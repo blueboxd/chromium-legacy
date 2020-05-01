@@ -147,7 +147,7 @@ class FeedSurfaceMediator
     }
 
     /**
-     * Initialize properties for UI components in the {@link FeedNewTabPage}.
+     * Initialize properties for UI components in the {@link NewTabPage}.
      * TODO(huayinz): Introduce a Model for these properties.
      */
     private void initializePropertiesForStream() {

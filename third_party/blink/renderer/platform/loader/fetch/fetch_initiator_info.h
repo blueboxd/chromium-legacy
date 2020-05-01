@@ -38,12 +38,17 @@ struct FetchInitiatorInfo {
   FetchInitiatorInfo()
       : name(),
         position(TextPosition::BelowRangePosition()),
-        is_link_preload(false) {}
+        is_link_preload(false),
+        is_imported_module(false) {}
 
   AtomicString name;
   TextPosition position;
   bool is_link_preload;
-  String imported_module_referrer;
+  bool is_imported_module;
+
+  // Should only be set when |is_imported_module| or when |name| is
+  // fetch_initiator_type_names::kCSS or fetch_initiator_type_names::kUaCSS.
+  String referrer;
 };
 
 }  // namespace blink

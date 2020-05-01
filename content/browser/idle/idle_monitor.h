@@ -9,17 +9,12 @@
 
 #include "base/callback.h"
 #include "base/containers/linked_list.h"
-#include "base/macros.h"
-#include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
 #include "base/time/time.h"
-#include "base/timer/timer.h"
 #include "content/common/content_export.h"
 #include "mojo/public/cpp/bindings/connection_error_callback.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "third_party/blink/public/mojom/idle/idle_manager.mojom.h"
-#include "ui/base/idle/idle.h"
-#include "url/origin.h"
 
 namespace content {
 

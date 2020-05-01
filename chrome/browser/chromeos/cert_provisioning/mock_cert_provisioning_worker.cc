@@ -8,6 +8,7 @@
 using base::test::IsJson;
 using testing::_;
 using testing::Return;
+using testing::ReturnRef;
 
 namespace chromeos {
 namespace cert_provisioning {
@@ -25,7 +26,6 @@ MockCertProvisioningWorkerFactory::ExpectCreateReturnMock(
     CertScope cert_scope,
     const CertProfile& cert_profile) {
   auto mock_worker = std::make_unique<MockCertProvisioningWorker>();
-
   MockCertProvisioningWorker* pointer = mock_worker.get();
 
   EXPECT_CALL(*this, Create(cert_scope, _, _, cert_profile, _, _))
@@ -56,11 +56,15 @@ MockCertProvisioningWorker::~MockCertProvisioningWorker() = default;
 
 void MockCertProvisioningWorker::SetExpectations(
     testing::Cardinality do_step_times,
-    bool is_waiting) {
+    bool is_waiting,
+    const CertProfile& cert_profile) {
   testing::Mock::VerifyAndClearExpectations(this);
+
+  cert_profile_ = cert_profile;
 
   EXPECT_CALL(*this, DoStep).Times(do_step_times);
   EXPECT_CALL(*this, IsWaiting).WillRepeatedly(Return(is_waiting));
+  EXPECT_CALL(*this, GetCertProfile).WillRepeatedly(ReturnRef(cert_profile_));
 }
 
 }  // namespace cert_provisioning

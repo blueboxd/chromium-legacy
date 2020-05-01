@@ -19,7 +19,6 @@
 #include "chromeos/dbus/cryptohome/cryptohome_client.h"
 #include "components/account_id/account_id.h"
 #include "components/user_manager/user.h"
-#include "third_party/cros_system_api/dbus/cryptohome/dbus-constants.h"
 
 class Profile;
 

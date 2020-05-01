@@ -1,8 +1,4 @@
     <style include="cr-shared-style settings-shared">
-      paper-tooltip {
-        --paper-tooltip: var(--cr-tooltip);
-      }
-
       site-favicon {
         /** Pad the difference between --cr-link-row-icon-width and
             site-favicon width to align with link rows */
@@ -66,7 +62,8 @@
             on-focus="onShowIncognitoTooltip_"></cr-tooltip-icon>
       </div>
     </template>
-    <paper-tooltip id="tooltip" fit-to-visible-bounds manual-mode
+    <paper-tooltip id="tooltip"
+        fit-to-visible-bounds manual-mode
         position="top">
       $i18n{incognitoSiteExceptionDesc}
     </paper-tooltip>

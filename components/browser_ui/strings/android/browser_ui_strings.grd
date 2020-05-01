@@ -476,6 +476,9 @@
     <message name="IDS_SCREEN_CAPTURE_NOTIFICATION_TITLE" desc="Text to be shown as a notification when screen capture is in progress.">
       Sharing your screen
     </message>
+    <message name="IDS_NOTIFICATION_CATEGORY_MEDIA" desc="Label for notifications shown when media is playing or recording, within a list of notification categories. [CHAR-LIMIT=32]">
+      Media
+    </message>
 
     </messages>
   </release>

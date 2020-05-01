@@ -22,6 +22,7 @@ const char kKeyNamePublicKey[] = "public_key";
 const char kKeyNameInvalidationTopic[] = "invalidation_topic";
 
 const char kKeyNameCertProfileId[] = "profile_id";
+const char kKeyNameCertProfileVersion[] = "policy_version";
 
 template <typename T>
 bool ConvertToEnum(int value, T* dst) {
@@ -57,17 +58,19 @@ bool DeserializeStringValue(const base::Value& parent_value,
 }
 
 base::Value SerializeCertProfile(const CertProfile& profile) {
-  static_assert(CertProfile::kVersion == 1, "This function should be updated");
+  static_assert(CertProfile::kVersion == 2, "This function should be updated");
 
   base::Value result(base::Value::Type::DICTIONARY);
   result.SetStringKey(kKeyNameCertProfileId, profile.profile_id);
+  result.SetStringKey(kKeyNameCertProfileVersion, profile.policy_version);
+
   return result;
 }
 
 bool DeserializeCertProfile(const base::Value& parent_value,
                             const char* value_name,
                             CertProfile* dst) {
-  static_assert(CertProfile::kVersion == 1, "This function should be updated");
+  static_assert(CertProfile::kVersion == 2, "This function should be updated");
 
   const base::Value* serialized_profile =
       parent_value.FindKeyOfType(value_name, base::Value::Type::DICTIONARY);
@@ -76,8 +79,14 @@ bool DeserializeCertProfile(const base::Value& parent_value,
     return false;
   }
 
-  return DeserializeStringValue(*serialized_profile, kKeyNameCertProfileId,
-                                &(dst->profile_id));
+  bool is_ok = true;
+  is_ok = is_ok &&
+          DeserializeStringValue(*serialized_profile, kKeyNameCertProfileId,
+                                 &(dst->profile_id));
+  is_ok = is_ok && DeserializeStringValue(*serialized_profile,
+                                          kKeyNameCertProfileVersion,
+                                          &(dst->policy_version));
+  return is_ok;
 }
 
 base::Value SerializePublicKey(const std::string& public_key) {

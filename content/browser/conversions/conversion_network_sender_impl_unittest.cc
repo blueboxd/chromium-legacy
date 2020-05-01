@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/strings/strcat.h"
 #include "base/task/post_task.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_clock.h"
 #include "content/browser/conversions/conversion_test_utils.h"
@@ -211,6 +212,40 @@ TEST_F(ConversionNetworkSenderTest, LoadFlags) {
       test_url_loader_factory_.GetPendingRequest(0)->request.load_flags;
   EXPECT_TRUE(load_flags & net::LOAD_BYPASS_CACHE);
   EXPECT_TRUE(load_flags & net::LOAD_DISABLE_CACHE);
+}
+
+TEST_F(ConversionNetworkSenderTest, ErrorHistogram) {
+  // All OK.
+  {
+    base::HistogramTester histograms;
+    auto report = GetReport(/*conversion_id=*/1);
+    network_sender_->SendReport(&report, GetSentCallback());
+    EXPECT_TRUE(test_url_loader_factory_.SimulateResponseForPendingRequest(
+        GetReportUrl("1"), ""));
+    // kOk = 0.
+    histograms.ExpectUniqueSample("Conversions.ReportStatus", 0, 1);
+  }
+  // Internal error.
+  {
+    base::HistogramTester histograms;
+    auto report = GetReport(/*conversion_id=*/2);
+    network_sender_->SendReport(&report, GetSentCallback());
+    network::URLLoaderCompletionStatus completion_status(net::ERR_FAILED);
+    EXPECT_TRUE(test_url_loader_factory_.SimulateResponseForPendingRequest(
+        GURL(GetReportUrl("2")), completion_status,
+        network::mojom::URLResponseHead::New(), std::string()));
+    // kInternalError = 1.
+    histograms.ExpectUniqueSample("Conversions.ReportStatus", 1, 1);
+  }
+  {
+    base::HistogramTester histograms;
+    auto report = GetReport(/*conversion_id=*/3);
+    network_sender_->SendReport(&report, GetSentCallback());
+    EXPECT_TRUE(test_url_loader_factory_.SimulateResponseForPendingRequest(
+        GetReportUrl("3"), std::string(), net::HTTP_UNAUTHORIZED));
+    // kExternalError = 2.
+    histograms.ExpectUniqueSample("Conversions.ReportStatus", 2, 1);
+  }
 }
 
 }  // namespace content

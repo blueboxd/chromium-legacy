@@ -23,6 +23,7 @@
 #include "content/browser/worker_host/dedicated_worker_service_impl.h"
 #include "content/browser/worker_host/worker_script_fetch_initiator.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/idle_manager.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/service_worker_context.h"
@@ -444,7 +445,9 @@ void DedicatedWorkerHost::CreateIdleManager(
   static_cast<StoragePartitionImpl*>(
       ancestor_render_frame_host->GetProcess()->GetStoragePartition())
       ->GetIdleManager()
-      ->CreateService(std::move(receiver));
+      ->CreateService(
+          std::move(receiver),
+          ancestor_render_frame_host->GetMainFrame()->GetLastCommittedOrigin());
 }
 
 void DedicatedWorkerHost::BindSmsReceiverReceiver(

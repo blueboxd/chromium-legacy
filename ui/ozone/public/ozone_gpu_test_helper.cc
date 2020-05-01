@@ -35,7 +35,7 @@ class FakeGpuConnection {
                      mojo::ScopedMessagePipeHandle interface_pipe) {
     mojo::GenericPendingReceiver receiver =
         mojo::GenericPendingReceiver(interface_name, std::move(interface_pipe));
-    DCHECK(binders_.Bind(&receiver))
+    CHECK(binders_.Bind(&receiver))
         << "Unable to find mojo interface " << interface_name;
   }
 

@@ -498,11 +498,6 @@ void TestRunnerForSpecificView::ForceNextDrawingBufferCreationToFail() {
   web_view()->ForceNextDrawingBufferCreationToFail();
 }
 
-void TestRunnerForSpecificView::SetWindowIsKey(bool value) {
-  web_view_test_proxy_->test_interfaces()->GetTestRunner()->SetFocus(web_view(),
-                                                                     value);
-}
-
 void TestRunnerForSpecificView::DidAcquirePointerLock() {
   DidAcquirePointerLockInternal();
 }

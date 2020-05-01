@@ -65,7 +65,7 @@ GlobalErrorBubbleView::GlobalErrorBubbleView(
 
   WidgetDelegate::SetTitle(error_->GetBubbleViewTitle());
   WidgetDelegate::SetShowCloseButton(error_->ShouldShowCloseButton());
-  WidgetDelegate::SetWindowClosingCallback(base::BindOnce(
+  WidgetDelegate::RegisterWindowClosingCallback(base::BindOnce(
       &GlobalErrorWithStandardBubble::BubbleViewDidClose, error_, browser));
 
   DialogDelegate::SetDefaultButton(error_->GetDefaultDialogButton());

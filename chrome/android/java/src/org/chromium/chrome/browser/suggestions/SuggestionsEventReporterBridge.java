@@ -5,9 +5,6 @@
 package org.chromium.chrome.browser.suggestions;
 
 import org.chromium.base.annotations.NativeMethods;
-import org.chromium.chrome.browser.ntp.cards.ActionItem;
-import org.chromium.chrome.browser.ntp.snippets.CategoryInt;
-import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
 
 /**
  * Exposes methods to report suggestions related events, for UMA or Fetch scheduling purposes.
@@ -25,48 +22,6 @@ public class SuggestionsEventReporterBridge implements SuggestionsEventReporter 
                 categories, suggestionsPerCategory, isCategoryVisible);
     }
 
-    @Override
-    public void onSuggestionShown(SnippetArticle suggestion) {
-        SuggestionsEventReporterBridgeJni.get().onSuggestionShown(suggestion.getGlobalRank(),
-                suggestion.mCategory, suggestion.getPerSectionRank(),
-                suggestion.mPublishTimestampMilliseconds, suggestion.mScore,
-                suggestion.mFetchTimestampMilliseconds);
-    }
-
-    @Override
-    public void onSuggestionOpened(SnippetArticle suggestion, int windowOpenDisposition,
-            SuggestionsRanker suggestionsRanker) {
-        int categoryIndex = suggestionsRanker.getCategoryRank(suggestion.mCategory);
-        SuggestionsEventReporterBridgeJni.get().onSuggestionOpened(suggestion.getGlobalRank(),
-                suggestion.mCategory, categoryIndex, suggestion.getPerSectionRank(),
-                suggestion.mPublishTimestampMilliseconds, suggestion.mScore, windowOpenDisposition,
-                suggestion.isPrefetched());
-    }
-
-    @Override
-    public void onSuggestionMenuOpened(SnippetArticle suggestion) {
-        SuggestionsEventReporterBridgeJni.get().onSuggestionMenuOpened(suggestion.getGlobalRank(),
-                suggestion.mCategory, suggestion.getPerSectionRank(),
-                suggestion.mPublishTimestampMilliseconds, suggestion.mScore);
-    }
-    @Override
-    public void onMoreButtonShown(ActionItem actionItem) {
-        SuggestionsEventReporterBridgeJni.get().onMoreButtonShown(
-                actionItem.getCategory(), actionItem.getPerSectionRank());
-    }
-
-    @Override
-    public void onMoreButtonClicked(ActionItem actionItem) {
-        @CategoryInt
-        int category = actionItem.getCategory();
-        SuggestionsEventReporterBridgeJni.get().onMoreButtonClicked(
-                category, actionItem.getPerSectionRank());
-    }
-
-    public static void onSuggestionTargetVisited(int category, long visitTimeMs) {
-        SuggestionsEventReporterBridgeJni.get().onSuggestionTargetVisited(category, visitTimeMs);
-    }
-
     public static void onActivityWarmResumed() {
         SuggestionsEventReporterBridgeJni.get().onActivityWarmResumed();
     }
@@ -75,6 +30,7 @@ public class SuggestionsEventReporterBridge implements SuggestionsEventReporter 
         SuggestionsEventReporterBridgeJni.get().onColdStart();
     }
 
+    // TODO(https://crbug.com/1069183): clean-up natives as part of C++ clean-up effort.
     @NativeMethods
     interface Natives {
         void onPageShown(

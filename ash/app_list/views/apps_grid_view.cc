@@ -417,7 +417,7 @@ AppsGridView::AppsGridView(ContentsView* contents_view,
   items_container_->SetPaintToLayer();
   items_container_->layer()->SetFillsBoundsOpaquely(false);
   bounds_animator_ = std::make_unique<views::BoundsAnimator>(
-      items_container_, /*use_transforms=*/false);
+      items_container_, /*use_transforms=*/true);
 
   if (!folder_delegate) {
     SetBorder(views::CreateEmptyBorder(
@@ -1566,6 +1566,7 @@ void AppsGridView::AnimationBetweenRows(AppListItemView* view,
   gfx::Rect target_in(target);
   if (animate_target)
     target_in.Offset(-dir * total_tile_size.width(), 0);
+  bounds_animator_->StopAnimatingView(view);
   view->SetBoundsRect(target_in);
   bounds_animator_->AnimateViewTo(view, target);
 

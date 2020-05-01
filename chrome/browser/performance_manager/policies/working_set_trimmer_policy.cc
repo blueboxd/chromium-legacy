@@ -4,11 +4,17 @@
 
 #include "chrome/browser/performance_manager/policies/working_set_trimmer_policy.h"
 
+#include "base/time/time.h"
 #include "build/build_config.h"
 
+#include "base/strings/strcat.h"
+#include "base/strings/string_number_conversions.h"
 #include "chrome/browser/performance_manager/mechanisms/working_set_trimmer.h"
+#include "components/performance_manager/graph/graph_impl.h"
+#include "components/performance_manager/graph/process_node_impl.h"
 #include "components/performance_manager/public/graph/graph.h"
 #include "components/performance_manager/public/graph/node_attached_data.h"
+#include "components/performance_manager/public/graph/node_data_describer_registry.h"
 #include "components/performance_manager/public/graph/process_node.h"
 #if defined(OS_WIN)
 #include "chrome/browser/performance_manager/policies/working_set_trimmer_policy_win.h"
@@ -30,6 +36,8 @@ class WorkingSetTrimData
   base::TimeTicks last_trim_;
 };
 
+const char kDescriberName[] = "WorkingSetTrimmerPolicy";
+
 }  // namespace
 
 WorkingSetTrimmerPolicy::WorkingSetTrimmerPolicy() = default;
@@ -50,9 +58,12 @@ void WorkingSetTrimmerPolicy::OnAllFramesInProcessFrozen(
 
 void WorkingSetTrimmerPolicy::RegisterObservers(Graph* graph) {
   graph->AddProcessNodeObserver(this);
+  graph->GetNodeDataDescriberRegistry()->RegisterDescriber(this,
+                                                           kDescriberName);
 }
 
 void WorkingSetTrimmerPolicy::UnregisterObservers(Graph* graph) {
+  graph->GetNodeDataDescriberRegistry()->UnregisterDescriber(this);
   graph->RemoveProcessNodeObserver(this);
 }
 
@@ -82,6 +93,23 @@ bool WorkingSetTrimmerPolicy::TrimWorkingSet(const ProcessNode* process_node) {
   }
 
   return false;
+}
+
+base::Value WorkingSetTrimmerPolicy::DescribeProcessNodeData(
+    const ProcessNode* node) const {
+  auto* data = WorkingSetTrimData::Get(ProcessNodeImpl::FromNode(node));
+  if (data == nullptr)
+    return base::Value();
+
+  base::Value ret(base::Value::Type::DICTIONARY);
+  auto last_trim_age = base::TimeTicks::Now() - data->last_trim_;
+
+  ret.SetKey(
+      "last_trim",
+      base::Value(base::StrCat(
+          {base::NumberToString(last_trim_age.InSeconds()), " seconds ago"})));
+
+  return ret;
 }
 
 // static

@@ -31,6 +31,7 @@
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
+#include "chrome/browser/ui/webui/settings/chromeos/constants/routes.mojom.h"
 #include "chrome/common/webui_url_constants.h"
 #endif
 
@@ -137,7 +138,8 @@ void SSLErrorControllerClient::LaunchDateAndTimeSettings() {
 
 #if defined(OS_CHROMEOS)
   chrome::SettingsWindowManager::GetInstance()->ShowOSSettings(
-      ProfileManager::GetActiveUserProfile(), chrome::kDateTimeSubPage);
+      ProfileManager::GetActiveUserProfile(),
+      chromeos::settings::mojom::kDateAndTimeSectionPath);
 #else
   base::ThreadPool::PostTask(
       FROM_HERE, {base::TaskPriority::USER_VISIBLE, base::MayBlock()},

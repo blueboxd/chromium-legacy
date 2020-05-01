@@ -1693,9 +1693,10 @@ void RenderThreadImpl::RequestNewLayerTreeFrameSink(
     const GURL& url,
     LayerTreeFrameSinkCallback callback,
     const char* client_name) {
+  const bool for_web_tests = blink::WebTestMode();
   // Misconfigured bots (eg. crbug.com/780757) could run web tests on a
   // machine where gpu compositing doesn't work. Don't crash in that case.
-  if (web_test_mode() && is_gpu_compositing_disabled_) {
+  if (for_web_tests && is_gpu_compositing_disabled_) {
     LOG(FATAL) << "Web tests require gpu compositing, but it is disabled.";
     return;
   }
@@ -1719,7 +1720,7 @@ void RenderThreadImpl::RequestNewLayerTreeFrameSink(
       *base::CommandLine::ForCurrentProcess();
   cc::mojo_embedder::AsyncLayerTreeFrameSink::InitParams params;
   params.compositor_task_runner = compositor_task_runner_;
-  if (web_test_mode() && !compositor_task_runner_) {
+  if (for_web_tests && !compositor_task_runner_) {
     // The frame sink provider expects a compositor task runner, but we might
     // not have that if we're running web tests in single threaded mode.
     // Set it to be our thread's task runner instead.
@@ -1748,7 +1749,7 @@ void RenderThreadImpl::RequestNewLayerTreeFrameSink(
       compositor_frame_sink_client.InitWithNewPipeAndPassReceiver();
 
   if (is_gpu_compositing_disabled_) {
-    DCHECK(!web_test_mode());
+    DCHECK(!for_web_tests);
     frame_sink_provider_->CreateForWidget(
         render_widget->routing_id(), std::move(compositor_frame_sink_receiver),
         std::move(compositor_frame_sink_client));

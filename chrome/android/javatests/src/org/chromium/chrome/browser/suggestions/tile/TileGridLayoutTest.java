@@ -40,7 +40,6 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.GlobalDiscardableReferencePool;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.night_mode.ChromeNightModeTestUtils;
@@ -58,7 +57,6 @@ import org.chromium.chrome.test.util.ChromeRenderTestRule;
 import org.chromium.chrome.test.util.NewTabPageTestUtils;
 import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
 import org.chromium.chrome.test.util.browser.offlinepages.FakeOfflinePageBridge;
-import org.chromium.chrome.test.util.browser.suggestions.FakeSuggestionsSource;
 import org.chromium.chrome.test.util.browser.suggestions.SuggestionsDependenciesRule;
 import org.chromium.chrome.test.util.browser.suggestions.mostvisited.FakeMostVisitedSites;
 import org.chromium.components.browser_ui.widget.displaystyle.UiConfig;
@@ -225,8 +223,6 @@ public class TileGridLayoutTest {
         mMostVisitedSites.setTileSuggestions(siteSuggestions);
         mSuggestionsDeps.getFactory().mostVisitedSites = mMostVisitedSites;
 
-        mSuggestionsDeps.getFactory().suggestionsSource = new FakeSuggestionsSource();
-
         mActivityTestRule.startMainActivityWithURL(UrlConstants.NTP_URL);
 
         Tab mTab = mActivityTestRule.getActivity().getActivityTab();
@@ -297,7 +293,6 @@ public class TileGridLayoutTest {
         FakeMostVisitedSites mostVisitedSites = new FakeMostVisitedSites();
         mostVisitedSites.setTileSuggestions(siteSuggestions);
         mSuggestionsDeps.getFactory().mostVisitedSites = mostVisitedSites;
-        mSuggestionsDeps.getFactory().suggestionsSource = new FakeSuggestionsSource();
 
         FrameLayout contentView = new FrameLayout(activity);
         UiConfig uiConfig = new UiConfig(contentView);
@@ -334,10 +329,9 @@ public class TileGridLayoutTest {
 
         // TODO (https://crbug.com/1063807):  Add incognito mode tests.
         Profile profile = Profile.getLastUsedRegularProfile();
-        SuggestionsUiDelegate uiDelegate = new SuggestionsUiDelegateImpl(
-                mSuggestionsDeps.getFactory().createSuggestionSource(null),
-                mSuggestionsDeps.getFactory().createEventReporter(), null, profile, null,
-                GlobalDiscardableReferencePool.getReferencePool(), activity.getSnackbarManager());
+        SuggestionsUiDelegate uiDelegate =
+                new SuggestionsUiDelegateImpl(mSuggestionsDeps.getFactory().createEventReporter(),
+                        null, profile, null, activity.getSnackbarManager());
 
         FakeOfflinePageBridge offlinePageBridge = new FakeOfflinePageBridge();
         List<OfflinePageItem> offlinePageItems = new ArrayList<>();

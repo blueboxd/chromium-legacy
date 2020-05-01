@@ -196,19 +196,19 @@ Polymer({
   },
 
   /** @private */
-  updateDriveDestinationReady_() {
+  updateDriveDestination_() {
     const key = createDestinationKey(
         Destination.GooglePromotedId.DOCS, DestinationOrigin.COOKIES,
         this.activeUser_);
-    this.driveDestinationReady_ =
-        !!this.destinationStore_.getDestinationByKey(key);
+    this.driveDestinationKey_ =
+        this.destinationStore_.getDestinationByKey(key) ? key : '';
   },
 
   /** @private */
   onActiveUserChanged_() {
     this.destinationStore_.startLoadCookieDestination(
         Destination.GooglePromotedId.DOCS);
-    this.updateDriveDestinationReady_();
+    this.updateDriveDestination_();
     const recentDestinations = this.getSettingValue('recentDestinations');
     recentDestinations.forEach(destination => {
       if (destination.origin === DestinationOrigin.COOKIES &&
@@ -427,7 +427,7 @@ Polymer({
     });
 
     this.displayedDestinations_ = updatedDestinations;
-    this.updateDriveDestinationReady_();
+    this.updateDriveDestination_();
   },
 
   /**
@@ -486,7 +486,7 @@ Polymer({
    */
   onAccountChange_(e) {
     this.$.userManager.updateActiveUser(e.detail, true);
-    this.updateDriveDestinationReady_();
+    this.updateDriveDestination_();
   },
 
   /** @private */

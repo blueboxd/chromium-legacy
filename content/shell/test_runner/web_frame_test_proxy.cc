@@ -85,8 +85,6 @@ class TestRenderFrameObserver : public content::RenderFrameObserver {
 
     // Looking for navigations to about:blank after a test completes.
     if (render_frame()->IsMainFrame() && !is_same_document_navigation) {
-      render_frame()->GetRenderView()->GetWebView()->SetFocusedFrame(
-          render_frame()->GetWebFrame());
       blink_test_runner()->DidCommitNavigationInMainFrame();
     }
   }

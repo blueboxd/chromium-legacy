@@ -405,6 +405,7 @@ class PowerMeasurementIntegrationTest(gpu_integration_test.GpuIntegrationTest):
   # Actual test functions
 
   def _RunTest_Basic(self, test_path, params):
+    del test_path  # Unused in this particular test.
     repeat = params['repeat']
     bypass_ipg = params['bypass_ipg']
 

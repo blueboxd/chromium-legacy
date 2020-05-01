@@ -23,7 +23,6 @@ class ShellDevToolsFrontend : public ShellDevToolsDelegate,
   static ShellDevToolsFrontend* Show(WebContents* inspected_contents);
 
   void Activate();
-  void Focus();
   void InspectElementAt(int x, int y);
   void Close() override;
 

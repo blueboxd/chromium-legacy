@@ -24,6 +24,7 @@ using TileList = std::vector<Tile>;
 using GetTilesCallback = base::OnceCallback<void(TileList)>;
 using TileCallback = base::OnceCallback<void(base::Optional<Tile>)>;
 using VisualsCallback = base::OnceCallback<void(const gfx::Image&)>;
+using BackgroundTaskFinishedCallback = base::OnceCallback<void(bool)>;
 
 // The central class on chrome client responsible for fetching, storing,
 // managing, and displaying query tiles in chrome.
@@ -40,6 +41,9 @@ class TileService : public KeyedService, public base::SupportsUserData {
   // ImageFetcher in Java directly using URL.
   virtual void GetVisuals(const std::string& tile_id,
                           VisualsCallback callback) = 0;
+
+  // Start fetch query tiles from server.
+  virtual void StartFetchForTiles(BackgroundTaskFinishedCallback callback) = 0;
 
   TileService() = default;
   ~TileService() override = default;

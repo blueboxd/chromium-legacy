@@ -197,6 +197,7 @@ std::string CompressAndSaveBitmap(const std::string& dir,
   unsigned int bytes_written =
       fwrite(reinterpret_cast<const char*>(data.data()), 1, data.size(),
              out_file.get());
+  out_file.reset();  // Explicitly close before a possible Delete below.
 
   // If there were errors, don't leave a partial file around.
   if (bytes_written != data.size()) {

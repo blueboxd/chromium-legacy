@@ -128,6 +128,7 @@ StyleImage* CSSImageSetValue::CacheImage(
     options.initiator_info.name = parser_mode_ == kUASheetMode
                                       ? fetch_initiator_type_names::kUacss
                                       : fetch_initiator_type_names::kCSS;
+    options.initiator_info.referrer = image.referrer.referrer;
     FetchParameters params(std::move(resource_request), options);
 
     if (cross_origin != kCrossOriginAttributeNotSet) {

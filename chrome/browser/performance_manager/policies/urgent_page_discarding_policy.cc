@@ -20,6 +20,7 @@
 #include "components/performance_manager/graph/page_node_impl.h"
 #include "components/performance_manager/public/graph/frame_node.h"
 #include "components/performance_manager/public/graph/graph_operations.h"
+#include "components/performance_manager/public/graph/node_data_describer_registry.h"
 #include "components/performance_manager/public/graph/page_node.h"
 #include "components/performance_manager/public/graph/process_node.h"
 #include "url/gurl.h"
@@ -55,6 +56,8 @@ class DiscardAttemptMarker : public NodeAttachedDataImpl<DiscardAttemptMarker> {
   explicit DiscardAttemptMarker(const PageNodeImpl* page_node) {}
 };
 
+const char kDescriberName[] = "UrgentPageDiscardingPolicy";
+
 }  // namespace
 
 UrgentPageDiscardingPolicy::UrgentPageDiscardingPolicy()
@@ -66,10 +69,13 @@ void UrgentPageDiscardingPolicy::OnPassedToGraph(Graph* graph) {
   graph_ = graph;
   RegisterMemoryPressureListener();
   graph->AddPageNodeObserver(this);
+  graph->GetNodeDataDescriberRegistry()->RegisterDescriber(this,
+                                                           kDescriberName);
 }
 
 void UrgentPageDiscardingPolicy::OnTakenFromGraph(Graph* graph) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  graph->GetNodeDataDescriberRegistry()->UnregisterDescriber(this);
   graph->RemovePageNodeObserver(this);
   UnregisterMemoryPressureListener();
   graph_ = nullptr;
@@ -317,6 +323,18 @@ void UrgentPageDiscardingPolicy::PostDiscardAttemptCallback(bool success) {
   }
 
   RegisterMemoryPressureListener();
+}
+
+base::Value UrgentPageDiscardingPolicy::DescribePageNodeData(
+    const PageNode* node) const {
+  auto* data = DiscardAttemptMarker::Get(PageNodeImpl::FromNode(node));
+  if (data == nullptr)
+    return base::Value();
+
+  base::Value ret(base::Value::Type::DICTIONARY);
+  ret.SetKey("has_discard_attempt_marker", base::Value("true"));
+
+  return ret;
 }
 
 }  // namespace policies

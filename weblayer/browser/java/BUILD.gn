@@ -4,6 +4,7 @@
 
 import("//build/config/android/config.gni")
 import("//build/config/android/rules.gni")
+import("//build/config/locales.gni")
 import("//weblayer/variables.gni")
 
 android_resources("weblayer_resources") {
@@ -13,6 +14,7 @@ android_resources("weblayer_resources") {
   ]
   custom_package = "org.chromium.weblayer_private"
   deps = [
+    ":weblayer_strings_grd",
     "//components/browser_ui/strings/android:browser_ui_strings_grd",
     "//components/browser_ui/styles/android:java_resources",
     "//components/page_info/android:java_resources",
@@ -34,6 +36,14 @@ java_cpp_template("resource_id_javagen") {
   ]
 }
 
+java_strings_grd("weblayer_strings_grd") {
+  grd_file = "weblayer_strings.grd"
+  outputs = [ "values/weblayer_strings.xml" ] +
+            process_file_template(
+                android_bundle_locales_as_resources,
+                [ "values-{{source_name_part}}/weblayer_strings.xml" ])
+}
+
 java_cpp_enum("generated_enums") {
   sources = [
     "//weblayer/browser/controls_visibility_reason.h",
@@ -48,6 +58,7 @@ android_library("java") {
   sources = [
     "org/chromium/weblayer_private/ActionModeCallback.java",
     "org/chromium/weblayer_private/AutocompleteSchemeClassifierImpl.java",
+    "org/chromium/weblayer_private/BrowserControlsContainerView.java",
     "org/chromium/weblayer_private/BrowserFragmentImpl.java",
     "org/chromium/weblayer_private/BrowserImpl.java",
     "org/chromium/weblayer_private/BrowserViewController.java",
@@ -75,12 +86,12 @@ android_library("java") {
     "org/chromium/weblayer_private/RemoteFragmentImpl.java",
     "org/chromium/weblayer_private/TabCallbackProxy.java",
     "org/chromium/weblayer_private/TabImpl.java",
-    "org/chromium/weblayer_private/TopControlsContainerView.java",
     "org/chromium/weblayer_private/UrlBarControllerImpl.java",
     "org/chromium/weblayer_private/WebContentsGestureStateTracker.java",
     "org/chromium/weblayer_private/WebLayerExceptionFilter.java",
     "org/chromium/weblayer_private/WebLayerFactoryImpl.java",
     "org/chromium/weblayer_private/WebLayerImpl.java",
+    "org/chromium/weblayer_private/WebLayerNotificationChannels.java",
     "org/chromium/weblayer_private/WebLayerTabModalPresenter.java",
     "org/chromium/weblayer_private/WebViewCompatibilityHelperImpl.java",
     "org/chromium/weblayer_private/metrics/MetricsServiceClient.java",
@@ -97,6 +108,7 @@ android_library("java") {
     "//base:jni_java",
     "//components/autofill/android:provider_java",
     "//components/browser_ui/modaldialog/android:java",
+    "//components/browser_ui/notifications/android:java",
     "//components/browser_ui/styles/android:java",
     "//components/browser_ui/styles/android:java_resources",
     "//components/browser_ui/util/android:java",
@@ -124,6 +136,7 @@ android_library("java") {
     "//components/url_formatter/android:url_formatter_java",
     "//components/variations/android:variations_java",
     "//components/version_info/android:version_constants_java",
+    "//components/webrtc/android:java",
     "//content/public/android:content_java",
     "//net/android:net_java",
     "//services/network/public/mojom:mojom_java",
@@ -177,6 +190,7 @@ android_library("test_java") {
 generate_jni("jni") {
   sources = [
     "org/chromium/weblayer_private/AutocompleteSchemeClassifierImpl.java",
+    "org/chromium/weblayer_private/BrowserControlsContainerView.java",
     "org/chromium/weblayer_private/BrowserImpl.java",
     "org/chromium/weblayer_private/ContentViewRenderView.java",
     "org/chromium/weblayer_private/CookieManagerImpl.java",
@@ -192,7 +206,6 @@ generate_jni("jni") {
     "org/chromium/weblayer_private/ProfileImpl.java",
     "org/chromium/weblayer_private/TabCallbackProxy.java",
     "org/chromium/weblayer_private/TabImpl.java",
-    "org/chromium/weblayer_private/TopControlsContainerView.java",
     "org/chromium/weblayer_private/UrlBarControllerImpl.java",
     "org/chromium/weblayer_private/WebLayerExceptionFilter.java",
     "org/chromium/weblayer_private/WebLayerFactoryImpl.java",

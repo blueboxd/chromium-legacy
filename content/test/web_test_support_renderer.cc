@@ -76,11 +76,6 @@ void EnableRendererWebTestMode() {
   UniqueNameHelper::PreserveStableUniqueNameForTesting();
 }
 
-void SetFocusAndActivate(RenderView* render_view, bool enable) {
-  static_cast<RenderViewImpl*>(render_view)
-      ->SetFocusAndActivateForTesting(enable);
-}
-
 void SchedulerRunIdleTasks(base::OnceClosure callback) {
   blink::scheduler::WebThreadScheduler* scheduler =
       content::RenderThreadImpl::current()->GetWebMainThreadScheduler();

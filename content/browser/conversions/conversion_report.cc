@@ -28,6 +28,7 @@ std::ostream& operator<<(std::ostream& out, const ConversionReport& report) {
       << ", reporting_origin: " << report.impression.reporting_origin()
       << ", conversion_data: " << report.conversion_data
       << ", report_time: " << report.report_time
+      << ", extra_delay: " << report.extra_delay
       << ", attribution_credit: " << report.attribution_credit;
   return out;
 }

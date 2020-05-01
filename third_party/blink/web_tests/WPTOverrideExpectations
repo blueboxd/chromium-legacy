@@ -957,10 +957,8 @@ external/wpt/html/canvas/offscreen/the-offscreen-canvas/offscreencanvas.commit.h
 external/wpt/html/canvas/offscreen/the-offscreen-canvas/offscreencanvas.resize.html [ Failure Pass ] # wpt_subtest_failure
 external/wpt/html/canvas/offscreen/the-offscreen-canvas/size.attributes.idl.worker.html [ Failure Pass ] # wpt_subtest_failure
 external/wpt/html/canvas/offscreen/the-offscreen-canvas/size.attributes.parse.em.worker.html [ Failure Pass ] # wpt_subtest_failure
-external/wpt/html/canvas/offscreen/the-offscreen-canvas/size.attributes.parse.empty.worker.html [ Failure Pass ] # wpt_subtest_failure
 external/wpt/html/canvas/offscreen/the-offscreen-canvas/size.attributes.parse.junk.worker.html [ Failure Pass ] # wpt_subtest_failure
 external/wpt/html/canvas/offscreen/the-offscreen-canvas/size.attributes.parse.minus.worker.html [ Failure Pass ] # wpt_subtest_failure
-external/wpt/html/canvas/offscreen/the-offscreen-canvas/size.attributes.parse.onlyspace.worker.html [ Failure Pass ] # wpt_subtest_failure
 external/wpt/html/canvas/offscreen/the-offscreen-canvas/size.attributes.parse.percent.worker.html [ Failure Pass ] # wpt_subtest_failure
 external/wpt/html/canvas/offscreen/the-offscreen-canvas/size.attributes.parse.trailingjunk.worker.html [ Failure Pass ] # wpt_subtest_failure
 external/wpt/orientation-sensor/AbsoluteOrientationSensor-iframe-access.https.html [ Pass ] # wpt_subtest_failure

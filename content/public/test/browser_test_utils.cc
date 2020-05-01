@@ -2397,8 +2397,17 @@ RenderProcessHostWatcher::RenderProcessHostWatcher(WebContents* web_contents,
                                type) {}
 
 RenderProcessHostWatcher::~RenderProcessHostWatcher() {
+  ClearProcessHost();
+}
+
+void RenderProcessHostWatcher::ClearProcessHost() {
+  // Although we would like to make it so that from here on, renderer crashes
+  // cause test failures, resetting ScopedAllowRendererCrashes inside the RPH
+  // observers is too soon. The current crash is notified to the testing
+  // framework *after* the observers run and we need this one to be ignored.
   if (render_process_host_)
     render_process_host_->RemoveObserver(this);
+  render_process_host_ = nullptr;
 }
 
 void RenderProcessHostWatcher::Wait() {
@@ -2407,11 +2416,18 @@ void RenderProcessHostWatcher::Wait() {
   DCHECK(allow_renderer_crashes_)
       << "RenderProcessHostWatcher::Wait() may only be called once";
   allow_renderer_crashes_.reset();
+  // Call this here just in case something else quits the RunLoop.
+  ClearProcessHost();
+}
+
+void RenderProcessHostWatcher::QuitRunLoop() {
+  std::move(quit_closure_).Run();
+  ClearProcessHost();
 }
 
 void RenderProcessHostWatcher::RenderProcessReady(RenderProcessHost* host) {
   if (type_ == WATCH_FOR_PROCESS_READY)
-    std::move(quit_closure_).Run();
+    QuitRunLoop();
 }
 
 void RenderProcessHostWatcher::RenderProcessExited(
@@ -2420,14 +2436,14 @@ void RenderProcessHostWatcher::RenderProcessExited(
   did_exit_normally_ =
       info.status == base::TERMINATION_STATUS_NORMAL_TERMINATION;
   if (type_ == WATCH_FOR_PROCESS_EXIT)
-    std::move(quit_closure_).Run();
+    QuitRunLoop();
 }
 
 void RenderProcessHostWatcher::RenderProcessHostDestroyed(
     RenderProcessHost* host) {
   render_process_host_ = nullptr;
   if (type_ == WATCH_FOR_HOST_DESTRUCTION)
-    std::move(quit_closure_).Run();
+    QuitRunLoop();
 }
 
 RenderProcessHostKillWaiter::RenderProcessHostKillWaiter(

@@ -78,7 +78,6 @@ class WebViewTestProxy : public content::RenderViewImpl {
                                  session_storage_namespace_id) override;
   void PrintPage(blink::WebLocalFrame* frame) override;
   blink::WebString AcceptLanguages() override;
-  void DidFocus(blink::WebLocalFrame* calling_frame) override;
 
   // Exposed for our TestRunner harness.
   using RenderViewImpl::ApplyPageVisibilityState;

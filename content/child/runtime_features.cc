@@ -110,9 +110,6 @@ void SetRuntimeFeatureDefaultsForPlatform(
       base::FeatureList::IsEnabled(features::kWebAuth));
 #endif
 
-  WebRuntimeFeatures::EnableWebAuthenticationFeaturePolicy(
-      base::FeatureList::IsEnabled(device::kWebAuthFeaturePolicy));
-
 #if defined(OS_ANDROID)
   WebRuntimeFeatures::EnablePictureInPictureAPI(
       base::FeatureList::IsEnabled(media::kPictureInPictureAPI));
@@ -319,6 +316,9 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
 #endif
     {wf::EnableTrustTokens, network::features::kTrustTokens, kEnableOnly},
     {wf::EnableInstalledApp, features::kInstalledApp, kDisableOnly},
+    {wf::EnableWebAuthenticationGetAssertionFeaturePolicy,
+     device::kWebAuthGetAssertionFeaturePolicy, kUseFeatureState},
+
   };
   for (const auto& mapping : blinkFeatureToBaseFeatureMapping) {
     SetRuntimeFeatureFromChromiumFeature(

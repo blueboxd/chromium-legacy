@@ -67,7 +67,7 @@ public class SectionHeader extends OptionalLeaf {
         if (TextUtils.equals(mHeaderText, headerText)) return;
 
         mHeaderText = headerText;
-        notifyItemChanged(0, SectionHeaderViewHolder::updateVisuals);
+        notifyItemChanged(0, null);
     }
 
     public ModelList getMenuModelList() {
@@ -105,13 +105,13 @@ public class SectionHeader extends OptionalLeaf {
      */
     public void toggleHeader() {
         mIsExpanded = !mIsExpanded;
-        notifyItemChanged(0, SectionHeaderViewHolder::updateVisuals);
+        notifyItemChanged(0, null);
         mToggleCallback.run();
     }
 
     @Override
     protected void onBindViewHolder(NewTabPageViewHolder holder) {
-        ((SectionHeaderViewHolder) holder).onBindViewHolder(this);
+        // TODO(https://crbug.com/1069183): Dead code, refactor to remove.
     }
 
     @Override

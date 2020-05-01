@@ -39,10 +39,6 @@ void ShellDevToolsFrontend::Activate() {
   frontend_shell_->ActivateContents(frontend_shell_->web_contents());
 }
 
-void ShellDevToolsFrontend::Focus() {
-  frontend_shell_->web_contents()->Focus();
-}
-
 void ShellDevToolsFrontend::InspectElementAt(int x, int y) {
   devtools_bindings_->InspectElementAt(x, y);
 }

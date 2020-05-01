@@ -244,9 +244,13 @@ AudioWorkletNode::AudioWorkletNode(
   HashMap<String, scoped_refptr<AudioParamHandler>> param_handler_map;
   for (const auto& param_info : param_info_list) {
     String param_name = param_info.Name().IsolatedCopy();
+    AudioParamHandler::AutomationRate
+        param_automation_rate(AudioParamHandler::AutomationRate::kAudio);
+    if (param_info.AutomationRate() == "k-rate")
+      param_automation_rate = AudioParamHandler::AutomationRate::kControl;
     AudioParam* audio_param = AudioParam::Create(
         context, Uuid(), AudioParamHandler::kParamTypeAudioWorklet,
-        param_info.DefaultValue(), AudioParamHandler::AutomationRate::kAudio,
+        param_info.DefaultValue(), param_automation_rate,
         AudioParamHandler::AutomationRateMode::kVariable, param_info.MinValue(),
         param_info.MaxValue());
     audio_param->SetCustomParamName("AudioWorkletNode(\"" + name + "\")." +

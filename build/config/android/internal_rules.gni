@@ -2782,11 +2782,11 @@ if (enable_java_templates) {
         _expected_native_libs_and_assets =
             "$_target_src_dir/java/" +
             "${invoker.verify_native_libs_and_assets_target_name}." +
-            "native_libs_and_assets.expected"
+            "${target_cpu}.native_libs_and_assets.expected"
         _native_libs_and_assets_expectation_failure_filepath =
             "$android_configuration_failure_dir/" +
             "${invoker.verify_native_libs_and_assets_target_name}." +
-            "native_libs_and_assets.failed"
+            "${target_cpu}.native_libs_and_assets.failed"
         if (fail_on_android_expectations) {
           _args += [ "--fail-on-expectations" ]
         }
@@ -3984,11 +3984,11 @@ template("create_android_app_bundle_module") {
       _expected_native_libs_and_assets =
           "$_target_src_dir/java/" +
           "${invoker.verify_native_libs_and_assets_target_name}." +
-          "native_libs_and_assets.expected"
+          "${target_cpu}.native_libs_and_assets.expected"
       _native_libs_and_assets_expectation_failure_filepath =
           "$android_configuration_failure_dir/" +
           "${invoker.verify_native_libs_and_assets_target_name}." +
-          "native_libs_and_assets.failed"
+          "${target_cpu}.native_libs_and_assets.failed"
       if (fail_on_android_expectations) {
         _args += [ "--fail-on-expectations" ]
       }

@@ -23,6 +23,7 @@
 #include "chrome/browser/ui/ash/wallpaper_controller_client.h"
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
 #include "chrome/browser/ui/webui/chromeos/login/l10n_util.h"
+#include "chrome/browser/ui/webui/settings/chromeos/constants/routes.mojom.h"
 #include "chrome/common/webui_url_constants.h"
 #include "components/user_manager/remove_user_delegate.h"
 #include "components/user_manager/user_names.h"
@@ -246,7 +247,8 @@ void LoginScreenClient::ShowParentAccessHelpApp(
 
 void LoginScreenClient::ShowLockScreenNotificationSettings() {
   chrome::SettingsWindowManager::GetInstance()->ShowOSSettings(
-      ProfileManager::GetActiveUserProfile(), chrome::kLockScreenSubPage);
+      ProfileManager::GetActiveUserProfile(),
+      chromeos::settings::mojom::kSecurityAndSignInSubpagePath);
 }
 
 void LoginScreenClient::OnFocusLeavingSystemTray(bool reverse) {

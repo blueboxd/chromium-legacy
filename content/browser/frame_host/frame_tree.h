@@ -267,6 +267,14 @@ class CONTENT_EXPORT FrameTree {
   // identified by |instance|.
   void SetPageFocus(SiteInstance* instance, bool is_focused);
 
+  // Walks the current frame tree and registers any origins matching |origin|,
+  // either the last committed origin of a RenderFrameHost or the origin
+  // associated with a NavigationRequest that has been assigned to a
+  // SiteInstance, as not-opted-in for origin isolation.
+  void RegisterExistingOriginToPreventOptInIsolation(
+      const url::Origin& previously_visited_origin,
+      NavigationRequest* navigation_request_to_exclude);
+
  private:
   friend class FrameTreeTest;
   FRIEND_TEST_ALL_PREFIXES(RenderFrameHostImplBrowserTest, RemoveFocusedFrame);

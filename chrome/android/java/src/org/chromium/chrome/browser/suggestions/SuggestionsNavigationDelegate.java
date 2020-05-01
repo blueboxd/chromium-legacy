@@ -6,21 +6,13 @@ package org.chromium.chrome.browser.suggestions;
 
 import android.app.Activity;
 
-import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.native_page.NativePageNavigationDelegateImpl;
-import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.ntp.NewTabPageUma;
-import org.chromium.chrome.browser.ntp.snippets.KnownCategories;
-import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
-import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.ui.native_page.NativePageHost;
-import org.chromium.components.offline_items_collection.LaunchLocation;
 import org.chromium.content_public.browser.LoadUrlParams;
-import org.chromium.content_public.common.Referrer;
-import org.chromium.network.mojom.ReferrerPolicy;
 import org.chromium.ui.base.PageTransition;
 import org.chromium.ui.mojom.WindowOpenDisposition;
 
@@ -52,58 +44,5 @@ public class SuggestionsNavigationDelegate extends NativePageNavigationDelegateI
     public void navigateToSuggestionUrl(int windowOpenDisposition, String url) {
         LoadUrlParams loadUrlParams = new LoadUrlParams(url, PageTransition.AUTO_BOOKMARK);
         openUrl(windowOpenDisposition, loadUrlParams);
-    }
-
-    /**
-     * Opens a content suggestion and records related metrics.
-     *
-     * @param windowOpenDisposition How to open (new window, current tab, etc).
-     * @param article The content suggestion to open.
-     */
-    public void openSnippet(final int windowOpenDisposition, final SnippetArticle article) {
-        NewTabPageUma.recordAction(NewTabPageUma.ACTION_OPENED_SNIPPET);
-
-        // We explicitly open an offline page only for prefetched offline pages when Data
-        // Reduction Proxy is enabled. For all other sections the URL is opened and it is up to
-        // Offline Pages whether to open its offline page (e.g. when offline).
-        if (DataReductionProxySettings.getInstance().isDataReductionProxyEnabled()
-                && article.isPrefetched()) {
-            assert article.getOfflinePageOfflineId() != null;
-            assert windowOpenDisposition == WindowOpenDisposition.CURRENT_TAB
-                    || windowOpenDisposition == WindowOpenDisposition.NEW_WINDOW
-                    || windowOpenDisposition == WindowOpenDisposition.NEW_BACKGROUND_TAB;
-            OfflinePageUtils.getLoadUrlParamsForOpeningOfflineVersion(article.mUrl,
-                    article.getOfflinePageOfflineId(), LaunchLocation.SUGGESTION,
-                    (loadUrlParams) -> {
-                        if (loadUrlParams == null) return;
-                        // Extra headers are not read in loadUrl, but verbatim headers are.
-                        loadUrlParams.setVerbatimHeaders(loadUrlParams.getExtraHeadersString());
-                        openDownloadSuggestion(windowOpenDisposition, article, loadUrlParams);
-                    });
-
-            return;
-        }
-
-        LoadUrlParams loadUrlParams = new LoadUrlParams(article.mUrl, PageTransition.AUTO_BOOKMARK);
-
-        // For article suggestions, we set the referrer. This is exploited
-        // to filter out these history entries for NTP tiles.
-        // TODO(mastiz): Extend this with support for other categories.
-        if (article.mCategory == KnownCategories.ARTICLES) {
-            loadUrlParams.setReferrer(new Referrer(
-                    SuggestionsConfig.getReferrerUrl(ChromeFeatureList.NTP_ARTICLE_SUGGESTIONS),
-                    ReferrerPolicy.ALWAYS));
-        }
-
-        Tab loadingTab = openUrl(windowOpenDisposition, loadUrlParams);
-        if (loadingTab != null) {
-            SuggestionsMetrics.recordVisit(loadingTab, article);
-        }
-    }
-
-    private void openDownloadSuggestion(
-            int windowOpenDisposition, SnippetArticle article, LoadUrlParams loadUrlParams) {
-        Tab loadingTab = openUrl(windowOpenDisposition, loadUrlParams);
-        if (loadingTab != null) SuggestionsMetrics.recordVisit(loadingTab, article);
     }
 }

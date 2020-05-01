@@ -140,4 +140,46 @@ TEST_F(WebElementTest, ShadowRoot) {
   }
 }
 
+TEST_F(WebElementTest, ComputedStyleProperties) {
+  InsertHTML(R"HTML(
+    <body>
+      <div id=testElement></div>
+    </body>
+  )HTML");
+
+  WebElement element = TestElement();
+  element.GetDocument().InsertStyleSheet(
+      "body { font-size: 16px; text-decoration: underline; color: blue;}");
+  // font-size
+  {
+    EXPECT_EQ(element.GetComputedValue("font-size"), "16px");
+    element.SetAttribute("style", "font-size: 3em");
+    EXPECT_EQ(element.GetComputedValue("font-size"), "48px");
+  }
+
+  // text-decoration
+  {
+    EXPECT_EQ(element.GetComputedValue("text-decoration"),
+              "none solid rgb(0, 0, 255)");
+    element.SetAttribute("style", "text-decoration: line-through");
+    EXPECT_EQ(element.GetComputedValue("text-decoration-line"), "line-through");
+    EXPECT_EQ(element.GetComputedValue("-Webkit-text-decorations-in-effect"),
+              "underline line-through");
+  }
+
+  // font-weight
+  {
+    EXPECT_EQ(element.GetComputedValue("font-weight"), "400");
+    element.SetAttribute("style", "font-weight: bold");
+    EXPECT_EQ(element.GetComputedValue("font-weight"), "700");
+  }
+
+  // color
+  {
+    EXPECT_EQ(element.GetComputedValue("color"), "rgb(0, 0, 255)");
+    element.SetAttribute("style", "color: red");
+    EXPECT_EQ(element.GetComputedValue("color"), "rgb(255, 0, 0)");
+  }
+}
+
 }  // namespace blink

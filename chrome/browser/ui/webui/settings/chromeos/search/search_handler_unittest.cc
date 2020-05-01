@@ -7,6 +7,7 @@
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/local_search_service/local_search_service.h"
+#include "chrome/browser/ui/webui/settings/chromeos/constants/routes.mojom.h"
 #include "chrome/browser/ui/webui/settings/chromeos/os_settings_manager.h"
 #include "chrome/browser/ui/webui/settings/chromeos/search/search.mojom-test-utils.h"
 #include "chrome/common/webui_url_constants.h"
@@ -65,7 +66,8 @@ TEST_F(SearchHandlerTest, Success) {
   // Multiple results should be available, and they should have Wi-Fi metadata.
   EXPECT_GT(search_results.size(), 0u);
   for (const auto& result : search_results) {
-    EXPECT_EQ(chrome::kWiFiSettingsSubPage, result->url_path_with_parameters);
+    EXPECT_EQ(chromeos::settings::mojom::kWifiNetworksSubpagePath,
+              result->url_path_with_parameters);
     EXPECT_EQ(mojom::SearchResultIcon::kWifi, result->icon);
   }
 }

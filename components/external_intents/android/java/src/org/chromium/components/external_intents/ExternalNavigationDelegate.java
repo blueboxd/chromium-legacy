@@ -10,6 +10,7 @@ import android.content.pm.ResolveInfo;
 import androidx.annotation.NonNull;
 
 import org.chromium.components.external_intents.ExternalNavigationHandler.OverrideUrlLoadingResult;
+import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.WindowAndroid;
 
@@ -99,16 +100,11 @@ public interface ExternalNavigationDelegate {
     void startFileIntent(Intent intent, String referrerUrl, boolean needsToCloseTab);
 
     /**
-     * Clobber the current tab and try not to pass an intent when it should be handled by Chrome
-     * so that we can deliver HTTP referrer information safely.
-     *
-     * @param url The new URL after clobbering the current tab.
-     * @param referrerUrl The HTTP referrer URL.
-     * @return OverrideUrlLoadingResult (if the tab has been clobbered, or we're launching an
-     *         intent.)
+     * Loads a URL as specified by |loadUrlParams| if possible. May fail in exceptional conditions
+     * (e.g., if there is no valid tab).
+     * @param loadUrlParams parameters of the URL to be loaded
      */
-    @OverrideUrlLoadingResult
-    int clobberCurrentTab(String url, String referrerUrl);
+    void loadUrlIfPossible(LoadUrlParams loadUrlParams);
 
     /** Adds a window id to the intent, if necessary. */
     void maybeSetWindowId(Intent intent);

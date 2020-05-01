@@ -31,9 +31,10 @@ extern const base::Feature kWebAuthBiometricEnrollment;
 COMPONENT_EXPORT(DEVICE_FIDO)
 extern const base::Feature kWebAuthPhoneSupport;
 
-// Enable WebAuthn calls in cross-origin iframes if allowed by Feature Policy.
+// Enable WebAuthn GetAssertion calls in cross-origin iframes if allowed by
+// Feature Policy.
 COMPONENT_EXPORT(DEVICE_FIDO)
-extern const base::Feature kWebAuthFeaturePolicy;
+extern const base::Feature kWebAuthGetAssertionFeaturePolicy;
 
 #if defined(OS_CHROMEOS) || defined(OS_LINUX)
 // Use a low connection latency BLE mode when connecting to caBLE

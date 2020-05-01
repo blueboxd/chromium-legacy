@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.webapps;
 
 import static android.view.WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_DEFAULT;
 
-import android.app.Activity;
 import android.content.Intent;
 import android.graphics.PixelFormat;
 import android.graphics.drawable.Drawable;
@@ -18,7 +17,6 @@ import android.view.ViewGroup;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.ApiCompatibilityUtils;
-import org.chromium.base.ApplicationStatus;
 import org.chromium.base.IntentUtils;
 import org.chromium.base.Log;
 import org.chromium.base.metrics.RecordUserAction;
@@ -31,7 +29,6 @@ import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProv
 import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider.CustomTabsUiType;
 import org.chromium.chrome.browser.customtabs.BaseCustomTabActivity;
 import org.chromium.chrome.browser.customtabs.CustomTabAppMenuPropertiesDelegate;
-import org.chromium.chrome.browser.customtabs.CustomTabDelegateFactory;
 import org.chromium.chrome.browser.customtabs.content.CustomTabIntentHandler.IntentIgnoringCriterion;
 import org.chromium.chrome.browser.customtabs.content.TabObserverRegistrar;
 import org.chromium.chrome.browser.customtabs.content.TabObserverRegistrar.CustomTabTabObserver;
@@ -46,12 +43,10 @@ import org.chromium.chrome.browser.usage_stats.UsageStatsService;
 import org.chromium.chrome.browser.util.AndroidTaskUtils;
 import org.chromium.chrome.browser.webapps.dependency_injection.WebappActivityComponent;
 import org.chromium.chrome.browser.webapps.dependency_injection.WebappActivityModule;
-import org.chromium.components.embedder_support.delegate.WebContentsDelegateAndroid;
 import org.chromium.content_public.browser.NavigationHandle;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.webapk.lib.common.WebApkConstants;
 
-import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -72,7 +67,6 @@ public class WebappActivity extends BaseCustomTabActivity<WebappActivityComponen
     private WebappActivityTabController mTabController;
     private SplashController mSplashController;
     private TabObserverRegistrar mTabObserverRegistrar;
-    private CustomTabDelegateFactory mDelegateFactory;
 
     private Integer mBrandColor;
 
@@ -84,37 +78,6 @@ public class WebappActivity extends BaseCustomTabActivity<WebappActivityComponen
         // WebappLauncherActivity and final use in WebappActivity.
         private static final HashMap<String, WebappInfo> sWebappInfoMap =
                 new HashMap<String, WebappInfo>();
-    }
-
-    /** Returns the running WebappActivity with the given tab id. Returns null if there is none. */
-    public static WeakReference<WebappActivity> findWebappActivityWithTabId(int tabId) {
-        if (tabId == Tab.INVALID_TAB_ID) return null;
-
-        for (Activity activity : ApplicationStatus.getRunningActivities()) {
-            if (!(activity instanceof WebappActivity)) continue;
-
-            WebappActivity webappActivity = (WebappActivity) activity;
-            Tab tab = webappActivity.getActivityTab();
-            if (tab != null && tab.getId() == tabId) {
-                return new WeakReference<>(webappActivity);
-            }
-        }
-        return null;
-    }
-
-    /** Returns the WebappActivity with the given {@link webappId}. */
-    public static WeakReference<WebappActivity> findRunningWebappActivityWithId(String webappId) {
-        for (Activity activity : ApplicationStatus.getRunningActivities()) {
-            if (!(activity instanceof WebappActivity)) {
-                continue;
-            }
-            WebappActivity webappActivity = (WebappActivity) activity;
-            if (webappActivity != null
-                    && TextUtils.equals(webappId, webappActivity.getWebappInfo().id())) {
-                return new WeakReference<>(webappActivity);
-            }
-        }
-        return null;
     }
 
     /**
@@ -310,7 +273,6 @@ public class WebappActivity extends BaseCustomTabActivity<WebappActivityComponen
         mTabController = component.resolveTabController();
         mSplashController = component.resolveSplashController();
         mTabObserverRegistrar = component.resolveTabObserverRegistrar();
-        mDelegateFactory = component.resolveTabDelegateFactory();
 
         mToolbarColorController.setUseTabThemeColor(true /* useTabThemeColor */);
         mStatusBarColorProvider.setUseTabThemeColor(true /* useTabThemeColor */);
@@ -370,11 +332,6 @@ public class WebappActivity extends BaseCustomTabActivity<WebappActivityComponen
      */
     public WebappInfo getWebappInfo() {
         return mWebappInfo;
-    }
-
-    WebContentsDelegateAndroid getWebContentsDelegate() {
-        assert mDelegateFactory != null;
-        return mDelegateFactory.getWebContentsDelegate();
     }
 
     public static void addWebappInfo(String id, WebappInfo info) {

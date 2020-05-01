@@ -38,6 +38,7 @@ if (optimize_webui) {
       "chrome://os-settings/app-management/image_info.mojom-lite.js",
       "chrome://os-settings/app-management/image.mojom-lite.js",
       "chrome://os-settings/app-management/types.mojom-lite.js",
+      "chrome://os-settings/constants/routes.mojom-lite.js",
       "chrome://os-settings/search/search.mojom-lite.js",
       "chrome://os-settings/search/search_result_icon.mojom-lite.js",
       "chrome://os-settings/search/user_action_recorder.mojom-lite.js",
@@ -59,10 +60,7 @@ if (optimize_webui) {
   grit("flattened_resources") {
     source = "../os_settings_resources.grd"
 
-    deps = [
-      "//chrome/browser/ui/webui/app_management:mojo_bindings_js",
-      "//chrome/browser/ui/webui/settings/chromeos/search:mojo_bindings_js",
-    ]
+    deps = [ "//chrome/browser/ui/webui/settings/chromeos:mojom_js" ]
 
     grit_flags = [
       "-E",
@@ -129,6 +127,7 @@ js_library("os_route") {
   deps = [
     ":os_settings_routes",
     "..:router",
+    "//chrome/browser/ui/webui/settings/chromeos/constants:mojom_js_library_for_compile",
     "//ui/webui/resources/js:cr",
     "//ui/webui/resources/js:load_time_data",
   ]

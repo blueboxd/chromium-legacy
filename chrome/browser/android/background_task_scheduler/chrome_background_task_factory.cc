@@ -7,8 +7,8 @@
 #include <utility>
 
 #include "chrome/android/chrome_jni_headers/ChromeBackgroundTaskFactory_jni.h"
+#include "chrome/browser/query_tiles/tile_background_task.h"
 #include "components/background_task_scheduler/task_ids.h"
-#include "components/query_tiles/tile_background_task.h"
 
 // static
 void ChromeBackgroundTaskFactory::SetAsDefault() {

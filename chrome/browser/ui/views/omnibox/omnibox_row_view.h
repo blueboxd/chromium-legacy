@@ -33,6 +33,9 @@ class OmniboxRowView : public views::View {
   // The result view associated with this row.
   OmniboxResultView* result_view() const { return result_view_; }
 
+  // views::View:
+  gfx::Insets GetInsets() const override;
+
  private:
   class HeaderView;
 

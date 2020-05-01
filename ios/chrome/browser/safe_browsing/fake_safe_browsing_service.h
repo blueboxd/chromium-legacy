@@ -5,11 +5,18 @@
 #ifndef IOS_CHROME_BROWSER_SAFE_BROWSING_FAKE_SAFE_BROWSING_SERVICE_H_
 #define IOS_CHROME_BROWSER_SAFE_BROWSING_FAKE_SAFE_BROWSING_SERVICE_H_
 
+#include <string>
+
 #include "ios/chrome/browser/safe_browsing/safe_browsing_service.h"
 
-// A fake SafeBrowsingService whose database treats all URLs as safe.
+// A fake SafeBrowsingService whose database treats URLs from host
+// safe.browsing.unsafe.chromium.test as unsafe, and treats all other URLs as
+// safe.
 class FakeSafeBrowsingService : public SafeBrowsingService {
  public:
+  // URLs with this host are treated as unsafe.
+  static const std::string kUnsafeHost;
+
   FakeSafeBrowsingService();
 
   FakeSafeBrowsingService(const FakeSafeBrowsingService&) = delete;

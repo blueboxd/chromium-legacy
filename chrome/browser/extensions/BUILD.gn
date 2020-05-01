@@ -1006,6 +1006,7 @@ jumbo_static_library("extensions") {
       "//ash/public/cpp",
       "//chrome/browser/chromeos/crostini:crostini_installer_types_mojom",
       "//chrome/browser/resources/chromeos/camera:chrome_camera_app",
+      "//chrome/browser/ui/webui/settings/chromeos/constants:mojom",
       "//chromeos",
       "//chromeos/attestation",
       "//chromeos/components/proximity_auth",

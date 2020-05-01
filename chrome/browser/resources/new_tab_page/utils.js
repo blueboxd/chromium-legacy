@@ -98,3 +98,14 @@ export function mojoString16(str) {
 export function mojoTimeDelta(timeDelta) {
   return {microseconds: Math.floor(timeDelta * 1000)};
 }
+
+/**
+ * Queries |selector| on |element|'s shadow root and returns the resulting
+ * element if there is any.
+ * @param {!Element} element
+ * @param {string} selector
+ * @return {Element}
+ */
+export function $$(element, selector) {
+  return element.shadowRoot.querySelector(selector);
+}

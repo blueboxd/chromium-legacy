@@ -2,16 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <utility>
-
 #include "content/browser/idle/idle_monitor.h"
 
+#include <utility>
+
 #include "base/bind.h"
-#include "base/callback_helpers.h"
-#include "content/public/browser/permission_controller.h"
-#include "content/public/browser/permission_type.h"
 #include "mojo/public/cpp/bindings/connection_error_callback.h"
-#include "ui/base/idle/idle.h"
 
 namespace content {
 

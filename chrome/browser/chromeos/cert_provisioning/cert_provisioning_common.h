@@ -29,15 +29,32 @@ using CertProvisioningResponseError =
 // Numeric values are used in serialization and should not be remapped.
 enum class CertScope { kUser = 0, kDevice = 1, kMaxValue = kDevice };
 
+// These values are used in serialization and should be changed carefully.
+enum class CertProvisioningWorkerState {
+  kInitState = 0,
+  kKeypairGenerated = 1,
+  kStartCsrResponseReceived = 2,
+  kVaChallengeFinished = 3,
+  kKeyRegistered = 4,
+  kKeypairMarked = 5,
+  kSignCsrFinished = 6,
+  kFinishCsrResponseReceived = 7,
+  kSucceed = 8,
+  kInconsistentDataError = 9,
+  kFailed = 10,
+  kMaxValue = kFailed,
+};
+
 using CertProfileId = std::string;
 
 struct CertProfile {
   CertProfileId profile_id;
+  std::string policy_version;
 
   // IMPORTANT:
   // Increment this when you add/change any member in CertProfile (and update
   // all functions that fail to compile because of it).
-  static constexpr int kVersion = 1;
+  static constexpr int kVersion = 2;
 
   bool operator==(const CertProfile& other) const;
   bool operator!=(const CertProfile& other) const;

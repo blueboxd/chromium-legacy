@@ -20,32 +20,68 @@ class NetworkConnectionHandler;
 
 namespace sync_wifi {
 
+const char kConnectionFailureReasonAllHistogram[] =
+    "Network.Wifi.Synced.Connection.FailureReason";
+const char kConnectionResultAllHistogram[] =
+    "Network.Wifi.Synced.Connection.Result";
+
+const char kConnectionFailureReasonManualHistogram[] =
+    "Network.Wifi.Synced.ManualConnection.FailureReason";
+const char kConnectionResultManualHistogram[] =
+    "Network.Wifi.Synced.ManualConnection.Result";
+
+const char kApplyFailureReasonHistogram[] =
+    "Network.Wifi.Synced.UpdateOperation.FailureReason";
+const char kApplyResultHistogram[] =
+    "Network.Wifi.Synced.UpdateOperation.Result";
+
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class ConnectionFailureReason {
+  kUnknownDeprecated = 0,  // deprecated
+  kBadPassphrase = 1,
+  kBadWepKey = 2,
+  kFailedToConnect = 3,
+  kDhcpFailure = 4,
+  kDnsLookupFailure = 5,
+  kEapAuthentication = 6,
+  kEapLocalTls = 7,
+  kEapRemoteTls = 8,
+  kOutOfRange = 9,
+  kPinMissing = 10,
+  kUnknown = 11,
+  kNoFailure = 12,
+  kNotAssociated = 13,
+  kNotAuthenticated = 14,
+  kTooManySTAs = 15,
+  kMaxValue = kTooManySTAs
+};
+
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class ApplyNetworkFailureReason {
+  kUnknown = 0,
+  kAlreadyExists = 1,
+  kFailedToRemove = 2,
+  kFailedToUpdate = 3,
+  kFailedToAdd = 4,
+  kInProgress = 5,
+  kInternalError = 6,
+  kInvalidArguments = 7,
+  kInvalidNetworkName = 8,
+  kInvalidPassphrase = 9,
+  kInvalidProperty = 10,
+  kNotSupported = 11,
+  kPassphraseRequired = 12,
+  kPermissionDenied = 13,
+  kTimedout = 14,
+  kMaxValue = kTimedout
+};
+
 // Logs connection metrics for networks which were configured by sync.
 class SyncedNetworkMetricsLogger : public NetworkConnectionObserver,
                                    public NetworkStateHandlerObserver {
  public:
-  // These values are persisted to logs. Entries should not be renumbered and
-  // numeric values should never be reused.
-  enum class ConnectionFailureReason {
-    kUnknownDeprecated = 0,  // deprecated
-    kBadPassphrase = 1,
-    kBadWepKey = 2,
-    kFailedToConnect = 3,
-    kDhcpFailure = 4,
-    kDnsLookupFailure = 5,
-    kEapAuthentication = 6,
-    kEapLocalTls = 7,
-    kEapRemoteTls = 8,
-    kOutOfRange = 9,
-    kPinMissing = 10,
-    kUnknown = 11,
-    kNoFailure = 12,
-    kNotAssociated = 13,
-    kNotAuthenticated = 14,
-    kTooManySTAs = 15,
-    kMaxValue = kTooManySTAs
-  };
-
   SyncedNetworkMetricsLogger(
       NetworkStateHandler* network_state_handler,
       NetworkConnectionHandler* network_connection_handler);
@@ -63,8 +99,20 @@ class SyncedNetworkMetricsLogger : public NetworkConnectionObserver,
   // NetworkStateObserver::
   void NetworkConnectionStateChanged(const NetworkState* network) override;
 
+  // Only record after all retries have failed.
+  void RecordApplyNetworkFailed();
+  // Record the cause of failure for all tries.  |error_string| is optional,
+  // |error_enum| will be used unless the provided |error_string| can be mapped
+  // to a more specific error.
+  void RecordApplyNetworkFailureReason(ApplyNetworkFailureReason error_enum,
+                                       const std::string& error_string);
+  void RecordApplyNetworkSuccess();
+
  private:
-  static ConnectionFailureReason FailureReasonToEnum(const std::string& reason);
+  static ConnectionFailureReason ConnectionFailureReasonToEnum(
+      const std::string& reason);
+  static ApplyNetworkFailureReason ApplyFailureReasonToEnum(
+      const std::string& reason);
 
   void ConnectErrorPropertiesSucceeded(
       const std::string& error_name,

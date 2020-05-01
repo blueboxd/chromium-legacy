@@ -195,6 +195,19 @@
   #backgroundImageAttribution2 {
     font-size: .75rem;
   }
+
+  @keyframes fadein {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  .fadein {
+    animation: 100ms ease-in-out fadein;
+  }
 </style>
 <div id="background"
     style="background-color: [[rgbaOrInherit_(theme_.backgroundColor)]];">
@@ -207,9 +220,13 @@
         --ntp-theme-shortcut-background-color:
               [[rgbaOrInherit_(theme_.shortcutBackgroundColor)]];
         --ntp-logo-color: [[rgbaOrInherit_(logoColor_)]];">
-  <ntp-untrusted-iframe id="oneGoogleBar" path="one-google-bar"
-      hidden$="[[!oneGoogleBarLoaded_]]">
-  </ntp-untrusted-iframe>
+  <dom-if if="[[lazyRender_]]">
+    <template>
+      <ntp-untrusted-iframe id="oneGoogleBar" path="one-google-bar"
+          hidden$="[[!oneGoogleBarLoaded_]]">
+      </ntp-untrusted-iframe>
+    </template>
+  </dom-if>
   <ntp-logo id="logo" doodle-allowed$="[[doodleAllowed_]]"
       single-colored$="[[singleColoredLogo_]]">
   </ntp-logo>
@@ -222,34 +239,38 @@
   <ntp-most-visited id="mostVisited" dark$="[[theme_.isDark]]"
       use-white-add-icon$="[[theme_.shortcutUseWhiteAddIcon]]">
   </ntp-most-visited>
-  <ntp-untrusted-iframe id="promo" path="promo" hidden$="[[!promoLoaded_]]">
-  </ntp-untrusted-iframe>
-  <a id="backgroundImageAttribution"
-      href="[[backgroundImageAttributionUrl_]]"
-      hidden="[[!backgroundImageAttribution1_]]">
-    <div id="backgroundImageAttribution1Container">
-      <div id="linkIcon"></div>
-      <div id="backgroundImageAttribution1">
-        [[backgroundImageAttribution1_]]
+  <dom-if if="[[lazyRender_]]">
+    <template>
+      <ntp-untrusted-iframe id="promo" path="promo" hidden$="[[!promoLoaded_]]">
+      </ntp-untrusted-iframe>
+      <a id="backgroundImageAttribution"
+          href="[[backgroundImageAttributionUrl_]]"
+          hidden="[[!backgroundImageAttribution1_]]">
+        <div id="backgroundImageAttribution1Container">
+          <div id="linkIcon"></div>
+          <div id="backgroundImageAttribution1">
+            [[backgroundImageAttribution1_]]
+          </div>
+        </div>
+        <div id="backgroundImageAttribution2"
+            hidden="[[!backgroundImageAttribution2_]]">
+          [[backgroundImageAttribution2_]]
+        </div>
+      </a>
+      <div id="customizeButtonSpacer"></div>
+      <!-- cr-button has a transparent background. This leads to incorrect
+           results when a custom background is set. Therefore, wrap customize
+           button in container to enfore solid background color. -->
+      <div id="customizeButtonContainer">
+        <cr-button id="customizeButton" on-click="onCustomizeClick_">
+          <div id="customizeIcon"></div>
+          <div id="customizeText" hidden$="[[showBackgroundImage_]]">
+            $i18n{customizeButton}
+          </div>
+        </cr-button>
       </div>
-    </div>
-    <div id="backgroundImageAttribution2"
-        hidden="[[!backgroundImageAttribution2_]]">
-      [[backgroundImageAttribution2_]]
-    </div>
-  </a>
-  <div id="customizeButtonSpacer"></div>
-  <!-- cr-button has a transparent background. This leads to incorrect results
-       when a custom background is set. Therefore, wrap customize button in
-       container to enfore solid background color. -->
-  <div id="customizeButtonContainer">
-    <cr-button id="customizeButton" on-click="onCustomizeClick_">
-      <div id="customizeIcon"></div>
-      <div id="customizeText" hidden$="[[showBackgroundImage_]]">
-        $i18n{customizeButton}
-      </div>
-    </cr-button>
-  </div>
+    </template>
+  </dom-if>
 </div>
 <dom-if if="[[showVoiceSearchOverlay_]]" restamp>
   <template>

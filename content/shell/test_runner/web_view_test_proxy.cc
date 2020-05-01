@@ -71,11 +71,6 @@ blink::WebString WebViewTestProxy::AcceptLanguages() {
   return blink::WebString::FromUTF8(GetTestRunner()->GetAcceptLanguages());
 }
 
-void WebViewTestProxy::DidFocus(blink::WebLocalFrame* calling_frame) {
-  GetTestRunner()->SetFocus(GetWebView(), true);
-  RenderViewImpl::DidFocus(calling_frame);
-}
-
 void WebViewTestProxy::Reset() {
   accessibility_controller_.Reset();
   // |text_input_controller_| doesn't have any state to reset.

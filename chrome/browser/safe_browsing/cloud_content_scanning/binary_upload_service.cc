@@ -341,6 +341,9 @@ void BinaryUploadService::FinishRequest(Request* request,
   WebUIInfoSingleton::GetInstance()->AddToDeepScanResponses(
       active_tokens_[request], ResultToString(result), response);
 
+  std::string instance_id =
+      request->deep_scanning_request().fcm_notification_token();
+
   request->FinishRequest(result, response);
   active_requests_.erase(request);
   active_timers_.erase(request);
@@ -355,8 +358,7 @@ void BinaryUploadService::FinishRequest(Request* request,
 
     // The BinaryFCMService will handle all recoverable errors. In case of
     // unrecoverable error, there's nothing we can do here.
-    binary_fcm_service_->UnregisterInstanceID(token_it->second,
-                                              base::DoNothing());
+    binary_fcm_service_->UnregisterInstanceID(instance_id, base::DoNothing());
   }
 
   active_tokens_.erase(token_it);
@@ -507,6 +509,11 @@ void BinaryUploadService::ResetAuthorizationData() {
 
   // Call IsAuthorized  to update |can_upload_enterprise_data_| right away.
   IsAuthorized(base::DoNothing());
+}
+
+void BinaryUploadService::Shutdown() {
+  if (binary_fcm_service_)
+    binary_fcm_service_->Shutdown();
 }
 
 void BinaryUploadService::SetAuthForTesting(bool authorized) {

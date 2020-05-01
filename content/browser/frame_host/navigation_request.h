@@ -202,6 +202,9 @@ class CONTENT_EXPORT NavigationRequest
 
   ~NavigationRequest() override;
 
+  // Returns true if this request's URL matches |origin| and the request state
+  // is at (or past) WILL_PROCESS_RESPONSE.
+  bool HasCommittingOrigin(const url::Origin& origin);
   // Returns true if this navigation request is requesting opt-in
   // origin-isolation, via Origin Policy or headers.
   bool IsOptInIsolationRequested();

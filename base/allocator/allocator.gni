@@ -17,7 +17,7 @@ if (is_android || is_mac || is_ios || is_asan || is_lsan || is_tsan ||
 # The debug CRT on Windows has some debug features that are incompatible with
 # the shim. NaCl in particular does seem to link some binaries statically
 # against the debug CRT with "is_nacl=false".
-if ((is_linux || is_android || is_mac ||
+if ((is_linux || is_android || is_mac || is_ios ||
      (is_win && !is_component_build && !is_debug)) && !is_asan && !is_hwasan &&
     !is_lsan && !is_tsan && !is_msan) {
   _default_use_allocator_shim = true
@@ -39,8 +39,9 @@ assert(!is_win || use_allocator == "none", "Tcmalloc doesn't work on Windows.")
 assert(!is_mac || use_allocator == "none", "Tcmalloc doesn't work on macOS.")
 assert(!is_ios || use_allocator == "none", "Tcmalloc doesn't work on iOS.")
 
-assert(!use_allocator_shim || is_linux || is_android || is_win || is_mac,
-       "use_allocator_shim works only on Android, Linux, macOS, and Windows.")
+assert(
+    !use_allocator_shim || is_linux || is_android || is_win || is_mac || is_ios,
+    "use_allocator_shim works only on Android, iOS, Linux, macOS, and Windows.")
 
 if (is_win && use_allocator_shim) {
   assert(!is_component_build,

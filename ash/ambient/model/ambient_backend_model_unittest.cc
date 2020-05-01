@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "ash/ambient/ambient_constants.h"
 #include "ash/ambient/model/ambient_backend_model_observer.h"
 #include "ash/test/ash_test_base.h"
 #include "ui/gfx/image/image_skia.h"
@@ -18,7 +19,7 @@ namespace {
 
 // This class has a local in memory cache of downloaded photos. This is the max
 // number of photos before and after currently shown image.
-constexpr int kImageBufferLength = 3;
+constexpr int kTestImageBufferLength = 3;
 
 }  // namespace
 
@@ -33,7 +34,8 @@ class AmbientBackendModelTest : public AshTestBase {
     AshTestBase::SetUp();
 
     ambient_backend_model_ = std::make_unique<AmbientBackendModel>();
-    ambient_backend_model_->set_buffer_length_for_testing(kImageBufferLength);
+    ambient_backend_model_->set_buffer_length_for_testing(
+        kTestImageBufferLength);
   }
 
   void TearDown() override {
@@ -63,6 +65,14 @@ class AmbientBackendModelTest : public AshTestBase {
 
   // Returns whether the image is null.
   bool IsNullImage(const gfx::ImageSkia& image) { return image.isNull(); }
+
+  base::TimeDelta GetPhotoRefreshInterval() {
+    return ambient_backend_model()->GetPhotoRefreshInterval();
+  }
+
+  void SetPhotoRefreshInterval(const base::TimeDelta& interval) {
+    ambient_backend_model()->SetPhotoRefreshInterval(interval);
+  }
 
   AmbientBackendModel* ambient_backend_model() {
     return ambient_backend_model_.get();
@@ -129,6 +139,27 @@ TEST_F(AmbientBackendModelTest, AddThirdImage) {
   EXPECT_TRUE(EqualsToTestImage(prev_image()));
   EXPECT_TRUE(EqualsToTestImage(curr_image()));
   EXPECT_TRUE(IsNullImage(next_image()));
+}
+
+// Test the photo refresh interval is expected.
+TEST_F(AmbientBackendModelTest, ShouldReturnExpectedPhotoRefreshInterval) {
+  // Should fetch image immediately.
+  EXPECT_EQ(GetPhotoRefreshInterval(), base::TimeDelta());
+
+  AddNTestImages(1);
+  // Should fetch image immediately.
+  EXPECT_EQ(GetPhotoRefreshInterval(), base::TimeDelta());
+
+  AddNTestImages(1);
+  // Has enough images. Will fetch more image at the |photo_refresh_interval_|,
+  // which is |kPhotoRefreshInterval| by default.
+  EXPECT_EQ(GetPhotoRefreshInterval(), kPhotoRefreshInterval);
+
+  // Change the photo refresh interval.
+  const base::TimeDelta interval = base::TimeDelta::FromMinutes(1);
+  SetPhotoRefreshInterval(interval);
+  // The refresh interval will be the set value.
+  EXPECT_EQ(GetPhotoRefreshInterval(), interval);
 }
 
 }  // namespace ash

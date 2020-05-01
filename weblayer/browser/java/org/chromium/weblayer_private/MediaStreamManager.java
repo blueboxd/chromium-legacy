@@ -4,23 +4,28 @@
 
 package org.chromium.weblayer_private;
 
-import android.app.NotificationChannel;
 import android.app.NotificationManager;
-import android.app.PendingIntent;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.os.Build;
 import android.os.RemoteException;
 import android.util.AndroidRuntimeException;
 import android.webkit.ValueCallback;
 
-import androidx.core.app.NotificationCompat;
-import androidx.core.app.NotificationManagerCompat;
-
+import org.chromium.base.BuildInfo;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
+import org.chromium.components.browser_ui.notifications.ChromeNotification;
+import org.chromium.components.browser_ui.notifications.NotificationBuilder;
+import org.chromium.components.browser_ui.notifications.NotificationManagerProxy;
+import org.chromium.components.browser_ui.notifications.NotificationManagerProxyImpl;
+import org.chromium.components.browser_ui.notifications.NotificationMetadata;
+import org.chromium.components.browser_ui.notifications.PendingIntentProvider;
+import org.chromium.components.browser_ui.notifications.channels.ChannelsInitializer;
+import org.chromium.components.webrtc.MediaCaptureNotificationUtil;
+import org.chromium.components.webrtc.MediaCaptureNotificationUtil.MediaType;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.weblayer_private.interfaces.IMediaCaptureCallbackClient;
 import org.chromium.weblayer_private.interfaces.ObjectWrapper;
@@ -35,9 +40,7 @@ import java.util.Set;
  */
 @JNINamespace("weblayer")
 public class MediaStreamManager {
-    private static boolean sCreatedChannel = false;
     private static final String WEBRTC_PREFIX = "org.chromium.weblayer.webrtc";
-    private static final String CHANNEL_ID = WEBRTC_PREFIX + ".channel";
     private static final String EXTRA_TAB_ID = WEBRTC_PREFIX + ".TAB_ID";
     private static final String ACTIVATE_TAB_INTENT = WEBRTC_PREFIX + ".ACTIVATE_TAB";
     private static final String AV_STREAM_TAG = WEBRTC_PREFIX + ".avstream";
@@ -52,6 +55,8 @@ public class MediaStreamManager {
             WEBRTC_PREFIX + ".avstream_notifications";
 
     private IMediaCaptureCallbackClient mClient;
+
+    private TabImpl mTab;
 
     // The notification ID matches the tab ID, which uniquely identifies the notification when
     // paired with the tag.
@@ -94,7 +99,7 @@ public class MediaStreamManager {
                 prefs.getStringSet(PREF_ACTIVE_AV_STREAM_NOTIFICATION_IDS, null);
         if (staleNotificationIds == null) return;
 
-        NotificationManagerCompat manager = getNotificationManager();
+        NotificationManagerProxy manager = getNotificationManager();
         if (manager == null) return;
 
         for (String id : staleNotificationIds) {
@@ -104,6 +109,7 @@ public class MediaStreamManager {
     }
 
     public MediaStreamManager(TabImpl tab) {
+        mTab = tab;
         mNotificationId = tab.getId();
         mNative = MediaStreamManagerJni.get().create(this, tab.getWebContents());
     }
@@ -124,7 +130,7 @@ public class MediaStreamManager {
     }
 
     private void cancelNotification() {
-        NotificationManagerCompat notificationManager = getNotificationManager();
+        NotificationManagerProxy notificationManager = getNotificationManager();
         if (notificationManager != null) {
             notificationManager.cancel(AV_STREAM_TAG, mNotificationId);
         }
@@ -203,50 +209,36 @@ public class MediaStreamManager {
             return;
         }
 
-        NotificationManagerCompat notificationManager = getNotificationManager();
-        if (notificationManager == null) return;
-        createNotificationChannel();
-
+        Context appContext = ContextUtils.getApplicationContext();
         Intent intent = WebLayerImpl.createIntent();
         intent.putExtra(EXTRA_TAB_ID, mNotificationId);
         intent.setAction(ACTIVATE_TAB_INTENT);
-        PendingIntent pendingIntent = PendingIntent.getBroadcast(
-                ContextUtils.getApplicationContext(), mNotificationId, intent, 0);
-        // TODO(estade): use localized text and correct icon.
-        NotificationCompat.Builder builder =
-                new NotificationCompat.Builder(ContextUtils.getApplicationContext(), CHANNEL_ID)
-                        .setOngoing(true)
-                        .setLocalOnly(true)
-                        .setAutoCancel(false)
-                        .setContentIntent(pendingIntent)
-                        .setSmallIcon(android.R.drawable.ic_menu_camera)
-                        .setContentTitle(audio && video
-                                        ? "all the streamz"
-                                        : audio ? "audio streamz" : "video streamz");
-        notificationManager.notify(AV_STREAM_TAG, mNotificationId, builder.build());
+        PendingIntentProvider contentIntent =
+                PendingIntentProvider.getBroadcast(appContext, mNotificationId, intent, 0);
+
+        int mediaType = audio && video ? MediaType.AUDIO_AND_VIDEO
+                                       : audio ? MediaType.AUDIO_ONLY : MediaType.VIDEO_ONLY;
+
+        NotificationManagerProxy notificationManagerProxy = getNotificationManager();
+        ChannelsInitializer channelsInitializer = new ChannelsInitializer(notificationManagerProxy,
+                WebLayerNotificationChannels.getInstance(), appContext.getResources());
+
+        // TODO(crbug/1076098): don't hard-code incognito to false.
+        ChromeNotification notification = MediaCaptureNotificationUtil.createNotification(
+                new NotificationBuilder(appContext, WebLayerNotificationChannels.ChannelId.MEDIA,
+                        channelsInitializer,
+                        new NotificationMetadata(0, AV_STREAM_TAG, mNotificationId)),
+                mediaType, mTab.getWebContents().getVisibleUrl().getSpec(),
+                WebLayerImpl.getClientApplicationName(), false /*isIncognito*/, contentIntent,
+                null /*stopIntent*/, BuildInfo.getInstance().packageName);
+        notificationManagerProxy.notify(notification);
+
         updateActiveNotifications(true);
         notifyClient(audio, video);
     }
 
-    private void createNotificationChannel() {
-        // Create the NotificationChannel, but only on API 26+ because
-        // the NotificationChannel class is new and not in the support library
-        if (!sCreatedChannel && Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            // TODO(estade): use localized channel name.
-            ContextUtils.getApplicationContext()
-                    .getSystemService(NotificationManager.class)
-                    .createNotificationChannel(new NotificationChannel(
-                            CHANNEL_ID, "WebRTC", NotificationManager.IMPORTANCE_LOW));
-        }
-
-        sCreatedChannel = true;
-    }
-
-    private static NotificationManagerCompat getNotificationManager() {
-        if (ContextUtils.getApplicationContext() == null) {
-            return null;
-        }
-        return NotificationManagerCompat.from(ContextUtils.getApplicationContext());
+    private static NotificationManagerProxy getNotificationManager() {
+        return new NotificationManagerProxyImpl(ContextUtils.getApplicationContext());
     }
 
     @NativeMethods

@@ -174,9 +174,11 @@ void ConversionManagerImpl::HandleReportsExpiredAtStartup(
   for (ConversionReport& report : reports) {
     if (report.report_time > current_time)
       continue;
-    report.report_time =
+    base::Time updated_report_time =
         conversion_policy_->GetReportTimeForExpiredReportAtStartup(
             current_time);
+    report.extra_delay = updated_report_time - report.report_time;
+    report.report_time = updated_report_time;
   }
   QueueReports(std::move(reports));
 }

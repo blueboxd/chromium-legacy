@@ -8303,7 +8303,7 @@ Unknown properties are collapsed to zero. -->
 <!-- System Code is CDM specific. Use this as a placeholder to treat sparse
 histogram as enum -->
 
-  <int value="0" label="Unknown Error"/>
+  <int value="0" label="Unknown"/>
 </enum>
 
 <enum name="CertificateChainPosition">
@@ -11533,6 +11533,12 @@ Called by update_net_error_codes.py.-->
   <int value="13" label="UI dismissed without open"/>
   <int value="14" label="UI dismissed after open"/>
   <int value="15" label="UI button shown"/>
+</enum>
+
+<enum name="ConversionReportStatus">
+  <int value="0" label="OK"/>
+  <int value="1" label="Internal network error"/>
+  <int value="2" label="External non-200 HTTP error"/>
 </enum>
 
 <enum name="CookieCommitProblem">
@@ -27242,7 +27248,7 @@ Called by update_feature_policy_enum.py.-->
   <int value="64" label="ClientHintWidth"/>
   <int value="65" label="DocumentAccess"/>
   <int value="66" label="WebXr"/>
-  <int value="67" label="PublicKeyCredentials"/>
+  <int value="67" label="PublicKeyCredentialsGet"/>
   <int value="68" label="Clipboard"/>
   <int value="69" label="ClientHintUAMobile"/>
   <int value="70" label="StorageAccessAPI"/>

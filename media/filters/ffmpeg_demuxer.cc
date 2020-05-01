@@ -641,6 +641,15 @@ void FFmpegDemuxerStream::EnqueuePacket(ScopedAVPacket packet) {
   if (packet->flags & AV_PKT_FLAG_KEY)
     buffer->set_is_key_frame(true);
 
+  // One last sanity check on the packet timestamps in case any of the above
+  // calculations have pushed the values to the limits.
+  if (buffer->timestamp() == kNoTimestamp ||
+      buffer->timestamp() == kInfiniteDuration) {
+    MEDIA_LOG(ERROR, media_log_) << "FFmpegDemuxer: PTS is not defined";
+    demuxer_->NotifyDemuxerError(DEMUXER_ERROR_COULD_NOT_PARSE);
+    return;
+  }
+
   last_packet_timestamp_ = buffer->timestamp();
   last_packet_duration_ = buffer->duration();
 

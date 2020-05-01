@@ -104,11 +104,13 @@ class BodyStreamBuffer::LoaderClient final
 // safe to do during construction.
 
 // static
-BodyStreamBuffer* BodyStreamBuffer::Create(ScriptState* script_state,
-                                           BytesConsumer* consumer,
-                                           AbortSignal* signal) {
-  auto* buffer = MakeGarbageCollected<BodyStreamBuffer>(PassKey(), script_state,
-                                                        consumer, signal);
+BodyStreamBuffer* BodyStreamBuffer::Create(
+    ScriptState* script_state,
+    BytesConsumer* consumer,
+    AbortSignal* signal,
+    scoped_refptr<BlobDataHandle> side_data_blob) {
+  auto* buffer = MakeGarbageCollected<BodyStreamBuffer>(
+      PassKey(), script_state, consumer, signal, std::move(side_data_blob));
   buffer->Init();
   return buffer;
 }
@@ -116,11 +118,13 @@ BodyStreamBuffer* BodyStreamBuffer::Create(ScriptState* script_state,
 BodyStreamBuffer::BodyStreamBuffer(PassKey,
                                    ScriptState* script_state,
                                    BytesConsumer* consumer,
-                                   AbortSignal* signal)
+                                   AbortSignal* signal,
+                                   scoped_refptr<BlobDataHandle> side_data_blob)
     : UnderlyingSourceBase(script_state),
       script_state_(script_state),
       consumer_(consumer),
       signal_(signal),
+      side_data_blob_(std::move(side_data_blob)),
       made_from_readable_stream_(false) {}
 
 void BodyStreamBuffer::Init() {
@@ -151,11 +155,13 @@ void BodyStreamBuffer::Init() {
 }
 
 BodyStreamBuffer::BodyStreamBuffer(ScriptState* script_state,
-                                   ReadableStream* stream)
+                                   ReadableStream* stream,
+                                   scoped_refptr<BlobDataHandle> side_data_blob)
     : UnderlyingSourceBase(script_state),
       script_state_(script_state),
       stream_(stream),
       signal_(nullptr),
+      side_data_blob_(std::move(side_data_blob)),
       made_from_readable_stream_(true) {
   DCHECK(stream_);
 }
@@ -239,6 +245,7 @@ void BodyStreamBuffer::Tee(BodyStreamBuffer** branch1,
   DCHECK(!IsStreamDisturbedForDCheck(exception_state));
   *branch1 = nullptr;
   *branch2 = nullptr;
+  scoped_refptr<BlobDataHandle> side_data_blob = TakeSideDataBlob();
 
   if (made_from_readable_stream_) {
     if (stream_broken_) {
@@ -258,8 +265,10 @@ void BodyStreamBuffer::Tee(BodyStreamBuffer** branch1,
       return;
     }
 
-    *branch1 = MakeGarbageCollected<BodyStreamBuffer>(script_state_, stream1);
-    *branch2 = MakeGarbageCollected<BodyStreamBuffer>(script_state_, stream2);
+    *branch1 = MakeGarbageCollected<BodyStreamBuffer>(script_state_, stream1,
+                                                      side_data_blob);
+    *branch2 = MakeGarbageCollected<BodyStreamBuffer>(script_state_, stream2,
+                                                      side_data_blob);
     return;
   }
   BytesConsumer* dest1 = nullptr;
@@ -271,8 +280,10 @@ void BodyStreamBuffer::Tee(BodyStreamBuffer** branch1,
   }
   BytesConsumerTee(ExecutionContext::From(script_state_), handle, &dest1,
                    &dest2);
-  *branch1 = BodyStreamBuffer::Create(script_state_, dest1, signal_);
-  *branch2 = BodyStreamBuffer::Create(script_state_, dest2, signal_);
+  *branch1 =
+      BodyStreamBuffer::Create(script_state_, dest1, signal_, side_data_blob);
+  *branch2 =
+      BodyStreamBuffer::Create(script_state_, dest2, signal_, side_data_blob);
 }
 
 ScriptPromise BodyStreamBuffer::pull(ScriptState* script_state) {
@@ -402,6 +413,10 @@ bool BodyStreamBuffer::IsAborted() {
   return signal_->aborted();
 }
 
+scoped_refptr<BlobDataHandle> BodyStreamBuffer::TakeSideDataBlob() {
+  return std::move(side_data_blob_);
+}
+
 void BodyStreamBuffer::Trace(Visitor* visitor) {
   visitor->Trace(script_state_);
   visitor->Trace(stream_);
@@ -440,6 +455,7 @@ void BodyStreamBuffer::GetError() {
 }
 
 void BodyStreamBuffer::CancelConsumer() {
+  side_data_blob_.reset();
   if (consumer_) {
     consumer_->Cancel();
     consumer_ = nullptr;
@@ -528,6 +544,8 @@ BytesConsumer* BodyStreamBuffer::ReleaseHandle(
     ExceptionState& exception_state) {
   DCHECK(!IsStreamLockedForDCheck(exception_state));
   DCHECK(!IsStreamDisturbedForDCheck(exception_state));
+
+  side_data_blob_.reset();
 
   if (stream_broken_) {
     exception_state.ThrowDOMException(

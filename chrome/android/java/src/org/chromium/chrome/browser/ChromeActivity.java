@@ -1091,7 +1091,8 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
 
     @Override
     public void onStart() {
-        if (AsyncTabParamsManager.hasParamsWithTabToReparent()) {
+        // Sometimes mCompositorViewHolder is null, see crbug.com/1057613.
+        if (AsyncTabParamsManager.hasParamsWithTabToReparent() && mCompositorViewHolder != null) {
             mCompositorViewHolder.prepareForTabReparenting();
         }
         super.onStart();

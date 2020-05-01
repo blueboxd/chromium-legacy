@@ -11,14 +11,11 @@ import org.chromium.chrome.test.pagecontroller.controllers.urlpage.UrlPage;
 import org.chromium.chrome.test.pagecontroller.utils.IUi2Locator;
 import org.chromium.chrome.test.pagecontroller.utils.Ui2Locators;
 
-import java.util.List;
-
 /**
  * New Tab Page Page Controller, handles either Feed or Zine implementations.
  */
 public class NewTabPageController extends PageController {
     private static final float SCROLL_SWIPE_FRACTION = 0.6f;
-    private static final float MAX_LOAD_ARTICLES_WAIT = 5000f;
     // The test will timeout for Small and Medium sizes before 50 swipes is
     // reached.  This number is set so that it should not be hit if everything
     // is working fine.  Please bump it up if test cases exceeding 50 swipes
@@ -38,43 +35,23 @@ public class NewTabPageController extends PageController {
             Ui2Locators.withAnyResEntry(R.id.action_button);
     private static final IUi2Locator LOCATOR_MENU_BUTTON =
             Ui2Locators.withAnyResEntry(R.id.menu_button);
-    private static final IUi2Locator LOCATOR_BOTTOM_OF_PAGE =
-            Ui2Locators.withAnyResEntry(R.id.progress_indicator, R.id.action_button);
     private static final IUi2Locator LOCATOR_FEED_STREAM_RECYCLER_VIEW =
             Ui2Locators.withAnyResEntry(org.chromium.chrome.feed.R.id.feed_stream_recycler_view);
     private static final IUi2Locator LOCATOR_HEADER_STATUS =
             Ui2Locators.withPath(Ui2Locators.withAnyResEntry(R.id.header_status),
                     Ui2Locators.withTextRegex(REGEX_TEXT_HEADER_STATUS));
-    private static final IUi2Locator LOCATOR_INFO_BAR_MESSAGE =
-            Ui2Locators.withAnyResEntry(R.id.infobar_message, R.id.snackbar_message);
-    private static final IUi2Locator LOCATOR_INFO_BAR_CLOSE =
-            Ui2Locators.withAnyResEntry(R.id.infobar_close_button);
 
     private static final IUi2Locator LOCATOR_TAB_SWITCHER =
             Ui2Locators.withAnyResEntry(R.id.tab_switcher_button);
 
-    private static final IUi2Locator LOCATOR_NEW_TAB_PAGE =
-            Ui2Locators.withAnyResEntry(R.id.ntp_content,
-                    org.chromium.chrome.feed.R.id.feed_stream_recycler_view, R.id.card_contents);
-
-    private ArticleCardController mAriticleCardController;
-    private SuggestionTileController mSuggestionsTileController;
+    private static final IUi2Locator LOCATOR_NEW_TAB_PAGE = Ui2Locators.withAnyResEntry(
+            R.id.ntp_content, org.chromium.chrome.feed.R.id.feed_stream_recycler_view,
+            org.chromium.chrome.feed.R.id.feed_content_card);
 
     private static final NewTabPageController sInstance = new NewTabPageController();
-    private NewTabPageController() {
-        mAriticleCardController = ArticleCardController.getInstance();
-        mSuggestionsTileController = SuggestionTileController.getInstance();
-    }
+    private NewTabPageController() {}
     public static NewTabPageController getInstance() {
         return sInstance;
-    }
-
-    public ArticleCardController.ImplementationType getArticleImplementationType() {
-        if (mLocatorHelper.isOnScreen(LOCATOR_FEED_STREAM_RECYCLER_VIEW)) {
-            return ArticleCardController.ImplementationType.FEED;
-        } else {
-            return ArticleCardController.ImplementationType.ZINE;
-        }
     }
 
     /**
@@ -116,19 +93,6 @@ public class NewTabPageController extends PageController {
         mUtils.swipeUpVertically(screenHeightPercentage);
     }
 
-    public void clickInfoBarMessage() {
-        mUtils.click(LOCATOR_INFO_BAR_MESSAGE);
-    }
-
-    public String getInfoBarMessage() {
-        return mLocatorHelper.getOneText(LOCATOR_INFO_BAR_MESSAGE);
-    }
-
-    public NewTabPageController closeInfoBar() {
-        mUtils.click(LOCATOR_INFO_BAR_CLOSE);
-        return this;
-    }
-
     public boolean hasScrolledToBottom() {
         // If TEXT_HEADER_STATUS_SHOW is displayed, it means articles are hidden.
         IUi2Locator locator = Ui2Locators.withPath(
@@ -165,82 +129,6 @@ public class NewTabPageController extends PageController {
         }
     }
 
-    public List<ArticleCardController.Info> getAllLoadedArticles() {
-        return getAllLoadedArticles(getArticleImplementationType());
-    }
-
-    /**
-     * Get all suggestion tiles.  This will cause the page to scroll to the top.
-     * @return List of suggestion infos, possibly empty.
-     */
-    public List<SuggestionTileController.Info> getAllSuggestionTiles() {
-        // Suggestion tiles are currently at the top of the NTP, so need to ensure page is
-        // scrolled to the top, otherwise they may be offscreen.
-        scrollToTop();
-        return mSuggestionsTileController.parseScreen();
-    }
-
-    /**
-     * Get all loaded articles.  This will cause the page to scroll to top then down to the bottom.
-     * @param implementationType The article implementation type, FEED or ZINE.
-     * @return                      List of article card infos, this is a list to preserve the
-     *                              order of the articles as they appeared on the screen.
-     */
-    public List<ArticleCardController.Info> getAllLoadedArticles(
-            ArticleCardController.ImplementationType implementationType) {
-        scrollToTop();
-        List<ArticleCardController.Info> allArticles =
-                mAriticleCardController.parseScreenForArticles(implementationType);
-        do {
-            scrollTowardsBottom(SCROLL_SWIPE_FRACTION);
-            List<ArticleCardController.Info> currentArticles =
-                    mAriticleCardController.parseScreenForArticles(implementationType);
-            for (ArticleCardController.Info article : currentArticles) {
-                if (!allArticles.contains(article)) {
-                    allArticles.add(article);
-                }
-            }
-        } while (!hasScrolledToBottom());
-
-        return allArticles;
-    }
-
-    /**
-     * Perform the default card action by tapping on it.  This will cause the page to scroll to top
-     * then down to where the article is located (or hit bottom if it isn't found).
-     * @param article The article info.
-     * @return        UrlPage Controller where the article will be loaded.
-     */
-    public UrlPage clickArticle(ArticleCardController.Info article) {
-        scrollToTop();
-        IUi2Locator locator = ArticleCardController.getInstance().getLocator(article);
-        mUtils.swipeUpVerticallyUntilFound(locator, LOCATOR_BOTTOM_OF_PAGE);
-        mUtils.click(locator);
-        return UrlPage.getInstance().verifyActive();
-    }
-
-    /**
-     * The default action is the one that gets performed when the user taps on the tile icon
-     * (opens site in a new page).  If user long taps, then a menu is shown providing more choices
-     * (not yet implemented).  This will cause the page to scroll to the top.
-     */
-    public UrlPage clickSuggestionTile(SuggestionTileController.Info tile) {
-        scrollToTop();
-        IUi2Locator locator = mSuggestionsTileController.getLocator(tile);
-        mUtils.swipeUpVerticallyUntilFound(locator, LOCATOR_BOTTOM_OF_PAGE);
-        mUtils.click(locator);
-        return UrlPage.getInstance().verifyActive();
-    }
-
-    /**
-     * Click the load more aritcles button at the bottom of the page.  This will cause the page
-     * to scroll to the bottom.
-     */
-    public void clickLoadMoreArticles() {
-        scrollToBottom();
-        mUtils.click(LOCATOR_MORE_BUTTON);
-    }
-
     /**
      * Open the tab switcher at the top.  This will cause the page to scroll to the top.
      * @return The TabSwitcher Page Controller.
@@ -259,14 +147,6 @@ public class NewTabPageController extends PageController {
         scrollToTop();
         mUtils.click(LOCATOR_MENU_BUTTON);
         return ChromeMenu.getInstance().verifyActive();
-    }
-
-    public ArticleActionsMenu openArticleContextMenu(ArticleCardController.Info card) {
-        scrollToTop();
-        IUi2Locator locator = mAriticleCardController.getLocator(card);
-        mUtils.swipeUpVerticallyUntilFound(locator, LOCATOR_BOTTOM_OF_PAGE);
-        mUtils.longClick(locator);
-        return ArticleActionsMenu.getInstance().verifyActive();
     }
 
     public UrlPage omniboxSearch(String url) {

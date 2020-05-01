@@ -135,7 +135,6 @@ class VIEWS_EXPORT DialogDelegate : public WidgetDelegate {
   DialogDelegate* AsDialogDelegate() override;
   ClientView* CreateClientView(Widget* widget) override;
   NonClientFrameView* CreateNonClientFrameView(Widget* widget) override;
-  void WindowWillClose() override;
 
   static NonClientFrameView* CreateDialogFrameView(Widget* widget);
 
@@ -254,6 +253,10 @@ class VIEWS_EXPORT DialogDelegate : public WidgetDelegate {
   // TODO(ellyjones): Investigate getting rid of this entirely and having all
   // dialogs use the same button row insets.
   void SetButtonRowInsets(const gfx::Insets& insets);
+
+  // Callback for WidgetDelegate when the window this dialog is hosted in is
+  // closing. Don't call this yourself.
+  void WindowWillClose();
 
  protected:
   ~DialogDelegate() override;

@@ -1673,6 +1673,24 @@ class AbortOnVmStartObserver : public CrostiniManager::RestartObserver {
   base::WeakPtr<CrostiniManager> crostini_manager_;
 };
 
+// Watches the Crostini restarter until the Concierge started phase, then aborts
+// the sequence.
+class AbortOnConciergeStartObserver : public CrostiniManager::RestartObserver {
+ public:
+  explicit AbortOnConciergeStartObserver(
+      base::WeakPtr<CrostiniManager> crostini_manager)
+      : crostini_manager_(crostini_manager) {}
+
+  void OnConciergeStarted(bool success) override {
+    if (crostini_manager_) {
+      crostini_manager_->AbortRestartCrostini(restart_id(), base::DoNothing());
+    }
+  }
+
+ private:
+  base::WeakPtr<CrostiniManager> crostini_manager_;
+};
+
 }  // namespace
 
 void CrostiniManager::UpgradeContainer(const ContainerId& key,
@@ -1766,6 +1784,31 @@ void CrostiniManager::EnsureVmRunning(const ContainerId& key,
   if (!IsVmRunning(vm_name)) {
     RestartCrostini(vm_name, container_name, std::move(inner_callback),
                     new AbortOnVmStartObserver(weak_ptr_factory_.GetWeakPtr()));
+  } else {
+    std::move(inner_callback).Run(CrostiniResult::SUCCESS);
+  }
+}
+
+void CrostiniManager::EnsureConciergeRunning(CrostiniResultCallback callback) {
+  CrostiniResultCallback inner_callback = base::BindOnce(
+      [](CrostiniResultCallback final_callback, CrostiniResult result) {
+        if (result == CrostiniResult::SUCCESS ||
+            result == CrostiniResult::RESTART_ABORTED) {
+          // RESTART_ABORTED is expected when we successfully abort after
+          // launching the VM, turn it into a success since that's what we were
+          // asked for.
+          std::move(final_callback).Run(CrostiniResult::SUCCESS);
+        } else {
+          std::move(final_callback).Run(result);
+        }
+      },
+      std::move(callback));
+
+  if (!IsVmRunning(kCrostiniDefaultVmName)) {
+    RestartCrostini(
+        kCrostiniDefaultVmName, kCrostiniDefaultContainerName,
+        std::move(inner_callback),
+        new AbortOnConciergeStartObserver(weak_ptr_factory_.GetWeakPtr()));
   } else {
     std::move(inner_callback).Run(CrostiniResult::SUCCESS);
   }

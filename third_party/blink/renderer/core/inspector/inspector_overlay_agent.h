@@ -75,6 +75,7 @@ using OverlayFrontend = protocol::Overlay::Metainfo::FrontendClass;
 class CORE_EXPORT InspectTool : public GarbageCollected<InspectTool> {
  public:
   virtual ~InspectTool() = default;
+
   void Init(InspectorOverlayAgent* overlay, OverlayFrontend* frontend);
   virtual int GetDataResourceId();
   virtual bool HandleInputEvent(LocalFrameView* frame_view,
@@ -98,9 +99,29 @@ class CORE_EXPORT InspectTool : public GarbageCollected<InspectTool> {
   virtual bool HideOnMouseMove();
 
  protected:
+  InspectTool() = default;
   virtual void DoInit() {}
   Member<InspectorOverlayAgent> overlay_;
   OverlayFrontend* frontend_ = nullptr;
+};
+
+class CORE_EXPORT Hinge final : public GarbageCollected<Hinge> {
+ public:
+  Hinge(FloatQuad quad,
+        Color color,
+        Color outline_color,
+        InspectorOverlayAgent* overlay);
+  ~Hinge() = default;
+  static int GetDataResourceId();
+  void Draw(float scale);
+  void Trace(Visitor* visitor);
+
+ private:
+  FloatQuad quad_;
+  Color content_color_;
+  Color outline_color_;
+  Member<InspectorOverlayAgent> overlay_;
+  DISALLOW_COPY_AND_ASSIGN(Hinge);
 };
 
 class CORE_EXPORT InspectorOverlayAgent final
@@ -161,6 +182,8 @@ class CORE_EXPORT InspectorOverlayAgent final
       protocol::Maybe<bool> include_distance,
       protocol::Maybe<bool> include_style,
       std::unique_ptr<protocol::DictionaryValue>* highlight) override;
+  protocol::Response setShowHinge(
+      protocol::Maybe<protocol::Overlay::HingeConfig> hinge_config) override;
 
   // InspectorBaseAgent overrides.
   void Restore() override;
@@ -202,17 +225,19 @@ class CORE_EXPORT InspectorOverlayAgent final
 
   protocol::Response CompositingEnabled();
 
+  bool IsVisible() const { return inspect_tool_ || hinge_; }
   bool InSomeInspectMode();
-
   void SetNeedsUnbufferedInput(bool unbuffered);
   void PickTheRightTool();
+  // Set or clear a mode tool, or add a highlight tool
   void SetInspectTool(InspectTool* inspect_tool);
-  void LoadFrameForTool();
+  void LoadFrameForTool(int data_resource_id);
+  void EnsureEnableFrameOverlay();
+  void DisableFrameOverlay();
   protocol::Response HighlightConfigFromInspectorObject(
       protocol::Maybe<protocol::Overlay::HighlightConfig>
           highlight_inspector_object,
       std::unique_ptr<InspectorHighlightConfig>*);
-
   Member<WebLocalFrameImpl> frame_impl_;
   Member<InspectedFrames> inspected_frames_;
   Member<Page> overlay_page_;
@@ -226,6 +251,7 @@ class CORE_EXPORT InspectorOverlayAgent final
   Member<InspectorDOMAgent> dom_agent_;
   std::unique_ptr<FrameOverlay> frame_overlay_;
   Member<InspectTool> inspect_tool_;
+  Member<Hinge> hinge_;
   bool swallow_next_mouse_up_;
   DOMNodeId backend_node_id_to_inspect_;
   InspectorAgentState::Boolean enabled_;

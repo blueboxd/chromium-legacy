@@ -28,6 +28,7 @@ import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.ShortcutSource;
 import org.chromium.chrome.browser.WarmupManager;
+import org.chromium.chrome.browser.customtabs.BaseCustomTabActivity;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.firstrun.FirstRunFlowSequencer;
 import org.chromium.webapk.lib.client.WebApkValidator;
@@ -102,10 +103,10 @@ public class WebappLauncherActivity extends Activity {
      * @return True if a live WebappActivity was found, false otherwise.
      */
     public static boolean bringWebappToFront(int tabId) {
-        WeakReference<WebappActivity> webappActivity =
-                WebappActivity.findWebappActivityWithTabId(tabId);
-        if (webappActivity == null || webappActivity.get() == null) return false;
-        webappActivity.get().getWebContentsDelegate().activateContents();
+        WeakReference<BaseCustomTabActivity<?>> customTabActivity =
+                WebappLocator.findWebappActivityWithTabId(tabId);
+        if (customTabActivity == null || customTabActivity.get() == null) return false;
+        customTabActivity.get().getWebContentsDelegate().activateContents();
         return true;
     }
 

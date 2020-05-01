@@ -157,9 +157,6 @@ class TestRunnerForSpecificView {
   // Sets a flag causing the next call to DrawingBuffer::create to fail.
   void ForceNextDrawingBufferCreationToFail();
 
-  // Gives focus to the view associated with TestRunnerForSpecificView.
-  void SetWindowIsKey(bool value);
-
   // Pointer lock handling.
   void DidAcquirePointerLock();
   void DidNotAcquirePointerLock();

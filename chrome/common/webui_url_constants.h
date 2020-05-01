@@ -353,69 +353,6 @@ extern const char kSignOutSubPage[];
 extern const char kSyncSetupSubPage[];
 extern const char kTriggeredResetProfileSettingsSubPage[];
 
-#if defined(OS_CHROMEOS)
-// Entry points for OS settings sub-pages.
-extern const char kAccessibilitySubPage[];
-extern const char kAccountManagerSubPage[];
-extern const char kAccountSubPage[];
-extern const char kAmbientModeSubPage[];
-extern const char kAndroidAppsDetailsSubPage[];
-extern const char kAndroidAppsDetailsSubPageInBrowserSettings[];
-extern const char kAppManagementDetailSubPage[];
-extern const char kAppManagementSubPage[];
-extern const char kAssistantSubPage[];
-extern const char kBluetoothSubPage[];
-extern const char kChangePictureSubPage[];
-extern const char kConnectedDevicesSubPage[];
-extern const char kCrostiniSharedPathsSubPage[];
-extern const char kCrostiniSharedUsbDevicesSubPage[];
-extern const char kCrostiniExportImportSubPage[];
-extern const char kCrostiniDiskResizeSubPage[];
-extern const char kDateTimeSubPage[];
-extern const char kDisplaySubPage[];
-extern const char kExternalStorageSubPage[];
-extern const char kHelpSubPage[];
-extern const char kInternetSubPage[];
-extern const char kKerberosAccountsSubPage[];
-extern const char kKeyboardOverlaySubPage[];
-extern const char kKnownNetworksSubPage[];
-extern const char kLockScreenSubPage[];
-extern const char kManageAccessibilitySubPage[];
-extern const char kManageAccessibilityTtsSubPage[];
-extern const char kMultideviceSubPage[];
-extern const char kNativePrintingSettingsSubPage[];
-extern const char kNetworkDetailSubPage[];
-extern const char kNetworksSubPage[];
-extern const char kOsAccessibilitySubPage[];
-extern const char kOsLanguagesSubPage[];
-extern const char kOsLanguagesDetailsSubPage[];
-extern const char kOsLanguagesInputMethodsSubPage[];
-extern const char kOsLanguagesSmartInputsSubPage[];
-extern const char kOsPeopleSubPage[];
-extern const char kOsPrintingSubPage[];
-extern const char kOsPrivacySubPage[];
-extern const char kOsResetSubPage[];
-extern const char kOsSearchSubPage[];
-extern const char kOsSignOutSubPage[];
-extern const char kPluginVmDetailsSubPage[];
-extern const char kPluginVmSharedPathsSubPage[];
-extern const char kPointerOverlaySubPage[];
-extern const char kPowerSubPage[];
-extern const char kSmartLockSettingsSubPage[];
-extern const char kSmbSharesSubPage[];
-extern const char kStorageSubPage[];
-extern const char kStylusSubPage[];
-extern const char kSwitchAccessSubPage[];
-extern const char kTetherSettingsSubPage[];
-extern const char kVPNSettingsSubPage[];
-extern const char kWiFiSettingsSubPage[];
-extern const char kEthernetSettingsSubPage[];
-extern const char kCellularSettingsSubPage[];
-
-// Returns true if the sub-page is one of the above.
-bool IsOSSettingsSubPage(const std::string& sub_page);
-#endif  // defined(OS_CHROMEOS)
-
 #if defined(OS_WIN)
 extern const char kCleanupSubPage[];
 #endif

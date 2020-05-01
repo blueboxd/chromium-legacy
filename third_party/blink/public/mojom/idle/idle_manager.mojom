@@ -20,6 +20,11 @@ enum ScreenIdleState {
   kUnlocked
 };
 
+enum IdleManagerError {
+  kSuccess,
+  kPermissionDisabled,
+};
+
 struct IdleState {
   UserIdleState user;
   ScreenIdleState screen;
@@ -36,5 +41,5 @@ interface IdleManager {
   // the pipe.
   AddMonitor(mojo_base.mojom.TimeDelta threshold,
              pending_remote<IdleMonitor> monitor)
-      => (IdleState state);
+      => (IdleManagerError error, IdleState? state);
 };

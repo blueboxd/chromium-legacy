@@ -7,15 +7,12 @@ package org.chromium.chrome.test.util.browser.suggestions;
 import org.junit.rules.TestWatcher;
 import org.junit.runner.Description;
 
-import org.chromium.base.DiscardableReferencePool;
-import org.chromium.chrome.browser.ntp.snippets.SuggestionsSource;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.suggestions.SuggestionsDependencyFactory;
 import org.chromium.chrome.browser.suggestions.SuggestionsEventReporter;
 import org.chromium.chrome.browser.suggestions.mostvisited.MostVisitedSites;
 import org.chromium.chrome.browser.thumbnail.generator.ThumbnailProvider;
-import org.chromium.chrome.browser.ui.favicon.FaviconHelper;
 import org.chromium.chrome.browser.ui.favicon.LargeIconBridge;
 
 /**
@@ -55,19 +52,11 @@ public class SuggestionsDependenciesRule extends TestWatcher {
      * SuggestionsDependencyFactory that exposes and allows modifying the instances to be injected.
      */
     public static class TestFactory extends SuggestionsDependencyFactory {
-        public SuggestionsSource suggestionsSource;
         public MostVisitedSites mostVisitedSites;
         public LargeIconBridge largeIconBridge;
         public SuggestionsEventReporter eventReporter;
         public ThumbnailProvider thumbnailProvider;
-        public FaviconHelper faviconHelper;
         public OfflinePageBridge offlinePageBridge;
-
-        @Override
-        public SuggestionsSource createSuggestionSource(Profile profile) {
-            if (suggestionsSource != null) return suggestionsSource;
-            return super.createSuggestionSource(profile);
-        }
 
         @Override
         public SuggestionsEventReporter createEventReporter() {
@@ -85,18 +74,6 @@ public class SuggestionsDependenciesRule extends TestWatcher {
         public LargeIconBridge createLargeIconBridge(Profile profile) {
             if (largeIconBridge != null) return largeIconBridge;
             return new LargeIconBridge(profile);
-        }
-
-        @Override
-        public ThumbnailProvider createThumbnailProvider(DiscardableReferencePool referencePool) {
-            if (thumbnailProvider != null) return thumbnailProvider;
-            return super.createThumbnailProvider(referencePool);
-        }
-
-        @Override
-        public FaviconHelper createFaviconHelper() {
-            if (faviconHelper != null) return faviconHelper;
-            return super.createFaviconHelper();
         }
 
         @Override

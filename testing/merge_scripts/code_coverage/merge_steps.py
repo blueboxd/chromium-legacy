@@ -23,10 +23,13 @@ def _merge_steps_argument_parser(*args, **kwargs):
       default='.*',
       help='regex pattern of profdata filename to merge for current test type. '
           'If not present, all profdata files will be merged.')
+  # TODO(crbug.com/1077304) - migrate this to sparse=False as default, and have
+  # --sparse to set sparse
   parser.add_argument(
-      '--sparse',
-      help='invokes llvm-profdata with argument -sparse=true',
-      action='store_true')
+      '--no-sparse',
+      action='store_false',
+      dest='sparse',
+      help='run llvm-profdata without the sparse flag.')
   return parser
 
 

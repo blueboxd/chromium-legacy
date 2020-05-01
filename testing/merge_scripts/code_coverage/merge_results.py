@@ -55,10 +55,13 @@ def _MergeAPIArgumentParser(*args, **kwargs):
       '--per-cl-coverage',
       action='store_true',
       help='set to indicate that this is a per-CL coverage build')
+  # TODO(crbug.com/1077304) - migrate this to sparse=False as default, and have
+  # --sparse to set sparse
   parser.add_argument(
-      '--sparse',
-      help='invokes llvm-profdata with argument -sparse=true',
-      action='store_true')
+      '--no-sparse',
+      action='store_false',
+      dest='sparse',
+      help='run llvm-profdata without the sparse flag.')
   return parser
 
 

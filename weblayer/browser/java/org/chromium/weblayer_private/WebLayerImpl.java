@@ -254,6 +254,7 @@ public final class WebLayerImpl extends IWebLayer.Stub {
         GmsBridge.getInstance().setSafeBrowsingHandler();
 
         MediaStreamManager.onWebLayerInit();
+        WebLayerNotificationChannels.updateChannelsIfNecessary();
     }
 
     @Override
@@ -354,6 +355,14 @@ public final class WebLayerImpl extends IWebLayer.Stub {
         } catch (RemoteException e) {
             throw new APICallException(e);
         }
+    }
+
+    public static String getClientApplicationName() {
+        Context context = ContextUtils.getApplicationContext();
+        return new StringBuilder()
+                .append(context.getPackageManager().getApplicationLabel(
+                        context.getApplicationInfo()))
+                .toString();
     }
 
     /**

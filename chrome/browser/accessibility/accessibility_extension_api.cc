@@ -45,6 +45,7 @@
 #include "ash/public/cpp/window_tree_host_lookup.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/arc/accessibility/arc_accessibility_helper_bridge.h"
+#include "chrome/browser/ui/webui/settings/chromeos/constants/routes_util.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/display/display.h"
@@ -86,7 +87,7 @@ AccessibilityPrivateOpenSettingsSubpageFunction::Run() {
 
 #if defined(OS_CHROMEOS)
   Profile* profile = chromeos::AccessibilityManager::Get()->profile();
-  if (chrome::IsOSSettingsSubPage(params->subpage)) {
+  if (chromeos::settings::IsOSSettingsSubPage(params->subpage)) {
     chrome::SettingsWindowManager::GetInstance()->ShowOSSettings(
         profile, params->subpage);
   }

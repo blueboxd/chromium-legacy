@@ -22,15 +22,13 @@ SliderExample::SliderExample() : ExampleBase("Slider") {}
 SliderExample::~SliderExample() = default;
 
 void SliderExample::CreateExampleView(View* container) {
-  label_ = new Label();
-  slider_ = new views::Slider(this);
+  label_ = container->AddChildView(std::make_unique<Label>());
+  slider_ = container->AddChildView(std::make_unique<Slider>(this));
 
   slider_->SetValue(0.5);
 
   container->SetLayoutManager(std::make_unique<BoxLayout>(
       BoxLayout::Orientation::kHorizontal, gfx::Insets(3), 3));
-  container->AddChildView(slider_);
-  container->AddChildView(label_);
 }
 
 void SliderExample::SliderValueChanged(Slider* sender,

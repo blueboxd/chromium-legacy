@@ -28,6 +28,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
+import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.ntp.snippets.SectionHeader;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
@@ -47,15 +48,16 @@ import org.chromium.net.test.EmbeddedTestServerRule;
 import java.util.List;
 
 /**
- * Tests for {@link FeedNewTabPage} specifically with card rendering. Other tests can be found in
+ * Tests for {@link NewTabPage} with card rendering. Other tests can be found in
  * {@link org.chromium.chrome.browser.feed.FeedNewTabPageTest}.
  */
+// clang-format off
 @RunWith(ChromeJUnit4ClassRunner.class)
-@CommandLineFlags
-        .Add(ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE)
-        @Features.EnableFeatures({ChromeFeatureList.INTEREST_FEED_CONTENT_SUGGESTIONS,
-                ChromeFeatureList.OMNIBOX_SEARCH_ENGINE_LOGO})
-        public class FeedNewTabPageCardRenderTest {
+@CommandLineFlags.Add(ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE)
+@Features.EnableFeatures({ChromeFeatureList.INTEREST_FEED_CONTENT_SUGGESTIONS,
+    ChromeFeatureList.OMNIBOX_SEARCH_ENGINE_LOGO})
+public class FeedNewTabPageCardRenderTest {
+    //clang-format on
     private static final String TEST_FEED_DATA_BASE_PATH = "/chrome/test/data/android/feed/";
 
     @Rule
@@ -75,7 +77,7 @@ import java.util.List;
     public EmbeddedTestServerRule mTestServer = new EmbeddedTestServerRule();
 
     private Tab mTab;
-    private FeedNewTabPage mNtp;
+    private NewTabPage mNtp;
     private ViewGroup mTileGridLayout;
     private FakeMostVisitedSites mMostVisitedSites;
     private List<SiteSuggestion> mSiteSuggestions;
@@ -92,8 +94,8 @@ import java.util.List;
         mTab = mActivityTestRule.getActivity().getActivityTab();
         NewTabPageTestUtils.waitForNtpLoaded(mTab);
 
-        Assert.assertTrue(mTab.getNativePage() instanceof FeedNewTabPage);
-        mNtp = (FeedNewTabPage) mTab.getNativePage();
+        Assert.assertTrue(mTab.getNativePage() instanceof NewTabPage);
+        mNtp = (NewTabPage) mTab.getNativePage();
         mTileGridLayout = mNtp.getView().findViewById(R.id.tile_grid_layout);
         Assert.assertEquals(mSiteSuggestions.size(), mTileGridLayout.getChildCount());
     }
@@ -110,16 +112,19 @@ import java.util.List;
 
     private void renderFeedCards(String scenarioName) throws Exception {
         // Open a new tab.
-        SectionHeader firstHeader = mNtp.getMediatorForTesting().getSectionHeaderForTesting();
+        SectionHeader firstHeader = mNtp.getCoordinatorForTesting()
+                                            .getMediatorForTesting()
+                                            .getSectionHeaderForTesting();
         RecyclerView recycleView =
-                (RecyclerView) mNtp.getCoordinatorForTesting().getStream().getView();
+                (RecyclerView) mNtp.getCoordinatorForTesting().getStreamForTesting().getView();
 
         // Check header is expanded.
         Assert.assertTrue(firstHeader.isExpandable() && firstHeader.isExpanded());
         Assert.assertTrue(getPreferenceForArticleSectionHeader());
 
         // Trigger a refresh to get feed cards.
-        mFeedDataInjector.triggerFeedRefreshOnUiThreadBlocking(mNtp.getStreamForTesting());
+        mFeedDataInjector.triggerFeedRefreshOnUiThreadBlocking(
+                mNtp.getCoordinatorForTesting().getStreamForTesting());
 
         // Scroll to the first feed card.
         onView(instanceOf(RecyclerView.class))

@@ -4,6 +4,8 @@
 
 #include "ash/ambient/fake_ambient_backend_controller_impl.h"
 
+#include <utility>
+
 #include "base/callback.h"
 #include "base/optional.h"
 #include "base/threading/sequenced_task_runner_handle.h"
@@ -54,6 +56,11 @@ void FakeAmbientBackendControllerImpl::UpdateSettings(
   // Pretend to respond asynchronously.
   base::SequencedTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(std::move(callback), /*success=*/true));
+}
+
+void FakeAmbientBackendControllerImpl::SetPhotoRefreshInterval(
+    base::TimeDelta interval) {
+  NOTIMPLEMENTED();
 }
 
 }  // namespace ash

@@ -38,6 +38,10 @@ struct CONTENT_EXPORT ConversionReport {
   // The time this conversion report should be sent.
   base::Time report_time;
 
+  // Tracks ephemeral increases to |report_time| for this conversion report, for
+  // the purposes of logging metrics.
+  base::TimeDelta extra_delay;
+
   // The attribution credit assigned to this conversion report. This is derived
   // from the set of all impressions that matched a singular conversion event.
   // This should be in the range 0-100. A set of ConversionReports for one

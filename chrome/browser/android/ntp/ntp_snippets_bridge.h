@@ -42,16 +42,6 @@ class NTPSnippetsBridge
                         const base::android::JavaParamRef<jobject>& obj,
                         jint j_category_id);
 
-  base::android::ScopedJavaLocalRef<jobject> GetCategoryInfo(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& obj,
-      jint j_category_id);
-
-  base::android::ScopedJavaLocalRef<jobject> GetSuggestionsForCategory(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& obj,
-      jint j_category_id);
-
   jboolean AreRemoteSuggestionsEnabled(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj);
@@ -71,14 +61,6 @@ class NTPSnippetsBridge
       jint j_minimum_size_px,
       jint j_desired_size_px,
       const base::android::JavaParamRef<jobject>& j_callback);
-
-  void Fetch(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& obj,
-      jint j_category_id,
-      const base::android::JavaParamRef<jobjectArray>& j_displayed_suggestions,
-      const base::android::JavaParamRef<jobject>& j_fetch_success_callback,
-      const base::android::JavaParamRef<jobject>& j_fetch_failure_callback);
 
   void ReloadSuggestions(JNIEnv* env,
                          const base::android::JavaParamRef<jobject>& obj);

@@ -9,6 +9,7 @@
 #include "base/time/time.h"
 #include "components/performance_manager/public/graph/graph.h"
 #include "components/performance_manager/public/graph/node_attached_data.h"
+#include "components/performance_manager/public/graph/node_data_describer.h"
 #include "components/performance_manager/public/graph/process_node.h"
 
 namespace performance_manager {
@@ -32,7 +33,8 @@ namespace policies {
 //   memory available quickly for foreground processes and improves global
 //   browser performance.
 class WorkingSetTrimmerPolicy : public GraphOwned,
-                                public ProcessNode::ObserverDefaultImpl {
+                                public ProcessNode::ObserverDefaultImpl,
+                                public NodeDataDescriberDefaultImpl {
  public:
   WorkingSetTrimmerPolicy();
   ~WorkingSetTrimmerPolicy() override;
@@ -75,6 +77,9 @@ class WorkingSetTrimmerPolicy : public GraphOwned,
 
   // A helper method which sets the last trim time to the specified time.
   void SetLastTrimTime(const ProcessNode* process_node, base::TimeTicks time);
+
+  // NodeDataDescriber implementation:
+  base::Value DescribeProcessNodeData(const ProcessNode* node) const override;
 
   DISALLOW_COPY_AND_ASSIGN(WorkingSetTrimmerPolicy);
 };

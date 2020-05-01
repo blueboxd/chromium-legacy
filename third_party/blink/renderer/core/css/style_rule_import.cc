@@ -150,6 +150,8 @@ void StyleRuleImport::RequestStyleSheet() {
 
   ResourceLoaderOptions options;
   options.initiator_info.name = fetch_initiator_type_names::kCSS;
+  options.initiator_info.referrer =
+      parent_style_sheet_->ParserContext()->GetReferrer().referrer;
   ResourceRequest resource_request(abs_url);
   if (parent_style_sheet_->ParserContext()->IsAdRelated())
     resource_request.SetIsAdResource();

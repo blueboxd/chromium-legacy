@@ -57,3 +57,6 @@ per-file yes_no.py=satorux@chromium.org
 
 per-file download_optimization_profile.py=gbiv@chromium.org
 per-file download_optimization_profile.py=tcwang@chromium.org
+
+per-file update_pgo_profiles.py=liaoyuke@chromium.org
+per-file update_pgo_profiles.py=sebmarchand@chromium.org

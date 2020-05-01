@@ -64,6 +64,7 @@
 #include "chrome/browser/supervised_user/supervised_user_service.h"
 #include "chrome/browser/supervised_user/supervised_user_service_factory.h"
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
+#include "chrome/browser/ui/webui/settings/chromeos/constants/routes.mojom.h"
 #include "chrome/browser/ui/webui/signin/inline_login_handler_dialog_chromeos.h"
 #endif
 
@@ -289,7 +290,7 @@ void ProcessMirrorHeader(
 
   // 3. Displaying the Account Manager for managing accounts.
   chrome::SettingsWindowManager::GetInstance()->ShowOSSettings(
-      profile, chrome::kAccountManagerSubPage);
+      profile, chromeos::settings::mojom::kMyAccountsSubpagePath);
   return;
 
 #else   // !defined(OS_CHROMEOS)

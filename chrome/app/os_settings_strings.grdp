@@ -1078,6 +1078,15 @@
   <message name="IDS_SETTINGS_CROSTINI_DISK_RESIZE_DONE" desc="The message displayed to the user once disk resizing has completed successfully.">
     Done
   </message>
+  <message name="IDS_SETTINGS_CROSTINI_DISK_RESIZE_CONFIRMATION_DIALOG_TITLE" desc="Confirmation dialog title when a user is about to reserve a size for a disk which previously did not have a fixed size.">
+    Are you sure you want to reserve a fixed size disk for Linux (Beta)?
+  </message>
+  <message name="IDS_SETTINGS_CROSTINI_DISK_RESIZE_CONFIRMATION_DIALOG_MESSAGE" desc="Message displayed in the confirmation dialog when the user is about to resize a disk to one with a fixed size.">
+    This operation cannot be undone
+  </message>
+  <message name="IDS_SETTINGS_CROSTINI_DISK_RESIZE_CONFIRMATION_DIALOG_BUTTON" desc="Button text in the confirmation dialog when the user confirms they want to resize the disk.">
+    Reserve size
+  </message>
   <message name="IDS_SETTINGS_CROSTINI_ARC_ADB_POWERWASH_REQUIRED_SUBLABEL" desc="Sublabel notifying user of powerwash requirement before enabling ARC ADB sideloading.">
     A factory reset of this Chromebook is required to enable ADB debugging. <ph name="BEGIN_LINK_LEARN_MORE">&lt;a target="_blank" href="$1"&gt;</ph>Learn more<ph name="END_LINK_LEARN_MORE">&lt;/a&gt;</ph>
   </message>

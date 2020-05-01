@@ -17,6 +17,7 @@
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "components/device_event_log/device_event_log.h"
 #include "device/fido/mac/authenticator_config.h"
+#include "device/fido/mac/keychain.h"
 
 namespace device {
 namespace fido {
@@ -71,6 +72,31 @@ bool BinaryHasKeychainAccessGroupEntitlement(
       base::ScopedCFTypeRef<CFStringRef>(
           base::SysUTF8ToCFStringRef(keychain_access_group)));
 }
+
+API_AVAILABLE(macosx(10.12.2))
+bool CanCreateSecureEnclaveKeyPair() {
+  // CryptoKit offers SecureEnclave.isAvailable but does not have Swift
+  // bindings. Instead, attempt to create an ephemeral key pair in the secure
+  // enclave.
+  base::ScopedCFTypeRef<CFMutableDictionaryRef> params(
+      CFDictionaryCreateMutable(kCFAllocatorDefault, 0, nullptr, nullptr));
+  CFDictionarySetValue(params, kSecAttrKeyType,
+                       kSecAttrKeyTypeECSECPrimeRandom);
+  CFDictionarySetValue(params, kSecAttrKeySizeInBits, @256);
+  CFDictionarySetValue(params, kSecAttrTokenID, kSecAttrTokenIDSecureEnclave);
+  CFDictionarySetValue(params, kSecAttrIsPermanent, @NO);
+
+  base::ScopedCFTypeRef<CFErrorRef> cferr;
+  base::ScopedCFTypeRef<SecKeyRef> private_key(
+      Keychain::GetInstance().KeyCreateRandomKey(params,
+                                                 cferr.InitializeInto()));
+  if (!private_key) {
+    FIDO_LOG(DEBUG) << "SecKeyCreateRandomKey failed: " << cferr;
+    return false;
+  }
+  return true;
+}
+
 }  // namespace
 
 // static
@@ -90,16 +116,32 @@ std::unique_ptr<TouchIdContext> TouchIdContext::Create() {
 
 // static
 bool TouchIdContext::TouchIdAvailableImpl(const AuthenticatorConfig& config) {
+  // Ensure that the binary is signed with the keychain-access-group
+  // entitlement that is configured by the embedder; that user authentication
+  // with biometry, watch, or device passcode possible; and that the device has
+  // a secure enclave.
+
   if (!BinaryHasKeychainAccessGroupEntitlement(config.keychain_access_group)) {
-    FIDO_LOG(ERROR) << "Touch ID unavailable because keychain-access-group "
-                       "entitlement is missing or incorrect";
+    FIDO_LOG(ERROR)
+        << "Touch ID authenticator unavailable because keychain-access-group "
+           "entitlement is missing or incorrect";
     return false;
   }
 
   base::scoped_nsobject<LAContext> context([[LAContext alloc] init]);
-  return
-      [context canEvaluatePolicy:LAPolicyDeviceOwnerAuthenticationWithBiometrics
-                           error:nil];
+  base::scoped_nsobject<NSError> nserr;
+  if (![context canEvaluatePolicy:LAPolicyDeviceOwnerAuthentication
+                            error:nserr.InitializeInto()]) {
+    FIDO_LOG(DEBUG) << "canEvaluatePolicy failed: " << nserr;
+    return false;
+  }
+
+  if (!CanCreateSecureEnclaveKeyPair()) {
+    FIDO_LOG(DEBUG) << "No secure enclave";
+    return false;
+  }
+
+  return true;
 }
 
 // static

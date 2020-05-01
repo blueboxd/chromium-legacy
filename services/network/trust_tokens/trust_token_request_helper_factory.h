@@ -29,9 +29,14 @@ class TrustTokenRequestHelperFactory {
   // Created helpers will use |store| to access persistent Trust
   // Tokens state and |key_commitment_getter| to obtain keys; consequently, both
   // arguments must outlive all of the created helpers.
+  //
+  // Each decision whether to vend a helper will first query |authorizer| to
+  // determine whether it's currently allowed to execute Trust Tokens
+  // operations.
   TrustTokenRequestHelperFactory(
       PendingTrustTokenStore* store,
-      const TrustTokenKeyCommitmentGetter* key_commitment_getter);
+      const TrustTokenKeyCommitmentGetter* key_commitment_getter,
+      base::RepeatingCallback<bool(void)> authorizer);
 
   TrustTokenRequestHelperFactory(const TrustTokenRequestHelperFactory&) =
       delete;
@@ -71,6 +76,7 @@ class TrustTokenRequestHelperFactory {
 
   PendingTrustTokenStore* store_;
   const TrustTokenKeyCommitmentGetter* key_commitment_getter_;
+  base::RepeatingCallback<bool(void)> authorizer_;
 
   base::WeakPtrFactory<TrustTokenRequestHelperFactory> weak_factory_{this};
 };

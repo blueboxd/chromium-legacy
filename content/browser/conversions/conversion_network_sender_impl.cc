@@ -8,12 +8,17 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/check.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
 #include "content/public/browser/storage_partition.h"
 #include "net/base/load_flags.h"
+#include "net/base/net_errors.h"
 #include "net/http/http_request_headers.h"
+#include "net/http/http_response_headers.h"
+#include "net/http/http_status_code.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/simple_url_loader.h"
@@ -24,6 +29,36 @@
 namespace content {
 
 namespace {
+
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class Status {
+  kOk = 0,
+  // Corresponds to a non-zero NET_ERROR.
+  kInternalError = 1,
+  // Corresponds to a non-200 HTTP response code from the reporting endpoint.
+  kExternalError = 2,
+  kMaxValue = kExternalError
+};
+
+// Called when a network request is started for |report|, for logging metrics.
+void LogMetricsOnReportSend(ConversionReport* report) {
+  DCHECK(report);
+  // Use a large time range to capture users that might not open the browser for
+  // a long time while a conversion report is pending. Revisit this range if it
+  // is non-ideal for real world data.
+  // Add |extra_delay| to the reported time which will include the amount of
+  // time since the report was originally scheduled, for reports at startup
+  // whose |report_time| changes due to additional startup delay.
+  base::Time now = base::Time::Now();
+  base::TimeDelta delay = (now - report->report_time) + report->extra_delay;
+  base::UmaHistogramCustomTimes("Conversions.ExtraReportDelay", delay,
+                                base::TimeDelta::FromSeconds(1),
+                                base::TimeDelta::FromDays(7), /*buckets=*/100);
+
+  // TODO(csharrison): We should thread the conversion time alongside the
+  // ConversionReport to log the effective time since conversion.
+}
 
 GURL GetReportUrl(const content::ConversionReport& report) {
   url::Replacements<char> replacements;
@@ -106,6 +141,7 @@ void ConversionNetworkSenderImpl::SendReport(ConversionReport* report,
       base::BindOnce(&ConversionNetworkSenderImpl::OnReportSent,
                      base::Unretained(this), std::move(it),
                      std::move(sent_callback)));
+  LogMetricsOnReportSend(report);
 }
 
 void ConversionNetworkSenderImpl::SetURLLoaderFactoryForTesting(
@@ -117,9 +153,18 @@ void ConversionNetworkSenderImpl::OnReportSent(
     UrlLoaderList::iterator it,
     ReportSentCallback sent_callback,
     scoped_refptr<net::HttpResponseHeaders> headers) {
-  // TODO(https://crbug.com/1054127): Log metrics for success/failure of sending
-  // reports. This should inspect the HTTP response code from the headers HTTP
-  // failures and SimpleUrlLoader::NetError() for internal errors/timeouts.
+  network::SimpleURLLoader* loader = it->get();
+
+  // Consider a non-200 HTTP code as a non-internal error.
+  bool internal_ok = loader->NetError() == net::OK ||
+                     loader->NetError() == net::ERR_HTTP_RESPONSE_CODE_FAILURE;
+  bool external_ok = headers && headers->response_code() == net::HTTP_OK;
+  Status status =
+      internal_ok && external_ok
+          ? Status::kOk
+          : !internal_ok ? Status::kInternalError : Status::kExternalError;
+  base::UmaHistogramEnumeration("Conversions.ReportStatus", status);
+
   loaders_in_progress_.erase(it);
   std::move(sent_callback).Run();
 }

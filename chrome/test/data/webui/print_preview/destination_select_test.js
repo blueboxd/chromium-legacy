@@ -84,11 +84,12 @@ suite(destination_select_test.suiteName, function() {
     destinationSelect.loaded = true;
     const selectEl = destinationSelect.$$('.md-select');
     compareIcon(selectEl, 'print');
-    const driveId = Destination.GooglePromotedId.DOCS;
     const cookieOrigin = DestinationOrigin.COOKIES;
+    const driveKey =
+        `${Destination.GooglePromotedId.DOCS}/${cookieOrigin}/${account}`;
+    destinationSelect.driveDestinationKey = driveKey;
 
-    return selectOption(
-               destinationSelect, `${driveId}/${cookieOrigin}/${account}`)
+    return selectOption(destinationSelect, driveKey)
         .then(() => {
           // Icon updates early based on the ID.
           compareIcon(selectEl, 'save-to-drive');

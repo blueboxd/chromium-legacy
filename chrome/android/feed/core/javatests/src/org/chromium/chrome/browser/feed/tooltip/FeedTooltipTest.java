@@ -32,11 +32,11 @@ import org.junit.runner.RunWith;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
-import org.chromium.chrome.browser.feed.FeedNewTabPage;
 import org.chromium.chrome.browser.feed.FeedProcessScopeFactory;
 import org.chromium.chrome.browser.feed.library.api.client.stream.Stream;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
+import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
@@ -94,10 +94,10 @@ import org.chromium.content_public.browser.test.util.TestThreadUtils;
         final Tab tab = mActivityTestRule.getActivity().getActivityTab();
         NewTabPageTestUtils.waitForNtpLoaded(tab);
 
-        Assert.assertTrue("The current tab is not a FeedNewTabPage.",
-                tab.getNativePage() instanceof FeedNewTabPage);
-        final FeedNewTabPage ntp = (FeedNewTabPage) tab.getNativePage();
-        mStream = ntp.getStreamForTesting();
+        Assert.assertTrue(
+                "The current tab is not a NewTabPage.", tab.getNativePage() instanceof NewTabPage);
+        final NewTabPage ntp = (NewTabPage) tab.getNativePage();
+        mStream = ntp.getCoordinatorForTesting().getStreamForTesting();
 
         Assert.assertTrue("The Stream view should be a RecyclerView.",
                 mStream.getView() instanceof RecyclerView);

@@ -561,44 +561,6 @@ public class TopToolbarCoordinator implements Toolbar {
     }
 
     /**
-     * @param anchor The view to use as an anchor.
-     */
-    public void setProgressBarAnchorView(@Nullable View anchor) {
-        getProgressBar().setAnchorView(anchor);
-    }
-
-    /**
-     * Starts load progress.
-     */
-    public void startLoadProgress() {
-        mToolbarLayout.startLoadProgress();
-    }
-
-    /**
-     * Sets load progress.
-     * @param progress The load progress between 0 and 1.
-     */
-    public void setLoadProgress(float progress) {
-        mToolbarLayout.setLoadProgress(progress);
-    }
-
-    /**
-     * Finishes load progress.
-     * @param delayed Whether hiding progress bar should be delayed to give enough time for user to
-     *                        recognize the last state.
-     */
-    public void finishLoadProgress(boolean delayed) {
-        mToolbarLayout.finishLoadProgress(delayed);
-    }
-
-    /**
-     * @return True if the progress bar is started.
-     */
-    public boolean isProgressStarted() {
-        return mToolbarLayout.isProgressStarted();
-    }
-
-    /**
      * Finish any toolbar animations.
      */
     public void finishAnimations() {

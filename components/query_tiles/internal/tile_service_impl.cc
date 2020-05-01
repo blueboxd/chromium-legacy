@@ -7,6 +7,7 @@
 #include <string>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/rand_util.h"
 
 namespace upboarding {
@@ -74,6 +75,21 @@ void TileServiceImpl::ScheduleDailyTask() {
           : background_task::TaskInfo::NetworkType::ANY;
 
   scheduler_->Schedule(task_info);
+}
+
+void TileServiceImpl::StartFetchForTiles(
+    BackgroundTaskFinishedCallback callback) {
+  DCHECK(tile_fetcher_);
+  tile_fetcher_->StartFetchForTiles(
+      base::BindOnce(&TileServiceImpl::OnFetchFinished,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+}
+
+void TileServiceImpl::OnFetchFinished(
+    BackgroundTaskFinishedCallback callback,
+    TileInfoRequestStatus status,
+    const std::unique_ptr<std::string> response_body) {
+  std::move(callback).Run(false /*reschedule*/);
 }
 
 }  // namespace upboarding

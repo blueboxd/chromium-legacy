@@ -15,6 +15,7 @@
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/notifications/notification_display_service.h"
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
+#include "chrome/browser/ui/webui/settings/chromeos/constants/routes.mojom.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/generated_resources.h"
@@ -252,8 +253,9 @@ void TetherNotificationPresenter::OnNotificationClicked(
       GetMetricValueForClickOnNotificationBody(notification_id),
       TetherNotificationPresenter::NOTIFICATION_INTERACTION_TYPE_MAX);
 
-  OpenSettingsAndRemoveNotification(chrome::kTetherSettingsSubPage,
-                                    notification_id);
+  OpenSettingsAndRemoveNotification(
+      chromeos::settings::mojom::kMobileDataNetworksSubpagePath,
+      notification_id);
 }
 
 TetherNotificationPresenter::NotificationInteractionType

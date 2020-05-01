@@ -71,11 +71,11 @@ class GattBatteryControllerTest : public testing::Test {
     mock_adapter_ =
         base::MakeRefCounted<NiceMock<device::MockBluetoothAdapter>>();
 
-    mock_device_1_ =
+    unpaired_mock_device_ =
         std::make_unique<testing::NiceMock<device::MockBluetoothDevice>>(
             nullptr /* adapter */, 0 /* bluetooth_class */, "name_1",
-            "address_1", true /* paired */, true /* connected */);
-    mock_device_2_ =
+            "address_1", false /* paired */, true /* connected */);
+    paired_mock_device_ =
         std::make_unique<testing::NiceMock<device::MockBluetoothDevice>>(
             nullptr /* adapter */, 0 /* bluetooth_class */, "name_2",
             "address_2", true /* paired */, true /* connected */);
@@ -97,6 +97,13 @@ class GattBatteryControllerTest : public testing::Test {
     DCHECK(gatt_controller_);
     gatt_controller_->DeviceConnectedStateChanged(mock_adapter_.get(), device,
                                                   is_connected);
+  }
+
+  void NotifyDevicePairedChanged(device::BluetoothDevice* device,
+                                 bool is_paired) {
+    DCHECK(gatt_controller_);
+    gatt_controller_->DevicePairedChanged(mock_adapter_.get(), device,
+                                          is_paired);
   }
 
   void NotifyDeviceAdded(device::BluetoothDevice* device) {
@@ -121,8 +128,8 @@ class GattBatteryControllerTest : public testing::Test {
 
  protected:
   scoped_refptr<NiceMock<device::MockBluetoothAdapter>> mock_adapter_;
-  std::unique_ptr<device::MockBluetoothDevice> mock_device_1_;
-  std::unique_ptr<device::MockBluetoothDevice> mock_device_2_;
+  std::unique_ptr<device::MockBluetoothDevice> unpaired_mock_device_;
+  std::unique_ptr<device::MockBluetoothDevice> paired_mock_device_;
   std::unique_ptr<FakeGattBatteryPollerFactory>
       fake_gatt_battery_poller_factory_;
   std::unique_ptr<GattBatteryController> gatt_controller_;
@@ -132,101 +139,105 @@ class GattBatteryControllerTest : public testing::Test {
 };
 
 TEST_F(GattBatteryControllerTest,
-       CreatesPollerForNewConnectedDevices_ConnectedStateChanged) {
-  // Indicate a connection to a device was made. A Poller should be created.
-  NotifyConnectedStateChanged(mock_device_1_.get(), true /* is_connected */);
-  EXPECT_TRUE(GetFakeBatteryPoller(mock_device_1_.get()));
-  EXPECT_EQ(1, pollers_created_count());
+       CreatesPollerForNewDevices_ConnectedStateChanged) {
+  // Indicate a connection to an unpaired device was made. A poller should not
+  // be created.
+  NotifyConnectedStateChanged(unpaired_mock_device_.get(),
+                              true /* is_connected */);
+  EXPECT_FALSE(GetFakeBatteryPoller(unpaired_mock_device_.get()));
+  EXPECT_EQ(0, pollers_created_count());
 
-  // Another device connected. Should create another poller.
-  NotifyConnectedStateChanged(mock_device_2_.get(), true /* is_connected */);
-  EXPECT_TRUE(GetFakeBatteryPoller(mock_device_1_.get()));
-  EXPECT_TRUE(GetFakeBatteryPoller(mock_device_2_.get()));
-  EXPECT_EQ(2, pollers_created_count());
+  // A paired device became connected. Should create a poller.
+  NotifyConnectedStateChanged(paired_mock_device_.get(),
+                              true /* is_connected */);
+  EXPECT_TRUE(GetFakeBatteryPoller(paired_mock_device_.get()));
+  EXPECT_EQ(1, pollers_created_count());
 }
 
 TEST_F(GattBatteryControllerTest,
-       CreatesPollerForNewConnectedDevices_DeviceAdded) {
-  NotifyDeviceAdded(mock_device_1_.get());
-  EXPECT_TRUE(GetFakeBatteryPoller(mock_device_1_.get()));
+       CreatesPollerForNewDevices_DevicePairedChanged) {
+  // Indicate a device is now paired. A poller should be created.
+  NotifyDevicePairedChanged(paired_mock_device_.get(), true /* is_paired */);
+  EXPECT_TRUE(GetFakeBatteryPoller(paired_mock_device_.get()));
   EXPECT_EQ(1, pollers_created_count());
+}
 
-  NotifyDeviceAdded(mock_device_2_.get());
-  EXPECT_TRUE(GetFakeBatteryPoller(mock_device_1_.get()));
-  EXPECT_TRUE(GetFakeBatteryPoller(mock_device_2_.get()));
-  EXPECT_EQ(2, pollers_created_count());
+TEST_F(GattBatteryControllerTest, CreatesPollerForNewDevices_DeviceAdded) {
+  NotifyDeviceAdded(unpaired_mock_device_.get());
+  EXPECT_FALSE(GetFakeBatteryPoller(unpaired_mock_device_.get()));
+  EXPECT_EQ(0, pollers_created_count());
+
+  NotifyDeviceAdded(paired_mock_device_.get());
+  EXPECT_TRUE(GetFakeBatteryPoller(paired_mock_device_.get()));
+  EXPECT_EQ(1, pollers_created_count());
 }
 
 TEST_F(GattBatteryControllerTest,
        DoesntCreatePollerForAlreadyConnectedDevices_ConnectedStateChanged) {
   // Simulate a device connected, should create a poller.
-  NotifyConnectedStateChanged(mock_device_1_.get(), true /* is_connected */);
-  EXPECT_TRUE(GetFakeBatteryPoller(mock_device_1_.get()));
+  NotifyConnectedStateChanged(paired_mock_device_.get(),
+                              true /* is_connected */);
+  EXPECT_TRUE(GetFakeBatteryPoller(paired_mock_device_.get()));
   EXPECT_EQ(1, pollers_created_count());
 
   // Calls to DeviceConnectedStateChanged() with a connected device doesn't
   // create new instances.
-  NotifyConnectedStateChanged(mock_device_1_.get(), true /* is_connected */);
+  NotifyConnectedStateChanged(paired_mock_device_.get(),
+                              true /* is_connected */);
   EXPECT_EQ(1, pollers_created_count());
 }
 
 TEST_F(GattBatteryControllerTest,
        DoesntCreatePollerForAlreadyConnectedDevices_DeviceAdded) {
-  NotifyConnectedStateChanged(mock_device_1_.get(), true /* is_connected */);
-  EXPECT_TRUE(GetFakeBatteryPoller(mock_device_1_.get()));
+  NotifyConnectedStateChanged(paired_mock_device_.get(),
+                              true /* is_connected */);
+  EXPECT_TRUE(GetFakeBatteryPoller(paired_mock_device_.get()));
   EXPECT_EQ(1, pollers_created_count());
 
   // Calls to DeviceAdded() with a connected device doesn't create new
   // instances.
-  NotifyDeviceAdded(mock_device_1_.get());
+  NotifyDeviceAdded(paired_mock_device_.get());
   EXPECT_EQ(1, pollers_created_count());
 }
 
 TEST_F(GattBatteryControllerTest,
        RemovesDisconnectedDevices_ConnectedStateChanged) {
-  NotifyConnectedStateChanged(mock_device_1_.get(), true /* is_connected */);
-  NotifyConnectedStateChanged(mock_device_2_.get(), true /* is_connected */);
-  EXPECT_TRUE(GetFakeBatteryPoller(mock_device_1_.get()));
-  EXPECT_TRUE(GetFakeBatteryPoller(mock_device_2_.get()));
-  EXPECT_EQ(2, pollers_created_count());
+  NotifyConnectedStateChanged(paired_mock_device_.get(),
+                              true /* is_connected */);
+  EXPECT_TRUE(GetFakeBatteryPoller(paired_mock_device_.get()));
 
-  // Indicate a device is no longer connected.
-  NotifyConnectedStateChanged(mock_device_1_.get(), false /* is_connected */);
+  // Indicate a device is no longer connected. Should stop tracking that device.
+  NotifyConnectedStateChanged(paired_mock_device_.get(),
+                              false /* is_connected */);
+  EXPECT_FALSE(GetFakeBatteryPoller(paired_mock_device_.get()));
+}
 
-  // Should stop tracking just that device.
-  EXPECT_FALSE(GetFakeBatteryPoller(mock_device_1_.get()));
-  EXPECT_TRUE(GetFakeBatteryPoller(mock_device_2_.get()));
+TEST_F(GattBatteryControllerTest,
+       RemovesDisconnectedDevices_DevicePairedChanged) {
+  NotifyConnectedStateChanged(paired_mock_device_.get(),
+                              true /* is_connected */);
+  EXPECT_TRUE(GetFakeBatteryPoller(paired_mock_device_.get()));
 
-  // Disconnect the second device.
-  NotifyConnectedStateChanged(mock_device_2_.get(), false /* is_connected */);
-  EXPECT_FALSE(GetFakeBatteryPoller(mock_device_2_.get()));
-  EXPECT_EQ(2, pollers_created_count());
+  // Indicate a device is no longer paired. Should stop tracking that device.
+  NotifyDevicePairedChanged(paired_mock_device_.get(), false /* is_paired */);
+  EXPECT_FALSE(GetFakeBatteryPoller(paired_mock_device_.get()));
 }
 
 TEST_F(GattBatteryControllerTest, RemovesDisconnectedDevices_DeviceRemoved) {
-  NotifyConnectedStateChanged(mock_device_1_.get(), true /* is_connected */);
-  NotifyConnectedStateChanged(mock_device_2_.get(), true /* is_connected */);
-  EXPECT_TRUE(GetFakeBatteryPoller(mock_device_1_.get()));
-  EXPECT_TRUE(GetFakeBatteryPoller(mock_device_2_.get()));
-  EXPECT_EQ(2, pollers_created_count());
+  NotifyConnectedStateChanged(paired_mock_device_.get(),
+                              true /* is_connected */);
+  EXPECT_TRUE(GetFakeBatteryPoller(paired_mock_device_.get()));
 
-  // Indicate a device is no longer connected.
-  NotifyDeviceRemoved(mock_device_1_.get());
-
-  // Should stop tracking just that device.
-  EXPECT_FALSE(GetFakeBatteryPoller(mock_device_1_.get()));
-  EXPECT_TRUE(GetFakeBatteryPoller(mock_device_2_.get()));
-
-  // Disconnect the second device.
-  NotifyDeviceRemoved(mock_device_2_.get());
-  EXPECT_FALSE(GetFakeBatteryPoller(mock_device_2_.get()));
-  EXPECT_EQ(2, pollers_created_count());
+  // Indicate a device is no longer present. Should stop tracking that device.
+  NotifyDeviceRemoved(paired_mock_device_.get());
+  EXPECT_FALSE(GetFakeBatteryPoller(paired_mock_device_.get()));
 }
 
 TEST_F(GattBatteryControllerTest,
        DoesntDoAnythingRemovingUntrackedDevices_ConnectedStateChanged) {
   // Indicate a device is no longer connected.
-  NotifyConnectedStateChanged(mock_device_1_.get(), false /* is_connected */);
+  NotifyConnectedStateChanged(paired_mock_device_.get(),
+                              false /* is_connected */);
 
   // Should not create any poller nor crash.
   EXPECT_EQ(0, pollers_created_count());
@@ -235,7 +246,7 @@ TEST_F(GattBatteryControllerTest,
 TEST_F(GattBatteryControllerTest,
        DoesntDoAnythingRemovingUntrackedDevices_DeviceRemoved) {
   // Indicate a device is no longer connected.
-  NotifyDeviceRemoved(mock_device_1_.get());
+  NotifyDeviceRemoved(paired_mock_device_.get());
 
   // Should not create any poller nor crash.
   EXPECT_EQ(0, pollers_created_count());
@@ -244,33 +255,36 @@ TEST_F(GattBatteryControllerTest,
 TEST_F(GattBatteryControllerTest,
        CreatesNewPollerAfterDeviceReconnects_ConnectedStateChanged) {
   // Simulate a device connected.
-  NotifyConnectedStateChanged(mock_device_1_.get(), true /* is_connected */);
-  EXPECT_TRUE(GetFakeBatteryPoller(mock_device_1_.get()));
+  NotifyConnectedStateChanged(paired_mock_device_.get(),
+                              true /* is_connected */);
+  EXPECT_TRUE(GetFakeBatteryPoller(paired_mock_device_.get()));
   EXPECT_EQ(1, pollers_created_count());
 
   // Indicate the device is no longer connected.
-  NotifyConnectedStateChanged(mock_device_1_.get(), false /* is_connected */);
-  EXPECT_FALSE(GetFakeBatteryPoller(mock_device_1_.get()));
+  NotifyConnectedStateChanged(paired_mock_device_.get(),
+                              false /* is_connected */);
+  EXPECT_FALSE(GetFakeBatteryPoller(paired_mock_device_.get()));
 
   // Reconnect the device.
-  NotifyConnectedStateChanged(mock_device_1_.get(), true /* is_connected */);
-  EXPECT_TRUE(GetFakeBatteryPoller(mock_device_1_.get()));
+  NotifyConnectedStateChanged(paired_mock_device_.get(),
+                              true /* is_connected */);
+  EXPECT_TRUE(GetFakeBatteryPoller(paired_mock_device_.get()));
   EXPECT_EQ(2, pollers_created_count());
 }
 
 TEST_F(GattBatteryControllerTest,
        CreatesNewPollerAfterDeviceReconnects_DeviceAdded_DeviceRemoved) {
-  NotifyDeviceAdded(mock_device_1_.get());
-  EXPECT_TRUE(GetFakeBatteryPoller(mock_device_1_.get()));
+  NotifyDeviceAdded(paired_mock_device_.get());
+  EXPECT_TRUE(GetFakeBatteryPoller(paired_mock_device_.get()));
   EXPECT_EQ(1, pollers_created_count());
 
   // Indicate the device is no longer connected.
-  NotifyDeviceRemoved(mock_device_1_.get());
-  EXPECT_FALSE(GetFakeBatteryPoller(mock_device_1_.get()));
+  NotifyDeviceRemoved(paired_mock_device_.get());
+  EXPECT_FALSE(GetFakeBatteryPoller(paired_mock_device_.get()));
 
   // Reconnect the device.
-  NotifyDeviceAdded(mock_device_1_.get());
-  EXPECT_TRUE(GetFakeBatteryPoller(mock_device_1_.get()));
+  NotifyDeviceAdded(paired_mock_device_.get());
+  EXPECT_TRUE(GetFakeBatteryPoller(paired_mock_device_.get()));
   EXPECT_EQ(2, pollers_created_count());
 }
 

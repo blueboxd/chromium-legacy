@@ -107,9 +107,11 @@ class CORE_EXPORT HTMLElement : public Element {
   bool HasDirectionAuto() const;
   TextDirection DirectionalityIfhasDirAutoAttribute(bool& is_auto) const;
 
+  virtual bool IsHTMLBodyElement() const { return false; }
+  virtual bool IsHTMLFrameSetElement() const { return false; }
+  virtual bool IsHTMLPortalElement() const { return false; }
   virtual bool IsHTMLUnknownElement() const { return false; }
   virtual bool IsPluginElement() const { return false; }
-  virtual bool IsHTMLPortalElement() const { return false; }
 
   // https://html.spec.whatwg.org/C/#category-label
   virtual bool IsLabelable() const;

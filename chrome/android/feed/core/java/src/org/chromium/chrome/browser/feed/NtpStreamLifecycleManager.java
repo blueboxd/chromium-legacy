@@ -24,7 +24,7 @@ import org.chromium.content_public.browser.NavigationEntry;
 /**
  * Manages the lifecycle of a {@link Stream} associated with a Tab in an Activity.
  */
-final class NtpStreamLifecycleManager extends StreamLifecycleManager {
+public final class NtpStreamLifecycleManager extends StreamLifecycleManager {
     /** Key for the Stream instance state that may be stored in a navigation entry. */
     private static final String STREAM_SAVED_INSTANCE_STATE_KEY = "StreamSavedInstanceState";
 
@@ -42,7 +42,7 @@ final class NtpStreamLifecycleManager extends StreamLifecycleManager {
      * @param activity The {@link Activity} that the {@link Stream} is attached to.
      * @param tab The {@link Tab} that the {@link Stream} is attached to.
      */
-    NtpStreamLifecycleManager(Stream stream, Activity activity, Tab tab) {
+    public NtpStreamLifecycleManager(Stream stream, Activity activity, Tab tab) {
         super(stream, activity);
 
         // Set mTab before 'start' since 'restoreInstanceState' will use it.
@@ -50,7 +50,7 @@ final class NtpStreamLifecycleManager extends StreamLifecycleManager {
         start();
 
         // We don't need to handle mStream#onDestroy here since this class will be destroyed when
-        // the associated FeedNewTabPage is destroyed.
+        // the associated NewTabPage is destroyed.
         mTabObserver = new EmptyTabObserver() {
             @Override
             public void onInteractabilityChanged(Tab tab, boolean isInteractable) {

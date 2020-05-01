@@ -61,7 +61,7 @@ public class HomepagePromoVariationManager {
         if (variation.equals(Variations.SLIM)) {
             return LayoutStyle.SLIM;
         }
-        // TODO(wenyufu): change the default style to compact after making adjustment to large
-        return LayoutStyle.LARGE;
+
+        return LayoutStyle.COMPACT;
     }
 }

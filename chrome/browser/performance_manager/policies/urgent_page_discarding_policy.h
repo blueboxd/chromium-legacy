@@ -13,6 +13,7 @@
 #include "base/sequence_checker.h"
 #include "components/performance_manager/public/decorators/page_live_state_decorator.h"
 #include "components/performance_manager/public/graph/graph.h"
+#include "components/performance_manager/public/graph/node_data_describer.h"
 #include "components/performance_manager/public/graph/page_node.h"
 
 namespace performance_manager {
@@ -26,7 +27,8 @@ namespace policies {
 // Urgently discard a tab when receiving a memory pressure signal. The discarded
 // tab will be the eligible tab with the largest resident set.
 class UrgentPageDiscardingPolicy : public GraphOwned,
-                                   public PageNode::ObserverDefaultImpl {
+                                   public PageNode::ObserverDefaultImpl,
+                                   public NodeDataDescriberDefaultImpl {
  public:
   UrgentPageDiscardingPolicy();
   ~UrgentPageDiscardingPolicy() override;
@@ -75,6 +77,9 @@ class UrgentPageDiscardingPolicy : public GraphOwned,
 
   // Callback called when a discard attempt has completed.
   void PostDiscardAttemptCallback(bool success);
+
+  // NodeDataDescriber implementation:
+  base::Value DescribePageNodeData(const PageNode* node) const override;
 
   std::unique_ptr<base::MemoryPressureListener> memory_pressure_listener_;
   Graph* graph_ = nullptr;

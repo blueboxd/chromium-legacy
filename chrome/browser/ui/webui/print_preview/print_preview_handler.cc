@@ -85,6 +85,7 @@
 #include "chrome/browser/device_identity/device_oauth2_token_service.h"
 #include "chrome/browser/device_identity/device_oauth2_token_service_factory.h"
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
+#include "chrome/browser/ui/webui/settings/chromeos/constants/routes.mojom.h"
 #include "chrome/browser/ui/webui/signin/inline_login_handler_dialog_chromeos.h"
 #include "chromeos/printing/printer_configuration.h"
 #include "components/signin/public/identity_manager/scope_set.h"
@@ -1014,7 +1015,7 @@ void PrintPreviewHandler::HandleSignin(const base::ListValue* args) {
       chromeos::InlineLoginHandlerDialogChromeOS::Show();
     } else {
       chrome::SettingsWindowManager::GetInstance()->ShowOSSettings(
-          profile, chrome::kAccountManagerSubPage);
+          profile, chromeos::settings::mojom::kMyAccountsSubpagePath);
     }
     return;
   }
@@ -1084,7 +1085,8 @@ void PrintPreviewHandler::HandleOpenPrinterSettings(
     const base::ListValue* args) {
 #if defined(OS_CHROMEOS)
   chrome::SettingsWindowManager::GetInstance()->ShowOSSettings(
-      Profile::FromWebUI(web_ui()), chrome::kNativePrintingSettingsSubPage);
+      Profile::FromWebUI(web_ui()),
+      chromeos::settings::mojom::kPrintingDetailsSubpagePath);
 #else
   GURL url(chrome::GetSettingsUrl(chrome::kPrintingSettingsSubPage));
   content::OpenURLParams params(url, content::Referrer(),

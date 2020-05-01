@@ -220,12 +220,8 @@ void AmbientController::RefreshImage() {
 }
 
 void AmbientController::ScheduleRefreshImage() {
-  base::TimeDelta refresh_interval;
-  if (!ambient_backend_model_.ShouldFetchImmediately()) {
-    // TODO(b/139953713): Change to a correct time interval.
-    refresh_interval = base::TimeDelta::FromSeconds(5);
-  }
-
+  const base::TimeDelta refresh_interval =
+      ambient_backend_model_.GetPhotoRefreshInterval();
   refresh_timer_.Start(FROM_HERE, refresh_interval,
                        base::BindOnce(&AmbientController::RefreshImage,
                                       weak_factory_.GetWeakPtr()));

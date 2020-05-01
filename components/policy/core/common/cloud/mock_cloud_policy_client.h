@@ -104,23 +104,26 @@ class MockCloudPolicyClient : public CloudPolicyClient {
   }
   MOCK_METHOD2(UploadRealtimeReport_, void(base::Value&, StatusCallback&));
 
-  MOCK_METHOD4(ClientCertProvisioningStartCsr,
+  MOCK_METHOD5(ClientCertProvisioningStartCsr,
                void(const std::string& cert_scope,
                     const std::string& cert_profile_id,
+                    const std::string& cert_profile_version,
                     const std::string& public_key,
                     ClientCertProvisioningStartCsrCallback callback));
 
-  MOCK_METHOD6(ClientCertProvisioningFinishCsr,
+  MOCK_METHOD7(ClientCertProvisioningFinishCsr,
                void(const std::string& cert_scope,
                     const std::string& cert_profile_id,
+                    const std::string& cert_profile_version,
                     const std::string& public_key,
                     const std::string& va_challenge_response,
                     const std::string& signature,
                     ClientCertProvisioningFinishCsrCallback callback));
 
-  MOCK_METHOD4(ClientCertProvisioningDownloadCert,
+  MOCK_METHOD5(ClientCertProvisioningDownloadCert,
                void(const std::string& cert_scope,
                     const std::string& cert_profile_id,
+                    const std::string& cert_profile_version,
                     const std::string& public_key,
                     ClientCertProvisioningDownloadCertCallback callback));
 

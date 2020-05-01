@@ -34,6 +34,7 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.DisableIf;
 import org.chromium.components.external_intents.ExternalNavigationHandler.OverrideUrlLoadingResult;
+import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.test.NativeLibraryTestRule;
 import org.chromium.ui.base.PageTransition;
@@ -837,8 +838,8 @@ public class ExternalNavigationHandlerTest {
         Assert.assertEquals(IMDB_APP_INTENT_FOR_TOM_HANKS, invokedIntent.getData().toString());
         Assert.assertNull("The invoked intent should not have browser_fallback_url\n",
                 invokedIntent.getStringExtra(ExternalNavigationHandler.EXTRA_BROWSER_FALLBACK_URL));
-        Assert.assertNull(mDelegate.getNewUrlAfterClobbering());
-        Assert.assertNull(mDelegate.getReferrerUrlForClobbering());
+        Assert.assertNull(mUrlHandler.mNewUrlAfterClobbering);
+        Assert.assertNull(mUrlHandler.mReferrerUrlForClobbering);
     }
 
     @Test
@@ -854,8 +855,8 @@ public class ExternalNavigationHandlerTest {
                 .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_ASYNC_ACTION,
                         START_INCOGNITO | START_OTHER_ACTIVITY);
 
-        Assert.assertNull(mDelegate.getNewUrlAfterClobbering());
-        Assert.assertNull(mDelegate.getReferrerUrlForClobbering());
+        Assert.assertNull(mUrlHandler.mNewUrlAfterClobbering);
+        Assert.assertNull(mUrlHandler.mReferrerUrlForClobbering);
     }
 
     @Test
@@ -884,9 +885,8 @@ public class ExternalNavigationHandlerTest {
                 .withReferrer(SEARCH_RESULT_URL_FOR_TOM_HANKS)
                 .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_CLOBBERING_TAB, IGNORE);
         Assert.assertNull(mDelegate.startActivityIntent);
-        Assert.assertEquals(IMDB_WEBPAGE_FOR_TOM_HANKS, mDelegate.getNewUrlAfterClobbering());
-        Assert.assertEquals(
-                SEARCH_RESULT_URL_FOR_TOM_HANKS, mDelegate.getReferrerUrlForClobbering());
+        Assert.assertEquals(IMDB_WEBPAGE_FOR_TOM_HANKS, mUrlHandler.mNewUrlAfterClobbering);
+        Assert.assertEquals(SEARCH_RESULT_URL_FOR_TOM_HANKS, mUrlHandler.mReferrerUrlForClobbering);
     }
 
     @Test
@@ -902,9 +902,8 @@ public class ExternalNavigationHandlerTest {
                 .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_CLOBBERING_TAB, IGNORE);
 
         Assert.assertNull(mDelegate.startActivityIntent);
-        Assert.assertEquals(IMDB_WEBPAGE_FOR_TOM_HANKS, mDelegate.getNewUrlAfterClobbering());
-        Assert.assertEquals(
-                SEARCH_RESULT_URL_FOR_TOM_HANKS, mDelegate.getReferrerUrlForClobbering());
+        Assert.assertEquals(IMDB_WEBPAGE_FOR_TOM_HANKS, mUrlHandler.mNewUrlAfterClobbering);
+        Assert.assertEquals(SEARCH_RESULT_URL_FOR_TOM_HANKS, mUrlHandler.mReferrerUrlForClobbering);
     }
 
     @Test
@@ -979,9 +978,8 @@ public class ExternalNavigationHandlerTest {
                 .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_CLOBBERING_TAB, IGNORE);
 
         Assert.assertNull(mDelegate.startActivityIntent);
-        Assert.assertEquals(IMDB_WEBPAGE_FOR_TOM_HANKS, mDelegate.getNewUrlAfterClobbering());
-        Assert.assertEquals(
-                SEARCH_RESULT_URL_FOR_TOM_HANKS, mDelegate.getReferrerUrlForClobbering());
+        Assert.assertEquals(IMDB_WEBPAGE_FOR_TOM_HANKS, mUrlHandler.mNewUrlAfterClobbering);
+        Assert.assertEquals(SEARCH_RESULT_URL_FOR_TOM_HANKS, mUrlHandler.mReferrerUrlForClobbering);
     }
 
     @Test
@@ -996,9 +994,8 @@ public class ExternalNavigationHandlerTest {
                 .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_CLOBBERING_TAB, IGNORE);
 
         Assert.assertNull(mDelegate.startActivityIntent);
-        Assert.assertEquals(IMDB_WEBPAGE_FOR_TOM_HANKS, mDelegate.getNewUrlAfterClobbering());
-        Assert.assertEquals(
-                SEARCH_RESULT_URL_FOR_TOM_HANKS, mDelegate.getReferrerUrlForClobbering());
+        Assert.assertEquals(IMDB_WEBPAGE_FOR_TOM_HANKS, mUrlHandler.mNewUrlAfterClobbering);
+        Assert.assertEquals(SEARCH_RESULT_URL_FOR_TOM_HANKS, mUrlHandler.mReferrerUrlForClobbering);
     }
 
     @Test
@@ -1016,8 +1013,8 @@ public class ExternalNavigationHandlerTest {
 
         Intent invokedIntent = mDelegate.startActivityIntent;
         Assert.assertTrue(invokedIntent.getData().toString().startsWith("market://"));
-        Assert.assertEquals(null, mDelegate.getNewUrlAfterClobbering());
-        Assert.assertEquals(null, mDelegate.getReferrerUrlForClobbering());
+        Assert.assertEquals(null, mUrlHandler.mNewUrlAfterClobbering);
+        Assert.assertEquals(null, mUrlHandler.mReferrerUrlForClobbering);
     }
 
     @Test
@@ -1713,6 +1710,8 @@ public class ExternalNavigationHandlerTest {
         public String mLastCommittedUrl;
         public boolean mIsSerpReferrer;
         public boolean mShouldRequestFileAccess;
+        public String mNewUrlAfterClobbering;
+        public String mReferrerUrlForClobbering;
 
         public ExternalNavigationHandlerForTesting(ExternalNavigationDelegate delegate) {
             super(delegate);
@@ -1741,6 +1740,13 @@ public class ExternalNavigationHandlerTest {
         @Override
         protected boolean shouldRequestFileAccess(String url) {
             return mShouldRequestFileAccess;
+        }
+
+        @Override
+        protected @OverrideUrlLoadingResult int clobberCurrentTab(String url, String referrerUrl) {
+            mNewUrlAfterClobbering = url;
+            mReferrerUrlForClobbering = referrerUrl;
+            return OverrideUrlLoadingResult.OVERRIDE_WITH_CLOBBERING_TAB;
         }
     };
 
@@ -1858,11 +1864,7 @@ public class ExternalNavigationHandlerTest {
         }
 
         @Override
-        public @OverrideUrlLoadingResult int clobberCurrentTab(String url, String referrerUrl) {
-            mNewUrlAfterClobbering = url;
-            mReferrerUrlForClobbering = referrerUrl;
-            return OverrideUrlLoadingResult.OVERRIDE_WITH_CLOBBERING_TAB;
-        }
+        public void loadUrlIfPossible(LoadUrlParams loadUrlParams) {}
 
         @Override
         public void maybeSetWindowId(Intent intent) {}
@@ -1968,14 +1970,6 @@ public class ExternalNavigationHandlerTest {
             mCanResolveActivityForMarket = value;
         }
 
-        public String getNewUrlAfterClobbering() {
-            return mNewUrlAfterClobbering;
-        }
-
-        public String getReferrerUrlForClobbering() {
-            return mReferrerUrlForClobbering;
-        }
-
         public void setIsChromeAppInForeground(boolean value) {
             mIsChromeAppInForeground = value;
         }
@@ -2027,8 +2021,6 @@ public class ExternalNavigationHandlerTest {
         private ArrayList<IntentActivity> mIntentActivities = new ArrayList<IntentActivity>();
         private boolean mCanResolveActivityForExternalSchemes = true;
         private boolean mCanResolveActivityForMarket = true;
-        private String mNewUrlAfterClobbering;
-        private String mReferrerUrlForClobbering;
         private boolean mCanHandleWithInstantApp;
         private boolean mHandleWithAutofillAssistant;
         public boolean mCalledWithProxy;

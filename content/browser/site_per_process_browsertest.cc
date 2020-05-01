@@ -4753,23 +4753,21 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, OriginUpdatesReachProxies) {
   // JavaScript.  Instead, try to navigate the second frame from the first
   // frame.  This should fail with a console error message, which should
   // contain the second frame's updated origin (see blink::Frame::canNavigate).
-  std::unique_ptr<ConsoleObserverDelegate> console_delegate(
-      new ConsoleObserverDelegate(
-          shell()->web_contents(),
-          "Unsafe JavaScript attempt to initiate navigation*"));
-  shell()->web_contents()->SetDelegate(console_delegate.get());
+  WebContentsConsoleObserver console_observer(shell()->web_contents());
+  console_observer.SetPattern(
+      "Unsafe JavaScript attempt to initiate navigation*");
 
   // frames[1] can't be used due to a bug where RemoteFrames are created out of
   // order (https://crbug.com/478792).  Instead, target second frame by name.
   EXPECT_TRUE(ExecuteScript(root->child_at(0),
                             "try { parent.frames['frame2'].location.href = "
                             "'data:text/html,foo'; } catch (e) {}"));
-  console_delegate->Wait();
+  console_observer.Wait();
 
   std::string frame_origin = root->child_at(1)->current_origin().Serialize();
   EXPECT_EQ(frame_origin + "/", frame_url.GetOrigin().spec());
-  EXPECT_TRUE(
-      base::MatchPattern(console_delegate->message(), "*" + frame_origin + "*"))
+  EXPECT_TRUE(base::MatchPattern(console_observer.GetMessageAt(0u),
+                                 "*" + frame_origin + "*"))
       << "Error message does not contain the frame's latest origin ("
       << frame_origin << ")";
 }
@@ -5290,9 +5288,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, NavigatePopupToIllegalURL) {
   EXPECT_NE(popup->web_contents()->GetSiteInstance(),
             shell()->web_contents()->GetSiteInstance());
 
-  ConsoleObserverDelegate console_delegate(
-      web_contents(), "Not allowed to load local resource:*");
-  web_contents()->SetDelegate(&console_delegate);
+  WebContentsConsoleObserver console_observer(web_contents());
+  console_observer.SetPattern("Not allowed to load local resource:*");
 
   // From the opener, navigate the popup to a file:/// URL.  This should result
   // in a console error and stay on the old page.
@@ -5300,7 +5297,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, NavigatePopupToIllegalURL) {
   NavigateNamedFrame(shell(), file_url, "foo");
   EXPECT_TRUE(WaitForLoadStop(popup->web_contents()));
   EXPECT_EQ(popup_url, popup->web_contents()->GetLastCommittedURL());
-  EXPECT_TRUE(base::MatchPattern(console_delegate.message(),
+  EXPECT_TRUE(base::MatchPattern(console_observer.GetMessageAt(0u),
                                  "Not allowed to load local resource: file:*"));
 
   // Now try the same test with a chrome:// URL.
@@ -5310,7 +5307,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, NavigatePopupToIllegalURL) {
   EXPECT_TRUE(WaitForLoadStop(popup->web_contents()));
   EXPECT_EQ(popup_url, popup->web_contents()->GetLastCommittedURL());
   EXPECT_TRUE(
-      base::MatchPattern(console_delegate.message(),
+      base::MatchPattern(console_observer.GetMessageAt(1u),
                          std::string("Not allowed to load local resource: ") +
                              kChromeUIScheme + ":*"));
 }
@@ -14354,15 +14351,14 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   GURL original_frame_url(child->current_frame_host()->GetLastCommittedURL());
   EXPECT_EQ("b.com", original_frame_url.host());
 
-  ConsoleObserverDelegate console_delegate(
-      web_contents(), "Not allowed to load local resource: file:*");
-  web_contents()->SetDelegate(&console_delegate);
+  WebContentsConsoleObserver console_observer(web_contents());
+  console_observer.SetPattern("Not allowed to load local resource: file:*");
 
   GURL file_url("file:///");
   EXPECT_TRUE(
       ExecJs(web_contents(),
              JsReplace("document.querySelector('iframe').src = $1", file_url)));
-  console_delegate.Wait();
+  console_observer.Wait();
 
   // The iframe should've stayed at the original URL.
   EXPECT_EQ(original_frame_url,

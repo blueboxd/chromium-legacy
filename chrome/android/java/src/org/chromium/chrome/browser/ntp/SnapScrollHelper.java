@@ -13,7 +13,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ntp.NewTabPageView.NewTabPageManager;
 
 /**
  * This class handles snap scroll for the search box on a {@link NewTabPage}.
@@ -37,8 +36,7 @@ public class SnapScrollHelper {
      *                the {@link NewTabPage}.
      * @param newTabPageLayout The {@link NewTabPageLayout} associated with the {@link NewTabPage}.
      */
-    public SnapScrollHelper(
-            NewTabPageView.NewTabPageManager manager, NewTabPageLayout newTabPageLayout) {
+    public SnapScrollHelper(NewTabPageManager manager, NewTabPageLayout newTabPageLayout) {
         mManager = manager;
         mNewTabPageLayout = newTabPageLayout;
         mSnapScrollRunnable = new SnapScrollRunnable();

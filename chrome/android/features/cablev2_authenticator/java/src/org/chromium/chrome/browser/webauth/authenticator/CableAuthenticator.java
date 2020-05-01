@@ -109,8 +109,14 @@ class CableAuthenticator {
 
         List<PublicKeyCredentialParameters> parameters = new ArrayList<>();
         for (int i = 0; i < algorithms.length; i++) {
-            parameters.add(new PublicKeyCredentialParameters(
-                    PublicKeyCredentialType.PUBLIC_KEY.toString(), algorithms[i]));
+            try {
+                parameters.add(new PublicKeyCredentialParameters(
+                        PublicKeyCredentialType.PUBLIC_KEY.toString(), algorithms[i]));
+            } catch (IllegalArgumentException e) {
+                // The FIDO API will throw IllegalArgumentException for unrecognised algorithms.
+                // Since an authenticator ignores unknown algorithms, this exception just needs to
+                // be caught and ignored.
+            }
         }
         // The GmsCore FIDO2 API does not actually support resident keys yet.
         AuthenticatorSelectionCriteria selection = new AuthenticatorSelectionCriteria.Builder()

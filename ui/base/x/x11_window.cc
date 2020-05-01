@@ -1404,8 +1404,6 @@ void XWindow::DispatchResize() {
 }
 
 void XWindow::DelayedResize(const gfx::Rect& bounds_in_pixels) {
-  base::WeakPtr<XWindow> alive(resize_weak_factory_.GetWeakPtr());
-
   if (configure_counter_value_is_extended_ &&
       (current_counter_value_ % 2) == 0) {
     // Increase the |extended_update_counter_|, so the compositor will know we
@@ -1415,16 +1413,13 @@ void XWindow::DelayedResize(const gfx::Rect& bounds_in_pixels) {
     SyncSetCounter(xdisplay_, extended_update_counter_,
                    ++current_counter_value_);
   }
-  NotifyBoundsChanged(bounds_in_pixels);
-
-  // Bounds change propagation above may spin a window move loop, which might
-  // end up closing and destroying this instance (e.g: when a chrome window is
-  // snapped into a tab strip). So we must handle this possible scenario before
-  // trying to access any class variable/function. See crbug.com/1068755.
-  if (!alive)
-    return;
 
   CancelResize();
+  NotifyBoundsChanged(bounds_in_pixels);
+
+  // No more member accesses here: bounds change propagation may have deleted
+  // |this| (e.g. when a chrome window is snapped into a tab strip. Further
+  // details at crbug.com/1068755).
 }
 
 void XWindow::CancelResize() {

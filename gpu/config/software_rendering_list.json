@@ -618,41 +618,6 @@
       ]
     },
     {
-      "id": 88,
-      "description": "Accelerated video decode on AMD driver 13.152.1.8000 is incompatible with the GPU sandbox",
-      "cr_bugs": [298968],
-      "os": {
-        "type": "win"
-      },
-      "vendor_id": "0x1002",
-      "driver_version": {
-        "comment": "INF_version: 13.152.1.8000; date: 10/08/2013",
-        "op": "=",
-        "value": "8.17.10.1230"
-      },
-      "features": [
-        "accelerated_video_decode"
-      ]
-    },
-    {
-      "id": 89,
-      "description": "Accelerated video decode interferes with GPU sandbox on certain AMD drivers",
-      "cr_bugs": [298968],
-      "os": {
-        "type": "win"
-      },
-      "vendor_id": "0x1002",
-      "driver_version": {
-        "comment": "INF_version: 8.810.4.5000, 8.970.100.1100; date: 4/7/2011, 04/29/2013",
-        "op": "between",
-        "value": "8.17.10.1060",
-        "value2": "8.17.10.1129"
-      },
-      "features": [
-        "accelerated_video_decode"
-      ]
-    },
-    {
       "id": 90,
       "description": "Accelerated video decode interferes with GPU sandbox on certain NVIDIA drivers",
       "cr_bugs": [298968],
@@ -1752,6 +1717,23 @@
       "driver_version": {
         "op": "=",
         "value": "10.18.10.3958"
+      },
+      "features": [
+        "accelerated_video_decode"
+      ]
+    },
+    {
+      "id": 166,
+      "description": "8.17.10.* AMD drivers are buggy",
+      "driver_update_url": "https://www.amd.com/en/support/apu/amd-series-processors/amd-a8-series-apu-for-laptops/a8-5550m-radeon-hd-8550g",
+      "cr_bugs": [298968, 1069262],
+      "os": {
+        "type": "win"
+      },
+      "vendor_id": "0x1002",
+      "driver_version": {
+        "op": "=",
+        "value": "8.17.10"
       },
       "features": [
         "accelerated_video_decode"

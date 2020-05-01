@@ -26,7 +26,8 @@ public class FragmentWindowAndroid extends IntentWindowAndroid {
     private BrowserFragmentImpl mFragment;
     private ModalDialogManager mModalDialogManager;
 
-    // Just create one ImmutableWeakReference object to avoid gc churn.
+    // This WeakReference is purely to avoid gc churn of creating a new WeakReference in
+    // every getActivity call. It is not needed for correctness.
     private ImmutableWeakReference<Activity> mActivityWeakRefHolder;
 
     FragmentWindowAndroid(Context context, BrowserFragmentImpl fragment) {
@@ -50,7 +51,8 @@ public class FragmentWindowAndroid extends IntentWindowAndroid {
 
     @Override
     public final WeakReference<Activity> getActivity() {
-        if (mActivityWeakRefHolder == null) {
+        if (mActivityWeakRefHolder == null
+                || mActivityWeakRefHolder.get() != mFragment.getActivity()) {
             mActivityWeakRefHolder = new ImmutableWeakReference<>(mFragment.getActivity());
         }
         return mActivityWeakRefHolder;

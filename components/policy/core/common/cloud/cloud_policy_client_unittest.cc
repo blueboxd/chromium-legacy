@@ -1932,6 +1932,7 @@ void CloudPolicyClientCertProvisioningStartCsrTest::RunTest(
         callback_observer) {
   const std::string cert_scope = "fake_cert_scope_1";
   const std::string cert_profile_id = "fake_cert_profile_id_1";
+  const std::string cert_profile_version = "fake_cert_profile_version_1";
   const std::string public_key = "fake_public_key_1";
 
   em::DeviceManagementRequest expected_request;
@@ -1940,6 +1941,7 @@ void CloudPolicyClientCertProvisioningStartCsrTest::RunTest(
         expected_request.mutable_client_certificate_provisioning_request();
     inner_request->set_certificate_scope(cert_scope);
     inner_request->set_cert_profile_id(cert_profile_id);
+    inner_request->set_policy_version(cert_profile_version);
     inner_request->set_public_key(public_key);
     // Sets the request type, no actual data is required.
     inner_request->mutable_start_csr_request();
@@ -1953,7 +1955,7 @@ void CloudPolicyClientCertProvisioningStartCsrTest::RunTest(
                       service_.StartJobOKAsync(fake_response)));
 
   client_->ClientCertProvisioningStartCsr(
-      cert_scope, cert_profile_id, public_key,
+      cert_scope, cert_profile_id, cert_profile_version, public_key,
       base::BindOnce(
           &MockClientCertProvisioningStartCsrCallbackObserver::Callback,
           base::Unretained(&callback_observer)));
@@ -2079,6 +2081,7 @@ void CloudPolicyClientCertProvisioningFinishCsrTest::RunTest(
         callback_observer) {
   const std::string cert_scope = "fake_cert_scope_1";
   const std::string cert_profile_id = "fake_cert_profile_id_1";
+  const std::string cert_profile_version = "fake_cert_profile_version_1";
   const std::string public_key = "fake_public_key_1";
   const std::string va_challenge_response = "fake_va_challenge_response_1";
   const std::string signature = "fake_signature_1";
@@ -2089,6 +2092,7 @@ void CloudPolicyClientCertProvisioningFinishCsrTest::RunTest(
         expected_request.mutable_client_certificate_provisioning_request();
     inner_request->set_certificate_scope(cert_scope);
     inner_request->set_cert_profile_id(cert_profile_id);
+    inner_request->set_policy_version(cert_profile_version);
     inner_request->set_public_key(public_key);
 
     em::FinishCsrRequest* finish_csr_request =
@@ -2105,7 +2109,8 @@ void CloudPolicyClientCertProvisioningFinishCsrTest::RunTest(
                       service_.StartJobOKAsync(fake_response)));
 
   client_->ClientCertProvisioningFinishCsr(
-      cert_scope, cert_profile_id, public_key, va_challenge_response, signature,
+      cert_scope, cert_profile_id, cert_profile_version, public_key,
+      va_challenge_response, signature,
       base::BindOnce(
           &MockClientCertProvisioningFinishCsrCallbackObserver::Callback,
           base::Unretained(&callback_observer)));
@@ -2191,6 +2196,7 @@ void CloudPolicyClientCertProvisioningDownloadCertTest::RunTest(
         callback_observer) {
   const std::string cert_scope = "fake_cert_scope_1";
   const std::string cert_profile_id = "fake_cert_profile_id_1";
+  const std::string cert_profile_version = "fake_cert_profile_version_1";
   const std::string public_key = "fake_public_key_1";
 
   em::DeviceManagementRequest expected_request;
@@ -2199,6 +2205,7 @@ void CloudPolicyClientCertProvisioningDownloadCertTest::RunTest(
         expected_request.mutable_client_certificate_provisioning_request();
     inner_request->set_certificate_scope(cert_scope);
     inner_request->set_cert_profile_id(cert_profile_id);
+    inner_request->set_policy_version(cert_profile_version);
     inner_request->set_public_key(public_key);
     // Sets the request type, no actual data is required.
     inner_request->mutable_download_cert_request();
@@ -2212,7 +2219,7 @@ void CloudPolicyClientCertProvisioningDownloadCertTest::RunTest(
                       service_.StartJobOKAsync(fake_response)));
 
   client_->ClientCertProvisioningDownloadCert(
-      cert_scope, cert_profile_id, public_key,
+      cert_scope, cert_profile_id, cert_profile_version, public_key,
       base::BindOnce(
           &MockClientCertProvisioningDownloadCertCallbackObserver::Callback,
           base::Unretained(&callback_observer)));

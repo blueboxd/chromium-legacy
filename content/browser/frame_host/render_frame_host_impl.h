@@ -1531,6 +1531,16 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   void ReportNoBinderForInterface(const std::string& error);
 
+  // Returns true if this object has any NavigationRequests matching |origin|.
+  // Since this function is used to find existing committed/committing origins
+  // that have not opted-in to isolation, and since any calls to this function
+  // will be initiated by a NavigationRequest that is itself requesting opt-in
+  // isolation, |navigation_request_to_exclude| allows that request to exclude
+  // itself from consideration.
+  bool HasCommittingNavigationRequestForOrigin(
+      const url::Origin& origin,
+      NavigationRequest* navigation_request_to_exclude);
+
   // Force the RenderFrameHost to be left in pending deletion state instead of
   // being actually deleted after navigating away:
   // - Force waiting for unload handler result regardless of whether an

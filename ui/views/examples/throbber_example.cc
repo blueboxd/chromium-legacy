@@ -18,8 +18,8 @@ namespace {
 
 class ThrobberView : public View {
  public:
-  ThrobberView() : throbber_(new Throbber()) {
-    AddChildView(throbber_);
+  ThrobberView() {
+    throbber_ = AddChildView(std::make_unique<Throbber>());
     throbber_->Start();
   }
 
@@ -63,7 +63,7 @@ ThrobberExample::~ThrobberExample() = default;
 
 void ThrobberExample::CreateExampleView(View* container) {
   container->SetLayoutManager(std::make_unique<FillLayout>());
-  container->AddChildView(new ThrobberView());
+  container->AddChildView(std::make_unique<ThrobberView>());
 }
 
 }  // namespace examples

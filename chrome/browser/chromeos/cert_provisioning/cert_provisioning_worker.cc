@@ -8,6 +8,8 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/no_destructor.h"
+#include "chrome/browser/chromeos/attestation/tpm_challenge_key_result.h"
+#include "chrome/browser/chromeos/cert_provisioning/cert_provisioning_common.h"
 #include "chrome/browser/chromeos/cert_provisioning/cert_provisioning_serializer.h"
 #include "chrome/browser/chromeos/platform_keys/platform_keys_service.h"
 #include "chrome/browser/chromeos/platform_keys/platform_keys_service_factory.h"
@@ -92,6 +94,7 @@ int GetStateOrderedIndex(CertProvisioningWorkerState state) {
       res -= 1;
       FALLTHROUGH;
     case CertProvisioningWorkerState::kSucceed:
+    case CertProvisioningWorkerState::kInconsistentDataError:
     case CertProvisioningWorkerState::kFailed:
       res -= 1;
   }
@@ -210,6 +213,7 @@ void CertProvisioningWorkerImpl::DoStep() {
       DownloadCert();
       return;
     case CertProvisioningWorkerState::kSucceed:
+    case CertProvisioningWorkerState::kInconsistentDataError:
     case CertProvisioningWorkerState::kFailed:
       DCHECK(false);
       return;
@@ -229,8 +233,7 @@ void CertProvisioningWorkerImpl::UpdateState(
 
   if (IsFinished()) {
     CleanUp();
-    std::move(callback_).Run(cert_profile_,
-                             state_ == CertProvisioningWorkerState::kSucceed);
+    std::move(callback_).Run(cert_profile_, state_);
   }
 }
 
@@ -251,8 +254,17 @@ void CertProvisioningWorkerImpl::OnGenerateKeyDone(
     const attestation::TpmChallengeKeyResult& result) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
+  if (result.result_code ==
+      attestation::TpmChallengeKeyResultCode::kGetCertificateFailedError) {
+    LOG(WARNING) << "Failed to get certificate for a key";
+    request_backoff_.InformOfRequest(false);
+    // Next DoStep will retry generating the key.
+    ScheduleNextStep(request_backoff_.GetTimeUntilRelease());
+    return;
+  }
+
   if (!result.IsSuccess() || result.public_key.empty()) {
-    LOG(ERROR) << "Failed to prepare key: " << result.GetErrorMessage();
+    LOG(ERROR) << "Failed to prepare a key: " << result.GetErrorMessage();
     UpdateState(CertProvisioningWorkerState::kFailed);
     return;
   }
@@ -266,7 +278,8 @@ void CertProvisioningWorkerImpl::StartCsr() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   cloud_policy_client_->ClientCertProvisioningStartCsr(
-      CertScopeToString(cert_scope_), cert_profile_.profile_id, public_key_,
+      CertScopeToString(cert_scope_), cert_profile_.profile_id,
+      cert_profile_.policy_version, public_key_,
       base::BindOnce(&CertProvisioningWorkerImpl::OnStartCsrDone,
                      weak_factory_.GetWeakPtr()));
 }
@@ -417,8 +430,9 @@ void CertProvisioningWorkerImpl::FinishCsr() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   cloud_policy_client_->ClientCertProvisioningFinishCsr(
-      CertScopeToString(cert_scope_), cert_profile_.profile_id, public_key_,
-      va_challenge_response_, signature_,
+      CertScopeToString(cert_scope_), cert_profile_.profile_id,
+      cert_profile_.policy_version, public_key_, va_challenge_response_,
+      signature_,
       base::BindOnce(&CertProvisioningWorkerImpl::OnFinishCsrDone,
                      weak_factory_.GetWeakPtr()));
 }
@@ -441,7 +455,8 @@ void CertProvisioningWorkerImpl::DownloadCert() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   cloud_policy_client_->ClientCertProvisioningDownloadCert(
-      CertScopeToString(cert_scope_), cert_profile_.profile_id, public_key_,
+      CertScopeToString(cert_scope_), cert_profile_.profile_id,
+      cert_profile_.policy_version, public_key_,
       base::BindOnce(&CertProvisioningWorkerImpl::OnDownloadCertDone,
                      weak_factory_.GetWeakPtr()));
 }
@@ -494,6 +509,7 @@ void CertProvisioningWorkerImpl::OnImportCertDone(
 bool CertProvisioningWorkerImpl::IsFinished() const {
   switch (state_) {
     case CertProvisioningWorkerState::kSucceed:
+    case CertProvisioningWorkerState::kInconsistentDataError:
     case CertProvisioningWorkerState::kFailed:
       return true;
     default:
@@ -522,9 +538,11 @@ bool CertProvisioningWorkerImpl::ProcessResponseErrors(
     base::Optional<int64_t> try_later) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  if (status ==
-      policy::DeviceManagementStatus::DM_STATUS_TEMPORARY_UNAVAILABLE) {
-    LOG(WARNING) << "DM Server is temporary unavailable";
+  if ((status ==
+       policy::DeviceManagementStatus::DM_STATUS_TEMPORARY_UNAVAILABLE) ||
+      (status == policy::DeviceManagementStatus::DM_STATUS_REQUEST_FAILED) ||
+      (status == policy::DeviceManagementStatus::DM_STATUS_HTTP_STATUS_ERROR)) {
+    LOG(WARNING) << "Connection to DM Server failed, error: " << status;
     request_backoff_.InformOfRequest(false);
     ScheduleNextStep(request_backoff_.GetTimeUntilRelease());
     return false;
@@ -537,6 +555,13 @@ bool CertProvisioningWorkerImpl::ProcessResponseErrors(
   }
 
   request_backoff_.InformOfRequest(true);
+
+  if (error.has_value() &&
+      (error.value() == CertProvisioningResponseError::INCONSISTENT_DATA)) {
+    LOG(ERROR) << "Server response contains error: " << error.value();
+    UpdateState(CertProvisioningWorkerState::kInconsistentDataError);
+    return false;
+  }
 
   if (error.has_value()) {
     LOG(ERROR) << "Server response contains error: " << error.value();
@@ -612,6 +637,7 @@ void CertProvisioningWorkerImpl::HandleSerialization() {
       CertProvisioningSerializer::SerializeWorkerToPrefs(pref_service_, *this);
       break;
     case CertProvisioningWorkerState::kSucceed:
+    case CertProvisioningWorkerState::kInconsistentDataError:
     case CertProvisioningWorkerState::kFailed:
       CertProvisioningSerializer::DeleteWorkerFromPrefs(pref_service_, *this);
       break;

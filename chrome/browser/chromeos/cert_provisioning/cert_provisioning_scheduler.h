@@ -54,7 +54,8 @@ class CertProvisioningScheduler {
       delete;
 
   void UpdateCerts();
-  void OnProfileFinished(const CertProfile& cert_profile, bool is_success);
+  void OnProfileFinished(const CertProfile& profile,
+                         CertProvisioningWorkerState state);
 
   // For testing.
   size_t GetWorkerCount() const;
@@ -63,6 +64,8 @@ class CertProvisioningScheduler {
  private:
   void ScheduleInitialUpdate();
   void ScheduleDailyUpdate();
+  // Posts delayed task to call ProcessProfile.
+  void ScheduleRetry(const CertProfile& profile);
 
   void InitialUpdateCerts();
   void DeleteCertsWithoutPolicy();
@@ -76,6 +79,10 @@ class CertProvisioningScheduler {
       std::map<std::string, scoped_refptr<net::X509Certificate>>
           existing_certs_with_ids,
       const std::string& error_message);
+
+  // Creates a new worker for |profile| if there is no at the moment.
+  // Recreates a worker if existing one has a different version of the profile.
+  // Continues an existing worker if it is in a waiting state.
   void ProcessProfile(const CertProfile& profile);
 
   std::vector<CertProfile> GetCertProfiles();

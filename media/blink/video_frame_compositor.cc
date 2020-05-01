@@ -20,7 +20,7 @@ namespace media {
 // Amount of time to wait between UpdateCurrentFrame() callbacks before starting
 // background rendering to keep the Render() callbacks moving.
 const int kBackgroundRenderingTimeoutMs = 250;
-const int kForceBeginFramesTimeoutMs = 250;
+const int kForceBeginFramesTimeoutMs = 1000;
 
 // static
 constexpr const char VideoFrameCompositor::kTracingCategory[];

@@ -106,6 +106,15 @@ class BLINK_EXPORT WebElement : public WebNode {
 
   void RequestFullscreen();
 
+  // ComputedStyle property values. The following exposure is of CSS property
+  // values are part of the ComputedStyle set which is usually exposed through
+  // the Window object in WebIDL as window.getComputedStyle(element). Exposing
+  // ComputedStyle requires all of CSSComputedStyleDeclaration which is a pretty
+  // large interfaces. For now the we are exposing computed property values as
+  // strings directly to WebElement and enable public component usage through
+  // /public/web interfaces.
+  WebString GetComputedValue(const WebString& property_name);
+
 #if INSIDE_BLINK
   WebElement(Element*);
   WebElement& operator=(Element*);

@@ -490,4 +490,47 @@ void FrameTree::SetPageFocus(SiteInstance* instance, bool is_focused) {
   }
 }
 
+void FrameTree::RegisterExistingOriginToPreventOptInIsolation(
+    const url::Origin& previously_visited_origin,
+    NavigationRequest* navigation_request_to_exclude) {
+  std::unordered_set<SiteInstance*> matching_site_instances;
+
+  // Be sure to visit all RenderFrameHosts associated with this frame that might
+  // have an origin that could script other frames. We skip RenderFrameHosts
+  // that are in the bfcache, assuming there's no way for a frame to join the
+  // BrowsingInstance of a bfcache RFH while it's in the cache.
+  for (auto* frame_tree_node : SubtreeNodes(root())) {
+    auto* frame_host = frame_tree_node->current_frame_host();
+
+    if (previously_visited_origin == frame_host->GetLastCommittedOrigin())
+      matching_site_instances.insert(frame_host->GetSiteInstance());
+
+    if (frame_host->HasCommittingNavigationRequestForOrigin(
+            previously_visited_origin, navigation_request_to_exclude)) {
+      matching_site_instances.insert(frame_host->GetSiteInstance());
+    }
+
+    auto* spec_frame_host =
+        frame_tree_node->render_manager()->speculative_frame_host();
+    if (spec_frame_host &&
+        spec_frame_host->HasCommittingNavigationRequestForOrigin(
+            previously_visited_origin, navigation_request_to_exclude)) {
+      matching_site_instances.insert(spec_frame_host->GetSiteInstance());
+    }
+
+    auto* navigation_request = frame_tree_node->navigation_request();
+    if (navigation_request &&
+        navigation_request != navigation_request_to_exclude &&
+        navigation_request->HasCommittingOrigin(previously_visited_origin)) {
+      matching_site_instances.insert(frame_host->GetSiteInstance());
+    }
+  }
+
+  // Update any SiteInstances found to contain |origin|.
+  for (auto* site_instance : matching_site_instances) {
+    static_cast<SiteInstanceImpl*>(site_instance)
+        ->PreventOptInOriginIsolation(previously_visited_origin);
+  }
+}
+
 }  // namespace content

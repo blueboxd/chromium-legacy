@@ -36,12 +36,17 @@ import org.chromium.base.PackageManagerUtils;
 import org.chromium.base.PathUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
+import org.chromium.base.task.PostTask;
 import org.chromium.components.embedder_support.util.UrlConstants;
 import org.chromium.components.embedder_support.util.UrlUtilities;
 import org.chromium.components.embedder_support.util.UrlUtilitiesJni;
+import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.NavigationController;
 import org.chromium.content_public.browser.NavigationEntry;
+import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.common.ContentUrlConstants;
+import org.chromium.content_public.common.Referrer;
+import org.chromium.network.mojom.ReferrerPolicy;
 import org.chromium.ui.base.PageTransition;
 import org.chromium.url.URI;
 
@@ -348,6 +353,46 @@ public class ExternalNavigationHandler {
             return true;
         }
         return false;
+    }
+
+    /**
+     * Clobber the current tab and try not to pass an intent when it should be handled internally
+     * so that we can deliver HTTP referrer information safely.
+     *
+     * @param url The new URL after clobbering the current tab.
+     * @param referrerUrl The HTTP referrer URL.
+     * @return OverrideUrlLoadingResult (if the tab has been clobbered, or we're launching an
+     *         intent.)
+     */
+    protected @OverrideUrlLoadingResult int clobberCurrentTab(String url, String referrerUrl) {
+        int transitionType = PageTransition.LINK;
+        final LoadUrlParams loadUrlParams = new LoadUrlParams(url, transitionType);
+        if (!TextUtils.isEmpty(referrerUrl)) {
+            Referrer referrer = new Referrer(referrerUrl, ReferrerPolicy.ALWAYS);
+            loadUrlParams.setReferrer(referrer);
+        }
+        if (mDelegate.hasValidTab()) {
+            // Loading URL will start a new navigation which cancels the current one
+            // that this clobbering is being done for. It leads to UAF. To avoid that,
+            // we're loading URL asynchronously. See https://crbug.com/732260.
+            PostTask.postTask(UiThreadTaskTraits.DEFAULT, new Runnable() {
+                @Override
+                public void run() {
+                    mDelegate.loadUrlIfPossible(loadUrlParams);
+                }
+            });
+            return OverrideUrlLoadingResult.OVERRIDE_WITH_CLOBBERING_TAB;
+        } else {
+            assert false : "clobberCurrentTab was called with an empty tab.";
+            Uri uri = Uri.parse(url);
+            Intent intent = new Intent(Intent.ACTION_VIEW, uri);
+            String packageName = ContextUtils.getApplicationContext().getPackageName();
+            intent.putExtra(Browser.EXTRA_APPLICATION_ID, packageName);
+            intent.addCategory(Intent.CATEGORY_BROWSABLE);
+            intent.setPackage(packageName);
+            mDelegate.startActivity(intent, false);
+            return OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT;
+        }
     }
 
     private boolean isTypedRedirectToExternalProtocol(
@@ -1054,7 +1099,7 @@ public class ExternalNavigationHandler {
             params.getRedirectHandler().setShouldNotOverrideUrlLoadingOnCurrentRedirectChain();
         }
         if (DEBUG) Log.i(TAG, "clobberCurrentTab called");
-        return mDelegate.clobberCurrentTab(browserFallbackUrl, params.getReferrerUrl());
+        return clobberCurrentTab(browserFallbackUrl, params.getReferrerUrl());
     }
 
     /**

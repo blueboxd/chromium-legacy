@@ -1730,10 +1730,29 @@ void NavigationRequest::CheckForIsolationOptIn(const GURL& url) {
     // map the global-walk call onto NavigatorDelegate to get it into
     // WebContents. We definitely need to do the global walk prior to deciding
     // on the render_frame_host_ to commit to.
+    // We must exclude ourselves from the global walk otherwise we may mark our
+    // origin as non-opt-in before it gets the change to register itself as
+    // opted-in.
     frame_tree_node_->navigator()
         ->GetDelegate()
-        ->RegisterExistingOriginToPreventOptInIsolation(origin);
+        ->RegisterExistingOriginToPreventOptInIsolation(
+            origin, this /* navigation_request_to_exclude */);
   }
+}
+
+bool NavigationRequest::HasCommittingOrigin(const url::Origin& origin) {
+  // We are only interested in checking requests that have been assigned a
+  // SiteInstance.
+  if (state() < WILL_PROCESS_RESPONSE)
+    return false;
+
+  // This origin conversion won't be correct for about:blank, but origin
+  // isolation shouldn't need to care about that case because a previous
+  // instance of the origin would already have determined its isolation status
+  // in that BrowsingInstance.
+  // TODO(https://crbug.com/888079): Use the computed origin here just to be
+  // safe.
+  return origin == url::Origin::Create(GetURL());
 }
 
 bool NavigationRequest::IsOptInIsolationRequested() {

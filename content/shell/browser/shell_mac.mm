@@ -12,6 +12,9 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/sys_string_conversions.h"
 #include "content/public/browser/native_web_keyboard_event.h"
+#include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/render_widget_host.h"
+#include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "content/shell/app/resource.h"
 #import "ui/base/cocoa/underlay_opengl_hosting_window.h"
@@ -237,8 +240,45 @@ void Shell::PlatformCreateWindow(int width, int height) {
     url_edit_view_ = url_edit_view.get();
   }
 
-  // show the window
+  // Show the new window.
   [window_.GetNativeNSWindow() makeKeyAndOrderFront:nil];
+}
+
+void Shell::PlatformActivateContents(WebContents* top_contents) {
+  if (!headless_) {
+    // This focuses the main frame RenderWidgetHost in the window, but does not
+    // make the window itself active. The WebContentsDelegate (this class) is
+    // responsible for doing both.
+    top_contents->Focus();
+    // This makes the window the active window for the application, and when the
+    // app is active, the window will be also. That makes all RenderWidgetHosts
+    // for the window active (which is separate from focused on mac).
+    [window_.GetNativeNSWindow() makeKeyAndOrderFront:nil];
+    // This makes the application active so that we can actually move focus
+    // between windows and the renderer can receive focus/blur events.
+    [NSApp activateIgnoringOtherApps:YES];
+    return;
+  }
+
+  // In headless mode, there are no system windows, so we can't go down the
+  // normal path which relies on calling the OS to move focus/active states.
+  // Instead we fake it out by just informing the RenderWidgetHost directly.
+
+  // For all windows other than this one, blur them.
+  for (Shell* window : windows_) {
+    if (window != this) {
+      WebContents* other_top_contents = window->web_contents();
+      RenderWidgetHost* other_main_widget =
+          other_top_contents->GetMainFrame()->GetView()->GetRenderWidgetHost();
+      other_main_widget->Blur();
+      other_main_widget->SetActive(false);
+    }
+  }
+
+  RenderWidgetHost* main_widget =
+      top_contents->GetMainFrame()->GetView()->GetRenderWidgetHost();
+  main_widget->Focus();
+  main_widget->SetActive(true);
 }
 
 void Shell::PlatformSetContents() {

@@ -332,6 +332,10 @@ void FetchRespondWithObserver::OnResponseFulfilled(
 
   BodyStreamBuffer* buffer = response->InternalBodyBuffer();
   if (buffer) {
+    // The |side_data_blob| must be taken before the body buffer is
+    // drained or loading begins.
+    fetch_api_response->side_data_blob = buffer->TakeSideDataBlob();
+
     scoped_refptr<BlobDataHandle> blob_data_handle =
         buffer->DrainAsBlobDataHandle(
             BytesConsumer::BlobSizePolicy::kAllowBlobWithInvalidSize,

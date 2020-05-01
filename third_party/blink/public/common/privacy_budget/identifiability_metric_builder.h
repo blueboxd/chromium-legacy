@@ -46,8 +46,8 @@ namespace blink {
 //
 // Metrics for *regular* UKM consist of a mapping from a metric ID to a metric
 // value. The metric ID is a digest of the metric name as determined by
-// base::DigestForMetrics(), similar to how an |event_hash| is derived from the
-// event name.
+// base::IdentifiabilityDigestOfBytes(), similar to how an |event_hash| is
+// derived from the event name.
 //
 // However, for identifiability metrics, the method for generating metric IDs
 // is:
@@ -66,7 +66,7 @@ namespace blink {
 // |metric_hash| to the output of the identifiable surface encoded into 64-bits.
 //
 // To generate a 64-bit hash of a random binary blob, use
-// |blink::DigestForMetrics()|. For numbers with fewer than 56
+// |blink::IdentifiabilityDigestOfBytes()|. For numbers with fewer than 56
 // significant bits, you can use the number itself as the input hash.
 //
 // As mentioned in |identifiability_metrics.h|, this function is **not** a
@@ -83,14 +83,14 @@ namespace blink {
 //        identifiable_surface = IdentifiableSurface::FromTypeAndInput(
 //            IdentifiableSurface::Type::kWebFeature,
 //            blink::mojom::WebFeature::kDeviceOrientationSecureOrigin);
-//        output = DigestForMetrics(result_as_binary_blob);
+//        output = IdentifiabilityDigestOfBytes(result_as_binary_blob);
 //
 // 2. A surface that takes a non-trivial input represented as a binary blob:
 //
 //        identifiable_surface = IdentifiableSurface::FromTypeAndInput(
 //            IdentifiableSurface::Type::kFancySurface,
-//            DigestForMetrics(input_as_binary_blob));
-//        output = DigestForMetrics(result_as_binary_blob);
+//            IdentifiabilityDigestOfBytes(input_as_binary_blob));
+//        output = IdentifiabilityDigestOfBytes(result_as_binary_blob);
 class BLINK_COMMON_EXPORT IdentifiabilityMetricBuilder
     : public ukm::internal::UkmEntryBuilderBase {
  public:

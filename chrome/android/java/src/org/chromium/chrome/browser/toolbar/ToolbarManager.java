@@ -107,7 +107,6 @@ import org.chromium.chrome.features.start_surface.StartSurfaceConfiguration;
 import org.chromium.components.browser_ui.styles.ChromeColors;
 import org.chromium.components.browser_ui.widget.scrim.ScrimCoordinator;
 import org.chromium.components.browser_ui.widget.scrim.ScrimProperties;
-import org.chromium.components.browser_ui.widget.textbubble.TextBubble;
 import org.chromium.components.feature_engagement.EventConstants;
 import org.chromium.components.feature_engagement.Tracker;
 import org.chromium.components.search_engines.TemplateUrl;
@@ -203,8 +202,6 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
     private boolean mTabRestoreCompleted;
 
     private AppMenuButtonHelper mAppMenuButtonHelper;
-
-    private TextBubble mTextBubble;
 
     private boolean mInitializedWithNative;
     private Runnable mOnInitializedRunnable;
@@ -1365,37 +1362,11 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
     }
 
     /**
-     * Gets the visibility of the Toolbar shadow.
-     * @return One of View.VISIBLE, View.INVISIBLE, or View.GONE.
-     */
-    public int getToolbarShadowVisibility() {
-        View toolbarShadow = mControlContainer.findViewById(R.id.toolbar_shadow);
-        return (toolbarShadow != null) ? toolbarShadow.getVisibility() : View.GONE;
-    }
-
-    /**
      * Sets the visibility of the Toolbar shadow.
      */
     public void setToolbarShadowVisibility(int visibility) {
         View toolbarShadow = mControlContainer.findViewById(R.id.toolbar_shadow);
         if (toolbarShadow != null) toolbarShadow.setVisibility(visibility);
-    }
-
-    /**
-     * Gets the visibility of the Toolbar.
-     * @return One of View.VISIBLE, View.INVISIBLE, or View.GONE.
-     */
-    public int getToolbarVisibility() {
-        View toolbar = getToolbarView();
-        return (toolbar != null) ? toolbar.getVisibility() : View.GONE;
-    }
-
-    /**
-     * Sets the visibility of the Toolbar.
-     */
-    public void setToolbarVisibility(int visibility) {
-        View toolbar = getToolbarView();
-        if (toolbar != null) toolbar.setVisibility(visibility);
     }
 
     /**
@@ -1676,10 +1647,6 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
      */
     public void setProgressBarEnabled(boolean enabled) {
         mToolbar.setProgressBarEnabled(enabled);
-    }
-
-    public void setProgressBarAnchorView(@Nullable View anchor) {
-        mToolbar.setProgressBarAnchorView(anchor);
     }
 
     /**

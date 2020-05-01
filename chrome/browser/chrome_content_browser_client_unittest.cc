@@ -48,12 +48,18 @@
 #include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
 #include "url/gurl.h"
 
+#if defined(USE_X11) || defined(USE_OZONE)
+#include <sys/utsname.h>
+#endif
+
 #if !defined(OS_ANDROID)
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/search_test_utils.h"
+#else
+#include "base/system/sys_info.h"
 #endif
 
 #if BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)
@@ -98,9 +104,109 @@ void CheckUserAgentStringOrdering(bool mobile_device) {
   std::string product_str = pieces[0];
   std::string safari_version_str = pieces[1];
 
-  // Not sure what can be done to better check the OS string, since it's highly
-  // platform-dependent.
   EXPECT_FALSE(os_str.empty());
+
+  pieces = base::SplitStringUsingSubstr(os_str, "; ", base::KEEP_WHITESPACE,
+                                        base::SPLIT_WANT_ALL);
+#if defined(OS_WIN)
+  // Windows NT 10.0; Win64; x64
+  // Windows NT 10.0; WOW64
+  // Windows NT 10.0
+  std::string os_and_version = pieces[0];
+  for (unsigned int i = 1; i < pieces.size(); ++i) {
+    bool equals = ((pieces[i] == "WOW64") || (pieces[i] == "Win64") ||
+                   pieces[i] == "x64");
+    ASSERT_TRUE(equals);
+  }
+  pieces = base::SplitStringUsingSubstr(pieces[0], " ", base::KEEP_WHITESPACE,
+                                        base::SPLIT_WANT_ALL);
+  ASSERT_EQ(3u, pieces.size());
+  ASSERT_EQ("Windows", pieces[0]);
+  ASSERT_EQ("NT", pieces[1]);
+  double version;
+  ASSERT_TRUE(base::StringToDouble(pieces[2], &version));
+  ASSERT_LE(4.0, version);
+  ASSERT_GT(11.0, version);
+#elif defined(OS_MACOSX)
+  // Macintosh; Intel Mac OS X 10_15_4
+  ASSERT_EQ(2u, pieces.size());
+  ASSERT_EQ("Macintosh", pieces[0]);
+  pieces = base::SplitStringUsingSubstr(pieces[1], " ", base::KEEP_WHITESPACE,
+                                        base::SPLIT_WANT_ALL);
+  ASSERT_EQ(5u, pieces.size());
+  ASSERT_EQ("Intel", pieces[0]);
+  ASSERT_EQ("Mac", pieces[1]);
+  ASSERT_EQ("OS", pieces[2]);
+  ASSERT_EQ("X", pieces[3]);
+  pieces = base::SplitStringUsingSubstr(pieces[4], "_", base::KEEP_WHITESPACE,
+                                        base::SPLIT_WANT_ALL);
+  ASSERT_EQ("10", pieces[0]);
+  int value;
+  ASSERT_TRUE(base::StringToInt(pieces[1], &value));
+  ASSERT_LE(0, value);
+  ASSERT_TRUE(base::StringToInt(pieces[2], &value));
+  ASSERT_LE(0, value);
+#elif defined(USE_X11) || defined(USE_OZONE)
+  // X11; Linux x86_64
+  // X11; CrOS armv7l 4537.56.0
+  struct utsname unixinfo;
+  uname(&unixinfo);
+  std::string machine = unixinfo.machine;
+  if (strcmp(unixinfo.machine, "x86_64") == 0 &&
+      sizeof(void*) == sizeof(int32_t)) {
+    machine = "i686 (x86_64)";
+  }
+  ASSERT_EQ(2u, pieces.size());
+  ASSERT_EQ("X11", pieces[0]);
+  pieces = base::SplitStringUsingSubstr(pieces[1], " ", base::KEEP_WHITESPACE,
+                                        base::SPLIT_WANT_ALL);
+#if defined(OS_CHROMEOS)
+  // X11; CrOS armv7l 4537.56.0
+  //      ^^
+  ASSERT_EQ(3u, pieces.size());
+  ASSERT_EQ("CrOS", pieces[0]);
+  ASSERT_EQ(machine, pieces[1]);
+  pieces = base::SplitStringUsingSubstr(pieces[2], ".", base::KEEP_WHITESPACE,
+                                        base::SPLIT_WANT_ALL);
+  for (unsigned int i = 1; i < pieces.size(); ++i) {
+    int value;
+    ASSERT_TRUE(base::StringToInt(pieces[i], &value));
+  }
+#else
+  // X11; Linux x86_64
+  //      ^^
+  ASSERT_EQ(2u, pieces.size());
+  // This may not be Linux in all cases in the wild, but it is on the bots.
+  ASSERT_EQ("Linux", pieces[0]);
+  ASSERT_EQ(machine, pieces[1]);
+#endif
+#elif defined(OS_ANDROID)
+  // Linux; Android 7.1.1; Samsung Chromebook 3
+  ASSERT_EQ(3u, pieces.size());
+  ASSERT_EQ("Linux", pieces[0]);
+  std::string model = pieces[2];
+
+  pieces = base::SplitStringUsingSubstr(pieces[1], " ", base::KEEP_WHITESPACE,
+                                        base::SPLIT_WANT_ALL);
+  ASSERT_EQ(2u, pieces.size());
+  ASSERT_EQ("Android", pieces[0]);
+  pieces = base::SplitStringUsingSubstr(pieces[1], ".", base::KEEP_WHITESPACE,
+                                        base::SPLIT_WANT_ALL);
+  for (unsigned int i = 1; i < pieces.size(); ++i) {
+    int value;
+    ASSERT_TRUE(base::StringToInt(pieces[i], &value));
+  }
+  if (base::SysInfo::GetAndroidBuildCodename() == "REL") {
+    ASSERT_EQ(base::SysInfo::HardwareModelName(), model);
+  } else {
+    ASSERT_EQ("", model);
+  }
+#elif defined(OS_FUCHSIA)
+  // X11; Fuchsia
+  ASSERT_EQ(2u, pieces.size());
+  ASSERT_EQ("X11", pieces[0]);
+  ASSERT_EQ("Fuchsia", pieces[1]);
+#endif
 
   // Check that the version numbers match.
   EXPECT_FALSE(webkit_version_str.empty());
@@ -498,6 +604,11 @@ TEST(ChromeContentBrowserClientTest, UserAgentMetadata) {
   EXPECT_EQ(metadata.brand, version_info::GetProductName());
   EXPECT_EQ(metadata.full_version, version_info::GetVersionNumber());
   EXPECT_EQ(metadata.major_version, version_info::GetMajorVersionNumber());
+  EXPECT_EQ(metadata.platform_version,
+            content::GetOSVersion(content::IncludeAndroidBuildNumber::Exclude,
+                                  content::IncludeAndroidModel::Exclude));
+  // This makes sure no extra information is added to the platform version.
+  EXPECT_EQ(metadata.platform_version.find(";"), std::string::npos);
   EXPECT_EQ(metadata.platform, version_info::GetOSType());
   EXPECT_EQ(metadata.architecture, content::BuildCpuInfo());
   EXPECT_EQ(metadata.model, content::BuildModelInfo());

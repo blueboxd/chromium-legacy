@@ -93,6 +93,7 @@ source_set("unit_tests") {
   sources = [
     "safe_browsing_blocking_page_unittest.mm",
     "safe_browsing_service_unittest.mm",
+    "safe_browsing_tab_helper_unittest.mm",
     "safe_browsing_unsafe_resource_container_unittest.mm",
     "safe_browsing_url_allow_list_unittest.mm",
     "url_checker_delegate_impl_unittest.mm",
@@ -100,8 +101,10 @@ source_set("unit_tests") {
 
   deps = [
     ":safe_browsing",
+    ":test_support",
     "//base/test:test_support",
     "//components/prefs:test_support",
+    "//components/safe_browsing/core:features",
     "//components/safe_browsing/core/browser",
     "//components/safe_browsing/core/common",
     "//components/safe_browsing/core/common:thread_utils",

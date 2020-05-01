@@ -18,7 +18,7 @@ ScopedMayLoadLibraryAtBackgroundPriority::
                      from_here.function_name());
 }
 
-bool ScopedMayLoadLibraryAtBackgroundPriority::OnScopeFirstEntered() {
+bool ScopedMayLoadLibraryAtBackgroundPriority::OnScopeEntered() {
 #if defined(OS_WIN)
   const base::ThreadPriority priority =
       PlatformThread::GetCurrentThreadPriority();

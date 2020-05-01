@@ -504,6 +504,7 @@ ci.linux_builder(
     name = 'Fuchsia ARM64',
     console_view_entry = ci.console_view_entry(
         category = 'fuchsia|a64',
+        short_name = 'rel',
     ),
     notifies = ['cr-fuchsia'],
 )

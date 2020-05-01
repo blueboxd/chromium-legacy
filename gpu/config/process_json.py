@@ -428,6 +428,9 @@ def write_conditions(entry_id, is_exception, exception_id, entry,
     elif key == 'description':
       assert not is_exception
       continue
+    elif key == 'driver_update_url':
+      assert not is_exception
+      continue
     elif key == 'features':
       assert not is_exception
       continue
@@ -651,7 +654,11 @@ def write_entry(entry, total_feature_set, feature_name_prefix,
   # ID
   entry_id = entry['id']
   data_file.write('%d,  // id\n' % entry_id)
-  data_file.write('"%s",\n' % entry['description']);
+  description = entry['description']
+  if 'driver_update_url' in entry:
+    description += (' Please update your graphics driver via this link: ' +
+                    entry['driver_update_url'])
+  data_file.write('"%s",\n' % description);
   # Features
   if 'features' in entry:
     var_name = 'kFeatureListFor%sEntry%d' % (unique_symbol_id, entry_id)

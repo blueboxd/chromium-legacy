@@ -24,10 +24,16 @@
     TestRunner.evaluateInPage('loadData()');
   }
 
-  var awaitedMessages = 2;
-  function step3() {
-    --awaitedMessages;
-    if (awaitedMessages > 0)
+  var expectedDoneMessages = 2;
+  async function step3() {
+    let messages = await ConsoleTestRunner.dumpConsoleMessagesIntoArray();
+    let doneMessagesCount = 0;
+    for (let i = 0; i < messages.length; i++) {
+      if (messages[i].endsWith("Done.")) {
+        doneMessagesCount++;
+      }
+    }
+    if (doneMessagesCount < expectedDoneMessages)
       return;
     function dumpInitiator(url) {
       var matching_requests = NetworkTestRunner.findRequestsByURLPattern(new RegExp(url.replace('.', '\\.')));
@@ -54,11 +60,14 @@
 
     dumpInitiator('initiator.css');
     dumpInitiator('size=100');
+    dumpInitiator('size=200');
+    dumpInitiator('size=300');
     dumpInitiator('size=400');
     dumpInitiator('style.css');
     dumpInitiator('empty.html');
     dumpInitiator('module1.js');
     dumpInitiator('module2.js');
+    dumpInitiator('example.ttf');
     TestRunner.completeTest();
   }
 })();

@@ -108,10 +108,16 @@ constexpr char kRelyingPartyRpIconUrlSecurityErrorMessage[] =
 constexpr char kAbortErrorMessage[] =
     "webauth: AbortError: Request has been aborted.";
 
-constexpr char kFeatureMissingMessage[] =
-    "webauth: NotAllowedError: The 'publickey-credentials' feature is not "
-    "enabled in this document. Feature Policy may be used to delegate Web "
+constexpr char kGetFeaturePolicyMissingMessage[] =
+    "webauth: NotAllowedError: The 'publickey-credentials-get' feature is "
+    "not enabled in this document. Feature Policy may be used to delegate Web "
     "Authentication capabilities to cross-origin child frames.";
+
+constexpr char kCrossOriginAncestorMessage[] =
+    "webauth: NotAllowedError: The following credential operations can only "
+    "occur in a document which is same-origin with all of its ancestors: "
+    "storage/retrieval of 'PasswordCredential' and 'FederatedCredential', "
+    "storage of 'PublicKeyCredential'.";
 
 // Templates to be used with base::ReplaceStringPlaceholders. Can be
 // modified to include up to 9 replacements. The default values for
@@ -788,7 +794,7 @@ class WebAuthJavascriptClientBrowserTest : public WebAuthBrowserTestBase {
 
  protected:
   std::vector<base::Feature> GetFeaturesToEnable() override {
-    return {device::kWebAuthFeaturePolicy};
+    return {device::kWebAuthGetAssertionFeaturePolicy};
   }
 
  private:
@@ -1169,7 +1175,7 @@ IN_PROC_BROWSER_TEST_F(WebAuthJavascriptClientBrowserTest,
       // XO |Create|Get  | Allow
       {false, true, true, ""},
       {true, false, false, ""},
-      {true, true, true, "publickey-credentials"},
+      {true, false, true, "publickey-credentials-get"},
   };
 
   for (const auto& test : kTestCases) {
@@ -1209,7 +1215,7 @@ IN_PROC_BROWSER_TEST_F(WebAuthJavascriptClientBrowserTest,
     if (test.create_should_work) {
       EXPECT_EQ(std::string(kOkMessage), result);
     } else {
-      EXPECT_EQ(kFeatureMissingMessage, result);
+      EXPECT_EQ(kCrossOriginAncestorMessage, result);
     }
 
     const int credential_id =
@@ -1227,7 +1233,7 @@ IN_PROC_BROWSER_TEST_F(WebAuthJavascriptClientBrowserTest,
     if (test.get_should_work) {
       EXPECT_EQ(std::string(kOkMessage), result);
     } else {
-      EXPECT_EQ(kFeatureMissingMessage, result);
+      EXPECT_EQ(kGetFeaturePolicyMissingMessage, result);
     }
   }
 }

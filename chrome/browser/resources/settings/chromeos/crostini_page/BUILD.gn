@@ -112,6 +112,7 @@ js_library("crostini_subpage") {
 #    ":crostini_arc_adb_confirmation_dialog.m",
 #    ":crostini_browser_proxy.m",
 #    ":crostini_disk_resize_dialog.m",
+#    ":crostini_disk_resize_confirmation_dialog.m",
 #    ":crostini_export_import.m",
 #    ":crostini_import_confirmation_dialog.m",
 #    ":crostini_mic_sharing_dialog.m",
@@ -154,6 +155,14 @@ js_library("crostini_disk_resize_dialog.m") {
     # TODO: Fill those in.
   ]
   extra_deps = [ ":crostini_disk_resize_dialog_module" ]
+}
+
+js_library("crostini_disk_resize_confirmation_dialog.m") {
+  sources = [ "$root_gen_dir/chrome/browser/resources/settings/chromeos/crostini_page/crostini_disk_resize_confirmation_dialog.m.js" ]
+  deps = [
+    # TODO: Fill those in.
+  ]
+  extra_deps = [ ":crostini_disk_resize_confirmation_dialog_module" ]
 }
 
 js_library("crostini_export_import.m") {
@@ -263,6 +272,12 @@ polymer_modulizer("crostini_arc_adb_confirmation_dialog") {
 polymer_modulizer("crostini_disk_resize_dialog") {
   js_file = "crostini_disk_resize_dialog.js"
   html_file = "crostini_disk_resize_dialog.html"
+  html_type = "dom-module"
+}
+
+polymer_modulizer("crostini_disk_resize_confirmation_dialog") {
+  js_file = "crostini_disk_resize_confirmation_dialog.js"
+  html_file = "crostini_disk_resize_confirmation_dialog.html"
   html_type = "dom-module"
 }
 

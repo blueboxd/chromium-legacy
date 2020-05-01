@@ -24,7 +24,7 @@ def _call_profdata_tool(profile_input_file_paths,
                         profile_output_file_path,
                         profdata_tool_path,
                         retries=3,
-                        sparse=False):
+                        sparse=True):
   """Calls the llvm-profdata tool.
 
   Args:
@@ -32,8 +32,8 @@ def _call_profdata_tool(profile_input_file_paths,
         are to be merged.
     profile_output_file_path: The path to the merged file to write.
     profdata_tool_path: The path to the llvm-profdata executable.
-    sparse (bool): (optional) sets the sparse flag on for llvm-profdata.
-        defaults to True.
+    sparse (bool): flag to indicate whether to run llvm-profdata with --sparse.
+      Doc: https://llvm.org/docs/CommandGuide/llvm-profdata.html#profdata-merge
 
   Returns:
     A list of paths to profiles that had to be excluded to get the merge to
@@ -47,7 +47,7 @@ def _call_profdata_tool(profile_input_file_paths,
         profdata_tool_path, 'merge', '-o', profile_output_file_path,
     ]
     if sparse:
-      subprocess_cmd.append('-sparse=true')
+      subprocess_cmd += ['-sparse=true',]
     subprocess_cmd.extend(profile_input_file_paths)
 
     # Redirecting stderr is required because when error happens, llvm-profdata
@@ -82,7 +82,7 @@ def _call_profdata_tool(profile_input_file_paths,
                      valid_profiles)
         return invalid_profiles + _call_profdata_tool(
             valid_profiles, profile_output_file_path, profdata_tool_path,
-            retries - 1, sparse)
+            retries - 1)
 
     logging.error('Failed to merge profiles, return code (%d), output: %r' %
                   (error.returncode, error.output))
@@ -236,7 +236,7 @@ def merge_profiles(input_dir,
                    input_extension,
                    profdata_tool_path,
                    input_filename_pattern='.*',
-                   sparse=False):
+                   sparse=True):
   """Merges the profiles produced by the shards using llvm-profdata.
 
   Args:
@@ -247,7 +247,8 @@ def merge_profiles(input_dir,
     profdata_tool_path: The path to the llvm-profdata executable.
     input_filename_pattern (str): The regex pattern of input filename. Should be
         a valid regex pattern if present.
-    sparse (bool): a flag to run llvm-profdata with -sparse=true
+    sparse (bool): flag to indicate whether to run llvm-profdata with --sparse.
+      Doc: https://llvm.org/docs/CommandGuide/llvm-profdata.html#profdata-merge
 
   Returns:
     The list of profiles that had to be excluded to get the merge to

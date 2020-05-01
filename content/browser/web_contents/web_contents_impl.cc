@@ -6194,13 +6194,19 @@ std::unique_ptr<NavigationUIData> WebContentsImpl::GetNavigationUIData(
 }
 
 void WebContentsImpl::RegisterExistingOriginToPreventOptInIsolation(
-    const url::Origin& origin) {
+    const url::Origin& origin,
+    NavigationRequest* navigation_request_to_exclude) {
   // Note: This function can be made static if we ever need call it without
   // a WebContentsImpl instance, in which case we can use a wrapper to
   // implement the override from NavigatorDelegate.
   for (WebContentsImpl* web_contents : GetAllWebContents()) {
     web_contents->controller_.RegisterExistingOriginToPreventOptInIsolation(
         origin);
+    // Walk the frame tree to pick up any frames without FrameNavigationEntries.
+    // * Some frames won't have FrameNavigationEntries (Issues 524208, 608402).
+    // * Some pending navigations won't have NavigationEntries.
+    web_contents->GetFrameTree()->RegisterExistingOriginToPreventOptInIsolation(
+        origin, navigation_request_to_exclude);
   }
 }
 

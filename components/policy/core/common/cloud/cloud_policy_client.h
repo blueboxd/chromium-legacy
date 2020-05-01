@@ -344,6 +344,7 @@ class POLICY_EXPORT CloudPolicyClient {
   virtual void ClientCertProvisioningStartCsr(
       const std::string& cert_scope,
       const std::string& cert_profile_id,
+      const std::string& cert_profile_version,
       const std::string& public_key,
       ClientCertProvisioningStartCsrCallback callback);
 
@@ -359,6 +360,7 @@ class POLICY_EXPORT CloudPolicyClient {
   virtual void ClientCertProvisioningFinishCsr(
       const std::string& cert_scope,
       const std::string& cert_profile_id,
+      const std::string& cert_profile_version,
       const std::string& public_key,
       const std::string& va_challenge_response,
       const std::string& signature,
@@ -373,6 +375,7 @@ class POLICY_EXPORT CloudPolicyClient {
   virtual void ClientCertProvisioningDownloadCert(
       const std::string& cert_scope,
       const std::string& cert_profile_id,
+      const std::string& cert_profile_version,
       const std::string& public_key,
       ClientCertProvisioningDownloadCertCallback callback);
 

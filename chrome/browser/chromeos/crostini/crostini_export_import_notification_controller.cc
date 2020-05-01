@@ -14,6 +14,7 @@
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
+#include "chrome/browser/ui/webui/settings/chromeos/constants/routes.mojom.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/generated_resources.h"
@@ -190,7 +191,8 @@ void CrostiniExportImportNotificationController::SetStatusFailedWithMessageUI(
       delegate_->SetCallback(base::BindRepeating(
           [](Profile* profile) {
             chrome::SettingsWindowManager::GetInstance()->ShowOSSettings(
-                profile, chrome::kCrostiniExportImportSubPage);
+                profile, chromeos::settings::mojom::
+                             kCrostiniBackupAndRestoreSubpagePath);
           },
           profile_));
       break;
@@ -210,7 +212,7 @@ void CrostiniExportImportNotificationController::SetStatusFailedWithMessageUI(
       delegate_->SetCallback(base::BindRepeating(
           [](Profile* profile) {
             chrome::SettingsWindowManager::GetInstance()->ShowOSSettings(
-                profile, chrome::kStorageSubPage);
+                profile, chromeos::settings::mojom::kStorageSubpagePath);
           },
           profile_));
       break;

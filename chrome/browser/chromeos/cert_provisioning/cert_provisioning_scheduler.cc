@@ -6,6 +6,7 @@
 #include <memory>
 
 #include "base/bind.h"
+#include "base/logging.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/cert_provisioning/cert_provisioning_common.h"
@@ -23,6 +24,10 @@ namespace cert_provisioning {
 
 namespace {
 const char kCertProfileIdKey[] = "cert_profile_id";
+const char kPolicyVersionKey[] = "policy_version";
+
+const base::TimeDelta kInconsistentDataErrorRetryDelay =
+    base::TimeDelta::FromSeconds(30);
 
 policy::CloudPolicyClient* GetCloudPolicyClientForDevice() {
   policy::BrowserPolicyConnectorChromeOS* connector =
@@ -145,6 +150,15 @@ void CertProvisioningScheduler::ScheduleDailyUpdate() {
       base::TimeDelta::FromDays(1));
 }
 
+void CertProvisioningScheduler::ScheduleRetry(const CertProfile& profile) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE,
+      base::Bind(&CertProvisioningScheduler::ProcessProfile,
+                 weak_factory_.GetWeakPtr(), profile),
+      kInconsistentDataErrorRetryDelay);
+}
+
 void CertProvisioningScheduler::InitialUpdateCerts() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
@@ -192,6 +206,7 @@ void CertProvisioningScheduler::DailyUpdateCerts() {
 
 void CertProvisioningScheduler::DeserializeWorkers() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   const base::Value* saved_workers =
       pref_service_->Get(GetPrefNameForSerialization(cert_scope_));
   if (!saved_workers) {
@@ -271,7 +286,9 @@ void CertProvisioningScheduler::ProcessProfile(const CertProfile& profile) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   CertProvisioningWorker* worker = FindWorker(profile.profile_id);
-  if (!worker) {
+  if (!worker ||
+      (worker->GetCertProfile().policy_version != profile.policy_version)) {
+    // Create new worker or replace an existing one.
     CreateCertProvisioningWorker(profile);
     return;
   }
@@ -301,19 +318,31 @@ void CertProvisioningScheduler::CreateCertProvisioningWorker(
 }
 
 void CertProvisioningScheduler::OnProfileFinished(
-    const CertProfile& cert_profile,
-    bool is_success) {
+    const CertProfile& profile,
+    CertProvisioningWorkerState state) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  if (!is_success) {
-    LOG(ERROR) << "Failed to process certificate profile: "
-               << cert_profile.profile_id;
-    failed_cert_profiles_.insert(cert_profile.profile_id);
+  switch (state) {
+    case CertProvisioningWorkerState::kSucceed:
+      VLOG(0) << "Successfully provisioned certificate for profile: "
+              << profile.profile_id;
+      break;
+    case CertProvisioningWorkerState::kInconsistentDataError:
+      LOG(WARNING) << "Inconsistent data error for certificate profile: "
+                   << profile.profile_id;
+      ScheduleRetry(profile);
+      break;
+    default:
+      LOG(ERROR) << "Failed to process certificate profile: "
+                 << profile.profile_id;
+      failed_cert_profiles_.insert(profile.profile_id);
+      break;
   }
 
-  auto iter = workers_.find(cert_profile.profile_id);
+  auto iter = workers_.find(profile.profile_id);
   if (iter == workers_.end()) {
-    LOG(WARNING) << "Finished worker is not found: " << cert_profile.profile_id;
+    NOTREACHED();
+    LOG(WARNING) << "Finished worker is not found";
     return;
   }
   workers_.erase(iter);
@@ -343,13 +372,16 @@ std::vector<CertProfile> CertProvisioningScheduler::GetCertProfiles() {
   std::vector<CertProfile> result_profiles;
   for (const base::Value& cur_profile : profile_list->GetList()) {
     const std::string* id = cur_profile.FindStringKey(kCertProfileIdKey);
-    if (!id) {
-      LOG(WARNING) << "Id field is not found";
+    const std::string* policy_version =
+        cur_profile.FindStringKey(kPolicyVersionKey);
+    if (!id || !policy_version) {
+      LOG(WARNING) << "Failed to parse certificate profile";
       continue;
     }
 
     result_profiles.emplace_back();
     result_profiles.back().profile_id = *id;
+    result_profiles.back().policy_version = *policy_version;
   }
 
   return result_profiles;

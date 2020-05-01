@@ -288,6 +288,7 @@ class WebGLConformanceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
       self.fail(self._WebGLTestMessages(self.tab))
 
   def _RunConformanceTest(self, test_path, *args):
+    del args  # Unused in conformance tests.
     self._NavigateTo(test_path, conformance_harness_script)
     self._CheckTestCompletion()
 

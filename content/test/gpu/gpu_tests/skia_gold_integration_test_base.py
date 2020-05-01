@@ -192,13 +192,13 @@ class SkiaGoldIntegrationTestBase(gpu_integration_test.GpuIntegrationTest):
     cls._image_parameters = None
 
   @classmethod
-  def GetImageParameters(cls, tab, page):
+  def GetImageParameters(cls, page):
     if not cls._image_parameters:
-      cls._ComputeGpuInfo(tab, page)
+      cls._ComputeGpuInfo(page)
     return cls._image_parameters
 
   @classmethod
-  def _ComputeGpuInfo(cls, tab, page):
+  def _ComputeGpuInfo(cls, page):
     if cls._image_parameters:
       return
     browser = cls.browser
@@ -352,9 +352,9 @@ class SkiaGoldIntegrationTestBase(gpu_integration_test.GpuIntegrationTest):
       # yapf: enable
     return build_id_args
 
-  def GetGoldJsonKeys(self, tab, page):
+  def GetGoldJsonKeys(self, page):
     """Get all the JSON metadata that will be passed to golctl."""
-    img_params = self.GetImageParameters(tab, page)
+    img_params = self.GetImageParameters(page)
     # All values need to be strings, otherwise goldctl fails.
     gpu_keys = {
         'vendor_id': self.ToHexOrNone(img_params.vendor_id),
@@ -369,7 +369,6 @@ class SkiaGoldIntegrationTestBase(gpu_integration_test.GpuIntegrationTest):
   def _UploadTestResultToSkiaGold(self,
                                   image_name,
                                   screenshot,
-                                  tab,
                                   page,
                                   build_id_args=None):
     """Compares the given image using Skia Gold and uploads the result.
@@ -381,7 +380,6 @@ class SkiaGoldIntegrationTestBase(gpu_integration_test.GpuIntegrationTest):
     Args:
       image_name: the name of the image being checked.
       screenshot: the image being checked as a Telemetry Bitmap.
-      tab: the Telemetry Tab object that the test was run in.
       page: the GPU PixelTestPage object for the test.
       build_id_args: a list of build-identifying flags and values.
     """
@@ -397,7 +395,7 @@ class SkiaGoldIntegrationTestBase(gpu_integration_test.GpuIntegrationTest):
         suffix='.png', dir=self._skia_gold_temp_dir).name
     image_util.WritePngFile(screenshot, png_temp_file)
 
-    gpu_keys = self.GetGoldJsonKeys(tab, page)
+    gpu_keys = self.GetGoldJsonKeys(page)
     json_temp_file = tempfile.NamedTemporaryFile(
         suffix='.json', dir=self._skia_gold_temp_dir).name
     failure_file = tempfile.NamedTemporaryFile(
@@ -549,7 +547,7 @@ class SkiaGoldIntegrationTestBase(gpu_integration_test.GpuIntegrationTest):
       # related to Gold.
       try:
         self._UploadTestResultToSkiaGold(
-            image_name, screenshot, tab, page, build_id_args=build_id_args)
+            image_name, screenshot, page, build_id_args=build_id_args)
       except Exception as gold_exception:
         logging.error(str(gold_exception))
       # TODO(https://crbug.com/1043129): Switch this to just "raise" once these

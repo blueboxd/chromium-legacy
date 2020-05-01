@@ -192,6 +192,10 @@ interface WebTestControlHost {
   // For the duration of the current test this causes all file choosers to
   // return the passed in |path|.
   SetFilePathForMockFileDialog(mojo_base.mojom.FilePath path);
+
+  // Moves focus and active state to the secondary devtools window, which exists
+  // only in devtools JS tests.
+  FocusDevtoolsSecondaryWindow();
 };
 
 // Web test messages sent from the renderer process to the browser.

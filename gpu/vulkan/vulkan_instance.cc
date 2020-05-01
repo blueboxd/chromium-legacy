@@ -80,19 +80,11 @@ bool VulkanInstance::Initialize(
   if (vkEnumerateInstanceVersion)
     vkEnumerateInstanceVersion(&vulkan_info_.api_version);
 
-#if defined(OS_ANDROID)
-  // Ensure that android works only with vulkan apiVersion >= 1.1. Vulkan will
-  // only be enabled for Android P+ and Android P+ requires vulkan
-  // apiVersion >= 1.1.
   if (vulkan_info_.api_version < VK_MAKE_VERSION(1, 1, 0))
     return false;
-#endif
 
   // Use Vulkan 1.1 if it's available.
-  vulkan_info_.used_api_version =
-      (vulkan_info_.api_version >= VK_MAKE_VERSION(1, 1, 0))
-          ? VK_MAKE_VERSION(1, 1, 0)
-          : VK_MAKE_VERSION(1, 0, 0);
+  vulkan_info_.used_api_version = VK_MAKE_VERSION(1, 1, 0);
 
   VkResult result = VK_SUCCESS;
 

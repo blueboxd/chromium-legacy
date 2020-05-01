@@ -280,12 +280,6 @@ void BlinkTestRunner::SendBluetoothManualChooserEvent(
                                                                  argument);
 }
 
-void BlinkTestRunner::SetFocus(blink::WebView* web_view, bool focus) {
-  RenderView* render_view = RenderView::FromWebView(web_view);
-  if (render_view)  // Check whether |web_view| has been already closed.
-    SetFocusAndActivate(render_view, focus);
-}
-
 void BlinkTestRunner::SetBlockThirdPartyCookies(bool block) {
   GetWebTestControlHostRemote()->BlockThirdPartyCookies(block);
 }
@@ -558,6 +552,10 @@ void BlinkTestRunner::SetScreenOrientationChanged() {
   GetWebTestControlHostRemote()->SetScreenOrientationChanged();
 }
 
+void BlinkTestRunner::FocusDevtoolsSecondaryWindow() {
+  GetWebTestControlHostRemote()->FocusDevtoolsSecondaryWindow();
+}
+
 void BlinkTestRunner::SetTrustTokenKeyCommitments(
     const std::string& raw_commitments,
     base::OnceClosure callback) {
@@ -695,10 +693,6 @@ void BlinkTestRunner::OnSetTestConfiguration(
   gfx::Rect window_rect(widget->WindowRect().x, widget->WindowRect().y,
                         window_size.width(), window_size.height());
   widget->SetWindowRectSynchronouslyForTesting(window_rect);
-
-  TestInterfaces* interfaces = web_view_test_proxy_->test_interfaces();
-  TestRunner* test_runner = interfaces->GetTestRunner();
-  test_runner->SetFocus(web_view_test_proxy_->GetWebView(), true);
 }
 
 void BlinkTestRunner::OnResetRendererAfterWebTest() {

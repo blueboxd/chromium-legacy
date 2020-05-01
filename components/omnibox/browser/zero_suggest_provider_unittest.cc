@@ -215,58 +215,46 @@ TEST_F(ZeroSuggestProviderTest, TypeOfResultToRun) {
   GURL current_url = GURL("https://example.com/");
   GURL suggest_url = GetSuggestURL(metrics::OmniboxEventProto::OTHER);
 
-  EXPECT_CALL(*client_, IsAuthenticated())
-      .WillRepeatedly(testing::Return(true));
   EXPECT_CALL(*client_, IsPersonalizedUrlDataCollectionActive())
       .WillRepeatedly(testing::Return(true));
 
   // Verify the unconfigured state returns platorm-specific defaults.
+  auto ExpectPlatformSpecificDefaultZeroSuggestBehavior = [&]() {
 #if defined(OS_IOS) || defined(OS_ANDROID)
-  EXPECT_EQ(ZeroSuggestProvider::ResultType::MOST_VISITED,
-            provider_->TypeOfResultToRun(current_url, suggest_url));
+    EXPECT_EQ(ZeroSuggestProvider::ResultType::MOST_VISITED,
+              provider_->TypeOfResultToRun(current_url, suggest_url));
 #else
-  EXPECT_EQ(ZeroSuggestProvider::ResultType::NONE,
-            provider_->TypeOfResultToRun(current_url, suggest_url));
+    EXPECT_EQ(ZeroSuggestProvider::ResultType::NONE,
+              provider_->TypeOfResultToRun(current_url, suggest_url));
 #endif
+  };
+  ExpectPlatformSpecificDefaultZeroSuggestBehavior();
 
-  // Verify remote suggestions are only allowed when the user is signed in.
-  // Otherwise, falls back to platorm-specific defaults.
-  EXPECT_CALL(*client_, IsAuthenticated())
-      .WillRepeatedly(testing::Return(false));
-
-  CreateRemoteNoUrlFieldTrial();
-#if defined(OS_IOS) || defined(OS_ANDROID)
-  EXPECT_EQ(ZeroSuggestProvider::ResultType::MOST_VISITED,
-            provider_->TypeOfResultToRun(current_url, suggest_url));
-#else
-  EXPECT_EQ(ZeroSuggestProvider::ResultType::NONE,
-            provider_->TypeOfResultToRun(current_url, suggest_url));
-#endif
-
-  // Restore authentication state.
+  // Verify RemoteNoUrl works when the user is signed in.
   EXPECT_CALL(*client_, IsAuthenticated())
       .WillRepeatedly(testing::Return(true));
+  CreateRemoteNoUrlFieldTrial();
+  EXPECT_EQ(ZeroSuggestProvider::ResultType::REMOTE_NO_URL,
+            provider_->TypeOfResultToRun(current_url, suggest_url));
 
-  // Verify remote suggestions are only allowed when user has set up Google as
-  // default search engine. Otherwise, falls back to platorm-specific defaults.
+  // But if the user has signed out, fall back to platform-specific defaults.
+  EXPECT_CALL(*client_, IsAuthenticated())
+      .WillRepeatedly(testing::Return(false));
+  ExpectPlatformSpecificDefaultZeroSuggestBehavior();
+
+  // Restore authentication state, but now set a non-Google default search
+  // engine. Verify that we still disallow remote suggestions.
+  EXPECT_CALL(*client_, IsAuthenticated())
+      .WillRepeatedly(testing::Return(true));
   TemplateURLService* turl_model = client_->GetTemplateURLService();
   auto* google_search_provider = turl_model->GetDefaultSearchProvider();
-
   TemplateURLData data;
   data.SetURL("https://www.example.com/?q={searchTerms}");
   data.suggestions_url = "https://www.example.com/suggest/?q={searchTerms}";
   auto* other_search_provider =
       turl_model->Add(std::make_unique<TemplateURL>(data));
   turl_model->SetUserSelectedDefaultSearchProvider(other_search_provider);
-
-  CreateRemoteNoUrlFieldTrial();
-#if defined(OS_IOS) || defined(OS_ANDROID)
-  EXPECT_EQ(ZeroSuggestProvider::ResultType::MOST_VISITED,
-            provider_->TypeOfResultToRun(current_url, suggest_url));
-#else
-  EXPECT_EQ(ZeroSuggestProvider::ResultType::NONE,
-            provider_->TypeOfResultToRun(current_url, suggest_url));
-#endif
+  ExpectPlatformSpecificDefaultZeroSuggestBehavior();
 
   // Restore Google as the default search provider.
   turl_model->SetUserSelectedDefaultSearchProvider(

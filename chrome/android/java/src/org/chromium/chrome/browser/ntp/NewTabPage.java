@@ -12,6 +12,7 @@ import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -21,7 +22,6 @@ import androidx.core.view.ViewCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import org.chromium.base.ApiCompatibilityUtils;
-import org.chromium.base.DiscardableReferencePool;
 import org.chromium.base.Log;
 import org.chromium.base.TimeUtils;
 import org.chromium.base.TraceEvent;
@@ -29,18 +29,24 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.GlobalDiscardableReferencePool;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.compositor.layouts.content.InvalidationAwareThumbnailProvider;
 import org.chromium.chrome.browser.download.DownloadManagerService;
+import org.chromium.chrome.browser.feed.FeedProcessScopeFactory;
+import org.chromium.chrome.browser.feed.FeedSurfaceCoordinator;
+import org.chromium.chrome.browser.feed.NtpStreamLifecycleManager;
+import org.chromium.chrome.browser.feed.StreamLifecycleManager;
+import org.chromium.chrome.browser.feed.action.FeedActionHandler;
+import org.chromium.chrome.browser.feed.library.api.client.stream.Stream;
+import org.chromium.chrome.browser.feed.library.api.host.action.ActionApi;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.lifecycle.LifecycleObserver;
 import org.chromium.chrome.browser.lifecycle.PauseResumeWithNativeObserver;
-import org.chromium.chrome.browser.ntp.NewTabPageView.NewTabPageManager;
-import org.chromium.chrome.browser.ntp.cards.ItemViewType;
-import org.chromium.chrome.browser.ntp.cards.NewTabPageAdapter;
-import org.chromium.chrome.browser.ntp.snippets.SuggestionsSource;
+import org.chromium.chrome.browser.native_page.ContextMenuManager;
+import org.chromium.chrome.browser.ntp.snippets.SectionHeaderView;
+import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.omnibox.LocationBar.OmniboxFocusReason;
 import org.chromium.chrome.browser.omnibox.voice.VoiceRecognitionHandler;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -69,6 +75,7 @@ import org.chromium.components.search_engines.TemplateUrlService.TemplateUrlServ
 import org.chromium.components.url_formatter.UrlFormatter;
 import org.chromium.content_public.browser.NavigationController;
 import org.chromium.content_public.browser.NavigationEntry;
+import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.mojom.WindowOpenDisposition;
 import org.chromium.url.GURL;
 
@@ -79,7 +86,8 @@ import java.util.List;
  */
 public class NewTabPage implements NativePage, InvalidationAwareThumbnailProvider,
                                    TemplateUrlServiceObserver,
-                                   ChromeFullscreenManager.FullscreenListener {
+                                   ChromeFullscreenManager.FullscreenListener,
+                                   FeedSurfaceCoordinator.FeedSurfaceDelegate {
     private static final String TAG = "NewTabPage";
 
     // Key for the scroll position data that may be stored in a navigation entry.
@@ -97,12 +105,10 @@ public class NewTabPage implements NativePage, InvalidationAwareThumbnailProvide
     private final boolean mIsTablet;
     private final ChromeFullscreenManager mFullscreenManager;
     private final NewTabPageUma mNewTabPageUma;
+    private final ContextMenuManager mContextMenuManager;
+    private FeedSurfaceCoordinator mCoordinator;
 
-    /**
-     * The {@link NewTabPageView} shown in this NewTabPageLayout. This may be null in sub-classes.
-     */
-    private @Nullable NewTabPageView mNewTabPageView;
-    protected NewTabPageLayout mNewTabPageLayout;
+    private NewTabPageLayout mNewTabPageLayout;
     private TabObserver mTabObserver;
     private LifecycleObserver mLifecycleObserver;
     protected boolean mSearchProviderHasLogo;
@@ -184,13 +190,10 @@ public class NewTabPage implements NativePage, InvalidationAwareThumbnailProvide
 
     protected class NewTabPageManagerImpl
             extends SuggestionsUiDelegateImpl implements NewTabPageManager {
-        public NewTabPageManagerImpl(SuggestionsSource suggestionsSource,
-                SuggestionsEventReporter eventReporter,
+        public NewTabPageManagerImpl(SuggestionsEventReporter eventReporter,
                 SuggestionsNavigationDelegate navigationDelegate, Profile profile,
-                NativePageHost nativePageHost, DiscardableReferencePool referencePool,
-                SnackbarManager snackbarManager) {
-            super(suggestionsSource, eventReporter, navigationDelegate, profile, nativePageHost,
-                    referencePool, snackbarManager);
+                NativePageHost nativePageHost, SnackbarManager snackbarManager) {
+            super(eventReporter, navigationDelegate, profile, nativePageHost, snackbarManager);
         }
 
         @Override
@@ -307,14 +310,12 @@ public class NewTabPage implements NativePage, InvalidationAwareThumbnailProvide
         Profile profile = Profile.fromWebContents(mTab.getWebContents());
 
         SuggestionsDependencyFactory depsFactory = SuggestionsDependencyFactory.getInstance();
-        SuggestionsSource suggestionsSource = depsFactory.createSuggestionSource(profile);
         SuggestionsEventReporter eventReporter = depsFactory.createEventReporter();
 
         SuggestionsNavigationDelegate navigationDelegate = new SuggestionsNavigationDelegate(
                 activity, profile, nativePageHost, tabModelSelector, mTab);
-        mNewTabPageManager = new NewTabPageManagerImpl(suggestionsSource, eventReporter,
-                navigationDelegate, profile, nativePageHost,
-                GlobalDiscardableReferencePool.getReferencePool(), snackbarManager);
+        mNewTabPageManager = new NewTabPageManagerImpl(
+                eventReporter, navigationDelegate, profile, nativePageHost, snackbarManager);
         mTileGroupDelegate = new NewTabPageTileGroupDelegate(
                 activity, profile, navigationDelegate, snackbarManager);
 
@@ -337,11 +338,6 @@ public class NewTabPage implements NativePage, InvalidationAwareThumbnailProvide
             public void onHidden(Tab tab, @TabHidingType int type) {
                 if (mIsLoaded) recordNTPHidden();
             }
-
-            @Override
-            public void onPageLoadStarted(Tab tab, String url) {
-                saveLastScrollPosition();
-            }
         };
         mTab.addObserver(mTabObserver);
 
@@ -360,8 +356,8 @@ public class NewTabPage implements NativePage, InvalidationAwareThumbnailProvide
         mActivityLifecycleDispatcher.register(mLifecycleObserver);
 
         updateSearchProviderHasLogo();
-        initializeMainView(activity, nativePageHost, activityTabProvider, lifecycleDispatcher,
-                snackbarManager, overviewModeBehavior, tabModelSelector, uma, isInNightMode);
+        initializeMainView(activity, activityTabProvider, snackbarManager, tabModelSelector, uma,
+                isInNightMode);
 
         mFullscreenManager = fullscreenManager;
         getView().addOnAttachStateChangeListener(new View.OnAttachStateChangeListener() {
@@ -387,44 +383,60 @@ public class NewTabPage implements NativePage, InvalidationAwareThumbnailProvide
         mNewTabPageUma.recordIsUserOnline();
         mNewTabPageUma.recordLoadType();
         mNewTabPageUma.recordContentSuggestionsDisplayStatus();
+
+        // TODO(twellington): Move this somewhere it can be shared with NewTabPageView?
+        Runnable closeContextMenuCallback = activity::closeContextMenu;
+        mContextMenuManager = new ContextMenuManager(mNewTabPageManager.getNavigationDelegate(),
+                mCoordinator.getTouchEnabledDelegate(), closeContextMenuCallback,
+                NewTabPage.CONTEXT_MENU_USER_ACTION_PREFIX);
+        mTab.getWindowAndroid().addContextMenuCloseListener(mContextMenuManager);
+
+        mNewTabPageLayout.initialize(mNewTabPageManager, activity, mTileGroupDelegate,
+                mSearchProviderHasLogo,
+                TemplateUrlServiceFactory.get().isDefaultSearchEngineGoogle(),
+                mCoordinator.getScrollDelegate(), mContextMenuManager, mCoordinator.getUiConfig(),
+                activityTabProvider, lifecycleDispatcher, overviewModeBehavior, uma);
         TraceEvent.end(TAG);
     }
 
     /**
      * Create and initialize the main view contained in this NewTabPage.
      * @param activity The activity used to initialize the view.
-     * @param host NativePageHost used for initialization.
      * @param tabProvider Provides the current active tab.
-     * @param lifecycleDispatcher Activity lifecycle dispatcher.
-     * @param snackbarManager {@link SnackBarManager} object.
-     * @param overviewModeBehavior Overview mode to observe for mode changes.
+     * @param snackbarManager {@link SnackbarManager} object.
      * @param tabModelSelector {@link TabModelSelector} object.
      * @param uma {@link NewTabPageUma} object recording user metrics.
      * @param isInNightMode {@code true} if the night mode setting is on.
      */
-    protected void initializeMainView(Activity activity, NativePageHost host,
-            Supplier<Tab> tabProvider, ActivityLifecycleDispatcher lifecycleDispatcher,
-            SnackbarManager snackbarManager, @Nullable OverviewModeBehavior overviewModeBehavior,
-            TabModelSelector tabModelSelector, NewTabPageUma uma, boolean isInNightMode) {
+    protected void initializeMainView(Activity activity, Supplier<Tab> tabProvider,
+            SnackbarManager snackbarManager, TabModelSelector tabModelSelector, NewTabPageUma uma,
+            boolean isInNightMode) {
+        Profile profile = Profile.fromWebContents(mTab.getWebContents());
+        ActionApi actionApi = new FeedActionHandler(mNewTabPageManager.getNavigationDelegate(),
+                FeedProcessScopeFactory.getFeedConsumptionObserver(),
+                FeedProcessScopeFactory.getFeedOfflineIndicator(),
+                OfflinePageBridge.getForProfile(profile),
+                FeedProcessScopeFactory.getFeedLoggingBridge(), activity, profile);
         LayoutInflater inflater = LayoutInflater.from(activity);
-        mNewTabPageView = (NewTabPageView) inflater.inflate(R.layout.new_tab_page_view, null);
-        mNewTabPageLayout = mNewTabPageView.getNewTabPageLayout();
+        mNewTabPageLayout = (NewTabPageLayout) inflater.inflate(R.layout.new_tab_page_layout, null);
 
-        mNewTabPageView.initialize(mNewTabPageManager, activity, mTab, mTileGroupDelegate,
-                mSearchProviderHasLogo,
-                TemplateUrlServiceFactory.get().isDefaultSearchEngineGoogle(),
-                getScrollPositionFromNavigationEntry(NAVIGATION_ENTRY_SCROLL_POSITION_KEY, mTab),
-                mConstructedTimeNs, tabProvider, lifecycleDispatcher, overviewModeBehavior, uma);
-    }
+        // Determine the feed header to use.
+        final SectionHeaderView sectionHeaderView;
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.FEED_HEADER_MENU)) {
+            sectionHeaderView = (SectionHeaderView) inflater.inflate(
+                    R.layout.new_tab_page_snippets_expandable_header_with_menu, null, false);
+        } else {
+            sectionHeaderView = (SectionHeaderView) inflater.inflate(
+                    R.layout.new_tab_page_snippets_expandable_header, null, false);
+        }
 
-    /**
-     * Save the last scroll position stored in the navigation entry if necessary.
-     */
-    protected void saveLastScrollPosition() {
-        int scrollPosition = mNewTabPageView.getScrollPosition();
-        if (scrollPosition == RecyclerView.NO_POSITION) return;
-        saveStringToNavigationEntry(
-                mTab, NAVIGATION_ENTRY_SCROLL_POSITION_KEY, Integer.toString(scrollPosition));
+        mCoordinator = new FeedSurfaceCoordinator(activity, snackbarManager, tabModelSelector,
+                tabProvider, new SnapScrollHelper(mNewTabPageManager, mNewTabPageLayout),
+                mNewTabPageLayout, sectionHeaderView, actionApi, isInNightMode, this,
+                mNewTabPageManager.getNavigationDelegate(), profile);
+
+        // Record the timestamp at which the new tab page's construction started.
+        uma.trackTimeToFirstDraw(mCoordinator.getView(), mConstructedTimeNs);
     }
 
     /**
@@ -487,12 +499,6 @@ public class NewTabPage implements NativePage, InvalidationAwareThumbnailProvide
      */
     private int getToolbarExtraYOffset() {
         return mFullscreenManager.getTopControlsHeight() - mTabStripAndToolbarHeight;
-    }
-
-    /** @return The view container for the new tab page. */
-    @VisibleForTesting
-    public NewTabPageView getNewTabPageView() {
-        return mNewTabPageView;
     }
 
     /** @return The view container for the new tab layout. */
@@ -610,7 +616,6 @@ public class NewTabPage implements NativePage, InvalidationAwareThumbnailProvide
      */
     public void setFakeboxDelegate(FakeboxDelegate fakeboxDelegate) {
         mFakeboxDelegate = fakeboxDelegate;
-        if (mNewTabPageView != null) mNewTabPageView.setFakeboxDelegate(fakeboxDelegate);
         if (mFakeboxDelegate != null) {
             // The toolbar can't get the reference to the native page until its initialization is
             // finished, so we can't cache it here and transfer it to the view later. We pull that
@@ -732,6 +737,8 @@ public class NewTabPage implements NativePage, InvalidationAwareThumbnailProvide
         mActivityLifecycleDispatcher.unregister(mLifecycleObserver);
         mLifecycleObserver = null;
         mFullscreenManager.removeListener(this);
+        mCoordinator.destroy();
+        mTab.getWindowAndroid().removeContextMenuCloseListener(mContextMenuManager);
         mIsDestroyed = true;
     }
 
@@ -757,7 +764,7 @@ public class NewTabPage implements NativePage, InvalidationAwareThumbnailProvide
 
     @Override
     public View getView() {
-        return mNewTabPageView;
+        return mCoordinator.getView();
     }
 
     @Override
@@ -773,34 +780,28 @@ public class NewTabPage implements NativePage, InvalidationAwareThumbnailProvide
 
     @Override
     public boolean shouldCaptureThumbnail() {
-        return mNewTabPageView.shouldCaptureThumbnail();
+        return mNewTabPageLayout.shouldCaptureThumbnail() || mCoordinator.shouldCaptureThumbnail();
     }
 
     @Override
     public void captureThumbnail(Canvas canvas) {
-        mNewTabPageView.captureThumbnail(canvas);
+        mNewTabPageLayout.onPreCaptureThumbnail();
+        mCoordinator.captureThumbnail(canvas);
+    }
+    // Implements FeedSurfaceDelegate
+    @Override
+    public StreamLifecycleManager createStreamLifecycleManager(Stream stream, Activity activity) {
+        return new NtpStreamLifecycleManager(stream, activity, mTab);
+    }
+
+    @Override
+    public boolean onInterceptTouchEvent(MotionEvent ev) {
+        return !(mTab != null && DeviceFormFactor.isWindowOnTablet(mTab.getWindowAndroid()))
+                && (mFakeboxDelegate != null && mFakeboxDelegate.isUrlBarFocused());
     }
 
     @VisibleForTesting
-    public NewTabPageManager getManagerForTesting() {
-        return mNewTabPageManager;
-    }
-
-    @VisibleForTesting
-    public View getSignInPromoViewForTesting() {
-        RecyclerView recyclerView = mNewTabPageView.getRecyclerView();
-        NewTabPageAdapter adapter = (NewTabPageAdapter) recyclerView.getAdapter();
-        return recyclerView
-                .findViewHolderForAdapterPosition(
-                        adapter.getFirstPositionForType(ItemViewType.PROMO))
-                .itemView;
-    }
-
-    @VisibleForTesting
-    public View getSectionHeaderViewForTesting() {
-        RecyclerView recyclerView = mNewTabPageView.getRecyclerView();
-        NewTabPageAdapter adapter = (NewTabPageAdapter) recyclerView.getAdapter();
-        return recyclerView.findViewHolderForAdapterPosition(adapter.getFirstHeaderPosition())
-                .itemView;
+    public FeedSurfaceCoordinator getCoordinatorForTesting() {
+        return mCoordinator;
     }
 }

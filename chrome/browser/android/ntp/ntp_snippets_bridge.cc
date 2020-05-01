@@ -51,37 +51,6 @@ using ntp_snippets::CategoryStatus;
 using ntp_snippets::KnownCategories;
 using ntp_snippets::ContentSuggestion;
 
-namespace {
-
-// Converts a vector of ContentSuggestions to its Java equivalent.
-ScopedJavaLocalRef<jobject> JNI_SnippetsBridge_ToJavaSuggestionList(
-    JNIEnv* env,
-    const Category& category,
-    const std::vector<ContentSuggestion>& suggestions) {
-  ScopedJavaLocalRef<jobject> result =
-      Java_SnippetsBridge_createSuggestionList(env);
-  for (const ContentSuggestion& suggestion : suggestions) {
-    // image_dominant_color equal to 0 encodes absence of the value. 0 is not a
-    // valid color, because the passed color cannot be fully transparent.
-    ScopedJavaLocalRef<jobject> java_suggestion =
-        Java_SnippetsBridge_addSuggestion(
-            env, result, category.id(),
-            ConvertUTF8ToJavaString(env, suggestion.id().id_within_category()),
-            ConvertUTF16ToJavaString(env, suggestion.title()),
-            ConvertUTF16ToJavaString(env, suggestion.publisher_name()),
-            ConvertUTF8ToJavaString(env, suggestion.url().spec()),
-            suggestion.publish_date().ToJavaTime(), suggestion.score(),
-            suggestion.fetch_date().ToJavaTime(),
-            suggestion.is_video_suggestion(),
-            suggestion.optional_image_dominant_color().value_or(0),
-            !suggestion.salient_image_url().is_empty());
-  }
-
-  return result;
-}
-
-}  // namespace
-
 static jlong JNI_SnippetsBridge_Init(JNIEnv* env,
                                      const JavaParamRef<jobject>& j_bridge,
                                      const JavaParamRef<jobject>& j_profile) {
@@ -156,33 +125,6 @@ int NTPSnippetsBridge::GetCategoryStatus(JNIEnv* env,
       Category::FromIDValue(j_category_id)));
 }
 
-ScopedJavaLocalRef<jobject> NTPSnippetsBridge::GetCategoryInfo(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj,
-    jint j_category_id) {
-  base::Optional<CategoryInfo> info =
-      content_suggestions_service_->GetCategoryInfo(
-          Category::FromIDValue(j_category_id));
-  if (!info) {
-    return ScopedJavaLocalRef<jobject>(env, nullptr);
-  }
-  return Java_SnippetsBridge_createSuggestionsCategoryInfo(
-      env, j_category_id, ConvertUTF16ToJavaString(env, info->title()),
-      static_cast<int>(info->card_layout()),
-      static_cast<int>(info->additional_action()), info->show_if_empty(),
-      ConvertUTF16ToJavaString(env, info->no_suggestions_message()));
-}
-
-ScopedJavaLocalRef<jobject> NTPSnippetsBridge::GetSuggestionsForCategory(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj,
-    jint j_category_id) {
-  Category category = Category::FromIDValue(j_category_id);
-  return JNI_SnippetsBridge_ToJavaSuggestionList(
-      env, category,
-      content_suggestions_service_->GetSuggestionsForCategory(category));
-}
-
 jboolean NTPSnippetsBridge::AreRemoteSuggestionsEnabled(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {
@@ -218,29 +160,6 @@ void NTPSnippetsBridge::FetchSuggestionFavicon(
       j_minimum_size_px, j_desired_size_px,
       base::BindOnce(&NTPSnippetsBridge::OnImageFetched,
                      weak_ptr_factory_.GetWeakPtr(), callback));
-}
-
-void NTPSnippetsBridge::Fetch(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj,
-    jint j_category_id,
-    const JavaParamRef<jobjectArray>& j_displayed_suggestions,
-    const JavaParamRef<jobject>& j_success_callback,
-    const JavaParamRef<jobject>& j_failure_callback) {
-  ScopedJavaGlobalRef<jobject> success_callback(j_success_callback);
-  ScopedJavaGlobalRef<jobject> failure_callback(j_failure_callback);
-  std::vector<std::string> known_suggestion_ids;
-  AppendJavaStringArrayToStringVector(env, j_displayed_suggestions,
-                                      &known_suggestion_ids);
-
-  Category category = Category::FromIDValue(j_category_id);
-  content_suggestions_service_->Fetch(
-      category,
-      std::set<std::string>(known_suggestion_ids.begin(),
-                            known_suggestion_ids.end()),
-      base::BindOnce(&NTPSnippetsBridge::OnSuggestionsFetched,
-                     weak_ptr_factory_.GetWeakPtr(), success_callback,
-                     failure_callback, category));
 }
 
 void NTPSnippetsBridge::ReloadSuggestions(JNIEnv* env,
@@ -293,30 +212,25 @@ void NTPSnippetsBridge::RestoreDismissedCategories(
 NTPSnippetsBridge::~NTPSnippetsBridge() {}
 
 void NTPSnippetsBridge::OnNewSuggestions(Category category) {
-  JNIEnv* env = AttachCurrentThread();
-  Java_SnippetsBridge_onNewSuggestions(env, bridge_,
-                                       static_cast<int>(category.id()));
+  // TODO(https://crbug.com/1069183): Dead code, clean-up with rest of C++ Feed
+  // code.
 }
 
 void NTPSnippetsBridge::OnCategoryStatusChanged(Category category,
                                                 CategoryStatus new_status) {
-  JNIEnv* env = AttachCurrentThread();
-  Java_SnippetsBridge_onCategoryStatusChanged(env, bridge_,
-                                              static_cast<int>(category.id()),
-                                              static_cast<int>(new_status));
+  // TODO(https://crbug.com/1069183): Dead code, clean-up with rest of C++ Feed
+  // code.
 }
 
 void NTPSnippetsBridge::OnSuggestionInvalidated(
     const ContentSuggestion::ID& suggestion_id) {
-  JNIEnv* env = AttachCurrentThread();
-  Java_SnippetsBridge_onSuggestionInvalidated(
-      env, bridge_, static_cast<int>(suggestion_id.category().id()),
-      ConvertUTF8ToJavaString(env, suggestion_id.id_within_category()));
+  // TODO(https://crbug.com/1069183): Dead code, clean-up with rest of C++ Feed
+  // code.
 }
 
 void NTPSnippetsBridge::OnFullRefreshRequired() {
-  JNIEnv* env = AttachCurrentThread();
-  Java_SnippetsBridge_onFullRefreshRequired(env, bridge_);
+  // TODO(https://crbug.com/1069183): Dead code, clean-up with rest of C++ Feed
+  // code.
 }
 
 void NTPSnippetsBridge::ContentSuggestionsServiceShutdown() {
@@ -340,22 +254,11 @@ void NTPSnippetsBridge::OnSuggestionsFetched(
     ntp_snippets::Status status,
     std::vector<ContentSuggestion> suggestions) {
   // TODO(fhorschig, dgn): Allow refetch or show notification acc. to status.
-  JNIEnv* env = AttachCurrentThread();
-  if (status.IsSuccess()) {
-    RunObjectCallbackAndroid(
-        success_callback,
-        JNI_SnippetsBridge_ToJavaSuggestionList(env, category, suggestions));
-  } else {
-    // The second parameter here means nothing - it was more convenient to pass
-    // a Callback (which has 1 parameter) over to the native side than a
-    // Runnable (which has no parameters). We ignore the parameter Java-side.
-    RunIntCallbackAndroid(failure_callback, 0);
-  }
+  // Dead code, clean-up with rest of C++ Feed code.
 }
 
 void NTPSnippetsBridge::OnSuggestionsVisibilityChanged(
     const Category category) {
-  JNIEnv* env = AttachCurrentThread();
-  Java_SnippetsBridge_onSuggestionsVisibilityChanged(
-      env, bridge_, static_cast<int>(category.id()));
+  // TODO(https://crbug.com/1069183): Dead code, clean-up with rest of C++ Feed
+  // code.
 }

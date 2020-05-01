@@ -193,7 +193,7 @@ void NetworkMetadataStore::SetPref(const std::string& network_guid,
   if (!network)
     return;
 
-  if (network->IsPrivate()) {
+  if (network->IsPrivate() && profile_pref_service_) {
     base::Value profile_dict =
         profile_pref_service_->GetDictionary(kNetworkMetadataPref)->Clone();
     profile_dict.SetPath(GetPath(network_guid, key), std::move(value));
@@ -221,7 +221,7 @@ const base::Value* NetworkMetadataStore::GetPref(
     return nullptr;
   }
 
-  if (network->IsPrivate()) {
+  if (network->IsPrivate() && profile_pref_service_) {
     const base::Value* profile_dict =
         profile_pref_service_->GetDictionary(kNetworkMetadataPref);
     return profile_dict->FindPath(GetPath(network_guid, key));

@@ -22,6 +22,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
+#include "chrome/browser/ui/webui/settings/chromeos/constants/routes.mojom.h"
 #include "chrome/common/webui_url_constants.h"
 #endif  // defined(OS_CHROMEOS)
 
@@ -110,7 +111,8 @@ void BluetoothChooserController::OpenAdapterOffHelpUrl() const {
 #if defined(OS_CHROMEOS)
   // Chrome OS can directly link to the OS setting to turn on the adapter.
   chrome::SettingsWindowManager::GetInstance()->ShowOSSettings(
-      GetBrowser()->profile(), chrome::kBluetoothSubPage);
+      GetBrowser()->profile(),
+      chromeos::settings::mojom::kBluetoothDevicesSubpagePath);
 #else
   // For other operating systems, show a help center page in a tab.
   GetBrowser()->OpenURL(content::OpenURLParams(

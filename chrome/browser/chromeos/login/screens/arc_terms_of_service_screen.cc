@@ -12,6 +12,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
 #include "chrome/browser/ui/webui/chromeos/login/arc_terms_of_service_screen_handler.h"
+#include "chrome/browser/ui/webui/settings/chromeos/constants/routes.mojom.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/webui_url_constants.h"
 #include "components/prefs/pref_service.h"
@@ -43,7 +44,7 @@ void ArcTermsOfServiceScreen::MaybeLaunchArcSettings(Profile* profile) {
     // settings and sync settings - currently the Settings window will only
     // show one settings page. See crbug.com/901184#c4 for details.
     chrome::SettingsWindowManager::GetInstance()->ShowOSSettings(
-        profile, chrome::kAndroidAppsDetailsSubPage);
+        profile, chromeos::settings::mojom::kGooglePlayStoreSubpagePath);
   }
 }
 

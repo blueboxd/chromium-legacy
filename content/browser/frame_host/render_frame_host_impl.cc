@@ -145,6 +145,7 @@
 #include "content/public/browser/context_menu_params.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/global_routing_id.h"
+#include "content/public/browser/idle_manager.h"
 #include "content/public/browser/media_player_watch_time.h"
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/permission_type.h"
@@ -3359,6 +3360,28 @@ void RenderFrameHostImpl::RequestTextSurroundingSelection(
   DCHECK(!callback.is_null());
   GetAssociatedLocalFrame()->GetTextSurroundingSelection(max_length,
                                                          std::move(callback));
+}
+
+bool RenderFrameHostImpl::HasCommittingNavigationRequestForOrigin(
+    const url::Origin& origin,
+    NavigationRequest* navigation_request_to_exclude) {
+  if (navigation_request_ &&
+      navigation_request_.get() != navigation_request_to_exclude &&
+      navigation_request_->HasCommittingOrigin(origin)) {
+    return true;
+  }
+
+  for (const auto& it : navigation_requests_) {
+    NavigationRequest* request = it.first;
+    if (request != navigation_request_to_exclude &&
+        request->HasCommittingOrigin(origin)) {
+      return true;
+    }
+  }
+
+  // Note: this function excludes |same_document_navigation_request_|, which
+  // should be ok since these cannot change the origin.
+  return false;
 }
 
 void RenderFrameHostImpl::SendInterventionReport(const std::string& id,
@@ -7011,7 +7034,8 @@ void RenderFrameHostImpl::GetIdleManager(
   }
   static_cast<StoragePartitionImpl*>(GetProcess()->GetStoragePartition())
       ->GetIdleManager()
-      ->CreateService(std::move(receiver));
+      ->CreateService(std::move(receiver),
+                      GetMainFrame()->GetLastCommittedOrigin());
 }
 
 void RenderFrameHostImpl::GetPresentationService(
@@ -8591,7 +8615,9 @@ RenderFrameHostImpl::PerformGetAssertionWebAuthSecurityChecks(
   bool is_cross_origin;
   blink::mojom::AuthenticatorStatus status =
       GetWebAuthRequestSecurityChecker()->ValidateAncestorOrigins(
-          effective_origin, &is_cross_origin);
+          effective_origin,
+          WebAuthRequestSecurityChecker::RequestType::kGetAssertion,
+          &is_cross_origin);
   if (status != blink::mojom::AuthenticatorStatus::SUCCESS) {
     return status;
   }
@@ -8612,7 +8638,9 @@ RenderFrameHostImpl::PerformMakeCredentialWebAuthSecurityChecks(
   bool is_cross_origin;
   blink::mojom::AuthenticatorStatus status =
       GetWebAuthRequestSecurityChecker()->ValidateAncestorOrigins(
-          effective_origin, &is_cross_origin);
+          effective_origin,
+          WebAuthRequestSecurityChecker::RequestType::kMakeCredential,
+          &is_cross_origin);
   if (status != blink::mojom::AuthenticatorStatus::SUCCESS) {
     return status;
   }

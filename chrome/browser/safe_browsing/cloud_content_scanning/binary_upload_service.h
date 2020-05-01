@@ -162,6 +162,9 @@ class BinaryUploadService : public KeyedService {
   // Resets |can_upload_data_|. Called every 24 hour by |timer_|.
   void ResetAuthorizationData();
 
+  // Performs cleanup needed at shutdown.
+  void Shutdown() override;
+
   // Sets |can_upload_data_| for tests.
   void SetAuthForTesting(bool authorized);
 

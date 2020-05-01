@@ -4777,7 +4777,8 @@ class MockTrustTokenRequestHelperFactory
       mojom::TrustTokenOperationStatus creation_failure_error,
       SyncOrAsync sync_or_async)
       : TrustTokenRequestHelperFactory(nullptr,
-                                       noop_key_commitment_getter.get()),
+                                       noop_key_commitment_getter.get(),
+                                       {}),
         sync_or_async_(sync_or_async),
         creation_failure_error_(creation_failure_error) {}
 
@@ -4787,7 +4788,8 @@ class MockTrustTokenRequestHelperFactory
       SyncOrAsync sync_or_async,
       bool* begin_done_flag)
       : TrustTokenRequestHelperFactory(nullptr,
-                                       noop_key_commitment_getter.get()),
+                                       noop_key_commitment_getter.get(),
+                                       {}),
         sync_or_async_(sync_or_async),
         helper_(
             std::make_unique<MockTrustTokenRequestHelper>(on_begin,

@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/web_apps/web_app_frame_toolbar_test.h"
-
 #include <cmath>
 
 #include "base/optional.h"
@@ -17,7 +15,9 @@
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/toolbar_button_provider.h"
 #include "chrome/browser/ui/views/page_action/page_action_icon_controller.h"
+#include "chrome/browser/ui/views/web_apps/web_app_frame_toolbar_test_mixin.h"
 #include "chrome/browser/ui/views/web_apps/web_app_frame_toolbar_view.h"
+#include "chrome/test/base/in_process_browser_test.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/page_zoom.h"
@@ -50,7 +50,8 @@ T* GetLastVisible(const std::vector<T*>& views) {
 
 }  // namespace
 
-class WebAppFrameToolbarBrowserTest : public WebAppFrameToolbarTest {
+class WebAppFrameToolbarBrowserTest : public InProcessBrowserTest,
+                                      public WebAppFrameToolbarTestMixin {
  public:
   WebAppFrameToolbarBrowserTest()
       : https_server_(net::EmbeddedTestServer::TYPE_HTTPS) {}
@@ -61,7 +62,7 @@ class WebAppFrameToolbarBrowserTest : public WebAppFrameToolbarTest {
   void SetUp() override {
     https_server_.AddDefaultHandlers(GetChromeTestDataDir());
 
-    WebAppFrameToolbarTest::SetUp();
+    InProcessBrowserTest::SetUp();
   }
 
  private:
@@ -70,7 +71,7 @@ class WebAppFrameToolbarBrowserTest : public WebAppFrameToolbarTest {
 
 IN_PROC_BROWSER_TEST_F(WebAppFrameToolbarBrowserTest, SpaceConstrained) {
   const GURL app_url("https://test.org");
-  InstallAndLaunchWebApp(app_url);
+  InstallAndLaunchWebApp(browser(), app_url);
 
   views::View* const toolbar_left_container =
       web_app_frame_toolbar()->GetLeftContainerForTesting();
@@ -167,7 +168,7 @@ IN_PROC_BROWSER_TEST_F(WebAppFrameToolbarBrowserTest, SpaceConstrained) {
 IN_PROC_BROWSER_TEST_F(WebAppFrameToolbarBrowserTest, ThemeChange) {
   ASSERT_TRUE(https_server()->Start());
   const GURL app_url = https_server()->GetURL("/banners/theme-color.html");
-  InstallAndLaunchWebApp(app_url);
+  InstallAndLaunchWebApp(browser(), app_url);
 
   content::WebContents* web_contents =
       app_browser()->tab_strip_model()->GetActiveWebContents();
@@ -208,7 +209,7 @@ IN_PROC_BROWSER_TEST_F(WebAppFrameToolbarBrowserTest, ThemeChange) {
 // Test that a tooltip is shown when hovering over a truncated title.
 IN_PROC_BROWSER_TEST_F(WebAppFrameToolbarBrowserTest, TitleHover) {
   const GURL app_url("https://test.org");
-  InstallAndLaunchWebApp(app_url);
+  InstallAndLaunchWebApp(browser(), app_url);
 
   views::View* const toolbar_left_container =
       web_app_frame_toolbar()->GetLeftContainerForTesting();

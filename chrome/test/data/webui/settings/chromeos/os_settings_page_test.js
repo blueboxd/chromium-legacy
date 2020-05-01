@@ -84,8 +84,10 @@ suite('OSSettingsPage', function() {
     Polymer.dom.flush();
     await test_util.flushTasks();
 
-    const sectionNames =
-        ['osPrivacy', 'osLanguages', 'files', 'osReset', 'dateTime', 'a11y'];
+    const sectionNames = [
+      'osPrivacy', 'osLanguages', 'files', 'osReset', 'dateTime',
+      'osAccessibility'
+    ];
 
     for (const name of sectionNames) {
       const section = settingsPage.shadowRoot.querySelector(
@@ -113,7 +115,7 @@ suite('OSSettingsPage', function() {
 
     const visibleSections = [
       'internet', 'bluetooth', 'device', 'osSearch', 'apps', 'osPrivacy',
-      'osLanguages', 'files', 'osReset', 'dateTime', 'a11y'
+      'osLanguages', 'files', 'osReset', 'dateTime', 'osAccessibility'
     ];
     for (const name of visibleSections) {
       const section = settingsPage.shadowRoot.querySelector(

@@ -191,11 +191,6 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
   // RenderView is the currently active RenderView of a WebContents.
   unsigned GetLocalSessionHistoryLengthForTesting() const;
 
-  // Invokes OnSetFocus and marks the widget as active depending on the value
-  // of |enable|. This is used for web tests that need to control the focus
-  // synchronously from the renderer.
-  void SetFocusAndActivateForTesting(bool enable);
-
   void UpdateBrowserControlsState(BrowserControlsState constraints,
                                   BrowserControlsState current,
                                   bool animate);

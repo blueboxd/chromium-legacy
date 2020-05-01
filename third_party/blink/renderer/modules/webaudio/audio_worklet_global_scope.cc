@@ -116,12 +116,31 @@ void AudioWorkletGlobalScope::registerProcessor(
 
   if (!v8_parameter_descriptors->IsNullOrUndefined()) {
     // Optional 'parameterDescriptors' property is found.
-    const HeapVector<Member<AudioParamDescriptor>>& audio_param_descriptors =
+    const HeapVector<Member<AudioParamDescriptor>>& given_param_descriptors =
         NativeValueTraits<IDLSequence<AudioParamDescriptor>>::NativeValue(
             isolate, v8_parameter_descriptors, exception_state);
     if (exception_state.HadException())
       return;
-    definition->SetAudioParamDescriptors(audio_param_descriptors);
+
+    // registerProcessor() Step 7.3.1: Let paramName be the value of the member
+    // name in descriptor. Throw a NotSupportedError if paramNames already
+    // contains paramName value.
+    HashSet<String> sanitized_names;
+    HeapVector<Member<AudioParamDescriptor>> sanitized_param_descriptors;
+    for (const auto& given_descriptor : given_param_descriptors) {
+      const String new_param_name = given_descriptor->name();
+      if (!sanitized_names.insert(new_param_name).is_new_entry) {
+        exception_state.ThrowDOMException(
+            DOMExceptionCode::kNotSupportedError,
+            "Found a duplicate name \"" + new_param_name +
+            "\" in parameterDescriptors() from the AudioWorkletProcessor " +
+            "definition of \"" + name + "\".");
+        return;
+      }
+      sanitized_param_descriptors.push_back(given_descriptor);
+    }
+
+    definition->SetAudioParamDescriptors(sanitized_param_descriptors);
   }
 
   processor_definition_map_.Set(name, definition);

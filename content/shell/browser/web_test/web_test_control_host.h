@@ -204,6 +204,7 @@ class WebTestControlHost : public WebContentsObserver,
   void BlockThirdPartyCookies(bool block) override;
   void GetWritableDirectory(GetWritableDirectoryCallback callback) override;
   void SetFilePathForMockFileDialog(const base::FilePath& path) override;
+  void FocusDevtoolsSecondaryWindow() override;
 
  private:
   enum TestPhase { BETWEEN_TESTS, DURING_TEST, CLEAN_UP };

@@ -44,9 +44,4 @@ public class TileGridViewHolder extends SiteSectionViewHolder {
     public void bindDataSource(TileGroup tileGroup, TileRenderer tileRenderer) {
         super.bindDataSource(tileGroup, tileRenderer);
     }
-
-    @Override
-    public void recycle() {
-        super.recycle();
-    }
 }

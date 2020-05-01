@@ -42,6 +42,7 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
+#include "chrome/browser/ui/webui/settings/chromeos/constants/routes.mojom.h"
 #include "chrome/browser/web_applications/system_web_app_manager.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/common/chrome_paths.h"
@@ -164,8 +165,9 @@ IN_PROC_BROWSER_TEST_F(AppListClientImplBrowserTest, ShowAppInfo) {
       settings_app->tab_strip_model()->GetActiveWebContents());
 
   EXPECT_EQ(
-      chrome::GetOSSettingsUrl(base::StrCat(
-          {chrome::kAppManagementDetailSubPage, "?id=", app->id()})),
+      chrome::GetOSSettingsUrl(
+          base::StrCat({chromeos::settings::mojom::kAppDetailsSubpagePath,
+                        "?id=", app->id()})),
       settings_app->tab_strip_model()->GetActiveWebContents()->GetVisibleURL());
   // The app list should be dismissed when the dialog is shown.
   EXPECT_FALSE(client->app_list_visible());

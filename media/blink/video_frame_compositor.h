@@ -231,7 +231,7 @@ class MEDIA_BLINK_EXPORT VideoFrameCompositor : public VideoRendererSink,
   // after each successful UpdateCurrentFrame() call.
   base::RetainingOneShotTimer background_rendering_timer_;
 
-  // Calls ClearForceBeginFrames() once we stop receiving calls to
+  // Calls StopForceBeginFrames() once we stop receiving calls to
   // requestVideoFrameCallback() (or SetOnFramePresentedCallback() in our case).
   base::RetainingOneShotTimer force_begin_frames_timer_;
 

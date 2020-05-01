@@ -359,7 +359,7 @@ suite(history_list_test.suiteName, function() {
 
               // Check that the card title displays the search term somewhere.
               const index = heading.indexOf('Google');
-              assertTrue(index != -1);
+              assertTrue(index !== -1);
 
               // Check that the search term is bolded correctly in the
               // history-item.

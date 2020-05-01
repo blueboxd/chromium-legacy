@@ -10,9 +10,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
-import android.net.Uri;
 import android.os.StrictMode;
-import android.provider.Browser;
 import android.text.TextUtils;
 
 import androidx.annotation.VisibleForTesting;
@@ -20,13 +18,11 @@ import androidx.annotation.VisibleForTesting;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.IntentUtils;
 import org.chromium.base.PackageManagerUtils;
-import org.chromium.base.task.PostTask;
 import org.chromium.components.external_intents.ExternalNavigationDelegate;
 import org.chromium.components.external_intents.ExternalNavigationHandler;
 import org.chromium.components.external_intents.ExternalNavigationHandler.OverrideUrlLoadingResult;
 import org.chromium.components.external_intents.ExternalNavigationParams;
 import org.chromium.content_public.browser.LoadUrlParams;
-import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.common.Referrer;
 import org.chromium.network.mojom.ReferrerPolicy;
@@ -221,35 +217,9 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
     }
 
     @Override
-    public @OverrideUrlLoadingResult int clobberCurrentTab(String url, String referrerUrl) {
-        int transitionType = PageTransition.LINK;
-        final LoadUrlParams loadUrlParams = new LoadUrlParams(url, transitionType);
-        if (!TextUtils.isEmpty(referrerUrl)) {
-            Referrer referrer = new Referrer(referrerUrl, ReferrerPolicy.ALWAYS);
-            loadUrlParams.setReferrer(referrer);
-        }
-        if (hasValidTab()) {
-            // Loading URL will start a new navigation which cancels the current one
-            // that this clobbering is being done for. It leads to UAF. To avoid that,
-            // we're loading URL asynchronously. See https://crbug.com/732260.
-            PostTask.postTask(UiThreadTaskTraits.DEFAULT, new Runnable() {
-                @Override
-                public void run() {
-                    if (hasValidTab()) mTab.loadUrl(loadUrlParams);
-                }
-            });
-            return OverrideUrlLoadingResult.OVERRIDE_WITH_CLOBBERING_TAB;
-        } else {
-            assert false : "clobberCurrentTab was called with an empty tab.";
-            Uri uri = Uri.parse(url);
-            Intent intent = new Intent(Intent.ACTION_VIEW, uri);
-            String packageName = ContextUtils.getApplicationContext().getPackageName();
-            intent.putExtra(Browser.EXTRA_APPLICATION_ID, packageName);
-            intent.addCategory(Intent.CATEGORY_BROWSABLE);
-            intent.setPackage(packageName);
-            startActivity(intent, false);
-            return OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT;
-        }
+    public void loadUrlIfPossible(LoadUrlParams loadUrlParams) {
+        if (!hasValidTab()) return;
+        mTab.loadUrl(loadUrlParams);
     }
 
     @Override

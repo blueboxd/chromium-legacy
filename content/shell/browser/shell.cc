@@ -274,7 +274,6 @@ void Shell::LoadURLForFrame(const GURL& url,
   params.frame_name = frame_name;
   params.transition_type = transition_type;
   web_contents_->GetController().LoadURLWithParams(params);
-  web_contents_->Focus();
 }
 
 void Shell::LoadDataWithBaseURL(const GURL& url, const std::string& data,
@@ -318,7 +317,6 @@ void Shell::LoadDataWithBaseURLInternal(const GURL& url,
   params.virtual_url_for_data_url = url;
   params.override_user_agent = NavigationController::UA_OVERRIDE_FALSE;
   web_contents_->GetController().LoadURLWithParams(params);
-  web_contents_->Focus();
 }
 
 void Shell::AddNewContents(WebContents* source,
@@ -338,22 +336,18 @@ void Shell::AddNewContents(WebContents* source,
 
 void Shell::GoBackOrForward(int offset) {
   web_contents_->GetController().GoToOffset(offset);
-  web_contents_->Focus();
 }
 
 void Shell::Reload() {
   web_contents_->GetController().Reload(ReloadType::NORMAL, false);
-  web_contents_->Focus();
 }
 
 void Shell::ReloadBypassingCache() {
   web_contents_->GetController().Reload(ReloadType::BYPASSING_CACHE, false);
-  web_contents_->Focus();
 }
 
 void Shell::Stop() {
   web_contents_->Stop();
-  web_contents_->Focus();
 }
 
 void Shell::UpdateNavigationControls(bool to_different_document) {
@@ -374,7 +368,6 @@ void Shell::ShowDevTools() {
   }
 
   devtools_frontend_->Activate();
-  devtools_frontend_->Focus();
 }
 
 void Shell::CloseDevTools() {
@@ -564,7 +557,15 @@ void Shell::RendererUnresponsive(
 }
 
 void Shell::ActivateContents(WebContents* contents) {
-  contents->GetRenderViewHost()->GetWidget()->Focus();
+#if !defined(OS_MACOSX)
+  contents->Focus();
+#else
+  // Mac headless mode is quite different than other platforms. Normally
+  // focusing the WebContents would cause the OS to focus the window. Because
+  // headless mac doesn't actually have system windows, we can't go down the
+  // normal path and have to fake it out in the browser process.
+  PlatformActivateContents(contents);
+#endif
 }
 
 std::unique_ptr<WebContents> Shell::ActivatePortalWebContents(

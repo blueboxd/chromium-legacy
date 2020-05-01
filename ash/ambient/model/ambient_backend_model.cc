@@ -9,7 +9,9 @@
 
 namespace ash {
 
-AmbientBackendModel::AmbientBackendModel() = default;
+AmbientBackendModel::AmbientBackendModel() {
+  SetPhotoRefreshInterval(kPhotoRefreshInterval);
+}
 
 AmbientBackendModel::~AmbientBackendModel() = default;
 
@@ -53,6 +55,17 @@ void AmbientBackendModel::AddNextImage(const gfx::ImageSkia& image) {
   // Update the first image.
   if (images_.size() == 1)
     NotifyImagesChanged();
+}
+
+base::TimeDelta AmbientBackendModel::GetPhotoRefreshInterval() {
+  if (ShouldFetchImmediately())
+    return base::TimeDelta();
+
+  return photo_refresh_interval_;
+}
+
+void AmbientBackendModel::SetPhotoRefreshInterval(base::TimeDelta interval) {
+  photo_refresh_interval_ = interval;
 }
 
 void AmbientBackendModel::Clear() {

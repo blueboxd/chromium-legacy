@@ -17,6 +17,7 @@
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
 #include "chrome/browser/ui/settings_window_manager_observer_chromeos.h"
 #include "chrome/browser/ui/web_applications/system_web_app_ui_utils.h"
+#include "chrome/browser/ui/webui/settings/chromeos/constants/routes.mojom.h"
 #include "chrome/browser/web_applications/system_web_app_manager.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/common/chrome_features.h"
@@ -189,8 +190,9 @@ IN_PROC_BROWSER_TEST_F(SettingsWindowManagerTest, OpenSettings) {
   EXPECT_EQ(chrome::kChromeUIOSSettingsHost, web_contents->GetURL().host());
 
   // Showing an OS sub-page reuses the OS settings window.
-  settings_manager_->ShowOSSettings(browser()->profile(),
-                                    chrome::kBluetoothSubPage);
+  settings_manager_->ShowOSSettings(
+      browser()->profile(),
+      chromeos::settings::mojom::kBluetoothDevicesSubpagePath);
   EXPECT_EQ(1u, observer_.new_settings_count());
   EXPECT_EQ(2u, chrome::GetTotalBrowserCount());
 

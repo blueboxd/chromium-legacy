@@ -19,7 +19,7 @@ extension_manager_tests.TestNames = {
 
 function getDataByName(list, name) {
   return assert(list.find(function(el) {
-    return el.name == name;
+    return el.name === name;
   }));
 }
 

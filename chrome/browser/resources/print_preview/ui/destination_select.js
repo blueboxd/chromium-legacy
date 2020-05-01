@@ -16,7 +16,7 @@ import '../strings.m.js';
 import {I18nBehavior} from 'chrome://resources/js/i18n_behavior.m.js';
 import {Base, html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-import {createDestinationKey, Destination, DestinationOrigin, RecentDestination} from '../data/destination.js';
+import {Destination, DestinationOrigin, PDF_DESTINATION_KEY, RecentDestination} from '../data/destination.js';
 import {getSelectDropdownBackground} from '../print_preview_utils.js';
 
 import {SelectBehavior} from './select_behavior.js';
@@ -38,7 +38,7 @@ Polymer({
 
     disabled: Boolean,
 
-    driveDestinationReady: Boolean,
+    driveDestinationKey: String,
 
     loaded: Boolean,
 
@@ -48,6 +48,12 @@ Polymer({
 
     /** @type {!Array<!Destination>} */
     recentDestinationList: Array,
+
+    /** @private {string} */
+    pdfDestinationKey_: {
+      type: String,
+      value: PDF_DESTINATION_KEY,
+    },
 
     /** @private {string} */
     statusText_: {
@@ -67,25 +73,6 @@ Polymer({
   /** Sets the select to the current value of |destination|. */
   updateDestination() {
     this.selectedValue = this.destination.key;
-  },
-
-  /**
-   * @return {string} Unique identifier for the Save as PDF destination
-   * @private
-   */
-  getPdfDestinationKey_() {
-    return createDestinationKey(
-        Destination.GooglePromotedId.SAVE_AS_PDF, DestinationOrigin.LOCAL, '');
-  },
-
-  /**
-   * @return {string} Unique identifier for the Save to Google Drive destination
-   * @private
-   */
-  getGoogleDriveDestinationKey_() {
-    return createDestinationKey(
-        Destination.GooglePromotedId.DOCS, DestinationOrigin.COOKIES,
-        this.activeUser);
   },
 
   /**

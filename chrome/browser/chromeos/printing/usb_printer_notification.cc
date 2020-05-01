@@ -13,6 +13,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
+#include "chrome/browser/ui/webui/settings/chromeos/constants/routes.mojom.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -81,7 +82,7 @@ void UsbPrinterNotification::Click(
     visible_ = false;
     if (type_ == Type::kConfigurationRequired) {
       chrome::SettingsWindowManager::GetInstance()->ShowOSSettings(
-          profile_, chrome::kNativePrintingSettingsSubPage);
+          profile_, chromeos::settings::mojom::kPrintingDetailsSubpagePath);
     }
     return;
   }

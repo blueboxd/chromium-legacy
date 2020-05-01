@@ -53,7 +53,7 @@ class NewTabDelegate;
 class ProfileImpl;
 
 #if defined(OS_ANDROID)
-class TopControlsContainerView;
+class BrowserControlsContainerView;
 enum class ControlsVisibilityReason;
 #endif
 
@@ -284,7 +284,7 @@ class TabImpl : public Tab,
   base::ObserverList<TabObserver>::Unchecked observers_;
   std::unique_ptr<i18n::LocaleChangeSubscription> locale_change_subscription_;
 #if defined(OS_ANDROID)
-  TopControlsContainerView* top_controls_container_view_ = nullptr;
+  BrowserControlsContainerView* top_controls_container_view_ = nullptr;
   base::android::ScopedJavaGlobalRef<jobject> java_impl_;
   base::OneShotTimer update_browser_controls_state_timer_;
 #endif

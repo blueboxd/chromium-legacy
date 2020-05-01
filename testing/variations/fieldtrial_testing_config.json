@@ -3736,6 +3736,8 @@
                         "NtpRealboxMatchOmniboxTheme",
                         "OmniboxDisplayTitleForCurrentUrl",
                         "OmniboxDocumentProvider",
+                        "OmniboxHistoryQuickProviderAllowButDoNotScoreMidwordTerms",
+                        "OmniboxHistoryQuickProviderAllowMidwordContinuations",
                         "OmniboxMaxURLMatches",
                         "OmniboxOnFocusSuggestions",
                         "OmniboxRemoveSuggestionsFromClipboard",
@@ -3764,6 +3766,8 @@
                     "enable_features": [
                         "ClipboardMaximumAge",
                         "OmniboxDisableInstantExtendedLimit",
+                        "OmniboxHistoryQuickProviderAllowButDoNotScoreMidwordTerms",
+                        "OmniboxHistoryQuickProviderAllowMidwordContinuations",
                         "OmniboxOnFocusSuggestions"
                     ]
                 }
@@ -3782,6 +3786,8 @@
                         "ZeroSuggestVariant:8:*": "RemoteNoUrl"
                     },
                     "enable_features": [
+                        "OmniboxHistoryQuickProviderAllowButDoNotScoreMidwordTerms",
+                        "OmniboxHistoryQuickProviderAllowMidwordContinuations",
                         "OmniboxOnFocusSuggestions"
                     ]
                 }
@@ -5690,26 +5696,6 @@
                     },
                     "enable_features": [
                         "SyncInstanceIDTokenTTL"
-                    ]
-                }
-            ]
-        }
-    ],
-    "SyncMergeBookmarksUsingGUIDs": [
-        {
-            "platforms": [
-                "android",
-                "chromeos",
-                "ios",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "MergeBookmarksUsingGUIDs"
                     ]
                 }
             ]

@@ -15,6 +15,10 @@ GattBatteryController::GattBatteryController(
     scoped_refptr<device::BluetoothAdapter> adapter)
     : adapter_(adapter) {
   adapter_->AddObserver(this);
+
+  // Track any devices which are already paired and connected.
+  for (auto* device : adapter_->GetDevices())
+    DeviceAdded(adapter_.get(), device);
 }
 
 GattBatteryController::~GattBatteryController() {
@@ -26,16 +30,28 @@ void GattBatteryController::DeviceConnectedStateChanged(
     device::BluetoothDevice* device,
     bool is_now_connected) {
   if (is_now_connected) {
-    EnsurePollerExistsForDevice(device);
+    DeviceAdded(adapter, device);
     return;
   }
 
-  poller_map_.erase(device->GetAddress());
+  DeviceRemoved(adapter, device);
+}
+
+void GattBatteryController::DevicePairedChanged(
+    device::BluetoothAdapter* adapter,
+    device::BluetoothDevice* device,
+    bool new_paired_status) {
+  if (new_paired_status) {
+    DeviceAdded(adapter, device);
+    return;
+  }
+
+  DeviceRemoved(adapter, device);
 }
 
 void GattBatteryController::DeviceAdded(device::BluetoothAdapter* adapter,
                                         device::BluetoothDevice* device) {
-  if (device->IsConnected())
+  if (device->IsPaired() && device->IsConnected())
     EnsurePollerExistsForDevice(device);
 }
 

@@ -6,6 +6,7 @@ package org.chromium.components.webrtc;
 
 import android.app.PendingIntent;
 import android.content.Context;
+import android.graphics.drawable.Icon;
 import android.os.Build;
 
 import androidx.annotation.IntDef;
@@ -33,25 +34,34 @@ public class MediaCaptureNotificationUtil {
 
     /**
      * Creates a notification for the provided parameters.
-     * @param notificationId Unique id of the notification.
      * @param mediaType Media type of the notification.
      * @param url Url of the current webrtc call.
      * @param appName the display name for the app, e.g. "Chromium".
      * @param isIncognito whether the notification is for an off-the-record context.
      * @param contentIntent the intent to be sent when the notification is clicked.
      * @param stopIntent if non-null, a stop button that triggers this intent will be added.
+     * @param resPackageName if non-null, the name of the package that contains the drawable.
      */
     public static ChromeNotification createNotification(ChromeNotificationBuilder builder,
-            int notificationId, @MediaType int mediaType, String url, String appName,
-            boolean isIncognito, @Nullable PendingIntentProvider contentIntent,
-            @Nullable PendingIntent stopIntent) {
-        builder.setAutoCancel(false)
-                .setOngoing(true)
-                .setSmallIcon(getNotificationIconId(mediaType))
-                .setLocalOnly(true)
-                .setContentIntent(contentIntent);
-
+            @MediaType int mediaType, String url, @Nullable String appName, boolean isIncognito,
+            @Nullable PendingIntentProvider contentIntent, @Nullable PendingIntent stopIntent,
+            @Nullable String resPackageName) {
         Context appContext = ContextUtils.getApplicationContext();
+        builder.setAutoCancel(false).setOngoing(true).setLocalOnly(true).setContentIntent(
+                contentIntent);
+
+        if (resPackageName != null) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                builder.setSmallIcon(
+                        Icon.createWithResource(resPackageName, getNotificationIconId(mediaType)));
+            } else {
+                // Some fallback is required, or the notification won't appear.
+                builder.setSmallIcon(android.R.drawable.radiobutton_on_background);
+            }
+        } else {
+            builder.setSmallIcon(getNotificationIconId(mediaType));
+        }
+
         if (stopIntent != null) {
             builder.setPriorityBeforeO(NotificationCompat.PRIORITY_HIGH);
             builder.setVibrate(new long[0]);
@@ -64,7 +74,7 @@ public class MediaCaptureNotificationUtil {
         String titleText = getNotificationTitleText(mediaType);
         // App name is automatically added to the title from Android N, but needs to be added
         // explicitly for prior versions.
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N || appName == null) {
             builder.setContentTitle(titleText);
         } else {
             builder.setContentTitle(appContext.getString(

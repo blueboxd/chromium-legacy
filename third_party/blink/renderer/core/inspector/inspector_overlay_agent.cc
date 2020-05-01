@@ -208,6 +208,34 @@ void InspectTool::Trace(Visitor* visitor) {
   visitor->Trace(overlay_);
 }
 
+// Hinge -----------------------------------------------------------------------
+
+Hinge::Hinge(FloatQuad quad,
+             Color content_color,
+             Color outline_color,
+             InspectorOverlayAgent* overlay)
+    : quad_(quad),
+      content_color_(content_color),
+      outline_color_(outline_color),
+      overlay_(overlay) {}
+
+// static
+int Hinge::GetDataResourceId() {
+  // TODO (soxia): In the future, we should make the hinge working properly
+  // with tools using different resources.
+  return IDR_INSPECT_TOOL_HIGHLIGHT_HTML;
+}
+
+void Hinge::Trace(Visitor* visitor) {
+  visitor->Trace(overlay_);
+}
+
+void Hinge::Draw(float scale) {
+  InspectorHighlight highlight(scale);
+  highlight.AppendQuad(quad_, content_color_, outline_color_);
+  overlay_->EvaluateInOverlay("drawHighlight", highlight.AsProtocolValue());
+}
+
 // InspectorOverlayAgent -------------------------------------------------------
 
 class InspectorOverlayAgent::InspectorPageOverlayDelegate final
@@ -230,7 +258,7 @@ class InspectorOverlayAgent::InspectorPageOverlayDelegate final
   void PaintFrameOverlay(const FrameOverlay& frame_overlay,
                          GraphicsContext& graphics_context,
                          const IntSize&) const override {
-    if (!overlay_->inspect_tool_)
+    if (!overlay_->IsVisible())
       return;
 
     overlay_->PaintOverlayPage();
@@ -359,6 +387,7 @@ void InspectorOverlayAgent::Trace(Visitor* visitor) {
   visitor->Trace(overlay_host_);
   visitor->Trace(dom_agent_);
   visitor->Trace(inspect_tool_);
+  visitor->Trace(hinge_);
   InspectorBaseAgent::Trace(visitor);
 }
 
@@ -595,6 +624,48 @@ Response InspectorOverlayAgent::highlightQuad(
   return Response::Success();
 }
 
+Response InspectorOverlayAgent::setShowHinge(
+    protocol::Maybe<protocol::Overlay::HingeConfig> tool_config) {
+  // Hide the hinge when called without a configuration.
+  if (!tool_config.isJust()) {
+    hinge_ = nullptr;
+    if (!inspect_tool_)
+      DisableFrameOverlay();
+    ScheduleUpdate();
+    return Response::Success();
+  }
+
+  // Create a hinge
+  protocol::Overlay::HingeConfig* config = tool_config.fromJust();
+  protocol::DOM::Rect* rect = config->getRect();
+  int x = rect->getX();
+  int y = rect->getY();
+  int width = rect->getWidth();
+  int height = rect->getHeight();
+  if (x < 0 || y < 0 || width < 0 || height < 0)
+    return Response::InvalidParams("Invalid hinge rectangle.");
+
+  // Use default color if a content color is not provided.
+  Color content_color =
+      config->hasContentColor()
+          ? InspectorDOMAgent::ParseColor(config->getContentColor(nullptr))
+          : Color(38, 38, 38);
+  // outlineColor uses a kTransparent default from ParseColor if not provided.
+  Color outline_color =
+      InspectorDOMAgent::ParseColor(config->getOutlineColor(nullptr));
+
+  DCHECK(frame_impl_->GetFrameView() && GetFrame());
+
+  LoadFrameForTool(Hinge::GetDataResourceId());
+  EnsureEnableFrameOverlay();
+  FloatQuad quad(FloatRect(x, y, width, height));
+  hinge_ =
+      MakeGarbageCollected<Hinge>(quad, content_color, outline_color, this);
+  ScheduleUpdate();
+
+  return Response::Success();
+}
+
 Response InspectorOverlayAgent::highlightNode(
     std::unique_ptr<protocol::Overlay::HighlightConfig>
         highlight_inspector_object,
@@ -648,6 +719,7 @@ Response InspectorOverlayAgent::highlightFrame(
 Response InspectorOverlayAgent::hideHighlight() {
   if (inspect_tool_ && inspect_tool_->HideOnHideHighlight())
     PickTheRightTool();
+
   return Response::Success();
 }
 
@@ -807,7 +879,7 @@ WebInputEventResult InspectorOverlayAgent::HandleInputEventInOverlay(
 }
 
 void InspectorOverlayAgent::ScheduleUpdate() {
-  if (inspect_tool_) {
+  if (IsVisible()) {
     GetFrame()->GetPage()->GetChromeClient().ScheduleAnimation(
         GetFrame()->View());
   }
@@ -838,8 +910,10 @@ void InspectorOverlayAgent::PaintOverlayPage() {
 
   Reset(viewport_size);
 
-  DCHECK(inspect_tool_);
-  inspect_tool_->Draw(WindowToViewportScale());
+  if (inspect_tool_)
+    inspect_tool_->Draw(WindowToViewportScale());
+  if (hinge_)
+    hinge_->Draw(WindowToViewportScale());
 
   OverlayMainFrame()->View()->UpdateAllLifecyclePhases(
       DocumentUpdateReason::kInspector);
@@ -862,11 +936,11 @@ float InspectorOverlayAgent::WindowToViewportScale() const {
                                                                     1.0f);
 }
 
-void InspectorOverlayAgent::LoadFrameForTool() {
-  if (frame_resource_name_ == inspect_tool_->GetDataResourceId())
+void InspectorOverlayAgent::LoadFrameForTool(int data_resource_id) {
+  if (frame_resource_name_ == data_resource_id)
     return;
 
-  frame_resource_name_ = inspect_tool_->GetDataResourceId();
+  frame_resource_name_ = data_resource_id;
 
   if (overlay_page_) {
     overlay_page_->WillBeDestroyed();
@@ -1153,7 +1227,29 @@ void InspectorOverlayAgent::PickTheRightTool() {
     inspect_tool = MakeGarbageCollected<PausedInDebuggerTool>(
         v8_session_, paused_in_debugger_message_.Get());
   }
+
   SetInspectTool(inspect_tool);
+}
+
+void InspectorOverlayAgent::DisableFrameOverlay() {
+  if (IsVisible() || !frame_overlay_)
+    return;
+
+  frame_overlay_.reset();
+  auto& client = GetFrame()->GetPage()->GetChromeClient();
+  client.SetCursorOverridden(false);
+  client.SetCursor(PointerCursor(), GetFrame());
+
+  if (auto* frame_view = frame_impl_->GetFrameView())
+    frame_view->SetPaintArtifactCompositorNeedsUpdate();
+}
+
+void InspectorOverlayAgent::EnsureEnableFrameOverlay() {
+  if (frame_overlay_)
+    return;
+
+  frame_overlay_ = std::make_unique<FrameOverlay>(
+      GetFrame(), std::make_unique<InspectorPageOverlayDelegate>(*this));
 }
 
 void InspectorOverlayAgent::SetInspectTool(InspectTool* inspect_tool) {
@@ -1164,21 +1260,16 @@ void InspectorOverlayAgent::SetInspectTool(InspectTool* inspect_tool) {
 
   if (inspect_tool_)
     inspect_tool_->Dispose();
-  inspect_tool_ = inspect_tool;
-  if (inspect_tool_) {
-    LoadFrameForTool();
-    if (!frame_overlay_) {
-      frame_overlay_ = std::make_unique<FrameOverlay>(
-          GetFrame(), std::make_unique<InspectorPageOverlayDelegate>(*this));
-    }
-    inspect_tool_->Init(this, GetFrontend());
-  } else if (frame_overlay_) {
-    frame_overlay_.reset();
-    auto& client = GetFrame()->GetPage()->GetChromeClient();
-    client.SetCursorOverridden(false);
-    client.SetCursor(PointerCursor(), GetFrame());
-    if (auto* frame_view = frame_impl_->GetFrameView())
-      frame_view->SetPaintArtifactCompositorNeedsUpdate();
+
+  if (inspect_tool) {
+    inspect_tool_ = inspect_tool;
+    LoadFrameForTool(inspect_tool->GetDataResourceId());
+    EnsureEnableFrameOverlay();
+    inspect_tool->Init(this, GetFrontend());
+  } else {
+    inspect_tool_ = nullptr;
+    if (!hinge_)
+      DisableFrameOverlay();
   }
   ScheduleUpdate();
 }

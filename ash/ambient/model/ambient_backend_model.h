@@ -9,6 +9,7 @@
 #include "base/containers/circular_deque.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
+#include "base/time/time.h"
 #include "ui/gfx/image/image_skia.h"
 
 namespace ash {
@@ -36,6 +37,10 @@ class ASH_EXPORT AmbientBackendModel {
 
   // Add image to local storage.
   void AddNextImage(const gfx::ImageSkia& image);
+
+  // Get/Set the photo refresh interval.
+  base::TimeDelta GetPhotoRefreshInterval();
+  void SetPhotoRefreshInterval(base::TimeDelta interval);
 
   // Clear local storage.
   void Clear();
@@ -80,6 +85,9 @@ class ASH_EXPORT AmbientBackendModel {
   // (b/154046129).
   gfx::ImageSkia weather_condition_icon_;
   float temperature_ = 0.0f;
+
+  // The interval to refresh photos.
+  base::TimeDelta photo_refresh_interval_;
 
   base::ObserverList<AmbientBackendModelObserver> observers_;
 

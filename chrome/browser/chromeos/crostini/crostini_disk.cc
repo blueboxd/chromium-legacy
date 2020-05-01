@@ -48,13 +48,25 @@ CrostiniDiskInfo::~CrostiniDiskInfo() = default;
 namespace disk {
 void GetDiskInfo(OnceDiskInfoCallback callback,
                  Profile* profile,
-                 std::string vm_name) {
-  base::ThreadPool::PostTaskAndReplyWithResult(
-      FROM_HERE, {base::MayBlock()},
-      base::BindOnce(&base::SysInfo::AmountOfFreeDiskSpace,
-                     base::FilePath(crostini::kHomeDirectory)),
-      base::BindOnce(&OnAmountOfFreeDiskSpace, std::move(callback), profile,
-                     std::move(vm_name)));
+                 std::string vm_name,
+                 bool full_info) {
+  if (full_info) {
+    base::ThreadPool::PostTaskAndReplyWithResult(
+        FROM_HERE, {base::MayBlock()},
+        base::BindOnce(&base::SysInfo::AmountOfFreeDiskSpace,
+                       base::FilePath(crostini::kHomeDirectory)),
+        base::BindOnce(&OnAmountOfFreeDiskSpace, std::move(callback), profile,
+                       std::move(vm_name)));
+  } else {
+    VLOG(1) << "Starting concierge";
+    // Since we only care about the disk's current size and whether it's a
+    // sparse disk, we claim there's plenty of free space available to prevent
+    // error conditions in |OnCrostiniSufficientlyRunning|.
+    constexpr int64_t kFakeAvailableDiskBytes = 500l * 1024 * 1024;
+    CrostiniManager::GetForProfile(profile)->EnsureConciergeRunning(
+        base::BindOnce(&OnCrostiniSufficientlyRunning, std::move(callback),
+                       profile, std::move(vm_name), kFakeAvailableDiskBytes));
+  }
 }
 
 void OnAmountOfFreeDiskSpace(OnceDiskInfoCallback callback,
@@ -65,21 +77,23 @@ void OnAmountOfFreeDiskSpace(OnceDiskInfoCallback callback,
     LOG(ERROR) << "Failed to get amount of free disk space";
     std::move(callback).Run(nullptr);
   } else {
+    VLOG(1) << "Starting vm " << vm_name;
     auto container_id = ContainerId(vm_name, kCrostiniDefaultContainerName);
     CrostiniManager::GetForProfile(profile)->EnsureVmRunning(
         std::move(container_id),
-        base::BindOnce(&OnVMRunning, std::move(callback), profile,
-                       std::move(vm_name), free_space));
+        base::BindOnce(&OnCrostiniSufficientlyRunning, std::move(callback),
+                       profile, std::move(vm_name), free_space));
   }
 }
 
-void OnVMRunning(OnceDiskInfoCallback callback,
-                 Profile* profile,
-                 std::string vm_name,
-                 int64_t free_space,
-                 CrostiniResult result) {
+void OnCrostiniSufficientlyRunning(OnceDiskInfoCallback callback,
+                                   Profile* profile,
+                                   std::string vm_name,
+                                   int64_t free_space,
+                                   CrostiniResult result) {
   if (result != CrostiniResult::SUCCESS) {
-    LOG(ERROR) << "Failed to launch VM: error " << static_cast<int>(result);
+    LOG(ERROR) << "Failed to start concierge or start VM: error "
+               << static_cast<int>(result);
     std::move(callback).Run(nullptr);
   } else {
     vm_tools::concierge::ListVmDisksRequest request;
@@ -120,6 +134,11 @@ void OnListVmDisks(
     std::move(callback).Run(nullptr);
     return;
   }
+  VLOG(1) << "name: " << image->name();
+  VLOG(1) << "image_type: " << image->image_type();
+  VLOG(1) << "size: " << image->size();
+  VLOG(1) << "user_chosen_size: " << image->user_chosen_size();
+
   if (image->image_type() !=
       vm_tools::concierge::DiskImageType::DISK_IMAGE_RAW) {
     // Can't resize qcow2 images and don't know how to handle auto or pluginvm
@@ -129,9 +148,7 @@ void OnListVmDisks(
     return;
   }
   if (image->min_size() == 0) {
-    LOG(ERROR) << "Unable to get minimum disk size";
-    std::move(callback).Run(nullptr);
-    return;
+    VLOG(1) << "Unable to get minimum disk size. VM not running yet?";
   }
   disk_info->is_user_chosen_size = image->user_chosen_size();
   disk_info->can_resize =
@@ -225,14 +242,31 @@ void ResizeCrostiniDisk(Profile* profile,
                         std::string vm_name,
                         uint64_t size_bytes,
                         base::OnceCallback<void(bool)> callback) {
-  vm_tools::concierge::ResizeDiskImageRequest request;
-  request.set_cryptohome_id(CryptohomeIdForProfile(profile));
-  request.set_vm_name(vm_name);
-  request.set_disk_size(size_bytes);
+  ContainerId container_id(vm_name, kCrostiniDefaultContainerName);
+  CrostiniManager::GetForProfile(profile)->EnsureVmRunning(
+      std::move(container_id),
+      base::BindOnce(&OnVMRunning, std::move(callback), profile,
+                     std::move(vm_name), size_bytes));
+}
 
-  base::UmaHistogramBoolean("Crostini.DiskResize.Started", true);
-  GetConciergeClient()->ResizeDiskImage(
-      request, base::BindOnce(&OnResize, std::move(callback)));
+void OnVMRunning(base::OnceCallback<void(bool)> callback,
+                 Profile* profile,
+                 std::string vm_name,
+                 int64_t size_bytes,
+                 CrostiniResult result) {
+  if (result != CrostiniResult::SUCCESS) {
+    LOG(ERROR) << "Failed to launch VM: error " << static_cast<int>(result);
+    std::move(callback).Run(false);
+  } else {
+    vm_tools::concierge::ResizeDiskImageRequest request;
+    request.set_cryptohome_id(CryptohomeIdForProfile(profile));
+    request.set_vm_name(std::move(vm_name));
+    request.set_disk_size(size_bytes);
+
+    base::UmaHistogramBoolean("Crostini.DiskResize.Started", true);
+    GetConciergeClient()->ResizeDiskImage(
+        request, base::BindOnce(&OnResize, std::move(callback)));
+  }
 }
 
 void OnResize(

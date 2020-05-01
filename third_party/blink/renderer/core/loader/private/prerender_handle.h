@@ -34,10 +34,12 @@
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/util/type_safety/pass_key.h"
-#include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/mojom/prerender/prerender.mojom-blink.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/mojo/heap_mojo_receiver.h"
+#include "third_party/blink/renderer/platform/mojo/heap_mojo_remote.h"
+#include "third_party/blink/renderer/platform/mojo/heap_mojo_wrapper_mode.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 
 namespace blink {
@@ -62,7 +64,8 @@ class PrerenderHandle final : public GarbageCollected<PrerenderHandle>,
                   Document&,
                   PrerenderClient*,
                   const KURL&,
-                  mojo::Remote<mojom::blink::PrerenderHandle>,
+                  HeapMojoRemote<mojom::blink::PrerenderHandle,
+                                 HeapMojoWrapperMode::kWithoutContextObserver>,
                   mojo::PendingReceiver<mojom::blink::PrerenderHandleClient>);
   ~PrerenderHandle() override;
   void Dispose();
@@ -86,8 +89,13 @@ class PrerenderHandle final : public GarbageCollected<PrerenderHandle>,
 
   KURL url_;
   WeakMember<PrerenderClient> client_;
-  mojo::Remote<mojom::blink::PrerenderHandle> remote_handle_;
-  mojo::Receiver<mojom::blink::PrerenderHandleClient> receiver_;
+  HeapMojoRemote<mojom::blink::PrerenderHandle,
+                 HeapMojoWrapperMode::kWithoutContextObserver>
+      remote_handle_;
+  HeapMojoReceiver<mojom::blink::PrerenderHandleClient,
+                   PrerenderHandle,
+                   HeapMojoWrapperMode::kWithoutContextObserver>
+      receiver_;
 
   DISALLOW_COPY_AND_ASSIGN(PrerenderHandle);
 };

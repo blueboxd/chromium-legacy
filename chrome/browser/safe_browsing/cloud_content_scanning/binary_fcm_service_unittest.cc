@@ -6,20 +6,28 @@
 
 #include "base/base64.h"
 #include "base/bind_helpers.h"
+#include "base/logging.h"
 #include "base/run_loop.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "chrome/browser/gcm/gcm_profile_service_factory.h"
+#include "chrome/browser/gcm/instance_id/instance_id_profile_service_factory.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/gcm_driver/common/gcm_message.h"
 #include "components/gcm_driver/fake_gcm_profile_service.h"
 #include "components/gcm_driver/gcm_client.h"
 #include "components/gcm_driver/instance_id/instance_id.h"
+#include "components/gcm_driver/instance_id/instance_id_driver.h"
 #include "components/safe_browsing/core/proto/webprotect.pb.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_utils.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace safe_browsing {
+
+using ::testing::_;
+using ::testing::Invoke;
+using ::testing::Return;
 
 namespace {
 
@@ -27,6 +35,58 @@ std::unique_ptr<KeyedService> BuildFakeGCMProfileService(
     content::BrowserContext* context) {
   return gcm::FakeGCMProfileService::Build(static_cast<Profile*>(context));
 }
+
+class MockInstanceIDDriver : public instance_id::InstanceIDDriver {
+ public:
+  MockInstanceIDDriver() : InstanceIDDriver(/*gcm_driver=*/nullptr) {}
+  ~MockInstanceIDDriver() override = default;
+
+  MOCK_METHOD1(GetInstanceID,
+               instance_id::InstanceID*(const std::string& app_id));
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MockInstanceIDDriver);
+};
+
+class MockInstanceID : public instance_id::InstanceID {
+ public:
+  MockInstanceID() : InstanceID("", nullptr) {}
+  ~MockInstanceID() override = default;
+
+  MOCK_METHOD6(GetToken,
+               void(const std::string& authorized_entity,
+                    const std::string& scope,
+                    base::TimeDelta time_to_live,
+                    const std::map<std::string, std::string>& options,
+                    std::set<Flags> flags,
+                    GetTokenCallback callback));
+
+  MOCK_METHOD3(DeleteToken,
+               void(const std::string& authorized_entity,
+                    const std::string& scope,
+                    DeleteTokenCallback callback));
+
+  void GetID(GetIDCallback callback) override { NOTIMPLEMENTED(); }
+  void GetCreationTime(GetCreationTimeCallback callback) override {
+    NOTIMPLEMENTED();
+  }
+
+  void ValidateToken(const std::string& authorized_entity,
+                     const std::string& scope,
+                     const std::string& token,
+                     ValidateTokenCallback callback) override {
+    NOTIMPLEMENTED();
+  }
+
+ protected:
+  void DeleteTokenImpl(const std::string& authorized_entity,
+                       const std::string& scope,
+                       DeleteTokenCallback callback) override {
+    NOTIMPLEMENTED();
+  }
+
+  void DeleteIDImpl(DeleteIDCallback callback) override { NOTIMPLEMENTED(); }
+};
 
 }  // namespace
 
@@ -241,6 +301,133 @@ TEST_F(BinaryFCMServiceTest, UnregisterTokenRetriesFailures) {
                      &unregistered));
   content::RunAllTasksUntilIdle();
   EXPECT_TRUE(unregistered);
+}
+
+TEST_F(BinaryFCMServiceTest, UnregistersTokensOnShutdown) {
+  // Get an instance ID
+  std::string received_instance_id = BinaryFCMService::kInvalidId;
+  binary_fcm_service_->GetInstanceID(base::BindOnce(
+      [](std::string* target_id, const std::string& instance_id) {
+        *target_id = instance_id;
+      },
+      &received_instance_id));
+  content::RunAllTasksUntilIdle();
+  EXPECT_NE(received_instance_id, BinaryFCMService::kInvalidId);
+
+  binary_fcm_service_->Shutdown();
+
+  // Shutdown the InstanceID service.
+  instance_id::InstanceIDProfileServiceFactory::GetInstance()
+      ->SetTestingFactory(&profile_,
+                          BrowserContextKeyedServiceFactory::TestingFactory());
+
+  // Ensure we tear down correctly. This used to crash.
+}
+
+TEST_F(BinaryFCMServiceTest, UnregisterOneTokensOneCall) {
+  MockInstanceIDDriver driver;
+  MockInstanceID instance_id;
+  ON_CALL(driver, GetInstanceID(_)).WillByDefault(Return(&instance_id));
+  binary_fcm_service_.reset();
+  binary_fcm_service_ = std::make_unique<BinaryFCMService>(
+      gcm::GCMProfileServiceFactory::GetForProfile(&profile_)->driver(),
+      &driver);
+
+  EXPECT_CALL(instance_id, GetToken(_, _, _, _, _, _))
+      .Times(2)
+      .WillRepeatedly(
+          Invoke([](const std::string&, const std::string&, base::TimeDelta,
+                    const std::map<std::string, std::string>&,
+                    std::set<instance_id::InstanceID::Flags>,
+                    instance_id::InstanceID::GetTokenCallback callback) {
+            std::move(callback).Run("token",
+                                    instance_id::InstanceID::Result::SUCCESS);
+          }));
+
+  std::string first_id = BinaryFCMService::kInvalidId;
+  binary_fcm_service_->GetInstanceID(base::BindOnce(
+      [](std::string* target_id, const std::string& instance_id) {
+        *target_id = instance_id;
+      },
+      &first_id));
+
+  std::string second_id = BinaryFCMService::kInvalidId;
+  binary_fcm_service_->GetInstanceID(base::BindOnce(
+      [](std::string* target_id, const std::string& instance_id) {
+        *target_id = instance_id;
+      },
+      &second_id));
+
+  content::RunAllTasksUntilIdle();
+
+  EXPECT_CALL(instance_id, DeleteToken(_, _, _))
+      .WillOnce(
+          Invoke([](const std::string&, const std::string&,
+                    instance_id::InstanceID::DeleteTokenCallback callback) {
+            std::move(callback).Run(instance_id::InstanceID::Result::SUCCESS);
+          }));
+
+  binary_fcm_service_->UnregisterInstanceID(first_id, base::DoNothing());
+  binary_fcm_service_->UnregisterInstanceID(second_id, base::DoNothing());
+
+  content::RunAllTasksUntilIdle();
+}
+
+TEST_F(BinaryFCMServiceTest, UnregisterTwoTokensTwoCalls) {
+  MockInstanceIDDriver driver;
+  MockInstanceID instance_id;
+  ON_CALL(driver, GetInstanceID(_)).WillByDefault(Return(&instance_id));
+  binary_fcm_service_.reset();
+  binary_fcm_service_ = std::make_unique<BinaryFCMService>(
+      gcm::GCMProfileServiceFactory::GetForProfile(&profile_)->driver(),
+      &driver);
+
+  EXPECT_CALL(instance_id, GetToken(_, _, _, _, _, _))
+      .WillOnce(
+          Invoke([](const std::string&, const std::string&, base::TimeDelta,
+                    const std::map<std::string, std::string>&,
+                    std::set<instance_id::InstanceID::Flags>,
+                    instance_id::InstanceID::GetTokenCallback callback) {
+            std::move(callback).Run("token",
+                                    instance_id::InstanceID::Result::SUCCESS);
+          }))
+      .WillOnce(
+          Invoke([](const std::string&, const std::string&, base::TimeDelta,
+                    const std::map<std::string, std::string>&,
+                    std::set<instance_id::InstanceID::Flags>,
+                    instance_id::InstanceID::GetTokenCallback callback) {
+            std::move(callback).Run("token 2",
+                                    instance_id::InstanceID::Result::SUCCESS);
+          }));
+
+  std::string first_id = BinaryFCMService::kInvalidId;
+  binary_fcm_service_->GetInstanceID(base::BindOnce(
+      [](std::string* target_id, const std::string& instance_id) {
+        *target_id = instance_id;
+      },
+      &first_id));
+
+  std::string second_id = BinaryFCMService::kInvalidId;
+  binary_fcm_service_->GetInstanceID(base::BindOnce(
+      [](std::string* target_id, const std::string& instance_id) {
+        *target_id = instance_id;
+      },
+      &second_id));
+
+  content::RunAllTasksUntilIdle();
+
+  EXPECT_CALL(instance_id, DeleteToken(_, _, _))
+      .Times(2)
+      .WillOnce(
+          Invoke([](const std::string&, const std::string&,
+                    instance_id::InstanceID::DeleteTokenCallback callback) {
+            std::move(callback).Run(instance_id::InstanceID::Result::SUCCESS);
+          }));
+
+  binary_fcm_service_->UnregisterInstanceID(first_id, base::DoNothing());
+  binary_fcm_service_->UnregisterInstanceID(second_id, base::DoNothing());
+
+  content::RunAllTasksUntilIdle();
 }
 
 }  // namespace safe_browsing

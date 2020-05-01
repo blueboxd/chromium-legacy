@@ -5,34 +5,22 @@
 #include "chromeos/components/sync_wifi/synced_network_metrics_logger.h"
 
 #include "base/bind.h"
-#include "base/metrics/histogram_macros.h"
+#include "base/metrics/histogram_functions.h"
 #include "chromeos/network/network_configuration_handler.h"
 #include "chromeos/network/network_connection_handler.h"
 #include "chromeos/network/network_metadata_store.h"
 #include "chromeos/network/network_state_handler.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
+#include "third_party/cros_system_api/dbus/shill/dbus-constants.h"
 
 namespace chromeos {
 
 namespace sync_wifi {
 
-namespace {
-
-const char kFailureReasonAllHistogram[] =
-    "Network.Wifi.Synced.Connection.FailureReason";
-const char kConnectionResultAllHistogram[] =
-    "Network.Wifi.Synced.Connection.Result";
-
-const char kFailureReasonManualHistogram[] =
-    "Network.Wifi.Synced.ManualConnection.FailureReason";
-const char kConnectionResultManualHistogram[] =
-    "Network.Wifi.Synced.ManualConnection.Result";
-
-}  // namespace
-
 // static
-SyncedNetworkMetricsLogger::ConnectionFailureReason
-SyncedNetworkMetricsLogger::FailureReasonToEnum(const std::string& reason) {
+ConnectionFailureReason
+SyncedNetworkMetricsLogger::ConnectionFailureReasonToEnum(
+    const std::string& reason) {
   if (reason == shill::kErrorBadPassphrase)
     return ConnectionFailureReason::kBadPassphrase;
   else if (reason == shill::kErrorBadWEPKey)
@@ -65,6 +53,36 @@ SyncedNetworkMetricsLogger::FailureReasonToEnum(const std::string& reason) {
     return ConnectionFailureReason::kUnknown;
 }
 
+// static
+ApplyNetworkFailureReason SyncedNetworkMetricsLogger::ApplyFailureReasonToEnum(
+    const std::string& reason) {
+  if (reason == shill::kErrorResultAlreadyExists) {
+    return ApplyNetworkFailureReason::kAlreadyExists;
+  } else if (reason == shill::kErrorResultInProgress) {
+    return ApplyNetworkFailureReason::kInProgress;
+  } else if (reason == shill::kErrorInternal ||
+             reason == shill::kErrorResultInternalError) {
+    return ApplyNetworkFailureReason::kInternalError;
+  } else if (reason == shill::kErrorResultInvalidArguments) {
+    return ApplyNetworkFailureReason::kInvalidArguments;
+  } else if (reason == shill::kErrorResultInvalidNetworkName) {
+    return ApplyNetworkFailureReason::kInvalidNetworkName;
+  } else if (reason == shill::kErrorResultInvalidPassphrase ||
+             reason == shill::kErrorBadPassphrase) {
+    return ApplyNetworkFailureReason::kInvalidPassphrase;
+  } else if (reason == shill::kErrorResultInvalidProperty) {
+    return ApplyNetworkFailureReason::kInvalidProperty;
+  } else if (reason == shill::kErrorResultNotSupported) {
+    return ApplyNetworkFailureReason::kNotSupported;
+  } else if (reason == shill::kErrorResultPassphraseRequired) {
+    return ApplyNetworkFailureReason::kPassphraseRequired;
+  } else if (reason == shill::kErrorResultPermissionDenied) {
+    return ApplyNetworkFailureReason::kPermissionDenied;
+  } else {
+    return ApplyNetworkFailureReason::kUnknown;
+  }
+}
+
 SyncedNetworkMetricsLogger::SyncedNetworkMetricsLogger(
     NetworkStateHandler* network_state_handler,
     NetworkConnectionHandler* network_connection_handler) {
@@ -93,8 +111,9 @@ void SyncedNetworkMetricsLogger::ConnectSucceeded(
   if (!IsEligible(network))
     return;
 
-  UMA_HISTOGRAM_BOOLEAN(kConnectionResultManualHistogram, true);
+  base::UmaHistogramBoolean(kConnectionResultManualHistogram, true);
 }
+
 void SyncedNetworkMetricsLogger::ConnectFailed(const std::string& service_path,
                                                const std::string& error_name) {
   const NetworkState* network =
@@ -131,11 +150,12 @@ void SyncedNetworkMetricsLogger::NetworkConnectionStateChanged(
   }
 
   if (network->connection_state() == shill::kStateFailure) {
-    UMA_HISTOGRAM_BOOLEAN(kConnectionResultAllHistogram, false);
-    UMA_HISTOGRAM_ENUMERATION(kFailureReasonAllHistogram,
-                              FailureReasonToEnum(network->GetError()));
+    base::UmaHistogramBoolean(kConnectionResultAllHistogram, false);
+    base::UmaHistogramEnumeration(
+        kConnectionFailureReasonAllHistogram,
+        ConnectionFailureReasonToEnum(network->GetError()));
   } else if (network->IsConnectedState()) {
-    UMA_HISTOGRAM_BOOLEAN(kConnectionResultAllHistogram, true);
+    base::UmaHistogramBoolean(kConnectionResultAllHistogram, true);
   }
   connecting_guids_.erase(network->guid());
 }
@@ -167,9 +187,9 @@ void SyncedNetworkMetricsLogger::ConnectErrorPropertiesSucceeded(
     if (!NetworkState::ErrorIsValid(shill_error))
       shill_error = error_name;
   }
-  UMA_HISTOGRAM_BOOLEAN(kConnectionResultManualHistogram, false);
-  UMA_HISTOGRAM_ENUMERATION(kFailureReasonManualHistogram,
-                            FailureReasonToEnum(shill_error));
+  base::UmaHistogramBoolean(kConnectionResultManualHistogram, false);
+  base::UmaHistogramEnumeration(kConnectionFailureReasonManualHistogram,
+                                ConnectionFailureReasonToEnum(shill_error));
 }
 
 void SyncedNetworkMetricsLogger::ConnectErrorPropertiesFailed(
@@ -177,9 +197,29 @@ void SyncedNetworkMetricsLogger::ConnectErrorPropertiesFailed(
     const std::string& service_path,
     const std::string& request_error,
     std::unique_ptr<base::DictionaryValue> shill_error_data) {
-  UMA_HISTOGRAM_BOOLEAN(kConnectionResultManualHistogram, false);
-  UMA_HISTOGRAM_ENUMERATION(kFailureReasonManualHistogram,
-                            FailureReasonToEnum(error_name));
+  base::UmaHistogramBoolean(kConnectionResultManualHistogram, false);
+  base::UmaHistogramEnumeration(kConnectionFailureReasonManualHistogram,
+                                ConnectionFailureReasonToEnum(error_name));
+}
+
+void SyncedNetworkMetricsLogger::RecordApplyNetworkSuccess() {
+  base::UmaHistogramBoolean(kApplyResultHistogram, true);
+}
+void SyncedNetworkMetricsLogger::RecordApplyNetworkFailed() {
+  base::UmaHistogramBoolean(kApplyResultHistogram, false);
+}
+
+void SyncedNetworkMetricsLogger::RecordApplyNetworkFailureReason(
+    ApplyNetworkFailureReason error_enum,
+    const std::string& error_string) {
+  // Get a specific error from the |error_string| if available.
+  ApplyNetworkFailureReason reason = ApplyFailureReasonToEnum(error_string);
+  if (reason == ApplyNetworkFailureReason::kUnknown) {
+    // Fallback on the provided enum.
+    reason = error_enum;
+  }
+
+  base::UmaHistogramEnumeration(kApplyFailureReasonHistogram, reason);
 }
 
 }  // namespace sync_wifi

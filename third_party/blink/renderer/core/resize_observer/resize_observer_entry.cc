@@ -4,9 +4,11 @@
 
 #include "third_party/blink/renderer/core/resize_observer/resize_observer_entry.h"
 #include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/geometry/dom_rect_read_only.h"
 #include "third_party/blink/renderer/core/layout/adjust_for_absolute_zoom.h"
 #include "third_party/blink/renderer/core/layout/layout_box.h"
+#include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/resize_observer/resize_observation.h"
 #include "third_party/blink/renderer/core/resize_observer/resize_observer_size.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
@@ -72,18 +74,26 @@ ResizeObserverEntry::ResizeObserverEntry(Element* target) : target_(target) {
         LayoutSize border_box_size =
             LayoutSize(layout_box->LogicalWidth(), layout_box->LogicalHeight());
 
+        // Get Device Scale Factor for cases where use-zoom-for-dsf is disabled.
+        // This is 1 if use-zoom-for-dsf is enabled.
+        float device_scale_factor =
+            layout_object->GetFrame()->GetPage()->DeviceScaleFactorDeprecated();
+
         LayoutSize paint_offset =
             layout_object->FirstFragment().PaintOffset().ToLayoutSize();
+
         ResizeObserverSize* device_pixel_content_box_size =
             ResizeObserverSize::Create(
                 SnapSizeToPixel(layout_box->ContentLogicalWidth(),
                                 style.IsHorizontalWritingMode()
                                     ? paint_offset.Width()
-                                    : paint_offset.Height()),
+                                    : paint_offset.Height()) *
+                    device_scale_factor,
                 SnapSizeToPixel(layout_box->ContentLogicalHeight(),
                                 style.IsHorizontalWritingMode()
                                     ? paint_offset.Height()
-                                    : paint_offset.Width()));
+                                    : paint_offset.Width()) *
+                    device_scale_factor);
 
         content_box_size_.push_back(ZoomAdjustedSize(content_box_size, style));
         border_box_size_.push_back(ZoomAdjustedSize(border_box_size, style));

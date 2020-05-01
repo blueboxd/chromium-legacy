@@ -140,9 +140,7 @@ class GpuIntegrationTestUnittest(unittest.TestCase):
             args, possible_browser))
 
   def _TestTagGenerationForMockPlatform(self, test_class, args):
-    tag_set = _GenerateNvidiaExampleTagsForTestClassAndArgs(
-        webgl_conformance_integration_test.WebGLConformanceIntegrationTest,
-        args)
+    tag_set = _GenerateNvidiaExampleTagsForTestClassAndArgs(test_class, args)
     self.assertTrue(
         set([
             'win', 'win10', 'd3d9', 'release', 'nvidia', 'nvidia-0x1cb3',

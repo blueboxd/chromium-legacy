@@ -174,3 +174,12 @@ void OmniboxRowView::HideHeader() {
   if (header_view_)
     header_view_->SetVisible(false);
 }
+
+gfx::Insets OmniboxRowView::GetInsets() const {
+  // A visible header means this is the start of a new section. Give the section
+  // that just ended an extra 4dp of padding. https://crbug.com/1076646
+  if (header_view_ && header_view_->GetVisible())
+    return gfx::Insets(4, 0, 0, 0);
+
+  return gfx::Insets();
+}

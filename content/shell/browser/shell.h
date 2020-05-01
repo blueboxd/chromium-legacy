@@ -249,6 +249,10 @@ class Shell : public WebContentsDelegate,
   void PlatformSetIsLoading(bool loading);
   // Set the title of shell window
   void PlatformSetTitle(const base::string16& title);
+#if defined(OS_MACOSX)
+  // Activate (make key) the native window, and focus the web contents.
+  void PlatformActivateContents(WebContents* contents);
+#endif
 #if defined(OS_ANDROID)
   void PlatformToggleFullscreenModeForTab(WebContents* web_contents,
                                           bool enter_fullscreen);

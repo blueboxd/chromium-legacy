@@ -10,12 +10,14 @@
 #include "base/memory/ptr_util.h"
 #include "base/optional.h"
 #include "base/run_loop.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/task_environment.h"
 #include "chromeos/components/sync_wifi/fake_pending_network_configuration_tracker.h"
 #include "chromeos/components/sync_wifi/fake_timer_factory.h"
 #include "chromeos/components/sync_wifi/network_identifier.h"
 #include "chromeos/components/sync_wifi/network_test_helper.h"
 #include "chromeos/components/sync_wifi/pending_network_configuration_tracker_impl.h"
+#include "chromeos/components/sync_wifi/synced_network_metrics_logger.h"
 #include "chromeos/components/sync_wifi/synced_network_updater_impl.h"
 #include "chromeos/components/sync_wifi/test_data_generator.h"
 #include "chromeos/dbus/shill/fake_shill_simulated_result.h"
@@ -85,9 +87,12 @@ class SyncedNetworkUpdaterImplTest : public testing::Test {
     auto timer_factory_unique_ptr = std::make_unique<FakeTimerFactory>();
     tracker_ = tracker_unique_ptr.get();
     timer_factory_ = timer_factory_unique_ptr.get();
+    metrics_logger_ = std::make_unique<SyncedNetworkMetricsLogger>(
+        /*network_state_handler=*/nullptr,
+        /*network_connection_handler=*/nullptr);
     updater_ = std::make_unique<SyncedNetworkUpdaterImpl>(
         std::move(tracker_unique_ptr), remote_cros_network_config_.get(),
-        std::move(timer_factory_unique_ptr));
+        std::move(timer_factory_unique_ptr), metrics_logger_.get());
   }
 
   void TearDown() override {
@@ -109,6 +114,7 @@ class SyncedNetworkUpdaterImplTest : public testing::Test {
   std::unique_ptr<NetworkTestHelper> local_test_helper_;
   FakeTimerFactory* timer_factory_;
   FakePendingNetworkConfigurationTracker* tracker_;
+  std::unique_ptr<SyncedNetworkMetricsLogger> metrics_logger_;
   std::unique_ptr<SyncedNetworkUpdaterImpl> updater_;
   mojo::Remote<chromeos::network_config::mojom::CrosNetworkConfig>
       remote_cros_network_config_;
@@ -120,6 +126,7 @@ class SyncedNetworkUpdaterImplTest : public testing::Test {
 };
 
 TEST_F(SyncedNetworkUpdaterImplTest, TestAdd_OneNetwork) {
+  base::HistogramTester histogram_tester;
   sync_pb::WifiConfigurationSpecifics specifics =
       GenerateTestWifiSpecifics(fred_network_id());
   NetworkIdentifier id = NetworkIdentifier::FromProto(specifics);
@@ -132,9 +139,11 @@ TEST_F(SyncedNetworkUpdaterImplTest, TestAdd_OneNetwork) {
   EXPECT_TRUE(
       NetworkHandler::Get()->network_metadata_store()->GetIsConfiguredBySync(
           network->guid()));
+  histogram_tester.ExpectBucketCount(kApplyResultHistogram, true, 1);
 }
 
 TEST_F(SyncedNetworkUpdaterImplTest, TestAdd_ThenRemove) {
+  base::HistogramTester histogram_tester;
   EXPECT_FALSE(FindLocalNetworkById(fred_network_id()));
   updater()->AddOrUpdateNetwork(GenerateTestWifiSpecifics(fred_network_id()));
   EXPECT_TRUE(tracker()->GetPendingUpdateById(fred_network_id()));
@@ -148,9 +157,11 @@ TEST_F(SyncedNetworkUpdaterImplTest, TestAdd_ThenRemove) {
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(tracker()->GetPendingUpdateById(fred_network_id()));
   EXPECT_FALSE(FindLocalNetworkById(fred_network_id()));
+  histogram_tester.ExpectBucketCount(kApplyResultHistogram, true, 2);
 }
 
 TEST_F(SyncedNetworkUpdaterImplTest, TestAdd_TwoNetworks) {
+  base::HistogramTester histogram_tester;
   updater()->AddOrUpdateNetwork(GenerateTestWifiSpecifics(fred_network_id()));
   updater()->AddOrUpdateNetwork(GenerateTestWifiSpecifics(mango_network_id()));
   EXPECT_TRUE(tracker()->GetPendingUpdateById(fred_network_id()));
@@ -172,9 +183,11 @@ TEST_F(SyncedNetworkUpdaterImplTest, TestAdd_TwoNetworks) {
 
   EXPECT_FALSE(tracker()->GetPendingUpdateById(fred_network_id()));
   EXPECT_FALSE(tracker()->GetPendingUpdateById(mango_network_id()));
+  histogram_tester.ExpectBucketCount(kApplyResultHistogram, true, 2);
 }
 
 TEST_F(SyncedNetworkUpdaterImplTest, TestFailToAdd_Error) {
+  base::HistogramTester histogram_tester;
   network_state_helper()->manager_test()->SetSimulateConfigurationResult(
       chromeos::FakeShillSimulatedResult::kFailure);
 
@@ -191,9 +204,14 @@ TEST_F(SyncedNetworkUpdaterImplTest, TestFailToAdd_Error) {
   // Our test tracker holds on to the number of completed attempts after an
   // update has been removed, and that should be equal to kMaxRetries (3).
   EXPECT_EQ(3, tracker()->GetCompletedAttempts(fred_network_id()));
+
+  histogram_tester.ExpectBucketCount(kApplyResultHistogram, false, 1);
+  histogram_tester.ExpectBucketCount(
+      kApplyFailureReasonHistogram, ApplyNetworkFailureReason::kFailedToAdd, 3);
 }
 
 TEST_F(SyncedNetworkUpdaterImplTest, TestFailToAdd_Timeout) {
+  base::HistogramTester histogram_tester;
   network_state_helper()->manager_test()->SetSimulateConfigurationResult(
       chromeos::FakeShillSimulatedResult::kTimeout);
 
@@ -219,9 +237,14 @@ TEST_F(SyncedNetworkUpdaterImplTest, TestFailToAdd_Timeout) {
 
   EXPECT_EQ(3, tracker()->GetCompletedAttempts(fred_network_id()));
   EXPECT_FALSE(tracker()->GetPendingUpdateById(fred_network_id()));
+
+  histogram_tester.ExpectBucketCount(kApplyResultHistogram, false, 1);
+  histogram_tester.ExpectBucketCount(kApplyFailureReasonHistogram,
+                                     ApplyNetworkFailureReason::kTimedout, 3);
 }
 
 TEST_F(SyncedNetworkUpdaterImplTest, TestFailToAdd_Timeout_ThenSucceed) {
+  base::HistogramTester histogram_tester;
   network_state_helper()->manager_test()->SetSimulateConfigurationResult(
       chromeos::FakeShillSimulatedResult::kTimeout);
 
@@ -246,9 +269,15 @@ TEST_F(SyncedNetworkUpdaterImplTest, TestFailToAdd_Timeout_ThenSucceed) {
 
   EXPECT_FALSE(tracker()->GetPendingUpdateById(fred_network_id()));
   EXPECT_TRUE(FindLocalNetworkById(fred_network_id()));
+
+  histogram_tester.ExpectBucketCount(kApplyResultHistogram, false, 0);
+  histogram_tester.ExpectBucketCount(kApplyResultHistogram, true, 1);
+  histogram_tester.ExpectBucketCount(kApplyFailureReasonHistogram,
+                                     ApplyNetworkFailureReason::kTimedout, 2);
 }
 
 TEST_F(SyncedNetworkUpdaterImplTest, TestFailToRemove) {
+  base::HistogramTester histogram_tester;
   network_state_helper()->profile_test()->SetSimulateDeleteResult(
       chromeos::FakeShillSimulatedResult::kFailure);
   updater()->AddOrUpdateNetwork(GenerateTestWifiSpecifics(fred_network_id()));
@@ -264,6 +293,11 @@ TEST_F(SyncedNetworkUpdaterImplTest, TestFailToRemove) {
   EXPECT_TRUE(FindLocalNetworkById(fred_network_id()));
   EXPECT_FALSE(tracker()->GetPendingUpdateById(fred_network_id()));
   EXPECT_EQ(3, tracker()->GetCompletedAttempts(fred_network_id()));
+
+  histogram_tester.ExpectBucketCount(kApplyResultHistogram, false, 1);
+  histogram_tester.ExpectBucketCount(kApplyFailureReasonHistogram,
+                                     ApplyNetworkFailureReason::kFailedToRemove,
+                                     3);
 }
 
 }  // namespace sync_wifi

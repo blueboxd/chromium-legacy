@@ -102,7 +102,7 @@ class PixelIntegrationTest(
       if do_page_action:
         # The page action may itself signal test failure via self.fail().
         self._DoPageAction(tab, page)
-      self._RunSkiaGoldBasedPixelTest(do_page_action, page)
+      self._RunSkiaGoldBasedPixelTest(page)
     finally:
       test_messages = self._TestHarnessMessages(tab)
       if test_messages:
@@ -131,13 +131,12 @@ class PixelIntegrationTest(
     # args[0] is the PixelTestPage for the current test.
     return args[0].expected_per_process_crashes
 
-  def _RunSkiaGoldBasedPixelTest(self, do_page_action, page):
+  def _RunSkiaGoldBasedPixelTest(self, page):
     """Captures and compares a test image using Skia Gold.
 
     Raises an Exception if the comparison fails.
 
     Args:
-      do_page_action: a bool indicating if an action was run on the page.
       page: the GPU PixelTestPage object for the test.
     """
     tab = self.tab
@@ -164,7 +163,7 @@ class PixelIntegrationTest(
       return
     image_name = self._UrlToImageName(page.name)
     self._UploadTestResultToSkiaGold(
-        image_name, screenshot, tab, page, build_id_args=build_id_args)
+        image_name, screenshot, page, build_id_args=build_id_args)
 
   def _DoPageAction(self, tab, page):
     getattr(self, '_' + page.optional_action)(tab, page)
@@ -200,9 +199,11 @@ class PixelIntegrationTest(
     # in order to navigate to chrome://gpucrash) that the simpler
     # solution of provoking the GPU process crash from this renderer
     # process was chosen.
+    del page  # Unused in this particular action.
     tab.EvaluateJavaScript('chrome.gpuBenchmarking.crashGpuProcess()')
 
   def _SwitchTabs(self, tab, page):
+    del page  # Unused in this particular action.
     if not tab.browser.supports_tab_control:
       self.fail('Browser must support tab control')
     dummy_tab = tab.browser.tabs.New()
@@ -212,6 +213,7 @@ class PixelIntegrationTest(
     tab.Activate()
 
   def _RunTestWithHighPerformanceTab(self, tab, page):
+    del page  # Unused in this particular action.
     if not self._IsDualGPUMacLaptop():
       # Short-circuit this test.
       logging.info('Short-circuiting test because not running on dual-GPU Mac '
@@ -249,6 +251,7 @@ class PixelIntegrationTest(
     tab.EvaluateJavaScript('runToCompletion()')
 
   def _RunLowToHighPowerTest(self, tab, page):
+    del page  # Unused in this particular action.
     is_dual_gpu = self._IsDualGPUMacLaptop()
     tab.EvaluateJavaScript('initialize(' +
                            ('true' if is_dual_gpu else 'false') + ')')
@@ -256,6 +259,7 @@ class PixelIntegrationTest(
     # complete with either a success or failure.
 
   def _RunOffscreenCanvasIBRCWebGLTest(self, tab, page):
+    del page  # Unused in this particular action.
     self._AssertLowPowerGPU()
     tab.EvaluateJavaScript('setup()')
     # Wait a few seconds for any (incorrect) GPU switched
@@ -265,6 +269,7 @@ class PixelIntegrationTest(
     tab.EvaluateJavaScript('render()')
 
   def _RunOffscreenCanvasIBRCWebGLHighPerfTest(self, tab, page):
+    del page  # Unused in this particular action.
     self._AssertLowPowerGPU()
     tab.EvaluateJavaScript('setup(true)')
     # Wait a few seconds for any (incorrect) GPU switched

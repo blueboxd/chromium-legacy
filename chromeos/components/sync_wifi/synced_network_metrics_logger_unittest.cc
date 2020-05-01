@@ -22,20 +22,6 @@ namespace chromeos {
 
 namespace sync_wifi {
 
-namespace {
-
-const char kFailureReasonAllHistogram[] =
-    "Network.Wifi.Synced.Connection.FailureReason";
-const char kConnectionResultAllHistogram[] =
-    "Network.Wifi.Synced.Connection.Result";
-
-const char kFailureReasonManualHistogram[] =
-    "Network.Wifi.Synced.ManualConnection.FailureReason";
-const char kConnectionResultManualHistogram[] =
-    "Network.Wifi.Synced.ManualConnection.Result";
-
-}  // namespace
-
 class SyncedNetworkMetricsLoggerTest : public testing::Test {
  public:
   SyncedNetworkMetricsLoggerTest()
@@ -104,7 +90,7 @@ TEST_F(SyncedNetworkMetricsLoggerTest,
   base::RunLoop().RunUntilIdle();
 
   histogram_tester.ExpectBucketCount(kConnectionResultManualHistogram, true, 1);
-  histogram_tester.ExpectTotalCount(kFailureReasonManualHistogram, 0);
+  histogram_tester.ExpectTotalCount(kConnectionFailureReasonManualHistogram, 0);
 }
 
 TEST_F(SyncedNetworkMetricsLoggerTest,
@@ -116,7 +102,7 @@ TEST_F(SyncedNetworkMetricsLoggerTest,
   base::RunLoop().RunUntilIdle();
 
   histogram_tester.ExpectTotalCount(kConnectionResultManualHistogram, 0);
-  histogram_tester.ExpectTotalCount(kFailureReasonManualHistogram, 0);
+  histogram_tester.ExpectTotalCount(kConnectionFailureReasonManualHistogram, 0);
 }
 
 TEST_F(SyncedNetworkMetricsLoggerTest, FailedManualConnection_SyncedNetwork) {
@@ -133,9 +119,9 @@ TEST_F(SyncedNetworkMetricsLoggerTest, FailedManualConnection_SyncedNetwork) {
 
   histogram_tester.ExpectBucketCount(kConnectionResultManualHistogram, false,
                                      1);
-  histogram_tester.ExpectBucketCount(
-      kFailureReasonManualHistogram,
-      SyncedNetworkMetricsLogger::ConnectionFailureReason::kBadPassphrase, 1);
+  histogram_tester.ExpectBucketCount(kConnectionFailureReasonManualHistogram,
+                                     ConnectionFailureReason::kBadPassphrase,
+                                     1);
 }
 
 TEST_F(SyncedNetworkMetricsLoggerTest,
@@ -152,7 +138,7 @@ TEST_F(SyncedNetworkMetricsLoggerTest,
   base::RunLoop().RunUntilIdle();
 
   histogram_tester.ExpectTotalCount(kConnectionResultManualHistogram, 0);
-  histogram_tester.ExpectTotalCount(kFailureReasonManualHistogram, 0);
+  histogram_tester.ExpectTotalCount(kConnectionFailureReasonManualHistogram, 0);
 }
 
 TEST_F(SyncedNetworkMetricsLoggerTest, FailedConnection_SyncedNetwork) {
@@ -173,9 +159,8 @@ TEST_F(SyncedNetworkMetricsLoggerTest, FailedConnection_SyncedNetwork) {
   base::RunLoop().RunUntilIdle();
 
   histogram_tester.ExpectBucketCount(kConnectionResultAllHistogram, false, 1);
-  histogram_tester.ExpectBucketCount(
-      kFailureReasonAllHistogram,
-      SyncedNetworkMetricsLogger::ConnectionFailureReason::kUnknown, 1);
+  histogram_tester.ExpectBucketCount(kConnectionFailureReasonAllHistogram,
+                                     ConnectionFailureReason::kUnknown, 1);
 }
 
 TEST_F(SyncedNetworkMetricsLoggerTest,
@@ -196,7 +181,47 @@ TEST_F(SyncedNetworkMetricsLoggerTest,
   base::RunLoop().RunUntilIdle();
 
   histogram_tester.ExpectTotalCount(kConnectionResultAllHistogram, 0);
-  histogram_tester.ExpectTotalCount(kFailureReasonAllHistogram, 0);
+  histogram_tester.ExpectTotalCount(kConnectionFailureReasonAllHistogram, 0);
+}
+
+TEST_F(SyncedNetworkMetricsLoggerTest, RecordApplyNetworkFailed) {
+  base::HistogramTester histogram_tester;
+  synced_network_metrics_logger()->RecordApplyNetworkFailed();
+  base::RunLoop().RunUntilIdle();
+
+  histogram_tester.ExpectBucketCount(kApplyResultHistogram, false, 1);
+}
+
+TEST_F(SyncedNetworkMetricsLoggerTest,
+       RecordApplyNetworkFailureReason_NoErrorString) {
+  base::HistogramTester histogram_tester;
+  synced_network_metrics_logger()->RecordApplyNetworkFailureReason(
+      ApplyNetworkFailureReason::kTimedout, "");
+  base::RunLoop().RunUntilIdle();
+
+  histogram_tester.ExpectBucketCount(kApplyFailureReasonHistogram,
+                                     ApplyNetworkFailureReason::kTimedout, 1);
+}
+
+TEST_F(SyncedNetworkMetricsLoggerTest,
+       RecordApplyNetworkFailureReason_ValidErrorString) {
+  base::HistogramTester histogram_tester;
+  synced_network_metrics_logger()->RecordApplyNetworkFailureReason(
+      ApplyNetworkFailureReason::kTimedout,
+      shill::kErrorResultPermissionDenied);
+  base::RunLoop().RunUntilIdle();
+
+  histogram_tester.ExpectBucketCount(
+      kApplyFailureReasonHistogram,
+      ApplyNetworkFailureReason::kPermissionDenied, 1);
+}
+
+TEST_F(SyncedNetworkMetricsLoggerTest, RecordApplyNetworkSuccess) {
+  base::HistogramTester histogram_tester;
+  synced_network_metrics_logger()->RecordApplyNetworkSuccess();
+  base::RunLoop().RunUntilIdle();
+
+  histogram_tester.ExpectBucketCount(kApplyResultHistogram, true, 1);
 }
 
 }  // namespace sync_wifi

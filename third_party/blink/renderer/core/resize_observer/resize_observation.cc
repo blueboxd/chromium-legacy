@@ -4,8 +4,10 @@
 
 #include "third_party/blink/renderer/core/resize_observer/resize_observation.h"
 #include "third_party/blink/renderer/core/display_lock/display_lock_utilities.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/layout/adjust_for_absolute_zoom.h"
 #include "third_party/blink/renderer/core/layout/layout_box.h"
+#include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/resize_observer/resize_observer.h"
 #include "third_party/blink/renderer/core/resize_observer/resize_observer_box_options.h"
 #include "third_party/blink/renderer/core/svg/svg_element.h"
@@ -77,7 +79,8 @@ LayoutSize ResizeObservation::ComputeTargetSize() const {
           case ResizeObserverBoxOptions::DevicePixelContentBox: {
             LayoutSize paint_offset =
                 layout_object->FirstFragment().PaintOffset().ToLayoutSize();
-            return LayoutSize(
+
+            LayoutSize device_pixel_content_box_size(
                 SnapSizeToPixel(layout_box->ContentLogicalWidth(),
                                 style.IsHorizontalWritingMode()
                                     ? paint_offset.Width()
@@ -86,6 +89,15 @@ LayoutSize ResizeObservation::ComputeTargetSize() const {
                                 style.IsHorizontalWritingMode()
                                     ? paint_offset.Height()
                                     : paint_offset.Width()));
+
+            // Get Device Scale Factor for cases where use-zoom-for-dsf is
+            // disabled. This is 1 if use-zoom-for-dsf is enabled.
+            float device_scale_factor = layout_object->GetFrame()
+                                            ->GetPage()
+                                            ->DeviceScaleFactorDeprecated();
+            device_pixel_content_box_size.Scale(device_scale_factor);
+
+            return device_pixel_content_box_size;
           }
           default:
             NOTREACHED();

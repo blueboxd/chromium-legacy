@@ -81,13 +81,14 @@ enum class RequiredOriginType {
   kSecure,
   // Must be a secure origin and be same-origin with all ancestor frames.
   kSecureAndSameWithAncestors,
-  // Must be a secure origin and the "publickey-credentials" feature policy
-  // must be enabled. By default "publickey-credentials" is not inherited by
-  // cross-origin child frames, so if that policy is not explicitly enabled,
-  // behavior is the same as that of |kSecureAndSameWithAncestors|. Note that
-  // feature policies can be expressed in various ways, e.g.: |allow| iframe
-  // attribute and/or feature-policy header, and may be inherited from parent
-  // browsing contexts. See Feature Policy spec.
+  // Must be a secure origin and the "publickey-credentials-get" feature
+  // policy must be enabled. By default "publickey-credentials-get" is not
+  // inherited by cross-origin child frames, so if that policy is not
+  // explicitly enabled, behavior is the same as that of
+  // |kSecureAndSameWithAncestors|. Note that feature policies can be
+  // expressed in various ways, e.g.: |allow| iframe attribute and/or
+  // feature-policy header, and may be inherited from parent browsing
+  // contexts. See Feature Policy spec.
   kSecureAndPermittedByFeaturePolicy,
 };
 
@@ -134,20 +135,21 @@ bool CheckSecurityRequirementsBeforeRequest(
             DOMExceptionCode::kNotAllowedError,
             "The following credential operations can only occur in a document "
             "which is same-origin with all of its ancestors: storage/retrieval "
-            "of 'PasswordCredential' and 'FederatedCredential'."));
+            "of 'PasswordCredential' and 'FederatedCredential', storage of "
+            "'PublicKeyCredential'."));
         return false;
       }
       break;
 
     case RequiredOriginType::kSecureAndPermittedByFeaturePolicy:
-      // The 'publickey-credentials' feature's "default allowlist" is "self",
-      // which means the webauthn feature is allowed by default in same-origin
-      // child browsing contexts.
+      // The 'publickey-credentials-get' feature's "default allowlist" is
+      // "self", which means the webauthn feature is allowed by default in
+      // same-origin child browsing contexts.
       if (!resolver->GetFrame()->GetSecurityContext()->IsFeatureEnabled(
-              mojom::blink::FeaturePolicyFeature::kPublicKeyCredentials)) {
+              mojom::blink::FeaturePolicyFeature::kPublicKeyCredentialsGet)) {
         resolver->Reject(MakeGarbageCollected<DOMException>(
             DOMExceptionCode::kNotAllowedError,
-            "The 'publickey-credentials' feature is not enabled in this "
+            "The 'publickey-credentials-get' feature is not enabled in this "
             "document. Feature Policy may be used to delegate Web "
             "Authentication capabilities to cross-origin child frames."));
         return false;
@@ -182,7 +184,7 @@ void AssertSecurityRequirementsBeforeResponse(
     case RequiredOriginType::kSecureAndPermittedByFeaturePolicy:
       SECURITY_CHECK(
           resolver->GetFrame()->GetSecurityContext()->IsFeatureEnabled(
-              mojom::blink::FeaturePolicyFeature::kPublicKeyCredentials));
+              mojom::blink::FeaturePolicyFeature::kPublicKeyCredentialsGet));
       break;
   }
 }
@@ -521,7 +523,8 @@ ScriptPromise CredentialsContainer::get(
   // hasPublicKey() implies that this is a WebAuthn request.
   auto required_origin_type =
       options->hasPublicKey() &&
-              RuntimeEnabledFeatures::WebAuthenticationFeaturePolicyEnabled()
+              RuntimeEnabledFeatures::
+                  WebAuthenticationGetAssertionFeaturePolicyEnabled()
           ? RequiredOriginType::kSecureAndPermittedByFeaturePolicy
           : RequiredOriginType::kSecureAndSameWithAncestors;
   if (!CheckSecurityRequirementsBeforeRequest(resolver, required_origin_type)) {
@@ -729,11 +732,8 @@ ScriptPromise CredentialsContainer::create(
 
   // hasPublicKey() implies that this is a WebAuthn request.
   auto required_origin_type =
-      options->hasPublicKey()
-          ? RuntimeEnabledFeatures::WebAuthenticationFeaturePolicyEnabled()
-                ? RequiredOriginType::kSecureAndPermittedByFeaturePolicy
-                : RequiredOriginType::kSecureAndSameWithAncestors
-          : RequiredOriginType::kSecure;
+      options->hasPublicKey() ? RequiredOriginType::kSecureAndSameWithAncestors
+                              : RequiredOriginType::kSecure;
 
   if (!CheckSecurityRequirementsBeforeRequest(resolver, required_origin_type)) {
     return promise;

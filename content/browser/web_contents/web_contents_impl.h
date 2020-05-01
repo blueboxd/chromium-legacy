@@ -848,7 +848,8 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
                                const GURL& scope,
                                AllowServiceWorkerResult allowed) override;
   void RegisterExistingOriginToPreventOptInIsolation(
-      const url::Origin& origin) override;
+      const url::Origin& origin,
+      NavigationRequest* navigation_request_to_exclude) override;
 
   // RenderWidgetHostDelegate --------------------------------------------------
 

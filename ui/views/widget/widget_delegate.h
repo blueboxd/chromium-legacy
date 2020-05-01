@@ -177,7 +177,6 @@ class VIEWS_EXPORT WidgetDelegate {
   // The default implementations of these methods simply call the corresponding
   // callbacks; see Set*Callback() below. If you override these it is not
   // necessary to call the base implementations.
-  virtual void WindowWillClose();
   virtual void WindowClosing();
   virtual void DeleteDelegate();
 
@@ -244,9 +243,13 @@ class VIEWS_EXPORT WidgetDelegate {
   void SetCenterTitle(bool center_title);
 #endif
 
-  void SetWindowWillCloseCallback(base::OnceClosure callback);
-  void SetWindowClosingCallback(base::OnceClosure callback);
-  void SetDeleteDelegateCallback(base::OnceClosure callback);
+  void RegisterWindowWillCloseCallback(base::OnceClosure callback);
+  void RegisterWindowClosingCallback(base::OnceClosure callback);
+  void RegisterDeleteDelegateCallback(base::OnceClosure callback);
+
+  // Call this to notify the WidgetDelegate that its Widget is about to start
+  // closing.
+  void WindowWillClose();
 
  protected:
   virtual ~WidgetDelegate();
@@ -262,9 +265,9 @@ class VIEWS_EXPORT WidgetDelegate {
   // Managed by Widget. Ensures |this| outlives its Widget.
   bool can_delete_this_ = true;
 
-  base::OnceClosure window_will_close_callback_;
-  base::OnceClosure window_closing_callback_;
-  base::OnceClosure delete_delegate_callback_;
+  std::vector<base::OnceClosure> window_will_close_callbacks_;
+  std::vector<base::OnceClosure> window_closing_callbacks_;
+  std::vector<base::OnceClosure> delete_delegate_callbacks_;
 
   DISALLOW_COPY_AND_ASSIGN(WidgetDelegate);
 };

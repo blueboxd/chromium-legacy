@@ -14,7 +14,6 @@
 
 namespace content {
 class RenderFrame;
-class RenderView;
 
 // Turn a renderer into web test mode.
 void EnableRendererWebTestMode();
@@ -23,11 +22,6 @@ void EnableRendererWebTestMode();
 // WebWidgetTestProxy between WebWidgets and RenderWidgets and WebFrameTestProxy
 // between WebFrames and RenderFrames.
 void EnableWebTestProxyCreation();
-
-// Sets the focus of the render view depending on |enable|. This only overrides
-// the state of the renderer, and does not sync the focus to the browser
-// process.
-void SetFocusAndActivate(RenderView* render_view, bool enable);
 
 // Run all pending idle tasks immediately, and then invoke callback.
 void SchedulerRunIdleTasks(base::OnceClosure callback);

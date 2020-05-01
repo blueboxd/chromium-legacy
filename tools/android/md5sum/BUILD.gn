@@ -17,7 +17,10 @@ group("md5sum") {
 
 executable("md5sum_bin") {
   sources = [ "md5sum.cc" ]
-  deps = [ "//base" ]
+  deps = [
+    "//base",
+    "//third_party/zlib/google:compression_utils",
+  ]
 }
 
 if (current_toolchain == default_toolchain) {

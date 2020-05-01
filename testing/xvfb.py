@@ -222,8 +222,16 @@ def _run_with_weston(cmd, env, stdoutfile):
     for _ in range(10):
       # Weston is compiled along with the Ozone/Wayland platform, and is
       # fetched as data deps. Thus, run it from the current directory.
+      #
+      # Weston is used with the following flags:
+      # 1) --backend=headless-backend.so - runs Weston in a headless mode
+      # that does not require a real GPU card.
+      # 2) --idle-time=0 - disables idle timeout, which prevents Weston
+      # to enter idle state. Otherwise, Weston stops to send frame callbacks,
+      # and tests start to time out (this typically happens after 300 seconds -
+      # the default time after which Weston enters the idle state).
       weston_proc = subprocess.Popen(
-         ('./weston', '--backend=headless-backend.so'),
+         ('./weston', '--backend=headless-backend.so', '--idle-time=0'),
          stderr=subprocess.STDOUT, env=env)
 
       # Get the $WAYLAND_DISPLAY set by Weston and pass it to the test launcher.

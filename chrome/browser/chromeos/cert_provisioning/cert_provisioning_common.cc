@@ -12,8 +12,9 @@ namespace chromeos {
 namespace cert_provisioning {
 
 bool CertProfile::operator==(const CertProfile& other) const {
-  static_assert(kVersion == 1, "This function should be updated");
-  return (profile_id == other.profile_id);
+  static_assert(kVersion == 2, "This function should be updated");
+  return ((profile_id == other.profile_id) &&
+          (policy_version == other.policy_version));
 }
 
 bool CertProfile::operator!=(const CertProfile& other) const {

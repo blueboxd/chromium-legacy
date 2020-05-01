@@ -8,6 +8,11 @@
 #import <UIKit/UIKit.h>
 
 #if defined(__IPHONE_13_4)
+// Returns a pointer style provider that has the default hover effect and a
+// circle pointer shape.
+UIButtonPointerStyleProvider CreateDefaultEffectCirclePointerStyleProvider()
+    API_AVAILABLE(ios(13.4));
+
 // Returns a pointer style provider that has the lift hover effect and a circle
 // pointer shape.
 UIButtonPointerStyleProvider CreateLiftEffectCirclePointerStyleProvider()

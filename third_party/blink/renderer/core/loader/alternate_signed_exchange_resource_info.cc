@@ -4,7 +4,9 @@
 
 #include "third_party/blink/renderer/core/loader/alternate_signed_exchange_resource_info.h"
 
+#include "media/media_buildflags.h"
 #include "net/http/http_request_headers.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/web_package/signed_exchange_consts.h"
 #include "third_party/blink/public/common/web_package/web_package_request_matcher.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
@@ -28,7 +30,20 @@ constexpr char kAllowedAltSxg[] = "allowed-alt-sxg";
 // TODO(horo): Move somewhere and use shared constant value.
 const char kDefaultAcceptHeader[] = "*/*";
 const char kStylesheetAcceptHeader[] = "text/css,*/*;q=0.1";
-const char kImageAcceptHeader[] = "image/webp,image/apng,image/*,*/*;q=0.8";
+
+const char* ImageAcceptHeader() {
+  static constexpr char kImageAcceptHeaderWithAvif[] =
+      "image/avif,image/webp,image/apng,image/*,*/*;q=0.8";
+  static constexpr size_t kOffset = sizeof("image/avif,") - 1;
+#if BUILDFLAG(ENABLE_AV1_DECODER)
+  static const char* header = base::FeatureList::IsEnabled(features::kAVIF)
+                                  ? kImageAcceptHeaderWithAvif
+                                  : kImageAcceptHeaderWithAvif + kOffset;
+#else
+  static const char* header = kImageAcceptHeaderWithAvif + kOffset;
+#endif
+  return header;
+}
 
 using AlternateSignedExchangeMachingKey =
     std::pair<String /* anchor */,
@@ -133,7 +148,7 @@ AlternateSignedExchangeResourceInfo::FindMatchingEntry(
   if (resource_type == ResourceType::kCSSStyleSheet) {
     accept_header = kStylesheetAcceptHeader;
   } else if (resource_type == ResourceType::kImage) {
-    accept_header = kImageAcceptHeader;
+    accept_header = ImageAcceptHeader();
   }
   return FindMatchingEntry(url, accept_header, languages);
 }
@@ -147,7 +162,7 @@ AlternateSignedExchangeResourceInfo::FindMatchingEntry(
   if (request_context == mojom::RequestContextType::STYLE) {
     accept_header = kStylesheetAcceptHeader;
   } else if (request_context == mojom::RequestContextType::IMAGE) {
-    accept_header = kImageAcceptHeader;
+    accept_header = ImageAcceptHeader();
   }
   return FindMatchingEntry(url, accept_header, languages);
 }

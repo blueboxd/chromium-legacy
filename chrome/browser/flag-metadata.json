@@ -78,7 +78,7 @@
   {
     "name": "allow-scroll-settings",
     "owners": [ "khorimoto", "zentaro" ],
-    "expiry_milestone": 84
+    "expiry_milestone": 88
   },
   {
     "name": "allow-sxg-certs-without-extension",
@@ -942,8 +942,8 @@
   },
   {
     "name": "dns-over-https",
-    "owners": [ "dalyk", "doh-core@google.com" ],
-    "expiry_milestone": 84
+    "owners": [ "ericorth", "doh-core@google.com" ],
+    "expiry_milestone": 88
   },
   {
     "name": "double-buffer-compositing",
@@ -1053,14 +1053,9 @@
     "expiry_milestone": 73
   },
   {
-    "name": "enable-android-night-mode",
-    "owners": [ "twellington", "tedchoc" ],
-    "expiry_milestone": 80
-  },
-    {
     "name": "enable-android-night-mode-tab-reparenting",
-    "owners": [ "twellington", "tedchoc", "wylieb" ],
-    "expiry_milestone": 83
+    "owners": [ "wylieb", "twellington", "tedchoc"],
+    "expiry_milestone": 85
   },
   {
     "name": "enable-android-spellchecker",

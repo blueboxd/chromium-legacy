@@ -1,5 +1,6 @@
 specific_include_rules = {
     "alternate_signed_exchange_resource_info.cc" : [
+        "+media/media_buildflags.h",
         "+net/http/http_request_headers.h"
     ],
     "progress_tracker_test.cc" : [

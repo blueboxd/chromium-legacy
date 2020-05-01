@@ -562,9 +562,12 @@ bool WebTestControlHost::PrepareForWebTest(const TestInfo& test_info) {
             main_window_->web_contents());
   }
 
-  // Focus the RenderWidgetHost. This will send an IPC message to the
-  // renderer to propagate the state change.
-  main_window_->web_contents()->GetRenderViewHost()->GetWidget()->Focus();
+  // We don't go down the normal system path of focusing RenderWidgetHostView
+  // because on mac headless, there are no system windows and that path does
+  // not do anything. Instead we go through the Shell::ActivateContents() path
+  // which knows how to perform the activation correctly on all platforms and in
+  // headless mode.
+  main_window_->ActivateContents(main_window_->web_contents());
 
   // Flush various interfaces to ensure a test run begins from a known
   // state.
@@ -1423,6 +1426,16 @@ class FakeSelectFileDialogFactory : public ui::SelectFileDialogFactory {
 void WebTestControlHost::SetFilePathForMockFileDialog(
     const base::FilePath& path) {
   ui::SelectFileDialog::SetFactory(new FakeSelectFileDialogFactory(path));
+}
+
+void WebTestControlHost::FocusDevtoolsSecondaryWindow() {
+  CHECK(secondary_window_);
+  // We don't go down the normal system path of focusing RenderWidgetHostView
+  // because on mac headless, there are no system windows and that path does
+  // not do anything. Instead we go through the Shell::ActivateContents() path
+  // which knows how to perform the activation correctly on all platforms and in
+  // headless mode.
+  secondary_window_->ActivateContents(secondary_window_->web_contents());
 }
 
 void WebTestControlHost::GoToOffset(int offset) {

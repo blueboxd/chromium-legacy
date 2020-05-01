@@ -10,6 +10,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
 #include "chrome/browser/ui/webui/chromeos/user_image_source.h"
+#include "chrome/browser/ui/webui/settings/chromeos/constants/routes.mojom.h"
 #include "chrome/common/webui_url_constants.h"
 #include "components/user_manager/user.h"
 #include "ui/base/webui/web_ui_util.h"
@@ -61,7 +62,8 @@ void MultideviceSetupHandler::HandleOpenMultiDeviceSettings(
     const base::ListValue* args) {
   DCHECK(args->empty());
   chrome::SettingsWindowManager::GetInstance()->ShowOSSettings(
-      Profile::FromWebUI(web_ui()), chrome::kConnectedDevicesSubPage);
+      Profile::FromWebUI(web_ui()),
+      chromeos::settings::mojom::kMultiDeviceFeaturesSubpagePath);
 }
 
 }  // namespace multidevice_setup

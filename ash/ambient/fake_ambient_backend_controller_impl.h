@@ -24,6 +24,7 @@ class ASH_EXPORT FakeAmbientBackendControllerImpl
   void GetSettings(GetSettingsCallback callback) override;
   void UpdateSettings(AmbientModeTopicSource topic_source,
                       UpdateSettingsCallback callback) override;
+  void SetPhotoRefreshInterval(base::TimeDelta interval) override;
 
  private:
   base::WeakPtrFactory<FakeAmbientBackendControllerImpl> weak_factory_{this};

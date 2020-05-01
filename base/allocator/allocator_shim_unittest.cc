@@ -61,7 +61,14 @@ constexpr size_t kTestSizeEstimate = 1234;
 
 class AllocatorShimTest : public testing::Test {
  public:
+#if defined(OS_IOS)
+  // TODO(crbug.com/1077271): 64-bit iOS uses a page size that is larger than
+  // kSystemPageSize, causing this test to make larger allocations, relative to
+  // kSystemPageSize.
+  static const size_t kMaxSizeTracked = 6 * base::kSystemPageSize;
+#else
   static const size_t kMaxSizeTracked = 2 * base::kSystemPageSize;
+#endif
   AllocatorShimTest() : testing::Test() {}
 
   static size_t Hash(const void* ptr) {

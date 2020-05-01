@@ -17,6 +17,7 @@
 #include "chrome/browser/notifications/system_notification_helper.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
+#include "chrome/browser/ui/webui/settings/chromeos/constants/routes.mojom.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/dbus/cryptohome/cryptohome_client.h"
@@ -107,7 +108,8 @@ LowDiskNotification::CreateNotification(Severity severity) {
     if (button_index) {
       DCHECK_EQ(0, *button_index);
       chrome::SettingsWindowManager::GetInstance()->ShowOSSettings(
-          ProfileManager::GetActiveUserProfile(), chrome::kStorageSubPage);
+          ProfileManager::GetActiveUserProfile(),
+          chromeos::settings::mojom::kStorageSubpagePath);
     }
   });
   std::unique_ptr<message_center::Notification> notification =

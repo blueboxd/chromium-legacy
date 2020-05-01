@@ -41,6 +41,8 @@ enum class RelyingPartySecurityCheckFailure {
 class CONTENT_EXPORT WebAuthRequestSecurityChecker
     : public base::RefCounted<WebAuthRequestSecurityChecker> {
  public:
+  enum class RequestType { kMakeCredential, kGetAssertion };
+
   explicit WebAuthRequestSecurityChecker(RenderFrameHost* host);
   WebAuthRequestSecurityChecker(const WebAuthRequestSecurityChecker&) = delete;
 
@@ -53,12 +55,14 @@ class CONTENT_EXPORT WebAuthRequestSecurityChecker
 
   // Returns blink::mojom::AuthenticatorStatus::SUCCESS if |origin| is
   // same-origin with all ancestors in the frame tree, or else if
-  // requests from cross-origin embeddings are allowed by policy.
+  // requests from cross-origin embeddings are allowed by policy and the
+  // RequestType is |kGetAssertion|.
   // Returns blink::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR otherwise.
   // |is_cross_origin| is an output parameter that is set to true if there is
   // a cross-origin embedding, regardless of policy, and false otherwise.
   blink::mojom::AuthenticatorStatus ValidateAncestorOrigins(
       const url::Origin& origin,
+      RequestType type,
       bool* is_cross_origin);
 
   // Returns AuthenticatorStatus::SUCCESS if the origin domain is valid under

@@ -72,6 +72,7 @@
       "ui/android/java/strings/android_ui_strings.grd",
       "ui/chromeos/ui_chromeos_strings.grd",
       "ui/strings/ui_strings.grd",
+      "weblayer/browser/java/weblayer_strings.grd",
     ],
   },
   # The policy_templates are translated only into a subset of the languages.

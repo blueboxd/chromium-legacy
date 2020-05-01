@@ -29,7 +29,7 @@ import org.chromium.components.signin.metrics.SigninAccessPoint;
  * Shows a card prompting the user to sign in. This item is also an {@link OptionalLeaf}, and sign
  * in state changes control its visibility.
  */
-public class SignInPromo extends OptionalLeaf {
+public abstract class SignInPromo extends OptionalLeaf {
     /**
      * Period for which promos are suppressed if signin is refused in FRE.
      */
@@ -135,8 +135,7 @@ public class SignInPromo extends OptionalLeaf {
 
     @Override
     protected void onBindViewHolder(NewTabPageViewHolder holder) {
-        ((PersonalizedPromoViewHolder) holder)
-                .onBindViewHolder(mSigninPromoController, mProfileDataCache);
+        // TODO(https://crbug.com/1069183): Dead code, remove in future refactor.
     }
 
     @Override
@@ -145,9 +144,7 @@ public class SignInPromo extends OptionalLeaf {
     }
 
     /** Notify that the content for this {@link SignInPromo} has changed. */
-    protected void notifyDataChanged() {
-        if (isVisible()) notifyItemChanged(0, PersonalizedPromoViewHolder::update);
-    }
+    protected abstract void notifyDataChanged();
 
     private void updateVisibility() {
         setVisibilityInternal(

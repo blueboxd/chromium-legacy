@@ -7,6 +7,16 @@
  * 'crostini-subpage' is the settings subpage for managing Crostini.
  */
 
+/**
+ * The current confirmation state.
+ * @enum {string}
+ */
+const ConfirmationState = {
+  NONE: 'none',
+  CONFIRMED: 'confirmed',
+  CANCELED: 'canceled',
+};
+
 Polymer({
   is: 'settings-crostini-subpage',
 
@@ -90,6 +100,24 @@ Polymer({
       },
     },
 
+    /** @private */
+    showDiskResizeConfirmationDialog_: {
+      type: Boolean,
+      value: false,
+    },
+
+    /** @private */
+    isDiskUserChosenSize_: {
+      type: Boolean,
+      value: false,
+    },
+
+    /** @private {!ConfirmationState} */
+    diskResizeConfirmationState_: {
+      type: String,
+      value: ConfirmationState.NONE,
+    },
+
     /**
      * Whether the toggle to share the mic with Crostini should be shown.
      * @private {boolean}
@@ -168,6 +196,7 @@ Polymer({
         .requestCrostiniUpgraderDialogStatus();
     settings.CrostiniBrowserProxyImpl.getInstance()
         .requestCrostiniContainerUpgradeAvailable();
+    this.loadDiskInfo_();
   },
 
   ready() {
@@ -208,13 +237,54 @@ Polymer({
   },
 
   /** @private */
+  loadDiskInfo_() {
+    // TODO(davidmunro): No magic 'termina' string.
+    const vmName = 'termina';
+    settings.CrostiniBrowserProxyImpl.getInstance()
+        .getCrostiniDiskInfo(vmName, /*fullInfo = */ false)
+        .then(
+            diskInfo => {
+              if (diskInfo.succeeded) {
+                this.isDiskUserChosenSize_ = diskInfo.isUserChosenSize;
+              }
+            },
+            reason => {
+              console.log(`Unable to get info: ${reason}`);
+            });
+  },
+
+  /** @private */
   onDiskResizeClick_() {
+    if (!this.isDiskUserChosenSize_ &&
+        this.diskResizeConfirmationState_ !== ConfirmationState.CONFIRMED) {
+      this.showDiskResizeConfirmationDialog_ = true;
+      return;
+    }
     this.showDiskResizeDialog_ = true;
   },
 
   /** @private */
   onDiskResizeDialogClose_() {
     this.showDiskResizeDialog_ = false;
+    // DiskInfo could have changed.
+    this.loadDiskInfo_();
+  },
+
+  /** @private */
+  onDiskResizeConfirmationDialogClose_() {
+    this.showDiskResizeConfirmationDialog_ = false;
+    // The on_cancel is followed by on_close, so check cancel didn't happen
+    // first.
+    if (this.diskResizeConfirmationState_ !== ConfirmationState.CANCELED) {
+      this.diskResizeConfirmationState_ = ConfirmationState.CONFIRMED;
+      this.showDiskResizeDialog_ = true;
+    }
+  },
+
+  /** @private */
+  onDiskResizeConfirmationDialogCancel_() {
+    this.showDiskResizeConfirmationDialog_ = false;
+    this.diskResizeConfirmationState_ = ConfirmationState.CANCELED;
   },
 
   /**

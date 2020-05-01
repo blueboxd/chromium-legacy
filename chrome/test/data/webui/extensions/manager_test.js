@@ -20,7 +20,7 @@ extension_manager_tests.TestNames = {
 
 function getDataByName(list, name) {
   return assert(list.find(function(el) {
-    return el.name == name;
+    return el.name === name;
   }));
 }
 
@@ -52,7 +52,7 @@ suite(extension_manager_tests.suiteName, function() {
 
         const list = manager.$['items-list'];
         const listHasItemWithName = (name) =>
-            !!list.extensions.find(el => el.name == name);
+            !!list.extensions.find(el => el.name === name);
 
         expectEquals(manager.extensions_, manager.$['items-list'].extensions);
         expectTrue(listHasItemWithName('My extension 1'));
@@ -69,7 +69,7 @@ suite(extension_manager_tests.suiteName, function() {
   test(assert(extension_manager_tests.TestNames.SplitItems), function() {
     const sectionHasItemWithName = function(section, name) {
       return !!manager[section].find(function(el) {
-        return el.name == name;
+        return el.name === name;
       });
     };
 

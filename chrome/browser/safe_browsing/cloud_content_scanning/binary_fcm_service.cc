@@ -97,20 +97,24 @@ void BinaryFCMService::ClearCallbackForToken(const std::string& token) {
 }
 
 void BinaryFCMService::UnregisterInstanceID(
-    const std::string& token,
+    const std::string& instance_id,
     UnregisterInstanceIDCallback callback) {
-  instance_id_driver_->GetInstanceID(kBinaryFCMServiceAppId)
-      ->DeleteToken(kBinaryFCMServiceSenderId, instance_id::kGCMScope,
-                    base::BindOnce(&BinaryFCMService::OnInstanceIDUnregistered,
-                                   weakptr_factory_.GetWeakPtr(), token,
-                                   std::move(callback)));
+  instance_id_caller_counts_[instance_id]--;
+  if (instance_id_caller_counts_[instance_id] == 0) {
+    UnregisterInstanceIDImpl(instance_id, std::move(callback));
+    instance_id_caller_counts_.erase(instance_id);
+  }
 }
 
 void BinaryFCMService::OnGetInstanceID(GetInstanceIDCallback callback,
                                        const std::string& instance_id,
                                        instance_id::InstanceID::Result result) {
-  std::move(callback).Run(
-      result == instance_id::InstanceID::SUCCESS ? instance_id : kInvalidId);
+  if (result == instance_id::InstanceID::SUCCESS) {
+    instance_id_caller_counts_[instance_id]++;
+    std::move(callback).Run(instance_id);
+  } else {
+    std::move(callback).Run(kInvalidId);
+  }
 }
 
 void BinaryFCMService::ShutdownHandler() {
@@ -166,6 +170,16 @@ bool BinaryFCMService::CanHandle(const std::string& app_id) const {
   return app_id == kBinaryFCMServiceAppId;
 }
 
+void BinaryFCMService::UnregisterInstanceIDImpl(
+    const std::string& instance_id,
+    UnregisterInstanceIDCallback callback) {
+  instance_id_driver_->GetInstanceID(kBinaryFCMServiceAppId)
+      ->DeleteToken(kBinaryFCMServiceSenderId, instance_id::kGCMScope,
+                    base::BindOnce(&BinaryFCMService::OnInstanceIDUnregistered,
+                                   weakptr_factory_.GetWeakPtr(), instance_id,
+                                   std::move(callback)));
+}
+
 void BinaryFCMService::OnInstanceIDUnregistered(
     const std::string& token,
     UnregisterInstanceIDCallback callback,
@@ -185,6 +199,15 @@ void BinaryFCMService::OnInstanceIDUnregistered(
       UnregisterInstanceID(token, std::move(callback));
       break;
   }
+}
+
+void BinaryFCMService::Shutdown() {
+  for (const auto& id_and_count : instance_id_caller_counts_) {
+    const std::string& instance_id = id_and_count.first;
+    UnregisterInstanceIDImpl(instance_id, base::DoNothing());
+  }
+
+  instance_id_caller_counts_.clear();
 }
 
 }  // namespace safe_browsing

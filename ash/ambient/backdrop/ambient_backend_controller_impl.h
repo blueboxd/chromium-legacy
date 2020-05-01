@@ -30,6 +30,7 @@ class AmbientBackendControllerImpl : public AmbientBackendController {
   void GetSettings(GetSettingsCallback callback) override;
   void UpdateSettings(AmbientModeTopicSource topic_source,
                       UpdateSettingsCallback callback) override;
+  void SetPhotoRefreshInterval(base::TimeDelta interval) override;
 
  private:
   using BackdropClientConfig = chromeos::ambient::BackdropClientConfig;

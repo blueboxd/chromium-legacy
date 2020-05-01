@@ -89,7 +89,7 @@ FetchResponseData* CreateFetchResponseDataFromFetchAPIResponse(
         script_state,
         MakeGarbageCollected<BlobBytesConsumer>(
             ExecutionContext::From(script_state), fetch_api_response.blob),
-        nullptr /* AbortSignal */));
+        nullptr /* AbortSignal */, fetch_api_response.side_data_blob));
   }
 
   // Filter the response according to |fetch_api_response|'s ResponseType.
@@ -384,7 +384,6 @@ FetchResponseData* Response::CreateUnfilteredFetchResponseDataWithoutBody(
   response->SetResponseTime(fetch_api_response.response_time);
   response->SetCacheStorageCacheName(
       fetch_api_response.cache_storage_cache_name);
-  response->SetSideDataBlob(fetch_api_response.side_data_blob);
   response->SetLoadedWithCredentials(
       fetch_api_response.loaded_with_credentials);
 

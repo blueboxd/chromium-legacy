@@ -482,7 +482,7 @@ const FeaturePolicy::FeatureList& FeaturePolicy::GetDefaultFeatureList() {
         FeatureDefault(FeaturePolicy::FeatureDefault::EnableForAll)},
        {mojom::FeaturePolicyFeature::kPresentation,
         FeatureDefault(FeaturePolicy::FeatureDefault::EnableForAll)},
-       {mojom::FeaturePolicyFeature::kPublicKeyCredentials,
+       {mojom::FeaturePolicyFeature::kPublicKeyCredentialsGet,
         FeatureDefault(FeaturePolicy::FeatureDefault::EnableForSelf)},
        {mojom::FeaturePolicyFeature::kScript,
         FeatureDefault(FeaturePolicy::FeatureDefault::EnableForAll)},

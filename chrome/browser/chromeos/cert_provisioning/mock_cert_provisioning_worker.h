@@ -64,7 +64,14 @@ class MockCertProvisioningWorker : public CertProvisioningWorker {
   MOCK_METHOD(bool, IsWaiting, (), (const override));
   MOCK_METHOD(const CertProfile&, GetCertProfile, (), (const override));
 
-  void SetExpectations(testing::Cardinality do_step_times, bool is_waiting);
+  void SetExpectations(testing::Cardinality do_step_times,
+                       bool is_waiting,
+                       const CertProfile& cert_profile);
+
+  // Stores |cert_profile| for SetExpectations function. It is returned by
+  // reference and without copying it there is a risk that the original
+  // CertProfile can be deleted before clearing the expectation.
+  CertProfile cert_profile_;
 };
 
 }  // namespace cert_provisioning

@@ -161,13 +161,16 @@ class TopChromeMdParamTest : public BaseTest,
 };
 
 // Template to be used when a test does not work with the webUI tabstrip.
-template <class BaseTest>
-class NoWebUiTabStripTest : public BaseTest {
+template <bool kEnabled, class BaseTest>
+class WebUiTabStripOverrideTest : public BaseTest {
  public:
-  NoWebUiTabStripTest() {
-    feature_override_.InitAndDisableFeature(features::kWebUITabStrip);
+  WebUiTabStripOverrideTest() {
+    if (kEnabled)
+      feature_override_.InitAndEnableFeature(features::kWebUITabStrip);
+    else
+      feature_override_.InitAndDisableFeature(features::kWebUITabStrip);
   }
-  ~NoWebUiTabStripTest() override = default;
+  ~WebUiTabStripOverrideTest() override = default;
 
  private:
   base::test::ScopedFeatureList feature_override_;
@@ -259,7 +262,9 @@ using views::Widget;
 using BrowserNonClientFrameViewAshTest =
     TopChromeMdParamTest<InProcessBrowserTest>;
 using BrowserNonClientFrameViewAshTestNoWebUiTabStrip =
-    NoWebUiTabStripTest<BrowserNonClientFrameViewAshTest>;
+    WebUiTabStripOverrideTest<false, BrowserNonClientFrameViewAshTest>;
+using BrowserNonClientFrameViewAshTestWithWebUiTabStrip =
+    WebUiTabStripOverrideTest<true, BrowserNonClientFrameViewAshTest>;
 
 // This test does not make sense for the webUI tabstrip, since the window layout
 // is different in that case.
@@ -343,6 +348,26 @@ IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewAshTestNoWebUiTabStrip,
   window_manager->ShowWindowForUser(window, account_id1);
   EXPECT_FALSE(MultiUserWindowManagerHelper::ShouldShowAvatar(window));
   EXPECT_FALSE(frame_view->profile_indicator_icon_);
+}
+
+// There should be no top inset when using the WebUI tab strip since the frame
+// is invisible. Regression test for crbug.com/1076675
+IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewAshTestWithWebUiTabStrip,
+                       TopInset) {
+  // This test doesn't make sense in non-touch mode since it expects the WebUI
+  // tab strip to be active. This test is instantiated with and without touch
+  // mode.
+  if (!ui::TouchUiController::Get()->touch_ui())
+    return;
+
+  BrowserView* const browser_view =
+      BrowserView::GetBrowserViewForBrowser(browser());
+
+  StartOverview();
+  EXPECT_EQ(0, GetFrameViewAsh(browser_view)->GetTopInset(false));
+
+  EndOverview();
+  EXPECT_EQ(0, GetFrameViewAsh(browser_view)->GetTopInset(false));
 }
 
 IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewAshTest,
@@ -466,7 +491,7 @@ class ImmersiveModeBrowserViewTest
 }  // namespace
 
 using ImmersiveModeBrowserViewTestNoWebUiTabStrip =
-    NoWebUiTabStripTest<ImmersiveModeBrowserViewTest>;
+    WebUiTabStripOverrideTest<false, ImmersiveModeBrowserViewTest>;
 
 // This test does not make sense for the webUI tabstrip, since the frame is not
 // painted in that case.
@@ -1520,6 +1545,7 @@ IN_PROC_BROWSER_TEST_P(HomeLauncherBrowserNonClientFrameViewAshTest,
 
 INSTANTIATE_TEST_SUITE(BrowserNonClientFrameViewAshTest);
 INSTANTIATE_TEST_SUITE(BrowserNonClientFrameViewAshTestNoWebUiTabStrip);
+INSTANTIATE_TEST_SUITE(BrowserNonClientFrameViewAshTestWithWebUiTabStrip);
 INSTANTIATE_TEST_SUITE(ImmersiveModeBrowserViewTest);
 INSTANTIATE_TEST_SUITE(ImmersiveModeBrowserViewTestNoWebUiTabStrip);
 INSTANTIATE_TEST_SUITE(WebAppNonClientFrameViewAshTest);

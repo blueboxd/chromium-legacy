@@ -177,6 +177,7 @@ class TestRunnerBindings : public gin::Wrappable<TestRunnerBindings> {
   void EvaluateScriptInIsolatedWorld(int world_id, const std::string& script);
   void ExecCommand(gin::Arguments* args);
   void TriggerTestInspectorIssue(gin::Arguments* args);
+  void FocusDevtoolsSecondaryWindow();
   void ForceNextDrawingBufferCreationToFail();
   void ForceNextWebGLContextCreationToFail();
   void ForceRedSelectionColors();
@@ -262,7 +263,7 @@ class TestRunnerBindings : public gin::Wrappable<TestRunnerBindings> {
   void SetViewSourceForFrame(const std::string& name, bool enabled);
   void SetWillSendRequestClearHeader(const std::string& header);
   void SetWillSendRequestClearReferrer();
-  void SetWindowIsKey(bool value);
+  void SimulateBrowserWindowFocus(bool value);
   void NavigateSecondaryWindow(const std::string& url);
   void InspectSecondaryWindow();
   void SimulateWebNotificationClick(gin::Arguments* args);
@@ -466,6 +467,8 @@ gin::ObjectTemplateBuilder TestRunnerBindings::GetObjectTemplateBuilder(
       .SetMethod("triggerTestInspectorIssue",
                  &TestRunnerBindings::TriggerTestInspectorIssue)
       .SetMethod("findString", &TestRunnerBindings::FindString)
+      .SetMethod("focusDevtoolsSecondaryWindow",
+                 &TestRunnerBindings::FocusDevtoolsSecondaryWindow)
       .SetMethod("forceNextDrawingBufferCreationToFail",
                  &TestRunnerBindings::ForceNextDrawingBufferCreationToFail)
       .SetMethod("forceNextWebGLContextCreationToFail",
@@ -608,7 +611,8 @@ gin::ObjectTemplateBuilder TestRunnerBindings::GetObjectTemplateBuilder(
                  &TestRunnerBindings::SetWillSendRequestClearHeader)
       .SetMethod("setWillSendRequestClearReferrer",
                  &TestRunnerBindings::SetWillSendRequestClearReferrer)
-      .SetMethod("setWindowIsKey", &TestRunnerBindings::SetWindowIsKey)
+      .SetMethod("setWindowFocus",
+                 &TestRunnerBindings::SimulateBrowserWindowFocus)
       .SetMethod("simulateWebNotificationClick",
                  &TestRunnerBindings::SimulateWebNotificationClick)
       .SetMethod("simulateWebNotificationClose",
@@ -1172,8 +1176,19 @@ void TestRunnerBindings::SetBlockThirdPartyCookies(bool block) {
     runner_->SetBlockThirdPartyCookies(block);
 }
 
-void TestRunnerBindings::SetWindowIsKey(bool value) {
-  view_runner_->SetWindowIsKey(value);
+void TestRunnerBindings::SimulateBrowserWindowFocus(bool value) {
+  // This simulates the browser focusing or unfocusing the window,
+  // but does so only for this renderer process. Other frame tree
+  // fragments in other processes do not hear about the change. To
+  // do so the focus change would need to go through window.focus()
+  // and then watch for the focus event or do a round trip to the
+  // browser.
+  // TODO(danakj): This does not appear to do the same thing as the
+  // browser does, because actually moving focus causes different test
+  // results in tests such as editing/selection/4975120.html with the
+  // inner frame not getting its caret back.
+  DCHECK(frame_->IsMainFrame());
+  runner_->FocusWindow(frame_, value);
 }
 
 std::string TestRunnerBindings::PathToLocalResource(const std::string& path) {
@@ -1406,6 +1421,10 @@ int TestRunnerBindings::WebHistoryItemCount() {
 
 void TestRunnerBindings::ForceNextWebGLContextCreationToFail() {
   view_runner_->ForceNextWebGLContextCreationToFail();
+}
+
+void TestRunnerBindings::FocusDevtoolsSecondaryWindow() {
+  runner_->blink_test_runner_->FocusDevtoolsSecondaryWindow();
 }
 
 void TestRunnerBindings::ForceNextDrawingBufferCreationToFail() {
@@ -2476,18 +2495,42 @@ void TestRunner::SetBlockThirdPartyCookies(bool block) {
   blink_test_runner_->SetBlockThirdPartyCookies(block);
 }
 
-void TestRunner::SetFocus(blink::WebView* web_view, bool focus) {
-  if (focus) {
-    if (previously_focused_view_ != web_view) {
-      blink_test_runner_->SetFocus(previously_focused_view_, false);
-      blink_test_runner_->SetFocus(web_view, true);
-      previously_focused_view_ = web_view;
+void TestRunner::FocusWindow(RenderFrame* main_frame, bool focus) {
+  DCHECK(main_frame->IsMainFrame());
+
+  auto* frame_proxy = static_cast<WebFrameTestProxy*>(main_frame);
+  RenderWidget* widget = frame_proxy->GetLocalRootRenderWidget();
+
+  // Web tests get multiple windows in one renderer by doing same-site
+  // window.open() calls (or about:blank). They want to be able to move focus
+  // between those windows synchronously in the renderer, which is what we
+  // do here. We only allow it to focus main frames however, for simplicitly.
+
+  if (!focus) {
+    // This path simulates losing focus on the window, without moving it to
+    // another window.
+    if (widget->has_focus()) {
+      widget->OnSetActive(false);
+      widget->OnSetFocus(false);
     }
-  } else {
-    if (previously_focused_view_ == web_view) {
-      blink_test_runner_->SetFocus(web_view, false);
-      previously_focused_view_ = nullptr;
+    return;
+  }
+
+  // Find the currently focused window, and remove its focus.
+  for (WebViewTestProxy* window : test_interfaces_->GetWindowList()) {
+    RenderFrameImpl* other_main_frame = window->GetMainRenderFrame();
+    if (other_main_frame && other_main_frame != main_frame) {
+      RenderWidget* other_widget = other_main_frame->GetLocalRootRenderWidget();
+      if (other_widget->has_focus()) {
+        other_widget->OnSetActive(false);
+        other_widget->OnSetFocus(false);
+      }
     }
+  }
+
+  if (!widget->has_focus()) {
+    widget->OnSetFocus(true);
+    widget->OnSetActive(true);
   }
 }
 

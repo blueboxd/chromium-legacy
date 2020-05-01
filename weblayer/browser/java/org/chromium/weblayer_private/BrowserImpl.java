@@ -52,6 +52,7 @@ public class BrowserImpl extends IBrowser.Stub {
 
     private long mNativeBrowser;
     private final ProfileImpl mProfile;
+    private Context mEmbedderActivityContext;
     private BrowserViewController mViewController;
     private FragmentWindowAndroid mWindowAndroid;
     private IBrowserClient mClient;
@@ -86,8 +87,8 @@ public class BrowserImpl extends IBrowser.Stub {
         mVisibleSecurityStateObservers.removeObserver(observer);
     }
 
-    public BrowserImpl(ProfileImpl profile, String persistenceId, Bundle savedInstanceState,
-            FragmentWindowAndroid windowAndroid) {
+    public BrowserImpl(Context embedderAppContext, ProfileImpl profile, String persistenceId,
+            Bundle savedInstanceState, FragmentWindowAndroid windowAndroid) {
         profile.checkNotDestroyed();
         mProfile = profile;
 
@@ -101,7 +102,7 @@ public class BrowserImpl extends IBrowser.Stub {
                 ? savedInstanceState.getByteArray(SAVED_STATE_MINIMAL_PERSISTENCE_STATE_KEY)
                 : null;
 
-        createAttachmentState(windowAndroid);
+        createAttachmentState(embedderAppContext, windowAndroid);
         mNativeBrowser = BrowserImplJni.get().createBrowser(profile.getNativeProfile(), this);
         mUrlBarController = new UrlBarControllerImpl(this, mNativeBrowser);
     }
@@ -116,17 +117,21 @@ public class BrowserImpl extends IBrowser.Stub {
     }
 
     // Called from constructor and onFragmentAttached() to configure state needed when attached.
-    private void createAttachmentState(FragmentWindowAndroid windowAndroid) {
+    private void createAttachmentState(
+            Context embedderAppContext, FragmentWindowAndroid windowAndroid) {
         assert mViewController == null;
         assert mWindowAndroid == null;
+        assert mEmbedderActivityContext == null;
         mWindowAndroid = windowAndroid;
+        mEmbedderActivityContext = embedderAppContext;
         mViewController = new BrowserViewController(windowAndroid);
         mLocaleReceiver = new LocaleChangedBroadcastReceiver(windowAndroid.getContext().get());
         mPasswordEchoEnabled = null;
     }
 
-    public void onFragmentAttached(FragmentWindowAndroid windowAndroid) {
-        createAttachmentState(windowAndroid);
+    public void onFragmentAttached(
+            Context embedderAppContext, FragmentWindowAndroid windowAndroid) {
+        createAttachmentState(embedderAppContext, windowAndroid);
         updateAllTabsAndSetActive();
     }
 
@@ -249,10 +254,10 @@ public class BrowserImpl extends IBrowser.Stub {
 
     @CalledByNative
     boolean getDarkThemeEnabled() {
-        Context context = getContext();
-        if (context == null) return false;
+        if (mEmbedderActivityContext == null) return false;
         if (mDarkThemeEnabled == null) {
-            int uiMode = context.getResources().getConfiguration().uiMode;
+            if (mEmbedderActivityContext == null) return false;
+            int uiMode = mEmbedderActivityContext.getResources().getConfiguration().uiMode;
             mDarkThemeEnabled =
                     (uiMode & Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES;
         }
@@ -437,6 +442,7 @@ public class BrowserImpl extends IBrowser.Stub {
         if (mWindowAndroid != null) {
             mWindowAndroid.destroy();
             mWindowAndroid = null;
+            mEmbedderActivityContext = null;
         }
 
         mVisibleSecurityStateObservers.clear();

@@ -17,8 +17,6 @@ import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.bookmarks.BookmarkPage;
 import org.chromium.chrome.browser.download.DownloadPage;
 import org.chromium.chrome.browser.explore_sites.ExploreSitesPage;
-import org.chromium.chrome.browser.feed.FeedNewTabPage;
-import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.history.HistoryManagerUtils;
 import org.chromium.chrome.browser.history.HistoryPage;
@@ -82,13 +80,7 @@ public class NativePageFactory {
         protected NativePage buildNewTabPage(Tab tab) {
             NativePageHost nativePageHost = new TabShim(tab, mActivity.getFullscreenManager());
             if (tab.isIncognito()) return new IncognitoNewTabPage(mActivity, nativePageHost);
-            if (ChromeFeatureList.isEnabled(ChromeFeatureList.INTEREST_FEED_CONTENT_SUGGESTIONS)) {
-                return new FeedNewTabPage(mActivity, mActivity.getFullscreenManager(),
-                        mActivity.getActivityTabProvider(), mActivity.getOverviewModeBehavior(),
-                        mActivity.getSnackbarManager(), mActivity.getLifecycleDispatcher(),
-                        mActivity.getTabModelSelector(), mActivity.isTablet(), mUma.get(),
-                        mActivity.getNightModeStateProvider().isInNightMode(), nativePageHost, tab);
-            }
+
             return new NewTabPage(mActivity, mActivity.getFullscreenManager(),
                     mActivity.getActivityTabProvider(), mActivity.getOverviewModeBehavior(),
                     mActivity.getSnackbarManager(), mActivity.getLifecycleDispatcher(),

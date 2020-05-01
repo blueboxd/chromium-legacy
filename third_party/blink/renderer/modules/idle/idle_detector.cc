@@ -14,15 +14,16 @@
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/execution_context/security_context.h"
-#include "third_party/blink/renderer/modules/idle/idle_state.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
-#include "third_party/blink/renderer/platform/bindings/name_client.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
 
 namespace blink {
+
 namespace {
+
+using mojom::blink::IdleManagerError;
 
 const char kFeaturePolicyBlocked[] =
     "Access to the feature \"idle-detection\" is disallowed by feature policy.";
@@ -60,7 +61,7 @@ IdleDetector::IdleDetector(ExecutionContext* context, base::TimeDelta threshold)
     : ExecutionContextClient(context),
       threshold_(threshold),
       receiver_(this, context),
-      service_(context) {}
+      idle_service_(context) {}
 
 IdleDetector::~IdleDetector() = default;
 
@@ -91,17 +92,19 @@ ScriptPromise IdleDetector::start(ScriptState* script_state,
     return ScriptPromise();
   }
 
-  StartMonitoring();
-
-  return ScriptPromise::CastUndefined(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
+  ScriptPromise promise = resolver->Promise();
+  StartMonitoring(resolver);
+  return promise;
 }
 
 void IdleDetector::stop() {
   receiver_.reset();
 }
 
-void IdleDetector::StartMonitoring() {
+void IdleDetector::StartMonitoring(ScriptPromiseResolver* resolver) {
   if (receiver_.is_bound()) {
+    resolver->Resolve();
     return;
   }
 
@@ -109,22 +112,37 @@ void IdleDetector::StartMonitoring() {
   scoped_refptr<base::SingleThreadTaskRunner> task_runner =
       GetExecutionContext()->GetTaskRunner(TaskType::kMiscPlatformAPI);
 
-  if (!service_.is_bound()) {
+  if (!idle_service_.is_bound()) {
     GetExecutionContext()->GetBrowserInterfaceBroker().GetInterface(
-        service_.BindNewPipeAndPassReceiver(task_runner));
+        idle_service_.BindNewPipeAndPassReceiver(task_runner));
   }
 
   mojo::PendingRemote<mojom::blink::IdleMonitor> idle_monitor_remote;
   receiver_.Bind(idle_monitor_remote.InitWithNewPipeAndPassReceiver(),
                  task_runner);
 
-  service_->AddMonitor(
+  idle_service_->AddMonitor(
       threshold_, std::move(idle_monitor_remote),
-      WTF::Bind(&IdleDetector::OnAddMonitor, WrapWeakPersistent(this)));
+      WTF::Bind(&IdleDetector::OnAddMonitor, WrapWeakPersistent(this),
+                WrapPersistent(resolver)));
+  return;
 }
 
-void IdleDetector::OnAddMonitor(mojom::blink::IdleStatePtr state) {
-  Update(std::move(state));
+void IdleDetector::OnAddMonitor(ScriptPromiseResolver* resolver,
+                                IdleManagerError error,
+                                mojom::blink::IdleStatePtr state) {
+  switch (error) {
+    case IdleManagerError::kPermissionDisabled:
+      resolver->Reject(MakeGarbageCollected<DOMException>(
+          DOMExceptionCode::kNotAllowedError,
+          "Notification permission disabled"));
+      return;
+    case IdleManagerError::kSuccess:
+      DCHECK(state);
+      resolver->Resolve();
+      Update(std::move(state));
+      return;
+  }
 }
 
 blink::IdleState* IdleDetector::state() const {
@@ -147,7 +165,7 @@ void IdleDetector::Update(mojom::blink::IdleStatePtr state) {
 void IdleDetector::Trace(Visitor* visitor) {
   visitor->Trace(state_);
   visitor->Trace(receiver_);
-  visitor->Trace(service_);
+  visitor->Trace(idle_service_);
   EventTargetWithInlineData::Trace(visitor);
   ExecutionContextClient::Trace(visitor);
   ActiveScriptWrappable::Trace(visitor);

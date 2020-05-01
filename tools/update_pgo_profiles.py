@@ -103,8 +103,11 @@ def _get_profile_path(args):
   """
   profile_path = os.path.join(_PGO_PROFILE_DIR, _read_profile_name(args.target))
   if not os.path.isfile(profile_path):
-    raise RuntimeError('requested profile "%s" doesn\'t exist, please run '
-                       '"gclient runhooks" to download it')
+    raise RuntimeError(
+        'requested profile "%s" doesn\'t exist, please make sure '
+        '"checkout_pgo_profiles" is set to true in the "custom_vars" section '
+        'of your .gclient file and then run "gclient runhooks" to download it' %
+        profile_path)
 
   os.utime(profile_path, None)
   profile_path.rstrip(os.sep)

@@ -256,6 +256,7 @@ class TraceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
 
   def _EvaluateSuccess_CheckGLCategory(self, category, event_iterator,
                                        other_args):
+    del other_args  # Unused in this particular success evaluation.
     for event in event_iterator:
       if (event.category == category
           and event.args.get('gl_category', None) == 'gpu_toplevel'):
@@ -389,6 +390,7 @@ class TraceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
   def _EvaluateSuccess_CheckSwapChainPath(self, category, event_iterator,
                                           other_args):
     """Verified that swap chains were used for low latency canvas."""
+    del other_args  # Unused in this particular success evaluation.
     os_name = self.browser.platform.GetOSName()
     assert os_name and os_name.lower() == 'win'
 

@@ -39,7 +39,6 @@ class ContextMenuModel : public ui::SimpleMenuModel,
         ShellDevToolsFrontend* devtools_frontend =
             ShellDevToolsFrontend::Show(web_contents_);
         devtools_frontend->Activate();
-        devtools_frontend->Focus();
         devtools_frontend->InspectElementAt(params_.x, params_.y);
         break;
     };

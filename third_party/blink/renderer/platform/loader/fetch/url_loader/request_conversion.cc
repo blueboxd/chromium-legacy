@@ -37,7 +37,20 @@ namespace blink {
 namespace {
 
 constexpr char kStylesheetAcceptHeader[] = "text/css,*/*;q=0.1";
-constexpr char kImageAcceptHeader[] = "image/webp,image/apng,image/*,*/*;q=0.8";
+
+const char* ImageAcceptHeader() {
+  static constexpr char kImageAcceptHeaderWithAvif[] =
+      "image/avif,image/webp,image/apng,image/*,*/*;q=0.8";
+  static constexpr size_t kOffset = sizeof("image/avif,") - 1;
+#if BUILDFLAG(ENABLE_AV1_DECODER)
+  static const char* header = base::FeatureList::IsEnabled(features::kAVIF)
+                                  ? kImageAcceptHeaderWithAvif
+                                  : kImageAcceptHeaderWithAvif + kOffset;
+#else
+  static const char* header = kImageAcceptHeaderWithAvif + kOffset;
+#endif
+  return header;
+}
 
 // TODO(yhirano): Unify these with variables in
 // content/public/common/content_constants.h.
@@ -341,13 +354,8 @@ void PopulateResourceRequest(const ResourceRequestHead& src,
                             kStylesheetAcceptHeader);
   } else if (resource_type == mojom::ResourceType::kImage ||
              resource_type == mojom::ResourceType::kFavicon) {
-    std::string header(kImageAcceptHeader);
-#if BUILDFLAG(ENABLE_AV1_DECODER)
-    if (base::FeatureList::IsEnabled(features::kAVIF)) {
-      header.insert(0, "image/avif,");
-    }
-#endif
-    dest->headers.SetHeader(net::HttpRequestHeaders::kAccept, header);
+    dest->headers.SetHeader(net::HttpRequestHeaders::kAccept,
+                            ImageAcceptHeader());
   } else {
     // Calling SetHeaderIfMissing() instead of SetHeader() because JS can
     // manually set an accept header on an XHR.

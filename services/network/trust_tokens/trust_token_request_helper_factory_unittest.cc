@@ -88,7 +88,8 @@ class TrustTokenRequestHelperFactoryTest : public ::testing::Test {
     store.OnStoreReady(TrustTokenStore::CreateInMemory());
     NoopTrustTokenKeyCommitmentGetter getter;
 
-    TrustTokenRequestHelperFactory(&store, &getter)
+    TrustTokenRequestHelperFactory(&store, &getter,
+                                   base::BindRepeating([]() { return true; }))
         .CreateTrustTokenHelperForRequest(
             request, params,
             base::BindLambdaForTesting(
@@ -189,4 +190,27 @@ TEST_F(TrustTokenRequestHelperFactoryTest, CreatesRedemptionHelper) {
   EXPECT_TRUE(result.TakeOrCrash());
 }
 
+TEST_F(TrustTokenRequestHelperFactoryTest, RespectsAuthorizer) {
+  base::RunLoop run_loop;
+  TrustTokenStatusOrRequestHelper obtained_result;
+  PendingTrustTokenStore store;
+
+  store.OnStoreReady(TrustTokenStore::CreateInMemory());
+  NoopTrustTokenKeyCommitmentGetter getter;
+
+  TrustTokenRequestHelperFactory(&store, &getter,
+                                 base::BindRepeating([]() { return false; }))
+      .CreateTrustTokenHelperForRequest(
+          suitable_request(), suitable_params(),
+          base::BindLambdaForTesting(
+              [&](TrustTokenStatusOrRequestHelper result) {
+                obtained_result = std::move(result);
+                run_loop.Quit();
+              }));
+
+  run_loop.Run();
+
+  EXPECT_EQ(obtained_result.status(),
+            mojom::TrustTokenOperationStatus::kUnavailable);
+}
 }  // namespace network

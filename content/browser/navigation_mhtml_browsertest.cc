@@ -315,16 +315,14 @@ IN_PROC_BROWSER_TEST_F(NavigationMhtmlBrowserTest,
       "<iframe src=\"javascript:console.log('test')\"></iframe>");
   GURL mhtml_url = mhtml_archive.Write("index.mhtml");
 
-  auto console_delegate = std::make_unique<ConsoleObserverDelegate>(
-      web_contents(),
-      base::StringPrintf(
-          "Blocked script execution in '%s' because the document's frame "
-          "is sandboxed and the 'allow-scripts' permission is not set.",
-          mhtml_url.spec().c_str()));
-  web_contents()->SetDelegate(console_delegate.get());
+  WebContentsConsoleObserver console_observer(web_contents());
+  console_observer.SetPattern(base::StringPrintf(
+      "Blocked script execution in '%s' because the document's frame "
+      "is sandboxed and the 'allow-scripts' permission is not set.",
+      mhtml_url.spec().c_str()));
 
   EXPECT_TRUE(NavigateToURL(shell(), mhtml_url));
-  console_delegate->Wait();
+  console_observer.Wait();
 
   RenderFrameHostImpl* main_document = main_frame_host();
   ASSERT_EQ(1u, main_document->child_count());
@@ -343,16 +341,14 @@ IN_PROC_BROWSER_TEST_F(NavigationMhtmlBrowserTest, IframeJavascriptUrlFound) {
                                 "<iframe></iframe>");
   GURL mhtml_url = mhtml_archive.Write("index.mhtml");
 
-  auto console_delegate = std::make_unique<ConsoleObserverDelegate>(
-      web_contents(),
-      base::StringPrintf(
-          "Blocked script execution in '%s' because the document's frame "
-          "is sandboxed and the 'allow-scripts' permission is not set.",
-          mhtml_url.spec().c_str()));
-  web_contents()->SetDelegate(console_delegate.get());
+  WebContentsConsoleObserver console_observer(web_contents());
+  console_observer.SetPattern(base::StringPrintf(
+      "Blocked script execution in '%s' because the document's frame "
+      "is sandboxed and the 'allow-scripts' permission is not set.",
+      mhtml_url.spec().c_str()));
 
   EXPECT_TRUE(NavigateToURL(shell(), mhtml_url));
-  console_delegate->Wait();
+  console_observer.Wait();
 
   RenderFrameHostImpl* main_document = main_frame_host();
   ASSERT_EQ(1u, main_document->child_count());

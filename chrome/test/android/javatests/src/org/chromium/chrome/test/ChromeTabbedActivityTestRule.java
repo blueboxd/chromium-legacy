@@ -9,7 +9,6 @@ import org.junit.runners.model.Statement;
 
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
-import org.chromium.chrome.browser.feed.FeedNewTabPage;
 import org.chromium.chrome.browser.feed.FeedProcessScopeFactory;
 import org.chromium.chrome.browser.feed.TestNetworkClient;
 
@@ -41,20 +40,16 @@ public class ChromeTabbedActivityTestRule extends ChromeActivityTestRule<ChromeT
         Statement tabbedActivityStatement = new Statement() {
             @Override
             public void evaluate() throws Throwable {
-                // Setup Feed stubs if Feed is enabled.
-                boolean feedStubsInitialized = false;
-                if (!FeedNewTabPage.isDummy()) {
-                    feedStubsInitialized = true;
-                    TestNetworkClient client = new TestNetworkClient();
-                    client.setNetworkResponseFile(
-                            UrlUtils.getIsolatedTestFilePath(mFeedTestResponseFilePath));
-                    FeedProcessScopeFactory.setTestNetworkClient(client);
-                }
+                // Setup Feed stubs.
+                TestNetworkClient client = new TestNetworkClient();
+                client.setNetworkResponseFile(
+                        UrlUtils.getIsolatedTestFilePath(mFeedTestResponseFilePath));
+                FeedProcessScopeFactory.setTestNetworkClient(client);
 
                 base.evaluate();
 
                 // Teardown the network stubs for Feed if they've been setup.
-                if (feedStubsInitialized) FeedProcessScopeFactory.setTestNetworkClient(null);
+                FeedProcessScopeFactory.setTestNetworkClient(null);
             }
         };
 

@@ -1779,11 +1779,9 @@ void RenderViewImpl::DidAutoResize(const blink::WebSize& newSize) {
 }
 
 void RenderViewImpl::DidFocus(blink::WebLocalFrame* calling_frame) {
-  // TODO(jcivelli): when https://bugs.webkit.org/show_bug.cgi?id=33389 is fixed
-  //                 we won't have to test for user gesture anymore and we can
-  //                 move that code back to render_widget.cc
-  if (calling_frame && calling_frame->HasTransientUserActivation() &&
-      !RenderThreadImpl::current()->web_test_mode()) {
+  // We only allow focus to move to this RenderView when the request comes from
+  // a user gesture. (See also https://bugs.webkit.org/show_bug.cgi?id=33389.)
+  if (calling_frame && calling_frame->HasTransientUserActivation()) {
     Send(new ViewHostMsg_Focus(GetRoutingID()));
 
     // Tattle on the frame that called |window.focus()|.
@@ -1813,29 +1811,6 @@ void RenderViewImpl::SuspendVideoCaptureDevices(bool suspend) {
 
 unsigned RenderViewImpl::GetLocalSessionHistoryLengthForTesting() const {
   return history_list_length_;
-}
-
-void RenderViewImpl::SetFocusAndActivateForTesting(bool enable) {
-  // If the main frame is remote, return immediately. Page level focus
-  // should be set from the browser process, so if needed by tests it should
-  // be properly supported.
-  if (!main_render_frame_)
-    return;
-
-  RenderWidget* render_widget = main_render_frame_->GetLocalRootRenderWidget();
-
-  if (enable == render_widget->has_focus())
-    return;
-
-  if (enable) {
-    SetActiveForWidget(true);
-    // Fake an IPC message so go through the IPC handler.
-    render_widget->OnSetFocus(true);
-  } else {
-    // Fake an IPC message so go through the IPC handler.
-    render_widget->OnSetFocus(false);
-    SetActiveForWidget(false);
-  }
 }
 
 // static

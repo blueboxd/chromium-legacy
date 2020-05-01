@@ -117,7 +117,7 @@ enum FeaturePolicyFeature {
   kWebXr = 66,
 
   // Web Authentication (https://w3c.github.io/webauthn/#sctn-iframe-guidance)
-  kPublicKeyCredentials = 67,
+  kPublicKeyCredentialsGet = 67,
 
   // Controls use of Clipboard API.
   kClipboard = 68,

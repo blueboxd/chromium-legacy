@@ -4,6 +4,7 @@
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
 <link rel="import" href="chrome://resources/cr_elements/md_select_css.html">
 <link rel="import" href="chrome://resources/cr_elements/policy/cr_policy_pref_indicator.html">
+<link rel="import" href="chrome://resources/cr_elements/shared_style_css.html">
 <link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
 <link rel="import" href="chrome://resources/html/assert.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
@@ -22,19 +23,15 @@
 
 <dom-module id="os-settings-search-page">
   <template>
-    <style include="settings-shared md-select">
+    <style include="cr-shared-style settings-shared md-select">
       #search-wrapper {
         align-items: center;
         display: flex;
         min-height: var(--settings-row-min-height);
       }
 
-      /* TODO(jamescook): Style all OS settings tooltips to new spec. */
       paper-tooltip {
-        --paper-tooltip: {
-          @apply --cr-tooltip;
-          padding: 12px 10px;
-        };
+        --paper-tooltip-padding: 12px 10px;
       }
 
       iron-icon {

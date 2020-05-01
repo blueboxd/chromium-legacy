@@ -152,9 +152,11 @@ cr.define('settings', function() {
 
     /**
      * @param {string} vmName Name of the VM to get disk info for.
+     * @param {boolean} fullInfo Whether to start the VM for full info. Not
+     *     required for the main Crostini pages.
      * @return {!Promise<CrostiniDiskInfo>} The requested information.
      */
-    getCrostiniDiskInfo(vmName) {}
+    getCrostiniDiskInfo(vmName, fullInfo) {}
 
     /**
      * Resizes a preallocated user-chosen-size Crostini VM disk to the requested
@@ -318,8 +320,8 @@ cr.define('settings', function() {
     }
 
     /** @override */
-    getCrostiniDiskInfo(vmName) {
-      return cr.sendWithPromise('getCrostiniDiskInfo', vmName);
+    getCrostiniDiskInfo(vmName, fullInfo) {
+      return cr.sendWithPromise('getCrostiniDiskInfo', vmName, fullInfo);
     }
 
     /** @override */

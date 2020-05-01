@@ -1125,6 +1125,7 @@ def _make_overload_dispatcher_per_arg_size(cg_context, items):
     # 12.15. if there is an entry in S that has ... boolean ...
     # 12.16. if there is an entry in S that has any ...
     func_likes = [
+        find(lambda t, u: u.is_enumeration),
         find(lambda t, u: u.is_string),
         find(lambda t, u: u.is_numeric),
         find(lambda t, u: u.is_boolean),

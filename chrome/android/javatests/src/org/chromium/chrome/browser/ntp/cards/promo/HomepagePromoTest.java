@@ -51,6 +51,7 @@ import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
+import org.chromium.components.browser_ui.widget.promo.PromoCardCoordinator.LayoutStyle;
 import org.chromium.components.embedder_support.util.UrlConstants;
 import org.chromium.components.feature_engagement.FeatureConstants;
 import org.chromium.components.feature_engagement.Tracker;
@@ -83,6 +84,8 @@ public class HomepagePromoTest {
 
     @Mock
     private Tracker mTracker;
+    @Mock
+    private HomepagePromoVariationManager mMockVariationManager;
 
     @Before
     public void setUp() {
@@ -116,6 +119,7 @@ public class HomepagePromoTest {
         HomepagePromoUtils.setPromoDismissedInSharedPreference(mHasHomepagePromoDismissed);
         SharedPreferencesManager.getInstance().writeBoolean(
                 ChromePreferenceKeys.SIGNIN_PROMO_NTP_PROMO_DISMISSED, mHasSignInPromoDismissed);
+        HomepagePromoVariationManager.setInstanceForTesting(null);
     }
 
     /**
@@ -176,12 +180,15 @@ public class HomepagePromoTest {
     @Test
     @MediumTest
     public void testDismiss() {
+        // In order to dismiss the promo, we have to use the large / compact variation.
+        setVariationForTests(LayoutStyle.COMPACT);
+
         SignInPromo.setDisablePromoForTests(true);
         mActivityTestRule.loadUrl(UrlConstants.NTP_URL);
 
         scrollToHomepagePromo();
 
-        onView(withId(R.id.promo_close_button)).perform(click());
+        onView(withId(R.id.promo_secondary_button)).perform(click());
         Assert.assertNull("Homepage promo should not be removed.",
                 mActivityTestRule.getActivity().findViewById(R.id.homepage_promo));
 
@@ -224,5 +231,10 @@ public class HomepagePromoTest {
                 .perform(RecyclerViewActions.scrollToPosition(NTP_HEADER_POSITION + 1));
         waitForView((ViewGroup) mActivityTestRule.getActivity().findViewById(R.id.homepage_promo),
                 allOf(withId(R.id.promo_primary_button), isDisplayed()));
+    }
+
+    private void setVariationForTests(@LayoutStyle int variation) {
+        Mockito.when(mMockVariationManager.getLayoutVariation()).thenReturn(variation);
+        HomepagePromoVariationManager.setInstanceForTesting(mMockVariationManager);
     }
 }

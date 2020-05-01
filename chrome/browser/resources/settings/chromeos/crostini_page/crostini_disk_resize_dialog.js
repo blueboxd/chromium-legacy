@@ -31,6 +31,16 @@ const ResizeState = {
   DONE: 'done',
 };
 
+/**
+ * The current confirmation state.
+ * @enum {string}
+ */
+const ConfirmationState = {
+  NONE: 'none',
+  CONFIRMED: 'confirmed',
+  CANCELED: 'canceled',
+};
+
 Polymer({
   is: 'settings-crostini-disk-resize-dialog',
 
@@ -99,8 +109,10 @@ Polymer({
    * current state once the call completes.
    */
   loadDiskInfo_() {
+    // TODO(davidmunro): No magic 'termina' string.
+    const vmName = 'termina';
     settings.CrostiniBrowserProxyImpl.getInstance()
-        .getCrostiniDiskInfo('termina')  // TODO(davidmunro): No magic string.
+        .getCrostiniDiskInfo(vmName, /* fullInfo = */ true)
         .then(
             diskInfo => {
               if (!diskInfo.succeeded) {
@@ -115,6 +127,7 @@ Polymer({
                 this.minDiskSize_ = diskInfo.ticks[0].label;
                 this.maxDiskSize_ =
                     diskInfo.ticks[diskInfo.ticks.length - 1].label;
+                this.isUserChosenSize_ = diskInfo.isUserChosenSize;
               }
             },
             reason => {

@@ -32,6 +32,7 @@
 #include "chrome/browser/ui/webui/chromeos/internet_config_dialog.h"
 #include "chrome/browser/ui/webui/chromeos/internet_detail_dialog.h"
 #include "chrome/browser/ui/webui/chromeos/multidevice_setup/multidevice_setup_dialog.h"
+#include "chrome/browser/ui/webui/settings/chromeos/constants/routes.mojom.h"
 #include "chrome/browser/upgrade_detector/upgrade_detector.h"
 #include "chrome/common/url_constants.h"
 #include "chromeos/constants/chromeos_switches.h"
@@ -201,7 +202,8 @@ void SystemTrayClient::ShowSettings() {
 
 void SystemTrayClient::ShowBluetoothSettings() {
   base::RecordAction(base::UserMetricsAction("ShowBluetoothSettingsPage"));
-  ShowSettingsSubPageForActiveUser(chrome::kBluetoothSubPage);
+  ShowSettingsSubPageForActiveUser(
+      chromeos::settings::mojom::kBluetoothDevicesSubpagePath);
 }
 
 void SystemTrayClient::ShowBluetoothPairingDialog(
@@ -219,7 +221,8 @@ void SystemTrayClient::ShowBluetoothPairingDialog(
 void SystemTrayClient::ShowDateSettings() {
   base::RecordAction(base::UserMetricsAction("ShowDateOptions"));
   // Everybody can change the time zone (even though it is a device setting).
-  ShowSettingsSubPageForActiveUser(chrome::kDateTimeSubPage);
+  ShowSettingsSubPageForActiveUser(
+      chromeos::settings::mojom::kDateAndTimeSectionPath);
 }
 
 void SystemTrayClient::ShowSetTimeDialog() {
@@ -228,12 +231,14 @@ void SystemTrayClient::ShowSetTimeDialog() {
 
 void SystemTrayClient::ShowDisplaySettings() {
   base::RecordAction(base::UserMetricsAction("ShowDisplayOptions"));
-  ShowSettingsSubPageForActiveUser(chrome::kDisplaySubPage);
+  ShowSettingsSubPageForActiveUser(
+      chromeos::settings::mojom::kDisplaySubpagePath);
 }
 
 void SystemTrayClient::ShowPowerSettings() {
   base::RecordAction(base::UserMetricsAction("Tray_ShowPowerOptions"));
-  ShowSettingsSubPageForActiveUser(chrome::kPowerSubPage);
+  ShowSettingsSubPageForActiveUser(
+      chromeos::settings::mojom::kPowerSubpagePath);
 }
 
 void SystemTrayClient::ShowChromeSlow() {
@@ -244,18 +249,21 @@ void SystemTrayClient::ShowChromeSlow() {
 
 void SystemTrayClient::ShowIMESettings() {
   base::RecordAction(base::UserMetricsAction("OpenLanguageOptionsDialog"));
-  ShowSettingsSubPageForActiveUser(chrome::kOsLanguagesDetailsSubPage);
+  ShowSettingsSubPageForActiveUser(
+      chromeos::settings::mojom::kLanguagesAndInputDetailsSubpagePath);
 }
 
 void SystemTrayClient::ShowConnectedDevicesSettings() {
-  ShowSettingsSubPageForActiveUser(chrome::kConnectedDevicesSubPage);
+  ShowSettingsSubPageForActiveUser(
+      chromeos::settings::mojom::kMultiDeviceFeaturesSubpagePath);
 }
 
 void SystemTrayClient::ShowAboutChromeOS() {
   // We always want to check for updates when showing the about page from the
   // Ash UI.
-  ShowSettingsSubPageForActiveUser(std::string(chrome::kHelpSubPage) +
-                                   "?checkForUpdate=true");
+  ShowSettingsSubPageForActiveUser(
+      std::string(chromeos::settings::mojom::kAboutChromeOsSectionPath) +
+      "?checkForUpdate=true");
 }
 
 void SystemTrayClient::ShowHelp() {
@@ -271,7 +279,8 @@ void SystemTrayClient::ShowAccessibilityHelp() {
 
 void SystemTrayClient::ShowAccessibilitySettings() {
   base::RecordAction(base::UserMetricsAction("ShowAccessibilitySettings"));
-  ShowSettingsSubPageForActiveUser(chrome::kOsAccessibilitySubPage);
+  ShowSettingsSubPageForActiveUser(
+      chromeos::settings::mojom::kAccessibilitySectionPath);
 }
 
 void SystemTrayClient::ShowGestureEducationHelp() {
@@ -290,7 +299,8 @@ void SystemTrayClient::ShowPaletteHelp() {
 
 void SystemTrayClient::ShowPaletteSettings() {
   base::RecordAction(base::UserMetricsAction("ShowPaletteOptions"));
-  ShowSettingsSubPageForActiveUser(chrome::kStylusSubPage);
+  ShowSettingsSubPageForActiveUser(
+      chromeos::settings::mojom::kStylusSubpagePath);
 }
 
 void SystemTrayClient::ShowPublicAccountInfo() {
@@ -398,10 +408,12 @@ void SystemTrayClient::ShowNetworkSettingsHelper(const std::string& network_id,
     return;
   }
 
-  std::string page = chrome::kInternetSubPage;
+  std::string page = chromeos::settings::mojom::kNetworkSectionPath;
   const chromeos::NetworkState* network_state = GetNetworkState(network_id);
   if (!network_id.empty() && network_state) {
-    page = chrome::kNetworkDetailSubPage;
+    // TODO(khorimoto): Use a more general path name here. This path is named
+    // kWifi*, but it's actually a generic page.
+    page = chromeos::settings::mojom::kWifiDetailsSubpagePath;
     page += "?guid=";
     page += net::EscapeUrlEncodedData(network_id, true);
     page += "&name=";

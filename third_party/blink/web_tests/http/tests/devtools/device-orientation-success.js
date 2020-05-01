@@ -64,6 +64,10 @@
     },
 
     function setUpOrientationSensor(next) {
+      // The devtools inspector window needs to be focused to hear about
+      // sensor changes.
+      if (window.testRunner)
+        testRunner.focusDevtoolsSecondaryWindow();
       TestRunner.evaluateInPage('setUpOrientationSensor()', next);
     },
 

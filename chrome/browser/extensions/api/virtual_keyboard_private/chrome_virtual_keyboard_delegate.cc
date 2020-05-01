@@ -22,6 +22,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/keyboard/chrome_keyboard_controller_client.h"
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
+#include "chrome/browser/ui/webui/settings/chromeos/constants/routes.mojom.h"
 #include "chrome/common/url_constants.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "components/user_manager/user_manager.h"
@@ -254,7 +255,7 @@ bool ChromeVirtualKeyboardDelegate::ShowLanguageSettings() {
   base::RecordAction(base::UserMetricsAction("OpenLanguageOptionsDialog"));
   chrome::SettingsWindowManager::GetInstance()->ShowOSSettings(
       ProfileManager::GetActiveUserProfile(),
-      chrome::kOsLanguagesDetailsSubPage);
+      chromeos::settings::mojom::kLanguagesAndInputDetailsSubpagePath);
   return true;
 }
 

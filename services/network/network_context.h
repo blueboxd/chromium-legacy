@@ -595,7 +595,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
       proxy_lookup_requests_;
 
   // This must be below |url_request_context_| so that the URLRequestContext
-  // outlives all the URLLoaderFactories and URLLoaders that depend on it.
+  // outlives all the URLLoaderFactories and URLLoaders that depend on it;
+  // for the same reason, it must also be below |network_context_|.
   std::set<std::unique_ptr<cors::CorsURLLoaderFactory>,
            base::UniquePtrComparator>
       url_loader_factories_;

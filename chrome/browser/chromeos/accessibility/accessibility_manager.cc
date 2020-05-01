@@ -253,18 +253,16 @@ class ChromeVoxDeferredLoader : public content::UtteranceEventDelegate,
 
   void OnTimer() { manager_->PlaySpokenFeedbackToggleCountdown(tick_count_++); }
 
-  bool IsGoogleTtsVoiceAvailable() {
+  bool IsGoogleTtsVoiceAvailable() const {
     Profile* profile = manager_->profile();
     if (profile->HasOffTheRecordProfile())
       profile = profile->GetOffTheRecordProfile();
     std::vector<content::VoiceData> voices;
     content::TtsController::GetInstance()->GetVoices(profile, &voices);
-    for (size_t i = 0; i < voices.size(); i++) {
-      if (voices[i].engine_id ==
-          extension_misc::kGoogleSpeechSynthesisExtensionId)
-        return true;
-    }
-    return false;
+    return std::any_of(voices.begin(), voices.end(), [](const auto& voice) {
+      return voice.engine_id ==
+             extension_misc::kGoogleSpeechSynthesisExtensionId;
+    });
   }
 
   AccessibilityManager* manager_;

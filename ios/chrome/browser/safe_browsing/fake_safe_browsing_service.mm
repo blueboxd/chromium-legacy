@@ -15,7 +15,8 @@
 #endif
 
 namespace {
-// A SafeBrowsingUrlCheckerImpl that treats all URLs as safe.
+// A SafeBrowsingUrlCheckerImpl that treats all URLs as safe, unless they have
+// host safe.browsing.unsafe.chromium.test.
 class FakeSafeBrowsingUrlCheckerImpl
     : public safe_browsing::SafeBrowsingUrlCheckerImpl {
  public:
@@ -35,11 +36,21 @@ class FakeSafeBrowsingUrlCheckerImpl
       const std::string& method,
       safe_browsing::SafeBrowsingUrlCheckerImpl::NativeCheckUrlCallback
           callback) override {
+    if (url.host() == FakeSafeBrowsingService::kUnsafeHost) {
+      std::move(callback).Run(/*slow_check_notifier=*/nullptr,
+                              /*proceed=*/false,
+                              /*showed_interstitial=*/true);
+      return;
+    }
     std::move(callback).Run(/*slow_check_notifier=*/nullptr, /*proceed=*/true,
                             /*showed_interstitial=*/false);
   }
 };
 }
+
+// static
+const std::string FakeSafeBrowsingService::kUnsafeHost =
+    "safe.browsing.unsafe.chromium.test";
 
 FakeSafeBrowsingService::FakeSafeBrowsingService() = default;
 

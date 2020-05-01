@@ -27,6 +27,14 @@ public class BrowserFragmentImpl extends RemoteFragmentImpl {
     private final String mPersistenceId;
 
     private BrowserImpl mBrowser;
+
+    // The embedder's original context object. Only use this to resolve resource IDs provided by the
+    // embedder.
+    private Context mEmbedderActivityContext;
+
+    // The WebLayer-wrapped context object. This context gets assets and resources from WebLayer,
+    // not from the embedder. Use this for the most part, especially to resolve WebLayer-specific
+    // resource IDs.
     private Context mContext;
 
     public BrowserFragmentImpl(
@@ -41,10 +49,12 @@ public class BrowserFragmentImpl extends RemoteFragmentImpl {
     public void onAttach(Context context) {
         StrictModeWorkaround.apply();
         super.onAttach(context);
+        mEmbedderActivityContext = context;
         mContext = new ContextThemeWrapper(
                 ClassLoaderContextWrapperFactory.get(context), R.style.Theme_BrowserUI);
         if (mBrowser != null) { // On first creation, onAttach is called before onCreate
-            mBrowser.onFragmentAttached(new FragmentWindowAndroid(mContext, this));
+            mBrowser.onFragmentAttached(
+                    mEmbedderActivityContext, new FragmentWindowAndroid(mContext, this));
         }
     }
 
@@ -54,10 +64,12 @@ public class BrowserFragmentImpl extends RemoteFragmentImpl {
         super.onCreate(savedInstanceState);
         // onCreate() is only called once
         assert mBrowser == null;
-        // onCreate() is always called after onAttach(). onAttach() sets |mContext|.
+        // onCreate() is always called after onAttach(). onAttach() sets |mContext| and
+        // |mEmbedderContext|.
         assert mContext != null;
-        mBrowser = new BrowserImpl(mProfile, mPersistenceId, savedInstanceState,
-                new FragmentWindowAndroid(mContext, this));
+        assert mEmbedderActivityContext != null;
+        mBrowser = new BrowserImpl(mEmbedderActivityContext, mProfile, mPersistenceId,
+                savedInstanceState, new FragmentWindowAndroid(mContext, this));
     }
 
     @Override

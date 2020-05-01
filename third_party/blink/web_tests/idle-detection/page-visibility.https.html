@@ -12,6 +12,9 @@
 'use strict';
 
 promise_test(async t => {
+  await internals.setPermission({name: 'notifications'}, 'granted',
+                                location.origin, location.origin);
+
   let monitor;
 
   expect(addMonitor).andReturn((threshold, monitorPtr) => {
@@ -26,13 +29,11 @@ promise_test(async t => {
 
 
   let detector = new IdleDetector({threshold: 60});
-
   let watcher = new EventWatcher(t, detector, ["change"]);
+  let initial_state = watcher.wait_for("change");
 
   await detector.start();
-
-  // Waits for the first event.
-  await watcher.wait_for("change");
+  await initial_state;
 
   assert_equals(detector.state.user, "active");
 

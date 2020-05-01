@@ -10,7 +10,7 @@
 
 namespace blink {
 
-uint64_t DigestForMetrics(base::span<const uint8_t> in) {
+uint64_t IdentifiabilityDigestOfBytes(base::span<const uint8_t> in) {
   // NOTE: As documented at the point of declaration, the digest calculated here
   // should be stable once released.
   return base::PersistentHash(in);

@@ -11,6 +11,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
+#include "chrome/browser/ui/webui/settings/chromeos/constants/routes.mojom.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/webui_url_constants.h"
 #include "components/prefs/pref_service.h"
@@ -82,7 +83,8 @@ void AccountManagerWelcomeDialog::OnDialogClosed(
   // Opening Settings during shutdown leads to a crash.
   if (!chrome::IsAttemptingShutdown()) {
     chrome::SettingsWindowManager::GetInstance()->ShowOSSettings(
-        ProfileManager::GetActiveUserProfile(), chrome::kAccountManagerSubPage);
+        ProfileManager::GetActiveUserProfile(),
+        chromeos::settings::mojom::kMyAccountsSubpagePath);
   }
 
   SystemWebDialogDelegate::OnDialogClosed(json_retval);

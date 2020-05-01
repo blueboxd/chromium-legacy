@@ -380,8 +380,6 @@ class COMPONENT_EXPORT(UI_BASE_X) XWindow {
   std::array<XID, 4> pointer_barriers_;
 
   ::Cursor last_cursor_ = x11::None;
-
-  base::WeakPtrFactory<XWindow> resize_weak_factory_{this};
 };
 
 }  // namespace ui

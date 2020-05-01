@@ -38,6 +38,7 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelectorImpl;
 import org.chromium.chrome.browser.ui.RootUiCoordinator;
 import org.chromium.chrome.browser.webapps.SameTaskWebApkActivity;
 import org.chromium.chrome.browser.webapps.WebappActivityCoordinator;
+import org.chromium.components.embedder_support.delegate.WebContentsDelegateAndroid;
 
 /**
  * Contains functionality which is shared between {@link WebappActivity} and
@@ -47,6 +48,7 @@ import org.chromium.chrome.browser.webapps.WebappActivityCoordinator;
  */
 public abstract class BaseCustomTabActivity<C extends BaseCustomTabActivityComponent>
         extends ChromeActivity<C> {
+    protected CustomTabDelegateFactory mDelegateFactory;
     protected CustomTabToolbarCoordinator mToolbarCoordinator;
     protected CustomTabActivityNavigationController mNavigationController;
     protected CustomTabActivityTabProvider mTabProvider;
@@ -100,6 +102,7 @@ public abstract class BaseCustomTabActivity<C extends BaseCustomTabActivityCompo
      * Called when the {@link BaseCustomTabActivityComponent} was created.
      */
     protected void onComponentCreated(BaseCustomTabActivityComponent component) {
+        mDelegateFactory = component.resolveTabDelegateFactory();
         mToolbarCoordinator = component.resolveToolbarCoordinator();
         mNavigationController = component.resolveNavigationController();
         mTabProvider = component.resolveTabProvider();
@@ -309,5 +312,10 @@ public abstract class BaseCustomTabActivity<C extends BaseCustomTabActivityCompo
             return true;
         }
         return super.onMenuOrKeyboardAction(id, fromMenu);
+    }
+
+    public WebContentsDelegateAndroid getWebContentsDelegate() {
+        assert mDelegateFactory != null;
+        return mDelegateFactory.getWebContentsDelegate();
     }
 }

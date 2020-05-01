@@ -211,7 +211,7 @@ export function createExtensionInfo(opt_properties) {
 export function findMatches(root, query) {
   let elements = new Set();
   function doSearch(node) {
-    if (node.nodeType == Node.ELEMENT_NODE) {
+    if (node.nodeType === Node.ELEMENT_NODE) {
       const matches = node.querySelectorAll(query);
       for (let match of matches) {
         elements.add(match);

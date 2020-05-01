@@ -89,7 +89,7 @@ class CORE_EXPORT Response final : public ScriptWrappable,
   // ScriptWrappable
   bool HasPendingActivity() const final;
 
-  // Does not contain the blob response body.
+  // Does not contain the blob response body or any side data blob.
   // |request_url| is the current request URL that resulted in the response. It
   // is needed to process some response headers (e.g. CSP).
   // TODO(lfg, kinuko): The FetchResponseData::url_list_ should include the

@@ -21,7 +21,7 @@ import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/poly
 
 import {BrowserProxy} from './browser_proxy.js';
 import {BackgroundSelection, BackgroundSelectionType} from './customize_dialog.js';
-import {hexColorToSkColor, skColorToRgba} from './utils.js';
+import {$$, hexColorToSkColor, skColorToRgba} from './utils.js';
 
 class AppElement extends PolymerElement {
   static get is() {
@@ -36,6 +36,7 @@ class AppElement extends PolymerElement {
     return {
       /** @private */
       oneGoogleBarLoaded_: {
+        observer: 'oneGoogleBarLoadedChange_',
         type: Boolean,
         value: false,
       },
@@ -124,6 +125,13 @@ class AppElement extends PolymerElement {
         type: Boolean,
         value: () => loadTimeData.getBoolean('realboxEnabled'),
       },
+
+      /**
+       * If true, renders additional elements that were not deemed crucial to
+       * to show up immediately on load.
+       * @private
+       */
+      lazyRender_: Boolean,
     };
   }
 
@@ -158,7 +166,6 @@ class AppElement extends PolymerElement {
         }
       }
     });
-    this.setupShortcutDragDropOgbWorkaround_();
     FocusOutlineManager.forDocument(document);
   }
 
@@ -167,6 +174,15 @@ class AppElement extends PolymerElement {
     super.disconnectedCallback();
     this.callbackRouter_.removeListener(assert(this.setThemeListenerId_));
     this.eventTracker_.removeAll();
+  }
+
+  /** @override */
+  ready() {
+    super.ready();
+    // Let the browser breath and then render remaining elements.
+    BrowserProxy.getInstance().waitForLazyRender().then(() => {
+      this.lazyRender_ = true;
+    });
   }
 
   /**
@@ -193,7 +209,7 @@ class AppElement extends PolymerElement {
     if (!this.oneGoogleBarLoaded_) {
       return;
     }
-    this.$.oneGoogleBar.postMessage({
+    $$(this, '#oneGoogleBar').postMessage({
       type: 'enableDarkTheme',
       enabled: this.oneGoogleBarDarkThemeEnabled_,
     });
@@ -413,9 +429,9 @@ class AppElement extends PolymerElement {
     if (data.messageType === 'loaded') {
       this.oneGoogleBarLoaded_ = true;
     } else if (data.messageType === 'activate') {
-      this.$.oneGoogleBar.style.zIndex = '1000';
+      $$(this, '#oneGoogleBar').style.zIndex = '1000';
     } else if (data.messageType === 'deactivate') {
-      this.$.oneGoogleBar.style.zIndex = '0';
+      $$(this, '#oneGoogleBar').style.zIndex = '0';
     }
   }
 
@@ -431,12 +447,20 @@ class AppElement extends PolymerElement {
       this.promoLoaded_ = true;
       const onResize = () => {
         const hidePromo = this.$.mostVisited.getBoundingClientRect().bottom >=
-            this.$.promo.offsetTop;
-        this.$.promo.style.opacity = hidePromo ? 0 : 1;
+            $$(this, '#promo').offsetTop;
+        $$(this, '#promo').style.opacity = hidePromo ? 0 : 1;
       };
       this.eventTracker_.add(window, 'resize', onResize);
       onResize();
     }
+  }
+
+  /** @private */
+  oneGoogleBarLoadedChange_() {
+    if (!this.oneGoogleBarLoaded_) {
+      return;
+    }
+    this.setupShortcutDragDropOgbWorkaround_();
   }
 
   /**
@@ -452,7 +476,7 @@ class AppElement extends PolymerElement {
    * @private
    */
   setupShortcutDragDropOgbWorkaround_() {
-    const iframe = this.$.oneGoogleBar;
+    const iframe = $$(this, '#oneGoogleBar');
     let resetAtDragEnd = false;
     let dragging = false;
     let originalPointerEvents;

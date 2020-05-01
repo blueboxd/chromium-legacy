@@ -20,12 +20,15 @@ class InfoCollectionTest(gpu_integration_test.GpuIntegrationTest):
 
   @classmethod
   def GenerateGpuTests(cls, options):
-    yield ('InfoCollection_basic', '_',
-           ('_RunBasicTest', options.expected_vendor_id,
-            options.expected_device_id))
+    yield ('InfoCollection_basic', '_', ('_RunBasicTest', {
+        'expected_vendor_id_str':
+        options.expected_vendor_id,
+        'expected_device_id_str':
+        options.expected_device_id,
+    }))
     yield ('InfoCollection_direct_composition', '_',
-           ('_RunDirectCompositionTest', '_', '_'))
-    yield ('InfoCollection_dx12_vulkan', '_', ('_RunDX12VulkanTest', '_', '_'))
+           ('_RunDirectCompositionTest', {}))
+    yield ('InfoCollection_dx12_vulkan', '_', ('_RunDX12VulkanTest', {}))
 
   @classmethod
   def SetUpProcess(cls):
@@ -34,6 +37,7 @@ class InfoCollectionTest(gpu_integration_test.GpuIntegrationTest):
     cls.StartBrowser()
 
   def RunActualGpuTest(self, test_path, *args):
+    del test_path  # Unused in this particular GPU test.
     # Make sure the GPU process is started
     self.tab.action_runner.Navigate('chrome:gpu')
 
@@ -42,13 +46,19 @@ class InfoCollectionTest(gpu_integration_test.GpuIntegrationTest):
     if not system_info:
       self.fail("Browser doesn't support GetSystemInfo")
 
+    assert len(args) == 2
     test_func = args[0]
-    getattr(self, test_func)(system_info.gpu, args[1], args[2])
+    kwargs = args[1]
+    assert 'gpu' not in kwargs
+    kwargs['gpu'] = system_info.gpu
+    getattr(self, test_func)(**kwargs)
 
   ######################################
   # Helper functions for the tests below
 
-  def _RunBasicTest(self, gpu, expected_vendor_id_str, expected_device_id_str):
+  def _RunBasicTest(self, gpu, expected_vendor_id_str, expected_device_id_str,
+                    **kwargs):
+    del kwargs  # Any unused extra arguments that got passed in.
     device = gpu.devices[0]
     if not device:
       self.fail("System Info doesn't have a gpu")
@@ -72,7 +82,8 @@ class InfoCollectionTest(gpu_integration_test.GpuIntegrationTest):
       self.fail('Device ID mismatch, expected %s but got %s.' %
                 (expected_device_id, detected_device_id))
 
-  def _RunDirectCompositionTest(self, gpu, unused_arg_0, unused_arg_1):
+  def _RunDirectCompositionTest(self, gpu, **kwargs):
+    del kwargs  # Any unused extra arguments that got passed in.
     os_name = self.browser.platform.GetOSName()
     if os_name and os_name.lower() == 'win':
       overlay_bot_config = self.GetOverlayBotConfig()
@@ -86,7 +97,8 @@ class InfoCollectionTest(gpu_integration_test.GpuIntegrationTest):
               '%s mismatch, expected %s but got %s.' %
               (field, self._ValueToStr(expected), self._ValueToStr(detected)))
 
-  def _RunDX12VulkanTest(self, unused_arg_0, unused_arg_1, unused_arg_2):
+  def _RunDX12VulkanTest(self, **kwargs):
+    del kwargs  # Any unused extra arguments that got passed in.
     os_name = self.browser.platform.GetOSName()
     if os_name and os_name.lower() == 'win':
       self.RestartBrowserIfNecessaryWithArgs(

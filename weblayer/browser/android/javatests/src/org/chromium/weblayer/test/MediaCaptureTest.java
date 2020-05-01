@@ -4,6 +4,12 @@
 
 package org.chromium.weblayer.test;
 
+import android.annotation.TargetApi;
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.content.Context;
+import android.os.Build;
+import android.service.notification.StatusBarNotification;
 import android.support.test.filters.MediumTest;
 import android.webkit.ValueCallback;
 
@@ -14,6 +20,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.weblayer.MediaCaptureCallback;
@@ -62,16 +69,12 @@ public final class MediaCaptureTest {
 
         mTestWebLayer = TestWebLayer.getTestWebLayer(mActivity.getApplicationContext());
         mActivityTestRule.getTestServerRule().setServerUsesHttps(true);
-        String testUrl =
-                mActivityTestRule.getTestServer().getURL("/weblayer/test/data/getusermedia.html");
 
         mCaptureCallback = new CallbackImpl();
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             mActivity.getTab().getMediaCaptureController().setMediaCaptureCallback(
                     mCaptureCallback);
         });
-
-        mActivityTestRule.navigateAndWait(testUrl);
     }
 
     /**
@@ -80,6 +83,126 @@ public final class MediaCaptureTest {
     @Test
     @MediumTest
     public void testMediaCapture_basic() throws Throwable {
+        mActivityTestRule.navigateAndWait(
+                mActivityTestRule.getTestServer().getURL("/weblayer/test/data/getusermedia.html"));
+
+        grantPermissionAndWaitForStreamToStart();
+
+        Assert.assertTrue(mCaptureCallback.mAudio);
+        Assert.assertTrue(mCaptureCallback.mVideo);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            CriteriaHelper.pollInstrumentationThread(
+                    () -> { return getMediaCaptureNotification() != null; });
+        }
+
+        stopStream();
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            CriteriaHelper.pollInstrumentationThread(
+                    () -> { return getMediaCaptureNotification() == null; });
+        }
+    }
+
+    /**
+     * Tests that the per-site permission, once granted, is remembered the next time a stream is
+     * requested.
+     */
+    @Test
+    @MediumTest
+    public void testMediaCapture_rememberPermission() throws Throwable {
+        mActivityTestRule.navigateAndWait(
+                mActivityTestRule.getTestServer().getURL("/weblayer/test/data/getusermedia.html"));
+
+        grantPermissionAndWaitForStreamToStart();
+
+        Assert.assertTrue(mCaptureCallback.mAudio);
+        Assert.assertTrue(mCaptureCallback.mVideo);
+
+        stopStream();
+
+        // No permission prompt required the second time.
+        mCaptureCallback.mRequestedCountDown = new BoundedCountDownLatch(1);
+        mCaptureCallback.mStateCountDown = new BoundedCountDownLatch(1);
+        mActivityTestRule.navigateAndWait(
+                mActivityTestRule.getTestServer().getURL("/weblayer/test/data/getusermedia.html"));
+        mCaptureCallback.mRequestedCountDown.timedAwait();
+        mCaptureCallback.mStateCountDown.timedAwait();
+
+        Assert.assertTrue(mCaptureCallback.mAudio);
+        Assert.assertTrue(mCaptureCallback.mVideo);
+    }
+
+    /**
+     * Tests that a site can request two parallel streams and both are stopped via {@link
+     * stopMediaCapturing}.
+     */
+    @Test
+    @MediumTest
+    public void testMediaCapture_twoStreams() throws Throwable {
+        mActivityTestRule.navigateAndWait(
+                mActivityTestRule.getTestServer().getURL("/weblayer/test/data/getusermedia2.html"));
+
+        // Audio stream.
+        grantPermissionAndWaitForStreamToStart();
+        Assert.assertTrue(mCaptureCallback.mAudio);
+        Assert.assertFalse(mCaptureCallback.mVideo);
+
+        // Video stream.
+        grantPermissionAndWaitForStreamToStart();
+        Assert.assertTrue(mCaptureCallback.mAudio);
+        Assert.assertTrue(mCaptureCallback.mVideo);
+
+        mCaptureCallback.mStateCountDown = new BoundedCountDownLatch(2);
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> { mActivity.getTab().getMediaCaptureController().stopMediaCapturing(); });
+        mCaptureCallback.mStateCountDown.timedAwait();
+        Assert.assertFalse(mCaptureCallback.mAudio);
+        Assert.assertFalse(mCaptureCallback.mVideo);
+    }
+
+    /**
+     * Tests that the notification posted for a tab will be updated if a second stream is started.
+     */
+    @Test
+    @MediumTest
+    @MinAndroidSdkLevel(Build.VERSION_CODES.M)
+    public void testMediaCapture_twoStreamsNotification() throws Throwable {
+        mActivityTestRule.navigateAndWait(
+                mActivityTestRule.getTestServer().getURL("/weblayer/test/data/getusermedia2.html"));
+
+        // Audio stream.
+        grantPermissionAndWaitForStreamToStart();
+        Assert.assertTrue(mCaptureCallback.mAudio);
+        Assert.assertFalse(mCaptureCallback.mVideo);
+
+        CriteriaHelper.pollInstrumentationThread(
+                () -> { return getMediaCaptureNotification() != null; });
+        Notification audioNotification = getMediaCaptureNotification();
+
+        // Video stream.
+        grantPermissionAndWaitForStreamToStart();
+        Assert.assertTrue(mCaptureCallback.mAudio);
+        Assert.assertTrue(mCaptureCallback.mVideo);
+
+        CriteriaHelper.pollInstrumentationThread(() -> {
+            Notification combinedNotification = getMediaCaptureNotification();
+            return combinedNotification != null
+                    && combinedNotification.getSmallIcon().getResId()
+                    != audioNotification.getSmallIcon().getResId();
+        });
+
+        mCaptureCallback.mStateCountDown = new BoundedCountDownLatch(2);
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> { mActivity.getTab().getMediaCaptureController().stopMediaCapturing(); });
+        mCaptureCallback.mStateCountDown.timedAwait();
+        Assert.assertFalse(mCaptureCallback.mAudio);
+        Assert.assertFalse(mCaptureCallback.mVideo);
+
+        CriteriaHelper.pollInstrumentationThread(
+                () -> { return getMediaCaptureNotification() == null; });
+    }
+
+    private void grantPermissionAndWaitForStreamToStart() throws Throwable {
         CriteriaHelper.pollInstrumentationThread(
                 () -> { return mTestWebLayer.isPermissionDialogShown(); });
         mCaptureCallback.mRequestedCountDown = new BoundedCountDownLatch(1);
@@ -88,14 +211,35 @@ public final class MediaCaptureTest {
 
         mCaptureCallback.mRequestedCountDown.timedAwait();
         mCaptureCallback.mStateCountDown.timedAwait();
-        Assert.assertTrue(mCaptureCallback.mAudio);
-        Assert.assertTrue(mCaptureCallback.mVideo);
+    }
 
+    private void stopStream() throws Throwable {
         mCaptureCallback.mStateCountDown = new BoundedCountDownLatch(1);
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> { mActivity.getTab().getMediaCaptureController().stopMediaCapturing(); });
         mCaptureCallback.mStateCountDown.timedAwait();
         Assert.assertFalse(mCaptureCallback.mAudio);
         Assert.assertFalse(mCaptureCallback.mVideo);
+    }
+
+    /**
+     * Retrieves the active media capture notification, or null if none exists.
+     * Asserts that at most one notification exists.
+     * {@link NotificationManager#getActiveNotifications()} is only available from M.
+     */
+    @TargetApi(Build.VERSION_CODES.M)
+    private Notification getMediaCaptureNotification() {
+        StatusBarNotification notifications[] =
+                ((NotificationManager) mActivity.getApplicationContext().getSystemService(
+                         Context.NOTIFICATION_SERVICE))
+                        .getActiveNotifications();
+        Notification notification = null;
+        for (StatusBarNotification statusBarNotification : notifications) {
+            if (statusBarNotification.getTag().equals("org.chromium.weblayer.webrtc.avstream")) {
+                Assert.assertNull(notification);
+                notification = statusBarNotification.getNotification();
+            }
+        }
+        return notification;
     }
 }

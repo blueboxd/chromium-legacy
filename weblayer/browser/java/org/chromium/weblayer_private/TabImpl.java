@@ -691,7 +691,8 @@ public final class TabImpl extends ITab.Stub {
         long createTab(long profile, TabImpl caller);
         void setJavaImpl(long nativeTabImpl, TabImpl impl);
         void onAutofillProviderChanged(long nativeTabImpl, AutofillProvider autofillProvider);
-        void setTopControlsContainerView(long nativeTabImpl, long nativeTopControlsContainerView);
+        void setTopControlsContainerView(
+                long nativeTabImpl, long nativeBrowserControlsContainerView);
         void deleteTab(long tab);
         WebContents getWebContents(long nativeTabImpl, TabImpl caller);
         void executeScript(long nativeTabImpl, String script, boolean useSeparateIsolate,

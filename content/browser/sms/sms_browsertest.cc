@@ -3,7 +3,9 @@
 // found in the LICENSE file.
 
 #include <memory>
+#include <string>
 
+#include "base/test/bind_test_util.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "components/ukm/test_ukm_recorder.h"
 #include "content/browser/browser_main_loop.h"
@@ -24,6 +26,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/blink/public/common/sms/sms_receiver_outcome.h"
 
+using blink::mojom::SmsStatus;
 using ::testing::_;
 using ::testing::Invoke;
 using ::testing::NiceMock;
@@ -114,9 +117,8 @@ class SmsBrowserTest : public ContentBrowserTest {
     cert_verifier_.TearDownInProcessBrowserTestFixture();
   }
 
-  SmsFetcherImpl* GetSmsFetcher() {
-    return static_cast<SmsFetcherImpl*>(
-        SmsFetcher::Get(shell()->web_contents()->GetBrowserContext()));
+  SmsFetcher* GetSmsFetcher() {
+    return SmsFetcher::Get(shell()->web_contents()->GetBrowserContext());
   }
 
   ukm::TestAutoSetUkmRecorder* ukm_recorder() { return ukm_recorder_.get(); }
@@ -145,7 +147,7 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest, Receive) {
 
   auto provider = std::make_unique<MockSmsProvider>();
   MockSmsProvider* mock_provider_ptr = provider.get();
-  GetSmsFetcher()->SetSmsProviderForTesting(std::move(provider));
+  BrowserMainLoop::GetInstance()->SetSmsProviderForTesting(std::move(provider));
 
   // Test that SMS content can be retrieved after navigator.credentials.get().
   std::string script = R"(
@@ -187,7 +189,7 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest, AtMostOneSmsRequestPerOrigin) {
 
   auto provider = std::make_unique<MockSmsProvider>();
   MockSmsProvider* mock_provider_ptr = provider.get();
-  GetSmsFetcher()->SetSmsProviderForTesting(std::move(provider));
+  BrowserMainLoop::GetInstance()->SetSmsProviderForTesting(std::move(provider));
 
   std::string script = R"(
     (async () => {
@@ -230,7 +232,7 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest,
                        DISABLED_AtMostOneSmsRequestPerOriginPerTab) {
   auto provider = std::make_unique<MockSmsProvider>();
   MockSmsProvider* mock_provider_ptr = provider.get();
-  GetSmsFetcher()->SetSmsProviderForTesting(std::move(provider));
+  BrowserMainLoop::GetInstance()->SetSmsProviderForTesting(std::move(provider));
 
   Shell* tab1 = CreateBrowser();
   Shell* tab2 = CreateBrowser();
@@ -329,7 +331,7 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest, Reload) {
 
   auto provider = std::make_unique<MockSmsProvider>();
   MockSmsProvider* mock_provider_ptr = provider.get();
-  GetSmsFetcher()->SetSmsProviderForTesting(std::move(provider));
+  BrowserMainLoop::GetInstance()->SetSmsProviderForTesting(std::move(provider));
 
   std::string script = R"(
     // kicks off the sms receiver, adding the service
@@ -373,7 +375,7 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest, Close) {
 
   auto provider = std::make_unique<MockSmsProvider>();
   MockSmsProvider* mock_provider_ptr = provider.get();
-  GetSmsFetcher()->SetSmsProviderForTesting(std::move(provider));
+  BrowserMainLoop::GetInstance()->SetSmsProviderForTesting(std::move(provider));
 
   base::RunLoop loop;
 
@@ -402,7 +404,7 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest, Close) {
 IN_PROC_BROWSER_TEST_F(SmsBrowserTest, DISABLED_TwoTabsSameOrigin) {
   auto provider = std::make_unique<MockSmsProvider>();
   MockSmsProvider* mock_provider_ptr = provider.get();
-  GetSmsFetcher()->SetSmsProviderForTesting(std::move(provider));
+  BrowserMainLoop::GetInstance()->SetSmsProviderForTesting(std::move(provider));
 
   Shell* tab1 = CreateBrowser();
   Shell* tab2 = CreateBrowser();
@@ -483,7 +485,7 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest, DISABLED_TwoTabsSameOrigin) {
 IN_PROC_BROWSER_TEST_F(SmsBrowserTest, DISABLED_TwoTabsDifferentOrigin) {
   auto provider = std::make_unique<MockSmsProvider>();
   MockSmsProvider* mock_provider_ptr = provider.get();
-  GetSmsFetcher()->SetSmsProviderForTesting(std::move(provider));
+  BrowserMainLoop::GetInstance()->SetSmsProviderForTesting(std::move(provider));
 
   Shell* tab1 = CreateBrowser();
   Shell* tab2 = CreateBrowser();
@@ -559,7 +561,7 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest, SmsReceivedAfterTabIsClosed) {
 
   auto provider = std::make_unique<MockSmsProvider>();
   MockSmsProvider* mock_provider_ptr = provider.get();
-  GetSmsFetcher()->SetSmsProviderForTesting(std::move(provider));
+  BrowserMainLoop::GetInstance()->SetSmsProviderForTesting(std::move(provider));
 
   base::RunLoop loop;
 
@@ -588,7 +590,7 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest, Cancels) {
 
   auto provider = std::make_unique<MockSmsProvider>();
   MockSmsProvider* mock_provider_ptr = provider.get();
-  GetSmsFetcher()->SetSmsProviderForTesting(std::move(provider));
+  BrowserMainLoop::GetInstance()->SetSmsProviderForTesting(std::move(provider));
 
   shell()->web_contents()->SetDelegate(&delegate_);
 
@@ -628,7 +630,7 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest, AbortAfterSmsRetrieval) {
 
   auto provider = std::make_unique<MockSmsProvider>();
   MockSmsProvider* mock_provider_ptr = provider.get();
-  GetSmsFetcher()->SetSmsProviderForTesting(std::move(provider));
+  BrowserMainLoop::GetInstance()->SetSmsProviderForTesting(std::move(provider));
 
   shell()->web_contents()->SetDelegate(&delegate_);
 
@@ -663,6 +665,58 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest, AbortAfterSmsRetrieval) {
   EXPECT_EQ("AbortError", EvalJs(shell(), "request"));
 
   ExpectOutcomeUKM(url, blink::SMSReceiverOutcome::kAborted);
+}
+
+IN_PROC_BROWSER_TEST_F(SmsBrowserTest, SmsFetcherUAF) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      switches::kWebOtpBackend, switches::kWebOtpBackendUserConsent);
+  GURL url = GetTestUrl(nullptr, "simple_page.html");
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+
+  auto* provider = new NiceMock<MockSmsProvider>();
+  BrowserMainLoop::GetInstance()->SetSmsProviderForTesting(
+      base::WrapUnique(provider));
+
+  shell()->web_contents()->SetDelegate(&delegate_);
+
+  auto* fetcher = SmsFetcher::Get(shell()->web_contents()->GetBrowserContext());
+  auto* fetcher2 =
+      SmsFetcher::Get(shell()->web_contents()->GetBrowserContext());
+  mojo::Remote<blink::mojom::SmsReceiver> service;
+  mojo::Remote<blink::mojom::SmsReceiver> service2;
+
+  RenderFrameHost* render_frame_host = shell()->web_contents()->GetMainFrame();
+  SmsService::Create(fetcher, render_frame_host,
+                     service.BindNewPipeAndPassReceiver());
+  SmsService::Create(fetcher2, render_frame_host,
+                     service2.BindNewPipeAndPassReceiver());
+
+  base::RunLoop navigate;
+
+  EXPECT_CALL(*provider, Retrieve(_))
+      .WillOnce(Invoke([&]() {
+        static_cast<SmsFetcherImpl*>(fetcher)->OnReceive(
+            url::Origin::Create(url), "ABC234");
+      }))
+      .WillOnce(Invoke([&]() {
+        static_cast<SmsFetcherImpl*>(fetcher2)->OnReceive(
+            url::Origin::Create(url), "DEF567");
+      }));
+
+  service->Receive(base::BindLambdaForTesting(
+      [](SmsStatus status, const base::Optional<std::string>& otp) {
+        EXPECT_EQ(SmsStatus::kSuccess, status);
+        EXPECT_EQ("ABC234", otp);
+      }));
+
+  service2->Receive(base::BindLambdaForTesting(
+      [&navigate](SmsStatus status, const base::Optional<std::string>& otp) {
+        EXPECT_EQ(SmsStatus::kSuccess, status);
+        EXPECT_EQ("DEF567", otp);
+        navigate.Quit();
+      }));
+
+  navigate.Run();
 }
 
 }  // namespace content

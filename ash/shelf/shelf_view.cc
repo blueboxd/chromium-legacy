@@ -325,7 +325,7 @@ ShelfView::ShelfView(ShelfModel* model,
       view_model_(std::make_unique<views::ViewModel>()),
       bounds_animator_(
           std::make_unique<views::BoundsAnimator>(this,
-                                                  /*use_transforms=*/false)),
+                                                  /*use_transforms=*/true)),
       focus_search_(std::make_unique<ShelfFocusSearch>(this)),
       drag_and_drop_host_(drag_and_drop_host),
       shelf_button_delegate_(shelf_button_delegate) {
@@ -1856,6 +1856,7 @@ void ShelfView::ShelfItemChanged(int model_index, const ShelfItem& old_item) {
     view_model_->Add(new_view, model_index);
     view_model_->set_ideal_bounds(model_index, old_ideal_bounds);
 
+    bounds_animator_->StopAnimatingView(new_view);
     new_view->SetBoundsRect(old_view->bounds());
     bounds_animator_->AnimateViewTo(new_view, old_ideal_bounds);
 

@@ -139,12 +139,15 @@ bool WebAuthRequestSecurityChecker::IsSameOriginWithAncestors(
 blink::mojom::AuthenticatorStatus
 WebAuthRequestSecurityChecker::ValidateAncestorOrigins(
     const url::Origin& origin,
+    RequestType type,
     bool* is_cross_origin) {
   *is_cross_origin = !IsSameOriginWithAncestors(origin);
-  if ((!base::FeatureList::IsEnabled(device::kWebAuthFeaturePolicy) ||
+  if ((type == RequestType::kMakeCredential ||
+       !base::FeatureList::IsEnabled(
+           device::kWebAuthGetAssertionFeaturePolicy) ||
        !static_cast<RenderFrameHostImpl*>(render_frame_host_)
-            ->IsFeatureEnabled(
-                blink::mojom::FeaturePolicyFeature::kPublicKeyCredentials)) &&
+            ->IsFeatureEnabled(blink::mojom::FeaturePolicyFeature::
+                                   kPublicKeyCredentialsGet)) &&
       *is_cross_origin) {
     ReportSecurityCheckFailure(
         RelyingPartySecurityCheckFailure::kCrossOriginMismatch);

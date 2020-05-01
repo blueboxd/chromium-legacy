@@ -57,9 +57,10 @@ void PageAnimator::ServiceScriptedAnimations(
   for (auto& document : documents) {
     ScopedFrameBlamer frame_blamer(document->GetFrame());
     TRACE_EVENT0("blink,rail", "PageAnimator::serviceScriptedAnimations");
-    document->GetDocumentAnimations().UpdateAnimationTimingForAnimationFrame();
     if (document->View()) {
       if (document->View()->ShouldThrottleRendering()) {
+        document->GetDocumentAnimations()
+            .UpdateAnimationTimingForAnimationFrame();
         document->SetCurrentFrameIsThrottled(true);
         continue;
       }
@@ -90,6 +91,7 @@ void PageAnimator::ServiceScriptedAnimations(
       document->GetFrame()->AnimateSnapFling(monotonic_animation_start_time);
       SVGDocumentExtensions::ServiceOnAnimationFrame(*document);
     }
+    document->GetDocumentAnimations().UpdateAnimationTimingForAnimationFrame();
     // TODO(skyostil): This function should not run for documents without views.
     DocumentLifecycle::DisallowThrottlingScope no_throttling_scope(
         document->Lifecycle());

@@ -9,6 +9,7 @@
 #include "third_party/blink/public/mojom/idle/idle_manager.mojom-blink-forward.h"
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_idle_options.h"
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
@@ -38,8 +39,10 @@ class IdleDetector final : public EventTargetWithInlineData,
   static IdleDetector* Create(ScriptState*, ExceptionState&);
 
   IdleDetector(ExecutionContext*, base::TimeDelta threshold);
-
   ~IdleDetector() override;
+
+  IdleDetector(const IdleDetector&) = delete;
+  IdleDetector& operator=(const IdleDetector&) = delete;
 
   // EventTarget implementation.
   const AtomicString& InterfaceName() const override;
@@ -54,15 +57,19 @@ class IdleDetector final : public EventTargetWithInlineData,
   blink::IdleState* state() const;
   DEFINE_ATTRIBUTE_EVENT_LISTENER(change, kChange)
 
-  void OnAddMonitor(mojom::blink::IdleStatePtr);
+  void Trace(Visitor*) override;
 
+ private:
   // mojom::blink::IdleMonitor implementation. Invoked on a state change, and
   // causes an event to be dispatched.
   void Update(mojom::blink::IdleStatePtr state) override;
 
-  void Trace(Visitor*) override;
+  void StartMonitoring(ScriptPromiseResolver* resolver);
 
- private:
+  void OnAddMonitor(ScriptPromiseResolver*,
+                    mojom::blink::IdleManagerError,
+                    mojom::blink::IdleStatePtr);
+
   Member<blink::IdleState> state_;
 
   const base::TimeDelta threshold_;
@@ -73,14 +80,9 @@ class IdleDetector final : public EventTargetWithInlineData,
                    IdleDetector,
                    HeapMojoWrapperMode::kWithoutContextObserver>
       receiver_;
-
-  void StartMonitoring();
-
   HeapMojoRemote<mojom::blink::IdleManager,
                  HeapMojoWrapperMode::kWithoutContextObserver>
-      service_;
-
-  DISALLOW_COPY_AND_ASSIGN(IdleDetector);
+      idle_service_;
 };
 
 }  // namespace blink

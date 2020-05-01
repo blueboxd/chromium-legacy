@@ -8,6 +8,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/notifications/notification_display_service.h"
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
+#include "chrome/browser/ui/webui/settings/chromeos/constants/routes.mojom.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
@@ -133,7 +134,7 @@ void EasyUnlockNotificationController::ShowNotification(
 
 void EasyUnlockNotificationController::LaunchEasyUnlockSettings() {
   chrome::SettingsWindowManager::GetInstance()->ShowOSSettings(
-      profile_, chrome::kSmartLockSettingsSubPage);
+      profile_, chromeos::settings::mojom::kSmartLockSubpagePath);
 }
 
 void EasyUnlockNotificationController::LockScreen() {

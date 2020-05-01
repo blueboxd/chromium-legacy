@@ -30,13 +30,13 @@ import org.chromium.ui.modelutil.PropertyModel;
  */
 @JNINamespace("weblayer")
 public final class BrowserViewController
-        implements TopControlsContainerView.Listener,
+        implements BrowserControlsContainerView.Listener,
                    WebContentsGestureStateTracker.OnGestureStateChangedListener,
                    ModalDialogManager.ModalDialogManagerObserver {
     private final ContentViewRenderView mContentViewRenderView;
     private final ContentView mContentView;
     // Child of mContentView, holds top-view from client.
-    private final TopControlsContainerView mTopControlsContainerView;
+    private final BrowserControlsContainerView mTopControlsContainerView;
     // Other child of mContentView, which holds views that sit on top of the web contents, such as
     // tab modal dialogs.
     private final FrameLayout mWebContentsOverlayView;
@@ -63,7 +63,7 @@ public final class BrowserViewController
         mContentViewRenderView.onNativeLibraryLoaded(
                 mWindowAndroid, ContentViewRenderView.MODE_SURFACE_VIEW);
         mTopControlsContainerView =
-                new TopControlsContainerView(context, mContentViewRenderView, this);
+                new BrowserControlsContainerView(context, mContentViewRenderView, this);
         mTopControlsContainerView.setId(View.generateViewId());
         mContentView = ContentView.createContentView(
                 context, mTopControlsContainerView.getEventOffsetHandler());

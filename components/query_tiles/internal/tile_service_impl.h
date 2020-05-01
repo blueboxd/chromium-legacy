@@ -37,10 +37,16 @@ class TileServiceImpl : public TileService {
   void GetTile(const std::string& tile_id, TileCallback callback) override;
   void GetVisuals(const std::string& tile_id,
                   VisualsCallback callback) override;
+  void StartFetchForTiles(BackgroundTaskFinishedCallback callback) override;
 
   // TODO(hesen): Use an one-off task solution instead of periodic task.
   // Schedules periodic background task to start fetch.
   void ScheduleDailyTask();
+
+  // Called when fetching from server is completed.
+  void OnFetchFinished(BackgroundTaskFinishedCallback callback,
+                       TileInfoRequestStatus status,
+                       const std::unique_ptr<std::string> response_body);
 
   // Used to load tile images.
   std::unique_ptr<ImageLoader> image_loader_;

@@ -197,7 +197,8 @@ int BrowserNonClientFrameViewAsh::GetTopInset(bool restored) const {
     // but the inset is still calculated below, so the overview code can align
     // the window content with a fake header.
     if (!IsInOverviewMode() || frame()->IsFullscreen() ||
-        browser_view()->IsTabStripVisible()) {
+        browser_view()->IsTabStripVisible() ||
+        browser_view()->webui_tab_strip()) {
       return 0;
     }
   }

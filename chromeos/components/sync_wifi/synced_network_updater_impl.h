@@ -10,6 +10,7 @@
 #include "base/values.h"
 #include "chromeos/components/sync_wifi/network_identifier.h"
 #include "chromeos/components/sync_wifi/pending_network_configuration_tracker.h"
+#include "chromeos/components/sync_wifi/synced_network_metrics_logger.h"
 #include "chromeos/components/sync_wifi/synced_network_updater.h"
 #include "chromeos/services/network_config/public/mojom/cros_network_config.mojom.h"
 #include "components/sync/protocol/model_type_state.pb.h"
@@ -32,7 +33,8 @@ class SyncedNetworkUpdaterImpl
   SyncedNetworkUpdaterImpl(
       std::unique_ptr<PendingNetworkConfigurationTracker> tracker,
       network_config::mojom::CrosNetworkConfig* cros_network_config,
-      std::unique_ptr<TimerFactory> timer_factory);
+      std::unique_ptr<TimerFactory> timer_factory,
+      SyncedNetworkMetricsLogger* metrics_logger);
   ~SyncedNetworkUpdaterImpl() override;
 
   void AddOrUpdateNetwork(
@@ -76,9 +78,7 @@ class SyncedNetworkUpdaterImpl
       const std::string& guid);
   void OnGetNetworkList(
       std::vector<network_config::mojom::NetworkStatePropertiesPtr> networks);
-  void OnError(const std::string& change_guid,
-               const NetworkIdentifier& id,
-               const std::string& error_name);
+  void OnTimeout(const std::string& change_guid, const NetworkIdentifier& id);
   void OnSetPropertiesResult(const std::string& change_guid,
                              const std::string& network_guid,
                              const sync_pb::WifiConfigurationSpecifics& proto,
@@ -101,6 +101,7 @@ class SyncedNetworkUpdaterImpl
   std::unique_ptr<TimerFactory> timer_factory_;
   base::flat_map<std::string, std::unique_ptr<base::OneShotTimer>>
       change_guid_to_timer_map_;
+  SyncedNetworkMetricsLogger* metrics_logger_;
 
   base::WeakPtrFactory<SyncedNetworkUpdaterImpl> weak_ptr_factory_{this};
 };

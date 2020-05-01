@@ -1077,7 +1077,7 @@ class RenderProcessHostWatcher : public RenderProcessHostObserver {
   RenderProcessHostWatcher(WebContents* web_contents, WatchType type);
   ~RenderProcessHostWatcher() override;
 
-  // Waits until the expected event is triggered.
+  // Waits until the expected event is triggered. This may only be called once.
   void Wait();
 
   // Returns true if a renderer process exited cleanly (without hitting
@@ -1086,6 +1086,11 @@ class RenderProcessHostWatcher : public RenderProcessHostObserver {
   bool did_exit_normally() { return did_exit_normally_; }
 
  private:
+  // Stop observing and drop the reference to the RenderProcessHost.
+  void ClearProcessHost();
+  // Quit the run loop and clean up.
+  void QuitRunLoop();
+
   // Overridden RenderProcessHost::LifecycleObserver methods.
   void RenderProcessReady(RenderProcessHost* host) override;
   void RenderProcessExited(RenderProcessHost* host,

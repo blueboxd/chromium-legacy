@@ -26,6 +26,7 @@ namespace content {
 
 class FrameTreeNode;
 class NavigationHandle;
+class NavigationRequest;
 class RenderFrameHostImpl;
 struct LoadCommittedDetails;
 struct OpenURLParams;
@@ -135,10 +136,14 @@ class CONTENT_EXPORT NavigatorDelegate {
                                        const GURL& scope,
                                        AllowServiceWorkerResult allowed) {}
 
-  // Does a global walk of the session history, and registers origins that
-  // match |origin| to their respective BrowsingInstances.
+  // Does a global walk of the session history and all committed/pending-commit
+  // origins, and registers origins that match |origin| to their respective
+  // BrowsingInstances. |navigation_request_to_exclude| allows the
+  // NavigationRequest that initiates this process to avoid marking itself as
+  // non-opted-in before it gets the chance to opt-in.
   virtual void RegisterExistingOriginToPreventOptInIsolation(
-      const url::Origin& origin) {}
+      const url::Origin& origin,
+      NavigationRequest* navigation_request_to_exclude) {}
 };
 
 }  // namespace content

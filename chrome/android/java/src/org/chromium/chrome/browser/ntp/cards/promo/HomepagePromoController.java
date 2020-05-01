@@ -18,6 +18,7 @@ import org.chromium.chrome.browser.homepage.HomepageManager;
 import org.chromium.chrome.browser.homepage.HomepageManager.HomepageStateListener;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
 import org.chromium.components.browser_ui.widget.promo.PromoCardCoordinator;
+import org.chromium.components.browser_ui.widget.promo.PromoCardCoordinator.LayoutStyle;
 import org.chromium.components.browser_ui.widget.promo.PromoCardProperties;
 import org.chromium.components.feature_engagement.EventConstants;
 import org.chromium.components.feature_engagement.FeatureConstants;
@@ -120,37 +121,63 @@ public class HomepagePromoController implements HomepageStateListener {
     private PromoCardCoordinator getPromoCoordinator() {
         if (mPromoCoordinator != null) return mPromoCoordinator;
 
-        Resources r = mContext.getResources();
+        @LayoutStyle
+        int layoutStyle = HomepagePromoVariationManager.getInstance().getLayoutVariation();
+        mModel = buildModel(layoutStyle);
 
-        Drawable homeIcon = AppCompatResources.getDrawable(mContext, R.drawable.btn_toolbar_home);
-        ColorStateList tint =
-                AppCompatResources.getColorStateList(mContext, R.color.default_icon_color_blue);
+        mPromoCoordinator = new PromoCardCoordinator(
+                mContext, mModel, FeatureConstants.HOMEPAGE_PROMO_CARD_FEATURE, layoutStyle);
 
-        mModel =
-                new PropertyModel.Builder(PromoCardProperties.ALL_KEYS)
-                        .with(PromoCardProperties.IMAGE, homeIcon)
-                        .with(PromoCardProperties.ICON_TINT, tint)
-                        .with(PromoCardProperties.TITLE, r.getString(R.string.homepage_promo_title))
-                        .with(PromoCardProperties.DESCRIPTION,
-                                r.getString(R.string.homepage_promo_description))
-                        .with(PromoCardProperties.PRIMARY_BUTTON_TEXT,
-                                r.getString(R.string.homepage_promo_primary_button))
-                        .with(PromoCardProperties.PRIMARY_BUTTON_CALLBACK,
-                                (v) -> onPrimaryButtonClicked())
-                        .with(PromoCardProperties.HAS_SECONDARY_BUTTON, false)
-                        .with(PromoCardProperties.HAS_CLOSE_BUTTON, true)
-                        .with(PromoCardProperties.CLOSE_BUTTON_CALLBACK, (v) -> dismissPromo())
-                        .build();
-
-        mPromoCoordinator = new PromoCardCoordinator(mContext, mModel,
-                FeatureConstants.HOMEPAGE_PROMO_CARD_FEATURE,
-                HomepagePromoVariationManager.getInstance().getLayoutVariation());
         mPromoCoordinator.getView().setId(R.id.homepage_promo);
 
         // Subscribe to homepage update only when view is created.
         HomepageManager.getInstance().addListener(this);
 
         return mPromoCoordinator;
+    }
+
+    private PropertyModel buildModel(@LayoutStyle int layoutStyle) {
+        Resources r = mContext.getResources();
+
+        Drawable homeIcon = AppCompatResources.getDrawable(mContext, R.drawable.btn_toolbar_home);
+        ColorStateList tint =
+                AppCompatResources.getColorStateList(mContext, R.color.default_icon_color_blue);
+
+        PropertyModel.Builder builder = new PropertyModel.Builder(PromoCardProperties.ALL_KEYS);
+
+        builder.with(PromoCardProperties.IMAGE, homeIcon)
+                .with(PromoCardProperties.ICON_TINT, tint)
+                .with(PromoCardProperties.HAS_CLOSE_BUTTON, false)
+                .with(PromoCardProperties.PRIMARY_BUTTON_CALLBACK, (v) -> onPrimaryButtonClicked());
+
+        if (layoutStyle == LayoutStyle.SLIM) {
+            builder.with(PromoCardProperties.TITLE, r.getString(R.string.homepage_promo_title_slim))
+                    .with(PromoCardProperties.PRIMARY_BUTTON_TEXT,
+                            r.getString(R.string.homepage_promo_primary_button))
+                    .with(PromoCardProperties.HAS_SECONDARY_BUTTON, false);
+
+        } else if (layoutStyle == LayoutStyle.LARGE) {
+            builder.with(PromoCardProperties.TITLE, r.getString(R.string.homepage_promo_title))
+                    .with(PromoCardProperties.DESCRIPTION,
+                            r.getString(R.string.homepage_promo_description))
+                    .with(PromoCardProperties.PRIMARY_BUTTON_TEXT,
+                            r.getString(R.string.homepage_promo_primary_button))
+                    .with(PromoCardProperties.HAS_SECONDARY_BUTTON, false)
+                    .with(PromoCardProperties.CLOSE_BUTTON_CALLBACK, (v) -> dismissPromo());
+
+        } else { // layoutStyle == LayoutStyle.COMPACT
+            builder.with(PromoCardProperties.TITLE, r.getString(R.string.homepage_promo_title))
+                    .with(PromoCardProperties.DESCRIPTION,
+                            r.getString(R.string.homepage_promo_description))
+                    .with(PromoCardProperties.PRIMARY_BUTTON_TEXT,
+                            r.getString(R.string.homepage_promo_primary_button))
+                    .with(PromoCardProperties.HAS_SECONDARY_BUTTON, true)
+                    .with(PromoCardProperties.SECONDARY_BUTTON_TEXT,
+                            r.getString(R.string.no_thanks))
+                    .with(PromoCardProperties.SECONDARY_BUTTON_CALLBACK, (v) -> dismissPromo());
+        }
+
+        return builder.build();
     }
 
     /**

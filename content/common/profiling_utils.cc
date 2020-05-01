@@ -49,15 +49,12 @@ base::File OpenProfilingFile() {
   }
 
   // sajjadm@ and liaoyuke@ experimentally determined that a size 4 pool works
-  // well for the coverage builder. For other type of profiled build we want to
-  // use as many profiles files as possible to reduce the impact that one
-  // corrupt profile could have on the rest of the data.
-#if BUILDFLAG(USE_CLANG_COVERAGE)
-  std::string pool_index = base::NumberToString(base::RandInt(0, 4));
-#else
-  std::string pool_index = base::GenerateGUID();
-#endif
-  std::string filename = base::StrCat({"child_pool-", pool_index, ".profraw"});
+  // well for the coverage builder.
+  // TODO(https://crbug.com/1059335): Check if this is an appropriate value for
+  // the PGO builds.
+  int pool_index = base::RandInt(0, 3);
+  std::string filename = base::StrCat(
+      {"child_pool-", base::NumberToString(pool_index), ".profraw"});
 #if defined(OS_WIN)
   path = path.Append(base::UTF8ToUTF16(filename));
 #else

@@ -24,8 +24,9 @@ extern const base::Feature kWebAuthBiometricEnrollment{
 extern const base::Feature kWebAuthPhoneSupport{
     "WebAuthenticationPhoneSupport", base::FEATURE_DISABLED_BY_DEFAULT};
 
-extern const base::Feature kWebAuthFeaturePolicy{
-    "WebAuthenticationFeaturePolicy", base::FEATURE_DISABLED_BY_DEFAULT};
+extern const base::Feature kWebAuthGetAssertionFeaturePolicy{
+    "WebAuthenticationGetAssertionFeaturePolicy",
+    base::FEATURE_DISABLED_BY_DEFAULT};
 
 #if defined(OS_CHROMEOS) || defined(OS_LINUX)
 const base::Feature kWebAuthCableLowLatency{"WebAuthenticationCableLowLatency",

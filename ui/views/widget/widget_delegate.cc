@@ -154,20 +154,20 @@ bool WidgetDelegate::ShouldRestoreWindowSize() const {
 
 void WidgetDelegate::WindowWillClose() {
   // TODO(ellyjones): For this and the other callback methods, establish whether
-  // any other code calls these methods. If not, convert this if to a DCHECK to
-  // enforce the contract that these methods are only called once.
-  if (window_will_close_callback_)
-    std::move(window_will_close_callback_).Run();
+  // any other code calls these methods. If not, DCHECK here and below that
+  // these methods are only called once.
+  for (auto&& callback : window_will_close_callbacks_)
+    std::move(callback).Run();
 }
 
 void WidgetDelegate::WindowClosing() {
-  if (window_closing_callback_)
-    std::move(window_closing_callback_).Run();
+  for (auto&& callback : window_closing_callbacks_)
+    std::move(callback).Run();
 }
 
 void WidgetDelegate::DeleteDelegate() {
-  if (delete_delegate_callback_)
-    std::move(delete_delegate_callback_).Run();
+  for (auto&& callback : delete_delegate_callbacks_)
+    std::move(callback).Run();
 }
 
 View* WidgetDelegate::GetContentsView() {
@@ -240,16 +240,18 @@ void WidgetDelegate::SetCenterTitle(bool center_title) {
 }
 #endif
 
-void WidgetDelegate::SetWindowWillCloseCallback(base::OnceClosure callback) {
-  window_will_close_callback_ = std::move(callback);
+void WidgetDelegate::RegisterWindowWillCloseCallback(
+    base::OnceClosure callback) {
+  window_will_close_callbacks_.emplace_back(std::move(callback));
 }
 
-void WidgetDelegate::SetWindowClosingCallback(base::OnceClosure callback) {
-  window_closing_callback_ = std::move(callback);
+void WidgetDelegate::RegisterWindowClosingCallback(base::OnceClosure callback) {
+  window_closing_callbacks_.emplace_back(std::move(callback));
 }
 
-void WidgetDelegate::SetDeleteDelegateCallback(base::OnceClosure callback) {
-  delete_delegate_callback_ = std::move(callback);
+void WidgetDelegate::RegisterDeleteDelegateCallback(
+    base::OnceClosure callback) {
+  delete_delegate_callbacks_.emplace_back(std::move(callback));
 }
 
 ////////////////////////////////////////////////////////////////////////////////

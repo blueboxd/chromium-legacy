@@ -4,6 +4,7 @@
 
 #include "chrome/browser/query_tiles/tile_service_factory.h"
 
+#include "base/command_line.h"
 #include "base/memory/singleton.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/image_fetcher/image_fetcher_service_factory.h"
@@ -18,6 +19,7 @@
 #include "components/keyed_service/core/simple_dependency_manager.h"
 #include "components/language/core/browser/pref_names.h"
 #include "components/prefs/pref_service.h"
+#include "components/query_tiles/switches.h"
 #include "components/query_tiles/tile_service_factory_helper.h"
 #include "components/variations/service/variations_service.h"
 #include "google_apis/google_api_keys.h"
@@ -31,6 +33,14 @@ namespace {
 // TODO(hesen): Work around store/get country code in reduce mode.
 std::string GetCountryCode() {
   std::string country_code;
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(upboarding::switches::kQueryTilesCountryCode)) {
+    country_code = command_line->GetSwitchValueASCII(
+        upboarding::switches::kQueryTilesCountryCode);
+    if (!country_code.empty())
+      return country_code;
+  }
+
   if (!g_browser_process)
     return country_code;
 

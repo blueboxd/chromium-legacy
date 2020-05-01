@@ -552,10 +552,14 @@ wpt_internal/webgpu/cts.html?worker=1&q=webgpu:api/validation/vertex_state:check
 # Linux (Vulkan) specific
 #
 
-crbug.com/1014740 [ Linux ] wpt_internal/webgpu/cts.html?worker=0&q=webgpu:api/operation/buffers/map_oom:mapWriteAsync= [ Failure ]
-crbug.com/1014740 [ Linux ] wpt_internal/webgpu/cts.html?worker=1&q=webgpu:api/operation/buffers/map_oom:mapWriteAsync= [ Failure ]
-crbug.com/1014740 [ Linux ] wpt_internal/webgpu/cts.html?worker=0&q=webgpu:api/operation/buffers/map_oom:mapReadAsync= [ Failure ]
-crbug.com/1014740 [ Linux ] wpt_internal/webgpu/cts.html?worker=1&q=webgpu:api/operation/buffers/map_oom:mapReadAsync= [ Failure ]
+crbug.com/1014740 [ Linux ] wpt_internal/webgpu/cts.html?worker=0&q=webgpu:api/operation/buffers/map_oom:mapWriteAsync= [ Failure Crash ]
+crbug.com/1014740 [ Linux ] wpt_internal/webgpu/cts.html?worker=1&q=webgpu:api/operation/buffers/map_oom:mapWriteAsync= [ Failure Crash ]
+crbug.com/1014740 [ Linux ] wpt_internal/webgpu/cts.html?worker=0&q=webgpu:api/operation/buffers/map_oom:mapReadAsync= [ Failure Crash ]
+crbug.com/1014740 [ Linux ] wpt_internal/webgpu/cts.html?worker=1&q=webgpu:api/operation/buffers/map_oom:mapReadAsync= [ Failure Crash ]
+crbug.com/dawn/399 [ Linux ] wpt_internal/webgpu/cts.html?worker=0&q=webgpu:api/validation/createBindGroup:texture_binding_must_have_correct_usage={"type":"sampled-texture"} [ Crash ]
+crbug.com/dawn/399 [ Linux ] wpt_internal/webgpu/cts.html?worker=1&q=webgpu:api/validation/createBindGroup:texture_binding_must_have_correct_usage={"type":"sampled-texture"} [ Crash ]
+crbug.com/dawn/399 [ Linux ] wpt_internal/webgpu/cts.html?worker=0&q=webgpu:api/validation/render_pass_descriptor: [ Crash ]
+crbug.com/dawn/399 [ Linux ] wpt_internal/webgpu/cts.html?worker=1&q=webgpu:api/validation/render_pass_descriptor: [ Crash ]
 
 #
 # Windows (D3D12) specific

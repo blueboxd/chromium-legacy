@@ -31,6 +31,8 @@
 #include "third_party/blink/public/web/web_element.h"
 
 #include "third_party/blink/public/platform/web_rect.h"
+#include "third_party/blink/renderer/core/css/css_computed_style_declaration.h"
+#include "third_party/blink/renderer/core/css/css_property_names.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/editing/editing_utilities.h"
 #include "third_party/blink/renderer/core/fullscreen/fullscreen.h"
@@ -180,6 +182,22 @@ gfx::Size WebElement::GetImageSize() {
 void WebElement::RequestFullscreen() {
   Element* element = Unwrap<Element>();
   Fullscreen::RequestFullscreen(*element);
+}
+
+WebString WebElement::GetComputedValue(const WebString& property_name) {
+  if (IsNull())
+    return WebString();
+
+  Element* element = Unwrap<Element>();
+  CSSPropertyID property_id = cssPropertyID(
+      element->GetDocument().GetExecutionContext(), property_name);
+  if (property_id == CSSPropertyID::kInvalid)
+    return WebString();
+
+  element->GetDocument().UpdateStyleAndLayoutTree();
+  auto* computed_style =
+      MakeGarbageCollected<CSSComputedStyleDeclaration>(element);
+  return computed_style->GetPropertyCSSValue(property_id)->CssText();
 }
 
 WebElement::WebElement(Element* elem) : WebNode(elem) {}

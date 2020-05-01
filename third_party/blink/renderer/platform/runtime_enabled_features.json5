@@ -1404,10 +1404,6 @@
     {
       name: "PreciseMemoryInfo",
     },
-    {
-      name: "PredictedEvents",
-      status: "stable",
-    },
     // This feature is deprecated and we are evangelizing affected sites.
     // See https://crbug.com/346236 for current status.
     {
@@ -1836,7 +1832,7 @@
       status: "stable",
     },
     {
-      name: "WebAuthenticationFeaturePolicy",
+      name: "WebAuthenticationGetAssertionFeaturePolicy",
       status: "experimental",
     },
     // WebBluetooth is enabled by default on Android, ChromeOS and Mac.

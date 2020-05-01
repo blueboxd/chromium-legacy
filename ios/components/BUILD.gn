@@ -26,6 +26,7 @@ test("ios_components_unittests") {
     "//base/test:run_all_unittests",
     "//ios/components/io_thread:unit_tests",
     "//ios/components/security_interstitials:unit_tests",
+    "//ios/components/security_interstitials/lookalikes:unit_tests",
     "//ios/components/ui_util:unit_tests",
   ]
 

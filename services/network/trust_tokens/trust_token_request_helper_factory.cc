@@ -7,6 +7,7 @@
 
 #include <utility>
 
+#include "base/callback_forward.h"
 #include "net/base/isolation_info.h"
 #include "net/url_request/url_request.h"
 #include "services/network/public/cpp/resource_request.h"
@@ -27,14 +28,22 @@ namespace network {
 
 TrustTokenRequestHelperFactory::TrustTokenRequestHelperFactory(
     PendingTrustTokenStore* store,
-    const TrustTokenKeyCommitmentGetter* key_commitment_getter)
-    : store_(store), key_commitment_getter_(key_commitment_getter) {}
+    const TrustTokenKeyCommitmentGetter* key_commitment_getter,
+    base::RepeatingCallback<bool(void)> authorizer)
+    : store_(store),
+      key_commitment_getter_(key_commitment_getter),
+      authorizer_(std::move(authorizer)) {}
 TrustTokenRequestHelperFactory::~TrustTokenRequestHelperFactory() = default;
 
 void TrustTokenRequestHelperFactory::CreateTrustTokenHelperForRequest(
     const net::URLRequest& request,
     const mojom::TrustTokenParams& params,
     base::OnceCallback<void(TrustTokenStatusOrRequestHelper)> done) {
+  if (!authorizer_.Run()) {
+    std::move(done).Run(mojom::TrustTokenOperationStatus::kUnavailable);
+    return;
+  }
+
   for (base::StringPiece header : TrustTokensRequestHeaders()) {
     if (request.extra_request_headers().HasHeader(header)) {
       std::move(done).Run(mojom::TrustTokenOperationStatus::kInvalidArgument);

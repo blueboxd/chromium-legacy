@@ -343,13 +343,15 @@ suite('CrostiniPageTests', function() {
 
       test('DiskResizeOpensWhenClicked', async function() {
         assertTrue(!!subpage.$$('#showDiskResizeButton'));
+        await crostiniBrowserProxy.resolvePromise(
+            'getCrostiniDiskInfo', {succeeded: true, isUserChosenSize: true});
         subpage.$$('#showDiskResizeButton').click();
 
         await flushAsync();
         const dialog = subpage.$$('settings-crostini-disk-resize-dialog');
         assertTrue(!!dialog);
         assertEquals(
-            1, crostiniBrowserProxy.getCallCount('getCrostiniDiskInfo'));
+            2, crostiniBrowserProxy.getCallCount('getCrostiniDiskInfo'));
       });
     });
 
@@ -549,25 +551,46 @@ suite('CrostiniPageTests', function() {
         {label: 'label 10', value: 10, ariaLabel: 'label 10'},
         {label: 'label 100', value: 100, ariaLabel: 'label 100'}
       ];
-      const resizeableData =
-          {succeeded: true, canResize: true, defaultIndex: 2, ticks: ticks};
+      const resizeableData = {
+        succeeded: true,
+        canResize: true,
+        isUserChosenSize: true,
+        defaultIndex: 2,
+        ticks: ticks
+      };
 
-      setup(async function() {
-        assertTrue(!!subpage.$$('#showDiskResizeButton'));
-        crostiniBrowserProxy.diskInfo = {succeeded: false};
+      const sparseDiskData = {
+        succeeded: true,
+        canResize: true,
+        isUserChosenSize: false,
+        defaultIndex: 2,
+        ticks: ticks
+      };
+
+      async function clickShowDiskResize(userChosen) {
+        await crostiniBrowserProxy.resolvePromise(
+            'getCrostiniDiskInfo',
+            {succeeded: true, isUserChosenSize: userChosen});
         subpage.$$('#showDiskResizeButton').click();
-
         await flushAsync();
         dialog = subpage.$$('settings-crostini-disk-resize-dialog');
 
-        // We should be on the loading page but unable to kick off a resize yet.
-        assertTrue(!!dialog.$$('#loading'));
-        assertTrue(dialog.$$('#resize').disabled);
+        if (userChosen) {
+          // We should be on the loading page but unable to kick off a resize
+          // yet.
+          assertTrue(!!dialog.$$('#loading'));
+          assertTrue(dialog.$$('#resize').disabled);
+        }
+      }
+
+      setup(async function() {
+        assertTrue(!!subpage.$$('#showDiskResizeButton'));
       });
 
       test('MessageShownIfErrorAndCanRetry', async function() {
+        await clickShowDiskResize(true);
         await crostiniBrowserProxy.resolvePromise(
-            'getCrostiniDiskInfo', {succeeded: false});
+            'getCrostiniDiskInfo', {succeeded: false, isUserChosenSize: true});
 
         // We failed, should have a retry button.
         let button = dialog.$$('#retry');
@@ -593,18 +616,21 @@ suite('CrostiniPageTests', function() {
         assertFalse(dialog.$$('#cancel').disabled);
 
         assertEquals(
-            2, crostiniBrowserProxy.getCallCount('getCrostiniDiskInfo'));
+            3, crostiniBrowserProxy.getCallCount('getCrostiniDiskInfo'));
       });
 
       test('MessageShownIfCannotResize', async function() {
+        await clickShowDiskResize(true);
         await crostiniBrowserProxy.resolvePromise(
-            'getCrostiniDiskInfo', {succeeded: true, canResize: false});
+            'getCrostiniDiskInfo',
+            {succeeded: true, canResize: false, isUserChosenSize: true});
         assertVisibleBlockIs('#unsupported');
         assertTrue(dialog.$$('#resize').disabled);
         assertFalse(dialog.$$('#cancel').disabled);
       });
 
       test('ResizePageShownIfCanResize', async function() {
+        await clickShowDiskResize(true);
         await crostiniBrowserProxy.resolvePromise(
             'getCrostiniDiskInfo', resizeableData);
         assertVisibleBlockIs('#resize-block');
@@ -618,6 +644,7 @@ suite('CrostiniPageTests', function() {
       });
 
       test('InProgressResizing', async function() {
+        await clickShowDiskResize(true);
         await crostiniBrowserProxy.resolvePromise(
             'getCrostiniDiskInfo', resizeableData);
         const button = dialog.$$('#resize');
@@ -631,6 +658,7 @@ suite('CrostiniPageTests', function() {
       });
 
       test('ErrorResizing', async function() {
+        await clickShowDiskResize(true);
         await crostiniBrowserProxy.resolvePromise(
             'getCrostiniDiskInfo', resizeableData);
         const button = dialog.$$('#resize');
@@ -644,6 +672,7 @@ suite('CrostiniPageTests', function() {
       });
 
       test('SuccessResizing', async function() {
+        await clickShowDiskResize(true);
         await crostiniBrowserProxy.resolvePromise(
             'getCrostiniDiskInfo', resizeableData);
         const button = dialog.$$('#resize');
@@ -654,6 +683,37 @@ suite('CrostiniPageTests', function() {
         assertFalse(isVisible(dialog.$$('#resizing')));
         assertFalse(isVisible(dialog.$$('#resize-error')));
         assertFalse(dialog.$$('#cancel').disabled);
+      });
+
+      test('DiskResizeConfirmationDialogShownAndAccepted', async function() {
+        await clickShowDiskResize(false);
+        // Dismiss confirmation.
+        const confirmationDialog =
+            subpage.$$('settings-crostini-disk-resize-confirmation-dialog');
+        assertTrue(isVisible(confirmationDialog.$$('#continue')));
+        assertTrue(isVisible(confirmationDialog.$$('#cancel')));
+        confirmationDialog.$$('#continue').click();
+
+        await crostiniBrowserProxy.resolvePromise(
+            'getCrostiniDiskInfo', sparseDiskData);
+        dialog = subpage.$$('settings-crostini-disk-resize-dialog');
+        // TODO(nverne): Find out how to wait long enough for the dialog to
+        // show.
+      });
+
+      test('DiskResizeConfirmationDialogShownAndCanceled', async function() {
+        await crostiniBrowserProxy.resolvePromise(
+            'getCrostiniDiskInfo', sparseDiskData);
+        await clickShowDiskResize(false);
+        const confirmationDialog =
+            subpage.$$('settings-crostini-disk-resize-confirmation-dialog');
+        assertTrue(isVisible(confirmationDialog.$$('#continue')));
+        assertTrue(isVisible(confirmationDialog.$$('#cancel')));
+        confirmationDialog.$$('#cancel').click();
+        await flushAsync();
+
+        dialog = subpage.$$('settings-crostini-disk-resize-dialog');
+        assertFalse(!!dialog);
       });
     });
   });

@@ -41,20 +41,34 @@ enum class ThreadPriority : int;
 // The macro raises the thread priority to NORMAL for the scope when first
 // encountered. On Windows, loading a DLL on a background thread can lead to a
 // priority inversion on the loader lock and cause huge janks.
-#define SCOPED_MAY_LOAD_LIBRARY_AT_BACKGROUND_PRIORITY()                    \
-  base::internal::ScopedMayLoadLibraryAtBackgroundPriority                  \
-      INTERNAL_SCOPED_THREAD_PRIORITY_APPEND_LINE(                          \
-          scoped_may_load_library_at_background_priority)(FROM_HERE);       \
-  {                                                                         \
-    /* Thread-safe static local variable initialization ensures that */     \
-    /* OnScopeFirstEntered() is only invoked the first time that this is */ \
-    /* encountered. */                                                      \
-    static bool INTERNAL_SCOPED_THREAD_PRIORITY_APPEND_LINE(invoke_once) =  \
-        INTERNAL_SCOPED_THREAD_PRIORITY_APPEND_LINE(                        \
-            scoped_may_load_library_at_background_priority)                 \
-            .OnScopeFirstEntered();                                         \
-    ALLOW_UNUSED_LOCAL(                                                     \
-        INTERNAL_SCOPED_THREAD_PRIORITY_APPEND_LINE(invoke_once));          \
+#define SCOPED_MAY_LOAD_LIBRARY_AT_BACKGROUND_PRIORITY()                   \
+  base::internal::ScopedMayLoadLibraryAtBackgroundPriority                 \
+      INTERNAL_SCOPED_THREAD_PRIORITY_APPEND_LINE(                         \
+          scoped_may_load_library_at_background_priority)(FROM_HERE);      \
+  {                                                                        \
+    /* Thread-safe static local variable initialization ensures that */    \
+    /* OnScopeEntered() is only invoked the first time that this is */     \
+    /* encountered. */                                                     \
+    static bool INTERNAL_SCOPED_THREAD_PRIORITY_APPEND_LINE(invoke_once) = \
+        INTERNAL_SCOPED_THREAD_PRIORITY_APPEND_LINE(                       \
+            scoped_may_load_library_at_background_priority)                \
+            .OnScopeEntered();                                             \
+    ALLOW_UNUSED_LOCAL(                                                    \
+        INTERNAL_SCOPED_THREAD_PRIORITY_APPEND_LINE(invoke_once));         \
+  }
+
+// Like SCOPED_MAY_LOAD_LIBRARY_AT_BACKGROUND_PRIORITY, but raises the thread
+// priority every time the scope is entered. Use this around code that may
+// conditionally load a DLL each time it is executed, or which repeatedly loads
+// and unloads DLLs.
+#define SCOPED_MAY_LOAD_LIBRARY_AT_BACKGROUND_PRIORITY_REPEATEDLY()   \
+  base::internal::ScopedMayLoadLibraryAtBackgroundPriority            \
+      INTERNAL_SCOPED_THREAD_PRIORITY_APPEND_LINE(                    \
+          scoped_may_load_library_at_background_priority)(FROM_HERE); \
+  {                                                                   \
+    INTERNAL_SCOPED_THREAD_PRIORITY_APPEND_LINE(                      \
+        scoped_may_load_library_at_background_priority)               \
+        .OnScopeEntered();                                            \
   }
 
 namespace internal {
@@ -64,13 +78,15 @@ class BASE_EXPORT ScopedMayLoadLibraryAtBackgroundPriority {
   explicit ScopedMayLoadLibraryAtBackgroundPriority(const Location& from_here);
   ~ScopedMayLoadLibraryAtBackgroundPriority();
 
-  // The SCOPED_MAY_LOAD_LIBRARY_AT_BACKGROUND_PRIORITY() macro invokes this the
-  // first time that it is encountered.
-  bool OnScopeFirstEntered();
+  // The SCOPED_MAY_LOAD_LIBRARY_AT_BACKGROUND_PRIORITY() macro invokes this
+  // the first time that it is encountered. The
+  // SCOPED_MAY_LOAD_LIBRARY_AT_BACKGROUND_PRIORITY_REPEATEDLY() macro invokes
+  // this every time it is encountered.
+  bool OnScopeEntered();
 
  private:
 #if defined(OS_WIN)
-  // The original priority when invoking OnScopeFirstEntered().
+  // The original priority when invoking OnScopeEntered().
   base::Optional<ThreadPriority> original_thread_priority_;
 #endif
 

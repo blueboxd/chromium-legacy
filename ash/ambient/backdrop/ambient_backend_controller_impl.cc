@@ -14,6 +14,7 @@
 #include "ash/shell.h"
 #include "base/base64.h"
 #include "base/guid.h"
+#include "base/time/time.h"
 #include "chromeos/assistant/internal/proto/google3/backdrop/backdrop.pb.h"
 #include "components/prefs/pref_service.h"
 #include "net/base/load_flags.h"
@@ -195,6 +196,14 @@ void AmbientBackendControllerImpl::UpdateSettings(
   Shell::Get()->ambient_controller()->RequestAccessToken(base::BindOnce(
       &AmbientBackendControllerImpl::StartToUpdateSettings,
       weak_factory_.GetWeakPtr(), topic_source, std::move(callback)));
+}
+
+void AmbientBackendControllerImpl::SetPhotoRefreshInterval(
+    base::TimeDelta interval) {
+  Shell::Get()
+      ->ambient_controller()
+      ->ambient_backend_model()
+      ->SetPhotoRefreshInterval(interval);
 }
 
 void AmbientBackendControllerImpl::FetchScreenUpdateInfoInternal(

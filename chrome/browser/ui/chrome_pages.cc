@@ -67,6 +67,8 @@
 #include "base/metrics/histogram_functions.h"
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
 #include "chrome/browser/ui/webui/settings/chromeos/app_management/app_management_uma.h"
+#include "chrome/browser/ui/webui/settings/chromeos/constants/routes.mojom.h"
+#include "chrome/browser/ui/webui/settings/chromeos/constants/routes_util.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "components/version_info/version_info.h"
@@ -394,7 +396,7 @@ void ShowSettingsSubPageForProfile(Profile* profile,
 #if defined(OS_CHROMEOS)
   // OS settings sub-pages are handled else where and should never be
   // encountered here.
-  DCHECK(!chrome::IsOSSettingsSubPage(sub_page)) << sub_page;
+  DCHECK(!chromeos::settings::IsOSSettingsSubPage(sub_page)) << sub_page;
 #endif
   Browser* browser = chrome::FindTabbedBrowser(profile, false);
   if (!browser)
@@ -490,14 +492,15 @@ void ShowAppManagementPage(Profile* profile,
 
   base::UmaHistogramEnumeration(kAppManagementEntryPointsHistogramName,
                                 entry_point);
-  std::string sub_page =
-      base::StrCat({chrome::kAppManagementDetailSubPage, "?id=", app_id});
+  std::string sub_page = base::StrCat(
+      {chromeos::settings::mojom::kAppDetailsSubpagePath, "?id=", app_id});
   chrome::SettingsWindowManager::GetInstance()->ShowOSSettings(profile,
                                                                sub_page);
 }
 
 GURL GetOSSettingsUrl(const std::string& sub_page) {
-  DCHECK(sub_page.empty() || chrome::IsOSSettingsSubPage(sub_page)) << sub_page;
+  DCHECK(sub_page.empty() || chromeos::settings::IsOSSettingsSubPage(sub_page))
+      << sub_page;
   std::string url = kChromeUIOSSettingsURL;
   return GURL(url + sub_page);
 }

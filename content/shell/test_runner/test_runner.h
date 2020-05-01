@@ -155,9 +155,9 @@ class TestRunner {
   // Returns true if pixel results should be generated at the end of the test.
   bool ShouldGeneratePixelResults();
 
-  // Sets focus on the given view.  Internally tracks currently focused view,
-  // to aid in defocusing previously focused views at the right time.
-  void SetFocus(blink::WebView* web_view, bool focus);
+  // Activate the window holding the given main frame, and set focus on the
+  // frame's widget.
+  void FocusWindow(RenderFrame* main_frame, bool focus);
 
   // Methods used by WebViewTestClient and WebFrameTestClient.
   std::string GetAcceptLanguages() const;
@@ -627,11 +627,6 @@ class TestRunner {
 
   // Captured drag image.
   SkBitmap drag_image_;
-
-  // View that was focused by a previous call to TestRunner::SetFocus method.
-  // Note - this can be a dangling pointer to an already destroyed WebView (this
-  // is ok, because this is taken care of in BlinkTestRunner::SetFocus).
-  blink::WebView* previously_focused_view_ = nullptr;
 
   // True if rasterization should be performed during tests that examine
   // fling-style animations. This includes middle-click auto-scroll behaviors.

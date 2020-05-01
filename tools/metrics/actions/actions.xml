@@ -22763,6 +22763,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Suggestions.Card.ActionTapped">
+  <obsolete>Removed with removal of Zine code in April 2020.</obsolete>
   <owner>finkm@chromium.org</owner>
   <owner>dgn@chromium.org</owner>
   <description>

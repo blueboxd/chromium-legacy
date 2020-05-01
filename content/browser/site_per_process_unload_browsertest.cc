@@ -1447,8 +1447,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessSSLBrowserTest,
   // Navigate A1(B2) to A3.
   {
     // Prepare observers.
-    ConsoleObserverDelegate console(web_contents(), "console.log() sent");
-    web_contents()->SetDelegate(&console);
+    WebContentsConsoleObserver console_observer(web_contents());
+    console_observer.SetPattern("console.log() sent");
     RenderFrameDeletedObserver B2_deleted(B2);
 
     // Navigate
@@ -1457,7 +1457,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessSSLBrowserTest,
 
     // Observers must be reached.
     B2_deleted.WaitUntilDeleted();
-    console.Wait();
+    console_observer.Wait();
   }
 
   // Navigate back from A3 to A4(B5).
@@ -1540,8 +1540,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessSSLBrowserTest,
   // Navigate A1(B2(C3) to A4.
   {
     // Prepare observers.
-    ConsoleObserverDelegate console(web_contents(), "console.log() sent");
-    web_contents()->SetDelegate(&console);
+    WebContentsConsoleObserver console_observer(web_contents());
+    console_observer.SetPattern("console.log() sent");
     RenderFrameDeletedObserver B2_deleted(B2);
     RenderFrameDeletedObserver C3_deleted(C3);
 
@@ -1552,7 +1552,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessSSLBrowserTest,
     // Observers must be reached.
     B2_deleted.WaitUntilDeleted();
     C3_deleted.WaitUntilDeleted();
-    console.Wait();
+    console_observer.Wait();
   }
 
   // Navigate back from A4 to A5(B6(C7))

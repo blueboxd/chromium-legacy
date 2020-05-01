@@ -120,13 +120,13 @@ class BinaryUploadServiceTest : public testing::Test {
   }
 
   void ExpectInstanceID(std::string id) {
-    ON_CALL(*fcm_service_, GetInstanceID(_))
-        .WillByDefault(
+    EXPECT_CALL(*fcm_service_, GetInstanceID(_))
+        .WillOnce(
             Invoke([id](BinaryFCMService::GetInstanceIDCallback callback) {
               std::move(callback).Run(id);
             }));
-    ON_CALL(*fcm_service_, UnregisterInstanceID(_, _))
-        .WillByDefault(
+    EXPECT_CALL(*fcm_service_, UnregisterInstanceID(id, _))
+        .WillOnce(
             Invoke([](const std::string& token,
                       BinaryFCMService::UnregisterInstanceIDCallback callback) {
               std::move(callback).Run(true);
@@ -386,8 +386,6 @@ TEST_F(BinaryUploadServiceTest, OnUnauthorized) {
   request->set_request_dlp_scan(DlpDeepScanningClientRequest());
   request->set_request_malware_scan(MalwareDeepScanningClientRequest());
 
-  ExpectInstanceID("valid id");
-
   DeepScanningClientResponse simulated_response;
   simulated_response.mutable_dlp_scan_verdict();
   simulated_response.mutable_malware_scan_verdict();
@@ -450,7 +448,6 @@ TEST_F(BinaryUploadServiceTest, ReturnsAsynchronouslyWithNoFCM) {
 }
 
 TEST_F(BinaryUploadServiceTest, IsAuthorizedValidTimer) {
-  ExpectInstanceID("valid id");
   // The 24 hours timer should be started on the first IsAuthorized call.
   ValidateAuthorizationTimerIdle();
   service_->IsAuthorized(base::DoNothing());
@@ -505,8 +502,6 @@ TEST_F(BinaryUploadServiceTest, AdvancedProtectionDlpRequestUnauthorized) {
   malware_request.set_population(
       MalwareDeepScanningClientRequest::POPULATION_TITANIUM);
   request->set_request_malware_scan(malware_request);
-
-  ExpectInstanceID("valid id");
 
   DeepScanningClientResponse simulated_response;
   simulated_response.mutable_dlp_scan_verdict();

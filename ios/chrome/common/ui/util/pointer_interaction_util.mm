@@ -12,6 +12,19 @@
 
 #if defined(__IPHONE_13_4)
 
+UIButtonPointerStyleProvider CreateDefaultEffectCirclePointerStyleProvider()
+    API_AVAILABLE(ios(13.4)) {
+  return ^UIPointerStyle*(UIButton* button, UIPointerEffect* proposedEffect,
+                          UIPointerShape* proposedShape) {
+    DCHECK_EQ(button.frame.size.width, button.frame.size.height)
+        << "Pointer shape cannot be a circle since button is not square";
+    UIPointerShape* shape =
+        [UIPointerShape shapeWithRoundedRect:button.frame
+                                cornerRadius:button.frame.size.width / 2];
+    return [UIPointerStyle styleWithEffect:proposedEffect shape:shape];
+  };
+}
+
 UIButtonPointerStyleProvider CreateLiftEffectCirclePointerStyleProvider()
     API_AVAILABLE(ios(13.4)) {
   return ^UIPointerStyle*(UIButton* button, UIPointerEffect* proposedEffect,

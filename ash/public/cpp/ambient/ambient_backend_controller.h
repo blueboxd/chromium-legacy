@@ -6,10 +6,15 @@
 #define ASH_PUBLIC_CPP_AMBIENT_AMBIENT_BACKEND_CONTROLLER_H_
 
 #include <string>
+#include <vector>
 
 #include "ash/public/cpp/ash_public_export.h"
 #include "base/callback_forward.h"
 #include "base/optional.h"
+
+namespace base {
+class TimeDelta;
+}  // namespace base
 
 namespace ash {
 
@@ -107,6 +112,9 @@ class ASH_PUBLIC_EXPORT AmbientBackendController {
   // Currently only updating the AmbientModeTopicSource.
   virtual void UpdateSettings(AmbientModeTopicSource topic_source,
                               UpdateSettingsCallback callback) = 0;
+
+  // Set the photo refresh interval in ambient mode.
+  virtual void SetPhotoRefreshInterval(base::TimeDelta interval) = 0;
 };
 
 }  // namespace ash

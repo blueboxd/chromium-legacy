@@ -17,6 +17,7 @@
     android:id="@+id/empty_state_image"
     android:layout_height="wrap_content"
     android:layout_width ="match_parent"
+    android:paddingTop="16dp"
     android:contentDescription="@string/sharing_hub_no_devices_available_text"
     app:srcCompat="@drawable/shared_clipboard_zero_state"/>
 

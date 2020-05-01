@@ -78,6 +78,16 @@ export class BrowserProxy {
   now() {
     return Date.now();
   }
+
+  /**
+   * Returns promise that resolves when lazy rendering should be started.
+   * @return {!Promise}
+   */
+  waitForLazyRender() {
+    return new Promise((resolve, reject) => {
+      setTimeout(resolve, 50);
+    });
+  }
 }
 
 addSingletonGetter(BrowserProxy);

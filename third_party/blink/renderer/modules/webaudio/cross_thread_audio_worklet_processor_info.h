@@ -18,21 +18,24 @@ class CrossThreadAudioParamInfo {
 
  public:
   explicit CrossThreadAudioParamInfo(const AudioParamDescriptor* descriptor)
-      : name_(descriptor->name().IsolatedCopy()),
+      : automation_rate_(descriptor->automationRate().IsolatedCopy()),
         default_value_(descriptor->defaultValue()),
         max_value_(descriptor->maxValue()),
-        min_value_(descriptor->minValue()) {}
+        min_value_(descriptor->minValue()),
+        name_(descriptor->name().IsolatedCopy()) {}
 
-  const String& Name() const { return name_; }
+  const String& AutomationRate() const { return automation_rate_; }
   float DefaultValue() const { return default_value_; }
   float MaxValue() const { return max_value_; }
   float MinValue() const { return min_value_; }
+  const String& Name() const { return name_; }
 
  private:
-  const String name_;
+  const String automation_rate_;
   const float default_value_;
   const float max_value_;
   const float min_value_;
+  const String name_;
 };
 
 // A class for shallow repackage of |AudioWorkletProcessorDefinition|. This is

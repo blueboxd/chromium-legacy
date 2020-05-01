@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/no_destructor.h"
 #include "chrome/browser/ui/webui/chromeos/network_element_localized_strings_provider.h"
+#include "chrome/browser/ui/webui/settings/chromeos/constants/routes.mojom.h"
 #include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/common/webui_url_constants.h"
@@ -27,7 +28,7 @@ namespace {
 const std::vector<SearchConcept>& GetNetworkSearchConcepts() {
   static const base::NoDestructor<std::vector<SearchConcept>> tags({
       {IDS_SETTINGS_TAG_NETWORK_SETTINGS,
-       chrome::kNetworksSubPage,
+       chromeos::settings::mojom::kWifiNetworksSubpagePath,
        mojom::SearchResultIcon::kWifi,
        {IDS_SETTINGS_TAG_NETWORK_SETTINGS_ALT1, SearchConcept::kAltTagEnd}},
   });
@@ -37,7 +38,7 @@ const std::vector<SearchConcept>& GetNetworkSearchConcepts() {
 const std::vector<SearchConcept>& GetEthernetSearchConcepts() {
   static const base::NoDestructor<std::vector<SearchConcept>> tags({
       {IDS_SETTINGS_TAG_ETHERNET_SETTINGS,
-       chrome::kEthernetSettingsSubPage,
+       chromeos::settings::mojom::kEthernetDetailsSubpagePath,
        mojom::SearchResultIcon::kEthernet,
        {IDS_SETTINGS_TAG_ETHERNET_SETTINGS_ALT1, SearchConcept::kAltTagEnd}},
   });
@@ -46,19 +47,22 @@ const std::vector<SearchConcept>& GetEthernetSearchConcepts() {
 
 const std::vector<SearchConcept>& GetWifiSearchConcepts() {
   static const base::NoDestructor<std::vector<SearchConcept>> tags({
-      {IDS_SETTINGS_TAG_WIFI_SETTINGS, chrome::kWiFiSettingsSubPage,
+      {IDS_SETTINGS_TAG_WIFI_SETTINGS,
+       chromeos::settings::mojom::kWifiNetworksSubpagePath,
        mojom::SearchResultIcon::kWifi},
       {IDS_SETTINGS_TAG_TURN_ON_WIFI,
-       chrome::kWiFiSettingsSubPage,
+       chromeos::settings::mojom::kWifiNetworksSubpagePath,
        mojom::SearchResultIcon::kWifi,
        {IDS_SETTINGS_TAG_TURN_ON_WIFI_ALT1, SearchConcept::kAltTagEnd}},
       {IDS_SETTINGS_TAG_TURN_OFF_WIFI,
-       chrome::kWiFiSettingsSubPage,
+       chromeos::settings::mojom::kWifiNetworksSubpagePath,
        mojom::SearchResultIcon::kWifi,
        {IDS_SETTINGS_TAG_TURN_OFF_WIFI_ALT1, SearchConcept::kAltTagEnd}},
-      {IDS_SETTINGS_TAG_CONNECT_WIFI, chrome::kWiFiSettingsSubPage,
+      {IDS_SETTINGS_TAG_CONNECT_WIFI,
+       chromeos::settings::mojom::kWifiNetworksSubpagePath,
        mojom::SearchResultIcon::kWifi},
-      {IDS_SETTINGS_TAG_DISCONNECT_WIFI, chrome::kWiFiSettingsSubPage,
+      {IDS_SETTINGS_TAG_DISCONNECT_WIFI,
+       chromeos::settings::mojom::kWifiNetworksSubpagePath,
        mojom::SearchResultIcon::kWifi},
   });
   return *tags;

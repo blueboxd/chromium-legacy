@@ -283,10 +283,7 @@ if (is_chromeos) {
       "-E",
       "root_gen_dir=" + rebase_path(root_gen_dir, root_build_dir),
     ]
-    deps = [
-      "//chrome/browser/ui/webui/app_management:mojo_bindings_js",
-      "//chrome/browser/ui/webui/settings/chromeos/search:mojo_bindings_js",
-    ]
+    deps = [ "//chrome/browser/ui/webui/settings/chromeos:mojom_js" ]
     if (optimize_webui) {
       # Required due to flattenhtml="true" on a generated file.
       enable_input_discovery_for_gn_analyze = false

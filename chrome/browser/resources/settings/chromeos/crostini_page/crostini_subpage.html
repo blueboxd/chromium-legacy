@@ -15,6 +15,7 @@
 <link rel="import" href="../../settings_shared_css.html">
 <link rel="import" href="../metrics_recorder.html">
 <link rel="import" href="crostini_disk_resize_dialog.html">
+<link rel="import" href="crostini_disk_resize_confirmation_dialog.html">
 
 <dom-module id="settings-crostini-subpage">
   <template>
@@ -97,6 +98,12 @@
         <settings-crostini-disk-resize-dialog
             on-close="onDiskResizeDialogClose_">
         </settings-crostini-disk-resize-dialog>
+      </template>
+      <template is="dom-if" if="[[showDiskResizeConfirmationDialog_]]" restamp>
+        <settings-crostini-disk-resize-confirmation-dialog
+            on-close="onDiskResizeConfirmationDialogClose_"
+            on-cancel="onDiskResizeConfirmationDialogCancel_">
+        </settings-crostini-disk-resize-confirmation-dialog>
       </template>
     </template>
     <template is="dom-if" if="[[showCrostiniMic_]]">

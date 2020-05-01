@@ -576,12 +576,17 @@ public class FeedSurfaceCoordinator {
     }
 
     @VisibleForTesting
-    View getSignInPromoViewForTesting() {
+    public View getSignInPromoViewForTesting() {
         return getSigninPromoView();
     }
 
     @VisibleForTesting
-    View getSectionHeaderViewForTesting() {
+    public View getSectionHeaderViewForTesting() {
         return getSectionHeaderView();
+    }
+
+    @VisibleForTesting
+    public Stream getStreamForTesting() {
+        return getStream();
     }
 }

@@ -15,6 +15,7 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
+#include "chrome/browser/ui/webui/settings/chromeos/constants/routes.mojom.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chromeos/dbus/plugin_vm_service/plugin_vm_service.pb.h"
 #include "dbus/message.h"
@@ -95,8 +96,10 @@ void PluginVmServiceProvider::ShowSettingsPage(
   }
 
   // Validate subpage path.
-  if ((request.subpage_path() != chrome::kPluginVmDetailsSubPage) &&
-      (request.subpage_path() != chrome::kPluginVmSharedPathsSubPage)) {
+  if ((request.subpage_path() !=
+       chromeos::settings::mojom::kPluginVmDetailsSubpagePath) &&
+      (request.subpage_path() !=
+       chromeos::settings::mojom::kPluginVmSharedPathsSubpagePath)) {
     constexpr char error_message[] = "Invalid subpage_path";
     LOG(ERROR) << error_message;
     std::move(response_sender)

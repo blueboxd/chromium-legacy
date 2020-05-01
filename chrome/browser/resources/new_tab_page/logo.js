@@ -4,7 +4,6 @@
 
 import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
 import 'chrome://resources/cr_elements/hidden_style_css.m.js';
-import 'chrome://resources/polymer/v3_0/iron-pages/iron-pages.js';
 import './untrusted_iframe.js';
 import './doodle_share_dialog.js';
 
@@ -53,8 +52,20 @@ class LogoElement extends PolymerElement {
       doodle_: Object,
 
       /** @private */
-      mode_: {
-        computed: 'computeMode_(doodleAllowed, loaded_, doodle_)',
+      canShowDoodle_: {
+        computed: 'computeCanShowDoodle_(doodle_)',
+        type: Boolean,
+      },
+
+      /** @private */
+      showLogo_: {
+        computed: 'computeShowLogo_(doodleAllowed, loaded_, canShowDoodle_)',
+        type: Boolean,
+      },
+
+      /** @private */
+      showDoodle_: {
+        computed: 'computeShowDoodle_(doodleAllowed, loaded_, canShowDoodle_)',
         type: Boolean,
       },
 
@@ -139,23 +150,30 @@ class LogoElement extends PolymerElement {
   }
 
   /**
-   * @return {string}
+   * @return {boolean}
    * @private
    */
-  computeMode_() {
-    if (this.doodleAllowed) {
-      if (!this.loaded_) {
-        return 'none';
-      }
-      if (this.doodle_ &&
-          /* We hide interactive doodles when offline. Otherwise, the iframe
-             would show an ugly error page. */
-          (!this.doodle_.content.interactiveDoodle ||
-           window.navigator.onLine)) {
-        return 'doodle';
-      }
-    }
-    return 'logo';
+  computeCanShowDoodle_() {
+    return !!this.doodle_ &&
+        /* We hide interactive doodles when offline. Otherwise, the iframe
+           would show an ugly error page. */
+        (!this.doodle_.content.interactiveDoodle || window.navigator.onLine);
+  }
+
+  /**
+   * @return {boolean}
+   * @private
+   */
+  computeShowLogo_() {
+    return !this.doodleAllowed || (!!this.loaded_ && !this.canShowDoodle_);
+  }
+
+  /**
+   * @return {boolean}
+   * @private
+   */
+  computeShowDoodle_() {
+    return !!this.doodleAllowed && this.canShowDoodle_;
   }
 
   /**

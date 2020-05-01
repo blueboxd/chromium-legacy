@@ -14,6 +14,8 @@
 #include "base/notreached.h"
 #include "base/optional.h"
 #include "mojo/public/cpp/bindings/message.h"
+#include "services/network/cookie_manager.h"
+#include "services/network/cookie_settings.h"
 #include "services/network/cors/cors_url_loader_factory.h"
 #include "services/network/network_context.h"
 #include "services/network/network_service.h"
@@ -21,6 +23,7 @@
 #include "services/network/public/cpp/is_potentially_trustworthy.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/resource_scheduler/resource_scheduler_client.h"
+#include "services/network/trust_tokens/trust_token_request_helper_factory.h"
 #include "services/network/url_loader.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -219,6 +222,22 @@ void URLLoaderFactory::CreateLoaderAndStart(
     return;
   }
 
+  std::unique_ptr<TrustTokenRequestHelperFactory> trust_token_factory;
+  if (url_request.trust_token_params) {
+    trust_token_factory = std::make_unique<TrustTokenRequestHelperFactory>(
+        context_->trust_token_store(),
+        context_->network_service()->trust_token_key_commitments(),
+        // It's safe to use Unretained here because
+        // NetworkContext::CookieManager outlives the URLLoaders associated with
+        // the NetworkContext.
+        base::BindRepeating(
+            [](const CookieManager* manager) {
+              return !manager->cookie_settings()
+                          .are_third_party_cookies_blocked();
+            },
+            base::Unretained(context_->cookie_manager())));
+  }
+
   auto loader = std::make_unique<URLLoader>(
       context_->url_request_context(), network_service_client,
       context_->client(),
@@ -231,12 +250,7 @@ void URLLoaderFactory::CreateLoaderAndStart(
       std::move(keepalive_statistics_recorder),
       std::move(network_usage_accumulator),
       header_client_.is_bound() ? header_client_.get() : nullptr,
-      context_->origin_policy_manager(),
-      url_request.trust_token_params
-          ? std::make_unique<TrustTokenRequestHelperFactory>(
-                context_->trust_token_store(),
-                context_->network_service()->trust_token_key_commitments())
-          : nullptr);
+      context_->origin_policy_manager(), std::move(trust_token_factory));
 
   cors_url_loader_factory_->OnLoaderCreated(std::move(loader));
 }

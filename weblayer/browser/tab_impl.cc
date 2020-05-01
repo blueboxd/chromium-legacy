@@ -74,10 +74,10 @@
 #include "components/javascript_dialogs/tab_modal_dialog_manager.h"  // nogncheck
 #include "ui/android/view_android.h"
 #include "ui/gfx/android/java_bitmap.h"
+#include "weblayer/browser/browser_controls_container_view.h"
 #include "weblayer/browser/controls_visibility_reason.h"
 #include "weblayer/browser/java/jni/TabImpl_jni.h"
 #include "weblayer/browser/javascript_tab_modal_dialog_manager_delegate_android.h"
-#include "weblayer/browser/top_controls_container_view.h"
 #include "weblayer/browser/weblayer_factory_impl_android.h"
 #include "weblayer/browser/webrtc/media_stream_manager.h"
 #endif
@@ -458,8 +458,9 @@ ScopedJavaLocalRef<jobject> TabImpl::GetWebContents(
 void TabImpl::SetTopControlsContainerView(
     JNIEnv* env,
     jlong native_top_controls_container_view) {
-  top_controls_container_view_ = reinterpret_cast<TopControlsContainerView*>(
-      native_top_controls_container_view);
+  top_controls_container_view_ =
+      reinterpret_cast<BrowserControlsContainerView*>(
+          native_top_controls_container_view);
 }
 
 void TabImpl::ExecuteScript(JNIEnv* env,

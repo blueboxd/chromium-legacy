@@ -190,6 +190,9 @@ OSSettingsUI::OSSettingsUI(content::WebUI* web_ui)
   html_source->SetDefaultResource(IDR_OS_SETTINGS_SETTINGS_HTML);
 #endif
 
+  html_source->AddResourcePath("constants/routes.mojom-lite.js",
+                               IDR_OS_SETTINGS_ROUTES_MOJOM_LITE_JS);
+
   html_source->AddResourcePath("app-management/app_management.mojom-lite.js",
                                IDR_OS_SETTINGS_APP_MANAGEMENT_MOJO_LITE_JS);
   html_source->AddResourcePath(

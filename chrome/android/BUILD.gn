@@ -1945,7 +1945,7 @@ trichrome_library_apk_tmpl("trichrome_library_apk") {
     chrome_target = ":trichrome_chrome_bundle"
   }
 
-  if (!is_component_build) {
+  if (!is_component_build && (target_cpu == "arm" || target_cpu == "arm64")) {
     verify_native_libs_and_assets = true
   }
 
@@ -2455,7 +2455,7 @@ chrome_bundle("chrome_modern_public_bundle") {
   min_sdk_version = 21
   module_descs = chrome_modern_module_descs
   version_code = chrome_modern_version_code
-  if (!is_component_build) {
+  if (!is_component_build && (target_cpu == "arm" || target_cpu == "arm64")) {
     verify_native_libs_and_assets = true
   }
 }
@@ -2587,12 +2587,13 @@ if (public_android_sdk) {
       include_64_bit_webview = true
     }
 
+    if (!is_component_build && (target_cpu == "arm" || target_cpu == "arm64")) {
+      verify_native_libs_and_assets = true
+    }
+
     # Having //clank present causes different flags because of how play services
     # is wired up.
     # The channel is required because manifest entries vary based on channel.
-    if (!is_component_build) {
-      verify_native_libs_and_assets = true
-    }
     _verify_android_configuration =
         !enable_chrome_android_internal && android_channel == "stable"
     if (_verify_android_configuration) {
@@ -2628,7 +2629,7 @@ if (public_android_sdk) {
       is_64_bit_browser = false
       include_64_bit_webview = true
     }
-    if (!is_component_build) {
+    if (!is_component_build && (target_cpu == "arm" || target_cpu == "arm64")) {
       verify_native_libs_and_assets = true
     }
 

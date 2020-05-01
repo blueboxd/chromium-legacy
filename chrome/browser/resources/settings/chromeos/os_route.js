@@ -4,161 +4,281 @@
 
 cr.define('settings', function() {
   /**
+   * @param {!settings.Route} parent
+   * @param {string} path
+   * @param {!chromeos.settings.mojom.Section} section
+   * @return {!settings.Route}
+   */
+  function createSection(parent, path, section) {
+    // TODO(khorimoto): Add |section| to the the Route object.
+    return parent.createSection('/' + path, /*section=*/ path);
+  }
+
+  /**
+   * @param {!settings.Route} parent
+   * @param {string} path
+   * @param {!chromeos.settings.mojom.Subpage} subpage
+   * @return {!settings.Route}
+   */
+  function createSubpage(parent, path, subpage) {
+    // TODO(khorimoto): Add |subpage| to the Route object.
+    return parent.createChild('/' + path);
+  }
+
+  /**
    * Creates Route objects for each path corresponding to CrOS settings content.
    * @return {!OsSettingsRoutes}
    */
   function createOSSettingsRoutes() {
+    const mojom = chromeos.settings.mojom;
+    const Section = mojom.Section;
+    const Subpage = mojom.Subpage;
+
     const r = /** @type {!OsSettingsRoutes} */ ({});
 
-    // Root pages.
+    // Special routes: BASIC is the main page which loads if no path is
+    // provided, ADVANCED is the bottom section of the main page which is not
+    // visible unless the user enables it, and OS_SIGN_OUT is a sign out dialog.
     r.BASIC = new settings.Route('/');
-    r.ABOUT = new settings.Route('/help');
-
+    r.ADVANCED = new settings.Route('/advanced');
     r.OS_SIGN_OUT = r.BASIC.createChild('/osSignOut');
     r.OS_SIGN_OUT.isNavigableDialog = true;
 
-    r.OS_SEARCH = r.BASIC.createSection('/osSearch', 'osSearch');
+    // Network section.
+    r.INTERNET =
+        createSection(r.BASIC, mojom.NETWORK_SECTION_PATH, Section.kNetwork);
+    // Note: INTERNET_NETWORKS and NETWORK_DETAIL are special cases because they
+    // includes several subpages, one per network type. Default to kWifiNetworks
+    // and kWifiDetails subpages.
+    r.INTERNET_NETWORKS =
+        createSubpage(r.INTERNET, 'networks', Subpage.kWifiNetworks);
+    r.NETWORK_DETAIL =
+        createSubpage(r.INTERNET, 'networkDetail', Subpage.kWifiDetails);
+    r.KNOWN_NETWORKS = createSubpage(
+        r.INTERNET, mojom.KNOWN_NETWORKS_SUBPAGE_PATH, Subpage.kKnownNetworks);
+
+    // Bluetooth section.
+    r.BLUETOOTH = createSection(
+        r.BASIC, mojom.BLUETOOTH_SECTION_PATH, Section.kBluetooth);
+    r.BLUETOOTH_DEVICES = createSubpage(
+        r.BLUETOOTH, mojom.BLUETOOTH_DEVICES_SUBPAGE_PATH,
+        Subpage.kBluetoothDevices);
+
+    // MultiDevice section.
     if (!loadTimeData.getBoolean('isGuest')) {
-      r.OS_PEOPLE = r.BASIC.createSection('/osPeople', 'osPeople');
-      r.SYNC = r.OS_PEOPLE.createChild('/syncSetup');
-      if (!loadTimeData.getBoolean('splitSettingsSyncEnabled')) {
-        r.SYNC_ADVANCED = r.SYNC.createChild('/syncSetup/advanced');
-      }
+      r.MULTIDEVICE = createSection(
+          r.BASIC, mojom.MULTI_DEVICE_SECTION_PATH, Section.kMultiDevice);
+      r.MULTIDEVICE_FEATURES = createSubpage(
+          r.MULTIDEVICE, mojom.MULTI_DEVICE_FEATURES_SUBPAGE_PATH,
+          Subpage.kMultiDeviceFeatures);
+      r.SMART_LOCK = createSubpage(
+          r.MULTIDEVICE_FEATURES, mojom.SMART_LOCK_SUBPAGE_PATH,
+          Subpage.kSmartLock);
     }
 
-    r.INTERNET = r.BASIC.createSection('/internet', 'internet');
-    r.INTERNET_NETWORKS = r.INTERNET.createChild('/networks');
-    r.NETWORK_DETAIL = r.INTERNET.createChild('/networkDetail');
-    r.KNOWN_NETWORKS = r.INTERNET.createChild('/knownNetworks');
-    r.BLUETOOTH = r.BASIC.createSection('/bluetooth', 'bluetooth');
-    r.BLUETOOTH_DEVICES = r.BLUETOOTH.createChild('/bluetoothDevices');
-
-    r.DEVICE = r.BASIC.createSection('/device', 'device');
-    r.POINTERS = r.DEVICE.createChild('/pointer-overlay');
-    r.KEYBOARD = r.DEVICE.createChild('/keyboard-overlay');
-    r.STYLUS = r.DEVICE.createChild('/stylus');
-    r.DISPLAY = r.DEVICE.createChild('/display');
-    r.STORAGE = r.DEVICE.createChild('/storage');
-    r.EXTERNAL_STORAGE_PREFERENCES =
-        r.DEVICE.createChild('/storage/externalStoragePreferences');
-    r.POWER = r.DEVICE.createChild('/power');
-
-    // "About" is the only section in About, but we still need to create the
-    // route in order to show the subpage on Chrome OS.
-    r.ABOUT_ABOUT = r.ABOUT.createSection('/help/about', 'about');
-    r.DETAILED_BUILD_INFO = r.ABOUT_ABOUT.createChild('/help/details');
-
+    // People section.
     if (!loadTimeData.getBoolean('isGuest')) {
-      r.MULTIDEVICE = r.BASIC.createSection('/multidevice', 'multidevice');
-      r.MULTIDEVICE_FEATURES =
-          r.MULTIDEVICE.createChild('/multidevice/features');
-      r.SMART_LOCK =
-          r.MULTIDEVICE_FEATURES.createChild('/multidevice/features/smartLock');
-
-      r.ACCOUNTS = r.OS_PEOPLE.createChild('/accounts');
-      r.ACCOUNT_MANAGER = r.OS_PEOPLE.createChild('/accountManager');
-      r.KERBEROS_ACCOUNTS = r.OS_PEOPLE.createChild('/kerberosAccounts');
-      r.LOCK_SCREEN = r.OS_PEOPLE.createChild('/lockScreen');
-      r.FINGERPRINT = r.LOCK_SCREEN.createChild('/lockScreen/fingerprint');
-    }
-
-    if (loadTimeData.valueExists('showCrostini') &&
-        loadTimeData.getBoolean('showCrostini')) {
-      r.CROSTINI = r.BASIC.createSection('/crostini', 'crostini');
-      r.CROSTINI_ANDROID_ADB = r.CROSTINI.createChild('/crostini/androidAdb');
-      r.CROSTINI_DETAILS = r.CROSTINI.createChild('/crostini/details');
-      if (loadTimeData.valueExists('showCrostiniExportImport') &&
-          loadTimeData.getBoolean('showCrostiniExportImport')) {
-        r.CROSTINI_EXPORT_IMPORT =
-            r.CROSTINI_DETAILS.createChild('/crostini/exportImport');
-      }
-      r.CROSTINI_PORT_FORWARDING =
-          r.CROSTINI_DETAILS.createChild('/crostini/portForwarding');
-      r.CROSTINI_SHARED_PATHS =
-          r.CROSTINI_DETAILS.createChild('/crostini/sharedPaths');
-      r.CROSTINI_SHARED_USB_DEVICES =
-          r.CROSTINI_DETAILS.createChild('/crostini/sharedUsbDevices');
-      if (loadTimeData.valueExists('showCrostiniDiskResize') &&
-          loadTimeData.getBoolean('showCrostiniDiskResize')) {
-        r.CROSTINI_DISK_RESIZE =
-            r.CROSTINI_DETAILS.createChild('/crostini/diskResize');
-      }
-    }
-
-    if (loadTimeData.valueExists('showPluginVm') &&
-        loadTimeData.getBoolean('showPluginVm')) {
-      r.PLUGIN_VM = r.BASIC.createSection('/pluginVm', 'pluginVm');
-      r.PLUGIN_VM_DETAILS = r.PLUGIN_VM.createChild('/pluginVm/details');
-      r.PLUGIN_VM_SHARED_PATHS =
-          r.PLUGIN_VM.createChild('/pluginVm/sharedPaths');
-    }
-
-    r.GOOGLE_ASSISTANT = r.OS_SEARCH.createChild('/googleAssistant');
-
-    r.ADVANCED = new settings.Route('/advanced');
-
-    r.OS_PRIVACY = r.ADVANCED.createSection('/osPrivacy', 'osPrivacy');
-
-    // Languages and input
-    r.OS_LANGUAGES = r.ADVANCED.createSection('/osLanguages', 'osLanguages');
-    r.OS_LANGUAGES_DETAILS = r.OS_LANGUAGES.createChild('/osLanguages/details');
-    r.OS_LANGUAGES_INPUT_METHODS =
-        r.OS_LANGUAGES.createChild('/osLanguages/inputMethods');
-    r.OS_LANGUAGES_SMART_INPUTS =
-        r.OS_LANGUAGES.createChild('/osLanguages/smartInputs');
-
-    r.OS_PRINTING = r.ADVANCED.createSection('/osPrinting', 'osPrinting');
-
-    r.OS_ACCESSIBILITY = r.ADVANCED.createSection('/osAccessibility', 'a11y');
-
-    if (!loadTimeData.getBoolean('isGuest')) {
+      r.OS_PEOPLE =
+          createSection(r.BASIC, mojom.PEOPLE_SECTION_PATH, Section.kPeople);
+      r.ACCOUNT_MANAGER = createSubpage(
+          r.OS_PEOPLE, mojom.MY_ACCOUNTS_SUBPAGE_PATH, Subpage.kMyAccounts);
       if (loadTimeData.getBoolean('splitSettingsSyncEnabled')) {
-        r.OS_SYNC = r.OS_PEOPLE.createChild('/osSync');
+        r.OS_SYNC =
+            createSubpage(r.OS_PEOPLE, mojom.SYNC_SUBPAGE_PATH, Subpage.kSync);
       }
-      // Personalization
-      r.PERSONALIZATION =
-          r.BASIC.createSection('/personalization', 'personalization');
-      r.CHANGE_PICTURE = r.PERSONALIZATION.createChild('/changePicture');
-      r.AMBIENT_MODE = r.PERSONALIZATION.createChild('/ambientMode');
-
-      // Files (analogous to Downloads)
-      r.FILES = r.ADVANCED.createSection('/files', 'files');
-      r.SMB_SHARES = r.FILES.createChild('/smbShares');
+      r.SYNC = createSubpage(
+          r.OS_PEOPLE, mojom.SYNC_DEPRECATED_SUBPAGE_PATH,
+          Subpage.kSyncDeprecated);
+      if (!loadTimeData.getBoolean('splitSettingsSyncEnabled')) {
+        r.SYNC_ADVANCED = createSubpage(
+            r.SYNC, mojom.SYNC_DEPRECATED_ADVANCED_SUBPAGE_PATH,
+            Subpage.kSyncDeprecatedAdvanced);
+      }
+      r.LOCK_SCREEN = createSubpage(
+          r.OS_PEOPLE, mojom.SECURITY_AND_SIGN_IN_SUBPAGE_PATH,
+          Subpage.kSecurityAndSignIn);
+      r.FINGERPRINT = createSubpage(
+          r.LOCK_SCREEN, mojom.FINGERPRINT_SUBPATH_PATH, Subpage.kFingerprint);
+      r.ACCOUNTS = createSubpage(
+          r.OS_PEOPLE, mojom.MANAGE_OTHER_PEOPLE_SUBPAGE_PATH,
+          Subpage.kManageOtherPeople);
+      r.KERBEROS_ACCOUNTS = createSubpage(
+          r.OS_PEOPLE, mojom.KERBEROS_SUBPAGE_PATH, Subpage.kKerberos);
     }
 
-    // Reset
-    if (loadTimeData.valueExists('allowPowerwash') &&
-        loadTimeData.getBoolean('allowPowerwash')) {
-      r.OS_RESET = r.ADVANCED.createSection('/osReset', 'osReset');
+    // Device section.
+    r.DEVICE =
+        createSection(r.BASIC, mojom.DEVICE_SECTION_PATH, Section.kDevice);
+    r.POINTERS =
+        createSubpage(r.DEVICE, mojom.POINTERS_SUBPAGE_PATH, Subpage.kPointers);
+    r.KEYBOARD =
+        createSubpage(r.DEVICE, mojom.KEYBOARD_SUBPAGE_PATH, Subpage.kKeyboard);
+    r.STYLUS =
+        createSubpage(r.DEVICE, mojom.STYLUS_SUBPAGE_PATH, Subpage.kStylus);
+    r.DISPLAY =
+        createSubpage(r.DEVICE, mojom.DISPLAY_SUBPAGE_PATH, Subpage.kDisplay);
+    r.STORAGE =
+        createSubpage(r.DEVICE, mojom.STORAGE_SUBPAGE_PATH, Subpage.kStorage);
+    r.EXTERNAL_STORAGE_PREFERENCES = createSubpage(
+        r.STORAGE, mojom.EXTERNAL_STORAGE_SUBPAGE_PATH,
+        Subpage.kExternalStorage);
+    r.POWER = createSubpage(r.DEVICE, mojom.POWER_SUBPAGE_PATH, Subpage.kPower);
+
+    // Personalization section.
+    if (!loadTimeData.getBoolean('isGuest')) {
+      r.PERSONALIZATION = createSection(
+          r.BASIC, mojom.PERSONALIZATION_SECTION_PATH,
+          Section.kPersonalization);
+      r.CHANGE_PICTURE = createSubpage(
+          r.PERSONALIZATION, mojom.CHANGE_PICTURE_SUBPAGE_PATH,
+          Subpage.kChangePicture);
+      r.AMBIENT_MODE = createSubpage(
+          r.PERSONALIZATION, mojom.AMBIENT_MODE_SUBPAGE_PATH,
+          Subpage.kAmbientMode);
     }
 
-    // Apps
-    r.APPS = r.BASIC.createSection('/apps', 'apps');
-    r.APP_MANAGEMENT = r.APPS.createChild('/app-management');
-    r.APP_MANAGEMENT_DETAIL =
-        r.APP_MANAGEMENT.createChild('/app-management/detail');
-    // Android apps page
+    // Search and Assistant section.
+    r.OS_SEARCH = createSection(
+        r.BASIC, mojom.SEARCH_AND_ASSISTANT_SECTION_PATH,
+        Section.kSearchAndAssistant);
+    r.GOOGLE_ASSISTANT = createSubpage(
+        r.OS_SEARCH, mojom.ASSISTANT_SUBPAGE_PATH, Subpage.kAssistant);
+
+    // Apps section.
+    r.APPS = createSection(r.BASIC, mojom.APPS_SECTION_PATH, Section.kApps);
+    r.APP_MANAGEMENT = createSubpage(
+        r.APPS, mojom.APP_MANAGEMENT_SUBPAGE_PATH, Subpage.kAppManagement);
+    r.APP_MANAGEMENT_DETAIL = createSubpage(
+        r.APP_MANAGEMENT, mojom.APP_DETAILS_SUBPAGE_PATH, Subpage.kAppDetails);
     if (loadTimeData.valueExists('androidAppsVisible') &&
         loadTimeData.getBoolean('androidAppsVisible')) {
-      r.ANDROID_APPS_DETAILS = r.APPS.createChild('/androidAppsDetails');
+      r.ANDROID_APPS_DETAILS = createSubpage(
+          r.APPS, mojom.GOOGLE_PLAY_STORE_SUBPAGE_PATH,
+          Subpage.kGooglePlayStore);
     }
 
-    r.DATETIME = r.ADVANCED.createSection('/dateTime', 'dateTime');
-    r.DATETIME_TIMEZONE_SUBPAGE = r.DATETIME.createChild('/dateTime/timeZone');
+    // Crostini section.
+    if (loadTimeData.valueExists('showCrostini') &&
+        loadTimeData.getBoolean('showCrostini')) {
+      r.CROSTINI = createSection(
+          r.BASIC, mojom.CROSTINI_SECTION_PATH, Section.kCrostini);
+      r.CROSTINI_DETAILS = createSubpage(
+          r.CROSTINI, mojom.CROSTINI_DETAILS_SUBPAGE_PATH,
+          Subpage.kCrostiniDetails);
+      r.CROSTINI_SHARED_PATHS = createSubpage(
+          r.CROSTINI_DETAILS, mojom.CROSTINI_MANAGE_SHARED_FOLDERS_SUBPAGE_PATH,
+          Subpage.kCrostiniManageSharedFolders);
+      r.CROSTINI_SHARED_USB_DEVICES = createSubpage(
+          r.CROSTINI_DETAILS, mojom.CROSTINI_USB_PREFERENCES_SUBPAGE_PATH,
+          Subpage.kCrostiniUsbPreferences);
+      if (loadTimeData.valueExists('showCrostiniExportImport') &&
+          loadTimeData.getBoolean('showCrostiniExportImport')) {
+        r.CROSTINI_EXPORT_IMPORT = createSubpage(
+            r.CROSTINI_DETAILS, mojom.CROSTINI_BACKUP_AND_RESTORE_SUBPAGE_PATH,
+            Subpage.kCrostiniBackupAndRestore);
+      }
+      r.CROSTINI_ANDROID_ADB = createSubpage(
+          r.CROSTINI_DETAILS, mojom.CROSTINI_DEVELOP_ANDROID_APPS_SUBPAGE_PATH,
+          Subpage.kCrostiniDevelopAndroidApps);
+      r.CROSTINI_PORT_FORWARDING = createSubpage(
+          r.CROSTINI_DETAILS, mojom.CROSTINI_PORT_FORWARDING_SUBPAGE_PATH,
+          Subpage.kCrostiniPortForwarding);
+      if (loadTimeData.valueExists('showCrostiniDiskResize') &&
+          loadTimeData.getBoolean('showCrostiniDiskResize')) {
+        r.CROSTINI_DISK_RESIZE = createSubpage(
+            r.CROSTINI_DETAILS, mojom.CROSTINI_DISK_RESIZE_SUBPAGE_PATH,
+            Subpage.kCrostiniDiskResize);
+      }
+    }
 
-    r.CUPS_PRINTERS = r.OS_PRINTING.createChild('/cupsPrinters');
+    // Plugin VM section.
+    if (loadTimeData.valueExists('showPluginVm') &&
+        loadTimeData.getBoolean('showPluginVm')) {
+      r.PLUGIN_VM = createSection(
+          r.BASIC, mojom.PLUGIN_VM_SECTION_PATH, Section.kPluginVm);
+      r.PLUGIN_VM_DETAILS = createSubpage(
+          r.PLUGIN_VM, mojom.PLUGIN_VM_DETAILS_SUBPAGE_PATH,
+          Subpage.kPluginVmDetails);
+      r.PLUGIN_VM_SHARED_PATHS = createSubpage(
+          r.PLUGIN_VM, mojom.PLUGIN_VM_SHARED_PATHS_SUBPAGE_PATH,
+          Subpage.kPluginVmSharedPaths);
+    }
 
-    r.MANAGE_ACCESSIBILITY =
-        r.OS_ACCESSIBILITY.createChild('/manageAccessibility');
+    // Date and Time section.
+    r.DATETIME = createSection(
+        r.ADVANCED, mojom.DATE_AND_TIME_SECTION_PATH, Section.kDateAndTime);
+    r.DATETIME_TIMEZONE_SUBPAGE = createSubpage(
+        r.DATETIME, mojom.TIME_ZONE_SUBPAGE_PATH, Subpage.kTimeZone);
+
+    // Privacy and Security section.
+    r.OS_PRIVACY = createSection(
+        r.ADVANCED, mojom.PRIVACY_AND_SECURITY_SECTION_PATH,
+        Section.kPrivacyAndSecurity);
+
+    // Languages and Input section.
+    r.OS_LANGUAGES = createSection(
+        r.ADVANCED, mojom.LANGUAGES_AND_INPUT_SECTION_PATH,
+        Section.kLanguagesAndInput);
+    r.OS_LANGUAGES_DETAILS = createSubpage(
+        r.OS_LANGUAGES, mojom.LANGUAGES_AND_INPUT_DETAILS_SUBPAGE_PATH,
+        Subpage.kLanguagesAndInputDetails);
+    r.OS_LANGUAGES_INPUT_METHODS = createSubpage(
+        r.OS_LANGUAGES_DETAILS, mojom.MANAGE_INPUT_METHODS_SUBPAGE_PATH,
+        Subpage.kManageInputMethods);
+    r.OS_LANGUAGES_SMART_INPUTS = createSubpage(
+        r.OS_LANGUAGES, mojom.SMART_INPUTS_SUBAGE_PATH, Subpage.kSmartInputs);
+
+    // Files section.
+    if (!loadTimeData.getBoolean('isGuest')) {
+      r.FILES =
+          createSection(r.ADVANCED, mojom.FILES_SECTION_PATH, Section.kFiles);
+      r.SMB_SHARES = createSubpage(
+          r.FILES, mojom.NETWORK_FILE_SHARES_SUBPAGE_PATH,
+          Subpage.kNetworkFileShares);
+    }
+
+    // Printing section.
+    r.OS_PRINTING = createSection(
+        r.ADVANCED, mojom.PRINTING_SECTION_PATH, Section.kPrinting);
+    r.CUPS_PRINTERS = createSubpage(
+        r.OS_PRINTING, mojom.PRINTING_DETAILS_SUBPAGE_PATH,
+        Subpage.kPrintingDetails);
+
+    // Accessibility section.
+    r.OS_ACCESSIBILITY = createSection(
+        r.ADVANCED, mojom.ACCESSIBILITY_SECTION_PATH, Section.kAccessibility);
+    r.MANAGE_ACCESSIBILITY = createSubpage(
+        r.OS_ACCESSIBILITY, mojom.MANAGE_ACCESSIBILITY_SUBPAGE_PATH,
+        Subpage.kManageAccessibility);
+    r.MANAGE_TTS_SETTINGS = createSubpage(
+        r.MANAGE_ACCESSIBILITY, mojom.TEXT_TO_SPEECH_SUBPAGE_PATH,
+        Subpage.kTextToSpeech);
     if (loadTimeData.getBoolean('showExperimentalAccessibilitySwitchAccess')) {
-      r.MANAGE_SWITCH_ACCESS_SETTINGS = r.MANAGE_ACCESSIBILITY.createChild(
-          '/manageAccessibility/switchAccess');
+      r.MANAGE_SWITCH_ACCESS_SETTINGS = createSubpage(
+          r.MANAGE_ACCESSIBILITY, mojom.SWITCH_ACCESS_OPTIONS_SUBPAGE_PATH,
+          Subpage.kSwitchAccessOptions);
     }
-    r.MANAGE_TTS_SETTINGS =
-        r.MANAGE_ACCESSIBILITY.createChild('/manageAccessibility/tts');
+    r.MANAGE_CAPTION_SETTINGS = createSubpage(
+        r.MANAGE_ACCESSIBILITY, mojom.CAPTIONS_SUBPAGE_PATH, Subpage.kCaptions);
 
-    r.MANAGE_CAPTION_SETTINGS =
-        r.MANAGE_ACCESSIBILITY.createChild('/manageAccessibility/captions');
+    // Reset section.
+    if (loadTimeData.valueExists('allowPowerwash') &&
+        loadTimeData.getBoolean('allowPowerwash')) {
+      r.OS_RESET =
+          createSection(r.ADVANCED, mojom.RESET_SECTION_PATH, Section.kReset);
+    }
+
+    // About section. Note that this section is a special case, since it is not
+    // part of the main page. In this case, the "About Chrome OS" subpage is
+    // implemented using createSection().
+    // TODO(khorimoto): Add Section.kAboutChromeOs to settings.Route object.
+    r.ABOUT = new settings.Route('/' + mojom.ABOUT_CHROME_OS_SECTION_PATH);
+    r.ABOUT_ABOUT = r.ABOUT.createSection(
+        '/' + mojom.ABOUT_CHROME_OS_DETAILS_SUBPAGE_PATH, 'about');
+    r.DETAILED_BUILD_INFO = createSubpage(
+        r.ABOUT_ABOUT, mojom.DETAILED_BUILD_INFO_SUBPAGE_PATH,
+        Subpage.kDetailedBuildInfo);
+
     return r;
   }
 

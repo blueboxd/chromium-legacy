@@ -122,9 +122,6 @@ class BlinkTestRunner {
   void SendBluetoothManualChooserEvent(const std::string& event,
                                        const std::string& argument);
 
-  // Controls which WebView should be focused.
-  void SetFocus(blink::WebView* web_view, bool focus);
-
   // Controls whether all cookies should be accepted or writing cookies in a
   // third-party context is blocked.
   void SetBlockThirdPartyCookies(bool block);
@@ -209,6 +206,10 @@ class BlinkTestRunner {
   // Clears persistent Trust Token API state
   // (https://github.com/wicg/trust-token-api).
   void ClearTrustTokenState(base::OnceClosure callback);
+
+  // Moves focus and active state to the secondary devtools window, which exists
+  // only in devtools JS tests.
+  void FocusDevtoolsSecondaryWindow();
 
   // Message handlers forwarded by WebTestRenderFrameObserver.
   void OnSetTestConfiguration(mojom::WebTestRunTestConfigurationPtr params);

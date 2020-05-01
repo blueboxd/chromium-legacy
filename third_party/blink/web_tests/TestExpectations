@@ -214,8 +214,14 @@ crbug.com/974666 [ Mac10.13 ] http/tests/misc/object-embedding-svg-delayed-size-
 crbug.com/974720 [ Mac10.13 ] virtual/text-antialias/firstline/capitalize-transform-2.html [ Pass Crash ]
 crbug.com/974720 [ Mac10.13 ] virtual/text-antialias/firstline/capitalize-transform.html [ Pass Crash ]
 
-# This will likely be fixed as we finish off the origin isolation architecture work
-crbug.com/1067389 virtual/no-auto-wpt-origin-isolation/external/wpt/origin-isolation/parent-no-child-yes-same.sub.https.html [ Pass Failure Crash ]
+# This test depends on synchronous focus() which does not exist (anymore?).
+crbug.com/1074482 external/wpt/html/interaction/focus/the-autofocus-attribute/update-the-rendering.html [ Failure ]
+# This test has a bug in it that prevents it from being able to deal with order
+# differences it claims to support.
+crbug.com/1076129 external/wpt/service-workers/service-worker/clients-matchall-frozen.https.html [ Pass Failure ]
+crbug.com/1076129 virtual/cache-storage-eager-reading/external/wpt/service-workers/service-worker/clients-matchall-frozen.https.html [ Pass Failure ]
+crbug.com/1076129 virtual/cache-storage-sequence/external/wpt/service-workers/service-worker/clients-matchall-frozen.https.html [ Pass Failure ]
+crbug.com/1076129 virtual/omt-worker-fetch/external/wpt/service-workers/service-worker/clients-matchall-frozen.https.html [ Pass Failure ]
 
 # Flakily timing out or failing.
 # TODO(ccameron): Investigate this.
@@ -4353,10 +4359,8 @@ crbug.com/709227 external/wpt/html/canvas/offscreen/pixel-manipulation/2d.imageD
 crbug.com/709227 external/wpt/html/canvas/offscreen/the-offscreen-canvas/2d.getcontext.extraargs.worker.html [ Failure ]
 crbug.com/709227 external/wpt/html/canvas/offscreen/the-offscreen-canvas/size.attributes.idl.worker.html [ Failure ]
 crbug.com/709227 external/wpt/html/canvas/offscreen/the-offscreen-canvas/size.attributes.parse.em.worker.html [ Failure ]
-crbug.com/709227 external/wpt/html/canvas/offscreen/the-offscreen-canvas/size.attributes.parse.empty.worker.html [ Failure ]
 crbug.com/709227 external/wpt/html/canvas/offscreen/the-offscreen-canvas/size.attributes.parse.junk.worker.html [ Failure ]
 crbug.com/709227 external/wpt/html/canvas/offscreen/the-offscreen-canvas/size.attributes.parse.minus.worker.html [ Failure ]
-crbug.com/709227 external/wpt/html/canvas/offscreen/the-offscreen-canvas/size.attributes.parse.onlyspace.worker.html [ Failure ]
 crbug.com/709227 external/wpt/html/canvas/offscreen/the-offscreen-canvas/size.attributes.parse.percent.worker.html [ Failure ]
 crbug.com/709227 external/wpt/html/canvas/offscreen/the-offscreen-canvas/size.attributes.parse.trailingjunk.worker.html [ Failure ]
 

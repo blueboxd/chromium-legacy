@@ -27,6 +27,7 @@
 #include "third_party/blink/renderer/platform/scheduler/main_thread/main_thread_task_queue.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/page_scheduler_impl.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/resource_loading_task_runner_handle_impl.h"
+#include "third_party/blink/renderer/platform/scheduler/main_thread/task_type_names.h"
 #include "third_party/blink/renderer/platform/scheduler/public/web_scheduling_priority.h"
 #include "third_party/blink/renderer/platform/scheduler/public/web_scheduling_task_queue.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
@@ -43,6 +44,60 @@ using FeatureHandle = FrameOrWorkerScheduler::SchedulingAffectingFeatureHandle;
 using PrioritisationType = MainThreadTaskQueue::QueueTraits::PrioritisationType;
 
 using testing::Return;
+
+// All TaskTypes that can be passed to
+// FrameSchedulerImpl::CreateQueueTraitsForTaskType().
+constexpr TaskType kAllFrameTaskTypes[] = {
+    TaskType::kInternalContentCapture,
+    TaskType::kJavascriptTimer,
+    TaskType::kInternalLoading,
+    TaskType::kNetworking,
+    TaskType::kNetworkingWithURLLoaderAnnotation,
+    TaskType::kNetworkingControl,
+    TaskType::kDOMManipulation,
+    TaskType::kHistoryTraversal,
+    TaskType::kEmbed,
+    TaskType::kCanvasBlobSerialization,
+    TaskType::kRemoteEvent,
+    TaskType::kWebSocket,
+    TaskType::kMicrotask,
+    TaskType::kUnshippedPortMessage,
+    TaskType::kFileReading,
+    TaskType::kPresentation,
+    TaskType::kSensor,
+    TaskType::kPerformanceTimeline,
+    TaskType::kWebGL,
+    TaskType::kIdleTask,
+    TaskType::kInternalDefault,
+    TaskType::kMiscPlatformAPI,
+    TaskType::kFontLoading,
+    TaskType::kApplicationLifeCycle,
+    TaskType::kBackgroundFetch,
+    TaskType::kPermission,
+    TaskType::kPostedMessage,
+    TaskType::kServiceWorkerClientMessage,
+    TaskType::kWorkerAnimation,
+    TaskType::kUserInteraction,
+    TaskType::kMediaElementEvent,
+    TaskType::kInternalWebCrypto,
+    TaskType::kInternalMedia,
+    TaskType::kInternalMediaRealTime,
+    TaskType::kInternalUserInteraction,
+    TaskType::kInternalIntersectionObserver,
+    TaskType::kInternalFindInPage,
+    TaskType::kInternalContinueScriptLoading,
+    TaskType::kDatabaseAccess,
+    TaskType::kInternalNavigationAssociated,
+    TaskType::kInternalTest,
+    TaskType::kWebLocks,
+    TaskType::kInternalFrameLifecycleControl,
+    TaskType::kInternalTranslation,
+    TaskType::kInternalInspector,
+    TaskType::kInternalNavigationAssociatedUnfreezable};
+
+static_assert(
+    static_cast<int>(TaskType::kCount) == 71,
+    "When adding a TaskType, make sure that kAllFrameTaskTypes is updated.");
 
 void AppendToVectorTestTask(Vector<String>* vector, String value) {
   vector->push_back(std::move(value));
@@ -243,6 +298,11 @@ class FrameSchedulerImplTest : public testing::Test {
     EXPECT_TRUE(throttleable_task_queue());
     return scheduler_->task_queue_throttler()->IsThrottled(
         throttleable_task_queue().get());
+  }
+
+  bool IsTaskTypeThrottled(TaskType task_type) {
+    scoped_refptr<MainThreadTaskQueue> task_queue = GetTaskQueue(task_type);
+    return scheduler_->task_queue_throttler()->IsThrottled(task_queue.get());
   }
 
   SchedulingLifecycleState CalculateLifecycleState(
@@ -1855,6 +1915,29 @@ TEST_F(FrameSchedulerImplTest, TaskTypeToTaskQueueMapping) {
             LoadingControlTaskQueue());
   EXPECT_EQ(GetTaskQueue(TaskType::kInternalTranslation),
             ForegroundOnlyTaskQueue());
+}
+
+// Verify that kJavascriptTimer is the only non-internal TaskType that can be
+// throttled. This ensures that the Javascript timer throttling experiment only
+// affects wake ups from Javascript timers https://crbug.com/1075553
+TEST_F(FrameSchedulerImplTest, ThrottledTaskTypes) {
+  page_scheduler_->SetPageVisible(false);
+
+  for (TaskType task_type : kAllFrameTaskTypes) {
+    SCOPED_TRACE(testing::Message()
+                 << "TaskType is "
+                 << TaskTypeNames::TaskTypeToString(task_type));
+    switch (task_type) {
+      case TaskType::kInternalContentCapture:
+      case TaskType::kJavascriptTimer:
+      case TaskType::kInternalTranslation:
+        EXPECT_TRUE(IsTaskTypeThrottled(task_type));
+        break;
+      default:
+        EXPECT_FALSE(IsTaskTypeThrottled(task_type));
+        break;
+    };
+  }
 }
 
 class FrameSchedulerImplDatabaseAccessWithoutHighPriority

@@ -949,3 +949,7 @@ Destination.GooglePromotedId = {
   DOCS: '__google__docs',
   SAVE_AS_PDF: 'Save as PDF'
 };
+
+/** @type {string} Unique identifier for the Save as PDF destination */
+export const PDF_DESTINATION_KEY =
+    `${Destination.GooglePromotedId.SAVE_AS_PDF}/${DestinationOrigin.LOCAL}/`;

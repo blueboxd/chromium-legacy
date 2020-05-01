@@ -618,13 +618,14 @@ void CrostiniHandler::ResolveGetCrostiniDiskInfoCallback(
 
 void CrostiniHandler::HandleGetCrostiniDiskInfo(const base::ListValue* args) {
   AllowJavascript();
-  CHECK_EQ(2U, args->GetList().size());
+  CHECK_EQ(3U, args->GetList().size());
   std::string callback_id = args->GetList()[0].GetString();
   std::string vm_name = args->GetList()[1].GetString();
+  bool full_info = args->GetList()[2].GetBool();
   crostini::disk::GetDiskInfo(
       base::BindOnce(&CrostiniHandler::ResolveGetCrostiniDiskInfoCallback,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback_id)),
-      profile_, std::move(vm_name));
+      profile_, std::move(vm_name), full_info);
 }
 
 void CrostiniHandler::HandleResizeCrostiniDisk(const base::ListValue* args) {

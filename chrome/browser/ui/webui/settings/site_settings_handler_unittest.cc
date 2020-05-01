@@ -1187,7 +1187,13 @@ TEST_F(SiteSettingsHandlerTest, NotificationPermissionRevokeUkm) {
             static_cast<int64_t>(permissions::PermissionAction::REVOKED));
 }
 
-TEST_F(SiteSettingsHandlerTest, DefaultSettingSource) {
+// TODO(crbug.com/1076294): Test flakes on TSAN and ASAN.
+#if defined(THREAD_SANITIZER) || defined(ADDRESS_SANITIZER)
+#define MAYBE_DefaultSettingSource DISABLED_DefaultSettingSource
+#else
+#define MAYBE_DefaultSettingSource DefaultSettingSource
+#endif
+TEST_F(SiteSettingsHandlerTest, MAYBE_DefaultSettingSource) {
   ASSERT_TRUE(profile()->CreateHistoryService(/* delete_file= */ true,
                                               /* no_db= */ false));
 

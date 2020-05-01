@@ -74,41 +74,46 @@
     width: var(--width);
   }
 </style>
-<iron-pages selected="[[mode_]]" attr-for-selected="id">
-  <div id="logo">
-    <!-- TODO(crbug.com/1039910): Add flower if doodle available. -->
-    <div id="singleColoredLogo" hidden="[[!singleColored]]"></div>
-    <div id="multiColoredLogo" hidden="[[singleColored]]"></div>
-  </div>
-  <div id="doodle" title="[[doodle_.description]]">
-    <div id="imageContainer" hidden="[[!doodle_.content.imageDoodle]]"
-        tabindex="1" on-click="onImageClick_" on-keydown="onImageKeydown_">
-      <!-- The static image is always visible and the animated image is stacked
-           on top of the static image so that there is no flicker when starting
-           the animation. -->
-      <img id="image" src="[[imageUrl_]]">
-      </img>
-      <ntp-untrusted-iframe id="animation" path="[[animationUrl_]]"
-          hidden="[[!showAnimation_]]">
-      </ntp-untrusted-iframe>
-      <cr-button id="shareButton" title="$i18n{shareDoodle}"
-          on-click="onShareButtonClick_"
-          style="background-color: [[rgbaOrUnset_(doodle_.content.imageDoodle.shareButton.backgroundColor)]];
-                 left: [[doodle_.content.imageDoodle.shareButton.x]]px;
-                 top: [[doodle_.content.imageDoodle.shareButton.y]]px;">
-        <img id="shareButtonImage"
-            src="[[doodle_.content.imageDoodle.shareButton.iconUrl.url]]">
-        </img>
-      </cr-button>
+<dom-if if="[[showLogo_]]" restamp>
+  <template>
+    <div id="logo">
+      <div id="singleColoredLogo" hidden="[[!singleColored]]"></div>
+      <div id="multiColoredLogo" hidden="[[singleColored]]"></div>
     </div>
-    <ntp-untrusted-iframe id="iframe" path="[[iframeUrl_]]"
-        hidden="[[!iframeUrl_]]"
-        style="--duration: [[valueOrUnset_(duration_)]];
-               --height: [[valueOrUnset_(height_)]];
-               --width: [[valueOrUnset_(width_)]];">
-    </ntp-untrusted-iframe>
-  </div>
-</iron-pages>
+  </template>
+</dom-if>
+<dom-if if="[[showDoodle_]]" restamp>
+  <template> 
+    <div id="doodle" title="[[doodle_.description]]">
+      <div id="imageContainer" hidden="[[!doodle_.content.imageDoodle]]"
+          tabindex="1" on-click="onImageClick_" on-keydown="onImageKeydown_">
+        <!-- The static image is always visible and the animated image is
+             stacked on top of the static image so that there is no flicker when
+             starting the animation. -->
+        <img id="image" src="[[imageUrl_]]">
+        </img>
+        <ntp-untrusted-iframe id="animation" path="[[animationUrl_]]"
+            hidden="[[!showAnimation_]]">
+        </ntp-untrusted-iframe>
+        <cr-button id="shareButton" title="$i18n{shareDoodle}"
+            on-click="onShareButtonClick_"
+            style="background-color: [[rgbaOrUnset_(doodle_.content.imageDoodle.shareButton.backgroundColor)]];
+                   left: [[doodle_.content.imageDoodle.shareButton.x]]px;
+                   top: [[doodle_.content.imageDoodle.shareButton.y]]px;">
+          <img id="shareButtonImage"
+              src="[[doodle_.content.imageDoodle.shareButton.iconUrl.url]]">
+          </img>
+        </cr-button>
+      </div>
+      <ntp-untrusted-iframe id="iframe" path="[[iframeUrl_]]"
+          hidden="[[!iframeUrl_]]"
+          style="--duration: [[valueOrUnset_(duration_)]];
+                 --height: [[valueOrUnset_(height_)]];
+                 --width: [[valueOrUnset_(width_)]];">
+      </ntp-untrusted-iframe>
+    </div>
+  </template>
+</dom-if>
 <dom-if if="[[showShareDialog_]]" restamp>
   <template>
     <ntp-doodle-share-dialog title="[[doodle_.description]]"

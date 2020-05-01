@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_SAFE_BROWSING_CLOUD_CONTENT_SCANNING_BINARY_FCM_SERVICE_H_
 
 #include "base/callback_forward.h"
+#include "base/containers/flat_map.h"
 #include "base/memory/weak_ptr.h"
 #include "components/gcm_driver/gcm_app_handler.h"
 #include "components/gcm_driver/instance_id/instance_id.h"
@@ -46,12 +47,21 @@ class BinaryFCMService : public gcm::GCMAppHandler {
       base::RepeatingCallback<void(DeepScanningClientResponse)>;
   using UnregisterInstanceIDCallback = base::OnceCallback<void(bool)>;
 
+  // Get an InstanceID for use.
   virtual void GetInstanceID(GetInstanceIDCallback callback);
+
+  // Called to indicate the caller is done with the InstanceID. This may
+  // invalidate the InstanceID, once all callers using the same InstanceID call
+  // this method.
   virtual void UnregisterInstanceID(const std::string& token,
                                     UnregisterInstanceIDCallback callback);
+
   void SetCallbackForToken(const std::string& token,
                            OnMessageCallback callback);
   void ClearCallbackForToken(const std::string& token);
+
+  // Performs cleanup needed at shutdown.
+  void Shutdown();
 
   // GCMAppHandler implementation
   void ShutdownHandler() override;
@@ -77,6 +87,10 @@ class BinaryFCMService : public gcm::GCMAppHandler {
                        const std::string& instance_id,
                        instance_id::InstanceID::Result result);
 
+  // Helper function that performs the actual unregistration.
+  void UnregisterInstanceIDImpl(const std::string& instance_id,
+                                UnregisterInstanceIDCallback callback);
+
   void OnInstanceIDUnregistered(const std::string& token,
                                 UnregisterInstanceIDCallback callback,
                                 instance_id::InstanceID::Result result);
@@ -86,7 +100,11 @@ class BinaryFCMService : public gcm::GCMAppHandler {
   gcm::GCMDriver* gcm_driver_;
   instance_id::InstanceIDDriver* instance_id_driver_;
 
-  std::unordered_map<std::string, OnMessageCallback> message_token_map_;
+  base::flat_map<std::string, OnMessageCallback> message_token_map_;
+
+  // Map from an InstanceID to the number of callers to GetInstanceID using that
+  // InstanceID.
+  base::flat_map<std::string, unsigned int> instance_id_caller_counts_;
 
   base::WeakPtrFactory<BinaryFCMService> weakptr_factory_{this};
 };

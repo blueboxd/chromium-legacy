@@ -50,6 +50,7 @@ void DeviceAccountInitializer::FetchToken() {
   handling_request_ = true;
   client_->FetchRobotAuthCodes(
       DMAuth::FromDMToken(client_->dm_token()),
+      delegate_->GetRobotAuthCodeDeviceType(), delegate_->GetRobotOAuthScopes(),
       base::BindOnce(&DeviceAccountInitializer::OnRobotAuthCodesFetched,
                      weak_ptr_factory_.GetWeakPtr()));
 }
@@ -78,9 +79,11 @@ void DeviceAccountInitializer::OnRobotAuthCodesFetched(
       GaiaUrls::GetInstance()->oauth2_chrome_client_secret();
   client_info.redirect_uri = "oob";
 
+  DCHECK(delegate_->GetURLLoaderFactory());
+
   // Use the system request context to avoid sending user cookies.
-  gaia_oauth_client_.reset(new gaia::GaiaOAuthClient(
-      g_browser_process->shared_url_loader_factory()));
+  gaia_oauth_client_ =
+      std::make_unique<gaia::GaiaOAuthClient>(delegate_->GetURLLoaderFactory());
   gaia_oauth_client_->GetTokensFromAuthCode(client_info, auth_code,
                                             0 /* max_retries */, this);
 }

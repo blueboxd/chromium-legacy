@@ -86,7 +86,6 @@ void TestRunnerForSpecificView::Reset() {
     return;
 
   RemoveWebPageOverlay();
-  SetTabKeyCyclesThroughElements(true);
 
 #if !defined(OS_MACOSX) && !defined(OS_WIN)
   // (Constants copied because we can't depend on the header that defined
@@ -423,33 +422,6 @@ void TestRunnerForSpecificView::DispatchBeforeInstallPromptCallback(
 
 void TestRunnerForSpecificView::RunIdleTasks(v8::Local<v8::Function> callback) {
   blink_test_runner()->RunIdleTasks(CreateClosureThatPostsV8Callback(callback));
-}
-
-void TestRunnerForSpecificView::SetTabKeyCyclesThroughElements(
-    bool tab_key_cycles_through_elements) {
-  web_view()->SetTabKeyCyclesThroughElements(tab_key_cycles_through_elements);
-}
-
-void TestRunnerForSpecificView::ExecCommand(gin::Arguments* args) {
-  std::string command;
-  args->GetNext(&command);
-
-  std::string value;
-  if (args->Length() >= 3) {
-    // Ignore the second parameter (which is userInterface)
-    // since this command emulates a manual action.
-    args->Skip();
-    args->GetNext(&value);
-  }
-
-  // Note: webkit's version does not return the boolean, so neither do we.
-  web_view()->FocusedFrame()->ExecuteCommand(
-      blink::WebString::FromUTF8(command), blink::WebString::FromUTF8(value));
-}
-
-void TestRunnerForSpecificView::TriggerTestInspectorIssue() {
-  web_view()->FocusedFrame()->AddInspectorIssue(
-      blink::mojom::InspectorIssueCode::kSameSiteCookieIssue);
 }
 
 bool TestRunnerForSpecificView::IsCommandEnabled(const std::string& command) {

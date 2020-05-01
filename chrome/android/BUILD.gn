@@ -35,6 +35,17 @@ import("java_sources.gni")
 import("static_initializers.gni")
 import("trichrome.gni")
 
+_default_package = "org.chromium.chrome"
+if (android_channel != "default") {
+  # android-binary-size trybot may checks if an internal Chrome variant's
+  # AndroidManifest is as expected by ensuring the differences between its
+  # AndroidManifest and its upstream target's .AndroidManifest.expected file
+  # are as expected. Upstream targets having a "org.chromium.chrome" package
+  # name will cause the comparison to output many unnecessary differences.
+  # See https://source.chromium.org/chromium/chromium/src/+/master:chrome/android/java/README.md
+  _default_package += "." + android_channel
+}
+
 declare_args() {
   # Android package name to use when compiling the public chrome targets
   # (chrome_modern_public_apk, monochrome_public_apk, etc. as well as the
@@ -43,7 +54,7 @@ declare_args() {
   # WebView providers which declare one of a handful of package names. See
   # https://chromium.googlesource.com/chromium/src/+/HEAD/android_webview/docs/build-instructions.md#Changing-package-name
   # for details.
-  chrome_public_manifest_package = "org.chromium.chrome"
+  chrome_public_manifest_package = _default_package
 }
 chrome_public_test_manifest_package = "org.chromium.chrome.tests"
 
@@ -1919,60 +1930,58 @@ if (public_android_sdk) {
   }
 }
 
-if (define_upstream_webview_targets) {
-  trichrome_library_apk_tmpl("trichrome_library_apk") {
-    apk_name = "TrichromeLibrary"
-    android_manifest = trichrome_library_android_manifest
-    android_manifest_dep = ":trichrome_library_android_manifest"
-
-    if (android_64bit_target_cpu) {
-      is_64_bit_browser = false
-      include_64_bit_webview = true
-    }
-
-    if (trichrome_synchronized_proguard) {
-      webview_target = "//android_webview:trichrome_webview_apk"
-      chrome_target = ":trichrome_chrome_bundle"
-    }
-
-    if (!is_component_build) {
-      verify_native_libs_and_assets = true
-    }
-
-    # Having //clank present causes different flags because of how play services
-    # is wired up.
-    # The channel is required because manifest entries vary based on channel.
-    _verify_android_configuration =
-        !enable_chrome_android_internal && android_channel == "stable"
-    if (_verify_android_configuration) {
-      verify_manifest = true
-    }
-  }
+trichrome_library_apk_tmpl("trichrome_library_apk") {
+  apk_name = "TrichromeLibrary"
+  android_manifest = trichrome_library_android_manifest
+  android_manifest_dep = ":trichrome_library_android_manifest"
 
   if (android_64bit_target_cpu) {
-    trichrome_library_apk_tmpl("trichrome_library_32_apk") {
-      apk_name = "TrichromeLibrary32"
-      android_manifest = trichrome_library_32_android_manifest
-      android_manifest_dep = ":trichrome_library_32_android_manifest"
-      is_64_bit_browser = false
-      include_64_bit_webview = false
-    }
+    is_64_bit_browser = false
+    include_64_bit_webview = true
+  }
 
-    trichrome_library_apk_tmpl("trichrome_library_64_32_apk") {
-      apk_name = "TrichromeLibrary6432"
-      android_manifest = trichrome_library_64_32_android_manifest
-      android_manifest_dep = ":trichrome_library_64_32_android_manifest"
-      is_64_bit_browser = true
-      include_32_bit_webview = true
-    }
+  if (trichrome_synchronized_proguard) {
+    webview_target = "//android_webview:trichrome_webview_apk"
+    chrome_target = ":trichrome_chrome_bundle"
+  }
 
-    trichrome_library_apk_tmpl("trichrome_library_64_apk") {
-      apk_name = "TrichromeLibrary64"
-      android_manifest = trichrome_library_64_android_manifest
-      android_manifest_dep = ":trichrome_library_64_android_manifest"
-      is_64_bit_browser = true
-      include_32_bit_webview = false
-    }
+  if (!is_component_build) {
+    verify_native_libs_and_assets = true
+  }
+
+  # Having //clank present causes different flags because of how play services
+  # is wired up.
+  # The channel is required because manifest entries vary based on channel.
+  _verify_android_configuration =
+      !enable_chrome_android_internal && android_channel == "stable"
+  if (_verify_android_configuration) {
+    verify_manifest = true
+  }
+}
+
+if (android_64bit_target_cpu) {
+  trichrome_library_apk_tmpl("trichrome_library_32_apk") {
+    apk_name = "TrichromeLibrary32"
+    android_manifest = trichrome_library_32_android_manifest
+    android_manifest_dep = ":trichrome_library_32_android_manifest"
+    is_64_bit_browser = false
+    include_64_bit_webview = false
+  }
+
+  trichrome_library_apk_tmpl("trichrome_library_64_32_apk") {
+    apk_name = "TrichromeLibrary6432"
+    android_manifest = trichrome_library_64_32_android_manifest
+    android_manifest_dep = ":trichrome_library_64_32_android_manifest"
+    is_64_bit_browser = true
+    include_32_bit_webview = true
+  }
+
+  trichrome_library_apk_tmpl("trichrome_library_64_apk") {
+    apk_name = "TrichromeLibrary64"
+    android_manifest = trichrome_library_64_android_manifest
+    android_manifest_dep = ":trichrome_library_64_android_manifest"
+    is_64_bit_browser = true
+    include_32_bit_webview = false
   }
 }
 
@@ -2962,6 +2971,7 @@ generate_jni("chrome_jni_headers") {
     "java/src/org/chromium/chrome/browser/webapps/addtohomescreen/AddToHomescreenCoordinator.java",
     "java/src/org/chromium/chrome/browser/webapps/addtohomescreen/AddToHomescreenInstaller.java",
     "java/src/org/chromium/chrome/browser/webapps/addtohomescreen/AddToHomescreenMediator.java",
+    "java/src/org/chromium/chrome/browser/webauth/AuthenticatorImpl.java",
   ]
 
   # Used for testing only, should not be shipped to end users.

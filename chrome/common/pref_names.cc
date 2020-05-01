@@ -1711,6 +1711,10 @@ const char kClickToCallEnabled[] = "browser.click_to_call_enabled";
 // Extensions which should be opened upon completion.
 const char kDownloadExtensionsToOpen[] = "download.extensions_to_open";
 
+// Extensions which should be opened upon completion, set by policy.
+const char kDownloadExtensionsToOpenByPolicy[] =
+    "download.extensions_to_open_by_policy";
+
 // Dictionary of origins that have permission to launch at least one protocol
 // without first prompting the user. Each origin is a nested dictionary.
 // Within an origin dictionary, if a protocol is present with value |true|,
@@ -2975,6 +2979,10 @@ extern const char kRequiredClientCertificateForUser[] =
     "required_client_certificate_for_user";
 extern const char kRequiredClientCertificateForDevice[] =
     "required_client_certificate_for_device";
+extern const char kCertificateProvisioningStateForUser[] =
+    "cert_provisioning_user_state";
+extern const char kCertificateProvisioningStateForDevice[] =
+    "cert_provisioning_device_state";
 #endif
 
 // This pref enables checking of Media Feed items against the Safe Search API.

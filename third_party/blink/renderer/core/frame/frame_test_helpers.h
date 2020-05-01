@@ -43,6 +43,7 @@
 #include "third_party/blink/public/common/input/web_mouse_event.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/frame/frame_owner_element_type.mojom-blink.h"
+#include "third_party/blink/public/mojom/frame/tree_scope_type.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/scheduler/test/web_fake_thread_scheduler.h"
 #include "third_party/blink/public/platform/web_string.h"
@@ -139,14 +140,14 @@ WebMouseEvent CreateMouseEvent(WebInputEvent::Type,
 
 // Helper for creating a local child frame of a local parent frame.
 WebLocalFrameImpl* CreateLocalChild(WebLocalFrame& parent,
-                                    WebTreeScopeType,
+                                    blink::mojom::blink::TreeScopeType,
                                     TestWebFrameClient* = nullptr);
 
 // Similar, but unlike the overload which takes the client as a raw pointer,
 // ownership of the TestWebFrameClient is transferred to the test framework.
 // TestWebFrameClient may not be null.
 WebLocalFrameImpl* CreateLocalChild(WebLocalFrame& parent,
-                                    WebTreeScopeType,
+                                    blink::mojom::blink::TreeScopeType,
                                     std::unique_ptr<TestWebFrameClient>);
 
 // Helper for creating a provisional local frame that can replace a remote
@@ -398,7 +399,7 @@ class TestWebFrameClient : public WebLocalFrameClient {
   // WebLocalFrameClient:
   void FrameDetached(DetachType) override;
   WebLocalFrame* CreateChildFrame(WebLocalFrame* parent,
-                                  WebTreeScopeType,
+                                  blink::mojom::blink::TreeScopeType,
                                   const WebString& name,
                                   const WebString& fallback_name,
                                   const FramePolicy&,

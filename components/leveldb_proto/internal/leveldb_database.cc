@@ -39,13 +39,9 @@ bool PrefixStopCallback(const std::string& prefix, const std::string& key) {
   return base::StartsWith(key, prefix, base::CompareCase::SENSITIVE);
 }
 
-LevelDB::LevelDB(const char* client_name) : open_histogram_(nullptr) {
+LevelDB::LevelDB(const char* client_name) {
   // Used in lieu of UMA_HISTOGRAM_ENUMERATION because the histogram name is
   // not a constant.
-  open_histogram_ = base::LinearHistogram::FactoryGet(
-      std::string("LevelDB.Open.") + client_name, 1,
-      leveldb_env::LEVELDB_STATUS_MAX, leveldb_env::LEVELDB_STATUS_MAX + 1,
-      base::Histogram::kUmaTargetedHistogramFlag);
   approx_memtable_mem_histogram_ = base::LinearHistogram::FactoryGet(
       std::string("LevelDB.ApproximateMemTableMemoryUse.") + client_name, 1,
       kMaxApproxMemoryUseMB * 1048576, kMaxApproxMemoryUseMB * 4,
@@ -78,8 +74,6 @@ leveldb::Status LevelDB::Init(const base::FilePath& database_dir,
   const std::string path = database_dir.AsUTF8Unsafe();
 
   leveldb::Status status = leveldb_env::OpenDB(open_options_, path, &db_);
-  if (open_histogram_)
-    open_histogram_->Add(leveldb_env::GetLevelDBStatusUMAValue(status));
   if (destroy_on_corruption && status.IsCorruption()) {
     auto destroy_status = Destroy();
     if (!destroy_status.ok())

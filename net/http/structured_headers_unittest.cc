@@ -515,7 +515,6 @@ TEST(StructuredHeaderTest, UnserializableKeys) {
       {"begins with colon", ":token"},
       {"begins with percent", "%token"},
       {"begins with period", ".token"},
-      {"begins with asterisk", "*token"},
       {"begins with slash", "/token"},
   };
   for (const auto& bad_key : bad_keys) {

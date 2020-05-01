@@ -583,7 +583,7 @@
   {
     "name": "contextual-search-longpress-resolve",
     "owners": [ "//chrome/android/java/src/org/chromium/chrome/browser/contextualsearch/OWNERS" ],
-    "expiry_milestone": 83
+    "expiry_milestone": 85
   },
   {
     "name": "contextual-search-ml-tap-suppression",
@@ -3251,6 +3251,11 @@
     "expiry_milestone": 85
   },
   {
+    "name": "omnibox-suggestions-recycler-view",
+    "owners": [ "fgorski", "chrome-omnibox-team@google.com" ],
+    "expiry_milestone": 89
+  },
+  {
     "name": "omnibox-tab-switch-suggestions",
     "owners": [ "orinj", "chrome-omnibox-team@google.com" ],
     "expiry_milestone": 92
@@ -3351,6 +3356,11 @@
     "name": "page-info-chrome-guard",
        "owners": ["ewannpv", "gambard" ],
        "expiry_milestone": 85
+  },
+  {
+    "name": "page-info-performance-hints",
+    "owners": [ "jds" ],
+    "expiry_milestone": 90
   },
   {
     "name": "page-info-refactoring",

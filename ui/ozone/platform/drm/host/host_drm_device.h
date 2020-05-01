@@ -16,15 +16,12 @@
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "ui/gfx/native_widget_types.h"
+#include "ui/ozone/platform/drm/common/display_types.h"
 #include "ui/ozone/platform/drm/host/drm_cursor.h"
 #include "ui/ozone/platform/drm/host/gpu_thread_adapter.h"
 #include "ui/ozone/public/gpu_platform_support_host.h"
 #include "ui/ozone/public/mojom/device_cursor.mojom.h"
 #include "ui/ozone/public/mojom/drm_device.mojom.h"
-
-namespace display {
-class DisplaySnapshot;
-}
 
 namespace ui {
 class DrmDisplayHostManager;
@@ -69,7 +66,7 @@ class HostDrmDevice : public base::RefCountedThreadSafe<HostDrmDevice>,
 
   // Services needed by DrmDisplayHost
   bool GpuConfigureNativeDisplay(int64_t display_id,
-                                 const ui::DisplayMode_Params& display_mode,
+                                 const display::DisplayMode& pmode,
                                  const gfx::Point& point) override;
   bool GpuDisableNativeDisplay(int64_t display_id) override;
   bool GpuGetHDCPState(int64_t display_id) override;
@@ -100,8 +97,7 @@ class HostDrmDevice : public base::RefCountedThreadSafe<HostDrmDevice>,
   void GpuConfigureNativeDisplayCallback(int64_t display_id,
                                          bool success) const;
 
-  void GpuRefreshNativeDisplaysCallback(
-      std::vector<std::unique_ptr<display::DisplaySnapshot>> displays) const;
+  void GpuRefreshNativeDisplaysCallback(MovableDisplaySnapshots displays) const;
   void GpuDisableNativeDisplayCallback(int64_t display_id, bool success) const;
   void GpuTakeDisplayControlCallback(bool success) const;
   void GpuRelinquishDisplayControlCallback(bool success) const;

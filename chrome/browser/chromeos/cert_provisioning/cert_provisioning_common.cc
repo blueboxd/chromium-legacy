@@ -11,12 +11,33 @@
 namespace chromeos {
 namespace cert_provisioning {
 
+bool CertProfile::operator==(const CertProfile& other) const {
+  static_assert(kVersion == 1, "This function should be updated");
+  return (profile_id == other.profile_id);
+}
+
+bool CertProfile::operator!=(const CertProfile& other) const {
+  return (*this == other);
+}
+
 void RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterListPref(prefs::kRequiredClientCertificateForUser);
+  registry->RegisterDictionaryPref(prefs::kCertificateProvisioningStateForUser);
 }
 
 void RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
   registry->RegisterListPref(prefs::kRequiredClientCertificateForDevice);
+  registry->RegisterDictionaryPref(
+      prefs::kCertificateProvisioningStateForDevice);
+}
+
+const char* GetPrefNameForSerialization(CertScope scope) {
+  switch (scope) {
+    case CertScope::kUser:
+      return prefs::kCertificateProvisioningStateForUser;
+    case CertScope::kDevice:
+      return prefs::kCertificateProvisioningStateForDevice;
+  }
 }
 
 std::string GetKeyName(CertProfileId profile_id) {

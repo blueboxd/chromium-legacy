@@ -159,6 +159,7 @@ void AXTableInfo::ClearVectors() {
   row_nodes.clear();
   cell_id_to_index.clear();
   row_id_to_index.clear();
+  incremental_row_col_map_.clear();
 }
 
 void AXTableInfo::BuildCellDataVectorFromRowAndCellNodes(
@@ -180,12 +181,12 @@ void AXTableInfo::BuildCellDataVectorFromRowAndCellNodes(
     size_t current_aria_col_index = 1;
 
     // Make sure the row index is always at least as high as the one reported by
-    // Blink.
+    // the source tree.
     row_id_to_index[row_node->id()] =
         std::max(next_row_index,
                  GetSizeTAttribute(*row_node, IntAttribute::kTableRowIndex));
     size_t* current_row_index = &row_id_to_index[row_node->id()];
-
+    size_t spanned_col_index = 0;
     for (AXNode* cell : cell_nodes_in_this_row) {
       // Fill in basic info in CellData.
       CellData cell_data;
@@ -214,6 +215,9 @@ void AXTableInfo::BuildCellDataVectorFromRowAndCellNodes(
 
       // Ensure the column index must always be incrementing.
       cell_data.col_index = std::max(cell_data.col_index, current_col_index);
+
+      // And update the spanned column index.
+      spanned_col_index = std::max(spanned_col_index, cell_data.col_index);
 
       if (is_first_cell_in_row) {
         is_first_cell_in_row = false;
@@ -247,6 +251,41 @@ void AXTableInfo::BuildCellDataVectorFromRowAndCellNodes(
         cell_data.aria_row_index = current_aria_row_index;
       }
 
+      // Adjust the spanned col index by looking at the incremental row col map.
+      // This map contains already filled in values, accounting for spans, of
+      // all row, col indices. The map should have filled in all values we need
+      // (upper left triangle of cells of the table).
+      while (true) {
+        const auto& row_it = incremental_row_col_map_.find(*current_row_index);
+        if (row_it == incremental_row_col_map_.end()) {
+          break;
+        } else {
+          const auto& col_it = row_it->second.find(spanned_col_index);
+          if (col_it == row_it->second.end()) {
+            break;
+          } else {
+            // A pre-existing cell resides in our desired position. Make a
+            // best-fit to the right of the existing span.
+            const CellData& spanned_cell_data = col_it->second;
+            spanned_col_index =
+                spanned_cell_data.col_index + spanned_cell_data.col_span;
+
+            // Adjust the actual col index to be the best fit with the existing
+            // spanned cell data.
+            cell_data.col_index = spanned_col_index;
+          }
+        }
+      }
+
+      // Memoize the cell data using our incremental row col map.
+      for (size_t r = cell_data.row_index;
+           r < (cell_data.row_index + cell_data.row_span); r++) {
+        for (size_t c = cell_data.col_index;
+             c < (cell_data.col_index + cell_data.col_span); c++) {
+          incremental_row_col_map_[r][c] = cell_data;
+        }
+      }
+
       // Ensure the ARIA col index is incrementing.
       cell_data.aria_col_index =
           std::max(cell_data.aria_col_index, current_aria_col_index);
@@ -273,6 +312,7 @@ void AXTableInfo::BuildCellDataVectorFromRowAndCellNodes(
       // must be at least this large. Same for the current ARIA col index.
       current_col_index = cell_data.col_index + cell_data.col_span;
       current_aria_col_index = cell_data.aria_col_index + cell_data.col_span;
+      spanned_col_index = current_col_index;
 
       // Add this cell to our vector.
       cell_data_vector.push_back(cell_data);
@@ -291,10 +331,6 @@ void AXTableInfo::BuildCellAndHeaderVectorsFromCellData() {
   // arrays of row headers and column headers.
   row_headers.resize(row_count);
   col_headers.resize(col_count);
-  cell_ids.resize(row_count);
-  for (auto& row : cell_ids)
-    row.resize(col_count);
-
   // Fill in the arrays.
   //
   // At this point we have computed valid row and column indices for
@@ -303,6 +339,25 @@ void AXTableInfo::BuildCellAndHeaderVectorsFromCellData() {
   // fill in a 2-dimensional array that lets us look up an individual cell
   // by its (row, column) coordinates, plus arrays to hold row and column
   // headers.
+
+  // For cells.
+  cell_ids.resize(row_count);
+  for (size_t r = 0; r < row_count; r++) {
+    cell_ids[r].resize(col_count);
+    for (size_t c = 0; c < col_count; c++) {
+      const auto& row_it = incremental_row_col_map_.find(r);
+      if (row_it != incremental_row_col_map_.end()) {
+        const auto& col_it = row_it->second.find(c);
+        if (col_it != row_it->second.end())
+          cell_ids[r][c] = col_it->second.cell->id();
+      }
+    }
+  }
+
+  // No longer need this.
+  incremental_row_col_map_.clear();
+
+  // For relations.
   for (auto& cell_data : cell_data_vector) {
     for (size_t r = cell_data.row_index;
          r < cell_data.row_index + cell_data.row_span; r++) {
@@ -311,8 +366,6 @@ void AXTableInfo::BuildCellAndHeaderVectorsFromCellData() {
            c < cell_data.col_index + cell_data.col_span; c++) {
         DCHECK_LT(c, col_count);
         AXNode* cell = cell_data.cell;
-        cell_ids[r][c] = cell->id();
-
         if (cell->data().role == ax::mojom::Role::kColumnHeader) {
           col_headers[c].push_back(cell->id());
           all_headers.push_back(cell->id());
@@ -334,7 +387,7 @@ void AXTableInfo::UpdateExtraMacNodes() {
   // node.
   //
   // The columns have id -1, -2, -3, ... - this won't conflict with ids from
-  // Blink, which are all positive.
+  // the source tree, which are all positive.
   //
   // Each column has the kColumnIndex attribute set, and then each of the cells
   // in that column gets added as an indirect ID. That exposes them as children

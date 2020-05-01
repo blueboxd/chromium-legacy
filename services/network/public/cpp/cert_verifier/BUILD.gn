@@ -12,8 +12,6 @@ source_set("cert_verifier_creation") {
 
   if (is_chromeos) {
     sources += [
-      "cert_verify_proc_chromeos.cc",
-      "cert_verify_proc_chromeos.h",
       "system_trust_store_provider_chromeos.cc",
       "system_trust_store_provider_chromeos.h",
     ]
@@ -44,11 +42,6 @@ source_set("cert_verifier_creation_tests") {
     "//net:test_support",
     "//testing/gtest",
   ]
-
-  if (is_chromeos) {
-    sources += [ "cert_verify_proc_chromeos_unittest.cc" ]
-    deps += [ "//crypto:test_support" ]
-  }
 
   if (trial_comparison_cert_verifier_supported) {
     sources += [ "trial_comparison_cert_verifier_mojo_unittest.cc" ]

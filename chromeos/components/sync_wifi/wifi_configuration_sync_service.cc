@@ -48,6 +48,10 @@ WifiConfigurationSyncService::WifiConfigurationSyncService(
   metrics_logger_ = std::make_unique<SyncedNetworkMetricsLogger>(
       network_handler->network_state_handler(),
       network_handler->network_connection_handler());
+  NetworkMetadataStore* metadata_store =
+      network_handler->network_metadata_store();
+  if (metadata_store)
+    SetNetworkMetadataStore(metadata_store->GetWeakPtr());
 }
 
 WifiConfigurationSyncService::~WifiConfigurationSyncService() = default;

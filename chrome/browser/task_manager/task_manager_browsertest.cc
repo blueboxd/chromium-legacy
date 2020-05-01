@@ -600,9 +600,15 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, ReloadExtension) {
 // Checks that task manager counts a worker thread JS heap size.
 // http://crbug.com/241066
 IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, WebWorkerJSHeapMemory) {
+  // Workers require a trustworthy (e.g. https) context.
+  net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
+  https_server.ServeFilesFromSourceDirectory("chrome/test/data");
+  ASSERT_TRUE(https_server.Start());
+  GURL test_url = https_server.GetURL("/title1.html");
+
   ShowTaskManager();
   model()->ToggleColumnVisibility(ColumnSpecifier::V8_MEMORY);
-  ui_test_utils::NavigateToURL(browser(), GetTestURL());
+  ui_test_utils::NavigateToURL(browser(), test_url);
   size_t minimal_heap_size = 4 * 1024 * 1024 * sizeof(void*);
   std::string test_js = base::StringPrintf(
       "var blob = new Blob([\n"
@@ -624,16 +630,17 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, WebWorkerJSHeapMemory) {
 
   // The worker has allocated objects of at least |minimal_heap_size| bytes.
   // Wait for the heap stats to reflect this.
+  const char kTabWildcard[] = "https://127.0.0.1:*/title1.html";
   ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerStatToExceed(
-      MatchTab("title1.html"), ColumnSpecifier::V8_MEMORY, minimal_heap_size));
+      MatchTab(kTabWildcard), ColumnSpecifier::V8_MEMORY, minimal_heap_size));
   ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerStatToExceed(
-      MatchTab("title1.html"), ColumnSpecifier::V8_MEMORY_USED,
+      MatchTab(kTabWildcard), ColumnSpecifier::V8_MEMORY_USED,
       minimal_heap_size));
   ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerStatToExceed(
-      MatchTab("title1.html"), ColumnSpecifier::MEMORY_FOOTPRINT,
+      MatchTab(kTabWildcard), ColumnSpecifier::MEMORY_FOOTPRINT,
       minimal_heap_size));
   ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchAnyTab()));
-  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchTab("title1.html")));
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchTab(kTabWildcard)));
 }
 
 // Checks that task manager counts renderer JS heap size.

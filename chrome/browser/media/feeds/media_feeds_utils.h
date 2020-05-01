@@ -9,6 +9,11 @@
 
 #include "chrome/browser/media/feeds/media_feeds_store.mojom-forward.h"
 
+// Conversions between mojo MediaFeed structures and their protobuf equivalents,
+// including mojo MediaImage <-> proto Image. We don't use mojo struct traits
+// for these because we want to use the mojo structs throughout the C++
+// codebase.
+
 namespace media_feeds {
 
 class Image;

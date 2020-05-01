@@ -3,47 +3,50 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/chromeos/cert_provisioning/mock_cert_provisioning_worker.h"
+#include "base/test/values_test_util.h"
 
+using base::test::IsJson;
+using testing::_;
 using testing::Return;
 
 namespace chromeos {
 namespace cert_provisioning {
 
-// ================ CertProvisioningWorkerFactoryForTesting ====================
+// ================ MockCertProvisioningWorkerFactory ==========================
 
-CertProvisioningWorkerFactoryForTesting::
-    CertProvisioningWorkerFactoryForTesting() = default;
+MockCertProvisioningWorkerFactory::MockCertProvisioningWorkerFactory() =
+    default;
 
-CertProvisioningWorkerFactoryForTesting::
-    ~CertProvisioningWorkerFactoryForTesting() = default;
+MockCertProvisioningWorkerFactory::~MockCertProvisioningWorkerFactory() =
+    default;
 
-std::unique_ptr<CertProvisioningWorker>
-CertProvisioningWorkerFactoryForTesting::Create(
+MockCertProvisioningWorker*
+MockCertProvisioningWorkerFactory::ExpectCreateReturnMock(
     CertScope cert_scope,
-    Profile* profile,
-    PrefService* pref_service,
-    const CertProfile& cert_profile,
-    policy::CloudPolicyClient* cloud_policy_client,
-    CertProvisioningWorkerCallback callback) {
-  CHECK(!results_queue_.empty());
+    const CertProfile& cert_profile) {
+  auto mock_worker = std::make_unique<MockCertProvisioningWorker>();
 
-  std::unique_ptr<CertProvisioningWorker> result =
-      std::move(results_queue_.front());
-  results_queue_.pop();
-  return result;
+  MockCertProvisioningWorker* pointer = mock_worker.get();
+
+  EXPECT_CALL(*this, Create(cert_scope, _, _, cert_profile, _, _))
+      .Times(1)
+      .WillOnce(Return(testing::ByMove(std::move(mock_worker))));
+
+  return pointer;
 }
 
-void CertProvisioningWorkerFactoryForTesting::Push(
-    std::unique_ptr<CertProvisioningWorker> worker) {
-  results_queue_.push(std::move(worker));
-}
+MockCertProvisioningWorker*
+MockCertProvisioningWorkerFactory::ExpectDeserializeReturnMock(
+    CertScope cert_scope,
+    const base::Value& saved_worker) {
+  auto mock_worker = std::make_unique<MockCertProvisioningWorker>();
+  MockCertProvisioningWorker* pointer = mock_worker.get();
 
-size_t CertProvisioningWorkerFactoryForTesting::ResultsCount() const {
-  return results_queue_.size();
-}
+  EXPECT_CALL(*this, Deserialize(cert_scope, _, _, IsJson(saved_worker), _, _))
+      .Times(1)
+      .WillOnce(Return(testing::ByMove(std::move(mock_worker))));
 
-void CertProvisioningWorkerFactoryForTesting::Reset() {
-  results_queue_ = {};
+  return pointer;
 }
 
 // ================ MockCertProvisioningWorker =================================

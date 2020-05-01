@@ -32,13 +32,13 @@ class OSExchangeDataProviderAuraX11Test : public testing::Test {
     scoped_refptr<base::RefCountedMemory> mem(
         base::RefCountedString::TakeString(&contents_copy));
 
-    provider.format_map_.Insert(gfx::GetAtom(ui::kMimeTypeURIList), mem);
+    provider.format_map_.Insert(gfx::GetAtom(kMimeTypeURIList), mem);
   }
 
  protected:
   base::test::TaskEnvironment task_environment_;
   X11EventSource event_source;
-  ui::OSExchangeDataProviderAuraX11 provider;
+  OSExchangeDataProviderAuraX11 provider;
 };
 
 TEST_F(OSExchangeDataProviderAuraX11Test, MozillaURL) {
@@ -69,24 +69,24 @@ TEST_F(OSExchangeDataProviderAuraX11Test, FilesArentURLs) {
   AddURLList(kFileURL);
 
   EXPECT_TRUE(provider.HasFile());
-  EXPECT_TRUE(provider.HasURL(ui::OSExchangeData::CONVERT_FILENAMES));
-  EXPECT_FALSE(provider.HasURL(ui::OSExchangeData::DO_NOT_CONVERT_FILENAMES));
+  EXPECT_TRUE(provider.HasURL(OSExchangeData::CONVERT_FILENAMES));
+  EXPECT_FALSE(provider.HasURL(OSExchangeData::DO_NOT_CONVERT_FILENAMES));
 }
 
 TEST_F(OSExchangeDataProviderAuraX11Test, HTTPURLsArentFiles) {
   AddURLList(kGoogleURL);
 
   EXPECT_FALSE(provider.HasFile());
-  EXPECT_TRUE(provider.HasURL(ui::OSExchangeData::CONVERT_FILENAMES));
-  EXPECT_TRUE(provider.HasURL(ui::OSExchangeData::DO_NOT_CONVERT_FILENAMES));
+  EXPECT_TRUE(provider.HasURL(OSExchangeData::CONVERT_FILENAMES));
+  EXPECT_TRUE(provider.HasURL(OSExchangeData::DO_NOT_CONVERT_FILENAMES));
 }
 
 TEST_F(OSExchangeDataProviderAuraX11Test, URIListWithBoth) {
   AddURLList("file:///home/user/file.txt\nhttp://www.google.com");
 
   EXPECT_TRUE(provider.HasFile());
-  EXPECT_TRUE(provider.HasURL(ui::OSExchangeData::CONVERT_FILENAMES));
-  EXPECT_TRUE(provider.HasURL(ui::OSExchangeData::DO_NOT_CONVERT_FILENAMES));
+  EXPECT_TRUE(provider.HasURL(OSExchangeData::CONVERT_FILENAMES));
+  EXPECT_TRUE(provider.HasURL(OSExchangeData::DO_NOT_CONVERT_FILENAMES));
 
   // We should only receive the file from GetFilenames().
   std::vector<FileInfo> filenames;
@@ -108,7 +108,7 @@ TEST_F(OSExchangeDataProviderAuraX11Test, OnlyStringURLIsUnfiltered) {
   provider.SetString(file_url);
 
   EXPECT_TRUE(provider.HasString());
-  EXPECT_FALSE(provider.HasURL(ui::OSExchangeData::DO_NOT_CONVERT_FILENAMES));
+  EXPECT_FALSE(provider.HasURL(OSExchangeData::DO_NOT_CONVERT_FILENAMES));
 }
 
 TEST_F(OSExchangeDataProviderAuraX11Test, StringAndURIListFilterString) {

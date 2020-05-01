@@ -12,13 +12,6 @@ jumbo_component("cert_net_url_loader") {
     "cert_net_fetcher_url_loader.h",
   ]
 
-  if (use_nss_certs) {
-    sources += [
-      "nss_ocsp_session_url_loader.cc",
-      "nss_ocsp_session_url_loader.h",
-    ]
-  }
-
   deps = [
     "//base",
     "//mojo/public/cpp/bindings",
@@ -38,10 +31,6 @@ source_set("tests") {
   if (!is_ios) {
     # Need TestServer
     sources += [ "cert_net_fetcher_url_loader_unittest.cc" ]
-  }
-
-  if (use_nss_certs) {
-    sources += [ "nss_ocsp_session_url_loader_unittest.cc" ]
   }
 
   deps = [

@@ -244,11 +244,17 @@ void InstallablePaymentAppCrawler::OnPaymentWebAppInstallationInfo(
     std::unique_ptr<std::vector<PaymentManifestParser::WebAppIcon>> icons) {
   number_of_web_app_manifest_to_parse_--;
 
+  // Only download and decode payment app's icon if it is valid and stored.
   if (CompleteAndStorePaymentWebAppInfoIfValid(
           method_manifest_url, web_app_manifest_url, std::move(app_info))) {
-    // Only download and decode payment app's icon if it is valid and stored.
-    DownloadAndDecodeWebAppIcon(method_manifest_url, web_app_manifest_url,
-                                std::move(icons));
+    if (!DownloadAndDecodeWebAppIcon(method_manifest_url, web_app_manifest_url,
+                                     std::move(icons))) {
+      std::string error_message = base::ReplaceStringPlaceholders(
+          errors::kInvalidWebAppIcon, {web_app_manifest_url.spec()}, nullptr);
+      SetFirstError(error_message);
+      // App without a valid icon is not JIT installable.
+      installable_apps_.erase(method_manifest_url);
+    }
   }
 
   FinishCrawlingPaymentAppsIfReady();
@@ -340,7 +346,7 @@ bool InstallablePaymentAppCrawler::CompleteAndStorePaymentWebAppInfoIfValid(
   return true;
 }
 
-void InstallablePaymentAppCrawler::DownloadAndDecodeWebAppIcon(
+bool InstallablePaymentAppCrawler::DownloadAndDecodeWebAppIcon(
     const GURL& method_manifest_url,
     const GURL& web_app_manifest_url,
     std::unique_ptr<std::vector<PaymentManifestParser::WebAppIcon>> icons) {
@@ -350,7 +356,7 @@ void InstallablePaymentAppCrawler::DownloadAndDecodeWebAppIcon(
         "web app manifest \"" +
         web_app_manifest_url.spec() + "\" for payment handler manifest \"" +
         method_manifest_url.spec() + "\".");
-    return;
+    return false;
   }
 
   std::vector<blink::Manifest::ImageResource> manifest_icons;
@@ -393,7 +399,7 @@ void InstallablePaymentAppCrawler::DownloadAndDecodeWebAppIcon(
               web_app_manifest_url.spec() +
               "\" for payment handler manifest \"" +
               method_manifest_url.spec() + "\".");
-    return;
+    return false;
   }
 
   // Stop if the web_contents is gone.
@@ -403,7 +409,7 @@ void InstallablePaymentAppCrawler::DownloadAndDecodeWebAppIcon(
         "manifest \"" +
         web_app_manifest_url.spec() + "\" for payment handler manifest \"" +
         method_manifest_url.spec() + "\").");
-    return;
+    return false;
   }
 
   gfx::NativeView native_view = web_contents()->GetNativeView();
@@ -417,7 +423,7 @@ void InstallablePaymentAppCrawler::DownloadAndDecodeWebAppIcon(
               web_app_manifest_url.spec() +
               "\" for payment handler manifest \"" +
               method_manifest_url.spec() + "\".");
-    return;
+    return false;
   }
 
   number_of_web_app_icons_to_download_and_decode_++;
@@ -437,7 +443,7 @@ void InstallablePaymentAppCrawler::DownloadAndDecodeWebAppIcon(
         base::BindOnce(
             &InstallablePaymentAppCrawler::FinishCrawlingPaymentAppsIfReady,
             weak_ptr_factory_.GetWeakPtr()));
-    return;
+    return false;
   }
 
   bool can_download_icon = content::ManifestIconDownloader::Download(
@@ -451,6 +457,7 @@ void InstallablePaymentAppCrawler::DownloadAndDecodeWebAppIcon(
       false, /* square_only */
       initiator_frame_routing_id_);
   DCHECK(can_download_icon);
+  return can_download_icon;
 }
 
 void InstallablePaymentAppCrawler::OnPaymentWebAppIconDownloadAndDecoded(
@@ -458,16 +465,19 @@ void InstallablePaymentAppCrawler::OnPaymentWebAppIconDownloadAndDecoded(
     const GURL& web_app_manifest_url,
     const SkBitmap& icon) {
   number_of_web_app_icons_to_download_and_decode_--;
+  auto it = installable_apps_.find(method_manifest_url);
+  DCHECK(it != installable_apps_.end());
+  DCHECK(IsSameOriginWith(GURL(it->second->sw_scope), web_app_manifest_url));
   if (icon.drawsNothing()) {
     log_.Error(
         "Failed to download or decode the icon from web app manifest \"" +
         web_app_manifest_url.spec() + "\" for payment handler manifest \"" +
         method_manifest_url.spec() + "\".");
+    std::string error_message = base::ReplaceStringPlaceholders(
+        errors::kInvalidWebAppIcon, {web_app_manifest_url.spec()}, nullptr);
+    SetFirstError(error_message);
+    installable_apps_.erase(it);
   } else {
-    auto it = installable_apps_.find(method_manifest_url);
-    DCHECK(it != installable_apps_.end());
-    DCHECK(IsSameOriginWith(GURL(it->second->sw_scope), web_app_manifest_url));
-
     it->second->icon = std::make_unique<SkBitmap>(icon);
   }
 

@@ -44,6 +44,7 @@ class FakeLocalFrame : public blink::mojom::LocalFrame {
                            bool discard_duplicates) override;
   void AddInspectorIssue(blink::mojom::InspectorIssueInfoPtr info) override;
   void CheckCompleted() override;
+  void StopLoading() override;
   void Collapse(bool collapsed) override;
   void EnableViewSourceMode() override;
   void Focus() override;

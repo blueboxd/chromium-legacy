@@ -329,9 +329,17 @@ class StructuredHeaderParser {
 
   // Parses a Key ([SH09] 4.2.2, [SH15] 4.2.3.3).
   base::Optional<std::string> ReadKey() {
-    if (input_.empty() || !base::IsAsciiLower(input_.front())) {
-      LogParseError("ReadKey", "lcalpha");
-      return base::nullopt;
+    if (version_ == kDraft09) {
+      if (input_.empty() || !base::IsAsciiLower(input_.front())) {
+        LogParseError("ReadKey", "lcalpha");
+        return base::nullopt;
+      }
+    } else {
+      if (input_.empty() ||
+          (!base::IsAsciiLower(input_.front()) && input_.front() != '*')) {
+        LogParseError("ReadKey", "lcalpha | *");
+        return base::nullopt;
+      }
     }
     const char* allowed_chars =
         (version_ == kDraft09 ? kKeyChars09 : kKeyChars15);
@@ -738,7 +746,7 @@ class StructuredHeaderSerializer {
       return false;
     if (value.find_first_not_of(kKeyChars15) != std::string::npos)
       return false;
-    if (!base::IsAsciiLower(value[0]))
+    if (!base::IsAsciiLower(value[0]) && value[0] != '*')
       return false;
     output_ << value;
     return true;

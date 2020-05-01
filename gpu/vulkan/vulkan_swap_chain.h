@@ -78,6 +78,7 @@ class VULKAN_EXPORT VulkanSwapChain {
   uint32_t num_images() const { return static_cast<uint32_t>(images_.size()); }
   const gfx::Size& size() const { return size_; }
   bool use_protected_memory() const { return use_protected_memory_; }
+  VkResult state() const { return state_; }
 
  private:
   bool InitializeSwapChain(VkSurfaceKHR surface,
@@ -130,6 +131,7 @@ class VULKAN_EXPORT VulkanSwapChain {
   base::Optional<uint32_t> acquired_image_;
   bool is_writing_ = false;
   VkSemaphore end_write_semaphore_ = VK_NULL_HANDLE;
+  VkResult state_ = VK_SUCCESS;
 
   DISALLOW_COPY_AND_ASSIGN(VulkanSwapChain);
 };

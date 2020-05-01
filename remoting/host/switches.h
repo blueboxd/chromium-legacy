@@ -61,9 +61,6 @@ extern const char kOutputSwitchName[];
 // processes.
 extern const char kMojoPipeToken[];
 
-// Switch to upgrade the host config with a new refresh token.
-extern const char kUpgradeTokenSwitchName[];
-
 #if defined(OS_MACOSX)
 // NativeMessagingHost switch to check for required OS permissions and request
 // them if necessary.

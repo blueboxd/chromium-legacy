@@ -12,6 +12,7 @@
 #include "base/optional.h"
 #include "chrome/browser/enterprise/connectors/analysis_service_settings.h"
 #include "chrome/browser/enterprise/connectors/common.h"
+#include "components/prefs/pref_change_registrar.h"
 #include "url/gurl.h"
 
 namespace base {
@@ -51,9 +52,6 @@ class ConnectorsManager {
 
   bool DelayUntilVerdict(AnalysisConnector connector) const;
 
-  // Clears any cached values.
-  void Reset();
-
   // Public legacy functions.
   // These functions are used to interact with legacy policies and should only
   // be called while the connectors equivalent isn't available. They should be
@@ -66,6 +64,11 @@ class ConnectorsManager {
   // Public testing functions.
   const AnalysisConnectorsSettings& GetAnalysisConnectorsSettingsForTesting()
       const;
+
+  // Helpers to reset the ConnectorManager instance across test since it's a
+  // singleton that would otherwise persist its state.
+  void SetUpForTesting();
+  void TearDownForTesting();
 
  private:
   friend struct base::DefaultSingletonTraits<ConnectorsManager>;
@@ -90,6 +93,10 @@ class ConnectorsManager {
   // Read and cache the policy corresponding to |connector|.
   void CacheConnectorPolicy(AnalysisConnector connector);
 
+  // Sets up |pref_change_registrar_| if kEnterpriseConntorsEnabled is true.
+  // Used by the constructor and SetUpForTesting.
+  void StartObservingPrefs();
+
   // Private legacy functions.
   // These functions are used to interact with legacy policies and should stay
   // private. They should be removed once legacy policies are deprecated.
@@ -110,6 +117,10 @@ class ConnectorsManager {
   // Cached values of the connector policies. Updated when a connector is first
   // used or when a policy is updated.
   AnalysisConnectorsSettings connector_settings_;
+
+  // Used to track changes of connector policies and propagate them in
+  // |connector_settings_|.
+  PrefChangeRegistrar pref_change_registrar_;
 };
 
 }  // namespace enterprise_connectors

@@ -15,6 +15,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "ui/display/types/display_snapshot.h"
+#include "ui/ozone/platform/drm/common/display_types.h"
 #include "ui/ozone/platform/drm/common/drm_util.h"
 #include "ui/ozone/platform/drm/host/drm_device_connector.h"
 #include "ui/ozone/platform/drm/host/drm_display_host_manager.h"
@@ -128,14 +129,14 @@ bool HostDrmDevice::GpuRefreshNativeDisplays() {
 }
 
 bool HostDrmDevice::GpuConfigureNativeDisplay(int64_t id,
-                                              const DisplayMode_Params& pmode,
+                                              const display::DisplayMode& pmode,
                                               const gfx::Point& origin) {
   DCHECK_CALLED_ON_VALID_THREAD(on_ui_thread_);
   if (!IsConnected())
     return false;
 
-  // TODO(rjkroege): Remove the use of mode here.
-  auto mode = CreateDisplayModeFromParams(pmode);
+  auto mode = std::make_unique<display::DisplayMode>(
+      pmode.size(), pmode.is_interlaced(), pmode.refresh_rate());
   auto callback =
       base::BindOnce(&HostDrmDevice::GpuConfigureNativeDisplayCallback, this);
 
@@ -271,12 +272,10 @@ void HostDrmDevice::GpuConfigureNativeDisplayCallback(int64_t display_id,
   display_manager_->GpuConfiguredDisplay(display_id, success);
 }
 
-// TODO(rjkroege): Remove the unnecessary conversion back into params.
 void HostDrmDevice::GpuRefreshNativeDisplaysCallback(
-    std::vector<std::unique_ptr<display::DisplaySnapshot>> displays) const {
+    MovableDisplaySnapshots displays) const {
   DCHECK_CALLED_ON_VALID_THREAD(on_ui_thread_);
-  display_manager_->GpuHasUpdatedNativeDisplays(
-      CreateDisplaySnapshotParams(displays));
+  display_manager_->GpuHasUpdatedNativeDisplays(std::move(displays));
 }
 
 void HostDrmDevice::GpuDisableNativeDisplayCallback(int64_t display_id,

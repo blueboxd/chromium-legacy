@@ -13,9 +13,8 @@
   <uses-feature android:name="android.software.leanback" android:required="false"/>
   <uses-feature android:name="android.hardware.touchscreen" android:required="false"/>
   <application
-      android:debuggable="true"
       android:extractNativeLibs="True"
-      android:icon="@com.android.webview:drawable/icon_webview"
+      android:icon="@$PACKAGE:drawable/icon_webview"
       android:label="Android
       System
       WebView"
@@ -33,10 +32,10 @@
         android:launchMode="singleTask"
         android:name="org.chromium.android_webview.devui.MainActivity"
         android:process=":webview_apk"
-        android:taskAffinity="com.android.webview.org.chromium.android_webview.devui"
+        android:taskAffinity="$PACKAGE.org.chromium.android_webview.devui"
         android:theme="@style/Theme.DevUi.DayNight">
       <intent-filter>
-        <action android:name="com.android.webview.SHOW_DEV_UI"/>
+        <action android:name="$PACKAGE.SHOW_DEV_UI"/>
         <category android:name="android.intent.category.DEFAULT"/>
       </intent-filter>
     </activity>
@@ -57,9 +56,7 @@
         android:name="org.chromium.android_webview.devui.DeveloperModeState"
         android:process=":webview_apk"
         android:targetActivity="org.chromium.android_webview.devui.MainActivity"/>
-    <meta-data
-        android:name="com.android.webview.WebViewLibrary"
-        android:value="libwebviewchromium.so"/>
+    <meta-data android:name="$PACKAGE.WebViewLibrary" android:value="libwebviewchromium.so"/>
     <meta-data
         android:name="com.google.android.gms.version"
         android:value="@integer/google_play_services_version"/>
@@ -70,12 +67,12 @@
         android:name="org.chromium.content.browser.NUM_SANDBOXED_SERVICES"
         android:value="40"/>
     <provider
-        android:authorities="com.android.webview.DeveloperModeContentProvider"
+        android:authorities="$PACKAGE.DeveloperModeContentProvider"
         android:exported="true"
         android:name="org.chromium.android_webview.services.DeveloperModeContentProvider"
         android:process=":webview_service"/>
     <provider
-        android:authorities="com.android.webview.LicenseContentProvider"
+        android:authorities="$PACKAGE.LicenseContentProvider"
         android:exported="true"
         android:name="org.chromium.android_webview.nonembedded.LicenseContentProvider"
         android:process=":webview_apk"/>

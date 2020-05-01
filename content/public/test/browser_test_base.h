@@ -56,9 +56,6 @@ class BrowserTestBase : public testing::Test {
   // Override this to add command line flags specific to your test.
   virtual void SetUpCommandLine(base::CommandLine* command_line) {}
 
-  // Override this to disallow accesses to be production-compatible.
-  virtual bool AllowFileAccessFromFiles();
-
   // By default browser tests use hardcoded quota settings for consistency,
   // instead of dynamically based on available disk space. Tests can override
   // this if they want to use the production path.

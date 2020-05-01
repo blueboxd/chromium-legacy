@@ -117,7 +117,7 @@ class TrustTokenRequestIssuanceHelper : public TrustTokenRequestHelper {
   TrustTokenRequestIssuanceHelper(
       SuitableTrustTokenOrigin top_level_origin,
       TrustTokenStore* token_store,
-      std::unique_ptr<TrustTokenKeyCommitmentGetter> key_commitment_getter,
+      const TrustTokenKeyCommitmentGetter* key_commitment_getter,
       std::unique_ptr<Cryptographer> cryptographer);
   ~TrustTokenRequestIssuanceHelper() override;
 
@@ -181,7 +181,7 @@ class TrustTokenRequestIssuanceHelper : public TrustTokenRequestHelper {
   base::Optional<SuitableTrustTokenOrigin> issuer_;
   const SuitableTrustTokenOrigin top_level_origin_;
   TrustTokenStore* const token_store_;
-  const std::unique_ptr<TrustTokenKeyCommitmentGetter> key_commitment_getter_;
+  const TrustTokenKeyCommitmentGetter* const key_commitment_getter_;
   const std::unique_ptr<Cryptographer> cryptographer_;
   base::WeakPtrFactory<TrustTokenRequestIssuanceHelper> weak_ptr_factory_{this};
 };

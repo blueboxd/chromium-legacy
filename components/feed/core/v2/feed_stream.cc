@@ -410,13 +410,17 @@ void FeedStream::UnloadModel() {
   model_.reset();
 }
 
-void FeedStream::ReportOpenAction() {
+void FeedStream::ReportOpenAction(const std::string& slice_id) {
   user_classifier_->OnEvent(UserClassifier::Event::kSuggestionsUsed);
-  metrics_reporter_->OpenAction();
+  int index = surface_updater_->GetSliceIndexFromSliceId(slice_id);
+  if (index >= 0)
+    metrics_reporter_->OpenAction(index);
 }
-void FeedStream::ReportOpenInNewTabAction() {
+void FeedStream::ReportOpenInNewTabAction(const std::string& slice_id) {
   user_classifier_->OnEvent(UserClassifier::Event::kSuggestionsUsed);
-  metrics_reporter_->OpenInNewTabAction();
+  int index = surface_updater_->GetSliceIndexFromSliceId(slice_id);
+  if (index >= 0)
+    metrics_reporter_->OpenInNewTabAction(index);
 }
 void FeedStream::ReportOpenInNewIncognitoTabAction() {
   user_classifier_->OnEvent(UserClassifier::Event::kSuggestionsUsed);

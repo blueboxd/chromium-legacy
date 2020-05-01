@@ -9,30 +9,51 @@
 #include "chrome/browser/chromeos/cert_provisioning/cert_provisioning_worker.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
+using testing::_;
+using testing::Return;
+
 namespace chromeos {
 namespace cert_provisioning {
 
-class CertProvisioningWorkerFactoryForTesting
-    : public CertProvisioningWorkerFactory {
+// ================ MockCertProvisioningWorkerFactory ==========================
+
+class MockCertProvisioningWorker;
+
+class MockCertProvisioningWorkerFactory : public CertProvisioningWorkerFactory {
  public:
-  CertProvisioningWorkerFactoryForTesting();
-  ~CertProvisioningWorkerFactoryForTesting() override;
+  MockCertProvisioningWorkerFactory();
+  ~MockCertProvisioningWorkerFactory() override;
 
-  std::unique_ptr<CertProvisioningWorker> Create(
+  MOCK_METHOD(std::unique_ptr<CertProvisioningWorker>,
+              Create,
+              (CertScope cert_scope,
+               Profile* profile,
+               PrefService* pref_service,
+               const CertProfile& cert_profile,
+               policy::CloudPolicyClient* cloud_policy_client,
+               CertProvisioningWorkerCallback callback),
+              (override));
+
+  MOCK_METHOD(std::unique_ptr<CertProvisioningWorker>,
+              Deserialize,
+              (CertScope cert_scope,
+               Profile* profile,
+               PrefService* pref_service,
+               const base::Value& saved_worker,
+               policy::CloudPolicyClient* cloud_policy_client,
+               CertProvisioningWorkerCallback callback),
+              (override));
+
+  MockCertProvisioningWorker* ExpectCreateReturnMock(
       CertScope cert_scope,
-      Profile* profile,
-      PrefService* pref_service,
-      const CertProfile& cert_profile,
-      policy::CloudPolicyClient* cloud_policy_client,
-      CertProvisioningWorkerCallback callback) override;
+      const CertProfile& cert_profile);
 
-  void Push(std::unique_ptr<CertProvisioningWorker> worker);
-  size_t ResultsCount() const;
-  void Reset();
-
- private:
-  base::queue<std::unique_ptr<CertProvisioningWorker>> results_queue_;
+  MockCertProvisioningWorker* ExpectDeserializeReturnMock(
+      CertScope cert_scope,
+      const base::Value& saved_worker);
 };
+
+// ================ MockCertProvisioningWorker =================================
 
 class MockCertProvisioningWorker : public CertProvisioningWorker {
  public:
@@ -41,6 +62,7 @@ class MockCertProvisioningWorker : public CertProvisioningWorker {
 
   MOCK_METHOD(void, DoStep, (), (override));
   MOCK_METHOD(bool, IsWaiting, (), (const override));
+  MOCK_METHOD(const CertProfile&, GetCertProfile, (), (const override));
 
   void SetExpectations(testing::Cardinality do_step_times, bool is_waiting);
 };

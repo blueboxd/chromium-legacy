@@ -248,10 +248,6 @@ void BrowserTestBase::SetUp() {
       switches::kIPCConnectionTimeout,
       base::NumberToString(TestTimeouts::action_max_timeout().InSeconds()));
 
-  // The tests assume that file:// URIs can freely access other file:// URIs.
-  if (AllowFileAccessFromFiles())
-    command_line->AppendSwitch(switches::kAllowFileAccessFromFiles);
-
   command_line->AppendSwitch(switches::kDomAutomationController);
 
   // It is sometimes useful when looking at browser test failures to know which
@@ -524,10 +520,6 @@ void BrowserTestBase::TearDown() {
 #endif
 
   StoragePartitionImpl::SetDefaultQuotaSettingsForTesting(nullptr);
-}
-
-bool BrowserTestBase::AllowFileAccessFromFiles() {
-  return true;
 }
 
 bool BrowserTestBase::UseProductionQuotaSettings() {

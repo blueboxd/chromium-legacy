@@ -63,6 +63,8 @@ class FixedKeyCommitmentGetter : public TrustTokenKeyCommitmentGetter {
   mojom::TrustTokenKeyCommitmentResultPtr result_;
 };
 
+base::NoDestructor<FixedKeyCommitmentGetter> g_fixed_key_commitment_getter{};
+
 // MockCryptographer mocks out the cryptographic operations underlying Trust
 // Tokens issuance.
 class MockCryptographer
@@ -97,9 +99,9 @@ TEST_F(TrustTokenRequestIssuanceHelperTest, RejectsIfTooManyIssuers) {
         toplevel));
   }
 
-  TrustTokenRequestIssuanceHelper helper(
-      toplevel, store.get(), std::make_unique<FixedKeyCommitmentGetter>(),
-      std::make_unique<MockCryptographer>());
+  TrustTokenRequestIssuanceHelper helper(toplevel, store.get(),
+                                         g_fixed_key_commitment_getter.get(),
+                                         std::make_unique<MockCryptographer>());
 
   auto request = MakeURLRequest("https://issuer.com/");
   request->set_initiator(issuer);
@@ -122,7 +124,7 @@ TEST_F(TrustTokenRequestIssuanceHelperTest, RejectsIfAtCapacity) {
 
   TrustTokenRequestIssuanceHelper helper(
       *SuitableTrustTokenOrigin::Create(GURL("https://toplevel.com/")),
-      store.get(), std::make_unique<FixedKeyCommitmentGetter>(),
+      store.get(), g_fixed_key_commitment_getter.get(),
       std::make_unique<MockCryptographer>());
 
   auto request = MakeURLRequest("https://issuer.com/");
@@ -140,10 +142,10 @@ TEST_F(TrustTokenRequestIssuanceHelperTest, RejectsIfKeyCommitmentFails) {
 
   // Have the key commitment getter return nullptr, denoting that the key
   // commitment fetch failed.
+  auto getter = std::make_unique<FixedKeyCommitmentGetter>(issuer, nullptr);
   TrustTokenRequestIssuanceHelper helper(
       *SuitableTrustTokenOrigin::Create(GURL("https://toplevel.com/")),
-      store.get(), std::make_unique<FixedKeyCommitmentGetter>(issuer, nullptr),
-      std::make_unique<MockCryptographer>());
+      store.get(), getter.get(), std::make_unique<MockCryptographer>());
 
   auto request = MakeURLRequest("https://issuer.com/");
   request->set_initiator(
@@ -175,7 +177,7 @@ TEST_F(TrustTokenRequestIssuanceHelperTest,
 
   TrustTokenRequestIssuanceHelper helper(
       *SuitableTrustTokenOrigin::Create(GURL("https://toplevel.com/")),
-      store.get(), std::move(getter), std::move(cryptographer));
+      store.get(), getter.get(), std::move(cryptographer));
 
   auto request = MakeURLRequest("https://issuer.com/");
   request->set_initiator(issuer);
@@ -206,7 +208,7 @@ TEST_F(TrustTokenRequestIssuanceHelperTest, RejectsIfAddingKeyFails) {
 
   TrustTokenRequestIssuanceHelper helper(
       *SuitableTrustTokenOrigin::Create(GURL("https://toplevel.com/")),
-      store.get(), std::move(getter), std::move(cryptographer));
+      store.get(), getter.get(), std::move(cryptographer));
 
   auto request = MakeURLRequest("https://issuer.com/");
   request->set_initiator(issuer);
@@ -241,7 +243,7 @@ TEST_F(TrustTokenRequestIssuanceHelperTest,
 
   TrustTokenRequestIssuanceHelper helper(
       *SuitableTrustTokenOrigin::Create(GURL("https://toplevel.com/")),
-      store.get(), std::move(getter), std::move(cryptographer));
+      store.get(), getter.get(), std::move(cryptographer));
 
   auto request = MakeURLRequest("https://issuer.com/");
   request->set_initiator(issuer);
@@ -281,7 +283,7 @@ TEST_F(TrustTokenRequestIssuanceHelperTest, SetsRequestHeader) {
 
   TrustTokenRequestIssuanceHelper helper(
       *SuitableTrustTokenOrigin::Create(GURL("https://toplevel.com/")),
-      store.get(), std::move(getter), std::move(cryptographer));
+      store.get(), getter.get(), std::move(cryptographer));
 
   auto request = MakeURLRequest("https://issuer.com/");
   request->set_initiator(issuer);
@@ -323,7 +325,7 @@ TEST_F(TrustTokenRequestIssuanceHelperTest, SetsLoadFlag) {
 
   TrustTokenRequestIssuanceHelper helper(
       *SuitableTrustTokenOrigin::Create(GURL("https://toplevel.com/")),
-      store.get(), std::move(getter), std::move(cryptographer));
+      store.get(), getter.get(), std::move(cryptographer));
 
   auto request = MakeURLRequest("https://issuer.com/");
   request->set_initiator(issuer);
@@ -359,7 +361,7 @@ TEST_F(TrustTokenRequestIssuanceHelperTest, RejectsIfResponseOmitsHeader) {
 
   TrustTokenRequestIssuanceHelper helper(
       *SuitableTrustTokenOrigin::Create(GURL("https://toplevel.com/")),
-      store.get(), std::move(getter), std::move(cryptographer));
+      store.get(), getter.get(), std::move(cryptographer));
 
   auto request = MakeURLRequest("https://issuer.com/");
   request->set_initiator(issuer);
@@ -403,7 +405,7 @@ TEST_F(TrustTokenRequestIssuanceHelperTest, RejectsIfResponseIsUnusable) {
 
   TrustTokenRequestIssuanceHelper helper(
       *SuitableTrustTokenOrigin::Create(GURL("https://toplevel.com/")),
-      store.get(), std::move(getter), std::move(cryptographer));
+      store.get(), getter.get(), std::move(cryptographer));
 
   auto request = MakeURLRequest("https://issuer.com/");
   request->set_initiator(issuer);
@@ -454,7 +456,7 @@ TEST_F(TrustTokenRequestIssuanceHelperTest, Success) {
 
   TrustTokenRequestIssuanceHelper helper(
       *SuitableTrustTokenOrigin::Create(GURL("https://toplevel.com/")),
-      store.get(), std::move(getter), std::move(cryptographer));
+      store.get(), getter.get(), std::move(cryptographer));
 
   auto request = MakeURLRequest("https://issuer.com/");
   request->set_initiator(issuer);
@@ -503,7 +505,7 @@ TEST_F(TrustTokenRequestIssuanceHelperTest, AssociatesIssuerWithToplevel) {
 
   TrustTokenRequestIssuanceHelper helper(
       *SuitableTrustTokenOrigin::Create(GURL("https://toplevel.com/")),
-      store.get(), std::move(getter), std::move(cryptographer));
+      store.get(), getter.get(), std::move(cryptographer));
 
   auto request = MakeURLRequest("https://issuer.com/");
   request->set_initiator(issuer);
@@ -552,7 +554,7 @@ TEST_F(TrustTokenRequestIssuanceHelperTest, StoresObtainedTokens) {
 
   TrustTokenRequestIssuanceHelper helper(
       *SuitableTrustTokenOrigin::Create(GURL("https://toplevel.com/")),
-      store.get(), std::move(getter), std::move(cryptographer));
+      store.get(), getter.get(), std::move(cryptographer));
 
   auto request = MakeURLRequest("https://issuer.com/");
   request->set_initiator(issuer);
@@ -583,7 +585,7 @@ TEST_F(TrustTokenRequestIssuanceHelperTest, RejectsUnsuitableInsecureIssuer) {
   auto store = TrustTokenStore::CreateInMemory();
   TrustTokenRequestIssuanceHelper helper(
       *SuitableTrustTokenOrigin::Create(GURL("https://toplevel.com/")),
-      store.get(), std::make_unique<FixedKeyCommitmentGetter>(),
+      store.get(), g_fixed_key_commitment_getter.get(),
       std::make_unique<MockCryptographer>());
 
   auto request = MakeURLRequest("http://insecure-issuer.com/");
@@ -597,7 +599,7 @@ TEST_F(TrustTokenRequestIssuanceHelperTest,
   auto store = TrustTokenStore::CreateInMemory();
   TrustTokenRequestIssuanceHelper helper(
       *SuitableTrustTokenOrigin::Create(GURL("https://toplevel.com/")),
-      store.get(), std::make_unique<FixedKeyCommitmentGetter>(),
+      store.get(), g_fixed_key_commitment_getter.get(),
       std::make_unique<MockCryptographer>());
 
   auto request = MakeURLRequest("file:///non-https-issuer.txt");
@@ -633,7 +635,7 @@ TEST_F(TrustTokenRequestIssuanceHelperTest, RespectsMaximumBatchsize) {
 
   TrustTokenRequestIssuanceHelper helper(
       *SuitableTrustTokenOrigin::Create(GURL("https://toplevel.com/")),
-      store.get(), std::move(getter), std::move(cryptographer));
+      store.get(), getter.get(), std::move(cryptographer));
 
   auto request = MakeURLRequest("https://issuer.com/");
   request->set_initiator(issuer);

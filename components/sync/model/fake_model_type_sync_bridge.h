@@ -123,6 +123,7 @@ class FakeModelTypeSyncBridge : public ModelTypeSyncBridge {
   void GetAllDataForDebugging(DataCallback callback) override;
   std::string GetClientTag(const EntityData& entity_data) override;
   std::string GetStorageKey(const EntityData& entity_data) override;
+  bool SupportsGetClientTag() const override;
   bool SupportsGetStorageKey() const override;
   ConflictResolution ResolveConflict(
       const std::string& storage_key,
@@ -141,6 +142,16 @@ class FakeModelTypeSyncBridge : public ModelTypeSyncBridge {
   // we never want to. However, since we store the data as an EntityData for the
   // test code here, this function is needed to manually copy it.
   static std::unique_ptr<EntityData> CopyEntityData(const EntityData& old_data);
+
+  // Influences the way the bridge provides client tags. If set to true, the
+  // bridge will compute a client tag deterministically from specifics, via
+  // GetClientTag(). If set to false, bridge is responsible for setting client
+  // tag hashes in EntityData whenever committing entities.
+  void SetSupportsGetClientTag(bool supports_get_client_tag);
+
+  // Checks whether |entity| has the client tag hash filled in or whether the
+  // bridge itself is able to provide the client tag to the processor.
+  bool EntityHasClientTag(const EntityData& entity);
 
   // Influences the way the bridge produces storage key. If set to true, the
   // bridge will compute a storage key deterministically from specifics, via
@@ -179,10 +190,15 @@ class FakeModelTypeSyncBridge : public ModelTypeSyncBridge {
   // Whether an error should be produced on the next bridge call.
   bool error_next_ = false;
 
-  // Whether the bridge supports call to GetStorageKey. If it doesn't bridge is
+  // Whether the bridge supports call to GetStorageKey. If it doesn't, bridge is
   // responsible for calling UpdateStorageKey when processing new entities in
   // MergeSyncData/ApplySyncChanges.
   bool supports_get_storage_key_ = true;
+
+  // Whether the bridge supports call to GetClientTag. If it doesn't, bridge is
+  // responsible for setting client tag hashes in EntityData whenever committing
+  // entities.
+  bool supports_get_client_tag_ = true;
 
   // Last dynamically-generated storage key, for the case where
   // |supports_get_storage_key_| == false (otherwise the storage key gets

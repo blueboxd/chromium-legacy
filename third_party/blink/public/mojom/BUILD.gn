@@ -68,6 +68,7 @@ mojom("mojom_platform") {
     "frame/media_player_action.mojom",
     "frame/navigation_initiator.mojom",
     "frame/sudden_termination_disabler_type.mojom",
+    "frame/tree_scope_type.mojom",
     "frame/user_activation_update_types.mojom",
     "geolocation/geolocation_service.mojom",
     "hid/hid.mojom",
@@ -246,6 +247,19 @@ mojom("mojom_platform") {
   if (use_x11) {
     enabled_features += [ "use_x11" ]
   }
+
+  cpp_typemaps = [
+    {
+      types = [
+        {
+          mojom = "blink.mojom.ClipboardBuffer"
+          cpp = "::ui::ClipboardBuffer"
+        },
+      ]
+      traits_headers = [ "//ui/base/mojom/clipboard_blink_mojom_traits.h" ]
+      traits_public_deps = [ "//ui/base/clipboard:clipboard_types" ]
+    },
+  ]
 
   export_class_attribute = "BLINK_COMMON_EXPORT"
   export_define = "BLINK_COMMON_IMPLEMENTATION=1"

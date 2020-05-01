@@ -62,6 +62,12 @@ class WaveShaperDSPKernel final : public AudioDSPKernel {
                               const float* curve_data,
                               int curve_length) const;
 
+  // Like WaveShaperCurveValue, but computes the values for a vector of inputs.
+  void WaveShaperCurveValues(float* destination,
+                             const float* input,
+                             uint32_t frames_to_process,
+                             const float* curve_data,
+                             int curve_length) const;
   // Set the tail time
   void SetTailTime(double time) { tail_time_ = time; }
 

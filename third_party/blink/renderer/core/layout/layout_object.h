@@ -3400,10 +3400,6 @@ inline bool LayoutObject::CanTraversePhysicalFragments() const {
   // will not attempt to add support for them here.
   if (PaintFragment())
     return false;
-  // We don't support fragmentation traversal inside block fragmentation just
-  // yet.
-  if (IsInsideFlowThread())
-    return false;
   // The NG paint system currently doesn't support table-cells.
   if (IsTableCell())
     return false;

@@ -186,6 +186,7 @@ EntitySpecifics FakeModelTypeSyncBridge::WriteItem(const std::string& key,
 void FakeModelTypeSyncBridge::WriteItem(
     const std::string& key,
     std::unique_ptr<EntityData> entity_data) {
+  DCHECK(EntityHasClientTag(*entity_data));
   db_->PutData(key, *entity_data);
   if (change_processor()->IsTrackingMetadata()) {
     auto change_list = CreateMetadataChangeList();
@@ -241,6 +242,7 @@ base::Optional<ModelError> FakeModelTypeSyncBridge::MergeSyncData(
                                            metadata_change_list.get());
     }
     remote_storage_keys.insert(storage_key);
+    DCHECK(EntityHasClientTag(change->data()));
     db_->PutData(storage_key, change->data());
   }
 
@@ -274,11 +276,13 @@ base::Optional<ModelError> FakeModelTypeSyncBridge::ApplySyncChanges(
           change_processor()->UpdateStorageKey(change->data(), storage_key,
                                                metadata_changes.get());
         }
+        DCHECK(EntityHasClientTag(change->data()));
         EXPECT_FALSE(db_->HasData(storage_key));
         db_->PutData(storage_key, change->data());
         break;
       }
       case EntityChange::ACTION_UPDATE:
+        DCHECK(EntityHasClientTag(change->data()));
         EXPECT_TRUE(db_->HasData(change->storage_key()));
         db_->PutData(change->storage_key(), change->data());
         break;
@@ -354,6 +358,10 @@ std::string FakeModelTypeSyncBridge::GenerateStorageKey(
   }
 }
 
+bool FakeModelTypeSyncBridge::SupportsGetClientTag() const {
+  return supports_get_client_tag_;
+}
+
 bool FakeModelTypeSyncBridge::SupportsGetStorageKey() const {
   return supports_get_storage_key_;
 }
@@ -390,6 +398,15 @@ std::unique_ptr<EntityData> FakeModelTypeSyncBridge::CopyEntityData(
   new_data->creation_time = old_data.creation_time;
   new_data->modification_time = old_data.modification_time;
   return new_data;
+}
+
+void FakeModelTypeSyncBridge::SetSupportsGetClientTag(
+    bool supports_get_client_tag) {
+  supports_get_client_tag_ = supports_get_client_tag;
+}
+
+bool FakeModelTypeSyncBridge::EntityHasClientTag(const EntityData& entity) {
+  return supports_get_client_tag_ || !entity.client_tag_hash.value().empty();
 }
 
 void FakeModelTypeSyncBridge::SetSupportsGetStorageKey(

@@ -148,7 +148,8 @@ class CORE_EXPORT LayoutMultiColumnFlowThread final
 
   static LayoutMultiColumnFlowThread* CreateAnonymous(
       Document&,
-      const ComputedStyle& parent_style);
+      const ComputedStyle& parent_style,
+      bool needs_paint_layer);
 
   bool IsLayoutMultiColumnFlowThread() const final { return true; }
 
@@ -291,7 +292,7 @@ class CORE_EXPORT LayoutMultiColumnFlowThread final
   const char* GetName() const override { return "LayoutMultiColumnFlowThread"; }
 
  private:
-  LayoutMultiColumnFlowThread();
+  explicit LayoutMultiColumnFlowThread(bool needs_paint_layer);
   void UpdateLayout() override;
 
   void CalculateColumnHeightAvailable();

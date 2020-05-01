@@ -137,6 +137,11 @@ void InstallationTracker::OnExtensionLoaded(
 void InstallationTracker::OnExtensionInstallationFailed(
     const ExtensionId& extension_id,
     InstallationReporter::FailureReason reason) {
+  auto item = extensions_.find(extension_id);
+  // If the extension is loaded, ignore the failure.
+  if (item == extensions_.end() ||
+      item->second.status == ExtensionStatus::LOADED)
+    return;
   ChangeExtensionStatus(extension_id, ExtensionStatus::FAILED);
   if (loaded_ && pending_extensions_counter_ == 0)
     NotifyInstallationFinished();

@@ -13,6 +13,38 @@ cast_source_set("public") {
   deps = [ "//base" ]
 }
 
+cast_source_set("display_settings_public") {
+  sources = [
+    "display_settings_manager.cc",
+    "display_settings_manager.h",
+  ]
+
+  deps = [
+    "//base",
+    "//chromecast/ui/mojom",
+    "//mojo/public/cpp/bindings",
+    "//ui/display/types",
+  ]
+}
+
+cast_source_set("display_settings_manager") {
+  sources = [
+    "display_settings_manager_impl.cc",
+    "display_settings_manager_impl.h",
+  ]
+
+  deps = [
+    ":display_settings_public",
+    "//base",
+    "//chromecast/browser",
+    "//chromecast/graphics",
+    "//chromecast/ui/display_settings",
+    "//chromecast/ui/mojom",
+    "//mojo/public/cpp/bindings",
+    "//ui/display/types",
+  ]
+}
+
 cast_source_set("aura_components") {
   sources = [ "aura_components.h" ]
 

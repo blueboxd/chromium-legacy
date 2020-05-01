@@ -241,6 +241,8 @@ public class PageInfoController implements ModalDialogProperties.Controller,
         };
         mView.getCookieControlsView().setParams(cookieControlsParams);
 
+        mView.showPerformanceInfo(mDelegate.shouldShowPerformanceBadge(mFullUrl));
+
         mWebContentsObserver = new WebContentsObserver(webContents) {
             @Override
             public void navigationEntryCommitted() {

@@ -204,8 +204,8 @@ FrameReplicationState ReconstructReplicationStateForTesting(
   blink::WebLocalFrame* frame = test_render_frame->GetWebFrame();
 
   FrameReplicationState result;
-  // can't recover result.scope - no way to get WebTreeScopeType via public
-  // blink API...
+  // can't recover result.scope - no way to get blink::mojom::TreeScopeType via
+  // public blink API...
   result.name = frame->AssignedName().Utf8();
   result.unique_name = test_render_frame->unique_name();
   result.frame_policy.sandbox_flags = frame->EffectiveSandboxFlagsForTesting();

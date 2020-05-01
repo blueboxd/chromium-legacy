@@ -542,6 +542,7 @@ extern const char kAppWindowPlacement[];
 
 extern const char kDownloadDefaultDirectory[];
 extern const char kDownloadExtensionsToOpen[];
+extern const char kDownloadExtensionsToOpenByPolicy[];
 extern const char kDownloadDirUpgraded[];
 #if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_MACOSX)
 extern const char kOpenPdfDownloadInSystemReader[];
@@ -1046,6 +1047,8 @@ extern const char kKnownInterceptionDisclosureInfobarLastShown[];
 #if defined(OS_CHROMEOS)
 extern const char kRequiredClientCertificateForUser[];
 extern const char kRequiredClientCertificateForDevice[];
+extern const char kCertificateProvisioningStateForUser[];
+extern const char kCertificateProvisioningStateForDevice[];
 #endif
 
 extern const char kMediaFeedsSafeSearchEnabled[];

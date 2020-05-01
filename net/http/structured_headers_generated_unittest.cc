@@ -70,9 +70,6 @@ std::pair<std::string, Item> TokenParam(std::string key, std::string value) {
 //  * "0x00 starting an dictionary key - serialise only",
 //  * "0x00 starting an dictionary key",
 //  * "0x00 starting an token",
-// TODO(https://crbug.com/1069785): Parameters and keys can start with "*".
-//  * "0x2a starting a parameterised list key",
-//  * "0x2a starting an dictionary key",
 
 const struct ParameterizedItemTestCase {
   const char* name;
@@ -2010,6 +2007,10 @@ const struct ListTestCase {
     {"0x28 starting a parameterised list key", "foo; (a=1", base::nullopt},
     {"0x29 starting a parameterised list key", "foo; )a=1", base::nullopt},
     {"0x2b starting a parameterised list key", "foo; +a=1", base::nullopt},
+    {"0x2a starting a parameterised list key",
+     "foo; *a=1",
+     {{{Item("foo", Item::kTokenType), {Param("*a", 1)}}}},
+     "foo;*a=1"},
     {"0x2c starting a parameterised list key", "foo; ,a=1", base::nullopt},
     {"0x2d starting a parameterised list key", "foo; -a=1", base::nullopt},
     {"0x2e starting a parameterised list key", "foo; .a=1", base::nullopt},
@@ -3207,6 +3208,9 @@ const struct DictionaryTestCase {
     {"0x27 starting an dictionary key", "'a=1", base::nullopt},
     {"0x28 starting an dictionary key", "(a=1", base::nullopt},
     {"0x29 starting an dictionary key", ")a=1", base::nullopt},
+    {"0x2a starting an dictionary key",
+     "*a=1",
+     {Dictionary{{{"*a", {Integer(1), {}}}}}}},
     {"0x2b starting an dictionary key", "+a=1", base::nullopt},
     {"0x2c starting an dictionary key", ",a=1", base::nullopt},
     {"0x2d starting an dictionary key", "-a=1", base::nullopt},

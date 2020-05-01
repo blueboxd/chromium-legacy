@@ -101,9 +101,10 @@ class VIEWS_EXAMPLES_EXPORT LayoutExampleBase : public ExampleBase,
                                InsetTextfields* textfields,
                                int* vertical_pos);
 
-  // Creates a Checkbox with label |label_text|. Adjust |vertical_pos| to
-  // |vertical_pos| + checkbox->height() + kSpacing.
-  Checkbox* CreateCheckbox(const base::string16& label_text, int* vertical_pos);
+  // Creates and adds a Checkbox with label |label_text|. Adjust |vertical_pos|
+  // to |vertical_pos| + checkbox->height() + kSpacing.
+  Checkbox* CreateAndAddCheckbox(const base::string16& label_text,
+                                 int* vertical_pos);
 
   // ButtonListener:
   // Be sure to call LayoutExampleBase::ButtonPressed() to ensure the "add"

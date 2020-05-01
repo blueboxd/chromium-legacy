@@ -28,10 +28,6 @@ namespace gfx {
 struct PresentationFeedback;
 }
 
-namespace gin {
-class Arguments;
-}
-
 namespace content {
 class BlinkTestRunner;
 class WebWidgetTestProxy;
@@ -136,16 +132,6 @@ class TestRunnerForSpecificView {
   // requestIdleCallback calls.  Invoke the callback when all
   // idle tasks are complete.
   void RunIdleTasks(v8::Local<v8::Function> callback);
-
-  // Method that controls whether pressing Tab key cycles through page elements
-  // or inserts a '\t' char in text area
-  void SetTabKeyCyclesThroughElements(bool tab_key_cycles_through_elements);
-
-  // Executes an internal command (superset of document.execCommand() commands).
-  void ExecCommand(gin::Arguments* args);
-
-  // Trigger a test issue
-  void TriggerTestInspectorIssue();
 
   // Checks if an internal command is currently available.
   bool IsCommandEnabled(const std::string& command);

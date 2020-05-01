@@ -268,13 +268,20 @@ void HTMLImageElement::ParseAttribute(
   } else if (name == html_names::kUsemapAttr) {
     SetIsLink(!params.new_value.IsNull());
   } else if (name == html_names::kReferrerpolicyAttr) {
+    network::mojom::ReferrerPolicy old_referrer_policy = referrer_policy_;
     referrer_policy_ = network::mojom::ReferrerPolicy::kDefault;
     if (!params.new_value.IsNull()) {
+      UseCounter::Count(GetDocument(),
+                        WebFeature::kHTMLImageElementReferrerPolicyAttribute);
+
       SecurityPolicy::ReferrerPolicyFromString(
           params.new_value, kSupportReferrerPolicyLegacyKeywords,
           &referrer_policy_);
-      UseCounter::Count(GetDocument(),
-                        WebFeature::kHTMLImageElementReferrerPolicyAttribute);
+    }
+
+    if (referrer_policy_ != old_referrer_policy) {
+      GetImageLoader().UpdateFromElement(
+          ImageLoader::kUpdateIgnorePreviousError, referrer_policy_);
     }
   } else if (name == html_names::kDecodingAttr) {
     UseCounter::Count(GetDocument(), WebFeature::kImageDecodingAttribute);

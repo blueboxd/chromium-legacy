@@ -163,7 +163,6 @@ bool NetworkLocationRequest::MakeRequest(
   FormUploadData(wifi_data, wifi_timestamp, &upload_data);
   url_loader_->AttachStringForUpload(upload_data, "application/json");
 
-  request_start_time_ = base::TimeTicks::Now();
   url_loader_->DownloadToString(
       url_loader_factory_.get(),
       base::BindOnce(&NetworkLocationRequest::OnRequestComplete,
@@ -188,14 +187,6 @@ void NetworkLocationRequest::OnRequestComplete(
 
   bool server_error =
       net_error != net::OK || (response_code >= 500 && response_code < 600);
-  if (!server_error) {
-    const base::TimeDelta request_time =
-        base::TimeTicks::Now() - request_start_time_;
-
-    UMA_HISTOGRAM_CUSTOM_TIMES("Net.Wifi.LbsLatency", request_time,
-                               base::TimeDelta::FromMilliseconds(1),
-                               base::TimeDelta::FromSeconds(10), 100);
-  }
 
   url_loader_.reset();
 

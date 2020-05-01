@@ -255,14 +255,10 @@ suite('route', function() {
 
 suite('DynamicParameters', function() {
   setup(function() {
-    // TODO(https://crbug.com/1026426): Remove conditional when Polymer 2 tests
-    // are no longer run.
-    if (window.location.pathname === '/test_loader.html') {
-      PolymerTest.clearBody();
-      window.history.replaceState({}, '', 'search?guid=a%2Fb&foo=42');
-      const settingsUi = document.createElement('settings-ui');
-      document.body.appendChild(settingsUi);
-    }
+    PolymerTest.clearBody();
+    window.history.replaceState({}, '', 'search?guid=a%2Fb&foo=42');
+    const settingsUi = document.createElement('settings-ui');
+    document.body.appendChild(settingsUi);
   });
 
   test('get parameters from URL and navigation', function(done) {
@@ -293,14 +289,10 @@ suite('DynamicParameters', function() {
 
 suite('NonExistentRoute', function() {
   setup(function() {
-    // TODO(https://crbug.com/1026426): Remove conditional when Polymer 2 tests
-    // are no longer run.
-    if (window.location.pathname === '/test_loader.html') {
-      PolymerTest.clearBody();
-      window.history.replaceState({}, '', 'non/existent/route');
-      const settingsUi = document.createElement('settings-ui');
-      document.body.appendChild(settingsUi);
-    }
+    PolymerTest.clearBody();
+    window.history.replaceState({}, '', 'non/existent/route');
+    const settingsUi = document.createElement('settings-ui');
+    document.body.appendChild(settingsUi);
   });
 
   test('redirect to basic', function() {

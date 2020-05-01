@@ -15,7 +15,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/callback_promise_adapter.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_related_application.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
-#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/heap/heap_allocator.h"
 #include "third_party/blink/renderer/platform/heap/member.h"
@@ -30,22 +30,21 @@ using AppInstalledCallbacks =
 
 class MODULES_EXPORT InstalledAppController final
     : public GarbageCollected<InstalledAppController>,
-      public Supplement<LocalFrame>,
+      public Supplement<LocalDOMWindow>,
       public ExecutionContextClient {
   USING_GARBAGE_COLLECTED_MIXIN(InstalledAppController);
 
  public:
   static const char kSupplementName[];
 
-  explicit InstalledAppController(LocalFrame&);
+  explicit InstalledAppController(LocalDOMWindow&);
   virtual ~InstalledAppController();
 
   // Gets a list of related apps from the current page's manifest that belong
   // to the current underlying platform, and are installed.
   void GetInstalledRelatedApps(std::unique_ptr<AppInstalledCallbacks>);
 
-  static void ProvideTo(LocalFrame&);
-  static InstalledAppController* From(LocalFrame&);
+  static InstalledAppController* From(LocalDOMWindow&);
 
   void Trace(Visitor*) override;
 

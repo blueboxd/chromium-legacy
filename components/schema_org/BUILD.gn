@@ -43,7 +43,7 @@ compiled_action("schema_org_name_data") {
 
   inputs = [
     "//third_party/schema_org/schema.jsonld",
-    "//third_party/schema_org/overrides.jsonld"
+    "//third_party/schema_org/overrides.jsonld",
   ]
 
   outputs = [ "$target_gen_dir/schema_org_name_data.json" ]
@@ -80,7 +80,7 @@ action("generate_schema_org_code") {
 
   inputs = [
     "//third_party/schema_org/schema.jsonld",
-    "//third_party/schema_org/overrides.jsonld"
+    "//third_party/schema_org/overrides.jsonld",
   ]
 
   outputs = [

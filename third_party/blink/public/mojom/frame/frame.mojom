@@ -390,6 +390,9 @@ interface LocalFrame {
   // the frame can update its loading state.
   CheckCompleted();
 
+  // Instructs the frame to stop the load in progress, if any.
+  StopLoading();
+
   // Sent to the process that owns this frame's HTMLFrameOwnerElement to
   // control whether the element is collapsed or not. If the element is
   // collapsed, it will be removed from the layout tree of its parent

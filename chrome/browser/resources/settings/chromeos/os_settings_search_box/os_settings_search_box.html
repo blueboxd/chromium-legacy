@@ -35,6 +35,9 @@
 
       :host([narrow][showing-search]) {
         flex-basis: 100%;
+        justify-content: center;
+        padding-inline-end: 24px;
+        padding-inline-start: 24px;
       }
 
       cr-toolbar-search-field {
@@ -56,12 +59,14 @@
         margin-top: var(--separator-height);
       }
 
-      :host(:focus-within:not([narrow])) cr-toolbar-search-field {
+      :host(:focus-within) cr-toolbar-search-field {
         box-shadow: var(--cr-menu-shadow);
       }
 
       :host([narrow]) iron-dropdown {
         left: 0;
+        margin-inline-end: 24px;
+        margin-inline-start: 24px;
         right: 0;
       }
 
@@ -109,7 +114,7 @@
         height: var(--separator-height);
         margin-inline-end: 0;
         margin-inline-start: 0;
-        margin-top: calc(-1*var(--separator-height));
+        margin-top: -5px;
       }
     </style>
     <cr-toolbar-search-field id="search" narrow="[[narrow]]"

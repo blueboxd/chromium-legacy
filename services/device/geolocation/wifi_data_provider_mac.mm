@@ -10,7 +10,6 @@
 #include "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/strings/sys_string_conversions.h"
 #include "services/device/geolocation/wifi_data_provider_common.h"
 #include "services/device/geolocation/wifi_data_provider_manager.h"
@@ -41,8 +40,6 @@ bool CoreWlanApi::GetAccessPointData(WifiData::AccessPointDataSet* data) {
     NSArray<CWInterface*>* interfaces = [wifi_client_ interfaces];
     NSUInteger interface_error_count = 0;
     for (CWInterface* interface in interfaces) {
-      const base::TimeTicks start_time = base::TimeTicks::Now();
-
       NSError* err = nil;
       NSSet<CWNetwork*>* scan = [interface scanForNetworksWithName:nil
                                                              error:&err];
@@ -56,12 +53,6 @@ bool CoreWlanApi::GetAccessPointData(WifiData::AccessPointDataSet* data) {
         ++interface_error_count;
         continue;
       }
-
-      const base::TimeDelta duration = base::TimeTicks::Now() - start_time;
-
-      UMA_HISTOGRAM_CUSTOM_TIMES("Net.Wifi.ScanLatency", duration,
-                                 base::TimeDelta::FromMilliseconds(1),
-                                 base::TimeDelta::FromMinutes(1), 100);
 
       DVLOG(1) << interface.interfaceName << ": found " << count << " wifi APs";
 
@@ -82,10 +73,6 @@ bool CoreWlanApi::GetAccessPointData(WifiData::AccessPointDataSet* data) {
         data->insert(access_point_data);
       }
     }
-
-    UMA_HISTOGRAM_CUSTOM_COUNTS("Net.Wifi.InterfaceCount",
-                                [interfaces count] - interface_error_count, 1,
-                                5, 6);
 
     // Return true even if some interfaces failed to scan, so long as at least
     // one interface did not fail.

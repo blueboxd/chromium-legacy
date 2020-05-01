@@ -196,19 +196,16 @@ SafeBrowsingBlockingPage::GetTypeForTesting() {
 }
 
 void SafeBrowsingBlockingPage::OnInterstitialClosing() {
-  if (base::FeatureList::IsEnabled(safe_browsing::kCommittedSBInterstitials)) {
-    // With committed interstitials OnProceed and OnDontProceed don't get
-    // called, so call FinishThreatDetails from here.
-    FinishThreatDetails(
-        (proceeded()
-             ? base::TimeDelta::FromMilliseconds(threat_details_proceed_delay())
-             : base::TimeDelta()),
-        proceeded(), controller()->metrics_helper()->NumVisits());
-    if (proceeded()) {
-      HandleSubresourcesAfterProceed();
-    } else {
-      OnDontProceedDone();
-    }
+  // With committed interstitials OnProceed and OnDontProceed don't get
+  // called, so call FinishThreatDetails from here.
+  FinishThreatDetails((proceeded() ? base::TimeDelta::FromMilliseconds(
+                                         threat_details_proceed_delay())
+                                   : base::TimeDelta()),
+                      proceeded(), controller()->metrics_helper()->NumVisits());
+  if (proceeded()) {
+    HandleSubresourcesAfterProceed();
+  } else {
+    OnDontProceedDone();
   }
   BaseBlockingPage::OnInterstitialClosing();
 }

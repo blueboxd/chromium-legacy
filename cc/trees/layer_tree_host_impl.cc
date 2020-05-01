@@ -524,9 +524,14 @@ void LayerTreeHostImpl::CommitComplete() {
         FrameSequenceTrackerType::kMainThreadAnimation);
   }
 
-  // TODO(crbug.com/1021774): Start/stop custom FrameSequenceTracker based on
-  // pending info.
-  auto ignored = mutator_host_->TakePendingThroughputTrackerInfos();
+  for (const auto& info : mutator_host_->TakePendingThroughputTrackerInfos()) {
+    const MutatorHost::TrackedAnimationSequenceId sequence_id = info.id;
+    const bool start = info.start;
+    if (start)
+      frame_trackers_.StartCustomSequence(sequence_id);
+    else
+      frame_trackers_.StopCustomSequence(sequence_id);
+  }
 }
 
 void LayerTreeHostImpl::UpdateSyncTreeAfterCommitOrImplSideInvalidation() {
@@ -2046,6 +2051,13 @@ void LayerTreeHostImpl::DidPresentCompositorFrame(
   // is in charge of posting them to the main thread.
   client_->DidPresentCompositorFrameOnImplThread(
       frame_token, std::move(activated.main_thread_callbacks), details);
+
+  // Send throughput tracker results to main-thread if any.
+  auto throughput_tracker_results = frame_trackers_.TakeCustomTrackerResults();
+  if (!throughput_tracker_results.empty()) {
+    client_->NotifyThroughputTrackerResults(
+        std::move(throughput_tracker_results));
+  }
 }
 
 void LayerTreeHostImpl::DidNotNeedBeginFrame() {

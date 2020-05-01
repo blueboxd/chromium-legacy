@@ -45,8 +45,8 @@ void DrmDisplayHost::Configure(const display::DisplayMode* mode,
   configure_callback_ = std::move(callback);
   bool status = false;
   if (mode) {
-    status = sender_->GpuConfigureNativeDisplay(
-        snapshot_->display_id(), GetDisplayModeParams(*mode), origin);
+    status = sender_->GpuConfigureNativeDisplay(snapshot_->display_id(), *mode,
+                                                origin);
   } else {
     status = sender_->GpuDisableNativeDisplay(snapshot_->display_id());
   }

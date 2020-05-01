@@ -97,12 +97,12 @@ ScriptPromise PushManager::subscribe(
   // user for permission to use the Push API. The embedder should persist the
   // permission so that later calls in different contexts can succeed.
   if (auto* window = LocalDOMWindow::From(script_state)) {
-    LocalFrame* frame = window->GetFrame();
-    PushMessagingClient* messaging_client = PushMessagingClient::From(frame);
+    PushMessagingClient* messaging_client = PushMessagingClient::From(*window);
     DCHECK(messaging_client);
 
     messaging_client->Subscribe(
-        registration_, options, LocalFrame::HasTransientUserActivation(frame),
+        registration_, options,
+        LocalFrame::HasTransientUserActivation(window->GetFrame()),
         std::make_unique<PushSubscriptionCallbacks>(resolver, registration_));
   } else {
     GetPushProvider(registration_)

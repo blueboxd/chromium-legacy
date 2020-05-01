@@ -813,6 +813,9 @@ extern const char kOmniboxSearchEngineLogoDescription[];
 extern const char kOmniboxSpareRendererName[];
 extern const char kOmniboxSpareRendererDescription[];
 
+extern const char kOmniboxSuggestionsRecyclerViewName[];
+extern const char kOmniboxSuggestionsRecyclerViewDescription[];
+
 extern const char kOmniboxUIHideSteadyStateUrlSchemeName[];
 extern const char kOmniboxUIHideSteadyStateUrlSchemeDescription[];
 
@@ -1481,6 +1484,9 @@ extern const char kOfflinePagesShowAlternateDinoPageDescription[];
 
 extern const char kOffliningRecentPagesName[];
 extern const char kOffliningRecentPagesDescription[];
+
+extern const char kPageInfoPerformanceHintsName[];
+extern const char kPageInfoPerformanceHintsDescription[];
 
 extern const char kPasswordManagerOnboardingAndroidName[];
 extern const char kPasswordManagerOnboardingAndroidDescription[];

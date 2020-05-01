@@ -115,7 +115,8 @@ class POLICY_EXPORT CloudPolicyClient {
     // Called when the Service Account Identity is set on a policy data object
     // after a policy fetch. |service_account_email()| will return the new
     // account's email.
-    virtual void OnServiceAccountChanged(CloudPolicyClient* client) {}
+    virtual void OnServiceAccountSet(CloudPolicyClient* client,
+                                     const std::string& account_email) {}
   };
 
   struct POLICY_EXPORT RegistrationParameters {
@@ -230,10 +231,16 @@ class POLICY_EXPORT CloudPolicyClient {
 
   // Requests OAuth2 auth codes for the device robot account. The client being
   // registered is a prerequisite to this operation and this call will CHECK if
-  // the client is not in registered state.
+  // the client is not in registered state. |oauth_scopes| is the scopes for
+  // which the robot auth codes will be valid, and |device_type| should match
+  // the type of the robot account associated with this request.
   // The |callback| will be called when the operation completes.
-  virtual void FetchRobotAuthCodes(std::unique_ptr<DMAuth> auth,
-                                   RobotAuthCodeCallback callback);
+  virtual void FetchRobotAuthCodes(
+      std::unique_ptr<DMAuth> auth,
+      enterprise_management::DeviceServiceApiAccessRequest::DeviceType
+          device_type,
+      const std::string& oauth_scopes,
+      RobotAuthCodeCallback callback);
 
   // Sends an unregistration request to the server.
   virtual void Unregister();
@@ -399,13 +406,7 @@ class POLICY_EXPORT CloudPolicyClient {
     public_key_version_valid_ = true;
   }
 
-  void clear_public_key_version() {
-    public_key_version_valid_ = false;
-  }
-
-  const std::string& service_account_email() const {
-    return service_account_email_;
-  }
+  void clear_public_key_version() { public_key_version_valid_ = false; }
 
   // FetchPolicy() calls will request this policy type.
   // If |settings_entity_id| is empty then it won't be set in the
@@ -446,9 +447,7 @@ class POLICY_EXPORT CloudPolicyClient {
   // policies haven't gone through verification, so their contents cannot be
   // trusted. Use CloudPolicyStore::policy() and CloudPolicyStore::policy_map()
   // instead for making policy decisions.
-  const ResponseMap& responses() const {
-    return responses_;
-  }
+  const ResponseMap& responses() const { return responses_; }
 
   // Returns the policy response for the (|policy_type|, |settings_entity_id|)
   // pair if found in |responses()|. Otherwise returns nullptr.
@@ -456,9 +455,7 @@ class POLICY_EXPORT CloudPolicyClient {
       const std::string& policy_type,
       const std::string& settings_entity_id) const;
 
-  DeviceManagementStatus status() const {
-    return status_;
-  }
+  DeviceManagementStatus status() const { return status_; }
 
   // Returns the invalidation version that was used for the last FetchPolicy.
   // Observers can call this method from their OnPolicyFetched method to
@@ -610,7 +607,7 @@ class POLICY_EXPORT CloudPolicyClient {
   void NotifyPolicyFetched();
   void NotifyRegistrationStateChanged();
   void NotifyClientError();
-  void NotifyServiceAccountChanged();
+  void NotifyServiceAccountSet(const std::string& account_email);
 
   // Data necessary for constructing policy requests.
   const std::string machine_id_;
@@ -700,9 +697,6 @@ class POLICY_EXPORT CloudPolicyClient {
   // during re-registration, which gets triggered by a failed policy fetch with
   // error |DM_STATUS_SERVICE_DEVICE_NOT_FOUND|.
   std::string reregistration_dm_token_;
-
-  // The Service Account email that was set on the last policy fetch.
-  std::string service_account_email_;
 
   // Used to create tasks which run delayed on the UI thread.
   base::WeakPtrFactory<CloudPolicyClient> weak_ptr_factory_{this};

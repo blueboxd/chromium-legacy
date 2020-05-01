@@ -38,7 +38,6 @@
 #include "services/network/public/mojom/fetch_api.mojom-blink-forward.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/core/inspector/inspector_issue_storage.h"
 #include "third_party/blink/renderer/core/workers/parent_execution_context_task_runners.h"
 #include "third_party/blink/renderer/core/workers/worker_backing_thread_startup_data.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
@@ -59,6 +58,7 @@ namespace blink {
 
 class ConsoleMessageStorage;
 class InspectorTaskRunner;
+class InspectorIssueStorage;
 class WorkerBackingThread;
 class WorkerInspectorController;
 class WorkerOrWorkletGlobalScope;

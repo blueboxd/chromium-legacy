@@ -1157,10 +1157,11 @@ void RootWindowController::CreateContainers() {
   ::wm::SetChildWindowVisibilityChangesAnimated(menu_container);
   menu_container->SetProperty(::wm::kUsesScreenCoordinatesKey, true);
 
-  aura::Window* autoclick_container = CreateContainer(
-      kShellWindowId_AutoclickContainer, "AutoclickBubbleContainer",
-      lock_screen_related_containers);
-  autoclick_container->SetProperty(::wm::kUsesScreenCoordinatesKey, true);
+  aura::Window* accessibility_bubble_container = CreateContainer(
+      kShellWindowId_AccessibilityBubbleContainer,
+      "AccessibilityBubbleContainer", lock_screen_related_containers);
+  accessibility_bubble_container->SetProperty(::wm::kUsesScreenCoordinatesKey,
+                                              true);
 
   aura::Window* drag_drop_container = CreateContainer(
       kShellWindowId_DragImageAndTooltipContainer,

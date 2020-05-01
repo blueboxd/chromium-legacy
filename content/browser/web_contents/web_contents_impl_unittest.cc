@@ -1373,9 +1373,9 @@ TEST_F(WebContentsImplTest, CrossSiteNotPreemptedDuringBeforeUnload) {
   EXPECT_NE(orig_rfh, pending_rfh);
 
   // Suppose the first navigation tries to commit now, with a
-  // FrameMsg_Stop in flight.  This should not cancel the pending navigation,
-  // but it should act as if the beforeunload completion callback had been
-  // invoked.
+  // blink::mojom::LocalFrame::StopLoading() in flight. This should not cancel
+  // the pending navigation, but it should act as if the beforeunload completion
+  // callback had been invoked.
   same_site_navigation->Commit();
   EXPECT_TRUE(contents()->CrossProcessNavigationPending());
   EXPECT_EQ(orig_rfh, main_test_rfh());

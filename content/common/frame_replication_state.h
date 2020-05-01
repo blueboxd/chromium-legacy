@@ -18,7 +18,9 @@
 #include "url/origin.h"
 
 namespace blink {
-enum class WebTreeScopeType;
+namespace mojom {
+enum class TreeScopeType;
+}
 }
 
 namespace content {
@@ -28,7 +30,7 @@ namespace content {
 struct CONTENT_EXPORT FrameReplicationState {
   FrameReplicationState();
   FrameReplicationState(
-      blink::WebTreeScopeType scope,
+      blink::mojom::TreeScopeType scope,
       const std::string& name,
       const std::string& unique_name,
       blink::mojom::InsecureRequestPolicy insecure_request_policy,
@@ -118,7 +120,7 @@ struct CONTENT_EXPORT FrameReplicationState {
   // created. However, making it const makes it a pain to embed into IPC message
   // params: having a const member implicitly deletes the copy assignment
   // operator.
-  blink::WebTreeScopeType scope;
+  blink::mojom::TreeScopeType scope;
 
   // The insecure request policy that a frame's current document is enforcing.
   // Updates are immediately sent to all frame proxies when frames live in

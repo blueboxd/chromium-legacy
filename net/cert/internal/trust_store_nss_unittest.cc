@@ -298,26 +298,16 @@ TEST_P(TrustStoreNSSTestWithSlotFilterType, CertsNotPresent) {
   EXPECT_TRUE(TrustStoreContains(newroot_, ParsedCertificateList()));
 }
 
-#if !defined(OS_CHROMEOS)
-// TrustStoreNSS should not return temporary certs. (See
-// https://crbug.com/951166)
-TEST_P(TrustStoreNSSTestWithSlotFilterType, TempCertNotPresent) {
-  ScopedCERTCertificate temp_nss_cert(x509_util::CreateCERTCertificateFromBytes(
-      newintermediate_->der_cert().UnsafeData(),
-      newintermediate_->der_cert().Length()));
-  EXPECT_TRUE(TrustStoreContains(target_, ParsedCertificateList()));
-}
-#else   // !defined(OS_CHROMEOS)
 // TrustStoreNSS should return temporary certs on Chrome OS, because on Chrome
 // OS temporary certs are used to supply policy-provided untrusted authority
 // certs. (See https://crbug.com/978854)
+// On other platforms it's not required but doesn't hurt anything.
 TEST_P(TrustStoreNSSTestWithSlotFilterType, TempCertPresent) {
   ScopedCERTCertificate temp_nss_cert(x509_util::CreateCERTCertificateFromBytes(
       newintermediate_->der_cert().UnsafeData(),
       newintermediate_->der_cert().Length()));
   EXPECT_TRUE(TrustStoreContains(target_, {newintermediate_}));
 }
-#endif  // !defined(OS_CHROMEOS)
 
 // Independent of the specified slot-based filtering mode, built-in root certs
 // should always be trusted.

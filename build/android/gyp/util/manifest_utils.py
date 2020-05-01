@@ -120,6 +120,34 @@ def NormalizeManifest(path):
   with open(path) as f:
     # This also strips comments and sorts node attributes alphabetically.
     root = ElementTree.fromstring(f.read())
+    package = GetPackage(root)
+
+  # Trichrome's static library version number is updated daily. To avoid
+  # frequent manifest check failures, we remove the exact version number
+  # during normalization.
+  app_node = root.find('application')
+  if app_node is not None:
+    for node in app_node.getchildren():
+      if (node.tag in ['uses-static-library', 'static-library']
+          and '{%s}version' % ANDROID_NAMESPACE in node.keys()
+          and '{%s}name' % ANDROID_NAMESPACE in node.keys()):
+        node.set('{%s}version' % ANDROID_NAMESPACE, '$VERSION_NUMBER')
+
+  # We also remove the exact package name (except the one at the root level)
+  # to avoid noise during manifest comparison.
+  def blur_package_name(node):
+    for key in node.keys():
+      node.set(key, node.get(key).replace(package, '$PACKAGE'))
+
+    for child in node.getchildren():
+      blur_package_name(child)
+
+  # We only blur the package names of non-root nodes because they generate a lot
+  # of diffs when doing manifest checks for upstream targets. We still want to
+  # have 1 piece of package name not blurred just in case the package name is
+  # mistakenly changed.
+  for child in root.getchildren():
+    blur_package_name(child)
 
   # Sort nodes alphabetically, recursively.
   _SortAndStripElementTree(root, reverse_toplevel=True)

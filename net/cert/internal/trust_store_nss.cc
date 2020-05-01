@@ -56,25 +56,6 @@ void TrustStoreNSS::SyncGetIssuersOf(const ParsedCertificate* cert,
 
   for (CERTCertListNode* node = CERT_LIST_HEAD(found_certs);
        !CERT_LIST_END(node, found_certs); node = CERT_LIST_NEXT(node)) {
-#if !defined(OS_CHROMEOS)
-    // TODO(mattm): use CERT_GetCertIsTemp when minimum NSS version is >= 3.31.
-    if (node->cert->istemp) {
-      // Ignore temporary NSS certs on platforms other than Chrome OS. This
-      // ensures that during the trial when CertVerifyProcNSS and
-      // CertVerifyProcBuiltin are being used simultaneously, the builtin
-      // verifier does not get to "cheat" by using AIA fetched certs from
-      // CertVerifyProcNSS.
-      // TODO(https://crbug.com/951479): remove this when CertVerifyProcBuiltin
-      // becomes the default.
-      // This is not done for Chrome OS because temporary NSS certs are
-      // currently used there to implement policy-provided untrusted authority
-      // certificates, and no trials are being done on Chrome OS.
-      // TODO(https://crbug.com/978854): remove the Chrome OS exception when
-      // certificates are passed.
-      continue;
-    }
-#endif  // !defined(OS_CHROMEOS)
-
     CertErrors parse_errors;
     scoped_refptr<ParsedCertificate> cur_cert = ParsedCertificate::Create(
         x509_util::CreateCryptoBuffer(node->cert->derCert.data,

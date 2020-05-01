@@ -180,10 +180,8 @@ bool KeyframeEffectModelBase::SnapshotCompositableProperties(
   // ensure that it can be animated.
   const PropertyRegistry* property_registry =
       element.GetDocument().GetPropertyRegistry();
-  if (!property_registry) {
-    // TODO(kevers): Change to DCHECK once CSSVariables2Enabled flag is removed.
+  if (!property_registry)
     return updated;
-  }
 
   if (auto* inherited_variables = computed_style.InheritedVariables()) {
     for (const auto& name : inherited_variables->GetCustomPropertyNames()) {

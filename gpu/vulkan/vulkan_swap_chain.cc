@@ -5,6 +5,7 @@
 #include "gpu/vulkan/vulkan_swap_chain.h"
 
 #include "base/bind.h"
+#include "base/time/time.h"
 #include "gpu/vulkan/vulkan_command_buffer.h"
 #include "gpu/vulkan/vulkan_command_pool.h"
 #include "gpu/vulkan/vulkan_device_queue.h"
@@ -346,14 +347,33 @@ bool VulkanSwapChain::AcquireNextImage() {
     VkSemaphore vk_semaphore = CreateSemaphore(device);
     DCHECK(vk_semaphore != VK_NULL_HANDLE);
 
+#if defined(USE_X11)
+    // The xserver should still composite windows with a 1Hz fake vblank when
+    // screen is off or the window is offscreen. However there is an xserver
+    // bug, the requested hardware vblanks are lost, when screen turns off, so
+    // FIFO swapchain will hang.
+    // Workaround the issue by using the 2 seconds timeout for
+    // vkAcquireNextImageKHR(). When timeout happens, we consider the swapchain
+    // hang hanppened, and then make the surface lost, so a new swapchain will
+    // be recreated.
+    constexpr uint64_t kTimeout = base::Time::kNanosecondsPerSecond * 2;
+#else
+    constexpr uint64_t kTimeout = UINT64_MAX;
+#endif
     // Acquire the next image.
     uint32_t next_image;
     auto result =
-        vkAcquireNextImageKHR(device, swap_chain_, UINT64_MAX, vk_semaphore,
+        vkAcquireNextImageKHR(device, swap_chain_, kTimeout, vk_semaphore,
                               VK_NULL_HANDLE, &next_image);
+    if (result == VK_TIMEOUT) {
+      LOG(ERROR) << "vkAcquireNextImageKHR() hangs.";
+      state_ = VK_ERROR_SURFACE_LOST_KHR;
+      return false;
+    }
     if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
       vkDestroySemaphore(device, vk_semaphore, nullptr /* pAllocator */);
-      LOG(FATAL) << "vkAcquireNextImageKHR() failed: " << result;
+      LOG(DFATAL) << "vkAcquireNextImageKHR() failed: " << result;
+      state_ = result;
       return false;
     }
 

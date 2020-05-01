@@ -13,6 +13,7 @@
 #include "components/account_id/account_id.h"
 #include "components/policy/core/common/cloud/user_cloud_policy_store_base.h"
 #include "components/policy/policy_export.h"
+#include "components/policy/proto/device_management_backend.pb.h"
 #include "components/policy/proto/policy_signing_key.pb.h"
 
 namespace base {
@@ -20,6 +21,46 @@ class SequencedTaskRunner;
 }
 
 namespace policy {
+
+// This enum is used to define the buckets for an enumerated UMA histogram.
+// Hence,
+//   (a) existing enumerated constants should never be deleted or reordered, and
+//   (b) new constants should only be appended at the end of the enumeration.
+//
+// Keep this in sync with EnterprisePolicyLoadStatus in histograms.xml.
+enum PolicyLoadStatusForUma {
+  // Policy blob was successfully loaded and parsed.
+  LOAD_RESULT_SUCCESS,
+
+  // No previously stored policy was found.
+  LOAD_RESULT_NO_POLICY_FILE,
+
+  // Could not load the previously stored policy due to either a parse or
+  // file read error.
+  LOAD_RESULT_LOAD_ERROR,
+
+  // LOAD_RESULT_SIZE is the number of items in this enum and is used when
+  // logging histograms to set the bucket size, so should always be the last
+  // item.
+  LOAD_RESULT_SIZE,
+};
+
+// Struct containing the result of a policy load - if |status| ==
+// LOAD_RESULT_SUCCESS, |policy| is initialized from the policy file on disk.
+// |key| is initialized from the signing key file on disk.
+// |skip_key_signature_validation| must remain false except if the policy being
+// loaded is from a secure location and no signing key file is provided.
+struct PolicyLoadResult {
+  PolicyLoadStatusForUma status;
+  enterprise_management::PolicyFetchResponse policy;
+  enterprise_management::PolicySigningKey key;
+  bool skip_key_signature_validation = false;
+};
+
+// Function that takes in a PolicyLoadResult and returns a PolicyLoadResult with
+// filtered policies.
+using PolicyLoadFilter =
+    base::RepeatingCallback<PolicyLoadResult(PolicyLoadResult)>;
 
 // Implements a cloud policy store that stores policy on desktop. This is used
 // on (non-chromeos) platforms that do not have a secure storage
@@ -29,6 +70,7 @@ class POLICY_EXPORT DesktopCloudPolicyStore : public UserCloudPolicyStoreBase {
   DesktopCloudPolicyStore(
       const base::FilePath& policy_file,
       const base::FilePath& key_file,
+      PolicyLoadFilter policy_load_filter,
       scoped_refptr<base::SequencedTaskRunner> background_task_runner,
       PolicyScope policy_scope,
       PolicySource policy_source);
@@ -46,11 +88,17 @@ class POLICY_EXPORT DesktopCloudPolicyStore : public UserCloudPolicyStoreBase {
   void Store(const enterprise_management::PolicyFetchResponse& policy) override;
 
  protected:
+  // Loads cloud policies that have been written on the disk at |policy_path|
+  // for caching purposes. Reads the optional |key_path| to load the signing key
+  // for those policies.
+  static PolicyLoadResult LoadPolicyFromDisk(const base::FilePath& policy_path,
+                                             const base::FilePath& key_path);
+
   // Callback invoked when a new policy has been loaded from disk. If
   // |validate_in_background| is true, then policy is validated via a background
   // thread.
   void PolicyLoaded(bool validate_in_background,
-                    struct PolicyLoadResult policy_load_result);
+                    PolicyLoadResult policy_load_result);
 
   // Starts policy blob validation. |callback| is invoked once validation is
   // complete. If |validate_in_background| is true, then the validation work
@@ -77,6 +125,16 @@ class POLICY_EXPORT DesktopCloudPolicyStore : public UserCloudPolicyStoreBase {
   // Callback invoked to store the policy after validation has finished.
   void OnPolicyToStoreValidated(UserCloudPolicyValidator* validator);
 
+ private:
+  // Loads cloud policies that have been written on the disk at |policy_path|
+  // for caching purposes. Reads the optional |key_path| to load the signing key
+  // for those policies. |policy_load_filter| is used to filter the policies
+  // loaded.
+  static PolicyLoadResult LoadAndFilterPolicyFromDisk(
+      const base::FilePath& policy_path,
+      const base::FilePath& key_path,
+      const PolicyLoadFilter& policy_load_filter);
+
   // The current key used to verify signatures of policy. This value is
   // eventually consistent with the one persisted in the key cache file. This
   // is, generally, different from |policy_signature_public_key_| member of
@@ -89,6 +147,9 @@ class POLICY_EXPORT DesktopCloudPolicyStore : public UserCloudPolicyStoreBase {
 
   // Path to file where we store the signing key for the policy blob.
   base::FilePath key_path_;
+
+  // Function to filter load policies.
+  PolicyLoadFilter policy_load_filter_;
 
   // WeakPtrFactory used to create callbacks for validating and storing policy.
   base::WeakPtrFactory<DesktopCloudPolicyStore> weak_factory_{this};

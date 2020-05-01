@@ -14,12 +14,12 @@
 
 namespace blink {
 
-class LocalFrame;
+class LocalDOMWindow;
 
 class MODULES_EXPORT ManifestChangeNotifier
     : public GarbageCollected<ManifestChangeNotifier> {
  public:
-  explicit ManifestChangeNotifier(LocalFrame& frame);
+  explicit ManifestChangeNotifier(LocalDOMWindow& window);
   virtual ~ManifestChangeNotifier();
 
   virtual void Trace(Visitor*);
@@ -30,7 +30,7 @@ class MODULES_EXPORT ManifestChangeNotifier
   void ReportManifestChange();
   void EnsureManifestChangeObserver();
 
-  Member<LocalFrame> frame_;
+  Member<LocalDOMWindow> window_;
   mojo::AssociatedRemote<mojom::blink::ManifestUrlChangeObserver>
       manifest_change_observer_;
   bool report_task_scheduled_ = false;

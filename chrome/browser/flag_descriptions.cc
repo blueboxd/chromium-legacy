@@ -1387,6 +1387,11 @@ const char kOmniboxSpareRendererDescription[] =
     "When the omnibox is focused, start an empty spare renderer. This can "
     "speed up the load of the navigation from the omnibox.";
 
+const char kOmniboxSuggestionsRecyclerViewName[] =
+    "Omnibox Suggestions using a recycler view";
+const char kOmniboxSuggestionsRecyclerViewDescription[] =
+    "Use an Android RecyclerView to render the Omnibox Suggestions drop down.";
+
 const char kOmniboxUIHideSteadyStateUrlSchemeName[] =
     "Omnibox UI Hide Steady-State URL Scheme";
 const char kOmniboxUIHideSteadyStateUrlSchemeDescription[] =
@@ -2562,6 +2567,10 @@ const char kAndroidPartnerCustomizationPhenotypeName[] =
 const char kAndroidPartnerCustomizationPhenotypeDescription[] =
     "This flag loads a new configuration source of the default homepage and "
     "bookmarks.";
+
+const char kPageInfoPerformanceHintsName[] = "Page info performance hints";
+const char kPageInfoPerformanceHintsDescription[] =
+    "Show site performance information in the page info menu.";
 
 const char kPasswordManagerOnboardingAndroidName[] =
     "Password manager onboarding experience";

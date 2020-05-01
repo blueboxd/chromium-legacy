@@ -13,7 +13,6 @@
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
-#include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/modules/manifest/manifest_manager.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 
@@ -39,24 +38,23 @@ void InstalledAppController::GetInstalledRelatedApps(
                     WrapPersistent(this), std::move(callbacks)));
 }
 
-void InstalledAppController::ProvideTo(LocalFrame& frame) {
-  Supplement<LocalFrame>::ProvideTo(
-      frame, MakeGarbageCollected<InstalledAppController>(frame));
-}
-
-InstalledAppController* InstalledAppController::From(LocalFrame& frame) {
+InstalledAppController* InstalledAppController::From(LocalDOMWindow& window) {
   InstalledAppController* controller =
-      Supplement<LocalFrame>::From<InstalledAppController>(frame);
-  DCHECK(controller);
+      Supplement<LocalDOMWindow>::From<InstalledAppController>(window);
+  if (!controller) {
+    controller = MakeGarbageCollected<InstalledAppController>(window);
+    Supplement<LocalDOMWindow>::ProvideTo(window, controller);
+  }
+
   return controller;
 }
 
 const char InstalledAppController::kSupplementName[] = "InstalledAppController";
 
-InstalledAppController::InstalledAppController(LocalFrame& frame)
-    : Supplement<LocalFrame>(frame),
-      ExecutionContextClient(frame.DomWindow()),
-      provider_(frame.DomWindow()) {}
+InstalledAppController::InstalledAppController(LocalDOMWindow& window)
+    : Supplement<LocalDOMWindow>(window),
+      ExecutionContextClient(&window),
+      provider_(&window) {}
 
 void InstalledAppController::OnGetManifestForRelatedApps(
     std::unique_ptr<AppInstalledCallbacks> callbacks,
@@ -106,7 +104,7 @@ void InstalledAppController::OnFilterInstalledApps(
 
 void InstalledAppController::Trace(Visitor* visitor) {
   visitor->Trace(provider_);
-  Supplement<LocalFrame>::Trace(visitor);
+  Supplement<LocalDOMWindow>::Trace(visitor);
   ExecutionContextClient::Trace(visitor);
 }
 

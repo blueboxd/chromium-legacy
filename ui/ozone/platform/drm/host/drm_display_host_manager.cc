@@ -365,19 +365,19 @@ void DrmDisplayHostManager::OnGpuThreadReady() {
 void DrmDisplayHostManager::OnGpuThreadRetired() {}
 
 void DrmDisplayHostManager::GpuHasUpdatedNativeDisplays(
-    const std::vector<DisplaySnapshot_Params>& params_vector) {
+    MovableDisplaySnapshots displays) {
   if (delegate_)
     delegate_->OnDisplaySnapshotsInvalidated();
   std::vector<std::unique_ptr<DrmDisplayHost>> old_displays;
   displays_.swap(old_displays);
-  for (const auto& params : params_vector) {
+  for (auto& display : displays) {
     auto it = std::find_if(old_displays.begin(), old_displays.end(),
-                           FindDrmDisplayHostById(params.display_id));
+                           FindDrmDisplayHostById(display->display_id()));
     if (it == old_displays.end()) {
       displays_.push_back(std::make_unique<DrmDisplayHost>(
-          proxy_, CreateDisplaySnapshot(params), false /* is_dummy */));
+          proxy_, std::move(display), false /* is_dummy */));
     } else {
-      (*it)->UpdateDisplaySnapshot(CreateDisplaySnapshot(params));
+      (*it)->UpdateDisplaySnapshot(std::move(display));
       displays_.push_back(std::move(*it));
       old_displays.erase(it);
     }

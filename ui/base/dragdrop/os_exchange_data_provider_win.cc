@@ -44,7 +44,7 @@ namespace ui {
 
 static const ClipboardFormatType& GetRendererTaintFormatType() {
   static base::NoDestructor<ClipboardFormatType> format(
-      ui::ClipboardFormatType::GetType("chromium/x-renderer-taint"));
+      ClipboardFormatType::GetType("chromium/x-renderer-taint"));
   return *format;
 }
 

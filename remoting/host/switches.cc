@@ -39,8 +39,6 @@ const char kOutputSwitchName[] = "output";
 
 const char kMojoPipeToken[] = "mojo-pipe-token";
 
-const char kUpgradeTokenSwitchName[] = "upgrade-token";
-
 #if defined(OS_MACOSX)
 const char kCheckPermissionSwitchName[] = "check-permission";
 const char kCheckAccessibilityPermissionSwitchName[] =

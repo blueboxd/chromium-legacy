@@ -87,7 +87,10 @@ struct ContentSecurityPolicy {
 
   // Spec: https://www.w3.org/TR/upgrade-insecure-requests/
   bool upgrade_insecure_requests = false;
-  // TODO(https://crbug.com/1042164) Add 'treat-as-public-address'.
+
+  // https://wicg.github.io/cors-rfc1918/#csp
+  bool treat_as_public_address = false;
+
   // TODO(https://crbug.com/1041376) Add 'sandbox'.
 
   ContentSecurityPolicyHeader header;

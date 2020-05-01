@@ -9,7 +9,6 @@
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 
 #include "third_party/blink/public/platform/web_string.h"
-#include "third_party/blink/public/web/web_inspector_issue.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 

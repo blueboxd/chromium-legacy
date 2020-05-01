@@ -31,6 +31,7 @@ class ConfigurationPolicyProvider;
 class MachineLevelUserCloudPolicyManager;
 class MachineLevelUserCloudPolicyFetcher;
 class ChromeBrowserCloudManagementRegisterWatcher;
+class MachineLevelDeviceAccountInitializerHelper;
 
 // A class that setups and manages all CBCM related features.
 class ChromeBrowserCloudManagementController
@@ -102,10 +103,16 @@ class ChromeBrowserCloudManagementController
   void OnPolicyFetched(CloudPolicyClient* client) override;
   void OnRegistrationStateChanged(CloudPolicyClient* client) override;
   void OnClientError(CloudPolicyClient* client) override;
-  void OnServiceAccountChanged(CloudPolicyClient* client) override;
+  void OnServiceAccountSet(CloudPolicyClient* client,
+                           const std::string& account_email) override;
 
   // Early cleanup during browser shutdown process
   void ShutDown();
+
+  // Sets the SharedURLLoaderFactory that this object will use to make requests
+  // to GAIA.
+  void SetGaiaURLLoaderFactory(
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
 
  protected:
   void NotifyPolicyRegisterFinished(bool succeeded);
@@ -142,6 +149,11 @@ class ChromeBrowserCloudManagementController
   std::unique_ptr<enterprise_reporting::ReportScheduler> report_scheduler_;
 
   std::unique_ptr<policy::CloudPolicyClient> cloud_policy_client_;
+
+  std::unique_ptr<MachineLevelDeviceAccountInitializerHelper>
+      account_initializer_helper_;
+
+  scoped_refptr<network::SharedURLLoaderFactory> gaia_url_loader_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeBrowserCloudManagementController);
 };

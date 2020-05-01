@@ -38,11 +38,10 @@ public interface SuggestionProcessor {
     void onNativeInitialized();
 
     /**
-     * Create a model for a suggestion at the specified position.
-     * @param suggestion The suggestion to create the model for.
+     * Create a model for suggestions managed by the processor.
      * @return A model for the suggestion.
      */
-    PropertyModel createModelForSuggestion(OmniboxSuggestion suggestion);
+    PropertyModel createModel();
 
     /**
      * Populate a model for the given suggestion.

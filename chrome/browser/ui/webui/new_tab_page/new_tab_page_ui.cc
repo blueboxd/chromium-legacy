@@ -23,6 +23,7 @@
 #include "chrome/grit/new_tab_page_resources.h"
 #include "chrome/grit/new_tab_page_resources_map.h"
 #include "components/favicon_base/favicon_url_parser.h"
+#include "components/omnibox/common/omnibox_features.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/url_data_source.h"
 #include "content/public/browser/web_ui_data_source.h"
@@ -57,6 +58,9 @@ content::WebUIDataSource* CreateNewTabPageUiHtmlSource(Profile* profile) {
 
   // Realbox.
   source->AddBoolean("realboxEnabled", ntp_features::IsRealboxEnabled());
+  source->AddBoolean("suggestionTransparencyEnabled",
+                     base::FeatureList::IsEnabled(
+                         omnibox::kOmniboxSuggestionTransparencyOptions));
   source->AddBoolean(
       "realboxMatchOmniboxTheme",
       base::FeatureList::IsEnabled(ntp_features::kRealboxMatchOmniboxTheme));
@@ -170,6 +174,8 @@ content::WebUIDataSource* CreateNewTabPageUiHtmlSource(Profile* profile) {
                           IDR_NEW_TAB_PAGE_SKCOLOR_MOJO_LITE_JS);
   source->AddResourcePath("new_tab_page.mojom-lite.js",
                           IDR_NEW_TAB_PAGE_MOJO_LITE_JS);
+  source->AddResourcePath("omnibox.mojom-lite.js",
+                          IDR_NEW_TAB_PAGE_OMNIBOX_MOJO_LITE_JS);
 #if BUILDFLAG(OPTIMIZE_WEBUI)
   source->AddResourcePath("new_tab_page.js", IDR_NEW_TAB_PAGE_NEW_TAB_PAGE_JS);
 #endif  // BUILDFLAG(OPTIMIZE_WEBUI)

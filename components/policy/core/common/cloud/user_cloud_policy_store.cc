@@ -25,37 +25,6 @@ namespace em = enterprise_management;
 
 namespace policy {
 
-// This enum is used to define the buckets for an enumerated UMA histogram.
-// Hence,
-//   (a) existing enumerated constants should never be deleted or reordered, and
-//   (b) new constants should only be appended at the end of the enumeration.
-//
-// Keep this in sync with EnterprisePolicyLoadStatus in histograms.xml.
-enum PolicyLoadStatusForUma {
-  // Policy blob was successfully loaded and parsed.
-  LOAD_RESULT_SUCCESS,
-
-  // No previously stored policy was found.
-  LOAD_RESULT_NO_POLICY_FILE,
-
-  // Could not load the previously stored policy due to either a parse or
-  // file read error.
-  LOAD_RESULT_LOAD_ERROR,
-
-  // LOAD_RESULT_SIZE is the number of items in this enum and is used when
-  // logging histograms to set the bucket size, so should always be the last
-  // item.
-  LOAD_RESULT_SIZE,
-};
-
-// Struct containing the result of a policy load - if |status| ==
-// LOAD_RESULT_SUCCESS, |policy| is initialized from the policy file on disk.
-struct PolicyLoadResult {
-  PolicyLoadStatusForUma status;
-  em::PolicyFetchResponse policy;
-  em::PolicySigningKey key;
-};
-
 namespace {
 
 // Subdirectory in the user's profile for storing user policies.
@@ -74,49 +43,6 @@ const char kMetricPolicyHasVerifiedCachedKey[] =
 // Maximum policy and key size that will be loaded, in bytes.
 const size_t kPolicySizeLimit = 1024 * 1024;
 const size_t kKeySizeLimit = 16 * 1024;
-
-// Loads policy from the backing file. Returns a PolicyLoadResult with the
-// results of the fetch.
-policy::PolicyLoadResult LoadPolicyFromDisk(const base::FilePath& policy_path,
-                                            const base::FilePath& key_path) {
-  policy::PolicyLoadResult result;
-  // If the backing file does not exist, just return. We don't verify the key
-  // path here, because the key is optional (the validation code will fail if
-  // the key does not exist but the loaded policy is unsigned).
-  if (!base::PathExists(policy_path)) {
-    result.status = policy::LOAD_RESULT_NO_POLICY_FILE;
-    return result;
-  }
-  std::string data;
-
-  if (!base::ReadFileToStringWithMaxSize(policy_path, &data,
-                                         kPolicySizeLimit) ||
-      !result.policy.ParseFromString(data)) {
-    LOG(WARNING) << "Failed to read or parse policy data from "
-                 << policy_path.value();
-    result.status = policy::LOAD_RESULT_LOAD_ERROR;
-    return result;
-  }
-
-  if (!base::ReadFileToStringWithMaxSize(key_path, &data, kKeySizeLimit) ||
-      !result.key.ParseFromString(data)) {
-    // Log an error on missing key data, but do not trigger a load failure
-    // for now since there are still old unsigned cached policy blobs in the
-    // wild with no associated key (see kMetricPolicyHasVerifiedCachedKey UMA
-    // stat below).
-    LOG(ERROR) << "Failed to read or parse key data from " << key_path.value();
-    result.key.clear_signing_key();
-  }
-
-  // Track the occurrence of valid cached keys - when this ratio gets high
-  // enough, we can update the code to reject unsigned policy or unverified
-  // keys.
-  UMA_HISTOGRAM_BOOLEAN(kMetricPolicyHasVerifiedCachedKey,
-                        result.key.has_signing_key());
-
-  result.status = policy::LOAD_RESULT_SUCCESS;
-  return result;
-}
 
 bool WriteStringToFile(const base::FilePath path, const std::string& data) {
   if (!base::CreateDirectory(path.DirName())) {
@@ -171,6 +97,7 @@ void StorePolicyToDiskOnBackgroundThread(
 DesktopCloudPolicyStore::DesktopCloudPolicyStore(
     const base::FilePath& policy_path,
     const base::FilePath& key_path,
+    PolicyLoadFilter policy_load_filter,
     scoped_refptr<base::SequencedTaskRunner> background_task_runner,
     PolicyScope policy_scope,
     PolicySource policy_source)
@@ -178,7 +105,8 @@ DesktopCloudPolicyStore::DesktopCloudPolicyStore(
                                policy_scope,
                                policy_source),
       policy_path_(policy_path),
-      key_path_(key_path) {}
+      key_path_(key_path),
+      policy_load_filter_(std::move(policy_load_filter)) {}
 
 DesktopCloudPolicyStore::~DesktopCloudPolicyStore() {}
 
@@ -187,7 +115,8 @@ void DesktopCloudPolicyStore::LoadImmediately() {
   // Cancel any pending Load/Store/Validate operations.
   weak_factory_.InvalidateWeakPtrs();
   // Load the policy from disk...
-  PolicyLoadResult result = LoadPolicyFromDisk(policy_path_, key_path_);
+  PolicyLoadResult result =
+      LoadAndFilterPolicyFromDisk(policy_path_, key_path_, policy_load_filter_);
   // ...and install it, reporting success/failure to any observers.
   PolicyLoaded(false, result);
 }
@@ -215,9 +144,64 @@ void DesktopCloudPolicyStore::Load() {
   // complete.
   base::PostTaskAndReplyWithResult(
       background_task_runner().get(), FROM_HERE,
-      base::BindOnce(&LoadPolicyFromDisk, policy_path_, key_path_),
+      base::BindOnce(&DesktopCloudPolicyStore::LoadAndFilterPolicyFromDisk,
+                     policy_path_, key_path_, policy_load_filter_),
       base::BindOnce(&DesktopCloudPolicyStore::PolicyLoaded,
                      weak_factory_.GetWeakPtr(), true));
+}
+
+// static
+PolicyLoadResult DesktopCloudPolicyStore::LoadAndFilterPolicyFromDisk(
+    const base::FilePath& policy_path,
+    const base::FilePath& key_path,
+    const PolicyLoadFilter& policy_load_filter) {
+  policy::PolicyLoadResult result =
+      DesktopCloudPolicyStore::LoadPolicyFromDisk(policy_path, key_path);
+  return policy_load_filter ? policy_load_filter.Run(std::move(result))
+                            : result;
+}
+
+// static
+PolicyLoadResult DesktopCloudPolicyStore::LoadPolicyFromDisk(
+    const base::FilePath& policy_path,
+    const base::FilePath& key_path) {
+  policy::PolicyLoadResult result;
+  // If the backing file does not exist, just return. We don't verify the key
+  // path here, because the key is optional (the validation code will fail if
+  // the key does not exist but the loaded policy is unsigned).
+  if (!base::PathExists(policy_path)) {
+    result.status = policy::LOAD_RESULT_NO_POLICY_FILE;
+    return result;
+  }
+  std::string data;
+
+  if (!base::ReadFileToStringWithMaxSize(policy_path, &data,
+                                         kPolicySizeLimit) ||
+      !result.policy.ParseFromString(data)) {
+    LOG(WARNING) << "Failed to read or parse policy data from "
+                 << policy_path.value();
+    result.status = policy::LOAD_RESULT_LOAD_ERROR;
+    return result;
+  }
+
+  result.status = policy::LOAD_RESULT_SUCCESS;
+
+  if (key_path.empty())
+    return result;
+
+  if (!base::ReadFileToStringWithMaxSize(key_path, &data, kKeySizeLimit) ||
+      !result.key.ParseFromString(data)) {
+    LOG(ERROR) << "Failed to read or parse key data from " << key_path;
+    result.key.clear_signing_key();
+  }
+
+  // Track the occurrence of valid cached keys - when this ratio gets high
+  // enough, we can update the code to reject unsigned policy or unverified
+  // keys.
+  UMA_HISTOGRAM_BOOLEAN(kMetricPolicyHasVerifiedCachedKey,
+                        result.key.has_signing_key());
+
+  return result;
 }
 
 void DesktopCloudPolicyStore::PolicyLoaded(bool validate_in_background,
@@ -240,12 +224,13 @@ void DesktopCloudPolicyStore::PolicyLoaded(bool validate_in_background,
       // Found policy on disk - need to validate it before it can be used.
       std::unique_ptr<em::PolicyFetchResponse> cloud_policy(
           new em::PolicyFetchResponse(result.policy));
-      std::unique_ptr<em::PolicySigningKey> key(
-          new em::PolicySigningKey(result.key));
+      std::unique_ptr<em::PolicySigningKey> key;
+      if (!result.skip_key_signature_validation)
+        key = std::make_unique<em::PolicySigningKey>(result.key);
 
       bool doing_key_rotation = false;
-      if (!key->has_verification_key() ||
-          key->verification_key() != GetPolicyVerificationKey()) {
+      if (key && (!key->has_verification_key() ||
+                  key->verification_key() != GetPolicyVerificationKey())) {
         // The cached key didn't match our current key, so we're doing a key
         // rotation - make sure we request a new key from the server on our
         // next fetch.
@@ -407,6 +392,7 @@ UserCloudPolicyStore::UserCloudPolicyStore(
     scoped_refptr<base::SequencedTaskRunner> background_task_runner)
     : DesktopCloudPolicyStore(policy_path,
                               key_path,
+                              PolicyLoadFilter(),
                               background_task_runner,
                               PolicyScope::POLICY_SCOPE_USER,
                               PolicySource::POLICY_SOURCE_CLOUD) {}

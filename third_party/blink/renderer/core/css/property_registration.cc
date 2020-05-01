@@ -54,7 +54,6 @@ PropertyRegistration::PropertyRegistration(
               syntax,
               *this)),
       referenced_(false) {
-  DCHECK(RuntimeEnabledFeatures::CSSVariables2Enabled());
 }
 
 static bool ComputationallyIndependent(const CSSValue& value) {
@@ -146,7 +145,7 @@ void PropertyRegistration::DeclareProperty(Document& document,
   if (!initial && !syntax->IsUniversal())
     return;
 
-  document.GetPropertyRegistry()->DeclareProperty(
+  document.EnsurePropertyRegistry().DeclareProperty(
       name, *MakeGarbageCollected<PropertyRegistration>(
                 name, *syntax, inherits, initial, initial_variable_data));
 
@@ -171,7 +170,7 @@ void PropertyRegistration::registerProperty(
   }
   AtomicString atomic_name(name);
   Document* document = To<LocalDOMWindow>(execution_context)->document();
-  PropertyRegistry& registry = *document->GetPropertyRegistry();
+  PropertyRegistry& registry = document->EnsurePropertyRegistry();
   if (registry.IsInRegisteredPropertySet(atomic_name)) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kInvalidModificationError,
@@ -234,10 +233,8 @@ void PropertyRegistration::registerProperty(
 }
 
 void PropertyRegistration::RemoveDeclaredProperties(Document& document) {
-  if (PropertyRegistry* registry = document.GetPropertyRegistry()) {
-    registry->RemoveDeclaredProperties();
-    document.GetStyleEngine().PropertyRegistryChanged();
-  }
+  document.EnsurePropertyRegistry().RemoveDeclaredProperties();
+  document.GetStyleEngine().PropertyRegistryChanged();
 }
 
 }  // namespace blink

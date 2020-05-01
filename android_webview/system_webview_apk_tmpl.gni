@@ -55,6 +55,13 @@ template("system_webview_apk_or_module_tmpl") {
       deps += [ "//android_webview:android_webview_no_weblayer_java" ]
     } else {
       deps += [ "//android_webview:android_webview_java" ]
+
+      # Resources from this target will be kept in the base bundle module
+      # instead of in language splits.
+      if (!defined(invoker.shared_resources_allowlist_target)) {
+        shared_resources_allowlist_target =
+            "//android_webview:system_webview_no_weblayer_apk"
+      }
     }
 
     target_sdk_version = android_sdk_version

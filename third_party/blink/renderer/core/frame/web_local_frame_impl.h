@@ -44,6 +44,7 @@
 #include "third_party/blink/public/mojom/devtools/devtools_agent.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/frame/find_in_page.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/frame/lifecycle.mojom-blink-forward.h"
+#include "third_party/blink/public/mojom/frame/tree_scope_type.mojom-blink.h"
 #include "third_party/blink/public/mojom/portal/portal.mojom-blink-forward.h"
 #include "third_party/blink/public/platform/web_file_system_type.h"
 #include "third_party/blink/public/web/web_history_commit_type.h"
@@ -99,11 +100,10 @@ class CORE_EXPORT WebLocalFrameImpl final
   void Close() override;
   WebView* View() const override;
   v8::Local<v8::Object> GlobalProxy() const override;
-  void StopLoading() override;
   bool IsLoading() const override;
 
   // WebLocalFrame overrides:
-  WebLocalFrameImpl* CreateLocalChild(WebTreeScopeType,
+  WebLocalFrameImpl* CreateLocalChild(mojom::blink::TreeScopeType,
                                       WebLocalFrameClient*,
                                       blink::InterfaceRegistry*) override;
   WebLocalFrameClient* Client() const override { return client_; }
@@ -274,6 +274,7 @@ class CORE_EXPORT WebLocalFrameImpl final
   WebInputMethodController* GetInputMethodController() override;
   WebAssociatedURLLoader* CreateAssociatedURLLoader(
       const WebAssociatedURLLoaderOptions&) override;
+  void StopLoading() override;
   WebSize GetScrollOffset() const override;
   void SetScrollOffset(const WebSize&) override;
   WebSize DocumentSize() const override;
@@ -364,11 +365,11 @@ class CORE_EXPORT WebLocalFrameImpl final
                                               const WebString& name);
 
   WebLocalFrameImpl(util::PassKey<WebLocalFrameImpl>,
-                    WebTreeScopeType,
+                    mojom::blink::TreeScopeType,
                     WebLocalFrameClient*,
                     blink::InterfaceRegistry*);
   WebLocalFrameImpl(util::PassKey<WebRemoteFrameImpl>,
-                    WebTreeScopeType,
+                    mojom::blink::TreeScopeType,
                     WebLocalFrameClient*,
                     blink::InterfaceRegistry*);
   ~WebLocalFrameImpl() override;

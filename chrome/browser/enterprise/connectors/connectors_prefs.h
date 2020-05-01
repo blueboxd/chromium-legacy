@@ -18,6 +18,9 @@ extern const char kOnFileDownloadedPref[];
 // Pref that maps to the "OnBulkDataEntryEnterpriseConnector" policy.
 extern const char kOnBulkDataEntryPref[];
 
+// Pref that maps to the "OnSecurityEventEnterpriseConnector" policy.
+extern const char kOnSecurityEventPref[];
+
 void RegisterLocalStatePrefs(PrefRegistrySimple* registry);
 
 }  // namespace enterprise_connectors

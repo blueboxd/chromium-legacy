@@ -60,7 +60,7 @@ TEST_F(MetricsReporterTest, ScrollingCanTriggerEngaged) {
 }
 
 TEST_F(MetricsReporterTest, OpeningContentIsInteracting) {
-  reporter_.OpenAction();
+  reporter_.OpenAction(5);
 
   std::map<FeedEngagementType, int> want({
       {FeedEngagementType::kFeedEngaged, 1},
@@ -106,7 +106,7 @@ TEST_F(MetricsReporterTest, ManageInterestsInIsInteracting) {
 TEST_F(MetricsReporterTest, VisitsCanLastMoreThanFiveMinutes) {
   reporter_.StreamScrolled(1);
   clock_.Advance(base::TimeDelta::FromMinutes(5) - kEpsilon);
-  reporter_.OpenAction();
+  reporter_.OpenAction(0);
   clock_.Advance(base::TimeDelta::FromMinutes(5) - kEpsilon);
   reporter_.StreamScrolled(1);
 
@@ -120,10 +120,10 @@ TEST_F(MetricsReporterTest, VisitsCanLastMoreThanFiveMinutes) {
 }
 
 TEST_F(MetricsReporterTest, NewVisitAfterInactivity) {
-  reporter_.OpenAction();
+  reporter_.OpenAction(0);
   reporter_.StreamScrolled(1);
   clock_.Advance(base::TimeDelta::FromMinutes(5) + kEpsilon);
-  reporter_.OpenAction();
+  reporter_.OpenAction(0);
   reporter_.StreamScrolled(1);
 
   std::map<FeedEngagementType, int> want({
@@ -175,7 +175,7 @@ TEST_F(MetricsReporterTest, ReportsBackgroundRefreshStatus) {
 }
 
 TEST_F(MetricsReporterTest, OpenAction) {
-  reporter_.OpenAction();
+  reporter_.OpenAction(5);
 
   std::map<FeedEngagementType, int> want({
       {FeedEngagementType::kFeedEngaged, 1},
@@ -187,10 +187,11 @@ TEST_F(MetricsReporterTest, OpenAction) {
                    "ContentSuggestions.Feed.CardAction.Open"));
   histogram_.ExpectUniqueSample("ContentSuggestions.Feed.UserAction",
                                 FeedUserActionType::kTappedOnCard, 1);
+  histogram_.ExpectUniqueSample("NewTabPage.ContentSuggestions.Opened", 5, 1);
 }
 
 TEST_F(MetricsReporterTest, OpenInNewTabAction) {
-  reporter_.OpenInNewTabAction();
+  reporter_.OpenInNewTabAction(5);
 
   std::map<FeedEngagementType, int> want({
       {FeedEngagementType::kFeedEngaged, 1},
@@ -202,6 +203,7 @@ TEST_F(MetricsReporterTest, OpenInNewTabAction) {
                    "ContentSuggestions.Feed.CardAction.OpenInNewTab"));
   histogram_.ExpectUniqueSample("ContentSuggestions.Feed.UserAction",
                                 FeedUserActionType::kTappedOpenInNewTab, 1);
+  histogram_.ExpectUniqueSample("NewTabPage.ContentSuggestions.Opened", 5, 1);
 }
 
 TEST_F(MetricsReporterTest, OpenInNewIncognitoTabAction) {
@@ -218,6 +220,7 @@ TEST_F(MetricsReporterTest, OpenInNewIncognitoTabAction) {
   histogram_.ExpectUniqueSample(
       "ContentSuggestions.Feed.UserAction",
       FeedUserActionType::kTappedOpenInNewIncognitoTab, 1);
+  histogram_.ExpectTotalCount("NewTabPage.ContentSuggestions.Opened", 0);
 }
 
 TEST_F(MetricsReporterTest, SendFeedbackAction) {

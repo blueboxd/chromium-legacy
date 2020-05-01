@@ -30,11 +30,13 @@ def CollectSONAME(args):
 
 
 def CollectDynSym(args):
-  """Replaces: nm --format=posix -g -D $sofile | cut -f1-2 -d' '"""
+  """Replaces: nm --format=posix -g -D -p $sofile | cut -f1-2 -d' '"""
   toc = ''
-  nm = subprocess.Popen(wrapper_utils.CommandToRun([
-      args.nm, '--format=posix', '-g', '-D', args.sofile]),
-                        stdout=subprocess.PIPE, bufsize=-1)
+  nm = subprocess.Popen(
+      wrapper_utils.CommandToRun(
+          [args.nm, '--format=posix', '-g', '-D', '-p', args.sofile]),
+      stdout=subprocess.PIPE,
+      bufsize=-1)
   for line in nm.stdout:
     toc += ' '.join(line.split(' ', 2)[:2]) + '\n'
   return nm.wait(), toc

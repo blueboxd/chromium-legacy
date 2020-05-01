@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/ui/activity_services/activities/print_activity.h"
 
 #include "base/logging.h"
+#import "ios/chrome/browser/ui/activity_services/data/share_to_data.h"
 #include "ios/chrome/browser/ui/commands/browser_commands.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util_mac.h"
@@ -19,11 +20,27 @@ NSString* const kPrintActivityType = @"com.google.chrome.printActivity";
 
 }  // namespace
 
+@interface PrintActivity ()
+// The data object targeted by this activity.
+@property(nonatomic, strong, readonly) ShareToData* data;
+// The handler to be invoked when the activity is performed.
+@property(nonatomic, weak, readonly) id<BrowserCommands> handler;
+
+@end
+
 @implementation PrintActivity
-@synthesize dispatcher = _dispatcher;
 
 + (NSString*)activityIdentifier {
   return kPrintActivityType;
+}
+
+- (instancetype)initWithData:(ShareToData*)data
+                     handler:(id<BrowserCommands>)handler {
+  if (self = [super init]) {
+    _data = data;
+    _handler = handler;
+  }
+  return self;
 }
 
 #pragma mark - UIActivity
@@ -41,7 +58,7 @@ NSString* const kPrintActivityType = @"com.google.chrome.printActivity";
 }
 
 - (BOOL)canPerformWithActivityItems:(NSArray*)activityItems {
-  return YES;
+  return self.data.isPagePrintable;
 }
 
 - (void)prepareWithActivityItems:(NSArray*)activityItems {
@@ -52,7 +69,7 @@ NSString* const kPrintActivityType = @"com.google.chrome.printActivity";
 }
 
 - (void)performActivity {
-  [self.dispatcher printTab];
+  [self.handler printTab];
   [self activityDidFinish:YES];
 }
 

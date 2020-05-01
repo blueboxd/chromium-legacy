@@ -11,6 +11,7 @@
 
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
+#include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/common/content_export.h"
 
 namespace content {
@@ -18,7 +19,6 @@ namespace content {
 class FrameTree;
 class FrameTreeNode;
 class RenderFrameHostDelegate;
-class RenderFrameHostImpl;
 class RenderViewHostImpl;
 class SiteInstance;
 
@@ -36,7 +36,8 @@ class CONTENT_EXPORT RenderFrameHostFactory {
       FrameTree* frame_tree,
       FrameTreeNode* frame_tree_node,
       int32_t routing_id,
-      bool renderer_initiated_creation);
+      bool renderer_initiated_creation,
+      RenderFrameHostImpl::LifecycleState lifecycle_state);
 
   // Returns true if there is currently a globally-registered factory.
   static bool has_factory() { return !!factory_; }

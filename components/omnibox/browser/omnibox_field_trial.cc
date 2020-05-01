@@ -229,6 +229,9 @@ std::vector<std::string> OmniboxFieldTrial::GetZeroSuggestVariants(
   if (!base::FeatureList::IsEnabled(omnibox::kNewSearchFeatures))
     return {};
 
+  // Deprecated: Prefer to add a simple boolean flag that's checked directly
+  // in ZeroSuggestProvider instead of using this complicated mechanism.
+  //
   // We check all these features for ZeroSuggestVariant because it's not
   // possible to enable multiple features using Finch Forcing groups
   // (omnibox::kOnFocusSuggestions as well as another feature). Therefore, in
@@ -245,6 +248,17 @@ std::vector<std::string> OmniboxFieldTrial::GetZeroSuggestVariants(
       &omnibox::kZeroSuggestionsOnSERP,
   };
   for (const base::Feature* feature : features_to_check) {
+    // We check every feature on the list until we find one that matches
+    // |page_classification|, since GetValueForRuleInContextByFeature returns
+    // an empty string if no paramater matches |page_classification|.
+    //
+    // For instance, if we have:
+    //  kOnFocusSuggestions - ZeroSuggestVariant:7:* = RemoteNoUrl
+    //  kZeroSuggestionsOnNTPRealbox - ZeroSuggestVariant:15:* = RemoteSendUrl
+    //
+    // These can both simultaneously work, since they configure different
+    // page classifications. If one of them had a ZeroSuggestVariant:*:*
+    // wildcard rule, however, it would shadow all subsequent features.
     auto parameter_value = internal::GetValueForRuleInContextByFeature(
         *feature, kZeroSuggestVariantRule, page_classification);
     if (!parameter_value.empty()) {

@@ -84,10 +84,10 @@
 
 namespace blink {
 namespace mojom {
+enum class TreeScopeType;
 enum class WebFeature : int32_t;
 }  // namespace mojom
 
-enum class WebTreeScopeType;
 class AssociatedInterfaceProvider;
 class BrowserInterfaceBrokerProxy;
 class WebComputedAXTree;
@@ -196,7 +196,7 @@ class BLINK_EXPORT WebLocalFrameClient {
   // should create a new WebLocalFrame, insert it into the frame tree, and
   // return the created frame.
   virtual WebLocalFrame* CreateChildFrame(WebLocalFrame* parent,
-                                          WebTreeScopeType,
+                                          mojom::TreeScopeType,
                                           const WebString& name,
                                           const WebString& fallback_name,
                                           const FramePolicy&,
@@ -629,6 +629,8 @@ class BLINK_EXPORT WebLocalFrameClient {
     NOTREACHED();
     return nullptr;
   }
+
+  virtual void OnStopLoading() {}
 
   // Accessibility Object Model -------------------------------------------
 

@@ -213,14 +213,15 @@ void LayoutExampleBase::CreateMarginsTextFields(
                   kLayoutExampleVerticalSpacing;
 }
 
-Checkbox* LayoutExampleBase::CreateCheckbox(const base::string16& label_text,
-                                            int* vertical_pos) {
-  Checkbox* checkbox = new Checkbox(label_text, this);
+Checkbox* LayoutExampleBase::CreateAndAddCheckbox(
+    const base::string16& label_text,
+    int* vertical_pos) {
+  auto checkbox = std::make_unique<Checkbox>(label_text, this);
   checkbox->SetPosition(gfx::Point(kLayoutExampleLeftPadding, *vertical_pos));
   checkbox->SizeToPreferredSize();
-  control_panel_->AddChildView(checkbox);
-  *vertical_pos += checkbox->height() + kLayoutExampleVerticalSpacing;
-  return checkbox;
+  auto* checkbox_ptr = control_panel_->AddChildView(std::move(checkbox));
+  *vertical_pos += checkbox_ptr->height() + kLayoutExampleVerticalSpacing;
+  return checkbox_ptr;
 }
 
 void LayoutExampleBase::CreateExampleView(View* container) {

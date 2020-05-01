@@ -25,12 +25,14 @@ namespace blink {
 
 SurfaceLayerBridge::SurfaceLayerBridge(
     viz::FrameSinkId parent_frame_sink_id,
+    ContainsVideo contains_video,
     WebSurfaceLayerBridgeObserver* observer,
     cc::UpdateSubmissionStateCB update_submission_state_callback)
     : observer_(observer),
       update_submission_state_callback_(
           std::move(update_submission_state_callback)),
       frame_sink_id_(Platform::Current()->GenerateFrameSinkId()),
+      contains_video_(contains_video),
       parent_frame_sink_id_(parent_frame_sink_id) {
   mojo::Remote<mojom::blink::EmbeddedFrameSinkProvider> provider;
   Platform::Current()->GetBrowserInterfaceBroker()->GetInterface(
@@ -133,7 +135,7 @@ void SurfaceLayerBridge::CreateSurfaceLayer() {
   surface_layer_->SetStretchContentToFillBounds(true);
   surface_layer_->SetIsDrawable(true);
   surface_layer_->SetHitTestable(true);
-  surface_layer_->SetMayContainVideo(true);
+  surface_layer_->SetMayContainVideo(contains_video_ == ContainsVideo::kYes);
 
   if (observer_) {
     observer_->RegisterContentsLayer(surface_layer_.get());

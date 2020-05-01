@@ -20,6 +20,7 @@
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_line_box_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_text_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/layout_ng_mixin.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_block_break_token.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/paint/background_image_geometry.h"
@@ -46,6 +47,7 @@
 #include "third_party/blink/renderer/platform/graphics/graphics_context_state_saver.h"
 #include "third_party/blink/renderer/platform/graphics/paint/display_item_cache_skipper.h"
 #include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
+#include "third_party/blink/renderer/platform/graphics/paint/scoped_display_item_fragment.h"
 
 namespace blink {
 
@@ -310,6 +312,15 @@ bool NodeAtPointInFragment(const NGPhysicalBoxFragment& fragment,
                                                     accumulated_offset, action);
 }
 
+// Return an ID for this fragmentainer, which is unique within the fragmentation
+// context. We need to provide this ID when block-fragmenting, so that we can
+// cache the painting of each individual fragment.
+unsigned FragmentainerUniqueIdentifier(const NGPhysicalBoxFragment& fragment) {
+  if (const auto* break_token = To<NGBlockBreakToken>(fragment.BreakToken()))
+    return break_token->SequenceNumber() + 1;
+  return 0;
+}
+
 }  // anonymous namespace
 
 const NGBorderEdges& NGBoxFragmentPainter::BorderEdges() const {
@@ -485,6 +496,7 @@ void NGBoxFragmentPainter::PaintObject(
        physical_box_fragment.HasItems() || inline_box_cursor_) &&
       !paint_info.DescendantPaintingBlocked()) {
     if (UNLIKELY(paint_phase == PaintPhase::kForeground &&
+                 box_fragment_.IsCSSBox() &&
                  box_fragment_.Style().HasColumnRule()))
       PaintColumnRules(paint_info, paint_offset);
 
@@ -614,8 +626,7 @@ void NGBoxFragmentPainter::PaintBlockChildren(const PaintInfo& paint_info,
   for (const NGLink& child : box_fragment_.Children()) {
     const NGPhysicalFragment& child_fragment = *child;
     DCHECK(child_fragment.IsBox());
-    if (child_fragment.HasSelfPaintingLayer() || child_fragment.IsFloating() ||
-        child_fragment.IsColumnBox())
+    if (child_fragment.HasSelfPaintingLayer() || child_fragment.IsFloating())
       continue;
 
     const auto& box_child_fragment = To<NGPhysicalBoxFragment>(child_fragment);
@@ -628,6 +639,20 @@ void NGBoxFragmentPainter::PaintBlockChildren(const PaintInfo& paint_info,
         // Bypass Paint() and jump directly to PaintObject(), to skip the code
         // that assumes that we have a LayoutObject (and FragmentData).
         PhysicalOffset child_offset = paint_offset + child.offset;
+
+        if (box_child_fragment.IsColumnBox()) {
+          // This is a fragmentainer, and when node inside a fragmentation
+          // context paints multiple block fragments, we need to distinguish
+          // between them somehow, for paint caching to work. Therefore,
+          // establish a display item scope here.
+          unsigned identifier =
+              FragmentainerUniqueIdentifier(box_child_fragment);
+          ScopedDisplayItemFragment scope(paint_info.context, identifier);
+          NGBoxFragmentPainter(box_child_fragment)
+              .PaintObject(paint_info, child_offset);
+          continue;
+        }
+
         NGBoxFragmentPainter(box_child_fragment)
             .PaintObject(paint_info, child_offset);
         continue;
@@ -637,6 +662,13 @@ void NGBoxFragmentPainter::PaintBlockChildren(const PaintInfo& paint_info,
           .Paint(paint_info_for_descendants);
       continue;
     }
+
+    // Fall back to flow-thread painting when reaching a column (the flow thread
+    // is treated as a self-painting PaintLayer when fragment traversal is
+    // disabled, so nothing to do here).
+    if (box_child_fragment.IsColumnBox())
+      continue;
+
     child_fragment.GetLayoutObject()->Paint(paint_info_for_descendants);
   }
 }
@@ -687,7 +719,7 @@ void NGBoxFragmentPainter::PaintFloatingChildren(
 
   for (const NGLink& child : container.Children()) {
     const NGPhysicalFragment& child_fragment = *child;
-    if (child_fragment.HasSelfPaintingLayer() || child_fragment.IsColumnBox())
+    if (child_fragment.HasSelfPaintingLayer())
       continue;
 
     if (child_fragment.CanTraverse()) {
@@ -746,7 +778,18 @@ void NGBoxFragmentPainter::PaintFloatingChildren(
       continue;
     }
 
-    PaintFloatingChildren(*child_container, paint_info, float_paint_info);
+    if (child_container->IsColumnBox()) {
+      // This is a fragmentainer, and when node inside a fragmentation context
+      // paints multiple block fragments, we need to distinguish between them
+      // somehow, for paint caching to work. Therefore, establish a display item
+      // scope here.
+      unsigned identifier = FragmentainerUniqueIdentifier(
+          To<NGPhysicalBoxFragment>(*child_container));
+      ScopedDisplayItemFragment scope(paint_info.context, identifier);
+      PaintFloatingChildren(*child_container, paint_info, float_paint_info);
+    } else {
+      PaintFloatingChildren(*child_container, paint_info, float_paint_info);
+    }
   }
 }
 
@@ -1004,6 +1047,7 @@ void NGBoxFragmentPainter::PaintColumnRules(
     const PaintInfo& paint_info,
     const PhysicalOffset& paint_offset) {
   const ComputedStyle& style = box_fragment_.Style();
+  DCHECK(box_fragment_.IsCSSBox());
   DCHECK(style.HasColumnRule());
 
   // TODO(crbug.com/792437): Certain rule styles should be converted.

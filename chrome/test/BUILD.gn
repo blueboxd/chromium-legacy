@@ -4958,7 +4958,6 @@ test("unit_tests") {
     sources += [
       "../browser/safe_browsing/certificate_reporting_service_unittest.cc",
       "../browser/safe_browsing/chrome_password_protection_service_unittest.cc",
-      "../browser/safe_browsing/safe_browsing_blocking_page_unittest.cc",
       "../browser/safe_browsing/threat_details_unittest.cc",
       "../browser/safe_browsing/ui_manager_unittest.cc",
     ]

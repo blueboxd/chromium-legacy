@@ -1753,6 +1753,11 @@ class DisplayLockContextRenderingTest
       : RenderingTest(MakeGarbageCollected<SingleChildLocalFrameClient>()),
         ScopedCSSContentVisibilityHiddenMatchableForTest(true) {}
 
+  void SetUp() override {
+    EnableCompositing();
+    RenderingTest::SetUp();
+  }
+
   bool IsObservingLifecycle(DisplayLockContext* context) const {
     return context->is_registered_for_lifecycle_notifications_;
   }
@@ -2328,6 +2333,134 @@ TEST_F(DisplayLockContextRenderingTest, ForcedUnlockBookkeeping) {
   EXPECT_FALSE(context->IsLocked());
   EXPECT_EQ(
       GetDocument().GetDisplayLockDocumentState().LockedDisplayLockCount(), 0);
+}
+
+TEST_F(DisplayLockContextRenderingTest, LayoutRootIsSkippedIfLocked) {
+  SetHtmlInnerHTML(R"HTML(
+    <style>
+      .hidden { content-visibility: hidden; }
+      .contained { contain: strict; }
+      .positioned { position: absolute; top: 0; left: 0; }
+    </style>
+    <div id=hide>
+      <div class=contained>
+        <div id=new_parent class="contained positioned">
+          <div>
+            <div id=target></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  )HTML");
+
+  // Lock an ancestor.
+  auto* hide = GetDocument().getElementById("hide");
+  hide->classList().Add("hidden");
+  UpdateAllLifecyclePhasesForTest();
+
+  auto* target = GetDocument().getElementById("target");
+  auto* new_parent = GetDocument().getElementById("new_parent");
+
+  // Reparent elements which will invalidate layout without needing to process
+  // style (which is blocked by the display-lock).
+  new_parent->appendChild(target);
+
+  // Note that we don't check target here, since it doesn't have a layout object
+  // after being re-parented.
+  EXPECT_TRUE(new_parent->GetLayoutObject()->NeedsLayout());
+
+  // Updating the lifecycle should not update new_parent, since it is in a
+  // locked subtree.
+  UpdateAllLifecyclePhasesForTest();
+  EXPECT_TRUE(new_parent->GetLayoutObject()->NeedsLayout());
+
+  // Unlocking and updating should update everything.
+  hide->classList().Remove("hidden");
+  UpdateAllLifecyclePhasesForTest();
+
+  EXPECT_FALSE(hide->GetLayoutObject()->NeedsLayout());
+  EXPECT_FALSE(target->GetLayoutObject()->NeedsLayout());
+  EXPECT_FALSE(new_parent->GetLayoutObject()->NeedsLayout());
+}
+
+TEST_F(DisplayLockContextRenderingTest,
+       LayoutRootIsProcessedIfLockedAndForced) {
+  SetHtmlInnerHTML(R"HTML(
+    <style>
+      .hidden { content-visibility: hidden; }
+      .contained { contain: strict; }
+      .positioned { position: absolute; top: 0; left: 0; }
+    </style>
+    <div id=hide>
+      <div class=contained>
+        <div id=new_parent class="contained positioned">
+          <div>
+            <div id=target></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  )HTML");
+
+  // Lock an ancestor.
+  auto* hide = GetDocument().getElementById("hide");
+  hide->classList().Add("hidden");
+  UpdateAllLifecyclePhasesForTest();
+
+  auto* target = GetDocument().getElementById("target");
+  auto* new_parent = GetDocument().getElementById("new_parent");
+
+  // Reparent elements which will invalidate layout without needing to process
+  // style (which is blocked by the display-lock).
+  new_parent->appendChild(target);
+
+  // Note that we don't check target here, since it doesn't have a layout object
+  // after being re-parented.
+  EXPECT_TRUE(new_parent->GetLayoutObject()->NeedsLayout());
+
+  {
+    DisplayLockContext::ScopedForcedUpdate forced_scope =
+        hide->GetDisplayLockContext()->GetScopedForcedUpdate();
+
+    // Updating the lifecycle should update target and new_parent, since it is
+    // in a locked but forced subtree.
+    UpdateAllLifecyclePhasesForTest();
+    EXPECT_FALSE(target->GetLayoutObject()->NeedsLayout());
+    EXPECT_FALSE(new_parent->GetLayoutObject()->NeedsLayout());
+  }
+
+  // Unlocking and updating should update everything.
+  hide->classList().Remove("hidden");
+  UpdateAllLifecyclePhasesForTest();
+
+  EXPECT_FALSE(hide->GetLayoutObject()->NeedsLayout());
+  EXPECT_FALSE(target->GetLayoutObject()->NeedsLayout());
+  EXPECT_FALSE(new_parent->GetLayoutObject()->NeedsLayout());
+}
+
+TEST_F(DisplayLockContextRenderingTest, ContainStrictChild) {
+  SetHtmlInnerHTML(R"HTML(
+    <style>
+      .hidden { content-visibility: hidden; }
+      .contained { contain: strict; }
+      #target { backface-visibility: hidden; }
+    </style>
+    <div id=hide>
+      <div id=container class=contained>
+        <div id=target></div>
+      </div>
+    </div>
+  )HTML");
+
+  // Lock an ancestor.
+  auto* hide = GetDocument().getElementById("hide");
+  hide->classList().Add("hidden");
+
+  // This should not DCHECK.
+  UpdateAllLifecyclePhasesForTest();
+
+  hide->classList().Remove("hidden");
+  UpdateAllLifecyclePhasesForTest();
 }
 
 class DisplayLockContextLegacyRenderingTest

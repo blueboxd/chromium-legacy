@@ -46,7 +46,7 @@ namespace blink {
 
 class ExceptionState;
 class ExecutionContext;
-class LocalFrame;
+class LocalDOMWindow;
 class SpeechRecognitionController;
 
 class MODULES_EXPORT SpeechRecognition final
@@ -61,7 +61,7 @@ class MODULES_EXPORT SpeechRecognition final
  public:
   static SpeechRecognition* Create(ExecutionContext*);
 
-  SpeechRecognition(LocalFrame*, ExecutionContext*);
+  SpeechRecognition(LocalDOMWindow*);
   ~SpeechRecognition() override;
 
   // SpeechRecognition.idl implemementation.

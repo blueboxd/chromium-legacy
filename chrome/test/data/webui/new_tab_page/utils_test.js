@@ -5,7 +5,7 @@
 // So that mojo is defined.
 import 'chrome://resources/mojo/mojo/public/js/mojo_bindings_lite.js';
 
-import {createScrollBorders, hexColorToSkColor, skColorToRgba} from 'chrome://new-tab-page/new_tab_page.js';
+import {createScrollBorders, decodeString16, hexColorToSkColor, mojoString16, skColorToRgba} from 'chrome://new-tab-page/new_tab_page.js';
 import {waitAfterNextRender} from 'chrome://test/test_util.m.js';
 
 suite('NewTabPageUtilsTest', () => {
@@ -110,5 +110,11 @@ suite('scroll borders', () => {
     await waitAfterNextRender();
     assertHidden(top);
     assertHidden(bottom);
+  });
+});
+
+suite('Mojo type conversions', () => {
+  test('Can convert JavaScript string to Mojo String16 and back', () => {
+    assertEquals('hello world', decodeString16(mojoString16('hello world')));
   });
 });

@@ -205,6 +205,8 @@ public class PageInfoView extends FrameLayout implements OnClickListener, OnLong
     private final ElidedUrlTextView mUrlTitle;
     private final TextView mConnectionSummary;
     private final TextView mConnectionMessage;
+    private final TextView mPerformanceSummary;
+    private final TextView mPerformanceMessage;
     private final TextView mPreviewMessage;
     private final TextView mPreviewStaleTimestamp;
     private final TextView mPreviewLoadOriginal;
@@ -227,6 +229,8 @@ public class PageInfoView extends FrameLayout implements OnClickListener, OnLong
         mUrlTitle = findViewById(R.id.page_info_url);
         mConnectionSummary = findViewById(R.id.page_info_connection_summary);
         mConnectionMessage = findViewById(R.id.page_info_connection_message);
+        mPerformanceSummary = findViewById(R.id.page_info_performance_summary);
+        mPerformanceMessage = findViewById(R.id.page_info_performance_message);
         mPreviewMessage = findViewById(R.id.page_info_preview_message);
         mPreviewStaleTimestamp = findViewById(R.id.page_info_stale_preview_timestamp);
         mPreviewLoadOriginal = findViewById(R.id.page_info_preview_load_original);
@@ -248,9 +252,11 @@ public class PageInfoView extends FrameLayout implements OnClickListener, OnLong
 
         initializePageInfoViewChild(
                 mUrlTitle, params.urlTitleShown, 0f, params.urlTitleClickCallback);
-        // Hide the summary until its text is set.
+        // Hide the connection summary until its text is set.
         initializePageInfoViewChild(mConnectionSummary, false, 0f, null);
         initializePageInfoViewChild(mConnectionMessage, params.connectionMessageShown, 0f, null);
+        initializePageInfoViewChild(mPerformanceSummary, false, 0f, null);
+        initializePageInfoViewChild(mPerformanceMessage, false, 0f, null);
         // Hide the permissions list for sites with no permissions.
         initializePageInfoViewChild(mPermissionsTitle, false, 0f, null);
         initializePageInfoViewChild(mPermissionsSeparator, false, 0f, null);
@@ -305,6 +311,16 @@ public class PageInfoView extends FrameLayout implements OnClickListener, OnLong
                 mConnectionMessage.setTag(R.id.page_info_click_callback, params.clickCallback);
                 mConnectionMessage.setOnClickListener(this);
             }
+        }
+    }
+
+    public void showPerformanceInfo(boolean show) {
+        if (show) {
+            mPerformanceSummary.setVisibility(View.VISIBLE);
+            mPerformanceMessage.setVisibility(View.VISIBLE);
+        } else {
+            mPerformanceSummary.setVisibility(View.GONE);
+            mPerformanceMessage.setVisibility(View.GONE);
         }
     }
 
@@ -390,6 +406,8 @@ public class PageInfoView extends FrameLayout implements OnClickListener, OnLong
         animatableViews.add(mUrlTitle);
         animatableViews.add(mConnectionSummary);
         animatableViews.add(mConnectionMessage);
+        animatableViews.add(mPerformanceSummary);
+        animatableViews.add(mPerformanceMessage);
         animatableViews.add(mPreviewMessage);
         animatableViews.add(mPreviewStaleTimestamp);
         animatableViews.add(mPreviewLoadOriginal);

@@ -29,7 +29,9 @@ class MessageReplyDeserializer;
 }
 
 namespace blink {
-enum class WebTreeScopeType;
+namespace mojom {
+enum class TreeScopeType;
+}
 }
 
 namespace content {

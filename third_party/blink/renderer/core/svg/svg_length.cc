@@ -85,27 +85,18 @@ SVGLength::SVGLength(const CSSPrimitiveValue& value, SVGLengthMode mode)
   DCHECK_EQ(UnitMode(), mode);
 }
 
-SVGLength::SVGLength(const SVGLength& o)
-    : value_(o.value_), unit_mode_(o.unit_mode_) {}
-
 void SVGLength::Trace(Visitor* visitor) {
   visitor->Trace(value_);
   SVGPropertyBase::Trace(visitor);
 }
 
 SVGLength* SVGLength::Clone() const {
-  return MakeGarbageCollected<SVGLength>(*this);
+  return MakeGarbageCollected<SVGLength>(*value_, UnitMode());
 }
 
 SVGPropertyBase* SVGLength::CloneForAnimation(const String& value) const {
-  auto* length = MakeGarbageCollected<SVGLength>();
-  length->unit_mode_ = unit_mode_;
-
-  if (length->SetValueAsString(value) != SVGParseStatus::kNoError) {
-    length->value_ = CSSNumericLiteralValue::Create(
-        0, CSSPrimitiveValue::UnitType::kUserUnits);
-  }
-
+  auto* length = MakeGarbageCollected<SVGLength>(UnitMode());
+  length->SetValueAsString(value);
   return length;
 }
 

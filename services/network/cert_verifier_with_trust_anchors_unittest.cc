@@ -19,6 +19,7 @@
 #include "net/base/test_completion_callback.h"
 #include "net/cert/caching_cert_verifier.h"
 #include "net/cert/cert_net_fetcher.h"
+#include "net/cert/cert_verify_proc.h"
 #include "net/cert/cert_verify_proc_builtin.h"
 #include "net/cert/cert_verify_result.h"
 #include "net/cert/coalescing_cert_verifier.h"
@@ -29,13 +30,12 @@
 #include "net/log/net_log_with_source.h"
 #include "net/test/cert_test_util.h"
 #include "net/test/test_data_directory.h"
-#include "services/network/public/cpp/cert_verifier/cert_verify_proc_chromeos.h"
 #include "services/network/public/cpp/cert_verifier/system_trust_store_provider_chromeos.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace network {
 
-class CertVerifierWithTrustAnchorsTest : public testing::TestWithParam<bool> {
+class CertVerifierWithTrustAnchorsTest : public testing::Test {
  public:
   CertVerifierWithTrustAnchorsTest()
       : trust_anchor_used_(false),
@@ -58,16 +58,11 @@ class CertVerifierWithTrustAnchorsTest : public testing::TestWithParam<bool> {
         std::make_unique<CertVerifierWithTrustAnchors>(base::BindRepeating(
             &CertVerifierWithTrustAnchorsTest::OnTrustAnchorUsed,
             base::Unretained(this)));
-    if (GetParam()) {
-      cert_verify_proc_ = net::CreateCertVerifyProcBuiltin(
-          /*net_fetcher=*/nullptr,
-          std::make_unique<SystemTrustStoreProviderChromeOS>(
-              crypto::GetPublicSlotForChromeOSUser(
-                  test_nss_user_.username_hash())));
-    } else {
-      cert_verify_proc_ = base::MakeRefCounted<network::CertVerifyProcChromeOS>(
-          crypto::GetPublicSlotForChromeOSUser(test_nss_user_.username_hash()));
-    }
+    cert_verify_proc_ = net::CreateCertVerifyProcBuiltin(
+        /*net_fetcher=*/nullptr,
+        std::make_unique<SystemTrustStoreProviderChromeOS>(
+            crypto::GetPublicSlotForChromeOSUser(
+                test_nss_user_.username_hash())));
 
     cert_verifier_->InitializeOnIOThread(
         std::make_unique<net::CachingCertVerifier>(
@@ -153,11 +148,7 @@ class CertVerifierWithTrustAnchorsTest : public testing::TestWithParam<bool> {
   base::test::TaskEnvironment task_environment_;
 };
 
-INSTANTIATE_TEST_SUITE_P(All,
-                         CertVerifierWithTrustAnchorsTest,
-                         testing::Bool());
-
-TEST_P(CertVerifierWithTrustAnchorsTest, VerifyUntrustedCert) {
+TEST_F(CertVerifierWithTrustAnchorsTest, VerifyUntrustedCert) {
   // |test_server_cert_| is untrusted, so Verify() fails.
   {
     net::CertVerifyResult verify_result;
@@ -185,7 +176,7 @@ TEST_P(CertVerifierWithTrustAnchorsTest, VerifyUntrustedCert) {
   EXPECT_FALSE(WasTrustAnchorUsedAndReset());
 }
 
-TEST_P(CertVerifierWithTrustAnchorsTest, VerifyTrustedCert) {
+TEST_F(CertVerifierWithTrustAnchorsTest, VerifyTrustedCert) {
   // Make the database trust |test_ca_cert_|.
   net::NSSCertDatabase::ImportCertFailureList failure_list;
   ASSERT_TRUE(test_cert_db_->ImportCACerts(
@@ -213,7 +204,7 @@ TEST_P(CertVerifierWithTrustAnchorsTest, VerifyTrustedCert) {
   EXPECT_FALSE(WasTrustAnchorUsedAndReset());
 }
 
-TEST_P(CertVerifierWithTrustAnchorsTest, VerifyUsingAdditionalTrustAnchor) {
+TEST_F(CertVerifierWithTrustAnchorsTest, VerifyUsingAdditionalTrustAnchor) {
   ASSERT_TRUE(SupportsAdditionalTrustAnchors());
 
   // |test_server_cert_| is untrusted, so Verify() fails.
@@ -281,7 +272,7 @@ TEST_P(CertVerifierWithTrustAnchorsTest, VerifyUsingAdditionalTrustAnchor) {
   EXPECT_FALSE(WasTrustAnchorUsedAndReset());
 }
 
-TEST_P(CertVerifierWithTrustAnchorsTest,
+TEST_F(CertVerifierWithTrustAnchorsTest,
        VerifyUsesAdditionalTrustAnchorsAfterConfigChange) {
   ASSERT_TRUE(SupportsAdditionalTrustAnchors());
 

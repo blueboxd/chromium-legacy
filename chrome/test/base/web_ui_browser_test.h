@@ -159,7 +159,7 @@ class BaseWebUIBrowserTest : public JavaScriptBrowserTest {
 
   // Indicates that the libraries have been pre-loaded and to not load them
   // again.
-  bool libraries_preloaded_;
+  bool libraries_preloaded_ = false;
 
   // Saves the states of |test_fixture| and |test_name| for calling
   // PreloadJavascriptLibraries().
@@ -168,7 +168,7 @@ class BaseWebUIBrowserTest : public JavaScriptBrowserTest {
 
   // When this is non-NULL, this is The WebUI instance used for testing.
   // Otherwise the selected tab's web_ui is used.
-  content::WebUI* override_selected_web_ui_;
+  content::WebUI* override_selected_web_ui_ = nullptr;
 
   std::unique_ptr<TestChromeWebUIControllerFactory> test_factory_;
 };
@@ -181,7 +181,8 @@ class WebUIBrowserTest : public BaseWebUIBrowserTest {
   void SetupHandlers() override;
 
  private:
-  WebUITestMessageHandler* test_message_handler_;
+  // Owned by |test_handler_| in BaseWebUIBrowserTest.
+  WebUITestMessageHandler* const test_message_handler_;
 };
 
 #endif  // CHROME_TEST_BASE_WEB_UI_BROWSER_TEST_H_

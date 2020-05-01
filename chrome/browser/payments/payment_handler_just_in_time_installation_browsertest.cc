@@ -15,7 +15,8 @@ class PaymentHandlerJustInTimeInstallationTest
     : public PaymentRequestPlatformBrowserTestBase {
  protected:
   PaymentHandlerJustInTimeInstallationTest()
-      : kylepay_server_(net::EmbeddedTestServer::TYPE_HTTPS) {}
+      : kylepay_server_(net::EmbeddedTestServer::TYPE_HTTPS),
+        henrypay_server_(net::EmbeddedTestServer::TYPE_HTTPS) {}
 
   ~PaymentHandlerJustInTimeInstallationTest() override = default;
 
@@ -25,16 +26,23 @@ class PaymentHandlerJustInTimeInstallationTest
         "components/test/data/payments/kylepay.com/");
     ASSERT_TRUE(kylepay_server_.Start());
 
+    henrypay_server_.ServeFilesFromSourceDirectory(
+        "components/test/data/payments/henrypay.com");
+    ASSERT_TRUE(henrypay_server_.Start());
+
     // Set up test manifest downloader that knows how to fake origin.
-    const std::string method_name = "kylepay.com";
+    const std::string kyle_method_name = "kylepay.com";
+    const std::string henry_method_name = "henrypay.com";
     SetDownloaderAndIgnorePortInOriginComparisonForTesting(
-        {{method_name, &kylepay_server_}});
+        {{kyle_method_name, &kylepay_server_},
+         {henry_method_name, &henrypay_server_}});
 
     NavigateTo("/payment_request_bobpay_and_cards_test.html");
   }
 
  private:
   net::EmbeddedTestServer kylepay_server_;
+  net::EmbeddedTestServer henrypay_server_;
 };
 
 // kylepay.com hosts an installable payment app which handles both shipping
@@ -63,6 +71,21 @@ IN_PROC_BROWSER_TEST_F(PaymentHandlerJustInTimeInstallationTest,
 
   // kylepay should be installed just-in-time and used for testing.
   ExpectBodyContains("kylepay.com/webpay");
+}
+
+IN_PROC_BROWSER_TEST_F(PaymentHandlerJustInTimeInstallationTest,
+                       DoNotInstallPaymentAppWithMissingIcon) {
+  ResetEventWaiterForSingleEvent(TestEvent::kNotSupportedError);
+  EXPECT_TRUE(content::ExecJs(GetActiveWebContents(),
+                              "testPaymentMethods([{supportedMethods: "
+                              "'https://henrypay.com/webpay'}])"));
+  WaitForObservedEvent();
+
+  // show() should get rejected since the JIT installable app does not have an
+  // icon.
+  ExpectBodyContains(
+      "Failed to download or decode a non-empty icon for payment app with "
+      "\"https://henrypay.com/app.json\" manifest.");
 }
 
 class AlwaysAllowJustInTimePaymentAppTest

@@ -331,6 +331,8 @@ bool PepperWebPluginImpl::CanRedo() const {
 }
 
 bool PepperWebPluginImpl::ExecuteEditCommand(const blink::WebString& name) {
+  DCHECK(name != "Paste");
+  DCHECK(name != "PasteAndMatchStyle");
   return ExecuteEditCommand(name, WebString());
 }
 
@@ -343,40 +345,15 @@ bool PepperWebPluginImpl::ExecuteEditCommand(const blink::WebString& name,
     if (!HasSelection() || !CanEditText())
       return false;
 
-    if (!clipboard_) {
-      blink::Platform::Current()->GetBrowserInterfaceBroker()->GetInterface(
-          clipboard_.BindNewPipeAndPassReceiver());
-    }
-    base::string16 markup;
-    base::string16 text;
-    if (instance_) {
-      markup = instance_->GetSelectedText(true);
-      text = instance_->GetSelectedText(false);
-    }
-    clipboard_->WriteHtml(markup, GURL());
-    clipboard_->WriteText(text);
-    clipboard_->CommitWrite();
-
     instance_->ReplaceSelection("");
     return true;
   }
 
-  // If the clipboard contains something other than text (e.g. an image),
-  // ClipboardHost::ReadText() returns an empty string. The empty string is
-  // then pasted, replacing any selected text. This behavior is consistent with
-  // that of HTML text form fields.
   if (name == "Paste" || name == "PasteAndMatchStyle") {
     if (!CanEditText())
       return false;
 
-    if (!clipboard_) {
-      blink::Platform::Current()->GetBrowserInterfaceBroker()->GetInterface(
-          clipboard_.BindNewPipeAndPassReceiver());
-    }
-    base::string16 text;
-    clipboard_->ReadText(ui::ClipboardBuffer::kCopyPaste, &text);
-
-    instance_->ReplaceSelection(base::UTF16ToUTF8(text));
+    instance_->ReplaceSelection(value.Utf8());
     return true;
   }
 

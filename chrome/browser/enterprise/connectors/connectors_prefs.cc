@@ -14,10 +14,13 @@ const char kOnFileDownloadedPref[] = "enterprise_connectors.on_file_downloaded";
 
 const char kOnBulkDataEntryPref[] = "enterprise_connectors.on_bulk_data_entry";
 
+const char kOnSecurityEventPref[] = "enterprise_connectors.on_security_event";
+
 void RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
   registry->RegisterListPref(kOnFileAttachedPref);
   registry->RegisterListPref(kOnFileDownloadedPref);
   registry->RegisterListPref(kOnBulkDataEntryPref);
+  registry->RegisterListPref(kOnSecurityEventPref);
 }
 
 }  // namespace enterprise_connectors

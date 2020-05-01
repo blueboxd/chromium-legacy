@@ -149,6 +149,12 @@ BASE_EXPORT void JavaFloatArrayToFloatVector(
     const JavaRef<jfloatArray>& float_array,
     std::vector<float>* out);
 
+// Replaces the content of |out| with the Java doubles in |double_array|.
+BASE_EXPORT void JavaDoubleArrayToDoubleVector(
+    JNIEnv* env,
+    const JavaRef<jdoubleArray>& double_array,
+    std::vector<double>* out);
+
 // Assuming |array| is an byte[][] (array of byte arrays), replaces the
 // content of |out| with the corresponding vector of strings. No UTF-8
 // conversion is performed.

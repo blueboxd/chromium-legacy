@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
+#include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/common/bookmark_pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "ios/chrome/browser/policy/policy_features.h"
@@ -28,30 +29,31 @@ NSString* const kBookmarkActivityType = @"com.google.chrome.bookmarkActivity";
 @interface BookmarkActivity ()
 // Whether or not the page is bookmarked.
 @property(nonatomic, assign) BOOL bookmarked;
+// The bookmark model used to validate if a page was bookmarked.
+@property(nonatomic, assign) bookmarks::BookmarkModel* bookmarkModel;
 // The URL for the activity.
 @property(nonatomic, assign) GURL URL;
-// The dispatcher that handles when the activity is performed.
-@property(nonatomic, weak) id<BrowserCommands> dispatcher;
+// The handler invoked when the activity is performed.
+@property(nonatomic, weak) id<BrowserCommands> handler;
 // User's preferences service.
 @property(nonatomic, assign) PrefService* prefService;
 @end
 
 @implementation BookmarkActivity
 
-@synthesize bookmarked = _bookmarked;
-@synthesize dispatcher = _dispatcher;
-@synthesize URL = _URL;
-
 - (instancetype)initWithURL:(const GURL&)URL
-                 bookmarked:(BOOL)bookmarked
-                 dispatcher:(id<BrowserCommands>)dispatcher
+              bookmarkModel:(bookmarks::BookmarkModel*)bookmarkModel
+                    handler:(id<BrowserCommands>)handler
                 prefService:(PrefService*)prefService {
   self = [super init];
   if (self) {
     _URL = URL;
-    _bookmarked = bookmarked;
-    _dispatcher = dispatcher;
+    _bookmarkModel = bookmarkModel;
+    _handler = handler;
     _prefService = prefService;
+
+    _bookmarked = _bookmarkModel && _bookmarkModel->loaded() &&
+                  _bookmarkModel->IsBookmarked(_URL);
   }
   return self;
 }
@@ -79,9 +81,9 @@ NSString* const kBookmarkActivityType = @"com.google.chrome.bookmarkActivity";
 }
 
 - (BOOL)canPerformWithActivityItems:(NSArray*)activityItems {
-  // Don't show the add/remove bookmark activity if editing bookmarks is
-  // disabled in the prefs.
-  return [self isEditBookmarksEnabledInPrefs];
+  // Don't show the add/remove bookmark activity if we have an invalid
+  // bookmarkModel, or if editing bookmarks is disabled in the prefs.
+  return self.bookmarkModel && [self isEditBookmarksEnabledInPrefs];
 }
 
 - (void)prepareWithActivityItems:(NSArray*)activityItems {
@@ -92,7 +94,7 @@ NSString* const kBookmarkActivityType = @"com.google.chrome.bookmarkActivity";
 }
 
 - (void)performActivity {
-  [self.dispatcher bookmarkPage];
+  [self.handler bookmarkPage];
   [self activityDidFinish:YES];
 }
 

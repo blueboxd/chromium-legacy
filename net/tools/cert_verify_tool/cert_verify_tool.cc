@@ -34,11 +34,6 @@
 #include "net/proxy_resolution/proxy_config_service_fixed.h"
 #endif
 
-#if defined(USE_NSS_CERTS)
-#include "net/cert_net/nss_ocsp.h"
-#include "net/cert_net/nss_ocsp_session_url_request.h"
-#endif
-
 namespace {
 
 std::string GetUserAgent() {
@@ -62,9 +57,6 @@ void SetUpOnNetworkThread(
 #endif
   *context = url_request_context_builder.Build();
 
-#if defined(USE_NSS_CERTS)
-  net::SetURLRequestContextForNSSHttpIO(context->get());
-#endif
   // TODO(mattm): add command line flag to configure using
   // CertNetFetcher
   *cert_net_fetcher = base::MakeRefCounted<net::CertNetFetcherURLRequest>();
@@ -200,7 +192,7 @@ std::unique_ptr<CertVerifyImpl> CreateCertVerifyImplFromName(
     base::StringPiece impl_name,
     scoped_refptr<net::CertNetFetcher> cert_net_fetcher,
     bool use_system_roots) {
-#if !defined(OS_FUCHSIA)
+#if !(defined(OS_FUCHSIA) || defined(OS_LINUX) || defined(OS_CHROMEOS))
   if (impl_name == "platform") {
     if (!use_system_roots) {
       std::cerr << "WARNING: platform verifier not supported with "

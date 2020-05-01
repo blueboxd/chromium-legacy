@@ -82,7 +82,6 @@ void ProcessorEntity::SetStorageKey(const std::string& storage_key) {
 }
 
 void ProcessorEntity::ClearStorageKey() {
-  DCHECK(metadata_.is_deleted());
   storage_key_.clear();
 }
 

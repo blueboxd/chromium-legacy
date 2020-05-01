@@ -20,7 +20,6 @@
 #include "ui/gfx/native_pixmap_handle.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/vsync_provider.h"
-#include "ui/ozone/common/gpu/ozone_gpu_message_params.h"
 #include "ui/ozone/platform/drm/common/display_types.h"
 #include "ui/ozone/platform/drm/gpu/drm_device_generator.h"
 #include "ui/ozone/public/mojom/device_cursor.mojom.h"

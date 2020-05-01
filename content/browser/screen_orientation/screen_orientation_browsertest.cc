@@ -242,8 +242,9 @@ IN_PROC_BROWSER_TEST_F(ScreenOrientationBrowserTest, DISABLED_LockSmoke) {
 // This could be a web test if they were not using a mock screen orientation
 // controller.
 IN_PROC_BROWSER_TEST_F(ScreenOrientationBrowserTest, CrashTest_UseAfterDetach) {
-  GURL test_url = GetTestUrl("screen_orientation",
-                             "screen_orientation_use_after_detach.html");
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL test_url(embedded_test_server()->GetURL(
+      "/screen_orientation/screen_orientation_use_after_detach.html"));
 
   TestNavigationObserver navigation_observer(shell()->web_contents(), 2);
   shell()->LoadURL(test_url);

@@ -95,12 +95,17 @@ class PlayerFrameMediator implements PlayerFrameViewDelegate {
 
     @Override
     public void setLayoutDimensions(int width, int height) {
+        // Set initial scale so that content width fits within the layout dimensions.
+        float scaleFactor = ((float) width) / ((float) mContentWidth);
+        initializeViewPort(width, height, scaleFactor);
+    }
+
+    void initializeViewPort(int width, int height, float scaleFactor) {
         // If the dimensions of mViewportRect has been set, we don't need to do anything.
         if (!mViewportRect.isEmpty() || width <= 0 || height <= 0) return;
 
-        // Set mViewportRect's dimensions and start compositing.
         mViewportRect.set(0, 0, width, height);
-        updateViewport(0, 0, 1f);
+        updateViewport(0, 0, scaleFactor);
     }
 
     /**
@@ -258,20 +263,20 @@ class PlayerFrameMediator implements PlayerFrameViewDelegate {
     }
 
     private boolean scrollByInternal(float distanceX, float distanceY) {
-        // TODO(crbug.com/1020702): These values should be scaled for scale factors other than 1.
         int validDistanceX = 0;
         int validDistanceY = 0;
+        float scaledContentWidth = mContentWidth * mScaleFactor;
+        float scaledContentHeight = mContentHeight * mScaleFactor;
 
         if (mViewportRect.left > 0 && distanceX < 0) {
             validDistanceX = (int) Math.max(distanceX, -1f * mViewportRect.left);
-        } else if (mViewportRect.right < mContentWidth && distanceX > 0) {
-            validDistanceX = (int) Math.min(distanceX, (float) mContentWidth - mViewportRect.right);
+        } else if (mViewportRect.right < scaledContentWidth && distanceX > 0) {
+            validDistanceX = (int) Math.min(distanceX, scaledContentWidth - mViewportRect.right);
         }
         if (mViewportRect.top > 0 && distanceY < 0) {
             validDistanceY = (int) Math.max(distanceY, -1f * mViewportRect.top);
-        } else if (mViewportRect.bottom < mContentHeight && distanceY > 0) {
-            validDistanceY =
-                    (int) Math.min(distanceY, (float) mContentHeight - mViewportRect.bottom);
+        } else if (mViewportRect.bottom < scaledContentHeight && distanceY > 0) {
+            validDistanceY = (int) Math.min(distanceY, scaledContentHeight - mViewportRect.bottom);
         }
 
         if (validDistanceX == 0 && validDistanceY == 0) return false;
@@ -293,10 +298,12 @@ class PlayerFrameMediator implements PlayerFrameViewDelegate {
 
     @Override
     public boolean onFling(float velocityX, float velocityY) {
+        int scaledContentWidth = (int) (mContentWidth * mScaleFactor);
+        int scaledContentHeight = (int) (mContentHeight * mScaleFactor);
         mScroller.forceFinished(true);
         mScroller.fling(mViewportRect.left, mViewportRect.top, (int) -velocityX, (int) -velocityY,
-                0, mContentWidth - mViewportRect.width(), 0,
-                mContentHeight - mViewportRect.height());
+                0, scaledContentWidth - mViewportRect.width(), 0,
+                scaledContentHeight - mViewportRect.height());
 
         mScrollerHandler.post(this::handleFling);
         return true;

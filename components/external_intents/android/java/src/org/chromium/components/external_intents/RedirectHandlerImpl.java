@@ -22,7 +22,7 @@ import java.util.List;
 /**
  * This class contains the logic to determine effective navigation/redirect.
  */
-public class RedirectHandlerImpl implements RedirectHandler {
+public class RedirectHandlerImpl {
     /**
      * An invalid entry index.
      */
@@ -113,7 +113,10 @@ public class RedirectHandlerImpl implements RedirectHandler {
         mShouldNotOverrideUrlLoadingOnCurrentRedirectChain = false;
     }
 
-    @Override
+    /**
+     * Will cause shouldNotOverrideUrlLoading() to return true until a new user-initiated navigation
+     * occurs.
+     */
     public void setShouldNotOverrideUrlLoadingOnCurrentRedirectChain() {
         mShouldNotOverrideUrlLoadingOnCurrentRedirectChain = true;
     }
@@ -186,7 +189,6 @@ public class RedirectHandlerImpl implements RedirectHandler {
     /**
      * @return whether on effective intent redirect chain or not.
      */
-    @Override
     public boolean isOnEffectiveIntentRedirectChain() {
         return mInitialNavigationType == NAVIGATION_TYPE_FROM_INTENT && mIsOnEffectiveRedirectChain;
     }
@@ -205,7 +207,6 @@ public class RedirectHandlerImpl implements RedirectHandler {
      *                               Chrome.
      * @return whether we should stay in Chrome or not.
      */
-    @Override
     public boolean shouldStayInApp(boolean hasExternalProtocol, boolean isForTrustedCallingApp) {
         // http://crbug/424029 : Need to stay in Chrome for an intent heading explicitly to Chrome.
         // http://crbug/881740 : Relax stay in Chrome restriction for Custom Tabs.
@@ -216,7 +217,6 @@ public class RedirectHandlerImpl implements RedirectHandler {
     /**
      * @return Whether the current navigation is of the type that should always stay in Chrome.
      */
-    @Override
     public boolean shouldNavigationTypeStayInApp() {
         return shouldNavigationTypeStayInApp(false);
     }
@@ -236,7 +236,6 @@ public class RedirectHandlerImpl implements RedirectHandler {
     /**
      * @return Whether this navigation is initiated by a Custom Tabs {@link Intent}.
      */
-    @Override
     public boolean isFromCustomTabIntent() {
         return mIsCustomTabIntent;
     }
@@ -244,7 +243,6 @@ public class RedirectHandlerImpl implements RedirectHandler {
     /**
      * @return whether navigation is from a user's typing or not.
      */
-    @Override
     public boolean isNavigationFromUserTyping() {
         return mInitialNavigationType == NAVIGATION_TYPE_FROM_USER_TYPING;
     }
@@ -252,7 +250,6 @@ public class RedirectHandlerImpl implements RedirectHandler {
     /**
      * @return whether we should stay in Chrome or not.
      */
-    @Override
     public boolean shouldNotOverrideUrlLoading() {
         return mShouldNotOverrideUrlLoadingOnCurrentRedirectChain;
     }
@@ -274,7 +271,6 @@ public class RedirectHandlerImpl implements RedirectHandler {
     /**
      * @return whether |intent| has a new resolver against |mIntentHistory| or not.
      */
-    @Override
     public boolean hasNewResolver(List<ResolveInfo> resolvingInfos) {
         if (mInitialIntent == null) {
             return !resolvingInfos.isEmpty();

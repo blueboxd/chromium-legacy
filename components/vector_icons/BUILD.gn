@@ -83,6 +83,7 @@ aggregate_vector_icons("components_vector_icons") {
     "vr_headset.icon",
     "warning.icon",
     "wifi_add.icon",
+    "window_placement.icon",
   ]
 }
 

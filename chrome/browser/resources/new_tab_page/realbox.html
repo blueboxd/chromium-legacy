@@ -115,8 +115,9 @@
 </style>
 <div id="realboxInputWrapper">
   <div id="realboxIcon" data-icon$="[[realboxIcon_]]"></div>
-  <input type="search" autocomplete="off" spellcheck="false"
-      aria-live="polite" placeholder="$i18n{searchBoxHint}">
+  <input id="input" type="search" autocomplete="off" spellcheck="false"
+      aria-live="polite" placeholder="$i18n{searchBoxHint}"
+      on-mousedown="onMouseDown_">
   </input>
   <button id="voiceSearchButton" on-click="onVoiceSearchClick_"
       title="$i18n{voiceSearchButtonLabel}">

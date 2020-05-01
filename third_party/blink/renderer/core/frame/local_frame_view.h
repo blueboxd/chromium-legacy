@@ -839,7 +839,9 @@ class CORE_EXPORT LocalFrameView final
 
   PaintController* GetPaintController() { return paint_controller_.get(); }
 
-  void LayoutFromRootObject(LayoutObject& root);
+  // Returns true if the root object was laid out. Returns false if the layout
+  // was prevented (e.g. by ancestor display-lock) or not needed.
+  bool LayoutFromRootObject(LayoutObject& root);
 
   void UpdateLayerDebugInfoEnabled();
 

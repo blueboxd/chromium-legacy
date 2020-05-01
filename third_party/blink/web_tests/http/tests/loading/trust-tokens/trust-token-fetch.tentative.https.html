@@ -8,19 +8,19 @@
 <script>
   'use strict';
 
-  promise_test((t) => promise_rejects_dom(t, 'OperationError',
+  promise_test((t) => promise_rejects_dom(t, 'InvalidStateError',
     fetch('https://trusttoken.test', {
       trustToken: {
         type: 'token-request'
       }
-    }), 'Trust Token issuance should error.'), 'Trust Token issuance is not implemented');
+    }), 'Trust Token issuance should error.'), 'No keys for the issuer -> expect issuance to fail');
 
-  promise_test((t) => promise_rejects_dom(t, 'OperationError',
+  promise_test((t) => promise_rejects_dom(t, 'InvalidStateError',
     fetch('https://trusttoken.test', {
       trustToken: {
         type: 'srr-token-redemption'
       }
-    }), 'Trust Token redemption should error.'), 'Trust Token redemption is not implemented');
+    }), 'Trust Token redemption should error.'), 'No token for the issuer -> expect redemption to fail');
 
   promise_test((t) => promise_rejects_dom(t, 'OperationError',
     fetch('https://destination.test', {
@@ -28,5 +28,5 @@
         type: 'send-srr',
         issuer: 'https://issuer.test'
       }
-    }), 'Trust Token signing should error.'), 'Trust Token signing is not implemented');
+    }), 'Trust Token signing should error.'), 'No SRR for the issuer -> expect signing to fail');
 </script>

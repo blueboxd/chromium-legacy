@@ -7,6 +7,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
+#import "ios/chrome/browser/ui/activity_services/data/share_to_data.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util_mac.h"
@@ -36,8 +37,10 @@ enum class SendTabToSelfClickResult {
 }  // namespace
 
 @interface SendTabToSelfActivity ()
-// The dispatcher that handles when the activity is performed.
-@property(nonatomic, weak, readonly) id<BrowserCommands> dispatcher;
+// The data object targeted by this activity.
+@property(nonatomic, strong, readonly) ShareToData* data;
+// The handler to be invoked when the activity is performed.
+@property(nonatomic, weak, readonly) id<BrowserCommands> handler;
 
 @end
 
@@ -47,11 +50,13 @@ enum class SendTabToSelfClickResult {
   return kSendTabToSelfActivityType;
 }
 
-- (instancetype)initWithDispatcher:(id<BrowserCommands>)dispatcher {
+- (instancetype)initWithData:(ShareToData*)data
+                     handler:(id<BrowserCommands>)handler {
   base::UmaHistogramEnumeration(kClickResultHistogramName,
                                 SendTabToSelfClickResult::kShowItem);
   if (self = [super init]) {
-    _dispatcher = dispatcher;
+    _data = data;
+    _handler = handler;
   }
   return self;
 }
@@ -71,7 +76,7 @@ enum class SendTabToSelfClickResult {
 }
 
 - (BOOL)canPerformWithActivityItems:(NSArray*)activityItems {
-  return YES;
+  return self.data.canSendTabToSelf;
 }
 
 + (UIActivityCategory)activityCategory {
@@ -79,7 +84,7 @@ enum class SendTabToSelfClickResult {
 }
 
 - (void)performActivity {
-  [self.dispatcher showSendTabToSelfUI];
+  [self.handler showSendTabToSelfUI];
   [self activityDidFinish:YES];
 }
 

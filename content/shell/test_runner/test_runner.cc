@@ -459,7 +459,10 @@ gin::ObjectTemplateBuilder TestRunnerBindings::GetObjectTemplateBuilder(
       .SetMethod(
           "evaluateScriptInIsolatedWorldAndReturnValue",
           &TestRunnerBindings::EvaluateScriptInIsolatedWorldAndReturnValue)
+      // Executes an internal command (superset of document.execCommand()
+      // commands) on the frame's document.
       .SetMethod("execCommand", &TestRunnerBindings::ExecCommand)
+      // Trigger an inspector issue for the frame.
       .SetMethod("triggerTestInspectorIssue",
                  &TestRunnerBindings::TriggerTestInspectorIssue)
       .SetMethod("findString", &TestRunnerBindings::FindString)
@@ -588,6 +591,8 @@ gin::ObjectTemplateBuilder TestRunnerBindings::GetObjectTemplateBuilder(
       .SetMethod("setSpellCheckResolvedCallback",
                  &TestRunnerBindings::SetSpellCheckResolvedCallback)
       .SetMethod("setStorageAllowed", &TestRunnerBindings::SetStorageAllowed)
+      // Method that controls whether pressing Tab key cycles through page
+      // elements or inserts a '\t' char in text area
       .SetMethod("setTabKeyCyclesThroughElements",
                  &TestRunnerBindings::SetTabKeyCyclesThroughElements)
       .SetMethod("setTextDirection", &TestRunnerBindings::SetTextDirection)
@@ -705,15 +710,30 @@ void TestRunnerBindings::SetCloseRemainingWindowsWhenComplete(
 
 void TestRunnerBindings::SetTabKeyCyclesThroughElements(
     bool tab_key_cycles_through_elements) {
-  view_runner_->SetTabKeyCyclesThroughElements(tab_key_cycles_through_elements);
+  blink::WebView* web_view = frame_->GetWebFrame()->View();
+  web_view->SetTabKeyCyclesThroughElements(tab_key_cycles_through_elements);
 }
 
 void TestRunnerBindings::ExecCommand(gin::Arguments* args) {
-  view_runner_->ExecCommand(args);
+  std::string command;
+  args->GetNext(&command);
+
+  std::string value;
+  if (args->Length() >= 3) {
+    // Ignore the second parameter (which is userInterface)
+    // since this command emulates a manual action.
+    args->Skip();
+    args->GetNext(&value);
+  }
+
+  // Note: webkit's version does not return the boolean, so neither do we.
+  frame_->GetWebFrame()->ExecuteCommand(blink::WebString::FromUTF8(command),
+                                        blink::WebString::FromUTF8(value));
 }
 
 void TestRunnerBindings::TriggerTestInspectorIssue(gin::Arguments* args) {
-  view_runner_->TriggerTestInspectorIssue();
+  frame_->GetWebFrame()->AddInspectorIssue(
+      blink::mojom::InspectorIssueCode::kSameSiteCookieIssue);
 }
 
 bool TestRunnerBindings::IsCommandEnabled(const std::string& command) {

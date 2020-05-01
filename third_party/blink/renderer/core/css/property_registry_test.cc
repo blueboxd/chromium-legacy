@@ -15,31 +15,39 @@ class PropertyRegistryTest : public PageTestBase,
  public:
   PropertyRegistryTest() : ScopedCSSVariables2AtPropertyForTest(true) {}
 
-  PropertyRegistry* Registry() { return GetDocument().GetPropertyRegistry(); }
+  PropertyRegistry& Registry() {
+    return GetDocument().EnsurePropertyRegistry();
+  }
 
   const PropertyRegistration* Registration(AtomicString name) {
-    return Registry()->Registration(name);
+    return Registry().Registration(name);
   }
 
   const PropertyRegistration* RegisterProperty(AtomicString name) {
     auto* registration = css_test_helpers::CreatePropertyRegistration(name);
-    Registry()->RegisterProperty(name, *registration);
+    Registry().RegisterProperty(name, *registration);
     return registration;
   }
 
   const PropertyRegistration* DeclareProperty(AtomicString name) {
     auto* registration = css_test_helpers::CreatePropertyRegistration(name);
-    Registry()->DeclareProperty(name, *registration);
+    Registry().DeclareProperty(name, *registration);
     return registration;
   }
 
   HeapVector<Member<const PropertyRegistration>> AllRegistrations() {
     HeapVector<Member<const PropertyRegistration>> vector;
-    for (auto entry : *Registry())
+    for (auto entry : Registry())
       vector.push_back(entry.value);
     return vector;
   }
 };
+
+TEST_F(PropertyRegistryTest, EnsurePropertyRegistry) {
+  EXPECT_FALSE(GetDocument().GetPropertyRegistry());
+  PropertyRegistry* registry = &GetDocument().EnsurePropertyRegistry();
+  EXPECT_EQ(registry, GetDocument().GetPropertyRegistry());
+}
 
 TEST_F(PropertyRegistryTest, RegisterProperty) {
   EXPECT_FALSE(Registration("--x"));
@@ -89,19 +97,19 @@ TEST_F(PropertyRegistryTest, DeclareTwice) {
 }
 
 TEST_F(PropertyRegistryTest, IsInRegisteredPropertySet) {
-  EXPECT_FALSE(Registry()->IsInRegisteredPropertySet("--x"));
+  EXPECT_FALSE(Registry().IsInRegisteredPropertySet("--x"));
 
   RegisterProperty("--x");
-  EXPECT_TRUE(Registry()->IsInRegisteredPropertySet("--x"));
-  EXPECT_FALSE(Registry()->IsInRegisteredPropertySet("--y"));
+  EXPECT_TRUE(Registry().IsInRegisteredPropertySet("--x"));
+  EXPECT_FALSE(Registry().IsInRegisteredPropertySet("--y"));
 
   DeclareProperty("--y");
-  EXPECT_TRUE(Registry()->IsInRegisteredPropertySet("--x"));
-  EXPECT_FALSE(Registry()->IsInRegisteredPropertySet("--y"));
+  EXPECT_TRUE(Registry().IsInRegisteredPropertySet("--x"));
+  EXPECT_FALSE(Registry().IsInRegisteredPropertySet("--y"));
 
   RegisterProperty("--y");
-  EXPECT_TRUE(Registry()->IsInRegisteredPropertySet("--y"));
-  EXPECT_TRUE(Registry()->IsInRegisteredPropertySet("--y"));
+  EXPECT_TRUE(Registry().IsInRegisteredPropertySet("--y"));
+  EXPECT_TRUE(Registry().IsInRegisteredPropertySet("--y"));
 }
 
 TEST_F(PropertyRegistryTest, EmptyIterator) {
@@ -191,37 +199,37 @@ TEST_F(PropertyRegistryTest, IterateFullOverlapMulti) {
 }
 
 TEST_F(PropertyRegistryTest, IsEmptyUntilRegisterProperty) {
-  EXPECT_TRUE(Registry()->IsEmpty());
+  EXPECT_TRUE(Registry().IsEmpty());
   RegisterProperty("--x");
-  EXPECT_FALSE(Registry()->IsEmpty());
+  EXPECT_FALSE(Registry().IsEmpty());
 }
 
 TEST_F(PropertyRegistryTest, IsEmptyUntilDeclareProperty) {
-  EXPECT_TRUE(Registry()->IsEmpty());
+  EXPECT_TRUE(Registry().IsEmpty());
   DeclareProperty("--x");
-  EXPECT_FALSE(Registry()->IsEmpty());
+  EXPECT_FALSE(Registry().IsEmpty());
 }
 
 TEST_F(PropertyRegistryTest, Version) {
-  EXPECT_EQ(0u, Registry()->Version());
+  EXPECT_EQ(0u, Registry().Version());
 
   RegisterProperty("--a");
-  EXPECT_EQ(1u, Registry()->Version());
+  EXPECT_EQ(1u, Registry().Version());
 
   RegisterProperty("--b");
-  EXPECT_EQ(2u, Registry()->Version());
+  EXPECT_EQ(2u, Registry().Version());
 
   DeclareProperty("--c");
-  EXPECT_EQ(3u, Registry()->Version());
+  EXPECT_EQ(3u, Registry().Version());
 
   DeclareProperty("--c");
-  EXPECT_EQ(4u, Registry()->Version());
+  EXPECT_EQ(4u, Registry().Version());
 
   DeclareProperty("--d");
-  EXPECT_EQ(5u, Registry()->Version());
+  EXPECT_EQ(5u, Registry().Version());
 
-  Registry()->RemoveDeclaredProperties();
-  EXPECT_EQ(6u, Registry()->Version());
+  Registry().RemoveDeclaredProperties();
+  EXPECT_EQ(6u, Registry().Version());
 }
 
 TEST_F(PropertyRegistryTest, RemoveDeclaredProperties) {
@@ -235,7 +243,7 @@ TEST_F(PropertyRegistryTest, RemoveDeclaredProperties) {
   EXPECT_TRUE(Registration("--c"));
   EXPECT_TRUE(Registration("--d"));
 
-  Registry()->RemoveDeclaredProperties();
+  Registry().RemoveDeclaredProperties();
 
   EXPECT_FALSE(Registration("--a"));
   EXPECT_FALSE(Registration("--b"));
@@ -248,7 +256,7 @@ TEST_F(PropertyRegistryTest, MarkReferencedRegisterProperty) {
                                      false);
 
   UpdateAllLifecyclePhasesForTest();
-  EXPECT_FALSE(Registry()->WasReferenced("--x"));
+  EXPECT_FALSE(Registry().WasReferenced("--x"));
 
   GetDocument().documentElement()->setInnerHTML(R"HTML(
     <style>
@@ -263,12 +271,12 @@ TEST_F(PropertyRegistryTest, MarkReferencedRegisterProperty) {
   )HTML");
 
   UpdateAllLifecyclePhasesForTest();
-  EXPECT_TRUE(Registry()->WasReferenced("--x"));
+  EXPECT_TRUE(Registry().WasReferenced("--x"));
 }
 
 TEST_F(PropertyRegistryTest, MarkReferencedAtProperty) {
   UpdateAllLifecyclePhasesForTest();
-  EXPECT_FALSE(Registry()->WasReferenced("--x"));
+  EXPECT_FALSE(Registry().WasReferenced("--x"));
 
   GetDocument().documentElement()->setInnerHTML(R"HTML(
     <style>
@@ -288,7 +296,7 @@ TEST_F(PropertyRegistryTest, MarkReferencedAtProperty) {
   )HTML");
 
   UpdateAllLifecyclePhasesForTest();
-  EXPECT_TRUE(Registry()->WasReferenced("--x"));
+  EXPECT_TRUE(Registry().WasReferenced("--x"));
 
   css_test_helpers::RegisterProperty(GetDocument(), "--x", "<length>", "1px",
                                      false);
@@ -302,7 +310,7 @@ TEST_F(PropertyRegistryTest, MarkReferencedAtProperty) {
   // --x should still be marked as referenced, even though RegisterProperty
   // now takes precedence over @property.
   UpdateAllLifecyclePhasesForTest();
-  EXPECT_TRUE(Registry()->WasReferenced("--x"));
+  EXPECT_TRUE(Registry().WasReferenced("--x"));
 }
 
 }  // namespace blink

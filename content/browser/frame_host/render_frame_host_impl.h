@@ -102,6 +102,7 @@
 #include "third_party/blink/public/mojom/frame/frame_owner_element_type.mojom.h"
 #include "third_party/blink/public/mojom/frame/frame_owner_properties.mojom-forward.h"
 #include "third_party/blink/public/mojom/frame/navigation_initiator.mojom.h"
+#include "third_party/blink/public/mojom/frame/tree_scope_type.mojom.h"
 #include "third_party/blink/public/mojom/frame/user_activation_update_types.mojom.h"
 #include "third_party/blink/public/mojom/idle/idle_manager.mojom.h"
 #include "third_party/blink/public/mojom/image_downloader/image_downloader.mojom.h"
@@ -126,7 +127,6 @@
 #include "third_party/blink/public/mojom/websockets/websocket_connector.mojom.h"
 #include "third_party/blink/public/mojom/webtransport/quic_transport_connector.mojom.h"
 #include "third_party/blink/public/mojom/worker/dedicated_worker_host_factory.mojom.h"
-#include "third_party/blink/public/web/web_tree_scope_type.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/accessibility/ax_action_handler.h"
 #include "ui/accessibility/ax_event.h"
@@ -355,9 +355,11 @@ class CONTENT_EXPORT RenderFrameHostImpl
   bool IsDOMContentLoaded() override;
   void UpdateAdFrameType(blink::mojom::AdFrameType ad_frame_type) override;
   blink::mojom::AuthenticatorStatus PerformGetAssertionWebAuthSecurityChecks(
-      const std::string& relying_party_id) override;
+      const std::string& relying_party_id,
+      const url::Origin& effective_origin) override;
   blink::mojom::AuthenticatorStatus PerformMakeCredentialWebAuthSecurityChecks(
-      const std::string& relying_party_id) override;
+      const std::string& relying_party_id,
+      const url::Origin& effective_origin) override;
   void SetIsXrOverlaySetup() override;
   bool IsInBackForwardCache() override;
   ukm::SourceId GetPageUkmSourceId() override;
@@ -474,7 +476,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
           interface_provider_receiver,
       mojo::PendingReceiver<blink::mojom::BrowserInterfaceBroker>
           browser_interface_broker_receiver,
-      blink::WebTreeScopeType scope,
+      blink::mojom::TreeScopeType scope,
       const std::string& frame_name,
       const std::string& frame_unique_name,
       bool is_created_by_script,
@@ -599,6 +601,12 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // commit in this RenderFrameHost.
   bool HasPendingCommitNavigation() const;
 
+  // Return true if Unload() was called on the frame or one of its ancestors.
+  // If true, this corresponds either to unload handlers running for this
+  // RenderFrameHost (LifecycleState::kRunningUnloadHandlers) or when this
+  // RenderFrameHost is ready to be deleted (LifecycleState::kReadyToBeDeleted).
+  bool IsPendingDeletion();
+
   // A NavigationRequest for a pending cross-document navigation in this frame,
   // if any. This is cleared when the navigation commits.
   NavigationRequest* navigation_request() { return navigation_request_.get(); }
@@ -663,9 +671,11 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // This method returns true from the time this RenderFrameHost is created
   // until it is pending deletion. Pending deletion starts when Unload() is
   // called on the frame or one of its ancestors.
-  // BackForwardCache: Returns false when the frame is in the BackForwardCache.
+  // Returns false when the frame is in the BackForwardCache.
+  // TODO(https://crbug.com/1073449): Replace all occurrences of is_active.
   bool is_active() const {
-    return unload_state_ == UnloadState::NotRun && !is_in_back_forward_cache_;
+    return lifecycle_state_ == LifecycleState::kActive ||
+           lifecycle_state_ == LifecycleState::kSpeculative;
   }
 
   // Navigates to an interstitial page represented by the provided data URL.
@@ -673,6 +683,63 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   // Stop the load in progress.
   void Stop();
+
+  // Defines different states the RenderFrameHost can be in during its lifetime
+  // i.e., from point of creation to deletion.
+  enum class LifecycleState {
+    // This state corresponds to when a speculative RenderFrameHost is created
+    // for an ongoing navigation (to new URL) but hasn't been swapped in the
+    // frame tree yet, mainly created for performance optimization. The frame
+    // can only be created in this state and no transitions happen to this
+    // state.
+    //
+    // Transitions from this state happen to either kActive (when navigation
+    // commits) or kReadyToBeDeleted (when the navigation redirects
+    // or gets cancelled). Note that the term speculative is used, because the
+    // navigation might be canceled or redirected and the RenderFrameHost might
+    // get deleted before being used.
+    kSpeculative,
+
+    // This state corresponds to when a RenderFrameHost is the current one in
+    // its RenderFrameHostManager and FrameTreeNode. In this state,
+    // RenderFrameHost is visible to the user. Transition to kActive state may
+    // happen from either kSpeculative (when navigation commits) or
+    // kInBackForwardCache (when restoring from BackForwardCache) states.
+    //
+    // RenderFrameHost can also be created in this state for an empty document
+    // in a FrameTreeNode (e.g initializing root and child in an empty
+    // FrameTree).
+    kActive,
+
+    // This state corresponds to when RenderFrameHost is stored in
+    // BackForwardCache. This happens when the user navigates away from a
+    // document, so that the RenderFrameHost can be re-used after a history
+    // navigation. Transition to this state happens only from kActive state.
+    kInBackForwardCache,
+
+    // This state corresponds to when RenderFrameHost has started running unload
+    // handlers. An event such as navigation commit or detaching the frame
+    // causes the RenderFrameHost to transition to this state. Then, the
+    // RenderFrameHost sends IPCs to the renderer process to execute unload
+    // handlers and deletes the RenderFrame. The RenderFrameHost waits for an
+    // ACK from the renderer process, either FrameHostMsg_Unload_ACK for a
+    // navigating frame or FrameHostMsg_Detach for its subframes, after which
+    // the RenderFrameHost transitions to kReadyToBeDeleted state.
+    //
+    // Transition to this state happens only from kActive state. Note that
+    // eviction from BackForwardCache does not run unload handlers, and
+    // kInBackForwardCache moves to kReadyToBeDeleted.
+    kRunningUnloadHandlers,
+
+    // This state corresponds to when RenderFrameHost has completed running the
+    // unload handlers. Once all the descendant frames in other processes are
+    // gone, this RenderFrameHost will delete itself. Transition to this state
+    // may happen from one of kSpeculative, kActive, kInBackForwardCache or
+    // kRunningUnloadHandlers states.
+    kReadyToBeDeleted,
+  };
+  LifecycleState lifecycle_state() const { return lifecycle_state_; }
+  void SetLifecycleStateToActive();
 
   enum class BeforeUnloadType {
     BROWSER_INITIATED_NAVIGATION,
@@ -895,7 +962,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
       mojo::PendingAssociatedReceiver<blink::mojom::DevToolsAgent> receiver);
 
 #if defined(OS_ANDROID)
-  base::android::ScopedJavaLocalRef<jobject> GetJavaRenderFrameHost();
+  base::android::ScopedJavaLocalRef<jobject> GetJavaRenderFrameHost() override;
   service_manager::InterfaceProvider* GetJavaInterfaces() override;
 #endif
 
@@ -1493,13 +1560,16 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // TODO(nasko): Remove dependency on RenderViewHost here. RenderProcessHost
   // should be the abstraction needed here, but we need RenderViewHost to pass
   // into WebContentsObserver::FrameDetached for now.
+  // |lifecycle_state_| can either be kActive or kSpeculative during
+  // RenderFrameHostImpl creation.
   RenderFrameHostImpl(SiteInstance* site_instance,
                       scoped_refptr<RenderViewHostImpl> render_view_host,
                       RenderFrameHostDelegate* delegate,
                       FrameTree* frame_tree,
                       FrameTreeNode* frame_tree_node,
                       int32_t routing_id,
-                      bool renderer_initiated_creation);
+                      bool renderer_initiated_creation,
+                      LifecycleState lifecycle_state);
 
   // The SendCommit* functions below are wrappers for commit calls
   // made to mojom::FrameNavigationControl and mojom::NavigationClient.
@@ -2167,6 +2237,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
     return has_unload_handler_ || do_not_delete_for_testing_;
   }
 
+  // Updates the |lifecycle_state_|. Called when there is a change in the
+  // RenderFrameHost LifecycleState.
+  void SetLifecycleState(LifecycleState state);
+
   // The RenderViewHost that this RenderFrameHost is associated with.
   //
   // It is kept alive as long as any RenderFrameHosts or RenderFrameProxyHosts
@@ -2647,23 +2721,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // empty document is loaded.
   blink::mojom::ResourceLoadInfoPtr deferred_main_frame_load_info_;
 
-  enum class UnloadState {
-    // The initial state. The frame is alive.
-    NotRun,
-
-    // An event such as a navigation happened causing the frame to start its
-    // deletion. IPC are sent to execute the unload handlers and delete the
-    // RenderFrame. The RenderFrameHost is waiting for an ACK. Either
-    // FrameHostMsg_Unload_ACK for the navigating frame, or FrameHostMsg_Detach
-    // for its subframe.
-    InProgress,
-
-    // The unload handlers have run. Once all the descendant frames in other
-    // processes are gone, this RenderFrameHost can delete itself too.
-    Completed,
-  };
-  UnloadState unload_state_ = UnloadState::NotRun;
-
   // If a subframe failed to finish running its unload handler after
   // |subframe_unload_timeout_| the RenderFrameHost is deleted.
   base::TimeDelta subframe_unload_timeout_;
@@ -2672,7 +2729,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   base::OneShotTimer subframe_unload_timer_;
 
   // BackForwardCache:
-  bool is_in_back_forward_cache_ = false;
   bool is_evicted_from_back_forward_cache_ = false;
   base::OneShotTimer back_forward_cache_eviction_timer_;
 
@@ -2807,6 +2863,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // in this RenderFrameHost.
   // TODO(crbug.com/936696): Make this const after we have RenderDocument.
   int64_t last_committed_cross_document_navigation_id_ = -1;
+
+  // Tracks the state of |this| RenderFrameHost from the point it is created to
+  // when it gets deleted.
+  LifecycleState lifecycle_state_;
 
   // If true, RenderFrameHost should not be actually deleted and should be left
   // stuck in pending deletion.

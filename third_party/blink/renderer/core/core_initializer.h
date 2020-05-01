@@ -123,7 +123,6 @@ class CORE_EXPORT CoreInitializer {
       Page* clone_from_page,
       const SessionStorageNamespaceId& clone_to_namespace) = 0;
 
-  virtual void DidCommitLoad(LocalFrame&) = 0;
   virtual void DidChangeManifest(LocalFrame&) = 0;
 
  protected:

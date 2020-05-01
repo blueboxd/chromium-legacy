@@ -307,7 +307,7 @@ template("mac_toolchain") {
       link_command += "{{ldflags}} -o \"$dylib\" -Wl,-filelist,\"$rspfile\" {{frameworks}} {{solibs}} {{libs}}"
 
       replace_command = "if ! cmp -s \"$temporary_tocname\" \"$tocname\"; then mv \"$temporary_tocname\" \"$tocname\""
-      extract_toc_command = "{ $otool -l \"$dylib\" | grep LC_ID_DYLIB -A 5; $nm -gP \"$dylib\" | cut -f1-2 -d' ' | grep -v U\$\$; true; }"
+      extract_toc_command = "{ $otool -l \"$dylib\" | grep LC_ID_DYLIB -A 5; $nm -gPp \"$dylib\" | cut -f1-2 -d' ' | grep -v U\$\$; true; }"
 
       command = "if $does_reexport_command ; then $link_command && $extract_toc_command > \"$tocname\"; else $link_command && $extract_toc_command > \"$temporary_tocname\" && $replace_command ; fi; fi"
 

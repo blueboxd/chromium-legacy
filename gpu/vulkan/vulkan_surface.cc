@@ -250,8 +250,10 @@ bool VulkanSurface::CreateSwapChain(const gfx::Size& size,
   DCHECK_GT(static_cast<uint32_t>(image_size.width()), 0u);
   DCHECK_GT(static_cast<uint32_t>(image_size.height()), 0u);
 
-  if (image_size_ == image_size && transform_ == transform)
+  if (image_size_ == image_size && transform_ == transform &&
+      swap_chain_->state() == VK_SUCCESS) {
     return true;
+  }
 
   image_size_ = image_size;
   transform_ = transform;

@@ -535,6 +535,11 @@ void ProxyImpl::NotifyPaintWorkletStateChange(
   scheduler_->NotifyPaintWorkletStateChange(state);
 }
 
+void ProxyImpl::NotifyThroughputTrackerResults(CustomTrackerResults results) {
+  // TODO(crbug.com/1021774): Hookup threaded code path via ProxyMain.
+  NOTREACHED();
+}
+
 bool ProxyImpl::WillBeginImplFrame(const viz::BeginFrameArgs& args) {
   DCHECK(IsImplThread());
   return host_impl_->WillBeginImplFrame(args);

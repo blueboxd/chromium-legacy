@@ -373,6 +373,26 @@ TEST_F(ForcedExtensionsInstallationTrackerTest,
       InstallationReporter::UpdateCheckStatus::kNoUpdate, 1);
 }
 
+// Regression test to check if the metrics are collected properly for the
+// extensions which are already installed and loaded and then fail with error
+// ALREADY_INSTALLED.
+TEST_F(ForcedExtensionsInstallationTrackerTest,
+       ExtensionLoadedThenFailedWithAlreadyInstalledError) {
+  SetupForceList();
+  auto ext1 = ExtensionBuilder(kExtensionName1).SetID(kExtensionId1).Build();
+  tracker_->OnExtensionLoaded(&profile_, ext1.get());
+  installation_reporter_->ReportFailure(
+      kExtensionId1, InstallationReporter::FailureReason::ALREADY_INSTALLED);
+  auto ext2 = ExtensionBuilder(kExtensionName2).SetID(kExtensionId2).Build();
+  tracker_->OnExtensionLoaded(&profile_, ext2.get());
+  // InstallationTracker shuts down timer because all extension are either
+  // loaded or failed.
+  EXPECT_FALSE(fake_timer_->IsRunning());
+  histogram_tester_.ExpectTotalCount(kLoadTimeStats, 1);
+  histogram_tester_.ExpectTotalCount(kTimedOutStats, 0);
+  histogram_tester_.ExpectTotalCount(kTimedOutNotInstalledStats, 0);
+}
+
 TEST_F(ForcedExtensionsInstallationTrackerTest, ExtensionsStuck) {
   SetupForceList();
   installation_reporter_->ReportInstallationStage(

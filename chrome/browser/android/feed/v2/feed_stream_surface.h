@@ -62,10 +62,12 @@ class FeedStreamSurface : public FeedStreamApi::SurfaceInterface {
                          const base::android::JavaParamRef<jobject>& obj,
                          const base::android::JavaParamRef<jstring>& slice_id);
   void ReportOpenAction(JNIEnv* env,
-                        const base::android::JavaParamRef<jobject>& obj);
+                        const base::android::JavaParamRef<jobject>& obj,
+                        const base::android::JavaParamRef<jstring>& slice_id);
   void ReportOpenInNewTabAction(
       JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& obj);
+      const base::android::JavaParamRef<jobject>& obj,
+      const base::android::JavaParamRef<jstring>& slice_id);
   void ReportOpenInNewIncognitoTabAction(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj);

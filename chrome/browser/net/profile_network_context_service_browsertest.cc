@@ -35,6 +35,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/policy/core/common/policy_map.h"
 #include "components/policy/policy_constants.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/storage_partition.h"
@@ -54,21 +55,6 @@
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/policy/login_policy_test_base.h"
-#include "chrome/browser/chromeos/policy/user_policy_test_helper.h"
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
-#include "components/policy/policy_constants.h"
-#include "net/base/features.h"
-#endif  // defined(OS_CHROMEOS)
-
-#if BUILDFLAG(BUILTIN_CERT_VERIFIER_FEATURE_SUPPORTED)
-#include "chrome/browser/policy/policy_test_utils.h"
-#include "components/policy/core/common/policy_map.h"
-#include "components/policy/policy_constants.h"
-#include "net/base/features.h"
-#endif
 
 // Most tests for this class are in NetworkContextConfigurationBrowserTest.
 class ProfileNetworkContextServiceBrowsertest : public InProcessBrowserTest {
@@ -448,107 +434,7 @@ IN_PROC_BROWSER_TEST_F(ProfileNetworkContextServiceDiskCacheBrowsertest,
   EXPECT_EQ(kCacheSize, network_context_params_ptr->http_cache_max_size);
 }
 
-#if defined(OS_CHROMEOS)
-// Base class for verifying which certificate verifier is being used on Chrome
-// OS depending on feature state and policies.
-class ProfileNetworkContextServiceCertVerifierBrowsertestBase
-    : public policy::LoginPolicyTestBase {
- public:
-  ProfileNetworkContextServiceCertVerifierBrowsertestBase() = default;
-  ~ProfileNetworkContextServiceCertVerifierBrowsertestBase() override = default;
-
- protected:
-  bool IsSigninProfileUsingBuiltinCertVerifier() {
-    Profile* const profile = chromeos::ProfileHelper::GetSigninProfile();
-    ProfileNetworkContextService* const service =
-        ProfileNetworkContextServiceFactory::GetForContext(profile);
-    return service->using_builtin_cert_verifier();
-  }
-
-  bool IsActiveProfileUsingBuiltinCertVerifier() {
-    Profile* const profile = GetProfileForActiveUser();
-    ProfileNetworkContextService* const service =
-        ProfileNetworkContextServiceFactory::GetForContext(profile);
-    return service->using_builtin_cert_verifier();
-  }
-
-  base::test::ScopedFeatureList scoped_feature_list_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(
-      ProfileNetworkContextServiceCertVerifierBrowsertestBase);
-};
-
-// When using this class, the built-in certificate verifier has been enabled
-// using the UseBuiltinCertVerifier feature.
-class ProfileNetworkContextServiceCertVerifierBuiltinEnabledBrowsertest
-    : public ProfileNetworkContextServiceCertVerifierBrowsertestBase {
- public:
-  ProfileNetworkContextServiceCertVerifierBuiltinEnabledBrowsertest() = default;
-  ~ProfileNetworkContextServiceCertVerifierBuiltinEnabledBrowsertest()
-      override = default;
-
-  void SetUpInProcessBrowserTestFixture() override {
-    scoped_feature_list_.InitAndEnableFeature(
-        net::features::kCertVerifierBuiltinFeature);
-    ProfileNetworkContextServiceCertVerifierBrowsertestBase::
-        SetUpInProcessBrowserTestFixture();
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(
-      ProfileNetworkContextServiceCertVerifierBuiltinEnabledBrowsertest);
-};
-
-// If the built-in cert verifier is enabled and no policy is present, it should
-// be enabled on the sign-in screen and in the user profile.
-IN_PROC_BROWSER_TEST_F(
-    ProfileNetworkContextServiceCertVerifierBuiltinEnabledBrowsertest,
-    TurnedOnByFeature) {
-  SkipToLoginScreen();
-  EXPECT_TRUE(IsSigninProfileUsingBuiltinCertVerifier());
-
-  LogIn(kAccountId, kAccountPassword, kEmptyServices);
-
-  EXPECT_TRUE(IsActiveProfileUsingBuiltinCertVerifier());
-}
-
-// When using this class, the built-in certificate verifier has been disabled
-// using the UseBuiltinCertVerifier feature.
-class ProfileNetworkContextServiceCertVerifierBuiltinDisabledBrowsertest
-    : public ProfileNetworkContextServiceCertVerifierBrowsertestBase {
- public:
-  ProfileNetworkContextServiceCertVerifierBuiltinDisabledBrowsertest() =
-      default;
-  ~ProfileNetworkContextServiceCertVerifierBuiltinDisabledBrowsertest()
-      override = default;
-
-  void SetUpInProcessBrowserTestFixture() override {
-    scoped_feature_list_.InitAndDisableFeature(
-        net::features::kCertVerifierBuiltinFeature);
-    ProfileNetworkContextServiceCertVerifierBrowsertestBase::
-        SetUpInProcessBrowserTestFixture();
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(
-      ProfileNetworkContextServiceCertVerifierBuiltinDisabledBrowsertest);
-};
-
-// If the built-in cert verifier feature is disabled, it should be disabled in
-// user profiles but enabled in the sign-in profile.
-IN_PROC_BROWSER_TEST_F(
-    ProfileNetworkContextServiceCertVerifierBuiltinDisabledBrowsertest,
-    TurnedOffByFeature) {
-  SkipToLoginScreen();
-  EXPECT_TRUE(IsSigninProfileUsingBuiltinCertVerifier());
-
-  LogIn(kAccountId, kAccountPassword, kEmptyServices);
-
-  EXPECT_FALSE(IsActiveProfileUsingBuiltinCertVerifier());
-}
-
-#elif BUILDFLAG(BUILTIN_CERT_VERIFIER_FEATURE_SUPPORTED)
+#if BUILDFLAG(BUILTIN_CERT_VERIFIER_FEATURE_SUPPORTED)
 class ProfileNetworkContextServiceCertVerifierBuiltinFeaturePolicyTest
     : public policy::PolicyTest,
       public testing::WithParamInterface<bool> {
@@ -608,14 +494,14 @@ IN_PROC_BROWSER_TEST_P(
       network::mojom::CertVerifierCreationParams::CertVerifierImpl::kSystem,
       network_context_params_ptr->cert_verifier_creation_params
           ->use_builtin_cert_verifier);
-#endif
+#endif  // BUILDFLAG(BUILTIN_CERT_VERIFIER_POLICY_SUPPORTED)
 }
 
 INSTANTIATE_TEST_SUITE_P(
     All,
     ProfileNetworkContextServiceCertVerifierBuiltinFeaturePolicyTest,
     ::testing::Bool());
-#endif
+#endif  // BUILDFLAG(BUILTIN_CERT_VERIFIER_FEATURE_SUPPORTED)
 
 enum class CorsTestMode {
   kWithCorsMitigationListPolicy,

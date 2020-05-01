@@ -30,6 +30,10 @@
         height: var(--cr-toolbar-height);
       }
 
+      :host(:not([narrow])) {
+        --cr-toolbar-search-field-border-radius: 4px;
+      }
+
       h1 {
         flex: 1;
         font-size: 123%;

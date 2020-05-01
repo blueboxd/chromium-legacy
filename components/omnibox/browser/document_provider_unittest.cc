@@ -1141,3 +1141,24 @@ TEST_F(DocumentProviderTest, MinQueryLength) {
   provider_->Start(long_input, false);
   EXPECT_EQ(long_input.text(), provider_->input_.text());
 }
+
+TEST_F(DocumentProviderTest, StartCallsStop) {
+  // Test that a call to ::Start will stop old requests to prevent their results
+  // from appearing with the new input
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(omnibox::kDocumentProvider);
+  EXPECT_CALL(*client_.get(), SearchSuggestEnabled())
+      .WillRepeatedly(Return(true));
+  EXPECT_CALL(*client_.get(), IsAuthenticated()).WillRepeatedly(Return(true));
+  EXPECT_CALL(*client_.get(), IsSyncActive()).WillRepeatedly(Return(true));
+  EXPECT_CALL(*client_.get(), IsOffTheRecord()).WillRepeatedly(Return(false));
+
+  AutocompleteInput invalid_input(base::ASCIIToUTF16("12"),
+                                  metrics::OmniboxEventProto::OTHER,
+                                  TestSchemeClassifier());
+  invalid_input.set_want_asynchronous_matches(true);
+
+  provider_->done_ = false;
+  provider_->Start(invalid_input, false);
+  EXPECT_TRUE(provider_->done());
+}

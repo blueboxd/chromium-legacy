@@ -312,9 +312,8 @@ TEST_F(CSSVariableResolverTest, NeedsResolutionClearedByResolver) {
       MakeGarbageCollected<PropertyRegistration>(
           "--prop3", *token_syntax, false, initial_value,
           To<CSSVariableReferenceValue>(*initial_value).VariableDataValue());
-  ASSERT_TRUE(GetDocument().GetPropertyRegistry());
-  GetDocument().GetPropertyRegistry()->RegisterProperty("--prop3",
-                                                        *registration);
+  GetDocument().EnsurePropertyRegistry().RegisterProperty("--prop3",
+                                                          *registration);
 
   CustomProperty("--prop1", GetDocument()).ApplyValue(state, *prop1);
   CustomProperty("--prop2", GetDocument()).ApplyValue(state, *prop2);

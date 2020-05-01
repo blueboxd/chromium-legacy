@@ -10,11 +10,22 @@
 #include <string>
 
 #include "base/callback.h"
+#include "base/files/file_path.h"
 
 namespace chromecast {
 
 class CrashUtil {
  public:
+  // Returns true if the filesystem has sufficient space to collect the crash.
+  // Performs I/O on the current thread.
+  static bool HasSpaceToCollectCrash();
+
+  // Runs the dumpstate utility and sends its output to a file
+  // named after the minidump, but with ".txt.gz" appended to the name.
+  // This blocks the current thread to perform I/O (for multiple seconds).
+  static bool CollectDumpstate(const base::FilePath& minidump_path,
+                               base::FilePath* dumpstate_path);
+
   // Helper function to request upload an existing minidump file. Returns true
   // on success, false otherwise.
   static bool RequestUploadCrashDump(const std::string& existing_minidump_path,

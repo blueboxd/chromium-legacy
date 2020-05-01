@@ -277,9 +277,7 @@ class BuildConfigGenerator extends DefaultTask {
                 break
             case 'androidx_media_media':
             case 'androidx_versionedparcelable_versionedparcelable':
-            case 'com_android_support_support_compat':
             case 'com_android_support_support_media_compat':
-            case 'com_android_support_versionedparcelable':
                 sb.append('\n')
                 sb.append('  # Target has AIDL, but we do not support it yet: http://crbug.com/644439\n')
                 sb.append('  ignore_aidl = true\n')
@@ -329,10 +327,45 @@ class BuildConfigGenerator extends DefaultTask {
                 sb.append('  # https://crbug.com/989505\n')
                 sb.append('  jar_excluded_patterns = ["META-INF/proguard/*"]\n')
                 break
+            case 'com_android_support_support_compat':
+                sb.append('\n')
+                sb.append('  # Target has AIDL, but we do not support it yet: http://crbug.com/644439\n')
+                sb.append('  ignore_aidl = true\n')
+                sb.append('  ignore_manifest = true\n')
+                // Necessary to not have duplicate classes after jetification.
+                // They can be removed when we no longer jetify targets
+                // that depend on com_android_support_support_compat.
+                sb.append("""\
+                |  jar_excluded_patterns = [
+                |    "android/support/v4/graphics/drawable/IconCompatParcelizer.class",
+                |    "android/support/v4/os/ResultReceiver*",
+                |    "androidx/core/graphics/drawable/IconCompatParcelizer.class",
+                |    "androidx/core/internal/package-info.class",
+                |    "android/support/v4/app/INotificationSideChannel*",
+                |    "android/support/v4/os/IResultReceiver*",
+                |  ]
+                |
+                |""".stripMargin())
+                break
             case 'com_android_support_transition':
                 // Not specified in the POM, compileOnly dependency not supposed to be used unless
                 // the library is present: b/70887421
                 sb.append('  deps += [":com_android_support_support_fragment_java"]\n')
+                break
+            case 'com_android_support_versionedparcelable':
+                sb.append('\n')
+                sb.append('  # Target has AIDL, but we do not support it yet: http://crbug.com/644439\n')
+                sb.append('  ignore_aidl = true\n')
+                // Necessary to not have identical classes after jetification.
+                // They can be removed when we no longer jetify targets
+                // that depend on com_android_support_versionedparcelable.
+                sb.append("""\
+                |  jar_excluded_patterns = [
+                |    "android/support/v4/graphics/drawable/IconCompat.class",
+                |    "androidx/*",
+                |  ]
+                |
+                |""".stripMargin())
                 break
             case 'com_google_android_gms_play_services_basement':
                 // Deprecated deps jar but still needed by play services basement.

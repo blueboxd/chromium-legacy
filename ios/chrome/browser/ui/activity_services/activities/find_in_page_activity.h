@@ -8,6 +8,7 @@
 #import <UIKit/UIKit.h>
 
 @protocol FindInPageCommands;
+@class ShareToData;
 
 // Activity to trigger the find in page feature.
 @interface FindInPageActivity : UIActivity
@@ -15,7 +16,10 @@
 // Identifier for the activity.
 + (NSString*)activityIdentifier;
 
-- (instancetype)initWithHandler:(id<FindInPageCommands>)handler
+// Initializes the find in page activity with the given |data| and the
+// |handler|.
+- (instancetype)initWithData:(ShareToData*)data
+                     handler:(id<FindInPageCommands>)handler
     NS_DESIGNATED_INITIALIZER;
 - (instancetype)init NS_UNAVAILABLE;
 

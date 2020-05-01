@@ -144,6 +144,16 @@ enum AuthenticationButtonType {
                        : UIInterfaceOrientationMaskPortrait;
 }
 
+- (void)signinWillStart {
+  self.confirmationButton.hidden = YES;
+  [self startAnimatingActivityIndicator];
+}
+
+- (void)signinDidStop {
+  self.confirmationButton.hidden = NO;
+  [self stopAnimatingActivityIndicator];
+}
+
 #pragma mark - AuthenticationFlowDelegate
 
 - (void)didPresentDialog {
@@ -385,7 +395,7 @@ enum AuthenticationButtonType {
   [self.view addSubview:self.activityIndicator];
 
   self.activityIndicator.translatesAutoresizingMaskIntoConstraints = NO;
-  AddSameCenterConstraints(self.view, self.activityIndicator);
+  AddSameCenterConstraints(self.confirmationButton, self.activityIndicator);
 }
 
 // Embeds the user consent view in the root view.
@@ -499,8 +509,6 @@ enum AuthenticationButtonType {
 
 - (void)onSkipSigninButtonPressed:(id)sender {
   DCHECK_EQ(self.skipSigninButton, sender);
-
-  [self stopAnimatingActivityIndicator];
   [self.delegate userSigninViewControllerDidTapOnSkipSignin];
 }
 
@@ -517,7 +525,6 @@ enum AuthenticationButtonType {
       break;
     }
     case AuthenticationButtonTypeConfirmation: {
-      [self startAnimatingActivityIndicator];
       [self.delegate userSigninViewControllerDidTapOnSignin];
       break;
     }

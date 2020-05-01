@@ -70,6 +70,8 @@ POLICY_EXPORT extern const char kChromeMachineLevelUserCloudPolicyType[];
 POLICY_EXPORT extern const char kChromeMachineLevelExtensionCloudPolicyType[];
 POLICY_EXPORT extern const char kChromeRemoteCommandPolicyType[];
 
+POLICY_EXPORT extern const char kChromeMachineLevelUserCloudPolicyTypeBase64[];
+
 // These codes are sent in the |error_code| field of PolicyFetchResponse.
 enum PolicyFetchStatus {
   POLICY_FETCH_SUCCESS = 200,

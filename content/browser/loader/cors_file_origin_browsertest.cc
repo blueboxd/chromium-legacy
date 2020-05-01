@@ -99,12 +99,15 @@ class CorsFileOriginBrowserTest : public ContentBrowserTest {
   }
 
  private:
-  bool AllowFileAccessFromFiles() override { return false; }
+  virtual bool AllowFileAccessFromFiles() const { return false; }
   virtual bool IsWebSecurityEnabled() const { return true; }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     if (!IsWebSecurityEnabled()) {
       command_line->AppendSwitch(switches::kDisableWebSecurity);
+    }
+    if (AllowFileAccessFromFiles()) {
+      command_line->AppendSwitch(switches::kAllowFileAccessFromFiles);
     }
 
     ContentBrowserTest::SetUpCommandLine(command_line);
@@ -179,7 +182,7 @@ class CorsFileOriginBrowserTest : public ContentBrowserTest {
 class CorsFileOriginBrowserTestWithAllowFileAccessFromFiles
     : public CorsFileOriginBrowserTest {
  private:
-  bool AllowFileAccessFromFiles() override { return true; }
+  bool AllowFileAccessFromFiles() const override { return true; }
 };
 
 // Tests end to end Origin header and CORS check behaviors with
@@ -187,7 +190,6 @@ class CorsFileOriginBrowserTestWithAllowFileAccessFromFiles
 class CorsFileOriginBrowserTestWithDisableWebSecurity
     : public CorsFileOriginBrowserTest {
  private:
-  bool AllowFileAccessFromFiles() override { return false; }
   bool IsWebSecurityEnabled() const override { return false; }
 };
 

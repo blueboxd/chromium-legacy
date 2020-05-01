@@ -69,7 +69,9 @@ class SkiaOutputDeviceVulkan final : public SkiaOutputDevice {
   };
 
   bool Initialize();
-  void CreateSkSurface();
+  bool RecreateSwapChain(const gfx::Size& size,
+                         sk_sp<SkColorSpace> color_space,
+                         gfx::OverlayTransform transform);
 
   VulkanContextProvider* const context_provider_;
 
@@ -85,7 +87,8 @@ class SkiaOutputDeviceVulkan final : public SkiaOutputDevice {
   // SkSurfaces for swap chain images.
   std::vector<SkSurfaceSizePair> sk_surface_size_pairs_;
 
-  sk_sp<SkColorSpace> sk_color_space_;
+  sk_sp<SkColorSpace> color_space_;
+  bool is_new_swapchain_ = true;
 
   DISALLOW_COPY_AND_ASSIGN(SkiaOutputDeviceVulkan);
 };

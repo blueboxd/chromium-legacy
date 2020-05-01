@@ -221,7 +221,6 @@ void ProcessorEntityTracker::UpdateOrOverrideStorageKey(
   const std::string previous_storage_key = entity->storage_key();
   DCHECK_NE(previous_storage_key, storage_key);
   if (!previous_storage_key.empty()) {
-    DCHECK(entity->metadata().is_deleted());
     ClearStorageKey(previous_storage_key);
   }
   DCHECK(storage_key_to_tag_hash_.find(previous_storage_key) ==

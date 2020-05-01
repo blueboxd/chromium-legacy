@@ -27,6 +27,7 @@
 
 using blink::WebDocument;
 using blink::WebElement;
+using blink::WebFormControlElement;
 using blink::WebInputElement;
 using blink::WebString;
 
@@ -184,24 +185,35 @@ void SimulateOnFillForm(autofill::AutofillAgent* autofill_agent,
   data.action = GURL("http://example.com/blade.php");
   data.is_form_tag = true;  // Default value.
 
+  WebDocument document = main_frame->GetDocument();
+  WebFormControlElement fname_element =
+      document.GetElementById(WebString::FromUTF8("fname"))
+          .To<WebFormControlElement>();
+  ASSERT_FALSE(fname_element.IsNull());
+  WebFormControlElement lname_element =
+      document.GetElementById(WebString::FromUTF8("lname"))
+          .To<WebFormControlElement>();
+
   FormFieldData field_data;
   field_data.name = base::ASCIIToUTF16("fname");
   field_data.value = base::ASCIIToUTF16("John");
   field_data.is_autofilled = true;
+  field_data.unique_renderer_id =
+      FieldRendererId(fname_element.UniqueRendererFormControlId());
   data.fields.push_back(field_data);
 
   field_data.name = base::ASCIIToUTF16("lname");
   field_data.value = base::ASCIIToUTF16("Smith");
   field_data.is_autofilled = true;
+  if (!lname_element.IsNull()) {
+    field_data.unique_renderer_id =
+        FieldRendererId(lname_element.UniqueRendererFormControlId());
+  }
   data.fields.push_back(field_data);
-
-  WebDocument document = main_frame->GetDocument();
-  WebElement element = document.GetElementById(WebString::FromUTF8("fname"));
-  ASSERT_FALSE(element.IsNull());
 
   // This call is necessary to setup the autofill agent appropriate for the
   // user selection; simulates the menu actually popping up.
-  autofill_agent->FormControlElementClicked(element.To<WebInputElement>(),
+  autofill_agent->FormControlElementClicked(fname_element.To<WebInputElement>(),
                                             false);
 
   autofill_agent->FillForm(0, data);
@@ -212,6 +224,20 @@ void SimulateOnFillForm(autofill::AutofillAgent* autofill_agent,
 void SimulateOnFillFormWithNonFillableFields(
     autofill::AutofillAgent* autofill_agent,
     blink::WebLocalFrame* main_frame) {
+  WebDocument document = main_frame->GetDocument();
+  WebFormControlElement fname_element =
+      document.GetElementById(WebString::FromUTF8("fname"))
+          .To<WebFormControlElement>();
+  ASSERT_FALSE(fname_element.IsNull());
+  WebFormControlElement mname_element =
+      document.GetElementById(WebString::FromUTF8("mname"))
+          .To<WebFormControlElement>();
+  ASSERT_FALSE(mname_element.IsNull());
+  WebFormControlElement lname_element =
+      document.GetElementById(WebString::FromUTF8("lname"))
+          .To<WebFormControlElement>();
+  ASSERT_FALSE(lname_element.IsNull());
+
   FormData data;
   data.name = base::ASCIIToUTF16("name");
   data.url = GURL("http://example.com/");
@@ -222,26 +248,28 @@ void SimulateOnFillFormWithNonFillableFields(
   field_data.name = base::ASCIIToUTF16("fname");
   field_data.value = base::ASCIIToUTF16("John");
   field_data.is_autofilled = true;
+  field_data.unique_renderer_id =
+      FieldRendererId(fname_element.UniqueRendererFormControlId());
   data.fields.push_back(field_data);
 
   field_data.name = base::ASCIIToUTF16("lname");
   field_data.value = base::ASCIIToUTF16("Smith");
   field_data.is_autofilled = true;
+  field_data.unique_renderer_id =
+      FieldRendererId(lname_element.UniqueRendererFormControlId());
   data.fields.push_back(field_data);
 
   // Additional non-autofillable field.
   field_data.name = base::ASCIIToUTF16("mname");
   field_data.value = base::ASCIIToUTF16("James");
   field_data.is_autofilled = false;
+  field_data.unique_renderer_id =
+      FieldRendererId(mname_element.UniqueRendererFormControlId());
   data.fields.push_back(field_data);
-
-  WebDocument document = main_frame->GetDocument();
-  WebElement element = document.GetElementById(WebString::FromUTF8("fname"));
-  ASSERT_FALSE(element.IsNull());
 
   // This call is necessary to setup the autofill agent appropriate for the
   // user selection; simulates the menu actually popping up.
-  autofill_agent->FormControlElementClicked(element.To<WebInputElement>(),
+  autofill_agent->FormControlElementClicked(fname_element.To<WebInputElement>(),
                                             false);
 
   autofill_agent->FillForm(0, data);

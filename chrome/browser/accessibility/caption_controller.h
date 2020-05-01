@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_ACCESSIBILITY_CAPTION_CONTROLLER_H_
 
 #include <memory>
+#include <string>
 #include <unordered_map>
 
 #include "chrome/browser/ui/browser_list_observer.h"
@@ -14,6 +15,10 @@
 class Browser;
 class Profile;
 class PrefChangeRegistrar;
+
+namespace content {
+class RenderFrameHost;
+}
 
 namespace user_prefs {
 class PrefRegistrySyncable;
@@ -45,6 +50,11 @@ class CaptionController : public BrowserListObserver, public KeyedService {
   static void InitOffTheRecordPrefs(Profile* off_the_record_profile);
 
   void Init();
+
+  // Routes a transcription to the CaptionBubbleController that belongs to the
+  // appropriate browser.
+  void DispatchTranscription(content::RenderFrameHost* frame_host,
+                             const std::string& transcription);
 
  private:
   friend class CaptionControllerFactory;

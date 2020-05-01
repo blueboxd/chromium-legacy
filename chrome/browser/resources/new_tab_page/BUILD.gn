@@ -133,6 +133,7 @@ js_library("fakebox") {
 
 js_library("realbox") {
   deps = [
+    ":browser_proxy",
     ":utils",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
     "//ui/webui/resources/js:assert.m",
@@ -218,13 +219,16 @@ if (optimize_webui) {
     js_module_in_files = [ "new_tab_page.js" ]
     js_out_files = [ "new_tab_page.rollup.js" ]
     excludes = [
+      "chrome://resources/js/cr.m.js",
       "chrome://resources/mojo/mojo/public/js/mojo_bindings_lite.js",
+      "chrome://resources/mojo/mojo/public/mojom/base/big_buffer.mojom-lite.js",
+      "chrome://resources/mojo/mojo/public/mojom/base/string16.mojom-lite.js",
       "chrome://resources/mojo/mojo/public/mojom/base/text_direction.mojom-lite.js",
       "chrome://resources/mojo/mojo/public/mojom/base/time.mojom-lite.js",
-      "skcolor.mojom-lite.js",
-      "new_tab_page.mojom-lite.js",
       "chrome://resources/mojo/url/mojom/url.mojom-lite.js",
-      "chrome://resources/js/cr.m.js",
+      "new_tab_page.mojom-lite.js",
+      "omnibox.mojom-lite.js",
+      "skcolor.mojom-lite.js",
     ]
   }
 }

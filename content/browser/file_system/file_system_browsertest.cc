@@ -36,6 +36,10 @@ class FileSystemBrowserTest : public ContentBrowserTest,
  public:
   FileSystemBrowserTest() { is_incognito_ = GetParam(); }
 
+  void SetUpOnMainThread() override {
+    ASSERT_TRUE(embedded_test_server()->Start());
+  }
+
   void SimpleTest(const GURL& test_url) {
     // The test page will perform tests on FileAPI, then navigate to either
     // a #pass or #fail ref.
@@ -71,6 +75,7 @@ INSTANTIATE_TEST_SUITE_P(All, FileSystemBrowserTest, ::testing::Bool());
 class FileSystemBrowserTestWithLowQuota : public FileSystemBrowserTest {
  public:
   void SetUpOnMainThread() override {
+    FileSystemBrowserTest::SetUpOnMainThread();
     SetLowQuota(BrowserContext::GetDefaultStoragePartition(
                     browser()->web_contents()->GetBrowserContext())
                     ->GetQuotaManager());
@@ -100,15 +105,15 @@ INSTANTIATE_TEST_SUITE_P(All,
                          ::testing::Bool());
 
 IN_PROC_BROWSER_TEST_P(FileSystemBrowserTest, RequestTest) {
-  SimpleTest(GetTestUrl("fileapi", "request_test.html"));
+  SimpleTest(embedded_test_server()->GetURL("/fileapi/request_test.html"));
 }
 
 IN_PROC_BROWSER_TEST_P(FileSystemBrowserTest, CreateTest) {
-  SimpleTest(GetTestUrl("fileapi", "create_test.html"));
+  SimpleTest(embedded_test_server()->GetURL("/fileapi/create_test.html"));
 }
 
 IN_PROC_BROWSER_TEST_P(FileSystemBrowserTestWithLowQuota, QuotaTest) {
-  SimpleTest(GetTestUrl("fileapi", "quota_test.html"));
+  SimpleTest(embedded_test_server()->GetURL("/fileapi/quota_test.html"));
 }
 
 }  // namespace content

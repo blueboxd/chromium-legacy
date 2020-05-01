@@ -169,6 +169,14 @@ public class PageInfoControllerDelegateImpl implements PageInfoControllerDelegat
      * {@inheritDoc}
      */
     @Override
+    public boolean shouldShowPerformanceBadge(String url) {
+        return false;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public boolean isSiteSettingsAvailable() {
         // TODO(crbug.com/1058595): Once SiteSettingsHelper is componentized, add logic here.
         return false;

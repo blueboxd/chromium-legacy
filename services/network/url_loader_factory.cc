@@ -234,7 +234,8 @@ void URLLoaderFactory::CreateLoaderAndStart(
       context_->origin_policy_manager(),
       url_request.trust_token_params
           ? std::make_unique<TrustTokenRequestHelperFactory>(
-                context_->trust_token_store())
+                context_->trust_token_store(),
+                context_->network_service()->trust_token_key_commitments())
           : nullptr);
 
   cors_url_loader_factory_->OnLoaderCreated(std::move(loader));

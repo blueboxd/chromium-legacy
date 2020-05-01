@@ -1890,9 +1890,6 @@ void StyleEngine::AddUserKeyframeStyle(StyleRuleKeyframes* rule) {
 }
 
 void StyleEngine::AddPropertyRules(const RuleSet& rule_set) {
-  PropertyRegistry* registry = GetDocument().GetPropertyRegistry();
-  if (!registry)
-    return;
   const HeapVector<Member<StyleRuleProperty>> property_rules =
       rule_set.PropertyRules();
   for (unsigned i = 0; i < property_rules.size(); ++i) {
@@ -1925,7 +1922,7 @@ DocumentStyleEnvironmentVariables& StyleEngine::EnsureEnvironmentVariables() {
 scoped_refptr<StyleInitialData> StyleEngine::MaybeCreateAndGetInitialData() {
   if (initial_data_)
     return initial_data_;
-  if (PropertyRegistry* registry = document_->GetPropertyRegistry()) {
+  if (const PropertyRegistry* registry = document_->GetPropertyRegistry()) {
     if (!registry->IsEmpty())
       initial_data_ = StyleInitialData::Create(*registry);
   }

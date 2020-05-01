@@ -1657,6 +1657,31 @@ ci.fyi_builder(
     console_view_entry = ci.console_view_entry(
         category = 'chromeos',
     ),
+    properties = {
+        # The format of these properties is defined at archive/properties.proto
+        '$build/archive' : {
+            'archive_datas': [
+            {
+                'files': [
+                    'chrome',
+                    'chrome_100_percent.pak',
+                    'chrome_200_percent.pak',
+                    'crashpad_handler',
+                    'headless_lib.pak',
+                    'icudtl.dat',
+                    'nacl_helper',
+                    'nacl_irt_x86_64.nexe',
+                    'resources.pak',
+                    'snapshot_blob.bin',
+                ],
+                'dirs': ['locales', 'swiftshader'],
+                'gcs_bucket': 'chromium-lacros-fishfood',
+                'gcs_path': '{%position%}/lacros.zip',
+                'archive_type': 'ARCHIVE_TYPE_ZIP',
+            },
+        ],
+      },
+    },
 )
 
 ci.fyi_builder(

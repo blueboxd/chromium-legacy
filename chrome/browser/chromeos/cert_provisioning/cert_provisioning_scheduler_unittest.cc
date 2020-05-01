@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/json/json_reader.h"
 #include "base/test/gmock_callback_support.h"
+#include "base/test/values_test_util.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/cert_provisioning/cert_provisioning_common.h"
 #include "chrome/browser/chromeos/cert_provisioning/mock_cert_provisioning_worker.h"
@@ -22,12 +23,16 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::TimeDelta;
+using base::test::ParseJson;
 using base::test::RunOnceCallback;
 using testing::_;
 using testing::AtLeast;
 using testing::Exactly;
 using testing::Invoke;
+using testing::Mock;
 using testing::Return;
+using testing::ReturnRef;
+using testing::StrictMock;
 
 namespace chromeos {
 namespace cert_provisioning {
@@ -121,7 +126,7 @@ class CertProvisioningSchedulerTest : public testing::Test {
   }
 
   void SetUp() override {
-    CertProvisioningWorkerFactory::SetFactoryForTesting(&testing_factory_);
+    CertProvisioningWorkerFactory::SetFactoryForTesting(&mock_factory_);
 
     EXPECT_CALL(*platform_keys_service_, GetCertificates)
         .WillRepeatedly(Invoke(&certificate_helper_,
@@ -129,18 +134,7 @@ class CertProvisioningSchedulerTest : public testing::Test {
   }
 
   void TearDown() override {
-    // Check that we don't have unused workers in the factory.
-    EXPECT_EQ(testing_factory_.ResultsCount(), 0U);
-    testing_factory_.Reset();
-
     CertProvisioningWorkerFactory::SetFactoryForTesting(nullptr);
-  }
-
-  MockCertProvisioningWorker* CreateMockWorker(const std::string& profile_id) {
-    auto worker_obj = std::make_unique<MockCertProvisioningWorker>();
-    MockCertProvisioningWorker* worker = worker_obj.get();
-    testing_factory_.Push(std::move(worker_obj));
-    return worker;
   }
 
   content::BrowserTaskEnvironment task_environment_{
@@ -153,17 +147,13 @@ class CertProvisioningSchedulerTest : public testing::Test {
 
   TestingPrefServiceSimple pref_service_;
   policy::MockCloudPolicyClient cloud_policy_client_;
-  CertProvisioningWorkerFactoryForTesting testing_factory_;
+  // Only expected creations are allowed.
+  StrictMock<MockCertProvisioningWorkerFactory> mock_factory_;
   CertificateTestHelper certificate_helper_;
 };
 
 TEST_F(CertProvisioningSchedulerTest, Success) {
   CertScope cert_scope = CertScope::kUser;
-  const char kCertProfileId[] = "cert_profile_id_1";
-
-  MockCertProvisioningWorker* worker = CreateMockWorker(kCertProfileId);
-  worker->SetExpectations(/*do_step_times=*/AtLeast(1), /*is_waiting=*/false);
-  ASSERT_EQ(testing_factory_.ResultsCount(), 1U);
 
   CertProvisioningScheduler scheduler(
       cert_scope, testing_profile_, &pref_service_,
@@ -172,24 +162,29 @@ TEST_F(CertProvisioningSchedulerTest, Success) {
   // The policy is empty, so no workers should be created yet.
   FastForwardBy(base::TimeDelta::FromSeconds(1));
   EXPECT_EQ(scheduler.GetWorkerCount(), 0U);
-  ASSERT_EQ(testing_factory_.ResultsCount(), 1U);
 
-  // Add 1 certificate profile to the policy.
-  base::Optional<base::Value> config = base::JSONReader::Read(
+  // One worker will be created on prefs update.
+  const char kCertProfileId[] = "cert_profile_id_1";
+  CertProfile cert_profile{kCertProfileId};
+  MockCertProvisioningWorker* worker =
+      mock_factory_.ExpectCreateReturnMock(cert_scope, cert_profile);
+  worker->SetExpectations(/*do_step_times=*/AtLeast(1),
+                          /*is_waiting=*/false);
+
+  // Add 1 certificate profile to the policy ("cert_profile_id" is the same as
+  // above).
+  base::Value config = ParseJson(
       R"([{"name": "Certificate Profile 1",
            "cert_profile_id":"cert_profile_id_1",
            "key_algorithm":"rsa",
            "renewal_period_seconds": 365000}])");
-  ASSERT_TRUE(config.has_value());
-  pref_service_.Set(prefs::kRequiredClientCertificateForUser, config.value());
+  pref_service_.Set(prefs::kRequiredClientCertificateForUser, config);
 
-  // Now 1 worker should be created.
-  FastForwardBy(base::TimeDelta::FromSeconds(1));
   EXPECT_EQ(scheduler.GetWorkerCount(), 1U);
-  ASSERT_EQ(testing_factory_.ResultsCount(), 0U);
+  Mock::VerifyAndClearExpectations(&mock_factory_);
 
   // Emulate callback from the worker.
-  scheduler.OnProfileFinished(kCertProfileId, true);
+  scheduler.OnProfileFinished(cert_profile, true);
 
   // Finished worker should be deleted.
   EXPECT_EQ(scheduler.GetWorkerCount(), 0U);
@@ -216,37 +211,38 @@ TEST_F(CertProvisioningSchedulerTest, Success) {
 
 TEST_F(CertProvisioningSchedulerTest, WorkerFailed) {
   CertScope cert_scope = CertScope::kDevice;
-  const char kCertProfileId[] = "cert_profile_id_1";
-
-  MockCertProvisioningWorker* worker = CreateMockWorker(kCertProfileId);
-  worker->SetExpectations(/*do_step_times=*/AtLeast(1), /*is_waiting=*/false);
-  ASSERT_EQ(testing_factory_.ResultsCount(), 1U);
 
   CertProvisioningScheduler scheduler(
       cert_scope, testing_profile_, &pref_service_,
-      prefs::kRequiredClientCertificateForDevice, &cloud_policy_client_);
+      prefs::kRequiredClientCertificateForUser, &cloud_policy_client_);
 
   // The policy is empty, so no workers should be created yet.
   FastForwardBy(base::TimeDelta::FromSeconds(1));
   EXPECT_EQ(scheduler.GetWorkerCount(), 0U);
-  ASSERT_EQ(testing_factory_.ResultsCount(), 1U);
 
-  // Add 1 certificate profile to the policy.
-  base::Optional<base::Value> config = base::JSONReader::Read(
+  // One worker will be created on prefs update.
+  const char kCertProfileId[] = "cert_profile_id_1";
+  CertProfile cert_profile{kCertProfileId};
+  MockCertProvisioningWorker* worker =
+      mock_factory_.ExpectCreateReturnMock(cert_scope, cert_profile);
+  worker->SetExpectations(/*do_step_times=*/AtLeast(1),
+                          /*is_waiting=*/false);
+
+  // Add 1 certificate profile to the policy ("cert_profile_id" is the same as
+  // above).
+  base::Value config = ParseJson(
       R"([{"name": "Certificate Profile 1",
            "cert_profile_id":"cert_profile_id_1",
            "key_algorithm":"rsa",
            "renewal_period_seconds": 365000}])");
-  ASSERT_TRUE(config.has_value());
-  pref_service_.Set(prefs::kRequiredClientCertificateForDevice, config.value());
+  pref_service_.Set(prefs::kRequiredClientCertificateForUser, config);
 
   // Now 1 worker should be created.
-  FastForwardBy(base::TimeDelta::FromSeconds(1));
   EXPECT_EQ(scheduler.GetWorkerCount(), 1U);
-  ASSERT_EQ(testing_factory_.ResultsCount(), 0U);
+  Mock::VerifyAndClearExpectations(&mock_factory_);
 
   // Emulate callback from the worker.
-  scheduler.OnProfileFinished(kCertProfileId, false);
+  scheduler.OnProfileFinished(cert_profile, false);
 
   // Failed worker should be deleted, failed profile ID is saved, no new workers
   // should be created.
@@ -271,49 +267,53 @@ TEST_F(CertProvisioningSchedulerTest, WorkerFailed) {
 }
 
 TEST_F(CertProvisioningSchedulerTest, InitialAndDailyUpdates) {
+  CertScope cert_scope = CertScope::kDevice;
+
   // Add 1 certificate profile to the policy.
-  base::Optional<base::Value> config = base::JSONReader::Read(
+  base::Value config = ParseJson(
       R"([{"name": "Certificate Profile 1",
            "cert_profile_id":"cert_profile_id_1",
            "key_algorithm":"rsa",
            "renewal_period_seconds": 365000}])");
-  ASSERT_TRUE(config.has_value());
-  pref_service_.Set(prefs::kRequiredClientCertificateForUser, config.value());
-
+  pref_service_.Set(prefs::kRequiredClientCertificateForUser, config);
+  // Same as in the policy.
   const char kCertProfileId[] = "cert_profile_id_1";
-  MockCertProvisioningWorker* worker = CreateMockWorker(kCertProfileId);
-  worker->SetExpectations(/*do_step_times=*/AtLeast(1), /*is_waiting=*/false);
-  ASSERT_EQ(testing_factory_.ResultsCount(), 1U);
+  CertProfile cert_profile{kCertProfileId};
 
   CertProvisioningScheduler scheduler(
-      CertScope::kDevice, testing_profile_, &pref_service_,
+      cert_scope, testing_profile_, &pref_service_,
       prefs::kRequiredClientCertificateForUser, &cloud_policy_client_);
 
   // Now one worker should be created.
+  MockCertProvisioningWorker* worker =
+      mock_factory_.ExpectCreateReturnMock(cert_scope, cert_profile);
+  worker->SetExpectations(/*do_step_times=*/AtLeast(1), /*is_waiting=*/false);
   FastForwardBy(base::TimeDelta::FromSeconds(1));
   ASSERT_EQ(scheduler.GetWorkerCount(), 1U);
-  ASSERT_EQ(testing_factory_.ResultsCount(), 0U);
+  Mock::VerifyAndClearExpectations(&mock_factory_);
 
   // Emulate callback from the worker.
-  scheduler.OnProfileFinished(kCertProfileId, false);
+  scheduler.OnProfileFinished(cert_profile, false);
 
   ASSERT_EQ(scheduler.GetWorkerCount(), 0U);
   EXPECT_EQ(scheduler.GetFailedCertProfilesIds(),
             std::set<std::string>{kCertProfileId});
 
-  FastForwardBy(base::TimeDelta::FromHours(12));
+  // No workers should be created yet.
+  FastForwardBy(base::TimeDelta::FromHours(20));
   ASSERT_EQ(scheduler.GetWorkerCount(), 0U);
 
-  MockCertProvisioningWorker* worker2 = CreateMockWorker(kCertProfileId);
+  // Now list of failed profiles should be cleared that will cause a new attempt
+  // to provision certificate.
+  MockCertProvisioningWorker* worker2 =
+      mock_factory_.ExpectCreateReturnMock(cert_scope, cert_profile);
   worker2->SetExpectations(/*do_step_times=*/AtLeast(1), /*is_waiting=*/false);
-  ASSERT_EQ(testing_factory_.ResultsCount(), 1U);
-
-  FastForwardBy(base::TimeDelta::FromHours(13));
+  FastForwardBy(base::TimeDelta::FromHours(5));
   ASSERT_EQ(scheduler.GetWorkerCount(), 1U);
-  ASSERT_EQ(testing_factory_.ResultsCount(), 0U);
+  Mock::VerifyAndClearExpectations(&mock_factory_);
 
   // Emulate callback from the worker.
-  scheduler.OnProfileFinished(kCertProfileId, true);
+  scheduler.OnProfileFinished(cert_profile, true);
 
   ASSERT_EQ(scheduler.GetWorkerCount(), 0U);
   EXPECT_EQ(scheduler.GetFailedCertProfilesIds(), std::set<std::string>{});
@@ -321,63 +321,67 @@ TEST_F(CertProvisioningSchedulerTest, InitialAndDailyUpdates) {
 
 TEST_F(CertProvisioningSchedulerTest, MultipleWorkers) {
   CertScope cert_scope = CertScope::kDevice;
-  const char kCertProfileId0[] = "cert_profile_id_0";
-  const char kCertProfileId1[] = "cert_profile_id_1";
-  const char kCertProfileId2[] = "cert_profile_id_2";
-
-  MockCertProvisioningWorker* worker0 = CreateMockWorker(kCertProfileId0);
-  worker0->SetExpectations(/*do_step_times=*/AtLeast(1), /*is_waiting=*/false);
-  MockCertProvisioningWorker* worker1 = CreateMockWorker(kCertProfileId1);
-  worker1->SetExpectations(/*do_step_times=*/AtLeast(1), /*is_waiting=*/false);
-  MockCertProvisioningWorker* worker2 = CreateMockWorker(kCertProfileId2);
-  worker2->SetExpectations(/*do_step_times=*/AtLeast(1), /*is_waiting=*/false);
-  ASSERT_EQ(testing_factory_.ResultsCount(), 3U);
 
   CertProvisioningScheduler scheduler(
       cert_scope, testing_profile_, &pref_service_,
-      prefs::kRequiredClientCertificateForDevice, &cloud_policy_client_);
+      prefs::kRequiredClientCertificateForUser, &cloud_policy_client_);
 
   // The policy is empty, so no workers should be created yet.
   FastForwardBy(base::TimeDelta::FromSeconds(1));
   ASSERT_EQ(scheduler.GetWorkerCount(), 0U);
-  ASSERT_EQ(testing_factory_.ResultsCount(), 3U);
 
-  // Add 3 certificate profiles to the policy.
-  base::Optional<base::Value> config = base::JSONReader::Read(
+  // New workers will be created on prefs update.
+  const char kCertProfileId0[] = "cert_profile_id_0";
+  CertProfile cert_profile0{kCertProfileId0};
+  const char kCertProfileId1[] = "cert_profile_id_1";
+  CertProfile cert_profile1{kCertProfileId1};
+  const char kCertProfileId2[] = "cert_profile_id_2";
+  CertProfile cert_profile2{kCertProfileId2};
+  MockCertProvisioningWorker* worker0 =
+      mock_factory_.ExpectCreateReturnMock(cert_scope, cert_profile0);
+  worker0->SetExpectations(/*do_step_times=*/AtLeast(1), /*is_waiting=*/false);
+  MockCertProvisioningWorker* worker1 =
+      mock_factory_.ExpectCreateReturnMock(cert_scope, cert_profile1);
+  worker1->SetExpectations(/*do_step_times=*/AtLeast(1), /*is_waiting=*/false);
+  MockCertProvisioningWorker* worker2 =
+      mock_factory_.ExpectCreateReturnMock(cert_scope, cert_profile2);
+  worker2->SetExpectations(/*do_step_times=*/AtLeast(1), /*is_waiting=*/false);
+
+  // Add 3 certificate profiles to the policy ("cert_profile_id"s are the same
+  // as above).
+  base::Value config = ParseJson(
       R"([{
-           "name": "Certificate Profile 1",
+           "name": "Certificate Profile 0",
            "cert_profile_id":"cert_profile_id_0",
            "key_algorithm":"rsa",
            "renewal_period_seconds": 365000
           },
           {
-           "name": "Certificate Profile 2",
+           "name": "Certificate Profile 1",
            "cert_profile_id":"cert_profile_id_1",
            "key_algorithm":"rsa",
            "renewal_period_seconds": 365000
           },
           {
-           "name": "Certificate Profile 3",
+           "name": "Certificate Profile 2",
            "cert_profile_id":"cert_profile_id_2",
            "key_algorithm":"rsa",
            "renewal_period_seconds": 365000
           }])");
-  ASSERT_TRUE(config.has_value());
-  pref_service_.Set(prefs::kRequiredClientCertificateForDevice, config.value());
+  pref_service_.Set(prefs::kRequiredClientCertificateForUser, config);
 
   // Now one worker for each profile should be created.
-  FastForwardBy(base::TimeDelta::FromSeconds(1));
   ASSERT_EQ(scheduler.GetWorkerCount(), 3U);
-  ASSERT_EQ(testing_factory_.ResultsCount(), 0U);
+  Mock::VerifyAndClearExpectations(&mock_factory_);
 
   // worker0 successfully finished. Should be just deleted.
-  scheduler.OnProfileFinished(kCertProfileId0, true);
+  scheduler.OnProfileFinished(cert_profile0, true);
 
   // worker1 is waiting. Should be continued.
   worker1->SetExpectations(/*do_step_times=*/AtLeast(1), /*is_waiting=*/true);
 
   // worker2 failed. Should be deleted and the profile id should be saved.
-  scheduler.OnProfileFinished(kCertProfileId2, false);
+  scheduler.OnProfileFinished(cert_profile2, false);
 
   EXPECT_EQ(scheduler.GetWorkerCount(), 1U);
   EXPECT_EQ(scheduler.GetFailedCertProfilesIds(),
@@ -442,6 +446,59 @@ TEST_F(CertProvisioningSchedulerTest, RemoveCertWithoutPolicy) {
       .Times(1);
 
   FastForwardBy(base::TimeDelta::FromSeconds(1));
+}
+
+TEST_F(CertProvisioningSchedulerTest, DeserializeWorkers) {
+  CertScope cert_scope = CertScope::kUser;
+
+  const char kCertProfileId[] = "cert_profile_id_1";
+  CertProfile cert_profile{kCertProfileId};
+
+  // Add 1 certificate profile to the policy.
+  base::Value cert_profiles = ParseJson(
+      R"([{"name": "Certificate Profile 1",
+           "cert_profile_id":"cert_profile_id_1",
+           "key_algorithm":"rsa",
+           "renewal_period_seconds": 365000}])");
+  pref_service_.Set(prefs::kRequiredClientCertificateForUser, cert_profiles);
+  // Add 1 serialized worker for the profile.
+  base::Value saved_worker = ParseJson(
+      R"({"cert_profile_1": {
+            "cert": "",
+            "cert_profile": {
+              "profile_id": "cert_profile_1"
+            },
+            "cert_scope": 0,
+            "csr": "fake_data_to_sign_1",
+            "hashing_algorithm": "sha256",
+            "public_key": "fake_public_key_1",
+            "signature": "fake_signature_1",
+            "state": 5,
+            "va_challenge": "fake_va_challenge_1",
+            "va_challenge_response": "fake_va_challenge_response_1"
+          }
+        })");
+  base::Value all_saved_workers(base::Value::Type::DICTIONARY);
+  all_saved_workers.SetKey("cert_profile_1", saved_worker.Clone());
+
+  pref_service_.Set(prefs::kCertificateProvisioningStateForUser,
+                    all_saved_workers);
+
+  MockCertProvisioningWorker* worker =
+      mock_factory_.ExpectDeserializeReturnMock(cert_scope, saved_worker);
+  ON_CALL(*worker, GetCertProfile).WillByDefault(ReturnRef(cert_profile));
+  // is_waiting==true should be set by Serializer so Scheduler knows that the
+  // worker has to be continued manually.
+  worker->SetExpectations(/*do_step_times=*/AtLeast(1),
+                          /*is_waiting=*/true);
+
+  CertProvisioningScheduler scheduler(
+      cert_scope, testing_profile_, &pref_service_,
+      prefs::kRequiredClientCertificateForUser, &cloud_policy_client_);
+
+  // Now one worker should be created.
+  FastForwardBy(base::TimeDelta::FromSeconds(1));
+  ASSERT_EQ(scheduler.GetWorkerCount(), 1U);
 }
 
 }  // namespace

@@ -73,7 +73,7 @@ base::LazyInstance<FrameProxyMap>::DestructorAtExit g_frame_proxy_map =
 RenderFrameProxy* RenderFrameProxy::CreateProxyToReplaceFrame(
     RenderFrameImpl* frame_to_replace,
     int routing_id,
-    blink::WebTreeScopeType scope) {
+    blink::mojom::TreeScopeType scope) {
   CHECK_NE(routing_id, MSG_ROUTING_NONE);
 
   std::unique_ptr<RenderFrameProxy> proxy(new RenderFrameProxy(routing_id));
@@ -182,7 +182,7 @@ RenderFrameProxy* RenderFrameProxy::CreateProxyForPortal(
   auto proxy = base::WrapUnique(new RenderFrameProxy(proxy_routing_id));
   proxy->devtools_frame_token_ = devtools_frame_token;
   blink::WebRemoteFrame* web_frame = blink::WebRemoteFrame::CreateForPortal(
-      blink::WebTreeScopeType::kDocument, proxy.get(),
+      blink::mojom::TreeScopeType::kDocument, proxy.get(),
       proxy->blink_interface_registry_.get(),
       proxy->GetRemoteAssociatedInterfaces(), portal_element);
   proxy->Init(web_frame, parent->render_view(),

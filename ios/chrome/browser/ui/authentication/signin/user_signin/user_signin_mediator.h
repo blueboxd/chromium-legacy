@@ -29,9 +29,6 @@ class UnifiedConsentService;
 // Delegate that handles interactions with unified consent screen.
 @protocol UserSigninMediatorDelegate
 
-// Sends a signal that the |settingsLinkWasTapped| parameter needs to be reset.
-- (void)userSigninMediatorDidTapResetSettingLink;
-
 // Returns the state of the |settingsLinkWasTapped| parameter in
 // UnifiedConsentCoordinator.
 - (BOOL)userSigninMediatorGetSettingsLinkWasTapped;
@@ -47,8 +44,8 @@ class UnifiedConsentService;
 - (void)userSigninMediatorSigninFinishedWithResult:
     (SigninCoordinatorResult)signinResult;
 
-// Updates the primary button for the user sign-in screen.
-- (void)userSigninMediatorNeedPrimaryButtonUpdate;
+// Called when the user fails.
+- (void)userSigninMediatorSigninFailed;
 
 @end
 

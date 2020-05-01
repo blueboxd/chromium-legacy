@@ -112,7 +112,6 @@ class COMPONENT_EXPORT(LEVELDB_PROTO) LevelDB {
   std::unique_ptr<leveldb::DB> db_;
   base::FilePath database_dir_;
   leveldb_env::Options open_options_;
-  base::HistogramBase* open_histogram_;
   base::HistogramBase* approx_memtable_mem_histogram_;
 
   DISALLOW_COPY_AND_ASSIGN(LevelDB);

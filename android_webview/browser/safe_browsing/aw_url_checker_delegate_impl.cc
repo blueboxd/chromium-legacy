@@ -169,20 +169,17 @@ void AwUrlCheckerDelegateImpl::StartApplicationResponse(
     const AwWebResourceRequest& request) {
   content::WebContents* web_contents = resource.web_contents_getter.Run();
 
-  if (base::FeatureList::IsEnabled(safe_browsing::kCommittedSBInterstitials)) {
-    security_interstitials::SecurityInterstitialTabHelper*
-        security_interstitial_tab_helper = security_interstitials::
-            SecurityInterstitialTabHelper::FromWebContents(web_contents);
-    if (ui_manager->IsWhitelisted(resource) &&
-        security_interstitial_tab_helper &&
-        security_interstitial_tab_helper->IsDisplayingInterstitial()) {
-      // In this case we are about to leave an interstitial due to the user
-      // clicking proceed on it, we shouldn't call OnSafeBrowsingHit again.
-      resource.callback_thread->PostTask(
-          FROM_HERE, base::BindOnce(resource.callback, true /* proceed */,
-                                    false /* showed_interstitial */));
-      return;
-    }
+  security_interstitials::SecurityInterstitialTabHelper*
+      security_interstitial_tab_helper = security_interstitials::
+          SecurityInterstitialTabHelper::FromWebContents(web_contents);
+  if (ui_manager->IsWhitelisted(resource) && security_interstitial_tab_helper &&
+      security_interstitial_tab_helper->IsDisplayingInterstitial()) {
+    // In this case we are about to leave an interstitial due to the user
+    // clicking proceed on it, we shouldn't call OnSafeBrowsingHit again.
+    resource.callback_thread->PostTask(
+        FROM_HERE, base::BindOnce(resource.callback, true /* proceed */,
+                                  false /* showed_interstitial */));
+    return;
   }
 
   AwContentsClientBridge* client =
@@ -218,25 +215,23 @@ void AwUrlCheckerDelegateImpl::DoApplicationResponse(
   // TODO(ntfschr): fully handle reporting once we add support (crbug/688629)
   bool proceed;
   switch (action) {
-    case SafeBrowsingAction::SHOW_INTERSTITIAL:
+    case SafeBrowsingAction::SHOW_INTERSTITIAL: {
       base::PostTask(
           FROM_HERE, {content::BrowserThread::UI},
           base::BindOnce(
               &AwUrlCheckerDelegateImpl::StartDisplayingDefaultBlockingPage,
               ui_manager, resource));
-      if (base::FeatureList::IsEnabled(
-              safe_browsing::kCommittedSBInterstitials)) {
-        AwContents* contents = AwContents::FromWebContents(web_contents);
-        if (!contents || !contents->CanShowInterstitial()) {
-          // With committed interstitials OnReceivedError for safe browsing
-          // blocked sites is generally called from the blocking page object.
-          // When CanShowInterstitial is false, no blocking page is created from
-          // StartDisplayingDefaultBlockingPage, so we handle the call here.
-          CallOnReceivedError(
-              AwContentsClientBridge::FromWebContents(web_contents), request,
-              entry);
-        }
+      AwContents* contents = AwContents::FromWebContents(web_contents);
+      if (!contents || !contents->CanShowInterstitial()) {
+        // With committed interstitials OnReceivedError for safe browsing
+        // blocked sites is generally called from the blocking page object.
+        // When CanShowInterstitial is false, no blocking page is created from
+        // StartDisplayingDefaultBlockingPage, so we handle the call here.
+        CallOnReceivedError(
+            AwContentsClientBridge::FromWebContents(web_contents), request,
+            entry);
       }
+    }
       return;
     case SafeBrowsingAction::PROCEED:
       proceed = true;
@@ -248,8 +243,7 @@ void AwUrlCheckerDelegateImpl::DoApplicationResponse(
       NOTREACHED();
   }
 
-  if (!proceed &&
-      base::FeatureList::IsEnabled(safe_browsing::kCommittedSBInterstitials)) {
+  if (!proceed) {
     // With committed interstitials OnReceivedError for safe browsing blocked
     // sites is generally called from the blocking page object. Since no
     // blocking page is created in this case, we manually call it here.

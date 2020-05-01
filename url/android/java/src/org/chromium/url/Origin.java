@@ -35,6 +35,11 @@ public class Origin {
         return mInternal.nonceIfOpaque != null;
     }
 
+    /** Protected constructor, used for testing purposes only. */
+    protected Origin() {
+        mInternal = null;
+    }
+
     @CalledByNative
     private static ByteBuffer serialize(Origin origin) {
         return origin.mInternal.serialize();

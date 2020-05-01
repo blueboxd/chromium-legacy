@@ -33,7 +33,15 @@ inline bool HasMultiplePaintFragments(const LayoutObject& layout_object) {
   return HasMultipleItems(NGPaintFragment::InlineFragmentsFor(&layout_object));
 }
 
-inline bool HasMultipleFragmentItems(const LayoutObject& layout_object) {
+inline bool MayHaveMultipleFragmentItems(const LayoutObject& layout_object) {
+  // TODO(crbug.com/1061423): NGInlineCursor is currently unable to deal with
+  // objects split into multiple fragmentainers (e.g. columns). Just return true
+  // if it's possible that this object participates in a fragmentation
+  // context. This will give false positives, but that should be harmless, given
+  // the way the return value is used by the caller.
+  if (layout_object.IsInsideFlowThread())
+    return true;
+
   NGInlineCursor cursor;
   cursor.MoveTo(layout_object);
   DCHECK(cursor);
@@ -113,9 +121,9 @@ void NGInlineBoxFragmentPainterBase::PaintBackgroundBorderShadow(
 
   DCHECK(inline_box_fragment_.GetLayoutObject());
   const LayoutObject& layout_object = *inline_box_fragment_.GetLayoutObject();
-  bool object_has_multiple_boxes =
+  bool object_may_have_multiple_boxes =
       inline_box_paint_fragment_ ? HasMultiplePaintFragments(layout_object)
-                                 : HasMultipleFragmentItems(layout_object);
+                                 : MayHaveMultipleFragmentItems(layout_object);
 
   // TODO(eae): Switch to LayoutNG version of BackgroundImageGeometry.
   BackgroundImageGeometry geometry(*static_cast<const LayoutBoxModelObject*>(
@@ -127,7 +135,7 @@ void NGInlineBoxFragmentPainterBase::PaintBackgroundBorderShadow(
         inline_box_paint_fragment_);
     PaintBoxDecorationBackground(
         box_painter, paint_info, paint_offset, adjusted_frame_rect, geometry,
-        object_has_multiple_boxes, border_edges.line_left,
+        object_may_have_multiple_boxes, border_edges.line_left,
         border_edges.line_right);
     return;
   }
@@ -137,7 +145,7 @@ void NGInlineBoxFragmentPainterBase::PaintBackgroundBorderShadow(
       To<NGPhysicalBoxFragment>(inline_box_fragment_));
   PaintBoxDecorationBackground(box_painter, paint_info, paint_offset,
                                adjusted_frame_rect, geometry,
-                               object_has_multiple_boxes,
+                               object_may_have_multiple_boxes,
                                border_edges.line_left, border_edges.line_right);
 }
 

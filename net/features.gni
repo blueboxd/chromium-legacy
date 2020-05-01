@@ -44,6 +44,5 @@ declare_args() {
   # supported and may be switched between using the CertVerifierBuiltin feature
   # flag. This does not include platforms where the builtin cert verifier is
   # the only verifier supported.
-  builtin_cert_verifier_feature_supported =
-      is_desktop_linux || is_mac || is_chromeos
+  builtin_cert_verifier_feature_supported = is_mac
 }

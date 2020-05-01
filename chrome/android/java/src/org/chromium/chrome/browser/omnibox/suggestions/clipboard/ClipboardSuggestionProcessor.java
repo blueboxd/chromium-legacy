@@ -54,7 +54,7 @@ public class ClipboardSuggestionProcessor extends BaseSuggestionViewProcessor {
     }
 
     @Override
-    public PropertyModel createModelForSuggestion(OmniboxSuggestion suggestion) {
+    public PropertyModel createModel() {
         return new PropertyModel(SuggestionViewProperties.ALL_KEYS);
     }
 

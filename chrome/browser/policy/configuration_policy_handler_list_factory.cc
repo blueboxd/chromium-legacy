@@ -90,6 +90,7 @@
 #include "chrome/browser/search/contextual_search_policy_handler_android.h"
 #else  // defined(OS_ANDROID)
 #include "chrome/browser/download/default_download_dir_policy_handler.h"
+#include "chrome/browser/download/download_auto_open_policy_handler.h"
 #include "chrome/browser/download/download_dir_policy_handler.h"
 #include "chrome/browser/enterprise/connectors/connectors_prefs.h"
 #include "chrome/browser/enterprise/connectors/enterprise_connectors_policy_handler.h"
@@ -1387,6 +1388,8 @@ std::unique_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
   handlers->AddHandler(
       std::make_unique<NtpCustomBackgroundEnabledPolicyHandler>());
   handlers->AddHandler(std::make_unique<DefaultDownloadDirPolicyHandler>());
+  handlers->AddHandler(
+      std::make_unique<DownloadAutoOpenPolicyHandler>(chrome_schema));
   handlers->AddHandler(std::make_unique<DownloadDirPolicyHandler>());
   handlers->AddHandler(std::make_unique<LocalSyncPolicyHandler>());
 
@@ -1449,6 +1452,11 @@ std::unique_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
           enterprise_connectors::EnterpriseConnectorsPolicyHandler>(
           key::kOnBulkDataEntryEnterpriseConnector,
           enterprise_connectors::kOnBulkDataEntryPref, chrome_schema));
+  handlers->AddHandler(
+      std::make_unique<
+          enterprise_connectors::EnterpriseConnectorsPolicyHandler>(
+          key::kOnSecurityEventEnterpriseConnector,
+          enterprise_connectors::kOnSecurityEventPref, chrome_schema));
 #endif  // defined(OS_ANDROID)
 
 #if defined(OS_CHROMEOS)

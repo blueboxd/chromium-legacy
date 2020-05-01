@@ -140,7 +140,7 @@ public class AnswerSuggestionProcessorUnitTest {
                 /* imageUrl */ GURL.emptyGURL(), /* imageDominantColor */ "",
                 /* isStarred */ false, /* isDeletable */ false, /* postContentType */ null,
                 /* postData */ null, OmniboxSuggestion.INVALID_GROUP);
-        PropertyModel model = mProcessor.createModelForSuggestion(suggestion);
+        PropertyModel model = mProcessor.createModel();
         return new SuggestionTestHelper(suggestion, null, model, userQuery);
     }
 
@@ -159,7 +159,7 @@ public class AnswerSuggestionProcessorUnitTest {
                 /* imageDominantColor */ "",
                 /* isStarred */ false, /* isDeletable */ false, /* postContentType */ null,
                 /* postData */ null, OmniboxSuggestion.INVALID_GROUP);
-        PropertyModel model = mProcessor.createModelForSuggestion(suggestion);
+        PropertyModel model = mProcessor.createModel();
         return new SuggestionTestHelper(suggestion, answer, model, null);
     }
 

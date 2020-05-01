@@ -12,7 +12,6 @@
 #import <Security/Security.h>
 
 #import "base/bind.h"
-#import "base/bind_helpers.h"
 #import "ios/third_party/material_components_ios/src/components/Snackbar/src/MaterialSnackbar.h"
 #import "remoting/ios/facade/ios_client_runtime_delegate.h"
 #import "remoting/ios/facade/remoting_service.h"
@@ -68,7 +67,6 @@ std::unique_ptr<remoting::OAuthTokenGetter> CreateOAuthTokenWithRefreshToken(
   std::unique_ptr<remoting::OAuthTokenGetter> oauth_tokenGetter(
       new remoting::OAuthTokenGetterImpl(
           std::move(oauth_credentials),
-          base::DoNothing(),
           RemotingService.instance.runtime->url_loader_factory(),
           /*auto_refresh=*/true));
   return oauth_tokenGetter;

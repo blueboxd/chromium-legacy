@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/memory/weak_ptr.h"
+#include "components/background_task_scheduler/background_task_scheduler.h"
 #include "components/query_tiles/internal/config.h"
 #include "components/query_tiles/internal/image_loader.h"
 #include "components/query_tiles/internal/tile_manager.h"
@@ -20,7 +21,8 @@ class TileServiceImpl : public TileService {
  public:
   TileServiceImpl(std::unique_ptr<ImageLoader> image_loader,
                   std::unique_ptr<TileManager> tile_manager,
-                  std::unique_ptr<TileConfig> config);
+                  std::unique_ptr<TileConfig> config,
+                  background_task::BackgroundTaskScheduler* scheduler);
   ~TileServiceImpl() override;
 
   // Disallow copy/assign.
@@ -34,6 +36,10 @@ class TileServiceImpl : public TileService {
   void GetVisuals(const std::string& tile_id,
                   VisualsCallback callback) override;
 
+  // TODO(hesen): Use an one-off task solution instead of periodic task.
+  // Schedules periodic background task to start fetch.
+  void ScheduleDailyTask();
+
   // Used to load tile images.
   std::unique_ptr<ImageLoader> image_loader_;
 
@@ -42,6 +48,10 @@ class TileServiceImpl : public TileService {
 
   // Config for the feature.
   std::unique_ptr<TileConfig> config_;
+
+  // Background task scheduler, obtained from native
+  // BackgroundTaskSchedulerFactory.
+  background_task::BackgroundTaskScheduler* scheduler_;
 
   base::WeakPtrFactory<TileServiceImpl> weak_ptr_factory_{this};
 };

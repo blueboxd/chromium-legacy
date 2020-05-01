@@ -226,8 +226,6 @@
 #include "third_party/blink/renderer/core/input/event_handler.h"
 #include "third_party/blink/renderer/core/input/touch_list.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
-#include "third_party/blink/renderer/core/inspector/inspector_issue.h"
-#include "third_party/blink/renderer/core/inspector/inspector_issue_storage.h"
 #include "third_party/blink/renderer/core/inspector/inspector_trace_events.h"
 #include "third_party/blink/renderer/core/intersection_observer/element_intersection_observer_data.h"
 #include "third_party/blink/renderer/core/intersection_observer/intersection_observer_controller.h"
@@ -7318,17 +7316,6 @@ void Document::AddConsoleMessage(ConsoleMessage* message,
     domWindow()->AddConsoleMessage(message, discard_duplicates);
 }
 
-void Document::AddInspectorIssue(InspectorIssue* issue) {
-  Page* page = GetPage();
-
-  if (!page) {
-    return;
-  }
-
-  page->GetInspectorIssueStorage().AddInspectorIssue(GetExecutionContext(),
-                                                     issue);
-}
-
 void Document::AddToTopLayer(Element* element, const Element* before) {
   if (element->IsInTopLayer())
     return;
@@ -8118,15 +8105,10 @@ void Document::SetShadowCascadeOrder(ShadowCascadeOrder order) {
     shadow_cascade_order_ = order;
 }
 
-PropertyRegistry* Document::GetPropertyRegistry() {
-  // TODO(timloh): When the flag is removed, return a reference instead.
-  if (!property_registry_ && RuntimeEnabledFeatures::CSSVariables2Enabled())
+PropertyRegistry& Document::EnsurePropertyRegistry() {
+  if (!property_registry_)
     property_registry_ = MakeGarbageCollected<PropertyRegistry>();
-  return property_registry_;
-}
-
-const PropertyRegistry* Document::GetPropertyRegistry() const {
-  return const_cast<Document*>(this)->GetPropertyRegistry();
+  return *property_registry_;
 }
 
 void Document::MaybeQueueSendDidEditFieldInInsecureContext() {

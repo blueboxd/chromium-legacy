@@ -107,24 +107,6 @@ views::View* BookmarkBubbleView::GetInitiallyFocusedView() {
   return name_field_;
 }
 
-base::string16 BookmarkBubbleView::GetWindowTitle() const {
-  return l10n_util::GetStringUTF16(newly_bookmarked_
-                                       ? IDS_BOOKMARK_BUBBLE_PAGE_BOOKMARKED
-                                       : IDS_BOOKMARK_BUBBLE_PAGE_BOOKMARK);
-}
-
-bool BookmarkBubbleView::ShouldShowCloseButton() const {
-  return true;
-}
-
-gfx::ImageSkia BookmarkBubbleView::GetWindowIcon() {
-  return gfx::ImageSkia();
-}
-
-bool BookmarkBubbleView::ShouldShowWindowIcon() const {
-  return false;
-}
-
 void BookmarkBubbleView::WindowClosing() {
   // We have to reset |bubble_| here, not in our destructor, because we'll be
   // destroyed asynchronously and the shown state will be checked before then.
@@ -148,12 +130,6 @@ void BookmarkBubbleView::OnDialogInitialized() {
   views::Button* cancel = GetCancelButton();
   if (cancel)
     cancel->AddAccelerator(ui::Accelerator(ui::VKEY_R, ui::EF_ALT_DOWN));
-}
-
-// views::View -----------------------------------------------------------------
-
-const char* BookmarkBubbleView::GetClassName() const {
-  return "BookmarkBubbleView";
 }
 
 // views::ButtonListener -------------------------------------------------------
@@ -217,9 +193,13 @@ BookmarkBubbleView::BookmarkBubbleView(
       observer_(observer),
       delegate_(std::move(delegate)),
       profile_(profile),
-      url_(url),
-      newly_bookmarked_(newly_bookmarked) {
+      url_(url) {
   DCHECK(anchor_view);
+
+  WidgetDelegate::SetTitle(l10n_util::GetStringUTF16(
+      newly_bookmarked ? IDS_BOOKMARK_BUBBLE_PAGE_BOOKMARKED
+                       : IDS_BOOKMARK_BUBBLE_PAGE_BOOKMARK));
+  WidgetDelegate::SetShowCloseButton(true);
 
   SetArrow(views::BubbleBorder::TOP_RIGHT);
   DialogDelegate::SetButtonLabel(ui::DIALOG_BUTTON_OK,
@@ -302,3 +282,7 @@ std::unique_ptr<views::View> BookmarkBubbleView::CreateSigninPromoView() {
       /*dice_signin_button_prominent=*/false);
 #endif
 }
+
+BEGIN_METADATA(BookmarkBubbleView)
+METADATA_PARENT_CLASS(LocationBarBubbleDelegateView);
+END_METADATA()

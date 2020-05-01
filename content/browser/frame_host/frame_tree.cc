@@ -106,7 +106,7 @@ FrameTree::FrameTree(Navigator* navigator,
                               nullptr,
                               // The top-level frame must always be in a
                               // document scope.
-                              blink::WebTreeScopeType::kDocument,
+                              blink::mojom::TreeScopeType::kDocument,
                               std::string(),
                               std::string(),
                               false,
@@ -181,7 +181,7 @@ FrameTreeNode* FrameTree::AddFrame(
         interface_provider_receiver,
     mojo::PendingReceiver<blink::mojom::BrowserInterfaceBroker>
         browser_interface_broker_receiver,
-    blink::WebTreeScopeType scope,
+    blink::mojom::TreeScopeType scope,
     const std::string& frame_name,
     const std::string& frame_unique_name,
     bool is_created_by_script,

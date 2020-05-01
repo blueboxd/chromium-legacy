@@ -200,10 +200,11 @@ class LaunchCommand(object):
       self.test_results['attempts'].append(
           self._log_parser.collect_test_results(outdir_attempt, output))
 
-      # Do not exit here when no failed test from parsed log, because when one
-      # shard fails before tests start in xcodebuild parallel testing, the tests
-      # not run don't appear in log at all.
-      if self.retries == attempt:
+      # Do not exit here when no failed test from parsed log and parallel
+      # testing is enabled (shards > 1), because when one of the shards fails
+      # before tests start , the tests not run don't appear in log at all.
+      if (self.retries == attempt or
+          (shards == 1 and not self.test_results['attempts'][-1]['failed'])):
         break
 
       # Exclude passed tests in next test attempt.

@@ -178,8 +178,8 @@ Refer to README.md for content description and update process.
  <item id="oauth2_access_token_fetcher" hash_code="27915688" type="0" content_hash_code="33501872" os_list="linux,windows" file_path="google_apis/gaia/oauth2_access_token_fetcher_impl.cc"/>
  <item id="oauth2_api_call_flow" hash_code="29188932" type="2" content_hash_code="108831236" os_list="linux,windows" policy_fields="-1" file_path="google_apis/gaia/oauth2_api_call_flow.cc"/>
  <item id="oauth2_mint_token_flow" hash_code="1112842" type="1" second_id="29188932" content_hash_code="91581432" os_list="linux,windows" semantics_fields="1,2,3,4,5" policy_fields="3,4" file_path="google_apis/gaia/oauth2_mint_token_flow.cc"/>
- <item id="ocsp_start_url_loader" hash_code="3646641" type="0" content_hash_code="106270072" os_list="linux" file_path="services/cert_verifier/cert_net_url_loader/nss_ocsp_session_url_loader.cc"/>
- <item id="ocsp_start_url_request" hash_code="60921996" type="0" content_hash_code="6288676" os_list="linux" file_path="net/cert_net/nss_ocsp_session_url_request.cc"/>
+ <item id="ocsp_start_url_loader" hash_code="3646641" type="0" deprecated="2020-04-28" content_hash_code="106270072" file_path=""/>
+ <item id="ocsp_start_url_request" hash_code="60921996" type="0" deprecated="2020-04-28" content_hash_code="6288676" file_path=""/>
  <item id="offline_prefetch" hash_code="19185953" type="0" content_hash_code="112039446" os_list="linux,windows" file_path="components/offline_pages/core/prefetch/prefetch_request_fetcher.cc"/>
  <item id="omnibox_documentsuggest" hash_code="6055066" type="0" content_hash_code="126973249" os_list="linux,windows" file_path="components/omnibox/browser/document_suggestions_service.cc"/>
  <item id="omnibox_navigation_observer" hash_code="61684939" type="0" content_hash_code="70941231" os_list="linux,windows" file_path="chrome/browser/ui/omnibox/chrome_omnibox_navigation_observer.cc"/>

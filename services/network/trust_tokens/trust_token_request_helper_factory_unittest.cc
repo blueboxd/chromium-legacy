@@ -69,6 +69,15 @@ class TrustTokenRequestHelperFactoryTest : public ::testing::Test {
     return ret;
   }
 
+  class NoopTrustTokenKeyCommitmentGetter
+      : public TrustTokenKeyCommitmentGetter {
+   public:
+    NoopTrustTokenKeyCommitmentGetter() = default;
+    void Get(const url::Origin& origin,
+             base::OnceCallback<void(mojom::TrustTokenKeyCommitmentResultPtr)>
+                 on_done) const override {}
+  };
+
   TrustTokenStatusOrRequestHelper CreateHelperAndWaitForResult(
       const net::URLRequest& request,
       const mojom::TrustTokenParams& params) {
@@ -77,13 +86,16 @@ class TrustTokenRequestHelperFactoryTest : public ::testing::Test {
     PendingTrustTokenStore store;
 
     store.OnStoreReady(TrustTokenStore::CreateInMemory());
+    NoopTrustTokenKeyCommitmentGetter getter;
 
-    TrustTokenRequestHelperFactory(&store).CreateTrustTokenHelperForRequest(
-        request, params,
-        base::BindLambdaForTesting([&](TrustTokenStatusOrRequestHelper result) {
-          obtained_result = std::move(result);
-          run_loop.Quit();
-        }));
+    TrustTokenRequestHelperFactory(&store, &getter)
+        .CreateTrustTokenHelperForRequest(
+            request, params,
+            base::BindLambdaForTesting(
+                [&](TrustTokenStatusOrRequestHelper result) {
+                  obtained_result = std::move(result);
+                  run_loop.Quit();
+                }));
 
     run_loop.Run();
     return obtained_result;
@@ -130,15 +142,6 @@ TEST_F(TrustTokenRequestHelperFactoryTest, ForbiddenHeaders) {
   }
 }
 
-// Since the Trust Tokens protocol operations themselves haven't been
-// implemented completely, if a request bearing Trust Tokens parameters does
-// arrive in the network service, it should get rejected with kUnavailable.
-TEST_F(TrustTokenRequestHelperFactoryTest, NotImplemented) {
-  EXPECT_EQ(CreateHelperAndWaitForResult(suitable_request(), suitable_params())
-                .status(),
-            mojom::TrustTokenOperationStatus::kUnavailable);
-}
-
 TEST_F(TrustTokenRequestHelperFactoryTest,
        CreatingSigningHelperRequiresSuitableIssuer) {
   auto request = CreateSuitableRequest();
@@ -162,6 +165,24 @@ TEST_F(TrustTokenRequestHelperFactoryTest,
 TEST_F(TrustTokenRequestHelperFactoryTest, CreatesSigningHelper) {
   auto params = suitable_params().Clone();
   params->type = mojom::TrustTokenOperationType::kSigning;
+
+  auto result = CreateHelperAndWaitForResult(suitable_request(), *params);
+  ASSERT_TRUE(result.ok());
+  EXPECT_TRUE(result.TakeOrCrash());
+}
+
+TEST_F(TrustTokenRequestHelperFactoryTest, CreatesIssuanceHelper) {
+  auto params = suitable_params().Clone();
+  params->type = mojom::TrustTokenOperationType::kIssuance;
+
+  auto result = CreateHelperAndWaitForResult(suitable_request(), *params);
+  ASSERT_TRUE(result.ok());
+  EXPECT_TRUE(result.TakeOrCrash());
+}
+
+TEST_F(TrustTokenRequestHelperFactoryTest, CreatesRedemptionHelper) {
+  auto params = suitable_params().Clone();
+  params->type = mojom::TrustTokenOperationType::kRedemption;
 
   auto result = CreateHelperAndWaitForResult(suitable_request(), *params);
   ASSERT_TRUE(result.ok());

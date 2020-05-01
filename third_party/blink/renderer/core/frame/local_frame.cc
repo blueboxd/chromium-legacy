@@ -114,7 +114,7 @@
 #include "third_party/blink/renderer/core/html/plugin_document.h"
 #include "third_party/blink/renderer/core/input/event_handler.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
-#include "third_party/blink/renderer/core/inspector/inspector_issue.h"
+#include "third_party/blink/renderer/core/inspector/inspector_issue_storage.h"
 #include "third_party/blink/renderer/core/inspector/inspector_task_runner.h"
 #include "third_party/blink/renderer/core/inspector/inspector_trace_events.h"
 #include "third_party/blink/renderer/core/intersection_observer/intersection_observer_controller.h"
@@ -2240,7 +2240,23 @@ void LocalFrame::AddMessageToConsole(mojom::blink::ConsoleMessageLevel level,
 }
 
 void LocalFrame::AddInspectorIssue(mojom::blink::InspectorIssueInfoPtr info) {
-  GetDocument()->AddInspectorIssue(InspectorIssue::Create(std::move(info)));
+  if (GetPage()) {
+    GetPage()->GetInspectorIssueStorage().AddInspectorIssue(DomWindow(), std::move(info));
+  }
+}
+
+void LocalFrame::StopLoading() {
+  Loader().StopAllLoaders();
+
+  // The stopLoading handler may run script, which may cause this frame to be
+  // detached/deleted. If that happens, return immediately.
+  if (!IsAttached())
+    return;
+
+  // Notify RenderFrame observers.
+  WebLocalFrameClient* client = Client()->GetWebFrame()->Client();
+  if (client)
+    client->OnStopLoading();
 }
 
 void LocalFrame::Collapse(bool collapsed) {

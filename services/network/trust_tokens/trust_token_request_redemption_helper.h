@@ -128,7 +128,7 @@ class TrustTokenRequestRedemptionHelper : public TrustTokenRequestHelper {
       SuitableTrustTokenOrigin top_level_origin,
       mojom::TrustTokenRefreshPolicy refresh_policy,
       TrustTokenStore* token_store,
-      std::unique_ptr<TrustTokenKeyCommitmentGetter> key_commitment_getter,
+      const TrustTokenKeyCommitmentGetter* key_commitment_getter,
       std::unique_ptr<KeyPairGenerator> key_pair_generator,
       std::unique_ptr<Cryptographer> cryptographer);
   ~TrustTokenRequestRedemptionHelper() override;
@@ -202,7 +202,7 @@ class TrustTokenRequestRedemptionHelper : public TrustTokenRequestHelper {
   std::string verification_key_;
 
   TrustTokenStore* const token_store_;
-  const std::unique_ptr<TrustTokenKeyCommitmentGetter> key_commitment_getter_;
+  const TrustTokenKeyCommitmentGetter* const key_commitment_getter_;
   const std::unique_ptr<KeyPairGenerator> key_pair_generator_;
   const std::unique_ptr<Cryptographer> cryptographer_;
 

@@ -69,6 +69,7 @@
 #if defined(OS_ANDROID)
 #include "chrome/browser/android/preferences/autofill/autofill_profile_bridge.h"
 #include "chrome/browser/android/signin/signin_promo_util_android.h"
+#include "chrome/browser/autofill/android/internal_authenticator_android.h"
 #include "chrome/browser/flags/android/chrome_feature_list.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/ui/android/autofill/autofill_logger_android.h"
@@ -231,7 +232,7 @@ std::unique_ptr<InternalAuthenticator>
 ChromeAutofillClient::CreateCreditCardInternalAuthenticator(
     content::RenderFrameHost* rfh) {
 #if defined(OS_ANDROID)
-  return nullptr;
+  return std::make_unique<InternalAuthenticatorAndroid>(rfh);
 #else
   return std::make_unique<content::InternalAuthenticatorImpl>(rfh);
 #endif

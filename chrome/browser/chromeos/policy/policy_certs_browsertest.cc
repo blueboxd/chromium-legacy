@@ -12,7 +12,6 @@
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/task/post_task.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
@@ -68,7 +67,6 @@
 #include "extensions/browser/extension_util.h"
 #include "extensions/browser/test_extension_registry_observer.h"
 #include "mojo/public/cpp/bindings/sync_call_restrictions.h"
-#include "net/base/features.h"
 #include "net/base/test_completion_callback.h"
 #include "net/cert/cert_database.h"
 #include "net/cert/nss_cert_database.h"
@@ -729,9 +727,6 @@ class PolicyProvidedCertsForSigninExtensionTest
   ~PolicyProvidedCertsForSigninExtensionTest() override = default;
 
   void SetUpInProcessBrowserTestFixture() override {
-    scoped_feature_list_.InitAndEnableFeature(
-        net::features::kCertVerifierBuiltinFeature);
-
     // Apply |kRootCaCert| for |kSigninScreenExtension1| in Device ONC policy.
     base::FilePath test_certs_path = GetTestCertsPath();
     std::string x509_contents;
@@ -826,8 +821,6 @@ class PolicyProvidedCertsForSigninExtensionTest
 
     return onc_dict;
   }
-
-  base::test::ScopedFeatureList scoped_feature_list_;
 
   DISALLOW_COPY_AND_ASSIGN(PolicyProvidedCertsForSigninExtensionTest);
 };  // namespace policy

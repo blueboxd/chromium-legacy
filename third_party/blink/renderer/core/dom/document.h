@@ -110,7 +110,6 @@ class WindowAgent;
 class WindowAgentFactory;
 class ComputedStyle;
 class ConsoleMessage;
-class InspectorIssue;
 class ContextFeatures;
 class CookieJar;
 class V0CustomElementMicrotaskRunQueue;
@@ -1403,7 +1402,6 @@ class CORE_EXPORT Document : public ContainerNode,
 
   void AddConsoleMessage(ConsoleMessage* message,
                          bool discard_duplicates = false) const;
-  void AddInspectorIssue(InspectorIssue*);
 
   LocalFrame* ExecutingFrame();
 
@@ -1477,8 +1475,10 @@ class CORE_EXPORT Document : public ContainerNode,
 
   bool IsInMainFrame() const;
 
-  const PropertyRegistry* GetPropertyRegistry() const;
-  PropertyRegistry* GetPropertyRegistry();
+  const PropertyRegistry* GetPropertyRegistry() const {
+    return property_registry_;
+  }
+  PropertyRegistry& EnsurePropertyRegistry();
 
   // Used to notify the embedder when the user edits the value of a
   // text field in a non-secure context.

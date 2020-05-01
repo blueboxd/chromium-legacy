@@ -12,7 +12,9 @@
 // boundary point marker "^".
 //
 // |tester| is either name with parameter of execCommand or function taking
-// one parameter |Selection|.
+// up to two parameters: |selection|, and |testRunner|. The |testRunner| is for
+// the frame in which the test is run, and allows the |tester| to inject test
+// behaviour into the frame, such as execCommand().
 //
 // |expectedText| is an HTML fragment text containing at most one focus marker
 // and anchor marker. If resulting selection is none, you don't need to have
@@ -761,6 +763,9 @@ class Sample {
   /** @return {!HTMLDocument} */
   get document() { return this.document_; }
 
+  /** @return {!DomWindow} */
+  get window() { return this.iframe_.contentWindow; }
+
   /** @return {!Selection} */
   get selection() { return this.selection_; }
 
@@ -1029,7 +1034,7 @@ function assertSelectionAndReturnSample(
   checkExpectedText(expectedText);
   const sample = new Sample(inputText);
   if (typeof(tester) === 'function') {
-    tester.call(window, sample.selection);
+    tester.call(window, sample.selection, sample.window.testRunner);
   } else if (typeof(tester) === 'string') {
     const strings = tester.split(/ (.+)/);
     sample.document.execCommand(strings[0], false, strings[1]);

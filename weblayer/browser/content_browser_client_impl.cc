@@ -21,7 +21,6 @@
 #include "components/page_load_metrics/browser/metrics_navigation_throttle.h"
 #include "components/page_load_metrics/browser/metrics_web_contents_observer.h"
 #include "components/permissions/quota_permission_context_impl.h"
-#include "components/safe_browsing/core/features.h"
 #include "components/security_interstitials/content/ssl_cert_reporter.h"
 #include "components/security_interstitials/content/ssl_error_handler.h"
 #include "components/security_interstitials/content/ssl_error_navigation_throttle.h"
@@ -482,8 +481,6 @@ ContentBrowserClientImpl::CreateThrottlesForNavigation(
 #if defined(OS_ANDROID)
   if (handle->IsInMainFrame()) {
     if (base::FeatureList::IsEnabled(features::kWebLayerSafeBrowsing) &&
-        base::FeatureList::IsEnabled(
-            safe_browsing::kCommittedSBInterstitials) &&
         IsSafebrowsingSupported()) {
       throttles.push_back(
           GetSafeBrowsingService()->CreateSafeBrowsingNavigationThrottle(

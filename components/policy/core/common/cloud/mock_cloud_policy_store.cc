@@ -8,12 +8,16 @@
 
 namespace policy {
 
-MockCloudPolicyStore::MockCloudPolicyStore() {}
+MockCloudPolicyStore::MockCloudPolicyStore() = default;
 
-MockCloudPolicyStore::~MockCloudPolicyStore() {}
+MockCloudPolicyStore::~MockCloudPolicyStore() = default;
 
-MockCloudPolicyStoreObserver::MockCloudPolicyStoreObserver() {}
+void MockCloudPolicyStore::InitPolicyData() {
+  policy_ = std::make_unique<enterprise_management::PolicyData>();
+}
 
-MockCloudPolicyStoreObserver::~MockCloudPolicyStoreObserver() {}
+MockCloudPolicyStoreObserver::MockCloudPolicyStoreObserver() = default;
+
+MockCloudPolicyStoreObserver::~MockCloudPolicyStoreObserver() = default;
 
 }  // namespace policy

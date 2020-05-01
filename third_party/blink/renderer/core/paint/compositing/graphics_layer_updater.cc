@@ -140,9 +140,13 @@ void GraphicsLayerUpdater::UpdateRecursive(
     }
   }
 
+  PaintLayer* first_child =
+      layer.GetLayoutObject().PrePaintBlockedByDisplayLock(
+          DisplayLockLifecycleTarget::kChildren)
+          ? nullptr
+          : layer.FirstChild();
   UpdateContext child_context(context, layer);
-  for (PaintLayer* child = layer.FirstChild(); child;
-       child = child->NextSibling()) {
+  for (PaintLayer* child = first_child; child; child = child->NextSibling()) {
     UpdateRecursive(*child, update_type, child_context,
                     layers_needing_paint_invalidation);
   }

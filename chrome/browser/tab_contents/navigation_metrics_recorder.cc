@@ -93,6 +93,12 @@ void NavigationMetricsRecorder::DidFinishNavigation(
         site_engagement_service_->GetEngagementLevel(url);
     UMA_HISTOGRAM_ENUMERATION("Navigation.MainFrame.SiteEngagementLevel",
                               engagement_level);
+
+    if (navigation_handle->IsFormSubmission()) {
+      UMA_HISTOGRAM_ENUMERATION(
+          "Navigation.MainFrameFormSubmission.SiteEngagementLevel",
+          engagement_level);
+    }
   }
 }
 

@@ -34,8 +34,8 @@ class MultiColumnFragmentainerGroupTest : public RenderingTest {
 void MultiColumnFragmentainerGroupTest::SetUp() {
   RenderingTest::SetUp();
   scoped_refptr<ComputedStyle> style = ComputedStyle::Create();
-  flow_thread_ =
-      LayoutMultiColumnFlowThread::CreateAnonymous(GetDocument(), *style.get());
+  flow_thread_ = LayoutMultiColumnFlowThread::CreateAnonymous(
+      GetDocument(), *style.get(), /* needs_paint_layer */ true);
   column_set_ = LayoutMultiColumnSet::CreateAnonymous(*flow_thread_,
                                                       *flow_thread_->Style());
 }

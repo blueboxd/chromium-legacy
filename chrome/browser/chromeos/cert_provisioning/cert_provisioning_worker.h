@@ -25,7 +25,7 @@ namespace chromeos {
 namespace cert_provisioning {
 
 using CertProvisioningWorkerCallback =
-    base::OnceCallback<void(bool is_success)>;
+    base::OnceCallback<void(const CertProfile& profile, bool is_success)>;
 
 class CertProvisioningWorker;
 
@@ -34,11 +34,20 @@ class CertProvisioningWorkerFactory {
   virtual ~CertProvisioningWorkerFactory() = default;
 
   static CertProvisioningWorkerFactory* Get();
+
   virtual std::unique_ptr<CertProvisioningWorker> Create(
       CertScope cert_scope,
       Profile* profile,
       PrefService* pref_service,
       const CertProfile& cert_profile,
+      policy::CloudPolicyClient* cloud_policy_client,
+      CertProvisioningWorkerCallback callback);
+
+  virtual std::unique_ptr<CertProvisioningWorker> Deserialize(
+      CertScope cert_scope,
+      Profile* profile,
+      PrefService* pref_service,
+      const base::Value& saved_worker,
       policy::CloudPolicyClient* cloud_policy_client,
       CertProvisioningWorkerCallback callback);
 
@@ -59,9 +68,8 @@ enum class CertProvisioningWorkerState {
   kKeypairMarked = 5,
   kSignCsrFinished = 6,
   kFinishCsrResponseReceived = 7,
-  kDownloadCertResponseReceived = 8,
-  kSucceed = 9,
-  kFailed = 10,
+  kSucceed = 8,
+  kFailed = 9,
   kMaxValue = kFailed,
 };
 
@@ -80,6 +88,8 @@ class CertProvisioningWorker {
   // Returns true, if the worker is waiting for some future event. |DoStep| can
   // be called to try continue right now.
   virtual bool IsWaiting() const = 0;
+  // Returns CertProfile that this worker is working on.
+  virtual const CertProfile& GetCertProfile() const = 0;
 };
 
 class CertProvisioningWorkerImpl : public CertProvisioningWorker {
@@ -95,6 +105,7 @@ class CertProvisioningWorkerImpl : public CertProvisioningWorker {
   // CertProvisioningWorker
   void DoStep() override;
   bool IsWaiting() const override;
+  const CertProfile& GetCertProfile() const override;
 
   // For testing.
   CertProvisioningWorkerState GetState() const;
@@ -140,20 +151,28 @@ class CertProvisioningWorkerImpl : public CertProvisioningWorker {
       base::Optional<int64_t> try_later,
       const std::string& pem_encoded_certificate);
 
-  void ImportCert();
+  void ImportCert(const std::string& pem_encoded_certificate);
   void OnImportCertDone(const std::string& error_message);
 
   void ScheduleNextStep(base::TimeDelta delay);
   void CancelScheduledTasks();
 
   // TODO: implement when invalidations are supported for cert provisioning.
-  void RegisterForInvalidationTopic(const std::string& invalidation_topic) {}
+  void RegisterForInvalidationTopic() {}
 
   // If it is called with kSucceed or kFailed, it will call the |callback_|. The
   // worker can be destroyed in callback and should not use any member fields
   // after that.
   void UpdateState(CertProvisioningWorkerState state);
   bool IsFinished() const;
+
+  // Serializes the worker or deletes serialized state accroding to the current
+  // state. Some states are considered unrecoverable, some can be reached again
+  // from previous ones.
+  void HandleSerialization();
+  // Handles recreation of some internal objects after deserialization. Intended
+  // to be called from CertProvisioningDeserializer.
+  void InitAfterDeserialization();
 
   void CleanUp();
 
@@ -182,12 +201,21 @@ class CertProvisioningWorkerImpl : public CertProvisioningWorker {
 
   std::string public_key_;
   std::string invalidation_topic_;
+
+  // These variables may not contain valid values after
+  // kFinishCsrResponseReceived state because of deserialization (and they don't
+  // need to).
   std::string csr_;
   std::string va_challenge_;
   std::string va_challenge_response_;
   base::Optional<platform_keys::HashAlgorithm> hashing_algorithm_;
   std::string signature_;
-  std::string pem_encoded_certificate_;
+
+  // IMPORTANT:
+  // Increment this when you add/change any member in CertProvisioningWorkerImpl
+  // that affects serialization (and update all functions that fail to compile
+  // because of it).
+  static constexpr int kVersion = 1;
 
   platform_keys::PlatformKeysService* platform_keys_service_ = nullptr;
   std::unique_ptr<attestation::TpmChallengeKeySubtle>

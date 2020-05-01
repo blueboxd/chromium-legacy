@@ -95,6 +95,10 @@ extern const char kInvalidServiceWorkerUrl[];
 // invalid SSL certificate.
 extern const char kInvalidSslCertificate[];
 
+// The downloaded web app icon should draw something for JIT install feature to
+// work.
+extern const char kInvalidWebAppIcon[];
+
 // Used when the {"supportedMethods": "", data: {}} is required, but not
 // provided.
 extern const char kMethodDataRequired[];

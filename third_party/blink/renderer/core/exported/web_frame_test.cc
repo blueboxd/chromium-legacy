@@ -4458,7 +4458,7 @@ class ContextLifetimeTestWebFrameClient
   // WebLocalFrameClient:
   WebLocalFrame* CreateChildFrame(
       WebLocalFrame* parent,
-      WebTreeScopeType scope,
+      mojom::blink::TreeScopeType scope,
       const WebString& name,
       const WebString& fallback_name,
       const FramePolicy&,
@@ -7216,7 +7216,7 @@ class TestCachePolicyWebFrameClient
   // frame_test_helpers::TestWebFrameClient:
   WebLocalFrame* CreateChildFrame(
       WebLocalFrame* parent,
-      WebTreeScopeType scope,
+      mojom::blink::TreeScopeType scope,
       const WebString&,
       const WebString&,
       const FramePolicy&,
@@ -7662,7 +7662,7 @@ class FailCreateChildFrame : public frame_test_helpers::TestWebFrameClient {
   // frame_test_helpers::TestWebFrameClient:
   WebLocalFrame* CreateChildFrame(
       WebLocalFrame* parent,
-      WebTreeScopeType scope,
+      mojom::blink::TreeScopeType scope,
       const WebString& name,
       const WebString& fallback_name,
       const FramePolicy&,
@@ -8841,7 +8841,7 @@ class WebFrameSwapTestClient : public frame_test_helpers::TestWebFrameClient {
 
   WebLocalFrame* CreateChildFrame(
       WebLocalFrame* parent,
-      WebTreeScopeType scope,
+      mojom::blink::TreeScopeType scope,
       const WebString& name,
       const WebString& fallback_name,
       const FramePolicy&,
@@ -10750,7 +10750,7 @@ class WebLocalFrameVisibilityChangeTest
   // frame_test_helpers::TestWebFrameClient:
   WebLocalFrame* CreateChildFrame(
       WebLocalFrame* parent,
-      WebTreeScopeType scope,
+      mojom::blink::TreeScopeType scope,
       const WebString& name,
       const WebString& fallback_name,
       const FramePolicy&,
@@ -12449,7 +12449,7 @@ TEST_F(WebFrameTest, NoLoadingCompletionCallbacksInDetach) {
     // frame_test_helpers::TestWebFrameClient:
     WebLocalFrame* CreateChildFrame(
         WebLocalFrame* parent,
-        WebTreeScopeType scope,
+        mojom::blink::TreeScopeType scope,
         const WebString& name,
         const WebString& fallback_name,
         const FramePolicy&,
@@ -12713,7 +12713,7 @@ class TestFallbackWebFrameClient
   // frame_test_helpers::TestWebFrameClient:
   WebLocalFrame* CreateChildFrame(
       WebLocalFrame* parent,
-      WebTreeScopeType scope,
+      mojom::blink::TreeScopeType scope,
       const WebString&,
       const WebString&,
       const FramePolicy&,

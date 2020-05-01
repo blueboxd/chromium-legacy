@@ -79,7 +79,7 @@ class CONTENT_EXPORT FrameTreeNode {
       FrameTree* frame_tree,
       Navigator* navigator,
       RenderFrameHostImpl* parent,
-      blink::WebTreeScopeType scope,
+      blink::mojom::TreeScopeType scope,
       const std::string& name,
       const std::string& unique_name,
       bool is_created_by_script,

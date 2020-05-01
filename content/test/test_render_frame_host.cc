@@ -38,9 +38,9 @@
 #include "third_party/blink/public/mojom/bluetooth/web_bluetooth.mojom.h"
 #include "third_party/blink/public/mojom/frame/frame_owner_element_type.mojom.h"
 #include "third_party/blink/public/mojom/frame/frame_owner_properties.mojom.h"
+#include "third_party/blink/public/mojom/frame/tree_scope_type.mojom.h"
 #include "third_party/blink/public/mojom/security_context/insecure_request_policy.mojom.h"
 #include "third_party/blink/public/platform/web_mixed_content_context_type.h"
-#include "third_party/blink/public/web/web_tree_scope_type.h"
 #include "ui/base/page_transition_types.h"
 
 namespace content {
@@ -63,14 +63,16 @@ TestRenderFrameHost::TestRenderFrameHost(
     RenderFrameHostDelegate* delegate,
     FrameTree* frame_tree,
     FrameTreeNode* frame_tree_node,
-    int32_t routing_id)
+    int32_t routing_id,
+    RenderFrameHostImpl::LifecycleState lifecyle_state)
     : RenderFrameHostImpl(site_instance,
                           std::move(render_view_host),
                           delegate,
                           frame_tree,
                           frame_tree_node,
                           routing_id,
-                          /*renderer_initiated_creation=*/false),
+                          /*renderer_initiated_creation=*/false,
+                          lifecyle_state),
       child_creation_observer_(delegate ? delegate->GetAsWebContents()
                                         : nullptr),
       simulate_history_list_was_cleared_(false),
@@ -133,7 +135,7 @@ TestRenderFrameHost* TestRenderFrameHost::AppendChild(
   OnCreateChildFrame(GetProcess()->GetNextRoutingID(),
                      CreateStubInterfaceProviderReceiver(),
                      CreateStubBrowserInterfaceBrokerReceiver(),
-                     blink::WebTreeScopeType::kDocument, frame_name,
+                     blink::mojom::TreeScopeType::kDocument, frame_name,
                      frame_unique_name, false, base::UnguessableToken::Create(),
                      blink::FramePolicy(), blink::mojom::FrameOwnerProperties(),
                      blink::mojom::FrameOwnerElementType::kIframe);

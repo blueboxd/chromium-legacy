@@ -17,6 +17,13 @@
 @property(nonatomic, readwrite, weak) id<ActivityServicePositioner>
     positionProvider;
 
+// Image that should be shared via the activity view. When set, will trigger
+// the share image experience.
+@property(nonatomic, strong) UIImage* image;
+
+// Title of the content that will be shared.
+@property(nonatomic, strong) NSString* title;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_ACTIVITY_SERVICES_ACTIVITY_SERVICE_COORDINATOR_H_

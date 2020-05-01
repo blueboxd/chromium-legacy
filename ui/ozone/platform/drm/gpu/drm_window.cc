@@ -16,7 +16,6 @@
 #include "third_party/skia/include/core/SkSurface.h"
 #include "ui/gfx/gpu_fence.h"
 #include "ui/gfx/presentation_feedback.h"
-#include "ui/ozone/common/gpu/ozone_gpu_message_params.h"
 #include "ui/ozone/platform/drm/common/drm_util.h"
 #include "ui/ozone/platform/drm/gpu/crtc_controller.h"
 #include "ui/ozone/platform/drm/gpu/drm_device.h"

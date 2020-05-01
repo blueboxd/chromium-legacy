@@ -11,15 +11,6 @@ import {getSearchManager} from 'chrome://settings/settings.js';
 suite('SearchSettingsTest', function() {
   let searchManager;
 
-  suiteSetup(function() {
-    // Import <settings-section> manually if not already imported
-    // (happens when |optimize_webui| is false).
-    if (customElements.get('settings-section') === undefined) {
-      return PolymerTest.importHtml(
-          'chrome://settings/settings_page/settings_section.html');
-    }
-  });
-
   setup(function() {
     searchManager = getSearchManager();
     PolymerTest.clearBody();

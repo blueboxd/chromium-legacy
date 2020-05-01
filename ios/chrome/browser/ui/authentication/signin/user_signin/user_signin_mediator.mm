@@ -105,8 +105,7 @@
   if (success) {
     [self signinCompletedWithIdentity:identity];
   } else {
-    [self.delegate userSigninMediatorNeedPrimaryButtonUpdate];
-    [self.delegate userSigninMediatorDidTapResetSettingLink];
+    [self.delegate userSigninMediatorSigninFailed];
   }
 }
 

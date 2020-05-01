@@ -11,14 +11,18 @@
 
 @protocol FindBarConsumer;
 @protocol FindInPageCommands;
-class WebStateList;
+
+namespace web {
+class WebState;
+}
 
 // Mediator for the Find Bar and the Find In page feature. As this feature is
 // currently being split off from BVC, this mediator will have more features
 // added and is not an ideal example of the mediator pattern.
 @interface FindBarMediator : NSObject <FindInPageResponseDelegate>
 
-- (instancetype)initWithCommandHandler:(id<FindInPageCommands>)commandHandler;
+- (instancetype)initWithWebState:(web::WebState*)webState
+                  commandHandler:(id<FindInPageCommands>)commandHandler;
 
 @property(nonatomic, weak) id<FindBarConsumer> consumer;
 

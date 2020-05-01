@@ -141,8 +141,9 @@ void AutoclickMenuBubbleController::ShowBubble(AutoclickEventType type,
   TrayBubbleView::InitParams init_params;
   init_params.delegate = this;
   // Anchor within the overlay container.
-  init_params.parent_window = Shell::GetContainer(
-      Shell::GetPrimaryRootWindow(), kShellWindowId_AutoclickContainer);
+  init_params.parent_window =
+      Shell::GetContainer(Shell::GetPrimaryRootWindow(),
+                          kShellWindowId_AccessibilityBubbleContainer);
   init_params.anchor_mode = TrayBubbleView::AnchorMode::kRect;
   init_params.is_anchored_to_status_area = false;
   // The widget's shadow is drawn below and on the sides of the view, with a

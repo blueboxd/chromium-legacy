@@ -36,6 +36,7 @@ blink_core_sources("page") {
     "frame_tree.h",
     "link_highlight.cc",
     "link_highlight.h",
+    "named_pages_mapper.h",
     "page.cc",
     "page.h",
     "page_animator.cc",

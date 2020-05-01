@@ -6,7 +6,9 @@
 #define CHROME_RENDERER_MEDIA_CHROME_SPEECH_RECOGNITION_CLIENT_H_
 
 #include <memory>
+#include <string>
 
+#include "chrome/common/caption.mojom.h"
 #include "media/base/audio_buffer.h"
 #include "media/base/speech_recognition_client.h"
 #include "media/mojo/mojom/speech_recognition_service.mojom.h"
@@ -45,6 +47,7 @@ class ChromeSpeechRecognitionClient
       speech_recognition_recognizer_;
   mojo::Receiver<media::mojom::SpeechRecognitionRecognizerClient>
       speech_recognition_client_receiver_{this};
+  mojo::Remote<chrome::mojom::CaptionHost> caption_host_;
 
   // The temporary audio bus used to convert the raw audio to the appropriate
   // format.

@@ -14,13 +14,13 @@ NSString* GetLocationBarSecurityIconTypeAssetName(
     LocationBarSecurityIconType iconType) {
   switch (iconType) {
     case INFO:
-      return @"location_bar_connection_insecure";
+      return @"location_bar_connection_info";
     case SECURE:
       return @"location_bar_connection_secure";
     case NOT_SECURE_WARNING:
       return @"location_bar_connection_dangerous";
     case LOCATION_BAR_SECURITY_ICON_TYPE_COUNT:
       NOTREACHED();
-      return @"location_bar_connection_insecure";
+      return @"location_bar_connection_info";
   }
 }

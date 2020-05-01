@@ -176,8 +176,6 @@ static_library("common") {
     "host_attributes.h",
     "host_config.cc",
     "host_config.h",
-    "host_config_upgrader.cc",
-    "host_config_upgrader.h",
     "host_details.cc",
     "host_details.h",
     "host_event_logger.h",

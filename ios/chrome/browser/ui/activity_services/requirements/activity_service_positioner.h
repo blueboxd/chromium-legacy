@@ -11,7 +11,7 @@
 // activity services menu on the screen.
 @protocol ActivityServicePositioner
 
-// Returns the view whose bound defines where the ActivityServiceController
+// Returns the view whose bound defines where the UIActivityViewController
 // should be presented.
 - (UIView*)shareButtonView;
 

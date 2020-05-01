@@ -20,6 +20,7 @@
 #include "components/gcm_driver/fake_gcm_driver.h"
 #include "components/policy/core/common/cloud/cloud_policy_client.h"
 #include "components/policy/core/common/cloud/mock_cloud_policy_client.h"
+#include "components/policy/core/common/cloud/mock_cloud_policy_store.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_utils.h"
 #include "net/base/ip_endpoint.h"
@@ -37,7 +38,7 @@ using ::testing::Pair;
 using ::testing::SaveArg;
 
 namespace {
-const char* const kFakeEnrollmentDomain = "example.com";
+const char* const kFakeCustomerId = "fake_customer_id";
 const char* const kFakeDeviceId = "fake_device_id";
 const char* const kHeartbeatGCMAppID = "com.google.chromeos.monitoring";
 const char* const kRegistrationId = "registration_id";
@@ -129,9 +130,15 @@ class HeartbeatSchedulerTest : public testing::Test {
       : task_runner_(new base::TestSimpleTaskRunner()),
         scheduler_(&gcm_driver_,
                    &cloud_policy_client_,
-                   kFakeEnrollmentDomain,
+                   &cloud_policy_store_,
                    kFakeDeviceId,
                    task_runner_) {}
+
+  void SetUp() {
+    cloud_policy_store_.InitPolicyData();
+    cloud_policy_store_.GetMutablePolicyData()->set_obfuscated_customer_id(
+        kFakeCustomerId);
+  }
 
   void TearDown() override { content::RunAllTasksUntilIdle(); }
 
@@ -167,6 +174,7 @@ class HeartbeatSchedulerTest : public testing::Test {
   MockGCMDriver gcm_driver_;
   chromeos::ScopedTestingCrosSettings scoped_testing_cros_settings_;
   testing::NiceMock<policy::MockCloudPolicyClient> cloud_policy_client_;
+  testing::NiceMock<policy::MockCloudPolicyStore> cloud_policy_store_;
 
   // TaskRunner used to run individual tests.
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
@@ -384,7 +392,7 @@ TEST_F(HeartbeatSchedulerTest, CheckMessageContents) {
   EXPECT_EQ("hb", message.data["type"]);
   int64_t timestamp;
   EXPECT_TRUE(base::StringToInt64(message.data["timestamp"], &timestamp));
-  EXPECT_EQ(kFakeEnrollmentDomain, message.data["domain_name"]);
+  EXPECT_EQ(kFakeCustomerId, message.data["customer_id"]);
   EXPECT_EQ(kFakeDeviceId, message.data["device_id"]);
 }
 

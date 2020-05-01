@@ -863,7 +863,7 @@ TEST_F(OSExchangeDataWinTest, ProvideURLForPlainTextURL) {
   EXPECT_EQ(GURL("http://google.com"), read_url);
 }
 
-class MockDownloadFileProvider : public ui::DownloadFileProvider {
+class MockDownloadFileProvider : public DownloadFileProvider {
  public:
   MockDownloadFileProvider() = default;
   ~MockDownloadFileProvider() override = default;

@@ -55,7 +55,7 @@ void SwitchAccessBackButtonBubbleController::ShowBackButton(
     // Anchor within the overlay container.
     init_params.parent_window =
         Shell::GetContainer(Shell::GetPrimaryRootWindow(),
-                            kShellWindowId_AccessibilityPanelContainer);
+                            kShellWindowId_AccessibilityBubbleContainer);
     init_params.anchor_mode = TrayBubbleView::AnchorMode::kRect;
     init_params.is_anchored_to_status_area = false;
     init_params.has_shadow = false;

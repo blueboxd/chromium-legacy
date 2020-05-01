@@ -184,8 +184,9 @@ void AutoclickScrollBubbleController::ShowBubble(
   TrayBubbleView::InitParams init_params;
   init_params.delegate = this;
   // Anchor within the overlay container.
-  init_params.parent_window = Shell::GetContainer(
-      Shell::GetPrimaryRootWindow(), kShellWindowId_AutoclickContainer);
+  init_params.parent_window =
+      Shell::GetContainer(Shell::GetPrimaryRootWindow(),
+                          kShellWindowId_AccessibilityBubbleContainer);
   init_params.anchor_mode = TrayBubbleView::AnchorMode::kRect;
   init_params.anchor_rect = anchor_rect;
   // The widget's shadow is drawn below and on the sides of the scroll view.

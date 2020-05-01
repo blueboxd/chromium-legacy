@@ -606,6 +606,9 @@ void AppTimeController::ShowNotificationForApp(
       l10n_util::GetStringUTF16(IDS_TIME_LIMIT_NOTIFICATION_DISPLAY_SOURCE);
 
   std::string notification_id = GetNotificationIdFor(app_name, notification);
+  message_center::RichNotificationData option_fields;
+  option_fields.fullscreen_visibility =
+      message_center::FullscreenVisibility::OVER_USER;
 
   std::unique_ptr<message_center::Notification> message_center_notification =
       ash::CreateSystemNotification(
@@ -614,7 +617,7 @@ void AppTimeController::ShowNotificationForApp(
           message_center::NotifierId(
               message_center::NotifierType::SYSTEM_COMPONENT,
               kFamilyLinkSourceId),
-          message_center::RichNotificationData(),
+          option_fields,
           notification == AppNotification::kTimeLimitChanged
               ? base::MakeRefCounted<
                     message_center::HandleNotificationClickDelegate>(
@@ -631,6 +634,10 @@ void AppTimeController::ShowNotificationForApp(
       NotificationDisplayService::GetForProfile(profile_);
   if (!notification_display_service)
     return;
+
+  // Close the existing notification with notification_id.
+  notification_display_service->Close(NotificationHandler::Type::TRANSIENT,
+                                      notification_id);
 
   notification_display_service->Display(NotificationHandler::Type::TRANSIENT,
                                         *message_center_notification,

@@ -2471,6 +2471,8 @@ if (enable_java_templates) {
       if (defined(invoker.verify_manifest) && invoker.verify_manifest &&
           !is_java_debug) {
         verify_manifest_target_name = _template_name
+        forward_variables_from(invoker,
+                               [ "expected_manifest_base_expectation" ])
       }
 
       if (defined(_resource_ids_provider_dep)) {
@@ -3458,6 +3460,7 @@ if (enable_java_templates) {
                                "uncompress_shared_libraries",
                                "use_chromium_linker",
                                "verify_manifest",
+                               "expected_manifest_base_expectation",
                                "verify_native_libs_and_assets",
                                "version_code",
                                "version_name",
@@ -3579,6 +3582,7 @@ if (enable_java_templates) {
                                "use_chromium_linker",
                                "use_modern_linker",
                                "verify_manifest",
+                               "expected_manifest_base_expectation",
                                "version_code",
                                "version_name",
                              ])
@@ -4459,12 +4463,9 @@ if (enable_java_templates) {
       _uses_static_library_synchronized_proguard =
           defined(invoker.static_library_synchronized_proguard) &&
           invoker.static_library_synchronized_proguard
-      if (_uses_static_library_synchronized_proguard) {
-        _sync_dex_target_dep = "${invoker.static_library_provider}__dexsplitter"
-      } else {
-        _sync_dex_target = "${_target_name}__sync_dex"
-        _sync_dex_target_dep = ":$_sync_dex_target"
-      }
+
+      # TODO(crbug.com/1032609): Remove dexsplitter from Trichrome Proguard.
+      _dex_target = "${_target_name}__dex"
       _proguard_mapping_path = "${_bundle_path}.mapping"
     }
 
@@ -4578,16 +4579,12 @@ if (enable_java_templates) {
       _proguard_mapping_path = "${_bundle_path}.mapping"
     }
 
-    _unsplit_dex_zip =
-        "${target_gen_dir}/${_target_name}/${_target_name}__unsplit.r8dex.jar"
-
     write_build_config(_build_config_target) {
       type = "android_app_bundle"
       possible_config_deps = _module_targets + [ proguard_android_sdk_dep_ ]
       build_config = _build_config
       proguard_enabled = _proguard_enabled
       module_build_configs = _module_build_configs
-      final_dex_path = _unsplit_dex_zip
 
       if (_proguard_enabled) {
         proguard_mapping_path = _proguard_mapping_path
@@ -4612,7 +4609,7 @@ if (enable_java_templates) {
               get_label_info(":$_target_name", "dir") +
               "/java/$_target_name.proguard_flags.expected"
         }
-        dex(_sync_dex_target) {
+        dex(_dex_target) {
           forward_variables_from(invoker,
                                  [
                                    "proguard_jar_path",
@@ -4629,19 +4626,8 @@ if (enable_java_templates) {
           }
 
           deps = _module_java_targets + [ ":$_build_config_target" ]
-          output = _unsplit_dex_zip
+          modules = _modules
         }
-      }
-
-      _dexsplitter_target = "${_target_name}__dexsplitter"
-      dexsplitter(_dexsplitter_target) {
-        input_dex_zip = _unsplit_dex_zip
-        proguard_mapping = _proguard_mapping_path
-        all_modules = _modules
-        deps = [
-                 ":$_build_config_target",
-                 _sync_dex_target_dep,
-               ] + _module_java_targets
       }
     }
 
@@ -4656,7 +4642,7 @@ if (enable_java_templates) {
       if (!_proguard_enabled) {
         _dex_target_for_module = "${_module_target}__final_dex"
       } else {
-        _dex_target_for_module = ":$_dexsplitter_target"
+        _dex_target_for_module = ":$_dex_target"
       }
 
       # Generate one module .zip file per bundle module.

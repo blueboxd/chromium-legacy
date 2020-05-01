@@ -2175,7 +2175,6 @@ bool RenderFrameImpl::OnMessageReceived(const IPC::Message& msg) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(RenderFrameImpl, msg)
     IPC_MESSAGE_HANDLER(UnfreezableFrameMsg_Unload, OnUnload)
-    IPC_MESSAGE_HANDLER(FrameMsg_Stop, OnStop)
     IPC_MESSAGE_HANDLER(FrameMsg_ContextMenuClosed, OnContextMenuClosed)
     IPC_MESSAGE_HANDLER(FrameMsg_CustomContextMenuAction,
                         OnCustomContextMenuAction)
@@ -3861,7 +3860,7 @@ RenderFrameImpl::GetRemoteNavigationAssociatedInterfaces() {
 
 blink::WebLocalFrame* RenderFrameImpl::CreateChildFrame(
     blink::WebLocalFrame* parent,
-    blink::WebTreeScopeType scope,
+    blink::mojom::TreeScopeType scope,
     const blink::WebString& name,
     const blink::WebString& fallback_name,
     const blink::FramePolicy& frame_policy,
@@ -4982,20 +4981,6 @@ void RenderFrameImpl::AddObserver(RenderFrameObserver* observer) {
 void RenderFrameImpl::RemoveObserver(RenderFrameObserver* observer) {
   observer->RenderFrameGone();
   observers_.RemoveObserver(observer);
-}
-
-void RenderFrameImpl::OnStop() {
-  DCHECK(frame_);
-
-  // The stopLoading call may run script, which may cause this frame to be
-  // detached/deleted.  If that happens, return immediately.
-  base::WeakPtr<RenderFrameImpl> weak_this = weak_factory_.GetWeakPtr();
-  frame_->StopLoading();
-  if (!weak_this)
-    return;
-
-  for (auto& observer : observers_)
-    observer.OnStop();
 }
 
 void RenderFrameImpl::OnDroppedNavigation() {
@@ -6443,6 +6428,11 @@ RenderFrameImpl::CreateURLLoaderFactory() {
     return nullptr;
   }
   return std::make_unique<FrameURLLoaderFactory>(weak_factory_.GetWeakPtr());
+}
+
+void RenderFrameImpl::OnStopLoading() {
+  for (auto& observer : observers_)
+    observer.OnStop();
 }
 
 void RenderFrameImpl::DraggableRegionsChanged() {

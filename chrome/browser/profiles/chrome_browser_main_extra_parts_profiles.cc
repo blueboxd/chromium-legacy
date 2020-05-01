@@ -170,6 +170,10 @@
 #include "chrome/browser/safe_browsing/advanced_protection_status_manager_factory.h"
 #endif
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/cert_provisioning/cert_provisioning_scheduler_user_service.h"
+#endif
+
 namespace chrome {
 
 void AddProfilesExtraParts(ChromeBrowserMainParts* main_parts) {
@@ -203,6 +207,8 @@ void ChromeBrowserMainExtraPartsProfiles::
   extensions::EnsureBrowserContextKeyedServiceFactoriesBuilt();
 #endif
 #if defined(OS_CHROMEOS)
+  chromeos::cert_provisioning::CertProvisioningSchedulerUserServiceFactory::
+      GetInstance();
   chromeos::EnsureBrowserContextKeyedServiceFactoriesBuilt();
 #endif
 

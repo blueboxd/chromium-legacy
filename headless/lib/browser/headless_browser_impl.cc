@@ -29,10 +29,6 @@
 #include "services/network/public/cpp/network_switches.h"
 #include "ui/events/devices/device_data_manager.h"
 
-#if defined(USE_NSS_CERTS)
-#include "net/cert_net/nss_ocsp.h"
-#endif
-
 namespace headless {
 
 HeadlessBrowserImpl::HeadlessBrowserImpl(

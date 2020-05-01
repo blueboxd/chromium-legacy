@@ -434,6 +434,12 @@
       <message name="IDS_PAGE_INFO_SITE_SETTINGS_BUTTON" desc="Text in the button that opens a website's Site Settings from the Page Info dialog.">
         Site settings
       </message>
+      <message name="IDS_PAGE_INFO_FAST_SITE_SUMMARY" desc="A short summary phrase in the Page Info bubble (which shows when you click the lock icon) that indicates that pages on the current website should load quickly.">
+        Site is fast
+      </message>
+      <message name="IDS_PAGE_INFO_FAST_SITE_MESSAGE" desc="A short paragraph that explains what is meant by labeling the current website as fast.">
+        This site opens and responds quickly for most people
+      </message>
 
     <message name="IDS_COOKIES_TITLE" desc="Title for the Cookies settings screen [CHAR-LIMIT=32]">
         Cookies

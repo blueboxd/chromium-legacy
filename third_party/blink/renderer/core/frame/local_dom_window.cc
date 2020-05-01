@@ -517,8 +517,8 @@ void LocalDOMWindow::AddConsoleMessageImpl(ConsoleMessage* console_message,
 
 void LocalDOMWindow::AddInspectorIssue(
     mojom::blink::InspectorIssueInfoPtr info) {
-  if (document()) {
-    document()->AddInspectorIssue(InspectorIssue::Create(std::move(info)));
+  if (GetFrame()) {
+    GetFrame()->AddInspectorIssue(std::move(info));
   }
 }
 

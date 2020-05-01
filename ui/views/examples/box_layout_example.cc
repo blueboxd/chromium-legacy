@@ -55,8 +55,8 @@ void BoxLayoutExample::CreateAdditionalControls(int vertical_pos) {
   CreateMarginsTextFields(base::ASCIIToUTF16("Insets"), &border_insets_,
                           &vertical_pos);
 
-  collapse_margins_ =
-      CreateCheckbox(base::ASCIIToUTF16("Collapse margins"), &vertical_pos);
+  collapse_margins_ = CreateAndAddCheckbox(
+      base::ASCIIToUTF16("Collapse margins"), &vertical_pos);
 
   UpdateLayoutManager();
 }

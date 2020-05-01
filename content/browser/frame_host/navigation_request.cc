@@ -549,7 +549,7 @@ int64_t CreateUniqueHandleID() {
   return ++unique_id_counter;
 }
 
-// Given an net::IPAddress and a set of headers, this function calculates the
+// Given an net::IPAddress and a CSP set, this function calculates the
 // IPAddressSpace which should be associated with the document this navigation
 // eventually commits into.
 //
@@ -562,35 +562,22 @@ int64_t CreateUniqueHandleID() {
 // some cases), but safe, as `kUnknown` is treated the same as `kPublic`.
 network::mojom::IPAddressSpace CalculateIPAddressSpace(
     const net::IPAddress& ip,
-    net::HttpResponseHeaders* headers) {
+    const std::vector<network::mojom::ContentSecurityPolicyPtr>& csp_policies) {
   // First, check whether the response forces itself into a public address space
   // as per https://wicg.github.io/cors-rfc1918/#csp.
-  bool must_treat_as_public_address = false;
-  std::string csp_value;
-  if (headers &&
-      headers->GetNormalizedHeader("content-security-policy", &csp_value)) {
-    // A content-security-policy is a semicolon-separated list of directives.
-    for (const auto& directive :
-         base::SplitStringPiece(csp_value, ";", base::TRIM_WHITESPACE,
-                                base::SPLIT_WANT_NONEMPTY)) {
-      if (base::EqualsCaseInsensitiveASCII("treat-as-public-address",
-                                           directive)) {
-        must_treat_as_public_address = true;
-      }
-    }
-  }
-
-  if (must_treat_as_public_address)
+  if (network::ShouldTreatAsPublicAddress(csp_policies))
     return network::mojom::IPAddressSpace::kPublic;
 
   // Otherwise, calculate the address space via the provided IP address.
-  if (!ip.IsValid()) {
+  if (!ip.IsValid())
     return network::mojom::IPAddressSpace::kUnknown;
-  } else if (ip.IsLoopback()) {
+
+  if (ip.IsLoopback())
     return network::mojom::IPAddressSpace::kLocal;
-  } else if (!ip.IsPubliclyRoutable()) {
+
+  if (!ip.IsPubliclyRoutable())
     return network::mojom::IPAddressSpace::kPrivate;
-  }
+
   return network::mojom::IPAddressSpace::kPublic;
 }
 
@@ -3699,11 +3686,13 @@ void NavigationRequest::ReadyToCommitNavigation(bool is_error) {
   ready_to_commit_time_ = base::TimeTicks::Now();
   RestartCommitTimeout();
 
-  // https://wicg.github.io/cors-rfc1918/#address-space
   if (!IsSameDocument()) {
+    // https://wicg.github.io/cors-rfc1918/#address-space
+    const std::vector<network::mojom::ContentSecurityPolicyPtr> empty_csp;
     network::mojom::IPAddressSpace ip_address_space = CalculateIPAddressSpace(
         GetSocketAddress().address(),
-        response_head_ ? response_head_->headers.get() : nullptr);
+        response_head_ ? response_head_->parsed_headers->content_security_policy
+                       : empty_csp);
     commit_params_->ip_address_space = ip_address_space;
     client_security_state_->ip_address_space = ip_address_space;
   }

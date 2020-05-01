@@ -27,15 +27,6 @@ CaptionBubbleControllerViews::CaptionBubbleControllerViews(Browser* browser)
                      base::Unretained(this)));
   caption_widget_ =
       views::BubbleDialogDelegateView::CreateBubble(caption_bubble_);
-
-  // Temporary
-  std::string text =
-      "Taylor Alison Swift (born December 13, 1989) is an American "
-      "singer-songwriter. She is known for narrative songs about her personal "
-      "life, which have received widespread media coverage. At age 14, Swift "
-      "became the youngest artist signed by the Sony/ATV Music publishing "
-      "house and, at age 15, she signed her first record deal.";
-  OnCaptionReceived(text);
 }
 
 CaptionBubbleControllerViews::~CaptionBubbleControllerViews() {
@@ -48,16 +39,17 @@ void CaptionBubbleControllerViews::OnCaptionBubbleDestroyed() {
   caption_widget_ = nullptr;
 }
 
-void CaptionBubbleControllerViews::OnCaptionReceived(const std::string& text) {
+void CaptionBubbleControllerViews::OnTranscription(
+    const std::string& transcription) {
   if (!caption_bubble_ || !caption_widget_)
     return;
 
-  caption_bubble_->SetText(text);
+  caption_bubble_->SetText(transcription);
 
   // If the captions bubble contains text, show the bubble. Otherwise, hide it.
   if (!caption_widget_->IsClosed()) {
     bool is_visible = caption_widget_->IsVisible();
-    bool is_empty = text.empty();
+    bool is_empty = transcription.empty();
     if (is_visible && is_empty) {
       caption_widget_->Hide();
     } else if (!is_visible && !is_empty) {

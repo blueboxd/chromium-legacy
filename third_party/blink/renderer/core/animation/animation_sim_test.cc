@@ -34,7 +34,6 @@ TEST_F(AnimationSimTest, CustomPropertyBaseComputedStyle) {
   // around and not be valid in the exit frame of the next custom property
   // animation.
 
-  ScopedCSSVariables2ForTest css_variables2(true);
   ScopedWebAnimationsAPIForTest web_animations(true);
 
   SimRequest main_resource("https://example.com/", "text/html");

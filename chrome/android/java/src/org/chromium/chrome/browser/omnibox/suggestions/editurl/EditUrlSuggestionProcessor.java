@@ -156,7 +156,7 @@ public class EditUrlSuggestionProcessor implements OnClickListener, SuggestionPr
     }
 
     @Override
-    public PropertyModel createModelForSuggestion(OmniboxSuggestion suggestion) {
+    public PropertyModel createModel() {
         return new PropertyModel(EditUrlSuggestionProperties.ALL_KEYS);
     }
 

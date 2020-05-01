@@ -8,6 +8,8 @@
 #include "chrome/browser/image_fetcher/image_fetcher_service_factory.h"
 #include "chrome/browser/profiles/profile_key.h"
 #include "chrome/common/chrome_constants.h"
+#include "components/background_task_scheduler/background_task_scheduler.h"
+#include "components/background_task_scheduler/background_task_scheduler_factory.h"
 #include "components/image_fetcher/core/image_fetcher_service.h"
 #include "components/keyed_service/core/simple_dependency_manager.h"
 #include "components/query_tiles/tile_service_factory_helper.h"
@@ -29,6 +31,7 @@ TileServiceFactory::TileServiceFactory()
     : SimpleKeyedServiceFactory("TileService",
                                 SimpleDependencyManager::GetInstance()) {
   DependsOn(ImageFetcherServiceFactory::GetInstance());
+  DependsOn(background_task::BackgroundTaskSchedulerFactory::GetInstance());
 }
 
 TileServiceFactory::~TileServiceFactory() {}
@@ -42,7 +45,12 @@ std::unique_ptr<KeyedService> TileServiceFactory::BuildServiceInstanceFor(
   base::FilePath storage_dir =
       ProfileKey::FromSimpleFactoryKey(key)->GetPath().Append(
           chrome::kQueryTileStorageDirname);
-  return CreateTileService(image_fetcher_service, db_provider, storage_dir);
+
+  auto* background_task_scheduler =
+      background_task::BackgroundTaskSchedulerFactory::GetForKey(key);
+
+  return CreateTileService(image_fetcher_service, db_provider, storage_dir,
+                           background_task_scheduler);
 }
 
 }  // namespace upboarding

@@ -78,8 +78,8 @@ java_prebuilt("android_arch_lifecycle_common_java") {
   jar_path = "libs/android_arch_lifecycle_common/common-1.1.1.jar"
   output_name = "android_arch_lifecycle_common"
   supports_android = true
-  skip_jetify = true
   deps = [ ":com_android_support_support_annotations_java" ]
+  skip_jetify = true
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
@@ -114,8 +114,8 @@ android_aar_prebuilt("android_arch_lifecycle_runtime_java") {
 android_aar_prebuilt("android_arch_lifecycle_viewmodel_java") {
   aar_path = "libs/android_arch_lifecycle_viewmodel/viewmodel-1.1.1.aar"
   info_path = "libs/android_arch_lifecycle_viewmodel/android_arch_lifecycle_viewmodel.info"
-  skip_jetify = true
   deps = [ ":com_android_support_support_annotations_java" ]
+  skip_jetify = true
 
   # https://crbug.com/887942#c1
   ignore_proguard_configs = true
@@ -577,22 +577,22 @@ android_aar_prebuilt("androidx_test_uiautomator_uiautomator_java") {
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
-android_aar_prebuilt("androidx_vectordrawable_vectordrawable_java") {
-  aar_path =
-      "libs/androidx_vectordrawable_vectordrawable/vectordrawable-1.0.0.aar"
-  info_path = "libs/androidx_vectordrawable_vectordrawable/androidx_vectordrawable_vectordrawable.info"
+android_aar_prebuilt("androidx_tvprovider_tvprovider_java") {
+  aar_path = "libs/androidx_tvprovider_tvprovider/tvprovider-1.0.0.aar"
+  info_path =
+      "libs/androidx_tvprovider_tvprovider/androidx_tvprovider_tvprovider.info"
   deps = [
     ":androidx_annotation_annotation_java",
     ":androidx_core_core_java",
   ]
   skip_jetify = true
-  create_srcjar = false
 }
 
-android_aar_prebuilt("androidx_tvprovider_tvprovider_java") {
-  aar_path = "libs/androidx_tvprovider_tvprovider/tvprovider-1.0.0.aar"
-  info_path =
-      "libs/androidx_tvprovider_tvprovider/androidx_tvprovider_tvprovider.info"
+# This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
+android_aar_prebuilt("androidx_vectordrawable_vectordrawable_java") {
+  aar_path =
+      "libs/androidx_vectordrawable_vectordrawable/vectordrawable-1.0.0.aar"
+  info_path = "libs/androidx_vectordrawable_vectordrawable/androidx_vectordrawable_vectordrawable.info"
   deps = [
     ":androidx_annotation_annotation_java",
     ":androidx_core_core_java",
@@ -657,8 +657,8 @@ android_aar_prebuilt("com_android_support_asynclayoutinflater_java") {
 android_aar_prebuilt("com_android_support_cardview_v7_java") {
   aar_path = "libs/com_android_support_cardview_v7/cardview-v7-28.0.0.aar"
   info_path = "libs/com_android_support_cardview_v7/com_android_support_cardview_v7.info"
-  skip_jetify = true
   deps = [ ":com_android_support_support_annotations_java" ]
+  skip_jetify = true
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
@@ -666,8 +666,8 @@ java_prebuilt("com_android_support_collections_java") {
   jar_path = "libs/com_android_support_collections/collections-28.0.0.jar"
   output_name = "com_android_support_collections"
   supports_android = true
-  skip_jetify = true
   deps = [ ":com_android_support_support_annotations_java" ]
+  skip_jetify = true
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
@@ -714,6 +714,8 @@ android_aar_prebuilt("com_android_support_design_java") {
     ":com_android_support_transition_java",
   ]
   skip_jetify = true
+
+  # Reduce binary size. https:crbug.com/954584
   ignore_proguard_configs = true
 }
 
@@ -744,16 +746,16 @@ android_aar_prebuilt("com_android_support_gridlayout_v7_java") {
 android_aar_prebuilt("com_android_support_interpolator_java") {
   aar_path = "libs/com_android_support_interpolator/interpolator-28.0.0.aar"
   info_path = "libs/com_android_support_interpolator/com_android_support_interpolator.info"
-  skip_jetify = true
   deps = [ ":com_android_support_support_annotations_java" ]
+  skip_jetify = true
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
 android_aar_prebuilt("com_android_support_localbroadcastmanager_java") {
   aar_path = "libs/com_android_support_localbroadcastmanager/localbroadcastmanager-28.0.0.aar"
   info_path = "libs/com_android_support_localbroadcastmanager/com_android_support_localbroadcastmanager.info"
-  skip_jetify = true
   deps = [ ":com_android_support_support_annotations_java" ]
+  skip_jetify = true
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
@@ -845,6 +847,8 @@ android_aar_prebuilt("com_android_support_support_compat_java") {
     ":com_android_support_versionedparcelable_java",
   ]
   skip_jetify = true
+
+  # Target has AIDL, but we do not support it yet: http://crbug.com/644439
   ignore_aidl = true
   ignore_manifest = true
   jar_excluded_patterns = [
@@ -914,8 +918,8 @@ android_aar_prebuilt("com_android_support_support_fragment_java") {
 android_aar_prebuilt("com_android_support_support_v13_java") {
   aar_path = "libs/com_android_support_support_v13/support-v13-28.0.0.aar"
   info_path = "libs/com_android_support_support_v13/com_android_support_support_v13.info"
-  skip_jetify = true
   deps = [ ":com_android_support_support_v4_java" ]
+  skip_jetify = true
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
@@ -1451,8 +1455,8 @@ java_prebuilt("android_arch_core_common_java") {
   # To remove visibility constraint, add this dependency to
   # //third_party/android_deps/build.gradle.
   visibility = [ ":*" ]
-  skip_jetify = true
   deps = [ ":com_android_support_support_annotations_java" ]
+  skip_jetify = true
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
@@ -1738,6 +1742,8 @@ android_aar_prebuilt("androidx_versionedparcelable_versionedparcelable_java") {
     ":androidx_collection_collection_java",
   ]
   skip_jetify = true
+
+  # Target has AIDL, but we do not support it yet: http://crbug.com/644439
   ignore_aidl = true
 }
 
@@ -1764,8 +1770,8 @@ android_aar_prebuilt("com_android_support_cursoradapter_java") {
   # To remove visibility constraint, add this dependency to
   # //third_party/android_deps/build.gradle.
   visibility = [ ":*" ]
-  skip_jetify = true
   deps = [ ":com_android_support_support_annotations_java" ]
+  skip_jetify = true
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
@@ -1776,8 +1782,8 @@ android_aar_prebuilt("com_android_support_documentfile_java") {
   # To remove visibility constraint, add this dependency to
   # //third_party/android_deps/build.gradle.
   visibility = [ ":*" ]
-  skip_jetify = true
   deps = [ ":com_android_support_support_annotations_java" ]
+  skip_jetify = true
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
@@ -1851,8 +1857,8 @@ android_aar_prebuilt("com_android_support_print_java") {
   # To remove visibility constraint, add this dependency to
   # //third_party/android_deps/build.gradle.
   visibility = [ ":*" ]
-  skip_jetify = true
   deps = [ ":com_android_support_support_annotations_java" ]
+  skip_jetify = true
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
@@ -1886,6 +1892,8 @@ android_aar_prebuilt("com_android_support_support_media_compat_java") {
     ":com_android_support_versionedparcelable_java",
   ]
   skip_jetify = true
+
+  # Target has AIDL, but we do not support it yet: http://crbug.com/644439
   ignore_aidl = true
 }
 
@@ -1935,6 +1943,8 @@ android_aar_prebuilt("com_android_support_versionedparcelable_java") {
     ":com_android_support_support_annotations_java",
   ]
   skip_jetify = true
+
+  # Target has AIDL, but we do not support it yet: http://crbug.com/644439
   ignore_aidl = true
   jar_excluded_patterns = [
     "android/support/v4/graphics/drawable/IconCompat.class",

@@ -20,6 +20,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "cc/animation/animation_host.h"
 #include "cc/animation/timing_function.h"
 #include "cc/input/scroll_elasticity_helper.h"
 #include "cc/layers/content_layer_client.h"
@@ -8782,6 +8783,54 @@ class LayerTreeHostTopControlsDeltaTriggersViewportUpdate
 };
 
 MULTI_THREAD_TEST_F(LayerTreeHostTopControlsDeltaTriggersViewportUpdate);
+
+// Tests that custom sequence throughput tracking result is reported to
+// LayerTreeHostClient.
+constexpr MutatorHost::TrackedAnimationSequenceId kSequenceId = 1u;
+class LayerTreeHostCustomThrougputTrackerTest : public LayerTreeHostTest {
+ public:
+  void BeginTest() override { PostSetNeedsCommitToMainThread(); }
+
+  void DidCommit() override {
+    // FrameSequenceTracker typically sees the following sequence:
+    //   e(2,2)b(3)B(0,3)E(3)s(3)S(3)e(3,3)P(3)b(4)B(3,4)E(4)s(4)S(4)e(4,4)P(4)
+    switch (layer_tree_host()->SourceFrameNumber()) {
+      case 1:
+        animation_host()->StartThroughputTracking(kSequenceId);
+        break;
+      case 3:
+        animation_host()->StopThroughputTracking(kSequenceId);
+        break;
+      default:
+        break;
+    }
+
+    PostSetNeedsCommitWithForcedRedrawToMainThread();
+  }
+
+  void NotifyThroughputTrackerResults(CustomTrackerResults results) override {
+    ASSERT_TRUE(base::Contains(results, kSequenceId));
+    const auto& throughput = results[kSequenceId];
+    // Frame 3 and 4 are counted. See the sequence in DidCommit comment for
+    // normal case that expects 2 for both frames_expected and frames_produced.
+    //
+    // However, on slow bots, begin frame could be skipped but still counted as
+    // expected frames, like the following:
+    //
+    //   e(5,5)b(8)B(0,8)E(8)s(3)S(8)e(8,8)b(11)
+    //       B(8,11)E(11)ts(4)S(11)e(11,11)P(3)e(14,14)P(4)
+    //
+    // B(0, 8) and B(8, 11) make frame_expected to be 4, more than 2 expected by
+    // test.
+    EXPECT_GE(throughput.frames_expected, 2u);
+    EXPECT_EQ(throughput.frames_produced, 2u);
+
+    EndTest();
+  }
+};
+
+// TODO(crbug.com/1021774): Revisit after hooking up threaded code path.
+SINGLE_THREAD_TEST_F(LayerTreeHostCustomThrougputTrackerTest);
 
 }  // namespace
 }  // namespace cc

@@ -1011,7 +1011,7 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, StartStopWi
         for (int index = 0; index < newSuggestionsCount; index++) {
             final OmniboxSuggestion suggestion = newSuggestions.get(index);
             final SuggestionProcessor processor = getProcessorForSuggestion(suggestion, index == 0);
-            final PropertyModel model = processor.createModelForSuggestion(suggestion);
+            final PropertyModel model = processor.createModel();
             mAvailableSuggestions.add(new SuggestionViewInfo(processor, suggestion, model));
         }
 

@@ -63,6 +63,11 @@ GlobalErrorBubbleView::GlobalErrorBubbleView(
   // error_ is a WeakPtr, but it's always non-null during construction.
   DCHECK(error_);
 
+  WidgetDelegate::SetTitle(error_->GetBubbleViewTitle());
+  WidgetDelegate::SetShowCloseButton(error_->ShouldShowCloseButton());
+  WidgetDelegate::SetWindowClosingCallback(base::BindOnce(
+      &GlobalErrorWithStandardBubble::BubbleViewDidClose, error_, browser));
+
   DialogDelegate::SetDefaultButton(error_->GetDefaultDialogButton());
   DialogDelegate::SetButtons(
       !error_->GetBubbleViewCancelButtonLabel().empty()
@@ -90,18 +95,7 @@ GlobalErrorBubbleView::GlobalErrorBubbleView(
   chrome::RecordDialogCreation(chrome::DialogIdentifier::GLOBAL_ERROR);
 }
 
-GlobalErrorBubbleView::~GlobalErrorBubbleView() {}
-
-base::string16 GlobalErrorBubbleView::GetWindowTitle() const {
-  if (!error_)
-    return base::string16();
-  return error_->GetBubbleViewTitle();
-}
-
-void GlobalErrorBubbleView::WindowClosing() {
-  if (error_)
-    error_->BubbleViewDidClose(browser_);
-}
+GlobalErrorBubbleView::~GlobalErrorBubbleView() = default;
 
 void GlobalErrorBubbleView::Init() {
   const int kMaxBubbleViewWidth = 362;
@@ -138,10 +132,6 @@ void GlobalErrorBubbleView::Init() {
   // or a new window opening). Make sure the bubble doesn't disappear before the
   // user sees it, if the bubble needs to be acknowledged.
   set_close_on_deactivate(error_->ShouldCloseOnDeactivate());
-}
-
-bool GlobalErrorBubbleView::ShouldShowCloseButton() const {
-  return error_ && error_->ShouldShowCloseButton();
 }
 
 void GlobalErrorBubbleView::OnDialogInitialized() {

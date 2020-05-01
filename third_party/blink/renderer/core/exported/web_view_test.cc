@@ -54,6 +54,7 @@
 #include "third_party/blink/public/common/input/web_keyboard_event.h"
 #include "third_party/blink/public/common/page/page_zoom.h"
 #include "third_party/blink/public/mojom/frame/frame_owner_element_type.mojom-blink.h"
+#include "third_party/blink/public/mojom/frame/tree_scope_type.mojom-blink.h"
 #include "third_party/blink/public/mojom/input/focus_type.mojom-blink.h"
 #include "third_party/blink/public/mojom/manifest/display_mode.mojom-shared.h"
 #include "third_party/blink/public/platform/web_coalesced_input_event.h"
@@ -76,7 +77,6 @@
 #include "third_party/blink/public/web/web_print_params.h"
 #include "third_party/blink/public/web/web_script_source.h"
 #include "third_party/blink/public/web/web_settings.h"
-#include "third_party/blink/public/web/web_tree_scope_type.h"
 #include "third_party/blink/public/web/web_view_client.h"
 #include "third_party/blink/public/web/web_widget.h"
 #include "third_party/blink/public/web/web_widget_client.h"
@@ -3930,7 +3930,7 @@ class CreateChildCounterFrameClient
  public:
   CreateChildCounterFrameClient() : count_(0) {}
   WebLocalFrame* CreateChildFrame(WebLocalFrame* parent,
-                                  WebTreeScopeType,
+                                  mojom::blink::TreeScopeType,
                                   const WebString& name,
                                   const WebString& fallback_name,
                                   const FramePolicy&,
@@ -3945,7 +3945,7 @@ class CreateChildCounterFrameClient
 
 WebLocalFrame* CreateChildCounterFrameClient::CreateChildFrame(
     WebLocalFrame* parent,
-    WebTreeScopeType scope,
+    mojom::blink::TreeScopeType scope,
     const WebString& name,
     const WebString& fallback_name,
     const FramePolicy& frame_policy,

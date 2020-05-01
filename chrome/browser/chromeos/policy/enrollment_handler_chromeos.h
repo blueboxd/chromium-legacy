@@ -102,6 +102,10 @@ class EnrollmentHandlerChromeOS : public CloudPolicyClient::Observer,
   void OnDeviceAccountTokenStored() override;
   void OnDeviceAccountTokenError(EnrollmentStatus status) override;
   void OnDeviceAccountClientError(DeviceManagementStatus status) override;
+  enterprise_management::DeviceServiceApiAccessRequest::DeviceType
+  GetRobotAuthCodeDeviceType() override;
+  std::string GetRobotOAuthScopes() override;
+  scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory() override;
 
  private:
   // Indicates what step of the process is currently pending. These steps need

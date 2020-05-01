@@ -261,6 +261,7 @@ class LayerTreeHostImplTest : public testing::Test,
                                          ElementListType tree_type) override {}
   void NotifyPaintWorkletStateChange(
       Scheduler::PaintWorkletState state) override {}
+  void NotifyThroughputTrackerResults(CustomTrackerResults results) override {}
 
   void set_reduce_memory_result(bool reduce_memory_result) {
     reduce_memory_result_ = reduce_memory_result;

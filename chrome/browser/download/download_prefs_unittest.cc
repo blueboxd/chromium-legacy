@@ -8,6 +8,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/prefs/pref_service.h"
+#include "components/prefs/scoped_user_pref_update.h"
 #include "components/safe_browsing/core/file_type_policies.h"
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -124,6 +125,66 @@ TEST(DownloadPrefsTest, AutoOpenCheckIsCaseInsensitive) {
       base::FilePath(FILE_PATH_LITERAL("x.foo"))));
   EXPECT_TRUE(prefs.IsAutoOpenEnabledBasedOnExtension(
       base::FilePath(FILE_PATH_LITERAL("x.Bar"))));
+}
+
+TEST(DownloadPrefsTest, AutoOpenSetByPolicy) {
+  const base::FilePath kBasicFilePath(
+      FILE_PATH_LITERAL("/good/basic-path.txt"));
+
+  content::BrowserTaskEnvironment task_environment_;
+  TestingProfile profile;
+  ListPrefUpdate update(profile.GetPrefs(),
+                        prefs::kDownloadExtensionsToOpenByPolicy);
+  update->AppendString("txt");
+  DownloadPrefs prefs(&profile);
+
+  EXPECT_TRUE(prefs.IsAutoOpenEnabledBasedOnExtension(kBasicFilePath));
+}
+
+TEST(DownloadPrefsTest, AutoOpenSetByPolicyDangerousType) {
+  const base::FilePath kDangerousFilePath(
+      FILE_PATH_LITERAL("/good/dangerout-type.swf"));
+
+  content::BrowserTaskEnvironment task_environment_;
+  TestingProfile profile;
+  ListPrefUpdate update(profile.GetPrefs(),
+                        prefs::kDownloadExtensionsToOpenByPolicy);
+  update->AppendString("swf");
+  DownloadPrefs prefs(&profile);
+
+  // Verifies that the user can't set this file type to auto-open, but it can
+  // still be set by policy.
+  EXPECT_FALSE(prefs.EnableAutoOpenByUserBasedOnExtension(kDangerousFilePath));
+  EXPECT_TRUE(prefs.IsAutoOpenEnabledBasedOnExtension(kDangerousFilePath));
+}
+
+TEST(DownloadPrefsTest, AutoOpenSetByPolicyDynamicUpdates) {
+  const base::FilePath kDangerousFilePath(
+      FILE_PATH_LITERAL("/good/dangerout-type.swf"));
+
+  content::BrowserTaskEnvironment task_environment_;
+  TestingProfile profile;
+  DownloadPrefs prefs(&profile);
+
+  // Ensure the file won't open open at first, but that it can be as soon as
+  // the preference is updated.
+  EXPECT_FALSE(prefs.IsAutoOpenEnabledBasedOnExtension(kDangerousFilePath));
+
+  // Update the policy preference.
+  {
+    ListPrefUpdate update(profile.GetPrefs(),
+                          prefs::kDownloadExtensionsToOpenByPolicy);
+    update->Append("swf");
+  }
+  EXPECT_TRUE(prefs.IsAutoOpenEnabledBasedOnExtension(kDangerousFilePath));
+
+  // Remove the policy and ensure the file stops auto-opening.
+  {
+    ListPrefUpdate update(profile.GetPrefs(),
+                          prefs::kDownloadExtensionsToOpenByPolicy);
+    update->ClearList();
+  }
+  EXPECT_FALSE(prefs.IsAutoOpenEnabledBasedOnExtension(kDangerousFilePath));
 }
 
 TEST(DownloadPrefsTest, MissingDefaultPathCorrected) {

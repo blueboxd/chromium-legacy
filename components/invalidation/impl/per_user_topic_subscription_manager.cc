@@ -26,6 +26,7 @@
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
+#include "google_apis/gaia/gaia_constants.h"
 
 namespace syncer {
 
@@ -45,9 +46,6 @@ const char kActiveRegistrationTokens[] =
 
 const char kInvalidationRegistrationScope[] =
     "https://firebaseperusertopics-pa.googleapis.com";
-
-const char kFCMOAuthScope[] =
-    "https://www.googleapis.com/auth/firebase.messaging";
 
 // Note: Taking |topic| and |private_topic_name| by value (rather than const
 // ref) because the caller (in practice, SubscriptionEntry) may be destroyed by
@@ -463,7 +461,7 @@ void PerUserTopicSubscriptionManager::SubscriptionFinishedForTopic(
     // the identity provider will return the same token again.
     if (!access_token_.empty() &&
         it->second->last_request_access_token == access_token_) {
-      identity_provider_->InvalidateAccessToken({kFCMOAuthScope},
+      identity_provider_->InvalidateAccessToken({GaiaConstants::kFCMOAuthScope},
                                                 access_token_);
       access_token_.clear();
     }
@@ -524,7 +522,7 @@ void PerUserTopicSubscriptionManager::RequestAccessToken() {
 
   access_token_.clear();
   access_token_fetcher_ = identity_provider_->FetchAccessToken(
-      "fcm_invalidation", {kFCMOAuthScope},
+      "fcm_invalidation", {GaiaConstants::kFCMOAuthScope},
       base::BindOnce(
           &PerUserTopicSubscriptionManager::OnAccessTokenRequestCompleted,
           base::Unretained(this)));

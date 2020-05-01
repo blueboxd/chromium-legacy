@@ -4245,21 +4245,6 @@
             ]
         }
     ],
-    "PhysicalWeb": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "PhysicalWeb"
-                    ]
-                }
-            ]
-        }
-    ],
     "PlayStoreAppSearch": [
         {
             "platforms": [

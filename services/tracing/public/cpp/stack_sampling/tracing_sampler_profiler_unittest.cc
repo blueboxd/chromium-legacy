@@ -485,7 +485,13 @@ TEST_F(TracingSampleProfilerTest, SampleLoaderLockOnChildThread) {
 
 #endif  // BUILDFLAG(ENABLE_LOADER_LOCK_SAMPLING)
 
-TEST(TracingProfileBuilderTest, ValidModule) {
+// Crashes on Windows.  https://crbug.com/1076768
+#if defined(OS_WIN)
+#define MAYBE_ValidModule DISABLED_ValidModule
+#else
+#define MAYBE_ValidModule ValidModule
+#endif
+TEST(TracingProfileBuilderTest, MAYBE_ValidModule) {
   TestModule module;
   TracingSamplerProfiler::TracingProfileBuilder profile_builder(
       base::PlatformThreadId(),

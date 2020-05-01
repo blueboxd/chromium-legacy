@@ -12,13 +12,17 @@ var offscreen_canvas = c2.transferControlToOffscreen();
 var ctx_o = offscreen_canvas.getContext('2d');
 
 // Since it checks if content retaining |mode_| changes from frame to frame,
-// multiple calls to rAF are used to assure the craetion of new frame.
+// multiple calls to rAF are used to assure the creation of new frame.
 ctx_o.fillRect(50, 50, 50, 50);
 ctx_o.clearRect(0, 0, 100, 90);
 window.requestAnimationFrame(dt => {
   ctx_o.fillRect(0, 0, 15, 15);
+  // Two RAF, back to back, just after notifyDone may be needed sometimes due to our test
+  // infrastructure. Never add more than two to fix a flaky test.
   window.requestAnimationFrame(dt => {
-    testRunner.notifyDone();
+    window.requestAnimationFrame(dt => {
+      testRunner.notifyDone();
+    });
   });
 });
 

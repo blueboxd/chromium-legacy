@@ -239,6 +239,10 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
     return split_auth_cache_by_network_isolation_key_;
   }
 
+  // From initialization on, this will be non-null and will always point to the
+  // same object (although the object's state can change on updates to the
+  // commitments). As a consequence, it's safe to store long-lived copies of the
+  // pointer.
   const TrustTokenKeyCommitments* trust_token_key_commitments() const {
     return trust_token_key_commitments_.get();
   }

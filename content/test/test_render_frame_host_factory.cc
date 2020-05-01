@@ -30,7 +30,8 @@ TestRenderFrameHostFactory::CreateRenderFrameHost(
   DCHECK(!renderer_initiated_creation);
   return std::make_unique<TestRenderFrameHost>(
       site_instance, std::move(render_view_host), delegate, frame_tree,
-      frame_tree_node, routing_id);
+      frame_tree_node, routing_id,
+      RenderFrameHostImpl::LifecycleState::kActive);
 }
 
 }  // namespace content

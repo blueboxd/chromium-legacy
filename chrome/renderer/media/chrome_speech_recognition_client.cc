@@ -4,6 +4,8 @@
 
 #include "chrome/renderer/media/chrome_speech_recognition_client.h"
 
+#include <utility>
+
 #include "content/public/renderer/render_frame.h"
 #include "media/mojo/mojom/media_types.mojom.h"
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
@@ -18,6 +20,8 @@ ChromeSpeechRecognitionClient::ChromeSpeechRecognitionClient(
       speech_recognition_client_receiver_.BindNewPipeAndPassRemote());
   render_frame->GetBrowserInterfaceBroker()->GetInterface(
       std::move(speech_recognition_context_receiver));
+  render_frame->GetBrowserInterfaceBroker()->GetInterface(
+      caption_host_.BindNewPipeAndPassReceiver());
 }
 
 ChromeSpeechRecognitionClient::~ChromeSpeechRecognitionClient() = default;
@@ -38,8 +42,7 @@ bool ChromeSpeechRecognitionClient::IsSpeechRecognitionAvailable() {
 
 void ChromeSpeechRecognitionClient::OnSpeechRecognitionRecognitionEvent(
     const std::string& transcription) {
-  // TODO(evliu): Pass the captions to the caption controller.
-  NOTIMPLEMENTED();
+  caption_host_->OnTranscription(transcription);
 }
 
 media::mojom::AudioDataS16Ptr

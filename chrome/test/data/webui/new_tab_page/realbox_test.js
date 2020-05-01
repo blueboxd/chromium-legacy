@@ -2,11 +2,44 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {BrowserProxy} from 'chrome://new-tab-page/new_tab_page.js';
+import {BrowserProxy, decodeString16} from 'chrome://new-tab-page/new_tab_page.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {getDeepActiveElement} from 'chrome://resources/js/util.m.js';
 import {assertStyle, createTestProxy, createTheme} from 'chrome://test/new_tab_page/test_support.js';
+import {TestBrowserProxy} from 'chrome://test/test_browser_proxy.m.js';
 import {eventToPromise} from 'chrome://test/test_util.m.js';
+
+/**
+ * Helps track realbox browser call arguments.
+ * @implements {newTabPage.mojom.PageHandlerRemote}
+ * @extends {TestBrowserProxy}
+ */
+class TestRealboxBrowserProxy extends TestBrowserProxy {
+  constructor() {
+    super(['queryAutocomplete']);
+  }
+
+  queryAutocomplete(input, preventInlineAutocomplete) {
+    this.methodCalled('queryAutocomplete', {input, preventInlineAutocomplete});
+  }
+}
+
+/**
+ * @param {string} type
+ * @param {!Object=} modifiers
+ */
+function createTrustedEvent(type, modifiers = {}) {
+  return Object.assign(
+      {
+        type,
+        isTrusted: true,
+        defaultPrevented: false,
+        preventDefault() {
+          this.defaultPrevented = true;
+        },
+      },
+      modifiers);
+}
 
 suite('NewTabPageRealboxTest', () => {
   /** @type {!RealboxElement} */
@@ -28,6 +61,7 @@ suite('NewTabPageRealboxTest', () => {
     PolymerTest.clearBody();
 
     testProxy = createTestProxy();
+    testProxy.handler = new TestRealboxBrowserProxy();
     BrowserProxy.instance_ = testProxy;
 
     realbox = document.createElement('ntp-realbox');
@@ -90,5 +124,28 @@ suite('NewTabPageRealboxTest', () => {
     assertStyle(
         realbox.$.realboxIcon, 'background-image',
         'url("chrome://new-tab-page/google_g.png")');
+  });
+
+  test('left-clicking input when empty queries autocomplete', async () => {
+    realbox.$.input.value = '';
+    realbox.$.input.onmousedown(createTrustedEvent('mousedown', {button: 0}));
+    assertEquals(1, testProxy.handler.getCallCount('queryAutocomplete'));
+    await testProxy.handler.whenCalled('queryAutocomplete').then((args) => {
+      assertTrue(decodeString16(args.input) === '');
+      assertFalse(args.preventInlineAutocomplete);
+    });
+
+    // Only left clicks query autocomplete.
+    realbox.$.input.onmousedown(createTrustedEvent('mousedown', {button: 1}));
+    assertEquals(1, testProxy.handler.getCallCount('queryAutocomplete'));
+
+    // Untrusted events won't qeury autocomplete.
+    realbox.$.input.onmousedown(new MouseEvent('mousedown', {button: 0}));
+    assertEquals(1, testProxy.handler.getCallCount('queryAutocomplete'));
+
+    // Non-empty input won't query autocomplete.
+    realbox.$.input.value = '   ';
+    realbox.$.input.onmousedown(createTrustedEvent('mousedown', {button: 0}));
+    assertEquals(1, testProxy.handler.getCallCount('queryAutocomplete'));
   });
 });

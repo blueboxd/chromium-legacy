@@ -270,7 +270,8 @@ PaintLayerType LayoutBox::LayerTypeRequired() const {
   // since position:static elements that are not flex-items get their z-index
   // coerced to auto.
   if (IsPositioned() || CreatesGroup() || HasTransformRelatedProperty() ||
-      HasHiddenBackface() || HasReflection() || StyleRef().SpecifiesColumns() ||
+      HasHiddenBackface() || HasReflection() ||
+      (StyleRef().SpecifiesColumns() && !CanTraversePhysicalFragments()) ||
       StyleRef().IsStackingContext() ||
       StyleRef().ShouldCompositeForCurrentAnimations() ||
       IsEffectiveRootScroller())

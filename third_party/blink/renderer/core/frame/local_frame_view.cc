@@ -49,6 +49,7 @@
 #include "third_party/blink/renderer/core/animation/document_animations.h"
 #include "third_party/blink/renderer/core/css/font_face_set_document.h"
 #include "third_party/blink/renderer/core/css/style_change_reason.h"
+#include "third_party/blink/renderer/core/display_lock/display_lock_utilities.h"
 #include "third_party/blink/renderer/core/dom/static_node_list.h"
 #include "third_party/blink/renderer/core/editing/compute_layer_selection.h"
 #include "third_party/blink/renderer/core/editing/drag_caret.h"
@@ -644,7 +645,29 @@ void LocalFrameView::PerformPreLayoutTasks() {
     document->ClearResizedForViewportUnits();
 }
 
-void LocalFrameView::LayoutFromRootObject(LayoutObject& root) {
+bool LocalFrameView::LayoutFromRootObject(LayoutObject& root) {
+  if (!root.NeedsLayout())
+    return false;
+
+  if (auto* locked_ancestor =
+          DisplayLockUtilities::LockedAncestorPreventingLayout(root)) {
+    // Note that since we're preventing the layout on a layout root, we have to
+    // mark its ancestor chain for layout. The reason for this is that we will
+    // clear the layout roots whether or not we have finished laying them out,
+    // so the fact that this root still needs layout will be lost if we don't
+    // mark its container chain.
+    //
+    // Also, since we know that this root has a layout-blocking ancestor, the
+    // layout bit propagation will stop there.
+    //
+    // TODO(vmpstr): Note that an alternative to this approach is to keep `root`
+    // as a layout root in `layout_subtree_root_list_`. It would mean that we
+    // will keep it in the list while the display-lock prevents layout. We need
+    // to investigate which of these approaches is better.
+    root.MarkContainerChainForLayout();
+    return false;
+  }
+
   LayoutState layout_state(root);
   if (scrollable_areas_) {
     for (auto& scrollable_area : *scrollable_areas_) {
@@ -655,6 +678,7 @@ void LocalFrameView::LayoutFromRootObject(LayoutObject& root) {
   }
 
   root.UpdateLayout();
+  return true;
 }
 
 void LocalFrameView::PrepareLayoutAnalyzer() {
@@ -731,9 +755,8 @@ void LocalFrameView::PerformLayout(bool in_subtree_layout) {
                              layout_subtree_root_list_.size());
       }
       for (auto& root : layout_subtree_root_list_.Ordered()) {
-        if (!root->NeedsLayout())
+        if (!LayoutFromRootObject(*root))
           continue;
-        LayoutFromRootObject(*root);
 
         root->PaintingLayer()->UpdateLayerPositionsAfterLayout();
 
@@ -1683,7 +1706,8 @@ void LocalFrameView::ScheduleRelayoutOfSubtree(LayoutObject* relayout_root) {
     if (!ShouldThrottleRendering())
       GetPage()->Animator().ScheduleVisualUpdate(frame_.Get());
 
-    Lifecycle().EnsureStateAtMost(DocumentLifecycle::kStyleClean);
+    if (GetPage()->Animator().IsServicingAnimations())
+      Lifecycle().EnsureStateAtMost(DocumentLifecycle::kStyleClean);
   }
   TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"),
                        "InvalidateLayout", TRACE_EVENT_SCOPE_THREAD, "data",

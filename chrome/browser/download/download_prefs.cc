@@ -84,6 +84,14 @@ bool DownloadPathIsDangerous(const base::FilePath& download_path) {
 #endif
 }
 
+base::FilePath::StringType StringToFilePathString(const std::string& src) {
+#if defined(OS_POSIX)
+  return src;
+#elif defined(OS_WIN)
+  return base::UTF8ToWide(src);
+#endif
+}
+
 class DefaultDownloadDirectory {
  public:
   const base::FilePath& path() const { return path_; }
@@ -120,6 +128,7 @@ DefaultDownloadDirectory& GetDefaultDownloadDirectorySingleton() {
 
 DownloadPrefs::DownloadPrefs(Profile* profile) : profile_(profile) {
   PrefService* prefs = profile->GetPrefs();
+  pref_change_registrar_.Init(prefs);
 
 #if defined(OS_CHROMEOS)
   // On Chrome OS, the default download directory is different for each profile.
@@ -204,6 +213,15 @@ DownloadPrefs::DownloadPrefs(Profile* profile) : profile_(profile) {
       prefs::kSafeBrowsingForTrustedSourcesEnabled, prefs);
   download_restriction_.Init(prefs::kDownloadRestrictions, prefs);
 
+  pref_change_registrar_.Add(
+      prefs::kDownloadExtensionsToOpenByPolicy,
+      base::BindRepeating(&DownloadPrefs::UpdateAutoOpenByPolicy,
+                          // This unretained is safe since this callback is
+                          // only held while this instance is alive, so this
+                          // will always be valid.
+                          base::Unretained(this)));
+  UpdateAutoOpenByPolicy();
+
   // We store any file extension that should be opened automatically at
   // download completion in this pref.
   std::string user_extensions_to_open =
@@ -212,17 +230,15 @@ DownloadPrefs::DownloadPrefs(Profile* profile) : profile_(profile) {
   for (const auto& extension_string :
        base::SplitString(user_extensions_to_open, ":", base::TRIM_WHITESPACE,
                          base::SPLIT_WANT_ALL)) {
-#if defined(OS_POSIX)
-    base::FilePath::StringType extension = extension_string;
-#elif defined(OS_WIN)
-    base::FilePath::StringType extension = base::UTF8ToWide(extension_string);
-#endif
+    base::FilePath::StringType extension =
+        StringToFilePathString(extension_string);
     // If it's empty or malformed or not allowed to open automatically, then
     // skip the entry. Any such entries will be dropped from preferences the
     // next time SaveAutoOpenState() is called.
     if (extension.empty() ||
-        *extension.begin() == base::FilePath::kExtensionSeparator)
+        *extension.begin() == base::FilePath::kExtensionSeparator) {
       continue;
+    }
     // Construct something like ".<extension>", since
     // IsAllowedToOpenAutomatically() needs a filename.
     base::FilePath filename_with_extension = base::FilePath(
@@ -250,6 +266,7 @@ void DownloadPrefs::RegisterProfilePrefs(
       false,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
   registry->RegisterStringPref(prefs::kDownloadExtensionsToOpen, std::string());
+  registry->RegisterListPref(prefs::kDownloadExtensionsToOpenByPolicy, {});
   registry->RegisterBooleanPref(prefs::kDownloadDirUpgraded, false);
   registry->RegisterIntegerPref(prefs::kSaveFileType,
                                 content::SAVE_PAGE_TYPE_AS_COMPLETE_HTML);
@@ -382,7 +399,8 @@ bool DownloadPrefs::IsAutoOpenEnabledBasedOnExtension(
     return true;
 #endif
 
-  return auto_open_by_user_.find(extension) != auto_open_by_user_.end();
+  return auto_open_by_user_.find(extension) != auto_open_by_user_.end() ||
+         auto_open_by_policy_.find(extension) != auto_open_by_policy_.end();
 }
 
 bool DownloadPrefs::EnableAutoOpenByUserBasedOnExtension(
@@ -524,6 +542,18 @@ base::FilePath DownloadPrefs::SanitizeDownloadTargetPath(
   // profile directory as a safe default.
   return GetDefaultDownloadDirectoryForProfile();
 #endif
+}
+
+void DownloadPrefs::UpdateAutoOpenByPolicy() {
+  auto_open_by_policy_.clear();
+
+  PrefService* prefs = profile_->GetPrefs();
+  for (const auto& extension :
+       *prefs->GetList(prefs::kDownloadExtensionsToOpenByPolicy)) {
+    base::FilePath::StringType extension_string =
+        StringToFilePathString(extension.GetString());
+    auto_open_by_policy_.insert(extension_string);
+  }
 }
 
 bool DownloadPrefs::AutoOpenCompareFunctor::operator()(

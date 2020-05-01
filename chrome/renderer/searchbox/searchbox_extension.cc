@@ -452,7 +452,7 @@ base::Value CreateAutocompleteMatches(
       description_class.Append(std::move(entry));
     }
     dict.SetKey("descriptionClass", std::move(description_class));
-    dict.SetStringKey("destinationUrl", match->destination_url);
+    dict.SetStringKey("destinationUrl", match->destination_url.spec());
     dict.SetIntKey("suggestionGroupId", match->suggestion_group_id);
     dict.SetStringKey("inlineAutocompletion", match->inline_autocompletion);
     dict.SetBoolKey("isSearchType", match->is_search_type);

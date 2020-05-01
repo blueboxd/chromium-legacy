@@ -4,7 +4,6 @@
 
 // clang-format off
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
-import {PromiseResolver} from 'chrome://resources/js/promise_resolver.m.js';
 import {beforeNextRender,flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {ContentSetting,ContentSettingsTypes,LocalDataBrowserProxyImpl,SiteSettingsPrefsBrowserProxyImpl} from 'chrome://settings/lazy_load.js';
 import {CrSettingsPrefs, Router,routes} from 'chrome://settings/settings.js';
@@ -134,22 +133,13 @@ suite('AllSites', function() {
     setUpAllSites(prefsVarious);
     testElement.populateList_();
     return browserProxy.whenCalled('getAllSites').then(() => {
-      // Use resolver to ensure that the list container is populated.
-      const resolver = new PromiseResolver();
-      // In Polymer2, we need to wait until after the next render for the list
-      // to be populated.
-      beforeNextRender(testElement, () => {
-        resolver.resolve();
-      });
-      return resolver.promise.then(() => {
-        assertEquals(3, testElement.siteGroupMap.size);
+      assertEquals(3, testElement.siteGroupMap.size);
 
-        // Flush to be sure list container is populated.
-        flush();
-        const siteEntries =
-            testElement.$.listContainer.querySelectorAll('site-entry');
-        assertEquals(3, siteEntries.length);
-      });
+      // Flush to be sure list container is populated.
+      flush();
+      const siteEntries =
+          testElement.$.listContainer.querySelectorAll('site-entry');
+      assertEquals(3, siteEntries.length);
     });
   });
 

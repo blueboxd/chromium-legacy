@@ -23,6 +23,12 @@ void InspectorIssueStorage::AddInspectorIssue(ExecutionContext* context,
   issues_.push_back(issue);
 }
 
+void InspectorIssueStorage::AddInspectorIssue(
+    ExecutionContext* context,
+    mojom::blink::InspectorIssueInfoPtr info) {
+  AddInspectorIssue(context, InspectorIssue::Create(std::move(info)));
+}
+
 void InspectorIssueStorage::Clear() {
   issues_.clear();
 }

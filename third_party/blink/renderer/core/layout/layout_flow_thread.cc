@@ -34,10 +34,11 @@
 
 namespace blink {
 
-LayoutFlowThread::LayoutFlowThread()
+LayoutFlowThread::LayoutFlowThread(bool needs_paint_layer)
     : LayoutBlockFlow(nullptr),
       column_sets_invalidated_(false),
-      page_logical_size_changed_(false) {}
+      page_logical_size_changed_(false),
+      needs_paint_layer_(needs_paint_layer) {}
 
 LayoutFlowThread* LayoutFlowThread::LocateFlowThreadContainingBlockOf(
     const LayoutObject& descendant,
@@ -113,6 +114,15 @@ void LayoutFlowThread::UpdateLayout() {
   page_logical_size_changed_ = column_sets_invalidated_ && EverHadLayout();
   LayoutBlockFlow::UpdateLayout();
   page_logical_size_changed_ = false;
+}
+
+PaintLayerType LayoutFlowThread::LayerTypeRequired() const {
+  if (!needs_paint_layer_)
+    return kNoPaintLayer;
+  // Always create a Layer for the LayoutFlowThread so that we can easily avoid
+  // drawing the children directly. We need this for legacy painting (but not
+  // for NG).
+  return kNormalPaintLayer;
 }
 
 void LayoutFlowThread::ComputeLogicalHeight(

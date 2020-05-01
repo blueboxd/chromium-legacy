@@ -961,6 +961,18 @@
     ]
   },
 
+  "AutoOpenFileTypes" : {
+    "os": ["win", "mac", "linux", "chromeos"],
+    "policy_pref_mapping_test": [
+      {
+        "policies": { "AutoOpenFileTypes": ["exe", ".txt", "pdf"] },
+        "prefs": {
+          "download.extensions_to_open_by_policy": {"value" : ["exe", "pdf"] }
+        }
+      }
+    ]
+  },
+
   "ClearSiteDataOnExit": {
     "note": "This policy is retired, see http://crbug.com/133291."
   },
@@ -7049,6 +7061,22 @@
           ]
         },
         "prefs": { "enterprise_connectors.on_bulk_data_entry": { "local_state": true } }
+      }
+    ]
+  },
+
+  "OnSecurityEventEnterpriseConnector": {
+    "os": ["win", "linux", "mac", "chromeos"],
+    "policy_pref_mapping_test": [
+      {
+        "policies": {
+          "OnSecurityEventEnterpriseConnector": [
+            {
+              "service_provider": "Google"
+            }
+          ]
+        },
+        "prefs": { "enterprise_connectors.on_security_event": { "local_state": true } }
       }
     ]
   },

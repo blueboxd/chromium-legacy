@@ -25,6 +25,7 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_paths.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
@@ -269,6 +270,23 @@ IN_PROC_BROWSER_TEST_P(WorkerTest, SingleWorker) {
 }
 
 IN_PROC_BROWSER_TEST_P(WorkerTest, SingleWorkerFromFile) {
+  RunTest(GetTestFileURL("single_worker.html"), true /* expect_failure */);
+}
+
+class WorkerTestWithAllowFileAccessFromFiles : public WorkerTest {
+ public:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    WorkerTest::SetUpCommandLine(command_line);
+    command_line->AppendSwitch(switches::kAllowFileAccessFromFiles);
+  }
+};
+
+INSTANTIATE_TEST_SUITE_P(All,
+                         WorkerTestWithAllowFileAccessFromFiles,
+                         testing::ValuesIn({false, true}));
+
+IN_PROC_BROWSER_TEST_P(WorkerTestWithAllowFileAccessFromFiles,
+                       SingleWorkerFromFile) {
   RunTest(GetTestFileURL("single_worker.html"));
 }
 

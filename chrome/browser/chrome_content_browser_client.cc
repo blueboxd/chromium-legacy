@@ -3933,11 +3933,8 @@ ChromeContentBrowserClient::CreateThrottlesForNavigation(
       GooglePasswordManagerNavigationThrottle::MaybeCreateThrottleFor(handle));
 #endif
 
-  if (base::FeatureList::IsEnabled(safe_browsing::kCommittedSBInterstitials)) {
-    throttles.push_back(
-        std::make_unique<safe_browsing::SafeBrowsingNavigationThrottle>(
-            handle));
-  }
+  throttles.push_back(
+      std::make_unique<safe_browsing::SafeBrowsingNavigationThrottle>(handle));
 
 #if defined(OS_WIN) || defined(OS_MACOSX) || \
     (defined(OS_LINUX) && !defined(OS_CHROMEOS))

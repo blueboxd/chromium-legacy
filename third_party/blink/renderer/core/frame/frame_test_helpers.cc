@@ -44,6 +44,7 @@
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/common/frame/frame_policy.h"
+#include "third_party/blink/public/mojom/frame/tree_scope_type.mojom-blink.h"
 #include "third_party/blink/public/platform/interface_registry.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_data.h"
@@ -55,7 +56,6 @@
 #include "third_party/blink/public/web/web_frame_widget.h"
 #include "third_party/blink/public/web/web_navigation_params.h"
 #include "third_party/blink/public/web/web_settings.h"
-#include "third_party/blink/public/web/web_tree_scope_type.h"
 #include "third_party/blink/public/web/web_view_client.h"
 #include "third_party/blink/renderer/core/exported/web_remote_frame_impl.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
@@ -216,7 +216,7 @@ WebMouseEvent CreateMouseEvent(WebInputEvent::Type type,
 }
 
 WebLocalFrameImpl* CreateLocalChild(WebLocalFrame& parent,
-                                    WebTreeScopeType scope,
+                                    mojom::blink::TreeScopeType scope,
                                     TestWebFrameClient* client) {
   std::unique_ptr<TestWebFrameClient> owned_client;
   client = CreateDefaultClientIfNeeded(client, owned_client);
@@ -228,7 +228,7 @@ WebLocalFrameImpl* CreateLocalChild(WebLocalFrame& parent,
 
 WebLocalFrameImpl* CreateLocalChild(
     WebLocalFrame& parent,
-    WebTreeScopeType scope,
+    mojom::blink::TreeScopeType scope,
     std::unique_ptr<TestWebFrameClient> self_owned) {
   DCHECK(self_owned);
   TestWebFrameClient* client = self_owned.get();
@@ -302,7 +302,7 @@ WebRemoteFrameImpl* CreateRemote(TestWebRemoteFrameClient* client) {
   std::unique_ptr<TestWebRemoteFrameClient> owned_client;
   client = CreateDefaultClientIfNeeded(client, owned_client);
   auto* frame = MakeGarbageCollected<WebRemoteFrameImpl>(
-      WebTreeScopeType::kDocument, client,
+      mojom::blink::TreeScopeType::kDocument, client,
       InterfaceRegistry::GetEmptyInterfaceRegistry(),
       client->GetAssociatedInterfaceProvider());
   client->Bind(frame, std::move(owned_client));
@@ -318,8 +318,8 @@ WebLocalFrameImpl* CreateLocalChild(WebRemoteFrame& parent,
   std::unique_ptr<TestWebFrameClient> owned_client;
   client = CreateDefaultClientIfNeeded(client, owned_client);
   auto* frame = To<WebLocalFrameImpl>(parent.CreateLocalChild(
-      WebTreeScopeType::kDocument, name, FramePolicy(), client, nullptr,
-      previous_sibling, properties,
+      mojom::blink::TreeScopeType::kDocument, name, FramePolicy(), client,
+      nullptr, previous_sibling, properties,
       mojom::blink::FrameOwnerElementType::kIframe, nullptr));
   client->Bind(frame, std::move(owned_client));
 
@@ -365,7 +365,7 @@ WebRemoteFrameImpl* CreateRemoteChild(
   std::unique_ptr<TestWebRemoteFrameClient> owned_client;
   client = CreateDefaultClientIfNeeded(client, owned_client);
   auto* frame = To<WebRemoteFrameImpl>(parent.CreateRemoteChild(
-      WebTreeScopeType::kDocument, name, FramePolicy(),
+      mojom::blink::TreeScopeType::kDocument, name, FramePolicy(),
       mojom::blink::FrameOwnerElementType::kIframe, client,
       InterfaceRegistry::GetEmptyInterfaceRegistry(),
       client->GetAssociatedInterfaceProvider(), nullptr));
@@ -612,7 +612,7 @@ void TestWebFrameClient::FrameDetached(DetachType type) {
 
 WebLocalFrame* TestWebFrameClient::CreateChildFrame(
     WebLocalFrame* parent,
-    WebTreeScopeType scope,
+    mojom::blink::TreeScopeType scope,
     const WebString& name,
     const WebString& fallback_name,
     const FramePolicy&,

@@ -67,6 +67,7 @@ const char* kInsecurePolicies[] = {
     key::kChromeCleanupReportingEnabled,
     key::kCommandLineFlagSecurityWarningsEnabled,
     key::kDefaultSearchProviderEnabled,
+    key::kAutoOpenFileTypes,
     key::kHomepageIsNewTabPage,
     key::kHomepageLocation,
     key::kMetricsReportingEnabled,

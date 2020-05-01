@@ -31,6 +31,7 @@ import org.chromium.content_public.browser.RenderFrameHost;
 import org.chromium.content_public.common.ContentSwitches;
 import org.chromium.net.test.EmbeddedTestServer;
 import org.chromium.net.test.ServerCertificate;
+import org.chromium.url.Origin;
 
 /** Test suite for navigator.credentials functionality. */
 @RunWith(ChromeJUnit4ClassRunner.class)
@@ -53,13 +54,13 @@ public class AuthenticatorTest {
     private class MockFido2ApiHandler extends Fido2ApiHandler {
         @Override
         protected void makeCredential(PublicKeyCredentialCreationOptions options,
-                RenderFrameHost frameHost, HandlerResponseCallback callback) {
+                RenderFrameHost frameHost, Origin origin, HandlerResponseCallback callback) {
             callback.onError(AuthenticatorStatus.NOT_IMPLEMENTED);
         }
 
         @Override
         protected void getAssertion(PublicKeyCredentialRequestOptions options,
-                RenderFrameHost frameHost, HandlerResponseCallback callback) {
+                RenderFrameHost frameHost, Origin origin, HandlerResponseCallback callback) {
             callback.onError(AuthenticatorStatus.NOT_IMPLEMENTED);
         }
 

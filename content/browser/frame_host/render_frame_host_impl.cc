@@ -772,7 +772,8 @@ RenderFrameHostImpl::RenderFrameHostImpl(
     FrameTree* frame_tree,
     FrameTreeNode* frame_tree_node,
     int32_t routing_id,
-    bool renderer_initiated_creation)
+    bool renderer_initiated_creation,
+    LifecycleState lifecycle_state)
     : render_view_host_(std::move(render_view_host)),
       delegate_(delegate),
       site_instance_(static_cast<SiteInstanceImpl*>(site_instance)),
@@ -811,8 +812,11 @@ RenderFrameHostImpl::RenderFrameHostImpl(
           RenderViewHostImpl::kUnloadTimeoutMS)),
       commit_callback_interceptor_(nullptr),
       media_device_id_salt_base_(
-          BrowserContext::CreateRandomMediaDeviceIDSalt()) {
+          BrowserContext::CreateRandomMediaDeviceIDSalt()),
+      lifecycle_state_(lifecycle_state) {
   DCHECK(delegate_);
+  DCHECK(lifecycle_state_ == LifecycleState::kSpeculative ||
+         lifecycle_state_ == LifecycleState::kActive);
 
   GetProcess()->AddRoute(routing_id_, this);
   g_routing_id_frame_map.Get().emplace(
@@ -954,24 +958,24 @@ RenderFrameHostImpl::~RenderFrameHostImpl() {
   //    main RenderFrame.
   // 2. The RenderFrame can be unloaded. In this case, the browser sends a
   //    UnfreezableFrameMsg_Unload for the RenderFrame to replace itself with a
-  //    RenderFrameProxy and release its associated resources. |unload_state_|
-  //    is advanced to UnloadState::InProgress to track that this IPC is in
-  //    flight.
+  //    RenderFrameProxy and release its associated resources.
+  //    |lifecycle_state_| is advanced to LifeCycleState::kRunningUnloadHandlers
+  //    to track that this IPC is in flight.
   // 3. The RenderFrame can be detached, as part of removing a subtree (due to
   //    navigation, unload, or DOM mutation). In this case, the browser sends
   //    a UnfreezableFrameMsg_Delete for the RenderFrame to detach itself and
   //    release its associated resources. If the subframe contains an unload
-  //    handler, |unload_state_| is advanced to UnloadState::InProgress to track
-  //    that the detach is in progress; otherwise, it is advanced directly to
-  //    UnloadState::Completed.
+  //    handler, |lifecycle_state_| is advanced to
+  //    LifeCycleState::kRunningUnloadHandlers to track that the detach is in
+  //    progress; otherwise, it is advanced directly to
+  //    LifeCycleState::kReadyToBeDeleted.
   //
   // The browser side gives the renderer a small timeout to finish processing
   // unload / detach messages. When the timeout expires, the RFH will be
   // removed regardless of whether or not the renderer acknowledged that it
   // completed the work, to avoid indefinitely leaking browser-side state. To
   // avoid leaks, ~RenderFrameHostImpl still validates that the appropriate
-  // cleanup IPC was sent to the renderer, by checking that |unload_state_| !=
-  // UnloadState::NotRun.
+  // cleanup IPC was sent to the renderer, by checking IsPendingDeletion().
   //
   // TODO(dcheng): Due to how frame detach is signalled today, there are some
   // bugs in this area. In particular, subtree detach is reported from the
@@ -1070,8 +1074,8 @@ void RenderFrameHostImpl::AudioContextPlaybackStopped(int audio_context_id) {
 void RenderFrameHostImpl::EnterBackForwardCache() {
   TRACE_EVENT0("navigation", "RenderFrameHostImpl::EnterBackForwardCache");
   DCHECK(IsBackForwardCacheEnabled());
-  DCHECK(!is_in_back_forward_cache_);
-  is_in_back_forward_cache_ = true;
+  DCHECK_EQ(lifecycle_state_, LifecycleState::kActive);
+  SetLifecycleState(LifecycleState::kInBackForwardCache);
   // Pages in the back-forward cache are automatically evicted after a certain
   // time.
   if (!GetParent())
@@ -1100,8 +1104,8 @@ void RenderFrameHostImpl::EnterBackForwardCache() {
 void RenderFrameHostImpl::LeaveBackForwardCache() {
   TRACE_EVENT0("navigation", "RenderFrameHostImpl::LeaveBackForwardCache");
   DCHECK(IsBackForwardCacheEnabled());
-  DCHECK(is_in_back_forward_cache_);
-  is_in_back_forward_cache_ = false;
+  DCHECK_EQ(lifecycle_state_, LifecycleState::kInBackForwardCache);
+  SetLifecycleState(LifecycleState::kActive);
   if (back_forward_cache_eviction_timer_.IsRunning())
     back_forward_cache_eviction_timer_.Stop();
   for (auto& child : children_)
@@ -1130,7 +1134,7 @@ RenderFrameHostImpl::TakeLastCommitParams() {
 }
 
 void RenderFrameHostImpl::StartBackForwardCacheEvictionTimer() {
-  DCHECK(is_in_back_forward_cache_);
+  DCHECK(IsInBackForwardCache());
   base::TimeDelta evict_after =
       BackForwardCacheImpl::GetTimeToLiveInBackForwardCache();
   NavigationControllerImpl* controller = static_cast<NavigationControllerImpl*>(
@@ -1814,10 +1818,10 @@ void RenderFrameHostImpl::RenderProcessExited(
   has_before_unload_handler_ = false;
   has_unload_handler_ = false;
 
-  if (unload_state_ != UnloadState::NotRun) {
+  if (IsPendingDeletion()) {
     // If the process has died, we don't need to wait for the ACK. Complete the
     // deletion immediately.
-    unload_state_ = UnloadState::Completed;
+    SetLifecycleState(LifecycleState::kReadyToBeDeleted);
     DCHECK(children_.empty());
     PendingDeletionCheckCompleted();
     // |this| is deleted. Don't add any more code at this point in the function.
@@ -1838,7 +1842,7 @@ void RenderFrameHostImpl::RenderProcessGone(
     const ChildProcessTerminationInfo& info) {
   DCHECK_EQ(site_instance_.get(), site_instance);
 
-  if (is_in_back_forward_cache_) {
+  if (IsInBackForwardCache()) {
     EvictFromBackForwardCacheWithReason(
         info.status == base::TERMINATION_STATUS_PROCESS_CRASHED
             ? BackForwardCacheMetrics::NotRestoredReason::
@@ -2057,7 +2061,7 @@ bool RenderFrameHostImpl::CreateRenderFrame(int previous_routing_id,
 }
 
 void RenderFrameHostImpl::DeleteRenderFrame(FrameDeleteIntention intent) {
-  if (unload_state_ != UnloadState::NotRun)
+  if (IsPendingDeletion())
     return;
 
   if (render_frame_created_) {
@@ -2082,8 +2086,10 @@ void RenderFrameHostImpl::DeleteRenderFrame(FrameDeleteIntention intent) {
     }
   }
 
-  unload_state_ =
-      has_unload_handler() ? UnloadState::InProgress : UnloadState::Completed;
+  LifecycleState lifecycle_state = has_unload_handler()
+                                       ? LifecycleState::kRunningUnloadHandlers
+                                       : LifecycleState::kReadyToBeDeleted;
+  SetLifecycleState(lifecycle_state);
 }
 
 void RenderFrameHostImpl::SetRenderFrameCreated(bool created) {
@@ -2203,7 +2209,7 @@ void RenderFrameHostImpl::OnCreateChildFrame(
         new_interface_provider_provider_receiver,
     mojo::PendingReceiver<blink::mojom::BrowserInterfaceBroker>
         browser_interface_broker_receiver,
-    blink::WebTreeScopeType scope,
+    blink::mojom::TreeScopeType scope,
     const std::string& frame_name,
     const std::string& frame_unique_name,
     bool is_created_by_script,
@@ -2478,17 +2484,23 @@ void RenderFrameHostImpl::OnDetach() {
     return;
   }
 
-  if (unload_state_ != UnloadState::NotRun) {
+  if (IsPendingDeletion()) {
     // The frame is pending deletion. FrameHostMsg_Detach is used to confirm
-    // its unload handlers ran.
-    unload_state_ = UnloadState::Completed;
+    // its unload handlers ran. Note that it is possible for a frame to already
+    // be in kReadyToBeDeleted. This happens when this RenderFrameHost is
+    // pending deletion and is waiting on one of its children to run its unload
+    // handler. While running it, it can request its parent to detach itself.
+    // See test: SitePerProcessBrowserTest.PartialUnloadHandler.
+    if (lifecycle_state_ != LifecycleState::kReadyToBeDeleted)
+      SetLifecycleState(LifecycleState::kReadyToBeDeleted);
     PendingDeletionCheckCompleted();  // Can delete |this|.
     return;
   }
 
   // This frame is being removed by the renderer, and it has already executed
   // its unload handler.
-  unload_state_ = UnloadState::Completed;
+  SetLifecycleState(LifecycleState::kReadyToBeDeleted);
+
   // Before completing the removal, we still need to wait for all of its
   // descendant frames to execute unload handlers. Start executing those
   // handlers now.
@@ -2769,7 +2781,7 @@ void RenderFrameHostImpl::Unload(RenderFrameProxyHost* proxy, bool is_loading) {
 
   // If this RenderFrameHost is already pending deletion, it must have already
   // gone through this, therefore just return.
-  if (unload_state_ != UnloadState::NotRun) {
+  if (IsPendingDeletion()) {
     NOTREACHED() << "RFH should be in default state when calling Unload.";
     return;
   }
@@ -2784,7 +2796,7 @@ void RenderFrameHostImpl::Unload(RenderFrameProxyHost* proxy, bool is_loading) {
   is_waiting_for_unload_ack_ = true;
 
   if (proxy) {
-    unload_state_ = UnloadState::InProgress;
+    SetLifecycleState(LifecycleState::kRunningUnloadHandlers);
     if (IsRenderFrameLive()) {
       Send(new UnfreezableFrameMsg_Unload(
           routing_id_, proxy->GetRoutingID(), is_loading,
@@ -2801,7 +2813,7 @@ void RenderFrameHostImpl::Unload(RenderFrameProxyHost* proxy, bool is_loading) {
     // The unload handlers already ran for this document during the
     // local<->local swap. Hence, there is no need to send
     // UnfreezableFrameMsg_Unload here. It can be marked at completed.
-    unload_state_ = UnloadState::Completed;
+    SetLifecycleState(LifecycleState::kReadyToBeDeleted);
   }
 
   if (web_ui())
@@ -2820,7 +2832,7 @@ void RenderFrameHostImpl::Unload(RenderFrameProxyHost* proxy, bool is_loading) {
 }
 
 void RenderFrameHostImpl::DetachFromProxy() {
-  if (unload_state_ != UnloadState::NotRun)
+  if (IsPendingDeletion())
     return;
 
   // Start pending deletion on this frame and its children.
@@ -2998,8 +3010,8 @@ void RenderFrameHostImpl::OnUnloadACK() {
   if (do_not_delete_for_testing_)
     return;
 
-  DCHECK_EQ(UnloadState::InProgress, unload_state_);
-  unload_state_ = UnloadState::Completed;
+  DCHECK_EQ(LifecycleState::kRunningUnloadHandlers, lifecycle_state_);
+  SetLifecycleState(LifecycleState::kReadyToBeDeleted);
   PendingDeletionCheckCompleted();  // Can delete |this|.
 }
 
@@ -5105,7 +5117,7 @@ void RenderFrameHostImpl::NavigateToInterstitialURL(const GURL& data_url) {
 void RenderFrameHostImpl::Stop() {
   TRACE_EVENT1("navigation", "RenderFrameHostImpl::Stop", "frame_tree_node",
                frame_tree_node_->frame_tree_node_id());
-  Send(new FrameMsg_Stop(routing_id_));
+  GetAssociatedLocalFrame()->StopLoading();
 }
 
 void RenderFrameHostImpl::DispatchBeforeUnload(BeforeUnloadType type,
@@ -5311,12 +5323,12 @@ void RenderFrameHostImpl::SetBeforeUnloadTimeoutDelayForTesting(
 void RenderFrameHostImpl::StartPendingDeletionOnSubtree() {
   ResetNavigationsForPendingDeletion();
 
-  DCHECK_NE(UnloadState::NotRun, unload_state_);
+  DCHECK(IsPendingDeletion());
   for (std::unique_ptr<FrameTreeNode>& child_frame : children_) {
     for (FrameTreeNode* node :
          frame_tree_node_->frame_tree()->SubtreeNodes(child_frame.get())) {
       RenderFrameHostImpl* child = node->current_frame_host();
-      if (child->unload_state_ != UnloadState::NotRun)
+      if (child->IsPendingDeletion())
         continue;
 
       // Blink handles deletion of all same-process descendants, running their
@@ -5330,9 +5342,10 @@ void RenderFrameHostImpl::StartPendingDeletionOnSubtree() {
 
       local_ancestor->DeleteRenderFrame(FrameDeleteIntention::kNotMainFrame);
       if (local_ancestor != child) {
-        child->unload_state_ = child->has_unload_handler()
-                                   ? UnloadState::InProgress
-                                   : UnloadState::Completed;
+        LifecycleState child_lifecycle_state =
+            child->has_unload_handler() ? LifecycleState::kRunningUnloadHandlers
+                                        : LifecycleState::kReadyToBeDeleted;
+        child->SetLifecycleState(child_lifecycle_state);
       }
 
       node->frame_tree()->FrameUnloading(node);
@@ -5341,7 +5354,8 @@ void RenderFrameHostImpl::StartPendingDeletionOnSubtree() {
 }
 
 void RenderFrameHostImpl::PendingDeletionCheckCompleted() {
-  if (unload_state_ == UnloadState::Completed && children_.empty()) {
+  if (lifecycle_state_ == LifecycleState::kReadyToBeDeleted &&
+      children_.empty()) {
     if (is_waiting_for_unload_ack_)
       OnUnloaded();
     else
@@ -5374,7 +5388,7 @@ void RenderFrameHostImpl::ResetNavigationsForPendingDeletion() {
 }
 
 void RenderFrameHostImpl::OnUnloadTimeout() {
-  DCHECK_NE(unload_state_, UnloadState::NotRun);
+  DCHECK(IsPendingDeletion());
   parent_->RemoveChild(frame_tree_node_);
 }
 
@@ -7966,8 +7980,9 @@ void RenderFrameHostImpl::DidCommitNavigation(
   // If we're waiting for a cross-site beforeunload completion callback from
   // this renderer and we receive a Navigate message from the main frame, then
   // the renderer was navigating already and sent it before hearing the
-  // FrameMsg_Stop message. Treat this as an implicit beforeunload completion
-  // callback to allow the pending navigation to continue.
+  // blink::mojom::LocalFrame::StopLoading() message. Treat this as an implicit
+  // beforeunload completion callback to allow the pending navigation to
+  // continue.
   if (is_waiting_for_beforeunload_completion_ &&
       unload_ack_is_for_navigation_ && !GetParent()) {
     base::TimeTicks approx_renderer_start_time = send_before_unload_start_time_;
@@ -8099,7 +8114,7 @@ void RenderFrameHostImpl::SendBeforeUnload(
 void RenderFrameHostImpl::AddServiceWorkerContainerHost(
     const std::string& uuid,
     base::WeakPtr<content::ServiceWorkerContainerHost> host) {
-  if (is_in_back_forward_cache_) {
+  if (IsInBackForwardCache()) {
     // RenderFrameHost entered BackForwardCache before adding
     // ServiceWorkerContainerHost. In this case, evict the entry from the cache.
     EvictFromBackForwardCacheWithReason(
@@ -8191,7 +8206,7 @@ void RenderFrameHostImpl::EnsureDescendantsAreUnloading() {
       RenderFrameHostImpl* child = subframe->current_frame_host();
       // Every child is expected to be pending deletion. If it isn't the
       // case, their FrameTreeNode is immediately removed from the tree.
-      if (child->unload_state_ == UnloadState::NotRun)
+      if (!child->IsPendingDeletion())
         rfhs_to_be_checked.push_back(child);
       else
         parents_to_be_checked.push_back(child);
@@ -8422,7 +8437,7 @@ void RenderFrameHostImpl::LogCannotCommitUrlCrashKeys(
 }
 
 void RenderFrameHostImpl::MaybeEvictFromBackForwardCache() {
-  if (!is_in_back_forward_cache_)
+  if (!IsInBackForwardCache())
     return;
 
   RenderFrameHostImpl* top_document = this;
@@ -8550,17 +8565,18 @@ void RenderFrameHostImpl::UpdateAdFrameType(
 
 blink::mojom::AuthenticatorStatus
 RenderFrameHostImpl::PerformGetAssertionWebAuthSecurityChecks(
-    const std::string& relying_party_id) {
+    const std::string& relying_party_id,
+    const url::Origin& effective_origin) {
   bool is_cross_origin;
   blink::mojom::AuthenticatorStatus status =
       GetWebAuthRequestSecurityChecker()->ValidateAncestorOrigins(
-          GetLastCommittedOrigin(), &is_cross_origin);
+          effective_origin, &is_cross_origin);
   if (status != blink::mojom::AuthenticatorStatus::SUCCESS) {
     return status;
   }
 
   status = GetWebAuthRequestSecurityChecker()->ValidateDomainAndRelyingPartyID(
-      GetLastCommittedOrigin(), relying_party_id);
+      effective_origin, relying_party_id);
   if (status != blink::mojom::AuthenticatorStatus::SUCCESS) {
     return status;
   }
@@ -8570,17 +8586,18 @@ RenderFrameHostImpl::PerformGetAssertionWebAuthSecurityChecks(
 
 blink::mojom::AuthenticatorStatus
 RenderFrameHostImpl::PerformMakeCredentialWebAuthSecurityChecks(
-    const std::string& relying_party_id) {
+    const std::string& relying_party_id,
+    const url::Origin& effective_origin) {
   bool is_cross_origin;
   blink::mojom::AuthenticatorStatus status =
       GetWebAuthRequestSecurityChecker()->ValidateAncestorOrigins(
-          GetLastCommittedOrigin(), &is_cross_origin);
+          effective_origin, &is_cross_origin);
   if (status != blink::mojom::AuthenticatorStatus::SUCCESS) {
     return status;
   }
 
   status = GetWebAuthRequestSecurityChecker()->ValidateDomainAndRelyingPartyID(
-      GetLastCommittedOrigin(), relying_party_id);
+      effective_origin, relying_party_id);
   if (status != blink::mojom::AuthenticatorStatus::SUCCESS) {
     return status;
   }
@@ -8621,7 +8638,45 @@ RenderFrameHostImpl::GetWebAuthRequestSecurityChecker() {
 }
 
 bool RenderFrameHostImpl::IsInBackForwardCache() {
-  return is_in_back_forward_cache_;
+  return lifecycle_state_ == LifecycleState::kInBackForwardCache;
+}
+
+bool RenderFrameHostImpl::IsPendingDeletion() {
+  return lifecycle_state_ == LifecycleState::kRunningUnloadHandlers ||
+         lifecycle_state_ == LifecycleState::kReadyToBeDeleted;
+}
+
+void RenderFrameHostImpl::SetLifecycleStateToActive() {
+  SetLifecycleState(LifecycleState::kActive);
+}
+
+void RenderFrameHostImpl::SetLifecycleState(LifecycleState state) {
+  // Cross-verify that |lifecycle_state_| transition happens correctly.
+  switch (state) {
+    case LifecycleState::kSpeculative:
+      // RenderFrameHost is only set speculative during its creation and no
+      // transitions happen to this state during its lifetime.
+      NOTREACHED();
+      break;
+    case LifecycleState::kActive:
+      DCHECK(lifecycle_state_ == LifecycleState::kSpeculative ||
+             lifecycle_state_ == LifecycleState::kInBackForwardCache)
+          << "Unexpected LifeCycleState " << int(lifecycle_state_);
+      break;
+    case LifecycleState::kInBackForwardCache:
+      DCHECK_EQ(lifecycle_state_, LifecycleState::kActive)
+          << "Unexpected LifeCycleState " << int(lifecycle_state_);
+      break;
+    case LifecycleState::kRunningUnloadHandlers:
+      DCHECK_EQ(lifecycle_state_, LifecycleState::kActive)
+          << "Unexpected LifeCycleState " << int(lifecycle_state_);
+      break;
+    case LifecycleState::kReadyToBeDeleted:
+      DCHECK_NE(lifecycle_state_, LifecycleState::kReadyToBeDeleted)
+          << "Unexpected LifeCycleState " << int(lifecycle_state_);
+      break;
+  }
+  lifecycle_state_ = state;
 }
 
 }  // namespace content

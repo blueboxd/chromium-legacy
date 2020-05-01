@@ -11,7 +11,7 @@
 #import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/send_tab_to_self/send_tab_to_self_browser_agent.h"
 #include "ios/chrome/browser/sync/send_tab_to_self_sync_service_factory.h"
-#import "ios/chrome/browser/ui/activity_services/activity_service_controller.h"
+#import "ios/chrome/browser/ui/activity_services/activity_service_mediator.h"
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/chrome/browser/ui/commands/snackbar_commands.h"
 #import "ios/chrome/browser/ui/commands/toolbar_commands.h"

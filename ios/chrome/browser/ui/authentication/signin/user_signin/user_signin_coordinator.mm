@@ -216,7 +216,7 @@ const CGFloat kFadeOutAnimationDuration = 0.16f;
 - (void)unifiedConsentCoordinatorNeedPrimaryButtonUpdate:
     (UnifiedConsentCoordinator*)coordinator {
   DCHECK_EQ(self.unifiedConsentCoordinator, coordinator);
-  [self userSigninMediatorNeedPrimaryButtonUpdate];
+  [self.viewController updatePrimaryButtonStyle];
 }
 
 #pragma mark - UserSigninViewControllerDelegate
@@ -267,10 +267,6 @@ const CGFloat kFadeOutAnimationDuration = 0.16f;
 
 #pragma mark - UserSigninMediatorDelegate
 
-- (void)userSigninMediatorDidTapResetSettingLink {
-  [self.unifiedConsentCoordinator resetSettingLinkTapped];
-}
-
 - (BOOL)userSigninMediatorGetSettingsLinkWasTapped {
   return self.unifiedConsentCoordinator.settingsLinkWasTapped;
 }
@@ -319,7 +315,10 @@ const CGFloat kFadeOutAnimationDuration = 0.16f;
   }
 }
 
-- (void)userSigninMediatorNeedPrimaryButtonUpdate {
+- (void)userSigninMediatorSigninFailed {
+  [self.unifiedConsentCoordinator resetSettingLinkTapped];
+  self.unifiedConsentCoordinator.uiDisabled = NO;
+  [self.viewController signinDidStop];
   [self.viewController updatePrimaryButtonStyle];
 }
 
@@ -496,6 +495,8 @@ const CGFloat kFadeOutAnimationDuration = 0.16f;
       self.browser->GetCommandDispatcher(), BrowsingDataCommands);
   authenticationFlow.delegate = self.viewController;
 
+  self.unifiedConsentCoordinator.uiDisabled = YES;
+  [self.viewController signinWillStart];
   [self.mediator
       authenticateWithIdentity:self.unifiedConsentCoordinator.selectedIdentity
             authenticationFlow:authenticationFlow];

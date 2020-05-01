@@ -85,6 +85,7 @@ extern const base::Feature kNotificationSuspender;
 extern const base::Feature kOfflineIndicatorV2;
 extern const base::Feature kOmniboxSpareRenderer;
 extern const base::Feature kOverlayNewLayout;
+extern const base::Feature kPageInfoPerformanceHints;
 extern const base::Feature kPayWithGoogleV1;
 extern const base::Feature kPhotoPickerVideoSupport;
 extern const base::Feature kPhotoPickerZoom;

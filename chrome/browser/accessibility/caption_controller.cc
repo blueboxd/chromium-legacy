@@ -12,12 +12,15 @@
 #include "chrome/browser/component_updater/soda_component_installer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/caption_bubble_controller.h"
 #include "chrome/common/pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/sync_preferences/pref_service_syncable.h"
+#include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/web_contents.h"
 #include "media/base/media_switches.h"
 
 namespace captions {
@@ -120,6 +123,20 @@ void CaptionController::OnBrowserRemoved(Browser* browser) {
 
   DCHECK(caption_bubble_controllers_.count(browser));
   caption_bubble_controllers_.erase(browser);
+}
+
+void CaptionController::DispatchTranscription(
+    content::RenderFrameHost* frame_host,
+    const std::string& transcription) {
+  auto* web_contents = content::WebContents::FromRenderFrameHost(frame_host);
+  if (!web_contents)
+    return;
+  auto* browser = chrome::FindBrowserWithWebContents(web_contents);
+  if (!browser)
+    return;
+  if (!caption_bubble_controllers_.count(browser))
+    return;
+  caption_bubble_controllers_[browser]->OnTranscription(transcription);
 }
 
 }  // namespace captions

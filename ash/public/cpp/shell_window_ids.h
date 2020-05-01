@@ -143,14 +143,18 @@ enum ShellWindowId {
   // TODO(jamescook): Consolidate this with DockedMagnifierContainer.
   kShellWindowId_AccessibilityPanelContainer,
 
-  // The container for the Autoclick bubble that overlays the work area and any
-  // menus and bubbles, but appears under the Autoclick mouse UX in
-  // kShellWindowId_OverlayContainer. Autoclick needs to work with dialogs and
-  // menus, so it must be shown above kShellWindowId_SettingBubbleContainer to
-  // allow the user to access these settings. However, the Autoclick bubble has
-  // buttons with tooltips which must be shown above the Autoclick bubble, so it
-  // must be under kShellWindowId_DragImageAndTooltipContainer.
-  kShellWindowId_AutoclickContainer,
+  // The container for accessibility bubbles that overlay the work area and any
+  // other menus and bubbles, but appear under the Autoclick mouse UX in
+  // kShellWindowId_OverlayContainer. Both Autoclick and Switch Access have
+  // bubbles that appear in this layer. These features need to work with dialogs
+  // and menus, so they must be shown above
+  // kShellWindowId_SettingBubbleContainer to allow the user to access these
+  // settings. However, these bubbles may have buttons with tooltips which must
+  // be shown above the bubbles, so it must be under
+  // kShellWindowId_DragImageAndTooltipContainer.
+  // TODO(crbug/1076973): Investigate merging this container with
+  // AccessibilityPanelContainer.
+  kShellWindowId_AccessibilityBubbleContainer,
 
   // The container for special components overlaid onscreen, such as the
   // region selector for partial screenshots.

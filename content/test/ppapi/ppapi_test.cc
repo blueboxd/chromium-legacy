@@ -63,6 +63,11 @@ void PPAPITestBase::SetUpCommandLine(base::CommandLine* command_line) {
   command_line->AppendSwitchASCII(
       switches::kAutoplayPolicy,
       switches::autoplay::kNoUserGestureRequiredPolicy);
+
+  // This doesn't test what we ship, but is needed by some tests (like
+  // TestMessageHandler::TestExceptions, fileSystem-related tests) and given
+  // PPAPI deprecation it doesn't seem worth fixing the tests now.
+  command_line->AppendSwitch(switches::kAllowFileAccessFromFiles);
 }
 
 GURL PPAPITestBase::GetTestFileUrl(const std::string& test_case) {

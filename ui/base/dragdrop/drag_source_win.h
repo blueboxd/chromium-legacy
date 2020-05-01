@@ -26,7 +26,7 @@ class DragSourceWin
           IDropSource> {
  public:
   // Factory method to avoid exporting the class and all it derives from.
-  static UI_BASE_EXPORT Microsoft::WRL::ComPtr<ui::DragSourceWin> Create();
+  static UI_BASE_EXPORT Microsoft::WRL::ComPtr<DragSourceWin> Create();
 
   // Use Create() to construct these objects. Direct calls to the constructor
   // are an error - it is only public because a WRL helper function creates the

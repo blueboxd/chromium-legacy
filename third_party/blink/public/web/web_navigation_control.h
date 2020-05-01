@@ -100,7 +100,7 @@ class WebNavigationControl : public WebLocalFrame {
   virtual bool IsClientNavigationInitialHistoryLoad() = 0;
 
  protected:
-  explicit WebNavigationControl(WebTreeScopeType scope)
+  explicit WebNavigationControl(mojom::TreeScopeType scope)
       : WebLocalFrame(scope) {}
 };
 

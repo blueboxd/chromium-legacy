@@ -19,6 +19,48 @@ mojom("mojom") {
     "//ui/gfx/geometry/mojom",
     "//url/mojom:url_mojom_gurl",
   ]
+
+  cpp_typemaps = [
+    {
+      types = [
+        {
+          mojom = "ui.mojom.Cursor"
+          cpp = "::ui::Cursor"
+          copyable_pass_by_value = true
+        },
+      ]
+      traits_sources = [ "cursor_mojom_traits.cc" ]
+      traits_headers = [ "cursor_mojom_traits.h" ]
+      traits_public_deps = [
+        "//ui/gfx/geometry",
+        "//ui/gfx/geometry/mojom:mojom_traits",
+      ]
+    },
+    {
+      types = [
+        {
+          mojom = "ui.mojom.DialogButton"
+          cpp = "::ui::DialogButton"
+        },
+        {
+          mojom = "ui.mojom.ModalType"
+          cpp = "::ui::ModalType"
+        },
+      ]
+      traits_headers = [ "ui_base_types_mojom_traits.h" ]
+      traits_public_deps = [ "//ui/base" ]
+    },
+    {
+      types = [
+        {
+          mojom = "ui.mojom.WindowOpenDisposition"
+          cpp = "::WindowOpenDisposition"
+        },
+      ]
+      traits_headers = [ "window_open_disposition_mojom_traits.h" ]
+      traits_public_deps = [ "//ui/base" ]
+    },
+  ]
 }
 
 mojom("cursor_type") {

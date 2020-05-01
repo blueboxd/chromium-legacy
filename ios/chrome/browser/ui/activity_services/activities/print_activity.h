@@ -8,15 +8,19 @@
 #import <UIKit/UIKit.h>
 
 @protocol BrowserCommands;
+@class ShareToData;
 
 // Activity that triggers the printing service.
 @interface PrintActivity : UIActivity
 
-// The dispatcher that handles when the activity is performed.
-@property(nonatomic, weak) id<BrowserCommands> dispatcher;
-
 // Identifier for the print activity.
 + (NSString*)activityIdentifier;
+
+// Initializes the print activity with the given |data| and the |handler|.
+- (instancetype)initWithData:(ShareToData*)data
+                     handler:(id<BrowserCommands>)handler
+    NS_DESIGNATED_INITIALIZER;
+- (instancetype)init NS_UNAVAILABLE;
 
 @end
 

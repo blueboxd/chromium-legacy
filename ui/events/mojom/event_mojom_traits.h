@@ -14,12 +14,12 @@
 #include "ui/events/event_constants.h"
 #include "ui/events/mojom/event.mojom.h"
 #include "ui/events/mojom/event_constants.mojom.h"
+#include "ui/events/pointer_details.h"
 #include "ui/events/types/event_type.h"
 
 namespace ui {
 class Event;
 class LatencyInfo;
-struct PointerDetails;
 }
 
 namespace mojo {

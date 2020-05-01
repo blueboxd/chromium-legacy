@@ -27,7 +27,7 @@ OSExchangeDataProviderFactory::CreateProvider() {
 #elif defined(OS_LINUX)
   return std::make_unique<OSExchangeDataProviderAura>();
 #elif defined(OS_MACOSX)
-  return ui::BuildOSExchangeDataProviderMac();
+  return BuildOSExchangeDataProviderMac();
 #elif defined(OS_WIN)
   return std::make_unique<OSExchangeDataProviderWin>();
 #elif defined(OS_FUCHSIA)

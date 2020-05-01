@@ -10,6 +10,7 @@
 #include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/time/default_clock.h"
+#include "components/background_task_scheduler/background_task_scheduler.h"
 #include "components/image_fetcher/core/image_fetcher_service.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/leveldb_proto/public/proto_database_provider.h"
@@ -28,7 +29,8 @@ const base::FilePath::CharType kTileDbName[] =
 std::unique_ptr<TileService> CreateTileService(
     image_fetcher::ImageFetcherService* image_fetcher_service,
     leveldb_proto::ProtoDatabaseProvider* db_provider,
-    const base::FilePath& storage_dir) {
+    const base::FilePath& storage_dir,
+    background_task::BackgroundTaskScheduler* scheduler) {
   // Create image loader.
   auto* cached_image_fetcher = image_fetcher_service->GetImageFetcher(
       image_fetcher::ImageFetcherConfig::kDiskCacheOnly);
@@ -49,8 +51,9 @@ std::unique_ptr<TileService> CreateTileService(
   auto tile_manager = TileManager::Create(
       std::move(tile_store), base::DefaultClock::GetInstance(), config.get());
 
-  return std::make_unique<TileServiceImpl>(
-      std::move(image_loader), std::move(tile_manager), std::move(config));
+  return std::make_unique<TileServiceImpl>(std::move(image_loader),
+                                           std::move(tile_manager),
+                                           std::move(config), scheduler);
 }
 
 }  // namespace upboarding

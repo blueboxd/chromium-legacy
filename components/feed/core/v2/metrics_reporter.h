@@ -62,8 +62,8 @@ class MetricsReporter {
   // User interactions. See |FeedStreamApi| for definitions.
 
   virtual void ContentSliceViewed(int index_in_stream);
-  void OpenAction();
-  void OpenInNewTabAction();
+  void OpenAction(int index_in_stream);
+  void OpenInNewTabAction(int index_in_stream);
   void OpenInNewIncognitoTabAction();
   void SendFeedbackAction();
   void LearnMoreAction();

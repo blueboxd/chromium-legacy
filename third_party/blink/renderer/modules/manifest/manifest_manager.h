@@ -27,13 +27,13 @@ class ManifestFetcher;
 class ResourceResponse;
 
 // The ManifestManager is a helper class that takes care of fetching and parsing
-// the Manifest of the associated LocalFrame. It uses the ManifestFetcher and
+// the Manifest of the associated window. It uses the ManifestFetcher and
 // the ManifestParser in order to do so.
 //
 // Consumers should use the mojo ManifestManager interface to use this class.
 class MODULES_EXPORT ManifestManager
     : public GarbageCollected<ManifestManager>,
-      public Supplement<LocalFrame>,
+      public Supplement<LocalDOMWindow>,
       public mojom::blink::ManifestManager,
       public ExecutionContextLifecycleObserver {
   USING_GARBAGE_COLLECTED_MIXIN(ManifestManager);
@@ -41,21 +41,21 @@ class MODULES_EXPORT ManifestManager
  public:
   static const char kSupplementName[];
 
-  static ManifestManager* From(LocalFrame&);
+  static ManifestManager* From(LocalDOMWindow&);
 
-  static void ProvideTo(LocalFrame&);
-
-  explicit ManifestManager(LocalFrame&);
+  explicit ManifestManager(LocalDOMWindow&);
   ~ManifestManager() override;
 
   void DidChangeManifest();
-  void DidCommitLoad();
   bool CanFetchManifest();
 
   KURL ManifestURL() const;
   bool ManifestUseCredentials() const;
 
   void RequestManifestForTesting(WebManifestManager::Callback callback);
+  void SetManifestChangeNotifierForTest(ManifestChangeNotifier* notifier) {
+    manifest_change_notifier_ = notifier;
+  }
 
   // mojom::blink::ManifestManager implementation.
   void RequestManifest(RequestManifestCallback callback) override;
@@ -91,7 +91,7 @@ class MODULES_EXPORT ManifestManager
   Member<ManifestFetcher> fetcher_;
   Member<ManifestChangeNotifier> manifest_change_notifier_;
 
-  // Whether the LocalFrame may have an associated Manifest. If true, the frame
+  // Whether the window may have an associated Manifest. If true, the frame
   // may have a manifest, if false, it can't have one. This boolean is true when
   // DidChangeManifest() is called, if it is never called, it means that the
   // associated document has no <link rel="manifest">.

@@ -104,12 +104,6 @@ class CorbAndCorsExtensionTestBase : public ExtensionBrowserTest {
  public:
   CorbAndCorsExtensionTestBase() = default;
 
-  bool AllowFileAccessFromFiles() override {
-    // This is important to 1) test what we ship and 2) make sure that
-    // file->file XHRs are blocked by CORS (without extensions in the picture).
-    return false;
-  }
-
   void SetUpOnMainThread() override {
     ExtensionBrowserTest::SetUpOnMainThread();
 

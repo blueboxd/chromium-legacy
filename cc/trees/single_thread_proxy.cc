@@ -550,6 +550,11 @@ void SingleThreadProxy::NotifyPaintWorkletStateChange(
   NOTREACHED();
 }
 
+void SingleThreadProxy::NotifyThroughputTrackerResults(
+    CustomTrackerResults results) {
+  layer_tree_host_->NotifyThroughputTrackerResults(std::move(results));
+}
+
 void SingleThreadProxy::RequestBeginMainFrameNotExpected(bool new_state) {
   if (scheduler_on_impl_thread_) {
     scheduler_on_impl_thread_->SetMainThreadWantsBeginMainFrameNotExpected(

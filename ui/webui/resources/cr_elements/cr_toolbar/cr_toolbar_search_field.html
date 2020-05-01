@@ -124,6 +124,11 @@
         margin: 0;
       }
 
+      :host([narrow]) {
+        border-radius:
+            var(--cr-toolbar-search-field-border-radius, 0);
+      }
+
       /** Wide layout. */
       :host(:not([narrow])) {
         background:

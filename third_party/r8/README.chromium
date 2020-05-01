@@ -18,6 +18,7 @@ desugar_jdk_libs.json
 R8 is a proguard-like optimizer that also has the ability to dex.
 
 Local Modifications:
+* Cherry-picked R8 commit: b8464335ec1e587bde88d7a12c90d59531be10de
 * Refer to commit descriptions within "patches" directory.
 * Added "playground" directory for quick "how does this optimize" tests.
 

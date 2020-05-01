@@ -20,6 +20,7 @@
 #include "components/gcm_driver/gcm_client.h"
 #include "components/gcm_driver/gcm_connection_observer.h"
 #include "components/policy/core/common/cloud/cloud_policy_client.h"
+#include "components/policy/core/common/cloud/cloud_policy_store.h"
 
 namespace base {
 class SequencedTaskRunner;
@@ -49,7 +50,7 @@ class HeartbeatScheduler : public gcm::GCMAppHandler,
   HeartbeatScheduler(
       gcm::GCMDriver* driver,
       policy::CloudPolicyClient* cloud_policy_client,
-      const std::string& enrollment_domain,
+      policy::CloudPolicyStore* cloud_policy_store,
       const std::string& device_id,
       const scoped_refptr<base::SequencedTaskRunner>& task_runner);
 
@@ -112,8 +113,9 @@ class HeartbeatScheduler : public gcm::GCMAppHandler,
   // TaskRunner used for scheduling heartbeats.
   const scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
-  // The domain that this device is enrolled to.
-  const std::string enrollment_domain_;
+  // Obfuscated customerId the device is enrolled into.
+  // Only set for device policy.
+  std::string customer_id_;
 
   // The device_id for this device - sent up with the enrollment domain with
   // heartbeats to identify the device to the server.
@@ -140,6 +142,8 @@ class HeartbeatScheduler : public gcm::GCMAppHandler,
   base::CancelableClosure heartbeat_callback_;
 
   policy::CloudPolicyClient* cloud_policy_client_;
+
+  policy::CloudPolicyStore* cloud_policy_store_;
 
   // The GCMDriver used to send heartbeat messages.
   gcm::GCMDriver* const gcm_driver_;

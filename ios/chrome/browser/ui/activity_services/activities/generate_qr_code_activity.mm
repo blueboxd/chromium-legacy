@@ -4,8 +4,10 @@
 
 #import "ios/chrome/browser/ui/activity_services/activities/generate_qr_code_activity.h"
 
+#include "base/feature_list.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
+#include "ios/chrome/browser/ui/ui_feature_flags.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
@@ -23,7 +25,7 @@ NSString* const kGenerateQrCodeActivityType =
 }
 
 @property(nonatomic, weak, readonly) NSString* title;
-@property(nonatomic, weak, readonly) id<QRGenerationCommands> dispatcher;
+@property(nonatomic, weak, readonly) id<QRGenerationCommands> handler;
 
 @end
 
@@ -35,11 +37,11 @@ NSString* const kGenerateQrCodeActivityType =
 
 - (instancetype)initWithURL:(const GURL&)activityURL
                       title:(NSString*)title
-                 dispatcher:(id<QRGenerationCommands>)dispatcher {
+                    handler:(id<QRGenerationCommands>)handler {
   if (self = [super init]) {
     _activityURL = activityURL;
     _title = title;
-    _dispatcher = dispatcher;
+    _handler = handler;
   }
   return self;
 }
@@ -59,7 +61,7 @@ NSString* const kGenerateQrCodeActivityType =
 }
 
 - (BOOL)canPerformWithActivityItems:(NSArray*)activityItems {
-  return YES;
+  return base::FeatureList::IsEnabled(kQRCodeGeneration);
 }
 
 + (UIActivityCategory)activityCategory {
@@ -67,7 +69,7 @@ NSString* const kGenerateQrCodeActivityType =
 }
 
 - (void)performActivity {
-  [self.dispatcher
+  [self.handler
       generateQRCode:[[GenerateQRCodeCommand alloc] initWithURL:_activityURL
                                                           title:self.title]];
   [self activityDidFinish:YES];

@@ -4333,8 +4333,8 @@ void LayoutBlockFlow::CreateOrDestroyMultiColumnFlowThreadIfNeeded(
   if (IsLayoutNGCustom())
     return;
 
-  LayoutMultiColumnFlowThread* flow_thread =
-      LayoutMultiColumnFlowThread::CreateAnonymous(GetDocument(), StyleRef());
+  auto* flow_thread = LayoutMultiColumnFlowThread::CreateAnonymous(
+      GetDocument(), StyleRef(), !CanTraversePhysicalFragments());
   AddChild(flow_thread);
   pagination_state_changed_ = true;
 

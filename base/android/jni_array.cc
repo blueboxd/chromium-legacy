@@ -353,6 +353,17 @@ void JavaFloatArrayToFloatVector(JNIEnv* env,
   env->GetFloatArrayRegion(float_array.obj(), 0, len, out->data());
 }
 
+void JavaDoubleArrayToDoubleVector(JNIEnv* env,
+                                   const JavaRef<jdoubleArray>& double_array,
+                                   std::vector<double>* out) {
+  DCHECK(out);
+  size_t len = SafeGetArrayLength(env, double_array);
+  out->resize(len);
+  if (!len)
+    return;
+  env->GetDoubleArrayRegion(double_array.obj(), 0, len, out->data());
+}
+
 void JavaArrayOfByteArrayToStringVector(JNIEnv* env,
                                         const JavaRef<jobjectArray>& array,
                                         std::vector<std::string>* out) {

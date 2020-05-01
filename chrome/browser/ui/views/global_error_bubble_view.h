@@ -26,13 +26,8 @@ class GlobalErrorBubbleView : public views::BubbleDialogDelegateView,
       const base::WeakPtr<GlobalErrorWithStandardBubble>& error);
   ~GlobalErrorBubbleView() override;
 
-  // views::WidgetDelegate implementation.
-  base::string16 GetWindowTitle() const override;
-  void WindowClosing() override;
-
   // views::BubbleDialogDelegateView implementation.
   void Init() override;
-  bool ShouldShowCloseButton() const override;
   void OnDialogInitialized() override;
 
   // GlobalErrorBubbleViewBase implementation.

@@ -15,6 +15,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/inspector/console_message_storage.h"
+#include "third_party/blink/renderer/core/inspector/inspector_issue_storage.h"
 #include "third_party/blink/renderer/core/inspector/main_thread_debugger.h"
 #include "third_party/blink/renderer/core/inspector/worker_thread_debugger.h"
 #include "third_party/blink/renderer/core/origin_trials/origin_trial_context.h"
@@ -164,7 +165,7 @@ void WorkletGlobalScope::AddInspectorIssue(
     frame_->AddInspectorIssue(std::move(info));
   } else {
     worker_thread_->GetInspectorIssueStorage()->AddInspectorIssue(
-        this, InspectorIssue::Create(std::move(info)));
+        this, std::move(info));
   }
 }
 

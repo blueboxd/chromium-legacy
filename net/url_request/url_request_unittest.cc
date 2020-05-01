@@ -83,7 +83,6 @@
 #include "net/cert/test_root_certs.h"
 #include "net/cert/x509_util.h"
 #include "net/cert_net/cert_net_fetcher_url_request.h"
-#include "net/cert_net/nss_ocsp_session_url_request.h"
 #include "net/cookies/canonical_cookie_test_helpers.h"
 #include "net/cookies/cookie_monster.h"
 #include "net/cookies/cookie_store_test_helpers.h"
@@ -159,10 +158,6 @@
 #include "net/network_error_logging/network_error_logging_service.h"
 #include "net/network_error_logging/network_error_logging_test_util.h"
 #endif  // BUILDFLAG(ENABLE_REPORTING)
-
-#if defined(USE_NSS_CERTS)
-#include "net/cert_net/nss_ocsp.h"
-#endif
 
 using net::test::IsError;
 using net::test::IsOk;
@@ -9576,16 +9571,10 @@ class HTTPSCertNetFetchingTest : public HTTPSRequestTest {
 
     cert_net_fetcher_->SetURLRequestContext(&context_);
     context_.cert_verifier()->SetConfig(GetCertVerifierConfig());
-#if defined(USE_NSS_CERTS)
-    SetURLRequestContextForNSSHttpIO(&context_);
-#endif
   }
 
   void TearDown() override {
     cert_net_fetcher_->Shutdown();
-#if defined(USE_NSS_CERTS)
-    SetURLRequestContextForNSSHttpIO(nullptr);
-#endif
     net::URLRequestFilter::GetInstance()->ClearHandlers();
   }
 
@@ -9650,10 +9639,6 @@ class HTTPSOCSPTest : public HTTPSRequestTest {
         ImportCertFromFile(GetTestCertsDirectory(), "ocsp-test-root.pem");
     ASSERT_TRUE(root_cert);
     test_root_.reset(new ScopedTestRoot(root_cert.get()));
-
-#if defined(USE_NSS_CERTS)
-    SetURLRequestContextForNSSHttpIO(&context_);
-#endif
   }
 
   void TearDown() override {
@@ -9700,9 +9685,6 @@ class HTTPSOCSPTest : public HTTPSRequestTest {
 
   ~HTTPSOCSPTest() override {
     cert_net_fetcher_->Shutdown();
-#if defined(USE_NSS_CERTS)
-    SetURLRequestContextForNSSHttpIO(nullptr);
-#endif
   }
 
  protected:
@@ -9724,7 +9706,7 @@ class HTTPSOCSPTest : public HTTPSRequestTest {
 };
 
 static bool UsingBuiltinCertVerifier() {
-#if defined(OS_FUCHSIA)
+#if defined(OS_FUCHSIA) || defined(OS_LINUX) || defined(OS_CHROMEOS)
   return true;
 #elif BUILDFLAG(BUILTIN_CERT_VERIFIER_FEATURE_SUPPORTED)
   if (base::FeatureList::IsEnabled(features::kCertVerifierBuiltinFeature))
@@ -9743,7 +9725,7 @@ static bool UsingBuiltinCertVerifier() {
 static bool SystemSupportsHardFailRevocationChecking() {
   if (UsingBuiltinCertVerifier())
     return true;
-#if defined(OS_WIN) || defined(USE_NSS_CERTS)
+#if defined(OS_WIN)
   return true;
 #else
   return false;
@@ -10192,10 +10174,6 @@ static const struct OCSPVerifyTestData {
      OCSPVerifyResult::NO_MATCHING_RESPONSE,
      OCSPRevocationStatus::UNKNOWN},
 
-// These tests fail when using NSS for certificate verification, as NSS fails
-// and doesn't return the partial path. As a result the OCSP checks being done
-// at the CertVerifyProc layer cannot access the issuer certificate.
-#if !defined(USE_NSS_CERTS)
     // 22
     {{{SpawnedTestServer::SSLOptions::OCSP_REVOKED,
        SpawnedTestServer::SSLOptions::OCSP_DATE_VALID}},
@@ -10216,7 +10194,6 @@ static const struct OCSPVerifyTestData {
      SpawnedTestServer::SSLOptions::OCSP_PRODUCED_VALID,
      OCSPVerifyResult::INVALID_DATE,
      OCSPRevocationStatus::UNKNOWN},
-#endif
 };
 
 class HTTPSOCSPVerifyTest
@@ -10317,17 +10294,8 @@ TEST_F(HTTPSHardFailTest, FailsOnOCSPInvalid) {
   CertStatus cert_status;
   DoConnection(ssl_options, &cert_status);
 
-  if (UsingBuiltinCertVerifier()) {
-    EXPECT_EQ(CERT_STATUS_UNABLE_TO_CHECK_REVOCATION,
-              cert_status & CERT_STATUS_ALL_ERRORS);
-  } else {
-#if defined(USE_NSS_CERTS)
-    EXPECT_EQ(CERT_STATUS_REVOKED, cert_status & CERT_STATUS_ALL_ERRORS);
-#else
-    EXPECT_EQ(CERT_STATUS_UNABLE_TO_CHECK_REVOCATION,
-              cert_status & CERT_STATUS_ALL_ERRORS);
-#endif
-  }
+  EXPECT_EQ(CERT_STATUS_UNABLE_TO_CHECK_REVOCATION,
+            cert_status & CERT_STATUS_ALL_ERRORS);
 
   // Without a positive OCSP response, we shouldn't show the EV status.
   EXPECT_FALSE(cert_status & CERT_STATUS_IS_EV);

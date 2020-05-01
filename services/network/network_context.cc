@@ -145,11 +145,6 @@
 #include "services/network/mdns_responder.h"
 #endif  // BUILDFLAG(ENABLE_MDNS)
 
-#if defined(USE_NSS_CERTS)
-#include "net/cert_net/nss_ocsp.h"
-#include "net/cert_net/nss_ocsp_session_url_request.h"
-#endif  // defined(USE_NSS_CERTS)
-
 #if defined(OS_ANDROID)
 #include "base/android/application_status_listener.h"
 #endif
@@ -413,13 +408,6 @@ NetworkContext::~NetworkContext() {
   // May be nullptr in tests.
   if (network_service_)
     network_service_->DeregisterNetworkContext(this);
-
-#if defined(USE_NSS_CERTS)
-  if (IsPrimaryNetworkContext() &&
-      base::MessageLoopCurrentForIO::IsSet()) {  // null in some unit tests.
-    net::SetURLRequestContextForNSSHttpIO(nullptr);
-  }
-#endif  // defined(USE_NSS_CERTS)
 
   if (cert_net_fetcher_)
     cert_net_fetcher_->Shutdown();
@@ -2099,15 +2087,6 @@ URLRequestContextOwner NetworkContext::MakeURLRequestContext() {
     proxy_delegate_->SetProxyResolutionService(
         result.url_request_context->proxy_resolution_service());
   }
-
-#if defined(USE_NSS_CERTS)
-  // These must be matched by cleanup code just before the URLRequestContext is
-  // destroyed.
-  if (params_->primary_network_context &&
-      base::MessageLoopCurrentForIO::IsSet()) {  // null in some unit tests.
-    net::SetURLRequestContextForNSSHttpIO(result.url_request_context.get());
-  }
-#endif
 
   cookie_manager_ = std::make_unique<CookieManager>(
       result.url_request_context->cookie_store(),

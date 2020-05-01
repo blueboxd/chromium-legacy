@@ -48,7 +48,6 @@ class MODULES_EXPORT ModulesInitializer : public CoreInitializer {
       Page* clone_from_page,
       const SessionStorageNamespaceId& clone_to_namespace) override;
 
-  void DidCommitLoad(LocalFrame&) override;
   void DidChangeManifest(LocalFrame&) override;
 };
 

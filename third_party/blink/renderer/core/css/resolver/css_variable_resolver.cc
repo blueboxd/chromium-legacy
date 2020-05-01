@@ -68,7 +68,6 @@ scoped_refptr<CSSVariableData> CSSVariableResolver::ValueForCustomProperty(
     return nullptr;
   }
 
-  DCHECK(registry_ || !RuntimeEnabledFeatures::CSSVariables2Enabled());
   const PropertyRegistration* registration =
       registry_ ? registry_->Registration(name) : nullptr;
 

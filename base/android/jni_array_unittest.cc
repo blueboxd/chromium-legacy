@@ -335,6 +335,23 @@ TEST(JniArray, JavaFloatArrayToFloatVector) {
   }
 }
 
+TEST(JniArray, JavaDoubleArrayToDoubleVector) {
+  const std::vector<double> kDoubles = {0.0, 0.5, -0.5,
+                                        std::numeric_limits<double>::min()};
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jdoubleArray> jdoubles(
+      env, env->NewDoubleArray(kDoubles.size()));
+  ASSERT_TRUE(jdoubles);
+
+  env->SetDoubleArrayRegion(jdoubles.obj(), 0, kDoubles.size(),
+                            reinterpret_cast<const jdouble*>(kDoubles.data()));
+  ASSERT_FALSE(HasException(env));
+
+  std::vector<double> doubles;
+  JavaDoubleArrayToDoubleVector(env, jdoubles, &doubles);
+  ASSERT_EQ(kDoubles, doubles);
+}
+
 TEST(JniArray, JavaArrayOfByteArrayToStringVector) {
   const int kMaxItems = 50;
   JNIEnv* env = AttachCurrentThread();

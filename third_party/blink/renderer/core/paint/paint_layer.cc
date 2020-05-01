@@ -1649,8 +1649,9 @@ void PaintLayer::CollectFragments(
   // The inherited offset_from_root does not include any pagination offsets.
   // In the presence of fragmentation, we cannot use it.
   bool offset_from_root_can_be_used = offset_from_root && !is_fragmented;
+  wtf_size_t physical_fragment_idx = 0u;
   for (auto* fragment_data = &first_fragment_data; fragment_data;
-       fragment_data = fragment_data->NextFragment()) {
+       fragment_data = fragment_data->NextFragment(), physical_fragment_idx++) {
     const FragmentData* root_fragment_data;
     if (root_layer == this) {
       root_fragment_data = fragment_data;
@@ -1707,12 +1708,10 @@ void PaintLayer::CollectFragments(
     fragment.fragment_data = fragment_data;
 
     if (GetLayoutObject().CanTraversePhysicalFragments()) {
-      if (const auto* block = DynamicTo<LayoutBlock>(&GetLayoutObject())) {
-        fragment.physical_fragment = block->CurrentFragment();
+      if (const LayoutBox* layout_box = ToLayoutBoxOrNull(GetLayoutObject())) {
+        fragment.physical_fragment =
+            layout_box->GetPhysicalFragment(physical_fragment_idx);
         DCHECK(fragment.physical_fragment);
-
-        // TODO(mstensho): Implement support for multiple fragments per node.
-        DCHECK(!fragment_data->NextFragment());
       }
     }
 

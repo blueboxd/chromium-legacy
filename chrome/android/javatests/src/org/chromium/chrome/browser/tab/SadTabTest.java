@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.tab;
 
+import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
 import android.widget.Button;
 
@@ -44,6 +45,7 @@ public class SadTabTest {
     }
 
     private static boolean isShowingSadTab(Tab tab) {
+        InstrumentationRegistry.getInstrumentation().waitForIdleSync();
         try {
             return TestThreadUtils.runOnUiThreadBlocking(() -> SadTab.isShowing(tab));
         } catch (ExecutionException e) {
@@ -193,7 +195,12 @@ public class SadTabTest {
      *         doesn't exist.
      */
     private static Button getSadTabButton(Tab tab) {
-        return (Button) tab.getContentView().findViewById(R.id.sad_tab_button);
+        InstrumentationRegistry.getInstrumentation().waitForIdleSync();
+        try {
+            return TestThreadUtils.runOnUiThreadBlocking(
+                    () -> tab.getView().findViewById(R.id.sad_tab_button));
+        } catch (ExecutionException e) {
+            return null;
+        }
     }
-
 }

@@ -21,7 +21,7 @@
 // to handle the command.
 - (instancetype)initWithURL:(const GURL&)activityURL
                       title:(NSString*)title
-                 dispatcher:(id<QRGenerationCommands>)dispatcher
+                    handler:(id<QRGenerationCommands>)handler
     NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)init NS_UNAVAILABLE;

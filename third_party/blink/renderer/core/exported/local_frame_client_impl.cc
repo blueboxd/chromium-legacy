@@ -513,8 +513,6 @@ void LocalFrameClientImpl::DispatchDidCommitLoad(
   }
   if (WebDevToolsAgentImpl* dev_tools = DevToolsAgent())
     dev_tools->DidCommitLoadForLocalFrame(web_frame_->GetFrame());
-
-  CoreInitializer::GetInstance().DidCommitLoad(*web_frame_->GetFrame());
 }
 
 void LocalFrameClientImpl::DispatchDidFailLoad(

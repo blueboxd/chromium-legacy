@@ -5,6 +5,7 @@
 module search.mojom;
 
 import "mojo/public/mojom/base/string16.mojom";
+import "url/mojom/url.mojom";
 
 // See components/omnibox/browser/autocomplete_match.h.
 struct ACMatchClassification {
@@ -22,7 +23,7 @@ struct AutocompleteMatch {
   // the resulting data URL is sent to JS via AutocompleteMatchImageAvailable
   // along with the |destination_url| and the match index which are used to
   // identify the appropriate match.
-  string destination_url;
+  url.mojom.Url destination_url;
   mojo_base.mojom.String16 inline_autocompletion;
   mojo_base.mojom.String16 fill_into_edit;
   // The url for the suggestion icon. This is a relative url pointing to a

@@ -1983,8 +1983,8 @@ TEST_F(NavigationControllerTest, AutoSubframe) {
       process()->GetNextRoutingID(),
       TestRenderFrameHost::CreateStubInterfaceProviderReceiver(),
       TestRenderFrameHost::CreateStubBrowserInterfaceBrokerReceiver(),
-      blink::WebTreeScopeType::kDocument, std::string(), unique_name0, false,
-      base::UnguessableToken::Create(), blink::FramePolicy(),
+      blink::mojom::TreeScopeType::kDocument, std::string(), unique_name0,
+      false, base::UnguessableToken::Create(), blink::FramePolicy(),
       blink::mojom::FrameOwnerProperties(), kOwnerType);
   TestRenderFrameHost* subframe = static_cast<TestRenderFrameHost*>(
       contents()->GetFrameTree()->root()->child_at(0)->current_frame_host());
@@ -2021,8 +2021,8 @@ TEST_F(NavigationControllerTest, AutoSubframe) {
       process()->GetNextRoutingID(),
       TestRenderFrameHost::CreateStubInterfaceProviderReceiver(),
       TestRenderFrameHost::CreateStubBrowserInterfaceBrokerReceiver(),
-      blink::WebTreeScopeType::kDocument, std::string(), unique_name1, false,
-      base::UnguessableToken::Create(), blink::FramePolicy(),
+      blink::mojom::TreeScopeType::kDocument, std::string(), unique_name1,
+      false, base::UnguessableToken::Create(), blink::FramePolicy(),
       blink::mojom::FrameOwnerProperties(), kOwnerType);
   TestRenderFrameHost* subframe2 = static_cast<TestRenderFrameHost*>(
       contents()->GetFrameTree()->root()->child_at(1)->current_frame_host());
@@ -2059,8 +2059,8 @@ TEST_F(NavigationControllerTest, AutoSubframe) {
       process()->GetNextRoutingID(),
       TestRenderFrameHost::CreateStubInterfaceProviderReceiver(),
       TestRenderFrameHost::CreateStubBrowserInterfaceBrokerReceiver(),
-      blink::WebTreeScopeType::kDocument, std::string(), unique_name2, false,
-      base::UnguessableToken::Create(), blink::FramePolicy(),
+      blink::mojom::TreeScopeType::kDocument, std::string(), unique_name2,
+      false, base::UnguessableToken::Create(), blink::FramePolicy(),
       blink::mojom::FrameOwnerProperties(), kOwnerType);
   TestRenderFrameHost* subframe3 =
       static_cast<TestRenderFrameHost*>(contents()
@@ -2115,7 +2115,7 @@ TEST_F(NavigationControllerTest, BackSubframe) {
       process()->GetNextRoutingID(),
       TestRenderFrameHost::CreateStubInterfaceProviderReceiver(),
       TestRenderFrameHost::CreateStubBrowserInterfaceBrokerReceiver(),
-      blink::WebTreeScopeType::kDocument, std::string(), unique_name, false,
+      blink::mojom::TreeScopeType::kDocument, std::string(), unique_name, false,
       base::UnguessableToken::Create(), blink::FramePolicy(),
       blink::mojom::FrameOwnerProperties(),
       blink::mojom::FrameOwnerElementType::kIframe);
@@ -3350,7 +3350,7 @@ TEST_F(NavigationControllerTest, SameSubframe) {
       process()->GetNextRoutingID(),
       TestRenderFrameHost::CreateStubInterfaceProviderReceiver(),
       TestRenderFrameHost::CreateStubBrowserInterfaceBrokerReceiver(),
-      blink::WebTreeScopeType::kDocument, std::string(), unique_name, false,
+      blink::mojom::TreeScopeType::kDocument, std::string(), unique_name, false,
       base::UnguessableToken::Create(), blink::FramePolicy(),
       blink::mojom::FrameOwnerProperties(),
       blink::mojom::FrameOwnerElementType::kIframe);
@@ -3518,7 +3518,7 @@ TEST_F(NavigationControllerTest, SubframeWhilePending) {
       process()->GetNextRoutingID(),
       TestRenderFrameHost::CreateStubInterfaceProviderReceiver(),
       TestRenderFrameHost::CreateStubBrowserInterfaceBrokerReceiver(),
-      blink::WebTreeScopeType::kDocument, std::string(), unique_name, false,
+      blink::mojom::TreeScopeType::kDocument, std::string(), unique_name, false,
       base::UnguessableToken::Create(), blink::FramePolicy(),
       blink::mojom::FrameOwnerProperties(),
       blink::mojom::FrameOwnerElementType::kIframe);
@@ -4779,7 +4779,7 @@ TEST_F(NavigationControllerTest, SubFrameNavigationUIData) {
       process()->GetNextRoutingID(),
       TestRenderFrameHost::CreateStubInterfaceProviderReceiver(),
       TestRenderFrameHost::CreateStubBrowserInterfaceBrokerReceiver(),
-      blink::WebTreeScopeType::kDocument, std::string(), unique_name, false,
+      blink::mojom::TreeScopeType::kDocument, std::string(), unique_name, false,
       base::UnguessableToken::Create(), blink::FramePolicy(),
       blink::mojom::FrameOwnerProperties(),
       blink::mojom::FrameOwnerElementType::kIframe);

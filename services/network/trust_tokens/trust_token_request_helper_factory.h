@@ -14,6 +14,7 @@
 #include "services/network/public/mojom/trust_tokens.mojom.h"
 #include "services/network/trust_tokens/pending_trust_token_store.h"
 #include "services/network/trust_tokens/suitable_trust_token_origin.h"
+#include "services/network/trust_tokens/trust_token_key_commitment_getter.h"
 #include "services/network/trust_tokens/trust_token_request_helper.h"
 
 namespace network {
@@ -26,11 +27,17 @@ class TrustTokenStatusOrRequestHelper;
 class TrustTokenRequestHelperFactory {
  public:
   // Created helpers will use |store| to access persistent Trust
-  // Tokens state; consequently, |store| must outlive all of the created
-  // helpers.
-  explicit TrustTokenRequestHelperFactory(PendingTrustTokenStore* store);
+  // Tokens state and |key_commitment_getter| to obtain keys; consequently, both
+  // arguments must outlive all of the created helpers.
+  TrustTokenRequestHelperFactory(
+      PendingTrustTokenStore* store,
+      const TrustTokenKeyCommitmentGetter* key_commitment_getter);
 
-  TrustTokenRequestHelperFactory();
+  TrustTokenRequestHelperFactory(const TrustTokenRequestHelperFactory&) =
+      delete;
+  TrustTokenRequestHelperFactory& operator=(
+      const TrustTokenRequestHelperFactory&) = delete;
+
   virtual ~TrustTokenRequestHelperFactory();
 
   // Attempts to create a TrustTokenRequestHelper able to help execute the Trust
@@ -63,6 +70,7 @@ class TrustTokenRequestHelperFactory {
       TrustTokenStore* store);
 
   PendingTrustTokenStore* store_;
+  const TrustTokenKeyCommitmentGetter* key_commitment_getter_;
 
   base::WeakPtrFactory<TrustTokenRequestHelperFactory> weak_factory_{this};
 };

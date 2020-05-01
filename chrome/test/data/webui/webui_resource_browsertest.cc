@@ -26,12 +26,15 @@ class WebUIResourceBrowserTest : public InProcessBrowserTest {
     pak_path = pak_path.AppendASCII("browser_tests.pak");
     ui::ResourceBundle::GetSharedInstance().AddDataPackFromPath(
         pak_path, ui::SCALE_FACTOR_NONE);
+
+    ASSERT_TRUE(embedded_test_server()->Start());
   }
 
   // Runs all test functions in |file|, waiting for them to complete.
-  void LoadFile(const base::FilePath& file) {
-    base::FilePath webui(FILE_PATH_LITERAL("webui"));
-    RunTest(ui_test_utils::GetTestUrl(webui, file));
+  void LoadFile(const std::string& file) {
+    GURL test_url =
+        embedded_test_server()->GetURL(std::string("/webui/") + file);
+    RunTest(test_url);
   }
 
   void LoadResource(int idr) {
@@ -67,13 +70,13 @@ IN_PROC_BROWSER_TEST_F(WebUIResourceBrowserTest, ArrayDataModelTest) {
   AddLibrary(IDR_WEBUI_JS_CR);
   AddLibrary(IDR_WEBUI_JS_CR_EVENT_TARGET);
   AddLibrary(IDR_WEBUI_JS_CR_UI_ARRAY_DATA_MODEL);
-  LoadFile(base::FilePath(FILE_PATH_LITERAL("array_data_model_test.html")));
+  LoadFile("array_data_model_test.html");
 }
 
 IN_PROC_BROWSER_TEST_F(WebUIResourceBrowserTest, CrTest) {
   AddLibrary(IDR_WEBUI_JS_CR);
   AddLibrary(IDR_WEBUI_JS_CR_EVENT_TARGET);
-  LoadFile(base::FilePath(FILE_PATH_LITERAL("cr_test.html")));
+  LoadFile("cr_test.html");
 }
 
 IN_PROC_BROWSER_TEST_F(WebUIResourceBrowserTest, CrReloadTest) {
@@ -82,13 +85,13 @@ IN_PROC_BROWSER_TEST_F(WebUIResourceBrowserTest, CrReloadTest) {
   // Loading cr.js again on purpose to check whether it overwrites the cr
   // namespace.
   AddLibrary(IDR_WEBUI_JS_CR);
-  LoadFile(base::FilePath(FILE_PATH_LITERAL("cr_reload_test.html")));
+  LoadFile("cr_reload_test.html");
 }
 
 IN_PROC_BROWSER_TEST_F(WebUIResourceBrowserTest, EventTargetTest) {
   AddLibrary(IDR_WEBUI_JS_CR);
   AddLibrary(IDR_WEBUI_JS_CR_EVENT_TARGET);
-  LoadFile(base::FilePath(FILE_PATH_LITERAL("event_target_test.html")));
+  LoadFile("event_target_test.html");
 }
 
 IN_PROC_BROWSER_TEST_F(WebUIResourceBrowserTest, I18nProcessCssTest) {
@@ -113,7 +116,7 @@ IN_PROC_BROWSER_TEST_F(WebUIResourceBrowserTestV0, I18nProcessTest) {
   AddLibrary(IDR_WEBUI_JS_LOAD_TIME_DATA);
   AddLibrary(IDR_WEBUI_JS_I18N_TEMPLATE_NO_PROCESS);
   AddLibrary(IDR_WEBUI_JS_UTIL);
-  LoadFile(base::FilePath(FILE_PATH_LITERAL("i18n_process_test.html")));
+  LoadFile("i18n_process_test.html");
 }
 
 IN_PROC_BROWSER_TEST_F(WebUIResourceBrowserTest, ListTest) {
@@ -125,7 +128,7 @@ IN_PROC_BROWSER_TEST_F(WebUIResourceBrowserTest, ListTest) {
   AddLibrary(IDR_WEBUI_JS_CR_UI_LIST_SELECTION_CONTROLLER);
   AddLibrary(IDR_WEBUI_JS_CR_UI_LIST_SELECTION_MODEL);
   AddLibrary(IDR_WEBUI_JS_CR_UI_LIST);
-  LoadFile(base::FilePath(FILE_PATH_LITERAL("list_test.html")));
+  LoadFile("list_test.html");
 }
 
 #if defined(OS_CHROMEOS)
@@ -140,7 +143,7 @@ IN_PROC_BROWSER_TEST_F(WebUIResourceBrowserTest, GridTest) {
   AddLibrary(IDR_WEBUI_JS_CR_UI_LIST_SELECTION_MODEL);
   // Grid must be the last addition as it depends on list libraries.
   AddLibrary(IDR_WEBUI_JS_CR_UI_GRID);
-  LoadFile(base::FilePath(FILE_PATH_LITERAL("grid_test.html")));
+  LoadFile("grid_test.html");
 }
 #endif
 
@@ -148,15 +151,14 @@ IN_PROC_BROWSER_TEST_F(WebUIResourceBrowserTest, ListSelectionModelTest) {
   AddLibrary(IDR_WEBUI_JS_CR);
   AddLibrary(IDR_WEBUI_JS_CR_EVENT_TARGET);
   AddLibrary(IDR_WEBUI_JS_CR_UI_LIST_SELECTION_MODEL);
-  LoadFile(base::FilePath(FILE_PATH_LITERAL("list_selection_model_test.html")));
+  LoadFile("list_selection_model_test.html");
 }
 
 IN_PROC_BROWSER_TEST_F(WebUIResourceBrowserTest, ListSingleSelectionModelTest) {
   AddLibrary(IDR_WEBUI_JS_CR);
   AddLibrary(IDR_WEBUI_JS_CR_EVENT_TARGET);
   AddLibrary(IDR_WEBUI_JS_CR_UI_LIST_SINGLE_SELECTION_MODEL);
-  LoadFile(base::FilePath(FILE_PATH_LITERAL(
-      "list_single_selection_model_test.html")));
+  LoadFile("list_single_selection_model_test.html");
 }
 
 IN_PROC_BROWSER_TEST_F(WebUIResourceBrowserTest, MenuTest) {
@@ -166,22 +168,22 @@ IN_PROC_BROWSER_TEST_F(WebUIResourceBrowserTest, MenuTest) {
   AddLibrary(IDR_WEBUI_JS_CR_UI_COMMAND);
   AddLibrary(IDR_WEBUI_JS_CR_UI_MENU_ITEM);
   AddLibrary(IDR_WEBUI_JS_CR_UI_MENU);
-  LoadFile(base::FilePath(FILE_PATH_LITERAL("menu_test.html")));
+  LoadFile("menu_test.html");
 }
 
 IN_PROC_BROWSER_TEST_F(WebUIResourceBrowserTest, MockTimerTest) {
-  LoadFile(base::FilePath(FILE_PATH_LITERAL("mock_timer_test.html")));
+  LoadFile("mock_timer_test.html");
 }
 
 IN_PROC_BROWSER_TEST_F(WebUIResourceBrowserTest, ParseHtmlSubsetTest) {
   AddLibrary(IDR_WEBUI_JS_PARSE_HTML_SUBSET);
-  LoadFile(base::FilePath(FILE_PATH_LITERAL("parse_html_subset_test.html")));
+  LoadFile("parse_html_subset_test.html");
 }
 
 IN_PROC_BROWSER_TEST_F(WebUIResourceBrowserTest, PositionUtilTest) {
   AddLibrary(IDR_WEBUI_JS_CR);
   AddLibrary(IDR_WEBUI_JS_CR_UI_POSITION_UTIL);
-  LoadFile(base::FilePath(FILE_PATH_LITERAL("position_util_test.html")));
+  LoadFile("position_util_test.html");
 }
 
 IN_PROC_BROWSER_TEST_F(WebUIResourceBrowserTest, CommandTest) {
@@ -190,7 +192,7 @@ IN_PROC_BROWSER_TEST_F(WebUIResourceBrowserTest, CommandTest) {
   AddLibrary(IDR_WEBUI_JS_CR_UI);
   AddLibrary(IDR_WEBUI_JS_CR_UI_KEYBOARD_SHORTCUT_LIST);
   AddLibrary(IDR_WEBUI_JS_CR_UI_COMMAND);
-  LoadFile(base::FilePath(FILE_PATH_LITERAL("command_test.html")));
+  LoadFile("command_test.html");
 }
 
 IN_PROC_BROWSER_TEST_F(WebUIResourceBrowserTest, ContextMenuHandlerTest) {
@@ -204,7 +206,7 @@ IN_PROC_BROWSER_TEST_F(WebUIResourceBrowserTest, ContextMenuHandlerTest) {
   AddLibrary(IDR_WEBUI_JS_CR_UI_MENU_BUTTON);
   AddLibrary(IDR_WEBUI_JS_CR_UI_MENU);
   AddLibrary(IDR_WEBUI_JS_CR_UI_CONTEXT_MENU_HANDLER);
-  LoadFile(base::FilePath(FILE_PATH_LITERAL("context_menu_handler_test.html")));
+  LoadFile("context_menu_handler_test.html");
 }
 
 IN_PROC_BROWSER_TEST_F(WebUIResourceBrowserTest, MenuButtonTest) {
@@ -216,37 +218,37 @@ IN_PROC_BROWSER_TEST_F(WebUIResourceBrowserTest, MenuButtonTest) {
   AddLibrary(IDR_WEBUI_JS_CR_UI_MENU_BUTTON);
   AddLibrary(IDR_WEBUI_JS_CR_UI_MENU_ITEM);
   AddLibrary(IDR_WEBUI_JS_CR_UI_MENU);
-  LoadFile(base::FilePath(FILE_PATH_LITERAL("menu_button_test.html")));
+  LoadFile("menu_button_test.html");
 }
 
 IN_PROC_BROWSER_TEST_F(WebUIResourceBrowserTest, SplitterTest) {
   AddLibrary(IDR_WEBUI_JS_CR);
   AddLibrary(IDR_WEBUI_JS_CR_UI);
   AddLibrary(IDR_WEBUI_JS_CR_UI_SPLITTER);
-  LoadFile(base::FilePath(FILE_PATH_LITERAL("splitter_test.html")));
+  LoadFile("splitter_test.html");
 }
 
 IN_PROC_BROWSER_TEST_F(WebUIResourceBrowserTest, UtilTest) {
   AddLibrary(IDR_WEBUI_JS_UTIL);
-  LoadFile(base::FilePath(FILE_PATH_LITERAL("util_test.html")));
+  LoadFile("util_test.html");
 }
 
 IN_PROC_BROWSER_TEST_F(WebUIResourceBrowserTest, IconTest) {
   AddLibrary(IDR_WEBUI_JS_CR);
   AddLibrary(IDR_WEBUI_JS_UTIL);
   AddLibrary(IDR_WEBUI_JS_ICON);
-  LoadFile(base::FilePath(FILE_PATH_LITERAL("icon_test.html")));
+  LoadFile("icon_test.html");
 }
 
 IN_PROC_BROWSER_TEST_F(WebUIResourceBrowserTest, PromiseResolverTest) {
   AddLibrary(IDR_WEBUI_JS_ASSERT);
   AddLibrary(IDR_WEBUI_JS_PROMISE_RESOLVER);
-  LoadFile(base::FilePath(FILE_PATH_LITERAL("promise_resolver_test.html")));
+  LoadFile("promise_resolver_test.html");
 }
 
 IN_PROC_BROWSER_TEST_F(WebUIResourceBrowserTest, I18nBehaviorTest) {
   AddLibrary(IDR_WEBUI_JS_LOAD_TIME_DATA);
   AddLibrary(IDR_WEBUI_JS_PARSE_HTML_SUBSET);
   AddLibrary(IDR_WEBUI_JS_I18N_BEHAVIOR);
-  LoadFile(base::FilePath(FILE_PATH_LITERAL("i18n_behavior_test.html")));
+  LoadFile("i18n_behavior_test.html");
 }

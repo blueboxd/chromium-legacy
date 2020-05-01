@@ -1,9 +1,0 @@
-# Copyright 2020 The Chromium Authors. All rights reserved.
-# Use of this source code is governed by a BSD-style license that can be
-# found in the LICENSE file.
-
-mojom = "//ui/events/mojom/event_constants.mojom"
-public_headers = [ "//ui/events/event_constants.h" ]
-traits_headers = [ "//ui/events/ipc/ui_events_param_traits_macros.h" ]
-public_deps = [ "//ui/events/ipc" ]
-type_mappings = [ "ui.mojom.EventPointerType=::ui::EventPointerType" ]

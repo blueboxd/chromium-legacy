@@ -56,6 +56,12 @@
 // orientations on iPad.
 - (NSUInteger)supportedInterfaceOrientations;
 
+// Blocks the UI (except the cancel button) when the sign-in is in progress.
+- (void)signinWillStart;
+
+// Unblocks the UI when the sign-in is done.
+- (void)signinDidStop;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_AUTHENTICATION_SIGNIN_USER_SIGNIN_USER_SIGNIN_VIEW_CONTROLLER_H_

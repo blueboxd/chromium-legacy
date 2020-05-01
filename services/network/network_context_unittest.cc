@@ -6577,7 +6577,7 @@ TEST_F(NetworkContextExpectBadMessageTest,
 }
 
 TEST_F(NetworkContextTest,
-       FailsTrustTokenBearingRequestWhenTrustTokensIsEnabled) {
+       AttemptsTrustTokenBearingRequestWhenTrustTokensIsEnabled) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(features::kTrustTokens);
 
@@ -6588,8 +6588,6 @@ TEST_F(NetworkContextTest,
   task_environment_.RunUntilIdle();
 
   ResourceRequest my_request;
-  my_request.request_initiator =
-      url::Origin::Create(GURL("https://initiator.com"));
   my_request.trust_token_params =
       OptionalTrustTokenParams(mojom::TrustTokenParams::New());
 
@@ -6597,16 +6595,15 @@ TEST_F(NetworkContextTest,
   factory_params->top_frame_origin =
       url::Origin::Create(GURL("https://topframe.com/"));
 
-  // Since Trust Tokens operations haven't been implemented yet, requests
-  // configured for these operations should fail even if Trust Tokens is
-  // enabled.
+  // Since the request doesn't have a destination URL suitable for use as a
+  // Trust Tokens issuer, it should fail.
   std::unique_ptr<TestURLLoaderClient> client =
       FetchRequest(my_request, network_context.get(), mojom::kURLLoadOptionNone,
                    mojom::kBrowserProcessId, std::move(factory_params));
   EXPECT_EQ(client->completion_status().error_code,
             net::ERR_TRUST_TOKEN_OPERATION_FAILED);
   EXPECT_EQ(client->completion_status().trust_token_operation_status,
-            mojom::TrustTokenOperationStatus::kUnavailable);
+            mojom::TrustTokenOperationStatus::kInvalidArgument);
 }
 
 }  // namespace

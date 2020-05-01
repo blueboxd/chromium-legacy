@@ -11,6 +11,7 @@
 #include "ash/system/tray/tray_background_view.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/unified/unified_system_tray_view.h"
+#include "ash/wm/collision_detection/collision_detection_utils.h"
 
 namespace ash {
 
@@ -37,7 +38,7 @@ void SwitchAccessMenuBubbleController::ShowMenu(
     // Anchor within the overlay container.
     init_params.parent_window =
         Shell::GetContainer(Shell::GetPrimaryRootWindow(),
-                            kShellWindowId_AccessibilityPanelContainer);
+                            kShellWindowId_AccessibilityBubbleContainer);
     init_params.anchor_mode = TrayBubbleView::AnchorMode::kRect;
     init_params.is_anchored_to_status_area = false;
     init_params.insets = gfx::Insets(kUnifiedMenuPadding, kUnifiedMenuPadding);
@@ -57,6 +58,10 @@ void SwitchAccessMenuBubbleController::ShowMenu(
     widget_ = views::BubbleDialogDelegateView::CreateBubble(bubble_view_);
     TrayBackgroundView::InitializeBubbleAnimations(widget_);
     bubble_view_->InitializeAndShowBubble();
+
+    CollisionDetectionUtils::MarkWindowPriorityForCollisionDetection(
+        widget_->GetNativeWindow(),
+        CollisionDetectionUtils::RelativePriority::kSwitchAccessMenu);
   }
 
   DCHECK(bubble_view_);
@@ -64,10 +69,18 @@ void SwitchAccessMenuBubbleController::ShowMenu(
   menu_view_->SetActions(actions_to_show);
   bubble_view_->SetPreferredWidth(menu_view_->GetBubbleWidthDip());
   bubble_view_->ChangeAnchorRect(anchor);
-  widget_->Show();
 
-  gfx::Rect widget_bounds = widget_->GetWindowBoundsInScreen();
-  back_button_controller_->ShowBackButton(widget_bounds);
+  gfx::Rect new_bounds = widget_->GetWindowBoundsInScreen();
+
+  // Update the preferred bounds based on other system windows.
+  gfx::Rect resting_bounds = CollisionDetectionUtils::AvoidObstacles(
+      display::Screen::GetScreen()->GetDisplayNearestWindow(
+          widget_->GetNativeWindow()),
+      new_bounds, CollisionDetectionUtils::RelativePriority::kSwitchAccessMenu);
+
+  widget_->SetBounds(resting_bounds);
+  widget_->Show();
+  back_button_controller_->ShowBackButton(resting_bounds);
 }
 
 void SwitchAccessMenuBubbleController::HideBackButton() {

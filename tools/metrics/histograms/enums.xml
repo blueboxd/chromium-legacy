@@ -20085,6 +20085,8 @@ Called by update_document_policy_enum.py.-->
   <int value="696" label="OnFileDownloadedEnterpriseConnector"/>
   <int value="697" label="OnBulkDataEntryEnterpriseConnector"/>
   <int value="698" label="PluginVmUserId"/>
+  <int value="699" label="OnSecurityEventEnterpriseConnector"/>
+  <int value="700" label="AutoOpenFileTypes"/>
 </enum>
 
 <enum name="EnterprisePolicyDeviceIdValidity">
@@ -38439,6 +38441,7 @@ from previous Chrome versions.
   <int value="-1536242739" label="security-chip"/>
   <int value="-1535946978" label="MixBrowserTypeTabs:disabled"/>
   <int value="-1535758690" label="AutoplayIgnoreWebAudio:disabled"/>
+  <int value="-1535694535" label="PageInfoPerformanceHints:enabled"/>
   <int value="-1533258008" label="CalculateNativeWinOcclusion:enabled"/>
   <int value="-1532035450" label="DragTabsInTabletMode:disabled"/>
   <int value="-1532014193" label="disable-encryption-migration"/>
@@ -38771,6 +38774,7 @@ from previous Chrome versions.
   <int value="-1197245070" label="CookieDeprecationMessages:disabled"/>
   <int value="-1197035323" label="ZeroSuggestRedirectToChrome:disabled"/>
   <int value="-1195194959" label="XGEOVisibleNetworks:disabled"/>
+  <int value="-1191258368" label="PageInfoPerformanceHints:disabled"/>
   <int value="-1190174011" label="enable-hdr"/>
   <int value="-1185477291" label="ImeDecoderWithSandbox:enabled"/>
   <int value="-1184904651" label="enable-npapi"/>
@@ -40553,6 +40557,7 @@ from previous Chrome versions.
   <int value="926852901" label="DataReductionProxyMainMenu:disabled"/>
   <int value="928900043" label="OmniboxLooseMaxLimitOnDedicatedRows:disabled"/>
   <int value="929462705" label="disable-link-disambiguation-popup"/>
+  <int value="934236781" label="OmniboxSuggestionsRecyclerView:enabled"/>
   <int value="934292666" label="DownloadRename:enabled"/>
   <int value="934805020" label="CornerShortcuts:disabled"/>
   <int value="935655516" label="password-import-export:disabled"/>
@@ -41353,6 +41358,7 @@ from previous Chrome versions.
   <int value="1851358497" label="enable-ash-sidebar"/>
   <int value="1851746253" label="ReducedReferrerGranularity:disabled"/>
   <int value="1852630189" label="NTPBookmarkSuggestions:disabled"/>
+  <int value="1854048611" label="OmniboxSuggestionsRecyclerView:disabled"/>
   <int value="1854226565" label="AutofillNoLocalSaveOnUnmaskSuccess:enabled"/>
   <int value="1855524566" label="allow-insecure-websocket-from-https-origin"/>
   <int value="1858385315" label="ChromeHomeBottomNavLabels:enabled"/>

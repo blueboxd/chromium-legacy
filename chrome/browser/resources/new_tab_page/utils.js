@@ -67,3 +67,34 @@ export function createScrollBorders(container) {
   observer.observe(bottomProbe);
   return observer;
 }
+
+/**
+ * Converts a mojoBase.mojom.String16 to a JavaScript String.
+ * @param {?mojoBase.mojom.String16} str
+ * @return {string}
+ */
+export function decodeString16(str) {
+  return str ? str.data.map(ch => String.fromCodePoint(ch)).join('') : '';
+}
+
+/**
+ * Converts a JavaScript String to a mojoBase.mojom.String16.
+ * @param {string} str
+ * @return {!mojoBase.mojom.String16}
+ */
+export function mojoString16(str) {
+  const array = new Array(str.length);
+  for (let i = 0; i < str.length; ++i) {
+    array[i] = str.charCodeAt(i);
+  }
+  return {data: array};
+}
+
+/**
+ * Converts a time delta in milliseconds to mojoBase.mojom.TimeDelta.
+ * @param {number} timeDelta time delta in milliseconds
+ * @returns {!mojoBase.mojom.TimeDelta}
+ */
+export function mojoTimeDelta(timeDelta) {
+  return {microseconds: Math.floor(timeDelta * 1000)};
+}

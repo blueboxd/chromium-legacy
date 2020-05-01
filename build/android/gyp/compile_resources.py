@@ -82,8 +82,10 @@ def _ParseArgs(args):
   input_opts.add_argument(
       '--android-manifest', required=True, help='AndroidManifest.xml path.')
   input_opts.add_argument(
-      '--android-manifest-expected',
-      help='Expected contents for the final manifest.')
+      '--expected-file',
+      help='Expected contents for the check. If'
+      '--android-manifest-verify-diff-base is set, this is a diff file. If'
+      'not, this is a AndroidManifest file.')
   input_opts.add_argument(
       '--android-manifest-normalized', help='Normalized manifest.')
   input_opts.add_argument(
@@ -95,6 +97,11 @@ def _ParseArgs(args):
       action="store_true",
       help='When passed fails the build on AndroidManifest expectation '
       'mismatches.')
+  input_opts.add_argument(
+      '--expected-manifest-base-expectation',
+      help='When we expect the actual normalized manifest is different from'
+      'the file from --android-manifest-expected, this file specifies the'
+      'difference.')
   input_opts.add_argument(
       '--r-java-root-package-name',
       default='base',
@@ -486,11 +493,23 @@ def _FixManifest(options, temp_dir):
   return debug_manifest_path, orig_package
 
 
-def _VerifyManifest(actual_manifest, expected_manifest, normalized_manifest,
+def _VerifyManifest(actual_manifest, expected_file, normalized_manifest,
+                    expected_manifest_base_expectation,
                     unexpected_manifest_failure_file, fail_on_mismatch):
   with build_utils.AtomicOutput(normalized_manifest) as normalized_output:
     normalized_output.write(manifest_utils.NormalizeManifest(actual_manifest))
-  msg = diff_utils.DiffFileContents(expected_manifest, normalized_manifest)
+
+  if expected_manifest_base_expectation:
+    with tempfile.NamedTemporaryFile() as generated_diff:
+      actual_diff_content = diff_utils.GenerateDiffWithOnlyAdditons(
+          expected_manifest_base_expectation, normalized_manifest)
+      generated_diff.write(actual_diff_content)
+      generated_diff.flush()
+
+      msg = diff_utils.DiffFileContents(expected_file, generated_diff.name)
+  else:
+    msg = diff_utils.DiffFileContents(expected_file, normalized_manifest)
+
   if not msg:
     return
 
@@ -927,9 +946,10 @@ def _PackageApk(options, build):
       options, build.temp_dir)
   if options.rename_manifest_package:
     desired_manifest_package_name = options.rename_manifest_package
-  if options.android_manifest_expected:
-    _VerifyManifest(fixed_manifest, options.android_manifest_expected,
+  if options.expected_file:
+    _VerifyManifest(fixed_manifest, options.expected_file,
                     options.android_manifest_normalized,
+                    options.expected_manifest_base_expectation,
                     options.android_manifest_expectations_failure_file,
                     options.fail_on_expectations)
 
@@ -1137,9 +1157,11 @@ def _OnStaleMd5(options):
       temp_dir=path, keep_files=bool(debug_temp_resources_dir)) as build:
     manifest_package_name = _PackageApk(options, build)
 
-    # If --shared-resources-allowlist is used, the all resources listed in
-    # the corresponding R.txt file will be non-final, and an onResourcesLoaded()
-    # will be generated to adjust them at runtime.
+    # If --shared-resources-allowlist is used, all the resources listed in the
+    # corresponding R.txt file will be non-final, and an onResourcesLoaded()
+    # will be generated to adjust them at runtime. If --shared-resources is used
+    # then ignore the allowlist, since there is never a case where those
+    # resources should be final.
     #
     # Otherwise, if --shared-resources is used, the all resources will be
     # non-final, and an onResourcesLoaded() method will be generated too.
@@ -1147,7 +1169,7 @@ def _OnStaleMd5(options):
     # Otherwise, all resources will be final, and no method will be generated.
     #
     rjava_build_options = resource_utils.RJavaBuildOptions()
-    if options.shared_resources_allowlist:
+    if options.shared_resources_allowlist and not options.shared_resources:
       rjava_build_options.ExportSomeResources(
           options.shared_resources_allowlist)
       rjava_build_options.GenerateOnResourcesLoaded()
@@ -1211,7 +1233,8 @@ def main(args):
   possible_input_paths = depfile_deps + [
       options.aapt2_path,
       options.android_manifest,
-      options.android_manifest_expected,
+      options.expected_file,
+      options.expected_manifest_base_expectation,
       options.resources_config_path,
       options.shared_resources_allowlist,
       options.use_resource_ids_path,

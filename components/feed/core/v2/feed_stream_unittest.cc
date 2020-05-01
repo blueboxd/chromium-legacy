@@ -948,7 +948,7 @@ TEST_F(FeedStreamTest, UsingTheFeedChangesUserClassification) {
   ASSERT_EQ(UserClass::kActiveSuggestionsViewer, stream_->GetUserClass());
   for (int i = 0; i < 5; i++) {
     task_environment_.FastForwardBy(base::TimeDelta::FromHours(1));
-    stream_->ReportOpenAction();
+    stream_->ReportOpenAction("slice-id");
   }
   EXPECT_EQ(UserClass::kActiveSuggestionsConsumer, stream_->GetUserClass());
 }

@@ -100,6 +100,7 @@
 #include "third_party/blink/public/mojom/page/spatial_navigation.mojom.h"
 #endif
 #else
+#include "chrome/browser/accessibility/caption_host_impl.h"
 #include "chrome/browser/badging/badge_manager.h"
 #include "chrome/browser/payments/payment_request_factory.h"
 #include "chrome/browser/speech/speech_recognition_service.h"
@@ -108,6 +109,7 @@
 #include "chrome/browser/ui/webui/downloads/downloads_ui.h"
 #include "chrome/browser/ui/webui/new_tab_page/new_tab_page.mojom.h"
 #include "chrome/browser/ui/webui/new_tab_page/new_tab_page_ui.h"
+#include "chrome/common/caption.mojom.h"
 #include "media/mojo/mojom/speech_recognition_service.mojom.h"
 #endif
 
@@ -340,6 +342,17 @@ void BindSpeechRecognitionContextHandler(
         std::move(receiver));
   }
 }
+
+void BindCaptionContextHandler(
+    content::RenderFrameHost* frame_host,
+    mojo::PendingReceiver<chrome::mojom::CaptionHost> receiver) {
+  Profile* profile = Profile::FromBrowserContext(
+      frame_host->GetProcess()->GetBrowserContext());
+  PrefService* profile_prefs = profile->GetPrefs();
+  if (profile_prefs->GetBoolean(prefs::kLiveCaptionEnabled)) {
+    captions::CaptionHostImpl::Create(frame_host, std::move(receiver));
+  }
+}
 #endif
 
 void PopulateChromeFrameBinders(
@@ -429,6 +442,8 @@ void PopulateChromeFrameBinders(
 #if !defined(OS_ANDROID)
   map->Add<media::mojom::SpeechRecognitionContext>(
       base::BindRepeating(&BindSpeechRecognitionContextHandler));
+  map->Add<chrome::mojom::CaptionHost>(
+      base::BindRepeating(&BindCaptionContextHandler));
 #endif
 }
 

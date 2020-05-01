@@ -153,22 +153,22 @@ class ASH_EXPORT WorkspaceLayoutManager : public aura::LayoutManager,
 
   // Notifies windows about a change in a system ui area. This could be
   // the keyboard or any window in the SettingsBubbleContainer or
-  // autoclick_menu_bubble_container_. Windows will only be notified about
+  // accessibility_bubble_container_. Windows will only be notified about
   // changes to system ui areas on the display they are on.
   void NotifySystemUiAreaChanged();
 
   // Notifies the autoclick controller about a workspace event. If autoclick
   // is enabled, the autoclick bubble may need to move in response to that
   // event.
-  void NotifyAutoclickWorkspaceChanged();
+  void NotifyAccessibilityWorkspaceChanged();
 
   aura::Window* window_;
   aura::Window* root_window_;
   RootWindowController* root_window_controller_;
   aura::Window* settings_bubble_container_;
   BubbleWindowObserver settings_bubble_window_observer_;
-  aura::Window* autoclick_bubble_container_;
-  BubbleWindowObserver autoclick_bubble_window_observer_;
+  aura::Window* accessibility_bubble_container_;
+  BubbleWindowObserver accessibility_bubble_window_observer_;
 
   // Set of windows we're listening to.
   WindowSet windows_;

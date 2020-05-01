@@ -15,10 +15,10 @@
       type: 'token-request'
     });
     request.onerror = t.step_func_done(() => {
-      assert_equals(request.trustTokenOperationError.name, "OperationError");
+      assert_equals(request.trustTokenOperationError.name, "InvalidStateError");
     });
     request.send();
-  }, 'Trust Token issuance is not implemented');
+  }, 'No keys for the issuer -> expect issuance to fail');
 
   async_test((t) => {
     let request = new XMLHttpRequest();
@@ -27,10 +27,10 @@
       type: 'srr-token-redemption'
     });
     request.onerror = t.step_func_done(() => {
-      assert_equals(request.trustTokenOperationError.name, "OperationError");
+      assert_equals(request.trustTokenOperationError.name, "InvalidStateError");
     });
     request.send();
-  }, 'Trust Token redemption is not implemented');
+  }, 'No keys for the issuer -> expect redemption to fail');
 
   async_test((t) => {
     let request = new XMLHttpRequest();
@@ -43,5 +43,5 @@
       assert_equals(request.trustTokenOperationError.name, "OperationError");
     });
     request.send();
-  }, 'Trust Token signing is not implemented');
+  }, 'No SRR for the issuer -> expect signing to fail');
 </script>

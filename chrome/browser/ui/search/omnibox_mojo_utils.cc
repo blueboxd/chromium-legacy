@@ -119,7 +119,7 @@ std::vector<search::mojom::AutocompleteMatchPtr> CreateAutocompleteMatches(
           search::mojom::ACMatchClassification::New(description_class.offset,
                                                     description_class.style));
     }
-    mojom_match->destination_url = match.destination_url.spec();
+    mojom_match->destination_url = match.destination_url;
     mojom_match->suggestion_group_id = match.suggestion_group_id.value_or(0);
     mojom_match->icon_url =
         AutocompleteMatchVectorIconToResourceName(match.GetVectorIcon(false));

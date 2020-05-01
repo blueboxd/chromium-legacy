@@ -73,6 +73,10 @@ const char kInvalidServiceWorkerUrl[] =
 
 const char kInvalidSslCertificate[] = "SSL certificate is not valid.";
 
+const char kInvalidWebAppIcon[] =
+    "Failed to download or decode a non-empty icon for payment app with \"$1\" "
+    "manifest.";
+
 const char kMethodDataRequired[] = "Method data required.";
 
 const char kMethodNameRequired[] = "Method name required.";

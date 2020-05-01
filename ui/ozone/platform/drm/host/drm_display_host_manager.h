@@ -18,6 +18,7 @@
 #include "ui/events/ozone/device/device_event.h"
 #include "ui/events/ozone/device/device_event_observer.h"
 #include "ui/events/ozone/evdev/event_factory_evdev.h"
+#include "ui/ozone/platform/drm/common/display_types.h"
 #include "ui/ozone/platform/drm/host/gpu_thread_observer.h"
 #include "ui/ozone/public/ozone_platform.h"
 
@@ -29,8 +30,6 @@ class DrmDisplayHost;
 class DrmDisplayHostManager;
 class DrmNativeDisplayDelegate;
 class GpuThreadAdapter;
-
-struct DisplaySnapshot_Params;
 
 // The portion of the DrmDisplayHostManager implementation that is agnostic
 // in how its communication with GPU-specific functionality is implemented.
@@ -63,8 +62,7 @@ class DrmDisplayHostManager : public DeviceEventObserver, GpuThreadObserver {
 
   // Communication-free implementations of actions performed in response to
   // messages from the GPU thread.
-  void GpuHasUpdatedNativeDisplays(
-      const std::vector<DisplaySnapshot_Params>& displays);
+  void GpuHasUpdatedNativeDisplays(MovableDisplaySnapshots displays);
   void GpuConfiguredDisplay(int64_t display_id, bool status);
   void GpuReceivedHDCPState(int64_t display_id,
                             bool status,

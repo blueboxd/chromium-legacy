@@ -86,6 +86,9 @@ const char kChromeMachineLevelExtensionCloudPolicyType[] =
     "google/chrome/machine-level-extension";
 const char kChromeRemoteCommandPolicyType[] = "google/chromeos/remotecommand";
 
+const char kChromeMachineLevelUserCloudPolicyTypeBase64[] =
+    "Z29vZ2xlL2Nocm9tZS9tYWNoaW5lLWxldmVsLXVzZXI=";
+
 }  // namespace dm_protocol
 
 const uint8_t kPolicyVerificationKey[] = {

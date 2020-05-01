@@ -135,7 +135,7 @@ void SecurityStateWebContentsObserver::DidChangeVisibleSecurityState() {
 }
 
 static bool UsingBuiltinCertVerifier() {
-#if defined(OS_FUCHSIA)
+#if defined(OS_FUCHSIA) || defined(OS_LINUX) || defined(OS_CHROMEOS)
   return true;
 #elif BUILDFLAG(BUILTIN_CERT_VERIFIER_FEATURE_SUPPORTED)
   if (base::FeatureList::IsEnabled(net::features::kCertVerifierBuiltinFeature))

@@ -27,6 +27,7 @@
 
 #include "base/macros.h"
 #include "third_party/blink/public/common/page/page_visibility_state.h"
+#include "third_party/blink/public/mojom/devtools/inspector_issue.mojom-blink-forward.h"
 #include "third_party/blink/public/platform/scheduler/web_scoped_virtual_time_pauser.h"
 #include "third_party/blink/public/platform/web_text_autosizer_page_info.h"
 #include "third_party/blink/public/web/web_window_features.h"

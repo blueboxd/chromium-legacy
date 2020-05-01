@@ -1,3 +1,4 @@
+
 // Copyright 2020 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
@@ -13,4 +14,4 @@ import './app.js';
 
 export {BrowserProxy} from './browser_proxy.js';
 export {BackgroundSelectionType} from './customize_dialog.js';
-export {createScrollBorders, hexColorToSkColor, skColorToRgba} from './utils.js';
+export {createScrollBorders, decodeString16, hexColorToSkColor, mojoString16, skColorToRgba} from './utils.js';

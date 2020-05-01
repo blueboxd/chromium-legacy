@@ -104,6 +104,8 @@ MediaFeedsWebUIBrowserTest.prototype = {
     GEN('media_feeds::mojom::MediaImagePtr image1 = ');
     GEN('  media_feeds::mojom::MediaImage::New();');
     GEN('image1->src = GURL("https://www.example.org/image1.png");');
+    GEN('image1->content_attributes = {');
+    GEN('  media_feeds::mojom::ContentAttribute::kIconic };');
     GEN('item->images.push_back(std::move(image1));');
     GEN('media_feeds::mojom::MediaImagePtr image2 = ');
     GEN('  media_feeds::mojom::MediaImage::New();');
@@ -114,10 +116,16 @@ MediaFeedsWebUIBrowserTest.prototype = {
     GEN('media_feeds::mojom::MediaImagePtr logo1 = ');
     GEN('  media_feeds::mojom::MediaImage::New();');
     GEN('logo1->src = GURL("https://www.example.org/logo1.png");');
+    GEN('logo1->content_attributes = {');
+    GEN('  media_feeds::mojom::ContentAttribute::kHasTitle,');
+    GEN('  media_feeds::mojom::ContentAttribute::kForLightBackground};');
     GEN('logos.push_back(std::move(logo1));');
     GEN('media_feeds::mojom::MediaImagePtr logo2 = ');
     GEN('  media_feeds::mojom::MediaImage::New();');
     GEN('logo2->src = GURL("https://www.example.org/logo2.png");');
+    GEN('logo2->content_attributes = {');
+    GEN('  media_feeds::mojom::ContentAttribute::kNoTitle,');
+    GEN('  media_feeds::mojom::ContentAttribute::kForDarkBackground};');
     GEN('logos.push_back(std::move(logo2));');
     GEN('service->StoreMediaFeedFetchResult(');
     GEN('  1, std::move(items), media_feeds::mojom::FetchResult::kSuccess,');
@@ -178,7 +186,7 @@ TEST_F('MediaFeedsWebUIBrowserTest', 'All', function() {
         'https://example.com, https://www.google1.com, https://www.google2.com',
         feedsContents.childNodes[14].textContent.trim());
     assertEquals(
-        'https://www.example.org/logo1.pnghttps://www.example.org/logo2.png',
+        'https://www.example.org/logo1.pngContentAttributes=HasTitle, ForLightBackgroundhttps://www.example.org/logo2.pngContentAttributes=NoTitle, ForDarkBackground',
         feedsContents.childNodes[15].textContent.trim());
     assertEquals(
         'Show ContentsFetch Feed',
@@ -242,7 +250,7 @@ TEST_F('MediaFeedsWebUIBrowserTest', 'All', function() {
       assertEquals('3', feedItemsContents.childNodes[15].textContent.trim());
       assertEquals('Yes', feedItemsContents.childNodes[16].textContent.trim());
       assertEquals(
-          'https://www.example.org/image1.pnghttps://www.example.org/image2.png',
+          'https://www.example.org/image1.pngContentAttributes=Iconichttps://www.example.org/image2.png',
           feedItemsContents.childNodes[17].textContent.trim());
       assertEquals('Safe', feedItemsContents.childNodes[18].textContent.trim());
     });

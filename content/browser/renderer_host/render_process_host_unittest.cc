@@ -137,7 +137,7 @@ TEST_F(RenderProcessHostUnitTest, ReuseCommittedSite) {
       process()->GetNextRoutingID(),
       TestRenderFrameHost::CreateStubInterfaceProviderReceiver(),
       TestRenderFrameHost::CreateStubBrowserInterfaceBrokerReceiver(),
-      blink::WebTreeScopeType::kDocument, std::string(), unique_name, false,
+      blink::mojom::TreeScopeType::kDocument, std::string(), unique_name, false,
       base::UnguessableToken::Create(), blink::FramePolicy(),
       blink::mojom::FrameOwnerProperties(),
       blink::mojom::FrameOwnerElementType::kIframe);

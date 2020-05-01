@@ -30,20 +30,21 @@ class ASH_EXPORT CollisionDetectionUtils {
 
   // Ordered list of windows which do collision detection. Higher numbers take
   // higher priority, i.e. the higher RelativePriority of two windows will not
-  // move when the windows are in conflict. In this case, that means the
-  // Picture in Picture window will move out of the way for the Automatic Clicks
-  // menu, and both will move out of the way for the Automatic Clicks scroll
-  // menu, and all will move for default system windows. Windows with the same
-  // relative priority will not affect collision with each other. kDefault is
-  // used for "everything else", and should not be an input to
-  // GetRestingPosition or AvoidObstacles.
+  // move when the windows are in conflict. For example, the Picture in Picture
+  // window will move out of the way for the Automatic Clicks menu, and both
+  // will move out of the way for the Automatic Clicks scroll menu, and all
+  // will move for default system windows. Windows with the same relative
+  // priority will not affect collision with each other. kDefault is used for
+  // "everything else", and should not be an input to GetRestingPosition or
+  // AvoidObstacles.
   // TODO(crbug.com/955512): Ensure calculations take place from high to low
   // priority to reduce number of collision computations.
   enum class RelativePriority {
     kPictureInPicture = 0,
-    kAutomaticClicksMenu = 1,
-    kAutomaticClicksScrollMenu = 2,
-    kDefault = 3,
+    kSwitchAccessMenu = 1,
+    kAutomaticClicksMenu = 2,
+    kAutomaticClicksScrollMenu = 3,
+    kDefault = 4,
   };
 
   CollisionDetectionUtils() = delete;

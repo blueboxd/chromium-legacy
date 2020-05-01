@@ -10,7 +10,10 @@
 #include "ui/display/types/gamma_ramp_rgb_entry.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/native_widget_types.h"
-#include "ui/ozone/common/gpu/ozone_gpu_message_params.h"
+
+namespace display {
+class DisplayMode;
+}  // namespace display
 
 namespace ui {
 
@@ -43,10 +46,9 @@ class GpuThreadAdapter {
   virtual bool GpuRemoveGraphicsDevice(const base::FilePath& path) = 0;
 
   // Services needed by DrmDisplayHost
-  virtual bool GpuConfigureNativeDisplay(
-      int64_t display_id,
-      const ui::DisplayMode_Params& display_mode,
-      const gfx::Point& point) = 0;
+  virtual bool GpuConfigureNativeDisplay(int64_t display_id,
+                                         const display::DisplayMode& pmode,
+                                         const gfx::Point& point) = 0;
   virtual bool GpuDisableNativeDisplay(int64_t display_id) = 0;
   virtual bool GpuGetHDCPState(int64_t display_id) = 0;
   virtual bool GpuSetHDCPState(int64_t display_id,

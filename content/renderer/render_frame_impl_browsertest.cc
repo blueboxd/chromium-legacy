@@ -289,7 +289,7 @@ TEST_F(RenderFrameImplTest, LocalChildFrameWasShown) {
   blink::WebLocalFrame* parent_web_frame = frame()->GetWebFrame();
 
   parent_web_frame->CreateLocalChild(
-      blink::WebTreeScopeType::kDocument, grandchild,
+      blink::mojom::TreeScopeType::kDocument, grandchild,
       grandchild->blink_interface_registry_.get());
   grandchild->in_frame_tree_ = true;
   grandchild->Initialize();

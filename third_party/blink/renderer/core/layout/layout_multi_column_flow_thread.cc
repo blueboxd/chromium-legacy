@@ -39,8 +39,9 @@ const LayoutBox* LayoutMultiColumnFlowThread::style_changed_box_;
 bool LayoutMultiColumnFlowThread::could_contain_spanners_;
 bool LayoutMultiColumnFlowThread::toggle_spanners_if_needed_;
 
-LayoutMultiColumnFlowThread::LayoutMultiColumnFlowThread()
-    : last_set_worked_on_(nullptr),
+LayoutMultiColumnFlowThread::LayoutMultiColumnFlowThread(bool needs_paint_layer)
+    : LayoutFlowThread(needs_paint_layer),
+      last_set_worked_on_(nullptr),
       column_count_(1),
       column_heights_changed_(false),
       is_being_evacuated_(false) {
@@ -51,9 +52,10 @@ LayoutMultiColumnFlowThread::~LayoutMultiColumnFlowThread() = default;
 
 LayoutMultiColumnFlowThread* LayoutMultiColumnFlowThread::CreateAnonymous(
     Document& document,
-    const ComputedStyle& parent_style) {
+    const ComputedStyle& parent_style,
+    bool needs_paint_layer) {
   LayoutMultiColumnFlowThread* layout_object =
-      new LayoutMultiColumnFlowThread();
+      new LayoutMultiColumnFlowThread(needs_paint_layer);
   layout_object->SetDocumentForAnonymous(&document);
   layout_object->SetStyle(ComputedStyle::CreateAnonymousStyleWithDisplay(
       parent_style, EDisplay::kBlock));

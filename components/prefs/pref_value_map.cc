@@ -4,6 +4,7 @@
 
 #include "components/prefs/pref_value_map.h"
 
+#include <limits.h>
 #include <map>
 #include <memory>
 #include <utility>

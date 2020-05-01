@@ -17,11 +17,14 @@ import org.chromium.base.Consumer;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.instantapps.InstantAppsHandler;
 import org.chromium.chrome.browser.offlinepages.OfflinePageItem;
 import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
 import org.chromium.chrome.browser.offlinepages.OfflinePageUtils.OfflinePageLoadUrlDelegate;
 import org.chromium.chrome.browser.omnibox.ChromeAutocompleteSchemeClassifier;
+import org.chromium.chrome.browser.performance_hints.PerformanceHintsObserver;
+import org.chromium.chrome.browser.performance_hints.PerformanceHintsObserver.PerformanceClass;
 import org.chromium.chrome.browser.previews.PreviewsAndroidBridge;
 import org.chromium.chrome.browser.previews.PreviewsUma;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -308,6 +311,20 @@ public class ChromePageInfoControllerDelegate implements PageInfoControllerDeleg
             }
         }
         return null;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean shouldShowPerformanceBadge(String url) {
+        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.PAGE_INFO_PERFORMANCE_HINTS)) {
+            return false;
+        }
+        @PerformanceClass
+        int pagePerformanceClass =
+                PerformanceHintsObserver.getPerformanceClassForURL(mWebContents, url);
+        return pagePerformanceClass == PerformanceClass.PERFORMANCE_FAST;
     }
 
     /**

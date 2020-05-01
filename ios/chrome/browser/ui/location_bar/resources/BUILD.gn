@@ -44,10 +44,10 @@ imageset("location_bar_connection_dangerous") {
   ]
 }
 
-imageset("location_bar_connection_insecure") {
+imageset("location_bar_connection_info") {
   sources = [
-    "location_bar_connection_insecure.imageset/Contents.json",
-    "location_bar_connection_insecure.imageset/location_bar_connection_insecure@2x.png",
-    "location_bar_connection_insecure.imageset/location_bar_connection_insecure@3x.png",
+    "location_bar_connection_info.imageset/Contents.json",
+    "location_bar_connection_info.imageset/location_bar_connection_info@2x.png",
+    "location_bar_connection_info.imageset/location_bar_connection_info@3x.png",
   ]
 }

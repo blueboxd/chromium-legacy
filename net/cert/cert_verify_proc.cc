@@ -52,9 +52,7 @@
 #include "net/cert/cert_verify_proc_builtin.h"
 #endif
 
-#if defined(USE_NSS_CERTS)
-#include "net/cert/cert_verify_proc_nss.h"
-#elif defined(OS_ANDROID)
+#if defined(OS_ANDROID)
 #include "net/cert/cert_verify_proc_android.h"
 #elif defined(OS_IOS)
 #include "net/cert/cert_verify_proc_ios.h"
@@ -496,13 +494,11 @@ base::Value CertVerifyParams(X509Certificate* cert,
 
 }  // namespace
 
-#if !defined(OS_FUCHSIA)
+#if !(defined(OS_FUCHSIA) || defined(OS_LINUX) || defined(OS_CHROMEOS))
 // static
 scoped_refptr<CertVerifyProc> CertVerifyProc::CreateSystemVerifyProc(
     scoped_refptr<CertNetFetcher> cert_net_fetcher) {
-#if defined(USE_NSS_CERTS)
-  return new CertVerifyProcNSS();
-#elif defined(OS_ANDROID)
+#if defined(OS_ANDROID)
   return new CertVerifyProcAndroid(std::move(cert_net_fetcher));
 #elif defined(OS_IOS)
   return new CertVerifyProcIOS();

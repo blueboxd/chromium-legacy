@@ -39,7 +39,7 @@ const char kRootCertificateFile[] = "root_ca_cert.pem";
 const char kGoodCertificateFile[] = "ok_cert.pem";
 
 scoped_refptr<CertVerifyProc> CreateCertVerifyProc() {
-#if defined(OS_FUCHSIA)
+#if defined(OS_FUCHSIA) || defined(OS_LINUX) || defined(OS_CHROMEOS)
   return CertVerifyProc::CreateBuiltinVerifyProc(/*cert_net_fetcher=*/nullptr);
 #elif BUILDFLAG(BUILTIN_CERT_VERIFIER_FEATURE_SUPPORTED)
   if (base::FeatureList::IsEnabled(features::kCertVerifierBuiltinFeature)) {

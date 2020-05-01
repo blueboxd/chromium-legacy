@@ -522,4 +522,17 @@ Element* DisplayLockUtilities::LockedAncestorPreventingPrePaint(
   return nullptr;
 }
 
+Element* DisplayLockUtilities::LockedAncestorPreventingLayout(
+    const LayoutObject& object) {
+  for (auto* ancestor = NearestLockedExclusiveAncestor(object); ancestor;
+       ancestor = NearestLockedExclusiveAncestor(*ancestor)) {
+    DCHECK(ancestor->GetDisplayLockContext());
+    if (!ancestor->GetDisplayLockContext()->ShouldLayout(
+            DisplayLockLifecycleTarget::kChildren)) {
+      return ancestor;
+    }
+  }
+  return nullptr;
+}
+
 }  // namespace blink

@@ -88,7 +88,7 @@ class TrustTokenBrowsertest : public ContentBrowserTest {
   net::EmbeddedTestServer server_{net::EmbeddedTestServer::TYPE_HTTPS};
 };
 
-IN_PROC_BROWSER_TEST_F(TrustTokenBrowsertest, DISABLED_FetchEndToEnd) {
+IN_PROC_BROWSER_TEST_F(TrustTokenBrowsertest, FetchEndToEnd) {
   base::RunLoop run_loop;
   GetNetworkService()->SetTrustTokenKeyCommitments(
       WrapKeyCommitmentForIssuer(url::Origin::Create(server_.base_url()),
@@ -118,7 +118,7 @@ IN_PROC_BROWSER_TEST_F(TrustTokenBrowsertest, DISABLED_FetchEndToEnd) {
   EXPECT_EQ(request_handler_.LastVerificationError(), base::nullopt);
 }
 
-IN_PROC_BROWSER_TEST_F(TrustTokenBrowsertest, DISABLED_XhrEndToEnd) {
+IN_PROC_BROWSER_TEST_F(TrustTokenBrowsertest, XhrEndToEnd) {
   base::RunLoop run_loop;
   GetNetworkService()->SetTrustTokenKeyCommitments(
       WrapKeyCommitmentForIssuer(url::Origin::Create(server_.base_url()),
@@ -179,7 +179,7 @@ IN_PROC_BROWSER_TEST_F(TrustTokenBrowsertest, DISABLED_XhrEndToEnd) {
   EXPECT_EQ(request_handler_.LastVerificationError(), base::nullopt);
 }
 
-IN_PROC_BROWSER_TEST_F(TrustTokenBrowsertest, DISABLED_IframeEndToEnd) {
+IN_PROC_BROWSER_TEST_F(TrustTokenBrowsertest, IframeEndToEnd) {
   base::RunLoop run_loop;
   GetNetworkService()->SetTrustTokenKeyCommitments(
       WrapKeyCommitmentForIssuer(url::Origin::Create(server_.base_url()),
@@ -214,8 +214,7 @@ IN_PROC_BROWSER_TEST_F(TrustTokenBrowsertest, DISABLED_IframeEndToEnd) {
   EXPECT_EQ(request_handler_.LastVerificationError(), base::nullopt);
 }
 
-IN_PROC_BROWSER_TEST_F(TrustTokenBrowsertest,
-                       DISABLED_HasTrustTokenAfterIssuance) {
+IN_PROC_BROWSER_TEST_F(TrustTokenBrowsertest, HasTrustTokenAfterIssuance) {
   base::RunLoop run_loop;
   GetNetworkService()->SetTrustTokenKeyCommitments(
       WrapKeyCommitmentForIssuer(url::Origin::Create(server_.base_url()),

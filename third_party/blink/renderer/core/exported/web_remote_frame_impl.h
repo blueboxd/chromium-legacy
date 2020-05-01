@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EXPORTED_WEB_REMOTE_FRAME_IMPL_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_EXPORTED_WEB_REMOTE_FRAME_IMPL_H_
 
+#include "third_party/blink/public/mojom/frame/tree_scope_type.mojom-blink.h"
 #include "third_party/blink/public/mojom/frame/user_activation_update_types.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/security_context/insecure_request_policy.mojom-blink-forward.h"
 #include "third_party/blink/public/web/web_remote_frame.h"
@@ -37,13 +38,13 @@ class CORE_EXPORT WebRemoteFrameImpl final
                                              InterfaceRegistry*,
                                              AssociatedInterfaceProvider*,
                                              WebFrame* opener);
-  static WebRemoteFrameImpl* CreateForPortal(WebTreeScopeType,
+  static WebRemoteFrameImpl* CreateForPortal(mojom::blink::TreeScopeType,
                                              WebRemoteFrameClient*,
                                              InterfaceRegistry*,
                                              AssociatedInterfaceProvider*,
                                              const WebElement& portal_element);
 
-  WebRemoteFrameImpl(WebTreeScopeType,
+  WebRemoteFrameImpl(mojom::blink::TreeScopeType,
                      WebRemoteFrameClient*,
                      InterfaceRegistry*,
                      AssociatedInterfaceProvider*);
@@ -52,10 +53,9 @@ class CORE_EXPORT WebRemoteFrameImpl final
   // WebFrame methods:
   void Close() override;
   WebView* View() const override;
-  void StopLoading() override;
 
   // WebRemoteFrame methods:
-  WebLocalFrame* CreateLocalChild(WebTreeScopeType,
+  WebLocalFrame* CreateLocalChild(mojom::blink::TreeScopeType,
                                   const WebString& name,
                                   const FramePolicy&,
                                   WebLocalFrameClient*,
@@ -64,7 +64,7 @@ class CORE_EXPORT WebRemoteFrameImpl final
                                   const WebFrameOwnerProperties&,
                                   mojom::FrameOwnerElementType,
                                   WebFrame* opener) override;
-  WebRemoteFrame* CreateRemoteChild(WebTreeScopeType,
+  WebRemoteFrame* CreateRemoteChild(mojom::blink::TreeScopeType,
                                     const WebString& name,
                                     const FramePolicy&,
                                     mojom::FrameOwnerElementType,

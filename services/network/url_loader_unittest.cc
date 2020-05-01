@@ -79,6 +79,7 @@
 #include "services/network/test/test_network_service_client.h"
 #include "services/network/test/test_url_loader_client.h"
 #include "services/network/test_chunked_data_pipe_getter.h"
+#include "services/network/trust_tokens/trust_token_key_commitment_getter.h"
 #include "services/network/trust_tokens/trust_token_request_helper.h"
 #include "services/network/trust_tokens/trust_token_request_helper_factory.h"
 #include "services/network/url_loader.h"
@@ -4758,13 +4759,26 @@ class MockTrustTokenRequestHelper : public TrustTokenRequestHelper {
   bool* begin_done_flag_;
 };
 
+class NoopTrustTokenKeyCommitmentGetter : public TrustTokenKeyCommitmentGetter {
+ public:
+  NoopTrustTokenKeyCommitmentGetter() = default;
+  void Get(const url::Origin& origin,
+           base::OnceCallback<void(mojom::TrustTokenKeyCommitmentResultPtr)>
+               on_done) const override {}
+};
+
+base::NoDestructor<NoopTrustTokenKeyCommitmentGetter>
+    noop_key_commitment_getter{};
+
 class MockTrustTokenRequestHelperFactory
     : public TrustTokenRequestHelperFactory {
  public:
   MockTrustTokenRequestHelperFactory(
       mojom::TrustTokenOperationStatus creation_failure_error,
       SyncOrAsync sync_or_async)
-      : sync_or_async_(sync_or_async),
+      : TrustTokenRequestHelperFactory(nullptr,
+                                       noop_key_commitment_getter.get()),
+        sync_or_async_(sync_or_async),
         creation_failure_error_(creation_failure_error) {}
 
   MockTrustTokenRequestHelperFactory(
@@ -4772,7 +4786,9 @@ class MockTrustTokenRequestHelperFactory
       base::Optional<mojom::TrustTokenOperationStatus> on_finalize,
       SyncOrAsync sync_or_async,
       bool* begin_done_flag)
-      : sync_or_async_(sync_or_async),
+      : TrustTokenRequestHelperFactory(nullptr,
+                                       noop_key_commitment_getter.get()),
+        sync_or_async_(sync_or_async),
         helper_(
             std::make_unique<MockTrustTokenRequestHelper>(on_begin,
                                                           on_finalize,

@@ -173,9 +173,13 @@ class VIEWS_EXPORT WidgetDelegate {
   // Close() or CloseNow().
   // Important note: for OS-initiated window closes, steps 1 and 2 don't happen
   // - i.e, WindowWillClose() is never invoked.
-  virtual void WindowWillClose() {}
-  virtual void WindowClosing() {}
-  virtual void DeleteDelegate() {}
+  //
+  // The default implementations of these methods simply call the corresponding
+  // callbacks; see Set*Callback() below. If you override these it is not
+  // necessary to call the base implementations.
+  virtual void WindowWillClose();
+  virtual void WindowClosing();
+  virtual void DeleteDelegate();
 
   // Called when the user begins/ends to change the bounds of the window.
   virtual void OnWindowBeginUserBoundsChange() {}
@@ -240,6 +244,10 @@ class VIEWS_EXPORT WidgetDelegate {
   void SetCenterTitle(bool center_title);
 #endif
 
+  void SetWindowWillCloseCallback(base::OnceClosure callback);
+  void SetWindowClosingCallback(base::OnceClosure callback);
+  void SetDeleteDelegateCallback(base::OnceClosure callback);
+
  protected:
   virtual ~WidgetDelegate();
 
@@ -253,6 +261,10 @@ class VIEWS_EXPORT WidgetDelegate {
 
   // Managed by Widget. Ensures |this| outlives its Widget.
   bool can_delete_this_ = true;
+
+  base::OnceClosure window_will_close_callback_;
+  base::OnceClosure window_closing_callback_;
+  base::OnceClosure delete_delegate_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(WidgetDelegate);
 };

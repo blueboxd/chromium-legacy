@@ -68,8 +68,6 @@ class ProfileNetworkContextService
 
 #if defined(OS_CHROMEOS)
   void UpdateAdditionalCertificates();
-
-  bool using_builtin_cert_verifier() { return using_builtin_cert_verifier_; }
 #endif
 
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
@@ -182,10 +180,6 @@ class ProfileNetworkContextService
   // Used for testing.
   base::RepeatingCallback<std::unique_ptr<net::ClientCertStore>()>
       client_cert_store_factory_;
-
-#if defined(OS_CHROMEOS)
-  bool using_builtin_cert_verifier_;
-#endif
 
   DISALLOW_COPY_AND_ASSIGN(ProfileNetworkContextService);
 };

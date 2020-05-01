@@ -5,11 +5,9 @@
 #include <map>
 
 #include "base/task/post_task.h"
-#include "base/test/scoped_feature_list.h"
 #include "components/safe_browsing/android/safe_browsing_api_handler.h"
 #include "components/safe_browsing/content/base_blocking_page.h"
 #include "components/safe_browsing/core/db/v4_protocol_manager_util.h"
-#include "components/safe_browsing/core/features.h"
 #include "components/security_interstitials/content/security_interstitial_tab_helper.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -76,18 +74,9 @@ class FakeSafeBrowsingApiHandler
   std::map<GURL, safe_browsing::SBThreatType> restrictions_;
 };
 
-class SafeBrowsingBrowserTest : public WebLayerBrowserTest,
-                                public ::testing::WithParamInterface<bool> {
+class SafeBrowsingBrowserTest : public WebLayerBrowserTest {
  public:
-  SafeBrowsingBrowserTest() : fake_handler_(new FakeSafeBrowsingApiHandler()) {
-    if (GetParam()) {
-      feature_list_.InitAndEnableFeature(
-          safe_browsing::kCommittedSBInterstitials);
-    } else {
-      feature_list_.InitAndDisableFeature(
-          safe_browsing::kCommittedSBInterstitials);
-    }
-  }
+  SafeBrowsingBrowserTest() : fake_handler_(new FakeSafeBrowsingApiHandler()) {}
   ~SafeBrowsingBrowserTest() override = default;
 
   // WebLayerBrowserTest:
@@ -110,11 +99,8 @@ class SafeBrowsingBrowserTest : public WebLayerBrowserTest,
     load_observer.Wait();
     EXPECT_EQ(expect_interstitial, HasInterstitial());
     if (expect_interstitial) {
-      if (base::FeatureList::IsEnabled(
-              safe_browsing::kCommittedSBInterstitials)) {
-        ASSERT_EQ(SafeBrowsingBlockingPage::kTypeForTesting,
-                  GetSecurityInterstitialPage()->GetTypeForTesting());
-      }
+      ASSERT_EQ(SafeBrowsingBlockingPage::kTypeForTesting,
+                GetSecurityInterstitialPage()->GetTypeForTesting());
       EXPECT_TRUE(GetSecurityInterstitialPage()->GetHTMLContents().length() >
                   0);
     }
@@ -129,67 +115,50 @@ class SafeBrowsingBrowserTest : public WebLayerBrowserTest,
 
   security_interstitials::SecurityInterstitialPage*
   GetSecurityInterstitialPage() {
-    if (base::FeatureList::IsEnabled(
-            safe_browsing::kCommittedSBInterstitials)) {
-      security_interstitials::SecurityInterstitialTabHelper* helper =
-          security_interstitials::SecurityInterstitialTabHelper::
-              FromWebContents(GetWebContents());
-      return helper
-                 ? helper
-                       ->GetBlockingPageForCurrentlyCommittedNavigationForTesting()
-                 : nullptr;
-    }
-
-    return static_cast<security_interstitials::SecurityInterstitialPage*>(
-        content::InterstitialPage::GetInterstitialPage(GetWebContents())
-            ->GetDelegateForTesting());
+    security_interstitials::SecurityInterstitialTabHelper* helper =
+        security_interstitials::SecurityInterstitialTabHelper::FromWebContents(
+            GetWebContents());
+    return helper
+               ? helper
+                     ->GetBlockingPageForCurrentlyCommittedNavigationForTesting()
+               : nullptr;
   }
 
-  bool HasInterstitial() {
-    if (base::FeatureList::IsEnabled(
-            safe_browsing::kCommittedSBInterstitials)) {
-      return GetSecurityInterstitialPage() != nullptr;
-    }
-
-    return GetWebContents()->GetInterstitialPage() != nullptr;
-  }
+  bool HasInterstitial() { return GetSecurityInterstitialPage() != nullptr; }
 
   std::unique_ptr<FakeSafeBrowsingApiHandler> fake_handler_;
   GURL url_;
-  base::test::ScopedFeatureList feature_list_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SafeBrowsingBrowserTest);
 };
 
-INSTANTIATE_TEST_SUITE_P(All, SafeBrowsingBrowserTest, ::testing::Bool());
-
-IN_PROC_BROWSER_TEST_P(SafeBrowsingBrowserTest,
+IN_PROC_BROWSER_TEST_F(SafeBrowsingBrowserTest,
                        DoesNotShowInterstitial_NoRestriction) {
   Navigate(url_, false);
 }
 
-IN_PROC_BROWSER_TEST_P(SafeBrowsingBrowserTest, DoesNotShowInterstitial_Safe) {
+IN_PROC_BROWSER_TEST_F(SafeBrowsingBrowserTest, DoesNotShowInterstitial_Safe) {
   NavigateWithThreatType(safe_browsing::SB_THREAT_TYPE_SAFE, false);
 }
 
-IN_PROC_BROWSER_TEST_P(SafeBrowsingBrowserTest, ShowsInterstitial_Malware) {
+IN_PROC_BROWSER_TEST_F(SafeBrowsingBrowserTest, ShowsInterstitial_Malware) {
   NavigateWithThreatType(safe_browsing::SB_THREAT_TYPE_URL_MALWARE, true);
 }
 
-IN_PROC_BROWSER_TEST_P(SafeBrowsingBrowserTest, ShowsInterstitial_Phishing) {
+IN_PROC_BROWSER_TEST_F(SafeBrowsingBrowserTest, ShowsInterstitial_Phishing) {
   NavigateWithThreatType(safe_browsing::SB_THREAT_TYPE_URL_PHISHING, true);
 }
 
-IN_PROC_BROWSER_TEST_P(SafeBrowsingBrowserTest, ShowsInterstitial_Unwanted) {
+IN_PROC_BROWSER_TEST_F(SafeBrowsingBrowserTest, ShowsInterstitial_Unwanted) {
   NavigateWithThreatType(safe_browsing::SB_THREAT_TYPE_URL_UNWANTED, true);
 }
 
-IN_PROC_BROWSER_TEST_P(SafeBrowsingBrowserTest, ShowsInterstitial_Billing) {
+IN_PROC_BROWSER_TEST_F(SafeBrowsingBrowserTest, ShowsInterstitial_Billing) {
   NavigateWithThreatType(safe_browsing::SB_THREAT_TYPE_BILLING, true);
 }
 
-IN_PROC_BROWSER_TEST_P(SafeBrowsingBrowserTest,
+IN_PROC_BROWSER_TEST_F(SafeBrowsingBrowserTest,
                        ShowsInterstitial_Malware_Subresource) {
   GURL page_with_script_url =
       embedded_test_server()->GetURL("/simple_page_with_script.html");

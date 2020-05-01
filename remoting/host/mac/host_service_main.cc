@@ -153,19 +153,7 @@ int HostService::RunHost() {
     return RunHostFromOldScript();
   }
 
-  // Run the config-upgrade tool, but only if running as root, as normal users
-  // don't have permission to write the config file.
-  if (geteuid() == 0) {
-    HOST_LOG << "Attempting to upgrade token";
-    base::CommandLine cmdline(host_exe_file_);
-    cmdline.AppendSwitch("upgrade-token");
-    cmdline.AppendSwitchPath("host-config", config_file_);
-    std::string output;
-    base::GetAppOutputAndError(cmdline, &output);
-    if (!output.empty()) {
-      HOST_LOG << "Message from host --upgrade-token: " << output;
-    }
-  } else if (HostIsEnabled()) {
+  if (geteuid() != 0 && HostIsEnabled()) {
     // Only check for non-root users, as the permission wizard is not actionable
     // at the login screen. Also, permission is only needed when host is
     // enabled - the launchd service should exit immediately if the host is

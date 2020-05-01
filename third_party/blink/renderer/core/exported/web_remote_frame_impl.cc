@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
+#include "third_party/blink/public/mojom/frame/tree_scope_type.mojom-blink.h"
 #include "third_party/blink/public/mojom/security_context/insecure_request_policy.mojom-blink.h"
 #include "third_party/blink/public/platform/web_float_rect.h"
 #include "third_party/blink/public/platform/web_intrinsic_sizing_info.h"
@@ -15,7 +16,6 @@
 #include "third_party/blink/public/web/web_frame_owner_properties.h"
 #include "third_party/blink/public/web/web_performance.h"
 #include "third_party/blink/public/web/web_range.h"
-#include "third_party/blink/public/web/web_tree_scope_type.h"
 #include "third_party/blink/renderer/bindings/core/v8/window_proxy.h"
 #include "third_party/blink/renderer/core/execution_context/remote_security_context.h"
 #include "third_party/blink/renderer/core/execution_context/security_context.h"
@@ -45,7 +45,7 @@
 namespace blink {
 
 WebRemoteFrame* WebRemoteFrame::Create(
-    WebTreeScopeType scope,
+    mojom::blink::TreeScopeType scope,
     WebRemoteFrameClient* client,
     InterfaceRegistry* interface_registry,
     AssociatedInterfaceProvider* associated_interface_provider) {
@@ -65,7 +65,7 @@ WebRemoteFrame* WebRemoteFrame::CreateMainFrame(
 }
 
 WebRemoteFrame* WebRemoteFrame::CreateForPortal(
-    WebTreeScopeType scope,
+    mojom::blink::TreeScopeType scope,
     WebRemoteFrameClient* client,
     InterfaceRegistry* interface_registry,
     AssociatedInterfaceProvider* associated_interface_provider,
@@ -82,7 +82,7 @@ WebRemoteFrameImpl* WebRemoteFrameImpl::CreateMainFrame(
     AssociatedInterfaceProvider* associated_interface_provider,
     WebFrame* opener) {
   WebRemoteFrameImpl* frame = MakeGarbageCollected<WebRemoteFrameImpl>(
-      WebTreeScopeType::kDocument, client, interface_registry,
+      mojom::blink::TreeScopeType::kDocument, client, interface_registry,
       associated_interface_provider);
   frame->SetOpener(opener);
   Page& page = *static_cast<WebViewImpl*>(web_view)->GetPage();
@@ -101,7 +101,7 @@ WebRemoteFrameImpl* WebRemoteFrameImpl::CreateMainFrame(
 }
 
 WebRemoteFrameImpl* WebRemoteFrameImpl::CreateForPortal(
-    WebTreeScopeType scope,
+    mojom::blink::TreeScopeType scope,
     WebRemoteFrameClient* client,
     InterfaceRegistry* interface_registry,
     AssociatedInterfaceProvider* associated_interface_provider,
@@ -159,13 +159,8 @@ WebView* WebRemoteFrameImpl::View() const {
   return GetFrame()->GetPage()->GetChromeClient().GetWebView();
 }
 
-void WebRemoteFrameImpl::StopLoading() {
-  // TODO(dcheng,japhet): Calling this method should stop loads
-  // in all subframes, both remote and local.
-}
-
 WebLocalFrame* WebRemoteFrameImpl::CreateLocalChild(
-    WebTreeScopeType scope,
+    mojom::blink::TreeScopeType scope,
     const WebString& name,
     const FramePolicy& frame_policy,
     WebLocalFrameClient* client,
@@ -207,7 +202,7 @@ void WebRemoteFrameImpl::InitializeCoreFrame(
 }
 
 WebRemoteFrame* WebRemoteFrameImpl::CreateRemoteChild(
-    WebTreeScopeType scope,
+    mojom::blink::TreeScopeType scope,
     const WebString& name,
     const FramePolicy& frame_policy,
     mojom::blink::FrameOwnerElementType frame_owner_element_type,
@@ -346,7 +341,7 @@ WebRect WebRemoteFrameImpl::GetCompositingRect() {
 }
 
 WebRemoteFrameImpl::WebRemoteFrameImpl(
-    WebTreeScopeType scope,
+    mojom::blink::TreeScopeType scope,
     WebRemoteFrameClient* client,
     InterfaceRegistry* interface_registry,
     AssociatedInterfaceProvider* associated_interface_provider)

@@ -245,6 +245,11 @@ base::FilePath ProfileHelper::GetSigninProfileDir() {
 // static
 Profile* ProfileHelper::GetSigninProfile() {
   ProfileManager* profile_manager = g_browser_process->profile_manager();
+  // |profile_manager| could be null in tests.
+  if (!profile_manager) {
+    return nullptr;
+  }
+
   return profile_manager->GetProfile(GetSigninProfileDir())
       ->GetPrimaryOTRProfile();
 }

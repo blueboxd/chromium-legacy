@@ -58,7 +58,6 @@ class CORE_EXPORT SVGLength final : public SVGPropertyBase {
   explicit SVGLength(SVGLengthMode = SVGLengthMode::kOther);
   SVGLength(Initial, SVGLengthMode);
   SVGLength(const CSSPrimitiveValue&, SVGLengthMode);
-  SVGLength(const SVGLength&);
 
   void SetInitial(unsigned);
 

@@ -96,9 +96,6 @@ constexpr char kOnlyDlpUrl[] = "https://no.malware.com";
 constexpr char kOnlyMalwareUrl[] = "https://no.dlp.com";
 constexpr char kNoTagsUrl[] = "https://no.dlp.or.malware.ca";
 
-// constexpr const char* kAllConnectorsTestUrls[] = {
-//  kDlpAndMalwareUrl, kOnlyDlpUrl, kOnlyMalwareUrl, kNoTagsUrl
-//};
 }  // namespace
 
 class ConnectorsManagerTest : public testing::Test {
@@ -107,6 +104,12 @@ class ConnectorsManagerTest : public testing::Test {
       : profile_manager_(TestingBrowserProcess::GetGlobal()) {
     EXPECT_TRUE(profile_manager_.SetUp());
     profile_ = profile_manager_.CreateTestingProfile("test-user");
+  }
+
+  void SetUp() override { ConnectorsManager::GetInstance()->SetUpForTesting(); }
+
+  void TearDown() override {
+    ConnectorsManager::GetInstance()->TearDownForTesting();
   }
 
   void ValidateSettings(const AnalysisSettings& settings) {
@@ -134,12 +137,24 @@ class ConnectorsManagerTest : public testing::Test {
     return settings;
   }
 
-  void SetConnectorPref(const char* pref, const char* pref_value) {
-    auto maybe_pref_value =
-        base::JSONReader::Read(pref_value, base::JSON_ALLOW_TRAILING_COMMAS);
-    ASSERT_TRUE(maybe_pref_value.has_value());
-    g_browser_process->local_state()->Set(pref, maybe_pref_value.value());
-  }
+  class ScopedConnectorPref {
+   public:
+    ScopedConnectorPref(const char* pref, const char* pref_value)
+        : pref_(pref) {
+      auto maybe_pref_value =
+          base::JSONReader::Read(pref_value, base::JSON_ALLOW_TRAILING_COMMAS);
+      EXPECT_TRUE(maybe_pref_value.has_value());
+      TestingBrowserProcess::GetGlobal()->local_state()->Set(
+          pref, maybe_pref_value.value());
+    }
+
+    ~ScopedConnectorPref() {
+      TestingBrowserProcess::GetGlobal()->local_state()->ClearPref(pref_);
+    }
+
+   private:
+    const char* pref_;
+  };
 
  protected:
   content::BrowserTaskEnvironment task_environment_;
@@ -399,7 +414,7 @@ INSTANTIATE_TEST_SUITE_P(
 using ConnectorsManagerNoFeatureTest = ConnectorsManagerTest;
 
 TEST_F(ConnectorsManagerNoFeatureTest, OnFileAttached) {
-  SetConnectorPref(kOnFileAttachedPref, kNormalSettingsPref);
+  ScopedConnectorPref scoped_pref(kOnFileAttachedPref, kNormalSettingsPref);
 
   // Ensure that the default legacy settings are read synchronously.
   int i = 0;
@@ -429,10 +444,6 @@ class ConnectorsManagerConnectorPoliciesTest
  public:
   ConnectorsManagerConnectorPoliciesTest() {
     scoped_feature_list_.InitWithFeatures({kEnterpriseConnectorsEnabled}, {});
-  }
-
-  ~ConnectorsManagerConnectorPoliciesTest() override {
-    ConnectorsManager::GetInstance()->Reset();
   }
 
   const char* url() const { return GetParam(); }
@@ -482,7 +493,7 @@ TEST_P(ConnectorsManagerConnectorPoliciesTest, OnFileAttached) {
   ASSERT_TRUE(ConnectorsManager::GetInstance()
                   ->GetAnalysisConnectorsSettingsForTesting()
                   .empty());
-  SetConnectorPref(kOnFileAttachedPref, kNormalSettingsPref);
+  ScopedConnectorPref scoped_pref(kOnFileAttachedPref, kNormalSettingsPref);
   SetUpExpectedSettings(kNormalSettingsPref);
 
   // Verify that the expected settings are returned normally.
@@ -520,7 +531,7 @@ TEST_P(ConnectorsManagerConnectorPoliciesTest, OnFileAttached_EmptyList) {
   ASSERT_TRUE(ConnectorsManager::GetInstance()
                   ->GetAnalysisConnectorsSettingsForTesting()
                   .empty());
-  SetConnectorPref(kOnFileAttachedPref, kEmptySettingsPref);
+  ScopedConnectorPref scoped_pref(kOnFileAttachedPref, kEmptySettingsPref);
 
   bool called = false;
   ConnectorsManager::GetInstance()->GetAnalysisSettings(
@@ -543,5 +554,60 @@ INSTANTIATE_TEST_CASE_P(ConnectorsManagerConnectorPoliciesTest,
                                         kOnlyDlpUrl,
                                         kOnlyMalwareUrl,
                                         kNoTagsUrl));
+
+class ConnectorsManagerDynamicPoliciesTest
+    : public ConnectorsManagerTest,
+      public testing::WithParamInterface<const char*> {
+ public:
+  ConnectorsManagerDynamicPoliciesTest() {
+    scoped_feature_list_.InitWithFeatures({kEnterpriseConnectorsEnabled}, {});
+  }
+
+  const char* pref() const { return GetParam(); }
+
+  AnalysisConnector connector() const {
+    // TODO(crbug/1067631): Add other connector prefs once their corresponding
+    // policy exists.
+    return AnalysisConnector::FILE_ATTACHED;
+  }
+};
+
+TEST_P(ConnectorsManagerDynamicPoliciesTest, DynamicPolicies) {
+  // The cache is initially empty.
+  auto* manager = ConnectorsManager::GetInstance();
+  ASSERT_TRUE(manager->GetAnalysisConnectorsSettingsForTesting().empty());
+
+  // Once the pref is updated, the settings should be cached, and analysis
+  // settings can be obtained.
+  {
+    ScopedConnectorPref scoped_pref(pref(), kNormalSettingsPref);
+
+    const auto& cached_settings =
+        manager->GetAnalysisConnectorsSettingsForTesting();
+    ASSERT_FALSE(cached_settings.empty());
+    ASSERT_EQ(1u, cached_settings.count(connector()));
+    ASSERT_EQ(1u, cached_settings.at(connector()).size());
+
+    auto settings = cached_settings.at(connector())
+                        .at(0)
+                        .GetAnalysisSettings(GURL(kDlpAndMalwareUrl));
+    ASSERT_TRUE(settings.has_value());
+    expected_block_until_verdict_ = BlockUntilVerdict::BLOCK;
+    expected_block_password_protected_files_ = true;
+    expected_block_large_files_ = true;
+    expected_block_unsupported_file_types_ = true;
+    expected_tags_ = {"dlp", "malware"};
+    ValidateSettings(settings.value());
+  }
+
+  // The cache should be empty again after the pref is reset.
+  ASSERT_TRUE(manager->GetAnalysisConnectorsSettingsForTesting().empty());
+}
+
+// TODO(crbug/1067631): Add other connector prefs once their corresponding
+// policy exists.
+INSTANTIATE_TEST_CASE_P(ConnectorsManagerDynamicPoliciesTest,
+                        ConnectorsManagerDynamicPoliciesTest,
+                        testing::Values(kOnFileAttachedPref));
 
 }  // namespace enterprise_connectors

@@ -70,9 +70,6 @@ class NetworkLocationRequest {
   WifiData wifi_data_;
   base::Time wifi_timestamp_;
 
-  // The start time for the request.
-  base::TimeTicks request_start_time_;
-
   DISALLOW_COPY_AND_ASSIGN(NetworkLocationRequest);
 };
 

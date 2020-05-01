@@ -4,34 +4,16 @@
 
 #include <string>
 
-#include "ash/public/cpp/ash_features.h"
 #include "base/bind.h"
-#include "base/command_line.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
-#include "base/scoped_observer.h"
-#include "base/task/thread_pool.h"
-#include "base/test/scoped_feature_list.h"
-#include "base/test/test_timeouts.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/login/test/fake_gaia_mixin.h"
-#include "chrome/browser/chromeos/login/test/oobe_base_test.h"
-#include "chrome/browser/chromeos/login/test/session_manager_state_waiter.h"
-#include "chrome/browser/chromeos/login/ui/login_display_host.h"
+#include "chrome/browser/chromeos/login/login_manager_test.h"
+#include "chrome/browser/chromeos/login/test/login_manager_mixin.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
-#include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
-#include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/test/base/in_process_browser_test.h"
-#include "chromeos/constants/chromeos_switches.h"
+#include "chromeos/system/fake_statistics_provider.h"
 #include "components/prefs/pref_service.h"
-#include "content/public/browser/browser_thread.h"
-#include "google_apis/gaia/fake_gaia.h"
-#include "google_apis/gaia/gaia_switches.h"
-#include "google_apis/gaia/gaia_urls.h"
-#include "net/test/embedded_test_server/embedded_test_server.h"
-#include "net/test/embedded_test_server/http_response.h"
 #include "rlz/buildflags/buildflags.h"
 
 #if BUILDFLAG(ENABLE_RLZ)
@@ -43,6 +25,8 @@ namespace chromeos {
 
 namespace {
 
+constexpr char kTestBrand[] = "TEST";
+
 #if BUILDFLAG(ENABLE_RLZ)
 void GetAccessPointRlzInBackgroundThread(rlz_lib::AccessPoint point,
                                          base::string16* rlz) {
@@ -53,34 +37,26 @@ void GetAccessPointRlzInBackgroundThread(rlz_lib::AccessPoint point,
 
 }  // namespace
 
-class LoginUtilsTest : public OobeBaseTest {
+class LoginUtilsTest : public LoginManagerTest {
  public:
-  LoginUtilsTest() = default;
+  LoginUtilsTest() {
+    scoped_fake_statistics_provider_.SetMachineStatistic(
+        system::kRlzBrandCodeKey, kTestBrand);
+  }
   ~LoginUtilsTest() override = default;
 
   PrefService* local_state() { return g_browser_process->local_state(); }
 
-  void Login(const std::string& username) {
-    LoginDisplayHost::default_host()
-        ->GetOobeUI()
-        ->GetView<GaiaScreenHandler>()
-        ->ShowSigninScreenForTest(username, "password", "[]");
-
-    // Wait for the session to start after submitting the credentials. This
-    // will wait until all the background requests are done.
-    test::WaitForPrimaryUserSessionStart();
-  }
+  LoginManagerMixin login_manager_{&mixin_host_};
 
  private:
-  FakeGaiaMixin fake_gaia_{&mixin_host_, embedded_test_server()};
+  system::ScopedFakeStatisticsProvider scoped_fake_statistics_provider_;
 
   DISALLOW_COPY_AND_ASSIGN(LoginUtilsTest);
 };
 
 #if BUILDFLAG(ENABLE_RLZ)
 IN_PROC_BROWSER_TEST_F(LoginUtilsTest, RlzInitialized) {
-  WaitForSigninScreen();
-
   // No RLZ brand code set initially.
   EXPECT_FALSE(local_state()->HasPrefPath(prefs::kRLZBrand));
 
@@ -90,13 +66,17 @@ IN_PROC_BROWSER_TEST_F(LoginUtilsTest, RlzInitialized) {
     PrefChangeRegistrar registrar;
     registrar.Init(local_state());
     registrar.Add(prefs::kRLZBrand, loop.QuitClosure());
-    Login("username");
+
+    WizardController::SkipPostLoginScreensForTesting();
+    login_manager_.LoginAsNewReguarUser();
+    login_manager_.WaitForActiveSession();
+
     loop.Run();
   }
 
-  // RLZ brand code has been set to empty string.
+  // RLZ brand code has been set.
   EXPECT_TRUE(local_state()->HasPrefPath(prefs::kRLZBrand));
-  EXPECT_EQ(std::string(), local_state()->GetString(prefs::kRLZBrand));
+  EXPECT_EQ(local_state()->GetString(prefs::kRLZBrand), kTestBrand);
 
   // RLZ value for homepage access point should have been initialized.
   // This value must be obtained in a background thread.

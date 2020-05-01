@@ -72,9 +72,9 @@ class FeedStreamApi {
   virtual void ReportNavigationStarted() = 0;
   virtual void ReportNavigationDone() = 0;
   // The user triggered the default open action, usually by tapping the card.
-  virtual void ReportOpenAction() = 0;
+  virtual void ReportOpenAction(const std::string& slice_id) = 0;
   // The user triggered the 'open in new tab' action.
-  virtual void ReportOpenInNewTabAction() = 0;
+  virtual void ReportOpenInNewTabAction(const std::string& slice_id) = 0;
   // The user triggered the 'open in new incognito tab' action.
   virtual void ReportOpenInNewIncognitoTabAction() = 0;
   // The user pressed the 'send feedback' context menu option, but may have not

@@ -101,7 +101,9 @@ class InstallablePaymentAppCrawler : public content::WebContentsObserver {
       const GURL& method_manifest_url,
       const GURL& web_app_manifest_url,
       std::unique_ptr<WebAppInstallationInfo> app_info);
-  void DownloadAndDecodeWebAppIcon(
+  // Returns true if an icon can get downloaded for the web app with the given
+  // manifest.
+  bool DownloadAndDecodeWebAppIcon(
       const GURL& method_manifest_url,
       const GURL& web_app_manifest_url,
       std::unique_ptr<std::vector<PaymentManifestParser::WebAppIcon>> icons);

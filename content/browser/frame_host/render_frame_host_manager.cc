@@ -373,8 +373,7 @@ void RenderFrameHostManager::Stop() {
   // A loading speculative RenderFrameHost should also stop.
   if (speculative_render_frame_host_ &&
       speculative_render_frame_host_->is_loading()) {
-    speculative_render_frame_host_->Send(
-        new FrameMsg_Stop(speculative_render_frame_host_->GetRoutingID()));
+    speculative_render_frame_host_->GetAssociatedLocalFrame()->StopLoading();
   }
 }
 
@@ -2093,11 +2092,16 @@ RenderFrameHostManager::CreateRenderFrameHost(
                                          /*swapped_out=*/false);
   }
   CHECK(render_view_host);
+  // Lifecycle state of newly created RenderFrameHostImpl.
+  RenderFrameHostImpl::LifecycleState lifecycle_state =
+      create_frame_case == CreateFrameCase::kCreateSpeculative
+          ? RenderFrameHostImpl::LifecycleState::kSpeculative
+          : RenderFrameHostImpl::LifecycleState::kActive;
 
   return RenderFrameHostFactory::Create(
       site_instance, std::move(render_view_host),
       frame_tree->render_frame_delegate(), frame_tree, frame_tree_node_,
-      frame_routing_id, renderer_initiated_creation);
+      frame_routing_id, renderer_initiated_creation, lifecycle_state);
 }
 
 bool RenderFrameHostManager::CreateSpeculativeRenderFrameHost(
@@ -2849,6 +2853,15 @@ std::unique_ptr<RenderFrameHostImpl> RenderFrameHostManager::SetRenderFrameHost(
   std::unique_ptr<RenderFrameHostImpl> old_render_frame_host =
       std::move(render_frame_host_);
   render_frame_host_ = std::move(render_frame_host);
+
+  if (render_frame_host_ && render_frame_host_->lifecycle_state() !=
+                                RenderFrameHostImpl::LifecycleState::kActive) {
+    // Set the |render_frame_host_| LifecycleState to kActive after the swap
+    // with the current RenderFrameHost if it is not null. RenderFrameHost can
+    // be either be in kspeculative or kInBackForwardCache before setting the
+    // lifecycle_state to kActive here.
+    render_frame_host_->SetLifecycleStateToActive();
+  }
 
   if (frame_tree_node_->IsMainFrame()) {
     // Update the count of top-level frames using this SiteInstance.  All

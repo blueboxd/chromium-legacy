@@ -337,10 +337,16 @@ IN_PROC_BROWSER_TEST_P(MediaTest, VideoErrorEmptySrcAttribute) {
 }
 
 IN_PROC_BROWSER_TEST_P(MediaTest, VideoErrorNoSupportedStreams) {
-  RunErrorMessageTest(
-      "video", "no_streams.webm",
-      "DEMUXER_ERROR_NO_SUPPORTED_STREAMS: FFmpegDemuxer: no supported streams",
-      GetParam());
+  // The test doesn't work from file: scheme without AllowFileAccessFromFiles.
+  // TODO(wolenetz): https://crbug.com/1071473: Investigate and reenable the
+  // test.
+  if (!GetParam())
+    return;
+
+  RunErrorMessageTest("video", "no_streams.webm",
+                      "DEMUXER_ERROR_NO_SUPPORTED_STREAMS: FFmpegDemuxer: no "
+                      "supported streams",
+                      GetParam());
 }
 
 // Covers tear-down when navigating away as opposed to browser exiting.

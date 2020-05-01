@@ -201,7 +201,7 @@ class TestPluginWithEditableText : public FakeWebPlugin {
 class TestPluginWebFrameClient : public frame_test_helpers::TestWebFrameClient {
   WebLocalFrame* CreateChildFrame(
       WebLocalFrame* parent,
-      WebTreeScopeType scope,
+      mojom::blink::TreeScopeType scope,
       const WebString& name,
       const WebString& fallback_name,
       const FramePolicy&,

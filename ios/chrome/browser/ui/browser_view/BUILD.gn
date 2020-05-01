@@ -72,7 +72,7 @@ source_set("browser_view") {
     "//ios/chrome/browser/store_kit",
     "//ios/chrome/browser/translate",
     "//ios/chrome/browser/ui:feature_flags",
-    "//ios/chrome/browser/ui/activity_services:coordinator",
+    "//ios/chrome/browser/ui/activity_services",
     "//ios/chrome/browser/ui/activity_services/requirements",
     "//ios/chrome/browser/ui/alert_coordinator",
     "//ios/chrome/browser/ui/authentication",

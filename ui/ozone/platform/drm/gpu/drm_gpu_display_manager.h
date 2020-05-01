@@ -11,8 +11,9 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "ui/display/types/display_constants.h"
+#include "ui/gfx/geometry/point.h"
 #include "ui/gfx/native_widget_types.h"
-#include "ui/ozone/common/gpu/ozone_gpu_message_params.h"
 #include "ui/ozone/platform/drm/common/display_types.h"
 
 namespace display {

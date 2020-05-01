@@ -99,6 +99,11 @@ public interface PageInfoControllerDelegate {
     String getOfflinePageConnectionMessage();
 
     /**
+     * Returns whether or not the performance badge should be shown for |url|.
+     */
+    boolean shouldShowPerformanceBadge(String url);
+
+    /**
      * Whether Site settings are available.
      */
     boolean isSiteSettingsAvailable();

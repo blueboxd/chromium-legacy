@@ -14828,9 +14828,12 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   RenderFrameHostImpl* rfh_c =
       rfh_b->frame_tree_node()->render_manager()->speculative_frame_host();
 
-  EXPECT_EQ(RenderFrameHostImpl::UnloadState::NotRun, rfh_a->unload_state_);
-  EXPECT_EQ(RenderFrameHostImpl::UnloadState::NotRun, rfh_b->unload_state_);
-  EXPECT_EQ(RenderFrameHostImpl::UnloadState::NotRun, rfh_c->unload_state_);
+  EXPECT_EQ(RenderFrameHostImpl::LifecycleState::kActive,
+            rfh_a->lifecycle_state());
+  EXPECT_EQ(RenderFrameHostImpl::LifecycleState::kActive,
+            rfh_b->lifecycle_state());
+  EXPECT_EQ(RenderFrameHostImpl::LifecycleState::kSpeculative,
+            rfh_c->lifecycle_state());
 
   // 3) Deletion of B. The unload handler takes times to execute.
   RenderFrameDeletedObserver delete_b(rfh_b), delete_c(rfh_c);
@@ -14838,8 +14841,10 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
       ExecJs(rfh_a, JsReplace("document.querySelector('iframe').remove();")));
   EXPECT_FALSE(delete_b.deleted());
   EXPECT_TRUE(delete_c.deleted());  // The speculative RFH is deleted.
-  EXPECT_EQ(RenderFrameHostImpl::UnloadState::NotRun, rfh_a->unload_state_);
-  EXPECT_EQ(RenderFrameHostImpl::UnloadState::InProgress, rfh_b->unload_state_);
+  EXPECT_EQ(RenderFrameHostImpl::LifecycleState::kActive,
+            rfh_a->lifecycle_state());
+  EXPECT_EQ(RenderFrameHostImpl::LifecycleState::kRunningUnloadHandlers,
+            rfh_b->lifecycle_state());
 
   // The navigation has been canceled.
   navigation_observer.WaitForNavigationFinished();
@@ -14881,10 +14886,14 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   RenderFrameHostImpl* rfh_d =
       rfh_c->frame_tree_node()->render_manager()->speculative_frame_host();
 
-  EXPECT_EQ(RenderFrameHostImpl::UnloadState::NotRun, rfh_a->unload_state_);
-  EXPECT_EQ(RenderFrameHostImpl::UnloadState::NotRun, rfh_b->unload_state_);
-  EXPECT_EQ(RenderFrameHostImpl::UnloadState::NotRun, rfh_c->unload_state_);
-  EXPECT_EQ(RenderFrameHostImpl::UnloadState::NotRun, rfh_d->unload_state_);
+  EXPECT_EQ(RenderFrameHostImpl::LifecycleState::kActive,
+            rfh_a->lifecycle_state());
+  EXPECT_EQ(RenderFrameHostImpl::LifecycleState::kActive,
+            rfh_b->lifecycle_state());
+  EXPECT_EQ(RenderFrameHostImpl::LifecycleState::kActive,
+            rfh_c->lifecycle_state());
+  EXPECT_EQ(RenderFrameHostImpl::LifecycleState::kSpeculative,
+            rfh_d->lifecycle_state());
 
   // 3) Deletion of D. The unload handler takes times to execute.
   RenderFrameDeletedObserver delete_b(rfh_b), delete_c(rfh_c), delete_d(rfh_d);
@@ -14893,9 +14902,12 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   EXPECT_FALSE(delete_b.deleted());
   EXPECT_FALSE(delete_c.deleted());
   EXPECT_TRUE(delete_d.deleted());  // The speculative RFH is deleted.
-  EXPECT_EQ(RenderFrameHostImpl::UnloadState::NotRun, rfh_a->unload_state_);
-  EXPECT_EQ(RenderFrameHostImpl::UnloadState::Completed, rfh_b->unload_state_);
-  EXPECT_EQ(RenderFrameHostImpl::UnloadState::InProgress, rfh_c->unload_state_);
+  EXPECT_EQ(RenderFrameHostImpl::LifecycleState::kActive,
+            rfh_a->lifecycle_state());
+  EXPECT_EQ(RenderFrameHostImpl::LifecycleState::kReadyToBeDeleted,
+            rfh_b->lifecycle_state());
+  EXPECT_EQ(RenderFrameHostImpl::LifecycleState::kRunningUnloadHandlers,
+            rfh_c->lifecycle_state());
 
   // The navigation has been canceled.
   navigation_observer.WaitForNavigationFinished();

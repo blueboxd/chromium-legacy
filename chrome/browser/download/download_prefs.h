@@ -11,6 +11,7 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "build/build_config.h"
+#include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_member.h"
 
 class Profile;
@@ -125,6 +126,8 @@ class DownloadPrefs {
   // it as is. If it isn't returns the default download directory.
   base::FilePath SanitizeDownloadTargetPath(const base::FilePath& path) const;
 
+  void UpdateAutoOpenByPolicy();
+
   Profile* profile_;
 
   BooleanPrefMember prompt_for_download_;
@@ -138,6 +141,8 @@ class DownloadPrefs {
   IntegerPrefMember download_restriction_;
   BooleanPrefMember safebrowsing_for_trusted_sources_enabled_;
 
+  PrefChangeRegistrar pref_change_registrar_;
+
   // To identify if a download URL is from a trusted source.
   std::unique_ptr<TrustedSourcesManager> trusted_sources_manager_;
 
@@ -149,6 +154,7 @@ class DownloadPrefs {
   typedef std::set<base::FilePath::StringType,
                    AutoOpenCompareFunctor> AutoOpenSet;
   AutoOpenSet auto_open_by_user_;
+  AutoOpenSet auto_open_by_policy_;
 
 #if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_MACOSX)
   bool should_open_pdf_in_system_reader_;

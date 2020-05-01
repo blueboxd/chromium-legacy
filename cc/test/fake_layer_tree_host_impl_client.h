@@ -51,6 +51,7 @@ class FakeLayerTreeHostImplClient : public LayerTreeHostImplClient {
                                          ElementListType tree_type) override {}
   void NotifyPaintWorkletStateChange(
       Scheduler::PaintWorkletState state) override {}
+  void NotifyThroughputTrackerResults(CustomTrackerResults results) override {}
 
   void reset_did_request_impl_side_invalidation() {
     did_request_impl_side_invalidation_ = false;

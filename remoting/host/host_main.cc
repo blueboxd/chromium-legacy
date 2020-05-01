@@ -22,7 +22,6 @@
 #include "mojo/core/embedder/embedder.h"
 #include "remoting/base/breakpad.h"
 #include "remoting/host/evaluate_capability.h"
-#include "remoting/host/host_config_upgrader.h"
 #include "remoting/host/host_exit_codes.h"
 #include "remoting/host/logging.h"
 #include "remoting/host/resources.h"
@@ -73,9 +72,7 @@ const char kUsageMessage[] =
     "  --version                - Prints the host version and exits.\n"
     "  --window-id=<id>         - Specifies a window to remote,"
     " instead of the whole desktop.\n"
-    "  --evaluate-type=<type>   - Evaluates the capability of the host.\n"
-    "  --upgrade-token          - Upgrades the OAuth token in the host "
-    "config.\n";
+    "  --evaluate-type=<type>   - Evaluates the capability of the host.\n";
 
 void Usage(const base::FilePath& program_name) {
   printf(kUsageMessage, program_name.MaybeAsASCII().c_str());
@@ -215,11 +212,6 @@ int HostMain(int argc, char** argv) {
 
   // Enable debug logs.
   InitHostLogging();
-
-  // Perform token upgrade if specified on command-line.
-  if (command_line->HasSwitch(kUpgradeTokenSwitchName)) {
-    return HostConfigUpgrader::UpgradeConfigFile();
-  }
 
 #if defined(REMOTING_ENABLE_BREAKPAD)
   // Initialize Breakpad as early as possible. On Mac the command-line needs to

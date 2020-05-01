@@ -490,6 +490,9 @@ void AddContentSecurityPolicyFromHeaders(
     if (frame_ancestors != directives.end())
       ParseFrameAncestors(policy, frame_ancestors->second);
 
+    policy->treat_as_public_address |=
+        directives.contains("treat-as-public-address");
+
     auto report_endpoints = directives.find("report-to");
     if (report_endpoints != directives.end()) {
       if (!policy->use_reporting_api) {
@@ -553,6 +556,16 @@ bool ShouldUpgradeInsecureRequest(
     const std::vector<mojom::ContentSecurityPolicyPtr>& policies) {
   for (const auto& policy : policies) {
     if (policy->upgrade_insecure_requests)
+      return true;
+  }
+
+  return false;
+}
+
+bool ShouldTreatAsPublicAddress(
+    const std::vector<mojom::ContentSecurityPolicyPtr>& policies) {
+  for (const auto& policy : policies) {
+    if (policy->treat_as_public_address)
       return true;
   }
 

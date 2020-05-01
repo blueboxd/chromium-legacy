@@ -8,8 +8,8 @@
 
 namespace ui {
 
-Microsoft::WRL::ComPtr<ui::DragSourceWin> DragSourceWin::Create() {
-  return Microsoft::WRL::Make<ui::DragSourceWin>();
+Microsoft::WRL::ComPtr<DragSourceWin> DragSourceWin::Create() {
+  return Microsoft::WRL::Make<DragSourceWin>();
 }
 
 DragSourceWin::DragSourceWin() : cancel_drag_(false), data_(nullptr) {
@@ -39,8 +39,7 @@ HRESULT DragSourceWin::GiveFeedback(DWORD effect) {
 
 void DragSourceWin::OnDragSourceDrop() {
   DCHECK(data_);
-  ui::OSExchangeDataProviderWin::GetDataObjectImpl(*data_)
-      ->set_in_drag_loop(false);
+  OSExchangeDataProviderWin::GetDataObjectImpl(*data_)->set_in_drag_loop(false);
 }
 
 }  // namespace ui

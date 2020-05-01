@@ -172,7 +172,8 @@ class RenderFrameHostFactoryForHistoryBackInterceptor
       bool renderer_initiated_creation) override {
     return base::WrapUnique(new RenderFrameHostImplForHistoryBackInterceptor(
         site_instance, std::move(render_view_host), delegate, frame_tree,
-        frame_tree_node, routing_id, renderer_initiated_creation));
+        frame_tree_node, routing_id, renderer_initiated_creation,
+        RenderFrameHostImpl::LifecycleState::kActive));
   }
 };
 

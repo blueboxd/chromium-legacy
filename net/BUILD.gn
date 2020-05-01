@@ -1442,15 +1442,9 @@ component("net") {
 
         # These files are part of the partial implementation of NSS for
         # cert verification, so keep them in that case.
-        "cert/cert_verify_proc_nss.cc",
-        "cert/cert_verify_proc_nss.h",
         "cert/test_root_certs_nss.cc",
         "cert/x509_util_nss.cc",
         "cert/x509_util_nss.h",
-        "cert_net/nss_ocsp.cc",
-        "cert_net/nss_ocsp.h",
-        "cert_net/nss_ocsp_session_url_request.cc",
-        "cert_net/nss_ocsp_session_url_request.h",
       ]
       if (!is_chromecast) {
         sources += [
@@ -4645,7 +4639,6 @@ test("net_unittests") {
       "cert/internal/trust_store_nss_unittest.cc",
       "cert/nss_cert_database_unittest.cc",
       "cert/x509_util_nss_unittest.cc",
-      "cert_net/nss_ocsp_unittest.cc",
     ]
     if (!is_chromecast) {
       sources += [

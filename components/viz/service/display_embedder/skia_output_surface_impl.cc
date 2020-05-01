@@ -793,6 +793,13 @@ void SkiaOutputSurfaceImpl::DidSwapBuffersComplete(
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(client_);
 
+  // Reset |damage_of_buffers_|, if buffers are new created.
+  if (params.swap_response.result ==
+      gfx::SwapResult::SWAP_NAK_RECREATE_BUFFERS) {
+    for (auto& damage : damage_of_buffers_)
+      damage = gfx::Rect(size_);
+  }
+
   if (!params.texture_in_use_responses.empty())
     client_->DidReceiveTextureInUseResponses(params.texture_in_use_responses);
   if (!params.ca_layer_params.is_empty)

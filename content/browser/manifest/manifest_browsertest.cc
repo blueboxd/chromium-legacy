@@ -194,17 +194,18 @@ IN_PROC_BROWSER_TEST_F(ManifestBrowserTest, NoManifest) {
 // If a page manifest points to a 404 URL, requesting the manifest should return
 // the empty manifest. However, the manifest URL will be non-empty.
 IN_PROC_BROWSER_TEST_F(ManifestBrowserTest, 404Manifest) {
-  GURL test_url = GetTestUrl("manifest", "404-manifest.html");
+  GURL test_url = embedded_test_server()->GetURL("/manifest/404-manifest.html");
 
   ASSERT_TRUE(NavigateToURL(shell(), test_url));
 
   GetManifestAndWait();
   EXPECT_TRUE(manifest().IsEmpty());
   EXPECT_FALSE(manifest_url().is_empty());
-  EXPECT_EQ(0, GetConsoleErrorCount());
+  // 1 error for syntax errors in manifest/thereisnomanifestthere.json.
+  EXPECT_EQ(1, GetConsoleErrorCount());
   ASSERT_EQ(1u, reported_manifest_urls().size());
   EXPECT_EQ(manifest_url(), reported_manifest_urls()[0]);
-  EXPECT_EQ(0u, manifests_reported_when_favicon_url_updated().size());
+  EXPECT_EQ(1u, manifests_reported_when_favicon_url_updated().size());
 }
 
 // If a page has an empty manifest, requesting the manifest should return the

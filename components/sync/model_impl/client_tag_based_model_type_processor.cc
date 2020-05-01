@@ -356,7 +356,13 @@ void ClientTagBasedModelTypeProcessor::Put(
     entity = entity_tracker_->GetEntityForTagHash(data->client_tag_hash);
     if (entity != nullptr) {
       DCHECK(storage_key != entity->storage_key());
-      DCHECK(entity->metadata().is_deleted());
+      if (!entity->metadata().is_deleted()) {
+        // The bridge overrides an entity that is not deleted. This is
+        // unexpected but the processor tolerates it. It is very likely a
+        // metadata orphan; report it to metrics.
+        UMA_HISTOGRAM_ENUMERATION("Sync.ModelTypeOrphanMetadata.Put",
+                                  ModelTypeHistogramValue(type_));
+      }
       // Remove the old storage key from the tracker and the corresponding
       // metadata record.
       metadata_change_list->ClearMetadata(entity->storage_key());
@@ -875,7 +881,7 @@ void ClientTagBasedModelTypeProcessor::ConsumeDataBatch(
     // effects of this inconsistent state, we treat it as if UntrackEntity()
     // had been called.
     storage_keys_to_untrack.push_back(storage_key);
-    UMA_HISTOGRAM_ENUMERATION("Sync.ModelTypeOrphanMetadata",
+    UMA_HISTOGRAM_ENUMERATION("Sync.ModelTypeOrphanMetadata.GetData",
                               ModelTypeHistogramValue(type_));
   }
 

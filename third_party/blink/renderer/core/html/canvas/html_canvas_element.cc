@@ -1432,7 +1432,8 @@ void HTMLCanvasElement::CreateLayer() {
   // We do not design transferControlToOffscreen() for frame-less HTML canvas.
   if (frame) {
     surface_layer_bridge_ = std::make_unique<::blink::SurfaceLayerBridge>(
-        frame->GetPage()->GetChromeClient().GetFrameSinkId(frame), this,
+        frame->GetPage()->GetChromeClient().GetFrameSinkId(frame),
+        ::blink::SurfaceLayerBridge::ContainsVideo::kNo, this,
         base::DoNothing());
     // Creates a placeholder layer first before Surface is created.
     surface_layer_bridge_->CreateSolidColorLayer();

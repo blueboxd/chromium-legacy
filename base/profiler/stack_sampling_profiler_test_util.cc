@@ -18,6 +18,15 @@
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+#if defined(OS_WIN)
+// Windows doesn't provide an alloca function like Linux does.
+// Fortunately, it provides _alloca, which functions identically.
+#include <malloc.h>
+#define alloca _alloca
+#else
+#include <alloca.h>
+#endif
+
 namespace base {
 
 namespace {

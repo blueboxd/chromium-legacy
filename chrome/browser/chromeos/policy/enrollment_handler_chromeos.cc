@@ -37,6 +37,7 @@
 #include "components/policy/core/common/cloud/dm_auth.h"
 #include "components/policy/proto/chrome_device_policy.pb.h"
 #include "google_apis/gaia/gaia_auth_util.h"
+#include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "net/http/http_status_code.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -566,6 +567,20 @@ void EnrollmentHandlerChromeOS::OnDeviceAccountTokenError(
 void EnrollmentHandlerChromeOS::OnDeviceAccountClientError(
     DeviceManagementStatus status) {
   // Do nothing, it would be handled in OnClientError.
+}
+
+enterprise_management::DeviceServiceApiAccessRequest::DeviceType
+EnrollmentHandlerChromeOS::GetRobotAuthCodeDeviceType() {
+  return em::DeviceServiceApiAccessRequest::CHROME_OS;
+}
+
+std::string EnrollmentHandlerChromeOS::GetRobotOAuthScopes() {
+  return GaiaConstants::kAnyApiOAuth2Scope;
+}
+
+scoped_refptr<network::SharedURLLoaderFactory>
+EnrollmentHandlerChromeOS::GetURLLoaderFactory() {
+  return g_browser_process->shared_url_loader_factory();
 }
 
 void EnrollmentHandlerChromeOS::SetFirmwareManagementParametersData() {

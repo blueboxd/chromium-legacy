@@ -99,15 +99,20 @@ void FeedStreamSurface::SurfaceClosed(JNIEnv* env,
   }
 }
 
-void FeedStreamSurface::ReportOpenAction(JNIEnv* env,
-                                         const JavaParamRef<jobject>& obj) {
-  feed_stream_api_->ReportOpenAction();
+void FeedStreamSurface::ReportOpenAction(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    const JavaParamRef<jstring>& slice_id) {
+  feed_stream_api_->ReportOpenAction(
+      base::android::ConvertJavaStringToUTF8(env, slice_id));
 }
 
 void FeedStreamSurface::ReportOpenInNewTabAction(
     JNIEnv* env,
-    const JavaParamRef<jobject>& obj) {
-  feed_stream_api_->ReportOpenInNewTabAction();
+    const JavaParamRef<jobject>& obj,
+    const JavaParamRef<jstring>& slice_id) {
+  feed_stream_api_->ReportOpenInNewTabAction(
+      base::android::ConvertJavaStringToUTF8(env, slice_id));
 }
 
 void FeedStreamSurface::ReportOpenInNewIncognitoTabAction(

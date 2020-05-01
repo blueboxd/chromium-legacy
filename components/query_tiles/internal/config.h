@@ -40,6 +40,10 @@ struct TileConfig {
 
   // Locale setting from operating system.
   std::string locale;
+
+  // Flag to tell whether running the background task requires unmeter network
+  // condition.
+  bool is_unmetered_network_required;
 };
 
 }  // namespace upboarding

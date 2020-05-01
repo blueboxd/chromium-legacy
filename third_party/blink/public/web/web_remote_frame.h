@@ -21,7 +21,9 @@ class Layer;
 
 namespace blink {
 
-enum class WebTreeScopeType;
+namespace mojom {
+enum class TreeScopeType;
+}
 class AssociatedInterfaceProvider;
 class InterfaceRegistry;
 class WebElement;
@@ -37,7 +39,7 @@ class WebRemoteFrame : public WebFrame {
  public:
   // Factory methods for creating a WebRemoteFrame. The WebRemoteFrameClient
   // argument must be non-null for all creation methods.
-  BLINK_EXPORT static WebRemoteFrame* Create(WebTreeScopeType,
+  BLINK_EXPORT static WebRemoteFrame* Create(mojom::TreeScopeType,
                                              WebRemoteFrameClient*,
                                              InterfaceRegistry*,
                                              AssociatedInterfaceProvider*);
@@ -52,7 +54,7 @@ class WebRemoteFrame : public WebFrame {
   // Also performs core initialization to associate the created remote frame
   // with the provided <portal> element.
   BLINK_EXPORT static WebRemoteFrame* CreateForPortal(
-      WebTreeScopeType,
+      mojom::TreeScopeType,
       WebRemoteFrameClient*,
       InterfaceRegistry*,
       AssociatedInterfaceProvider*,
@@ -65,7 +67,7 @@ class WebRemoteFrame : public WebFrame {
   // ensure that it is inserted into the correct location in the list of
   // children. If |previous_sibling| is null, the child is inserted at the
   // beginning.
-  virtual WebLocalFrame* CreateLocalChild(WebTreeScopeType,
+  virtual WebLocalFrame* CreateLocalChild(mojom::TreeScopeType,
                                           const WebString& name,
                                           const FramePolicy&,
                                           WebLocalFrameClient*,
@@ -75,7 +77,7 @@ class WebRemoteFrame : public WebFrame {
                                           mojom::FrameOwnerElementType,
                                           WebFrame* opener) = 0;
 
-  virtual WebRemoteFrame* CreateRemoteChild(WebTreeScopeType,
+  virtual WebRemoteFrame* CreateRemoteChild(mojom::TreeScopeType,
                                             const WebString& name,
                                             const FramePolicy&,
                                             mojom::FrameOwnerElementType,
@@ -146,7 +148,7 @@ class WebRemoteFrame : public WebFrame {
   virtual WebRect GetCompositingRect() = 0;
 
  protected:
-  explicit WebRemoteFrame(WebTreeScopeType scope) : WebFrame(scope) {}
+  explicit WebRemoteFrame(mojom::TreeScopeType scope) : WebFrame(scope) {}
 
   // Inherited from WebFrame, but intentionally hidden: it never makes sense
   // to call these on a WebRemoteFrame.

@@ -68,9 +68,11 @@ const char* ConnectorToPref(AnalysisConnector connector) {
 }  // namespace
 
 // ConnectorsManager implementation---------------------------------------------
-ConnectorsManager::~ConnectorsManager() = default;
+ConnectorsManager::ConnectorsManager() {
+  StartObservingPrefs();
+}
 
-ConnectorsManager::ConnectorsManager() = default;
+ConnectorsManager::~ConnectorsManager() = default;
 
 // static
 ConnectorsManager* ConnectorsManager::GetInstance() {
@@ -120,6 +122,8 @@ void ConnectorsManager::GetAnalysisSettingsFromConnectorPolicy(
 }
 
 void ConnectorsManager::CacheConnectorPolicy(AnalysisConnector connector) {
+  connector_settings_.erase(connector);
+
   // Connectors with non-existing policies should not reach this code.
   const char* pref = ConnectorToPref(connector);
   DCHECK(pref);
@@ -265,13 +269,33 @@ std::set<std::string> ConnectorsManager::MatchURLAgainstLegacyPolicies(
   return tags;
 }
 
-void ConnectorsManager::Reset() {
-  connector_settings_.clear();
+void ConnectorsManager::StartObservingPrefs() {
+  pref_change_registrar_.Init(g_browser_process->local_state());
+  if (base::FeatureList::IsEnabled(kEnterpriseConnectorsEnabled)) {
+    // TODO(crbug/1067631): Add other connectors once their corresponding policy
+    // exists.
+    if (!pref_change_registrar_.IsObserved(kOnFileAttachedPref)) {
+      pref_change_registrar_.Add(
+          kOnFileAttachedPref,
+          base::BindRepeating(&ConnectorsManager::CacheConnectorPolicy,
+                              base::Unretained(this),
+                              AnalysisConnector::FILE_ATTACHED));
+    }
+  }
 }
 
 const ConnectorsManager::AnalysisConnectorsSettings&
 ConnectorsManager::GetAnalysisConnectorsSettingsForTesting() const {
   return connector_settings_;
+}
+
+void ConnectorsManager::SetUpForTesting() {
+  StartObservingPrefs();
+}
+
+void ConnectorsManager::TearDownForTesting() {
+  pref_change_registrar_.RemoveAll();
+  connector_settings_.clear();
 }
 
 }  // namespace enterprise_connectors

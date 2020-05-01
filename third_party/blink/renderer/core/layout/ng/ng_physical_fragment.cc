@@ -306,15 +306,13 @@ bool NGPhysicalFragment::IsPlacedByLayoutNG() const {
 
 const FragmentData* NGPhysicalFragment::GetFragmentData() const {
   DCHECK(CanTraverse());
-  const LayoutObject* layout_object = GetLayoutObject();
-  if (!layout_object)
+  const LayoutBox* box = ToLayoutBoxOrNull(GetLayoutObject());
+  if (!box) {
+    DCHECK(!GetLayoutObject());
     return nullptr;
-  // TODO(mstensho): Actually return the correct FragmentData. For now this
-  // method only behaves if there's just one FragmentData associated with the
-  // LayoutObject.
-  const FragmentData& first_fragment_data = layout_object->FirstFragment();
-  DCHECK(!first_fragment_data.NextFragment());
-  return &first_fragment_data;
+  }
+  return box->FragmentDataFromPhysicalFragment(
+      To<NGPhysicalBoxFragment>(*this));
 }
 
 const NGPhysicalFragment* NGPhysicalFragment::PostLayout() const {
@@ -461,8 +459,8 @@ const Vector<NGInlineItem>& NGPhysicalFragment::InlineItemsOfContainingBlock()
 }
 
 TouchAction NGPhysicalFragment::EffectiveAllowedTouchAction() const {
-  DCHECK(GetLayoutObject());
-  return GetLayoutObject()->EffectiveAllowedTouchAction();
+  DCHECK(layout_object_);
+  return layout_object_->EffectiveAllowedTouchAction();
 }
 
 UBiDiLevel NGPhysicalFragment::BidiLevel() const {

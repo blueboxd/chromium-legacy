@@ -47,10 +47,6 @@ extern const char kEnableVp9ConfigPath[];
 extern const char kEnableH264ConfigPath[];
 // Number of Kibibytes of frame data to allow each client to record.
 extern const char kFrameRecorderBufferKbConfigPath[];
-// Key which marks the config's token as up-to-date for FTL. If present, the
-// token-exchange will be skipped, which avoids querying over the network for
-// the current token's scopes.
-extern const char kIsFtlTokenConfigPath[];
 
 // Helpers for serializing/deserializing Host configuration dictonaries.
 std::unique_ptr<base::DictionaryValue> HostConfigFromJson(

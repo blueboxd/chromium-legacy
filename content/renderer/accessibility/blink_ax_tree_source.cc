@@ -996,6 +996,8 @@ void BlinkAXTreeSource::SerializeNode(WebAXObject src,
 
     const bool is_table_like_role = ui::IsTableLike(dst->role);
     if (is_table_like_role) {
+      // TODO(accessibility): these should be computed by ui::AXTableInfo and
+      // removed here.
       int column_count = src.ColumnCount();
       int row_count = src.RowCount();
       if (column_count > 0 && row_count > 0) {
@@ -1006,32 +1008,31 @@ void BlinkAXTreeSource::SerializeNode(WebAXObject src,
       }
 
       int aria_colcount = src.AriaColumnCount();
-      if (aria_colcount)
+      if (aria_colcount) {
         dst->AddIntAttribute(ax::mojom::IntAttribute::kAriaColumnCount,
                              aria_colcount);
+      }
 
       int aria_rowcount = src.AriaRowCount();
-      if (aria_rowcount)
+      if (aria_rowcount) {
         dst->AddIntAttribute(ax::mojom::IntAttribute::kAriaRowCount,
                              aria_rowcount);
+      }
     }
 
     if (ui::IsTableRow(dst->role)) {
-      dst->AddIntAttribute(ax::mojom::IntAttribute::kTableRowIndex,
-                           src.RowIndex());
       WebAXObject header = src.RowHeader();
-      if (!header.IsDetached())
+      if (!header.IsDetached()) {
+        // TODO(accessibility): these should be computed by ui::AXTableInfo and
+        // removed here.
         dst->AddIntAttribute(ax::mojom::IntAttribute::kTableRowHeaderId,
                              header.AxID());
+      }
     }
 
     if (ui::IsCellOrTableHeader(dst->role)) {
-      dst->AddIntAttribute(ax::mojom::IntAttribute::kTableCellColumnIndex,
-                           src.CellColumnIndex());
       dst->AddIntAttribute(ax::mojom::IntAttribute::kTableCellColumnSpan,
                            src.CellColumnSpan());
-      dst->AddIntAttribute(ax::mojom::IntAttribute::kTableCellRowIndex,
-                           src.CellRowIndex());
       dst->AddIntAttribute(ax::mojom::IntAttribute::kTableCellRowSpan,
                            src.CellRowSpan());
     }
@@ -1040,9 +1041,10 @@ void BlinkAXTreeSource::SerializeNode(WebAXObject src,
       // aria-rowindex and aria-colindex are supported on cells, headers and
       // rows.
       int aria_rowindex = src.AriaRowIndex();
-      if (aria_rowindex)
+      if (aria_rowindex) {
         dst->AddIntAttribute(ax::mojom::IntAttribute::kAriaCellRowIndex,
                              aria_rowindex);
+      }
 
       int aria_colindex = src.AriaColumnIndex();
       if (aria_colindex) {

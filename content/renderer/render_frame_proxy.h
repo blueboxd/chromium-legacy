@@ -78,7 +78,7 @@ class CONTENT_EXPORT RenderFrameProxy : public IPC::Listener,
   static RenderFrameProxy* CreateProxyToReplaceFrame(
       RenderFrameImpl* frame_to_replace,
       int routing_id,
-      blink::WebTreeScopeType scope);
+      blink::mojom::TreeScopeType scope);
 
   // This method should be used to create a RenderFrameProxy, when there isn't
   // an existing RenderFrame. It should be called to construct a local

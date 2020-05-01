@@ -79,7 +79,11 @@ void WebViewTestProxy::DidFocus(blink::WebLocalFrame* calling_frame) {
 void WebViewTestProxy::Reset() {
   accessibility_controller_.Reset();
   // |text_input_controller_| doesn't have any state to reset.
+
   view_test_runner_.Reset();
+
+  // Resets things on the WebView that TestRunnerBindings can modify.
+  GetWebView()->SetTabKeyCyclesThroughElements(true);
 
   for (blink::WebFrame* frame = GetWebView()->MainFrame(); frame;
        frame = frame->TraverseNext()) {

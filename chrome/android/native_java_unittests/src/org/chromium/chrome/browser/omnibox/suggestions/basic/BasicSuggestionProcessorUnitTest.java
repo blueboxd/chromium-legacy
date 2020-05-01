@@ -131,7 +131,7 @@ public class BasicSuggestionProcessorUnitTest {
                 /* imageUrl */ GURL.emptyGURL(), /* imageDominantColor */ "", isBookmark,
                 /* isDeletable */ false, /* postContentType */ null, /* postData */ null,
                 OmniboxSuggestion.INVALID_GROUP);
-        mModel = mProcessor.createModelForSuggestion(mSuggestion);
+        mModel = mProcessor.createModel();
         mProcessor.populateModel(mSuggestion, mModel, 0);
     }
 

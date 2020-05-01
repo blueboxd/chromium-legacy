@@ -59,6 +59,10 @@ class EnterpriseEnrollmentHelperImpl
   void OnDeviceAccountTokenError(policy::EnrollmentStatus status) override;
   void OnDeviceAccountClientError(
       policy::DeviceManagementStatus status) override;
+  enterprise_management::DeviceServiceApiAccessRequest::DeviceType
+  GetRobotAuthCodeDeviceType() override;
+  std::string GetRobotOAuthScopes() override;
+  scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory() override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(EnterpriseEnrollmentTest,

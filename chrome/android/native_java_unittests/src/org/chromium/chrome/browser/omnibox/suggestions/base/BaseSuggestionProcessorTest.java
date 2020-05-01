@@ -49,7 +49,7 @@ public class BaseSuggestionProcessorTest {
         }
 
         @Override
-        public PropertyModel createModelForSuggestion(OmniboxSuggestion suggestion) {
+        public PropertyModel createModel() {
             return new PropertyModel(BaseSuggestionViewProperties.ALL_KEYS);
         }
 
@@ -108,7 +108,7 @@ public class BaseSuggestionProcessorTest {
                 /* imageUrl */ GURL.emptyGURL(), /* imageDominantColor */ "", false,
                 /* isDeletable */ false, /* postContentType */ null, /* postData */ null,
                 OmniboxSuggestion.INVALID_GROUP);
-        mModel = mProcessor.createModelForSuggestion(mSuggestion);
+        mModel = mProcessor.createModel();
         mProcessor.populateModel(mSuggestion, mModel, 0);
     }
 

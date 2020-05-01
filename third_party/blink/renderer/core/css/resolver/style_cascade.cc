@@ -879,7 +879,7 @@ void StyleCascade::MarkIsReferenced(const CustomProperty& property) {
   if (!property.IsRegistered())
     return;
   const AtomicString& name = property.GetPropertyNameAtomicString();
-  state_.GetDocument().GetPropertyRegistry()->MarkReferenced(name);
+  state_.GetDocument().EnsurePropertyRegistry().MarkReferenced(name);
 }
 
 void StyleCascade::MarkHasVariableReference(const CSSProperty& property) {

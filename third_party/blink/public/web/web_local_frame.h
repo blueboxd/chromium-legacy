@@ -68,7 +68,6 @@ class WebString;
 class WebTextCheckClient;
 class WebURL;
 class WebView;
-enum class WebTreeScopeType;
 struct FramePolicy;
 struct TransferableMessage;
 struct WebAssociatedURLLoaderOptions;
@@ -78,6 +77,10 @@ struct WebPrintParams;
 struct WebPrintPresetOptions;
 struct WebScriptSource;
 struct WebSourceLocation;
+
+namespace mojom {
+enum class TreeScopeType;
+}
 
 // Interface for interacting with in process frames. This contains methods that
 // require interacting with a frame's document.
@@ -132,7 +135,7 @@ class WebLocalFrame : public WebFrame {
   // Creates a new local child of this frame. Similar to the other methods that
   // create frames, the returned frame should be freed by calling Close() when
   // it's no longer needed.
-  virtual WebLocalFrame* CreateLocalChild(WebTreeScopeType,
+  virtual WebLocalFrame* CreateLocalChild(mojom::TreeScopeType,
                                           WebLocalFrameClient*,
                                           blink::InterfaceRegistry*) = 0;
 
@@ -618,12 +621,15 @@ class WebLocalFrame : public WebFrame {
   // Loading ------------------------------------------------------------------
 
   // Returns an AssociatedURLLoader that is associated with this frame.  The
-  // loader will, for example, be cancelled when WebFrame::stopLoading is
-  // called.
+  // loader will, for example, be cancelled when StopLoading is called.
   //
-  // FIXME: stopLoading does not yet cancel an associated loader!!
+  // FIXME: StopLoading does not yet cancel an associated loader!!
   virtual WebAssociatedURLLoader* CreateAssociatedURLLoader(
       const WebAssociatedURLLoaderOptions&) = 0;
+
+  // This API is deprecated and only required by PepperURLLoaderHost::Close(),
+  // and so it should not be used on a regular basis.
+  virtual void StopLoading() = 0;
 
   // Geometry -----------------------------------------------------------------
 
@@ -760,7 +766,7 @@ class WebLocalFrame : public WebFrame {
   virtual void SetAllowsCrossBrowsingInstanceFrameLookup() = 0;
 
  protected:
-  explicit WebLocalFrame(WebTreeScopeType scope) : WebFrame(scope) {}
+  explicit WebLocalFrame(mojom::TreeScopeType scope) : WebFrame(scope) {}
 
   // Inherited from WebFrame, but intentionally hidden: it never makes sense
   // to directly call these on a WebLocalFrame.

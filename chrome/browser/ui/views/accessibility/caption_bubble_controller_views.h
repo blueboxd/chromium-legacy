@@ -32,8 +32,8 @@ class CaptionBubbleControllerViews : public CaptionBubbleController {
   CaptionBubbleControllerViews& operator=(const CaptionBubbleControllerViews&) =
       delete;
 
-  // Called when captions are received from the service.
-  void OnCaptionReceived(const std::string& text) override;
+  // Called when a transcription is received from the service.
+  void OnTranscription(const std::string& transcription) override;
 
   // Called when the active tab changes.
   void OnActiveTabChanged(int index) override;

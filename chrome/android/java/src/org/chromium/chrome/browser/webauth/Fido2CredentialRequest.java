@@ -38,9 +38,9 @@ import org.chromium.chrome.browser.externalauth.UserRecoverableErrorHandler;
 import org.chromium.content_public.browser.RenderFrameHost;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsStatics;
-import org.chromium.net.GURLUtils;
 import org.chromium.ui.base.ActivityWindowAndroid;
 import org.chromium.ui.base.WindowAndroid;
+import org.chromium.url.Origin;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -138,7 +138,7 @@ public class Fido2CredentialRequest implements WindowAndroid.IntentCallback {
 
     public void handleMakeCredentialRequest(
             org.chromium.blink.mojom.PublicKeyCredentialCreationOptions options,
-            RenderFrameHost frameHost, HandlerResponseCallback callback) {
+            RenderFrameHost frameHost, Origin origin, HandlerResponseCallback callback) {
         assert mCallback == null;
         mCallback = callback;
         if (mWebContents == null) {
@@ -153,8 +153,8 @@ public class Fido2CredentialRequest implements WindowAndroid.IntentCallback {
             return;
         }
 
-        int securityCheck =
-                frameHost.performMakeCredentialWebAuthSecurityChecks(options.relyingParty.id);
+        int securityCheck = frameHost.performMakeCredentialWebAuthSecurityChecks(
+                options.relyingParty.id, origin);
         if (securityCheck != AuthenticatorStatus.SUCCESS) {
             returnErrorAndResetCallback(securityCheck);
             return;
@@ -171,7 +171,7 @@ public class Fido2CredentialRequest implements WindowAndroid.IntentCallback {
         BrowserPublicKeyCredentialCreationOptions browserRequestOptions =
                 new BrowserPublicKeyCredentialCreationOptions.Builder()
                         .setPublicKeyCredentialCreationOptions(credentialCreationOptions)
-                        .setOrigin(Uri.parse(GURLUtils.getOrigin(frameHost.getLastCommittedURL())))
+                        .setOrigin(Uri.parse(convertOriginToString(origin)))
                         .build();
 
         Task<Fido2PendingIntent> result = mFido2ApiClient.getRegisterIntent(browserRequestOptions);
@@ -179,7 +179,7 @@ public class Fido2CredentialRequest implements WindowAndroid.IntentCallback {
     }
 
     public void handleGetAssertionRequest(PublicKeyCredentialRequestOptions options,
-            RenderFrameHost frameHost, HandlerResponseCallback callback) {
+            RenderFrameHost frameHost, Origin origin, HandlerResponseCallback callback) {
         assert mCallback == null;
         mCallback = callback;
         if (mWebContents == null) {
@@ -195,7 +195,7 @@ public class Fido2CredentialRequest implements WindowAndroid.IntentCallback {
         }
 
         int securityCheck =
-                frameHost.performGetAssertionWebAuthSecurityChecks(options.relyingPartyId);
+                frameHost.performGetAssertionWebAuthSecurityChecks(options.relyingPartyId, origin);
         if (securityCheck != AuthenticatorStatus.SUCCESS) {
             returnErrorAndResetCallback(securityCheck);
             return;
@@ -212,7 +212,7 @@ public class Fido2CredentialRequest implements WindowAndroid.IntentCallback {
         BrowserPublicKeyCredentialRequestOptions browserRequestOptions =
                 new BrowserPublicKeyCredentialRequestOptions.Builder()
                         .setPublicKeyCredentialRequestOptions(getAssertionOptions)
-                        .setOrigin(Uri.parse(GURLUtils.getOrigin(frameHost.getLastCommittedURL())))
+                        .setOrigin(Uri.parse(convertOriginToString(origin)))
                         .build();
 
         Task<Fido2PendingIntent> result = mFido2ApiClient.getSignIntent(browserRequestOptions);
@@ -365,5 +365,9 @@ public class Fido2CredentialRequest implements WindowAndroid.IntentCallback {
                             + "and FIDO2_KEY_CREDENTIAL_EXTRA.");
             returnErrorAndResetCallback(AuthenticatorStatus.UNKNOWN_ERROR);
         }
+    }
+
+    private String convertOriginToString(Origin origin) {
+        return origin.getScheme() + "://" + origin.getHost() + ":" + origin.getPort();
     }
 }

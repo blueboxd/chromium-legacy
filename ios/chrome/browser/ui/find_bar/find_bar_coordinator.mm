@@ -42,8 +42,9 @@
   }
   self.presenter.delegate = self;
 
-  self.mediator = [[FindBarMediator alloc]
-      initWithCommandHandler:self.findInPageCommandHandler];
+  self.mediator =
+      [[FindBarMediator alloc] initWithWebState:self.currentWebState
+                                 commandHandler:self.findInPageCommandHandler];
   self.mediator.consumer = self.findBarController;
 
   DCHECK(self.currentWebState);
@@ -75,6 +76,7 @@
   }
   [self.findBarController findBarViewWillHide];
   [self.presenter dismissAnimated:animated];
+  self.mediator = nil;
 }
 
 - (void)showAnimated:(BOOL)animated shouldFocus:(BOOL)shouldFocus {

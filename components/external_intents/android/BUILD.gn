@@ -14,7 +14,6 @@ android_library("java") {
     "java/src/org/chromium/components/external_intents/ExternalNavigationParams.java",
     "java/src/org/chromium/components/external_intents/InterceptNavigationDelegateClient.java",
     "java/src/org/chromium/components/external_intents/InterceptNavigationDelegateImpl.java",
-    "java/src/org/chromium/components/external_intents/RedirectHandler.java",
     "java/src/org/chromium/components/external_intents/RedirectHandlerImpl.java",
   ]
 

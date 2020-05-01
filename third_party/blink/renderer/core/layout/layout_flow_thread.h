@@ -65,7 +65,7 @@ class MultiColumnLayoutState {
 // LayoutMultiColumnSet will actually be a viewPort of the LayoutFlowThread.
 class CORE_EXPORT LayoutFlowThread : public LayoutBlockFlow {
  public:
-  LayoutFlowThread();
+  explicit LayoutFlowThread(bool needs_paint_layer);
   ~LayoutFlowThread() override = default;
 
   bool IsLayoutFlowThread() const final { return true; }
@@ -101,9 +101,7 @@ class CORE_EXPORT LayoutFlowThread : public LayoutBlockFlow {
 
   void UpdateLayout() override;
 
-  // Always create a Layer for the LayoutFlowThread so that we
-  // can easily avoid drawing the children directly.
-  PaintLayerType LayerTypeRequired() const final { return kNormalPaintLayer; }
+  PaintLayerType LayerTypeRequired() const final;
 
   bool NeedsPreferredWidthsRecalculation() const final { return true; }
 
@@ -229,6 +227,7 @@ class CORE_EXPORT LayoutFlowThread : public LayoutBlockFlow {
 
   bool column_sets_invalidated_ : 1;
   bool page_logical_size_changed_ : 1;
+  bool needs_paint_layer_ : 1;
 };
 
 DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutFlowThread, IsLayoutFlowThread());

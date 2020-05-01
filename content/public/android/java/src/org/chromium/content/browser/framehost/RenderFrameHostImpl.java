@@ -147,17 +147,21 @@ public class RenderFrameHostImpl implements RenderFrameHost {
     }
 
     @Override
-    public int performGetAssertionWebAuthSecurityChecks(String relyingPartyId) {
+    public int performGetAssertionWebAuthSecurityChecks(
+            String relyingPartyId, Origin effectiveOrigin) {
         if (mNativeRenderFrameHostAndroid == 0) return AuthenticatorStatus.UNKNOWN_ERROR;
         return RenderFrameHostImplJni.get().performGetAssertionWebAuthSecurityChecks(
-                mNativeRenderFrameHostAndroid, RenderFrameHostImpl.this, relyingPartyId);
+                mNativeRenderFrameHostAndroid, RenderFrameHostImpl.this, relyingPartyId,
+                effectiveOrigin);
     }
 
     @Override
-    public int performMakeCredentialWebAuthSecurityChecks(String relyingPartyId) {
+    public int performMakeCredentialWebAuthSecurityChecks(
+            String relyingPartyId, Origin effectiveOrigin) {
         if (mNativeRenderFrameHostAndroid == 0) return AuthenticatorStatus.UNKNOWN_ERROR;
         return RenderFrameHostImplJni.get().performMakeCredentialWebAuthSecurityChecks(
-                mNativeRenderFrameHostAndroid, RenderFrameHostImpl.this, relyingPartyId);
+                mNativeRenderFrameHostAndroid, RenderFrameHostImpl.this, relyingPartyId,
+                effectiveOrigin);
     }
 
     @NativeMethods
@@ -175,8 +179,8 @@ public class RenderFrameHostImpl implements RenderFrameHost {
         boolean isRenderFrameCreated(long nativeRenderFrameHostAndroid, RenderFrameHostImpl caller);
         boolean isProcessBlocked(long nativeRenderFrameHostAndroid, RenderFrameHostImpl caller);
         int performGetAssertionWebAuthSecurityChecks(long nativeRenderFrameHostAndroid,
-                RenderFrameHostImpl caller, String relyingPartyId);
+                RenderFrameHostImpl caller, String relyingPartyId, Origin effectiveOrigin);
         int performMakeCredentialWebAuthSecurityChecks(long nativeRenderFrameHostAndroid,
-                RenderFrameHostImpl caller, String relyingPartyId);
+                RenderFrameHostImpl caller, String relyingPartyId, Origin effectiveOrigin);
     }
 }

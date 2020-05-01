@@ -33,10 +33,19 @@ using CertProfileId = std::string;
 
 struct CertProfile {
   CertProfileId profile_id;
+
+  // IMPORTANT:
+  // Increment this when you add/change any member in CertProfile (and update
+  // all functions that fail to compile because of it).
+  static constexpr int kVersion = 1;
+
+  bool operator==(const CertProfile& other) const;
+  bool operator!=(const CertProfile& other) const;
 };
 
 void RegisterProfilePrefs(PrefRegistrySimple* registry);
 void RegisterLocalStatePrefs(PrefRegistrySimple* registry);
+const char* GetPrefNameForSerialization(CertScope scope);
 
 // Returns the nickname (CKA_LABEL) for keys created for the |profile_id|.
 std::string GetKeyName(CertProfileId profile_id);

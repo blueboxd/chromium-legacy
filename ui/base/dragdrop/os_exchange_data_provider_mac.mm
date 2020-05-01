@@ -79,8 +79,7 @@ namespace {
 class OwningProvider : public OSExchangeDataProviderMac {
  public:
   OwningProvider()
-      : OSExchangeDataProviderMac(),
-        owned_pasteboard_(new ui::UniquePasteboard) {}
+      : OSExchangeDataProviderMac(), owned_pasteboard_(new UniquePasteboard) {}
   OwningProvider(const OwningProvider& provider) = default;
 
   std::unique_ptr<OSExchangeData::Provider> Clone() const override {
@@ -92,7 +91,7 @@ class OwningProvider : public OSExchangeDataProviderMac {
   }
 
  private:
-  scoped_refptr<ui::UniquePasteboard> owned_pasteboard_;
+  scoped_refptr<UniquePasteboard> owned_pasteboard_;
 };
 
 class WrappingProvider : public OSExchangeDataProviderMac {
@@ -153,7 +152,7 @@ void OSExchangeDataProviderMac::SetURL(const GURL& url,
   base::scoped_nsobject<NSPasteboardItem> item =
       ClipboardUtil::PasteboardItemFromUrl(base::SysUTF8ToNSString(url.spec()),
                                            base::SysUTF16ToNSString(title));
-  ui::ClipboardUtil::AddDataToPasteboard(GetPasteboard(), item);
+  ClipboardUtil::AddDataToPasteboard(GetPasteboard(), item);
 }
 
 void OSExchangeDataProviderMac::SetFilename(const base::FilePath& path) {
@@ -208,8 +207,7 @@ bool OSExchangeDataProviderMac::GetURLAndTitle(
   DCHECK(url);
   DCHECK(title);
 
-  if (ui::PopulateURLAndTitleFromPasteboard(url, title, GetPasteboard(),
-                                            false)) {
+  if (PopulateURLAndTitleFromPasteboard(url, title, GetPasteboard(), false)) {
     return true;
   }
 
@@ -333,10 +331,10 @@ NSDraggingItem* OSExchangeDataProviderMac::GetDraggingItem() const {
 // static
 NSArray* OSExchangeDataProviderMac::SupportedPasteboardTypes() {
   return @[
-    kWebCustomDataPboardType, ui::ClipboardUtil::UTIForWebURLsAndTitles(),
-    NSURLPboardType, NSFilenamesPboardType, ui::kChromeDragDummyPboardType,
+    kWebCustomDataPboardType, ClipboardUtil::UTIForWebURLsAndTitles(),
+    NSURLPboardType, NSFilenamesPboardType, kChromeDragDummyPboardType,
     NSStringPboardType, NSHTMLPboardType, NSRTFPboardType,
-    NSFilenamesPboardType, ui::kWebCustomDataPboardType, NSPasteboardTypeString
+    NSFilenamesPboardType, kWebCustomDataPboardType, NSPasteboardTypeString
   ];
 }
 

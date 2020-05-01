@@ -15,11 +15,6 @@ source_set("common") {
     "gl_ozone_egl.h",
     "gl_surface_egl_readback.cc",
     "gl_surface_egl_readback.h",
-    "gpu/ozone_gpu_message_generator.cc",
-    "gpu/ozone_gpu_message_generator.h",
-    "gpu/ozone_gpu_message_params.cc",
-    "gpu/ozone_gpu_message_params.h",
-    "gpu/ozone_gpu_messages.h",
     "stub_overlay_manager.cc",
     "stub_overlay_manager.h",
   ]

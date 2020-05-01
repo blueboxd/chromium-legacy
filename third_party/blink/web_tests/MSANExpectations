@@ -371,8 +371,8 @@ crbug.com/856601 [ Linux ] external/wpt/battery-status/idlharness.https.window.h
 crbug.com/856601 [ Linux ] external/wpt/permissions/idlharness.any.html [ Skip ]
 
 # Sheriff 2020-01-10
-crbug.com/1041052 [ Linux ] external/wpt/offscreen-canvas/filter/offscreencanvas.filter.w.html [ Timeout ]
-crbug.com/1041052 [ Linux ] external/wpt/2dcontext/fill-and-stroke-styles/canvas_colorsandstyles_createlineargradient_001.htm [ Timeout ]
+crbug.com/1041052 [ Linux ] external/wpt/html/canvas/offscreen/filter/offscreencanvas.filter.w.html [ Timeout ]
+crbug.com/1041052 [ Linux ] external/wpt/html/canvas/element/fill-and-stroke-styles/canvas_colorsandstyles_createlineargradient_001.htm [ Timeout ]
 
 # Sheriff 2020-02-04
 crbug.com/1047818 [ Linux ] external/wpt/visual-viewport/idlharness.window.html [ Skip ]

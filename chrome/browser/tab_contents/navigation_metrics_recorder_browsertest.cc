@@ -18,6 +18,9 @@ namespace {
 
 typedef InProcessBrowserTest NavigationMetricsRecorderBrowserTest;
 
+// A site engagement score that falls into the range for HIGH engagement level.
+const int kHighEngagementScore = 50;
+
 IN_PROC_BROWSER_TEST_F(NavigationMetricsRecorderBrowserTest, TestMetrics) {
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
@@ -38,7 +41,7 @@ IN_PROC_BROWSER_TEST_F(NavigationMetricsRecorderBrowserTest, TestMetrics) {
 }
 
 IN_PROC_BROWSER_TEST_F(NavigationMetricsRecorderBrowserTest,
-                       TestMEngagementLevel) {
+                       Navigation_EngagementLevel) {
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
 
@@ -55,13 +58,40 @@ IN_PROC_BROWSER_TEST_F(NavigationMetricsRecorderBrowserTest,
                                blink::mojom::EngagementLevel::NONE, 1);
 
   SiteEngagementService::Get(browser()->profile())
-      ->ResetBaseScoreForURL(url, 50);
+      ->ResetBaseScoreForURL(url, kHighEngagementScore);
   ui_test_utils::NavigateToURL(browser(), url);
   histograms.ExpectTotalCount("Navigation.MainFrame.SiteEngagementLevel", 2);
   histograms.ExpectBucketCount("Navigation.MainFrame.SiteEngagementLevel",
                                blink::mojom::EngagementLevel::NONE, 1);
   histograms.ExpectBucketCount("Navigation.MainFrame.SiteEngagementLevel",
                                blink::mojom::EngagementLevel::HIGH, 1);
+}
+
+IN_PROC_BROWSER_TEST_F(NavigationMetricsRecorderBrowserTest,
+                       FormSubmission_EngagementLevel) {
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  ASSERT_TRUE(embedded_test_server()->Start());
+  const GURL url(embedded_test_server()->GetURL("/form.html"));
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  // Submit a form and check the histograms. Before doing so, we set a high site
+  // engagement score so that a single form submission doesn't affect the score
+  // much.
+  SiteEngagementService::Get(browser()->profile())
+      ->ResetBaseScoreForURL(url, kHighEngagementScore);
+  base::HistogramTester histograms;
+  content::TestNavigationObserver observer(web_contents);
+  const char* const kScript = "document.getElementById('form').submit()";
+  EXPECT_TRUE(content::ExecuteScript(web_contents, kScript));
+  observer.WaitForNavigationFinished();
+
+  histograms.ExpectTotalCount(
+      "Navigation.MainFrameFormSubmission.SiteEngagementLevel", 1);
+  histograms.ExpectBucketCount(
+      "Navigation.MainFrameFormSubmission.SiteEngagementLevel",
+      blink::mojom::EngagementLevel::HIGH, 1);
 }
 
 }  // namespace

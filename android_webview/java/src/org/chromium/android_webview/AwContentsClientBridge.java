@@ -325,9 +325,7 @@ public class AwContentsClientBridge {
             // Android WebView does not notify the embedder of these situations using
             // this error code with the WebViewClient.onReceivedError callback.
             if (safebrowsingHit) {
-                if (shouldOmitNotificationsForSafeBrowsingHit
-                        && AwFeatureList.isEnabled(
-                                AwFeatures.SAFE_BROWSING_COMMITTED_INTERSTITIALS)) {
+                if (shouldOmitNotificationsForSafeBrowsingHit) {
                     // With committed interstitials we don't fire these notifications when the
                     // interstitial shows, we instead handle them once the interstitial is
                     // dismissed.

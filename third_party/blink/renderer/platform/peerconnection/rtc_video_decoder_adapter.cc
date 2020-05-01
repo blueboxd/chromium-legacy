@@ -222,8 +222,9 @@ int32_t RTCVideoDecoderAdapter::InitDecode(
   base::AutoLock auto_lock(lock_);
   UMA_HISTOGRAM_BOOLEAN("Media.RTCVideoDecoderInitDecodeSuccess", !has_error_);
   if (!has_error_) {
-    UMA_HISTOGRAM_BOOLEAN("Media.RTCVideoDecoderProfile",
-                          GuessVideoCodecProfile(format_));
+    UMA_HISTOGRAM_ENUMERATION("Media.RTCVideoDecoderProfile",
+                              GuessVideoCodecProfile(format_),
+                              media::VIDEO_CODEC_PROFILE_MAX + 1);
   }
   return has_error_ ? WEBRTC_VIDEO_CODEC_UNINITIALIZED : WEBRTC_VIDEO_CODEC_OK;
 }

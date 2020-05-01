@@ -246,12 +246,6 @@ bool IsDrmModuleName(const int fd, const std::string& name) {
   return result;
 }
 
-bool AreDisplayModesEqual(const DisplayMode_Params& lhs,
-                          const DisplayMode_Params& rhs) {
-  return lhs.size == rhs.size && lhs.is_interlaced == rhs.is_interlaced &&
-         lhs.refresh_rate == rhs.refresh_rate;
-}
-
 }  // namespace
 
 ScopedDrmPropertyPtr FindDrmProperty(int fd,
@@ -269,20 +263,6 @@ bool HasColorCorrectionMatrix(int fd, drmModeCrtc* crtc) {
   ScopedDrmObjectPropertyPtr crtc_props(
       drmModeObjectGetProperties(fd, crtc->crtc_id, DRM_MODE_OBJECT_CRTC));
   return !!FindDrmProperty(fd, crtc_props.get(), "CTM");
-}
-
-DisplayMode_Params GetDisplayModeParams(const display::DisplayMode& mode) {
-  DisplayMode_Params params;
-  params.size = mode.size();
-  params.is_interlaced = mode.is_interlaced();
-  params.refresh_rate = mode.refresh_rate();
-  return params;
-}
-
-std::unique_ptr<display::DisplayMode> CreateDisplayModeFromParams(
-    const DisplayMode_Params& pmode) {
-  return std::make_unique<display::DisplayMode>(pmode.size, pmode.is_interlaced,
-                                                pmode.refresh_rate);
 }
 
 const gfx::Size ModeSize(const drmModeModeInfo& mode) {
@@ -522,76 +502,6 @@ std::unique_ptr<display::DisplaySnapshot> CreateDisplaySnapshot(
       display_name, sys_path, std::move(modes), panel_orientation, edid,
       current_mode, native_mode, product_code, year_of_manufacture,
       maximum_cursor_size);
-}
-
-// TODO(rjkroege): Remove in a subsequent CL once Mojo IPC is used everywhere.
-std::vector<DisplaySnapshot_Params> CreateDisplaySnapshotParams(
-    const MovableDisplaySnapshots& displays) {
-  std::vector<DisplaySnapshot_Params> params;
-  for (auto& d : displays) {
-    DisplaySnapshot_Params p;
-
-    p.display_id = d->display_id();
-    p.origin = d->origin();
-    p.physical_size = d->physical_size();
-    p.type = d->type();
-    p.is_aspect_preserving_scaling = d->is_aspect_preserving_scaling();
-    p.has_overscan = d->has_overscan();
-    p.privacy_screen_state = d->privacy_screen_state();
-    p.has_color_correction_matrix = d->has_color_correction_matrix();
-    p.color_correction_in_linear_space = d->color_correction_in_linear_space();
-    p.color_space = d->color_space();
-    p.bits_per_channel = d->bits_per_channel();
-    p.display_name = d->display_name();
-    p.sys_path = d->sys_path();
-
-    std::vector<DisplayMode_Params> mode_params;
-    for (const auto& m : d->modes()) {
-      mode_params.push_back(GetDisplayModeParams(*m));
-    }
-    p.modes = mode_params;
-    p.panel_orientation = d->panel_orientation();
-    p.edid = d->edid();
-
-    p.has_current_mode = d->current_mode();
-    if (d->current_mode())
-      p.current_mode = GetDisplayModeParams(*d->current_mode());
-
-    p.has_native_mode = d->native_mode();
-    if (d->native_mode())
-      p.native_mode = GetDisplayModeParams(*d->native_mode());
-
-    p.product_code = d->product_code();
-    p.year_of_manufacture = d->year_of_manufacture();
-    p.maximum_cursor_size = d->maximum_cursor_size();
-
-    params.push_back(p);
-  }
-  return params;
-}
-
-std::unique_ptr<display::DisplaySnapshot> CreateDisplaySnapshot(
-    const DisplaySnapshot_Params& params) {
-  display::DisplaySnapshot::DisplayModeList modes;
-  const display::DisplayMode* current_mode = nullptr;
-  const display::DisplayMode* native_mode = nullptr;
-  for (const auto& mode : params.modes) {
-    modes.push_back(CreateDisplayModeFromParams(mode));
-    if (AreDisplayModesEqual(params.current_mode, mode))
-      current_mode = modes.back().get();
-    if (AreDisplayModesEqual(params.native_mode, mode))
-      native_mode = modes.back().get();
-  }
-
-  return std::make_unique<display::DisplaySnapshot>(
-      params.display_id, params.origin, params.physical_size, params.type,
-      params.is_aspect_preserving_scaling, params.has_overscan,
-      params.privacy_screen_state, params.has_color_correction_matrix,
-      params.color_correction_in_linear_space, params.color_space,
-      params.bits_per_channel, params.display_name, params.sys_path,
-      std::move(modes), params.panel_orientation, params.edid, current_mode,
-      native_mode, params.product_code, params.year_of_manufacture,
-      params.maximum_cursor_size);
 }
 
 int GetFourCCFormatForOpaqueFramebuffer(gfx::BufferFormat format) {

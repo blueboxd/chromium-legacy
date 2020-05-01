@@ -40,6 +40,7 @@
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/public/test/navigation_handle_observer.h"
+#include "content/public/test/render_frame_host_test_support.h"
 #include "content/public/test/simple_url_loader_test_helper.h"
 #include "content/public/test/test_frame_navigation_observer.h"
 #include "content/public/test/test_navigation_observer.h"
@@ -165,6 +166,7 @@ class FirstPartySchemeContentBrowserClient : public TestContentBrowserClient {
 // See https://crbug.com/491535
 class RenderFrameHostImplBrowserTest : public ContentBrowserTest {
  public:
+  using LifecycleState = RenderFrameHostImpl::LifecycleState;
   RenderFrameHostImplBrowserTest()
       : https_server_(net::EmbeddedTestServer::TYPE_HTTPS) {
     // This makes the tests that check NetworkIsolationKeys make sure both the
@@ -199,6 +201,10 @@ class RenderFrameHostImplBrowserTest : public ContentBrowserTest {
 
   WebContentsImpl* web_contents() const {
     return static_cast<WebContentsImpl*>(shell()->web_contents());
+  }
+
+  RenderFrameHostImpl* root_frame_host() const {
+    return web_contents()->GetMainFrame();
   }
 
  private:
@@ -462,7 +468,8 @@ class RenderFrameHostFactoryForBeforeUnloadInterceptor
       bool renderer_initiated_creation) override {
     return base::WrapUnique(new RenderFrameHostImplForBeforeUnloadInterceptor(
         site_instance, std::move(render_view_host), delegate, frame_tree,
-        frame_tree_node, routing_id, renderer_initiated_creation));
+        frame_tree_node, routing_id, renderer_initiated_creation,
+        RenderFrameHostImpl::LifecycleState::kActive));
   }
 };
 
@@ -1162,9 +1169,11 @@ class ExecuteScriptBeforeRenderFrameDeletedHelper
 // code and may run nested message loops and send sync IPC messages.
 IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
                        FrameDetached_WindowOpenIPCFails) {
-  EXPECT_TRUE(NavigateToURL(shell(), GetTestUrl("", "title1.html")));
+  EXPECT_TRUE(
+      NavigateToURL(shell(), embedded_test_server()->GetURL("/title1.html")));
   EXPECT_EQ(1u, Shell::windows().size());
-  GURL test_url = GetTestUrl("render_frame_host", "window_open.html");
+  GURL test_url =
+      embedded_test_server()->GetURL("/render_frame_host/window_open.html");
   std::string open_script =
       base::StringPrintf("popup = window.open('%s');", test_url.spec().c_str());
 
@@ -3751,7 +3760,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
   RenderFrameHostImpl* rfh_a = web_contents()->GetMainFrame();
   RenderFrameHostImpl* rfh_b = rfh_a->child_at(0)->current_frame_host();
   RenderFrameDeletedObserver delete_rfh_b(rfh_b);
-  EXPECT_EQ(RenderFrameHostImpl::UnloadState::NotRun, rfh_b->unload_state_);
+  EXPECT_EQ(LifecycleState::kActive, rfh_b->lifecycle_state());
 
   // 2) Disable the unload timer to ensure that the unload timer doesn't fire
   // before we call OnDetach(). Act as if there was a slow unload handler on
@@ -3769,7 +3778,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
   // 4) Navigate rfh_a to C.
   EXPECT_TRUE(NavigateToURL(shell(), url_c));
   RenderFrameHostImpl* rfh_c = web_contents()->GetMainFrame();
-  EXPECT_EQ(RenderFrameHostImpl::UnloadState::InProgress, rfh_b->unload_state_);
+  EXPECT_EQ(LifecycleState::kRunningUnloadHandlers, rfh_b->lifecycle_state());
 
   // 5) Check the IsCurrent state of rfh_a, rfh_b and rfh_c after navigating to
   // C.
@@ -3781,6 +3790,137 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
   EXPECT_FALSE(delete_rfh_b.deleted());
   rfh_b->OnDetach();
   EXPECT_TRUE(delete_rfh_b.deleted());
+}
+
+// Test the LifecycleState is updated correctly for the main frame during
+// navigation.
+IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
+                       CheckLifecycleStateTransitionOnMainFrame) {
+  GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  GURL url_b(embedded_test_server()->GetURL("b.com", "/title2.html"));
+  IsolateAllSitesForTesting(base::CommandLine::ForCurrentProcess());
+
+  // 1) Navigate to A.
+  EXPECT_TRUE(NavigateToURL(shell(), url_a));
+  RenderFrameHostImpl* rfh_a = root_frame_host();
+  EXPECT_EQ(LifecycleState::kActive, rfh_a->lifecycle_state());
+
+  // 2) Leave rfh_a in pending deletion state to check for rfh_a LifecycleState
+  // after navigating to B.
+  LeaveInPendingDeletionState(rfh_a);
+
+  // 3) Start navigation to B, but don't commit yet.
+  TestNavigationManager manager(shell()->web_contents(), url_b);
+  shell()->LoadURL(url_b);
+  EXPECT_TRUE(manager.WaitForRequestStart());
+
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
+  RenderFrameHostImpl* pending_rfh =
+      root->render_manager()->speculative_frame_host();
+  NavigationRequest* navigation_request = root->navigation_request();
+  EXPECT_EQ(navigation_request->associated_site_instance_type(),
+            NavigationRequest::AssociatedSiteInstanceType::SPECULATIVE);
+  EXPECT_TRUE(pending_rfh);
+
+  // 4) Check the LifecycleState of both rfh_a and pending_rfh before commit.
+  EXPECT_EQ(LifecycleState::kSpeculative, pending_rfh->lifecycle_state());
+  EXPECT_EQ(LifecycleState::kActive, rfh_a->lifecycle_state());
+  EXPECT_EQ(root_frame_host(), rfh_a);
+
+  // 5) Let the navigation finish and make sure it is succeeded.
+  manager.WaitForNavigationFinished();
+  EXPECT_EQ(url_b, web_contents()->GetMainFrame()->GetLastCommittedURL());
+  RenderFrameHostImpl* rfh_b = root_frame_host();
+
+  // 6) Check the LifecycleState of both rfh_a and rfh_b after navigating to B.
+  EXPECT_EQ(LifecycleState::kRunningUnloadHandlers, rfh_a->lifecycle_state());
+  EXPECT_EQ(LifecycleState::kActive, rfh_b->lifecycle_state());
+}
+
+// Test the LifecycleState is updated correctly for a subframe.
+IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
+                       CheckRFHLifecycleStateTransitionOnSubFrame) {
+  IsolateAllSitesForTesting(base::CommandLine::ForCurrentProcess());
+  GURL url_ab(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(b)"));
+  GURL url_c(embedded_test_server()->GetURL("c.com", "/title1.html"));
+
+  // Lifecycle state of initial (Blank page) RenderFrameHost should be active as
+  // we don't update the LifecycleState prior to navigation commits (to new URL
+  // i.e., url_ab in this case).
+  EXPECT_EQ(LifecycleState::kActive, root_frame_host()->lifecycle_state());
+
+  // 1) Navigate to a page with an iframe.
+  EXPECT_TRUE(NavigateToURL(shell(), url_ab));
+  RenderFrameHostImpl* rfh_a = web_contents()->GetMainFrame();
+  RenderFrameHostImpl* rfh_b = rfh_a->child_at(0)->current_frame_host();
+  EXPECT_EQ(LifecycleState::kActive, rfh_b->lifecycle_state());
+
+  // 2) Navigate B's subframe to a cross-site C.
+  NavigateFrameToURL(rfh_b->frame_tree_node(), url_c);
+
+  // 3) Check LifecycleState of sub-frame rfh_c after navigating from subframe
+  // rfh_b.
+  RenderFrameHostImpl* rfh_c = rfh_a->child_at(0)->current_frame_host();
+  EXPECT_EQ(LifecycleState::kActive, rfh_c->lifecycle_state());
+
+  // 4) Add a new child frame.
+  RenderFrameHostCreatedObserver subframe_observer(web_contents());
+  EXPECT_TRUE(ExecJs(rfh_c,
+                     "let iframe = document.createElement('iframe');"
+                     "document.body.appendChild(iframe);"));
+  subframe_observer.Wait();
+
+  // 5) LifecycleState of newly inserted child frame should be kActive before
+  // navigation.
+  RenderFrameHostImpl* rfh_d = rfh_c->child_at(0)->current_frame_host();
+  EXPECT_EQ(LifecycleState::kActive, rfh_d->lifecycle_state());
+}
+
+// Test the LifecycleState when a renderer crashes during navigation.
+// When navigating after a crash, the new RenderFrameHost should
+// become active immediately, prior to the navigation committing. This is
+// an optimization to prevent the user from sitting around on the sad tab
+// unnecessarily.
+// TODO(https://crbug.com/1072817): This behavior might be revisited in the
+// future.
+IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
+                       CheckRFHLifecycleStateWhenRendererCrashes) {
+  GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  GURL url_b(embedded_test_server()->GetURL("b.com", "/title2.html"));
+  IsolateAllSitesForTesting(base::CommandLine::ForCurrentProcess());
+
+  // 1) Navigate to A.
+  EXPECT_TRUE(NavigateToURL(shell(), url_a));
+  RenderFrameHostImpl* rfh_a = root_frame_host();
+  EXPECT_EQ(LifecycleState::kActive, rfh_a->lifecycle_state());
+
+  // 2) Renderer crash.
+  RenderProcessHost* renderer_process = rfh_a->GetProcess();
+  RenderProcessHostWatcher crash_observer(
+      renderer_process, RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
+  renderer_process->Shutdown(0);
+  crash_observer.Wait();
+
+  // 3) Start navigation to B, but don't commit yet.
+  TestNavigationManager manager(shell()->web_contents(), url_b);
+  shell()->LoadURL(url_b);
+  EXPECT_TRUE(manager.WaitForRequestStart());
+
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
+  RenderFrameHostImpl* current_rfh =
+      root->render_manager()->current_frame_host();
+  NavigationRequest* navigation_request = root->navigation_request();
+  EXPECT_EQ(navigation_request->associated_site_instance_type(),
+            NavigationRequest::AssociatedSiteInstanceType::CURRENT);
+
+  // 4) Check the LifecycleState of B's RFH.
+  EXPECT_EQ(LifecycleState::kActive, current_rfh->lifecycle_state());
+
+  // 5) Let the navigation finish and make sure it is succeeded.
+  manager.WaitForNavigationFinished();
+  EXPECT_EQ(url_b, web_contents()->GetMainFrame()->GetLastCommittedURL());
+  EXPECT_EQ(LifecycleState::kActive, current_rfh->lifecycle_state());
 }
 
 namespace {

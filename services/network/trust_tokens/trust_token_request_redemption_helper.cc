@@ -27,7 +27,7 @@ TrustTokenRequestRedemptionHelper::TrustTokenRequestRedemptionHelper(
     SuitableTrustTokenOrigin top_level_origin,
     mojom::TrustTokenRefreshPolicy refresh_policy,
     TrustTokenStore* token_store,
-    std::unique_ptr<TrustTokenKeyCommitmentGetter> key_commitment_getter,
+    const TrustTokenKeyCommitmentGetter* key_commitment_getter,
     std::unique_ptr<KeyPairGenerator> key_pair_generator,
     std::unique_ptr<Cryptographer> cryptographer)
     : top_level_origin_(top_level_origin),

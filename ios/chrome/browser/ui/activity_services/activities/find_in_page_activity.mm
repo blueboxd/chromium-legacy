@@ -6,6 +6,7 @@
 
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
+#import "ios/chrome/browser/ui/activity_services/data/share_to_data.h"
 #import "ios/chrome/browser/ui/commands/find_in_page_commands.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util_mac.h"
@@ -22,8 +23,10 @@ NSString* const kFindInPageActivityType =
 }  // namespace
 
 @interface FindInPageActivity ()
+// Data associated with this activity.
+@property(nonatomic, strong, readonly) ShareToData* data;
 // The handler that handles the command when the activity is performed.
-@property(nonatomic, weak) id<FindInPageCommands> handler;
+@property(nonatomic, weak, readonly) id<FindInPageCommands> handler;
 @end
 
 @implementation FindInPageActivity
@@ -32,9 +35,11 @@ NSString* const kFindInPageActivityType =
   return kFindInPageActivityType;
 }
 
-- (instancetype)initWithHandler:(id<FindInPageCommands>)handler {
+- (instancetype)initWithData:(ShareToData*)data
+                     handler:(id<FindInPageCommands>)handler {
   self = [super init];
   if (self) {
+    _data = data;
     _handler = handler;
   }
   return self;
@@ -55,7 +60,7 @@ NSString* const kFindInPageActivityType =
 }
 
 - (BOOL)canPerformWithActivityItems:(NSArray*)activityItems {
-  return YES;
+  return self.data.isPageSearchable;
 }
 
 + (UIActivityCategory)activityCategory {

@@ -51,6 +51,19 @@ class DeviceAccountInitializer : public CloudPolicyClient::Observer,
 
     // Called when an error happens during cloud policy client calls.
     virtual void OnDeviceAccountClientError(DeviceManagementStatus status) = 0;
+
+    // Returns the device type that should be sent to the device management
+    // server when requesting auth codes.
+    virtual enterprise_management::DeviceServiceApiAccessRequest::DeviceType
+    GetRobotAuthCodeDeviceType() = 0;
+
+    // Returns the oauth scopes for which to request auth codes.
+    virtual std::string GetRobotOAuthScopes() = 0;
+
+    // Returns a url loader factory that the DeviceAccountInitializer will use
+    // for GAIA requests.
+    virtual scoped_refptr<network::SharedURLLoaderFactory>
+    GetURLLoaderFactory() = 0;
   };
 
   DeviceAccountInitializer(CloudPolicyClient* client, Delegate* delegate);

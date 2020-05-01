@@ -27,25 +27,37 @@ const char kCertProfileIdKey[] = "cert_profile_id";
 policy::CloudPolicyClient* GetCloudPolicyClientForDevice() {
   policy::BrowserPolicyConnectorChromeOS* connector =
       g_browser_process->platform_part()->browser_policy_connector_chromeos();
+  if (!connector) {
+    return nullptr;
+  }
 
   policy::DeviceCloudPolicyManagerChromeOS* policy_manager =
       connector->GetDeviceCloudPolicyManager();
+  if (!policy_manager) {
+    return nullptr;
+  }
 
-  policy::CloudPolicyClient* client = policy_manager->core()->client();
+  policy::CloudPolicyCore* core = policy_manager->core();
+  if (!core) {
+    return nullptr;
+  }
 
-  DCHECK(client);
-  return client;
+  return core->client();
 }
 
 policy::CloudPolicyClient* GetCloudPolicyClientForUser(Profile* profile) {
   policy::UserCloudPolicyManagerChromeOS* user_cloud_policy_manager =
       profile->GetUserCloudPolicyManagerChromeOS();
+  if (!user_cloud_policy_manager) {
+    return nullptr;
+  }
 
-  policy::CloudPolicyClient* client =
-      user_cloud_policy_manager->core()->client();
+  policy::CloudPolicyCore* core = user_cloud_policy_manager->core();
+  if (!core) {
+    return nullptr;
+  }
 
-  DCHECK(client);
-  return client;
+  return core->client();
 }
 
 }  // namespace
@@ -54,20 +66,36 @@ policy::CloudPolicyClient* GetCloudPolicyClientForUser(Profile* profile) {
 std::unique_ptr<CertProvisioningScheduler>
 CertProvisioningScheduler::CreateUserCertProvisioningScheduler(
     Profile* profile) {
+  PrefService* pref_service = profile->GetPrefs();
+  policy::CloudPolicyClient* cloud_policy_client =
+      GetCloudPolicyClientForUser(profile);
+
+  if (!profile || !pref_service || !cloud_policy_client) {
+    LOG(ERROR) << "Failed to create user certificate provisioning scheduler";
+    return nullptr;
+  }
+
   return std::make_unique<CertProvisioningScheduler>(
-      CertScope::kUser, profile, profile->GetPrefs(),
-      prefs::kRequiredClientCertificateForUser,
-      GetCloudPolicyClientForUser(profile));
+      CertScope::kUser, profile, pref_service,
+      prefs::kRequiredClientCertificateForUser, cloud_policy_client);
 }
 
 // static
 std::unique_ptr<CertProvisioningScheduler>
 CertProvisioningScheduler::CreateDeviceCertProvisioningScheduler() {
+  Profile* profile = ProfileHelper::GetSigninProfile();
+  PrefService* pref_service = g_browser_process->local_state();
+  policy::CloudPolicyClient* cloud_policy_client =
+      GetCloudPolicyClientForDevice();
+
+  if (!profile || !pref_service || !cloud_policy_client) {
+    LOG(ERROR) << "Failed to create device certificate provisioning scheduler";
+    return nullptr;
+  }
+
   return std::make_unique<CertProvisioningScheduler>(
-      CertScope::kDevice, ProfileHelper::GetSigninProfile(),
-      g_browser_process->local_state(),
-      prefs::kRequiredClientCertificateForDevice,
-      GetCloudPolicyClientForDevice());
+      CertScope::kDevice, profile, pref_service,
+      prefs::kRequiredClientCertificateForDevice, cloud_policy_client);
 }
 
 CertProvisioningScheduler::CertProvisioningScheduler(
@@ -150,6 +178,7 @@ void CertProvisioningScheduler::OnDeleteKeysWithoutPolicyDone(
                << error_message;
   }
 
+  DeserializeWorkers();
   UpdateCerts();
 }
 
@@ -159,6 +188,32 @@ void CertProvisioningScheduler::DailyUpdateCerts() {
   failed_cert_profiles_.clear();
   UpdateCerts();
   ScheduleDailyUpdate();
+}
+
+void CertProvisioningScheduler::DeserializeWorkers() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  const base::Value* saved_workers =
+      pref_service_->Get(GetPrefNameForSerialization(cert_scope_));
+  if (!saved_workers) {
+    return;
+  }
+
+  for (const auto& kv : saved_workers->DictItems()) {
+    const base::Value& saved_worker = kv.second;
+
+    std::unique_ptr<CertProvisioningWorker> worker =
+        CertProvisioningWorkerFactory::Get()->Deserialize(
+            cert_scope_, profile_, pref_service_, saved_worker,
+            cloud_policy_client_,
+            base::BindOnce(&CertProvisioningScheduler::OnProfileFinished,
+                           weak_factory_.GetWeakPtr()));
+    if (!worker) {
+      // Deserialization error message was already logged.
+      continue;
+    }
+
+    workers_[worker->GetCertProfile().profile_id] = std::move(worker);
+  }
 }
 
 void CertProvisioningScheduler::OnPrefsChange() {
@@ -239,24 +294,26 @@ void CertProvisioningScheduler::CreateCertProvisioningWorker(
           cert_scope_, profile_, pref_service_, cert_profile,
           cloud_policy_client_,
           base::BindOnce(&CertProvisioningScheduler::OnProfileFinished,
-                         weak_factory_.GetWeakPtr(), cert_profile.profile_id));
+                         weak_factory_.GetWeakPtr()));
   CertProvisioningWorker* worker_unowned = worker.get();
   workers_[cert_profile.profile_id] = std::move(worker);
   worker_unowned->DoStep();
 }
 
-void CertProvisioningScheduler::OnProfileFinished(const std::string& profile_id,
-                                                  bool is_success) {
+void CertProvisioningScheduler::OnProfileFinished(
+    const CertProfile& cert_profile,
+    bool is_success) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (!is_success) {
-    LOG(ERROR) << "Failed to process certificate profile: " << profile_id;
-    failed_cert_profiles_.insert(profile_id);
+    LOG(ERROR) << "Failed to process certificate profile: "
+               << cert_profile.profile_id;
+    failed_cert_profiles_.insert(cert_profile.profile_id);
   }
 
-  auto iter = workers_.find(profile_id);
+  auto iter = workers_.find(cert_profile.profile_id);
   if (iter == workers_.end()) {
-    LOG(WARNING) << "Finished worker is not found";
+    LOG(WARNING) << "Finished worker is not found: " << cert_profile.profile_id;
     return;
   }
   workers_.erase(iter);

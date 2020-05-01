@@ -41,8 +41,7 @@
 namespace blink {
 
 SpeechRecognition* SpeechRecognition::Create(ExecutionContext* context) {
-  LocalDOMWindow* window = To<LocalDOMWindow>(context);
-  return MakeGarbageCollected<SpeechRecognition>(window->GetFrame(), context);
+  return MakeGarbageCollected<SpeechRecognition>(To<LocalDOMWindow>(context));
 }
 
 void SpeechRecognition::start(ExceptionState& exception_state) {
@@ -208,21 +207,21 @@ void SpeechRecognition::OnConnectionError() {
   Ended();
 }
 
-SpeechRecognition::SpeechRecognition(LocalFrame* frame,
-                                     ExecutionContext* context)
-    : ExecutionContextLifecycleObserver(context),
-      PageVisibilityObserver(frame ? frame->GetPage() : nullptr),
+SpeechRecognition::SpeechRecognition(LocalDOMWindow* window)
+    : ExecutionContextLifecycleObserver(window),
+      PageVisibilityObserver(window->GetFrame() ? window->GetFrame()->GetPage()
+                                                : nullptr),
       grammars_(SpeechGrammarList::Create()),  // FIXME: The spec is not clear
                                                // on the default value for the
                                                // grammars attribute.
       continuous_(false),
       interim_results_(false),
       max_alternatives_(1),
-      controller_(SpeechRecognitionController::From(frame)),
+      controller_(SpeechRecognitionController::From(*window)),
       started_(false),
       stopping_(false),
-      receiver_(this, context),
-      session_(context) {}
+      receiver_(this, window),
+      session_(window) {}
 
 SpeechRecognition::~SpeechRecognition() = default;
 

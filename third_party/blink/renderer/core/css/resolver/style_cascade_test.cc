@@ -2660,11 +2660,10 @@ TEST_F(StyleCascadeTest, MarkReferenced) {
   cascade.Add("width", "var(--x)");
   cascade.Apply();
 
-  const auto* registry = GetDocument().GetPropertyRegistry();
-  ASSERT_TRUE(registry);
+  const auto& registry = GetDocument().EnsurePropertyRegistry();
 
-  EXPECT_TRUE(registry->WasReferenced("--x"));
-  EXPECT_FALSE(registry->WasReferenced("--y"));
+  EXPECT_TRUE(registry.WasReferenced("--x"));
+  EXPECT_FALSE(registry.WasReferenced("--y"));
 }
 
 TEST_F(StyleCascadeTest, MarkHasVariableReferenceLonghand) {

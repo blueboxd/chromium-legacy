@@ -1055,6 +1055,11 @@ void ForEachMatchingFormFieldCommon(
     static base::NoDestructor<WebString> kValue("value");
     static base::NoDestructor<WebString> kPlaceholder("placeholder");
 
+    if (FieldRendererId(element->UniqueRendererFormControlId()) !=
+        data.fields[i].unique_renderer_id) {
+      continue;
+    }
+
     if (((filters & FILTER_DISABLED_ELEMENTS) && !element->IsEnabled()) ||
         ((filters & FILTER_READONLY_ELEMENTS) && element->IsReadOnly()) ||
         // See description for FILTER_NON_FOCUSABLE_ELEMENTS.

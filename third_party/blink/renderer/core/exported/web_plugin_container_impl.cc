@@ -104,6 +104,7 @@
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/keyboard_codes.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/mojom/cursor_type.mojom-blink.h"
@@ -401,19 +402,29 @@ void WebPluginContainerImpl::Copy() {
 }
 
 bool WebPluginContainerImpl::ExecuteEditCommand(const WebString& name) {
-  if (web_plugin_->ExecuteEditCommand(name))
-    return true;
-
-  if (name != "Copy")
-    return false;
-
-  Copy();
-  return true;
+  return ExecuteEditCommand(name, WebString());
 }
 
 bool WebPluginContainerImpl::ExecuteEditCommand(const WebString& name,
                                                 const WebString& value) {
-  return web_plugin_->ExecuteEditCommand(name, value);
+  DCHECK(value.IsEmpty());
+
+  // If the clipboard contains something other than text (e.g. an image),
+  // ReadPlainText() returns an empty string. The empty string is then pasted,
+  // replacing any selected text. This behavior is consistent with that of HTML
+  // text form fields.
+  String text;
+  if (name == "Paste" || name == "PasteAndMatchStyle") {
+    LocalFrame* frame = element_->GetDocument().GetFrame();
+    text = frame->GetSystemClipboard()->ReadPlainText();
+  }
+
+  // If copying or cutting, make sure to copy the plugin text to the clipboard
+  // before executing the command.
+  if (name == "Copy" || (name == "Cut" && web_plugin_->CanEditText()))
+    Copy();
+
+  return web_plugin_->ExecuteEditCommand(name, text);
 }
 
 // static

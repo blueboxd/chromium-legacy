@@ -821,6 +821,10 @@ void SearchTabHelper::OpenAutocompleteMatch(
     return;
   }
 
+  // TODO(crbug.com/1041129): The following logic for recording Omnibox metrics
+  // is largely copied over to NewTabPageHandler::OpenAutocompleteMatch(). Make
+  // sure any changes here is reflected there until one code path is obsolete.
+
   const auto now = base::TimeTicks::Now();
   base::TimeDelta elapsed_time_since_first_autocomplete_query =
       now - time_of_first_autocomplete_query_;

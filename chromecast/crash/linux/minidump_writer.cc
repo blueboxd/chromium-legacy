@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "chromecast/base/path_utils.h"
 #include "chromecast/base/process_utils.h"
+#include "chromecast/crash/linux/crash_util.h"
 #include "chromecast/crash/linux/dump_info.h"
 #include "chromecast/crash/linux/minidump_generator.h"
 
@@ -20,18 +21,9 @@ const char kDumpStateSuffix[] = ".txt.gz";
 
 // Fork and run dumpstate, saving results to minidump_name + ".txt.gz".
 int DumpState(const std::string& minidump_name) {
-  std::vector<std::string> argv;
-  argv.push_back(GetBinPathASCII("dumpstate").value());
-  argv.push_back("-w");
-  argv.push_back("crash-request");
-  argv.push_back("-z");
-  argv.push_back("-o");
-  argv.push_back(
-      minidump_name);  // dumpstate appends ".txt.gz" to the filename.
-
-  std::string log;
-  if (!chromecast::GetAppOutput(argv, &log)) {
-    LOG(ERROR) << "failed to execute dumpstate";
+  base::FilePath dumpstate_path;
+  if (!CrashUtil::CollectDumpstate(base::FilePath(minidump_name),
+                                   &dumpstate_path)) {
     return -1;
   }
   return 0;

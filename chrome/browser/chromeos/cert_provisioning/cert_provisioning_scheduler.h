@@ -54,7 +54,7 @@ class CertProvisioningScheduler {
       delete;
 
   void UpdateCerts();
-  void OnProfileFinished(const std::string& profile_id, bool is_success);
+  void OnProfileFinished(const CertProfile& cert_profile, bool is_success);
 
   // For testing.
   size_t GetWorkerCount() const;
@@ -70,6 +70,7 @@ class CertProvisioningScheduler {
 
   void OnPrefsChange();
   void DailyUpdateCerts();
+  void DeserializeWorkers();
 
   void OnGetCertsWithIdsDone(
       std::map<std::string, scoped_refptr<net::X509Certificate>>

@@ -3214,6 +3214,10 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_WITH_PARAMS_VALUE_TYPE(omnibox::kOmniboxSearchEngineLogo,
                                     kOmniboxSearchEngineLogoFeatureVariations,
                                     "OmniboxSearchEngineLogo")},
+    {"omnibox-suggestions-recycler-view",
+     flag_descriptions::kOmniboxSuggestionsRecyclerViewName,
+     flag_descriptions::kOmniboxSuggestionsRecyclerViewDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(omnibox::kOmniboxSuggestionsRecyclerView)},
 #endif  // defined(OS_ANDROID)
 
     {"omnibox-on-device-head-suggestions-incognito",
@@ -5307,6 +5311,13 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kContextMenuPerformanceInfoName,
      flag_descriptions::kContextMenuPerformanceInfoDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kContextMenuPerformanceInfo)},
+#endif  // !defined(OS_ANDROID)
+
+#if defined(OS_ANDROID)
+    {"page-info-performance-hints",
+     flag_descriptions::kPageInfoPerformanceHintsName,
+     flag_descriptions::kPageInfoPerformanceHintsDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kPageInfoPerformanceHints)},
 #endif  // !defined(OS_ANDROID)
 
 #if defined(OS_CHROMEOS)

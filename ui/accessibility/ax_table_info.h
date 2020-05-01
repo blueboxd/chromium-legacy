@@ -5,6 +5,7 @@
 #ifndef UI_ACCESSIBILITY_AX_TABLE_INFO_H_
 #define UI_ACCESSIBILITY_AX_TABLE_INFO_H_
 
+#include <map>
 #include <set>
 #include <unordered_map>
 #include <vector>
@@ -114,6 +115,7 @@ class AX_EXPORT AXTableInfo {
   AXTree* tree_ = nullptr;
   AXNode* table_node_ = nullptr;
   bool valid_ = false;
+  std::map<int, std::map<int, CellData>> incremental_row_col_map_;
 };
 
 }  // namespace ui

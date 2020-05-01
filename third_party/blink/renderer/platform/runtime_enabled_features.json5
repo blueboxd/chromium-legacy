@@ -512,7 +512,6 @@
     {
       name: "CSSPaintAPIArguments",
       status: "experimental",
-      depends_on: ["CSSVariables2"],
     },
     {
       name: "CSSPictureInPicture",
@@ -546,28 +545,21 @@
       name: "CSSSupportsSelector",
       status: "stable",
     },
-    {
-      name: "CSSVariables2",
-      status: "stable",
-    },
     // Support for @property rules.
     {
       name: "CSSVariables2AtProperty",
       status: "test",
-      depends_on: ["CSSVariables2"],
     },
     // Support for registered custom properties with <image> syntax.
     {
       name: "CSSVariables2ImageValues",
       status: "test",
-      depends_on: ["CSSVariables2"],
     },
     // Support for registered custom properties with <transform-list> and
     // <transform-function> syntax.
     {
       name: "CSSVariables2TransformValues",
       status: "test",
-      depends_on: ["CSSVariables2"],
     },
     {
       name: "CSSViewport",
@@ -952,6 +944,7 @@
       // Traverse the fragment tree when painting and hit-testing, instead of
       // the layout object tree.
       name: "LayoutNGFragmentTraversal",
+      implied_by: ["LayoutNGBlockFragmentation"],
     },
     {
       name: "LayoutNGGrid",

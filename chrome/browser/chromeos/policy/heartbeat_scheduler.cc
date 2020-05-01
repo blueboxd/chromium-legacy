@@ -41,7 +41,7 @@ const char kUpstreamNotificationSignUpListeningEvents[] =
 
 const char kGcmMessageTypeKey[] = "type";
 const char kHeartbeatTimestampKey[] = "timestamp";
-const char kHeartbeatDomainNameKey[] = "domain_name";
+const char kHeartbeatCustomerIdKey[] = "customer_id";
 const char kHeartbeatDeviceIDKey[] = "device_id";
 const char kHeartbeatTypeValue[] = "hb";
 const char kUpstreamNotificationNotifyKey[] = "notify";
@@ -181,15 +181,15 @@ void HeartbeatRegistrationHelper::OnRegisterAttemptComplete(
 HeartbeatScheduler::HeartbeatScheduler(
     gcm::GCMDriver* driver,
     policy::CloudPolicyClient* cloud_policy_client,
-    const std::string& enrollment_domain,
+    policy::CloudPolicyStore* cloud_policy_store,
     const std::string& device_id,
     const scoped_refptr<base::SequencedTaskRunner>& task_runner)
     : task_runner_(task_runner),
-      enrollment_domain_(enrollment_domain),
       device_id_(device_id),
       heartbeat_enabled_(false),
       heartbeat_interval_(kDefaultHeartbeatInterval),
       cloud_policy_client_(cloud_policy_client),
+      cloud_policy_store_(cloud_policy_store),
       gcm_driver_(driver) {
   // If no GCMDriver (e.g. this is loaded as part of an unrelated unit test)
   // do nothing as no heartbeats can be sent.
@@ -307,6 +307,11 @@ void HeartbeatScheduler::ScheduleNextHeartbeat() {
     return;
   }
 
+  // Set the customerId if the policy is fetched.
+  if (cloud_policy_store_->policy()) {
+    customer_id_ = cloud_policy_store_->policy()->obfuscated_customer_id();
+  }
+
   // Calculate when to fire off the next update (if it should have already
   // happened, this yields a TimeDelta of 0).
   base::TimeDelta delay = std::max(
@@ -341,7 +346,7 @@ void HeartbeatScheduler::OnRegistrationComplete(
 
 void HeartbeatScheduler::SendHeartbeat() {
   DCHECK(!registration_id_.empty());
-  if (!gcm_driver_ || !heartbeat_enabled_)
+  if (!gcm_driver_ || !heartbeat_enabled_ || customer_id_.empty())
     return;
 
   gcm::OutgoingMessage message;
@@ -356,7 +361,7 @@ void HeartbeatScheduler::SendHeartbeat() {
   message.data[kGcmMessageTypeKey] = kHeartbeatTypeValue;
   message.data[kHeartbeatTimestampKey] =
       base::NumberToString(base::Time::NowFromSystemTime().ToJavaTime());
-  message.data[kHeartbeatDomainNameKey] = enrollment_domain_;
+  message.data[kHeartbeatCustomerIdKey] = customer_id_;
   message.data[kHeartbeatDeviceIDKey] = device_id_;
   gcm_driver_->Send(kHeartbeatGCMAppID,
                     GetDestinationID() + kHeartbeatGCMSenderSuffix, message,

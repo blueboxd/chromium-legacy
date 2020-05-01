@@ -23,6 +23,17 @@ def _SkipOmitted(line):
   return line
 
 
+def GenerateDiffWithOnlyAdditons(expected_path, actual_path):
+  """Generate a diff that only contains additions"""
+  with open(expected_path) as expected, open(actual_path) as actual:
+    expected_lines = expected.readlines()
+    actual_lines = actual.readlines()
+
+    diff = difflib.ndiff(expected_lines, actual_lines)
+    filtered_diff = (line for line in diff if line.startswith('+'))
+    return ''.join(filtered_diff)
+
+
 def DiffFileContents(expected_path, actual_path, show_files_compared=True):
   """Check file contents for equality and return the diff or None."""
   with open(expected_path) as f_expected, open(actual_path) as f_actual:

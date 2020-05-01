@@ -54,7 +54,88 @@ mojom("mojom") {
       traits_headers = [ "display_mojom_traits.h" ]
       traits_public_deps = [ ":shared_mojom_traits" ]
     },
+    {
+      types = [
+        {
+          mojom = "display.mojom.DisplayConnectionType"
+          cpp = "::display::DisplayConnectionType"
+        },
+        {
+          mojom = "display.mojom.HDCPState"
+          cpp = "::display::HDCPState"
+        },
+        {
+          mojom = "display.mojom.PrivacyScreenState"
+          cpp = "::display::PrivacyScreenState"
+        },
+      ]
+      traits_sources = [ "display_constants_mojom_traits.cc" ]
+      traits_headers = [ "display_constants_mojom_traits.h" ]
+      traits_public_deps = [ "//ui/display" ]
+    },
+    {
+      types = [
+        {
+          mojom = "display.mojom.Position"
+          cpp = "::display::DisplayPlacement::Position"
+        },
+        {
+          mojom = "display.mojom.OffsetReference"
+          cpp = "::display::DisplayPlacement::OffsetReference"
+        },
+        {
+          mojom = "display.mojom.DisplayPlacement"
+          cpp = "::display::DisplayPlacement"
+        },
+        {
+          mojom = "display.mojom.DisplayLayout"
+          cpp = "::std::unique_ptr<::display::DisplayLayout>"
+          move_only = true
+        },
+      ]
+      traits_sources = [ "display_layout_mojom_traits.cc" ]
+      traits_headers = [ "display_layout_mojom_traits.h" ]
+      traits_public_deps = [ "//ui/display" ]
+    },
+    {
+      types = [
+        {
+          mojom = "display.mojom.DisplayMode"
+          cpp = "::std::unique_ptr<::display::DisplayMode>"
+          move_only = true
+        },
+      ]
+      traits_sources = [ "display_mode_mojom_traits.cc" ]
+      traits_headers = [ "display_mode_mojom_traits.h" ]
+      traits_public_deps = [ "//ui/display" ]
+      traits_deps = [ "//ui/gfx/geometry" ]
+    },
+    {
+      types = [
+        {
+          mojom = "display.mojom.DisplaySnapshot"
+          cpp = "::std::unique_ptr<::display::DisplaySnapshot>"
+          move_only = true
+        },
+      ]
+      traits_sources = [ "display_snapshot_mojom_traits.cc" ]
+      traits_headers = [ "display_snapshot_mojom_traits.h" ]
+      traits_public_deps = [ "//ui/display" ]
+      traits_deps = [ "//ui/gfx/geometry" ]
+    },
+    {
+      types = [
+        {
+          mojom = "display.mojom.GammaRampRGBEntry"
+          cpp = "::display::GammaRampRGBEntry"
+        },
+      ]
+      traits_sources = [ "gamma_ramp_rgb_entry_mojom_traits.cc" ]
+      traits_headers = [ "gamma_ramp_rgb_entry_mojom_traits.h" ]
+      traits_public_deps = [ "//ui/display" ]
+    },
   ]
+
   cpp_typemaps += shared_cpp_typemaps
   blink_cpp_typemaps = shared_cpp_typemaps
 }

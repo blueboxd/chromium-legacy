@@ -152,6 +152,24 @@ bool WidgetDelegate::ShouldRestoreWindowSize() const {
   return true;
 }
 
+void WidgetDelegate::WindowWillClose() {
+  // TODO(ellyjones): For this and the other callback methods, establish whether
+  // any other code calls these methods. If not, convert this if to a DCHECK to
+  // enforce the contract that these methods are only called once.
+  if (window_will_close_callback_)
+    std::move(window_will_close_callback_).Run();
+}
+
+void WidgetDelegate::WindowClosing() {
+  if (window_closing_callback_)
+    std::move(window_closing_callback_).Run();
+}
+
+void WidgetDelegate::DeleteDelegate() {
+  if (delete_delegate_callback_)
+    std::move(delete_delegate_callback_).Run();
+}
+
 View* WidgetDelegate::GetContentsView() {
   if (!default_contents_view_)
     default_contents_view_ = new View;
@@ -221,6 +239,18 @@ void WidgetDelegate::SetCenterTitle(bool center_title) {
   params_.center_title = center_title;
 }
 #endif
+
+void WidgetDelegate::SetWindowWillCloseCallback(base::OnceClosure callback) {
+  window_will_close_callback_ = std::move(callback);
+}
+
+void WidgetDelegate::SetWindowClosingCallback(base::OnceClosure callback) {
+  window_closing_callback_ = std::move(callback);
+}
+
+void WidgetDelegate::SetDeleteDelegateCallback(base::OnceClosure callback) {
+  delete_delegate_callback_ = std::move(callback);
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // WidgetDelegateView:

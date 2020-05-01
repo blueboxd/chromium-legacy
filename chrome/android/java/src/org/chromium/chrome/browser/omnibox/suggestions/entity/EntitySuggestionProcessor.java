@@ -86,7 +86,7 @@ public class EntitySuggestionProcessor extends BaseSuggestionViewProcessor {
     }
 
     @Override
-    public PropertyModel createModelForSuggestion(OmniboxSuggestion suggestion) {
+    public PropertyModel createModel() {
         return new PropertyModel(EntitySuggestionViewProperties.ALL_KEYS);
     }
 

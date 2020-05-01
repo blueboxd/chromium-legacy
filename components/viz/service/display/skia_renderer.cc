@@ -2078,7 +2078,12 @@ void SkiaRenderer::DrawYUVVideoQuad(const YUVVideoDrawQuad* quad,
 #endif
 
   DCHECK(resource_provider_);
-  ScopedYUVSkImageBuilder builder(this, quad, dst_color_space.ToSkColorSpace());
+  // Pass in |frame_color_space| here instead of |dst_color_space| so the color
+  // space transform going from SkImage to SkSurface is identity. The
+  // SkColorFilter already handles color space conversion so this avoids
+  // applying the conversion twice.
+  ScopedYUVSkImageBuilder builder(this, quad,
+                                  frame_color_space.ToSkColorSpace());
   const SkImage* image = builder.sk_image();
   if (!image)
     return;

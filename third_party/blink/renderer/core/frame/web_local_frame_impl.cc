@@ -97,9 +97,11 @@
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "services/network/public/cpp/web_sandbox_flags.h"
 #include "services/network/public/mojom/web_sandbox_flags.mojom-blink.h"
+#include "third_party/blink/public/mojom/devtools/inspector_issue.mojom-blink.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-blink.h"
 #include "third_party/blink/public/mojom/frame/frame_owner_element_type.mojom-blink.h"
 #include "third_party/blink/public/mojom/frame/media_player_action.mojom-blink.h"
+#include "third_party/blink/public/mojom/frame/tree_scope_type.mojom-blink.h"
 #include "third_party/blink/public/platform/interface_registry.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/web_double_size.h"
@@ -133,7 +135,6 @@
 #include "third_party/blink/public/web/web_range.h"
 #include "third_party/blink/public/web/web_script_source.h"
 #include "third_party/blink/public/web/web_serialized_script_value.h"
-#include "third_party/blink/public/web/web_tree_scope_type.h"
 #include "third_party/blink/renderer/bindings/core/v8/binding_security.h"
 #include "third_party/blink/renderer/bindings/core/v8/isolated_world_csp.h"
 #include "third_party/blink/renderer/bindings/core/v8/sanitize_script_errors.h"
@@ -212,7 +213,6 @@
 #include "third_party/blink/renderer/core/input/context_menu_allowed_scope.h"
 #include "third_party/blink/renderer/core/input/event_handler.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
-#include "third_party/blink/renderer/core/inspector/inspector_issue.h"
 #include "third_party/blink/renderer/core/inspector/main_thread_debugger.h"
 #include "third_party/blink/renderer/core/layout/hit_test_result.h"
 #include "third_party/blink/renderer/core/layout/layout_embedded_content.h"
@@ -970,14 +970,6 @@ void WebLocalFrameImpl::StartNavigation(const WebURLRequest& request) {
                                        WebFrameLoadType::kStandard);
 }
 
-void WebLocalFrameImpl::StopLoading() {
-  if (!GetFrame())
-    return;
-  // FIXME: Figure out what we should really do here. It seems like a bug
-  // that FrameLoader::stopLoading doesn't call stopAllLoaders.
-  GetFrame()->Loader().StopAllLoaders();
-}
-
 WebDocumentLoader* WebLocalFrameImpl::GetDocumentLoader() const {
   DCHECK(GetFrame());
   return DocumentLoaderForDocLoader(GetFrame()->Loader().GetDocumentLoader());
@@ -1008,6 +1000,10 @@ void WebLocalFrameImpl::SetReferrerForRequest(WebURLRequest& request,
 WebAssociatedURLLoader* WebLocalFrameImpl::CreateAssociatedURLLoader(
     const WebAssociatedURLLoaderOptions& options) {
   return new WebAssociatedURLLoaderImpl(GetFrame()->DomWindow(), options);
+}
+
+void WebLocalFrameImpl::StopLoading() {
+  GetFrame()->StopLoading();
 }
 
 void WebLocalFrameImpl::ReplaceSelection(const WebString& text) {
@@ -1674,8 +1670,8 @@ WebLocalFrameImpl* WebLocalFrameImpl::CreateMainFrame(
     network::mojom::blink::WebSandboxFlags sandbox_flags,
     const FeaturePolicy::FeatureState& opener_feature_state) {
   auto* frame = MakeGarbageCollected<WebLocalFrameImpl>(
-      util::PassKey<WebLocalFrameImpl>(), WebTreeScopeType::kDocument, client,
-      interface_registry);
+      util::PassKey<WebLocalFrameImpl>(),
+      mojom::blink::TreeScopeType::kDocument, client, interface_registry);
   frame->SetOpener(opener);
   Page& page = *static_cast<WebViewImpl*>(web_view)->GetPage();
   DCHECK(!page.MainFrame());
@@ -1697,8 +1693,9 @@ WebLocalFrameImpl* WebLocalFrameImpl::CreateProvisional(
   DCHECK(name.IsEmpty() || name.Equals(previous_frame->Tree().GetName()));
   auto* web_frame = MakeGarbageCollected<WebLocalFrameImpl>(
       util::PassKey<WebLocalFrameImpl>(),
-      previous_web_frame->InShadowTree() ? WebTreeScopeType::kShadow
-                                         : WebTreeScopeType::kDocument,
+      previous_web_frame->InShadowTree()
+          ? mojom::blink::TreeScopeType::kShadow
+          : mojom::blink::TreeScopeType::kDocument,
       client, interface_registry);
   web_frame->SetParent(previous_web_frame->Parent());
   web_frame->SetOpener(previous_web_frame->Opener());
@@ -1743,7 +1740,7 @@ WebLocalFrameImpl* WebLocalFrameImpl::CreateProvisional(
 }
 
 WebLocalFrameImpl* WebLocalFrameImpl::CreateLocalChild(
-    WebTreeScopeType scope,
+    mojom::blink::TreeScopeType scope,
     WebLocalFrameClient* client,
     blink::InterfaceRegistry* interface_registry) {
   auto* frame = MakeGarbageCollected<WebLocalFrameImpl>(
@@ -1754,7 +1751,7 @@ WebLocalFrameImpl* WebLocalFrameImpl::CreateLocalChild(
 
 WebLocalFrameImpl::WebLocalFrameImpl(
     util::PassKey<WebLocalFrameImpl>,
-    WebTreeScopeType scope,
+    mojom::blink::TreeScopeType scope,
     WebLocalFrameClient* client,
     blink::InterfaceRegistry* interface_registry)
     : WebNavigationControl(scope),
@@ -1774,7 +1771,7 @@ WebLocalFrameImpl::WebLocalFrameImpl(
 
 WebLocalFrameImpl::WebLocalFrameImpl(
     util::PassKey<WebRemoteFrameImpl>,
-    WebTreeScopeType scope,
+    mojom::blink::TreeScopeType scope,
     WebLocalFrameClient* client,
     blink::InterfaceRegistry* interface_registry)
     : WebLocalFrameImpl(util::PassKey<WebLocalFrameImpl>(),
@@ -1841,10 +1838,10 @@ LocalFrame* WebLocalFrameImpl::CreateChildFrame(
     HTMLFrameOwnerElement* owner_element) {
   DCHECK(client_);
   TRACE_EVENT0("blink", "WebLocalFrameImpl::createChildframe");
-  WebTreeScopeType scope =
+  mojom::blink::TreeScopeType scope =
       GetFrame()->GetDocument() == owner_element->GetTreeScope()
-          ? WebTreeScopeType::kDocument
-          : WebTreeScopeType::kShadow;
+          ? mojom::blink::TreeScopeType::kDocument
+          : mojom::blink::TreeScopeType::kShadow;
   WebFrameOwnerProperties owner_properties(
       owner_element->BrowsingContextContainerName(),
       owner_element->ScrollbarMode(), owner_element->MarginWidth(),
@@ -2497,8 +2494,7 @@ void WebLocalFrameImpl::AddInspectorIssueImpl(
   DCHECK(GetFrame());
   auto info = mojom::blink::InspectorIssueInfo::New(
       code, mojom::blink::InspectorIssueDetails::New());
-  GetFrame()->GetDocument()->AddInspectorIssue(
-      InspectorIssue::Create(std::move(info)));
+  GetFrame()->AddInspectorIssue(std::move(info));
 }
 
 void WebLocalFrameImpl::SetTextCheckClient(

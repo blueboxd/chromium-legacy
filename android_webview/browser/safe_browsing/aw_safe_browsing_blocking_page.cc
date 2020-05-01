@@ -178,9 +178,6 @@ void AwSafeBrowsingBlockingPage::FinishThreatDetails(
 
 void AwSafeBrowsingBlockingPage::OnInterstitialClosing() {
   if (resource_request_ && !proceeded()) {
-    // resource_request_ should only be set for committed interstitials.
-    DCHECK(
-        base::FeatureList::IsEnabled(safe_browsing::kCommittedSBInterstitials));
     AwContentsClientBridge* client =
         AwContentsClientBridge::FromWebContents(web_contents());
     // With committed interstitials, the navigation to the site is failed before
@@ -188,8 +185,8 @@ void AwSafeBrowsingBlockingPage::OnInterstitialClosing() {
     // time, and manually trigger them here.
     if (client) {
       client->OnReceivedError(*resource_request_,
-                              safe_browsing::GetNetErrorCodeForSafeBrowsing(),
-                              true, false);
+                              safe_browsing::kNetErrorCodeForSafeBrowsing, true,
+                              false);
     }
   }
   safe_browsing::BaseBlockingPage::OnInterstitialClosing();

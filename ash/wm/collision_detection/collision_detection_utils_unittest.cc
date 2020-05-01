@@ -247,48 +247,73 @@ TEST_P(CollisionDetectionUtilsDisplayTest,
 TEST_P(CollisionDetectionUtilsDisplayTest,
        AvoidObstaclesMovesForHigherPriorityWindow) {
   auto display = GetDisplay();
-  aura::Window* autoclick_container =
-      Shell::GetContainer(root_window(), kShellWindowId_AutoclickContainer);
-  std::unique_ptr<aura::Window> prioritized_window =
-      CreateChildWindow(autoclick_container, gfx::Rect(100, 100, 100, 10), 0);
+  aura::Window* accessibility_bubble_container = Shell::GetContainer(
+      root_window(), kShellWindowId_AccessibilityBubbleContainer);
+  std::unique_ptr<aura::Window> prioritized_window = CreateChildWindow(
+      accessibility_bubble_container, gfx::Rect(100, 100, 100, 10), 0);
+
+  gfx::Rect position_before_collision_detection(100, 100, 100, 100);
+  gfx::Rect position_when_moved_by_collision_detection(100, 118, 100, 100);
 
   const struct {
     CollisionDetectionUtils::RelativePriority window_priority;
     CollisionDetectionUtils::RelativePriority avoid_obstacles_priority;
     gfx::Rect expected_position;
   } kTestCases[] = {
-      // If the fixed window is kDefault, both Autoclick and PIP should move.
+      // If the fixed window is kDefault, all other windows should move.
       {CollisionDetectionUtils::RelativePriority::kDefault,
        CollisionDetectionUtils::RelativePriority::kPictureInPicture,
-       gfx::Rect(100, 118, 100, 100)},
+       position_when_moved_by_collision_detection},
       {CollisionDetectionUtils::RelativePriority::kDefault,
        CollisionDetectionUtils::RelativePriority::kAutomaticClicksMenu,
-       gfx::Rect(100, 118, 100, 100)},
-      // If the fixed window is PIP, Autoclick should not move.
+       position_when_moved_by_collision_detection},
+      {CollisionDetectionUtils::RelativePriority::kDefault,
+       CollisionDetectionUtils::RelativePriority::kSwitchAccessMenu,
+       position_when_moved_by_collision_detection},
+      // If the fixed window is PIP, Autoclick or Switch Access should not move.
       {CollisionDetectionUtils::RelativePriority::kPictureInPicture,
        CollisionDetectionUtils::RelativePriority::kAutomaticClicksMenu,
-       gfx::Rect(100, 100, 100, 100)},
+       position_before_collision_detection},
+      {CollisionDetectionUtils::RelativePriority::kPictureInPicture,
+       CollisionDetectionUtils::RelativePriority::kSwitchAccessMenu,
+       position_before_collision_detection},
       // The PIP should not move for itself.
       {CollisionDetectionUtils::RelativePriority::kPictureInPicture,
        CollisionDetectionUtils::RelativePriority::kPictureInPicture,
-       gfx::Rect(100, 100, 100, 100)},
-      // Picture in Picture moves for Autoclicks menu.
+       position_before_collision_detection},
+      // If the fixed window is the Switch Access menu, the PIP should move, but
+      // the Autoclick menu should not.
+      {CollisionDetectionUtils::RelativePriority::kSwitchAccessMenu,
+       CollisionDetectionUtils::RelativePriority::kPictureInPicture,
+       position_when_moved_by_collision_detection},
+      {CollisionDetectionUtils::RelativePriority::kSwitchAccessMenu,
+       CollisionDetectionUtils::RelativePriority::kAutomaticClicksMenu,
+       position_before_collision_detection},
+      // The Switch Access menu should not move for itself.
+      {CollisionDetectionUtils::RelativePriority::kSwitchAccessMenu,
+       CollisionDetectionUtils::RelativePriority::kSwitchAccessMenu,
+       position_before_collision_detection},
+      // If the fixed window is Automatic Clicks, both the PIP and the the
+      // Switch Access menu should move.
       {CollisionDetectionUtils::RelativePriority::kAutomaticClicksMenu,
        CollisionDetectionUtils::RelativePriority::kPictureInPicture,
-       gfx::Rect(100, 118, 100, 100)},
-      // Autoclicks menu does not move for itself.
+       position_when_moved_by_collision_detection},
+      {CollisionDetectionUtils::RelativePriority::kAutomaticClicksMenu,
+       CollisionDetectionUtils::RelativePriority::kSwitchAccessMenu,
+       position_when_moved_by_collision_detection},
+      // Autoclicks menu should not move for itself.
       {CollisionDetectionUtils::RelativePriority::kAutomaticClicksMenu,
        CollisionDetectionUtils::RelativePriority::kAutomaticClicksMenu,
-       gfx::Rect(100, 100, 100, 100)},
+       position_before_collision_detection},
   };
 
   for (const auto& test : kTestCases) {
     CollisionDetectionUtils::MarkWindowPriorityForCollisionDetection(
         prioritized_window.get(), test.window_priority);
     EXPECT_EQ(ConvertToScreen(test.expected_position),
-              CallAvoidObstacles(display,
-                                 ConvertToScreen(gfx::Rect(100, 100, 100, 100)),
-                                 test.avoid_obstacles_priority));
+              CallAvoidObstacles(
+                  display, ConvertToScreen(position_before_collision_detection),
+                  test.avoid_obstacles_priority));
   }
 }
 

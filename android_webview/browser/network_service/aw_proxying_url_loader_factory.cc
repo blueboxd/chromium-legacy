@@ -646,7 +646,7 @@ void InterceptedRequest::OnURLLoaderError(uint32_t custom_reason,
                                           const std::string& description) {
   if (custom_reason == network::mojom::URLLoader::kClientDisconnectReason) {
     if (description == safe_browsing::kCustomCancelReasonForURLLoader) {
-      SendErrorCallback(safe_browsing::GetNetErrorCodeForSafeBrowsing(), true);
+      SendErrorCallback(safe_browsing::kNetErrorCodeForSafeBrowsing, true);
     } else {
       int parsed_error_code;
       if (base::StringToInt(base::StringPiece(description),

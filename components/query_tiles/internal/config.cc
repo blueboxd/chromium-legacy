@@ -24,6 +24,9 @@ constexpr base::TimeDelta kDefaultExpireDuration =
 // Default locale string.
 constexpr char kDefaultLocale[] = "en-US";
 
+// Default network requirement for background task.
+constexpr bool kDefaultIsUnmeterNetworkRequired = false;
+
 const GURL BuildGetQueryTileURL(const GURL& base_url, const char* path) {
   GURL::Replacements replacements;
   replacements.SetPathStr(path);
@@ -47,7 +50,8 @@ TileConfig::TileConfig()
       get_query_tile_url(
           BuildGetQueryTileURL(base_url, kDefaultGetQueryTilePath)),
       expire_duration(kDefaultExpireDuration),
-      locale(kDefaultLocale) {}
+      locale(kDefaultLocale),
+      is_unmetered_network_required(kDefaultIsUnmeterNetworkRequired) {}
 
 TileConfig::~TileConfig() = default;
 

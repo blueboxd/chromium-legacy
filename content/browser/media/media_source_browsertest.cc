@@ -25,7 +25,7 @@ class MediaSourceTest : public MediaBrowserTest {
     query_params.emplace_back("mediaFile", media_file);
     query_params.emplace_back("mediaType", media_type);
     RunMediaTestPage("media_source_player.html", query_params, expectation,
-                     false);
+                     true);
   }
 
   void TestSimplePlayback(const std::string& media_file,

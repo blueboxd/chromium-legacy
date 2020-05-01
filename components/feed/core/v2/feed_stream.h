@@ -106,8 +106,8 @@ class FeedStream : public FeedStreamApi,
   void ReportSliceViewed(const std::string& slice_id) override;
   void ReportNavigationStarted() override;
   void ReportNavigationDone() override;
-  void ReportOpenAction() override;
-  void ReportOpenInNewTabAction() override;
+  void ReportOpenAction(const std::string& slice_id) override;
+  void ReportOpenInNewTabAction(const std::string& slice_id) override;
   void ReportOpenInNewIncognitoTabAction() override;
   void ReportSendFeedbackAction() override;
   void ReportLearnMoreAction() override;

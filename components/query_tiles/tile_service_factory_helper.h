@@ -18,6 +18,10 @@ namespace image_fetcher {
 class ImageFetcherService;
 }  // namespace image_fetcher
 
+namespace background_task {
+class BackgroundTaskScheduler;
+}  // namespace background_task
+
 namespace upboarding {
 
 class TileService;
@@ -25,7 +29,8 @@ class TileService;
 std::unique_ptr<TileService> CreateTileService(
     image_fetcher::ImageFetcherService* image_fetcher_service,
     leveldb_proto::ProtoDatabaseProvider* db_provider,
-    const base::FilePath& storage_dir);
+    const base::FilePath& storage_dir,
+    background_task::BackgroundTaskScheduler* scheduler);
 
 }  // namespace upboarding
 

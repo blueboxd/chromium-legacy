@@ -12,7 +12,6 @@
 #include "base/strings/string_util.h"
 #include "google_apis/google_api_keys.h"
 #include "remoting/base/logging.h"
-#include "remoting/base/oauth_token_exchanger.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace remoting {
@@ -34,8 +33,7 @@ OAuthTokenGetterImpl::OAuthTokenGetterImpl(
     bool auto_refresh)
     : intermediate_credentials_(std::move(intermediate_credentials)),
       gaia_oauth_client_(new gaia::GaiaOAuthClient(url_loader_factory)),
-      credentials_updated_callback_(on_credentials_update),
-      token_exchanger_(url_loader_factory) {
+      credentials_updated_callback_(on_credentials_update) {
   if (auto_refresh) {
     refresh_timer_.reset(new base::OneShotTimer());
   }
@@ -43,14 +41,10 @@ OAuthTokenGetterImpl::OAuthTokenGetterImpl(
 
 OAuthTokenGetterImpl::OAuthTokenGetterImpl(
     std::unique_ptr<OAuthAuthorizationCredentials> authorization_credentials,
-    const OAuthTokenGetter::RefreshTokenUpdatedCallback&
-        on_refresh_token_updated,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     bool auto_refresh)
     : authorization_credentials_(std::move(authorization_credentials)),
-      gaia_oauth_client_(new gaia::GaiaOAuthClient(url_loader_factory)),
-      refresh_token_updated_callback_(on_refresh_token_updated),
-      token_exchanger_(url_loader_factory) {
+      gaia_oauth_client_(new gaia::GaiaOAuthClient(url_loader_factory)) {
   if (auto_refresh) {
     refresh_timer_.reset(new base::OneShotTimer());
   }
@@ -97,7 +91,9 @@ void OAuthTokenGetterImpl::OnRefreshTokenResponse(
   if (!authorization_credentials_->is_service_account && !email_verified_) {
     gaia_oauth_client_->GetUserEmail(access_token, kMaxRetries, this);
   } else {
-    ExchangeAccessToken();
+    NotifyTokenCallbacks(OAuthTokenGetterImpl::SUCCESS,
+                         authorization_credentials_->login,
+                         oauth_access_token_);
   }
 }
 
@@ -121,9 +117,8 @@ void OAuthTokenGetterImpl::OnGetUserEmailResponse(
 
   email_verified_ = true;
 
-  // Now that we've refreshed the token and verified that it's for the correct
-  // user account, exchange the token if needed.
-  ExchangeAccessToken();
+  NotifyTokenCallbacks(OAuthTokenGetterImpl::SUCCESS,
+                       authorization_credentials_->login, oauth_access_token_);
 }
 
 void OAuthTokenGetterImpl::UpdateAccessToken(const std::string& access_token,
@@ -280,43 +275,6 @@ void OAuthTokenGetterImpl::RefreshAccessToken() {
   gaia_oauth_client_->RefreshToken(client_info,
                                    authorization_credentials_->refresh_token,
                                    empty_scope_list, kMaxRetries, this);
-}
-
-void OAuthTokenGetterImpl::ExchangeAccessToken() {
-  // Unretained() is safe because |this| owns its token-exchanger, which
-  // owns its GaiaOAuthClient, which cancels callbacks on destruction.
-  token_exchanger_.ExchangeToken(
-      oauth_access_token_,
-      base::BindOnce(&OAuthTokenGetterImpl::OnExchangeTokenResponse,
-                     base::Unretained(this)));
-}
-
-void OAuthTokenGetterImpl::OnExchangeTokenResponse(
-    Status status,
-    const std::string& refresh_token,
-    const std::string& access_token) {
-  oauth_access_token_ = access_token;
-  switch (status) {
-    case AUTH_ERROR:
-      OnOAuthError();
-      break;
-    case NETWORK_ERROR:
-      NotifyTokenCallbacks(status, std::string(), std::string());
-      break;
-    case SUCCESS:
-      if (!refresh_token.empty() &&
-          refresh_token != authorization_credentials_->refresh_token) {
-        authorization_credentials_->refresh_token = refresh_token;
-        if (refresh_token_updated_callback_) {
-          refresh_token_updated_callback_.Run(refresh_token);
-        }
-      }
-      NotifyTokenCallbacks(status, authorization_credentials_->login,
-                           oauth_access_token_);
-      break;
-    default:
-      NOTREACHED();
-  }
 }
 
 }  // namespace remoting

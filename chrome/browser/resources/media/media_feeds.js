@@ -117,6 +117,19 @@ class MediaFeedsTableDelegate {
         a.target = '_blank';
         td.appendChild(a);
         td.appendChild(document.createElement('br'));
+
+        const contentAttributes = [];
+        if (image.contentAttributes && image.contentAttributes.length !== 0) {
+          const p = document.createElement('p');
+          const contentAttributes = [];
+
+          image.contentAttributes.forEach((contentAttribute) => {
+            contentAttributes.push(formatContentAttribute(contentAttribute));
+          });
+
+          p.textContent = 'ContentAttributes=' + contentAttributes.join(', ');
+          td.appendChild(p);
+        }
       });
     } else if (key == 'type') {
       // Format a MediaFeedItemType.
@@ -379,6 +392,42 @@ function formatLiveDetails(mojoLiveDetails) {
   }
 
   return textContent;
+}
+
+/**
+ * Formats a single ContentAttribute for display.
+ * @param {mediaFeeds.mojom.ContentAttribute} contentAttribute
+ * @returns {string}
+ */
+function formatContentAttribute(contentAttribute) {
+  switch (parseInt(contentAttribute, 10)) {
+    case mediaFeeds.mojom.ContentAttribute.kIconic:
+      return 'Iconic';
+    case mediaFeeds.mojom.ContentAttribute.kSceneStill:
+      return 'SceneStill';
+    case mediaFeeds.mojom.ContentAttribute.kPoster:
+      return 'Poster';
+    case mediaFeeds.mojom.ContentAttribute.kBackground:
+      return 'Background';
+    case mediaFeeds.mojom.ContentAttribute.kForDarkBackground:
+      return 'ForDarkBackground';
+    case mediaFeeds.mojom.ContentAttribute.kForLightBackground:
+      return 'ForLightBackground';
+    case mediaFeeds.mojom.ContentAttribute.kCentered:
+      return 'Centered';
+    case mediaFeeds.mojom.ContentAttribute.kRightCentered:
+      return 'RightCentered';
+    case mediaFeeds.mojom.ContentAttribute.kLeftCentered:
+      return 'LeftCentered';
+    case mediaFeeds.mojom.ContentAttribute.kHasTransparentBackground:
+      return 'HasTransparentBackground';
+    case mediaFeeds.mojom.ContentAttribute.kHasTitle:
+      return 'HasTitle';
+    case mediaFeeds.mojom.ContentAttribute.kNoTitle:
+      return 'NoTitle';
+    default:
+      return 'Unknown';
+  }
 }
 
 /**

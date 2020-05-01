@@ -30,6 +30,7 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/embedded_test_server_connection_listener.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/blink/public/common/features.h"
 #include "url/gurl.h"
 
@@ -599,19 +600,9 @@ IN_PROC_BROWSER_TEST_F(NavigationPredictorBrowserTest,
 
   EXPECT_EQ(1u, observer.count_predictions());
   EXPECT_EQ(url, observer.last_prediction()->source_document_url());
-  ASSERT_EQ(2u, observer.last_prediction()->sorted_predicted_urls().size());
-
-  EXPECT_NE(
-      observer.last_prediction()->sorted_predicted_urls().end(),
-      std::find(observer.last_prediction()->sorted_predicted_urls().begin(),
-                observer.last_prediction()->sorted_predicted_urls().end(),
-                "https://google.com/"));
-  EXPECT_NE(
-      observer.last_prediction()->sorted_predicted_urls().end(),
-      std::find(observer.last_prediction()->sorted_predicted_urls().begin(),
-                observer.last_prediction()->sorted_predicted_urls().end(),
-                "https://example.com/"))
-      << observer.last_prediction()->sorted_predicted_urls().at(1);
+  EXPECT_THAT(observer.last_prediction()->sorted_predicted_urls(),
+              ::testing::UnorderedElementsAre("https://google.com/",
+                                              "https://example.com/"));
 
   // Doing another navigation after removing the observer should not cause a
   // crash.

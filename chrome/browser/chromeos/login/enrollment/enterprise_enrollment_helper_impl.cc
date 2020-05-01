@@ -29,8 +29,10 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/policy/core/common/cloud/dm_auth.h"
+#include "components/policy/proto/device_management_backend.pb.h"
 #include "google_apis/gaia/gaia_auth_consumer.h"
 #include "google_apis/gaia/gaia_auth_fetcher.h"
+#include "google_apis/gaia/gaia_constants.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace {
@@ -203,6 +205,21 @@ void EnterpriseEnrollmentHelperImpl::OnDeviceAccountClientError(
       policy::EnrollmentStatus::ForRobotAuthFetchError(status));
   base::ThreadTaskRunnerHandle::Get()->DeleteSoon(
       FROM_HERE, device_account_initializer_.release());
+}
+
+enterprise_management::DeviceServiceApiAccessRequest::DeviceType
+EnterpriseEnrollmentHelperImpl::GetRobotAuthCodeDeviceType() {
+  return enterprise_management::DeviceServiceApiAccessRequest::CHROME_OS;
+}
+
+std::string EnterpriseEnrollmentHelperImpl::GetRobotOAuthScopes() {
+  return GaiaConstants::kAnyApiOAuth2Scope;
+}
+
+scoped_refptr<network::SharedURLLoaderFactory>
+EnterpriseEnrollmentHelperImpl::GetURLLoaderFactory() {
+  return g_browser_process->system_network_context_manager()
+      ->GetSharedURLLoaderFactory();
 }
 
 void EnterpriseEnrollmentHelperImpl::ClearAuth(base::OnceClosure callback) {

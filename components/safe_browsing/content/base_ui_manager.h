@@ -152,10 +152,6 @@ class BaseUIManager
   virtual void ShowBlockingPageForResource(const UnsafeResource& resource);
 
  private:
-  // When true, we immediately cancel navigations that have been blocked by Safe
-  // Browsing, otherwise we call show on the interstitial.
-  bool SafeBrowsingInterstitialsAreCommittedNavigations();
-
   friend class base::RefCountedThreadSafe<BaseUIManager>;
 
   // Creates a blocking page, used for interstitials triggered by subresources.

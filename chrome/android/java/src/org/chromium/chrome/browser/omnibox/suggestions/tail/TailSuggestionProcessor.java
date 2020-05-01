@@ -45,7 +45,7 @@ public class TailSuggestionProcessor extends BaseSuggestionViewProcessor {
     }
 
     @Override
-    public PropertyModel createModelForSuggestion(OmniboxSuggestion suggestion) {
+    public PropertyModel createModel() {
         return new PropertyModel(TailSuggestionViewProperties.ALL_KEYS);
     }
 

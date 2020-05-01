@@ -11,19 +11,24 @@
 #include "net/url_request/url_request.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/mojom/trust_tokens.mojom-shared.h"
+#include "services/network/trust_tokens/boringssl_trust_token_issuance_cryptographer.h"
+#include "services/network/trust_tokens/boringssl_trust_token_redemption_cryptographer.h"
+#include "services/network/trust_tokens/ed25519_key_pair_generator.h"
 #include "services/network/trust_tokens/ed25519_trust_token_request_signer.h"
 #include "services/network/trust_tokens/suitable_trust_token_origin.h"
 #include "services/network/trust_tokens/trust_token_http_headers.h"
 #include "services/network/trust_tokens/trust_token_key_commitment_controller.h"
 #include "services/network/trust_tokens/trust_token_request_canonicalizer.h"
+#include "services/network/trust_tokens/trust_token_request_issuance_helper.h"
+#include "services/network/trust_tokens/trust_token_request_redemption_helper.h"
 #include "services/network/trust_tokens/trust_token_request_signing_helper.h"
 
 namespace network {
 
 TrustTokenRequestHelperFactory::TrustTokenRequestHelperFactory(
-    PendingTrustTokenStore* store)
-    : store_(store) {}
-TrustTokenRequestHelperFactory::TrustTokenRequestHelperFactory() = default;
+    PendingTrustTokenStore* store,
+    const TrustTokenKeyCommitmentGetter* key_commitment_getter)
+    : store_(store), key_commitment_getter_(key_commitment_getter) {}
 TrustTokenRequestHelperFactory::~TrustTokenRequestHelperFactory() = default;
 
 void TrustTokenRequestHelperFactory::CreateTrustTokenHelperForRequest(
@@ -61,6 +66,24 @@ void TrustTokenRequestHelperFactory::ConstructHelperUsingStore(
   DCHECK(params);
 
   switch (params->type) {
+    case mojom::TrustTokenOperationType::kIssuance: {
+      std::move(done).Run(std::unique_ptr<TrustTokenRequestHelper>(
+          new TrustTokenRequestIssuanceHelper(
+              std::move(top_frame_origin), store, key_commitment_getter_,
+              std::make_unique<BoringsslTrustTokenIssuanceCryptographer>())));
+      return;
+    }
+
+    case mojom::TrustTokenOperationType::kRedemption: {
+      std::move(done).Run(std::unique_ptr<TrustTokenRequestHelper>(
+          new TrustTokenRequestRedemptionHelper(
+              std::move(top_frame_origin), params->refresh_policy, store,
+              key_commitment_getter_,
+              std::make_unique<Ed25519KeyPairGenerator>(),
+              std::make_unique<BoringsslTrustTokenRedemptionCryptographer>())));
+      return;
+    }
+
     case mojom::TrustTokenOperationType::kSigning: {
       base::Optional<SuitableTrustTokenOrigin> maybe_issuer;
       if (params->issuer) {
@@ -83,13 +106,6 @@ void TrustTokenRequestHelperFactory::ConstructHelperUsingStore(
               store, std::move(signing_params),
               std::make_unique<Ed25519TrustTokenRequestSigner>(),
               std::make_unique<TrustTokenRequestCanonicalizer>())));
-      return;
-    }
-
-    // Issuance and redemption aren't yet implemented.
-    case mojom::TrustTokenOperationType::kIssuance:
-    case mojom::TrustTokenOperationType::kRedemption: {
-      std::move(done).Run(mojom::TrustTokenOperationStatus::kUnavailable);
       return;
     }
   }

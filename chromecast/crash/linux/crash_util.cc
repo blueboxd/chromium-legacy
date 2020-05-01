@@ -4,12 +4,15 @@
 
 #include "chromecast/crash/linux/crash_util.h"
 
+#include <string>
+
 #include "base/bind.h"
-#include "base/files/file_path.h"
+#include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
 #include "chromecast/base/path_utils.h"
+#include "chromecast/base/process_utils.h"
 #include "chromecast/base/version.h"
 #include "chromecast/crash/app_state_tracker.h"
 #include "chromecast/crash/linux/dummy_minidump_generator.h"
@@ -18,6 +21,9 @@
 namespace chromecast {
 
 namespace {
+const char kDumpStateSuffix[] = ".txt.gz";
+const char kMinidumpsDir[] = "minidumps";
+const size_t kMaxFilesInMinidumpsDir = 22;  // 10 crashes
 
 // This can be set to a callback for testing. This allows us to inject a fake
 // dumpstate routine to avoid calling an executable during an automated test.
@@ -26,6 +32,43 @@ namespace {
 static base::OnceCallback<int(const std::string&)>* g_dumpstate_cb = nullptr;
 
 }  // namespace
+
+// static
+bool CrashUtil::HasSpaceToCollectCrash() {
+  // Normally the path is protected by a file lock, but we don't need to acquire
+  // that just to make an estimate of the space consumed.
+  base::FilePath dump_dir(GetHomePathASCII(kMinidumpsDir));
+  base::FileEnumerator file_enumerator(dump_dir, false /* recursive */,
+                                       base::FileEnumerator::FILES);
+  size_t total = 0;
+  for (base::FilePath name = file_enumerator.Next(); !name.empty();
+       name = file_enumerator.Next()) {
+    total++;
+  }
+  return total <= kMaxFilesInMinidumpsDir;
+}
+
+// static
+bool CrashUtil::CollectDumpstate(const base::FilePath& minidump_path,
+                                 base::FilePath* dumpstate_path) {
+  std::vector<std::string> argv = {
+      chromecast::GetBinPathASCII("dumpstate").value(),
+      "-w",
+      "crash-request",
+      "-z",
+      "-o",
+      minidump_path.value() /* dumpstate appends ".txt.gz" to the filename */
+  };
+
+  std::string log;
+  if (!chromecast::GetAppOutput(argv, &log)) {
+    LOG(ERROR) << "failed to execute dumpstate";
+    return false;
+  }
+
+  *dumpstate_path = minidump_path.AddExtensionASCII(kDumpStateSuffix);
+  return true;
+}
 
 // static
 uint64_t CrashUtil::GetCurrentTimeMs() {

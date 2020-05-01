@@ -11,9 +11,6 @@ package org.chromium.android_webview;
  */
 public final class AwFeatures {
     // Alphabetical:
-    public static final String SAFE_BROWSING_COMMITTED_INTERSTITIALS =
-            "SafeBrowsingCommittedInterstitials";
-
     public static final String WEBVIEW_CONNECTIONLESS_SAFE_BROWSING =
             "WebViewConnectionlessSafeBrowsing";
 

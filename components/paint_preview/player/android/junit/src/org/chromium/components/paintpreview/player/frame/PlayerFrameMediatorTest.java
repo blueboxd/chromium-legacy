@@ -191,9 +191,10 @@ public class PlayerFrameMediatorTest {
         Assert.assertEquals(expectedViewPort, mModel.get(PlayerFrameProperties.VIEWPORT));
 
         // The bitmap matrix should be empty, but initialized with the correct number of rows and
-        // columns.
+        // columns. Because we set the initial scale factor to view port width over content width,
+        // we should have only one column.
         Bitmap[][] bitmapMatrix = mModel.get(PlayerFrameProperties.BITMAP_MATRIX);
-        Assert.assertTrue(Arrays.deepEquals(bitmapMatrix, new Bitmap[6][4]));
+        Assert.assertTrue(Arrays.deepEquals(bitmapMatrix, new Bitmap[2][1]));
         Assert.assertEquals(new ArrayList<Pair<View, Rect>>(),
                 mModel.get(PlayerFrameProperties.SUBFRAME_VIEWS));
     }
@@ -205,7 +206,7 @@ public class PlayerFrameMediatorTest {
     @Test
     public void testBitmapRequest() {
         // Initial view port setup.
-        mMediator.setLayoutDimensions(100, 200);
+        mMediator.initializeViewPort(100, 200, 1f);
 
         // Requests for bitmaps in all tiles that are visible in the view port as well as their
         // adjacent tiles should've been made.
@@ -322,7 +323,7 @@ public class PlayerFrameMediatorTest {
     @Test
     public void testRequiredBitmapMatrix() {
         // Initial view port setup.
-        mMediator.setLayoutDimensions(100, 200);
+        mMediator.initializeViewPort(100, 200, 1f);
 
         boolean[][] expectedRequiredBitmaps = new boolean[6][6];
 
@@ -447,7 +448,7 @@ public class PlayerFrameMediatorTest {
     public void testBitmapRequestResponse() {
         // Sets the bitmap tile size to 150x200 and triggers bitmap request for the upper left tile
         // and its adjacent tiles.
-        mMediator.setLayoutDimensions(150, 200);
+        mMediator.initializeViewPort(150, 200, 1f);
 
         // Create mock bitmaps for response.
         Bitmap bitmap00 = Mockito.mock(Bitmap.class);
@@ -510,7 +511,7 @@ public class PlayerFrameMediatorTest {
     @Test
     public void testViewPortOnScrollBy() {
         // Initial view port setup.
-        mMediator.setLayoutDimensions(100, 200);
+        mMediator.initializeViewPort(100, 200, 1f);
         Rect expectedViewPort = new Rect(0, 0, 100, 200);
 
         // Scroll right and down by a within bounds amount. Both scroll directions should be
@@ -593,7 +594,7 @@ public class PlayerFrameMediatorTest {
         mMediator.addSubFrame(subFrame3.first, subFrame3.second);
 
         // Initial view port setup.
-        mMediator.setLayoutDimensions(100, 200);
+        mMediator.initializeViewPort(100, 200, 1f);
         List<Pair<View, Rect>> expectedVisibleViews = new ArrayList<>();
         expectedVisibleViews.add(subFrame1);
         expectedVisibleViews.add(subFrame2);
@@ -622,7 +623,7 @@ public class PlayerFrameMediatorTest {
     @Test
     public void testViewPortOnFling() {
         // Initial view port setup.
-        mMediator.setLayoutDimensions(100, 200);
+        mMediator.initializeViewPort(100, 200, 1f);
         Rect expectedViewPort = new Rect(0, 0, 100, 200);
 
         mMediator.onFling(100, 0);
@@ -669,7 +670,7 @@ public class PlayerFrameMediatorTest {
     @Test
     public void testOnClick() {
         // Initial view port setup.
-        mMediator.setLayoutDimensions(100, 200);
+        mMediator.initializeViewPort(100, 200, 1f);
         List<ClickedPoint> expectedClickedPoints = new ArrayList<>();
 
         // No scrolling has happened yet.

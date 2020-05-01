@@ -51,10 +51,10 @@ void FlexLayoutExample::CreateAdditionalControls(int vertical_pos) {
   CreateMarginsTextFields(base::ASCIIToUTF16("Default margins"),
                           &default_child_margins_, &vertical_pos);
 
-  collapse_margins_ =
-      CreateCheckbox(base::ASCIIToUTF16("Collapse margins"), &vertical_pos);
+  collapse_margins_ = CreateAndAddCheckbox(
+      base::ASCIIToUTF16("Collapse margins"), &vertical_pos);
 
-  ignore_default_main_axis_margins_ = CreateCheckbox(
+  ignore_default_main_axis_margins_ = CreateAndAddCheckbox(
       base::ASCIIToUTF16("Ignore main axis margins"), &vertical_pos);
 
   layout_ = layout_panel()->SetLayoutManager(std::make_unique<FlexLayout>());

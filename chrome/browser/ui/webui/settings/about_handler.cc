@@ -329,9 +329,9 @@ AboutHandler* AboutHandler::Create(content::WebUIDataSource* html_source,
                          ObsoleteSystem::GetLinkURL());
 
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
-  base::string16 tos = l10n_util::GetStringFUTF16(
-      IDS_ABOUT_TERMS_OF_SERVICE, base::UTF8ToUTF16(chrome::kChromeUITermsURL));
-  html_source->AddString("aboutProductTos", tos);
+  html_source->AddString("aboutTermsURL", chrome::kChromeUITermsURL);
+  html_source->AddLocalizedString("aboutProductTos",
+                                  IDS_ABOUT_TERMS_OF_SERVICE);
 #endif
 
 #if defined(OS_CHROMEOS)

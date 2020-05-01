@@ -450,7 +450,7 @@ bool DocumentProvider::IsInputLikelyURL(const AutocompleteInput& input) {
 void DocumentProvider::Start(const AutocompleteInput& input,
                              bool minimal_changes) {
   TRACE_EVENT0("omnibox", "DocumentProvider::Start");
-  matches_.clear();
+  Stop(true, false);
   field_trial_triggered_ = false;
 
   // Perform various checks - feature is enabled, user is allowed to use the
@@ -475,8 +475,6 @@ void DocumentProvider::Start(const AutocompleteInput& input,
   if (IsInputLikelyURL(input)) {
     return;
   }
-
-  Stop(false, false);
 
   input_ = input;
 

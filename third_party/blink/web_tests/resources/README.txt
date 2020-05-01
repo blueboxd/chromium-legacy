@@ -6,6 +6,7 @@ which is automatically synced with W3C web-platform-tests.
 * testdriver.js
 * testharness.js
 * testharness.css
+* testdriver-actions.js
 
 The following files are native to Blink and can be modified:
 

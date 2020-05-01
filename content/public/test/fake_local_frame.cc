@@ -43,6 +43,8 @@ void FakeLocalFrame::AddInspectorIssue(
 
 void FakeLocalFrame::CheckCompleted() {}
 
+void FakeLocalFrame::StopLoading() {}
+
 void FakeLocalFrame::Collapse(bool collapsed) {}
 
 void FakeLocalFrame::EnableViewSourceMode() {}

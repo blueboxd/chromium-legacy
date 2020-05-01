@@ -33,7 +33,6 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "third_party/blink/public/mojom/devtools/inspector_issue.mojom-blink-forward.h"
 #include "third_party/blink/public/platform/web_mixed_content_context_type.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/renderer/core/core_export.h"

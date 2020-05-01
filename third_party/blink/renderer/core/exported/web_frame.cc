@@ -5,6 +5,7 @@
 #include "third_party/blink/public/web/web_frame.h"
 
 #include <algorithm>
+#include "third_party/blink/public/mojom/frame/tree_scope_type.mojom-blink.h"
 #include "third_party/blink/public/mojom/scroll/scrollbar_mode.mojom-blink.h"
 #include "third_party/blink/public/mojom/security_context/insecure_request_policy.mojom-blink.h"
 #include "third_party/blink/public/web/web_element.h"
@@ -287,7 +288,7 @@ WebFrame* WebFrame::FromFrame(Frame* frame) {
   return WebRemoteFrameImpl::FromFrame(To<RemoteFrame>(*frame));
 }
 
-WebFrame::WebFrame(WebTreeScopeType scope)
+WebFrame::WebFrame(mojom::blink::TreeScopeType scope)
     : scope_(scope),
       parent_(nullptr),
       previous_sibling_(nullptr),

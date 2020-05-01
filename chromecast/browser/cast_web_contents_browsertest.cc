@@ -1006,8 +1006,9 @@ IN_PROC_BROWSER_TEST_F(CastWebContentsBrowserTest, PostMessageToMainFrame) {
   EXPECT_CALL(mock_cast_wc_observer_,
               UpdateTitle(base::ASCIIToUTF16(kOriginalTitle)));
 
-  GURL gurl = content::GetFileUrlWithQuery(
-      GetTestDataFilePath("window_post_message.html"), "");
+  embedded_test_server()->ServeFilesFromSourceDirectory(GetTestDataPath());
+  StartTestServer();
+  GURL gurl = embedded_test_server()->GetURL("/window_post_message.html");
 
   cast_web_contents_->LoadUrl(gurl);
   title_change_observer_.RunUntilTitleEquals(kOriginalTitle);
@@ -1031,8 +1032,9 @@ IN_PROC_BROWSER_TEST_F(CastWebContentsBrowserTest, PostMessagePassMessagePort) {
               UpdateTitle(base::ASCIIToUTF16(kOriginalTitle)));
 
   // Load test page.
-  GURL gurl = content::GetFileUrlWithQuery(
-      GetTestDataFilePath("message_port.html"), "");
+  embedded_test_server()->ServeFilesFromSourceDirectory(GetTestDataPath());
+  StartTestServer();
+  GURL gurl = embedded_test_server()->GetURL("/message_port.html");
   cast_web_contents_->LoadUrl(gurl);
   title_change_observer_.RunUntilTitleEquals(kOriginalTitle);
 
@@ -1097,8 +1099,9 @@ IN_PROC_BROWSER_TEST_F(CastWebContentsBrowserTest,
   EXPECT_CALL(mock_cast_wc_observer_,
               UpdateTitle(base::ASCIIToUTF16(kOriginalTitle)));
   // Load test page.
-  GURL gurl = content::GetFileUrlWithQuery(
-      GetTestDataFilePath("message_port.html"), "");
+  embedded_test_server()->ServeFilesFromSourceDirectory(GetTestDataPath());
+  StartTestServer();
+  GURL gurl = embedded_test_server()->GetURL("/message_port.html");
   cast_web_contents_->LoadUrl(gurl);
   title_change_observer_.RunUntilTitleEquals(kOriginalTitle);
 

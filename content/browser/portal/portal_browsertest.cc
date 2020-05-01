@@ -1427,7 +1427,8 @@ class RenderFrameHostFactoryForNavigationControlInterceptor
     return base::WrapUnique(
         new RenderFrameHostImplForNavigationControlInterceptor(
             site_instance, std::move(render_view_host), delegate, frame_tree,
-            frame_tree_node, routing_id, renderer_initiated_creation));
+            frame_tree_node, routing_id, renderer_initiated_creation,
+            RenderFrameHostImpl::LifecycleState::kActive));
   }
 };
 

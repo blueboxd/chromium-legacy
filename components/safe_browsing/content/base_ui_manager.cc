@@ -248,62 +248,57 @@ void BaseUIManager::DisplayBlockingPage(
                        resource.web_contents_getter.Run(),
                        true /* A decision is now pending */,
                        resource.threat_type);
-  if (SafeBrowsingInterstitialsAreCommittedNavigations()) {
-    GURL unsafe_url = (resource.IsMainPageLoadBlocked() ||
-                       !GetNavigationEntryForResource(resource))
-                          ? resource.url
-                          : GetNavigationEntryForResource(resource)->GetURL();
-    AddUnsafeResource(unsafe_url, resource);
-    // If the delayed warnings experiment is not enabled, with committed
-    // interstitials we just cancel the load from here, the actual interstitial
-    // will be shown from the SafeBrowsingNavigationThrottle.
-    // showed_interstitial is set to false for subresources since this
-    // cancellation doesn't correspond to the navigation that triggers the error
-    // page (the call to LoadPostCommitErrorPage creates another navigation).
-    //
-    // If the experiment is enabled, the interstitial is shown below.
-    if (!resource.callback.is_null()) {
-      resource.callback_thread->PostTask(
-          FROM_HERE,
-          base::BindOnce(
-              resource.callback, false /* proceed */,
-              resource.IsMainPageLoadBlocked() /* showed_interstitial */));
-    }
-
-    if (!base::FeatureList::IsEnabled(safe_browsing::kDelayedWarnings)) {
-      DCHECK(!resource.is_delayed_warning);
-    }
-
-    if ((!resource.IsMainPageLoadBlocked() || resource.is_delayed_warning) &&
-        !IsWhitelisted(resource)) {
-      // For subresource triggered interstitials, we trigger the error page
-      // navigation from here since there will be no navigation to intercept
-      // in the throttle.
-      content::WebContents* contents = resource.web_contents_getter.Run();
-      content::NavigationEntry* entry = GetNavigationEntryForResource(resource);
-      // entry can be null if we are on a brand new tab, and a resource is added
-      // via javascript without a navigation.
-      GURL blocked_url = entry ? entry->GetURL() : resource.url;
-
-      // Blocking pages handle both user interaction, and generation of the
-      // interstitial HTML. In the case of subresources, we need the HTML
-      // content prior to (and in a different process than when) installing the
-      // command handlers. For this reason we create a blocking page here just
-      // to generate the HTML, and immediately delete it.
-      BaseBlockingPage* blocking_page =
-          CreateBlockingPageForSubresource(contents, blocked_url, resource);
-      contents->GetController().LoadPostCommitErrorPage(
-          contents->GetMainFrame(), blocked_url,
-          blocking_page->GetHTMLContents(), net::ERR_BLOCKED_BY_CLIENT);
-      delete blocking_page;
-    }
-    return;
+  GURL unsafe_url = (resource.IsMainPageLoadBlocked() ||
+                     !GetNavigationEntryForResource(resource))
+                        ? resource.url
+                        : GetNavigationEntryForResource(resource)->GetURL();
+  AddUnsafeResource(unsafe_url, resource);
+  // If the delayed warnings experiment is not enabled, with committed
+  // interstitials we just cancel the load from here, the actual interstitial
+  // will be shown from the SafeBrowsingNavigationThrottle.
+  // showed_interstitial is set to false for subresources since this
+  // cancellation doesn't correspond to the navigation that triggers the error
+  // page (the call to LoadPostCommitErrorPage creates another navigation).
+  //
+  // If the experiment is enabled, the interstitial is shown below.
+  if (!resource.callback.is_null()) {
+    resource.callback_thread->PostTask(
+        FROM_HERE,
+        base::BindOnce(
+            resource.callback, false /* proceed */,
+            resource.IsMainPageLoadBlocked() /* showed_interstitial */));
   }
-  ShowBlockingPageForResource(resource);
+
+  if (!base::FeatureList::IsEnabled(safe_browsing::kDelayedWarnings)) {
+    DCHECK(!resource.is_delayed_warning);
+  }
+
+  if ((!resource.IsMainPageLoadBlocked() || resource.is_delayed_warning) &&
+      !IsWhitelisted(resource)) {
+    // For subresource triggered interstitials, we trigger the error page
+    // navigation from here since there will be no navigation to intercept
+    // in the throttle.
+    content::WebContents* contents = resource.web_contents_getter.Run();
+    content::NavigationEntry* entry = GetNavigationEntryForResource(resource);
+    // entry can be null if we are on a brand new tab, and a resource is added
+    // via javascript without a navigation.
+    GURL blocked_url = entry ? entry->GetURL() : resource.url;
+
+    // Blocking pages handle both user interaction, and generation of the
+    // interstitial HTML. In the case of subresources, we need the HTML
+    // content prior to (and in a different process than when) installing the
+    // command handlers. For this reason we create a blocking page here just
+    // to generate the HTML, and immediately delete it.
+    BaseBlockingPage* blocking_page =
+        CreateBlockingPageForSubresource(contents, blocked_url, resource);
+    contents->GetController().LoadPostCommitErrorPage(
+        contents->GetMainFrame(), blocked_url, blocking_page->GetHTMLContents(),
+        net::ERR_BLOCKED_BY_CLIENT);
+    delete blocking_page;
+  }
 }
 
-void BaseUIManager::EnsureWhitelistCreated(
-    WebContents* web_contents) {
+void BaseUIManager::EnsureWhitelistCreated(WebContents* web_contents) {
   GetOrCreateWhitelist(web_contents);
 }
 
@@ -312,10 +307,6 @@ void BaseUIManager::CreateAndSendHitReport(const UnsafeResource& resource) {}
 void BaseUIManager::ShowBlockingPageForResource(
     const UnsafeResource& resource) {
   BaseBlockingPage::ShowBlockingPage(this, resource);
-}
-
-bool BaseUIManager::SafeBrowsingInterstitialsAreCommittedNavigations() {
-  return base::FeatureList::IsEnabled(kCommittedSBInterstitials);
 }
 
 BaseBlockingPage* BaseUIManager::CreateBlockingPageForSubresource(

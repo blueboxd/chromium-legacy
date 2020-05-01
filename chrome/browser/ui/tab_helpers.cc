@@ -346,6 +346,8 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
     OomInterventionTabHelper::CreateForWebContents(web_contents);
   }
   if (base::FeatureList::IsEnabled(
+          chrome::android::kPageInfoPerformanceHints) ||
+      base::FeatureList::IsEnabled(
           chrome::android::kContextMenuPerformanceInfo) ||
       base::FeatureList::IsEnabled(kPerformanceHintsObserver)) {
     PerformanceHintsObserver::CreateForWebContents(web_contents);

@@ -30,17 +30,20 @@ namespace blink {
 // static
 const char PushMessagingClient::kSupplementName[] = "PushMessagingClient";
 
-PushMessagingClient::PushMessagingClient(LocalFrame& frame)
-    : Supplement<LocalFrame>(frame),
-      push_messaging_manager_(frame.DomWindow()) {
+PushMessagingClient::PushMessagingClient(LocalDOMWindow& window)
+    : Supplement<LocalDOMWindow>(window), push_messaging_manager_(&window) {
   // This class will be instantiated for every page load (rather than on push
   // messaging use), so there's nothing to be done in this constructor.
 }
 
 // static
-PushMessagingClient* PushMessagingClient::From(LocalFrame* frame) {
-  DCHECK(frame);
-  return Supplement<LocalFrame>::From<PushMessagingClient>(frame);
+PushMessagingClient* PushMessagingClient::From(LocalDOMWindow& window) {
+  auto* client = Supplement<LocalDOMWindow>::From<PushMessagingClient>(window);
+  if (!client) {
+    client = MakeGarbageCollected<PushMessagingClient>(window);
+    Supplement<LocalDOMWindow>::ProvideTo(window, client);
+  }
+  return client;
 }
 
 mojom::blink::PushMessaging* PushMessagingClient::GetPushMessagingRemote() {
@@ -79,7 +82,7 @@ void PushMessagingClient::Subscribe(
 }
 
 void PushMessagingClient::Trace(Visitor* visitor) {
-  Supplement<LocalFrame>::Trace(visitor);
+  Supplement<LocalDOMWindow>::Trace(visitor);
   visitor->Trace(push_messaging_manager_);
 }
 
@@ -155,12 +158,6 @@ void PushMessagingClient::DidSubscribe(
         PushRegistrationStatusToPushErrorType(status),
         PushRegistrationStatusToString(status)));
   }
-}
-
-// static
-void ProvidePushMessagingClientTo(LocalFrame& frame,
-                                  PushMessagingClient* client) {
-  PushMessagingClient::ProvideTo(frame, client);
 }
 
 }  // namespace blink

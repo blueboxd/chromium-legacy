@@ -38,6 +38,8 @@ class MachineLevelUserCloudPolicyStoreTest : public ::testing::Test {
 
   void SetUp() override {
     ASSERT_TRUE(tmp_policy_dir_.CreateUniqueTempDir());
+    updater_policy_path_ =
+        tmp_policy_dir_.GetPath().AppendASCII("updater_policies");
     store_ = CreateStore();
   }
 
@@ -53,8 +55,9 @@ class MachineLevelUserCloudPolicyStoreTest : public ::testing::Test {
     std::unique_ptr<MachineLevelUserCloudPolicyStore> store =
         MachineLevelUserCloudPolicyStore::Create(
             DMToken::CreateValidTokenForTesting(PolicyBuilder::kFakeToken),
-            PolicyBuilder::kFakeDeviceId, tmp_policy_dir_.GetPath(),
-            cloud_policy_overrides, base::ThreadTaskRunnerHandle::Get());
+            PolicyBuilder::kFakeDeviceId, updater_policy_path_,
+            tmp_policy_dir_.GetPath(), cloud_policy_overrides,
+            base::ThreadTaskRunnerHandle::Get());
     store->AddObserver(&observer_);
     return store;
   }
@@ -65,10 +68,15 @@ class MachineLevelUserCloudPolicyStoreTest : public ::testing::Test {
     base::RunLoop().RunUntilIdle();
   }
 
+  const base::FilePath& updater_policy_path() const {
+    return updater_policy_path_;
+  }
   std::unique_ptr<MachineLevelUserCloudPolicyStore> store_;
 
   base::ScopedTempDir tmp_policy_dir_;
+  base::FilePath updater_policy_path_;
   UserPolicyBuilder policy_;
+  UserPolicyBuilder updater_policy_;
   MockCloudPolicyStoreObserver observer_;
   PolicyMap expected_policy_map_;
 
@@ -173,6 +181,120 @@ TEST_F(MachineLevelUserCloudPolicyStoreTest, StoreThenLoadPolicy) {
   loader->RemoveObserver(&observer_);
 
   ::testing::Mock::VerifyAndClearExpectations(&observer_);
+}
+
+TEST_F(MachineLevelUserCloudPolicyStoreTest, LoadOlderExternalPolicies) {
+  // Create a fake updater policy file.
+  EXPECT_CALL(observer_, OnStoreLoaded(store_.get()));
+  policy_.policy_data().set_timestamp(1000);
+  policy_.payload().mutable_searchsuggestenabled()->set_value(true);
+  policy_.Build();
+  store_->Store(policy_.policy());
+  base::RunLoop().RunUntilIdle();
+  ::testing::Mock::VerifyAndClearExpectations(&observer_);
+  ASSERT_TRUE(base::Move(
+      tmp_policy_dir_.GetPath().AppendASCII("Machine Level User Cloud Policy"),
+      updater_policy_path()));
+
+  // Create a policy file made by the browser.
+  std::unique_ptr<MachineLevelUserCloudPolicyStore> store = CreateStore();
+  EXPECT_CALL(observer_, OnStoreLoaded(store.get()));
+  policy_.policy_data().set_timestamp(2000);
+  policy_.payload().mutable_searchsuggestenabled()->set_value(false);
+  policy_.Build();
+  store->Store(policy_.policy());
+  base::RunLoop().RunUntilIdle();
+  store->RemoveObserver(&observer_);
+  ::testing::Mock::VerifyAndClearExpectations(&observer_);
+
+  // Load the policies and expect to have the updater ones.
+  std::unique_ptr<MachineLevelUserCloudPolicyStore> loader = CreateStore();
+  EXPECT_CALL(observer_, OnStoreLoaded(loader.get()));
+  loader->Load();
+  base::RunLoop().RunUntilIdle();
+
+  SetExpectedPolicyMap(POLICY_SOURCE_CLOUD);
+  ASSERT_TRUE(loader->policy());
+  EXPECT_TRUE(expected_policy_map_.Equals(loader->policy_map()));
+  EXPECT_EQ(CloudPolicyStore::STATUS_OK, loader->status());
+  loader->RemoveObserver(&observer_);
+
+  ::testing::Mock::VerifyAndClearExpectations(&observer_);
+}
+
+TEST_F(MachineLevelUserCloudPolicyStoreTest, LoadRecentExternalPolicies) {
+  // Create a fake updater policy file.
+  EXPECT_CALL(observer_, OnStoreLoaded(store_.get()));
+  policy_.policy_data().set_timestamp(2000);
+  policy_.payload().mutable_searchsuggestenabled()->set_value(true);
+  policy_.Build();
+  store_->Store(policy_.policy());
+  base::RunLoop().RunUntilIdle();
+  ::testing::Mock::VerifyAndClearExpectations(&observer_);
+  ASSERT_TRUE(base::Move(
+      tmp_policy_dir_.GetPath().AppendASCII("Machine Level User Cloud Policy"),
+      updater_policy_path()));
+
+  // Create a policy file made by the browser.
+  std::unique_ptr<MachineLevelUserCloudPolicyStore> store = CreateStore();
+  EXPECT_CALL(observer_, OnStoreLoaded(store.get()));
+  policy_.policy_data().set_timestamp(1000);
+  policy_.payload().mutable_searchsuggestenabled()->set_value(false);
+  policy_.Build();
+  store->Store(policy_.policy());
+  base::RunLoop().RunUntilIdle();
+  store->RemoveObserver(&observer_);
+  ::testing::Mock::VerifyAndClearExpectations(&observer_);
+
+  // Load the policies and expect to have the updater ones.
+  std::unique_ptr<MachineLevelUserCloudPolicyStore> loader = CreateStore();
+  EXPECT_CALL(observer_, OnStoreLoaded(loader.get()));
+  loader->Load();
+  base::RunLoop().RunUntilIdle();
+
+  PolicyMap expected_updater_policy_map;
+  expected_updater_policy_map.Set(
+      "SearchSuggestEnabled", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
+      POLICY_SOURCE_CLOUD, std::make_unique<base::Value>(true), nullptr);
+
+  ASSERT_TRUE(loader->policy());
+  EXPECT_TRUE(expected_updater_policy_map.Equals(loader->policy_map()));
+  EXPECT_EQ(CloudPolicyStore::STATUS_OK, loader->status());
+  loader->RemoveObserver(&observer_);
+
+  ::testing::Mock::VerifyAndClearExpectations(&observer_);
+}
+
+TEST_F(MachineLevelUserCloudPolicyStoreTest, LoadExternalOnlyPolicies) {
+  // Create a fake updater policy file.
+  EXPECT_CALL(observer_, OnStoreLoaded(store_.get()));
+  policy_.policy_data().set_timestamp(2000);
+  policy_.payload().mutable_searchsuggestenabled()->set_value(true);
+  policy_.Build();
+  store_->Store(policy_.policy());
+  base::RunLoop().RunUntilIdle();
+  ::testing::Mock::VerifyAndClearExpectations(&observer_);
+  ASSERT_TRUE(base::Move(
+      tmp_policy_dir_.GetPath().AppendASCII("Machine Level User Cloud Policy"),
+      updater_policy_path()));
+
+  // Load the policies and expect to have the updater ones.
+  std::unique_ptr<MachineLevelUserCloudPolicyStore> loader = CreateStore();
+  EXPECT_CALL(observer_, OnStoreLoaded(loader.get()));
+  loader->Load();
+  base::RunLoop().RunUntilIdle();
+
+  PolicyMap expected_updater_policy_map;
+  expected_updater_policy_map.Set(
+      "SearchSuggestEnabled", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
+      POLICY_SOURCE_CLOUD, std::make_unique<base::Value>(true), nullptr);
+
+  ASSERT_TRUE(loader->policy());
+  EXPECT_TRUE(expected_updater_policy_map.Equals(loader->policy_map()));
+  EXPECT_EQ(CloudPolicyStore::STATUS_OK, loader->status());
+
+  ::testing::Mock::VerifyAndClearExpectations(&observer_);
+  loader->RemoveObserver(&observer_);
 }
 
 TEST_F(MachineLevelUserCloudPolicyStoreTest,

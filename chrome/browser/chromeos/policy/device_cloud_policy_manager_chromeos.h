@@ -14,6 +14,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
+#include "chrome/browser/chromeos/cert_provisioning/cert_provisioning_scheduler.h"
 #include "chrome/browser/chromeos/policy/server_backed_state_keys_broker.h"
 #include "components/policy/core/common/cloud/cloud_policy_client.h"
 #include "components/policy/core/common/cloud/cloud_policy_manager.h"
@@ -219,6 +220,11 @@ class DeviceCloudPolicyManagerChromeOS : public CloudPolicyManager {
   // once it is passed to this class.
   std::unique_ptr<ForwardingSchemaRegistry>
       signin_profile_forwarding_schema_registry_;
+
+  // Manages provisioning of certificates from
+  // RequiredClientCertificateForDevice device policy.
+  std::unique_ptr<chromeos::cert_provisioning::CertProvisioningScheduler>
+      device_cert_provisioning_scheduler_;
 
   // Whether the component cloud policy should be disabled (by skipping the
   // component cloud policy service creation).

@@ -30,8 +30,8 @@ class CaptionBubbleController {
 
   static std::unique_ptr<CaptionBubbleController> Create(Browser* browser);
 
-  // Called when captions are received from the service.
-  virtual void OnCaptionReceived(const std::string& text) {}
+  // Called when a transcription is received from the service.
+  virtual void OnTranscription(const std::string& transcription) {}
 
   // Called when the active tab changes.
   virtual void OnActiveTabChanged(int index) {}

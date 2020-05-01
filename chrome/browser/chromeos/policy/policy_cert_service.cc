@@ -120,16 +120,6 @@ void PolicyCertService::GetPolicyCertificatesForStoragePartition(
   // extension ID (among extensions IDs with policy-provided certificates) that
   // corresponds to |partition_path|.
 
-  // Only allow certificates that are specific to |partition_path| if the
-  // built-in certificate verifier is active. The platform certificate verifier
-  // is not able to isolate contexts from each other.
-  auto* profile_network_context =
-      ProfileNetworkContextServiceFactory::GetForContext(profile_);
-  if (!profile_network_context->using_builtin_cert_verifier()) {
-    LOG(ERROR) << "Ignoring extension-scoped policy certificates";
-    return;
-  }
-
   base::FilePath default_storage_partition_path =
       content::BrowserContext::GetDefaultStoragePartition(profile_)->GetPath();
   // Among the extension IDs that have policy-provided certificates, attempt to

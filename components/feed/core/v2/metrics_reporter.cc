@@ -15,10 +15,16 @@ namespace feed {
 namespace {
 using feed::internal::FeedEngagementType;
 using feed::internal::FeedUserActionType;
+const int kMaxSuggestionsTotal = 50;
 
 void ReportEngagementTypeHistogram(FeedEngagementType engagement_type) {
   UMA_HISTOGRAM_ENUMERATION("ContentSuggestions.Feed.EngagementType",
                             engagement_type);
+}
+
+void ReportContentSuggestionsOpened(int index_in_stream) {
+  UMA_HISTOGRAM_EXACT_LINEAR("NewTabPage.ContentSuggestions.Opened",
+                             index_in_stream, kMaxSuggestionsTotal);
 }
 
 void ReportUserActionHistogram(FeedUserActionType action_type) {
@@ -80,22 +86,23 @@ void MetricsReporter::StreamScrolled(int distance_dp) {
 }
 
 void MetricsReporter::ContentSliceViewed(int index_in_stream) {
-  const int kMaxSuggestionsTotal = 50;
   UMA_HISTOGRAM_EXACT_LINEAR("NewTabPage.ContentSuggestions.Shown",
                              index_in_stream, kMaxSuggestionsTotal);
 }
 
-void MetricsReporter::OpenAction() {
+void MetricsReporter::OpenAction(int index_in_stream) {
   ReportUserActionHistogram(FeedUserActionType::kTappedOnCard);
   base::RecordAction(
       base::UserMetricsAction("ContentSuggestions.Feed.CardAction.Open"));
+  ReportContentSuggestionsOpened(index_in_stream);
   RecordInteraction();
 }
 
-void MetricsReporter::OpenInNewTabAction() {
+void MetricsReporter::OpenInNewTabAction(int index_in_stream) {
   ReportUserActionHistogram(FeedUserActionType::kTappedOpenInNewTab);
   base::RecordAction(base::UserMetricsAction(
       "ContentSuggestions.Feed.CardAction.OpenInNewTab"));
+  ReportContentSuggestionsOpened(index_in_stream);
   RecordInteraction();
 }
 

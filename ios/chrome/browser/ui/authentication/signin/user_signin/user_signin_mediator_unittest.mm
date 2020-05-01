@@ -324,9 +324,7 @@ TEST_F(UserSigninMediatorTest, AuthenticateWithIdentityError) {
   SetPerformerFailureExpectations();
 
   // Returns to sign-in flow.
-  OCMExpect(
-      [mediator_delegate_mock_ userSigninMediatorNeedPrimaryButtonUpdate]);
-  OCMExpect([mediator_delegate_mock_ userSigninMediatorDidTapResetSettingLink]);
+  OCMExpect([mediator_delegate_mock_ userSigninMediatorSigninFailed]);
 
   [mediator_ authenticateWithIdentity:identity_
                    authenticationFlow:authentication_flow_];
@@ -349,9 +347,7 @@ TEST_F(UserSigninMediatorTest, CancelWithAuthenticationInProgress) {
   SetPerformerCancelAndDismissExpectations();
 
   // Unsuccessful sign-in completion updates the primary button.
-  OCMExpect(
-      [mediator_delegate_mock_ userSigninMediatorNeedPrimaryButtonUpdate]);
-  OCMExpect([mediator_delegate_mock_ userSigninMediatorDidTapResetSettingLink]);
+  OCMExpect([mediator_delegate_mock_ userSigninMediatorSigninFailed]);
 
   [mediator_ authenticateWithIdentity:identity_
                    authenticationFlow:authentication_flow_];
@@ -372,9 +368,7 @@ TEST_F(UserSigninMediatorTest, CancelAndDismissAuthenticationInProgress) {
   SetPerformerCancelAndDismissExpectations();
 
   // Unsuccessful sign-in completion updates the primary button.
-  OCMExpect(
-      [mediator_delegate_mock_ userSigninMediatorNeedPrimaryButtonUpdate]);
-  OCMExpect([mediator_delegate_mock_ userSigninMediatorDidTapResetSettingLink]);
+  OCMExpect([mediator_delegate_mock_ userSigninMediatorSigninFailed]);
 
   [mediator_ authenticateWithIdentity:identity_
                    authenticationFlow:authentication_flow_];

@@ -1076,7 +1076,7 @@ _CONFIG = [
         'allowed': ['base::ThreadPriority'],
     },
     {
-        'paths': ['third_party/blink/renderer/core/dom/document.cc'],
+        'paths': ['third_party/blink/renderer/core/frame/local_dom_window.cc'],
         'allowed': [
             'net::registry_controlled_domains::.+',
         ],

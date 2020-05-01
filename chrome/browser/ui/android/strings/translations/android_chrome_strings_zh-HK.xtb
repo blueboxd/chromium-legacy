@@ -38,7 +38,6 @@
 <translation id="1258753120186372309">Google Doodle：<ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1260236875608242557">搜尋與探索</translation>
 <translation id="1266864766717917324">無法分享<ph name="CONTENT_TYPE" /></translation>
-<translation id="1272079795634619415">停止</translation>
 <translation id="1283039547216852943">輕按即可展開</translation>
 <translation id="1285320974508926690">永不翻譯此網站</translation>
 <translation id="1291207594882862231">清除記錄、Cookie、網站資料、快取…</translation>
@@ -50,8 +49,8 @@
 <translation id="1327257854815634930">導覽記錄開咗</translation>
 <translation id="1331212799747679585">無法更新 Chrome。其他選項</translation>
 <translation id="1332501820983677155">Google Chrome 功能快速鍵</translation>
+<translation id="1347468774581902829">管理活動</translation>
 <translation id="1360432990279830238">要登出並停用同步功能嗎？</translation>
-<translation id="1364532808393826295"><ph name="APP_NAME" /> - <ph name="NOTIFICATION_MESSAGE" /></translation>
 <translation id="1373696734384179344">記憶體不足，無法下載所選內容。</translation>
 <translation id="1376578503827013741">正在運算…</translation>
 <translation id="1383876407941801731">搜尋</translation>
@@ -122,7 +121,6 @@
 <translation id="2013642289801508067">{FILE_COUNT,plural, =1{# 個檔案}other{# 個檔案}}</translation>
 <translation id="2017836877785168846">清除網址列中的記錄和自動完成資料。</translation>
 <translation id="2021896219286479412">全螢幕網站控制</translation>
-<translation id="2030769033451695672">輕按即可返回 <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
 <translation id="2038563949887743358">開啟「切換為電腦版網站」</translation>
 <translation id="204321170514947529"><ph name="APP_NAME" /> 在 Chrome 中也有資料</translation>
 <translation id="2049574241039454490"><ph name="FILE_SIZE_OF_TOTAL" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
@@ -434,6 +432,7 @@
 <translation id="4663756553811254707">已刪除 <ph name="NUMBER_OF_BOOKMARKS" /> 個書籤</translation>
 <translation id="4665282149850138822">已將 <ph name="NAME" /> 新增到主畫面</translation>
 <translation id="4684427112815847243">同步處理所有資料</translation>
+<translation id="4688610874307684559">正在 Chrome 中執行 (初始)</translation>
 <translation id="4695891336199304370">{SHIPPING_OPTIONS,plural, =1{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 和另外 <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> 種運送方式}other{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 和另外 <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> 種運送方式}}</translation>
 <translation id="4696983787092045100">將文字傳送至您的裝置</translation>
 <translation id="4698034686595694889">在 <ph name="APP_NAME" /> 中離線瀏覽</translation>
@@ -592,7 +591,6 @@
 <translation id="5876056640971328065">暫停影片</translation>
 <translation id="5884076754568147479">為協助您完成工作，系統會將您使用「Google 助理」的網站網址和內容，以及您透過「Google 助理」提交的資料傳送給 Google</translation>
 <translation id="5919204609460789179">更新 <ph name="PRODUCT_NAME" /> 即可開始同步處理</translation>
-<translation id="5922853908706496913">正在分享螢幕畫面</translation>
 <translation id="5937580074298050696">已節省 <ph name="AMOUNT" /></translation>
 <translation id="5939518447894949180">重設</translation>
 <translation id="5942872142862698679">使用 Google 搜尋內容</translation>
@@ -773,16 +771,17 @@
 <translation id="7479104141328977413">分頁管理</translation>
 <translation id="7481312909269577407">向前</translation>
 <translation id="7482656565088326534">預覽分頁</translation>
+<translation id="7484997419527351112">探索 - 關閉</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (上次更新： <ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7494974237137038751">已節省的數據用量</translation>
 <translation id="7498271377022651285">請稍候…</translation>
 <translation id="7514365320538308">下載</translation>
 <translation id="751961395872307827">無法連接網站</translation>
 <translation id="7542481630195938534">無法取得建議</translation>
-<translation id="7554752735887601236">有網站正在使用您的麥克風</translation>
 <translation id="7559975015014302720">精簡模式已關閉</translation>
 <translation id="7562080006725997899">正在清除瀏覽資料</translation>
 <translation id="756809126120519699">已清除 Chrome 資料</translation>
+<translation id="7577900504646297215">管理興趣</translation>
 <translation id="757855969265046257">{FILES,plural, =1{已下載 <ph name="FILES_DOWNLOADED_ONE" /> 個檔案}other{已下載 <ph name="FILES_DOWNLOADED_MANY" /> 個檔案}}</translation>
 <translation id="7588219262685291874">在裝置開啟「省電模式」後啟用深色主題背景</translation>
 <translation id="7593557518625677601">如要啟動 Chrome 同步功能，請開啟 Android 設定並重新啟用 Android 系統同步處理功能</translation>
@@ -813,7 +812,6 @@
 <translation id="7774809984919390718">{PAYMENT_METHOD,plural, =1{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 和另外 <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> 種付款方式}other{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 和另外 <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> 種付款方式}}</translation>
 <translation id="7791543448312431591">新增</translation>
 <translation id="780301667611848630">不用了，謝謝</translation>
-<translation id="7804248752222191302">有網站正在使用您的相機</translation>
 <translation id="7810647596859435254">選擇開啟應用程式…</translation>
 <translation id="7821588508402923572">節省的數據會在這裡顯示</translation>
 <translation id="783819812427904514">將影片取消靜音</translation>
@@ -885,9 +883,7 @@
 <translation id="8349013245300336738">依使用數據量排序</translation>
 <translation id="8364299278605033898">查看熱門網站</translation>
 <translation id="8368027906805972958">不明或不支援的裝置 (<ph name="DEVICE_ID" />)</translation>
-<translation id="83792324527827022">有網站正在使用您的相機和麥克風</translation>
 <translation id="8393700583063109961">傳送訊息</translation>
-<translation id="8394832520002899662">輕按即可返回網站</translation>
 <translation id="8413126021676339697">顯示完整記錄</translation>
 <translation id="8427875596167638501">預覽分頁喺畫面下半部分顯示</translation>
 <translation id="8428213095426709021">設定</translation>
@@ -984,7 +980,6 @@
 <translation id="970715775301869095">尚餘 <ph name="MINUTES" /> 分鐘</translation>
 <translation id="974555521953189084">如要開始同步處理，請輸入您的密碼短語</translation>
 <translation id="981121421437150478">離線</translation>
-<translation id="982182592107339124">這會清除所有網站的資料，包括：</translation>
 <translation id="983192555821071799">關閉所有分頁</translation>
 <translation id="987264212798334818">一般</translation>
 </translationbundle>

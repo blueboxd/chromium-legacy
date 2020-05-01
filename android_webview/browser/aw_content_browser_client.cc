@@ -261,7 +261,7 @@ std::string GetUserAgent() {
     product += " Mobile";
   }
   return content::BuildUserAgentFromProductAndExtraOSInfo(
-      product, "; wv", true /* include_android_build_number */);
+      product, "; wv", content::IncludeAndroidBuildNumber::Include);
 }
 
 // TODO(yirui): can use similar logic as in PrependToAcceptLanguagesIfNecessary

@@ -8,7 +8,9 @@
 <translation id="1181037720776840403">Хасах</translation>
 <translation id="1201402288615127009">Дараагийнх</translation>
 <translation id="1242008676835033345"><ph name="WEBSITE_URL" />-д оруулсан</translation>
+<translation id="1272079795634619415">Зогс</translation>
 <translation id="129382876167171263">Вэб сайтын хадгалсан файлыг энд харуулна</translation>
+<translation id="1364532808393826295"><ph name="APP_NAME" /> - <ph name="NOTIFICATION_MESSAGE" /></translation>
 <translation id="1369915414381695676">Сайт <ph name="SITE_NAME" /> нэмсэн</translation>
 <translation id="1383876407941801731">Хайлт</translation>
 <translation id="1384959399684842514">Таталтыг түр зогсоосон</translation>
@@ -29,6 +31,7 @@
 <translation id="1984937141057606926">Гуравдагч этгээдээс бусад этгээдийг зөвшөөрсөн байна</translation>
 <translation id="1994173015038366702">Сайтын URL</translation>
 <translation id="2025115093177348061">Өргөтгөсөн бодит орчин</translation>
+<translation id="2030769033451695672"><ph name="URL_OF_THE_CURRENT_TAB" /> руу буцах бол товшино уу</translation>
 <translation id="2041019821020695769">Chrome-д танд мэдэгдэл илгээхийг зөвшөөрөхийн тулд мэдэгдлийг <ph name="BEGIN_LINK" />Android-н тохиргоонд<ph name="END_LINK" /> мөн адил асаана уу</translation>
 <translation id="2079545284768500474">Буцаах</translation>
 <translation id="2091887806945687916">Дуу</translation>
@@ -104,6 +107,7 @@
 <translation id="5048398596102334565">Сайтад хөдөлгөөн мэдрэгчид хандахыг зөвшөөрөх (санал болгосон)</translation>
 <translation id="5063480226653192405">Ашиглалт</translation>
 <translation id="5100237604440890931">Задарсан, энд дарж өргөтгөнө үү.</translation>
+<translation id="5123685120097942451">Нууцлалтай чихтэй хуудас</translation>
 <translation id="5300589172476337783">Харуулах</translation>
 <translation id="5301954838959518834">OK, ойлголоо</translation>
 <translation id="5307446750509046227">Сайтын санг устгах</translation>
@@ -111,6 +115,7 @@
 <translation id="5317780077021120954">Хадгалах</translation>
 <translation id="5335288049665977812">Сайтад JavaScript-г ажиллуулахыг зөвшөөрөх (санал болгосон)</translation>
 <translation id="534295439873310000">NFC төхөөрөмжүүд</translation>
+<translation id="5354152178998424783">Энэ нь сайтаас хадгалсан <ph name="DATASIZE" /> өгөгдөл болон күүкиг арилгана.</translation>
 <translation id="5391532827096253100">Таны энэ сайтын холболт аюултай байна. Сайтын мэдээлэл</translation>
 <translation id="5494752089476963479">Төвөгтэй эсвэл хуурамч зар харуулдаг сайтуудын зарыг блоклох</translation>
 <translation id="5505264765875738116">Сайтууд нь танд мэдэгдэл илгээх зөвшөөрөл асуух боломжгүй</translation>
@@ -125,6 +130,7 @@
 <translation id="5804241973901381774">Зөвшөөрлүүд</translation>
 <translation id="5860033963881614850">Идэвхгүй байна</translation>
 <translation id="5916664084637901428">Асаах</translation>
+<translation id="5922853908706496913">Таны дэлгэцийг хуваалцаж байна</translation>
 <translation id="5939518447894949180">Дахин сэргээх</translation>
 <translation id="6040143037577758943">Хаах</translation>
 <translation id="6042308850641462728">Илүү их</translation>
@@ -168,6 +174,7 @@
 <translation id="7423098979219808738">Эхлээд асуу</translation>
 <translation id="7423538860840206698">Түр санах ойгоос уншихыг хориглосон</translation>
 <translation id="7521387064766892559">JavaScript</translation>
+<translation id="7554752735887601236">Сайт таны микрофоныг ашиглаж байна</translation>
 <translation id="7572498721684305250">Таныг NFC төхөөрөмж дээр товших үед мэдээлэл илгээх болон хүлээн авахыг сайтуудад хориглох</translation>
 <translation id="757524316907819857">Хамгаалалттай контентыг тоглуулж буй сайтуудыг блок хийх</translation>
 <translation id="7589445247086920869">Одоогийн хайлтын хэрэгсэлд блоклох</translation>
@@ -176,9 +183,11 @@
 <translation id="7781829728241885113">Өчигдөр</translation>
 <translation id="7791543448312431591">Нэмэх</translation>
 <translation id="780301667611848630">Үгүй, баярлалаа</translation>
+<translation id="7804248752222191302">Сайт таны камерыг ашиглаж байна</translation>
 <translation id="7817023149356982970">Та энэ сайтаас гарна.</translation>
 <translation id="7828557259026017104">Күүки нь таны зочилдог вэб сайтуудын үүсгэдэг файл юм. Сайтууд нь таны сонголтыг санахын тулд түүнийг ашигладаг. Гуравдагч талын күүкиг бусад сайт үүсгэдэг. Эдгээр сайт нь таны зочилдог вэб хуудсан дээрээ хардаг зар эсвэл зураг зэрэг контентын заримыг нь эзэмшдэг.</translation>
 <translation id="7846076177841592234">Сонголтыг цуцлах</translation>
+<translation id="7846621471902887024">Та бүх сайтаас гарах болно.</translation>
 <translation id="7882806643839505685">Тодорхой сайтад дуу тоглуулахыг зөвшөөрнө үү.</translation>
 <translation id="7993619969781047893">Зарим сайтын онцлогууд ажиллахгүй байж болзошгүй</translation>
 <translation id="7999064672810608036">Та cookies гэх мэт энэ вэбсайтны бүх мэдээллийг устгах мөн бүх зөвшөөрлийг дахин тохируулахдаа итгэлтэй байна уу?</translation>
@@ -192,7 +201,9 @@
 <translation id="8261506727792406068">Устгах</translation>
 <translation id="8300705686683892304">Аппаар удирддаг</translation>
 <translation id="8372893542064058268">Тодорхой сайтад дэвсгэрт синк хийхийг зөвшөөрнө.</translation>
+<translation id="83792324527827022">Сайт таны камер болон микрофоныг ашиглаж байна</translation>
 <translation id="8380167699614421159">Энэ сайт төвөгтэй эсвэл хуурамч зар харуулдаг</translation>
+<translation id="8394832520002899662">Сайт руу буцахын тулд товшино уу</translation>
 <translation id="8447861592752582886">Төхөөрөмжийн зөвшөөрлийг хүчингүй болгох</translation>
 <translation id="851751545965956758">Сайтуудыг төхөөрөмжүүдэд холбогдохыг нь блоклох</translation>
 <translation id="857943718398505171">Зөвшөөрөгдсөн (санал болгосон)</translation>

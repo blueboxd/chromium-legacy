@@ -220,8 +220,8 @@ WebLocalFrameImpl* CreateLocalChild(WebLocalFrame& parent,
                                     TestWebFrameClient* client) {
   std::unique_ptr<TestWebFrameClient> owned_client;
   client = CreateDefaultClientIfNeeded(client, owned_client);
-  auto* frame =
-      To<WebLocalFrameImpl>(parent.CreateLocalChild(scope, client, nullptr));
+  auto* frame = To<WebLocalFrameImpl>(parent.CreateLocalChild(
+      scope, client, nullptr, base::UnguessableToken::Create()));
   client->Bind(frame, std::move(owned_client));
   return frame;
 }
@@ -232,8 +232,8 @@ WebLocalFrameImpl* CreateLocalChild(
     std::unique_ptr<TestWebFrameClient> self_owned) {
   DCHECK(self_owned);
   TestWebFrameClient* client = self_owned.get();
-  auto* frame =
-      To<WebLocalFrameImpl>(parent.CreateLocalChild(scope, client, nullptr));
+  auto* frame = To<WebLocalFrameImpl>(parent.CreateLocalChild(
+      scope, client, nullptr, base::UnguessableToken::Create()));
   client->Bind(frame, std::move(self_owned));
   return frame;
 }
@@ -243,8 +243,8 @@ WebLocalFrameImpl* CreateProvisional(WebRemoteFrame& old_frame,
   std::unique_ptr<TestWebFrameClient> owned_client;
   client = CreateDefaultClientIfNeeded(client, owned_client);
   auto* frame = To<WebLocalFrameImpl>(WebLocalFrame::CreateProvisional(
-      client, nullptr, &old_frame, FramePolicy(),
-      WebFrame::ToCoreFrame(old_frame)->Tree().GetName()));
+      client, nullptr, base::UnguessableToken::Create(), &old_frame,
+      FramePolicy(), WebFrame::ToCoreFrame(old_frame)->Tree().GetName()));
   client->Bind(frame, std::move(owned_client));
   std::unique_ptr<TestWebWidgetClient> widget_client;
 
@@ -304,7 +304,8 @@ WebRemoteFrameImpl* CreateRemote(TestWebRemoteFrameClient* client) {
   auto* frame = MakeGarbageCollected<WebRemoteFrameImpl>(
       mojom::blink::TreeScopeType::kDocument, client,
       InterfaceRegistry::GetEmptyInterfaceRegistry(),
-      client->GetAssociatedInterfaceProvider());
+      client->GetAssociatedInterfaceProvider(),
+      base::UnguessableToken::Create());
   client->Bind(frame, std::move(owned_client));
   return frame;
 }
@@ -320,7 +321,8 @@ WebLocalFrameImpl* CreateLocalChild(WebRemoteFrame& parent,
   auto* frame = To<WebLocalFrameImpl>(parent.CreateLocalChild(
       mojom::blink::TreeScopeType::kDocument, name, FramePolicy(), client,
       nullptr, previous_sibling, properties,
-      mojom::blink::FrameOwnerElementType::kIframe, nullptr));
+      mojom::blink::FrameOwnerElementType::kIframe,
+      base::UnguessableToken::Create(), nullptr));
   client->Bind(frame, std::move(owned_client));
 
   std::unique_ptr<TestWebWidgetClient> owned_widget_client;
@@ -368,7 +370,8 @@ WebRemoteFrameImpl* CreateRemoteChild(
       mojom::blink::TreeScopeType::kDocument, name, FramePolicy(),
       mojom::blink::FrameOwnerElementType::kIframe, client,
       InterfaceRegistry::GetEmptyInterfaceRegistry(),
-      client->GetAssociatedInterfaceProvider(), nullptr));
+      client->GetAssociatedInterfaceProvider(),
+      base::UnguessableToken::Create(), nullptr));
   client->Bind(frame, std::move(owned_client));
   if (!security_origin)
     security_origin = SecurityOrigin::CreateUniqueOpaque();
@@ -400,8 +403,9 @@ WebViewImpl* WebViewHelper::InitializeWithOpener(
   std::unique_ptr<TestWebFrameClient> owned_web_frame_client;
   web_frame_client =
       CreateDefaultClientIfNeeded(web_frame_client, owned_web_frame_client);
-  WebLocalFrame* frame = WebLocalFrame::CreateMainFrame(
-      web_view_, web_frame_client, nullptr, opener);
+  WebLocalFrame* frame =
+      WebLocalFrame::CreateMainFrame(web_view_, web_frame_client, nullptr,
+                                     base::UnguessableToken::Create(), opener);
   web_frame_client->Bind(frame, std::move(owned_web_frame_client));
 
   test_web_widget_client_ = CreateDefaultClientIfNeeded(
@@ -501,7 +505,8 @@ WebViewImpl* WebViewHelper::InitializeRemoteWithOpener(
   WebRemoteFrameImpl* frame = WebRemoteFrameImpl::CreateMainFrame(
       web_view_, web_remote_frame_client,
       InterfaceRegistry::GetEmptyInterfaceRegistry(),
-      web_remote_frame_client->GetAssociatedInterfaceProvider(), opener);
+      web_remote_frame_client->GetAssociatedInterfaceProvider(),
+      base::UnguessableToken::Create(), opener);
   web_remote_frame_client->Bind(frame,
                                 std::move(owned_web_remote_frame_client));
   if (!security_origin)

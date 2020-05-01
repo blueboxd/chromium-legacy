@@ -31,15 +31,12 @@
 #include "ui/wm/core/focus_controller.h"
 #include "url/gurl.h"
 
-namespace aura {
-class WindowTreeHost;
-}  // namespace aura
-
 namespace content {
 class FromRenderFrameHost;
 }  // namespace content
 
 class ContextImpl;
+class FrameWindowTreeHost;
 class FrameLayoutManager;
 class MediaPlayerImpl;
 
@@ -115,7 +112,7 @@ class FrameImpl : public fuchsia::web::Frame,
     DISALLOW_COPY_AND_ASSIGN(OriginScopedScript);
   };
 
-  aura::Window* root_window() const { return window_tree_host_->window(); }
+  aura::Window* root_window() const;
 
   // Shared implementation for the ExecuteJavaScript[NoResult]() APIs.
   void ExecuteJavaScriptInternal(std::vector<std::string> origins,
@@ -131,10 +128,9 @@ class FrameImpl : public fuchsia::web::Frame,
   // Cleans up the MediaPlayerImpl on disconnect.
   void OnMediaPlayerDisconnect();
 
-  // Sets the WindowTreeHost to use for this Frame. Only one WindowTreeHost can
-  // be set at a time.
-  void SetWindowTreeHost(
-      std::unique_ptr<aura::WindowTreeHost> window_tree_host);
+  // Initializes WindowTreeHost for the view with the specified |view_token|.
+  // |view_token| may be uninitialized in headless mode.
+  void InitWindowTreeHost(fuchsia::ui::views::ViewToken view_token);
 
   // Destroys the WindowTreeHost along with its view or other associated
   // resources.
@@ -244,7 +240,7 @@ class FrameImpl : public fuchsia::web::Frame,
   const std::unique_ptr<content::WebContents> web_contents_;
   ContextImpl* const context_;
 
-  std::unique_ptr<aura::WindowTreeHost> window_tree_host_;
+  std::unique_ptr<FrameWindowTreeHost> window_tree_host_;
 
   std::unique_ptr<wm::FocusController> focus_controller_;
 

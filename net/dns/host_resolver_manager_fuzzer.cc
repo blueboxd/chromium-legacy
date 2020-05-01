@@ -21,6 +21,8 @@
 #include "net/dns/context_host_resolver.h"
 #include "net/dns/fuzzed_host_resolver_util.h"
 #include "net/dns/host_resolver.h"
+#include "net/dns/host_resolver_source.h"
+#include "net/dns/public/dns_query_type.h"
 #include "net/log/net_log_with_source.h"
 #include "net/log/test_net_log.h"
 #include "net/net_buildflags.h"
@@ -153,6 +155,10 @@ class DnsRequest {
             : net::HostResolver::ResolveHostParameters::CacheUsage::DISALLOWED;
     parameters.include_canonical_name = data_provider_->ConsumeBool();
 
+    if (!IsParameterCombinationAllowed(parameters)) {
+      return net::ERR_FAILED;
+    }
+
     const char* hostname = data_provider_->PickValueInArray(kHostNames);
     request_ = host_resolver_->CreateRequest(
         net::HostPortPair(hostname, 80), net::NetLogWithSource(), parameters);
@@ -171,6 +177,27 @@ class DnsRequest {
       run_loop_->Run();
       run_loop_.reset();
     }
+  }
+
+  // Some combinations of request parameters are disallowed and expected to
+  // DCHECK. Returns whether or not |parameters| represents one of those cases.
+  static bool IsParameterCombinationAllowed(
+      net::HostResolver::ResolveHostParameters parameters) {
+    // SYSTEM requests only support address types.
+    if (parameters.source == net::HostResolverSource::SYSTEM &&
+        !net::IsAddressType(parameters.dns_query_type)) {
+      return false;
+    }
+
+    // Multiple parameters disallowed for mDNS requests.
+    if (parameters.source == net::HostResolverSource::MULTICAST_DNS &&
+        (parameters.include_canonical_name || parameters.loopback_only ||
+         parameters.cache_usage !=
+             net::HostResolver::ResolveHostParameters::CacheUsage::ALLOWED)) {
+      return false;
+    }
+
+    return true;
   }
 
   // Cancel the request, if not already completed. Otherwise, does nothing.

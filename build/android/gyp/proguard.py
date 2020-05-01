@@ -9,6 +9,7 @@ import os
 import re
 import shutil
 import sys
+import tempfile
 import zipfile
 
 from util import build_utils
@@ -144,6 +145,11 @@ def _ParseOptions():
       help='When passed fails the build on proguard config expectation '
       'mismatches.')
   parser.add_argument(
+      '--only-verify-expectations',
+      action='store_true',
+      help='If passed only verifies that the proguard configs match '
+      'expectations but does not do any optimization with proguard/R8.')
+  parser.add_argument(
       '--classpath',
       action='append',
       help='GN-list of .jar files to include as libraries.')
@@ -207,6 +213,9 @@ def _ParseOptions():
 
   if options.proguard_path and options.disable_outlining:
     parser.error('--disable-outlining requires --r8-path')
+
+  if options.only_verify_expectations and not options.stamp:
+    parser.error('--only-verify-expectations requires --stamp')
 
   options.classpath = build_utils.ParseGnList(options.classpath)
   options.proguard_configs = build_utils.ParseGnList(options.proguard_configs)
@@ -527,6 +536,16 @@ def _ContainsDebuggingConfig(config_str):
   return any(config in config_str for config in debugging_configs)
 
 
+def _MaybeWriteStampAndDepFile(options, inputs):
+  output = options.output_path
+  if options.stamp:
+    build_utils.Touch(options.stamp)
+    output = options.stamp
+  if options.depfile:
+    build_utils.WriteDepfile(
+        options.depfile, output, inputs=inputs, add_pydeps=False)
+
+
 def main():
   options = _ParseOptions()
 
@@ -554,6 +573,18 @@ def main():
       proguard_configs, dynamic_config_data, exclude_generated=True)
   print_stdout = _ContainsDebuggingConfig(merged_configs) or options.verbose
 
+
+  if options.expected_configs_file:
+    with tempfile.NamedTemporaryFile() as f:
+      f.write(merged_configs)
+      f.flush()
+      _VerifyExpectedConfigs(options.expected_configs_file, f.name,
+                             options.proguard_expectations_failure_file,
+                             options.fail_on_expectations)
+  if options.only_verify_expectations:
+    _MaybeWriteStampAndDepFile(options, options.proguard_configs)
+    return
+
   # Writing the config output before we know ProGuard is going to succeed isn't
   # great, since then a failure will result in one of the outputs being updated.
   # We do it anyways though because the error message prints out the path to the
@@ -562,12 +593,6 @@ def main():
   if options.output_config:
     with open(options.output_config, 'w') as f:
       f.write(merged_configs)
-
-    if options.expected_configs_file:
-      _VerifyExpectedConfigs(options.expected_configs_file,
-                             options.output_config,
-                             options.proguard_expectations_failure_file,
-                             options.fail_on_expectations)
 
   if options.r8_path:
     _OptimizeWithR8(options, proguard_configs, libraries, dynamic_config_data,
@@ -584,13 +609,7 @@ def main():
   if options.apply_mapping:
     inputs.append(options.apply_mapping)
 
-  output_path = options.output_path
-  if options.stamp:
-    build_utils.Touch(options.stamp)
-    output_path = options.stamp
-
-  build_utils.WriteDepfile(
-      options.depfile, output_path, inputs=inputs, add_pydeps=False)
+  _MaybeWriteStampAndDepFile(options, inputs)
 
 
 if __name__ == '__main__':

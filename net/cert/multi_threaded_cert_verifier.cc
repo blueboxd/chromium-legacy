@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/check_op.h"
 #include "base/memory/weak_ptr.h"
 #include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
@@ -33,8 +34,8 @@ class MultiThreadedCertVerifierScopedAllowBaseSyncPrimitives
 
 namespace {
 
-// Used to pass the result of CertVerifierJob::DoVerifyOnWorkerThread() to
-// CertVerifierJob::OnJobCompleted().
+// Used to pass the result of DoVerifyOnWorkerThread() to
+// MultiThreadedCertVerifier::InternalRequest::OnJobComplete().
 struct ResultHelper {
   int error;
   CertVerifyResult result;
@@ -56,8 +57,7 @@ int GetFlagsForConfig(const CertVerifier::Config& config) {
   return flags;
 }
 
-// DoVerifyOnWorkerThread runs the verification synchronously on a worker
-// thread.
+// Runs the verification synchronously on a worker thread.
 std::unique_ptr<ResultHelper> DoVerifyOnWorkerThread(
     const scoped_refptr<CertVerifyProc>& verify_proc,
     const scoped_refptr<X509Certificate>& cert,
@@ -83,11 +83,15 @@ std::unique_ptr<ResultHelper> DoVerifyOnWorkerThread(
   return verify_result;
 }
 
+}  // namespace
+
 // Helper to allow callers to cancel pending CertVerifier::Verify requests.
 // Note that because the CertVerifyProc is blocking, it's not actually
 // possible to cancel the in-progress request; instead, this simply guarantees
 // that the provided callback will not be invoked if the Request is deleted.
-class InternalRequest : public CertVerifier::Request {
+class MultiThreadedCertVerifier::InternalRequest
+    : public CertVerifier::Request,
+      public base::LinkNode<InternalRequest> {
  public:
   InternalRequest(CompletionOnceCallback callback,
                   CertVerifyResult* caller_result);
@@ -97,6 +101,8 @@ class InternalRequest : public CertVerifier::Request {
              const CertVerifier::Config& config,
              const CertVerifier::RequestParams& params,
              const NetLogWithSource& caller_net_log);
+
+  void ResetCallback() { callback_.Reset(); }
 
  private:
   // This is a static method with a |self| weak pointer instead of a regular
@@ -111,16 +117,25 @@ class InternalRequest : public CertVerifier::Request {
   base::WeakPtrFactory<InternalRequest> weak_factory_{this};
 };
 
-InternalRequest::InternalRequest(CompletionOnceCallback callback,
-                                 CertVerifyResult* caller_result)
+MultiThreadedCertVerifier::InternalRequest::InternalRequest(
+    CompletionOnceCallback callback,
+    CertVerifyResult* caller_result)
     : callback_(std::move(callback)), caller_result_(caller_result) {}
 
-InternalRequest::~InternalRequest() = default;
+MultiThreadedCertVerifier::InternalRequest::~InternalRequest() {
+  if (callback_) {
+    // This InternalRequest was eagerly cancelled as the callback is still
+    // valid, so |this| needs to be removed from MultiThreadedCertVerifier's
+    // list.
+    RemoveFromList();
+  }
+}
 
-void InternalRequest::Start(const scoped_refptr<CertVerifyProc>& verify_proc,
-                            const CertVerifier::Config& config,
-                            const CertVerifier::RequestParams& params,
-                            const NetLogWithSource& caller_net_log) {
+void MultiThreadedCertVerifier::InternalRequest::Start(
+    const scoped_refptr<CertVerifyProc>& verify_proc,
+    const CertVerifier::Config& config,
+    const CertVerifier::RequestParams& params,
+    const NetLogWithSource& caller_net_log) {
   const NetLogWithSource net_log(NetLogWithSource::Make(
       caller_net_log.net_log(), NetLogSourceType::CERT_VERIFIER_TASK));
   net_log.BeginEvent(NetLogEventType::CERT_VERIFIER_TASK);
@@ -140,12 +155,12 @@ void InternalRequest::Start(const scoped_refptr<CertVerifyProc>& verify_proc,
                      params.hostname(), params.ocsp_response(),
                      params.sct_list(), flags, config.crl_set,
                      config.additional_trust_anchors, net_log),
-      base::BindOnce(&InternalRequest::OnJobComplete,
+      base::BindOnce(&MultiThreadedCertVerifier::InternalRequest::OnJobComplete,
                      weak_factory_.GetWeakPtr()));
 }
 
 // static
-void InternalRequest::OnJobComplete(
+void MultiThreadedCertVerifier::InternalRequest::OnJobComplete(
     base::WeakPtr<InternalRequest> self,
     std::unique_ptr<ResultHelper> verify_result) {
   // Always log the EndEvent, even if the Request has been destroyed.
@@ -155,12 +170,22 @@ void InternalRequest::OnJobComplete(
   if (!self)
     return;
 
+  DCHECK(verify_result);
+
+  // If the MultiThreadedCertVerifier has been deleted, the callback will have
+  // been reset to null.
+  if (!self->callback_)
+    return;
+
+  // If ~MultiThreadedCertVerifier has not Reset() our callback, then this
+  // InternalRequest will not have been removed from MultiThreadedCertVerifier's
+  // list yet.
+  self->RemoveFromList();
+
   *self->caller_result_ = verify_result->result;
   // Note: May delete |self|.
   std::move(self->callback_).Run(verify_result->error);
 }
-
-}  // namespace
 
 MultiThreadedCertVerifier::MultiThreadedCertVerifier(
     scoped_refptr<CertVerifyProc> verify_proc)
@@ -171,6 +196,13 @@ MultiThreadedCertVerifier::MultiThreadedCertVerifier(
 
 MultiThreadedCertVerifier::~MultiThreadedCertVerifier() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  // Reset the callbacks for each InternalRequest to fulfill the respective
+  // net::CertVerifier contract.
+  while (!request_list_.empty()) {
+    base::LinkNode<InternalRequest>* curr = request_list_.head();
+    curr->value()->ResetCallback();
+    curr->RemoveFromList();
+  }
 }
 
 int MultiThreadedCertVerifier::Verify(const RequestParams& params,
@@ -188,6 +220,7 @@ int MultiThreadedCertVerifier::Verify(const RequestParams& params,
   std::unique_ptr<InternalRequest> request =
       std::make_unique<InternalRequest>(std::move(callback), verify_result);
   request->Start(verify_proc_, config_, params, net_log);
+  request_list_.Append(request.get());
   *out_req = std::move(request);
   return ERR_IO_PENDING;
 }

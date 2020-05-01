@@ -30,6 +30,17 @@ void MediaFeedsContentsObserver::DidFinishNavigation(
     return;
 
   render_frame_.reset();
+
+  auto new_origin = url::Origin::Create(web_contents()->GetLastCommittedURL());
+  if (last_origin_ == new_origin)
+    return;
+
+  ResetFeed();
+  last_origin_ = new_origin;
+}
+
+void MediaFeedsContentsObserver::WebContentsDestroyed() {
+  ResetFeed();
 }
 
 void MediaFeedsContentsObserver::DidFinishLoad(
@@ -94,6 +105,15 @@ MediaFeedsContentsObserver::GetService() {
       Profile::FromBrowserContext(web_contents()->GetBrowserContext());
 
   return media_history::MediaHistoryKeyedServiceFactory::GetForProfile(profile);
+}
+
+void MediaFeedsContentsObserver::ResetFeed() {
+  if (!last_origin_.has_value())
+    return;
+
+  GetService()->ResetMediaFeed(*last_origin_,
+                               media_feeds::mojom::ResetReason::kVisit);
+  last_origin_.reset();
 }
 
 WEB_CONTENTS_USER_DATA_KEY_IMPL(MediaFeedsContentsObserver)

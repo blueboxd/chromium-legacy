@@ -105,6 +105,14 @@ class COMPONENT_EXPORT(DEBUG_DAEMON) DebugDaemonClient
   virtual void GetScrubbedBigLogs(const cryptohome::AccountIdentifier& id,
                                   GetLogsCallback callback) = 0;
 
+  // Retrieves the ARC bug report for user identified by |userhash|
+  // and saves it in debugd daemon store.
+  // If a backup already exists, it is overwritten.
+  // If backup operation fails, an error is logged.
+  // |userhash|: Cryptohome sanitized username.
+  virtual void BackupArcBugReport(const std::string& userhash,
+                                  VoidDBusMethodCallback callback) = 0;
+
   // Gets all logs collected by debugd.
   virtual void GetAllLogs(GetLogsCallback callback) = 0;
 

@@ -4,7 +4,7 @@
 
 #include "third_party/blink/renderer/platform/scheduler/public/thread_type.h"
 
-#include "base/logging.h"
+#include "base/notreached.h"
 
 namespace blink {
 

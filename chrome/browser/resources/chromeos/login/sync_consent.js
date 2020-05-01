@@ -13,14 +13,27 @@ Polymer({
   behaviors: [OobeI18nBehavior, OobeDialogHostBehavior],
 
   properties: {
+    /**
+     * Flag that determines whether current account type is supervised or not.
+     */
+    isChildAccount_: { type: Boolean },
     /** @private */
     splitSettingsSyncEnabled_: {
       type: Boolean,
-      value: function() {
+      value: function () {
         return loadTimeData.getBoolean('splitSettingsSyncEnabled');
       },
       readOnly: true,
     },
+
+  },
+
+  /**
+   * Set flag isChildAccount_ value.
+   * @param is_child_account Boolean
+   */
+  setIsChildAccount(is_child_account) {
+    this.isChildAccount_ = is_child_account;
   },
 
   /** @override */
@@ -153,9 +166,9 @@ Polymer({
   /** @return {!Array<string>} Text of the consent description elements. */
   getConsentDescription_() {
     let consentDescription =
-        Array.from(this.shadowRoot.querySelectorAll('[consent-description]'))
-            .filter(element => element.clientWidth * element.clientHeight > 0)
-            .map(element => element.innerHTML.trim());
+      Array.from(this.shadowRoot.querySelectorAll('[consent-description]'))
+        .filter(element => element.clientWidth * element.clientHeight > 0)
+        .map(element => element.innerHTML.trim());
     assert(consentDescription);
     return consentDescription;
   },

@@ -411,9 +411,12 @@ ci.builder(
 ci.android_builder(
     name = 'Android ASAN (dbg)',
     console_view_entry = ci.console_view_entry(
-        category = 'on_cq',
+        category = 'builder|arm',
         short_name = 'san',
     ),
+    # Higher build timeout since dbg ASAN builds can take a while on a clobber
+    # build.
+    execution_timeout = 4 * time.hour,
 )
 
 ci.android_builder(

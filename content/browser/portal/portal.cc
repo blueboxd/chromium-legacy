@@ -133,8 +133,8 @@ RenderFrameProxyHost* Portal::CreateProxyAndAttachPortal() {
       mojo::PendingRemote<blink::mojom::BrowserInterfaceBroker>()
           .InitWithNewPipeAndPassReceiver(),
       blink::mojom::TreeScopeType::kDocument, "", "", true,
-      base::UnguessableToken::Create(), blink::FramePolicy(),
-      blink::mojom::FrameOwnerProperties(), false,
+      base::UnguessableToken::Create(), base::UnguessableToken::Create(),
+      blink::FramePolicy(), blink::mojom::FrameOwnerProperties(), false,
       blink::mojom::FrameOwnerElementType::kPortal);
   outer_node->AddObserver(this);
 

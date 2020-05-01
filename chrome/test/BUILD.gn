@@ -3477,7 +3477,6 @@ test("unit_tests") {
     "../common/conflicts/module_watcher_win_unittest.cc",
     "../common/conflicts/remote_module_watcher_win_unittest.cc",
     "../common/crash_keys_unittest.cc",
-    "../common/heap_profiler_controller_unittest.cc",
     "../common/ini_parser_unittest.cc",
     "../common/mac/mock_launchd.h",
     "../common/mac/mock_launchd.mm",
@@ -4172,6 +4171,7 @@ test("unit_tests") {
       "../browser/ui/webui/sync_internals_message_handler_unittest.cc",
       "../browser/ui/webui/theme_source_unittest.cc",
       "../browser/ui/webui/web_dialog_web_contents_delegate_unittest.cc",
+      "../browser/ui/webui/webui_allowlist_provider_unittest.cc",
       "../browser/ui/window_sizer/window_sizer_common_unittest.cc",
       "../browser/ui/window_sizer/window_sizer_common_unittest.h",
       "../browser/ui/window_sizer/window_sizer_unittest.cc",
@@ -4430,6 +4430,7 @@ test("unit_tests") {
       "../browser/ui/ash/assistant/assistant_state_client_unittest.cc",
       "../browser/ui/ash/assistant/conversation_starters_parser_unittest.cc",
       "../browser/ui/ash/assistant/device_actions_unittest.cc",
+      "../browser/ui/ash/assistant/search_and_assistant_enabled_checker_unittest.cc",
       "../browser/ui/ash/ime_controller_client_unittest.cc",
       "../browser/ui/ash/keyboard/chrome_keyboard_ui_unittest.cc",
       "../browser/ui/ash/keyboard/chrome_keyboard_web_contents_unittest.cc",
@@ -4463,6 +4464,7 @@ test("unit_tests") {
       "//chrome/browser/resources/chromeos/zip_archiver/cpp:ziparchiver_unittests",
       "//chrome/browser/ui/app_list/search/search_result_ranker:app_launch_predictor_proto",
       "//chrome/browser/ui/app_list/search/search_result_ranker:recurrence_ranker_proto",
+      "//chromeos/assistant:buildflags",
       "//chromeos/services/machine_learning/public/cpp:test_support",
       "//components/arc:arc_test_support",
     ]
@@ -4482,6 +4484,10 @@ test("unit_tests") {
       "../browser/background/background_mode_manager_unittest.cc",
       "../browser/background/background_mode_optimizer_unittest.cc",
     ]
+  }
+
+  if (enable_cros_libassistant) {
+    deps += [ "//chromeos/assistant/internal" ]
   }
 
   if (enable_spellcheck) {
@@ -6117,6 +6123,7 @@ test("chrome_app_unittests") {
     "//components/crash/core/common",
     "//components/flags_ui:switches",
     "//components/gwp_asan/buildflags",
+    "//components/heap_profiling/in_process",
     "//components/safe_browsing:buildflags",
   ]
   if (!is_fuchsia) {

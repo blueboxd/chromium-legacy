@@ -38,7 +38,6 @@
 <translation id="1258753120186372309">Google doodle: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1260236875608242557">ຊອກຫາ ແລະ ສຳຫຼວດ</translation>
 <translation id="1266864766717917324">ບໍ່ສາມາດແບ່ງປັນ <ph name="CONTENT_TYPE" /> ໄດ້</translation>
-<translation id="1272079795634619415">ຢຸດ</translation>
 <translation id="1283039547216852943">ແຕະເພື່ອຂະຫຍາຍ</translation>
 <translation id="1285320974508926690">ຢ່າແປເວັບ​ໄຊ​ທ໌ນີ້</translation>
 <translation id="1291207594882862231">ລຶບລ້າງປະຫວັດ, ຄຸກກີ້, ຂໍ້ມູນເວັບໄຊ, ແຄສ…</translation>
@@ -51,7 +50,6 @@
 <translation id="1331212799747679585">Chrome ບໍ່ສາມາດອັບເດດໄດ້. ຕົວເລືອກເພີ່ມເຕີມ</translation>
 <translation id="1332501820983677155">ທາງລັດຄຸນສົມບັດ Google Chrome</translation>
 <translation id="1360432990279830238">ອອກຈາກະລະບົບ ແລະ ປິດການຊິ້ງຂໍ້ມູນບໍ?</translation>
-<translation id="1364532808393826295"><ph name="APP_NAME" /> - <ph name="NOTIFICATION_MESSAGE" /></translation>
 <translation id="1373696734384179344">ຄວາມ​ຈຳ​ບໍ່​ພຽງ​ພໍ ເພື່ອ​ດາວ​ໂຫຼດ​ເນື້ອ​ໃນ​ເລືອກ​ໄວ້.</translation>
 <translation id="1376578503827013741">ກຳລັງຄຳນວນ...</translation>
 <translation id="1383876407941801731">ຊອກຫາ</translation>
@@ -122,7 +120,6 @@
 <translation id="2013642289801508067">{FILE_COUNT,plural, =1{# ໄຟລ໌}other{# ໄຟລ໌}}</translation>
 <translation id="2017836877785168846">ລຶບລ້າງປະຫວັດ ແລະ ການເຮັດສຳເລັດອັດຕະໂນມັດໃນແຖບທີ່ຢູ່.</translation>
 <translation id="2021896219286479412">ການຄວບຄຸມເວັບໄຊແບບເຕັມຈໍ</translation>
-<translation id="2030769033451695672">ແຕະເພື່ອກັບຄືນຫາ <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
 <translation id="2038563949887743358">ເປີດ​ຂໍ​ເວັບ​ໄຊ​ທ໌​ເດັ​ສ​ທັອບ</translation>
 <translation id="204321170514947529"><ph name="APP_NAME" />ຍັງມີຂໍ້ມູນໃນ Chrome ນຳ</translation>
 <translation id="2049574241039454490"><ph name="FILE_SIZE_OF_TOTAL" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
@@ -592,7 +589,6 @@
 <translation id="5876056640971328065">ຢຸດວິດີໂອໄວ້ຊົ່ວຄາວ</translation>
 <translation id="5884076754568147479">ເພື່ອຊ່ວຍທ່ານເຮັດສຳເລັດໜ້າວຽກ, Google ຈະໄດ້ຮັບ URL ແລະ ເນື້ອຫາຂອງເວັບໄຊທີ່ທ່ານໃຊ້ຜູ້ຊ່ວຍ, ພ້ອມກັບຂໍ້ມູນທີ່ທ່ານສົ່ງຜ່ານຜູ້ຊ່ວຍ</translation>
 <translation id="5919204609460789179">ອັບເດດ <ph name="PRODUCT_NAME" /> ເພື່ອເລີ່ມການຊິ້ງຂໍ້ມູນ</translation>
-<translation id="5922853908706496913">ກຳລັງແບ່ງປັນໜ້າຈໍຂອງທ່ານ</translation>
 <translation id="5937580074298050696">ປະຢັດໄດ້ <ph name="AMOUNT" /></translation>
 <translation id="5939518447894949180">ຕັ້ງຄ່າຄືນໃໝ່</translation>
 <translation id="5942872142862698679">ກຳລັງໃຊ້ Google ສຳລັບການຊອກຫາ</translation>
@@ -779,7 +775,6 @@
 <translation id="7514365320538308">ດາວ​ໂຫລດ</translation>
 <translation id="751961395872307827">ບໍ່ສາມາດເຊື່ອມຕໍ່ກັບເວັບໄຊໄດ້</translation>
 <translation id="7542481630195938534">ບໍ່ສາມາດຮັບເອົາຄຳແນະນຳໄດ້</translation>
-<translation id="7554752735887601236">ເວັບໄຊກຳລັງໃຊ້ໄມໂຄຣໂຟນຂອງທ່ານ</translation>
 <translation id="7559975015014302720">ໂໝດ Lite ປິດຢູ່</translation>
 <translation id="7562080006725997899">ກຳ​ລັງລຶບຂໍ້​ມູນການທ່ອງເນັດ</translation>
 <translation id="756809126120519699">ລຶບລ້າງຂໍ້ມູນ Chrome ແລ້ວ</translation>
@@ -813,7 +808,6 @@
 <translation id="7774809984919390718">{PAYMENT_METHOD,plural, =1{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 ແລະ ອີກ <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> ວິທີການຈ່າຍເງິນ}other{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 ແລະ ອີກ <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> ວິທີການຈ່າຍເງິນ}}</translation>
 <translation id="7791543448312431591">ເພີ່ມ</translation>
 <translation id="780301667611848630">ບໍ່​, ​ຂອບ​ໃຈ</translation>
-<translation id="7804248752222191302">ເວັບໄຊກຳລັງໃຊ້ກ້ອງຂອງທ່ານຢູ່</translation>
 <translation id="7810647596859435254">ເປີດດ້ວຍ...</translation>
 <translation id="7821588508402923572">ການປະຢັດຂໍ້ມູນຂອງທ່ານຈະປາກົດຢູ່ບ່ອນນີ້</translation>
 <translation id="783819812427904514">ເປີດສຽງວິດີໂອ</translation>
@@ -885,9 +879,7 @@
 <translation id="8349013245300336738">ຮຽງຕາມປະລິມານອິນເຕີເນັດທີ່ໃຊ້</translation>
 <translation id="8364299278605033898">ເບິ່ງເວັບໄຊຍອດນິຍົມ</translation>
 <translation id="8368027906805972958">ອຸປະກອນທີ່ບໍ່ຮູ້ຈັກ ຫຼື ບໍ່ຮອງຮັບ (<ph name="DEVICE_ID" />)</translation>
-<translation id="83792324527827022">ເວັບໄຊກຳລັງໃຊ້ກ້ອງ ແລະ ໄມໂຄຣໂຟນຂອງທ່ານຢູ່</translation>
 <translation id="8393700583063109961">ສົ່ງຂໍ້ຄວາມ</translation>
-<translation id="8394832520002899662">ແຕະເພື່ອກັບຄືນຫາເວັບໄຊ</translation>
 <translation id="8413126021676339697">ສະ​ແດງ​ປະຫວັດທັງໝົດ</translation>
 <translation id="8427875596167638501">ແຖບສະແດງຕົວຢ່າງເປີດເຄິ່ງໜຶ່ງ</translation>
 <translation id="8428213095426709021">ການ​ຕັ້ງຄ່າ</translation>
@@ -984,7 +976,6 @@
 <translation id="970715775301869095">ຍັງເຫຼືອ <ph name="MINUTES" /> ນາທີ</translation>
 <translation id="974555521953189084">ປ້ອນວະລີຜ່ານຂອງທ່ານເພື່ອເລີ່ມການຊິ້ງຂໍ້ມູນ</translation>
 <translation id="981121421437150478">ອອຟລາຍນ໌</translation>
-<translation id="982182592107339124">ນີ້ຈະລຶບຂໍ້ມູນສຳລັບທຸກເວັບໄຊ ລວມທັງ:</translation>
 <translation id="983192555821071799">ປິດ​ທຸກແຖບ</translation>
 <translation id="987264212798334818">ທົ່ວໄປ</translation>
 </translationbundle>

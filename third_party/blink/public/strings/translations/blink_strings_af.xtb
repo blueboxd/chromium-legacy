@@ -35,6 +35,7 @@
 <translation id="1938124657309484470">Waarde moet <ph name="MAXIMUM_DATE_OR_TIME" /> of vroeër wees.</translation>
 <translation id="1946271899482435442">Wys datumkieser</translation>
 <translation id="1993104285338243655">Het na weerspieëling gewissel</translation>
+<translation id="2031987842108996681">Rooi kanaal</translation>
 <translation id="2060505056492490888">"<ph name="DOT" />" word op die verkeerde plek gebruik in "<ph name="INVALIDDOMAIN" />".</translation>
 <translation id="2148716181193084225">Vandag</translation>
 <translation id="2158401438286456825">bladsylys</translation>
@@ -45,6 +46,7 @@
 <translation id="2291999235780842123">merkblokkie</translation>
 <translation id="2311842470354187719">bladsybreuk</translation>
 <translation id="2335594187091864976">datum- en tydkieser</translation>
+<translation id="2393030564806080191">Heksadesimale kleurwaarde</translation>
 <translation id="245932805758469625">hoeveel sekondes van video oor is</translation>
 <translation id="248395913932153421">Dag</translation>
 <translation id="2507943997699731163">Vul asseblief hierdie veld in.</translation>
@@ -52,6 +54,7 @@
 <translation id="2561842179657104141">wys meer mediakontroles</translation>
 <translation id="2572483411312390101">speel</translation>
 <translation id="2613802280814924224">Voer asseblief 'n geldige waarde in. Die naaste geldige waarde is <ph name="VALID_VALUE" />.</translation>
+<translation id="2634240155926812724">Groen kanaal</translation>
 <translation id="2653659639078652383">Dien in</translation>
 <translation id="2657045182931379222">grafiese voorwerp</translation>
 <translation id="2674318244760992338">voetreël</translation>
@@ -127,6 +130,7 @@
 <translation id="5034860022980953847">vorderingaanwyser</translation>
 <translation id="5090250355906949916">videotydskuurder</translation>
 <translation id="5093189678851173835">epigraaf</translation>
+<translation id="509897012892853729">Blou kanaal</translation>
 <translation id="5117590920725113268">Wys volgende maand</translation>
 <translation id="512758898067543763">ryopskrif</translation>
 <translation id="5143125788380636750">epiloog</translation>
@@ -164,6 +168,7 @@
 <translation id="6166809985690652833">nawoord</translation>
 <translation id="6209276755895393898">Dit lyk soos: <ph name="DESCRIPTION" /></translation>
 <translation id="6213469881011901533">woordelys</translation>
+<translation id="6281588256137006900">Helderheid</translation>
 <translation id="6281763101136022427">URL</translation>
 <translation id="6310801910862476708">Verlaat prent-in-prent</translation>
 <translation id="6398862346408813489">Wys maandkeusepaneel</translation>
@@ -184,6 +189,7 @@
 <translation id="6790428901817661496">Speel</translation>
 <translation id="6820355525329141109">Kon nie inprop laai nie.</translation>
 <translation id="6820615603175220800">bibliografieverwysing</translation>
+<translation id="6831465880655513317">Kleurbron met tweedimensionele glyer om kleurdiepte en helderheid te kies</translation>
 <translation id="6843725295806269523">demp</translation>
 <translation id="6885760532393684712">gids</translation>
 <translation id="689129560213475294">eindtitel</translation>
@@ -201,6 +207,7 @@
 <translation id="7263440858009898357">Kies asseblief 'n item uit die lys.</translation>
 <translation id="727747134524199931">kolomopskrif</translation>
 <translation id="7320576522385648310">buffer tans</translation>
+<translation id="7341556277900466204">Kleurbron</translation>
 <translation id="7353453495576941748">erkenning</translation>
 <translation id="7364796246159120393">Kies lêer</translation>
 <translation id="739024184232394898">Ander …</translation>
@@ -221,6 +228,7 @@
 <translation id="775297008183122718">Ongeldige inskrywing</translation>
 <translation id="7789962463072032349">laat wag</translation>
 <translation id="7802800022689234070">openbaarmakingdriehoek</translation>
+<translation id="7852167693871241274">Skakeringglyer</translation>
 <translation id="7888071071722539607">Sluit asseblief 'n '<ph name="ATSIGN" />' by die e-posadres in. 'n '<ph name="ATSIGN" />' ontbreek in '<ph name="INVALIDADDRESS" />'.</translation>
 <translation id="7891486169920085145">verdeler</translation>
 <translation id="795667975304826397">Geen lêer gekies nie</translation>
@@ -263,6 +271,7 @@
 <translation id="8875657656876809964">Videoterugspeelfout</translation>
 <translation id="8889402386540077796">Skakering</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> KB</translation>
+<translation id="894736920926684893">Formaatwisselaar</translation>
 <translation id="8987927404178983737">Maand</translation>
 <translation id="901493112792887934">huidige tyd in sekondes</translation>
 <translation id="901834265349196618">e-pos</translation>

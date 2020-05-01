@@ -95,7 +95,6 @@
 <translation id="3582972582564653026">Đồng bộ hóa và cá nhân hóa Chrome trên các thiết bị của bạn</translation>
 <translation id="3596080736082218006">{COUNT,plural, =0{Quản trị viên của bạn yêu cầu bạn chạy lại Chrome để áp dụng bản cập nhật}=1{Quản trị viên của bạn yêu cầu bạn chạy lại Chrome để áp dụng bản cập nhật. Cửa sổ ẩn danh của bạn sẽ không mở lại.}other{Quản trị viên của bạn yêu cầu bạn chạy lại Chrome để áp dụng bản cập nhật. # cửa sổ ẩn danh của bạn sẽ không mở lại.}}</translation>
 <translation id="3622797965165704966">Giờ đây, việc sử dụng Chrome bằng tài khoản Google của bạn và trên máy tính được chia sẻ trở nên dễ dàng hơn.</translation>
-<translation id="3637702109597584617"><ph name="TERMS_OF_SERVICE_LINK" />Điều khoản dịch vụ<ph name="END_TERMS_OF_SERVICE_LINK" /> của Google Chrome OS</translation>
 <translation id="3718181793972440140">Thao tác này sẽ xóa 1 mục khỏi thiết bị này. Để truy xuất dữ liệu của bạn sau, hãy đăng nhập vào Chrome dưới dạng <ph name="USER_EMAIL" />.</translation>
 <translation id="3735758079232443276">Tiện ích "<ph name="EXTENSION_NAME" />" đã thay đổi trang nào được hiển thị khi bạn khởi động Chrome.</translation>
 <translation id="3780814664026482060">Chrome - <ph name="PAGE_TITLE" /></translation>
@@ -112,6 +111,7 @@
 <translation id="4205939740494406371">Chrome không thể kiểm tra mật khẩu của bạn. Hãy thử lại sau 24 giờ hoặc <ph name="BEGIN_LINK" />kiểm tra các mật khẩu trong Tài khoản Google của bạn<ph name="END_LINK" />.</translation>
 <translation id="424864128008805179">Đăng xuất khỏi Chrome?</translation>
 <translation id="4251615635259297716">Bạn muốn liên kết dữ liệu Chrome của bạn với tài khoản này?</translation>
+<translation id="4281844954008187215">Điều khoản dịch vụ</translation>
 <translation id="4293420128516039005">Đăng nhập để đồng bộ hóa và cá nhân hóa Chrome trên các thiết bị của bạn</translation>
 <translation id="4328355335528187361">Google Chrome Dev (mDNS-In)</translation>
 <translation id="4331809312908958774">Hệ điều hành Chrome</translation>
@@ -146,11 +146,10 @@
 
 Một số tính năng có thể không khả dụng. Vui lòng chỉ định thư mục hồ sơ khác hoặc sử dụng phiên bản Chrome mới hơn.</translation>
 <translation id="5193136243808726294">Google Chrome OS không thể mở trang này.</translation>
-<translation id="5204098752394657250"><ph name="TERMS_OF_SERVICE_LINK" />Điều khoản dịch vụ<ph name="END_TERMS_OF_SERVICE_LINK" /> của Google Chrome</translation>
 <translation id="5251420635869119124">Khách có thể sử dụng Chrome mà không phải thoát khỏi bất cứ nội dung nào.</translation>
 <translation id="532046782124376502">Cảnh báo: Google Chrome không thể ngăn các tiện ích ghi lại lịch sử duyệt web của bạn. Để tắt tiện ích này trong chế độ ẩn danh, hãy bỏ chọn tùy chọn này.</translation>
 <translation id="5386244825306882791">Tiện ích này cũng điều khiển trang nào được hiển thị khi bạn khởi động Chrome hoặc tìm kiếm từ Thanh địa chỉ.</translation>
-<translation id="5394833366792865639">Chia sẻ một tab Chrome</translation>
+<translation id="5394833366792865639">Chia sẻ một thẻ Chrome</translation>
 <translation id="5430073640787465221">Tệp tùy chọn của bạn bị hỏng hoặc không hợp lệ. Google Chrome không thể khôi phục cài đặt của bạn.</translation>
 <translation id="556024056938947818">Google Chrome đang cố gắng hiển thị mật khẩu.</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>

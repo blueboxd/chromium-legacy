@@ -10,6 +10,7 @@
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #import "ios/chrome/browser/ssl/captive_portal_detector_tab_helper.h"
 #import "ios/chrome/browser/ssl/captive_portal_detector_tab_helper_delegate.h"
+#import "ios/components/security_interstitials/ios_blocking_page_tab_helper.h"
 #include "ios/web/public/security/web_interstitial.h"
 #import "ios/web/public/test/web_test_with_web_state.h"
 #import "ios/web/public/web_state.h"
@@ -49,6 +50,10 @@ class IOSSSLErrorHandlerTest : public web::WebTestWithWebState {
 
     id captive_portal_detector_tab_helper_delegate = [OCMockObject
         mockForProtocol:@protocol(CaptivePortalDetectorTabHelperDelegate)];
+
+    security_interstitials::IOSBlockingPageTabHelper::CreateForWebState(
+        web_state());
+
     // Use a testing URLLoaderFactory so that these tests don't attempt to make
     // network requests.
     CaptivePortalDetectorTabHelper::CreateForWebState(

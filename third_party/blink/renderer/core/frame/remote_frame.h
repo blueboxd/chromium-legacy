@@ -39,6 +39,7 @@ class CORE_EXPORT RemoteFrame final : public Frame,
   RemoteFrame(RemoteFrameClient*,
               Page&,
               FrameOwner*,
+              const base::UnguessableToken& frame_token,
               WindowAgentFactory* inheriting_agent_factory,
               InterfaceRegistry*,
               AssociatedInterfaceProvider*);

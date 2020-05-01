@@ -229,7 +229,7 @@ class GpuState;
 }
 namespace weblayer {
 class BrowserContextImpl;
-class BrowserProcess;
+class ContentBrowserClientImpl;
 class ProfileImpl;
 class WebLayerPathProvider;
 }
@@ -383,7 +383,7 @@ class BASE_EXPORT ScopedAllowBlocking {
   friend class resource_coordinator::TabManagerDelegate;  // crbug.com/778703
   friend class web::WebSubThread;
   friend class weblayer::BrowserContextImpl;
-  friend class weblayer::BrowserProcess;
+  friend class weblayer::ContentBrowserClientImpl;
   friend class weblayer::ProfileImpl;
   friend class weblayer::WebLayerPathProvider;
 

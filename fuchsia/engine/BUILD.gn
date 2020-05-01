@@ -144,6 +144,8 @@ component("web_engine_core") {
     "browser/frame_layout_manager.h",
     "browser/frame_permission_controller.cc",
     "browser/frame_permission_controller.h",
+    "browser/frame_window_tree_host.cc",
+    "browser/frame_window_tree_host.h",
     "browser/media_player_impl.cc",
     "browser/media_player_impl.h",
     "browser/media_resource_provider_service.cc",

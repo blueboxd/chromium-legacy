@@ -23,9 +23,13 @@ import org.chromium.ui.widget.ChromeImageButton;
 class PromoCardView extends LinearLayout {
     ImageView mPromoImage;
     TextView mTitle;
-    TextView mDescription;
     ButtonCompat mPrimaryButton;
+
+    @Nullable
+    TextView mDescription;
+    @Nullable
     ChromeImageButton mDismissButton;
+    @Nullable
     ButtonCompat mSecondaryButton;
 
     public PromoCardView(Context context) {

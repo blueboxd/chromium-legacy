@@ -19,7 +19,7 @@ specific_include_rules = {
     "+ash/shell.h",
     "+ash/wm/window_util.h",
   ],
-  "assistive_window_controller_impl\.cc": [
+  "assistive_window_controller\.cc": [
     "+ash/shell.h",
     "+ash/wm/window_util.h",
   ],

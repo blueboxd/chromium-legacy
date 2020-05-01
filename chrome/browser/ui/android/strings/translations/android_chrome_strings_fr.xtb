@@ -38,7 +38,6 @@
 <translation id="1258753120186372309">Doodle : <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1260236875608242557">Rechercher et explorer</translation>
 <translation id="1266864766717917324">Impossible de partager le contenu suivant : <ph name="CONTENT_TYPE" /></translation>
-<translation id="1272079795634619415">Arrêter</translation>
 <translation id="1283039547216852943">Appuyer pour développer</translation>
 <translation id="1285320974508926690">Ne jamais traduire ce site</translation>
 <translation id="1291207594882862231">Efface l'historique, vider le cache, supprimer les cookies et les données de site…</translation>
@@ -50,8 +49,8 @@
 <translation id="1327257854815634930">Historique de navigation ouvert</translation>
 <translation id="1331212799747679585">Impossible de mettre à jour Chrome. Plus d'options</translation>
 <translation id="1332501820983677155">Raccourcis liés aux fonctionnalités de Google Chrome</translation>
+<translation id="1347468774581902829">Gérer l'activité</translation>
 <translation id="1360432990279830238">Se déconnecter et arrêter la synchro. ?</translation>
-<translation id="1364532808393826295"><ph name="APP_NAME" /> - <ph name="NOTIFICATION_MESSAGE" /></translation>
 <translation id="1373696734384179344">Mémoire insuffisante pour télécharger le contenu sélectionné.</translation>
 <translation id="1376578503827013741">Calcul…</translation>
 <translation id="1383876407941801731">Rechercher</translation>
@@ -122,7 +121,6 @@
 <translation id="2013642289801508067">{FILE_COUNT,plural, =1{# fichier}one{# fichier}other{# fichiers}}</translation>
 <translation id="2017836877785168846">Efface l'historique et les saisies semi-automatiques dans la barre d'adresse.</translation>
 <translation id="2021896219286479412">Commandes du site en plein écran</translation>
-<translation id="2030769033451695672">Appuyez pour revenir à l'adresse <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
 <translation id="2038563949887743358">Activer "Voir version ordinateur"</translation>
 <translation id="204321170514947529"><ph name="APP_NAME" /> a également des données dans Chrome</translation>
 <translation id="2049574241039454490"><ph name="FILE_SIZE_OF_TOTAL" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
@@ -434,6 +432,7 @@ Votre compte Google conserve peut-être d'autres contenus d'historique de naviga
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> favoris ont été supprimés.</translation>
 <translation id="4665282149850138822">Le site "<ph name="NAME" />" a bien été ajouté à votre écran d'accueil.</translation>
 <translation id="4684427112815847243">Tout synchroniser</translation>
+<translation id="4688610874307684559">Exécution dans Chrome (notification initiale)</translation>
 <translation id="4695891336199304370">{SHIPPING_OPTIONS,plural, =1{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 et <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> de plus}one{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 et <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> de plus}other{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 et <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> de plus}}</translation>
 <translation id="4696983787092045100">Envoyer le SMS à vos appareils</translation>
 <translation id="4698034686595694889">Afficher hors connexion dans <ph name="APP_NAME" /></translation>
@@ -592,7 +591,6 @@ Pour modifier ce paramètre, <ph name="BEGIN_LINK" />réinitialisez la synchroni
 <translation id="5876056640971328065">Mettre la vidéo en pause</translation>
 <translation id="5884076754568147479">Pour vous aider à effectuer des tâches, Google recevra les URL et le contenu des sites sur lesquels vous utilisez l'Assistant, ainsi que les informations que vous envoyez via celui-ci</translation>
 <translation id="5919204609460789179">Mettre à jour <ph name="PRODUCT_NAME" /> pour lancer la synchronisation</translation>
-<translation id="5922853908706496913">Partage de votre écran…</translation>
 <translation id="5937580074298050696"><ph name="AMOUNT" /> économisé(s)</translation>
 <translation id="5939518447894949180">Réinitialiser</translation>
 <translation id="5942872142862698679">Utilisation de Google pour les recherches</translation>
@@ -773,16 +771,17 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="7479104141328977413">Gestion des onglets</translation>
 <translation id="7481312909269577407">Avancer</translation>
 <translation id="7482656565088326534">Onglet ''Aperçu''</translation>
+<translation id="7484997419527351112">Discover - désactivé</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (Dernière mise à jour <ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7494974237137038751">de données économisées</translation>
 <translation id="7498271377022651285">Veuillez patienter…</translation>
 <translation id="7514365320538308">Télécharger</translation>
 <translation id="751961395872307827">Impossible de se connecter au site</translation>
 <translation id="7542481630195938534">Impossible d'obtenir des suggestions</translation>
-<translation id="7554752735887601236">Un site utilise votre micro</translation>
 <translation id="7559975015014302720">Mode simplifié désactivé</translation>
 <translation id="7562080006725997899">Effacement des données de navigation en cours</translation>
 <translation id="756809126120519699">Données de Chrome effacées</translation>
+<translation id="7577900504646297215">Gérer les centres d'intérêt</translation>
 <translation id="757855969265046257">{FILES,plural, =1{<ph name="FILES_DOWNLOADED_ONE" /> fichier téléchargé}one{<ph name="FILES_DOWNLOADED_MANY" /> fichier téléchargé}other{<ph name="FILES_DOWNLOADED_MANY" /> fichiers téléchargés}}</translation>
 <translation id="7588219262685291874">Activer le thème sombre lorsque l'économiseur de batterie de l'appareil est activé</translation>
 <translation id="7593557518625677601">Ouvrez paramètres Android et réactivez synchro système Android pour démarrer synchro Chrome.</translation>
@@ -813,7 +812,6 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="7774809984919390718">{PAYMENT_METHOD,plural, =1{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 et <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> de plus}one{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 et <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> de plus}other{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 et <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> de plus}}</translation>
 <translation id="7791543448312431591">Ajouter</translation>
 <translation id="780301667611848630">Non merci</translation>
-<translation id="7804248752222191302">Un site utilise actuellement votre appareil photo</translation>
 <translation id="7810647596859435254">Ouvrir avec…</translation>
 <translation id="7821588508402923572">Vos économies de données s'affichent ici</translation>
 <translation id="783819812427904514">Réactiver le son de la vidéo</translation>
@@ -885,9 +883,7 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="8349013245300336738">Trier en fonction de la quantité de données utilisées</translation>
 <translation id="8364299278605033898">Affichez les sites Web populaires</translation>
 <translation id="8368027906805972958">Appareil inconnu ou non compatible (<ph name="DEVICE_ID" />)</translation>
-<translation id="83792324527827022">Un site utilise votre appareil photo et votre micro</translation>
 <translation id="8393700583063109961">Envoyer un message</translation>
-<translation id="8394832520002899662">Appuyez pour revenir au site</translation>
 <translation id="8413126021676339697">Afficher l'historique complet</translation>
 <translation id="8427875596167638501">L'onglet "Aperçu" est ouvert à moitié</translation>
 <translation id="8428213095426709021">Paramètres</translation>
@@ -984,7 +980,6 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="970715775301869095"><ph name="MINUTES" /> minutes restantes</translation>
 <translation id="974555521953189084">Saisissez votre phrase secrète pour lancer la synchronisation.</translation>
 <translation id="981121421437150478">Hors connexion</translation>
-<translation id="982182592107339124">Cette action entraînera la suppression des données pour tous les sites, y compris :</translation>
 <translation id="983192555821071799">Fermer tous les onglets</translation>
 <translation id="987264212798334818">Général</translation>
 </translationbundle>

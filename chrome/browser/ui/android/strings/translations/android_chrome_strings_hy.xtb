@@ -38,7 +38,6 @@
 <translation id="1258753120186372309">Google doodle՝ <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1260236875608242557">Որոնում և առաջարկներ</translation>
 <translation id="1266864766717917324">Չհաջողվեց ուղարկել բովանդակությունը (<ph name="CONTENT_TYPE" />)</translation>
-<translation id="1272079795634619415">Դադարեցնել</translation>
 <translation id="1283039547216852943">Հպեք՝ ընդարձակելու համար</translation>
 <translation id="1285320974508926690">Երբեք չթարգմանել այս կայքը</translation>
 <translation id="1291207594882862231">Մաքրել պատմությունը, քուքիները, կայքի տվյալները, քեշը…</translation>
@@ -50,8 +49,8 @@
 <translation id="1327257854815634930">Նավարկման պատմության թերթն ամբողջությամբ բացված է</translation>
 <translation id="1331212799747679585">Չհաջողվեց թարմացնել Chrome-ը։ Այլ կարգավորումներ</translation>
 <translation id="1332501820983677155">Google Chrome-ի գործառույթների դյուրանցումներ</translation>
+<translation id="1347468774581902829">Կառավարել պատմությունը</translation>
 <translation id="1360432990279830238">Դուրս գրվե՞լ և անջատել համաժամացումը</translation>
-<translation id="1364532808393826295"><ph name="APP_NAME" /> – <ph name="NOTIFICATION_MESSAGE" /></translation>
 <translation id="1373696734384179344">Ընտրված բովանդակությունը ներբեռնելու համար բավարար հիշողություն չկա:</translation>
 <translation id="1376578503827013741">Հաշվարկ...</translation>
 <translation id="1383876407941801731">Որոնում</translation>
@@ -122,7 +121,6 @@
 <translation id="2013642289801508067">{FILE_COUNT,plural, =1{# ֆայլ}one{# ֆայլ}other{# ֆայլ}}</translation>
 <translation id="2017836877785168846">Մաքրում է պատմությունն ու հասցեագոտու ինքնալրացումները:</translation>
 <translation id="2021896219286479412">Լիաէկրան ռեժիմի կարգավորումներ</translation>
-<translation id="2030769033451695672">Հպեք՝ <ph name="URL_OF_THE_CURRENT_TAB" /> վերադառնալու համար</translation>
 <translation id="2038563949887743358">Միացնել կայքի ամբողջական տարբերակը</translation>
 <translation id="204321170514947529"><ph name="APP_NAME" /> հավելվածը նաև ունի տվյալներ Chrome-ում</translation>
 <translation id="2049574241039454490"><ph name="FILE_SIZE_OF_TOTAL" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
@@ -434,6 +432,7 @@
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> էջանիշ ջնջվեց</translation>
 <translation id="4665282149850138822"><ph name="NAME" /> կայքն ավելացվեց ձեր հիմնական էկրանին</translation>
 <translation id="4684427112815847243">Համաժամացնել բոլորը</translation>
+<translation id="4688610874307684559">Աշխատում է Chrome-ում (սկզբնական)</translation>
 <translation id="4695891336199304370">{SHIPPING_OPTIONS,plural, =1{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 և ուղարկման ևս <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> տարբերակ}one{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 and <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> more}other{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 և ուղարկման ևս <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> տարբերակ}}</translation>
 <translation id="4696983787092045100">Ուղարկել SMS սարքերին</translation>
 <translation id="4698034686595694889">Դիտեք <ph name="APP_NAME" /> հավելվածի անցանց ռեժիմում</translation>
@@ -592,7 +591,6 @@
 <translation id="5876056640971328065">Դադարեցնել</translation>
 <translation id="5884076754568147479">Ձեր աշխատանքը հեշտացնելու համար Google-ը կստանա կայքերի հասցեներն ու բովանդակությունը, որոնցում օգտվում եք Օգնականից, ինչպես նաև տվյալները, որոնք ուղարկում եք Օգնականի միջոցով։</translation>
 <translation id="5919204609460789179">Թարմացրեք <ph name="PRODUCT_NAME" />-ը՝ համաժամացումը սկսելու համար</translation>
-<translation id="5922853908706496913">Էկրանը ցուցադրվում է</translation>
 <translation id="5937580074298050696">Խնայվել է <ph name="AMOUNT" /></translation>
 <translation id="5939518447894949180">Վերակայել</translation>
 <translation id="5942872142862698679">Օգտագործվում է Google որոնման համակարգը</translation>
@@ -693,7 +691,7 @@
 <translation id="6698801883190606802">Կառավարել համաժամացված տվյալները</translation>
 <translation id="6699370405921460408">Google-ի սերվերները կօպտիմալացնեն ձեր այցելած էջերը։</translation>
 <translation id="6710213216561001401">Նախորդը</translation>
-<translation id="671481426037969117"><ph name="FQDN" /> հավելվածի ժամաչափի ժամանակը լրացել է։ Վաղը այն նորից կաշխատի:</translation>
+<translation id="671481426037969117"><ph name="FQDN" />-ի համար նախատեսված ժամանակը լրացել է։ Վաղը այն նորից կաշխատի:</translation>
 <translation id="6738867403308150051">Ներբեռնում…</translation>
 <translation id="6766622839693428701">Փակելու համար մատը սահեցրեք ներքև։</translation>
 <translation id="6767294960381293877">Սարքերը, որոնց հետ կիսվելու եք ներդիրով, ցուցադրված են էկրանի կեսով:</translation>
@@ -773,16 +771,17 @@
 <translation id="7479104141328977413">Ներդիրների կառավարում</translation>
 <translation id="7481312909269577407">Forward</translation>
 <translation id="7482656565088326534">Նախադիտման ներդիր</translation>
+<translation id="7484997419527351112">Discover – անջատված է</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (Թարմացվել է <ph name="TIME_SINCE_UPDATE" />-ին)</translation>
 <translation id="7494974237137038751">խնայվել է</translation>
 <translation id="7498271377022651285">Սպասեք…</translation>
 <translation id="7514365320538308">Ներբեռնել</translation>
 <translation id="751961395872307827">Չի հաջողվում միանալ կայքին</translation>
 <translation id="7542481630195938534">Չհաջողվեց ստանալ առաջարկները</translation>
-<translation id="7554752735887601236">Կայքն օգտագործում է ձեր խոսափողը</translation>
 <translation id="7559975015014302720">Lite ռեժիմն անջատած է</translation>
 <translation id="7562080006725997899">Ջնջվում են զննարկման տվյալները</translation>
 <translation id="756809126120519699">Chrome-ի տվյալները ջնջվեցին</translation>
+<translation id="7577900504646297215">Կառավարել հետաքրքրությունները</translation>
 <translation id="757855969265046257">{FILES,plural, =1{Ներբեռնվեց <ph name="FILES_DOWNLOADED_ONE" /> ֆայլ}one{Ներբեռնվեց <ph name="FILES_DOWNLOADED_MANY" /> ֆայլ}other{Ներբեռնվեց <ph name="FILES_DOWNLOADED_MANY" /> ֆայլ}}</translation>
 <translation id="7588219262685291874">Միացնել մուգ թեման, երբ սարքի մարտկոցի տնտեսման ռեժիմը միացված է</translation>
 <translation id="7593557518625677601">Բացեք Android կարգավորումները և նորից միացրեք Android համակարգի համաժամացումը՝ Chrome Sync-ը գործարկելու համար</translation>
@@ -813,7 +812,6 @@
 <translation id="7774809984919390718">{PAYMENT_METHOD,plural, =1{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 ու վճարման ևս <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> եղանակ}one{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 and <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> more}other{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 ու վճարման ևս <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> եղանակ}}</translation>
 <translation id="7791543448312431591">Ավելացնել</translation>
 <translation id="780301667611848630">Ոչ</translation>
-<translation id="7804248752222191302">Կայքն օգտագործում է ձեր տեսախցիկը</translation>
 <translation id="7810647596859435254">Բացել հավելվածով…</translation>
 <translation id="7821588508402923572">Թրաֆիկի տնտեսման մասին տվյալները կցուցադրվեն այստեղ</translation>
 <translation id="783819812427904514">Միացնել տեսանյութի ձայնը</translation>
@@ -885,9 +883,7 @@
 <translation id="8349013245300336738">Տեսակավորել ըստ օգտագործված տվյալների ծավալի</translation>
 <translation id="8364299278605033898">Դիտեք թոփ կայքերը</translation>
 <translation id="8368027906805972958">Անհայտ կամ չաջակցվող սարք (<ph name="DEVICE_ID" />)</translation>
-<translation id="83792324527827022">Կայքն օգտագործում է ձեր տեսախցիկն ու խոսափողը</translation>
 <translation id="8393700583063109961">Ուղարկել հաղորդագրություն</translation>
-<translation id="8394832520002899662">Հպեք՝ կայք վերադառնալու համար</translation>
 <translation id="8413126021676339697">Ցույց տալ ամբողջ պատմությունը</translation>
 <translation id="8427875596167638501">Նախադիտման ներդիրը կիսաբաց է</translation>
 <translation id="8428213095426709021">Կարգավորումներ</translation>
@@ -984,7 +980,6 @@
 <translation id="970715775301869095">Մնացել է <ph name="MINUTES" /> րոպե</translation>
 <translation id="974555521953189084">Համաժամացումը սկսելու համար մուտքագրեք ձեր անցաբառը</translation>
 <translation id="981121421437150478">Անցանց</translation>
-<translation id="982182592107339124">Բոլոր կայքերի տվյալները կջնջվեն, ներառյալ`</translation>
 <translation id="983192555821071799">Փակել բոլոր ներդիրները</translation>
 <translation id="987264212798334818">Ընդհանուր</translation>
 </translationbundle>

@@ -35,6 +35,7 @@
 <translation id="1938124657309484470">တန်ဖိုးမှာ <ph name="MAXIMUM_DATE_OR_TIME" /> သို့မဟုတ် စောရမည်။</translation>
 <translation id="1946271899482435442">ရက်စွဲရွေးကိရိယာကို ပြရန်</translation>
 <translation id="1993104285338243655">စကရင်ပွားခြင်းသို့ ပြောင်းထားသည်</translation>
+<translation id="2031987842108996681">အနီ ချန်နယ်</translation>
 <translation id="2060505056492490888">'<ph name="DOT" />' ကို '<ph name="INVALIDDOMAIN" />' ထဲတွင် နေရာမှားသုံးထားသည်။</translation>
 <translation id="2148716181193084225">ယနေ့</translation>
 <translation id="2158401438286456825">စာမျက်နှာစာရင်း</translation>
@@ -45,6 +46,7 @@
 <translation id="2291999235780842123">ခြစ်ရန် အကွက်</translation>
 <translation id="2311842470354187719">စာမျက်နှာခြားခြင်း</translation>
 <translation id="2335594187091864976">ရက်စွဲနှင့် အချိန် ရွေးချယ်မှု</translation>
+<translation id="2393030564806080191">ဟက်စ်အရောင် အညွှန်းကိန်း</translation>
 <translation id="245932805758469625">ဗီဒီယိုပြီးဆုံးရန် ကျန်ရှိ စက္ကန့်</translation>
 <translation id="248395913932153421">ရက်</translation>
 <translation id="2507943997699731163">ကျေးဇူးပြုပြီး ဒီအကွက်ကို ​ရေးဖြည့်ပါ။</translation>
@@ -52,6 +54,7 @@
 <translation id="2561842179657104141">နောက်ထပ် မီဒီယာထိန်းချုပ်မှုများကို ပြပါ</translation>
 <translation id="2572483411312390101">ဖွင့်ရန်</translation>
 <translation id="2613802280814924224">ကျေးဇူးပြု၍ မှန်ကန်သည့် တန်ဖိုးထည့်ပါ။ အနီးဆုံး တန်ဖိုးသည် <ph name="VALID_VALUE" />။</translation>
+<translation id="2634240155926812724">အစိမ်း ချန်နယ်</translation>
 <translation id="2653659639078652383">ပေးပို့ရန်</translation>
 <translation id="2657045182931379222">ဂရပ်ဖစ်ဓာတ်ပုံ အကြောင်းအရာ</translation>
 <translation id="2674318244760992338">အောက်ခြေပိုင်း</translation>
@@ -127,6 +130,7 @@
 <translation id="5034860022980953847">တိုးတက်မှု ညွှန်ပြကိရိယာ</translation>
 <translation id="5090250355906949916">ဗီဒီယိုဖိုင် အချိန် ကြည့်ရှုစနစ်</translation>
 <translation id="5093189678851173835">ကမ္ပည်းစာ</translation>
+<translation id="509897012892853729">အပြာ ချန်နယ်</translation>
 <translation id="5117590920725113268">လာမည့် လကို ပြရန်</translation>
 <translation id="512758898067543763">အတန်း ခေါင်းစီး</translation>
 <translation id="5143125788380636750">နိဂုံး</translation>
@@ -164,6 +168,7 @@
 <translation id="6166809985690652833">စာအုပ်ဖတ်ပြီးနောက် သုံးသပ်ချက်</translation>
 <translation id="6209276755895393898">အောက်ပါ ဖြစ်ပုံရသည်- <ph name="DESCRIPTION" /></translation>
 <translation id="6213469881011901533">ခက်ဆစ်</translation>
+<translation id="6281588256137006900">အလင်း</translation>
 <translation id="6281763101136022427">url</translation>
 <translation id="6310801910862476708">တစ်ခုပေါ်တစ်ခု ထပ်၍ဖွင့်သည့် မုဒ်မှ ထွက်ရန်</translation>
 <translation id="6398862346408813489">လ ရွေးချယ်ရေး အကွက်ကို ပြပါ</translation>
@@ -184,6 +189,7 @@
 <translation id="6790428901817661496">ဖွင့်ရန်</translation>
 <translation id="6820355525329141109">ပလာဂင်ကို တင် မပေးနိုင်ခဲ့ပါ။</translation>
 <translation id="6820615603175220800">ကျမ်းကိုးစာရင်း အညွှန်း</translation>
+<translation id="6831465880655513317">စိုစွတ်ပြည့်ဝမှုနှင့် အလင်းကို ရွေးချယ်ရန် နှစ်ဘက်မြင်ဆလိုက်ဒါပါသော အရောင်စက်ဝိုင်း</translation>
 <translation id="6843725295806269523">တိတ်ရန်</translation>
 <translation id="6885760532393684712">ဖိုင်လမ်းညွှန်</translation>
 <translation id="689129560213475294">အမှတ်တံဆိပ်</translation>
@@ -201,6 +207,7 @@
 <translation id="7263440858009898357">စာရင်းမှ အမယ်များကို ကျေးဇူးပြုပြီး ရွေးချယ်ပါ။</translation>
 <translation id="727747134524199931">ကော်လံခေါင်းစီး</translation>
 <translation id="7320576522385648310">ဖွင့်နေသည်</translation>
+<translation id="7341556277900466204">အရောင်စက်ဝိုင်း</translation>
 <translation id="7353453495576941748">မှတ်တမ်းတင်ထိုက်သူ</translation>
 <translation id="7364796246159120393">ဖိုင် ရွေးရန်</translation>
 <translation id="739024184232394898">အခြား...</translation>
@@ -221,6 +228,7 @@
 <translation id="775297008183122718">မမှန်ကန်သည့် ဝင်ရောက်မှု</translation>
 <translation id="7789962463072032349">ဆိုင်းငံ့ထားရန်</translation>
 <translation id="7802800022689234070">ထုတ်ဖော်ရန် တြိဂံ</translation>
+<translation id="7852167693871241274">အရောင်အသွေး ဆလိုက်ဒါ</translation>
 <translation id="7888071071722539607">ကျေးဇူးပြု၍ အီးမေးလ်လိပ်စာတွင် '<ph name="ATSIGN" />' တစ်ခုပါရှိစေပါ။ '<ph name="INVALIDADDRESS" />' တွင် '<ph name="ATSIGN" />' ပျောက်နေသည်။</translation>
 <translation id="7891486169920085145">ခွဲခြင်းစနစ်</translation>
 <translation id="795667975304826397">ဖိုင် မရွေးထား</translation>
@@ -263,6 +271,7 @@
 <translation id="8875657656876809964">ဗီဒီယိုဖွင့်ခြင်း အမှား</translation>
 <translation id="8889402386540077796">အရောင်အဆင်း</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> KB</translation>
+<translation id="894736920926684893">ဖော်မက် ဖွင့်ပိတ်ခလုတ်</translation>
 <translation id="8987927404178983737">လ</translation>
 <translation id="901493112792887934">စက္ကန့်အားဖြင့် လက်ရှိအချိန်</translation>
 <translation id="901834265349196618">အီးမေးလ်</translation>

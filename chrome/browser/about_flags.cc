@@ -1404,6 +1404,12 @@ const FeatureEntry::FeatureVariation kTabGridLayoutAndroidVariations[] = {
 const FeatureEntry::FeatureParam kStartSurfaceAndroid_SingleSurface[] = {
     {"start_surface_variation", "single"}};
 
+const FeatureEntry::FeatureParam kStartSurfaceAndroid_SingleSurface_V2[] = {
+    {"start_surface_variation", "single"},
+    {"show_last_active_tab_only", "true"},
+    {"exclude_mv_tiles", "true"},
+    {"hide_switch_when_no_incognito_tabs", "true"}};
+
 const FeatureEntry::FeatureParam
     kStartSurfaceAndroid_SingleSurfaceWithoutMvTiles[] = {
         {"start_surface_variation", "single"},
@@ -1428,6 +1434,8 @@ const FeatureEntry::FeatureParam kStartSurfaceAndroid_OmniboxOnly[] = {
 const FeatureEntry::FeatureVariation kStartSurfaceAndroidVariations[] = {
     {"Single Surface", kStartSurfaceAndroid_SingleSurface,
      base::size(kStartSurfaceAndroid_SingleSurface), nullptr},
+    {"Single Surface V2", kStartSurfaceAndroid_SingleSurface_V2,
+     base::size(kStartSurfaceAndroid_SingleSurface_V2), nullptr},
     {"Single Surface without MV Tiles",
      kStartSurfaceAndroid_SingleSurfaceWithoutMvTiles,
      base::size(kStartSurfaceAndroid_SingleSurfaceWithoutMvTiles), nullptr},
@@ -1459,6 +1467,23 @@ const FeatureEntry::FeatureVariation
          base::size(kAutofillUseMobileLabelDisambiguationShowAll), nullptr},
         {"(show one)", kAutofillUseMobileLabelDisambiguationShowOne,
          base::size(kAutofillUseMobileLabelDisambiguationShowOne), nullptr}};
+#endif  // defined(OS_ANDROID)
+
+#if defined(OS_ANDROID)
+const FeatureEntry::FeatureParam kHomepagePromoCardLarge[] = {
+    {"promo-card-variation", "Large"}};
+const FeatureEntry::FeatureParam kHomepagePromoCardCompact[] = {
+    {"promo-card-variation", "Compact"}};
+const FeatureEntry::FeatureParam kHomepagePromoCardSlim[] = {
+    {"promo-card-variation", "Slim"}};
+
+const FeatureEntry::FeatureVariation kHomepagePromoCardVariations[] = {
+    {"Large", kHomepagePromoCardLarge, base::size(kHomepagePromoCardLarge),
+     nullptr},
+    {"Compact", kHomepagePromoCardCompact,
+     base::size(kHomepagePromoCardCompact), nullptr},
+    {"Slim", kHomepagePromoCardSlim, base::size(kHomepagePromoCardSlim),
+     nullptr}};
 #endif  // defined(OS_ANDROID)
 
 const FeatureEntry::FeatureParam kLazyFrameLoadingAutomatic[] = {
@@ -2251,6 +2276,9 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kHideShelfControlsInTabletModeName,
      flag_descriptions::kHideShelfControlsInTabletModeDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kHideShelfControlsInTabletMode)},
+    {"shelf-app-scaling", flag_descriptions::kShelfAppScalingName,
+     flag_descriptions::kShelfAppScalingDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::features::kShelfAppScaling)},
     {"shelf-hotseat", flag_descriptions::kShelfHotseatName,
      flag_descriptions::kShelfHotseatDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kShelfHotseat)},
@@ -2792,6 +2820,9 @@ const FeatureEntry kFeatureEntries[] = {
     {"query-tiles", flag_descriptions::kQueryTilesName,
      flag_descriptions::kQueryTilesDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(upboarding::features::kQueryTiles)},
+    {"query-tiles-omnibox", flag_descriptions::kQueryTilesOmniboxName,
+     flag_descriptions::kQueryTilesOmniboxDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(upboarding::features::kQueryTilesInOmnibox)},
     {"query-tiles-country-code", flag_descriptions::kQueryTilesCountryCode,
      flag_descriptions::kQueryTilesCountryCodeDescription, kOsAndroid,
      MULTI_VALUE_TYPE(kQueryTilesCountryChoices)},
@@ -3831,6 +3862,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kDuetTabStripIntegrationAndroidName,
      flag_descriptions::kDuetTabStripIntegrationAndroidDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kDuetTabStripIntegrationAndroid)},
+
+    {"enable-conditional-tabstrip",
+     flag_descriptions::kConditionalTabStripAndroidName,
+     flag_descriptions::kConditionalTabStripAndroidDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kConditionalTabStripAndroid)},
 #endif  // OS_ANDROID
 
     {"enable-layout-ng", flag_descriptions::kEnableLayoutNGName,
@@ -5180,6 +5216,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kHomepageSettingsUIConversionName,
      flag_descriptions::kHomepageSettingsUIConversionDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kHomepageSettingsUIConversion)},
+    {"homepage-promo-card", flag_descriptions::kHomepagePromoCardName,
+     flag_descriptions::kHomepagePromoCardDescription, kOsAndroid,
+     FEATURE_WITH_PARAMS_VALUE_TYPE(chrome::android::kHomepagePromoCard,
+                                    kHomepagePromoCardVariations,
+                                    "HomepagePromoCard")},
 #endif  // defined(OS_ANDROID)
 
 #if defined(OS_CHROMEOS)
@@ -5420,6 +5461,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableHighResolutionMouseScrollingName,
      flag_descriptions::kEnableHighResolutionMouseScrollingDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ui::kEnableHighResolutionMouseScrolling)},
+
+    {"movable-partial-screenshot-region",
+     flag_descriptions::kMovablePartialScreenshotName,
+     flag_descriptions::kMovablePartialScreenshotDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(ash::features::kMovablePartialScreenshot)},
 #endif  // defined(OS_CHROMEOS)
 
     {"enable-experimental-cookie-features",

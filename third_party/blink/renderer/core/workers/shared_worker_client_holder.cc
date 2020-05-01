@@ -32,7 +32,7 @@
 
 #include <memory>
 #include <utility>
-#include "base/logging.h"
+#include "base/check.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/common/messaging/message_port_channel.h"

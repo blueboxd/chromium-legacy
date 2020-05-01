@@ -38,7 +38,6 @@
 <translation id="1258753120186372309">Sviatočné logo Google: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1260236875608242557">Prehľadať a preskúmať</translation>
 <translation id="1266864766717917324"><ph name="CONTENT_TYPE" /> sa nepodarilo zdieľať</translation>
-<translation id="1272079795634619415">Zastaviť</translation>
 <translation id="1283039547216852943">Klepnutím rozbaliť</translation>
 <translation id="1285320974508926690">Nikdy neprekladať tieto webové stránky</translation>
 <translation id="1291207594882862231">Vymazať históriu, súbory cookie, dáta webov, vyrovnávaciu pamäť…</translation>
@@ -50,8 +49,8 @@
 <translation id="1327257854815634930">História navigácie je otvorená</translation>
 <translation id="1331212799747679585">Chrome sa nedá aktualizovať. Ďalšie možnosti</translation>
 <translation id="1332501820983677155">Skratky pre funkcie prehliadača Google Chrome</translation>
+<translation id="1347468774581902829">Spravovať aktivitu</translation>
 <translation id="1360432990279830238">Odhlásiť sa a vypnúť synchronizáciu?</translation>
-<translation id="1364532808393826295"><ph name="APP_NAME" /> – <ph name="NOTIFICATION_MESSAGE" /></translation>
 <translation id="1373696734384179344">Vybraný obsah nie je možné stiahnuť z dôvodu nedostatku pamäte</translation>
 <translation id="1376578503827013741">Vypočítava sa…</translation>
 <translation id="1383876407941801731">Vyhľadávanie</translation>
@@ -122,7 +121,6 @@
 <translation id="2013642289801508067">{FILE_COUNT,plural, =1{# súbor}few{# súbory}many{# Files}other{# súborov}}</translation>
 <translation id="2017836877785168846">Vymaže históriu a automaticky doplňované výrazy v paneli s adresou.</translation>
 <translation id="2021896219286479412">Ovládanie webu na celú obrazovku</translation>
-<translation id="2030769033451695672">Klepnutím sa vrátite na kartu <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
 <translation id="2038563949887743358">Zapnutie žiadosti o verziu stránok pre počítače</translation>
 <translation id="204321170514947529">V Chrome má údaje aj aplikácia <ph name="APP_NAME" />.</translation>
 <translation id="2049574241039454490"><ph name="FILE_SIZE_OF_TOTAL" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
@@ -434,6 +432,7 @@ Váš účet Google môže mať na adrese <ph name="BEGIN_LINK" />myactivity.goo
 <translation id="4663756553811254707">Počet odstránených záložiek: <ph name="NUMBER_OF_BOOKMARKS" /></translation>
 <translation id="4665282149850138822">Stránky <ph name="NAME" /> boli pridané na plochu</translation>
 <translation id="4684427112815847243">Synchronizovať všetko</translation>
+<translation id="4688610874307684559">Spustené v Chrome (prvotné)</translation>
 <translation id="4695891336199304370">{SHIPPING_OPTIONS,plural, =1{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 a <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> ďalšia}few{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 a <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> ďalšie}many{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 a <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> ďalšej}other{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 a <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> ďalších}}</translation>
 <translation id="4696983787092045100">Odoslať text do vašich zariadení</translation>
 <translation id="4698034686595694889">Zobrazenie offline v aplikácii <ph name="APP_NAME" /></translation>
@@ -592,7 +591,6 @@ Ak chcete toto nastavenie zmeniť, <ph name="BEGIN_LINK" />resetujte synchroniz�
 <translation id="5876056640971328065">Pozastaviť video</translation>
 <translation id="5884076754568147479">Google bude dostávať webové adresy a obsah webov, kde používate Asistenta, ako aj informácie, ktoré prostredníctvom neho odošlete, aby vám mohol pomáhať s dokončovaním úloh</translation>
 <translation id="5919204609460789179">Ak chcete spustiť synchronizáciu, aktualizujte aplikáciu <ph name="PRODUCT_NAME" /></translation>
-<translation id="5922853908706496913">Zdieľate obrazovku</translation>
 <translation id="5937580074298050696">Ušetrené: <ph name="AMOUNT" /></translation>
 <translation id="5939518447894949180">Resetovať</translation>
 <translation id="5942872142862698679">Na vyhľadávanie sa používa Google</translation>
@@ -773,16 +771,17 @@ Niektoré weby môžu napríklad na túto žiadosť reagovať tak, že vám zobr
 <translation id="7479104141328977413">Správa kariet</translation>
 <translation id="7481312909269577407">Dopredu</translation>
 <translation id="7482656565088326534">Karta ukážky</translation>
+<translation id="7484997419527351112">Objaviť – vypnuté</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (Aktualizované <ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7494974237137038751">uložené dáta</translation>
 <translation id="7498271377022651285">Čakajte…</translation>
 <translation id="7514365320538308">Stiahnuť</translation>
 <translation id="751961395872307827">Nedá sa pripojiť k webu</translation>
 <translation id="7542481630195938534">Návrhy sa nedajú získať</translation>
-<translation id="7554752735887601236">Váš mikrofón používa nejaký web</translation>
 <translation id="7559975015014302720">Zjednodušený režim je vypnutý</translation>
 <translation id="7562080006725997899">Vymazávajú sa údaje prehliadania</translation>
 <translation id="756809126120519699">Údaje Chromu boli vymazané</translation>
+<translation id="7577900504646297215">Spravovať záujmy</translation>
 <translation id="757855969265046257">{FILES,plural, =1{<ph name="FILES_DOWNLOADED_ONE" /> stiahnutý súbor}few{<ph name="FILES_DOWNLOADED_MANY" /> stiahnuté súbory}many{<ph name="FILES_DOWNLOADED_MANY" /> files downloaded}other{<ph name="FILES_DOWNLOADED_MANY" /> stiahnutých súborov}}</translation>
 <translation id="7588219262685291874">Zapnúť tmavý motív, keď je v zariadení zapnutý šetrič batérie</translation>
 <translation id="7593557518625677601">V nastaveniach Androidu spustite synchronizáciu Chromu opätovným povolením synchronizácie Androidu</translation>
@@ -813,7 +812,6 @@ Niektoré weby môžu napríklad na túto žiadosť reagovať tak, že vám zobr
 <translation id="7774809984919390718">{PAYMENT_METHOD,plural, =1{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 a <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> ďalší}few{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 a <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> ďalšie}many{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 a <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> ďalšieho}other{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 a <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> ďalších}}</translation>
 <translation id="7791543448312431591">Pridať</translation>
 <translation id="780301667611848630">Nie, ďakujem</translation>
-<translation id="7804248752222191302">Váš fotoaparát používa nejaký web</translation>
 <translation id="7810647596859435254">Otvoriť pomocou…</translation>
 <translation id="7821588508402923572">Tu sa zobrazí úspora dát</translation>
 <translation id="783819812427904514">Zapnúť zvuk videa</translation>
@@ -885,9 +883,7 @@ Niektoré weby môžu napríklad na túto žiadosť reagovať tak, že vám zobr
 <translation id="8349013245300336738">Zoradiť podľa množstva využitých dát</translation>
 <translation id="8364299278605033898">Prezrite si obľúbené weby</translation>
 <translation id="8368027906805972958">Neznáme alebo nepodporované zariadenie (<ph name="DEVICE_ID" />)</translation>
-<translation id="83792324527827022">Váš fotoaparát a mikrofón používa nejaký web</translation>
 <translation id="8393700583063109961">Odoslať správu</translation>
-<translation id="8394832520002899662">Klepnutím sa vrátite na web</translation>
 <translation id="8413126021676339697">Zobraziť celú históriu</translation>
 <translation id="8427875596167638501">Karta ukážky je dopoly otvorená</translation>
 <translation id="8428213095426709021">Nastavenia</translation>
@@ -984,7 +980,6 @@ Niektoré weby môžu napríklad na túto žiadosť reagovať tak, že vám zobr
 <translation id="970715775301869095">Zostáva: <ph name="MINUTES" /> min</translation>
 <translation id="974555521953189084">Ak chcete spustiť synchronizáciu, zadajte prístupovú frázu</translation>
 <translation id="981121421437150478">Offline</translation>
-<translation id="982182592107339124">Vymažete dáta všetkých webov vrátane týchto:</translation>
 <translation id="983192555821071799">Zavrieť všetky karty</translation>
 <translation id="987264212798334818">Všeobecné</translation>
 </translationbundle>

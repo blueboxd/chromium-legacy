@@ -11,6 +11,7 @@
 
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/unguessable_token.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/common/content_export.h"
 
@@ -36,6 +37,7 @@ class CONTENT_EXPORT RenderFrameHostFactory {
       FrameTree* frame_tree,
       FrameTreeNode* frame_tree_node,
       int32_t routing_id,
+      const base::UnguessableToken& frame_token,
       bool renderer_initiated_creation,
       RenderFrameHostImpl::LifecycleState lifecycle_state);
 
@@ -55,6 +57,7 @@ class CONTENT_EXPORT RenderFrameHostFactory {
       FrameTree* frame_tree,
       FrameTreeNode* frame_tree_node,
       int32_t routing_id,
+      const base::UnguessableToken& frame_token,
       bool renderer_initiated_creation) = 0;
 
   // Registers a factory to be called when new RenderFrameHostImpls are created.

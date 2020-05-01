@@ -38,7 +38,6 @@
 <translation id="1258753120186372309">Google doodle፦ <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1260236875608242557">ይፈልጉ እና ያስሱ</translation>
 <translation id="1266864766717917324"><ph name="CONTENT_TYPE" /> ን ማጋራት አልተቻለም።</translation>
-<translation id="1272079795634619415">አቁም</translation>
 <translation id="1283039547216852943">ለመዘርጋት መታ ያድርጉ</translation>
 <translation id="1285320974508926690">ይህን ጣቢያ በጭራሽ አትተርጉም</translation>
 <translation id="1291207594882862231">ታሪክ፣ ኩኪዎች፣ የጣቢያ ውሂብ፣ መሸጎጫን አጽዳ…</translation>
@@ -50,8 +49,8 @@
 <translation id="1327257854815634930">የዳሰሳ ታሪክ ተከፍቷል</translation>
 <translation id="1331212799747679585">Chrome መዘመን አይችልም። ተጨማሪ አማራጮች</translation>
 <translation id="1332501820983677155">የGoogle Chrome ባህሪ አቋራጮች</translation>
+<translation id="1347468774581902829">እንቅስቃሴን አቀናብር</translation>
 <translation id="1360432990279830238">ዘግተው ወጥተው ስምረት ይጥፋ?</translation>
-<translation id="1364532808393826295"><ph name="APP_NAME" />፣ <ph name="NOTIFICATION_MESSAGE" /></translation>
 <translation id="1373696734384179344">የተመረጠውን ይዘት ለማውረድ በቂ ያልሆነ ማህደረ ትውስታ።</translation>
 <translation id="1376578503827013741">በማስላት ላይ…</translation>
 <translation id="1383876407941801731">ፍለጋ </translation>
@@ -122,7 +121,6 @@
 <translation id="2013642289801508067">{FILE_COUNT,plural, =1{# ፋይል}one{# ፋይሎች}other{# ፋይሎች}}</translation>
 <translation id="2017836877785168846">በአድራሻ አሞሌው ውስጥ ታሪክን እና ራስ-ሰር ማጠናቀቆችን ያጸዳል።</translation>
 <translation id="2021896219286479412">የሙሉ ማያ ገጽ ጣቢያ መቆጣጠሪያዎች</translation>
-<translation id="2030769033451695672">ወደ <ph name="URL_OF_THE_CURRENT_TAB" /> ለመመለስ መታ ያድርጉ</translation>
 <translation id="2038563949887743358">የዴስክቶፕ ጣቢያን ጠይቅን አብራ</translation>
 <translation id="204321170514947529"><ph name="APP_NAME" /> እንዲሁም በChrome ውስጥ ውሂብ አለው</translation>
 <translation id="2049574241039454490"><ph name="FILE_SIZE_OF_TOTAL" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
@@ -434,6 +432,7 @@
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> ዕልባቶች ተሰርዘዋል</translation>
 <translation id="4665282149850138822"><ph name="NAME" /> ወደ እርስዎ መነሻ ገፅ ታክሏል</translation>
 <translation id="4684427112815847243">ሁሉንም ያመሳስሉ</translation>
+<translation id="4688610874307684559">በChrome ውስጥ በማሄድ ላይ (የመጀመሪያው)</translation>
 <translation id="4695891336199304370">{SHIPPING_OPTIONS,plural, =1{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 እና <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> ተጨማሪ}one{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 እና <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> ተጨማሪ}other{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 እና <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> ተጨማሪ}}</translation>
 <translation id="4696983787092045100">ጽሑፍ ወደ መሣሪያዎችዎ ይላኩ</translation>
 <translation id="4698034686595694889">በ<ph name="APP_NAME" /> ውስጥ ከመስመር ውጭ ይመልከቱ</translation>
@@ -592,7 +591,6 @@
 <translation id="5876056640971328065">ቪዲዮ ባለበት አቁም</translation>
 <translation id="5884076754568147479">ተግባራትን እንዲያጠናቅቁ ለማገዝ Google ረዳትን የሚጠቀሙባቸው የጣቢያዎች ዩአርኤሎች እና ይዘቶችና እንዲሁም በረዳት በኩል የሚያስገቡት መረጃን ይቀበላል</translation>
 <translation id="5919204609460789179">ስምረትን ለመጀመር <ph name="PRODUCT_NAME" />ን ያዘምኑ</translation>
-<translation id="5922853908706496913">ማያ ገጽዎን በማጋራት ላይ</translation>
 <translation id="5937580074298050696"><ph name="AMOUNT" /> ተቀምጧል</translation>
 <translation id="5939518447894949180">ዳግም አስጀምር</translation>
 <translation id="5942872142862698679">ለፍለጋ Googleን መጠቀም</translation>
@@ -773,16 +771,17 @@
 <translation id="7479104141328977413">የትር አስተዳደር</translation>
 <translation id="7481312909269577407">ወደ ፊት</translation>
 <translation id="7482656565088326534">የቅድመ-እይታ ትር</translation>
+<translation id="7484997419527351112">ምርምር - ጠፍቷል</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (የተዘመነው በ<ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7494974237137038751">የተቆጠበው ውሂብ</translation>
 <translation id="7498271377022651285">እባክዎ ይጠብቁ…</translation>
 <translation id="7514365320538308">አውርድ</translation>
 <translation id="751961395872307827">ከበይነመረቡ ጋር መገናኘት አልተቻለም</translation>
 <translation id="7542481630195938534">የአስተያየት ጥቆማዎችን ማግኘት አልተቻለም</translation>
-<translation id="7554752735887601236">አንድ ጣቢያ የእርስዎን ማይክሮፎን እየተጠቀመ ነው</translation>
 <translation id="7559975015014302720">ቀላል ሁነታ ጠፍቷል</translation>
 <translation id="7562080006725997899">የአሰሳ ውሂብን በማጽዳት ላይ</translation>
 <translation id="756809126120519699">የChrome ውሂብ ጸድቷል</translation>
+<translation id="7577900504646297215">ፍላጎቶችን አቀናብር</translation>
 <translation id="757855969265046257">{FILES,plural, =1{<ph name="FILES_DOWNLOADED_ONE" />ፋይል ወርዷል}one{<ph name="FILES_DOWNLOADED_MANY" /> ፋይሎች ወርደዋል}other{<ph name="FILES_DOWNLOADED_MANY" /> ፋይሎች ወርደዋል}}</translation>
 <translation id="7588219262685291874">የመሣሪያዎ ባትሪ ቆጣቢ ሲበራ ጨለማ ገጽታን ያብሩ</translation>
 <translation id="7593557518625677601">የChrome ስምረትን ለመጀመር የAndroid ቅንብሮችን ይክፈቱና የAndroid ስርዓት ስምረትን ዳግም ያንቁ</translation>
@@ -813,7 +812,6 @@
 <translation id="7774809984919390718">{PAYMENT_METHOD,plural, =1{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 እና <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> ተጨማሪ}one{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 እና <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> ተጨማሪ}other{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 እና <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> ተጨማሪ}}</translation>
 <translation id="7791543448312431591">አክል</translation>
 <translation id="780301667611848630">አይ፣ አመሰግናለሁ</translation>
-<translation id="7804248752222191302">አንድ ጣቢያ ካሜራዎን እየተጠቀመ ነው</translation>
 <translation id="7810647596859435254">ክፈት በ…</translation>
 <translation id="7821588508402923572">የእርስዎ የውሂብ ቁጠባዎች እዚህ ይታያሉ</translation>
 <translation id="783819812427904514">የቪዲዮን ድምጸ-ከል አንሳ</translation>
@@ -885,9 +883,7 @@
 <translation id="8349013245300336738">ጥቅም ላይ በዋለው የውሂብ መጠን ደርድር</translation>
 <translation id="8364299278605033898">ታዋቂ ድር ጣቢያዎችን ይመልከቱ</translation>
 <translation id="8368027906805972958">ያልታወቀ ወይም የማይደገፍ መሣሪያ (<ph name="DEVICE_ID" />)</translation>
-<translation id="83792324527827022">አንድ ጣቢያ የእርስዎን ካሜራ እና ማይክሮፎን እየተጠቀመ ነው</translation>
 <translation id="8393700583063109961">መልዕክት ይላኩ</translation>
-<translation id="8394832520002899662">ወደ ጣቢያው ለመመለስ መታ ያድርጉ</translation>
 <translation id="8413126021676339697">ሙሉ ታሪክ አሳይ</translation>
 <translation id="8427875596167638501">የቅድመ-እይታ ትር ግማሽ ተከፍቷል</translation>
 <translation id="8428213095426709021">ቅንብሮች</translation>
@@ -984,7 +980,6 @@
 <translation id="970715775301869095"><ph name="MINUTES" /> ደቂቃዎች ይቀራሉ</translation>
 <translation id="974555521953189084">ስምረትን ለመጀመር የይለፍ ሐረግዎን ያስገቡ</translation>
 <translation id="981121421437150478">ከመስመር ውጪ</translation>
-<translation id="982182592107339124">ይህ ለሁሉም ጣቢያዎች ውሂብን ያጸዳል፣ የሚከተሉትን ጨምሮ፦</translation>
 <translation id="983192555821071799">ሁሉንም ትሮች ይዝጉ</translation>
 <translation id="987264212798334818">አጠቃላይ</translation>
 </translationbundle>

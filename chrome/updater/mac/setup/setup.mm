@@ -255,10 +255,8 @@ void CleanUpOldUpdater(const InfoPlist& old_updater_info_plist) {
 }  // namespace
 
 int SetupUpdater() {
-  const base::FilePath info_plist_path = InfoPlistPath();
-
   const std::unique_ptr<InfoPlist> info_plist =
-      InfoPlist::Create(info_plist_path);
+      InfoPlist::Create(InfoPlistPath());
   CHECK(info_plist);
 
   const base::FilePath dest_path =
@@ -297,10 +295,9 @@ int SetupUpdater() {
 }
 
 int SwapToUpgradedUpdater() {
-  const base::FilePath info_plist_path = InfoPlistPath();
   const std::unique_ptr<InfoPlist> info_plist =
-      InfoPlist::Create(info_plist_path);
-  CHECK(info_plist != nullptr);
+      InfoPlist::Create(InfoPlistPath());
+  CHECK(info_plist);
 
   // Check if a version of the updater already exists.
   const bool old_updater_exists =
@@ -353,22 +350,21 @@ int SwapToUpgradedUpdater() {
 
   if (old_updater_exists) {
     if (old_updater_bundle_path.get()) {
-      const base::FilePath old_updater_info_plist_path =
+      const base::FilePath old_info_plist_path =
           InfoPlistPath(base::mac::NSStringToFilePath(old_updater_bundle_path));
-      const std::unique_ptr<InfoPlist> old_updater_info_plist =
-          InfoPlist::Create(old_updater_info_plist_path);
-      if (old_updater_info_plist != nullptr) {
-        if (![old_updater_info_plist->BundleVersion()
+      const std::unique_ptr<InfoPlist> old_info_plist =
+          InfoPlist::Create(old_info_plist_path);
+      if (old_info_plist != nullptr) {
+        if (![old_info_plist->BundleVersion()
                 isEqualToString:info_plist->BundleVersion()]) {
-          CleanUpOldUpdater(*old_updater_info_plist);
+          CleanUpOldUpdater(*old_info_plist);
         } else {
           LOG(ERROR) << "Old version and new version are the same: "
                      << base::SysNSStringToUTF8(
-                            old_updater_info_plist->BundleVersion());
+                            old_info_plist->BundleVersion());
         }
       } else {
-        LOG(ERROR) << "Failed to get info plist at: "
-                   << old_updater_info_plist_path;
+        LOG(ERROR) << "Failed to get info plist at: " << old_info_plist_path;
       }
     }
   }
@@ -380,10 +376,9 @@ int SwapToUpgradedUpdater() {
 int Uninstall(bool is_machine) {
   ALLOW_UNUSED_LOCAL(is_machine);
 
-  const base::FilePath info_plist_path = InfoPlistPath();
   const std::unique_ptr<InfoPlist> info_plist =
-      InfoPlist::Create(info_plist_path);
-  CHECK(info_plist != nullptr);
+      InfoPlist::Create(InfoPlistPath());
+  CHECK(info_plist);
 
   if (!RemoveUpdateCheckFromLaunchd(
           info_plist->GoogleUpdateCheckLaunchdNameVersioned())) {

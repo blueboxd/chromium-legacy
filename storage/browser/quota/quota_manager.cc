@@ -355,12 +355,12 @@ class QuotaManager::UsageAndQuotaInfoGatherer : public QuotaTask {
 
   void OnBarrierComplete() { CallCompleted(); }
 
-  url::Origin origin_;
+  const url::Origin origin_;
   QuotaManager::UsageAndQuotaWithBreakdownCallback callback_;
-  StorageType type_;
-  bool is_unlimited_;
-  bool is_session_only_;
-  bool is_incognito_;
+  const StorageType type_;
+  const bool is_unlimited_;
+  const bool is_session_only_;
+  const bool is_incognito_;
   int64_t available_space_ = 0;
   int64_t total_space_ = 0;
   int64_t desired_host_quota_ = 0;
@@ -603,13 +603,13 @@ class QuotaManager::OriginDataDeleter : public QuotaTask {
     return static_cast<QuotaManager*>(observer());
   }
 
-  url::Origin origin_;
-  StorageType type_;
-  int quota_client_mask_;
+  const url::Origin origin_;
+  const StorageType type_;
+  const int quota_client_mask_;
   int error_count_;
   size_t remaining_clients_;
   int skipped_clients_;
-  bool is_eviction_;
+  const bool is_eviction_;
   StatusCallback callback_;
 
   base::WeakPtrFactory<OriginDataDeleter> weak_factory_{this};
@@ -699,9 +699,9 @@ class QuotaManager::HostDataDeleter : public QuotaTask {
     return static_cast<QuotaManager*>(observer());
   }
 
-  std::string host_;
-  StorageType type_;
-  int quota_client_mask_;
+  const std::string host_;
+  const StorageType type_;
+  const int quota_client_mask_;
   std::set<url::Origin> origins_;
   int error_count_;
   size_t remaining_clients_;
@@ -758,8 +758,8 @@ class QuotaManager::StorageCleanupHelper : public QuotaTask {
     return static_cast<QuotaManager*>(observer());
   }
 
-  StorageType type_;
-  int quota_client_mask_;
+  const StorageType type_;
+  const int quota_client_mask_;
   base::OnceClosure callback_;
   base::WeakPtrFactory<StorageCleanupHelper> weak_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(StorageCleanupHelper);

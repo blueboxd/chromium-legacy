@@ -38,7 +38,6 @@
 <translation id="1258753120186372309">Google doodle៖ <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1260236875608242557">ស្វែងរក និងរុករក</translation>
 <translation id="1266864766717917324">មិនអាចចែករំលែក <ph name="CONTENT_TYPE" /> បានទេ</translation>
-<translation id="1272079795634619415">ឈប់</translation>
 <translation id="1283039547216852943">ចុច​ដើម្បី​ពង្រីក</translation>
 <translation id="1285320974508926690">មិនបកប្រែគេហទំព័រនេះទៀតឡើយ</translation>
 <translation id="1291207594882862231">ជម្រះប្រវត្តិ ខុកឃី ទិន្នន័យគេហទំព័រ ឃ្លាំងសម្ងាត់…</translation>
@@ -51,7 +50,6 @@
 <translation id="1331212799747679585">Chrome មិន​អាចដំឡើងជំនាន់​បានទេ។ ជម្រើសច្រើនទៀត</translation>
 <translation id="1332501820983677155">ផ្លូវកាត់មុខងារ Google Chrome</translation>
 <translation id="1360432990279830238">ចាកចេញ ហើយបិទការធ្វើសមកាលកម្ម?</translation>
-<translation id="1364532808393826295"><ph name="APP_NAME" /> - <ph name="NOTIFICATION_MESSAGE" /></translation>
 <translation id="1373696734384179344">មេម៉ូរីមិនគ្រប់គ្រាន់ដើម្បីទាញយកមាតិកាដែលបានជ្រើសនេះទេ។</translation>
 <translation id="1376578503827013741">កំពុងគណនា...</translation>
 <translation id="1383876407941801731">ស្វែងរក</translation>
@@ -122,7 +120,6 @@
 <translation id="2013642289801508067">{FILE_COUNT,plural, =1{ឯកសារ #}other{ឯកសារ #}}</translation>
 <translation id="2017836877785168846">សម្អាត​ប្រវត្តិ និងការ​បំពេញស្វ័យប្រវត្តិ​នៅក្នុង​របារ​អាសយដ្ឋាន។</translation>
 <translation id="2021896219286479412">ការគ្រប់គ្រងទំព័រពេញអេក្រង់</translation>
-<translation id="2030769033451695672">ចុចដើម្បីត្រឡប់ទៅ <ph name="URL_OF_THE_CURRENT_TAB" /> វិញ</translation>
 <translation id="2038563949887743358">បើកសំណើគេហទំព័រសម្រាប់កុំព្យូទ័រ</translation>
 <translation id="204321170514947529"><ph name="APP_NAME" /> ក៏មានទិន្នន័យ​នៅក្នុង Chrome ផងដែរ</translation>
 <translation id="2049574241039454490"><ph name="FILE_SIZE_OF_TOTAL" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
@@ -592,7 +589,6 @@
 <translation id="5876056640971328065">ផ្អាក​វីដេអូ</translation>
 <translation id="5884076754568147479">ដើម្បី​ជួយអ្នកក្នុងការបំពេញ​កិច្ចការផ្សេងៗ Google នឹង​ទទួល​ URL និងខ្លឹមសារ​របស់គេហទំព័រ ដែលអ្នកប្រើជាមួយជំនួយការរបស់អ្នក ព្រមទាំងព័ត៌មានដែលអ្នកដាក់បញ្ជូនតាមរយៈជំនួយការ</translation>
 <translation id="5919204609460789179">អាប់ដេត <ph name="PRODUCT_NAME" /> ដើម្បីចាប់ផ្តើមធ្វើសមកាលកម្ម</translation>
-<translation id="5922853908706496913">កំពុងចែក​រំលែក​អេក្រង់​របស់​អ្នក</translation>
 <translation id="5937580074298050696">បាន​សន្សំ <ph name="AMOUNT" /></translation>
 <translation id="5939518447894949180">កំណត់ឡើងវិញ</translation>
 <translation id="5942872142862698679">ប្រើ Google ដើម្បីធ្វើការស្វែងរក</translation>
@@ -779,7 +775,6 @@
 <translation id="7514365320538308">ទាញយក</translation>
 <translation id="751961395872307827">មិន​អាច​ភ្ជាប់ទៅ​ទំព័រ​បានទេ</translation>
 <translation id="7542481630195938534">មិនអាចទទួលបានការណែនាំទេ</translation>
-<translation id="7554752735887601236">គេហទំព័រមួយកំពុងប្រើប្រាស់មីក្រូហ្វូនរបស់អ្នក</translation>
 <translation id="7559975015014302720">មុខងារស្រាល​បានបិទ</translation>
 <translation id="7562080006725997899">ការជម្រះទិន្នន័យរុករក</translation>
 <translation id="756809126120519699">បានជម្រះទិន្នន័យ Chrome</translation>
@@ -813,7 +808,6 @@
 <translation id="7774809984919390718">{PAYMENT_METHOD,plural, =1{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 និង <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> ទៀត}other{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 និង <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> ទៀត}}</translation>
 <translation id="7791543448312431591">បន្ថែម</translation>
 <translation id="780301667611848630">ទេ អរគុណ</translation>
-<translation id="7804248752222191302">គេហទំព័រមួយកំពុងប្រើប្រាស់កាមេរ៉ារបស់អ្នក</translation>
 <translation id="7810647596859435254">បើក​ដោយ​ប្រើ…</translation>
 <translation id="7821588508402923572">ការសន្សំសំចៃ​ទិន្នន័យ​របស់អ្នក​នឹង​បង្ហាញ​នៅ​ទីនេះ</translation>
 <translation id="783819812427904514">បើក​សំឡេង​វីដេអូ</translation>
@@ -885,9 +879,7 @@
 <translation id="8349013245300336738">តម្រៀប​តាម​បរិមាណ​ទិន្នន័យ​ដែលបានប្រើ</translation>
 <translation id="8364299278605033898">មើល​គេហទំព័រ​ពេញនិយម</translation>
 <translation id="8368027906805972958">ឧបករណ៍ដែល​មិនស្គាល់ ឬ​មិនអាច​ប្រើបាន (<ph name="DEVICE_ID" />)</translation>
-<translation id="83792324527827022">គេហទំព័រមួយ​កំពុង​ប្រើប្រាស់កាមេរ៉ា និងមីក្រូហ្វូនរបស់អ្នក</translation>
 <translation id="8393700583063109961">ផ្ញើ​សារ</translation>
-<translation id="8394832520002899662">ចុចដើម្បីត្រឡប់ទៅគេហទំព័រវិញ</translation>
 <translation id="8413126021676339697">បង្ហាញប្រវត្តិពេញលេញ</translation>
 <translation id="8427875596167638501">ផ្ទាំងមើលសាកល្បងបានបើក​ពាក់កណ្ដាល</translation>
 <translation id="8428213095426709021">ការកំណត់</translation>
@@ -984,7 +976,6 @@
 <translation id="970715775301869095">នៅសល់ <ph name="MINUTES" /> នាទីទៀត</translation>
 <translation id="974555521953189084">បញ្ចូលឃ្លាសម្ងាត់របស់អ្នកដើម្បីចាប់ផ្តើមសមកាលកម្ម</translation>
 <translation id="981121421437150478">ក្រៅបណ្តាញ</translation>
-<translation id="982182592107339124">វានឹងជម្រះទិន្នន័យសម្រាប់គហេទំព័រទាំងអស់ ដោយរាប់បញ្ចូលទាំង៖</translation>
 <translation id="983192555821071799">បិទផ្ទាំងទាំងអស់</translation>
 <translation id="987264212798334818">ទូទៅ</translation>
 </translationbundle>

@@ -3,12 +3,15 @@
 <translationbundle lang="fa">
 <translation id="1006017844123154345">باز کردن نسخه آنلاین</translation>
 <translation id="1044891598689252897">عملکرد سایت‌ها عادی خواهد بود</translation>
+<translation id="1124090076051167250">با این کار <ph name="DATASIZE" /> از داده‌ها و کوکی‌هایی که سایت‌ها و برنامه‌ها در صفحه اصلی ذخیره کرده‌اند پاک می‌شود.</translation>
 <translation id="1124772482545689468">کاربر</translation>
 <translation id="1178581264944972037">مکث</translation>
 <translation id="1181037720776840403">حذف</translation>
 <translation id="1201402288615127009">بعدی</translation>
 <translation id="1242008676835033345">جاسازی‌شده در <ph name="WEBSITE_URL" /></translation>
+<translation id="1272079795634619415">توقف</translation>
 <translation id="129382876167171263">فایل‌هایی را که وب‌سایت‌ها ذخیره کرده‌اند، در اینجا نمایش داده می‌شود</translation>
+<translation id="1364532808393826295"><ph name="APP_NAME" /> - <ph name="NOTIFICATION_MESSAGE" /></translation>
 <translation id="1369915414381695676">سایت <ph name="SITE_NAME" /> اضافه شد</translation>
 <translation id="1383876407941801731">جستجو</translation>
 <translation id="1384959399684842514">بارگیری موقتاً متوقف شد</translation>
@@ -29,6 +32,7 @@
 <translation id="1984937141057606926">مجاز، به غیر از طرف ثالث</translation>
 <translation id="1994173015038366702">نشانی وب سایت</translation>
 <translation id="2025115093177348061">واقعیت افزوده</translation>
+<translation id="2030769033451695672">برای برگشتن به <ph name="URL_OF_THE_CURRENT_TAB" /> ضربه بزنید</translation>
 <translation id="2041019821020695769">‏برای اینکه به Chrome امکان دهید برایتان اعلان ارسال کند، در <ph name="BEGIN_LINK" />تنظیمات Android<ph name="END_LINK" /> هم اعلان‌ها را روشن کنید.</translation>
 <translation id="2079545284768500474">لغو</translation>
 <translation id="2091887806945687916">صدا</translation>
@@ -104,6 +108,7 @@
 <translation id="5048398596102334565">مجاز بودن دسترسی سایت‌ها به حسگرهای حرکتی (توصیه می‌شود)</translation>
 <translation id="5063480226653192405">کاربر </translation>
 <translation id="5100237604440890931">کوچک شده - برای بزرگ کردن کلیک کنید.</translation>
+<translation id="5123685120097942451">برگه ناشناس</translation>
 <translation id="5300589172476337783">نمایش</translation>
 <translation id="5301954838959518834">بله، متوجه شدم</translation>
 <translation id="5307446750509046227">پاک کردن فضای ذخیره‌سازی سایت</translation>
@@ -123,9 +128,11 @@
 <translation id="5677928146339483299">مسدود است</translation>
 <translation id="5689516760719285838">مکان</translation>
 <translation id="5710871682236653961">‏وقتی روی دستگاه‌های NFC ضربه می‌زنید، قبل از ارسال و دریافت اطلاعات سؤال شود (توصیه می‌شود)</translation>
+<translation id="5719847187258001597">با این کار همه داده‌ها و کوکی‌هایی که <ph name="ORIGIN" /> و برنامه آن در صفحه اصلی ذخیره کرده‌اند پاک می‌شود.</translation>
 <translation id="5804241973901381774">مجوزها</translation>
 <translation id="5860033963881614850">خاموش</translation>
 <translation id="5916664084637901428">روشن</translation>
+<translation id="5922853908706496913">درحال هم‌رسانی صفحه‌نمایش</translation>
 <translation id="5939518447894949180">بازنشانی</translation>
 <translation id="6040143037577758943">بستن</translation>
 <translation id="6042308850641462728">بیشتر</translation>
@@ -169,6 +176,7 @@
 <translation id="7423098979219808738">ابتدا سؤال شود</translation>
 <translation id="7423538860840206698">خواندن محتوای بریده‌دان مسدود شد</translation>
 <translation id="7521387064766892559">جاوا اسکریپت</translation>
+<translation id="7554752735887601236">سایتی درحال استفاده از میکروفونتان است</translation>
 <translation id="7572498721684305250">‏وقتی روی دستگاه‌های NFC ضربه می‌زنید، ارسال و دریافت اطلاعات در سایت‌ها مسدود شود</translation>
 <translation id="757524316907819857">مسدود کردن سایت‌ها برای پخش محتوای محافظت‌شده</translation>
 <translation id="7589445247086920869">مسدود کردن موتور جستجوی کنونی</translation>
@@ -177,6 +185,7 @@
 <translation id="7781829728241885113">دیروز</translation>
 <translation id="7791543448312431591">افزودن</translation>
 <translation id="780301667611848630">نه متشکرم</translation>
+<translation id="7804248752222191302">سایتی درحال استفاده از دوربینتان است</translation>
 <translation id="7817023149356982970">از سیستم این سایت خارج خواهید شد.</translation>
 <translation id="7828557259026017104">کوکی‌ها فایل‌هایی هستند که توسط وب‌سایت‌هایی که بازدید می‌کنید ایجاد می‌شوند. سایت‌ها برای به‌خاطر سپردن اولویت‌هایتان از آن‌ها استفاده می‌کنند. کوکی‌های شخص ثالث را سایت‌های دیگری ایجاد می‌کنند. برخی از محتواها مثل آگهی‌ها یا تصاویر موجود در صفحه وبی که از آن دیدن می‌کنید، متعلق به این سایت‌ها هستند.</translation>
 <translation id="7846076177841592234">لغو انتخاب</translation>
@@ -194,7 +203,9 @@
 <translation id="8261506727792406068">حذف</translation>
 <translation id="8300705686683892304">مدیریت‌شده توسط برنامه</translation>
 <translation id="8372893542064058268">«همگام‌سازی پس‌زمینه» را برای یک سایت خاص مجاز کنید.</translation>
+<translation id="83792324527827022">سایتی درحال استفاده از دوربین و میکروفونتان است</translation>
 <translation id="8380167699614421159">این سایتْ آگهی‌های مزاحم یا گمراه‌کننده نشان می‌دهد</translation>
+<translation id="8394832520002899662">برای برگشتن به سایت ضربه بزنید</translation>
 <translation id="8447861592752582886">لغو مجوز دستگاه</translation>
 <translation id="851751545965956758">مسدود کردن سایت‌ها برای اتصال به دستگاه‌ها</translation>
 <translation id="857943718398505171">مجاز (توصیه می‌شود)</translation>

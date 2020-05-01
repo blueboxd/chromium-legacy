@@ -78,7 +78,8 @@ class CONTENT_EXPORT RenderFrameProxy : public IPC::Listener,
   static RenderFrameProxy* CreateProxyToReplaceFrame(
       RenderFrameImpl* frame_to_replace,
       int routing_id,
-      blink::mojom::TreeScopeType scope);
+      blink::mojom::TreeScopeType scope,
+      const base::UnguessableToken& proxy_frame_token);
 
   // This method should be used to create a RenderFrameProxy, when there isn't
   // an existing RenderFrame. It should be called to construct a local
@@ -99,6 +100,7 @@ class CONTENT_EXPORT RenderFrameProxy : public IPC::Listener,
       blink::WebFrame* opener,
       int parent_routing_id,
       const FrameReplicationState& replicated_state,
+      const base::UnguessableToken& frame_token,
       const base::UnguessableToken& devtools_frame_token);
 
   // Creates a RenderFrameProxy to be used with a portal owned by |parent|.
@@ -106,6 +108,7 @@ class CONTENT_EXPORT RenderFrameProxy : public IPC::Listener,
   static RenderFrameProxy* CreateProxyForPortal(
       RenderFrameImpl* parent,
       int proxy_routing_id,
+      const base::UnguessableToken& frame_token,
       const base::UnguessableToken& devtools_frame_token,
       const blink::WebElement& portal_element);
 

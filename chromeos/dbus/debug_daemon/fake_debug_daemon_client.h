@@ -58,6 +58,8 @@ class COMPONENT_EXPORT(DEBUG_DAEMON) FakeDebugDaemonClient
   void StopPerf(uint64_t session_id, VoidDBusMethodCallback callback) override;
   void GetScrubbedBigLogs(const cryptohome::AccountIdentifier& id,
                           GetLogsCallback callback) override;
+  void BackupArcBugReport(const std::string& userhash,
+                          VoidDBusMethodCallback callback) override;
   void GetAllLogs(GetLogsCallback callback) override;
   void GetLog(const std::string& log_name,
               DBusMethodCallback<std::string> callback) override;

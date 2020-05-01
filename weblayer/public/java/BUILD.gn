@@ -30,6 +30,7 @@ android_library("java") {
     "org/chromium/weblayer/BrowserFragment.java",
     "org/chromium/weblayer/BrowsingDataType.java",
     "org/chromium/weblayer/Callback.java",
+    "org/chromium/weblayer/CaptureScreenShotCallback.java",
     "org/chromium/weblayer/ChildProcessService.java",
     "org/chromium/weblayer/ContextMenuParams.java",
     "org/chromium/weblayer/CookieChangeCause.java",

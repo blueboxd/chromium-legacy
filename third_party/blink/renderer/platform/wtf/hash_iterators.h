@@ -53,6 +53,12 @@ struct HashTableConstIteratorAdapter<HashTableType,
   typedef HashTableConstValuesIterator<HashTableType, KeyType, MappedType>
       ValuesIterator;
 
+  using iterator_category = std::bidirectional_iterator_tag;
+  using value_type = HashTableType;
+  using difference_type = ptrdiff_t;
+  using pointer = value_type*;
+  using reference = value_type&;
+
   HashTableConstIteratorAdapter() = default;
   HashTableConstIteratorAdapter(
       const typename HashTableType::const_iterator& impl)
@@ -93,6 +99,12 @@ struct HashTableIteratorAdapter<HashTableType,
       KeysIterator;
   typedef HashTableValuesIterator<HashTableType, KeyType, MappedType>
       ValuesIterator;
+
+  using iterator_category = std::bidirectional_iterator_tag;
+  using value_type = HashTableType;
+  using difference_type = ptrdiff_t;
+  using pointer = value_type*;
+  using reference = value_type&;
 
   HashTableIteratorAdapter() = default;
   HashTableIteratorAdapter(const typename HashTableType::iterator& impl)

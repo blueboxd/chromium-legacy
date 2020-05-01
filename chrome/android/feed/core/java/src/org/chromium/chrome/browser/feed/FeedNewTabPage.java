@@ -111,7 +111,7 @@ public class FeedNewTabPage
         mCoordinator = new FeedSurfaceCoordinator(activity, snackbarManager, tabModelSelector,
                 tabProvider, new SnapScrollHelper(mNewTabPageManager, mNewTabPageLayout),
                 mNewTabPageLayout, sectionHeaderView, actionApi, isInNightMode, this,
-                mNewTabPageManager.getNavigationDelegate());
+                mNewTabPageManager.getNavigationDelegate(), profile);
 
         // Record the timestamp at which the new tab page's construction started.
         uma.trackTimeToFirstDraw(mCoordinator.getView(), mConstructedTimeNs);

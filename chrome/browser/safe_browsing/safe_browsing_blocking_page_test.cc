@@ -1915,6 +1915,16 @@ class SafeBrowsingBlockingPageDelayedWarningBrowserTest
     return WaitForReady(browser);
   }
 
+  static bool FullscreenAndWaitForInterstitial(Browser* browser) {
+    content::WebContents* contents =
+        browser->tab_strip_model()->GetActiveWebContents();
+    content::TestNavigationObserver observer(contents);
+    const char* const kScript = "document.body.webkitRequestFullscreen()";
+    EXPECT_TRUE(content::ExecuteScript(contents, kScript));
+    observer.WaitForNavigationFinished();
+    return WaitForReady(browser);
+  }
+
  protected:
   void NavigateAndAssertNoInterstitial() {
     // Use a page that contains an iframe so that we can test both top frame
@@ -1999,6 +2009,29 @@ IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageDelayedWarningBrowserTest,
                                DelayedWarningEvent::kPageLoaded, 1);
   histograms.ExpectBucketCount(kDelayedWarningsHistogram,
                                DelayedWarningEvent::kWarningShownOnKeypress, 1);
+}
+
+IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageDelayedWarningBrowserTest,
+                       Fullscreen_WarningShown) {
+  base::HistogramTester histograms;
+  NavigateAndAssertNoInterstitial();
+
+  // Page tries to enter fullscreen. An interstitial should be shown.
+  EXPECT_TRUE(FullscreenAndWaitForInterstitial(browser()));
+  EXPECT_FALSE(
+      browser()->tab_strip_model()->GetActiveWebContents()->IsFullscreen());
+
+  EXPECT_TRUE(ClickAndWaitForDetach(browser(), "primary-button"));
+  AssertNoInterstitial(browser(), false);  // Assert the interstitial is gone
+  EXPECT_EQ(GURL(url::kAboutBlankURL),     // Back to "about:blank"
+            browser()->tab_strip_model()->GetActiveWebContents()->GetURL());
+
+  histograms.ExpectTotalCount(kDelayedWarningsHistogram, 2);
+  histograms.ExpectBucketCount(kDelayedWarningsHistogram,
+                               DelayedWarningEvent::kPageLoaded, 1);
+  histograms.ExpectBucketCount(
+      kDelayedWarningsHistogram,
+      DelayedWarningEvent::kWarningShownOnFullscreenAttempt, 1);
 }
 
 // The user clicks on the page. Feature isn't configured to show a warning on

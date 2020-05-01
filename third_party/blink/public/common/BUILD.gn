@@ -141,6 +141,7 @@ source_set("headers") {
     "privacy_budget/identifiability_metric_builder.h",
     "privacy_budget/identifiability_metrics.h",
     "privacy_budget/identifiable_surface.h",
+    "privacy_budget/identifiability_study_participation.h",
     "scheduler/web_scheduler_tracked_feature.h",
     "screen_orientation/web_screen_orientation_lock_type.h",
     "screen_orientation/web_screen_orientation_type.h",

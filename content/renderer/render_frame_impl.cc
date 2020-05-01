@@ -1382,7 +1382,8 @@ RenderFrameImpl* RenderFrameImpl::CreateMainFrame(
 
   WebLocalFrame* web_frame = WebLocalFrame::CreateMainFrame(
       render_view->GetWebView(), render_frame,
-      render_frame->blink_interface_registry_.get(), opener,
+      render_frame->blink_interface_registry_.get(),
+      params->main_frame_frame_token, opener,
       // This conversion is a little sad, as this often comes from a
       // WebString...
       WebString::FromUTF8(params->replicated_frame_state.name),
@@ -1439,6 +1440,7 @@ void RenderFrameImpl::CreateFrame(
     int opener_routing_id,
     int parent_routing_id,
     int previous_sibling_routing_id,
+    const base::UnguessableToken& frame_token,
     const base::UnguessableToken& devtools_frame_token,
     const FrameReplicationState& replicated_state,
     CompositorDependencies* compositor_deps,
@@ -1489,7 +1491,7 @@ void RenderFrameImpl::CreateFrame(
         render_frame->blink_interface_registry_.get(),
         previous_sibling_web_frame,
         frame_owner_properties->To<blink::WebFrameOwnerProperties>(),
-        replicated_state.frame_owner_element_type,
+        replicated_state.frame_owner_element_type, frame_token,
         ResolveWebFrame(opener_routing_id));
 
     // The RenderFrame is created and inserted into the frame tree in the above
@@ -1525,7 +1527,7 @@ void RenderFrameImpl::CreateFrame(
       previous_proxy->set_provisional_frame_routing_id(routing_id);
     web_frame = blink::WebLocalFrame::CreateProvisional(
         render_frame, render_frame->blink_interface_registry_.get(),
-        previous_web_frame, replicated_state.frame_policy,
+        frame_token, previous_web_frame, replicated_state.frame_policy,
         WebString::FromUTF8(replicated_state.name));
     // The new |web_frame| is a main frame iff the proxy's frame was.
     DCHECK_EQ(!previous_web_frame->Parent(), !web_frame->Parent());
@@ -2262,7 +2264,8 @@ void RenderFrameImpl::BindNavigationClient(
 void RenderFrameImpl::OnUnload(
     int proxy_routing_id,
     bool is_loading,
-    const FrameReplicationState& replicated_frame_state) {
+    const FrameReplicationState& replicated_frame_state,
+    const base::UnguessableToken& frame_token) {
   TRACE_EVENT1("navigation,rail", "RenderFrameImpl::OnUnload", "id",
                routing_id_);
   DCHECK(!base::RunLoop::IsNestedOnCurrentThread());
@@ -2274,7 +2277,7 @@ void RenderFrameImpl::OnUnload(
   // so its routing id is registered for receiving IPC messages.
   CHECK_NE(proxy_routing_id, MSG_ROUTING_NONE);
   RenderFrameProxy* proxy = RenderFrameProxy::CreateProxyToReplaceFrame(
-      this, proxy_routing_id, replicated_frame_state.scope);
+      this, proxy_routing_id, replicated_frame_state.scope, frame_token);
 
   RenderViewImpl* render_view = render_view_;
   bool is_main_frame = is_main_frame_;
@@ -3939,7 +3942,8 @@ blink::WebLocalFrame* RenderFrameImpl::CreateChildFrame(
   child_render_frame->InitializeBlameContext(this);
   blink::WebLocalFrame* web_frame = parent->CreateLocalChild(
       scope, child_render_frame,
-      child_render_frame->blink_interface_registry_.get());
+      child_render_frame->blink_interface_registry_.get(),
+      params_reply.frame_token);
 
   child_render_frame->in_frame_tree_ = true;
   child_render_frame->Initialize();
@@ -3957,12 +3961,15 @@ RenderFrameImpl::CreatePortal(
   int proxy_routing_id = MSG_ROUTING_NONE;
   FrameReplicationState initial_replicated_state;
   base::UnguessableToken portal_token;
+  base::UnguessableToken frame_token;
   base::UnguessableToken devtools_frame_token;
-  GetFrameHost()->CreatePortal(
-      std::move(portal_endpoint), std::move(client_endpoint), &proxy_routing_id,
-      &initial_replicated_state, &portal_token, &devtools_frame_token);
+  GetFrameHost()->CreatePortal(std::move(portal_endpoint),
+                               std::move(client_endpoint), &proxy_routing_id,
+                               &initial_replicated_state, &portal_token,
+                               &frame_token, &devtools_frame_token);
   RenderFrameProxy* proxy = RenderFrameProxy::CreateProxyForPortal(
-      this, proxy_routing_id, devtools_frame_token, portal_element);
+      this, proxy_routing_id, frame_token, devtools_frame_token,
+      portal_element);
   proxy->SetReplicatedState(initial_replicated_state);
   return std::make_pair(proxy->web_frame(), portal_token);
 }
@@ -3971,13 +3978,16 @@ blink::WebRemoteFrame* RenderFrameImpl::AdoptPortal(
     const base::UnguessableToken& portal_token,
     const blink::WebElement& portal_element) {
   int proxy_routing_id = MSG_ROUTING_NONE;
+  base::UnguessableToken frame_token;
   base::UnguessableToken devtools_frame_token;
   FrameReplicationState replicated_state;
   viz::FrameSinkId frame_sink_id;
   GetFrameHost()->AdoptPortal(portal_token, &proxy_routing_id, &frame_sink_id,
-                              &replicated_state, &devtools_frame_token);
+                              &replicated_state, &frame_token,
+                              &devtools_frame_token);
   RenderFrameProxy* proxy = RenderFrameProxy::CreateProxyForPortal(
-      this, proxy_routing_id, devtools_frame_token, portal_element);
+      this, proxy_routing_id, frame_token, devtools_frame_token,
+      portal_element);
   proxy->FrameSinkIdChanged(frame_sink_id);
   proxy->SetReplicatedState(replicated_state);
   return proxy->web_frame();

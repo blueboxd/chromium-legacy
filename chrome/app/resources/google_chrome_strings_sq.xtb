@@ -97,7 +97,6 @@ Disa funksione mund të mos ofrohen dhe ndryshimet në preferenca nuk do të ruh
 <translation id="3582972582564653026">Sinkronizo dhe personalizo Chrome nëpër pajisjet e tua</translation>
 <translation id="3596080736082218006">{COUNT,plural, =0{Administratori yt kërkon që të hapësh përsëri Chrome për të zbatuar këtë përditësim}=1{Administratori yt kërkon që të hapësh përsëri Chrome për të zbatuar këtë përditësim Dritarja jote "e fshehtë" nuk do të rihapet.}other{Administratori yt kërkon që të hapësh përsëri Chrome për të zbatuar këtë përditësim # dritaret e tua "të fshehta" nuk do të rihapen.}}</translation>
 <translation id="3622797965165704966">Tani është më e lehtë të përdorësh Chrome me llogarinë tënde të Google dhe në kompjuterët e ndarë.</translation>
-<translation id="3637702109597584617"><ph name="TERMS_OF_SERVICE_LINK" />Kushtet e shërbimit<ph name="END_TERMS_OF_SERVICE_LINK" /> të sistemit operativ Google Chrome</translation>
 <translation id="3718181793972440140">Kjo do të fshijë 1 artikull nga kjo pajisje. Për t'i marrë më vonë të dhënat, identifikohu te Chrome si <ph name="USER_EMAIL" />.</translation>
 <translation id="3735758079232443276">Shtesa "<ph name="EXTENSION_NAME" />" ka ndryshuar se cila faqe shfaqet kur nis Chrome.</translation>
 <translation id="3780814664026482060">Chrome - <ph name="PAGE_TITLE" /></translation>
@@ -114,6 +113,7 @@ Disa funksione mund të mos ofrohen dhe ndryshimet në preferenca nuk do të ruh
 <translation id="4205939740494406371">Chrome nuk mund t'i kontrollojë fjalëkalimet e tua. Provo përsëri pas 24 orësh ose <ph name="BEGIN_LINK" />kontrollo fjalëkalimet në "Llogarinë tënde të Google"<ph name="END_LINK" />.</translation>
 <translation id="424864128008805179">Do të dalësh nga Chrome?</translation>
 <translation id="4251615635259297716">Të lidhen të dhënat e tua të Chrome me këtë llogari?</translation>
+<translation id="4281844954008187215">Kushtet e shërbimit</translation>
 <translation id="4293420128516039005">Identifikohu për të sinkronizuar dhe personalizuar Chrome nëpër pajisjet e tua</translation>
 <translation id="4328355335528187361">Google Chrome Dev (mDNS-In)</translation>
 <translation id="4331809312908958774">Sistemi operativ Chrome</translation>
@@ -148,7 +148,6 @@ Disa funksione mund të mos ofrohen dhe ndryshimet në preferenca nuk do të ruh
 
 Disa funksione mund të mos ofrohen. Specifiko një direktori tjetër të profilit ose përdor një version më të ri të Chrome.</translation>
 <translation id="5193136243808726294">Sistemi operativ Google Chrome nuk mund ta hapë këtë faqe.</translation>
-<translation id="5204098752394657250"><ph name="TERMS_OF_SERVICE_LINK" />Kushtet e shërbimit<ph name="END_TERMS_OF_SERVICE_LINK" /> të Google Chrome</translation>
 <translation id="5251420635869119124">Vizitorët mund të përdorin Chrome pa lënë asgjë prapa.</translation>
 <translation id="532046782124376502">Paralajmërim: Google Chrome nuk mund të parandalojë regjistrimin e historikut të shfletimit nga shtesat. Për ta çaktivizuar këtë shtesë në modalitetin "e fshehtë", anulo zgjedhjen e këtij opsioni.</translation>
 <translation id="5386244825306882791">Kontrollon po ashtu se cila faqe shfaqet kur nis Chrome ose kur kërkon nga Omnibox.</translation>

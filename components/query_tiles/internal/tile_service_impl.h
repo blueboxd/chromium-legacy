@@ -12,6 +12,7 @@
 #include "components/background_task_scheduler/background_task_scheduler.h"
 #include "components/query_tiles/internal/config.h"
 #include "components/query_tiles/internal/image_loader.h"
+#include "components/query_tiles/internal/tile_fetcher.h"
 #include "components/query_tiles/internal/tile_manager.h"
 #include "components/query_tiles/tile_service.h"
 
@@ -22,7 +23,8 @@ class TileServiceImpl : public TileService {
   TileServiceImpl(std::unique_ptr<ImageLoader> image_loader,
                   std::unique_ptr<TileManager> tile_manager,
                   std::unique_ptr<TileConfig> config,
-                  background_task::BackgroundTaskScheduler* scheduler);
+                  background_task::BackgroundTaskScheduler* scheduler,
+                  std::unique_ptr<TileFetcher> tile_fetcher);
   ~TileServiceImpl() override;
 
   // Disallow copy/assign.
@@ -52,6 +54,9 @@ class TileServiceImpl : public TileService {
   // Background task scheduler, obtained from native
   // BackgroundTaskSchedulerFactory.
   background_task::BackgroundTaskScheduler* scheduler_;
+
+  // Fetcher to execute download jobs from Google server.
+  std::unique_ptr<TileFetcher> tile_fetcher_;
 
   base::WeakPtrFactory<TileServiceImpl> weak_ptr_factory_{this};
 };

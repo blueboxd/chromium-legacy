@@ -86,9 +86,9 @@ class ASH_EXPORT ScreenshotController : public ui::EventHandler,
 
   class ScopedCursorSetter;
   class ScreenshotLayer;
+  class MovableScreenshotLayer;
 
   // Starts, ends, cancels, or updates the region selection.
-  void MaybeStart(const ui::LocatedEvent& event);
   void CompleteWindowScreenshot();
   void CompletePartialScreenshot();
   void Update(const ui::LocatedEvent& event);
@@ -112,6 +112,8 @@ class ASH_EXPORT ScreenshotController : public ui::EventHandler,
   // aura::WindowObserver:
   void OnWindowDestroying(aura::Window* window) override;
 
+  gfx::Point GetStartPositionForTest() const;
+
   Mode mode_;
 
   // If true, then only pointer events will be used when selecting the
@@ -121,7 +123,6 @@ class ASH_EXPORT ScreenshotController : public ui::EventHandler,
   base::OnceClosure on_screenshot_session_done_;
 
   // The data to build the screenshot region.
-  gfx::Point start_position_;
   aura::Window* root_window_;
 
   // Currently selected window in WINDOW mode.

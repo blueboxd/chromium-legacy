@@ -349,6 +349,7 @@ Jika Anda menonaktifkan kebijakan ini, scroll halaman web ke fragmen teks terten
           Jika kebijakan ini dinonaktifkan atau tidak disetel, Setelan akun Kerberos akan dinonaktifkan. Tidak ada akun Kerberos yang dapat ditambahkan dan autentikasi Kerberos tidak dapat digunakan. Semua akun Kerberos yang ada dan sandi yang disimpan telah dihapus.</translation>
 <translation id="1561424797596341174">Penggantian kebijakan untuk versi Debug host akses jarak jauh</translation>
 <translation id="1561967320164410511">U2F ditambah beberapa ekstensi untuk masing-masing pengesahan</translation>
+<translation id="1575015449587326319">Kebijakan konfigurasi untuk Konektor Chrome Enterprise OnFileDownloaded</translation>
 <translation id="1583248206450240930">Gunakan <ph name="PRODUCT_FRAME_NAME" /> jika tidak diubah</translation>
 <translation id="1588240398285670601">Setelan Browser</translation>
 <translation id="1599424828227887013">Mengaktifkan Isolasi Situs untuk asal yang ditentukan di perangkat Android</translation>
@@ -1288,7 +1289,6 @@ Jika kebijakan ini tidak ditetapkan, layar privasi mula-mula akan dinonaktifkan 
 <translation id="2869762730352628426">Mengaktifkan klik otomatis di layar login</translation>
 <translation id="2872961005593481000">Matikan</translation>
 <translation id="2874209944580848064">Catatan untuk perangkat <ph name="PRODUCT_OS_NAME" /> yang mendukung aplikasi Android:</translation>
-<translation id="2874901846804525128">Mencegah pengguna menggunakan aplikasi Android dari sumber yang tidak tepercaya.</translation>
 <translation id="2875192972412983412">Menentukan subset server cetak yang akan dikueri untuk server printer.
 
       Jika kebijakan ini ditetapkan, hanya server printer yang memiliki id yang cocok dengan nilai kebijakan ini yang akan tersedia untuk pengguna.
@@ -1669,6 +1669,11 @@ Jika ditetapkan ke False, <ph name="PRODUCT_NAME" /> tidak akan menggunakan noti
           Jika setelan ini dinonaktifkan, pengguna tidak dapat menyimpan sandi baru, tetapi masih dapat menggunakan sandi yang telah disimpan sebelumnya.
 
           Jika kebijakan ini diaktifkan atau dinonaktifkan, pengguna tidak dapat mengubah atau menggantinya di <ph name="PRODUCT_NAME" />. Jika kebijakan ini tidak ditetapkan, penyimpanan sandi diizinkan (tetapi dapat dinonaktifkan oleh pengguna).</translation>
+<translation id="3492834335089638487">Kebijakan ini mengontrol penggunaan aplikasi Android dari sumber yang tidak tepercaya (selain Google Play Store) untuk perangkat.
+
+      Jika nilai kebijakan ini tidak ditetapkan, fungsinya dianggap tidak diizinkan.
+
+      Ketersediaan fungsi ini akan tergantung pada kebijakan pengguna terkait.</translation>
 <translation id="3496296378755072552">Pengelola sandi</translation>
 <translation id="3500732098526756068">Mengizinkan Anda mengontrol pemicuan peringatan perlindungan sandi. Perlindungan sandi memperingatkan pengguna saat mereka menggunakan kembali sandi mereka yang dilindungi di situs yang berpotensi mencurigakan.
 
@@ -1791,7 +1796,6 @@ Jika ditetapkan ke False, <ph name="PRODUCT_NAME" /> tidak akan menggunakan noti
 <translation id="3715569262675717862">Autentikasi berdasarkan sertifikat klien</translation>
 <translation id="3736879847913515635">Mengaktifkan penambahan orang di pengelola pengguna</translation>
 <translation id="3737890474637805114">Blokir download file berukuran besar</translation>
-<translation id="3738723882663496016">Kebijakan ini menetapkan kunci lisensi <ph name="PLUGIN_VM_NAME" /> untuk perangkat ini.</translation>
 <translation id="3748900290998155147">Menentukan apakah penguncian layar saat aktif diizinkan. Penguncian layar saat aktif dapat diminta dengan ekstensi melalui power management extension API dan dengan aplikasi ARC.
 
 Jika kebijakan ini disetel ke true atau tidak disetel, penguncian layar saat aktif akan diterima untuk pengelolaan daya.
@@ -2329,9 +2333,6 @@ Jika kebijakan ini tidak disetel, setelan default-nya tidak diizinkan bagi pengg
 <translation id="4432762137771104529">Aktifkan Pelaporan Lengkap Safe Browsing</translation>
 <translation id="443454694385851356">Lama (tidak aman)</translation>
 <translation id="443665821428652897">Hapus data situs saat browser ditutup (tidak digunakan lagi)</translation>
-<translation id="4439132805807595336">Mengaktifkan perangkat ini untuk menjalankan PluginVm.
-
-      Jika kebijakan disetel ke false atau tidak disetel, <ph name="PLUGIN_VM_NAME" /> tidak diaktifkan untuk perangkat tersebut. Jika disetel ke true, <ph name="PLUGIN_VM_NAME" /> diaktifkan untuk perangkat tersebut selama setelan lain mengizinkannya. <ph name="PLUGIN_VM_ALLOWED_POLICY_NAME" /> harus disetel ke true, <ph name="PLUGIN_VM_LICENSE_KEY_POLICY_NAME" /> dan <ph name="PLUGIN_VM_IMAGE_POLICY_NAME" /> harus disetel agar <ph name="PLUGIN_VM_NAME" /> dapat berjalan.</translation>
 <translation id="4439336120285389675">Menentukan daftar fitur platform web yang tak digunakan lagi untuk diaktifkan kembali secara sementara.
 
       Kebijakan ini memberikan administrator kemampuan untuk mengaktifkan kembali fitur platform web yang tak digunakan lagi dalam waktu yang terbatas. Fitur diidentifikasi dengan tag string dan fitur yang sesuai dengan tag yang disertakan dalam daftar yang ditentukan oleh kebijakan ini akan diaktifkan kembali.
@@ -2910,6 +2911,7 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
 <translation id="5369937289900051171">Khusus pencetakan warna</translation>
 <translation id="5370279767682621504">Aktifkan dukungan HTTP/0.9 pada porta non-default</translation>
 <translation id="5377606826822211923">Mengontrol penggunaan aplikasi Android dari sumber yang tidak tepercaya untuk pengguna</translation>
+<translation id="537786648513450280">Mengontrol penggunaan aplikasi Android dari sumber yang tidak tepercaya untuk perangkat</translation>
 <translation id="5378985487213287085">Memungkinkan Anda menyetel apakah situs web diizinkan untuk menampilkan pemberitahuan desktop. Menampilkan pemberitahuan desktop dapat diizinkan secara default, ditolak secara default, atau pengguna dapat ditanya setiap kali sebuah situs web ingin menampilkan pemberitahuan desktop. Jika kebijakan ini tidak disetel, 'AskNotifications' akan digunakan dan pengguna dapat mengubahnya.</translation>
 <translation id="5380329473151894945">Menyetel status default fitur aksesibilitas kursor besar di layar login.
 
@@ -3806,7 +3808,6 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
 <translation id="6731757988219967594">Filter konten khusus dewasa dari situs level teratas (namun bukan iframe yang tersemat)</translation>
 <translation id="6734521799274931721">Mengontrol fitur Berbagi File Jaringan untuk ketersediaan ChromeOS</translation>
 <translation id="6735701345096330595">Mengaktifkan paksa pemeriksaan ejaan bahasa</translation>
-<translation id="6737677282967014160">Mengizinkan pengguna menggunakan aplikasi Android dari sumber yang tidak tepercaya.</translation>
 <translation id="6757613329154374267">Pencadangan dan pemulihan diaktifkan</translation>
 <translation id="6758659208493449452">Kebijakan ini mengontrol apakah pengguna yang terdaftar dalam Program Perlindungan Lanjutan menerima perlindungan tambahan. Beberapa fitur ini dapat mencakup pembagian data kepada Google (misalnya, pengguna Perlindungan Lanjutan akan dapat mengirimkan hasil downloadnya ke Google untuk pemindaian malware). Jika ditetapkan ke Benar atau tidak ditetapkan, pengguna terdaftar akan menerima perlindungan tambahan. Jika ditetapkan ke Salah, pengguna Perlindungan Lanjutan hanya akan menerima fitur konsumen standar.</translation>
 <translation id="6762235610019366960">Memungkinkan Anda mengontrol penyajian konten promosi dan/atau edukasi tab penuh di <ph name="PRODUCT_NAME" />.
@@ -4653,6 +4654,19 @@ Cara yang diharapkan terkait penggunaan kebijakan ini adalah merotasi konfiguras
 <translation id="8003853057959146975">Mengirimkan file untuk pemeriksaan pelanggaran aturan perlindungan data sensitif</translation>
 <translation id="8009554972280451023">Jika Anda mengaktifkan setelan ini, setelan yang disimpan di profil <ph name="PRODUCT_NAME" /> seperti bookmark, data IsiOtomatis, sandi, dan informasi lainnya juga akan ditulis ke file yang disimpan di folder profil pengguna Roaming atau lokasi yang ditentukan oleh Administrator melalui kebijakan <ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME" />. Mengaktifkan kebijakan ini akan menonaktifkan sinkronisasi cloud. Jika kebijakan ini dinonaktifkan atau tidak disetel, hanya profil lokal reguler yang akan digunakan. Kebijakan <ph name="SYNC_DISABLED_POLICY_NAME" /> menonaktifkan semua sinkronisasi data, menggantikan <ph name="ROAMING_PROFILE_SUPPORT_ENABLED_POLICY_NAME" />.</translation>
 <translation id="802147957407376460">Putar layar sebesar 0 derajat</translation>
+<translation id="8027265928215448940">Daftar setelan layanan Konektor Chrome Enterprise yang akan diterapkan ke Konektor Enterprise <ph name="ON_FILE_DOWNLOADED_ENTERPRISE_CONNECTOR" />, yang memicu saat file didownload di Chrome.
+
+      Kolom <ph name="ENTERPRISE_CONNECTOR_URL_LIST_FIELD" />, <ph name="ENTERPRISE_CONNECTOR_TAGS_FIELD" />, <ph name="ENTERPRISE_CONNECTOR_ENABLE_FIELD" />, dan <ph name="ENTERPRISE_CONNECTOR_DISABLE_FIELD" /> digunakan untuk menentukan apakah konektor perlu mengirimkan file untuk dianalisis saat didownload dari halaman tertentu dan tag yang perlu disertakan dalam permintaan analisis untuk file tersebut. Tag yang sesuai dengan pola 'aktifkan' akan disertakan dalam permintaan analisis jika URL halaman cocok dengan pola yang terkait dengan tag tersebut, selama tidak ada pola 'nonaktifkan' yang memiliki tag sama yang cocok dengan URL halaman itu. Analisis dilakukan jika terdapat minimal 1 tag yang disertakan dalam permintaan.
+
+      Kolom <ph name="ENTERPRISE_CONNECTOR_SERVICE_PROVIDER_FIELD" /> akan mengidentifikasi penyedia layanan analisis yang sesuai dengan setelan.
+
+      Jika kolom <ph name="ENTERPRISE_CONNECTOR_BLOCK_UNTIL_VERDICT_FIELD" /> ditetapkan ke 1, Chrome akan menunggu untuk mendapatkan respons dari layanan analisis sebelum memberikan akses pengguna ke file yang didownload. Jika nilai berupa bilangan bulat lainnya, Chrome akan memberikan akses pengguna ke file secara langsung.
+
+      Kolom <ph name="ENTERPRISE_CONNECTOR_BLOCK_PASSWORD_PROTECTED_FIELD" /> mengontrol apakah Chrome akan memblokir atau mengizinkan file yang dilindungi sandi.
+
+      Kolom <ph name="ENTERPRISE_CONNECTOR_BLOCK_LARGE_FILES_FIELD" /> mengontrol apakah Chrome akan memblokir atau mengizinkan file yang berukuran terlalu besar untuk dianalisis (lebih dari 50 MB).
+
+      Kebijakan ini hanya dapat ditetapkan dari konsol Google Admin.</translation>
 <translation id="8033913082323846868">Kebijakan ini tidak digunakan lagi di M70. Sebagai gantinya, gunakan AutofillAddressEnabled dan AutofillCreditCardEnabled.
 
       Mengaktifkan fitur IsiOtomatis <ph name="PRODUCT_NAME" /> dan mengizinkan pengguna untuk melengkapi formulir web secara otomatis menggunakan informasi yang tersimpan sebelumnya, seperti alamat atau informasi kartu kredit.
@@ -5326,19 +5340,6 @@ Pengguna tidak dapat mengubah atau mengganti setelan ini.</translation>
           Jika kebijakan ini tidak ditetapkan dan kebijakan didukung di perangkat, mode pengisian daya baterai standar akan diterapkan dan tidak dapat diubah oleh pengguna.
 
           Catatan: <ph name="DEVICE_ADVANCED_BATTERY_CHARGE_MODE_ENABLED_NAME" /> akan mengganti kebijakan ini jika kebijakan tersebut ditentukan.</translation>
-<translation id="9071472304496502510">Daftar setelan layanan Konektor Chrome Enterprise yang akan diterapkan ke Konektor Enterprise <ph name="ON_FILE_ATTACHED_ENTERPRISE_CONNECTOR" />, yang memicu saat file dilampirkan ke Chrome.
-
-      Kolom <ph name="ENTERPRISE_CONNECTOR_URL_LIST_FIELD" />, <ph name="ENTERPRISE_CONNECTOR_TAGS_FIELD" />, <ph name="ENTERPRISE_CONNECTOR_ENABLE_FIELD" /> dan <ph name="ENTERPRISE_CONNECTOR_DISABLE_FIELD" /> digunakan untuk menentukan apakah konektor perlu mengirimkan file untuk dianalisis saat dilampirkan ke halaman tertentu dan tag yang perlu disertakan dalam permintaan analisis untuk file tersebut. Tag yang sesuai dengan pola 'aktifkan' akan disertakan dalam permintaan analisis, jika URL halaman cocok dengan pola yang terkait tag tersebut selama tidak ada pola 'nonaktifkan' yang memiliki tag sama yang cocok dengan URL halaman. Analisis dilakukan jika terdapat minimal 1 tag yang disertakan dalam permintaan.
-
-      Kolom <ph name="ENTERPRISE_CONNECTOR_SERVICE_PROVIDER_FIELD" /> akan mengidentifikasi penyedia layanan analisis yang sesuai dengan setelan.
-
-      Jika kolom <ph name="ENTERPRISE_CONNECTOR_BLOCK_UNTIL_VERDICT_FIELD" /> ditetapkan ke 1, Chrome akan menunggu untuk mendapatkan respons dari layanan analisis sebelum memberikan akses halaman ke halaman tersebut. Jika nilai berupa bilangan bulat lainnya, Chrome akan memberikan akses halaman ke file secara langsung.
-
-      Kolom <ph name="ENTERPRISE_CONNECTOR_BLOCK_PASSWORD_PROTECTED_FIELD" /> mengontrol apakah Chrome akan memblokir atau mengizinkan file yang dilindungi sandi.
-
-      Kolom <ph name="ENTERPRISE_CONNECTOR_BLOCK_LARGE_FILES_FIELD" /> mengontrol apakah Chrome akan memblokir atau mengizinkan file yang berukuran terlalu besar untuk dianalisis (lebih dari 50 MB).
-
-      Kebijakan ini hanya dapat ditetapkan dari konsol Google Admin.</translation>
 <translation id="9077227880520270584">Timer login otomatis akun lokal perangkat</translation>
 <translation id="9084985621503260744">Tentukan apakah aktivitas video memengaruhi pengelolaan daya</translation>
 <translation id="9088433379343318874">Izinkan penyedia konten pengguna yang dilindungi</translation>

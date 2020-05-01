@@ -27,6 +27,7 @@ login.createScreen('SyncConsentScreen', 'sync-consent', function() {
      * @param {Object} data Screen init payload.
      */
     onBeforeShow(data) {
+      $('sync-consent-impl').setIsChildAccount(data['isChildAccount']);
       $('sync-loading').onBeforeShow();
       $('sync-consent-impl').onBeforeShow();
     },

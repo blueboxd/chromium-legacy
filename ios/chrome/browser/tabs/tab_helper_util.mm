@@ -72,6 +72,7 @@
 #import "ios/chrome/browser/web/sad_tab_tab_helper.h"
 #import "ios/chrome/browser/web/tab_id_tab_helper.h"
 #import "ios/chrome/browser/web/web_state_delegate_tab_helper.h"
+#import "ios/components/security_interstitials/ios_blocking_page_tab_helper.h"
 #import "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #import "ios/web/public/web_state.h"
 
@@ -104,6 +105,8 @@ void AttachTabHelpers(web::WebState* web_state, bool for_prerender) {
   OverscrollActionsTabHelper::CreateForWebState(web_state);
   IOSTaskTabHelper::CreateForWebState(web_state);
   AppLauncherTabHelper::CreateForWebState(web_state);
+  security_interstitials::IOSBlockingPageTabHelper::CreateForWebState(
+      web_state);
 
   if (base::FeatureList::IsEnabled(kInfobarOverlayUI)) {
     InfobarOverlayRequestInserter::CreateForWebState(web_state);

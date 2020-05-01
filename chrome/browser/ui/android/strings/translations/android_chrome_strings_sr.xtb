@@ -38,7 +38,6 @@
 <translation id="1258753120186372309">Google дудл логотип: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1260236875608242557">Претражујте и истражујте</translation>
 <translation id="1266864766717917324">Није успело дељење: <ph name="CONTENT_TYPE" /></translation>
-<translation id="1272079795634619415">Заустави</translation>
 <translation id="1283039547216852943">Додирните да бисте проширили</translation>
 <translation id="1285320974508926690">Никад не преводи овај сајт</translation>
 <translation id="1291207594882862231">Обришите историју, колачиће, податке о сајтовима, кеш...</translation>
@@ -50,8 +49,8 @@
 <translation id="1327257854815634930">Историја навигације је отворена</translation>
 <translation id="1331212799747679585">Chrome не може да се ажурира. Још опција</translation>
 <translation id="1332501820983677155">Пречице за Google Chrome функције</translation>
+<translation id="1347468774581902829">Управљајте активностима</translation>
 <translation id="1360432990279830238">Одјављујете се и искључујете синхрониз?</translation>
-<translation id="1364532808393826295"><ph name="APP_NAME" /> – <ph name="NOTIFICATION_MESSAGE" /></translation>
 <translation id="1373696734384179344">Нема довољно меморије за преузимање изабраног садржаја.</translation>
 <translation id="1376578503827013741">Рачуна се…</translation>
 <translation id="1383876407941801731">Претражи</translation>
@@ -122,7 +121,6 @@
 <translation id="2013642289801508067">{FILE_COUNT,plural, =1{# датотека}one{# датотека}few{# датотеке}other{# датотека}}</translation>
 <translation id="2017836877785168846">Брише историју и аутоматска довршавања у траци за адресу.</translation>
 <translation id="2021896219286479412">Контроле сајта на целом екрану</translation>
-<translation id="2030769033451695672">Додирните да бисте се вратили на <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
 <translation id="2038563949887743358">Укључи захтевање верзије сајта за рачунаре</translation>
 <translation id="204321170514947529"><ph name="APP_NAME" /> такође има податке у Chrome-у</translation>
 <translation id="2049574241039454490"><ph name="FILE_SIZE_OF_TOTAL" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
@@ -434,6 +432,7 @@ Google налог можда има друге облике историје п�
 <translation id="4663756553811254707">Избрисали сте <ph name="NUMBER_OF_BOOKMARKS" /> обележивача</translation>
 <translation id="4665282149850138822"><ph name="NAME" /> је додат на почетни екран</translation>
 <translation id="4684427112815847243">Синхронизуј све</translation>
+<translation id="4688610874307684559">Покренуто је у Chrome-у (почетно)</translation>
 <translation id="4695891336199304370">{SHIPPING_OPTIONS,plural, =1{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 и још <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}one{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 и још <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}few{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 и још <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}other{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 и још <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}}</translation>
 <translation id="4696983787092045100">Пошаљите SMS уређајима</translation>
 <translation id="4698034686595694889">Прегледајте офлајн у апликацији <ph name="APP_NAME" /></translation>
@@ -592,7 +591,6 @@ Google налог можда има друге облике историје п�
 <translation id="5876056640971328065">Паузирај видео</translation>
 <translation id="5884076754568147479">Да би вам помогао у обављању задатака, Google ће добијати URL-ове и садржај сајтова на којима користите Помоћник, као и информације које пошаљете преко Помоћника</translation>
 <translation id="5919204609460789179">Ажурирајте <ph name="PRODUCT_NAME" /> да бисте започели синхронизацију</translation>
-<translation id="5922853908706496913">Дели се екран</translation>
 <translation id="5937580074298050696">Уштедели сте <ph name="AMOUNT" /></translation>
 <translation id="5939518447894949180">Ресетуј</translation>
 <translation id="5942872142862698679">Користите Google за претрагу</translation>
@@ -773,16 +771,17 @@ Google налог можда има друге облике историје п�
 <translation id="7479104141328977413">Управљање картицама</translation>
 <translation id="7481312909269577407">Проследи</translation>
 <translation id="7482656565088326534">Картица за преглед</translation>
+<translation id="7484997419527351112">Discover – искључено</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (ажурирано је <ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7494974237137038751">уштеђених података</translation>
 <translation id="7498271377022651285">Сачекајте...</translation>
 <translation id="7514365320538308">Преузми</translation>
 <translation id="751961395872307827">Повезивање са сајтом није успело</translation>
 <translation id="7542481630195938534">Не можете да добијете предлоге</translation>
-<translation id="7554752735887601236">Сајт користи микрофон</translation>
 <translation id="7559975015014302720">Lite режим је искључен</translation>
 <translation id="7562080006725997899">Брисање података прегледања</translation>
 <translation id="756809126120519699">Chrome подаци су обрисани</translation>
+<translation id="7577900504646297215">Управљајте интересовањима</translation>
 <translation id="757855969265046257">{FILES,plural, =1{Преузели сте <ph name="FILES_DOWNLOADED_ONE" /> датотеку}one{Преузели сте <ph name="FILES_DOWNLOADED_MANY" /> датотеку}few{Преузели сте <ph name="FILES_DOWNLOADED_MANY" /> датотеке}other{Преузели сте <ph name="FILES_DOWNLOADED_MANY" /> датотека}}</translation>
 <translation id="7588219262685291874">Укључи тамну тему када је Уштеда батерије на уређају укључена</translation>
 <translation id="7593557518625677601">Отворите Android подешавања и поново омогућите синхронизацију Android система да бисте започели Chrome синхронизацију</translation>
@@ -813,7 +812,6 @@ Google налог можда има друге облике историје п�
 <translation id="7774809984919390718">{PAYMENT_METHOD,plural, =1{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 и још <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}one{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 и још <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}few{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 и још <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}other{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 и још <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}}</translation>
 <translation id="7791543448312431591">Додај</translation>
 <translation id="780301667611848630">Не, хвала</translation>
-<translation id="7804248752222191302">Сајт користи камеру</translation>
 <translation id="7810647596859435254">Отвори помоћу…</translation>
 <translation id="7821588508402923572">Уштеда података се приказује овде</translation>
 <translation id="783819812427904514">Укључите звук видеа</translation>
@@ -885,9 +883,7 @@ Google налог можда има друге облике историје п�
 <translation id="8349013245300336738">Сортирај по количини искоришћених података</translation>
 <translation id="8364299278605033898">Погледајте популарне веб-сајтове</translation>
 <translation id="8368027906805972958">Непознат или неподржан уређај (<ph name="DEVICE_ID" />)</translation>
-<translation id="83792324527827022">Сајт користи камеру и микрофон</translation>
 <translation id="8393700583063109961">Пошаљите поруку</translation>
-<translation id="8394832520002899662">Додирните да бисте се вратили на сајт</translation>
 <translation id="8413126021676339697">Прикажи сву историју</translation>
 <translation id="8427875596167638501">Картица за преглед је полуотворена</translation>
 <translation id="8428213095426709021">Подешавања</translation>
@@ -984,7 +980,6 @@ Google налог можда има друге облике историје п�
 <translation id="970715775301869095">Још <ph name="MINUTES" /> мин</translation>
 <translation id="974555521953189084">Унесите приступну фразу да да бисте започели синхронизацију</translation>
 <translation id="981121421437150478">Офлајн</translation>
-<translation id="982182592107339124">Овим бришете податке за све сајтове, укључујући:</translation>
 <translation id="983192555821071799">Затвори све картице</translation>
 <translation id="987264212798334818">Опште</translation>
 </translationbundle>

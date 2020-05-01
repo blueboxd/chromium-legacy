@@ -10,18 +10,25 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
+import android.content.ServiceConnection;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Binder;
 import android.os.Build;
 import android.os.IBinder;
 import android.os.Process;
+import android.os.RemoteException;
 
 import org.chromium.android_webview.common.DeveloperModeUtils;
+import org.chromium.android_webview.common.Flag;
 import org.chromium.android_webview.common.FlagOverrideHelper;
 import org.chromium.android_webview.common.ProductionSupportedFlagList;
 import org.chromium.android_webview.common.services.IDeveloperUiService;
 import org.chromium.base.CommandLine;
+import org.chromium.base.ContextUtils;
+import org.chromium.base.Log;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -33,6 +40,8 @@ import javax.annotation.concurrent.GuardedBy;
  * WebView implementation embedded in apps on the system and the Developer UI.
  */
 public final class DeveloperUiService extends Service {
+    private static final String TAG = "WebViewDevTools";
+
     private static final String CHANNEL_ID = "DevUiChannel";
     private static final int FLAG_OVERRIDE_NOTIFICATION_ID = 1;
 
@@ -45,6 +54,11 @@ public final class DeveloperUiService extends Service {
     private static final Object sLock = new Object();
     @GuardedBy("sLock")
     private static Map<String, Boolean> sOverriddenFlags = new HashMap<>();
+
+    // This is locked to guard reads/writes to the corresponding SharedPreferences object. Make sure
+    // all edits to that object are synchronized on sLock.
+    @GuardedBy("sLock")
+    private static final String SHARED_PREFS_FILE = "webview_devui_flags";
 
     private static final Map<String, String> INITIAL_SWITCHES =
             CommandLine.getInstance().getSwitches();
@@ -62,6 +76,7 @@ public final class DeveloperUiService extends Service {
             synchronized (sLock) {
                 applyFlagsToCommandLine(sOverriddenFlags, overriddenFlags);
                 sOverriddenFlags = overriddenFlags;
+                writeFlagsToStorageAsync(sOverriddenFlags);
                 if (sOverriddenFlags.isEmpty()) {
                     disableDeveloperMode();
                 } else {
@@ -71,11 +86,101 @@ public final class DeveloperUiService extends Service {
         }
     };
 
+    /**
+     * Static method to fetch the flag overrides. If this returns an empty map, this will
+     * asynchronously restart the Service to disable developer mode.
+     */
     public static Map<String, Boolean> getFlagOverrides() {
+        Map<String, Boolean> flagOverrides;
         synchronized (sLock) {
             // Create a copy so the caller can do what it wants with the Map without worrying about
             // thread safety.
-            return new HashMap<>(sOverriddenFlags);
+            flagOverrides = new HashMap<>(sOverriddenFlags);
+        }
+        if (flagOverrides.isEmpty()) {
+            // If the map is empty, it's probably because the Service has died. Read flags from
+            // disk to recover.
+            flagOverrides = readFlagsFromStorageSync();
+            // Send flags back to the service so it can properly restore developer mode.
+            startServiceAndSendFlags(flagOverrides);
+        }
+        return flagOverrides;
+    }
+
+    private static void startServiceAndSendFlags(final Map<String, Boolean> flags) {
+        final Context context = ContextUtils.getApplicationContext();
+        ServiceConnection connection = new ServiceConnection() {
+            @Override
+            public void onServiceConnected(ComponentName name, IBinder service) {
+                try {
+                    IDeveloperUiService.Stub.asInterface(service).setFlagOverrides(flags);
+                } catch (RemoteException e) {
+                    Log.e(TAG, "Failed to send flag overrides to service", e);
+                } finally {
+                    // Unbind when we've sent the flags overrides, since we expect we only need to
+                    // do this once.
+                    context.unbindService(this);
+                }
+            }
+
+            @Override
+            public void onServiceDisconnected(ComponentName name) {}
+        };
+        Intent intent = new Intent(context, DeveloperUiService.class);
+        if (!context.bindService(intent, connection, Context.BIND_AUTO_CREATE)) {
+            Log.e(TAG, "Failed to bind to Developer UI service");
+        }
+    }
+
+    private static boolean isFlagAllowed(String name) {
+        for (Flag flag : ProductionSupportedFlagList.sFlagList) {
+            if (flag.getName().equals(name)) return true;
+        }
+        return false;
+    }
+
+    private static Map<String, Boolean> readFlagsFromStorageSync() {
+        synchronized (sLock) {
+            Map<String, Boolean> flags = new HashMap<>();
+            Map<String, ?> allPreferences =
+                    ContextUtils.getApplicationContext()
+                            .getSharedPreferences(SHARED_PREFS_FILE, Context.MODE_PRIVATE)
+                            .getAll();
+
+            for (Map.Entry<String, ?> entry : allPreferences.entrySet()) {
+                String flagName = entry.getKey();
+                // Since flags may be persisted by a previous version, we need to filter by the
+                // current version's ProductionSupportedFlagList (in case flags get removed).
+                if (!isFlagAllowed(flagName)) {
+                    Log.w(TAG, "Toggling '" + flagName + "' is no longer supported");
+                    continue;
+                }
+                if (!(entry.getValue() instanceof Boolean)) {
+                    Log.e(TAG, "Expected value '" + entry.getValue() + "' to be type Boolean");
+                    continue;
+                }
+                boolean enabled = (Boolean) entry.getValue();
+                flags.put(flagName, enabled);
+            }
+            return flags;
+        }
+    }
+
+    private static void writeFlagsToStorageAsync(Map<String, Boolean> flags) {
+        synchronized (sLock) {
+            SharedPreferences.Editor editor =
+                    ContextUtils.getApplicationContext()
+                            .getSharedPreferences(SHARED_PREFS_FILE, Context.MODE_PRIVATE)
+                            .edit();
+            editor.clear();
+            for (Map.Entry<String, Boolean> entry : flags.entrySet()) {
+                String flagName = entry.getKey();
+                boolean enabled = entry.getValue();
+                editor.putBoolean(flagName, enabled);
+            }
+            // Ignore errors, since there's no way to recover. Commit changes async to avoid
+            // blocking the service.
+            editor.apply();
         }
     }
 

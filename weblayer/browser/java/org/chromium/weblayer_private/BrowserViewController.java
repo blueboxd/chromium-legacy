@@ -150,6 +150,10 @@ public final class BrowserViewController
         mTopControlsContainerView.setView(view);
     }
 
+    public boolean compositorHasSurface() {
+        return mContentViewRenderView.hasSurface();
+    }
+
     @Override
     public void onTopControlsCompletelyShownOrHidden() {
         adjustWebContentsHeightIfNecessary();

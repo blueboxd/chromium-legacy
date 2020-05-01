@@ -6,7 +6,7 @@
 
 #include <cmath>
 
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "base/time/time.h"
 #include "third_party/webrtc/api/scoped_refptr.h"
 #include "third_party/webrtc/system_wrappers/include/ntp_time.h"

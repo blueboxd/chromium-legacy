@@ -382,9 +382,7 @@
 <translation id="1509281256533087115">Juurdepääs seadmele <ph name="DEVICE_NAME_AND_VENDOR" /> USB kaudu</translation>
 <translation id="1509960214886564027">Paljude saitide funktsioonid ei pruugi töötada</translation>
 <translation id="1510030919967934016">Seda lehte on blokeeritud nii, et see ei saa teie asukohta jälgida.</translation>
-<translation id="1510055949674985293">Selle pildi jaoks QR-koodi loomine</translation>
 <translation id="1510238584712386396">Käivitaja</translation>
-<translation id="1510581003097415337">Selle lehe jaoks QR-koodi loomine</translation>
 <translation id="1510785804673676069">Kui kasutate puhverserverit, siis kontrollige oma puhverserveri
     seadeid või võtke ühendust võrguadministraatoriga
     veendumaks, et puhverserver töötab. Kui te pea puhverserverit
@@ -2309,7 +2307,6 @@ kasutades juhtpaneeli funktsiooni <ph name="CONTROL_PANEL_APPLET_NAME" />.
 <translation id="4007856537951125667">Otseteede peitmine</translation>
 <translation id="4008291085758151621">Saidi teave ei ole VR-režiimis saadaval</translation>
 <translation id="4010917659463429001">Järjehoidjate hankimiseks mobiilseadmesse <ph name="GET_IOS_APP_LINK" />.</translation>
-<translation id="4013132157686828973">„<ph name="CLIENT_NAME" />” silub seda brauserit</translation>
 <translation id="4014432863917027322">Kas parandada laiendust <ph name="EXTENSION_NAME" />?</translation>
 <translation id="4015163439792426608">Kas teil on laiendusi? <ph name="BEGIN_LINK" />Hallake oma laiendusi<ph name="END_LINK" /> hõlpsalt ühes kohas.</translation>
 <translation id="4020327272915390518">Valikute menüü</translation>
@@ -2534,7 +2531,7 @@ kasutades juhtpaneeli funktsiooni <ph name="CONTROL_PANEL_APPLET_NAME" />.
 <translation id="4361142739114356624">Selle kliendi sertifikaadi privaatvõti puudub või on sobimatu</translation>
 <translation id="4363771538994847871">Ülekande sihtkohti ei leitud. Kas vajate abi?</translation>
 <translation id="4364327530094270451">Melon</translation>
-<translation id="4364567974334641491">Rakendus <ph name="APP_NAME" /> jagab akent.</translation>
+<translation id="4364567974334641491"><ph name="APP_NAME" /> jagab akent.</translation>
 <translation id="4364830672918311045">Kuva märguanded</translation>
 <translation id="4370975561335139969">Sisestatud e-posti aadress ja parool ei ühildu</translation>
 <translation id="4374831787438678295">Linuxi installiprogramm</translation>
@@ -2546,7 +2543,7 @@ kasutades juhtpaneeli funktsiooni <ph name="CONTROL_PANEL_APPLET_NAME" />.
 <translation id="4379281552162875326">Kas desinstallida „<ph name="APP_NAME" />”?</translation>
 <translation id="4380648069038809855">Siseneti täisekraanirežiimi</translation>
 <translation id="4382131447572146376">{COUNT,plural, =0{<ph name="EMAIL" />}=1{<ph name="EMAIL" />, veel 1 konto}other{<ph name="EMAIL" />, veel <ph name="EXTRA_ACCOUNTS" /> kontot}}</translation>
-<translation id="43829217466934313">Rakendust <ph name="APP_NAME" /> ei lubata selles seadmes kasutada. Võtke ühendust oma organisatsiooni seadmete administraatoriga. Veakood: <ph name="ERROR_CODE" />.</translation>
+<translation id="43829217466934313">Rakendust <ph name="APP_NAME" /> ei lubata selles seadmes kasutada. Võtke ühendust oma organisatsiooni seadmeadministraatoriga. Veakood: <ph name="ERROR_CODE" />.</translation>
 <translation id="4384312707950789900">Lisa eelistatud võrkude hulka</translation>
 <translation id="4384652540891215547">Aktiveeri laiendus</translation>
 <translation id="438503109373656455">Ratsu</translation>
@@ -3013,7 +3010,6 @@ kasutades juhtpaneeli funktsiooni <ph name="CONTROL_PANEL_APPLET_NAME" />.
 <translation id="504561833207953641">Olemasolevas brauseriseansis avamine.</translation>
 <translation id="5047421709274785093">Blokeeri saitide jaoks liikumis- ja valgusandurite kasutamine</translation>
 <translation id="5050042263972837708">Grupi nimi</translation>
-<translation id="5051073330196664891">Google'i üldised teenusetingimused (uToS)</translation>
 <translation id="5051836348807686060">Õigekirjakontrolli teie valitud keelte puhul ei toetata</translation>
 <translation id="5052499409147950210">Saidi muutmine</translation>
 <translation id="5053604404986157245">Juhuslikult loodud TPM-i parool pole saadaval. See on pärast Powerwashi tavapärane.</translation>
@@ -3886,7 +3882,6 @@ kasutades juhtpaneeli funktsiooni <ph name="CONTROL_PANEL_APPLET_NAME" />.
 <translation id="6226777517901268232">Privaatvõtme fail (valikuline)</translation>
 <translation id="6227280783235722609">laiendus</translation>
 <translation id="6228691855869374890">See sait juhib MIDI-seadmeid täielikult.</translation>
-<translation id="6228720835160974792">Selle pildi jaoks QR-koodi loomine</translation>
 <translation id="6229890768313448549">Google Play teenusetingimusi ei saa laadida. Proovige uuesti.</translation>
 <translation id="6231881193380278751">Lehe automaatseks värskendamiseks lisage päringu parameeter URL-i: chrome://device-log/?refresh=&lt;sec&gt;</translation>
 <translation id="6232017090690406397">Aku</translation>
@@ -4549,7 +4544,6 @@ kasutades juhtpaneeli funktsiooni <ph name="CONTROL_PANEL_APPLET_NAME" />.
 <translation id="7123360114020465152">Enam ei toetata</translation>
 <translation id="7127980134843952133">Allalaadimiste ajalugu</translation>
 <translation id="7128151990937044829">Kuva märguande blokeerimisel aadressiribal indikaatorit</translation>
-<translation id="7128239828194367697">Selle lehe jaoks QR-koodi loomine</translation>
 <translation id="7131040479572660648">Lugege oma andmeid veebisaitidel <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> ja <ph name="WEBSITE_3" /></translation>
 <translation id="713122686776214250">Lisa le&amp;ht ...</translation>
 <translation id="7133578150266914903">Administraator viib selle seadme vanemale versioonile (<ph name="PROGRESS_PERCENT" />)</translation>
@@ -5932,7 +5926,7 @@ Hoidke oma võtmefail kindlas kohas. Teil läheb seda oma laiendi uute versiooni
 <translation id="8941173171815156065">Tühista luba „<ph name="PERMISSION" />”</translation>
 <translation id="894360074127026135">Netscape'i rahvusvaheline seadistus</translation>
 <translation id="8944099748578356325">Aku kiiremini kulutamine (praegu <ph name="BATTERY_PERCENTAGE" />%)</translation>
-<translation id="8944964446326379280">Rakendus <ph name="APP_NAME" /> jagab akent vahelehega <ph name="TAB_NAME" />.</translation>
+<translation id="8944964446326379280"><ph name="APP_NAME" /> jagab akent vahelehega <ph name="TAB_NAME" />.</translation>
 <translation id="8946359700442089734">Silumisfunktsioone ei lubatud täielikult selles toote <ph name="IDS_SHORT_PRODUCT_NAME" /> seadmes.</translation>
 <translation id="894871326938397531">Kas lahkuda inkognito režiimist?</translation>
 <translation id="8948939328578167195"><ph name="WEBSITE" /> soovib näha teie turvavõtme tootjat ja mudelit</translation>

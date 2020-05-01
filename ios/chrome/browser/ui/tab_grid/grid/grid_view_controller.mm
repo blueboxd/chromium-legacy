@@ -270,7 +270,21 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
   cell.accessibilityIdentifier =
       [NSString stringWithFormat:@"%@%ld", kGridCellIdentifierPrefix,
                                  base::checked_cast<long>(indexPath.item)];
-  GridItem* item = self.items[indexPath.item];
+
+  // In some cases this is called with an indexPath.item that's beyond (by 1)
+  // the bounds of self.items -- see crbug.com/1068136. Presumably this is a
+  // race condition where an item has been deleted at the same time as the
+  // collection is doing layout (potentially during rotation?). DCHECK to
+  // catch this in debug, and then in production fudge by duplicating the last
+  // cell. The assumption is that there will be another, correct layout shortly
+  // after the incorrect one.
+  NSUInteger itemIndex = indexPath.item;
+  DCHECK(itemIndex < self.items.count);
+  // Outside of debug builds, keep array bounds valid.
+  if (itemIndex >= self.items.count)
+    itemIndex = self.items.count - 1;
+
+  GridItem* item = self.items[itemIndex];
   [self configureCell:cell withItem:item];
   return cell;
 }

@@ -707,7 +707,7 @@ void ExtensionService::ReloadExtensionWithQuietFailure(
 
 bool ExtensionService::UninstallExtension(
     // "transient" because the process of uninstalling may cause the reference
-    // to become invalid. Instead, use |extenson->id()|.
+    // to become invalid. Instead, use |extension->id()|.
     const std::string& transient_extension_id,
     UninstallReason reason,
     base::string16* error) {

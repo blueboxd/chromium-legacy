@@ -65,7 +65,8 @@ using network::mojom::blink::TrustTokenOperationType;
 FetchRequestData* CreateCopyOfFetchRequestDataForFetch(
     ScriptState* script_state,
     const FetchRequestData* original) {
-  auto* request = MakeGarbageCollected<FetchRequestData>();
+  auto* request = MakeGarbageCollected<FetchRequestData>(
+      ExecutionContext::From(script_state));
   request->SetURL(original->Url());
   request->SetMethod(original->Method());
   request->SetHeaderList(original->HeaderList()->Clone());
@@ -252,7 +253,8 @@ Request* Request::CreateRequestWithRequestOrString(
   // integrity metadata is |request|'s integrity metadata."
   FetchRequestData* request = CreateCopyOfFetchRequestDataForFetch(
       script_state, input_request ? input_request->GetRequest()
-                                  : MakeGarbageCollected<FetchRequestData>());
+                                  : MakeGarbageCollected<FetchRequestData>(
+                                        execution_context));
 
   if (input_request) {
     // "Set |signal| to input’s signal."

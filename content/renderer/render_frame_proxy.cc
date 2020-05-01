@@ -73,7 +73,8 @@ base::LazyInstance<FrameProxyMap>::DestructorAtExit g_frame_proxy_map =
 RenderFrameProxy* RenderFrameProxy::CreateProxyToReplaceFrame(
     RenderFrameImpl* frame_to_replace,
     int routing_id,
-    blink::mojom::TreeScopeType scope) {
+    blink::mojom::TreeScopeType scope,
+    const base::UnguessableToken& proxy_frame_token) {
   CHECK_NE(routing_id, MSG_ROUTING_NONE);
 
   std::unique_ptr<RenderFrameProxy> proxy(new RenderFrameProxy(routing_id));
@@ -85,7 +86,7 @@ RenderFrameProxy* RenderFrameProxy::CreateProxyToReplaceFrame(
   // follow later.
   blink::WebRemoteFrame* web_frame = blink::WebRemoteFrame::Create(
       scope, proxy.get(), proxy->blink_interface_registry_.get(),
-      proxy->GetRemoteAssociatedInterfaces());
+      proxy->GetRemoteAssociatedInterfaces(), proxy_frame_token);
 
   RenderWidget* ancestor_widget = nullptr;
   bool parent_is_local = false;
@@ -119,6 +120,7 @@ RenderFrameProxy* RenderFrameProxy::CreateFrameProxy(
     blink::WebFrame* opener,
     int parent_routing_id,
     const FrameReplicationState& replicated_state,
+    const base::UnguessableToken& frame_token,
     const base::UnguessableToken& devtools_frame_token) {
   RenderFrameProxy* parent = nullptr;
   if (parent_routing_id != MSG_ROUTING_NONE) {
@@ -142,7 +144,7 @@ RenderFrameProxy* RenderFrameProxy::CreateFrameProxy(
     web_frame = blink::WebRemoteFrame::CreateMainFrame(
         render_view->GetWebView(), proxy.get(),
         proxy->blink_interface_registry_.get(),
-        proxy->GetRemoteAssociatedInterfaces(), opener);
+        proxy->GetRemoteAssociatedInterfaces(), frame_token, opener);
     // Root frame proxy has no ancestors to point to their RenderWidget.
   } else {
     // Create a frame under an existing parent. The parent is always expected
@@ -154,7 +156,7 @@ RenderFrameProxy* RenderFrameProxy::CreateFrameProxy(
         replicated_state.frame_policy,
         replicated_state.frame_owner_element_type, proxy.get(),
         proxy->blink_interface_registry_.get(),
-        proxy->GetRemoteAssociatedInterfaces(), opener);
+        proxy->GetRemoteAssociatedInterfaces(), frame_token, opener);
     proxy->unique_name_ = replicated_state.unique_name;
     render_view = parent->render_view();
     ancestor_widget = parent->ancestor_render_widget_;
@@ -177,6 +179,7 @@ RenderFrameProxy* RenderFrameProxy::CreateFrameProxy(
 RenderFrameProxy* RenderFrameProxy::CreateProxyForPortal(
     RenderFrameImpl* parent,
     int proxy_routing_id,
+    const base::UnguessableToken& frame_token,
     const base::UnguessableToken& devtools_frame_token,
     const blink::WebElement& portal_element) {
   auto proxy = base::WrapUnique(new RenderFrameProxy(proxy_routing_id));
@@ -184,7 +187,7 @@ RenderFrameProxy* RenderFrameProxy::CreateProxyForPortal(
   blink::WebRemoteFrame* web_frame = blink::WebRemoteFrame::CreateForPortal(
       blink::mojom::TreeScopeType::kDocument, proxy.get(),
       proxy->blink_interface_registry_.get(),
-      proxy->GetRemoteAssociatedInterfaces(), portal_element);
+      proxy->GetRemoteAssociatedInterfaces(), frame_token, portal_element);
   proxy->Init(web_frame, parent->render_view(),
               parent->GetLocalRootRenderWidget(), true);
   return proxy.release();

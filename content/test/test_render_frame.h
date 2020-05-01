@@ -58,7 +58,8 @@ class TestRenderFrame : public RenderFrameImpl {
                          const base::Optional<std::string>& error_page_content);
   void Unload(int proxy_routing_id,
               bool is_loading,
-              const FrameReplicationState& replicated_frame_state);
+              const FrameReplicationState& replicated_frame_state,
+              const base::UnguessableToken& frame_token);
   void SetEditableSelectionOffsets(int start, int end);
   void ExtendSelectionAndDelete(int before, int after);
   void DeleteSurroundingText(int before, int after);

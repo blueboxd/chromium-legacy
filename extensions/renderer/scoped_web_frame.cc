@@ -18,10 +18,12 @@ ScopedWebFrame::ScopedWebFrame()
                                    /*compositing_enabled=*/false,
                                    /*opener=*/nullptr,
                                    mojo::NullAssociatedReceiver())),
-      frame_(blink::WebLocalFrame::CreateMainFrame(view_,
-                                                   &frame_client_,
-                                                   nullptr,
-                                                   nullptr)) {}
+      frame_(blink::WebLocalFrame::CreateMainFrame(
+          view_,
+          &frame_client_,
+          nullptr,
+          base::UnguessableToken::Create(),
+          nullptr)) {}
 
 ScopedWebFrame::~ScopedWebFrame() {
   view_->Close();

@@ -38,7 +38,6 @@
 <translation id="1258753120186372309">Google doodle: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1260236875608242557">تلاش اور دریافت کریں</translation>
 <translation id="1266864766717917324"><ph name="CONTENT_TYPE" /> کا اشتراک نہیں کیا جا سکا</translation>
-<translation id="1272079795634619415">روکیں</translation>
 <translation id="1283039547216852943">پھیلانے کیلئے تھپتھپائیں</translation>
 <translation id="1285320974508926690">اس سائٹ کا ترجمہ کبھی نہ کریں</translation>
 <translation id="1291207594882862231">سرگزشت، کوکیز، سائٹ ڈیٹا، کیش کو صاف کریں…</translation>
@@ -51,7 +50,6 @@
 <translation id="1331212799747679585">‏Chrome کو اپ ڈیٹ نہیں کیا جا سکتا ہے۔ مزید اختیارات</translation>
 <translation id="1332501820983677155">‏Google Chrome خصوصیت کے شارٹ کٹس</translation>
 <translation id="1360432990279830238">سائن آؤٹ کریں اور مطابقت پذیری آف کریں؟</translation>
-<translation id="1364532808393826295"><ph name="APP_NAME" /> - <ph name="NOTIFICATION_MESSAGE" /></translation>
 <translation id="1373696734384179344">منتخب مواد ڈاؤن لوڈ کرنے کیلئے ناکافی میموری۔</translation>
 <translation id="1376578503827013741">شمار کیا جا رہا ہے…</translation>
 <translation id="1383876407941801731">تلاش کریں</translation>
@@ -122,7 +120,6 @@
 <translation id="2013642289801508067">{FILE_COUNT,plural, =1{# فائل}other{# فائلیں}}</translation>
 <translation id="2017836877785168846">پتہ بار کی سرگزشت اور خودکار تکمیلات کو صاف کرتا ہے۔</translation>
 <translation id="2021896219286479412">پوری اسکرین کے سائٹ کنٹرولز</translation>
-<translation id="2030769033451695672"><ph name="URL_OF_THE_CURRENT_TAB" /> پر واپس جانے کے لیے تھپتھپائیں</translation>
 <translation id="2038563949887743358">ڈیسک ٹاپ سائٹ کی درخواست کو آن کریں</translation>
 <translation id="204321170514947529">‏<ph name="APP_NAME" /> کا ڈیٹا Chrome میں بھی ہے</translation>
 <translation id="2049574241039454490"><ph name="FILE_SIZE_OF_TOTAL" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
@@ -591,7 +588,6 @@
 <translation id="5876056640971328065">ویڈیو موقوف کریں</translation>
 <translation id="5884076754568147479">‏ٹاسکس کو مکمل کرنے میں آپ کی مدد کرنے کے لیے، Google کو ان سائٹس کے URLs اور مواد موصول ہوں گے جن پر آپ اسسٹنٹ استعمال کرتے ہیں، نیز اسسٹنٹ کے ذریعے آپ کی جمع کروائی ہوئی معلومات بھی موصول ہوں گی</translation>
 <translation id="5919204609460789179">مطابقت پذیری شروع کرنے کیلئے <ph name="PRODUCT_NAME" /> کو اپ ڈیٹ کریں</translation>
-<translation id="5922853908706496913">آپ کی اسکرین کا اشتراک کیا جا رہا ہے</translation>
 <translation id="5937580074298050696"><ph name="AMOUNT" /> کی بچت ہوئی</translation>
 <translation id="5939518447894949180">دوبارہ ترتیب دیں</translation>
 <translation id="5942872142862698679">‏تلاش کیلئے Google کا استعمال کیا جا رہا ہے</translation>
@@ -778,7 +774,6 @@
 <translation id="7514365320538308">ڈاؤن لوڈ کریں</translation>
 <translation id="751961395872307827">سائٹ سے منسلک نہیں کیا جا سکتا</translation>
 <translation id="7542481630195938534">تجاویز حاصل نہیں کی جا سکیں</translation>
-<translation id="7554752735887601236">سائٹ آپ کا مائیکروفون استعمال کر رہی ہے</translation>
 <translation id="7559975015014302720">لائٹ موڈ آف ہے</translation>
 <translation id="7562080006725997899">براؤزنگ ڈیٹا صاف کرنا</translation>
 <translation id="756809126120519699">‏Chrome ڈیٹا صاف کر دیا گیا</translation>
@@ -812,7 +807,6 @@
 <translation id="7774809984919390718">{PAYMENT_METHOD,plural, =1{‏<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 اور <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> مزید}other{‏<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 اور <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> مزید}}</translation>
 <translation id="7791543448312431591">شامل کریں</translation>
 <translation id="780301667611848630">نہیں شکریہ</translation>
-<translation id="7804248752222191302">ایک سائٹ آپ کا کیمرا استعمال کر رہی ہے</translation>
 <translation id="7810647596859435254">اس کے ساتھ کھولیں…</translation>
 <translation id="7821588508402923572">آپ کے ڈیٹا کی بچتیں یہاں دکھائی دیں گی</translation>
 <translation id="783819812427904514">ویڈیو کی آواز چلائیں</translation>
@@ -884,9 +878,7 @@
 <translation id="8349013245300336738">استعمال کردہ ڈیٹا کی مقدار کے لحاظ سے ترتیب دیں</translation>
 <translation id="8364299278605033898">مقبول ویب سائٹس دیکھیں</translation>
 <translation id="8368027906805972958">نا معلوم یا غیر تعاون یافتہ آلہ (<ph name="DEVICE_ID" />)</translation>
-<translation id="83792324527827022">ایک سائٹ آپ کا کیمرا اور مائیکروفون استعمال کر رہی ہے</translation>
 <translation id="8393700583063109961">پیغام بھیجیں</translation>
-<translation id="8394832520002899662">سائٹ پر واپس جانے کے لیے تھپتھپائیں</translation>
 <translation id="8413126021676339697">مکمل سرگزشت دکھائیں</translation>
 <translation id="8427875596167638501">پیش منظر ٹیب آدھا کھلا ہے</translation>
 <translation id="8428213095426709021">ترتیبات</translation>
@@ -983,7 +975,6 @@
 <translation id="970715775301869095"><ph name="MINUTES" /> منٹ باقی</translation>
 <translation id="974555521953189084">مطابقت پذیری شروع کرنے کیلئے اپنا پاس فریز درج کریں</translation>
 <translation id="981121421437150478">آف لائن</translation>
-<translation id="982182592107339124">اس سے سبھی سائٹس کا ڈیٹا صاف ہو جائے گا، بشمول:</translation>
 <translation id="983192555821071799">سبھی ٹیبز بند کریں</translation>
 <translation id="987264212798334818">عمومی</translation>
 </translationbundle>

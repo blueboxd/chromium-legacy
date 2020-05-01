@@ -1,0 +1,31 @@
+# Copyright 2020 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+source_set("in_process") {
+  if (!is_ios) {
+    sources = [
+      "heap_profiler_controller.cc",
+      "heap_profiler_controller.h",
+    ]
+
+    deps = [
+      "//base",
+      "//components/metrics",
+      "//components/metrics:child_call_stack_profile_builder",
+    ]
+  }
+}
+
+source_set("unit_tests") {
+  testonly = true
+  if (!is_ios) {
+    sources = [ "heap_profiler_controller_unittest.cc" ]
+    deps = [
+      ":in_process",
+      "//base/test:test_support",
+      "//components/metrics",
+      "//components/metrics:child_call_stack_profile_builder",
+    ]
+  }
+}

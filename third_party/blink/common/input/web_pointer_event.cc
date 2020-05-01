@@ -4,7 +4,8 @@
 
 #include "third_party/blink/public/common/input/web_pointer_event.h"
 
-#include "base/logging.h"
+#include "base/check_op.h"
+#include "base/notreached.h"
 
 namespace blink {
 

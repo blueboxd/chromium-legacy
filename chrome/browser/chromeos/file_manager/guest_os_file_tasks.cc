@@ -60,21 +60,41 @@ GURL GeneratePNGDataUrl(const SkBitmap& sk_bitmap) {
   return GURL("data:image/png;base64," + encoded);
 }
 
-void OnAppIconsLoaded(Profile* profile,
-                      const std::vector<std::string>& app_ids,
-                      const std::vector<std::string>& app_names,
-                      ui::ScaleFactor scale_factor,
-                      std::vector<FullTaskDescriptor>* result_list,
-                      base::OnceClosure completion_closure,
-                      const std::vector<gfx::ImageSkia>& icons) {
+void OnAppIconsLoaded(
+    Profile* profile,
+    const std::vector<std::string>& app_ids,
+    const std::vector<std::string>& app_names,
+    const std::vector<guest_os::GuestOsRegistryService::VmType>& vm_types,
+    ui::ScaleFactor scale_factor,
+    std::vector<FullTaskDescriptor>* result_list,
+    base::OnceClosure completion_closure,
+    const std::vector<gfx::ImageSkia>& icons) {
   DCHECK(!app_ids.empty());
   DCHECK_EQ(app_ids.size(), icons.size());
 
   float scale = ui::GetScaleForScaleFactor(scale_factor);
 
+  std::vector<TaskType> task_types;
+  task_types.reserve(vm_types.size());
+  for (auto vm_type : vm_types) {
+    switch (vm_type) {
+      case guest_os::GuestOsRegistryService::VmType::
+          ApplicationList_VmType_TERMINA:
+        task_types.push_back(TASK_TYPE_CROSTINI_APP);
+        break;
+      case guest_os::GuestOsRegistryService::VmType::
+          ApplicationList_VmType_PLUGIN_VM:
+        task_types.push_back(TASK_TYPE_PLUGIN_VM_APP);
+        break;
+      default:
+        LOG(ERROR) << "Unsupported VmType: " << static_cast<int>(vm_type);
+        return;
+    }
+  }
+
   for (size_t i = 0; i < app_ids.size(); ++i) {
     result_list->push_back(FullTaskDescriptor(
-        TaskDescriptor(app_ids[i], TASK_TYPE_CROSTINI_APP, kGuestOsAppActionID),
+        TaskDescriptor(app_ids[i], task_types[i], kGuestOsAppActionID),
         app_names[i],
         extensions::api::file_manager_private::Verb::VERB_OPEN_WITH,
         GeneratePNGDataUrl(icons[i].GetRepresentation(scale).GetBitmap()),
@@ -179,10 +199,12 @@ bool AppSupportsAllEntries(
 
 }  // namespace
 
-void FindGuestOsApps(Profile* profile,
-                     const std::vector<extensions::EntryInfo>& entries,
-                     std::vector<std::string>* app_ids,
-                     std::vector<std::string>* app_names) {
+void FindGuestOsApps(
+    Profile* profile,
+    const std::vector<extensions::EntryInfo>& entries,
+    std::vector<std::string>* app_ids,
+    std::vector<std::string>* app_names,
+    std::vector<guest_os::GuestOsRegistryService::VmType>* vm_types) {
   auto* registry_service =
       guest_os::GuestOsRegistryServiceFactory::GetForProfile(profile);
   crostini::CrostiniMimeTypesService* mime_types_service =
@@ -196,6 +218,7 @@ void FindGuestOsApps(Profile* profile,
 
     app_ids->push_back(app_id);
     app_names->push_back(registration.Name());
+    vm_types->push_back(registration.VmType());
   }
 }
 
@@ -211,7 +234,9 @@ void FindGuestOsTasks(Profile* profile,
 
   std::vector<std::string> result_app_ids;
   std::vector<std::string> result_app_names;
-  FindGuestOsApps(profile, entries, &result_app_ids, &result_app_names);
+  std::vector<guest_os::GuestOsRegistryService::VmType> result_vm_types;
+  FindGuestOsApps(profile, entries, &result_app_ids, &result_app_names,
+                  &result_vm_types);
 
   if (result_app_ids.empty()) {
     std::move(completion_closure).Run();
@@ -223,8 +248,8 @@ void FindGuestOsTasks(Profile* profile,
   crostini::LoadIcons(
       profile, result_app_ids, kIconSizeInDip, scale_factor, kIconLoadTimeout,
       base::BindOnce(OnAppIconsLoaded, profile, result_app_ids,
-                     result_app_names, scale_factor, result_list,
-                     std::move(completion_closure)));
+                     std::move(result_app_names), std::move(result_vm_types),
+                     scale_factor, result_list, std::move(completion_closure)));
 }
 
 void ExecuteGuestOsTask(

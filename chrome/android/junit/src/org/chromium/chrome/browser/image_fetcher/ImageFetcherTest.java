@@ -33,6 +33,7 @@ import jp.tomorrowkey.android.gifplayer.BaseGifImage;
 public class ImageFetcherTest {
     private static final int WIDTH_PX = 100;
     private static final int HEIGHT_PX = 200;
+    private static final int EXPIRATION_INTERVAL = 60;
 
     /**
      * Concrete implementation for testing purposes.
@@ -110,5 +111,42 @@ public class ImageFetcherTest {
 
         // No arguments should alias to 0, 0.
         verify(mImageFetcher).fetchImage(eq(url), eq(client), eq(0), eq(0), any());
+    }
+
+    @Test
+    public void testCreateParams() {
+        String url = "https://www.example.com/image";
+        String client = "client";
+
+        // Verifies params without size specified.
+        ImageFetcher.Params params = ImageFetcher.Params.create(url, client);
+        assertEquals(url, params.url);
+        assertEquals(client, params.clientName);
+        assertEquals(0, params.width);
+        assertEquals(0, params.height);
+        assertEquals(0, params.expirationInterval);
+
+        // Verifies params with size.
+        params = ImageFetcher.Params.create(url, client, WIDTH_PX, HEIGHT_PX);
+        assertEquals(url, params.url);
+        assertEquals(client, params.clientName);
+        assertEquals(WIDTH_PX, params.width);
+        assertEquals(HEIGHT_PX, params.height);
+        assertEquals(0, params.expirationInterval);
+    }
+
+    @Test
+    public void testCreateParamsWithExpirationInterval() {
+        String url = "https://www.example.com/image";
+        String client = "client";
+
+        // Verifies params with expiration interval.
+        ImageFetcher.Params params = ImageFetcher.Params.createWithExpirationInterval(
+                url, client, WIDTH_PX, HEIGHT_PX, EXPIRATION_INTERVAL);
+        assertEquals(url, params.url);
+        assertEquals(client, params.clientName);
+        assertEquals(WIDTH_PX, params.width);
+        assertEquals(HEIGHT_PX, params.height);
+        assertEquals(EXPIRATION_INTERVAL, params.expirationInterval);
     }
 }

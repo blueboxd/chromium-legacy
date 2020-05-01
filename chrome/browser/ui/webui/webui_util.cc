@@ -38,7 +38,7 @@ void SetupWebUIDataSource(content::WebUIDataSource* source,
 
     source->AddResourcePath(path, resource.value);
   }
-  source->SetDefaultResource(default_resource);
+  source->AddResourcePath("", default_resource);
 }
 
 #if BUILDFLAG(OPTIMIZE_WEBUI)
@@ -48,7 +48,7 @@ void SetupBundledWebUIDataSource(content::WebUIDataSource* source,
                                  int default_resource) {
   SetupPolymer3Defaults(source);
   source->AddResourcePath(bundled_path, bundle);
-  source->SetDefaultResource(default_resource);
+  source->AddResourcePath("", default_resource);
 }
 #endif
 

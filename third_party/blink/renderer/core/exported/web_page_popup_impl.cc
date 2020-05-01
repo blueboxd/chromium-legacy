@@ -295,11 +295,11 @@ void WebPagePopupImpl::Initialize(WebViewImpl* web_view,
                       (MakeGarbageCollected<EmptyLocalFrameClient>()));
   // Creating new WindowAgentFactory because page popup content is owned by the
   // user agent and should be isolated from the main frame.
-  auto* frame =
-      MakeGarbageCollected<LocalFrame>(empty_local_frame_client, *page_,
-                                       /* FrameOwner* */ nullptr,
-                                       /* WindowAgentFactory* */ nullptr,
-                                       /* InterfaceRegistry* */ nullptr);
+  auto* frame = MakeGarbageCollected<LocalFrame>(
+      empty_local_frame_client, *page_,
+      /* FrameOwner* */ nullptr, base::UnguessableToken::Create(),
+      /* WindowAgentFactory* */ nullptr,
+      /* InterfaceRegistry* */ nullptr);
   frame->SetPagePopupOwner(popup_client_->OwnerElement());
   frame->SetView(MakeGarbageCollected<LocalFrameView>(*frame));
   PagePopupSupplement::Install(*frame, *this, popup_client_);

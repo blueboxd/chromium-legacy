@@ -93,7 +93,6 @@
 <translation id="3582972582564653026">Voit synkronoida Chromen ja tehdä siitä yksilöllisemmän kaikilla laitteilla.</translation>
 <translation id="3596080736082218006">{COUNT,plural, =0{Ylläpitäjä vaatii Chromen uudelleenkäynnistystä, jotta päivitys voidaan ottaa käyttöön.}=1{Ylläpitäjä vaatii Chromen uudelleenkäynnistystä, jotta päivitys voidaan ottaa käyttöön. Incognito-ikkunaasi ei avata uudelleen.}other{Ylläpitäjä vaatii Chromen uudelleenkäynnistystä, jotta päivitys voidaan ottaa käyttöön. # incognito-ikkunaasi ei avata uudelleen.}}</translation>
 <translation id="3622797965165704966">Nyt voit helpommin käyttää Chromea Google-tililläsi ja jaetuilla tietokoneilla.</translation>
-<translation id="3637702109597584617">Google Chrome ‑käyttöjärjestelmän <ph name="TERMS_OF_SERVICE_LINK" />käyttöehdot<ph name="END_TERMS_OF_SERVICE_LINK" /></translation>
 <translation id="3718181793972440140">Yksi kohde poistetaan pysyvästi  tältä laitteelta. Jos haluat palauttaa tiedot myöhemmin, kirjaudu Chromeen käyttäjänä <ph name="USER_EMAIL" />.</translation>
 <translation id="3735758079232443276">Laajennus <ph name="EXTENSION_NAME" /> on vaihtanut Chromen aloitussivun.</translation>
 <translation id="3780814664026482060">Chrome – <ph name="PAGE_TITLE" /></translation>
@@ -110,6 +109,7 @@
 <translation id="4205939740494406371">Chrome ei voi tarkistaa salasanojasi. Yritä uudelleen 24 tunnin kuluttua tai <ph name="BEGIN_LINK" />tarkista salasanat Google-tililtä<ph name="END_LINK" />.</translation>
 <translation id="424864128008805179">Kirjaudutaanko ulos Chromesta?</translation>
 <translation id="4251615635259297716">Linkitetäänkö Chrome-tiedot tähän tiliin?</translation>
+<translation id="4281844954008187215">Käyttöehdot</translation>
 <translation id="4293420128516039005">Kirjaudu sisään, niin voit synkronoida Chromen ja tehdä siitä yksilöllisemmän kaikilla laitteilla.</translation>
 <translation id="4328355335528187361">Google Chromen kehittäjäversio (saapuva mDNS)</translation>
 <translation id="4331809312908958774">Chrome-käyttöjärjestelmä</translation>
@@ -142,7 +142,6 @@
 <translation id="5132929315877954718">Löydät hienoja sovelluksia, pelejä ja teemoja Google Chromelle.</translation>
 <translation id="5170938038195470297">Profiiliasi ei voi käyttää, koska se on peräisin uudemmasta Google Chromen versiosta. Kaikkia toimintoja ei välttämättä voi käyttää. Määritä toinen profiilihakemisto tai käytä uudempaa Chromen versiota.</translation>
 <translation id="5193136243808726294">Google Chrome ‑käyttöjärjestelmä ei voi avata tätä sivua.</translation>
-<translation id="5204098752394657250">Google Chromen <ph name="TERMS_OF_SERVICE_LINK" />käyttöehdot<ph name="END_TERMS_OF_SERVICE_LINK" /></translation>
 <translation id="5251420635869119124">Vierailijat voivat käyttää Chromea jälkiä jättämättä.</translation>
 <translation id="532046782124376502">Varoitus: Google Chrome ei voi estää laajennuksia tallentamasta selaushistoriaasi. Voit poistaa tämän laajennuksen käytöstä incognito-tilassa poistamalla tämän valinnan.</translation>
 <translation id="5386244825306882791">Määrittää myös Chromen ja omnibox-hakujen aloitussivun.</translation>

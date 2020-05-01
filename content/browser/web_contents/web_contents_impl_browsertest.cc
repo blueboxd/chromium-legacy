@@ -15,6 +15,7 @@
 #include "base/optional.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
+#include "base/stl_util.h"
 #include "base/strings/pattern.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
@@ -52,6 +53,7 @@
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/content_client.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/content_paths.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
@@ -63,6 +65,9 @@
 #include "content/public/test/test_utils.h"
 #include "content/public/test/url_loader_interceptor.h"
 #include "content/shell/browser/shell.h"
+#include "content/shell/browser/shell_browser_context.h"
+#include "content/shell/browser/shell_content_browser_client.h"
+#include "content/shell/browser/web_test/mock_client_hints_controller_delegate.h"
 #include "content/test/content_browser_test_utils_internal.h"
 #include "content/test/resource_load_observer.h"
 #include "content/test/test_content_browser_client.h"
@@ -72,7 +77,9 @@
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/controllable_http_response.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "services/network/public/mojom/web_client_hints_types.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "third_party/blink/public/common/client_hints/client_hints.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/frame/fullscreen.mojom.h"
 #include "url/gurl.h"
@@ -1258,13 +1265,12 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
   const GURL kViewSourceURL(kViewSourceScheme + std::string(":") + kUrl.spec());
   EXPECT_TRUE(NavigateToURL(shell(), kUrl));
 
-  auto console_delegate = std::make_unique<ConsoleObserverDelegate>(
-      shell()->web_contents(),
+  WebContentsConsoleObserver console_observer(shell()->web_contents());
+  console_observer.SetPattern(
       "Not allowed to load local resource: view-source:*");
-  shell()->web_contents()->SetDelegate(console_delegate.get());
   EXPECT_TRUE(ExecuteScript(shell()->web_contents(),
                             "window.open('" + kViewSourceURL.spec() + "');"));
-  console_delegate->Wait();
+  console_observer.Wait();
   // Original page shouldn't navigate away, no new tab should be opened.
   EXPECT_EQ(kUrl, shell()->web_contents()->GetURL());
   EXPECT_EQ(1u, Shell::windows().size());
@@ -1278,16 +1284,14 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
   const GURL kViewSourceURL(kViewSourceScheme + std::string(":") + kUrl.spec());
   EXPECT_TRUE(NavigateToURL(shell(), kUrl));
 
-  std::unique_ptr<ConsoleObserverDelegate> console_delegate(
-      new ConsoleObserverDelegate(
-          shell()->web_contents(),
-          "Not allowed to load local resource: view-source:*"));
-  shell()->web_contents()->SetDelegate(console_delegate.get());
+  WebContentsConsoleObserver console_observer(shell()->web_contents());
+  console_observer.SetPattern(
+      "Not allowed to load local resource: view-source:*");
 
   EXPECT_TRUE(
       ExecuteScript(shell()->web_contents(),
                     "window.location = '" + kViewSourceURL.spec() + "';"));
-  console_delegate->Wait();
+  console_observer.Wait();
   // Original page shouldn't navigate away.
   EXPECT_EQ(kUrl, shell()->web_contents()->GetURL());
   EXPECT_FALSE(shell()
@@ -2195,24 +2199,34 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, UserAgentOverride) {
   EXPECT_EQ(kUserAgentOverride, header_value);
 }
 
-// Changes the user-agent override and sets the entry to override the user-agent
+// Changes the WebContents and active entry user agent override from
+// DidStartNavigation().
 // in WebContentsObserver::DidStartNavigation().
 class UserAgentInjector : public WebContentsObserver {
  public:
   UserAgentInjector(WebContents* web_contents, const std::string& user_agent)
-      : WebContentsObserver(web_contents), user_agent_(user_agent) {}
+      : UserAgentInjector(web_contents,
+                          blink::UserAgentOverride::UserAgentOnly(user_agent),
+                          true) {}
+
+  UserAgentInjector(WebContents* web_contents,
+                    const blink::UserAgentOverride& ua_override,
+                    bool is_overriding_user_agent = true)
+      : WebContentsObserver(web_contents),
+        user_agent_override_(ua_override),
+        is_overriding_user_agent_(is_overriding_user_agent) {}
 
   // WebContentsObserver:
   void DidStartNavigation(NavigationHandle* navigation_handle) override {
     NavigationEntry* entry = web_contents()->GetController().GetVisibleEntry();
     ASSERT_TRUE(entry);
-    web_contents()->SetUserAgentOverride(
-        blink::UserAgentOverride::UserAgentOnly(user_agent_), false);
-    navigation_handle->SetIsOverridingUserAgent(true);
+    web_contents()->SetUserAgentOverride(user_agent_override_, false);
+    navigation_handle->SetIsOverridingUserAgent(is_overriding_user_agent_);
   }
 
  private:
-  const std::string user_agent_;
+  const blink::UserAgentOverride user_agent_override_;
+  const bool is_overriding_user_agent_ = true;
 };
 
 // Verifies the user-agent string may be changed in DidStartNavigation().
@@ -2238,6 +2252,57 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
   WaitForLoadStop(shell()->web_contents());
   EXPECT_EQ(user_agent_override, EvalJs(shell()->web_contents(),
                                         "navigator.userAgent.toLowerCase()"));
+}
+
+class WebContentsImplBrowserTestClientHintsEnabled
+    : public WebContentsImplBrowserTest {
+ public:
+  void SetUp() override {
+    scoped_feature_list_.InitAndEnableFeature(features::kUserAgentClientHint);
+    WebContentsImplBrowserTest::SetUp();
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+// Verifies client hints are updated when the user-agent is changed in
+// DidStartNavigation().
+IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTestClientHintsEnabled,
+                       SetUserAgentOverrideFromDidStartNavigation) {
+  MockClientHintsControllerDelegate client_hints_controller_delegate;
+  ShellContentBrowserClient::Get()
+      ->browser_context()
+      ->set_client_hints_controller_delegate(&client_hints_controller_delegate);
+  net::test_server::ControllableHttpResponse http_response(
+      embedded_test_server(), "", true);
+  ASSERT_TRUE(embedded_test_server()->Start());
+  blink::UserAgentOverride ua_override;
+  ua_override.ua_string_override = "x";
+  ua_override.ua_metadata_override.emplace();
+  ua_override.ua_metadata_override->brand = "x";
+  ua_override.ua_metadata_override->major_version = "y";
+  ua_override.ua_metadata_override->mobile = true;
+  UserAgentInjector injector(shell()->web_contents(), ua_override);
+  shell()->web_contents()->GetController().LoadURLWithParams(
+      NavigationController::LoadURLParams(
+          embedded_test_server()->GetURL("/test.html")));
+  http_response.WaitForRequest();
+  http_response.Send(
+      "HTTP/1.1 200 OK\r\n"
+      "Content-Type: text/html; charset=utf-8\r\n"
+      "\r\n"
+      "<html>");
+  http_response.Done();
+  const std::string mobile_id =
+      blink::kClientHintsHeaderMapping[static_cast<int>(
+          network::mojom::WebClientHintsType::kUAMobile)];
+  ASSERT_TRUE(base::Contains(http_response.http_request()->headers, mobile_id));
+  // "?!" corresponds to "mobile=true".
+  EXPECT_EQ("?1", http_response.http_request()->headers.at(mobile_id));
+  ShellContentBrowserClient::Get()
+      ->browser_context()
+      ->set_client_hints_controller_delegate(nullptr);
 }
 
 IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,

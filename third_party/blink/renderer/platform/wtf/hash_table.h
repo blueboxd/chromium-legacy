@@ -2204,6 +2204,12 @@ struct HashTableConstIteratorAdapter {
   STACK_ALLOCATED();
 
  public:
+  using iterator_category = std::bidirectional_iterator_tag;
+  using value_type = HashTableType;
+  using difference_type = ptrdiff_t;
+  using pointer = value_type*;
+  using reference = value_type&;
+
   HashTableConstIteratorAdapter() = default;
   HashTableConstIteratorAdapter(
       const typename HashTableType::const_iterator& impl)

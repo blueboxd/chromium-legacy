@@ -4,7 +4,7 @@
 
 #include "third_party/blink/public/common/mediastream/media_devices_mojom_traits.h"
 
-#include "base/logging.h"
+#include "base/notreached.h"
 
 namespace mojo {
 

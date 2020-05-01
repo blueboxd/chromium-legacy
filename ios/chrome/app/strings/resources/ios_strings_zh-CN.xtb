@@ -158,6 +158,7 @@
 <translation id="285960592395650245">重试下载</translation>
 <translation id="2870560284913253234">网站</translation>
 <translation id="2871695793448672541">目前为隐藏状态的密码</translation>
+<translation id="2876369937070532032">当您面临安全风险时，将您所访问的部分网页的网址发送给 Google</translation>
 <translation id="288655811176831528">关闭标签页</translation>
 <translation id="2898963176829412617">新建文件夹…</translation>
 <translation id="2916171785467530738">自动填充搜索字词和网址</translation>
@@ -177,6 +178,7 @@
 <translation id="3161291298470460782">执行此操作会使您退出帐号、关闭同步功能并清除此设备中的所有 Chrome 数据，但已同步的数据仍会保留在您的 Google 帐号中。</translation>
 <translation id="3175081911749765310">网络服务</translation>
 <translation id="3178650076442119961">今天曾有活动</translation>
+<translation id="3181954750937456830">安全浏览（保护您和您的设备不受危险网站的侵害）</translation>
 <translation id="3207960819495026254">已加书签</translation>
 <translation id="3224641773458703735">要想导出密码，您必须先在设备上设置屏幕锁定。</translation>
 <translation id="3240426699337459095">已复制链接</translation>
@@ -430,6 +432,7 @@
 <translation id="6447842834002726250">Cookie</translation>
 <translation id="6464071786529933911">在新的无痕式标签页中打开</translation>
 <translation id="6476800141292307438">将页面翻译成<ph name="LANGUAGE" />。选项位于屏幕底部附近。</translation>
+<translation id="648164694371393720">身份验证出错</translation>
 <translation id="6482629121755362506">删除了<ph name="NUMBER_OF_SELECTED_BOOKMARKS" />项</translation>
 <translation id="6561262006871132942">放大</translation>
 <translation id="6610002944194042868">翻译选项</translation>

@@ -38,7 +38,6 @@
 <translation id="1258753120186372309">Google doodle: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1260236875608242557">खोजें और एक्सप्लोर करें</translation>
 <translation id="1266864766717917324"><ph name="CONTENT_TYPE" /> शेयर नहीं किया जा सका</translation>
-<translation id="1272079795634619415">रोकें</translation>
 <translation id="1283039547216852943">पूरा खोलने के लिए टैप करें</translation>
 <translation id="1285320974508926690">कभी भी इस साइट का अनुवाद न करें</translation>
 <translation id="1291207594882862231">इतिहास, कुकी, साइट डेटा, कैश साफ़ करें…</translation>
@@ -50,8 +49,8 @@
 <translation id="1327257854815634930">नेविगेशन का इतिहास अपने पूरे आकार में खुला हुआ है</translation>
 <translation id="1331212799747679585">Chrome अपडेट नहीं किया जा सकता. ज़्यादा विकल्प</translation>
 <translation id="1332501820983677155">Google Chrome सुविधा शॉर्टकट</translation>
+<translation id="1347468774581902829">गतिविधि प्रबंधित करें</translation>
 <translation id="1360432990279830238">साइन आउट करें और सिंक बंद करें?</translation>
-<translation id="1364532808393826295"><ph name="APP_NAME" /> - <ph name="NOTIFICATION_MESSAGE" /></translation>
 <translation id="1373696734384179344">चयनित सामग्री डाउनलोड करने के लिए मेमोरी अपर्याप्‍त है.</translation>
 <translation id="1376578503827013741">गणना की जा रही है…</translation>
 <translation id="1383876407941801731">खोजें</translation>
@@ -122,7 +121,6 @@
 <translation id="2013642289801508067">{FILE_COUNT,plural, =1{# फ़ाइल}one{# फ़ाइलें}other{# फ़ाइलें}}</translation>
 <translation id="2017836877785168846">इतिहास साफ़ करता है और पता बार मेंअपने-आपपूर्णता को साफ़ करता है.</translation>
 <translation id="2021896219286479412">पूरी स्क्रीन के साइट नियंत्रण</translation>
-<translation id="2030769033451695672"><ph name="URL_OF_THE_CURRENT_TAB" /> पर वापस जाने के लिए टैप करें</translation>
 <translation id="2038563949887743358">अनुरोध डेस्कटॉप साइट चालू करें</translation>
 <translation id="204321170514947529">Chrome में <ph name="APP_NAME" /> का डेटा भी है</translation>
 <translation id="2049574241039454490"><ph name="FILE_SIZE_OF_TOTAL" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
@@ -434,6 +432,7 @@
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> बुकमार्क का पता लगा</translation>
 <translation id="4665282149850138822"><ph name="NAME" /> को आपकी होम स्क्रीन में जोड़ा गया था</translation>
 <translation id="4684427112815847243">सब कुछ सिंक करें</translation>
+<translation id="4688610874307684559">Chrome में चल रहा है (शुरुआत में)</translation>
 <translation id="4695891336199304370">{SHIPPING_OPTIONS,plural, =1{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 और <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> अन्य}one{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 और <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> अन्य}other{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 और <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> अन्य}}</translation>
 <translation id="4696983787092045100">अपने डिवाइस पर मैसेज भेजें</translation>
 <translation id="4698034686595694889"><ph name="APP_NAME" /> में ऑफ़लाइन देखें</translation>
@@ -592,7 +591,6 @@
 <translation id="5876056640971328065">वीडियो रोकें</translation>
 <translation id="5884076754568147479">टास्क पूरे करने में आपकी मदद के लिए, Google उन साइटों के यूआरएल और सामग्री का इस्तेमाल करेगा जिनसे आपने Assistant को जोड़ा है. साथ ही, वह उस जानकारी का भी इस्तेमाल करेगा जिसे आपने Assistant की मदद से सबमिट किया है</translation>
 <translation id="5919204609460789179">सिंक शुरू करने के लिए <ph name="PRODUCT_NAME" /> अपडेट करें</translation>
-<translation id="5922853908706496913">आपकी स्क्रीन शेयर की जा रही है</translation>
 <translation id="5937580074298050696"><ph name="AMOUNT" /> सेव किए गए</translation>
 <translation id="5939518447894949180">रीसेट करें</translation>
 <translation id="5942872142862698679">खोजने के लिए Google का उपयोग किया जा रहा है</translation>
@@ -773,16 +771,17 @@
 <translation id="7479104141328977413">टैब प्रबंधन</translation>
 <translation id="7481312909269577407">आगे जाएं</translation>
 <translation id="7482656565088326534">झलक टैब</translation>
+<translation id="7484997419527351112">डिस्कवर - बंद है</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (<ph name="TIME_SINCE_UPDATE" /> अपडेट किया गया)</translation>
 <translation id="7494974237137038751">डेटा बचाया गया</translation>
 <translation id="7498271377022651285">कृपया प्रतीक्षा करें...</translation>
 <translation id="7514365320538308">डाउनलोड करें</translation>
 <translation id="751961395872307827">साइट से कनेक्ट नहीं किया जा सका</translation>
 <translation id="7542481630195938534">सुझाव नहीं मिल पा रहे हैं</translation>
-<translation id="7554752735887601236">कोई साइट आपके माइक्रोफ़ोन का इस्तेमाल कर रही है</translation>
 <translation id="7559975015014302720">लाइट मोड बंद है</translation>
 <translation id="7562080006725997899">ब्राउज़िंग डेटा साफ़ हो रहा है</translation>
 <translation id="756809126120519699">साफ़ किया गया Chrome डेटा</translation>
+<translation id="7577900504646297215">पसंद प्रबंधित करें</translation>
 <translation id="757855969265046257">{FILES,plural, =1{<ph name="FILES_DOWNLOADED_ONE" /> फ़ाइल डाउनलोड की गई}one{<ph name="FILES_DOWNLOADED_MANY" /> फ़ाइलें डाउनलोड की गईं}other{<ph name="FILES_DOWNLOADED_MANY" /> फ़ाइलें डाउनलोड की गईं}}</translation>
 <translation id="7588219262685291874">आपके डिवाइस की 'बैटरी सेवर' सुविधा चालू होने पर 'गहरे रंग वाली थीम' चालू करें</translation>
 <translation id="7593557518625677601">Android सेटिंग खोलें और Chrome सिंक शुरू करने के लिए Android सिस्टम सिंक फिर से चालू करें</translation>
@@ -813,7 +812,6 @@
 <translation id="7774809984919390718">{PAYMENT_METHOD,plural, =1{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 और <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> अन्य}one{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 और <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> अन्य}other{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 और <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> अन्य}}</translation>
 <translation id="7791543448312431591">जोड़ें</translation>
 <translation id="780301667611848630">नहीं, रहने दें</translation>
-<translation id="7804248752222191302">कोई साइट आपका कैमरा इस्तेमाल कर रही है</translation>
 <translation id="7810647596859435254">इसमें खोलें…</translation>
 <translation id="7821588508402923572">बचाया गया डेटा यहां दिखाई देगा</translation>
 <translation id="783819812427904514">वीडियो अनम्यूट करें</translation>
@@ -885,9 +883,7 @@
 <translation id="8349013245300336738">इस्तेमाल किए गए डेटा की मात्रा के हिसाब से क्रम में लगाएं</translation>
 <translation id="8364299278605033898">लोकप्रिय वेबसाइटें देखें</translation>
 <translation id="8368027906805972958">अज्ञात या काम न करने वाला डिवाइस (<ph name="DEVICE_ID" />)</translation>
-<translation id="83792324527827022">कोई साइट आपके कैमरे और माइक्रोफ़ोन का इस्तेमाल कर रही है</translation>
 <translation id="8393700583063109961">संदेश भेजें</translation>
-<translation id="8394832520002899662">साइट पर वापस जाने के लिए टैप करें</translation>
 <translation id="8413126021676339697">पूरा इतिहास दिखाएं</translation>
 <translation id="8427875596167638501">'झलक' टैब आधी स्क्रीन में खुला हुआ है</translation>
 <translation id="8428213095426709021">सेटिंग</translation>
@@ -984,7 +980,6 @@
 <translation id="970715775301869095"><ph name="MINUTES" /> मिनट शेष</translation>
 <translation id="974555521953189084">सिंक शुरू करने के लिए अपना 'पासफ़्रेज़' डालें</translation>
 <translation id="981121421437150478">ऑफ़लाइन</translation>
-<translation id="982182592107339124">इससे इन सभी साइटों का डेटा साफ़ हो जाएगा:</translation>
 <translation id="983192555821071799">सभी टैब बंद करें</translation>
 <translation id="987264212798334818">सामान्य</translation>
 </translationbundle>

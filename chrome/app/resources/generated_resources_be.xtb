@@ -173,6 +173,7 @@
 <translation id="122082903575839559">Алгарытм подпісу сертыфіката</translation>
 <translation id="1221024147024329929">PKCS #1 MD2 з шыфраваннем RSA</translation>
 <translation id="1221825588892235038">Толькі вылучанае</translation>
+<translation id="1223484782328004593">Для работы праграмы <ph name="APP_NAME" /> патрабуецца ліцэнзія</translation>
 <translation id="1223853788495130632">Ваш адміністратар рэкамендуе канкрэтнае значэнне для гэтай налады.</translation>
 <translation id="1224275271335624810">Максімальная хуткасць</translation>
 <translation id="1225177025209879837">Ідзе апрацоўка запыту...</translation>
@@ -211,6 +212,7 @@
 <translation id="1272978324304772054">Гэты ўліковы запіс карыстальніка не належыць да дамена, у якім зарэгістравана прылада.  Калі вы жадаеце зарэгістравацца ў іншым дамене, вам трэба спярша аднавіць прыладу.</translation>
 <translation id="1274977772557788323">Налады сховішча Adobe Flash Player</translation>
 <translation id="1274997165432133392">Файлы cookie і іншыя даныя сайтаў</translation>
+<translation id="1276994519141842946">Не ўдалося выдаліць праграму <ph name="APP_NAME" /></translation>
 <translation id="1280820357415527819">Ідзе пошук мабільных сетак</translation>
 <translation id="1280965841156951489">Змяніць файлы</translation>
 <translation id="1285320974508926690">Ніколі не перакладаць гэты сайт</translation>
@@ -319,6 +321,7 @@
 <translation id="1426870617281699524">Націсніце "Паўтарыць спробу" і прыміце запыт на камп'ютары</translation>
 <translation id="1427269577154060167">Краіна</translation>
 <translation id="142758023928848008">Уключыць заліпанне клавіш (каб выкарыстоўваць спалучэнні клавіш, націскаючы іх паслядоўна)</translation>
+<translation id="142765311413773645">Скончыўся тэрмін дзеяння ліцэнзіі праграмы <ph name="APP_NAME" /></translation>
 <translation id="1429300045468813835">Усё выдалена</translation>
 <translation id="143027896309062157">Чытаць і змяняць даныя на вашым камп'ютары і вэб-сайтах, якія вы наведваеце</translation>
 <translation id="1430915738399379752">Друк</translation>
@@ -379,9 +382,7 @@
 <translation id="1509281256533087115">Доступ да <ph name="DEVICE_NAME_AND_VENDOR" /> праз USB</translation>
 <translation id="1509960214886564027">Функцыі на многіх сайтах могуць перастаць працаваць</translation>
 <translation id="1510030919967934016">Адсочванне гэтай старонкай вашага месцазнаходжання заблакіравана.</translation>
-<translation id="1510055949674985293">Стварыць QR-код для гэтага відарыса</translation>
 <translation id="1510238584712386396">Панэль запуску</translation>
-<translation id="1510581003097415337">Стварыць QR-код для гэтай старонкі</translation>
 <translation id="1510785804673676069">Калі вы карыстаецеся проксі-серверам, праверце яго налады
     або звярніцеся да адміністратара сеткі, каб
     праверыць, ці працуе проксі-сервер. Калі вы лічыце, што проксі-сервер вам
@@ -1006,6 +1007,7 @@
 <translation id="2325444234681128157">Запомніць пароль</translation>
 <translation id="2326931316514688470">&amp;Перазагрузіць праграму</translation>
 <translation id="2327492829706409234">Уключыць праграму</translation>
+<translation id="2328561734797404498">Каб выкарыстоўваць праграму <ph name="APP_NAME" />, перазапусціце прыладу.</translation>
 <translation id="2329597144923131178">Каб закладкі, гісторыя, паролі і іншыя налады былі даступнымі на ўсіх вашых прыладах, увайдзіце ў сістэму.</translation>
 <translation id="2332131598580221120">Прагледзець у краме</translation>
 <translation id="2332192922827071008">Адкрыць параметры</translation>
@@ -1264,6 +1266,7 @@
 <translation id="2665717534925640469">Старонка перайшла ў поўнаэкранны рэжым і выключыла вам курсор мышы.</translation>
 <translation id="2665919335226618153">На жаль, падчас фармаціравання адбылася памылка.</translation>
 <translation id="2667463864537187133">Кіраванне праверкай правапісу</translation>
+<translation id="2669241540496514785">Немагчыма адкрыць праграму <ph name="APP_NAME" /></translation>
 <translation id="2670102641511624474"><ph name="APP_NAME" /> абагульвае ўкладку Chrome.</translation>
 <translation id="2670429602441959756">Функцыі на гэтай старонцы не падтрымліваюцца ў VR. Выконваецца выхад...</translation>
 <translation id="2671451824761031126">Імпарт закладак і налад выкананы</translation>
@@ -1340,6 +1343,7 @@
 <translation id="2757338480560142065">Праверце, ці супадае пароль, які вы захоўваеце, з паролем для сайта <ph name="WEBSITE" /></translation>
 <translation id="2762441749940182211">Камера заблакіравана</translation>
 <translation id="2765217105034171413">Малы</translation>
+<translation id="2766091842833763951">Не ўдалося наладзіць праграму <ph name="APP_NAME" /> з-за праблемы канфігурацыі. Звярніцеся да адміністратара прылад вашай арганізацыі. Код памылкі: <ph name="ERROR_CODE" />.</translation>
 <translation id="2766161002040448006">Папрасіць дазвол у бацькоў</translation>
 <translation id="2767127727915954024">Сайт <ph name="ORIGIN" /> зможа змяняць файл <ph name="FILENAME" />, пакуль вы не закрыеце ўсе ўкладкі гэтага сайта</translation>
 <translation id="276969039800130567">Вы ўвайшлі як <ph name="USER_EMAIL_ADDRESS" />.</translation>
@@ -2303,7 +2307,6 @@
 <translation id="4007856537951125667">Схаваць ярлыкі</translation>
 <translation id="4008291085758151621">Звесткі сайта недаступныя ў VR</translation>
 <translation id="4010917659463429001">Каб карыстацца сваімі закладкамі на мабільнай прыладзе, <ph name="GET_IOS_APP_LINK" />.</translation>
-<translation id="4013132157686828973">Кліент "<ph name="CLIENT_NAME" />" выконвае адладку гэтага браўзера</translation>
 <translation id="4014432863917027322">Выправіць "<ph name="EXTENSION_NAME" />"?</translation>
 <translation id="4015163439792426608">У вас ёсць пашырэнні? <ph name="BEGIN_LINK" />Кіруйце пашырэннямі<ph name="END_LINK" /> з лёгкасцю з аднаго месца.</translation>
 <translation id="4020327272915390518">Меню параметраў</translation>
@@ -2421,6 +2424,7 @@
 <translation id="4181602000363099176">20x</translation>
 <translation id="4181841719683918333">Мовы</translation>
 <translation id="4184885522552335684">Перацягніце, каб перамясціць дысплэй</translation>
+<translation id="4187424053537113647">Ідзе наладжванне праграмы <ph name="APP_NAME" />...</translation>
 <translation id="4194570336751258953">Уключыць націсканне дотыкам</translation>
 <translation id="4195643157523330669">Адкрыць у новай укладцы</translation>
 <translation id="4195814663415092787">Працягнуць з месца, дзе вы спыніліся</translation>
@@ -2539,6 +2543,7 @@
 <translation id="4379281552162875326">Выдаліць праграму "<ph name="APP_NAME" />"?</translation>
 <translation id="4380648069038809855">Уключаны поўнаэкранны рэжым</translation>
 <translation id="4382131447572146376">{COUNT,plural, =0{<ph name="EMAIL" />}=1{<ph name="EMAIL" /> і яшчэ 1 уліковы запіс}one{<ph name="EMAIL" /> і яшчэ <ph name="EXTRA_ACCOUNTS" /> уліковы запіс}few{<ph name="EMAIL" /> і яшчэ <ph name="EXTRA_ACCOUNTS" /> уліковыя запісы}many{<ph name="EMAIL" /> і яшчэ <ph name="EXTRA_ACCOUNTS" /> уліковых запісаў}other{<ph name="EMAIL" /> і яшчэ <ph name="EXTRA_ACCOUNTS" /> уліковага запісу}}</translation>
+<translation id="43829217466934313">Праграму <ph name="APP_NAME" /> нельга выкарыстоўваць на гэтай прыладзе. Звярніцеся да адміністратара прылад вашай арганізацыі. Код памылкі: <ph name="ERROR_CODE" />.</translation>
 <translation id="4384312707950789900">Дадаць у прыярытэтныя</translation>
 <translation id="4384652540891215547">Актываваць пашырэнне</translation>
 <translation id="438503109373656455">Саратога</translation>
@@ -2871,6 +2876,7 @@
 <translation id="4863769717153320198">Здаецца, гэта <ph name="WIDTH" /> × <ph name="HEIGHT" /> (стандартная)</translation>
 <translation id="4864369630010738180">Уваход...</translation>
 <translation id="486635084936119914">Аўтаматычна адкрываць пэўныя тыпы файлаў пасля спампоўвання</translation>
+<translation id="4869289251183233431">У сховішчы прылады мала месца. Для выкарыстання праграмы <ph name="APP_NAME" /> неабходна мець як мінімум <ph name="MINIMUM_SPACE" /> (рэкамендаваны аб'ём – звыш <ph name="RECOMMENDED_SPACE" />). Каб вызваліць месца, выдаліце файлы з прылады.</translation>
 <translation id="48704129375571883">Дадаць дадатковыя функцыі</translation>
 <translation id="4870758487381879312">Каб атрымаць звесткі пра канфігурацыю, увядзіце атрыманы ад адміністратара пароль</translation>
 <translation id="4870903493621965035">Няма спалучаных прылад</translation>
@@ -2923,6 +2929,7 @@
 <translation id="4920887663447894854">Наступным сайтам быў заблакіраваны доступ да адсочвання вашага месцазнаходжання праз гэту старонку:</translation>
 <translation id="49226369361073053">{0,plural, =0{Перазапусціце прыладу зараз}=1{Перазапусціце прыладу на працягу 1 секунды}one{Перазапусціце прыладу на працягу # секунды}few{Перазапусціце прыладу на працягу # секунд}many{Перазапусціце прыладу на працягу # секунд}other{Перазапусціце прыладу на працягу # секунды}}</translation>
 <translation id="492299503953721473">Выдаліць праграмы Android</translation>
+<translation id="492363500327720082">Ідзе выдаленне праграмы <ph name="APP_NAME" />...</translation>
 <translation id="4924352752174756392">12x</translation>
 <translation id="4925320384394644410">Вашы парты з'явяцца тут</translation>
 <translation id="4925542575807923399">Адміністратар гэтага ўліковага запісу патрабуе, каб у сеансе з уваходам у некалькі ўліковых запісаў гэты ўліковы запіс быў першым.</translation>
@@ -3003,7 +3010,6 @@
 <translation id="504561833207953641">Ідзе адкрыццё ў бягучым сеансе браўзера.</translation>
 <translation id="5047421709274785093">Заблакіраваць сайтам выкарыстанне датчыкаў руху і святла</translation>
 <translation id="5050042263972837708">Назва групы</translation>
-<translation id="5051073330196664891">Універсальныя Умовы выкарыстання Google</translation>
 <translation id="5051836348807686060">Праверка правапісу для выбраных моў не падтрымліваецца</translation>
 <translation id="5052499409147950210">Рэдагаванне сайта</translation>
 <translation id="5053604404986157245">Створаны выпадковым чынам пароль TPM недаступны. Пасля выкарыстання Powerwash гэта нармальна.</translation>
@@ -3484,6 +3490,7 @@
 <translation id="5692875591060376599">Выбраны файл – невядомы і можа быць небяспечным. Адправіць яго на праверку ў Палепшаную абарону Google?</translation>
 <translation id="569425414730375234">Бягучы сеанс інкогніта: <ph name="RECENT_PERMISSIONS_CHANGE_SENTENCE_START" /></translation>
 <translation id="5696143504434933566">Паскардзіцца на пашырэнне "<ph name="EXTENSION_NAME" />"</translation>
+<translation id="5696177755977520104">Сінхранізацыя налад Chrome OS</translation>
 <translation id="5696679855467848181">Файл PPD, які зараз выкарыстоўваецца: <ph name="PPD_NAME" /></translation>
 <translation id="570043786759263127">Праграмы і сэрвісы Google Play</translation>
 <translation id="5700836101007545240">Дадаванне падключэнняў забаронена адміністратарам</translation>
@@ -3794,6 +3801,7 @@
 <translation id="6103681770816982672">Увага: вы пераключаецеся на версію для распрацоўшчыкаў</translation>
 <translation id="6104068876731806426">Уліковыя запісы Google</translation>
 <translation id="6104311680260824317">Не ўдалося далучыць прыладу да дамена. Сервер не падтрымлівае вызначаныя тыпы шыфравання Kerberos. Наладзіць шыфраванне можна ў раздзеле "Іншыя параметры".</translation>
+<translation id="6105994589138235234">Сінхранізацыя Chrome</translation>
 <translation id="6112294629795967147">Каб змяніць памер, націсніце тут</translation>
 <translation id="6112727384379533756">Дадаць білет</translation>
 <translation id="6112931163620622315">Праверце свой тэлефон</translation>
@@ -3831,6 +3839,7 @@
 <translation id="6155141482566063812">Фонавая ўкладка абагульвае ваш экран</translation>
 <translation id="6156323911414505561">Паказваць панэль закладак</translation>
 <translation id="6156863943908443225">Кэш сцэнарыя</translation>
+<translation id="6157197137667039897">Не ўдалося ўсталяваць праграму <ph name="APP_NAME" />. Паўтарыце спробу або звярніцеся да адміністратара прылад сваёй арганізацыі. Код памылкі: <ph name="ERROR_CODE" />.</translation>
 <translation id="6160625263637492097">Выдаванне сертыфікатаў для аўтэнтыфікацыі</translation>
 <translation id="6163363155248589649">&amp;Звычайны</translation>
 <translation id="6163522313638838258">Разгарнуць усе...</translation>
@@ -3873,7 +3882,6 @@
 <translation id="6226777517901268232">Файл закрытага ключа (неабавязкова)</translation>
 <translation id="6227280783235722609">пашырэнне</translation>
 <translation id="6228691855869374890">Гэты сайт мае поўны кантроль над прыладамі MIDI.</translation>
-<translation id="6228720835160974792">Стварыць QR-код для гэтага відарыса</translation>
 <translation id="6229890768313448549">Не ўдалося загрузіць Умовы выкарыстання Google Play. Паўтарыце спробу.</translation>
 <translation id="6231881193380278751">Дадайце параметр запыту ў URL-адрас для аўтаматычнага абнаўлення старонкі: chrome://device-log/?refresh=&lt;sec&gt;</translation>
 <translation id="6232017090690406397">Акумулятар</translation>
@@ -4031,6 +4039,7 @@
 <translation id="6430814529589430811">ASCII з шыфраваннем Base64, адзін сертыфікат</translation>
 <translation id="6431347207794742960"><ph name="PRODUCT_NAME" /> будзе наладжваць аўтаматычныя абнаўленні для ўсіх карыстальнікаў гэтага камп'ютара.</translation>
 <translation id="6434309073475700221">Адхіліць</translation>
+<translation id="6434325376267409267">Каб выкарыстоўваць праграму <ph name="APP_NAME" />, прыладу трэба абнавіць.</translation>
 <translation id="6436164536244065364">Прагледзець у Вэб-краме</translation>
 <translation id="6438992844451964465"><ph name="WINDOW_TITLE" /> – прайграецца гук</translation>
 <translation id="6442187272350399447">Шыкоўна</translation>
@@ -4074,6 +4083,7 @@
 <translation id="6491376743066338510">Памылка аўтарызацыі</translation>
 <translation id="6494445798847293442">Не з'яўляецца цэнтрам сертыфікацыі</translation>
 <translation id="6495925982925244349">Сетка <ph name="NETWORK_INDEX" /> з <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, магутнасць сігналу – <ph name="SIGNAL_STRENGTH" />%, знаходзіцца пад кіраваннем адміністратара, падрабязныя звесткі</translation>
+<translation id="6496965928959882519">У сховішчы прылады мала месца. Для выкарыстання праграмы <ph name="APP_NAME" /> рэкамендуецца мець як мінімум <ph name="RECOMMENDED_SPACE" />. Каб вызваліць месца, выдаліце файлы з прылады.</translation>
 <translation id="6498249116389603658">&amp;Усе вашы мовы</translation>
 <translation id="6499143127267478107">Перавызначэнне хоста ў сцэнарыі проксі-сервера...</translation>
 <translation id="6499681088828539489">Забараніць проксі-серверы для абагуленых сетак</translation>
@@ -4534,7 +4544,6 @@
 <translation id="7123360114020465152">Больш не падтрымліваецца</translation>
 <translation id="7127980134843952133">Гісторыя спампоўвання</translation>
 <translation id="7128151990937044829">Паказваць індыкатар у адрасным радку пры блакіраванні апавяшчэнняў</translation>
-<translation id="7128239828194367697">Стварыць QR-код для гэтай старонкі</translation>
 <translation id="7131040479572660648">Прагляд вашых даных на вэб-сайтах <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> і <ph name="WEBSITE_3" /></translation>
 <translation id="713122686776214250">Дадаць ста&amp;ронку...</translation>
 <translation id="7133578150266914903">Адміністратар робіць адкат гэтай прылады (<ph name="PROGRESS_PERCENT" />).</translation>
@@ -4745,6 +4754,7 @@
 <translation id="7421925624202799674">&amp;Прагляд зыходнага тэксту старонкі</translation>
 <translation id="7422192691352527311">Параметры...</translation>
 <translation id="7423098979219808738">Спачатку запытваць</translation>
+<translation id="7423807071740419372">Праграме <ph name="APP_NAME" /> патрабуецца ваш дазвол</translation>
 <translation id="7427315641433634153">MSCHAP</translation>
 <translation id="7427348830195639090">Фонавая старонка: <ph name="BACKGROUND_PAGE_URL" /></translation>
 <translation id="7427798576651127129">Выклік з прылады <ph name="DEVICE_NAME" /></translation>
@@ -4775,6 +4785,7 @@
 <translation id="746216226901520237">Наступны раз прылада <ph name="DEVICE_TYPE" /> будзе разблакіравана з дапамогай вашага тэлефона. Вы можаце выключыць Smart Lock у Наладах.</translation>
 <translation id="7463006580194749499">Дадаць карыстальніка</translation>
 <translation id="7465522323587461835">{NUM_OPEN_TABS,plural, =1{# адкрытая ўкладка. Націсніце, каб уключыць або выключыць панэль укладак}one{# адкрытая ўкладка. Націсніце, каб уключыць або выключыць панэль укладак}few{# адкрытыя ўкладкі. Націсніце, каб уключыць або выключыць панэль укладак}many{# адкрытых укладак. Націсніце, каб уключыць або выключыць панэль укладак}other{# адкрытай укладкі. Націсніце, каб уключыць або выключыць панэль укладак}}</translation>
+<translation id="7465635034594602553">Нешта пайшло не так. Пачакайце некалькі хвілін і запусціце праграму <ph name="APP_NAME" /> зноў.</translation>
 <translation id="7465778193084373987">URL-адрас адклікання сертыфікатаў Netscape</translation>
 <translation id="7469894403370665791">Падключацца да гэтай сеткі аўтаматычна</translation>
 <translation id="747114903913869239">Памылка: не ўдалося дэкадаваць пашырэнне</translation>
@@ -5817,6 +5828,7 @@
 <translation id="8818958672113348984">Спраўдзіць з дапамогай тэлефона</translation>
 <translation id="8820817407110198400">Закладкі</translation>
 <translation id="8821045908425223359">Задаваць IP-адрас аўтаматычна</translation>
+<translation id="8821268776955756404">Праграма <ph name="APP_NAME" /> гатовая да выкарыстання.</translation>
 <translation id="882204272221080310">Абнавіць убудаванае ПЗ для павышэння бяспекі.</translation>
 <translation id="8823514049557262177">Скапіраваць тэкст &amp;спасылкі</translation>
 <translation id="8823559166155093873">Блакіраваць файлы cookie</translation>
@@ -5887,6 +5899,7 @@
 <translation id="8902667442496790482">Адкрыць налады функцыі "Чытаць уголас"</translation>
 <translation id="8903263458134414071">Выберыце, у які ўліковы запіс увайсці</translation>
 <translation id="890616557918890486">Змяніць крыніцу</translation>
+<translation id="8909298138148012791">Праграма <ph name="APP_NAME" /> выдалена</translation>
 <translation id="8909833622202089127">Сайт адсочвае ваша месцазнаходжанне</translation>
 <translation id="8910146161325739742">Абагульванне экрана</translation>
 <translation id="8910222113987937043">Змены ў закладках, гісторыі, паролях і іншых наладах больш не будуць сінхранізавацца з Уліковым запісам Google. Але існуючыя даныя застануцца ва Уліковым запісе Google, і імі можна будзе кіраваць на старонцы <ph name="BEGIN_LINK" />Панэль кіравання Google<ph name="END_LINK" />.</translation>

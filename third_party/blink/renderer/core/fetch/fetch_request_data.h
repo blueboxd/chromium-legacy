@@ -9,7 +9,6 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/unguessable_token.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
-#include "mojo/public/cpp/bindings/remote.h"
 #include "services/network/public/mojom/fetch_api.mojom-blink-forward.h"
 #include "services/network/public/mojom/referrer_policy.mojom-blink-forward.h"
 #include "services/network/public/mojom/trust_tokens.mojom-blink.h"
@@ -19,6 +18,8 @@
 #include "third_party/blink/renderer/core/fetch/body_stream_buffer.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_load_priority.h"
+#include "third_party/blink/renderer/platform/mojo/heap_mojo_remote.h"
+#include "third_party/blink/renderer/platform/mojo/heap_mojo_wrapper_mode.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/weborigin/referrer.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
@@ -44,7 +45,7 @@ class CORE_EXPORT FetchRequestData final
   FetchRequestData* Clone(ScriptState*, ExceptionState&);
   FetchRequestData* Pass(ScriptState*, ExceptionState&);
 
-  FetchRequestData();
+  explicit FetchRequestData(ExecutionContext* execution_context);
   ~FetchRequestData();
 
   void SetMethod(AtomicString method) { method_ = method; }
@@ -120,7 +121,9 @@ class CORE_EXPORT FetchRequestData final
   }
   void SetURLLoaderFactory(
       mojo::PendingRemote<network::mojom::blink::URLLoaderFactory> factory) {
-    url_loader_factory_.Bind(std::move(factory));
+    url_loader_factory_.Bind(
+        std::move(factory),
+        execution_context_->GetTaskRunner(TaskType::kNetworking));
   }
   const base::UnguessableToken& WindowId() const { return window_id_; }
   void SetWindowId(const base::UnguessableToken& id) { window_id_ = id; }
@@ -175,8 +178,11 @@ class CORE_EXPORT FetchRequestData final
   // the system would otherwise decide to use to load this request.
   // Currently used for blob: URLs, to ensure they can still be loaded even if
   // the URL got revoked after creating the request.
-  mojo::Remote<network::mojom::blink::URLLoaderFactory> url_loader_factory_;
+  HeapMojoRemote<network::mojom::blink::URLLoaderFactory,
+                 HeapMojoWrapperMode::kWithoutContextObserver>
+      url_loader_factory_;
   base::UnguessableToken window_id_;
+  Member<ExecutionContext> execution_context_;
 
   DISALLOW_COPY_AND_ASSIGN(FetchRequestData);
 };

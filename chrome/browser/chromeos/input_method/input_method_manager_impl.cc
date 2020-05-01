@@ -1000,8 +1000,10 @@ void InputMethodManagerImpl::SetUISessionState(UISessionState new_ui_session) {
   if (ui_session_ == STATE_TERMINATING) {
     if (candidate_window_controller_.get())
       candidate_window_controller_.reset();
-    if (assistive_window_controller_.get())
+    if (assistive_window_controller_.get()) {
       assistive_window_controller_.reset();
+      ui::IMEBridge::Get()->SetAssistiveWindowHandler(nullptr);
+    }
   }
 }
 
@@ -1291,8 +1293,9 @@ void InputMethodManagerImpl::MaybeInitializeAssistiveWindowController() {
   if (assistive_window_controller_.get())
     return;
 
-  assistive_window_controller_.reset(
-      AssistiveWindowController::CreateAssistiveWindowController());
+  assistive_window_controller_ = std::make_unique<AssistiveWindowController>();
+  ui::IMEBridge::Get()->SetAssistiveWindowHandler(
+      assistive_window_controller_.get());
 }
 
 void InputMethodManagerImpl::NotifyImeMenuItemsChanged(

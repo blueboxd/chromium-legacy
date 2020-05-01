@@ -97,7 +97,6 @@ Nekatere funkcije morda niso na voljo in spremembe nastavitev ne bodo shranjene.
 <translation id="3582972582564653026">V vseh svojih napravah sinhronizirajte in prilagodite Chrome</translation>
 <translation id="3596080736082218006">{COUNT,plural, =0{Skrbnik zahteva, da za uveljavitev te posodobitve znova zaženete Chrome.}=1{Skrbnik zahteva, da za uveljavitev te posodobitve znova zaženete Chrome. Okno brez beleženja zgodovine se ne bo znova odprlo.}one{Skrbnik zahteva, da za uveljavitev te posodobitve znova zaženete Chrome. # okno brez beleženja zgodovine se ne bo znova odprlo.}two{Skrbnik zahteva, da za uveljavitev te posodobitve znova zaženete Chrome. # okni brez beleženja zgodovine se ne bosta znova odprli.}few{Skrbnik zahteva, da za uveljavitev te posodobitve znova zaženete Chrome. # okna brez beleženja zgodovine se ne bodo znova odprla.}other{Skrbnik zahteva, da za uveljavitev te posodobitve znova zaženete Chrome. # oken brez beleženja zgodovine se ne bo znova odprlo.}}</translation>
 <translation id="3622797965165704966">Zdaj je Chrome lažje uporabljati z Google Računom in v računalnikih, ki so v skupni rabi.</translation>
-<translation id="3637702109597584617"><ph name="TERMS_OF_SERVICE_LINK" />Pogoji storitve<ph name="END_TERMS_OF_SERVICE_LINK" /> za Googlov OS Chrome</translation>
 <translation id="3718181793972440140">S tem bo iz te naprave izbrisan 1 element. Če želite pozneje prenesti podatke, se v Chrome prijavite kot <ph name="USER_EMAIL" />.</translation>
 <translation id="3735758079232443276">Zaradi razširitve »<ph name="EXTENSION_NAME" />« se je spremenila stran, ki je prikazana, ko zaženete Chrome.</translation>
 <translation id="3780814664026482060">Chrome – <ph name="PAGE_TITLE" /></translation>
@@ -114,6 +113,7 @@ Nekatere funkcije morda niso na voljo in spremembe nastavitev ne bodo shranjene.
 <translation id="4205939740494406371">Chrome ne more preveriti vaših gesel. Poskusite znova čez 24 ur ali <ph name="BEGIN_LINK" />preverite gesla v računu Google<ph name="END_LINK" />.</translation>
 <translation id="424864128008805179">Se želite odjaviti iz Chroma?</translation>
 <translation id="4251615635259297716">Želite svoje podatke v Chromu povezati s tem računom?</translation>
+<translation id="4281844954008187215">Pogoji storitve</translation>
 <translation id="4293420128516039005">Prijavite se, da boste lahko Chrome sinhronizirali in prilagodili v vseh svojih napravah</translation>
 <translation id="4328355335528187361">Google Chrome Dev (mDNS-In)</translation>
 <translation id="4331809312908958774">OS Chrome</translation>
@@ -148,7 +148,6 @@ Nekatere funkcije morda niso na voljo in spremembe nastavitev ne bodo shranjene.
 
 Nekatere funkcije morda ne bodo na voljo. Navedite drug imenik profila ali uporabite novejšo različico Google Chroma.</translation>
 <translation id="5193136243808726294">Googlov OS Chrome ne more odpreti te strani.</translation>
-<translation id="5204098752394657250"><ph name="TERMS_OF_SERVICE_LINK" />Pogoji storitve<ph name="END_TERMS_OF_SERVICE_LINK" /> za Google Chrome</translation>
 <translation id="5251420635869119124">Gostje lahko uporabljajo Chrome, ne da bi za seboj pustili kar koli.</translation>
 <translation id="532046782124376502">Opozorilo: Google Chrome razširitvam ne more preprečiti beleženja zgodovine brskanja. Če želite onemogočiti to razširitev v načinu brez beleženja zgodovine, počistite to možnost.</translation>
 <translation id="5386244825306882791">Določa tudi, katera stran je prikazana, ko zaženete Chrome ali iščete v naslovni vrstici.</translation>

@@ -841,7 +841,7 @@ const char* DisplayLockContext::ShouldForceUnlock() const {
   // just optimistically assume that we have all of the right containment in
   // place. See crbug.com/926276 for more information.
   if (element_->NeedsStyleRecalc()) {
-    DCHECK(DisplayLockUtilities::NearestLockedExclusiveAncestor(*element_));
+    DCHECK(DisplayLockUtilities::LockedAncestorPreventingStyle(*element_));
     return nullptr;
   }
 

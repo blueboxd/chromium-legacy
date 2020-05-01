@@ -38,7 +38,6 @@
 <translation id="1258753120186372309">Google ડૂડલ: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1260236875608242557">શોધો તેમજ શોધખોળ કરો</translation>
 <translation id="1266864766717917324"><ph name="CONTENT_TYPE" /> શેર કરી શકાયો નથી</translation>
-<translation id="1272079795634619415">રોકો</translation>
 <translation id="1283039547216852943">વિસ્તૃત કરવા માટે ટૅપ કરો</translation>
 <translation id="1285320974508926690">આ સાઇટનું ક્યારેય ભાષાંતર કરશો નહીં</translation>
 <translation id="1291207594882862231">ઇતિહાસ, કુકી, સાઇટ ડેટા, કૅશ સાફ કરો…</translation>
@@ -51,7 +50,6 @@
 <translation id="1331212799747679585">Chrome અપડેટ કરી શકાતું નથી. વધુ વિકલ્પો</translation>
 <translation id="1332501820983677155">Google Chrome સુવિધાના શૉર્ટકટ્સ</translation>
 <translation id="1360432990279830238">સાઇન આઉટ કરી સિંકનો વિકલ્પ બંધ કરવો છે?</translation>
-<translation id="1364532808393826295"><ph name="APP_NAME" /> - <ph name="NOTIFICATION_MESSAGE" /></translation>
 <translation id="1373696734384179344">પસંદ કરેલ કન્ટેન્ટ ડાઉનલોડ કરવા માટે મેમરી અપૂરતી છે.</translation>
 <translation id="1376578503827013741">ગણતરી કરી રહ્યાં છે…</translation>
 <translation id="1383876407941801731">શોધો</translation>
@@ -122,7 +120,6 @@
 <translation id="2013642289801508067">{FILE_COUNT,plural, =1{# ફાઇલ}one{# ફાઇલો}other{# ફાઇલો}}</translation>
 <translation id="2017836877785168846">ઍડ્રેસ બારમાં ઇતિહાસ અને સ્વતઃપૂર્ણ કરવું સાફ કરો.</translation>
 <translation id="2021896219286479412">પૂર્ણ સ્ક્રીન સાઇટ નિયંત્રણો</translation>
-<translation id="2030769033451695672"><ph name="URL_OF_THE_CURRENT_TAB" /> પર પરત ફરવા માટે, ટૅપ કરો</translation>
 <translation id="2038563949887743358">વિનંતી ડેસ્કટૉપ સાઇટ ચાલુ કરો</translation>
 <translation id="204321170514947529"><ph name="APP_NAME" /> નો ડેટા Chromeમાં પણ છે</translation>
 <translation id="2049574241039454490"><ph name="FILE_SIZE_OF_TOTAL" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
@@ -592,7 +589,6 @@
 <translation id="5876056640971328065">વીડિયો થોભાવો</translation>
 <translation id="5884076754568147479">કામને પૂર્ણ કરવામાં તમારી સહાય માટે, Googleને તમે જેના પર આસિસ્ટંટનો ઉપયોગ કરો છો તે URLs અને સાઇટના કન્ટેન્ટ તેમજ તમે આસિસ્ટંટ મારફતે સબમિટ કરો છો તે માહિતી મળશે</translation>
 <translation id="5919204609460789179">સમન્વયન પ્રારંભ કરવા માટે <ph name="PRODUCT_NAME" /> અપડેટ કરો</translation>
-<translation id="5922853908706496913">તમારી સ્ક્રીન શેર કરીએ છીએ</translation>
 <translation id="5937580074298050696"><ph name="AMOUNT" /> ડેટા બચાવ્યો</translation>
 <translation id="5939518447894949180">રીસેટ કરો</translation>
 <translation id="5942872142862698679">શોધ માટે Google નો ઉપયોગ કરી રહ્યાં છે</translation>
@@ -779,7 +775,6 @@
 <translation id="7514365320538308">ડાઉનલોડ કરો</translation>
 <translation id="751961395872307827">સાઇટ સાથે કનેક્ટ કરી શકાતું નથી</translation>
 <translation id="7542481630195938534">સૂચનો મેળવી શકતાં નથી</translation>
-<translation id="7554752735887601236">કોઈ સાઇટ તમારા માઇક્રોફોનનો ઉપયોગ કરી રહી છે</translation>
 <translation id="7559975015014302720">લાઇટ મોડ બંધ છે</translation>
 <translation id="7562080006725997899">બ્રાઉઝિંગ ડેટા સાફ કરો</translation>
 <translation id="756809126120519699">Chrome ડેટા સાફ કર્યો</translation>
@@ -813,7 +808,6 @@
 <translation id="7774809984919390718">{PAYMENT_METHOD,plural, =1{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 અને વધુ <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}one{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 અને વધુ <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}other{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 અને વધુ <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}}</translation>
 <translation id="7791543448312431591">ઉમેરો</translation>
 <translation id="780301667611848630">નહીં, આભાર</translation>
-<translation id="7804248752222191302">કોઈ સાઇટ તમારા કૅમેરાનો ઉપયોગ કરી રહી છે</translation>
 <translation id="7810647596859435254">આની સાથે ખોલો…</translation>
 <translation id="7821588508402923572">તમારી ડેટા બચત અહીં દેખાશે</translation>
 <translation id="783819812427904514">વીડિયોને અનમ્યૂટ કરો</translation>
@@ -885,9 +879,7 @@
 <translation id="8349013245300336738">વપરાયેલ ડેટાના પ્રમાણ અનુસાર સૉર્ટ કરો</translation>
 <translation id="8364299278605033898">લોકપ્રિય વેબસાઇટ જુઓ</translation>
 <translation id="8368027906805972958">અજાણ્યું અથવા અસમર્થિત ડિવાઇસ (<ph name="DEVICE_ID" />)</translation>
-<translation id="83792324527827022">કોઈ સાઇટ તમારા કૅમેરા અને માઇક્રોફોનનો ઉપયોગ કરી રહી છે</translation>
 <translation id="8393700583063109961">સંદેશ મોકલો</translation>
-<translation id="8394832520002899662">સાઇટ પર પાછા ફરવા માટે, ટૅપ કરો</translation>
 <translation id="8413126021676339697">પૂર્ણ ઇતિહાસ બતાવો</translation>
 <translation id="8427875596167638501">પ્રીવ્યૂ ટૅબ અડધી ઊંચાઈએ ખુલી</translation>
 <translation id="8428213095426709021">સેટિંગ્સ</translation>
@@ -984,7 +976,6 @@
 <translation id="970715775301869095"><ph name="MINUTES" /> મિનિટ બાકી</translation>
 <translation id="974555521953189084">સમન્વયન શરૂ કરવા માટે તમારો પાસફ્રેઝ દાખલ કરો</translation>
 <translation id="981121421437150478">ઑફલાઇન</translation>
-<translation id="982182592107339124">આ બધી સાઇટ્સ પરથી ડેટા સાફ કરશે, આ સહિત:</translation>
 <translation id="983192555821071799">બધા ટેબ્સ બંધ કરો</translation>
 <translation id="987264212798334818">સામાન્ય</translation>
 </translationbundle>

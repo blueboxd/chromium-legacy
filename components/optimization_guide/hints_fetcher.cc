@@ -17,6 +17,7 @@
 #include "components/optimization_guide/proto/hints.pb.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
+#include "components/variations/net/variations_http_headers.h"
 #include "content/public/browser/network_service_instance.h"
 #include "net/base/load_flags.h"
 #include "net/base/url_util.h"
@@ -234,8 +235,12 @@ bool HintsFetcher::FetchOptimizationGuideServiceHints(
   resource_request->method = "POST";
   resource_request->credentials_mode = network::mojom::CredentialsMode::kOmit;
 
-  active_url_loader_ = network::SimpleURLLoader::Create(
-      std::move(resource_request), traffic_annotation);
+  active_url_loader_ = variations::CreateSimpleURLLoaderWithVariationsHeader(
+      std::move(resource_request),
+      // This is always InIncognito::kNo as the OptimizationGuideKeyedService is
+      // not enabled on incognito sessions and is rechecked before each fetch.
+      variations::InIncognito::kNo, variations::SignedIn::kNo,
+      traffic_annotation);
 
   active_url_loader_->AttachStringForUpload(serialized_request,
                                             "application/x-protobuf");

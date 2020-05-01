@@ -3,12 +3,15 @@
 <translationbundle lang="si">
 <translation id="1006017844123154345">සබැඳිව විවෘත කරන්න</translation>
 <translation id="1044891598689252897">වෙබ් අඩවි සාමාන්‍යයෙන් ක්‍රියා කරයි</translation>
+<translation id="1124090076051167250">මෙය වෙබ් අඩවි හෝ යෙදුම් මඟින් ඔබේ මුල් තිරය මත ගබඩා කර ඇති දත්ත සහ කුකී <ph name="DATASIZE" /> ක් ඉවත් කරයි.</translation>
 <translation id="1124772482545689468">පරිශීලක</translation>
 <translation id="1178581264944972037">විරාමය</translation>
 <translation id="1181037720776840403">ඉවත් කරන්න</translation>
 <translation id="1201402288615127009">ඊළඟ</translation>
 <translation id="1242008676835033345"><ph name="WEBSITE_URL" /> මත කාවද්දන්න</translation>
+<translation id="1272079795634619415">නවතන්න</translation>
 <translation id="129382876167171263">වෙබ් අඩවිවලින් සුරකින ලද ගොනු මෙහි දිස් වෙති</translation>
+<translation id="1364532808393826295"><ph name="APP_NAME" />, <ph name="NOTIFICATION_MESSAGE" /></translation>
 <translation id="1369915414381695676">අඩවි <ph name="SITE_NAME" /> එක් කරන ලදී</translation>
 <translation id="1383876407941801731">සොයන්න</translation>
 <translation id="1384959399684842514">බාගැනීම විරාමයි</translation>
@@ -29,6 +32,7 @@
 <translation id="1984937141057606926">අනුමතයි, තෙවන පාර්ශව හැර</translation>
 <translation id="1994173015038366702">අඩවි URL</translation>
 <translation id="2025115093177348061">ආවර්ධිත යථාර්ථය</translation>
+<translation id="2030769033451695672"><ph name="URL_OF_THE_CURRENT_TAB" /> වෙත ආපසු යාමට තට්ටු කරන්න</translation>
 <translation id="2041019821020695769">Chrome හට ඔබ දැනුම්දීම් යැවීමට ඉඩ දීමට, <ph name="BEGIN_LINK" />Android සැකසීම්<ph name="END_LINK" /> තුළ ද දැනුම්දීම් සක්‍රීය කරන්න.</translation>
 <translation id="2079545284768500474">පසුගමනය</translation>
 <translation id="2091887806945687916">හඬ</translation>
@@ -104,6 +108,7 @@
 <translation id="5048398596102334565">වෙබ් අඩවිවලට චලන සංවේදකවලට ප්‍රවේශ වීමට ඉඩ දෙන්න (නිර්දේශිතයි)</translation>
 <translation id="5063480226653192405">භාවිතය</translation>
 <translation id="5100237604440890931">හකුළන ලදි - දිග හැරීමට ක්ලික් කරන්න</translation>
+<translation id="5123685120097942451">අප්‍රකට පටිත්ත</translation>
 <translation id="5300589172476337783">පෙන්වන්න</translation>
 <translation id="5301954838959518834">හරි, එය තේරුණා</translation>
 <translation id="5307446750509046227">වෙබ් අඩවි ආචයනය හිස් කරන්න</translation>
@@ -123,9 +128,11 @@
 <translation id="5677928146339483299">බාධාකළ</translation>
 <translation id="5689516760719285838">ස්ථානය</translation>
 <translation id="5710871682236653961">ඔබ NFC උපාංග තට්ටු කරන විට වෙබ් අඩවිවලට තොරතුරු යැවීමට සහ ලැබීමට ඉඩ දීමට පෙර අසන්න (නිර්දේශිතයි)</translation>
+<translation id="5719847187258001597">මෙය <ph name="ORIGIN" /> හෝ එහි යෙදුම විසින් ඔබේ මුල් තිරය මත ගබා කරනු ලැබූ සියලුම දත්ත සහ කුකී ඉවත් කරයි.</translation>
 <translation id="5804241973901381774">අවසර</translation>
 <translation id="5860033963881614850">අක්‍රීය</translation>
 <translation id="5916664084637901428">ක්‍රියාත්මකයි</translation>
+<translation id="5922853908706496913">ඔබේ තිරය බෙදා ගැනීම</translation>
 <translation id="5939518447894949180">නැවත සකසන්න</translation>
 <translation id="6040143037577758943">වසන්න</translation>
 <translation id="6042308850641462728">වැඩිදුර</translation>
@@ -169,6 +176,7 @@
 <translation id="7423098979219808738">පළමුව අසන්න</translation>
 <translation id="7423538860840206698">පසුරු පුවරුව කියවීමෙන් අවහිරයි</translation>
 <translation id="7521387064766892559">JavaScript</translation>
+<translation id="7554752735887601236">වෙබ් අඩවියක් ඔබේ මයික්‍රොෆෝනය භාවිත කරයි</translation>
 <translation id="7572498721684305250">ඔබ NFC උපාංග තට්ටු කරන විට වෙබ් අඩවිවලින් තොරතුරු යැවීම හෝ ලැබීම අවහිර කරන්න</translation>
 <translation id="757524316907819857">ආරක්ෂිත අන්තර්ගත වාදනය කරමින් තිබෙන අඩවි තහනම් කිරීම</translation>
 <translation id="7589445247086920869">වත්මන් සෙවුම් යන්ත්‍රය සඳහා අවහිර කරන්න</translation>
@@ -177,6 +185,7 @@
 <translation id="7781829728241885113">ඊයේ</translation>
 <translation id="7791543448312431591">එක් කරන්න</translation>
 <translation id="780301667611848630">එපා, ස්තූතියි</translation>
+<translation id="7804248752222191302">වෙබ් අඩවියක් ඔබේ කැමරාව භාවිත කරයි</translation>
 <translation id="7817023149356982970">ඔබ මෙම වෙබ් අඩවියන් වරනු ලැබේ.</translation>
 <translation id="7828557259026017104">කුකීස් යනු ඔබ පැමිණෙන වෙබ් අඩවිවලින් නිර්මාණ කෙරෙන ගොනු වේ. වෙබ් අඩවි ඔබේ මනාප මතක තබා ගැනීමට ඒවා භාවිත කරයි. තෙවන පාර්ශ්ව කුකී වෙනත් වෙබ් අඩවිවලින් නිර්මාණ කෙරේ. මෙම වෙබ් පිටුවලට ඔබ පැමිණෙන වෙබ් අඩවිය මත ඔබ දකින රූප හෝ දැන්වීම් වැනි සමහර අන්තර්ගත හිමි වේ.</translation>
 <translation id="7846076177841592234">තේරීම අවලංගු කරන්න</translation>
@@ -194,7 +203,9 @@
 <translation id="8261506727792406068">මකන්න</translation>
 <translation id="8300705686683892304">යෙදුමෙන් කළමනා කෙරෙන</translation>
 <translation id="8372893542064058268">නිශ්චිත අඩවියක් සඳහා පසුබිම සමමුහුර්ත කිරීමට ඉඩ දෙන්න.</translation>
+<translation id="83792324527827022">වෙබ් අඩවියක් ඔබේ කැමරාව සහ මයික්‍රොෆෝනය භාවිත කරයි</translation>
 <translation id="8380167699614421159">මෙම වෙබ් අඩවිය ආක්‍රමණික හෝ නොමඟ යවන දැන්වීම් පෙන්වයි</translation>
+<translation id="8394832520002899662">වෙබ් අඩවියට ආපසු යාමට තට්ටු කරන්න</translation>
 <translation id="8447861592752582886">උපාංගයේ අවසර අහෝසි කරන්න</translation>
 <translation id="851751545965956758">අඩවි උපාංගවලට සම්බන්ධ වීම අවහිර කරන්න</translation>
 <translation id="857943718398505171">ඉඩ දේ (නිර්දේශිතයි)</translation>

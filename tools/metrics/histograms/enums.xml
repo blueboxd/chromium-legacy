@@ -28416,6 +28416,7 @@ Called by update_feature_policy_enum.py.-->
   <int value="4" label="ARC App"/>
   <int value="5" label="Crostini App"/>
   <int value="6" label="Web App"/>
+  <int value="7" label="Plugin VM App"/>
 </enum>
 
 <enum name="FileManagerVolumeType">
@@ -38246,6 +38247,7 @@ from previous Chrome versions.
   <int value="-1772905637"
       label="RunVideoCaptureServiceInBrowserProcess:enabled"/>
   <int value="-1772172557" label="enable-osk-overscroll"/>
+  <int value="-1771552112" label="QueryTilesInOmnibox:disabled"/>
   <int value="-1768672408" label="ChromeDuplex:disabled"/>
   <int value="-1768308156" label="OmniboxDedupeGoogleDriveURLs:enabled"/>
   <int value="-1767470652" label="out-of-process-pdf"/>
@@ -38847,6 +38849,7 @@ from previous Chrome versions.
   <int value="-1119700637" label="ui-disable-partial-swap"/>
   <int value="-1118921985" label="ForceEnableSystemAec:enabled"/>
   <int value="-1117104514" label="smbfs-file-shares"/>
+  <int value="-1116278039" label="ShelfAppScaling:disabled"/>
   <int value="-1114080030" label="ResourceLoadingHints:enabled"/>
   <int value="-1112782121" label="AndroidSigninPromos:disabled"/>
   <int value="-1109826787" label="AccessibilityExposeDisplayNone:enabled"/>
@@ -39360,6 +39363,7 @@ from previous Chrome versions.
   <int value="-518104091" label="NewAudioRenderingMixingStrategy:enabled"/>
   <int value="-516845951" label="enable-embedded-extension-options"/>
   <int value="-515913489" label="EphemeralTabUsingBottomSheet:disabled"/>
+  <int value="-514076866" label="MovablePartialScreenshot:disabled"/>
   <int value="-513967943" label="CryptAuthV2Enrollment:disabled"/>
   <int value="-513305102" label="LanguagesPreference:enabled"/>
   <int value="-513066193" label="SyncUSSPasswords:enabled"/>
@@ -39693,6 +39697,7 @@ from previous Chrome versions.
       label="NTPArticleSuggestionsExpandableHeader:enabled"/>
   <int value="-110726049" label="KeyboardLockAPI:disabled"/>
   <int value="-110465424" label="PictureInPicture:enabled"/>
+  <int value="-109569254" label="QueryTilesInOmnibox:enabled"/>
   <int value="-108881882" label="NTPCondensedTileLayout:enabled"/>
   <int value="-108468535" label="ChromeColorsCustomColorPicker:disabled"/>
   <int value="-106373261" label="PaintPreviewDemo:enabled"/>
@@ -39894,6 +39899,7 @@ from previous Chrome versions.
   <int value="109577361" label="ForbidSyncXHRInPageDismissal:enabled"/>
   <int value="110888614" label="ReduceDisplayNotifications:enabled"/>
   <int value="112140177" label="DesktopPWAsUnifiedInstall:disabled"/>
+  <int value="114541256" label="HomepagePromoCard:disabled"/>
   <int value="115915570"
       label="OmniboxUIExperimentHideSteadyStateUrlPathQueryAndRef:enabled"/>
   <int value="116287989"
@@ -40018,6 +40024,7 @@ from previous Chrome versions.
   <int value="291389947" label="PercentBasedScrolling:disabled"/>
   <int value="291482671" label="ExperimentalFlingAnimation:disabled"/>
   <int value="291866104" label="WebAuthenticationPhoneSupport:enabled"/>
+  <int value="291968978" label="HomepagePromoCard:enabled"/>
   <int value="292560715" label="ViewsCastDialog:disabled"/>
   <int value="293134455" label="AutofillSendBillingCustomerNumber:disabled"/>
   <int value="293996306" label="ArrayPrototypeValues:disabled"/>
@@ -40204,6 +40211,7 @@ from previous Chrome versions.
   <int value="481506759" label="ServiceWorkerScriptStreaming:enabled"/>
   <int value="482232604" label="PercentBasedScrolling:enabled"/>
   <int value="487810392" label="EnablePalmOnToolTypePalm:enabled"/>
+  <int value="491334698" label="ConditionalTabStripAndroid:enabled"/>
   <int value="492113129" label="ExperimentalAppBanners:enabled"/>
   <int value="492985975" label="use-monitor-color-space"/>
   <int value="493903641" label="disable-appcontainer"/>
@@ -40624,6 +40632,7 @@ from previous Chrome versions.
       label="ContentSuggestionsThumbnailDominantColor:disabled"/>
   <int value="1005684777" label="PictureInPicture:disabled"/>
   <int value="1006608931" label="ArcEnableUnifiedAudioFocus:disabled"/>
+  <int value="1006691801" label="ConditionalTabStripAndroid:disabled"/>
   <int value="1007444341" label="enable-prefixed-encrypted-media"/>
   <int value="1008677979"
       label="AutofillUseImprovedLabelDisambiguation:disabled"/>
@@ -41033,6 +41042,7 @@ from previous Chrome versions.
   <int value="1459803015" label="WebRtcEnableCaptureMultiChannelApm:enabled"/>
   <int value="1460747747" label="GdiTextPrinting:enabled"/>
   <int value="1460958818" label="NTPForeignSessionsSuggestions:enabled"/>
+  <int value="1461581256" label="MovablePartialScreenshot:enabled"/>
   <int value="1464028544" label="WinUseHybridSpellChecker:disabled"/>
   <int value="1465624446" label="disable-zero-copy"/>
   <int value="1466380480" label="enable-device-discovery-notifications"/>
@@ -41571,6 +41581,7 @@ from previous Chrome versions.
   <int value="2077106718" label="EnableMessagesWebPush:enabled"/>
   <int value="2077917024"
       label="enable-supervised-user-managed-bookmarks-folder"/>
+  <int value="2078599705" label="ShelfAppScaling:enabled"/>
   <int value="2079672348" label="ExperimentalKeyboardLockUI:disabled"/>
   <int value="2081154375" label="AssistantKeyRemapping:disabled"/>
   <int value="2084477383" label="CrostiniDiskResizing:enabled"/>
@@ -58255,6 +58266,8 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
       label="User clicked on the page at least once but the feature isn't
              configured to show warnings on mouse clicks."/>
   <int value="4" label="User clicked on the page and the warning was shown."/>
+  <int value="5"
+      label="Page tried to enter fullscreen mode and the warning was shown."/>
 </enum>
 
 <enum name="SafeBrowsingParseV4HashResult">
@@ -62237,6 +62250,7 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="31" label="UMA_SEARCH_ENGINE_CHOICE_NOTIFICATION"/>
   <int value="32" label="UMA_TAB_GROUP_MANUAL_CREATION_UNDO"/>
   <int value="33" label="UMA_TWA_PRIVACY_DISCLOSURE_V2"/>
+  <int value="34" label="UMA_HOMEPAGE_PROMO_CHANGED_UNDO"/>
 </enum>
 
 <enum name="SnapshotOperationResult">

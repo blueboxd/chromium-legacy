@@ -60,8 +60,5 @@ per-file webui_url_constants.h=file://ui/webui/PLATFORM_OWNERS
 # Thread profiling
 per-file thread_profiler*=wittman@chromium.org
 
-# Heap profiler
-per-file heap_profiler*=alph@chromium.org
-
 # Web Applications
 per-file web_application_info.*=file://chrome/browser/web_applications/OWNERS

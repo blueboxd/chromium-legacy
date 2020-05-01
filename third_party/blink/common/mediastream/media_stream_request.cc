@@ -4,7 +4,7 @@
 
 #include "third_party/blink/public/common/mediastream/media_stream_request.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "build/build_config.h"
 
 namespace blink {

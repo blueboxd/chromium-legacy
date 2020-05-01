@@ -290,13 +290,16 @@ void RenderFrameHostManager::InitRoot(SiteInstance* site_instance,
                                       bool renderer_initiated_creation) {
   SetRenderFrameHost(CreateRenderFrameHost(
       CreateFrameCase::kInitRoot, site_instance,
-      /*frame_routing_id=*/MSG_ROUTING_NONE, renderer_initiated_creation));
+      /*frame_routing_id=*/MSG_ROUTING_NONE, base::UnguessableToken::Create(),
+      renderer_initiated_creation));
 }
 
-void RenderFrameHostManager::InitChild(SiteInstance* site_instance,
-                                       int32_t frame_routing_id) {
+void RenderFrameHostManager::InitChild(
+    SiteInstance* site_instance,
+    int32_t frame_routing_id,
+    const base::UnguessableToken& frame_token) {
   SetRenderFrameHost(CreateRenderFrameHost(
-      CreateFrameCase::kInitChild, site_instance, frame_routing_id,
+      CreateFrameCase::kInitChild, site_instance, frame_routing_id, frame_token,
       /*renderer_initiated_creation=*/false));
   // Notify the delegate of the creation of the current RenderFrameHost.
   // Do this only for subframes, as the main frame case is taken care of by
@@ -1269,7 +1272,7 @@ RenderFrameHostManager::ShouldSwapBrowsingInstancesForNavigation(
     SiteInstanceImpl* source_instance,
     SiteInstanceImpl* current_instance,
     SiteInstance* destination_instance,
-    const GURL& destination_effective_url,
+    const GURL& destination_url,
     bool destination_is_view_source_mode,
     ui::PageTransition transition,
     bool is_failure,
@@ -1311,7 +1314,8 @@ RenderFrameHostManager::ShouldSwapBrowsingInstancesForNavigation(
   // the new URL will be rendered in a new SiteInstance AND BrowsingInstance.
   BrowserContext* browser_context =
       delegate_->GetControllerForRenderManager().GetBrowserContext();
-
+  const GURL& destination_effective_url =
+      SiteInstanceImpl::GetEffectiveURL(browser_context, destination_url);
   // Don't force a new BrowsingInstance for URLs that are handled in the
   // renderer process, like javascript: or debug URLs like chrome://crash.
   if (IsRendererDebugURL(destination_effective_url))
@@ -1408,13 +1412,12 @@ RenderFrameHostManager::ShouldSwapBrowsingInstancesForNavigation(
       is_failure && SiteIsolationPolicy::IsErrorPageIsolationEnabled(
                         frame_tree_node_->IsMainFrame());
   if (current_instance->HasSite() &&
-      !IsCurrentlySameSite(render_frame_host_.get(),
-                           destination_effective_url) &&
-      !CanUseSourceSiteInstance(destination_effective_url, source_instance,
+      !IsCurrentlySameSite(render_frame_host_.get(), destination_url) &&
+      !CanUseSourceSiteInstance(destination_url, source_instance,
                                 was_server_redirect, is_failure) &&
       !is_for_isolated_error_page &&
-      IsBrowsingInstanceSwapAllowedForPageTransition(
-          transition, destination_effective_url)) {
+      IsBrowsingInstanceSwapAllowedForPageTransition(transition,
+                                                     destination_url)) {
     return ShouldSwapBrowsingInstance::kYes_ForceSwap;
   }
 
@@ -1487,8 +1490,7 @@ RenderFrameHostManager::GetSiteInstanceForNavigation(
       ShouldSwapBrowsingInstancesForNavigation(
           current_effective_url, current_is_view_source_mode, source_instance,
           static_cast<SiteInstanceImpl*>(current_instance), dest_instance,
-          SiteInstanceImpl::GetEffectiveURL(browser_context, dest_url),
-          dest_is_view_source_mode, transition, is_failure, is_reload,
+          dest_url, dest_is_view_source_mode, transition, is_failure, is_reload,
           cross_origin_opener_policy_mismatch, was_server_redirect);
   bool proactive_swap =
       (should_swap_result == ShouldSwapBrowsingInstance::kYes_ProactiveSwap);
@@ -2049,6 +2051,7 @@ RenderFrameHostManager::CreateRenderFrameHost(
     CreateFrameCase create_frame_case,
     SiteInstance* site_instance,
     int32_t frame_routing_id,
+    const base::UnguessableToken& frame_token,
     bool renderer_initiated_creation) {
   FrameTree* frame_tree = frame_tree_node_->frame_tree();
 
@@ -2101,7 +2104,8 @@ RenderFrameHostManager::CreateRenderFrameHost(
   return RenderFrameHostFactory::Create(
       site_instance, std::move(render_view_host),
       frame_tree->render_frame_delegate(), frame_tree, frame_tree_node_,
-      frame_routing_id, renderer_initiated_creation, lifecycle_state);
+      frame_routing_id, frame_token, renderer_initiated_creation,
+      lifecycle_state);
 }
 
 bool RenderFrameHostManager::CreateSpeculativeRenderFrameHost(
@@ -2168,6 +2172,7 @@ RenderFrameHostManager::CreateSpeculativeRenderFrame(SiteInstance* instance) {
   std::unique_ptr<RenderFrameHostImpl> new_render_frame_host =
       CreateRenderFrameHost(CreateFrameCase::kCreateSpeculative, instance,
                             /*frame_routing_id=*/MSG_ROUTING_NONE,
+                            base::UnguessableToken::Create(),
                             /*renderer_initiated_creation=*/false);
   DCHECK_EQ(new_render_frame_host->GetSiteInstance(), instance);
 
@@ -2338,7 +2343,8 @@ void RenderFrameHostManager::SwapOuterDelegateFrame(
   render_frame_host->Send(new UnfreezableFrameMsg_Unload(
       render_frame_host->GetRoutingID(), proxy->GetRoutingID(),
       false /* is_loading */,
-      render_frame_host->frame_tree_node()->current_replication_state()));
+      render_frame_host->frame_tree_node()->current_replication_state(),
+      proxy->GetFrameToken()));
   proxy->SetRenderFrameProxyCreated(true);
 }
 
@@ -2366,6 +2372,10 @@ bool RenderFrameHostManager::InitRenderView(
   bool created = delegate_->CreateRenderViewForRenderManager(
       render_view_host, opener_frame_routing_id,
       proxy ? proxy->GetRoutingID() : MSG_ROUTING_NONE,
+      proxy
+          ? proxy->GetFrameToken()
+          : static_cast<RenderFrameHostImpl*>(render_view_host->GetMainFrame())
+                ->frame_token(),
       frame_tree_node_->devtools_frame_token(),
       frame_tree_node_->current_replication_state());
 

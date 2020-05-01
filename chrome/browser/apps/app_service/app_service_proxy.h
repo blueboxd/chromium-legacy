@@ -28,10 +28,12 @@
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/apps/app_service/built_in_chromeos_apps.h"
 #include "chrome/browser/apps/app_service/crostini_apps.h"
-#include "chrome/browser/apps/app_service/extension_apps.h"
+#include "chrome/browser/apps/app_service/extension_apps_chromeos.h"
 #include "chrome/browser/apps/app_service/plugin_vm_apps.h"
 #include "chrome/browser/apps/app_service/web_apps.h"
 #include "chrome/services/app_service/public/cpp/instance_registry.h"
+#else
+#include "chrome/browser/apps/app_service/extension_apps.h"
 #endif  // OS_CHROMEOS
 
 class PrefRegistrySimple;
@@ -40,9 +42,10 @@ class Profile;
 namespace apps {
 
 class AppServiceImpl;
-class UninstallDialog;
 
 #if defined(OS_CHROMEOS)
+class UninstallDialog;
+
 struct PauseData {
   int hours = 0;
   int minutes = 0;
@@ -175,11 +178,13 @@ class AppServiceProxy : public KeyedService,
   void FlushMojoCallsForTesting();
   apps::IconLoader* OverrideInnerIconLoaderForTesting(
       apps::IconLoader* icon_loader);
+#if defined(OS_CHROMEOS)
   void ReInitializeCrostiniForTesting(Profile* profile);
   void SetDialogCreatedCallbackForTesting(base::OnceClosure callback);
   void UninstallForTesting(const std::string& app_id,
                            gfx::NativeWindow parent_window,
                            base::OnceClosure callback);
+#endif
 
   // Returns a list of apps (represented by their ids) which can handle |url|.
   std::vector<std::string> GetAppIdsForUrl(const GURL& url);
@@ -291,6 +296,7 @@ class AppServiceProxy : public KeyedService,
   void InitializePreferredApps(
       PreferredAppsList::PreferredApps preferred_apps) override;
 
+#if defined(OS_CHROMEOS)
   void UninstallImpl(const std::string& app_id,
                      gfx::NativeWindow parent_window,
                      base::OnceClosure callback);
@@ -309,7 +315,6 @@ class AppServiceProxy : public KeyedService,
                                bool report_abuse,
                                UninstallDialog* uninstall_dialog);
 
-#if defined(OS_CHROMEOS)
   // Returns true if the app cannot be launched and a launch prevention dialog
   // is shown to the user (e.g. the app is paused or blocked). Returns false
   // otherwise (and the app can be launched).
@@ -367,11 +372,12 @@ class AppServiceProxy : public KeyedService,
 #if defined(OS_CHROMEOS)
   std::unique_ptr<BuiltInChromeOsApps> built_in_chrome_os_apps_;
   std::unique_ptr<CrostiniApps> crostini_apps_;
-  std::unique_ptr<ExtensionApps> extension_apps_;
+  std::unique_ptr<ExtensionAppsChromeOs> extension_apps_;
   std::unique_ptr<PluginVmApps> plugin_vm_apps_;
   // TODO(crbug.com/877898): Erase extension_web_apps_. One of these is always
   // nullptr.
-  std::unique_ptr<ExtensionApps> extension_web_apps_;
+  std::unique_ptr<ExtensionAppsChromeOs> extension_web_apps_;
+  // TODO(crbug.com/1074774): Move web_apps_ to Chrome.
   std::unique_ptr<WebApps> web_apps_;
 
   bool arc_is_registered_ = false;
@@ -384,7 +390,14 @@ class AppServiceProxy : public KeyedService,
   // |pending_pause_requests|. If the app status is paused in AppRegistryCache
   // or pending_pause_requests, the app can't be launched.
   PausedApps pending_pause_requests_;
-#endif  // OS_CHROMEOS
+
+  using UninstallDialogs = std::set<std::unique_ptr<apps::UninstallDialog>,
+                                    base::UniquePtrComparator>;
+  UninstallDialogs uninstall_dialogs_;
+#else
+  // TODO(crbug.com/877898): Erase extension_web_apps_ when BMO is on.
+  std::unique_ptr<ExtensionApps> extension_web_apps_;
+#endif
 
   Profile* profile_;
 
@@ -392,10 +405,6 @@ class AppServiceProxy : public KeyedService,
   // to AppServiceProxy when publishers(ExtensionApps and WebApps) can run on
   // Chrome.
   std::unique_ptr<apps::BrowserAppLauncher> browser_app_launcher_;
-
-  using UninstallDialogs = std::set<std::unique_ptr<apps::UninstallDialog>,
-                                    base::UniquePtrComparator>;
-  UninstallDialogs uninstall_dialogs_;
 
   bool is_using_testing_profile_ = false;
   base::OnceClosure dialog_created_callback_;

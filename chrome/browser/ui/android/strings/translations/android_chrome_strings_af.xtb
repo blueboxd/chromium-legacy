@@ -38,7 +38,6 @@
 <translation id="1258753120186372309">Google-logoskets: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1260236875608242557">Soek en verken</translation>
 <translation id="1266864766717917324">Kon nie <ph name="CONTENT_TYPE" /> deel nie.</translation>
-<translation id="1272079795634619415">Stop</translation>
 <translation id="1283039547216852943">Tik om uit te vou</translation>
 <translation id="1285320974508926690">Moet nooit hierdie werf vertaal nie</translation>
 <translation id="1291207594882862231">Maak geskiedenis, webkoekies, werfdata, kas skoon …</translation>
@@ -50,8 +49,8 @@
 <translation id="1327257854815634930">Navigasiegeskiedenis is oopgemaak</translation>
 <translation id="1331212799747679585">Chrome kan nie opdateer nie. Meer opsies</translation>
 <translation id="1332501820983677155">Google Chrome-kenmerkkortpaaie</translation>
+<translation id="1347468774581902829">Bestuur aktiwiteit</translation>
 <translation id="1360432990279830238">Meld af en skakel sinkronisasie af?</translation>
-<translation id="1364532808393826295"><ph name="APP_NAME" /> – <ph name="NOTIFICATION_MESSAGE" /></translation>
 <translation id="1373696734384179344">Onvoldoende berging om die geselekteerde inhoud af te laai.</translation>
 <translation id="1376578503827013741">Bereken tans …</translation>
 <translation id="1383876407941801731">Soek</translation>
@@ -122,7 +121,6 @@
 <translation id="2013642289801508067">{FILE_COUNT,plural, =1{# lêer}other{# lêers}}</translation>
 <translation id="2017836877785168846">Vee geskiedenis en outovoltooiings in die adresbalk uit.</translation>
 <translation id="2021896219286479412">Volskermwerfkontroles</translation>
-<translation id="2030769033451695672">Tik om na <ph name="URL_OF_THE_CURRENT_TAB" /> terug te keer</translation>
 <translation id="2038563949887743358">Skakel Versoek rekenaarwerf aan</translation>
 <translation id="204321170514947529"><ph name="APP_NAME" /> het ook data in Chrome</translation>
 <translation id="2049574241039454490"><ph name="FILE_SIZE_OF_TOTAL" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
@@ -434,6 +432,7 @@ Jou Google-rekening het dalk ander vorme van blaaigeskiedenis, soos soektogte en
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> boekmerke is uitgevee</translation>
 <translation id="4665282149850138822"><ph name="NAME" /> is by jou tuisskerm gevoeg</translation>
 <translation id="4684427112815847243">Sinkroniseer alles</translation>
+<translation id="4688610874307684559">Werk tans in Chrome (aanvanklik)</translation>
 <translation id="4695891336199304370">{SHIPPING_OPTIONS,plural, =1{<ph name="SHIPPING_OPTION_PREVIEW" /> \u2026 en nog <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}other{<ph name="SHIPPING_OPTION_PREVIEW" /> \u2026 en nog <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}}</translation>
 <translation id="4696983787092045100">Stuur teks na jou toestelle toe</translation>
 <translation id="4698034686595694889">Bekyk vanlyn in <ph name="APP_NAME" /></translation>
@@ -592,7 +591,6 @@ Jou Google-rekening het dalk ander vorme van blaaigeskiedenis, soos soektogte en
 <translation id="5876056640971328065">Onderbreek video</translation>
 <translation id="5884076754568147479">Om jou te help om take te voltooi, sal Google die URL'e en inhoud ontvang van werwe waarop jy Assistent gebruik, asook inligting wat jy deur Assistent indien</translation>
 <translation id="5919204609460789179">Dateer <ph name="PRODUCT_NAME" /> op om sinkronisering te begin</translation>
-<translation id="5922853908706496913">Deel tans jou skerm</translation>
 <translation id="5937580074298050696"><ph name="AMOUNT" /> gestoor</translation>
 <translation id="5939518447894949180">Stel terug</translation>
 <translation id="5942872142862698679">Gebruik Google om te soek</translation>
@@ -773,16 +771,17 @@ Byvoorbeeld, sommige webwerwe kan op hierdie versoek reageer deur vir jou advert
 <translation id="7479104141328977413">Oortjiebestuur</translation>
 <translation id="7481312909269577407">Vorentoe</translation>
 <translation id="7482656565088326534">Voorskou-oortjie</translation>
+<translation id="7484997419527351112">Ontdek – af</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (opgedateer <ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7494974237137038751">data bespaar</translation>
 <translation id="7498271377022651285">Wag asseblief …</translation>
 <translation id="7514365320538308">Laai af</translation>
 <translation id="751961395872307827">Kan nie aan die werf koppel nie</translation>
 <translation id="7542481630195938534">Kan nie voorstelle kry nie</translation>
-<translation id="7554752735887601236">'n Werf gebruik tans jou mikrofoon</translation>
 <translation id="7559975015014302720">Ligte Modus is af</translation>
 <translation id="7562080006725997899">Vee blaaierdata uit</translation>
 <translation id="756809126120519699">Het Chrome-data uitgevee</translation>
+<translation id="7577900504646297215">Bestuur belangstellings</translation>
 <translation id="757855969265046257">{FILES,plural, =1{<ph name="FILES_DOWNLOADED_ONE" /> lêer is afgelaai}other{<ph name="FILES_DOWNLOADED_MANY" /> lêers is afgelaai}}</translation>
 <translation id="7588219262685291874">Skakel donkertema aan wanneer jou toestel se Batterybespaarder aan is</translation>
 <translation id="7593557518625677601">Maak Android-instellings oop en heraktiveer Android-stelselsinkronisering om Chrome-sinkronisering te begin</translation>
@@ -813,7 +812,6 @@ Byvoorbeeld, sommige webwerwe kan op hierdie versoek reageer deur vir jou advert
 <translation id="7774809984919390718">{PAYMENT_METHOD,plural, =1{<ph name="PAYMENT_METHOD_PREVIEW" /> \u2026 en nog <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}other{<ph name="PAYMENT_METHOD_PREVIEW" /> \u2026 en nog <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}}</translation>
 <translation id="7791543448312431591">Voeg by</translation>
 <translation id="780301667611848630">Nee, dankie</translation>
-<translation id="7804248752222191302">'n Werf gebruik tans jou kamera</translation>
 <translation id="7810647596859435254">Maak oop met …</translation>
 <translation id="7821588508402923572">Jou databesparing sal hier verskyn</translation>
 <translation id="783819812427904514">Ontdemp video</translation>
@@ -885,9 +883,7 @@ Byvoorbeeld, sommige webwerwe kan op hierdie versoek reageer deur vir jou advert
 <translation id="8349013245300336738">Rangskik volgens hoeveelheid data gebruik</translation>
 <translation id="8364299278605033898">Sien gewilde webwerwe</translation>
 <translation id="8368027906805972958">Onbekende of ongesteunde toestel (<ph name="DEVICE_ID" />)</translation>
-<translation id="83792324527827022">'n Werf gebruik tans jou kamera en mikrofoon</translation>
 <translation id="8393700583063109961">Stuur boodskap</translation>
-<translation id="8394832520002899662">Tik om na werf terug te keer</translation>
 <translation id="8413126021676339697">Wys volle geskiedenis</translation>
 <translation id="8427875596167638501">Voorskou-oortjie is half oopgemaak</translation>
 <translation id="8428213095426709021">Instellings</translation>
@@ -984,7 +980,6 @@ Byvoorbeeld, sommige webwerwe kan op hierdie versoek reageer deur vir jou advert
 <translation id="970715775301869095"><ph name="MINUTES" /> minute oor</translation>
 <translation id="974555521953189084">Voer jou wagfrase in om sinkronisering te begin</translation>
 <translation id="981121421437150478">Vanlyn</translation>
-<translation id="982182592107339124">Dit sal data vir alle werwe uitvee, insluitend:</translation>
 <translation id="983192555821071799">Maak alle oortjies toe</translation>
 <translation id="987264212798334818">Algemeen</translation>
 </translationbundle>

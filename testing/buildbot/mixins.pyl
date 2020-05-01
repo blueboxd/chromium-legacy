@@ -295,13 +295,6 @@
       },
     },
   },
-  'kitkat_generic': {
-    'swarming': {
-      'dimensions': {
-        'device_os': 'K',
-      },
-    },
-  },
   'limited_capacity_bot': {
     # Some FYI bot configurations have a limited number of bots in the swarming
     # pool. Increase the default expiration time from 1 hour to 6 hours to

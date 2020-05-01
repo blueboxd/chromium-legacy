@@ -509,7 +509,7 @@ ServiceWorkerContextWrapper::StartingExternalRequest(
   DCHECK_CURRENTLY_ON(GetCoreThreadId());
   if (!context())
     return ServiceWorkerExternalRequestResult::kNullContext;
-  ServiceWorkerVersion* version =
+  scoped_refptr<ServiceWorkerVersion> version =
       context()->GetLiveVersion(service_worker_version_id);
   if (!version)
     return ServiceWorkerExternalRequestResult::kWorkerNotFound;
@@ -523,7 +523,7 @@ ServiceWorkerContextWrapper::FinishedExternalRequest(
   DCHECK_CURRENTLY_ON(GetCoreThreadId());
   if (!context())
     return ServiceWorkerExternalRequestResult::kNullContext;
-  ServiceWorkerVersion* version =
+  scoped_refptr<ServiceWorkerVersion> version =
       context()->GetLiveVersion(service_worker_version_id);
   if (!version)
     return ServiceWorkerExternalRequestResult::kWorkerNotFound;

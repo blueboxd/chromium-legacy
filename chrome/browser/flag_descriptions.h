@@ -164,6 +164,9 @@ extern const char kAutofillPruneSuggestionsDescription[];
 extern const char kAutofillRestrictUnownedFieldsToFormlessCheckoutName[];
 extern const char kAutofillRestrictUnownedFieldsToFormlessCheckoutDescription[];
 
+extern const char kShelfAppScalingName[];
+extern const char kShelfAppScalingDescription[];
+
 extern const char kAutofillRichMetadataQueriesName[];
 extern const char kAutofillRichMetadataQueriesDescription[];
 
@@ -193,6 +196,9 @@ extern const char kOmniboxContextMenuShowFullUrlsDescription[];
 
 extern const char kClickToOpenPDFName[];
 extern const char kClickToOpenPDFDescription[];
+
+extern const char kConditionalTabStripAndroidName[];
+extern const char kConditionalTabStripAndroidDescription[];
 
 extern const char kDecodeJpeg420ImagesToYUVName[];
 extern const char kDecodeJpeg420ImagesToYUVDescription[];
@@ -1419,6 +1425,9 @@ extern const char kGamesHubDescription[];
 extern const char kHomepageLocationName[];
 extern const char kHomepageLocationDescription[];
 
+extern const char kHomepagePromoCardName[];
+extern const char kHomepagePromoCardDescription[];
+
 extern const char kHomepageSettingsUIConversionName[];
 extern const char kHomepageSettingsUIConversionDescription[];
 
@@ -1502,6 +1511,8 @@ extern const char kProcessSharingWithStrictSiteInstancesDescription[];
 
 extern const char kQueryTilesName[];
 extern const char kQueryTilesDescription[];
+extern const char kQueryTilesOmniboxName[];
+extern const char kQueryTilesOmniboxDescription[];
 extern const char kQueryTilesCountryCode[];
 extern const char kQueryTilesCountryCodeDescription[];
 extern const char kQueryTilesCountryCodeUS[];
@@ -1910,6 +1921,9 @@ extern const char kDisableOfficeEditingComponentAppDescription[];
 
 extern const char kDoubleTapToZoomInTabletModeName[];
 extern const char kDoubleTapToZoomInTabletModeDescription[];
+
+extern const char kMovablePartialScreenshotName[];
+extern const char kMovablePartialScreenshotDescription[];
 
 extern const char kEnableAdvancedPpdAttributesName[];
 extern const char kEnableAdvancedPpdAttributesDescription[];

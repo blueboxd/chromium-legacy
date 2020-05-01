@@ -5,7 +5,10 @@ khmel@chromium.org
 nancylingwang@chromium.org
 xiyuan@chromium.org
 
+# Mainly for launcher personalization purposes.
+jiameng@chromium.org
+tby@chromium.org
+
 per-file app_launch_event_logger*=charleszhao@chromium.org
-per-file app_launch_event_logger*=jiameng@chromium.org
 
 # COMPONENT: UI>Shell>Launcher

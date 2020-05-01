@@ -35,10 +35,6 @@ public class WebApkInfo extends WebappInfo {
         private String[] mFileNames;
         private String[][] mFileAccepts;
 
-        public ShareTarget() {
-            this(null, null, null, false, false, null, null);
-        }
-
         public ShareTarget(String action, String paramTitle, String paramText, boolean isMethodPost,
                 boolean isEncTypeMultipart, String[] fileNames, String[][] fileAccepts) {
             mData = new String[3];
@@ -52,15 +48,19 @@ public class WebApkInfo extends WebappInfo {
             mFileAccepts = fileAccepts != null ? fileAccepts : new String[0][];
         }
 
-        @Override
-        public boolean equals(Object o) {
-            if (!(o instanceof ShareTarget)) return false;
-            ShareTarget shareTarget = (ShareTarget) o;
-            return Arrays.equals(mData, shareTarget.mData)
-                    && mIsShareMethodPost == shareTarget.mIsShareMethodPost
-                    && mIsShareEncTypeMultipart == shareTarget.mIsShareEncTypeMultipart
-                    && Arrays.equals(mFileNames, shareTarget.mFileNames)
-                    && Arrays.deepEquals(mFileAccepts, shareTarget.mFileAccepts);
+        public static boolean equals(@Nullable ShareTarget s1, @Nullable ShareTarget s2) {
+            if (s1 == null) {
+                return (s2 == null);
+            }
+            if (s2 == null) {
+                return false;
+            }
+
+            return Arrays.equals(s1.mData, s2.mData)
+                    && s1.mIsShareMethodPost == s2.mIsShareMethodPost
+                    && s1.mIsShareEncTypeMultipart == s2.mIsShareEncTypeMultipart
+                    && Arrays.equals(s1.mFileNames, s2.mFileNames)
+                    && Arrays.deepEquals(s1.mFileAccepts, s2.mFileAccepts);
         }
 
         public String getAction() {

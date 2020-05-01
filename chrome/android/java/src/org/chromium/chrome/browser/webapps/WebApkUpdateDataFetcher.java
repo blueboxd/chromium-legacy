@@ -134,11 +134,12 @@ public class WebApkUpdateDataFetcher extends EmptyTabObserver {
         }
 
         // When share action is empty, we use a default empty share target
-        WebApkInfo.ShareTarget shareTarget = TextUtils.isEmpty(shareAction)
-                ? new WebApkInfo.ShareTarget()
-                : new WebApkInfo.ShareTarget(shareAction, shareParamsTitle, shareParamsText,
-                        isShareMethodPost, isShareEncTypeMultipart, shareParamsFileNames,
-                        shareParamsAccepts);
+        WebApkInfo.ShareTarget shareTarget = null;
+        if (!TextUtils.isEmpty(shareAction)) {
+            shareTarget = new WebApkInfo.ShareTarget(shareAction, shareParamsTitle, shareParamsText,
+                    isShareMethodPost, isShareEncTypeMultipart, shareParamsFileNames,
+                    shareParamsAccepts);
+        }
 
         int defaultBackgroundColor = SplashLayout.getDefaultBackgroundColor(appContext);
         WebappInfo info = WebApkInfo.create(mOldInfo.url(), scopeUrl,

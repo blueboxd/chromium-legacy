@@ -269,7 +269,8 @@ class RenderWidgetUnittest : public testing::Test {
                                        mojo::NullAssociatedReceiver());
     widget_ = std::make_unique<InteractiveRenderWidget>(&compositor_deps_);
     web_local_frame_ = blink::WebLocalFrame::CreateMainFrame(
-        web_view_, &web_frame_client_, nullptr, nullptr);
+        web_view_, &web_frame_client_, nullptr,
+        base::UnguessableToken::Create(), nullptr);
     web_frame_widget_ = blink::WebFrameWidget::CreateForMainFrame(
         widget_.get(), web_local_frame_,
         blink::CrossVariantMojoAssociatedRemote<

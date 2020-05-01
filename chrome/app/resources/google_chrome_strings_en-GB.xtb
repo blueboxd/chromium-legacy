@@ -97,7 +97,6 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="3582972582564653026">Sync and personalise Chrome across your devices</translation>
 <translation id="3596080736082218006">{COUNT,plural, =0{Your administrator requires that you relaunch Chrome to apply an update}=1{Your administrator requires that you relaunch Chrome to apply an update. Your Incognito window won't reopen.}other{Your administrator requires that you relaunch Chrome to apply an update. Your # Incognito windows won't reopen.}}</translation>
 <translation id="3622797965165704966">Now it's easier to use Chrome with your Google Account and on shared computers.</translation>
-<translation id="3637702109597584617">Google Chrome OS <ph name="TERMS_OF_SERVICE_LINK" />Terms of Service<ph name="END_TERMS_OF_SERVICE_LINK" /></translation>
 <translation id="3718181793972440140">This will delete 1 item from this device. To retrieve your data later, sign in to Chrome as <ph name="USER_EMAIL" />.</translation>
 <translation id="3735758079232443276">The extension "<ph name="EXTENSION_NAME" />" has changed the page that is shown when you start Chrome.</translation>
 <translation id="3780814664026482060">Chrome - <ph name="PAGE_TITLE" /></translation>
@@ -114,6 +113,7 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="4205939740494406371">Chrome can't check your passwords. Try again after 24 hours or <ph name="BEGIN_LINK" />check passwords in your Google Account<ph name="END_LINK" />.</translation>
 <translation id="424864128008805179">Sign out of Chrome?</translation>
 <translation id="4251615635259297716">Link my Chrome data to this account</translation>
+<translation id="4281844954008187215">Terms of Service</translation>
 <translation id="4293420128516039005">Sign in to sync and personalise Chrome across your devices</translation>
 <translation id="4328355335528187361">Google Chrome Dev (mDNS-In)</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
@@ -148,7 +148,6 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 
 Some features may be unavailable. Please specify a different profile directory or use a newer version of Chrome.</translation>
 <translation id="5193136243808726294">Google Chrome OS can't open this page.</translation>
-<translation id="5204098752394657250">Google Chrome <ph name="TERMS_OF_SERVICE_LINK" />Terms of Service<ph name="END_TERMS_OF_SERVICE_LINK" /></translation>
 <translation id="5251420635869119124">Guests can use Chrome without leaving anything behind.</translation>
 <translation id="532046782124376502">Warning: Google Chrome cannot prevent extensions from recording your browsing history. To disable this extension in incognito mode, unselect this option.</translation>
 <translation id="5386244825306882791">It also controls what page is shown when you start Chrome or search from the Omnibox.</translation>

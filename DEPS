@@ -178,11 +178,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '84aa92e42833f2f5bdd590825b5239dd301d1069',
+  'skia_revision': '6a6de65fd9330f1a2791810f8b18882a528ac6c0',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': '1a2073dcfd58d40559efc50834cff22e9b2140b0',
+  'v8_revision': '6d46c3affa70aaa3f047a5e75c206b91eeef0652',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling swarming_client
   # and whatever else without interference from each other.
@@ -190,11 +190,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': '9cac3c5823e76cb3c0c08e4d2f0ea6cbb5ecf46d',
+  'angle_revision': 'df31624eaf3df986a0bdf3f58a87b79b0cc8db5c',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
-  'swiftshader_revision': '78ec0ea4488708e77a78ec358e5b72fb16af9bb7',
+  'swiftshader_revision': '694e21400ee5dcdc1e5f9458464c9d6788367886',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling PDFium
   # and whatever else without interference from each other.
@@ -241,7 +241,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling catapult
   # and whatever else without interference from each other.
-  'catapult_revision': 'b0ad61f6ec5d0acf5497b33ca4055d5dbd7d056f',
+  'catapult_revision': 'd06fd11a1bab22b9c9e275ca5f3fa6ec8aa67ba2',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libFuzzer
   # and whatever else without interference from each other.
@@ -285,7 +285,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'spv_tools_revision': '49ca250b44c633ba7cb8897002e62781a451421c',
+  'spv_tools_revision': '2e1d208ed9deab9048a00e60bb891d5e12a8332e',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -301,11 +301,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'dawn_revision': 'e642b1d959d9e8db84f5afb487b4f363fce73bf8',
+  'dawn_revision': '303a3daf0decb8eaacb251346be317be00dda479',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'quiche_revision': 'b5e1d5b061a631bc8ffc37b43a8ccbe2f463935d',
+  'quiche_revision': '6b7aa8bce3fd2059dfbe01e79cc827dc33009a9c',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ios_webkit
   # and whatever else without interference from each other.
@@ -871,7 +871,7 @@ deps = {
   },
 
   'src/third_party/depot_tools':
-    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + '3e87ceaf336cb349c758c08e27c3e85295903031',
+    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + '37518fb2efa7a22ec6053e51599d0230f5bc589b',
 
   'src/third_party/devtools-frontend/src':
     Var('chromium_git') + '/devtools/devtools-frontend' + '@' + Var('devtools_frontend_revision'),
@@ -927,7 +927,7 @@ deps = {
     Var('chromium_git') + '/codecs/libgav1.git' + '@' + '638ef84819f8b3cd614dcf63378fe4814aa4cb2a',
 
   'src/third_party/glslang/src':
-    Var('chromium_git') + '/external/github.com/KhronosGroup/glslang.git' + '@' + '97ee5c88deac4f48bd88525e678abc188663c9b2',
+    Var('chromium_git') + '/external/github.com/KhronosGroup/glslang.git' + '@' + '2c53baedbb64049e15ed8d3b38f867c1d9bec097',
 
   'src/third_party/google_toolbox_for_mac/src': {
       'url': Var('chromium_git') + '/external/github.com/google/google-toolbox-for-mac.git' + '@' + Var('google_toolbox_for_mac_revision'),
@@ -1203,7 +1203,7 @@ deps = {
     Var('chromium_git') + '/external/github.com/cisco/openh264' + '@' + 'a5473711f3e20c6bd1c33d81b6c7b9a0618aa18f',
 
   'src/third_party/openscreen/src':
-    Var('chromium_git') + '/openscreen' + '@' + '842d9700cb6b0224522740a503893e0f5d3fdfb7',
+    Var('chromium_git') + '/openscreen' + '@' + 'c8c8fa1a5358bf60113b7887f39cd084ecb16965',
 
   'src/third_party/openxr/src': {
     'url': Var('chromium_git') + '/external/github.com/KhronosGroup/OpenXR-SDK' + '@' + '9e97b73e7dd2bfc07745489d728f6a36665c648f',
@@ -1220,7 +1220,7 @@ deps = {
   },
 
   'src/third_party/perfetto':
-    Var('android_git') + '/platform/external/perfetto.git' + '@' + '95ba1d3b61bd10b4942c77eeadee0b4082992a04',
+    Var('android_git') + '/platform/external/perfetto.git' + '@' + 'c30e8d978e05bd21bbe815f32aeee6d361572e69',
 
   'src/third_party/perl': {
       'url': Var('chromium_git') + '/chromium/deps/perl.git' + '@' + '6f3e5028eb65d0b4c5fdd792106ac4c84eee1eb3',
@@ -1298,7 +1298,7 @@ deps = {
       'packages': [
           {
               'package': 'fuchsia/third_party/aemu/linux-amd64',
-              'version': '5G0SNnG7y5vrRx9uieYCXluC7lrENI134I3ts-s7BckC'
+              'version': 'KkC1dMnOt3dQMJqp-GzpAoyULRktX6-7fxUPrsEeEJMC'
           },
       ],
       'condition': 'host_os == "linux" and checkout_fuchsia',
@@ -1522,7 +1522,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@046a1a01173cecc3b64819bd75ac5f38438e236a',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@d54639014eac07644f056e190187fe0f59b02d51',
     'condition': 'checkout_src_internal',
   },
 

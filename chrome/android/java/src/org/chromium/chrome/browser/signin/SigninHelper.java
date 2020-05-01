@@ -23,7 +23,8 @@ import org.chromium.chrome.browser.sync.ProfileSyncService;
 import org.chromium.components.signin.AccountManagerFacadeProvider;
 import org.chromium.components.signin.AccountTrackerService;
 import org.chromium.components.signin.AccountUtils;
-import org.chromium.components.signin.ChromeSigninController;
+import org.chromium.components.signin.base.CoreAccountInfo;
+import org.chromium.components.signin.identitymanager.ConsentLevel;
 import org.chromium.components.signin.metrics.SigninAccessPoint;
 import org.chromium.components.signin.metrics.SignoutReason;
 
@@ -82,8 +83,6 @@ public class SigninHelper {
         }
     }
 
-    private final ChromeSigninController mChromeSigninController;
-
     @Nullable private final ProfileSyncService mProfileSyncService;
 
     private final SigninManager mSigninManager;
@@ -105,7 +104,6 @@ public class SigninHelper {
         mProfileSyncService = ProfileSyncService.get();
         mSigninManager = IdentityServicesProvider.get().getSigninManager();
         mAccountTrackerService = IdentityServicesProvider.get().getAccountTrackerService();
-        mChromeSigninController = ChromeSigninController.get();
         mPrefsManager = SigninPreferencesManager.getInstance();
     }
 
@@ -129,15 +127,15 @@ public class SigninHelper {
             return;
         }
 
-        Account syncAccount = mChromeSigninController.getSignedInUser();
+        Account syncAccount = CoreAccountInfo.getAndroidAccountFrom(
+                mSigninManager.getIdentityManager().getPrimaryAccountInfo(ConsentLevel.SYNC));
         if (syncAccount == null) {
             return;
         }
 
         String renamedAccount = mPrefsManager.getNewSignedInAccountName();
         if (accountsChanged && renamedAccount != null) {
-            handleAccountRename(
-                    ChromeSigninController.get().getSignedInAccountName(), renamedAccount);
+            handleAccountRename(syncAccount.name, renamedAccount);
             return;
         }
 
@@ -148,7 +146,8 @@ public class SigninHelper {
             AsyncTask<Void> task = new AsyncTask<Void>() {
                 @Override
                 protected Void doInBackground() {
-                    updateAccountRenameData();
+                    updateAccountRenameData(
+                            new SystemAccountChangeEventChecker(), syncAccount.name);
                     return null;
                 }
 
@@ -224,30 +223,13 @@ public class SigninHelper {
         return false;
     }
 
-    private static String getLastKnownAccountName() {
-        // This is the last known name of the currently signed in user.
-        // It can be:
-        //  1. The signed in account name known to the ChromeSigninController.
-        //  2. A pending newly choosen name that is differed from the one known to
-        //     ChromeSigninController but is stored in ACCOUNT_RENAMED_PREFS_KEY.
-        String name = SigninPreferencesManager.getInstance().getNewSignedInAccountName();
-
-        // If there is no pending rename, take the name known to ChromeSigninController.
-        return name == null ? ChromeSigninController.get().getSignedInAccountName() : name;
-    }
-
-    private static void updateAccountRenameData() {
-        updateAccountRenameData(new SystemAccountChangeEventChecker());
-    }
-
     @VisibleForTesting
-    public static void updateAccountRenameData(AccountChangeEventChecker checker) {
-        String curName = getLastKnownAccountName();
-
+    public static void updateAccountRenameData(
+            AccountChangeEventChecker checker, String currentName) {
         // Skip the search if there is no signed in account.
-        if (curName == null) return;
+        if (currentName == null) return;
 
-        String newName = curName;
+        String newName = currentName;
 
         SigninPreferencesManager prefsManager = SigninPreferencesManager.getInstance();
         int eventIndex = prefsManager.getLastAccountChangedEventIndex();
@@ -281,7 +263,7 @@ public class SigninHelper {
             Log.w(TAG, "Error while looking for rename events.", e);
         }
 
-        if (!curName.equals(newName)) {
+        if (!currentName.equals(newName)) {
             prefsManager.setNewSignedInAccountName(newName);
         }
 
@@ -289,5 +271,4 @@ public class SigninHelper {
             prefsManager.setLastAccountChangedEventIndex(newIndex);
         }
     }
-
 }

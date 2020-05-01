@@ -120,7 +120,7 @@ TEST_F(PrintJobHistoryCleanerTest, CleanExpiredPrintJobs) {
 
   std::vector<PrintJobInfo> entries = GetPrintJobs();
   // CleanUp() call should clear the first entry which is expected to expire.
-  EXPECT_EQ(1u, entries.size());
+  ASSERT_EQ(1u, entries.size());
   EXPECT_EQ(kId2, entries[0].id());
 
   task_environment_.FastForwardBy(base::TimeDelta::FromDays(1));
@@ -149,7 +149,7 @@ TEST_F(PrintJobHistoryCleanerTest, CleanExpiredPrintJobsAfterPrefChanged) {
 
   std::vector<PrintJobInfo> entries = GetPrintJobs();
   // CleanUp() shouldn't clear anything.
-  EXPECT_EQ(1u, entries.size());
+  ASSERT_EQ(1u, entries.size());
   EXPECT_EQ(kId1, entries[0].id());
 
   test_prefs_.SetInteger(prefs::kPrintJobHistoryExpirationPeriod, 1);
@@ -180,7 +180,7 @@ TEST_F(PrintJobHistoryCleanerTest, StorePrintJobHistoryIndefinite) {
   std::vector<PrintJobInfo> entries = GetPrintJobs();
   // CleanUp() call shouldn't clear anything as according to pref we store
   // history indefinitely.
-  EXPECT_EQ(1u, entries.size());
+  ASSERT_EQ(1u, entries.size());
   EXPECT_EQ(kId1, entries[0].id());
 }
 

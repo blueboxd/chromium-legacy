@@ -1286,7 +1286,6 @@
 <translation id="2869762730352628426">ログイン画面で自動クリックを有効にする</translation>
 <translation id="2872961005593481000">終了</translation>
 <translation id="2874209944580848064">Android アプリをサポートする <ph name="PRODUCT_OS_NAME" /> デバイスに関する注意:</translation>
-<translation id="2874901846804525128">信頼できない提供元の Android アプリの使用をユーザーに許可しない。</translation>
 <translation id="2875192972412983412">サーバー プリンタについてのクエリを送信するプリント サーバーのサブセットを指定します。
 
       このポリシーを使用する場合は、このポリシーで指定した ID に一致するサーバー プリンタのみがユーザーに使用可能となります。
@@ -1787,7 +1786,6 @@ False に設定した場合、<ph name="PRODUCT_NAME" /> はネイティブ通�
 <translation id="3715569262675717862">クライアント証明書に基づく認証</translation>
 <translation id="3736879847913515635">ユーザー管理画面でのユーザー追加を許可する</translation>
 <translation id="3737890474637805114">大きなファイルのダウンロードをブロックする</translation>
-<translation id="3738723882663496016">このポリシーでは、このデバイスの <ph name="PLUGIN_VM_NAME" /> のライセンスキーを指定します。</translation>
 <translation id="3748900290998155147">起動ロックを許可するかどうかを指定します。起動ロックは拡張機能から Power Management Extension API を使って、または ARC アプリからリクエストされます。
 
           このポリシーが true に設定されているか未設定の場合、電源管理で起動ロックが有効となります。
@@ -2317,9 +2315,6 @@ False に設定した場合、<ph name="PRODUCT_NAME" /> はネイティブ通�
 <translation id="4432762137771104529">セーフ ブラウジングの詳細レポートを有効にする</translation>
 <translation id="443454694385851356">以前の暗号化タイプ（安全ではありません）</translation>
 <translation id="443665821428652897">ブラウザのシャットダウンでサイトのデータを削除する（サポート終了予定）</translation>
-<translation id="4439132805807595336">このデバイスで PluginVm を実行できるようにします。
-
-      このポリシーが false に設定されているか未設定の場合、デバイスで <ph name="PLUGIN_VM_NAME" /> は有効になりません。このポリシーが true に設定されている場合、デバイスでは <ph name="PLUGIN_VM_NAME" /> が有効になります（ただし他の設定でも許可されている必要があります）。<ph name="PLUGIN_VM_NAME" /> を実行するには、<ph name="PLUGIN_VM_ALLOWED_POLICY_NAME" /> を true に設定し、<ph name="PLUGIN_VM_LICENSE_KEY_POLICY_NAME" /> と <ph name="PLUGIN_VM_IMAGE_POLICY_NAME" /> を設定する必要があります。</translation>
 <translation id="4439336120285389675">サポートが終了したウェブ プラットフォーム機能を一時的に再度有効にすることができ、該当する機能のリストを指定します。
 
       このポリシーを利用して、管理者はサポートが終了したウェブ プラットフォーム機能を一時的に再び有効にできます。機能は文字列タグで指定します。このポリシーで指定したリスト内のタグに対応する機能が再び有効になります。
@@ -3807,7 +3802,6 @@ False に設定した場合、<ph name="PRODUCT_NAME" /> はネイティブ通�
 <translation id="6731757988219967594">アダルト コンテンツに基づいて最上位サイト（埋め込み iframe 以外）を除外する</translation>
 <translation id="6734521799274931721">Chrome OS でネットワーク ファイル共有を使用できるかどうかの設定</translation>
 <translation id="6735701345096330595">言語のスペルチェックを強制的に有効にする</translation>
-<translation id="6737677282967014160">信頼できない提供元の Android アプリの使用をユーザーに許可する。</translation>
 <translation id="6757613329154374267">バックアップと復元が有効</translation>
 <translation id="6758659208493449452">このポリシーは、高度な保護機能プログラムに登録しているユーザーが追加の保護機能を使用できるようにするかどうかを制御します。追加の機能では、Google とデータが共有されることがあります。たとえば、高度な保護機能のユーザーは、不正なソフトウェアをスキャンする目的で、ダウンロードしたファイルを Google に送信できます。True に設定するか未設定のままにした場合、登録ユーザーは追加の保護機能を使用できます。False に設定した場合、高度な保護機能のユーザーは標準的な消費者向けの機能のみを使用できます。</translation>
 <translation id="6762235610019366960"><ph name="PRODUCT_NAME" /> のタブ全体にプロモーション コンテンツや教育用コンテンツを表示するかどうかを制御します。
@@ -5343,19 +5337,6 @@ False に設定した場合、<ph name="PRODUCT_NAME" /> はネイティブ通�
           このポリシーを未設定のままにした場合、デバイスがポリシーに対応していれば、標準のバッテリー充電モードが適用され、ユーザーは変更することができなくなります。
 
           注: <ph name="DEVICE_ADVANCED_BATTERY_CHARGE_MODE_ENABLED_NAME" /> が指定されている場合はこのポリシーより優先されます。</translation>
-<translation id="9071472304496502510"><ph name="ON_FILE_ATTACHED_ENTERPRISE_CONNECTOR" /> Enterprise コネクタに適用する Chrome Enterprise コネクタ サービス設定のリストで、Chrome にファイルが添付されている場合に呼び出されます。
-
-      <ph name="ENTERPRISE_CONNECTOR_URL_LIST_FIELD" />、<ph name="ENTERPRISE_CONNECTOR_TAGS_FIELD" />、<ph name="ENTERPRISE_CONNECTOR_ENABLE_FIELD" />、<ph name="ENTERPRISE_CONNECTOR_DISABLE_FIELD" /> のフィールドは、特定のページに添付されているファイルを分析のためコネクタが送信すべきかどうかと、そのファイルの分析リクエストにどのタグを含めるかをコネクタで判別する際に使用されます。「有効」パターンに該当するタグは、ページの URL がそのタグに関連付けられているパターンと一致し、同じタグの「無効」パターンとは一致しない場合に分析リクエストに含められます。分析は、リクエストにタグが少なくとも 1 つ含まれる場合に行われます。
-
-      <ph name="ENTERPRISE_CONNECTOR_SERVICE_PROVIDER_FIELD" /> では、この設定が対応している分析サービス プロバイダを指定します。
-
-      <ph name="ENTERPRISE_CONNECTOR_BLOCK_UNTIL_VERDICT_FIELD" /> を 1 に設定した場合、Chrome では分析サービスからの応答を待ってから、ページにアクセスを許可します。その他の整数値を設定した場合、Chrome ではページにファイルへのアクセスをただちに許可します。
-
-      <ph name="ENTERPRISE_CONNECTOR_BLOCK_PASSWORD_PROTECTED_FIELD" /> では、パスワードで保護されているファイルをブロックするか許可するかを指定します。
-
-      <ph name="ENTERPRISE_CONNECTOR_BLOCK_LARGE_FILES_FIELD" /> では、分析可能なサイズより大きいファイル（50 MB 以上）をブロックするか許可するかを指定します。
-
-      このポリシーは Google 管理コンソールからのみ設定できます。</translation>
 <translation id="9077227880520270584">デバイスのローカル アカウントの自動ログイン タイマー</translation>
 <translation id="9084985621503260744">動画操作を電源管理に関連付けるかどうかを指定する</translation>
 <translation id="9088433379343318874">監視対象ユーザーのコンテンツ プロバイダを有効にする</translation>

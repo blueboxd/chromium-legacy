@@ -382,9 +382,7 @@
 <translation id="1509281256533087115">Bármely <ph name="DEVICE_NAME_AND_VENDOR" /> elérése USB-n keresztül</translation>
 <translation id="1509960214886564027">Számos webhelyen nem működnek a funkciók</translation>
 <translation id="1510030919967934016">Ez az oldal nem figyelheti a tartózkodási helyét.</translation>
-<translation id="1510055949674985293">QR-kód generálása ehhez a képhez</translation>
 <translation id="1510238584712386396">Indító</translation>
-<translation id="1510581003097415337">QR-kód generálása ehhez az oldalhoz</translation>
 <translation id="1510785804673676069">Ha proxyszervert használ, tekintse át a proxybeállításokat, vagy
     forduljon hálózati rendszergazdájához, hogy ellenőrizze a proxyszerver
     működését. Ha úgy véli, hogy nem kellene proxyszervert használnia,
@@ -1787,6 +1785,7 @@ Ha kezelni szeretné a fiók beállításait, telepítse eszközére a Family Li
 <translation id="3365598184818502391">Vagy a Ctrl vagy az Alt billentyűt használja</translation>
 <translation id="3367047597842238025">Állítsa be kedve szerint <ph name="DEVICE_TYPE" /> eszközét, és fedezze fel a karnyújtásra lévő lenyűgöző képességeit.</translation>
 <translation id="3368922792935385530">Kapcsolódva</translation>
+<translation id="3369067987974711168">A porttal kapcsolatos további műveletek megjelenítése</translation>
 <translation id="3369624026883419694">Szerver azonosítása folyamatban...</translation>
 <translation id="3371140690572404006">C típusú USB-vel kompatibilis eszköz (jobb első port)</translation>
 <translation id="337286756654493126">Az alkalmazásban megnyitott mappák olvasása</translation>
@@ -2308,11 +2307,11 @@ Elindítja a következőt: <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation
 <translation id="4007856537951125667">Parancsikonok elrejtése</translation>
 <translation id="4008291085758151621">A webhely-információk nem állnak rendelkezésre VR-módban</translation>
 <translation id="4010917659463429001">Könyvjelzők eléréséhez mobileszközön: <ph name="GET_IOS_APP_LINK" />.</translation>
-<translation id="4013132157686828973">A(z) „<ph name="CLIENT_NAME" />” hibakeresést hajt végre a böngészőnél</translation>
 <translation id="4014432863917027322">Javítja a következőt: „<ph name="EXTENSION_NAME" />”?</translation>
 <translation id="4015163439792426608">Használ bővítményeket? Egyetlen helyen, egyszerűen <ph name="BEGIN_LINK" />kezelheti őket<ph name="END_LINK" />.</translation>
 <translation id="4020327272915390518">Beállítások menü</translation>
 <translation id="4021279097213088397">–</translation>
+<translation id="402184264550408568">(TCP)</translation>
 <translation id="4022426551683927403">&amp;Hozzáadás a szótárhoz</translation>
 <translation id="4023146161712577481">Eszközkonfiguráció meghatározása.</translation>
 <translation id="4025039777635956441">Kiválasztott webhely némítása</translation>
@@ -2826,6 +2825,7 @@ Elindítja a következőt: <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation
 <translation id="4780321648949301421">Oldal mentése &amp;másként...</translation>
 <translation id="4785719467058219317">Olyan biztonsági hardverkulcsot használ, amely nincs regisztrálva ezen a webhelyen</translation>
 <translation id="4788092183367008521">Ellenőrizze a hálózati kapcsolatot, és próbálkozzon újra.</translation>
+<translation id="4791037424585594169">(UDP)</translation>
 <translation id="4792711294155034829">&amp;Hibabejelentés...</translation>
 <translation id="4794810983896241342">A frissítéseket a <ph name="BEGIN_LINK" />rendszergazdája<ph name="END_LINK" /> kezeli</translation>
 <translation id="479536056609751218">Weboldal -- csak HTML</translation>
@@ -3012,7 +3012,6 @@ Elindítja a következőt: <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation
 <translation id="504561833207953641">Megnyitás meglévő böngésző-munkamenetben.</translation>
 <translation id="5047421709274785093">A mozgás- és fényérzékelők használatnak tiltása a webhelyek számára</translation>
 <translation id="5050042263972837708">Csoport neve</translation>
-<translation id="5051073330196664891">A Google univerzális Általános Szerződési Feltételei</translation>
 <translation id="5051836348807686060">A helyesírás-ellenőrzés nem támogatott a kiválasztott nyelveken</translation>
 <translation id="5052499409147950210">Webhely szerkesztése</translation>
 <translation id="5053604404986157245">Nem áll rendelkezésre véletlenszerűen generált TPM jelszó. Powerwash után ez normális.</translation>
@@ -3111,6 +3110,7 @@ Elindítja a következőt: <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation
 <translation id="5185359571430619712">Bővítmények áttekintése</translation>
 <translation id="5185386675596372454">"<ph name="EXTENSION_NAME" />" legújabb verziója ki van kapcsolva, mert több jogosultság kell hozzá.</translation>
 <translation id="5187826826541650604"><ph name="KEY_NAME" /> (<ph name="DEVICE" />)</translation>
+<translation id="5190926251776387065">Port aktiválása</translation>
 <translation id="51918995459521422">A(z) <ph name="ORIGIN" /> több fájlt szeretne letölteni</translation>
 <translation id="5192062846343383368">A Family Link alkalmazást megnyitva ellenőrizheti a felügyeleti beállításokat</translation>
 <translation id="5193988420012215838">Vágólapra másolva</translation>
@@ -3839,6 +3839,7 @@ Győződjön meg arról, hogy nem ad ki bizalmas adatokat.</translation>
 <translation id="6150961653851236686">A böngésző erre a nyelvre fordítja le az oldalakat.</translation>
 <translation id="6151323131516309312">Nyomja meg a(z) <ph name="SEARCH_KEY" /> gombot a(z) <ph name="SITE_NAME" /> kereséshez</translation>
 <translation id="6151771661215463137">A fájl már megtalálható a letöltések mappájában.</translation>
+<translation id="6154240335466762404">Összes port eltávolítása</translation>
 <translation id="615436196126345398">Protokoll</translation>
 <translation id="6154697846084421647">Pillanatnyilag bejelentkezve</translation>
 <translation id="6155141482566063812">Az egyik háttérben futó lap megosztja az Ön képernyőjét</translation>
@@ -3887,7 +3888,6 @@ Győződjön meg arról, hogy nem ad ki bizalmas adatokat.</translation>
 <translation id="6226777517901268232">Privátkulcs-fájl (nem kötelező)</translation>
 <translation id="6227280783235722609">bővítményt</translation>
 <translation id="6228691855869374890">Ez a webhely teljes hozzáféréssel rendelkezik a MIDI-eszközökhöz.</translation>
-<translation id="6228720835160974792">QR-kód generálása ehhez a képhez</translation>
 <translation id="6229890768313448549">A Google Play Általános Szerződési Feltételeit nem sikerült betölteni. Próbálja újra.</translation>
 <translation id="6231881193380278751">Adjon meg egy lekérdezési paramétert az URL-ben az oldal automatikus frissítéséhez: chrome://device-log/?refresh=&lt;sec&gt;</translation>
 <translation id="6232017090690406397">Akkumulátor</translation>
@@ -3920,6 +3920,7 @@ Győződjön meg arról, hogy nem ad ki bizalmas adatokat.</translation>
 <translation id="6263082573641595914">Microsoft CA verzió</translation>
 <translation id="6263284346895336537">Nem fontos</translation>
 <translation id="6264365405983206840">Össz&amp;es kiválasztása</translation>
+<translation id="6265687851677020761">Port eltávolítása</translation>
 <translation id="6267166720438879315">Válasszon tanúsítványt a <ph name="HOST_NAME" /> hitelesítéséhez</translation>
 <translation id="6267547857941397424"><ph name="NETWORK_INDEX" />. hálózat (összesen <ph name="NETWORK_COUNT" />), <ph name="PHONE_NAME" />, jelerősség: <ph name="SIGNAL_STRENGTH" />%, telefon akkumulátora: <ph name="BATTERY_STATUS" />%, csatlakozás</translation>
 <translation id="6268252012308737255">Megnyitás ezzel: <ph name="APP" /></translation>
@@ -4550,7 +4551,6 @@ Győződjön meg arról, hogy nem ad ki bizalmas adatokat.</translation>
 <translation id="7123360114020465152">Már nem támogatott</translation>
 <translation id="7127980134843952133">Letöltési előzmények</translation>
 <translation id="7128151990937044829">Jelzés megjelenítése a címsávon, ha a böngésző letiltott értesítéseket</translation>
-<translation id="7128239828194367697">QR-kód generálása ehhez az oldalhoz</translation>
 <translation id="7131040479572660648">Adatok beolvasása a következő webhelyeken: <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> és <ph name="WEBSITE_3" /></translation>
 <translation id="713122686776214250">Ol&amp;dal hozzáadása...</translation>
 <translation id="7133578150266914903">Az eszköz rendszergazda általi visszaállítása jelenleg folyamatban van (<ph name="PROGRESS_PERCENT" />)</translation>
@@ -4940,6 +4940,7 @@ Győződjön meg arról, hogy nem ad ki bizalmas adatokat.</translation>
 <translation id="767127784612208024">Érintse meg a visszaállítás megerősítéséhez</translation>
 <translation id="767147716926917172">Diagnosztikai és használati adatok automatikus elküldése a Google-nak</translation>
 <translation id="7672520070349703697"><ph name="HUNG_IFRAME_URL" />, itt: <ph name="PAGE_TITLE" />.</translation>
+<translation id="7674416868315480713">A Linux alatt átirányított portok mindegyikének deaktiválása</translation>
 <translation id="7676867886086876795">A hangjának elküldése a Google számára, hogy bármely szövegmezőbe diktálhasson.</translation>
 <translation id="7678280409648629969">A Chrome az inkognitómód elhagyása után tárolja a bejelentkezési adatokat. Így később ismét használhatja a Touch ID funkciót ezen a webhelyen.</translation>
 <translation id="7681095912841365527">A webhely használhat Bluetooth-t</translation>

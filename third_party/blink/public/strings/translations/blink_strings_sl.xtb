@@ -35,6 +35,7 @@
 <translation id="1938124657309484470">Vrednost mora biti <ph name="MAXIMUM_DATE_OR_TIME" /> ali prej.</translation>
 <translation id="1946271899482435442">Pokaži izbirnik datuma</translation>
 <translation id="1993104285338243655">Preklopljeno na zrcaljenje</translation>
+<translation id="2031987842108996681">Rdeči kanal</translation>
 <translation id="2060505056492490888">»<ph name="DOT" />« je na napačnem mestu v »<ph name="INVALIDDOMAIN" />«.</translation>
 <translation id="2148716181193084225">Danes</translation>
 <translation id="2158401438286456825">seznam strani</translation>
@@ -45,6 +46,7 @@
 <translation id="2291999235780842123">potrditveno polje</translation>
 <translation id="2311842470354187719">prelom strani</translation>
 <translation id="2335594187091864976">izbirnik datuma in ure</translation>
+<translation id="2393030564806080191">Šestnajstiška barvna vrednost</translation>
 <translation id="245932805758469625">preostale sekunde videoposnetka</translation>
 <translation id="248395913932153421">Dan</translation>
 <translation id="2507943997699731163">Izpolnite to polje</translation>
@@ -52,6 +54,7 @@
 <translation id="2561842179657104141">prikaz več kontrolnikov za predstavnost</translation>
 <translation id="2572483411312390101">predvajanje</translation>
 <translation id="2613802280814924224">Vnesite veljavno vrednost. Najbližja veljavna vrednost je <ph name="VALID_VALUE" />.</translation>
+<translation id="2634240155926812724">Zeleni kanal</translation>
 <translation id="2653659639078652383">Pošlji</translation>
 <translation id="2657045182931379222">grafični predmet</translation>
 <translation id="2674318244760992338">noga</translation>
@@ -127,6 +130,7 @@
 <translation id="5034860022980953847">kazalnik poteka</translation>
 <translation id="5090250355906949916">časovni krmilnik za predvajanje videoposnetka</translation>
 <translation id="5093189678851173835">epigraf</translation>
+<translation id="509897012892853729">Modri kanal</translation>
 <translation id="5117590920725113268">Prikaz naslednjega meseca</translation>
 <translation id="512758898067543763">glava vrstice</translation>
 <translation id="5143125788380636750">epilog</translation>
@@ -164,6 +168,7 @@
 <translation id="6166809985690652833">spremna beseda</translation>
 <translation id="6209276755895393898">Videti je kot: <ph name="DESCRIPTION" /></translation>
 <translation id="6213469881011901533">glosar</translation>
+<translation id="6281588256137006900">Svetlost</translation>
 <translation id="6281763101136022427">url</translation>
 <translation id="6310801910862476708">Zapri način slike v sliki</translation>
 <translation id="6398862346408813489">Prikaz podokna za izbiro meseca</translation>
@@ -184,6 +189,7 @@
 <translation id="6790428901817661496">Predvajanje</translation>
 <translation id="6820355525329141109">Vtičnika ni bilo mogoče naložiti.</translation>
 <translation id="6820615603175220800">bibliografski viri</translation>
+<translation id="6831465880655513317">Barvni krog z dvorazsežnim drsnikom za izbiranje nasičenosti in svetlosti</translation>
 <translation id="6843725295806269523">nemo</translation>
 <translation id="6885760532393684712">imenik</translation>
 <translation id="689129560213475294">kolofon</translation>
@@ -201,6 +207,7 @@
 <translation id="7263440858009898357">Izberite element s seznama.</translation>
 <translation id="727747134524199931">glava stolpca</translation>
 <translation id="7320576522385648310">medpomnjenje</translation>
+<translation id="7341556277900466204">Izbirnik barv</translation>
 <translation id="7353453495576941748">zasluga</translation>
 <translation id="7364796246159120393">Izberite datoteko</translation>
 <translation id="739024184232394898">Drugo ...</translation>
@@ -221,6 +228,7 @@
 <translation id="775297008183122718">Neveljaven vnos</translation>
 <translation id="7789962463072032349">premor</translation>
 <translation id="7802800022689234070">trikotnik z dodatno vsebino</translation>
+<translation id="7852167693871241274">Drsnik za odtenek</translation>
 <translation id="7888071071722539607">V e-poštnem naslovu mora biti znak »<ph name="ATSIGN" />«. V naslovu »<ph name="INVALIDADDRESS" />« manjka »<ph name="ATSIGN" />«.</translation>
 <translation id="7891486169920085145">razdelilnik</translation>
 <translation id="795667975304826397">Nobena datoteka ni izbrana</translation>
@@ -263,6 +271,7 @@
 <translation id="8875657656876809964">Napaka pri predvajanju videoposnetka</translation>
 <translation id="8889402386540077796">Odtenek</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> KB</translation>
+<translation id="894736920926684893">Orodje za preklapljanje oblik</translation>
 <translation id="8987927404178983737">Mesec</translation>
 <translation id="901493112792887934">trenutni čas v sekundah</translation>
 <translation id="901834265349196618">e-pošta</translation>

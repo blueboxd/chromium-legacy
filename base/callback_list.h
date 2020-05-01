@@ -17,54 +17,44 @@
 
 // OVERVIEW:
 //
-// A container for a list of (repeating) callbacks. Unlike a normal vector or
-// list, this container can be modified during iteration without invalidating
-// the iterator. It safely handles the case of a callback removing itself or
-// another callback from the list while callbacks are being run.
+// A container for a list of callbacks. Provides callers the ability to manually
+// or automatically unregister callbacks at any time, including during callback
+// notification.
 //
 // TYPICAL USAGE:
 //
 // class MyWidget {
 //  public:
-//   ...
+//   using CallbackList = base::CallbackList<void(const Foo&)>;
 //
-//   std::unique_ptr<base::CallbackList<void(const Foo&)>::Subscription>
-//   RegisterCallback(const base::RepeatingCallback<void(const Foo&)>& cb) {
-//     return callback_list_.Add(cb);
+//   // Registers |cb| to be called whenever NotifyFoo() is executed.
+//   std::unique_ptr<CallbackList::Subscription>
+//   RegisterCallback(CallbackList::CallbackType cb) {
+//     return callback_list_.Add(std::move(cb));
 //   }
 //
 //  private:
+//   // Calls all registered callbacks, with |foo| as the supplied arg.
 //   void NotifyFoo(const Foo& foo) {
-//      callback_list_.Notify(foo);
+//     callback_list_.Notify(foo);
 //   }
 //
-//   base::CallbackList<void(const Foo&)> callback_list_;
-//
-//   DISALLOW_COPY_AND_ASSIGN(MyWidget);
+//   CallbackList callback_list_;
 // };
 //
 //
 // class MyWidgetListener {
-//  public:
-//   MyWidgetListener::MyWidgetListener() {
-//     foo_subscription_ = MyWidget::GetCurrent()->RegisterCallback(
-//             base::BindRepeating(&MyWidgetListener::OnFoo, this)));
-//   }
-//
-//   MyWidgetListener::~MyWidgetListener() {
-//      // Subscription gets deleted automatically and will deregister
-//      // the callback in the process.
-//   }
-//
 //  private:
 //   void OnFoo(const Foo& foo) {
-//     // Do something.
+//     // Called whenever MyWidget::NotifyFoo() is executed, unless
+//     // |foo_subscription_| has been reset().
 //   }
 //
-//   std::unique_ptr<base::CallbackList<void(const Foo&)>::Subscription>
-//       foo_subscription_;
-//
-//   DISALLOW_COPY_AND_ASSIGN(MyWidgetListener);
+//   // Automatically deregisters the callback when deleted (e.g. in
+//   // ~MyWidgetListener()).
+//   std::unique_ptr<MyWidget::CallbackList::Subscription> foo_subscription_ =
+//       MyWidget::Get()->RegisterCallback(
+//           base::BindRepeating(&MyWidgetListener::OnFoo, this));
 // };
 
 namespace base {
@@ -74,6 +64,9 @@ namespace internal {
 template <typename CallbackType>
 class CallbackListBase {
  public:
+  // A cancellation handle for callers who register callbacks. Subscription
+  // destruction cancels the associated callback and is legal any time,
+  // including after the destruction of the CallbackList that vends it.
   class Subscription {
    public:
     explicit Subscription(base::OnceClosure subscription_destroyed)
@@ -87,14 +80,17 @@ class CallbackListBase {
     bool IsCancelled() const { return subscription_destroyed_.IsCancelled(); }
 
    private:
+    // Run when |this| is destroyed to notify the CallbackList the associated
+    // callback should be canceled. Since this is bound using a WeakPtr to the
+    // CallbackList, it will automatically no-op if the CallbackList no longer
+    // exists.
     base::OnceClosure subscription_destroyed_;
 
     DISALLOW_COPY_AND_ASSIGN(Subscription);
   };
 
-  // Add a callback to the list. The callback will remain registered until the
-  // returned Subscription is destroyed. When the CallbackList is destroyed, any
-  // outstanding subscriptions are safely invalidated.
+  // Registers |cb| for future notifications. Returns a Subscription that can be
+  // used to cancel |cb|.
   std::unique_ptr<Subscription> Add(const CallbackType& cb) WARN_UNUSED_RESULT {
     DCHECK(!cb.is_null());
     return std::make_unique<Subscription>(
@@ -103,13 +99,15 @@ class CallbackListBase {
                        callbacks_.insert(callbacks_.end(), cb)));
   }
 
-  // Sets a callback which will be run when a subscription list is changed.
+  // Registers |removal_callback| to be run after elements are removed from the
+  // list of registered callbacks.
   void set_removal_callback(const RepeatingClosure& callback) {
     removal_callback_ = callback;
   }
 
-  // Returns true if there are no subscriptions. This is only valid to call when
-  // not looping through the list.
+  // Returns whether the list of registered callbacks is empty. This may not be
+  // called while Notify() is traversing the list (since the results could be
+  // inaccurate).
   bool empty() {
     DCHECK_EQ(0u, active_iterator_count_);
     return callbacks_.empty();
@@ -133,11 +131,15 @@ class CallbackListBase {
 
     ~Iterator() {
       if (list_ && --list_->active_iterator_count_ == 0) {
+        // Any null callbacks remaining in the list were canceled due to
+        // Subscription destruction during iteration, and can safely be erased
+        // now.
         list_->Compact();
       }
     }
 
     CallbackType* GetNext() {
+      // Skip any callbacks that are canceled during iteration.
       while ((list_iter_ != list_->callbacks_.end()) && list_iter_->is_null())
         ++list_iter_;
 
@@ -178,26 +180,41 @@ class CallbackListBase {
       }
     }
 
+    // Run |removal_callback_| if any callbacks were canceled. Note that we
+    // cannot simply compare list sizes before and after iterating, since
+    // notification may result in Add()ing new callbacks as well as canceling
+    // them.
     if (updated && !removal_callback_.is_null())
-      removal_callback_.Run();
+      removal_callback_.Run();  // May delete |this|!
   }
 
  private:
+  // Cancels the callback pointed to by |iter|, which is guaranteed to be valid.
   void OnSubscriptionDestroyed(
       const typename std::list<CallbackType>::iterator& iter) {
     if (active_iterator_count_) {
+      // Calling erase() here is unsafe, since the loop in Notify() may be
+      // referencing this same iterator, e.g. if adjacent callbacks'
+      // Subscriptions are both destroyed when the first one is Run().  Just
+      // reset the callback and let Notify() clean it up at the end.
       iter->Reset();
     } else {
       callbacks_.erase(iter);
       if (removal_callback_)
-        removal_callback_.Run();
+        removal_callback_.Run();  // May delete |this|!
     }
-    // Note that |removal_callback_| may destroy |this|.
   }
 
+  // Holds non-null callbacks, which will be called during Notify().
   std::list<CallbackType> callbacks_;
+
+  // Incremented while Notify() is traversing |callbacks_|.  Used primarily to
+  // avoid invalidating iterators that may be in use.
   size_t active_iterator_count_ = 0;
+
+  // Called after elements are removed from |callbacks_|.
   RepeatingClosure removal_callback_;
+
   WeakPtrFactory<CallbackListBase> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(CallbackListBase);
@@ -215,11 +232,15 @@ class CallbackList<void(Args...)>
 
   CallbackList() = default;
 
+  // Calls all registered callbacks that are not canceled beforehand. If any
+  // callbacks are unregistered, notifies any registered removal callback at the
+  // end.
   template <typename... RunArgs>
   void Notify(RunArgs&&... args) {
     auto it = this->GetIterator();
     CallbackType* cb;
     while ((cb = it.GetNext()) != nullptr) {
+      // Run the current callback, which may cancel it or any other callbacks.
       cb->Run(args...);
     }
   }

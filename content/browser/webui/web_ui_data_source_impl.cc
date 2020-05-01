@@ -53,6 +53,8 @@ std::string CleanUpPath(const std::string& path) {
   return path.substr(0, path.find_first_of('?'));
 }
 
+const int kNonExistentResource = -1;
+
 }  // namespace
 
 // Internal class to hide the fact that WebUIDataSourceImpl implements
@@ -126,7 +128,7 @@ WebUIDataSourceImpl::WebUIDataSourceImpl(const std::string& source_name)
     : URLDataSourceImpl(source_name,
                         std::make_unique<InternalDataSource>(this)),
       source_name_(source_name),
-      default_resource_(-1) {}
+      default_resource_(kNonExistentResource) {}
 
 WebUIDataSourceImpl::~WebUIDataSourceImpl() {
 }
@@ -313,10 +315,13 @@ void WebUIDataSourceImpl::StartDataRequest(
   }
 
   int resource_id = PathToIdrOrDefault(CleanUpPath(path));
-  DCHECK_NE(resource_id, -1) << " for " << path;
-  scoped_refptr<base::RefCountedMemory> response(
-      GetContentClient()->GetDataResourceBytes(resource_id));
-  std::move(callback).Run(response.get());
+  if (resource_id == kNonExistentResource) {
+    std::move(callback).Run(nullptr);
+  } else {
+    scoped_refptr<base::RefCountedMemory> response(
+        GetContentClient()->GetDataResourceBytes(resource_id));
+    std::move(callback).Run(response.get());
+  }
 }
 
 void WebUIDataSourceImpl::SendLocalizedStringsAsJSON(
@@ -337,7 +342,24 @@ bool WebUIDataSourceImpl::ShouldReplaceI18nInJS() const {
 
 int WebUIDataSourceImpl::PathToIdrOrDefault(const std::string& path) const {
   auto it = path_to_idr_map_.find(path);
-  return it == path_to_idr_map_.end() ? default_resource_ : it->second;
+  if (it != path_to_idr_map_.end())
+    return it->second;
+
+  if (default_resource_ != kNonExistentResource)
+    return default_resource_;
+
+  // Use GetMimeType() to check for most file requests. It returns text/html by
+  // default regardless of the extension if it does not match a different file
+  // type, so check for HTML file requests separately.
+  if (GetMimeType(path) != "text/html" ||
+      base::EndsWith(path, ".html", base::CompareCase::INSENSITIVE_ASCII)) {
+    return kNonExistentResource;
+  }
+
+  // If not a file request, try to get the resource for the empty key.
+  auto it_empty = path_to_idr_map_.find("");
+  return (it_empty != path_to_idr_map_.end()) ? it_empty->second
+                                              : kNonExistentResource;
 }
 
 }  // namespace content

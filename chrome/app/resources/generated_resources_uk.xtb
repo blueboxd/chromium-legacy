@@ -382,9 +382,7 @@
 <translation id="1509281256533087115">Отримувати доступ до будь-якого пристрою <ph name="DEVICE_NAME_AND_VENDOR" /> через USB</translation>
 <translation id="1509960214886564027">Функції на багатьох сайтах можуть не працювати</translation>
 <translation id="1510030919967934016">Цій сторінці заборонено відстежувати ваше місцезнаходження.</translation>
-<translation id="1510055949674985293">Створити QR-код цього зображення</translation>
 <translation id="1510238584712386396">Панель запуску</translation>
-<translation id="1510581003097415337">Створити QR-код цієї сторінки</translation>
 <translation id="1510785804673676069">Якщо ви використовуєте проксі-сервер, перевірте його налаштування
         чи зверніться до адміністратора мережі, щоб переконатися, що
         проксі-сервер працює. Якщо ви вважаєте, що використовувати
@@ -1787,6 +1785,7 @@
 <translation id="3365598184818502391">Використовуйте Ctrl або Alt</translation>
 <translation id="3367047597842238025">Налаштуйте <ph name="DEVICE_TYPE" /> на свій смак і відкривайте всі дивовижні можливості у вас під рукою.</translation>
 <translation id="3368922792935385530">Підключено</translation>
+<translation id="3369067987974711168">Показати більше дій для цього порту</translation>
 <translation id="3369624026883419694">-...</translation>
 <translation id="3371140690572404006">пристрій, під’єднаний до порту USB-C (праворуч на передній панелі)</translation>
 <translation id="337286756654493126">Читати з папок, які ви відкриваєте в програмі</translation>
@@ -2309,11 +2308,11 @@
 <translation id="4007856537951125667">Сховати ярлики</translation>
 <translation id="4008291085758151621">Інформація про сайт недоступна у VR-режимі</translation>
 <translation id="4010917659463429001">Щоб мати доступ до закладок на мобільному пристрої, потрібно <ph name="GET_IOS_APP_LINK" />.</translation>
-<translation id="4013132157686828973"><ph name="CLIENT_NAME" /> налагоджує цей веб-переглядач</translation>
 <translation id="4014432863917027322">Відновити розширення <ph name="EXTENSION_NAME" />?</translation>
 <translation id="4015163439792426608">Користуєтеся розширеннями? <ph name="BEGIN_LINK" />Керуйте ними<ph name="END_LINK" /> в єдиному зручному місці.</translation>
 <translation id="4020327272915390518">Меню параметрів</translation>
 <translation id="4021279097213088397">–</translation>
+<translation id="402184264550408568">(TCP)</translation>
 <translation id="4022426551683927403">&amp;Додати до словника</translation>
 <translation id="4023146161712577481">Визначення конфігурації пристрою.</translation>
 <translation id="4025039777635956441">Вимкнути звук на вибраному сайті</translation>
@@ -2827,6 +2826,7 @@
 <translation id="4780321648949301421">Зберегти сторінку як...</translation>
 <translation id="4785719467058219317">Ви використовуєте ключ безпеки, не зареєстрований на цьому веб-сайті</translation>
 <translation id="4788092183367008521">Перевірте з’єднання з мережею та повторіть спробу.</translation>
+<translation id="4791037424585594169">(UDP)</translation>
 <translation id="4792711294155034829">&amp;Повідомити про проблему...</translation>
 <translation id="4794810983896241342">Оновленнями керує <ph name="BEGIN_LINK" />адміністратор<ph name="END_LINK" /></translation>
 <translation id="479536056609751218">Веб-сторінка, тільки HTML</translation>
@@ -3013,7 +3013,6 @@
 <translation id="504561833207953641">Відкривається в наявному сеансі веб-переглядача.</translation>
 <translation id="5047421709274785093">Заборонити сайтам доступ до датчиків руху й світла</translation>
 <translation id="5050042263972837708">Назва групи</translation>
-<translation id="5051073330196664891">Універсальні загальні положення та умови Google</translation>
 <translation id="5051836348807686060">Перевірка орфографії не підтримується для вибраних мов</translation>
 <translation id="5052499409147950210">Редагувати сайт</translation>
 <translation id="5053604404986157245">Навмання згенерований пароль TPM не доступний. Це нормально після Powerwash (очищення).</translation>
@@ -3112,6 +3111,7 @@
 <translation id="5185359571430619712">Налаштування розширень</translation>
 <translation id="5185386675596372454">Нову версію розширення "<ph name="EXTENSION_NAME" />" вимкнено, оскільки для неї потрібно більше дозволів.</translation>
 <translation id="5187826826541650604"><ph name="KEY_NAME" /> (<ph name="DEVICE" />)</translation>
+<translation id="5190926251776387065">Активувати порт</translation>
 <translation id="51918995459521422"><ph name="ORIGIN" /> хоче завантажити кілька файлів</translation>
 <translation id="5192062846343383368">Щоб переглянути налаштування батьківського контролю, відкрийте додаток Family Link</translation>
 <translation id="5193988420012215838">Скопійовано в буфер обміну</translation>
@@ -3838,6 +3838,7 @@
 <translation id="6150961653851236686">Ця мова використовується для перекладу сторінок</translation>
 <translation id="6151323131516309312">Натисніть <ph name="SEARCH_KEY" />, щоб здійснити пошук <ph name="SITE_NAME" /></translation>
 <translation id="6151771661215463137">Файл уже є в папці завантажень.</translation>
+<translation id="6154240335466762404">Вилучити всі порти</translation>
 <translation id="615436196126345398">Протокол</translation>
 <translation id="6154697846084421647">Зараз у системі</translation>
 <translation id="6155141482566063812">Фонова вкладка має доступ до вашого екрана</translation>
@@ -3886,7 +3887,6 @@
 <translation id="6226777517901268232">Файл секретного ключа (необов’язково)</translation>
 <translation id="6227280783235722609">розширення</translation>
 <translation id="6228691855869374890">Цей сайт повністю контролює пристрої MIDI.</translation>
-<translation id="6228720835160974792">Створити QR-код цього зображення</translation>
 <translation id="6229890768313448549">Не вдається завантажити Умови використання Google Play. Повторіть спробу.</translation>
 <translation id="6231881193380278751">Додайте в URL-адресу параметр запиту для автоматичного оновлення сторінки: chrome://device-log/?refresh=&lt;sec&gt;</translation>
 <translation id="6232017090690406397">Акумулятор</translation>
@@ -3919,6 +3919,7 @@
 <translation id="6263082573641595914">Версія ЦС Microsoft</translation>
 <translation id="6263284346895336537">Не вирішальні</translation>
 <translation id="6264365405983206840">Вибрати &amp;всі</translation>
+<translation id="6265687851677020761">Вилучити порт</translation>
 <translation id="6267166720438879315">Виберіть сертифікат, щоб ідентифікувати себе на <ph name="HOST_NAME" /></translation>
 <translation id="6267547857941397424">Мережа <ph name="NETWORK_INDEX" /> з <ph name="NETWORK_COUNT" />, <ph name="PHONE_NAME" />, рівень сигналу – <ph name="SIGNAL_STRENGTH" />%, рівень заряду акумулятора телефона – <ph name="BATTERY_STATUS" />%. Підключитися</translation>
 <translation id="6268252012308737255">Відкрити за допомогою додатка <ph name="APP" /></translation>
@@ -4549,7 +4550,6 @@
 <translation id="7123360114020465152">Більше не підтримується</translation>
 <translation id="7127980134843952133">Історія завантажень</translation>
 <translation id="7128151990937044829">Показувати індикатор в адресному рядку, коли сповіщення заблоковано</translation>
-<translation id="7128239828194367697">Створити QR-код цієї сторінки</translation>
 <translation id="7131040479572660648">Переглядати ваші дані на веб-сайтах <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> і <ph name="WEBSITE_3" /></translation>
 <translation id="713122686776214250">Додати стор&amp;інку...</translation>
 <translation id="7133578150266914903">Адміністратор відновлює цей пристрій до попереднього стану (<ph name="PROGRESS_PERCENT" />)</translation>
@@ -4939,6 +4939,7 @@
 <translation id="767127784612208024">Торкніться, щоб підтвердити скидання</translation>
 <translation id="767147716926917172">Автоматично надсилає в Google дані про діагностику та використання</translation>
 <translation id="7672520070349703697"><ph name="HUNG_IFRAME_URL" />, на сторінці <ph name="PAGE_TITLE" />.</translation>
+<translation id="7674416868315480713">Деактивувати всі порти, запити для яких переадресовуються в Linux</translation>
 <translation id="7676867886086876795">Надішліть зразок свого голосу в Google, щоб дозволити диктування в будь-якому текстовому полі.</translation>
 <translation id="7678280409648629969">Дані для входу зберігатимуться в Chrome після виходу з режиму анонімного перегляду. Так ви зможете знову скористатися Touch ID на цьому веб-сайті.</translation>
 <translation id="7681095912841365527">Сайт може використовувати Bluetooth</translation>

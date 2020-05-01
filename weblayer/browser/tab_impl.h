@@ -30,10 +30,16 @@ class AutofillProvider;
 }  // namespace autofill
 
 namespace content {
+class RenderWidgetHostView;
 class WebContents;
 struct ContextMenuParams;
 struct WebPreferences;
 }
+
+namespace gfx {
+class Rect;
+class Size;
+}  // namespace gfx
 
 namespace sessions {
 class SessionTabHelperDelegate;
@@ -56,6 +62,20 @@ class TabImpl : public Tab,
                 public content::WebContentsObserver,
                 public find_in_page::FindResultObserver {
  public:
+  enum class ScreenShotErrors {
+    kNone = 0,
+    kScaleOutOfRange,
+    kTabNotActive,
+    kWebContentsNotVisible,
+    kNoSurface,
+    kNoRenderWidgetHostView,
+    kNoWindowAndroid,
+    kEmptyViewport,
+    kHiddenByControls,
+    kScaledToEmpty,
+    kCaptureFailed,
+  };
+
   // TODO(sky): investigate a better way to not have so many ifdefs.
 #if defined(OS_ANDROID)
   TabImpl(ProfileImpl* profile,
@@ -123,6 +143,11 @@ class TabImpl : public Tab,
   void UpdateBrowserControlsState(JNIEnv* env, jint constraint);
 
   base::android::ScopedJavaLocalRef<jstring> GetGuid(JNIEnv* env);
+
+  void CaptureScreenShot(
+      JNIEnv* env,
+      jfloat scale,
+      const base::android::JavaParamRef<jobject>& valueCallback);
 #endif
 
   ErrorPageDelegate* error_page_delegate() { return error_page_delegate_; }
@@ -209,6 +234,15 @@ class TabImpl : public Tab,
                            int version,
                            const std::vector<gfx::RectF>& rects,
                            const gfx::RectF& active_rect) override;
+
+  // Pointer arguments are outputs. Check the preconditions for capturing a
+  // screenshot and either set all outputs, or return an error code, in which
+  // case the state of output arguments is undefined.
+  ScreenShotErrors PrepareForCaptureScreenShot(
+      float scale,
+      content::RenderWidgetHostView** rwhv,
+      gfx::Rect* src_rect,
+      gfx::Size* output_size);
 #endif
 
   // content::WebContentsObserver:

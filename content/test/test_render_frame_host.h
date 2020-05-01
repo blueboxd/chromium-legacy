@@ -56,6 +56,7 @@ class TestRenderFrameHost : public RenderFrameHostImpl,
                       FrameTree* frame_tree,
                       FrameTreeNode* frame_tree_node,
                       int32_t routing_id,
+                      const base::UnguessableToken& frame_token,
                       LifecycleState lifecyle_state);
   ~TestRenderFrameHost() override;
 

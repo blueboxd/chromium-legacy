@@ -93,7 +93,6 @@
 <translation id="3582972582564653026">Menyinkronkan dan mempersonalisasi Chrome di perangkat Anda</translation>
 <translation id="3596080736082218006">{COUNT,plural, =0{Administrator mewajibkan Anda meluncurkan kembali Chrome untuk menerapkan update}=1{Administrator mewajibkan Anda meluncurkan kembali Chrome untuk menerapkan update. Jendela samaran Anda tidak akan dibuka kembali.}other{Administrator mewajibkan Anda meluncurkan kembali Chrome untuk menerapkan update. # jendela samaran Anda tidak akan dibuka kembali.}}</translation>
 <translation id="3622797965165704966">Kini, menggunakan Chrome dengan Akun Google Anda dan di komputer bersama jadi lebih mudah.</translation>
-<translation id="3637702109597584617"><ph name="TERMS_OF_SERVICE_LINK" />Persyaratan Layanan<ph name="END_TERMS_OF_SERVICE_LINK" /> Google Chrome OS</translation>
 <translation id="3718181793972440140">Tindakan ini akan menghapus 1 item dari perangkat ini. Untuk mengambil data nanti, login ke Chrome sebagai <ph name="USER_EMAIL" />.</translation>
 <translation id="3735758079232443276">Ekstensi "<ph name="EXTENSION_NAME" />" telah mengubah apa yang ditampilkan oleh halaman saat Anda memulai Chrome.</translation>
 <translation id="3780814664026482060">Chrome - <ph name="PAGE_TITLE" /></translation>
@@ -110,6 +109,7 @@
 <translation id="4205939740494406371">Chrome tidak dapat memeriksa sandi Anda. Coba lagi setelah 24 jam atau <ph name="BEGIN_LINK" />periksa sandi di Akun Google Anda<ph name="END_LINK" />.</translation>
 <translation id="424864128008805179">Logout dari Chrome?</translation>
 <translation id="4251615635259297716">Tautkan data Chrome Anda ke akun ini?</translation>
+<translation id="4281844954008187215">Persyaratan Layanan</translation>
 <translation id="4293420128516039005">Login untuk menyinkronkan dan mempersonalisasi Chrome di perangkat Anda</translation>
 <translation id="4328355335528187361">Google Chrome Dev (mDNS-In)</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
@@ -142,7 +142,6 @@
 <translation id="5132929315877954718">Temukan aplikasi, game, ekstensi, dan tema yang hebat untuk Google Chrome.</translation>
 <translation id="5170938038195470297">Profil Anda tidak dapat digunakan karena berasal dari versi terbaru Google Chrome. Beberapa fitur mungkin tidak tersedia. Tentukan direktori profil yang berbeda atau gunakan versi Chrome yang lebih anyar.</translation>
 <translation id="5193136243808726294">Google Chrome OS tidak dapat membuka halaman ini.</translation>
-<translation id="5204098752394657250"><ph name="TERMS_OF_SERVICE_LINK" />Persyaratan Layanan<ph name="END_TERMS_OF_SERVICE_LINK" /> Google Chrome</translation>
 <translation id="5251420635869119124">Tamu dapat menggunakan Chrome tanpa meninggalkan apa pun.</translation>
 <translation id="532046782124376502">Peringatan: Google Chrome tidak dapat mencegah ekstensi merekam histori browsing Anda. Untuk menonaktifkan ekstensi ini dalam mode samaran, batalkan memilih opsi ini.</translation>
 <translation id="5386244825306882791">Juga mengontrol halaman apa yang ditampilkan saat Anda memulai Chrome atau menelusuri dari Omnibox.</translation>

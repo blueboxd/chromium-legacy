@@ -6,19 +6,20 @@
 
 #include "base/feature_list.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
+#include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/web_applications/web_app_provider_factory.h"
 #include "chrome/common/chrome_features.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
+#include "extensions/browser/extension_prefs_factory.h"
+#include "extensions/browser/extension_registry_factory.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/guest_os/guest_os_registry_service_factory.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/notifications/notification_display_service_factory.h"
-#include "chrome/browser/web_applications/web_app_provider_factory.h"
 #include "extensions/browser/app_window/app_window_registry.h"
-#include "extensions/browser/extension_prefs_factory.h"
-#include "extensions/browser/extension_registry_factory.h"
 #endif  // OS_CHROMEOS
 
 namespace apps {
@@ -46,13 +47,14 @@ AppServiceProxyFactory::AppServiceProxyFactory()
     : BrowserContextKeyedServiceFactory(
           "AppServiceProxy",
           BrowserContextDependencyManager::GetInstance()) {
-#if defined(OS_CHROMEOS)
-  DependsOn(guest_os::GuestOsRegistryServiceFactory::GetInstance());
-  DependsOn(extensions::AppWindowRegistry::Factory::GetInstance());
   DependsOn(extensions::ExtensionPrefsFactory::GetInstance());
   DependsOn(extensions::ExtensionRegistryFactory::GetInstance());
-  DependsOn(NotificationDisplayServiceFactory::GetInstance());
+  DependsOn(HostContentSettingsMapFactory::GetInstance());
   DependsOn(web_app::WebAppProviderFactory::GetInstance());
+#if defined(OS_CHROMEOS)
+  DependsOn(guest_os::GuestOsRegistryServiceFactory::GetInstance());
+  DependsOn(NotificationDisplayServiceFactory::GetInstance());
+  DependsOn(extensions::AppWindowRegistry::Factory::GetInstance());
 #endif  // OS_CHROMEOS
 }
 

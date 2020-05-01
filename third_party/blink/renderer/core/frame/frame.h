@@ -268,6 +268,11 @@ class CORE_EXPORT Frame : public GarbageCollected<Frame> {
     return *window_agent_factory_;
   }
 
+  // This identifier represents the stable identifier between a
+  // LocalFrame  <--> RenderFrameHostImpl or a
+  // RemoteFrame <--> RenderFrameProxyHost in the browser process.
+  const base::UnguessableToken& GetFrameToken() const { return frame_token_; }
+
   bool GetVisibleToHitTesting() const { return visible_to_hit_testing_; }
   void UpdateVisibleToHitTesting();
 
@@ -286,6 +291,7 @@ class CORE_EXPORT Frame : public GarbageCollected<Frame> {
   Frame(FrameClient*,
         Page&,
         FrameOwner*,
+        const base::UnguessableToken& frame_token,
         WindowProxyManager*,
         WindowAgentFactory* inheriting_agent_factory);
 
@@ -369,6 +375,19 @@ class CORE_EXPORT Frame : public GarbageCollected<Frame> {
   // The sticky user activation state of the current frame before eTLD+1
   // navigation.  This is used in autoplay.
   bool had_sticky_user_activation_before_nav_ = false;
+
+  // This identifier represents the stable identifier between a
+  // LocalFrame  <--> RenderFrameHostImpl or a
+  // RemoteFrame <--> RenderFrameProxyHost in the browser process.
+  // Note that this identifier is unique per render process and
+  // browser relationship. ie. If this is a LocalFrame, RemoteFrames that
+  // represent this frame node in other processes will *not* have the same
+  // identifier. Similarly, if this is a RemoteFrame, the LocalFrame and
+  // other RemoteFrames that represent this frame node in other processes
+  // will *not* have the same identifier. This is different than the
+  // |devtools_frame_token_| in which all representations of this frame node
+  // have the same value in all processes.
+  base::UnguessableToken frame_token_;
 };
 
 inline FrameClient* Frame::Client() const {

@@ -897,10 +897,17 @@ void FuchsiaVideoDecoder::OnOutputPacket(fuchsia::media::Packet output_packet,
     pixel_aspect_ratio = container_pixel_aspect_ratio_;
   }
 
-  base::TimeDelta timestamp;
-  if (output_packet.has_timestamp_ish()) {
-    timestamp = base::TimeDelta::FromNanoseconds(output_packet.timestamp_ish());
+  // SendInputPacket() sets timestamp for all packets sent to the decoder, so we
+  // expect to receive timestamp for all decoded frames. Missing timestamp
+  // indicates a bug in the decoder implementation.
+  if (!output_packet.has_timestamp_ish()) {
+    LOG(ERROR) << "Received frame without timestamp.";
+    OnError();
+    return;
   }
+
+  base::TimeDelta timestamp =
+      base::TimeDelta::FromNanoseconds(output_packet.timestamp_ish());
 
   num_used_output_buffers_++;
 

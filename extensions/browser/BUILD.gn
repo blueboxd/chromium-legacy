@@ -528,7 +528,6 @@ source_set("browser_tests") {
       "//chromeos/dbus/upstart",
       "//chromeos/login/login_state",
       "//chromeos/network",
-      "//components/crash/core/app:app",
     ]
   }
 }
@@ -569,6 +568,17 @@ jumbo_source_set("test_support") {
 
   public_deps =
       [ "//extensions/browser/api/declarative_net_request:test_support" ]
+
+  if (is_chromeos) {
+    sources += [
+      "api/crash_report_private/mock_crash_endpoint.cc",
+      "api/crash_report_private/mock_crash_endpoint.h",
+    ]
+    deps += [
+      "//components/crash/core/app:app",
+      "//net:test_support",
+    ]
+  }
 }
 
 jumbo_source_set("value_store_test_support") {

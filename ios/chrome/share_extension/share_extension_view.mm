@@ -104,6 +104,24 @@ const CGFloat kButtonFontSize = 17;
         [self buttonWithTitle:openInChromeTitle
                      selector:@selector(openInChromePressed:)];
 
+#if defined(__IPHONE_13_4)
+    if (@available(iOS 13.4, *)) {
+      for (UIButton* button in
+           @[ self.readingListButton, bookmarksButton, openButton ]) {
+        button.pointerInteractionEnabled = YES;
+        button.pointerStyleProvider = ^UIPointerStyle*(
+            UIButton* button, __unused UIPointerEffect* proposedEffect,
+            __unused UIPointerShape* proposedShape) {
+          UITargetedPreview* preview =
+              [[UITargetedPreview alloc] initWithView:button];
+          UIPointerHoverEffect* effect =
+              [UIPointerHoverEffect effectWithPreview:preview];
+          return [UIPointerStyle styleWithEffect:effect shape:nil];
+        };
+      }
+    }
+#endif  // defined(__IPHONE_13_4)
+
     UIStackView* contentStack = [[UIStackView alloc] initWithArrangedSubviews:@[
       [self navigationBar], [self dividerView], [self sharedItemView],
       [self dividerView], self.readingListButton, [self dividerView],

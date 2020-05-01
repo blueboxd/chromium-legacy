@@ -5,7 +5,8 @@
 #include "third_party/blink/renderer/modules/peerconnection/rtc_rtp_receiver_impl.h"
 
 #include "base/bind.h"
-#include "base/logging.h"
+#include "base/check_op.h"
+#include "base/notreached.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_encoded_audio_stream_transformer.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_encoded_video_stream_transformer.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_rtp_sender_platform.h"

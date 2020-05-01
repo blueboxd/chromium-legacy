@@ -38,7 +38,6 @@
 <translation id="1258753120186372309">Doodle de Google: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1260236875608242557">Buscar e explorar</translation>
 <translation id="1266864766717917324">Non se puido compartir este contido: <ph name="CONTENT_TYPE" /></translation>
-<translation id="1272079795634619415">Deter</translation>
 <translation id="1283039547216852943">Toca para despregar</translation>
 <translation id="1285320974508926690">Non traducir nunca este sitio</translation>
 <translation id="1291207594882862231">Borrar o historial, as cookies, os datos dos sitios, a memoria caché…</translation>
@@ -50,8 +49,8 @@
 <translation id="1327257854815634930">O historial de navegación está aberto</translation>
 <translation id="1331212799747679585">Chrome non se pode actualizar. Máis opcións</translation>
 <translation id="1332501820983677155">Atallos das funcións de Google Chrome</translation>
+<translation id="1347468774581902829">Xestionar a actividade</translation>
 <translation id="1360432990279830238">Queres pechar sesión?</translation>
-<translation id="1364532808393826295"><ph name="APP_NAME" />: <ph name="NOTIFICATION_MESSAGE" /></translation>
 <translation id="1373696734384179344">Memoria insuficiente para descargar o contido seleccionado.</translation>
 <translation id="1376578503827013741">Calculando...</translation>
 <translation id="1383876407941801731">Buscar</translation>
@@ -122,7 +121,6 @@
 <translation id="2013642289801508067">{FILE_COUNT,plural, =1{# ficheiro}other{# ficheiros}}</translation>
 <translation id="2017836877785168846">Borra o historial e os completados automáticos na barra de enderezos.</translation>
 <translation id="2021896219286479412">Controis de pantalla completa</translation>
-<translation id="2030769033451695672">Toca para volver a <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
 <translation id="2038563949887743358">Activa a opción Ver como ordenador</translation>
 <translation id="204321170514947529"><ph name="APP_NAME" /> tamén ten datos en Chrome</translation>
 <translation id="2049574241039454490"><ph name="FILE_SIZE_OF_TOTAL" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
@@ -434,6 +432,7 @@ Só ti podes ver a que apunta a túa cámara. O sitio non pode ver as imaxes da 
 <translation id="4663756553811254707">Elimináronse <ph name="NUMBER_OF_BOOKMARKS" /> marcadores</translation>
 <translation id="4665282149850138822"><ph name="NAME" /> engadiuse á túa pantalla de inicio</translation>
 <translation id="4684427112815847243">Sincronizar todo</translation>
+<translation id="4688610874307684559">Estase executando en Chrome (inicial)</translation>
 <translation id="4695891336199304370">{SHIPPING_OPTIONS,plural, =1{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 e <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> máis}other{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 e <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> máis}}</translation>
 <translation id="4696983787092045100">Enviar texto a Os teus dispositivos</translation>
 <translation id="4698034686595694889">Ver contido sen conexión na aplicación <ph name="APP_NAME" /></translation>
@@ -592,7 +591,6 @@ Para cambiar esta opción de configuración, deberás <ph name="BEGIN_LINK" />re
 <translation id="5876056640971328065">Pór en pausa o vídeo</translation>
 <translation id="5884076754568147479">Para axudarche a completar tarefas, Google recibirá os URL e os contidos dos sitios nos que uses o Asistente, ademais da información que envíes a través del</translation>
 <translation id="5919204609460789179">Actualiza <ph name="PRODUCT_NAME" /> para iniciar a sincronización</translation>
-<translation id="5922853908706496913">Compartindo pantalla</translation>
 <translation id="5937580074298050696">Datos aforrados: <ph name="AMOUNT" /></translation>
 <translation id="5939518447894949180">Restablecer</translation>
 <translation id="5942872142862698679">Uso de Google para a busca</translation>
@@ -773,16 +771,17 @@ Por exemplo, algúns sitios web poden responder a esta solicitude mostrándoche 
 <translation id="7479104141328977413">Xestión de pestanas</translation>
 <translation id="7481312909269577407">Adiante</translation>
 <translation id="7482656565088326534">Pestana de vista previa</translation>
+<translation id="7484997419527351112">Discover: desactivado</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (actualizouse <ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7494974237137038751">datos aforrados</translation>
 <translation id="7498271377022651285">Agarda…</translation>
 <translation id="7514365320538308">Descargar</translation>
 <translation id="751961395872307827">Non se puido establecer conexión co sitio</translation>
 <translation id="7542481630195938534">Non se puideron obter suxestións</translation>
-<translation id="7554752735887601236">Un sitio está utilizando o micrófono</translation>
 <translation id="7559975015014302720">O modo básico está desactivado</translation>
 <translation id="7562080006725997899">Borrando datos de navegación</translation>
 <translation id="756809126120519699">Borráronse os datos de Chrome</translation>
+<translation id="7577900504646297215">Xestionar os intereses</translation>
 <translation id="757855969265046257">{FILES,plural, =1{<ph name="FILES_DOWNLOADED_ONE" /> ficheiro descargado}other{<ph name="FILES_DOWNLOADED_MANY" /> ficheiros descargados}}</translation>
 <translation id="7588219262685291874">Activa o tema escuro cando estea activada a función do dispositivo Aforro de batería</translation>
 <translation id="7593557518625677601">Sincronizar Chrome: abre a config. de Android e sincroniza de novo o seu sistema</translation>
@@ -813,7 +812,6 @@ Por exemplo, algúns sitios web poden responder a esta solicitude mostrándoche 
 <translation id="7774809984919390718">{PAYMENT_METHOD,plural, =1{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 e <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> máis}other{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 e <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> máis}}</translation>
 <translation id="7791543448312431591">Engadir</translation>
 <translation id="780301667611848630">Non, grazas</translation>
-<translation id="7804248752222191302">Un sitio está utilizando a cámara</translation>
 <translation id="7810647596859435254">Abrir con…</translation>
 <translation id="7821588508402923572">A cifra de aforro de datos aparecerá aquí</translation>
 <translation id="783819812427904514">Activar o son do vídeo</translation>
@@ -885,9 +883,7 @@ Por exemplo, algúns sitios web poden responder a esta solicitude mostrándoche 
 <translation id="8349013245300336738">Ordenar por cantidade de datos usados</translation>
 <translation id="8364299278605033898">Descubre sitios web populares</translation>
 <translation id="8368027906805972958">Dispositivo descoñecido ou non compatible (<ph name="DEVICE_ID" />)</translation>
-<translation id="83792324527827022">Un sitio está utilizando a cámara e o micrófono</translation>
 <translation id="8393700583063109961">Enviar mensaxe</translation>
-<translation id="8394832520002899662">Toca para volver ao sitio</translation>
 <translation id="8413126021676339697">Mostrar historial completo</translation>
 <translation id="8427875596167638501">A pestana de vista previa abriuse ata a metade</translation>
 <translation id="8428213095426709021">Configuración</translation>
@@ -984,7 +980,6 @@ Por exemplo, algúns sitios web poden responder a esta solicitude mostrándoche 
 <translation id="970715775301869095">Quedan <ph name="MINUTES" /> minutos</translation>
 <translation id="974555521953189084">Introduce a frase de acceso para iniciar a sincronización</translation>
 <translation id="981121421437150478">Sen conexión</translation>
-<translation id="982182592107339124">Borraranse os datos de todos os sitios, incluídos os seguintes:</translation>
 <translation id="983192555821071799">Pechar todas as pestanas</translation>
 <translation id="987264212798334818">Xeral</translation>
 </translationbundle>

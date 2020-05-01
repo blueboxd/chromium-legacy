@@ -38,7 +38,6 @@
 <translation id="1258753120186372309">Hình tượng trưng của Google: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1260236875608242557">Tìm kiếm và khám phá</translation>
 <translation id="1266864766717917324">Không thể chia sẻ <ph name="CONTENT_TYPE" /></translation>
-<translation id="1272079795634619415">Dừng</translation>
 <translation id="1283039547216852943">Nhấn để mở rộng</translation>
 <translation id="1285320974508926690">Không bao giờ dịch trang web này</translation>
 <translation id="1291207594882862231">Xóa lịch sử, cookie, dữ liệu trang web, bộ nhớ đệm…</translation>
@@ -51,7 +50,6 @@
 <translation id="1331212799747679585">Chrome không thể cập nhật. Tùy chọn khác</translation>
 <translation id="1332501820983677155">Phím tắt cho các tính năng của Google Chrome</translation>
 <translation id="1360432990279830238">Đăng xuất và tắt tính năng đồng bộ hóa?</translation>
-<translation id="1364532808393826295"><ph name="APP_NAME" /> – <ph name="NOTIFICATION_MESSAGE" /></translation>
 <translation id="1373696734384179344">Không đủ bộ nhớ để tải xuống nội dung được chọn.</translation>
 <translation id="1376578503827013741">Đang tính toán...</translation>
 <translation id="1383876407941801731">Tìm kiếm</translation>
@@ -122,7 +120,6 @@
 <translation id="2013642289801508067">{FILE_COUNT,plural, =1{# tệp}other{# tệp}}</translation>
 <translation id="2017836877785168846">Xóa lịch sử duyệt web và nội dung tự động hoàn thành trong thanh địa chỉ.</translation>
 <translation id="2021896219286479412">Kiểm soát trang toàn màn hình</translation>
-<translation id="2030769033451695672">Nhấn để quay lại <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
 <translation id="2038563949887743358">Bật Yêu cầu trang web cho máy tính</translation>
 <translation id="204321170514947529"><ph name="APP_NAME" /> cũng có dữ liệu trong Chrome</translation>
 <translation id="2049574241039454490"><ph name="FILE_SIZE_OF_TOTAL" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
@@ -592,7 +589,6 @@ Tài khoản Google của bạn có thể có các dạng lịch sử duyệt we
 <translation id="5876056640971328065">Tạm dừng video</translation>
 <translation id="5884076754568147479">Để giúp bạn hoàn thành những việc cần làm, Google sẽ nhận URL và nội dung của các trang web mà bạn sử dụng Trợ lý, cũng như thông tin bạn gửi qua Trợ lý</translation>
 <translation id="5919204609460789179">Cập nhật <ph name="PRODUCT_NAME" /> để bắt đầu đồng bộ hóa</translation>
-<translation id="5922853908706496913">Đang chia sẻ màn hình của bạn</translation>
 <translation id="5937580074298050696">Đã tiết kiệm <ph name="AMOUNT" /></translation>
 <translation id="5939518447894949180">Đặt lại</translation>
 <translation id="5942872142862698679">Sử dụng Google để tìm kiếm</translation>
@@ -779,7 +775,6 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="7514365320538308">Tải xuống</translation>
 <translation id="751961395872307827">Không thể kết nối với trang web</translation>
 <translation id="7542481630195938534">Không thể nhận nội dung đề xuất</translation>
-<translation id="7554752735887601236">Một trang web đang sử dụng micrô của bạn</translation>
 <translation id="7559975015014302720">Chế độ thu gọn đang tắt</translation>
 <translation id="7562080006725997899">Xóa dữ liệu duyệt web</translation>
 <translation id="756809126120519699">Đã xóa dữ liệu Chrome</translation>
@@ -813,7 +808,6 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="7774809984919390718">{PAYMENT_METHOD,plural, =1{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 và <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> tùy chọn khác}other{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 và <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> tùy chọn khác}}</translation>
 <translation id="7791543448312431591">Thêm</translation>
 <translation id="780301667611848630">Không, cảm ơn</translation>
-<translation id="7804248752222191302">Một trang web đang sử dụng máy ảnh của bạn</translation>
 <translation id="7810647596859435254">Mở bằng…</translation>
 <translation id="7821588508402923572">Mức tiết kiệm dữ liệu sẽ hiển thị tại đây</translation>
 <translation id="783819812427904514">Bật tiếng video</translation>
@@ -885,9 +879,7 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="8349013245300336738">Sắp xếp theo lượng dữ liệu đã dùng</translation>
 <translation id="8364299278605033898">Xem các trang web phổ biến</translation>
 <translation id="8368027906805972958">Thiết bị không xác định hoặc không được hỗ trợ (<ph name="DEVICE_ID" />)</translation>
-<translation id="83792324527827022">Một trang web đang sử dụng máy ảnh và micrô của bạn</translation>
 <translation id="8393700583063109961">Gửi tin nhắn</translation>
-<translation id="8394832520002899662">Nhấn để quay lại trang web</translation>
 <translation id="8413126021676339697">Hiển thị toàn bộ lịch sử</translation>
 <translation id="8427875596167638501">Tab xem trước đang mở trên nửa màn hình</translation>
 <translation id="8428213095426709021">Cài đặt</translation>
@@ -984,7 +976,6 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="970715775301869095">Còn <ph name="MINUTES" /> phút</translation>
 <translation id="974555521953189084">Nhập cụm mật khẩu của bạn để bắt đầu đồng bộ hóa</translation>
 <translation id="981121421437150478">Ngoại tuyến</translation>
-<translation id="982182592107339124">Thao tác này sẽ xóa dữ liệu của tất cả các trang web, bao gồm:</translation>
 <translation id="983192555821071799">Đóng tất cả các tab</translation>
 <translation id="987264212798334818">Chung</translation>
 </translationbundle>

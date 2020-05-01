@@ -97,7 +97,6 @@
 <translation id="3582972582564653026">ඔබගේ උපාංග හරහා Chrome සමමුහුර්ත කර පෞද්ගලීකරණය කරන්න</translation>
 <translation id="3596080736082218006">{COUNT,plural, =0{යාවත්කාලීනයක් යෙදීමට ඔබ Chrome නැවත ආරම්භ කිරීම පරිපාලකයාට අවශ්‍ය වේ}=1{යාවත්කාලීනයක් යෙදීමට ඔබ Chrome නැවත ආරම්භ කිරීම පරිපාලකයාට අවශ්‍ය වේ. ඔබේ අප්‍රසිද්ධ කවුළුව යළි විවෘත නොවෙයි.}one{යාවත්කාලීනයක් යෙදීමට ඔබ Chrome නැවත ආරම්භ කිරීම පරිපාලකයාට අවශ්‍ය වේ. ඔබේ අප්‍රසිද්ධ කවුළු # යළි විවෘත නොවෙයි.}other{යාවත්කාලීනයක් යෙදීමට ඔබ Chrome නැවත ආරම්භ කිරීම පරිපාලකයාට අවශ්‍ය වේ. ඔබේ අප්‍රසිද්ධ කවුළු # යළි විවෘත නොවෙයි.}}</translation>
 <translation id="3622797965165704966">දැන් Chrome ඔබගේ Google ගිණුම සහ බෙදාගත් පරිගණක මත භාවිතා කිරීමට වඩාත් පහසුයි.</translation>
-<translation id="3637702109597584617">Google Chrome OS <ph name="TERMS_OF_SERVICE_LINK" />සේවා නියම<ph name="END_TERMS_OF_SERVICE_LINK" /></translation>
 <translation id="3718181793972440140">මෙය අයිතම 1ක් මෙම උපාංගයෙන් මකනු ඇත. ඔබගේ දත්ත පසුව ලබා ගැනීමට, <ph name="USER_EMAIL" /> ලෙස Chrome වෙත පුරන්න.</translation>
 <translation id="3735758079232443276">"<ph name="EXTENSION_NAME" />" දිගුව විසින් ඔබ Chrome ආරම්භ කරන විට පෙන්වන පිටුව වෙනස් කර ඇත.</translation>
 <translation id="3780814664026482060">Chrome - <ph name="PAGE_TITLE" /></translation>
@@ -114,6 +113,7 @@
 <translation id="4205939740494406371">Chrome හට ඔබේ මුරපද පරීක්ෂා කළ නොහැක. පැය 24-කට පසු නැවත උත්සාහ කරන්න, නැති නම් <ph name="BEGIN_LINK" />ඔබේ Google ගිණුම තුළ මුරපද පරීක්‍ෂා කරන්න<ph name="END_LINK" />.</translation>
 <translation id="424864128008805179">Chrome වෙතින් වරන්න</translation>
 <translation id="4251615635259297716">මෙම ගිණුමට Chrome දත්ත සම්බන්ධ කරන්නද?</translation>
+<translation id="4281844954008187215">සේවා කොන්දේසි</translation>
 <translation id="4293420128516039005">ඔබගේ උපාංග හරහා Chrome සමමුහුර්ත කර පෞද්ගලීකරණය කිරීමට පුරනය වන්න</translation>
 <translation id="4328355335528187361">Google Chrome Dev (mDNS-In)</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
@@ -148,7 +148,6 @@
 
 ඇතැම් විශේෂාංග නොපවතිනු ඇත. කරුණාකර Chrome නි නව සංස්කරණය භාවිතයට වෙනස් පැතිකඩ නාමාවලියක් භාවිත කරන්න.</translation>
 <translation id="5193136243808726294">Google Chrome OS හට මෙම පිටුව විවෘත කළ නොහැකිය.</translation>
-<translation id="5204098752394657250">Google Chrome <ph name="TERMS_OF_SERVICE_LINK" />සේවා නියම<ph name="END_TERMS_OF_SERVICE_LINK" /></translation>
 <translation id="5251420635869119124">අමුත්තන්ට කිසිවක් තබා යෑමෙන් තොරව Chrome භාවිත කළ හැක.</translation>
 <translation id="532046782124376502">අනතුරු ඇඟවීමයි: Google Chrome හට ඔබේ බ්‍රවුස් කිරීමේ ඉතිහාසය පටිගත කිරීමෙන් දිගු වැළැක්විය නොහැක. මෙම දිගුව අප්‍රසිද්ධ ප්‍රකාරය තුළ අබල කිරීමට, මෙම විකල්පය තේරීම්හරණය කරන්න.</translation>
 <translation id="5386244825306882791">තවද එය ඔබ Chrome විවෘත කරන විට හෝ Omnibox වෙතින් සොයන විට පෙන්වන වෙබ් පිටුව නිර්ණය කරයි.</translation>

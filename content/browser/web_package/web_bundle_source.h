@@ -56,7 +56,7 @@ class CONTENT_EXPORT WebBundleSource {
 
   const GURL& url() const { return url_; }
 
-  bool IsNavigationPathRestrictionSatisfied(const GURL& url) const;
+  bool IsPathRestrictionSatisfied(const GURL& url) const;
 
  private:
   WebBundleSource(Type type, const base::FilePath& file_path, const GURL& url);

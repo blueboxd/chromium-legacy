@@ -396,6 +396,10 @@ void CandidateWindowView::SelectCandidateAt(int index_in_page) {
 
   // Update the cursor indexes in the model.
   candidate_window_.set_cursor_position(cursor_absolute_index);
+  // Set position data.
+  candidate_views_[index_in_page]->SetPositionData(
+      candidate_window_.current_candidate_index(),
+      candidate_window_.total_candidates());
 }
 
 const char* CandidateWindowView::GetClassName() const {

@@ -52,6 +52,8 @@ extern const base::Feature kNewSearchFeatures;
 // On-Focus Suggestions a.k.a. ZeroSuggest.
 extern const base::Feature kOnFocusSuggestions;
 extern const base::Feature kOnFocusSuggestionsContextualWeb;
+extern const base::Feature kProactiveZeroSuggestionsOnNTPOmnibox;
+extern const base::Feature kProactiveZeroSuggestionsOnNTPRealbox;
 extern const base::Feature kZeroSuggestionsOnNTP;
 extern const base::Feature kZeroSuggestionsOnNTPRealbox;
 extern const base::Feature kZeroSuggestionsOnSERP;

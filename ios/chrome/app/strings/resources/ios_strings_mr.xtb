@@ -158,6 +158,7 @@
 <translation id="285960592395650245">पुन्हा डाउनलोड करण्याचा प्रयत्न करा</translation>
 <translation id="2870560284913253234">साइट</translation>
 <translation id="2871695793448672541">लपलेला, पासवर्ड</translation>
+<translation id="2876369937070532032">तुमची सुरक्षा धोक्यात असते तेव्हा, तुम्ही भेट दिलेल्या काही पेजचे URL Google ला पाठवते</translation>
 <translation id="288655811176831528">टॅब बंद करा</translation>
 <translation id="2898963176829412617">नवीन फोल्डर...</translation>
 <translation id="2916171785467530738">ऑटोकंप्लीट शोध आणि URL</translation>
@@ -177,6 +178,7 @@
 <translation id="3161291298470460782">हे या डिव्हाइसमधून तुम्हाला साइन आउट करेल, सिंक बंद करेल आणि सर्व Chrome डेटा साफ करेल. तुमचा सिंक केलेला डेटा तुमचे Google खाते यामध्ये राहील.</translation>
 <translation id="3175081911749765310">वेब सेवा</translation>
 <translation id="3178650076442119961">आज ॲक्टिव्ह होते</translation>
+<translation id="3181954750937456830">सुरक्षित ब्राउझिंग (तुम्हाला आणि तुमच्या डिव्हाइसना धोकादायक साइटपासून सुरक्षित ठेवते)</translation>
 <translation id="3207960819495026254">बुकमार्क केलेली</translation>
 <translation id="3224641773458703735">पासवर्ड एक्सपोर्ट करण्यासाठी, तुम्ही प्रथम तुमच्या डिव्हाइसवर पासकोड सेट करणे आवश्यक आहे.</translation>
 <translation id="3240426699337459095">लिंक कॉपी केला</translation>
@@ -431,6 +433,7 @@
 <translation id="6447842834002726250">कुकीज</translation>
 <translation id="6464071786529933911">नवीन गुप्त टॅबमध्ये उघडा</translation>
 <translation id="6476800141292307438">पेजचे <ph name="LANGUAGE" /> मध्ये भाषांतर करत आहे. पर्याय स्क्रीनच्या खाली उपलब्ध आहेत.</translation>
+<translation id="648164694371393720">ऑथेंटिकेशन एरर</translation>
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> आयटम हटविले</translation>
 <translation id="6561262006871132942">झूम इन करा</translation>
 <translation id="6610002944194042868">भाषांतराचे पर्याय</translation>

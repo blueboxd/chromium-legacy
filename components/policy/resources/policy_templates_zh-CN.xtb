@@ -340,6 +340,7 @@
           如果停用了或未设置此政策，则 Kerberos 帐号设置处于停用状态。此时无法添加任何 Kerberos 帐号，也无法使用 Kerberos 身份验证功能。系统会删除所有现有 Kerberos 帐号，以及所有已存储的密码。</translation>
 <translation id="1561424797596341174">覆盖与远程访问主机的调试版本号相关的政策</translation>
 <translation id="1561967320164410511">用于个人认证的 U2F 和扩展程序</translation>
+<translation id="1575015449587326319">OnFileDownloaded Chrome Enterprise Connector 的配置政策</translation>
 <translation id="1583248206450240930">默认情况下使用“<ph name="PRODUCT_FRAME_NAME" />”</translation>
 <translation id="1588240398285670601">浏览器设置</translation>
 <translation id="1599424828227887013">在 Android 设备上为指定的来源启用网站隔离功能</translation>
@@ -1254,7 +1255,6 @@
 <translation id="2869762730352628426">在登录屏幕上启用自动点击</translation>
 <translation id="2872961005593481000">关机</translation>
 <translation id="2874209944580848064">针对支持 Android 应用的 <ph name="PRODUCT_OS_NAME" />设备的注意事项：</translation>
-<translation id="2874901846804525128">阻止用户使用来源不受信任的 Android 应用。</translation>
 <translation id="2875192972412983412">指定要让系统为确认是否有可用的服务器打印机而查询的部分打印服务器。
 
       如果使用此政策，则只有那些具有与此政策中所列值匹配的 ID 的服务器打印机才可供用户使用。
@@ -1633,6 +1633,11 @@
           此设置处于停用状态时，用户将无法保存新密码，但仍可以使用之前保存的密码。
 
           此政策处于启用或停用状态时，用户将无法在 <ph name="PRODUCT_NAME" /> 中更改或替换它。如果未设置此政策，则允许保存密码（不过用户可以停用密码保存功能）。</translation>
+<translation id="3492834335089638487">此政策用于控制设备对来源不受信任（不是来自 Google Play 商店）的 Android 应用的使用。
+
+      不设置此政策的值等同于禁止使用此功能。
+
+      此功能是否可用还取决于相应的用户规范。</translation>
 <translation id="3496296378755072552">密码管理器</translation>
 <translation id="3500732098526756068">可让您控制密码保护服务警告的触发条件。当用户在可疑网站上重复使用受保护的密码时，密码保护服务会向用户发出提醒。
 
@@ -1754,7 +1759,6 @@
 <translation id="3715569262675717862">基于客户端证书的身份验证</translation>
 <translation id="3736879847913515635">允许通过用户管理器添加用户</translation>
 <translation id="3737890474637805114">禁止下载大型文件</translation>
-<translation id="3738723882663496016">此政策可为该设备指定 <ph name="PLUGIN_VM_NAME" /> 许可密钥。</translation>
 <translation id="3748900290998155147">指定是否允许使用唤醒锁定。屏幕唤醒锁定可由扩展程序通过 Power Management Extension API 请求，也可由 ARC 应用请求。
 
           如果将此政策设为 true 或未进行设置，系统就会允许使用唤醒锁定，以便进行电源管理。
@@ -2280,9 +2284,6 @@
 <translation id="4432762137771104529">启用安全浏览扩展报告功能</translation>
 <translation id="443454694385851356">旧版（不安全）</translation>
 <translation id="443665821428652897">在浏览器关闭时清除网站数据（已弃用）</translation>
-<translation id="4439132805807595336">允许该设备运行 PluginVm。
-
-      如果此政策设为 false 或未设置，系统不会为该设备启用 <ph name="PLUGIN_VM_NAME" />。如果此政策设为 true，系统会为该设备启用 <ph name="PLUGIN_VM_NAME" />，但前提是其他设置也允许该设备运行它。若要允许 <ph name="PLUGIN_VM_NAME" /> 运行，需将 <ph name="PLUGIN_VM_ALLOWED_POLICY_NAME" /> 设为 true 并设置 <ph name="PLUGIN_VM_LICENSE_KEY_POLICY_NAME" /> 和 <ph name="PLUGIN_VM_IMAGE_POLICY_NAME" />。</translation>
 <translation id="4439336120285389675">指定要临时重新启用的已弃用网络平台功能的列表。
 
       通过此政策，管理员可以使已弃用的网络平台功能在限定的时间内重新发挥功效。这些功能用字符串标记进行标识，与通过此政策指定的列表中包含的标记对应的功能将被重新启用。
@@ -2854,6 +2855,7 @@
 <translation id="5369937289900051171">仅限彩色打印</translation>
 <translation id="5370279767682621504">在非默认端口上启用 HTTP/0.9 支持</translation>
 <translation id="5377606826822211923">控制用户对来源不受信任的 Android 应用的使用</translation>
+<translation id="537786648513450280">控制设备对来源不受信任的 Android 应用的使用</translation>
 <translation id="5378985487213287085">可让您设置是否允许网站显示桌面通知。默认情况下，可以允许或拒绝显示桌面通知，也可以在每次网站要显示桌面通知时询问用户。如果未设置此政策，系统将使用“AskNotifications”并允许用户更改此设置。</translation>
 <translation id="5380329473151894945">设置大号光标无障碍功能在登录屏幕上的默认状态。
 
@@ -3744,7 +3746,6 @@
 <translation id="6731757988219967594">滤除提供成人内容的顶级网站（但不滤除嵌入式 iframe）</translation>
 <translation id="6734521799274931721">控制是否允许在 Chrome 操作系统中使用网络文件共享功能</translation>
 <translation id="6735701345096330595">强制检查语言拼写</translation>
-<translation id="6737677282967014160">允许用户使用来源不受信任的 Android 应用。</translation>
 <translation id="6757613329154374267">已启用备份和恢复服务</translation>
 <translation id="6758659208493449452">此政策决定了加入“高级保护”计划的用户是否可获享额外的保护。其中部分功能可能涉及与 Google 共享数据（例如，加入“高级保护”计划的用户可将他们的下载内容发送给 Google 进行恶意软件扫描）。如果此政策设为 True 或未设置，已加入“高级保护”计划的用户将会获享额外的保护。如果此政策设为 False，已加入“高级保护”计划的用户只能使用标准的消费者级功能。</translation>
 <translation id="6762235610019366960">让您能够控制是否在 <ph name="PRODUCT_NAME" /> 中使用整个标签页显示宣传内容和/或教育内容。
@@ -4593,6 +4594,19 @@
 
       <ph name="SYNC_DISABLED_POLICY_NAME" /> 政策会停用所有数据同步，并会替换 <ph name="ROAMING_PROFILE_SUPPORT_ENABLED_POLICY_NAME" />。</translation>
 <translation id="802147957407376460">将屏幕旋转 0 度</translation>
+<translation id="8027265928215448940">让您能够指定适用于 <ph name="ON_FILE_DOWNLOADED_ENTERPRISE_CONNECTOR" /> Enterprise Connector 的 Chrome Enterprise Connector 服务设置列表，以供有人在 Chrome 中下载文件时调用。
+
+      <ph name="ENTERPRISE_CONNECTOR_URL_LIST_FIELD" />、<ph name="ENTERPRISE_CONNECTOR_TAGS_FIELD" />、<ph name="ENTERPRISE_CONNECTOR_ENABLE_FIELD" /> 和 <ph name="ENTERPRISE_CONNECTOR_DISABLE_FIELD" /> 字段用于确定当从特定网页中下载某个文件后，该连接器是否应发送此文件进行分析，以及要将哪些标记添加到针对此文件的分析请求中。如果相应的网页网址与“enable”格式所对应的某个标记相匹配，那么只要所有包含这个标记的“disable”格式与此网页网址都不匹配，该连接器便会将这个标记添加到分析请求中。如果该连接器向分析请求中添加了至少 1 个标记，分析服务便会分析下载的文件。
+
+      <ph name="ENTERPRISE_CONNECTOR_SERVICE_PROVIDER_FIELD" /> 字段用于确定您指定的设置是与哪个分析服务提供商对应。
+
+      如果您将 <ph name="ENTERPRISE_CONNECTOR_BLOCK_UNTIL_VERDICT_FIELD" /> 字段设为 1，Chrome 需要先等到分析服务做出响应，再确定是否要向相应用户授予对所下载文件的访问权限。如果您将该字段设为任何其他整数值，Chrome 就会立即向相应用户授予文件访问权限。
+
+      <ph name="ENTERPRISE_CONNECTOR_BLOCK_PASSWORD_PROTECTED_FIELD" /> 字段用于控制 Chrome 是会禁止访问还是会允许访问受密码保护的文件。
+
+      <ph name="ENTERPRISE_CONNECTOR_BLOCK_LARGE_FILES_FIELD" /> 字段用于控制 Chrome 是会禁止访问还是会允许访问因过大（超过 50 MB）而无法分析的文件。
+
+      此政策只能通过 Google 管理控制台进行设置。</translation>
 <translation id="8033913082323846868">我们在 M70 中弃用了此政策，请改用 AutofillAddressEnabled 和 AutofillCreditCardEnabled。
 
       可用于启用 <ph name="PRODUCT_NAME" /> 的“自动填充”功能，并允许用户使用先前存储的信息（例如地址或信用卡信息）自动填写网络表单。
@@ -5253,19 +5267,6 @@
           如果未设置此政策，并且相应设备支持此政策，则会应用标准电池充电模式，而且无法由用户更改。
 
           注意：<ph name="DEVICE_ADVANCED_BATTERY_CHARGE_MODE_ENABLED_NAME" />（若已指定）会覆盖此政策。</translation>
-<translation id="9071472304496502510">让您能够指定适用于 <ph name="ON_FILE_ATTACHED_ENTERPRISE_CONNECTOR" /> 企业版连接器的 Chrome 企业版连接器服务设置列表，当文件附加到 Chrome 时会调用此列表。
-
-      <ph name="ENTERPRISE_CONNECTOR_URL_LIST_FIELD" />、<ph name="ENTERPRISE_CONNECTOR_TAGS_FIELD" />、<ph name="ENTERPRISE_CONNECTOR_ENABLE_FIELD" /> 和 <ph name="ENTERPRISE_CONNECTOR_DISABLE_FIELD" /> 字段用于确定当某个文件附加到特定网页后，该连接器是否应发送此文件以供分析，以及要将哪些标记添加到针对此文件的分析请求中。如果相应的网页网址与“enable”格式所对应的某个标记相匹配，那么只要所有包含这个标记的“disable”格式与此网页网址都不匹配，该连接器便会将这个标记添加到分析请求中。如果该连接器向分析请求中添加了至少 1 个标记，分析服务便会分析附加的文件。
-
-      <ph name="ENTERPRISE_CONNECTOR_SERVICE_PROVIDER_FIELD" /> 字段用于确定您指定的设置是与哪个分析服务提供商对应。
-
-      如果您将 <ph name="ENTERPRISE_CONNECTOR_BLOCK_UNTIL_VERDICT_FIELD" /> 字段设为 1，Chrome 需要先等到分析服务的响应，再确定是否要向相应网页授予文件访问权限。如果您将该字段设为任何其他整数值，Chrome 就会立即向相应网页授予文件访问权限。
-
-      <ph name="ENTERPRISE_CONNECTOR_BLOCK_PASSWORD_PROTECTED_FIELD" /> 字段用于控制 Chrome 是会禁止访问还是会允许访问受密码保护的文件。
-
-      <ph name="ENTERPRISE_CONNECTOR_BLOCK_LARGE_FILES_FIELD" /> 字段用于控制 Chrome 是会禁止访问还是会允许访问因过大 (超过 50 MB) 而无法分析的文件。
-
-      此政策只能通过 Google 管理控制台进行设置。</translation>
 <translation id="9077227880520270584">设备本地帐号自动登录计时器</translation>
 <translation id="9084985621503260744">指定视频活动是否影响电源管理</translation>
 <translation id="9088433379343318874">启用受监管用户内容提供方</translation>

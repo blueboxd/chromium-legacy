@@ -4,7 +4,7 @@
 
 #include "third_party/blink/renderer/platform/heap/cancelable_task_scheduler.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/macros.h"
 #include "base/task_runner.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"

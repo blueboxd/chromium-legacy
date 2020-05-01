@@ -19,6 +19,7 @@ import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.text.TextUtils;
 
 import org.json.JSONArray;
 import org.junit.After;
@@ -372,6 +373,16 @@ public class WebApkUpdateManagerUnitTest {
         if (manifestData == null) return null;
 
         final String kPackageName = "org.random.webapk";
+        WebApkInfo.ShareTarget shareTarget = TextUtils.isEmpty(manifestData.shareTargetAction)
+                ? null
+                : new WebApkInfo.ShareTarget(manifestData.shareTargetAction,
+                        manifestData.shareTargetParamTitle, null,
+                        manifestData.shareTargetMethod != null
+                                && manifestData.shareTargetMethod.equals(SHARE_TARGET_METHOD_POST),
+                        manifestData.shareTargetEncType != null
+                                && manifestData.shareTargetEncType.equals(
+                                        SHARE_TARGET_ENC_TYPE_MULTIPART),
+                        manifestData.shareTargetFileNames, manifestData.shareTargetFileAccepts);
         return WebApkInfo.create("", manifestData.scopeUrl,
                 new WebappIcon(manifestData.primaryIcon), null, manifestData.name,
                 manifestData.shortName, manifestData.displayMode, manifestData.orientation, -1,
@@ -379,18 +390,9 @@ public class WebApkUpdateManagerUnitTest {
                 manifestData.defaultBackgroundColor, false /* isPrimaryIconMaskable */,
                 false /* isSplashIconMaskable*/, kPackageName, -1, WEB_MANIFEST_URL,
                 manifestData.startUrl, WebApkDistributor.BROWSER,
-                manifestData.iconUrlToMurmur2HashMap,
-                new WebApkInfo.ShareTarget(manifestData.shareTargetAction,
-                        manifestData.shareTargetParamTitle, null,
-                        manifestData.shareTargetMethod != null
-                                && manifestData.shareTargetMethod.equals(SHARE_TARGET_METHOD_POST),
-                        manifestData.shareTargetEncType != null
-                                && manifestData.shareTargetEncType.equals(
-                                        SHARE_TARGET_ENC_TYPE_MULTIPART),
-                        manifestData.shareTargetFileNames, manifestData.shareTargetFileAccepts),
-                false /* forceNavigation */, false /* isSplashProvidedByWebApk */,
-                null /* shareData */, manifestData.shortcuts /* shortcutItems */,
-                1 /* webApkVersionCode */);
+                manifestData.iconUrlToMurmur2HashMap, shareTarget, false /* forceNavigation */,
+                false /* isSplashProvidedByWebApk */, null /* shareData */,
+                manifestData.shortcuts /* shortcutItems */, 1 /* webApkVersionCode */);
     }
 
     /**

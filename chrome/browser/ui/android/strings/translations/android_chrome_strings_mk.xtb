@@ -38,7 +38,6 @@
 <translation id="1258753120186372309">Google Doodle: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1260236875608242557">Пребарувајте и истражувајте</translation>
 <translation id="1266864766717917324">Не можеше да се сподели <ph name="CONTENT_TYPE" /></translation>
-<translation id="1272079795634619415">Запри</translation>
 <translation id="1283039547216852943">Допрете за да се прошири</translation>
 <translation id="1285320974508926690">Никогаш не преведувај ја оваа локација</translation>
 <translation id="1291207594882862231">Исчистете ги историјата, колачињата, податоците на сајтот, кешот…</translation>
@@ -50,8 +49,8 @@
 <translation id="1327257854815634930">Отворена е историјата на навигација</translation>
 <translation id="1331212799747679585">Chrome не може да се ажурира. Повеќе опции</translation>
 <translation id="1332501820983677155">Кратенки за функциите на Google Chrome</translation>
+<translation id="1347468774581902829">Управувајте со активноста</translation>
 <translation id="1360432990279830238">Одјавете се и исклучете синхронизација?</translation>
-<translation id="1364532808393826295"><ph name="APP_NAME" /> - <ph name="NOTIFICATION_MESSAGE" /></translation>
 <translation id="1373696734384179344">Недоволно меморија за да се преземе избраната содржина.</translation>
 <translation id="1376578503827013741">Се пресметува…</translation>
 <translation id="1383876407941801731">Барај</translation>
@@ -122,7 +121,6 @@
 <translation id="2013642289801508067">{FILE_COUNT,plural, =1{# датотека}one{# датотека}other{# датотеки}}</translation>
 <translation id="2017836877785168846">Ги брише историјата и автоматските довршувања во лентата за адреси.</translation>
 <translation id="2021896219286479412">Контроли на сајтот на цел екран</translation>
-<translation id="2030769033451695672">Допрете за да се вратите на <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
 <translation id="2038563949887743358">Вклучи „Барај локација на работна површина“</translation>
 <translation id="204321170514947529"><ph name="APP_NAME" /> има податоци и во Chrome</translation>
 <translation id="2049574241039454490"><ph name="FILE_SIZE_OF_TOTAL" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
@@ -434,6 +432,7 @@
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> обележувачи се избришани</translation>
 <translation id="4665282149850138822"><ph name="NAME" /> е додадена на вашиот Почетен екран</translation>
 <translation id="4684427112815847243">Синхронизирај сѐ</translation>
+<translation id="4688610874307684559">Работи во Chrome (Почетно)</translation>
 <translation id="4695891336199304370">{SHIPPING_OPTIONS,plural, =1{<ph name="SHIPPING_OPTION_PREVIEW" />… и уште <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}one{<ph name="SHIPPING_OPTION_PREVIEW" />… и уште <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}other{<ph name="SHIPPING_OPTION_PREVIEW" />… и уште <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}}</translation>
 <translation id="4696983787092045100">Испратете SMS до вашите уреди</translation>
 <translation id="4698034686595694889">Прегледајте офлајн во <ph name="APP_NAME" /></translation>
@@ -592,7 +591,6 @@
 <translation id="5876056640971328065">Паузирајте го видеото</translation>
 <translation id="5884076754568147479">За да ви помогне да завршувате задачи, Google ќе ги добива URL-адресите и содржините на сајтовите на кои го користите „Помошникот“, како и податоците што ги испраќате преку „Помошникот“</translation>
 <translation id="5919204609460789179">Ажурирајте го <ph name="PRODUCT_NAME" /> за да започнете со синхронизирање</translation>
-<translation id="5922853908706496913">Се споделува екранот</translation>
 <translation id="5937580074298050696">Заштедено: <ph name="AMOUNT" /></translation>
 <translation id="5939518447894949180">Ресетирај</translation>
 <translation id="5942872142862698679">Се користи Google за пребарување</translation>
@@ -773,16 +771,17 @@
 <translation id="7479104141328977413">Управување со картички</translation>
 <translation id="7481312909269577407">Напред</translation>
 <translation id="7482656565088326534">Картичка за преглед</translation>
+<translation id="7484997419527351112">Discover е исклучена</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (Ажурирано <ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7494974237137038751">заштеден сообраќај</translation>
 <translation id="7498271377022651285">Почекајте…</translation>
 <translation id="7514365320538308">Преземи</translation>
 <translation id="751961395872307827">Не може да се поврзе со сајтот</translation>
 <translation id="7542481630195938534">Не може да се добијат предлози</translation>
-<translation id="7554752735887601236">Сајтот го користи микрофонот</translation>
 <translation id="7559975015014302720">„Лесниот режим“ е исклучен</translation>
 <translation id="7562080006725997899">Чистење податоци од прелистување</translation>
 <translation id="756809126120519699">Податоците на Chrome се исчистени</translation>
+<translation id="7577900504646297215">Управување со интересите</translation>
 <translation id="757855969265046257">{FILES,plural, =1{Преземена е <ph name="FILES_DOWNLOADED_ONE" /> датотека}one{Преземена е <ph name="FILES_DOWNLOADED_MANY" /> датотека}other{Преземени се <ph name="FILES_DOWNLOADED_MANY" /> датотеки}}</translation>
 <translation id="7588219262685291874">Вклучува темна тема кога е вклучен „Штедачот на батерија“ на уредот</translation>
 <translation id="7593557518625677601">Отвори поставки и овозможи синхронизац. на Android за да се синхронизира Chrome</translation>
@@ -813,7 +812,6 @@
 <translation id="7774809984919390718">{PAYMENT_METHOD,plural, =1{<ph name="PAYMENT_METHOD_PREVIEW" />… и уште <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}one{<ph name="PAYMENT_METHOD_PREVIEW" />… и уште <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}other{<ph name="PAYMENT_METHOD_PREVIEW" />… и уште <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}}</translation>
 <translation id="7791543448312431591">Додај</translation>
 <translation id="780301667611848630">Не, фала</translation>
-<translation id="7804248752222191302">Сајтот ја користи камерата</translation>
 <translation id="7810647596859435254">Отвори со…</translation>
 <translation id="7821588508402923572">Заштедата на сообраќајот ќе се појави тука</translation>
 <translation id="783819812427904514">Вклучете звук на видео</translation>
@@ -885,9 +883,7 @@
 <translation id="8349013245300336738">Подреди по количина на искористен сообраќај</translation>
 <translation id="8364299278605033898">Разгледајте ги популарните веб-сајтови</translation>
 <translation id="8368027906805972958">Непознат или неподдржан уред (<ph name="DEVICE_ID" />)</translation>
-<translation id="83792324527827022">Сајтот ги користи камерата и микрофонот</translation>
 <translation id="8393700583063109961">Испрати порака</translation>
-<translation id="8394832520002899662">Допрете за да се вратите на сајтот</translation>
 <translation id="8413126021676339697">Прикажи ја целата историја</translation>
 <translation id="8427875596167638501">Картичката за преглед е отворена на половина екран</translation>
 <translation id="8428213095426709021">Поставки</translation>
@@ -984,7 +980,6 @@
 <translation id="970715775301869095">Останаа <ph name="MINUTES" /> минути</translation>
 <translation id="974555521953189084">Внесете ја лозинката за да започнете со синхронизација</translation>
 <translation id="981121421437150478">Без мрежа</translation>
-<translation id="982182592107339124">Ова ќе ги избрише податоците за сите сајтови, вклучувајќи ги:</translation>
 <translation id="983192555821071799">Затвори ги сите картички</translation>
 <translation id="987264212798334818">Општо</translation>
 </translationbundle>

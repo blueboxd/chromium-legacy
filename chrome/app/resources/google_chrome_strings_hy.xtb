@@ -95,7 +95,6 @@
 <translation id="3582972582564653026">Համաժամացրեք և անհատականացրեք Chrome-ը ձեր բոլոր սարքերում</translation>
 <translation id="3596080736082218006">{COUNT,plural, =0{Թարմացումը կիրառելու համար ադմինիստրատորը պահանջում է վերագործարկել Chrome-ը}=1{Թարմացումը կիրառելու համար ադմինիստրատորը պահանջում է վերագործարկել Chrome-ը: Ձեր ինկոգնիտո պատուհանը նորից չի բացվի։}one{Թարմացումը կիրառելու համար ադմինիստրատորը պահանջում է վերագործարկել Chrome-ը: Ձեր # ինկոգնիտո պատուհանը նորից չի բացվի։}other{Թարմացումը կիրառելու համար ադմինիստրատորը պահանջում է վերագործարկել Chrome-ը: Ձեր # ինկոգնիտո պատուհանները նորից չեն բացվի։}}</translation>
 <translation id="3622797965165704966">Այժմ ավելի հեշտ է օգտագործել Chrome-ը ձեր Google հաշվի հետ, այդ թվում նաև համօգտագործվող համակարգիչներով:</translation>
-<translation id="3637702109597584617">Google Chrome OS-ի <ph name="TERMS_OF_SERVICE_LINK" />օգտագործման պայմաններ<ph name="END_TERMS_OF_SERVICE_LINK" /></translation>
 <translation id="3718181793972440140">1 տարր ձեր սարքից կջնջվի: Հետագայում ձեր տվյալներն առբերելու համար մուտք գործեք Chrome <ph name="USER_EMAIL" /> հաշվով:</translation>
 <translation id="3735758079232443276">«<ph name="EXTENSION_NAME" />» ընդլայնումը փոխել է Chrome-ի մեկնարկի ժամանակ ցուցադրվող էջը:</translation>
 <translation id="3780814664026482060">Chrome – <ph name="PAGE_TITLE" /></translation>
@@ -112,6 +111,7 @@
 <translation id="4205939740494406371">Chrome-ը չի կարող ստուգել ձեր գաղտնաբառերը։ 24 ժամ հետո նորից փորձեք կամ <ph name="BEGIN_LINK" />ստուգեք ձեր Google հաշվի գաղտնաբառերը<ph name="END_LINK" />։</translation>
 <translation id="424864128008805179">Դուրս գա՞լ Chrome-ից:</translation>
 <translation id="4251615635259297716">Կապե՞լ ձեր Chrome-ի տվյալներն այս հաշվի հետ:</translation>
+<translation id="4281844954008187215">Օգտագործման պայմաններ</translation>
 <translation id="4293420128516039005">Մտեք հաշիվ՝ Chrome-ը ձեր բոլոր սարքերում անհատականացնելու համար</translation>
 <translation id="4328355335528187361">Google Chrome Dev (mDNS-In)</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
@@ -146,7 +146,6 @@
 
 Որոշ գործառույթներ մատչելի չեն լինի: Նշեք պրոֆիլի այլ գրացուցակ կամ օգտագործեք Chrome-ի նոր տարբերակը:</translation>
 <translation id="5193136243808726294">Google Chrome OS-ը չի կարող բացել այս էջը:</translation>
-<translation id="5204098752394657250">Google Chrome-ի <ph name="TERMS_OF_SERVICE_LINK" />Օգտագործման պայմաններ<ph name="END_TERMS_OF_SERVICE_LINK" /></translation>
 <translation id="5251420635869119124">Հյուրերը կարող են օգտագործել Chrome-ն առանց հետքեր թողնելու:</translation>
 <translation id="532046782124376502">Ուշադրություն. Google Chrome-ը չի կարող արգելել ընդլայնումներին գրառել ձեր այցելությունների պատմությունը: Այս ընդլայնումն ինկոգնիտո ռեժիմում անջատելու համար չեղարկեք կարգավորման ընտրությունը:</translation>
 <translation id="5386244825306882791">Այն նաև վերահսկում է, թե ինչ էջ պետք է ցուցադրվի Chrome-ը մեկնարկելիս կամ Omnibox-ից որոնում կատարելու ժամանակ:</translation>

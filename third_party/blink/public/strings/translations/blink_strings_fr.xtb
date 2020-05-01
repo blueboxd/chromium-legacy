@@ -35,6 +35,7 @@
 <translation id="1938124657309484470">La date ou l'heure doit être égale ou antérieure à "<ph name="MAXIMUM_DATE_OR_TIME" />".</translation>
 <translation id="1946271899482435442">Afficher le sélecteur de date</translation>
 <translation id="1993104285338243655">Passage à la duplication d'écran</translation>
+<translation id="2031987842108996681">Canal rouge</translation>
 <translation id="2060505056492490888">L'emplacement du caractère "<ph name="DOT" />" est incorrect dans "<ph name="INVALIDDOMAIN" />".</translation>
 <translation id="2148716181193084225">Aujourd'hui</translation>
 <translation id="2158401438286456825">liste des pages</translation>
@@ -45,6 +46,7 @@
 <translation id="2291999235780842123">case à cocher</translation>
 <translation id="2311842470354187719">saut de page</translation>
 <translation id="2335594187091864976">outil de sélection de la date et de l'heure</translation>
+<translation id="2393030564806080191">Valeur de couleur hexadécimale</translation>
 <translation id="245932805758469625">nombre de secondes de vidéo restantes</translation>
 <translation id="248395913932153421">Jour</translation>
 <translation id="2507943997699731163">Veuillez renseigner ce champ.</translation>
@@ -52,6 +54,7 @@
 <translation id="2561842179657104141">afficher plus de commandes multimédias</translation>
 <translation id="2572483411312390101">lire</translation>
 <translation id="2613802280814924224">Veuillez saisir une valeur valide. La valeur valide la plus proche est "<ph name="VALID_VALUE" />".</translation>
+<translation id="2634240155926812724">Canal vert</translation>
 <translation id="2653659639078652383">Valider</translation>
 <translation id="2657045182931379222">objet graphique</translation>
 <translation id="2674318244760992338">pied de page</translation>
@@ -127,6 +130,7 @@
 <translation id="5034860022980953847">indicateur de progression</translation>
 <translation id="5090250355906949916">barre de défilement de la durée de la vidéo</translation>
 <translation id="5093189678851173835">épigraphe</translation>
+<translation id="509897012892853729">Canal bleu</translation>
 <translation id="5117590920725113268">Afficher le mois suivant</translation>
 <translation id="512758898067543763">en-tête de ligne</translation>
 <translation id="5143125788380636750">épilogue</translation>
@@ -164,6 +168,7 @@
 <translation id="6166809985690652833">postface</translation>
 <translation id="6209276755895393898">L'image représente probablement : <ph name="DESCRIPTION" /></translation>
 <translation id="6213469881011901533">glossaire</translation>
+<translation id="6281588256137006900">Luminosité</translation>
 <translation id="6281763101136022427">URL</translation>
 <translation id="6310801910862476708">Quitter le mode PIP (Picture-in-picture)</translation>
 <translation id="6398862346408813489">Afficher le panneau de sélection du mois</translation>
@@ -184,6 +189,7 @@
 <translation id="6790428901817661496">Lire</translation>
 <translation id="6820355525329141109">Impossible de charger le plug-in.</translation>
 <translation id="6820615603175220800">référence bibliographique</translation>
+<translation id="6831465880655513317">Cercle chromatique avec un curseur en deux dimensions pour sélectionner la saturation et la luminosité</translation>
 <translation id="6843725295806269523">muet</translation>
 <translation id="6885760532393684712">annuaire</translation>
 <translation id="689129560213475294">achevé d'imprimer</translation>
@@ -201,6 +207,7 @@
 <translation id="7263440858009898357">Sélectionnez un élément dans la liste.</translation>
 <translation id="727747134524199931">en-tête de colonne</translation>
 <translation id="7320576522385648310">mise en mémoire tampon</translation>
+<translation id="7341556277900466204">Cercle chromatique</translation>
 <translation id="7353453495576941748">crédit</translation>
 <translation id="7364796246159120393">Choisir un fichier</translation>
 <translation id="739024184232394898">Autre…</translation>
@@ -221,6 +228,7 @@
 <translation id="775297008183122718">Saisie incorrecte</translation>
 <translation id="7789962463072032349">pause</translation>
 <translation id="7802800022689234070">triangle d'expansion</translation>
+<translation id="7852167693871241274">Curseur des couleurs</translation>
 <translation id="7888071071722539607">Veuillez inclure "<ph name="ATSIGN" />" dans l'adresse e-mail. Il manque un symbole "<ph name="ATSIGN" />" dans "<ph name="INVALIDADDRESS" />".</translation>
 <translation id="7891486169920085145">séparateur</translation>
 <translation id="795667975304826397">Aucun fichier choisi</translation>
@@ -263,6 +271,7 @@
 <translation id="8875657656876809964">Erreur lors de la lecture de la vidéo</translation>
 <translation id="8889402386540077796">Teinte</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> Ko</translation>
+<translation id="894736920926684893">Sélection du format</translation>
 <translation id="8987927404178983737">Mois</translation>
 <translation id="901493112792887934">durée actuelle en secondes</translation>
 <translation id="901834265349196618">e-mail</translation>

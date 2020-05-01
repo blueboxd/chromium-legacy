@@ -16,14 +16,17 @@
 
 namespace security_interstitials {
 
+WEB_STATE_USER_DATA_KEY_IMPL(IOSBlockingPageTabHelper)
+
 namespace {
 // Script command prefix.
 const char kCommandPrefix[] = "blockingPage";
 }  // namespace
 
+#pragma mark - IOSBlockingPageTabHelper
+
 IOSBlockingPageTabHelper::IOSBlockingPageTabHelper(web::WebState* web_state)
-    : web_state_(web_state), subscription_(nullptr), weak_factory_(this) {
-  web_state_->AddObserver(this);
+    : subscription_(nullptr), navigation_id_listener_(web_state, this) {
   auto command_callback =
       base::Bind(&IOSBlockingPageTabHelper::OnBlockingPageCommand,
                  weak_factory_.GetWeakPtr());
@@ -33,67 +36,20 @@ IOSBlockingPageTabHelper::IOSBlockingPageTabHelper(web::WebState* web_state)
 
 IOSBlockingPageTabHelper::~IOSBlockingPageTabHelper() = default;
 
-// static
 void IOSBlockingPageTabHelper::AssociateBlockingPage(
-    web::WebState* web_state,
     int64_t navigation_id,
     std::unique_ptr<IOSSecurityInterstitialPage> blocking_page) {
-  // CreateForWebState() creates a tab helper if it doesn't exist for
-  // |web_state| yet.
-  IOSBlockingPageTabHelper::CreateForWebState(web_state);
-
-  IOSBlockingPageTabHelper* helper =
-      IOSBlockingPageTabHelper::FromWebState(web_state);
-  helper->SetBlockingPage(navigation_id, std::move(blocking_page));
+  if (navigation_id == last_committed_navigation_id_) {
+    blocking_page_for_currently_committed_navigation_ =
+        std::move(blocking_page);
+  } else {
+    blocking_pages_for_navigations_[navigation_id] = std::move(blocking_page);
+  }
 }
 
-IOSSecurityInterstitialPage* IOSBlockingPageTabHelper::GetCurrentBlockingPage(
-    web::WebState* web_state) const {
-  DCHECK_EQ(web_state_, web_state);
+IOSSecurityInterstitialPage* IOSBlockingPageTabHelper::GetCurrentBlockingPage()
+    const {
   return blocking_page_for_currently_committed_navigation_.get();
-}
-
-// When the navigation finishes and commits the SSL error page, store the
-// IOSSecurityInterstitialPage in a member variable so that it can handle
-// commands. Clean up the member variable when a subsequent navigation commits,
-// since the IOSSecurityInterstitialPage is no longer needed.
-void IOSBlockingPageTabHelper::DidFinishNavigation(
-    web::WebState* web_state,
-    web::NavigationContext* navigation_context) {
-  DCHECK_EQ(web_state_, web_state);
-  if (navigation_context->IsSameDocument()) {
-    return;
-  }
-
-  auto it = blocking_pages_for_navigations_.find(
-      navigation_context->GetNavigationId());
-
-  if (navigation_context->HasCommitted()) {
-    if (it == blocking_pages_for_navigations_.end()) {
-      blocking_page_for_currently_committed_navigation_.reset();
-    } else {
-      blocking_page_for_currently_committed_navigation_ = std::move(it->second);
-    }
-  }
-
-  if (it != blocking_pages_for_navigations_.end()) {
-    blocking_pages_for_navigations_.erase(it);
-  }
-
-  // Interstitials may change the visibility of the URL or other security state.
-  web_state_->DidChangeVisibleSecurityState();
-}
-
-void IOSBlockingPageTabHelper::WebStateDestroyed(web::WebState* web_state) {
-  DCHECK_EQ(web_state_, web_state);
-  web_state_->RemoveObserver(this);
-  web_state_ = nullptr;
-}
-
-void IOSBlockingPageTabHelper::SetBlockingPage(
-    int64_t navigation_id,
-    std::unique_ptr<IOSSecurityInterstitialPage> blocking_page) {
-  blocking_pages_for_navigations_[navigation_id] = std::move(blocking_page);
 }
 
 void IOSBlockingPageTabHelper::OnBlockingPageCommand(
@@ -112,6 +68,47 @@ void IOSBlockingPageTabHelper::OnBlockingPageCommand(
   }
 }
 
-WEB_STATE_USER_DATA_KEY_IMPL(IOSBlockingPageTabHelper)
+void IOSBlockingPageTabHelper::UpdateForFinishedNavigation(
+    int64_t navigation_id,
+    bool committed) {
+  if (committed) {
+    last_committed_navigation_id_ = navigation_id;
+    blocking_page_for_currently_committed_navigation_ =
+        std::move(blocking_pages_for_navigations_[navigation_id]);
+  }
+  blocking_pages_for_navigations_.erase(navigation_id);
+}
+
+#pragma mark - IOSBlockingPageTabHelper::CommittedNavigationIDListener
+
+IOSBlockingPageTabHelper::CommittedNavigationIDListener::
+    CommittedNavigationIDListener(web::WebState* web_state,
+                                  IOSBlockingPageTabHelper* tab_helper)
+    : tab_helper_(tab_helper) {
+  DCHECK(tab_helper_);
+  scoped_observer_.Add(web_state);
+}
+
+IOSBlockingPageTabHelper::CommittedNavigationIDListener::
+    ~CommittedNavigationIDListener() = default;
+
+void IOSBlockingPageTabHelper::CommittedNavigationIDListener::
+    DidFinishNavigation(web::WebState* web_state,
+                        web::NavigationContext* navigation_context) {
+  if (navigation_context->IsSameDocument())
+    return;
+
+  tab_helper_->UpdateForFinishedNavigation(
+      navigation_context->GetNavigationId(),
+      navigation_context->HasCommitted());
+
+  // Interstitials may change the visibility of the URL or other security state.
+  web_state->DidChangeVisibleSecurityState();
+}
+
+void IOSBlockingPageTabHelper::CommittedNavigationIDListener::WebStateDestroyed(
+    web::WebState* web_state) {
+  scoped_observer_.Remove(web_state);
+}
 
 }  // namespace security_interstitials

@@ -8,6 +8,7 @@ import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.text.TextUtils;
 import android.util.Base64;
+import android.util.SparseArray;
 
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
@@ -36,6 +37,11 @@ public class OmniboxSuggestion {
     private static final String KEY_PREFIX_ZERO_SUGGEST_IS_SEARCH_TYPE = "zero_suggest_is_search";
     private static final String KEY_PREFIX_ZERO_SUGGEST_ANSWER_TEXT = "zero_suggest_answer_text";
     private static final String KEY_PREFIX_ZERO_SUGGEST_GROUP_ID = "zero_suggest_group_id";
+    private static final String KEY_ZERO_SUGGEST_HEADER_LIST_SIZE = "zero_suggest_header_list_size";
+    private static final String KEY_PREFIX_ZERO_SUGGEST_HEADER_GROUP_ID =
+            "zero_suggest_header_group_id";
+    private static final String KEY_PREFIX_ZERO_SUGGEST_HEADER_GROUP_TITLE =
+            "zero_suggest_header_group_title";
     // Deprecated:
     // private static final String KEY_PREFIX_ZERO_SUGGEST_ANSWER_TYPE = "zero_suggest_answer_type";
     private static final String KEY_PREFIX_ZERO_SUGGEST_IS_DELETABLE = "zero_suggest_is_deletable";
@@ -314,6 +320,60 @@ public class OmniboxSuggestion {
             }
         }
         return suggestions;
+    }
+
+    /**
+     * @return The Group headers for zero suggest results if they have been cached before.
+     */
+    public static SparseArray<String> getCachedOmniboxSuggestionHeadersForZeroSuggest() {
+        final SharedPreferences prefs = ContextUtils.getAppSharedPreferences();
+        final int size = prefs.getInt(KEY_ZERO_SUGGEST_HEADER_LIST_SIZE, -1);
+
+        if (size <= 0) return null;
+
+        final SparseArray<String> headers = new SparseArray<>(size);
+        for (int i = 0; i < size; i++) {
+            int groupId = prefs.getInt(KEY_PREFIX_ZERO_SUGGEST_HEADER_GROUP_ID + i, INVALID_GROUP);
+            String groupTitle =
+                    prefs.getString(KEY_PREFIX_ZERO_SUGGEST_HEADER_GROUP_TITLE + i, null);
+            if (groupId == INVALID_GROUP || TextUtils.isEmpty(groupTitle)) continue;
+            headers.put(groupId, groupTitle);
+        }
+        return headers;
+    }
+
+    /**
+     * Cache the given suggestion group headers map in shared preferences.
+     * @param groupHeaders Group headers to cache.
+     */
+    public static void cacheOmniboxSuggestionHeadersForZeroSuggest(SparseArray<String> headers) {
+        final Editor editor = ContextUtils.getAppSharedPreferences().edit();
+        editor.putInt(KEY_ZERO_SUGGEST_HEADER_LIST_SIZE, headers.size()).apply();
+
+        for (int i = 0; i < headers.size(); i++) {
+            editor.putInt(KEY_PREFIX_ZERO_SUGGEST_HEADER_GROUP_ID + i, headers.keyAt(i))
+                    .putString(KEY_PREFIX_ZERO_SUGGEST_HEADER_GROUP_TITLE + i, headers.valueAt(i))
+                    .apply();
+        }
+    }
+
+    /**
+     * Iterates through suggestions list and removes all suggestions that report association with
+     * nonexistent group headers.
+     *
+     * @param suggestions List of suggestions to check.
+     * @param groupHeaders Group headers to check suggestions against.
+     */
+    public static void dropSuggestionsWithIncorrectGroupHeaders(
+            List<OmniboxSuggestion> suggestions, SparseArray<String> groupHeaders) {
+        if (suggestions == null || suggestions.isEmpty()) return;
+
+        for (int index = suggestions.size() - 1; index >= 0; index--) {
+            final int groupId = suggestions.get(index).getGroupId();
+            if (groupId != INVALID_GROUP && groupHeaders.indexOfKey(groupId) < 0) {
+                suggestions.remove(index);
+            }
+        }
     }
 
     /**

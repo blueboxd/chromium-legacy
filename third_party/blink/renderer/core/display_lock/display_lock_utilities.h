@@ -103,6 +103,11 @@ class CORE_EXPORT DisplayLockUtilities {
   // the layout update can be forced.
   static Element* LockedAncestorPreventingLayout(const LayoutObject& object);
 
+  // Returns the nearest ancestor element which has a lock that prevents
+  // style. Note that this is different from a nearest locked ancestor since
+  // the style update can be forced.
+  static Element* LockedAncestorPreventingStyle(const Node& element);
+
   // Returns true if |node| is not in a locked subtree, or if it's possible to
   // activate all of the locked ancestors for |activation_reason|.
   static bool IsInUnlockedOrActivatableSubtree(

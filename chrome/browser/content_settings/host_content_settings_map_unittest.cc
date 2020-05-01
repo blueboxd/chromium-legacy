@@ -2294,7 +2294,7 @@ TEST_F(HostContentSettingsMapTest, OriginAllowlist) {
   regular_map->GetWebsiteSetting(allowed_url, allowed_url,
                                  ContentSettingsType::CLIPBOARD_READ_WRITE,
                                  std::string(), &setting_info);
-  EXPECT_EQ(content_settings::SETTING_SOURCE_WHITELIST, setting_info.source);
+  EXPECT_EQ(content_settings::SETTING_SOURCE_ALLOWLIST, setting_info.source);
   EXPECT_EQ(allowed_url.GetOrigin().spec(),
             setting_info.primary_pattern.ToString());
   EXPECT_EQ(ContentSettingsPattern::Wildcard(), setting_info.secondary_pattern);

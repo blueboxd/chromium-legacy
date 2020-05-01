@@ -53,7 +53,7 @@ import org.chromium.chrome.browser.util.AccessibilityUtil;
 import org.chromium.components.external_intents.ExternalNavigationHandler;
 import org.chromium.components.external_intents.ExternalNavigationHandler.OverrideUrlLoadingResult;
 import org.chromium.components.external_intents.ExternalNavigationParams;
-import org.chromium.components.external_intents.RedirectHandlerImpl;
+import org.chromium.components.external_intents.RedirectHandler;
 import org.chromium.components.feature_engagement.EventConstants;
 import org.chromium.components.feature_engagement.FeatureConstants;
 import org.chromium.components.feature_engagement.Tracker;
@@ -156,7 +156,7 @@ public class ContextualSearchManager
     private long mNativeContextualSearchManagerPtr;
 
     private ViewGroup mParentView;
-    private RedirectHandlerImpl mRedirectHandler;
+    private RedirectHandler mRedirectHandler;
     private OverlayPanelContentViewDelegate mSearchContentViewDelegate;
     private TabModelSelectorTabModelObserver mTabModelObserver;
     private TabModelSelectorTabObserver mTabModelSelectorTabObserver;
@@ -277,7 +277,7 @@ public class ContextualSearchManager
 
         mInProductHelp.setParentView(parentView);
 
-        mRedirectHandler = RedirectHandlerImpl.create();
+        mRedirectHandler = RedirectHandler.create();
 
         mIsShowingPromo = false;
         mDidLogPromoOutcome = false;
@@ -1072,8 +1072,7 @@ public class ContextualSearchManager
             mRedirectHandler.updateNewUrlLoading(navigationParams.pageTransitionType,
                     navigationParams.isRedirect,
                     navigationParams.hasUserGesture || navigationParams.hasUserGestureCarryover,
-                    mActivity.getLastUserInteractionTime(),
-                    RedirectHandlerImpl.INVALID_ENTRY_INDEX);
+                    mActivity.getLastUserInteractionTime(), RedirectHandler.INVALID_ENTRY_INDEX);
             ExternalNavigationParams params =
                     new ExternalNavigationParams
                             .Builder(navigationParams.url, false, navigationParams.referrer,

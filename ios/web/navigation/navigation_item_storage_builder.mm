@@ -43,10 +43,12 @@ NavigationItemStorageBuilder::BuildNavigationItemImpl(
   // update the virtual URL reported by this object.
   item->original_request_url_ = navigation_item_storage.URL;
 
-  // In the cases where the URL to be restored is a file URL (either because it
-  // is already a session restoration item or because it is an external PDF),
-  // don't restore it to avoid issues. See http://crbug.com/1017147 and 1065433.
-  bool should_use_url = !navigation_item_storage.URL.SchemeIsFile() ||
+  // In the cases where the URL to be restored is not an HTTP URL, it very
+  // probable that we can't restore the page (for example for files, either
+  // because it is already a session restoration item or because it is an
+  // external PDF), don't restore it to avoid issues. See
+  // http://crbug.com/1017147 , 1076851 and 1065433.
+  bool should_use_url = navigation_item_storage.URL.SchemeIsHTTPOrHTTPS() ||
                         web::GetWebClient()->IsEmbedderBlockRestoreUrlEnabled();
   if (should_use_url) {
     item->SetURL(navigation_item_storage.URL);

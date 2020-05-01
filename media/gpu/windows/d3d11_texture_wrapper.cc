@@ -102,6 +102,7 @@ bool DefaultTexture2DWrapper::Init(
   int textures_per_picture = 0;
   switch (dxgi_format_) {
     case DXGI_FORMAT_NV12:
+    case DXGI_FORMAT_P010:
       textures_per_picture = 2;
       break;
     case DXGI_FORMAT_B8G8R8A8_UNORM:

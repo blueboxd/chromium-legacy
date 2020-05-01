@@ -4,8 +4,10 @@
 
 package org.chromium.weblayer;
 
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.RemoteException;
+import android.util.Pair;
 import android.webkit.ValueCallback;
 
 import androidx.annotation.NonNull;
@@ -284,6 +286,39 @@ public class Tab {
     public void unregisterTabCallback(@Nullable TabCallback callback) {
         ThreadCheck.ensureOnUiThread();
         mCallbacks.removeObserver(callback);
+    }
+
+    /**
+     * Take a screenshot of this tab and return it as a Bitmap.
+     * This API captures only the web content, not any Java Views, including the
+     * view in Browser.setTopView. The browser top view shrinks the height of
+     * the screenshot if it is not completely hidden.
+     * This method will fail if
+     * * the Fragment of this Tab is not started during the operation
+     * * this tab is not the active tab in its Browser
+     * * if scale is not in the range (0, 1]
+     * * Bitmap allocation fails
+     * The API is asynchronous when successful, but can be synchronous on
+     * failure. So embedder must take care when implementing resultCallback to
+     * allow reentrancy.
+     * @param scale Scale applied to the Bitmap.
+     * @param resultCallback Called when operation is complete.
+     * @since 84
+     */
+    public void captureScreenShot(float scale, @NonNull CaptureScreenShotCallback callback) {
+        ThreadCheck.ensureOnUiThread();
+        if (WebLayer.getSupportedMajorVersionInternal() < 84) {
+            throw new UnsupportedOperationException();
+        }
+        try {
+            mImpl.captureScreenShot(scale,
+                    ObjectWrapper.wrap(
+                            (ValueCallback<Pair<Bitmap, Integer>>) (Pair<Bitmap, Integer> pair) -> {
+                                callback.onScreenShotCaptured(pair.first, pair.second);
+                            }));
+        } catch (RemoteException e) {
+            throw new APICallException(e);
+        }
     }
 
     ITab getITab() {

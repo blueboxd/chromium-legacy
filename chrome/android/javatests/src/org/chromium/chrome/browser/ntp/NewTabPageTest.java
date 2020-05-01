@@ -34,6 +34,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.GarbageCollectionTestUtils;
 import org.chromium.base.MemoryPressureListener;
 import org.chromium.base.memory.MemoryPressureCallback;
 import org.chromium.base.test.params.ParameterAnnotations;
@@ -92,6 +93,7 @@ import org.chromium.policy.test.annotations.Policies;
 import org.chromium.ui.base.PageTransition;
 
 import java.io.IOException;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -672,6 +674,24 @@ public class NewTabPageTest {
         callback.waitForCallback(0);
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> MemoryPressureListener.removeCallback(pressureCallback));
+    }
+
+    @Test
+    @SmallTest
+    @Feature("NewTabPage")
+    public void testNewTabPageCanBeGarbageCollected() throws IOException {
+        WeakReference<NewTabPage> ntpRef = new WeakReference<>(mNtp);
+
+        mActivityTestRule.loadUrl("about:blank");
+
+        mNtp = null;
+        mMostVisitedSites = null;
+        mSuggestionsDeps.getFactory().mostVisitedSites = null;
+        mFakebox = null;
+        mTileGridLayout = null;
+        mTab = null;
+
+        Assert.assertTrue(GarbageCollectionTestUtils.canBeGarbageCollected(ntpRef));
     }
 
     private void assertThumbnailInvalidAndRecapture() {

@@ -38,7 +38,6 @@
 <translation id="1258753120186372309">Google doodle: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1260236875608242557">Maghanap at mag-explore</translation>
 <translation id="1266864766717917324">Hindi maibahagi ang <ph name="CONTENT_TYPE" /></translation>
-<translation id="1272079795634619415">Stop</translation>
 <translation id="1283039547216852943">I-tap upang palawakin</translation>
 <translation id="1285320974508926690">Huwag isalin kailanman ang site na ito</translation>
 <translation id="1291207594882862231">I-clear ang history, cookies, site data, cache…</translation>
@@ -51,7 +50,6 @@
 <translation id="1331212799747679585">Hindi ma-update ang Chrome. Higit pang opsyon</translation>
 <translation id="1332501820983677155">Mga shortcut ng feature ng Google Chrome</translation>
 <translation id="1360432990279830238">Mag-sign out at i-off ang pag-sync?</translation>
-<translation id="1364532808393826295"><ph name="APP_NAME" /> - <ph name="NOTIFICATION_MESSAGE" /></translation>
 <translation id="1373696734384179344">Hindi sapat ang memory upang ma-download ang napiling content.</translation>
 <translation id="1376578503827013741">Kino-compute…</translation>
 <translation id="1383876407941801731">Hanapin</translation>
@@ -122,7 +120,6 @@
 <translation id="2013642289801508067">{FILE_COUNT,plural, =1{# File}one{# File}other{# na File}}</translation>
 <translation id="2017836877785168846">Kini-clear ang history at mga awtomatikong pagkumpleto sa address bar.</translation>
 <translation id="2021896219286479412">Control ng full screen sa site</translation>
-<translation id="2030769033451695672">Mag-tap para bumalik sa <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
 <translation id="2038563949887743358">I-on ang Hilingin ang site sa desktop</translation>
 <translation id="204321170514947529">May data rin ang <ph name="APP_NAME" /> sa Chrome</translation>
 <translation id="2049574241039454490"><ph name="FILE_SIZE_OF_TOTAL" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
@@ -592,7 +589,6 @@ Para baguhin ang setting na ito, <ph name="BEGIN_LINK" />i-reset ang pag-sync<ph
 <translation id="5876056640971328065">I-pause ang video</translation>
 <translation id="5884076754568147479">Para tulungan kang tapusin ang mga gawain, matatanggap ng Google ang mga URL at content ng mga site kung saan ka gumamit ng Assistant, gayundin ang impormasyong isinumite mo sa pamamagitan ng Assistant</translation>
 <translation id="5919204609460789179">I-update ang <ph name="PRODUCT_NAME" /> upang simulan ang pag-sync</translation>
-<translation id="5922853908706496913">Ibinabahagi ang iyong screen</translation>
 <translation id="5937580074298050696"><ph name="AMOUNT" /> ang natipid</translation>
 <translation id="5939518447894949180">I-reset</translation>
 <translation id="5942872142862698679">Ginagamit ang Google para sa paghahanap</translation>
@@ -779,7 +775,6 @@ Halimbawa, puwedeng tumugon ang ilang website sa kahilingang ito sa pamamagitan 
 <translation id="7514365320538308">I-download</translation>
 <translation id="751961395872307827">Hindi makakonekta sa site</translation>
 <translation id="7542481630195938534">Hindi makakuha ng mga suhestyon</translation>
-<translation id="7554752735887601236">Gingamit ng isang site ang iyong mikropono</translation>
 <translation id="7559975015014302720">Naka-off ang Lite mode</translation>
 <translation id="7562080006725997899">Kini-clear ang data sa pag-browse</translation>
 <translation id="756809126120519699">Na-clear ang data ng Chrome</translation>
@@ -813,7 +808,6 @@ Halimbawa, puwedeng tumugon ang ilang website sa kahilingang ito sa pamamagitan 
 <translation id="7774809984919390718">{PAYMENT_METHOD,plural, =1{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 at <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> iba pa}one{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 at <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> iba pa}other{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 at <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> na iba pa}}</translation>
 <translation id="7791543448312431591">Idagdag</translation>
 <translation id="780301667611848630">Hindi salamat</translation>
-<translation id="7804248752222191302">Ginagamit ng isang site ang iyong camera</translation>
 <translation id="7810647596859435254">Buksan gamit ang…</translation>
 <translation id="7821588508402923572">Lalabas dito ang mga natipid sa iyong data</translation>
 <translation id="783819812427904514">I-unmute ang video</translation>
@@ -885,9 +879,7 @@ Halimbawa, puwedeng tumugon ang ilang website sa kahilingang ito sa pamamagitan 
 <translation id="8349013245300336738">Pagbukud-bukurin ayon sa dami ng data na nagamit</translation>
 <translation id="8364299278605033898">Tingnan ang mga sikat na website</translation>
 <translation id="8368027906805972958">Hindi alam o hindi sinusuportahang device (<ph name="DEVICE_ID" />)</translation>
-<translation id="83792324527827022">Ginagamit ng isang site ang iyong camera at mikropono</translation>
 <translation id="8393700583063109961">Ipadala ang mensahe</translation>
-<translation id="8394832520002899662">Mag-tap para bumalik sa site</translation>
 <translation id="8413126021676339697">Ipakita ang buong history</translation>
 <translation id="8427875596167638501">Nakabukas nang kalahati ang tab na preview</translation>
 <translation id="8428213095426709021">Mga Setting</translation>
@@ -984,7 +976,6 @@ Halimbawa, puwedeng tumugon ang ilang website sa kahilingang ito sa pamamagitan 
 <translation id="970715775301869095"><ph name="MINUTES" /> (na) minuto na lang ang natitira</translation>
 <translation id="974555521953189084">Ilagay ang iyong passphrase upang simulan ang pag-sync</translation>
 <translation id="981121421437150478">Offline</translation>
-<translation id="982182592107339124">Iki-clear nito ang data para sa lahat ng site, kabilang ang:</translation>
 <translation id="983192555821071799">Isara ang lahat ng tab</translation>
 <translation id="987264212798334818">Pangkalahatan</translation>
 </translationbundle>

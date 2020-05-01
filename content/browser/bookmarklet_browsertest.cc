@@ -24,13 +24,8 @@ class BookmarkletTest : public ContentBrowserTest {
     EXPECT_EQ("start page", GetBodyText());
   }
 
-  std::string GetBodyText() {
-    std::string body_text;
-    EXPECT_TRUE(ExecuteScriptAndExtractString(
-        shell(),
-        "window.domAutomationController.send(document.body.innerText);",
-        &body_text));
-    return body_text;
+  content::EvalJsResult GetBodyText() {
+    return EvalJs(shell(), "document.body.innerText");
   }
 };
 

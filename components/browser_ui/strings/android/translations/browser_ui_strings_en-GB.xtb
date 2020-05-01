@@ -3,12 +3,15 @@
 <translationbundle lang="en-GB">
 <translation id="1006017844123154345">Open Online</translation>
 <translation id="1044891598689252897">Sites will work normally</translation>
+<translation id="1124090076051167250">This will clear <ph name="DATASIZE" /> of data and cookies stored by sites or by apps on your home screen.</translation>
 <translation id="1124772482545689468">User</translation>
 <translation id="1178581264944972037">Pause</translation>
 <translation id="1181037720776840403">Remove</translation>
 <translation id="1201402288615127009">Next</translation>
 <translation id="1242008676835033345">Embedded on <ph name="WEBSITE_URL" /></translation>
+<translation id="1272079795634619415">Stop</translation>
 <translation id="129382876167171263">Files saved by websites appear here</translation>
+<translation id="1364532808393826295"><ph name="APP_NAME" />–<ph name="NOTIFICATION_MESSAGE" /></translation>
 <translation id="1369915414381695676">Site <ph name="SITE_NAME" /> added</translation>
 <translation id="1383876407941801731">Search</translation>
 <translation id="1384959399684842514">Download paused</translation>
@@ -29,6 +32,7 @@
 <translation id="1984937141057606926">Allowed, except third-party</translation>
 <translation id="1994173015038366702">Site URL</translation>
 <translation id="2025115093177348061">Augmented reality</translation>
+<translation id="2030769033451695672">Tap to return to <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
 <translation id="2041019821020695769">To let Chrome send you notifications, also turn on notifications in <ph name="BEGIN_LINK" />Android Settings<ph name="END_LINK" />.</translation>
 <translation id="2079545284768500474">Undo</translation>
 <translation id="2091887806945687916">Sound</translation>
@@ -104,6 +108,7 @@
 <translation id="5048398596102334565">Allow sites to access motion sensors (recommended)</translation>
 <translation id="5063480226653192405">Usage</translation>
 <translation id="5100237604440890931">Collapsed – click to expand.</translation>
+<translation id="5123685120097942451">Incognito tab</translation>
 <translation id="5300589172476337783">Show</translation>
 <translation id="5301954838959518834">OK, got it</translation>
 <translation id="5307446750509046227">Clear site storage</translation>
@@ -123,9 +128,11 @@
 <translation id="5677928146339483299">Blocked</translation>
 <translation id="5689516760719285838">Location</translation>
 <translation id="5710871682236653961">Ask before allowing sites to send and receive info when you tap NFC devices (recommended)</translation>
+<translation id="5719847187258001597">This will clear all data and cookies stored by <ph name="ORIGIN" /> or by its app on your home screen.</translation>
 <translation id="5804241973901381774">Permissions</translation>
 <translation id="5860033963881614850">Off</translation>
 <translation id="5916664084637901428">On</translation>
+<translation id="5922853908706496913">Sharing your screen</translation>
 <translation id="5939518447894949180">Reset</translation>
 <translation id="6040143037577758943">Close</translation>
 <translation id="6042308850641462728">More</translation>
@@ -169,6 +176,7 @@
 <translation id="7423098979219808738">Ask first</translation>
 <translation id="7423538860840206698">Blocked from reading clipboard</translation>
 <translation id="7521387064766892559">JavaScript</translation>
+<translation id="7554752735887601236">A site is using your microphone</translation>
 <translation id="7572498721684305250">Block sites from sending and receiving info when you tap NFC devices</translation>
 <translation id="757524316907819857">Block sites from playing protected content</translation>
 <translation id="7589445247086920869">Block for current search engine</translation>
@@ -177,6 +185,7 @@
 <translation id="7781829728241885113">Yesterday</translation>
 <translation id="7791543448312431591">Add</translation>
 <translation id="780301667611848630">No, thanks</translation>
+<translation id="7804248752222191302">A site is using your camera</translation>
 <translation id="7817023149356982970">You'll be signed out of this site.</translation>
 <translation id="7828557259026017104">Cookies are files created by websites that you visit. Sites use them to remember your preferences. Third-party cookies are created by other sites. These sites own some of the content, like ads or images, that you see on the web page that you visit.</translation>
 <translation id="7846076177841592234">Cancel selection</translation>
@@ -194,7 +203,9 @@
 <translation id="8261506727792406068">Delete</translation>
 <translation id="8300705686683892304">Managed by app</translation>
 <translation id="8372893542064058268">Allow Background Sync for a specific site.</translation>
+<translation id="83792324527827022">A site is using your camera and microphone</translation>
 <translation id="8380167699614421159">This site shows intrusive or misleading ads</translation>
+<translation id="8394832520002899662">Tap to return to the site</translation>
 <translation id="8447861592752582886">Revoke device permission</translation>
 <translation id="851751545965956758">Block sites from connecting to devices</translation>
 <translation id="857943718398505171">Allowed (recommended)</translation>

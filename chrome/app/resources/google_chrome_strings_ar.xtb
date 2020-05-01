@@ -95,7 +95,6 @@
 <translation id="3582972582564653026">‏يمكنك مزامنة Chrome وتخصيصه على جميع أجهزتك.</translation>
 <translation id="3596080736082218006">{COUNT,plural, =0{‏يطلب المشرف إعادة تشغيل Chrome لتطبيق تحديث.}=1{‏يطلب المشرف إعادة تشغيل Chrome لتطبيق تحديث. لن تتم إعادة فتح نافذة التصفح المتخفي.}two{‏يطلب المشرف إعادة تشغيل Chrome لتطبيق تحديث. لن تتم إعادة فتح نافذتَي التصفح المتخفي.}few{‏يطلب المشرف إعادة تشغيل Chrome لتطبيق تحديث. لن تتم إعادة فتح نوافذ التصفّح المتخفي البالغ عددها #.}many{‏يطلب المشرف إعادة تشغيل Chrome لتطبيق تحديث. لن تتم إعادة فتح نوافذ التصفّح المتخفي البالغ عددها #.}other{‏يطلب المشرف إعادة تشغيل Chrome لتطبيق تحديث. لن تتم إعادة فتح نوافذ التصفّح المتخفي البالغ عددها #.}}</translation>
 <translation id="3622797965165704966">‏الآن أصبح استخدام Chrome مع حسابك في Google وفي أجهزة الكمبيوتر المشتركة أكثر سهولة.</translation>
-<translation id="3637702109597584617">‏<ph name="TERMS_OF_SERVICE_LINK" />بنود خدمة<ph name="END_TERMS_OF_SERVICE_LINK" /> نظام التشغيل Google Chrome</translation>
 <translation id="3718181793972440140">‏سيعمل هذا على حذف عنصر واحد من هذا الجهاز. لاسترداد بياناتك لاحقًا، سجّل الدخول إلى Chrome كـ <ph name="USER_EMAIL" />.</translation>
 <translation id="3735758079232443276">‏غيّرت الإضافة "<ph name="EXTENSION_NAME" />" الصفحة التي تظهر عند بدء Chrome.</translation>
 <translation id="3780814664026482060">Chrome - <ph name="PAGE_TITLE" /></translation>
@@ -112,6 +111,7 @@
 <translation id="4205939740494406371">‏يتعذّر على Chrome التحقُّق من كلمات المرور. يُرجى إعادة المحاولة بعد 24 ساعة أو <ph name="BEGIN_LINK" />التحقُّق من كلمات المرور في حسابك على Google<ph name="END_LINK" />.</translation>
 <translation id="424864128008805179">‏هل تريد تسجيل الخروج من Chrome؟</translation>
 <translation id="4251615635259297716">‏هل ترغب في ربط بياناتك في Chrome بهذا الحساب؟</translation>
+<translation id="4281844954008187215">بنود الخدمة</translation>
 <translation id="4293420128516039005">‏يمكنك تسجيل الدخول لمزامنة Chrome وتخصيصه على جميع أجهزتك.</translation>
 <translation id="4328355335528187361">‏إصدار مطوّري البرامج من Google Chrome ‏(mDNS-In)</translation>
 <translation id="4331809312908958774">‏نظام تشغيل Chrome</translation>
@@ -146,7 +146,6 @@
 
 قد تكون بعض الميزات غير متاحة. يُرجى تحديد دليل ملف شخصي مختلف أو استخدام إصدار أحدث من Chrome.</translation>
 <translation id="5193136243808726294">‏يتعذر على نظام التشغيل Google Chrome فتح هذه الصفحة.</translation>
-<translation id="5204098752394657250">‏<ph name="TERMS_OF_SERVICE_LINK" />بنود خدمة<ph name="END_TERMS_OF_SERVICE_LINK" /> Google Chrome</translation>
 <translation id="5251420635869119124">‏يمكن للضيف استخدام Chrome بدون أن يترك أي أثر وراءه.</translation>
 <translation id="532046782124376502">‏تحذير: يتعذّر على Google Chrome منع الإضافات من تسجيل سجل تصفحك. لإيقاف هذه الإضافة في وضع التصفح المتخفي، ألغِ تحديد هذا الخيار.</translation>
 <translation id="5386244825306882791">‏كما أنها تتحكم في الصفحة التي تظهر عند تشغيل Chrome أو إجراء بحث من المربع متعدد الاستخدامات.</translation>

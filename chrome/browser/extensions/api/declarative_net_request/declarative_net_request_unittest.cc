@@ -760,7 +760,8 @@ TEST_P(SingleRulesetTest, DynamicRulesetRace) {
   // on subsequent extension load. Since this will further delay the initial
   // ruleset load, it helps test that the ruleset loading doesn't race with
   // updating dynamic rules.
-  ScopedIncrementIndexedRulesetFormatVersion scoped_version_change;
+  ScopedIncrementRulesetVersion scoped_version_change =
+      CreateScopedIncrementRulesetVersionForTesting();
 
   TestExtensionRegistryObserver registry_observer(registry());
 

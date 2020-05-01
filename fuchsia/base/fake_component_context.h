@@ -35,13 +35,11 @@ class FakeComponentContext
       AgentImpl::CreateComponentStateCallback callback);
 
   // fuchsia::modular::ComponentContext_TestBase implementation.
-  void ConnectToAgent(
+  void DeprecatedConnectToAgent(
       std::string agent_url,
       fidl::InterfaceRequest<::fuchsia::sys::ServiceProvider> services,
       fidl::InterfaceRequest<fuchsia::modular::AgentController> controller)
       override;
-  void ConnectToAgentService(
-      fuchsia::modular::AgentServiceRequest request) override;
   void NotImplemented_(const std::string& name) override;
 
  private:

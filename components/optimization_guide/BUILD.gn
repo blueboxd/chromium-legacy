@@ -60,6 +60,8 @@ static_library("optimization_guide") {
     "//components/leveldb_proto",
     "//components/optimization_guide/proto:optimization_guide_proto",
     "//components/prefs",
+    "//components/variations",
+    "//components/variations/net",
     "//content/public/browser",
     "//google_apis",
     "//net:net",

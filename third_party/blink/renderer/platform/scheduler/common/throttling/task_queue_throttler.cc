@@ -9,7 +9,7 @@
 #include "base/debug/stack_trace.h"
 
 #include "base/bind.h"
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/memory/ptr_util.h"
 #include "base/optional.h"
 #include "base/time/tick_clock.h"

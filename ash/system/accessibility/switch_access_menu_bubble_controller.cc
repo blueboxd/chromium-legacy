@@ -49,7 +49,7 @@ void SwitchAccessMenuBubbleController::ShowMenu(
 
     menu_view_ = new SwitchAccessMenuView();
     menu_view_->SetBorder(
-        views::CreateEmptyBorder(kUnifiedTopShortcutSpacing, 0, 0, 0));
+        views::CreateEmptyBorder(gfx::Insets(kUnifiedMenuPadding)));
     bubble_view_->AddChildView(menu_view_);
 
     menu_view_->SetPaintToLayer();

@@ -93,7 +93,6 @@
 <translation id="3582972582564653026">Sincronizează și personalizează Chrome pe toate dispozitivele</translation>
 <translation id="3596080736082218006">{COUNT,plural, =0{Administratorul solicită să relansezi Chrome pentru a aplica o actualizare}=1{Administratorul solicită să relansezi Chrome pentru a aplica o actualizare. Fereastra incognito nu se va mai deschide.}few{Administratorul solicită să relansezi Chrome pentru a aplica o actualizare. Cele # ferestre incognito nu se vor mai deschide.}other{Administratorul solicită să relansezi Chrome pentru a aplica o actualizare. Cele # de ferestre incognito nu se vor mai deschide.}}</translation>
 <translation id="3622797965165704966">Acum este mai ușor să folosiți Chrome cu Contul Google și pe computerele utilizate în comun.</translation>
-<translation id="3637702109597584617"><ph name="TERMS_OF_SERVICE_LINK" />Termenii și condițiile<ph name="END_TERMS_OF_SERVICE_LINK" /> sistemului de operare Google Chrome</translation>
 <translation id="3718181793972440140">Astfel, se va șterge 1 element de pe acest dispozitiv. Pentru a recupera datele mai târziu, conectează-te la Chrome ca <ph name="USER_EMAIL" />.</translation>
 <translation id="3735758079232443276">Extensia „<ph name="EXTENSION_NAME" />” a modificat ce pagină se afișează când pornești Chrome.</translation>
 <translation id="3780814664026482060">Chrome – <ph name="PAGE_TITLE" /></translation>
@@ -110,6 +109,7 @@
 <translation id="4205939740494406371">Chrome nu îți poate verifica parolele. Încearcă din nou după 24 de ore sau <ph name="BEGIN_LINK" />verifică parolele din Contul Google<ph name="END_LINK" />.</translation>
 <translation id="424864128008805179">Te deconectezi de la Chrome?</translation>
 <translation id="4251615635259297716">Vă conectați datele Chrome cu acest cont?</translation>
+<translation id="4281844954008187215">Condiții de furnizare a serviciilor</translation>
 <translation id="4293420128516039005">Conectează-te pentru a sincroniza și a personaliza Chrome pe toate dispozitivele</translation>
 <translation id="4328355335528187361">Google Chrome Dev (mDNS-In)</translation>
 <translation id="4331809312908958774">Sistemul de operare Chrome</translation>
@@ -142,11 +142,10 @@
 <translation id="5132929315877954718">Descoperă aplicații, jocuri, extensii și teme extraordinare pentru Google Chrome.</translation>
 <translation id="5170938038195470297">Profilul dvs. nu poate fi utilizat, deoarece provine de la o versiune Google Chrome mai recentă. Este posibil ca unele funcții să nu fie disponibile. Specificați un director de profil diferit sau utilizați o versiune Chrome mai nouă.</translation>
 <translation id="5193136243808726294">Sistemul de operare Google Chrome nu poate deschide pagina.</translation>
-<translation id="5204098752394657250"><ph name="TERMS_OF_SERVICE_LINK" />Termeni și condiții<ph name="END_TERMS_OF_SERVICE_LINK" /> Google Chrome</translation>
 <translation id="5251420635869119124">Invitații pot folosi Chrome fără a lăsa nicio urmă.</translation>
 <translation id="532046782124376502">Avertisment: Google Chrome nu poate împiedica extensiile să înregistreze istoricul de navigare. Pentru a dezactiva această extensie în modul incognito, debifează această opțiune.</translation>
 <translation id="5386244825306882791">Stabilește și ce pagină se afișează când porniți Chrome sau când căutați din caseta polivalentă.</translation>
-<translation id="5394833366792865639">Distribuie o filă Chrome</translation>
+<translation id="5394833366792865639">Arată o filă Chrome</translation>
 <translation id="5430073640787465221">Fișierul dvs. de preferințe este fie deteriorat, fie nevalid. Google Chrome nu poate recupera setările dvs.</translation>
 <translation id="556024056938947818">Google Chrome încearcă să afișeze parolele.</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>

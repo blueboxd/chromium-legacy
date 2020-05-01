@@ -35,6 +35,7 @@
 <translation id="1938124657309484470">Максимальное значение должно быть <ph name="MAXIMUM_DATE_OR_TIME" />.</translation>
 <translation id="1946271899482435442">Показать окно выбора даты</translation>
 <translation id="1993104285338243655">Включено дублирование экрана</translation>
+<translation id="2031987842108996681">Канал красного цвета</translation>
 <translation id="2060505056492490888">Недопустимое положение символа "<ph name="DOT" />" в адресе "<ph name="INVALIDDOMAIN" />".</translation>
 <translation id="2148716181193084225">Сегодня</translation>
 <translation id="2158401438286456825">список страниц</translation>
@@ -45,6 +46,7 @@
 <translation id="2291999235780842123">флажок</translation>
 <translation id="2311842470354187719">разрыв страницы</translation>
 <translation id="2335594187091864976">окно выбора даты и времени</translation>
+<translation id="2393030564806080191">Цвет в шестнадцатеричном формате</translation>
 <translation id="245932805758469625">оставшееся время до конца видео в секундах</translation>
 <translation id="248395913932153421">День</translation>
 <translation id="2507943997699731163">Заполните это поле.</translation>
@@ -52,6 +54,7 @@
 <translation id="2561842179657104141">ещё элементы управления</translation>
 <translation id="2572483411312390101">воспроизведение</translation>
 <translation id="2613802280814924224">Введите допустимое значение. Ближайшее допустимое значение: <ph name="VALID_VALUE" />.</translation>
+<translation id="2634240155926812724">Канал зеленого цвета</translation>
 <translation id="2653659639078652383">Отправить</translation>
 <translation id="2657045182931379222">графический объект</translation>
 <translation id="2674318244760992338">нижний колонтитул</translation>
@@ -127,6 +130,7 @@
 <translation id="5034860022980953847">индикатор хода выполнения</translation>
 <translation id="5090250355906949916">полоса воспроизведения видео</translation>
 <translation id="5093189678851173835">эпиграф</translation>
+<translation id="509897012892853729">Канал синего цвета</translation>
 <translation id="5117590920725113268">Показать следующий месяц</translation>
 <translation id="512758898067543763">заголовок строки</translation>
 <translation id="5143125788380636750">эпилог</translation>
@@ -164,6 +168,7 @@
 <translation id="6166809985690652833">послесловие</translation>
 <translation id="6209276755895393898">Кажется, это "<ph name="DESCRIPTION" />"</translation>
 <translation id="6213469881011901533">словарь</translation>
+<translation id="6281588256137006900">Светлота</translation>
 <translation id="6281763101136022427">url</translation>
 <translation id="6310801910862476708">Выйти из режима "Картинка в картинке"</translation>
 <translation id="6398862346408813489">Показать панель выбора месяца</translation>
@@ -184,6 +189,7 @@
 <translation id="6790428901817661496">Воспроизвести</translation>
 <translation id="6820355525329141109">Не удалось загрузить плагин</translation>
 <translation id="6820615603175220800">ссылка на библиографию</translation>
+<translation id="6831465880655513317">Цветовой круг с двумерным ползунком для выбора насыщенности и светлоты</translation>
 <translation id="6843725295806269523">отключить звук</translation>
 <translation id="6885760532393684712">каталог</translation>
 <translation id="689129560213475294">выпускные данные</translation>
@@ -201,6 +207,7 @@
 <translation id="7263440858009898357">Выберите один из пунктов списка.</translation>
 <translation id="727747134524199931">заголовок столбца</translation>
 <translation id="7320576522385648310">Буферизация…</translation>
+<translation id="7341556277900466204">Цветовой круг</translation>
 <translation id="7353453495576941748">упоминание</translation>
 <translation id="7364796246159120393">Выберите файл</translation>
 <translation id="739024184232394898">Другое…</translation>
@@ -221,6 +228,7 @@
 <translation id="775297008183122718">Неверная запись</translation>
 <translation id="7789962463072032349">Пауза</translation>
 <translation id="7802800022689234070">треугольник развертывания</translation>
+<translation id="7852167693871241274">Ползунок для регулировки тона</translation>
 <translation id="7888071071722539607">Адрес электронной почты должен содержать символ "<ph name="ATSIGN" />". В адресе "<ph name="INVALIDADDRESS" />" отсутствует символ "<ph name="ATSIGN" />".</translation>
 <translation id="7891486169920085145">разделитель</translation>
 <translation id="795667975304826397">Файл не выбран</translation>
@@ -263,6 +271,7 @@
 <translation id="8875657656876809964">Ошибка при воспроизведении видео</translation>
 <translation id="8889402386540077796">Тон</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> КБ</translation>
+<translation id="894736920926684893">Переключатель форматов</translation>
 <translation id="8987927404178983737">Месяц</translation>
 <translation id="901493112792887934">текущее время в секундах</translation>
 <translation id="901834265349196618">электронная почта</translation>

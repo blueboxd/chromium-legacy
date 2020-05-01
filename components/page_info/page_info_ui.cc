@@ -424,7 +424,7 @@ base::string16 PageInfoUI::PermissionActionToUIString(
 
       button_text_ids = kPermissionButtonTextIDUserManaged;
       break;
-    case content_settings::SETTING_SOURCE_WHITELIST:
+    case content_settings::SETTING_SOURCE_ALLOWLIST:
     case content_settings::SETTING_SOURCE_NONE:
     default:
       NOTREACHED();

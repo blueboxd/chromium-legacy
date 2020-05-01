@@ -27,6 +27,7 @@ group("closure_compile") {
 js_type_check("closure_compile_index") {
   closure_flags = media_closure_flags
   deps = [
+    ":app_context_test_support",
     ":launch",
     ":message_pipe",
     ":mojo_api_bootstrap",
@@ -39,6 +40,9 @@ js_type_check("closure_compile_app") {
     ":message_pipe",
     ":receiver",
   ]
+}
+
+js_library("app_context_test_support") {
 }
 
 js_library("launch") {

@@ -98,7 +98,7 @@ const base::Feature kCompositorThreadedScrollbarScrolling = {
 // native apps on Windows.
 const base::Feature kExperimentalFlingAnimation {
   "ExperimentalFlingAnimation",
-#if defined(OS_WIN) || defined(OS_LINUX)
+#if defined(OS_WIN) || (defined(OS_LINUX) && !defined(OS_CHROMEOS))
       base::FEATURE_ENABLED_BY_DEFAULT
 #else
       base::FEATURE_DISABLED_BY_DEFAULT

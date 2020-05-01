@@ -94,6 +94,19 @@ class TestDebugDaemonClient : public chromeos::FakeDebugDaemonClient {
     std::move(callback).Run(start_concierge_result_);
   }
 
+  void BackupArcBugReport(const std::string& userhash,
+                          chromeos::VoidDBusMethodCallback callback) override {
+    backup_arc_bug_report_called_ = true;
+    std::move(callback).Run(backup_arc_bug_report_result_);
+  }
+
+  bool backup_arc_bug_report_called() const {
+    return backup_arc_bug_report_called_;
+  }
+  void set_backup_arc_bug_report_result(bool result) {
+    backup_arc_bug_report_result_ = result;
+  }
+
   bool start_concierge_called() const { return start_concierge_called_; }
   void set_start_concierge_result(bool result) {
     start_concierge_result_ = result;
@@ -102,6 +115,8 @@ class TestDebugDaemonClient : public chromeos::FakeDebugDaemonClient {
  private:
   bool start_concierge_called_ = false;
   bool start_concierge_result_ = true;
+  bool backup_arc_bug_report_called_ = false;
+  bool backup_arc_bug_report_result_ = true;
 
   DISALLOW_COPY_AND_ASSIGN(TestDebugDaemonClient);
 };
@@ -409,6 +424,11 @@ class ArcVmClientAdapterTest : public testing::Test,
         chromeos::DBusThreadManager::Get()->GetConciergeClient());
   }
 
+  TestDebugDaemonClient* GetTestDebugDaemonClient() {
+    return static_cast<TestDebugDaemonClient*>(
+        chromeos::DBusThreadManager::Get()->GetDebugDaemonClient());
+  }
+
   TestArcVmBootNotificationServer* boot_notification_server() {
     return boot_server_.get();
   }
@@ -422,10 +442,6 @@ class ArcVmClientAdapterTest : public testing::Test,
   }
 
  private:
-  TestDebugDaemonClient* GetTestDebugDaemonClient() {
-    return static_cast<TestDebugDaemonClient*>(
-        chromeos::DBusThreadManager::Get()->GetDebugDaemonClient());
-  }
 
   void RewriteStatus(FileSystemStatus* status) {
     status->set_host_rootfs_writable_for_testing(host_rootfs_writable_);
@@ -540,6 +556,31 @@ TEST_F(ArcVmClientAdapterTest, StopArcInstance_WithLogBackup) {
   RecreateRunLoop();
   SendVmStoppedSignal();
   run_loop()->Run();
+  // ..and that calls ArcInstanceStopped.
+  EXPECT_TRUE(arc_instance_stopped_called());
+}
+
+TEST_F(ArcVmClientAdapterTest, StopArcInstance_WithLogBackup_BackupFailed) {
+  SetValidUserInfo();
+  StartMiniArc();
+  UpgradeArc(true);
+
+  EXPECT_FALSE(GetTestDebugDaemonClient()->backup_arc_bug_report_called());
+  GetTestDebugDaemonClient()->set_backup_arc_bug_report_result(false);
+
+  adapter()->StopArcInstance(/*on_shutdown=*/false, /*should_backup_log=*/true);
+  run_loop()->RunUntilIdle();
+  EXPECT_TRUE(GetTestConciergeClient()->stop_vm_called());
+  // The callback for StopVm D-Bus reply does NOT call ArcInstanceStopped when
+  // the D-Bus call result is successful.
+  EXPECT_FALSE(arc_instance_stopped_called());
+
+  // Instead, vm_concierge explicitly notifies Chrome of the VM termination.
+  RecreateRunLoop();
+  SendVmStoppedSignal();
+  run_loop()->Run();
+
+  EXPECT_TRUE(GetTestDebugDaemonClient()->backup_arc_bug_report_called());
   // ..and that calls ArcInstanceStopped.
   EXPECT_TRUE(arc_instance_stopped_called());
 }

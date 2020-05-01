@@ -18,6 +18,7 @@ import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Pair;
 
+import androidx.annotation.NonNull;
 import androidx.browser.trusted.sharing.ShareData;
 
 import org.xmlpull.v1.XmlPullParser;
@@ -402,10 +403,6 @@ public class WebApkIntentDataProviderFactory {
             splashIcon = new WebappIcon();
         }
 
-        if (shareTarget == null) {
-            shareTarget = new ShareTarget();
-        }
-
         WebappExtras webappExtras = new WebappExtras(
                 WebappRegistry.webApkIdForPackage(webApkPackageName), url, scope, primaryIcon, name,
                 shortName, displayMode, orientation, source,
@@ -544,6 +541,7 @@ public class WebApkIntentDataProviderFactory {
      * Returns the name of activity or activity alias in WebAPK which handles share intents, and
      * the data about the handler.
      */
+    @NonNull
     private static Pair<String, ShareTarget> extractFirstShareTarget(String webApkPackageName) {
         Intent shareIntent = new Intent();
         shareIntent.setAction(Intent.ACTION_SEND);
@@ -563,7 +561,7 @@ public class WebApkIntentDataProviderFactory {
             String shareAction =
                     IntentUtils.safeGetString(shareTargetMetaData, WebApkMetaDataKeys.SHARE_ACTION);
             if (TextUtils.isEmpty(shareAction)) {
-                return new Pair<>(null, new ShareTarget());
+                return new Pair<>(null, null);
             }
 
             String encodedFileNames = IntentUtils.safeGetString(
@@ -584,8 +582,7 @@ public class WebApkIntentDataProviderFactory {
             boolean isShareEncTypeMultipart = shareEncType != null
                     && shareEncType.toLowerCase(Locale.ENGLISH).equals("multipart/form-data");
 
-            ShareTarget target = new ShareTarget(
-                    IntentUtils.safeGetString(shareTargetMetaData, WebApkMetaDataKeys.SHARE_ACTION),
+            ShareTarget target = new ShareTarget(shareAction,
                     IntentUtils.safeGetString(
                             shareTargetMetaData, WebApkMetaDataKeys.SHARE_PARAM_TITLE),
                     IntentUtils.safeGetString(
@@ -594,6 +591,6 @@ public class WebApkIntentDataProviderFactory {
 
             return new Pair<>(shareTargetActivityName, target);
         }
-        return new Pair<>(null, new ShareTarget());
+        return new Pair<>(null, null);
     }
 }

@@ -1642,36 +1642,41 @@ WebLocalFrame* WebLocalFrame::CreateMainFrame(
     WebView* web_view,
     WebLocalFrameClient* client,
     InterfaceRegistry* interface_registry,
+    const base::UnguessableToken& frame_token,
     WebFrame* opener,
     const WebString& name,
     network::mojom::blink::WebSandboxFlags sandbox_flags,
     const FeaturePolicy::FeatureState& opener_feature_state) {
   return WebLocalFrameImpl::CreateMainFrame(
-      web_view, client, interface_registry, opener, name, sandbox_flags,
-      opener_feature_state);
+      web_view, client, interface_registry, frame_token, opener, name,
+      sandbox_flags, opener_feature_state);
 }
 
 WebLocalFrame* WebLocalFrame::CreateProvisional(
     WebLocalFrameClient* client,
     InterfaceRegistry* interface_registry,
+    const base::UnguessableToken& frame_token,
     WebFrame* previous_frame,
     const FramePolicy& frame_policy,
     const WebString& name) {
-  return WebLocalFrameImpl::CreateProvisional(
-      client, interface_registry, previous_frame, frame_policy, name);
+  return WebLocalFrameImpl::CreateProvisional(client, interface_registry,
+                                              frame_token, previous_frame,
+                                              frame_policy, name);
 }
 
 WebLocalFrameImpl* WebLocalFrameImpl::CreateMainFrame(
     WebView* web_view,
     WebLocalFrameClient* client,
     InterfaceRegistry* interface_registry,
+    const base::UnguessableToken& frame_token,
     WebFrame* opener,
     const WebString& name,
     network::mojom::blink::WebSandboxFlags sandbox_flags,
     const FeaturePolicy::FeatureState& opener_feature_state) {
   auto* frame = MakeGarbageCollected<WebLocalFrameImpl>(
       util::PassKey<WebLocalFrameImpl>(),
-      mojom::blink::TreeScopeType::kDocument, client, interface_registry);
+      mojom::blink::TreeScopeType::kDocument, client, interface_registry,
+      frame_token);
   frame->SetOpener(opener);
   Page& page = *static_cast<WebViewImpl*>(web_view)->GetPage();
   DCHECK(!page.MainFrame());
@@ -1685,6 +1690,7 @@ WebLocalFrameImpl* WebLocalFrameImpl::CreateMainFrame(
 WebLocalFrameImpl* WebLocalFrameImpl::CreateProvisional(
     WebLocalFrameClient* client,
     blink::InterfaceRegistry* interface_registry,
+    const base::UnguessableToken& frame_token,
     WebFrame* previous_web_frame,
     const FramePolicy& frame_policy,
     const WebString& name) {
@@ -1696,7 +1702,7 @@ WebLocalFrameImpl* WebLocalFrameImpl::CreateProvisional(
       previous_web_frame->InShadowTree()
           ? mojom::blink::TreeScopeType::kShadow
           : mojom::blink::TreeScopeType::kDocument,
-      client, interface_registry);
+      client, interface_registry, frame_token);
   web_frame->SetParent(previous_web_frame->Parent());
   web_frame->SetOpener(previous_web_frame->Opener());
   network::mojom::blink::WebSandboxFlags sandbox_flags =
@@ -1742,9 +1748,11 @@ WebLocalFrameImpl* WebLocalFrameImpl::CreateProvisional(
 WebLocalFrameImpl* WebLocalFrameImpl::CreateLocalChild(
     mojom::blink::TreeScopeType scope,
     WebLocalFrameClient* client,
-    blink::InterfaceRegistry* interface_registry) {
+    blink::InterfaceRegistry* interface_registry,
+    const base::UnguessableToken& frame_token) {
   auto* frame = MakeGarbageCollected<WebLocalFrameImpl>(
-      util::PassKey<WebLocalFrameImpl>(), scope, client, interface_registry);
+      util::PassKey<WebLocalFrameImpl>(), scope, client, interface_registry,
+      frame_token);
   AppendChild(frame);
   return frame;
 }
@@ -1753,8 +1761,9 @@ WebLocalFrameImpl::WebLocalFrameImpl(
     util::PassKey<WebLocalFrameImpl>,
     mojom::blink::TreeScopeType scope,
     WebLocalFrameClient* client,
-    blink::InterfaceRegistry* interface_registry)
-    : WebNavigationControl(scope),
+    blink::InterfaceRegistry* interface_registry,
+    const base::UnguessableToken& frame_token)
+    : WebNavigationControl(scope, frame_token),
       client_(client),
       local_frame_client_(MakeGarbageCollected<LocalFrameClientImpl>(this)),
       autofill_client_(nullptr),
@@ -1773,11 +1782,13 @@ WebLocalFrameImpl::WebLocalFrameImpl(
     util::PassKey<WebRemoteFrameImpl>,
     mojom::blink::TreeScopeType scope,
     WebLocalFrameClient* client,
-    blink::InterfaceRegistry* interface_registry)
+    blink::InterfaceRegistry* interface_registry,
+    const base::UnguessableToken& frame_token)
     : WebLocalFrameImpl(util::PassKey<WebLocalFrameImpl>(),
                         scope,
                         client,
-                        interface_registry) {}
+                        interface_registry,
+                        frame_token) {}
 
 WebLocalFrameImpl::~WebLocalFrameImpl() {
   // The widget for the frame, if any, must have already been closed.
@@ -1807,9 +1818,9 @@ void WebLocalFrameImpl::InitializeCoreFrame(
     WindowAgentFactory* window_agent_factory,
     network::mojom::blink::WebSandboxFlags sandbox_flags,
     const FeaturePolicy::FeatureState& opener_feature_state) {
-  SetCoreFrame(MakeGarbageCollected<LocalFrame>(local_frame_client_.Get(), page,
-                                                owner, window_agent_factory,
-                                                interface_registry_));
+  SetCoreFrame(MakeGarbageCollected<LocalFrame>(
+      local_frame_client_.Get(), page, owner, GetFrameToken(),
+      window_agent_factory, interface_registry_));
   frame_->Tree().SetName(name);
   if (RuntimeEnabledFeatures::FeaturePolicyForSandboxEnabled())
     frame_->SetOpenerFeatureState(opener_feature_state);

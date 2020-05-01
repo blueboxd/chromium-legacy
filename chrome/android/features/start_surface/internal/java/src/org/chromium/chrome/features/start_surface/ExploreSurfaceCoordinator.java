@@ -81,14 +81,13 @@ class ExploreSurfaceCoordinator implements FeedSurfaceCoordinator.FeedSurfaceDel
         if (mExploreSurfaceNavigationDelegate == null) {
             mExploreSurfaceNavigationDelegate = new ExploreSurfaceNavigationDelegate(mActivity);
         }
-
+        Profile profile = Profile.getLastUsedRegularProfile();
         ExploreSurfaceActionHandler exploreSurfaceActionHandler =
                 new ExploreSurfaceActionHandler(mExploreSurfaceNavigationDelegate,
                         FeedProcessScopeFactory.getFeedConsumptionObserver(),
                         FeedProcessScopeFactory.getFeedOfflineIndicator(),
-                        OfflinePageBridge.getForProfile(Profile.getLastUsedProfile()),
-                        FeedProcessScopeFactory.getFeedLoggingBridge(), mActivity,
-                        Profile.getLastUsedRegularProfile().getOriginalProfile());
+                        OfflinePageBridge.getForProfile(profile),
+                        FeedProcessScopeFactory.getFeedLoggingBridge(), mActivity, profile);
 
         SectionHeaderView sectionHeaderView = null;
         if (hasHeader) {
@@ -99,7 +98,7 @@ class ExploreSurfaceCoordinator implements FeedSurfaceCoordinator.FeedSurfaceDel
         FeedSurfaceCoordinator feedSurfaceCoordinator = new FeedSurfaceCoordinator(mActivity,
                 mActivity.getSnackbarManager(), mActivity.getTabModelSelector(),
                 mActivity.getActivityTabProvider(), null, null, sectionHeaderView,
-                exploreSurfaceActionHandler, isInNightMode, this, null);
+                exploreSurfaceActionHandler, isInNightMode, this, null, profile);
         feedSurfaceCoordinator.getView().setId(R.id.start_surface_explore_view);
         return feedSurfaceCoordinator;
         // TODO(crbug.com/982018): Customize surface background for incognito and dark mode.

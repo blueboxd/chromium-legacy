@@ -93,7 +93,6 @@
 <translation id="3582972582564653026">Chrome'u cihazlarınız arasında senkronize edin ve kişiselleştirin</translation>
 <translation id="3596080736082218006">{COUNT,plural, =0{Yöneticiniz bir güncellemeyi uygulamak için Chrome'u yeniden başlatmanızı gerektiriyor}=1{Yöneticiniz bir güncellemeyi uygulamak için Chrome'u yeniden başlatmanızı gerektiriyor. Gizli pencereniz yeniden açılmayacak.}other{Yöneticiniz bir güncellemeyi uygulamak için Chrome'u yeniden başlatmanızı gerektiriyor. # Gizli pencereniz yeniden açılmayacak.}}</translation>
 <translation id="3622797965165704966">Chrome'u Google Hesabınızla ve paylaşılan bilgisayarlarda kullanmak artık daha kolay.</translation>
-<translation id="3637702109597584617">Google Chrome OS <ph name="TERMS_OF_SERVICE_LINK" />Hizmet Şartları<ph name="END_TERMS_OF_SERVICE_LINK" /></translation>
 <translation id="3718181793972440140">Bu işlem, 1 öğeyi bu cihazdan silecektir. Verilerinizi daha sonra geri almak için Chrome'da <ph name="USER_EMAIL" /> hesabıyla oturum açın.</translation>
 <translation id="3735758079232443276">"<ph name="EXTENSION_NAME" />" uzantısı, Chrome'u başlattığınızda gösterilen sayfayı değiştirdi.</translation>
 <translation id="3780814664026482060">Chrome - <ph name="PAGE_TITLE" /></translation>
@@ -110,6 +109,7 @@
 <translation id="4205939740494406371">Chrome, şifrelerinizi kontrol edemiyor. 24 saat sonra tekrar deneyin veya <ph name="BEGIN_LINK" />şifreleri Google Hesabınızda kontrol edin<ph name="END_LINK" />.</translation>
 <translation id="424864128008805179">Chrome oturumu kapatılsın mı?</translation>
 <translation id="4251615635259297716">Chrome verileriniz bu hesaba bağlansın mı?</translation>
+<translation id="4281844954008187215">Hizmet Şartları</translation>
 <translation id="4293420128516039005">Chrome'u cihazlarınız arasında senkronize etmek ve kişiselleştirmek için oturum açın</translation>
 <translation id="4328355335528187361">Google Chrome Dev (mDNS-In)</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
@@ -144,7 +144,6 @@
 
 Bazı özellikler kullanılamayabilir. Lütfen farklı bir profil dizini belirtin veya daha yeni bir Chrome sürümü kullanın.</translation>
 <translation id="5193136243808726294">Google Chrome OS bu sayfayı açamıyor.</translation>
-<translation id="5204098752394657250">Google Chrome <ph name="TERMS_OF_SERVICE_LINK" />Hizmet Şartları<ph name="END_TERMS_OF_SERVICE_LINK" /></translation>
 <translation id="5251420635869119124">Misafirler Chrome'u geride hiçbir şey bırakmadan kullanabilirler.</translation>
 <translation id="532046782124376502">Uyarı: Google Chrome, uzantıların göz atma geçmişinizi kaydetmesini önleyemez. Gizli modda bu uzantıyı devre dışı bırakmak için bu seçeneğin onay işaretini kaldırın.</translation>
 <translation id="5386244825306882791">Ayrıca, Chrome'u başlattığınızda veya Çok Amaçlı Adres Çubuğu'ndan arama yaptığınızda gösterilecek sayfayı da denetler.</translation>

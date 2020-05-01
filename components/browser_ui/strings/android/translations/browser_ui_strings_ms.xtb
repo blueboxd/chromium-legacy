@@ -3,12 +3,15 @@
 <translationbundle lang="ms">
 <translation id="1006017844123154345">Buka Dalam Talian</translation>
 <translation id="1044891598689252897">Tapak akan berfungsi seperti biasa</translation>
+<translation id="1124090076051167250">Tindakan ini akan mengosongkan <ph name="DATASIZE" /> data dan kuki yang disimpan oleh tapak atau apl pada Skrin utama anda.</translation>
 <translation id="1124772482545689468">Pengguna</translation>
 <translation id="1178581264944972037">Jeda</translation>
 <translation id="1181037720776840403">Alih keluar</translation>
 <translation id="1201402288615127009">Seterusnya</translation>
 <translation id="1242008676835033345">Dibenamkan pada <ph name="WEBSITE_URL" /></translation>
+<translation id="1272079795634619415">Berhenti</translation>
 <translation id="129382876167171263">Fail yang disimpan oleh tapak web akan dipaparkan di sini</translation>
+<translation id="1364532808393826295"><ph name="APP_NAME" /> - <ph name="NOTIFICATION_MESSAGE" /></translation>
 <translation id="1369915414381695676">Tapak <ph name="SITE_NAME" /> telah ditambahkan</translation>
 <translation id="1383876407941801731">Carian</translation>
 <translation id="1384959399684842514">Muat turun dijeda</translation>
@@ -29,6 +32,7 @@
 <translation id="1984937141057606926">Dibenarkan, kecuali pihak ketiga</translation>
 <translation id="1994173015038366702">URL tapak</translation>
 <translation id="2025115093177348061">Realiti tambahan</translation>
+<translation id="2030769033451695672">Ketik untuk kembali kepada <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
 <translation id="2041019821020695769">Untuk membenarkan Chrome menghantar pemberitahuan kepada anda, hidupkan pemberitahuan dalam <ph name="BEGIN_LINK" />Tetapan Android<ph name="END_LINK" /> juga.</translation>
 <translation id="2079545284768500474">Buat asal</translation>
 <translation id="2091887806945687916">Bunyi</translation>
@@ -104,6 +108,7 @@
 <translation id="5048398596102334565">Benarkan tapak mengakses penderia gerakan (disyorkan)</translation>
 <translation id="5063480226653192405">Penggunaan</translation>
 <translation id="5100237604440890931">Diruntuhkan - klik untuk mengembangkan.</translation>
+<translation id="5123685120097942451">Tab Inkognito</translation>
 <translation id="5300589172476337783">Paparkan</translation>
 <translation id="5301954838959518834">OK, faham</translation>
 <translation id="5307446750509046227">Kosongkan storan tapak</translation>
@@ -123,9 +128,11 @@
 <translation id="5677928146339483299">Disekat</translation>
 <translation id="5689516760719285838">Lokasi</translation>
 <translation id="5710871682236653961">Tanya sebelum membenarkan tapak menghantar dan menerima maklumat semasa anda mengetik peranti NFC (disyorkan)</translation>
+<translation id="5719847187258001597">Tindakan ini akan mengosongkan semua data dan kuki yang disimpan oleh <ph name="ORIGIN" /> atau oleh aplnya pada Skrin utama anda.</translation>
 <translation id="5804241973901381774">Kebenaran</translation>
 <translation id="5860033963881614850">Dimatikan</translation>
 <translation id="5916664084637901428">Hidupkan</translation>
+<translation id="5922853908706496913">Berkongsi skrin anda</translation>
 <translation id="5939518447894949180">Tetapkan semula</translation>
 <translation id="6040143037577758943">Tutup</translation>
 <translation id="6042308850641462728">Lagi</translation>
@@ -169,6 +176,7 @@
 <translation id="7423098979219808738">Tanya dahulu</translation>
 <translation id="7423538860840206698">Disekat daripada membaca papan keratan</translation>
 <translation id="7521387064766892559">JavaScript</translation>
+<translation id="7554752735887601236">Suatu tapak sedang menggunakan mikrofon anda</translation>
 <translation id="7572498721684305250">Sekat tapak daripada menghantar dan menerima maklumat semasa anda mengetik peranti NFC</translation>
 <translation id="757524316907819857">Sekat tapak daripada memainkan kandungan yang dilindungi</translation>
 <translation id="7589445247086920869">Sekat untuk enjin carian semasa</translation>
@@ -177,6 +185,7 @@
 <translation id="7781829728241885113">Semalam</translation>
 <translation id="7791543448312431591">Tambah</translation>
 <translation id="780301667611848630">Tidak, terima kasih</translation>
+<translation id="7804248752222191302">Suatu tapak sedang menggunakan kamera anda</translation>
 <translation id="7817023149356982970">Anda akan dilog keluar daripada tapak ini.</translation>
 <translation id="7828557259026017104">Kuki ialah fail yang dibuat oleh tapak web yang anda lawati. Tapak menggunakan kuki untuk mengingat pilihan anda. Kuki pihak ketiga dibuat oleh tapak lain. Tapak ini memiliki sebahagian daripada kandungan, seperti iklan atau imej, yang anda lihat dalam halaman web yang anda lawati.</translation>
 <translation id="7846076177841592234">Batalkan pilihan</translation>
@@ -194,7 +203,9 @@
 <translation id="8261506727792406068">Padam</translation>
 <translation id="8300705686683892304">Diurus oleh apl</translation>
 <translation id="8372893542064058268">Benarkan Penyegerakan Latar Belakang untuk tapak tertentu</translation>
+<translation id="83792324527827022">Suatu tapak sedang menggunakan kamera dan mikrofon anda</translation>
 <translation id="8380167699614421159">Tapak ini menyiarkan iklan yang mengganggu atau mengelirukan</translation>
+<translation id="8394832520002899662">Ketik untuk kembali ke tapak</translation>
 <translation id="8447861592752582886">Batalkan kebenaran peranti</translation>
 <translation id="851751545965956758">Sekat tapak daripada menyambung ke peranti</translation>
 <translation id="857943718398505171">Dibenarkan (disyorkan)</translation>

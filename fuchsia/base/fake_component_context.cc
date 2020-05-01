@@ -32,7 +32,7 @@ void FakeComponentContext::RegisterCreateComponentStateCallback(
                                   std::move(create_component_state_callback))));
 }
 
-void FakeComponentContext::ConnectToAgent(
+void FakeComponentContext::DeprecatedConnectToAgent(
     std::string agent_url,
     fidl::InterfaceRequest<::fuchsia::sys::ServiceProvider> services,
     fidl::InterfaceRequest<fuchsia::modular::AgentController> controller) {
@@ -41,15 +41,6 @@ void FakeComponentContext::ConnectToAgent(
       << "Received request for an unknown agent URL: " << agent_url;
 
   it->second->Connect(component_url_, std::move(services));
-}
-
-void FakeComponentContext::ConnectToAgentService(
-    fuchsia::modular::AgentServiceRequest request) {
-  if (!agent_services_) {
-    ConnectToAgent(component_url_, agent_services_.NewRequest(), nullptr);
-  }
-  agent_services_->ConnectToService(std::move(request.service_name()),
-                                    std::move(*request.mutable_channel()));
 }
 
 void FakeComponentContext::NotImplemented_(const std::string& name) {

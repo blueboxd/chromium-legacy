@@ -439,6 +439,16 @@ IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationThrottleBrowserTest,
            LookalikeUrlMatchType::kTargetEmbedding);
 }
 
+// Target embedding should not trigger on allowlisted domains.
+IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationThrottleBrowserTest,
+                       TargetEmbedding_Allowlist) {
+  const GURL kNavigatedUrl = GetURL("foo.scholar.google.com.com");
+  SetEngagementScore(browser(), kNavigatedUrl, kLowEngagement);
+  SetSafetyTipAllowlistPatterns({}, {"scholar\\.google\\.com"});
+  TestInterstitialNotShown(browser(), kNavigatedUrl);
+  CheckNoUkm();
+}
+
 // Similar to Idn_TopDomain_Match but the domain is not in top 500. Should not
 // show an interstitial, but should still record metrics.
 IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationThrottleBrowserTest,

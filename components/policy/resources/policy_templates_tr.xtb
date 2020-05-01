@@ -353,6 +353,7 @@ Bu politikayı devre dışı bırakırsanız web sayfasını URL yoluyla belirli
           Bu politika devre dışı bırakılır veya ayarlanmazsa Kerberos Hesap ayarları devre dışı bırakılır. Kerberos hesabı eklenemez ve Kerberos kimlik doğrulama protokolü kullanılamaz. Mevcut tüm Kerberos hesapları kaldırılır, saklanan tüm şifreler silinir.</translation>
 <translation id="1561424797596341174">Politika, uzaktan erişim ana makinesinin Hata Ayıklama yapılarını geçersiz kılar</translation>
 <translation id="1561967320164410511">Bağımsız doğrulama için U2F plus uzantıları</translation>
+<translation id="1575015449587326319">OnFileDownloaded Chrome Enterprise Bağlayıcı için yapılandırma politikası</translation>
 <translation id="1583248206450240930">Varsayılan olarak <ph name="PRODUCT_FRAME_NAME" /> ürününü kullan</translation>
 <translation id="1588240398285670601">Tarayıcı Ayarları</translation>
 <translation id="1599424828227887013">Android cihazlarda Site İzolasyonu'nu belirtilen kaynaklar için etkinleştirme</translation>
@@ -1312,7 +1313,6 @@ Bu politika ayarlanmazsa <ph name="PRODUCT_NAME" /> varsayılan 10.000 milisaniy
 <translation id="2869762730352628426">Giriş ekranında otomatik tıklama özelliğini etkinleştir</translation>
 <translation id="2872961005593481000">Kapat</translation>
 <translation id="2874209944580848064">Android uygulamalarını destekleyen <ph name="PRODUCT_OS_NAME" /> cihazlarına ilişkin not:</translation>
-<translation id="2874901846804525128">Kullanıcının güvenilmeyen kaynaklardan Android uygulamaları kullanmasını engelle.</translation>
 <translation id="2875192972412983412">Sunucu yazıcıları için sorgulanacak yazdırma sunucuları alt grubunu belirtir.
 
       Bu politika kullanılırsa kullanıcı yalnızca kimlikleri bu politikadaki değerlerle eşleşen sunucu yazıcıları kullanabilir.
@@ -1698,6 +1698,11 @@ Bu ayar Kapalı değerine getirilirse veya herhangi bir değer belirlenmezse <ph
           önceden kaydedilmiş şifreleri kullanmaya devam edebilirler.
 
           Bu politika etkinleştirilirse veya devre dışı bırakılırsa kullanıcılar bunu <ph name="PRODUCT_NAME" /> ürününün içinden değiştiremez veya geçersiz kılamazlar. Bu politika ayarlanmazsa, şifre kaydetmeye izin verilir (ancak kullanıcı bu özelliği kapatabilir).</translation>
+<translation id="3492834335089638487">Bu politika, cihazda güvenilmeyen kaynaklardan (Google Play Store dışında) Android uygulamalarının kullanımını kontrol eder.
+
+      Bu politikanın değeri ayarlanmazsa işleve izin verilmiyor olarak değerlendirilir.
+
+      Bu işlevin kullanılabilirliği, ek olarak ilgili kullanıcı politikasına da bağlıdır.</translation>
 <translation id="3496296378755072552">Şifre yöneticisi</translation>
 <translation id="3500732098526756068">Şifre koruma uyarısının tetiklenmesini kontrol etmenizi sağlar. Şifre koruma, korunan şifrelerini şüpheli olabilecek sitelerde yeniden kullanan kullanıcıları uyarır.
 
@@ -1821,7 +1826,6 @@ Bu ayar Kapalı değerine getirilirse veya herhangi bir değer belirlenmezse <ph
 <translation id="3715569262675717862">İstemci sertifikalarına dayalı kimlik doğrulama</translation>
 <translation id="3736879847913515635">Kullanıcı yöneticisinde kişi eklemeyi etkinleştir</translation>
 <translation id="3737890474637805114">Büyük dosya indirmelerini engelle</translation>
-<translation id="3738723882663496016">Bu politika, bu cihazla ilgili <ph name="PLUGIN_VM_NAME" /> lisans anahtarını belirtmektedir.</translation>
 <translation id="3748900290998155147">Uyanık kalma kilitlerine izin verilip verilmeyeceğini belirtir. Uyanık kalma kilitleri, güç yönetimi uzantı API'si yoluyla uzantılar tarafından ve ARC uygulamaları tarafından istenebilir.
 
           Bu politika true (doğru) değerine ayarlanırsa veya ayarlanmadan bırakılırsa, güç yönetimi için uyanık kalma kilitleri kullanılır.
@@ -2358,9 +2362,6 @@ politikayı geçersiz kılamaz.
 <translation id="4432762137771104529">Güvenli Tarama Genişletilmiş Raporlamasını Etkinleştir</translation>
 <translation id="443454694385851356">Eski (güvenli değil)</translation>
 <translation id="443665821428652897">Tarayıcı kapandığında site verilerini temizle (kullanımdan kaldırıldı)</translation>
-<translation id="4439132805807595336">Bu cihazın PluginVm çalıştırmasını etkinleştirir.
-
-      Politika false (yanlış) olarak ayarlanır veya ayarlanmadan bırakılırsa <ph name="PLUGIN_VM_NAME" /> cihaz için etkinleştirilmez. True (doğru) olarak ayarlanırsa diğer ayarlar izin verdiği sürece <ph name="PLUGIN_VM_NAME" /> cihaz için etkinleştirilir. <ph name="PLUGIN_VM_NAME" /> adlı sanal makinenin çalışmasına izin verilebilmesi için <ph name="PLUGIN_VM_ALLOWED_POLICY_NAME" /> politikasının true (doğru) olarak ayarlanması, <ph name="PLUGIN_VM_LICENSE_KEY_POLICY_NAME" /> ve <ph name="PLUGIN_VM_IMAGE_POLICY_NAME" /> politikasının da ayarlanması gerekir.</translation>
 <translation id="4439336120285389675">Geçici olarak yeniden etkinleştirmek için, kullanımdan kaldırılmış web platformu özelliklerinin bir listesini belirtin.
 
       Bu politika, yöneticilere kullanımdan kaldırılmış web platformu özelliklerini sınırlı bir süre için tekrar etkinleştirebilme olanağı verir. Özellikler bir dize etiketiyle tanımlanır ve bu politikanın belirttiği listeye eklenmiş olan etiketlere karşılık gelen özellikler yeniden etkinleştirilir.
@@ -2958,6 +2959,7 @@ politikayı geçersiz kılamaz.
 <translation id="5369937289900051171">Yalnızca renkli yazdır</translation>
 <translation id="5370279767682621504">Varsayılan olmayan bağlantı noktalarında HTTP/0.9 desteğini etkinleştir</translation>
 <translation id="5377606826822211923">Kullanıcı için güvenilmeyen kaynaklardan Android uygulaması kullanımının kontrolü</translation>
+<translation id="537786648513450280">Cihaz için güvenilmeyen kaynaklardan Android uygulaması kullanımının kontrolü</translation>
 <translation id="5378985487213287085">Web sitelerinin masaüstü bildirimleri görüntülemesine izin verilip verilmeyeceğini ayarlamanıza olanak tanır. Varsayılan olarak masaüstü bildirimlerinin görüntülenmesine izin verilebilir, varsayılan olarak bu reddedilebilir veya bir web sitesi her masaüstü bildirimi gösterme isteğinde bulunduğunda kullanıcıya sorulabilir.
 
           Bu politika ayarlanmadan bırakılırsa, 'AskNotifications' kullanılır ve kullanıcı ayarı değiştirebilir.</translation>
@@ -3869,7 +3871,6 @@ Bu ayar devre dışı bırakılır veya herhangi bir değer belirlenmezse <ph na
 <translation id="6731757988219967594">Üst düzey siteleri (ancak yerleştirilmiş iframe'leri değil) yetişkinlere yönelik içerik için filtrele</translation>
 <translation id="6734521799274931721">ChromeOS için Ağ Üzerinde Dosya Paylaşımı'nın kullanılabilirliğini kontrol eder</translation>
 <translation id="6735701345096330595">Yazım denetimi dillerini etkinleştirmeye zorla</translation>
-<translation id="6737677282967014160">Kullanıcının güvenilmeyen kaynaklardan Android uygulamaları kullanmasına izin ver.</translation>
 <translation id="6757613329154374267">Yedekleme ve geri yükleme özelliği etkinleştirildi</translation>
 <translation id="6758659208493449452">Bu politika, Gelişmiş Koruma programına kayıtlı kullanıcılara ekstra özellikler sunulup sunulmayacağını kontrol eder. Bu özelliklerin bazıları kapsamında Google ile veri paylaşılabilir (örneğin, Gelişmiş Koruma kullanıcıları indirdikleri dosyaları Google'a göndererek kötü amaçlı yazılıma karşı taranmasını sağlayabilir). Bu politika True (Doğru) değerine ayarlanır veya ayarlanmadan bırakılırsa kayıtlı kullanıcılara ekstra özellikler sunulur. Bu politika False (Yanlış) değerine ayarlanırsa Gelişmiş Koruma kullanıcılarına yalnızca standart tüketici özellikleri sunulur.</translation>
 <translation id="6762235610019366960"><ph name="PRODUCT_NAME" /> içindeki tam sekme tanıtım ve/veya eğitim amaçlı içeriğin sunumunu kontrol etmeye izin verir.
@@ -4744,6 +4745,19 @@ Bu politika yanlış (false) değerine ayarlanırsa Yeni Sekme sayfasında, otom
 
       <ph name="SYNC_DISABLED_POLICY_NAME" /> politikası, <ph name="ROAMING_PROFILE_SUPPORT_ENABLED_POLICY_NAME" /> politikasını geçersiz kılarak tüm veri senkronizasyonunu devre dışı bırakır.</translation>
 <translation id="802147957407376460">Ekranı 0 derece döndür</translation>
+<translation id="8027265928215448940">Chrome'da bir dosya indirildiğinde tetiklenen <ph name="ON_FILE_DOWNLOADED_ENTERPRISE_CONNECTOR" /> Enterprise Bağlayıcı'ya uygulanacak Chrome Enterprise Bağlayıcılar hizmetleri ayarlarının listesidir.
+
+      <ph name="ENTERPRISE_CONNECTOR_URL_LIST_FIELD" />, <ph name="ENTERPRISE_CONNECTOR_TAGS_FIELD" />, <ph name="ENTERPRISE_CONNECTOR_ENABLE_FIELD" /> ve <ph name="ENTERPRISE_CONNECTOR_DISABLE_FIELD" /> alanları, bağlayıcı belirli bir sayfayadan indirildiğinde analiz için dosya gönderip göndermemesi gerektiğini ve bu dosyanın analiz isteğine hangi etiketlerin dahil edileceğini belirlemek üzere kullanılır. Sayfa URL'si etiketle ilişkilendirilen desenle eşleşirse "etkinleştir" desenine karşılık gelen bu etiket analiz isteğine dahil edilir. Bu, aynı etikete sahip "devre dışı bırak" deseni sayfa URL'si ile eşleşirse gerçekleşmez. Analiz, isteğe en az 1 etiket dahil edilecekse gerçekleşir.
+
+      <ph name="ENTERPRISE_CONNECTOR_SERVICE_PROVIDER_FIELD" /> alanı, ayarların hangi analiz servis sağlayıcısına karşılık geldiğini tanımlar.
+
+      <ph name="ENTERPRISE_CONNECTOR_BLOCK_UNTIL_VERDICT_FIELD" /> alanının 1 değerine ayarlanması, Chrome'un kullanıcıya indirilen dosyaya erişim izni vermeden önce analiz hizmetinden yanıt almak için bekleyeceği anlamına gelir. Başka herhangi bir tam sayı değeri, Chrome'un, kullanıcının dosyaya erişim iznini hemen vereceği anlamına gelir.
+
+      <ph name="ENTERPRISE_CONNECTOR_BLOCK_PASSWORD_PROTECTED_FIELD" /> alanı, Chrome'un şifre korumalı dosyaları engelleyeceğini mi yoksa izin mi vereceğini kontrol eder.
+
+      <ph name="ENTERPRISE_CONNECTOR_BLOCK_LARGE_FILES_FIELD" /> alanı, Chrome'un analiz edilemeyecek kadar büyük dosyaları (50 MB'tan büyük) engelleyeceğini mi yoksa izin mi vereceğini kontrol eder.
+
+      Bu politika yalnızca Google Yönetici konsolundan ayarlanabilir.</translation>
 <translation id="8033913082323846868">Bu politika M70 sürümünde kullanımdan kaldırılmıştır. Lütfen bunun yerine AutofillAddressEnabled ve AutofillCreditCardEnabled politikalarını kullanın.
 
       <ph name="PRODUCT_NAME" /> içinde bulunan Otomatik Doldurma özelliğini etkinleştirir ve kullanıcıların adresler ve kredi kartı bilgileri gibi önceden saklanmış bilgileri kullanarak web formlarını otomatik bir şekilde doldurmalarına olanak sağlar.
@@ -5416,19 +5430,6 @@ Bu politika "true" (doğru) olarak ayarlanırsa kullanıcının tarayıcıyı ku
           Bu politika ayarlanmadan bırakılmış ve politika cihazda destekleniyorsa standart pil şarj modu uygulanır ve kullanıcı tarafından değiştirilemez.
 
           Not: <ph name="DEVICE_ADVANCED_BATTERY_CHARGE_MODE_ENABLED_NAME" /> belirtilmişse bu politikayı geçersiz kılar.</translation>
-<translation id="9071472304496502510">Chrome'a bir dosya eklendiğinde tetiklenen <ph name="ON_FILE_ATTACHED_ENTERPRISE_CONNECTOR" /> Enterprise Bağlayıcı'ya uygulanacak Chrome Enterprise Bağlayıcılar hizmetleri ayarlarının listesidir.
-
-      <ph name="ENTERPRISE_CONNECTOR_URL_LIST_FIELD" />, <ph name="ENTERPRISE_CONNECTOR_TAGS_FIELD" />, <ph name="ENTERPRISE_CONNECTOR_ENABLE_FIELD" /> ve <ph name="ENTERPRISE_CONNECTOR_DISABLE_FIELD" /> alanları, bağlayıcı belirli bir sayfaya eklendiğinde analiz için dosya gönderip göndermemesi gerektiğini ve bu dosyanın analiz isteğine hangi etiketlerin dahil edileceğini belirlemek üzere kullanılır. Sayfa URL'si etiketle ilişkilendirilen desenle eşleşirse "etkinleştir" desenine karşılık gelen bu etiket analiz isteğine dahil edilir. Bu, aynı etikete sahip "devre dışı bırak" deseni sayfa URL'si ile eşleşirse gerçekleşmez. Analiz, isteğe en az 1 etiket dahil edilecekse gerçekleşir.
-
-      <ph name="ENTERPRISE_CONNECTOR_SERVICE_PROVIDER_FIELD" /> alanı, ayarların hangi analiz servis sağlayıcısına karşılık geldiğini tanımlar.
-
-      <ph name="ENTERPRISE_CONNECTOR_BLOCK_UNTIL_VERDICT_FIELD" /> alanının 1 değerine ayarlanması, Chrome'un sayfaya dosyaya erişim izni vermeden önce analiz hizmetinden yanıt almak için bekleyeceği anlamına gelir. Başka herhangi bir tam sayı değeri, Chrome'un sayfaya dosyaya erişim iznini hemen vereceği anlamına gelir.
-
-      <ph name="ENTERPRISE_CONNECTOR_BLOCK_PASSWORD_PROTECTED_FIELD" /> alanı, Chrome'un şifre korumalı dosyaları engelleyeceğini mi yoksa izin mi vereceğini kontrol eder.
-
-      <ph name="ENTERPRISE_CONNECTOR_BLOCK_LARGE_FILES_FIELD" /> alanı, Chrome'un analiz edilemeyecek kadar büyük dosyaları (50 MB'tan büyük) engelleyeceğini mi yoksa izin mi vereceğini kontrol eder.
-
-      Bu politika yalnızca Google Yönetici konsolundan ayarlanabilir.</translation>
 <translation id="9077227880520270584">Cihaz yerel hesabına otomatik giriş zamanlayıcısı</translation>
 <translation id="9084985621503260744">Video etkinliğinin güç yönetimini etkileyip etkilemeyeceğini belirtme</translation>
 <translation id="9088433379343318874">Denetlenen kullanıcı içerik sağlayıcısını etkinleştirme</translation>

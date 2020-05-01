@@ -1347,7 +1347,12 @@ class MetaBuildWrapper(object):
     build_dir = self.args.path
     command, extra_files = self.GetIsolateCommand(target, vals)
 
-    cmd = self.GNCmd('desc', build_dir, label, 'runtime_deps')
+    # Any warning for an unused arg will get interleaved into the cmd's stdout.
+    # When that happens, the isolate step below will fail with an obscure error
+    # when it tries processing the lines of the warning. Fail quickly in that
+    # case to avoid confusion.
+    cmd = self.GNCmd('desc', build_dir, label, 'runtime_deps',
+                     '--fail-on-unused-args')
     ret, out, _ = self.Call(cmd)
     if ret:
       if out:

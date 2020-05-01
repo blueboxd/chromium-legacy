@@ -211,6 +211,7 @@
 <translation id="3495304270784461826"><ph name="COUNT" /> lỗi.</translation>
 <translation id="3519867315646775981">Chuyển ngữ (shalom ← שלום)</translation>
 <translation id="3522708245912499433">Tiếng Bồ Đào Nha</translation>
+<translation id="3524311639100184459">Lưu ý: Các tệp này chỉ được lưu trữ tạm thời và có thể tự động bị xóa để giải phóng dung lượng ổ đĩa.  <ph name="BEGIN_LINK" />Tìm hiểu thêm<ph name="END_LINK" /></translation>
 <translation id="3527085408025491307">Thư mục</translation>
 <translation id="3549797760399244642">Truy cập drive.google.com...</translation>
 <translation id="357479282490346887">Tiếng Lithuania</translation>
@@ -500,6 +501,7 @@
 <translation id="6806699711453372963">Quản lý chia sẻ với Linux</translation>
 <translation id="6808193438228982088">Cáo</translation>
 <translation id="6820687829547641339">Lưu trữ tar được nén bởi Gzip</translation>
+<translation id="6823166707458800069">Tất cả các tệp bạn đã lưu trong thư mục này đều tự động được sao lưu trực tuyến.</translation>
 <translation id="6825883775269213504">Tiếng Nga</translation>
 <translation id="6827236167376090743">Video này sẽ tiếp tục phát đi phát lại.</translation>
 <translation id="6847101934483209767">Đã xóa <ph name="ENTRY_NAME" /> khỏi lựa chọn.</translation>

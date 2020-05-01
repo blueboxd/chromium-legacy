@@ -172,6 +172,35 @@ the triage link for the problematic image.
 
 [skia crbug]: https://bugs.chromium.org/p/skia
 
+## Inexact Matching
+
+By default, Gold uses exact matching with support for multiple baselines per
+test. This works well for most of the GPU tests, but there are a handful of
+tests such as `Pixel_CSS3DBlueBox` that are prone to noise which causes them to
+need additional triaging at times.
+
+For cases like this, using inexact matching can help, as it allows a comparison
+to pass if there are only minor differences between the produced image and a
+known-good image. Images that pass in this way will be automatically approved
+in Gold, so there is still a record of exactly what was produced.
+
+To enable this functionality, simply add a `matching_algorithm` field to the
+`PixelTestPage` definition for the test (see other uses of this in the file for
+concrete examples).
+
+In order to determine which values to use, you can use the script located at
+`//content/test/gpu/gold_inexact_matching/determine_gold_inexact_parameters.py`.
+
+More complete documentation can be found in the `--help` output of the script,
+but in general:
+* Use the `binary_search` optimization algorithm if you only want to vary
+    a single parameter, e.g. you only want to use a Sobel filter.
+* Use the `local_minima` optimization algorithm if you want to vary multiple
+    parameters, such as using fuzzy diffing + a Sobel filter together.
+* The default boundaries and weights generally work and give good results, but
+    you may need to tune them to better suit your particular test, e.g.
+    increasing the maximum number of differing pixels if your image is large.
+
 ## Working On Gold
 
 ### Modifying Gold And goldctl

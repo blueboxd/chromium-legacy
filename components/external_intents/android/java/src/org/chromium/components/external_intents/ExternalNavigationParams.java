@@ -27,7 +27,7 @@ public class ExternalNavigationParams {
     private final boolean mApplicationMustBeInForeground;
 
     /** A redirect handler. */
-    private final RedirectHandlerImpl mRedirectHandler;
+    private final RedirectHandler mRedirectHandler;
 
     /** Whether the intent should force a new tab to open. */
     private final boolean mOpenInNewTab;
@@ -55,7 +55,7 @@ public class ExternalNavigationParams {
 
     private ExternalNavigationParams(String url, boolean isIncognito, String referrerUrl,
             int pageTransition, boolean isRedirect, boolean appMustBeInForeground,
-            RedirectHandlerImpl redirectHandler, boolean openInNewTab,
+            RedirectHandler redirectHandler, boolean openInNewTab,
             boolean isBackgroundTabNavigation, boolean isMainFrame, String nativeClientPackageName,
             boolean hasUserGesture,
             boolean shouldCloseContentsOnOverrideUrlLoadingAndLaunchIntent) {
@@ -106,7 +106,7 @@ public class ExternalNavigationParams {
     }
 
     /** @return The redirect handler. */
-    public RedirectHandlerImpl getRedirectHandler() {
+    public RedirectHandler getRedirectHandler() {
         return mRedirectHandler;
     }
 
@@ -170,7 +170,7 @@ public class ExternalNavigationParams {
         private boolean mApplicationMustBeInForeground;
 
         /** A redirect handler. */
-        private RedirectHandlerImpl mRedirectHandler;
+        private RedirectHandler mRedirectHandler;
 
         /** Whether the intent should force a new tab to open. */
         private boolean mOpenInNewTab;
@@ -217,7 +217,7 @@ public class ExternalNavigationParams {
         }
 
         /** Sets a tab redirect handler. */
-        public Builder setRedirectHandler(RedirectHandlerImpl handler) {
+        public Builder setRedirectHandler(RedirectHandler handler) {
             mRedirectHandler = handler;
             return this;
         }

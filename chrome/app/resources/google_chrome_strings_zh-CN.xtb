@@ -93,7 +93,6 @@
 <translation id="3582972582564653026">在您的所有设备上同步并个性化设置 Chrome</translation>
 <translation id="3596080736082218006">{COUNT,plural, =0{您的管理员要求您重新启动 Chrome 以应用一项更新}=1{您的管理员要求您重新启动 Chrome 以应用一项更新。您的无痕式窗口不会重新打开。}other{您的管理员要求您重新启动 Chrome 以应用一项更新。您的 # 个无痕式窗口不会重新打开。}}</translation>
 <translation id="3622797965165704966">现在，无论是通过Google帐号还是在共用的计算机上，您都可以更轻松地使用Chrome。</translation>
-<translation id="3637702109597584617">Google Chrome 操作系统<ph name="TERMS_OF_SERVICE_LINK" />服务条款<ph name="END_TERMS_OF_SERVICE_LINK" /></translation>
 <translation id="3718181793972440140">这会从这台设备上删除 1 项内容。如果日后想要检索您的数据，届时请以 <ph name="USER_EMAIL" /> 的身份登录 Chrome。</translation>
 <translation id="3735758079232443276">“<ph name="EXTENSION_NAME" />”扩展程序更改了 Chrome 启动后系统显示的页面。</translation>
 <translation id="3780814664026482060">Chrome - <ph name="PAGE_TITLE" /></translation>
@@ -110,6 +109,7 @@
 <translation id="4205939740494406371">Chrome 无法检查您的密码。请过 24 小时再试，或者<ph name="BEGIN_LINK" />检查您的 Google 帐号中的密码<ph name="END_LINK" />。</translation>
 <translation id="424864128008805179">退出 Chrome？</translation>
 <translation id="4251615635259297716">是否将您的 Chrome 数据与此帐号相关联？</translation>
+<translation id="4281844954008187215">服务条款</translation>
 <translation id="4293420128516039005">登录即可在您的所有设备上同步并个性化设置 Chrome</translation>
 <translation id="4328355335528187361">Google Chrome 开发者版 (mDNS-In)</translation>
 <translation id="4331809312908958774">Chrome 操作系统</translation>
@@ -142,7 +142,6 @@
 <translation id="5132929315877954718">查找适用于Google Chrome的精彩应用、游戏、扩展程序和主题背景。</translation>
 <translation id="5170938038195470297">您的个人资料来自新版 Google Chrome 浏览器，因此无法使用。某些功能可能无法使用。请指定其他个人资料目录，或使用新版 Chrome 浏览器。</translation>
 <translation id="5193136243808726294">Google Chrome 操作系统无法打开此网页。</translation>
-<translation id="5204098752394657250">Google Chrome　<ph name="TERMS_OF_SERVICE_LINK" />服务条款<ph name="END_TERMS_OF_SERVICE_LINK" /></translation>
 <translation id="5251420635869119124">访客使用Chrome不会留下任何痕迹。</translation>
 <translation id="532046782124376502">警告：Google Chrome 无法阻止扩展程序记录您的浏览活动。要在无痕模式下停用该扩展程序，请取消选中此选项。</translation>
 <translation id="5386244825306882791">它还能够控制您启动Chrome后或通过多功能框进行搜索时系统显示的页面。</translation>

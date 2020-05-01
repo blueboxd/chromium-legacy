@@ -15,6 +15,8 @@
 #include "content/public/browser/content_browser_client.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 
+class PrefService;
+
 namespace weblayer {
 
 class FeatureListCreator;
@@ -112,11 +114,19 @@ class ContentBrowserClientImpl : public content::ContentBrowserClient {
   void CreateFeatureListAndFieldTrials();
 
  private:
+  std::unique_ptr<PrefService> CreateLocalState();
+
 #if defined(OS_ANDROID)
   SafeBrowsingService* GetSafeBrowsingService();
 #endif
 
   MainParams* params_;
+
+  // Local-state is created early on, before BrowserProcess. Ownership moves to
+  // BrowserMainParts, then BrowserProcess. BrowserProcess ultimately owns
+  // local-state so that it can be destroyed along with other BrowserProcess
+  // state.
+  std::unique_ptr<PrefService> local_state_;
 
   std::unique_ptr<FeatureListCreator> feature_list_creator_;
 };

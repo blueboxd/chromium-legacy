@@ -772,6 +772,7 @@ RenderFrameHostImpl::RenderFrameHostImpl(
     FrameTree* frame_tree,
     FrameTreeNode* frame_tree_node,
     int32_t routing_id,
+    const base::UnguessableToken& frame_token,
     bool renderer_initiated_creation,
     LifecycleState lifecycle_state)
     : render_view_host_(std::move(render_view_host)),
@@ -807,6 +808,7 @@ RenderFrameHostImpl::RenderFrameHostImpl(
           base::OnTaskRunnerDeleter(base::CreateSequencedTaskRunner(
               {ServiceWorkerContext::GetCoreThreadId()}))),
       active_sandbox_flags_(network::mojom::WebSandboxFlags::kNone),
+      frame_token_(frame_token),
       keep_alive_timeout_(base::TimeDelta::FromSeconds(30)),
       subframe_unload_timeout_(base::TimeDelta::FromMilliseconds(
           RenderViewHostImpl::kUnloadTimeoutMS)),
@@ -1975,6 +1977,7 @@ bool RenderFrameHostImpl::CreateRenderFrame(int previous_routing_id,
   params->parent_routing_id = parent_routing_id;
   params->previous_sibling_routing_id = previous_sibling_routing_id;
   params->replication_state = frame_tree_node()->current_replication_state();
+  params->frame_token = frame_token_;
   params->devtools_frame_token = frame_tree_node()->devtools_frame_token();
 
   // Normally, the replication state contains effective frame policy, excluding
@@ -2164,8 +2167,7 @@ void RenderFrameHostImpl::Init() {
         std::move(pending_navigate_->navigation_client),
         std::move(pending_navigate_->navigation_initiator),
         EnsurePrefetchedSignedExchangeCache(),
-        web_bundle_handle_ ? web_bundle_handle_->MaybeCreateTracker()
-                           : nullptr);
+        MaybeCreateWebBundleHandleTracker());
     pending_navigate_.reset();
   }
 }
@@ -2213,6 +2215,7 @@ void RenderFrameHostImpl::OnCreateChildFrame(
     const std::string& frame_name,
     const std::string& frame_unique_name,
     bool is_created_by_script,
+    const base::UnguessableToken& frame_token,
     const base::UnguessableToken& devtools_frame_token,
     const blink::FramePolicy& frame_policy,
     const blink::mojom::FrameOwnerProperties& frame_owner_properties,
@@ -2244,7 +2247,7 @@ void RenderFrameHostImpl::OnCreateChildFrame(
                         std::move(new_interface_provider_provider_receiver),
                         std::move(browser_interface_broker_receiver), scope,
                         frame_name, frame_unique_name, is_created_by_script,
-                        devtools_frame_token, frame_policy,
+                        frame_token, devtools_frame_token, frame_policy,
                         frame_owner_properties, was_discarded_, owner_type);
 }
 
@@ -2393,14 +2396,16 @@ void RenderFrameHostImpl::SetOriginAndIsolationInfoOfNewFrame(
 FrameTreeNode* RenderFrameHostImpl::AddChild(
     std::unique_ptr<FrameTreeNode> child,
     int process_id,
-    int frame_routing_id) {
+    int frame_routing_id,
+    const base::UnguessableToken& frame_token) {
   // Child frame must always be created in the same process as the parent.
   CHECK_EQ(process_id, GetProcess()->GetID());
 
   // Initialize the RenderFrameHost for the new node.  We always create child
   // frames in the same SiteInstance as the current frame, and they can swap to
   // a different one if they navigate away.
-  child->render_manager()->InitChild(GetSiteInstance(), frame_routing_id);
+  child->render_manager()->InitChild(GetSiteInstance(), frame_routing_id,
+                                     frame_token);
 
   // Other renderer processes in this BrowsingInstance may need to find out
   // about the new frame.  Create a proxy for the child frame in all
@@ -2800,7 +2805,8 @@ void RenderFrameHostImpl::Unload(RenderFrameProxyHost* proxy, bool is_loading) {
     if (IsRenderFrameLive()) {
       Send(new UnfreezableFrameMsg_Unload(
           routing_id_, proxy->GetRoutingID(), is_loading,
-          proxy->frame_tree_node()->current_replication_state()));
+          proxy->frame_tree_node()->current_replication_state(),
+          proxy->GetFrameToken()));
       // Remember that a RenderFrameProxy was created as part of processing the
       // Unload message above.
       proxy->SetRenderFrameProxyCreated(true);
@@ -4609,7 +4615,7 @@ void RenderFrameHostImpl::CreateNewWindow(
       devtools_instrumentation::ShouldWaitForDebuggerInWindowOpen();
   mojom::CreateNewWindowReplyPtr reply = mojom::CreateNewWindowReply::New(
       main_frame->GetRenderViewHost()->GetRoutingID(),
-      main_frame->GetRoutingID(),
+      main_frame->GetRoutingID(), main_frame->frame_token(),
       main_frame->GetLocalRenderWidgetHost()->GetRoutingID(), visual_properties,
       std::move(blink_frame_widget_host),
       std::move(blink_frame_widget_receiver), std::move(blink_widget_host),
@@ -4667,7 +4673,7 @@ void RenderFrameHostImpl::CreatePortal(
   DCHECK(initial_replicated_state.origin.opaque());
 
   std::move(callback).Run(proxy_host->GetRoutingID(), initial_replicated_state,
-                          (*it)->portal_token(),
+                          proxy_host->GetFrameToken(), (*it)->portal_token(),
                           (*it)->GetDevToolsFrameToken());
 }
 
@@ -4689,7 +4695,7 @@ void RenderFrameHostImpl::AdoptPortal(
                                                  ->GetRenderWidgetHostView())
           ->GetFrameSinkId(),
       proxy_host->frame_tree_node()->current_replication_state(),
-      portal->GetDevToolsFrameToken());
+      proxy_host->GetFrameToken(), portal->GetDevToolsFrameToken());
 }
 
 void RenderFrameHostImpl::CreateNewWidget(
@@ -4823,7 +4829,7 @@ void RenderFrameHostImpl::BeginNavigation(
       frame_tree_node(), std::move(validated_params), std::move(begin_params),
       std::move(blob_url_loader_factory), std::move(navigation_client),
       std::move(navigation_initiator), EnsurePrefetchedSignedExchangeCache(),
-      web_bundle_handle_ ? web_bundle_handle_->MaybeCreateTracker() : nullptr);
+      MaybeCreateWebBundleHandleTracker());
 }
 
 void RenderFrameHostImpl::SubresourceResponseStarted(
@@ -8186,6 +8192,21 @@ RenderFrameHostImpl::EnsurePrefetchedSignedExchangeCache() {
 void RenderFrameHostImpl::ClearPrefetchedSignedExchangeCache() {
   if (prefetched_signed_exchange_cache_)
     prefetched_signed_exchange_cache_->Clear();
+}
+
+std::unique_ptr<WebBundleHandleTracker>
+RenderFrameHostImpl::MaybeCreateWebBundleHandleTracker() {
+  if (web_bundle_handle_)
+    return web_bundle_handle_->MaybeCreateTracker();
+  FrameTreeNode* frame_owner =
+      frame_tree_node_->parent() ? frame_tree_node_->parent()->frame_tree_node()
+                                 : frame_tree_node_->opener();
+  if (!frame_owner)
+    return nullptr;
+  RenderFrameHostImpl* frame_owner_host = frame_owner->current_frame_host();
+  if (!frame_owner_host->web_bundle_handle_)
+    return nullptr;
+  return frame_owner_host->web_bundle_handle_->MaybeCreateTracker();
 }
 
 RenderWidgetHostImpl* RenderFrameHostImpl::GetLocalRenderWidgetHost() const {

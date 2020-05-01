@@ -39,6 +39,7 @@ source_set("unit_tests") {
   deps = [
     ":security_interstitials",
     "//ios/web",
-    "//ios/web/public/test",
+    "//ios/web/public/test/fakes",
+    "//testing/gtest",
   ]
 }

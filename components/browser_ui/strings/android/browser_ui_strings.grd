@@ -371,6 +371,9 @@
       <message name="IDS_ACCESSIBILITY_COLLAPSED_GROUP" desc="The accessibility text to read when the selected widget is collapsed.">
         Collapsed - click to expand.
       </message>
+      <message name="IDS_MENU_HELP" desc="Menu item for opening the help page. [CHAR-LIMIT=27]">
+        Help &amp; feedback
+      </message>
 
       <!-- Downloads UI -->
       <message name="IDS_DOWNLOAD_NOTIFICATION_CANCEL_BUTTON" desc="Text on the button that cancels a download.">

@@ -82,9 +82,12 @@ void LCDTextMetricsReporter::NotifyPauseFrameProduction() {
   if (!total_text_area)
     return;
 
+  float device_scale_factor =
+      layer_tree_host_impl_->settings().use_painted_device_scale_factor
+          ? layer_tree_host_impl_->active_tree()->painted_device_scale_factor()
+          : layer_tree_host_impl_->active_tree()->device_scale_factor();
   UMA_HISTOGRAM_PERCENTAGE(
-      layer_tree_host_impl_->active_tree()->device_scale_factor() >=
-              kHighDPIDeviceScaleFactorThreshold
+      device_scale_factor >= kHighDPIDeviceScaleFactorThreshold
           ? kLCDTextMetricNameHighDPI
           : kLCDTextMetricNameLowDPI,
       roundf(total_lcd_text_area * 100.f / total_text_area));

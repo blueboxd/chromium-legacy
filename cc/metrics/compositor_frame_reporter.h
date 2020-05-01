@@ -70,7 +70,8 @@ class CC_EXPORT CompositorFrameReporter {
     kNonDroppedFrame = 0,
     kMissedDeadlineFrame = 1,
     kDroppedFrame = 2,
-    kMaxValue = kDroppedFrame
+    kCompositorOnlyFrame = 3,
+    kMaxValue = kCompositorOnlyFrame
   };
 
   // These values are used for indexing the UMA histograms.
@@ -155,6 +156,7 @@ class CC_EXPORT CompositorFrameReporter {
   void OnFinishImplFrame(base::TimeTicks timestamp);
   void OnAbortBeginMainFrame(base::TimeTicks timestamp);
   void OnDidNotProduceFrame(FrameSkippedReason skip_reason);
+  void EnableCompositorOnlyReporting();
   bool did_finish_impl_frame() const { return did_finish_impl_frame_; }
   base::TimeTicks impl_frame_finish_time() const {
     return impl_frame_finish_time_;

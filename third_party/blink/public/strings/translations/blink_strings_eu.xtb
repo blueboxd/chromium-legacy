@@ -35,6 +35,7 @@
 <translation id="1938124657309484470">Balioak <ph name="MAXIMUM_DATE_OR_TIME" /> edo lehenago izan behar du.</translation>
 <translation id="1946271899482435442">Erakutsi data-hautatzailea</translation>
 <translation id="1993104285338243655">Islatzeko modura aldatu da</translation>
+<translation id="2031987842108996681">Kanal gorria</translation>
 <translation id="2060505056492490888">"<ph name="DOT" />" posizio okerrean erabili da "<ph name="INVALIDDOMAIN" />" domeinuan.</translation>
 <translation id="2148716181193084225">Gaur</translation>
 <translation id="2158401438286456825">orrien zerrenda</translation>
@@ -45,6 +46,7 @@
 <translation id="2291999235780842123">kontrol-laukia</translation>
 <translation id="2311842470354187719">orri-jauzia</translation>
 <translation id="2335594187091864976">data- eta ordu-hautatzailea</translation>
+<translation id="2393030564806080191">Kolore hamaseitarraren balioa</translation>
 <translation id="245932805758469625">bideoa amaitzeko geratzen den segundo kopurua</translation>
 <translation id="248395913932153421">Eguna</translation>
 <translation id="2507943997699731163">Bete eremu hau.</translation>
@@ -52,6 +54,7 @@
 <translation id="2561842179657104141">erakutsi multimedia-edukia kontrolatzeko aukerak</translation>
 <translation id="2572483411312390101">erreproduzitu</translation>
 <translation id="2613802280814924224">Idatzi baliozko balioa. Idatzi duzunetik gertuen duzuna <ph name="VALID_VALUE" /> da.</translation>
+<translation id="2634240155926812724">Kanal berdea</translation>
 <translation id="2653659639078652383">Bidali</translation>
 <translation id="2657045182931379222">objektu grafikoa</translation>
 <translation id="2674318244760992338">orri-oina</translation>
@@ -127,6 +130,7 @@
 <translation id="5034860022980953847">egoera-adierazlea</translation>
 <translation id="5090250355906949916">bideoaren erreprodukzio-denboraren graduatzailea</translation>
 <translation id="5093189678851173835">epigrafea</translation>
+<translation id="509897012892853729">Kanal urdina</translation>
 <translation id="5117590920725113268">Erakutsi hurrengo hilabetea</translation>
 <translation id="512758898067543763">errenkadaren goiburua</translation>
 <translation id="5143125788380636750">epilogoa</translation>
@@ -164,6 +168,7 @@
 <translation id="6166809985690652833">hitzatzea</translation>
 <translation id="6209276755895393898">Badirudi hau dela: <ph name="DESCRIPTION" /></translation>
 <translation id="6213469881011901533">glosarioa</translation>
+<translation id="6281588256137006900">Argitasuna</translation>
 <translation id="6281763101136022427">urla</translation>
 <translation id="6310801910862476708">Irten pantaila txikiko modutik</translation>
 <translation id="6398862346408813489">Erakutsi hilabetearen hautapenaren panela</translation>
@@ -184,6 +189,7 @@
 <translation id="6790428901817661496">Erreproduzitu</translation>
 <translation id="6820355525329141109">Ezin izan da kargatu plugina.</translation>
 <translation id="6820615603175220800">bibliografia-erreferentzia</translation>
+<translation id="6831465880655513317">Bi dimentsioko graduatzailea duen zirkulu kromatikoa, saturazioa eta argitasuna hautatzeko</translation>
 <translation id="6843725295806269523">desaktibatu audioa</translation>
 <translation id="6885760532393684712">direktorioa</translation>
 <translation id="689129560213475294">azken oharra</translation>
@@ -201,6 +207,7 @@
 <translation id="7263440858009898357">Hautatu zerrendako elementu bat.</translation>
 <translation id="727747134524199931">zutabearen goiburua</translation>
 <translation id="7320576522385648310">bufferrean gordetzen</translation>
+<translation id="7341556277900466204">Zirkulu kromatikoa</translation>
 <translation id="7353453495576941748">adierazpena</translation>
 <translation id="7364796246159120393">Aukeratu fitxategia</translation>
 <translation id="739024184232394898">Beste bat…</translation>
@@ -221,6 +228,7 @@
 <translation id="775297008183122718">Idatzitakoak ez du balio</translation>
 <translation id="7789962463072032349">pausatu</translation>
 <translation id="7802800022689234070">zabaltze-triangelua</translation>
+<translation id="7852167693871241274">Ñabardura-graduatzailea</translation>
 <translation id="7888071071722539607">Sartu "<ph name="ATSIGN" />" ikurra helbide elektronikoan. "<ph name="INVALIDADDRESS" />" helbideari "<ph name="ATSIGN" />" ikurra falta zaio.</translation>
 <translation id="7891486169920085145">banatzailea</translation>
 <translation id="795667975304826397">Ez da fitxategirik aukeratu</translation>
@@ -263,6 +271,7 @@
 <translation id="8875657656876809964">Bideoaren erreprodukzio-errorea</translation>
 <translation id="8889402386540077796">Ñabardura</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> KB</translation>
+<translation id="894736920926684893">Formatu-etengailua</translation>
 <translation id="8987927404178983737">Hilabetea</translation>
 <translation id="901493112792887934">uneko denbora segundotan</translation>
 <translation id="901834265349196618">helbide elektronikoa</translation>

@@ -15,4 +15,4 @@ if (!window.OAuthConsent.setConsentResult) {
 
 const script = document.createElement('script');
 script.innerText = injectCode;
-document.body.appendChild(script);
+document.documentElement.prepend(script);

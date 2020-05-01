@@ -97,7 +97,6 @@
 <translation id="3582972582564653026">‏اپنے آلات پر Chrome کو مطابقت پذیر اور ذاتی نوعیت کا بنائیں</translation>
 <translation id="3596080736082218006">{COUNT,plural, =0{‏آپ کے منتظم کا مطالبہ ہے کہ آپ اپ ڈیٹ کو لاگو کرنے کیلئے Chrome کو بند کر کے دوبارہ چلائیں}=1{‏آپ کے منتظم کا مطالبہ ہے کہ آپ اپ ڈیٹ کو لاگو کرنے کیلئے Chrome کو بند کر کے دوبارہ چلائیں۔ آپ کی پوشیدگی ونڈو دوبارہ نہیں کھلے گی۔}other{‏آپ کے منتظم کا مطالبہ ہے کہ آپ اپ ڈیٹ کو لاگو کرنے کیلئے Chrome کو بند کر کے دوبارہ چلائیں۔ آپ کی # پوشیدگی ونڈوز دوبارہ نہیں کھلیں گی۔}}</translation>
 <translation id="3622797965165704966">‏اب آپ کے Google اکاؤنٹ کے ساتھ اور اشتراک کردہ کمپیوٹرز پر Chrome کو استعمال کرنا آسان تر ہے۔</translation>
-<translation id="3637702109597584617">‏Google Chrome OS <ph name="TERMS_OF_SERVICE_LINK" />سروس کی شرائط<ph name="END_TERMS_OF_SERVICE_LINK" /></translation>
 <translation id="3718181793972440140">‏یہ اس آلہ سے 1 آئٹم کو حذف کر دے گا۔ بعد میں اپنا ڈیٹا بازیافت کرنے کیلئے Chrome میں <ph name="USER_EMAIL" /> کے بطور سائن ان کریں۔</translation>
 <translation id="3735758079232443276">‏آپ کی جانب سے Chrome شروع کرنے پر دکھائی دینے والے صفحہ کو ایکسٹینشن "<ph name="EXTENSION_NAME" />" نے تبدیل کر دیا ہے۔</translation>
 <translation id="3780814664026482060">Chrome - <ph name="PAGE_TITLE" />‎</translation>
@@ -114,6 +113,7 @@
 <translation id="4205939740494406371">‏Chrome آپ کے پاس ورڈز چیک نہیں کر سکتا ہے۔ 24 گھنٹے بعد دوبارہ کوشش کریں یا <ph name="BEGIN_LINK" />اپنے Google اکاؤنٹ میں پاس ورڈز چیک کریں<ph name="END_LINK" />۔</translation>
 <translation id="424864128008805179">‏Chrome سے سائن آؤٹ کریں؟</translation>
 <translation id="4251615635259297716">‏آپ کا Chrome ڈیٹا اس اکاؤنٹ سے لنک کریں؟</translation>
+<translation id="4281844954008187215">سروس کی شرائط</translation>
 <translation id="4293420128516039005">‏اپنے آلات پر Chrome کو مطابقت پذیر اور ذاتی نوعیت کا بنانے کے لیے سائن ان کریں</translation>
 <translation id="4328355335528187361">Google Chrome Dev (mDNS-In)‎</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
@@ -148,7 +148,6 @@
 
 ممکن ہے کچھ خصوصیات دستیاب نہ ہوں۔ براہ کرم ایک مختلف پروفائل ڈائرکٹری کا تعین کریں یا Chrome کا ایک جدید تر ورژن استعمال کریں۔</translation>
 <translation id="5193136243808726294">‏Google Chrome OS یہ صفحہ نہیں کھول سکتا ہے۔</translation>
-<translation id="5204098752394657250">‏Google Chrome <ph name="TERMS_OF_SERVICE_LINK" />سروس کی شرائط<ph name="END_TERMS_OF_SERVICE_LINK" /></translation>
 <translation id="5251420635869119124">‏مہمان کسی چیز کو پیچھے چھوڑے بغیر Chrome کو استعمال کر سکتے ہیں۔</translation>
 <translation id="532046782124376502">‏وارننگ: Google Chrome ایکسٹینشنز کو آپ کی براؤزنگ سرگزشت ریکارڈ کرنے سے نہیں روک سکتا ہے۔ اس ایکسٹینشن کو پوشیدگی وضع میں غیر فعال کرنے کے لیے، اس اختیار کو غیر منتخب کریں۔</translation>
 <translation id="5386244825306882791">‏یہ آپ کی جانب سے Chrome شروع کیے جانے یا اومنی باکس سے تلاش کیے جانے پر دکھائی دینے والے صفحہ کو کنٹرول بھی کرتا ہے۔</translation>

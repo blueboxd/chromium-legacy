@@ -96,7 +96,6 @@
 <translation id="3582972582564653026">მოახდინეთ Chrome-ის სინქრონიზაცია და პერსონალიზება თქვენს ყველა მოწყობილობას შორის</translation>
 <translation id="3596080736082218006">{COUNT,plural, =0{განახლების მისასადაგებლად თქვენი ადმინისტრატორი მოითხოვს Chrome-ის ხელახლა გაშვებას}=1{განახლების მისასადაგებლად თქვენი ადმინისტრატორი მოითხოვს Chrome-ის ხელახლა გაშვებას. თქვენი ინკოგნიტო ფანჯარა ხელახლა არ გაიხსნება.}other{განახლების მისასადაგებლად თქვენი ადმინისტრატორი მოითხოვს Chrome-ის ხელახლა გაშვებას. თქვენი # ინკოგნიტო ფანჯარა ხელახლა არ გაიხსნება.}}</translation>
 <translation id="3622797965165704966">ადვილი გახდა თქვენი Google-ის ანგარიშის მეშვეობით Chrome-ის გამოყენება და საერთო მოხმარების კომპიუტერებზეც.</translation>
-<translation id="3637702109597584617">Google Chrome OS-ის <ph name="TERMS_OF_SERVICE_LINK" />მომსახურების პირობები<ph name="END_TERMS_OF_SERVICE_LINK" /></translation>
 <translation id="3718181793972440140">ეს მოქმედება წაშლის 1 ერთეულს ამ მოწყობილობიდან. თქვენი მონაცემების მოგვიანებით მისაღებად, შედით Chrome-ში, როგორც <ph name="USER_EMAIL" />.</translation>
 <translation id="3735758079232443276">გაფართოებამ „<ph name="EXTENSION_NAME" />“ თქვენ მიერ Chrome-ის გაშვებისას ნაჩვენები გვერდი შეცვალა.</translation>
 <translation id="3780814664026482060">Chrome — <ph name="PAGE_TITLE" /></translation>
@@ -113,6 +112,7 @@
 <translation id="4205939740494406371">Chrome ვერ ახერხებს პაროლების შემოწმებას. ცადეთ 24 საათში ან <ph name="BEGIN_LINK" />შეამოწმეთ პაროლები თქვენს Google ანგარიშში<ph name="END_LINK" />.</translation>
 <translation id="424864128008805179">გსურთ Chrome-იდან გამოსვლა?</translation>
 <translation id="4251615635259297716">მივამაგროთ Chrome-ის მონაცემები ამ ანგარიშზე?</translation>
+<translation id="4281844954008187215">მომსახურების პირობები</translation>
 <translation id="4293420128516039005">შედით სისტემაში, რათა მოახდინოთ Chrome-ის სინქრონიზაცია და პერსონალიზება თქვენს ყველა მოწყობილობას შორის</translation>
 <translation id="4328355335528187361">Google Chrome Dev (mDNS-In)</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
@@ -147,7 +147,6 @@
 
 ზოგიერთი ფუნქცია შეიძლება მიუწვდომელი იყოს. მიუთითეთ პროფილის სხვა დირექტორია ან გამოიყენეთ Chrome-ის უფრო ახალი ვერსია.</translation>
 <translation id="5193136243808726294">Google Chrome OS ვერ ხსნის ამ გვერდს.</translation>
-<translation id="5204098752394657250">Google Chrome <ph name="TERMS_OF_SERVICE_LINK" />სერვისის პირობები<ph name="END_TERMS_OF_SERVICE_LINK" /></translation>
 <translation id="5251420635869119124">სტუმრებს შეუძლიათ Chrome-ის გამოყენება და მისი ყველა ფუნქციით სარგებლობა.</translation>
 <translation id="532046782124376502">გაფრთხილება: Google Chrome ვერ შეუშლის ხელს გაფართოებებს ვების დათვალიერების ისტორიის შენახვაში. ამ გაფართოების ინკოგნიტო რეჟიმში გამოსართავად მოხსენით მონიშვნა ამ ვარიანტზე.</translation>
 <translation id="5386244825306882791">იგი ასევე აკონტროლებს, თუ რომელი გვერდი გამოჩნდება Chrome-ის გაშვებისას ან Omnibox-დან ძიების დროს.</translation>

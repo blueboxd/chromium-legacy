@@ -109,15 +109,22 @@ void DelegatedFrameHostAndroid::CopyFromCompositingSurface(
     base::OnceCallback<void(const SkBitmap&)> callback) {
   DCHECK(CanCopyFromCompositingSurface());
 
+  std::unique_ptr<ui::WindowAndroidCompositor::ReadbackRef> readback_ref;
+  if (view_->GetWindowAndroid() && view_->GetWindowAndroid()->GetCompositor()) {
+    readback_ref =
+        view_->GetWindowAndroid()->GetCompositor()->TakeReadbackRef();
+  }
   std::unique_ptr<viz::CopyOutputRequest> request =
       std::make_unique<viz::CopyOutputRequest>(
           viz::CopyOutputRequest::ResultFormat::RGBA_BITMAP,
           base::BindOnce(
               [](base::OnceCallback<void(const SkBitmap&)> callback,
+                 std::unique_ptr<ui::WindowAndroidCompositor::ReadbackRef>
+                     readback_ref,
                  std::unique_ptr<viz::CopyOutputResult> result) {
                 std::move(callback).Run(result->AsSkBitmap());
               },
-              std::move(callback)));
+              std::move(callback), std::move(readback_ref)));
 
   if (!src_subrect.IsEmpty())
     request->set_area(src_subrect);

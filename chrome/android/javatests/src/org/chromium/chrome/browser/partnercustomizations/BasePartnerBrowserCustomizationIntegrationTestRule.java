@@ -16,7 +16,7 @@ import org.chromium.chrome.test.partnercustomizations.TestPartnerBrowserCustomiz
  */
 public class BasePartnerBrowserCustomizationIntegrationTestRule
         extends ChromeActivityTestRule<ChromeActivity> {
-    BasePartnerBrowserCustomizationIntegrationTestRule() {
+    public BasePartnerBrowserCustomizationIntegrationTestRule() {
         super(ChromeActivity.class);
     }
 

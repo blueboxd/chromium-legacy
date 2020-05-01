@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.site_settings;
 
-import android.app.Activity;
 import android.graphics.Bitmap;
 
 import org.chromium.base.Callback;
@@ -15,7 +14,13 @@ import org.chromium.components.embedder_support.browser_context.BrowserContextHa
  * An interface implemented by the embedder that allows the Site Settings UI to access
  * embedder-specific logic.
  */
+// TODO(crbug.com/1077007): Clean up this interface.
 public interface SiteSettingsClient {
+    /**
+     * @return The BrowserContextHandle that should be used to read and update settings.
+     */
+    BrowserContextHandle getBrowserContextHandle();
+
     /**
      * @return the ManagedPreferenceDelegate instance that should be used when rendering
      *         Preferences.
@@ -23,28 +28,22 @@ public interface SiteSettingsClient {
     ManagedPreferenceDelegate getManagedPreferenceDelegate();
 
     /**
-     * Launches a support page relevant to settings UI pages.
-     *
-     * @see org.chromium.chrome.browser.help.HelpAndFeedback#show
+     * @return The SiteSettingsHelpClient that should be used to provide help functionality to the
+     *     Site Settings UI.
      */
-    void launchSettingsHelpAndFeedbackActivity(Activity currentActivity);
+    SiteSettingsHelpClient getSiteSettingsHelpClient();
 
     /**
-     * Launches a support page related to protected content.
-     *
-     * @see org.chromium.chrome.browser.help.HelpAndFeedback#show
+     * @return The SiteSettingsPrefClient that should be used to access native prefs when rendering
+     *     the Site Settings UI.
      */
-    void launchProtectedContentHelpAndFeedbackActivity(Activity currentActivity);
+    // TODO(crbug.com/1071603): Remove this once PrefServiceBridge is componentized.
+    SiteSettingsPrefClient getSiteSettingsPrefClient();
 
     /**
      * @return The WebappSettingsClient that should be used when showing the Site Settings UI.
      */
     WebappSettingsClient getWebappSettingsClient();
-
-    /**
-     * @return The BrowserContextHandle that should be used to read and update settings.
-     */
-    BrowserContextHandle getBrowserContextHandle();
 
     /**
      * Asynchronously looks up the locally cached favicon image for the given URL, generating a
@@ -61,13 +60,6 @@ public interface SiteSettingsClient {
      * @return true if the QuietNotificationPrompts Feature is enabled.
      */
     boolean isQuietNotificationPromptsFeatureEnabled();
-
-    /**
-     * @return The SiteSettingsPrefClient that should be used to access native prefs when rendering
-     *     the SiteSettings UI.
-     */
-    // TODO(crbug.com/1071603): Remove this once PrefServiceBridge is componentized.
-    SiteSettingsPrefClient getSiteSettingsPrefClient();
 
     /**
      * @return The id of the notification channel associated with the given origin.

@@ -33,6 +33,7 @@
 #include "third_party/blink/renderer/core/css/properties/css_property.h"
 #include "third_party/blink/renderer/core/css/style_auto_color.h"
 #include "third_party/blink/renderer/core/css/style_color.h"
+#include "third_party/blink/renderer/core/layout/geometry/logical_size.h"
 #include "third_party/blink/renderer/core/scroll/scroll_types.h"
 #include "third_party/blink/renderer/core/style/border_value.h"
 #include "third_party/blink/renderer/core/style/computed_style_base.h"
@@ -2616,6 +2617,15 @@ class ComputedStyle : public ComputedStyleBase,
   bool GeneratesMarkerImage() const {
     return Display() == EDisplay::kListItem && ListStyleImage() &&
            !ListStyleImage()->ErrorOccurred();
+  }
+
+  base::Optional<LogicalSize> LogicalAspectRatio() const {
+    if (!AspectRatio())
+      return base::nullopt;
+    IntSize ratio = *AspectRatio();
+    if (!IsHorizontalWritingMode())
+      ratio = ratio.TransposedSize();
+    return LogicalSize(LayoutUnit(ratio.Width()), LayoutUnit(ratio.Height()));
   }
 
  private:

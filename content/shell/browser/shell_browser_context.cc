@@ -197,7 +197,7 @@ ShellBrowserContext::GetPermissionControllerDelegate() {
 
 ClientHintsControllerDelegate*
 ShellBrowserContext::GetClientHintsControllerDelegate() {
-  return nullptr;
+  return client_hints_controller_delegate_;
 }
 
 BackgroundFetchDelegate* ShellBrowserContext::GetBackgroundFetchDelegate() {

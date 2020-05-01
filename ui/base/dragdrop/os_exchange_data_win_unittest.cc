@@ -406,8 +406,8 @@ TEST_F(OSExchangeDataWinTest, VirtualFiles) {
       } else {
         // IStorage uses compound files, so temp files won't be flat text files.
         // Just make sure the original contents appears in the compound files.
-        EXPECT_TRUE(read_contents.find(kTestFilenamesAndContents[i].second) !=
-                    std::string::npos);
+        EXPECT_TRUE(
+            base::Contains(read_contents, kTestFilenamesAndContents[i].second));
       }
     }
   }
@@ -542,8 +542,8 @@ TEST_F(OSExchangeDataWinTest, VirtualFilesDuplicateNames) {
       } else {
         // IStorage uses compound files, so temp files won't be flat text files.
         // Just make sure the original contents appears in the compound files.
-        EXPECT_TRUE(read_contents.find(kTestFilenamesAndContents[i].second) !=
-                    std::string::npos);
+        EXPECT_TRUE(
+            base::Contains(read_contents, kTestFilenamesAndContents[i].second));
       }
     }
   }
@@ -625,8 +625,8 @@ TEST_F(OSExchangeDataWinTest, VirtualFilesDuplicateNamesCaseInsensitivity) {
       } else {
         // IStorage uses compound files, so temp files won't be flat text files.
         // Just make sure the original contents appears in the compound files.
-        EXPECT_TRUE(read_contents.find(kTestFilenamesAndContents[i].second) !=
-                    std::string::npos);
+        EXPECT_TRUE(
+            base::Contains(read_contents, kTestFilenamesAndContents[i].second));
       }
     }
   }
@@ -747,8 +747,8 @@ TEST_F(OSExchangeDataWinTest, VirtualFilesInvalidAndDuplicateNames) {
       } else {
         // IStorage uses compound files, so temp files won't be flat text files.
         // Just make sure the original contents appears in the compound files.
-        EXPECT_TRUE(read_contents.find(kTestFilenamesAndContents[i].second) !=
-                    std::string::npos);
+        EXPECT_TRUE(
+            base::Contains(read_contents, kTestFilenamesAndContents[i].second));
       }
     }
   }

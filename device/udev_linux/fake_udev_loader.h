@@ -20,10 +20,10 @@ class FakeUdevLoader : public device::UdevLoader {
   FakeUdevLoader();
   ~FakeUdevLoader() override;
 
-  void AddFakeDevice(std::string name,
-                     std::string syspath,
-                     std::map<std::string, std::string> sysattrs,
-                     std::map<std::string, std::string> properties);
+  udev_device* AddFakeDevice(std::string name,
+                             std::string syspath,
+                             std::map<std::string, std::string> sysattrs,
+                             std::map<std::string, std::string> properties);
 
  private:
   bool Init() override;

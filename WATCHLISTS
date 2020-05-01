@@ -1693,7 +1693,7 @@
       'filepath': 'third_party/blink/renderer/(core|modules|platform)/.*\.idl',
     },
     'speed_metrics_changelog': {
-      'filepath': 'docs/speed/metrics_changelog/.*.md',
+      'filepath': 'docs/speed_metrics/metrics_changelog/.*.md',
     },
     'spellcheck': {
       'filepath': 'chrome/browser/spellchecker/'\

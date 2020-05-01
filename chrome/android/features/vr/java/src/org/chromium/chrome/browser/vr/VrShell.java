@@ -60,7 +60,7 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabObserver;
 import org.chromium.chrome.browser.toolbar.NewTabButton;
 import org.chromium.chrome.browser.util.VoiceRecognitionUtil;
 import org.chromium.chrome.browser.vr.keyboard.VrInputMethodManagerWrapper;
-import org.chromium.components.external_intents.RedirectHandlerImpl;
+import org.chromium.components.external_intents.RedirectHandler;
 import org.chromium.components.page_info.PageInfoController;
 import org.chromium.content_public.browser.ImeAdapter;
 import org.chromium.content_public.browser.LoadUrlParams;
@@ -94,7 +94,7 @@ public class VrShell extends GvrLayout
     private final VrCompositorSurfaceManager mVrCompositorSurfaceManager;
     private final VrShellDelegate mDelegate;
     private final VirtualDisplayAndroid mContentVirtualDisplay;
-    private final RedirectHandlerImpl mRedirectHandler;
+    private final RedirectHandler mRedirectHandler;
     private final TabObserver mTabObserver;
     private final TabModelSelectorObserver mTabModelSelectorObserver;
     private final View.OnTouchListener mTouchListener;
@@ -116,7 +116,7 @@ public class VrShell extends GvrLayout
 
     private boolean mReprojectedRendering;
 
-    private RedirectHandlerImpl mNonVrRedirectHandler;
+    private RedirectHandler mNonVrRedirectHandler;
     private UiWidgetFactory mNonVrUiWidgetFactory;
 
     private TabModelSelector mTabModelSelector;
@@ -234,7 +234,7 @@ public class VrShell extends GvrLayout
         mNonVrUiWidgetFactory = UiWidgetFactory.getInstance();
         UiWidgetFactory.setInstance(new VrUiWidgetFactory(this, mActivity.getModalDialogManager()));
 
-        mRedirectHandler = new RedirectHandlerImpl() {
+        mRedirectHandler = new RedirectHandler() {
             @Override
             public boolean shouldStayInApp(boolean hasExternalProtocol) {
                 return !hasExternalProtocol;

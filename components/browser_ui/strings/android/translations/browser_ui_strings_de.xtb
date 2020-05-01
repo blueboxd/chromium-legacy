@@ -8,7 +8,9 @@
 <translation id="1181037720776840403">Entfernen</translation>
 <translation id="1201402288615127009">Weiter</translation>
 <translation id="1242008676835033345">Auf <ph name="WEBSITE_URL" /> eingebettet</translation>
+<translation id="1272079795634619415">Stopp</translation>
 <translation id="129382876167171263">Hier werden von Websites gespeicherte Dateien angezeigt</translation>
+<translation id="1364532808393826295"><ph name="APP_NAME" /> – <ph name="NOTIFICATION_MESSAGE" /></translation>
 <translation id="1369915414381695676">Website "<ph name="SITE_NAME" />" hinzugefügt</translation>
 <translation id="1383876407941801731">Suchen</translation>
 <translation id="1384959399684842514">Download angehalten</translation>
@@ -29,6 +31,7 @@
 <translation id="1984937141057606926">Zugelassen, außer Cookies Dritter</translation>
 <translation id="1994173015038366702">Website-URL</translation>
 <translation id="2025115093177348061">Augmented Reality</translation>
+<translation id="2030769033451695672">Tippen, um zu <ph name="URL_OF_THE_CURRENT_TAB" /> zurückzukehren</translation>
 <translation id="2041019821020695769">Aktivieren Sie Benachrichtigungen auch in den <ph name="BEGIN_LINK" />Android-Einstellungen<ph name="END_LINK" />, damit Chrome Ihnen Benachrichtigungen senden kann.</translation>
 <translation id="2079545284768500474">Rückgängig machen</translation>
 <translation id="2091887806945687916">Ton</translation>
@@ -104,6 +107,7 @@
 <translation id="5048398596102334565">Websites den Zugriff auf Bewegungssensoren erlauben (empfohlen)</translation>
 <translation id="5063480226653192405">Verwendung</translation>
 <translation id="5100237604440890931">Minimiert – zum Maximieren klicken</translation>
+<translation id="5123685120097942451">Inkognito-Tab</translation>
 <translation id="5300589172476337783">Anzeigen</translation>
 <translation id="5301954838959518834">Ok</translation>
 <translation id="5307446750509046227">Websitespeicher löschen</translation>
@@ -111,6 +115,7 @@
 <translation id="5317780077021120954">Speichern</translation>
 <translation id="5335288049665977812">Ausführung von JavaScript durch Websites zulassen (empfohlen)</translation>
 <translation id="534295439873310000">NFC-Geräte</translation>
+<translation id="5354152178998424783">Dadurch werden <ph name="DATASIZE" /> von Websites gespeicherte Daten und Cookies gelöscht.</translation>
 <translation id="5391532827096253100">Die Verbindung zu dieser Website ist nicht sicher. Websiteinformationen</translation>
 <translation id="5494752089476963479">Werbung auf Websites blockieren, auf denen aufdringliche oder irreführende Werbung angezeigt wird</translation>
 <translation id="5505264765875738116">Websites können nicht fragen, ob Sie Benachrichtigungen erhalten möchten</translation>
@@ -125,6 +130,7 @@
 <translation id="5804241973901381774">Berechtigungen</translation>
 <translation id="5860033963881614850">Aus</translation>
 <translation id="5916664084637901428">An</translation>
+<translation id="5922853908706496913">Bildschirmfreigabe läuft</translation>
 <translation id="5939518447894949180">Zurücksetzen</translation>
 <translation id="6040143037577758943">Schließen</translation>
 <translation id="6042308850641462728">Mehr</translation>
@@ -168,6 +174,7 @@
 <translation id="7423098979219808738">Zuerst fragen</translation>
 <translation id="7423538860840206698">Es dürfen keine Dateien aus der Zwischenablage abgerufen werden</translation>
 <translation id="7521387064766892559">JavaScript</translation>
+<translation id="7554752735887601236">Eine Website verwendet Ihr Mikrofon</translation>
 <translation id="7572498721684305250">Websites daran hindern, Informationen zu senden und zu empfangen, wenn das Smartphone an NFC-Geräte gehalten wird</translation>
 <translation id="757524316907819857">Wiedergabe von geschützten Inhalten für Websites blockieren</translation>
 <translation id="7589445247086920869">Für die aktuelle Suchmaschine blockieren</translation>
@@ -176,9 +183,11 @@
 <translation id="7781829728241885113">Gestern</translation>
 <translation id="7791543448312431591">Hinzufügen</translation>
 <translation id="780301667611848630">Kein Interesse</translation>
+<translation id="7804248752222191302">Eine Website verwendet Ihre Kamera</translation>
 <translation id="7817023149356982970">Sie werden von dieser Website abgemeldet.</translation>
 <translation id="7828557259026017104">Cookies sind Dateien, die von Websites erstellt werden, die Sie besuchen. Sie werden zum Speichern Ihrer Einstellungen verwendet. Drittanbieter-Cookies werden von anderen Websites erstellt. Diesen Websites gehören einige der Inhalte, wie z. B. Werbeanzeigen oder Bilder, die Sie auf der besuchten Webseite sehen.</translation>
 <translation id="7846076177841592234">Auswahl aufheben</translation>
+<translation id="7846621471902887024">Sie werden von allen Websites abgemeldet.</translation>
 <translation id="7882806643839505685">Wiedergabe von Ton auf einer bestimmten Website zulassen.</translation>
 <translation id="7993619969781047893">Funktionen auf manchen Websites funktionieren möglicherweise nicht mehr</translation>
 <translation id="7999064672810608036">Möchten Sie wirklich alle lokalen Daten einschließlich Cookies löschen und alle Berechtigungen für diese Website zurücksetzen?</translation>
@@ -192,7 +201,9 @@
 <translation id="8261506727792406068">Löschen</translation>
 <translation id="8300705686683892304">Von App verwaltet</translation>
 <translation id="8372893542064058268">Lässt die Hintergrundsynchronisierung für eine bestimmte Website zu.</translation>
+<translation id="83792324527827022">Eine Website verwendet Ihre Kamera und Ihr Mikrofon</translation>
 <translation id="8380167699614421159">Diese Website zeigt aufdringliche oder irreführende Werbung an</translation>
+<translation id="8394832520002899662">Tippen, um zur Website zurückzukehren</translation>
 <translation id="8447861592752582886">Zugriffsberechtigung auf Gerät widerrufen</translation>
 <translation id="851751545965956758">Verhindern, dass Websites eine Verbindung zu Geräten herstellen</translation>
 <translation id="857943718398505171">Zugelassen (empfohlen)</translation>

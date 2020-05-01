@@ -122,6 +122,14 @@ public class TabUiFeatureUtilities {
     }
 
     /**
+     * @return Whether the conditional tab strip feature is enabled and available for use.
+     */
+    public static boolean isConditionalTabStripEnabled() {
+        return CachedFeatureFlags.isEnabled(ChromeFeatureList.CONDITIONAL_TAB_STRIP_ANDROID)
+                && !isGridTabSwitcherEnabled() && isTabManagementModuleSupported();
+    }
+
+    /**
      * @return Whether the thumbnail_aspect_ratio field trail is set.
      */
     public static boolean isTabThumbnailAspectRatioNotOne() {

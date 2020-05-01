@@ -13,6 +13,9 @@ namespace features {
 // Main feature flag for the query tiles feature.
 extern const base::Feature kQueryTiles;
 
+// Feature flag to determine whether query tiles should be shown on omnibox.
+extern const base::Feature kQueryTilesInOmnibox;
+
 }  // namespace features
 
 namespace switches {

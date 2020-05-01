@@ -158,6 +158,7 @@
 <translation id="285960592395650245">ลองดาวน์โหลดอีกครั้ง</translation>
 <translation id="2870560284913253234">เว็บไซต์</translation>
 <translation id="2871695793448672541">รหัสผ่านแบบซ่อน</translation>
+<translation id="2876369937070532032">ส่ง URL ของหน้าบางส่วนที่คุณเข้าชมไปให้ Google เมื่อการรักษาความปลอดภัยมีความเสี่ยง</translation>
 <translation id="288655811176831528">ปิดแท็บ</translation>
 <translation id="2898963176829412617">โฟลเดอร์ใหม่…</translation>
 <translation id="2916171785467530738">เติมข้อความค้นหาและ URL อัตโนมัติ</translation>
@@ -177,6 +178,7 @@
 <translation id="3161291298470460782">การดำเนินการนี้จะนำคุณออกจากระบบ ปิดการซิงค์ และล้างข้อมูล Chrome ทั้งหมดในอุปกรณ์นี้ แต่ข้อมูลที่ซิงค์ไว้จะยังอยู่ในบัญชี Google</translation>
 <translation id="3175081911749765310">บริการทางเว็บ</translation>
 <translation id="3178650076442119961">ใช้งานวันนี้</translation>
+<translation id="3181954750937456830">Google Safe Browsing (ปกป้องคุณและอุปกรณ์จากเว็บไซต์ที่เป็นอันตราย)</translation>
 <translation id="3207960819495026254">บุ๊กมาร์กแล้ว</translation>
 <translation id="3224641773458703735">หากต้องการส่งออกรหัสผ่าน คุณต้องตั้งรหัสผ่านในอุปกรณ์ก่อน</translation>
 <translation id="3240426699337459095">คัดลอกลิงก์แล้ว</translation>
@@ -430,6 +432,7 @@
 <translation id="6447842834002726250">คุกกี้</translation>
 <translation id="6464071786529933911">เปิดในแท็บที่ไม่ระบุตัวตนใหม่</translation>
 <translation id="6476800141292307438">กำลังแปลหน้าเว็บเป็นภาษา<ph name="LANGUAGE" /> ตัวเลือกจะอยู่ทางด้านล่างของหน้าจอ</translation>
+<translation id="648164694371393720">ข้อผิดพลาดในการตรวจสอบสิทธิ์</translation>
 <translation id="6482629121755362506">ลบแล้ว <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> รายการ</translation>
 <translation id="6561262006871132942">ซูมเข้า</translation>
 <translation id="6610002944194042868">ตัวเลือกการแปลภาษา</translation>

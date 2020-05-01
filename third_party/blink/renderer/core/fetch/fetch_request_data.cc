@@ -72,7 +72,8 @@ FetchRequestData* FetchRequestData::Create(
     ScriptState* script_state,
     const mojom::blink::FetchAPIRequest& fetch_api_request,
     ForServiceWorkerFetchEvent for_service_worker_fetch_event) {
-  FetchRequestData* request = MakeGarbageCollected<FetchRequestData>();
+  FetchRequestData* request = MakeGarbageCollected<FetchRequestData>(
+      script_state ? ExecutionContext::From(script_state) : nullptr);
   request->url_ = fetch_api_request.url;
   request->method_ = AtomicString(fetch_api_request.method);
   for (const auto& pair : fetch_api_request.headers) {
@@ -130,7 +131,7 @@ FetchRequestData* FetchRequestData::Create(
 }
 
 FetchRequestData* FetchRequestData::CloneExceptBody() {
-  auto* request = MakeGarbageCollected<FetchRequestData>();
+  auto* request = MakeGarbageCollected<FetchRequestData>(execution_context_);
   request->url_ = url_;
   request->method_ = method_;
   request->header_list_ = header_list_->Clone();
@@ -168,9 +169,11 @@ FetchRequestData* FetchRequestData::Clone(ScriptState* script_state,
     buffer_ = new1;
     request->buffer_ = new2;
   }
-  if (url_loader_factory_) {
+  if (url_loader_factory_.is_bound()) {
     url_loader_factory_->Clone(
-        request->url_loader_factory_.BindNewPipeAndPassReceiver());
+        request->url_loader_factory_.BindNewPipeAndPassReceiver(
+            ExecutionContext::From(script_state)
+                ->GetTaskRunner(TaskType::kNetworking)));
   }
   return request;
 }
@@ -192,7 +195,7 @@ FetchRequestData* FetchRequestData::Pass(ScriptState* script_state,
 
 FetchRequestData::~FetchRequestData() {}
 
-FetchRequestData::FetchRequestData()
+FetchRequestData::FetchRequestData(ExecutionContext* execution_context)
     : method_(http_names::kGET),
       header_list_(MakeGarbageCollected<FetchHeaderList>()),
       context_(mojom::RequestContextType::UNSPECIFIED),
@@ -206,11 +209,15 @@ FetchRequestData::FetchRequestData()
       importance_(mojom::FetchImportanceMode::kImportanceAuto),
       response_tainting_(kBasicTainting),
       priority_(ResourceLoadPriority::kUnresolved),
-      keepalive_(false) {}
+      keepalive_(false),
+      url_loader_factory_(execution_context),
+      execution_context_(execution_context) {}
 
 void FetchRequestData::Trace(Visitor* visitor) {
   visitor->Trace(buffer_);
   visitor->Trace(header_list_);
+  visitor->Trace(url_loader_factory_);
+  visitor->Trace(execution_context_);
 }
 
 }  // namespace blink

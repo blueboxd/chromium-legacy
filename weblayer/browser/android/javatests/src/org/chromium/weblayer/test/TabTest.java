@@ -4,6 +4,8 @@
 
 package org.chromium.weblayer.test;
 
+import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.support.test.filters.SmallTest;
 
 import org.junit.Assert;
@@ -11,9 +13,12 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.weblayer.Tab;
 import org.chromium.weblayer.shell.InstrumentationActivity;
+
+import java.util.concurrent.TimeoutException;
 
 /**
  * Tests for Tab.
@@ -101,5 +106,66 @@ public class TabTest {
         }));
 
         callback.waitForCloseTab();
+    }
+
+    private Bitmap captureScreenShot(float scale) throws TimeoutException {
+        Bitmap[] bitmapHolder = new Bitmap[1];
+        CallbackHelper callbackHelper = new CallbackHelper();
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            Tab tab = mActivity.getTab();
+            tab.captureScreenShot(scale, (Bitmap bitmap, int errorCode) -> {
+                Assert.assertNotNull(bitmap);
+                Assert.assertEquals(0, errorCode);
+                bitmapHolder[0] = bitmap;
+                // Failure is ok here, so not checking |bitmap| or |errorCode|.
+                callbackHelper.notifyCalled();
+            });
+        });
+        callbackHelper.waitForFirst();
+        return bitmapHolder[0];
+    }
+
+    private void checkQuadrantColors(Bitmap bitmap) {
+        int quarterWidth = bitmap.getWidth() / 4;
+        int quarterHeight = bitmap.getHeight() / 4;
+        Assert.assertEquals(Color.rgb(255, 0, 0), bitmap.getPixel(quarterWidth, quarterHeight));
+        Assert.assertEquals(Color.rgb(0, 255, 0), bitmap.getPixel(quarterWidth * 3, quarterHeight));
+        Assert.assertEquals(Color.rgb(0, 0, 255), bitmap.getPixel(quarterWidth, quarterHeight * 3));
+        Assert.assertEquals(
+                Color.rgb(128, 128, 128), bitmap.getPixel(quarterWidth * 3, quarterHeight * 3));
+    }
+
+    @Test
+    @SmallTest
+    public void testCaptureScreenShot() throws TimeoutException {
+        String url = mActivityTestRule.getTestDataURL("quadrant_colors.html");
+        mActivity = mActivityTestRule.launchShellWithUrl(url);
+
+        Bitmap bitmap = captureScreenShot(1.f);
+        checkQuadrantColors(bitmap);
+        Bitmap halfBitmap = captureScreenShot(0.5f);
+        checkQuadrantColors(bitmap);
+
+        final int allowedError = 10;
+        Assert.assertTrue(Math.abs(bitmap.getWidth() / 2 - halfBitmap.getWidth()) < allowedError);
+        Assert.assertTrue(Math.abs(bitmap.getHeight() / 2 - halfBitmap.getHeight()) < allowedError);
+    }
+
+    @Test
+    @SmallTest
+    public void testCaptureScreenShotDoesNotHang() throws TimeoutException {
+        String startupUrl = "about:blank";
+        mActivity = mActivityTestRule.launchShellWithUrl(startupUrl);
+
+        CallbackHelper callbackHelper = new CallbackHelper();
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            Tab tab = mActivity.getTab();
+            tab.captureScreenShot(1.f, (Bitmap bitmap, int errorCode) -> {
+                // Failure is ok here, so not checking |bitmap| or |errorCode|.
+                callbackHelper.notifyCalled();
+            });
+            mActivity.destroyFragment();
+        });
+        callbackHelper.waitForFirst();
     }
 }

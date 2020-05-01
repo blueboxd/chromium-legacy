@@ -34,7 +34,10 @@ enum class DelayedWarningEvent {
   kWarningNotTriggeredOnMouseClick = 3,
   // User clicked on the page and the warning was shown.
   kWarningShownOnMouseClick = 4,
-  kMaxValue = kWarningShownOnMouseClick,
+  // The page tried to enter fullscreen mode.
+  kWarningShownOnFullscreenAttempt = 5,
+
+  kMaxValue = kWarningShownOnFullscreenAttempt,
 };
 
 // Name of the histogram.
@@ -72,6 +75,8 @@ class SafeBrowsingUserInteractionObserver
                              content::RenderViewHost* new_host) override;
   void WebContentsDestroyed() override;
   void DidStartNavigation(content::NavigationHandle* handle) override;
+  void DidToggleFullscreenModeForTab(bool entered_fullscreen,
+                                     bool will_cause_resize) override;
 
  private:
   static SafeBrowsingUserInteractionObserver* FromWebContents(

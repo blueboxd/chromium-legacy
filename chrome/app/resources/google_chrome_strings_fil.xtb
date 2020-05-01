@@ -97,7 +97,6 @@ Maaaring hindi available ang ilang tampok at hindi mase-save ang mga pagbabago s
 <translation id="3582972582564653026">I-sync at i-personalize ang Chrome sa lahat ng iyong device</translation>
 <translation id="3596080736082218006">{COUNT,plural, =0{Ipinag-aatas ng iyong administrator na ilunsad mo ulit ang Chrome para mailapat ang isang update}=1{Ipinag-aatas ng iyong administrator na ilunsad mo ulit ang Chrome para mailapat ang isang update. Hindi bubukas ulit ang iyong Incognito window.}one{Ipinag-aatas ng iyong administrator na ilunsad mo ulit ang Chrome para mailapat ang isang update. Hindi bubukas ulit ang iyong # Incognito window.}other{Ipinag-aatas ng iyong administrator na ilunsad mo ulit ang Chrome para mailapat ang isang update. Hindi bubukas ulit ang iyong # na Incognito window.}}</translation>
 <translation id="3622797965165704966">Ngayon, mas madali nang gamitin ang Chrome sa iyong Google Account at sa mga nakabahaging computer.</translation>
-<translation id="3637702109597584617"><ph name="TERMS_OF_SERVICE_LINK" />Mga Tuntunin ng Serbisyo<ph name="END_TERMS_OF_SERVICE_LINK" /> ng Google Chrome OS</translation>
 <translation id="3718181793972440140">Magde-delete ito ng 1 item sa device na ito. Upang makuha ang iyong data sa ibang pagkakataon, mag-sign in sa Chrome bilang <ph name="USER_EMAIL" />.</translation>
 <translation id="3735758079232443276">Binago ng extension na "<ph name="EXTENSION_NAME" />" ang ipinapakitang page kapag sinimulan mo ang Chrome.</translation>
 <translation id="3780814664026482060">Chrome - <ph name="PAGE_TITLE" /></translation>
@@ -114,6 +113,7 @@ Maaaring hindi available ang ilang tampok at hindi mase-save ang mga pagbabago s
 <translation id="4205939740494406371">Hindi masuri ng Chrome ang iyong mga password. Subukan ulit pagkalipas ng 24 na oras o <ph name="BEGIN_LINK" />suriin ang mga password sa iyong Google Account<ph name="END_LINK" />.</translation>
 <translation id="424864128008805179">Mag-sign out sa Chrome?</translation>
 <translation id="4251615635259297716">I-link ang iyong data sa Chrome sa account na ito</translation>
+<translation id="4281844954008187215">Mga Tuntunin ng Serbisyo</translation>
 <translation id="4293420128516039005">Mag-sign in para i-sync at i-personalize ang Chrome sa lahat ng iyong device</translation>
 <translation id="4328355335528187361">Google Chrome Dev (mDNS-In)</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
@@ -148,7 +148,6 @@ Maaaring hindi available ang ilang tampok at hindi mase-save ang mga pagbabago s
 
 Maaaring hindi available ang ilang tampok. Mangyaring tumukoy ng ibang direktoryo ng profile o gumamit ng mas bagong bersyon ng Chrome.</translation>
 <translation id="5193136243808726294">Hindi mabuksan ng Google Chrome OS ang page na ito.</translation>
-<translation id="5204098752394657250"><ph name="TERMS_OF_SERVICE_LINK" />Mga Tuntunin ng Serbisyo<ph name="END_TERMS_OF_SERVICE_LINK" /> ng Google Chrome</translation>
 <translation id="5251420635869119124">Makakagamit ng Chrome ang mga bisita nang hindi nag-iiwan ng anumang bakas.</translation>
 <translation id="532046782124376502">Babala: Hindi mapipigilan ng Google Chrome ang pagtatala ng mga extension sa iyong history ng pag-browse. Upang i-disable ang extension na ito sa incognito mode, alisin sa pagkakapili ang opsyong ito.</translation>
 <translation id="5386244825306882791">Kinokontrol din nito kung anong pahina ang ipinapakita kapag sinimulan mo ang Chrome o naghanap mula sa Omnibox.</translation>

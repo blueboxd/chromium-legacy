@@ -35,6 +35,7 @@
 <translation id="1938124657309484470">Vlera duhet të jetë <ph name="MAXIMUM_DATE_OR_TIME" /> ose më e hershme.</translation>
 <translation id="1946271899482435442">Shfaq zgjedhësin e datës</translation>
 <translation id="1993104285338243655">U kalua te pasqyrimi</translation>
+<translation id="2031987842108996681">Kanali i kuq</translation>
 <translation id="2060505056492490888">"<ph name="DOT" />" përdoret në një pozicion të gabuar në "<ph name="INVALIDDOMAIN" />".</translation>
 <translation id="2148716181193084225">Sot</translation>
 <translation id="2158401438286456825">listë faqeje</translation>
@@ -45,6 +46,7 @@
 <translation id="2291999235780842123">kutia e kontrollit</translation>
 <translation id="2311842470354187719">thyerje faqeje</translation>
 <translation id="2335594187091864976">zgjedhësi i datës dhe orës</translation>
+<translation id="2393030564806080191">Vlera e ngjyrave heksadecimale</translation>
 <translation id="245932805758469625">numri i sekondave të mbetura të videos</translation>
 <translation id="248395913932153421">Dita</translation>
 <translation id="2507943997699731163">Plotësoje këtë fushë.</translation>
@@ -52,6 +54,7 @@
 <translation id="2561842179657104141">shfaq më shumë kontrolle të medias</translation>
 <translation id="2572483411312390101">luaj</translation>
 <translation id="2613802280814924224">Fut një vlerë të vlefshme. Vlera më e afërt e vlefshme është <ph name="VALID_VALUE" />.</translation>
+<translation id="2634240155926812724">Kanali i gjelbër</translation>
 <translation id="2653659639078652383">Dërgoje</translation>
 <translation id="2657045182931379222">objekt grafik</translation>
 <translation id="2674318244760992338">shënime në fund të faqes</translation>
@@ -127,6 +130,7 @@
 <translation id="5034860022980953847">treguesi i progresit</translation>
 <translation id="5090250355906949916">shiriti kohor i videos</translation>
 <translation id="5093189678851173835">epigraf</translation>
+<translation id="509897012892853729">Kanali blu</translation>
 <translation id="5117590920725113268">Trego muajin e ardhshëm</translation>
 <translation id="512758898067543763">koka e rreshtit</translation>
 <translation id="5143125788380636750">epilog</translation>
@@ -164,6 +168,7 @@
 <translation id="6166809985690652833">pasthënie</translation>
 <translation id="6209276755895393898">Duket se është: <ph name="DESCRIPTION" /></translation>
 <translation id="6213469881011901533">fjalorth</translation>
+<translation id="6281588256137006900">Ndriçimi</translation>
 <translation id="6281763101136022427">url</translation>
 <translation id="6310801910862476708">Dil nga "figurë brenda figurës"</translation>
 <translation id="6398862346408813489">Trego panelin e zgjedhjes mujore</translation>
@@ -184,6 +189,7 @@
 <translation id="6790428901817661496">Luaj</translation>
 <translation id="6820355525329141109">Nuk mund ta ngarkonte përbërësin shtesë.</translation>
 <translation id="6820615603175220800">referencë bibliografike</translation>
+<translation id="6831465880655513317">Pusi i ngjyrave me rrëshqitësin dydimensional për zgjedhjen e gjallërisë dhe ndriçimit</translation>
 <translation id="6843725295806269523">heshtje</translation>
 <translation id="6885760532393684712">direktoria</translation>
 <translation id="689129560213475294">kolofon</translation>
@@ -201,6 +207,7 @@
 <translation id="7263440858009898357">Përzgjidh një artikull në listë.</translation>
 <translation id="727747134524199931">titulli i kolonës</translation>
 <translation id="7320576522385648310">po ruan në ndërmemorie</translation>
+<translation id="7341556277900466204">Pusi i ngjyrave</translation>
 <translation id="7353453495576941748">mirënjohje</translation>
 <translation id="7364796246159120393">Zgjidh skedarin</translation>
 <translation id="739024184232394898">Tjetër...</translation>
@@ -221,6 +228,7 @@
 <translation id="775297008183122718">Atribut i pavlefshëm</translation>
 <translation id="7789962463072032349">pauzë</translation>
 <translation id="7802800022689234070">trekëndëshi i zbulimit</translation>
+<translation id="7852167693871241274">Rrëshqitësi i nuancës</translation>
 <translation id="7888071071722539607">Përfshi një "<ph name="ATSIGN" />" në adresën e mail-it. Te "<ph name="INVALIDADDRESS" />" mungon një "<ph name="ATSIGN" />".</translation>
 <translation id="7891486169920085145">ndarësi</translation>
 <translation id="795667975304826397">Nuk u zgjodh asnjë skedar</translation>
@@ -263,6 +271,7 @@
 <translation id="8875657656876809964">Gabim gjatë luajtjes së videos</translation>
 <translation id="8889402386540077796">Nuanca</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> KB</translation>
+<translation id="894736920926684893">Ndryshuesi i formatit</translation>
 <translation id="8987927404178983737">Muaji</translation>
 <translation id="901493112792887934">koha aktuale në sekonda</translation>
 <translation id="901834265349196618">mail</translation>

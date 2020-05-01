@@ -113,6 +113,7 @@ android_resources("java_resources") {
     "java/res/layout/tri_state_site_settings_preference.xml",
     "java/res/layout/website_features.xml",
     "java/res/menu/website_preferences_menu.xml",
+    "java/res/values/ids.xml",
     "java/res/xml/single_website_preferences.xml",
     "java/res/xml/site_settings_preferences.xml",
     "java/res/xml/website_preferences.xml",

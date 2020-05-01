@@ -29,7 +29,7 @@ WebBundleInterceptorForHistoryNavigationFromNetwork::
                                                std::move(done_callback),
                                                frame_tree_node_id),
       source_(std::move(source)) {
-  DCHECK(source_->IsNavigationPathRestrictionSatisfied(target_inner_url_));
+  DCHECK(source_->IsPathRestrictionSatisfied(target_inner_url_));
 }
 
 WebBundleInterceptorForHistoryNavigationFromNetwork::

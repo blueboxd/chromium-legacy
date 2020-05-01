@@ -17,20 +17,27 @@
 #include "components/leveldb_proto/public/shared_proto_database_client_list.h"
 #include "components/query_tiles/internal/cached_image_loader.h"
 #include "components/query_tiles/internal/config.h"
+#include "components/query_tiles/internal/tile_fetcher.h"
 #include "components/query_tiles/internal/tile_manager.h"
 #include "components/query_tiles/internal/tile_service_impl.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace upboarding {
 namespace {
 const base::FilePath::CharType kTileDbName[] =
     FILE_PATH_LITERAL("UpboardingQueryTileDatabase");
+
 }  // namespace
 
 std::unique_ptr<TileService> CreateTileService(
     image_fetcher::ImageFetcherService* image_fetcher_service,
     leveldb_proto::ProtoDatabaseProvider* db_provider,
     const base::FilePath& storage_dir,
-    background_task::BackgroundTaskScheduler* scheduler) {
+    background_task::BackgroundTaskScheduler* scheduler,
+    const std::string& accepted_language,
+    const std::string& country_code,
+    const std::string& api_key,
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory) {
   // Create image loader.
   auto* cached_image_fetcher = image_fetcher_service->GetImageFetcher(
       image_fetcher::ImageFetcherConfig::kDiskCacheOnly);
@@ -51,9 +58,14 @@ std::unique_ptr<TileService> CreateTileService(
   auto tile_manager = TileManager::Create(
       std::move(tile_store), base::DefaultClock::GetInstance(), config.get());
 
-  return std::make_unique<TileServiceImpl>(std::move(image_loader),
-                                           std::move(tile_manager),
-                                           std::move(config), scheduler);
+  // Create fetcher.
+  auto tile_fetcher =
+      TileFetcher::Create(config->get_query_tile_url, country_code,
+                          accepted_language, api_key, url_loader_factory);
+
+  return std::make_unique<TileServiceImpl>(
+      std::move(image_loader), std::move(tile_manager), std::move(config),
+      scheduler, std::move(tile_fetcher));
 }
 
 }  // namespace upboarding

@@ -180,7 +180,10 @@ test("device_unittests") {
 
   if (use_udev) {
     sources += [ "udev_linux/udev_unittest.cc" ]
-    deps += [ "//device/udev_linux" ]
+    deps += [
+      "//device/udev_linux",
+      "//device/udev_linux:test_support",
+    ]
   }
 
   if (is_android) {

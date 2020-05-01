@@ -127,6 +127,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kChromeSharingHub,
     &kChromeSmartSelection,
     &kCommandLineOnNonRooted,
+    &kConditionalTabStripAndroid,
     &kContactsPickerSelectAll,
     &kContentIndexingDownloadHome,
     &kContentIndexingNTP,
@@ -153,6 +154,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kFocusOmniboxInIncognitoTabIntents,
     &kHandleMediaIntents,
     &kHomepageLocation,
+    &kHomepagePromoCard,
     &kHomepageSettingsUIConversion,
     &kHorizontalTabSwitcherAndroid,
     &kImmersiveUiMode,
@@ -252,6 +254,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &switches::kSyncUseSessionsUnregisterDelay,
     &subresource_filter::kSafeBrowsingSubresourceFilter,
     &upboarding::features::kQueryTiles,
+    &upboarding::features::kQueryTilesInOmnibox,
 };
 
 const base::Feature* FindFeatureExposedToJava(const std::string& feature_name) {
@@ -306,6 +309,9 @@ const base::Feature kBackgroundTaskComponentUpdate{
 
 const base::Feature kBookmarksShowInFolder{"BookmarksShowInFolder",
                                            base::FEATURE_ENABLED_BY_DEFAULT};
+
+const base::Feature kConditionalTabStripAndroid{
+    "ConditionalTabStripAndroid", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Used in downstream code.
 const base::Feature kCastDeviceFilter{"CastDeviceFilter",
@@ -447,6 +453,9 @@ const base::Feature kHandleMediaIntents{"HandleMediaIntents",
 // force the home page url for managed devices.
 const base::Feature kHomepageLocation{"HomepageLocationPolicy",
                                       base::FEATURE_ENABLED_BY_DEFAULT};
+
+const base::Feature kHomepagePromoCard{"HomepagePromoCard",
+                                       base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kHomepageSettingsUIConversion{
     "HomepageSettingsUIConversion", base::FEATURE_ENABLED_BY_DEFAULT};

@@ -1,6 +1,0 @@
-This is a testharness.js-based test.
-FAIL nativeIO.close is idempotent nativeIO.openSync is not a function
-FAIL nativeIO.read fails after nativeIO.close settles nativeIO.openSync is not a function
-FAIL NativeIOFile.write fails after NativeIOFile.close nativeIO.openSync is not a function
-Harness: the test ran to completion.
-

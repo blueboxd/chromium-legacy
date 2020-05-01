@@ -95,13 +95,17 @@ def _ParseArgs(args):
   input_opts.add_argument(
       '--fail-on-expectations',
       action="store_true",
-      help='When passed fails the build on AndroidManifest expectation '
+      help='When passed, fails the build on AndroidManifest expectation '
       'mismatches.')
   input_opts.add_argument(
       '--expected-manifest-base-expectation',
       help='When we expect the actual normalized manifest is different from'
       'the file from --android-manifest-expected, this file specifies the'
       'difference.')
+  input_opts.add_argument(
+      '--only-verify-expectations',
+      action='store_true',
+      help='If passed, only verify the android manifest expectation and exit.')
   input_opts.add_argument(
       '--r-java-root-package-name',
       default='base',
@@ -946,12 +950,6 @@ def _PackageApk(options, build):
       options, build.temp_dir)
   if options.rename_manifest_package:
     desired_manifest_package_name = options.rename_manifest_package
-  if options.expected_file:
-    _VerifyManifest(fixed_manifest, options.expected_file,
-                    options.android_manifest_normalized,
-                    options.expected_manifest_base_expectation,
-                    options.android_manifest_expectations_failure_file,
-                    options.fail_on_expectations)
 
   link_command += [
       '--manifest', fixed_manifest, '--rename-manifest-package',
@@ -1142,6 +1140,16 @@ def _WriteOutputs(options, build):
       shutil.move(temp, final)
 
 
+def _VerifyExpectations(options):
+  with build_utils.TempDir() as tempdir:
+    fixed_manifest, _ = _FixManifest(options, tempdir)
+    _VerifyManifest(fixed_manifest, options.expected_file,
+                    options.android_manifest_normalized,
+                    options.expected_manifest_base_expectation,
+                    options.android_manifest_expectations_failure_file,
+                    options.fail_on_expectations)
+
+
 def _OnStaleMd5(options):
   path = options.arsc_path or options.proto_path
   debug_temp_resources_dir = os.environ.get('TEMP_RESOURCES_DIR')
@@ -1155,6 +1163,7 @@ def _OnStaleMd5(options):
 
   with resource_utils.BuildContext(
       temp_dir=path, keep_files=bool(debug_temp_resources_dir)) as build:
+
     manifest_package_name = _PackageApk(options, build)
 
     # If --shared-resources-allowlist is used, all the resources listed in the
@@ -1225,6 +1234,11 @@ def main(args):
   build_utils.InitLogging('RESOURCE_DEBUG')
   args = build_utils.ExpandFileArgs(args)
   options = _ParseArgs(args)
+
+  if options.expected_file:
+    _VerifyExpectations(options)
+  if options.only_verify_expectations:
+    return
 
   depfile_deps = (
       options.dependencies_res_zips + options.extra_main_r_text_files +

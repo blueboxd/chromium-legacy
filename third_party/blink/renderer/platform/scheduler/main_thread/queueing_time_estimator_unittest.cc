@@ -7,7 +7,6 @@
 #include <memory>
 #include <string>
 
-#include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"

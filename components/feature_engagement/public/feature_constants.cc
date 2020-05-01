@@ -79,6 +79,8 @@ const base::Feature kIPHEphemeralTabFeature{"IPH_EphemeralTab",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kIPHFeedCardMenuFeature{"IPH_FeedCardMenu",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kIPHHomepagePromoCardFeature{
+    "IPH_HomepagePromoCard", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kIPHIdentityDiscFeature{"IPH_IdentityDisc",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kIPHKeyboardAccessoryAddressFillingFeature{

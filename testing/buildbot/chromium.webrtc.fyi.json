@@ -12,7 +12,7 @@
   },
   "WebRTC Chromium FYI Android Builder (dbg)": {},
   "WebRTC Chromium FYI Android Builder ARM64 (dbg)": {},
-  "WebRTC Chromium FYI Android Tests (dbg) (K Nexus5)": {
+  "WebRTC Chromium FYI Android Tests (dbg) (L Nexus5)": {
     "gtest_tests": [
       {
         "args": [
@@ -40,7 +40,7 @@
           ],
           "dimension_sets": [
             {
-              "device_os": "K",
+              "device_os": "L",
               "device_os_type": "userdebug",
               "device_type": "hammerhead",
               "os": "Android"

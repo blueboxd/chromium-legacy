@@ -84,8 +84,8 @@ NSString* GetSafeBrowsingErrorPageHTML(web::WebState* web_state,
   std::unique_ptr<security_interstitials::IOSSecurityInterstitialPage> page =
       SafeBrowsingBlockingPage::Create(*resource);
   std::string error_page_content = page->GetHtmlContents();
-  security_interstitials::IOSBlockingPageTabHelper::AssociateBlockingPage(
-      web_state, navigation_id, std::move(page));
+  security_interstitials::IOSBlockingPageTabHelper::FromWebState(web_state)
+      ->AssociateBlockingPage(navigation_id, std::move(page));
 
   return base::SysUTF8ToNSString(error_page_content);
 }

@@ -125,4 +125,7 @@
     <item type="id" name="ntp_feed_header_menu_item_interest" />
     <item type="id" name="ntp_feed_header_menu_item_learn" />
     <item type="id" name="ntp_feed_header_menu_item_toggle_switch" />
+
+    <!-- Homepage Promo -->
+    <item type="id" name="homepage_promo" />
 </resources>

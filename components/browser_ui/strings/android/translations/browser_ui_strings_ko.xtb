@@ -8,7 +8,9 @@
 <translation id="1181037720776840403">삭제</translation>
 <translation id="1201402288615127009">다음</translation>
 <translation id="1242008676835033345"><ph name="WEBSITE_URL" />에 삽입됨</translation>
+<translation id="1272079795634619415">중지</translation>
 <translation id="129382876167171263">웹사이트에서 저장한 파일이 여기에 표시됩니다.</translation>
+<translation id="1364532808393826295"><ph name="APP_NAME" /> - <ph name="NOTIFICATION_MESSAGE" /></translation>
 <translation id="1369915414381695676"><ph name="SITE_NAME" /> 사이트 추가됨</translation>
 <translation id="1383876407941801731">검색</translation>
 <translation id="1384959399684842514">다운로드 일시중지됨</translation>
@@ -29,6 +31,7 @@
 <translation id="1984937141057606926">타사 쿠키만 제외하고 허용</translation>
 <translation id="1994173015038366702">사이트 URL</translation>
 <translation id="2025115093177348061">증강 현실</translation>
+<translation id="2030769033451695672">탭하여 <ph name="URL_OF_THE_CURRENT_TAB" />(으)로 돌아가기</translation>
 <translation id="2041019821020695769">Chrome에서 알림을 전송하도록 허용하려면 <ph name="BEGIN_LINK" />Android 설정<ph name="END_LINK" />에서도 알림을 사용 설정하세요.</translation>
 <translation id="2079545284768500474">실행취소</translation>
 <translation id="2091887806945687916">소리</translation>
@@ -104,6 +107,7 @@
 <translation id="5048398596102334565">사이트의 움직임 감지 센서 액세스 허용(권장)</translation>
 <translation id="5063480226653192405">사용</translation>
 <translation id="5100237604440890931">접힘 - 펼치려면 클릭</translation>
+<translation id="5123685120097942451">시크릿 탭</translation>
 <translation id="5300589172476337783">표시</translation>
 <translation id="5301954838959518834">확인</translation>
 <translation id="5307446750509046227">사이트 저장용량 삭제</translation>
@@ -111,6 +115,7 @@
 <translation id="5317780077021120954">저장</translation>
 <translation id="5335288049665977812">사이트에서 자바스크립트를 실행하도록 허용(권장)</translation>
 <translation id="534295439873310000">NFC 기기</translation>
+<translation id="5354152178998424783">사이트에서 저장한 <ph name="DATASIZE" />의 데이터와 쿠키가 삭제됩니다.</translation>
 <translation id="5391532827096253100">이 사이트와의 연결은 안전하지 않습니다. 사이트 정보</translation>
 <translation id="5494752089476963479">방해가 되거나 사용자를 현혹하는 광고를 표시하는 사이트의 광고 차단</translation>
 <translation id="5505264765875738116">사이트에서 알림 전송 허용을 요청할 수 없음</translation>
@@ -125,6 +130,7 @@
 <translation id="5804241973901381774">권한</translation>
 <translation id="5860033963881614850">사용 안함</translation>
 <translation id="5916664084637901428">사용</translation>
+<translation id="5922853908706496913">화면 공유</translation>
 <translation id="5939518447894949180">초기화</translation>
 <translation id="6040143037577758943">닫기</translation>
 <translation id="6042308850641462728">더보기</translation>
@@ -168,6 +174,7 @@
 <translation id="7423098979219808738">우선 확인</translation>
 <translation id="7423538860840206698">클립보드 액세스가 차단됨</translation>
 <translation id="7521387064766892559">자바스크립트</translation>
+<translation id="7554752735887601236">사이트에서 마이크를 사용 중입니다.</translation>
 <translation id="7572498721684305250">NFC 기기를 탭할 때 사이트가 정보를 주고받지 못하도록 차단</translation>
 <translation id="757524316907819857">사이트에서 보호된 콘텐츠를 재생하지 못하도록 차단</translation>
 <translation id="7589445247086920869">현재 검색엔진에 허용 안함</translation>
@@ -176,9 +183,11 @@
 <translation id="7781829728241885113">어제</translation>
 <translation id="7791543448312431591">추가</translation>
 <translation id="780301667611848630">아니요, 괜찮습니다.</translation>
+<translation id="7804248752222191302">사이트에서 카메라 사용 중</translation>
 <translation id="7817023149356982970">이 사이트에서 로그아웃됩니다.</translation>
 <translation id="7828557259026017104">쿠키는 방문한 웹사이트에서 생성된 파일로, 사이트에서 사용자의 설정을 기억하기 위해 사용합니다. 타사 쿠키는 다른 사이트, 즉 광고나 이미지 등 방문하는 웹페이지에 표시되는 일부 콘텐츠를 소유하는 사이트에 의해 생성됩니다.</translation>
 <translation id="7846076177841592234">선택 취소</translation>
+<translation id="7846621471902887024">모든 사이트에서 로그아웃됩니다.</translation>
 <translation id="7882806643839505685">특정 사이트에서 소리를 재생하도록 허용합니다.</translation>
 <translation id="7993619969781047893">일부 사이트에서는 기능이 작동하지 않을 수 있음</translation>
 <translation id="7999064672810608036">쿠키를 포함하여 이 웹사이트의 모든 로컬 데이터를 삭제하고 모든 권한을 재설정하시겠습니까?</translation>
@@ -192,7 +201,9 @@
 <translation id="8261506727792406068">삭제</translation>
 <translation id="8300705686683892304">앱에서 관리함</translation>
 <translation id="8372893542064058268">특정 사이트에서 백그라운드 동기화를 허용합니다.</translation>
+<translation id="83792324527827022">사이트에서 카메라와 마이크를 사용 중입니다.</translation>
 <translation id="8380167699614421159">이 사이트에서는 방해가 되거나 사용자를 현혹하는 광고를 표시합니다.</translation>
+<translation id="8394832520002899662">탭하여 사이트로 돌아가기</translation>
 <translation id="8447861592752582886">기기 액세스 권한 취소</translation>
 <translation id="851751545965956758">사이트에서 기기에 연결하지 못하도록 차단</translation>
 <translation id="857943718398505171">허용(권장)</translation>

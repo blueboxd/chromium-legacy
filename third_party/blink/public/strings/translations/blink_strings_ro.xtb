@@ -35,6 +35,7 @@
 <translation id="1938124657309484470">Valoarea pentru dată/oră trebuie să fie <ph name="MAXIMUM_DATE_OR_TIME" /> sau una anterioară.</translation>
 <translation id="1946271899482435442">Afișează selectorul de date</translation>
 <translation id="1993104285338243655">S-a comutat la oglindire</translation>
+<translation id="2031987842108996681">Canalul roșu</translation>
 <translation id="2060505056492490888">Semnul „<ph name="DOT" />” apare poziționat greșit în „<ph name="INVALIDDOMAIN" />”.</translation>
 <translation id="2148716181193084225">Astăzi</translation>
 <translation id="2158401438286456825">listă de pagini</translation>
@@ -45,6 +46,7 @@
 <translation id="2291999235780842123">casetă de selectare</translation>
 <translation id="2311842470354187719">sfârșit de pagină</translation>
 <translation id="2335594187091864976">selector pentru dată și oră</translation>
+<translation id="2393030564806080191">Valoarea hexazecimală a culorii</translation>
 <translation id="245932805758469625">numărul de secunde rămase din videoclip</translation>
 <translation id="248395913932153421">Zi</translation>
 <translation id="2507943997699731163">Completează acest câmp.</translation>
@@ -52,6 +54,7 @@
 <translation id="2561842179657104141">afișează mai multe comenzi media</translation>
 <translation id="2572483411312390101">redați</translation>
 <translation id="2613802280814924224">Introduceți o valoare validă. Cea mai apropiată valoare validă este <ph name="VALID_VALUE" />.</translation>
+<translation id="2634240155926812724">Canalul verde</translation>
 <translation id="2653659639078652383">Trimite</translation>
 <translation id="2657045182931379222">obiect grafic</translation>
 <translation id="2674318244760992338">notă de subsol</translation>
@@ -127,6 +130,7 @@
 <translation id="5034860022980953847">indicator de progres</translation>
 <translation id="5090250355906949916">glisor pentru redare video</translation>
 <translation id="5093189678851173835">epigraf</translation>
+<translation id="509897012892853729">Canalul albastru</translation>
 <translation id="5117590920725113268">Afișează luna următoare</translation>
 <translation id="512758898067543763">antet rând</translation>
 <translation id="5143125788380636750">epilog</translation>
@@ -164,6 +168,7 @@
 <translation id="6166809985690652833">postfață</translation>
 <translation id="6209276755895393898">Pare a fi: <ph name="DESCRIPTION" /></translation>
 <translation id="6213469881011901533">glosar</translation>
+<translation id="6281588256137006900">Luminozitate</translation>
 <translation id="6281763101136022427">adresă URL</translation>
 <translation id="6310801910862476708">Ieși din modul Picture-in-Picture</translation>
 <translation id="6398862346408813489">Afișează panoul de selectare a lunii</translation>
@@ -184,6 +189,7 @@
 <translation id="6790428901817661496">Redă</translation>
 <translation id="6820355525329141109">Nu s-a putut încărca pluginul.</translation>
 <translation id="6820615603175220800">referință bibliografică</translation>
+<translation id="6831465880655513317">Selector de culoare cu glisor bidimensional pentru selectarea saturației și a luminozității</translation>
 <translation id="6843725295806269523">dezactivați sunetul</translation>
 <translation id="6885760532393684712">director</translation>
 <translation id="689129560213475294">colofon</translation>
@@ -201,6 +207,7 @@
 <translation id="7263440858009898357">Selectează un articol din listă.</translation>
 <translation id="727747134524199931">antet coloană</translation>
 <translation id="7320576522385648310">Se încarcă în memoria temporară</translation>
+<translation id="7341556277900466204">Selector de culoare</translation>
 <translation id="7353453495576941748">mulțumire</translation>
 <translation id="7364796246159120393">Alege fișierul</translation>
 <translation id="739024184232394898">Altele...</translation>
@@ -221,6 +228,7 @@
 <translation id="775297008183122718">Intrare nevalidă</translation>
 <translation id="7789962463072032349">întrerupe</translation>
 <translation id="7802800022689234070">triunghi pentru afișare</translation>
+<translation id="7852167693871241274">Glisor pentru nuanță</translation>
 <translation id="7888071071722539607">Includeți semnul „<ph name="ATSIGN" />” în adresa de e-mail. Din adresa „<ph name="INVALIDADDRESS" />” lipsește semnul „<ph name="ATSIGN" />”.</translation>
 <translation id="7891486169920085145">element de divizare</translation>
 <translation id="795667975304826397">Nu ai ales niciun fișier</translation>
@@ -263,6 +271,7 @@
 <translation id="8875657656876809964">Eroare de redare video</translation>
 <translation id="8889402386540077796">Nuanță</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> KO</translation>
+<translation id="894736920926684893">Comutator pentru format</translation>
 <translation id="8987927404178983737">Lună</translation>
 <translation id="901493112792887934">timp actual în secunde</translation>
 <translation id="901834265349196618">e-mail</translation>

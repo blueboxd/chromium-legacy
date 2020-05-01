@@ -353,6 +353,10 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
 
   TrustedTypePolicyFactory* trustedTypes() const;
 
+  // Returns true if this window is cross-site to the main frame. Defaults to
+  // false in a detached window.
+  bool IsCrossSiteSubframe() const;
+
   void DispatchPersistedPageshowEvent(base::TimeTicks navigation_start);
 
   void DispatchPagehideEvent(PageTransitionEventPersistence persistence) {

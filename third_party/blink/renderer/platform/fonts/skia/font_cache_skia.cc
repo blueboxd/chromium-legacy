@@ -33,7 +33,8 @@
 #include <memory>
 #include <utility>
 
-#include "base/logging.h"
+#include "base/check_op.h"
+#include "base/notreached.h"
 #include "build/build_config.h"
 #include "third_party/blink/public/platform/linux/web_sandbox_support.h"
 #include "third_party/blink/public/platform/platform.h"

@@ -222,7 +222,6 @@ class CORE_EXPORT DocumentLifecycle {
   bool StateAllowsTreeMutations() const;
   bool StateAllowsLayoutTreeMutations() const;
   bool StateAllowsDetach() const;
-  bool StateAllowsLayoutInvalidation() const;
   bool StateAllowsLayoutTreeNotifications() const;
 
   void AdvanceTo(LifecycleState);
@@ -291,11 +290,6 @@ inline bool DocumentLifecycle::StateAllowsDetach() const {
          state_ == kCompositingInputsClean || state_ == kCompositingClean ||
          state_ == kPrePaintClean || state_ == kPaintClean ||
          state_ == kStopping || state_ == kInactive;
-}
-
-inline bool DocumentLifecycle::StateAllowsLayoutInvalidation() const {
-  return state_ != kInPerformLayout && state_ != kInCompositingUpdate &&
-         state_ != kInPrePaint && state_ != kInPaint;
 }
 
 }  // namespace blink

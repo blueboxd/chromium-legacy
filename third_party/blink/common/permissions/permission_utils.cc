@@ -4,7 +4,7 @@
 
 #include "third_party/blink/public/common/permissions/permission_utils.h"
 
-#include "base/logging.h"
+#include "base/notreached.h"
 
 namespace blink {
 

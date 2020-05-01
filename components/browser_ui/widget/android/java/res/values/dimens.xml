@@ -67,10 +67,15 @@
     <dimen name="promo_padding">16dp</dimen>
     <dimen name="promo_header_margin_vertical">8dp</dimen>
     <dimen name="promo_close_btn_size">24dp</dimen>
-    <dimen name="promo_title_margin_vertical">8dp</dimen>
-    <dimen name="promo_description_margin_horizontal">8dp</dimen>
-    <dimen name="promo_description_margin_vertical">16dp</dimen>
+    <dimen name="promo_between_text_margin">8dp</dimen>
+    <dimen name="promo_text_group_margin_horizontal">8dp</dimen>
+    <dimen name="promo_text_group_margin_vertical">16dp</dimen>
     <dimen name="promo_buttons_margin_horizontal">8dp</dimen>
+
+    <dimen name="promo_compact_padding">12dp</dimen>
+    <dimen name="promo_compact_header_margin_vertical">16dp</dimen>
+
+    <dimen name="promo_slim_button_max_width">84dp</dimen>
 
     <!-- TextBubble dimensions -->
     <dimen name="text_bubble_margin">4dp</dimen>

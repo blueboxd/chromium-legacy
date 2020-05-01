@@ -158,6 +158,7 @@
 <translation id="285960592395650245">Relancer téléchargement</translation>
 <translation id="2870560284913253234">Site</translation>
 <translation id="2871695793448672541">Masqué, Mot de passe</translation>
+<translation id="2876369937070532032">Envoyer à Google les URL des pages que vous consultez présentant un risque pour votre sécurité</translation>
 <translation id="288655811176831528">Fermer l'onglet</translation>
 <translation id="2898963176829412617">Nouveau dossier…</translation>
 <translation id="2916171785467530738">Saisir semi-automatiquement les recherches et les URL</translation>
@@ -177,6 +178,7 @@
 <translation id="3161291298470460782">Vous serez alors déconnecté, la synchronisation sera désactivée, et toutes les données Chrome seront supprimées de cet appareil. En revanche, vos données synchronisées resteront dans votre compte Google.</translation>
 <translation id="3175081911749765310">Services Web</translation>
 <translation id="3178650076442119961">Actif aujourd'hui</translation>
+<translation id="3181954750937456830">Navigation sécurisée (assure votre protection et celle de votre appareil contre les sites dangereux)</translation>
 <translation id="3207960819495026254">Favori</translation>
 <translation id="3224641773458703735">Pour exporter les mots de passe, vous devez d'abord définir un code secret sur votre appareil.</translation>
 <translation id="3240426699337459095">Le lien a bien été copié.</translation>
@@ -430,6 +432,7 @@ Vos données ont été chiffrées avec votre phrase secrète de synchronisation 
 <translation id="6447842834002726250">Cookies</translation>
 <translation id="6464071786529933911">Ouvrir nouvel onglet navigation privée</translation>
 <translation id="6476800141292307438">Traduction de la page en <ph name="LANGUAGE" />. Options disponibles au bas de l'écran.</translation>
+<translation id="648164694371393720">Erreur d'authentification</translation>
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> éléments supprimés.</translation>
 <translation id="6561262006871132942">Zoom avant</translation>
 <translation id="6610002944194042868">Options de traduction</translation>

@@ -96,7 +96,6 @@ Baadhi ya vipengele huenda visipatikane na mabadiliko katika mapendeleo hayatahi
 <translation id="3582972582564653026">Sawazisha na uweke mapendeleo kwenye Chrome katika vifaa vyako vyote</translation>
 <translation id="3596080736082218006">{COUNT,plural, =0{Msimamizi wako anataka ufungue Chrome tena ili utumie sasisho}=1{Msimamizi wako anataka ufungue Chrome tena ili utumie sasisho. Haitafungua upya dirisha fiche.}other{Msimamizi wako anataka ufungue Chrome tena ili utumie sasisho. Haitafungua upya madirisha # fiche.}}</translation>
 <translation id="3622797965165704966">Sasa ni rahisi zaidi kutumia Chrome pamoja na Akaunti yako ya Google na kwenye kompyuta zinazoshirikiwa.</translation>
-<translation id="3637702109597584617"><ph name="TERMS_OF_SERVICE_LINK" />Sheria na Masharti<ph name="END_TERMS_OF_SERVICE_LINK" /> ya Mfumo wa Uendeshaji wa Google Chrome</translation>
 <translation id="3718181793972440140">Hatua hii itafuta kipengee 1 kwenye kifaa hiki. Ili urejeshe data yako baadaye, ingia katika Chrome ukitumia <ph name="USER_EMAIL" />.</translation>
 <translation id="3735758079232443276">Kiendelezi hiki "<ph name="EXTENSION_NAME" />" kimebadilisha ukurasa unaoonyeshwa unapoanzisha Chrome.</translation>
 <translation id="3780814664026482060">Chrome - <ph name="PAGE_TITLE" /></translation>
@@ -113,6 +112,7 @@ Baadhi ya vipengele huenda visipatikane na mabadiliko katika mapendeleo hayatahi
 <translation id="4205939740494406371">Chrome imeshindwa kukagua manenosiri yako. Jaribu tena baada ya saa 24 au <ph name="BEGIN_LINK" />kagua manenosiri katika Akaunti yako ya Google<ph name="END_LINK" />.</translation>
 <translation id="424864128008805179">Ungependa kuondoka kwenye Chrome?</translation>
 <translation id="4251615635259297716">Ungependa kuunganisha data yako ya Chrome kwenye akaunti hii?</translation>
+<translation id="4281844954008187215">Sheria na Masharti</translation>
 <translation id="4293420128516039005">Ingia katika akaunti ili usawazishe na uweke mapendeleo kwenye Chrome katika vifaa vyako vyote</translation>
 <translation id="4328355335528187361">Google Chrome Dev (mDNS-In)</translation>
 <translation id="4331809312908958774">Mfumo wa Uendeshaji wa Chrome</translation>
@@ -147,7 +147,6 @@ Baadhi ya vipengele huenda visipatikane na mabadiliko katika mapendeleo hayatahi
 
 Huenda baadhi ya vipengele visipatikane. Tafadhali bainisha saraka tofauti ya wasifu au tumia toleo jipya la Chrome.</translation>
 <translation id="5193136243808726294">Mfumo wa Uendeshaji wa Google Chrome hauwezi kufungua ukurasa huu.</translation>
-<translation id="5204098752394657250">Sheria na Masharti za <ph name="TERMS_OF_SERVICE_LINK" />Google Chrome<ph name="END_TERMS_OF_SERVICE_LINK" /></translation>
 <translation id="5251420635869119124">Walioalikwa wanaweza kutumia Chrome bila kuacha chochote nyuma.</translation>
 <translation id="532046782124376502">Ilani: Google Chrome haiwezi kuzuia viendelezi kurekodi historia yako ya kuvinjari. Ili kuzima kiendelezi hiki katika hali fiche, batilisha chaguo hili.</translation>
 <translation id="5386244825306882791">Pia inadhibiti ukurasa unaoonyeshwa unapoanzisha Chrome au unapotafuta kutoka Sanduku Kuu.</translation>

@@ -1119,7 +1119,9 @@ blink::UserAgentMetadata GetUserAgentMetadata() {
   metadata.full_version = version_info::GetVersionNumber();
   metadata.major_version = version_info::GetMajorVersionNumber();
   metadata.platform = version_info::GetOSType();
-  metadata.platform_version = content::GetOSVersion(false);
+  metadata.platform_version =
+      content::GetOSVersion(content::IncludeAndroidBuildNumber::Exclude,
+                            content::IncludeAndroidModel::Exclude);
   metadata.architecture = content::BuildCpuInfo();
   metadata.model = content::BuildModelInfo();
 

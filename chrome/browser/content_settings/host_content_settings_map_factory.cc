@@ -11,6 +11,7 @@
 #include "chrome/browser/profiles/off_the_record_profile_impl.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
+#include "chrome/browser/ui/webui/webui_allowlist_provider.h"
 #include "chrome/common/buildflags.h"
 #include "components/content_settings/core/browser/content_settings_pref_provider.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
@@ -87,6 +88,12 @@ scoped_refptr<RefcountedKeyedService>
       /*store_last_modified=*/true,
       base::FeatureList::IsEnabled(
           permissions::features::kPermissionDelegation)));
+
+  auto allowlist_provider = std::make_unique<WebUIAllowlistProvider>(
+      WebUIAllowlist::GetOrCreate(profile));
+  settings_map->RegisterProvider(
+      HostContentSettingsMap::WEBUI_ALLOWLIST_PROVIDER,
+      std::move(allowlist_provider));
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   // These must be registered before before the HostSettings are passed over to

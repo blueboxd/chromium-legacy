@@ -97,7 +97,6 @@ Sommige kenmerke kan dalk nie beskikbaar wees nie en veranderings aan voorkeure 
 <translation id="3582972582564653026">Sinkroniseer en personaliseer Chrome op al jou toestelle</translation>
 <translation id="3596080736082218006">{COUNT,plural, =0{Jou administrateur vereis dat jy Chrome herbegin om 'n opdatering toe te pas}=1{Jou administrateur vereis dat jy Chrome herbegin om 'n opdatering toe te pas. Jou incognitovenster sal nie weer oopgemaak word nie.}other{Jou administrateur vereis dat jy Chrome herbegin om 'n opdatering toe te pas. Jou # incognitovensters sal nie weer oopgemaak word nie.}}</translation>
 <translation id="3622797965165704966">Nou is dit makliker om Chrome met jou Google-rekening en op gedeelde rekenaars te gebruik.</translation>
-<translation id="3637702109597584617">Google Chrome-bedryfstelsel se <ph name="TERMS_OF_SERVICE_LINK" />diensbepalings<ph name="END_TERMS_OF_SERVICE_LINK" /></translation>
 <translation id="3718181793972440140">Dit sal 1 item op hierdie toestel uitvee. Meld as <ph name="USER_EMAIL" /> by Chrome aan om jou data later op te haal.</translation>
 <translation id="3735758079232443276">Die uitbreiding "<ph name="EXTENSION_NAME" />" het verander watter bladsy gewys word wanneer jy Chrome begin.</translation>
 <translation id="3780814664026482060">Chrome – <ph name="PAGE_TITLE" /></translation>
@@ -114,6 +113,7 @@ Sommige kenmerke kan dalk nie beskikbaar wees nie en veranderings aan voorkeure 
 <translation id="4205939740494406371">Chrome kan nie jou wagwoorde nagaan nie. Probeer ná 24 uur weer of <ph name="BEGIN_LINK" />gaan wagwoorde in jou Google-rekening na<ph name="END_LINK" />.</translation>
 <translation id="424864128008805179">Meld af uit Chrome?</translation>
 <translation id="4251615635259297716">Koppel jou Chrome-data aan hierdie rekening?</translation>
+<translation id="4281844954008187215">Diensbepalings</translation>
 <translation id="4293420128516039005">Meld aan om Chrome op al jou toestelle te sinkroniseer en personaliseer</translation>
 <translation id="4328355335528187361">Google Chrome Dev (mDNS-In)</translation>
 <translation id="4331809312908958774">Chrome-bedryfstelsel</translation>
@@ -148,7 +148,6 @@ Sommige kenmerke kan dalk nie beskikbaar wees nie en veranderings aan voorkeure 
 
 Sommige kenmerke kan dalk onbeskikbaar wees. Spesifiseer 'n ander profielgids of gebruik 'n nuwer weergawe van Chrome.</translation>
 <translation id="5193136243808726294">Google Chrome OS kan nie hierdie bladsy oopmaak nie.</translation>
-<translation id="5204098752394657250">Google Chrome se <ph name="TERMS_OF_SERVICE_LINK" />diensbepalings<ph name="END_TERMS_OF_SERVICE_LINK" /></translation>
 <translation id="5251420635869119124">Gaste kan Chrome gebruik sonder om iets agter te laat.</translation>
 <translation id="532046782124376502">Waarskuwing: Google Chrome kan nie keer dat uitbreidings rekord hou van jou blaaigeskiedenis nie. Om hierdie uitbreiding in incognitomodus te deaktiveer, moet jy hierdie opsie ontmerk.</translation>
 <translation id="5386244825306882791">Dit beheer ook watter bladsy gewys word wanneer jy Chrome begin of soek vanuit die omnikassie.</translation>

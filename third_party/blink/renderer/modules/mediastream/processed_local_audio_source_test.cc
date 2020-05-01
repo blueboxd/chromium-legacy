@@ -6,7 +6,6 @@
 #include <string>
 
 #include "base/bind.h"
-#include "base/logging.h"
 #include "build/build_config.h"
 #include "media/base/audio_bus.h"
 #include "media/base/audio_parameters.h"

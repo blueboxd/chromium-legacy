@@ -868,6 +868,14 @@ public class NewTabPageLayout extends LinearLayout implements TileGroup.Observer
             mOverviewObserver = null;
         }
 
+        if (mSearchProviderLogoView != null) {
+            mSearchProviderLogoView.destroy();
+        }
+
+        if (mLogoDelegate != null) {
+            mLogoDelegate.destroy();
+        }
+
         mSearchBoxCoordinator.destroy();
     }
 

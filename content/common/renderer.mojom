@@ -63,6 +63,13 @@ struct CreateViewParams {
   // is None (due to site isolation), or a RenderFrame in all other cases.
   FrameReplicationState replicated_frame_state;
 
+  // This represents the frame token for the MainFrame. It will be always set.
+  // If |main_frame_routing_id| is set, it will store a unique identifier for
+  // the  LocalFrame<-->RenderFrameHostImpl mapping.
+  // If |proxy_routing_id| is set, it will store a unique identifier for
+  // the RemoteFrame<-->RenderFrameProxyHost mapping.
+  mojo_base.mojom.UnguessableToken main_frame_frame_token;
+
   // Used for devtools instrumentation and trace-ability. The token is
   // propagated to Blink's LocalFrame and both Blink and content/
   // can tag calls and requests with this instrumentation token in order to
@@ -131,6 +138,10 @@ struct CreateFrameParams {
   // configured to replace either the previous frame or the previous proxy on
   // commit.
   int32 previous_routing_id;
+
+  // The frame token. It is a unique identifier for
+  // the LocalFrame<-->RenderFrameHostImpl mapping.
+  mojo_base.mojom.UnguessableToken frame_token;
 
   // Specifies the new frame's opener.  The opener will be null if this is
   // MSG_ROUTING_NONE.
@@ -240,12 +251,15 @@ interface Renderer {
   // is MSG_ROUTING_NONE.  The new proxy should be created as a child of the
   // object identified by |parent_routing_id| or as top level if that is
   // MSG_ROUTING_NONE.
+  // |proxy_frame_token| is used uniquely identify the
+  // RemoteFrame <--> RenderFrameProxyHost mapping.
   // |devtools_frame_token| is used for devtools instrumentation
   // and trace-ability. It is defined by the browser and is never
   // sent back from the renderer in the control calls.
   CreateFrameProxy(int32 routing_id, int32 render_view_routing_id,
                    int32 opener_routing_id, int32 parent_routing_id,
                    FrameReplicationState replication_state,
+                   mojo_base.mojom.UnguessableToken proxy_frame_token,
                    mojo_base.mojom.UnguessableToken devtools_frame_token);
 
   // Tells the renderer that the network type has changed so that

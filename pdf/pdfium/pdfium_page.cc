@@ -21,6 +21,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "pdf/pdfium/pdfium_api_string_buffer_adapter.h"
 #include "pdf/pdfium/pdfium_engine.h"
+#include "pdf/pdfium/pdfium_unsupported_features.h"
 #include "ppapi/c/private/ppb_pdf.h"
 #include "printing/units.h"
 #include "third_party/pdfium/public/cpp/fpdf_scopers.h"
@@ -300,6 +301,7 @@ void PDFiumPage::Unload() {
 }
 
 FPDF_PAGE PDFiumPage::GetPage() {
+  ScopedUnsupportedFeature scoped_unsupported_feature(engine_);
   if (!available_)
     return nullptr;
   if (!page_) {

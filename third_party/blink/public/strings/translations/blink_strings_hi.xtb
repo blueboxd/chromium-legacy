@@ -35,6 +35,7 @@
 <translation id="1938124657309484470">मान <ph name="MAXIMUM_DATE_OR_TIME" /> या पहले का होना चाहिए.</translation>
 <translation id="1946271899482435442">तारीख पिकर दिखाएं</translation>
 <translation id="1993104285338243655">'स्क्रीन शेयर करने' पर स्विच किया गया</translation>
+<translation id="2031987842108996681">लाल चैनल</translation>
 <translation id="2060505056492490888">'<ph name="DOT" />' का '<ph name="INVALIDDOMAIN" />' में गलत स्थान पर उपयोग किया गया है.</translation>
 <translation id="2148716181193084225">आज</translation>
 <translation id="2158401438286456825">पेज सूची</translation>
@@ -45,6 +46,7 @@
 <translation id="2291999235780842123">चेकबॉक्स</translation>
 <translation id="2311842470354187719">नया पेज</translation>
 <translation id="2335594187091864976">तारीख और समय पिकर</translation>
+<translation id="2393030564806080191">रंग का हेक्साडेसिमल मान</translation>
 <translation id="245932805758469625">बचे हुए वीडियो का कुल समय सेकंड में</translation>
 <translation id="248395913932153421">दिन</translation>
 <translation id="2507943997699731163">कृपया इस फ़ील्ड को भरें.</translation>
@@ -52,6 +54,7 @@
 <translation id="2561842179657104141">ज़्यादा मीडिया नियंत्रण दिखाएं</translation>
 <translation id="2572483411312390101">चलाएं</translation>
 <translation id="2613802280814924224">कृपया कोई मान्य मान डालें. निकटतम मान्य मान <ph name="VALID_VALUE" /> है.</translation>
+<translation id="2634240155926812724">हरा चैनल</translation>
 <translation id="2653659639078652383">सबमिट करें</translation>
 <translation id="2657045182931379222">ग्राफ़िक्स ऑब्जेक्ट</translation>
 <translation id="2674318244760992338">पाद लेख</translation>
@@ -127,6 +130,7 @@
 <translation id="5034860022980953847">प्रगति संकेतक</translation>
 <translation id="5090250355906949916">वीडियो टाइम स्क्रबर</translation>
 <translation id="5093189678851173835">इपिग्राफ़</translation>
+<translation id="509897012892853729">नीला चैनल</translation>
 <translation id="5117590920725113268">अगला महीना दिखाएं</translation>
 <translation id="512758898067543763">पंक्ति शीर्षलेख</translation>
 <translation id="5143125788380636750">उपसंहार</translation>
@@ -164,6 +168,7 @@
 <translation id="6166809985690652833">उपसंहार</translation>
 <translation id="6209276755895393898">यह इमेज इस बारे में लगती है: <ph name="DESCRIPTION" /></translation>
 <translation id="6213469881011901533">शब्दावली</translation>
+<translation id="6281588256137006900">रंगों का हल्कापन</translation>
 <translation id="6281763101136022427">यूआरएल</translation>
 <translation id="6310801910862476708">'पिक्चर में पिक्चर से बाहर निकलें'</translation>
 <translation id="6398862346408813489">महीना चुनने का पैनल दिखाएं</translation>
@@ -184,6 +189,7 @@
 <translation id="6790428901817661496">चलाएं</translation>
 <translation id="6820355525329141109">प्लग इन लोड नहीं किया जा सका.</translation>
 <translation id="6820615603175220800">संदर्भ सूची का संदर्भ</translation>
+<translation id="6831465880655513317">कलर वेल में दो डाइमेंशन वाला स्लाइडर होता है, जिससे रंग को गहरा या फीका किया जाता है</translation>
 <translation id="6843725295806269523">म्यूट करें</translation>
 <translation id="6885760532393684712">निर्देशिका</translation>
 <translation id="689129560213475294">कॉलफ़न</translation>
@@ -201,6 +207,7 @@
 <translation id="7263440858009898357">कृपया सूची में किसी आइटम को चुनें.</translation>
 <translation id="727747134524199931">स्तंभ शीर्षलेख</translation>
 <translation id="7320576522385648310">बफ़र हो रहा है</translation>
+<translation id="7341556277900466204">कलर वेल</translation>
 <translation id="7353453495576941748">क्रेडिट</translation>
 <translation id="7364796246159120393">फ़ाइल चुनें</translation>
 <translation id="739024184232394898">अन्य...</translation>
@@ -221,6 +228,7 @@
 <translation id="775297008183122718">अमान्य प्रविष्टि</translation>
 <translation id="7789962463072032349">रोकें</translation>
 <translation id="7802800022689234070">प्रकटीकरण त्रिकोण</translation>
+<translation id="7852167693871241274">रंगों का स्लाइडर</translation>
 <translation id="7888071071722539607">कृपया ईमेल पते में '<ph name="ATSIGN" />' शामिल करें. '<ph name="INVALIDADDRESS" />' में '<ph name="ATSIGN" />' नहीं है.</translation>
 <translation id="7891486169920085145">विभाजक</translation>
 <translation id="795667975304826397">कोई फाइल नहीं चुनी गई</translation>
@@ -263,6 +271,7 @@
 <translation id="8875657656876809964">वीडियो चलाने में गड़बड़ी</translation>
 <translation id="8889402386540077796">रंग</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> केबी</translation>
+<translation id="894736920926684893">फ़ॉर्मैट को टॉगल करने वाला बटन</translation>
 <translation id="8987927404178983737">माह</translation>
 <translation id="901493112792887934">वर्तमान समय, सेकंड में</translation>
 <translation id="901834265349196618">ईमेल</translation>

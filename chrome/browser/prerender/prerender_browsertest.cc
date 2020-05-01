@@ -89,6 +89,7 @@
 #include "components/password_manager/core/browser/test_password_store.h"
 #include "components/safe_browsing/core/db/database_manager.h"
 #include "components/safe_browsing/core/db/util.h"
+#include "components/safe_browsing/core/features.h"
 #include "components/variations/entropy_provider.h"
 #include "components/variations/variations_associated_data.h"
 #include "content/public/browser/browser_message_filter.h"
@@ -1394,53 +1395,6 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderSSLClientCertIframe) {
                    FINAL_STATUS_SSL_CLIENT_CERTIFICATE_REQUESTED, 0);
 }
 
-// Ensures that we do not prerender pages with a safe browsing
-// interstitial.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderSafeBrowsingTopLevel) {
-  GURL url = embedded_test_server()->GetURL("/prerender/prerender_page.html");
-  GetFakeSafeBrowsingDatabaseManager()->SetThreatTypeForUrl(
-      url, safe_browsing::SB_THREAT_TYPE_URL_MALWARE);
-  PrerenderTestURL("/prerender/prerender_page.html", FINAL_STATUS_SAFE_BROWSING,
-                   0);
-}
-
-// Ensures that server redirects to a malware page will cancel prerenders.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
-                       PrerenderSafeBrowsingServerRedirect) {
-  GURL url = embedded_test_server()->GetURL("/prerender/prerender_page.html");
-  GetFakeSafeBrowsingDatabaseManager()->SetThreatTypeForUrl(
-      url, safe_browsing::SB_THREAT_TYPE_URL_MALWARE);
-  PrerenderTestURL(CreateServerRedirect("/prerender/prerender_page.html"),
-                   FINAL_STATUS_SAFE_BROWSING, 0);
-}
-
-// Ensures that we do not prerender pages which have a malware subresource.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderSafeBrowsingSubresource) {
-  GURL image_url = embedded_test_server()->GetURL(kPrefetchJpeg);
-  GetFakeSafeBrowsingDatabaseManager()->SetThreatTypeForUrl(
-      image_url, safe_browsing::SB_THREAT_TYPE_URL_MALWARE);
-  base::StringPairs replacement_text;
-  replacement_text.push_back(
-      std::make_pair("REPLACE_WITH_IMAGE_URL", image_url.spec()));
-  std::string replacement_path = net::test_server::GetFilePathWithReplacements(
-      "/prerender/prerender_with_image.html", replacement_text);
-  PrerenderTestURL(replacement_path, FINAL_STATUS_SAFE_BROWSING, 0);
-}
-
-// Ensures that we do not prerender pages which have a malware iframe.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderSafeBrowsingIframe) {
-  GURL iframe_url = embedded_test_server()->GetURL(
-      "/prerender/prerender_embedded_content.html");
-  GetFakeSafeBrowsingDatabaseManager()->SetThreatTypeForUrl(
-      iframe_url, safe_browsing::SB_THREAT_TYPE_URL_MALWARE);
-  base::StringPairs replacement_text;
-  replacement_text.push_back(
-      std::make_pair("REPLACE_WITH_URL", iframe_url.spec()));
-  std::string replacement_path = net::test_server::GetFilePathWithReplacements(
-      "/prerender/prerender_with_iframe.html", replacement_text);
-  PrerenderTestURL(replacement_path, FINAL_STATUS_SAFE_BROWSING, 0);
-}
-
 // Checks that the favicon is properly loaded on prerender.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderFavicon) {
   std::unique_ptr<TestPrerender> prerender = PrerenderTestURL(
@@ -1551,6 +1505,81 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderSSLReferrerPolicy) {
                    FINAL_STATUS_USED, 1);
   NavigateToDestURL();
 }
+
+// Test interaction of Safe Browsing with prerender. Parametrized to enable
+// SafeBrowsing Delayed Warnings experiment. The experiment shouldn't delay
+// prerender page loads. Otherwise, the tests will crash or timeout.
+// The experiment only delays phishing warnings so the tests must use a phishing
+// resource.
+class PrerenderSafeBrowsingTest
+    : public PrerenderBrowserTest,
+      public testing::WithParamInterface<
+          testing::tuple<bool /* Enable delayed warnings experiment */>> {
+ public:
+  PrerenderSafeBrowsingTest() {
+    if (testing::get<0>(GetParam())) {
+      scoped_feature_list_.InitWithFeatures(
+          /*enabled_features=*/{safe_browsing::kDelayedWarnings},
+          /*disabled_features=*/{});
+    }
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+// Ensures that we do not prerender pages with a safe browsing
+// interstitial.
+IN_PROC_BROWSER_TEST_P(PrerenderSafeBrowsingTest, TopLevel) {
+  GURL url = embedded_test_server()->GetURL("/prerender/prerender_page.html");
+  GetFakeSafeBrowsingDatabaseManager()->SetThreatTypeForUrl(
+      url, safe_browsing::SB_THREAT_TYPE_URL_PHISHING);
+  PrerenderTestURL("/prerender/prerender_page.html", FINAL_STATUS_SAFE_BROWSING,
+                   0);
+}
+
+// Ensures that server redirects to a malware page will cancel prerenders.
+IN_PROC_BROWSER_TEST_P(PrerenderSafeBrowsingTest, ServerRedirect) {
+  GURL url = embedded_test_server()->GetURL("/prerender/prerender_page.html");
+  GetFakeSafeBrowsingDatabaseManager()->SetThreatTypeForUrl(
+      url, safe_browsing::SB_THREAT_TYPE_URL_PHISHING);
+  PrerenderTestURL(CreateServerRedirect("/prerender/prerender_page.html"),
+                   FINAL_STATUS_SAFE_BROWSING, 0);
+}
+
+// Ensures that we do not prerender pages which have a malware subresource.
+IN_PROC_BROWSER_TEST_P(PrerenderSafeBrowsingTest, Subresource) {
+  GURL image_url = embedded_test_server()->GetURL(kPrefetchJpeg);
+  GetFakeSafeBrowsingDatabaseManager()->SetThreatTypeForUrl(
+      image_url, safe_browsing::SB_THREAT_TYPE_URL_PHISHING);
+  base::StringPairs replacement_text;
+  replacement_text.push_back(
+      std::make_pair("REPLACE_WITH_IMAGE_URL", image_url.spec()));
+  std::string replacement_path = net::test_server::GetFilePathWithReplacements(
+      "/prerender/prerender_with_image.html", replacement_text);
+  PrerenderTestURL(replacement_path, FINAL_STATUS_SAFE_BROWSING, 0);
+}
+
+// Ensures that we do not prerender pages which have a malware iframe.
+IN_PROC_BROWSER_TEST_P(PrerenderSafeBrowsingTest, Iframe) {
+  GURL iframe_url = embedded_test_server()->GetURL(
+      "/prerender/prerender_embedded_content.html");
+  GetFakeSafeBrowsingDatabaseManager()->SetThreatTypeForUrl(
+      iframe_url, safe_browsing::SB_THREAT_TYPE_URL_PHISHING);
+  base::StringPairs replacement_text;
+  replacement_text.push_back(
+      std::make_pair("REPLACE_WITH_URL", iframe_url.spec()));
+  std::string replacement_path = net::test_server::GetFilePathWithReplacements(
+      "/prerender/prerender_with_iframe.html", replacement_text);
+  PrerenderTestURL(replacement_path, FINAL_STATUS_SAFE_BROWSING, 0);
+}
+
+INSTANTIATE_TEST_SUITE_P(PrerenderSafeBrowsingTest,
+                         PrerenderSafeBrowsingTest,
+                         testing::Combine(testing::Values(
+                             false,
+                             true)) /* Enable delayed warnings experiment */
+);
 
 // Test interaction of the webNavigation and tabs API with prerender.
 class PrerenderBrowserTestWithExtensions : public PrerenderBrowserTest,

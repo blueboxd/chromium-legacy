@@ -7,6 +7,7 @@
 #include <stdint.h>
 
 #include "base/feature_list.h"
+#include "base/strings/strcat.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/system/sys_info.h"
@@ -22,11 +23,6 @@
 namespace content {
 
 namespace {
-
-#if defined(OS_ANDROID)
-const base::Feature kAndroidUserAgentStringContainsBuildId{
-    "AndroidUserAgentStringContainsBuildId", base::FEATURE_DISABLED_BY_DEFAULT};
-#endif  // defined(OS_ANDROID)
 
 std::string GetUserAgentPlatform() {
 #if defined(OS_WIN)
@@ -93,7 +89,8 @@ std::string BuildCpuInfo() {
   return cpuinfo;
 }
 
-std::string GetOSVersion(bool include_android_build_number) {
+std::string GetOSVersion(IncludeAndroidBuildNumber include_android_build_number,
+                         IncludeAndroidModel include_android_model) {
   std::string os_version;
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
   int32_t os_major_version = 0;
@@ -105,12 +102,13 @@ std::string GetOSVersion(bool include_android_build_number) {
 
 #if defined(OS_ANDROID)
   std::string android_version_str = base::SysInfo::OperatingSystemVersion();
-  std::string android_info_str = GetAndroidOSInfo(include_android_build_number);
+  std::string android_info_str =
+      GetAndroidOSInfo(include_android_build_number, include_android_model);
 #endif
 
   base::StringAppendF(&os_version,
 #if defined(OS_WIN)
-                      "%d.%d; ", os_major_version, os_minor_version
+                      "%d.%d", os_major_version, os_minor_version
 #elif defined(OS_MACOSX)
                       "%d_%d_%d", os_major_version, os_minor_version,
                       os_bugfix_version
@@ -127,9 +125,12 @@ std::string GetOSVersion(bool include_android_build_number) {
   return os_version;
 }
 
-std::string BuildOSCpuInfo(bool include_android_build_number) {
+std::string BuildOSCpuInfo(
+    IncludeAndroidBuildNumber include_android_build_number,
+    IncludeAndroidModel include_android_model) {
   std::string cputype = BuildCpuInfo();
-  std::string os_version = GetOSVersion(include_android_build_number);
+  std::string os_version =
+      GetOSVersion(include_android_build_number, include_android_model);
   std::string os_cpu;
 
 #if !defined(OS_ANDROID) && defined(OS_POSIX) && !defined(OS_MACOSX)
@@ -140,7 +141,7 @@ std::string BuildOSCpuInfo(bool include_android_build_number) {
 
   base::StringAppendF(&os_cpu,
 #if defined(OS_WIN)
-                      "Windows NT %s%s", os_version.c_str(), cputype.c_str()
+                      "Windows NT %s; %s", os_version.c_str(), cputype.c_str()
 #elif defined(OS_MACOSX)
                       "%s Mac OS X %s", cputype.c_str(), os_version.c_str()
 #elif defined(OS_CHROMEOS)
@@ -177,7 +178,9 @@ std::string GetFrozenUserAgent(bool mobile, std::string major_version) {
 std::string BuildUserAgentFromProduct(const std::string& product) {
   std::string os_info;
   base::StringAppendF(&os_info, "%s%s", GetUserAgentPlatform().c_str(),
-                      BuildOSCpuInfo(false).c_str());
+                      BuildOSCpuInfo(IncludeAndroidBuildNumber::Exclude,
+                                     IncludeAndroidModel::Include)
+                          .c_str());
   return BuildUserAgentFromOSAndProduct(os_info, product);
 }
 
@@ -196,28 +199,32 @@ std::string BuildModelInfo() {
 std::string BuildUserAgentFromProductAndExtraOSInfo(
     const std::string& product,
     const std::string& extra_os_info,
-    bool include_android_build_number) {
+    IncludeAndroidBuildNumber include_android_build_number) {
   std::string os_info;
-  base::StringAppendF(&os_info, "%s%s%s", GetUserAgentPlatform().c_str(),
-                      BuildOSCpuInfo(include_android_build_number).c_str(),
-                      extra_os_info.c_str());
+  base::StrAppend(&os_info, {GetUserAgentPlatform(),
+                             BuildOSCpuInfo(include_android_build_number,
+                                            IncludeAndroidModel::Include),
+                             extra_os_info});
   return BuildUserAgentFromOSAndProduct(os_info, product);
 }
 
-std::string GetAndroidOSInfo(bool include_android_build_number) {
+std::string GetAndroidOSInfo(
+    IncludeAndroidBuildNumber include_android_build_number,
+    IncludeAndroidModel include_android_model) {
   std::string android_info_str;
 
   // Send information about the device.
   bool semicolon_inserted = false;
-  std::string android_device_name = BuildModelInfo();
-  if (!android_device_name.empty()) {
-    android_info_str += "; " + android_device_name;
-    semicolon_inserted = true;
+  if (include_android_model == IncludeAndroidModel::Include) {
+    std::string android_device_name = BuildModelInfo();
+    if (!android_device_name.empty()) {
+      android_info_str += "; " + android_device_name;
+      semicolon_inserted = true;
+    }
   }
 
   // Append the build ID.
-  if (base::FeatureList::IsEnabled(kAndroidUserAgentStringContainsBuildId) ||
-      include_android_build_number) {
+  if (include_android_build_number == IncludeAndroidBuildNumber::Include) {
     std::string android_build_id = base::SysInfo::GetAndroidBuildID();
     if (!android_build_id.empty()) {
       if (!semicolon_inserted)

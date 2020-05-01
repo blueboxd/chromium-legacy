@@ -23,9 +23,9 @@ void AgentManager::ConnectToAgentServiceUnsafe(base::StringPiece agent,
   auto it = agents_.find(agent);
   if (it == agents_.end()) {
     it = agents_.emplace(agent.as_string(), AgentConnection()).first;
-    component_context_->ConnectToAgent(agent.as_string(),
-                                       it->second.services.NewRequest(),
-                                       it->second.controller.NewRequest());
+    component_context_->DeprecatedConnectToAgent(
+        agent.as_string(), it->second.services.NewRequest(),
+        it->second.controller.NewRequest());
     it->second.services.set_error_handler(
         [this, agent = agent.as_string()](zx_status_t status) {
           ZX_LOG(WARNING, status) << "Agent disconnected: " << agent;

@@ -4,7 +4,7 @@
 
 #include "third_party/blink/renderer/platform/fonts/skia/sktypeface_factory.h"
 
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "build/build_config.h"
 #include "third_party/skia/include/core/SkFontMgr.h"
 #include "third_party/skia/include/ports/SkFontConfigInterface.h"

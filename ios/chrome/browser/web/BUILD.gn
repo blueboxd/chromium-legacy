@@ -329,6 +329,7 @@ source_set("unit_tests_internal") {
     "//ios/chrome/browser/safe_browsing",
     "//ios/chrome/browser/web",
     "//ios/chrome/test/fakes",
+    "//ios/components/security_interstitials",
     "//ios/web/common:features",
     "//ios/web/common:web_view_creation_util",
     "//ios/web/public/test",

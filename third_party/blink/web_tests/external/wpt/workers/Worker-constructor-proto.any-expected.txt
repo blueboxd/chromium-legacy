@@ -1,4 +1,0 @@
-This is a testharness.js-based test.
-FAIL Tests that setting the proto of a built in constructor is not reset. WorkerLocation is not defined
-Harness: the test ran to completion.
-

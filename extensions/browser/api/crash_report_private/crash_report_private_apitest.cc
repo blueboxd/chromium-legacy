@@ -4,18 +4,14 @@
 
 #include "base/system/sys_info.h"
 #include "base/test/simple_test_clock.h"
-#include "base/threading/scoped_blocking_call.h"
-#include "components/crash/core/app/crash_reporter_client.h"
 #include "content/public/test/browser_task_environment.h"
 #include "extensions/browser/api/crash_report_private/crash_report_private_api.h"
+#include "extensions/browser/api/crash_report_private/mock_crash_endpoint.h"
 #include "extensions/browser/browsertest_util.h"
 #include "extensions/common/switches.h"
 #include "extensions/shell/test/shell_apitest.h"
 #include "extensions/test/extension_test_message_listener.h"
 #include "extensions/test/test_extension_dir.h"
-#include "net/http/http_status_code.h"
-#include "net/test/embedded_test_server/http_request.h"
-#include "net/test/embedded_test_server/http_response.h"
 
 namespace extensions {
 
@@ -24,30 +20,6 @@ using browsertest_util::ExecuteScriptInBackgroundPage;
 namespace {
 
 constexpr const char* kTestExtensionId = "jjeoclcdfjddkdjokiejckgcildcflpp";
-constexpr const char* kTestCrashEndpoint = "/crash";
-
-class MockCrashReporterClient : public crash_reporter::CrashReporterClient {
- public:
-  void set_consented(bool consented) { consented_ = consented; }
-
- private:
-  bool GetCollectStatsConsent() override {
-    // In production, GetCollectStatsConsent may be blocking due to file reads.
-    // Simulate this in our tests as well.
-    base::ScopedBlockingCall scoped_blocking_call(
-        FROM_HERE, base::BlockingType::MAY_BLOCK);
-    return consented_;
-  }
-  void GetProductNameAndVersion(std::string* product_name,
-                                std::string* version,
-                                std::string* channel) override {
-    *product_name = "Chrome (Chrome OS)";
-    *version = "1.2.3.4";
-    *channel = "Stable";
-  }
-
-  bool consented_ = true;
-};
 
 std::string GetOsVersion() {
   int32_t os_major_version = 0;
@@ -93,13 +65,8 @@ class CrashReportPrivateApiTest : public ShellApiTest {
     extension_ = LoadExtension(test_dir.UnpackedPath());
     EXPECT_TRUE(listener.WaitUntilSatisfied());
 
-    embedded_test_server()->RegisterRequestHandler(base::Bind(
-        &CrashReportPrivateApiTest::HandleRequest, base::Unretained(this)));
-    ASSERT_TRUE(embedded_test_server()->Start());
-
-    api::SetCrashEndpointForTesting(
-        embedded_test_server()->GetURL(kTestCrashEndpoint).spec());
-    crash_reporter::SetCrashReporterClient(&client_);
+    crash_endpoint_ =
+        std::make_unique<MockCrashEndpoint>(embedded_test_server());
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
@@ -109,32 +76,13 @@ class CrashReportPrivateApiTest : public ShellApiTest {
   }
 
  protected:
-  struct Report {
-    std::string query;
-    std::string content;
-  };
-
+  const MockCrashEndpoint::Report& last_report() {
+    return crash_endpoint_->last_report();
+  }
   const Extension* extension_;
-  MockCrashReporterClient client_;
-  Report last_report_;
+  std::unique_ptr<MockCrashEndpoint> crash_endpoint_;
 
  private:
-  std::unique_ptr<net::test_server::HttpResponse> HandleRequest(
-      const net::test_server::HttpRequest& request) {
-    GURL absolute_url = embedded_test_server()->GetURL(request.relative_url);
-    if (absolute_url.path() != kTestCrashEndpoint) {
-      return nullptr;
-    }
-
-    last_report_ = {absolute_url.query(), request.content};
-    auto http_response =
-        std::make_unique<net::test_server::BasicHttpResponse>();
-    http_response->set_code(net::HTTP_OK);
-    http_response->set_content("123");
-    http_response->set_content_type("text/plain");
-    return http_response;
-  }
-
   DISALLOW_COPY_AND_ASSIGN(CrashReportPrivateApiTest);
 };
 
@@ -149,14 +97,14 @@ IN_PROC_BROWSER_TEST_F(CrashReportPrivateApiTest, Basic) {
   ExecuteScriptInBackgroundPage(browser_context(), extension_->id(),
                                 kTestScript);
 
-  EXPECT_EQ(last_report_.query,
+  EXPECT_EQ(last_report().query,
             "browser=Chrome&browser_version=1.2.3.4&channel=Stable&"
             "error_message=hi&full_url=http%3A%2F%2Fwww.test.com%2F&"
             "os=ChromeOS&os_version=" +
                 GetOsVersion() +
                 "&prod=Chrome%2520(Chrome%2520OS)&src=http%3A%2F%2Fwww.test."
                 "com%2F&type=JavascriptError&url=%2F&ver=1.2.3.4");
-  EXPECT_EQ(last_report_.content, "");
+  EXPECT_EQ(last_report().content, "");
 }
 
 IN_PROC_BROWSER_TEST_F(CrashReportPrivateApiTest, ExtraParamsAndStackTrace) {
@@ -175,14 +123,14 @@ IN_PROC_BROWSER_TEST_F(CrashReportPrivateApiTest, ExtraParamsAndStackTrace) {
   ExecuteScriptInBackgroundPage(browser_context(), extension_->id(),
                                 kTestScript);
 
-  EXPECT_EQ(last_report_.query,
+  EXPECT_EQ(last_report().query,
             "browser=Chrome&browser_version=1.2.3.4&channel=Stable&column=%C8&"
             "error_message=hi&full_url=http%3A%2F%2Fwww.test.com%2Ffoo"
             "&line=%7B&os=ChromeOS&os_version=" +
                 GetOsVersion() +
                 "&prod=TestApp&src=http%3A%2F%2Fwww.test.com%2Ffoo&type="
                 "JavascriptError&url=%2Ffoo&ver=1.0.0.0");
-  EXPECT_EQ(last_report_.content, "   at <anonymous>:1:1");
+  EXPECT_EQ(last_report().content, "   at <anonymous>:1:1");
 }
 
 IN_PROC_BROWSER_TEST_F(CrashReportPrivateApiTest, StackTraceWithErrorMessage) {
@@ -201,14 +149,14 @@ IN_PROC_BROWSER_TEST_F(CrashReportPrivateApiTest, StackTraceWithErrorMessage) {
   ExecuteScriptInBackgroundPage(browser_context(), extension_->id(),
                                 kTestScript);
 
-  EXPECT_EQ(last_report_.query,
+  EXPECT_EQ(last_report().query,
             "browser=Chrome&browser_version=1.2.3.4&channel=Stable&column=%C8&"
             "error_message=hi&full_url=http%3A%2F%2Fwww.test.com%2Ffoo&"
             "line=%7B&os=ChromeOS&os_version=" +
                 GetOsVersion() +
                 "&prod=TestApp&src=http%3A%2F%2Fwww.test.com%2Ffoo&type="
                 "JavascriptError&url=%2Ffoo&ver=1.0.0.0");
-  EXPECT_EQ(last_report_.content, "");
+  EXPECT_EQ(last_report().content, "");
 }
 
 IN_PROC_BROWSER_TEST_F(CrashReportPrivateApiTest, AnonymizeMessage) {
@@ -228,7 +176,7 @@ IN_PROC_BROWSER_TEST_F(CrashReportPrivateApiTest, AnonymizeMessage) {
   ExecuteScriptInBackgroundPage(browser_context(), extension_->id(),
                                 kTestScript);
 
-  EXPECT_EQ(last_report_.query,
+  EXPECT_EQ(last_report().query,
             "browser=Chrome&browser_version=1.2.3.4&channel=Stable&column=%C8&"
             "error_message=%5BMAC%20OUI%3D06%3A00%3A00%20IFACE%3D1%5D&"
             "full_url=http%3A%2F%2Fwww.test.com%2Ffoo&line=%7B&os=ChromeOS&"
@@ -236,7 +184,7 @@ IN_PROC_BROWSER_TEST_F(CrashReportPrivateApiTest, AnonymizeMessage) {
                 GetOsVersion() +
                 "&prod=TestApp&src=http%3A%2F%2Fwww.test.com%2Ffoo&type="
                 "JavascriptError&url=%2Ffoo&ver=1.0.0.0");
-  EXPECT_EQ(last_report_.content, "");
+  EXPECT_EQ(last_report().content, "");
 }
 
 IN_PROC_BROWSER_TEST_F(CrashReportPrivateApiTest, Throttling) {
@@ -286,12 +234,12 @@ IN_PROC_BROWSER_TEST_F(CrashReportPrivateApiTest, NoConsent) {
       });
   )";
 
-  client_.set_consented(false);
+  crash_endpoint_->set_consented(false);
   EXPECT_EQ("", ExecuteScriptInBackgroundPage(browser_context(),
                                               extension_->id(), kTestScript));
   // The server should not receive any reports.
-  EXPECT_EQ(last_report_.query, "");
-  EXPECT_EQ(last_report_.content, "");
+  EXPECT_EQ(last_report().query, "");
+  EXPECT_EQ(last_report().content, "");
 }
 
 }  // namespace extensions

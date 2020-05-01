@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from collections import defaultdict
 import fnmatch
 import json
 import os
@@ -240,6 +241,7 @@ class MockChange(object):
 
   def __init__(self, changed_files):
     self._changed_files = changed_files
+    self.footers = defaultdict(list)
 
   def LocalPaths(self):
     return self._changed_files
@@ -247,3 +249,7 @@ class MockChange(object):
   def AffectedFiles(self, include_dirs=False, include_deletes=True,
                     file_filter=None):
     return self._changed_files
+
+  def GitFootersFromDescription(self):
+    return self.footers
+

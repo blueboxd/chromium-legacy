@@ -158,6 +158,7 @@
 <translation id="285960592395650245">ລອງດາວໂຫຼດໃໝ່</translation>
 <translation id="2870560284913253234">ເວັບ​ໄຊທ໌</translation>
 <translation id="2871695793448672541">ເຊື່ອງ​ແລ້ວ, ລະ​ຫັດ​ຜ່ານ</translation>
+<translation id="2876369937070532032">ສົ່ງ URL ຂອງບາງໜ້າເວັບທີ່ທ່ານເຂົ້າເບິ່ງໃຫ້ Google, ເມື່ອຄວາມປອດໄພຂອງທ່ານມີຄວາມສ່ຽງ</translation>
 <translation id="288655811176831528">ປິດແຖບ</translation>
 <translation id="2898963176829412617">ໂຟ​ລ​ເດີ​ໃໝ່...</translation>
 <translation id="2916171785467530738">ຕື່ມການຊອກຫາ ແລະ URL ໂດຍອັດຕະໂນມັດ​</translation>
@@ -177,6 +178,7 @@
 <translation id="3161291298470460782">ນີ້ຈະນຳທ່ານອອກຈາກລະບົບ, ປິດການຊິ້ງຂໍ້ມູນ ແລະ ລຶບລ້າງຂໍ້ມູນ Chrome ອອກຈາກອຸປະກອນນີ້. ຂໍ້ມູນທີ່ຊິ້ງແລ້ວຂອງທ່ານຈະຍັງຄົງຢູ່ໃນບັນຊີ Google ຂອງທ່ານ.</translation>
 <translation id="3175081911749765310">ການ​ບໍ​ລິ​ການ​ເວັບ</translation>
 <translation id="3178650076442119961">ນຳໃຊ້ມື້ນີ້</translation>
+<translation id="3181954750937456830">Safe Browsing (ປົກປ້ອງທ່ານ ແລະ ອຸປະກອນຂອງທ່ານຈາກເວັບໄຊອັນຕະລາຍ)</translation>
 <translation id="3207960819495026254">ໃສ່ບຸກ​ມາກ​໌​ແລ້ວ</translation>
 <translation id="3224641773458703735">ເພື່ອສົ່ງອອກລະຫັດຜ່ານ, ທ່ານຕ້ອງຕັ້ງລະຫັດຜ່ານໃນອຸປະກອນຂອງທ່ານກ່ອນ.</translation>
 <translation id="3240426699337459095">ອັດ​ສຳ​ເນົາ​ລິ້ງ​ແລ້ວ</translation>
@@ -430,6 +432,7 @@ Handoff ຍັງ​ຕ້ອງ​ໄດ້​ເປີດ​ໃຊ້​ງາ
 <translation id="6447842834002726250">ຄຸກກີ້</translation>
 <translation id="6464071786529933911">ເປີດ​ຢູ່​ໃນ​ແຖບ​ທີ່ບໍ່​ເຜີຍ​ຕົວ​ຕົນ​ໃໝ່</translation>
 <translation id="6476800141292307438">ກຳລັງແປໜ້າເວັບເປັນ <ph name="LANGUAGE" />. ມີຕົວເລືອກໃຫ້ນຳໃຊ້ຢູ່ໃກ້ລຸ່ມສຸດຂອງໜ້າຈໍ.</translation>
+<translation id="648164694371393720">ການຮອງຮັບຄວາມຖືກຕ້ອງຜິດພາດ</translation>
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> ລາຍ​ການ​ຖືກ​ລຶບ​ແລ້ວ</translation>
 <translation id="6561262006871132942">ຊຸມເຂົ້າ</translation>
 <translation id="6610002944194042868">ຕົວເລືອກແປພາສາ</translation>

@@ -100,8 +100,9 @@ class WebNavigationControl : public WebLocalFrame {
   virtual bool IsClientNavigationInitialHistoryLoad() = 0;
 
  protected:
-  explicit WebNavigationControl(mojom::TreeScopeType scope)
-      : WebLocalFrame(scope) {}
+  explicit WebNavigationControl(mojom::TreeScopeType scope,
+                                const base::UnguessableToken& frame_token)
+      : WebLocalFrame(scope, frame_token) {}
 };
 
 }  // namespace blink

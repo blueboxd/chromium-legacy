@@ -89,6 +89,7 @@ class CONTENT_EXPORT CompositorImpl
  private:
   class AndroidHostDisplayClient;
   class ScopedCachedBackBuffer;
+  class ReadbackRefImpl;
 
   // Compositor implementation.
   void SetRootWindow(gfx::NativeWindow root_window) override;
@@ -151,6 +152,7 @@ class CONTENT_EXPORT CompositorImpl
   void DidLoseLayerTreeFrameSink() override;
 
   // WindowAndroidCompositor implementation.
+  std::unique_ptr<ReadbackRef> TakeReadbackRef() override;
   void RequestCopyOfOutputOnRootLayer(
       std::unique_ptr<viz::CopyOutputRequest> request) override;
   void SetNeedsAnimate() override;
@@ -210,6 +212,8 @@ class CONTENT_EXPORT CompositorImpl
   void InitializeVizLayerTreeFrameSink(
       scoped_refptr<viz::ContextProviderCommandBuffer> context_provider);
 
+  void DecrementPendingReadbacks();
+
   viz::FrameSinkId frame_sink_id_;
 
   // root_layer_ is the persistent internal root layer, while subroot_layer_
@@ -265,6 +269,8 @@ class CONTENT_EXPORT CompositorImpl
   size_t num_of_consecutive_surface_failures_ = 0u;
 
   base::TimeTicks latest_frame_time_;
+
+  uint32_t pending_readbacks_ = 0u;
 
   base::WeakPtrFactory<CompositorImpl> weak_factory_{this};
 

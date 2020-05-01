@@ -8,7 +8,9 @@
 <translation id="1181037720776840403">Supprimer</translation>
 <translation id="1201402288615127009">Suivant</translation>
 <translation id="1242008676835033345">Intégré sur <ph name="WEBSITE_URL" /></translation>
+<translation id="1272079795634619415">Arrêter</translation>
 <translation id="129382876167171263">Les fichiers enregistrés par les sites Web s'affichent ici</translation>
+<translation id="1364532808393826295"><ph name="APP_NAME" /> : <ph name="NOTIFICATION_MESSAGE" /></translation>
 <translation id="1369915414381695676">Le site <ph name="SITE_NAME" /> a été ajouté</translation>
 <translation id="1383876407941801731">Rechercher</translation>
 <translation id="1384959399684842514">Téléchargement interrompu</translation>
@@ -29,6 +31,7 @@
 <translation id="1984937141057606926">Autorisés, sauf témoins tiers</translation>
 <translation id="1994173015038366702">URL du site</translation>
 <translation id="2025115093177348061">Réalité augmentée</translation>
+<translation id="2030769033451695672">Touchez pour revenir à <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
 <translation id="2041019821020695769">Pour autoriser Chrome à vous envoyer des notifications, vous devez aussi activer celles-ci dans les <ph name="BEGIN_LINK" />paramètres Android<ph name="END_LINK" />.</translation>
 <translation id="2079545284768500474">Annuler</translation>
 <translation id="2091887806945687916">Son</translation>
@@ -104,6 +107,7 @@
 <translation id="5048398596102334565">Autoriser les sites à accéder à vos capteurs de mouvements (recommandé)</translation>
 <translation id="5063480226653192405">Utilisation</translation>
 <translation id="5100237604440890931">Réduit : cliquer pour développer</translation>
+<translation id="5123685120097942451">Onglet de navigation privée</translation>
 <translation id="5300589172476337783">Afficher</translation>
 <translation id="5301954838959518834">J'ai compris.</translation>
 <translation id="5307446750509046227">Suppr. stock. des sites</translation>
@@ -111,6 +115,7 @@
 <translation id="5317780077021120954">Enregistrer</translation>
 <translation id="5335288049665977812">Autoriser les sites à exécuter JavaScript (recommandé)</translation>
 <translation id="534295439873310000">Appareils NFC</translation>
+<translation id="5354152178998424783">Cette action effacera <ph name="DATASIZE" /> de données et de témoins qu'ont stockés des sites.</translation>
 <translation id="5391532827096253100">Votre connexion à ce site n'est pas sécurisée. Renseignements sur le site</translation>
 <translation id="5494752089476963479">Bloquer les annonces sur les sites qui diffusent des annonces intrusives ou trompeuses</translation>
 <translation id="5505264765875738116">Les sites ne peuvent pas vous demander l'autorisation d'envoyer des notifications</translation>
@@ -125,6 +130,7 @@
 <translation id="5804241973901381774">Autorisations</translation>
 <translation id="5860033963881614850">Désactivé</translation>
 <translation id="5916664084637901428">Activé</translation>
+<translation id="5922853908706496913">Partage de votre écran en cours…</translation>
 <translation id="5939518447894949180">Recommencer</translation>
 <translation id="6040143037577758943">Fermer</translation>
 <translation id="6042308850641462728">Plus</translation>
@@ -168,6 +174,7 @@
 <translation id="7423098979219808738">Demander d'abord</translation>
 <translation id="7423538860840206698">La lecture du presse-papiers a été bloquée</translation>
 <translation id="7521387064766892559">JavaScript</translation>
+<translation id="7554752735887601236">Un site utilise votre microphone</translation>
 <translation id="7572498721684305250">Empêcher les sites d'envoyer et de recevoir de l'information lorsque vous touchez des appareils NFC</translation>
 <translation id="757524316907819857">Empêcher les sites de lire du contenu protégé</translation>
 <translation id="7589445247086920869">Bloquer pour le moteur de recherche actuel</translation>
@@ -176,9 +183,11 @@
 <translation id="7781829728241885113">Hier</translation>
 <translation id="7791543448312431591">Ajouter</translation>
 <translation id="780301667611848630">Non merci</translation>
+<translation id="7804248752222191302">Un site utilise votre appareil photo</translation>
 <translation id="7817023149356982970">Vous serez déconnecté de ce site.</translation>
 <translation id="7828557259026017104">Les témoins sont des fichiers créés par les sites Web que vous visitez. Les sites les utilisent pour mémoriser vos préférences. Les témoins tiers sont ceux que créent d'autres sites. Ces sites possèdent certains types de contenu, comme des annonces et des images, que vous voyez sur les pages que vous visitez.</translation>
 <translation id="7846076177841592234">Annuler la sélection</translation>
+<translation id="7846621471902887024">Vous serez déconnecté de tous les sites.</translation>
 <translation id="7882806643839505685">Autorisez le son sur un site précis.</translation>
 <translation id="7993619969781047893">Des fonctionnalités sur certains sites risquent de ne pas fonctionner</translation>
 <translation id="7999064672810608036">Voulez-vous vraiment effacer toutes les données locales de ce site Web, y compris les témoins, et réinitialiser toutes les autorisations pour ce site Web?</translation>
@@ -192,7 +201,9 @@
 <translation id="8261506727792406068">Supprimer</translation>
 <translation id="8300705686683892304">Gérés par une application</translation>
 <translation id="8372893542064058268">Autorisez la synchronisation en arrière-plan pour un site en particulier.</translation>
+<translation id="83792324527827022">Un site utilise votre appareil photo et votre microphone</translation>
 <translation id="8380167699614421159">Ce site diffuse des annonces intrusives ou trompeuses</translation>
+<translation id="8394832520002899662">Touchez pour revenir au site</translation>
 <translation id="8447861592752582886">Révoquer l'autorisation de l'appareil</translation>
 <translation id="851751545965956758">Empêcher les sites de se connecter à des appareils</translation>
 <translation id="857943718398505171">Autorisée (recommandé)</translation>

@@ -38,7 +38,6 @@
 <translation id="1258753120186372309">Google-piirros: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1260236875608242557">Hae ja tutki</translation>
 <translation id="1266864766717917324">Jakaminen epäonnistui: <ph name="CONTENT_TYPE" /></translation>
-<translation id="1272079795634619415">Pysäytä</translation>
 <translation id="1283039547216852943">Laajenna napauttamalla.</translation>
 <translation id="1285320974508926690">Älä käännä tätä sivustoa</translation>
 <translation id="1291207594882862231">Tyhjennä historia, evästeet, sivustojen tiedot, välimuisti ja niin edelleen.</translation>
@@ -50,8 +49,8 @@
 <translation id="1327257854815634930">Navigointihistoria avattu</translation>
 <translation id="1331212799747679585">Chromea ei voi päivittää. Lisää vaihtoehtoja</translation>
 <translation id="1332501820983677155">Google Chromen ominaisuuksien pikanäppäimet</translation>
+<translation id="1347468774581902829">Toimintavalinnat</translation>
 <translation id="1360432990279830238">Kirjaudu ulos ja lopeta synkronointi?</translation>
-<translation id="1364532808393826295"><ph name="APP_NAME" /> – <ph name="NOTIFICATION_MESSAGE" /></translation>
 <translation id="1373696734384179344">Liian vähän muistia valitun sisällön lataamiseen.</translation>
 <translation id="1376578503827013741">Lasketaan…</translation>
 <translation id="1383876407941801731">Haku</translation>
@@ -122,7 +121,6 @@
 <translation id="2013642289801508067">{FILE_COUNT,plural, =1{# tiedosto}other{# tiedostoa}}</translation>
 <translation id="2017836877785168846">Tyhjentää historian ja osoitepalkin automaattiset täydennykset.</translation>
 <translation id="2021896219286479412">Ohjaimet koko näytön tilassa</translation>
-<translation id="2030769033451695672">Napauta, niin palaat tänne: <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
 <translation id="2038563949887743358">Ota käyttöön Käytä tietokoneversiota</translation>
 <translation id="204321170514947529"><ph name="APP_NAME" /> sisältää dataa myös Chromessa</translation>
 <translation id="2049574241039454490"><ph name="FILE_SIZE_OF_TOTAL" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
@@ -434,6 +432,7 @@ Google-tililläsi voi olla muita selaushistoriatietoja, kuten hakuja ja toiminta
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> kirjanmerkkiä poistettiin</translation>
 <translation id="4665282149850138822"><ph name="NAME" /> lisättiin aloitusnäytölle.</translation>
 <translation id="4684427112815847243">Synkronoi kaikki</translation>
+<translation id="4688610874307684559">Käynnissä Chromessa (alustava)</translation>
 <translation id="4695891336199304370">{SHIPPING_OPTIONS,plural, =1{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 ja <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> muu}other{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 ja <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> muuta}}</translation>
 <translation id="4696983787092045100">Lähetä teksti laitteillesi</translation>
 <translation id="4698034686595694889"><ph name="APP_NAME" /> voi näyttää sisältöä offline-tilassa</translation>
@@ -592,7 +591,6 @@ Jos haluat muokata asetusta, <ph name="BEGIN_LINK" />nollaa synkronointi<ph name
 <translation id="5876056640971328065">Keskeytä video</translation>
 <translation id="5884076754568147479">Jotta tehtävien hoitaminen sujuisi helpommin, Google saa tiedot niiden sivustojen URL-osoitteista ja sisällöstä, joilla käytät Assistantia, sekä Assistantin kautta lähettämäsi tiedot</translation>
 <translation id="5919204609460789179">Aloita synkronointi päivittämällä <ph name="PRODUCT_NAME" /></translation>
-<translation id="5922853908706496913">Näyttösi jaetaan</translation>
 <translation id="5937580074298050696"><ph name="AMOUNT" /> säästetty</translation>
 <translation id="5939518447894949180">Tyhjennä</translation>
 <translation id="5942872142862698679">Hakukoneena käytetään Googlea.</translation>
@@ -773,16 +771,17 @@ Jotkin verkkosivustot voivat vastata tähän pyyntöön esimerkiksi näyttämäl
 <translation id="7479104141328977413">Välilehtien ylläpito</translation>
 <translation id="7481312909269577407">Seuraava</translation>
 <translation id="7482656565088326534">Esikatseluvälilehti</translation>
+<translation id="7484997419527351112">Discover – pois päältä</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (päivitettiin <ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7494974237137038751">dataa säästetty</translation>
 <translation id="7498271377022651285">Odota…</translation>
 <translation id="7514365320538308">Lataa</translation>
 <translation id="751961395872307827">Yhteyden muodostaminen sivustoon epäonnistui</translation>
 <translation id="7542481630195938534">Ehdotusten haku epäonnistui</translation>
-<translation id="7554752735887601236">Sivusto käyttää mikrofoniasi</translation>
 <translation id="7559975015014302720">Yksinkertaistettu tila on pois päältä</translation>
 <translation id="7562080006725997899">Selaustietoja poistetaan</translation>
 <translation id="756809126120519699">Chrome-tiedot tyhjennetty</translation>
+<translation id="7577900504646297215">Ylläpidä kiinnostuksen kohteita</translation>
 <translation id="757855969265046257">{FILES,plural, =1{<ph name="FILES_DOWNLOADED_ONE" /> tiedosto ladattu}other{<ph name="FILES_DOWNLOADED_MANY" /> tiedostoa ladattu}}</translation>
 <translation id="7588219262685291874">Ota tumma teema käyttöön, kun laitteen virransäästö on käytössä</translation>
 <translation id="7593557518625677601">Avaa Android-asetukset ja ota järjestelmän synkronointi uudelleen käyttöön.</translation>
@@ -813,7 +812,6 @@ Jotkin verkkosivustot voivat vastata tähän pyyntöön esimerkiksi näyttämäl
 <translation id="7774809984919390718">{PAYMENT_METHOD,plural, =1{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 ja <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> muu}other{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 ja <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> muuta}}</translation>
 <translation id="7791543448312431591">Lisää</translation>
 <translation id="780301667611848630">Ei kiitos</translation>
-<translation id="7804248752222191302">Sivusto käyttää kameraasi</translation>
 <translation id="7810647596859435254">Avaa sovelluksessa…</translation>
 <translation id="7821588508402923572">Datasäästösi näkyvät täällä</translation>
 <translation id="783819812427904514">Poista videon mykistys</translation>
@@ -885,9 +883,7 @@ Jotkin verkkosivustot voivat vastata tähän pyyntöön esimerkiksi näyttämäl
 <translation id="8349013245300336738">Lajittele käytetyn datan määrän mukaan</translation>
 <translation id="8364299278605033898">Katso suositut sivustot</translation>
 <translation id="8368027906805972958">Tuntematon tai ei-tuettu laite (<ph name="DEVICE_ID" />)</translation>
-<translation id="83792324527827022">Sivusto käyttää kameraasi ja mikrofoniasi</translation>
 <translation id="8393700583063109961">Lähetä viesti</translation>
-<translation id="8394832520002899662">Palaa sivustolle napauttamalla</translation>
 <translation id="8413126021676339697">Näytä koko selaushistoria</translation>
 <translation id="8427875596167638501">Esikatseluvälilehti on puoliksi auki</translation>
 <translation id="8428213095426709021">Asetukset</translation>
@@ -984,7 +980,6 @@ Jotkin verkkosivustot voivat vastata tähän pyyntöön esimerkiksi näyttämäl
 <translation id="970715775301869095"><ph name="MINUTES" /> minuuttia jäljellä</translation>
 <translation id="974555521953189084">Aloita synkronointi antamalla tunnuslauseesi.</translation>
 <translation id="981121421437150478">Offline</translation>
-<translation id="982182592107339124">Kaikkien sivustojen tiedot poistetaan, esimerkiksi:</translation>
 <translation id="983192555821071799">Sulje kaikki välilehdet</translation>
 <translation id="987264212798334818">Yleistä</translation>
 </translationbundle>

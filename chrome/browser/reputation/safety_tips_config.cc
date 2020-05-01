@@ -124,8 +124,10 @@ bool IsUrlAllowlistedBySafetyTipsComponent(
 bool IsTargetUrlAllowlistedBySafetyTipsComponent(
     const chrome_browser_safety_tips::SafetyTipsConfig* proto,
     const GURL& url) {
-  DCHECK(proto);
   DCHECK(!url.host().empty());
+  if (proto == nullptr) {
+    return false;
+  }
   for (const auto& host_pattern : proto->allowed_target_pattern()) {
     if (!host_pattern.has_regex()) {
       continue;

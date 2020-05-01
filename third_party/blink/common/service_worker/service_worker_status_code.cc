@@ -4,7 +4,7 @@
 
 #include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
 
-#include "base/logging.h"
+#include "base/notreached.h"
 
 namespace blink {
 

@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.omnibox.suggestions;
 
 import android.text.TextUtils;
+import android.util.SparseArray;
 
 import org.junit.Assert;
 
@@ -108,6 +109,108 @@ public class OmniboxSuggestionUnitTest {
         OmniboxSuggestion.cacheOmniboxSuggestionListForZeroSuggest(list1);
         List<OmniboxSuggestion> list2 =
                 OmniboxSuggestion.getCachedOmniboxSuggestionsForZeroSuggest();
+        Assert.assertTrue(isOmniboxSuggestionListMatch(list1, list2));
+    }
+
+    @CalledByNativeJavaTest
+    public void groupHeaders_restoreHeadersFromEmptyCache() {
+        SparseArray<String> cachedHeaders =
+                OmniboxSuggestion.getCachedOmniboxSuggestionHeadersForZeroSuggest();
+        Assert.assertNull(cachedHeaders);
+    }
+
+    @CalledByNativeJavaTest
+    public void groupHeaders_cacheAllSaneGroupHeaders() {
+        SparseArray<String> headers = new SparseArray<>();
+        headers.put(10, "Header For Group 10");
+        headers.put(20, "Header For Group 20");
+        headers.put(30, "Header For Group 30");
+
+        OmniboxSuggestion.cacheOmniboxSuggestionHeadersForZeroSuggest(headers);
+        SparseArray<String> cachedHeaders =
+                OmniboxSuggestion.getCachedOmniboxSuggestionHeadersForZeroSuggest();
+
+        Assert.assertEquals(headers.size(), cachedHeaders.size());
+        for (int index = 0; index < headers.size(); index++) {
+            Assert.assertEquals(headers.keyAt(index), cachedHeaders.keyAt(index));
+            Assert.assertEquals(headers.valueAt(index), cachedHeaders.valueAt(index));
+        }
+    }
+
+    @CalledByNativeJavaTest
+    public void groupHeaders_cachePartiallySaneGroupHeadersDropsInvalidEntries() {
+        SparseArray<String> headers = new SparseArray<>();
+        headers.put(10, "Header For Group 10");
+        headers.put(OmniboxSuggestion.INVALID_GROUP, "Header For Group 20");
+        headers.put(30, null);
+
+        OmniboxSuggestion.cacheOmniboxSuggestionHeadersForZeroSuggest(headers);
+        SparseArray<String> cachedHeaders =
+                OmniboxSuggestion.getCachedOmniboxSuggestionHeadersForZeroSuggest();
+
+        Assert.assertEquals(1, cachedHeaders.size());
+        Assert.assertEquals(10, cachedHeaders.keyAt(0));
+        Assert.assertEquals("Header For Group 10", cachedHeaders.valueAt(0));
+    }
+
+    @CalledByNativeJavaTest
+    public void groupHeaders_restoreInvalidHeadersFromCache() {
+        SparseArray<String> headers = new SparseArray<>();
+        headers.put(OmniboxSuggestion.INVALID_GROUP, "This group is invalid");
+        headers.put(20, "");
+        headers.put(30, null);
+
+        OmniboxSuggestion.cacheOmniboxSuggestionHeadersForZeroSuggest(headers);
+        SparseArray<String> cachedHeaders =
+                OmniboxSuggestion.getCachedOmniboxSuggestionHeadersForZeroSuggest();
+        Assert.assertEquals(0, cachedHeaders.size());
+    }
+
+    @CalledByNativeJavaTest
+    public void dropSuggestions_suggestionsWithNoGroups() {
+        List<OmniboxSuggestion> list = buildDummySuggestionsList(2, false);
+        SparseArray<String> headers = new SparseArray<>();
+        OmniboxSuggestion.dropSuggestionsWithIncorrectGroupHeaders(list, headers);
+        Assert.assertEquals(2, list.size());
+    }
+
+    @CalledByNativeJavaTest
+    public void dropSuggestions_suggestionsWithValidGroupsAssociation() {
+        List<OmniboxSuggestion> list1 = buildDummySuggestionsList(2, false);
+        List<OmniboxSuggestion> list2 = buildDummySuggestionsList(2, false);
+        OmniboxSuggestion suggestionWithHeader = new OmniboxSuggestion(
+                OmniboxSuggestionType.SEARCH_SUGGEST, true /* isSearchType */, 0 /* relevance */,
+                0 /* transition */, "dummy text", null /* displayTextClassifications */,
+                "dummy description" /* description */, null /* descriptionClassifications */,
+                null /* answer */, null /* fillIntoEdit */, new GURL("dummy url") /* url */,
+                GURL.emptyGURL() /* imageUrl */, null /* imageDominantColor */,
+                false /* isStarred */, false /* isDeletable */, null /* postContentType */,
+                null /* postData */, 1);
+        list1.add(suggestionWithHeader);
+        list2.add(suggestionWithHeader);
+
+        SparseArray<String> headers = new SparseArray<>();
+        headers.put(1, "Valid Header");
+
+        OmniboxSuggestion.dropSuggestionsWithIncorrectGroupHeaders(list2, headers);
+        Assert.assertTrue(isOmniboxSuggestionListMatch(list1, list2));
+    }
+
+    @CalledByNativeJavaTest
+    public void dropSuggestions_suggestionsWithInvalidGroupsAssociation() {
+        List<OmniboxSuggestion> list1 = buildDummySuggestionsList(2, false);
+        List<OmniboxSuggestion> list2 = buildDummySuggestionsList(2, false);
+        OmniboxSuggestion suggestionWithHeader = new OmniboxSuggestion(
+                OmniboxSuggestionType.SEARCH_SUGGEST, true /* isSearchType */, 0 /* relevance */,
+                0 /* transition */, "dummy text", null /* displayTextClassifications */,
+                "dummy description" /* description */, null /* descriptionClassifications */,
+                null /* answer */, null /* fillIntoEdit */, new GURL("dummy url") /* url */,
+                GURL.emptyGURL() /* imageUrl */, null /* imageDominantColor */,
+                false /* isStarred */, false /* isDeletable */, null /* postContentType */,
+                null /* postData */, 1);
+        list2.add(suggestionWithHeader);
+
+        OmniboxSuggestion.dropSuggestionsWithIncorrectGroupHeaders(list2, new SparseArray<>());
         Assert.assertTrue(isOmniboxSuggestionListMatch(list1, list2));
     }
 }

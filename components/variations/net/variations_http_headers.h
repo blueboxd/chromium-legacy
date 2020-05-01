@@ -38,7 +38,9 @@ extern const char kClientDataHeader[];
 // parameters. It is fine to pass SignedIn::NO if the state is not known to the
 // caller. This will prevent addition of ids of type
 // GOOGLE_WEB_PROPERTIES_SIGNED_IN, which is not the case for any ids that come
-// from the variations server. These headers are never transmitted to non-Google
+// from the variations server. The |incognito| param must be the actual
+// Incognito state. It is not correct to pass InIncognito:kNo if the state is
+// unknown. These headers are never transmitted to non-Google
 // web sites, which is checked based on the destination |url|.
 // Returns true if custom headers are added. Returns false otherwise.
 bool AppendVariationsHeader(const GURL& url,
@@ -68,7 +70,10 @@ void RemoveVariationsHeaderIfNeeded(
 
 // Creates a SimpleURLLoader that will include the variations header for
 // requests to Google and ensures they're removed if a redirect to a non-Google
-// URL occurs.
+// URL occurs.  The content of the headers will depend on |incognito| and
+// |signed_in| parameters. It is fine to pass SignedIn::NO if the state is not
+// known to the caller. The |incognito| param must be the actual Incognito
+// state. It is not correct to pass InIncognito:kNo if the state is unknown.
 std::unique_ptr<network::SimpleURLLoader>
 CreateSimpleURLLoaderWithVariationsHeader(
     std::unique_ptr<network::ResourceRequest> request,
@@ -78,7 +83,10 @@ CreateSimpleURLLoaderWithVariationsHeader(
 
 // Creates a SimpleURLLoader that will include the variations header for
 // requests to Google when the signed-in state is unknown and ensures they're
-// removed if a redirect to a non-Google URL occurs.
+// removed if a redirect to a non-Google URL occurs. The content of the headers
+// will depend on |incognito| parameters. The |incognito| param must be the
+// actual Incognito state. It is not correct to pass InIncognito:kNo if the
+// state is unknown.
 std::unique_ptr<network::SimpleURLLoader>
 CreateSimpleURLLoaderWithVariationsHeaderUnknownSignedIn(
     std::unique_ptr<network::ResourceRequest> request,

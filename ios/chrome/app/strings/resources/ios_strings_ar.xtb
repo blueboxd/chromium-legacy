@@ -158,6 +158,7 @@
 <translation id="285960592395650245">إعادة محاولة التنزيل</translation>
 <translation id="2870560284913253234">الموقع</translation>
 <translation id="2871695793448672541">مخفية، كلمة المرور</translation>
+<translation id="2876369937070532032">‏يتم إرسال عناوين URL لبعض الصفحات التي تزورها إلى Google، عندما يكون أمانك في خطر</translation>
 <translation id="288655811176831528">إغلاق علامة التبويب</translation>
 <translation id="2898963176829412617">مجلد جديد...</translation>
 <translation id="2916171785467530738">‏الإكمال التلقائي لعناوين URL وعمليات البحث</translation>
@@ -177,6 +178,7 @@
 <translation id="3161291298470460782">‏سيؤدي هذا الإجراء إلى تسجيل الخروج من حسابك على Chrome وإيقاف المزامنة ومحو جميع بيانات Chrome من هذا الجهاز. وستظل البيانات المتزامنة في حسابك على Google.</translation>
 <translation id="3175081911749765310">خدمات الويب</translation>
 <translation id="3178650076442119961">نشط اليوم</translation>
+<translation id="3181954750937456830">التصفُّح الآمن (يحميك ويحمي جهازك من مواقع الويب الضارة)</translation>
 <translation id="3207960819495026254">تمت إضافتها إلى الإشارات المرجعية.</translation>
 <translation id="3224641773458703735">لتصدير كلمات المرور، يلزمك أولاً تعيين رمز مرور على جهازك.</translation>
 <translation id="3240426699337459095">تم نسخ الرابط</translation>
@@ -430,6 +432,7 @@
 <translation id="6447842834002726250">ملفّات تعريف الارتباط</translation>
 <translation id="6464071786529933911">فتح في علامة تبويب جديدة للتصفح المتخفي</translation>
 <translation id="6476800141292307438">ترجمة صفحة إلى <ph name="LANGUAGE" />. وتتوفّر الخيارات بالقرب من أسفل الشاشة.</translation>
+<translation id="648164694371393720">خطأ في المصادقة</translation>
 <translation id="6482629121755362506">تم حذف <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> من العناصر</translation>
 <translation id="6561262006871132942">تكبير</translation>
 <translation id="6610002944194042868">خيارات الترجمة</translation>

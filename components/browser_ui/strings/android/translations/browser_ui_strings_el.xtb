@@ -3,12 +3,15 @@
 <translationbundle lang="el">
 <translation id="1006017844123154345">Άνοιγμα στο διαδίκτυο</translation>
 <translation id="1044891598689252897">Οι ιστότοποι θα λειτουργούν κανονικά</translation>
+<translation id="1124090076051167250">Αυτή η ενέργεια θα διαγράψει <ph name="DATASIZE" /> δεδομένων και cookie που έχουν αποθηκευτεί από ιστοτόπους ή εφαρμογές στην αρχική σας οθόνη.</translation>
 <translation id="1124772482545689468">Χρήστης</translation>
 <translation id="1178581264944972037">Παύση</translation>
 <translation id="1181037720776840403">Κατάργηση</translation>
 <translation id="1201402288615127009">Επόμενο</translation>
 <translation id="1242008676835033345">Ενσωματωμένο σε <ph name="WEBSITE_URL" /></translation>
+<translation id="1272079795634619415">Διακοπή</translation>
 <translation id="129382876167171263">Τα αρχεία που αποθηκεύονται από ιστοτόπους εμφανίζονται εδώ</translation>
+<translation id="1364532808393826295"><ph name="APP_NAME" />-<ph name="NOTIFICATION_MESSAGE" /></translation>
 <translation id="1369915414381695676">Προστέθηκε ο ιστότοπος <ph name="SITE_NAME" /></translation>
 <translation id="1383876407941801731">Αναζήτηση</translation>
 <translation id="1384959399684842514">Η λήψη διακόπηκε προσωρινά.</translation>
@@ -29,6 +32,7 @@
 <translation id="1984937141057606926">Να επιτρέπονται, εκτός από τα cookie τρίτου μέρους</translation>
 <translation id="1994173015038366702">URL ιστότοπου</translation>
 <translation id="2025115093177348061">Επαυξημένη πραγματικότητα</translation>
+<translation id="2030769033451695672">Πατήστε για επιστροφή σε <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
 <translation id="2041019821020695769">Για να επιτρέψετε στο Chrome να σας στέλνει ειδοποιήσεις, ενεργοποιήστε επίσης τις ειδοποιήσεις στις <ph name="BEGIN_LINK" />Ρυθμίσεις Android<ph name="END_LINK" />.</translation>
 <translation id="2079545284768500474">Αναίρεση</translation>
 <translation id="2091887806945687916">Ήχος</translation>
@@ -104,6 +108,7 @@
 <translation id="5048398596102334565">Να επιτρέπεται στους ιστοτόπους η πρόσβαση στους αισθητήρες κίνησης (συνιστάται)</translation>
 <translation id="5063480226653192405">Χρήση</translation>
 <translation id="5100237604440890931">Συμπτυγμένη - Κάντε κλικ για ανάπτυξη</translation>
+<translation id="5123685120097942451">Καρτέλα ανώνυμης περιήγησης</translation>
 <translation id="5300589172476337783">Εμφάνιση</translation>
 <translation id="5301954838959518834">OK, το κατάλαβα</translation>
 <translation id="5307446750509046227">Διαγ.αποθ.χώρου ιστότ.</translation>
@@ -123,9 +128,11 @@
 <translation id="5677928146339483299">Αποκλεισμένο</translation>
 <translation id="5689516760719285838">Τοποθεσία</translation>
 <translation id="5710871682236653961">Να γίνεται ερώτηση προτού επιτραπεί σε ιστοτόπους η αποστολή ή η λήψη πληροφοριών κατά το πάτημα συσκευών NFC (συνιστάται).</translation>
+<translation id="5719847187258001597">Αυτή η ενέργεια θα διαγράψει όλα τα δεδομένα και τα cookie που έχουν αποθηκευτεί από <ph name="ORIGIN" /> ή από αυτήν την εφαρμογή στην αρχική οθόνη σας.</translation>
 <translation id="5804241973901381774">Άδειες</translation>
 <translation id="5860033963881614850">Απενεργοποιημένη</translation>
 <translation id="5916664084637901428">Ενεργό</translation>
+<translation id="5922853908706496913">Κοινή χρήση της οθόνης σας</translation>
 <translation id="5939518447894949180">Επαναφορά</translation>
 <translation id="6040143037577758943">Κλείσιμο</translation>
 <translation id="6042308850641462728">Περισσότερα</translation>
@@ -169,6 +176,7 @@
 <translation id="7423098979219808738">Να γίνεται ερώτηση πρώτα</translation>
 <translation id="7423538860840206698">Αποκλεισμός από ανάγνωση πρόχειρου</translation>
 <translation id="7521387064766892559">JavaScript</translation>
+<translation id="7554752735887601236">Ένας ιστότοπος χρησιμοποιεί το μικρόφωνό σας.</translation>
 <translation id="7572498721684305250">Αποκλεισμός ιστοτόπων από την αποστολή ή τη λήψη πληροφοριών κατά το πάτημα συσκευών NFC.</translation>
 <translation id="757524316907819857">Αποκλεισμός αναπαραγωγής προστατευόμενου περιεχομένου από ιστοτόπους</translation>
 <translation id="7589445247086920869">Αποκλεισμός για την τρέχουσα μηχανή αναζήτησης</translation>
@@ -177,6 +185,7 @@
 <translation id="7781829728241885113">Χθες</translation>
 <translation id="7791543448312431591">Προσθήκη</translation>
 <translation id="780301667611848630">Όχι, ευχαριστώ</translation>
+<translation id="7804248752222191302">Ένας ιστότοπος χρησιμοποιεί την κάμερά σας.</translation>
 <translation id="7817023149356982970">Θα αποσυνδεθείτε από αυτόν τον ιστότοπο.</translation>
 <translation id="7828557259026017104">Τα cookie είναι αρχεία που δημιουργούνται από ιστοτόπους που επισκέπτεστε. Οι ιστότοποι τα χρησιμοποιούν για να απομνημονεύουν τις προτιμήσεις σας. Τα cookie τρίτου μέρους δημιουργούνται από άλλους ιστοτόπους. Αυτοί οι ιστότοποι διαθέτουν κάποιο περιεχόμενο, όπως διαφημίσεις ή εικόνες, το οποίο μπορείτε να δείτε στην ιστοσελίδα που επισκέπτεστε.</translation>
 <translation id="7846076177841592234">Ακύρωση επιλογής</translation>
@@ -194,7 +203,9 @@
 <translation id="8261506727792406068">Διαγραφή</translation>
 <translation id="8300705686683892304">Διαχείριση από εφαρμογή</translation>
 <translation id="8372893542064058268">Να επιτρέπεται ο Συγχρονισμός παρασκηνίου για έναν συγκεκριμένο ιστότοπο.</translation>
+<translation id="83792324527827022">Ένας ιστότοπος χρησιμοποιεί την κάμερα και το μικρόφωνό σας.</translation>
 <translation id="8380167699614421159">Αυτός ο ιστότοπος εμφανίζει παρεμβατικές ή παραπλανητικές διαφημίσεις</translation>
+<translation id="8394832520002899662">Πατήστε για επιστροφή στον ιστότοπο</translation>
 <translation id="8447861592752582886">Ανάκληση άδειας συσκευής</translation>
 <translation id="851751545965956758">Αποκλεισμός ιστοτόπων από τη σύνδεση σε συσκευές</translation>
 <translation id="857943718398505171">Επιτρέπεται (συνιστάται)</translation>

@@ -4196,6 +4196,46 @@ def _AndroidSpecificOnCommitChecks(input_api, output_api):
   results.extend(_CheckAndroidXmlStyle(input_api, output_api, False))
   return results
 
+# TODO(chrishall): could we additionally match on any path owned by
+#                  ui/accessibility/OWNERS ?
+_ACCESSIBILITY_PATHS = (
+    r"^chrome[\\/]browser.*[\\/]accessibility[\\/]",
+    r"^chrome[\\/]browser[\\/]extensions[\\/]api[\\/]automation.*[\\/]",
+    r"^chrome[\\/]renderer[\\/]extensions[\\/]accessibility_.*",
+    r"^chrome[\\/]tests[\\/]data[\\/]accessibility[\\/]",
+    r"^content[\\/]browser[\\/]accessibility[\\/]",
+    r"^content[\\/]renderer[\\/]accessibility[\\/]",
+    r"^content[\\/]tests[\\/]data[\\/]accessibility[\\/]",
+    r"^extensions[\\/]renderer[\\/]api[\\/]automation[\\/]",
+    r"^ui[\\/]accessibility[\\/]",
+    r"^ui[\\/]views[\\/]accessibility[\\/]",
+)
+
+def _CheckAccessibilityRelnotesField(input_api, output_api):
+  """Checks that commits to accessibility code contain an AX-Relnotes field in
+  their commit message."""
+  def FileFilter(affected_file):
+    paths = _ACCESSIBILITY_PATHS
+    return input_api.FilterSourceFile(affected_file, white_list=paths)
+
+  # Only consider changes affecting accessibility paths.
+  if not any(input_api.AffectedFiles(file_filter=FileFilter)):
+    return []
+
+  relnotes = input_api.change.GitFootersFromDescription().get('AX-Relnotes', [])
+  if relnotes:
+    return []
+
+  # TODO(chrishall): link to Relnotes documentation in message.
+  message = ("Missing 'AX-Relnotes:' field required for accessibility changes"
+             "\n  please add 'AX-Relnotes: [release notes].' to describe any "
+             "user-facing changes"
+             "\n  otherwise add 'AX-Relnotes: n/a.' if this change has no "
+             "user-facing effects"
+             "\n  if this is confusing or annoying then please contact members "
+             "of ui/accessibility/OWNERS.")
+
+  return [output_api.PresubmitNotifyResult(message)]
 
 def _CommonChecks(input_api, output_api):
   """Checks common to both upload and commit."""
@@ -4209,6 +4249,7 @@ def _CommonChecks(input_api, output_api):
     results.extend(
         input_api.canned_checks.CheckAuthorizedAuthor(input_api, output_api))
 
+  results.extend(_CheckAccessibilityRelnotesField(input_api, output_api))
   results.extend(
       _CheckNoProductionCodeUsingTestOnlyFunctions(input_api, output_api))
   results.extend(

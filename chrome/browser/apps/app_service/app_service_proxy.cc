@@ -14,7 +14,6 @@
 #include "chrome/browser/apps/app_service/app_icon_source.h"
 #include "chrome/browser/apps/app_service/app_service_metrics.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
-#include "chrome/browser/apps/app_service/uninstall_dialog.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/services/app_service/app_service_impl.h"
@@ -25,6 +24,7 @@
 #include "url/url_constants.h"
 
 #if defined(OS_CHROMEOS)
+#include "chrome/browser/apps/app_service/uninstall_dialog.h"
 #include "chrome/browser/chromeos/child_accounts/time_limits/app_time_limit_interface.h"
 #include "chrome/browser/supervised_user/grit/supervised_user_unscaled_resources.h"
 #include "extensions/common/constants.h"
@@ -139,7 +139,7 @@ void AppServiceProxy::Initialize() {
     built_in_chrome_os_apps_ =
         std::make_unique<BuiltInChromeOsApps>(app_service_, profile_);
     crostini_apps_ = std::make_unique<CrostiniApps>(app_service_, profile_);
-    extension_apps_ = std::make_unique<ExtensionApps>(
+    extension_apps_ = std::make_unique<ExtensionAppsChromeOs>(
         app_service_, profile_, apps::mojom::AppType::kExtension,
         &instance_registry_);
     plugin_vm_apps_ = std::make_unique<PluginVmApps>(app_service_, profile_);
@@ -147,17 +147,23 @@ void AppServiceProxy::Initialize() {
       web_apps_ = std::make_unique<WebApps>(app_service_, profile_,
                                             &instance_registry_);
     } else {
-      extension_web_apps_ = std::make_unique<ExtensionApps>(
+      extension_web_apps_ = std::make_unique<ExtensionAppsChromeOs>(
           app_service_, profile_, apps::mojom::AppType::kWeb,
           &instance_registry_);
     }
+#else
+    if (!base::FeatureList::IsEnabled(
+            features::kDesktopPWAsWithoutExtensions)) {
+      extension_web_apps_ = std::make_unique<ExtensionApps>(
+          app_service_, profile_, apps::mojom::AppType::kWeb);
+    }
+#endif
 
     // Asynchronously add app icon source, so we don't do too much work in the
     // constructor.
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(&AppServiceProxy::AddAppIconSource,
                                   weak_ptr_factory_.GetWeakPtr(), profile_));
-#endif  // OS_CHROMEOS
   }
 
   Observe(&cache_);
@@ -287,7 +293,20 @@ void AppServiceProxy::SetPermission(const std::string& app_id,
 
 void AppServiceProxy::Uninstall(const std::string& app_id,
                                 gfx::NativeWindow parent_window) {
+#if defined(OS_CHROMEOS)
   UninstallImpl(app_id, parent_window, base::DoNothing());
+#else
+  // On non-ChromeOS, publishers run the remove dialog.
+  apps::mojom::AppType app_type = cache_.GetAppType(app_id);
+  if (app_type == apps::mojom::AppType::kWeb) {
+    if (!base::FeatureList::IsEnabled(
+            features::kDesktopPWAsWithoutExtensions)) {
+      ExtensionApps::UninstallImpl(profile_, app_id, parent_window);
+    } else {
+      // TODO(crbug.com/1074774): Implement uninstall for WebApps.
+    }
+  }
+#endif
 }
 
 #if defined(OS_CHROMEOS)
@@ -388,12 +407,11 @@ apps::IconLoader* AppServiceProxy::OverrideInnerIconLoaderForTesting(
   return old;
 }
 
-void AppServiceProxy::ReInitializeCrostiniForTesting(Profile* profile) {
 #if defined(OS_CHROMEOS)
+void AppServiceProxy::ReInitializeCrostiniForTesting(Profile* profile) {
   if (app_service_.is_connected()) {
     crostini_apps_->ReInitializeForTesting(app_service_, profile);
   }
-#endif
 }
 
 void AppServiceProxy::SetDialogCreatedCallbackForTesting(
@@ -406,6 +424,7 @@ void AppServiceProxy::UninstallForTesting(const std::string& app_id,
                                           base::OnceClosure callback) {
   UninstallImpl(app_id, parent_window, std::move(callback));
 }
+#endif
 
 std::vector<std::string> AppServiceProxy::GetAppIdsForUrl(const GURL& url) {
   return GetAppIdsForIntent(apps_util::CreateIntentFromUrl(url));
@@ -475,9 +494,9 @@ void AppServiceProxy::AddAppIconSource(Profile* profile) {
 }
 
 void AppServiceProxy::Shutdown() {
+#if defined(OS_CHROMEOS)
   uninstall_dialogs_.clear();
 
-#if defined(OS_CHROMEOS)
   if (app_service_.is_connected()) {
     extension_apps_->Shutdown();
     if (web_apps_) {
@@ -486,7 +505,7 @@ void AppServiceProxy::Shutdown() {
       extension_web_apps_->Shutdown();
     }
   }
-#endif  // OS_CHROMEOS
+#endif
 }
 
 void AppServiceProxy::OnApps(std::vector<apps::mojom::AppPtr> deltas) {
@@ -515,6 +534,7 @@ void AppServiceProxy::InitializePreferredApps(
   preferred_apps_.Init(preferred_apps);
 }
 
+#if defined(OS_CHROMEOS)
 void AppServiceProxy::UninstallImpl(const std::string& app_id,
                                     gfx::NativeWindow parent_window,
                                     base::OnceClosure callback) {
@@ -555,7 +575,6 @@ void AppServiceProxy::OnUninstallDialogClosed(
   uninstall_dialogs_.erase(it);
 }
 
-#if defined(OS_CHROMEOS)
 bool AppServiceProxy::MaybeShowLaunchPreventionDialog(
     const apps::AppUpdate& update) {
   if (update.AppId() == extension_misc::kChromeAppId) {

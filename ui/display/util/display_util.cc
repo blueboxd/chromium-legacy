@@ -32,6 +32,19 @@ void EmitEdidColorSpaceChecksOutcomeUma(EdidColorSpaceChecksOutcome outcome) {
                                 outcome);
 }
 
+// Returns true if each and all matrix values are within |epsilon| distance.
+bool NearlyEqual(const skcms_Matrix3x3& lhs,
+                 const skcms_Matrix3x3& rhs,
+                 float epsilon) {
+  for (int r = 0; r < 3; r++) {
+    for (int c = 0; c < 3; c++) {
+      if (std::abs(lhs.vals[r][c] - rhs.vals[r][c]) > epsilon)
+        return false;
+    }
+  }
+  return true;
+}
+
 }  // namespace
 
 bool IsDisplaySizeBlackListed(const gfx::Size& physical_size) {
@@ -100,12 +113,20 @@ gfx::ColorSpace GetColorSpaceFromEdid(const display::EdidParser& edid_parser) {
     return gfx::ColorSpace();
   }
 
-  skcms_Matrix3x3 color_space_as_matrix;
-  if (!primaries.toXYZD50(&color_space_as_matrix)) {
+  skcms_Matrix3x3 primaries_matrix;
+  if (!primaries.toXYZD50(&primaries_matrix)) {
     EmitEdidColorSpaceChecksOutcomeUma(
         EdidColorSpaceChecksOutcome::kErrorCannotExtractToXYZD50);
     return gfx::ColorSpace();
   }
+
+  // Snap the primaries to those of BT.709/sRGB for performance purposes, see
+  // crbug.com/1073467. kPrimariesTolerance is an educated guess from various
+  // ChromeOS panels observations.
+  auto color_space_primaries = gfx::ColorSpace::PrimaryID::INVALID;
+  constexpr float kPrimariesTolerance = 0.025;
+  if (NearlyEqual(primaries_matrix, SkNamedGamut::kSRGB, kPrimariesTolerance))
+    color_space_primaries = gfx::ColorSpace::PrimaryID::BT709;
 
   const double gamma = edid_parser.gamma();
   if (gamma < 1.0) {
@@ -115,8 +136,7 @@ gfx::ColorSpace GetColorSpaceFromEdid(const display::EdidParser& edid_parser) {
   }
   EmitEdidColorSpaceChecksOutcomeUma(EdidColorSpaceChecksOutcome::kSuccess);
 
-  gfx::ColorSpace::TransferID transfer_id =
-      gfx::ColorSpace::TransferID::INVALID;
+  auto transfer_id = gfx::ColorSpace::TransferID::INVALID;
   if (base::Contains(edid_parser.supported_color_primary_ids(),
                      gfx::ColorSpace::PrimaryID::BT2020)) {
     if (base::Contains(edid_parser.supported_color_transfer_ids(),
@@ -132,11 +152,20 @@ gfx::ColorSpace GetColorSpaceFromEdid(const display::EdidParser& edid_parser) {
     transfer_id = gfx::ColorSpace::TransferID::GAMMA24;
   }
 
-  if (transfer_id != gfx::ColorSpace::TransferID::INVALID)
-    return gfx::ColorSpace::CreateCustom(color_space_as_matrix, transfer_id);
+  // Prefer to return a name-based ColorSpace to ease subsequent calculations.
+  if (transfer_id != gfx::ColorSpace::TransferID::INVALID) {
+    if (color_space_primaries != gfx::ColorSpace::PrimaryID::INVALID)
+      return gfx::ColorSpace(color_space_primaries, transfer_id);
+    return gfx::ColorSpace::CreateCustom(primaries_matrix, transfer_id);
+  }
 
   skcms_TransferFunction transfer = {gamma, 1.f, 0.f, 0.f, 0.f, 0.f, 0.f};
-  return gfx::ColorSpace::CreateCustom(color_space_as_matrix, transfer);
+  if (color_space_primaries == gfx::ColorSpace::PrimaryID::INVALID)
+    return gfx::ColorSpace::CreateCustom(primaries_matrix, transfer);
+  return gfx::ColorSpace(
+      color_space_primaries, gfx::ColorSpace::TransferID::CUSTOM,
+      gfx::ColorSpace::MatrixID::RGB, gfx::ColorSpace::RangeID::FULL,
+      /*custom_primary_matrix=*/nullptr, &transfer);
 }
 
 }  // namespace display

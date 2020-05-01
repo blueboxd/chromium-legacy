@@ -218,7 +218,7 @@ const char* GetCommandKeyForActionType(ActionInfo::Type action_type) {
       command_key = manifest_values::kPageActionCommandEvent;
       break;
     case ActionInfo::TYPE_ACTION:
-      // TODO(devlin): Add support for the "action" key.
+      command_key = manifest_values::kActionCommandEvent;
       break;
   }
 
@@ -1173,11 +1173,11 @@ IN_PROC_BROWSER_TEST_P(ActionCommandsApiTest, TriggeringCommandTriggersPopup) {
   EXPECT_TRUE(ExtensionActionTestHelper::Create(browser())->HasPopup());
 }
 
-// TODO(devlin): Add ActionInfo::TYPE_ACTION support here.
 INSTANTIATE_TEST_SUITE_P(All,
                          ActionCommandsApiTest,
                          testing::Values(ActionInfo::TYPE_BROWSER,
-                                         ActionInfo::TYPE_PAGE));
+                                         ActionInfo::TYPE_PAGE,
+                                         ActionInfo::TYPE_ACTION));
 
 INSTANTIATE_TEST_SUITE_P(All, IncognitoCommandsApiTest, testing::Bool());
 

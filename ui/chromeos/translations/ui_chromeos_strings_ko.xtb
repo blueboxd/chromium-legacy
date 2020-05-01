@@ -211,6 +211,7 @@
 <translation id="3495304270784461826">오류가 <ph name="COUNT" />개 있습니다.</translation>
 <translation id="3519867315646775981">음역(shalom ← שלום)</translation>
 <translation id="3522708245912499433">포르투갈어</translation>
+<translation id="3524311639100184459">주의: 이 파일은 임시 파일이며 디스크 여유 공간을 확보하기 위해 자동으로 삭제될 수 있습니다.  <ph name="BEGIN_LINK" />자세히 알아보기<ph name="END_LINK" /></translation>
 <translation id="3527085408025491307">폴더</translation>
 <translation id="3549797760399244642">drive.google.com 사이트로 이동...</translation>
 <translation id="357479282490346887">리투아니아어</translation>
@@ -500,6 +501,7 @@
 <translation id="6806699711453372963">Linux 공유 관리</translation>
 <translation id="6808193438228982088">여우</translation>
 <translation id="6820687829547641339">Gzip으로 압축된 tar 압축 파일</translation>
+<translation id="6823166707458800069">이 폴더에 저장된 모든 파일은 온라인으로 자동 백업됩니다.</translation>
 <translation id="6825883775269213504">러시아어</translation>
 <translation id="6827236167376090743">이 동영상이 계속 반복 재생됩니다.</translation>
 <translation id="6847101934483209767"><ph name="ENTRY_NAME" /> 항목이 선택 해제되었습니다.</translation>

@@ -92,7 +92,6 @@
 <translation id="3582972582564653026">Szinkronizálhatja és személyre szabhatja a Chrome-ot minden eszközén</translation>
 <translation id="3596080736082218006">{COUNT,plural, =0{A rendszergazda előírta, hogy újra kell indítania a Chrome-ot a frissítés alkalmazásához.}=1{A rendszergazda előírta, hogy újra kell indítania a Chrome-ot a frissítés alkalmazásához. Az inkognitóablak nem fog újra megnyílni.}other{A rendszergazda előírta, hogy újra kell indítania a Chrome-ot a frissítés alkalmazásához. A(z) # inkognitóablak nem fog újra megnyílni.}}</translation>
 <translation id="3622797965165704966">Google-fiókjával most még egyszerűbben használhatja a Chrome-ot közösen használt számítógépeken.</translation>
-<translation id="3637702109597584617">Google Chrome OS <ph name="TERMS_OF_SERVICE_LINK" />Általános Szerződési Feltételek<ph name="END_TERMS_OF_SERVICE_LINK" /></translation>
 <translation id="3718181793972440140">Ezzel egyetlen elemet töröl az eszközről. Az adatok későbbi lekéréséhez jelentkezzen be a Chrome-ba a következő e-mail-címmel: <ph name="USER_EMAIL" />.</translation>
 <translation id="3735758079232443276">A(z) <ph name="EXTENSION_NAME" /> bővítmény módosította, hogy melyik oldal jelenjen meg a Chrome indításakor.</translation>
 <translation id="3780814664026482060">Chrome – <ph name="PAGE_TITLE" /></translation>
@@ -109,6 +108,7 @@
 <translation id="4205939740494406371">A Chrome nem tudja ellenőrizni a jelszavait. Próbálja újra 24 óra múlva, vagy <ph name="BEGIN_LINK" />ellenőrizze jelszavait a Google-fiókjában<ph name="END_LINK" />.</translation>
 <translation id="424864128008805179">Kijelentkezés a Chrome-ból</translation>
 <translation id="4251615635259297716">Társítja Chrome-adatait ezzel a fiókkal?</translation>
+<translation id="4281844954008187215">Általános Szerződési Feltételek</translation>
 <translation id="4293420128516039005">Jelentkezzen be, hogy szinkronizálhassa és személyre szabhassa a Chrome-ot minden eszközén</translation>
 <translation id="4328355335528187361">Google Chrome Dev (mDNS-In)</translation>
 <translation id="4331809312908958774">Chrome operációs rendszer</translation>
@@ -141,7 +141,6 @@
 <translation id="5132929315877954718">Fedezzen fel nagyszerű alkalmazásokat, játékokat, bővítményeket és témákat a Google Chrome-hoz.</translation>
 <translation id="5170938038195470297">A profilja nem használható, mivel a Google Chrome egy újabb verziójából származik. Előfordulhat, hogy egyes funkciók nem érhetők el. Kérjük, adjon meg egy másik profilmappát, vagy használja a Google Chrome újabb verzióját.</translation>
 <translation id="5193136243808726294">A Google Chrome OS nem tudja megnyitni ezt az oldalt.</translation>
-<translation id="5204098752394657250">Google Chrome <ph name="TERMS_OF_SERVICE_LINK" />Általános Szerződési Feltételek<ph name="END_TERMS_OF_SERVICE_LINK" /></translation>
 <translation id="5251420635869119124">A vendégek úgy használhatják a Chrome-ot, hogy nem hagynak hátra semmit.</translation>
 <translation id="532046782124376502">Figyelmeztetés: A Google Chrome nem tudja megakadályozni, hogy a bővítmények rögzítsék a böngészési előzményeket. A bővítmény inkognitómódban való használatának letiltásához törölje e lehetőség bejelölését.</translation>
 <translation id="5386244825306882791">Továbbá azt is szabályozza, hogy melyik oldal jelenik meg a Chrome indításakor vagy a cím- és keresősávban indított kereséskor.</translation>

@@ -4,11 +4,14 @@
 
 #include "chrome/browser/reputation/local_heuristics.h"
 
+#include "base/bind.h"
+#include "base/callback.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/strings/string_split.h"
 #include "chrome/browser/lookalikes/lookalike_url_blocking_page.h"
 #include "chrome/browser/lookalikes/lookalike_url_navigation_throttle.h"
 #include "chrome/browser/lookalikes/lookalike_url_service.h"
+#include "chrome/browser/reputation/safety_tips_config.h"
 #include "chrome/common/chrome_features.h"
 #include "components/lookalikes/lookalike_url_util.h"
 #include "components/security_state/core/features.h"
@@ -43,8 +46,11 @@ bool ShouldTriggerSafetyTipFromLookalike(
     return false;
   }
 
-  if (!GetMatchingDomain(navigated_domain, engaged_sites, &matched_domain,
-                         &match_type)) {
+  auto* config = GetSafetyTipsRemoteConfigProto();
+  const LookalikeTargetAllowlistChecker in_target_allowlist =
+      base::BindRepeating(&IsTargetUrlAllowlistedBySafetyTipsComponent, config);
+  if (!GetMatchingDomain(navigated_domain, engaged_sites, in_target_allowlist,
+                         &matched_domain, &match_type)) {
     return false;
   }
 

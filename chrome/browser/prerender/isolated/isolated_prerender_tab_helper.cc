@@ -93,8 +93,10 @@ void InformPLMOfLikelyPrefetching(content::WebContents* web_contents) {
 IsolatedPrerenderTabHelper::PrefetchMetrics::PrefetchMetrics() = default;
 IsolatedPrerenderTabHelper::PrefetchMetrics::~PrefetchMetrics() = default;
 
-IsolatedPrerenderTabHelper::CurrentPageLoad::CurrentPageLoad()
-    : metrics_(
+IsolatedPrerenderTabHelper::CurrentPageLoad::CurrentPageLoad(
+    content::NavigationHandle* handle)
+    : navigation_start_(handle ? handle->NavigationStart() : base::TimeTicks()),
+      metrics_(
           base::MakeRefCounted<IsolatedPrerenderTabHelper::PrefetchMetrics>()) {
 }
 IsolatedPrerenderTabHelper::CurrentPageLoad::~CurrentPageLoad() = default;
@@ -107,7 +109,7 @@ const void* IsolatedPrerenderTabHelper::PrefetchingLikelyEventKey() {
 IsolatedPrerenderTabHelper::IsolatedPrerenderTabHelper(
     content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents) {
-  page_ = std::make_unique<CurrentPageLoad>();
+  page_ = std::make_unique<CurrentPageLoad>(nullptr);
   profile_ = Profile::FromBrowserContext(web_contents->GetBrowserContext());
 
   NavigationPredictorKeyedService* navigation_predictor_service =
@@ -177,7 +179,7 @@ void IsolatedPrerenderTabHelper::DidFinishNavigation(
 
   // |page_| is reset on commit so that any available cached prefetches that
   // result from a redirect get used.
-  page_ = std::make_unique<CurrentPageLoad>();
+  page_ = std::make_unique<CurrentPageLoad>(navigation_handle);
 }
 
 void IsolatedPrerenderTabHelper::OnVisibilityChanged(
@@ -217,6 +219,13 @@ void IsolatedPrerenderTabHelper::Prefetch() {
   DCHECK(IsolatedPrerenderIsEnabled());
 
   page_->url_loader_.reset();
+
+  if (!page_->metrics_->navigation_to_prefetch_start_.has_value()) {
+    page_->metrics_->navigation_to_prefetch_start_ =
+        base::TimeTicks::Now() - page_->navigation_start_;
+    DCHECK_GT(page_->metrics_->navigation_to_prefetch_start_.value(),
+              base::TimeDelta());
+  }
 
   if (IsolatedPrerenderCloseIdleSockets() && page_->isolated_network_context_) {
     page_->isolated_network_context_->CloseIdleConnections(base::DoNothing());

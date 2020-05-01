@@ -246,7 +246,6 @@ body.hide-fakebox #fakebox {
   display: none;
   left: 0;
   overflow: hidden;
-  padding-bottom: 8px;
   padding-top: var(--searchbox-height);
   position: absolute;
   right: 0;
@@ -310,23 +309,37 @@ body.hide-fakebox #fakebox {
 #realbox-matches a.has-image {
   display: flex;
   flex-direction: column;
-  height: 32px;
-  justify-content: center;
   padding-bottom: 6px;
   padding-top: 6px;
 }
 
 #realbox-matches a.has-image > span {
-  margin-bottom: 2px;
-  margin-top: 2px;
+  position: relative;
+}
+
+#realbox-matches a.has-image > span:first-of-type {
+  top: -1px; /* aligns the top of the text with the top of the image */
+}
+
+#realbox-matches a.has-image > span:last-of-type {
+  bottom: -1px; /* aligns the bottom of the text with the bottom of the image */
 }
 
 #realbox-matches a.has-image .description {
   font-size: 14px;
+  margin-top: 2px;
+}
+
+#realbox-matches a.has-image .remove-match {
+  top: 10px;
 }
 
 #realbox-matches.removable a {
   padding-inline-end: 48px;
+}
+
+#realbox-matches a:last-of-type {
+  margin-bottom: 8px;
 }
 
 #realbox-matches a:-webkit-any(:focus-within, .selected) .match-icon {

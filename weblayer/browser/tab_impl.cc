@@ -4,10 +4,15 @@
 
 #include "weblayer/browser/tab_impl.h"
 
+#include <cmath>
+
 #include "base/auto_reset.h"
 #include "base/feature_list.h"
 #include "base/guid.h"
 #include "base/logging.h"
+#include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
+#include "cc/layers/layer.h"
 #include "components/autofill/content/browser/content_autofill_driver_factory.h"
 #include "components/autofill/core/browser/autofill_manager.h"
 #include "components/autofill/core/browser/autofill_provider.h"
@@ -21,12 +26,15 @@
 #include "components/permissions/permission_result.h"
 #include "components/sessions/content/session_tab_helper.h"
 #include "components/webrtc/media_stream_devices_controller.h"
+#include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/file_select_listener.h"
 #include "content/public/browser/interstitial_page.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/renderer_preferences_util.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/web_preferences.h"
@@ -65,6 +73,7 @@
 #include "components/embedder_support/android/delegate/color_chooser_android.h"
 #include "components/javascript_dialogs/tab_modal_dialog_manager.h"  // nogncheck
 #include "ui/android/view_android.h"
+#include "ui/gfx/android/java_bitmap.h"
 #include "weblayer/browser/controls_visibility_reason.h"
 #include "weblayer/browser/java/jni/TabImpl_jni.h"
 #include "weblayer/browser/javascript_tab_modal_dialog_manager_delegate_android.h"
@@ -81,6 +90,7 @@
 #if defined(OS_ANDROID)
 using base::android::AttachCurrentThread;
 using base::android::JavaParamRef;
+using base::android::ScopedJavaGlobalRef;
 using base::android::ScopedJavaLocalRef;
 #endif
 
@@ -156,14 +166,53 @@ struct UserData : public base::SupportsUserData::Data {
 #if defined(OS_ANDROID)
 Tab* g_last_tab;
 
-void HandleJavaScriptResult(
-    const base::android::ScopedJavaGlobalRef<jobject>& callback,
-    base::Value result) {
+void HandleJavaScriptResult(const ScopedJavaGlobalRef<jobject>& callback,
+                            base::Value result) {
   std::string json;
   base::JSONWriter::Write(result, &json);
   base::android::RunStringCallbackAndroid(callback, json);
 }
-#endif
+
+void OnConvertedToJavaBitmap(const ScopedJavaGlobalRef<jobject>& value_callback,
+                             const ScopedJavaGlobalRef<jobject>& java_bitmap) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  Java_TabImpl_runCaptureScreenShotCallback(
+      AttachCurrentThread(), value_callback, java_bitmap,
+      static_cast<int>(TabImpl::ScreenShotErrors::kNone));
+}
+
+// Convert SkBitmap to java Bitmap on a background thread since it involves a
+// memcpy.
+void ConvertToJavaBitmapBackgroundThread(
+    const SkBitmap& bitmap,
+    base::OnceCallback<void(const ScopedJavaGlobalRef<jobject>&)> callback) {
+  // Make sure to only pass ScopedJavaGlobalRef between threads.
+  ScopedJavaGlobalRef<jobject> java_bitmap =
+      ScopedJavaGlobalRef<jobject>(gfx::ConvertToJavaBitmap(&bitmap));
+  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                 base::BindOnce(std::move(callback), std::move(java_bitmap)));
+}
+
+void OnScreenShotCaptured(const ScopedJavaGlobalRef<jobject>& value_callback,
+                          const SkBitmap& bitmap) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  if (bitmap.isNull() || bitmap.drawsNothing()) {
+    Java_TabImpl_runCaptureScreenShotCallback(
+        AttachCurrentThread(), value_callback, nullptr,
+        static_cast<int>(TabImpl::ScreenShotErrors::kCaptureFailed));
+    return;
+  }
+  // Not using PostTaskAndReplyWithResult to ensure ScopedJavaLocalRef is not
+  // passed between threads.
+  base::ThreadPool::PostTask(
+      FROM_HERE,
+      {base::TaskPriority::BEST_EFFORT,
+       base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
+      base::BindOnce(&ConvertToJavaBitmapBackgroundThread, bitmap,
+                     base::BindOnce(&OnConvertedToJavaBitmap, value_callback)));
+}
+
+#endif  // OS_ANDROID
 
 }  // namespace
 
@@ -417,7 +466,7 @@ void TabImpl::ExecuteScript(JNIEnv* env,
                             const JavaParamRef<jstring>& script,
                             bool use_separate_isolate,
                             const JavaParamRef<jobject>& callback) {
-  base::android::ScopedJavaGlobalRef<jobject> jcallback(env, callback);
+  ScopedJavaGlobalRef<jobject> jcallback(env, callback);
   ExecuteScript(base::android::ConvertJavaStringToUTF16(script),
                 use_separate_isolate,
                 base::BindOnce(&HandleJavaScriptResult, jcallback));
@@ -481,7 +530,70 @@ ScopedJavaLocalRef<jstring> TabImpl::GetGuid(JNIEnv* env) {
   return base::android::ConvertUTF8ToJavaString(AttachCurrentThread(),
                                                 GetGuid());
 }
-#endif
+
+TabImpl::ScreenShotErrors TabImpl::PrepareForCaptureScreenShot(
+    float scale,
+    content::RenderWidgetHostView** rwhv,
+    gfx::Rect* src_rect,
+    gfx::Size* output_size) {
+  if (scale <= 0.f || scale > 1.f)
+    return ScreenShotErrors::kScaleOutOfRange;
+
+  if (!IsActive())
+    return ScreenShotErrors::kTabNotActive;
+
+  if (web_contents_->GetVisibility() != content::Visibility::VISIBLE)
+    return ScreenShotErrors::kWebContentsNotVisible;
+
+  if (!browser_ || !browser_->CompositorHasSurface())
+    return ScreenShotErrors::kNoSurface;
+
+  *rwhv = web_contents_->GetTopLevelRenderWidgetHostView();
+  if (!*rwhv)
+    return ScreenShotErrors::kNoRenderWidgetHostView;
+
+  if (!(*rwhv)->GetNativeView()->GetWindowAndroid())
+    return ScreenShotErrors::kNoWindowAndroid;
+
+  *src_rect =
+      gfx::Rect(web_contents_->GetNativeView()->GetPhysicalBackingSize());
+  if (src_rect->IsEmpty())
+    return ScreenShotErrors::kEmptyViewport;
+
+  cc::Layer* layer = web_contents_->GetNativeView()->GetLayer();
+  float offset_y = layer ? layer->position().y() : 0.f;
+  int reduced_height = std::round(src_rect->height() - offset_y);
+  if (reduced_height <= 0)
+    return ScreenShotErrors::kHiddenByControls;
+  src_rect->set_height(reduced_height);
+
+  *output_size = gfx::ScaleToCeiledSize(src_rect->size(), scale, scale);
+  if (output_size->IsEmpty())
+    return ScreenShotErrors::kScaledToEmpty;
+  return ScreenShotErrors::kNone;
+}
+
+void TabImpl::CaptureScreenShot(
+    JNIEnv* env,
+    jfloat scale,
+    const base::android::JavaParamRef<jobject>& value_callback) {
+  content::RenderWidgetHostView* rwhv = nullptr;
+  gfx::Rect src_rect;
+  gfx::Size output_size;
+  ScreenShotErrors error =
+      PrepareForCaptureScreenShot(scale, &rwhv, &src_rect, &output_size);
+  if (error != ScreenShotErrors::kNone) {
+    Java_TabImpl_runCaptureScreenShotCallback(
+        env, ScopedJavaLocalRef<jobject>(value_callback),
+        ScopedJavaLocalRef<jobject>(), static_cast<int>(error));
+  }
+
+  rwhv->CopyFromSurface(
+      src_rect, output_size,
+      base::BindOnce(&OnScreenShotCaptured,
+                     ScopedJavaGlobalRef<jobject>(value_callback)));
+}
+#endif  // OS_ANDROID
 
 content::WebContents* TabImpl::OpenURLFromTab(
     content::WebContents* source,

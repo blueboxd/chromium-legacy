@@ -382,9 +382,7 @@
 <translation id="1509281256533087115">Pasiekite bet kurį „<ph name="DEVICE_NAME_AND_VENDOR" />“ per USB</translation>
 <translation id="1509960214886564027">Funkcijos gali neveikti daugybėje svetainių.</translation>
 <translation id="1510030919967934016">Šis puslapis buvo užblokuotas, kad nebūtų galima stebėti jūsų vietovės.</translation>
-<translation id="1510055949674985293">Generuoti šio vaizdo QR kodą</translation>
 <translation id="1510238584712386396">Paleidimo priemonė</translation>
-<translation id="1510581003097415337">Generuoti šio puslapio QR kodą</translation>
 <translation id="1510785804673676069">Jei naudojate įgaliotąjį serverį, patikrinkite jo nustatymus arba
     susisiekite su tinklo administratoriumi, kad įsitikintumėte, jog įgaliotasis
     serveris veikia. Jei nemanote, kad turėtumėte naudoti įgaliotąjį serverį
@@ -2309,7 +2307,6 @@ Ar norite paleisti „<ph name="CONTROL_PANEL_APPLET_NAME" />“?</translation>
 <translation id="4007856537951125667">Slėpti sparčiuosius klavišus</translation>
 <translation id="4008291085758151621">Svetainės informacija nepasiekiama VR formatu</translation>
 <translation id="4010917659463429001">Kad pasiektumėte žymes mobiliajame įrenginyje, <ph name="GET_IOS_APP_LINK" />.</translation>
-<translation id="4013132157686828973">„<ph name="CLIENT_NAME" />“ derina šią naršyklę</translation>
 <translation id="4014432863917027322">Pataisyti „<ph name="EXTENSION_NAME" />“?</translation>
 <translation id="4015163439792426608">Turite plėtinių? <ph name="BEGIN_LINK" />Tvarkykite juos<ph name="END_LINK" /> vienoje paprastoje vietoje.</translation>
 <translation id="4020327272915390518">Parinkčių meniu</translation>
@@ -3013,7 +3010,6 @@ Ar norite paleisti „<ph name="CONTROL_PANEL_APPLET_NAME" />“?</translation>
 <translation id="504561833207953641">Atidaroma esamoje naršyklės sesijoje.</translation>
 <translation id="5047421709274785093">Neleisti svetainėms naudoti judesio ir šviesos jutiklių</translation>
 <translation id="5050042263972837708">Grupės pavadinimas</translation>
-<translation id="5051073330196664891">„Google“ bendrosios paslaugų teikimo sąlygos</translation>
 <translation id="5051836348807686060">Jūsų pasirinktų kalbų rašybos tikrinimas nepalaikomas</translation>
 <translation id="5052499409147950210">Svetainės redagavimas</translation>
 <translation id="5053604404986157245">Šis atsitiktiniu būdu sugeneruotas TPM slaptažodis negalimas. Tai įprasta po „Powerwash“ vykdymo.</translation>
@@ -3887,7 +3883,6 @@ Ar norite paleisti „<ph name="CONTROL_PANEL_APPLET_NAME" />“?</translation>
 <translation id="6226777517901268232">Privataus rakto failas (pasirenkama)</translation>
 <translation id="6227280783235722609">plėtinys</translation>
 <translation id="6228691855869374890">Ši svetainė visiškai valdo MIDI įrenginius.</translation>
-<translation id="6228720835160974792">Generuoti šio vaizdo QR kodą</translation>
 <translation id="6229890768313448549">Nepavyksta įkelti „Google Play“ paslaugų teikimo sąlygų. Bandykite dar kartą.</translation>
 <translation id="6231881193380278751">Kad puslapis būtų atnaujintas automatiškai, pridėkite šį užklausos parametrą prie URL: chrome://device-log/?refresh=&lt;sec&gt;</translation>
 <translation id="6232017090690406397">Akumuliatorius</translation>
@@ -4550,7 +4545,6 @@ Ar norite paleisti „<ph name="CONTROL_PANEL_APPLET_NAME" />“?</translation>
 <translation id="7123360114020465152">Nebepalaikoma</translation>
 <translation id="7127980134843952133">Atsisiuntimų istorija</translation>
 <translation id="7128151990937044829">Rodyti indikatorių adreso juostoje, kai blokuojamas pranešimas</translation>
-<translation id="7128239828194367697">Generuoti šio puslapio QR kodą</translation>
 <translation id="7131040479572660648">Skaityti duomenis svetainėse <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> ir <ph name="WEBSITE_3" /></translation>
 <translation id="713122686776214250">Pridėti pu&amp;slapį...</translation>
 <translation id="7133578150266914903">Administratorius atkuria šį įrenginį (<ph name="PROGRESS_PERCENT" />)</translation>
@@ -5836,7 +5830,7 @@ Rakto failą laikykite saugioje vietoje. Jo reikės, kai norėsite sukurti nauja
 <translation id="8818958672113348984">Patvirtinti telefonu</translation>
 <translation id="8820817407110198400">Žymės</translation>
 <translation id="8821045908425223359">Automatiškai konfigūruoti IP adresą</translation>
-<translation id="8821268776955756404">Programa „<ph name="APP_NAME" />“ paroušta naudoti.</translation>
+<translation id="8821268776955756404">Programa „<ph name="APP_NAME" />“ paruošta naudoti.</translation>
 <translation id="882204272221080310">Atnaujinti programinę aparatinę įrangą, norint užtikrinti geresnę apsaugą.</translation>
 <translation id="8823514049557262177">Kopijuoti nuorodos teks&amp;tą</translation>
 <translation id="8823559166155093873">Blokuoti slapukus</translation>

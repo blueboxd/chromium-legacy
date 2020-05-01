@@ -4,7 +4,7 @@
 
 #include "third_party/blink/renderer/platform/graphics/gpu/dawn_control_client_holder.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "gpu/command_buffer/client/webgpu_interface.h"
 
 namespace blink {

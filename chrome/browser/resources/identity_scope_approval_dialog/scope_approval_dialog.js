@@ -20,6 +20,13 @@ function loadAuthUrlAndShowWindow(url, win) {
     window.open(e.targetUrl);
   });
 
+  webview.addContentScripts([{
+    name: 'injectRule',
+    matches: ['https://accounts.google.com/*'],
+    js: {files: ['inject.js']},
+    run_at: 'document_start'
+  }]);
+
   // Request a customized view from GAIA.
   webview.request.onBeforeSendHeaders.addListener(
       function(details) {
@@ -44,7 +51,6 @@ function loadAuthUrlAndShowWindow(url, win) {
       windowId = win.id;
       windowShown = true;
     }
-    webview.executeScript({file: 'inject.js'});
   });
 }
 

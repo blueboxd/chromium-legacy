@@ -38,7 +38,6 @@
 <translation id="1258753120186372309">Google ഡൂഡിൽ: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1260236875608242557">തിരയുക, അടുത്തറിയുക</translation>
 <translation id="1266864766717917324"><ph name="CONTENT_TYPE" /> പങ്കിടാനായില്ല</translation>
-<translation id="1272079795634619415">നിര്‍ത്തുക</translation>
 <translation id="1283039547216852943">വികസിപ്പിക്കാൻ ടാപ്പ് ചെയ്യുക</translation>
 <translation id="1285320974508926690">ഈ സൈറ്റ് ഒരിക്കലും വിവര്‍‌ത്തനം ചെയ്യരുത്</translation>
 <translation id="1291207594882862231">ചരിത്രവും കുക്കികളും സൈറ്റ് വിവരവും കാഷെയും മായ്‌ക്കുക...</translation>
@@ -51,7 +50,6 @@
 <translation id="1331212799747679585">Chrome അപ്‌ഡേറ്റ് ചെയ്യാനാവില്ല. കൂടുതൽ ഓപ്‌ഷനുകൾ</translation>
 <translation id="1332501820983677155">Google Chrome ഫീച്ചർ കുറുക്കുവഴികൾ</translation>
 <translation id="1360432990279830238">സൈൻ ഔട്ട് ചെയ്‌ത് സമന്വയം ഓഫാക്കണോ?</translation>
-<translation id="1364532808393826295"><ph name="APP_NAME" /> - <ph name="NOTIFICATION_MESSAGE" /></translation>
 <translation id="1373696734384179344">തിരഞ്ഞെടുത്ത ഉള്ളടക്കം ഡൗൺലോഡ് ചെയ്യുന്നതിന് ആവശ്യമായ മെമ്മറിയില്ല.</translation>
 <translation id="1376578503827013741">കണക്കാക്കുന്നു…</translation>
 <translation id="1383876407941801731">തിരയുക</translation>
@@ -122,7 +120,6 @@
 <translation id="2013642289801508067">{FILE_COUNT,plural, =1{# ഫയല്‍}other{# ഫയലുകൾ}}</translation>
 <translation id="2017836877785168846">വിലാസ ബാറിലെ ചരിത്രവും സ്വയം പൂർത്തീകരണങ്ങളും മായ്ക്കുന്നു.</translation>
 <translation id="2021896219286479412">പൂർണ്ണ സ്ക്രീൻ സൈറ്റ് നിയന്ത്രണങ്ങൾ</translation>
-<translation id="2030769033451695672"><ph name="URL_OF_THE_CURRENT_TAB" /> എന്നതിലേക്ക് മടങ്ങാൻ ടാപ്പ് ചെയ്യുക</translation>
 <translation id="2038563949887743358">'ഡെസ്‌ക്‌ടോപ്പ് സൈറ്റ് അഭ്യർത്ഥിക്കുക' ഓണാക്കുക</translation>
 <translation id="204321170514947529"><ph name="APP_NAME" /> എന്നതിനും Chrome-ൽ ഡാറ്റയുണ്ടായിരുന്നു</translation>
 <translation id="2049574241039454490"><ph name="FILE_SIZE_OF_TOTAL" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
@@ -592,7 +589,6 @@
 <translation id="5876056640971328065">വീഡിയോ താൽക്കാലികമായി നിർത്തുക</translation>
 <translation id="5884076754568147479">ടാസ്‌ക്കുകൾ പൂർത്തിയാക്കാൻ നിങ്ങളെ സഹായിക്കുന്നതിനായി, നിങ്ങൾ അസിസ്‌റ്റന്റ് ഉപയോഗിക്കുന്ന സൈറ്റുകളുടെ URL-കളും അവയുടെ ഉള്ളടക്കവും അസിസ്‌റ്റന്റിലൂടെ നിങ്ങൾ സമർപ്പിക്കുന്ന വിവരങ്ങളും Google-ന് ലഭിക്കും.</translation>
 <translation id="5919204609460789179">സമന്വയിപ്പിക്കാൻ തുടങ്ങുന്നതിന്, <ph name="PRODUCT_NAME" /> അപ്‌ഡേറ്റ് ചെയ്യുക</translation>
-<translation id="5922853908706496913">നിങ്ങളുടെ സ്‌ക്രീൻ പങ്കിടുന്നു</translation>
 <translation id="5937580074298050696"><ph name="AMOUNT" /> സംരക്ഷിച്ചു</translation>
 <translation id="5939518447894949180">റീസെറ്റ് ചെയ്യുക</translation>
 <translation id="5942872142862698679">തിരയാൻ Google ഉപയോഗിക്കുന്നു</translation>
@@ -779,7 +775,6 @@
 <translation id="7514365320538308">ഡൗൺലോഡ് ചെയ്യുക</translation>
 <translation id="751961395872307827">സൈറ്റിലേക്ക് കണ‌ക്‌റ്റ് ചെയ്യാനാവുന്നില്ല</translation>
 <translation id="7542481630195938534">നിർദ്ദേശങ്ങൾ സ്വീകരിക്കാനാവില്ല</translation>
-<translation id="7554752735887601236">ഒരു സൈറ്റ് നിങ്ങളുടെ മൈക്രോഫോൺ ഉപയോഗിക്കുന്നു</translation>
 <translation id="7559975015014302720">ലൈറ്റ് മോഡ് ഓഫാണ്</translation>
 <translation id="7562080006725997899">ബ്രൗസിംഗ് ഡാറ്റ മായ്‌ക്കൽ</translation>
 <translation id="756809126120519699">Chrome ഡാറ്റ മായ്‌ച്ചു</translation>
@@ -813,7 +808,6 @@
 <translation id="7774809984919390718">{PAYMENT_METHOD,plural, =1{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 എന്നതും ‌മറ്റ് <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> പേയ്‌മെന്റ് രീതികളും}other{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 എന്നതും ‌മറ്റ് <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> പേയ്‌മെന്റ് രീതികളും}}</translation>
 <translation id="7791543448312431591">ചേര്‍ക്കൂ</translation>
 <translation id="780301667611848630">വേണ്ട നന്ദി</translation>
-<translation id="7804248752222191302">ഒരു സൈറ്റ് നിങ്ങളുടെ ക്യാമറ ഉപയോഗിക്കുന്നു</translation>
 <translation id="7810647596859435254">ഇത് ഉപയോഗിച്ച് തുറക്കുക...</translation>
 <translation id="7821588508402923572">നിങ്ങൾ ലാഭിച്ച ഡാറ്റ ഇവിടെ ദൃശ്യമാവും</translation>
 <translation id="783819812427904514">വീഡിയോ അൺ‌മ്യൂട്ട് ചെയ്യുക</translation>
@@ -885,9 +879,7 @@
 <translation id="8349013245300336738">ഉപയോഗിച്ച ഡാറ്റയുടെ അളവിനനുസരിച്ച് അടുക്കുക</translation>
 <translation id="8364299278605033898">ജനപ്രിയ വെബ്‌സൈറ്റുകൾ കാണുക</translation>
 <translation id="8368027906805972958">പരിചിതമല്ലാത്തതോ പിന്തുണയ്‌ക്കാത്തതോ ആയ ഉപകരണം (<ph name="DEVICE_ID" />)</translation>
-<translation id="83792324527827022">ഒരു സൈറ്റ് നിങ്ങളുടെ ക്യാമറയും മൈക്രോഫോണും ഉപയോഗിക്കുന്നു</translation>
 <translation id="8393700583063109961">സന്ദേശം അയയ്ക്കുക</translation>
-<translation id="8394832520002899662">സൈറ്റിലേക്ക് മടങ്ങാൻ ടാപ്പ് ചെയ്യുക</translation>
 <translation id="8413126021676339697">മുഴുവന്‍ ചരിത്രവും കാണിക്കുക</translation>
 <translation id="8427875596167638501">പ്രിവ്യു ടാബ് പാതി തുറന്നിരിക്കുന്നു</translation>
 <translation id="8428213095426709021">ക്രമീകരണങ്ങള്‍</translation>
@@ -984,7 +976,6 @@
 <translation id="970715775301869095"><ph name="MINUTES" /> മിനിറ്റ് ശേഷിക്കുന്നു</translation>
 <translation id="974555521953189084">സമന്വയിപ്പിക്കൽ തുടങ്ങുന്നതിന് പാസ്‌ഫ്രെയ്‌സ് നൽകുക</translation>
 <translation id="981121421437150478">ഓഫ്‌ലൈൻ</translation>
-<translation id="982182592107339124">ഇത് ഇനിപ്പറയുന്നവ ഉൾപ്പെടെയുള്ള എല്ലാ സൈറ്റുകളുടെയും വിവരങ്ങൾ മായ്‌ക്കുന്നതിനിടയാക്കും:</translation>
 <translation id="983192555821071799">എല്ലാ ടാബുകളും അടയ്‌ക്കുക</translation>
 <translation id="987264212798334818">പൊതുവായ</translation>
 </translationbundle>

@@ -38,7 +38,6 @@
 <translation id="1258753120186372309">Google doodle'ı: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1260236875608242557">Arama yapın ve keşfedin</translation>
 <translation id="1266864766717917324"><ph name="CONTENT_TYPE" /> paylaşılamadı</translation>
-<translation id="1272079795634619415">Durdur</translation>
 <translation id="1283039547216852943">Genişletmek için dokunun</translation>
 <translation id="1285320974508926690">Bu siteyi hiçbir zaman çevirme</translation>
 <translation id="1291207594882862231">Geçmişi, çerezleri, site verilerini, önbelleği temizleyin…</translation>
@@ -50,8 +49,8 @@
 <translation id="1327257854815634930">Gezinme geçmişi açık</translation>
 <translation id="1331212799747679585">Chrome güncellenemiyor. Diğer seçenekler</translation>
 <translation id="1332501820983677155">Google Chrome'un özellik kısayolları</translation>
+<translation id="1347468774581902829">Etkinliği yönet</translation>
 <translation id="1360432990279830238">Oturum ve senkronizasyon kapatılsın mı?</translation>
-<translation id="1364532808393826295"><ph name="APP_NAME" />-<ph name="NOTIFICATION_MESSAGE" /></translation>
 <translation id="1373696734384179344">Seçilen içeriği indirmek için bellek yetersiz.</translation>
 <translation id="1376578503827013741">Hesaplanıyor…</translation>
 <translation id="1383876407941801731">Ara</translation>
@@ -122,7 +121,6 @@
 <translation id="2013642289801508067">{FILE_COUNT,plural, =1{# Dosya}other{# Dosya}}</translation>
 <translation id="2017836877785168846">Geçmişi ve adres çubuğundaki otomatik tamamlama bilgilerini temizler.</translation>
 <translation id="2021896219286479412">Tam ekran site kontrolleri</translation>
-<translation id="2030769033451695672"><ph name="URL_OF_THE_CURRENT_TAB" /> sekmesine dönmek için dokunun</translation>
 <translation id="2038563949887743358">Masaüstü sitesi iste işlevini etkinleştir</translation>
 <translation id="204321170514947529"><ph name="APP_NAME" /> uygulamasına ait veriler Chrome'da da mevcut</translation>
 <translation id="2049574241039454490"><ph name="FILE_SIZE_OF_TOTAL" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
@@ -434,6 +432,7 @@ Diğer Google hizmetlerinden yapılan aramalar ve etkinlikler gibi Google hesab�
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> yer işareti silindi</translation>
 <translation id="4665282149850138822"><ph name="NAME" />, Ana ekranınıza eklendi</translation>
 <translation id="4684427112815847243">Her şeyi senkronize et</translation>
+<translation id="4688610874307684559">Chrome'da çalışıyor (Başlangıç)</translation>
 <translation id="4695891336199304370">{SHIPPING_OPTIONS,plural, =1{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 ve <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> seçenek daha}other{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 ve <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> seçenek daha}}</translation>
 <translation id="4696983787092045100">Cihazlarınıza mesaj gönderin</translation>
 <translation id="4698034686595694889"><ph name="APP_NAME" /> uygulamasında çevrimdışı görüntüle</translation>
@@ -592,7 +591,6 @@ Bu ayarı değiştirmek için <ph name="BEGIN_LINK" />senkronizasyonu sıfırlay
 <translation id="5876056640971328065">Videoyu duraklat</translation>
 <translation id="5884076754568147479">Google, görevleri tamamlamanıza yardımcı olmak için Asistan'ı kullandığınız sitelerin URL'lerinin ve içeriklerinin yanı sıra Asistan aracılığıyla gönderdiğiniz bilgileri alır</translation>
 <translation id="5919204609460789179">Senkronizasyonu başlatmak için <ph name="PRODUCT_NAME" /> adlı uygulamayı güncelleyin</translation>
-<translation id="5922853908706496913">Ekranınız paylaşılıyor</translation>
 <translation id="5937580074298050696"><ph name="AMOUNT" /> tasarruf edildi</translation>
 <translation id="5939518447894949180">Sıfırla</translation>
 <translation id="5942872142862698679">Arama için Google kullanılıyor</translation>
@@ -773,16 +771,17 @@ Bu ayarı değiştirmek için <ph name="BEGIN_LINK" />senkronizasyonu sıfırlay
 <translation id="7479104141328977413">Sekme yönetimi</translation>
 <translation id="7481312909269577407">İleri</translation>
 <translation id="7482656565088326534">Önizleme sekmesi</translation>
+<translation id="7484997419527351112">Keşfet - kapalı</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (<ph name="TIME_SINCE_UPDATE" /> güncellendi)</translation>
 <translation id="7494974237137038751">tasarruf edilen veri miktarı</translation>
 <translation id="7498271377022651285">Lütfen bekleyin…</translation>
 <translation id="7514365320538308">İndir</translation>
 <translation id="751961395872307827">Siteye bağlanılamıyor</translation>
 <translation id="7542481630195938534">Öneriler alınamıyor</translation>
-<translation id="7554752735887601236">Bir site mikrofonunuzu kullanıyor</translation>
 <translation id="7559975015014302720">Basit mod kapalı</translation>
 <translation id="7562080006725997899">Göz atma verileri temizleniyor</translation>
 <translation id="756809126120519699">Chrome verileri temizlendi</translation>
+<translation id="7577900504646297215">İlgi alanlarını yönet</translation>
 <translation id="757855969265046257">{FILES,plural, =1{<ph name="FILES_DOWNLOADED_ONE" /> dosya indirildi}other{<ph name="FILES_DOWNLOADED_MANY" /> dosya indirildi}}</translation>
 <translation id="7588219262685291874">Cihazın Pil Tasarrufu özelliği açık olduğunda koyu tema açılır</translation>
 <translation id="7593557518625677601">Chrome Senkronizasyonu'nu başlatmak için Android ayarlarını açın ve Android sistem senkronizasyonunu yeniden etkinleştirin</translation>
@@ -813,7 +812,6 @@ Bu ayarı değiştirmek için <ph name="BEGIN_LINK" />senkronizasyonu sıfırlay
 <translation id="7774809984919390718">{PAYMENT_METHOD,plural, =1{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 ve <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> ödeme yöntemi daha}other{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 ve <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> ödeme yöntemi daha}}</translation>
 <translation id="7791543448312431591">Ekle</translation>
 <translation id="780301667611848630">Hayır, teşekkürler</translation>
-<translation id="7804248752222191302">Bir site kameranızı kullanıyor</translation>
 <translation id="7810647596859435254">Birlikte aç…</translation>
 <translation id="7821588508402923572">Veri tasarruflarınız burada görünür</translation>
 <translation id="783819812427904514">Videonun sesini aç</translation>
@@ -885,9 +883,7 @@ Bu ayarı değiştirmek için <ph name="BEGIN_LINK" />senkronizasyonu sıfırlay
 <translation id="8349013245300336738">Kullanılan veri miktarına göre sırala</translation>
 <translation id="8364299278605033898">Popüler web sitelerini görün</translation>
 <translation id="8368027906805972958">Bilinmeyen veya desteklenmeyen cihaz (<ph name="DEVICE_ID" />)</translation>
-<translation id="83792324527827022">Bir site kameranızı ve mikrofonunuzu kullanıyor</translation>
 <translation id="8393700583063109961">İleti gönder</translation>
-<translation id="8394832520002899662">Siteye dönmek için dokunun</translation>
 <translation id="8413126021676339697">Tüm geçmişi göster</translation>
 <translation id="8427875596167638501">Önizleme sekmesi yarım açık</translation>
 <translation id="8428213095426709021">Ayarlar</translation>
@@ -984,7 +980,6 @@ Bu ayarı değiştirmek için <ph name="BEGIN_LINK" />senkronizasyonu sıfırlay
 <translation id="970715775301869095"><ph name="MINUTES" /> dk. kaldı</translation>
 <translation id="974555521953189084">Senkronizasyonu başlatmak için parolanızı girin</translation>
 <translation id="981121421437150478">Çevrimdışı</translation>
-<translation id="982182592107339124">Bu işlem, aşağıdakiler de dahil olmak üzere tüm sitelere ilişkin verileri temizleyecek:</translation>
 <translation id="983192555821071799">Tüm sekmeleri kapat</translation>
 <translation id="987264212798334818">Genel</translation>
 </translationbundle>

@@ -134,6 +134,7 @@ class CORE_EXPORT LocalFrame final : public Frame,
       LocalFrameClient*,
       Page&,
       FrameOwner*,
+      const base::UnguessableToken& frame_token,
       WindowAgentFactory* inheriting_agent_factory,
       InterfaceRegistry*,
       const base::TickClock* clock = base::DefaultTickClock::GetInstance());

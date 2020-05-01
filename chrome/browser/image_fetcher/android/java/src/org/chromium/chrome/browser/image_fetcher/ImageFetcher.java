@@ -19,13 +19,107 @@ import jp.tomorrowkey.android.gifplayer.BaseGifImage;
  * ImageFetcher instantiation.
  */
 public abstract class ImageFetcher {
-    // All UMA client names collected here to prevent duplicates.
+    // All UMA client names collected here to prevent duplicates. While adding a new client, please
+    // update the histogram suffix ImageFetcherClients in histograms.xml as well.
     public static final String ANSWER_SUGGESTIONS_UMA_CLIENT_NAME = "AnswerSuggestions";
     public static final String ASSISTANT_DETAILS_UMA_CLIENT_NAME = "AssistantDetails";
     public static final String ASSISTANT_INFO_BOX_UMA_CLIENT_NAME = "AssistantInfoBox";
     public static final String ENTITY_SUGGESTIONS_UMA_CLIENT_NAME = "EntitySuggestions";
     public static final String FEED_UMA_CLIENT_NAME = "Feed";
     public static final String NTP_ANIMATED_LOGO_UMA_CLIENT_NAME = "NewTabPageAnimatedLogo";
+    public static final String QUERY_TILE_UMA_CLIENT_NAME = "QueryTiles";
+
+    /**
+     * Encapsulates image fetching customization options. Supports a subset of the native
+     * ImageFetcherParams. The image resizing is done in Java.
+     */
+    public static class Params {
+        static final int DEFAULT_IMAGE_SIZE = 0;
+        // TODO(xingliu): Merge with ImageFetcherBridge.INVALID_EXPIRATION_INTERVAL.
+        static final int INVALID_EXPIRATION_INTERVAL = 0;
+
+        /**
+         * Creates image fetcher parameters. The image will not be resized.
+         * @param url The url to fetch the image from.
+         * @param clientName Name of the cached image fetcher client to report UMA metrics for.
+         */
+        public static Params create(final String url, String clientName) {
+            return new Params(url, clientName, DEFAULT_IMAGE_SIZE, DEFAULT_IMAGE_SIZE,
+                    INVALID_EXPIRATION_INTERVAL);
+        }
+
+        /**
+         * Creates image fetcher parameters with image size specified.
+         * @param url The url to fetch the image from.
+         * @param clientName Name of the cached image fetcher client to report UMA metrics for.
+         * @param width The new bitmap's desired width (in pixels). Image won't be scaled if set to
+         *         {@link #DEFAULT_IMAGE_SIZE}.
+         * @param height The new bitmap's desired height (in pixels). Image won't be scaled if set
+         *         to {@link #DEFAULT_IMAGE_SIZE}.
+         */
+        public static Params create(final String url, String clientName, int width, int height) {
+            return new Params(url, clientName, width, height, INVALID_EXPIRATION_INTERVAL);
+        }
+
+        /**
+         * Only used in rare cases. Creates image fetcher parameters that keeps the cache file for a
+         * certain period of time.
+         * @param url The url to fetch the image from.
+         * @param clientName Name of the cached image fetcher client to report UMA metrics for.
+         * @param width The new bitmap's desired width (in pixels). Image won't be scaled if set to
+         *         {@link #DEFAULT_IMAGE_SIZE}.
+         * @param height The new bitmap's desired height (in pixels). Image won't be scaled if set
+         *         to {@link #DEFAULT_IMAGE_SIZE}.
+         * @param expirationInterval The duration that image files will stay in cache, measured in
+         *         minutes.
+         */
+        public static Params createWithExpirationInterval(final String url, String clientName,
+                int width, int height, int expirationInterval) {
+            assert expirationInterval > INVALID_EXPIRATION_INTERVAL;
+            return new Params(url, clientName, width, height, expirationInterval);
+        }
+
+        private Params(
+                String url, String clientName, int width, int height, int expirationInterval) {
+            assert width >= DEFAULT_IMAGE_SIZE;
+            assert height >= DEFAULT_IMAGE_SIZE;
+            assert expirationInterval >= INVALID_EXPIRATION_INTERVAL;
+
+            this.url = url;
+            this.clientName = clientName;
+            this.width = width;
+            this.height = height;
+            this.expirationInterval = expirationInterval;
+        }
+
+        /**
+         * The url to fetch the image from.
+         */
+        public final String url;
+
+        /**
+         * Name of the cached image fetcher client to report UMA metrics for.
+         */
+        public final String clientName;
+
+        /**
+         * The new bitmap's desired width (in pixels). Image won't be scaled if set to {@link
+         * #DEFAULT_IMAGE_SIZE}.
+         */
+        public final int width;
+
+        /**
+         * The new bitmap's desired height (in pixels). Image won't be scaled if set to {@link
+         * #DEFAULT_IMAGE_SIZE}.
+         */
+        public final int height;
+
+        /**
+         * Only specifies in rare cases to keep the cache file on disk for certain period of time.
+         * Measured in minutes. Any value <= 0 will be ignored.
+         */
+        public final int expirationInterval;
+    }
 
     /** Base class that can be used for testing. */
     public abstract static class ImageFetcherForTesting extends ImageFetcher {

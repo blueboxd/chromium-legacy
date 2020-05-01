@@ -9,7 +9,7 @@
 #include <memory>
 #include <utility>
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/platform/p2p/socket_dispatcher.h"
 

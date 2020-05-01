@@ -115,7 +115,7 @@ public class SyncTest {
             // real account rename events instead of the mocks.
             MockChangeEventChecker eventChecker = new MockChangeEventChecker();
             eventChecker.insertRenameEvent(oldAccount.name, newAccount.name);
-            SigninHelper.updateAccountRenameData(eventChecker);
+            SigninHelper.updateAccountRenameData(eventChecker, oldAccount.name);
 
             // Tell the fake content resolver that a rename had happen and copy over the sync
             // settings. This would normally be done by the

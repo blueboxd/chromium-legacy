@@ -118,7 +118,8 @@ blink::UserAgentMetadata GetShellUserAgentMetadata() {
   metadata.brand = "content_shell";
   metadata.full_version = CONTENT_SHELL_VERSION;
   metadata.major_version = CONTENT_SHELL_MAJOR_VERSION;
-  metadata.platform = BuildOSCpuInfo(false);
+  metadata.platform = BuildOSCpuInfo(IncludeAndroidBuildNumber::Exclude,
+                                     IncludeAndroidModel::Exclude);
   metadata.architecture = BuildCpuInfo();
   metadata.model = BuildModelInfo();
 

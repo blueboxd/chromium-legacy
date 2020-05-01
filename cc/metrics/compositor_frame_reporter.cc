@@ -63,11 +63,16 @@ constexpr const char* GetVizBreakdownName(VizBreakdown stage) {
 
 // Names for CompositorFrameReporter::StageType, which should be updated in case
 // of changes to the enum.
-constexpr const char* GetStageName(int stage_type_index) {
+constexpr const char* GetStageName(int stage_type_index,
+                                   bool impl_only = false) {
   switch (stage_type_index) {
     case static_cast<int>(StageType::kBeginImplFrameToSendBeginMainFrame):
+      if (impl_only)
+        return "BeginImplFrameToFinishImpl";
       return "BeginImplFrameToSendBeginMainFrame";
     case static_cast<int>(StageType::kSendBeginMainFrameToCommit):
+      if (impl_only)
+        return "SendBeginMainFrameToBeginMainAbort";
       return "SendBeginMainFrameToCommit";
     case static_cast<int>(StageType::kCommit):
       return "Commit";
@@ -76,6 +81,8 @@ constexpr const char* GetStageName(int stage_type_index) {
     case static_cast<int>(StageType::kActivation):
       return "Activation";
     case static_cast<int>(StageType::kEndActivateToSubmitCompositorFrame):
+      if (impl_only)
+        return "ImplFrameDoneToSubmitCompositorFrame";
       return "EndActivateToSubmitCompositorFrame";
     case static_cast<int>(
         StageType::kSubmitCompositorFrameToPresentationCompositorFrame):
@@ -141,8 +148,8 @@ constexpr const char* GetStageName(int stage_type_index) {
 
 // Names for CompositorFrameReporter::FrameReportType, which should be
 // updated in case of changes to the enum.
-constexpr const char* kReportTypeNames[]{"", "MissedDeadlineFrame.",
-                                         "DroppedFrame."};
+constexpr const char* kReportTypeNames[]{
+    "", "MissedDeadlineFrame.", "DroppedFrame.", "CompositorOnlyFrame."};
 
 static_assert(base::size(kReportTypeNames) == kFrameReportTypeCount,
               "Compositor latency report types has changed.");
@@ -185,10 +192,13 @@ std::string GetCompositorLatencyHistogramName(
       FrameSequenceTracker::GetFrameSequenceTrackerTypeName(
           frame_sequence_tracker_type);
   DCHECK(tracker_type_name);
+  bool impl_only_frame =
+      (report_type_index ==
+       static_cast<int>(FrameReportType::kCompositorOnlyFrame));
   return base::StrCat({"CompositorLatency.",
                        kReportTypeNames[report_type_index], tracker_type_name,
                        *tracker_type_name ? "." : "",
-                       GetStageName(stage_type_index)});
+                       GetStageName(stage_type_index, impl_only_frame)});
 }
 
 std::string GetEventLatencyHistogramBaseName(
@@ -295,6 +305,10 @@ void CompositorFrameReporter::OnDidNotProduceFrame(
     FrameSkippedReason skip_reason) {
   did_not_produce_frame_time_ = Now();
   frame_skip_reason_ = skip_reason;
+}
+
+void CompositorFrameReporter::EnableCompositorOnlyReporting() {
+  EnableReportType(FrameReportType::kCompositorOnlyFrame);
 }
 
 void CompositorFrameReporter::SetBlinkBreakdown(

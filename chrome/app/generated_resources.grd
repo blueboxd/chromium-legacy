@@ -3737,12 +3737,28 @@ are declared in tools/grit/grit_rule.gni.
 
       <!-- Extension alerts. -->
       <message name="IDS_EXTENSION_ALERT_TITLE" desc="Titlebar of the extension notification alert">
-        Confirm Changes
+        {NUM_EXTENSIONS, plural, 
+        =1 {This extension may be dangerous}
+        other {These extensions may be dangerous}}
       </message>
-      <message name="IDS_EXTENSION_ALERT_ITEM_BLACKLISTED" desc="A statement that an extension has been newly blacklisted. https://support.google.com/chrome/answer/1210215 contains the language on which we're basing the phrasing.">
+      <message name="IDS_APP_ALERT_TITLE" desc="Titlebar of the app notification alert">
+       {NUM_APPS, plural, 
+        =1 {This app may be dangerous}
+        other {These apps may be dangerous}}
+      </message>
+       <message name="IDS_EXTENSION_AND_APP_ALERT_TITLE" desc="Titlebar of the extension and app notification alert">
+        These items may be dangerous
+      </message>
+      <message name="IDS_EXTENSION_ALERT_ITEM_BLACKLISTED_OTHER" desc="A statement that an extension has been newly blacklisted. https://support.google.com/chrome/answer/1210215 contains the language on which we're basing the phrasing.">
         The extension "<ph name="EXTENSION_NAME">$1<ex>Gmail Checker</ex></ph>" was automatically disabled.
       </message>
-      <message name="IDS_APP_ALERT_ITEM_BLACKLISTED" desc="A statement that a packaged app has been newly blacklisted. https://support.google.com/chrome/answer/1210215 contains the language on which we're basing the phrasing.">
+      <message name="IDS_EXTENSION_ALERT_ITEM_BLACKLISTED_MALWARE" desc="A statement that an extension has been newly blacklisted for malware.">
+        "<ph name="EXTENSION_NAME">$1<ex>Gmail Checker</ex></ph>" has been disabled because it contains malware
+      </message>
+      <message name="IDS_EXTENSION_ALERT_ITEM_BLACKLISTED_MALWARE_PLURAL" desc="A statement that an extension has been newly blacklisted for malware.">
+        "<ph name="EXTENSION_NAME">$1<ex>Gmail Checker</ex></ph>" has been disabled because it contains malware.
+      </message>
+      <message name="IDS_APP_ALERT_ITEM_BLACKLISTED_OTHER" desc="A statement that a packaged app has been newly blacklisted. https://support.google.com/chrome/answer/1210215 contains the language on which we're basing the phrasing.">
         The app "<ph name="EXTENSION_NAME">$1<ex>Gmail</ex></ph>" was automatically removed.
       </message>
       <message name="IDS_EXTENSION_ALERT_ITEM_OK" desc="The title of the default button acknowledging the information presented.">
@@ -4416,6 +4432,18 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_EXTENSION_INSTALL_PROMPT_ASK_A_PARENT_BUTTON" desc="Text for the ask-a-parent button on the extension install prompt.">
         Ask a parent
+      </message>
+      <message name="IDS_EXTENSION_INSTALL_BLOCKED_BY_PARENT_PROMPT_ADDING_ACTION" desc="Text for the action of adding an extension or app, used in the sense of 'Adding the extension is disabled'">
+        Adding
+      </message>
+      <message name="IDS_EXTENSION_INSTALL_BLOCKED_BY_PARENT_PROMPT_ENABLING_ACTION" desc="Text for the action of enabling an extension or app, used in the sense of 'Enabling the extension is disabled'">
+        Enabling
+      </message>
+      <message name="IDS_EXTENSION_INSTALL_BLOCKED_BY_PARENT_PROMPT_TITLE" desc="Text for the title of the dialog indicating that a parent has blocked extensions and apps.">
+        <ph name="ACTION_PARAMETER">$1<ex>Adding</ex></ph> <ph name="EXTENSION_TYPE_PARAMETER">$2<ex>extension</ex></ph> is disabled
+      </message>
+      <message name="IDS_EXTENSION_INSTALL_BLOCKED_BY_PARENT_PROMPT_MESSAGE" desc="Text for the dialog indicating that a parent has blocked extensions and apps.">
+       Your parent has turned off "Permissions for sites, apps and extensions" for Chrome. <ph name="ACTION_PARAMETER">$1<ex>Adding</ex></ph> this <ph name="EXTENSION_TYPE_PARAMETER">$2<ex>extension</ex></ph> is not allowed.
       </message>
       <message name="IDS_PARENT_PERMISSION_PROMPT_GO_GET_A_PARENT_FOR_EXTENSION_LABEL" desc="Text for the title section of the parent permission dialog asking child to get a parent to approve.">
         Go get a parent to approve "<ph name="EXTENSION_NAME">$1<ex>Gmail Checker</ex></ph>"

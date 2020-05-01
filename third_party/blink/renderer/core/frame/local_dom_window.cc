@@ -30,6 +30,7 @@
 #include <utility>
 
 #include "cc/input/snap_selection_strategy.h"
+#include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/mojom/feature_policy/policy_disposition.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
@@ -264,6 +265,20 @@ TrustedTypePolicyFactory* LocalDOMWindow::trustedTypes() const {
         MakeGarbageCollected<TrustedTypePolicyFactory>(GetExecutionContext());
   }
   return trusted_types_.Get();
+}
+
+bool LocalDOMWindow::IsCrossSiteSubframe() const {
+  if (!GetFrame())
+    return false;
+  // It'd be nice to avoid the url::Origin temporaries, but that would require
+  // exposing the net internal helper.
+  // TODO: If the helper gets exposed, we could do this without any new
+  // allocations using StringUTF8Adaptor.
+  auto* top_origin =
+      GetFrame()->Tree().Top().GetSecurityContext()->GetSecurityOrigin();
+  return !net::registry_controlled_domains::SameDomainOrHost(
+      top_origin->ToUrlOrigin(), GetSecurityOrigin()->ToUrlOrigin(),
+      net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
 }
 
 LocalDOMWindow* LocalDOMWindow::From(const ScriptState* script_state) {

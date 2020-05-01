@@ -307,6 +307,7 @@ const std::string& Frame::ToTraceValue() {
 Frame::Frame(FrameClient* client,
              Page& page,
              FrameOwner* owner,
+             const base::UnguessableToken& frame_token,
              WindowProxyManager* window_proxy_manager,
              WindowAgentFactory* inheriting_agent_factory)
     : tree_node_(this),
@@ -320,7 +321,8 @@ Frame::Frame(FrameClient* client,
                                 ? inheriting_agent_factory
                                 : MakeGarbageCollected<WindowAgentFactory>()),
       is_loading_(false),
-      devtools_frame_token_(client->GetDevToolsFrameToken()) {
+      devtools_frame_token_(client->GetDevToolsFrameToken()),
+      frame_token_(frame_token) {
   InstanceCounters::IncrementCounter(InstanceCounters::kFrameCounter);
 }
 

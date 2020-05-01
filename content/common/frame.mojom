@@ -338,6 +338,9 @@ struct CreateNewWindowReply {
   // The ID of the main frame hosted in the view.
   int32 main_frame_route_id;
 
+  // The unique identifier of the RenderFrameHost
+  mojo_base.mojom.UnguessableToken main_frame_frame_token;
+
   // The ID of the widget for the main frame.
   int32 main_frame_widget_route_id;
 
@@ -383,26 +386,36 @@ interface FrameHost {
 
   // Sent by the renderer process to request the creation of a new portal.
   // |portal| is the pipe to be used for the Portal object, |client| is the pipe
-  // used to communicate back with the caller. Returns |proxy_routing_id|, which
-  // is the routing id of the RenderFrameProxy, |initial_replicated_state|, the
-  // replicated state associated with that RenderFrameProxy, and |portal_token|,
-  // which is the unique identifier for the portal.
+  // used to communicate back with the caller. Returns:
+  // |proxy_routing_id| - the routing id of the RenderFrameProxy
+  // |initial_replicated_state| - the replicated state associated with that
+  //                              RenderFrameProxy
+  // |portal_token| - the unique identifier for the portal
+  // |frame_token| - the unique identifier of the RenderFrameProxy
+  // |devtools_frame_token| - the unique identifier of the frame node in the
+  //                          frame tree
   [Sync] CreatePortal(
       pending_associated_receiver<blink.mojom.Portal> portal,
       pending_associated_remote<blink.mojom.PortalClient> client)
       => (int32 proxy_routing_id,
           FrameReplicationState initial_replicated_state,
           mojo_base.mojom.UnguessableToken portal_token,
+          mojo_base.mojom.UnguessableToken frame_token,
           mojo_base.mojom.UnguessableToken devtools_frame_token);
 
   // Requests that this frame adopts the portal identified by |portal_token|.
-  // Returns |proxy_routing_id|, which is the routing id of the portal's
-  // RenderFrameProxy, |replicated_state|, the replicated state associated with
-  // that RFP, and the |devtools_frame_token|.
+  // Returns:
+  // |proxy_routing_id| - the routing id of the portal's RenderFrameProxy
+  // |replicated_state| - the replicated state associated with that
+  //                      RenderFrameProxy
+  // |frame_token| - the unique identifier of the RenderFrameProxy
+  // |devtools_frame_token| - the unique identifier of the frame node in the
+  //                          frame tree
   [Sync] AdoptPortal(mojo_base.mojom.UnguessableToken portal_token)
       => (int32 proxy_routing_id,
           viz.mojom.FrameSinkId frame_sink_id,
           FrameReplicationState replicated_state,
+          mojo_base.mojom.UnguessableToken frame_token,
           mojo_base.mojom.UnguessableToken devtools_frame_token);
 
 

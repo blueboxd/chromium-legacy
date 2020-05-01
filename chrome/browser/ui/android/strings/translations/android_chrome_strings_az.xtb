@@ -38,7 +38,6 @@
 <translation id="1258753120186372309">Google doodle: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1260236875608242557">Axtarın və kəşf edin</translation>
 <translation id="1266864766717917324"><ph name="CONTENT_TYPE" /> paylaşmaq mümkün olmnadı</translation>
-<translation id="1272079795634619415">Dayandırın</translation>
 <translation id="1283039547216852943">Genişləndirmək üçün klikləyin</translation>
 <translation id="1285320974508926690">Bu saytı heç vaxt tərcümə etməyin</translation>
 <translation id="1291207594882862231">Tarixçə, kuki, sayt datası və keşi təmizləyin…</translation>
@@ -51,7 +50,6 @@
 <translation id="1331212799747679585">Chrome güncəllənmədi. Digər seçimlər</translation>
 <translation id="1332501820983677155">Google Chrome funksiya qısayolları</translation>
 <translation id="1360432990279830238">Sinxronizasiya deaktiv edilsin?</translation>
-<translation id="1364532808393826295"><ph name="APP_NAME" /> - <ph name="NOTIFICATION_MESSAGE" /></translation>
 <translation id="1373696734384179344">Seçilmiş məzmunu endirmək üçün yaddaş çatmır.</translation>
 <translation id="1376578503827013741">Hesablanır...</translation>
 <translation id="1383876407941801731">Axtar</translation>
@@ -122,7 +120,6 @@
 <translation id="2013642289801508067">{FILE_COUNT,plural, =1{# Fayl}other{# Fayl}}</translation>
 <translation id="2017836877785168846">Ünvan panelində tarixçə və avtomatik tamamlamaları silir.</translation>
 <translation id="2021896219286479412">Tam ekran sayt nəzarətləri</translation>
-<translation id="2030769033451695672"><ph name="URL_OF_THE_CURRENT_TAB" /> bölməsinə qayıtmaq üçün toxunun</translation>
 <translation id="2038563949887743358">Əsas Versiya Sorğusunu aktiv edin</translation>
 <translation id="204321170514947529">Həmçinin, <ph name="APP_NAME" /> tətbiqinin Chrome'da datası var</translation>
 <translation id="2049574241039454490"><ph name="FILE_SIZE_OF_TOTAL" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
@@ -592,7 +589,6 @@ Ayarı dəyişmək üçün <ph name="BEGIN_LINK" />sinxronizasiyanı sıfırlay�
 <translation id="5876056640971328065">Videoya pauza verin</translation>
 <translation id="5884076754568147479">Tapşırıqları tamamlamaqda sizə kömək etmək üçün Google Assistentdən istifadə etdiyiniz saytların URL və məzmunlarını, eləcə də Assistent vasitəsilə təqdim etdiyiniz məlumatları əldə edəcək</translation>
 <translation id="5919204609460789179">Sinxronizasiyanı başlatmaq üçün <ph name="PRODUCT_NAME" /> məhsulunu yeniləyin</translation>
-<translation id="5922853908706496913">Ekranınız paylaşılır</translation>
 <translation id="5937580074298050696"><ph name="AMOUNT" /> istifadə edildi</translation>
 <translation id="5939518447894949180">Sıfırlayın</translation>
 <translation id="5942872142862698679">Axtarış üçün Google istifadə edilir</translation>
@@ -777,7 +773,6 @@ Ayarı dəyişmək üçün <ph name="BEGIN_LINK" />sinxronizasiyanı sıfırlay�
 <translation id="7514365320538308">Endirmə</translation>
 <translation id="751961395872307827">Sayta qoşulmaq mümkün deyil</translation>
 <translation id="7542481630195938534">Təklifləri əldə etmək mümkün deyil</translation>
-<translation id="7554752735887601236">Sayt mikrofonunuzdan istifadə edir</translation>
 <translation id="7559975015014302720">Layt rejimi deaktivdir</translation>
 <translation id="7562080006725997899">Baxış datası silinir</translation>
 <translation id="756809126120519699">Chrome datası təmizləndi</translation>
@@ -811,7 +806,6 @@ Ayarı dəyişmək üçün <ph name="BEGIN_LINK" />sinxronizasiyanı sıfırlay�
 <translation id="7774809984919390718">{PAYMENT_METHOD,plural, =1{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 və <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> digəri}other{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 və <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> digəri}}</translation>
 <translation id="7791543448312431591">Əlavə etmək</translation>
 <translation id="780301667611848630">Yox, çox sağ olun</translation>
-<translation id="7804248752222191302">Sayt kameranızdan istifadə edir</translation>
 <translation id="7810647596859435254">Bununla açın...</translation>
 <translation id="7821588508402923572">Data istifadəsi burada görünəcək</translation>
 <translation id="783819812427904514">Videonu səssiz rejimdən çıxarın</translation>
@@ -883,9 +877,7 @@ Ayarı dəyişmək üçün <ph name="BEGIN_LINK" />sinxronizasiyanı sıfırlay�
 <translation id="8349013245300336738">İstifadə edilmiş data həcminə görə çeşidləyin</translation>
 <translation id="8364299278605033898">Populyar veb saytlara baxın</translation>
 <translation id="8368027906805972958">Naməlum və ya dəstəklənməyən cihaz (<ph name="DEVICE_ID" />)</translation>
-<translation id="83792324527827022">Sayt kamera və mikrofonunuzdan istifadə edir</translation>
 <translation id="8393700583063109961">Mesaj göndərin</translation>
-<translation id="8394832520002899662">Sayta qayıtmaq üçün toxunun</translation>
 <translation id="8413126021676339697">Tam tarixçəni göstərin</translation>
 <translation id="8427875596167638501">Önbaxış tabının yarısı açılıb</translation>
 <translation id="8428213095426709021">Ayarlar</translation>
@@ -982,7 +974,6 @@ Ayarı dəyişmək üçün <ph name="BEGIN_LINK" />sinxronizasiyanı sıfırlay�
 <translation id="970715775301869095"><ph name="MINUTES" /> dəqiqə qaldı</translation>
 <translation id="974555521953189084">Sinxronizasiyanı başlamaq üçün parol sözü daxil edin</translation>
 <translation id="981121421437150478">Oflayn</translation>
-<translation id="982182592107339124">Bu, bütün saytlardakı datanı siləcək, bunlar da daxil olmaqla:</translation>
 <translation id="983192555821071799">Bütün panelləri bağlayın</translation>
 <translation id="987264212798334818">Ümumi</translation>
 </translationbundle>

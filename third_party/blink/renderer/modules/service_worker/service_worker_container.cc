@@ -83,7 +83,7 @@ void MaybeRecordThirdPartyServiceWorkerUsage(
   LocalDOMWindow* window = To<LocalDOMWindow>(execution_context);
   DCHECK(window);
 
-  if (window->document()->IsCrossSiteSubframe())
+  if (window->IsCrossSiteSubframe())
     UseCounter::Count(window, WebFeature::kThirdPartyServiceWorker);
 }
 

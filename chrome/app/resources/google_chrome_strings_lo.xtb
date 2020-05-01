@@ -97,7 +97,6 @@
 <translation id="3582972582564653026">ຊິ້ງຂໍ້ມູນ ແລະ ປັບແຕ່ງ Chrome ໃຫ້ເປັນແບບສ່ວນຕົວໃນທົ່ວອຸປະກອນຂອງທ່ານ</translation>
 <translation id="3596080736082218006">{COUNT,plural, =0{ຜູ້ເບິ່ງແຍງລະບົບຂອງທ່ານກຳນົດໃຫ້ທ່ານເປີດ Chrome ຄືນໃໝ່ເພື່ອນຳໃຊ້ການອັບເດດ}=1{ຜູ້ເບິ່ງແຍງລະບົບຂອງທ່ານກຳນົດໃຫ້ທ່ານເປີດ Chrome ຄືນໃໝ່ເພື່ອນຳໃຊ້ການອັບເດດ. ໜ້າຈໍທີ່ບໍ່ເປີດເຜີຍຕົວຕົນຂອງທ່ານຈະບໍ່ເປີດຄືນໃໝ່.}other{ຜູ້ເບິ່ງແຍງລະບົບຂອງທ່ານກຳນົດໃຫ້ທ່ານເປີດ Chrome ຄືນໃໝ່ເພື່ອນຳໃຊ້ການອັບເດດ. ໜ້າຈໍທີ່ບໍ່ເປີດເຜີຍຕົວຕົນຂອງທ່ານ # ລາຍການຈະບໍ່ເປີດຄືນໃໝ່.}}</translation>
 <translation id="3622797965165704966">ດຽວນີ້ມັນງ່າຍທີ່ຈະໃຊ້ Chrome ກັບບັນຊີ Google ຂອງທ່ານ ແລະຢູ່ໃນຄອມພິວເຕີທີ່ແຊຣ໌ແລ້ວ.</translation>
-<translation id="3637702109597584617"><ph name="TERMS_OF_SERVICE_LINK" />ຂໍ້ກໍານົດການບໍລິການ<ph name="END_TERMS_OF_SERVICE_LINK" /> ຂອງ Google Chrome OS</translation>
 <translation id="3718181793972440140">ນີ້ຈະລຶບ 1 ລາຍການອອກຈາກວິດີໂອນີ້. ເພື່ອກູ້ຂໍ້ມູນຂອງທ່ານຄືນໃນພາຍຫຼັງ, ກະລຸນາເຂົ້າສູ່ລະບົບ Chrome ເປັນ <ph name="USER_EMAIL" />.</translation>
 <translation id="3735758079232443276">ສ່ວນຂະຫຍາຍ "<ph name="EXTENSION_NAME" />" ໄດ້ປ່ຽນສິ່ງທີ່ໜ້າສະແດງຂຶ້ນ ເມື່ອທ່ານເລີ່ມຕົ້ນ Chrome​.</translation>
 <translation id="3780814664026482060">Chrome - <ph name="PAGE_TITLE" /></translation>
@@ -114,6 +113,7 @@
 <translation id="4205939740494406371">Chrome ບໍ່ສາມາດກວດລະຫັດຜ່ານຂອງທ່ານໄດ້. ລອງໃໝ່ຫຼັງຈາກ 24 ຊົ່ວໂມງ ຫຼື <ph name="BEGIN_LINK" />ກວດລະຫັດຜ່ານໃນບັນຊີ Google ຂອງທ່ານ<ph name="END_LINK" />.</translation>
 <translation id="424864128008805179">ອອກຈາກລະບົບ Chrome ບໍ?</translation>
 <translation id="4251615635259297716">ລິ້ງ Chrome ຂອງ​ທ່ານກັບບັນຊີນີ້ບໍ?</translation>
+<translation id="4281844954008187215">ຂໍ້ກໍານົດການບໍລິການ</translation>
 <translation id="4293420128516039005">ເຂົ້າສູ່ລະບົບເພື່ອຊິ້ງຂໍ້ມູນ ແລະ ປັບແຕ່ງ Chrome ໃຫ້ເປັນແບບສ່ວນຕົວໃນທົ່ວອຸປະກອນຂອງທ່ານ</translation>
 <translation id="4328355335528187361">Google Chrome Dev (mDNS-In)</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
@@ -148,7 +148,6 @@
 
 ອາດຈະບໍ່ມີບາງຄຸນສົມບັດຢູ່. ກະລຸນາລະບຸໄດເຣັກຕໍຣີໂປຣໄຟລ໌ອື່ນ ຫຼືໃຊ້ Chrome ລຸ້ນໃໝ່ກ່ວາ.</translation>
 <translation id="5193136243808726294">Google Chrome OS ບໍ່ສາມາດເປີດໜ້ານີ້ໄດ້.</translation>
-<translation id="5204098752394657250">Google Chrome <ph name="TERMS_OF_SERVICE_LINK" />ຂໍ້ກໍານົດການບໍລິການ<ph name="END_TERMS_OF_SERVICE_LINK" /></translation>
 <translation id="5251420635869119124">ແຂກສາມາດໃຊ້  Chrome ໂດຍ​ບໍ່​ມີ​ການປະອັນໃດໄວ້ເບື້ອງຫຼັງໄດ້.</translation>
 <translation id="532046782124376502">ຄຳເຕືອນ: Google Chrome ບໍ່ສາມາດປ້ອງກັນບໍ່ໃຫ້ສ່ວນຂະຫຍາຍບັນທຶກປະຫວັດການທ່ອງເວັບຂອງທ່ານໄດ້. ເພື່ອປິດນຳໃຊ້ສ່ວນຂະຫຍາຍນີ້ໃນໂໝດບໍ່ເປີດເຜີຍຕົວຕົນ, ກະລຸນາຍົກເລີກການເລືອກຕົວເລືອກນີ້.</translation>
 <translation id="5386244825306882791">ມັນຍັງຄວບຄຸມວ່າຈະໃຫ້ສະແດງໜ້າໃດຂຶ້ນ ເມື່ອທ່ານເລີ່ມຕົ້ນເປີດ Chrome ຫຼືຄົ້ນຫາຈາກ Omnibox.</translation>

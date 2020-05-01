@@ -436,27 +436,47 @@ class Pincher {
 
 const pincher = new Pincher;
 
-$('settings-toggle').addEventListener('click', (e) => {
-  const dialog = $('settings-dialog');
-  const toggle = $('settings-toggle');
-  if (dialog.open) {
-    toggle.classList.remove('activated');
-    dialog.close();
-  } else {
-    toggle.classList.add('activated');
-    dialog.showModal();
+class SettingsDialog {
+  constructor(toggleElement, dialogElement, backdropElement) {
+    this._toggleElement = toggleElement;
+    this._dialogElement = dialogElement;
+    this._backdropElement = backdropElement;
+
+    this._toggleElement.addEventListener('click', this.toggle.bind(this));
+    this._dialogElement.addEventListener('close', this.close.bind(this));
+    this._backdropElement.addEventListener('click', this.close.bind(this));
+
+    $('close-settings-button').addEventListener('click', this.close.bind(this));
+
+    $('theme-selection').addEventListener('change', (e) => {
+      useTheme(e.target.value);
+    });
+
+    $('font-family-selection').addEventListener('change', (e) => {
+      useFontFamily(e.target.value);
+    });
   }
-});
 
-$('close-settings-button').addEventListener('click', (e) => {
-  $('settings-toggle').classList.remove('activated');
-  $('settings-dialog').close();
-});
+  toggle() {
+    if (this._dialogElement.open) {
+      this.close();
+    } else {
+      this.showModal();
+    }
+  }
 
-$('theme-selection').addEventListener('change', (e) => {
-  useTheme(e.target.value);
-});
+  showModal() {
+    this._toggleElement.classList.add('activated');
+    this._backdropElement.style.display = 'block';
+    this._dialogElement.showModal();
+  }
 
-$('font-family-selection').addEventListener('change', (e) => {
-  useFontFamily(e.target.value);
-});
+  close() {
+    this._toggleElement.classList.remove('activated');
+    this._backdropElement.style.display = 'none';
+    this._dialogElement.close();
+  }
+}
+
+const settingsDialog = new SettingsDialog(
+    $('settings-toggle'), $('settings-dialog'), $('dialog-backdrop'));

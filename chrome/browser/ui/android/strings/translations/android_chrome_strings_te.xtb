@@ -38,7 +38,6 @@
 <translation id="1258753120186372309">Google doodle: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1260236875608242557">శోధన &amp; విశ్లేషణ</translation>
 <translation id="1266864766717917324"><ph name="CONTENT_TYPE" />ను షేర్ చేయడం సాధ్యపడలేదు</translation>
-<translation id="1272079795634619415">ఆపు</translation>
 <translation id="1283039547216852943">విస్త‌రించ‌డానికి నొక్కండి</translation>
 <translation id="1285320974508926690">ఈ సైట్‌ను ఎప్పటికీ అనువదించవద్దు</translation>
 <translation id="1291207594882862231">చరిత్ర, కుక్కీలు, సైట్ డేటా, కాష్‌ను తీసివేస్తుంది…</translation>
@@ -51,7 +50,6 @@
 <translation id="1331212799747679585">Chromeని అప్‌డేట్ చేయడం సాధ్యపడదు. మరిన్ని ఎంపికలు</translation>
 <translation id="1332501820983677155">Google Chrome లక్షణ సత్వరమార్గాలు</translation>
 <translation id="1360432990279830238">సైన్ అవుట్ చేసి, సమకాలీకరణను ఆఫ్ చేయలా?</translation>
-<translation id="1364532808393826295"><ph name="APP_NAME" /> - <ph name="NOTIFICATION_MESSAGE" /></translation>
 <translation id="1373696734384179344">ఎంచుకున్న కంటెంట్‌ను డౌన్‌లోడ్ చేయడానికి తగినంత మెమరీ లేదు.</translation>
 <translation id="1376578503827013741">గణిస్తోంది...</translation>
 <translation id="1383876407941801731">వెతుకు</translation>
@@ -122,7 +120,6 @@
 <translation id="2013642289801508067">{FILE_COUNT,plural, =1{# ఫైల్}other{# ఫైల్‌లు}}</translation>
 <translation id="2017836877785168846">చిరునామా బార్‌లో చరిత్రను మరియు స్వీయ పూరణలను క్లియర్ చేస్తుంది.</translation>
 <translation id="2021896219286479412">పూర్తి స్క్రీన్ సైట్ నియంత్రణలు</translation>
-<translation id="2030769033451695672"><ph name="URL_OF_THE_CURRENT_TAB" />కు తిరిగి వెళ్లడానికి ట్యాప్ చేయండి</translation>
 <translation id="2038563949887743358">డెస్క్‌టాప్ సైట్ అభ్యర్థనను ఆన్ చేయండి</translation>
 <translation id="204321170514947529"><ph name="APP_NAME" /> డేటాను Chromeలో కూడా కలిగి ఉంటుంది</translation>
 <translation id="2049574241039454490"><ph name="FILE_SIZE_OF_TOTAL" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
@@ -592,7 +589,6 @@
 <translation id="5876056640971328065">వీడియోను పాజ్ చేయి</translation>
 <translation id="5884076754568147479">టాస్క్‌లు పూర్తి చేయడంలో మీకు సహాయపడటానికి, మీరు అసిస్టెంట్‌ను ఉపయోగించే సైట్‌ల URLలు అలాగే వాటిలోని కంటెంట్‌ను, వీటితో పాటు మీరు అసిస్టెంట్ ద్వారా సమర్పించే సమాచారాన్ని Google పొందుతుంది</translation>
 <translation id="5919204609460789179">సింక్‌ను ప్రారంభించడానికి <ph name="PRODUCT_NAME" />ని అప్‌డేట్ చేయండి</translation>
-<translation id="5922853908706496913">మీ స్క్రీన్‌ను షేర్ చేయడం</translation>
 <translation id="5937580074298050696"><ph name="AMOUNT" /> సేవ్ చేయబడింది</translation>
 <translation id="5939518447894949180">రీసెట్ చేయి</translation>
 <translation id="5942872142862698679">శోధన కోసం Googleను ఉపయోగిస్తోంది</translation>
@@ -779,7 +775,6 @@
 <translation id="7514365320538308">డౌన్‌లోడ్ చేయి</translation>
 <translation id="751961395872307827">సైట్‌కు కనెక్ట్ చేయడం సాధ్యపడలేదు</translation>
 <translation id="7542481630195938534">సూచనలను పొందడం సాధ్యపడదు</translation>
-<translation id="7554752735887601236">ఒక సైట్ మీ మైక్రోఫోన్‌ను ఉపయోగిస్తోంది</translation>
 <translation id="7559975015014302720">లైట్ మోడ్ ఆఫ్ చేయబడింది</translation>
 <translation id="7562080006725997899">బ్రౌజింగ్ డేటాను తీసివేస్తోంది</translation>
 <translation id="756809126120519699">Chrome డేటా తీసివేయబడింది</translation>
@@ -813,7 +808,6 @@
 <translation id="7774809984919390718">{PAYMENT_METHOD,plural, =1{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 మరియు మరో <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}other{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 మరియు మరో <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}}</translation>
 <translation id="7791543448312431591">జోడించు</translation>
 <translation id="780301667611848630">వద్దు , ధన్యవాదాలు</translation>
-<translation id="7804248752222191302">ఒక సైట్ మీ కెమెరాను ఉపయోగిస్తోంది</translation>
 <translation id="7810647596859435254">దీనితో తెరువు…</translation>
 <translation id="7821588508402923572">మీ డేటా పొదుపులు ఇక్కడ కనిపిస్తాయి</translation>
 <translation id="783819812427904514">వీడియోను అన్‌మ్యూట్ చేయండి</translation>
@@ -885,9 +879,7 @@
 <translation id="8349013245300336738">వినియోగించిన డేటా పరిమాణం ద్వారా క్రమీకరించు</translation>
 <translation id="8364299278605033898">ప్రసిద్ధ వెబ్‌సైట్‌లను చూడండి</translation>
 <translation id="8368027906805972958">తెలియని లేదా మద్దతు లేని పరికరం (<ph name="DEVICE_ID" />)</translation>
-<translation id="83792324527827022">ఒక సైట్ మీ కెమెరాను, మైక్రోఫోన్‌ను ఉపయోగిస్తోంది</translation>
 <translation id="8393700583063109961">సందేశాన్ని పంపండి</translation>
-<translation id="8394832520002899662">సైట్‌కు తిరిగి వెళ్లడానికి ట్యాప్ చేయండి</translation>
 <translation id="8413126021676339697">పూర్తి చరిత్రను చూపించు</translation>
 <translation id="8427875596167638501">ప్రివ్యూ ట్యాబ్ సగం తెరవబడింది</translation>
 <translation id="8428213095426709021">సెట్టింగ్‌లు</translation>
@@ -984,7 +976,6 @@
 <translation id="970715775301869095"><ph name="MINUTES" /> నిమిషాలు మిగిలి ఉంది</translation>
 <translation id="974555521953189084">సింక్‌ను ప్రారంభించడానికి మీ రహస్య పదబంధాన్ని నమోదు చేయండి</translation>
 <translation id="981121421437150478">ఆఫ్‌లైన్</translation>
-<translation id="982182592107339124">ఇది వీటితో సహా అన్ని సైట్‌ల డేటాను తీసివేస్తుంది:</translation>
 <translation id="983192555821071799">అన్ని ట్యాబ్‌లను మూసివేయి</translation>
 <translation id="987264212798334818">సాధారణం</translation>
 </translationbundle>

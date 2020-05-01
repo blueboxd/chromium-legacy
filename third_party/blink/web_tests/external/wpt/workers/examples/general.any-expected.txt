@@ -1,5 +1,0 @@
-This is a testharness.js-based test.
-PASS Test that should pass
-FAIL Worker top-level script is a generated script. assert_equals: expected "/workers/examples/general.any.worker.js" but got "/workers/examples/general.any.html"
-Harness: the test ran to completion.
-

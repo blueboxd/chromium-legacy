@@ -76,6 +76,8 @@ public class ContentViewRenderView extends FrameLayout {
 
     private int mWebContentsHeightDelta;
 
+    private boolean mCompositorHasSurface;
+
     // Common interface to listen to surface related events.
     private interface SurfaceEventListener {
         void surfaceCreated();
@@ -142,6 +144,7 @@ public class ContentViewRenderView extends FrameLayout {
             assert mSurfaceData == ContentViewRenderView.this.mCurrent;
             ContentViewRenderViewJni.get().surfaceChanged(mNativeContentViewRenderView,
                     canBeUsedWithSurfaceControl, format, width, height, surface);
+            mCompositorHasSurface = surface != null;
             if (mWebContents != null) {
                 ContentViewRenderViewJni.get().onPhysicalBackingSizeChanged(
                         mNativeContentViewRenderView, mWebContents, width, height);
@@ -154,6 +157,7 @@ public class ContentViewRenderView extends FrameLayout {
             assert mSurfaceData == ContentViewRenderView.this.mCurrent;
             ContentViewRenderViewJni.get().surfaceDestroyed(
                     mNativeContentViewRenderView, cacheBackBuffer);
+            mCompositorHasSurface = false;
         }
     }
 
@@ -702,6 +706,10 @@ public class ContentViewRenderView extends FrameLayout {
 
     public ResourceManager getResourceManager() {
         return ContentViewRenderViewJni.get().getResourceManager(mNativeContentViewRenderView);
+    }
+
+    public boolean hasSurface() {
+        return mCompositorHasSurface;
     }
 
     @CalledByNative

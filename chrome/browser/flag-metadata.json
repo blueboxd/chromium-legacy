@@ -1278,6 +1278,11 @@
     "expiry_milestone": -1
   },
   {
+    "name": "enable-conditional-tabstrip",
+    "owners": [ "memex-team@google.com" ],
+    "expiry_milestone": 90
+  },
+  {
     "name": "enable-cooperative-scheduling",
     "owners": [ "keishi" ],
     "expiry_milestone": 85
@@ -2638,6 +2643,11 @@
     "expiry_milestone": 90
   },
   {
+    "name": "homepage-promo-card",
+    "owners": [ "wenyufu", "chrome-android-app@chromium.org" ],
+    "expiry_milestone": 90
+  },
+  {
     "name": "homepage-settings-ui-conversion",
     "owners": [ "wenyufu", "chrome-android-app@chromium.org" ],
     "expiry_milestone": 84
@@ -2924,6 +2934,11 @@
     "name": "mouse-subframe-no-implicit-capture",
     "owners": [ "eirage", "nzolghadr", "input-dev" ],
     "expiry_milestone": 84
+  },
+  {
+    "name": "movable-partial-screenshot-region",
+    "owners": [ "xiyuan", "chromeos-wmp-eng" ],
+    "expiry_milestone": 90
   },
   {
     "name": "multi-display-overview-and-split-view",
@@ -3516,7 +3531,7 @@
   {
     "name": "query-tiles",
     "owners": [ "shaktisahu", "qinmin"],
-    "expiry_milestone": 86
+    "expiry_milestone": 88
   },
   {
     "name": "query-tiles-country-code",
@@ -3526,6 +3541,11 @@
   {
     "name": "query-tiles-instant-fetch",
     "owners": [ "xingliu"],
+    "expiry_milestone": 88
+  },
+  {
+    "name": "query-tiles-omnibox",
+    "owners": [ "shaktisahu", "qinmin"],
     "expiry_milestone": 88
   },
   {
@@ -3727,6 +3747,11 @@
     "expiry_milestone": 82
   },
   {
+    "name":"shelf-app-scaling",
+    "owners":["andrewxu"],
+    "expiry_milestone": 86
+  },
+  {
     "name": "shelf-hide-buttons-in-tablet",
     "owners": [ "tbarzic", "//ash/shelf/OWNERS" ],
     "expiry_milestone": 84
@@ -3864,7 +3889,7 @@
   {
     "name": "split-settings-sync",
     "owners": [ "jamescook", "cros-system-services@google.com" ],
-    "expiry_milestone": 84
+    "expiry_milestone": 87
   },
   {
     "name": "ssl-committed-interstitials",

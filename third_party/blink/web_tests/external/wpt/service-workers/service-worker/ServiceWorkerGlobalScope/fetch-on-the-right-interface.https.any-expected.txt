@@ -1,4 +1,0 @@
-This is a testharness.js-based test.
-FAIL Fetch method on the right interface assert_false: ServiceWorkerGlobalScope instance should not have "fetch" method as its property. expected false got true
-Harness: the test ran to completion.
-

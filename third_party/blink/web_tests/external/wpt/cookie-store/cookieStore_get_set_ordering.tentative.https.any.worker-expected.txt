@@ -1,5 +1,0 @@
-This is a testharness.js-based test.
-FAIL Set three simple origin session cookies sequentially and ensure they all end up in the cookie jar in order. promise_test: Unhandled rejection with value: object "ReferenceError: cookieStore is not defined"
-FAIL Set three simple origin session cookies in undefined order using Promise.all and ensure they all end up in the cookie jar in any order.  promise_test: Unhandled rejection with value: object "ReferenceError: cookieStore is not defined"
-Harness: the test ran to completion.
-

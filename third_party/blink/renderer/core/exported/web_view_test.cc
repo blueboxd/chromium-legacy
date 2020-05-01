@@ -522,8 +522,9 @@ TEST_F(WebViewTest, SetBaseBackgroundColorBeforeMainFrame) {
   EXPECT_EQ(SK_ColorBLUE, web_view->BackgroundColor());
 
   frame_test_helpers::TestWebFrameClient web_frame_client;
-  WebLocalFrame* frame = WebLocalFrame::CreateMainFrame(
-      web_view, &web_frame_client, nullptr, nullptr);
+  WebLocalFrame* frame =
+      WebLocalFrame::CreateMainFrame(web_view, &web_frame_client, nullptr,
+                                     base::UnguessableToken::Create(), nullptr);
   web_frame_client.Bind(frame);
 
   {
@@ -2761,8 +2762,9 @@ TEST_F(WebViewTest, ClientTapHandlingNullWebViewClient) {
       /*compositing_enabled=*/false, nullptr, mojo::NullAssociatedReceiver()));
   frame_test_helpers::TestWebFrameClient web_frame_client;
   frame_test_helpers::TestWebWidgetClient web_widget_client;
-  WebLocalFrame* local_frame = WebLocalFrame::CreateMainFrame(
-      web_view, &web_frame_client, nullptr, nullptr);
+  WebLocalFrame* local_frame =
+      WebLocalFrame::CreateMainFrame(web_view, &web_frame_client, nullptr,
+                                     base::UnguessableToken::Create(), nullptr);
   web_frame_client.Bind(local_frame);
   blink::WebFrameWidget::CreateForMainFrame(
       &web_widget_client, local_frame,

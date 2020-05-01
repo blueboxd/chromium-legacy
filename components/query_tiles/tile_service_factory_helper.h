@@ -22,6 +22,10 @@ namespace background_task {
 class BackgroundTaskScheduler;
 }  // namespace background_task
 
+namespace network {
+class SharedURLLoaderFactory;
+}  // namespace network
+
 namespace upboarding {
 
 class TileService;
@@ -30,7 +34,11 @@ std::unique_ptr<TileService> CreateTileService(
     image_fetcher::ImageFetcherService* image_fetcher_service,
     leveldb_proto::ProtoDatabaseProvider* db_provider,
     const base::FilePath& storage_dir,
-    background_task::BackgroundTaskScheduler* scheduler);
+    background_task::BackgroundTaskScheduler* scheduler,
+    const std::string& accepted_language,
+    const std::string& country_code,
+    const std::string& api_key,
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
 
 }  // namespace upboarding
 

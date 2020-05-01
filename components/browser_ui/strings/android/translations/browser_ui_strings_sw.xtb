@@ -3,12 +3,15 @@
 <translationbundle lang="sw">
 <translation id="1006017844123154345">Fungua Mtandaoni</translation>
 <translation id="1044891598689252897">Tovuti zitafanya kazi kama kawaida</translation>
+<translation id="1124090076051167250">Hatua hii itafuta <ph name="DATASIZE" /> ya data na vidakuzi vilivyohifadhiwa na tovuti au programu kwenye Skrini ya kwanza.</translation>
 <translation id="1124772482545689468">Mtumiaji</translation>
 <translation id="1178581264944972037">Sitisha</translation>
 <translation id="1181037720776840403">Ondoa</translation>
 <translation id="1201402288615127009">Endelea</translation>
 <translation id="1242008676835033345">Imepachikwa kwenye <ph name="WEBSITE_URL" /></translation>
+<translation id="1272079795634619415">Simamisha</translation>
 <translation id="129382876167171263">Faili zinazohifadhiwa na tovuti huonekana hapa</translation>
+<translation id="1364532808393826295"><ph name="APP_NAME" />, <ph name="NOTIFICATION_MESSAGE" /></translation>
 <translation id="1369915414381695676">Tovuti <ph name="SITE_NAME" /> imeongezwa</translation>
 <translation id="1383876407941801731">Tafuta</translation>
 <translation id="1384959399684842514">Upakuaji umesitishwa</translation>
@@ -29,6 +32,7 @@
 <translation id="1984937141057606926">Inaruhusiwa, isipokuwa vidakuzi vingine</translation>
 <translation id="1994173015038366702">URL ya Tovuti</translation>
 <translation id="2025115093177348061">Uhalisia ulioboreshwa</translation>
+<translation id="2030769033451695672">Gusa ili urudi kwenye <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
 <translation id="2041019821020695769">Ili uruhusu Chrome ikutumie arifa, washa arifa pia katika <ph name="BEGIN_LINK" />Mipangilio ya Android<ph name="END_LINK" />.</translation>
 <translation id="2079545284768500474">Tendua</translation>
 <translation id="2091887806945687916">Sauti</translation>
@@ -104,6 +108,7 @@
 <translation id="5048398596102334565">Ruhusu tovuti zifikie vitambuzi vyako vya mwendo (inapendekezwa)</translation>
 <translation id="5063480226653192405">Matumizi</translation>
 <translation id="5100237604440890931">Imekunjwa - bofya ili upanue.</translation>
+<translation id="5123685120097942451">Kichupo fiche</translation>
 <translation id="5300589172476337783">Onyesha</translation>
 <translation id="5301954838959518834">Sawa, nimeelewa</translation>
 <translation id="5307446750509046227">Futa hifadhi ya tovuti</translation>
@@ -111,7 +116,7 @@
 <translation id="5317780077021120954">Hifadhi</translation>
 <translation id="5335288049665977812">Ruhusu tovuti zitumie JavaScript (inapendekezwa)</translation>
 <translation id="534295439873310000">Vifaa vya NFC</translation>
-<translation id="5354152178998424783">Hatua hii itafuta data na vidakuzi vilivyohifadhiwa na tovuti upate ili <ph name="DATASIZE" />.</translation>
+<translation id="5354152178998424783">Hatua hii itafuta data na vidakuzi vya ukubwa wa <ph name="DATASIZE" /> vilivyohifadhiwa na tovuti.</translation>
 <translation id="5391532827096253100">Muunganisho wako kwenye tovuti hii si salama. Maelezo ya tovuti</translation>
 <translation id="5494752089476963479">Zuia matangazo kwenye tovuti zinazoonyesha matangazo yanayopotosha au yanayokatiza huduma</translation>
 <translation id="5505264765875738116">Tovuti haziwezi kukuuliza kutuma arifa</translation>
@@ -123,9 +128,11 @@
 <translation id="5677928146339483299">Kumezuiwa</translation>
 <translation id="5689516760719285838">Mahali</translation>
 <translation id="5710871682236653961">Uliza kabla ya kuruhusu tovuti kutuma na kupokea maelezo unapogusa vifaa vya NFC (inapendekezwa)</translation>
+<translation id="5719847187258001597">Hatua hii itafuta data na vidakuzi vyote vilivyohifadhiwa na <ph name="ORIGIN" /> au na programu yake kwenye Skrini yako ya kwanza.</translation>
 <translation id="5804241973901381774">Idhini</translation>
 <translation id="5860033963881614850">Kimezimwa</translation>
 <translation id="5916664084637901428">Imewashwa</translation>
+<translation id="5922853908706496913">Inashiriki skrini yako</translation>
 <translation id="5939518447894949180">Weka upya</translation>
 <translation id="6040143037577758943">Funga</translation>
 <translation id="6042308850641462728">Zaidi</translation>
@@ -169,6 +176,7 @@
 <translation id="7423098979219808738">Uliza kwanza</translation>
 <translation id="7423538860840206698">Imezuiwa kusoma ubao wa kunakili</translation>
 <translation id="7521387064766892559">JavaScript</translation>
+<translation id="7554752735887601236">Tovuti inatumia maikrofoni yako</translation>
 <translation id="7572498721684305250">Zuia tovuti zisitume na kupokea maelezo wakati unagusa vifaa vya NFC</translation>
 <translation id="757524316907819857">Zuia tovuti zisicheze maudhui yanayolindwa</translation>
 <translation id="7589445247086920869">Zuia kwa mtambo wa sasa wa kutafuta</translation>
@@ -177,6 +185,7 @@
 <translation id="7781829728241885113">Jana</translation>
 <translation id="7791543448312431591">Ongeza</translation>
 <translation id="780301667611848630">Hapana</translation>
+<translation id="7804248752222191302">Tovuti inatumia kamera yako</translation>
 <translation id="7817023149356982970">Utaondolewa kwenye akaunti ya tovuti hii.</translation>
 <translation id="7828557259026017104">Vidakuzi ni faili zinazoundwa na tovuti unazotembelea. Tovuti huvitumia kukumbuka mapendeleo yako. Vidakuzi vya washirika wengine hutengenezwa na tovuti nyingine. Tovuti hizo humiliki baadhi ya maudhui kama vile matangazo au picha ambazo unaona kwenye kurasa za wavuti unazotembelea.</translation>
 <translation id="7846076177841592234">Ghairi uchaguzi</translation>
@@ -194,7 +203,9 @@
 <translation id="8261506727792406068">Futa</translation>
 <translation id="8300705686683892304">Zinazodhibitiwa na programu</translation>
 <translation id="8372893542064058268">Ruhusu Usawazishaji wa Chini Chini wa tovuti mahususi.</translation>
+<translation id="83792324527827022">Tovuti inatumia kamera na maikrofoni yako</translation>
 <translation id="8380167699614421159">Tovuti hii inaonyesha matangazo yanayopotosha au yanayokatiza huduma</translation>
+<translation id="8394832520002899662">Gusa ili urudi kwenye tovuti</translation>
 <translation id="8447861592752582886">Batilisha ruhusa ya kifaa</translation>
 <translation id="851751545965956758">Zuia tovuti zisiunganishe kwenye vifaa</translation>
 <translation id="857943718398505171">Imeruhusiwa (inapendekezwa)</translation>

@@ -60,11 +60,12 @@ struct ProviderNamesSourceMapEntry {
 };
 
 const HostContentSettingsMap::ProviderType kFirstProvider =
-    HostContentSettingsMap::POLICY_PROVIDER;
+    HostContentSettingsMap::WEBUI_ALLOWLIST_PROVIDER;
 const HostContentSettingsMap::ProviderType kFirstUserModifiableProvider =
     HostContentSettingsMap::NOTIFICATION_ANDROID_PROVIDER;
 
 constexpr ProviderNamesSourceMapEntry kProviderNamesSourceMap[] = {
+    {"webui_allowlist", content_settings::SETTING_SOURCE_ALLOWLIST},
     {"policy", content_settings::SETTING_SOURCE_POLICY},
     {"supervised_user", content_settings::SETTING_SOURCE_SUPERVISED},
     {"extension", content_settings::SETTING_SOURCE_EXTENSION},
@@ -889,7 +890,7 @@ std::unique_ptr<base::Value> HostContentSettingsMap::GetWebsiteSetting(
 
       if (primary_url.SchemeIs(scheme)) {
         if (info) {
-          info->source = content_settings::SETTING_SOURCE_WHITELIST;
+          info->source = content_settings::SETTING_SOURCE_ALLOWLIST;
           info->primary_pattern = ContentSettingsPattern::Wildcard();
           info->secondary_pattern = ContentSettingsPattern::Wildcard();
         }
@@ -905,7 +906,7 @@ std::unique_ptr<base::Value> HostContentSettingsMap::GetWebsiteSetting(
     if (content_settings_info->force_allowed_origins().contains(origin)) {
       DCHECK(content_settings::OriginCanBeForceAllowed(origin));
       if (info) {
-        info->source = content_settings::SETTING_SOURCE_WHITELIST;
+        info->source = content_settings::SETTING_SOURCE_ALLOWLIST;
         info->primary_pattern =
             ContentSettingsPattern::FromURLNoWildcard(origin.GetURL());
         info->secondary_pattern = ContentSettingsPattern::Wildcard();

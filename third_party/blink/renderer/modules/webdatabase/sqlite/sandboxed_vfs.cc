@@ -9,8 +9,9 @@
 #include <string>
 #include <utility>
 
+#include "base/check_op.h"
 #include "base/files/file.h"
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "base/threading/platform_thread.h"
 #include "build/build_config.h"
 #include "sql/initialization.h"

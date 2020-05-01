@@ -1464,7 +1464,7 @@ bool Browser::ShouldAllowRunningInsecureContent(
   MixedContentSettingsTabHelper* mixed_content_settings =
       MixedContentSettingsTabHelper::FromWebContents(web_contents);
   DCHECK(mixed_content_settings);
-  bool allowed = mixed_content_settings->is_running_insecure_content_allowed();
+  bool allowed = mixed_content_settings->IsRunningInsecureContentAllowed();
   if (!allowed && !origin.host().empty()) {
     // Note: this is a browser-side-translation of the call to
     // DidBlockContentType from inside

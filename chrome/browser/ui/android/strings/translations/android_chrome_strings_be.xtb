@@ -38,7 +38,6 @@
 <translation id="1258753120186372309">Дудл Google: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1260236875608242557">Агляд прапанаванага змесціва і пошук</translation>
 <translation id="1266864766717917324">Не ўдалося абагуліць змесціва наступнага тыпу: <ph name="CONTENT_TYPE" /></translation>
-<translation id="1272079795634619415">Спыніць</translation>
 <translation id="1283039547216852943">Дакраніцеся, каб разгарнуць</translation>
 <translation id="1285320974508926690">Ніколі не перакладаць гэты сайт</translation>
 <translation id="1291207594882862231">Ачысціць гісторыю, файлы cookie, даныя сайта, кэш…</translation>
@@ -51,7 +50,6 @@
 <translation id="1331212799747679585">Немагчыма абнавіць Chrome. Дадатковыя параметры</translation>
 <translation id="1332501820983677155">Спалучэнні клавіш для функцый Google Chrome</translation>
 <translation id="1360432990279830238">Выйсці і выключыць сінхранізацыю?</translation>
-<translation id="1364532808393826295"><ph name="APP_NAME" />. <ph name="NOTIFICATION_MESSAGE" /></translation>
 <translation id="1373696734384179344">Недастаткова памяці, каб спампаваць выбранае змесціва.</translation>
 <translation id="1376578503827013741">Вылічэнне…</translation>
 <translation id="1383876407941801731">Пошук</translation>
@@ -122,7 +120,6 @@
 <translation id="2013642289801508067">{FILE_COUNT,plural, =1{# файл}one{# файл}few{# файлы}many{# файлаў}other{# файла}}</translation>
 <translation id="2017836877785168846">Ачышчае гісторыю і гісторыю аўтазапаўнення ў адрасным радку.</translation>
 <translation id="2021896219286479412">Кіраванне сайтам на ўвесь экран</translation>
-<translation id="2030769033451695672">Націсніце, каб вярнуцца на ўкладку <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
 <translation id="2038563949887743358">Уключыць запытванне версіі для настольнага камп'ютара</translation>
 <translation id="204321170514947529">Праграма "<ph name="APP_NAME" />" таксама мае змесціва ў Chrome</translation>
 <translation id="2049574241039454490"><ph name="FILE_SIZE_OF_TOTAL" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
@@ -592,7 +589,6 @@
 <translation id="5876056640971328065">Прыпыніць відэа</translation>
 <translation id="5884076754568147479">Каб дапамагаць вам выконваць задачы, Google будзе збіраць URL-адрасы і змесціва сайтаў, на якіх вы выкарыстоўваеце Памочніка, а таксама інфармацыю, якую вы перадаяце праз яго</translation>
 <translation id="5919204609460789179">Каб запусціць сінхранізацыю, абнавіце <ph name="PRODUCT_NAME" /></translation>
-<translation id="5922853908706496913">Ваш экран абагульваецца</translation>
 <translation id="5937580074298050696">Эканомія: <ph name="AMOUNT" /></translation>
 <translation id="5939518447894949180">Скінуць</translation>
 <translation id="5942872142862698679">Выкарыстоўваецца пошукавая сістэма Google</translation>
@@ -779,7 +775,6 @@
 <translation id="7514365320538308">Спампаваць</translation>
 <translation id="751961395872307827">Не ўдаецца падключыцца да сайта</translation>
 <translation id="7542481630195938534">Не ўдалося атрымаць прапановы</translation>
-<translation id="7554752735887601236">Сайт выкарыстоўвае мікрафон</translation>
 <translation id="7559975015014302720">Лёгкі рэжым выключаны</translation>
 <translation id="7562080006725997899">Ідзе ачыстка даных прагляду</translation>
 <translation id="756809126120519699">Даныя Chrome выдалены</translation>
@@ -813,7 +808,6 @@
 <translation id="7774809984919390718">{PAYMENT_METHOD,plural, =1{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 і яшчэ <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}one{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 і яшчэ <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}few{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 і яшчэ <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}many{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 і яшчэ <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}other{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 і яшчэ <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}}</translation>
 <translation id="7791543448312431591">Дадаць</translation>
 <translation id="780301667611848630">Не, дзякуй</translation>
-<translation id="7804248752222191302">Сайт выкарыстоўвае камеру</translation>
 <translation id="7810647596859435254">Адкрыць з дапамогай…</translation>
 <translation id="7821588508402923572">Тут будзе паказвацца аб'ём сэканомленага трафіка</translation>
 <translation id="783819812427904514">Уключыць гук відэа</translation>
@@ -885,9 +879,7 @@
 <translation id="8349013245300336738">Сартаваць па аб'ёме выкарыстанага трафіка</translation>
 <translation id="8364299278605033898">Праглядайце папулярныя вэб-сайты</translation>
 <translation id="8368027906805972958">Прылада невядомая або не падтрымліваецца (<ph name="DEVICE_ID" />)</translation>
-<translation id="83792324527827022">Сайт выкарыстоўвае камеру і мікрафон</translation>
 <translation id="8393700583063109961">Адправіць паведамленне</translation>
-<translation id="8394832520002899662">Каб вярнуцца на сайт, націсніце тут</translation>
 <translation id="8413126021676339697">Паказаць усю гісторыю</translation>
 <translation id="8427875596167638501">Укладка перадпрагляду адкрыта напалову</translation>
 <translation id="8428213095426709021">Налады</translation>
@@ -984,7 +976,6 @@
 <translation id="970715775301869095">Засталося часу: <ph name="MINUTES" /> хв</translation>
 <translation id="974555521953189084">Каб пачаць сінхранізацыю, увядзіце фразу-пароль</translation>
 <translation id="981121421437150478">Па-за сеткай</translation>
-<translation id="982182592107339124">Будуць выдалены даныя ўсіх сайтаў, у тым ліку наступных:</translation>
 <translation id="983192555821071799">Закрыць усе ўкладкі</translation>
 <translation id="987264212798334818">Агульныя</translation>
 </translationbundle>

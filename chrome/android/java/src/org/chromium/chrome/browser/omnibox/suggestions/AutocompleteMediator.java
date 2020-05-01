@@ -133,6 +133,7 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, StartStopWi
     private @Nullable EditUrlSuggestionProcessor mEditUrlProcessor;
     private final List<SuggestionProcessor> mSuggestionProcessors;
     private final List<SuggestionViewInfo> mAvailableSuggestions;
+    private SparseArray<String> mGroupHeaders;
 
     private ToolbarDataProvider mDataProvider;
     private OverviewModeBehavior mOverviewModeBehavior;
@@ -204,6 +205,7 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, StartStopWi
         mHandler = handler;
         mSuggestionProcessors = new ArrayList<>();
         mAvailableSuggestions = new ArrayList<>();
+        mGroupHeaders = new SparseArray<>();
 
         mOverviewModeObserver = new EmptyOverviewModeObserver() {
             @Override
@@ -968,7 +970,7 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, StartStopWi
         String userText = mUrlBarEditingTextProvider.getTextWithoutAutocomplete();
         mUrlTextAfterSuggestionsReceived = userText + inlineAutocompleteText;
 
-        if (setNewSuggestions(newSuggestions)) {
+        if (setNewSuggestions(newSuggestions, groupHeaders)) {
             // Reset all processors and clear existing suggestions if we received a new suggestions
             // list.
             for (SuggestionProcessor processor : mSuggestionProcessors) {
@@ -987,16 +989,19 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, StartStopWi
      * re-use them.
      *
      * @param newSuggestions List of OmniboxSuggestions to apply.
+     * @param groupHeaders Map of group ID to header title.
      * @return true, if newly supplied list was different from the previously supplied and cached
      *         list.
      */
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
-    boolean setNewSuggestions(List<OmniboxSuggestion> newSuggestions) {
+    boolean setNewSuggestions(
+            List<OmniboxSuggestion> newSuggestions, SparseArray<String> newGroupHeaders) {
         final int newSuggestionsCount = newSuggestions != null ? newSuggestions.size() : 0;
+        boolean sameSuggestions = false;
 
         final int currentSuggestionsCount = mAvailableSuggestions.size();
         if (currentSuggestionsCount == newSuggestionsCount) {
-            boolean sameSuggestions = true;
+            sameSuggestions = true;
             for (int i = 0; i < currentSuggestionsCount; i++) {
                 OmniboxSuggestion existingSuggestion = mAvailableSuggestions.get(i).suggestion;
                 if (!existingSuggestion.equals(newSuggestions.get(i))) {
@@ -1004,8 +1009,21 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, StartStopWi
                     break;
                 }
             }
-            if (sameSuggestions) return false;
         }
+
+        final int newHeadersCount = newGroupHeaders != null ? newGroupHeaders.size() : 0;
+        sameSuggestions &= newHeadersCount == mGroupHeaders.size();
+        if (sameSuggestions) {
+            for (int i = 0; i < mGroupHeaders.size(); i++) {
+                final int key = mGroupHeaders.keyAt(i);
+                if (!TextUtils.equals(newGroupHeaders.get(key), mGroupHeaders.get(key))) {
+                    sameSuggestions = false;
+                    break;
+                }
+            }
+        }
+
+        if (sameSuggestions) return false;
 
         mAvailableSuggestions.clear();
         for (int index = 0; index < newSuggestionsCount; index++) {
@@ -1015,7 +1033,17 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, StartStopWi
             mAvailableSuggestions.add(new SuggestionViewInfo(processor, suggestion, model));
         }
 
+        if (newGroupHeaders == null) {
+            mGroupHeaders.clear();
+        } else {
+            mGroupHeaders = newGroupHeaders;
+        }
         return true;
+    }
+
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+    SparseArray<String> getGroupHeaders() {
+        return mGroupHeaders;
     }
 
     /**

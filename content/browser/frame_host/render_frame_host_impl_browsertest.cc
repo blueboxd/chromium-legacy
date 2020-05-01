@@ -465,10 +465,11 @@ class RenderFrameHostFactoryForBeforeUnloadInterceptor
       FrameTree* frame_tree,
       FrameTreeNode* frame_tree_node,
       int32_t routing_id,
+      const base::UnguessableToken& frame_token,
       bool renderer_initiated_creation) override {
     return base::WrapUnique(new RenderFrameHostImplForBeforeUnloadInterceptor(
         site_instance, std::move(render_view_host), delegate, frame_tree,
-        frame_tree_node, routing_id, renderer_initiated_creation,
+        frame_tree_node, routing_id, frame_token, renderer_initiated_creation,
         RenderFrameHostImpl::LifecycleState::kActive));
   }
 };

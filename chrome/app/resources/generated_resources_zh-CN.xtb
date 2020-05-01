@@ -173,6 +173,7 @@
 <translation id="122082903575839559">证书签名算法</translation>
 <translation id="1221024147024329929">PKCS #1，带有 RSA 加密的 MD2</translation>
 <translation id="1221825588892235038">仅限选定内容</translation>
+<translation id="1223484782328004593"><ph name="APP_NAME" /> 必须获得许可</translation>
 <translation id="1223853788495130632">您的管理员建议将此设置设为某个特定值。</translation>
 <translation id="1224275271335624810">最快</translation>
 <translation id="1225177025209879837">正在处理请求…</translation>
@@ -211,6 +212,7 @@
 <translation id="1272978324304772054">此用户帐号不属于设备所注册的域。如果想注册其他域，那么您首先需要执行设备恢复。</translation>
 <translation id="1274977772557788323">Adobe Flash Player 存储设置</translation>
 <translation id="1274997165432133392">Cookie 及其他网站数据</translation>
+<translation id="1276994519141842946">无法卸载 <ph name="APP_NAME" /></translation>
 <translation id="1280820357415527819">正在搜索移动网络</translation>
 <translation id="1280965841156951489">修改文件</translation>
 <translation id="1285320974508926690">一律不翻译此网站</translation>
@@ -319,6 +321,7 @@
 <translation id="1426870617281699524">请点击“重试”，然后接受计算机上显示的提示</translation>
 <translation id="1427269577154060167">国家/地区</translation>
 <translation id="142758023928848008">启用粘滞键（只需依序输入按键即可执行键盘快捷方式）</translation>
+<translation id="142765311413773645"><ph name="APP_NAME" /> 的许可已过期</translation>
 <translation id="1429300045468813835">已全部清除</translation>
 <translation id="143027896309062157">读取和更改您在自己的计算机上以及访问的网站上的所有数据</translation>
 <translation id="1430915738399379752">打印</translation>
@@ -379,9 +382,7 @@
 <translation id="1509281256533087115">通过 USB 访问任何<ph name="DEVICE_NAME_AND_VENDOR" /></translation>
 <translation id="1509960214886564027">很多网站上的功能可能会无法正常运作</translation>
 <translation id="1510030919967934016">系统已阻止此网页跟踪您的位置。</translation>
-<translation id="1510055949674985293">为此图片生成二维码</translation>
 <translation id="1510238584712386396">启动器</translation>
-<translation id="1510581003097415337">为此页面生成二维码</translation>
 <translation id="1510785804673676069">如果您使用的是代理服务器，请检查您的代理设置，或与网络管理员核实代理服务器是否运转正常。如果您认为自己使用的不是代理服务器，请调整您的<ph name="LINK_START" />代理设置<ph name="LINK_END" />。</translation>
 <translation id="1511997356770098059">此安全密钥无法存储任何登录数据</translation>
 <translation id="1512210426710821809">要想撤消此操作，唯一的方法是重新安装 <ph name="IDS_SHORT_PRODUCT_OS_NAME" /></translation>
@@ -1003,6 +1004,7 @@
 <translation id="2325444234681128157">记住密码</translation>
 <translation id="2326931316514688470">重新加载应用(&amp;R)</translation>
 <translation id="2327492829706409234">启用应用</translation>
+<translation id="2328561734797404498">请重启您的设备，即可使用 <ph name="APP_NAME" />。</translation>
 <translation id="2329597144923131178">登录后可获取您所有设备上保存的书签、历史记录、密码和其他设置。</translation>
 <translation id="2332131598580221120">在应用店中查看</translation>
 <translation id="2332192922827071008">打开偏好设置</translation>
@@ -1260,6 +1262,7 @@
 <translation id="2665717534925640469">此网页现处于全屏模式并已隐藏鼠标指针。</translation>
 <translation id="2665919335226618153">糟糕！格式化过程中出现错误。</translation>
 <translation id="2667463864537187133">管理拼写检查</translation>
+<translation id="2669241540496514785">无法打开 <ph name="APP_NAME" /></translation>
 <translation id="2670102641511624474"><ph name="APP_NAME" /> 正在共享 Chrome 标签页。</translation>
 <translation id="2670429602441959756">此网页包含尚不受虚拟现实模式支持的功能。即将退出…</translation>
 <translation id="2671451824761031126">您的书签和设置已就绪</translation>
@@ -1336,6 +1339,7 @@
 <translation id="2757338480560142065">请确保您要保存的密码与您用来登录 <ph name="WEBSITE" /> 的密码相符</translation>
 <translation id="2762441749940182211">已禁止使用摄像头</translation>
 <translation id="2765217105034171413">小</translation>
+<translation id="2766091842833763951">无法设置 <ph name="APP_NAME" />，因为出现了配置问题。请与贵组织的设备管理员联系。错误代码：<ph name="ERROR_CODE" />。</translation>
 <translation id="2766161002040448006">询问家长的意见</translation>
 <translation id="2767127727915954024"><ph name="ORIGIN" /> 将能够修改“<ph name="FILENAME" />”中的内容，除非您关闭此网站的所有标签页</translation>
 <translation id="276969039800130567">您已用 <ph name="USER_EMAIL_ADDRESS" /> 的身份登录。</translation>
@@ -2298,7 +2302,6 @@
 <translation id="4007856537951125667">隐藏快捷方式</translation>
 <translation id="4008291085758151621">虚拟实境中不提供网站信息</translation>
 <translation id="4010917659463429001">要在移动设备上获取书签，请<ph name="GET_IOS_APP_LINK" />。</translation>
-<translation id="4013132157686828973">“<ph name="CLIENT_NAME" />”正在调试此浏览器</translation>
 <translation id="4014432863917027322">要修复“<ph name="EXTENSION_NAME" />”吗？</translation>
 <translation id="4015163439792426608">安装了扩展程序？在一个位置轻松<ph name="BEGIN_LINK" />管理您的扩展程序<ph name="END_LINK" />。</translation>
 <translation id="4020327272915390518">选项菜单</translation>
@@ -2416,6 +2419,7 @@
 <translation id="4181602000363099176">20 倍</translation>
 <translation id="4181841719683918333">语言</translation>
 <translation id="4184885522552335684">拖动即可移动显示屏</translation>
+<translation id="4187424053537113647">正在设置 <ph name="APP_NAME" />…</translation>
 <translation id="4194570336751258953">启用点按单击</translation>
 <translation id="4195643157523330669">在新标签页中打开</translation>
 <translation id="4195814663415092787">继续浏览上次打开的网页</translation>
@@ -2534,6 +2538,7 @@
 <translation id="4379281552162875326">卸载“<ph name="APP_NAME" />”？</translation>
 <translation id="4380648069038809855">已进入全屏模式</translation>
 <translation id="4382131447572146376">{COUNT,plural, =0{<ph name="EMAIL" />}=1{<ph name="EMAIL" />，以及另外 1 个帐号}other{<ph name="EMAIL" />，以及另外 <ph name="EXTRA_ACCOUNTS" /> 个帐号}}</translation>
+<translation id="43829217466934313">不允许在此设备上使用 <ph name="APP_NAME" />。请与贵组织的设备管理员联系。错误代码：<ph name="ERROR_CODE" />。</translation>
 <translation id="4384312707950789900">添加到首选网络列表</translation>
 <translation id="4384652540891215547">激活该扩展程序</translation>
 <translation id="438503109373656455">小马</translation>
@@ -2866,6 +2871,7 @@
 <translation id="4863769717153320198">有效分辨率：<ph name="WIDTH" /> x <ph name="HEIGHT" />（默认）</translation>
 <translation id="4864369630010738180">正在登录…</translation>
 <translation id="486635084936119914">下载特定类型的文件后自动将其打开</translation>
+<translation id="4869289251183233431">您设备上的存储空间不足。使用 <ph name="APP_NAME" /> 需要至少 <ph name="MINIMUM_SPACE" /> 的可用空间（建议 <ph name="RECOMMENDED_SPACE" /> 以上）。如需增加可用空间，请从设备中删除文件。</translation>
 <translation id="48704129375571883">添加其他功能</translation>
 <translation id="4870758487381879312">请输入管理员提供的密码以获取配置信息</translation>
 <translation id="4870903493621965035">没有已配对的设备</translation>
@@ -2918,6 +2924,7 @@
 <translation id="4920887663447894854">系统已阻止以下网站跟踪您在此网页上的位置：</translation>
 <translation id="49226369361073053">{0,plural, =0{立即更新此设备}=1{请在 1 秒内更新此设备}other{请在 # 秒内更新此设备}}</translation>
 <translation id="492299503953721473">移除 Android 应用</translation>
+<translation id="492363500327720082">正在卸载 <ph name="APP_NAME" />…</translation>
 <translation id="4924352752174756392">12 倍</translation>
 <translation id="4925320384394644410">您的端口将会显示在此处</translation>
 <translation id="4925542575807923399">此帐号的管理员规定：在多帐号登录会话中，此帐号必须是最先登录的帐号。</translation>
@@ -2998,7 +3005,6 @@
 <translation id="504561833207953641">正在现有的浏览器会话中打开。</translation>
 <translation id="5047421709274785093">禁止网站使用动作传感器和光传感器</translation>
 <translation id="5050042263972837708">群组名称</translation>
-<translation id="5051073330196664891">Google 通用服务条款 (uToS)</translation>
 <translation id="5051836348807686060">所选语言不支持拼写检查</translation>
 <translation id="5052499409147950210">修改网站</translation>
 <translation id="5053604404986157245">随机生成的 TPM 密码不可用。这是执行 Powerwash 之后的正常现象。</translation>
@@ -3479,6 +3485,7 @@
 <translation id="5692875591060376599">所选文件是不明文件，可能含有危险内容。发送给 Google 高级保护进行扫描？</translation>
 <translation id="569425414730375234">当前的无痕式会话：<ph name="RECENT_PERMISSIONS_CHANGE_SENTENCE_START" /></translation>
 <translation id="5696143504434933566">举报“<ph name="EXTENSION_NAME" />”的滥用行为</translation>
+<translation id="5696177755977520104">Chrome 操作系统设置同步</translation>
 <translation id="5696679855467848181">当前正在使用的 PPD 文件：<ph name="PPD_NAME" /></translation>
 <translation id="570043786759263127">Google Play 应用和服务</translation>
 <translation id="5700836101007545240">“添加连接”功能已由您的管理员停用</translation>
@@ -3789,6 +3796,7 @@
 <translation id="6103681770816982672">警告：您打算切换到开发者版本</translation>
 <translation id="6104068876731806426">Google 帐号</translation>
 <translation id="6104311680260824317">无法将此设备加入到该网域中。相应服务器不支持所指定的 Kerberos 加密类型。请前往“更多选项”以检查加密设置。</translation>
+<translation id="6105994589138235234">Chrome 浏览器同步</translation>
 <translation id="6112294629795967147">触摸即可调整大小</translation>
 <translation id="6112727384379533756">添加票据</translation>
 <translation id="6112931163620622315">请查看您的手机</translation>
@@ -3826,6 +3834,7 @@
 <translation id="6155141482566063812">背景标签页正在共享您的屏幕</translation>
 <translation id="6156323911414505561">显示书签栏</translation>
 <translation id="6156863943908443225">脚本缓存</translation>
+<translation id="6157197137667039897">无法安装 <ph name="APP_NAME" />。请重试，或与贵组织的设备管理员联系。错误代码：<ph name="ERROR_CODE" />。</translation>
 <translation id="6160625263637492097">提供用于验证身份的证书</translation>
 <translation id="6163363155248589649">正常(&amp;N)</translation>
 <translation id="6163522313638838258">全部展开...</translation>
@@ -3868,7 +3877,6 @@
 <translation id="6226777517901268232">私钥文件（选填）</translation>
 <translation id="6227280783235722609">扩展程序</translation>
 <translation id="6228691855869374890">此网站可完全控制 MIDI 设备。</translation>
-<translation id="6228720835160974792">为此图片生成二维码</translation>
 <translation id="6229890768313448549">无法加载《Google Play 服务条款》。请重试。</translation>
 <translation id="6231881193380278751">在网址中添加查询参数可自动刷新相应网页：chrome://device-log/?refresh=&lt;sec&gt;</translation>
 <translation id="6232017090690406397">电池</translation>
@@ -4026,6 +4034,7 @@
 <translation id="6430814529589430811">Base64 编码 ASCII，单一证书</translation>
 <translation id="6431347207794742960"><ph name="PRODUCT_NAME" />将为此计算机上的所有用户设置自动更新。</translation>
 <translation id="6434309073475700221">放弃</translation>
+<translation id="6434325376267409267">您需要更新设备，才能使用 <ph name="APP_NAME" />。</translation>
 <translation id="6436164536244065364">在 Chrome 网上应用店中查看</translation>
 <translation id="6438992844451964465"><ph name="WINDOW_TITLE" /> - 正在播放音频</translation>
 <translation id="6442187272350399447">棒极了</translation>
@@ -4069,6 +4078,7 @@
 <translation id="6491376743066338510">授权失败</translation>
 <translation id="6494445798847293442">不是证书授权中心</translation>
 <translation id="6495925982925244349">第 <ph name="NETWORK_INDEX" /> 个网络（共 <ph name="NETWORK_COUNT" /> 个），<ph name="NETWORK_NAME" />，<ph name="SECURITY_STATUS" />，<ph name="CONNECTION_STATUS" />，信号强度为 <ph name="SIGNAL_STRENGTH" />%，由您的管理员管理，详细信息</translation>
+<translation id="6496965928959882519">您设备上的存储空间不足。建议您释放至少 <ph name="RECOMMENDED_SPACE" /> 的可用空间以便使用 <ph name="APP_NAME" />。如需增加可用空间，请从您的设备中删除文件。</translation>
 <translation id="6498249116389603658">所选全部语言(&amp;A)</translation>
 <translation id="6499143127267478107">正在解析代理脚本中的主机...</translation>
 <translation id="6499681088828539489">禁止共享网络使用代理</translation>
@@ -4529,7 +4539,6 @@
 <translation id="7123360114020465152">已不再受支持</translation>
 <translation id="7127980134843952133">下载记录</translation>
 <translation id="7128151990937044829">当通知处于屏蔽状态时在地址栏中显示“已屏蔽”图标</translation>
-<translation id="7128239828194367697">为此页面生成二维码</translation>
 <translation id="7131040479572660648">读取您在 <ph name="WEBSITE_1" />、<ph name="WEBSITE_2" /> 和 <ph name="WEBSITE_3" /> 上的数据</translation>
 <translation id="713122686776214250">添加网页(&amp;G)...</translation>
 <translation id="7133578150266914903">您的管理员正在回滚此设备 (<ph name="PROGRESS_PERCENT" />)</translation>
@@ -4740,6 +4749,7 @@
 <translation id="7421925624202799674">显示网页源代码(&amp;V)</translation>
 <translation id="7422192691352527311">偏好设置...</translation>
 <translation id="7423098979219808738">先询问</translation>
+<translation id="7423807071740419372"><ph name="APP_NAME" /> 需要获得相应权限才能运行</translation>
 <translation id="7427315641433634153">MSCHAP</translation>
 <translation id="7427348830195639090">后台网页：<ph name="BACKGROUND_PAGE_URL" /></translation>
 <translation id="7427798576651127129">通过<ph name="DEVICE_NAME" />拨打电话</translation>
@@ -4770,6 +4780,7 @@
 <translation id="746216226901520237">下次，您只需使用手机就能解锁您的 <ph name="DEVICE_TYPE" /> 了。您可在“设置”中关闭 Smart Lock。</translation>
 <translation id="7463006580194749499">添加用户</translation>
 <translation id="7465522323587461835">{NUM_OPEN_TABS,plural, =1{共有 # 个打开的标签页，按一下此按钮即可显示/隐藏标签栏}other{共有 # 个打开的标签页，按一下此按钮即可显示/隐藏标签栏}}</translation>
+<translation id="7465635034594602553">出了点问题。请在几分钟后重新运行 <ph name="APP_NAME" />。</translation>
 <translation id="7465778193084373987">Netscape 证书吊销网址</translation>
 <translation id="7469894403370665791">自动连接到该网络</translation>
 <translation id="747114903913869239">错误：无法对扩展程序进行解码</translation>
@@ -5812,6 +5823,7 @@
 <translation id="8818958672113348984">通过手机进行验证</translation>
 <translation id="8820817407110198400">书签</translation>
 <translation id="8821045908425223359">自动配置 IP 地址</translation>
+<translation id="8821268776955756404">现在可以使用 <ph name="APP_NAME" /> 了。</translation>
 <translation id="882204272221080310">更新固件以提高安全性。</translation>
 <translation id="8823514049557262177">复制链接文字(&amp;X)</translation>
 <translation id="8823559166155093873">屏蔽 Cookie</translation>
@@ -5882,6 +5894,7 @@
 <translation id="8902667442496790482">打开“随选朗读”设置</translation>
 <translation id="8903263458134414071">请选择要登录的帐号</translation>
 <translation id="890616557918890486">更改来源</translation>
+<translation id="8909298138148012791">已卸载 <ph name="APP_NAME" /></translation>
 <translation id="8909833622202089127">该网站正在跟踪您的位置</translation>
 <translation id="8910146161325739742">共享屏幕</translation>
 <translation id="8910222113987937043">对您的书签、历史记录、密码及其他设置所做的更改将不再同步到您的 Google 帐号。但是，您的现有数据依然会存储在您的 Google 帐号中，而且您可以通过 <ph name="BEGIN_LINK" />Google 信息中心<ph name="END_LINK" />管理这些数据。</translation>

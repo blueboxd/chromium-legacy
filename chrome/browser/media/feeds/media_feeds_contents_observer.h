@@ -32,6 +32,7 @@ class MediaFeedsContentsObserver
   void DidFinishNavigation(content::NavigationHandle* handle) override;
   void DidFinishLoad(content::RenderFrameHost* render_frame_host,
                      const GURL& validated_url) override;
+  void WebContentsDestroyed() override;
 
   void SetClosureForTest(base::RepeatingClosure callback) {
     test_closure_ = std::move(callback);
@@ -47,6 +48,12 @@ class MediaFeedsContentsObserver
 
   media_history::MediaHistoryKeyedService* GetService();
 
+  void ResetFeed();
+
+  // The last origin that the web contents navigated too. Used for resetting
+  // feeds based on user navigation.
+  base::Optional<url::Origin> last_origin_;
+
   // The test closure will be called once we have checked the page for a media
   // feed.
   base::RepeatingClosure test_closure_;
@@ -56,4 +63,4 @@ class MediaFeedsContentsObserver
   WEB_CONTENTS_USER_DATA_KEY_DECL();
 };
 
-#endif  // CHROME_BROWSER_MEDIA_HISTORY_MEDIA_HISTORY_CONTENTS_OBSERVER_H_
+#endif  // CHROME_BROWSER_MEDIA_FEEDS_MEDIA_FEEDS_CONTENTS_OBSERVER_H_

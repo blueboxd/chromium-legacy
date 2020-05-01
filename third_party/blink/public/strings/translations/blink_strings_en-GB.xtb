@@ -35,6 +35,7 @@
 <translation id="1938124657309484470">Value must be <ph name="MAXIMUM_DATE_OR_TIME" /> or earlier.</translation>
 <translation id="1946271899482435442">Show date picker</translation>
 <translation id="1993104285338243655">Switched to mirroring</translation>
+<translation id="2031987842108996681">Red channel</translation>
 <translation id="2060505056492490888">'<ph name="DOT" />' is used at a wrong position in '<ph name="INVALIDDOMAIN" />'.</translation>
 <translation id="2148716181193084225">Today</translation>
 <translation id="2158401438286456825">page list</translation>
@@ -45,6 +46,7 @@
 <translation id="2291999235780842123">Tick box</translation>
 <translation id="2311842470354187719">page break</translation>
 <translation id="2335594187091864976">date and time picker</translation>
+<translation id="2393030564806080191">Hexadecimal colour value</translation>
 <translation id="245932805758469625">number of seconds of video remaining</translation>
 <translation id="248395913932153421">Day</translation>
 <translation id="2507943997699731163">Please fill in this field.</translation>
@@ -52,6 +54,7 @@
 <translation id="2561842179657104141">show more media controls</translation>
 <translation id="2572483411312390101">play</translation>
 <translation id="2613802280814924224">Please enter a valid value. The nearest valid value is <ph name="VALID_VALUE" />.</translation>
+<translation id="2634240155926812724">Green channel</translation>
 <translation id="2653659639078652383">Submit</translation>
 <translation id="2657045182931379222">graphics object</translation>
 <translation id="2674318244760992338">footer</translation>
@@ -127,6 +130,7 @@
 <translation id="5034860022980953847">progress indicator</translation>
 <translation id="5090250355906949916">video time scrubber</translation>
 <translation id="5093189678851173835">epigraph</translation>
+<translation id="509897012892853729">Blue channel</translation>
 <translation id="5117590920725113268">Show next month</translation>
 <translation id="512758898067543763">row header</translation>
 <translation id="5143125788380636750">epilogue</translation>
@@ -164,6 +168,7 @@
 <translation id="6166809985690652833">afterword</translation>
 <translation id="6209276755895393898">Appears to be: <ph name="DESCRIPTION" /></translation>
 <translation id="6213469881011901533">glossary</translation>
+<translation id="6281588256137006900">Lightness</translation>
 <translation id="6281763101136022427">url</translation>
 <translation id="6310801910862476708">Exit picture-in-picture</translation>
 <translation id="6398862346408813489">Show month selection panel</translation>
@@ -184,6 +189,7 @@
 <translation id="6790428901817661496">Play</translation>
 <translation id="6820355525329141109">Couldn't load plug-in.</translation>
 <translation id="6820615603175220800">bibliography reference</translation>
+<translation id="6831465880655513317">Colour well with two-dimensional slider for selecting saturation and lightness</translation>
 <translation id="6843725295806269523">mute</translation>
 <translation id="6885760532393684712">directory</translation>
 <translation id="689129560213475294">colophon</translation>
@@ -201,6 +207,7 @@
 <translation id="7263440858009898357">Please select an item in the list.</translation>
 <translation id="727747134524199931">column header</translation>
 <translation id="7320576522385648310">buffering</translation>
+<translation id="7341556277900466204">Colour well</translation>
 <translation id="7353453495576941748">credit</translation>
 <translation id="7364796246159120393">Choose file</translation>
 <translation id="739024184232394898">Other...</translation>
@@ -221,6 +228,7 @@
 <translation id="775297008183122718">Invalid entry</translation>
 <translation id="7789962463072032349">pause</translation>
 <translation id="7802800022689234070">disclosure triangle</translation>
+<translation id="7852167693871241274">Hue slider</translation>
 <translation id="7888071071722539607">Please include an '<ph name="ATSIGN" />' in the email address. '<ph name="INVALIDADDRESS" />' is missing an '<ph name="ATSIGN" />'.</translation>
 <translation id="7891486169920085145">splitter</translation>
 <translation id="795667975304826397">No file chosen</translation>
@@ -263,6 +271,7 @@
 <translation id="8875657656876809964">Video playback error</translation>
 <translation id="8889402386540077796">Hue</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> KB</translation>
+<translation id="894736920926684893">Format toggler</translation>
 <translation id="8987927404178983737">Month</translation>
 <translation id="901493112792887934">current time in seconds</translation>
 <translation id="901834265349196618">email</translation>

@@ -77,55 +77,43 @@ const char kPDF[] =
 
 enum ExpectedNavigationStatus { NAVIGATION_BLOCKED, NAVIGATION_ALLOWED };
 
-// This class is similar to ConsoleObserverDelegate in that it listens and waits
-// for specific console messages. The difference from ConsoleObserverDelegate is
-// that this class immediately stops waiting if it sees a message matching
-// fail_pattern, instead of waiting for a message matching success_pattern.
-class BlockedURLWarningConsoleObserverDelegate : public WebContentsDelegate {
+// A wrapper around WebContentsConsoleObserver that watches for a success or
+// failure message. This will add a failure if an unexpected message is seen.
+class BlockedURLWarningConsoleObserver {
  public:
   enum Status {
     NO_MESSAGE,
     SAW_SUCCESS_MESSAGE,
     SAW_FAILURE_MESSAGE,
   };
-  BlockedURLWarningConsoleObserverDelegate(WebContents* web_contents,
-                                           const std::string& success_filter,
-                                           const std::string& fail_filter)
-      : web_contents_(web_contents),
+  BlockedURLWarningConsoleObserver(WebContents* web_contents,
+                                   const std::string& success_filter,
+                                   const std::string& fail_filter)
+      : console_observer_(web_contents),
         success_filter_(success_filter),
         fail_filter_(fail_filter),
         status_(NO_MESSAGE) {}
 
-  ~BlockedURLWarningConsoleObserverDelegate() override {}
+  ~BlockedURLWarningConsoleObserver() = default;
 
-  // WebContentsDelegate method:
-  bool DidAddMessageToConsole(WebContents* source,
-                              blink::mojom::ConsoleMessageLevel log_level,
-                              const base::string16& message,
-                              int32_t line_no,
-                              const base::string16& source_id) override {
-    DCHECK(source == web_contents_);
-    const std::string ascii_message = base::UTF16ToASCII(message);
-    if (base::MatchPattern(ascii_message, fail_filter_)) {
+  void Wait() {
+    console_observer_.Wait();
+    ASSERT_EQ(1u, console_observer_.messages().size());
+    std::string message = console_observer_.GetMessageAt(0u);
+    if (base::MatchPattern(message, fail_filter_))
       status_ = SAW_FAILURE_MESSAGE;
-      run_loop_.Quit();
-    }
-    if (base::MatchPattern(ascii_message, success_filter_)) {
+    else if (base::MatchPattern(message, success_filter_))
       status_ = SAW_SUCCESS_MESSAGE;
-      run_loop_.Quit();
-    }
-    return false;
+    else
+      ADD_FAILURE() << "Unexpected message: " << message;
   }
-
-  void Wait() { run_loop_.Run(); }
 
   Status status() const { return status_; }
 
  private:
-  WebContents* web_contents_;
+  WebContentsConsoleObserver console_observer_;
   const std::string success_filter_;
   const std::string fail_filter_;
-  base::RunLoop run_loop_;
   Status status_;
 };
 
@@ -373,20 +361,17 @@ class BlockedSchemeNavigationBrowserTest
             ? std::string()
             : base::StringPrintf(kNavigationBlockedMessage, scheme.c_str());
 
-    std::unique_ptr<ConsoleObserverDelegate> console_delegate;
+    base::Optional<WebContentsConsoleObserver> console_observer;
     if (!expected_message.empty()) {
-      console_delegate.reset(new ConsoleObserverDelegate(
-          shell()->web_contents(), expected_message));
-      shell()->web_contents()->SetDelegate(console_delegate.get());
+      console_observer.emplace(shell()->web_contents());
+      console_observer->SetPattern(expected_message);
     }
 
     TestNavigationObserver navigation_observer(shell()->web_contents());
     EXPECT_TRUE(ExecuteScript(rfh, javascript));
 
-    if (console_delegate) {
-      console_delegate->Wait();
-      shell()->web_contents()->SetDelegate(nullptr);
-    }
+    if (console_observer)
+      console_observer->Wait();
 
     switch (expected_navigation_status) {
       case NAVIGATION_ALLOWED:
@@ -523,16 +508,14 @@ class BlockedSchemeNavigationBrowserTest
     // Should see success message, should never see blocked message.
     const std::string blocked_message =
         base::StringPrintf(kNavigationBlockedMessage, scheme.c_str());
-    BlockedURLWarningConsoleObserverDelegate console_delegate(
+    BlockedURLWarningConsoleObserver console_observer(
         shell->web_contents(), kNavigationSuccessfulMessage, blocked_message);
-    shell->web_contents()->SetDelegate(&console_delegate);
 
     TestNavigationObserver navigation_observer(shell->web_contents());
     EXPECT_TRUE(ExecuteScript(rfh, javascript));
-    console_delegate.Wait();
-    EXPECT_EQ(BlockedURLWarningConsoleObserverDelegate::SAW_SUCCESS_MESSAGE,
-              console_delegate.status());
-    shell->web_contents()->SetDelegate(nullptr);
+    console_observer.Wait();
+    EXPECT_EQ(BlockedURLWarningConsoleObserver::SAW_SUCCESS_MESSAGE,
+              console_observer.status());
     navigation_observer.Wait();
 
     // The new page should have the expected scheme.
@@ -554,16 +537,14 @@ class BlockedSchemeNavigationBrowserTest
     // Should see blocked message, should never see success message.
     const std::string blocked_message =
         base::StringPrintf(kNavigationBlockedMessage, scheme.c_str());
-    BlockedURLWarningConsoleObserverDelegate console_delegate(
+    BlockedURLWarningConsoleObserver console_observer(
         shell->web_contents(), kNavigationSuccessfulMessage, blocked_message);
-    shell->web_contents()->SetDelegate(&console_delegate);
 
     TestNavigationObserver navigation_observer(shell->web_contents());
     EXPECT_TRUE(ExecuteScript(rfh, javascript));
-    console_delegate.Wait();
-    EXPECT_EQ(BlockedURLWarningConsoleObserverDelegate::SAW_FAILURE_MESSAGE,
-              console_delegate.status());
-    shell->web_contents()->SetDelegate(nullptr);
+    console_observer.Wait();
+    EXPECT_EQ(BlockedURLWarningConsoleObserver::SAW_FAILURE_MESSAGE,
+              console_observer.status());
 
     // Original page shouldn't navigate away.
     EXPECT_EQ(original_url, shell->web_contents()->GetLastCommittedURL());
@@ -598,14 +579,12 @@ IN_PROC_BROWSER_TEST_P(BlockedSchemeNavigationBrowserTest,
       "<html><script>console.log('NAVIGATION_SUCCESSFUL');</script></html>",
       "text/html"));
   if (IsDataURLTest()) {
-    BlockedURLWarningConsoleObserverDelegate console_delegate(
+    BlockedURLWarningConsoleObserver console_observer(
         shell()->web_contents(), kNavigationSuccessfulMessage,
         GetNavigationBlockedMessage());
 
-    shell()->web_contents()->SetDelegate(&console_delegate);
     EXPECT_TRUE(NavigateToURL(shell(), kUrl));
-    console_delegate.Wait();
-    shell()->web_contents()->SetDelegate(nullptr);
+    console_observer.Wait();
     EXPECT_TRUE(
         shell()->web_contents()->GetLastCommittedURL().SchemeIs(GetParam()));
 
@@ -621,14 +600,12 @@ IN_PROC_BROWSER_TEST_P(BlockedSchemeNavigationBrowserTest,
     Shell* new_shell = new_shell_observer.GetShell();
     WaitForLoadStop(new_shell->web_contents());
 
-    BlockedURLWarningConsoleObserverDelegate console_delegate(
+    BlockedURLWarningConsoleObserver console_observer(
         new_shell->web_contents(), kNavigationSuccessfulMessage,
         GetNavigationBlockedMessage());
-    new_shell->web_contents()->SetDelegate(&console_delegate);
     EXPECT_TRUE(NavigateToURL(new_shell, kUrl));
 
-    console_delegate.Wait();
-    new_shell->web_contents()->SetDelegate(nullptr);
+    console_observer.Wait();
     EXPECT_TRUE(
         new_shell->web_contents()->GetLastCommittedURL().SchemeIs(GetParam()));
   }

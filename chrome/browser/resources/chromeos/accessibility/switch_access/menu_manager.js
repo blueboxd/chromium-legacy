@@ -108,6 +108,9 @@ class MenuManager {
    */
   static enter(navNode) {
     const manager = MenuManager.instance;
+    if (!manager) {
+      return false;
+    }
     if (!manager.menuPanel_) {
       console.log('Error: Menu panel has not loaded.');
       return false;
@@ -132,7 +135,9 @@ class MenuManager {
 
   /** Exits the menu. */
   static exit() {
-    MenuManager.instance.exit_();
+    if (MenuManager.instance) {
+      MenuManager.instance.exit_();
+    }
   }
 
   /**
@@ -142,7 +147,7 @@ class MenuManager {
    */
   static moveForward() {
     const manager = MenuManager.instance;
-    if (!manager.inMenu_ || !manager.node_) {
+    if (!manager || !manager.inMenu_ || !manager.node_) {
       return false;
     }
 
@@ -159,7 +164,7 @@ class MenuManager {
    */
   static moveBackward() {
     const manager = MenuManager.instance;
-    if (!manager.inMenu_ || !manager.node_) {
+    if (!manager || !manager.inMenu_ || !manager.node_) {
       return false;
     }
 
@@ -172,7 +177,7 @@ class MenuManager {
   /** Reloads the menu, if it has changed. */
   static reloadMenuIfNeeded() {
     const manager = MenuManager.instance;
-    if (manager.menuOriginNode_) {
+    if (manager && manager.menuOriginNode_) {
       manager.openMenu_(manager.menuOriginNode_, SAConstants.MenuId.MAIN);
     }
   }
@@ -183,7 +188,7 @@ class MenuManager {
    */
   static selectCurrentNode() {
     const manager = MenuManager.instance;
-    if (!manager.inMenu_ || !manager.node_) {
+    if (!manager || !manager.inMenu_ || !manager.node_) {
       return false;
     }
 
@@ -206,7 +211,7 @@ class MenuManager {
   static requestBackButtonFocusChange(should_focus) {
     // Ignore attempts from outside the class to set focus when the menu is
     // open.
-    if (MenuManager.instance.inMenu_) {
+    if (!MenuManager.instance || MenuManager.instance.inMenu_) {
       return;
     }
     MenuManager.instance.updateFocusRing_(should_focus);

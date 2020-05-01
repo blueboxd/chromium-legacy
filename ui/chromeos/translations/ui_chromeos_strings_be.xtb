@@ -211,6 +211,7 @@
 <translation id="3495304270784461826">Памылак: <ph name="COUNT" />.</translation>
 <translation id="3519867315646775981">Транслітарацыя (shalom ← שלום)</translation>
 <translation id="3522708245912499433">Партугальская</translation>
+<translation id="3524311639100184459">Увага! Гэта часовыя файлы, і яны могуць быць аўтаматычна выдалены для вызвалення месца на дыску.  <ph name="BEGIN_LINK" />Даведацца больш<ph name="END_LINK" /></translation>
 <translation id="3527085408025491307">Папка</translation>
 <translation id="3549797760399244642">Перайсці на drive.google.com...</translation>
 <translation id="357479282490346887">Літоўская</translation>
@@ -499,6 +500,7 @@
 <translation id="6806699711453372963">Кіраваць абагульваннем з Linux</translation>
 <translation id="6808193438228982088">Ліса</translation>
 <translation id="6820687829547641339">Архіў TAR, сціснуты праграмай Gzip</translation>
+<translation id="6823166707458800069">Для ўсіх файлаў, захаваных у гэтай папцы, аўтаматычна ствараюцца рэзервовыя копіі ў інтэрнэце.</translation>
 <translation id="6825883775269213504">Руская</translation>
 <translation id="6827236167376090743">Гэта відэа будзе прайгравацца да другога прышэсця.</translation>
 <translation id="6847101934483209767">Выдалена з выбранага: <ph name="ENTRY_NAME" />.</translation>

@@ -45,6 +45,7 @@ class SelectType : public GarbageCollected<SelectType> {
   virtual const ComputedStyle* OptionStyle() const;
   virtual void MaximumOptionWidthMightBeChanged() const;
 
+  virtual void ScrollToOption(HTMLOptionElement* option);
   virtual void SelectAll();
   virtual void SaveListboxActiveSelection();
   virtual void HandleMouseRelease();

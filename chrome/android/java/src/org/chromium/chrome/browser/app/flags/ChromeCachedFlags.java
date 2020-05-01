@@ -51,6 +51,7 @@ public class ChromeCachedFlags {
         List<String> featuresToCache = Arrays.asList(
                 ChromeFeatureList.ANDROID_PARTNER_CUSTOMIZATION_PHENOTYPE,
                 ChromeFeatureList.COMMAND_LINE_ON_NON_ROOTED,
+                ChromeFeatureList.CONDITIONAL_TAB_STRIP_ANDROID,
                 ChromeFeatureList.CHROME_DUET,
                 ChromeFeatureList.CHROME_DUET_ADAPTIVE,
                 ChromeFeatureList.CHROME_DUET_LABELED,

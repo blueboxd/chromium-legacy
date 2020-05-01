@@ -5,6 +5,7 @@
 #include "device/udev_linux/fake_udev_loader.h"
 
 #include <base/logging.h>
+#include "base/files/file_path.h"
 
 struct udev {
   // empty
@@ -46,7 +47,7 @@ FakeUdevLoader::~FakeUdevLoader() {
     UdevLoader::SetForTesting(nullptr, false);
 }
 
-void FakeUdevLoader::AddFakeDevice(
+udev_device* FakeUdevLoader::AddFakeDevice(
     std::string name,
     std::string syspath,
     std::map<std::string, std::string> sysattrs,
@@ -54,6 +55,7 @@ void FakeUdevLoader::AddFakeDevice(
   devices_.emplace_back(new udev_device(std::move(name), std::move(syspath),
                                         std::move(sysattrs),
                                         std::move(properties)));
+  return devices_.back().get();
 }
 
 bool FakeUdevLoader::Init() {
@@ -69,7 +71,16 @@ const char* FakeUdevLoader::udev_device_get_devnode(udev_device* udev_device) {
 }
 
 udev_device* FakeUdevLoader::udev_device_get_parent(udev_device* udev_device) {
-  return nullptr;
+  if (!udev_device) {
+    return nullptr;
+  }
+
+  const base::FilePath syspath(udev_device->syspath_);
+  auto it =
+      std::find_if(devices_.begin(), devices_.end(), [syspath](const auto& d) {
+        return base::FilePath(d->syspath_).IsParent(syspath);
+      });
+  return it == devices_.end() ? nullptr : it->get();
 }
 
 udev_device* FakeUdevLoader::udev_device_get_parent_with_subsystem_devtype(

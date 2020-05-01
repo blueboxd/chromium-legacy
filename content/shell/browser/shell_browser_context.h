@@ -42,6 +42,11 @@ class ShellBrowserContext : public BrowserContext {
     guest_manager_ = guest_manager;
   }
 
+  void set_client_hints_controller_delegate(
+      ClientHintsControllerDelegate* delegate) {
+    client_hints_controller_delegate_ = delegate;
+  }
+
   // BrowserContext implementation.
   base::FilePath GetPath() override;
 #if !defined(OS_ANDROID)
@@ -93,6 +98,7 @@ class ShellBrowserContext : public BrowserContext {
   base::FilePath path_;
   BrowserPluginGuestManager* guest_manager_;
   std::unique_ptr<SimpleFactoryKey> key_;
+  ClientHintsControllerDelegate* client_hints_controller_delegate_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(ShellBrowserContext);
 };

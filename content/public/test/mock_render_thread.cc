@@ -283,6 +283,7 @@ void MockRenderThread::OnCreateChildFrame(
   params_reply->browser_interface_broker_handle =
       browser_interface_broker.PassPipe().release();
 
+  params_reply->frame_token = base::UnguessableToken::Create();
   params_reply->devtools_frame_token = base::UnguessableToken::Create();
 }
 
@@ -326,6 +327,7 @@ void MockRenderThread::OnCreateWindow(
   reply->main_frame_interface_bundle->browser_interface_broker =
       std::move(browser_interface_broker);
 
+  reply->main_frame_frame_token = base::UnguessableToken::Create();
   reply->main_frame_widget_route_id = GetNextRoutingID();
   reply->cloned_session_storage_namespace_id =
       blink::AllocateSessionStorageNamespaceId();

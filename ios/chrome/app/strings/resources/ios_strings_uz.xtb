@@ -158,6 +158,7 @@
 <translation id="285960592395650245">Qaytadan urinish</translation>
 <translation id="2870560284913253234">Sayt</translation>
 <translation id="2871695793448672541">Yashirin parol</translation>
+<translation id="2876369937070532032">Xavfli vaziyatlarda siz tashrif buyurgan ayrim URL manzillarni Google serverlariga yuboradi</translation>
 <translation id="288655811176831528">Varaqni yopish</translation>
 <translation id="2898963176829412617">Yangi jild...</translation>
 <translation id="2916171785467530738">Qidiruv va URL manzillarning avtomatik kiritilishi</translation>
@@ -177,6 +178,7 @@
 <translation id="3161291298470460782">Bu hisobingizdan chiqarib, sinxronizatsiyani faolsizlantiradi va bu qurilmadagi barcha Chrome maʼlumotlaringizni tozalab tashlaydi. Google hisobingizga sinxronlangan maʼlumotlaringiz joyida qoladi.</translation>
 <translation id="3175081911749765310">Veb-xizmatlar</translation>
 <translation id="3178650076442119961">Bugun onlayn edi</translation>
+<translation id="3181954750937456830">Saytlarni xavfsiz kezish (sizni va qurilmangizni xavfli saytlardan himoya qiladi)</translation>
 <translation id="3207960819495026254">Xatcho‘plarga qo‘shildi</translation>
 <translation id="3224641773458703735">Parollarni eksport qilish uchun qurilmangizni maxfiy kod bilan qulflang.</translation>
 <translation id="3240426699337459095">Nusxalandi</translation>
@@ -430,6 +432,7 @@ Ma’lumotlaringiz <ph name="TIME" /> sanasida kodli ibora bilan shifrlangan. Si
 <translation id="6447842834002726250">Cookie fayllari</translation>
 <translation id="6464071786529933911">Yangi inkognito sahifada ochish</translation>
 <translation id="6476800141292307438">Sahifa <ph name="LANGUAGE" /> tiliga tarjima qilinmoqda. Parametrlar ekranning pastiga yaqin joyda joylashgan.</translation>
+<translation id="648164694371393720">Autentifikatsiya xatosi</translation>
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> ta xatcho‘p o‘chirildi</translation>
 <translation id="6561262006871132942">Yaqinlashtirish</translation>
 <translation id="6610002944194042868">Tarjima parametrlari</translation>

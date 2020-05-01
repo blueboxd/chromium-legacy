@@ -193,8 +193,8 @@ message DeviceRegisterRequest {
 
 // Identification of a device used during its registration.
 message DeviceRegisterIdentification {
-  // The Zero-Touch SN if a device has one.
-  optional string zero_touch_sn = 1;
+  // The attested device ID for devices using Zero-Touch (see go/zt-sn).
+  optional string attested_device_id = 1;
 }
 
 // Response from server to device register request.

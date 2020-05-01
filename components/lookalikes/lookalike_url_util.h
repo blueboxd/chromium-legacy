@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/time/time.h"
 #include "components/url_formatter/url_formatter.h"
 #include "url/gurl.h"
@@ -17,6 +18,9 @@ class GURL;
 namespace lookalikes {
 extern const char kHistogramName[];
 }
+
+using LookalikeTargetAllowlistChecker =
+    base::RepeatingCallback<bool(const GURL&)>;
 
 // Used for UKM. There is only a single LookalikeUrlMatchType per navigation.
 enum class LookalikeUrlMatchType {
@@ -118,15 +122,17 @@ bool ShouldBlockLookalikeUrlNavigation(LookalikeUrlMatchType match_type,
 // check is made using both visual skeleton and edit distance comparison.  If
 // this returns true, match details will be written into |matched_domain|.
 // Pointer arguments can't be nullptr.
-bool GetMatchingDomain(const DomainInfo& navigated_domain,
-                       const std::vector<DomainInfo>& engaged_sites,
-                       std::string* matched_domain,
-                       LookalikeUrlMatchType* match_type);
+bool GetMatchingDomain(
+    const DomainInfo& navigated_domain,
+    const std::vector<DomainInfo>& engaged_sites,
+    const LookalikeTargetAllowlistChecker& in_target_allowlist,
+    std::string* matched_domain,
+    LookalikeUrlMatchType* match_type);
 
 void RecordUMAFromMatchType(LookalikeUrlMatchType match_type);
 
 // Checks to see if a URL is a target embedding lookalike. This function sets
-// |safe_url| to the url of the embedded target domain.
+// |safe_hostname| to the url of the embedded target domain.
 // At the moment we consider the following cases as Target Embedding:
 // example-google.com-site.com, example.google.com-site.com,
 // example-google-com-site.com, example.google.com.site.com,
@@ -134,8 +140,12 @@ void RecordUMAFromMatchType(LookalikeUrlMatchType match_type);
 // detect embeddings of top 500 domains and engaged domains. However, to reduce
 // false positives, we do not protect domains that are shorter than 7 characters
 // long (e.g. com.ru).
-bool IsTargetEmbeddingLookalike(const GURL& url,
-                                const std::vector<DomainInfo>& engaged_sites,
-                                std::string* safe_url);
+// This function checks possible targets against |in_target_allowlist| to skip
+// permitted embeddings.
+bool IsTargetEmbeddingLookalike(
+    const std::string& hostname,
+    const std::vector<DomainInfo>& engaged_sites,
+    const LookalikeTargetAllowlistChecker& in_target_allowlist,
+    std::string* safe_hostname);
 
 #endif  // COMPONENTS_LOOKALIKES_LOOKALIKE_URL_UTIL_H_

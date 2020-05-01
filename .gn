@@ -432,7 +432,6 @@ check_targets = [
   # "//third_party/libaom/*",  # https://crbug.com/899771
   "//third_party/libc++/*",
   "//third_party/libc++abi/*",
-  "//third_party/libcxx-pretty-printers/*",
   "//third_party/libdrm/*",
   "//third_party/libgav1/*",
   "//third_party/libjingle/*",

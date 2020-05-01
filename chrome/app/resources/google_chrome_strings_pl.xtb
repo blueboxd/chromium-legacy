@@ -92,7 +92,6 @@
 <translation id="3582972582564653026">Synchronizuj dane Chrome i korzystaj z własnych ustawień przeglądarki na wielu urządzeniach</translation>
 <translation id="3596080736082218006">{COUNT,plural, =0{Administrator wymaga ponownego uruchomienia Chrome, by przeglądarka mogła zainstalować aktualizację}=1{Administrator wymaga ponownego uruchomienia Chrome, by przeglądarka mogła zainstalować aktualizację. Okno incognito nie otworzy się ponownie.}few{Administrator wymaga ponownego uruchomienia Chrome, by przeglądarka mogła zainstalować aktualizację. # okna incognito nie otworzą się ponownie.}many{Administrator wymaga ponownego uruchomienia Chrome, by przeglądarka mogła zainstalować aktualizację. # okien incognito nie otworzy się ponownie.}other{Administrator wymaga ponownego uruchomienia Chrome, by przeglądarka mogła zainstalować aktualizację. # okna incognito nie otworzy się ponownie.}}</translation>
 <translation id="3622797965165704966">Korzystanie z Chrome na wspólnych komputerach i przy użyciu konta Google jest teraz jeszcze łatwiejsze.</translation>
-<translation id="3637702109597584617"><ph name="TERMS_OF_SERVICE_LINK" />Warunki korzystania<ph name="END_TERMS_OF_SERVICE_LINK" /> z systemu operacyjnego Google Chrome</translation>
 <translation id="3718181793972440140">Spowoduje to usunięcie 1 elementu z tego urządzenia. Aby później odzyskać dane, zaloguj się w Chrome jako <ph name="USER_EMAIL" />.</translation>
 <translation id="3735758079232443276">Rozszerzenie „<ph name="EXTENSION_NAME" />” ustawiło inną stronę wyświetlaną po uruchomieniu Chrome.</translation>
 <translation id="3780814664026482060">Chrome – <ph name="PAGE_TITLE" /></translation>
@@ -109,6 +108,7 @@
 <translation id="4205939740494406371">Chrome nie może sprawdzić Twoich haseł. Spróbuj ponownie za 24 godziny lub <ph name="BEGIN_LINK" />sprawdź hasła na koncie Google<ph name="END_LINK" />.</translation>
 <translation id="424864128008805179">Wylogować z Chrome?</translation>
 <translation id="4251615635259297716">Połączyć Twoje dane Chrome z tym kontem?</translation>
+<translation id="4281844954008187215">Warunki korzystania z usługi</translation>
 <translation id="4293420128516039005">Zaloguj się, by synchronizować dane Chrome i korzystać z własnych ustawień przeglądarki na wielu urządzeniach</translation>
 <translation id="4328355335528187361">Wersja deweloperska Google Chrome (mDNS-In)</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
@@ -141,7 +141,6 @@
 <translation id="5132929315877954718">Odkryj znakomite aplikacje, gry, rozszerzenia i motywy do przeglądarki Google Chrome.</translation>
 <translation id="5170938038195470297">Nie można użyć Twojego profilu, ponieważ został utworzony w nowszej wersji Google Chrome. Niektóre funkcje mogą być niedostępne. Podaj inny katalog z profilem lub użyj nowszej wersji Chrome.</translation>
 <translation id="5193136243808726294">System operacyjny Google Chrome nie może otworzyć tej strony.</translation>
-<translation id="5204098752394657250"><ph name="TERMS_OF_SERVICE_LINK" />Warunki korzystania z usługi<ph name="END_TERMS_OF_SERVICE_LINK" /> Google Chrome</translation>
 <translation id="5251420635869119124">Goście mogą korzystać z Chrome, nie pozostawiając żadnych danych.</translation>
 <translation id="532046782124376502">Ostrzeżenie: Google Chrome nie może uniemożliwić rozszerzeniom zapisywania historii przeglądania. Aby wyłączyć to rozszerzenie w trybie incognito, odznacz tę opcję.</translation>
 <translation id="5386244825306882791">Kontroluje także to, jaka strona wyświetla się po uruchomieniu Chrome lub wyszukiwaniu w omniboksie.</translation>

@@ -95,7 +95,6 @@
 <translation id="3582972582564653026">Chrome sinhronizēšana un personalizēšana visās jūsu ierīcēs</translation>
 <translation id="3596080736082218006">{COUNT,plural, =0{Lai lietotu atjauninājumu, administrators pieprasa restartēt pārlūku Chrome.}=1{Lai lietotu atjauninājumu, administrators pieprasa restartēt pārlūku Chrome. Jūsu inkognito režīma logs netiks atkārtoti atvērts.}zero{Lai lietotu atjauninājumu, administrators pieprasa restartēt pārlūku Chrome. # jūsu inkognito režīma logi netiks atkārtoti atvērti.}one{Lai lietotu atjauninājumu, administrators pieprasa restartēt pārlūku Chrome. # jūsu inkognito režīma logs netiks atkārtoti atvērts.}other{Lai lietotu atjauninājumu, administrators pieprasa restartēt pārlūku Chrome. # jūsu inkognito režīma logi netiks atkārtoti atvērti.}}</translation>
 <translation id="3622797965165704966">Tagad pārlūkā Chrome ir vieglāk izmantot Google kontu, kā arī ir atvieglota lietošana datoros, ko izmanto vairākas personas.</translation>
-<translation id="3637702109597584617">Google Chrome OS <ph name="TERMS_OF_SERVICE_LINK" />pakalpojumu sniegšanas noteikumi<ph name="END_TERMS_OF_SERVICE_LINK" /></translation>
 <translation id="3718181793972440140">Veicot šo darbību, no šīs ierīces tiks dzēsts 1 vienums. Lai vēlāk izgūtu datus, pierakstieties pārlūkā Chrome kā <ph name="USER_EMAIL" />.</translation>
 <translation id="3735758079232443276">Paplašinājums “<ph name="EXTENSION_NAME" />” mainīja iestatījumu, kura lapa tiek parādīta, palaižot pārlūku Chrome.</translation>
 <translation id="3780814664026482060">Chrome — <ph name="PAGE_TITLE" /></translation>
@@ -112,6 +111,7 @@
 <translation id="4205939740494406371">Pārlūkprogrammā Chrome nevar pārbaudīt jūsu paroles. Mēģiniet vēlreiz pēc 24 stundām vai <ph name="BEGIN_LINK" />pārbaudiet paroles savā Google kontā<ph name="END_LINK" />.</translation>
 <translation id="424864128008805179">Vai izrakstīties no pārlūka Chrome?</translation>
 <translation id="4251615635259297716">Vai saistīt Chrome datus ar šo kontu?</translation>
+<translation id="4281844954008187215">Google pakalpojumu noteikumi</translation>
 <translation id="4293420128516039005">Pierakstieties, lai sinhronizētu un personalizētu Chrome visās savās ierīcēs.</translation>
 <translation id="4328355335528187361">Google Chrome Dev (mDNS-In)</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
@@ -146,7 +146,6 @@
 
 Dažas funkcijas var nebūt pieejamas. Norādiet citu profila direktoriju vai lietojiet jaunāku Chrome versiju.</translation>
 <translation id="5193136243808726294">Problēma ar lapas atvēršanu pārlūkā Google Chrome OS.</translation>
-<translation id="5204098752394657250">Google Chrome <ph name="TERMS_OF_SERVICE_LINK" />pakalpojumu sniegšanas noteikumi<ph name="END_TERMS_OF_SERVICE_LINK" /></translation>
 <translation id="5251420635869119124">Viesi var izmantot pārlūku Chrome, neatstājot nekādas pēdas.</translation>
 <translation id="532046782124376502">Brīdinājums! Google Chrome nevar novērst to, ka paplašinājumi ieraksta jūsu pārlūkošanas vēsturi. Lai atspējotu šo paplašinājumu inkognito režīmā, noņemiet atzīmi no šīs opcijas.</translation>
 <translation id="5386244825306882791">Tas nosaka arī to, kāda lapa tiks rādīta, kad atvērsiet pārlūku Chrome vai meklēsiet, izmantojot universālo lodziņu.</translation>

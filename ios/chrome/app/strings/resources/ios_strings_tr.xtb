@@ -158,6 +158,7 @@
 <translation id="285960592395650245">Tekrar İndirmeyi Dene</translation>
 <translation id="2870560284913253234">Site</translation>
 <translation id="2871695793448672541">Gizli, Şifre</translation>
+<translation id="2876369937070532032">Güvenliğiniz risk altında olduğunda ziyaret ettiğiniz bazı sayfaların URL'lerini Google'a gönderir</translation>
 <translation id="288655811176831528">Sekmeyi Kapat</translation>
 <translation id="2898963176829412617">Yeni Klasör…</translation>
 <translation id="2916171785467530738">Aramaları ve URL'leri Otomatik Tamamlama</translation>
@@ -177,6 +178,7 @@
 <translation id="3161291298470460782">Bu işlem, oturumunuzun ve senkronizasyonun kapatılmasını, ayrıca tüm Chrome verilerinin bu cihazdan temizlenmesini sağlayacak. Senkronize edilmiş verileriniz Google Hesabınızda kalmaya devam edecek.</translation>
 <translation id="3175081911749765310">Web Hizmetleri</translation>
 <translation id="3178650076442119961">Bugün Etkin</translation>
+<translation id="3181954750937456830">Gizli Göz Atma (sizi ve cihazınızı tehlikelerden korur)</translation>
 <translation id="3207960819495026254">Yer işareti koyuldu</translation>
 <translation id="3224641773458703735">Şifreleri dışa aktarmak için öncelikle cihazınızda bir şifre kodu ayarlamanız gerekir.</translation>
 <translation id="3240426699337459095">Bağlantı kopyalandı</translation>
@@ -430,6 +432,7 @@ Verileriniz <ph name="TIME" /> tarihinde senkronizasyon parolanızla şifrelendi
 <translation id="6447842834002726250">Çerezler</translation>
 <translation id="6464071786529933911">Yeni Gizli Sekmede Aç</translation>
 <translation id="6476800141292307438">Sayfa <ph name="LANGUAGE" /> diline çevriliyor. Seçenekler ekranın alt kısmına yakın bir yerde bulunur.</translation>
+<translation id="648164694371393720">Kimlik Doğrulama Hatası</translation>
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> öğe silindi</translation>
 <translation id="6561262006871132942">Yakınlaştır</translation>
 <translation id="6610002944194042868">Çeviri Seçenekleri</translation>

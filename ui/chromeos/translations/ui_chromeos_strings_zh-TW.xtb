@@ -211,6 +211,7 @@
 <translation id="3495304270784461826">發生 <ph name="COUNT" /> 個錯誤。</translation>
 <translation id="3519867315646775981">音譯 (shalom ← שלום)</translation>
 <translation id="3522708245912499433">葡萄牙文</translation>
+<translation id="3524311639100184459">注意：這些是暫存檔案，系統可能會自動將其刪除，以釋出磁碟空間。<ph name="BEGIN_LINK" />瞭解詳情<ph name="END_LINK" /></translation>
 <translation id="3527085408025491307">資料夾</translation>
 <translation id="3549797760399244642">前往 drive.google.com...</translation>
 <translation id="357479282490346887">立陶宛文</translation>
@@ -500,6 +501,7 @@
 <translation id="6806699711453372963">管理 Linux 共用設定</translation>
 <translation id="6808193438228982088">狐狸</translation>
 <translation id="6820687829547641339">Gzip 壓縮 tar 封存</translation>
+<translation id="6823166707458800069">所有儲存在這個資料夾的檔案都會自動在線上備份。</translation>
 <translation id="6825883775269213504">俄文</translation>
 <translation id="6827236167376090743">這部影片會持續播放到地老天荒。</translation>
 <translation id="6847101934483209767">已從所選範圍中移除「<ph name="ENTRY_NAME" />」。</translation>

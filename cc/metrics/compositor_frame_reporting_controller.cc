@@ -241,6 +241,7 @@ void CompositorFrameReportingController::DidSubmitCompositorFrame(
   }
 
   if (impl_reporter) {
+    impl_reporter->EnableCompositorOnlyReporting();
     impl_reporter->StartStage(
         StageType::kSubmitCompositorFrameToPresentationCompositorFrame, Now());
     impl_reporter->SetEventsMetrics(

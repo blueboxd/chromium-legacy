@@ -280,19 +280,19 @@ TEST_F(AppServiceImplTest, PreferredApps) {
 
   // Add one subscriber.
   FakeSubscriber sub0(&impl);
-  impl.FlushMojoCallsForTesting();
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(sub0.PreferredApps().GetValue(),
             impl.GetPreferredAppsForTesting().GetValue());
 
   // Add another subscriber.
   FakeSubscriber sub1(&impl);
-  impl.FlushMojoCallsForTesting();
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(sub1.PreferredApps().GetValue(),
             impl.GetPreferredAppsForTesting().GetValue());
 
   FakePublisher pub0(&impl, apps::mojom::AppType::kArc,
                      std::vector<std::string>{kAppId1, kAppId2});
-  impl.FlushMojoCallsForTesting();
+  base::RunLoop().RunUntilIdle();
 
   // Test sync preferred app to all subscribers.
   filter_url = GURL("https://www.abc.com/");
@@ -318,7 +318,6 @@ TEST_F(AppServiceImplTest, PreferredApps) {
                        another_intent_filter->Clone(),
                        apps_util::CreateIntentFromUrl(another_filter_url),
                        /*from_publisher=*/true);
-  impl.FlushMojoCallsForTesting();
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(kAppId2, sub0.PreferredApps().FindPreferredAppForUrl(filter_url));
   EXPECT_EQ(kAppId2, sub1.PreferredApps().FindPreferredAppForUrl(filter_url));
@@ -329,7 +328,7 @@ TEST_F(AppServiceImplTest, PreferredApps) {
 
   // Test that uninstall removes all the settings for the app.
   pub0.UninstallApps(std::vector<std::string>{kAppId2}, &impl);
-  impl.FlushMojoCallsForTesting();
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(base::nullopt,
             sub0.PreferredApps().FindPreferredAppForUrl(filter_url));
   EXPECT_EQ(base::nullopt,
@@ -346,7 +345,7 @@ TEST_F(AppServiceImplTest, PreferredApps) {
                        another_intent_filter->Clone(),
                        apps_util::CreateIntentFromUrl(another_filter_url),
                        /*from_publisher=*/true);
-  impl.FlushMojoCallsForTesting();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(kAppId2, sub0.PreferredApps().FindPreferredAppForUrl(filter_url));
   EXPECT_EQ(kAppId2, sub1.PreferredApps().FindPreferredAppForUrl(filter_url));
@@ -358,7 +357,7 @@ TEST_F(AppServiceImplTest, PreferredApps) {
   // Test that remove setting for one filter.
   impl.RemovePreferredAppForFilter(apps::mojom::AppType::kUnknown, kAppId2,
                                    intent_filter->Clone());
-  impl.FlushMojoCallsForTesting();
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(base::nullopt,
             sub0.PreferredApps().FindPreferredAppForUrl(filter_url));
   EXPECT_EQ(base::nullopt,

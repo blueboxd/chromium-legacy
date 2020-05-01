@@ -4,7 +4,6 @@
 
 #include "third_party/blink/renderer/platform/scheduler/public/scheduling_policy.h"
 
-#include "base/logging.h"
 
 namespace blink {
 

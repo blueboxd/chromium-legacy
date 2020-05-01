@@ -3,12 +3,15 @@
 <translationbundle lang="is">
 <translation id="1006017844123154345">Opna á netinu</translation>
 <translation id="1044891598689252897">Vefsvæði virka sem skyldi</translation>
+<translation id="1124090076051167250">Þetta hreinsar <ph name="DATASIZE" /> af gögnum og fótsporum sem geymd eru af vefsvæðum og forritum á heimaskjánum.</translation>
 <translation id="1124772482545689468">Notandi</translation>
 <translation id="1178581264944972037">Gera hlé</translation>
 <translation id="1181037720776840403">Fjarlægja</translation>
 <translation id="1201402288615127009">Áfram</translation>
 <translation id="1242008676835033345">Fellt inn á <ph name="WEBSITE_URL" /></translation>
+<translation id="1272079795634619415">Stöðva</translation>
 <translation id="129382876167171263">Skrár sem vefsvæði vista birtast hér</translation>
+<translation id="1364532808393826295"><ph name="APP_NAME" /> – <ph name="NOTIFICATION_MESSAGE" /></translation>
 <translation id="1369915414381695676">Vefsvæðinu <ph name="SITE_NAME" /> bætt við</translation>
 <translation id="1383876407941801731">Leita</translation>
 <translation id="1384959399684842514">Gert var hlé á niðurhali</translation>
@@ -29,6 +32,7 @@
 <translation id="1984937141057606926">Leyfð, nema frá þriðja aðila</translation>
 <translation id="1994173015038366702">Slóð vefsvæðis</translation>
 <translation id="2025115093177348061">Aukinn veruleiki</translation>
+<translation id="2030769033451695672">Ýttu til að fara aftur á <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
 <translation id="2041019821020695769">Til að leyfa Chrome að senda þér tilkynningar þarftu einnig að kveikja á þeim í <ph name="BEGIN_LINK" />stillingum Android<ph name="END_LINK" />.</translation>
 <translation id="2079545284768500474">Afturkalla</translation>
 <translation id="2091887806945687916">Hljóð</translation>
@@ -104,6 +108,7 @@
 <translation id="5048398596102334565">Leyfa vefsvæðum að fá aðgang að hreyfiskynjurunum (ráðlagt)</translation>
 <translation id="5063480226653192405">Notkun</translation>
 <translation id="5100237604440890931">Minnkað – smelltu til að stækka.</translation>
+<translation id="5123685120097942451">Huliðsflipi</translation>
 <translation id="5300589172476337783">Sýna</translation>
 <translation id="5301954838959518834">Ég skil</translation>
 <translation id="5307446750509046227">Hreinsa geymslu vefsvæða</translation>
@@ -123,9 +128,11 @@
 <translation id="5677928146339483299">Lokað fyrir aðgang</translation>
 <translation id="5689516760719285838">Staðsetning</translation>
 <translation id="5710871682236653961">Spyrja áður en vefsvæði fá leyfi til að senda og taka við upplýsingum þegar þú ýtir á NFC-tæki (ráðlagt)</translation>
+<translation id="5719847187258001597">Þetta hreinsar öll gögn og fótspor sem <ph name="ORIGIN" /> eða forrit þess geymir á heimaskjánum</translation>
 <translation id="5804241973901381774">Heimildir</translation>
 <translation id="5860033963881614850">Slökkt</translation>
 <translation id="5916664084637901428">Kveikt</translation>
+<translation id="5922853908706496913">Deiling skjásins þíns</translation>
 <translation id="5939518447894949180">Endurstilla</translation>
 <translation id="6040143037577758943">Loka</translation>
 <translation id="6042308850641462728">Meira</translation>
@@ -169,6 +176,7 @@
 <translation id="7423098979219808738">Spyrja fyrst</translation>
 <translation id="7423538860840206698">Lokað fyrir lestur klippiborðs</translation>
 <translation id="7521387064766892559">JavaScript</translation>
+<translation id="7554752735887601236">Vefsvæði er að nota hljóðnemann</translation>
 <translation id="7572498721684305250">Loka fyrir að vefsvæði geti sent og tekið við upplýsingum þegar þú ýtir á NFC-tæki</translation>
 <translation id="757524316907819857">Banna síðum að spila varið efni</translation>
 <translation id="7589445247086920869">Setja á bannlista á núverandi leitarvél</translation>
@@ -177,6 +185,7 @@
 <translation id="7781829728241885113">Í gær</translation>
 <translation id="7791543448312431591">Bæta við</translation>
 <translation id="780301667611848630">Nei, takk</translation>
+<translation id="7804248752222191302">Vefsvæði er að nota myndavélina</translation>
 <translation id="7817023149356982970">Þú verður skráð(ur) út af þessu vefsvæði.</translation>
 <translation id="7828557259026017104">Fótspor eru skrár sem myndast á vefsvæðum sem þú heimsækir. Vefsvæði geta notað þau til að muna kjörstillingarnar þínar. Fótspor frá þriðja aðila eru búin til af öðrum vefsvæðum. Þessi vefsvæði eiga eitthvað af efninu, eins og auglýsingar eða myndir, sem þú sérð á vefsíðunni sem þú heimsækir.</translation>
 <translation id="7846076177841592234">Hætta við val</translation>
@@ -194,7 +203,9 @@
 <translation id="8261506727792406068">Eyða</translation>
 <translation id="8300705686683892304">Stjórnað af forriti</translation>
 <translation id="8372893542064058268">Leyfa bakgrunnssamstillingu fyrir ákveðið vefsvæði.</translation>
+<translation id="83792324527827022">Vefsvæði er að nota myndavélina þína og hljóðnemann</translation>
 <translation id="8380167699614421159">Þetta vefsvæði sýnir ágengar eða villandi auglýsingar</translation>
+<translation id="8394832520002899662">Ýttu til að fara aftur á vefsvæðið</translation>
 <translation id="8447861592752582886">Afturkalla tækjaheimild</translation>
 <translation id="851751545965956758">Ekki leyfa vefsvæðum að tengjast tækjum</translation>
 <translation id="857943718398505171">Leyft (ráðlagt)</translation>

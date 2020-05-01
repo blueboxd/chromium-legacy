@@ -4,7 +4,7 @@
 
 #include "third_party/blink/renderer/platform/graphics/color_space_profile_data.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "third_party/blink/renderer/platform/wtf/wtf.h"
 
 struct bt709ColorProfile {

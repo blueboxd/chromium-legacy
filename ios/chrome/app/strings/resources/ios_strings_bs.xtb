@@ -158,6 +158,7 @@
 <translation id="285960592395650245">Ponovo pokušaj preuzeti</translation>
 <translation id="2870560284913253234">Web lokacija</translation>
 <translation id="2871695793448672541">Sakriveno, zaporka</translation>
+<translation id="2876369937070532032">Googleu šalje URL-ove nekih stranica koje posjećujete kada je ugrožena vaša sigurnost</translation>
 <translation id="288655811176831528">Zatvori karticu</translation>
 <translation id="2898963176829412617">Novi folder…</translation>
 <translation id="2916171785467530738">Samodovršavanje pretraživanja i URL-ova</translation>
@@ -177,6 +178,7 @@
 <translation id="3161291298470460782">Ovim ćete se odjaviti, isključiti sinhronizaciju i obrisati Chrome podatke s ovog uređaja. Vaši sinhronizirani podaci će ostati na vašem Google računu.</translation>
 <translation id="3175081911749765310">Web usluge</translation>
 <translation id="3178650076442119961">Aktivan danas</translation>
+<translation id="3181954750937456830">Sigurno pregledavanje (štiti vas i vaš uređaj od opasnih web-lokacija)</translation>
 <translation id="3207960819495026254">Označeno</translation>
 <translation id="3224641773458703735">Da biste izvezli zaporke, najprije morate postaviti šifru zaporke na uređaju.</translation>
 <translation id="3240426699337459095">Link je kopiran</translation>
@@ -430,7 +432,7 @@ Vaši podaci su šifrirani sinhroniziranim pristupnim izrazom <ph name="TIME" />
 <translation id="6447842834002726250">Kolačići</translation>
 <translation id="6464071786529933911">Otvori u novoj anonimnoj kartici</translation>
 <translation id="6476800141292307438">Prevođenje stranice na <ph name="LANGUAGE" /> jezik. Opcije su dostupne pri dnu ekrana.</translation>
-<translation id="648164694371393720">Pogreška autentifikacije</translation>
+<translation id="648164694371393720">Greška pri autentifikaciji</translation>
 <translation id="6482629121755362506">Broj izbrisanih stavki je <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /></translation>
 <translation id="6561262006871132942">Uvećaj</translation>
 <translation id="6610002944194042868">Opcije za prevođenje</translation>

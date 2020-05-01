@@ -382,9 +382,7 @@
 <translation id="1509281256533087115">Пристапи на секој <ph name="DEVICE_NAME_AND_VENDOR" /> преку USB</translation>
 <translation id="1509960214886564027">Функциите на многу сајтови може да не функционираат</translation>
 <translation id="1510030919967934016">Страницата е блокирана да не ја следи вашата локација.</translation>
-<translation id="1510055949674985293">Генерирајте QR-код за сликава</translation>
 <translation id="1510238584712386396">Стартер</translation>
-<translation id="1510581003097415337">Генерирајте QR-код за страницава</translation>
 <translation id="1510785804673676069">Доколку користите прокси-сервер, проверете ги поставките за прокси или
     контактирајте со мрежниот администратор за да провери дали прокси-
     серверот работи. Доколку сметате дека не треба да користите
@@ -1787,6 +1785,7 @@
 <translation id="3365598184818502391">Користете Ctrl или Alt</translation>
 <translation id="3367047597842238025">Поставете го вашиот <ph name="DEVICE_TYPE" /> токму како што сакате и откријте ги сите неверојатни способности што ви се на дофат на прстите.</translation>
 <translation id="3368922792935385530">Поврзано</translation>
+<translation id="3369067987974711168">Прикажи повеќе дејства за портава</translation>
 <translation id="3369624026883419694">Разрешување домаќин...</translation>
 <translation id="3371140690572404006">USB-Ц уред (предна порта од десна страна)</translation>
 <translation id="337286756654493126">Читајте датотеки и папки што ги отворате во апликацијата</translation>
@@ -2309,11 +2308,11 @@
 <translation id="4007856537951125667">Сокриј ги кратенките</translation>
 <translation id="4008291085758151621">Информациите за сајтот не се достапни во VR</translation>
 <translation id="4010917659463429001">За да ги добиете обележувачите на мобилниот уред, <ph name="GET_IOS_APP_LINK" />.</translation>
-<translation id="4013132157686828973">„<ph name="CLIENT_NAME" />“ отстранува грешки од прелистувачов</translation>
 <translation id="4014432863917027322">Поправи „<ph name="EXTENSION_NAME" />“?</translation>
 <translation id="4015163439792426608">Имате ли екстензии? <ph name="BEGIN_LINK" />Управувајте со екстензиите<ph name="END_LINK" /> на едно место.</translation>
 <translation id="4020327272915390518">Мени со опции</translation>
 <translation id="4021279097213088397">–</translation>
+<translation id="402184264550408568">(TCP)</translation>
 <translation id="4022426551683927403">&amp;Додај во речник</translation>
 <translation id="4023146161712577481">Се утврдува конфигурацијата на уредот.</translation>
 <translation id="4025039777635956441">Исклучи звук на избраниот сајт</translation>
@@ -2827,6 +2826,7 @@
 <translation id="4780321648949301421">Зачувај страница како...</translation>
 <translation id="4785719467058219317">Користите безбедносен клуч што не е регистриран на веб-сајтов</translation>
 <translation id="4788092183367008521">Проверете ја мрежната врска и обидете се повторно.</translation>
+<translation id="4791037424585594169">(UDP)</translation>
 <translation id="4792711294155034829">&amp;Пријави проблем...</translation>
 <translation id="4794810983896241342"><ph name="BEGIN_LINK" />Вашиот администратор<ph name="END_LINK" /> управува со ажурирањата</translation>
 <translation id="479536056609751218">Веб-страница, само HTML</translation>
@@ -3013,7 +3013,6 @@
 <translation id="504561833207953641">Се отвора во постојната сесија на прелистувачот.</translation>
 <translation id="5047421709274785093">Блокирај го користењето сензори за движење и светлина на сајтовите</translation>
 <translation id="5050042263972837708">Име на групата</translation>
-<translation id="5051073330196664891">Универзални услови за користење на Google (uToS)</translation>
 <translation id="5051836348807686060">Проверката на правопис не е поддржана за јазиците што ги избравте</translation>
 <translation id="5052499409147950210">Изменете го сајтот</translation>
 <translation id="5053604404986157245">Случајно генерираната ТПМ-лозинка не е достапна. Тоа е нормално по фабричко ресетирање.</translation>
@@ -3112,6 +3111,7 @@
 <translation id="5185359571430619712">Прегледајте ги екстензиите</translation>
 <translation id="5185386675596372454">Најновата верзија на „<ph name="EXTENSION_NAME" />“ е оневозможена бидејќи бара повеќе дозволи.</translation>
 <translation id="5187826826541650604"><ph name="KEY_NAME" /> (<ph name="DEVICE" />)</translation>
+<translation id="5190926251776387065">Активирај ја портата</translation>
 <translation id="51918995459521422"><ph name="ORIGIN" /> сака да преземе повеќе датотеки</translation>
 <translation id="5192062846343383368">Отворете ја апликацијата Family Link за да ги видите поставките за надзор</translation>
 <translation id="5193988420012215838">Копирано во привремената меморија</translation>
@@ -3838,6 +3838,7 @@
 <translation id="6150961653851236686">Овој јазик се користи при преведување страници</translation>
 <translation id="6151323131516309312">Притисни <ph name="SEARCH_KEY" /> за да ја побараш <ph name="SITE_NAME" /></translation>
 <translation id="6151771661215463137">Датотеката веќе постои во папката со преземања.</translation>
+<translation id="6154240335466762404">Отстрани ги сите порти</translation>
 <translation id="615436196126345398">Протокол</translation>
 <translation id="6154697846084421647">Моментално пријавено</translation>
 <translation id="6155141482566063812">Картичка во заднина го споделува вашиот екран</translation>
@@ -3886,7 +3887,6 @@
 <translation id="6226777517901268232">Датотека со приватен клуч (изборно)</translation>
 <translation id="6227280783235722609">екстензија</translation>
 <translation id="6228691855869374890">Оваа страница има целосна контрола над MIDI-уреди.</translation>
-<translation id="6228720835160974792">Генерирајте QR-код за сликава</translation>
 <translation id="6229890768313448549">Условите за користење на Google Play не може да се вчитаат. Обидете се повторно.</translation>
 <translation id="6231881193380278751">Додајте параметар на барањето во URL за автоматско освежување на страницата: chrome://device-log/?refresh=&lt;sec&gt;</translation>
 <translation id="6232017090690406397">Батерија</translation>
@@ -3919,6 +3919,7 @@
 <translation id="6263082573641595914">Microsoft CA верзија</translation>
 <translation id="6263284346895336537">Не е критично</translation>
 <translation id="6264365405983206840">Избери ги &amp;сите</translation>
+<translation id="6265687851677020761">Отстрани ја портата</translation>
 <translation id="6267166720438879315">Изберете сертификат за да се автентицирате на <ph name="HOST_NAME" /></translation>
 <translation id="6267547857941397424">Мрежа <ph name="NETWORK_INDEX" /> од <ph name="NETWORK_COUNT" />, <ph name="PHONE_NAME" />, јачина на сигналот: <ph name="SIGNAL_STRENGTH" /> %, батерија на телефонот: <ph name="BATTERY_STATUS" /> %, поврзи</translation>
 <translation id="6268252012308737255">Отвори со <ph name="APP" /></translation>
@@ -4549,7 +4550,6 @@
 <translation id="7123360114020465152">Веќе не е поддржано</translation>
 <translation id="7127980134843952133">Историја на преземања</translation>
 <translation id="7128151990937044829">Прикажувај индикатор во лентата за адреси кога известувањата се блокирани</translation>
-<translation id="7128239828194367697">Генерирајте QR-код за страницава</translation>
 <translation id="7131040479572660648">Читајте ги вашите податоци на <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> и <ph name="WEBSITE_3" /></translation>
 <translation id="713122686776214250">Додај стра&amp;ница...</translation>
 <translation id="7133578150266914903">Администраторот го враќа уредов на фабричките поставки (<ph name="PROGRESS_PERCENT" />)</translation>
@@ -4939,6 +4939,7 @@
 <translation id="767127784612208024">Допрете за да го потврдите ресетирањето</translation>
 <translation id="767147716926917172">Автоматски испраќа дијагностички податоци и податоци за користењето до Google</translation>
 <translation id="7672520070349703697"><ph name="HUNG_IFRAME_URL" />, на <ph name="PAGE_TITLE" />.</translation>
+<translation id="7674416868315480713">Деактивирај ги сите порти што се проследени во Linux</translation>
 <translation id="7676867886086876795">Испратете го вашиот глас во Google за да се дозволи диктирање во кое било поле за текст.</translation>
 <translation id="7678280409648629969">Податоците за најавување ќе се складираат во Chrome откако ќе излезете од режимот „Инкогнито“. Ова ќе ви овозможи во иднина повторно да користите „ID на допир“ на овој веб-сајт.</translation>
 <translation id="7681095912841365527">Сајтот може да користи Bluetooth</translation>

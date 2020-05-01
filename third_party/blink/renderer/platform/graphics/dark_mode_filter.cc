@@ -6,7 +6,8 @@
 
 #include <cmath>
 
-#include "base/logging.h"
+#include "base/check_op.h"
+#include "base/notreached.h"
 #include "base/optional.h"
 #include "third_party/blink/renderer/platform/graphics/dark_mode_color_classifier.h"
 #include "third_party/blink/renderer/platform/graphics/dark_mode_color_filter.h"

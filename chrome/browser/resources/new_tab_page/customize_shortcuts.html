@@ -5,6 +5,9 @@
 
   #options {
     display: flex;
+    /* Padding is for .option-image focus outline. */
+    padding-inline-start: 2px;
+    padding-top: 2px;
   }
 
   .option {
@@ -18,9 +21,12 @@
     box-sizing: border-box;
     cursor: pointer;
     height: 176px;
-    outline: none;
     position: relative;
     width: 268px;
+  }
+
+  :host-context(.focus-outline-visible)) .option-image:focus {
+    box-shadow: 0 0 0 2px var(--ntp-focus-shadow-color);
   }
 
   .selected .option-image {
@@ -230,35 +236,34 @@
 <div id="options">
   <div id="optionCustomLinks"
       class$="option [[getCustomLinksSelected_(customLinksEnabled_, hide_)]]">
-    <div id="optionCustomLinksButton" class="option-image" tabindex="0"
-        role="button"
+    <cr-button id="optionCustomLinksButton" class="option-image" tabindex="0"
         aria-pressed$="[[getCustomLinksAriaPressed_(customLinksEnabled_,
             hide_)]]"
-        title="$i18n{myShortcuts}" on-click="onCustomLinksClick_">
+        title="$i18n{myShortcuts}" on-click="onCustomLinksClick_" noink>
       <div class="option-icon"></div>
       <div class="option-mini">
         <ntp-mini-page single-colored-logo></ntp-mini-page>
       </div>
       <div class="selected-circle"></div>
       <div class="selected-check"></div>
-    </div>
+    </cr-button>
     <div class="option-title">$i18n{myShortcuts}</div>
     $i18n{shortcutsCurated}
   </div>
   <div id="optionMostVisited"
       class$="option [[getMostVisitedSelected_(customLinksEnabled_, hide_)]]">
-    <div id="optionMostVisitedButton" class="option-image" tabindex="0"
-        role="button"
+    <cr-button id="optionMostVisitedButton" class="option-image" tabindex="0"
         aria-pressed$="[[getMostVisitedAriaPressed_(customLinksEnabled_,
             hide_)]]"
-        title="$i18n{mostVisited}" on-click="onMostVisitedClick_">
+        title="$i18n{mostVisited}" on-click="onMostVisitedClick_"
+        on-keydown="onMostVistedKey" noink>
       <div class="option-icon"></div>
       <div class="option-mini">
         <ntp-mini-page single-colored-logo></ntp-mini-page>
       </div>
       <div class="selected-circle"></div>
       <div class="selected-check"></div>
-    </div>
+    </cr-button>
     <div class="option-title">$i18n{mostVisited}</div>
     $i18n{shortcutsSuggested}
   </div>

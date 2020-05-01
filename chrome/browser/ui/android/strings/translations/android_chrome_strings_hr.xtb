@@ -38,7 +38,6 @@
 <translation id="1258753120186372309">Googleov doodle logotip: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1260236875608242557">Pretraživanje i istraživanje</translation>
 <translation id="1266864766717917324">Nije moguće podijeliti <ph name="CONTENT_TYPE" /></translation>
-<translation id="1272079795634619415">Zaustavi</translation>
 <translation id="1283039547216852943">Dodirnite za proširivanje</translation>
 <translation id="1285320974508926690">Nikad nemoj prevoditi ovu web-lokaciju</translation>
 <translation id="1291207594882862231">Brisanje povijesti, kolačića, podataka web-lokacija, predmemorije...</translation>
@@ -50,8 +49,8 @@
 <translation id="1327257854815634930">Otvorena je povijest navigacije</translation>
 <translation id="1331212799747679585">Chrome se ne može ažurirati. Više opcija</translation>
 <translation id="1332501820983677155">Prečaci za značajke Google Chromea</translation>
+<translation id="1347468774581902829">Upravljaj aktivnostima</translation>
 <translation id="1360432990279830238">Odjaviti se i isključiti sinkronizaciju?</translation>
-<translation id="1364532808393826295"><ph name="APP_NAME" /> – <ph name="NOTIFICATION_MESSAGE" /></translation>
 <translation id="1373696734384179344">Nema dovoljno memorije za preuzimanje odabranog sadržaja.</translation>
 <translation id="1376578503827013741">Izračunavanje…</translation>
 <translation id="1383876407941801731">Traži</translation>
@@ -122,7 +121,6 @@
 <translation id="2013642289801508067">{FILE_COUNT,plural, =1{# datoteka}one{# datoteka}few{# datoteke}other{# datoteka}}</translation>
 <translation id="2017836877785168846">Briše povijest i automatsko dovršavanje u adresnoj traci.</translation>
 <translation id="2021896219286479412">Kontrole web-lokacije na cijelom zaslonu</translation>
-<translation id="2030769033451695672">Dodirnite da biste se vratili na <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
 <translation id="2038563949887743358">Uključivanje zahtjeva za prikaz klasične web-lokacije</translation>
 <translation id="204321170514947529"><ph name="APP_NAME" /> ima podatke i u Chromeu</translation>
 <translation id="2049574241039454490"><ph name="FILE_SIZE_OF_TOTAL" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
@@ -434,6 +432,7 @@ Vaš Google račun može sadržavati druge oblike povijesti pregledavanja, na pr
 <translation id="4663756553811254707">Oznake su izbrisane (<ph name="NUMBER_OF_BOOKMARKS" />)</translation>
 <translation id="4665282149850138822">Web-lokacija <ph name="NAME" /> dodana je na početni zaslon</translation>
 <translation id="4684427112815847243">Sinkroniziraj sve</translation>
+<translation id="4688610874307684559">Pokretanje u Chromeu (početno)</translation>
 <translation id="4695891336199304370">{SHIPPING_OPTIONS,plural, =1{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 i još <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}one{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 i još <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}few{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 i još <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}other{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 i još <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}}</translation>
 <translation id="4696983787092045100">Pošaljite SMS na svoje uređaje</translation>
 <translation id="4698034686595694889">Pregledajte offline u aplikaciji <ph name="APP_NAME" /></translation>
@@ -592,7 +591,6 @@ Da biste promijenili tu postavku, <ph name="BEGIN_LINK" />poništite sinkronizac
 <translation id="5876056640971328065">Pauziraj videozapis</translation>
 <translation id="5884076754568147479">Da bi vam pomogao sa zadacima, Google će primati URL-ove i sadržaje web-lokacija na kojima upotrebljavate Asistenta, kao i informacije koje šaljete putem Asistenta</translation>
 <translation id="5919204609460789179">Ažurirajte <ph name="PRODUCT_NAME" /> za pokretanje sinkronizacije</translation>
-<translation id="5922853908706496913">Dijeljenje zaslona</translation>
 <translation id="5937580074298050696">Spremljeno <ph name="AMOUNT" /></translation>
 <translation id="5939518447894949180">Ponovno postavi</translation>
 <translation id="5942872142862698679">Za pretraživanje se upotrebljava Google</translation>
@@ -773,16 +771,17 @@ Na primjer, neke web-lokacije na taj zahtjev mogu odgovoriti tako da vam prikaž
 <translation id="7479104141328977413">Upravljanje karticama</translation>
 <translation id="7481312909269577407">Naprijed</translation>
 <translation id="7482656565088326534">Kartica pregleda</translation>
+<translation id="7484997419527351112">Discover - isključeno</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (ažurirano <ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7494974237137038751">spremljeni podaci</translation>
 <translation id="7498271377022651285">Pričekajte…</translation>
 <translation id="7514365320538308">Preuzmi</translation>
 <translation id="751961395872307827">Povezivanje s web-lokacijom nije uspjelo</translation>
 <translation id="7542481630195938534">Prijedlozi se ne mogu dohvatiti</translation>
-<translation id="7554752735887601236">Web-lokacija upotrebljava vaš mikrofon</translation>
 <translation id="7559975015014302720">Jednostavni je način isključen</translation>
 <translation id="7562080006725997899">Brisanje podataka o pregledavanju</translation>
 <translation id="756809126120519699">Chromeovi su podaci izbrisani</translation>
+<translation id="7577900504646297215">Upravljaj interesima</translation>
 <translation id="757855969265046257">{FILES,plural, =1{Preuzeta je <ph name="FILES_DOWNLOADED_ONE" /> datoteka}one{Preuzeta je <ph name="FILES_DOWNLOADED_MANY" /> datoteka}few{Preuzete su <ph name="FILES_DOWNLOADED_MANY" /> datoteke}other{Preuzeto je <ph name="FILES_DOWNLOADED_MANY" /> datoteka}}</translation>
 <translation id="7588219262685291874">Uključi tamnu temu kada je uključena Štednja baterije na uređaju</translation>
 <translation id="7593557518625677601">U postavkama omogućite sink. sustava Android da se pokrene Chrome sinkronizacija</translation>
@@ -813,7 +812,6 @@ Na primjer, neke web-lokacije na taj zahtjev mogu odgovoriti tako da vam prikaž
 <translation id="7774809984919390718">{PAYMENT_METHOD,plural, =1{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 i još <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}one{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 i još <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}few{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 i još <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}other{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 i još <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}}</translation>
 <translation id="7791543448312431591">Dodaj</translation>
 <translation id="780301667611848630">Ne, hvala</translation>
-<translation id="7804248752222191302">Web-lokacija upotrebljava vašu kameru</translation>
 <translation id="7810647596859435254">Otvori aplikacijom…</translation>
 <translation id="7821588508402923572">Ovdje će se prikazati vaša ušteda podataka</translation>
 <translation id="783819812427904514">Uključi kameru</translation>
@@ -885,9 +883,7 @@ Na primjer, neke web-lokacije na taj zahtjev mogu odgovoriti tako da vam prikaž
 <translation id="8349013245300336738">Poredaj po količini potrošenih podataka</translation>
 <translation id="8364299278605033898">Pogledajte popularne web-lokacije</translation>
 <translation id="8368027906805972958">Nepoznati ili nepodržani uređaj (<ph name="DEVICE_ID" />)</translation>
-<translation id="83792324527827022">Web-lokacija upotrebljava vašu kameru i mikrofon</translation>
 <translation id="8393700583063109961">Pošaljite poruku</translation>
-<translation id="8394832520002899662">Dodirnite da biste se vratili na web-lokaciju</translation>
 <translation id="8413126021676339697">Pokaži cijelu povijest</translation>
 <translation id="8427875596167638501">Kartica pregleda je poluotvorena</translation>
 <translation id="8428213095426709021">Postavke</translation>
@@ -984,7 +980,6 @@ Na primjer, neke web-lokacije na taj zahtjev mogu odgovoriti tako da vam prikaž
 <translation id="970715775301869095">Preostalo minuta: <ph name="MINUTES" /></translation>
 <translation id="974555521953189084">Unesite šifru da biste pokrenuli sinkronizaciju</translation>
 <translation id="981121421437150478">Izvanmrežno</translation>
-<translation id="982182592107339124">Izbrisat će se podaci za sve web-lokacije, uključujući:</translation>
 <translation id="983192555821071799">Zatvori sve kartice</translation>
 <translation id="987264212798334818">Općenito</translation>
 </translationbundle>

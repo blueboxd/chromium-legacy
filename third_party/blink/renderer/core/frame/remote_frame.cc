@@ -64,12 +64,14 @@ RemoteFrame::RemoteFrame(
     RemoteFrameClient* client,
     Page& page,
     FrameOwner* owner,
+    const base::UnguessableToken& frame_token,
     WindowAgentFactory* inheriting_agent_factory,
     InterfaceRegistry* interface_registry,
     AssociatedInterfaceProvider* associated_interface_provider)
     : Frame(client,
             page,
             owner,
+            frame_token,
             MakeGarbageCollected<RemoteWindowProxyManager>(*this),
             inheriting_agent_factory) {
   dom_window_ = MakeGarbageCollected<RemoteDOMWindow>(*this);

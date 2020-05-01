@@ -386,7 +386,10 @@ IN_PROC_BROWSER_TEST_P(SystemNetworkContextManagerFreezeQUICUaBrowsertest,
     EXPECT_TRUE(ContainsSubstring(quic_ua, chrome::GetChannelName()));
     EXPECT_TRUE(ContainsSubstring(
         quic_ua, version_info::GetProductNameAndVersionForUserAgent()));
-    EXPECT_TRUE(ContainsSubstring(quic_ua, content::BuildOSCpuInfo(false)));
+    EXPECT_TRUE(ContainsSubstring(
+        quic_ua,
+        content::BuildOSCpuInfo(content::IncludeAndroidBuildNumber::Exclude,
+                                content::IncludeAndroidModel::Include)));
   }
 }
 

@@ -93,7 +93,6 @@
 <translation id="3582972582564653026">Sincroniza y personaliza Chrome en todos tus dispositivos</translation>
 <translation id="3596080736082218006">{COUNT,plural, =0{El administrador necesita que reinicies Chrome para aplicar una actualización}=1{El administrador necesita que reinicies Chrome para aplicar una actualización. No se volverá a abrir la ventana de incógnito.}other{El administrador necesita que reinicies Chrome para aplicar una actualización. No se volverán a abrir las # ventanas de incógnito.}}</translation>
 <translation id="3622797965165704966">Ahora es más sencillo utilizar Chrome con la cuenta de Google y en computadoras compartidas.</translation>
-<translation id="3637702109597584617"><ph name="TERMS_OF_SERVICE_LINK" />Condiciones del Servicio<ph name="END_TERMS_OF_SERVICE_LINK" /> del Sistema operativo Google Chrome</translation>
 <translation id="3718181793972440140">Esta acción borrará 1 elemento de este dispositivo. Si más adelante deseas recuperar los datos, accede a tu cuenta en Chrome como <ph name="USER_EMAIL" />.</translation>
 <translation id="3735758079232443276">La extensión "<ph name="EXTENSION_NAME" />" cambió la página que se muestra al iniciar Chrome.</translation>
 <translation id="3780814664026482060">Chrome - <ph name="PAGE_TITLE" /></translation>
@@ -110,6 +109,7 @@
 <translation id="4205939740494406371">Chrome no puede revisar las contraseñas. Vuelve a intentarlo dentro de 24 horas o <ph name="BEGIN_LINK" />revisa las contraseñas en tu Cuenta de Google<ph name="END_LINK" />.</translation>
 <translation id="424864128008805179">¿Quieres salir de Chrome?</translation>
 <translation id="4251615635259297716">¿Quieres vincular tus datos de Google Chrome con esta cuenta?</translation>
+<translation id="4281844954008187215">Condiciones del Servicio</translation>
 <translation id="4293420128516039005">Accede para sincronizar y personalizar Chrome en todos tus dispositivos</translation>
 <translation id="4328355335528187361">Google Chrome Dev (mDNS-In)</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
@@ -142,7 +142,6 @@
 <translation id="5132929315877954718">Descubre aplicaciones, juegos, extensiones y temas geniales para Google Chrome.</translation>
 <translation id="5170938038195470297">No se puede usar tu perfil porque pertenece a una nueva versión de Google Chrome. Es posible que algunas características no estén disponibles. Especifica un directorio de perfil diferente o usa una nueva versión de Chrome.</translation>
 <translation id="5193136243808726294">El Sistema operativo Google Chrome no puede abrir esta página.</translation>
-<translation id="5204098752394657250"><ph name="TERMS_OF_SERVICE_LINK" />Condiciones del Servicio<ph name="END_TERMS_OF_SERVICE_LINK" /> de Google Chrome</translation>
 <translation id="5251420635869119124">Los invitados pueden utilizar Chrome sin dejar nada detrás.</translation>
 <translation id="532046782124376502">Advertencia: Google Chrome no puede impedir que las extensiones guarden tu historial de navegación. Para inhabilitar esta extensión en modo de navegación incógnito, desmarca esta opción.</translation>
 <translation id="5386244825306882791">También controla qué página se muestra al iniciar Chrome o al realizar búsquedas desde el cuadro multifunción.</translation>

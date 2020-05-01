@@ -197,7 +197,15 @@ class HintsFetcherDisabledBrowserTest : public InProcessBrowserTest {
     // only provides the URL.
     cmd->AppendSwitchASCII(
         optimization_guide::switches::kOptimizationGuideServiceGetHintsURL,
-        hints_server_->base_url().spec());
+        hints_server_
+            ->GetURL(GURL(optimization_guide::
+                              kOptimizationGuideServiceGetHintsDefaultURL)
+                         .host(),
+                     "/")
+            .spec());
+    cmd->AppendSwitchASCII("host-rules", "MAP * 127.0.0.1");
+    cmd->AppendSwitchASCII("force-variation-ids", "4");
+
     cmd->AppendSwitchASCII(optimization_guide::switches::kFetchHintsOverride,
                            "example1.com, example2.com");
 
@@ -393,6 +401,7 @@ class HintsFetcherDisabledBrowserTest : public InProcessBrowserTest {
     // If the request is a GET, it corresponds to a navigation so return a
     // normal response.
     EXPECT_EQ(request.method, net::test_server::METHOD_POST);
+    EXPECT_NE(request.headers.end(), request.headers.find("X-Client-Data"));
 
     optimization_guide::proto::GetHintsRequest hints_request;
     EXPECT_TRUE(hints_request.ParseFromString(request.content));

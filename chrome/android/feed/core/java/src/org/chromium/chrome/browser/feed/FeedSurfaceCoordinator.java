@@ -24,6 +24,7 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.GlobalDiscardableReferencePool;
+import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.feed.library.api.client.scope.ProcessScope;
 import org.chromium.chrome.browser.feed.library.api.client.scope.StreamScope;
 import org.chromium.chrome.browser.feed.library.api.client.stream.Header;
@@ -42,7 +43,9 @@ import org.chromium.chrome.browser.native_page.ContextMenuManager;
 import org.chromium.chrome.browser.native_page.NativePageNavigationDelegate;
 import org.chromium.chrome.browser.ntp.NewTabPageLayout;
 import org.chromium.chrome.browser.ntp.SnapScrollHelper;
+import org.chromium.chrome.browser.ntp.cards.promo.HomepagePromoController;
 import org.chromium.chrome.browser.ntp.snippets.SectionHeaderView;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.signin.PersonalizedSigninPromoView;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
@@ -51,10 +54,13 @@ import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
 import org.chromium.chrome.feed.R;
 import org.chromium.components.browser_ui.widget.displaystyle.UiConfig;
 import org.chromium.components.browser_ui.widget.displaystyle.ViewResizer;
+import org.chromium.components.feature_engagement.Tracker;
 import org.chromium.ui.UiUtils;
 import org.chromium.ui.base.ViewUtils;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 /**
  * Provides a surface that displays an interest feed rendered list of content suggestions.
@@ -75,6 +81,11 @@ public class FeedSurfaceCoordinator {
     private UiConfig mUiConfig;
     private FrameLayout mRootView;
     private ContextMenuManager mContextMenuManager;
+    private Tracker mTracker;
+
+    // Homepage promo view will be not-null once we have it created, until it is destroyed.
+    private @Nullable View mHomepagePromoView;
+    private @Nullable HomepagePromoController mHomepagePromoController;
 
     // Used when Feed is enabled.
     private @Nullable Stream mStream;
@@ -227,6 +238,22 @@ public class FeedSurfaceCoordinator {
         }
     }
 
+    private class HomepagePromoHeader implements Header {
+        @Override
+        public View getView() {
+            assert mHomepagePromoView != null;
+            return mHomepagePromoView;
+        }
+
+        @Override
+        public boolean isDismissible() {
+            return false;
+        }
+
+        @Override
+        public void onDismissed() {}
+    }
+
     /**
      * Provides the additional capabilities needed for the container view.
      */
@@ -283,13 +310,14 @@ public class FeedSurfaceCoordinator {
      * @param delegate The constructing {@link FeedSurfaceDelegate}.
      * @param pageNavigationDelegate The {@link NativePageNavigationDelegate}
      *                               that handles page navigation.
+     * @param profile The current user profile.
      */
     public FeedSurfaceCoordinator(Activity activity, SnackbarManager snackbarManager,
             TabModelSelector tabModelSelector, Supplier<Tab> tabProvider,
             @Nullable SnapScrollHelper snapScrollHelper, @Nullable View ntpHeader,
             @Nullable SectionHeaderView sectionHeaderView, ActionApi actionApi,
             boolean showDarkBackground, FeedSurfaceDelegate delegate,
-            @Nullable NativePageNavigationDelegate pageNavigationDelegate) {
+            @Nullable NativePageNavigationDelegate pageNavigationDelegate, Profile profile) {
         mActivity = activity;
         mSnackbarManager = snackbarManager;
         mNtpHeader = ntpHeader;
@@ -308,8 +336,16 @@ public class FeedSurfaceCoordinator {
         mRootView.setPadding(0, resources.getDimensionPixelOffset(R.dimen.tab_strip_height), 0, 0);
         mUiConfig = new UiConfig(mRootView);
 
+        mTracker = TrackerFactory.getTrackerForProfile(profile);
+
         // Mediator should be created before any Stream changes.
         mMediator = new FeedSurfaceMediator(this, snapScrollHelper, mPageNavigationDelegate);
+
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.HOMEPAGE_PROMO_CARD)) {
+            mHomepagePromoController =
+                    new HomepagePromoController(mActivity, mSnackbarManager, mTracker, mMediator);
+            mMediator.onHomepagePromoStateChange();
+        }
 
         // Native should already have been loaded because of FeedSurfaceMediator.
         if (ChromeFeatureList.isEnabled(ChromeFeatureList.INTEREST_FEED_V2)) {
@@ -326,6 +362,7 @@ public class FeedSurfaceCoordinator {
         mStreamLifecycleManager = null;
         if (mImageLoader != null) mImageLoader.destroy();
         mImageLoader = null;
+        if (mHomepagePromoController != null) mHomepagePromoController.destroy();
     }
 
     public ContextMenuManager.TouchEnabledDelegate getTouchEnabledDelegate() {
@@ -408,6 +445,7 @@ public class FeedSurfaceCoordinator {
         if (mNtpHeader != null) UiUtils.removeViewFromParent(mNtpHeader);
         if (mSectionHeaderView != null) UiUtils.removeViewFromParent(mSectionHeaderView);
         if (mSigninPromoView != null) UiUtils.removeViewFromParent(mSigninPromoView);
+        if (mHomepagePromoView != null) UiUtils.removeViewFromParent(mHomepagePromoView);
 
         if (mNtpHeader != null) {
             mStream.setHeaderViews(Arrays.asList(new NonDismissibleHeader(mNtpHeader),
@@ -454,6 +492,12 @@ public class FeedSurfaceCoordinator {
             mStream = null;
             mSectionHeaderView = null;
             mSigninPromoView = null;
+            mHomepagePromoView = null;
+            // TODO(wenyufu): Support HomepagePromo when policy enabled.
+            if (mHomepagePromoController != null) {
+                mHomepagePromoController.destroy();
+                mHomepagePromoController = null;
+            }
             if (mImageLoader != null) {
                 mImageLoader.destroy();
                 mImageLoader = null;
@@ -499,22 +543,31 @@ public class FeedSurfaceCoordinator {
     }
 
     /** Update header views in the Stream. */
-    void updateHeaderViews(boolean isPromoVisible) {
+    void updateHeaderViews(boolean isSignInPromoVisible) {
+        List<Header> headers = new ArrayList<>();
         if (mNtpHeader != null) {
             assert mSectionHeaderView != null;
-            mStream.setHeaderViews(
-                    isPromoVisible ? Arrays.asList(new NonDismissibleHeader(mNtpHeader),
-                            new NonDismissibleHeader(mSectionHeaderView), new SignInPromoHeader())
-                                   : Arrays.asList(new NonDismissibleHeader(mNtpHeader),
-                                           new NonDismissibleHeader(mSectionHeaderView)));
-        } else if (mSectionHeaderView == null) {
-            if (isPromoVisible) mStream.setHeaderViews(Arrays.asList(new SignInPromoHeader()));
-        } else {
-            mStream.setHeaderViews(isPromoVisible
-                            ? Arrays.asList(new NonDismissibleHeader(mSectionHeaderView),
-                                    new SignInPromoHeader())
-                            : Arrays.asList(new NonDismissibleHeader(mSectionHeaderView)));
+            headers.add(new NonDismissibleHeader(mNtpHeader));
         }
+
+        // TODO(wenyufu): check Finch flag for whether sign-in takes precedence over homepage promo
+        if (!isSignInPromoVisible && mHomepagePromoController != null) {
+            View promoView = mHomepagePromoController.getPromoView();
+            if (promoView != null) {
+                mHomepagePromoView = promoView;
+                headers.add(new HomepagePromoHeader());
+            }
+        }
+
+        if (mSectionHeaderView != null) {
+            headers.add(new NonDismissibleHeader(mSectionHeaderView));
+        }
+
+        if (isSignInPromoVisible) {
+            headers.add(new SignInPromoHeader());
+        }
+
+        mStream.setHeaderViews(headers);
     }
 
     @VisibleForTesting

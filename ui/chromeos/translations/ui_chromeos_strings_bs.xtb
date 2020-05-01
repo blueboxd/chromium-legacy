@@ -211,7 +211,7 @@
 <translation id="3495304270784461826">Broj grešaka: <ph name="COUNT" /></translation>
 <translation id="3519867315646775981">transliteracija (shalom ← שלום)</translation>
 <translation id="3522708245912499433">portugalski</translation>
-<translation id="3524311639100184459">Oprez: ove su datoteke privremene i mogu se automatski izbrisati za oslobađanje prostora na disku.  <ph name="BEGIN_LINK" />Saznajte više<ph name="END_LINK" /></translation>
+<translation id="3524311639100184459">Oprez: Ovi fajlovi su privremeni i moguće je da će se automatski izbrisati radi oslobađanja prostora na disku.  <ph name="BEGIN_LINK" />Saznajte više<ph name="END_LINK" /></translation>
 <translation id="3527085408025491307">Folder</translation>
 <translation id="3549797760399244642">Idite na drive.google.com...</translation>
 <translation id="357479282490346887">Litvanska</translation>
@@ -501,7 +501,7 @@
 <translation id="6806699711453372963">Upravljajte Linux dijeljenjem</translation>
 <translation id="6808193438228982088">Lisica</translation>
 <translation id="6820687829547641339">Gzip kompresirana tar arhiva</translation>
-<translation id="6823166707458800069">Sve datoteke spremljene u ovoj mapi automatski se sigurnosno kopiraju online.</translation>
+<translation id="6823166707458800069">Za sve fajlove koje sačuvate u ovom folderu se automatski kreira sigurnosna kopija na mreži.</translation>
 <translation id="6825883775269213504">ruski</translation>
 <translation id="6827236167376090743">Ovaj videozapis će se reproducirati dok se boje ne rastope.</translation>
 <translation id="6847101934483209767">Stavka <ph name="ENTRY_NAME" /> je uklonjena iz odabira.</translation>

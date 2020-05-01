@@ -122,6 +122,7 @@ class TestWebContents : public WebContentsImpl, public WebContentsTester {
       RenderViewHost* render_view_host,
       int opener_frame_routing_id,
       int proxy_routing_id,
+      const base::UnguessableToken& frame_token,
       const base::UnguessableToken& devtools_frame_token,
       const FrameReplicationState& replicated_frame_state) override;
   void UpdateRenderViewSizeForRenderManager(bool is_main_frame) override {}

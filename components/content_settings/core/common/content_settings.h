@@ -87,14 +87,14 @@ typedef std::string ResourceIdentifier;
 
 // Enum containing the various source for content settings. Settings can be
 // set by policy, extension, the user or by the custodian of a supervised user.
-// Certain (internal) schemes are whilelisted. For whilelisted schemes the
-// source is |SETTING_SOURCE_WHITELIST|.
+// Certain (internal) origins are allowlisted. For these origins the source is
+// |SETTING_SOURCE_ALLOWLIST|.
 enum SettingSource {
   SETTING_SOURCE_NONE,
   SETTING_SOURCE_POLICY,
   SETTING_SOURCE_EXTENSION,
   SETTING_SOURCE_USER,
-  SETTING_SOURCE_WHITELIST,
+  SETTING_SOURCE_ALLOWLIST,
   SETTING_SOURCE_SUPERVISED,
   SETTING_SOURCE_INSTALLED_WEBAPP,
 };

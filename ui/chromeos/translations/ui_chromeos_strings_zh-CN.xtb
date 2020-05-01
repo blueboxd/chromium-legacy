@@ -211,6 +211,7 @@
 <translation id="3495304270784461826"><ph name="COUNT" />个错误。</translation>
 <translation id="3519867315646775981">音译(shalom ← שלום)</translation>
 <translation id="3522708245912499433">葡萄牙语</translation>
+<translation id="3524311639100184459">警告：这些都是临时文件，可能会被系统自动删除以释放磁盘空间。<ph name="BEGIN_LINK" />了解详情<ph name="END_LINK" /></translation>
 <translation id="3527085408025491307">文件夹</translation>
 <translation id="3549797760399244642">转到 drive.google.com...</translation>
 <translation id="357479282490346887">立陶宛语</translation>
@@ -495,6 +496,7 @@
 <translation id="6806699711453372963">管理 Linux 共享设置</translation>
 <translation id="6808193438228982088">狐狸</translation>
 <translation id="6820687829547641339">gzip 压缩的 tar 归档</translation>
+<translation id="6823166707458800069">系统会自动在线备份此文件夹中保存的所有文件。</translation>
 <translation id="6825883775269213504">俄语</translation>
 <translation id="6827236167376090743">此视频将不断循环播放。</translation>
 <translation id="6847101934483209767">已从所选项中移除<ph name="ENTRY_NAME" />。</translation>

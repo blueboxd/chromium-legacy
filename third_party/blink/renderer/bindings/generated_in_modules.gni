@@ -213,6 +213,8 @@ generated_enumeration_sources_in_modules = [
   "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_presentation_connection_close_reason.h",
   "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_presentation_connection_state.cc",
   "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_presentation_connection_state.h",
+  "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_presenter_type.cc",
+  "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_presenter_type.h",
   "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_public_key_credential_type.cc",
   "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_public_key_credential_type.h",
   "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_push_encryption_key_name.cc",
@@ -500,6 +502,8 @@ generated_interface_sources_in_modules = [
   "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_dedicated_worker_global_scope.h",
   "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_delay_node.cc",
   "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_delay_node.h",
+  "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_delegated_ink_trail_presenter.cc",
+  "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_delegated_ink_trail_presenter.h",
   "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_deprecated_storage_info.cc",
   "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_deprecated_storage_info.h",
   "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_deprecated_storage_quota.cc",
@@ -762,6 +766,8 @@ generated_interface_sources_in_modules = [
   "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_image_capture.h",
   "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_image_decoder.cc",
   "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_image_decoder.h",
+  "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_ink.cc",
+  "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_ink.h",
   "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_input_device_info.cc",
   "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_input_device_info.h",
   "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_install_event.cc",
@@ -1392,4 +1398,11 @@ generated_interface_sources_in_modules += [
 generated_interface_sources_for_testing_in_modules = [
   "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_internals.cc",
   "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_internals.h",
+]
+
+generated_interface_sources_for_testing_in_modules += [
+  "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/init_idl_interfaces_for_testing.cc",
+  "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/init_idl_interfaces_for_testing.h",
+  "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/properties_per_feature_installer_for_testing.cc",
+  "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/properties_per_feature_installer_for_testing.h",
 ]

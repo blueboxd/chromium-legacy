@@ -382,9 +382,7 @@
 <translation id="1509281256533087115">Aceder a qualquer <ph name="DEVICE_NAME_AND_VENDOR" /> através de USB</translation>
 <translation id="1509960214886564027">As funcionalidades em muitos sites podem falhar.</translation>
 <translation id="1510030919967934016">Esta página foi bloqueada de monitorizar a sua localização.</translation>
-<translation id="1510055949674985293">Gerar código QR para esta imagem</translation>
 <translation id="1510238584712386396">Launcher</translation>
-<translation id="1510581003097415337">Gerar código QR para esta página</translation>
 <translation id="1510785804673676069">Se utilizar um servidor proxy, verifique as definições de proxy ou
     contacte o gestor de rede para se certificar de que o servidor
     proxy está a funcionar. Se acha que não deve utilizar um
@@ -1787,6 +1785,7 @@ Pretende pará-lo?</translation>
 <translation id="3365598184818502391">Utilize Ctrl ou Alt.</translation>
 <translation id="3367047597842238025">Configure o <ph name="DEVICE_TYPE" /> ao seu gosto e descubra todas as capacidades fantásticas ao seu alcance.</translation>
 <translation id="3368922792935385530">Ligado</translation>
+<translation id="3369067987974711168">Mostrar mais ações para esta porta</translation>
 <translation id="3369624026883419694">A resolver anfitrião...</translation>
 <translation id="3371140690572404006">Dispositivo USB-C (porta frontal do lado direito)</translation>
 <translation id="337286756654493126">Ler pastas que são abertas na aplicação</translation>
@@ -2309,11 +2308,11 @@ Pretende pará-lo?</translation>
 <translation id="4007856537951125667">Ocultar atalhos</translation>
 <translation id="4008291085758151621">As informações do site não estão disponíveis na RV</translation>
 <translation id="4010917659463429001">Para obter os seus marcadores no dispositivo móvel, <ph name="GET_IOS_APP_LINK" />.</translation>
-<translation id="4013132157686828973">"<ph name="CLIENT_NAME" />" está a depurar este navegador.</translation>
 <translation id="4014432863917027322">Reparar "<ph name="EXTENSION_NAME" />"?</translation>
 <translation id="4015163439792426608">Tem extensões? <ph name="BEGIN_LINK" />Faça a gestão das suas extensões<ph name="END_LINK" /> num lugar acessível.</translation>
 <translation id="4020327272915390518">Menu de opções</translation>
 <translation id="4021279097213088397">–</translation>
+<translation id="402184264550408568">(TCP)</translation>
 <translation id="4022426551683927403">&amp;Adicionar ao Dicionário</translation>
 <translation id="4023146161712577481">A determinar a configuração do dispositivo.</translation>
 <translation id="4025039777635956441">Desativar o som do site selecionado</translation>
@@ -2827,6 +2826,7 @@ Pretende pará-lo?</translation>
 <translation id="4780321648949301421">Guardar página como...</translation>
 <translation id="4785719467058219317">Está a utilizar uma chave de segurança que não está registada neste Website.</translation>
 <translation id="4788092183367008521">Verifique a sua ligação à rede e tente novamente.</translation>
+<translation id="4791037424585594169">(UDP)</translation>
 <translation id="4792711294155034829">&amp;Comunicar um problema...</translation>
 <translation id="4794810983896241342"><ph name="BEGIN_LINK" />O seu administrador<ph name="END_LINK" /> gere as atualizações.</translation>
 <translation id="479536056609751218">Página Web, Apenas HTML</translation>
@@ -3013,7 +3013,6 @@ Pretende pará-lo?</translation>
 <translation id="504561833207953641">A abrir numa sessão existente do navegador…</translation>
 <translation id="5047421709274785093">Impedir que os sites utilizem sensores de movimento e de luz</translation>
 <translation id="5050042263972837708">Nome do grupo</translation>
-<translation id="5051073330196664891">Termos de Utilização do Google universais (uToS)</translation>
 <translation id="5051836348807686060">A verificação ortográfica não é suportada para os idiomas selecionados</translation>
 <translation id="5052499409147950210">Editar site</translation>
 <translation id="5053604404986157245">A palavra-passe TPM, gerada aleatoriamente, não está disponível. Esta situação é normal após uma Powerwash.</translation>
@@ -3112,6 +3111,7 @@ Pretende pará-lo?</translation>
 <translation id="5185359571430619712">Extensões de comentários</translation>
 <translation id="5185386675596372454">A versão mais recente de "<ph name="EXTENSION_NAME" />" foi desativada porque necessita de mais permissões.</translation>
 <translation id="5187826826541650604"><ph name="KEY_NAME" /> (<ph name="DEVICE" />)</translation>
+<translation id="5190926251776387065">Ativar porta</translation>
 <translation id="51918995459521422"><ph name="ORIGIN" /> pretende transferir vários ficheiros.</translation>
 <translation id="5192062846343383368">Abra a aplicação Family Link para ver as suas definições de supervisão.</translation>
 <translation id="5193988420012215838">Copiado para a área de transferência.</translation>
@@ -3839,6 +3839,7 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="6150961653851236686">Este idioma é utilizado ao traduzir páginas</translation>
 <translation id="6151323131516309312">Prima <ph name="SEARCH_KEY" /> para pesquisar no <ph name="SITE_NAME" /></translation>
 <translation id="6151771661215463137">O ficheiro já existe na sua pasta de transferências.</translation>
+<translation id="6154240335466762404">Remover todas as portas</translation>
 <translation id="615436196126345398">Protocolo</translation>
 <translation id="6154697846084421647">Atualmente com sessão iniciada</translation>
 <translation id="6155141482566063812">O separador em segundo plano está a partilhar o seu ecrã.</translation>
@@ -3887,7 +3888,6 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="6226777517901268232">Ficheiro de chave privada (opcional)</translation>
 <translation id="6227280783235722609">extensão</translation>
 <translation id="6228691855869374890">Este site tem controlo total sobre dispositivos MIDI.</translation>
-<translation id="6228720835160974792">Gerar código QR para esta imagem</translation>
 <translation id="6229890768313448549">Não é possível carregar os Termos de Utilização do Google Play. Tente novamente.</translation>
 <translation id="6231881193380278751">Adicione um parâmetro de consulta no URL para atualizar automaticamente a página: chrome://device-log/?refresh=&lt;sec&gt;</translation>
 <translation id="6232017090690406397">Bateria</translation>
@@ -3920,6 +3920,7 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="6263082573641595914">Versão de AC Microsoft</translation>
 <translation id="6263284346895336537">Não crítica</translation>
 <translation id="6264365405983206840">Seleccion&amp;ar Tudo</translation>
+<translation id="6265687851677020761">Remover porta</translation>
 <translation id="6267166720438879315">Selecione um certificado para se autenticar perante <ph name="HOST_NAME" /></translation>
 <translation id="6267547857941397424">Rede <ph name="NETWORK_INDEX" /> de <ph name="NETWORK_COUNT" />, <ph name="PHONE_NAME" />, intensidade do sinal: <ph name="SIGNAL_STRENGTH" />%, bateria do telemóvel: <ph name="BATTERY_STATUS" />%, ligar</translation>
 <translation id="6268252012308737255">Abrir com <ph name="APP" /></translation>
@@ -4550,7 +4551,6 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="7123360114020465152">Já não é suportada.</translation>
 <translation id="7127980134843952133">Histórico de transferências</translation>
 <translation id="7128151990937044829">Apresentar um indicador na barra de endereço quando as notificações estão bloqueadas</translation>
-<translation id="7128239828194367697">Gerar código QR para esta página</translation>
 <translation id="7131040479572660648">Ler os seus dados em <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> e <ph name="WEBSITE_3" /></translation>
 <translation id="713122686776214250">Adicionar pá&amp;gina...</translation>
 <translation id="7133578150266914903">O administrador está a reverter este dispositivo (<ph name="PROGRESS_PERCENT" />)</translation>
@@ -4940,6 +4940,7 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="767127784612208024">Toque para confirmar a reposição</translation>
 <translation id="767147716926917172">Envia automaticamente dados de diagnóstico e de utilização para a Google</translation>
 <translation id="7672520070349703697"><ph name="HUNG_IFRAME_URL" />, em <ph name="PAGE_TITLE" />.</translation>
+<translation id="7674416868315480713">Desativar todas as portas a serem encaminhadas no Linux</translation>
 <translation id="7676867886086876795">Envie a sua voz para o Google para permitir a introdução por voz em qualquer campo de texto.</translation>
 <translation id="7678280409648629969">Os dados de início de sessão são armazenados no Chrome depois de sair do modo de navegação anónima. Isto permite-lhe utilizar novamente o Touch ID neste Website mais tarde.</translation>
 <translation id="7681095912841365527">O site pode utilizar o Bluetooth.</translation>

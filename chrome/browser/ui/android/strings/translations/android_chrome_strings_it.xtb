@@ -38,7 +38,6 @@
 <translation id="1258753120186372309">Doodle di Google: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1260236875608242557">Cerca ed esplora</translation>
 <translation id="1266864766717917324">Impossibile condividere <ph name="CONTENT_TYPE" /></translation>
-<translation id="1272079795634619415">Interrompi</translation>
 <translation id="1283039547216852943">Tocca per espandere</translation>
 <translation id="1285320974508926690">Non tradurre mai questo sito</translation>
 <translation id="1291207594882862231">Cancella la cronologia, i cookie, i dati dei siti, la cache…</translation>
@@ -50,8 +49,8 @@
 <translation id="1327257854815634930">La cronologia di navigazione è aperta</translation>
 <translation id="1331212799747679585">Impossibile aggiornare Chrome. Altre opzioni</translation>
 <translation id="1332501820983677155">Scorciatoie delle funzioni di Google Chrome</translation>
+<translation id="1347468774581902829">Gestisci attività</translation>
 <translation id="1360432990279830238">Uscire e disattivare la sincronizzazione?</translation>
-<translation id="1364532808393826295"><ph name="APP_NAME" /> - <ph name="NOTIFICATION_MESSAGE" /></translation>
 <translation id="1373696734384179344">Memoria non sufficiente per scaricare i contenuti selezionati.</translation>
 <translation id="1376578503827013741">Elaborazione...</translation>
 <translation id="1383876407941801731">Cerca</translation>
@@ -122,7 +121,6 @@
 <translation id="2013642289801508067">{FILE_COUNT,plural, =1{# file}other{# file}}</translation>
 <translation id="2017836877785168846">Consente di cancellare la cronologia e i completamenti automatici nella barra degli indirizzi.</translation>
 <translation id="2021896219286479412">Controlli sito a schermo intero</translation>
-<translation id="2030769033451695672">Tocca per tornare a <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
 <translation id="2038563949887743358">Attiva Richiedi sito desktop</translation>
 <translation id="204321170514947529">Anche <ph name="APP_NAME" /> presenta dati in Chrome</translation>
 <translation id="2049574241039454490"><ph name="FILE_SIZE_OF_TOTAL" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
@@ -434,6 +432,7 @@ Il tuo Account Google potrebbe avere altre forme di cronologia di navigazione, a
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> Preferiti eliminati</translation>
 <translation id="4665282149850138822">Il sito <ph name="NAME" /> è stato aggiunto alla schermata Home</translation>
 <translation id="4684427112815847243">Sincronizza tutto</translation>
+<translation id="4688610874307684559">In esecuzione in Chrome (iniziale)</translation>
 <translation id="4695891336199304370">{SHIPPING_OPTIONS,plural, =1{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 e altre <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}other{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 e altre <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}}</translation>
 <translation id="4696983787092045100">Invia un messaggio ai tuoi dispositivi</translation>
 <translation id="4698034686595694889">Visualizza offline in <ph name="APP_NAME" /></translation>
@@ -592,7 +591,6 @@ Per cambiare questa impostazione, <ph name="BEGIN_LINK" />reimposta la sincroniz
 <translation id="5876056640971328065">Metti in pausa il video</translation>
 <translation id="5884076754568147479">Per aiutarti a completare le attività, Google riceverà gli URL e i contenuti dei siti su cui utilizzi l'assistente, oltre alle informazioni che invii attraverso l'assistente</translation>
 <translation id="5919204609460789179">Aggiorna <ph name="PRODUCT_NAME" /> per avviare la sincronizzazione</translation>
-<translation id="5922853908706496913">Condivisione dello schermo</translation>
 <translation id="5937580074298050696">Dati risparmiati: <ph name="AMOUNT" /></translation>
 <translation id="5939518447894949180">Reimposta</translation>
 <translation id="5942872142862698679">Google in uso per la ricerca</translation>
@@ -773,16 +771,17 @@ Ad esempio, alcuni siti web potrebbero rispondere alla richiesta mostrando annun
 <translation id="7479104141328977413">Gestione schede</translation>
 <translation id="7481312909269577407">Avanti</translation>
 <translation id="7482656565088326534">Scheda di anteprima</translation>
+<translation id="7484997419527351112">Discover - off</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (Ultimo aggiornamento: <ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7494974237137038751">di dati risparmiati</translation>
 <translation id="7498271377022651285">Attendi…</translation>
 <translation id="7514365320538308">Scarica</translation>
 <translation id="751961395872307827">Impossibile connettersi al sito</translation>
 <translation id="7542481630195938534">Impossibile ricevere suggerimenti</translation>
-<translation id="7554752735887601236">Un sito sta utilizzando il microfono</translation>
 <translation id="7559975015014302720">La modalità Lite non è attiva</translation>
 <translation id="7562080006725997899">Cancellazione dei dati di navigazione in corso</translation>
 <translation id="756809126120519699">Dati di Chrome cancellati</translation>
+<translation id="7577900504646297215">Gestisci interessi</translation>
 <translation id="757855969265046257">{FILES,plural, =1{<ph name="FILES_DOWNLOADED_ONE" /> file scaricato}other{<ph name="FILES_DOWNLOADED_MANY" /> file scaricati}}</translation>
 <translation id="7588219262685291874">Attiva il tema scuro quando sul dispositivo è attivo Risparmio energetico</translation>
 <translation id="7593557518625677601">Apri le impostazioni di Android e abilita nuovamente la sincronizzazione del sistema Android per poter avviare la Sicronizzazione Chrome</translation>
@@ -813,7 +812,6 @@ Ad esempio, alcuni siti web potrebbero rispondere alla richiesta mostrando annun
 <translation id="7774809984919390718">{PAYMENT_METHOD,plural, =1{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 e altri <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}other{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 e altri <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}}</translation>
 <translation id="7791543448312431591">Aggiungi</translation>
 <translation id="780301667611848630">No grazie</translation>
-<translation id="7804248752222191302">Un sito sta utilizzando la fotocamera</translation>
 <translation id="7810647596859435254">Apri con…</translation>
 <translation id="7821588508402923572">La quantità di dati risparmiata sarà visualizzata qui</translation>
 <translation id="783819812427904514">Riattiva audio video</translation>
@@ -885,9 +883,7 @@ Ad esempio, alcuni siti web potrebbero rispondere alla richiesta mostrando annun
 <translation id="8349013245300336738">Ordina per quantità di dati utilizzati</translation>
 <translation id="8364299278605033898">Scopri i siti web più visitati</translation>
 <translation id="8368027906805972958">Dispositivo sconosciuto o non supportato (<ph name="DEVICE_ID" />)</translation>
-<translation id="83792324527827022">Un sito sta utilizzando la fotocamera e il microfono</translation>
 <translation id="8393700583063109961">Invia messaggio</translation>
-<translation id="8394832520002899662">Tocca per tornare al sito.</translation>
 <translation id="8413126021676339697">Mostra cronologia completa</translation>
 <translation id="8427875596167638501">La scheda di anteprima è aperta nella parte inferiore dello schermo</translation>
 <translation id="8428213095426709021">Impostazioni</translation>
@@ -984,7 +980,6 @@ Ad esempio, alcuni siti web potrebbero rispondere alla richiesta mostrando annun
 <translation id="970715775301869095"><ph name="MINUTES" /> min rimanenti</translation>
 <translation id="974555521953189084">Inserisci la passphrase per avviare la sincronizzazione</translation>
 <translation id="981121421437150478">Offline</translation>
-<translation id="982182592107339124">Questa operazione cancellerà i dati di tutti i siti, inclusi:</translation>
 <translation id="983192555821071799">Chiudi tutte le schede</translation>
 <translation id="987264212798334818">Generali</translation>
 </translationbundle>

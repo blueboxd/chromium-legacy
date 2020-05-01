@@ -1906,8 +1906,8 @@ void RenderThreadImpl::CreateFrame(mojom::CreateFrameParamsPtr params) {
       params->routing_id, std::move(interface_provider),
       std::move(browser_interface_broker), params->previous_routing_id,
       params->opener_routing_id, params->parent_routing_id,
-      params->previous_sibling_routing_id, params->devtools_frame_token,
-      params->replication_state, compositor_deps,
+      params->previous_sibling_routing_id, params->frame_token,
+      params->devtools_frame_token, params->replication_state, compositor_deps,
       std::move(params->widget_params),
       std::move(params->frame_owner_properties),
       params->has_committed_real_load);
@@ -1919,11 +1919,12 @@ void RenderThreadImpl::CreateFrameProxy(
     int32_t opener_routing_id,
     int32_t parent_routing_id,
     const FrameReplicationState& replicated_state,
+    const base::UnguessableToken& frame_token,
     const base::UnguessableToken& devtools_frame_token) {
   RenderFrameProxy::CreateFrameProxy(
       routing_id, render_view_routing_id,
       RenderFrameImpl::ResolveWebFrame(opener_routing_id), parent_routing_id,
-      replicated_state, devtools_frame_token);
+      replicated_state, frame_token, devtools_frame_token);
 }
 
 void RenderThreadImpl::OnNetworkConnectionChanged(

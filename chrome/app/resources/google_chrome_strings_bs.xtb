@@ -97,7 +97,6 @@ Neke funkcije možda neće biti dostupne i promjene postavki se neće sačuvati.
 <translation id="3582972582564653026">Sinhronizirajte i personalizirajte Chrome na svim uređajima</translation>
 <translation id="3596080736082218006">{COUNT,plural, =0{Administrator traži da ponovo pokrenete Chrome radi primjene ažuriranja}=1{Administrator traži da ponovo pokrenete Chrome radi primjene ažuriranja. Vaš anonimni prozor se neće ponovo otvoriti.}one{Administrator traži da ponovo pokrenete Chrome radi primjene ažuriranja. Vaš # anonimni prozor se neće ponovo otvoriti.}few{Administrator traži da ponovo pokrenete Chrome radi primjene ažuriranja. Vaša # anonimna prozora se neće ponovo otvoriti.}other{Administrator traži da ponovo pokrenete Chrome radi primjene ažuriranja. Vaših # anonimnih prozora se neće ponovo otvoriti.}}</translation>
 <translation id="3622797965165704966">Sada je lakše koristiti Chrome s vašim Google računom i na dijeljenim računarima.</translation>
-<translation id="3637702109597584617"><ph name="TERMS_OF_SERVICE_LINK" />Uslovi korištenja usluge<ph name="END_TERMS_OF_SERVICE_LINK" /> za Google Chrome OS</translation>
 <translation id="3718181793972440140">Ovim će se izbrisati 1 stavka s ovog uređaja. Da preuzmete svoje podatke kasnije, prijavite se na Chrome kao <ph name="USER_EMAIL" />.</translation>
 <translation id="3735758079232443276">Ekstenzija "<ph name="EXTENSION_NAME" />" je promijenila stranicu koja se prikazuje kada pokrenete Chrome.</translation>
 <translation id="3780814664026482060">Chrome – <ph name="PAGE_TITLE" /></translation>
@@ -114,6 +113,7 @@ Neke funkcije možda neće biti dostupne i promjene postavki se neće sačuvati.
 <translation id="4205939740494406371">Chrome ne može provjeravati vaše lozinke. Pokušajte ponovo za 24 sata ili <ph name="BEGIN_LINK" />provjerite lozinke na Google računu<ph name="END_LINK" />.</translation>
 <translation id="424864128008805179">Odjaviti se iz Chromea?</translation>
 <translation id="4251615635259297716">Povezati podatke iz Chromea s ovim računom?</translation>
+<translation id="4281844954008187215">Uslovi korištenja usluge</translation>
 <translation id="4293420128516039005">Prijavite se za sinhroniziranje i personaliziranje Chromea na svim svojim uređajima</translation>
 <translation id="4328355335528187361">Google Chrome Dev (mDNS-In)</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
@@ -148,7 +148,6 @@ Neke funkcije možda neće biti dostupne i promjene postavki se neće sačuvati.
 
 Moguće je da neke funkcije neće biti dostupne. Odredite drugi direktorij profila ili koristite noviju verziju Chromea.</translation>
 <translation id="5193136243808726294">Google Chrome OS ne može otvoriti ovu stranicu.</translation>
-<translation id="5204098752394657250"><ph name="TERMS_OF_SERVICE_LINK" />Uslovi korištenja usluge<ph name="END_TERMS_OF_SERVICE_LINK" /> Google Chromea</translation>
 <translation id="5251420635869119124">Gosti mogu koristiti Chrome, a da pritom ne ostave tragove o korištenju.</translation>
 <translation id="532046782124376502">Upozorenje: Google Chrome ne može spriječiti da ekstenzije čitaju vašu historiju pregledanja. Da onemogućite ovu ekstenziju u anonimnom načinu rada, poništite odabir ove opcije.</translation>
 <translation id="5386244825306882791">Također kontrolira koja stranica će se prikazati kada pokrenete Chrome ili budete pretraživali iz višenamjenskog okvira.</translation>

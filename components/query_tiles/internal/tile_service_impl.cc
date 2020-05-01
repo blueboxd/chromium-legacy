@@ -30,11 +30,13 @@ TileServiceImpl::TileServiceImpl(
     std::unique_ptr<ImageLoader> image_loader,
     std::unique_ptr<TileManager> tile_manager,
     std::unique_ptr<TileConfig> config,
-    background_task::BackgroundTaskScheduler* scheduler)
+    background_task::BackgroundTaskScheduler* scheduler,
+    std::unique_ptr<TileFetcher> tile_fetcher)
     : image_loader_(std::move(image_loader)),
       tile_manager_(std::move(tile_manager)),
       config_(std::move(config)),
-      scheduler_(scheduler) {
+      scheduler_(scheduler),
+      tile_fetcher_(std::move(tile_fetcher)) {
   ScheduleDailyTask();
 }
 

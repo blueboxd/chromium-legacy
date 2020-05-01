@@ -229,8 +229,10 @@ void FullCardRequest::OnDidGetRealPan(
       unmask_response_details_ = response_details;
 
       const base::string16 cvc =
-          base::FeatureList::IsEnabled(
-              features::kAutofillAlwaysReturnCloudTokenizedCard) &&
+          (base::FeatureList::IsEnabled(
+               features::kAutofillEnableGoogleIssuedCard) ||
+           base::FeatureList::IsEnabled(
+               features::kAutofillAlwaysReturnCloudTokenizedCard)) &&
                   !response_details.dcvv.empty()
               ? base::UTF8ToUTF16(response_details.dcvv)
               : request_->user_response.cvc;

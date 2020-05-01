@@ -7,7 +7,6 @@
 #include <cstdint>
 
 #include "base/hash/hash.h"
-#include "base/logging.h"
 
 namespace blink {
 

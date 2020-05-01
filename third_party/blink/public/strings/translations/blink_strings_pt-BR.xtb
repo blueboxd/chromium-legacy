@@ -35,6 +35,7 @@
 <translation id="1938124657309484470">O valor deve ser <ph name="MAXIMUM_DATE_OR_TIME" /> ou anterior.</translation>
 <translation id="1946271899482435442">Mostrar seletor de datas</translation>
 <translation id="1993104285338243655">Alterado para espelhamento</translation>
+<translation id="2031987842108996681">Canal vermelho</translation>
 <translation id="2060505056492490888">"<ph name="DOT" />" está sendo usado em uma posição incorreta em "<ph name="INVALIDDOMAIN" />".</translation>
 <translation id="2148716181193084225">Hoje</translation>
 <translation id="2158401438286456825">lista de páginas</translation>
@@ -45,6 +46,7 @@
 <translation id="2291999235780842123">caixa de seleção</translation>
 <translation id="2311842470354187719">quebra de página</translation>
 <translation id="2335594187091864976">seletor de data e hora</translation>
+<translation id="2393030564806080191">Valor hexadecimal de cor</translation>
 <translation id="245932805758469625">segundos restantes do vídeo</translation>
 <translation id="248395913932153421">Dia</translation>
 <translation id="2507943997699731163">Preencha este campo.</translation>
@@ -52,6 +54,7 @@
 <translation id="2561842179657104141">mostrar mais controles de mídia</translation>
 <translation id="2572483411312390101">reproduzir</translation>
 <translation id="2613802280814924224">Insira um valor válido. O valor válido mais próximo é <ph name="VALID_VALUE" />.</translation>
+<translation id="2634240155926812724">Canal verde</translation>
 <translation id="2653659639078652383">Enviar</translation>
 <translation id="2657045182931379222">objeto gráfico</translation>
 <translation id="2674318244760992338">rodapé</translation>
@@ -127,6 +130,7 @@
 <translation id="5034860022980953847">indicador de progresso</translation>
 <translation id="5090250355906949916">barra de progressão de vídeo</translation>
 <translation id="5093189678851173835">epígrafe</translation>
+<translation id="509897012892853729">Canal azul</translation>
 <translation id="5117590920725113268">Mostrar próximo mês</translation>
 <translation id="512758898067543763">cabeçalho de linha</translation>
 <translation id="5143125788380636750">epílogo</translation>
@@ -164,6 +168,7 @@
 <translation id="6166809985690652833">posfácio</translation>
 <translation id="6209276755895393898">Parece ser: <ph name="DESCRIPTION" /></translation>
 <translation id="6213469881011901533">glossário</translation>
+<translation id="6281588256137006900">Iluminação</translation>
 <translation id="6281763101136022427">url</translation>
 <translation id="6310801910862476708">Sair de picture-in-picture</translation>
 <translation id="6398862346408813489">Mostrar painel de seleção de mês</translation>
@@ -184,6 +189,7 @@
 <translation id="6790428901817661496">Reproduzir</translation>
 <translation id="6820355525329141109">Não foi possível carregar o plug-in.</translation>
 <translation id="6820615603175220800">referência bibliográfica</translation>
+<translation id="6831465880655513317">Círculo cromático com controle deslizante bidimensional para seleção de saturação e iluminação</translation>
 <translation id="6843725295806269523">sem som</translation>
 <translation id="6885760532393684712">diretório</translation>
 <translation id="689129560213475294">colofão</translation>
@@ -201,6 +207,7 @@
 <translation id="7263440858009898357">Selecione um item da lista.</translation>
 <translation id="727747134524199931">cabeçalho da coluna</translation>
 <translation id="7320576522385648310">armazenando em buffer</translation>
+<translation id="7341556277900466204">Círculo cromático</translation>
 <translation id="7353453495576941748">crédito</translation>
 <translation id="7364796246159120393">Escolher arquivo</translation>
 <translation id="739024184232394898">Outras...</translation>
@@ -221,6 +228,7 @@
 <translation id="775297008183122718">Entrada inválida</translation>
 <translation id="7789962463072032349">pausar</translation>
 <translation id="7802800022689234070">triângulo de divulgação</translation>
+<translation id="7852167693871241274">Controle deslizante de matiz</translation>
 <translation id="7888071071722539607">Inclua um "<ph name="ATSIGN" />" no endereço de e-mail. "<ph name="INVALIDADDRESS" />" está com um "<ph name="ATSIGN" />" faltando.</translation>
 <translation id="7891486169920085145">divisor</translation>
 <translation id="795667975304826397">Nenhum arquivo selecionado</translation>
@@ -263,6 +271,7 @@
 <translation id="8875657656876809964">Erro na reprodução do vídeo</translation>
 <translation id="8889402386540077796">Matiz</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> KB</translation>
+<translation id="894736920926684893">Alternador de formato</translation>
 <translation id="8987927404178983737">Mês</translation>
 <translation id="901493112792887934">tempo atual em segundos</translation>
 <translation id="901834265349196618">e-mail</translation>

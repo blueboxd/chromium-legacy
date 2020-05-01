@@ -93,7 +93,6 @@
 <translation id="3582972582564653026">Synkroniser og gi Chrome et personlig preg på alle enhetene dine</translation>
 <translation id="3596080736082218006">{COUNT,plural, =0{Administratoren din krever at du starter Chrome på nytt for å ta i bruk en oppdatering}=1{Administratoren din krever at du starter Chrome på nytt for å ta i bruk en oppdatering. Inkognitovinduet ditt blir ikke gjenåpnet.}other{Administratoren din krever at du starter Chrome på nytt for å ta i bruk en oppdatering. De # inkognitovinduene dine blir ikke gjenåpnet.}}</translation>
 <translation id="3622797965165704966">Nå er det enklere å bruke Chrome med Google-kontoen din og på datamaskiner du deler med andre.</translation>
-<translation id="3637702109597584617"><ph name="TERMS_OF_SERVICE_LINK" />Vilkår for bruk<ph name="END_TERMS_OF_SERVICE_LINK" /> av Google Chrome OS</translation>
 <translation id="3718181793972440140">Dette sletter 1 element fra denne enheten. For å hente dataene dine igjen senere må du logge på Chrome som <ph name="USER_EMAIL" />.</translation>
 <translation id="3735758079232443276">Utvidelsen «<ph name="EXTENSION_NAME" />» har endret hvilken side som vises når du starter Chrome.</translation>
 <translation id="3780814664026482060">Chrome – <ph name="PAGE_TITLE" /></translation>
@@ -110,6 +109,7 @@
 <translation id="4205939740494406371">Chrome kan ikke sjekke passordene dine. Prøv på nytt om 24 timer, eller <ph name="BEGIN_LINK" />sjekk passordene i Google-kontoen din<ph name="END_LINK" />.</translation>
 <translation id="424864128008805179">Vil du logge av Chrome?</translation>
 <translation id="4251615635259297716">Vil du koble Chrome-dataene dine til denne kontoen?</translation>
+<translation id="4281844954008187215">Vilkår for bruk</translation>
 <translation id="4293420128516039005">Logg på for å synkronisere og gi Chrome et personlig preg på alle enhetene dine</translation>
 <translation id="4328355335528187361">Google Chrome Dev (mDNS – inn)</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
@@ -142,7 +142,6 @@
 <translation id="5132929315877954718">Oppdag flotte apper, spill, utvidelser og temaer for Google Chrome.</translation>
 <translation id="5170938038195470297">Profilen din kan ikke brukes fordi den er fra en nyere versjon av Google Chrome. Enkelte funksjoner kan være utilgjengelige. Angi en annen profilkatalog, eller bruk en nyere versjon av Chrome.</translation>
 <translation id="5193136243808726294">Google Chrome OS kan ikke åpne denne siden</translation>
-<translation id="5204098752394657250">Google Chrome – <ph name="TERMS_OF_SERVICE_LINK" />vilkår for bruk<ph name="END_TERMS_OF_SERVICE_LINK" /></translation>
 <translation id="5251420635869119124">Gjester kan bruke Chrome uten å etterlate seg spor.</translation>
 <translation id="532046782124376502">Advarsel: Google Chrome kan ikke hindre utvidelser i å registrere nettlesingsloggen din. Du kan deaktivere utvidelsen i inkognitomodus ved å fjerne avmerkingen for dette alternativet.</translation>
 <translation id="5386244825306882791">Den styrer også hvilken side som vises når du starter Chrome eller søker fra multifunksjonsfeltet.</translation>

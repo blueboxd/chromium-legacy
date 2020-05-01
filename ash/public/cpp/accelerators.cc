@@ -262,7 +262,8 @@ const AcceleratorData kNewAdditionalAcceleratorData[] = {
 
     // Minimize / Maximize
     {true, ui::VKEY_OEM_MINUS, ui::EF_COMMAND_DOWN, WINDOW_MINIMIZE},
-    {true, ui::VKEY_OEM_PLUS, ui::EF_COMMAND_DOWN, TOGGLE_MAXIMIZED},
+    {true, ui::VKEY_OEM_PLUS, ui::EF_SHIFT_DOWN | ui::EF_COMMAND_DOWN,
+     TOGGLE_MAXIMIZED},
 };
 
 const size_t kNewAdditionalAcceleratorDataLength =

@@ -38,6 +38,12 @@ class CORE_EXPORT NGPhysicalContainerFragment : public NGPhysicalFragment {
       STACK_ALLOCATED();
 
      public:
+      using iterator_category = std::bidirectional_iterator_tag;
+      using value_type = NGLink;
+      using difference_type = ptrdiff_t;
+      using pointer = value_type*;
+      using reference = value_type&;
+
       ConstIterator(const NGLink* current) : current_(current) {}
 
       const NGLink& operator*() const { return *PostLayoutOrCurrent(); }

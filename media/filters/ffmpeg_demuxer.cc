@@ -1150,6 +1150,11 @@ int64_t FFmpegDemuxer::GetMemoryUsage() const {
   return allocation_size;
 }
 
+base::Optional<container_names::MediaContainerName>
+FFmpegDemuxer::GetContainerForMetrics() const {
+  return container();
+}
+
 void FFmpegDemuxer::OnEncryptedMediaInitData(
     EmeInitDataType init_data_type,
     const std::string& encryption_key_id) {

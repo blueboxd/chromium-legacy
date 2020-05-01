@@ -382,9 +382,7 @@
 <translation id="1509281256533087115">Приступај било ком уређају <ph name="DEVICE_NAME_AND_VENDOR" /> преко USB-а</translation>
 <translation id="1509960214886564027">Функције на многим сајтовима могу да престану са радом</translation>
 <translation id="1510030919967934016">Овој страници је онемогућено да прати локацију на којој се налазите.</translation>
-<translation id="1510055949674985293">Генериши QR кôд за ову слику</translation>
 <translation id="1510238584712386396">Покретач</translation>
-<translation id="1510581003097415337">Генериши QR кôд за ову страницу</translation>
 <translation id="1510785804673676069">Ако користите прокси сервер, проверите подешавања проксија или контактирајте администратора мреже да бисте проверили да ли прокси сервер функционише. Ако не сматрате да треба да користите прокси сервер, прилагодите <ph name="LINK_START" />подешавања проксија<ph name="LINK_END" />.</translation>
 <translation id="1511997356770098059">На овом безбедносном кључу не можете да чувате податке за пријављивање</translation>
 <translation id="1512210426710821809">Једини начин да ово опозовете је да поново инсталирате <ph name="IDS_SHORT_PRODUCT_OS_NAME" /></translation>
@@ -1784,6 +1782,7 @@
 <translation id="3365598184818502391">Користите Ctrl или Alt</translation>
 <translation id="3367047597842238025">Подесите <ph name="DEVICE_TYPE" /> онако како ви то желите и откријте све доступне сјајне могућности.</translation>
 <translation id="3368922792935385530">Повезан</translation>
+<translation id="3369067987974711168">Прикажи још радњи за овај порт</translation>
 <translation id="3369624026883419694">Одређује се хост...</translation>
 <translation id="3371140690572404006">Уређај са USB прикључком типа C (десни предњи порт)</translation>
 <translation id="337286756654493126">Читање директоријума које отворите у апликацији</translation>
@@ -2306,11 +2305,11 @@
 <translation id="4007856537951125667">Сакриј пречице</translation>
 <translation id="4008291085758151621">Информације о сајтовима нису доступне у ВР-у</translation>
 <translation id="4010917659463429001">Да би вам обележивачи били доступни на мобилном уређају, <ph name="GET_IOS_APP_LINK" />.</translation>
-<translation id="4013132157686828973">„<ph name="CLIENT_NAME" />“ отклања грешке из овог прегледача</translation>
 <translation id="4014432863917027322">Желите ли да поправите „<ph name="EXTENSION_NAME" />“?</translation>
 <translation id="4015163439792426608">Имате додатке? <ph name="BEGIN_LINK" />Управљајте додацима<ph name="END_LINK" /> на једном практичном месту.</translation>
 <translation id="4020327272915390518">Мени са опцијама</translation>
 <translation id="4021279097213088397">-</translation>
+<translation id="402184264550408568">(TCP)</translation>
 <translation id="4022426551683927403">&amp;Додај у речник</translation>
 <translation id="4023146161712577481">Утврђивање конфигурације уређаја.</translation>
 <translation id="4025039777635956441">Искључи звук изабраног сајта</translation>
@@ -2824,6 +2823,7 @@
 <translation id="4780321648949301421">Сачувај страницу као...</translation>
 <translation id="4785719467058219317">Користите безбедносни кључ који није регистрован за овај веб-сајт</translation>
 <translation id="4788092183367008521">Проверите мрежну везу и пробајте поново.</translation>
+<translation id="4791037424585594169">(UDP)</translation>
 <translation id="4792711294155034829">&amp;Пријави проблем...</translation>
 <translation id="4794810983896241342"><ph name="BEGIN_LINK" />Администратор<ph name="END_LINK" /> управља ажурирањима</translation>
 <translation id="479536056609751218">Веб-страница, само HTML</translation>
@@ -3010,7 +3010,6 @@
 <translation id="504561833207953641">Отвара се у постојећој сесији прегледача.</translation>
 <translation id="5047421709274785093">Блокирај сајтове тако да не користе сензоре за покрет и светло</translation>
 <translation id="5050042263972837708">Назив групе</translation>
-<translation id="5051073330196664891">Google универзални услови коришћења услуге (uToS)</translation>
 <translation id="5051836348807686060">Провера правописа није подржана за језике које сте изабрали</translation>
 <translation id="5052499409147950210">Измените сајт</translation>
 <translation id="5053604404986157245">Насумично генерисана лозинка за модул поуздане платформе није доступна. То је нормално после Powerwash-а.</translation>
@@ -3109,6 +3108,7 @@
 <translation id="5185359571430619712">Додаци за рецензије</translation>
 <translation id="5185386675596372454">Најновија верзија додатка „<ph name="EXTENSION_NAME" />“ је онемогућена јер захтева још дозвола.</translation>
 <translation id="5187826826541650604"><ph name="KEY_NAME" /> (<ph name="DEVICE" />)</translation>
+<translation id="5190926251776387065">Активирај порт</translation>
 <translation id="51918995459521422"><ph name="ORIGIN" /> жели да преузме више датотека</translation>
 <translation id="5192062846343383368">Отворите апликацију Family Link да бисте видели подешавања надзора</translation>
 <translation id="5193988420012215838">Копирано је у привремену меморију</translation>
@@ -3836,6 +3836,7 @@
 <translation id="6150961653851236686">Овај језик се користи при превођењу страница</translation>
 <translation id="6151323131516309312">Притисните <ph name="SEARCH_KEY" /> да бисте претражили <ph name="SITE_NAME" /> сајт</translation>
 <translation id="6151771661215463137">Датотека већ постоји у директоријуму са преузимањима.</translation>
+<translation id="6154240335466762404">Уклони све портове</translation>
 <translation id="615436196126345398">Протокол</translation>
 <translation id="6154697846084421647">Тренутно пријављен</translation>
 <translation id="6155141482566063812">Картица у позадини дели екран</translation>
@@ -3884,7 +3885,6 @@
 <translation id="6226777517901268232">Датотека приватног кључа (опционално)</translation>
 <translation id="6227280783235722609">додатак</translation>
 <translation id="6228691855869374890">Овај сајт у потпуности контролише MIDI уређаје.</translation>
-<translation id="6228720835160974792">Генериши QR кôд за ову слику</translation>
 <translation id="6229890768313448549">Услови коришћења услуге Google Play не могу да се учитају. Пробајте поново.</translation>
 <translation id="6231881193380278751">Додајте параметар упита у URL да бисте аутоматски освежили страницу: chrome://device-log/?refresh=&lt;sec&gt;</translation>
 <translation id="6232017090690406397">Батерија</translation>
@@ -3917,6 +3917,7 @@
 <translation id="6263082573641595914">Верзија Microsoft CA</translation>
 <translation id="6263284346895336537">Није од пресудне важности</translation>
 <translation id="6264365405983206840">Изабери &amp;све</translation>
+<translation id="6265687851677020761">Уклони порт</translation>
 <translation id="6267166720438879315">Изаберите сертификат да бисте потврдили идентитет хосту <ph name="HOST_NAME" /></translation>
 <translation id="6267547857941397424"><ph name="NETWORK_INDEX" />. мрежа од <ph name="NETWORK_COUNT" />, <ph name="PHONE_NAME" />, јачина сигнала <ph name="SIGNAL_STRENGTH" />%, батерија телефона <ph name="BATTERY_STATUS" />%, повежи</translation>
 <translation id="6268252012308737255">Отвори помоћу апликације <ph name="APP" /></translation>
@@ -4547,7 +4548,6 @@
 <translation id="7123360114020465152">Није више подржан</translation>
 <translation id="7127980134843952133">Историја преузимања</translation>
 <translation id="7128151990937044829">Приказуј индикатор на траци за адресу када су обавештења блокирана</translation>
-<translation id="7128239828194367697">Генериши QR кôд за ову страницу</translation>
 <translation id="7131040479572660648">Читање ваших података на <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> и <ph name="WEBSITE_3" /></translation>
 <translation id="713122686776214250">Додај стра&amp;ницу...</translation>
 <translation id="7133578150266914903">Администратор враћа овај уређај на ранију верзију (<ph name="PROGRESS_PERCENT" />)</translation>
@@ -4758,7 +4758,7 @@
 <translation id="7421925624202799674">&amp;Прикажи извор странице</translation>
 <translation id="7422192691352527311">Подешавања...</translation>
 <translation id="7423098979219808738">Прво питај</translation>
-<translation id="7423807071740419372">За покретање апликације <ph name="APP_NAME" /> потребна је дозвола</translation>
+<translation id="7423807071740419372">За покретање апликације <ph name="APP_NAME" /> је потребна дозвола</translation>
 <translation id="7427315641433634153">MSCHAP</translation>
 <translation id="7427348830195639090">Страница у позадини: <ph name="BACKGROUND_PAGE_URL" /></translation>
 <translation id="7427798576651127129">Позив са уређаја <ph name="DEVICE_NAME" /></translation>
@@ -4937,6 +4937,7 @@
 <translation id="767127784612208024">Додирните да бисте потврдили ресетовање</translation>
 <translation id="767147716926917172">Аутоматски шаље Google-у дијагностику и податке о коришћењу</translation>
 <translation id="7672520070349703697"><ph name="HUNG_IFRAME_URL" />, на страници <ph name="PAGE_TITLE" />.</translation>
+<translation id="7674416868315480713">Деактивирај све портове који се прослеђују у Linux-у</translation>
 <translation id="7676867886086876795">Шаљите податке о гласу Google-у да би се омогућило диктирање у свим пољима за текст.</translation>
 <translation id="7678280409648629969">Подаци о пријављивању се чувају у Chrome-у када изађете из режима без архивирања. То ће вам омогућити да касније поново користите Touch ID са овим веб-сајтом.</translation>
 <translation id="7681095912841365527">Сајт може да користи Bluetooth</translation>

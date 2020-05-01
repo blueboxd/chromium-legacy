@@ -991,12 +991,14 @@ bool LocalFrame::ShouldThrottleRendering() const {
 LocalFrame::LocalFrame(LocalFrameClient* client,
                        Page& page,
                        FrameOwner* owner,
+                       const base::UnguessableToken& frame_token,
                        WindowAgentFactory* inheriting_agent_factory,
                        InterfaceRegistry* interface_registry,
                        const base::TickClock* clock)
     : Frame(client,
             page,
             owner,
+            frame_token,
             MakeGarbageCollected<LocalWindowProxyManager>(*this),
             inheriting_agent_factory),
       frame_scheduler_(page.GetPageScheduler()->CreateFrameScheduler(

@@ -35,6 +35,7 @@
 <translation id="1938124657309484470">Değer <ph name="MAXIMUM_DATE_OR_TIME" /> veya daha geri olmalıdır.</translation>
 <translation id="1946271899482435442">Tarih seçiciyi göster</translation>
 <translation id="1993104285338243655">Yansıtmaya geçildi</translation>
+<translation id="2031987842108996681">Kırmızı kanal</translation>
 <translation id="2060505056492490888">"<ph name="DOT" />", "<ph name="INVALIDDOMAIN" />" adı içinde yanlış bir konumda kullanılmış.</translation>
 <translation id="2148716181193084225">Bugün</translation>
 <translation id="2158401438286456825">sayfa listesi</translation>
@@ -45,6 +46,7 @@
 <translation id="2291999235780842123">onay kutusu</translation>
 <translation id="2311842470354187719">sayfa sonu</translation>
 <translation id="2335594187091864976">tarih ve saat seçici</translation>
+<translation id="2393030564806080191">On altılı renk değeri</translation>
 <translation id="245932805758469625">saniye olarak videonun kalan süresi</translation>
 <translation id="248395913932153421">Gün</translation>
 <translation id="2507943997699731163">Lütfen bu alanı doldurun.</translation>
@@ -52,6 +54,7 @@
 <translation id="2561842179657104141">diğer medya kontrollerini göster</translation>
 <translation id="2572483411312390101">oynat</translation>
 <translation id="2613802280814924224">Lütfen geçerli bir değer girin. En yakın geçerli değer şudur: <ph name="VALID_VALUE" /></translation>
+<translation id="2634240155926812724">Yeşil kanal</translation>
 <translation id="2653659639078652383">Gönder</translation>
 <translation id="2657045182931379222">grafik nesnesi</translation>
 <translation id="2674318244760992338">altbilgi</translation>
@@ -127,6 +130,7 @@
 <translation id="5034860022980953847">ilerleme durumu göstergesi</translation>
 <translation id="5090250355906949916">video süresi göstergesi</translation>
 <translation id="5093189678851173835">yazıt</translation>
+<translation id="509897012892853729">Mavi kanal</translation>
 <translation id="5117590920725113268">Sonraki ayı göster</translation>
 <translation id="512758898067543763">satır başlığı</translation>
 <translation id="5143125788380636750">son söz</translation>
@@ -164,6 +168,7 @@
 <translation id="6166809985690652833">sonsöz</translation>
 <translation id="6209276755895393898">Resimdeki şu olabilir: <ph name="DESCRIPTION" /></translation>
 <translation id="6213469881011901533">terimler sözlüğü</translation>
+<translation id="6281588256137006900">Açıklık</translation>
 <translation id="6281763101136022427">URL</translation>
 <translation id="6310801910862476708">Pencere İçinde Pencereden Çık</translation>
 <translation id="6398862346408813489">Ay seçim panelini göster</translation>
@@ -184,6 +189,7 @@
 <translation id="6790428901817661496">Oynat</translation>
 <translation id="6820355525329141109">Eklenti yüklenemedi.</translation>
 <translation id="6820615603175220800">kaynakça referansı</translation>
+<translation id="6831465880655513317">Renk doygunluğunu ve açıklığını seçmek için iki boyutlu kaydırma çubuğu olan renk çemberi</translation>
 <translation id="6843725295806269523">sesi kapat</translation>
 <translation id="6885760532393684712">dizin</translation>
 <translation id="689129560213475294">künye</translation>
@@ -201,6 +207,7 @@
 <translation id="7263440858009898357">Lütfen listeden bir öğe seçin.</translation>
 <translation id="727747134524199931">sütun başlığı</translation>
 <translation id="7320576522385648310">arabelleğe alınıyor</translation>
+<translation id="7341556277900466204">Renk çemberi</translation>
 <translation id="7353453495576941748">katkıda bulunan</translation>
 <translation id="7364796246159120393">Dosya Seç</translation>
 <translation id="739024184232394898">Diğer...</translation>
@@ -221,6 +228,7 @@
 <translation id="775297008183122718">Geçersiz giriş</translation>
 <translation id="7789962463072032349">duraklat</translation>
 <translation id="7802800022689234070">açıklama üçgeni</translation>
+<translation id="7852167693871241274">Ton kaydırıcısı</translation>
 <translation id="7888071071722539607">Lütfen e-posta adresine bir "<ph name="ATSIGN" />" işareti ekleyin. "<ph name="INVALIDADDRESS" />" adresinde "<ph name="ATSIGN" />" eksik.</translation>
 <translation id="7891486169920085145">ayırıcı</translation>
 <translation id="795667975304826397">Dosya seçilmedi</translation>
@@ -263,6 +271,7 @@
 <translation id="8875657656876809964">Video oynatma hatası</translation>
 <translation id="8889402386540077796">Ton</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> KB</translation>
+<translation id="894736920926684893">Açma/kapatma düğmesini biçimlendir</translation>
 <translation id="8987927404178983737">Ay</translation>
 <translation id="901493112792887934">saniye olarak geçerli süre</translation>
 <translation id="901834265349196618">e-posta</translation>

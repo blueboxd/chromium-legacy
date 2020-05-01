@@ -36,6 +36,8 @@ class UI_CHROMEOS_EXPORT CandidateView : public views::Button {
 
   void SetHighlighted(bool highlighted);
 
+  void SetPositionData(int index, int total);
+
  private:
   friend class CandidateWindowViewTest;
   FRIEND_TEST_ALL_PREFIXES(CandidateWindowViewTest, ShortcutSettingTest);
@@ -68,6 +70,10 @@ class UI_CHROMEOS_EXPORT CandidateView : public views::Button {
   int shortcut_width_ = 0;
   int candidate_width_ = 0;
   bool highlighted_ = false;
+
+  // 0-based index of this candidate e.g. [0, total_candidates_ -1].
+  int candidate_index_;
+  int total_candidates_;
 
   DISALLOW_COPY_AND_ASSIGN(CandidateView);
 };

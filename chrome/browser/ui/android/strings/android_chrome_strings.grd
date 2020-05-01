@@ -203,9 +203,6 @@ CHAR-LIMIT guidelines:
       <message name="IDS_SETTINGS" desc="Title for Chrome's Settings.">
         Settings
       </message>
-      <message name="IDS_MENU_HELP" desc="Menu item for opening the help page. [CHAR-LIMIT=27]">
-        Help &amp; feedback
-      </message>
       <message name="IDS_PREFS_SECTION_BASICS" desc='Title of "Basics" section of preferences. [CHAR-LIMIT=32]'>
         Basics
       </message>
@@ -617,6 +614,21 @@ CHAR-LIMIT guidelines:
       <message name="IDS_OPTIONS_HOMEPAGE_CHROME_HOMEPAGE" desc="The option that allows user to set Chrome's new tab page as the homepage." >
         Chrome’s homepage
       </message>
+
+      <!-- Homepage Promo card -->
+      <message name="IDS_HOMEPAGE_PROMO_TITLE" desc="The title displayed on homepage promo card, which guide user set chrome's new tab page as their new homepage.">
+        Get here quicker
+      </message>
+      <message name="IDS_HOMEPAGE_PROMO_DESCRIPTION" desc="The description displayed on homepage promo card, which guide user set chrome's new tab page as their new homepage.">
+        See your top sites and recent stories whenever you tap the Home button
+      </message>
+      <message name="IDS_HOMEPAGE_PROMO_PRIMARY_BUTTON" desc="The text displayed on homepage promo card's primary button compat, which will change the user's homepage to new tab page when they tab.">
+        Change homepage
+      </message>
+      <message name="IDS_HOMEPAGE_PROMO_SNACKBAR_MESSAGE" desc="The text displayed on the snackbar that appears after setting homepage by click on homepage promo card's primary button, which will change the user's homepage to new tab page.">
+        Homepage changed
+      </message>
+
 
       <!-- Notifications preferences -->
       <message name="IDS_PREFS_NOTIFICATIONS" desc="Title for Notification preferences.">

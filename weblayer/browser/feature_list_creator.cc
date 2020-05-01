@@ -9,17 +9,8 @@
 #include "base/path_service.h"
 #include "build/build_config.h"
 #include "cc/base/switches.h"
-#include "components/metrics/metrics_pref_names.h"
-#include "components/metrics/metrics_service.h"
 #include "components/metrics/metrics_state_manager.h"
-#include "components/pref_registry/pref_registry_syncable.h"
-#include "components/prefs/in_memory_pref_store.h"
-#include "components/prefs/json_pref_store.h"
-#include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
-#include "components/prefs/pref_service_factory.h"
-#include "components/variations/pref_names.h"
-#include "components/variations/service/ui_string_overrider.h"
 #include "components/variations/service/variations_service.h"
 #include "components/variations/variations_crash_keys.h"
 #include "content/public/browser/network_service_instance.h"
@@ -40,45 +31,11 @@ namespace {
 
 FeatureListCreator* feature_list_creator_instance = nullptr;
 
-void HandleReadError(PersistentPrefStore::PrefReadError error) {}
-
-#if defined(OS_ANDROID)
-base::FilePath GetPrefStorePath() {
-  base::FilePath path;
-  base::PathService::Get(base::DIR_ANDROID_APP_DATA, &path);
-  path = path.Append(FILE_PATH_LITERAL("pref_store"));
-  return path;
-}
-#endif
-
-std::unique_ptr<PrefService> CreatePrefService() {
-  auto pref_registry = base::MakeRefCounted<user_prefs::PrefRegistrySyncable>();
-
-#if defined(OS_ANDROID)
-  metrics::AndroidMetricsServiceClient::RegisterPrefs(pref_registry.get());
-#endif
-  variations::VariationsService::RegisterPrefs(pref_registry.get());
-  PrefServiceFactory pref_service_factory;
-
-#if defined(OS_ANDROID)
-  pref_service_factory.set_user_prefs(
-      base::MakeRefCounted<JsonPrefStore>(GetPrefStorePath()));
-#else
-  // For now just use in memory PrefStore for desktop.
-  // TODO(weblayer-dev): Find a long term solution.
-  pref_service_factory.set_user_prefs(
-      base::MakeRefCounted<InMemoryPrefStore>());
-#endif
-
-  pref_service_factory.set_read_error_callback(
-      base::BindRepeating(&HandleReadError));
-
-  return pref_service_factory.Create(pref_registry);
-}
-
 }  // namespace
 
-FeatureListCreator::FeatureListCreator() {
+FeatureListCreator::FeatureListCreator(PrefService* local_state)
+    : local_state_(local_state) {
+  DCHECK(local_state_);
   DCHECK(!feature_list_creator_instance);
   feature_list_creator_instance = this;
 }
@@ -122,7 +79,7 @@ void FeatureListCreator::SetUpFieldTrials() {
   variations_service_ = variations::VariationsService::Create(
       std::make_unique<WebLayerVariationsServiceClient>(
           system_network_context_manager_),
-      local_state_.get(), metrics_client->metrics_state_manager(),
+      local_state_, metrics_client->metrics_state_manager(),
       switches::kDisableBackgroundNetworking, variations::UIStringOverrider(),
       base::BindOnce(&content::GetNetworkConnectionTracker));
   variations_service_->OverridePlatform(
@@ -145,10 +102,8 @@ void FeatureListCreator::SetUpFieldTrials() {
 }
 
 void FeatureListCreator::CreateFeatureListAndFieldTrials() {
-  local_state_ = CreatePrefService();
-  CHECK(local_state_);
 #if defined(OS_ANDROID)
-  WebLayerMetricsServiceClient::GetInstance()->Initialize(local_state_.get());
+  WebLayerMetricsServiceClient::GetInstance()->Initialize(local_state_);
 #endif
   SetUpFieldTrials();
 }

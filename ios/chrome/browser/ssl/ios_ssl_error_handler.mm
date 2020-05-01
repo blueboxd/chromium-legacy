@@ -160,8 +160,8 @@ void IOSSSLErrorHandler::ShowSSLInterstitial() {
             CreateMetricsHelper(web_state_, request_url_, overridable_),
             GetApplicationContext()->GetApplicationLocale()));
     std::string error_html = page->GetHtmlContents();
-    security_interstitials::IOSBlockingPageTabHelper::AssociateBlockingPage(
-        web_state_, navigation_id_, std::move(page));
+    security_interstitials::IOSBlockingPageTabHelper::FromWebState(web_state_)
+        ->AssociateBlockingPage(navigation_id_, std::move(page));
     std::move(blocking_page_callback_).Run(base::SysUTF8ToNSString(error_html));
   } else {
     // SSLBlockingPage deletes itself when it's dismissed.
@@ -190,8 +190,8 @@ void IOSSSLErrorHandler::ShowCaptivePortalInterstitial(
             CreateMetricsHelper(web_state_, request_url_, overridable_),
             GetApplicationContext()->GetApplicationLocale()));
     std::string error_html = page->GetHtmlContents();
-    security_interstitials::IOSBlockingPageTabHelper::AssociateBlockingPage(
-        web_state_, navigation_id_, std::move(page));
+    security_interstitials::IOSBlockingPageTabHelper::FromWebState(web_state_)
+        ->AssociateBlockingPage(navigation_id_, std::move(page));
     std::move(blocking_page_callback_).Run(base::SysUTF8ToNSString(error_html));
   } else {
     // IOSCaptivePortalBlockingPage deletes itself when it's dismissed.

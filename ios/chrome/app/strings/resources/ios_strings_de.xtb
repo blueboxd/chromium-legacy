@@ -158,6 +158,7 @@
 <translation id="285960592395650245">Download wiederholen</translation>
 <translation id="2870560284913253234">Website</translation>
 <translation id="2871695793448672541">Ausgeblendetes Passwort</translation>
+<translation id="2876369937070532032">URLs einiger von mir besuchter Seiten an Google senden, wenn meine Sicherheit gefährdet ist</translation>
 <translation id="288655811176831528">Tab schließen</translation>
 <translation id="2898963176829412617">Neuer Ordner…</translation>
 <translation id="2916171785467530738">Suchanfragen und URLs automatisch vervollständigen</translation>
@@ -177,6 +178,7 @@
 <translation id="3161291298470460782">Hierdurch werden Sie abgemeldet, die Synchronisierung wird deaktiviert und alle Chrome-Daten werden von diesem Gerät gelöscht. Ihre synchronisierten Daten verbleiben jedoch in Ihrem Google-Konto.</translation>
 <translation id="3175081911749765310">Webdienste</translation>
 <translation id="3178650076442119961">Heute aktiv</translation>
+<translation id="3181954750937456830">Safe Browsing (mich und mein Gerät vor schädlichen Websites schützen)</translation>
 <translation id="3207960819495026254">Mit einem Lesezeichen versehen</translation>
 <translation id="3224641773458703735">Um Passwörter zu exportieren, müssen Sie zuerst einen Passcode auf Ihrem Gerät einrichten.</translation>
 <translation id="3240426699337459095">Link wurde kopiert.</translation>
@@ -430,6 +432,7 @@ Ihre Daten wurden am <ph name="TIME" /> mit Ihrer Synchronisierungspassphrase ve
 <translation id="6447842834002726250">Cookies</translation>
 <translation id="6464071786529933911">In neuem Inkognito-Tab öffnen</translation>
 <translation id="6476800141292307438">Die Seite wird in die Sprache <ph name="LANGUAGE" /> übersetzt. Optionen sind unten auf dem Bildschirm verfügbar.</translation>
+<translation id="648164694371393720">Authentifizierungsfehler</translation>
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> Lesezeichen gelöscht</translation>
 <translation id="6561262006871132942">Heranzoomen</translation>
 <translation id="6610002944194042868">Übersetzungsoptionen</translation>

@@ -382,9 +382,7 @@
 <translation id="1509281256533087115">Access any <ph name="DEVICE_NAME_AND_VENDOR" /> via USB</translation>
 <translation id="1509960214886564027">Features on many sites may break</translation>
 <translation id="1510030919967934016">This page has been blocked from tracking your location.</translation>
-<translation id="1510055949674985293">Generate QR code for this Image</translation>
 <translation id="1510238584712386396">Launcher</translation>
-<translation id="1510581003097415337">Generate QR code for this page</translation>
 <translation id="1510785804673676069">If you are using a proxy server, check your proxy settings or
     contact your network administrator to check that the proxy
     server is working. If you don't believe you should be using a
@@ -1787,6 +1785,7 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="3365598184818502391">Use either Ctrl or Alt</translation>
 <translation id="3367047597842238025">Set up your <ph name="DEVICE_TYPE" /> just as you want it and discover all the amazing capabilities at your fingertips.</translation>
 <translation id="3368922792935385530">Connected</translation>
+<translation id="3369067987974711168">Show more actions for this port</translation>
 <translation id="3369624026883419694">Resolving host...</translation>
 <translation id="3371140690572404006">USB-C device (right-hand-side front port)</translation>
 <translation id="337286756654493126">Read folders that you open in the application</translation>
@@ -2309,11 +2308,11 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="4007856537951125667">Hide shortcuts</translation>
 <translation id="4008291085758151621">Site information is not available in VR</translation>
 <translation id="4010917659463429001">To get your bookmarks on your mobile device, <ph name="GET_IOS_APP_LINK" />.</translation>
-<translation id="4013132157686828973">'<ph name="CLIENT_NAME" />' is debugging this browser</translation>
 <translation id="4014432863917027322">Repair "<ph name="EXTENSION_NAME" />"?</translation>
 <translation id="4015163439792426608">Got extensions? <ph name="BEGIN_LINK" />Manage your extensions<ph name="END_LINK" /> in one easy place.</translation>
 <translation id="4020327272915390518">Options menu</translation>
 <translation id="4021279097213088397">–</translation>
+<translation id="402184264550408568">(TCP)</translation>
 <translation id="4022426551683927403">&amp;Add to Dictionary</translation>
 <translation id="4023146161712577481">Determining device configuration.</translation>
 <translation id="4025039777635956441">Mute Selected Site</translation>
@@ -2827,6 +2826,7 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="4780321648949301421">Save Page As...</translation>
 <translation id="4785719467058219317">You're using a security key that's not registered with this website</translation>
 <translation id="4788092183367008521">Please check your network connection and try again.</translation>
+<translation id="4791037424585594169">(UDP)</translation>
 <translation id="4792711294155034829">&amp;Report an Issue...</translation>
 <translation id="4794810983896241342">Updates are managed by <ph name="BEGIN_LINK" />your administrator<ph name="END_LINK" /></translation>
 <translation id="479536056609751218">Web Page, HTML Only</translation>
@@ -3013,7 +3013,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="504561833207953641">Opening in existing browser session.</translation>
 <translation id="5047421709274785093">Block sites from using motion and light sensors</translation>
 <translation id="5050042263972837708">Group name</translation>
-<translation id="5051073330196664891">Google universal Terms of Service (uToS)</translation>
 <translation id="5051836348807686060">Spellcheck isn’t supported for the languages that you have selected</translation>
 <translation id="5052499409147950210">Edit site</translation>
 <translation id="5053604404986157245">The randomly generated TPM password is not available. This is normal after a Powerwash.</translation>
@@ -3112,6 +3111,7 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="5185359571430619712">Review extensions</translation>
 <translation id="5185386675596372454">The newest version of "<ph name="EXTENSION_NAME" />" has been disabled because it requires more permissions.</translation>
 <translation id="5187826826541650604"><ph name="KEY_NAME" /> (<ph name="DEVICE" />)</translation>
+<translation id="5190926251776387065">Activate port</translation>
 <translation id="51918995459521422"><ph name="ORIGIN" /> wants to download multiple files</translation>
 <translation id="5192062846343383368">Open the Family Link app to see your supervision settings</translation>
 <translation id="5193988420012215838">Copied to your clipboard</translation>
@@ -3838,6 +3838,7 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="6150961653851236686">This language is used when translating pages</translation>
 <translation id="6151323131516309312">Press <ph name="SEARCH_KEY" /> to search <ph name="SITE_NAME" /></translation>
 <translation id="6151771661215463137">The file already exists in your download folder.</translation>
+<translation id="6154240335466762404">Remove all ports</translation>
 <translation id="615436196126345398">Protocol</translation>
 <translation id="6154697846084421647">Currently signed in</translation>
 <translation id="6155141482566063812">Background tab is sharing your screen</translation>
@@ -3886,7 +3887,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="6226777517901268232">Private key file (optional)</translation>
 <translation id="6227280783235722609">extension</translation>
 <translation id="6228691855869374890">This site has full control of MIDI devices.</translation>
-<translation id="6228720835160974792">Generate QR code for this image</translation>
 <translation id="6229890768313448549">Google Play Terms of Service cannot be loaded. Please retry.</translation>
 <translation id="6231881193380278751">Add a QueryParam in URL to auto-refresh the page: chrome://device-log/?refresh=&lt;sec&gt;</translation>
 <translation id="6232017090690406397">Battery</translation>
@@ -3919,6 +3919,7 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="6263082573641595914">Microsoft CA Version</translation>
 <translation id="6263284346895336537">Not Critical</translation>
 <translation id="6264365405983206840">Select &amp;All</translation>
+<translation id="6265687851677020761">Remove port</translation>
 <translation id="6267166720438879315">Select a certificate to which you want to authenticate <ph name="HOST_NAME" /></translation>
 <translation id="6267547857941397424">Network <ph name="NETWORK_INDEX" /> of <ph name="NETWORK_COUNT" />, <ph name="PHONE_NAME" />, signal strength <ph name="SIGNAL_STRENGTH" />%, phone battery <ph name="BATTERY_STATUS" />%, connect</translation>
 <translation id="6268252012308737255">Open with <ph name="APP" /></translation>
@@ -4549,7 +4550,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="7123360114020465152">No longer supported</translation>
 <translation id="7127980134843952133">Download history</translation>
 <translation id="7128151990937044829">Show an indicator in the address bar when notifications are blocked</translation>
-<translation id="7128239828194367697">Generate QR code for this page</translation>
 <translation id="7131040479572660648">Read your data on <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> and <ph name="WEBSITE_3" /></translation>
 <translation id="713122686776214250">Add pa&amp;ge...</translation>
 <translation id="7133578150266914903">Your administrator is rolling back this device (<ph name="PROGRESS_PERCENT" />)</translation>
@@ -4939,6 +4939,7 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="767127784612208024">Touch to confirm reset</translation>
 <translation id="767147716926917172">Automatically sends diagnostic and usage data to Google</translation>
 <translation id="7672520070349703697"><ph name="HUNG_IFRAME_URL" />, in <ph name="PAGE_TITLE" />.</translation>
+<translation id="7674416868315480713">Deactivate all ports being forwarded in Linux</translation>
 <translation id="7676867886086876795">Send your voice to Google to allow dictation into any text field.</translation>
 <translation id="7678280409648629969">Sign-in data will be stored in Chrome after you exit Incognito mode. This will let you use Touch ID with this website again later.</translation>
 <translation id="7681095912841365527">Site can use Bluetooth</translation>

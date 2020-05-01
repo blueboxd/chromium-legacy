@@ -35,6 +35,7 @@
 <translation id="1938124657309484470">Вредноста мора да биде <ph name="MAXIMUM_DATE_OR_TIME" /> или порано.</translation>
 <translation id="1946271899482435442">Прикажи го избирачот на датум</translation>
 <translation id="1993104285338243655">Префрлено на отсликување</translation>
+<translation id="2031987842108996681">Црвен канал</translation>
 <translation id="2060505056492490888">„<ph name="DOT" />“ се користи на погрешно место во „<ph name="INVALIDDOMAIN" />“.</translation>
 <translation id="2148716181193084225">Денес</translation>
 <translation id="2158401438286456825">список со страници</translation>
@@ -45,6 +46,7 @@
 <translation id="2291999235780842123">поле за избор</translation>
 <translation id="2311842470354187719">прелом на страница</translation>
 <translation id="2335594187091864976">избирач на датум и време</translation>
+<translation id="2393030564806080191">Хексадецимална вредност на бојата</translation>
 <translation id="245932805758469625">број на преостанати секунди од видеото</translation>
 <translation id="248395913932153421">Ден</translation>
 <translation id="2507943997699731163">Пополнете го ова поле.</translation>
@@ -52,6 +54,7 @@
 <translation id="2561842179657104141">прикажи повеќе контроли на аудио-визуелни содржини</translation>
 <translation id="2572483411312390101">репродуцирај</translation>
 <translation id="2613802280814924224">Внесете важечка вредност. Најблиската важечка вредност е <ph name="VALID_VALUE" />.</translation>
+<translation id="2634240155926812724">Зелен канал</translation>
 <translation id="2653659639078652383">Поднеси</translation>
 <translation id="2657045182931379222">графички објект</translation>
 <translation id="2674318244760992338">подножје</translation>
@@ -127,6 +130,7 @@
 <translation id="5034860022980953847">индикатор за напредокот</translation>
 <translation id="5090250355906949916">лизгач на времепловот на видеото</translation>
 <translation id="5093189678851173835">епиграф</translation>
+<translation id="509897012892853729">Син канал</translation>
 <translation id="5117590920725113268">Прикажи го следниот месец</translation>
 <translation id="512758898067543763">наслов на ред</translation>
 <translation id="5143125788380636750">епилог</translation>
@@ -164,6 +168,7 @@
 <translation id="6166809985690652833">поговор</translation>
 <translation id="6209276755895393898">Се чини дека е: <ph name="DESCRIPTION" /></translation>
 <translation id="6213469881011901533">поимник</translation>
+<translation id="6281588256137006900">Осветленост</translation>
 <translation id="6281763101136022427">URL</translation>
 <translation id="6310801910862476708">Излези од „слика во слика“</translation>
 <translation id="6398862346408813489">Прикажи ја таблата за избирање месеци</translation>
@@ -184,6 +189,7 @@
 <translation id="6790428901817661496">Репродуцирај</translation>
 <translation id="6820355525329141109">Дополнителната компонента не можеше да се вчита</translation>
 <translation id="6820615603175220800">референца за библиографија</translation>
+<translation id="6831465880655513317">Спектар на бои со дводимензионален лизгач за избор на заситеноста и осветленоста</translation>
 <translation id="6843725295806269523">исклучи тон</translation>
 <translation id="6885760532393684712">директориум</translation>
 <translation id="689129560213475294">отпечаток</translation>
@@ -201,6 +207,7 @@
 <translation id="7263440858009898357">Изберете ставка од листата.</translation>
 <translation id="727747134524199931">наслов на колона</translation>
 <translation id="7320576522385648310">се презема</translation>
+<translation id="7341556277900466204">Спектар на бои</translation>
 <translation id="7353453495576941748">благодарност</translation>
 <translation id="7364796246159120393">Избери датотека</translation>
 <translation id="739024184232394898">Друго...</translation>
@@ -221,6 +228,7 @@
 <translation id="775297008183122718">Неважечка вредност</translation>
 <translation id="7789962463072032349">пауза</translation>
 <translation id="7802800022689234070">триаголник за откривање</translation>
+<translation id="7852167693871241274">Лизгач за нијанси</translation>
 <translation id="7888071071722539607">Опфатете „<ph name="ATSIGN" />“ во адресата на е-пошта. Во „<ph name="INVALIDADDRESS" />“ недостига „<ph name="ATSIGN" />“.</translation>
 <translation id="7891486169920085145">разделница</translation>
 <translation id="795667975304826397">Нема избрана датотека</translation>
@@ -263,6 +271,7 @@
 <translation id="8875657656876809964">Грешка при репродукција на видео</translation>
 <translation id="8889402386540077796">Нијанса</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> KB</translation>
+<translation id="894736920926684893">Копче за префрлање на форматот</translation>
 <translation id="8987927404178983737">Месец</translation>
 <translation id="901493112792887934">тековно време во секунди</translation>
 <translation id="901834265349196618">е-пошта</translation>

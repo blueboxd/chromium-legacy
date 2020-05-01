@@ -39,16 +39,19 @@ class WebRemoteFrame : public WebFrame {
  public:
   // Factory methods for creating a WebRemoteFrame. The WebRemoteFrameClient
   // argument must be non-null for all creation methods.
-  BLINK_EXPORT static WebRemoteFrame* Create(mojom::TreeScopeType,
-                                             WebRemoteFrameClient*,
-                                             InterfaceRegistry*,
-                                             AssociatedInterfaceProvider*);
+  BLINK_EXPORT static WebRemoteFrame* Create(
+      mojom::TreeScopeType,
+      WebRemoteFrameClient*,
+      InterfaceRegistry*,
+      AssociatedInterfaceProvider*,
+      const base::UnguessableToken& frame_token);
 
   BLINK_EXPORT static WebRemoteFrame* CreateMainFrame(
       WebView*,
       WebRemoteFrameClient*,
       InterfaceRegistry*,
       AssociatedInterfaceProvider*,
+      const base::UnguessableToken& frame_token,
       WebFrame* opener);
 
   // Also performs core initialization to associate the created remote frame
@@ -58,6 +61,7 @@ class WebRemoteFrame : public WebFrame {
       WebRemoteFrameClient*,
       InterfaceRegistry*,
       AssociatedInterfaceProvider*,
+      const base::UnguessableToken& frame_token,
       const WebElement& portal_element);
 
   // Specialized factory methods to allow the embedder to replicate the frame
@@ -67,24 +71,28 @@ class WebRemoteFrame : public WebFrame {
   // ensure that it is inserted into the correct location in the list of
   // children. If |previous_sibling| is null, the child is inserted at the
   // beginning.
-  virtual WebLocalFrame* CreateLocalChild(mojom::TreeScopeType,
-                                          const WebString& name,
-                                          const FramePolicy&,
-                                          WebLocalFrameClient*,
-                                          blink::InterfaceRegistry*,
-                                          WebFrame* previous_sibling,
-                                          const WebFrameOwnerProperties&,
-                                          mojom::FrameOwnerElementType,
-                                          WebFrame* opener) = 0;
+  virtual WebLocalFrame* CreateLocalChild(
+      mojom::TreeScopeType,
+      const WebString& name,
+      const FramePolicy&,
+      WebLocalFrameClient*,
+      blink::InterfaceRegistry*,
+      WebFrame* previous_sibling,
+      const WebFrameOwnerProperties&,
+      mojom::FrameOwnerElementType,
+      const base::UnguessableToken& frame_token,
+      WebFrame* opener) = 0;
 
-  virtual WebRemoteFrame* CreateRemoteChild(mojom::TreeScopeType,
-                                            const WebString& name,
-                                            const FramePolicy&,
-                                            mojom::FrameOwnerElementType,
-                                            WebRemoteFrameClient*,
-                                            blink::InterfaceRegistry*,
-                                            AssociatedInterfaceProvider*,
-                                            WebFrame* opener) = 0;
+  virtual WebRemoteFrame* CreateRemoteChild(
+      mojom::TreeScopeType,
+      const WebString& name,
+      const FramePolicy&,
+      mojom::FrameOwnerElementType,
+      WebRemoteFrameClient*,
+      blink::InterfaceRegistry*,
+      AssociatedInterfaceProvider*,
+      const base::UnguessableToken& frame_token,
+      WebFrame* opener) = 0;
 
   // Layer for the in-process compositor.
   virtual void SetCcLayer(cc::Layer*,
@@ -148,7 +156,9 @@ class WebRemoteFrame : public WebFrame {
   virtual WebRect GetCompositingRect() = 0;
 
  protected:
-  explicit WebRemoteFrame(mojom::TreeScopeType scope) : WebFrame(scope) {}
+  explicit WebRemoteFrame(mojom::TreeScopeType scope,
+                          const base::UnguessableToken& frame_token)
+      : WebFrame(scope, frame_token) {}
 
   // Inherited from WebFrame, but intentionally hidden: it never makes sense
   // to call these on a WebRemoteFrame.

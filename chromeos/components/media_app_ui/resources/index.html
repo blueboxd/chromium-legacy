@@ -2,8 +2,9 @@
      Use of this source code is governed by a BSD-style license that can be
      found in the LICENSE file. -->
 <!DOCTYPE html>
+<html dir="$i18n{textdirection}" lang="$i18n{language}">
 <meta charset="utf-8">
-<title>Media App</title>
+<title>$i18n{appTitle}</title>
 <style>
   body {
     height: 100vh;
@@ -11,6 +12,7 @@
     overflow: hidden;
     position: relative;
   }
+
   /*
    * This is the <iframe> style set for sandboxed guests that use
    * guest_view_iframe_container.js.
@@ -27,3 +29,4 @@
 <script src="/mojo_api_bootstrap.js"></script>
 <iframe src="chrome-untrusted://media-app/app.html" allow="fullscreen"></iframe>
 <script src="/media_app_index_scripts.js"></script>
+</html>

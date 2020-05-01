@@ -40,8 +40,7 @@ void OSExchangeDataProviderAuraX11::SetFileContents(
     const base::FilePath& filename,
     const std::string& file_contents) {
   DCHECK(!filename.empty());
-  DCHECK(format_map().end() ==
-         format_map().find(gfx::GetAtom(kMimeTypeMozillaURL)));
+  DCHECK(!base::Contains(format_map(), gfx::GetAtom(kMimeTypeMozillaURL)));
 
   set_file_contents_name(filename);
 

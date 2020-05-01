@@ -158,6 +158,7 @@
 <translation id="285960592395650245">Thử tải xuống lại</translation>
 <translation id="2870560284913253234">Trang web</translation>
 <translation id="2871695793448672541">Mật khẩu ẩn</translation>
+<translation id="2876369937070532032">Gửi URL của một số trang mà bạn truy cập cho Google khi bạn gặp rủi ro về bảo mật</translation>
 <translation id="288655811176831528">Đóng tab</translation>
 <translation id="2898963176829412617">Thư mục mới…</translation>
 <translation id="2916171785467530738">Tự động hoàn thành cụm từ tìm kiếm và URL</translation>
@@ -177,6 +178,7 @@
 <translation id="3161291298470460782">Thao tác này sẽ khiến bạn bị đăng xuất, tắt tính năng đồng bộ hóa và xóa tất cả dữ liệu trên Chrome khỏi thiết bị này. Dữ liệu đã đồng bộ hóa của bạn sẽ vẫn ở trong Tài khoản Google của bạn.</translation>
 <translation id="3175081911749765310">Dịch vụ web</translation>
 <translation id="3178650076442119961">Hoạt động hôm nay</translation>
+<translation id="3181954750937456830">Duyệt web an toàn (bảo vệ bạn cũng như thiết bị của bạn khỏi các trang web nguy hiểm)</translation>
 <translation id="3207960819495026254">Đã đánh dấu trang</translation>
 <translation id="3224641773458703735">Để xuất mật khẩu, trước tiên bạn phải đặt mật mã trên thiết bị của mình.</translation>
 <translation id="3240426699337459095">Đã sao chép đường liên kết</translation>
@@ -430,6 +432,7 @@ Dữ liệu của bạn đã được mã hóa bằng cụm mật khẩu đồng
 <translation id="6447842834002726250">Cookie</translation>
 <translation id="6464071786529933911">Mở trong tab ẩn danh mới</translation>
 <translation id="6476800141292307438">Đang dịch trang sang <ph name="LANGUAGE" />. Các tùy chọn nằm ở gần cuối màn hình.</translation>
+<translation id="648164694371393720">Lỗi xác thực</translation>
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> dấu trang đã bị xóa</translation>
 <translation id="6561262006871132942">Phóng to</translation>
 <translation id="6610002944194042868">Tùy chọn dịch</translation>

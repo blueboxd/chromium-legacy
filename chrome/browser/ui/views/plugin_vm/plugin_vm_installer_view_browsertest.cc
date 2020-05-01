@@ -35,6 +35,7 @@
 #include "content/public/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/strings/grit/ui_strings.h"
 
 namespace {
 
@@ -130,7 +131,9 @@ class PluginVmInstallerViewBrowserTest : public DialogBrowserTest {
 
   void CheckSetupIsFinishedSuccessfully() {
     EXPECT_TRUE(HasAcceptButton());
-    EXPECT_FALSE(HasCancelButton());
+    EXPECT_TRUE(HasCancelButton());
+    EXPECT_EQ(view_->GetDialogButtonLabel(ui::DIALOG_BUTTON_CANCEL),
+              l10n_util::GetStringUTF16(IDS_APP_CLOSE));
     EXPECT_EQ(view_->GetDialogButtonLabel(ui::DIALOG_BUTTON_OK),
               l10n_util::GetStringUTF16(IDS_PLUGIN_VM_INSTALLER_LAUNCH_BUTTON));
     EXPECT_EQ(

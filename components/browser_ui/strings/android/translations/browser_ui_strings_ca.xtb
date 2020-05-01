@@ -3,12 +3,15 @@
 <translationbundle lang="ca">
 <translation id="1006017844123154345">Obre en línia</translation>
 <translation id="1044891598689252897">Els llocs web funcionaran amb normalitat</translation>
+<translation id="1124090076051167250">Amb aquesta acció s'esborraran dades i galetes emmagatzemades pels llocs web o les aplicacions de la pantalla d'inici (<ph name="DATASIZE" />).</translation>
 <translation id="1124772482545689468">Usuari</translation>
 <translation id="1178581264944972037">Posa en pausa</translation>
 <translation id="1181037720776840403">Suprimeix</translation>
 <translation id="1201402288615127009">Següent</translation>
 <translation id="1242008676835033345">Incrustada a <ph name="WEBSITE_URL" /></translation>
+<translation id="1272079795634619415">Atura</translation>
 <translation id="129382876167171263">Els fitxers desats pels llocs web es mostren aquí</translation>
+<translation id="1364532808393826295"><ph name="APP_NAME" />: <ph name="NOTIFICATION_MESSAGE" /></translation>
 <translation id="1369915414381695676">El lloc <ph name="SITE_NAME" /> s'ha afegit</translation>
 <translation id="1383876407941801731">Cerca</translation>
 <translation id="1384959399684842514">La baixada s'ha posat en pausa</translation>
@@ -29,6 +32,7 @@
 <translation id="1984937141057606926">Permeses, excepte les de tercers</translation>
 <translation id="1994173015038366702">URL del lloc web</translation>
 <translation id="2025115093177348061">Realitat augmentada</translation>
+<translation id="2030769033451695672">Toca per tornar a <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
 <translation id="2041019821020695769">Perquè Chrome et pugui enviar notificacions, també has d'activar-les a la <ph name="BEGIN_LINK" />configuració d'Android<ph name="END_LINK" />.</translation>
 <translation id="2079545284768500474">Desfés</translation>
 <translation id="2091887806945687916">So</translation>
@@ -104,6 +108,7 @@
 <translation id="5048398596102334565">Permet que els llocs web accedeixin als sensors de moviment (opció recomanada)</translation>
 <translation id="5063480226653192405">Ús</translation>
 <translation id="5100237604440890931">Vista replegada (feu clic per desplegar-la)</translation>
+<translation id="5123685120097942451">Pestanya d'incògnit</translation>
 <translation id="5300589172476337783">Mostra</translation>
 <translation id="5301954838959518834">D'acord</translation>
 <translation id="5307446750509046227">Esborra emmagatz. lloc</translation>
@@ -123,9 +128,11 @@
 <translation id="5677928146339483299">Bloquejat</translation>
 <translation id="5689516760719285838">Ubicació</translation>
 <translation id="5710871682236653961">Pregunta abans de permetre que els llocs web enviïn i rebin informació quan toquis dispositius amb NFC (opció recomanada)</translation>
+<translation id="5719847187258001597">Amb aquesta acció s'esborraran totes les dades i galetes emmagatzemades per <ph name="ORIGIN" /> o per la seva aplicació de la pantalla d'inici.</translation>
 <translation id="5804241973901381774">Permisos</translation>
 <translation id="5860033963881614850">Desactivat</translation>
 <translation id="5916664084637901428">Activat</translation>
+<translation id="5922853908706496913">S'està compartint la pantalla</translation>
 <translation id="5939518447894949180">Restableix</translation>
 <translation id="6040143037577758943">Tanca</translation>
 <translation id="6042308850641462728">Més</translation>
@@ -169,6 +176,7 @@
 <translation id="7423098979219808738">Pregunta abans</translation>
 <translation id="7423538860840206698">L'accés de lectura al porta-retalls està bloquejat</translation>
 <translation id="7521387064766892559">JavaScript</translation>
+<translation id="7554752735887601236">Un lloc web està utilitzant el micròfon</translation>
 <translation id="7572498721684305250">Evita que els llocs web enviïn i rebin informació quan toquis dispositius amb NFC</translation>
 <translation id="757524316907819857">Impedeix que els llocs web reprodueixin contingut protegit</translation>
 <translation id="7589445247086920869">Bloqueja al motor de cerca actual</translation>
@@ -177,6 +185,7 @@
 <translation id="7781829728241885113">Ahir</translation>
 <translation id="7791543448312431591">Afegeix</translation>
 <translation id="780301667611848630">No, gràcies</translation>
+<translation id="7804248752222191302">Un lloc web està utilitzant la càmera</translation>
 <translation id="7817023149356982970">Se't tancarà la sessió d'aquest lloc web.</translation>
 <translation id="7828557259026017104">Les galetes són fitxers que creen els llocs web que visites. Els llocs web les fan servir per recordar les teves preferències. Les galetes de tercers són les que creen altres llocs web. Part del contingut d'aquests llocs, com ara els anuncis o les imatges, es mostra a la pàgina web que visites.</translation>
 <translation id="7846076177841592234">Cancel·la la selecció</translation>
@@ -194,7 +203,9 @@
 <translation id="8261506727792406068">Suprimeix</translation>
 <translation id="8300705686683892304">Gestionats per aplicacions</translation>
 <translation id="8372893542064058268">Permet la sincronització en segon pla en un lloc concret.</translation>
+<translation id="83792324527827022">Un lloc web està utilitzant la càmera i el micròfon</translation>
 <translation id="8380167699614421159">Aquest lloc web mostra anuncis intrusius o enganyosos</translation>
+<translation id="8394832520002899662">Toca per tornar al lloc web</translation>
 <translation id="8447861592752582886">Revoca el permís d'accés al dispositiu</translation>
 <translation id="851751545965956758">Impedeix que els llocs web es connectin a dispositius</translation>
 <translation id="857943718398505171">Permès (opció recomanada)</translation>

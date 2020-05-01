@@ -6,8 +6,8 @@
 
 #include <memory>
 #include "base/bind.h"
+#include "base/check.h"
 #include "base/location.h"
-#include "base/logging.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/message_loop/message_pump.h"
 #include "base/message_loop/message_pump_type.h"

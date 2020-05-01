@@ -3,12 +3,15 @@
 <translationbundle lang="es">
 <translation id="1006017844123154345">Abrir versión online</translation>
 <translation id="1044891598689252897">Los sitios web funcionarán con normalidad</translation>
+<translation id="1124090076051167250">Esta acción borrará <ph name="DATASIZE" /> de datos y cookies almacenados por sitios web o aplicaciones en tu pantalla de inicio.</translation>
 <translation id="1124772482545689468">Usuario</translation>
 <translation id="1178581264944972037">Pausar</translation>
 <translation id="1181037720776840403">Quitar</translation>
 <translation id="1201402288615127009">Siguiente</translation>
 <translation id="1242008676835033345">Insertada en <ph name="WEBSITE_URL" /></translation>
+<translation id="1272079795634619415">Interrumpir</translation>
 <translation id="129382876167171263">Los archivos que guarden los sitios web aparecerán aquí</translation>
+<translation id="1364532808393826295"><ph name="APP_NAME" />: <ph name="NOTIFICATION_MESSAGE" /></translation>
 <translation id="1369915414381695676">Se ha añadido el sitio <ph name="SITE_NAME" /></translation>
 <translation id="1383876407941801731">Buscar</translation>
 <translation id="1384959399684842514">Descarga en pausa</translation>
@@ -29,6 +32,7 @@
 <translation id="1984937141057606926">Permitidas (excepto cookies de terceros)</translation>
 <translation id="1994173015038366702">URL del sitio</translation>
 <translation id="2025115093177348061">Realidad aumentada</translation>
+<translation id="2030769033451695672">Toca para volver a <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
 <translation id="2041019821020695769">Para que Chrome pueda enviarte notificaciones, actívalas también en los <ph name="BEGIN_LINK" />ajustes de Android<ph name="END_LINK" />.</translation>
 <translation id="2079545284768500474">Deshacer</translation>
 <translation id="2091887806945687916">Sonido</translation>
@@ -104,6 +108,7 @@
 <translation id="5048398596102334565">Permitir que los sitios web accedan a los sensores de movimiento (recomendado)</translation>
 <translation id="5063480226653192405">Uso</translation>
 <translation id="5100237604440890931">Contraído (hacer clic para ampliar)</translation>
+<translation id="5123685120097942451">Pestaña de incógnito</translation>
 <translation id="5300589172476337783">Mostrar</translation>
 <translation id="5301954838959518834">Entendido</translation>
 <translation id="5307446750509046227">Liberar espacio</translation>
@@ -123,9 +128,11 @@
 <translation id="5677928146339483299">Bloqueado</translation>
 <translation id="5689516760719285838">Ubicación</translation>
 <translation id="5710871682236653961">Pregunta antes de permitir que los sitios web envíen y reciban información cuando toques dispositivos NFC (recomendado)</translation>
+<translation id="5719847187258001597">Esta acción borrará todos los datos y cookies almacenados por <ph name="ORIGIN" /> y su aplicación en tu pantalla de inicio.</translation>
 <translation id="5804241973901381774">Permisos</translation>
 <translation id="5860033963881614850">Desactivado</translation>
 <translation id="5916664084637901428">Activado</translation>
+<translation id="5922853908706496913">Compartiendo tu pantalla</translation>
 <translation id="5939518447894949180">Restablecer</translation>
 <translation id="6040143037577758943">Cerrar</translation>
 <translation id="6042308850641462728">Más</translation>
@@ -169,6 +176,7 @@
 <translation id="7423098979219808738">Preguntar antes</translation>
 <translation id="7423538860840206698">Se ha bloqueado la lectura del portapapeles</translation>
 <translation id="7521387064766892559">JavaScript</translation>
+<translation id="7554752735887601236">Un sitio web está usando tu micrófono</translation>
 <translation id="7572498721684305250">No permite que los sitios web envíen y reciban información cuando toques dispositivos NFC</translation>
 <translation id="757524316907819857">Impedir que los sitios web reproduzcan contenido protegido</translation>
 <translation id="7589445247086920869">Bloquear para el motor de búsqueda actual</translation>
@@ -177,6 +185,7 @@
 <translation id="7781829728241885113">Ayer</translation>
 <translation id="7791543448312431591">Añadir</translation>
 <translation id="780301667611848630">No, gracias</translation>
+<translation id="7804248752222191302">Un sitio web está usando tu cámara</translation>
 <translation id="7817023149356982970">Se cerrará tu sesión en este sitio web.</translation>
 <translation id="7828557259026017104">Las cookies son archivos que crean los sitios web que visitas. Estos las usan para recordar tus preferencias. Las cookies de terceros las crean otros sitios web. Parte del contenido que ves en la página web que visitas, como anuncios o imágenes, pertenece a esos otros sitios web.</translation>
 <translation id="7846076177841592234">Cancelar selección</translation>
@@ -194,7 +203,9 @@
 <translation id="8261506727792406068">Eliminar</translation>
 <translation id="8300705686683892304">Administrados por una aplicación</translation>
 <translation id="8372893542064058268">Permite la sincronización en segundo plano de un sitio web específico.</translation>
+<translation id="83792324527827022">Un sitio web está usando tu cámara y tu micrófono</translation>
 <translation id="8380167699614421159">El sitio web muestra anuncios invasivos o engañosos</translation>
+<translation id="8394832520002899662">Toca para volver al sitio web</translation>
 <translation id="8447861592752582886">Revocar permiso de dispositivo</translation>
 <translation id="851751545965956758">No permitir que los sitios web se conecten a dispositivos</translation>
 <translation id="857943718398505171">Permitido (recomendado)</translation>

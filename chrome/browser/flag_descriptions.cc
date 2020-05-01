@@ -71,6 +71,10 @@ const char kAllowSyncXHRInPageDismissalDescription[] =
     "Allows synchronous XHR requests during page dismissal when the page is "
     "being navigated away or closed by the user.";
 
+const char kConditionalTabStripAndroidName[] = "Conditional Tab Strip";
+const char kConditionalTabStripAndroidDescription[] =
+    "Allows users to access conditional tab strip.";
+
 const char kEnableClipboardProviderImageSuggestionsName[] =
     "Omnibox clipboard image search suggestions";
 const char kEnableClipboardProviderImageSuggestionsDescription[] =
@@ -82,6 +86,11 @@ const char kEnableFtpDescription[] =
     "either showing a directory listing or downloading the resource over FTP. "
     "When disabled, the browser has no special handling for ftp:// URLs and "
     "by default defer handling of the URL to the underlying platform.";
+
+const char kShelfAppScalingName[] = "Enable shelf app scaling";
+const char kShelfAppScalingDescription[] =
+    "Reduce the app icon size from standard to dense when the user exceeds the "
+    "available space to add an additional app icon in tablet mode";
 
 const char kEnableSignedExchangeSubresourcePrefetchName[] =
     "Enable Signed Exchange subresource prefetching";
@@ -2438,6 +2447,12 @@ const char kHomepageLocationDescription[] =
     "Enable enterprice policy HomepageLocation, a rule of configure the home "
     "page URL";
 
+const char kHomepagePromoCardName[] =
+    "Enable homepage promo card on the New Tab Page";
+const char kHomepagePromoCardDescription[] =
+    "Enable homepage promo card that will be shown to users with partner "
+    "configured homepage.";
+
 const char kHomepageSettingsUIConversionName[] =
     "Enable new homepage setting UI";
 const char kHomepageSettingsUIConversionDescription[] =
@@ -2605,7 +2620,8 @@ const char kProcessSharingWithStrictSiteInstancesDescription[] =
 
 const char kQueryTilesName[] = "Show query tiles";
 const char kQueryTilesDescription[] = "Shows query tiles in Chrome";
-
+const char kQueryTilesOmniboxName[] = "Show query tiles in omnibox";
+const char kQueryTilesOmniboxDescription[] = "Shows query tiles in omnibox";
 const char kQueryTilesCountryCode[] = "Country code for getting tiles";
 const char kQueryTilesCountryCodeDescription[] =
     "When query tiles are enabled, this value determines tiles for which "
@@ -3300,6 +3316,11 @@ const char kDoubleTapToZoomInTabletModeName[] =
 const char kDoubleTapToZoomInTabletModeDescription[] =
     "If Enabled, double tapping in webpages while in tablet mode will zoom the "
     "page.";
+
+const char kMovablePartialScreenshotName[] =
+    "Movable/resizable partial screenshot region";
+const char kMovablePartialScreenshotDescription[] =
+    "Allow partial screenshot region to be moved/resized via mouse/touch.";
 
 const char kEnableAdvancedPpdAttributesName[] =
     "Enable advanced PPD attributes";

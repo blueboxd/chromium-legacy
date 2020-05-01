@@ -58,6 +58,7 @@ extern const base::Feature kIPHEphemeralTabFeature;
 extern const base::Feature kIPHFeedCardMenuFeature;
 extern const base::Feature kIPHHomePageButtonFeature;
 extern const base::Feature kIPHHomepageTileFeature;
+extern const base::Feature kIPHHomepagePromoCardFeature;
 extern const base::Feature kIPHIdentityDiscFeature;
 extern const base::Feature kIPHKeyboardAccessoryAddressFillingFeature;
 extern const base::Feature kIPHKeyboardAccessoryPasswordFillingFeature;

@@ -938,6 +938,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
       RenderViewHost* render_view_host,
       int opener_frame_routing_id,
       int proxy_routing_id,
+      const base::UnguessableToken& frame_token,
       const base::UnguessableToken& devtools_frame_token,
       const FrameReplicationState& replicated_frame_state) override;
   void CreateRenderWidgetHostViewForRenderManager(

@@ -156,6 +156,30 @@ class DlcserviceClientImpl : public DlcserviceClient {
                        weak_ptr_factory_.GetWeakPtr()));
   }
 
+  void Purge(const std::string& dlc_id, PurgeCallback purge_callback) override {
+    if (!service_available_ || task_running_) {
+      EnqueueTask(base::BindOnce(&DlcserviceClientImpl::Purge,
+                                 weak_ptr_factory_.GetWeakPtr(), dlc_id,
+                                 std::move(purge_callback)));
+      return;
+    }
+
+    TaskStarted();
+    dbus::MethodCall method_call(dlcservice::kDlcServiceInterface,
+                                 dlcservice::kPurgeMethod);
+    dbus::MessageWriter writer(&method_call);
+    writer.AppendString(dlc_id);
+
+    purge_callback_holder_ = std::move(purge_callback);
+    purge_field_holder_ = dlc_id;
+
+    VLOG(1) << "Requesting to purge DLC=" << dlc_id;
+    dlcservice_proxy_->CallMethodWithErrorResponse(
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::BindOnce(&DlcserviceClientImpl::OnPurge,
+                       weak_ptr_factory_.GetWeakPtr()));
+  }
+
   void GetInstalled(GetInstalledCallback callback) override {
     if (!service_available_ || task_running_) {
       EnqueueTask(base::BindOnce(&DlcserviceClientImpl::GetInstalled,
@@ -208,6 +232,9 @@ class DlcserviceClientImpl : public DlcserviceClient {
     // |Uninstall()|
     uninstall_callback_holder_.reset();
     uninstall_field_holder_.reset();
+    // |Purge()|
+    purge_callback_holder_.reset();
+    purge_field_holder_.reset();
   }
 
   void EnqueueTask(base::OnceClosure task) {
@@ -330,6 +357,25 @@ class DlcserviceClientImpl : public DlcserviceClient {
     CheckAndRunPendingTask();
   }
 
+  void OnPurge(dbus::Response* response, dbus::ErrorResponse* err_response) {
+    DCHECK(purge_field_holder_.has_value());
+    DCHECK(purge_callback_holder_.has_value());
+    if (response) {
+      std::move(purge_callback_holder_.value()).Run(dlcservice::kErrorNone);
+    } else {
+      const auto err = DlcserviceErrorResponseHandler(err_response).get_err();
+      if (err == dlcservice::kErrorBusy) {
+        EnqueueTask(base::BindOnce(&DlcserviceClientImpl::Purge,
+                                   weak_ptr_factory_.GetWeakPtr(),
+                                   std::move(purge_field_holder_.value()),
+                                   std::move(purge_callback_holder_.value())));
+      } else {
+        std::move(purge_callback_holder_.value()).Run(err);
+      }
+    }
+    CheckAndRunPendingTask();
+  }
+
   void OnGetInstalled(GetInstalledCallback callback,
                       dbus::Response* response,
                       dbus::ErrorResponse* err_response) {
@@ -363,11 +409,17 @@ class DlcserviceClientImpl : public DlcserviceClient {
   // The cached callback to call on a finished |Uninstall()|.
   base::Optional<UninstallCallback> uninstall_callback_holder_;
 
+  // The cached callback to call on a finished |Uninstall()|.
+  base::Optional<PurgeCallback> purge_callback_holder_;
+
   // The cached field of |DlcModuleList| for retrying call to install.
   base::Optional<dlcservice::DlcModuleList> install_field_holder_;
 
   // The cached field of string (DLC ID) for retrying call to uninstall.
   base::Optional<std::string> uninstall_field_holder_;
+
+  // The cached field of string (DLC ID) for retrying call to purge.
+  base::Optional<std::string> purge_field_holder_;
 
   // A list of postponed calls to dlcservice to be called after it becomes
   // available or after the currently running task completes.

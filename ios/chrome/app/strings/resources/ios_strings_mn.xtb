@@ -158,6 +158,7 @@
 <translation id="285960592395650245">Татаж авах үйлдлийг дахин хийх</translation>
 <translation id="2870560284913253234">Ажлын талбар</translation>
 <translation id="2871695793448672541">Нуусан, Нууц үг</translation>
+<translation id="2876369937070532032">Таны аюулгүй байдал эрсдэлд орох үед таны зочилдог зарим хуудсын URL-г Google-д илгээдэг</translation>
 <translation id="288655811176831528">Чихтэй хуудсыг хаах</translation>
 <translation id="2898963176829412617">Шинэ хавтас...</translation>
 <translation id="2916171785467530738">Хайлт болон URL-г автоматаар гүйцээх</translation>
@@ -177,6 +178,7 @@
 <translation id="3161291298470460782">Ингэснээр таныг гаргаж, синк хийхийг унтраах бөгөөд Chrome-н бүх өгөгдлийг энэ төхөөрөмжөөс устгана. Таны cинк хийсэн өгөгдөл Google Бүртгэлд тань үлдэнэ.</translation>
 <translation id="3175081911749765310">Вэб үйлчилгээнүүд</translation>
 <translation id="3178650076442119961">Өнөөдөр идэвхтэй</translation>
+<translation id="3181954750937456830">Аюулгүй хөтөч (таныг болон таны төхөөрөмжийг аюултай сайтаас хамгаалдаг)</translation>
 <translation id="3207960819495026254">Хавчуурга хадгалагдсан</translation>
 <translation id="3224641773458703735">Та нууц үгийг экспорт хийхийн тулд эхлээд төхөөрөмждөө нууц код тохируулах шаардлагатай.</translation>
 <translation id="3240426699337459095">Холбоосыг хуулсан</translation>
@@ -429,6 +431,7 @@ Handoff-ыг Тохиргооны ерөнхий хэсэгт идэвхижүү
 <translation id="6447842834002726250">Cookies</translation>
 <translation id="6464071786529933911">Нууцлалын шинэ чихтэй хуудсанд нээх</translation>
 <translation id="6476800141292307438">Хуудсыг <ph name="LANGUAGE" /> руу орчуулж байна. Дэлгэцийн доод хэсгийн ойролцоо сонголт хийх боломжтой.</translation>
+<translation id="648164694371393720">Нотолгооны алдаа</translation>
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> зүйлс сонгогдсон байна</translation>
 <translation id="6561262006871132942">Томруулах</translation>
 <translation id="6610002944194042868">Орчуулах сонголт</translation>

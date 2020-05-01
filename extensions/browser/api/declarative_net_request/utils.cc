@@ -82,9 +82,9 @@ int GetIndexedRulesetFormatVersionForTesting() {
   return GetIndexedRulesetFormatVersion();
 }
 
-void SetIndexedRulesetFormatVersionForTesting(int version) {
-  DCHECK_NE(kInvalidIndexedRulesetFormatVersion, version);
-  g_indexed_ruleset_format_version_for_testing = version;
+ScopedIncrementRulesetVersion CreateScopedIncrementRulesetVersionForTesting() {
+  return base::AutoReset<int>(&g_indexed_ruleset_format_version_for_testing,
+                              GetIndexedRulesetFormatVersion() + 1);
 }
 
 bool StripVersionHeaderAndParseVersion(std::string* ruleset_data) {

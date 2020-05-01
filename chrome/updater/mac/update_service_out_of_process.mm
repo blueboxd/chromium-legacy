@@ -64,6 +64,11 @@ using base::SysUTF8ToNSString;
   return self;
 }
 
+- (void)dealloc {
+  [_xpcConnection invalidate];
+  [super dealloc];
+}
+
 - (void)registerForUpdatesWithAppId:(NSString* _Nullable)appId
                           brandCode:(NSString* _Nullable)brandCode
                                 tag:(NSString* _Nullable)tag

@@ -21,5 +21,6 @@ std::string AndroidAboutAppInfo::GetGmsInfo() {
 
 std::string AndroidAboutAppInfo::GetOsInfo() {
   return base::SysInfo::OperatingSystemVersion() +
-         content::GetAndroidOSInfo(/*include_android_build_number=*/true);
+         content::GetAndroidOSInfo(content::IncludeAndroidBuildNumber::Include,
+                                   content::IncludeAndroidModel::Include);
 }

@@ -88,6 +88,11 @@ TabImpl* BrowserImpl::CreateTabForSessionRestore(
 }
 
 #if defined(OS_ANDROID)
+bool BrowserImpl::CompositorHasSurface() {
+  return Java_BrowserImpl_compositorHasSurface(AttachCurrentThread(),
+                                               java_impl_);
+}
+
 void BrowserImpl::AddTab(JNIEnv* env,
                          const JavaParamRef<jobject>& caller,
                          long native_tab) {

@@ -1,6 +1,6 @@
 {
-  "name": "Media App",
-  "short_name": "Media App",
+  "name": "$i18nRaw{name}",
+  "short_name": "$i18nRaw{name}",
   "start_url": "/",
   "display": "standalone",
   "theme_color": "#202124",
@@ -17,8 +17,8 @@
       "action": ".",
       "name": "Media File",
       "accept": {
-        "image/*": [ ],
-        "video/*": [ ]
+        "image/*": [],
+        "video/*": []
       }
     }
   ]

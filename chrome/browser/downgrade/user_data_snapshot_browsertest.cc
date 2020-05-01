@@ -185,7 +185,8 @@ class UserDataSnapshotBrowserTestBase : public InProcessBrowserTest {
       relaunch_chrome_override_;
 };
 
-class BookmarksSnapshotTest : public UserDataSnapshotBrowserTestBase {
+// Disabled due to cross-platform flakes; https://crbug.com/1066680.
+class DISABLED_BookmarksSnapshotTest : public UserDataSnapshotBrowserTestBase {
  protected:
   // Bookmarks as such
   // bookmark_bar_node
@@ -276,10 +277,10 @@ class BookmarksSnapshotTest : public UserDataSnapshotBrowserTestBase {
   const base::string16 mobile_url_title_ = base::ASCIIToUTF16("Mobile URL");
 };
 
-IN_PROC_BROWSER_TEST_F(BookmarksSnapshotTest, PRE_PRE_PRE_Test) {}
-IN_PROC_BROWSER_TEST_F(BookmarksSnapshotTest, PRE_PRE_Test) {}
-IN_PROC_BROWSER_TEST_F(BookmarksSnapshotTest, PRE_Test) {}
-IN_PROC_BROWSER_TEST_F(BookmarksSnapshotTest, Test) {}
+IN_PROC_BROWSER_TEST_F(DISABLED_BookmarksSnapshotTest, PRE_PRE_PRE_Test) {}
+IN_PROC_BROWSER_TEST_F(DISABLED_BookmarksSnapshotTest, PRE_PRE_Test) {}
+IN_PROC_BROWSER_TEST_F(DISABLED_BookmarksSnapshotTest, PRE_Test) {}
+IN_PROC_BROWSER_TEST_F(DISABLED_BookmarksSnapshotTest, Test) {}
 
 class HistorySnapshotTest : public UserDataSnapshotBrowserTestBase {
   struct HistoryEntry {

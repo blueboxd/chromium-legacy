@@ -6,7 +6,7 @@
 <link rel="import" href="chrome://resources/cr_elements/cr_toggle/cr_toggle.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
 <if expr="_google_chrome">
-<link rel="import" href="chrome://oobe/sync-consent-icons.html">
+  <link rel="import" href="chrome://oobe/sync-consent-icons.html">
 </if>
 
 <dom-module id="sync-consent">
@@ -18,24 +18,20 @@
     <!-- Traditional dialog. This can be deleted when SplitSettingsSync is the
          default. -->
     <oobe-dialog id="syncConsentOverviewDialog" role="dialog" has-buttons
-        aria-label$="[[i18nDynamic(locale, 'syncConsentScreenTitle')]]"
-        hidden>
-      <hd-iron-icon slot="oobe-icon"
-          icon1x="sync-consent-32:googleg" icon2x="sync-consent-64:googleg">
+      aria-label$="[[i18nDynamic(locale, 'syncConsentScreenTitle')]]" hidden>
+      <hd-iron-icon slot="oobe-icon" icon1x="sync-consent-32:googleg" icon2x="sync-consent-64:googleg">
       </hd-iron-icon>
       <h1 slot="title" consent-description>
         [[i18nDynamic(locale, 'syncConsentScreenTitle')]]
       </h1>
       <div slot="footer" class="layout vertical">
         <div class="overview-list-item flex layout horizontal center">
-          <hd-iron-icon class="overview-list-item-icon"
-              src1x="chrome://oobe/logo_24px-1x.svg"
-              src2x="chrome://oobe/logo_24px-2x.svg">
+          <hd-iron-icon class="overview-list-item-icon" src1x="chrome://oobe/logo_24px-1x.svg"
+            src2x="chrome://oobe/logo_24px-2x.svg">
           </hd-iron-icon>
           <div class="flex layout vertical center-justified">
-            <div role="heading" aria-level="2" class="overview-list-item-title"
-              consent-description>
-                [[i18nDynamic(locale, 'syncConsentScreenChromeSyncName')]]
+            <div role="heading" aria-level="2" class="overview-list-item-title" consent-description>
+              [[i18nDynamic(locale, 'syncConsentScreenChromeSyncName')]]
             </div>
             <div class="overview-list-item-description" consent-description>
               [[i18nDynamic(locale, 'syncConsentScreenChromeSyncDescription')]]
@@ -43,18 +39,21 @@
           </div>
         </div>
         <div class="overview-list-item flex layout horizontal center">
-          <hd-iron-icon class="overview-list-item-icon"
-              icon1x="sync-consent-32:googleg" icon2x="sync-consent-64:googleg">
+          <hd-iron-icon class="overview-list-item-icon" icon1x="sync-consent-32:googleg"
+            icon2x="sync-consent-64:googleg">
           </hd-iron-icon>
           <div class="flex layout vertical center-justified">
-            <div role ="heading" aria-level="2" class="overview-list-item-title"
-              consent-description>
-                [[i18nDynamic(locale,
-                  'syncConsentScreenPersonalizeGoogleServicesName')]]
-            </div>
-            <div class="overview-list-item-description" consent-description>
+            <div role="heading" aria-level="2" class="overview-list-item-title" consent-description>
               [[i18nDynamic(locale,
-                'syncConsentScreenPersonalizeGoogleServicesDescription')]]
+              'syncConsentScreenPersonalizeGoogleServicesName')]]
+            </div>
+            <div hidden=[[isChildAccount_]] class="overview-list-item-description" consent-description>
+              [[i18nDynamic(locale,
+              'syncConsentScreenPersonalizeGoogleServicesDescription')]]
+            </div>
+            <div hidden=[[!isChildAccount_]] class="overview-list-item-description" consent-description>
+              [[i18nDynamic(locale,
+              'syncConsentScreenPersonalizeGoogleServicesDescriptionSupervisedUser')]]
             </div>
           </div>
         </div>
@@ -63,8 +62,8 @@
         </cr-checkbox>
       </div>
       <div slot="bottom-buttons" class="layout horizontal end-justified">
-        <oobe-text-button id="settingsSaveAndContinueButton"
-            on-tap="onSettingsSaveAndContinue_" class="focus-on-show" inverse>
+        <oobe-text-button id="settingsSaveAndContinueButton" on-tap="onSettingsSaveAndContinue_" class="focus-on-show"
+          inverse>
           <div slot="text" consent-description consent-confirmation>
             [[i18nDynamic(locale, 'syncConsentAcceptAndContinue')]]
           </div>
@@ -74,10 +73,8 @@
 
     <!-- Dialog used with the SplitSettingsSync feature. -->
     <oobe-dialog id="splitSettingsSyncConsentDialog" role="dialog" has-buttons
-        aria-label$="[[i18nDynamic(locale, 'syncConsentScreenTitle')]]"
-        hidden>
-      <hd-iron-icon slot="oobe-icon"
-          icon1x="sync-consent-32:googleg" icon2x="sync-consent-64:googleg">
+      aria-label$="[[i18nDynamic(locale, 'syncConsentScreenTitle')]]" hidden>
+      <hd-iron-icon slot="oobe-icon" icon1x="sync-consent-32:googleg" icon2x="sync-consent-64:googleg">
       </hd-iron-icon>
       <h1 slot="title" consent-description>
         [[i18nDynamic(locale, 'syncConsentScreenTitle')]]
@@ -86,12 +83,10 @@
 
         <!-- "Chrome OS settings sync" -->
         <div class="overview-list-item layout horizontal center">
-          <img class="overview-list-item-icon" src="images/settings_gear.svg"
-              width="24" height="24">
+          <img class="overview-list-item-icon" src="images/settings_gear.svg" width="24" height="24">
           <div class="flex layout vertical center-justified">
-            <div role="heading" aria-level="2" class="overview-list-item-title"
-              id="osSyncName" consent-description>
-                [[i18nDynamic(locale, 'syncConsentScreenOsSyncName')]]
+            <div role="heading" aria-level="2" class="overview-list-item-title" id="osSyncName" consent-description>
+              [[i18nDynamic(locale, 'syncConsentScreenOsSyncName')]]
             </div>
             <div class="overview-list-item-description" consent-description>
               [[i18nDynamic(locale, 'syncConsentScreenOsSyncDescription')]]
@@ -103,12 +98,11 @@
 
         <!-- "Chrome browser sync" -->
         <div class="overview-list-item layout horizontal center">
-          <img class="overview-list-item-icon" src="images/browser_sync.svg"
-              width="24" height="24">
+          <img class="overview-list-item-icon" src="images/browser_sync.svg" width="24" height="24">
           <div class="flex layout vertical center-justified">
-            <div role="heading" aria-level="2" class="overview-list-item-title"
-              consent-description id="browserSyncName">
-                [[i18nDynamic(locale, 'syncConsentScreenChromeSyncName')]]
+            <div role="heading" aria-level="2" class="overview-list-item-title" consent-description
+              id="browserSyncName">
+              [[i18nDynamic(locale, 'syncConsentScreenChromeSyncName')]]
             </div>
             <div class="overview-list-item-description" consent-description>
               [[i18nDynamic(locale, 'syncConsentScreenChromeSyncDescription')]]
@@ -124,26 +118,28 @@
 
         <!-- Personalize Google services -->
         <div class="overview-list-item layout horizontal center">
-          <hd-iron-icon class="overview-list-item-icon"
-              icon1x="sync-consent-32:googleg" icon2x="sync-consent-64:googleg">
+          <hd-iron-icon class="overview-list-item-icon" icon1x="sync-consent-32:googleg"
+            icon2x="sync-consent-64:googleg">
           </hd-iron-icon>
           <div class="flex layout vertical center-justified">
-            <div role ="heading" aria-level="2" class="overview-list-item-title"
-              consent-description>
-                [[i18nDynamic(locale,
-                  'syncConsentScreenPersonalizeGoogleServicesName')]]
-            </div>
-            <div class="overview-list-item-description" consent-description>
+            <div role="heading" aria-level="2" class="overview-list-item-title" consent-description>
               [[i18nDynamic(locale,
-                'syncConsentScreenPersonalizeGoogleServicesDescription')]]
+              'syncConsentScreenPersonalizeGoogleServicesName')]]
+            </div>
+            <div hidden=[[isChildAccount_]] class="overview-list-item-description" consent-description>
+              [[i18nDynamic(locale,
+              'syncConsentScreenPersonalizeGoogleServicesDescription')]]
+            </div>
+            <div hidden=[[!isChildAccount_]] class="overview-list-item-description" consent-description>
+              [[i18nDynamic(locale,
+              'syncConsentScreenPersonalizeGoogleServicesDescriptionSupervisedUser')]]
             </div>
           </div>
         </div>
       </div>
       <div slot="bottom-buttons" class="layout horizontal end-justified">
-        <oobe-text-button id="settingsAcceptAndContinueButton"
-            on-tap="onSettingsAcceptAndContinue_"
-            class="focus-on-show" inverse>
+        <oobe-text-button id="settingsAcceptAndContinueButton" on-tap="onSettingsAcceptAndContinue_"
+          class="focus-on-show" inverse>
           <div slot="text" consent-description consent-confirmation>
             [[i18nDynamic(locale, 'syncConsentAcceptAndContinue')]]
           </div>

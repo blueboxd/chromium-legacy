@@ -6729,6 +6729,7 @@ bool WebContentsImpl::CreateRenderViewForRenderManager(
     RenderViewHost* render_view_host,
     int opener_frame_routing_id,
     int proxy_routing_id,
+    const base::UnguessableToken& frame_token,
     const base::UnguessableToken& devtools_frame_token,
     const FrameReplicationState& replicated_frame_state) {
   TRACE_EVENT0("browser,navigation",
@@ -6739,8 +6740,8 @@ bool WebContentsImpl::CreateRenderViewForRenderManager(
 
   if (!static_cast<RenderViewHostImpl*>(render_view_host)
            ->CreateRenderView(opener_frame_routing_id, proxy_routing_id,
-                              devtools_frame_token, replicated_frame_state,
-                              created_with_opener_)) {
+                              frame_token, devtools_frame_token,
+                              replicated_frame_state, created_with_opener_)) {
     return false;
   }
   // Set the TextAutosizer state from the main frame's renderer on the new view,
@@ -6827,6 +6828,7 @@ void WebContentsImpl::RequestFindMatchRects(int current_version) {
 bool WebContentsImpl::CreateRenderViewForInitialEmptyDocument() {
   return CreateRenderViewForRenderManager(
       GetRenderViewHost(), MSG_ROUTING_NONE, MSG_ROUTING_NONE,
+      frame_tree_.root()->current_frame_host()->frame_token(),
       frame_tree_.root()->devtools_frame_token(),
       frame_tree_.root()->current_replication_state());
 }

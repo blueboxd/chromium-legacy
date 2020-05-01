@@ -173,6 +173,7 @@
 <translation id="122082903575839559">인증서 서명 알고리즘</translation>
 <translation id="1221024147024329929">PKCS #1 MD2(RSA 암호화 사용)</translation>
 <translation id="1221825588892235038">선택 영역만</translation>
+<translation id="1223484782328004593"><ph name="APP_NAME" /> 라이선스 필요</translation>
 <translation id="1223853788495130632">관리자가 이 설정에 대해 특정 값을 추천합니다.</translation>
 <translation id="1224275271335624810">가장 빠르게</translation>
 <translation id="1225177025209879837">요청을 처리하는 중...</translation>
@@ -211,6 +212,7 @@
 <translation id="1272978324304772054">이 사용자 계정은 기기가 등록된 도메인에 속해 있지 않습니다. 다른 도메인에 등록하려면 먼저 기기 복구 절차를 거쳐야 합니다.</translation>
 <translation id="1274977772557788323">Adobe Flash Player 저장용량 설정</translation>
 <translation id="1274997165432133392">쿠키 및 기타 사이트 데이터</translation>
+<translation id="1276994519141842946"><ph name="APP_NAME" /> 앱을 제거할 수 없음</translation>
 <translation id="1280820357415527819">모바일 네트워크 검색 중</translation>
 <translation id="1280965841156951489">파일 수정</translation>
 <translation id="1285320974508926690">이 사이트 번역 안함</translation>
@@ -319,6 +321,7 @@
 <translation id="1426870617281699524">다시 시도를 클릭하고 컴퓨터에 표시된 메시지를 수락하세요</translation>
 <translation id="1427269577154060167">국가</translation>
 <translation id="142758023928848008">고정키 사용(연속으로 입력하여 단축키 사용)</translation>
+<translation id="142765311413773645"><ph name="APP_NAME" /> 라이선스 만료됨</translation>
 <translation id="1429300045468813835">모두 삭제됨</translation>
 <translation id="143027896309062157">컴퓨터 및 방문하는 웹사이트의 전체 데이터 조회 및 변경</translation>
 <translation id="1430915738399379752">인쇄</translation>
@@ -379,9 +382,7 @@
 <translation id="1509281256533087115">USB를 통해 모든 <ph name="DEVICE_NAME_AND_VENDOR" />에 액세스</translation>
 <translation id="1509960214886564027">다수의 사이트에서 기능이 작동하지 않을 수 있음</translation>
 <translation id="1510030919967934016">이 페이지는 위치 추적이 차단되었습니다.</translation>
-<translation id="1510055949674985293">이 이미지의 QR 코드 생성</translation>
 <translation id="1510238584712386396">런처</translation>
-<translation id="1510581003097415337">이 페이지의 QR 코드 생성</translation>
 <translation id="1510785804673676069">프록시 서버를 사용하는 경우 프록시 설정을 확인하거나
     네트워크 관리자에게 문의하여 프록시 서버가 작동하는지
     확인하세요. 프록시 서버를 사용하지 않으려면
@@ -1006,6 +1007,7 @@
 <translation id="2325444234681128157">비밀번호 저장</translation>
 <translation id="2326931316514688470">앱 새로고침(&amp;R)</translation>
 <translation id="2327492829706409234">앱 사용</translation>
+<translation id="2328561734797404498"><ph name="APP_NAME" /> 앱을 사용하려면 기기를 다시 시작해 주세요.</translation>
 <translation id="2329597144923131178">로그인하면 모든 기기에서 북마크, 방문 기록, 비밀번호, 기타 설정을 사용할 수 있습니다.</translation>
 <translation id="2332131598580221120">스토어에서 보기</translation>
 <translation id="2332192922827071008">환경설정 열기</translation>
@@ -1264,6 +1266,7 @@
 <translation id="2665717534925640469">페이지가 현재 전체화면으로 전환되었으며 마우스 커서를 사용 중지했습니다.</translation>
 <translation id="2665919335226618153">포맷 중에 오류가 발생했습니다.</translation>
 <translation id="2667463864537187133">맞춤법 검사 관리</translation>
+<translation id="2669241540496514785"><ph name="APP_NAME" /> 앱을 열 수 없음</translation>
 <translation id="2670102641511624474"><ph name="APP_NAME" />이(가) Chrome 탭을 공유합니다.</translation>
 <translation id="2670429602441959756">이 페이지에는 아직 VR에서 지원되지 않는 기능이 있습니다. 종료합니다...</translation>
 <translation id="2671451824761031126">북마크와 설정을 가져왔습니다.</translation>
@@ -1340,6 +1343,7 @@
 <translation id="2757338480560142065">저장하려는 비밀번호가 <ph name="WEBSITE" />의 비밀번호와 일치하는지 확인하세요.</translation>
 <translation id="2762441749940182211">카메라 차단됨</translation>
 <translation id="2765217105034171413">작게</translation>
+<translation id="2766091842833763951">구성 문제로 인해 <ph name="APP_NAME" /> 앱을 설정할 수 없습니다. 조직의 기기 관리자에게 문의하세요. 오류 코드: <ph name="ERROR_CODE" />.</translation>
 <translation id="2766161002040448006">부모님에게 묻기</translation>
 <translation id="2767127727915954024">이 사이트의 탭을 모두 닫을 때까지 <ph name="ORIGIN" />에서 <ph name="FILENAME" /> 파일을 수정할 수 있게 됩니다.</translation>
 <translation id="276969039800130567"><ph name="USER_EMAIL_ADDRESS" />(으)로 로그인되었습니다.</translation>
@@ -2303,7 +2307,6 @@
 <translation id="4007856537951125667">바로가기 숨기기</translation>
 <translation id="4008291085758151621">VR에서 사이트 정보를 사용할 수 없습니다</translation>
 <translation id="4010917659463429001">휴대기기에서 내 북마크를 사용하려면 <ph name="GET_IOS_APP_LINK" />.</translation>
-<translation id="4013132157686828973">'<ph name="CLIENT_NAME" />'에서 이 브라우저를 디버깅하는 중입니다</translation>
 <translation id="4014432863917027322">'<ph name="EXTENSION_NAME" />'을(를) 복구하시겠습니까?</translation>
 <translation id="4015163439792426608">확장 프로그램이 있나요? 한곳에서 편리하게 <ph name="BEGIN_LINK" />확장 프로그램을 관리<ph name="END_LINK" />하세요.</translation>
 <translation id="4020327272915390518">옵션 메뉴</translation>
@@ -2419,6 +2422,7 @@
 <translation id="4181602000363099176">20배</translation>
 <translation id="4181841719683918333">언어</translation>
 <translation id="4184885522552335684">디스플레이를 이동하려면 드래그하세요.</translation>
+<translation id="4187424053537113647"><ph name="APP_NAME" /> 설정 중…</translation>
 <translation id="4194570336751258953">탭하여 클릭 사용</translation>
 <translation id="4195643157523330669">새 탭에서 열기</translation>
 <translation id="4195814663415092787">중단한 위치에서 계속하기</translation>
@@ -2537,6 +2541,7 @@
 <translation id="4379281552162875326">‘<ph name="APP_NAME" />’ 앱을 제거하시겠습니까?</translation>
 <translation id="4380648069038809855">전체 화면으로 전환됨</translation>
 <translation id="4382131447572146376">{COUNT,plural, =0{<ph name="EMAIL" />}=1{<ph name="EMAIL" /> 외 계정 1개}other{<ph name="EMAIL" /> 외 계정 <ph name="EXTRA_ACCOUNTS" />개}}</translation>
+<translation id="43829217466934313">이 기기에서는 <ph name="APP_NAME" /> 앱이 허용되지 않습니다. 조직의 기기 관리자에게 문의하세요. 오류 코드: <ph name="ERROR_CODE" />.</translation>
 <translation id="4384312707950789900">기본 네트워크에 추가</translation>
 <translation id="4384652540891215547">확장 프로그램 활성화</translation>
 <translation id="438503109373656455">말</translation>
@@ -2869,6 +2874,7 @@
 <translation id="4863769717153320198"><ph name="WIDTH" />x<ph name="HEIGHT" />(권장)처럼 보입니다.</translation>
 <translation id="4864369630010738180">로그인 중...</translation>
 <translation id="486635084936119914">다운로드 후에 특정 파일 형식을 자동으로 열기</translation>
+<translation id="4869289251183233431">기기의 저장용량이 부족합니다. <ph name="APP_NAME" /> 앱을 사용하려면 최소 <ph name="MINIMUM_SPACE" />의 여유 공간이 필요하며 <ph name="RECOMMENDED_SPACE" /> 이상의 여유 공간이 권장됩니다. 여유 공간을 늘리려면 기기에서 파일을 삭제하세요.</translation>
 <translation id="48704129375571883">추가 기능 추가</translation>
 <translation id="4870758487381879312">구성 정보를 가져오려면 관리자가 제공한 비밀번호를 입력하세요.</translation>
 <translation id="4870903493621965035">페어링된 기기가 없습니다.</translation>
@@ -2921,6 +2927,7 @@
 <translation id="4920887663447894854">이 페이지에서 사용자 위치 추적이 차단된 사이트는 다음과 같습니다.</translation>
 <translation id="49226369361073053">{0,plural, =0{지금 기기 업데이트}=1{1초 내 기기 업데이트}other{#초 내 기기 업데이트}}</translation>
 <translation id="492299503953721473">Android 앱 삭제</translation>
+<translation id="492363500327720082"><ph name="APP_NAME" /> 제거 중…</translation>
 <translation id="4924352752174756392">12배</translation>
 <translation id="4925320384394644410">포트가 여기에 표시됩니다</translation>
 <translation id="4925542575807923399">이 계정이 멀티 로그인 세션에서 처음으로 로그인하는 계정이 되도록 계정 관리자가 요청합니다.</translation>
@@ -3001,7 +3008,6 @@
 <translation id="504561833207953641">기존 브라우저 세션에서 여는 중입니다.</translation>
 <translation id="5047421709274785093">사이트에서 모션 및 조도 센서 사용 차단</translation>
 <translation id="5050042263972837708">그룹 이름</translation>
-<translation id="5051073330196664891">Google 일반 서비스 약관(uToS)</translation>
 <translation id="5051836348807686060">선택한 언어의 맞춤법 검사가 지원되지 않습니다.</translation>
 <translation id="5052499409147950210">사이트 수정</translation>
 <translation id="5053604404986157245">임의로 생성된 TPM 비밀번호는 사용할 수 없습니다. Powerwash 이후에는 정상입니다.</translation>
@@ -3482,6 +3488,7 @@
 <translation id="5692875591060376599">선택한 파일은 알 수 없는 파일이므로 위험할 수 있습니다. 검사를 위해 Google 고급 보호 프로그램에 전송할까요?</translation>
 <translation id="569425414730375234">현재 시크릿 세션: <ph name="RECENT_PERMISSIONS_CHANGE_SENTENCE_START" /></translation>
 <translation id="5696143504434933566">'<ph name="EXTENSION_NAME" />'의 악용사례 신고</translation>
+<translation id="5696177755977520104">Chrome OS 설정 동기화</translation>
 <translation id="5696679855467848181">현재 사용 중인 PPD 파일: <ph name="PPD_NAME" /></translation>
 <translation id="570043786759263127">Google Play 앱 및 서비스</translation>
 <translation id="5700836101007545240">관리자가 연결 추가를 허용하지 않았습니다.</translation>
@@ -3792,6 +3799,7 @@
 <translation id="6103681770816982672">경고: 개발자 채널로 전환</translation>
 <translation id="6104068876731806426">Google 계정</translation>
 <translation id="6104311680260824317">기기가 도메인에 가입하지 못했습니다. 서버가 지정된 Kerberos 암호화 유형을 지원하지 않습니다. '옵션 더보기'에서 암호화 설정을 확인하세요.</translation>
+<translation id="6105994589138235234">Chrome 브라우저 동기화</translation>
 <translation id="6112294629795967147">터치하여 크기 조정</translation>
 <translation id="6112727384379533756">티켓 추가</translation>
 <translation id="6112931163620622315">휴대전화 확인</translation>
@@ -3829,6 +3837,7 @@
 <translation id="6155141482566063812">배경 탭에서 화면을 공유하는 중입니다.</translation>
 <translation id="6156323911414505561">북마크바 표시</translation>
 <translation id="6156863943908443225">스크립트 캐시</translation>
+<translation id="6157197137667039897"><ph name="APP_NAME" /> 앱을 설치할 수 없습니다. 다시 시도해 보거나 조직의 기기 관리자에게 문의하세요. 오류 코드: <ph name="ERROR_CODE" />.</translation>
 <translation id="6160625263637492097">인증에 사용할 인증서 제공</translation>
 <translation id="6163363155248589649">보통(&amp;N)</translation>
 <translation id="6163522313638838258">모두 펼치기...</translation>
@@ -3871,7 +3880,6 @@
 <translation id="6226777517901268232">비공개 키 파일(선택사항)</translation>
 <translation id="6227280783235722609">확장 프로그램</translation>
 <translation id="6228691855869374890">이 사이트는 MIDI 기기를 완전히 제어할 수 있습니다.</translation>
-<translation id="6228720835160974792">이 이미지의 QR 코드 생성</translation>
 <translation id="6229890768313448549">Google Play 서비스 약관을 로드할 수 없습니다. 다시 시도해 주세요.</translation>
 <translation id="6231881193380278751">검색어 매개변수를 URL에 추가하여 다음 페이지를 자동으로 새로고침하세요. chrome://device-log/?refresh=&lt;sec&gt;</translation>
 <translation id="6232017090690406397">배터리</translation>
@@ -4029,6 +4037,7 @@
 <translation id="6430814529589430811">Base64-인코딩 ASCII, 단일 인증서</translation>
 <translation id="6431347207794742960"><ph name="PRODUCT_NAME" />에서 이 컴퓨터의 모든 사용자에 대해 자동 업데이트를 설정합니다.</translation>
 <translation id="6434309073475700221">중지</translation>
+<translation id="6434325376267409267"><ph name="APP_NAME" /> 앱을 사용하려면 기기를 업데이트해야 합니다.</translation>
 <translation id="6436164536244065364">웹 스토어에서 보기</translation>
 <translation id="6438992844451964465"><ph name="WINDOW_TITLE" /> - 오디오 재생</translation>
 <translation id="6442187272350399447">멋쟁이</translation>
@@ -4072,6 +4081,7 @@
 <translation id="6491376743066338510">승인에 실패했습니다.</translation>
 <translation id="6494445798847293442">인증 기관이 아닙니다.</translation>
 <translation id="6495925982925244349">네트워크 <ph name="NETWORK_INDEX" />/<ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, 신호 강도 <ph name="SIGNAL_STRENGTH" />%, 관리자가 관리함, 세부정보</translation>
+<translation id="6496965928959882519">기기의 저장용량이 부족합니다. <ph name="APP_NAME" /> 앱을 사용하려면 최소 <ph name="RECOMMENDED_SPACE" />의 여유 공간이 권장됩니다. 여유 공간을 늘리려면 기기에서 파일을 삭제하세요.</translation>
 <translation id="6498249116389603658">모든 언어(&amp;A)</translation>
 <translation id="6499143127267478107">프록시 스크립트의 호스트 확인 중...</translation>
 <translation id="6499681088828539489">공유 네트워크에서 프록시 허용 안함</translation>
@@ -4532,7 +4542,6 @@
 <translation id="7123360114020465152">프린터가 더 이상 지원되지 않습니다.</translation>
 <translation id="7127980134843952133">다운로드 기록</translation>
 <translation id="7128151990937044829">알림이 차단되면 주소 표시줄에 표시 아이콘 나타내기</translation>
-<translation id="7128239828194367697">이 페이지의 QR 코드 생성</translation>
 <translation id="7131040479572660648"><ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, <ph name="WEBSITE_3" />에서 데이터 읽기</translation>
 <translation id="713122686776214250">페이지 추가(&amp;G)...</translation>
 <translation id="7133578150266914903">관리자가 이 기기를 롤백하는 중(<ph name="PROGRESS_PERCENT" />)</translation>
@@ -4743,6 +4752,7 @@
 <translation id="7421925624202799674">페이지 소스 보기(&amp;V)</translation>
 <translation id="7422192691352527311">환경설정...</translation>
 <translation id="7423098979219808738">우선 확인</translation>
+<translation id="7423807071740419372"><ph name="APP_NAME" />에 실행 권한 필요</translation>
 <translation id="7427315641433634153">MSCHAP</translation>
 <translation id="7427348830195639090">백그라운드 페이지: <ph name="BACKGROUND_PAGE_URL" /></translation>
 <translation id="7427798576651127129"><ph name="DEVICE_NAME" />에서 전화 걸기</translation>
@@ -4773,6 +4783,7 @@
 <translation id="746216226901520237">다음번에는 휴대전화를 통해 <ph name="DEVICE_TYPE" />이 잠금 해제됩니다. 설정에서 Smart Lock을 사용 중지할 수 있습니다.</translation>
 <translation id="7463006580194749499">사용자 추가</translation>
 <translation id="7465522323587461835">{NUM_OPEN_TABS,plural, =1{열려 있는 탭 #개, 눌러서 탭 표시줄 표시/숨기기}other{열려 있는 탭 #개, 눌러서 탭 표시줄 표시/숨기기}}</translation>
+<translation id="7465635034594602553">문제가 발생했습니다. 잠시 후 <ph name="APP_NAME" /> 앱을 다시 실행해 주세요.</translation>
 <translation id="7465778193084373987">Netscape Certificate Revocation URL</translation>
 <translation id="7469894403370665791">네트워크에 자동 연결</translation>
 <translation id="747114903913869239">오류: 확장 프로그램을 디코딩할 수 없음</translation>
@@ -5816,6 +5827,7 @@
 <translation id="8818958672113348984">휴대전화를 통해 인증</translation>
 <translation id="8820817407110198400">북마크</translation>
 <translation id="8821045908425223359">자동으로 IP 주소 설정</translation>
+<translation id="8821268776955756404"><ph name="APP_NAME" /> 앱을 사용할 수 있습니다.</translation>
 <translation id="882204272221080310">펌웨어를 업데이트하여 보안 강화</translation>
 <translation id="8823514049557262177">링크 텍스트 복사(&amp;X)</translation>
 <translation id="8823559166155093873">쿠키 차단</translation>
@@ -5886,6 +5898,7 @@
 <translation id="8902667442496790482">텍스트 읽어주기 설정 열기</translation>
 <translation id="8903263458134414071">로그인 계정 선택</translation>
 <translation id="890616557918890486">소스 변경</translation>
+<translation id="8909298138148012791"><ph name="APP_NAME" /> 앱이 제거됨</translation>
 <translation id="8909833622202089127">사이트에서 내 위치를 추적하고 있습니다.</translation>
 <translation id="8910146161325739742">화면 공유하기</translation>
 <translation id="8910222113987937043">북마크, 방문 기록, 비밀번호 및 기타 설정을 변경하면 더 이상 Google 계정에 동기화되지 않습니다. 하지만 기존 데이터는 Google 계정에 계속 저장되며 <ph name="BEGIN_LINK" />Google 대시보드<ph name="END_LINK" />에서 관리할 수 있습니다.</translation>

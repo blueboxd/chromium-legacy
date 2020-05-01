@@ -44,7 +44,8 @@ void PortalCreatedObserver::CreatePortal(
   std::move(callback).Run(
       proxy_host->GetRoutingID(),
       proxy_host->frame_tree_node()->current_replication_state(),
-      portal_->portal_token(), portal_->GetDevToolsFrameToken());
+      proxy_host->GetFrameToken(), portal_->portal_token(),
+      portal_->GetDevToolsFrameToken());
 
   DidCreatePortal();
 }
@@ -64,7 +65,7 @@ void PortalCreatedObserver::AdoptPortal(
                                                  ->GetRenderWidgetHostView())
           ->GetFrameSinkId(),
       proxy_host->frame_tree_node()->current_replication_state(),
-      portal->GetDevToolsFrameToken());
+      proxy_host->GetFrameToken(), portal->GetDevToolsFrameToken());
 
   DidCreatePortal();
 }

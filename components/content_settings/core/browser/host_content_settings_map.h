@@ -56,7 +56,8 @@ class HostContentSettingsMap : public content_settings::Observer,
     // EXTENSION names is a layering violation when this class will move to
     // components.
     // TODO(mukai): find the solution.
-    POLICY_PROVIDER = 0,
+    WEBUI_ALLOWLIST_PROVIDER = 0,
+    POLICY_PROVIDER,
     SUPERVISED_PROVIDER,
     CUSTOM_EXTENSION_PROVIDER,
     INSTALLED_WEBAPP_PROVIDER,
@@ -132,7 +133,7 @@ class HostContentSettingsMap : public content_settings::Observer,
   // |primary_pattern| and the |secondary_pattern| fields of |info| are set to
   // the patterns of the applying rule.  Note that certain internal schemes are
   // whitelisted. For whitelisted schemes the |source| field of |info| is set
-  // the |SETTING_SOURCE_WHITELIST| and the |primary_pattern| and
+  // the |SETTING_SOURCE_ALLOWLIST| and the |primary_pattern| and
   // |secondary_pattern| are set to a wildcard pattern.  If there is no content
   // setting, NULL is returned and the |source| field of |info| is set to
   // |SETTING_SOURCE_NONE|. The pattern fields of |info| are set to empty

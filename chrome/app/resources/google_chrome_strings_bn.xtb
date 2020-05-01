@@ -95,7 +95,6 @@
 <translation id="3582972582564653026">আপনার সব ডিভাইস জুড়ে Chrome সিঙ্ক করুন এবং নিজের মতো সাজিয়ে নিন</translation>
 <translation id="3596080736082218006">{COUNT,plural, =0{একটি আপডেট প্রয়োগ করতে আপনার অ্যাডমিনিস্ট্রেটর আপনাকে Chrome আবার চালু করতে বলছেন}=1{একটি আপডেট প্রয়োগ করতে আপনার অ্যাডমিনিস্ট্রেটর আপনাকে Chrome আবার চালু করতে বলছেন। আপনার ছদ্মবেশী উইন্ডো আবার খুলবে না।}one{একটি আপডেট প্রয়োগ করতে আপনার অ্যাডমিনিস্ট্রেটর আপনাকে Chrome আবার চালু করতে বলছেন। আপনার #টি ছদ্মবেশী উইন্ডো আবার খুলবে না।}other{একটি আপডেট প্রয়োগ করতে আপনার অ্যাডমিনিস্ট্রেটর আপনাকে Chrome আবার চালু করতে বলছেন। আপনার #টি ছদ্মবেশী উইন্ডো আবার খুলবে না।}}</translation>
 <translation id="3622797965165704966">এখন আপনার Google অ্যাকাউন্ট ও শেয়ার করা কম্পিউটারগুলিতে Chrome ব্যবহার করা আরো সহজ৷</translation>
-<translation id="3637702109597584617">Google Chrome OS <ph name="TERMS_OF_SERVICE_LINK" />পরিষেবার শর্তাবলী<ph name="END_TERMS_OF_SERVICE_LINK" /></translation>
 <translation id="3718181793972440140">এটি এই ডিভাইস থেকে ১টি আইটেম মুছে দেবে। আপনার ডেটা পরে পুনরুদ্ধার করার জন্য, Chrome-এ <ph name="USER_EMAIL" /> হিসেবে সাইন-ইন করুন।</translation>
 <translation id="3735758079232443276">আপনি Chrome চালু করলে কোন পৃষ্ঠাটি দেখানো হবে তা "<ph name="EXTENSION_NAME" />" এক্সটেনশনটি পরিবর্তন করেছে।</translation>
 <translation id="3780814664026482060">Chrome - <ph name="PAGE_TITLE" /></translation>
@@ -112,6 +111,7 @@
 <translation id="4205939740494406371">Chrome আপনার পাসওয়ার্ড চেক করতে পারছে না। ২৪ ঘণ্টা পরে আবার চেষ্টা করুন বা <ph name="BEGIN_LINK" />আপনার Google অ্যাকাউন্টে পাসওয়ার্ড চেক করুন<ph name="END_LINK" />।</translation>
 <translation id="424864128008805179">Chrome থেকে সাইন-আউট করবেন?</translation>
 <translation id="4251615635259297716">এই অ্যাকাউন্টে আপনার Chrome ডেটা লিঙ্ক করবেন?</translation>
+<translation id="4281844954008187215">পরিষেবার শর্তাদি</translation>
 <translation id="4293420128516039005">আপনার সব ডিভাইস জুড়ে Chrome সিঙ্ক করতে এবং নিজের মতো সাজিয়ে নিতে সাইন-ইন করুন</translation>
 <translation id="4328355335528187361">Google Chrome ডেভেলপার (mDNS-In)</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
@@ -146,7 +146,6 @@
 
 কিছু বৈশিষ্ট্য অনুপলভ্য হতে পারে৷ একটি ভিন্ন প্রোফাইল নির্দেশিকা সুনির্দিষ্টভাবে উল্লেখ করুন অথবা Chrome এর নতুন ভার্সন ব্যবহার করুন৷</translation>
 <translation id="5193136243808726294">Google Chrome OS এই পৃষ্ঠা খুলতে পারছে না।</translation>
-<translation id="5204098752394657250">Google Chrome <ph name="TERMS_OF_SERVICE_LINK" /> পরিষেবার শর্তাবলী <ph name="END_TERMS_OF_SERVICE_LINK" /></translation>
 <translation id="5251420635869119124">অতিথিগণ কোনো কিছুর জন্য অভাব বোধ না করেই Chrome ব্যবহার করতে পারবেন৷</translation>
 <translation id="532046782124376502">সতর্কতা: Google Chrome কোনও এক্সটেনশনকে আপনার ব্রাউজিং ইতিহাস রেকর্ড করা থেকে আটকাতে পারে না। ছদ্মবেশী মোডে এই এক্সটেনশনটি বন্ধ করার জন্য এই বিকল্পটি বন্ধ করুন।</translation>
 <translation id="5386244825306882791">আপনি Chrome শুরু করলে বা Omnibox থেকে সার্চ করলে কোন পৃষ্ঠাটি দেখানো হবে তাও এটি নিয়ন্ত্রণ করে।</translation>

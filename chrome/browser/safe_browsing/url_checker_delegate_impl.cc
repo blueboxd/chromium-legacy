@@ -46,8 +46,14 @@ void CreateSafeBrowsingUserInteractionObserver(
     const security_interstitials::UnsafeResource& resource,
     bool is_main_frame,
     scoped_refptr<SafeBrowsingUIManager> ui_manager) {
+  content::WebContents* web_contents = web_contents_getter.Run();
+  // Don't delay the interstitial for prerender pages.
+  if (prerender::PrerenderContents::FromWebContents(web_contents)) {
+    SafeBrowsingUIManager::StartDisplayingBlockingPage(ui_manager, resource);
+    return;
+  }
   SafeBrowsingUserInteractionObserver::CreateForWebContents(
-      web_contents_getter.Run(), resource, is_main_frame, ui_manager);
+      web_contents, resource, is_main_frame, ui_manager);
 }
 
 }  // namespace

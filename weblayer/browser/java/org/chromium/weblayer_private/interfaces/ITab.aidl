@@ -48,4 +48,7 @@ interface ITab {
 
   void setMediaCaptureCallbackClient(in IMediaCaptureCallbackClient client) = 14;
   void stopMediaCapturing() = 15;
+
+  // Added in 84
+  void captureScreenShot(in float scale, in IObjectWrapper resultCallback) = 16;
 }

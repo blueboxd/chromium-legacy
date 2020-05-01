@@ -5,291 +5,53 @@
 #ifndef CHROME_BROWSER_APPS_APP_SERVICE_EXTENSION_APPS_H_
 #define CHROME_BROWSER_APPS_APP_SERVICE_EXTENSION_APPS_H_
 
-#include <map>
-#include <memory>
 #include <string>
 
-#include "base/macros.h"
-#include "base/memory/weak_ptr.h"
-#include "base/scoped_observer.h"
-#include "chrome/browser/apps/app_service/app_icon_factory.h"
-#include "chrome/browser/apps/app_service/app_launch_params.h"
-#include "chrome/browser/apps/app_service/app_notifications.h"
+#include "chrome/browser/apps/app_service/extension_apps_base.h"
 #include "chrome/browser/apps/app_service/icon_key_util.h"
-#include "chrome/browser/apps/app_service/paused_apps.h"
-#include "chrome/browser/notifications/notification_common.h"
-#include "chrome/browser/notifications/notification_display_service.h"
-#include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
-#include "chrome/browser/ui/web_applications/web_app_launch_manager.h"
-#include "chrome/services/app_service/public/cpp/instance.h"
-#include "chrome/services/app_service/public/cpp/instance_registry.h"
-#include "chrome/services/app_service/public/cpp/publisher_base.h"
 #include "chrome/services/app_service/public/mojom/app_service.mojom.h"
-#include "components/content_settings/core/browser/content_settings_observer.h"
-#include "components/content_settings/core/browser/host_content_settings_map.h"
-#include "components/prefs/pref_change_registrar.h"
-#include "extensions/browser/app_window/app_window_registry.h"
-#include "extensions/browser/extension_prefs.h"
-#include "extensions/browser/extension_prefs_observer.h"
-#include "extensions/browser/extension_registry.h"
-#include "extensions/browser/extension_registry_observer.h"
-#include "mojo/public/cpp/bindings/pending_remote.h"
-#include "mojo/public/cpp/bindings/receiver.h"
+#include "chrome/services/app_service/public/mojom/types.mojom.h"
 #include "mojo/public/cpp/bindings/remote.h"
-#include "mojo/public/cpp/bindings/remote_set.h"
+#include "ui/gfx/native_widget_types.h"
+
+namespace extensions {
+class Extension;
+}
 
 class Profile;
 
-namespace content {
-class WebContents;
-}
-
-namespace extensions {
-class AppWindow;
-class ExtensionSet;
-}
-
-namespace message_center {
-class Notification;
-}
-
-class NotificationDisplayService;
-
 namespace apps {
-class ExtensionAppsEnableFlow;
 
-// An app publisher (in the App Service sense) of extension-backed apps,
-// including Chrome Apps (platform apps and legacy packaged apps) and hosted
-// apps (including desktop PWAs).
+// An app publisher (in the App Service sense) of extension-backed apps for
+// Chrome, including Chrome Apps (platform apps and legacy packaged apps) and
+// hosted apps (including desktop PWAs).
 //
 // In the future, desktop PWAs will be migrated to a new system.
 //
 // See chrome/services/app_service/README.md.
-class ExtensionApps : public apps::PublisherBase,
-                      public extensions::AppWindowRegistry::Observer,
-                      public extensions::ExtensionPrefsObserver,
-                      public extensions::ExtensionRegistryObserver,
-                      public content_settings::Observer,
-                      public ArcAppListPrefs::Observer,
-                      public NotificationDisplayService::Observer {
+class ExtensionApps : public apps::ExtensionAppsBase {
  public:
   ExtensionApps(const mojo::Remote<apps::mojom::AppService>& app_service,
                 Profile* profile,
-                apps::mojom::AppType app_type,
-                apps::InstanceRegistry* instance_registry);
+                apps::mojom::AppType app_type);
   ~ExtensionApps() override;
 
-  // Record uninstall dialog action for Web apps and Chrome apps.
-  static void RecordUninstallCanceledAction(Profile* profile,
-                                            const std::string& app_id);
+  ExtensionApps(const ExtensionApps&) = delete;
+  ExtensionApps& operator=(const ExtensionApps&) = delete;
 
-  void Shutdown();
-
-  void ObserveArc();
+  // Uninstall for web apps on Chrome.
+  static void UninstallImpl(Profile* profile,
+                            const std::string& app_id,
+                            gfx::NativeWindow parent_window);
 
  private:
-  void Initialize(const mojo::Remote<apps::mojom::AppService>& app_service);
-
-  // Determines whether the given extension should be treated as type app_type_,
-  // and should therefore by handled by this publisher.
-  bool Accepts(const extensions::Extension* extension);
-
-  // Returns extensions::Extension* for the valid |app_id|. Otherwise, returns
-  // nullptr.
-  const extensions::Extension* MaybeGetExtension(const std::string& app_id);
-
-  // apps::mojom::Publisher overrides.
-  void Connect(mojo::PendingRemote<apps::mojom::Subscriber> subscriber_remote,
-               apps::mojom::ConnectOptionsPtr opts) override;
-  void LoadIcon(const std::string& app_id,
-                apps::mojom::IconKeyPtr icon_key,
-                apps::mojom::IconCompression icon_compression,
-                int32_t size_hint_in_dip,
-                bool allow_placeholder_icon,
-                LoadIconCallback callback) override;
-  void Launch(const std::string& app_id,
-              int32_t event_flags,
-              apps::mojom::LaunchSource launch_source,
-              int64_t display_id) override;
-  void LaunchAppWithFiles(const std::string& app_id,
-                          apps::mojom::LaunchContainer container,
-                          int32_t event_flags,
-                          apps::mojom::LaunchSource launch_source,
-                          apps::mojom::FilePathsPtr file_paths) override;
-  void LaunchAppWithIntent(const std::string& app_id,
-                           int32_t event_flags,
-                           apps::mojom::IntentPtr intent,
-                           apps::mojom::LaunchSource launch_source,
-                           int64_t display_id) override;
-  void SetPermission(const std::string& app_id,
-                     apps::mojom::PermissionPtr permission) override;
-  void Uninstall(const std::string& app_id,
-                 bool clear_site_data,
-                 bool report_abuse) override;
-  void PauseApp(const std::string& app_id) override;
-  void UnpauseApps(const std::string& app_id) override;
-  void GetMenuModel(const std::string& app_id,
-                    apps::mojom::MenuType menu_type,
-                    int64_t display_id,
-                    GetMenuModelCallback callback) override;
-  void OpenNativeSettings(const std::string& app_id) override;
-
-  // content_settings::Observer overrides.
-  void OnContentSettingChanged(const ContentSettingsPattern& primary_pattern,
-                               const ContentSettingsPattern& secondary_pattern,
-                               ContentSettingsType content_type,
-                               const std::string& resource_identifier) override;
-
-  // Overridden from AppWindowRegistry::Observer:
-  void OnAppWindowAdded(extensions::AppWindow* app_window) override;
-  void OnAppWindowShown(extensions::AppWindow* app_window,
-                        bool was_hidden) override;
-  void OnAppWindowHidden(extensions::AppWindow* app_window) override;
-  void OnAppWindowRemoved(extensions::AppWindow* app_window) override;
-
-  // extensions::ExtensionPrefsObserver overrides.
-  void OnExtensionLastLaunchTimeChanged(
-      const std::string& app_id,
-      const base::Time& last_launch_time) override;
-  void OnExtensionPrefsWillBeDestroyed(
-      extensions::ExtensionPrefs* prefs) override;
-
-  // extensions::ExtensionRegistryObserver overrides.
-  void OnExtensionLoaded(content::BrowserContext* browser_context,
-                         const extensions::Extension* extension) override;
-  void OnExtensionUnloaded(content::BrowserContext* browser_context,
-                           const extensions::Extension* extension,
-                           extensions::UnloadedExtensionReason reason) override;
-  void OnExtensionInstalled(content::BrowserContext* browser_context,
-                            const extensions::Extension* extension,
-                            bool is_update) override;
-  void OnExtensionUninstalled(content::BrowserContext* browser_context,
-                              const extensions::Extension* extension,
-                              extensions::UninstallReason reason) override;
-
-  // Function called when SystemWebAppManager::on_apps_synchronized() runs.
-  void OnSystemWebAppsInstalled();
-
-  // ArcAppListPrefs::Observer overrides.
-  void OnPackageInstalled(
-      const arc::mojom::ArcPackageInfo& package_info) override;
-  void OnPackageRemoved(const std::string& package_name,
-                        bool uninstalled) override;
-  void OnPackageListInitialRefreshed() override;
-  void OnArcAppListPrefsDestroyed() override;
-
-  // NotificationDisplayService::Observer overrides.
-  void OnNotificationDisplayed(
-      const message_center::Notification& notification,
-      const NotificationCommon::Metadata* const metadata) override;
-  void OnNotificationClosed(const std::string& notification_id) override;
-  void OnNotificationDisplayServiceDestroyed(
-      NotificationDisplayService* service) override;
-
-  void MaybeAddNotification(const std::string& app_id,
-                            const std::string& notification_id);
-  void MaybeAddWebPageNotifications(
-      const message_center::Notification& notification,
-      const NotificationCommon::Metadata* const metadata);
-
-  // Checks if extension is disabled and if enable flow should be started.
-  // Returns true if extension enable flow is started or there is already one
-  // running, and run |callback| to launch the app.
-  bool RunExtensionEnableFlow(const std::string& app_id,
-                              base::OnceClosure callback);
-
-  static bool IsBlacklisted(const std::string& app_id);
-
-  static void SetShowInFields(apps::mojom::AppPtr& app,
-                              const extensions::Extension* extension,
-                              Profile* profile);
-  static bool ShouldShow(const extensions::Extension* extension,
-                         Profile* profile);
-
-  // Handles profile prefs kHideWebStoreIcon changes.
-  void OnHideWebStoreIconPrefChanged();
-
-  // Update the show_in_xxx fields for the App structure.
-  void UpdateShowInFields(const std::string& app_id);
-
-  void PopulatePermissions(const extensions::Extension* extension,
-                           std::vector<mojom::PermissionPtr>* target);
-  void PopulateIntentFilters(const base::Optional<GURL>& app_scope,
-                             std::vector<mojom::IntentFilterPtr>* target);
+  // ExtensionAppsBase overrides.
+  bool Accepts(const extensions::Extension* extension) override;
+  bool ShouldShownInLauncher(const extensions::Extension* extension) override;
   apps::mojom::AppPtr Convert(const extensions::Extension* extension,
-                              apps::mojom::Readiness readiness);
-  void ConvertVector(const extensions::ExtensionSet& extensions,
-                     apps::mojom::Readiness readiness,
-                     std::vector<apps::mojom::AppPtr>* apps_out);
-
-  // Calculate the icon effects for the extension.
-  IconEffects GetIconEffects(const extensions::Extension* extension,
-                             bool paused);
-
-  // Get the equivalent Chrome app from |arc_package_name| and set the Chrome
-  // app badge on the icon effects for the equivalent Chrome apps. If the
-  // equivalent ARC app is installed, add the Chrome app badge, otherwise,
-  // remove the Chrome app badge.
-  void ApplyChromeBadge(const std::string& arc_package_name);
-
-  void SetIconEffect(const std::string& app_id);
-
-  bool ShouldRecordAppWindowActivity(extensions::AppWindow* app_window);
-  void RegisterInstance(extensions::AppWindow* app_window, InstanceState state);
-
-  void GetMenuModelForChromeBrowserApp(apps::mojom::MenuType menu_type,
-                                       GetMenuModelCallback callback);
-
-  content::WebContents* LaunchImpl(const AppLaunchParams& params);
-
-  mojo::RemoteSet<apps::mojom::Subscriber> subscribers_;
-
-  Profile* const profile_;
-
-  ScopedObserver<extensions::ExtensionPrefs, extensions::ExtensionPrefsObserver>
-      prefs_observer_{this};
-  ScopedObserver<extensions::ExtensionRegistry,
-                 extensions::ExtensionRegistryObserver>
-      registry_observer_{this};
-  ScopedObserver<HostContentSettingsMap, content_settings::Observer>
-      content_settings_observer_{this};
+                              apps::mojom::Readiness readiness) override;
 
   apps_util::IncrementingIconKeyFactory icon_key_factory_;
-
-  const apps::mojom::AppType app_type_;
-
-  apps::InstanceRegistry* instance_registry_;
-  ScopedObserver<extensions::AppWindowRegistry,
-                 extensions::AppWindowRegistry::Observer>
-      app_window_registry_{this};
-
-  using EnableFlowPtr = std::unique_ptr<ExtensionAppsEnableFlow>;
-  std::map<std::string, EnableFlowPtr> enable_flow_map_;
-
-  PausedApps paused_apps_;
-
-  std::map<extensions::AppWindow*, aura::Window*> app_window_to_aura_window_;
-
-  ArcAppListPrefs* arc_prefs_ = nullptr;
-
-  // app_service_ is owned by the object that owns this object.
-  apps::mojom::AppService* app_service_;
-
-  // Registrar used to monitor the profile prefs.
-  PrefChangeRegistrar profile_pref_change_registrar_;
-
-  // TODO(crbug.com/1061843): Remove web_app_launch_manager_ when BMO launches.
-  std::unique_ptr<web_app::WebAppLaunchManager> web_app_launch_manager_;
-
-  ScopedObserver<NotificationDisplayService,
-                 NotificationDisplayService::Observer>
-      notification_display_service_{this};
-
-  AppNotifications app_notifications_;
-
-  base::WeakPtrFactory<ExtensionApps> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(ExtensionApps);
 };
 
 }  // namespace apps

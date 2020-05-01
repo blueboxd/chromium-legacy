@@ -44,6 +44,8 @@ namespace {
 
 const char kCrOSTracingAgentName[] = "cros";
 const char kCrOSTraceLabel[] = "systemTraceEvents";
+// TODO(b/149874690) Remove this when dbus::kBackupArcBugReport is available.
+const char kBackupArcBugReport[] = "BackupArcBugReport";
 
 // Because the cheets logs are very huge, we set the D-Bus timeout to 2 minutes.
 const int kBigLogsDBusTimeoutMS = 120 * 1000;
@@ -256,6 +258,19 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
         base::BindOnce(&DebugDaemonClientImpl::OnBigFeedbackLogsResponse,
                        weak_ptr_factory_.GetWeakPtr(),
                        pipe_reader->AsWeakPtr()));
+  }
+
+  void BackupArcBugReport(const std::string& userhash,
+                          VoidDBusMethodCallback callback) override {
+    dbus::MethodCall method_call(debugd::kDebugdInterface, kBackupArcBugReport);
+    dbus::MessageWriter writer(&method_call);
+    writer.AppendString(userhash);
+
+    DVLOG(1) << "Backing up ARC bug report";
+    debugdaemon_proxy_->CallMethod(
+        &method_call, kBigLogsDBusTimeoutMS,
+        base::BindOnce(&DebugDaemonClientImpl::OnVoidMethod,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
   void GetAllLogs(GetLogsCallback callback) override {

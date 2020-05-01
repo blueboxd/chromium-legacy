@@ -92,7 +92,6 @@
 <translation id="3582972582564653026">ซิงค์และปรับเปลี่ยน Chrome ในอุปกรณ์ต่างๆ</translation>
 <translation id="3596080736082218006">{COUNT,plural, =0{ผู้ดูแลระบบต้องการให้คุณเปิด Chrome ขึ้นมาใหม่เพื่อใช้การอัปเดต}=1{ผู้ดูแลระบบต้องการให้คุณเปิด Chrome ขึ้นมาใหม่เพื่อใช้การอัปเดต หน้าต่างที่ไม่ระบุตัวตนจะไม่เปิดให้อีก}other{ผู้ดูแลระบบต้องการให้คุณเปิด Chrome ขึ้นมาใหม่เพื่อใช้การอัปเดต หน้าต่างที่ไม่ระบุตัวตนจำนวน # หน้าต่างจะไม่เปิดให้อีก}}</translation>
 <translation id="3622797965165704966">ตอนนี้การใช้ Chrome กับบัญชี Google ของคุณและบนคอมพิวเตอร์ที่ใช้ร่วมกันทำได้ง่ายกว่าเดิม</translation>
-<translation id="3637702109597584617"><ph name="TERMS_OF_SERVICE_LINK" />ข้อกำหนดในการให้บริการ<ph name="END_TERMS_OF_SERVICE_LINK" />ของ Google Chrome OS</translation>
 <translation id="3718181793972440140">การดำเนินการนี้จะลบ 1 รายการออกจากอุปกรณ์นี้ หากต้องการดึงข้อมูลภายหลัง ให้ลงชื่อเข้าใช้ Chrome ด้วย <ph name="USER_EMAIL" /></translation>
 <translation id="3735758079232443276">ส่วนขยาย "<ph name="EXTENSION_NAME" />" ได้เปลี่ยนหน้าที่จะแสดงเมื่อคุณเริ่มต้น Chrome</translation>
 <translation id="3780814664026482060">Chrome - <ph name="PAGE_TITLE" /></translation>
@@ -109,6 +108,7 @@
 <translation id="4205939740494406371">Chrome ตรวจสอบรหัสผ่านของคุณไม่ได้ โปรดรอ 24 ชั่วโมงแล้วลองอีกครั้งหรือ<ph name="BEGIN_LINK" />ตรวจสอบรหัสผ่านในบัญชี Google<ph name="END_LINK" /></translation>
 <translation id="424864128008805179">ต้องการออกจากระบบ Chrome ไหม</translation>
 <translation id="4251615635259297716">เชื่อมโยงข้อมูล Chrome กับบัญชีนี้ไหม</translation>
+<translation id="4281844954008187215">ข้อกำหนดในการให้บริการ</translation>
 <translation id="4293420128516039005">ลงชื่อเข้าใช้เพื่อซิงค์และปรับเปลี่ยน Chrome ในอุปกรณ์ต่างๆ</translation>
 <translation id="4328355335528187361">Google Chrome Dev (mDNS-In)</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
@@ -141,7 +141,6 @@
 <translation id="5132929315877954718">พบกับแอป เกม ส่วนขยาย และธีมเด็ดๆ สำหรับ Google Chrome</translation>
 <translation id="5170938038195470297">โปรไฟล์ของคุณไม่สามารถใช้ได้เพราะมาจากรุ่นที่ใหม่กว่าของ Google Chrome ฟีเจอร์บางอย่างอาจจะไม่พร้อมใช้งาน โปรดระบุไดเรกทอรีของโปรไฟล์อื่นหรือใช้ Chrome รุ่นที่ใหม่กว่า</translation>
 <translation id="5193136243808726294">Google Chrome OS ไม่สามารถเปิดหน้านี้</translation>
-<translation id="5204098752394657250"><ph name="TERMS_OF_SERVICE_LINK" />ข้อกำหนดในการให้บริการ<ph name="END_TERMS_OF_SERVICE_LINK" />ของ Google Chrome</translation>
 <translation id="5251420635869119124">ผู้เยี่ยมชมสามารถใช้ Chrome ได้โดยไม่ทิ้งร่องรอยไว้</translation>
 <translation id="532046782124376502">คำเตือน: Google Chrome ไม่สามารถป้องกันไม่ให้ส่วนขยายบันทึกประวัติการเข้าชม หากต้องการปิดใช้ส่วนขยายนี้ในโหมดไม่ระบุตัวตน ให้ยกเลิกการเลือกตัวเลือกนี้</translation>
 <translation id="5386244825306882791">อีกทั้งยังควบคุมหน้าที่จะแสดงเมื่อคุณเปิด Chrome หรือทำการค้นหาจากแถบอเนกประสงค์ด้วย</translation>

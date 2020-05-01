@@ -8,6 +8,8 @@ namespace upboarding {
 namespace features {
 const base::Feature kQueryTiles{"QueryTiles",
                                 base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kQueryTilesInOmnibox{"QueryTilesInOmnibox",
+                                         base::FEATURE_DISABLED_BY_DEFAULT};
 }  // namespace features
 
 namespace switches {

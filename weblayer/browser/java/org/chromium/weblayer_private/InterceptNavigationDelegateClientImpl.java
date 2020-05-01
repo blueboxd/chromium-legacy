@@ -12,7 +12,7 @@ import org.chromium.components.external_intents.AuthenticatorNavigationIntercept
 import org.chromium.components.external_intents.ExternalNavigationHandler;
 import org.chromium.components.external_intents.InterceptNavigationDelegateClient;
 import org.chromium.components.external_intents.InterceptNavigationDelegateImpl;
-import org.chromium.components.external_intents.RedirectHandlerImpl;
+import org.chromium.components.external_intents.RedirectHandler;
 import org.chromium.components.navigation_interception.NavigationParams;
 import org.chromium.content_public.browser.NavigationHandle;
 import org.chromium.content_public.browser.WebContents;
@@ -25,13 +25,13 @@ import org.chromium.content_public.browser.WebContentsObserver;
 public class InterceptNavigationDelegateClientImpl implements InterceptNavigationDelegateClient {
     private TabImpl mTab;
     private WebContentsObserver mWebContentsObserver;
-    private RedirectHandlerImpl mRedirectHandler;
+    private RedirectHandler mRedirectHandler;
     private InterceptNavigationDelegateImpl mInterceptNavigationDelegate;
-    private long mLastNavigationWithUserGestureTime = RedirectHandlerImpl.INVALID_TIME;
+    private long mLastNavigationWithUserGestureTime = RedirectHandler.INVALID_TIME;
 
     InterceptNavigationDelegateClientImpl(TabImpl tab) {
         mTab = tab;
-        mRedirectHandler = RedirectHandlerImpl.create();
+        mRedirectHandler = RedirectHandler.create();
         mWebContentsObserver = new WebContentsObserver() {
             @Override
             public void didFinishNavigation(NavigationHandle navigationHandle) {
@@ -82,7 +82,7 @@ public class InterceptNavigationDelegateClientImpl implements InterceptNavigatio
     }
 
     @Override
-    public RedirectHandlerImpl getOrCreateRedirectHandler() {
+    public RedirectHandler getOrCreateRedirectHandler() {
         return mRedirectHandler;
     }
 

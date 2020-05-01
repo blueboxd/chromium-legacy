@@ -1848,7 +1848,7 @@ void WebMediaPlayerImpl::OnError(PipelineStatus status) {
     status = PIPELINE_ERROR_EXTERNAL_RENDERER_FAILED;
 #endif
 
-  MaybeSetContainerName();
+  MaybeSetContainerNameForMetrics();
   simple_watch_timer_.Stop();
   media_log_->NotifyError(status);
   media_metrics_provider_->OnError(status);
@@ -1903,7 +1903,7 @@ void WebMediaPlayerImpl::OnMetadata(const PipelineMetadata& metadata) {
   media_metrics_provider_->SetTimeToMetadata(time_to_metadata_);
   RecordTimingUMA("Media.TimeToMetadata", time_to_metadata_);
 
-  MaybeSetContainerName();
+  MaybeSetContainerNameForMetrics();
 
   pipeline_metadata_ = metadata;
   if (power_status_helper_)
@@ -3759,11 +3759,7 @@ void WebMediaPlayerImpl::OnPictureInPictureAvailabilityChanged(bool available) {
   delegate_->DidPictureInPictureAvailabilityChange(delegate_id_, available);
 }
 
-void WebMediaPlayerImpl::MaybeSetContainerName() {
-  // MSE nor MediaPlayerRenderer provide container information.
-  if (chunk_demuxer_ || using_media_player_renderer_)
-    return;
-
+void WebMediaPlayerImpl::MaybeSetContainerNameForMetrics() {
   // Pipeline startup failed before even getting a demuxer setup.
   if (!demuxer_)
     return;
@@ -3772,11 +3768,10 @@ void WebMediaPlayerImpl::MaybeSetContainerName() {
   if (highest_ready_state_ >= WebMediaPlayer::kReadyStateHaveMetadata)
     return;
 
-// If ffmpeg isn't enabled, we can't get the container name.
-#if BUILDFLAG(ENABLE_FFMPEG)
-  media_metrics_provider_->SetContainerName(
-      static_cast<FFmpegDemuxer*>(demuxer_.get())->container());
-#endif
+  // Only report metrics for demuxers that provide container information.
+  auto container = demuxer_->GetContainerForMetrics();
+  if (container.has_value())
+    media_metrics_provider_->SetContainerName(container.value());
 }
 
 void WebMediaPlayerImpl::MaybeUpdateBufferSizesForPlayback() {

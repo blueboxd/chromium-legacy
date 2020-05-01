@@ -97,7 +97,6 @@
 <translation id="3582972582564653026">Төхөөрөмжүүддээ Chrome-г синк хийж, хувийн болгох</translation>
 <translation id="3596080736082218006">{COUNT,plural, =0{Шинэчлэлтийг хэрэгжүүлэхийн тулд Chrome-г дахин ачаалахыг таны администратор танаас шаардаж байна}=1{Шинэчлэлтийг хэрэгжүүлэхийн тулд Chrome-г дахин ачаалахыг таны администратор танаас шаардаж байна. Таны нууцлалтай цонхыг дахин нээхгүй.}other{Шинэчлэлтийг хэрэгжүүлэхийн тулд Chrome-г дахин ачаалахыг таны администратор танаас шаардаж байна. Таны # нууцлалтай цонхыг дахин нээхгүй.}}</translation>
 <translation id="3622797965165704966">Одоо та Google хаягаа ашиглан мөн өөр бусад компьютер дээр Chrome-г ашиглахад хялбар боллоо.</translation>
-<translation id="3637702109597584617">Google Chrome үйлдлийн системийн <ph name="TERMS_OF_SERVICE_LINK" />Үйлчилгээний нөхцөл<ph name="END_TERMS_OF_SERVICE_LINK" /></translation>
 <translation id="3718181793972440140">Энэ нь төхөөрөмжөөс 1 зүйл устгах болно. Өгөгдлөө дараа сэргээхийн тулд Chrome-д <ph name="USER_EMAIL" />-р нэвтэрнэ үү.</translation>
 <translation id="3735758079232443276">"<ph name="EXTENSION_NAME" />" өргөтгөл нь таныг Chrome-г эхлүүлэх үед хуудсанд харагдах зүйлийг өөрчилсөн.</translation>
 <translation id="3780814664026482060">Chrome - <ph name="PAGE_TITLE" /></translation>
@@ -114,6 +113,7 @@
 <translation id="4205939740494406371">Chrome таны нууц үгсийг шалгах боломжгүй байна. 24 цагийн дараа дахин оролдоно уу эсвэл <ph name="BEGIN_LINK" />өөрийн Google Бүртгэл дэх нууц үгсийг шалгана уу<ph name="END_LINK" />.</translation>
 <translation id="424864128008805179">Chrome-с гарах уу?</translation>
 <translation id="4251615635259297716">Chrome өгөгдлөө энэ бүртгэл рүү холбох уу?</translation>
+<translation id="4281844954008187215">Үйлчилгээний нөхцөл</translation>
 <translation id="4293420128516039005">Төхөөрөмжүүддээ Chrome-г синк хийж, хувийн болгохын тулд нэвтрэх</translation>
 <translation id="4328355335528187361">Google Chrome Dev (mDNS-In)</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
@@ -148,7 +148,6 @@
 
 Зарим функц ажиллахгүй байж болох юм. Өөр профайл тодорхойл эсвэл Chrome-ийн шинэ хувилбарыг хэрэглэнэ үү.</translation>
 <translation id="5193136243808726294">Google Chrome үйлдлийн систем энэ хуудсыг нээх боломжгүй</translation>
-<translation id="5204098752394657250">Google Chrome <ph name="TERMS_OF_SERVICE_LINK" /> Үйлчилгээний нөхцөл <ph name="END_TERMS_OF_SERVICE_LINK" /></translation>
 <translation id="5251420635869119124">Зочид ч бусдаас хоцролгүй Chrome-ийг бүх талаар нь ашиглах боломжтой.</translation>
 <translation id="532046782124376502">Анхааруулга: Google Chrome таны өргөтгөлийг хөтчийн түүх бичихээс сэргийлэх боломжгүй. Энэ өргөтгөлийг үл танигдах горимд идэвхгүй болгохын тулд энэ сонголтыг сонгохгүй орхино уу.</translation>
 <translation id="5386244825306882791">Энэ нь мөн таныг Chrome эхлүүлэхэд ямар хуудаснуудыг харуулах эсвэл Omnibox-оос хайхыг хянадаг.</translation>

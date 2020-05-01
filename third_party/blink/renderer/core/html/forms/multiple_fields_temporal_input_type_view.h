@@ -95,6 +95,8 @@ class MultipleFieldsTemporalInputTypeView final
   void ClearValue() override;
 
   // InputTypeView functions
+  void UpdateAppearanceOnFocus(SelectionBehaviorOnFocus selection_behavior,
+                               const FocusOptions& options) override;
   void Blur() final;
   void ClosePopupView() override;
   bool HasOpenedPopup() const override;

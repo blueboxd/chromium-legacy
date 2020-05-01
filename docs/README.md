@@ -379,6 +379,10 @@ used when committed.
 *   [Mojo “Style” Guide](security/mojo.md) - Recommendations for best practices
     from Mojo and IPC reviewers
 
+### Speed
+*   [Chrome Speed](speed/README.md) - Documentation for performance measurements and regressions in Chrome.
+*   [Chrome Speed Metrics](speed_metrics/README.md) - Documentation about user experience metrics in the web and their JavaScript APIs.
+
 ### WebXR
 *   [Running OpenVR Without Headset](xr/run_openvr_without_headset.md) -
     Instructions for running OpenVR on Windows without a headset

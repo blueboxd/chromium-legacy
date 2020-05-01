@@ -96,7 +96,8 @@ void P2PQuicStreamImpl::OnDataAvailable() {
   }
 }
 
-void P2PQuicStreamImpl::OnStreamDataConsumed(size_t bytes_consumed) {
+void P2PQuicStreamImpl::OnStreamDataConsumed(
+    quic::QuicByteCount bytes_consumed) {
   // We should never consume more than has been written.
   DCHECK_GE(write_buffered_amount_, bytes_consumed);
   QuicStream::OnStreamDataConsumed(bytes_consumed);

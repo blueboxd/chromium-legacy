@@ -227,6 +227,7 @@ class CONTENT_EXPORT RenderFrameImpl
       int opener_routing_id,
       int parent_routing_id,
       int previous_sibling_routing_id,
+      const base::UnguessableToken& frame_token,
       const base::UnguessableToken& devtools_frame_token,
       const FrameReplicationState& replicated_state,
       CompositorDependencies* compositor_deps,
@@ -1026,7 +1027,8 @@ class CONTENT_EXPORT RenderFrameImpl
   // content/common/*_messages.h for the message that the function is handling.
   void OnUnload(int proxy_routing_id,
                 bool is_loading,
-                const FrameReplicationState& replicated_frame_state);
+                const FrameReplicationState& replicated_frame_state,
+                const base::UnguessableToken& frame_token);
   void OnDeleteFrame(FrameDeleteIntention intent);
   void OnShowContextMenu(const gfx::Point& location);
   void OnContextMenuClosed(const CustomContextMenuContext& custom_context);

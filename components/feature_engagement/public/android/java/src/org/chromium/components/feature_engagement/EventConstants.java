@@ -160,6 +160,9 @@ public final class EventConstants {
     /** User has used Ephemeral Tab i.e. opened and browsed the content. */
     public static final String EPHEMERAL_TAB_USED = "ephemeral_tab_used";
 
+    /** HomepagePromo has been accepted. */
+    public static final String HOMEPAGE_PROMO_ACCEPTED = "homepage_promo_accepted";
+
     /**
      * Do not instantiate.
      */

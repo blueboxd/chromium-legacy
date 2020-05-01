@@ -33,21 +33,26 @@ class CORE_EXPORT WebRemoteFrameImpl final
     : public GarbageCollected<WebRemoteFrameImpl>,
       public WebRemoteFrame {
  public:
-  static WebRemoteFrameImpl* CreateMainFrame(WebView*,
-                                             WebRemoteFrameClient*,
-                                             InterfaceRegistry*,
-                                             AssociatedInterfaceProvider*,
-                                             WebFrame* opener);
-  static WebRemoteFrameImpl* CreateForPortal(mojom::blink::TreeScopeType,
-                                             WebRemoteFrameClient*,
-                                             InterfaceRegistry*,
-                                             AssociatedInterfaceProvider*,
-                                             const WebElement& portal_element);
+  static WebRemoteFrameImpl* CreateMainFrame(
+      WebView*,
+      WebRemoteFrameClient*,
+      InterfaceRegistry*,
+      AssociatedInterfaceProvider*,
+      const base::UnguessableToken& frame_token,
+      WebFrame* opener);
+  static WebRemoteFrameImpl* CreateForPortal(
+      mojom::blink::TreeScopeType,
+      WebRemoteFrameClient*,
+      InterfaceRegistry*,
+      AssociatedInterfaceProvider*,
+      const base::UnguessableToken& frame_token,
+      const WebElement& portal_element);
 
   WebRemoteFrameImpl(mojom::blink::TreeScopeType,
                      WebRemoteFrameClient*,
                      InterfaceRegistry*,
-                     AssociatedInterfaceProvider*);
+                     AssociatedInterfaceProvider*,
+                     const base::UnguessableToken& frame_token);
   ~WebRemoteFrameImpl() override;
 
   // WebFrame methods:
@@ -63,6 +68,7 @@ class CORE_EXPORT WebRemoteFrameImpl final
                                   WebFrame* previous_sibling,
                                   const WebFrameOwnerProperties&,
                                   mojom::FrameOwnerElementType,
+                                  const base::UnguessableToken& frame_token,
                                   WebFrame* opener) override;
   WebRemoteFrame* CreateRemoteChild(mojom::blink::TreeScopeType,
                                     const WebString& name,
@@ -71,6 +77,7 @@ class CORE_EXPORT WebRemoteFrameImpl final
                                     WebRemoteFrameClient*,
                                     blink::InterfaceRegistry*,
                                     AssociatedInterfaceProvider*,
+                                    const base::UnguessableToken& frame_token,
                                     WebFrame* opener) override;
   void SetCcLayer(cc::Layer*,
                   bool prevent_contents_opaque_changes,

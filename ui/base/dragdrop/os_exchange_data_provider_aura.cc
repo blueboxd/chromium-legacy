@@ -152,7 +152,7 @@ bool OSExchangeDataProviderAura::HasFile() const {
 
 bool OSExchangeDataProviderAura::HasCustomFormat(
     const ClipboardFormatType& format) const {
-  return pickle_data_.find(format) != pickle_data_.end();
+  return base::Contains(pickle_data_, format);
 }
 
 void OSExchangeDataProviderAura::SetHtml(const base::string16& html,

@@ -44,7 +44,7 @@ const char kFullPageMimeHandlerViewHTML[] =
     "name='%s' "
     "style='position:absolute; left: 0; top: 0;'width='100%%' height='100%%'"
     " src='about:blank' type='%s' "
-    "internalid='%s'></embed></body></html>";
+    "internalid='%s'></body></html>";
 const uint32_t kFullPageMimeHandlerViewDataPipeSize = 512U;
 
 SkColor GetBackgroundColorStringForMimeType(const GURL& url,

@@ -58,7 +58,7 @@ namespace {
 void RecordSharedWorkerUsage(LocalDOMWindow* window) {
   UseCounter::Count(window, WebFeature::kSharedWorkerStart);
 
-  if (window->document()->IsCrossSiteSubframe())
+  if (window->IsCrossSiteSubframe())
     UseCounter::Count(window, WebFeature::kThirdPartySharedWorker);
 }
 

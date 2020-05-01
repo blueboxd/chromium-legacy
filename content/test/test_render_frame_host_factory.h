@@ -34,6 +34,7 @@ class TestRenderFrameHostFactory : public RenderFrameHostFactory {
       FrameTree* frame_tree,
       FrameTreeNode* frame_tree_node,
       int32_t routing_id,
+      const base::UnguessableToken& frame_token,
       bool renderer_initiated_creation) override;
 
  private:

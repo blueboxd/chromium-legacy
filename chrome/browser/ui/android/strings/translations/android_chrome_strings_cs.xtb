@@ -38,7 +38,6 @@
 <translation id="1258753120186372309">Sváteční logo Google: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1260236875608242557">Vyhledávání a prozkoumávání</translation>
 <translation id="1266864766717917324">Sdílení obsahu typu <ph name="CONTENT_TYPE" /> se nezdařilo</translation>
-<translation id="1272079795634619415">Zastavit</translation>
 <translation id="1283039547216852943">Klepnutím rozbalíte</translation>
 <translation id="1285320974508926690">Tento web nikdy nepřekládat</translation>
 <translation id="1291207594882862231">Vymazat historii, soubory cookie, data webů, mezipaměť…</translation>
@@ -51,7 +50,6 @@
 <translation id="1331212799747679585">Chrome nelze aktualizovat. Další možnosti</translation>
 <translation id="1332501820983677155">Zkratky funkcí prohlížeče Google Chrome</translation>
 <translation id="1360432990279830238">Odhlásit se a vypnout synchronizaci?</translation>
-<translation id="1364532808393826295"><ph name="APP_NAME" /> – <ph name="NOTIFICATION_MESSAGE" /></translation>
 <translation id="1373696734384179344">Ke stažení vybraného obsahu není k dispozici dostatek paměti.</translation>
 <translation id="1376578503827013741">Probíhá výpočet…</translation>
 <translation id="1383876407941801731">Vyhledávání</translation>
@@ -122,7 +120,6 @@
 <translation id="2013642289801508067">{FILE_COUNT,plural, =1{# soubor}few{# soubory}many{# souboru}other{# souborů}}</translation>
 <translation id="2017836877785168846">Vymaže historii a automatická dokončení v adresním řádku.</translation>
 <translation id="2021896219286479412">Ovládání webu na celé obrazovce</translation>
-<translation id="2030769033451695672">Klepnutím se vrátíte na web <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
 <translation id="2038563949887743358">Zapnout funkci Verze webu pro PC</translation>
 <translation id="204321170514947529">Aplikace <ph name="APP_NAME" /> má také data v Chromu</translation>
 <translation id="2049574241039454490"><ph name="FILE_SIZE_OF_TOTAL" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
@@ -592,7 +589,6 @@ Chcete-toto nastavení změnit, <ph name="BEGIN_LINK" />resetujte synchronizaci<
 <translation id="5876056640971328065">Pozastavit video</translation>
 <translation id="5884076754568147479">Abyste mohli provádět akce, Google bude dostávat adresy URL a obsah webů, ve kterých používáte Asistenta, a informace, které prostřednictvím Asistenta odesíláte</translation>
 <translation id="5919204609460789179">Chcete-li zahájit synchronizaci, aktualizujte aplikaci <ph name="PRODUCT_NAME" /></translation>
-<translation id="5922853908706496913">Sdílíte obrazovku</translation>
 <translation id="5937580074298050696">Uspořeno: <ph name="AMOUNT" /></translation>
 <translation id="5939518447894949180">Resetovat</translation>
 <translation id="5942872142862698679">K vyhledávání se používá Google</translation>
@@ -779,7 +775,6 @@ Některé weby mohou například na tento požadavek reagovat tak, že vám zobr
 <translation id="7514365320538308">Stáhnout</translation>
 <translation id="751961395872307827">K webu se nelze připojit</translation>
 <translation id="7542481630195938534">Návrhy nelze načíst</translation>
-<translation id="7554752735887601236">Webové stránky používají váš mikrofon</translation>
 <translation id="7559975015014302720">Zjednodušený režim je vypnutý</translation>
 <translation id="7562080006725997899">Mazání údajů o prohlížení</translation>
 <translation id="756809126120519699">Vymazání údajů Chromu</translation>
@@ -813,7 +808,6 @@ Některé weby mohou například na tento požadavek reagovat tak, že vám zobr
 <translation id="7774809984919390718">{PAYMENT_METHOD,plural, =1{<ph name="PAYMENT_METHOD_PREVIEW" /> a <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> další}few{<ph name="PAYMENT_METHOD_PREVIEW" /> a <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> další}many{<ph name="PAYMENT_METHOD_PREVIEW" /> a <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> další}other{<ph name="PAYMENT_METHOD_PREVIEW" /> a <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> dalších}}</translation>
 <translation id="7791543448312431591">Přidat</translation>
 <translation id="780301667611848630">Ne, děkuji</translation>
-<translation id="7804248752222191302">Web používá váš fotoaparát</translation>
 <translation id="7810647596859435254">Otevřít v aplikaci…</translation>
 <translation id="7821588508402923572">Zde se budou zobrazovat vaše úspory dat</translation>
 <translation id="783819812427904514">Zapnout zvuk videa</translation>
@@ -885,9 +879,7 @@ Některé weby mohou například na tento požadavek reagovat tak, že vám zobr
 <translation id="8349013245300336738">Seřadit podle množství využitých dat</translation>
 <translation id="8364299278605033898">Zobrazit populární weby</translation>
 <translation id="8368027906805972958">Neznámé nebo nepodporované zařízení (<ph name="DEVICE_ID" />)</translation>
-<translation id="83792324527827022">Webové stránky používají váš fotoaparát a mikrofon</translation>
 <translation id="8393700583063109961">Odeslat zprávu</translation>
-<translation id="8394832520002899662">Klepnutím se vrátíte na web</translation>
 <translation id="8413126021676339697">Zobrazit celou historii</translation>
 <translation id="8427875596167638501">Karta náhledu je otevřená na půlce</translation>
 <translation id="8428213095426709021">Nastavení</translation>
@@ -984,7 +976,6 @@ Některé weby mohou například na tento požadavek reagovat tak, že vám zobr
 <translation id="970715775301869095">Zbývá: <ph name="MINUTES" /> min</translation>
 <translation id="974555521953189084">Chcete-li spustit synchronizaci zadejte heslovou frázi.</translation>
 <translation id="981121421437150478">Offline</translation>
-<translation id="982182592107339124">Tímto vymažete data všech webů včetně těchto:</translation>
 <translation id="983192555821071799">Zavřít všechny karty</translation>
 <translation id="987264212798334818">Všeobecné</translation>
 </translationbundle>

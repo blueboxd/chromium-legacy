@@ -38,7 +38,6 @@
 <translation id="1258753120186372309">Google-dudl: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1260236875608242557">Qidiruv va tanishuv</translation>
 <translation id="1266864766717917324"><ph name="CONTENT_TYPE" /> yuborilmadi</translation>
-<translation id="1272079795634619415">To‘xtatish</translation>
 <translation id="1283039547216852943">Bosib yoyish</translation>
 <translation id="1285320974508926690">Bu sayt hech qachon tarjima qilinmasin</translation>
 <translation id="1291207594882862231">Brauzer tarixi, cookie-fayllar, kesh va boshqa sayt ma’lumotlarini tozalash...</translation>
@@ -50,8 +49,8 @@
 <translation id="1327257854815634930">Sahifalar tarixi ochildi</translation>
 <translation id="1331212799747679585">Chrome yangilanmadi. Boshqa sozlamalar</translation>
 <translation id="1332501820983677155">Google Chrome funksiyalari</translation>
+<translation id="1347468774581902829">Tarixni boshqarish</translation>
 <translation id="1360432990279830238">Chiqilsin va sinxronizatsiya uzilsinmi?</translation>
-<translation id="1364532808393826295"><ph name="APP_NAME" /> - <ph name="NOTIFICATION_MESSAGE" /></translation>
 <translation id="1373696734384179344">Tanlangan kontentni yuklab olish uchun yetarli bo‘sh joy yo‘q.</translation>
 <translation id="1376578503827013741">Hisoblanmoqda…</translation>
 <translation id="1383876407941801731">Qidiruv</translation>
@@ -122,7 +121,6 @@
 <translation id="2013642289801508067">{FILE_COUNT,plural, =1{# ta fayl}other{# ta fayl}}</translation>
 <translation id="2017836877785168846">Manzil qatoridan tarix va avtoto‘ldirishlarni tozalaydi.</translation>
 <translation id="2021896219286479412">To‘liq ekranli rejim sozlamalari</translation>
-<translation id="2030769033451695672"><ph name="URL_OF_THE_CURRENT_TAB" /> sahifasiga qaytish uchun bosing</translation>
 <translation id="2038563949887743358">Saytning to‘liq versiyasini ko‘rish</translation>
 <translation id="204321170514947529">Chrome brauzeridagi <ph name="APP_NAME" /> maʼlumotlari ham tozalanadi</translation>
 <translation id="2049574241039454490"><ph name="FILE_SIZE_OF_TOTAL" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
@@ -434,6 +432,7 @@ Google hisobingiz orqali amalga oshirgan qidiruvlaringiz, brauzer tarixi va bosh
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> ta xatcho‘p o‘chirib tashlandi</translation>
 <translation id="4665282149850138822"><ph name="NAME" /> sayti bosh ekranga qo‘shildi</translation>
 <translation id="4684427112815847243">Hamma narsa sinxronlansin</translation>
+<translation id="4688610874307684559">Chrome ichida ishga tushgan (Boshida)</translation>
 <translation id="4695891336199304370">{SHIPPING_OPTIONS,plural, =1{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 va yana <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> ta}other{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 va yana <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> ta}}</translation>
 <translation id="4696983787092045100">Matnni qurilmalaringizga yuborish</translation>
 <translation id="4698034686595694889"><ph name="APP_NAME" /> orqali oflayn ko‘rish mumkin</translation>
@@ -592,7 +591,6 @@ Bu sozlamani almashtirish uchun <ph name="BEGIN_LINK" />sinxronizatsiyani tiklan
 <translation id="5876056640971328065">Videoni pauza qilish</translation>
 <translation id="5884076754568147479">Google internetda ishlashingizni osonlashtirish uchun Assistent orqali kirilgan saytlarning URL manzillari va kontentlarini, shuningdek, soʻrovlarni ham oladi</translation>
 <translation id="5919204609460789179">Sinxronizatsiyani boshlash uchun <ph name="PRODUCT_NAME" /> yangilanishi kerak</translation>
-<translation id="5922853908706496913">Ekran namoyish qilinmoqda</translation>
 <translation id="5937580074298050696"><ph name="AMOUNT" /> trafik tejaldi</translation>
 <translation id="5939518447894949180">Asliga qaytarish</translation>
 <translation id="5942872142862698679">Asosiy qidiruv tizimi – Google</translation>
@@ -773,16 +771,17 @@ Masalan, qaysi sahifalarga kirganligingizdan qat’i nazar, ba’zi saytlarda re
 <translation id="7479104141328977413">Varaqlar boshqaruvi</translation>
 <translation id="7481312909269577407">Oldinga</translation>
 <translation id="7482656565088326534">Razm solish sahifasi</translation>
+<translation id="7484997419527351112">Discover - yoqilmagan</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (oxirgi yangilanish: <ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7494974237137038751">tejalgan trafik</translation>
 <translation id="7498271377022651285">Iltimos kuting...</translation>
 <translation id="7514365320538308">Yuklab olish</translation>
 <translation id="751961395872307827">Saytga ulanib bo‘lmadi</translation>
 <translation id="7542481630195938534">Tavsiyalar yuklanmadi</translation>
-<translation id="7554752735887601236">Sayt mikrofondan foydalanmoqda</translation>
 <translation id="7559975015014302720">Lite rejimi yoqilmagan</translation>
 <translation id="7562080006725997899">Brauzer tarixini tozalash</translation>
 <translation id="756809126120519699">Chrome ma’lumotlari tozalandi</translation>
+<translation id="7577900504646297215">Qiziqishlarni sozlash</translation>
 <translation id="757855969265046257">{FILES,plural, =1{<ph name="FILES_DOWNLOADED_ONE" /> ta fayl yuklab olindi}other{<ph name="FILES_DOWNLOADED_MANY" /> ta fayl yuklab olindi}}</translation>
 <translation id="7588219262685291874">Qurilmangizda Batareya quvvatini tejash rejimi yoqilganda tungi mavzu faollashadi</translation>
 <translation id="7593557518625677601">Android sozlamalarini oching va Chrome Sync xizmatini ishga tushirish uchun Android tizimini sinxronlashni qayta yoqib qo‘ying</translation>
@@ -813,7 +812,6 @@ Masalan, qaysi sahifalarga kirganligingizdan qat’i nazar, ba’zi saytlarda re
 <translation id="7774809984919390718">{PAYMENT_METHOD,plural, =1{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 va yana <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> ta}other{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 va yana <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> ta}}</translation>
 <translation id="7791543448312431591">Qo‘shish</translation>
 <translation id="780301667611848630">Kerak emas</translation>
-<translation id="7804248752222191302">Sayt kameradan foydalanmoqda</translation>
 <translation id="7810647596859435254">Quyidagi bilan ochish…</translation>
 <translation id="7821588508402923572">Tejalgan trafik shu yerda paydo bo‘ladi</translation>
 <translation id="783819812427904514">Video ovozini yoqish</translation>
@@ -885,9 +883,7 @@ Masalan, qaysi sahifalarga kirganligingizdan qat’i nazar, ba’zi saytlarda re
 <translation id="8349013245300336738">Sarflangan trafik asosida saralash</translation>
 <translation id="8364299278605033898">Mahalliy ommabop saytlar</translation>
 <translation id="8368027906805972958">Notanish yoki qoʻllab-quvvatlanmaydigan qurilma (<ph name="DEVICE_ID" />)</translation>
-<translation id="83792324527827022">Sayt kamera va mikrofondan foydalanmoqda</translation>
 <translation id="8393700583063109961">Xabar yuborish</translation>
-<translation id="8394832520002899662">Saytga qaytish uchun bosing</translation>
 <translation id="8413126021676339697">Barcha tarixni ko‘rsatish</translation>
 <translation id="8427875596167638501">Razm solish sahifasi yarim hajmda ochildi</translation>
 <translation id="8428213095426709021">Sozlamalar</translation>
@@ -984,7 +980,6 @@ Masalan, qaysi sahifalarga kirganligingizdan qat’i nazar, ba’zi saytlarda re
 <translation id="970715775301869095"><ph name="MINUTES" /> daqiqa qoldi</translation>
 <translation id="974555521953189084">Sinxronizatsiyani boshlash uchun kodli iborani kiriting</translation>
 <translation id="981121421437150478">Oflayn</translation>
-<translation id="982182592107339124">Barcha saytlarga tegishli ma’lumotlar tozalanadi, jumladan:</translation>
 <translation id="983192555821071799">Barcha ichki oynalarni yopish</translation>
 <translation id="987264212798334818">Umumiy</translation>
 </translationbundle>

@@ -228,6 +228,26 @@ class CompositorImpl::ScopedCachedBackBuffer {
   uint32_t cache_id_;
 };
 
+class CompositorImpl::ReadbackRefImpl
+    : public ui::WindowAndroidCompositor::ReadbackRef {
+ public:
+  explicit ReadbackRefImpl(base::WeakPtr<CompositorImpl> weakptr);
+  ~ReadbackRefImpl() override;
+
+ private:
+  base::WeakPtr<CompositorImpl> compositor_weakptr_;
+};
+
+CompositorImpl::ReadbackRefImpl::ReadbackRefImpl(
+    base::WeakPtr<CompositorImpl> weakptr)
+    : compositor_weakptr_(weakptr) {}
+
+CompositorImpl::ReadbackRefImpl::~ReadbackRefImpl() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  if (compositor_weakptr_)
+    compositor_weakptr_->DecrementPendingReadbacks();
+}
+
 // static
 Compositor* Compositor::Create(CompositorClient* client,
                                gfx::NativeWindow root_window) {
@@ -455,6 +475,18 @@ void CompositorImpl::SetVisible(bool visible) {
 }
 
 void CompositorImpl::TearDownDisplayAndUnregisterRootFrameSink() {
+  // Make a best effort to try to complete pending readbacks.
+  // TODO(crbug.com/637035): Consider doing this in a better way,
+  // ideally with the guarantee of readbacks completing.
+  if (display_private_ && pending_readbacks_) {
+    // Note that while this is not a Sync IPC, the call to
+    // InvalidateFrameSinkId below will end up triggering a sync call to
+    // FrameSinkManager::DestroyCompositorFrameSink, as this is the root
+    // frame sink. Because |display_private_| is an associated remote to
+    // FrameSinkManager, this subsequent sync call will ensure ordered
+    // execution of this call.
+    display_private_->ForceImmediateDrawAndSwapIfPossible();
+  }
   GetHostFrameSinkManager()->InvalidateFrameSinkId(frame_sink_id_);
   display_private_.reset();
 }
@@ -669,6 +701,12 @@ CompositorImpl::GetBeginMainFrameMetrics() {
   return nullptr;
 }
 
+std::unique_ptr<ui::WindowAndroidCompositor::ReadbackRef>
+CompositorImpl::TakeReadbackRef() {
+  ++pending_readbacks_;
+  return std::make_unique<ReadbackRefImpl>(weak_factory_.GetWeakPtr());
+}
+
 void CompositorImpl::RequestCopyOfOutputOnRootLayer(
     std::unique_ptr<viz::CopyOutputRequest> request) {
   root_window_->GetLayer()->RequestCopyOfOutput(std::move(request));
@@ -874,6 +912,11 @@ void CompositorImpl::EvictCachedBackBuffer() {
 void CompositorImpl::RequestPresentationTimeForNextFrame(
     PresentationTimeCallback callback) {
   host_->RequestPresentationTimeForNextFrame(std::move(callback));
+}
+
+void CompositorImpl::DecrementPendingReadbacks() {
+  DCHECK_GT(pending_readbacks_, 0u);
+  --pending_readbacks_;
 }
 
 }  // namespace content

@@ -45,6 +45,9 @@ ASH_PUBLIC_EXPORT extern const base::Feature kDockedMagnifier;
 // TODO(crbug.com/890029): Remove this when the feature is fully launched.
 ASH_PUBLIC_EXPORT extern const base::Feature kDragToSnapInClamshellMode;
 
+// Enables resizing/moving the selection region for partial screenshot.
+ASH_PUBLIC_EXPORT extern const base::Feature kMovablePartialScreenshot;
+
 // Enables rounded corners in overview mode for testing.
 // TODO(crbug.com/903486): Remove this when new rounded corners implementation
 // has landed.
@@ -222,6 +225,8 @@ ASH_PUBLIC_EXPORT bool IsDisplayIdentificationEnabled();
 ASH_PUBLIC_EXPORT bool IsWebUITabStripTabDragIntegrationEnabled();
 
 ASH_PUBLIC_EXPORT bool IsDisplayAlignmentAssistanceEnabled();
+
+ASH_PUBLIC_EXPORT bool IsMovablePartialScreenshotEnabled();
 
 // These two functions are supposed to be temporary functions to set or get
 // whether "WebUITabStrip" feature is enabled from Chrome.

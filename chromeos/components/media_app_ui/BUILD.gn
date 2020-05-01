@@ -24,9 +24,11 @@ static_library("media_app_ui") {
   deps = [
     ":mojo_bindings",
     ":mojo_bindings_js",
+    "//chromeos/components/web_applications",
     "//chromeos/constants",
     "//chromeos/resources:media_app_bundle_resources",
     "//chromeos/resources:media_app_resources",
+    "//chromeos/strings",
     "//content/public/browser",
     "//mojo/public/cpp/bindings",
     "//mojo/public/cpp/platform",

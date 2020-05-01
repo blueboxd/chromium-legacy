@@ -12,6 +12,7 @@
 #include "build/build_config.h"
 #include "cc/base/switches.h"
 #include "components/captive_portal/core/buildflags.h"
+#include "components/prefs/pref_service.h"
 #include "components/startup_metric_utils/browser/startup_metric_utils.h"
 #include "components/translate/core/browser/translate_download_manager.h"
 #include "content/public/browser/browser_thread.h"
@@ -91,8 +92,11 @@ void StopMessageLoop(base::OnceClosure quit_closure) {
 
 BrowserMainPartsImpl::BrowserMainPartsImpl(
     MainParams* params,
-    const content::MainFunctionParams& main_function_params)
-    : params_(params), main_function_params_(main_function_params) {}
+    const content::MainFunctionParams& main_function_params,
+    std::unique_ptr<PrefService> local_state)
+    : params_(params),
+      main_function_params_(main_function_params),
+      local_state_(std::move(local_state)) {}
 
 BrowserMainPartsImpl::~BrowserMainPartsImpl() = default;
 
@@ -119,7 +123,7 @@ void BrowserMainPartsImpl::PreMainMessageLoopStart() {
 }
 
 int BrowserMainPartsImpl::PreEarlyInitialization() {
-  browser_process_ = std::make_unique<BrowserProcess>();
+  browser_process_ = std::make_unique<BrowserProcess>(std::move(local_state_));
 
 #if defined(USE_X11)
   ui::SetDefaultX11ErrorHandlers();

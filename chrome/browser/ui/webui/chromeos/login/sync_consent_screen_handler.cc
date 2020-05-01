@@ -6,10 +6,12 @@
 
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/values.h"
 #include "chrome/browser/chromeos/login/screens/sync_consent_screen.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "components/login/localized_values_builder.h"
+#include "components/user_manager/user_manager.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace {
@@ -93,6 +95,10 @@ void SyncConsentScreenHandler::DeclareLocalizedValues(
       "syncConsentScreenPersonalizeGoogleServicesName",
       IDS_LOGIN_SYNC_CONSENT_SCREEN_PERSONALIZE_GOOGLE_SERVICES_NAME, builder);
   RememberLocalizedValue(
+      "syncConsentScreenPersonalizeGoogleServicesDescriptionSupervisedUser",
+      IDS_LOGIN_SYNC_CONSENT_SCREEN_PERSONALIZE_GOOGLE_SERVICES_DESCRIPTION_SUPERVISED_USER,
+      builder);
+  RememberLocalizedValue(
       "syncConsentScreenPersonalizeGoogleServicesDescription",
       IDS_LOGIN_SYNC_CONSENT_SCREEN_PERSONALIZE_GOOGLE_SERVICES_DESCRIPTION,
       builder);
@@ -121,7 +127,11 @@ void SyncConsentScreenHandler::Bind(SyncConsentScreen* screen) {
 }
 
 void SyncConsentScreenHandler::Show() {
-  ShowScreen(kScreenId);
+  bool is_child_account_ =
+      user_manager::UserManager::Get()->IsLoggedInAsChildUser();
+  base::DictionaryValue data;
+  data.SetBoolean("isChildAccount", is_child_account_);
+  ShowScreenWithData(kScreenId, &data);
 }
 
 void SyncConsentScreenHandler::Hide() {}

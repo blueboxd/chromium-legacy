@@ -631,7 +631,7 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   bool IsInPictureInPicture() const;
 
   // Sets the UKM container name if needed.
-  void MaybeSetContainerName();
+  void MaybeSetContainerNameForMetrics();
 
   // Switch to SurfaceLayer, either initially or from VideoLayer.
   void ActivateSurfaceLayerForVideo();

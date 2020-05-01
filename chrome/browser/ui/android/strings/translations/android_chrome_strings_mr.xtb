@@ -38,7 +38,6 @@
 <translation id="1258753120186372309">Google डूडल: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1260236875608242557">शोधा आणि एक्सप्लोर करा</translation>
 <translation id="1266864766717917324"><ph name="CONTENT_TYPE" /> शेअर करू शकलो नाही</translation>
-<translation id="1272079795634619415">थांबा</translation>
 <translation id="1283039547216852943">विस्तृत करण्यासाठी टॅप करा</translation>
 <translation id="1285320974508926690">या साइटचा कधीही भाषांतर करु नका</translation>
 <translation id="1291207594882862231">इतिहास, कुकी, साइट डेटा, कॅशे  साफ करा…</translation>
@@ -51,7 +50,6 @@
 <translation id="1331212799747679585">Chrome अपडेट होऊ शकत नाही. आणखी पर्याय</translation>
 <translation id="1332501820983677155">Google Chrome वैशिष्ट्य शॉर्टकट</translation>
 <translation id="1360432990279830238">साइन आउट करून सिंक बंद करायचे आहे का?</translation>
-<translation id="1364532808393826295"><ph name="APP_NAME" /> - <ph name="NOTIFICATION_MESSAGE" /></translation>
 <translation id="1373696734384179344">निवडलेला आशय डाउनलोड करण्यासाठी अपुरी मेमरी.</translation>
 <translation id="1376578503827013741">गणना करत आहे...</translation>
 <translation id="1383876407941801731">शोधा</translation>
@@ -122,7 +120,6 @@
 <translation id="2013642289801508067">{FILE_COUNT,plural, =1{# फाइल}other{# फायली}}</translation>
 <translation id="2017836877785168846">ॲड्रेस बारमधील इतिहास आणि आपोआप पूर्ण केलेले साफ करते.</translation>
 <translation id="2021896219286479412">फुल स्क्रीन साइट नियंत्रणे</translation>
-<translation id="2030769033451695672"><ph name="URL_OF_THE_CURRENT_TAB" /> वर परत जाण्यासाठी टॅप करा</translation>
 <translation id="2038563949887743358">डेस्कटॉप साइट विनंती चालू करा</translation>
 <translation id="204321170514947529"><ph name="APP_NAME" />चा Chrome मध्ये देखील डेटा आहे</translation>
 <translation id="2049574241039454490"><ph name="FILE_SIZE_OF_TOTAL" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
@@ -592,7 +589,6 @@
 <translation id="5876056640971328065">व्हिडिओ थांबवा</translation>
 <translation id="5884076754568147479">टास्क पूर्ण करण्यात तुम्हाला मदत व्हावी म्हणून Google ला तुम्ही Assistant वापरून सबमिट करता त्या माहितीच्या समावेशासह तुम्ही Assistant वापरता त्या साइटचा आशय आणि URL मिळतील</translation>
 <translation id="5919204609460789179">सिंक सुरू करण्यासाठी <ph name="PRODUCT_NAME" /> अपडेट करा</translation>
-<translation id="5922853908706496913">तुमची स्क्रीन शेअर करत आहे</translation>
 <translation id="5937580074298050696"><ph name="AMOUNT" /> वाचवला</translation>
 <translation id="5939518447894949180">रीसेट करा</translation>
 <translation id="5942872142862698679">शोध करण्‍यासाठी Google वापरत आहे</translation>
@@ -779,7 +775,6 @@
 <translation id="7514365320538308">डाउनलोड करा</translation>
 <translation id="751961395872307827">साइटशी कनेक्ट करु शकत नाही</translation>
 <translation id="7542481630195938534">सूचना मिळवू शकत नाही</translation>
-<translation id="7554752735887601236">साइट तुमचा मायक्रोफोन वापरत आहे</translation>
 <translation id="7559975015014302720">लाइट मोड बंद आहे</translation>
 <translation id="7562080006725997899">ब्राउझिंग डेटा साफ करत आहे</translation>
 <translation id="756809126120519699">Chrome डेटा साफ केला</translation>
@@ -813,7 +808,6 @@
 <translation id="7774809984919390718">{PAYMENT_METHOD,plural, =1{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 आणि <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> अधिक}other{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 आणि <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> अधिक}}</translation>
 <translation id="7791543448312431591">जोडा</translation>
 <translation id="780301667611848630">नाही, नको</translation>
-<translation id="7804248752222191302">साइट तुमचा कॅमेरा वापरत आहे</translation>
 <translation id="7810647596859435254">यासह उघडा...</translation>
 <translation id="7821588508402923572">तुमची डेटा बचत येथे दिसेल</translation>
 <translation id="783819812427904514">व्हिडिओ अनम्यूट करा</translation>
@@ -885,9 +879,7 @@
 <translation id="8349013245300336738">वापरलेल्या डेटानुसार क्रमाने लावा</translation>
 <translation id="8364299278605033898">लोकप्रिय वेबसाइट पाहा</translation>
 <translation id="8368027906805972958">अज्ञात किंवा सपोर्ट नसलेले डिव्हाइस (<ph name="DEVICE_ID" />)</translation>
-<translation id="83792324527827022">साइट तुमचा कॅमेरा आणि मायक्रोफोन वापरत आहे</translation>
 <translation id="8393700583063109961">संदेश पाठवा</translation>
-<translation id="8394832520002899662">साइटवर परत जाण्यासाठी टॅप करा</translation>
 <translation id="8413126021676339697">संपूर्ण इतिहास दर्शवा</translation>
 <translation id="8427875596167638501">पूर्वावलोकन टॅब अर्धा उघडा आहे</translation>
 <translation id="8428213095426709021">सेटिंग्ज</translation>
@@ -984,7 +976,6 @@
 <translation id="970715775301869095"><ph name="MINUTES" /> मिनिटे शिल्लक</translation>
 <translation id="974555521953189084">सिंक सुरू करण्यासाठी तुमचा सांकेतिक पासफ्रेझ एंटर करा</translation>
 <translation id="981121421437150478">ऑफलाइन</translation>
-<translation id="982182592107339124">हे यासह सर्व साइटसाठी डेटा साफ करेल:</translation>
 <translation id="983192555821071799">सर्व टॅब बंद करा</translation>
 <translation id="987264212798334818">सामान्य</translation>
 </translationbundle>

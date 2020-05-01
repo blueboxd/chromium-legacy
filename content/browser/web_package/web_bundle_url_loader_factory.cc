@@ -12,6 +12,7 @@
 #include "base/strings/string_util.h"
 #include "base/task/post_task.h"
 #include "content/browser/web_package/web_bundle_reader.h"
+#include "content/browser/web_package/web_bundle_source.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
@@ -228,9 +229,7 @@ void WebBundleURLLoaderFactory::CreateLoaderAndStart(
     const network::ResourceRequest& resource_request,
     mojo::PendingRemote<network::mojom::URLLoaderClient> loader_client,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation) {
-  if (base::EqualsCaseInsensitiveASCII(resource_request.method,
-                                       net::HttpRequestHeaders::kGetMethod) &&
-      reader_->HasEntry(resource_request.url)) {
+  if (CanHandleRequest(resource_request)) {
     auto loader = std::make_unique<EntryLoader>(
         weak_factory_.GetWeakPtr(), std::move(loader_client), resource_request,
         frame_tree_node_id_);
@@ -251,6 +250,24 @@ void WebBundleURLLoaderFactory::CreateLoaderAndStart(
 void WebBundleURLLoaderFactory::Clone(
     mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver) {
   receivers_.Add(this, std::move(receiver));
+}
+
+bool WebBundleURLLoaderFactory::CanHandleRequest(
+    const network::ResourceRequest& resource_request) const {
+  if (!base::EqualsCaseInsensitiveASCII(resource_request.method,
+                                        net::HttpRequestHeaders::kGetMethod)) {
+    return false;
+  }
+  if (reader_->source().is_network() &&
+      !reader_->source().IsPathRestrictionSatisfied(resource_request.url)) {
+    // For network served bundle, subresources are loaded from the bundle only
+    // when their URLs are inside the bundle's scope.
+    // https://github.com/WICG/webpackage/blob/master/explainers/navigation-to-unsigned-bundles.md#loading-an-authoritative-unsigned-bundle
+    // 'Subsequent subresource requests will also only be served from the bundle
+    // if they're inside its scope.'
+    return false;
+  }
+  return reader_->HasEntry(resource_request.url);
 }
 
 }  // namespace content

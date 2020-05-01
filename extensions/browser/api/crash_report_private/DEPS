@@ -4,7 +4,7 @@ include_rules = [
 ]
 
 specific_include_rules = {
-  "crash_report_private_apitest.cc": [
+  "mock_crash_endpoint.cc": [
     "+components/crash/core/app/crash_reporter_client.h",
   ],
 }

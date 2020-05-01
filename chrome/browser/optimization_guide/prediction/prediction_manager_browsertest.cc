@@ -19,6 +19,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
+#include "components/optimization_guide/optimization_guide_constants.h"
 #include "components/optimization_guide/optimization_guide_features.h"
 #include "components/optimization_guide/optimization_guide_store.h"
 #include "components/optimization_guide/optimization_guide_switches.h"
@@ -265,7 +266,14 @@ class PredictionManagerBrowserTest : public InProcessBrowserTest {
                            "whatever.com,somehost.com");
     cmd->AppendSwitchASCII(
         optimization_guide::switches::kOptimizationGuideServiceGetModelsURL,
-        models_server_->base_url().spec());
+        models_server_
+            ->GetURL(GURL(optimization_guide::
+                              kOptimizationGuideServiceGetModelsDefaultURL)
+                         .host(),
+                     "/")
+            .spec());
+    cmd->AppendSwitchASCII("host-rules", "MAP * 127.0.0.1");
+    cmd->AppendSwitchASCII("force-variation-ids", "4");
   }
 
   void SetResponseType(
@@ -313,6 +321,7 @@ class PredictionManagerBrowserTest : public InProcessBrowserTest {
     // The request to the remote Optimization Guide Service should always be a
     // POST.
     EXPECT_EQ(request.method, net::test_server::METHOD_POST);
+    EXPECT_NE(request.headers.end(), request.headers.find("X-Client-Data"));
     response->set_code(net::HTTP_OK);
     std::unique_ptr<optimization_guide::proto::GetModelsResponse>
         get_models_response = BuildGetModelsResponse(

@@ -36,6 +36,9 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/events/scoped_event_queue.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
+#include "third_party/blink/renderer/core/editing/frame_selection.h"
+#include "third_party/blink/renderer/core/editing/position.h"
+#include "third_party/blink/renderer/core/editing/selection_template.h"
 #include "third_party/blink/renderer/core/events/keyboard_event.h"
 #include "third_party/blink/renderer/core/events/mouse_event.h"
 #include "third_party/blink/renderer/core/html/forms/base_temporal_input_type.h"
@@ -357,6 +360,20 @@ MultipleFieldsTemporalInputTypeView::~MultipleFieldsTemporalInputTypeView() =
 void MultipleFieldsTemporalInputTypeView::Trace(Visitor* visitor) {
   visitor->Trace(input_type_);
   InputTypeView::Trace(visitor);
+}
+
+void MultipleFieldsTemporalInputTypeView::UpdateAppearanceOnFocus(
+    SelectionBehaviorOnFocus selection_behavior,
+    const FocusOptions& options) {
+  GetElement().GetDocument().GetFrame()->Selection().SetSelection(
+      SelectionInDOMTree::Builder()
+          .Collapse(Position(*GetDateTimeEditElement(), 0))
+          .Build(),
+      SetSelectionOptions::Builder()
+          .SetShouldCloseTyping(true)
+          .SetShouldClearTypingStyle(true)
+          .SetDoNotSetFocus(true)
+          .Build());
 }
 
 void MultipleFieldsTemporalInputTypeView::Blur() {

@@ -85,7 +85,9 @@ std::string GetUserAgent() {
                       "Linux; ", "Android"
 #else
       "X11; ",
-      content::BuildOSCpuInfo(false /* include_android_build_number */).c_str()
+      content::BuildOSCpuInfo(content::IncludeAndroidBuildNumber::Exclude,
+                              content::IncludeAndroidModel::Include)
+          .c_str()
 #endif
       );
   return content::BuildUserAgentFromOSAndProduct(os_info, product) +

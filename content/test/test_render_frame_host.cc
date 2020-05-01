@@ -64,6 +64,7 @@ TestRenderFrameHost::TestRenderFrameHost(
     FrameTree* frame_tree,
     FrameTreeNode* frame_tree_node,
     int32_t routing_id,
+    const base::UnguessableToken& frame_token,
     RenderFrameHostImpl::LifecycleState lifecyle_state)
     : RenderFrameHostImpl(site_instance,
                           std::move(render_view_host),
@@ -71,6 +72,7 @@ TestRenderFrameHost::TestRenderFrameHost(
                           frame_tree,
                           frame_tree_node,
                           routing_id,
+                          frame_token,
                           /*renderer_initiated_creation=*/false,
                           lifecyle_state),
       child_creation_observer_(delegate ? delegate->GetAsWebContents()
@@ -132,13 +134,13 @@ void TestRenderFrameHost::InitializeRenderFrameIfNeeded() {
 TestRenderFrameHost* TestRenderFrameHost::AppendChild(
     const std::string& frame_name) {
   std::string frame_unique_name = base::GenerateGUID();
-  OnCreateChildFrame(GetProcess()->GetNextRoutingID(),
-                     CreateStubInterfaceProviderReceiver(),
-                     CreateStubBrowserInterfaceBrokerReceiver(),
-                     blink::mojom::TreeScopeType::kDocument, frame_name,
-                     frame_unique_name, false, base::UnguessableToken::Create(),
-                     blink::FramePolicy(), blink::mojom::FrameOwnerProperties(),
-                     blink::mojom::FrameOwnerElementType::kIframe);
+  OnCreateChildFrame(
+      GetProcess()->GetNextRoutingID(), CreateStubInterfaceProviderReceiver(),
+      CreateStubBrowserInterfaceBrokerReceiver(),
+      blink::mojom::TreeScopeType::kDocument, frame_name, frame_unique_name,
+      false, base::UnguessableToken::Create(), base::UnguessableToken::Create(),
+      blink::FramePolicy(), blink::mojom::FrameOwnerProperties(),
+      blink::mojom::FrameOwnerElementType::kIframe);
   return static_cast<TestRenderFrameHost*>(
       child_creation_observer_.last_created_frame());
 }

@@ -5318,6 +5318,61 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest,
     EXPECT_TRUE(reload_observer.last_navigation_succeeded());
   }
 }
+// A custom ContentBrowserClient that simulates GetEffectiveURL() translation
+// for all URLs that are in the same page (including URL with refs).
+class PageEffectiveURLContentBrowserClient : public ContentBrowserClient {
+ public:
+  PageEffectiveURLContentBrowserClient(const GURL& url_to_modify,
+                                       const GURL& url_to_return)
+      : url_to_modify_(url_to_modify), url_to_return_(url_to_return) {}
+  ~PageEffectiveURLContentBrowserClient() override = default;
+
+ private:
+  GURL GetEffectiveURL(BrowserContext* browser_context,
+                       const GURL& url) override {
+    if (url.EqualsIgnoringRef(url_to_modify_))
+      return url_to_return_;
+    return url;
+  }
+
+  GURL url_to_modify_;
+  GURL url_to_return_;
+
+  DISALLOW_COPY_AND_ASSIGN(PageEffectiveURLContentBrowserClient);
+};
+
+// Ensure that same-document navigations for URLs with effective URLs don't
+// incorrectly swap BrowsingInstance. See crbug.com/1073540.
+IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest,
+                       NavigationToSameDocumentWithEffectiveURL) {
+  StartEmbeddedServer();
+  const GURL page_url(embedded_test_server()->GetURL("/title1.html"));
+  const GURL anchor_in_page_url(
+      embedded_test_server()->GetURL("/title1.html#bar"));
+  const GURL effective_url("http://foo.com");
+  auto* web_contents = static_cast<WebContentsImpl*>(shell()->web_contents());
+  // The effective URL for |page_url| and |anchor_in_page_url| will be
+  // |effective_url|.
+  PageEffectiveURLContentBrowserClient modified_client(page_url, effective_url);
+  ContentBrowserClient* regular_client =
+      SetBrowserClientForTesting(&modified_client);
+
+  // Make a navigation to |page_url|.
+  EXPECT_TRUE(NavigateToURL(shell(), page_url));
+  EXPECT_EQ(web_contents->GetLastCommittedURL(), page_url);
+  scoped_refptr<SiteInstance> orig_site_instance =
+      web_contents->GetMainFrame()->GetSiteInstance();
+
+  // Navigate to #bar in the same document.
+  EXPECT_TRUE(NavigateToURL(shell(), anchor_in_page_url));
+  EXPECT_EQ(web_contents->GetLastCommittedURL(), anchor_in_page_url);
+  // We should reuse the same SiteInstance.
+  EXPECT_EQ(orig_site_instance,
+            web_contents->GetMainFrame()->GetSiteInstance());
+
+  // Set the browser client back to the regular client.
+  SetBrowserClientForTesting(regular_client);
+}
 
 // A test ContentBrowserClient implementation which enforces
 // BrowsingInstance swap on every navigation. It is used to verify that

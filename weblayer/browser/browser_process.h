@@ -13,7 +13,6 @@
 #include "build/build_config.h"
 #include "services/network/public/cpp/network_quality_tracker.h"
 
-class PrefRegistrySimple;
 class PrefService;
 
 namespace network_time {
@@ -31,7 +30,7 @@ class SafeBrowsingService;
 // the UI thread.
 class BrowserProcess {
  public:
-  BrowserProcess();
+  explicit BrowserProcess(std::unique_ptr<PrefService> local_state);
   ~BrowserProcess();
 
   static BrowserProcess* GetInstance();
@@ -55,7 +54,6 @@ class BrowserProcess {
 #endif
 
  private:
-  void RegisterPrefs(PrefRegistrySimple* pref_registry);
   void CreateNetworkQualityObserver();
 
   std::unique_ptr<PrefService> local_state_;

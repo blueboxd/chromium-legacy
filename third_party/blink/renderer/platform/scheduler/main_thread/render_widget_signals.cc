@@ -4,7 +4,7 @@
 
 #include "third_party/blink/renderer/platform/scheduler/main_thread/render_widget_signals.h"
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/memory/ptr_util.h"
 #include "third_party/blink/public/platform/scheduler/web_render_widget_scheduling_state.h"
 

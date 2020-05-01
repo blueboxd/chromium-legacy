@@ -90,7 +90,10 @@ public class AutocompleteController {
         mUseCachedZeroSuggestResults = true;
         List<OmniboxSuggestion> suggestions =
                 OmniboxSuggestion.getCachedOmniboxSuggestionsForZeroSuggest();
-        if (suggestions != null) mListener.onSuggestionsReceived(suggestions, null, "");
+        SparseArray<String> groupHeaders =
+                OmniboxSuggestion.getCachedOmniboxSuggestionHeadersForZeroSuggest();
+        OmniboxSuggestion.dropSuggestionsWithIncorrectGroupHeaders(suggestions, groupHeaders);
+        if (suggestions != null) mListener.onSuggestionsReceived(suggestions, groupHeaders, "");
     }
 
     /**
@@ -243,6 +246,7 @@ public class AutocompleteController {
         mListener.onSuggestionsReceived(suggestions, groupHeaders, inlineAutocompleteText);
         if (mWaitingForSuggestionsToCache) {
             OmniboxSuggestion.cacheOmniboxSuggestionListForZeroSuggest(suggestions);
+            OmniboxSuggestion.cacheOmniboxSuggestionHeadersForZeroSuggest(groupHeaders);
         }
     }
 

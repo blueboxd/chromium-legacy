@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.site_settings;
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
@@ -14,7 +13,6 @@ import androidx.preference.Preference;
 import org.chromium.base.Callback;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
-import org.chromium.chrome.browser.help.HelpAndFeedback;
 import org.chromium.chrome.browser.notifications.channels.SiteChannelsManager;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.settings.ChromeManagedPreferenceDelegate;
@@ -37,12 +35,18 @@ public class ChromeSiteSettingsClient implements SiteSettingsClient {
     private static final float FAVICON_TEXT_SIZE_FRACTION = 0.625f;
 
     private final Context mContext;
-    private ChromeWebappSettingsClient mChromeWebappSettingsClient;
+    private ChromeSiteSettingsHelpClient mChromeSiteSettingsHelpClient;
     private ChromeSiteSettingsPrefClient mChromeSiteSettingsPrefClient;
+    private ChromeWebappSettingsClient mChromeWebappSettingsClient;
     private ManagedPreferenceDelegate mManagedPreferenceDelegate;
 
     public ChromeSiteSettingsClient(Context context) {
         mContext = context;
+    }
+
+    @Override
+    public BrowserContextHandle getBrowserContextHandle() {
+        return Profile.getLastUsedRegularProfile();
     }
 
     @Override
@@ -59,17 +63,19 @@ public class ChromeSiteSettingsClient implements SiteSettingsClient {
     }
 
     @Override
-    public void launchSettingsHelpAndFeedbackActivity(Activity currentActivity) {
-        HelpAndFeedback.getInstance().show(currentActivity,
-                currentActivity.getString(R.string.help_context_settings),
-                Profile.getLastUsedRegularProfile(), null);
+    public SiteSettingsHelpClient getSiteSettingsHelpClient() {
+        if (mChromeSiteSettingsHelpClient == null) {
+            mChromeSiteSettingsHelpClient = new ChromeSiteSettingsHelpClient();
+        }
+        return mChromeSiteSettingsHelpClient;
     }
 
     @Override
-    public void launchProtectedContentHelpAndFeedbackActivity(Activity currentActivity) {
-        HelpAndFeedback.getInstance().show(currentActivity,
-                currentActivity.getString(R.string.help_context_protected_content),
-                Profile.getLastUsedRegularProfile(), null);
+    public ChromeSiteSettingsPrefClient getSiteSettingsPrefClient() {
+        if (mChromeSiteSettingsPrefClient == null) {
+            mChromeSiteSettingsPrefClient = new ChromeSiteSettingsPrefClient();
+        }
+        return mChromeSiteSettingsPrefClient;
     }
 
     @Override
@@ -78,11 +84,6 @@ public class ChromeSiteSettingsClient implements SiteSettingsClient {
             mChromeWebappSettingsClient = new ChromeWebappSettingsClient();
         }
         return mChromeWebappSettingsClient;
-    }
-
-    @Override
-    public BrowserContextHandle getBrowserContextHandle() {
-        return Profile.getLastUsedRegularProfile();
     }
 
     @Override
@@ -141,14 +142,6 @@ public class ChromeSiteSettingsClient implements SiteSettingsClient {
     @Override
     public boolean isQuietNotificationPromptsFeatureEnabled() {
         return ChromeFeatureList.isEnabled(ChromeFeatureList.QUIET_NOTIFICATION_PROMPTS);
-    }
-
-    @Override
-    public ChromeSiteSettingsPrefClient getSiteSettingsPrefClient() {
-        if (mChromeSiteSettingsPrefClient == null) {
-            mChromeSiteSettingsPrefClient = new ChromeSiteSettingsPrefClient();
-        }
-        return mChromeSiteSettingsPrefClient;
     }
 
     @Override

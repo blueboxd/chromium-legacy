@@ -25,6 +25,7 @@
 #import "ios/chrome/browser/safe_browsing/safe_browsing_unsafe_resource_container.h"
 #import "ios/chrome/browser/web/error_page_util.h"
 #include "ios/chrome/browser/web/features.h"
+#import "ios/components/security_interstitials/ios_blocking_page_tab_helper.h"
 #include "ios/web/common/features.h"
 #import "ios/web/common/web_view_creation_util.h"
 #import "ios/web/public/test/error_test_util.h"
@@ -313,6 +314,8 @@ TEST_F(ChromeWebClientTest, PrepareErrorPageWithSSLInfo) {
         page = error_html;
       });
   web::TestWebState test_web_state;
+  security_interstitials::IOSBlockingPageTabHelper::CreateForWebState(
+      &test_web_state);
   test_web_state.SetBrowserState(browser_state());
   web_client.PrepareErrorPage(&test_web_state, GURL(kTestUrl), error,
                               /*is_post=*/false,
@@ -333,6 +336,8 @@ TEST_F(ChromeWebClientTest, PrepareErrorPageWithSSLInfo) {
 TEST_F(ChromeWebClientTest, PrepareErrorPageForSafeBrowsingError) {
   // Store an unsafe resource in |web_state|'s container.
   web::TestWebState web_state;
+  security_interstitials::IOSBlockingPageTabHelper::CreateForWebState(
+      &web_state);
   SafeBrowsingUnsafeResourceContainer::CreateForWebState(&web_state);
   security_interstitials::UnsafeResource resource;
   resource.threat_type = safe_browsing::SB_THREAT_TYPE_URL_PHISHING;

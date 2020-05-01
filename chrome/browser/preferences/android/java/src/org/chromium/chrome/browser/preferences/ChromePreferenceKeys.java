@@ -479,6 +479,14 @@ public final class ChromePreferenceKeys {
             "com.google.android.apps.chrome.ChromeMobileApplication.BOOT_TIMESTAMP";
 
     /**
+     * Key prefix for base promo component. Used in {@link
+     * org.chromium.components.browser_ui.widget.promo.PromoCardCoordinator} to store related state
+     * or statistics.
+     */
+    public static final KeyPrefix PROMO_IS_DISMISSED =
+            new KeyPrefix("Chrome.PromoCard.IsDismissed.*");
+
+    /**
      * Key to cache the enabled bottom toolbar parameter.
      */
     public static final String VARIATION_CACHED_BOTTOM_TOOLBAR = "bottom_toolbar_variation";
@@ -685,6 +693,7 @@ public final class ChromePreferenceKeys {
                 FLAGS_FIELD_TRIAL_PARAM_CACHED.pattern(),
                 HOMEPAGE_LOCATION_POLICY,
                 HOMEPAGE_USE_CHROME_NTP,
+                PROMO_IS_DISMISSED.pattern(),
                 TWA_DISCLOSURE_SEEN_PACKAGES
         );
         // clang-format on

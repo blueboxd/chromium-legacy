@@ -3,6 +3,9 @@
 // found in the LICENSE file.
 
 #include "device/udev_linux/udev.h"
+
+#include "base/files/file_path.h"
+#include "device/udev_linux/fake_udev_loader.h"
 #include "device/udev_linux/udev_loader.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
@@ -21,6 +24,56 @@ TEST(UdevTest, DecodeString) {
 
 TEST(UdevTest, Loader) {
   ASSERT_NE(nullptr, UdevLoader::Get());
+}
+
+TEST(UdevTest, GetSysAttrNoAttrs) {
+  testing::FakeUdevLoader fake_udev;
+  udev_device* device = fake_udev.AddFakeDevice("Foo", "/device/foo", {}, {});
+
+  const std::string attr_value = UdevDeviceGetSysattrValue(device, "attr");
+  EXPECT_TRUE(attr_value.empty());
+}
+
+TEST(UdevTest, GetSysAttrSimple) {
+  testing::FakeUdevLoader fake_udev;
+  std::map<std::string, std::string> attrs;
+  attrs.emplace("attr", "attr value");
+  udev_device* device =
+      fake_udev.AddFakeDevice("Foo", "/device/foo", std::move(attrs), {});
+
+  std::string attr_value = UdevDeviceGetSysattrValue(device, "attr");
+  EXPECT_EQ("attr value", attr_value);
+
+  attr_value = UdevDeviceGetSysattrValue(device, "unknown attr");
+  EXPECT_TRUE(attr_value.empty());
+}
+
+TEST(UdevTest, GetParent) {
+  testing::FakeUdevLoader fake_udev;
+  std::map<std::string, std::string> attrs;
+  udev_device* parent = fake_udev.AddFakeDevice("Foo", "/device/foo", {}, {});
+  udev_device* device =
+      fake_udev.AddFakeDevice("Foo", "/device/foo/bar", {}, {});
+
+  EXPECT_EQ(parent, udev_device_get_parent(device));
+  EXPECT_EQ(nullptr, udev_device_get_parent(parent));
+}
+
+TEST(UdevTest, GetSysAttrRecursiveOneLevel) {
+  testing::FakeUdevLoader fake_udev;
+  std::map<std::string, std::string> attrs;
+  attrs.emplace("attr", "attr value");
+  fake_udev.AddFakeDevice("Foo", "/device/foo", std::move(attrs), {});
+  udev_device* device =
+      fake_udev.AddFakeDevice("Foo", "/device/foo/bar", {}, {});
+
+  // Don't find the attr on the current device.
+  std::string attr_value = UdevDeviceGetSysattrValue(device, "attr");
+  EXPECT_TRUE(attr_value.empty());
+
+  // Find it when searching recursive.
+  attr_value = UdevDeviceRecursiveGetSysattrValue(device, "attr");
+  EXPECT_EQ("attr value", attr_value);
 }
 
 }  // namespace device

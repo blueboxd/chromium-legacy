@@ -185,22 +185,22 @@ TEST(DisplayUtilTest, GetColorSpaceFromEdid) {
           EdidColorSpaceChecksOutcome::kSuccess),
       2);
 
-  // Test with Chromebook Eve internal display.
-  constexpr SkColorSpacePrimaries expected_eve_primaries = {.fRX = 0.639648f,
-                                                            .fRY = 0.329102f,
-                                                            .fGX = 0.299805f,
-                                                            .fGY = 0.599609f,
-                                                            .fBX = 0.149414f,
-                                                            .fBY = 0.059570f,
-                                                            .fWX = 0.312500f,
-                                                            .fWY = 0.328125f};
-  skcms_Matrix3x3 expected_eve_toXYZ50_matrix;
-  expected_eve_primaries.toXYZD50(&expected_eve_toXYZ50_matrix);
+  // Test with Chromebook Eve internal display. The SkColorSpacePrimaries:
+  // SkColorSpacePrimaries expected_eve_primaries = {.fRX = 0.639648f,
+  //                                                 .fRY = 0.329102f,
+  //                                                 .fGX = 0.299805f,
+  //                                                 .fGY = 0.599609f,
+  //                                                 .fBX = 0.149414f,
+  //                                                 .fBY = 0.059570f,
+  //                                                 .fWX = 0.312500f,
+  //                                                 .fWY = 0.328125f};
+  // are very close to the BT.709/sRGB ones, so they'll be rounded to those.
+  const skcms_TransferFunction eve_transfer({2.2, 1, 0, 0, 0, 0, 0});
+  const gfx::ColorSpace expected_eve_color_space(
+      gfx::ColorSpace::PrimaryID::BT709, gfx::ColorSpace::TransferID::CUSTOM,
+      gfx::ColorSpace::MatrixID::RGB, gfx::ColorSpace::RangeID::FULL,
+      /*custom_primary_matrix=*/nullptr, &eve_transfer);
   const std::vector<uint8_t> eve_edid(kEve, kEve + base::size(kEve) - 1);
-  const gfx::ColorSpace expected_eve_color_space =
-      gfx::ColorSpace::CreateCustom(
-          expected_eve_toXYZ50_matrix,
-          skcms_TransferFunction({2.2, 1, 0, 0, 0, 0, 0}));
   EXPECT_EQ(expected_eve_color_space.ToString(),
             GetColorSpaceFromEdid(display::EdidParser(eve_edid)).ToString());
   histogram_tester.ExpectBucketCount(

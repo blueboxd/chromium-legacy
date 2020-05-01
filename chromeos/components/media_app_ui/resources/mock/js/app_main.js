@@ -75,6 +75,33 @@ window.customElements.define('backlight-app', BacklightApp);
 class VideoContainer extends HTMLElement {}
 window.customElements.define('backlight-video-container', VideoContainer);
 
+// Add error handlers similar to go/error-collector to test crash reporting in
+// the mock app. The handlers in go/error-collector are compiled-in and have
+// more sophisticated message extraction, with fewer assumptions.
+
+/** @suppress{reportUnknownTypes,missingProperties} */
+function sendCrashReport(params) {
+  chrome.crashReportPrivate.reportError(params, () => {});
+}
+self.addEventListener('error', (event) => {
+  const errorEvent = /** @type {ErrorEvent} */ (event);
+  sendCrashReport({
+    message: /** @type {Error} */ (errorEvent.error).message,
+    url: window.location.href,
+    product: 'ChromeOS_MediaAppMock',
+    lineNumber: errorEvent.lineno,
+    columnNumber: errorEvent.colno
+  });
+});
+self.addEventListener('unhandledrejection', (event) => {
+  const rejectionEvent = /** @type {{reason: Error}} */ (event);
+  sendCrashReport({
+    message: rejectionEvent.reason.message,
+    url: window.location.href,
+    product: 'ChromeOS_MediaAppMock',
+  });
+});
+
 document.addEventListener('DOMContentLoaded', () => {
   // The "real" app first loads translations for populating strings in the app
   // for the initial load, then does this.

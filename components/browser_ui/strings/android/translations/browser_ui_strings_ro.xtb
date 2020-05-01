@@ -3,12 +3,15 @@
 <translationbundle lang="ro">
 <translation id="1006017844123154345">Deschide online</translation>
 <translation id="1044891598689252897">Site-urile vor funcționa normal</translation>
+<translation id="1124090076051167250">Astfel, se vor șterge <ph name="DATASIZE" /> din datele și cookie-urile stocate de site-uri sau aplicații de pe ecranul de pornire.</translation>
 <translation id="1124772482545689468">Utilizator</translation>
 <translation id="1178581264944972037">Întrerupe</translation>
 <translation id="1181037720776840403">Elimină</translation>
 <translation id="1201402288615127009">Înainte</translation>
 <translation id="1242008676835033345">Încorporat în <ph name="WEBSITE_URL" /></translation>
+<translation id="1272079795634619415">Oprește</translation>
 <translation id="129382876167171263">Fișierele salvate de site-uri apar aici</translation>
+<translation id="1364532808393826295"><ph name="APP_NAME" /> – <ph name="NOTIFICATION_MESSAGE" /></translation>
 <translation id="1369915414381695676">Site-ul <ph name="SITE_NAME" /> a fost adăugat</translation>
 <translation id="1383876407941801731">Caută</translation>
 <translation id="1384959399684842514">Descărcare întreruptă</translation>
@@ -29,6 +32,7 @@
 <translation id="1984937141057606926">Permise, cu excepția celor terță parte</translation>
 <translation id="1994173015038366702">Adresa URL a site-ului</translation>
 <translation id="2025115093177348061">Realitate augmentată</translation>
+<translation id="2030769033451695672">Atinge pentru a reveni la <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
 <translation id="2041019821020695769">Pentru a permite Chrome să îți trimită notificări, activează notificările și în <ph name="BEGIN_LINK" />Setările Android<ph name="END_LINK" />.</translation>
 <translation id="2079545284768500474">Anulează</translation>
 <translation id="2091887806945687916">Sunet</translation>
@@ -104,6 +108,7 @@
 <translation id="5048398596102334565">Permite accesul site-urilor la senzorii de mișcare (recomandat)</translation>
 <translation id="5063480226653192405">Utilizare</translation>
 <translation id="5100237604440890931">Afișare restrânsă – dă clic pentru a extinde.</translation>
+<translation id="5123685120097942451">Filă incognito</translation>
 <translation id="5300589172476337783">Afișează</translation>
 <translation id="5301954838959518834">OK, am înțeles</translation>
 <translation id="5307446750509046227">Șterge stocare site-uri</translation>
@@ -123,9 +128,11 @@
 <translation id="5677928146339483299">Blocat</translation>
 <translation id="5689516760719285838">Locație</translation>
 <translation id="5710871682236653961">Întreabă înainte de a permite site-urilor să trimită și să primească informații când se ating dispozitive NFC (recomandat)</translation>
+<translation id="5719847187258001597">Astfel, se vor șterge toate datele și cookie-urile stocate de <ph name="ORIGIN" /> sau de aplicația asociată de pe ecranul de pornire.</translation>
 <translation id="5804241973901381774">Permisiuni</translation>
 <translation id="5860033963881614850">Dezactivat</translation>
 <translation id="5916664084637901428">Activat</translation>
+<translation id="5922853908706496913">Se permite accesul la ecran</translation>
 <translation id="5939518447894949180">Resetează</translation>
 <translation id="6040143037577758943">Închide</translation>
 <translation id="6042308850641462728">Mai multe</translation>
@@ -169,6 +176,7 @@
 <translation id="7423098979219808738">Mai întâi întreabă</translation>
 <translation id="7423538860840206698">Citirea clipboardului este blocată</translation>
 <translation id="7521387064766892559">JavaScript</translation>
+<translation id="7554752735887601236">Un site folosește microfonul</translation>
 <translation id="7572498721684305250">Blochează trimiterea și primirea informațiilor de la site-uri când se ating dispozitive NFC</translation>
 <translation id="757524316907819857">Împiedică site-urile să redea conținutul protejat</translation>
 <translation id="7589445247086920869">Blochează pentru motorul de căutare actual</translation>
@@ -177,6 +185,7 @@
 <translation id="7781829728241885113">Ieri</translation>
 <translation id="7791543448312431591">Adaugă</translation>
 <translation id="780301667611848630">Nu, mulțumesc</translation>
+<translation id="7804248752222191302">Un site folosește camera foto</translation>
 <translation id="7817023149356982970">Te vei deconecta de la acest site.</translation>
 <translation id="7828557259026017104">Cookie-urile sunt fișiere create de site-urile pe care le accesezi. Site-urile le folosesc pentru a-ți reține preferințele. Cookie-urile terță parte sunt create de alte site-uri. Aceste site-uri dețin o parte din conținut, cum ar fi anunțuri sau imagini, pe care le vezi pe pagina web pe care o accesezi.</translation>
 <translation id="7846076177841592234">Anulează selecția</translation>
@@ -194,7 +203,9 @@
 <translation id="8261506727792406068">Șterge</translation>
 <translation id="8300705686683892304">Gestionate de aplicație</translation>
 <translation id="8372893542064058268">Permite sincronizarea în fundal pentru un anumit site.</translation>
+<translation id="83792324527827022">Un site folosește camera foto și microfonul</translation>
 <translation id="8380167699614421159">Acest site afișează anunțuri deranjante sau înșelătoare</translation>
+<translation id="8394832520002899662">Atinge pentru a reveni la site</translation>
 <translation id="8447861592752582886">Revocă permisiunea de accesare a dispozitivului</translation>
 <translation id="851751545965956758">Blochează conectarea site-urilor la dispozitive</translation>
 <translation id="857943718398505171">Acordată (recomandat)</translation>

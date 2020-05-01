@@ -31,6 +31,10 @@ class IntegrationTest : public ::testing::Test {
 TEST_F(IntegrationTest, InstallUninstall) {
   Install();
   ExpectInstalled();
+#if defined(OS_MACOSX)
+  Swap();
+  ExpectSwapped();
+#endif  // OS_MACOSX
   Uninstall();
 }
 

@@ -38,7 +38,6 @@
 <translation id="1258753120186372309">Google doodle: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1260236875608242557">ค้นหาและสำรวจ</translation>
 <translation id="1266864766717917324">แชร์<ph name="CONTENT_TYPE" />ไม่ได้</translation>
-<translation id="1272079795634619415">หยุด</translation>
 <translation id="1283039547216852943">แตะเพื่อขยาย</translation>
 <translation id="1285320974508926690">ไม่ต้องแปลเว็บไซต์นี้</translation>
 <translation id="1291207594882862231">ล้างประวัติการเข้าชม คุกกี้ ข้อมูลเว็บไซต์ แคช…</translation>
@@ -51,7 +50,6 @@
 <translation id="1331212799747679585">อัปเดต Chrome ไม่ได้ ตัวเลือกอื่นๆ</translation>
 <translation id="1332501820983677155">แป้นพิมพ์ลัดสำหรับฟีเจอร์ของ Google Chrome</translation>
 <translation id="1360432990279830238">ออกจากระบบและปิดการซิงค์ไหม</translation>
-<translation id="1364532808393826295"><ph name="APP_NAME" /> - <ph name="NOTIFICATION_MESSAGE" /></translation>
 <translation id="1373696734384179344">หน่วยความจำไม่เพียงพอที่จะดาวน์โหลดเนื้อหาที่เลือก</translation>
 <translation id="1376578503827013741">กำลังประมวลผล…</translation>
 <translation id="1383876407941801731">ค้นหา</translation>
@@ -122,7 +120,6 @@
 <translation id="2013642289801508067">{FILE_COUNT,plural, =1{# ไฟล์}other{# ไฟล์}}</translation>
 <translation id="2017836877785168846">ล้างประวัติการเข้าชมและการเติมข้อความอัตโนมัติในแถบที่อยู่เว็บ</translation>
 <translation id="2021896219286479412">ส่วนควบคุมเว็บไซต์แบบเต็มหน้าจอ</translation>
-<translation id="2030769033451695672">แตะเพื่อกลับไปที่ <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
 <translation id="2038563949887743358">เปิดการขอเว็บไซต์เดสก์ท็อป</translation>
 <translation id="204321170514947529"><ph name="APP_NAME" /> มีข้อมูลอยู่ใน Chrome ด้วย</translation>
 <translation id="2049574241039454490"><ph name="FILE_SIZE_OF_TOTAL" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
@@ -592,7 +589,6 @@
 <translation id="5876056640971328065">หยุดวิดีโอชั่วคราว</translation>
 <translation id="5884076754568147479">Google จะได้รับ URL และเนื้อหาของเว็บไซต์ต่างๆ ที่คุณใช้งาน Assistant ด้วย รวมถึงข้อมูลที่คุณส่งผ่าน Assistant เพื่อช่วยทำงานที่ต้องการให้เสร็จสิ้น</translation>
 <translation id="5919204609460789179">อัปเดต <ph name="PRODUCT_NAME" /> เพื่อเริ่มซิงค์</translation>
-<translation id="5922853908706496913">กำลังแชร์หน้าจอ</translation>
 <translation id="5937580074298050696">ประหยัดได้ <ph name="AMOUNT" /></translation>
 <translation id="5939518447894949180">รีเซ็ต</translation>
 <translation id="5942872142862698679">กำลังใช้ Google ในการค้นหา</translation>
@@ -779,7 +775,6 @@
 <translation id="7514365320538308">ดาวน์โหลด</translation>
 <translation id="751961395872307827">เชื่อมต่อเว็บไซต์ไม่ได้</translation>
 <translation id="7542481630195938534">รับคำแนะนำไม่ได้</translation>
-<translation id="7554752735887601236">มีเว็บไซต์กำลังใช้ไมโครโฟน</translation>
 <translation id="7559975015014302720">โหมด Lite ปิดอยู่</translation>
 <translation id="7562080006725997899">กำลังล้างข้อมูลการท่องเว็บ</translation>
 <translation id="756809126120519699">ล้างข้อมูล Chrome แล้ว</translation>
@@ -813,7 +808,6 @@
 <translation id="7774809984919390718">{PAYMENT_METHOD,plural, =1{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 และอีก <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> วิธี}other{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 และอีก <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> วิธี}}</translation>
 <translation id="7791543448312431591">เพิ่ม</translation>
 <translation id="780301667611848630">ไม่ ขอบคุณ</translation>
-<translation id="7804248752222191302">มีเว็บไซต์กำลังใช้กล้อง</translation>
 <translation id="7810647596859435254">เปิดด้วย…</translation>
 <translation id="7821588508402923572">การประหยัดอินเทอร์เน็ตของคุณจะแสดงที่นี่</translation>
 <translation id="783819812427904514">เปิดเสียงวิดีโอ</translation>
@@ -885,9 +879,7 @@
 <translation id="8349013245300336738">จัดเรียงตามปริมาณเน็ตมือถือที่ใช้</translation>
 <translation id="8364299278605033898">ดูเว็บไซต์ยอดนิยม</translation>
 <translation id="8368027906805972958">อุปกรณ์ที่ไม่รู้จักหรือไม่รองรับ (<ph name="DEVICE_ID" />)</translation>
-<translation id="83792324527827022">มีเว็บไซต์กำลังใช้กล้องถ่ายรูปและไมโครโฟน</translation>
 <translation id="8393700583063109961">ส่งข้อความ</translation>
-<translation id="8394832520002899662">แตะเพื่อกลับไปที่เว็บไซต์</translation>
 <translation id="8413126021676339697">แสดงประวัติการเข้าชมทั้งหมด</translation>
 <translation id="8427875596167638501">แท็บแสดงตัวอย่างเปิดอยู่ครึ่งเดียว</translation>
 <translation id="8428213095426709021">การตั้งค่า</translation>
@@ -984,7 +976,6 @@
 <translation id="970715775301869095">เหลือ <ph name="MINUTES" /> นาที</translation>
 <translation id="974555521953189084">ป้อนรหัสผ่านเพื่อเริ่มซิงค์</translation>
 <translation id="981121421437150478">ออฟไลน์</translation>
-<translation id="982182592107339124">การดำเนินการนี้จะล้างข้อมูลสำหรับทุกเว็บไซต์ รวมถึง</translation>
 <translation id="983192555821071799">ปิดแท็บทั้งหมด</translation>
 <translation id="987264212798334818">ทั่วไป</translation>
 </translationbundle>

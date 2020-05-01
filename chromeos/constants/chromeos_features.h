@@ -66,6 +66,8 @@ extern const base::Feature kCrostiniWebUIUpgrader;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kCryptAuthV2DeviceSync;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
+extern const base::Feature kShelfAppScaling;
+COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kCryptAuthV2Enrollment;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kDisableOfficeEditingComponentApp;

@@ -37,6 +37,8 @@ namespace {
 
 const char kMediaFeedsTestURL[] = "/test";
 
+const char kMediaFeedsAltTestURL[] = "/alt";
+
 constexpr base::FilePath::CharType kMediaFeedsTestFileName[] =
     FILE_PATH_LITERAL("chrome/test/data/media/feeds/media-feed.json");
 
@@ -193,6 +195,8 @@ class MediaFeedsBrowserTest : public InProcessBrowserTest {
       auto response = std::make_unique<net::test_server::BasicHttpResponse>();
       response->set_content(full_test_data_);
       return response;
+    } else if (request.relative_url == kMediaFeedsAltTestURL) {
+      return std::make_unique<net::test_server::BasicHttpResponse>();
     }
     return nullptr;
   }
@@ -243,6 +247,123 @@ IN_PROC_BROWSER_TEST_F(MediaFeedsBrowserTest, DiscoverAndFetch) {
                          "Picture-in-Picture and AV1",
                          "Chrome Releases", "Chrome University", "JAM stack",
                          "Ask Chrome", "Big Buck Bunny"));
+}
+
+IN_PROC_BROWSER_TEST_F(MediaFeedsBrowserTest, ResetMediaFeed_OnNavigation) {
+  DiscoverFeed();
+
+  {
+    auto feeds = GetDiscoveredFeeds();
+    ASSERT_EQ(1u, feeds.size());
+    EXPECT_EQ(media_feeds::mojom::ResetReason::kNone, feeds[0]->reset_reason);
+
+    // Fetch the feed.
+    base::RunLoop run_loop;
+    GetMediaFeedsService()->FetchMediaFeed(feeds[0]->id, feeds[0]->url,
+                                           run_loop.QuitClosure());
+    run_loop.Run();
+    WaitForDB();
+  }
+
+  // Navigate on the same origin and make sure we do not reset.
+  ui_test_utils::NavigateToURL(browser(),
+                               GetServer()->GetURL(kMediaFeedsAltTestURL));
+  WaitForDB();
+
+  {
+    auto feeds = GetDiscoveredFeeds();
+    ASSERT_EQ(1u, feeds.size());
+    EXPECT_EQ(media_feeds::mojom::ResetReason::kNone, feeds[0]->reset_reason);
+  }
+
+  // Navigate to a different origin and make sure we reset.
+  ui_test_utils::NavigateToURL(
+      browser(), GetServer()->GetURL("www.example.com", kMediaFeedsAltTestURL));
+  WaitForDB();
+
+  {
+    auto feeds = GetDiscoveredFeeds();
+    ASSERT_EQ(1u, feeds.size());
+    EXPECT_EQ(media_feeds::mojom::ResetReason::kVisit, feeds[0]->reset_reason);
+  }
+}
+
+IN_PROC_BROWSER_TEST_F(MediaFeedsBrowserTest,
+                       ResetMediaFeed_OnNavigation_NeverFetched) {
+  DiscoverFeed();
+
+  ui_test_utils::NavigateToURL(
+      browser(), GetServer()->GetURL("www.example.com", kMediaFeedsAltTestURL));
+  WaitForDB();
+
+  {
+    auto feeds = GetDiscoveredFeeds();
+    ASSERT_EQ(1u, feeds.size());
+    EXPECT_EQ(media_feeds::mojom::ResetReason::kNone, feeds[0]->reset_reason);
+  }
+}
+
+IN_PROC_BROWSER_TEST_F(MediaFeedsBrowserTest,
+                       ResetMediaFeed_OnNavigation_WrongOrigin) {
+  DiscoverFeed();
+
+  ui_test_utils::NavigateToURL(
+      browser(), GetServer()->GetURL("www.example.com", kMediaFeedsAltTestURL));
+  WaitForDB();
+
+  {
+    auto feeds = GetDiscoveredFeeds();
+    ASSERT_EQ(1u, feeds.size());
+    EXPECT_EQ(media_feeds::mojom::ResetReason::kNone, feeds[0]->reset_reason);
+
+    // Fetch the feed.
+    base::RunLoop run_loop;
+    GetMediaFeedsService()->FetchMediaFeed(feeds[0]->id, feeds[0]->url,
+                                           run_loop.QuitClosure());
+    run_loop.Run();
+    WaitForDB();
+  }
+
+  // The navigation is not on an origin associated with the feed so we should
+  // never reset it.
+  ui_test_utils::NavigateToURL(
+      browser(),
+      GetServer()->GetURL("www.example2.com", kMediaFeedsAltTestURL));
+  WaitForDB();
+
+  {
+    auto feeds = GetDiscoveredFeeds();
+    ASSERT_EQ(1u, feeds.size());
+    EXPECT_EQ(media_feeds::mojom::ResetReason::kNone, feeds[0]->reset_reason);
+  }
+}
+
+IN_PROC_BROWSER_TEST_F(MediaFeedsBrowserTest,
+                       ResetMediaFeed_WebContentsDestroyed) {
+  DiscoverFeed();
+
+  {
+    auto feeds = GetDiscoveredFeeds();
+    ASSERT_EQ(1u, feeds.size());
+    EXPECT_EQ(media_feeds::mojom::ResetReason::kNone, feeds[0]->reset_reason);
+
+    // Fetch the feed.
+    base::RunLoop run_loop;
+    GetMediaFeedsService()->FetchMediaFeed(feeds[0]->id, feeds[0]->url,
+                                           run_loop.QuitClosure());
+    run_loop.Run();
+    WaitForDB();
+  }
+
+  // If we destroy the web contents then we should reset the feed.
+  browser()->tab_strip_model()->CloseAllTabs();
+  WaitForDB();
+
+  {
+    auto feeds = GetDiscoveredFeeds();
+    ASSERT_EQ(1u, feeds.size());
+    EXPECT_EQ(media_feeds::mojom::ResetReason::kVisit, feeds[0]->reset_reason);
+  }
 }
 
 // Parameterized test to check that media feed discovery works with different

@@ -4,11 +4,13 @@
 
 package org.chromium.weblayer_private;
 
+import android.graphics.Bitmap;
 import android.graphics.RectF;
 import android.os.Build;
 import android.os.RemoteException;
 import android.text.TextUtils;
 import android.util.AndroidRuntimeException;
+import android.util.Pair;
 import android.util.SparseArray;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
@@ -490,6 +492,21 @@ public final class TabImpl extends ITab.Stub {
         return TabImplJni.get().getGuid(mNativeTab);
     }
 
+    @Override
+    public void captureScreenShot(float scale, IObjectWrapper valueCallback) {
+        StrictModeWorkaround.apply();
+        ValueCallback<Pair<Bitmap, Integer>> unwrappedCallback =
+                (ValueCallback<Pair<Bitmap, Integer>>) ObjectWrapper.unwrap(
+                        valueCallback, ValueCallback.class);
+        TabImplJni.get().captureScreenShot(mNativeTab, scale, unwrappedCallback);
+    }
+
+    @CalledByNative
+    private static void runCaptureScreenShotCallback(
+            ValueCallback<Pair<Bitmap, Integer>> callback, Bitmap bitmap, int errorCode) {
+        callback.onReceiveValue(Pair.create(bitmap, errorCode));
+    }
+
     @CalledByNative
     private static RectF createRectF(float x, float y, float right, float bottom) {
         return new RectF(x, y, right, bottom);
@@ -681,5 +698,7 @@ public final class TabImpl extends ITab.Stub {
                 Callback<String> callback);
         void updateBrowserControlsState(long nativeTabImpl, int newConstraint);
         String getGuid(long nativeTabImpl);
+        void captureScreenShot(long nativeTabImpl, float scale,
+                ValueCallback<Pair<Bitmap, Integer>> valueCallback);
     }
 }

@@ -269,8 +269,8 @@ WebViewPlugin::WebViewHelper::WebViewHelper(WebViewPlugin* plugin,
   // ApplyWebPreferences before making a WebLocalFrame so that the frame sees a
   // consistent view of our preferences.
   content::RenderView::ApplyWebPreferences(preferences, web_view_);
-  WebLocalFrame* web_frame =
-      WebLocalFrame::CreateMainFrame(web_view_, this, nullptr, nullptr);
+  WebLocalFrame* web_frame = WebLocalFrame::CreateMainFrame(
+      web_view_, this, nullptr, base::UnguessableToken::Create(), nullptr);
   // The created WebFrameWidget is owned by the |web_frame|.
   WebFrameWidget::CreateForMainFrame(
       this, web_frame,

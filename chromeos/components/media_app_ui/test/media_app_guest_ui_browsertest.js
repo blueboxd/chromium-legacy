@@ -17,3 +17,8 @@ GUEST_TEST('GuestCanSpawnWorkers', () => {
 
   assertEquals(error, null, error && error.message);
 });
+
+// Test that language is set correctly on the guest iframe.
+GUEST_TEST('GuestHasLang', () => {
+  assertEquals(document.documentElement.lang, 'en');
+});

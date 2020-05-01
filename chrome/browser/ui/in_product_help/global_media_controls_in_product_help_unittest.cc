@@ -96,9 +96,10 @@ TEST_F(GlobalMediaControlsInProductHelpTest,
   AddTab(browser(), GURL("chrome://blank"));
 }
 
-TEST_F(GlobalMediaControlsInProductHelpTest, DoesNotTriggerForOtherProfiles) {
+TEST_F(GlobalMediaControlsInProductHelpTest,
+       DoesNotTriggerForIncognitoProfiles) {
   std::unique_ptr<BrowserWindow> alt_window = CreateBrowserWindow();
-  Profile* alt_profile = profile()->GetOffTheRecordProfile();
+  Profile* alt_profile = profile()->GetPrimaryOTRProfile();
   std::unique_ptr<Browser> alt_browser =
       CreateBrowser(alt_profile, Browser::TYPE_NORMAL, false, alt_window.get());
 

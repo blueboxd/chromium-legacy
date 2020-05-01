@@ -17,6 +17,7 @@ import static org.mockito.Mockito.when;
 
 import android.os.Handler;
 import android.os.Message;
+import android.util.SparseArray;
 import android.view.View;
 
 import org.junit.Assert;
@@ -133,6 +134,25 @@ public class AutocompleteMediatorUnitTest {
         return list;
     }
 
+    /**
+     * Build a fake group headers map with elements named 'Header #', where '#' is the group header
+     * index (1-based) and 'Header' is the supplied prefix. Each header has a corresponding key
+     * computed as baseKey + #.
+     *
+     * @param count Number of group headers to build.
+     * @param baseKey Key of the first group header.
+     * @param prefix Name prefix for each group.
+     * @return Map of group headers (populated in random order).
+     */
+    private SparseArray<String> buildDummyGroupHeaders(int count, int baseKey, String prefix) {
+        SparseArray<String> headers = new SparseArray<>(count);
+        for (int index = 0; index < count; index++) {
+            headers.put(baseKey + index, prefix + " " + (index + 1));
+        }
+
+        return headers;
+    }
+
     @CalledByNativeJavaTest
     @NativeJavaTestFeatures.Enable(ChromeFeatureList.OMNIBOX_ADAPTIVE_SUGGESTIONS_COUNT)
     @NativeJavaTestFeatures.Disable(ChromeFeatureList.OMNIBOX_DEFERRED_KEYBOARD_POPUP)
@@ -141,7 +161,7 @@ public class AutocompleteMediatorUnitTest {
 
         final int maximumListHeight = SUGGESTION_MIN_HEIGHT * 3;
 
-        mMediator.setNewSuggestions(mSuggestionsList);
+        mMediator.setNewSuggestions(mSuggestionsList, null);
         mMediator.updateSuggestionsList(maximumListHeight);
 
         Assert.assertEquals(MINIMUM_NUMBER_OF_SUGGESTIONS_TO_SHOW, mSuggestionModels.size());
@@ -156,7 +176,7 @@ public class AutocompleteMediatorUnitTest {
 
         final int maximumListHeight = SUGGESTION_MIN_HEIGHT * 7;
 
-        mMediator.setNewSuggestions(mSuggestionsList);
+        mMediator.setNewSuggestions(mSuggestionsList, null);
         mMediator.updateSuggestionsList(maximumListHeight);
 
         Assert.assertEquals(7, mSuggestionModels.size());
@@ -171,7 +191,7 @@ public class AutocompleteMediatorUnitTest {
 
         final int maximumListHeight = SUGGESTION_MIN_HEIGHT * 2;
 
-        mMediator.setNewSuggestions(mSuggestionsList);
+        mMediator.setNewSuggestions(mSuggestionsList, null);
         mMediator.updateSuggestionsList(maximumListHeight);
 
         Assert.assertEquals(mSuggestionsList.size(), mSuggestionModels.size());
@@ -186,7 +206,7 @@ public class AutocompleteMediatorUnitTest {
 
         final int maximumListHeight = SUGGESTION_MIN_HEIGHT * 7;
 
-        mMediator.setNewSuggestions(null);
+        mMediator.setNewSuggestions(null, null);
         mMediator.updateSuggestionsList(maximumListHeight);
 
         Assert.assertEquals(0, mSuggestionModels.size());
@@ -201,7 +221,7 @@ public class AutocompleteMediatorUnitTest {
 
         final int maximumListHeight = SUGGESTION_MIN_HEIGHT * 7;
 
-        mMediator.setNewSuggestions(new ArrayList<>());
+        mMediator.setNewSuggestions(new ArrayList<>(), null);
         mMediator.updateSuggestionsList(maximumListHeight);
 
         Assert.assertEquals(0, mSuggestionModels.size());
@@ -214,7 +234,7 @@ public class AutocompleteMediatorUnitTest {
     public void updateSuggestionsList_reusesExistingSuggestionsWhenHinted() {
         mMediator.onNativeInitialized();
 
-        mMediator.setNewSuggestions(mSuggestionsList);
+        mMediator.setNewSuggestions(mSuggestionsList, null);
         mMediator.updateSuggestionsList(SUGGESTION_MIN_HEIGHT * 5);
 
         // Verify that processor has only been initialized once.
@@ -246,43 +266,124 @@ public class AutocompleteMediatorUnitTest {
     public void setNewSuggestions_detectsSameSuggestions() {
         final List<OmniboxSuggestion> list1 = buildDummySuggestionsList(5, "Set A");
         final List<OmniboxSuggestion> list2 = buildDummySuggestionsList(5, "Set A");
-        mMediator.setNewSuggestions(list1);
-        Assert.assertFalse(mMediator.setNewSuggestions(list2));
+        mMediator.setNewSuggestions(list1, null);
+        Assert.assertFalse(mMediator.setNewSuggestions(list2, null));
     }
 
     @CalledByNativeJavaTest
     public void setNewSuggestions_detectsDifferentLists() {
         final List<OmniboxSuggestion> list1 = buildDummySuggestionsList(5, "Set A");
         final List<OmniboxSuggestion> list2 = buildDummySuggestionsList(5, "Set B");
-        mMediator.setNewSuggestions(list1);
-        Assert.assertTrue(mMediator.setNewSuggestions(list2));
+        mMediator.setNewSuggestions(list1, null);
+        Assert.assertTrue(mMediator.setNewSuggestions(list2, null));
     }
 
     @CalledByNativeJavaTest
     public void setNewSuggestions_detectsNewElements() {
         final List<OmniboxSuggestion> list1 = buildDummySuggestionsList(5, "Set A");
         final List<OmniboxSuggestion> list2 = buildDummySuggestionsList(6, "Set A");
-        mMediator.setNewSuggestions(list1);
-        Assert.assertTrue(mMediator.setNewSuggestions(list2));
+        mMediator.setNewSuggestions(list1, null);
+        Assert.assertTrue(mMediator.setNewSuggestions(list2, null));
     }
 
     @CalledByNativeJavaTest
     public void setNewSuggestions_detectsNoDifferenceWhenSuppliedEmptyLists() {
         final List<OmniboxSuggestion> list1 = new ArrayList<>();
         final List<OmniboxSuggestion> list2 = new ArrayList<>();
-        mMediator.setNewSuggestions(list1);
-        Assert.assertFalse(mMediator.setNewSuggestions(list2));
+        mMediator.setNewSuggestions(list1, null);
+        Assert.assertFalse(mMediator.setNewSuggestions(list2, null));
     }
 
     @CalledByNativeJavaTest
     public void setNewSuggestions_detectsDifferenceWhenWorkingWithEmptyLists() {
         final List<OmniboxSuggestion> list1 = buildDummySuggestionsList(5, "Set");
         final List<OmniboxSuggestion> list2 = new ArrayList<>();
-        mMediator.setNewSuggestions(list1);
+        mMediator.setNewSuggestions(list1, null);
         // Changing from populated list to an empty list.
-        Assert.assertTrue(mMediator.setNewSuggestions(list2));
+        Assert.assertTrue(mMediator.setNewSuggestions(list2, null));
         // Changing from an empty list to populated list.
-        Assert.assertTrue(mMediator.setNewSuggestions(list1));
+        Assert.assertTrue(mMediator.setNewSuggestions(list1, null));
+    }
+
+    @CalledByNativeJavaTest
+    public void updateSuggestionsList_collectsNewGroupHeaders() {
+        final List<OmniboxSuggestion> list = new ArrayList<>();
+        final SparseArray<String> giveHeaders = buildDummyGroupHeaders(3, 1, "Header");
+        mMediator.setNewSuggestions(list, giveHeaders);
+        final SparseArray<String> haveHeaders = mMediator.getGroupHeaders();
+
+        Assert.assertEquals(giveHeaders.size(), haveHeaders.size());
+        for (int index = 0; index < giveHeaders.size(); index++) {
+            Assert.assertEquals(giveHeaders.keyAt(index), haveHeaders.keyAt(index));
+            Assert.assertEquals(giveHeaders.valueAt(index), haveHeaders.valueAt(index));
+        }
+    }
+
+    @CalledByNativeJavaTest
+    public void updateSuggestionsList_newHeadersOverwriteOldHeaders() {
+        final List<OmniboxSuggestion> list = new ArrayList<>();
+        final SparseArray<String> oldHeaders = buildDummyGroupHeaders(5, 3, "Old Header");
+        final SparseArray<String> newHeaders = buildDummyGroupHeaders(3, 1, "New Header");
+        mMediator.setNewSuggestions(list, oldHeaders);
+        mMediator.setNewSuggestions(list, newHeaders);
+
+        final SparseArray<String> haveHeaders = mMediator.getGroupHeaders();
+
+        Assert.assertEquals(newHeaders.size(), haveHeaders.size());
+        for (int index = 0; index < newHeaders.size(); index++) {
+            Assert.assertEquals(newHeaders.keyAt(index), haveHeaders.keyAt(index));
+            Assert.assertEquals(newHeaders.valueAt(index), haveHeaders.valueAt(index));
+        }
+    }
+
+    @CalledByNativeJavaTest
+    public void updateSuggestionsList_detectsSameHeaders() {
+        final List<OmniboxSuggestion> list = new ArrayList<>();
+        final SparseArray<String> headers1 = buildDummyGroupHeaders(3, 1, "Header");
+        final SparseArray<String> headers2 = buildDummyGroupHeaders(3, 1, "Header");
+
+        mMediator.setNewSuggestions(list, headers1);
+        Assert.assertFalse(mMediator.setNewSuggestions(list, headers2));
+    }
+
+    @CalledByNativeJavaTest
+    public void updateSuggestionsList_detectsDifferentSuggestionKeys() {
+        final List<OmniboxSuggestion> list = new ArrayList<>();
+        final SparseArray<String> headers1 = buildDummyGroupHeaders(3, 1, "Header");
+        final SparseArray<String> headers2 = buildDummyGroupHeaders(3, 2, "Header");
+
+        mMediator.setNewSuggestions(list, headers1);
+        Assert.assertTrue(mMediator.setNewSuggestions(list, headers2));
+    }
+
+    @CalledByNativeJavaTest
+    public void updateSuggestionsList_detectsDifferentSuggestionTitles() {
+        final List<OmniboxSuggestion> list = new ArrayList<>();
+        final SparseArray<String> headers1 = buildDummyGroupHeaders(3, 1, "HeaderA");
+        final SparseArray<String> headers2 = buildDummyGroupHeaders(3, 1, "HeaderB");
+
+        mMediator.setNewSuggestions(list, headers1);
+        Assert.assertTrue(mMediator.setNewSuggestions(list, headers2));
+    }
+
+    @CalledByNativeJavaTest
+    public void updateSuggestionsList_detectsNoDifferencesWhenEmptyAndPassedEmptyLists() {
+        final List<OmniboxSuggestion> list = new ArrayList<>();
+        final SparseArray<String> headers1 = new SparseArray<String>();
+        final SparseArray<String> headers2 = new SparseArray<String>();
+
+        mMediator.setNewSuggestions(list, headers1);
+        Assert.assertFalse(mMediator.setNewSuggestions(list, headers2));
+    }
+
+    @CalledByNativeJavaTest
+    public void updateSuggestionsList_detectsNoDifferencesWhenEmptyAndPassedNullLists() {
+        final List<OmniboxSuggestion> list = new ArrayList<>();
+        final SparseArray<String> headers1 = new SparseArray<String>();
+        final SparseArray<String> headers2 = null;
+
+        mMediator.setNewSuggestions(list, headers1);
+        Assert.assertFalse(mMediator.setNewSuggestions(list, headers2));
     }
 
     @CalledByNativeJavaTest
@@ -445,7 +546,7 @@ public class AutocompleteMediatorUnitTest {
             ChromeFeatureList.OMNIBOX_DEFERRED_KEYBOARD_POPUP})
     public void setLayoutDirection_beforeInitialization() {
         mMediator.setLayoutDirection(View.LAYOUT_DIRECTION_RTL);
-        mMediator.setNewSuggestions(mSuggestionsList);
+        mMediator.setNewSuggestions(mSuggestionsList, null);
         mMediator.updateSuggestionsList(Integer.MAX_VALUE);
         Assert.assertEquals(mSuggestionsList.size(), mSuggestionModels.size());
         for (int i = 0; i < mSuggestionModels.size(); i++) {
@@ -460,7 +561,7 @@ public class AutocompleteMediatorUnitTest {
     @NativeJavaTestFeatures.Disable({ChromeFeatureList.OMNIBOX_ADAPTIVE_SUGGESTIONS_COUNT,
             ChromeFeatureList.OMNIBOX_DEFERRED_KEYBOARD_POPUP})
     public void setLayoutDirection_afterInitialization() {
-        mMediator.setNewSuggestions(mSuggestionsList);
+        mMediator.setNewSuggestions(mSuggestionsList, null);
         mMediator.updateSuggestionsList(Integer.MAX_VALUE);
         Assert.assertEquals(mSuggestionsList.size(), mSuggestionModels.size());
 

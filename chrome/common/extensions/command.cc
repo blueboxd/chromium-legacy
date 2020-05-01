@@ -39,9 +39,12 @@ static const int kMaxTokenSize = 4;
 static const int kMaxTokenSize = 3;
 #endif  // OS_CHROMEOS
 
+// TODO(devlin): Expose this on Command, since many places implicitly check
+// this.
 bool IsNamedCommand(const std::string& command_name) {
   return command_name != values::kPageActionCommandEvent &&
-         command_name != values::kBrowserActionCommandEvent;
+         command_name != values::kBrowserActionCommandEvent &&
+         command_name != values::kActionCommandEvent;
 }
 
 bool DoesRequireModifier(const std::string& accelerator) {

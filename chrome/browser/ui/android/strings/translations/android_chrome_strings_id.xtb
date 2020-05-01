@@ -38,7 +38,6 @@
 <translation id="1258753120186372309">Google doodle: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1260236875608242557">Telusuri &amp; jelajahi</translation>
 <translation id="1266864766717917324">Tidak dapat membagikan <ph name="CONTENT_TYPE" /></translation>
-<translation id="1272079795634619415">Berhenti</translation>
 <translation id="1283039547216852943">Ketuk untuk meluaskan</translation>
 <translation id="1285320974508926690">Jangan pernah terjemahkan situs ini</translation>
 <translation id="1291207594882862231">Menghapus histori, cookie, data situs, cache...</translation>
@@ -51,7 +50,6 @@
 <translation id="1331212799747679585">Chrome tidak dapat diupdate. Opsi lainnya</translation>
 <translation id="1332501820983677155">Pintasan fitur Google Chrome</translation>
 <translation id="1360432990279830238">Logout dan nonaktifkan sinkronisasi?</translation>
-<translation id="1364532808393826295"><ph name="APP_NAME" /> - <ph name="NOTIFICATION_MESSAGE" /></translation>
 <translation id="1373696734384179344">Memori tidak cukup untuk mendownload konten yang dipilih.</translation>
 <translation id="1376578503827013741">Menghitung…</translation>
 <translation id="1383876407941801731">Telusuri</translation>
@@ -122,7 +120,6 @@
 <translation id="2013642289801508067">{FILE_COUNT,plural, =1{# File}other{# File}}</translation>
 <translation id="2017836877785168846">Hapus histori dan pelengkapan otomatis di kolom URL.</translation>
 <translation id="2021896219286479412">Kontrol situs layar penuh</translation>
-<translation id="2030769033451695672">Ketuk untuk kembali ke <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
 <translation id="2038563949887743358">Aktifkan Ubah situs desktop</translation>
 <translation id="204321170514947529"><ph name="APP_NAME" /> juga memiliki data di Chrome</translation>
 <translation id="2049574241039454490"><ph name="FILE_SIZE_OF_TOTAL" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
@@ -592,7 +589,6 @@ Untuk mengubah setelan ini, <ph name="BEGIN_LINK" />setel ulang sinkronisasi<ph 
 <translation id="5876056640971328065">Jeda video</translation>
 <translation id="5884076754568147479">Untuk membantu Anda menyelesaikan tugas, Google akan menerima URL dan konten situs tempat Anda menggunakan Asisten, serta informasi yang Anda kirimkan melalui Asisten</translation>
 <translation id="5919204609460789179">Perbarui <ph name="PRODUCT_NAME" /> untuk memulai sinkronisasi</translation>
-<translation id="5922853908706496913">Membagikan layar Anda</translation>
 <translation id="5937580074298050696"><ph name="AMOUNT" /> dihemat</translation>
 <translation id="5939518447894949180">Setel ulang</translation>
 <translation id="5942872142862698679">Menggunakan Google untuk penelusuran</translation>
@@ -779,7 +775,6 @@ Misalnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangka
 <translation id="7514365320538308">Download</translation>
 <translation id="751961395872307827">Tidak dapat terhubung ke situs</translation>
 <translation id="7542481630195938534">Tidak bisa mendapatkan saran</translation>
-<translation id="7554752735887601236">Situs menggunakan mikrofon Anda</translation>
 <translation id="7559975015014302720">Mode Ringan nonaktif</translation>
 <translation id="7562080006725997899">Menghapus data penjelajahan</translation>
 <translation id="756809126120519699">Data Chrome telah dihapus</translation>
@@ -813,7 +808,6 @@ Misalnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangka
 <translation id="7774809984919390718">{PAYMENT_METHOD,plural, =1{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 dan <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> lainnya}other{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 dan <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> lainnya}}</translation>
 <translation id="7791543448312431591">Tambahkan</translation>
 <translation id="780301667611848630">Lain kali</translation>
-<translation id="7804248752222191302">Situs menggunakan kamera Anda</translation>
 <translation id="7810647596859435254">Buka dengan...</translation>
 <translation id="7821588508402923572">Penghematan data Anda akan terlihat di sini</translation>
 <translation id="783819812427904514">Bunyikan video</translation>
@@ -885,9 +879,7 @@ Misalnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangka
 <translation id="8349013245300336738">Urutkan menurut jumlah kuota yang digunakan</translation>
 <translation id="8364299278605033898">Lihat situs yang populer</translation>
 <translation id="8368027906805972958">Perangkat tidak dikenal atau tidak didukung (<ph name="DEVICE_ID" />)</translation>
-<translation id="83792324527827022">Situs menggunakan kamera dan mikrofon Anda</translation>
 <translation id="8393700583063109961">Kirim pesan</translation>
-<translation id="8394832520002899662">Ketuk untuk kembali ke situs</translation>
 <translation id="8413126021676339697">Tampilkan histori lengkap</translation>
 <translation id="8427875596167638501">Tab pratinjau terbuka setengah</translation>
 <translation id="8428213095426709021">Setelan</translation>
@@ -984,7 +976,6 @@ Misalnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangka
 <translation id="970715775301869095"><ph name="MINUTES" /> menit lagi</translation>
 <translation id="974555521953189084">Masukkan frasa sandi Anda untuk memulai sinkronisasi</translation>
 <translation id="981121421437150478">Offline</translation>
-<translation id="982182592107339124">Tindakan ini akan menghapus data untuk semua situs, termasuk:</translation>
 <translation id="983192555821071799">Tutup semua tab</translation>
 <translation id="987264212798334818">Umum</translation>
 </translationbundle>

@@ -6,7 +6,6 @@
 
 #include <fuchsia/ui/gfx/cpp/fidl.h>
 #include <lib/sys/cpp/component_context.h>
-#include <lib/ui/scenic/cpp/view_ref_pair.h>
 #include <limits>
 
 #include "base/bind_helpers.h"
@@ -38,6 +37,7 @@
 #include "fuchsia/engine/browser/context_impl.h"
 #include "fuchsia/engine/browser/event_filter.h"
 #include "fuchsia/engine/browser/frame_layout_manager.h"
+#include "fuchsia/engine/browser/frame_window_tree_host.h"
 #include "fuchsia/engine/browser/media_player_impl.h"
 #include "fuchsia/engine/browser/web_engine_devtools_controller.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
@@ -47,13 +47,9 @@
 #include "third_party/blink/public/common/logging/logging_utils.h"
 #include "third_party/blink/public/common/messaging/web_message_port.h"
 #include "third_party/blink/public/mojom/loader/resource_load_info.mojom.h"
-#include "ui/aura/client/window_parenting_client.h"
 #include "ui/aura/window.h"
-#include "ui/aura/window_tree_host_platform.h"
-#include "ui/base/ime/input_method_base.h"
 #include "ui/gfx/switches.h"
 #include "ui/ozone/public/ozone_switches.h"
-#include "ui/platform_window/platform_window_init_properties.h"
 #include "ui/wm/core/base_focus_rules.h"
 #include "url/gurl.h"
 
@@ -120,66 +116,6 @@ bool IsOriginWhitelisted(const GURL& url,
   }
   return false;
 }
-
-class WindowParentingClientImpl : public aura::client::WindowParentingClient {
- public:
-  explicit WindowParentingClientImpl(aura::Window* root_window)
-      : root_window_(root_window) {
-    aura::client::SetWindowParentingClient(root_window_, this);
-  }
-  ~WindowParentingClientImpl() override {
-    aura::client::SetWindowParentingClient(root_window_, nullptr);
-  }
-
-  // WindowParentingClient implementation.
-  aura::Window* GetDefaultParent(aura::Window* window,
-                                 const gfx::Rect& bounds) override {
-    return root_window_;
-  }
-
- private:
-  aura::Window* root_window_;
-
-  DISALLOW_COPY_AND_ASSIGN(WindowParentingClientImpl);
-};
-
-// WindowTreeHost that hosts web frames.
-class FrameWindowTreeHost : public aura::WindowTreeHostPlatform {
- public:
-  explicit FrameWindowTreeHost(ui::PlatformWindowInitProperties properties,
-                               content::WebContents* web_contents)
-      : aura::WindowTreeHostPlatform(std::move(properties)),
-        window_parenting_client_(window()),
-        web_contents_(web_contents) {}
-
-  ~FrameWindowTreeHost() override = default;
-
-  // Route focus & blur events to the window's focus observer and its
-  // InputMethod.
-  void OnActivationChanged(bool active) override {
-    if (active) {
-      aura::client::GetFocusClient(window())->FocusWindow(window());
-      GetInputMethod()->OnFocus();
-    } else {
-      aura::client::GetFocusClient(window())->FocusWindow(nullptr);
-      GetInputMethod()->OnBlur();
-    }
-  }
-
-  void OnWindowStateChanged(ui::PlatformWindowState new_state) override {
-    if (new_state == ui::PlatformWindowState::kMinimized) {
-      web_contents_->WasOccluded();
-    } else {
-      web_contents_->WasShown();
-    }
-  }
-
- private:
-  WindowParentingClientImpl window_parenting_client_;
-  content::WebContents* web_contents_;
-
-  DISALLOW_COPY_AND_ASSIGN(FrameWindowTreeHost);
-};
 
 logging::LogSeverity ConsoleLogLevelToLoggingSeverity(
     fuchsia::web::ConsoleLogLevel level) {
@@ -352,6 +288,10 @@ FrameImpl::OriginScopedScript& FrameImpl::OriginScopedScript::operator=(
 }
 
 FrameImpl::OriginScopedScript::~OriginScopedScript() = default;
+
+aura::Window* FrameImpl::root_window() const {
+  return window_tree_host_->window();
+}
 
 void FrameImpl::ExecuteJavaScriptInternal(std::vector<std::string> origins,
                                           fuchsia::mem::Buffer script,
@@ -564,30 +504,15 @@ void FrameImpl::CreateView(fuchsia::ui::views::ViewToken view_token) {
   // If a View to this Frame is already active then disconnect it.
   DestroyWindowTreeHost();
 
-  ui::PlatformWindowInitProperties properties;
-  properties.view_token = std::move(view_token);
-  properties.view_ref_pair = scenic::ViewRefPair::New();
-
-  // Create a ViewRef and register it to the Fuchsia SemanticsManager.
-  fuchsia::ui::views::ViewRef accessibility_view_ref;
-  zx_status_t status = properties.view_ref_pair.view_ref.reference.duplicate(
-      ZX_RIGHT_SAME_RIGHTS, &accessibility_view_ref.reference);
-  if (status != ZX_OK) {
-    ZX_LOG(ERROR, status) << "zx_object_duplicate";
-    context_->DestroyFrame(this);
-    return;
-  }
+  InitWindowTreeHost(std::move(view_token));
 
   fuchsia::accessibility::semantics::SemanticsManagerPtr semantics_manager =
       base::fuchsia::ComponentContextForCurrentProcess()
           ->svc()
           ->Connect<fuchsia::accessibility::semantics::SemanticsManager>();
   accessibility_bridge_ = std::make_unique<AccessibilityBridge>(
-      std::move(semantics_manager), std::move(accessibility_view_ref),
+      std::move(semantics_manager), window_tree_host_->CreateViewRef(),
       web_contents_.get());
-
-  SetWindowTreeHost(std::make_unique<FrameWindowTreeHost>(std::move(properties),
-                                                          web_contents_.get()));
 }
 
 void FrameImpl::GetMediaPlayer(
@@ -792,15 +717,13 @@ void FrameImpl::EnableHeadlessRendering() {
     return;
   }
 
-  SetWindowTreeHost(std::make_unique<FrameWindowTreeHost>(
-      ui::PlatformWindowInitProperties(), web_contents_.get()));
+  InitWindowTreeHost(fuchsia::ui::views::ViewToken());
 
   gfx::Rect bounds(kHeadlessWindowSize);
   if (semantics_manager_for_test_) {
-    scenic::ViewRefPair view_ref_pair = scenic::ViewRefPair::New();
     accessibility_bridge_ = std::make_unique<AccessibilityBridge>(
         std::move(semantics_manager_for_test_),
-        std::move(view_ref_pair.view_ref), web_contents_.get());
+        window_tree_host_->CreateViewRef(), web_contents_.get());
 
     // Set bounds for testing hit testing.
     bounds.set_size(kSemanticsTestingWindowSize);
@@ -820,11 +743,11 @@ void FrameImpl::DisableHeadlessRendering() {
   DestroyWindowTreeHost();
 }
 
-void FrameImpl::SetWindowTreeHost(
-    std::unique_ptr<aura::WindowTreeHost> window_tree_host) {
+void FrameImpl::InitWindowTreeHost(fuchsia::ui::views::ViewToken view_token) {
   DCHECK(!window_tree_host_);
 
-  window_tree_host_ = std::move(window_tree_host);
+  window_tree_host_ = std::make_unique<FrameWindowTreeHost>(
+      std::move(view_token), web_contents_.get());
   window_tree_host_->InitHost();
   root_window()->AddPreTargetHandler(&event_filter_);
 

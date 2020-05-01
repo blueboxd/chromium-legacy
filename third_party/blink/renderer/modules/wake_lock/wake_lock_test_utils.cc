@@ -6,8 +6,9 @@
 
 #include <utility>
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/macros.h"
+#include "base/notreached.h"
 #include "base/run_loop.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"

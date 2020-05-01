@@ -2893,7 +2893,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
       security_interstitials::IOSBlockingPageTabHelper::FromWebState(webState);
   DCHECK(webState->HasOpener() ||
          !webState->GetNavigationManager()->GetItemCount() ||
-         helper->GetCurrentBlockingPage(webState) != nullptr);
+         helper->GetCurrentBlockingPage() != nullptr);
   if (!self.browser)
     return;
   WebStateList* webStateList = self.browser->GetWebStateList();

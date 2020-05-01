@@ -174,6 +174,8 @@ class CONTENT_EXPORT RenderFrameProxyHost
   blink::AssociatedInterfaceProvider* GetRemoteAssociatedInterfacesTesting();
   bool IsInertForTesting();
 
+  const base::UnguessableToken& GetFrameToken() const { return frame_token_; }
+
  private:
   // IPC Message handlers.
   void OnDetach();
@@ -238,6 +240,8 @@ class CONTENT_EXPORT RenderFrameProxyHost
 
   mojo::AssociatedReceiver<blink::mojom::RemoteFrameHost>
       remote_frame_host_receiver_{this};
+
+  base::UnguessableToken frame_token_ = base::UnguessableToken::Create();
 
   DISALLOW_COPY_AND_ASSIGN(RenderFrameProxyHost);
 };

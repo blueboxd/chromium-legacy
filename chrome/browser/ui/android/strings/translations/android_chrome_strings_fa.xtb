@@ -38,7 +38,6 @@
 <translation id="1258753120186372309">‏Google doodle: ‏<ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1260236875608242557">جستجو و کاوش</translation>
 <translation id="1266864766717917324"><ph name="CONTENT_TYPE" /> هم‌رسانی نشد</translation>
-<translation id="1272079795634619415">توقف</translation>
 <translation id="1283039547216852943">برای بزرگ کردن ضربه بزنید</translation>
 <translation id="1285320974508926690">این سایت هرگز ترجمه نشود</translation>
 <translation id="1291207594882862231">پاک کردن سابقه، کوکی‌ها، داده‌های سایت، حافظه پنهان…</translation>
@@ -50,8 +49,8 @@
 <translation id="1327257854815634930">سابقه «پیمایش» باز است.</translation>
 <translation id="1331212799747679585">‏Chrome به‌روزرسانی نشد. گزینه‌های دیگر</translation>
 <translation id="1332501820983677155">‏میان‌برهای ویژه Google Chrome</translation>
+<translation id="1347468774581902829">مدیریت فعالیت</translation>
 <translation id="1360432990279830238">از سیستم خارج و همگام‌سازی خاموش شود؟</translation>
-<translation id="1364532808393826295"><ph name="APP_NAME" /> - <ph name="NOTIFICATION_MESSAGE" /></translation>
 <translation id="1373696734384179344">حافظه برای بارگیری محتوای انتخابی کافی نیست.</translation>
 <translation id="1376578503827013741">درحال محاسبه…</translation>
 <translation id="1383876407941801731">جستجو</translation>
@@ -122,7 +121,6 @@
 <translation id="2013642289801508067">{FILE_COUNT,plural, =1{# فایل}one{# فایل}other{# فایل}}</translation>
 <translation id="2017836877785168846">سابقه و تکمیل خودکار را در نوار نشانی پاک می‌کند.</translation>
 <translation id="2021896219286479412">کنترل‌های سایت تمام‌صفحه</translation>
-<translation id="2030769033451695672">برای برگشتن به <ph name="URL_OF_THE_CURRENT_TAB" /> ضربه بزنید</translation>
 <translation id="2038563949887743358">روشن کردن درخواست سایت رایانه‌ای</translation>
 <translation id="204321170514947529">‏<ph name="APP_NAME" /> داده‌هایی در Chrome نیز دارد</translation>
 <translation id="2049574241039454490"><ph name="FILE_SIZE_OF_TOTAL" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
@@ -434,6 +432,7 @@
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> نشانک حذف شد</translation>
 <translation id="4665282149850138822"><ph name="NAME" /> به صفحه اصلی شما اضافه شد</translation>
 <translation id="4684427112815847243">همگام‌سازی همه</translation>
+<translation id="4688610874307684559">‏درحال اجرا در Chrome (اولیه)</translation>
 <translation id="4695891336199304370">{SHIPPING_OPTIONS,plural, =1{‏<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 و <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> گزینه دیگر}one{‏<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 و <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> گزینه دیگر}other{‏<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 و <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> گزینه دیگر}}</translation>
 <translation id="4696983787092045100">ارسال نوشتار به دستگاه‌های شما</translation>
 <translation id="4698034686595694889">مشاهده آفلاین در <ph name="APP_NAME" /></translation>
@@ -592,7 +591,6 @@
 <translation id="5876056640971328065">مکث ویدیو</translation>
 <translation id="5884076754568147479">‏برای کمک به انجام کارها، Google نشانی‌های وب و محتوای سایت‌هایی را که در آن‌ها از «دستیار» استفاده می‌کنید، و همچنین اطلاعاتی را که ازطریق «دستیار» ارسال می‌کنید دریافت خواهد کرد</translation>
 <translation id="5919204609460789179">برای شروع همگام‌سازی، <ph name="PRODUCT_NAME" /> را به‌روزرسانی کنید</translation>
-<translation id="5922853908706496913">درحال هم‌رسانی صفحه‌نمایش</translation>
 <translation id="5937580074298050696"><ph name="AMOUNT" /> صرفه‌جویی‌شده</translation>
 <translation id="5939518447894949180">بازنشانی</translation>
 <translation id="5942872142862698679">‏استفاده از Google برای جستجو</translation>
@@ -773,16 +771,17 @@
 <translation id="7479104141328977413">مدیریت برگه</translation>
 <translation id="7481312909269577407">ارسال کردن</translation>
 <translation id="7482656565088326534">برگه پیش‌نمایش</translation>
+<translation id="7484997419527351112">یافته‌ها - خاموش</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (زمان به‌روزرسانی <ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7494974237137038751">داده صرفه‌جویی‌شده</translation>
 <translation id="7498271377022651285">لطفاً صبر کنید...</translation>
 <translation id="7514365320538308">بارگیری</translation>
 <translation id="751961395872307827">نمی‌توان به این سایت متصل شد</translation>
 <translation id="7542481630195938534">دریافت پیشنهادها امکان‌پذیر نیست</translation>
-<translation id="7554752735887601236">سایتی درحال استفاده از میکروفونتان است</translation>
 <translation id="7559975015014302720">«حالت ساده» خاموش است</translation>
 <translation id="7562080006725997899">پاک کردن داده‌های مرور</translation>
 <translation id="756809126120519699">‏داده‌های Chrome پاک شد</translation>
+<translation id="7577900504646297215">مدیریت علایق</translation>
 <translation id="757855969265046257">{FILES,plural, =1{<ph name="FILES_DOWNLOADED_ONE" /> فایل بارگیری شد}one{<ph name="FILES_DOWNLOADED_MANY" /> فایل بارگیری شد}other{<ph name="FILES_DOWNLOADED_MANY" /> فایل بارگیری شد}}</translation>
 <translation id="7588219262685291874">روشن شدن طرح زمینه تیره وقتی «بهینه‌سازی باتری» دستگاه روشن است</translation>
 <translation id="7593557518625677601">‏برای شروع همگام‌سازی Chrome، تنظیمات Android را باز کنید و همگام‌سازی سیستم Android را دوباره فعال کنید</translation>
@@ -813,7 +812,6 @@
 <translation id="7774809984919390718">{PAYMENT_METHOD,plural, =1{‏<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 و <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> روش پرداخت دیگر}one{‏<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 و <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> روش پرداخت دیگر}other{‏<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 و <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> روش پرداخت دیگر}}</translation>
 <translation id="7791543448312431591">افزودن</translation>
 <translation id="780301667611848630">نه متشکرم</translation>
-<translation id="7804248752222191302">سایتی درحال استفاده از دوربینتان است</translation>
 <translation id="7810647596859435254">باز کردن با…</translation>
 <translation id="7821588508402923572">میزان داده صرفه‌جویی‌شده اینجا نشان داده می‌شود</translation>
 <translation id="783819812427904514">با صدا کردن ویدیو</translation>
@@ -885,9 +883,7 @@
 <translation id="8349013245300336738">مرتب‌سازی براساس مقدار داده استفاده‌شده</translation>
 <translation id="8364299278605033898">مشاهده وب‌سایت‌های پرطرفدار</translation>
 <translation id="8368027906805972958">دستگاه ناشناس یا پشتیبانی‌نشده (<ph name="DEVICE_ID" />)</translation>
-<translation id="83792324527827022">سایتی درحال استفاده از دوربین و میکروفونتان است</translation>
 <translation id="8393700583063109961">ارسال پیام</translation>
-<translation id="8394832520002899662">برای برگشتن به سایت ضربه بزنید</translation>
 <translation id="8413126021676339697">نمایش کل سابقه</translation>
 <translation id="8427875596167638501">برگه پیش‌نمایش نیمه‌باز است</translation>
 <translation id="8428213095426709021">تنظیمات</translation>
@@ -984,7 +980,6 @@
 <translation id="970715775301869095"><ph name="MINUTES" /> دقیقه باقی‌مانده است</translation>
 <translation id="974555521953189084">برای شروع همگام‌سازی، عبارت عبورتان را وارد کنید</translation>
 <translation id="981121421437150478">آفلاین</translation>
-<translation id="982182592107339124">با این کار داده‌های همه سایت‌ها پاک می‌شود، از جمله:</translation>
 <translation id="983192555821071799">بستن همه برگه‌ها</translation>
 <translation id="987264212798334818">موارد کلی</translation>
 </translationbundle>

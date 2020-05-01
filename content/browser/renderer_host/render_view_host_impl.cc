@@ -331,6 +331,7 @@ SiteInstanceImpl* RenderViewHostImpl::GetSiteInstance() {
 bool RenderViewHostImpl::CreateRenderView(
     int opener_frame_route_id,
     int proxy_route_id,
+    const base::UnguessableToken& frame_token,
     const base::UnguessableToken& devtools_frame_token,
     const FrameReplicationState& replicated_frame_state,
     bool window_was_created_with_opener) {
@@ -388,6 +389,7 @@ bool RenderViewHostImpl::CreateRenderView(
     std::tie(params->frame_widget_host, params->frame_widget) =
         main_rfh->GetRenderWidgetHost()->BindNewFrameWidgetInterfaces();
   }
+  params->main_frame_frame_token = frame_token;
   params->session_storage_namespace_id =
       delegate_->GetSessionStorageNamespace(instance_.get())->id();
   // Ensure the RenderView sets its opener correctly.
@@ -400,6 +402,7 @@ bool RenderViewHostImpl::CreateRenderView(
   if (main_rfh) {
     params->has_committed_real_load =
         main_rfh->frame_tree_node()->has_committed_real_load();
+    DCHECK_EQ(params->main_frame_frame_token, main_rfh->frame_token());
   }
   params->devtools_main_frame_token = devtools_frame_token;
   // GuestViews in the same StoragePartition need to find each other's frames.

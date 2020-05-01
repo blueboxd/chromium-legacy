@@ -9,7 +9,6 @@
 #include "third_party/blink/public/mojom/web_feature/web_feature.mojom-shared.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
-#include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/events/message_event.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/platform/mojo/mojo_helper.h"
@@ -43,7 +42,7 @@ BroadcastChannel* BroadcastChannel::Create(ExecutionContext* execution_context,
                                            const String& name,
                                            ExceptionState& exception_state) {
   LocalDOMWindow* window = DynamicTo<LocalDOMWindow>(execution_context);
-  if (window && window->document()->IsCrossSiteSubframe())
+  if (window && window->IsCrossSiteSubframe())
     UseCounter::Count(window, WebFeature::kThirdPartyBroadcastChannel);
 
   if (execution_context->GetSecurityOrigin()->IsOpaque()) {

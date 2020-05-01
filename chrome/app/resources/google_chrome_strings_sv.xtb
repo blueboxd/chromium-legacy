@@ -97,7 +97,6 @@ Vissa funktioner kanske inte är tillgängliga och ändringar i inställningarna
 <translation id="3582972582564653026">Synkronisera och anpassa Chrome på alla enheter du använder</translation>
 <translation id="3596080736082218006">{COUNT,plural, =0{Administratören meddelar att du måste starta om Chrome så att en uppdatering tillämpas}=1{Administratören meddelar att du måste starta om Chrome så att en uppdatering tillämpas. Inkognitofönstret öppnas inte igen.}other{Administratören meddelar att du måste starta om Chrome så att en uppdatering tillämpas. De # inkognitofönstren öppnas inte igen.}}</translation>
 <translation id="3622797965165704966">Nu är det enklare att använda Chrome med ditt Google-konto och på delade datorer.</translation>
-<translation id="3637702109597584617"><ph name="TERMS_OF_SERVICE_LINK" />Användarvillkor<ph name="END_TERMS_OF_SERVICE_LINK" /> för Google Chrome OS</translation>
 <translation id="3718181793972440140">Ett objekt tas bort från enheten. Logga in i Chrome som <ph name="USER_EMAIL" /> om du vill kunna återställa datan senare.</translation>
 <translation id="3735758079232443276">Tillägget <ph name="EXTENSION_NAME" /> har ändrat vilken sida som visas när du startar Chrome.</translation>
 <translation id="3780814664026482060">Chrome – <ph name="PAGE_TITLE" /></translation>
@@ -114,6 +113,7 @@ Vissa funktioner kanske inte är tillgängliga och ändringar i inställningarna
 <translation id="4205939740494406371">Chrome kan inte kontrollera dina lösenord. Försök igen om 24 timmar eller <ph name="BEGIN_LINK" />kontrollera lösenorden i ditt Google-konto<ph name="END_LINK" />.</translation>
 <translation id="424864128008805179">Vill du logga ut från Chrome?</translation>
 <translation id="4251615635259297716">Koppla dina uppgifter i Chrome till det här kontot</translation>
+<translation id="4281844954008187215">Användarvillkor</translation>
 <translation id="4293420128516039005">Genom att logga in kan du synkronisera och anpassa Chrome på alla enheter du använder</translation>
 <translation id="4328355335528187361">Google Chrome Dev (mDNS-in)</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
@@ -148,7 +148,6 @@ Vissa funktioner kanske inte är tillgängliga och ändringar i inställningarna
 
 Vissa funktioner är kanske inte tillgängliga. Ange en annan profilkatalog om du vill använda en nyare version av Chrome.</translation>
 <translation id="5193136243808726294">Det går inte att öppna den här sidan i Google Chrome OS.</translation>
-<translation id="5204098752394657250">Google Chromes <ph name="TERMS_OF_SERVICE_LINK" />användarvillkor<ph name="END_TERMS_OF_SERVICE_LINK" /></translation>
 <translation id="5251420635869119124">Gäster kan använda Chrome utan att lämna spår.</translation>
 <translation id="532046782124376502">Varning! Google Chrome kan inte förhindra tillägg från att registrera din webbhistorik. Om du vill inaktivera det här tillägget i inkognitoläge avmarkerar du detta alternativ.</translation>
 <translation id="5386244825306882791">Det styr också vilken sida som visas när du startar Chrome eller söker i adressfältet.</translation>

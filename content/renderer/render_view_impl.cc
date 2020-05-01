@@ -461,10 +461,10 @@ void RenderViewImpl::Initialize(
     main_render_frame_ = RenderFrameImpl::CreateMainFrame(
         this, compositor_deps, opener_frame, &params, std::move(show_callback));
   } else {
-    RenderFrameProxy::CreateFrameProxy(params->proxy_routing_id, GetRoutingID(),
-                                       opener_frame, MSG_ROUTING_NONE,
-                                       params->replicated_frame_state,
-                                       params->devtools_main_frame_token);
+    RenderFrameProxy::CreateFrameProxy(
+        params->proxy_routing_id, GetRoutingID(), opener_frame,
+        MSG_ROUTING_NONE, params->replicated_frame_state,
+        params->main_frame_frame_token, params->devtools_main_frame_token);
   }
 
   // TODO(davidben): Move this state from Blink into content.
@@ -1299,6 +1299,7 @@ WebView* RenderViewImpl::CreateView(
   view_params->renderer_preferences = renderer_preferences_.Clone();
   view_params->web_preferences = webkit_preferences_;
   view_params->view_id = reply->route_id;
+  view_params->main_frame_frame_token = reply->main_frame_frame_token;
   view_params->main_frame_routing_id = reply->main_frame_route_id;
   view_params->frame_widget_host = std::move(reply->frame_widget_host);
   view_params->frame_widget = std::move(reply->frame_widget);

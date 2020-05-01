@@ -38,7 +38,6 @@
 <translation id="1258753120186372309">Google'i Doodle'i vigurlogo: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1260236875608242557">Otsimine ja avastamine</translation>
 <translation id="1266864766717917324">Üksust <ph name="CONTENT_TYPE" /> ei õnnestunud jagada</translation>
-<translation id="1272079795634619415">Peata</translation>
 <translation id="1283039547216852943">Laiendamiseks puudutage</translation>
 <translation id="1285320974508926690">Ära kunagi seda saiti tõlgi</translation>
 <translation id="1291207594882862231">Ajaloo, küpsiste, saidiandmete, vahemälu kustutamine …</translation>
@@ -51,7 +50,6 @@
 <translation id="1331212799747679585">Chrome'i ei saa värskendada. Rohkem valikuid</translation>
 <translation id="1332501820983677155">Google Chrome'i funktsioonide otseteed</translation>
 <translation id="1360432990279830238">Login välja ja keelan sünkroonimise?</translation>
-<translation id="1364532808393826295"><ph name="APP_NAME" /> – <ph name="NOTIFICATION_MESSAGE" /></translation>
 <translation id="1373696734384179344">Valitud sisu allalaadimiseks pole piisavalt mäluruumi.</translation>
 <translation id="1376578503827013741">Arvutamine …</translation>
 <translation id="1383876407941801731">Otsi</translation>
@@ -122,7 +120,6 @@
 <translation id="2013642289801508067">{FILE_COUNT,plural, =1{# fail}other{# faili}}</translation>
 <translation id="2017836877785168846">Kustutab aadressiribalt ajaloo ja automaatse täitmise teabe.</translation>
 <translation id="2021896219286479412">Saidi juhtelemendid täisekraanil</translation>
-<translation id="2030769033451695672">Puudutage vahelehele <ph name="URL_OF_THE_CURRENT_TAB" /> naasmiseks</translation>
 <translation id="2038563949887743358">Valiku Taotle arvutisaiti sisselülitamine</translation>
 <translation id="204321170514947529">Rakendusel <ph name="APP_NAME" /> on samuti Chrome’i andmeid</translation>
 <translation id="2049574241039454490"><ph name="FILE_SIZE_OF_TOTAL" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
@@ -592,7 +589,6 @@ Seade muutmiseks <ph name="BEGIN_LINK" />lähtestage sünkroonimine<ph name="END
 <translation id="5876056640971328065">Video peatamine</translation>
 <translation id="5884076754568147479">Selleks et aidata teil toiminguid teha, saadetakse Google'ile nende saitide URL-id ja sisu, millel assistenti kasutate, ning teave, mille assistendi kaudu esitate</translation>
 <translation id="5919204609460789179">Sünkroonimise alustamiseks värskendage teenust <ph name="PRODUCT_NAME" /></translation>
-<translation id="5922853908706496913">Ekraanikuva jagamine</translation>
 <translation id="5937580074298050696"><ph name="AMOUNT" /> on säästetud</translation>
 <translation id="5939518447894949180">Lähtesta</translation>
 <translation id="5942872142862698679">Otsimiseks kasutatakse Google'it</translation>
@@ -779,7 +775,6 @@ Näiteks võivad mõned veebisaidid taotlusele reageerida nii, et näitavad teil
 <translation id="7514365320538308">Laadi alla</translation>
 <translation id="751961395872307827">Saidiga ei saa ühendust luua</translation>
 <translation id="7542481630195938534">Soovitusi ei saa hankida</translation>
-<translation id="7554752735887601236">Sait kasutab teie mikrofoni</translation>
 <translation id="7559975015014302720">Lihtsustatud režiim on väljas</translation>
 <translation id="7562080006725997899">Sirvimisandmete kustutamine</translation>
 <translation id="756809126120519699">Chrome'i andmed kustutati</translation>
@@ -813,7 +808,6 @@ Näiteks võivad mõned veebisaidid taotlusele reageerida nii, et näitavad teil
 <translation id="7774809984919390718">{PAYMENT_METHOD,plural, =1{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 ja veel <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}other{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 ja veel <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}}</translation>
 <translation id="7791543448312431591">Lisa</translation>
 <translation id="780301667611848630">Ei, aitäh</translation>
-<translation id="7804248752222191302">Sait kasutab teie kaamerat</translation>
 <translation id="7810647596859435254">Ava rakendusega …</translation>
 <translation id="7821588508402923572">Siin kuvatakse teie säästetud andmemaht</translation>
 <translation id="783819812427904514">Video vaigistuse tühistamine</translation>
@@ -885,9 +879,7 @@ Näiteks võivad mõned veebisaidid taotlusele reageerida nii, et näitavad teil
 <translation id="8349013245300336738">Sordi kasutatud andmemahu alusel</translation>
 <translation id="8364299278605033898">Vaadake populaarseid veebisaite</translation>
 <translation id="8368027906805972958">Tundmatu või toetamata seade (<ph name="DEVICE_ID" />)</translation>
-<translation id="83792324527827022">Sait kasutab teie kaamerat ja mikrofoni</translation>
 <translation id="8393700583063109961">Saatke sõnum</translation>
-<translation id="8394832520002899662">Puudutage saidile naasmiseks</translation>
 <translation id="8413126021676339697">Kuva kogu ajalugu</translation>
 <translation id="8427875596167638501">Eelvaate vaheleht on pooleldi avatud</translation>
 <translation id="8428213095426709021">Seaded</translation>
@@ -984,7 +976,6 @@ Näiteks võivad mõned veebisaidid taotlusele reageerida nii, et näitavad teil
 <translation id="970715775301869095">Jäänud on <ph name="MINUTES" /> minutit</translation>
 <translation id="974555521953189084">Sünkroonimise alustamiseks sisestage parool</translation>
 <translation id="981121421437150478">Võrguühenduseta</translation>
-<translation id="982182592107339124">See kustutab kõikide saitide andmed, sealhulgas:</translation>
 <translation id="983192555821071799">Sule kõik vahelehed</translation>
 <translation id="987264212798334818">Üldine</translation>
 </translationbundle>

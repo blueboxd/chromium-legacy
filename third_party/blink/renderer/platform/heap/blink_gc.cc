@@ -4,7 +4,6 @@
 
 #include "third_party/blink/renderer/platform/heap/blink_gc.h"
 
-#include "base/logging.h"
 
 namespace blink {
 

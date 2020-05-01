@@ -1269,7 +1269,6 @@ Se questa norma non viene impostata, l'utente potrà scegliere se utilizzare o m
 <translation id="2869762730352628426">Attiva la funzione di clic automatico nella schermata di accesso</translation>
 <translation id="2872961005593481000">Spegni</translation>
 <translation id="2874209944580848064">Nota per i dispositivi <ph name="PRODUCT_OS_NAME" /> che supportano le app Android:</translation>
-<translation id="2874901846804525128">Impedisci all'utente di usare app Android di fonti non attendibili</translation>
 <translation id="2875192972412983412">Consente di specificare il sottoinsieme di server di stampa a cui verranno inviate query sulle stampanti.
 
       Se viene usato questo criterio, gli utenti avranno a disposizione soltanto le stampanti con ID corrispondenti ai valori specificati in questo criterio.
@@ -1408,7 +1407,6 @@ Questa norma viene rispettata soltanto se viene attivata la norma "DefaultSearch
 <translation id="3096595567015595053">Elenco dei plug-in attivati</translation>
 <translation id="3101501961102569744">Scegli come specificare le impostazioni del server proxy</translation>
 <translation id="3101709781009526431">Data e ora</translation>
-<translation id="3112706537206652445">Impedisce agli utenti di questo dispositivo di utilizzare il processo sideload ADB. Se il processo sideload è stato attivato in precedenza, il passaggio a questa impostazione lascia il dispositivo in uno stato di sicurezza discutibile.</translation>
 <translation id="3114411414586006215">Questo criterio consente di stabilire l'elenco di siti web che non causeranno mai un cambio di browser.
 
       Tieni presente che puoi aggiungere elementi all'elenco anche tramite il criterio <ph name="EXTERNAL_SITELIST_URL_POLICY_NAME" />.
@@ -1778,7 +1776,6 @@ Questa norma viene rispettata soltanto se viene attivata la norma "DefaultSearch
 <translation id="3715569262675717862">Autenticazione basata su certificati client</translation>
 <translation id="3736879847913515635">Attiva la funzione Aggiungi persona in Gestione utenti</translation>
 <translation id="3737890474637805114">Blocca i download di file di grandi dimensioni</translation>
-<translation id="3738723882663496016">Questa norma specifica il codice licenza <ph name="PLUGIN_VM_NAME" /> di questo dispositivo.</translation>
 <translation id="3748900290998155147">Consente di specificare se consentire o meno i wakelock. I wakelock possono essere richiesti dalle estensioni tramite l'API dell'estensione di gestione dell'alimentazione e dalle app ARC.
 
           Se questa norma viene impostata su true o non viene impostata, i wakelock verranno rispettati per la gestione dell'alimentazione.
@@ -2301,9 +2298,6 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
 <translation id="4432762137771104529">Attiva rapporti estesi su Navigazione sicura</translation>
 <translation id="443454694385851356">Precedente (non sicuro)</translation>
 <translation id="443665821428652897">Cancella i dati del sito alla chiusura del browser (obsoleta)</translation>
-<translation id="4439132805807595336">Consente al dispositivo di eseguire PluginVm.
-
-      Se la norma viene impostata su false o non viene impostata, <ph name="PLUGIN_VM_NAME" /> non viene attivato per il dispositivo. Se viene impostata su true, <ph name="PLUGIN_VM_NAME" /> viene attivato per il dispositivo, a condizione che anche le altre impostazioni lo permettano. La norma <ph name="PLUGIN_VM_ALLOWED_POLICY_NAME" /> deve essere impostata su true, mentre le norme <ph name="PLUGIN_VM_LICENSE_KEY_POLICY_NAME" /> e <ph name="PLUGIN_VM_IMAGE_POLICY_NAME" /> devono essere impostate per consentire l'esecuzione di <ph name="PLUGIN_VM_NAME" />.</translation>
 <translation id="4439336120285389675">Consente di specificare un elenco di funzioni ritirate della piattaforma web da riattivare temporaneamente.
 
       Questa norma consente agli amministratori di riattivare funzioni ritirate della piattaforma web per un periodo di tempo limitato. Le funzioni sono identificate da un tag string e le funzioni corrispondenti ai tag inclusi nell'elenco specificato tramite questa norma verranno riattivate.
@@ -3791,7 +3785,6 @@ Se questa norma non viene impostata o se l'elenco è vuoto, sarà possibile acce
 <translation id="6731757988219967594">Filtra i siti di contenuti per adulti di primo livello (ma non gli iframe incorporati)</translation>
 <translation id="6734521799274931721">Consente di controllare la disponibilità della funzione Condivisioni file di rete per Chrome OS</translation>
 <translation id="6735701345096330595">Forza attivazione lingue per controllo ortografico</translation>
-<translation id="6737677282967014160">Consenti all'utente di usare app Android di fonti non attendibili</translation>
 <translation id="6757613329154374267">Backup e ripristino attivato</translation>
 <translation id="6758659208493449452">Questo criterio consente di stabilire se gli utenti registrati al programma di protezione avanzata ricevono o meno ulteriori livelli di protezione. Alcune di queste funzionalità potrebbero prevedere la condivisione di dati con Google (ad esempio, gli utenti che usano la protezione avanzata potranno inviare i propri download a Google per verificare l'eventuale presenza di malware). Se questo criterio viene impostato su True o non viene impostato, gli utenti registrati al programma riceveranno ulteriori livelli di protezione. Se viene impostato su False, gli utenti che usano la protezione avanzata riceveranno soltanto le funzionalità standard per i consumatori.</translation>
 <translation id="6762235610019366960">Ti consente di gestire la presentazione dei contenuti promozionali e/o informativi a scheda intera in <ph name="PRODUCT_NAME" />.
@@ -4111,7 +4104,6 @@ Se questa norma è impostata su True o non è impostata, il modello di oscuramen
 <translation id="7202925763179776247">Consenti limitazioni dei download</translation>
 <translation id="7207095846245296855">Forza il filtro SafeSearch di Google</translation>
 <translation id="7211368186050418507">Non rilevare mai automaticamente il fuso orario</translation>
-<translation id="7213920626995591871">Impedisce agli utenti di questo dispositivo di utilizzare il processo sideload ADB e forza la funzione Powerwash del dispositivo se tale processo è stato attivato in precedenza.</translation>
 <translation id="7216442368414164495">Consenti agli utenti di attivare i rapporti estesi di Navigazione sicura</translation>
 <translation id="7222749588229362483">Consente di unire i criteri selezionati quando provengono da origini diverse, con stesso ambito e livello.
 
@@ -4415,7 +4407,6 @@ Se questa norma non viene impostata, verranno utilizzate le dimensioni predefini
 <translation id="7687943045976362719">Se questa norma viene impostata, i tipi di contenuto specificati vengono gestiti da <ph name="PRODUCT_FRAME_NAME" />.
 
           Se la norma non viene impostata, verrà utilizzato per tutti i siti il renderer predefinito. (È possibile utilizzare la norma <ph name="CHROME_FRAME_RENDERER_SETTINGS_POLICY_NAME" /> per configurare il renderer predefinito).</translation>
-<translation id="7690423044860056310">Consente agli utenti affiliati di questo dispositivo di utilizzare il processo sideload ADB.</translation>
 <translation id="7691028179743802462">Questo criterio è obsoleto in M83, utilizza invece SafeBrowsingProtectionLevel.
 
       Consente di attivare la funzionalità Navigazione sicura di <ph name="PRODUCT_NAME" /> e di impedire agli utenti di modificare questa impostazione.
@@ -5324,19 +5315,6 @@ https://www.w3.org/TR/secure-contexts/
           Se questo criterio non viene impostato ed è supportato sul dispositivo, verrà applicata la modalità di ricarica standard della batteria e l'impostazione non potrà essere modificata dall'utente.
 
           Nota: se specificato, <ph name="DEVICE_ADVANCED_BATTERY_CHARGE_MODE_ENABLED_NAME" /> sostituisce questo criterio.</translation>
-<translation id="9071472304496502510">Elenco di impostazioni per i servizi dei connettori di Chrome Enterprise da applicare al connettore di Enterprise <ph name="ON_FILE_ATTACHED_ENTERPRISE_CONNECTOR" />, che si attiva quando un file viene allegato a Chrome.
-
-      I campi <ph name="ENTERPRISE_CONNECTOR_URL_LIST_FIELD" />, <ph name="ENTERPRISE_CONNECTOR_TAGS_FIELD" />, <ph name="ENTERPRISE_CONNECTOR_ENABLE_FIELD" /> e <ph name="ENTERPRISE_CONNECTOR_DISABLE_FIELD" /> vengono utilizzati per determinare se il connettore deve inviare un file per l'analisi quando viene allegato a una pagina specifica e quali tag includere nella richiesta di analisi per quel file. Un tag che corrisponde a un pattern "enable" verrà incluso nella richiesta di analisi se l'URL della pagina corrisponde a un pattern associato a tale tag finché nessun pattern "disable" con lo stesso tag corrisponde all'URL della pagina. L'analisi viene eseguita se almeno un tag deve essere incluso nella richiesta.
-
-      Il campo <ph name="ENTERPRISE_CONNECTOR_SERVICE_PROVIDER_FIELD" /> identifica a quali fornitori di servizi di analisi corrispondono le impostazioni.
-
-      Se il campo <ph name="ENTERPRISE_CONNECTOR_BLOCK_UNTIL_VERDICT_FIELD" /> è impostato su 1, Chrome attende di ricevere una risposta dal servizio di analisi prima di concedere l'accesso alla pagina. Con qualsiasi altro valore intero, Chrome concede al file l'accesso alla pagina immediatamente.
-
-      Il campo <ph name="ENTERPRISE_CONNECTOR_BLOCK_PASSWORD_PROTECTED_FIELD" /> controlla se Chrome blocca o autorizza i campi protetti da una password.
-
-      Il campo <ph name="ENTERPRISE_CONNECTOR_BLOCK_LARGE_FILES_FIELD" /> controlla se Chrome blocca o autorizza i file troppo grandi per essere analizzati (oltre i 50 MB).
-
-      Questo criterio può essere impostato solo dalla Console di amministrazione Google.</translation>
 <translation id="9077227880520270584">Timer accesso automatico all'account locale del dispositivo</translation>
 <translation id="9084985621503260744">Specifica se l'attività video incide sulla gestione dell'alimentazione</translation>
 <translation id="9088433379343318874">Abilita il provider di contenuti dell'utente supervisionato</translation>

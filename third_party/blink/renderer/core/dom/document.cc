@@ -42,7 +42,6 @@
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/mojom/base/text_direction.mojom-blink.h"
-#include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "services/metrics/public/cpp/mojo_ukm_recorder.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
@@ -2687,7 +2686,7 @@ bool Document::NeedsLayoutTreeUpdateForNode(const Node& node,
                                             bool ignore_adjacent_style) const {
   // TODO(rakina): Switch some callers that may need to call
   // NeedsLayoutTreeUpdateForNodeIncludingDisplayLocked instead of this.
-  if (DisplayLockUtilities::NearestLockedExclusiveAncestor(node)) {
+  if (DisplayLockUtilities::LockedAncestorPreventingStyle(node)) {
     // |node| is in a locked-subtree, so we don't need to update it.
     return false;
   }
@@ -8502,18 +8501,6 @@ void Document::UpdateForcedColors() {
 
 bool Document::InForcedColorsMode() const {
   return in_forced_colors_mode_ && !Printing();
-}
-
-bool Document::IsCrossSiteSubframe() const {
-  // It'd be nice to avoid the url::Origin temporaries, but that would require
-  // exposing the net internal helper.
-  // TODO: If the helper gets exposed, we could do this without any new
-  // allocations using StringUTF8Adaptor.
-  return TopFrameOrigin() &&
-         !net::registry_controlled_domains::SameDomainOrHost(
-             TopFrameOrigin()->ToUrlOrigin(),
-             GetSecurityOrigin()->ToUrlOrigin(),
-             net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
 }
 
 void Document::CountUse(mojom::WebFeature feature) const {

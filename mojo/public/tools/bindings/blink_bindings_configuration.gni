@@ -8,7 +8,6 @@ for_blink = true
 
 _typemap_imports = [
   "//media/learning/mojo/public/cpp/typemaps.gni",
-  "//mojo/public/cpp/bindings/tests/blink_typemaps.gni",
   "//skia/public/mojom/typemaps.gni",
   "//third_party/blink/renderer/platform/mojo/blink_typemaps.gni",
   "//third_party/blink/public/blink_typemaps.gni",

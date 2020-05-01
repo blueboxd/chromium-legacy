@@ -38,7 +38,6 @@
 <translation id="1258753120186372309">Google ଡୁଡଲ୍: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1260236875608242557">ସନ୍ଧାନ ଓ ଏକ୍ସପ୍ଲୋର୍‌</translation>
 <translation id="1266864766717917324"><ph name="CONTENT_TYPE" />ସେୟାର୍ କରିହେଲା ନାହିଁ</translation>
-<translation id="1272079795634619415">ବନ୍ଦ କରନ୍ତୁ</translation>
 <translation id="1283039547216852943">ପ୍ରସାରଣ କରିବା ପାଇଁ ଟାପ୍ କରନ୍ତୁ</translation>
 <translation id="1285320974508926690">ଏହି ସାଇଟ୍‍କୁ କଦାପି ଅନୁବାଦ କରନ୍ତୁ ନାହିଁ</translation>
 <translation id="1291207594882862231">ଇତିବୃତ୍ତି, କୁକୀ, ସାଇଟ୍ ଡାଟା, କ୍ୟାଚିକୁ ଖାଲି କରନ୍ତୁ…</translation>
@@ -51,7 +50,6 @@
 <translation id="1331212799747679585">Chrome ଅପ୍‌ଡେଟ୍ ହୋଇପାରିବ ନାହିଁ। ଅଧିକ ବିକଳ୍ପ</translation>
 <translation id="1332501820983677155">Google Chrome ବୈଶିଷ୍ଟ୍ୟ ସର୍ଟକଟ୍</translation>
 <translation id="1360432990279830238">ସିଙ୍କ ସାଇନ୍‌ ଆଉଟ୍‍ ଏବଂ ବନ୍ଦ କରିବେ?</translation>
-<translation id="1364532808393826295"><ph name="APP_NAME" /> - <ph name="NOTIFICATION_MESSAGE" /></translation>
 <translation id="1373696734384179344">ଚୟନ କରାଯାଇଥିବା ବିଷୟବସ୍ତୁ ଡାଉନ୍‌ଲୋଡ୍ କରିବା ପାଇଁ ପର୍ଯ୍ୟାପ୍ତ ମେମୋରୀ ନାହିଁ।</translation>
 <translation id="1376578503827013741">ଗଣନା ହେଉଛି…</translation>
 <translation id="1383876407941801731">ସନ୍ଧାନ</translation>
@@ -122,7 +120,6 @@
 <translation id="2013642289801508067">{FILE_COUNT,plural, =1{#ଟି ଫାଇଲ୍}other{#ଟି ଫାଇଲ୍}}</translation>
 <translation id="2017836877785168846">ଠିକଣା ବାର୍‌ରେ ଥିବା ଇତିବୃତ୍ତି ଓ ଅଟୋକମ୍ପ୍ଲିସେନ୍‍ଗୁଡ଼ିକୁ ଖାଲି କରନ୍ତୁ।</translation>
 <translation id="2021896219286479412">ପୂର୍ଣ୍ଣ-ସ୍କ୍ରିନ୍ ସାଇଟ୍ ନିୟନ୍ତ୍ରଣ</translation>
-<translation id="2030769033451695672"><ph name="URL_OF_THE_CURRENT_TAB" />କୁ ଫେରିବା ପାଇଁ ଟାପ୍ କରନ୍ତୁ</translation>
 <translation id="2038563949887743358">ଅନୁରୋଧ ଡେକ୍ସଟପ୍ ସାଇଟ୍ ଚାଲୁ କରନ୍ତୁ</translation>
 <translation id="204321170514947529"><ph name="APP_NAME" />ର ମଧ୍ୟ Chromeରେ ଡାଟା ଅଛି</translation>
 <translation id="2049574241039454490"><ph name="FILE_SIZE_OF_TOTAL" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
@@ -592,7 +589,6 @@
 <translation id="5876056640971328065">ଭିଡିଓ ବିରତ କରନ୍ତୁ</translation>
 <translation id="5884076754568147479">କାର୍ଯ୍ୟଗୁଡ଼ିକୁ ସମ୍ପୂର୍ଣ୍ଣ କରିବାରେ ଆପଣଙ୍କୁ ସାହାଯ୍ୟ କରିବା ନିମନ୍ତେ, ଆପଣ Assistant ବ୍ୟବହାର କରିଥିବା ସାଇଟଗୁଡ଼ିକର URL ଏବଂ ବିଷୟବସ୍ତୁଗୁଡ଼ିକ ସହିତ Assistant ମାଧ୍ୟମରେ ଆପଣ ଦାଖଲ କରିଥିବା ସୂଚନା Google ପ୍ରାପ୍ତ କରିବ</translation>
 <translation id="5919204609460789179">ସିଙ୍କ ଆରମ୍ଭ କରିବା ପାଇଁ <ph name="PRODUCT_NAME" /> ଅପ୍‍‍ଡେଟ୍ କରନ୍ତୁ</translation>
-<translation id="5922853908706496913">ଆପଣଙ୍କ ସ୍କ୍ରିନ୍ ସେୟାର୍ କରାଯାଉଛି</translation>
 <translation id="5937580074298050696"><ph name="AMOUNT" />କୁ ସେଭ୍ କରାଗଲା</translation>
 <translation id="5939518447894949180">ପୁନଃସେଟ୍</translation>
 <translation id="5942872142862698679">ସନ୍ଧାନ ପାଇଁ Google ବ୍ୟବହାର କରାଯାଉଛି</translation>
@@ -779,7 +775,6 @@
 <translation id="7514365320538308">ଡାଉନ୍‌‌ଲୋଡ୍‌ କରନ୍ତୁ</translation>
 <translation id="751961395872307827">ସାଇଟ୍‍କୁ ସଂଯୋଗ କରିପାରିବ ନାହିଁ।</translation>
 <translation id="7542481630195938534">ପରାମର୍ଶ ପ୍ରାପ୍ତ କରିପାରିଲା ନାହିଁ</translation>
-<translation id="7554752735887601236">କୌଣସି ସାଇଟ୍ ଆପଣଙ୍କ ମାଇକ୍ରୋଫୋନକୁ ବ୍ୟବହାର କରୁଛି</translation>
 <translation id="7559975015014302720">ଲାଇଟ୍ ମୋଡ୍ ବନ୍ଦ ଅଛି</translation>
 <translation id="7562080006725997899">ବ୍ରାଇଜିଂ ଡାଟା ଖାଲି ହେଉଛି</translation>
 <translation id="756809126120519699">Chrome ଡାଟା ଖାଲି କରାଯାଇଛି</translation>
@@ -813,7 +808,6 @@
 <translation id="7774809984919390718">{PAYMENT_METHOD,plural, =1{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 ଓ <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> ଅଧିକ}other{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 ଓ <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> ଅଧିକ}}</translation>
 <translation id="7791543448312431591">ଯୋଡନ୍ତୁ</translation>
 <translation id="780301667611848630">ନାଁ, ଥାଉ</translation>
-<translation id="7804248752222191302">କୌଣସି ସାଇଟ୍ ଆପଣଙ୍କ କ୍ୟାମେରା ବ୍ୟବହାର କରୁଛି</translation>
 <translation id="7810647596859435254">ଏଥିରେ ଖୋଲନ୍ତୁ…</translation>
 <translation id="7821588508402923572">ଆପଣଙ୍କର ଡାଟା ସେଭିଂ ଏଠାରେ ଦେଖାଯିବ</translation>
 <translation id="783819812427904514">ଭିଡିଓ ଅନମ୍ୟୁଟ୍ କରନ୍ତୁ</translation>
@@ -885,9 +879,7 @@
 <translation id="8349013245300336738">ବ୍ୟବହାର କରାଯାଇଥିବା ଡାଟାର ପରିମାଣର କ୍ରମରେ ସଜାନ୍ତୁ</translation>
 <translation id="8364299278605033898">ଲୋକପ୍ରିୟ ୱେବ୍‍ସାଇଟ୍‌ଗୁଡ଼ିକ ଦେଖନ୍ତୁ</translation>
 <translation id="8368027906805972958">ଅଜଣା କିମ୍ବା ଅସମର୍ଥିତ ଡିଭାଇସ୍ (<ph name="DEVICE_ID" />)</translation>
-<translation id="83792324527827022">କୌଣସି ସାଇଟ୍ ଆପଣଙ୍କ କ୍ୟାମେରା ଏବଂ ମାଇକ୍ରୋଫୋନକୁ ବ୍ୟବହାର କରୁଛି</translation>
 <translation id="8393700583063109961">ମେସେଜ୍‌ ପଠାନ୍ତୁ</translation>
-<translation id="8394832520002899662">ସାଇଟକୁ ଫେରିବାକୁ ଟାପ୍ କରନ୍ତୁ</translation>
 <translation id="8413126021676339697">ସମ୍ପୂର୍ଣ୍ଣ ଇତିବୃତ୍ତି ଦେଖାନ୍ତୁ</translation>
 <translation id="8427875596167638501">ପ୍ରିଭ୍ୟୁ ଟାବ୍ ଅଧା ଖୋଲା ଅଛି</translation>
 <translation id="8428213095426709021">ସେଟିଂସ୍</translation>
@@ -984,7 +976,6 @@
 <translation id="970715775301869095"><ph name="MINUTES" /> ମିନିଟ୍ ବାକି ଅଛି</translation>
 <translation id="974555521953189084">ସିଙ୍କ୍ ଆରମ୍ଭ କରିବାକୁ ଆପଣଙ୍କର ପାସ୍‌ଫ୍ରେଜ୍ ଲେଖନ୍ତୁ</translation>
 <translation id="981121421437150478">ଅଫ୍‍ଲାଇନ୍</translation>
-<translation id="982182592107339124">ଏହା ସମସ୍ତ ସାଇଟ୍‍ଗୁଡ଼ିକ ପାଇଁ ଡାଟା ଖାଲି କରିଦେବ, ଏଥିରେ ଅନ୍ତର୍ଭୁକ୍ତ ଅଛି:</translation>
 <translation id="983192555821071799">ସମସ୍ତ ଟାବ୍ ବନ୍ଦ କରନ୍ତୁ</translation>
 <translation id="987264212798334818">ସାଧାରଣ</translation>
 </translationbundle>

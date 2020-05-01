@@ -40,6 +40,9 @@ const base::Feature kDockedMagnifier{"DockedMagnifier",
 const base::Feature kDragToSnapInClamshellMode{
     "DragToSnapInClamshellMode", base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kMovablePartialScreenshot{
+    "MovablePartialScreenshot", base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kEnableOverviewRoundedCorners{
     "EnableOverviewRoundedCorners", base::FEATURE_ENABLED_BY_DEFAULT};
 
@@ -262,6 +265,11 @@ bool IsWebUITabStripTabDragIntegrationEnabled() {
 bool IsDisplayAlignmentAssistanceEnabled() {
   return base::FeatureList::IsEnabled(kDisplayAlignAssist);
 }
+
+bool IsMovablePartialScreenshotEnabled() {
+  return base::FeatureList::IsEnabled(kMovablePartialScreenshot);
+}
+
 namespace {
 
 // The boolean flag indicating if "WebUITabStrip" feature is enabled in Chrome.

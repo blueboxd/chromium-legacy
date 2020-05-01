@@ -98,6 +98,7 @@ import org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper;
 import org.chromium.chrome.tab_ui.R;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
+import org.chromium.chrome.test.util.ApplicationTestUtils;
 import org.chromium.chrome.test.util.ChromeRenderTestRule;
 import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.chrome.test.util.MenuUtils;
@@ -1616,6 +1617,25 @@ public class StartSurfaceLayoutTest {
         onView(allOf(withParent(withId(R.id.compositor_view_holder)), withId(R.id.tab_list_view)))
                 .check(TabCountAssertion.havingTabCount(2));
         onViewWaiting(withText("2 tabs grouped"));
+    }
+
+    @Test
+    @MediumTest
+    public void testActivityCanBeGarbageCollectedAfterFinished() throws Exception {
+        prepareTabs(1, 0, "about:blank");
+
+        WeakReference<ChromeTabbedActivity> activityRef =
+                new WeakReference<>(mActivityTestRule.getActivity());
+
+        ChromeTabbedActivity activity =
+                ApplicationTestUtils.recreateActivity(mActivityTestRule.getActivity());
+        InstrumentationRegistry.getInstrumentation().waitForIdleSync();
+
+        mStartSurfaceLayout = null;
+        mTabListDelegate = null;
+        mActivityTestRule.setActivity(activity);
+
+        assertTrue(GarbageCollectionTestUtils.canBeGarbageCollected(activityRef));
     }
 
     private void enterTabGroupManualSelection(ChromeTabbedActivity cta) {

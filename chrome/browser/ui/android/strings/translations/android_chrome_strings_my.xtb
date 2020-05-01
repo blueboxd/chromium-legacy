@@ -38,7 +38,6 @@
 <translation id="1258753120186372309">Google doodle- <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1260236875608242557">ရှာဖွေပြီး စူးစမ်းလေ့လာပါ</translation>
 <translation id="1266864766717917324"><ph name="CONTENT_TYPE" /> ကို မျှဝေ၍မရပါ။</translation>
-<translation id="1272079795634619415">ရပ်ရန်</translation>
 <translation id="1283039547216852943">ချဲ့ရန် တို့ပါ</translation>
 <translation id="1285320974508926690">ဒီဆိုက်ကို ဘယ်တော့မှ ဘာသာမပြန်ပါနှင့်</translation>
 <translation id="1291207594882862231">မှတ်တမ်း၊ ကွတ်ကီး၊ ဆိုက်ဒေတာ၊ ကက်ရှ်များကို ရှင်းလင်းပါ...</translation>
@@ -50,8 +49,8 @@
 <translation id="1327257854815634930">လမ်းညွှန်မှု မှတ်တမ်း ဖွင့်ထားသည်</translation>
 <translation id="1331212799747679585">Chrome ကို အပ်ဒိတ်လုပ်၍မရပါ။ နောက်ထပ်ရွေးချယ်စရာများ</translation>
 <translation id="1332501820983677155">Google Chrome ဝန်ဆောင်မှု ဖြတ်လမ်းလင့်ခ်များ</translation>
+<translation id="1347468774581902829">လုပ်ဆောင်ချက်ကို စီမံခန့်ခွဲရန်</translation>
 <translation id="1360432990279830238">ထွက်ပြီး စင့်ခ်လုပ်ခြင်းကို ပိတ်လိုသလား။</translation>
-<translation id="1364532808393826295"><ph name="APP_NAME" /> - <ph name="NOTIFICATION_MESSAGE" /></translation>
 <translation id="1373696734384179344">ရွေးချယ်ထားသည့် အကြောင်းအရာအား ဒေါင်းလုပ်လုပ်ရန် မှတ်ဉာဏ် မလုံလောက်ပါ။</translation>
 <translation id="1376578503827013741">တွက်ချက်နေသည်…</translation>
 <translation id="1383876407941801731">ရှာဖွေမှု</translation>
@@ -122,7 +121,6 @@
 <translation id="2013642289801508067">{FILE_COUNT,plural, =1{# ဖိုင်}other{# ဖိုင်}}</translation>
 <translation id="2017836877785168846">လိပ်စာဘားရှိ မှတ်တမ်းနှင့် အလိုအလျောက်ဖြည့်ခြင်းများကို ရှင်းလင်းရန်</translation>
 <translation id="2021896219286479412">မျက်နှာပြင်အပြည့် ထိန်းချုပ်မှု</translation>
-<translation id="2030769033451695672"><ph name="URL_OF_THE_CURRENT_TAB" /> သို့ပြန်သွားရန် တို့ပါ</translation>
 <translation id="2038563949887743358">ဆိုဒ်ကြီး တောင်းဆိုမှု ဖွင့်မည်</translation>
 <translation id="204321170514947529"><ph name="APP_NAME" /> သည် Chrome တွင်လည်း ဒေတာများရှိသည်</translation>
 <translation id="2049574241039454490"><ph name="FILE_SIZE_OF_TOTAL" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
@@ -434,6 +432,7 @@
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> စာညှပ် တွေ့ရှိပါသည်</translation>
 <translation id="4665282149850138822"><ph name="NAME" />ကို သင်၏ ပင်မ မျက်နှာပြင်သို့ ထည့်ပေးခဲ့သည်</translation>
 <translation id="4684427112815847243">အားလုံး စင့်ခ်ရန်</translation>
+<translation id="4688610874307684559">Chrome တွင် လုပ်ဆောင်နေသည် (ကနဦး)</translation>
 <translation id="4695891336199304370">{SHIPPING_OPTIONS,plural, =1{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 နှင့် နောက်ထပ် <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> ခု}other{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 နှင့် နောက်ထပ် <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> ခု}}</translation>
 <translation id="4696983787092045100">'သင့်ကိရိယာများ' သို့ စာတိုပို့ရန်</translation>
 <translation id="4698034686595694889"><ph name="APP_NAME" /> တွင် အော့ဖ်လိုင်းဖြင့် ကြည့်ခြင်း</translation>
@@ -592,7 +591,6 @@
 <translation id="5876056640971328065">ဗီဒီယို ခဏရပ်ရန်</translation>
 <translation id="5884076754568147479">သင်၏လုပ်ဆောင်စရာများ ပြီးမြောက်အောင် ကူညီရန် Assistant ကို အသုံးပြုထားသည့် ဝဘ်ဆိုက်များ၏ URL နှင့် အကြောင်းအရာများအပြင် Assistant ဖြင့် ပေးပို့ထားသည့် အချက်အလက်များကို Google က ရရှိပါမည်။</translation>
 <translation id="5919204609460789179">စင့်ခ်လုပ်ရန် <ph name="PRODUCT_NAME" /> ကို အပ်ဒိတ်လုပ်ပါ</translation>
-<translation id="5922853908706496913">သင့်ဖန်သားပြင်ကို မျှဝေနေသည်</translation>
 <translation id="5937580074298050696"><ph name="AMOUNT" /> ကို သိမ်းပြီးပါပြီ</translation>
 <translation id="5939518447894949180">ပြန်ညှိ</translation>
 <translation id="5942872142862698679">ရှာဖွေမှုအတွက် Google ကို အသုံးပြုသည်</translation>
@@ -772,16 +770,17 @@
 <translation id="7479104141328977413">တဘ် စီမံခန့်ခွဲမှု</translation>
 <translation id="7481312909269577407">ရှေ့သို့</translation>
 <translation id="7482656565088326534">အစမ်းကြည့်ရှုမှု တဘ်</translation>
+<translation id="7484997419527351112">ရှာဖွေခြင်း - ပိတ်ထားသည်</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (မွမ်းမံပြင်ဆင်ပြီး<ph name="TIME_SINCE_UPDATE" /> )</translation>
 <translation id="7494974237137038751">သိမ်းဆည်းထားသော ဒေတာ</translation>
 <translation id="7498271377022651285">ကျေးဇူးပြုပြီး စောင့်ပါ…</translation>
 <translation id="7514365320538308">ဒေါင်းလုဒ်</translation>
 <translation id="751961395872307827">ဝဘ်ဆိုက်နှင့် ချိတ်ဆက်၍မရပါ</translation>
 <translation id="7542481630195938534">အကြံပြုချက်များကို ရယူ၍မရပါ</translation>
-<translation id="7554752735887601236">ဝဘ်ဆိုက်တစ်ခုက သင့်မိုက်ကရိုဖုန်းကို အသုံးပြုနေသည်</translation>
 <translation id="7559975015014302720">'အပေါ့စားမုဒ်' ပိတ်ထားသည်</translation>
 <translation id="7562080006725997899">ဘရောင်ဇာ ဒေတာကို ရှင်းရန်</translation>
 <translation id="756809126120519699">Chrome ဒေတာကို ရှင်းလင်းလိုက်ပါပြီ</translation>
+<translation id="7577900504646297215">စိတ်ဝင်စားမှုများ စီမံရန်</translation>
 <translation id="757855969265046257">{FILES,plural, =1{<ph name="FILES_DOWNLOADED_ONE" /> ဖိုင် ဒေါင်းလုဒ်လုပ်ပြီးပြီ}other{<ph name="FILES_DOWNLOADED_MANY" /> ဖိုင် ဒေါင်းလုဒ်လုပ်ပြီးပြီ}}</translation>
 <translation id="7588219262685291874">သင့်စက်ပစ္စည်း၏ 'ဘက်ထရီ အားထိန်း' ဖွင့်ထားလျှင် မှောင်သည့် အပြင်အဆင်ကို ဖွင့်သည်</translation>
 <translation id="7593557518625677601">Chrome စင့်ခ်ပြုလုပ်ခြင်းကို စတင်ရန် Android ဆက်တင်ကို ဖွင့်ပြီး Android စနစ်စင့်ခ်ပြုလုပ်ခြင်းကို ပြန်ဖွင့်ပါ</translation>
@@ -812,7 +811,6 @@
 <translation id="7774809984919390718">{PAYMENT_METHOD,plural, =1{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 နှင့် နောက်ထပ် <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> ခု}other{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 နှင့် နောက်ထပ် <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> ခု}}</translation>
 <translation id="7791543448312431591">ထည့်ရန်</translation>
 <translation id="780301667611848630">မလို ကျေးဇူးပဲ</translation>
-<translation id="7804248752222191302">ဝဘ်ဆိုက်တစ်ခုက သင့်ကင်မရာကို အသုံးပြုနေသည်</translation>
 <translation id="7810647596859435254">… ဖြင့် ဖွင့်ရန်</translation>
 <translation id="7821588508402923572">သင်၏ဒေတာချွေတာမှုများကို ဤနေရာတွင် မြင်ရပါမည်</translation>
 <translation id="783819812427904514">ဗီဒီယိုကို အသံပြန်ဖွင့်ရန်</translation>
@@ -884,9 +882,7 @@
 <translation id="8349013245300336738">အသုံးပြုသည့် ဒေတာပမာဏအလိုက် စီရန်</translation>
 <translation id="8364299278605033898">လူကြိုက်များသော ဝဘ်ဆိုက်များ ကြည့်ရန်</translation>
 <translation id="8368027906805972958">အမျိုးအမည်မသိ သို့မဟုတ် ပံ့ပိုးမထားသည့် ကိရိယာ ( <ph name="DEVICE_ID" /> )</translation>
-<translation id="83792324527827022">ဝဘ်ဆိုက်တစ်ခုက သင့်ကင်မရာနှင့် မိုက်ကရိုဖုန်းကို အသုံးပြုနေသည်</translation>
 <translation id="8393700583063109961">စာပို့ရန်</translation>
-<translation id="8394832520002899662">ဝဘ်ဆိုက်သို့ ပြန်သွားရန် တို့ပါ</translation>
 <translation id="8413126021676339697">မှတ်တမ်း အပြည့် ပြရန်</translation>
 <translation id="8427875596167638501">အစမ်းကြည့်ရှုမှုတဘ်ကို တစ်ဝက်ဖွင့်ထားသည်</translation>
 <translation id="8428213095426709021">ဆက်တင်များ</translation>
@@ -983,7 +979,6 @@
 <translation id="970715775301869095"><ph name="MINUTES" /> မိနစ် ကျန်သည်</translation>
 <translation id="974555521953189084">စင့်ခ်ပြုလုပ်ခြင်းကို စတင်ရန် စကားဝှက်ကို ထည့်ပါ</translation>
 <translation id="981121421437150478">အော့ဖ်လိုင်း</translation>
-<translation id="982182592107339124">၎င်းသည် အောက်ပါတို့အပါအဝင် ဆိုက်များအားလုံးမှ ဒေတာများကို ရှင်းလင်းလိုက်ပါမည် −</translation>
 <translation id="983192555821071799">တဘ်အားလုံး ပိတ်ရန်</translation>
 <translation id="987264212798334818">အထွေထွေ</translation>
 </translationbundle>

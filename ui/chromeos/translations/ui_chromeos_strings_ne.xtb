@@ -211,6 +211,7 @@
 <translation id="3495304270784461826"><ph name="COUNT" /> त्रुटिहरू।</translation>
 <translation id="3519867315646775981">ट्रान्सलिटेरेशन (shalom ← שלום)</translation>
 <translation id="3522708245912499433">पोर्टुगिज</translation>
+<translation id="3524311639100184459">चेतावनी: यी फाइलहरू अस्थायी हुन् र भण्डारण स्थान खाली गर्नका निम्ति यी फाइल स्वतः मेटाइन सक्छन्।  <ph name="BEGIN_LINK" />थप जान्नुहोस्<ph name="END_LINK" /></translation>
 <translation id="3527085408025491307">फोल्डर</translation>
 <translation id="3549797760399244642">drive.google.com मा जानुहोस् ...</translation>
 <translation id="357479282490346887">लिथुएनियन</translation>
@@ -499,6 +500,7 @@
 <translation id="6806699711453372963">Linux सँग आदान प्रदान गरिने कुराहरू व्यवस्थापन गर्नुहोस्</translation>
 <translation id="6808193438228982088">स्याल</translation>
 <translation id="6820687829547641339">Gzip द्वारा खाँदिएको टार सङ्ग्रह</translation>
+<translation id="6823166707458800069">यो फोल्डरमा सुरक्षित गरिएका सबै फाइलहरू स्वतः अनलाइनमा ब्याकअप गरिन्छ।</translation>
 <translation id="6825883775269213504">रसियाली</translation>
 <translation id="6827236167376090743">काउज घर नआउँदासम्म यो भिडियो चल्न जारी रहनेछ।</translation>
 <translation id="6847101934483209767">चयनबाट <ph name="ENTRY_NAME" /> हटाइयो।</translation>

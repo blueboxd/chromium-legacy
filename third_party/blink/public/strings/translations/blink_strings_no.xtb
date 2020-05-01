@@ -35,6 +35,7 @@
 <translation id="1938124657309484470">Verdien må være <ph name="MAXIMUM_DATE_OR_TIME" /> eller før.</translation>
 <translation id="1946271899482435442">Vis datovelgeren</translation>
 <translation id="1993104285338243655">Byttet til speiling</translation>
+<translation id="2031987842108996681">Rød kanal</translation>
 <translation id="2060505056492490888">«<ph name="DOT" />» er brukt på feil sted i «<ph name="INVALIDDOMAIN" />».</translation>
 <translation id="2148716181193084225">I dag</translation>
 <translation id="2158401438286456825">sideliste</translation>
@@ -45,6 +46,7 @@
 <translation id="2291999235780842123">avmerkingsboks</translation>
 <translation id="2311842470354187719">sideskift</translation>
 <translation id="2335594187091864976">dato- og klokkeslettvelger</translation>
+<translation id="2393030564806080191">Heksadesimal fargeverdi</translation>
 <translation id="245932805758469625">antall sekunder med video som gjenstår</translation>
 <translation id="248395913932153421">Dag</translation>
 <translation id="2507943997699731163">Vennligst fyll ut dette feltet.</translation>
@@ -52,6 +54,7 @@
 <translation id="2561842179657104141">vis flere mediakontroller</translation>
 <translation id="2572483411312390101">spill av</translation>
 <translation id="2613802280814924224">Skriv inn en gyldig verdi. Den nærmeste, gyldige verdien er <ph name="VALID_VALUE" />.</translation>
+<translation id="2634240155926812724">Grønn kanal</translation>
 <translation id="2653659639078652383">Send</translation>
 <translation id="2657045182931379222">grafikkobjekt</translation>
 <translation id="2674318244760992338">fotnote</translation>
@@ -127,6 +130,7 @@
 <translation id="5034860022980953847">fremdriftsindikator</translation>
 <translation id="5090250355906949916">videotidslinje</translation>
 <translation id="5093189678851173835">epigraf</translation>
+<translation id="509897012892853729">Blå kanal</translation>
 <translation id="5117590920725113268">Se neste måned</translation>
 <translation id="512758898067543763">radoverskrift</translation>
 <translation id="5143125788380636750">epilog</translation>
@@ -164,6 +168,7 @@
 <translation id="6166809985690652833">etterord</translation>
 <translation id="6209276755895393898">Dette ser ut til å være <ph name="DESCRIPTION" /></translation>
 <translation id="6213469881011901533">ordliste</translation>
+<translation id="6281588256137006900">Lyshet</translation>
 <translation id="6281763101136022427">nettadresse</translation>
 <translation id="6310801910862476708">Avslutt bilde-i-bilde</translation>
 <translation id="6398862346408813489">Se panelet for valg av måned</translation>
@@ -184,6 +189,7 @@
 <translation id="6790428901817661496">Spill av</translation>
 <translation id="6820355525329141109">Kunne ikke laste inn programtillegget.</translation>
 <translation id="6820615603175220800">bibliografireferanse</translation>
+<translation id="6831465880655513317">Fargebrønn med todimensjonal glidebryter for valg av metning og lyshet</translation>
 <translation id="6843725295806269523">kutt lyd</translation>
 <translation id="6885760532393684712">katalog</translation>
 <translation id="689129560213475294">kolofon</translation>
@@ -201,6 +207,7 @@
 <translation id="7263440858009898357">Velg en artikkel i listen.</translation>
 <translation id="727747134524199931">kolonneoverskrift</translation>
 <translation id="7320576522385648310">bufring</translation>
+<translation id="7341556277900466204">Fargebrønn</translation>
 <translation id="7353453495576941748">anerkjennelse</translation>
 <translation id="7364796246159120393">Velg fil</translation>
 <translation id="739024184232394898">Andre</translation>
@@ -221,6 +228,7 @@
 <translation id="775297008183122718">Ugyldig oppføring</translation>
 <translation id="7789962463072032349">stans midlertidig</translation>
 <translation id="7802800022689234070">trekant for ekstra innhold</translation>
+<translation id="7852167693871241274">Glidebryter for fargetone</translation>
 <translation id="7888071071722539607">Inkluder en «<ph name="ATSIGN" />» i e-postadressen. «<ph name="INVALIDADDRESS" />» mangler en «<ph name="ATSIGN" />».</translation>
 <translation id="7891486169920085145">vindusdeler</translation>
 <translation id="795667975304826397">Ingen fil valgt</translation>
@@ -263,6 +271,7 @@
 <translation id="8875657656876809964">Feil ved videoavspilling</translation>
 <translation id="8889402386540077796">Fargetone</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> kB</translation>
+<translation id="894736920926684893">Formatvelger</translation>
 <translation id="8987927404178983737">Måned</translation>
 <translation id="901493112792887934">gjeldende tid i sekunder</translation>
 <translation id="901834265349196618">e-post</translation>

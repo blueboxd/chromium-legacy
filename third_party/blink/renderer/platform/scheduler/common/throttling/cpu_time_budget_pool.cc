@@ -6,7 +6,7 @@
 
 #include <cstdint>
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/optional.h"
 #include "third_party/blink/renderer/platform/scheduler/common/throttling/task_queue_throttler.h"
 

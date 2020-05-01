@@ -76,6 +76,10 @@ chromeos::ConciergeClient* GetConciergeClient() {
   return chromeos::DBusThreadManager::Get()->GetConciergeClient();
 }
 
+chromeos::DebugDaemonClient* GetDebugDaemonClient() {
+  return chromeos::DBusThreadManager::Get()->GetDebugDaemonClient();
+}
+
 std::string GetChromeOsChannelFromLsbRelease() {
   constexpr const char kChromeOsReleaseTrack[] = "CHROMEOS_RELEASE_TRACK";
   constexpr const char kUnknown[] = "unknown";
@@ -438,10 +442,9 @@ class ArcVmClientAdapter : public ArcClientAdapter,
   void UpgradeArc(UpgradeParams params,
                   chromeos::VoidDBusMethodCallback callback) override {
     VLOG(1) << "Starting Concierge service";
-    chromeos::DBusThreadManager::Get()->GetDebugDaemonClient()->StartConcierge(
-        base::BindOnce(&ArcVmClientAdapter::OnConciergeStarted,
-                       weak_factory_.GetWeakPtr(), std::move(params),
-                       std::move(callback)));
+    GetDebugDaemonClient()->StartConcierge(base::BindOnce(
+        &ArcVmClientAdapter::OnConciergeStarted, weak_factory_.GetWeakPtr(),
+        std::move(params), std::move(callback)));
   }
 
   void StopArcInstance(bool on_shutdown, bool should_backup_log) override {
@@ -456,16 +459,13 @@ class ArcVmClientAdapter : public ArcClientAdapter,
     }
 
     if (should_backup_log) {
-      // TODO(b/149874690): Call debugd to back up the log.
+      GetDebugDaemonClient()->BackupArcBugReport(
+          user_id_hash_,
+          base::BindOnce(&ArcVmClientAdapter::OnArcBugReportBackedUp,
+                         weak_factory_.GetWeakPtr()));
+    } else {
+      StopArcInstanceInternal();
     }
-
-    VLOG(1) << "Stopping arcvm";
-    vm_tools::concierge::StopVmRequest request;
-    request.set_name(kArcVmName);
-    request.set_owner_id(user_id_hash_);
-    GetConciergeClient()->StopVm(
-        request, base::BindOnce(&ArcVmClientAdapter::OnStopVmReply,
-                                weak_factory_.GetWeakPtr()));
   }
 
   void SetUserInfo(const cryptohome::Identification& cryptohome_id,
@@ -496,6 +496,23 @@ class ArcVmClientAdapter : public ArcClientAdapter,
   void ConciergeServiceRestarted() override {}
 
  private:
+  void OnArcBugReportBackedUp(bool result) {
+    VLOG(1) << "OnArcBugReportBackedUp: back up "
+            << (result ? "done" : "failed");
+
+    StopArcInstanceInternal();
+  }
+
+  void StopArcInstanceInternal() {
+    VLOG(1) << "Stopping arcvm";
+    vm_tools::concierge::StopVmRequest request;
+    request.set_name(kArcVmName);
+    request.set_owner_id(user_id_hash_);
+    GetConciergeClient()->StopVm(
+        request, base::BindOnce(&ArcVmClientAdapter::OnStopVmReply,
+                                weak_factory_.GetWeakPtr()));
+  }
+
   void OnIsDevMode(chromeos::VoidDBusMethodCallback callback,
                    bool is_dev_mode) {
     VLOG(1) << "Starting arcvm-per-board-features";

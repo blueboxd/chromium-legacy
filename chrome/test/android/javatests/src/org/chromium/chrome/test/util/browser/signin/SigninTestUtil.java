@@ -130,7 +130,6 @@ public final class SigninTestUtil {
         signIn(account);
         return account;
     }
-
     /**
      * Sign into an account. Account should be added by {@link #addTestAccount} first.
      */

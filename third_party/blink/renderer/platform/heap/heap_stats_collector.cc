@@ -6,7 +6,7 @@
 
 #include <cmath>
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/partitions.h"
 
 namespace blink {

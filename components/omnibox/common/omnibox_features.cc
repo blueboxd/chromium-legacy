@@ -228,11 +228,14 @@ const base::Feature kOmniboxDemoteByType{"OmniboxDemoteByType",
 const base::Feature kNewSearchFeatures{"OmniboxNewSearchFeatures",
                                        base::FEATURE_ENABLED_BY_DEFAULT};
 
-// This feature exists to flexibly configure on-focus suggestions using the
-// "ZeroSuggestVariant" per-page-classification parameter.
+// Feature that configures ZeroSuggestProvider using the "ZeroSuggestVariant"
+// per-page-classification parameter.
 //
-// However, since only one experiment can configure this feature, it should
-// generally not be used. Instead, create a new base::Feature for each feature.
+// Generally speaking - do NOT use this for future server-side experiments.
+// Instead, create your a new narrowly scoped base::Feature for each experiment.
+//
+// Because our Field Trial system can only configure this base::Feature in a
+// single study, and does not merge parameters, using this creates conflicts.
 const base::Feature kOnFocusSuggestions{"OmniboxOnFocusSuggestions",
                                         base::FEATURE_ENABLED_BY_DEFAULT};
 
@@ -241,6 +244,17 @@ const base::Feature kOnFocusSuggestions{"OmniboxOnFocusSuggestions",
 // otherwise eligible to send the current page URL to the suggest server.
 const base::Feature kOnFocusSuggestionsContextualWeb{
     "OmniboxOnFocusSuggestionsContextualWeb",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enables Proactive ZeroSuggestions (PZPS) on the NTP, for the Omnibox and
+// Realbox respectively. Note: enabling this feature merely makes
+// ZeroSuggestProvider send the request. There are additional requirements,
+// like the user being signed-in, and the suggest server having PZPS enabled.
+const base::Feature kProactiveZeroSuggestionsOnNTPOmnibox{
+    "OmniboxProactiveZeroSuggestionsOnNTPOmnibox",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kProactiveZeroSuggestionsOnNTPRealbox{
+    "OmniboxProactiveZeroSuggestionsOnNTPRealbox",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Allow suggestions to be shown to the user on the New Tab Page upon focusing

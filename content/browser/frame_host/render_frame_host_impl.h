@@ -206,6 +206,7 @@ class TimeoutMonitor;
 class WebAuthRequestSecurityChecker;
 class WebBluetoothServiceImpl;
 class WebBundleHandle;
+class WebBundleHandleTracker;
 struct UntrustworthyContextMenuParams;
 struct PendingNavigation;
 struct ResourceTimingInfo;
@@ -458,17 +459,17 @@ class CONTENT_EXPORT RenderFrameHostImpl
   int routing_id() const { return routing_id_; }
 
   // Called when this frame has added a child. This is a continuation of an IPC
-  // that was partially handled on the IO thread (to allocate |new_routing_id|
-  // and |devtools_frame_token|), and is forwarded here. The renderer has
-  // already been told to create a RenderFrame with the specified ID values.
-  // |interface_provider_receiver| is the receiver end of the InterfaceProvider
-  // interface that the RenderFrameHost corresponding to the child frame should
-  // bind to expose services to the renderer process. The caller takes care of
-  // sending down the client end of the pipe to the child RenderFrame to use.
-  // |browser_interface_broker_receiver| is the receiver end of
-  // BrowserInterfaceBroker interface in the child frame. RenderFrameHost should
-  // bind this receiver to expose services to the renderer process. The caller
-  // takes care of sending down the client end of the pipe to the child
+  // that was partially handled on the IO thread (to allocate |new_routing_id|,
+  // |frame_token| and |devtools_frame_token|), and is forwarded here. The
+  // renderer has already been told to create a RenderFrame with the specified
+  // ID values. |interface_provider_receiver| is the receiver end of the
+  // InterfaceProvider interface that the RenderFrameHost corresponding to the
+  // child frame should bind to expose services to the renderer process. The
+  // caller takes care of sending down the client end of the pipe to the child
+  // RenderFrame to use. |browser_interface_broker_receiver| is the receiver end
+  // of BrowserInterfaceBroker interface in the child frame. RenderFrameHost
+  // should bind this receiver to expose services to the renderer process. The
+  // caller takes care of sending down the client end of the pipe to the child
   // RenderFrame to use.
   void OnCreateChildFrame(
       int new_routing_id,
@@ -480,6 +481,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
       const std::string& frame_name,
       const std::string& frame_unique_name,
       bool is_created_by_script,
+      const base::UnguessableToken& frame_token,
       const base::UnguessableToken& devtools_frame_token,
       const blink::FramePolicy& frame_policy,
       const blink::mojom::FrameOwnerProperties& frame_owner_properties,
@@ -502,7 +504,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
   FrameTreeNode* child_at(size_t index) const { return children_[index].get(); }
   FrameTreeNode* AddChild(std::unique_ptr<FrameTreeNode> child,
                           int process_id,
-                          int frame_routing_id);
+                          int frame_routing_id,
+                          const base::UnguessableToken& frame_token);
   void RemoveChild(FrameTreeNode* child);
   void ResetChildren();
 
@@ -1182,6 +1185,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // Clears the entries in the PrefetchedSignedExchangeCache if exists.
   void ClearPrefetchedSignedExchangeCache();
 
+  // Creates a WebBundleHandleTracker from WebBundleHandles which are attached
+  // |this| or the parent frame or the opener frame.
+  std::unique_ptr<WebBundleHandleTracker> MaybeCreateWebBundleHandleTracker();
+
   // Adds |message| to the DevTools console only if it is unique (i.e. has not
   // been added to the console previously from this frame).
   virtual void AddUniqueMessageToConsole(
@@ -1568,6 +1575,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
                       FrameTree* frame_tree,
                       FrameTreeNode* frame_tree_node,
                       int32_t routing_id,
+                      const base::UnguessableToken& frame_token,
                       bool renderer_initiated_creation,
                       LifecycleState lifecycle_state);
 
@@ -2674,7 +2682,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
       dropped_interface_request_logger_;
 
   // IPC-friendly token that represents this host.
-  const base::UnguessableToken frame_token_ = base::UnguessableToken::Create();
+  const base::UnguessableToken frame_token_;
 
   viz::mojom::InputTargetClient* input_target_client_ = nullptr;
   mojo::Remote<mojom::FrameInputHandler> frame_input_handler_;

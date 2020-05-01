@@ -1022,6 +1022,90 @@ class IncludeGuardTest(unittest.TestCase):
                      'Header using the wrong include guard name '
                      'WrongInBlink_h')
 
+class AccessibilityRelnotesFieldTest(unittest.TestCase):
+  def testRelnotesPresent(self):
+    mock_input_api = MockInputApi()
+    mock_output_api = MockOutputApi()
+
+    mock_input_api.files = [MockAffectedFile('ui/accessibility/foo.bar', [''])]
+    mock_input_api.change.footers['AX-Relnotes'] = [
+        'Important user facing change']
+
+    msgs = PRESUBMIT._CheckAccessibilityRelnotesField(
+        mock_input_api, mock_output_api)
+    self.assertEqual(0, len(msgs),
+                     'Expected %d messages, found %d: %s'
+                     % (0, len(msgs), msgs))
+
+  def testRelnotesMissingFromAccessibilityChange(self):
+    mock_input_api = MockInputApi()
+    mock_output_api = MockOutputApi()
+
+    mock_input_api.files = [
+        MockAffectedFile('some/file', ['']),
+        MockAffectedFile('ui/accessibility/foo.bar', ['']),
+        MockAffectedFile('some/other/file', [''])
+    ]
+
+    msgs = PRESUBMIT._CheckAccessibilityRelnotesField(
+        mock_input_api, mock_output_api)
+    self.assertEqual(1, len(msgs),
+                     'Expected %d messages, found %d: %s'
+                     % (1, len(msgs), msgs))
+    self.assertTrue("Missing 'AX-Relnotes:' field" in msgs[0].message,
+                    'Missing AX-Relnotes field message not found in errors')
+
+  # The relnotes footer is not required for changes which do not touch any
+  # accessibility directories.
+  def testIgnoresNonAccesssibilityCode(self):
+    mock_input_api = MockInputApi()
+    mock_output_api = MockOutputApi()
+
+    mock_input_api.files = [
+        MockAffectedFile('some/file', ['']),
+        MockAffectedFile('some/other/file', [''])
+    ]
+
+    msgs = PRESUBMIT._CheckAccessibilityRelnotesField(
+        mock_input_api, mock_output_api)
+    self.assertEqual(0, len(msgs),
+                     'Expected %d messages, found %d: %s'
+                     % (0, len(msgs), msgs))
+
+  # Test that our presubmit correctly raises an error for a set of known paths.
+  def testExpectedPaths(self):
+    filesToTest = [
+      "chrome/browser/accessibility/foo.py",
+      "chrome/browser/chromeos/arc/accessibility/foo.cc",
+      "chrome/browser/ui/views/accessibility/foo.h",
+      "chrome/browser/extensions/api/automation/foo.h",
+      "chrome/browser/extensions/api/automation_internal/foo.cc",
+      "chrome/renderer/extensions/accessibility_foo.h",
+      "chrome/tests/data/accessibility/foo.html",
+      "content/browser/accessibility/foo.cc",
+      "content/renderer/accessibility/foo.h",
+      "content/tests/data/accessibility/foo.cc",
+      "extensions/renderer/api/automation/foo.h",
+      "ui/accessibility/foo/bar/baz.cc",
+      "ui/views/accessibility/foo/bar/baz.h",
+    ]
+
+    for testFile in filesToTest:
+      mock_input_api = MockInputApi()
+      mock_output_api = MockOutputApi()
+
+      mock_input_api.files = [
+          MockAffectedFile(testFile, [''])
+      ]
+
+      msgs = PRESUBMIT._CheckAccessibilityRelnotesField(
+          mock_input_api, mock_output_api)
+      self.assertEqual(1, len(msgs),
+                       'Expected %d messages, found %d: %s, for file %s'
+                       % (1, len(msgs), msgs, testFile))
+      self.assertTrue("Missing 'AX-Relnotes:' field" in msgs[0].message,
+                      ('Missing AX-Relnotes field message not found in errors '
+                       ' for file %s' % (testFile)))
 
 class AndroidDeprecatedTestAnnotationTest(unittest.TestCase):
   def testCheckAndroidTestAnnotationUsage(self):

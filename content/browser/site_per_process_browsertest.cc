@@ -6174,7 +6174,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   // anymore.
   process_a->GetRendererInterface()->CreateFrameProxy(
       new_routing_id, view_routing_id, MSG_ROUTING_NONE, parent_routing_id,
-      FrameReplicationState(), base::UnguessableToken::Create());
+      FrameReplicationState(), base::UnguessableToken::Create(),
+      base::UnguessableToken::Create());
 
   // Ensure the subframe is detached in the browser process.
   observer.Wait();
@@ -6220,6 +6221,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
       process, RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
   int frame_routing_id =
       node->render_manager()->speculative_frame_host()->GetRoutingID();
+  base::UnguessableToken frame_token =
+      node->render_manager()->speculative_frame_host()->frame_token();
   int previous_routing_id =
       node->render_manager()->GetProxyToParent()->GetRoutingID();
 
@@ -6242,6 +6245,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
         shell()->web_contents()->GetMainFrame()->GetRoutingID();
     params->previous_sibling_routing_id = IPC::mojom::kRoutingIdNone;
     params->frame_owner_properties = blink::mojom::FrameOwnerProperties::New();
+    params->frame_token = frame_token;
     params->devtools_frame_token = base::UnguessableToken::Create();
     process->GetRendererInterface()->CreateFrame(std::move(params));
   }
@@ -6281,6 +6285,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, ParentDetachRemoteChild) {
   RenderProcessHostWatcher watcher(
       process, RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
   int frame_routing_id = node->current_frame_host()->GetRoutingID();
+  base::UnguessableToken frame_token =
+      node->current_frame_host()->frame_token();
   int widget_routing_id =
       node->current_frame_host()->GetRenderWidgetHost()->GetRoutingID();
   int parent_routing_id =
@@ -6324,6 +6330,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, ParentDetachRemoteChild) {
                       .InitWithNewEndpointAndPassReceiver());
     params->replication_state.name = "name";
     params->replication_state.unique_name = "name";
+    params->frame_token = frame_token;
     params->devtools_frame_token = base::UnguessableToken::Create();
     process->GetRendererInterface()->CreateFrame(std::move(params));
   }

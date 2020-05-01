@@ -61,7 +61,8 @@ Bugs which would normally be
 critical severity with unusual mitigating factors may be rated as high severity.
 For example, renderer sandbox escapes fall into this category as their impact is
 that of a critical severity bug, but they require the precondition of a
-compromised renderer.
+compromised renderer. (Bugs which involve using [MojoJS](../../mojo/public/js/README.md)
+to trigger an exploitable browser process crash usually fall into this category).
 
 They are normally assigned priority **Pri-1** and assigned to the current stable
 milestone (or earliest milestone affected). For high severity bugs,

@@ -35,6 +35,7 @@
 <translation id="1938124657309484470">Thamani lazima iwe <ph name="MAXIMUM_DATE_OR_TIME" /> au mapema.</translation>
 <translation id="1946271899482435442">Onyesha kiteua tarehe</translation>
 <translation id="1993104285338243655">Inatumia hali ya kuakisi</translation>
+<translation id="2031987842108996681">Kituo chekundu</translation>
 <translation id="2060505056492490888">' <ph name="DOT" /> 'imetumika kwenye nafasi isiyostahili katika '<ph name="INVALIDDOMAIN" />'.</translation>
 <translation id="2148716181193084225">Leo</translation>
 <translation id="2158401438286456825">orodha ya kurasa</translation>
@@ -45,6 +46,7 @@
 <translation id="2291999235780842123">kisanduku cha kuteua</translation>
 <translation id="2311842470354187719">nafasi ya kugawa kurasa</translation>
 <translation id="2335594187091864976">mchumaji tarehe na wakati</translation>
+<translation id="2393030564806080191">Nambari ya rangi ya heksadesimali</translation>
 <translation id="245932805758469625">idadi ya sekunde za video zilizosalia</translation>
 <translation id="248395913932153421">Siku</translation>
 <translation id="2507943997699731163">Tafadhali jaza sehemu hii.</translation>
@@ -52,6 +54,7 @@
 <translation id="2561842179657104141">onyesha vidhibiti zaidi vya maudhui</translation>
 <translation id="2572483411312390101">cheza</translation>
 <translation id="2613802280814924224">Tafadhali ingiza thamani halali.Thamani halali ya karibu ni <ph name="VALID_VALUE" />.</translation>
+<translation id="2634240155926812724">Kituo cha kijani</translation>
 <translation id="2653659639078652383">Wasilisha</translation>
 <translation id="2657045182931379222">kipengee cha michoro</translation>
 <translation id="2674318244760992338">kijachini</translation>
@@ -127,6 +130,7 @@
 <translation id="5034860022980953847">kiashiria cha maendeleo</translation>
 <translation id="5090250355906949916">kitelezi cha muda wa video</translation>
 <translation id="5093189678851173835">epigrafu</translation>
+<translation id="509897012892853729">Kituo cha buluu</translation>
 <translation id="5117590920725113268">Onyesha mwezi unaofuata</translation>
 <translation id="512758898067543763">kichwa cha safu mlalo</translation>
 <translation id="5143125788380636750">hitimisho</translation>
@@ -164,6 +168,7 @@
 <translation id="6166809985690652833">maelezo kuhusu kitabu</translation>
 <translation id="6209276755895393898">Inaonekana kuwa: <ph name="DESCRIPTION" /></translation>
 <translation id="6213469881011901533">faharasa</translation>
+<translation id="6281588256137006900">Mwangaza</translation>
 <translation id="6281763101136022427">URL</translation>
 <translation id="6310801910862476708">Funga hali ya Picha ndani ya Picha</translation>
 <translation id="6398862346408813489">Onyesha kisanduku cha uchaguzi wa mwezi</translation>
@@ -184,6 +189,7 @@
 <translation id="6790428901817661496">Cheza</translation>
 <translation id="6820355525329141109">Haikuweza kupakia programu jalizi.</translation>
 <translation id="6820615603175220800">marejeleo ya bibliografia</translation>
+<translation id="6831465880655513317">Paka rangi vizuri ukitumia kitelezi cha pande mbili cha kuchagua ukolezaji na ung'aavu</translation>
 <translation id="6843725295806269523">nyamazisha</translation>
 <translation id="6885760532393684712">saraka</translation>
 <translation id="689129560213475294">kolofoni</translation>
@@ -201,6 +207,7 @@
 <translation id="7263440858009898357">Tafadhali chagua kipengee katika orodha.</translation>
 <translation id="727747134524199931">kijajuu cha safu wima</translation>
 <translation id="7320576522385648310">inaakibisha</translation>
+<translation id="7341556277900466204">Paka rangi vizuri</translation>
 <translation id="7353453495576941748">aliyeshiriki</translation>
 <translation id="7364796246159120393">Chagua Faili</translation>
 <translation id="739024184232394898">Nyingine...</translation>
@@ -221,6 +228,7 @@
 <translation id="775297008183122718">Ingizo batili</translation>
 <translation id="7789962463072032349">Sitisha</translation>
 <translation id="7802800022689234070">pembe tatu ya ufafanuzi</translation>
+<translation id="7852167693871241274">Kitelezi cha uzito wa rangi</translation>
 <translation id="7888071071722539607">Tafadhali jumuisha '<ph name="ATSIGN" />' katika anwani ya barua pepe. '<ph name="INVALIDADDRESS" />' inakosa '<ph name="ATSIGN" />'.</translation>
 <translation id="7891486169920085145">kitenganishi</translation>
 <translation id="795667975304826397">Hakuna faili iliyochaguliwa</translation>
@@ -263,6 +271,7 @@
 <translation id="8875657656876809964">Hitilafu ya kucheza video</translation>
 <translation id="8889402386540077796">Rangi</translation>
 <translation id="8901569739625249689">KB <ph name="QUANTITY" /></translation>
+<translation id="894736920926684893">Swichi ya muundo</translation>
 <translation id="8987927404178983737">Mwezi</translation>
 <translation id="901493112792887934">muda wa sasa kwa sekunde</translation>
 <translation id="901834265349196618">Barua pepe</translation>

@@ -49,6 +49,10 @@ class COMPONENT_EXPORT(DLCSERVICE_CLIENT) DlcserviceClient {
   // |dlcservice::kErrorNone| the call has failed.
   using UninstallCallback = base::OnceCallback<void(const std::string& err)>;
 
+  // The callback used for |Purge()|, if the error is something other than
+  // |dlcservice::kErrorNone| the call has failed.
+  using PurgeCallback = base::OnceCallback<void(const std::string& err)>;
+
   // The callback used for |GetInstalled()|, if the error is something other
   // than |dlcservice::kErrorNone| the call has failed. It is very rare case for
   // |GetInstalled()| call to fail.
@@ -67,9 +71,19 @@ class COMPONENT_EXPORT(DLCSERVICE_CLIENT) DlcserviceClient {
                        ProgressCallback progress_callback) = 0;
 
   // Uninstalls a single DLC and calls the callback with indication of
-  // success/failure.
+  // success/failure. Uninstalling disables the DLC but does not remove the DLC
+  // from disk. After each uninstallation, a refcount to the DLC is decremented.
+  // Once the refcount reaches 0, the DLC will remain in cache. However, if
+  // the DLC is not installed within a window of time after reaching a
+  // refcount of 0, the DLC will be purged automatically.
   virtual void Uninstall(const std::string& dlc_id,
                          UninstallCallback callback) = 0;
+
+  // Purges a single DLC and calls the callback with indication of
+  // success/failure. Purging removes the DLC entirely from disk, regardless if
+  // the DLC has been uninstalled or if there is a nonzero installed refcount.
+  virtual void Purge(const std::string& dlc_id,
+                     PurgeCallback purge_callback) = 0;
 
   // Provides the DLC(s) information such as id and root mount point.
   virtual void GetInstalled(GetInstalledCallback callback) = 0;

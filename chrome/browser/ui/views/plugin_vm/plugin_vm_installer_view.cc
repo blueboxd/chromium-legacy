@@ -206,7 +206,10 @@ bool PluginVmInstallerView::Cancel() {
       plugin_vm::RecordPluginVmSetupResultHistogram(
           plugin_vm::PluginVmSetupResult::kUserCancelledImportingPluginVmImage);
       break;
+    case State::CREATED:
+    case State::IMPORTED:
     case State::ERROR:
+      // Setup result has already been logged in these cases.
       return true;
     default:
       NOTREACHED();
@@ -469,10 +472,9 @@ int PluginVmInstallerView::GetCurrentDialogButtons() const {
     case State::IMPORTING:
       return ui::DIALOG_BUTTON_CANCEL;
     case State::LOW_DISK_SPACE:
-      return ui::DIALOG_BUTTON_CANCEL | ui::DIALOG_BUTTON_OK;
     case State::IMPORTED:
     case State::CREATED:
-      return ui::DIALOG_BUTTON_OK;
+      return ui::DIALOG_BUTTON_CANCEL | ui::DIALOG_BUTTON_OK;
     case State::ERROR:
       DCHECK(reason_);
       switch (*reason_) {
@@ -498,8 +500,9 @@ base::string16 PluginVmInstallerView::GetCurrentDialogButtonLabel(
     }
     case State::CREATED:
     case State::IMPORTED: {
-      DCHECK_EQ(button, ui::DIALOG_BUTTON_OK);
-      return l10n_util::GetStringUTF16(IDS_PLUGIN_VM_INSTALLER_LAUNCH_BUTTON);
+      return l10n_util::GetStringUTF16(
+          button == ui::DIALOG_BUTTON_OK ? IDS_PLUGIN_VM_INSTALLER_LAUNCH_BUTTON
+                                         : IDS_APP_CLOSE);
     }
     case State::LOW_DISK_SPACE:
       return l10n_util::GetStringUTF16(

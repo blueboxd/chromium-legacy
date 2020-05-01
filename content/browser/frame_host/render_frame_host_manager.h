@@ -119,6 +119,7 @@ class CONTENT_EXPORT RenderFrameHostManager
         RenderViewHost* render_view_host,
         int opener_frame_routing_id,
         int proxy_routing_id,
+        const base::UnguessableToken& frame_token,
         const base::UnguessableToken& devtools_frame_token,
         const FrameReplicationState& replicated_frame_state) = 0;
     virtual void CreateRenderWidgetHostViewForRenderManager(
@@ -184,7 +185,9 @@ class CONTENT_EXPORT RenderFrameHostManager
   void InitRoot(SiteInstance* site_instance, bool renderer_initiated_creation);
 
   // Initialize this frame as the child of another frame.
-  void InitChild(SiteInstance* site_instance, int32_t frame_routing_id);
+  void InitChild(SiteInstance* site_instance,
+                 int32_t frame_routing_id,
+                 const base::UnguessableToken& frame_token);
 
   // Returns the currently active RenderFrameHost.
   //
@@ -565,8 +568,8 @@ class CONTENT_EXPORT RenderFrameHostManager
   void DeleteRenderFrameProxyHost(SiteInstance* site_instance);
 
   // Returns true if for the navigation from |current_effective_url| to
-  // |destination_effective_url|, a new SiteInstance and BrowsingInstance should
-  // be created (even if we are in a process model that doesn't usually swap).
+  // |destination_url|, a new SiteInstance and BrowsingInstance should be
+  // created (even if we are in a process model that doesn't usually swap).
   // This forces a process swap and severs script connections with existing
   // tabs.  Cases where this can happen include transitions between WebUI and
   // regular web pages.
@@ -574,7 +577,7 @@ class CONTENT_EXPORT RenderFrameHostManager
   // |source_instance| is the SiteInstance of the frame that initiated the
   // navigation. |current_instance| is the SiteInstance of the frame that is
   // currently navigating. |destination_instance| is a predetermined
-  // SiteInstance that will be used for |destination_effective_url| if not
+  // SiteInstance that will be used for |destination_url| if not
   // null - we will swap BrowsingInstances if it's in a different
   // BrowsingInstance than the current one.
   //
@@ -584,14 +587,17 @@ class CONTENT_EXPORT RenderFrameHostManager
   // We use the effective URL here, since that's what is used in the
   // SiteInstance's site and when we later call IsSameSite.  If there is no
   // current NavigationEntry, check the current SiteInstance's site, which might
-  // already be committed to a Web UI URL (such as the NTP).
+  // already be committed to a Web UI URL (such as the NTP). Note that we don't
+  // pass the effective URL for destination URL here and instead calculate the
+  // destination's effective URL within the function because some methods called
+  // in the function like IsCurrentlySameSite expects a non-effective URL.
   ShouldSwapBrowsingInstance ShouldSwapBrowsingInstancesForNavigation(
       const GURL& current_effective_url,
       bool current_is_view_source_mode,
       SiteInstanceImpl* source_instance,
       SiteInstanceImpl* current_instance,
       SiteInstance* destination_instance,
-      const GURL& destination_effective_url,
+      const GURL& destination_url,
       bool destination_is_view_source_mode,
       ui::PageTransition transition,
       bool is_failure,
@@ -724,6 +730,7 @@ class CONTENT_EXPORT RenderFrameHostManager
       CreateFrameCase create_frame_case,
       SiteInstance* site_instance,
       int32_t frame_routing_id,
+      const base::UnguessableToken& frame_token,
       bool renderer_initiated_creation);
 
   // Create and initialize a speculative RenderFrameHost for an ongoing

@@ -376,9 +376,6 @@ void WorkerGlobalScope::EvaluateClassicScript(
     std::unique_ptr<Vector<uint8_t>> cached_meta_data,
     const v8_inspector::V8StackTraceId& stack_id) {
   DCHECK(!IsContextPaused());
-  CHECK(!GetExecutionContext()->IsContextDestroyed())
-      << "https://crbug.com/930618: worker global scope was destroyed before "
-         "evaluating classic script";
 
   SingleCachedMetadataHandler* handler =
       CreateWorkerScriptCachedMetadataHandler(script_url,

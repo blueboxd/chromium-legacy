@@ -10,7 +10,7 @@
 
 #include "base/bind.h"
 #include "base/callback_forward.h"
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/scoped_refptr.h"

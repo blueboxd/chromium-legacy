@@ -1203,6 +1203,7 @@ jumbo_component("base") {
       "native_library_ios.mm",
       "process/launch_ios.cc",
       "process/process_metrics_ios.cc",
+      "profiler/module_cache_mac.cc",
       "profiler/stack_sampler_ios.cc",
     ]
   }
@@ -2004,7 +2005,6 @@ jumbo_component("base") {
       "message_loop/message_pump_mac.mm",
       "power_monitor/power_monitor_device_source_ios.mm",
       "process/memory_stubs.cc",
-      "profiler/module_cache_stub.cc",
       "strings/sys_string_conversions_mac.mm",
       "synchronization/waitable_event_mac.cc",
       "system/sys_info_ios.mm",

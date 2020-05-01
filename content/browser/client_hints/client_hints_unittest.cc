@@ -10,17 +10,7 @@
 
 namespace content {
 
-class ClientHintsTest : public testing::Test {
- public:
-  ClientHintsTest() {}
-
-  ~ClientHintsTest() override {}
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ClientHintsTest);
-};
-
-TEST_F(ClientHintsTest, RttRoundedOff) {
+TEST(ClientHintsTest, RttRoundedOff) {
   EXPECT_EQ(
       0u, RoundRttForTesting("", base::TimeDelta::FromMilliseconds(1023)) % 50);
   EXPECT_EQ(
@@ -38,7 +28,7 @@ TEST_F(ClientHintsTest, RttRoundedOff) {
               50);
 }
 
-TEST_F(ClientHintsTest, DownlinkRoundedOff) {
+TEST(ClientHintsTest, DownlinkRoundedOff) {
   EXPECT_GE(1,
             static_cast<int>(RoundKbpsToMbpsForTesting("", 102) * 1000) % 50);
   EXPECT_GE(1, static_cast<int>(RoundKbpsToMbpsForTesting("", 12) * 1000) % 50);
@@ -64,7 +54,7 @@ TEST_F(ClientHintsTest, DownlinkRoundedOff) {
 // RTT and the original value may be slightly more than 10% due to rounding off.
 // To handle that, the maximum absolute difference allowed is set to a value
 // slightly larger than 10% of the original metric value.
-TEST_F(ClientHintsTest, FinalRttWithin10PercentValue) {
+TEST(ClientHintsTest, FinalRttWithin10PercentValue) {
   EXPECT_NEAR(98, RoundRttForTesting("", base::TimeDelta::FromMilliseconds(98)),
               100);
   EXPECT_NEAR(1023,
@@ -83,7 +73,7 @@ TEST_F(ClientHintsTest, FinalRttWithin10PercentValue) {
 // of downlink and the original value may be slightly more than 10% due to
 // rounding off. To handle that, the maximum absolute difference allowed is set
 // to a value slightly larger than 10% of the original metric value.
-TEST_F(ClientHintsTest, FinalDownlinkWithin10PercentValue) {
+TEST(ClientHintsTest, FinalDownlinkWithin10PercentValue) {
   EXPECT_NEAR(0.098, RoundKbpsToMbpsForTesting("", 98), 0.1);
   EXPECT_NEAR(1.023, RoundKbpsToMbpsForTesting("", 1023), 0.2);
   EXPECT_NEAR(1.193, RoundKbpsToMbpsForTesting("", 1193), 0.2);
@@ -91,7 +81,7 @@ TEST_F(ClientHintsTest, FinalDownlinkWithin10PercentValue) {
   EXPECT_NEAR(9.999, RoundKbpsToMbpsForTesting("", 9999), 1.2);
 }
 
-TEST_F(ClientHintsTest, RttMaxValue) {
+TEST(ClientHintsTest, RttMaxValue) {
   EXPECT_GE(3000u,
             RoundRttForTesting("", base::TimeDelta::FromMilliseconds(1023)));
   EXPECT_GE(3000u,
@@ -106,7 +96,7 @@ TEST_F(ClientHintsTest, RttMaxValue) {
       0u, RoundRttForTesting("", base::TimeDelta::FromMilliseconds(6023)) % 50);
 }
 
-TEST_F(ClientHintsTest, DownlinkMaxValue) {
+TEST(ClientHintsTest, DownlinkMaxValue) {
   EXPECT_GE(10.0, RoundKbpsToMbpsForTesting("", 102));
   EXPECT_GE(10.0, RoundKbpsToMbpsForTesting("", 2102));
   EXPECT_GE(10.0, RoundKbpsToMbpsForTesting("", 100102));
@@ -118,7 +108,7 @@ TEST_F(ClientHintsTest, DownlinkMaxValue) {
       1, static_cast<int>(RoundKbpsToMbpsForTesting("", 100102) * 1000) % 50);
 }
 
-TEST_F(ClientHintsTest, RttRandomized) {
+TEST(ClientHintsTest, RttRandomized) {
   const int initial_value = RoundRttForTesting(
       "example.com", base::TimeDelta::FromMilliseconds(1023));
   bool network_quality_randomized_by_host = false;
@@ -143,7 +133,7 @@ TEST_F(ClientHintsTest, RttRandomized) {
   }
 }
 
-TEST_F(ClientHintsTest, DownlinkRandomized) {
+TEST(ClientHintsTest, DownlinkRandomized) {
   const int initial_value = RoundKbpsToMbpsForTesting("example.com", 1023);
   bool network_quality_randomized_by_host = false;
   // There is a 1/20 chance that the same random noise is selected for two

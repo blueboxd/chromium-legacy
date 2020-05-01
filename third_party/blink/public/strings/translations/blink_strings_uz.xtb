@@ -35,6 +35,7 @@
 <translation id="1938124657309484470">Maksimal qiymat <ph name="MAXIMUM_DATE_OR_TIME" /> bo‘lishi mumkin</translation>
 <translation id="1946271899482435442">Sana tanlash oynasini ochish</translation>
 <translation id="1993104285338243655">Tasvir boshqa ekranga uzatilmoqda</translation>
+<translation id="2031987842108996681">Qizil kanal</translation>
 <translation id="2060505056492490888">“<ph name="INVALIDDOMAIN" />” manzilida <ph name="DOT" /> belgisi noto‘g‘ri qo‘yildi.</translation>
 <translation id="2148716181193084225">Bugun</translation>
 <translation id="2158401438286456825">sahifalar ro‘yxati</translation>
@@ -45,6 +46,7 @@
 <translation id="2291999235780842123">belgilash katakchasi</translation>
 <translation id="2311842470354187719">sahifa oxiri</translation>
 <translation id="2335594187091864976">sana va vaqt tanlash oynasi</translation>
+<translation id="2393030564806080191">Rangning 16 raqamli qiymati</translation>
 <translation id="245932805758469625">qolgan video vaqti, soniyada</translation>
 <translation id="248395913932153421">Kun</translation>
 <translation id="2507943997699731163">Bu maydonni to‘ldiring.</translation>
@@ -52,6 +54,7 @@
 <translation id="2561842179657104141">yana boshqa boshqaruv elementlari</translation>
 <translation id="2572483411312390101">ijro etish</translation>
 <translation id="2613802280814924224">Yaroqli qiymat kiriting. Eng yaqin yaroqli qiymat: <ph name="VALID_VALUE" />.</translation>
+<translation id="2634240155926812724">Yashil kanal</translation>
 <translation id="2653659639078652383">Yuborish</translation>
 <translation id="2657045182931379222">grafik obyekt</translation>
 <translation id="2674318244760992338">pastki kolontitul</translation>
@@ -127,6 +130,7 @@
 <translation id="5034860022980953847">jarayon holati ko‘rsatkichi</translation>
 <translation id="5090250355906949916">video ijro yoʻlagi</translation>
 <translation id="5093189678851173835">epigraf</translation>
+<translation id="509897012892853729">Koʻk kanal</translation>
 <translation id="5117590920725113268">Keyingi oyni ko‘rsatish</translation>
 <translation id="512758898067543763">satr sarlavhasi</translation>
 <translation id="5143125788380636750">epilog</translation>
@@ -164,6 +168,7 @@
 <translation id="6166809985690652833">xotima</translation>
 <translation id="6209276755895393898">Bizningcha bu: <ph name="DESCRIPTION" /></translation>
 <translation id="6213469881011901533">lug‘at</translation>
+<translation id="6281588256137006900">Yorqinlik</translation>
 <translation id="6281763101136022427">url</translation>
 <translation id="6310801910862476708">Tasvir ustida tasvir rejimidan chiqish</translation>
 <translation id="6398862346408813489">Oy tanlash panelini ko‘rsatish</translation>
@@ -184,6 +189,7 @@
 <translation id="6790428901817661496">Ijro etish</translation>
 <translation id="6820355525329141109">Plagin yuklanmadi.</translation>
 <translation id="6820615603175220800">bibliografiya havolasi</translation>
+<translation id="6831465880655513317">2D slayder uchun rang toʻqligi va yorqinligini tanlash</translation>
 <translation id="6843725295806269523">ovozsiz qilish</translation>
 <translation id="6885760532393684712">katalog</translation>
 <translation id="689129560213475294">nashriyot ramzi</translation>
@@ -201,6 +207,7 @@
 <translation id="7263440858009898357">Ro‘yxat bandlaridan birini tanlang.</translation>
 <translation id="727747134524199931">ustun sarlavhasi</translation>
 <translation id="7320576522385648310">buferlanyapti</translation>
+<translation id="7341556277900466204">Rang tanlash</translation>
 <translation id="7353453495576941748">hissa</translation>
 <translation id="7364796246159120393">Fayl tanlang</translation>
 <translation id="739024184232394898">Boshqa...</translation>
@@ -221,6 +228,7 @@
 <translation id="775297008183122718">Xato kiritildi</translation>
 <translation id="7789962463072032349">pauza</translation>
 <translation id="7802800022689234070">yoyiluvchi uchburchak</translation>
+<translation id="7852167693871241274">Slayder tusi</translation>
 <translation id="7888071071722539607">Elektron pochta manzilida “<ph name="ATSIGN" />” belgisi bo‘lishi kerak. “<ph name="INVALIDADDRESS" />” manzilida “<ph name="ATSIGN" />” belgisi yo‘q.</translation>
 <translation id="7891486169920085145">ajratkich</translation>
 <translation id="795667975304826397">Hech qanday fayl tanlanmagan</translation>
@@ -263,6 +271,7 @@
 <translation id="8875657656876809964">Video ijro etilmadi</translation>
 <translation id="8889402386540077796">Tus</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> KB</translation>
+<translation id="894736920926684893">Formatni almashtirish</translation>
 <translation id="8987927404178983737">Oy</translation>
 <translation id="901493112792887934">joriy vaqt soniyalarda</translation>
 <translation id="901834265349196618">e-pochta</translation>

@@ -75,6 +75,33 @@ void PopulateAncestorContexts(Node* node,
   }
 }
 
+template <typename Lambda>
+Element* LockedAncestorPreventingUpdate(const Node& node,
+                                        Lambda update_is_prevented) {
+  for (auto* ancestor =
+           DisplayLockUtilities::NearestLockedExclusiveAncestor(node);
+       ancestor;
+       ancestor =
+           DisplayLockUtilities::NearestLockedExclusiveAncestor(*ancestor)) {
+    DCHECK(ancestor->GetDisplayLockContext());
+    if (update_is_prevented(ancestor->GetDisplayLockContext()))
+      return ancestor;
+  }
+  return nullptr;
+}
+
+template <typename Lambda>
+Element* LockedAncestorPreventingUpdate(const LayoutObject& object,
+                                        Lambda update_is_prevented) {
+  if (auto* ancestor =
+          DisplayLockUtilities::NearestLockedExclusiveAncestor(object)) {
+    if (update_is_prevented(ancestor->GetDisplayLockContext()))
+      return ancestor;
+    return LockedAncestorPreventingUpdate(*ancestor, update_is_prevented);
+  }
+  return nullptr;
+}
+
 }  // namespace
 
 bool DisplayLockUtilities::ActivateFindInPageMatchRangeIfNeeded(
@@ -511,28 +538,24 @@ void DisplayLockUtilities::SelectionRemovedFromDocument(Document& document) {
 
 Element* DisplayLockUtilities::LockedAncestorPreventingPrePaint(
     const LayoutObject& object) {
-  for (auto* ancestor = NearestLockedExclusiveAncestor(object); ancestor;
-       ancestor = NearestLockedExclusiveAncestor(*ancestor)) {
-    DCHECK(ancestor->GetDisplayLockContext());
-    if (!ancestor->GetDisplayLockContext()->ShouldPrePaint(
-            DisplayLockLifecycleTarget::kChildren)) {
-      return ancestor;
-    }
-  }
-  return nullptr;
+  return LockedAncestorPreventingUpdate(
+      object, [](DisplayLockContext* context) {
+        return !context->ShouldPrePaint(DisplayLockLifecycleTarget::kChildren);
+      });
 }
 
 Element* DisplayLockUtilities::LockedAncestorPreventingLayout(
     const LayoutObject& object) {
-  for (auto* ancestor = NearestLockedExclusiveAncestor(object); ancestor;
-       ancestor = NearestLockedExclusiveAncestor(*ancestor)) {
-    DCHECK(ancestor->GetDisplayLockContext());
-    if (!ancestor->GetDisplayLockContext()->ShouldLayout(
-            DisplayLockLifecycleTarget::kChildren)) {
-      return ancestor;
-    }
-  }
-  return nullptr;
+  return LockedAncestorPreventingUpdate(
+      object, [](DisplayLockContext* context) {
+        return !context->ShouldLayout(DisplayLockLifecycleTarget::kChildren);
+      });
+}
+
+Element* DisplayLockUtilities::LockedAncestorPreventingStyle(const Node& node) {
+  return LockedAncestorPreventingUpdate(node, [](DisplayLockContext* context) {
+    return !context->ShouldStyle(DisplayLockLifecycleTarget::kChildren);
+  });
 }
 
 }  // namespace blink

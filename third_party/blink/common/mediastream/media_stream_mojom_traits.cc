@@ -4,7 +4,7 @@
 
 #include "third_party/blink/public/common/mediastream/media_stream_mojom_traits.h"
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "media/base/ipc/media_param_traits.h"
 #include "media/capture/mojom/video_capture_types_mojom_traits.h"
 #include "media/mojo/mojom/display_media_information.mojom.h"

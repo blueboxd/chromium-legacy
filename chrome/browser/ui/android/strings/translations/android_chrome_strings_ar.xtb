@@ -38,7 +38,6 @@
 <translation id="1258753120186372309">‏رسم الشعار المبتكر من Google: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1260236875608242557">البحث والاستكشاف</translation>
 <translation id="1266864766717917324">تعذَّرت مشاركة <ph name="CONTENT_TYPE" />.</translation>
-<translation id="1272079795634619415">إيقاف</translation>
 <translation id="1283039547216852943">النقر للتوسيع</translation>
 <translation id="1285320974508926690">عدم ترجمة هذا الموقع مطلقًا</translation>
 <translation id="1291207594882862231">محو السجل وملفات تعريف الارتباط وبيانات المواقع وذاكرة التخزين المؤقت...</translation>
@@ -50,8 +49,8 @@
 <translation id="1327257854815634930">يتم فتح سجلّ التنقُّل.</translation>
 <translation id="1331212799747679585">‏يتعذَّر تحديث Chrome. يُرجى الاطِّلاع على مزيد من الخيارات</translation>
 <translation id="1332501820983677155">‏اختصارات ميزات Google Chrome</translation>
+<translation id="1347468774581902829">إدارة النشاط</translation>
 <translation id="1360432990279830238">هل تريد تسجيل الخروج وإيقاف المزامنة؟</translation>
-<translation id="1364532808393826295"><ph name="APP_NAME" /> - <ph name="NOTIFICATION_MESSAGE" /></translation>
 <translation id="1373696734384179344">لا توجد ذاكرة كافية لتنزيل المحتوى المحدد.</translation>
 <translation id="1376578503827013741">جارٍ الحوسبة...</translation>
 <translation id="1383876407941801731">البحث</translation>
@@ -122,7 +121,6 @@
 <translation id="2013642289801508067">{FILE_COUNT,plural, =1{ملف واحد (#)}zero{# ملف}two{ملفان (#)}few{# ملفات}many{# ملفًا}other{# ملف}}</translation>
 <translation id="2017836877785168846">محو السجلّ وعمليات الإكمال التلقائي في شريط العناوين.</translation>
 <translation id="2021896219286479412">عناصر التحكم لموقع في وضع ملء الشاشة</translation>
-<translation id="2030769033451695672">يُرجى النقر للرجوع إلى <ph name="URL_OF_THE_CURRENT_TAB" />.</translation>
 <translation id="2038563949887743358">تفعيل طلب موقع الويب لسطح المكتب</translation>
 <translation id="204321170514947529">‏تتوفَّر بيانات<ph name="APP_NAME" /> أيضًا في Chrome</translation>
 <translation id="2049574241039454490"><ph name="FILE_SIZE_OF_TOTAL" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
@@ -434,6 +432,7 @@
 <translation id="4663756553811254707">تم حذف <ph name="NUMBER_OF_BOOKMARKS" /> من الإشارات المرجعية</translation>
 <translation id="4665282149850138822">تمت إضافة <ph name="NAME" /> إلى صفحتك الرئيسية</translation>
 <translation id="4684427112815847243">مزامنة كل شيء</translation>
+<translation id="4688610874307684559">‏قيد التشغيل في Chrome (أوّلي)</translation>
 <translation id="4695891336199304370">{SHIPPING_OPTIONS,plural, =1{‏<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 وخيار إضافي واحد (<ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />)}zero{‏<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 و<ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> خيار إضافي}two{‏<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 وخياران إضافيان (<ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />)}few{‏<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 و<ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> خيارات إضافية}many{‏<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 و<ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> خيارًا إضافيًا}other{‏<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 و<ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> خيار إضافي}}</translation>
 <translation id="4696983787092045100">إرسال رسالة نصية إلى أجهزتك</translation>
 <translation id="4698034686595694889">العرض بلا اتصال بالإنترنت في تطبيق <ph name="APP_NAME" /></translation>
@@ -592,7 +591,6 @@
 <translation id="5876056640971328065">إيقاف الفيديو مؤقتًا</translation>
 <translation id="5884076754568147479">‏لمساعدتك على إنجاز المهام، ستتلقى Google عناوين URL للمواقع الإلكترونية ومحتواها عند استخدامك "مساعد Google" على تلك المواقع، بالإضافة إلى المعلومات التي يتم إرسالها من خلال "مساعد Google".</translation>
 <translation id="5919204609460789179">تحديث <ph name="PRODUCT_NAME" /> لبدء المزامنة</translation>
-<translation id="5922853908706496913">جارٍ مشاركة شاشتك</translation>
 <translation id="5937580074298050696">تم توفير <ph name="AMOUNT" /></translation>
 <translation id="5939518447894949180">إعادة الضبط</translation>
 <translation id="5942872142862698679">‏استخدام محرك Google للبحث</translation>
@@ -773,16 +771,17 @@
 <translation id="7479104141328977413">إدارة علامات التبويب</translation>
 <translation id="7481312909269577407">إلى الأمام</translation>
 <translation id="7482656565088326534">علامة تبويب المعاينة</translation>
+<translation id="7484997419527351112">الاقتراحات - غير مفعّلة</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (تم التحديث منذ <ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7494974237137038751">حجم البيانات التي تم توفيرها</translation>
 <translation id="7498271377022651285">يُرجى الانتظار...</translation>
 <translation id="7514365320538308">تنزيل</translation>
 <translation id="751961395872307827">يتعذّر الاتصال بالموقع</translation>
 <translation id="7542481630195938534">يتعذر الحصول على الاقتراحات</translation>
-<translation id="7554752735887601236">هناك موقع إلكتروني يستخدم الميكروفون.</translation>
 <translation id="7559975015014302720">تم إيقاف الوضع البسيط</translation>
 <translation id="7562080006725997899">جارٍ محو بيانات التصفح</translation>
 <translation id="756809126120519699">‏بيانات Chrome التي تم محوها</translation>
+<translation id="7577900504646297215">إدارة الاهتمامات</translation>
 <translation id="757855969265046257">{FILES,plural, =1{تم تنزيل ملف <ph name="FILES_DOWNLOADED_ONE" />}zero{تم تنزيل <ph name="FILES_DOWNLOADED_MANY" /> ملفات}two{تم تنزيل ملفين (<ph name="FILES_DOWNLOADED_MANY" />)}few{تم تنزيل <ph name="FILES_DOWNLOADED_MANY" /> ملفات}many{تم تنزيل <ph name="FILES_DOWNLOADED_MANY" /> ملفًا}other{تم تنزيل <ph name="FILES_DOWNLOADED_MANY" /> ملف}}</translation>
 <translation id="7588219262685291874">تفعيل "المظهر الداكن" عند تفعيل ميزة "توفير شحن البطارية" للجهاز</translation>
 <translation id="7593557518625677601">‏فتح إعدادات Android وإعادة تفعيل مزامنة نظام Android لبدء مزامنة Chrome</translation>
@@ -813,7 +812,6 @@
 <translation id="7774809984919390718">{PAYMENT_METHOD,plural, =1{‏<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 وطريقة دفع إضافية واحدة (<ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />)}zero{‏<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 و<ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> طريقة دفع إضافية}two{‏<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 وطريقتا دفع إضافيتان (<ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />)}few{‏<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 و<ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> طرق دفع إضافية}many{‏<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 و<ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> طريقة دفع إضافية}other{‏<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 و<ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> طريقة دفع إضافية}}</translation>
 <translation id="7791543448312431591">إضافة</translation>
 <translation id="780301667611848630">لا، شكرًا</translation>
-<translation id="7804248752222191302">هناك موقع إلكتروني يستخدم الكاميرا.</translation>
 <translation id="7810647596859435254">فتح باستخدام...</translation>
 <translation id="7821588508402923572">سيظهر توفير البيانات هنا</translation>
 <translation id="783819812427904514">إعادة صوت الفيديو</translation>
@@ -885,9 +883,7 @@
 <translation id="8349013245300336738">الترتيب حسب مقدار البيانات المُستخدَمة</translation>
 <translation id="8364299278605033898">عرض مواقع الويب الشائعة</translation>
 <translation id="8368027906805972958">جهاز غير معروف أو غير متوافق (<ph name="DEVICE_ID" />)</translation>
-<translation id="83792324527827022">هناك موقع إلكتروني يستخدم الميكروفون والكاميرا.</translation>
 <translation id="8393700583063109961">إرسال رسالة</translation>
-<translation id="8394832520002899662">يُرجى النقر للرجوع إلى الموقع الإلكتروني.</translation>
 <translation id="8413126021676339697">عرض السجلّ بكامله</translation>
 <translation id="8427875596167638501">علامة تبويب المعاينة مفتوحة جزئيًا</translation>
 <translation id="8428213095426709021">الإعدادات</translation>
@@ -984,7 +980,6 @@
 <translation id="970715775301869095">عدد الدقائق المتبقية: <ph name="MINUTES" /></translation>
 <translation id="974555521953189084">إدخال عبارة المرور لبدء المزامنة</translation>
 <translation id="981121421437150478">بلا اتصال</translation>
-<translation id="982182592107339124">سيؤدي هذا إلى محو بيانات جميع المواقع، بما في ذلك:</translation>
 <translation id="983192555821071799">إغلاق جميع علامات التبويب</translation>
 <translation id="987264212798334818">عام</translation>
 </translationbundle>

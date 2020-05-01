@@ -282,6 +282,11 @@ Try tapping the mic to ask me anything.
         Perks
       </message>
 
+      <!-- Media App -->
+      <message name="IDS_MEDIA_APP_APP_NAME" desc="Name of the Media App in the app shelf. This app is the default installed app to open and edit images, video, pdf and audio files." meaning="App name.">
+        Gallery
+      </message>
+
       <!-- Pin dialog error messages -->
       <message name="IDS_REQUEST_PIN_DIALOG_INVALID_PIN_ERROR" desc="The error message displayed in the certificate provider PIN request dialog when an invalid PIN was entered. Should end with a full stop since it can be chained with more text.">
         Invalid PIN.

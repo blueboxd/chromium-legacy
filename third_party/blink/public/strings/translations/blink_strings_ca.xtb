@@ -35,6 +35,7 @@
 <translation id="1938124657309484470">El valor ha de ser <ph name="MAXIMUM_DATE_OR_TIME" /> o anterior.</translation>
 <translation id="1946271899482435442">Mostra el selector de dates</translation>
 <translation id="1993104285338243655">S'ha canviat a projecció</translation>
+<translation id="2031987842108996681">Canal vermell</translation>
 <translation id="2060505056492490888">"<ph name="DOT" />" s'ha utilitzat en una posició incorrecta a "<ph name="INVALIDDOMAIN" />".</translation>
 <translation id="2148716181193084225">Avui</translation>
 <translation id="2158401438286456825">llista de pàgines</translation>
@@ -45,6 +46,7 @@
 <translation id="2291999235780842123">casella de selecció</translation>
 <translation id="2311842470354187719">salt de pàgina</translation>
 <translation id="2335594187091864976">selector de data i hora</translation>
+<translation id="2393030564806080191">Valor hexadecimal del color</translation>
 <translation id="245932805758469625">nombre de segons restants del vídeo</translation>
 <translation id="248395913932153421">Dia</translation>
 <translation id="2507943997699731163">Empleneu aquest camp.</translation>
@@ -52,6 +54,7 @@
 <translation id="2561842179657104141">mostra més controls multimèdia</translation>
 <translation id="2572483411312390101">reprodueix</translation>
 <translation id="2613802280814924224">Introduïu un valor vàlid. El valor vàlid més proper és <ph name="VALID_VALUE" />.</translation>
+<translation id="2634240155926812724">Canal verd</translation>
 <translation id="2653659639078652383">Envia</translation>
 <translation id="2657045182931379222">objecte gràfic</translation>
 <translation id="2674318244760992338">peu</translation>
@@ -127,6 +130,7 @@
 <translation id="5034860022980953847">indicador de progrés</translation>
 <translation id="5090250355906949916">barra de moment del vídeo</translation>
 <translation id="5093189678851173835">epígraf</translation>
+<translation id="509897012892853729">Canal blau</translation>
 <translation id="5117590920725113268">Mostra el mes següent</translation>
 <translation id="512758898067543763">capçalera de la fila</translation>
 <translation id="5143125788380636750">epíleg</translation>
@@ -164,6 +168,7 @@
 <translation id="6166809985690652833">cloenda</translation>
 <translation id="6209276755895393898">Sembla el següent: <ph name="DESCRIPTION" /></translation>
 <translation id="6213469881011901533">glossari</translation>
+<translation id="6281588256137006900">Lluminositat</translation>
 <translation id="6281763101136022427">url</translation>
 <translation id="6310801910862476708">Surt de pantalla en pantalla</translation>
 <translation id="6398862346408813489">Mostra el tauler de la selecció de mes</translation>
@@ -184,6 +189,7 @@
 <translation id="6790428901817661496">Reprodueix</translation>
 <translation id="6820355525329141109">El connector no s'ha pogut carregar.</translation>
 <translation id="6820615603175220800">referència bibliogràfica</translation>
+<translation id="6831465880655513317">Cercle cromàtic amb un control lliscant bidimensional per seleccionar la saturació i la lluminositat</translation>
 <translation id="6843725295806269523">silencia</translation>
 <translation id="6885760532393684712">directori</translation>
 <translation id="689129560213475294">colofó</translation>
@@ -201,6 +207,7 @@
 <translation id="7263440858009898357">Seleccioneu un element de la llista.</translation>
 <translation id="727747134524199931">capçalera de columna</translation>
 <translation id="7320576522385648310">s'estan emmagatzemant dades a la memòria intermèdia</translation>
+<translation id="7341556277900466204">Cercle cromàtic</translation>
 <translation id="7353453495576941748">crèdit</translation>
 <translation id="7364796246159120393">Tria un fitxer</translation>
 <translation id="739024184232394898">Altres...</translation>
@@ -221,6 +228,7 @@
 <translation id="775297008183122718">Entrada no vàlida</translation>
 <translation id="7789962463072032349">posa en pausa</translation>
 <translation id="7802800022689234070">triangle desplegable</translation>
+<translation id="7852167693871241274">Control lliscant per al to</translation>
 <translation id="7888071071722539607">Incloeu el símbol "<ph name="ATSIGN" />" a l'adreça electrònica. Al camp "<ph name="INVALIDADDRESS" />" falta el símbol "<ph name="ATSIGN" />".</translation>
 <translation id="7891486169920085145">divisor</translation>
 <translation id="795667975304826397">No s'ha triat cap fitxer</translation>
@@ -263,6 +271,7 @@
 <translation id="8875657656876809964">Error de reproducció del vídeo</translation>
 <translation id="8889402386540077796">To</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> KB</translation>
+<translation id="894736920926684893">Commutador per al format</translation>
 <translation id="8987927404178983737">Mes</translation>
 <translation id="901493112792887934">temps actual en segons</translation>
 <translation id="901834265349196618">correu electrònic</translation>

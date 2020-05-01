@@ -97,7 +97,6 @@
 <translation id="3582972582564653026">আপোনাৰ সমগ্ৰ ডিভাইচতে Chromeক ছিংক কৰি ব্যক্তিকৃত কৰক</translation>
 <translation id="3596080736082218006">{COUNT,plural, =0{আপোনাৰ প্ৰশাসকে কোনো আপডে’ট প্ৰয়োগ কৰিবলৈ আপুনি Chrome পুনৰ লঞ্চ কৰাটো বিচাৰে}=1{আপোনাৰ প্ৰশাসকে কোনো আপডে’ট প্ৰয়োগ কৰিবলৈ আপুনি Chrome পুনৰ লঞ্চ কৰাটো বিচাৰে। আপোনাৰ.ইনক’গনিট' ৱিণ্ড'খন পুনৰ খুলিব নোৱাৰিব।}one{আপোনাৰ প্ৰশাসকে কোনো আপডে’ট প্ৰয়োগ কৰিবলৈ আপুনি Chrome পুনৰ লঞ্চ কৰাটো বিচাৰে। আপোনাৰ #খন.ইনক’গনিট' ৱিণ্ড' পুনৰ খুলিব নোৱাৰিব।}other{আপোনাৰ প্ৰশাসকে কোনো আপডে’ট প্ৰয়োগ কৰিবলৈ আপুনি Chrome পুনৰ লঞ্চ কৰাটো বিচাৰে। আপোনাৰ #খন.ইনক’গনিট' ৱিণ্ড' পুনৰ খুলিব নোৱাৰিব।}}</translation>
 <translation id="3622797965165704966">বর্তমান আপোনাৰ Google একাউণ্টৰ জৰিয়তে আৰু শ্বেয়াৰ কৰা কম্পিউটাৰসমূহ সহজে Chrome ব্যৱহাৰ কৰিব পৰা যায়।</translation>
-<translation id="3637702109597584617">Google Chrome OS <ph name="TERMS_OF_SERVICE_LINK" />সেৱাৰ চৰ্তাৱলী<ph name="END_TERMS_OF_SERVICE_LINK" /></translation>
 <translation id="3718181793972440140">ইয়াৰ ফলত এই ডিভাইচটোৰ পৰা ১টা বস্তু মচা হ’ব। আপোনাৰ ডেটা পিছত পুনৰুদ্ধাৰ কৰিবলৈ Chromeত <ph name="USER_EMAIL" /> হিচাপে ছাইন ইন কৰক।</translation>
 <translation id="3735758079232443276">আপুনি Chrome আৰম্ভ কৰিলে কোনটো পৃষ্ঠা দেখুওৱা হ’ব সেয়া "<ph name="EXTENSION_NAME" />" এক্সটেনশ্বনে সলনি কৰিছে।</translation>
 <translation id="3780814664026482060">Chrome - <ph name="PAGE_TITLE" /></translation>
@@ -114,6 +113,7 @@
 <translation id="4205939740494406371">Chromeএ আপোনাৰ পাছৱর্ডসমূহ পৰীক্ষা কৰিব নোৱাৰে। ২৪ ঘণ্টাৰ পাছত পুনৰ চেষ্টা কৰক অথবা <ph name="BEGIN_LINK" />আপোনাৰ Google একাউণ্টত পাছৱর্ডসমূহ পৰীক্ষা কৰক<ph name="END_LINK" />।</translation>
 <translation id="424864128008805179">Chromeৰ পৰা ছাইন আউট কৰিবনে?</translation>
 <translation id="4251615635259297716">এই একাউণ্টত আপোনাৰ Chrome ডেটা লিংক কৰিবনে?</translation>
+<translation id="4281844954008187215">সেৱাৰ চৰ্তাৱলী</translation>
 <translation id="4293420128516039005">আপোনাৰ সকলো ডিভাইচত Chrome ছিংক আৰু ব্যক্তিগতকৰণ কৰিবলৈ ছাইন ইন কৰক</translation>
 <translation id="4328355335528187361">Google Chrome Dev (mDNS-In)</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
@@ -148,7 +148,6 @@
 
 কিছুমান সুবিধা নাথাকিব পাৰে। অনুগ্ৰহ কৰি অন্য কোনো প্ৰ’ফাইল ডাইৰেক্টৰী নির্দিষ্ট কৰক বা Chromeৰ নতুন সংস্কৰণ ব্যৱহাৰ কৰক।</translation>
 <translation id="5193136243808726294">Google Chrome OSএ এই পৃষ্ঠাটো খুলিব নোৱাৰে।</translation>
-<translation id="5204098752394657250">Google Chromeৰ <ph name="TERMS_OF_SERVICE_LINK" />সেৱাৰ চৰ্তাৱলী<ph name="END_TERMS_OF_SERVICE_LINK" /></translation>
 <translation id="5251420635869119124">অতিথিসকলে কোনো সুবিধা বাদ নিদিয়াকৈ Chrome ব্যৱহাৰ কৰিব পাৰে।</translation>
 <translation id="532046782124376502">সর্তকবার্তা: Google Chromeএ এক্সটেনশ্বনক আপোনাৰ ব্ৰাউজিঙৰ ইতিহাস ৰেকৰ্ড কৰাত বাধা দিব নোৱাৰে। এই এক্সটেনশ্বনটো ইনক’গনিট’ ম’ডত অক্ষম কৰিবলৈ এই বিকল্পটো বাছনিৰ পৰা বাদ দিয়ক।</translation>
 <translation id="5386244825306882791">এইটোৱে লগতে আপুনি Chrome আৰম্ভ কৰিলে বা Omniboxৰ পৰা সন্ধান কৰিলে কি পৃষ্ঠা খোল খায় সেয়া নিয়ন্ত্ৰণ কৰে।</translation>

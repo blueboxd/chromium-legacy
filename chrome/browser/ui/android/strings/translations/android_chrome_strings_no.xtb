@@ -38,7 +38,6 @@
 <translation id="1258753120186372309">Google-doodle: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1260236875608242557">Søk og utforsk</translation>
 <translation id="1266864766717917324">Kunne ikke dele <ph name="CONTENT_TYPE" /></translation>
-<translation id="1272079795634619415">Stopp</translation>
 <translation id="1283039547216852943">Trykk for å vise</translation>
 <translation id="1285320974508926690">Oversett aldri dette nettstedet</translation>
 <translation id="1291207594882862231">Slett loggoppføringer, informasjonskapsler, nettstedsdata, bufferen …</translation>
@@ -50,8 +49,8 @@
 <translation id="1327257854815634930">Navigasjonsloggen er åpnet</translation>
 <translation id="1331212799747679585">Kan ikke oppdatere Chrome. Flere alternativer</translation>
 <translation id="1332501820983677155">Hurtigtaster for funksjoner i Google Chrome.</translation>
+<translation id="1347468774581902829">Administrer aktivitet</translation>
 <translation id="1360432990279830238">Vil du logge av og slå av synkronisering?</translation>
-<translation id="1364532808393826295"><ph name="APP_NAME" /> – <ph name="NOTIFICATION_MESSAGE" /></translation>
 <translation id="1373696734384179344">Det er ikke nok ledig minne til å laste ned det valgte innholdet.</translation>
 <translation id="1376578503827013741">Beregner …</translation>
 <translation id="1383876407941801731">Søk</translation>
@@ -122,7 +121,6 @@
 <translation id="2013642289801508067">{FILE_COUNT,plural, =1{# fil}other{# filer}}</translation>
 <translation id="2017836877785168846">Tømmer loggen og fjerner automatiske fullføringer fra adressefeltet.</translation>
 <translation id="2021896219286479412">Navigering i full skjerm</translation>
-<translation id="2030769033451695672">Trykk for å gå tilbake til <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
 <translation id="2038563949887743358">Slå på Bruk skrivebordsversjon</translation>
 <translation id="204321170514947529"><ph name="APP_NAME" /> har også data i Chrome</translation>
 <translation id="2049574241039454490"><ph name="FILE_SIZE_OF_TOTAL" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
@@ -434,6 +432,7 @@ Google-kontoen din kan ha andre former for nettleserlogger, for eksempel søk og
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> bokmerker ble slettet</translation>
 <translation id="4665282149850138822"><ph name="NAME" /> ble lagt til på startskjermen</translation>
 <translation id="4684427112815847243">Synkroniser alt</translation>
+<translation id="4688610874307684559">Kjører i Chrome (innledende)</translation>
 <translation id="4695891336199304370">{SHIPPING_OPTIONS,plural, =1{<ph name="SHIPPING_OPTION_PREVIEW" /> og <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> til}other{<ph name="SHIPPING_OPTION_PREVIEW" /> og <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> til}}</translation>
 <translation id="4696983787092045100">Send tekst til enhetene dine</translation>
 <translation id="4698034686595694889">Se uten nett i <ph name="APP_NAME" /></translation>
@@ -592,7 +591,6 @@ For å endre denne innstillingen, <ph name="BEGIN_LINK" />tilbakestill synkronis
 <translation id="5876056640971328065">Sett videoen på pause</translation>
 <translation id="5884076754568147479">For å hjelpe deg med å fullføre oppgaver mottar Google nettadressene til og innholdet på nettsteder der du bruker assistenten, i tillegg til informasjon som du sender inn gjennom assistenten</translation>
 <translation id="5919204609460789179">Oppdater <ph name="PRODUCT_NAME" /> for å starte synkroniseringen</translation>
-<translation id="5922853908706496913">Deler skjermen din</translation>
 <translation id="5937580074298050696"><ph name="AMOUNT" /> spart</translation>
 <translation id="5939518447894949180">Tilbakestill</translation>
 <translation id="5942872142862698679">Bruker Google til å søke</translation>
@@ -773,16 +771,17 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="7479104141328977413">Faneadministrering</translation>
 <translation id="7481312909269577407">Frem</translation>
 <translation id="7482656565088326534">Fane for forhåndsvisning</translation>
+<translation id="7484997419527351112">Discover – av</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (oppdatert <ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7494974237137038751">data spart</translation>
 <translation id="7498271377022651285">Vent litt</translation>
 <translation id="7514365320538308">Last ned</translation>
 <translation id="751961395872307827">Kan ikke koble til nettstedet</translation>
 <translation id="7542481630195938534">Kan ikke hente forslag</translation>
-<translation id="7554752735887601236">Et nettsted bruker mikrofonen din</translation>
 <translation id="7559975015014302720">Forenklet modus er av</translation>
 <translation id="7562080006725997899">Sletter nettlesingsdata</translation>
 <translation id="756809126120519699">Chrome-dataene er slettet</translation>
+<translation id="7577900504646297215">Administrer interesser</translation>
 <translation id="757855969265046257">{FILES,plural, =1{<ph name="FILES_DOWNLOADED_ONE" /> fil er lastet ned}other{<ph name="FILES_DOWNLOADED_MANY" /> filer er lastet ned}}</translation>
 <translation id="7588219262685291874">Slå på mørkt tema når batterisparing er på</translation>
 <translation id="7593557518625677601">Start Chrome-synkronisering ved å slå på synkronisering i Android-innstillingene</translation>
@@ -813,7 +812,6 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="7774809984919390718">{PAYMENT_METHOD,plural, =1{<ph name="PAYMENT_METHOD_PREVIEW" /> og <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> til}other{<ph name="PAYMENT_METHOD_PREVIEW" /> og <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> til}}</translation>
 <translation id="7791543448312431591">Legg til</translation>
 <translation id="780301667611848630">Nei takk</translation>
-<translation id="7804248752222191302">Et nettsted bruker kameraet ditt</translation>
 <translation id="7810647596859435254">Åpne med…</translation>
 <translation id="7821588508402923572">Datasparingen din vises her</translation>
 <translation id="783819812427904514">Slå på lyden i videoen</translation>
@@ -885,9 +883,7 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="8349013245300336738">Sortér etter mengden data som er brukt</translation>
 <translation id="8364299278605033898">Se populære nettsteder</translation>
 <translation id="8368027906805972958">Ukjent eller ikke-støttet enhet (<ph name="DEVICE_ID" />)</translation>
-<translation id="83792324527827022">Et nettsted bruker kameraet ditt og mikrofonen din</translation>
 <translation id="8393700583063109961">Send melding</translation>
-<translation id="8394832520002899662">Trykk for å gå tilbake til nettstedet</translation>
 <translation id="8413126021676339697">Vis fullstendig logg</translation>
 <translation id="8427875596167638501">Fanen for forhåndsvisning er halvveis åpnet</translation>
 <translation id="8428213095426709021">Innstillinger</translation>
@@ -984,7 +980,6 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="970715775301869095"><ph name="MINUTES" /> minutter igjen</translation>
 <translation id="974555521953189084">Skriv inn passordfrasen din for å starte synkroniseringen</translation>
 <translation id="981121421437150478">Uten nett</translation>
-<translation id="982182592107339124">Dette fører til at dataene for alle nettsteder slettes, deriblant disse:</translation>
 <translation id="983192555821071799">Lukk alle faner</translation>
 <translation id="987264212798334818">Generelt</translation>
 </translationbundle>

@@ -102,7 +102,7 @@ TEST_F(PrintJobHistoryServiceImplTest, SaveObservedCupsPrintJob) {
 
   std::vector<printing::proto::PrintJobInfo> entries = GetPrintJobs();
 
-  EXPECT_EQ(1u, entries.size());
+  ASSERT_EQ(1u, entries.size());
   EXPECT_EQ(kTitle, entries[0].title());
   EXPECT_EQ(kPagesNumber, entries[0].number_of_pages());
   EXPECT_EQ(printing::proto::PrintJobInfo_PrintJobStatus_CANCELED,

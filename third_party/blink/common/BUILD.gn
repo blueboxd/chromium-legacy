@@ -202,6 +202,7 @@ jumbo_source_set("common_unittests_sources") {
     "origin_trials/trial_token_validator_unittest.cc",
     "privacy_budget/identifiability_metric_builder_unittest.cc",
     "privacy_budget/identifiability_metrics_unittest.cc",
+    "privacy_budget/identifiability_study_participation.cc",
     "privacy_budget/identifiable_surface_unittest.cc",
     "test/run_all_unittests.cc",
     "user_agent/user_agent_metadata_unittest.cc",

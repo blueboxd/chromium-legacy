@@ -8,7 +8,9 @@
 <translation id="1181037720776840403">ತೆಗೆದುಹಾಕು</translation>
 <translation id="1201402288615127009">ಮುಂದೆ</translation>
 <translation id="1242008676835033345"><ph name="WEBSITE_URL" /> ನಲ್ಲಿ ಎಂಬೆಡ್ ಮಾಡಲಾಗಿದೆ</translation>
+<translation id="1272079795634619415">ನಿಲ್ಲಿಸಿ</translation>
 <translation id="129382876167171263">ವೆಬ್‌ಸೈಟ್‌ಗಳ ಮೂಲಕ ಉಳಿಸಲಾಗಿರುವ ಫೈಲ್‌ಗಳು ಇಲ್ಲಿ ಗೋಚರಿಸುತ್ತವೆ</translation>
+<translation id="1364532808393826295"><ph name="APP_NAME" /> - <ph name="NOTIFICATION_MESSAGE" /></translation>
 <translation id="1369915414381695676"><ph name="SITE_NAME" /> ಸೈಟ್ ಸೇರಿಸಲಾಗಿದೆ</translation>
 <translation id="1383876407941801731">ಹುಡುಕಾಟ</translation>
 <translation id="1384959399684842514">ಡೌನ್‌ಲೋಡ್ ವಿರಾಮಗೊಳಿಸಲಾಗಿದೆ</translation>
@@ -29,6 +31,7 @@
 <translation id="1984937141057606926">ಮೂರನೇ ವ್ಯಕ್ತಿಯನ್ನು ಹೊರತುಪಡಿಸಿ ಅನುಮತಿಸಲಾಗಿದೆ</translation>
 <translation id="1994173015038366702">ಸೈಟ್ URL</translation>
 <translation id="2025115093177348061">ಆಗ್‌ಮೆಂಟೆಡ್ ರಿಯಾಲಿಟಿ</translation>
+<translation id="2030769033451695672"><ph name="URL_OF_THE_CURRENT_TAB" /> ಗೆ ಮರಳಲು ಟ್ಯಾಪ್ ಮಾಡಿ</translation>
 <translation id="2041019821020695769">Chrome ನಿಮಗೆ ಅಧಿಸೂಚನೆಗಳನ್ನು ಕಳುಹಿಸುವುದಕ್ಕೆ ಅನುಮತಿಸಲು, <ph name="BEGIN_LINK" />Android ಸೆಟ್ಟಿಂಗ್‌ಗಳಲ್ಲಿ<ph name="END_LINK" /> ಅಧಿಸೂಚನೆಗಳನ್ನು ಕೂಡ ಆನ್ ಮಾಡಬೇಕಾಗುತ್ತದೆ.</translation>
 <translation id="2079545284768500474">ರದ್ದುಮಾಡಿ</translation>
 <translation id="2091887806945687916">ಶಬ್ಧ</translation>
@@ -104,6 +107,7 @@
 <translation id="5048398596102334565">ಚಲನಾ ಸೆನ್ಸರ್‌ಗಳನ್ನು ಪ್ರವೇಶಿಸಲು ಸೈಟ್‌ಗಳಿಗೆ ಅನುಮತಿ ನೀಡಿ (ಶಿಫಾರಸು ಮಾಡಿರುವುದು)</translation>
 <translation id="5063480226653192405">ಬಳಕೆ</translation>
 <translation id="5100237604440890931">ಕುಗ್ಗಿಸಲಾಗಿದೆ - ವಿಸ್ತರಿಸಲು ಕ್ಲಿಕ್ ಮಾಡಿ</translation>
+<translation id="5123685120097942451">ಅದೃಶ್ಯ ಟ್ಯಾಬ್‌</translation>
 <translation id="5300589172476337783">ಪ್ರದರ್ಶಿಸಿ</translation>
 <translation id="5301954838959518834">ಸರಿ, ಅರ್ಥವಾಯಿತು</translation>
 <translation id="5307446750509046227">ಸೈಟ್ ಸಂಗ್ರಹಣೆಯನ್ನು ಅಳಿಸಿ</translation>
@@ -126,6 +130,7 @@
 <translation id="5804241973901381774">ಅನುಮತಿಗಳು</translation>
 <translation id="5860033963881614850">ಆಫ್</translation>
 <translation id="5916664084637901428">ಆನ್‌</translation>
+<translation id="5922853908706496913">ನಿಮ್ಮ ಸ್ಕ್ರೀನ್ ಅನ್ನು ಹಂಚಿಕೊಳ್ಳಲಾಗುತ್ತಿದೆ</translation>
 <translation id="5939518447894949180">ಮರುಹೊಂದಿಸು</translation>
 <translation id="6040143037577758943">ಮುಚ್ಚಿರಿ</translation>
 <translation id="6042308850641462728">ಇನ್ನಷ್ಟು</translation>
@@ -170,6 +175,7 @@
 <translation id="7423098979219808738">ಮೊದಲು ಕೇಳಿ</translation>
 <translation id="7423538860840206698">ಕ್ಲಿಪ್‌ಬೋರ್ಡ್ ಓದದಂತೆ ನಿರ್ಬಂಧಿಸಲಾಗಿದೆ</translation>
 <translation id="7521387064766892559">JavaScript</translation>
+<translation id="7554752735887601236">ಒಂದು ಸೈಟ್ ನಿಮ್ಮ ಮೈಕ್ರೊಫೋನ್ ಅನ್ನು ಬಳಸುತ್ತಿದೆ</translation>
 <translation id="7572498721684305250">ನೀವು NFC ಸಾಧನಗಳನ್ನು ಟ್ಯಾಪ್ ಮಾಡಿದಾಗ, ವೆಬ್‌ಸೈಟ್‌ಗಳು ಮಾಹಿತಿ ಕಳುಹಿಸುವುದನ್ನು ಮತ್ತು ಸ್ವೀಕರಿಸುವುದನ್ನು ನಿರ್ಬಂಧಿಸಿ</translation>
 <translation id="757524316907819857">ಸಂರಕ್ಷಿತ ವಿಷಯವನ್ನು ಪ್ಲೇ ಮಾಡದಂತೆ ಸೈಟ್‌ಗಳನ್ನು ನಿರ್ಬಂಧಿಸಿ</translation>
 <translation id="7589445247086920869">ಪ್ರಸ್ತುತ ಹುಡುಕಾಟ ಇಂಜಿನ್ ಅನ್ನು ನಿರ್ಬಂಧಿಸಿ</translation>
@@ -178,6 +184,7 @@
 <translation id="7781829728241885113">ನಿನ್ನೆ</translation>
 <translation id="7791543448312431591">ಸೇರಿಸು</translation>
 <translation id="780301667611848630">ಬೇಡ, ಧನ್ಯವಾದಗಳು</translation>
+<translation id="7804248752222191302">ಒಂದು ಸೈಟ್ ನಿಮ್ಮ ಕ್ಯಾಮರಾವನ್ನು ಬಳಸುತ್ತಿದೆ</translation>
 <translation id="7817023149356982970">ನಿಮ್ಮನ್ನು ಈ ಸೈಟ್‌ನಿಂದ ಸೈನ್ ಔಟ್ ಮಾಡಲಾಗುತ್ತದೆ.</translation>
 <translation id="7828557259026017104">ಕುಕೀಗಳು ಎಂದರೆ ನೀವು ಭೇಟಿ ನೀಡುವ ವೆಬ್‌ಸೈಟ್‌ಗಳು ರಚಿಸಿದ ಫೈಲ್‌ಗಳು. ನಿಮ್ಮ ಆದ್ಯತೆಗಳನ್ನು ನೆನಪಿನಲ್ಲಿಡಲು, ಸೈಟ್‌ಗಳು ಕುಕೀಗಳನ್ನು ಬಳಸಿಕೊಳ್ಳುತ್ತವೆ. ಥರ್ಡ್-ಪಾರ್ಟಿ ಕುಕೀಗಳನ್ನು ಇತರ ಸೈಟ್‌ಗಳಿಂದ ರಚಿಸಲಾಗಿದೆ. ನೀವು ಭೇಟಿ ನೀಡುವ ವೆಬ್‌ಪುಟ ನೀವು ನೋಡುವ ಜಾಹೀರಾತುಗಳು ಅಥವಾ ಚಿತ್ರಗಳಂತಹ ಕೆಲವು ರೀತಿಯ ವಿಷಯವನ್ನು, ಈ ಸೈಟ್‌ಗಳು ಮಾಲೀಕತ್ವವನ್ನು ಹೊಂದಿವೆ.</translation>
 <translation id="7846076177841592234">ಆಯ್ಕೆ ರದ್ದುಮಾಡಿ</translation>
@@ -195,7 +202,9 @@
 <translation id="8261506727792406068">ಅಳಿಸಿ</translation>
 <translation id="8300705686683892304">ಆ್ಯಪ್ ಮೂಲಕ ನಿರ್ವಹಿಸಲಾಗಿದೆ</translation>
 <translation id="8372893542064058268">ನಿರ್ದಿಷ್ಟ ಸೈಟ್‌ಗಾಗಿ ಹಿನ್ನೆಲೆ ಸಿಂಕ್‌ ಅನುಮತಿಸಿ.</translation>
+<translation id="83792324527827022">ಒಂದು ಸೈಟ್ ನಿಮ್ಮ ಕ್ಯಾಮರಾ ಹಾಗೂ ಮೈಕ್ರೊಫೋನ್ ಅನ್ನು ಬಳಸುತ್ತಿದೆ</translation>
 <translation id="8380167699614421159">ಅತಿಕ್ರಮಣಕಾರಿಯಾಗಿರುವ ಅಥವಾ ತಪ್ಪುದಾರಿಗೆಳೆಯುವ ಜಾಹೀರಾತುಗಳನ್ನು ಈ ಸೈಟ್ ತೋರಿಸುತ್ತದೆ</translation>
+<translation id="8394832520002899662">ಸೈಟ್‌ಗೆ ಮರಳಲು ಟ್ಯಾಪ್ ಮಾಡಿ</translation>
 <translation id="8447861592752582886">ಸಾಧನ ಅನುಮತಿಯನ್ನು ಹಿಂತೆಗೆದುಕೊಳ್ಳಿ</translation>
 <translation id="851751545965956758">ಸಾಧನಗಳಿಗೆ ಸಂಪರ್ಕಿಸದಂತೆ, ಸೈಟ್‌ಗಳನ್ನು ನಿರ್ಬಂಧಿಸಿ</translation>
 <translation id="857943718398505171">ಅನುಮತಿಸಲಾಗಿದೆ (ಶಿಫಾರಸು ಮಾಡಲಾಗಿದೆ)</translation>

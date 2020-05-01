@@ -238,6 +238,7 @@ public abstract class ChromeFeatureList {
     public static final String CHROME_SMART_SELECTION = "ChromeSmartSelection";
     public static final String CLEAR_OLD_BROWSING_DATA = "ClearOldBrowsingData";
     public static final String COMMAND_LINE_ON_NON_ROOTED = "CommandLineOnNonRooted";
+    public static final String CONDITIONAL_TAB_STRIP_ANDROID = "ConditionalTabStripAndroid";
     public static final String CONTACTS_PICKER_SELECT_ALL = "ContactsPickerSelectAll";
     public static final String CONTENT_SUGGESTIONS_SCROLL_TO_LOAD =
             "ContentSuggestionsScrollToLoad";
@@ -281,6 +282,7 @@ public abstract class ChromeFeatureList {
     public static final String GRANT_NOTIFICATIONS_TO_DSE = "GrantNotificationsToDSE";
     public static final String HANDLE_MEDIA_INTENTS = "HandleMediaIntents";
     public static final String HOMEPAGE_LOCATION_POLICY = "HomepageLocationPolicy";
+    public static final String HOMEPAGE_PROMO_CARD = "HomepagePromoCard";
     public static final String HOMEPAGE_SETTINGS_UI_CONVERSION = "HomepageSettingsUIConversion";
     public static final String HORIZONTAL_TAB_SWITCHER_ANDROID = "HorizontalTabSwitcherAndroid";
     public static final String IMMERSIVE_UI_MODE = "ImmersiveUiMode";

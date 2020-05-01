@@ -97,6 +97,7 @@ class WebLocalFrame : public WebFrame {
       WebView*,
       WebLocalFrameClient*,
       blink::InterfaceRegistry*,
+      const base::UnguessableToken& frame_token,
       WebFrame* opener = nullptr,
       const WebString& name = WebString(),
       network::mojom::WebSandboxFlags = network::mojom::WebSandboxFlags::kNone,
@@ -128,6 +129,7 @@ class WebLocalFrame : public WebFrame {
   BLINK_EXPORT static WebLocalFrame* CreateProvisional(
       WebLocalFrameClient*,
       blink::InterfaceRegistry*,
+      const base::UnguessableToken& frame_token,
       WebFrame* previous_web_frame,
       const FramePolicy&,
       const WebString& name);
@@ -135,9 +137,11 @@ class WebLocalFrame : public WebFrame {
   // Creates a new local child of this frame. Similar to the other methods that
   // create frames, the returned frame should be freed by calling Close() when
   // it's no longer needed.
-  virtual WebLocalFrame* CreateLocalChild(mojom::TreeScopeType,
-                                          WebLocalFrameClient*,
-                                          blink::InterfaceRegistry*) = 0;
+  virtual WebLocalFrame* CreateLocalChild(
+      mojom::TreeScopeType,
+      WebLocalFrameClient*,
+      blink::InterfaceRegistry*,
+      const base::UnguessableToken& frame_token) = 0;
 
   // Returns the WebFrame associated with the current V8 context. This
   // function can return 0 if the context is associated with a Document that
@@ -766,7 +770,9 @@ class WebLocalFrame : public WebFrame {
   virtual void SetAllowsCrossBrowsingInstanceFrameLookup() = 0;
 
  protected:
-  explicit WebLocalFrame(mojom::TreeScopeType scope) : WebFrame(scope) {}
+  explicit WebLocalFrame(mojom::TreeScopeType scope,
+                         const base::UnguessableToken& frame_token)
+      : WebFrame(scope, frame_token) {}
 
   // Inherited from WebFrame, but intentionally hidden: it never makes sense
   // to directly call these on a WebLocalFrame.

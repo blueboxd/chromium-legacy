@@ -38,7 +38,6 @@
 <translation id="1258753120186372309">Google чиймелек: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1260236875608242557">Издөө жана изилдөө</translation>
 <translation id="1266864766717917324"><ph name="CONTENT_TYPE" /> менен бөлүшүлгөн жок</translation>
-<translation id="1272079795634619415">Токтотуу</translation>
 <translation id="1283039547216852943">Жайып көрсөтүү үчүн таптап коюңуз</translation>
 <translation id="1285320974508926690">Бул сайт эч качан которулбасын</translation>
 <translation id="1291207594882862231">Таржымалды, кукилерди, сайт дайындарын, кешти тазалоо…</translation>
@@ -51,7 +50,6 @@
 <translation id="1331212799747679585">Chrome жаңырбай жатат. Кошумча параметрлер</translation>
 <translation id="1332501820983677155">Google Chrome функциясынын кыска жолдору</translation>
 <translation id="1360432990279830238">Аккаунттан чыгып, шайкештирүүнү өчүрөсүзбү?</translation>
-<translation id="1364532808393826295"><ph name="APP_NAME" />, <ph name="NOTIFICATION_MESSAGE" /></translation>
 <translation id="1373696734384179344">Тандалган мазмунду жүктөп алуу үчүн эстутум жетишсиз.</translation>
 <translation id="1376578503827013741">Эсептелүүдө…</translation>
 <translation id="1383876407941801731">Издөө</translation>
@@ -122,7 +120,6 @@
 <translation id="2013642289801508067">{FILE_COUNT,plural, =1{# файл}other{# файл}}</translation>
 <translation id="2017836877785168846">Дарек тилкесиндеги таржымалды жана сөздү автоматтык түрдө бүтүрүүнү тазалайт.</translation>
 <translation id="2021896219286479412">Сайтты толук экран режиминде көзөмөлдөө</translation>
-<translation id="2030769033451695672"><ph name="URL_OF_THE_CURRENT_TAB" /> кайтуу үчүн таптап коюңуз</translation>
 <translation id="2038563949887743358">Иш тактасынын сайтындагы суроо-талапты күйгүзүү</translation>
 <translation id="204321170514947529"><ph name="APP_NAME" /> колдонмосунун дайындары Chrome'до дагы бар</translation>
 <translation id="2049574241039454490"><ph name="FILE_SIZE_OF_TOTAL" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
@@ -592,7 +589,6 @@ Google аккаунтуңуздун башка Google кызматтарынан
 <translation id="5876056640971328065">Видеону тындыруу</translation>
 <translation id="5884076754568147479">Тапшырмаларды аткарууга жардам берүү үчүн Google Жардамчыны колдонгон сайттардын URL даректерин жана мазмунун, ошондой эле Жардамчы аркылуу тапшырган маалыматты алат</translation>
 <translation id="5919204609460789179">Шайкештирүүнү баштоо үчүн <ph name="PRODUCT_NAME" /> жаңыртыңыз</translation>
-<translation id="5922853908706496913">Экраныңыз бөлүшүлүүдө</translation>
 <translation id="5937580074298050696"><ph name="AMOUNT" /> үнөмдөлдү</translation>
 <translation id="5939518447894949180">Кайра коюу</translation>
 <translation id="5942872142862698679">Издөө үчүн Google колдонулууда</translation>
@@ -779,7 +775,6 @@ Google аккаунтуңуздун башка Google кызматтарынан
 <translation id="7514365320538308">Жүктөп алуу</translation>
 <translation id="751961395872307827">Сайтка туташпай жатат</translation>
 <translation id="7542481630195938534">Сунуштар жүктөлгөн жок</translation>
-<translation id="7554752735887601236">Сайт микрофонуңузду колдонуп жатат</translation>
 <translation id="7559975015014302720">Жөнөкөй режим өчүк</translation>
 <translation id="7562080006725997899">Серептөө дайындары тазаланууда</translation>
 <translation id="756809126120519699">Chrome дайындары тазаланды</translation>
@@ -813,7 +808,6 @@ Google аккаунтуңуздун башка Google кызматтарынан
 <translation id="7774809984919390718">{PAYMENT_METHOD,plural, =1{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 жана дагы <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}other{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 жана дагы <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}}</translation>
 <translation id="7791543448312431591">Кошуу</translation>
 <translation id="780301667611848630">Жок, рахмат</translation>
-<translation id="7804248752222191302">Сайт камераңызды колдонуп жатат</translation>
 <translation id="7810647596859435254">Төмөнкү менен ачуу…</translation>
 <translation id="7821588508402923572">Үнөмдөлгөн трафик ушул жерде көрүнөт</translation>
 <translation id="783819812427904514">Видеонун үнүн чыгаруу</translation>
@@ -885,9 +879,7 @@ Google аккаунтуңуздун башка Google кызматтарынан
 <translation id="8349013245300336738">Сарпталган трафик боюнча иргөө</translation>
 <translation id="8364299278605033898">Таанымал вебсайттарды көрүү</translation>
 <translation id="8368027906805972958">Белгисиз же колдоого алынбаган түзмөк (<ph name="DEVICE_ID" />)</translation>
-<translation id="83792324527827022">Сайт камераңызды жана микрофонуңузду колдонуп жатат</translation>
 <translation id="8393700583063109961">Билдирүү жөнөтүү</translation>
-<translation id="8394832520002899662">Сайтка кайтуу үчүн таптаңыз</translation>
 <translation id="8413126021676339697">Таржымалды толугу менен көрсөтүү</translation>
 <translation id="8427875596167638501">Алдын ала көрүү өтмөгүнүн жарымы жабык</translation>
 <translation id="8428213095426709021">Жөндөөлөр</translation>
@@ -984,7 +976,6 @@ Google аккаунтуңуздун башка Google кызматтарынан
 <translation id="970715775301869095"><ph name="MINUTES" /> мүн. калды</translation>
 <translation id="974555521953189084">Шайкештирип баштоо үчүн сөз айкашын киргизиңиз</translation>
 <translation id="981121421437150478">Офлайн</translation>
-<translation id="982182592107339124">Ушуну менен бардык сайттардын дайындары, анын ичинде төмөнкү дайындар тазаланат:</translation>
 <translation id="983192555821071799">Бардык өтмөктөрдү жабуу</translation>
 <translation id="987264212798334818">Жалпы</translation>
 </translationbundle>

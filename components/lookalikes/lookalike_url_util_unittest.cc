@@ -4,6 +4,7 @@
 
 #include "components/lookalikes/lookalike_url_util.h"
 
+#include "base/bind.h"
 #include "base/strings/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -66,6 +67,10 @@ TEST(LookalikeUrlUtilTest, IsEditDistanceAtMostOne) {
   }
 }
 
+bool IsGoogleScholar(const GURL& hostname) {
+  return hostname.host() == "scholar.google.com";
+}
+
 TEST(LookalikeUrlUtilTest, TargetEmbeddingTest) {
   const std::vector<DomainInfo> engaged_sites = {
       GetDomainInfo(GURL("https://highengagement.com"))};
@@ -125,6 +130,13 @@ TEST(LookalikeUrlUtilTest, TargetEmbeddingTest) {
       {GURL("http://sth.google-com-sth.com"), true},
       // Target domain could be an engaged domain
       {GURL("http://highengagement-com-login.com"), true},
+      // If target domain is an allowlisted domain, it should not trigger the
+      // heuristic.
+      {GURL("http://foo.scholar.google-com-login.com"), false},
+      // An allowlisted domain will make sure it is not marked as an embedded
+      // target. However, other targets could still be embedded in the domain.
+      {GURL("http://foo.google.com.scholar.google-com-login.com"), true},
+      {GURL("http://foo.scholar.google-com.google.com-login.com"), true},
 
       // Ensure legitimate domains don't trigger the heuristic.
       {GURL("http://google.com"), false},
@@ -134,17 +146,19 @@ TEST(LookalikeUrlUtilTest, TargetEmbeddingTest) {
   };
 
   for (const auto& kTestCase : kTestCases) {
-    std::string safe_url;
+    std::string safe_hostname;
     if (kTestCase.should_trigger) {
-      EXPECT_TRUE(
-          IsTargetEmbeddingLookalike(kTestCase.url, engaged_sites, &safe_url))
+      EXPECT_TRUE(IsTargetEmbeddingLookalike(
+          kTestCase.url.host(), engaged_sites,
+          base::BindRepeating(&IsGoogleScholar), &safe_hostname))
           << "Expected that \"" << kTestCase.url
           << " should trigger but it didn't.";
     } else {
-      EXPECT_FALSE(
-          IsTargetEmbeddingLookalike(kTestCase.url, engaged_sites, &safe_url))
+      EXPECT_FALSE(IsTargetEmbeddingLookalike(
+          kTestCase.url.host(), engaged_sites,
+          base::BindRepeating(&IsGoogleScholar), &safe_hostname))
           << "Expected that \"" << kTestCase.url
-          << " shouldn't trigger but it did. For URL: " << safe_url;
+          << " shouldn't trigger but it did. For URL: " << safe_hostname;
     }
   }
 }

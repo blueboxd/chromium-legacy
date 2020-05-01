@@ -15,6 +15,7 @@
 #include "base/test/bind_test_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_restrictions.h"
+#include "build/build_config.h"
 #include "content/browser/web_package/web_bundle_utils.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/content_browser_client.h"
@@ -54,6 +55,14 @@ constexpr char kDefaultHeaders[] =
     "HTTP/1.1 200 OK\n"
     "Content-Type: application/webbundle\n"
     "X-Content-Type-Options: nosniff\n";
+
+constexpr char kHeadersForHtml[] =
+    "HTTP/1.1 200 OK\n"
+    "Content-Type: text/html\n";
+
+constexpr char kHeadersForJavaScript[] =
+    "HTTP/1.1 200 OK\n"
+    "Content-Type: application/javascript\n";
 
 base::FilePath GetTestDataPath(base::StringPiece file) {
   base::FilePath test_data_dir;
@@ -343,9 +352,25 @@ class WebBundleBrowserTestBase : public ContentBrowserTest {
         base::StringPrintf("location.href = '%s';", url.spec().c_str()), title);
   }
 
+  void CreateTemporaryWebBundleFile(const std::string& content,
+                                    base::FilePath* file_path) {
+    base::ScopedAllowBlockingForTesting allow_blocking;
+    if (!temp_dir_.IsValid()) {
+      ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
+    }
+    base::FilePath tmp_file_path;
+    ASSERT_TRUE(
+        base::CreateTemporaryFileInDir(temp_dir_.GetPath(), &tmp_file_path));
+    ASSERT_TRUE(base::WriteFile(tmp_file_path, content.data(), content.size()) >
+                0);
+    *file_path = tmp_file_path.AddExtension(FILE_PATH_LITERAL(".wbn"));
+    ASSERT_TRUE(base::Move(tmp_file_path, *file_path));
+  }
+
  private:
   ContentBrowserClient* original_client_ = nullptr;
   TestBrowserClient browser_client_;
+  base::ScopedTempDir temp_dir_;
 
   DISALLOW_COPY_AND_ASSIGN(WebBundleBrowserTestBase);
 };
@@ -405,34 +430,229 @@ std::string CreateSimpleWebBundle(const GURL& primary_url) {
   return std::string(bundle.begin(), bundle.end());
 }
 
-std::string CreatePathTestWebBundle(
-    const net::test_server::EmbeddedTestServer* server) {
-  const GURL primary_url = server->GetURL("/web_bundle/path_test/in_scope/");
-  data_decoder::test::WebBundleBuilder builder(primary_url.spec(), "");
-  builder.AddExchange(primary_url.spec(),
-                      {{":status", "200"}, {"content-type", "text/html"}},
-                      "<title>Ready</title>");
-  builder.AddExchange(
-      server->GetURL("/web_bundle/path_test/in_scope/page.html").spec(),
-      {{":status", "200"}, {"content-type", "text/html"}},
+void AddHtmlFile(data_decoder::test::WebBundleBuilder* builder,
+                 const GURL& base_url,
+                 const std::string& path,
+                 const std::string& content) {
+  builder->AddExchange(base_url.Resolve(path).spec(),
+                       {{":status", "200"}, {"content-type", "text/html"}},
+                       content);
+}
+
+void AddScriptFile(data_decoder::test::WebBundleBuilder* builder,
+                   const GURL& base_url,
+                   const std::string& path,
+                   const std::string& content) {
+  builder->AddExchange(
+      base_url.Resolve(path).spec(),
+      {{":status", "200"}, {"content-type", "application/javascript"}},
+      content);
+}
+
+std::string CreatePathTestWebBundle(const GURL& base_url) {
+  const std::string primary_url_path = "/web_bundle/path_test/in_scope/";
+  data_decoder::test::WebBundleBuilder builder(
+      base_url.Resolve(primary_url_path).spec(), "");
+  AddHtmlFile(&builder, base_url, primary_url_path, "<title>Ready</title>");
+  AddHtmlFile(
+      &builder, base_url, "/web_bundle/path_test/in_scope/page.html",
       "<script>const page_info = 'In scope page in Web Bundle';</script>"
       "<script src=\"page.js\"></script>");
-  builder.AddExchange(
-      server->GetURL("/web_bundle/path_test/in_scope/page.js").spec(),
-      {{":status", "200"}, {"content-type", "application/javascript"}},
+  AddScriptFile(
+      &builder, base_url, "/web_bundle/path_test/in_scope/page.js",
       "document.title = page_info + ' / in scope script in Web Bundle';");
-  builder.AddExchange(
-      server->GetURL("/web_bundle/path_test/out_scope/page.html").spec(),
-      {{":status", "200"}, {"content-type", "text/html"}},
+  AddHtmlFile(
+      &builder, base_url, "/web_bundle/path_test/out_scope/page.html",
       "<script>const page_info = 'Out scope page in Web Bundle';</script>"
       "<script src=\"page.js\"></script>");
-  builder.AddExchange(
-      server->GetURL("/web_bundle/path_test/out_scope/page.js").spec(),
-      {{":status", "200"}, {"content-type", "application/javascript"}},
+  AddScriptFile(
+      &builder, base_url, "/web_bundle/path_test/out_scope/page.js",
       "document.title = page_info + ' / out scope script in Web Bundle';");
-
   std::vector<uint8_t> bundle = builder.CreateBundle();
   return std::string(bundle.begin(), bundle.end());
+}
+
+std::string CreateSubPageHtml(const std::string& page_info) {
+  return base::StringPrintf(R"(
+    <body><script>
+      const page_info = '%s';
+      let script  = document.createElement('script');
+      script.src = location.hash.substr(1);
+      document.body.appendChild(script);
+    </script></body>)",
+                            page_info.c_str());
+}
+
+std::string CreateScriptForSubPageTest(const std::string& script_info) {
+  return base::StringPrintf(
+      R"(
+        if (window.opener) {
+          window.opener.postMessage(page_info + ' %s', '*');
+        } else {
+          window.parent.window.postMessage(page_info + ' %s', '*');
+        }
+        )",
+      script_info.c_str(), script_info.c_str());
+}
+
+void RegisterRequestHandlerForSubPageTest(net::EmbeddedTestServer* server,
+                                          const std::string& prefix) {
+  server->RegisterRequestHandler(base::BindRepeating(
+      [](const std::string& prefix,
+         const net::test_server::HttpRequest& request)
+          -> std::unique_ptr<net::test_server::HttpResponse> {
+        if (base::EndsWith(request.relative_url, "subpage",
+                           base::CompareCase::SENSITIVE)) {
+          return std::make_unique<net::test_server::RawHttpResponse>(
+              kHeadersForHtml, CreateSubPageHtml(prefix + "server-page"));
+        }
+        if (base::EndsWith(request.relative_url, "script",
+                           base::CompareCase::SENSITIVE)) {
+          return std::make_unique<net::test_server::RawHttpResponse>(
+              kHeadersForJavaScript,
+              CreateScriptForSubPageTest(prefix + "server-script"));
+        }
+        return nullptr;
+      },
+      prefix));
+}
+
+// Sets up |primary_server| and |third_party_server| to return server generated
+// sub page HTML files and JavaScript files:
+//  - |primary_server| will return a sub page file created by
+//    CreateSubPageHtml("") for all URL which ends with "subpage", and returns a
+//    script file created by CreateScriptForSubPageTest("") for all URL which
+//    ends with "script".
+//  - |third_party_server| will return a sub page file created by
+//    CreateSubPageHtml("third-party:") for all URL which ends with "subpage",
+//    and returns a script file created by
+//    CreateScriptForSubPageTest("third-party:") for all URL which ends with
+//    "script".
+// And generates a web bundle file which contains the following files:
+//  - in |primary_server|'s origin:
+//    - /top : web bundle file's primary URL.
+//    - /subpage : returns CreateSubPageHtml("wbn-page").
+//    - /script : returns CreateScriptForSubPageTest("wbn-script").
+//  - in |third_party_server|'s origin:
+//    - /subpage : returns CreateSubPageHtml("third-party:wbn-page").
+//    - /script : returns CreateScriptForSubPageTest("third-party:wbn-script").
+// When the sub page is loaded using iframe or window.open(), a script of the
+// URL hash of the sub page is loaded. And domAutomationController.send() will
+// be called via postMessage(). So we can know whether the sub page and the
+// script are loaded from the web bundle file or the server.
+void SetUpSubPageTest(net::EmbeddedTestServer* primary_server,
+                      net::EmbeddedTestServer* third_party_server,
+                      GURL* primary_url_origin,
+                      GURL* third_party_origin,
+                      std::string* web_bundle_content) {
+  RegisterRequestHandlerForSubPageTest(primary_server, "");
+  RegisterRequestHandlerForSubPageTest(third_party_server, "third-party:");
+
+  ASSERT_TRUE(primary_server->Start());
+  ASSERT_TRUE(third_party_server->Start());
+  *primary_url_origin = primary_server->GetURL("/");
+  *third_party_origin = third_party_server->GetURL("/");
+
+  data_decoder::test::WebBundleBuilder builder(
+      primary_url_origin->Resolve("/top").spec(), "");
+  AddHtmlFile(&builder, *primary_url_origin, "/top", R"(
+    <script>
+    window.addEventListener('message',
+                            event => domAutomationController.send(event.data),
+                            false);
+    document.title = 'Ready';
+    </script>
+    )");
+  AddHtmlFile(&builder, *primary_url_origin, "/subpage",
+              CreateSubPageHtml("wbn-page"));
+  AddScriptFile(&builder, *primary_url_origin, "/script",
+                CreateScriptForSubPageTest("wbn-script"));
+
+  AddHtmlFile(&builder, *third_party_origin, "/subpage",
+              CreateSubPageHtml("third-party:wbn-page"));
+  AddScriptFile(&builder, *third_party_origin, "/script",
+                CreateScriptForSubPageTest("third-party:wbn-script"));
+
+  std::vector<uint8_t> bundle = builder.CreateBundle();
+  *web_bundle_content = std::string(bundle.begin(), bundle.end());
+}
+
+std::string AddIframeAndWaitForMessage(const ToRenderFrameHost& adapter,
+                                       const GURL& url) {
+  std::string result;
+  EXPECT_TRUE(content::ExecuteScriptAndExtractString(adapter,
+                                                     base::StringPrintf(
+                                                         R"(
+  (function(){
+    const iframe = document.createElement('iframe');
+    iframe.src = '%s';
+    document.body.appendChild(iframe);
+  })();
+  )",
+                                                         url.spec().c_str()),
+                                                     &result));
+  return result;
+}
+
+std::string WindowOpenAndWaitForMessage(const ToRenderFrameHost& adapter,
+                                        const GURL& url) {
+  std::string result;
+  EXPECT_TRUE(content::ExecuteScriptAndExtractString(
+      adapter,
+      base::StringPrintf("window.open('%s', '_blank');", url.spec().c_str()),
+      &result));
+  return result;
+}
+
+// Runs tests for subpages  (iframe / window.open()). This function calls
+// |test_func| to create an iframe (AddIframeAndWaitForMessage) or to open a new
+// window (WindowOpenAndWaitForMessage).
+// |support_third_party_wbn_page| must be true when third party pages should be
+// served from servers even if they are in the web bundle.
+void RunSubPageTest(const ToRenderFrameHost& adapter,
+                    const GURL& primary_url_origin,
+                    const GURL& third_party_origin,
+                    std::string (*test_func)(const content::ToRenderFrameHost&,
+                                             const GURL&),
+                    bool support_third_party_wbn_page) {
+  EXPECT_EQ(
+      "wbn-page wbn-script",
+      (*test_func)(adapter,
+                   primary_url_origin.Resolve("/subpage").Resolve("#/script")));
+  EXPECT_EQ("wbn-page server-script",
+            (*test_func)(adapter, primary_url_origin.Resolve("/subpage")
+                                      .Resolve("#/not-in-wbn-script")));
+
+  EXPECT_EQ(
+      support_third_party_wbn_page ? "wbn-page third-party:wbn-script"
+                                   : "wbn-page third-party:server-script",
+      (*test_func)(adapter,
+                   primary_url_origin.Resolve("/subpage")
+                       .Resolve(std::string("#") +
+                                third_party_origin.Resolve("/script").spec())));
+  EXPECT_EQ(
+      "wbn-page third-party:server-script",
+      (*test_func)(
+          adapter,
+          primary_url_origin.Resolve("/subpage")
+              .Resolve(
+                  std::string("#") +
+                  third_party_origin.Resolve("/not-in-wbn-script").spec())));
+
+  EXPECT_EQ(
+      "server-page server-script",
+      (*test_func)(adapter, primary_url_origin.Resolve("/not-in-wbn-subpage")
+                                .Resolve("#/script")));
+  EXPECT_EQ(
+      support_third_party_wbn_page
+          ? "third-party:wbn-page third-party:wbn-script"
+          : "third-party:server-page third-party:server-script",
+      (*test_func)(adapter,
+                   third_party_origin.Resolve("/subpage").Resolve("#script")));
+  EXPECT_EQ(
+      "third-party:server-page third-party:server-script",
+      (*test_func)(adapter, third_party_origin.Resolve("/not-in-wbn-subpage")
+                                .Resolve("#script")));
 }
 
 }  // namespace
@@ -475,6 +695,22 @@ IN_PROC_BROWSER_TEST_F(InvalidTrustableWebBundleFileUrlBrowserTest,
   EXPECT_EQ(net::ERR_INVALID_URL, *finish_navigation_observer.error_code());
 }
 
+enum class TestFilePathMode {
+  kNormalFilePath,
+#if defined(OS_ANDROID)
+  kContentURI,
+#endif  // OS_ANDROID
+};
+
+#if defined(OS_ANDROID)
+#define TEST_FILE_PATH_MODE_PARAMS                   \
+  testing::Values(TestFilePathMode::kNormalFilePath, \
+                  TestFilePathMode::kContentURI)
+#else
+#define TEST_FILE_PATH_MODE_PARAMS \
+  testing::Values(TestFilePathMode::kNormalFilePath)
+#endif  // OS_ANDROID
+
 class WebBundleTrustableFileBrowserTestBase : public WebBundleBrowserTestBase {
  protected:
   WebBundleTrustableFileBrowserTestBase() = default;
@@ -487,44 +723,37 @@ class WebBundleTrustableFileBrowserTestBase : public WebBundleBrowserTestBase {
                                     test_data_url().spec());
   }
 
+  void SetTestDataUrl(const base::FilePath& test_data_path,
+                      TestFilePathMode path_mode) {
+    if (path_mode == TestFilePathMode::kNormalFilePath) {
+      test_data_url_ = net::FilePathToFileURL(test_data_path);
+      return;
+    }
+#if defined(OS_ANDROID)
+    DCHECK_EQ(TestFilePathMode::kContentURI, path_mode);
+    test_data_url_ = CopyFileAndGetContentUri(test_data_path);
+#endif  // OS_ANDROID
+  }
   const GURL& test_data_url() const { return test_data_url_; }
-  const GURL& empty_page_url() const { return empty_page_url_; }
-
-  GURL test_data_url_;
-  GURL empty_page_url_;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(WebBundleTrustableFileBrowserTestBase);
-};
+  GURL test_data_url_;
 
-enum class TestFilePathMode {
-  kNormalFilePath,
-#if defined(OS_ANDROID)
-  kContentURI,
-#endif  // OS_ANDROID
+  DISALLOW_COPY_AND_ASSIGN(WebBundleTrustableFileBrowserTestBase);
 };
 
 class WebBundleTrustableFileBrowserTest
     : public testing::WithParamInterface<TestFilePathMode>,
       public WebBundleTrustableFileBrowserTestBase {
  protected:
-  WebBundleTrustableFileBrowserTest() {
-    if (GetParam() == TestFilePathMode::kNormalFilePath) {
-      test_data_url_ =
-          net::FilePathToFileURL(GetTestDataPath("web_bundle_browsertest.wbn"));
-      empty_page_url_ =
-          net::FilePathToFileURL(GetTestDataPath("empty_page.html"));
-      return;
-    }
-#if defined(OS_ANDROID)
-    DCHECK_EQ(TestFilePathMode::kContentURI, GetParam());
-    test_data_url_ =
-        CopyFileAndGetContentUri(GetTestDataPath("web_bundle_browsertest.wbn"));
-    empty_page_url_ =
-        CopyFileAndGetContentUri(GetTestDataPath("empty_page.html"));
-#endif  // OS_ANDROID
-  }
+  WebBundleTrustableFileBrowserTest() = default;
   ~WebBundleTrustableFileBrowserTest() override = default;
+
+  void SetUp() override {
+    SetTestDataUrl(GetTestDataPath("web_bundle_browsertest.wbn"), GetParam());
+    SetEmptyPageUrl();
+    WebBundleTrustableFileBrowserTestBase::SetUp();
+  }
 
   std::string ExecuteAndGetString(const std::string& script) {
     std::string result;
@@ -534,7 +763,24 @@ class WebBundleTrustableFileBrowserTest
     return result;
   }
 
+  const GURL& empty_page_url() const { return empty_page_url_; }
+
  private:
+  void SetEmptyPageUrl() {
+    if (GetParam() == TestFilePathMode::kNormalFilePath) {
+      empty_page_url_ =
+          net::FilePathToFileURL(GetTestDataPath("empty_page.html"));
+      return;
+    }
+#if defined(OS_ANDROID)
+    DCHECK_EQ(TestFilePathMode::kContentURI, GetParam());
+    empty_page_url_ =
+        CopyFileAndGetContentUri(GetTestDataPath("empty_page.html"));
+#endif  // OS_ANDROID
+  }
+
+  GURL empty_page_url_;
+
   DISALLOW_COPY_AND_ASSIGN(WebBundleTrustableFileBrowserTest);
 };
 
@@ -621,25 +867,68 @@ IN_PROC_BROWSER_TEST_P(WebBundleTrustableFileBrowserTest, BaseURI) {
             "https://example.org/piyo/foo/bar");
 }
 
-INSTANTIATE_TEST_SUITE_P(WebBundleTrustableFileBrowserTests,
+INSTANTIATE_TEST_SUITE_P(WebBundleTrustableFileBrowserTest,
                          WebBundleTrustableFileBrowserTest,
-                         testing::Values(TestFilePathMode::kNormalFilePath
-#if defined(OS_ANDROID)
-                                         ,
-                                         TestFilePathMode::kContentURI
-#endif  // OS_ANDROID
-                                         ));
+                         TEST_FILE_PATH_MODE_PARAMS);
+
+class WebBundleTrustableFileSubPageBrowserTests
+    : public testing::WithParamInterface<TestFilePathMode>,
+      public WebBundleTrustableFileBrowserTestBase {
+ protected:
+  WebBundleTrustableFileSubPageBrowserTests() = default;
+  ~WebBundleTrustableFileSubPageBrowserTests() override = default;
+
+  void SetUp() override {
+    std::string web_bundle_content;
+    SetUpSubPageTest(embedded_test_server(), &third_party_server_,
+                     &primary_url_origin_, &third_party_origin_,
+                     &web_bundle_content);
+    base::FilePath file_path;
+    CreateTemporaryWebBundleFile(web_bundle_content, &file_path);
+
+    SetTestDataUrl(file_path, GetParam());
+    WebBundleTrustableFileBrowserTestBase::SetUp();
+  }
+
+  GURL primary_url_origin_;
+  GURL third_party_origin_;
+
+ private:
+  net::EmbeddedTestServer third_party_server_;
+
+  DISALLOW_COPY_AND_ASSIGN(WebBundleTrustableFileSubPageBrowserTests);
+};
+
+IN_PROC_BROWSER_TEST_P(WebBundleTrustableFileSubPageBrowserTests, Iframe) {
+  NavigateToBundleAndWaitForReady(test_data_url(),
+                                  primary_url_origin_.Resolve("/top"));
+  RunSubPageTest(shell()->web_contents(), primary_url_origin_,
+                 third_party_origin_, &AddIframeAndWaitForMessage,
+                 true /* support_third_party_wbn_page */);
+}
+
+IN_PROC_BROWSER_TEST_P(WebBundleTrustableFileSubPageBrowserTests, WindowOpen) {
+  NavigateToBundleAndWaitForReady(test_data_url(),
+                                  primary_url_origin_.Resolve("/top"));
+  RunSubPageTest(shell()->web_contents(), primary_url_origin_,
+                 third_party_origin_, &WindowOpenAndWaitForMessage,
+                 true /* support_third_party_wbn_page */);
+}
+
+INSTANTIATE_TEST_SUITE_P(WebBundleTrustableFileSubPageBrowserTests,
+                         WebBundleTrustableFileSubPageBrowserTests,
+                         TEST_FILE_PATH_MODE_PARAMS);
 
 class WebBundleTrustableFileNotFoundBrowserTest
     : public WebBundleTrustableFileBrowserTestBase {
  protected:
-  WebBundleTrustableFileNotFoundBrowserTest() {
-    base::FilePath test_data_dir;
-    CHECK(base::PathService::Get(base::DIR_SOURCE_ROOT, &test_data_dir));
-    test_data_url_ =
-        net::FilePathToFileURL(test_data_dir.AppendASCII("not_found"));
-  }
+  WebBundleTrustableFileNotFoundBrowserTest() = default;
   ~WebBundleTrustableFileNotFoundBrowserTest() override = default;
+  void SetUp() override {
+    SetTestDataUrl(GetTestDataPath("not_found"),
+                   TestFilePathMode::kNormalFilePath);
+    WebBundleTrustableFileBrowserTestBase::SetUp();
+  }
 };
 
 IN_PROC_BROWSER_TEST_F(WebBundleTrustableFileNotFoundBrowserTest, NotFound) {
@@ -993,14 +1282,55 @@ IN_PROC_BROWSER_TEST_P(WebBundleFileBrowserTest, IframeNavigationNoCrash) {
                                "Iframe loaded again");
 }
 
+IN_PROC_BROWSER_TEST_P(WebBundleFileBrowserTest, Iframe) {
+  net::EmbeddedTestServer third_party_server;
+  GURL primary_url_origin;
+  GURL third_party_origin;
+  std::string web_bundle_content;
+  SetUpSubPageTest(embedded_test_server(), &third_party_server,
+                   &primary_url_origin, &third_party_origin,
+                   &web_bundle_content);
+
+  base::FilePath file_path;
+  CreateTemporaryWebBundleFile(web_bundle_content, &file_path);
+  const GURL test_data_url = GetTestUrlForFile(file_path);
+  NavigateToBundleAndWaitForReady(
+      test_data_url, web_bundle_utils::GetSynthesizedUrlForWebBundle(
+                         test_data_url, primary_url_origin.Resolve("/top")));
+  RunSubPageTest(shell()->web_contents(), primary_url_origin,
+                 third_party_origin, &AddIframeAndWaitForMessage,
+                 true /* support_third_party_wbn_page */);
+}
+
+// Flaky failures on Android; https://crbug.com/1077177.
+#if defined(OS_ANDROID)
+#define MAYBE_WindowOpen DISABLED_WindowOpen
+#else
+#define MAYBE_WindowOpen WindowOpen
+#endif
+IN_PROC_BROWSER_TEST_P(WebBundleFileBrowserTest, MAYBE_WindowOpen) {
+  net::EmbeddedTestServer third_party_server;
+  GURL primary_url_origin;
+  GURL third_party_origin;
+  std::string web_bundle_content;
+  SetUpSubPageTest(embedded_test_server(), &third_party_server,
+                   &primary_url_origin, &third_party_origin,
+                   &web_bundle_content);
+
+  base::FilePath file_path;
+  CreateTemporaryWebBundleFile(web_bundle_content, &file_path);
+  const GURL test_data_url = GetTestUrlForFile(file_path);
+  NavigateToBundleAndWaitForReady(
+      test_data_url, web_bundle_utils::GetSynthesizedUrlForWebBundle(
+                         test_data_url, primary_url_origin.Resolve("/top")));
+  RunSubPageTest(shell()->web_contents(), primary_url_origin,
+                 third_party_origin, &WindowOpenAndWaitForMessage,
+                 true /* support_third_party_wbn_page */);
+}
+
 INSTANTIATE_TEST_SUITE_P(WebBundleFileBrowserTest,
                          WebBundleFileBrowserTest,
-                         testing::Values(TestFilePathMode::kNormalFilePath
-#if defined(OS_ANDROID)
-                                         ,
-                                         TestFilePathMode::kContentURI
-#endif  // OS_ANDROID
-                                         ));
+                         TEST_FILE_PATH_MODE_PARAMS);
 
 class WebBundleNetworkBrowserTest : public WebBundleBrowserTestBase {
  protected:
@@ -1011,6 +1341,7 @@ class WebBundleNetworkBrowserTest : public WebBundleBrowserTestBase {
     WebBundleBrowserTestBase::SetUpOnMainThread();
     host_resolver()->AddRule("*", "127.0.0.1");
   }
+
   void TearDownOnMainThread() override {
     // Shutdown the server to avoid the data race of |headers_| and |contents_|
     // caused by page reload on error.
@@ -1322,7 +1653,7 @@ IN_PROC_BROWSER_TEST_F(WebBundleNetworkBrowserTest, Navigations) {
   const std::string wbn_path = "/web_bundle/path_test/in_scope/path_test.wbn";
   RegisterRequestHandler(wbn_path);
   ASSERT_TRUE(embedded_test_server()->Start());
-  SetContents(CreatePathTestWebBundle(embedded_test_server()));
+  SetContents(CreatePathTestWebBundle(embedded_test_server()->base_url()));
 
   const GURL wbn_url = embedded_test_server()->GetURL(wbn_path);
   const GURL primary_url =
@@ -1347,7 +1678,7 @@ IN_PROC_BROWSER_TEST_F(WebBundleNetworkBrowserTest, HistoryNavigations) {
   const std::string wbn_path = "/web_bundle/path_test/in_scope/path_test.wbn";
   RegisterRequestHandler(wbn_path);
   ASSERT_TRUE(embedded_test_server()->Start());
-  SetContents(CreatePathTestWebBundle(embedded_test_server()));
+  SetContents(CreatePathTestWebBundle(embedded_test_server()->base_url()));
 
   const GURL wbn_url = embedded_test_server()->GetURL(wbn_path);
   const GURL primary_url =
@@ -1515,6 +1846,99 @@ IN_PROC_BROWSER_TEST_F(WebBundleNetworkBrowserTest,
       embedded_test_server()->GetURL(alt_primary_url_path)));
   HistoryBackAndWaitUntilConsoleError(
       "The expected URL resource is not found in the web bundle.");
+}
+
+IN_PROC_BROWSER_TEST_F(WebBundleNetworkBrowserTest, Iframe) {
+  const std::string wbn_path = "/test.wbn";
+  RegisterRequestHandler(wbn_path);
+
+  net::EmbeddedTestServer third_party_server;
+  GURL primary_url_origin;
+  GURL third_party_origin;
+  std::string web_bundle_content;
+  SetUpSubPageTest(embedded_test_server(), &third_party_server,
+                   &primary_url_origin, &third_party_origin,
+                   &web_bundle_content);
+  SetContents(web_bundle_content);
+  NavigateToBundleAndWaitForReady(primary_url_origin.Resolve(wbn_path),
+                                  primary_url_origin.Resolve("/top"));
+  RunSubPageTest(shell()->web_contents(), primary_url_origin,
+                 third_party_origin, &AddIframeAndWaitForMessage,
+                 false /* support_third_party_wbn_page */);
+}
+
+IN_PROC_BROWSER_TEST_F(WebBundleNetworkBrowserTest, WindowOpen) {
+  const std::string wbn_path = "/test.wbn";
+  RegisterRequestHandler(wbn_path);
+
+  net::EmbeddedTestServer third_party_server;
+  GURL primary_url_origin;
+  GURL third_party_origin;
+  std::string web_bundle_content;
+  SetUpSubPageTest(embedded_test_server(), &third_party_server,
+                   &primary_url_origin, &third_party_origin,
+                   &web_bundle_content);
+  SetContents(web_bundle_content);
+  NavigateToBundleAndWaitForReady(primary_url_origin.Resolve(wbn_path),
+                                  primary_url_origin.Resolve("/top"));
+  RunSubPageTest(shell()->web_contents(), primary_url_origin,
+                 third_party_origin, &WindowOpenAndWaitForMessage,
+                 false /* support_third_party_wbn_page */);
+}
+
+IN_PROC_BROWSER_TEST_F(WebBundleNetworkBrowserTest, OutScopeSubPage) {
+  const std::string wbn_path = "/in_scope/test.wbn";
+  const std::string primary_url_path = "/in_scope/test.html";
+
+  RegisterRequestHandler(wbn_path);
+  RegisterRequestHandlerForSubPageTest(embedded_test_server(), "");
+  ASSERT_TRUE(embedded_test_server()->Start());
+  const GURL origin = embedded_test_server()->GetURL("/");
+  data_decoder::test::WebBundleBuilder builder(
+      origin.Resolve(primary_url_path).spec(), "");
+  AddHtmlFile(&builder, origin, primary_url_path, R"(
+    <script>
+    window.addEventListener('message',
+                            event => domAutomationController.send(event.data),
+                            false);
+    document.title = 'Ready';
+    </script>
+    )");
+  AddHtmlFile(&builder, origin, "/in_scope/subpage",
+              CreateSubPageHtml("in-scope-wbn-page"));
+  AddScriptFile(&builder, origin, "/in_scope/script",
+                CreateScriptForSubPageTest("in-scope-wbn-script"));
+  AddHtmlFile(&builder, origin, "/out_scope/subpage",
+              CreateSubPageHtml("out-scope-wbn-page"));
+  AddScriptFile(&builder, origin, "/out_scope/script",
+                CreateScriptForSubPageTest("out-scope-wbn-script"));
+  std::vector<uint8_t> bundle = builder.CreateBundle();
+  SetContents(std::string(bundle.begin(), bundle.end()));
+  NavigateToBundleAndWaitForReady(origin.Resolve(wbn_path),
+                                  origin.Resolve(primary_url_path));
+  const auto funcs = {&AddIframeAndWaitForMessage,
+                      &WindowOpenAndWaitForMessage};
+  for (const auto func : funcs) {
+    EXPECT_EQ(
+        "in-scope-wbn-page in-scope-wbn-script",
+        (*func)(
+            shell()->web_contents(),
+            origin.Resolve("/in_scope/subpage").Resolve("#/in_scope/script")));
+    EXPECT_EQ(
+        "in-scope-wbn-page server-script",
+        (*func)(
+            shell()->web_contents(),
+            origin.Resolve("/in_scope/subpage").Resolve("#/out_scope/script")));
+    EXPECT_EQ(
+        "server-page server-script",
+        (*func)(
+            shell()->web_contents(),
+            origin.Resolve("/out_scope/subpage").Resolve("#/in_scope/script")));
+    EXPECT_EQ(
+        "server-page server-script",
+        (*func)(shell()->web_contents(), origin.Resolve("/out_scope/subpage")
+                                             .Resolve("#/out_scope/script")));
+  }
 }
 
 }  // namespace content

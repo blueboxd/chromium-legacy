@@ -211,6 +211,7 @@
 <translation id="3495304270784461826"><ph name="COUNT" /> erreurs</translation>
 <translation id="3519867315646775981">Translittération (shalom ← שלום)</translation>
 <translation id="3522708245912499433">Portugais</translation>
+<translation id="3524311639100184459">Attention : Ces fichiers sont temporaires et peuvent être automatiquement supprimés pour libérer de l'espace disque.  <ph name="BEGIN_LINK" />En savoir plus<ph name="END_LINK" /></translation>
 <translation id="3527085408025491307">Dossier</translation>
 <translation id="3549797760399244642">Accéder à drive.google.com…</translation>
 <translation id="357479282490346887">Lituanien</translation>
@@ -500,6 +501,7 @@
 <translation id="6806699711453372963">Gérer le partage Linux</translation>
 <translation id="6808193438228982088">Renard</translation>
 <translation id="6820687829547641339">Archive TAR compressée avec Gzip</translation>
+<translation id="6823166707458800069">Tous les fichiers enregistrés dans ce dossier sont automatiquement sauvegardés en ligne.</translation>
 <translation id="6825883775269213504">Russe</translation>
 <translation id="6827236167376090743">Cette vidéo va être lue en boucle.</translation>
 <translation id="6847101934483209767">Élément <ph name="ENTRY_NAME" /> supprimé de la sélection.</translation>

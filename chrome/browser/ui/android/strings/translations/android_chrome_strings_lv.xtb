@@ -38,7 +38,6 @@
 <translation id="1258753120186372309">Google svētku logotips: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1260236875608242557">Meklēšana un izpēte</translation>
 <translation id="1266864766717917324">Nevarēja kopīgot: <ph name="CONTENT_TYPE" /></translation>
-<translation id="1272079795634619415">Apturēt</translation>
 <translation id="1283039547216852943">Pieskarties, lai izvērstu</translation>
 <translation id="1285320974508926690">Nekad netulkot šo vietni</translation>
 <translation id="1291207594882862231">Dzēst vēsturi, sīkfailus, vietnes datus, kešatmiņu…</translation>
@@ -51,7 +50,6 @@
 <translation id="1331212799747679585">Nevar atjaunināt Chrome — citas opcijas</translation>
 <translation id="1332501820983677155">Google Chrome funkciju īsinājumtaustiņi</translation>
 <translation id="1360432990279830238">Izrakstīties un izslēgt sinhronizēšanu?</translation>
-<translation id="1364532808393826295"><ph name="APP_NAME" /> — <ph name="NOTIFICATION_MESSAGE" /></translation>
 <translation id="1373696734384179344">Nepietiek vietas, lai lejupielādētu atlasīto saturu.</translation>
 <translation id="1376578503827013741">Notiek aprēķināšana...</translation>
 <translation id="1383876407941801731">Meklēt</translation>
@@ -122,7 +120,6 @@
 <translation id="2013642289801508067">{FILE_COUNT,plural, =1{# fails}zero{# faili}one{# fails}other{# faili}}</translation>
 <translation id="2017836877785168846">Notīra vēsturi un automātiskās pabeigšanas ierakstus adreses joslā.</translation>
 <translation id="2021896219286479412">Pilnekrāna vietnes vadīklas</translation>
-<translation id="2030769033451695672">Pieskarieties, lai atgrieztos cilnē <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
 <translation id="2038563949887743358">Ieslēgt iestatījumu “Pieprasīt datora vietni”</translation>
 <translation id="204321170514947529">Pārlūkā Chrome ir arī “<ph name="APP_NAME" />” dati</translation>
 <translation id="2049574241039454490"><ph name="FILE_SIZE_OF_TOTAL" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
@@ -592,7 +589,6 @@ Lai mainītu šo iestatījumu, <ph name="BEGIN_LINK" />atiestatiet sinhronizāci
 <translation id="5876056640971328065">Apturēt video atskaņošanu</translation>
 <translation id="5884076754568147479">Lai palīdzētu jums paveikt uzdevumus, Google saņems to vietņu vietrāžus URL un saturu, kurās izmantojat Asistentu, kā arī informāciju, ko iesniedzat, izmantojot Asistentu.</translation>
 <translation id="5919204609460789179">Lai sāktu sinhronizēšanu, atjauniniet <ph name="PRODUCT_NAME" /></translation>
-<translation id="5922853908706496913">Notiek jūsu ekrāna kopīgošana</translation>
 <translation id="5937580074298050696">Saglabāts: <ph name="AMOUNT" /></translation>
 <translation id="5939518447894949180">Atiestatīt</translation>
 <translation id="5942872142862698679">Tiek izmantota meklētājprogramma Google</translation>
@@ -779,7 +775,6 @@ Piemēram, dažas vietnes, reaģējot uz šo pieprasījumu, var rādīt jums rek
 <translation id="7514365320538308">Lejupielādēt</translation>
 <translation id="751961395872307827">Nevar izveidot savienojumu ar vietni.</translation>
 <translation id="7542481630195938534">Nevar iegūt ieteikumus.</translation>
-<translation id="7554752735887601236">Kāda vietne izmanto jūsu mikrofonu</translation>
 <translation id="7559975015014302720">Vienkāršotais režīms ir izslēgts</translation>
 <translation id="7562080006725997899">Notiek pārlūkošanas datu notīrīšana</translation>
 <translation id="756809126120519699">Chrome dati tika notīrīti</translation>
@@ -813,7 +808,6 @@ Piemēram, dažas vietnes, reaģējot uz šo pieprasījumu, var rādīt jums rek
 <translation id="7774809984919390718">{PAYMENT_METHOD,plural, =1{<ph name="PAYMENT_METHOD_PREVIEW" />… un vēl <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}zero{<ph name="PAYMENT_METHOD_PREVIEW" />… un vēl <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}one{<ph name="PAYMENT_METHOD_PREVIEW" />… un vēl <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}other{<ph name="PAYMENT_METHOD_PREVIEW" />… un vēl <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}}</translation>
 <translation id="7791543448312431591">Pievienot</translation>
 <translation id="780301667611848630">Nē, paldies</translation>
-<translation id="7804248752222191302">Kāda vietne izmanto jūsu kameru</translation>
 <translation id="7810647596859435254">Atvērt ar…</translation>
 <translation id="7821588508402923572">Šeit tiks parādīts ietaupīto datu apjoms.</translation>
 <translation id="783819812427904514">Ieslēgt video skaņu</translation>
@@ -885,9 +879,7 @@ Piemēram, dažas vietnes, reaģējot uz šo pieprasījumu, var rādīt jums rek
 <translation id="8349013245300336738">Kārtot pēc izmantoto datu apjoma</translation>
 <translation id="8364299278605033898">Skatīt populāras vietnes</translation>
 <translation id="8368027906805972958">Nezināma vai neatbalstīta ierīce (<ph name="DEVICE_ID" />)</translation>
-<translation id="83792324527827022">Kāda vietne izmanto jūsu kameru un mikrofonu</translation>
 <translation id="8393700583063109961">Sūtīt ziņojumu</translation>
-<translation id="8394832520002899662">Lai atgrieztos vietnē, pieskarieties šeit</translation>
 <translation id="8413126021676339697">Rādīt pilnu vēsturi</translation>
 <translation id="8427875596167638501">Priekšskatījuma cilne ir daļēji atvērta</translation>
 <translation id="8428213095426709021">Iestatījumi</translation>
@@ -984,7 +976,6 @@ Piemēram, dažas vietnes, reaģējot uz šo pieprasījumu, var rādīt jums rek
 <translation id="970715775301869095">Atlikušas <ph name="MINUTES" /> min</translation>
 <translation id="974555521953189084">Lai sāktu sinhronizēšanu, ievadiet ieejas frāzi</translation>
 <translation id="981121421437150478">Bezsaistē</translation>
-<translation id="982182592107339124">Tādējādi tiks dzēsti dati no visām vietnēm, tostarp:</translation>
 <translation id="983192555821071799">Aizvērt visas cilnes</translation>
 <translation id="987264212798334818">Vispārīgi</translation>
 </translationbundle>

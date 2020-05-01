@@ -8,9 +8,15 @@ import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 
+import androidx.annotation.IntDef;
+import androidx.annotation.LayoutRes;
+
 import org.chromium.components.browser_ui.widget.R;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
+
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 
 /**
  * PromoCard Coordinator that owns the view and the model change processor. Client will need to
@@ -18,9 +24,29 @@ import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
  * to initialize the view.
  */
 public class PromoCardCoordinator {
+    @IntDef({LayoutStyle.LARGE, LayoutStyle.COMPACT, LayoutStyle.SLIM})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface LayoutStyle {
+        int LARGE = 0;
+        int COMPACT = 1;
+        int SLIM = 2;
+    }
+
     private PromoCardView mPromoCardView;
     private PropertyModelChangeProcessor mModelChangeProcessor;
     private String mFeatureName;
+
+    /**
+     * Create the Coordinator of PromoCard that owns the view and the change process. Default to
+     * create the large variance.
+     * @param context Context used to create the view.
+     * @param model {@link PropertyModel} built with {@link PromoCardProperties}.
+     * @param featureName Name of the feature of this promo. Will be used to create keys for
+     *         SharedPreference.
+     */
+    public PromoCardCoordinator(Context context, PropertyModel model, String featureName) {
+        this(context, model, featureName, LayoutStyle.COMPACT);
+    }
 
     /**
      * Create the Coordinator of PromoCard that owns the view and the change process.
@@ -28,10 +54,12 @@ public class PromoCardCoordinator {
      * @param model {@link PropertyModel} built with {@link PromoCardProperties}.
      * @param featureName Name of the feature of this promo. Will be used to create keys for
      *         SharedPreference.
+     * @param layoutStyle {@link LayoutStyle} used for the promo.
      */
-    public PromoCardCoordinator(Context context, PropertyModel model, String featureName) {
+    public PromoCardCoordinator(Context context, PropertyModel model, String featureName,
+            @LayoutStyle int layoutStyle) {
         mPromoCardView = (PromoCardView) LayoutInflater.from(context).inflate(
-                R.layout.promo_card_view, null, false);
+                getPromoLayout(layoutStyle), null, false);
         mModelChangeProcessor = PropertyModelChangeProcessor.create(
                 model, mPromoCardView, new PromoCardViewBinder());
         mFeatureName = featureName;
@@ -56,5 +84,18 @@ public class PromoCardCoordinator {
      */
     public String getFeatureName() {
         return mFeatureName;
+    }
+
+    private @LayoutRes int getPromoLayout(@LayoutStyle int layoutStyle) {
+        switch (layoutStyle) {
+            case LayoutStyle.LARGE:
+                return R.layout.promo_card_view_large;
+            case LayoutStyle.COMPACT:
+                return R.layout.promo_card_view_compact;
+            case LayoutStyle.SLIM:
+                return R.layout.promo_card_view_slim;
+            default:
+                throw new IllegalArgumentException("Unsupported value: " + layoutStyle);
+        }
     }
 }

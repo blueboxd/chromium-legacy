@@ -577,7 +577,8 @@ TEST_F(RenderViewImplTest, IsPinchGestureActivePropagatesToProxies) {
           root_web_frame->FirstChild()->NextSibling()->ToWebLocalFrame()));
   ASSERT_TRUE(child_frame_2);
   child_frame_1->Unload(kProxyRoutingId, true,
-                        ReconstructReplicationStateForTesting(child_frame_1));
+                        ReconstructReplicationStateForTesting(child_frame_1),
+                        base::UnguessableToken::Create());
   EXPECT_TRUE(root_web_frame->FirstChild()->IsWebRemoteFrame());
   RenderFrameProxy* child_proxy_1 = RenderFrameProxy::FromWebFrame(
       root_web_frame->FirstChild()->ToWebRemoteFrame());
@@ -600,7 +601,8 @@ TEST_F(RenderViewImplTest, IsPinchGestureActivePropagatesToProxies) {
   // and registering of a new RenderFrameProxy, which should pick up the
   // existing setting.
   child_frame_2->Unload(kProxyRoutingId + 1, true,
-                        ReconstructReplicationStateForTesting(child_frame_2));
+                        ReconstructReplicationStateForTesting(child_frame_2),
+                        base::UnguessableToken::Create());
   EXPECT_TRUE(root_web_frame->FirstChild()->NextSibling()->IsWebRemoteFrame());
   RenderFrameProxy* child_proxy_2 = RenderFrameProxy::FromWebFrame(
       root_web_frame->FirstChild()->NextSibling()->ToWebRemoteFrame());
@@ -1109,7 +1111,8 @@ TEST_F(RenderViewImplScaleFactorTest, DeviceEmulationWithOOPIF) {
   ASSERT_TRUE(child_frame);
 
   child_frame->Unload(kProxyRoutingId + 1, true,
-                      ReconstructReplicationStateForTesting(child_frame));
+                      ReconstructReplicationStateForTesting(child_frame),
+                      base::UnguessableToken::Create());
   EXPECT_TRUE(web_frame->FirstChild()->IsWebRemoteFrame());
   RenderFrameProxy* child_proxy = RenderFrameProxy::FromWebFrame(
       web_frame->FirstChild()->ToWebRemoteFrame());
@@ -1152,7 +1155,8 @@ TEST_F(RenderViewImplTest, OriginReplicationForUnload) {
   content::FrameReplicationState replication_state =
       ReconstructReplicationStateForTesting(child_frame);
   replication_state.origin = url::Origin::Create(GURL("http://foo.com"));
-  child_frame->Unload(kProxyRoutingId, true, replication_state);
+  child_frame->Unload(kProxyRoutingId, true, replication_state,
+                      base::UnguessableToken::Create());
 
   // The child frame should now be a WebRemoteFrame.
   EXPECT_TRUE(web_frame->FirstChild()->IsWebRemoteFrame());
@@ -1169,7 +1173,8 @@ TEST_F(RenderViewImplTest, OriginReplicationForUnload) {
   TestRenderFrame* child_frame2 =
       static_cast<TestRenderFrame*>(RenderFrame::FromWebFrame(
           web_frame->FirstChild()->NextSibling()->ToWebLocalFrame()));
-  child_frame2->Unload(kProxyRoutingId + 1, true, replication_state);
+  child_frame2->Unload(kProxyRoutingId + 1, true, replication_state,
+                       base::UnguessableToken::Create());
   EXPECT_TRUE(web_frame->FirstChild()->NextSibling()->IsWebRemoteFrame());
   EXPECT_TRUE(
       web_frame->FirstChild()->NextSibling()->GetSecurityOrigin().IsOpaque());
@@ -1196,7 +1201,8 @@ TEST_F(RenderViewImplEnableZoomForDSFTest,
   content::FrameReplicationState replication_state =
       ReconstructReplicationStateForTesting(frame());
   // replication_state.origin = url::Origin(GURL("http://foo.com"));
-  frame()->Unload(kProxyRoutingId, true, replication_state);
+  frame()->Unload(kProxyRoutingId, true, replication_state,
+                  base::UnguessableToken::Create());
   EXPECT_TRUE(view()->GetWebView()->MainFrame()->IsWebRemoteFrame());
 
   // Do the remote-to-local transition for the proxy, which is to create a
@@ -1235,8 +1241,8 @@ TEST_F(RenderViewImplEnableZoomForDSFTest,
       routing_id, std::move(stub_interface_provider),
       std::move(stub_browser_interface_broker), kProxyRoutingId,
       MSG_ROUTING_NONE, MSG_ROUTING_NONE, MSG_ROUTING_NONE,
-      base::UnguessableToken::Create(), replication_state,
-      compositor_deps_.get(), std::move(widget_params),
+      base::UnguessableToken::Create(), base::UnguessableToken::Create(),
+      replication_state, compositor_deps_.get(), std::move(widget_params),
       blink::mojom::FrameOwnerProperties::New(),
       /*has_committed_real_load=*/true);
   TestRenderFrame* provisional_frame =
@@ -1285,7 +1291,8 @@ TEST_F(RenderViewImplTest, DetachingProxyAlsoDestroysProvisionalFrame) {
   // Unload the child frame.
   FrameReplicationState replication_state =
       ReconstructReplicationStateForTesting(child_frame);
-  child_frame->Unload(kProxyRoutingId, true, replication_state);
+  child_frame->Unload(kProxyRoutingId, true, replication_state,
+                      base::UnguessableToken::Create());
   EXPECT_TRUE(web_frame->FirstChild()->IsWebRemoteFrame());
 
   // Do the first step of a remote-to-local transition for the child proxy,
@@ -1302,7 +1309,8 @@ TEST_F(RenderViewImplTest, DetachingProxyAlsoDestroysProvisionalFrame) {
       routing_id, std::move(stub_interface_provider),
       std::move(stub_browser_interface_broker), kProxyRoutingId,
       MSG_ROUTING_NONE, frame()->GetRoutingID(), MSG_ROUTING_NONE,
-      base::UnguessableToken::Create(), replication_state, nullptr,
+      base::UnguessableToken::Create(), base::UnguessableToken::Create(),
+      replication_state, nullptr,
       /*widget_params=*/nullptr, blink::mojom::FrameOwnerProperties::New(),
       /*has_committed_real_load=*/true);
   {
@@ -1339,7 +1347,8 @@ TEST_F(RenderViewImplEnableZoomForDSFTest,
   TestRenderFrame* main_frame =
       static_cast<TestRenderFrame*>(view()->GetMainRenderFrame());
   main_frame->Unload(kProxyRoutingId, true,
-                     ReconstructReplicationStateForTesting(main_frame));
+                     ReconstructReplicationStateForTesting(main_frame),
+                     base::UnguessableToken::Create());
   EXPECT_TRUE(view()->GetWebView()->MainFrame()->IsWebRemoteFrame());
 }
 
@@ -2654,7 +2663,8 @@ TEST_F(RenderViewImplTest, DispatchBeforeUnloadCanDetachFrame) {
 
         // Unloads the main frame.
         frame()->OnMessageReceived(UnfreezableFrameMsg_Unload(
-            frame()->GetRoutingID(), 1, false, FrameReplicationState()));
+            frame()->GetRoutingID(), 1, false, FrameReplicationState(),
+            base::UnguessableToken::Create()));
 
         was_callback_run = true;
         run_loop.Quit();

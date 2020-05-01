@@ -220,8 +220,7 @@ class PixelTestPages(object):
             matching_algorithm=algo.SobelMatchingAlgorithm(
                 max_different_pixels=0,
                 pixel_delta_threshold=0,
-                edge_threshold=100,
-            )),
+                edge_threshold=100)),
         PixelTestPage(
             'pixel_webgl_aa_alpha.html',
             base_name + '_WebGLGreenTriangle_AA_Alpha',
@@ -910,7 +909,11 @@ class PixelTestPages(object):
             'pixel_precision_rounded_corner.html',
             base_name + '_PrecisionRoundedCorner',
             test_rect=[0, 0, 400, 400],
-            browser_args=browser_args)
+            browser_args=browser_args,
+            matching_algorithm=algo.SobelMatchingAlgorithm(
+                max_different_pixels=10,
+                pixel_delta_threshold=30,
+                edge_threshold=100)),
     ]
 
   # Pages that should be run with off-thread paint worklet flags.
@@ -1253,13 +1256,21 @@ class PixelTestPages(object):
         PixelTestPage(
             'filter_effects.html',
             base_name + '_CSSFilterEffects',
-            test_rect=[0, 0, 300, 300]),
+            test_rect=[0, 0, 300, 300],
+            matching_algorithm=algo.SobelMatchingAlgorithm(
+                max_different_pixels=10,
+                pixel_delta_threshold=5,
+                edge_threshold=245)),
         PixelTestPage(
             'filter_effects.html',
             base_name + '_CSSFilterEffects_NoOverlays',
             test_rect=[0, 0, 300, 300],
             tolerance=10,
-            browser_args=no_overlays_args),
+            browser_args=no_overlays_args,
+            matching_algorithm=algo.SobelMatchingAlgorithm(
+                max_different_pixels=240,
+                pixel_delta_threshold=5,
+                edge_threshold=250)),
 
         # Test WebGL's premultipliedAlpha:false without the CA compositor.
         PixelTestPage(

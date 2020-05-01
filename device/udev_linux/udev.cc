@@ -167,6 +167,20 @@ std::string UdevDeviceGetSysattrValue(udev_device* udev_device,
   return StringOrEmptyIfNull(udev_device_get_sysattr_value(udev_device, key));
 }
 
+std::string UdevDeviceRecursiveGetSysattrValue(udev_device* udev_device,
+                                               const char* key) {
+  while (udev_device) {
+    const char* result = udev_device_get_sysattr_value(udev_device, key);
+    if (result) {
+      return result;
+    }
+
+    udev_device = udev_device_get_parent(udev_device);
+  }
+
+  return "";
+}
+
 std::string UdevDecodeString(const std::string& encoded) {
   std::string decoded;
   const size_t size = encoded.size();

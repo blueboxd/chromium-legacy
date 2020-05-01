@@ -14,18 +14,24 @@
 #include "base/path_service.h"
 #include "base/stl_util.h"
 #include "base/strings/string_piece.h"
+#include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "components/autofill/content/browser/content_autofill_driver_factory.h"
 #include "components/captive_portal/core/buildflags.h"
 #include "components/embedder_support/switches.h"
+#include "components/network_time/network_time_tracker.h"
 #include "components/page_load_metrics/browser/metrics_navigation_throttle.h"
 #include "components/page_load_metrics/browser/metrics_web_contents_observer.h"
 #include "components/permissions/quota_permission_context_impl.h"
+#include "components/prefs/json_pref_store.h"
+#include "components/prefs/pref_registry_simple.h"
+#include "components/prefs/pref_service_factory.h"
 #include "components/security_interstitials/content/ssl_cert_reporter.h"
 #include "components/security_interstitials/content/ssl_error_handler.h"
 #include "components/security_interstitials/content/ssl_error_navigation_throttle.h"
 #include "components/strings/grit/components_locale_settings.h"
 #include "components/variations/net/variations_http_headers.h"
+#include "components/variations/service/variations_service.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/devtools_manager_delegate.h"
 #include "content/public/browser/generated_code_cache_settings.h"
@@ -53,6 +59,7 @@
 #include "url/url_constants.h"
 #include "weblayer/browser/browser_main_parts_impl.h"
 #include "weblayer/browser/browser_process.h"
+#include "weblayer/browser/download_manager_delegate_impl.h"
 #include "weblayer/browser/feature_list_creator.h"
 #include "weblayer/browser/i18n_util.h"
 #include "weblayer/browser/navigation_controller_impl.h"
@@ -66,6 +73,7 @@
 #include "weblayer/browser/weblayer_content_browser_overlay_manifest.h"
 #include "weblayer/browser/weblayer_security_blocking_page_factory.h"
 #include "weblayer/common/features.h"
+#include "weblayer/common/weblayer_paths.h"
 #include "weblayer/public/common/switches.h"
 #include "weblayer/public/fullscreen_delegate.h"
 #include "weblayer/public/main.h"
@@ -80,6 +88,7 @@
 #include "components/cdm/browser/cdm_message_filter_android.h"
 #include "components/cdm/browser/media_drm_storage_impl.h"  // nogncheck
 #include "components/crash/content/browser/crash_handler_host_linux.h"
+#include "components/embedder_support/android/metrics/android_metrics_service_client.h"
 #include "components/navigation_interception/intercept_navigation_delegate.h"
 #include "components/spellcheck/browser/spell_check_host_impl.h"  // nogncheck
 #include "content/public/browser/browser_task_traits.h"
@@ -189,16 +198,21 @@ void CreateMediaDrmStorage(
 }
 #endif  // defined(OS_ANDROID)
 
+void RegisterPrefs(PrefRegistrySimple* pref_registry) {
+  network_time::NetworkTimeTracker::RegisterPrefs(pref_registry);
+  pref_registry->RegisterIntegerPref(kDownloadNextIDPref, 0);
+#if defined(OS_ANDROID)
+  metrics::AndroidMetricsServiceClient::RegisterPrefs(pref_registry);
+#endif
+  variations::VariationsService::RegisterPrefs(pref_registry);
+}
+
 }  // namespace
 
 ContentBrowserClientImpl::ContentBrowserClientImpl(MainParams* params)
-    : params_(params),
-      feature_list_creator_(std::make_unique<FeatureListCreator>()) {
+    : params_(params) {
   if (!SystemNetworkContextManager::HasInstance())
     SystemNetworkContextManager::CreateInstance(GetUserAgent());
-
-  feature_list_creator_->SetSystemNetworkContextManager(
-      SystemNetworkContextManager::GetInstance());
 }
 
 ContentBrowserClientImpl::~ContentBrowserClientImpl() = default;
@@ -206,8 +220,12 @@ ContentBrowserClientImpl::~ContentBrowserClientImpl() = default;
 std::unique_ptr<content::BrowserMainParts>
 ContentBrowserClientImpl::CreateBrowserMainParts(
     const content::MainFunctionParams& parameters) {
+  // This should be called after CreateFeatureListAndFieldTrials(), which
+  // creates |local_state_|.
+  DCHECK(local_state_);
   std::unique_ptr<BrowserMainPartsImpl> browser_main_parts =
-      std::make_unique<BrowserMainPartsImpl>(params_, parameters);
+      std::make_unique<BrowserMainPartsImpl>(params_, parameters,
+                                             std::move(local_state_));
 
   return browser_main_parts;
 }
@@ -577,6 +595,11 @@ ContentBrowserClientImpl::CreateQuotaPermissionContext() {
 }
 
 void ContentBrowserClientImpl::CreateFeatureListAndFieldTrials() {
+  local_state_ = CreateLocalState();
+  feature_list_creator_ =
+      std::make_unique<FeatureListCreator>(local_state_.get());
+  feature_list_creator_->SetSystemNetworkContextManager(
+      SystemNetworkContextManager::GetInstance());
   feature_list_creator_->CreateFeatureListAndFieldTrials();
 }
 
@@ -639,6 +662,26 @@ void ContentBrowserClientImpl::AppendExtraCommandLineSwitches(
     };
     command_line->CopySwitchesFrom(browser_command_line, kSwitchNames,
                                    base::size(kSwitchNames));
+  }
+}
+
+// static
+std::unique_ptr<PrefService> ContentBrowserClientImpl::CreateLocalState() {
+  auto pref_registry = base::MakeRefCounted<PrefRegistrySimple>();
+
+  RegisterPrefs(pref_registry.get());
+  base::FilePath path;
+  CHECK(base::PathService::Get(DIR_USER_DATA, &path));
+  path = path.AppendASCII("Local State");
+  PrefServiceFactory pref_service_factory;
+  pref_service_factory.set_user_prefs(
+      base::MakeRefCounted<JsonPrefStore>(path));
+
+  {
+    // Creating the prefs service may require reading the preferences from
+    // disk.
+    base::ScopedAllowBlocking allow_io;
+    return pref_service_factory.Create(pref_registry);
   }
 }
 

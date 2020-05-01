@@ -185,6 +185,7 @@ FrameTreeNode* FrameTree::AddFrame(
     const std::string& frame_name,
     const std::string& frame_unique_name,
     bool is_created_by_script,
+    const base::UnguessableToken& frame_token,
     const base::UnguessableToken& devtools_frame_token,
     const blink::FramePolicy& frame_policy,
     const blink::mojom::FrameOwnerProperties& frame_owner_properties,
@@ -219,8 +220,8 @@ FrameTreeNode* FrameTree::AddFrame(
     new_node->set_was_discarded();
 
   // Add the new node to the FrameTree, creating the RenderFrameHost.
-  FrameTreeNode* added_node =
-      parent->AddChild(std::move(new_node), process_id, new_routing_id);
+  FrameTreeNode* added_node = parent->AddChild(std::move(new_node), process_id,
+                                               new_routing_id, frame_token);
 
   DCHECK(interface_provider_receiver.is_valid());
   added_node->current_frame_host()->BindInterfaceProviderReceiver(

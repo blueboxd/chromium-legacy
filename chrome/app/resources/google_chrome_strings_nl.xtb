@@ -96,7 +96,6 @@ Sommige functies zijn wellicht niet beschikbaar en wijzigingen in voorkeuren wor
 <translation id="3582972582564653026">Chrome op al je apparaten synchroniseren en personaliseren</translation>
 <translation id="3596080736082218006">{COUNT,plural, =0{Je beheerder vereist dat je Chrome opnieuw start om een update uit te voeren.}=1{Je beheerder vereist dat je Chrome opnieuw start om een update uit te voeren. Je incognitovenster kan niet opnieuw worden geopend.}other{Je beheerder vereist dat je Chrome opnieuw start om een update uit te voeren. Je # incognitovensters kunnen niet opnieuw worden geopend.}}</translation>
 <translation id="3622797965165704966">Het is nu gemakkelijker om Chrome met je Google-account en op gedeelde computers te gebruiken.</translation>
-<translation id="3637702109597584617"><ph name="TERMS_OF_SERVICE_LINK" />Servicevoorwaarden<ph name="END_TERMS_OF_SERVICE_LINK" /> voor Google Chrome OS</translation>
 <translation id="3718181793972440140">Hiermee wordt 1 item verwijderd van dit apparaat. Als je je gegevens later wilt terughalen, log je in bij Chrome als <ph name="USER_EMAIL" />.</translation>
 <translation id="3735758079232443276">De extensie '<ph name="EXTENSION_NAME" />' heeft gewijzigd welke pagina wordt weergegeven wanneer je Chrome start.</translation>
 <translation id="3780814664026482060">Chrome - <ph name="PAGE_TITLE" /></translation>
@@ -113,6 +112,7 @@ Sommige functies zijn wellicht niet beschikbaar en wijzigingen in voorkeuren wor
 <translation id="4205939740494406371">Chrome kan je wachtwoorden niet checken. Probeer het over 24 uur opnieuw of <ph name="BEGIN_LINK" />check de wachtwoorden in je Google-account<ph name="END_LINK" />.</translation>
 <translation id="424864128008805179">Uitloggen bij Chrome?</translation>
 <translation id="4251615635259297716">Wil je je Chrome-gegevens aan dit account koppelen?</translation>
+<translation id="4281844954008187215">Servicevoorwaarden</translation>
 <translation id="4293420128516039005">Log in om Chrome op al je apparaten te synchroniseren en te personaliseren</translation>
 <translation id="4328355335528187361">Google Chrome Dev (mDNS-In)</translation>
 <translation id="4331809312908958774">Besturingssysteem Chrome</translation>
@@ -147,7 +147,6 @@ Sommige functies zijn wellicht niet beschikbaar en wijzigingen in voorkeuren wor
 
 Sommige functies zijn wellicht niet beschikbaar. Geef een andere profieldirectory op of gebruik een nieuwere versie van Chrome.</translation>
 <translation id="5193136243808726294">Google Chrome OS kan deze pagina niet openen.</translation>
-<translation id="5204098752394657250"><ph name="TERMS_OF_SERVICE_LINK" />Servicevoorwaarden<ph name="END_TERMS_OF_SERVICE_LINK" /> van Google Chrome</translation>
 <translation id="5251420635869119124">Gasten kunnen Chrome gebruiken zonder iets achter te laten.</translation>
 <translation id="532046782124376502">Waarschuwing: Google Chrome kan niet voorkomen dat extensies je browsegeschiedenis registreren. Als je deze extensie in de incognitomodus wilt uitschakelen, verwijder je het vinkje bij deze optie.</translation>
 <translation id="5386244825306882791">Hiermee wordt ook gecontroleerd welke pagina wordt weergegeven wanneer je Chrome start of vanuit de omnibox zoekt.</translation>

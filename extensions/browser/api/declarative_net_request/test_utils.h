@@ -119,21 +119,6 @@ class RulesetManagerObserver : public RulesetManager::TestObserver {
   SEQUENCE_CHECKER(sequence_checker_);
 };
 
-// Test helper to increment the indexed ruleset format version while in scope.
-// Resets it to the original value when it goes out of scope.
-class ScopedIncrementIndexedRulesetFormatVersion {
- public:
-  ScopedIncrementIndexedRulesetFormatVersion();
-  ~ScopedIncrementIndexedRulesetFormatVersion();
-  ScopedIncrementIndexedRulesetFormatVersion(
-      const ScopedIncrementIndexedRulesetFormatVersion&) = delete;
-  ScopedIncrementIndexedRulesetFormatVersion& operator=(
-      const ScopedIncrementIndexedRulesetFormatVersion&) = delete;
-
- private:
-  const int original_version_;
-};
-
 }  // namespace declarative_net_request
 }  // namespace extensions
 

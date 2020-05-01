@@ -107,7 +107,17 @@ fieldset {
 }
 
 #settings-dialog::backdrop {
+  display: none;
+}
+
+#dialog-backdrop {
+  bottom: 0;
+  display: none;
+  left: 0;
   opacity: 0;
+  position: fixed;
+  right: 0;
+  top: 0;
 }
 
 #settings-header {

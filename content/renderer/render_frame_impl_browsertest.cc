@@ -113,7 +113,8 @@ class RenderFrameImplTest : public RenderViewTest {
 
     RenderFrameImpl::FromWebFrame(
         view_->GetMainRenderFrame()->GetWebFrame()->FirstChild())
-        ->OnUnload(kFrameProxyRouteId, false, frame_replication_state);
+        ->OnUnload(kFrameProxyRouteId, false, frame_replication_state,
+                   base::UnguessableToken::Create());
 
     mojo::PendingRemote<service_manager::mojom::InterfaceProvider>
         stub_interface_provider;
@@ -128,8 +129,8 @@ class RenderFrameImplTest : public RenderViewTest {
         kSubframeRouteId, std::move(stub_interface_provider),
         std::move(stub_browser_interface_broker), MSG_ROUTING_NONE,
         MSG_ROUTING_NONE, kFrameProxyRouteId, MSG_ROUTING_NONE,
-        base::UnguessableToken::Create(), frame_replication_state,
-        &compositor_deps_, std::move(widget_params),
+        base::UnguessableToken::Create(), base::UnguessableToken::Create(),
+        frame_replication_state, &compositor_deps_, std::move(widget_params),
         blink::mojom::FrameOwnerProperties::New(),
         /*has_committed_real_load=*/true);
 
@@ -290,7 +291,8 @@ TEST_F(RenderFrameImplTest, LocalChildFrameWasShown) {
 
   parent_web_frame->CreateLocalChild(
       blink::mojom::TreeScopeType::kDocument, grandchild,
-      grandchild->blink_interface_registry_.get());
+      grandchild->blink_interface_registry_.get(),
+      base::UnguessableToken::Create());
   grandchild->in_frame_tree_ = true;
   grandchild->Initialize();
 

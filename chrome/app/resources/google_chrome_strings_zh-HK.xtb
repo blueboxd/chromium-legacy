@@ -96,7 +96,6 @@
 <translation id="3582972582564653026">在不同裝置上同步和設定個人化的 Chrome</translation>
 <translation id="3596080736082218006">{COUNT,plural, =0{管理員要求您重新啟動 Chrome，以套用更新}=1{管理員要求您重新啟動 Chrome，以套用更新。您的無痕式視窗不會重新開啟。}other{管理員要求您重新啟動 Chrome，以套用更新。您的 # 個無痕式視窗不會重新開啟。}}</translation>
 <translation id="3622797965165704966">無論是登入 Google 帳戶使用 Chrome，還是以 Google 帳戶使用共用電腦，現在都更輕而易舉。</translation>
-<translation id="3637702109597584617">Google Chrome 作業系統<ph name="TERMS_OF_SERVICE_LINK" />服務條款<ph name="END_TERMS_OF_SERVICE_LINK" /></translation>
 <translation id="3718181793972440140">這會刪除此裝置上的 1 個項目。如果日後想擷取資料，請以 <ph name="USER_EMAIL" /> 的身分登入 Chrome。</translation>
 <translation id="3735758079232443276">擴充功能「<ph name="EXTENSION_NAME" />」已變更 Chrome 啟動時所顯示的網頁。</translation>
 <translation id="3780814664026482060">Chrome - <ph name="PAGE_TITLE" /></translation>
@@ -113,6 +112,7 @@
 <translation id="4205939740494406371">Chrome 無法檢查密碼，請於 24 小時後再試一次，或<ph name="BEGIN_LINK" />檢查 Google 帳戶中的密碼<ph name="END_LINK" />。</translation>
 <translation id="424864128008805179">要登出 Chrome 嗎？</translation>
 <translation id="4251615635259297716">要將您的 Chrome 數據連結至這個帳戶嗎？</translation>
+<translation id="4281844954008187215">服務條款</translation>
 <translation id="4293420128516039005">登入即可在不同裝置上同步和設定個人化的 Chrome</translation>
 <translation id="4328355335528187361">Google Chrome 開發人員版 (mDNS-In)</translation>
 <translation id="4331809312908958774">Chrome 作業系統</translation>
@@ -147,7 +147,6 @@
 
 這表示您可能無法使用部分功能。請指定另一個設定檔目錄，或使用較新版本的 Chrome。</translation>
 <translation id="5193136243808726294">Google Chrome 作業系統無法開啟此網頁。</translation>
-<translation id="5204098752394657250">Google Chrome <ph name="TERMS_OF_SERVICE_LINK" />服務條款<ph name="END_TERMS_OF_SERVICE_LINK" /></translation>
 <translation id="5251420635869119124">以訪客身分使用 Chrome 不會留下任何記錄。</translation>
 <translation id="532046782124376502">警告：Google Chrome 無法阻止擴充程式記錄您的瀏覽活動。如要在無痕模式中停用這個擴充程式，請取消選取這個選項。</translation>
 <translation id="5386244825306882791">這個擴充功能也會控管 Chrome 啟動時或您使用網址列搜尋時所顯示的網頁。</translation>

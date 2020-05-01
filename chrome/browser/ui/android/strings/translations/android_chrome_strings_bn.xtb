@@ -38,7 +38,6 @@
 <translation id="1258753120186372309">Google ডুডল: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1260236875608242557">সার্চ করুন, ঘুরে দেখুন</translation>
 <translation id="1266864766717917324"><ph name="CONTENT_TYPE" /> শেয়ার করা যায়নি</translation>
-<translation id="1272079795634619415">বন্ধ</translation>
 <translation id="1283039547216852943">প্রসারিত করতে আলতো চাপুন</translation>
 <translation id="1285320974508926690">কখনই এই সাইটটিকে অনুবাদ করবেন না</translation>
 <translation id="1291207594882862231">ইতিহাস, কুকিজ, সাইট ডেটা, ক্যাশে সাফ করে...</translation>
@@ -51,7 +50,6 @@
 <translation id="1331212799747679585">Chrome আপডেট হচ্ছে না। আরও বিকল্প</translation>
 <translation id="1332501820983677155">Google Chrome এর বাছাই করা শর্টকাটগুলি</translation>
 <translation id="1360432990279830238">সাইন-আউট করে সিঙ্ক বন্ধ করবেন?</translation>
-<translation id="1364532808393826295"><ph name="APP_NAME" /> - <ph name="NOTIFICATION_MESSAGE" /></translation>
 <translation id="1373696734384179344">নির্বাচিত কন্টেন্ট ডাউনলোড করার জন্য যথেষ্ট মেমরি নেই৷</translation>
 <translation id="1376578503827013741">গণনা করছে...</translation>
 <translation id="1383876407941801731">সার্চ করুন</translation>
@@ -122,7 +120,6 @@
 <translation id="2013642289801508067">{FILE_COUNT,plural, =1{#টি ফাইল}one{#টি ফাইল}other{#টি ফাইল}}</translation>
 <translation id="2017836877785168846">অ্যাড্রেস বার থেকে ইতিহাস ও অটোকমপ্লিট মুছে ফেলে।</translation>
 <translation id="2021896219286479412">পূর্ণ স্ক্রিন সাইট নিয়ন্ত্রণ</translation>
-<translation id="2030769033451695672"><ph name="URL_OF_THE_CURRENT_TAB" />-এ ফিরে যেতে ট্যাপ করুন</translation>
 <translation id="2038563949887743358">ডেস্কটপ সাইটের অনুরোধ চালু করুন</translation>
 <translation id="204321170514947529"><ph name="APP_NAME" /> অ্যাপের ডেটা Chrome ব্রাউজারেও আছে</translation>
 <translation id="2049574241039454490"><ph name="FILE_SIZE_OF_TOTAL" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
@@ -594,7 +591,6 @@
 <translation id="5876056640971328065">ভিডিও পজ করুন</translation>
 <translation id="5884076754568147479">আপনাকে টাস্কগুলি সম্পূর্ণ করতে সাহায্য করার জন্য, যে যে সাইটে Assistant ব্যবহার করেন সেগুলির কন্টেন্ট ও ইউআরএল, তার সাথে Assistant-এর মাধ্যমে আপনার জমা দেওয়া যেকোনও তথ্য Google-কে পাঠানো হবে</translation>
 <translation id="5919204609460789179">সিঙ্ক শুরু করতে <ph name="PRODUCT_NAME" /> আপডেট করুন</translation>
-<translation id="5922853908706496913">আপনার স্ক্রিন শেয়ার করা হচ্ছে</translation>
 <translation id="5937580074298050696"><ph name="AMOUNT" /> সেভ করা হয়েছে</translation>
 <translation id="5939518447894949180">রিসেট করুন</translation>
 <translation id="5942872142862698679">সার্চের জন্য Google কে ব্যবহার করছে</translation>
@@ -781,7 +777,6 @@
 <translation id="7514365320538308">ডাউনলোড করুন</translation>
 <translation id="751961395872307827">সাইটের সাথে সংযোগ করা যাচ্ছে না</translation>
 <translation id="7542481630195938534">প্রস্তাবনা পাওয়া যাচ্ছে না</translation>
-<translation id="7554752735887601236">একটি সাইট আপনার মাইক্রোফোন ব্যবহার করছে</translation>
 <translation id="7559975015014302720">লাইট মোড বন্ধ আছে</translation>
 <translation id="7562080006725997899">ব্রাউজিং ইতিহাস সাফ করা হচ্ছে</translation>
 <translation id="756809126120519699">Chrome ডেটা সাফ হয়েছে</translation>
@@ -815,7 +810,6 @@
 <translation id="7774809984919390718">{PAYMENT_METHOD,plural, =1{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 এবং <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> আরও অনেক}one{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 এবং <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> আরও অনেক}other{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 এবং <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> আরও অনেক}}</translation>
 <translation id="7791543448312431591">জুড়ুন</translation>
 <translation id="780301667611848630">না থাক</translation>
-<translation id="7804248752222191302">একটি সাইট আপনার ক্যামেরা ব্যবহার করছে</translation>
 <translation id="7810647596859435254">এর মাধ্যমে খুলুন...</translation>
 <translation id="7821588508402923572">আপনি কত ডেটা সেভ করেছেন তা এখানে দেখা যাবে</translation>
 <translation id="783819812427904514">ভিডিওটি আনমিউট করুন</translation>
@@ -887,9 +881,7 @@
 <translation id="8349013245300336738">ব্যবহার করা ডেটার পরিমাণ অনুযায়ী সাজান</translation>
 <translation id="8364299278605033898">জনপ্রিয় ওয়েবসাইট দেখুন</translation>
 <translation id="8368027906805972958">অপরিচিত বা কাজ করে না এমন ডিভাইস (<ph name="DEVICE_ID" />)</translation>
-<translation id="83792324527827022">একটি সাইট আপনার ক্যামেরা ও মাইক্রোফোন ব্যবহার করছে</translation>
 <translation id="8393700583063109961">বার্তা পাঠান</translation>
-<translation id="8394832520002899662">সাইটে ফিরে যেতে ট্যাপ করুন</translation>
 <translation id="8413126021676339697">সম্পূর্ণ ইতিহাস দেখান</translation>
 <translation id="8427875596167638501">প্রিভিউ ট্যাব অর্ধেক খোলা আছে</translation>
 <translation id="8428213095426709021">সেটিংস</translation>
@@ -986,7 +978,6 @@
 <translation id="970715775301869095"><ph name="MINUTES" /> মিনিট বাকি আছে</translation>
 <translation id="974555521953189084">সিঙ্ক শুরু করার জন্য আপনার পাসফ্রেজ লিখুন</translation>
 <translation id="981121421437150478">অফলাইন</translation>
-<translation id="982182592107339124">এটা সব সাইটের জন্য ডেটা সাফ করবে, এতে অন্তর্ভুক্ত আছে:</translation>
 <translation id="983192555821071799">সমস্ত ট্যাবগুলি বন্ধ করুন</translation>
 <translation id="987264212798334818">সাধারণ</translation>
 </translationbundle>

@@ -38,7 +38,6 @@
 <translation id="1258753120186372309">Драскулка на Google: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1260236875608242557">Търсене и разглеждане</translation>
 <translation id="1266864766717917324">Споделянето на <ph name="CONTENT_TYPE" /> не бе възможно</translation>
-<translation id="1272079795634619415">Стоп</translation>
 <translation id="1283039547216852943">Докоснете за разгъване</translation>
 <translation id="1285320974508926690">Този сайт да не се превежда никога</translation>
 <translation id="1291207594882862231">Изчистване на историята, „бисквитките“, данните за сайтове и кеша…</translation>
@@ -50,8 +49,8 @@
 <translation id="1327257854815634930">Историята на навигацията е отворена</translation>
 <translation id="1331212799747679585">Chrome не може да се актуализира. Още опции</translation>
 <translation id="1332501820983677155">Комбинации за функции на Google Chrome</translation>
+<translation id="1347468774581902829">Управление на активността</translation>
 <translation id="1360432990279830238">Изход и изключване на синхронизирането?</translation>
-<translation id="1364532808393826295"><ph name="APP_NAME" /> – <ph name="NOTIFICATION_MESSAGE" /></translation>
 <translation id="1373696734384179344">Недостатъчно памет за изтегляне на избраното съдържание.</translation>
 <translation id="1376578503827013741">Изчислява се…</translation>
 <translation id="1383876407941801731">Търсене</translation>
@@ -122,7 +121,6 @@
 <translation id="2013642289801508067">{FILE_COUNT,plural, =1{# файл}other{# файла}}</translation>
 <translation id="2017836877785168846">Изчиства историята и автоматичните довършвания в адресната лента.</translation>
 <translation id="2021896219286479412">Контроли за сайтове на цял екран</translation>
-<translation id="2030769033451695672">Докоснете, за да се върнете към <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
 <translation id="2038563949887743358">Включване на функцията за заявяване на настолни сайтове</translation>
 <translation id="204321170514947529"><ph name="APP_NAME" /> също има данни в Chrome</translation>
 <translation id="2049574241039454490"><ph name="FILE_SIZE_OF_TOTAL" /><ph name="SEPARATOR" /><ph name="DESCRIPTION" /></translation>
@@ -434,6 +432,7 @@
 <translation id="4663756553811254707">Изтрихте <ph name="NUMBER_OF_BOOKMARKS" /> отметки</translation>
 <translation id="4665282149850138822">Добавихте <ph name="NAME" /> към началния екран</translation>
 <translation id="4684427112815847243">Синхронизиране на всичко</translation>
+<translation id="4688610874307684559">Изпълнение в Chrome (първоначално)</translation>
 <translation id="4695891336199304370">{SHIPPING_OPTIONS,plural, =1{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 и още <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}other{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 и още <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}}</translation>
 <translation id="4696983787092045100">Изпращане на текст до устройствата ви</translation>
 <translation id="4698034686595694889">Офлайн преглед в <ph name="APP_NAME" /></translation>
@@ -592,7 +591,6 @@
 <translation id="5876056640971328065">Поставяне на видеоклипа на пауза</translation>
 <translation id="5884076754568147479">За да ви помага да изпълнявате задачи, Google ще получава URL адресите и съдържанието на сайтовете, в които използвате Асистент, както и данните, които изпращате чрез услугата</translation>
 <translation id="5919204609460789179">Актуализирайте <ph name="PRODUCT_NAME" />, за да стартира синхронизирането</translation>
-<translation id="5922853908706496913">Екранът ви се споделя</translation>
 <translation id="5937580074298050696">Спестени: <ph name="AMOUNT" /></translation>
 <translation id="5939518447894949180">Нулиране</translation>
 <translation id="5942872142862698679">За търсене ще се използва Google</translation>
@@ -773,16 +771,17 @@
 <translation id="7479104141328977413">Управление на разделите</translation>
 <translation id="7481312909269577407">Напред</translation>
 <translation id="7482656565088326534">Раздел за визуализация</translation>
+<translation id="7484997419527351112">Discover – изключено</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (Актуализирано: <ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7494974237137038751">спестени данни</translation>
 <translation id="7498271377022651285">Моля, изчакайте...</translation>
 <translation id="7514365320538308">Изтегляне</translation>
 <translation id="751961395872307827">Не може да се установи връзка със сайта</translation>
 <translation id="7542481630195938534">Предложенията не могат да бъдат показани</translation>
-<translation id="7554752735887601236">Сайт използва микрофона ви</translation>
 <translation id="7559975015014302720">Олекотеният режим е изключен</translation>
 <translation id="7562080006725997899">Данните за сърфирането се изчистват</translation>
 <translation id="756809126120519699">Данните в Chrome са изчистени</translation>
+<translation id="7577900504646297215">Управление на интересите</translation>
 <translation id="757855969265046257">{FILES,plural, =1{<ph name="FILES_DOWNLOADED_ONE" /> файл бе изтеглен}other{<ph name="FILES_DOWNLOADED_MANY" /> файла бяха изтеглени}}</translation>
 <translation id="7588219262685291874">Включване на тъмната тема, когато режимът за запазване на батерията на устройството ви е включен</translation>
 <translation id="7593557518625677601">За старт на синхронизирането активирайте системното синхронизиране на Android</translation>
@@ -813,7 +812,6 @@
 <translation id="7774809984919390718">{PAYMENT_METHOD,plural, =1{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 и още <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}other{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 и още <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}}</translation>
 <translation id="7791543448312431591">Добавяне</translation>
 <translation id="780301667611848630">Не, благодаря</translation>
-<translation id="7804248752222191302">Сайт използва камерата ви</translation>
 <translation id="7810647596859435254">Отваряне със…</translation>
 <translation id="7821588508402923572">Тук ще се показва количеството икономисани данни</translation>
 <translation id="783819812427904514">С образ</translation>
@@ -885,9 +883,7 @@
 <translation id="8349013245300336738">Сортиране по количеството използвани данни</translation>
 <translation id="8364299278605033898">Вижте популярните уебсайтове</translation>
 <translation id="8368027906805972958">Неизвестно или неподдържано устройство (<ph name="DEVICE_ID" />)</translation>
-<translation id="83792324527827022">Сайт използва камерата и микрофона ви</translation>
 <translation id="8393700583063109961">Изпратете съобщение</translation>
-<translation id="8394832520002899662">Докоснете, за да се върнете към сайта</translation>
 <translation id="8413126021676339697">Цялата история</translation>
 <translation id="8427875596167638501">Разделът за визуализация е наполовина отворен</translation>
 <translation id="8428213095426709021">Настройки</translation>
@@ -984,7 +980,6 @@
 <translation id="970715775301869095">Остават <ph name="MINUTES" /> мин</translation>
 <translation id="974555521953189084">Въведете своя пропуск, за да започне синхронизирането</translation>
 <translation id="981121421437150478">Офлайн</translation>
-<translation id="982182592107339124">Това действие ще изчисти данните за всички сайтове, включително:</translation>
 <translation id="983192555821071799">Затваряне на всички раздели</translation>
 <translation id="987264212798334818">Общи</translation>
 </translationbundle>

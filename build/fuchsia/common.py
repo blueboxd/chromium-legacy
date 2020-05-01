@@ -14,8 +14,6 @@ DIR_SOURCE_ROOT = os.path.abspath(
 IMAGES_ROOT = os.path.join(
     DIR_SOURCE_ROOT, 'third_party', 'fuchsia-sdk', 'images')
 SDK_ROOT = os.path.join(DIR_SOURCE_ROOT, 'third_party', 'fuchsia-sdk', 'sdk')
-ARM64_SDK_TOOLS = os.path.join(SDK_ROOT, 'tools', 'arm64')
-X64_SDK_TOOLS = os.path.join(SDK_ROOT, 'tools', 'x64')
 
 def EnsurePathExists(path):
   """Checks that the file |path| exists on the filesystem and returns the path
@@ -44,16 +42,14 @@ def GetHostArchFromPlatform():
 
 def GetHostToolPathFromPlatform(tool):
   host_arch = platform.machine()
-  if host_arch == 'x86_64':
-    return os.path.join(X64_SDK_TOOLS, tool)
-  elif host_arch == 'aarch64':
-    return os.path.join(ARM64_SDK_TOOLS, tool)
-  raise Exception('Unsupported host architecture: %s' % host_arch)
+  return os.path.join(SDK_ROOT, 'tools', GetHostArchFromPlatform(), tool)
+
 
 def GetEmuRootForPlatform(emulator):
-  return os.path.join(DIR_SOURCE_ROOT, 'third_party',
-                      emulator + '-' + GetHostOsFromPlatform() + '-' +
-                       GetHostArchFromPlatform())
+  return os.path.join(
+      DIR_SOURCE_ROOT, 'third_party', '{0}-{1}-{2}'.format(
+          emulator, GetHostOsFromPlatform(), GetHostArchFromPlatform()))
+
 
 def ConnectPortForwardingTask(target, local_port, remote_port = 0):
   """Establishes a port forwarding SSH task to a localhost TCP endpoint hosted

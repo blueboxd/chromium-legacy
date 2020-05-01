@@ -35,6 +35,7 @@
 <translation id="1938124657309484470">Стойността трябва да е <ph name="MAXIMUM_DATE_OR_TIME" /> или по-рано.</translation>
 <translation id="1946271899482435442">Показване на инструмента за избор на дата</translation>
 <translation id="1993104285338243655">Превключихте към дублиране</translation>
+<translation id="2031987842108996681">Червен канал</translation>
 <translation id="2060505056492490888">„<ph name="DOT" />“ се използва на неправилна позиция в/ъв „<ph name="INVALIDDOMAIN" />“.</translation>
 <translation id="2148716181193084225">Днес</translation>
 <translation id="2158401438286456825">списък със страниците</translation>
@@ -45,6 +46,7 @@
 <translation id="2291999235780842123">квадратче за отметка</translation>
 <translation id="2311842470354187719">разделител на страници</translation>
 <translation id="2335594187091864976">инструмент за избор на дата и час</translation>
+<translation id="2393030564806080191">Шестнадесетична стойност за цвета</translation>
 <translation id="245932805758469625">оставащи секунди до края на видеоклипа</translation>
 <translation id="248395913932153421">Ден</translation>
 <translation id="2507943997699731163">Моля, попълнете това поле.</translation>
@@ -52,6 +54,7 @@
 <translation id="2561842179657104141">показване на още контроли за мултимедия</translation>
 <translation id="2572483411312390101">пускане</translation>
 <translation id="2613802280814924224">Моля, въведете валидна стойност. Най-близката такава е <ph name="VALID_VALUE" />.</translation>
+<translation id="2634240155926812724">Зелен канал</translation>
 <translation id="2653659639078652383">Изпращане</translation>
 <translation id="2657045182931379222">графичен обект</translation>
 <translation id="2674318244760992338">долен колонтитул</translation>
@@ -127,6 +130,7 @@
 <translation id="5034860022980953847">индикатор за напредък</translation>
 <translation id="5090250355906949916">времеви плъзгач за видеоклипа</translation>
 <translation id="5093189678851173835">епиграф</translation>
+<translation id="509897012892853729">Син канал</translation>
 <translation id="5117590920725113268">Показване на следващия месец</translation>
 <translation id="512758898067543763">заглавка на ред</translation>
 <translation id="5143125788380636750">епилог</translation>
@@ -164,6 +168,7 @@
 <translation id="6166809985690652833">послеслов</translation>
 <translation id="6209276755895393898">Изглежда, че това е: <ph name="DESCRIPTION" /></translation>
 <translation id="6213469881011901533">терминологичен речник</translation>
+<translation id="6281588256137006900">Яркост</translation>
 <translation id="6281763101136022427">url адрес</translation>
 <translation id="6310801910862476708">Изход от „Картина в картината“</translation>
 <translation id="6398862346408813489">Показване на панела за избиране на месец</translation>
@@ -184,6 +189,7 @@
 <translation id="6790428901817661496">Пускане</translation>
 <translation id="6820355525329141109">Приставката не можа да се зареди.</translation>
 <translation id="6820615603175220800">препратка към библиографски запис</translation>
+<translation id="6831465880655513317">Цветова контрола с плъзгач в две измерения за избор на наситеност и яркост</translation>
 <translation id="6843725295806269523">заглушаване</translation>
 <translation id="6885760532393684712">директория</translation>
 <translation id="689129560213475294">колофон</translation>
@@ -201,6 +207,7 @@
 <translation id="7263440858009898357">Моля, изберете елемент в списъка.</translation>
 <translation id="727747134524199931">заглавка на колона</translation>
 <translation id="7320576522385648310">буферира се</translation>
+<translation id="7341556277900466204">Цветова контрола</translation>
 <translation id="7353453495576941748">признание за източника</translation>
 <translation id="7364796246159120393">Избор на файл</translation>
 <translation id="739024184232394898">Други...</translation>
@@ -221,6 +228,7 @@
 <translation id="775297008183122718">Въведеното е невалидно</translation>
 <translation id="7789962463072032349">поставяне на пауза</translation>
 <translation id="7802800022689234070">триъгълник за разкриване на съдържание</translation>
+<translation id="7852167693871241274">Плъзгач за цветови тон</translation>
 <translation id="7888071071722539607">Моля, включете „<ph name="ATSIGN" />“ в имейл адреса. В/ъв „<ph name="INVALIDADDRESS" />“ липсва „<ph name="ATSIGN" />“.</translation>
 <translation id="7891486169920085145">разделител</translation>
 <translation id="795667975304826397">Няма избран файл</translation>
@@ -263,6 +271,7 @@
 <translation id="8875657656876809964">Грешка при възпроизвеждането на видеоклипа</translation>
 <translation id="8889402386540077796">Цветови тон</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> KБ</translation>
+<translation id="894736920926684893">Превключвател за формата</translation>
 <translation id="8987927404178983737">Месец</translation>
 <translation id="901493112792887934">текущо време в секунди</translation>
 <translation id="901834265349196618">имейл</translation>

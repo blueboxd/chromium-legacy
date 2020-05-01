@@ -288,15 +288,19 @@ WebFrame* WebFrame::FromFrame(Frame* frame) {
   return WebRemoteFrameImpl::FromFrame(To<RemoteFrame>(*frame));
 }
 
-WebFrame::WebFrame(mojom::blink::TreeScopeType scope)
+WebFrame::WebFrame(mojom::blink::TreeScopeType scope,
+                   const base::UnguessableToken& frame_token)
     : scope_(scope),
+      frame_token_(frame_token),
       parent_(nullptr),
       previous_sibling_(nullptr),
       next_sibling_(nullptr),
       first_child_(nullptr),
       last_child_(nullptr),
       opener_(nullptr),
-      opened_frame_tracker_(new OpenedFrameTracker) {}
+      opened_frame_tracker_(new OpenedFrameTracker) {
+  DCHECK(frame_token_);
+}
 
 WebFrame::~WebFrame() {
   opened_frame_tracker_.reset(nullptr);

@@ -38,7 +38,6 @@
 <translation id="1258753120186372309">Google 涂鸦：<ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1260236875608242557">搜索内容与浏览相关建议</translation>
 <translation id="1266864766717917324">无法分享<ph name="CONTENT_TYPE" /></translation>
-<translation id="1272079795634619415">停止</translation>
 <translation id="1283039547216852943">点按即可展开</translation>
 <translation id="1285320974508926690">一律不翻译此网站</translation>
 <translation id="1291207594882862231">清除历史记录、Cookie、网站数据、缓存内容…</translation>
@@ -51,7 +50,6 @@
 <translation id="1331212799747679585">Chrome 无法更新。更多选项</translation>
 <translation id="1332501820983677155">Google Chrome 功能快捷键</translation>
 <translation id="1360432990279830238">退出帐号并关闭同步功能？</translation>
-<translation id="1364532808393826295"><ph name="APP_NAME" /> - <ph name="NOTIFICATION_MESSAGE" /></translation>
 <translation id="1373696734384179344">内存不足，无法下载所选内容。</translation>
 <translation id="1376578503827013741">正在计算…</translation>
 <translation id="1383876407941801731">搜索</translation>
@@ -122,7 +120,6 @@
 <translation id="2013642289801508067">{FILE_COUNT,plural, =1{# 个文件}other{# 个文件}}</translation>
 <translation id="2017836877785168846">清除历史记录和地址栏中的自动填充项。</translation>
 <translation id="2021896219286479412">全屏网站控件</translation>
-<translation id="2030769033451695672">点按即可返回到 <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
 <translation id="2038563949887743358">开启“请求切换到桌面版网站”</translation>
 <translation id="204321170514947529">Chrome 中也有<ph name="APP_NAME" />的数据</translation>
 <translation id="2049574241039454490"><ph name="FILE_SIZE_OF_TOTAL" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
@@ -592,7 +589,6 @@
 <translation id="5876056640971328065">暂停视频</translation>
 <translation id="5884076754568147479">为了帮助您执行各种操作，Google 将会收到您使用 Google 助理时所在网站的网址和内容，以及您通过 Google 助理提交的信息</translation>
 <translation id="5919204609460789179">需更新 <ph name="PRODUCT_NAME" />，才能开始同步</translation>
-<translation id="5922853908706496913">正在共享您的屏幕</translation>
 <translation id="5937580074298050696">已节省 <ph name="AMOUNT" /></translation>
 <translation id="5939518447894949180">重置</translation>
 <translation id="5942872142862698679">目前使用的搜索引擎是 Google</translation>
@@ -779,7 +775,6 @@
 <translation id="7514365320538308">下载</translation>
 <translation id="751961395872307827">无法连接到该网站</translation>
 <translation id="7542481630195938534">无法获取建议</translation>
-<translation id="7554752735887601236">有一个网站正在使用您的麦克风</translation>
 <translation id="7559975015014302720">精简模式已关闭</translation>
 <translation id="7562080006725997899">正在清除浏览数据</translation>
 <translation id="756809126120519699">已清除 Chrome 数据</translation>
@@ -813,7 +808,6 @@
 <translation id="7774809984919390718">{PAYMENT_METHOD,plural, =1{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026以及另外 <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> 种付款方式}other{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026以及另外 <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> 种付款方式}}</translation>
 <translation id="7791543448312431591">添加</translation>
 <translation id="780301667611848630">不用了，谢谢</translation>
-<translation id="7804248752222191302">有一个网站正在使用您的摄像头</translation>
 <translation id="7810647596859435254">打开方式…</translation>
 <translation id="7821588508402923572">您的数据流量节省情况将显示在这里</translation>
 <translation id="783819812427904514">将视频取消静音</translation>
@@ -885,9 +879,7 @@
 <translation id="8349013245300336738">按已使用的数据流量排序</translation>
 <translation id="8364299278605033898">查看热门网站</translation>
 <translation id="8368027906805972958">未知或不支持的设备 (<ph name="DEVICE_ID" />)</translation>
-<translation id="83792324527827022">有一个网站正在使用您的摄像头和麦克风</translation>
 <translation id="8393700583063109961">发送消息</translation>
-<translation id="8394832520002899662">点按即可返回到网站</translation>
 <translation id="8413126021676339697">显示全部历史记录</translation>
 <translation id="8427875596167638501">预览标签页已在下半屏中打开</translation>
 <translation id="8428213095426709021">设置</translation>
@@ -984,7 +976,6 @@
 <translation id="970715775301869095">还剩 <ph name="MINUTES" /> 分钟</translation>
 <translation id="974555521953189084">输入密码以开始同步</translation>
 <translation id="981121421437150478">离线</translation>
-<translation id="982182592107339124">这会清除所有网站的数据，包括：</translation>
 <translation id="983192555821071799">关闭所有标签页</translation>
 <translation id="987264212798334818">常规</translation>
 </translationbundle>

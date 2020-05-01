@@ -49,6 +49,8 @@ class BrowserImpl : public Browser {
       const std::string& guid);
 
 #if defined(OS_ANDROID)
+  bool CompositorHasSurface();
+
   void AddTab(JNIEnv* env,
               const base::android::JavaParamRef<jobject>& caller,
               long native_tab);

@@ -93,7 +93,6 @@
 <translation id="3582972582564653026">Segerakkan dan peribadikan Chrome pada semua peranti anda</translation>
 <translation id="3596080736082218006">{COUNT,plural, =0{Pentadbir anda menghendaki anda melancarkan semula Chrome untuk menggunakan kemas kini}=1{Pentadbir anda menghendaki anda melancarkan semula Chrome untuk menggunakan kemas kini. Tetingkap Inkognito anda tidak dapat dibuka semula.}other{Pentadbir anda menghendaki anda melancarkan semula Chrome untuk menggunakan kemas kini. # tetingkap Inkognito anda tidak dapat dibuka semula.}}</translation>
 <translation id="3622797965165704966">Kini lebih mudah menggunakan Chrome dengan Akaun Google anda dan pada komputer yang dikongsi.</translation>
-<translation id="3637702109597584617"><ph name="TERMS_OF_SERVICE_LINK" />Syarat Perkhidmatan<ph name="END_TERMS_OF_SERVICE_LINK" /> OS Google Chrome</translation>
 <translation id="3718181793972440140">Tindakan ini akan memadamkan 1 item daripada peranti ini. Untuk mendapatkan kembali data anda kemudian, log masuk ke Chrome sebagai <ph name="USER_EMAIL" />.</translation>
 <translation id="3735758079232443276">Sambungan "<ph name="EXTENSION_NAME" />" telah menukar halaman yang ditunjukkan apabila anda memulakan Chrome.</translation>
 <translation id="3780814664026482060">Chrome - <ph name="PAGE_TITLE" /></translation>
@@ -110,6 +109,7 @@
 <translation id="4205939740494406371">Chrome tidak dapat menyemak kata laluan anda. Cuba lagi selepas 24 jam atau <ph name="BEGIN_LINK" />semak kata laluan dalam Akaun Google anda<ph name="END_LINK" />.</translation>
 <translation id="424864128008805179">Log keluar daripada Chrome?</translation>
 <translation id="4251615635259297716">Paut data Chrome anda ke akaun ini?</translation>
+<translation id="4281844954008187215">Syarat Perkhidmatan</translation>
 <translation id="4293420128516039005">Log masuk untuk menyegerakkan dan memperibadikan Chrome pada semua peranti anda</translation>
 <translation id="4328355335528187361">Google Chrome Dev (mDNS-In)</translation>
 <translation id="4331809312908958774">OS Chrome</translation>
@@ -142,7 +142,6 @@
 <translation id="5132929315877954718">Temui apl, permainan, sambungan dan tema hebat untuk Google Chrome.</translation>
 <translation id="5170938038195470297">Profil anda tidak boleh digunakan kerana ia adalah dari versi Google Chrome yang lebih baharu. Beberapa ciri mungkin tidak tersedia. Sila tetapkan direktori profil lain atau gunakan versi Chrome yang lebih baharu.</translation>
 <translation id="5193136243808726294">OS Google Chrome tidak boleh membuka halaman ini.</translation>
-<translation id="5204098752394657250"><ph name="TERMS_OF_SERVICE_LINK" />Syarat Perkhidmatan<ph name="END_TERMS_OF_SERVICE_LINK" /> Google Chrome </translation>
 <translation id="5251420635869119124">Tetamu boleh menggunakan Chrome tanpa meninggalkan apa-apa.</translation>
 <translation id="532046782124376502">Amaran: Google Chrome tidak dapat menghalang sambungan daripada merakamkan sejarah penyemakan imbas anda. Untuk melumpuhkan sambungan ini dalam mod inkognito, nyahpilih pilihan ini.</translation>
 <translation id="5386244825306882791">Sambungan turut mengawal halaman yang ditunjukkan apabila anda memulakan Chrome atau membuat carian dari Kotak Omni.</translation>

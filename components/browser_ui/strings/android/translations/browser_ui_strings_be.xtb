@@ -8,7 +8,9 @@
 <translation id="1181037720776840403">Выдаліць</translation>
 <translation id="1201402288615127009">Далей</translation>
 <translation id="1242008676835033345">Убудавана на сайце <ph name="WEBSITE_URL" /></translation>
+<translation id="1272079795634619415">Спыніць</translation>
 <translation id="129382876167171263">Тут паказваюцца файлы, захаваныя вэб-сайтамі</translation>
+<translation id="1364532808393826295"><ph name="APP_NAME" />. <ph name="NOTIFICATION_MESSAGE" /></translation>
 <translation id="1369915414381695676">Сайт <ph name="SITE_NAME" /> дададзены</translation>
 <translation id="1383876407941801731">Пошук</translation>
 <translation id="1384959399684842514">Спампоўка прыпынена</translation>
@@ -29,6 +31,7 @@
 <translation id="1984937141057606926">Дазволены, за выключэннем старонніх</translation>
 <translation id="1994173015038366702">URL-адрас сайта</translation>
 <translation id="2025115093177348061">Дапоўненая рэальнасць</translation>
+<translation id="2030769033451695672">Націсніце, каб вярнуцца на ўкладку <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
 <translation id="2041019821020695769">Каб Chrome мог адпраўляць вам апавяшчэнні, таксама ўключыце іх у <ph name="BEGIN_LINK" />Наладах Android<ph name="END_LINK" />.</translation>
 <translation id="2079545284768500474">Адрабіць</translation>
 <translation id="2091887806945687916">Гук</translation>
@@ -104,6 +107,7 @@
 <translation id="5048398596102334565">Дазваляць сайтам доступ да датчыкаў руху (рэкамендуецца)</translation>
 <translation id="5063480226653192405">Выкарыстанне</translation>
 <translation id="5100237604440890931">Згорнута – каб разгарнуць, націсніце тут.</translation>
+<translation id="5123685120097942451">Укладка інкогніта</translation>
 <translation id="5300589172476337783">Паказаць</translation>
 <translation id="5301954838959518834">OK</translation>
 <translation id="5307446750509046227">Ачысціць сховішча</translation>
@@ -111,6 +115,7 @@
 <translation id="5317780077021120954">Захаваць</translation>
 <translation id="5335288049665977812">Дазволіць сайтам запускаць JavaScript (рэкамендавана)</translation>
 <translation id="534295439873310000">Прылады NFC</translation>
+<translation id="5354152178998424783">Будуць выдалены файлы cookie і даныя (<ph name="DATASIZE" />), захаваныя сайтамі.</translation>
 <translation id="5391532827096253100">Ваша падключэнне да гэтага сайта небяспечнае. Звесткі пра сайт</translation>
 <translation id="5494752089476963479">Блакіраваць рэкламу на сайтах, якія паказваюць назойлівую рэкламу або рэкламу, якая ўводзіць у зман</translation>
 <translation id="5505264765875738116">Сайтам забаронена запытваць дазвол на паказ апавяшчэнняў</translation>
@@ -125,6 +130,7 @@
 <translation id="5804241973901381774">Дазволы</translation>
 <translation id="5860033963881614850">Выключана</translation>
 <translation id="5916664084637901428">Уключана</translation>
+<translation id="5922853908706496913">Ваш экран абагульваецца</translation>
 <translation id="5939518447894949180">Скінуць</translation>
 <translation id="6040143037577758943">Закрыць</translation>
 <translation id="6042308850641462728">Яшчэ</translation>
@@ -168,6 +174,7 @@
 <translation id="7423098979219808738">Спачатку запытваць</translation>
 <translation id="7423538860840206698">Чытанне буфера абмену заблакіравана</translation>
 <translation id="7521387064766892559">JavaScript</translation>
+<translation id="7554752735887601236">Сайт выкарыстоўвае мікрафон</translation>
 <translation id="7572498721684305250">Блакіраваць сайтам адпраўку і атрыманне інфармацыі, калі вы націсканнем выбіраеце прылады NFC</translation>
 <translation id="757524316907819857">Блакіраваць прайграванне абароненага змесціва на сайтах</translation>
 <translation id="7589445247086920869">Блакіраваць для бягучай пошукавай сістэмы</translation>
@@ -176,9 +183,11 @@
 <translation id="7781829728241885113">Учора</translation>
 <translation id="7791543448312431591">Дадаць</translation>
 <translation id="780301667611848630">Не, дзякуй</translation>
+<translation id="7804248752222191302">Сайт выкарыстоўвае камеру</translation>
 <translation id="7817023149356982970">Будзе выкананы выхад з гэтага сайта.</translation>
 <translation id="7828557259026017104">Файлы cookie – гэта файлы, якія ствараюцца наведанымі вамі вэб-сайтамі, каб запамінаць вашы налады. Староннія файлы cookie ствараюцца іншымі сайтамі. Гэтым сайтам належыць пэўнае змесціва (напрыклад рэклама або відарысы), размешчанае на вэб-старонцы, якую вы наведваеце.</translation>
 <translation id="7846076177841592234">Скасаваць выбар</translation>
+<translation id="7846621471902887024">Будзе выкананы выхад з усіх сайтаў.</translation>
 <translation id="7882806643839505685">Дазвол гуку на канкрэтным сайце.</translation>
 <translation id="7993619969781047893">Функцыі на некаторых сайтах могуць перастаць працаваць</translation>
 <translation id="7999064672810608036">Вы сапраўды хочаце ачысціць усе лакальныя даныя, у тым ліку файлы cookie, і скінуць усе дазволы для гэтага вэб-сайта?</translation>
@@ -192,7 +201,9 @@
 <translation id="8261506727792406068">Выдаліць</translation>
 <translation id="8300705686683892304">Пад кіраваннем праграмы</translation>
 <translation id="8372893542064058268">Дазволіць фонавую сінхранізацыю для канкрэтнага сайта.</translation>
+<translation id="83792324527827022">Сайт выкарыстоўвае камеру і мікрафон</translation>
 <translation id="8380167699614421159">Гэты сайт паказвае назойлівую рэкламу або рэкламу, якая ўводзіць у зман</translation>
+<translation id="8394832520002899662">Каб вярнуцца на сайт, націсніце тут</translation>
 <translation id="8447861592752582886">Адклікаць дазвол на доступ да прылады</translation>
 <translation id="851751545965956758">Блакіраваць сайтам падключэнне да прылад</translation>
 <translation id="857943718398505171">Дазволена (рэкамендуецца)</translation>

@@ -687,7 +687,8 @@ void PrintRenderFrameHelper::PrintHeaderAndFooter(
 
   HeaderAndFooterClient frame_client;
   blink::WebLocalFrame* frame = blink::WebLocalFrame::CreateMainFrame(
-      web_view, &frame_client, nullptr, nullptr);
+      web_view, &frame_client, nullptr, base::UnguessableToken::Create(),
+      nullptr);
 
   blink::WebWidgetClient web_widget_client;
   blink::WebFrameWidget::CreateForMainFrame(
@@ -941,8 +942,8 @@ void PrepareFrameAndViewForPrint::CopySelection(
       /*compositing_enabled=*/false,
       /*opener=*/nullptr, mojo::NullAssociatedReceiver());
   content::RenderView::ApplyWebPreferences(prefs, web_view);
-  blink::WebLocalFrame* main_frame =
-      blink::WebLocalFrame::CreateMainFrame(web_view, this, nullptr, nullptr);
+  blink::WebLocalFrame* main_frame = blink::WebLocalFrame::CreateMainFrame(
+      web_view, this, nullptr, base::UnguessableToken::Create(), nullptr);
   frame_.Reset(main_frame);
   blink::WebFrameWidget::CreateForMainFrame(
       this, main_frame,

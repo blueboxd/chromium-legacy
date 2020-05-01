@@ -55,6 +55,10 @@ def _MergeAPIArgumentParser(*args, **kwargs):
       '--per-cl-coverage',
       action='store_true',
       help='set to indicate that this is a per-CL coverage build')
+  parser.add_argument(
+      '--sparse',
+      help='invokes llvm-profdata with argument -sparse=true',
+      action='store_true')
   return parser
 
 
@@ -88,7 +92,8 @@ def main():
   invalid_profiles, counter_overflows = coverage_merger.merge_profiles(
       params.task_output_dir,
       os.path.join(params.profdata_dir, output_prodata_filename), '.profraw',
-      params.llvm_profdata)
+      params.llvm_profdata,
+      sparse=params.sparse)
 
   # At the moment counter overflows overlap with invalid profiles, but this is
   # not guaranteed to remain the case indefinitely. To avoid future conflicts

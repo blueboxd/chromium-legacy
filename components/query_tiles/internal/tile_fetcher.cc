@@ -19,6 +19,31 @@ namespace {
 
 const char kRequestContentType[] = "application/x-protobuf";
 
+constexpr net::NetworkTrafficAnnotationTag kQueryTilesFetcherTrafficAnnotation =
+    net::DefineNetworkTrafficAnnotation("query_tiles_fetcher", R"(
+              semantics {
+                sender: "Query Tiles Fetcher"
+                description:
+                  "Fetches RPC for query tiles on Android NTP and omnibox."
+                trigger:
+                  "A priodic TileBackgroundTask will always be scheduled to "
+                  "fetch RPC from server, unless the feature is disabled "
+                  "or suspended."
+                data: "Country code and accepted languages will be sent via "
+                  "the header. No user information is sent."
+                destination: GOOGLE_OWNED_SERVICE
+              }
+              policy {
+                cookies_allowed: NO
+                setting: "Disabled if a non-Google search engine is used."
+                chrome_policy {
+                  DefaultSearchProviderEnabled {
+                    DefaultSearchProviderEnabled: false
+                  }
+                }
+              }
+    )");
+
 class TileFetcherImpl : public TileFetcher {
  public:
   TileFetcherImpl(
@@ -26,29 +51,28 @@ class TileFetcherImpl : public TileFetcher {
       const std::string& country_code,
       const std::string& accept_languages,
       const std::string& api_key,
-      const net::NetworkTrafficAnnotationTag& traffic_annotation,
-      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-      FinishedCallback callback)
-      : url_loader_factory_(url_loader_factory),
-        callback_(std::move(callback)) {
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
+      : url_loader_factory_(url_loader_factory) {
     tile_info_request_status_ = TileInfoRequestStatus::kInit;
-    // Start fetching.
     auto resource_request =
         BuildGetRequest(url, country_code, accept_languages, api_key);
-    url_loader_ = network::SimpleURLLoader::Create(std::move(resource_request),
-                                                   traffic_annotation);
-
+    url_loader_ = network::SimpleURLLoader::Create(
+        std::move(resource_request), kQueryTilesFetcherTrafficAnnotation);
     url_loader_->SetOnResponseStartedCallback(base::BindRepeating(
         &TileFetcherImpl::OnResponseStarted, weak_ptr_factory_.GetWeakPtr()));
+  }
+
+ private:
+  // TileFetcher implementation.
+  void StartFetchForTiles(FinishedCallback callback) override {
     // TODO(hesen): Estimate max size of response then replace to
     // DownloadToString method.
     url_loader_->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
         url_loader_factory_.get(),
         base::BindOnce(&TileFetcherImpl::OnDownloadComplete,
-                       weak_ptr_factory_.GetWeakPtr()));
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
- private:
   // Build the request to get tile info.
   std::unique_ptr<network::ResourceRequest> BuildGetRequest(
       const GURL& url,
@@ -81,18 +105,17 @@ class TileFetcherImpl : public TileFetcher {
   }
 
   // Called after receiving HTTP response. Processes the response code.
-  void OnDownloadComplete(std::unique_ptr<std::string> response_body) {
-    std::move(callback_).Run(tile_info_request_status_,
-                             std::move(response_body));
+  void OnDownloadComplete(FinishedCallback callback,
+                          std::unique_ptr<std::string> response_body) {
+    std::move(callback).Run(tile_info_request_status_,
+                            std::move(response_body));
+    tile_info_request_status_ = TileInfoRequestStatus::kInit;
   }
 
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
 
   // Simple URL loader to fetch proto from network.
   std::unique_ptr<network::SimpleURLLoader> url_loader_;
-
-  // Callback to be executed after fetching is done.
-  FinishedCallback callback_;
 
   // Status of the tile info request.
   TileInfoRequestStatus tile_info_request_status_;
@@ -103,17 +126,14 @@ class TileFetcherImpl : public TileFetcher {
 }  // namespace
 
 // static
-std::unique_ptr<TileFetcher> TileFetcher::CreateAndFetchForTileInfo(
+std::unique_ptr<TileFetcher> TileFetcher::Create(
     const GURL& url,
     const std::string& country_code,
     const std::string& accept_languages,
     const std::string& api_key,
-    const net::NetworkTrafficAnnotationTag& traffic_annotation,
-    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-    FinishedCallback callback) {
-  return std::make_unique<TileFetcherImpl>(
-      url, country_code, accept_languages, api_key, traffic_annotation,
-      url_loader_factory, std::move(callback));
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory) {
+  return std::make_unique<TileFetcherImpl>(url, country_code, accept_languages,
+                                           api_key, url_loader_factory);
 }
 
 TileFetcher::TileFetcher() = default;

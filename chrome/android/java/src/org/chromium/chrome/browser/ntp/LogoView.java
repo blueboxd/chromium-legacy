@@ -132,6 +132,17 @@ public class LogoView extends FrameLayout implements OnClickListener {
     }
 
     /**
+     * Clean up member variables when this view is no longer needed.
+     */
+    public void destroy() {
+        // Need to end the animation otherwise it can cause memory leaks since the AnimationHandler
+        // has a reference to the animation callback which then can link back to the
+        // {@code mTransitionProperty}.
+        endFadeAnimation();
+        mLoadingView.destroy();
+    }
+
+    /**
      * Sets the {@link Delegate} to notify when the logo is pressed.
      */
     public void setDelegate(Delegate delegate) {

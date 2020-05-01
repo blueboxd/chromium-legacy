@@ -10,69 +10,84 @@
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/accessibility/switch_access_menu_button.h"
 #include "ash/system/tray/tray_constants.h"
+#include "base/containers/flat_map.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/accessibility/mojom/ax_node_data.mojom-shared.h"
 #include "ui/events/event.h"
-#include "ui/views/layout/box_layout.h"
+#include "ui/views/layout/grid_layout.h"
 
 namespace ash {
 
 namespace {
 constexpr char kUniqueId[] = "switch_access_menu_view";
+constexpr int kMaxColumns = 3;
 
 struct ButtonInfo {
-  const char* name;
   const gfx::VectorIcon* icon;
   int label_id;
 };
 
 // These strings must match the values of
 // accessibility_private::SwitchAccessMenuAction.
-const ButtonInfo kMenuButtonDetails[] = {
-    {"decrement", &kSwitchAccessDecrementIcon, IDS_ASH_SWITCH_ACCESS_DECREMENT},
-    {"dictation", &kDictationOnNewuiIcon, IDS_ASH_SWITCH_ACCESS_DICTATION},
-    {"increment", &kSwitchAccessIncrementIcon, IDS_ASH_SWITCH_ACCESS_INCREMENT},
-    {"keyboard", &kSwitchAccessKeyboardIcon, IDS_ASH_SWITCH_ACCESS_KEYBOARD},
-    {"scrollDown", &kSwitchAccessScrollDownIcon,
-     IDS_ASH_SWITCH_ACCESS_SCROLL_DOWN},
-    {"scrollLeft", &kSwitchAccessScrollLeftIcon,
-     IDS_ASH_SWITCH_ACCESS_SCROLL_LEFT},
-    {"scrollRight", &kSwitchAccessScrollRightIcon,
-     IDS_ASH_SWITCH_ACCESS_SCROLL_RIGHT},
-    {"scrollUp", &kSwitchAccessScrollUpIcon, IDS_ASH_SWITCH_ACCESS_SCROLL_UP},
-    {"select", &kSwitchAccessSelectIcon, IDS_ASH_SWITCH_ACCESS_SELECT},
-    {"settings", &kSwitchAccessSettingsIcon, IDS_ASH_SWITCH_ACCESS_SETTINGS},
+const base::flat_map<std::string, ButtonInfo> kMenuButtonDetails = {
+    {"decrement",
+     {&kSwitchAccessDecrementIcon, IDS_ASH_SWITCH_ACCESS_DECREMENT}},
+    {"dictation", {&kDictationOnNewuiIcon, IDS_ASH_SWITCH_ACCESS_DICTATION}},
+    {"increment",
+     {&kSwitchAccessIncrementIcon, IDS_ASH_SWITCH_ACCESS_INCREMENT}},
+    {"keyboard", {&kSwitchAccessKeyboardIcon, IDS_ASH_SWITCH_ACCESS_KEYBOARD}},
+    {"scrollDown",
+     {&kSwitchAccessScrollDownIcon, IDS_ASH_SWITCH_ACCESS_SCROLL_DOWN}},
+    {"scrollLeft",
+     {&kSwitchAccessScrollLeftIcon, IDS_ASH_SWITCH_ACCESS_SCROLL_LEFT}},
+    {"scrollRight",
+     {&kSwitchAccessScrollRightIcon, IDS_ASH_SWITCH_ACCESS_SCROLL_RIGHT}},
+    {"scrollUp", {&kSwitchAccessScrollUpIcon, IDS_ASH_SWITCH_ACCESS_SCROLL_UP}},
+    {"select", {&kSwitchAccessSelectIcon, IDS_ASH_SWITCH_ACCESS_SELECT}},
+    {"settings", {&kSwitchAccessSettingsIcon, IDS_ASH_SWITCH_ACCESS_SETTINGS}},
 };
 
 }  // namespace
 
-SwitchAccessMenuView::SwitchAccessMenuView() {
-  SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::Orientation::kHorizontal, kUnifiedMenuItemPadding,
-      kUnifiedMenuPadding));
-}
-
-SwitchAccessMenuView::~SwitchAccessMenuView() {}
+SwitchAccessMenuView::SwitchAccessMenuView() = default;
+SwitchAccessMenuView::~SwitchAccessMenuView() = default;
 
 void SwitchAccessMenuView::SetActions(std::vector<std::string> actions) {
   RemoveAllChildViews(/*delete_children=*/true);
 
-  for (std::string action : actions) {
-    for (ButtonInfo info : kMenuButtonDetails) {
-      if (action == info.name) {
-        AddChildView(
-            new SwitchAccessMenuButton(info.name, *info.icon, info.label_id));
-        break;
-      }
-    }
+  views::GridLayout* layout =
+      SetLayoutManager(std::make_unique<views::GridLayout>());
+  views::ColumnSet* columns = layout->AddColumnSet(0);
+  columns->AddPaddingColumn(0 /* resize_percent */, kUnifiedMenuPadding);
+  for (int i = 0; i < kMaxColumns; i++) {
+    columns->AddColumn(views::GridLayout::CENTER, views::GridLayout::CENTER,
+                       0, /* resize_percent */
+                       views::GridLayout::FIXED,
+                       SwitchAccessMenuButton::kWidthDip, 0);
+    columns->AddPaddingColumn(0 /* resize_percent */, kUnifiedMenuPadding);
   }
+
+  int button_count = 0;
+  for (std::string action : actions) {
+    auto it = kMenuButtonDetails.find(action);
+    if (it == kMenuButtonDetails.end())
+      continue;
+    ButtonInfo info = it->second;
+    // If this is the first button of a new row, tell the layout to start a
+    // new row.
+    if (button_count % kMaxColumns == 0)
+      layout->StartRowWithPadding(0, 0, 0, kUnifiedMenuPadding);
+    layout->AddView(std::make_unique<SwitchAccessMenuButton>(action, *info.icon,
+                                                             info.label_id));
+    button_count++;
+  }
+  layout->AddPaddingRow(0, kUnifiedMenuPadding);
 }
 
 int SwitchAccessMenuView::GetBubbleWidthDip() const {
-  // Fixed at 3 menu items, as the menu currently has a max of 3 items per row
-  // and will not show with less than 3 items. In the future this will vary with
-  // the number of menu items displayed.
-  return (3 * SwitchAccessMenuButton::kWidthDip) + (2 * kUnifiedMenuPadding) +
+  // In the future this will vary with the number of menu items displayed.
+  return (kMaxColumns * SwitchAccessMenuButton::kWidthDip) +
+         ((kMaxColumns - 1) * kUnifiedMenuPadding) +
          kUnifiedMenuItemPadding.left() + kUnifiedMenuItemPadding.right();
 }
 

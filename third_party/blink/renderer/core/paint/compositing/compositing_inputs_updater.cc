@@ -50,9 +50,10 @@ void CompositingInputsUpdater::Update() {
   PaintLayer* layer =
       compositing_inputs_root_ ? compositing_inputs_root_ : root_layer_;
 
-  if (DisplayLockUtilities::NearestLockedExclusiveAncestor(
+  // We don't need to do anything if the layer is under a locked display lock
+  // that prevents updates.
+  if (DisplayLockUtilities::LockedAncestorPreventingPrePaint(
           layer->GetLayoutObject())) {
-    compositing_inputs_root_ = nullptr;
     return;
   }
 

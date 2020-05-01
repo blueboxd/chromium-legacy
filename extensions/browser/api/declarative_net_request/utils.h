@@ -10,6 +10,7 @@
 #include <string>
 #include <vector>
 
+#include "base/auto_reset.h"
 #include "base/callback_forward.h"
 #include "base/containers/span.h"
 #include "base/macros.h"
@@ -36,10 +37,14 @@ bool IsValidRulesetData(base::span<const uint8_t> data, int expected_checksum);
 // testing.
 std::string GetVersionHeaderForTesting();
 
-// Get/Set the ruleset format version for testing. Note: Instead of using these
-// directly, use ScopedIncrementRulesetFormatVersion.
+// Gets the ruleset format version for testing.
 int GetIndexedRulesetFormatVersionForTesting();
-void SetIndexedRulesetFormatVersionForTesting(int version);
+
+// Test helper to increment the indexed ruleset format version while the
+// returned value is in scope. Resets it to the original value when it goes out
+// of scope.
+using ScopedIncrementRulesetVersion = base::AutoReset<int>;
+ScopedIncrementRulesetVersion CreateScopedIncrementRulesetVersionForTesting();
 
 // Strips the version header from |ruleset_data|. Returns false on version
 // mismatch.

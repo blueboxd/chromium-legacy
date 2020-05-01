@@ -301,6 +301,12 @@ public class BrowserImpl extends IBrowser.Stub {
         }
     }
 
+    @CalledByNative
+    private boolean compositorHasSurface() {
+        if (mViewController == null) return false;
+        return mViewController.compositorHasSurface();
+    }
+
     @Override
     public boolean setActiveTab(ITab controller) {
         StrictModeWorkaround.apply();

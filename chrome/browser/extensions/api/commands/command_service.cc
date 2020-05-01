@@ -181,7 +181,8 @@ bool CommandService::AddKeybindingPref(
   // Media Keys are allowed to be used by named command only.
   DCHECK(!Command::IsMediaKey(accelerator) ||
          (command_name != manifest_values::kPageActionCommandEvent &&
-          command_name != manifest_values::kBrowserActionCommandEvent));
+          command_name != manifest_values::kBrowserActionCommandEvent &&
+          command_name != manifest_values::kActionCommandEvent));
 
   DictionaryPrefUpdate updater(profile_->GetPrefs(),
                                prefs::kExtensionCommands);
@@ -365,37 +366,58 @@ void CommandService::RemoveRelinquishedKeybindings(const Extension* extension) {
     }
   }
 
+  auto remove_overrides_if_unused = [this, extension](ActionInfo::Type type) {
+    Command existing_command;
+    if (!GetExtensionActionCommand(extension->id(), type,
+                                   CommandService::ACTIVE, &existing_command,
+                                   nullptr)) {
+      // No keybindings to remove.
+      return;
+    }
+
+    if (IsCommandShortcutUserModified(extension,
+                                      existing_command.command_name())) {
+      // Don't relinquish user-modified shortcuts.
+      return;
+    }
+
+    const Command* new_command = nullptr;
+    switch (type) {
+      case ActionInfo::TYPE_ACTION:
+        new_command = CommandsInfo::GetActionCommand(extension);
+        break;
+      case ActionInfo::TYPE_BROWSER:
+        new_command = CommandsInfo::GetBrowserActionCommand(extension);
+        break;
+      case ActionInfo::TYPE_PAGE:
+        new_command = CommandsInfo::GetPageActionCommand(extension);
+        break;
+    }
+
+    // The shortcuts should be removed if there is no command specified in the
+    // new extension, or the only command specified is synthesized (i.e.,
+    // assigned to ui::VKEY_UNKNOWN), which happens for browser action commands.
+    // See CommandsHandler::MaybeSetBrowserActionDefault().
+    // TODO(devlin): Should this logic apply to ActionInfo::TYPE_ACTION?
+    // See https://crbug.com/893373.
+    const bool should_relinquish =
+        !new_command ||
+        (type == ActionInfo::TYPE_BROWSER &&
+         new_command->accelerator().key_code() == ui::VKEY_UNKNOWN);
+
+    if (!should_relinquish)
+      return;
+
+    RemoveKeybindingPrefs(extension->id(), existing_command.command_name());
+  };
+
   // TODO(https://crbug.com/1067130): Extensions shouldn't be able to specify
   // commands for actions they don't have, so we should just be able to query
   // for a single action type.
-  Command existing_browser_action_command;
-  const Command* new_browser_action_command =
-      CommandsInfo::GetBrowserActionCommand(extension);
-  if (GetExtensionActionCommand(extension->id(), ActionInfo::TYPE_BROWSER,
-                                CommandService::ACTIVE,
-                                &existing_browser_action_command, nullptr) &&
-      // The browser action command may be defaulted to an unassigned
-      // accelerator if a browser action is specified by the extension but a
-      // keybinding is not declared. See
-      // CommandsHandler::MaybeSetBrowserActionDefault.
-      (!new_browser_action_command ||
-       new_browser_action_command->accelerator().key_code() ==
-           ui::VKEY_UNKNOWN) &&
-      !IsCommandShortcutUserModified(
-          extension, existing_browser_action_command.command_name())) {
-    RemoveKeybindingPrefs(extension->id(),
-                          existing_browser_action_command.command_name());
-  }
-
-  Command existing_page_action_command;
-  if (GetExtensionActionCommand(extension->id(), ActionInfo::TYPE_PAGE,
-                                CommandService::ACTIVE,
-                                &existing_page_action_command, nullptr) &&
-      !CommandsInfo::GetPageActionCommand(extension) &&
-      !IsCommandShortcutUserModified(
-          extension, existing_page_action_command.command_name())) {
-    RemoveKeybindingPrefs(extension->id(),
-                          existing_page_action_command.command_name());
+  for (ActionInfo::Type type :
+       {ActionInfo::TYPE_ACTION, ActionInfo::TYPE_BROWSER,
+        ActionInfo::TYPE_PAGE}) {
+    remove_overrides_if_unused(type);
   }
 }
 
@@ -435,6 +457,14 @@ void CommandService::AssignKeybindings(const Extension* extension) {
                       false,   // Overwriting not allowed.
                       false);  // Not global.
   }
+
+  const Command* action_command = CommandsInfo::GetActionCommand(extension);
+  if (action_command && CanAutoAssign(*action_command, extension)) {
+    AddKeybindingPref(action_command->accelerator(), extension->id(),
+                      action_command->command_name(),
+                      false,   // Overwriting not allowed.
+                      false);  // Not global.
+  }
 }
 
 bool CommandService::CanAutoAssign(const Command &command,
@@ -450,7 +480,8 @@ bool CommandService::CanAutoAssign(const Command &command,
 
   if (command.global()) {
     if (command.command_name() == manifest_values::kBrowserActionCommandEvent ||
-        command.command_name() == manifest_values::kPageActionCommandEvent)
+        command.command_name() == manifest_values::kPageActionCommandEvent ||
+        command.command_name() == manifest_values::kActionCommandEvent)
       return false;  // Browser and page actions are not global in nature.
 
     if (extension->permissions_data()->HasAPIPermission(
@@ -557,6 +588,9 @@ void CommandService::RemoveDefunctExtensionSuggestedCommandPrefs(
       } else if (it.key() == manifest_values::kPageActionCommandEvent) {
         if (!CommandsInfo::GetPageActionCommand(extension))
           suggested_key_prefs->Remove(it.key(), NULL);
+      } else if (it.key() == manifest_values::kActionCommandEvent) {
+        if (!CommandsInfo::GetActionCommand(extension))
+          suggested_key_prefs->Remove(it.key(), nullptr);
       } else if (named_commands) {
         if (named_commands->find(it.key()) == named_commands->end())
           suggested_key_prefs->Remove(it.key(), NULL);
@@ -667,8 +701,8 @@ bool CommandService::GetExtensionActionCommand(const std::string& extension_id,
       requested_command = CommandsInfo::GetPageActionCommand(extension);
       break;
     case ActionInfo::TYPE_ACTION:
-      // TODO(devlin): Add support for the "action" key.
-      return false;
+      requested_command = CommandsInfo::GetActionCommand(extension);
+      break;
   }
   if (!requested_command)
     return false;

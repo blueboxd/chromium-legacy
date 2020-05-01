@@ -3,12 +3,15 @@
 <translationbundle lang="ar">
 <translation id="1006017844123154345">فتح على الإنترنت</translation>
 <translation id="1044891598689252897">ستعمل المواقع الإلكترونية بشكلٍ طبيعي.</translation>
+<translation id="1124090076051167250">سيؤدي هذا الإجراء إلى محو <ph name="DATASIZE" /> من البيانات وملفات تعريف الارتباط المُخزّنة من خلال المواقع الإلكترونية أو التطبيقات على الشاشة الرئيسية.</translation>
 <translation id="1124772482545689468">المستخدم</translation>
 <translation id="1178581264944972037">الإيقاف مؤقتًا</translation>
 <translation id="1181037720776840403">إزالة</translation>
 <translation id="1201402288615127009">التالي</translation>
 <translation id="1242008676835033345">مضمّن في <ph name="WEBSITE_URL" /></translation>
+<translation id="1272079795634619415">إيقاف</translation>
 <translation id="129382876167171263">تظهر هنا الملفات التي تحفظها المواقع الإلكترونية</translation>
+<translation id="1364532808393826295"><ph name="APP_NAME" /> - <ph name="NOTIFICATION_MESSAGE" /></translation>
 <translation id="1369915414381695676">تمت إضافة الموقع <ph name="SITE_NAME" /></translation>
 <translation id="1383876407941801731">البحث</translation>
 <translation id="1384959399684842514">تم إيقاف التنزيل مؤقتًا</translation>
@@ -29,6 +32,7 @@
 <translation id="1984937141057606926">مسموح باستثناء الجهات الخارجية</translation>
 <translation id="1994173015038366702">‏عنوان URL للموقع</translation>
 <translation id="2025115093177348061">الواقع المعزّز</translation>
+<translation id="2030769033451695672">يُرجى النقر للرجوع إلى <ph name="URL_OF_THE_CURRENT_TAB" />.</translation>
 <translation id="2041019821020695769">‏للسماح لمتصفِّح Chrome بإرسال الإشعارات إليك، يمكنك أيضًا تفعيل الإشعارات في <ph name="BEGIN_LINK" />إعدادات Android<ph name="END_LINK" />.</translation>
 <translation id="2079545284768500474">تراجع</translation>
 <translation id="2091887806945687916">الصوت</translation>
@@ -104,6 +108,7 @@
 <translation id="5048398596102334565">السماح لمواقع الويب بالوصول إلى مستشعرات الحركة (مُقترَح)</translation>
 <translation id="5063480226653192405">الاستخدام</translation>
 <translation id="5100237604440890931">تم التصغير - انقر للتوسيع.</translation>
+<translation id="5123685120097942451">علامة تبويب "التصفُّح المتخفي"</translation>
 <translation id="5300589172476337783">عرض</translation>
 <translation id="5301954838959518834">حسنًا</translation>
 <translation id="5307446750509046227">محو مساحة تخزين المواقع</translation>
@@ -111,6 +116,7 @@
 <translation id="5317780077021120954">حفظ</translation>
 <translation id="5335288049665977812">‏السماح لمواقع الويب بتشغيل JavaScript (موصى به)</translation>
 <translation id="534295439873310000">‏أجهزة NFC</translation>
+<translation id="5354152178998424783">سيؤدي هذا الإجراء إلى محو <ph name="DATASIZE" /> من البيانات وملفات تعريف الارتباط المُخزّنة من خلال المواقع الإلكترونية.</translation>
 <translation id="5391532827096253100">إن اتصالك بهذا الموقع الإلكتروني غير آمن. معلومات موقع الويب</translation>
 <translation id="5494752089476963479">حظر الإعلانات في المواقع الإلكترونية التي تعرض إعلانات مضلِّلة أو غير مرغوب فيها</translation>
 <translation id="5505264765875738116">منع المواقع الإلكترونية من طلب إرسال إشعارات</translation>
@@ -122,9 +128,11 @@
 <translation id="5677928146339483299">الحظر</translation>
 <translation id="5689516760719285838">الموقع الجغرافي</translation>
 <translation id="5710871682236653961">‏السؤال قبل السماح للمواقع الإلكترونية بإرسال المعلومات وتلقّيها عند النقر على أجهزة NFC (مستحسن)</translation>
+<translation id="5719847187258001597">سيؤدي هذا الإجراء إلى محو جميع البيانات وملفات تعريف الارتباط المُخزّنة من خلال <ph name="ORIGIN" /> أو من خلال التطبيق على الشاشة الرئيسية.</translation>
 <translation id="5804241973901381774">الأذونات</translation>
 <translation id="5860033963881614850">غير مفعّل</translation>
 <translation id="5916664084637901428">مفعّل</translation>
+<translation id="5922853908706496913">جارٍ مشاركة شاشتك</translation>
 <translation id="5939518447894949180">إعادة الضبط</translation>
 <translation id="6040143037577758943">إغلاق</translation>
 <translation id="6042308850641462728">المزيد</translation>
@@ -168,6 +176,7 @@
 <translation id="7423098979219808738">السؤال أولاً</translation>
 <translation id="7423538860840206698">تم الحظر من قراءة الحافظة</translation>
 <translation id="7521387064766892559">JavaScript</translation>
+<translation id="7554752735887601236">هناك موقع إلكتروني يستخدم الميكروفون.</translation>
 <translation id="7572498721684305250">‏حظر المواقع الإلكترونية من إرسال المعلومات وتلقّيها عند النقر على أجهزة NFC.</translation>
 <translation id="757524316907819857">منع مواقع الويب من تشغيل المحتوى المحمي</translation>
 <translation id="7589445247086920869">حظر محرّك البحث الحالي</translation>
@@ -176,9 +185,11 @@
 <translation id="7781829728241885113">أمس</translation>
 <translation id="7791543448312431591">إضافة</translation>
 <translation id="780301667611848630">لا، شكرًا</translation>
+<translation id="7804248752222191302">هناك موقع إلكتروني يستخدم الكاميرا.</translation>
 <translation id="7817023149356982970">سيتم تسجيل خروجك من هذا الموقع الإلكتروني.</translation>
 <translation id="7828557259026017104">ملفات تعريف الارتباط هي ملفات تُنشئها المواقع الإلكترونية التي تزورها. وتستخدمها المواقع الإلكترونية لتتذكّر الإعدادات المفضّلة. أمّا ملفات تعريف الارتباط التابعة لجهات خارجية، فتُنشئها مواقع إلكترونية أخرى. وتمتلك هذه المواقع الإلكترونية بعضًا من المحتوى الذي تراه على صفحة الويب التي تزورها، مثل الإعلانات أو الصور.</translation>
 <translation id="7846076177841592234">إلغاء الاختيار</translation>
+<translation id="7846621471902887024">سيتم تسجيل خروجك من جميع المواقع الإلكترونية.</translation>
 <translation id="7882806643839505685">السماح بتشغيل الصوت لموقع معين.</translation>
 <translation id="7993619969781047893">قد تتوقف الميزات عن العمل في بعض المواقع الإلكترونية.</translation>
 <translation id="7999064672810608036">هل أنت متأكّد أنك تريد محو كل البيانات المحلية، بما في ذلك ملفات تعريف الارتباط، وإعادة ضبط كافة الأذونات لهذا الموقع الإلكتروني؟</translation>
@@ -192,7 +203,9 @@
 <translation id="8261506727792406068">حذف</translation>
 <translation id="8300705686683892304">تتم الإدارة من خلال التطبيق</translation>
 <translation id="8372893542064058268">السماح لموقع ويب معيّن بتشغيل "المزامنة في الخلفية"</translation>
+<translation id="83792324527827022">هناك موقع إلكتروني يستخدم الميكروفون والكاميرا.</translation>
 <translation id="8380167699614421159">يعرض هذا الموقع الإلكتروني إعلانات مضلِّلة أو غير مرغوب فيها</translation>
+<translation id="8394832520002899662">يُرجى النقر للرجوع إلى الموقع الإلكتروني.</translation>
 <translation id="8447861592752582886">إبطال إذن الجهاز</translation>
 <translation id="851751545965956758">حظر مواقع الويب من الاتصال بأجهزة</translation>
 <translation id="857943718398505171">مسموح بها (موصى بها)</translation>

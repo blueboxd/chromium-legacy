@@ -5879,6 +5879,8 @@ static_assert(
 
 
 def _collect_include_headers(interface):
+    assert isinstance(interface, web_idl.Interface)
+
     headers = set(interface.code_generator_info.blink_headers)
 
     def collect_from_idl_type(idl_type):
@@ -5936,6 +5938,8 @@ def _collect_include_headers(interface):
 
 
 def generate_interface(interface):
+    assert isinstance(interface, web_idl.Interface)
+
     path_manager = PathManager(interface)
     api_component = path_manager.api_component
     impl_component = path_manager.impl_component
@@ -6387,6 +6391,7 @@ def generate_interface(interface):
 
     if is_cross_components:
         api_class_def.public_section.append(installer_function_trampolines)
+        api_class_def.public_section.append(EmptyNode())
         api_class_def.private_section.extend([
             TextNode("// Cross-component trampolines"),
             trampoline_var_decls,
@@ -6444,12 +6449,20 @@ def generate_interface(interface):
                                 path_manager.gen_path_to(impl_source_path))
 
 
-def generate_install_properties_per_feature(web_idl_database):
+def generate_install_properties_per_feature(web_idl_database,
+                                            function_name,
+                                            filepath_basename,
+                                            for_testing=False):
+    assert isinstance(web_idl_database, web_idl.Database)
+    assert isinstance(function_name, str)
+    assert isinstance(filepath_basename, str)
+    assert isinstance(for_testing, bool)
+
     # Filepaths
-    header_path = PathManager.component_path(
-        "modules", "properties_per_feature_installer.h")
-    source_path = PathManager.component_path(
-        "modules", "properties_per_feature_installer.cc")
+    header_path = PathManager.component_path("modules",
+                                             "{}.h".format(filepath_basename))
+    source_path = PathManager.component_path("modules",
+                                             "{}.cc".format(filepath_basename))
 
     # Root nodes
     header_node = ListNode(tail="\n")
@@ -6477,13 +6490,9 @@ def generate_install_properties_per_feature(web_idl_database):
         "OriginTrialFeature feature",
     ]
     func_decl = CxxFuncDeclNode(
-        name="InstallPropertiesPerFeature",
-        arg_decls=arg_decls,
-        return_type="void")
+        name=function_name, arg_decls=arg_decls, return_type="void")
     func_def = CxxFuncDefNode(
-        name="InstallPropertiesPerFeature",
-        arg_decls=arg_decls,
-        return_type="void")
+        name=function_name, arg_decls=arg_decls, return_type="void")
     func_def.body.add_template_vars({
         "script_state": "script_state",
         "feature": "feature",
@@ -6517,6 +6526,7 @@ def generate_install_properties_per_feature(web_idl_database):
     source_node.accumulator.add_include_headers([
         "base/containers/span.h",
         "third_party/blink/renderer/platform/bindings/script_state.h",
+        "third_party/blink/renderer/platform/bindings/v8_per_context_data.h",
     ])
     source_node.extend([
         make_copyright_header(),
@@ -6541,9 +6551,9 @@ def generate_install_properties_per_feature(web_idl_database):
 using InstallFuncType =
     V8InterfaceBridgeBase::InstallContextDependentPropertiesFuncType;\
 """),
+                EmptyNode(),
+                helper_func_def,
             ]),
-        EmptyNode(),
-        helper_func_def,
         EmptyNode(),
         func_def,
     ])
@@ -6552,6 +6562,9 @@ using InstallFuncType =
     feature_to_interfaces = {}
     set_of_interfaces = set()
     for interface in web_idl_database.interfaces:
+        if interface.code_generator_info.for_testing != for_testing:
+            continue
+
         for member in itertools.chain(interface.attributes,
                                       interface.constants,
                                       interface.operation_groups):
@@ -6562,7 +6575,13 @@ using InstallFuncType =
                 set_of_interfaces.add(interface)
 
     switch_node = CxxSwitchNode(cond="${feature}")
-    switch_node.append(case=None, body=TextNode("NOTREACHED();"))
+    switch_node.append(
+        case=None,
+        body=[
+            TextNode("// Ignore unknown, deprecated, and/or unused features."),
+            TextNode("return;"),
+        ],
+        should_add_break=False)
     for feature, interfaces in sorted(feature_to_interfaces.items()):
         entries = [
             TextNode("{{"
@@ -6631,12 +6650,20 @@ for (const auto& pair : wrapper_type_info_list) {
     write_code_node_to_file(source_node, path_manager.gen_path_to(source_path))
 
 
-def generate_init_idl_interfaces(web_idl_database):
+def generate_init_idl_interfaces(web_idl_database,
+                                 function_name,
+                                 filepath_basename,
+                                 for_testing=False):
+    assert isinstance(web_idl_database, web_idl.Database)
+    assert isinstance(function_name, str)
+    assert isinstance(filepath_basename, str)
+    assert isinstance(for_testing, bool)
+
     # Filepaths
     header_path = PathManager.component_path("modules",
-                                             "init_idl_interfaces.h")
+                                             "{}.h".format(filepath_basename))
     source_path = PathManager.component_path("modules",
-                                             "init_idl_interfaces.cc")
+                                             "{}.cc".format(filepath_basename))
 
     # Root nodes
     header_node = ListNode(tail="\n")
@@ -6656,9 +6683,9 @@ def generate_init_idl_interfaces(web_idl_database):
 
     # Function nodes
     func_decl = CxxFuncDeclNode(
-        name="InitIDLInterfaces", arg_decls=[], return_type="void")
+        name=function_name, arg_decls=[], return_type="void")
     func_def = CxxFuncDefNode(
-        name="InitIDLInterfaces", arg_decls=[], return_type="void")
+        name=function_name, arg_decls=[], return_type="void")
     header_bindings_ns.body.extend([
         TextNode("""\
 // Initializes cross-component trampolines of IDL interface implementations.\
@@ -6690,9 +6717,7 @@ def generate_init_idl_interfaces(web_idl_database):
 
     init_calls = []
     for interface in web_idl_database.interfaces:
-        # 'Internals' is the only test-only interface that needs
-        # cross-component trampoline initialization.
-        if interface.identifier == "Internals":
+        if interface.code_generator_info.for_testing != for_testing:
             continue
 
         path_manager = PathManager(interface)
@@ -6717,6 +6742,24 @@ def run_multiprocessing_task(args):
 
 
 def generate_interfaces(web_idl_database):
+    assert isinstance(web_idl_database, web_idl.Database)
+
+    generate_install_properties_per_feature(
+        web_idl_database, "InstallPropertiesPerFeature",
+        "properties_per_feature_installer")
+    generate_install_properties_per_feature(
+        web_idl_database,
+        "InstallPropertiesPerFeatureForTesting",
+        "properties_per_feature_installer_for_testing",
+        for_testing=True)
+    generate_init_idl_interfaces(web_idl_database, "InitIDLInterfaces",
+                                 "init_idl_interfaces")
+    generate_init_idl_interfaces(
+        web_idl_database,
+        "InitIDLInterfacesForTesting",
+        "init_idl_interfaces_for_testing",
+        for_testing=True)
+
     # More processes do not mean better performance.  The default size was
     # chosen heuristically.
     process_pool_size = 8
@@ -6731,6 +6774,3 @@ def generate_interfaces(web_idl_database):
         run_multiprocessing_task,
         map(lambda interface: (interface, package_initializer()),
             web_idl_database.interfaces)).get(timeout_in_sec)
-
-    generate_install_properties_per_feature(web_idl_database)
-    generate_init_idl_interfaces(web_idl_database)

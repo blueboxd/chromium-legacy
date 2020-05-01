@@ -5,7 +5,7 @@
 #include "third_party/blink/renderer/modules/peerconnection/webrtc_set_description_observer.h"
 
 #include "base/bind.h"
-#include "base/logging.h"
+#include "base/check.h"
 #include "third_party/webrtc/pc/sdp_utils.h"
 
 namespace blink {

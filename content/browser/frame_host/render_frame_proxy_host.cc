@@ -238,7 +238,7 @@ bool RenderFrameProxyHost::InitRenderFrameProxy() {
                             ->GetRoutingID();
   GetProcess()->GetRendererInterface()->CreateFrameProxy(
       routing_id_, view_routing_id, opener_routing_id, parent_routing_id,
-      frame_tree_node_->current_replication_state(),
+      frame_tree_node_->current_replication_state(), frame_token_,
       frame_tree_node_->devtools_frame_token());
 
   SetRenderFrameProxyCreated(true);

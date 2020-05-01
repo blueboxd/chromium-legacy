@@ -4682,10 +4682,10 @@
       },
       'WebRTC Chromium FYI Android Builder (dbg)': {},
       'WebRTC Chromium FYI Android Builder ARM64 (dbg)': {},
-      'WebRTC Chromium FYI Android Tests (dbg) (K Nexus5)': {
+      'WebRTC Chromium FYI Android Tests (dbg) (L Nexus5)': {
         'os_type': 'android',
         'mixins': [
-          'kitkat_generic',
+          'lollipop_generic',
           'hammerhead',
         ],
         'test_suites': {

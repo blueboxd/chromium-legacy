@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.webapps;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import org.chromium.chrome.browser.webapps.WebApkInfo.ShareTarget;
 
@@ -62,7 +63,7 @@ public class WebApkExtras {
      * TODO(pkotwicz): Remove this property in favor of
      * {@link BrowserServicesIntentDataProvider#shareTarget()}
      */
-    @NonNull
+    @Nullable
     public final ShareTarget shareTarget;
 
     /**
@@ -108,7 +109,7 @@ public class WebApkExtras {
         return new WebApkExtras(null /* webApkPackageName */, new WebappIcon(),
                 false /* isSplashIconMaskable */, 0 /* shellApkVersion */, null /* manifestUrl */,
                 null /* manifestStartUrl */, WebApkDistributor.OTHER,
-                new HashMap<String, String>() /* iconUrlToMurmur2HashMap */, new ShareTarget(),
+                new HashMap<String, String>() /* iconUrlToMurmur2HashMap */, null /* shareTarget */,
                 false /* isSplashProvidedByWebApk */, new ArrayList<>() /* shortcutItems */,
                 0 /* webApkVersionCode */);
     }
@@ -116,7 +117,7 @@ public class WebApkExtras {
     public WebApkExtras(String webApkPackageName, @NonNull WebappIcon splashIcon,
             boolean isSplashIconMaskable, int shellApkVersion, String manifestUrl,
             String manifestStartUrl, @WebApkDistributor int distributor,
-            @NonNull Map<String, String> iconUrlToMurmur2HashMap, @NonNull ShareTarget shareTarget,
+            @NonNull Map<String, String> iconUrlToMurmur2HashMap, @Nullable ShareTarget shareTarget,
             boolean isSplashProvidedByWebApk, @NonNull List<ShortcutItem> shortcutItems,
             int webApkVersionCode) {
         this.webApkPackageName = webApkPackageName;

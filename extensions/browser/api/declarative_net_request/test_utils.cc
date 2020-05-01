@@ -15,7 +15,6 @@
 #include "extensions/browser/api/declarative_net_request/indexed_rule.h"
 #include "extensions/browser/api/declarative_net_request/ruleset_matcher.h"
 #include "extensions/browser/api/declarative_net_request/ruleset_source.h"
-#include "extensions/browser/api/declarative_net_request/utils.h"
 #include "extensions/browser/api/web_request/web_request_info.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/common/api/declarative_net_request/test_utils.h"
@@ -381,17 +380,6 @@ void RulesetManagerObserver::OnEvaluateRequest(const WebRequestInfo& request,
                                                bool is_incognito_context) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   observed_requests_.push_back(request.url);
-}
-
-ScopedIncrementIndexedRulesetFormatVersion::
-    ScopedIncrementIndexedRulesetFormatVersion()
-    : original_version_(GetIndexedRulesetFormatVersionForTesting()) {
-  SetIndexedRulesetFormatVersionForTesting(original_version_ + 1);
-}
-
-ScopedIncrementIndexedRulesetFormatVersion::
-    ~ScopedIncrementIndexedRulesetFormatVersion() {
-  SetIndexedRulesetFormatVersionForTesting(original_version_);
 }
 
 }  // namespace declarative_net_request

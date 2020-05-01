@@ -28,6 +28,10 @@ const char kLoggingModuleSwitch[] = "vmodule";
 const char kSingleProcessSwitch[] = "single-process";
 const char kAppIdSwitch[] = "appid";
 
+#if defined(OS_MACOSX)
+const char kSwapUpdaterSwitch[] = "swap-updater";
+#endif  // OS_MACOSX
+
 #if defined(OS_WIN)
 const char kInstallFromOutDir[] = "install-from-out-dir";
 #endif  // OS_WIN

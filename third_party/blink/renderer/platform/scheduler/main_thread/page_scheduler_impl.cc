@@ -5,9 +5,10 @@
 #include "third_party/blink/renderer/platform/scheduler/main_thread/page_scheduler_impl.h"
 
 #include "base/bind.h"
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/notreached.h"
 #include "base/optional.h"
 #include "base/strings/string_number_conversions.h"
 #include "third_party/blink/public/common/features.h"

@@ -62,7 +62,7 @@ class MODULES_EXPORT P2PQuicStreamImpl final : public quic::QuicStream,
   // Called when written data (from WriteData()) is consumed by QUIC. This means
   // the data has either been sent across the wire, or it has been turned into a
   // packet and queued if the socket is unexpectedly blocked.
-  void OnStreamDataConsumed(size_t bytes_consumed) override;
+  void OnStreamDataConsumed(quic::QuicByteCount bytes_consumed) override;
 
  private:
   using quic::QuicStream::Reset;

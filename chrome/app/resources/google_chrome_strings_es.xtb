@@ -97,7 +97,6 @@ Es posible que algunas funciones no estén disponibles y que no se guarden los c
 <translation id="3582972582564653026">Sincroniza y personaliza Chrome en todos tus dispositivos</translation>
 <translation id="3596080736082218006">{COUNT,plural, =0{Tu administrador pide que reinicies Chrome para aplicar una actualización}=1{Tu administrador pide que reinicies Chrome para aplicar una actualización. La ventana de incógnito no se volverá a abrir.}other{Tu administrador pide que reinicies Chrome para aplicar una actualización. Las # ventanas de incógnito no se volverán a abrir.}}</translation>
 <translation id="3622797965165704966">Ahora es más fácil utilizar Chrome con tu cuenta de Google y en ordenadores compartidos.</translation>
-<translation id="3637702109597584617"><ph name="TERMS_OF_SERVICE_LINK" />Condiciones de Servicio<ph name="END_TERMS_OF_SERVICE_LINK" /> de Google Chrome OS</translation>
 <translation id="3718181793972440140">Se eliminará un elemento de este dispositivo. Para recuperar tus datos en otro momento, inicia sesión en Chrome como <ph name="USER_EMAIL" />.</translation>
 <translation id="3735758079232443276">La extensión <ph name="EXTENSION_NAME" /> ha cambiado la página que se muestra al iniciar Chrome.</translation>
 <translation id="3780814664026482060">Chrome - <ph name="PAGE_TITLE" /></translation>
@@ -114,6 +113,7 @@ Es posible que algunas funciones no estén disponibles y que no se guarden los c
 <translation id="4205939740494406371">Chrome no puede comprobar tus contraseñas. Vuelve a intentarlo en 24 horas o <ph name="BEGIN_LINK" />comprueba las contraseñas en tu cuenta de Google<ph name="END_LINK" />.</translation>
 <translation id="424864128008805179">¿Quieres cerrar sesión en Chrome?</translation>
 <translation id="4251615635259297716">¿Quieres vincular tus datos de Chrome a esta cuenta?</translation>
+<translation id="4281844954008187215">Términos del Servicio</translation>
 <translation id="4293420128516039005">Inicia sesión para sincronizar y personalizar Chrome en todos tus dispositivos</translation>
 <translation id="4328355335528187361">Google Chrome Dev (mDNS-In)</translation>
 <translation id="4331809312908958774">SO de Chrome</translation>
@@ -148,7 +148,6 @@ Es posible que algunas funciones no estén disponibles y que no se guarden los c
 
 Puede que algunas funciones no estén disponibles. Especifica otro directorio de perfil o usa una versión más reciente de Chrome.</translation>
 <translation id="5193136243808726294">Google Chrome OS no puede abrir esta página.</translation>
-<translation id="5204098752394657250"><ph name="TERMS_OF_SERVICE_LINK" />Condiciones de Servicio<ph name="END_TERMS_OF_SERVICE_LINK" /> de Google Chrome</translation>
 <translation id="5251420635869119124">Los invitados pueden utilizar Chrome sin dejar nada atrás.</translation>
 <translation id="532046782124376502">Advertencia: Google Chrome no puede evitar que las extensiones registren el historial de navegación. Para inhabilitar esta extensión en modo de incógnito, desactiva esta opción.</translation>
 <translation id="5386244825306882791">También controla qué página se muestra al iniciar Chrome o al hacer búsquedas desde el omnibox.</translation>

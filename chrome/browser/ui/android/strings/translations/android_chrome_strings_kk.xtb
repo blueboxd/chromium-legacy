@@ -38,7 +38,6 @@
 <translation id="1258753120186372309">Google Doodle: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1260236875608242557">Іздеу және зерттеу</translation>
 <translation id="1266864766717917324"><ph name="CONTENT_TYPE" /> бөлісу мүмкін болмады.</translation>
-<translation id="1272079795634619415">Тоқтату</translation>
 <translation id="1283039547216852943">Жаю үшін түртіңіз</translation>
 <translation id="1285320974508926690">Бұл сайтты ешқашан аудармау</translation>
 <translation id="1291207594882862231">Тарихты, cookie файлдарын, сайт деректерін, кэшті жою…</translation>
@@ -51,7 +50,6 @@
 <translation id="1331212799747679585">Chrome браузерін жаңарту мүмкін емес. Басқа опциялар</translation>
 <translation id="1332501820983677155">Google Chrome функциясының пернелер тіркесімі</translation>
 <translation id="1360432990279830238">Шығып, синхрондауды өшіру керек пе?</translation>
-<translation id="1364532808393826295"><ph name="APP_NAME" /> – <ph name="NOTIFICATION_MESSAGE" /></translation>
 <translation id="1373696734384179344">Таңдалған мазмұнды жүктеу үшін жад жеткіліксіз.</translation>
 <translation id="1376578503827013741">Есептелуде…</translation>
 <translation id="1383876407941801731">Іздеу</translation>
@@ -122,7 +120,6 @@
 <translation id="2013642289801508067">{FILE_COUNT,plural, =1{# файл}other{# файл}}</translation>
 <translation id="2017836877785168846">Мекенжай жолағындағы тарихты және автотолтыруларды өшіреді.</translation>
 <translation id="2021896219286479412">Толық экран режимін басқару</translation>
-<translation id="2030769033451695672"><ph name="URL_OF_THE_CURRENT_TAB" /> қойындысына оралу үшін түртіңіз.</translation>
 <translation id="2038563949887743358">Жұмыс үстелі сайтын сұрау: қосу</translation>
 <translation id="204321170514947529"><ph name="APP_NAME" /> қолданбасының да Chrome браузерінде деректері бар</translation>
 <translation id="2049574241039454490"><ph name="FILE_SIZE_OF_TOTAL" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
@@ -592,7 +589,6 @@ Google есептік жазбасының шолу тарихы басқа Goog
 <translation id="5876056640971328065">Бейнені кідірту</translation>
 <translation id="5884076754568147479">Жұмыстарыңызға көмектесу үшін Assistant қызметі қолданылған сайттардың URL мекенжайлары және мазмұны, сонымен қатар Assistant арқылы жіберілген ақпарат Google-ға жіберіледі.</translation>
 <translation id="5919204609460789179">Синхрондауды бастау үшін <ph name="PRODUCT_NAME" /> өнімін жаңартыңыз</translation>
-<translation id="5922853908706496913">Экранды бөлісіп жатырсыз.</translation>
 <translation id="5937580074298050696"><ph name="AMOUNT" /> үнемделді</translation>
 <translation id="5939518447894949180">Қалпына келтіру</translation>
 <translation id="5942872142862698679">Google қызметімен іздеу</translation>
@@ -779,7 +775,6 @@ Google есептік жазбасының шолу тарихы басқа Goog
 <translation id="7514365320538308">Жүктеу</translation>
 <translation id="751961395872307827">Сайтқа қосылу мүмкін емес</translation>
 <translation id="7542481630195938534">Ұсыныстар алынбайды</translation>
-<translation id="7554752735887601236">Сайт микрофонды пайдаланып жатыр.</translation>
 <translation id="7559975015014302720">Lite режимі өшірулі</translation>
 <translation id="7562080006725997899">Шолу деректерін тазалау</translation>
 <translation id="756809126120519699">Chrome деректері өшірілді</translation>
@@ -813,7 +808,6 @@ Google есептік жазбасының шолу тарихы басқа Goog
 <translation id="7774809984919390718">{PAYMENT_METHOD,plural, =1{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 және тағы <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}other{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 және тағы <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}}</translation>
 <translation id="7791543448312431591">Қосу</translation>
 <translation id="780301667611848630">Жоқ, рақмет</translation>
-<translation id="7804248752222191302">Сайт камераны пайдаланып жатыр.</translation>
 <translation id="7810647596859435254">Ашу әдісі…</translation>
 <translation id="7821588508402923572">Деректерді үнемдеу ақпараты осы жерде көрсетіледі</translation>
 <translation id="783819812427904514">Бейненің дыбысын қосу</translation>
@@ -885,9 +879,7 @@ Google есептік жазбасының шолу тарихы басқа Goog
 <translation id="8349013245300336738">Пайдаланылған деректер көлемі бойынша сұрыптау</translation>
 <translation id="8364299278605033898">Танымал веб-сайттарды көріңіз.</translation>
 <translation id="8368027906805972958">Белгісіз немесе жарамсыз құрылғы (<ph name="DEVICE_ID" />)</translation>
-<translation id="83792324527827022">Сайт камера мен микрофонды пайдаланып жатыр.</translation>
 <translation id="8393700583063109961">Хабар жіберу</translation>
-<translation id="8394832520002899662">Сайтқа оралу үшін түртіңіз.</translation>
 <translation id="8413126021676339697">Толық журналды көрсету</translation>
 <translation id="8427875596167638501">"Алдын ала қарау" қойындысы жартылай ашық.</translation>
 <translation id="8428213095426709021">Параметрлер</translation>
@@ -984,7 +976,6 @@ Google есептік жазбасының шолу тарихы басқа Goog
 <translation id="970715775301869095"><ph name="MINUTES" /> мин қалды</translation>
 <translation id="974555521953189084">Синхрондауды бастау үшін құпия фразаны енгізіңіз</translation>
 <translation id="981121421437150478">Желіден тыс</translation>
-<translation id="982182592107339124">Барлық сайттардың деректері жойылады, соның ішінде:</translation>
 <translation id="983192555821071799">Барлық қойындыларды жабу</translation>
 <translation id="987264212798334818">Жалпы</translation>
 </translationbundle>

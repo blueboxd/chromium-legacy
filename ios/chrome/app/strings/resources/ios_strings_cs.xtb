@@ -158,6 +158,7 @@
 <translation id="285960592395650245">Znovu stáhnout</translation>
 <translation id="2870560284913253234">Stránky</translation>
 <translation id="2871695793448672541">Skryté, heslo</translation>
+<translation id="2876369937070532032">Když je ohrožena vaše bezpečnost, odesílá adresy URL některých navštívených stránek do Googlu</translation>
 <translation id="288655811176831528">Zavřít kartu</translation>
 <translation id="2898963176829412617">Nová složka…</translation>
 <translation id="2916171785467530738">Automaticky doplňovat vyhledávací dotazy a adresy URL</translation>
@@ -177,6 +178,7 @@
 <translation id="3161291298470460782">Tímto se odhlásíte, vypnete synchronizaci a vymažete z tohoto zařízení veškerá data prohlížeče Chrome. Synchronizovaná data vám v účtu Google zůstanou.</translation>
 <translation id="3175081911749765310">Webové služby</translation>
 <translation id="3178650076442119961">Aktivní dnes</translation>
+<translation id="3181954750937456830">Bezpečné prohlížení (chrání vás a vaše zařízení před nebezpečnými weby)</translation>
 <translation id="3207960819495026254">Přidáno do záložek</translation>
 <translation id="3224641773458703735">Chcete-li exportovat hesla, musíte nejdříve na zařízení nastavit heslo.</translation>
 <translation id="3240426699337459095">Odkaz byl zkopírován</translation>
@@ -430,6 +432,7 @@ Vaše data byla <ph name="TIME" /> zašifrována pomocí heslové fráze pro syn
 <translation id="6447842834002726250">Soubory cookie</translation>
 <translation id="6464071786529933911">Otevřít v nové anonymní kartě</translation>
 <translation id="6476800141292307438">Stránka se překládá do jazyka <ph name="LANGUAGE" />. Možnosti jsou k dispozici u dolního okraje obrazovky.</translation>
+<translation id="648164694371393720">Chyba ověření</translation>
 <translation id="6482629121755362506">Počet smazaných položek: <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /></translation>
 <translation id="6561262006871132942">Přiblížit</translation>
 <translation id="6610002944194042868">Možnosti Překladače</translation>

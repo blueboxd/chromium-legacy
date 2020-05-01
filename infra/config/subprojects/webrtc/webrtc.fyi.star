@@ -61,7 +61,7 @@ builder(
 )
 
 builder(
-    name = 'WebRTC Chromium FYI Android Tests (dbg) (K Nexus5)',
+    name = 'WebRTC Chromium FYI Android Tests (dbg) (L Nexus5)',
     triggered_by = ['WebRTC Chromium FYI Android Builder (dbg)'],
 )
 

@@ -35,6 +35,7 @@
 <translation id="1938124657309484470">Вредност мора да буде <ph name="MAXIMUM_DATE_OR_TIME" /> или старија.</translation>
 <translation id="1946271899482435442">Прикажи бирач датума</translation>
 <translation id="1993104285338243655">Пребачено је на пресликавање</translation>
+<translation id="2031987842108996681">Црвени канал</translation>
 <translation id="2060505056492490888">„<ph name="DOT" />“ је стављено на погрешно место у „<ph name="INVALIDDOMAIN" />“.</translation>
 <translation id="2148716181193084225">Данас</translation>
 <translation id="2158401438286456825">листа страница</translation>
@@ -45,6 +46,7 @@
 <translation id="2291999235780842123">поље за потврду</translation>
 <translation id="2311842470354187719">прелом странице</translation>
 <translation id="2335594187091864976">бирач датума и времена</translation>
+<translation id="2393030564806080191">Хексадецимална вредност боје</translation>
 <translation id="245932805758469625">број преосталих секунди видео снимка</translation>
 <translation id="248395913932153421">Дан</translation>
 <translation id="2507943997699731163">Попуните ово поље.</translation>
@@ -52,6 +54,7 @@
 <translation id="2561842179657104141">прикажи више контрола за медије</translation>
 <translation id="2572483411312390101">пустите</translation>
 <translation id="2613802280814924224">Унесите важећу вредност. Најближа важећа вредност је <ph name="VALID_VALUE" />.</translation>
+<translation id="2634240155926812724">Зелени канал</translation>
 <translation id="2653659639078652383">Пошаљи</translation>
 <translation id="2657045182931379222">графички објекат</translation>
 <translation id="2674318244760992338">подножје</translation>
@@ -127,6 +130,7 @@
 <translation id="5034860022980953847">индикатор напретка</translation>
 <translation id="5090250355906949916">клизач за трајање видео снимка</translation>
 <translation id="5093189678851173835">натпис</translation>
+<translation id="509897012892853729">Плави канал</translation>
 <translation id="5117590920725113268">Прикажи следећи месец</translation>
 <translation id="512758898067543763">заглавље реда</translation>
 <translation id="5143125788380636750">епилог</translation>
@@ -164,6 +168,7 @@
 <translation id="6166809985690652833">поговор</translation>
 <translation id="6209276755895393898">Изгледа да је ово: <ph name="DESCRIPTION" /></translation>
 <translation id="6213469881011901533">речник термина</translation>
+<translation id="6281588256137006900">Осветљеност</translation>
 <translation id="6281763101136022427">URL</translation>
 <translation id="6310801910862476708">Изађи из режима слике у слици</translation>
 <translation id="6398862346408813489">Прикажи таблу за избор месеца</translation>
@@ -184,6 +189,7 @@
 <translation id="6790428901817661496">Пусти</translation>
 <translation id="6820355525329141109">Учитавање додатне компоненте није успело.</translation>
 <translation id="6820615603175220800">референца библиографије</translation>
+<translation id="6831465880655513317">Бојите добро помоћу дводимензионалног клизача за избор засићености боја и осветљености</translation>
 <translation id="6843725295806269523">искључи звук</translation>
 <translation id="6885760532393684712">каталог</translation>
 <translation id="689129560213475294">знак издавача</translation>
@@ -201,6 +207,7 @@
 <translation id="7263440858009898357">Изаберите ставку са листе.</translation>
 <translation id="727747134524199931">заглавље колоне</translation>
 <translation id="7320576522385648310">баферовање</translation>
+<translation id="7341556277900466204">Бојите добро</translation>
 <translation id="7353453495576941748">заслуга</translation>
 <translation id="7364796246159120393">Одабери датотеку</translation>
 <translation id="739024184232394898">Друго...</translation>
@@ -221,6 +228,7 @@
 <translation id="775297008183122718">Неважећи унос</translation>
 <translation id="7789962463072032349">паузирај</translation>
 <translation id="7802800022689234070">троугао за откривање</translation>
+<translation id="7852167693871241274">Клизач за нијансу</translation>
 <translation id="7888071071722539607">Уврстите „<ph name="ATSIGN" />“ у имејл адресу. У адреси е-поште „<ph name="INVALIDADDRESS" />“ недостаје „<ph name="ATSIGN" />“.</translation>
 <translation id="7891486169920085145">разделник</translation>
 <translation id="795667975304826397">Није одабрано</translation>
@@ -263,6 +271,7 @@
 <translation id="8875657656876809964">Грешка при пуштању видео снимка</translation>
 <translation id="8889402386540077796">Нијанса</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> KB</translation>
+<translation id="894736920926684893">Форматирај прекидач</translation>
 <translation id="8987927404178983737">Месец</translation>
 <translation id="901493112792887934">актуелно време у секундама</translation>
 <translation id="901834265349196618">имејл</translation>

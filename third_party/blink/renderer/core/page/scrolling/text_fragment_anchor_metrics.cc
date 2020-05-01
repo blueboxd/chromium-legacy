@@ -4,7 +4,7 @@
 
 #include "third_party/blink/renderer/core/page/scrolling/text_fragment_anchor_metrics.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/trace_event/trace_event.h"
 #include "third_party/blink/renderer/core/frame/web_feature.h"

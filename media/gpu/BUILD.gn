@@ -480,9 +480,11 @@ source_set("unit_tests") {
     "//base/test:test_support",
     "//media:test_support",
     "//media/gpu",
+    "//media/gpu:test_support",
     "//media/gpu/ipc/service:unit_tests",
     "//testing/gmock",
     "//testing/gtest",
+    "//ui/gl:test_support",
   ]
   sources = [ "h264_decoder_unittest.cc" ]
 
@@ -505,6 +507,7 @@ source_set("unit_tests") {
       "windows/d3d11_copying_texture_wrapper_unittest.cc",
       "windows/d3d11_decoder_configurator_unittest.cc",
       "windows/d3d11_texture_selector_unittest.cc",
+      "windows/d3d11_texture_wrapper_unittest.cc",
       "windows/d3d11_video_decoder_unittest.cc",
       "windows/d3d11_video_device_format_support_unittest.cc",
       "windows/d3d11_video_processor_proxy_unittest.cc",

@@ -324,11 +324,12 @@ class WebMediaPlayerImplTest
                                          /*compositing_enabled=*/false,
                                          nullptr,
                                          mojo::NullAssociatedReceiver())),
-        web_local_frame_(
-            blink::WebLocalFrame::CreateMainFrame(web_view_,
-                                                  &web_frame_client_,
-                                                  nullptr,
-                                                  nullptr)),
+        web_local_frame_(blink::WebLocalFrame::CreateMainFrame(
+            web_view_,
+            &web_frame_client_,
+            nullptr,
+            base::UnguessableToken::Create(),
+            nullptr)),
         context_provider_(viz::TestContextProvider::Create()),
         audio_parameters_(TestAudioParameters::Normal()),
         memory_dump_manager_(

@@ -119,16 +119,20 @@ public class ChosenObjectSettings extends SiteSettingsPreferenceFragment {
         };
         mSearchView.setOnQueryTextListener(queryTextListener);
 
-        MenuItem help =
-                menu.add(Menu.NONE, R.id.menu_id_targeted_help, Menu.NONE, R.string.menu_help);
-        help.setIcon(VectorDrawableCompat.create(
-                getResources(), R.drawable.ic_help_and_feedback, getActivity().getTheme()));
+        if (getSiteSettingsClient().getSiteSettingsHelpClient().isHelpAndFeedbackEnabled()) {
+            MenuItem help = menu.add(
+                    Menu.NONE, R.id.menu_id_site_settings_help, Menu.NONE, R.string.menu_help);
+            help.setIcon(VectorDrawableCompat.create(
+                    getResources(), R.drawable.ic_help_and_feedback, getActivity().getTheme()));
+        }
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        if (item.getItemId() == R.id.menu_id_targeted_help) {
-            getSiteSettingsClient().launchSettingsHelpAndFeedbackActivity(getActivity());
+        if (item.getItemId() == R.id.menu_id_site_settings_help) {
+            getSiteSettingsClient()
+                    .getSiteSettingsHelpClient()
+                    .launchSettingsHelpAndFeedbackActivity(getActivity());
             return true;
         }
         return false;

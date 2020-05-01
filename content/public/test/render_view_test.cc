@@ -445,6 +445,7 @@ void RenderViewTest::SetUp() {
   view_params->view_id = render_thread_->GetNextRoutingID();
   view_params->main_frame_widget_routing_id =
       render_thread_->GetNextRoutingID();
+  view_params->main_frame_frame_token = base::UnguessableToken::Create();
   view_params->main_frame_routing_id = render_thread_->GetNextRoutingID();
   view_params->main_frame_interface_bundle =
       mojom::DocumentScopedInterfaceBundle::New();

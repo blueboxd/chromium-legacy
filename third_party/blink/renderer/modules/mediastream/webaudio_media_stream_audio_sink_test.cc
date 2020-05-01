@@ -6,7 +6,6 @@
 
 #include <stddef.h>
 
-#include "base/logging.h"
 #include "media/base/audio_bus.h"
 #include "media/base/audio_parameters.h"
 #include "testing/gtest/include/gtest/gtest.h"

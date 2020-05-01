@@ -50,7 +50,8 @@ class CONTENT_EXPORT WebBundleURLLoaderFactory final
 
  private:
   class EntryLoader;
-  friend class EntryLoader;
+
+  bool CanHandleRequest(const network::ResourceRequest& resource_request) const;
 
   mojo::ReceiverSet<network::mojom::URLLoaderFactory> receivers_;
   scoped_refptr<WebBundleReader> reader_;

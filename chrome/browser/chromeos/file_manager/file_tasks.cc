@@ -80,6 +80,7 @@ const char kFileBrowserHandlerTaskType[] = "file";
 const char kFileHandlerTaskType[] = "app";
 const char kArcAppTaskType[] = "arc";
 const char kCrostiniAppTaskType[] = "crostini";
+const char kPluginVmAppTaskType[] = "pluginvm";
 const char kWebAppTaskType[] = "web";
 const char kImportCrostiniImageHandlerId[] = "import-crostini-image";
 const char kInstallLinuxPackageHandlerId[] = "install-linux-package";
@@ -97,6 +98,8 @@ std::string TaskTypeToString(TaskType task_type) {
       return kCrostiniAppTaskType;
     case TASK_TYPE_WEB_APP:
       return kWebAppTaskType;
+    case TASK_TYPE_PLUGIN_VM_APP:
+      return kPluginVmAppTaskType;
     case TASK_TYPE_UNKNOWN:
     case DEPRECATED_TASK_TYPE_DRIVE_APP:
     case NUM_TASK_TYPE:
@@ -118,6 +121,8 @@ TaskType StringToTaskType(const std::string& str) {
     return TASK_TYPE_CROSTINI_APP;
   if (str == kWebAppTaskType)
     return TASK_TYPE_WEB_APP;
+  if (str == kPluginVmAppTaskType)
+    return TASK_TYPE_PLUGIN_VM_APP;
   return TASK_TYPE_UNKNOWN;
 }
 
@@ -498,7 +503,8 @@ bool ExecuteFileTask(Profile* profile,
     return true;
   }
 
-  if (task.task_type == TASK_TYPE_CROSTINI_APP) {
+  if (task.task_type == TASK_TYPE_CROSTINI_APP ||
+      task.task_type == TASK_TYPE_PLUGIN_VM_APP) {
     DCHECK_EQ(kGuestOsAppActionID, task.action_id);
     ExecuteGuestOsTask(profile, task, file_urls, std::move(done));
     return true;

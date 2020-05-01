@@ -38,7 +38,6 @@
 <translation id="1258753120186372309">Googles doodle: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1260236875608242557">Sök och utforska</translation>
 <translation id="1266864766717917324">Det gick inte att dela <ph name="CONTENT_TYPE" /></translation>
-<translation id="1272079795634619415">Stopp</translation>
 <translation id="1283039547216852943">Tryck och utöka</translation>
 <translation id="1285320974508926690">Översätt aldrig den här webbplatsen</translation>
 <translation id="1291207594882862231">Rensa historiken, cookies, webbplatsdata, cacheminnet …</translation>
@@ -50,8 +49,8 @@
 <translation id="1327257854815634930">Navigeringshistoriken har öppnats</translation>
 <translation id="1331212799747679585">Det går inte att uppdatera Chrome. Fler alternativ</translation>
 <translation id="1332501820983677155">Kortkommandon för funktioner i Google Chrome</translation>
+<translation id="1347468774581902829">Hantera aktivitet</translation>
 <translation id="1360432990279830238">Logga ut och inaktivera synkronisering?</translation>
-<translation id="1364532808393826295"><ph name="APP_NAME" />–<ph name="NOTIFICATION_MESSAGE" /></translation>
 <translation id="1373696734384179344">Det finns inte tillräckligt med minne för att ladda ned det valda innehållet.</translation>
 <translation id="1376578503827013741">Beräknar …</translation>
 <translation id="1383876407941801731">Sök</translation>
@@ -122,7 +121,6 @@
 <translation id="2013642289801508067">{FILE_COUNT,plural, =1{# fil}other{# filer}}</translation>
 <translation id="2017836877785168846">Rensar historik och autoslutföranden i adressfältet.</translation>
 <translation id="2021896219286479412">Helskärmskontroller på webbsidan</translation>
-<translation id="2030769033451695672">Återgå till <ph name="URL_OF_THE_CURRENT_TAB" /> genom att trycka här</translation>
 <translation id="2038563949887743358">Aktivera begäran av skrivbordsversion</translation>
 <translation id="204321170514947529">Data för <ph name="APP_NAME" /> finns även i Chrome</translation>
 <translation id="2049574241039454490"><ph name="FILE_SIZE_OF_TOTAL" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
@@ -434,6 +432,7 @@ Det kan finnas andra former av webbhistorik i Google-kontot på <ph name="BEGIN_
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> bokmärken har raderats</translation>
 <translation id="4665282149850138822"><ph name="NAME" /> har lagts till på startskärmen.</translation>
 <translation id="4684427112815847243">Synkronisera allt</translation>
+<translation id="4688610874307684559">Körs i Chrome (initialt)</translation>
 <translation id="4695891336199304370">{SHIPPING_OPTIONS,plural, =1{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 och <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> till}other{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 och <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> till}}</translation>
 <translation id="4696983787092045100">Skicka texten till dina enheter</translation>
 <translation id="4698034686595694889">Visa offline i <ph name="APP_NAME" /></translation>
@@ -592,7 +591,6 @@ Det kan finnas andra former av webbhistorik i Google-kontot på <ph name="BEGIN_
 <translation id="5876056640971328065">Pausa video</translation>
 <translation id="5884076754568147479">Innehållet på en webbplats där du använder Google Assistent, dess webbadress samt information som du skickar via assistenten överförs till Google så att du kan få uppgifterna utförda</translation>
 <translation id="5919204609460789179">Uppdatera <ph name="PRODUCT_NAME" /> för att starta synkronisering</translation>
-<translation id="5922853908706496913">Delar skärmen</translation>
 <translation id="5937580074298050696"><ph name="AMOUNT" /> har sparats</translation>
 <translation id="5939518447894949180">Återställ</translation>
 <translation id="5942872142862698679">Du söker med Google</translation>
@@ -773,16 +771,17 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="7479104141328977413">Flikhantering</translation>
 <translation id="7481312909269577407">Framåt</translation>
 <translation id="7482656565088326534">Fliken Förhandsgranskning</translation>
+<translation id="7484997419527351112">Förslag – av</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (uppdaterades <ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7494974237137038751">Sparad data</translation>
 <translation id="7498271377022651285">Vänta …</translation>
 <translation id="7514365320538308">Ladda ned</translation>
 <translation id="751961395872307827">Det gick inte att ansluta till webbplatsen</translation>
 <translation id="7542481630195938534">Det går inte att få förslag</translation>
-<translation id="7554752735887601236">En webbplats använder mikrofonen</translation>
 <translation id="7559975015014302720">Begränsat läge har inaktiverats</translation>
 <translation id="7562080006725997899">Tar bort webbinformation</translation>
 <translation id="756809126120519699">Data i Chrome har rensats</translation>
+<translation id="7577900504646297215">Hantera intressen</translation>
 <translation id="757855969265046257">{FILES,plural, =1{<ph name="FILES_DOWNLOADED_ONE" /> fil har laddats ned}other{<ph name="FILES_DOWNLOADED_MANY" /> filer har laddats ned}}</translation>
 <translation id="7588219262685291874">Aktivera mörkt tema när enhetens batterisparläge är på</translation>
 <translation id="7593557518625677601">Återaktivera synkronisering i Android-inställningarna så börjar Chrome synkas</translation>
@@ -813,7 +812,6 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="7774809984919390718">{PAYMENT_METHOD,plural, =1{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 och <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> till}other{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 och <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> till}}</translation>
 <translation id="7791543448312431591">Lägg till</translation>
 <translation id="780301667611848630">Nej tack</translation>
-<translation id="7804248752222191302">En webbplats använder kameran</translation>
 <translation id="7810647596859435254">Öppna med …</translation>
 <translation id="7821588508402923572">Här visas hur mycket data du har sparat</translation>
 <translation id="783819812427904514">Slå på ljudet för videon</translation>
@@ -885,9 +883,7 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="8349013245300336738">Sortera efter dataförbrukning</translation>
 <translation id="8364299278605033898">Visa populära webbplatser</translation>
 <translation id="8368027906805972958">Enheten är okänd eller stöds inte (<ph name="DEVICE_ID" />)</translation>
-<translation id="83792324527827022">En webbplats använder kameran och mikrofonen</translation>
 <translation id="8393700583063109961">Skicka meddelande</translation>
-<translation id="8394832520002899662">Återgå till webbplatsen genom att trycka här</translation>
 <translation id="8413126021676339697">Visa fullständig historik</translation>
 <translation id="8427875596167638501">Fliken Förhandsgranskning visas på halva skärmen</translation>
 <translation id="8428213095426709021">Inställningar</translation>
@@ -984,7 +980,6 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="970715775301869095"><ph name="MINUTES" /> minuter kvar</translation>
 <translation id="974555521953189084">Ange lösenfrasen för att starta synkroniseringen</translation>
 <translation id="981121421437150478">Offline</translation>
-<translation id="982182592107339124">Åtgärden raderar data för alla webbplatser, inklusive:</translation>
 <translation id="983192555821071799">Stäng alla flikar</translation>
 <translation id="987264212798334818">Allmänt</translation>
 </translationbundle>

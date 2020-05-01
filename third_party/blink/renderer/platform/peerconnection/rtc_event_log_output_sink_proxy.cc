@@ -4,7 +4,7 @@
 
 #include "third_party/blink/renderer/platform/peerconnection/rtc_event_log_output_sink_proxy.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_event_log_output_sink.h"
 
 namespace blink {

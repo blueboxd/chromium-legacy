@@ -1150,6 +1150,7 @@ group("browser_dependencies") {
     "//chrome/browser",
     "//chrome/common",
     "//components/gwp_asan/buildflags",
+    "//components/heap_profiling/in_process",
     "//components/sync",
     "//services/tracing/public/cpp",
   ]
@@ -1472,6 +1473,7 @@ if (is_android) {
       "//chrome/gpu",
       "//chrome/renderer",
       "//components/gwp_asan/buildflags",
+      "//components/heap_profiling/in_process",
       "//components/minidump_uploader",
       "//components/safe_browsing:buildflags",
       "//components/safe_browsing/android:safe_browsing_mobile",

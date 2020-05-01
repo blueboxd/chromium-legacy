@@ -7,8 +7,9 @@
 
 #include <memory>
 
-#include "components/prefs/pref_service.h"
 #include "weblayer/browser/weblayer_field_trials.h"
+
+class PrefService;
 
 namespace variations {
 class VariationsService;
@@ -23,7 +24,9 @@ class SystemNetworkContextManager;
 // of experiments.
 class FeatureListCreator {
  public:
-  FeatureListCreator();
+  explicit FeatureListCreator(PrefService* local_state);
+  FeatureListCreator(const FeatureListCreator&) = delete;
+  FeatureListCreator& operator=(const FeatureListCreator&) = delete;
   ~FeatureListCreator();
 
   // Return the single instance of FeatureListCreator. This does *not* trigger
@@ -43,8 +46,6 @@ class FeatureListCreator {
   // Calls through to the VariationService.
   void OnBrowserFragmentStarted();
 
-  PrefService* local_state() const { return local_state_.get(); }
-
   variations::VariationsService* variations_service() const {
     return variations_service_.get();
   }
@@ -52,7 +53,8 @@ class FeatureListCreator {
  private:
   void SetUpFieldTrials();
 
-  std::unique_ptr<PrefService> local_state_;
+  // Owned by BrowserProcess.
+  PrefService* local_state_;
 
   SystemNetworkContextManager* system_network_context_manager_;  // NOT OWNED.
 
@@ -62,8 +64,6 @@ class FeatureListCreator {
 
   // Set to true the first time OnBrowserFragmentStarted() is called.
   bool has_browser_fragment_started_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(FeatureListCreator);
 };
 
 }  // namespace weblayer

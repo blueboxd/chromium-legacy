@@ -38,7 +38,6 @@
 <translation id="1258753120186372309">Google ünnepi embléma: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1260236875608242557">Keresés és felfedezés</translation>
 <translation id="1266864766717917324">Nem sikerült a(z) <ph name="CONTENT_TYPE" /> megosztása</translation>
-<translation id="1272079795634619415">Leállítás</translation>
 <translation id="1283039547216852943">Koppintson a kibontáshoz</translation>
 <translation id="1285320974508926690">Ezt a webhelyet soha ne fordítsa le</translation>
 <translation id="1291207594882862231">Előzmények, cookie-k, webhelyadatok és a gyorsítótár törlése…</translation>
@@ -50,8 +49,8 @@
 <translation id="1327257854815634930">Megnyitotta a navigációs előzményeket</translation>
 <translation id="1331212799747679585">A Chrome frissítése nem lehetséges. További lehetőségek</translation>
 <translation id="1332501820983677155">A Google Chrome-funkciók billentyűparancsai</translation>
+<translation id="1347468774581902829">Tevékenységek kezelése</translation>
 <translation id="1360432990279830238">Kijelentkezik, és kikapcsolja a szinkronizálást?</translation>
-<translation id="1364532808393826295"><ph name="APP_NAME" />–<ph name="NOTIFICATION_MESSAGE" /></translation>
 <translation id="1373696734384179344">Nincs elegendő memória a kiválasztott tartalom letöltéséhez.</translation>
 <translation id="1376578503827013741">Számítás…</translation>
 <translation id="1383876407941801731">Keresés</translation>
@@ -122,7 +121,6 @@
 <translation id="2013642289801508067">{FILE_COUNT,plural, =1{# fájl}other{# fájl}}</translation>
 <translation id="2017836877785168846">Törli a címsávban található előzményeket és automatikus kiegészítéseket.</translation>
 <translation id="2021896219286479412">Teljes képernyős oldal vezérlői</translation>
-<translation id="2030769033451695672">Koppintson, hogy visszatérjen ide: <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
 <translation id="2038563949887743358">Kapcsolja be az Asztali webhely kérése funkciót</translation>
 <translation id="204321170514947529">A(z) <ph name="APP_NAME" /> a Chrome-ban is rendelkezik adatokkal</translation>
 <translation id="2049574241039454490"><ph name="FILE_SIZE_OF_TOTAL" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
@@ -434,6 +432,7 @@ Előfordulhat, hogy Google-fiókjában (a <ph name="BEGIN_LINK" />myactivity.goo
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> könyvjelző törölve</translation>
 <translation id="4665282149850138822">A(z) <ph name="NAME" /> felkerült a kezdőképernyőre</translation>
 <translation id="4684427112815847243">Az összes szinkronizálása</translation>
+<translation id="4688610874307684559">A Chrome-ban fut (kezdeti)</translation>
 <translation id="4695891336199304370">{SHIPPING_OPTIONS,plural, =1{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 és további <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}other{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 és további <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}}</translation>
 <translation id="4696983787092045100">SMS küldése az eszközeire</translation>
 <translation id="4698034686595694889">Megtekintés offline állapotban itt: <ph name="APP_NAME" /></translation>
@@ -592,7 +591,6 @@ A beállítás módosításához <ph name="BEGIN_LINK" />állítsa vissza a szin
 <translation id="5876056640971328065">Videó szüneteltetése</translation>
 <translation id="5884076754568147479">Annak érdekében, hogy segíteni tudjon a feladatok elvégzésében, a Google megkapja azoknak a webhelyeknek az URL-jeit és tartalmait, amelyeken Ön használta Segédjét, valamint megkapja a Segéden keresztül elküldött információkat</translation>
 <translation id="5919204609460789179">A szinkronizálás megkezdéséhez frissítse a következőt: <ph name="PRODUCT_NAME" /></translation>
-<translation id="5922853908706496913">Képernyő megosztása</translation>
 <translation id="5937580074298050696"><ph name="AMOUNT" /> megtakarított adatmennyiség</translation>
 <translation id="5939518447894949180">Visszaállítás</translation>
 <translation id="5942872142862698679">A Google használata a kereséshez</translation>
@@ -773,16 +771,17 @@ Egyes webhelyek például válaszolhatnak rá úgy, hogy olyan hirdetéseket jel
 <translation id="7479104141328977413">Lapkezelés</translation>
 <translation id="7481312909269577407">Előre</translation>
 <translation id="7482656565088326534">Előnézeti lap</translation>
+<translation id="7484997419527351112">Discover – kikapcsolva</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (Frissítve: <ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7494974237137038751">megtakarított adatmennyiség</translation>
 <translation id="7498271377022651285">Kérjük, várjon…</translation>
 <translation id="7514365320538308">Letöltés</translation>
 <translation id="751961395872307827">Nem lehet csatlakozni a webhelyhez</translation>
 <translation id="7542481630195938534">Nem sikerült lekérni a javaslatokat</translation>
-<translation id="7554752735887601236">Egy webhely használja az Ön mikrofonját</translation>
 <translation id="7559975015014302720">Az Egyszerűsített mód ki van kapcsolva</translation>
 <translation id="7562080006725997899">Böngészési adatok törlése</translation>
 <translation id="756809126120519699">Chrome-adatok törölve</translation>
+<translation id="7577900504646297215">Érdeklődési körök kezelése</translation>
 <translation id="757855969265046257">{FILES,plural, =1{<ph name="FILES_DOWNLOADED_ONE" /> fájl letöltve}other{<ph name="FILES_DOWNLOADED_MANY" /> fájl letöltve}}</translation>
 <translation id="7588219262685291874">Sötét téma bekapcsolása, amikor az eszköz Akkumulátorkímélő módja be van kapcsolva</translation>
 <translation id="7593557518625677601">Aktiválja újra az Android rendszer szinkronizálását a Chrome-szinkronizáláshoz</translation>
@@ -813,7 +812,6 @@ Egyes webhelyek például válaszolhatnak rá úgy, hogy olyan hirdetéseket jel
 <translation id="7774809984919390718">{PAYMENT_METHOD,plural, =1{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 és további <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}other{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 és további <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}}</translation>
 <translation id="7791543448312431591">Hozzáadás</translation>
 <translation id="780301667611848630">Köszönöm, nem</translation>
-<translation id="7804248752222191302">Egy webhely használja az Ön kameráját</translation>
 <translation id="7810647596859435254">Megnyitás ezzel:</translation>
 <translation id="7821588508402923572">Itt látható a megtakarított adatmennyiség</translation>
 <translation id="783819812427904514">Videó némításának feloldása</translation>
@@ -885,9 +883,7 @@ Egyes webhelyek például válaszolhatnak rá úgy, hogy olyan hirdetéseket jel
 <translation id="8349013245300336738">Rendezés a felhasznált adatmennyiség szerint</translation>
 <translation id="8364299278605033898">Tekintse meg a népszerű webhelyeket</translation>
 <translation id="8368027906805972958">Ismeretlen vagy nem támogatott eszköz (<ph name="DEVICE_ID" />)</translation>
-<translation id="83792324527827022">Egy webhely használja az Ön kameráját és mikrofonját</translation>
 <translation id="8393700583063109961">Üzenet küldése</translation>
-<translation id="8394832520002899662">Koppintson a webhelyre való visszatéréshez</translation>
 <translation id="8413126021676339697">Az összes előzmény</translation>
 <translation id="8427875596167638501">Félmagasságban megnyitott előnézeti ablak</translation>
 <translation id="8428213095426709021">Beállítások</translation>
@@ -984,7 +980,6 @@ Egyes webhelyek például válaszolhatnak rá úgy, hogy olyan hirdetéseket jel
 <translation id="970715775301869095"><ph name="MINUTES" /> perc van hátra</translation>
 <translation id="974555521953189084">A szinkronizálás megkezdéséhez adja meg összetett jelszavát</translation>
 <translation id="981121421437150478">Offline</translation>
-<translation id="982182592107339124">Ezzel törli az összes webhely adatait, beleértve a következőket:</translation>
 <translation id="983192555821071799">Az összes lap bezárása</translation>
 <translation id="987264212798334818">Általános</translation>
 </translationbundle>

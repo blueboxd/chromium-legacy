@@ -165,7 +165,7 @@ TEST_F(PrintJobDatabaseImplTest, SavePrintJob) {
   PrintJobInfo print_job_info = ConstructPrintJobInfo(kId1, kTitle1);
   SavePrintJob(print_job_info);
   std::vector<PrintJobInfo> entries = GetPrintJobs();
-  EXPECT_EQ(1u, entries.size());
+  ASSERT_EQ(1u, entries.size());
   EXPECT_EQ(kId1, entries[0].id());
   EXPECT_EQ(kTitle1, entries[0].title());
 }
@@ -178,7 +178,7 @@ TEST_F(PrintJobDatabaseImplTest, DeletePrintJobs) {
   SavePrintJob(print_job_info2);
   DeletePrintJobs({kId1});
   std::vector<PrintJobInfo> entries = GetPrintJobs();
-  EXPECT_EQ(1u, entries.size());
+  ASSERT_EQ(1u, entries.size());
   EXPECT_EQ(kId2, entries[0].id());
   EXPECT_EQ(kTitle2, entries[0].title());
 }
@@ -201,7 +201,7 @@ TEST_F(PrintJobDatabaseImplTest, GetPrintJobsFromDatabase) {
   PrintJobInfo print_job_info = ConstructPrintJobInfo(kId1, kTitle1);
   SavePrintJob(print_job_info);
   std::vector<PrintJobInfo> entries = GetPrintJobsFromProtoDatabase();
-  EXPECT_EQ(1u, entries.size());
+  ASSERT_EQ(1u, entries.size());
   EXPECT_EQ(kId1, entries[0].id());
   EXPECT_EQ(kTitle1, entries[0].title());
 }
@@ -225,7 +225,7 @@ TEST_F(PrintJobDatabaseImplTest, TwoSimultaneousSavePrintJobRequests) {
   run_loop2.Run();
 
   std::vector<PrintJobInfo> entries = GetPrintJobsFromProtoDatabase();
-  EXPECT_EQ(2u, entries.size());
+  ASSERT_EQ(2u, entries.size());
   std::vector<std::string> ids = {entries[0].id(), entries[1].id()};
   EXPECT_TRUE(std::find(ids.begin(), ids.end(), kId1) != ids.end());
   EXPECT_TRUE(std::find(ids.begin(), ids.end(), kId2) != ids.end());
@@ -247,7 +247,7 @@ TEST_F(PrintJobDatabaseImplTest, RequestsBeforeInitialization) {
   get_print_jobs_run_loop.Run();
 
   std::vector<PrintJobInfo> print_job_entries = entries();
-  EXPECT_EQ(1u, print_job_entries.size());
+  ASSERT_EQ(1u, print_job_entries.size());
   EXPECT_EQ(kId1, print_job_entries[0].id());
   EXPECT_EQ(kTitle1, print_job_entries[0].title());
 }

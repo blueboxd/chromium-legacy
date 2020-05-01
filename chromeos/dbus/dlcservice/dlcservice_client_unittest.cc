@@ -202,6 +202,57 @@ TEST_F(DlcserviceClientTest, UninstallBusyStatusTest) {
   base::RunLoop().RunUntilIdle();
 }
 
+TEST_F(DlcserviceClientTest, PurgeSuccessTest) {
+  responses_.push_back(dbus::Response::CreateEmpty());
+
+  EXPECT_CALL(*mock_proxy_.get(), DoCallMethodWithErrorResponse(_, _, _))
+      .WillOnce(
+          Invoke(this, &DlcserviceClientTest::CallMethodWithErrorResponse));
+
+  DlcserviceClient::PurgeCallback callback = base::BindOnce(
+      [](const std::string& err) { EXPECT_EQ(dlcservice::kErrorNone, err); });
+  client_->Purge("some-dlc-id", std::move(callback));
+  base::RunLoop().RunUntilIdle();
+}
+
+TEST_F(DlcserviceClientTest, PurgeFailureTest) {
+  dbus::MethodCall method_call(dlcservice::kDlcServiceInterface,
+                               dlcservice::kPurgeMethod);
+  method_call.SetSerial(123);
+  err_responses_.push_back(dbus::ErrorResponse::FromMethodCall(
+      &method_call, dlcservice::kErrorInternal, ""));
+
+  EXPECT_CALL(*mock_proxy_.get(), DoCallMethodWithErrorResponse(_, _, _))
+      .WillRepeatedly(
+          Invoke(this, &DlcserviceClientTest::CallMethodWithErrorResponse));
+
+  DlcserviceClient::PurgeCallback callback =
+      base::BindOnce([](const std::string& err) {
+        EXPECT_EQ(dlcservice::kErrorInternal, err);
+      });
+  client_->Purge("some-dlc-id", std::move(callback));
+  base::RunLoop().RunUntilIdle();
+}
+
+TEST_F(DlcserviceClientTest, PurgeBusyStatusTest) {
+  dbus::MethodCall method_call(dlcservice::kDlcServiceInterface,
+                               dlcservice::kPurgeMethod);
+  method_call.SetSerial(123);
+  err_responses_.push_back(dbus::ErrorResponse::FromMethodCall(
+      &method_call, dlcservice::kErrorBusy, ""));
+  err_responses_.push_back(dbus::ErrorResponse::FromMethodCall(
+      &method_call, dlcservice::kErrorNone, ""));
+
+  EXPECT_CALL(*mock_proxy_.get(), DoCallMethodWithErrorResponse(_, _, _))
+      .WillRepeatedly(
+          Invoke(this, &DlcserviceClientTest::CallMethodWithErrorResponse));
+
+  DlcserviceClient::PurgeCallback callback = base::BindOnce(
+      [](const std::string& err) { EXPECT_EQ(dlcservice::kErrorNone, err); });
+  client_->Purge("some-dlc-id", std::move(callback));
+  base::RunLoop().RunUntilIdle();
+}
+
 TEST_F(DlcserviceClientTest, InstallSuccessTest) {
   responses_.push_back(dbus::Response::CreateEmpty());
   dbus::MessageWriter writer(responses_.back().get());

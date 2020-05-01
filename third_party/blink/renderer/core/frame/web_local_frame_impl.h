@@ -103,9 +103,11 @@ class CORE_EXPORT WebLocalFrameImpl final
   bool IsLoading() const override;
 
   // WebLocalFrame overrides:
-  WebLocalFrameImpl* CreateLocalChild(mojom::blink::TreeScopeType,
-                                      WebLocalFrameClient*,
-                                      blink::InterfaceRegistry*) override;
+  WebLocalFrameImpl* CreateLocalChild(
+      mojom::blink::TreeScopeType,
+      WebLocalFrameClient*,
+      blink::InterfaceRegistry*,
+      const base::UnguessableToken& frame_token) override;
   WebLocalFrameClient* Client() const override { return client_; }
   void SetAutofillClient(WebAutofillClient*) override;
   WebAutofillClient* AutofillClient() override;
@@ -354,24 +356,29 @@ class CORE_EXPORT WebLocalFrameImpl final
       WebView*,
       WebLocalFrameClient*,
       InterfaceRegistry*,
+      const base::UnguessableToken& frame_token,
       WebFrame* opener,
       const WebString& name,
       network::mojom::blink::WebSandboxFlags,
       const FeaturePolicy::FeatureState&);
-  static WebLocalFrameImpl* CreateProvisional(WebLocalFrameClient*,
-                                              InterfaceRegistry*,
-                                              WebFrame*,
-                                              const FramePolicy&,
-                                              const WebString& name);
+  static WebLocalFrameImpl* CreateProvisional(
+      WebLocalFrameClient*,
+      InterfaceRegistry*,
+      const base::UnguessableToken& frame_token,
+      WebFrame*,
+      const FramePolicy&,
+      const WebString& name);
 
   WebLocalFrameImpl(util::PassKey<WebLocalFrameImpl>,
                     mojom::blink::TreeScopeType,
                     WebLocalFrameClient*,
-                    blink::InterfaceRegistry*);
+                    blink::InterfaceRegistry*,
+                    const base::UnguessableToken& frame_token);
   WebLocalFrameImpl(util::PassKey<WebRemoteFrameImpl>,
                     mojom::blink::TreeScopeType,
                     WebLocalFrameClient*,
-                    blink::InterfaceRegistry*);
+                    blink::InterfaceRegistry*,
+                    const base::UnguessableToken& frame_token);
   ~WebLocalFrameImpl() override;
 
   LocalFrame* CreateChildFrame(const AtomicString& name,

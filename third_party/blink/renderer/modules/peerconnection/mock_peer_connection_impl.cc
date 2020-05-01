@@ -9,7 +9,8 @@
 #include <utility>
 #include <vector>
 
-#include "base/logging.h"
+#include "base/check_op.h"
+#include "base/notreached.h"
 #include "base/stl_util.h"
 #include "third_party/blink/renderer/modules/peerconnection/mock_data_channel_impl.h"
 #include "third_party/blink/renderer/modules/peerconnection/mock_peer_connection_dependency_factory.h"

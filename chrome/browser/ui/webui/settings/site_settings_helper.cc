@@ -353,7 +353,7 @@ PolicyIndicatorType GetPolicyIndicatorFromSettingSource(
     case content_settings::SETTING_SOURCE_EXTENSION:
       return PolicyIndicatorType::kExtension;
     case content_settings::SETTING_SOURCE_USER:
-    case content_settings::SETTING_SOURCE_WHITELIST:
+    case content_settings::SETTING_SOURCE_ALLOWLIST:
     case content_settings::SETTING_SOURCE_NONE:
       return PolicyIndicatorType::kNone;
     case content_settings::SETTING_SOURCE_INSTALLED_WEBAPP:

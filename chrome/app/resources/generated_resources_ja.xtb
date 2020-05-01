@@ -379,9 +379,7 @@
 <translation id="1509281256533087115">あらゆる <ph name="DEVICE_NAME_AND_VENDOR" /> からの USB 経由のアクセス</translation>
 <translation id="1509960214886564027">多くサイトで機能を使用できなくなる可能性があります</translation>
 <translation id="1510030919967934016">このページは、あなたの現在地を追跡できないようブロックされています。</translation>
-<translation id="1510055949674985293">この画像の QR コードを生成</translation>
 <translation id="1510238584712386396">ランチャー</translation>
-<translation id="1510581003097415337">このページの QR コードを生成</translation>
 <translation id="1510785804673676069">プロキシ サーバーを使用している場合は、プロキシの設定をチェックするか、
     ネットワーク管理者に問い合わせてプロキシ サーバーが正常に動作
     しているかどうかを確認してください。プロキシ サーバーを使用していない
@@ -2303,7 +2301,6 @@
 <translation id="4007856537951125667">ショートカットを非表示にする</translation>
 <translation id="4008291085758151621">サイト情報は VR ではご利用いただけません</translation>
 <translation id="4010917659463429001">ブックマークをモバイル デバイスで使用できるようにするには、<ph name="GET_IOS_APP_LINK" />してください。</translation>
-<translation id="4013132157686828973">このブラウザは「<ph name="CLIENT_NAME" />」によりデバッグされています</translation>
 <translation id="4014432863917027322">「<ph name="EXTENSION_NAME" />」を修復しますか？</translation>
 <translation id="4015163439792426608">拡張機能はご利用ですか？<ph name="BEGIN_LINK" />拡張機能の管理<ph name="END_LINK" />は 1 か所で簡単に行うことができます。</translation>
 <translation id="4020327272915390518">オプション メニュー</translation>
@@ -3003,7 +3000,6 @@
 <translation id="504561833207953641">既存のブラウザ セッションで開いています。</translation>
 <translation id="5047421709274785093">サイトによるモーション センサーと光センサーの使用をブロックする</translation>
 <translation id="5050042263972837708">グループ名</translation>
-<translation id="5051073330196664891">Google 共通利用規約（uToS）</translation>
 <translation id="5051836348807686060">選択した言語ではスペルチェックを使用できません</translation>
 <translation id="5052499409147950210">サイトの編集</translation>
 <translation id="5053604404986157245">ランダムに生成された TPM パスワードは使用できません。これは Powerwash 後の通常の動作です。</translation>
@@ -3873,7 +3869,6 @@
 <translation id="6226777517901268232">秘密鍵ファイル（省略可能）</translation>
 <translation id="6227280783235722609">拡張機能</translation>
 <translation id="6228691855869374890">このサイトは MIDI デバイスのフル コントロールが許可されています。</translation>
-<translation id="6228720835160974792">この画像の QR コードを生成</translation>
 <translation id="6229890768313448549">Google Play 利用規約を読み込めません。もう一度お試しください。</translation>
 <translation id="6231881193380278751">ページを自動更新するには URL にクエリ パラメータを追加します: chrome://device-log/?refresh=&lt;sec&gt;</translation>
 <translation id="6232017090690406397">バッテリー</translation>
@@ -4534,7 +4529,6 @@
 <translation id="7123360114020465152">サポートが終了しています</translation>
 <translation id="7127980134843952133">ダウンロード履歴</translation>
 <translation id="7128151990937044829">通知がブロックされたときにアドレスバーにインジケーターを表示する</translation>
-<translation id="7128239828194367697">このページの QR コードを生成</translation>
 <translation id="7131040479572660648"><ph name="WEBSITE_1" />、<ph name="WEBSITE_2" />、<ph name="WEBSITE_3" /> でのユーザーデータの読み取り</translation>
 <translation id="713122686776214250">ページを追加(&amp;G)...</translation>
 <translation id="7133578150266914903">管理者がこのデバイスをロールバックしています（<ph name="PROGRESS_PERCENT" />）</translation>

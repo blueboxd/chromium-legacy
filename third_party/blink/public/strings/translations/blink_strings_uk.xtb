@@ -35,6 +35,7 @@
 <translation id="1938124657309484470">Має бути <ph name="MAXIMUM_DATE_OR_TIME" /> або раніша дата.</translation>
 <translation id="1946271899482435442">Показує засіб вибору дати</translation>
 <translation id="1993104285338243655">Змінено на дзеркалювання</translation>
+<translation id="2031987842108996681">Червоний канал</translation>
 <translation id="2060505056492490888">Символ "<ph name="DOT" />" у "<ph name="INVALIDDOMAIN" />" використано неправильно.</translation>
 <translation id="2148716181193084225">Сьогодні</translation>
 <translation id="2158401438286456825">список сторінок</translation>
@@ -45,6 +46,7 @@
 <translation id="2291999235780842123">прапорець</translation>
 <translation id="2311842470354187719">розрив сторінки</translation>
 <translation id="2335594187091864976">засіб вибору дати й часу</translation>
+<translation id="2393030564806080191">Шістнадцяткове значення кольору</translation>
 <translation id="245932805758469625">кількість секунд до кінця відео</translation>
 <translation id="248395913932153421">День</translation>
 <translation id="2507943997699731163">Заповніть це поле.</translation>
@@ -52,6 +54,7 @@
 <translation id="2561842179657104141">показати більше елементів керування мультимедійним вмістом</translation>
 <translation id="2572483411312390101">відтворити</translation>
 <translation id="2613802280814924224">Введіть дійсне значення. Найближче дійсне значення: <ph name="VALID_VALUE" />.</translation>
+<translation id="2634240155926812724">Зелений канал</translation>
 <translation id="2653659639078652383">Надіслати</translation>
 <translation id="2657045182931379222">графічний об’єкт</translation>
 <translation id="2674318244760992338">нижній колонтитул</translation>
@@ -127,6 +130,7 @@
 <translation id="5034860022980953847">індикатор перебігу</translation>
 <translation id="5090250355906949916">повзунок часу відтворення відео</translation>
 <translation id="5093189678851173835">епіграф</translation>
+<translation id="509897012892853729">Синій канал</translation>
 <translation id="5117590920725113268">Показати наступний місяць</translation>
 <translation id="512758898067543763">заголовок рядка</translation>
 <translation id="5143125788380636750">епілог</translation>
@@ -164,6 +168,7 @@
 <translation id="6166809985690652833">післямова</translation>
 <translation id="6209276755895393898">Схоже, на цьому зображенні <ph name="DESCRIPTION" /></translation>
 <translation id="6213469881011901533">глосарій</translation>
+<translation id="6281588256137006900">Світність</translation>
 <translation id="6281763101136022427">URL-адреса</translation>
 <translation id="6310801910862476708">Вийти з режиму "Картинка в картинці"</translation>
 <translation id="6398862346408813489">Показати панель вибору місяців</translation>
@@ -184,6 +189,7 @@
 <translation id="6790428901817661496">Відтворити</translation>
 <translation id="6820355525329141109">Не вдалося завантажити плагін.</translation>
 <translation id="6820615603175220800">посилання на бібліографію</translation>
+<translation id="6831465880655513317">Палітра вибору кольору з двовимірним повзунком для налаштування насиченості й світності</translation>
 <translation id="6843725295806269523">вимкнути звук</translation>
 <translation id="6885760532393684712">каталог</translation>
 <translation id="689129560213475294">емблема видавництва</translation>
@@ -201,6 +207,7 @@
 <translation id="7263440858009898357">Виберіть елемент зі списку.</translation>
 <translation id="727747134524199931">заголовок стовпця</translation>
 <translation id="7320576522385648310">буферизація</translation>
+<translation id="7341556277900466204">Палітра вибору кольору</translation>
 <translation id="7353453495576941748">подяка</translation>
 <translation id="7364796246159120393">Вибрати файл</translation>
 <translation id="739024184232394898">Інші...</translation>
@@ -221,6 +228,7 @@
 <translation id="775297008183122718">Недійсне введене значення</translation>
 <translation id="7789962463072032349">призупинити</translation>
 <translation id="7802800022689234070">трикутник відкривання</translation>
+<translation id="7852167693871241274">Повзунок тону</translation>
 <translation id="7888071071722539607">Електронна адреса має містити знак "<ph name="ATSIGN" />". В електронній адресі "<ph name="INVALIDADDRESS" />" знака "<ph name="ATSIGN" />" немає.</translation>
 <translation id="7891486169920085145">розділювач</translation>
 <translation id="795667975304826397">Файл не вибрано</translation>
@@ -263,6 +271,7 @@
 <translation id="8875657656876809964">Помилка відтворення відео</translation>
 <translation id="8889402386540077796">Тон</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> КБ</translation>
+<translation id="894736920926684893">Перемикач формату</translation>
 <translation id="8987927404178983737">Місяць</translation>
 <translation id="901493112792887934">поточний час у секундах</translation>
 <translation id="901834265349196618">електронна адреса</translation>

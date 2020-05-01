@@ -38,7 +38,6 @@
 <translation id="1258753120186372309">Google Doodle: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1260236875608242557">検索</translation>
 <translation id="1266864766717917324"><ph name="CONTENT_TYPE" /> を共有できませんでした</translation>
-<translation id="1272079795634619415">中止</translation>
 <translation id="1283039547216852943">タップして展開</translation>
 <translation id="1285320974508926690">このサイトは翻訳しない</translation>
 <translation id="1291207594882862231">履歴、Cookie、サイトデータ、キャッシュを削除…</translation>
@@ -51,7 +50,6 @@
 <translation id="1331212799747679585">Chrome を更新できません。その他のオプション</translation>
 <translation id="1332501820983677155">Google Chrome 機能のショートカット</translation>
 <translation id="1360432990279830238">ログアウトして同期をオフにしますか？</translation>
-<translation id="1364532808393826295"><ph name="APP_NAME" /> - <ph name="NOTIFICATION_MESSAGE" /></translation>
 <translation id="1373696734384179344">選択したコンテンツをダウンロードするにはメモリが不足しています。</translation>
 <translation id="1376578503827013741">計算中...</translation>
 <translation id="1383876407941801731">検索</translation>
@@ -122,7 +120,6 @@
 <translation id="2013642289801508067">{FILE_COUNT,plural, =1{# 件のファイル}other{# 件のファイル}}</translation>
 <translation id="2017836877785168846">アドレスバーの履歴とオートコンプリート データを削除します。</translation>
 <translation id="2021896219286479412">全画面表示時のサイトの操作項目</translation>
-<translation id="2030769033451695672">タップして <ph name="URL_OF_THE_CURRENT_TAB" /> に戻る</translation>
 <translation id="2038563949887743358">[PC 版サイトを見る] をオンにします</translation>
 <translation id="204321170514947529">Chrome にも <ph name="APP_NAME" /> のデータがあります</translation>
 <translation id="2049574241039454490"><ph name="FILE_SIZE_OF_TOTAL" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
@@ -592,7 +589,6 @@
 <translation id="5876056640971328065">動画を一時停止</translation>
 <translation id="5884076754568147479">タスクを完了するため、アシスタントを使用したサイトの URL とコンテンツ、およびアシスタントで送信した情報が Google に送られます。</translation>
 <translation id="5919204609460789179">同期を開始するには <ph name="PRODUCT_NAME" /> を更新してください</translation>
-<translation id="5922853908706496913">画面を共有しています</translation>
 <translation id="5937580074298050696"><ph name="AMOUNT" /> 節約</translation>
 <translation id="5939518447894949180">リセット</translation>
 <translation id="5942872142862698679">検索に Google を使用します</translation>
@@ -779,7 +775,6 @@
 <translation id="7514365320538308">ダウンロード</translation>
 <translation id="751961395872307827">サイトに接続できません</translation>
 <translation id="7542481630195938534">おすすめの記事を取得できません</translation>
-<translation id="7554752735887601236">サイトでマイクが使用されています</translation>
 <translation id="7559975015014302720">ライトモードはオフです</translation>
 <translation id="7562080006725997899">閲覧データの消去</translation>
 <translation id="756809126120519699">Chrome データの消去完了</translation>
@@ -813,7 +808,6 @@
 <translation id="7774809984919390718">{PAYMENT_METHOD,plural, =1{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 他 <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> 件}other{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 他 <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> 件}}</translation>
 <translation id="7791543448312431591">追加</translation>
 <translation id="780301667611848630">いいえ</translation>
-<translation id="7804248752222191302">サイトでカメラが使用されています</translation>
 <translation id="7810647596859435254">アプリで開く…</translation>
 <translation id="7821588508402923572">データ節約量がここに表示されます</translation>
 <translation id="783819812427904514">動画のミュートを解除</translation>
@@ -885,9 +879,7 @@
 <translation id="8349013245300336738">データ使用量で並べ替え</translation>
 <translation id="8364299278605033898">人気のウェブサイトを表示します</translation>
 <translation id="8368027906805972958">不明またはサポートされていないデバイス（<ph name="DEVICE_ID" />）</translation>
-<translation id="83792324527827022">サイトでカメラとマイクが使用されています</translation>
 <translation id="8393700583063109961">メッセージを送信</translation>
-<translation id="8394832520002899662">タップしてサイトに戻る</translation>
 <translation id="8413126021676339697">全履歴を表示</translation>
 <translation id="8427875596167638501">[プレビュー] タブが半分開いています</translation>
 <translation id="8428213095426709021">設定</translation>
@@ -984,7 +976,6 @@
 <translation id="970715775301869095">残り <ph name="MINUTES" /> 分</translation>
 <translation id="974555521953189084">同期を開始するにはパスワードを入力します</translation>
 <translation id="981121421437150478">オフライン</translation>
-<translation id="982182592107339124">この操作を行うと、次を含むすべてのサイトのデータが削除されます。</translation>
 <translation id="983192555821071799">すべてのタブを閉じる</translation>
 <translation id="987264212798334818">全般</translation>
 </translationbundle>

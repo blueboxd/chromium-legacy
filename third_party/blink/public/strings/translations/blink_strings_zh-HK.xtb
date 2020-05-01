@@ -35,6 +35,7 @@
 <translation id="1938124657309484470">必須輸入 <ph name="MAXIMUM_DATE_OR_TIME" /> 或之前的數值。</translation>
 <translation id="1946271899482435442">顯示日期點選器</translation>
 <translation id="1993104285338243655">已切換至鏡像模式</translation>
+<translation id="2031987842108996681">紅色色頻</translation>
 <translation id="2060505056492490888">「<ph name="DOT" />」未放在「<ph name="INVALIDDOMAIN" />」的正確位置。</translation>
 <translation id="2148716181193084225">今天</translation>
 <translation id="2158401438286456825">頁面清單</translation>
@@ -45,6 +46,7 @@
 <translation id="2291999235780842123">選框</translation>
 <translation id="2311842470354187719">分頁</translation>
 <translation id="2335594187091864976">日期和時間點選器</translation>
+<translation id="2393030564806080191">十六進制顏色值</translation>
 <translation id="245932805758469625">影片淨番嘅秒數</translation>
 <translation id="248395913932153421">日</translation>
 <translation id="2507943997699731163">請填寫這個欄位。</translation>
@@ -52,6 +54,7 @@
 <translation id="2561842179657104141">顯示更多媒體控制項</translation>
 <translation id="2572483411312390101">播放</translation>
 <translation id="2613802280814924224">請輸入有效值。最接近的有效值是 <ph name="VALID_VALUE" />。</translation>
+<translation id="2634240155926812724">綠色色頻</translation>
 <translation id="2653659639078652383">提交</translation>
 <translation id="2657045182931379222">圖像物件</translation>
 <translation id="2674318244760992338">頁尾</translation>
@@ -127,6 +130,7 @@
 <translation id="5034860022980953847">進度指標</translation>
 <translation id="5090250355906949916">影片時間拖動欄</translation>
 <translation id="5093189678851173835">題詞</translation>
+<translation id="509897012892853729">藍色色頻</translation>
 <translation id="5117590920725113268">顯示下個月</translation>
 <translation id="512758898067543763">列標題</translation>
 <translation id="5143125788380636750">結語</translation>
@@ -164,6 +168,7 @@
 <translation id="6166809985690652833">後記</translation>
 <translation id="6209276755895393898">圖片內容似好似係：<ph name="DESCRIPTION" /></translation>
 <translation id="6213469881011901533">詞彙表</translation>
+<translation id="6281588256137006900">亮度</translation>
 <translation id="6281763101136022427">網址</translation>
 <translation id="6310801910862476708">退出畫中畫</translation>
 <translation id="6398862346408813489">顯示月份選取面板</translation>
@@ -184,6 +189,7 @@
 <translation id="6790428901817661496">播放</translation>
 <translation id="6820355525329141109">無法載入外掛程式。</translation>
 <translation id="6820615603175220800">參考書目</translation>
+<translation id="6831465880655513317">色井設有二維滑桿，讓您選擇飽和度和亮度</translation>
 <translation id="6843725295806269523">靜音</translation>
 <translation id="6885760532393684712">目錄</translation>
 <translation id="689129560213475294">版權頁</translation>
@@ -201,6 +207,7 @@
 <translation id="7263440858009898357">請選取一個清單中的項目。</translation>
 <translation id="727747134524199931">欄標題</translation>
 <translation id="7320576522385648310">緩衝處理緊</translation>
+<translation id="7341556277900466204">色井</translation>
 <translation id="7353453495576941748">參與名單</translation>
 <translation id="7364796246159120393">選擇檔案</translation>
 <translation id="739024184232394898">其他日期…</translation>
@@ -221,6 +228,7 @@
 <translation id="775297008183122718">無效的輸入值</translation>
 <translation id="7789962463072032349">暫停</translation>
 <translation id="7802800022689234070">展開三角按鈕</translation>
+<translation id="7852167693871241274">Hue 滑桿</translation>
 <translation id="7888071071722539607">電郵地址中應包括「<ph name="ATSIGN" />」。「<ph name="INVALIDADDRESS" />」中沒有「<ph name="ATSIGN" />」。</translation>
 <translation id="7891486169920085145">分割器</translation>
 <translation id="795667975304826397">未選擇檔案</translation>
@@ -263,6 +271,7 @@
 <translation id="8875657656876809964">影片播放錯誤</translation>
 <translation id="8889402386540077796">色調</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> KB</translation>
+<translation id="894736920926684893">格式切換器</translation>
 <translation id="8987927404178983737">月</translation>
 <translation id="901493112792887934">目前時間 (以秒為單位)</translation>
 <translation id="901834265349196618">電郵</translation>

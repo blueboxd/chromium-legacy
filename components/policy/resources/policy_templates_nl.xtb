@@ -1310,7 +1310,6 @@ Als dit beleid niet is ingesteld, is het privacyscherm in eerste instantie uitge
 <translation id="2869762730352628426">Automatisch klikken op het inlogscherm inschakelen</translation>
 <translation id="2872961005593481000">Afsluiten</translation>
 <translation id="2874209944580848064">Opmerking voor <ph name="PRODUCT_OS_NAME" />-apparaten die Android-apps ondersteunen:</translation>
-<translation id="2874901846804525128">Voorkom dat de gebruiker Android-apps gebruikt van niet-vertrouwde bronnen.</translation>
 <translation id="2875192972412983412">Specificeert de subset van afdrukservers die worden aangeroepen voor serverprinters.
 
       Als dit beleid wordt gebruikt, zijn alleen serverprinters beschikbaar met ID's die overeenkomen met de waarden in dit beleid.
@@ -1451,7 +1450,6 @@ Als dit beleid niet is ingesteld, is het privacyscherm in eerste instantie uitge
 <translation id="3096595567015595053">Lijst met ingeschakelde plug-ins</translation>
 <translation id="3101501961102569744">Kies hoe je proxyserverinstellingen wilt specificeren</translation>
 <translation id="3101709781009526431">Datum en tijd</translation>
-<translation id="3112706537206652445">Voorkomen dat gebruikers van dit apparaat ADB-sideloading gebruiken. Als sideloading eerder is ingeschakeld en je overschakelt naar deze instelling, krijgt het apparaat een twijfelachtige beveiligingsstatus.</translation>
 <translation id="3114411414586006215">Dit beleid beheert de lijst met websites die nooit overschakeling naar een andere browser veroorzaken.
 
       Onthoud dat elementen aan deze lijst kunnen worden toegevoegd via het beleid <ph name="EXTERNAL_SITELIST_URL_POLICY_NAME" />.
@@ -1826,7 +1824,6 @@ Als dit beleid is ingesteld op False, gebruikt <ph name="PRODUCT_NAME" /> geen n
 <translation id="3715569262675717862">Verificatie op basis van clientcertificaten</translation>
 <translation id="3736879847913515635">'Persoon toevoegen' inschakelen in gebruikersbeheer</translation>
 <translation id="3737890474637805114">Grote bestandsdownloads blokkeren</translation>
-<translation id="3738723882663496016">Met dit beleid wordt de <ph name="PLUGIN_VM_NAME" />-licentiecode voor dit apparaat opgegeven.</translation>
 <translation id="3748900290998155147">Geeft aan of wake locks zijn toegestaan. Wake locks kunnen door extensies worden aangevraagd via de API voor de stroombeheerextensie en door ARC-apps.
 
           Als dit beleid is ingesteld op 'true' of als het niet is ingesteld, worden wake locks ingesteld voor stroombeheer.
@@ -2357,9 +2354,6 @@ Als dit beleid is ingesteld op False, gebruikt <ph name="PRODUCT_NAME" /> geen n
 <translation id="4432762137771104529">Uitgebreide rapportage van Safe Browsing inschakelen</translation>
 <translation id="443454694385851356">Verouderd (onbeveiligd)</translation>
 <translation id="443665821428652897">Sitegegevens wissen als de browser wordt gesloten (verouderd)</translation>
-<translation id="4439132805807595336">Dit apparaat toestaan om PluginVm uit te voeren.
-
-      Als het beleid is ingesteld op 'false' of niet is ingesteld, wordt <ph name="PLUGIN_VM_NAME" /> niet ingeschakeld voor het apparaat. Als het beleid is ingesteld op 'true', wordt <ph name="PLUGIN_VM_NAME" /> ingeschakeld voor het apparaat, op voorwaarde dat de andere instellingen dit ook toestaan. <ph name="PLUGIN_VM_NAME" /> kan alleen worden uitgevoerd als <ph name="PLUGIN_VM_ALLOWED_POLICY_NAME" /> is ingesteld op 'true' en als <ph name="PLUGIN_VM_LICENSE_KEY_POLICY_NAME" /> en <ph name="PLUGIN_VM_IMAGE_POLICY_NAME" /> zijn ingesteld.</translation>
 <translation id="4439336120285389675">Een lijst met verouderde webplatformfuncties opgeven die tijdelijk kunnen worden ingeschakeld.
 
       Dit beleid biedt beheerders de mogelijkheid om verouderde webplatformfuncties beperkte tijd opnieuw in te schakelen. De functies worden geïdentificeerd door een stringtag. De functies die horen bij de tags die zijn opgenomen in de lijst die dit beleid heeft aangegeven, worden opnieuw ingeschakeld.
@@ -3872,7 +3866,6 @@ Als dit beleid niet wordt ingesteld, kan de gebruiker ervoor kiezen de pagina 'N
 <translation id="6731757988219967594">Sites op hoofdniveau (maar geen ingesloten iframes) filteren op content voor volwassenen</translation>
 <translation id="6734521799274931721">Beheert netwerkfileshares voor Chrome OS-beschikbaarheid</translation>
 <translation id="6735701345096330595">Inschakelen van spellingcontrole voor talen afdwingen</translation>
-<translation id="6737677282967014160">Sta toe dat de gebruiker Android-apps van niet-vertrouwde bronnen kan gebruiken.</translation>
 <translation id="6757613329154374267">Back-up en herstel is ingeschakeld</translation>
 <translation id="6758659208493449452">Met dit beleid wordt bepaald of gebruikers die bij 'Geavanceerde beveiliging' zijn ingeschreven, extra beveiligingsmaatregelen ontvangen. Voor sommige van deze functies kunnen gegevens worden gedeeld met Google (gebruikers van 'Geavanceerde beveiliging' kunnen bijvoorbeeld hun downloads naar Google sturen om ze te scannen op malware). Als dit beleid is ingesteld op True of niet is ingesteld, ontvangen ingeschreven gebruikers extra beveiligingsmaatregelen. Als dit beleid is ingesteld op False, ontvangen gebruikers van 'Geavanceerde beveiliging' alleen de standaardfuncties voor consumenten.</translation>
 <translation id="6762235610019366960">Hiermee kun je de presentatie van promotie- en/of educatieve content op een volledig tabblad beheren in <ph name="PRODUCT_NAME" />.
@@ -4198,7 +4191,6 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
 <translation id="7202925763179776247">Downloadbeperkingen toestaan</translation>
 <translation id="7207095846245296855">Google SafeSearch afdwingen</translation>
 <translation id="7211368186050418507">Tijdzone nooit automatisch detecteren</translation>
-<translation id="7213920626995591871">Voorkomen dat gebruikers van dit apparaat ADB-sideloading gebruiken en een Powerwash van het apparaat afdwingen als sideloading eerder was ingeschakeld.</translation>
 <translation id="7216442368414164495">Hiermee kunnen gebruikers zich aanmelden voor uitgebreide rapportage van Safe Browsing</translation>
 <translation id="7222749588229362483">Hiermee kunnen de geselecteerde beleidsregels worden samengevoegd als ze afkomstig zijn uit verschillende bronnen en hetzelfde bereik en niveau hebben.
 
@@ -4509,7 +4501,6 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
 <translation id="7687943045976362719">Als dit beleid is ingesteld, worden de opgegeven contenttypen verwerkt door <ph name="PRODUCT_FRAME_NAME" />.
 
           Als dit beleid niet is ingesteld, wordt het standaard weergaveprogramma gebruikt voor alle sites. (Het beleid <ph name="CHROME_FRAME_RENDERER_SETTINGS_POLICY_NAME" /> kan worden gebruikt om het standaard weergaveprogramma te configureren.)</translation>
-<translation id="7690423044860056310">Toestaan dat gekoppelde gebruikers van dit apparaat ADB-sideloading gebruiken.</translation>
 <translation id="7691028179743802462">Dit beleid is beëindigd in M83. Gebruik in plaats daarvan SafeBrowsingProtectionLevel.
 
       Hiermee schakel je de functie Safe Browsing van <ph name="PRODUCT_NAME" /> in en voorkom je dat gebruikers deze instelling kunnen wijzigen.
@@ -5445,19 +5436,6 @@ Dit beleid wordt verwijderd in M75.</translation>
           Als het apparaat het beleid wel ondersteunt, maar het beleid niet wordt ingesteld, wordt de standaard batterijoplaadmodus toegepast en kan de gebruiker de modus niet wijzigen.
 
           Opmerking: <ph name="DEVICE_ADVANCED_BATTERY_CHARGE_MODE_ENABLED_NAME" /> overschrijft dit beleid als het is opgegeven.</translation>
-<translation id="9071472304496502510">Lijst met instellingen voor Chrome Enterprise-connectorservices die moeten worden toegepast op de Enterprise-connector <ph name="ON_FILE_ATTACHED_ENTERPRISE_CONNECTOR" />. De lijst wordt geactiveerd als een bestand wordt bijgevoegd in Chrome.
-
-      De velden <ph name="ENTERPRISE_CONNECTOR_URL_LIST_FIELD" />, <ph name="ENTERPRISE_CONNECTOR_TAGS_FIELD" />, <ph name="ENTERPRISE_CONNECTOR_ENABLE_FIELD" /> en <ph name="ENTERPRISE_CONNECTOR_DISABLE_FIELD" /> worden gebruikt om te bepalen of de connector een bestand voor analyse moet sturen als het is bijgevoegd bij een specifieke pagina en welke tags moeten worden opgenomen in het analyseverzoek voor dat bestand. Een tag die overeenkomt met een 'enable'-patroon, wordt opgenomen in het analyseverzoek als de pagina-URL overeenkomt met een patroon dat is gekoppeld aan die tag, op voorwaarde dat er geen 'disable'-patroon met dezelfde tag overeenkomt met de pagina-URL. De analyse vindt plaats als er ten minste één tag moet worden opgenomen in het verzoek.
-
-      Het veld <ph name="ENTERPRISE_CONNECTOR_SERVICE_PROVIDER_FIELD" /> geeft aan bij welke analyseserviceprovider de instellingen horen.
-
-      Als het veld <ph name="ENTERPRISE_CONNECTOR_BLOCK_UNTIL_VERDICT_FIELD" /> wordt ingesteld op 1, betekent dit dat Chrome wacht op een reactie van de analyseservice voordat de pagina toegang tot het bestand krijgt. Elke andere waarde met een geheel getal betekent dat Chrome de pagina onmiddellijk toegang tot het bestand geeft.
-
-      Het veld <ph name="ENTERPRISE_CONNECTOR_BLOCK_PASSWORD_PROTECTED_FIELD" /> bepaalt of Chrome bestanden die zijn beveiligd met een wachtwoord blokkeert of toestaat.
-
-      Het veld <ph name="ENTERPRISE_CONNECTOR_BLOCK_LARGE_FILES_FIELD" /> bepaalt of Chrome bestanden die te groot zijn om te worden geanalyseerd (meer dan 50 MB) blokkeert of toestaat.
-
-      Dit beleid kan alleen worden ingesteld via de Google Beheerdersconsole.</translation>
 <translation id="9077227880520270584">Timer voor automatisch inloggen op lokaal account op apparaat</translation>
 <translation id="9084985621503260744">Specificeer of videoactiviteit invloed heeft op stroombeheer</translation>
 <translation id="9088433379343318874">Contentprovider voor de gebruiker met beperkte rechten inschakelen</translation>

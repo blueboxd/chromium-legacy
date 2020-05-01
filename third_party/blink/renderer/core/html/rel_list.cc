@@ -49,6 +49,11 @@ bool RelList::ValidateTokenValue(const AtomicString& token_value,
         token_value == "modulepreload") {
       return true;
     }
+    if (RuntimeEnabledFeatures::SignedExchangeSubresourcePrefetchEnabled(
+            &GetElement().GetDocument()) &&
+        token_value == "allowed-alt-sxg") {
+      return true;
+    }
   } else if ((GetElement().HasTagName(html_names::kATag) ||
               GetElement().HasTagName(html_names::kAreaTag)) &&
              SupportedTokensAnchorAndArea().Contains(token_value)) {

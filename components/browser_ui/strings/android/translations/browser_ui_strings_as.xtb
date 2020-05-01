@@ -8,7 +8,9 @@
 <translation id="1181037720776840403">আঁতৰাওক</translation>
 <translation id="1201402288615127009">পৰৱৰ্তী</translation>
 <translation id="1242008676835033345"><ph name="WEBSITE_URL" />ত এম্বেড কৰা হৈছে</translation>
+<translation id="1272079795634619415">বন্ধ কৰক</translation>
 <translation id="129382876167171263">ৱেবছাইটে ছেভ কৰা ফাইলসমূহ ইয়াত দেখা পোৱা যায়</translation>
+<translation id="1364532808393826295"><ph name="APP_NAME" /> - <ph name="NOTIFICATION_MESSAGE" /></translation>
 <translation id="1369915414381695676">ছাইট <ph name="SITE_NAME" /> যোগ কৰা হ’ল</translation>
 <translation id="1383876407941801731">সন্ধান</translation>
 <translation id="1384959399684842514">ডাইনল’ড পজ কৰা হৈছে</translation>
@@ -29,6 +31,7 @@
 <translation id="1984937141057606926">তৃতীয়-পক্ষক বাদ দি অনুমতি আছে</translation>
 <translation id="1994173015038366702">ছাইট URL</translation>
 <translation id="2025115093177348061">পৰিৱৰ্ধিত বাস্তৱিকতা</translation>
+<translation id="2030769033451695672"><ph name="URL_OF_THE_CURRENT_TAB" />লৈ উভতি যাবলৈ টিপক</translation>
 <translation id="2041019821020695769">Chromeক আপোনালৈ জাননী পঠিয়াবলৈ দিবলৈ <ph name="BEGIN_LINK" />Android ছেটিংসমূহ<ph name="END_LINK" />-তো জাননী অন কৰক।</translation>
 <translation id="2079545284768500474">আনডু কৰক</translation>
 <translation id="2091887806945687916">শব্দ</translation>
@@ -104,6 +107,7 @@
 <translation id="5048398596102334565">ম'শ্বন ছেন্সৰসমূহলৈ এক্সেছ পাবলৈ ছাইটসমূহক অনুমতি দিয়ক (চুপাৰিছ কৰা)</translation>
 <translation id="5063480226653192405">ব্যৱহাৰ</translation>
 <translation id="5100237604440890931">সংকুচিত - সম্প্ৰসাৰণ কৰিবলৈ টিপক</translation>
+<translation id="5123685120097942451">ইনক’গনিট’ টেব</translation>
 <translation id="5300589172476337783">দেখুৱাওক</translation>
 <translation id="5301954838959518834">ঠিক আছে, বুজি পালোঁ</translation>
 <translation id="5307446750509046227">ছাইটৰ ষ্ট’ৰেজ মচক</translation>
@@ -126,6 +130,7 @@
 <translation id="5804241973901381774">অনুমতি</translation>
 <translation id="5860033963881614850">অফ আছে</translation>
 <translation id="5916664084637901428">অন আছে</translation>
+<translation id="5922853908706496913">আপোনাৰ স্ক্ৰীন শ্বেয়াৰ কৰি থকা হৈছে</translation>
 <translation id="5939518447894949180">ৰিছেট কৰক</translation>
 <translation id="6040143037577758943">বন্ধ কৰক</translation>
 <translation id="6042308850641462728">অধিক</translation>
@@ -169,6 +174,7 @@
 <translation id="7423098979219808738">প্ৰথমে সোধক</translation>
 <translation id="7423538860840206698">ক্লিপব’ৰ্ড পঢ়াৰ সুবিধা অৱৰোধ কৰা হৈছে</translation>
 <translation id="7521387064766892559">JavaScript</translation>
+<translation id="7554752735887601236">এটা ছাইটে আপোনাৰ মাইক্ৰ’ফ’ন ব্যৱহাৰ কৰি আছে</translation>
 <translation id="7572498721684305250">আপুনি NFC ডিভাইচসমূহত টিপিলে ছাইটসমূহে তথ্য পঠিয়াব আৰু লাভ কৰিব নোৱৰাকৈ অৱৰোধ কৰক</translation>
 <translation id="757524316907819857">সুৰক্ষিত সমল প্লে’ কৰাৰ পৰা ছাইটসমূহক অৱৰোধ কৰক</translation>
 <translation id="7589445247086920869">বৰ্তমানৰ সন্ধান ইঞ্জিনটোৰ বাবে অৱৰোধ কৰক</translation>
@@ -177,6 +183,7 @@
 <translation id="7781829728241885113">কালি</translation>
 <translation id="7791543448312431591">যোগ কৰক</translation>
 <translation id="780301667611848630">নালাগে, ধন্যবাদ</translation>
+<translation id="7804248752222191302">এটা ছাইটে আপোনাৰ কেমেৰা ব্যৱহাৰ কৰি আছে</translation>
 <translation id="7817023149356982970">আপোনাক এই ছাইটটোৰ পৰা ছাইন আউট কৰোৱা হ’ব।</translation>
 <translation id="7828557259026017104">কুকিবোৰ হৈছে আপুনি চোৱা ৱেবছাইটসমূহে সৃষ্টি কৰা ফাইল। ছাইটসমূহে আপোনাৰ অগ্ৰাধিকাৰসমূহ মনত ৰাখিবলৈ সেইবোৰ ব্যৱহাৰ কৰে। তৃতীয় পক্ষৰ কুকিসমূহ অন্য ছাইটসমূহে সৃষ্টি কৰে। এই ছাইটসমূহ আপুনি চোৱা ৱেবছাইটটোত দেখা পোৱা বিজ্ঞাপন অথবা প্ৰতিচ্ছবিবোৰৰ দৰে কিছুমান সমলৰ গৰাকী।</translation>
 <translation id="7846076177841592234">বাছনি বাতিল কৰক</translation>
@@ -194,7 +201,9 @@
 <translation id="8261506727792406068">মচক</translation>
 <translation id="8300705686683892304">এপৰ দ্বাৰা পৰিচালিত</translation>
 <translation id="8372893542064058268">কোনো নির্দিষ্ট ছাইটৰ বাবে নেপথ্যত ছিংক কৰাৰ অনুমতি দিয়ক।</translation>
+<translation id="83792324527827022">এটা ছাইটে আপোনাৰ কেমেৰা আৰু মাইক্ৰ’ফ’ন ব্যৱহাৰ কৰি আছে</translation>
 <translation id="8380167699614421159">এই ছাইটটোৱে বিনা অনুমতিত বা কোনো বিভ্ৰান্তিকৰ বিজ্ঞাপন দেখুৱায়</translation>
+<translation id="8394832520002899662">এই ছাইটটোলৈ উভতি যাবলৈ টিপক</translation>
 <translation id="8447861592752582886">ডিভাইচৰ অনুমতি প্ৰত্যাহাৰ কৰক</translation>
 <translation id="851751545965956758">ডিভাইচৰ সৈতে সংযোগ কৰাৰ পৰা ছাইটসমূহক অৱৰোধ কৰক</translation>
 <translation id="857943718398505171">অনুমোদিত (চুপাৰিছ কৰা)</translation>

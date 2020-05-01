@@ -102,7 +102,7 @@ public class InterceptNavigationDelegateImpl implements InterceptNavigationDeleg
             return true;
         }
 
-        RedirectHandlerImpl redirectHandler = null;
+        RedirectHandler redirectHandler = null;
         if (navigationParams.isMainFrame) {
             redirectHandler = mClient.getOrCreateRedirectHandler();
         } else if (navigationParams.isExternalProtocol) {
@@ -116,7 +116,7 @@ public class InterceptNavigationDelegateImpl implements InterceptNavigationDeleg
             // not covering the case where a gesture is carried over via a redirect.  This is
             // currently not feasible because we do not see all navigations for iframes and it is
             // better to error on the side of caution and require direct user gestures for iframes.
-            redirectHandler = RedirectHandlerImpl.create();
+            redirectHandler = RedirectHandler.create();
         } else {
             assert false;
             return false;
@@ -164,7 +164,7 @@ public class InterceptNavigationDelegateImpl implements InterceptNavigationDeleg
      * ExternalNavigationHandler#shouldOverrideUrlLoading().
      */
     public ExternalNavigationParams.Builder buildExternalNavigationParams(
-            NavigationParams navigationParams, RedirectHandlerImpl redirectHandler,
+            NavigationParams navigationParams, RedirectHandler redirectHandler,
             boolean shouldCloseTab) {
         boolean isInitialTabLaunchInBackground =
                 mClient.wasTabLaunchedFromLongPressInBackground() && shouldCloseTab;
@@ -230,7 +230,7 @@ public class InterceptNavigationDelegateImpl implements InterceptNavigationDeleg
         if (mClient.getOrCreateRedirectHandler().isOnNavigation()) {
             return mClient.getOrCreateRedirectHandler()
                            .getLastCommittedEntryIndexBeforeStartingNavigation()
-                    == RedirectHandlerImpl.INVALID_ENTRY_INDEX;
+                    == RedirectHandler.INVALID_ENTRY_INDEX;
         }
         return false;
     }

@@ -38,7 +38,6 @@
 <translation id="1258753120186372309">Doodle do Google: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1260236875608242557">Pesquisar e explorar</translation>
 <translation id="1266864766717917324">Falha no compartilhamento de <ph name="CONTENT_TYPE" /></translation>
-<translation id="1272079795634619415">Parar</translation>
 <translation id="1283039547216852943">Toque para expandir</translation>
 <translation id="1285320974508926690">Nunca traduzir este site</translation>
 <translation id="1291207594882862231">Limpar histórico, cookies, dados do site, cache…</translation>
@@ -50,8 +49,8 @@
 <translation id="1327257854815634930">O histórico de navegação está aberto</translation>
 <translation id="1331212799747679585">Não é possível atualizar o Chrome. Mais opções</translation>
 <translation id="1332501820983677155">Atalhos de recursos do Google Chrome</translation>
+<translation id="1347468774581902829">Gerenciar atividade</translation>
 <translation id="1360432990279830238">Sair e desativar a sincronização?</translation>
-<translation id="1364532808393826295"><ph name="APP_NAME" />: <ph name="NOTIFICATION_MESSAGE" /></translation>
 <translation id="1373696734384179344">Memória insuficiente para fazer o download do conteúdo selecionado.</translation>
 <translation id="1376578503827013741">Calculando…</translation>
 <translation id="1383876407941801731">Pesquisar</translation>
@@ -122,7 +121,6 @@
 <translation id="2013642289801508067">{FILE_COUNT,plural, =1{# arquivo}one{# arquivo}other{# arquivos}}</translation>
 <translation id="2017836877785168846">Limpa o histórico e o preenchimento automático na barra de endereço.</translation>
 <translation id="2021896219286479412">Controles de site em tela cheia</translation>
-<translation id="2030769033451695672">Toque para voltar para <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
 <translation id="2038563949887743358">Ativar "Ver versão para computador"</translation>
 <translation id="204321170514947529">O app <ph name="APP_NAME" /> também tem dados no Chrome</translation>
 <translation id="2049574241039454490"><ph name="FILE_SIZE_OF_TOTAL" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
@@ -435,6 +433,7 @@ Só você pode ver o que é capturado pela câmera. O site não pode ver essas i
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> favoritos excluídos</translation>
 <translation id="4665282149850138822"><ph name="NAME" /> foi adicionado à sua tela inicial</translation>
 <translation id="4684427112815847243">Sincronizar tudo</translation>
+<translation id="4688610874307684559">Executando no Chrome (inicial)</translation>
 <translation id="4695891336199304370">{SHIPPING_OPTIONS,plural, =1{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 e mais <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}one{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 e mais <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}other{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 e mais <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}}</translation>
 <translation id="4696983787092045100">Enviar texto para seus dispositivos</translation>
 <translation id="4698034686595694889">Ver off-line no app <ph name="APP_NAME" /></translation>
@@ -593,7 +592,6 @@ Para alterar essa configuração, <ph name="BEGIN_LINK" />redefina a sincroniza�
 <translation id="5876056640971328065">Pausar vídeo</translation>
 <translation id="5884076754568147479">Para ajudar você com suas tarefas, o Google receberá os URLs e o conteúdo de sites em que você usa o Assistente, bem como as informações que você envia por ele</translation>
 <translation id="5919204609460789179">Atualize <ph name="PRODUCT_NAME" /> para iniciar a sincronização</translation>
-<translation id="5922853908706496913">Compartilhando a tela</translation>
 <translation id="5937580074298050696"><ph name="AMOUNT" /> economizado(s)</translation>
 <translation id="5939518447894949180">Redefinir</translation>
 <translation id="5942872142862698679">Usando o Google para pesquisar</translation>
@@ -774,16 +772,17 @@ Por exemplo, alguns sites podem responder a esse pedido mostrando anúncios que 
 <translation id="7479104141328977413">Gerenciamento de guias</translation>
 <translation id="7481312909269577407">Avançar</translation>
 <translation id="7482656565088326534">Guia "Visualizar"</translation>
+<translation id="7484997419527351112">Discover (desativado)</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (atualizada <ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7494974237137038751">de dados economizados</translation>
 <translation id="7498271377022651285">Aguarde...</translation>
 <translation id="7514365320538308">Fazer o download</translation>
 <translation id="751961395872307827">Não foi possível se conectar ao site</translation>
 <translation id="7542481630195938534">Não é possível exibir as sugestões</translation>
-<translation id="7554752735887601236">Um site está usando seu microfone</translation>
 <translation id="7559975015014302720">Modo Lite desativado</translation>
 <translation id="7562080006725997899">Limpando dados de navegação</translation>
 <translation id="756809126120519699">Dados do Chrome apagados</translation>
+<translation id="7577900504646297215">Gerenciar interesses</translation>
 <translation id="757855969265046257">{FILES,plural, =1{<ph name="FILES_DOWNLOADED_ONE" /> arquivo transferido por download}one{<ph name="FILES_DOWNLOADED_MANY" /> arquivo transferido por download}other{<ph name="FILES_DOWNLOADED_MANY" /> arquivos transferidos por download}}</translation>
 <translation id="7588219262685291874">Ativar o tema escuro quando a Economia de bateria do seu dispositivo estiver ativada</translation>
 <translation id="7593557518625677601">Abrir configs. Android e reativar sincronização do Android p/ sincronizar Chrome</translation>
@@ -814,7 +813,6 @@ Por exemplo, alguns sites podem responder a esse pedido mostrando anúncios que 
 <translation id="7774809984919390718">{PAYMENT_METHOD,plural, =1{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 e mais <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}one{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 e mais <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}other{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 e mais <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}}</translation>
 <translation id="7791543448312431591">Adicionar</translation>
 <translation id="780301667611848630">Não</translation>
-<translation id="7804248752222191302">Um site está usando sua câmera</translation>
 <translation id="7810647596859435254">Abrir com…</translation>
 <translation id="7821588508402923572">Sua economia de dados será exibida aqui</translation>
 <translation id="783819812427904514">Ativar som do vídeo</translation>
@@ -886,9 +884,7 @@ Por exemplo, alguns sites podem responder a esse pedido mostrando anúncios que 
 <translation id="8349013245300336738">Classificar por quantidade de dados usados</translation>
 <translation id="8364299278605033898">Ver sites conhecidos</translation>
 <translation id="8368027906805972958">Dispositivo desconhecido ou incompatível (<ph name="DEVICE_ID" />)</translation>
-<translation id="83792324527827022">Um site está usando sua câmera e seu microfone</translation>
 <translation id="8393700583063109961">Enviar mensagem</translation>
-<translation id="8394832520002899662">Toque para voltar ao site</translation>
 <translation id="8413126021676339697">Mostrar histórico completo</translation>
 <translation id="8427875596167638501">A guia "Visualizar" está parcialmente aberta</translation>
 <translation id="8428213095426709021">Configurações</translation>
@@ -985,7 +981,6 @@ Por exemplo, alguns sites podem responder a esse pedido mostrando anúncios que 
 <translation id="970715775301869095"><ph name="MINUTES" /> minutos restantes</translation>
 <translation id="974555521953189084">Digite sua senha longa para iniciar a sincronização</translation>
 <translation id="981121421437150478">Off-line</translation>
-<translation id="982182592107339124">Essa ação limpará os dados de todos os sites, incluindo:</translation>
 <translation id="983192555821071799">Fechar todas as guias</translation>
 <translation id="987264212798334818">Geral</translation>
 </translationbundle>

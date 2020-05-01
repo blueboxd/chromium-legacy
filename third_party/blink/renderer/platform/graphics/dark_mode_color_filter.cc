@@ -4,7 +4,8 @@
 
 #include "third_party/blink/renderer/platform/graphics/dark_mode_color_filter.h"
 
-#include "base/logging.h"
+#include "base/check.h"
+#include "base/notreached.h"
 #include "third_party/blink/renderer/platform/graphics/lab_color_space.h"
 #include "third_party/skia/include/core/SkColorFilter.h"
 #include "third_party/skia/include/effects/SkHighContrastFilter.h"

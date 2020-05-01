@@ -8,7 +8,9 @@
 <translation id="1181037720776840403">Pašalinti</translation>
 <translation id="1201402288615127009">Kitas</translation>
 <translation id="1242008676835033345">Įterpta <ph name="WEBSITE_URL" /></translation>
+<translation id="1272079795634619415">Sustabdyti</translation>
 <translation id="129382876167171263">Svetainių išsaugoti failai rodomi čia</translation>
+<translation id="1364532808393826295">„<ph name="APP_NAME" />“: <ph name="NOTIFICATION_MESSAGE" /></translation>
 <translation id="1369915414381695676">Pridėta svetainė <ph name="SITE_NAME" /></translation>
 <translation id="1383876407941801731">Ieškoti</translation>
 <translation id="1384959399684842514">Atsisiuntimas pristabdytas</translation>
@@ -29,6 +31,7 @@
 <translation id="1984937141057606926">Leidžiama (išskyrus trečiąsias šalis)</translation>
 <translation id="1994173015038366702">Svetainės URL</translation>
 <translation id="2025115093177348061">Išplėstoji realybė</translation>
+<translation id="2030769033451695672">Palieskite, kad grįžtumėte į <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
 <translation id="2041019821020695769">Norėdami leisti „Chrome“ siųsti pranešimus, taip pat įjunkite juos <ph name="BEGIN_LINK" />„Android“ nustatymuose<ph name="END_LINK" />.</translation>
 <translation id="2079545284768500474">Anuliuoti</translation>
 <translation id="2091887806945687916">Garsas</translation>
@@ -104,6 +107,7 @@
 <translation id="5048398596102334565">Leidžiama svetainėms pasiekti judesio jutiklius (rekomenduojama)</translation>
 <translation id="5063480226653192405">Naudojimas</translation>
 <translation id="5100237604440890931">Sutraukta – spustelėkite, kad išskleistumėte</translation>
+<translation id="5123685120097942451">Inkognito skirtukas</translation>
 <translation id="5300589172476337783">Rodyti</translation>
 <translation id="5301954838959518834">Gerai, supratau</translation>
 <translation id="5307446750509046227">Išvalyti svetainės saug.</translation>
@@ -126,6 +130,7 @@
 <translation id="5804241973901381774">Leidimai</translation>
 <translation id="5860033963881614850">Išjungta</translation>
 <translation id="5916664084637901428">Įjungta</translation>
+<translation id="5922853908706496913">Bendrinamas ekranas</translation>
 <translation id="5939518447894949180">Nustatyti iš naujo</translation>
 <translation id="6040143037577758943">Uždaryti</translation>
 <translation id="6042308850641462728">Daugiau</translation>
@@ -169,6 +174,7 @@
 <translation id="7423098979219808738">Pirmiausia paklausti</translation>
 <translation id="7423538860840206698">Neleidžiama skaityti iškarpinės</translation>
 <translation id="7521387064766892559">„JavaScript“</translation>
+<translation id="7554752735887601236">Svetainėje naudojamas jūsų mikrofonas</translation>
 <translation id="7572498721684305250">Blokuoti svetainėse informacijos siuntimą ir gavimą palietus ALR įrenginius</translation>
 <translation id="757524316907819857">Užblokuoti svetaines, kad neleistų apsaugoto turinio</translation>
 <translation id="7589445247086920869">Blokuoti dabartiniam paieškos varikliui</translation>
@@ -177,6 +183,7 @@
 <translation id="7781829728241885113">Vakar</translation>
 <translation id="7791543448312431591">Pridėti</translation>
 <translation id="780301667611848630">Ačiū, ne</translation>
+<translation id="7804248752222191302">Svetainėje naudojamas jūsų fotoaparatas</translation>
 <translation id="7817023149356982970">Būsite atjungti nuo šios svetainės.</translation>
 <translation id="7828557259026017104">Slapukai yra svetainių, kuriose lankėtės, sukurti failai. Svetainėse jie naudojami jūsų nuostatoms įsiminti. Trečiųjų šalių slapukus kuria kitos svetainės. Šioms svetainėms priklauso tam tikras tinklalapyje, kuriame lankotės, rodomas turinys, pvz., skelbimai ar vaizdai.</translation>
 <translation id="7846076177841592234">Atšaukti pasirinkimą</translation>
@@ -194,7 +201,9 @@
 <translation id="8261506727792406068">Ištrinti</translation>
 <translation id="8300705686683892304">Valdo programa</translation>
 <translation id="8372893542064058268">Leisti fono sinchronizavimą konkrečioje svetainėje.</translation>
+<translation id="83792324527827022">Svetainėje naudojamas jūsų fotoaparatas ir mikrofonas</translation>
 <translation id="8380167699614421159">Šioje svetainėje rodomi nepageidaujami arba klaidinantys skelbimai</translation>
+<translation id="8394832520002899662">Norėdami grįžti į svetainę, palieskite</translation>
 <translation id="8447861592752582886">Anuliuoti įrenginio leidimą</translation>
 <translation id="851751545965956758">Blokuoti svetaines, kad nebūtų galima prisijungti prie įrenginių</translation>
 <translation id="857943718398505171">Leidžiama (rekomenduojama)</translation>

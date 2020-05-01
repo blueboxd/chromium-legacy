@@ -158,6 +158,7 @@
 <translation id="285960592395650245">重新嘗試下載</translation>
 <translation id="2870560284913253234">網站</translation>
 <translation id="2871695793448672541">目前為隱藏狀態的密碼</translation>
+<translation id="2876369937070532032">當網站面臨安全風險時，Chrome 會將您瀏覽的部分網頁網址傳送給 Google</translation>
 <translation id="288655811176831528">關閉分頁</translation>
 <translation id="2898963176829412617">新資料夾…</translation>
 <translation id="2916171785467530738">自動完成搜尋和網址</translation>
@@ -177,6 +178,7 @@
 <translation id="3161291298470460782">此操作會將您登出、關閉同步處理功能，並清除此裝置上的所有 Chrome 資料。但已同步處理的資料會繼續保留在 Google 帳戶中。</translation>
 <translation id="3175081911749765310">網路服務</translation>
 <translation id="3178650076442119961">今天在線</translation>
+<translation id="3181954750937456830">安全瀏覽 (保護您和裝置免受危險網站攻擊)</translation>
 <translation id="3207960819495026254">已加入書籤</translation>
 <translation id="3224641773458703735">如要匯出密碼，您必須先在裝置上設定密碼。</translation>
 <translation id="3240426699337459095">連結已複製</translation>
@@ -430,6 +432,7 @@
 <translation id="6447842834002726250">Cookie</translation>
 <translation id="6464071786529933911">在新無痕式分頁中開啟</translation>
 <translation id="6476800141292307438">將網頁翻譯成<ph name="LANGUAGE" />。翻譯選項喺喺接近畫面底部附近。</translation>
+<translation id="648164694371393720">驗證錯誤</translation>
 <translation id="6482629121755362506">已刪除 <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> 個項目</translation>
 <translation id="6561262006871132942">放大</translation>
 <translation id="6610002944194042868">翻譯選項</translation>

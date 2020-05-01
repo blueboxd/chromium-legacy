@@ -362,7 +362,7 @@ public class ExternalNavigationHandler {
      */
     private boolean handleCCTRedirectsToInstantApps(ExternalNavigationParams params,
             boolean isExternalProtocol, boolean incomingIntentRedirect) {
-        RedirectHandlerImpl handler = params.getRedirectHandler();
+        RedirectHandler handler = params.getRedirectHandler();
         if (handler == null) return false;
         if (handler.isFromCustomTabIntent() && !isExternalProtocol && incomingIntentRedirect
                 && !handler.shouldNavigationTypeStayInApp()
@@ -378,7 +378,7 @@ public class ExternalNavigationHandler {
 
     private boolean redirectShouldStayInChrome(
             ExternalNavigationParams params, boolean isExternalProtocol, Intent targetIntent) {
-        RedirectHandlerImpl handler = params.getRedirectHandler();
+        RedirectHandler handler = params.getRedirectHandler();
         if (handler == null) return false;
         boolean shouldStayInApp = handler.shouldStayInApp(
                 isExternalProtocol, mDelegate.isIntentForTrustedCallingApp(targetIntent));

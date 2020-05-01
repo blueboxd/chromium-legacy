@@ -5,16 +5,53 @@
 #include "chrome/browser/query_tiles/tile_service_factory.h"
 
 #include "base/memory/singleton.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/image_fetcher/image_fetcher_service_factory.h"
+#include "chrome/browser/net/system_network_context_manager.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_key.h"
+#include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_constants.h"
 #include "components/background_task_scheduler/background_task_scheduler.h"
 #include "components/background_task_scheduler/background_task_scheduler_factory.h"
 #include "components/image_fetcher/core/image_fetcher_service.h"
 #include "components/keyed_service/core/simple_dependency_manager.h"
+#include "components/language/core/browser/pref_names.h"
+#include "components/prefs/pref_service.h"
 #include "components/query_tiles/tile_service_factory_helper.h"
+#include "components/variations/service/variations_service.h"
+#include "google_apis/google_api_keys.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace upboarding {
+namespace {
+
+// Issue 1076964: Currently the variation service can be only reached in full
+// browser mode. Ensure the fetcher task launches OnFullBrowserLoaded.
+// TODO(hesen): Work around store/get country code in reduce mode.
+std::string GetCountryCode() {
+  std::string country_code;
+  if (!g_browser_process)
+    return country_code;
+
+  auto* variations_service = g_browser_process->variations_service();
+  if (variations_service) {
+    country_code = variations_service->GetStoredPermanentCountry();
+    if (!country_code.empty())
+      return country_code;
+    country_code = variations_service->GetLatestCountry();
+  }
+  return country_code;
+}
+
+std::string GetGoogleAPIKey() {
+  bool is_stable_channel =
+      chrome::GetChannel() == version_info::Channel::STABLE;
+  return is_stable_channel ? google_apis::GetAPIKey()
+                           : google_apis::GetNonStableAPIKey();
+}
+
+}  // namespace
 
 // static
 TileServiceFactory* TileServiceFactory::GetInstance() {
@@ -49,8 +86,17 @@ std::unique_ptr<KeyedService> TileServiceFactory::BuildServiceInstanceFor(
   auto* background_task_scheduler =
       background_task::BackgroundTaskSchedulerFactory::GetForKey(key);
 
+  std::string accept_languanges =
+      ProfileKey::FromSimpleFactoryKey(key)->GetPrefs()->GetString(
+          language::prefs::kAcceptLanguages);
+
+  auto url_loader_factory =
+      SystemNetworkContextManager::GetInstance()->GetSharedURLLoaderFactory();
+
   return CreateTileService(image_fetcher_service, db_provider, storage_dir,
-                           background_task_scheduler);
+                           background_task_scheduler, accept_languanges,
+                           GetCountryCode(), GetGoogleAPIKey(),
+                           url_loader_factory);
 }
 
 }  // namespace upboarding

@@ -577,19 +577,18 @@ public class WebApkInfoTest {
     }
 
     /**
-     * Test that {@link WebApkInfo#shareTarget()} returns a non-null but empty object if the WebAPK
-     * does not handle share intents.
+     * Test that {@link WebApkInfo#shareTarget()} returns a null object if the WebAPK does not
+     * handle share intents.
      */
     @Test
-    public void testGetShareTargetNotNullEvenIfDoesNotHandleShareIntents() {
+    public void testGetShareTargetNullIfDoesNotHandleShareIntents() {
         Bundle bundle = new Bundle();
         bundle.putString(WebApkMetaDataKeys.START_URL, START_URL);
         WebApkTestHelper.registerWebApkWithMetaData(WEBAPK_PACKAGE_NAME, bundle, null);
         Intent intent = WebApkTestHelper.createMinimalWebApkIntent(WEBAPK_PACKAGE_NAME, START_URL);
         WebappInfo info = WebApkInfo.create(intent);
 
-        Assert.assertNotNull(info.shareTarget());
-        Assert.assertEquals("", info.shareTarget().getAction());
+        Assert.assertNull(info.shareTarget());
     }
 
     /**

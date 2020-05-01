@@ -7,3 +7,4 @@
 // <include src="message_pipe.js">
 // <include src="message_types.js">
 // <include src="receiver.js">
+// <include src="app_context_test_support.js">

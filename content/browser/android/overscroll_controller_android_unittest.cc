@@ -35,6 +35,7 @@ namespace {
 class MockCompositor : public WindowAndroidCompositor {
  public:
   ~MockCompositor() override {}
+  std::unique_ptr<ReadbackRef> TakeReadbackRef() override { return nullptr; }
   void RequestCopyOfOutputOnRootLayer(
       std::unique_ptr<viz::CopyOutputRequest>) override {}
   void SetNeedsAnimate() override {}

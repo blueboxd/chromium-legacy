@@ -6,21 +6,14 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
-#include "base/path_service.h"
-#include "base/threading/thread_restrictions.h"
 #include "base/time/default_clock.h"
 #include "base/time/default_tick_clock.h"
 #include "components/network_time/network_time_tracker.h"
-#include "components/prefs/json_pref_store.h"
-#include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
-#include "components/prefs/pref_service_factory.h"
 #include "content/public/browser/network_quality_observer_factory.h"
 #include "content/public/browser/network_service_instance.h"
 #include "services/network/public/cpp/network_quality_tracker.h"
-#include "weblayer/browser/download_manager_delegate_impl.h"
 #include "weblayer/browser/system_network_context_manager.h"
-#include "weblayer/common/weblayer_paths.h"
 
 #if defined(OS_ANDROID)
 #include "weblayer/browser/safe_browsing/safe_browsing_service.h"
@@ -33,7 +26,8 @@ namespace {
 BrowserProcess* g_browser_process = nullptr;
 }  // namespace
 
-BrowserProcess::BrowserProcess() {
+BrowserProcess::BrowserProcess(std::unique_ptr<PrefService> local_state)
+    : local_state_(std::move(local_state)) {
   g_browser_process = this;
 }
 
@@ -65,27 +59,6 @@ void BrowserProcess::StartTearDown() {
 
 PrefService* BrowserProcess::GetLocalState() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  if (!local_state_) {
-    auto pref_registry = base::MakeRefCounted<PrefRegistrySimple>();
-
-    RegisterPrefs(pref_registry.get());
-
-    base::FilePath path;
-    CHECK(base::PathService::Get(DIR_USER_DATA, &path));
-    path = path.AppendASCII("Local State");
-    PrefServiceFactory pref_service_factory;
-    pref_service_factory.set_user_prefs(
-        base::MakeRefCounted<JsonPrefStore>(path));
-
-    {
-      // Creating the prefs service may require reading the preferences from
-      // disk.
-      base::ScopedAllowBlocking allow_io;
-      local_state_ = pref_service_factory.Create(pref_registry);
-    }
-  }
-
   return local_state_.get();
 }
 
@@ -116,11 +89,6 @@ network::NetworkQualityTracker* BrowserProcess::GetNetworkQualityTracker() {
         base::BindRepeating(&content::GetNetworkService));
   }
   return network_quality_tracker_.get();
-}
-
-void BrowserProcess::RegisterPrefs(PrefRegistrySimple* pref_registry) {
-  network_time::NetworkTimeTracker::RegisterPrefs(pref_registry);
-  pref_registry->RegisterIntegerPref(kDownloadNextIDPref, 0);
 }
 
 void BrowserProcess::CreateNetworkQualityObserver() {

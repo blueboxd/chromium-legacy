@@ -14,6 +14,8 @@
 #include "content/public/browser/browser_main_parts.h"
 #include "content/public/common/main_function_params.h"
 
+class PrefService;
+
 namespace weblayer {
 class BrowserProcess;
 struct MainParams;
@@ -21,7 +23,8 @@ struct MainParams;
 class BrowserMainPartsImpl : public content::BrowserMainParts {
  public:
   BrowserMainPartsImpl(MainParams* params,
-                       const content::MainFunctionParams& main_function_params);
+                       const content::MainFunctionParams& main_function_params,
+                       std::unique_ptr<PrefService> local_state);
   ~BrowserMainPartsImpl() override;
 
   // BrowserMainParts overrides.
@@ -34,8 +37,6 @@ class BrowserMainPartsImpl : public content::BrowserMainParts {
   void PreDefaultMainMessageLoopRun(base::OnceClosure quit_closure) override;
 
  private:
-  void CreateLocalState();
-
   MainParams* params_;
 
   std::unique_ptr<BrowserProcess> browser_process_;
@@ -46,6 +47,10 @@ class BrowserMainPartsImpl : public content::BrowserMainParts {
   // For running weblayer_browsertests.
   const content::MainFunctionParams main_function_params_;
   bool run_message_loop_ = true;
+
+  // Ownership of this moves to BrowserProcess. See
+  // ContentBrowserClientImpl::local_state_ for details.
+  std::unique_ptr<PrefService> local_state_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserMainPartsImpl);
 };

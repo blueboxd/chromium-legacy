@@ -127,6 +127,13 @@ void FakeDebugDaemonClient::GetScrubbedBigLogs(
       FROM_HERE, base::BindOnce(std::move(callback), false, sample));
 }
 
+void FakeDebugDaemonClient::BackupArcBugReport(
+    const std::string& userhash,
+    VoidDBusMethodCallback callback) {
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), true));
+}
+
 void FakeDebugDaemonClient::GetAllLogs(GetLogsCallback callback) {
   std::map<std::string, std::string> sample;
   sample["Sample Log"] = "Your email address is abc@abc.com";

@@ -24,9 +24,9 @@ public interface InterceptNavigationDelegateClient {
     /* Returns the time of the user's last interaction with the app. */
     long getLastUserInteractionTime();
 
-    /* Gets a RedirectHandlerImpl instance that is associated with this client, creating it if
+    /* Gets a RedirectHandler instance that is associated with this client, creating it if
      * necessary. */
-    RedirectHandlerImpl getOrCreateRedirectHandler();
+    RedirectHandler getOrCreateRedirectHandler();
 
     /* Creates an AuthenticatorNavigationInterceptor instance that is configured for this client.
      */

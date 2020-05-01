@@ -531,6 +531,8 @@ TEST(ThreadPoolWorkerTest, WorkerCleanupFromGetWork) {
   controls->WaitForWorkToRun();
   Mock::VerifyAndClear(delegate);
   controls->WaitForMainExit();
+  // Join the worker to avoid leaks.
+  worker->JoinForTesting();
 }
 
 TEST(ThreadPoolWorkerTest, WorkerCleanupDuringWork) {

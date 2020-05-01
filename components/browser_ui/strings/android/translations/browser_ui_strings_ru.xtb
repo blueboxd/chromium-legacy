@@ -3,12 +3,15 @@
 <translationbundle lang="ru">
 <translation id="1006017844123154345">Открыть в Интернете</translation>
 <translation id="1044891598689252897">Сайты будут работать в нормальном режиме</translation>
+<translation id="1124090076051167250">Будут удалены данные и файлы cookie, сохраненные сайтами или приложениями, добавленными на главный экран. Всего: <ph name="DATASIZE" />.</translation>
 <translation id="1124772482545689468">Пользователь</translation>
 <translation id="1178581264944972037">Пауза</translation>
 <translation id="1181037720776840403">Удалить</translation>
 <translation id="1201402288615127009">Далее</translation>
 <translation id="1242008676835033345">Встроено на сайте <ph name="WEBSITE_URL" /></translation>
+<translation id="1272079795634619415">Остановить</translation>
 <translation id="129382876167171263">Здесь появятся файлы, сохраненные сайтами.</translation>
+<translation id="1364532808393826295"><ph name="APP_NAME" />: "<ph name="NOTIFICATION_MESSAGE" />".</translation>
 <translation id="1369915414381695676">Добавлен сайт <ph name="SITE_NAME" /></translation>
 <translation id="1383876407941801731">Поиск</translation>
 <translation id="1384959399684842514">Скачивание приостановлено.</translation>
@@ -29,6 +32,7 @@
 <translation id="1984937141057606926">Разрешено, кроме сторонних сайтов</translation>
 <translation id="1994173015038366702">Адрес сайта</translation>
 <translation id="2025115093177348061">Дополненная реальность</translation>
+<translation id="2030769033451695672">Нажмите, чтобы вернуться на страницу <ph name="URL_OF_THE_CURRENT_TAB" />.</translation>
 <translation id="2041019821020695769">Чтобы Chrome отправлял вам уведомления, включите их в <ph name="BEGIN_LINK" />настройках Android<ph name="END_LINK" />.</translation>
 <translation id="2079545284768500474">Отмена</translation>
 <translation id="2091887806945687916">Звук</translation>
@@ -104,6 +108,7 @@
 <translation id="5048398596102334565">Предоставить сайтам доступ к датчикам движения (рекомендуется)</translation>
 <translation id="5063480226653192405">Использование</translation>
 <translation id="5100237604440890931">Свернуто. Нажмите, чтобы развернуть.</translation>
+<translation id="5123685120097942451">Вкладка инкогнито</translation>
 <translation id="5300589172476337783">Показать</translation>
 <translation id="5301954838959518834">ОК</translation>
 <translation id="5307446750509046227">Удалить данные сайтов</translation>
@@ -111,6 +116,7 @@
 <translation id="5317780077021120954">Сохранить</translation>
 <translation id="5335288049665977812">Разрешить сайтам использовать JavaScript (рекомендуется)</translation>
 <translation id="534295439873310000">Устройства с функцией NFC</translation>
+<translation id="5354152178998424783">Будут удалены данные и файлы cookie (всего <ph name="DATASIZE" />), сохраненные сайтами.</translation>
 <translation id="5391532827096253100">Подключение к сайту не защищено. Информация о сайте</translation>
 <translation id="5494752089476963479">Блокировать объявления на сайтах, которые показывают навязчивую или вводящую в заблуждение рекламу</translation>
 <translation id="5505264765875738116">Сайты не могут запрашивать разрешения на отправку уведомлений</translation>
@@ -122,9 +128,11 @@
 <translation id="5677928146339483299">Заблокировано</translation>
 <translation id="5689516760719285838">Геоданные</translation>
 <translation id="5710871682236653961">Запрашивать для сайтов разрешение на обмен информацией через NFC (рекомендуется).</translation>
+<translation id="5719847187258001597">Будут удалены все данные и файлы cookie, которые сохранены сайтом <ph name="ORIGIN" /> или его приложением, добавленным на главный экран.</translation>
 <translation id="5804241973901381774">Разрешения</translation>
 <translation id="5860033963881614850">ВЫКЛ</translation>
 <translation id="5916664084637901428">ВКЛ</translation>
+<translation id="5922853908706496913">Предоставлен доступ к вашему экрану</translation>
 <translation id="5939518447894949180">Сбросить</translation>
 <translation id="6040143037577758943">Закрыть</translation>
 <translation id="6042308850641462728">Ещё</translation>
@@ -168,6 +176,7 @@
 <translation id="7423098979219808738">Всегда спрашивать</translation>
 <translation id="7423538860840206698">Доступ к данным в буфере обмена заблокирован</translation>
 <translation id="7521387064766892559">JavaScript</translation>
+<translation id="7554752735887601236">Сайт использует ваш микрофон</translation>
 <translation id="7572498721684305250">Запретить сайтам обмен информацией через NFC.</translation>
 <translation id="757524316907819857">Запретить сайтам воспроизводить защищенный контент</translation>
 <translation id="7589445247086920869">Закрыть доступ текущей поисковой системе</translation>
@@ -176,9 +185,11 @@
 <translation id="7781829728241885113">Вчера</translation>
 <translation id="7791543448312431591">Добавить</translation>
 <translation id="780301667611848630">Спасибо, не надо</translation>
+<translation id="7804248752222191302">Сайт использует вашу камеру</translation>
 <translation id="7817023149356982970">Вы выйдете из аккаунта на этом сайте.</translation>
 <translation id="7828557259026017104">Когда вы посещаете сайты, они создают файлы cookie для сохранения настроек и других пользовательских данных. Сторонние файлы cookie создаются другими сайтами, которые размещают свой контент (например, объявления или изображения) на просматриваемых вами веб-страницах.</translation>
 <translation id="7846076177841592234">Отменить выбор</translation>
+<translation id="7846621471902887024">Вы выйдете из аккаунта на всех сайтах.</translation>
 <translation id="7882806643839505685">Включить звуки на определенном сайте.</translation>
 <translation id="7993619969781047893">Некоторые функции на сайтах могут работать некорректно</translation>
 <translation id="7999064672810608036">Вы уверены, что хотите удалить все данные этого веб-сайта, включая файлы cookie, и сбросить заданные разрешения?</translation>
@@ -192,7 +203,9 @@
 <translation id="8261506727792406068">Удалить</translation>
 <translation id="8300705686683892304">Под управлением приложения</translation>
 <translation id="8372893542064058268">Разрешить фоновую синхронизацию для конкретного сайта.</translation>
+<translation id="83792324527827022">Сайт использует вашу камеру и микрофон</translation>
 <translation id="8380167699614421159">Этот сайт показывает навязчивую или вводящую в заблуждение рекламу</translation>
+<translation id="8394832520002899662">Нажмите, чтобы вернуться на сайт.</translation>
 <translation id="8447861592752582886">Отключить доступ к устройству</translation>
 <translation id="851751545965956758">Не разрешать сайтам подключаться к устройствам</translation>
 <translation id="857943718398505171">Разрешено (рекомендуется)</translation>

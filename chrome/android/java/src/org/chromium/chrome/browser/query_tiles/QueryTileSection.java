@@ -10,10 +10,15 @@ import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
 
 import org.chromium.base.Callback;
+import org.chromium.chrome.browser.GlobalDiscardableReferencePool;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
+import org.chromium.chrome.browser.image_fetcher.ImageFetcher;
+import org.chromium.chrome.browser.image_fetcher.ImageFetcherConfig;
+import org.chromium.chrome.browser.image_fetcher.ImageFetcherFactory;
 import org.chromium.chrome.browser.ntp.search.SearchBoxChipDelegate;
 import org.chromium.chrome.browser.ntp.search.SearchBoxCoordinator;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.components.browser_ui.widget.R;
 import org.chromium.components.browser_ui.widget.image_tiles.ImageTile;
 import org.chromium.components.browser_ui.widget.image_tiles.ImageTileCoordinator;
 import org.chromium.components.browser_ui.widget.image_tiles.ImageTileCoordinatorFactory;
@@ -25,6 +30,7 @@ import org.chromium.ui.display.DisplayAndroid;
 import org.chromium.ui.display.DisplayUtil;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -46,6 +52,8 @@ public class QueryTileSection {
     private ImageTileCoordinator mTileCoordinator;
     private TileProvider mTileProvider;
     private TileUmaLogger mTileUmaLogger;
+    private ImageFetcher mImageFetcher;
+    private Integer mTileWidth;
 
     /** Constructor. */
     public QueryTileSection(ViewGroup queryTileSectionView,
@@ -64,6 +72,9 @@ public class QueryTileSection {
                 tileConfig, this::onTileClicked, this::getVisuals);
         mQueryTileSectionView.addView(mTileCoordinator.getView(),
                 new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
+        mImageFetcher =
+                ImageFetcherFactory.createImageFetcher(ImageFetcherConfig.IN_MEMORY_WITH_DISK_CACHE,
+                        GlobalDiscardableReferencePool.getReferencePool());
         reloadTiles();
     }
 
@@ -98,10 +109,9 @@ public class QueryTileSection {
 
             @Override
             public void getChipIcon(Callback<Bitmap> callback) {
-                mTileProvider.getVisuals(queryTile.id, bitmaps -> {
-                    Bitmap bitmap = bitmaps != null && !bitmaps.isEmpty() ? bitmaps.get(0) : null;
-                    callback.onResult(bitmap);
-                });
+                int chipIconSize = mQueryTileSectionView.getResources().getDimensionPixelSize(
+                        R.dimen.chip_icon_size);
+                fetchImage(queryTile, chipIconSize, callback);
             }
         });
     }
@@ -117,12 +127,27 @@ public class QueryTileSection {
     }
 
     private void getVisuals(ImageTile tile, Callback<List<Bitmap>> callback) {
-        mTileProvider.getVisuals(tile.id, callback);
+        // TODO(crbug.com/1077086): Probably need a bigger width to start with or pass the exact
+        // width. Also may need to update on orientation change.
+        if (mTileWidth == null) {
+            mTileWidth = mQueryTileSectionView.getResources().getDimensionPixelSize(
+                    R.dimen.tile_ideal_width);
+        }
+
+        fetchImage((QueryTile) tile, mTileWidth,
+                bitmap -> { callback.onResult(Arrays.asList(bitmap)); });
+    }
+
+    private void fetchImage(QueryTile queryTile, int size, Callback<Bitmap> callback) {
+        String url = queryTile.urls.get(0);
+        // TODO(crbug.com/1058534) : Replace with correct API.
+        mImageFetcher.fetchImage(
+                url, ImageFetcher.QUERY_TILE_UMA_CLIENT_NAME, size, size, callback);
     }
 
     /**
-     * @return Max number of rows for most visted tiles. For smaller screens, the most visited tiles
-     *         section on NTP is shortened so that feed is still visible above the fold.
+     * @return Max number of rows for most visited tiles. For smaller screens, the most visited
+     *         tiles section on NTP is shortened so that feed is still visible above the fold.
      */
     public Integer getMaxRowsForMostVisitedTiles() {
         if (!isFeatureEnabled()) return null;

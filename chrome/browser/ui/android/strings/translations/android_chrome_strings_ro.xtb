@@ -38,7 +38,6 @@
 <translation id="1258753120186372309">Doodle Google: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1260236875608242557">Caută și explorează</translation>
 <translation id="1266864766717917324">Nu s-a trimis <ph name="CONTENT_TYPE" /></translation>
-<translation id="1272079795634619415">Oprește</translation>
 <translation id="1283039547216852943">Atinge pentru a extinde</translation>
 <translation id="1285320974508926690">Nu traduce niciodată acest site</translation>
 <translation id="1291207594882862231">Șterge istoricul, cookie-urile, datele privind site-urile și memoria cache…</translation>
@@ -50,8 +49,8 @@
 <translation id="1327257854815634930">Istoricul de navigare este deschis</translation>
 <translation id="1331212799747679585">Chrome nu se poate actualiza. Mai multe opțiuni</translation>
 <translation id="1332501820983677155">Comenzi rapide pentru funcțiile Google Chrome</translation>
+<translation id="1347468774581902829">Gestionează activitatea</translation>
 <translation id="1360432990279830238">Te deconectezi și dezactivezi sincronizarea?</translation>
-<translation id="1364532808393826295"><ph name="APP_NAME" /> – <ph name="NOTIFICATION_MESSAGE" /></translation>
 <translation id="1373696734384179344">Memorie insuficientă pentru descărcarea conținutului selectat.</translation>
 <translation id="1376578503827013741">Se calculează…</translation>
 <translation id="1383876407941801731">Caută</translation>
@@ -122,7 +121,6 @@
 <translation id="2013642289801508067">{FILE_COUNT,plural, =1{Un fișier}few{# fișiere}other{# de fișiere}}</translation>
 <translation id="2017836877785168846">Șterge istoricul și completările automate din bara de adrese.</translation>
 <translation id="2021896219286479412">Comenzi site în ecran complet</translation>
-<translation id="2030769033451695672">Atinge pentru a reveni la <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
 <translation id="2038563949887743358">Activează opțiunea Versiune site pentru desktop</translation>
 <translation id="204321170514947529">Și <ph name="APP_NAME" /> are date în Chrome</translation>
 <translation id="2049574241039454490"><ph name="FILE_SIZE_OF_TOTAL" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
@@ -434,6 +432,7 @@ Contul Google poate să ofere alte forme ale istoricului de navigare, cum ar fi 
 <translation id="4663756553811254707">S-au șters <ph name="NUMBER_OF_BOOKMARKS" /> (de) marcaje</translation>
 <translation id="4665282149850138822">Site-ul <ph name="NAME" /> a fost adăugat pe ecranul de pornire</translation>
 <translation id="4684427112815847243">Sincronizează tot</translation>
+<translation id="4688610874307684559">Rulează în Chrome (inițială)</translation>
 <translation id="4695891336199304370">{SHIPPING_OPTIONS,plural, =1{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 și încă <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}few{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 și încă <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}other{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 și încă <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}}</translation>
 <translation id="4696983787092045100">Trimite text pe dispozitivele tale</translation>
 <translation id="4698034686595694889">Vezi offline în <ph name="APP_NAME" /></translation>
@@ -592,7 +591,6 @@ Pentru a modifica această setare, <ph name="BEGIN_LINK" />resetează sincroniza
 <translation id="5876056640971328065">Întrerupe videoclipul</translation>
 <translation id="5884076754568147479">Pentru a te ajuta să finalizezi sarcini, Google va primi adresele URL și conținutul site-urilor în care folosești Asistentul, precum și informațiile pe care le trimiți cu ajutorul Asistentului</translation>
 <translation id="5919204609460789179">Actualizează <ph name="PRODUCT_NAME" /> pentru a începe sincronizarea</translation>
-<translation id="5922853908706496913">Se permite accesul la ecran</translation>
 <translation id="5937580074298050696"><ph name="AMOUNT" /> salvați</translation>
 <translation id="5939518447894949180">Resetează</translation>
 <translation id="5942872142862698679">Pentru căutare se folosește Google</translation>
@@ -773,16 +771,17 @@ De exemplu, unele site-uri pot răspunde la această solicitare afișând anunț
 <translation id="7479104141328977413">Gestionarea filelor</translation>
 <translation id="7481312909269577407">Înainte</translation>
 <translation id="7482656565088326534">Fila de previzualizare</translation>
+<translation id="7484997419527351112">Discover – dezactivat</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (Actualizată la <ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7494974237137038751">date economisite</translation>
 <translation id="7498271377022651285">Așteaptă...</translation>
 <translation id="7514365320538308">Descarcă</translation>
 <translation id="751961395872307827">Nu se poate realiza conexiunea la site</translation>
 <translation id="7542481630195938534">Nu se pot obține sugestii</translation>
-<translation id="7554752735887601236">Un site folosește microfonul</translation>
 <translation id="7559975015014302720">Modul Lite este dezactivat</translation>
 <translation id="7562080006725997899">Se șterg datele de navigare</translation>
 <translation id="756809126120519699">Datele Chrome au fost șterse</translation>
+<translation id="7577900504646297215">Gestionează interesele</translation>
 <translation id="757855969265046257">{FILES,plural, =1{<ph name="FILES_DOWNLOADED_ONE" /> fișier descărcat}few{<ph name="FILES_DOWNLOADED_MANY" /> fișiere descărcate}other{<ph name="FILES_DOWNLOADED_MANY" /> de fișiere descărcate}}</translation>
 <translation id="7588219262685291874">Activează tema întunecată când este activată Economisirea bateriei pentru dispozitiv</translation>
 <translation id="7593557518625677601">Deschide setările Android și reactivează sincronizarea sistemului Android pentru a porni sincronizarea Chrome</translation>
@@ -813,7 +812,6 @@ De exemplu, unele site-uri pot răspunde la această solicitare afișând anunț
 <translation id="7774809984919390718">{PAYMENT_METHOD,plural, =1{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 și încă <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}few{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 și încă <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}other{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 și încă <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}}</translation>
 <translation id="7791543448312431591">Adaugă</translation>
 <translation id="780301667611848630">Nu, mulțumesc</translation>
-<translation id="7804248752222191302">Un site folosește camera foto</translation>
 <translation id="7810647596859435254">Deschide cu…</translation>
 <translation id="7821588508402923572">Economiile de date vor apărea aici</translation>
 <translation id="783819812427904514">Activează sunetul videoclipului</translation>
@@ -885,9 +883,7 @@ De exemplu, unele site-uri pot răspunde la această solicitare afișând anunț
 <translation id="8349013245300336738">Sortează după volumul de date folosite</translation>
 <translation id="8364299278605033898">Vezi site-urile populare</translation>
 <translation id="8368027906805972958">Dispozitiv necunoscut sau neacceptat (<ph name="DEVICE_ID" />)</translation>
-<translation id="83792324527827022">Un site folosește camera foto și microfonul</translation>
 <translation id="8393700583063109961">Trimite un mesaj</translation>
-<translation id="8394832520002899662">Atinge pentru a reveni la site</translation>
 <translation id="8413126021676339697">Afișează întregul istoric</translation>
 <translation id="8427875596167638501">Fila de previzualizare este pe jumătate deschisă</translation>
 <translation id="8428213095426709021">Setări</translation>
@@ -984,7 +980,6 @@ De exemplu, unele site-uri pot răspunde la această solicitare afișând anunț
 <translation id="970715775301869095"><ph name="MINUTES" /> min. rămase</translation>
 <translation id="974555521953189084">Introdu expresia de acces pentru a începe sincronizarea</translation>
 <translation id="981121421437150478">Offline</translation>
-<translation id="982182592107339124">Astfel, se vor șterge datele pentru toate site-urile, inclusiv:</translation>
 <translation id="983192555821071799">Închide toate filele</translation>
 <translation id="987264212798334818">General</translation>
 </translationbundle>

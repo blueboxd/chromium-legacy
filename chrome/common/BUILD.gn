@@ -124,8 +124,6 @@ static_library("common") {
     "custom_handlers/protocol_handler.h",
     "google_url_loader_throttle.cc",
     "google_url_loader_throttle.h",
-    "heap_profiler_controller.cc",
-    "heap_profiler_controller.h",
     "logging_chrome.cc",
     "logging_chrome.h",
     "mac/launchd.h",

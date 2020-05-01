@@ -307,6 +307,95 @@ mojom("test_interfaces") {
     "//mojo/public/mojom/base",
   ]
 
+  cpp_typemaps = [
+    {
+      types = [
+        {
+          mojom = "mojo.test.TypemappedRect"
+          cpp = "::mojo::test::RectChromium"
+          hashable = true
+        },
+        {
+          mojom = "mojo.test.SharedTypemappedRect"
+          cpp = "::mojo::test::SharedRect"
+        },
+      ]
+      traits_headers = [
+        "//mojo/public/cpp/bindings/tests/rect_chromium_traits.h",
+        "//mojo/public/cpp/bindings/tests/shared_rect_traits.h",
+      ]
+    },
+    {
+      types = [
+        {
+          mojom = "mojo.test.PickledEnum"
+          cpp = "::mojo::test::PickledEnumChromium"
+        },
+        {
+          mojom = "mojo.test.PickledStruct"
+          cpp = "::mojo::test::PickledStructChromium"
+          move_only = true
+        },
+        {
+          mojom = "mojo.test.TestNativeStructMojom"
+          cpp = "::mojo::test::TestNativeStruct"
+        },
+        {
+          mojom = "mojo.test.TestNativeStructWithAttachmentsMojom"
+          cpp = "::mojo::test::TestNativeStructWithAttachments"
+          move_only = true
+        },
+      ]
+      traits_sources = [
+        "//mojo/public/cpp/bindings/tests/pickled_types_chromium.cc",
+        "//mojo/public/cpp/bindings/tests/test_native_types.cc",
+      ]
+      traits_headers = [
+        "//mojo/public/cpp/bindings/tests/pickled_types_chromium.h",
+        "//mojo/public/cpp/bindings/tests/test_native_types.h",
+      ]
+      traits_deps = [ "//ipc" ]
+    },
+  ]
+
+  blink_cpp_typemaps = [
+    {
+      types = [
+        {
+          mojom = "mojo.test.TypemappedRect"
+          cpp = "::mojo::test::RectBlink"
+          hashable = true
+        },
+        {
+          mojom = "mojo.test.SharedTypemappedRect"
+          cpp = "::mojo::test::SharedRect"
+        },
+      ]
+      traits_headers = [
+        "//mojo/public/cpp/bindings/tests/rect_blink_traits.h",
+        "//mojo/public/cpp/bindings/tests/shared_rect_traits.h",
+      ]
+    },
+    {
+      types = [
+        {
+          mojom = "mojo.test.PickledEnum"
+          cpp = "::mojo::test::PickledEnumBlink"
+        },
+        {
+          mojom = "mojo.test.PickledStruct"
+          cpp = "::mojo::test::PickledStructBlink"
+          move_only = true
+        },
+      ]
+      traits_sources =
+          [ "//mojo/public/cpp/bindings/tests/pickled_types_blink.cc" ]
+      traits_headers =
+          [ "//mojo/public/cpp/bindings/tests/pickled_types_blink.h" ]
+      traits_deps = [ "//ipc" ]
+    },
+  ]
+
   support_lazy_serialization = true
 
   # Validation tests require precise message content matching, so we avoid
@@ -409,6 +498,68 @@ mojom("test_mojom_import2") {
 mojom("test_struct_traits_interfaces") {
   testonly = true
   sources = [ "struct_with_traits.mojom" ]
+
+  cpp_typemaps = [
+    {
+      types = [
+        {
+          mojom = "mojo.test.EnumWithTraits"
+          cpp = "::mojo::test::EnumWithTraitsImpl"
+        },
+        {
+          mojom = "mojo.test.StructWithTraits"
+          cpp = "::mojo::test::StructWithTraitsImpl"
+        },
+        {
+          mojom = "mojo.test.StructWithUnreachableTraits"
+          cpp = "::mojo::test::StructWithUnreachableTraitsImpl"
+        },
+        {
+          mojom = "mojo.test.NestedStructWithTraits"
+          cpp = "::mojo::test::NestedStructWithTraitsImpl"
+        },
+        {
+          mojom = "mojo.test.TrivialStructWithTraits"
+          cpp = "::mojo::test::TrivialStructWithTraitsImpl"
+          copyable_pass_by_value = true
+        },
+        {
+          mojom = "mojo.test.MoveOnlyStructWithTraits"
+          cpp = "::mojo::test::MoveOnlyStructWithTraitsImpl"
+          move_only = true
+        },
+        {
+          mojom = "mojo.test.StructWithTraitsForUniquePtr"
+          cpp = "::std::unique_ptr<int>"
+          move_only = true
+          nullable_is_same_type = true
+        },
+        {
+          mojom = "mojo.test.UnionWithTraits"
+          cpp = "::std::unique_ptr<::mojo::test::UnionWithTraitsBase>"
+          move_only = true
+          nullable_is_same_type = true
+        },
+        {
+          mojom = "mojo.test.StructForceSerialize"
+          cpp = "::mojo::test::StructForceSerializeImpl"
+          force_serialize = true
+        },
+        {
+          mojom = "mojo.test.StructNestedForceSerialize"
+          cpp = "::mojo::test::StructNestedForceSerializeImpl"
+        },
+      ]
+      traits_sources = [
+        "//mojo/public/cpp/bindings/tests/struct_with_traits_impl_traits.cc",
+      ]
+      traits_headers = [
+        "//mojo/public/cpp/bindings/tests/struct_with_traits_impl_traits.h",
+      ]
+      traits_public_deps =
+          [ "//mojo/public/cpp/bindings/tests:struct_with_traits_impl" ]
+    },
+  ]
 
   support_lazy_serialization = true
 }

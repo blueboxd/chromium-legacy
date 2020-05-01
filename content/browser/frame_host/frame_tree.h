@@ -162,6 +162,7 @@ class CONTENT_EXPORT FrameTree {
       const std::string& frame_name,
       const std::string& frame_unique_name,
       bool is_created_by_script,
+      const base::UnguessableToken& frame_token,
       const base::UnguessableToken& devtools_frame_token,
       const blink::FramePolicy& frame_policy,
       const blink::mojom::FrameOwnerProperties& frame_owner_properties,

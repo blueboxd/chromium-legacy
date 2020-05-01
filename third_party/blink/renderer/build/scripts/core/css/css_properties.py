@@ -18,48 +18,40 @@ PRIMITIVE_TYPES = [
 ]
 
 
-# Check properties parameters are valid.
-# TODO(jiameng): add more flag checks later.
-def check_property_parameters(property_to_check):
-    # Only longhand properties can be interpolable.
-    if property_to_check['longhands']:
-        assert not(property_to_check['interpolable']), \
-            'Shorthand property (' + property_to_check['name'] + ') ' \
-            'cannot be interpolable'
-    if property_to_check['longhands']:
-        assert 'parseSingleValue' not in property_to_check['property_methods'], \
-            'Shorthand property (' + property_to_check['name'] + ') ' \
-            'should not implement parseSingleValue'
-    else:
-        assert 'parseShorthand' not in property_to_check['property_methods'], \
-            'Longhand property (' + property_to_check['name'] + ') ' \
-            'should not implement parseShorthand'
-    assert property_to_check['is_descriptor'] or \
-        property_to_check['is_property'], \
-        '{} must be a property, descriptor, or both'.format(
-            property_to_check['name'])
-    if property_to_check['field_template'] is not None:
-        assert not property_to_check['longhands'], \
-            "Shorthand '{}' cannot have a field_template.".format(
-                property_to_check['name'])
-    if property_to_check['mutable']:
-        assert property_to_check['field_template'] == 'monotonic_flag', \
-            'mutable keyword only implemented for monotonic_flag'
-    if property_to_check['alias_for']:
-        assert not property_to_check['is_internal'], \
-            'Internal aliases is not supported'
-    if property_to_check['valid_for_first_letter']:
-        assert not property_to_check['longhands'], \
-            'Shorthand %s should not be marked as valid_for_first_letter' % \
-            property_to_check['name']
-    if property_to_check['valid_for_cue']:
-        assert not property_to_check['longhands'], \
-            'Shorthand %s should not be marked as valid_for_cue' % \
-            property_to_check['name']
-    if property_to_check['valid_for_marker']:
-        assert not property_to_check['longhands'], \
-            'Shorthand %s should not be marked as valid_for_marker' % \
-            property_to_check['name']
+def validate_property(prop):
+    name = prop['name']
+    has_method = lambda x: x in prop['property_methods']
+    assert prop['is_property'] or prop['is_descriptor'], \
+        'Entry must be a property, descriptor, or both [%s]' % name
+    assert not prop['interpolable'] or prop['is_longhand'], \
+        'Only longhands can be interpolable [%s]' % name
+    assert not has_method('ParseSingleValue') or prop['is_longhand'], \
+        'Only longhands can implement ParseSingleValue [%s]' % name
+    assert not has_method('ParseShorthand') or prop['is_shorthand'], \
+        'Only shorthands can implement ParseShorthand [%s]' % name
+    assert not prop['field_template'] or prop['is_longhand'], \
+        'Only longhands can have a field_template [%s]' % name
+    assert not prop['valid_for_first_letter'] or prop['is_longhand'], \
+        'Only longhands can be valid_for_first_letter [%s]' % name
+    assert not prop['valid_for_cue'] or prop['is_longhand'], \
+        'Only longhands can be valid_for_cue [%s]' % name
+    assert not prop['valid_for_marker'] or prop['is_longhand'], \
+        'Only longhands can be valid_for_marker [%s]' % name
+
+
+def validate_alias(alias):
+    name = alias['name']
+    is_internal = lambda x: x['name'].original.startswith('-internal-')
+    assert not alias['runtime_flag'], \
+        'Runtime flags are not supported for aliases [%s]' % name
+    assert not is_internal(alias), \
+        'Internal aliases not supported [%s]' % name
+
+
+def validate_field(field):
+    name = field['name']
+    assert not field['mutable'] or field['field_template'] == 'monotonic_flag',\
+        'mutable requires field_template:monotonic_flag [%s]' % name
 
 
 class CSSProperties(object):
@@ -116,12 +108,17 @@ class CSSProperties(object):
             self._extra_fields.extend(fields.name_dictionaries)
         for field in self._extra_fields:
             self.expand_parameters(field)
+            validate_field(field)
 
     def add_properties(self, properties, origin_trial_features):
         for property_ in properties:
             self._properties_by_name[property_['name'].original] = property_
 
         for property_ in properties:
+            property_['is_shorthand'] = \
+                property_['is_property'] and bool(property_['longhands'])
+            property_['is_longhand'] = \
+                property_['is_property'] and not property_['is_shorthand']
             self.expand_visited(property_)
             property_['in_origin_trial'] = False
             self.expand_origin_trials(property_, origin_trial_features)
@@ -143,7 +140,7 @@ class CSSProperties(object):
         # Sort properties by priority, then alphabetically.
         for property_ in self._longhands + self._shorthands:
             self.expand_parameters(property_)
-            check_property_parameters(property_)
+            validate_property(property_)
             # This order must match the order in CSSPropertyPriority.h.
             priority_numbers = {'Animation': 0, 'High': 1, 'Low': 2}
             priority = priority_numbers[property_['priority']]
@@ -208,10 +205,7 @@ class CSSProperties(object):
 
     def expand_aliases(self):
         for i, alias in enumerate(self._aliases):
-            assert not alias['runtime_flag'], \
-                "Property '{}' is an alias with a runtime_flag, "\
-                "but runtime flags do not currently work for aliases.".format(
-                    alias['name'])
+            validate_alias(alias)
             aliased_property = self._properties_by_id[id_for_css_property(
                 alias['alias_for'])]
             aliased_property.setdefault('aliases', [])

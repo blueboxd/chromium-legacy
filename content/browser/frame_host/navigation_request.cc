@@ -257,17 +257,18 @@ bool NeedsHTTPOrigin(net::HttpRequestHeaders* headers,
 
 // TODO(clamy): This should match what's happening in
 // blink::FrameFetchContext::addAdditionalRequestHeaders.
-void AddAdditionalRequestHeaders(net::HttpRequestHeaders* headers,
-                                 const GURL& url,
-                                 mojom::NavigationType navigation_type,
-                                 ui::PageTransition transition,
-                                 BrowserContext* browser_context,
-                                 const std::string& method,
-                                 const std::string& user_agent_override,
-                                 bool has_user_gesture,
-                                 base::Optional<url::Origin> initiator_origin,
-                                 blink::mojom::Referrer* referrer,
-                                 FrameTreeNode* frame_tree_node) {
+void AddAdditionalRequestHeaders(
+    net::HttpRequestHeaders* headers,
+    const GURL& url,
+    mojom::NavigationType navigation_type,
+    ui::PageTransition transition,
+    BrowserContext* browser_context,
+    const std::string& method,
+    const std::string& user_agent_override,
+    bool has_user_gesture,
+    const base::Optional<url::Origin>& initiator_origin,
+    blink::mojom::Referrer* referrer,
+    FrameTreeNode* frame_tree_node) {
   if (!url.SchemeIsHTTPOrHTTPS())
     return;
 
@@ -1053,14 +1054,9 @@ NavigationRequest::NavigationRequest(
         browser_context->GetClientHintsControllerDelegate();
     if (client_hints_delegate) {
       net::HttpRequestHeaders client_hints_headers;
-      RenderViewHost* render_view_host =
-          frame_tree_node->current_frame_host()->GetRenderViewHost();
-      const bool javascript_enabled =
-          render_view_host->GetWebkitPreferences().javascript_enabled;
       AddNavigationRequestClientHintsHeaders(
           common_params_->url, &client_hints_headers, browser_context,
-          javascript_enabled, client_hints_delegate, IsOverridingUserAgent(),
-          frame_tree_node_);
+          client_hints_delegate, IsOverridingUserAgent(), frame_tree_node_);
       headers.MergeFrom(client_hints_headers);
     }
 
@@ -2547,18 +2543,13 @@ void NavigationRequest::OnRedirectChecksComplete(
       browser_context->GetClientHintsControllerDelegate();
   if (client_hints_delegate) {
     net::HttpRequestHeaders client_hints_extra_headers;
-    RenderViewHost* render_view_host =
-        frame_tree_node_->current_frame_host()->GetRenderViewHost();
-    const bool javascript_enabled =
-        render_view_host->GetWebkitPreferences().javascript_enabled;
     PersistAcceptCHAfterNagivationRequestRedirect(
         commit_params_->redirects.back(),
         commit_params_->redirect_response.back()->parsed_headers,
-        browser_context, javascript_enabled, client_hints_delegate,
-        frame_tree_node_);
+        browser_context, client_hints_delegate, frame_tree_node_);
     AddNavigationRequestClientHintsHeaders(
         common_params_->url, &client_hints_extra_headers, browser_context,
-        javascript_enabled, client_hints_delegate,
+        client_hints_delegate,
         commit_params_->is_overriding_user_agent || entry_overrides_ua_,
         frame_tree_node_);
     modified_headers.MergeFrom(client_hints_extra_headers);
@@ -4127,8 +4118,8 @@ void NavigationRequest::SetIsOverridingUserAgent(bool override_ua) {
   if (is_for_commit_)
     return;
 
-  if (entry_overrides_ua_ == override_ua)
-    return;
+  // Don't early out if entry_overrides_ua_ == override_ua as the user-agent
+  // may have changed.
 
   // This function only applies when there is a NavigationEntry.
   NavigationEntry* entry = GetNavigationEntry();
@@ -4150,7 +4141,15 @@ void NavigationRequest::SetIsOverridingUserAgent(bool override_ua) {
                     user_agent_override.empty()
                         ? GetContentClient()->browser()->GetUserAgent()
                         : user_agent_override);
-  // TODO(sky): add support for client hints.
+  BrowserContext* browser_context =
+      frame_tree_node_->navigator()->GetController()->GetBrowserContext();
+  ClientHintsControllerDelegate* client_hints_delegate =
+      browser_context->GetClientHintsControllerDelegate();
+  if (client_hints_delegate) {
+    UpdateNavigationRequestClientUaHeaders(
+        common_params_->url, client_hints_delegate, entry_overrides_ua_,
+        frame_tree_node_, &headers);
+  }
   begin_params_->headers = headers.ToString();
   // |request_headers_| comes from |begin_params_|. Clear |request_headers_| now
   // so that if |request_headers_| are needed, they will be updated.

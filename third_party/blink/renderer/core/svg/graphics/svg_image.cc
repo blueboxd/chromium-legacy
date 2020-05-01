@@ -862,6 +862,7 @@ Image::SizeAvailability SVGImage::DataChanged(bool all_data_received) {
     DCHECK(!frame_client_);
     frame_client_ = MakeGarbageCollected<SVGImageLocalFrameClient>(this);
     frame = MakeGarbageCollected<LocalFrame>(frame_client_, *page, nullptr,
+                                             base::UnguessableToken::Create(),
                                              nullptr, nullptr);
     frame->SetView(MakeGarbageCollected<LocalFrameView>(*frame));
     frame->Init();

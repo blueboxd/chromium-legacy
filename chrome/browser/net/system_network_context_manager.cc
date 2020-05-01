@@ -567,7 +567,8 @@ SystemNetworkContextManager::CreateDefaultNetworkContextParams() {
         version_info::GetProductNameAndVersionForUserAgent());
     quic_user_agent_id.push_back(' ');
     quic_user_agent_id.append(
-        content::BuildOSCpuInfo(false /* include_android_build_number */));
+        content::BuildOSCpuInfo(content::IncludeAndroidBuildNumber::Exclude,
+                                content::IncludeAndroidModel::Include));
   }
   network_context_params->quic_user_agent_id = quic_user_agent_id;
 

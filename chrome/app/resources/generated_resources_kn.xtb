@@ -382,9 +382,7 @@
 <translation id="1509281256533087115">USB ಮೂಲಕ ಯಾವುದೇ <ph name="DEVICE_NAME_AND_VENDOR" /> ಪ್ರವೇಶಿಸಿ</translation>
 <translation id="1509960214886564027">ಹಲವು ಸೈಟ್‌ಗಳಲ್ಲಿನ ಫೀಚರ್‌ಗಳು ಕಾರ್ಯನಿರ್ವಹಿಸುವುದನ್ನು ನಿಲ್ಲಿಸಬಹುದು</translation>
 <translation id="1510030919967934016">ನಿಮ್ಮ ಸ್ಥಳವನ್ನು ಗಮನವಿರಿಸದಂತೆ ಈ ಪುಟವನ್ನು ನಿರ್ಬಂಧಿಸಲಾಗಿದೆ.</translation>
-<translation id="1510055949674985293">ಈ ಚಿತ್ರಕ್ಕಾಗಿ QR ಕೋಡ್ ರಚಿಸಿ</translation>
 <translation id="1510238584712386396">ಲಾಂಚರ್</translation>
-<translation id="1510581003097415337">ಈ ಪುಟಕ್ಕಾಗಿ QR ಕೋಡ್ ರಚಿಸಿ</translation>
 <translation id="1510785804673676069">ನೀವು ಪ್ರಾಕ್ಸಿ ಸರ್ವರ್ ಬಳಸುತ್ತಿದ್ದರೆ, ಪ್ರಾಕ್ಸಿ ಸರ್ವರ್ ಕಾರ್ಯನಿರ್ವಹಿಸುತ್ತಿದೆಯೇ 
        ಎಂಬುದನ್ನು ಪರಿಶೀಲಿಸಲು ನಿಮ್ಮ  ಪ್ರಾಕ್ಸಿ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ಪರಿಶೀಲಿಸಿ ಅಥವಾ ನಿಮ್ಮ 
        ನೆಟ್‌ವರ್ಕ್ ನಿರ್ವಾಹಕರನ್ನು ಸಂಪರ್ಕಿಸಿ. ನೀವು ಪ್ರಾಕ್ಸಿ ಸರ್ವರ್‌ ಅನ್ನು ಬಳಸುತ್ತಿರುವಿರಿ 
@@ -2309,7 +2307,6 @@
 <translation id="4007856537951125667">ಶಾರ್ಟ್‌ಕಟ್‌ಗಳನ್ನು ಮರೆಮಾಡಿ</translation>
 <translation id="4008291085758151621">VR ನಲ್ಲಿ ಸೈಟ್ ಮಾಹಿತಿಯು ಲಭ್ಯವಿಲ್ಲ</translation>
 <translation id="4010917659463429001">ನಿಮ್ಮ ಮೊಬೈಲ್ ಸಾಧನದಲ್ಲಿ ನಿಮ್ಮ ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳನ್ನು ಪಡೆದುಕೊಳ್ಳಲು, <ph name="GET_IOS_APP_LINK" />.</translation>
-<translation id="4013132157686828973">ಈ ಬ್ರೌಸರ್‌ ಅನ್ನು "<ph name="CLIENT_NAME" />" ಡೀಬಗ್ ಮಾಡುತ್ತಿದೆ</translation>
 <translation id="4014432863917027322">"<ph name="EXTENSION_NAME" />" ಸರಿಪಡಿಸಬೇಕೆ?</translation>
 <translation id="4015163439792426608">ನೀವು ವಿಸ್ತರಣೆಗಳನ್ನು ಬಳಸುತ್ತಿರುವಿರಾ? ಒಂದೇ ಸ್ಥಳದಲ್ಲಿ ಸುಲಭವಾಗಿ <ph name="BEGIN_LINK" />ನಿಮ್ಮ ವಿಸ್ತರಣೆಗಳನ್ನು ನಿರ್ವಹಿಸಿ<ph name="END_LINK" />.</translation>
 <translation id="4020327272915390518">ಆಯ್ಕೆಗಳ ಮೆನು</translation>
@@ -3014,7 +3011,6 @@
 <translation id="504561833207953641">ಅಸ್ತಿತ್ವದಲ್ಲಿರುವ ಬ್ರೌಸರ್ ಸೆಶನ್‌ನಲ್ಲಿ ತೆರೆಯಲಾಗುತ್ತಿದೆ.</translation>
 <translation id="5047421709274785093">ಚಲನೆ ಮತ್ತು ಬೆಳಕಿನ ಸೆನ್ಸರ್‌ಗಳನ್ನು ಬಳಸದಂತೆ ಸೈಟ್‌ಗಳನ್ನು ನಿರ್ಬಂಧಿಸಿ</translation>
 <translation id="5050042263972837708">ಗುಂಪು ಹೆಸರು</translation>
-<translation id="5051073330196664891">Google ಜಾಗತಿಕ ಸೇವಾ ನಿಯಮಗಳು (uToS)</translation>
 <translation id="5051836348807686060">ನೀವು ಆಯ್ಕೆ ಮಾಡಿರುವ ಭಾಷೆಗಳಲ್ಲಿ ಕಾಗುಣಿತ ಪರೀಕ್ಷೆಯು ಬೆಂಬಲಿಸುವುದಿಲ್ಲ</translation>
 <translation id="5052499409147950210">ಸೈಟ್ ಎಡಿಟ್ ಮಾಡಿ</translation>
 <translation id="5053604404986157245">ಯಾದೃಚ್ಛಿಕವಾಗಿ ರಚಿಸಲಾದ TPM ಪಾಸ್‌ವರ್ಡ್ ಲಭ್ಯವಿಲ್ಲ. Powerwash ನ ನಂತರ ಇದು ಸಾಮಾನ್ಯವಾಗಿದೆ.</translation>
@@ -3888,7 +3884,6 @@
 <translation id="6226777517901268232">ಖಾಸಗಿ ಕೀ ಫೈಲ್ (ಐಚ್ಛಿಕ)</translation>
 <translation id="6227280783235722609">ವಿಸ್ತರಣೆ</translation>
 <translation id="6228691855869374890">ಈ ಸೈಟ್‌ಗೆ MIDI ಸಾಧನಗಳ ಸಂಪೂರ್ಣ ನಿಯಂತ್ರಣವಿದೆ.</translation>
-<translation id="6228720835160974792">ಈ ಚಿತ್ರಕ್ಕಾಗಿ QR ಕೋಡ್ ರಚಿಸಿ</translation>
 <translation id="6229890768313448549">Google Play ಸೇವೆಯ ನಿಯಮಗಳನ್ನು ಲೋಡ್ ಮಾಡಲು ಸಾಧ್ಯವಿಲ್ಲ. ದಯವಿಟ್ಟು ಮರುಪ್ರಯತ್ನಿಸಿ.</translation>
 <translation id="6231881193380278751">ಪುಟವನ್ನು ಸ್ವಯಂ-ರಿಫ್ರೆಶ್ ಮಾಡಲು ಪ್ರಶ್ನೆಯ ಪರಮ್ ಸೇರಿಸಿ: chrome://device-log/?refresh=&lt;sec&gt;</translation>
 <translation id="6232017090690406397">ಬ್ಯಾಟರಿ</translation>
@@ -4552,7 +4547,6 @@
 <translation id="7123360114020465152">ಇನ್ನು ಮುಂದೆ ಬೆಂಬಲಿಸುವುದಿಲ್ಲ</translation>
 <translation id="7127980134843952133">ಡೌನ್‌ಲೋಡ್ ಇತಿಹಾಸ</translation>
 <translation id="7128151990937044829">ಅಧಿಸೂಚನೆಗಳನ್ನು ನಿರ್ಬಂಧಿಸಿದಾಗ, ವಿಳಾಸ ಪಟ್ಟಿಯಲ್ಲಿ ಸೂಚಕವನ್ನು ತೋರಿಸಿ</translation>
-<translation id="7128239828194367697">ಈ ಪುಟಕ್ಕಾಗಿ QR ಕೋಡ್ ರಚಿಸಿ</translation>
 <translation id="7131040479572660648">ನಿಮ್ಮ ಡೇಟಾವನ್ನು <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, ಮತ್ತು <ph name="WEBSITE_3" /> ನಲ್ಲಿ ಓದಿ</translation>
 <translation id="713122686776214250">&amp;ಪುಟ ಸೇರಿಸು...</translation>
 <translation id="7133578150266914903">ನಿಮ್ಮ ನಿರ್ವಾಹಕರು ನಿಮ್ಮ ಸಾಧನವನ್ನು ಮುಂಚಿನ ನಿರ್ದಿಷ್ಟ ಸ್ಥಿತಿಗೆ ಹಿಂತಿರುಗಿಸುತ್ತಿದ್ದಾರೆ (<ph name="PROGRESS_PERCENT" />)</translation>

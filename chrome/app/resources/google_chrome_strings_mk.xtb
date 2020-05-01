@@ -97,7 +97,6 @@
 <translation id="3582972582564653026">Синхронизирајте го и персонализирајте го Chrome на сите ваши уреди</translation>
 <translation id="3596080736082218006">{COUNT,plural, =0{Администраторот бара да го рестартирате Chrome за да се примени ажурирање}=1{Администраторот бара да го рестартирате Chrome за да се примени ажурирање. Прозорецот „Инкогнито“ нема да се отвори повторно.}one{Администраторот бара да го рестартирате Chrome за да се примени ажурирање. # прозорец „Инкогнито“ нема да се отвори повторно.}other{Администраторот бара да го рестартирате Chrome за да се примени ажурирање. # прозорци „Инкогнито“ нема да се отворат повторно.}}</translation>
 <translation id="3622797965165704966">Сега е полесно да го користите Chrome со вашата сметка на Google и на споделени компјутери.</translation>
-<translation id="3637702109597584617"><ph name="TERMS_OF_SERVICE_LINK" />Услови за користење<ph name="END_TERMS_OF_SERVICE_LINK" /> на Google Chrome OS</translation>
 <translation id="3718181793972440140">Ова ќе избрише една ставка од уредов. За да ги вратите вашите податоци подоцна, најавете се на Chrome како <ph name="USER_EMAIL" />.</translation>
 <translation id="3735758079232443276">Екстензијата „<ph name="EXTENSION_NAME" />“ ја смени страницата што се прикажува кога го стартувате Chrome.</translation>
 <translation id="3780814664026482060">Chrome - <ph name="PAGE_TITLE" /></translation>
@@ -114,6 +113,7 @@
 <translation id="4205939740494406371">Chrome не може да ги провери вашите лозинки. Обидете се пак по 24 часа или <ph name="BEGIN_LINK" />проверете ги лозинките во сметката на Google<ph name="END_LINK" />.</translation>
 <translation id="424864128008805179">Ќе се одјавите од Chrome?</translation>
 <translation id="4251615635259297716">Да се поврзат вашите податоци на Chrome со оваа сметка?</translation>
+<translation id="4281844954008187215">Услови за користење</translation>
 <translation id="4293420128516039005">Најавете се за да го синхронизирате и персонализирате Chrome на сите ваши уреди</translation>
 <translation id="4328355335528187361">Google Chrome Dev (mDNS-In)</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
@@ -148,7 +148,6 @@
 
 Некои карактеристики можеби се недостапни. Наведете друг директориум на профили или користете понова верзија на Chrome.</translation>
 <translation id="5193136243808726294">ОС на Google Chrome не може да ја отвори страницава.</translation>
-<translation id="5204098752394657250"><ph name="TERMS_OF_SERVICE_LINK" />Услови за користење<ph name="END_TERMS_OF_SERVICE_LINK" /> на Google Chrome</translation>
 <translation id="5251420635869119124">Гостите може да го користат Chrome без оставање никакви траги зад нив.</translation>
 <translation id="532046782124376502">Предупредување: Google Chrome не може да ги спречи екстензиите да ја снимаат вашата историја на прелистување. За оневозможување на екстензијата во режим инкогнито, поништете го изборот на опцијава.</translation>
 <translation id="5386244825306882791">Контролира и која страница се прикажува кога го стартувате Chromе или ако пребарувате од лентата за адреси.</translation>

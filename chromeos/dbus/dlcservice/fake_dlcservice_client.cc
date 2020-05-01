@@ -30,6 +30,13 @@ void FakeDlcserviceClient::Uninstall(const std::string& dlc_id,
       FROM_HERE, base::BindOnce(std::move(callback), uninstall_err_));
 }
 
+void FakeDlcserviceClient::Purge(const std::string& dlc_id,
+                                 PurgeCallback callback) {
+  VLOG(1) << "Requesting to purge DLC=" << dlc_id;
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), purge_err_));
+}
+
 void FakeDlcserviceClient::GetInstalled(GetInstalledCallback callback) {
   VLOG(1) << "Requesting to get installed DLC(s).";
   base::ThreadTaskRunnerHandle::Get()->PostTask(

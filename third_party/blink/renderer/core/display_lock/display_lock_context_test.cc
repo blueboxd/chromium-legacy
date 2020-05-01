@@ -2463,6 +2463,151 @@ TEST_F(DisplayLockContextRenderingTest, ContainStrictChild) {
   UpdateAllLifecyclePhasesForTest();
 }
 
+TEST_F(DisplayLockContextRenderingTest, CompositingRootIsSkippedIfLocked) {
+  SetHtmlInnerHTML(R"HTML(
+    <style>
+      .hidden { content-visibility: hidden; }
+      .contained { contain: strict; }
+      #target { backface-visibility: hidden; }
+    </style>
+    <div id=hide>
+      <div id=container class=contained>
+        <div id=target></div>
+      </div>
+    </div>
+  )HTML");
+
+  // Lock an ancestor.
+  auto* hide = GetDocument().getElementById("hide");
+  hide->classList().Add("hidden");
+  UpdateAllLifecyclePhasesForTest();
+
+  auto* target = GetDocument().getElementById("target");
+  ASSERT_TRUE(target->GetLayoutObject());
+  auto* target_box = ToLayoutBoxModelObject(target->GetLayoutObject());
+  ASSERT_TRUE(target_box);
+  EXPECT_TRUE(target_box->Layer());
+  EXPECT_TRUE(target_box->HasSelfPaintingLayer());
+  auto* target_layer = target_box->Layer();
+
+  target_layer->SetNeedsCompositingInputsUpdate();
+  EXPECT_TRUE(target_layer->NeedsCompositingInputsUpdate());
+
+  auto* container = GetDocument().getElementById("container");
+  ASSERT_TRUE(container->GetLayoutObject());
+  auto* container_box = ToLayoutBoxModelObject(container->GetLayoutObject());
+  ASSERT_TRUE(container_box);
+  EXPECT_TRUE(container_box->Layer());
+  EXPECT_TRUE(container_box->HasSelfPaintingLayer());
+  auto* container_layer = container_box->Layer();
+
+  auto* compositor = target_layer->Compositor();
+  ASSERT_TRUE(compositor);
+
+  EXPECT_EQ(compositor->GetCompositingInputsRoot(), container_layer);
+
+  UpdateAllLifecyclePhasesForTest();
+
+  EXPECT_EQ(compositor->GetCompositingInputsRoot(), container_layer);
+  EXPECT_TRUE(target_layer->NeedsCompositingInputsUpdate());
+
+  hide->classList().Remove("hidden");
+
+  UpdateAllLifecyclePhasesForTest();
+
+  EXPECT_FALSE(compositor->GetCompositingInputsRoot());
+  EXPECT_FALSE(target_layer->NeedsCompositingInputsUpdate());
+}
+
+TEST_F(DisplayLockContextRenderingTest,
+       CompositingRootIsProcessedIfLockedButForced) {
+  SetHtmlInnerHTML(R"HTML(
+    <style>
+      .hidden { content-visibility: hidden; }
+      .contained { contain: strict; }
+      #target { backface-visibility: hidden; }
+    </style>
+    <div id=hide>
+      <div class=contained>
+        <div id=container class=contained>
+          <div id=target></div>
+        </div>
+      </div>
+    </div>
+  )HTML");
+
+  // Lock an ancestor.
+  auto* hide = GetDocument().getElementById("hide");
+  hide->classList().Add("hidden");
+  UpdateAllLifecyclePhasesForTest();
+
+  auto* target = GetDocument().getElementById("target");
+  ASSERT_TRUE(target->GetLayoutObject());
+  auto* target_box = ToLayoutBoxModelObject(target->GetLayoutObject());
+  ASSERT_TRUE(target_box);
+  EXPECT_TRUE(target_box->Layer());
+  EXPECT_TRUE(target_box->HasSelfPaintingLayer());
+  auto* target_layer = target_box->Layer();
+
+  target_layer->SetNeedsCompositingInputsUpdate();
+  EXPECT_TRUE(target_layer->NeedsCompositingInputsUpdate());
+
+  auto* container = GetDocument().getElementById("container");
+  ASSERT_TRUE(container->GetLayoutObject());
+  auto* container_box = ToLayoutBoxModelObject(container->GetLayoutObject());
+  ASSERT_TRUE(container_box);
+  EXPECT_TRUE(container_box->Layer());
+  EXPECT_TRUE(container_box->HasSelfPaintingLayer());
+  auto* container_layer = container_box->Layer();
+
+  auto* compositor = target_layer->Compositor();
+  ASSERT_TRUE(compositor);
+
+  EXPECT_EQ(compositor->GetCompositingInputsRoot(), container_layer);
+
+  {
+    auto scoped_update = hide->GetDisplayLockContext()->GetScopedForcedUpdate();
+    UpdateAllLifecyclePhasesForTest();
+  }
+
+  EXPECT_FALSE(compositor->GetCompositingInputsRoot());
+  EXPECT_FALSE(target_layer->NeedsCompositingInputsUpdate());
+
+  hide->classList().Remove("hidden");
+
+  UpdateAllLifecyclePhasesForTest();
+
+  EXPECT_FALSE(compositor->GetCompositingInputsRoot());
+  EXPECT_FALSE(target_layer->NeedsCompositingInputsUpdate());
+}
+
+TEST_F(DisplayLockContextRenderingTest,
+       NeedsLayoutTreeUpdateForNodeRespectsForcedLocks) {
+  SetHtmlInnerHTML(R"HTML(
+    <style>
+      .hidden { content-visibility: hidden; }
+      .contained { contain: strict; }
+      .backface_hidden { backface-visibility: hidden; }
+    </style>
+    <div id=hide>
+      <div id=container class=contained>
+        <div id=target></div>
+      </div>
+    </div>
+  )HTML");
+
+  // Lock an ancestor.
+  auto* hide = GetDocument().getElementById("hide");
+  hide->classList().Add("hidden");
+  UpdateAllLifecyclePhasesForTest();
+
+  auto* target = GetDocument().getElementById("target");
+  target->classList().Add("backface_hidden");
+
+  auto forced_scope = hide->GetDisplayLockContext()->GetScopedForcedUpdate();
+  EXPECT_TRUE(GetDocument().NeedsLayoutTreeUpdateForNode(*target));
+}
+
 class DisplayLockContextLegacyRenderingTest
     : public RenderingTest,
       private ScopedCSSContentVisibilityHiddenMatchableForTest,

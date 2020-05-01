@@ -353,6 +353,7 @@
           如果停用或不設定這項政策，系統會停用 Kerberos 帳戶設定。使用者無法新增 Kerberos 帳戶，也無法使用 Kerberos 驗證。系統會刪除所有現有的 Kerberos 帳戶和所有已儲存的密碼。</translation>
 <translation id="1561424797596341174">針對遠端存取主機的偵錯版本覆寫政策</translation>
 <translation id="1561967320164410511">用於個人認證的 U2F 和擴充功能</translation>
+<translation id="1575015449587326319">OnFileDownloaded Chrome Enterprise Connector 的配置政策</translation>
 <translation id="1583248206450240930">根據預設使用 <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="1588240398285670601">瀏覽器設定</translation>
 <translation id="1599424828227887013">在 Android 裝置上為指定來源啟用網站隔離</translation>
@@ -1282,7 +1283,6 @@
 <translation id="2869762730352628426">在登入畫面上啟用自動點擊功能</translation>
 <translation id="2872961005593481000">關閉</translation>
 <translation id="2874209944580848064">支援 Android 裝置的 <ph name="PRODUCT_OS_NAME" />裝置注意事項：</translation>
-<translation id="2874901846804525128">禁止使用者使用來源不受信任的 Android 應用程式。</translation>
 <translation id="2875192972412983412">指定系統尋找伺服器印表機時，要查詢符合何種條件的列印伺服器。
 
       如果使用這項政策，使用者只能使用 ID 符合本政策值的伺服器印表機。
@@ -1661,6 +1661,11 @@
           仍可使用先前儲存的密碼。
 
           這項政策一經啟用或停用，使用者即無法在 <ph name="PRODUCT_NAME" /> 中變更或覆寫政策。如果不設定這項政策，系統會允許儲存密碼 (但使用者可以自行關閉這項功能)。</translation>
+<translation id="3492834335089638487">這項政策可控管裝置是否能使用來源不受信任 (並非來自 Google Play 商店) 的 Android 應用程式。
+
+      如果不設定這項政策的值，系統會視為禁止使用這項功能。
+
+      這項功能的可用性會根據對應的使用者政策而定。</translation>
 <translation id="3496296378755072552">密碼管理員</translation>
 <translation id="3500732098526756068">這可讓你控管密碼保護警告訊息的觸發設定。當使用者在有安全疑慮的網站上重複使用受保護的密碼時，密碼保護功能會向使用者發出警示。
 
@@ -1779,7 +1784,6 @@
 <translation id="3715569262675717862">根據用戶端憑證進行驗證</translation>
 <translation id="3736879847913515635">允許在使用者管理工具中新增使用者</translation>
 <translation id="3737890474637805114">禁止下載大型檔案</translation>
-<translation id="3738723882663496016">這項政策會為這個裝置指定 <ph name="PLUGIN_VM_NAME" /> 授權金鑰。</translation>
 <translation id="3748900290998155147">指定是否允許使用 Wake Lock。擴充功能如要使用 Wake Lock，可以透過電源管理擴充功能 API 以及 ARC 應用程式提出要求。
 
           如果這項政策設為「True」或未設定，系統的電源管理機制將採用 Wake Lock。
@@ -2303,7 +2307,6 @@
 <translation id="4432762137771104529">啟用安全瀏覽模式的進階回報功能</translation>
 <translation id="443454694385851356">舊版 (不安全)</translation>
 <translation id="443665821428652897">瀏覽器關閉時清除網站資料 (已淘汰)</translation>
-<translation id="4439132805807595336">允許這個裝置執行 PluginVm。如果將這項政策設為 False 或不設定，裝置不會啟用 <ph name="PLUGIN_VM_NAME" />。如果設為 True，在其他相關設定也允許這項操作的情況下，裝置會啟用 <ph name="PLUGIN_VM_NAME" />。要讓 <ph name="PLUGIN_VM_NAME" /> 順利執行，你必須將 <ph name="PLUGIN_VM_ALLOWED_POLICY_NAME" /> 設為 True，並設定 <ph name="PLUGIN_VM_LICENSE_KEY_POLICY_NAME" /> 和 <ph name="PLUGIN_VM_IMAGE_POLICY_NAME" />。</translation>
 <translation id="4439336120285389675">指定要暫時重新啟用的已淘汰網路平台功能清單。
 
       這項政策可讓管理員在限定時間內重新啟用已淘汰的網路平台功能。系統會使用字串標記辨識功能，並根據這項政策在清單中指定的標記重新啟用對應的功能。
@@ -2880,6 +2883,7 @@
 <translation id="5369937289900051171">僅限彩色列印</translation>
 <translation id="5370279767682621504">在非預設通訊埠啟用 HTTP/0.9 支援功能</translation>
 <translation id="5377606826822211923">控管使用者是否可使用來源不受信任的 Android 應用程式</translation>
+<translation id="537786648513450280">控管裝置是否可使用來源不受信任的 Android 應用程式</translation>
 <translation id="5378985487213287085">允許你設定是否要讓網站顯示桌面通知。你可以將網站預設為允許或禁止顯示桌面通知，也可以設為每次網站要顯示桌面通知時再詢問使用者。如果未設定這項政策，系統會使用「AskNotifications」，但使用者可以變更這項設定。</translation>
 <translation id="5380329473151894945">設定大型游標無障礙功能在登入畫面中的預設狀態。
 
@@ -3774,7 +3778,6 @@
 <translation id="6731757988219967594">針對成人內容篩選頂層網站 (但不篩選嵌入的 iframe)</translation>
 <translation id="6734521799274931721">控管是否允許在 Chrome 作業系統使用網路檔案共用功能</translation>
 <translation id="6735701345096330595">強制執行拼字檢查的語言</translation>
-<translation id="6737677282967014160">允許使用者使用來源不受信任的 Android 應用程式。</translation>
 <translation id="6757613329154374267">已啟用備份與還原功能</translation>
 <translation id="6758659208493449452">這項政策可控管已加入進階保護計畫的使用者是否可以享有額外的防護。部分功能可能涉及與 Google 共用資料 (例如，進階保護計畫的使用者可將下載內容傳送至 Google 進行惡意軟體掃描)。如果設為 True 或不予設定，已加入計畫的使用者將能享有額外的防護。如果設為 False，進階保護計畫的使用者只能享有標準的消費者功能。</translation>
 <translation id="6762235610019366960">讓你控制 <ph name="PRODUCT_NAME" /> 能否以完整分頁顯示宣傳和/或教學內容。
@@ -4617,6 +4620,19 @@
 
       <ph name="SYNC_DISABLED_POLICY_NAME" /> 政策會停用所有資料同步處理功能，並覆寫 <ph name="ROAMING_PROFILE_SUPPORT_ENABLED_POLICY_NAME" />。</translation>
 <translation id="802147957407376460">將畫面旋轉 0 度</translation>
+<translation id="8027265928215448940">指定要套用至 <ph name="ON_FILE_DOWNLOADED_ENTERPRISE_CONNECTOR" /> Enterprise Connector 的 Chrome Enterprise Connectors 服務設定清單，在 Chrome 中下載檔案時會觸發這份清單。
+
+      從特定網頁下載檔案時，系統會使用 <ph name="ENTERPRISE_CONNECTOR_URL_LIST_FIELD" />、<ph name="ENTERPRISE_CONNECTOR_TAGS_FIELD" />、<ph name="ENTERPRISE_CONNECTOR_ENABLE_FIELD" />、<ph name="ENTERPRISE_CONNECTOR_DISABLE_FIELD" /> 欄位來判斷連接器是否要傳送檔案進行分析，以及要在該檔案的分析要求中加入哪些標記。系統會比對標記對應的模式，如果頁面網址符合與該標記相關聯的「啟用」模式，系統就會將該標記加入分析要求中 (但若有頁面網址與此標記中的「停用」模式符合的情況則除外)。如果在要求中加入至少 1 個標記，系統就會進行分析。
+
+      <ph name="ENTERPRISE_CONNECTOR_SERVICE_PROVIDER_FIELD" /> 欄位會識別與設定對應的分析服務供應商。
+
+      如果將 <ph name="ENTERPRISE_CONNECTOR_BLOCK_UNTIL_VERDICT_FIELD" /> 欄位設為 1，Chrome 會先等候分析服務的回覆，再授予使用者下載檔案的存取權。如果設為其他整數值，Chrome 會立即授予使用者檔案存取權。
+
+      <ph name="ENTERPRISE_CONNECTOR_BLOCK_PASSWORD_PROTECTED_FIELD" /> 欄位可控制 Chrome 要封鎖還是允許受到密碼保護的檔案。
+
+      <ph name="ENTERPRISE_CONNECTOR_BLOCK_LARGE_FILES_FIELD" /> 欄位可控制 Chrome 要封鎖還是允許大小過大而無法分析的檔案 (超過 50 MB 的檔案)。
+
+      你只能透過 Google 管理控制台設定這項政策。</translation>
 <translation id="8033913082323846868">這項政策自 M70 起已淘汰，請改用 AutofillAddressEnabled 和 AutofillCreditCardEnabled。
 
 啟用「<ph name="PRODUCT_NAME" />」的「自動填入」功能，並允許使用者使用先前儲存的地址或信用卡資料等資訊自動填寫網路表單。
@@ -5045,7 +5061,7 @@
 
       如果啟用這項政策，快速解答將可以存取所選內容。
       如果停用這項政策，快速解答將無法存取所選內容。
-      如果不設定這項政策，使用者可自行決定是否要允許快速解答存取所選內容。</translation>
+      如果未設定這項政策，則使用者可自行決定是否要允許快速解答存取所選內容。</translation>
 <translation id="8685024486845674965">密碼遭到重複使用時，會觸發密碼保護警告</translation>
 <translation id="8687958770985542440">重新啟用 Web Components v0 API，直到 M84 版為止。</translation>
 <translation id="8693243869659262736">使用內建的 DNS 用戶端</translation>
@@ -5291,19 +5307,6 @@
           如果裝置支援這項政策但你未設定政策，系統會套用標準充電模式，且使用者無法變更這個模式。
 
           注意：如果指定 <ph name="DEVICE_ADVANCED_BATTERY_CHARGE_MODE_ENABLED_NAME" />，這項政策會遭到覆寫。</translation>
-<translation id="9071472304496502510">指定要套用至 <ph name="ON_FILE_ATTACHED_ENTERPRISE_CONNECTOR" /> Enterprise Connector 的 Chrome Enterprise Connectors 服務設定清單，這份清單會在檔案附加至 Chrome 時觸發。
-
-      將檔案附加至特定網頁時，系統會使用 <ph name="ENTERPRISE_CONNECTOR_URL_LIST_FIELD" />、<ph name="ENTERPRISE_CONNECTOR_TAGS_FIELD" />、<ph name="ENTERPRISE_CONNECTOR_ENABLE_FIELD" />、<ph name="ENTERPRISE_CONNECTOR_DISABLE_FIELD" /> 欄位來判斷連接器是否要傳送檔案進行分析，以及要在該檔案的分析要求中加入哪些標記。系統會比對標記對應的模式，如果頁面網址符合與該標記相關聯的「啟用」模式，系統就會將該標記加入分析要求中 (但若有頁面網址與此標記中的「停用」模式符合的情況則除外)。如果在要求中加入至少 1 個標記，系統就會進行分析。
-
-      <ph name="ENTERPRISE_CONNECTOR_SERVICE_PROVIDER_FIELD" /> 欄位會識別與設定對應的分析服務供應商。
-
-      如果將 <ph name="ENTERPRISE_CONNECTOR_BLOCK_UNTIL_VERDICT_FIELD" /> 欄位設為 1，Chrome 會先等候分析服務的回覆，再授予頁面存取權。如果設為其他整數值，Chrome 會立即授予檔案的頁面存取權。
-
-      <ph name="ENTERPRISE_CONNECTOR_BLOCK_PASSWORD_PROTECTED_FIELD" /> 欄位可控制 Chrome 要封鎖還是允許受到密碼保護的檔案。
-
-      <ph name="ENTERPRISE_CONNECTOR_BLOCK_LARGE_FILES_FIELD" /> 欄位可控制 Chrome 要封鎖還是允許大小過大而無法分析的檔案 (超過 50 MB 的檔案)。
-
-      你只能透過 Google 管理控制台設定這項政策。</translation>
 <translation id="9077227880520270584">裝置本機帳戶自動登入計時器</translation>
 <translation id="9084985621503260744">指定會影響電源管理的視訊活動</translation>
 <translation id="9088433379343318874">啟用受監管的使用者內容提供者</translation>

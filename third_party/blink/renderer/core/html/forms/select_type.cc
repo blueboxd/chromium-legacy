@@ -52,6 +52,8 @@
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/page/spatial_navigation.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
+#include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
+#include "third_party/blink/renderer/core/scroll/scroll_alignment.h"
 #include "third_party/blink/renderer/platform/text/platform_locale.h"
 #include "ui/base/ui_base_features.h"
 
@@ -615,6 +617,7 @@ class ListBoxSelectType final : public SelectType {
   void DidBlur() override;
   void DidSetSuggestedOption(HTMLOptionElement* option) override;
   void SaveLastSelection() override;
+  void ScrollToOption(HTMLOptionElement* option) override;
   void SelectAll() override;
   void SaveListboxActiveSelection() override;
   void HandleMouseRelease() override;
@@ -635,6 +638,7 @@ class ListBoxSelectType final : public SelectType {
   void UpdateSelectedState(HTMLOptionElement* clicked_option,
                            SelectionMode mode);
   void UpdateListBoxSelection(bool deselect_other_options, bool scroll = true);
+  void ScrollToOptionTask();
 
   Vector<bool> cached_state_for_active_selection_;
   Vector<bool> last_on_change_selection_;
@@ -851,7 +855,7 @@ bool ListBoxSelectType::DefaultEventHandler(const Event& event) {
         select_->SetActiveSelectionAnchor(select_->active_selection_end_.Get());
       }
 
-      select_->ScrollToOption(end_option);
+      ScrollToOption(end_option);
       if (select_new_item || is_in_non_contiguous_selection_) {
         if (select_new_item) {
           UpdateListBoxSelection(deselect_others);
@@ -902,7 +906,7 @@ void ListBoxSelectType::DidBlur() {
 
 void ListBoxSelectType::DidSetSuggestedOption(HTMLOptionElement* option) {
   if (select_->GetLayoutObject())
-    select_->ScrollToOption(option);
+    ScrollToOption(option);
 }
 
 void ListBoxSelectType::SaveLastSelection() {
@@ -926,6 +930,48 @@ void ListBoxSelectType::UpdateMultiSelectFocus() {
     option->SetMultiSelectFocusedState(is_focused);
   }
   select_->ScrollToSelection();
+}
+
+void ListBoxSelectType::ScrollToOption(HTMLOptionElement* option) {
+  if (!option)
+    return;
+  bool has_pending_task = select_->option_to_scroll_to_;
+  // We'd like to keep an HTMLOptionElement reference rather than the index of
+  // the option because the task should work even if unselected option is
+  // inserted before executing ScrollToOptionTask().
+  select_->option_to_scroll_to_ = option;
+  if (!has_pending_task) {
+    select_->GetDocument()
+        .GetTaskRunner(TaskType::kUserInteraction)
+        ->PostTask(FROM_HERE, WTF::Bind(&ListBoxSelectType::ScrollToOptionTask,
+                                        WrapPersistent(this)));
+  }
+}
+
+void ListBoxSelectType::ScrollToOptionTask() {
+  HTMLOptionElement* option = select_->option_to_scroll_to_.Release();
+  if (!option || !select_->isConnected() || will_be_destroyed_)
+    return;
+  // HTMLSelectElement::OptionRemoved() makes sure option_to_scroll_to_ doesn't
+  // have an option with another owner.
+  DCHECK_EQ(option->OwnerSelectElement(), select_);
+  select_->GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kScroll);
+  if (!select_->GetLayoutObject() || select_->UsesMenuList())
+    return;
+  PhysicalRect bounds = option->BoundingBoxForScrollIntoView();
+
+  // The following code will not scroll parent boxes unlike ScrollRectToVisible.
+  auto* box = select_->GetLayoutBox();
+  if (!box->HasOverflowClip())
+    return;
+  DCHECK(box->Layer());
+  DCHECK(box->Layer()->GetScrollableArea());
+  box->Layer()->GetScrollableArea()->ScrollIntoView(
+      bounds,
+      ScrollAlignment::CreateScrollIntoViewParams(
+          ScrollAlignment::ToEdgeIfNeeded(), ScrollAlignment::ToEdgeIfNeeded(),
+          mojom::blink::ScrollType::kProgrammatic, false,
+          mojom::blink::ScrollBehavior::kInstant));
 }
 
 void ListBoxSelectType::SelectAll() {
@@ -1161,6 +1207,8 @@ const ComputedStyle* SelectType::OptionStyle() const {
 }
 
 void SelectType::MaximumOptionWidthMightBeChanged() const {}
+
+void SelectType::ScrollToOption(HTMLOptionElement* option) {}
 
 void SelectType::SelectAll() {
   NOTREACHED();

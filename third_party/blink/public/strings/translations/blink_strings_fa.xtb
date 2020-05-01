@@ -35,6 +35,7 @@
 <translation id="1938124657309484470">مقدار باید <ph name="MAXIMUM_DATE_OR_TIME" /> یا قبل از آن باشد.</translation>
 <translation id="1946271899482435442">نمایش انتخابگر تاریخ</translation>
 <translation id="1993104285338243655">به نمایش صفحه‌نمایش روی دستگاه دیگر تغییر یافت</translation>
+<translation id="2031987842108996681">کانال قرمز</translation>
 <translation id="2060505056492490888">«<ph name="DOT" />» در «<ph name="INVALIDDOMAIN" />» در محل اشتباهی قرار دارد.</translation>
 <translation id="2148716181193084225">امروز</translation>
 <translation id="2158401438286456825">فهرست صفحه</translation>
@@ -45,6 +46,7 @@
 <translation id="2291999235780842123">کادر تأیید</translation>
 <translation id="2311842470354187719">جداساز صفحه</translation>
 <translation id="2335594187091864976">انتخابگر تاریخ و زمان</translation>
+<translation id="2393030564806080191">مقدار رنگ در مبنای شانزده</translation>
 <translation id="245932805758469625">ثانیه‌های باقی‌مانده از ویدیو</translation>
 <translation id="248395913932153421">روز</translation>
 <translation id="2507943997699731163">لطفاً این قسمت را تکمیل کنید.</translation>
@@ -52,6 +54,7 @@
 <translation id="2561842179657104141">نمایش کنترل‌های رسانه بیشتر</translation>
 <translation id="2572483411312390101">پخش</translation>
 <translation id="2613802280814924224">لطفاً یک مقدار معتبر وارد کنید. نزدیک‌ترین مقدار معتبر <ph name="VALID_VALUE" /> است.</translation>
+<translation id="2634240155926812724">کانال سبز</translation>
 <translation id="2653659639078652383">ارائه</translation>
 <translation id="2657045182931379222">شیء گرافیکی</translation>
 <translation id="2674318244760992338">پانویس</translation>
@@ -127,6 +130,7 @@
 <translation id="5034860022980953847">نشانگر پیشرفت</translation>
 <translation id="5090250355906949916">انتخابگر زمان ویدیو</translation>
 <translation id="5093189678851173835">نقل‌قول آغازین</translation>
+<translation id="509897012892853729">کانال آبی</translation>
 <translation id="5117590920725113268">نمایش ماه بعدی</translation>
 <translation id="512758898067543763">عنوان ردیف</translation>
 <translation id="5143125788380636750">گفتار پایانی</translation>
@@ -164,6 +168,7 @@
 <translation id="6166809985690652833">سخن پایانی</translation>
 <translation id="6209276755895393898">به‌نظر می‌رسد <ph name="DESCRIPTION" /> باشد</translation>
 <translation id="6213469881011901533">واژه‌نامه</translation>
+<translation id="6281588256137006900">روشنی</translation>
 <translation id="6281763101136022427">نشانی وب</translation>
 <translation id="6310801910862476708">خروج از تصویر در تصویر</translation>
 <translation id="6398862346408813489">نمایش پانل انتخاب ماه</translation>
@@ -184,6 +189,7 @@
 <translation id="6790428901817661496">پخش</translation>
 <translation id="6820355525329141109">افزایه بارگیری نشد.</translation>
 <translation id="6820615603175220800">مرجع فهرست منابع</translation>
+<translation id="6831465880655513317">مخزن رنگ با لغزنده دوبعدی برای انتخاب اشباع رنگ و روشنایی</translation>
 <translation id="6843725295806269523">بیصداکردن</translation>
 <translation id="6885760532393684712">فهرست راهنما</translation>
 <translation id="689129560213475294">انجامه</translation>
@@ -201,6 +207,7 @@
 <translation id="7263440858009898357">لطفاً یک مورد را در فهرست انتخاب کنید.</translation>
 <translation id="727747134524199931">عنوان ستون</translation>
 <translation id="7320576522385648310">درحال بافر کردن</translation>
+<translation id="7341556277900466204">مخزن رنگ</translation>
 <translation id="7353453495576941748">تأیید اعتبار</translation>
 <translation id="7364796246159120393">انتخاب فایل</translation>
 <translation id="739024184232394898">موارد دیگر...</translation>
@@ -221,6 +228,7 @@
 <translation id="775297008183122718">ورودی نامعتبر</translation>
 <translation id="7789962463072032349">مکث</translation>
 <translation id="7802800022689234070">مثلث افشا</translation>
+<translation id="7852167693871241274">لغزنده فام</translation>
 <translation id="7888071071722539607">لطفاً نماد «<ph name="ATSIGN" />» را به نشانی ایمیل اضافه کنید. «<ph name="INVALIDADDRESS" />» در «<ph name="ATSIGN" />» موجود نیست.</translation>
 <translation id="7891486169920085145">تقسیم‌کننده</translation>
 <translation id="795667975304826397">فایلی انتخاب نشده است</translation>
@@ -263,6 +271,7 @@
 <translation id="8875657656876809964">خطا در بازپخش ویدئو</translation>
 <translation id="8889402386540077796">رنگ‌مایه</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> کیلوبایت</translation>
+<translation id="894736920926684893">قالب‌بندی تغییردهنده وضعیت</translation>
 <translation id="8987927404178983737">ماه</translation>
 <translation id="901493112792887934">زمان کنونی به ثانیه</translation>
 <translation id="901834265349196618">ایمیل</translation>

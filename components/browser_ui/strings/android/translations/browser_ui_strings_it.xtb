@@ -3,12 +3,15 @@
 <translationbundle lang="it">
 <translation id="1006017844123154345">Apri online</translation>
 <translation id="1044891598689252897">I siti funzioneranno normalmente</translation>
+<translation id="1124090076051167250">Verranno cancellati <ph name="DATASIZE" /> di dati e cookie memorizzati da siti e app nella schermata Home.</translation>
 <translation id="1124772482545689468">Utente</translation>
 <translation id="1178581264944972037">Pausa</translation>
 <translation id="1181037720776840403">Rimuovi</translation>
 <translation id="1201402288615127009">Avanti</translation>
 <translation id="1242008676835033345">Incorporato su <ph name="WEBSITE_URL" /></translation>
+<translation id="1272079795634619415">Interrompi</translation>
 <translation id="129382876167171263">I file salvati dai siti web vengono mostrati qui</translation>
+<translation id="1364532808393826295"><ph name="APP_NAME" /> - <ph name="NOTIFICATION_MESSAGE" /></translation>
 <translation id="1369915414381695676">Sito <ph name="SITE_NAME" /> aggiunto</translation>
 <translation id="1383876407941801731">Cerca</translation>
 <translation id="1384959399684842514">Download sospeso</translation>
@@ -29,6 +32,7 @@
 <translation id="1984937141057606926">Consentiti, tranne i cookie di terze parti</translation>
 <translation id="1994173015038366702">URL sito</translation>
 <translation id="2025115093177348061">Realtà aumentata</translation>
+<translation id="2030769033451695672">Tocca per tornare a <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
 <translation id="2041019821020695769">Per consentire a Chrome di inviarti notifiche, devi attivare le notifiche anche nelle <ph name="BEGIN_LINK" />Impostazioni Android<ph name="END_LINK" />.</translation>
 <translation id="2079545284768500474">Annulla</translation>
 <translation id="2091887806945687916">Audio</translation>
@@ -104,6 +108,7 @@
 <translation id="5048398596102334565">Consenti ai siti di accedere ai sensori di movimento (opzione consigliata)</translation>
 <translation id="5063480226653192405">Utilizzo</translation>
 <translation id="5100237604440890931">Compresso. Fai clic per espandere.</translation>
+<translation id="5123685120097942451">Scheda di navigazione in incognito</translation>
 <translation id="5300589172476337783">Mostra</translation>
 <translation id="5301954838959518834">OK</translation>
 <translation id="5307446750509046227">Cancella dati dei siti</translation>
@@ -123,9 +128,11 @@
 <translation id="5677928146339483299">Bloccato</translation>
 <translation id="5689516760719285838">Posizione</translation>
 <translation id="5710871682236653961">Chiedi prima di consentire ai siti di inviare e ricevere informazioni quando tocchi i dispositivi NFC (opzione consigliata)</translation>
+<translation id="5719847187258001597">Verranno cancellati tutti i dati e i cookie memorizzati dal sito <ph name="ORIGIN" /> o dalla relativa app nella schermata Home.</translation>
 <translation id="5804241973901381774">Autorizzazioni</translation>
 <translation id="5860033963881614850">OFF</translation>
 <translation id="5916664084637901428">On</translation>
+<translation id="5922853908706496913">Condivisione dello schermo</translation>
 <translation id="5939518447894949180">Reimposta</translation>
 <translation id="6040143037577758943">Chiudi</translation>
 <translation id="6042308850641462728">Altro</translation>
@@ -169,6 +176,7 @@
 <translation id="7423098979219808738">Chiedi prima</translation>
 <translation id="7423538860840206698">Lettura degli appunti non consentita</translation>
 <translation id="7521387064766892559">JavaScript</translation>
+<translation id="7554752735887601236">Un sito sta utilizzando il microfono</translation>
 <translation id="7572498721684305250">Impedisci ai siti di inviare e ricevere informazioni quando tocchi i dispositivi NFC</translation>
 <translation id="757524316907819857">Impedisci ai siti di riprodurre contenuti protetti</translation>
 <translation id="7589445247086920869">Blocca per motore di ricerca corrente</translation>
@@ -177,6 +185,7 @@
 <translation id="7781829728241885113">Ieri</translation>
 <translation id="7791543448312431591">Aggiungi</translation>
 <translation id="780301667611848630">No grazie</translation>
+<translation id="7804248752222191302">Un sito sta utilizzando la fotocamera</translation>
 <translation id="7817023149356982970">Uscirai da questo sito.</translation>
 <translation id="7828557259026017104">I cookie sono file creati dai siti web visitati, che li usano per memorizzare le tue preferenze. I cookie di terze parti vengono creati da altri siti, che sono proprietari di alcuni dei contenuti, ad esempio annunci o immagini, che vengono visualizzati nella pagina web visitata.</translation>
 <translation id="7846076177841592234">Annulla selezione</translation>
@@ -194,7 +203,9 @@
 <translation id="8261506727792406068">Elimina</translation>
 <translation id="8300705686683892304">Gestiti dall'app</translation>
 <translation id="8372893542064058268">Consenti la sincronizzazione in background per un sito specifico.</translation>
+<translation id="83792324527827022">Un sito sta utilizzando la fotocamera e il microfono</translation>
 <translation id="8380167699614421159">Questo sito mostra annunci invasivi o fuorvianti</translation>
+<translation id="8394832520002899662">Tocca per tornare al sito.</translation>
 <translation id="8447861592752582886">Revoca autorizzazione dispositivo</translation>
 <translation id="851751545965956758">Impedisci ai siti di connettersi ai dispositivi</translation>
 <translation id="857943718398505171">Consentita (opzione consigliata)</translation>

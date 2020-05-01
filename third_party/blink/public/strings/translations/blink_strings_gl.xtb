@@ -35,6 +35,7 @@
 <translation id="1938124657309484470">O valor debe ser <ph name="MAXIMUM_DATE_OR_TIME" /> ou anterior.</translation>
 <translation id="1946271899482435442">Mostra o selector de data</translation>
 <translation id="1993104285338243655">Cambiouse á proxección</translation>
+<translation id="2031987842108996681">Canle vermella</translation>
 <translation id="2060505056492490888">"<ph name="DOT" />" utilízase nunha posición incorrecta en "<ph name="INVALIDDOMAIN" />".</translation>
 <translation id="2148716181193084225">Hoxe</translation>
 <translation id="2158401438286456825">lista de páxinas</translation>
@@ -45,6 +46,7 @@
 <translation id="2291999235780842123">caixa de verificación</translation>
 <translation id="2311842470354187719">salto de páxina</translation>
 <translation id="2335594187091864976">seleccionador de data e hora</translation>
+<translation id="2393030564806080191">Valor de cor hexadecimal</translation>
 <translation id="245932805758469625">número de segundos restantes do vídeo</translation>
 <translation id="248395913932153421">Día</translation>
 <translation id="2507943997699731163">Completa este campo.</translation>
@@ -52,6 +54,7 @@
 <translation id="2561842179657104141">mostrar máis controis multimedia</translation>
 <translation id="2572483411312390101">reproducir</translation>
 <translation id="2613802280814924224">Introduce un valor válido. O valor válido máis próximo é <ph name="VALID_VALUE" />.</translation>
+<translation id="2634240155926812724">Canle verde</translation>
 <translation id="2653659639078652383">Enviar</translation>
 <translation id="2657045182931379222">obxecto gráfico</translation>
 <translation id="2674318244760992338">pé de páxina</translation>
@@ -127,6 +130,7 @@
 <translation id="5034860022980953847">indicador de progreso</translation>
 <translation id="5090250355906949916">barra de progresión do vídeo</translation>
 <translation id="5093189678851173835">epígrafe</translation>
+<translation id="509897012892853729">Canle azul</translation>
 <translation id="5117590920725113268">Mostrar mes seguinte</translation>
 <translation id="512758898067543763">cabeceira de fila</translation>
 <translation id="5143125788380636750">epílogo</translation>
@@ -164,6 +168,7 @@
 <translation id="6166809985690652833">epílogo</translation>
 <translation id="6209276755895393898">Parece "<ph name="DESCRIPTION" />"</translation>
 <translation id="6213469881011901533">glosario</translation>
+<translation id="6281588256137006900">Luz</translation>
 <translation id="6281763101136022427">URL</translation>
 <translation id="6310801910862476708">Saír do modo de pantalla superposta</translation>
 <translation id="6398862346408813489">Mostra o panel de selección do mes</translation>
@@ -184,6 +189,7 @@
 <translation id="6790428901817661496">Reproducir</translation>
 <translation id="6820355525329141109">Non se puido cargar o plugin.</translation>
 <translation id="6820615603175220800">referencia bibliográfica</translation>
+<translation id="6831465880655513317">Círculo de cores cun control desprazable de dúas dimensións para seleccionar a saturación e a luz</translation>
 <translation id="6843725295806269523">silencia</translation>
 <translation id="6885760532393684712">directorio</translation>
 <translation id="689129560213475294">colofón</translation>
@@ -201,6 +207,7 @@
 <translation id="7263440858009898357">Selecciona un elemento da lista.</translation>
 <translation id="727747134524199931">cabeceira de columna</translation>
 <translation id="7320576522385648310">almacenando no búfer</translation>
+<translation id="7341556277900466204">Círculo de cores</translation>
 <translation id="7353453495576941748">créditos</translation>
 <translation id="7364796246159120393">Seleccionar ficheiro</translation>
 <translation id="739024184232394898">Outras...</translation>
@@ -221,6 +228,7 @@
 <translation id="775297008183122718">Entrada non válida</translation>
 <translation id="7789962463072032349">pausa</translation>
 <translation id="7802800022689234070">triángulo despregable</translation>
+<translation id="7852167693871241274">Control desprazable do ton</translation>
 <translation id="7888071071722539607">Inclúe un valor "<ph name="ATSIGN" />" no enderezo de correo electrónico. A "<ph name="INVALIDADDRESS" />" fáltalle un "<ph name="ATSIGN" />".</translation>
 <translation id="7891486169920085145">divisor</translation>
 <translation id="795667975304826397">Non hai ningún ficheiro seleccionado</translation>
@@ -263,6 +271,7 @@
 <translation id="8875657656876809964">Erro de reprodución do vídeo</translation>
 <translation id="8889402386540077796">Tonalidade</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> kB</translation>
+<translation id="894736920926684893">Interruptor de formato</translation>
 <translation id="8987927404178983737">Mes</translation>
 <translation id="901493112792887934">tempo actual en segundos</translation>
 <translation id="901834265349196618">correo electrónico</translation>

@@ -1,0 +1,10 @@
+include_rules = [
+  "+components/metrics/call_stack_profile_builder.h",
+  "+components/metrics/call_stack_profile_metrics_provider.h",
+]
+
+specific_include_rules = {
+  "heap_profiler_controller_unittest\.cc": [
+    "+third_party/metrics_proto/sampled_profile.pb.h",
+  ],
+}

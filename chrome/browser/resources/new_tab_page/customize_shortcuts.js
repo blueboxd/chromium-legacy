@@ -5,8 +5,10 @@
 import './mini_page.js';
 import 'chrome://resources/cr_elements/cr_icons_css.m.js';
 import 'chrome://resources/cr_elements/cr_toggle/cr_toggle.m.js';
+import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
 
 import {assert} from 'chrome://resources/js/assert.m.js';
+import {FocusOutlineManager} from 'chrome://resources/js/cr/ui/focus_outline_manager.m.js';
 import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {BrowserProxy} from './browser_proxy.js';
@@ -51,6 +53,7 @@ class CustomizeShortcutsElement extends PolymerElement {
           this.hide_ = !info.visible;
         });
     this.pageHandler_.updateMostVisitedInfo();
+    FocusOutlineManager.forDocument(document);
   }
 
   /** @override */

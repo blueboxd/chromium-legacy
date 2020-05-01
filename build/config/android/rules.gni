@@ -2471,6 +2471,8 @@ if (enable_java_templates) {
       if (defined(invoker.verify_manifest) && invoker.verify_manifest &&
           !is_java_debug) {
         verify_manifest_target_name = _template_name
+        build_config_dep = ":$_build_config_target"
+        android_manifest_dep = ":$_merge_manifest_target"
         forward_variables_from(invoker,
                                [ "expected_manifest_base_expectation" ])
       }
@@ -3144,9 +3146,10 @@ if (enable_java_templates) {
         if (defined(invoker.verify_native_libs_and_assets) &&
             invoker.verify_native_libs_and_assets) {
           verify_native_libs_and_assets_target_name = _template_name
+          build_config_dep = ":$_build_config_target"
         }
 
-        assets_build_config = _build_config
+        build_config = _build_config
         keystore_name = _keystore_name
         keystore_path = _keystore_path
         keystore_password = _keystore_password
@@ -4530,7 +4533,8 @@ if (enable_java_templates) {
     # the libs as allotted by this step.
     _native_libraries_config =
         "$target_gen_dir/$_target_name.native_libraries_config"
-    allot_native_libraries("${_target_name}__allot_native_libraries") {
+    _native_libraries_config_target = "${_target_name}__allot_native_libraries"
+    allot_native_libraries(_native_libraries_config_target) {
       modules = _modules
       native_libraries_filearg_keys = [
         "native:libraries",
@@ -4544,8 +4548,9 @@ if (enable_java_templates) {
     if (defined(android_app_secondary_abi)) {
       _secondary_abi_native_libraries_config =
           "$target_gen_dir/$_target_name.secondary_abi_native_libraries_config"
-      allot_native_libraries(
-          "${_target_name}__allot_secondary_abi_native_libraries") {
+      _secondary_abi_native_libraries_config_target =
+          "${_target_name}__allot_secondary_abi_native_libraries"
+      allot_native_libraries(_secondary_abi_native_libraries_config_target) {
         modules = _modules
         native_libraries_filearg_keys = [
           "native:secondary_abi_libraries",
@@ -4604,11 +4609,6 @@ if (enable_java_templates) {
       } else {
         _verify_proguard_flags = defined(invoker.verify_proguard_flags) &&
                                  invoker.verify_proguard_flags
-        if (_verify_proguard_flags) {
-          _proguard_expectations_file =
-              get_label_info(":$_target_name", "dir") +
-              "/java/$_target_name.proguard_flags.expected"
-        }
         dex(_dex_target) {
           forward_variables_from(invoker,
                                  [
@@ -4622,7 +4622,7 @@ if (enable_java_templates) {
           build_config = _build_config
 
           if (_verify_proguard_flags) {
-            proguard_expectations_file = _proguard_expectations_file
+            verify_proguard_flags_target_name = _target_name
           }
 
           deps = _module_java_targets + [ ":$_build_config_target" ]
@@ -4669,10 +4669,16 @@ if (enable_java_templates) {
             defined(invoker.verify_native_libs_and_assets) &&
             invoker.verify_native_libs_and_assets) {
           verify_native_libs_and_assets_target_name = "${_target_name}__base"
+          build_config_target = _module_build_config_target
+          native_libraries_config_target = ":$_native_libraries_config_target"
+          if (defined(android_app_secondary_abi)) {
+            secondary_abi_native_libraries_config_target =
+                ":$_secondary_abi_native_libraries_config_target"
+          }
         }
 
         deps = [
-          ":${_target_name}__allot_native_libraries",
+          ":$_native_libraries_config_target",
           _dex_target_for_module,
           _module_build_config_target,
           _module_target,
@@ -4681,7 +4687,7 @@ if (enable_java_templates) {
         if (defined(android_app_secondary_abi)) {
           secondary_abi_native_libraries_config =
               _secondary_abi_native_libraries_config
-          deps += [ ":${_target_name}__allot_secondary_abi_native_libraries" ]
+          deps += [ ":$_secondary_abi_native_libraries_config_target" ]
         }
       }
 

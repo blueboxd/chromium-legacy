@@ -11,6 +11,7 @@
 #include <map>
 #include <memory>
 
+#include "base/containers/linked_list.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/threading/thread_checker.h"
@@ -40,8 +41,12 @@ class NET_EXPORT_PRIVATE MultiThreadedCertVerifier : public CertVerifier {
   void SetConfig(const CertVerifier::Config& config) override;
 
  private:
+  class InternalRequest;
+
   Config config_;
   scoped_refptr<CertVerifyProc> verify_proc_;
+
+  base::LinkedList<InternalRequest> request_list_;
 
   THREAD_CHECKER(thread_checker_);
 

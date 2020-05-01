@@ -161,6 +161,34 @@ bool IsTop500Domain(const DomainInfo& domain, std::string* found_domain) {
   return false;
 }
 
+// Checks if the targeted domain is allowlisted. To check that we need to
+// check all of the subdomains that could be made. The reason is for example
+// in the case of "foo.scholar.google.com.university.edu", "google.com" is
+// considered as the targeted domain. We need to make sure
+// "scholar.google.com" or "foo.scholar.google.com" are not allowlisted
+// before marking the input domain as a target embedding domain.
+bool ASubdomainIsAllowlisted(
+    const std::string& embedded_target,
+    const base::span<const std::string>& subdomain_labels_so_far,
+    const LookalikeTargetAllowlistChecker& in_target_allowlist) {
+  const std::string https_scheme =
+      url::kHttpsScheme + std::string(url::kStandardSchemeSeparator);
+
+  if (in_target_allowlist.Run(GURL(https_scheme + embedded_target))) {
+    return true;
+  }
+  std::string potential_hostname = embedded_target;
+  // Attach each token from the end to the embedded target to check if that
+  // subdomain has been allowlisted.
+  for (int i = subdomain_labels_so_far.size() - 1; i >= 0; i--) {
+    potential_hostname = subdomain_labels_so_far[i] + "." + potential_hostname;
+    if (in_target_allowlist.Run(GURL(https_scheme + potential_hostname))) {
+      return true;
+    }
+  }
+  return false;
+}
+
 }  // namespace
 
 DomainInfo::DomainInfo(const std::string& arg_hostname,
@@ -283,10 +311,12 @@ bool ShouldBlockLookalikeUrlNavigation(LookalikeUrlMatchType match_type,
          navigated_domain.idn_result.matching_top_domain.is_top_500;
 }
 
-bool GetMatchingDomain(const DomainInfo& navigated_domain,
-                       const std::vector<DomainInfo>& engaged_sites,
-                       std::string* matched_domain,
-                       LookalikeUrlMatchType* match_type) {
+bool GetMatchingDomain(
+    const DomainInfo& navigated_domain,
+    const std::vector<DomainInfo>& engaged_sites,
+    const LookalikeTargetAllowlistChecker& in_target_allowlist,
+    std::string* matched_domain,
+    LookalikeUrlMatchType* match_type) {
   DCHECK(!navigated_domain.domain_and_registry.empty());
   DCHECK(matched_domain);
   DCHECK(match_type);
@@ -341,11 +371,8 @@ bool GetMatchingDomain(const DomainInfo& navigated_domain,
     }
   }
 
-  if (IsTargetEmbeddingLookalike(
-          GURL(std::string(url::kHttpsScheme) +
-               std::string(url::kStandardSchemeSeparator) +
-               navigated_domain.hostname),
-          engaged_sites, matched_domain)) {
+  if (IsTargetEmbeddingLookalike(navigated_domain.hostname, engaged_sites,
+                                 in_target_allowlist, matched_domain)) {
     *match_type = LookalikeUrlMatchType::kTargetEmbedding;
     return true;
   }
@@ -375,12 +402,13 @@ void RecordUMAFromMatchType(LookalikeUrlMatchType match_type) {
   }
 }
 
-bool IsTargetEmbeddingLookalike(const GURL& url,
-                                const std::vector<DomainInfo>& engaged_sites,
-                                std::string* safe_url) {
-  DCHECK(url.SchemeIsHTTPOrHTTPS());
+bool IsTargetEmbeddingLookalike(
+    const std::string& hostname,
+    const std::vector<DomainInfo>& engaged_sites,
+    const LookalikeTargetAllowlistChecker& in_target_allowlist,
+    std::string* safe_hostname) {
   const std::string host_without_etld =
-      url_formatter::top_domains::HostnameWithoutRegistry(url.host());
+      url_formatter::top_domains::HostnameWithoutRegistry(hostname);
   const std::vector<std::string> hostname_tokens_without_etld =
       SplitDomainWithouteTLDIntoTokens(host_without_etld);
 
@@ -396,7 +424,8 @@ bool IsTargetEmbeddingLookalike(const GURL& url,
   // embedding attacks against domains that contain '-' in their address
   // (e.g programme-tv.net). Also if the eTLD of the target has more than one
   // part, we won't be able to protect it (e.g. google.co.uk).
-  for (const auto& token : hostname_tokens_without_etld) {
+  for (size_t i = 0; i < hostname_tokens_without_etld.size(); i++) {
+    const std::string token = hostname_tokens_without_etld[i];
     const std::string possible_embedded_target = prev_token + "." + token;
     if (prev_token.empty()) {
       prev_token = token;
@@ -422,17 +451,30 @@ bool IsTargetEmbeddingLookalike(const GURL& url,
       continue;
     }
 
-    *safe_url =
+    *safe_hostname =
         GetMatchingSiteEngagementDomain(engaged_sites, possible_target_domain);
     // |GetMatchingSiteEngagementDomain| uses skeleton matching, we make sure
     // the found engaged site is an exact match of the embedded target.
-    if (*safe_url != possible_embedded_target) {
-      *safe_url = std::string();
+    if (*safe_hostname != possible_embedded_target) {
+      *safe_hostname = std::string();
     }
-    if (!safe_url->empty() ||
-        IsTop500Domain(possible_target_domain, safe_url)) {
+    if (safe_hostname->empty() &&
+        !IsTop500Domain(possible_target_domain, safe_hostname)) {
+      continue;
+    }
+
+    // Check if any subdomain is allowlisted.
+    std::vector<std::string> subdomain_labels_so_far(
+        hostname_tokens_without_etld.begin(),
+        hostname_tokens_without_etld.begin() + i - 1);
+    if (!ASubdomainIsAllowlisted(possible_embedded_target,
+                                 subdomain_labels_so_far,
+                                 in_target_allowlist)) {
       return true;
     }
+
+    // A target is found but it was allowlisted.
+    *safe_hostname = std::string();
   }
   return false;
 }

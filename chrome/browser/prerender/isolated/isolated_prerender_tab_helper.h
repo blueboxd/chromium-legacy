@@ -15,6 +15,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/sequence_checker.h"
+#include "base/time/time.h"
 #include "chrome/browser/navigation_predictor/navigation_predictor_keyed_service.h"
 #include "chrome/browser/prerender/isolated/prefetched_mainframe_response_container.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -94,6 +95,9 @@ class IsolatedPrerenderTabHelper
     // The total number of redirects encountered during all prefetches.
     size_t prefetch_total_redirect_count_ = 0;
 
+    // The duration between navigation start and the start of prefetching.
+    base::Optional<base::TimeDelta> navigation_to_prefetch_start_;
+
    private:
     friend class base::RefCounted<PrefetchMetrics>;
     ~PrefetchMetrics();
@@ -156,8 +160,11 @@ class IsolatedPrerenderTabHelper
   // need to reset an instance of this class to clean up previous state.
   class CurrentPageLoad {
    public:
-    CurrentPageLoad();
+    explicit CurrentPageLoad(content::NavigationHandle* handle);
     ~CurrentPageLoad();
+
+    // The start time of the current navigation.
+    const base::TimeTicks navigation_start_;
 
     // The metrics pertaining to prefetching actions on a Google SRP page.
     scoped_refptr<PrefetchMetrics> metrics_;

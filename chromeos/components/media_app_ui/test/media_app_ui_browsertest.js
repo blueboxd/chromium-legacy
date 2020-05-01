@@ -95,7 +95,7 @@ async function createTestImageFile(
 // chrome-untrusted://media-app/". This test also fails if the guest renderer is
 // terminated, e.g., due to webui performing bad IPC such as network requests
 // (failure detected in content/public/test/no_renderer_crashes_assertion.cc).
-TEST_F('MediaAppUIBrowserTest', 'GuestCanLoad', async () => {
+TEST_F('MediaAppUIBrowserTest', 'DISABLED_GuestCanLoad', async () => {
   const guest = document.querySelector('iframe');
   const app = await driver.waitForElementInGuest('backlight-app', 'tagName');
 
@@ -106,8 +106,15 @@ TEST_F('MediaAppUIBrowserTest', 'GuestCanLoad', async () => {
   testDone();
 });
 
-TEST_F('MediaAppUIBrowserTest', 'LoadFile', async () => {
-  loadFile(await createTestImageFile(), new FakeFileSystemFileHandle());
+// Tests that we have localized information in the HTML like title and lang.
+TEST_F('MediaAppUIBrowserTest', 'HasTitleAndLang', () => {
+  assertEquals(document.documentElement.lang, 'en');
+  assertEquals(document.title, 'Gallery');
+  testDone();
+});
+
+TEST_F('MediaAppUIBrowserTest', 'DISABLED_LoadFile', async () => {
+  await loadFile(await createTestImageFile(), new FakeFileSystemFileHandle());
   const result =
       await driver.waitForElementInGuest('img[src^="blob:"]', 'naturalWidth');
 
@@ -125,7 +132,7 @@ TEST_F('MediaAppUIBrowserTest', 'CanOpenFeedbackDialog', async () => {
 });
 
 // Tests that video elements in the guest can be full-screened.
-TEST_F('MediaAppUIBrowserTest', 'CanFullscreenVideo', async () => {
+TEST_F('MediaAppUIBrowserTest', 'DISABLED_CanFullscreenVideo', async () => {
   // Remove `overflow: hidden` to work around a spurious DCHECK in Blink
   // layout. See crbug.com/1052791. Oddly, even though the video is in the guest
   // iframe document (which also has these styles on its body), it is necessary
@@ -134,7 +141,7 @@ TEST_F('MediaAppUIBrowserTest', 'CanFullscreenVideo', async () => {
 
   // Load a zero-byte video. It won't load, but the video element should be
   // added to the DOM (and it can still be fullscreened).
-  loadFile(
+  await loadFile(
       new File([], 'zero_byte_video.webm', {type: 'video/webm'}),
       new FakeFileSystemFileHandle());
 
@@ -189,7 +196,7 @@ TEST_F('MediaAppUIBrowserTest', 'ReceivesProxiedError', async () => {
 // by the privileged context.
 TEST_F('MediaAppUIBrowserTest', 'OverwriteOriginalIPC', async () => {
   const handle = new FakeFileSystemFileHandle();
-  loadFile(await createTestImageFile(), handle);
+  await loadFile(await createTestImageFile(), handle);
 
   // Write should not be called initially.
   assertEquals(undefined, handle.lastWritable);
@@ -209,7 +216,7 @@ TEST_F('MediaAppUIBrowserTest', 'DeleteOriginalIPC', async () => {
   const directory = createMockTestDirectory();
   // Simulate steps taken to load a file via a launch event.
   const firstFile = directory.files[0];
-  loadFile(await createTestImageFile(), firstFile);
+  await loadFile(await createTestImageFile(), firstFile);
   // Set `currentDirectoryHandle` in launch.js.
   currentDirectoryHandle = directory;
   let testResponse;
@@ -272,7 +279,7 @@ TEST_F('MediaAppUIBrowserTest', 'RenameOriginalIPC', async () => {
   const directory = createMockTestDirectory();
   // Simulate steps taken to load a file via a launch event.
   const firstFile = directory.files[0];
-  loadFile(await createTestImageFile(), firstFile);
+  await loadFile(await createTestImageFile(), firstFile);
   // Set `currentDirectoryHandle` in launch.js.
   currentDirectoryHandle = directory;
   let testResponse;
@@ -317,7 +324,7 @@ TEST_F('MediaAppUIBrowserTest', 'SaveCopyIPC', async () => {
     };
   });
   const testImage = await createTestImageFile(10, 10);
-  loadFile(testImage, new FakeFileSystemFileHandle());
+  await loadFile(testImage, new FakeFileSystemFileHandle());
 
   const result = await guestMessagePipe.sendMessage('test', {saveCopy: true});
   assertEquals(result.testQueryResult, 'boo yah!');
@@ -393,5 +400,10 @@ TEST_F('MediaAppUIBrowserTest', 'RelatedFiles', async () => {
 
 TEST_F('MediaAppUIBrowserTest', 'GuestCanSpawnWorkers', async () => {
   await runTestInGuest('GuestCanSpawnWorkers');
+  testDone();
+});
+
+TEST_F('MediaAppUIBrowserTest', 'GuestHasLang', async () => {
+  await runTestInGuest('GuestHasLang');
   testDone();
 });

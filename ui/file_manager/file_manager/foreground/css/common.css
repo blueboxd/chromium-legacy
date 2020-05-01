@@ -410,6 +410,13 @@ body.files-ng .body2-primary {
   line-height: 20px;
 }
 
+body.files-ng .annotation1-primary {
+  color: var(--google-grey-900);
+  font-family: Roboto;
+  font-size: 12px;
+  line-height: 18px;
+}
+
  /* Modification to cr-button to comply with ChromeOS GM2 rules. */
 body.files-ng cr-button.text-button {
   color: var(--google-blue-600);

@@ -131,11 +131,13 @@ if (${{{clause}.cond}}) \\
 
 class CxxSwitchNode(CodeNode):
     class _Clause(object):
-        def __init__(self, case, body):
+        def __init__(self, case, body, should_add_break):
             assert isinstance(case, CodeNode) or case is None
             assert isinstance(body, SymbolScopeNode)
+            assert isinstance(should_add_break, bool)
             self.case = case
             self.body = body
+            self.should_add_break = should_add_break
 
     def __init__(self, cond):
         cond = _to_conditional_node(cond)
@@ -150,15 +152,19 @@ switch (${{{cond}}}) {{
 % for {clause} in {clauses}:
   case ${{{clause}.case}}: {{
     ${{{clause}.body}}
+% if {clause}.should_add_break:
     break;
+% endif
   }}
 % endfor
-% if {default_clauses}:
+% for {clause} in {default_clauses}:
   default: {{
-    ${{{default_clauses}[0].body}}
+    ${{{clause}.body}}
+% if {clause}.should_add_break:
     break;
-  }}
 % endif
+  }}
+% endfor
 }}\
 """,
             cond=cond_gensym,
@@ -177,18 +183,31 @@ switch (${{{cond}}}) {{
         self._clauses = clauses
         self._default_clauses = default_clauses
 
-    def append(self, case, body, likeliness=Likeliness.LIKELY):
-        if case is not None:  # None = default:
+    def append(self,
+               case,
+               body,
+               should_add_break=True,
+               likeliness=Likeliness.LIKELY):
+        """
+        Args:
+            case: Constant expression of 'case' label, or None for 'default'
+                label.
+            body: The body statements.
+            should_add_break: True adds 'break' statement at the end of |body|.
+            likeliness: The likeliness of |body|.
+        """
+        if case is not None:
             case = _to_maybe_text_node(case)
             case.set_outer(self)
         body = _to_symbol_scope_node(body, likeliness)
         body.set_outer(self)
 
         if case is not None:
-            self._clauses.append(self._Clause(case, body))
+            self._clauses.append(self._Clause(case, body, should_add_break))
         else:
             assert not self._default_clauses
-            self._default_clauses.append(self._Clause(case, body))
+            self._default_clauses.append(
+                self._Clause(case, body, should_add_break))
 
 
 class CxxBreakableBlockNode(CompositeNode):

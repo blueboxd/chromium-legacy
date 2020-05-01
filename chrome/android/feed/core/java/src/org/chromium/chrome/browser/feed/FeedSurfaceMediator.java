@@ -26,6 +26,7 @@ import org.chromium.chrome.browser.native_page.NativePageNavigationDelegate;
 import org.chromium.chrome.browser.ntp.NewTabPageLayout;
 import org.chromium.chrome.browser.ntp.SnapScrollHelper;
 import org.chromium.chrome.browser.ntp.cards.SignInPromo;
+import org.chromium.chrome.browser.ntp.cards.promo.HomepagePromoController.HomepagePromoStateListener;
 import org.chromium.chrome.browser.ntp.snippets.SectionHeader;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefChangeRegistrar;
@@ -48,13 +49,14 @@ import org.chromium.ui.mojom.WindowOpenDisposition;
  * A mediator for the {@link FeedSurfaceCoordinator} responsible for interacting with the
  * native library and handling business logic.
  */
-class FeedSurfaceMediator implements NewTabPageLayout.ScrollDelegate,
-                                     ContextMenuManager.TouchEnabledDelegate,
-                                     TemplateUrlServiceObserver, ListMenu.Delegate {
+class FeedSurfaceMediator
+        implements NewTabPageLayout.ScrollDelegate, ContextMenuManager.TouchEnabledDelegate,
+                   TemplateUrlServiceObserver, ListMenu.Delegate, HomepagePromoStateListener {
     private final FeedSurfaceCoordinator mCoordinator;
     private final @Nullable SnapScrollHelper mSnapScrollHelper;
     private final PrefChangeRegistrar mPrefChangeRegistrar;
     private final SigninManager mSigninManager;
+
     private final NativePageNavigationDelegate mPageNavigationDelegate;
 
     private @Nullable ScrollListener mStreamScrollListener;
@@ -426,6 +428,11 @@ class FeedSurfaceMediator implements NewTabPageLayout.ScrollDelegate,
             assert false
                 : String.format("Cannot handle action for item in the menu with id %d", itemId);
         }
+    }
+
+    @Override
+    public void onHomepagePromoStateChange() {
+        mCoordinator.updateHeaderViews(mSignInPromo != null && mSignInPromo.isVisible());
     }
 
     /**

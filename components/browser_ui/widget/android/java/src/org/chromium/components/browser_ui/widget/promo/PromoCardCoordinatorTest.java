@@ -19,6 +19,7 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.CallbackHelper;
+import org.chromium.components.browser_ui.widget.promo.PromoCardCoordinator.LayoutStyle;
 import org.chromium.components.browser_ui.widget.test.R;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.modelutil.PropertyModel;
@@ -37,7 +38,11 @@ public class PromoCardCoordinatorTest {
     public void setUp() {
         mContext = InstrumentationRegistry.getInstrumentation().getContext();
         mModel = new PropertyModel.Builder(PromoCardProperties.ALL_KEYS).build();
-        mPromoCardCoordinator = new PromoCardCoordinator(mContext, mModel, "test-feature");
+    }
+
+    private void setupCoordinator(@LayoutStyle int layoutStyle) {
+        mPromoCardCoordinator =
+                new PromoCardCoordinator(mContext, mModel, "test-feature", layoutStyle);
         mView = (PromoCardView) mPromoCardCoordinator.getView();
 
         Assert.assertNotNull("PromoCardView is null", mView);
@@ -45,8 +50,49 @@ public class PromoCardCoordinatorTest {
 
     @Test
     @SmallTest
-    public void
-    testTextImageBinding() {
+    public void testCreateView_Large() {
+        setupCoordinator(LayoutStyle.LARGE);
+
+        Assert.assertNotNull("Large promo should have image view.", mView.mPromoImage);
+        Assert.assertNotNull("Large promo should have title.", mView.mTitle);
+        Assert.assertNotNull("Large promo should have description.", mView.mDescription);
+        Assert.assertNotNull("Large promo should have dismiss button.", mView.mDismissButton);
+        Assert.assertNotNull("Large promo should have primary button.", mView.mPrimaryButton);
+        Assert.assertNotNull("Large promo should have secondary button.", mView.mSecondaryButton);
+    }
+
+    @Test
+    @SmallTest
+    public void testCreateView_Compact() {
+        setupCoordinator(LayoutStyle.COMPACT);
+
+        Assert.assertNotNull("Compact promo should have image view.", mView.mPromoImage);
+        Assert.assertNotNull("Compact promo should have title.", mView.mTitle);
+        Assert.assertNotNull("Compact promo should have description.", mView.mDescription);
+        Assert.assertNotNull("Compact promo should have primary button.", mView.mPrimaryButton);
+        Assert.assertNotNull("Compact promo should have secondary button.", mView.mSecondaryButton);
+
+        Assert.assertNull("Compact promo should not have dismiss button.", mView.mDismissButton);
+    }
+
+    @Test
+    @SmallTest
+    public void testCreateView_Slim() {
+        setupCoordinator(LayoutStyle.SLIM);
+
+        Assert.assertNotNull("Slim Promo should have image view.", mView.mPromoImage);
+        Assert.assertNotNull("Slim Promo should have title.", mView.mTitle);
+        Assert.assertNotNull("Slim Promo should have primary button.", mView.mPrimaryButton);
+
+        Assert.assertNull("Slim promo should not have description.", mView.mDescription);
+        Assert.assertNull("Slim promo should not have secondary button.", mView.mSecondaryButton);
+        Assert.assertNull("Slim promo should not have dismiss button.", mView.mDismissButton);
+    }
+
+    @Test
+    @SmallTest
+    public void testTextImageBinding() {
+        setupCoordinator(LayoutStyle.LARGE);
         final Drawable testImage =
                 AppCompatResources.getDrawable(mContext, R.drawable.test_logo_avatar_anonymous);
         final String titleString = "Some string for title";
@@ -83,12 +129,12 @@ public class PromoCardCoordinatorTest {
     @Test
     @SmallTest
     public void testChangeVisibility() {
-        Assert.assertEquals(mView.getVisibility(), View.VISIBLE);
+        setupCoordinator(LayoutStyle.LARGE);
         Assert.assertEquals(mView.mSecondaryButton.getVisibility(), View.VISIBLE);
 
         // Hide the secondary button
         TestThreadUtils.runOnUiThreadBlocking(
-                () -> { mModel.set(PromoCardProperties.SECONDARY_BUTTON_VISIBLE, false); });
+                () -> { mModel.set(PromoCardProperties.HAS_SECONDARY_BUTTON, false); });
         Assert.assertEquals("Secondary button is still visible.", View.GONE,
                 mView.mSecondaryButton.getVisibility());
     }
@@ -96,6 +142,7 @@ public class PromoCardCoordinatorTest {
     @Test
     @SmallTest
     public void testActionBinding() throws Exception {
+        setupCoordinator(LayoutStyle.LARGE);
         final CallbackHelper primaryClickCallback = new CallbackHelper();
         final CallbackHelper secondaryClickCallback = new CallbackHelper();
         final CallbackHelper dismissClickCallback = new CallbackHelper();

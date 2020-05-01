@@ -340,7 +340,8 @@
 
     <div class="dialog-header files-ng" role="contentinfo">
       <div id="location-breadcrumbs" class="breadcrumbs"></div>
-      <div id="read-only-indicator" hidden>
+      <div id="read-only-indicator" aria-label="$i18n{READONLY_INDICATOR_TOOLTIP}" hidden
+           has-tooltip show-card-tooltip>
         <span id="read-only-icon"></span>
         <span id="read-only-label">$i18n{READ_ONLY_LABEL}</span>
       </div>

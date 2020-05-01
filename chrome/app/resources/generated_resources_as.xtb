@@ -382,9 +382,7 @@
 <translation id="1509281256533087115">USBৰ জৰিয়তে যিকোনো <ph name="DEVICE_NAME_AND_VENDOR" /> এক্সেছ কৰক</translation>
 <translation id="1509960214886564027">বহুতো ছাইটৰ সুবিধাসমূহ ব্যাহত হ’ব পাৰে</translation>
 <translation id="1510030919967934016">এই পৃষ্ঠাটোক আপোনাৰ অৱস্থান ট্ৰেক কৰাৰ পৰা অৱৰোধ কৰা হৈছে৷</translation>
-<translation id="1510055949674985293">এই প্ৰতিচ্ছবিখনৰ বাবে কিউআৰ ক’ড সৃষ্টি কৰক</translation>
 <translation id="1510238584712386396">লঞ্চাৰ</translation>
-<translation id="1510581003097415337">এই পৃষ্ঠাখনৰ বাবে কিউআৰ ক’ড সৃষ্টি কৰক</translation>
 <translation id="1510785804673676069">আপুনি যদি এটা প্ৰক্সি ছাৰ্ভাৰ ব্যৱহাৰ কৰি আছে তেন্তে প্ৰক্সি ছেটিংসমূহ পৰীক্ষা কৰক বা প্ৰক্সি ছার্ভাৰে কাম কৰি থকাটো পৰীক্ষা কৰিবলৈ নিজৰ নেটৱর্ক প্ৰশাসকৰ সৈতে যোগাযোগ কৰক। যদি আপুনি বিশ্বাস কৰা নাই তেন্তে আপুনি কোনো প্ৰ’ক্সি ছার্ভাৰ ব্যৱহাৰ কৰি আছে , অনুগ্ৰহ কৰি আপোনাৰ : <ph name="LINK_START" />প্ৰক্সি ছেটিংসমূহ<ph name="LINK_END" />.মিলাওক।</translation>
 <translation id="1511997356770098059">এই সুৰক্ষাৰ চাবিটোৱে কোনো ছাইন-ইন ডেটা ষ্ট'ৰ কৰিব নোৱাৰে।</translation>
 <translation id="1512210426710821809">এইটো আনডু কৰাৰ একমাত্ৰ উপায় হৈছে <ph name="IDS_SHORT_PRODUCT_OS_NAME" />পুনৰ ইনষ্টল কৰা</translation>
@@ -2304,7 +2302,6 @@
 <translation id="4007856537951125667">শ্বৰ্টকাটসমূহ লুকুৱাওক</translation>
 <translation id="4008291085758151621">VRত ছাইটত তথ্য নাই</translation>
 <translation id="4010917659463429001">আপোনাৰ ম'বাইল ডিভাইচটোত নিজৰ বুকমার্কসমূহ পাবলৈ <ph name="GET_IOS_APP_LINK" />।</translation>
-<translation id="4013132157686828973">"<ph name="CLIENT_NAME" />"এ এই ব্ৰাউজাৰটো ডিবাগ কৰি আছে</translation>
 <translation id="4014432863917027322">"<ph name="EXTENSION_NAME" />" মেৰামতি কৰিবনে?</translation>
 <translation id="4015163439792426608">এক্সটেনশ্বনসমূহ আছেনে? এক সহজ ঠাইত <ph name="BEGIN_LINK" />আপোনাৰ এক্সটেনশ্বনসমূহ পৰিচালনা কৰক<ph name="END_LINK" />।</translation>
 <translation id="4020327272915390518">বিকল্পৰ মেনু</translation>
@@ -3006,7 +3003,6 @@
 <translation id="504561833207953641">পূর্বে থকা ব্ৰাউজাৰ ছেশ্বনত খুলি আছে।</translation>
 <translation id="5047421709274785093">গতি আৰু পোহৰৰ ছেন্সৰ ব্যৱহাৰ কৰাৰ ক্ষেত্ৰত ছাইটবোৰক অৱৰোধ কৰক</translation>
 <translation id="5050042263972837708">গোটৰ নাম</translation>
-<translation id="5051073330196664891">Googleৰ সার্বজনীন সেৱাৰ চৰ্তাৱলী (uToS)</translation>
 <translation id="5051836348807686060">আপুনি বাছনি কৰা ভাষাৰ ক্ষেত্ৰত বানান পৰীক্ষক সমৰ্থিত নহয়</translation>
 <translation id="5052499409147950210">ছাইট সম্পাদনা কৰক</translation>
 <translation id="5053604404986157245">যাদৃচ্ছিকভাৱে উৎপন্ন কৰা TPM পাছৱৰ্ড উপলব্ধ নাই৷ Powerwashৰ পাছত এয়া স্বাভাৱিক।</translation>
@@ -3877,7 +3873,6 @@
 <translation id="6226777517901268232">ব্যক্তিগত চাবিৰ ফাইল (ঐচ্ছিক)</translation>
 <translation id="6227280783235722609">এক্সটেনশ্বন</translation>
 <translation id="6228691855869374890">এই পৃষ্ঠাটোৱে MIDI ডিভাইচ সম্পূৰ্ণৰূপে নিয়ন্ত্রণ কৰিব পাৰে।</translation>
-<translation id="6228720835160974792">এই প্ৰতিচ্ছবিখনৰ বাবে কিউআৰ ক’ড সৃষ্টি কৰক</translation>
 <translation id="6229890768313448549">Google Playৰ সেৱাৰ চৰ্তাৱলী ল’ড কৰিব পৰা নগ’ল। অনুগ্ৰহ কৰি আকৌ চেষ্টা কৰক।</translation>
 <translation id="6231881193380278751">পৃষ্ঠাটো স্বয়ংক্ৰিয়ভাৱে ৰিফ্রে’শ্ব কৰিবলৈ সন্ধানৰ এটা পৰম যোগ কৰক: chrome://device-log/?refresh=&lt;sec&gt;</translation>
 <translation id="6232017090690406397">বেটাৰী</translation>
@@ -4536,7 +4531,6 @@
 <translation id="7123360114020465152">এতিয়া আৰু সমৰ্থিত নহয়</translation>
 <translation id="7127980134843952133">ডাউনল’ডৰ ইতিহাস</translation>
 <translation id="7128151990937044829">জাননীসমূহ অৱৰোধ কৰিলে ঠিকনাৰ দণ্ডত এটা সূচক প্ৰদর্শন কৰক</translation>
-<translation id="7128239828194367697">এই পৃষ্ঠাখনৰ বাবে কিউআৰ ক’ড সৃষ্টি কৰক</translation>
 <translation id="7131040479572660648"><ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> আৰু <ph name="WEBSITE_3" />ত আপোনাৰ ডেটা পঢ়ক</translation>
 <translation id="713122686776214250">পৃ&amp;ষ্ঠা যোগ কৰক...</translation>
 <translation id="7133578150266914903">আপোনাৰ প্ৰশাসকে এই ডিভাইচ ৰ'ল বেক কৰি আছে (<ph name="PROGRESS_PERCENT" />)</translation>

@@ -17,10 +17,12 @@ namespace {
 const int kDummyStringId = 123;
 const int kDummyDefaultResourceId = 456;
 const int kDummyResourceId = 789;
+const int kDummyJSResourceId = 790;
 
 const char kDummyString[] = "foo";
 const char kDummyDefaultResource[] = "<html>foo</html>";
 const char kDummyResource[] = "<html>blah</html>";
+const char kDummyJSResource[] = "export const bar = 5;";
 
 class TestClient : public TestContentClient {
  public:
@@ -40,6 +42,9 @@ class TestClient : public TestContentClient {
     } else if (resource_id == kDummyResourceId) {
       bytes = new base::RefCountedStaticMemory(kDummyResource,
                                                base::size(kDummyResource));
+    } else if (resource_id == kDummyJSResourceId) {
+      bytes = new base::RefCountedStaticMemory(kDummyJSResource,
+                                               base::size(kDummyJSResource));
     }
     return bytes;
   }
@@ -226,6 +231,42 @@ TEST_F(WebUIDataSourceTest, MimeType) {
 
 TEST_F(WebUIDataSourceTest, ShouldServeMimeTypeAsContentTypeHeader) {
   EXPECT_TRUE(source()->source()->ShouldServeMimeTypeAsContentTypeHeader());
+}
+
+void InvalidResourceCallback(scoped_refptr<base::RefCountedMemory> data) {
+  EXPECT_EQ(nullptr, data);
+}
+
+void NamedResourceBarJSCallback(scoped_refptr<base::RefCountedMemory> data) {
+  std::string result(data->front_as<char>(), data->size());
+  EXPECT_NE(result.find(kDummyJSResource), std::string::npos);
+}
+
+TEST_F(WebUIDataSourceTest, NoSetDefaultResource) {
+  // Set an empty path resource instead of a default.
+  source()->AddResourcePath("", kDummyDefaultResourceId);
+  source()->AddResourcePath("foobar.html", kDummyResourceId);
+  source()->AddResourcePath("bar.js", kDummyJSResourceId);
+
+  // Empty paths return the resource for the empty path.
+  StartDataRequest("", base::BindOnce(&DefaultResourceFoobarCallback));
+  StartDataRequest("/", base::BindOnce(&DefaultResourceFoobarCallback));
+  // Un-mapped path that does not look like a file request also returns the
+  // resource associated with the empty path.
+  StartDataRequest("subpage", base::BindOnce(&DefaultResourceFoobarCallback));
+  // Paths that are valid filenames succeed and return the file contents.
+  StartDataRequest("foobar.html", base::BindOnce(&NamedResourceFoobarCallback));
+  StartDataRequest("bar.js", base::BindOnce(&NamedResourceBarJSCallback));
+  // Invalid file requests fail
+  StartDataRequest("does_not_exist.html",
+                   base::BindOnce(&InvalidResourceCallback));
+  StartDataRequest("does_not_exist.js",
+                   base::BindOnce(&InvalidResourceCallback));
+
+  // strings.m.js fails until UseStringsJs is called.
+  StartDataRequest("strings.m.js", base::BindOnce(&InvalidResourceCallback));
+  source()->UseStringsJs();
+  StartDataRequest("strings.m.js", base::BindOnce(&EmptyStringsCallback, true));
 }
 
 }  // namespace content

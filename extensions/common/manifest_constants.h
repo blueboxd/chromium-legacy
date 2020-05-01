@@ -207,6 +207,7 @@ extern const char kFileSystemProviderCapabilities[];
 // Some values expected in manifests.
 namespace manifest_values {
 
+extern const char kActionCommandEvent[];
 extern const char kApiKey[];
 extern const char kBrowserActionCommandEvent[];
 extern const char kIncognitoNotAllowed[];

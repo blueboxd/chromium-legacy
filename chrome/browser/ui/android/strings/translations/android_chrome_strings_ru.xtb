@@ -38,7 +38,6 @@
 <translation id="1258753120186372309">Дудл Google: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1260236875608242557">Поиск и рекомендации</translation>
 <translation id="1266864766717917324">Не удалось отправить: <ph name="CONTENT_TYPE" /></translation>
-<translation id="1272079795634619415">Остановить</translation>
 <translation id="1283039547216852943">Нажмите, чтобы развернуть</translation>
 <translation id="1285320974508926690">Никогда не переводить этот сайт</translation>
 <translation id="1291207594882862231">Удалить файлы cookie и данные сайтов, очистить историю и кеш</translation>
@@ -50,8 +49,8 @@
 <translation id="1327257854815634930">История переходов открыта</translation>
 <translation id="1331212799747679585">Не удалось обновить Chrome. Другие настройки</translation>
 <translation id="1332501820983677155">Функции Google Chrome</translation>
+<translation id="1347468774581902829">Управление историей</translation>
 <translation id="1360432990279830238">Выйти и отключить синхронизацию?</translation>
-<translation id="1364532808393826295"><ph name="APP_NAME" />: "<ph name="NOTIFICATION_MESSAGE" />".</translation>
 <translation id="1373696734384179344">Недостаточно памяти для скачивания выбранного контента.</translation>
 <translation id="1376578503827013741">Подсчет…</translation>
 <translation id="1383876407941801731">Поиск</translation>
@@ -122,7 +121,6 @@
 <translation id="2013642289801508067">{FILE_COUNT,plural, =1{# файл}one{# файл}few{# файла}many{# файлов}other{# файла}}</translation>
 <translation id="2017836877785168846">Удаление истории и вариантов автозаполнения в адресной строке</translation>
 <translation id="2021896219286479412">Настройки полноэкранного режима</translation>
-<translation id="2030769033451695672">Нажмите, чтобы вернуться на страницу <ph name="URL_OF_THE_CURRENT_TAB" />.</translation>
 <translation id="2038563949887743358">Включить полную версию сайта</translation>
 <translation id="204321170514947529">Приложение "<ph name="APP_NAME" />" также хранит свои данные в Chrome</translation>
 <translation id="2049574241039454490"><ph name="DESCRIPTION" /> <ph name="SEPARATOR" /> <ph name="FILE_SIZE_OF_TOTAL" /></translation>
@@ -434,6 +432,7 @@
 <translation id="4663756553811254707">Удалено закладок: <ph name="NUMBER_OF_BOOKMARKS" /></translation>
 <translation id="4665282149850138822">Сайт <ph name="NAME" /> добавлен на главный экран</translation>
 <translation id="4684427112815847243">Синхронизировать все</translation>
+<translation id="4688610874307684559">Запущено в Chrome (первичный запуск)</translation>
 <translation id="4695891336199304370">{SHIPPING_OPTIONS,plural, =1{<ph name="SHIPPING_OPTION_PREVIEW" /> и ещё <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> способ доставки}one{<ph name="SHIPPING_OPTION_PREVIEW" /> и ещё <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> способ доставки}few{<ph name="SHIPPING_OPTION_PREVIEW" /> и ещё <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> способа доставки}many{<ph name="SHIPPING_OPTION_PREVIEW" /> и ещё <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> способов доставки}other{<ph name="SHIPPING_OPTION_PREVIEW" /> и ещё <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> способа доставки}}</translation>
 <translation id="4696983787092045100">Отправить сообщения на свои устройства</translation>
 <translation id="4698034686595694889">Есть контент, доступный для офлайн-просмотра в <ph name="APP_NAME" /></translation>
@@ -592,7 +591,6 @@
 <translation id="5876056640971328065">Приостановить видео</translation>
 <translation id="5884076754568147479">Выполнять действия в Chrome с помощью Ассистента: отправлять в Google контент и URL сайтов, а также информацию, сообщаемую Ассистенту</translation>
 <translation id="5919204609460789179">Обновите <ph name="PRODUCT_NAME" />, чтобы начать синхронизацию</translation>
-<translation id="5922853908706496913">Предоставлен доступ к вашему экрану</translation>
 <translation id="5937580074298050696">Сохранено: <ph name="AMOUNT" /></translation>
 <translation id="5939518447894949180">Сбросить</translation>
 <translation id="5942872142862698679">Google используется как поисковая система по умолчанию</translation>
@@ -773,16 +771,17 @@
 <translation id="7479104141328977413">Управление вкладками</translation>
 <translation id="7481312909269577407">Вперед</translation>
 <translation id="7482656565088326534">Вкладка предпросмотра</translation>
+<translation id="7484997419527351112">Рекомендации отключены</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (последнее обновление: <ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7494974237137038751">сэкономлено</translation>
 <translation id="7498271377022651285">Подождите…</translation>
 <translation id="7514365320538308">Скачать</translation>
 <translation id="751961395872307827">Не удалось подключиться к сайту</translation>
 <translation id="7542481630195938534">Не удалось загрузить рекомендации</translation>
-<translation id="7554752735887601236">Сайт использует ваш микрофон</translation>
 <translation id="7559975015014302720">Упрощенный режим отключен</translation>
 <translation id="7562080006725997899">Очистить историю</translation>
 <translation id="756809126120519699">Данные Chrome удалены</translation>
+<translation id="7577900504646297215">Управление интересами</translation>
 <translation id="757855969265046257">{FILES,plural, =1{Скачан <ph name="FILES_DOWNLOADED_ONE" /> файл}one{Скачан <ph name="FILES_DOWNLOADED_MANY" /> файл}few{Скачано <ph name="FILES_DOWNLOADED_MANY" /> файла}many{Скачано <ph name="FILES_DOWNLOADED_MANY" /> файлов}other{Скачано <ph name="FILES_DOWNLOADED_MANY" /> файла}}</translation>
 <translation id="7588219262685291874">Использовать тёмную тему, когда включен режим энергосбережения</translation>
 <translation id="7593557518625677601">Откройте настройки Android и снова включите синхронизацию системы</translation>
@@ -813,7 +812,6 @@
 <translation id="7774809984919390718">{PAYMENT_METHOD,plural, =1{<ph name="PAYMENT_METHOD_PREVIEW" /> и ещё <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> способ оплаты}one{<ph name="PAYMENT_METHOD_PREVIEW" /> и ещё <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> способ оплаты}few{<ph name="PAYMENT_METHOD_PREVIEW" /> и ещё <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> способа оплаты}many{<ph name="PAYMENT_METHOD_PREVIEW" /> и ещё <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> способов оплаты}other{<ph name="PAYMENT_METHOD_PREVIEW" /> и ещё <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> способа оплаты}}</translation>
 <translation id="7791543448312431591">Добавить</translation>
 <translation id="780301667611848630">Спасибо, не надо</translation>
-<translation id="7804248752222191302">Сайт использует вашу камеру</translation>
 <translation id="7810647596859435254">Открыть с помощью...</translation>
 <translation id="7821588508402923572">Здесь появятся данные об экономии трафика</translation>
 <translation id="783819812427904514">Включить звук для видео</translation>
@@ -885,9 +883,7 @@
 <translation id="8349013245300336738">Сортировать по объему использованного трафика</translation>
 <translation id="8364299278605033898">Показать популярные сайты</translation>
 <translation id="8368027906805972958">Неизвестное или неподдерживаемое устройство (<ph name="DEVICE_ID" />)</translation>
-<translation id="83792324527827022">Сайт использует вашу камеру и микрофон</translation>
 <translation id="8393700583063109961">Отправить сообщение</translation>
-<translation id="8394832520002899662">Нажмите, чтобы вернуться на сайт.</translation>
 <translation id="8413126021676339697">Показать всю историю</translation>
 <translation id="8427875596167638501">Вкладка предпросмотра открыта на половину высоты</translation>
 <translation id="8428213095426709021">Настройки</translation>
@@ -984,7 +980,6 @@
 <translation id="970715775301869095">Осталось <ph name="MINUTES" /> мин.</translation>
 <translation id="974555521953189084">Чтобы начать синхронизацию, введите кодовую фразу</translation>
 <translation id="981121421437150478">Офлайн</translation>
-<translation id="982182592107339124">Будут удалены данные всех сайтов, в том числе:</translation>
 <translation id="983192555821071799">Закрыть все вкладки</translation>
 <translation id="987264212798334818">Общие</translation>
 </translationbundle>

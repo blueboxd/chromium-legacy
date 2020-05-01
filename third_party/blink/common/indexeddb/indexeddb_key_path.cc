@@ -4,7 +4,8 @@
 
 #include "third_party/blink/public/common/indexeddb/indexeddb_key_path.h"
 
-#include "base/logging.h"
+#include "base/check.h"
+#include "base/notreached.h"
 #include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom-shared.h"
 
 namespace blink {

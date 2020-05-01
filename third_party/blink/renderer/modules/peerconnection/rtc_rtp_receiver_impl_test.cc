@@ -7,7 +7,7 @@
 #include <memory>
 
 #include "base/bind.h"
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"

@@ -65,6 +65,7 @@ public class LogoDelegateImpl implements LogoView.Delegate {
 
     public void destroy() {
         mIsDestroyed = true;
+        mLogoBridge.destroy();
         mImageFetcher.destroy();
         mImageFetcher = null;
     }

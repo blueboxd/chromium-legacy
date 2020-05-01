@@ -9,10 +9,19 @@
 #include <uuid/uuid.h>
 
 #include "base/strings/string_number_conversions.h"
+#include "build/build_config.h"
 
 namespace base {
 
 namespace {
+
+#if defined(ARCH_CPU_64_BITS)
+using MachHeaderType = mach_header_64;
+constexpr uint32_t kMachHeaderMagic = MH_MAGIC_64;
+#else
+using MachHeaderType = mach_header;
+constexpr uint32_t kMachHeaderMagic = MH_MAGIC;
+#endif
 
 // Returns the unique build ID for a module loaded at |module_addr|. Returns the
 // empty string if the function fails to get the build ID.
@@ -23,12 +32,12 @@ namespace {
 // module header, but on the Mac, UUIDs are never reused and so the "age" value
 // appended to the UUID is always 0.
 std::string GetUniqueId(const void* module_addr) {
-  const mach_header_64* mach_header =
-      reinterpret_cast<const mach_header_64*>(module_addr);
-  DCHECK_EQ(MH_MAGIC_64, mach_header->magic);
+  const MachHeaderType* mach_header =
+      reinterpret_cast<const MachHeaderType*>(module_addr);
+  DCHECK_EQ(mach_header->magic, kMachHeaderMagic);
 
-  size_t offset = sizeof(mach_header_64);
-  size_t offset_limit = sizeof(mach_header_64) + mach_header->sizeofcmds;
+  size_t offset = sizeof(MachHeaderType);
+  size_t offset_limit = sizeof(MachHeaderType) + mach_header->sizeofcmds;
 
   for (uint32_t i = 0; i < mach_header->ncmds; ++i) {
     if (offset + sizeof(load_command) >= offset_limit)
@@ -52,8 +61,8 @@ std::string GetUniqueId(const void* module_addr) {
           reinterpret_cast<const uuid_command*>(current_cmd);
       static_assert(sizeof(uuid_cmd->uuid) == sizeof(uuid_t),
                     "UUID field of UUID command should be 16 bytes.");
-      // The ID is comprised of the UUID concatenated with the Mac's "age" value
-      // which is always 0.
+      // The ID comprises the UUID concatenated with the Mac's "age" value which
+      // is always 0.
       return HexEncode(&uuid_cmd->uuid, sizeof(uuid_cmd->uuid)) + "0";
     }
     offset += current_cmd->cmdsize;
@@ -63,11 +72,12 @@ std::string GetUniqueId(const void* module_addr) {
 
 // Returns the size of the _TEXT segment of the module loaded at |module_addr|.
 size_t GetModuleTextSize(const void* module_addr) {
-  const mach_header_64* mach_header =
-      reinterpret_cast<const mach_header_64*>(module_addr);
-  DCHECK_EQ(MH_MAGIC_64, mach_header->magic);
+  const MachHeaderType* mach_header =
+      reinterpret_cast<const MachHeaderType*>(module_addr);
+  DCHECK_EQ(mach_header->magic, kMachHeaderMagic);
   unsigned long module_size;
-  getsegmentdata(mach_header, SEG_TEXT, &module_size);
+  if (!getsegmentdata(mach_header, SEG_TEXT, &module_size))
+    module_size = 0;
   return module_size;
 }
 

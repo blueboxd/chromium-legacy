@@ -359,6 +359,7 @@ Wenn die Richtlinie "EnableMediaRouter" auf "false" gesetzt ist, hat der Wert di
           Ist die Richtlinie deaktiviert oder nicht konfiguriert, sind die Einstellungen für Kerberos-Konten deaktiviert. In diesem Fall können keine Kerberos-Konten hinzugefügt werden und die Nutzung der Kerberos-Authentifizierung ist nicht möglich. Alle vorhandenen Kerberos-Konten werden gelöscht, ebenso wie alle gespeicherten Passwörter.</translation>
 <translation id="1561424797596341174">Überschreiben von Richtlinien für Fehlerbehebungs-Builds des Hosts für den Remotezugriff</translation>
 <translation id="1561967320164410511">U2F plus Erweiterungen zur individuellen Bestätigung</translation>
+<translation id="1575015449587326319">Konfigurationsrichtlinie für den Chrome Enterprise-Connector "OnFileDownloaded"</translation>
 <translation id="1583248206450240930">Standardmäßig <ph name="PRODUCT_FRAME_NAME" /> verwenden</translation>
 <translation id="1588240398285670601">Browsereinstellungen</translation>
 <translation id="1599424828227887013">Website-Isolierung für angegebene Ursprünge auf Android-Geräten aktivieren</translation>
@@ -1297,7 +1298,6 @@ Wenn Sie "Letzte Sitzung wiederherstellen" wählen, werden die URLs, die beim le
 <translation id="2869762730352628426">Funktion "Automatisch klicken" auf dem Anmeldebildschirm aktivieren</translation>
 <translation id="2872961005593481000">Herunterfahren</translation>
 <translation id="2874209944580848064">Hinweis für <ph name="PRODUCT_OS_NAME" />-Geräte, die Android-Apps unterstützen:</translation>
-<translation id="2874901846804525128">Sie können Nutzer daran hindern, Android-Apps aus nicht vertrauenswürdigen Quellen zu verwenden.</translation>
 <translation id="2875192972412983412">Gibt die Untergruppe der Druckserver an, von denen Serverdrucker abgefragt werden.
 
       Wenn diese Richtlinie verwendet wird, stehen dem Nutzer nur die Serverdrucker zur Verfügung, deren IDs mit den Werten in dieser Richtlinie übereinstimmen.
@@ -1676,6 +1676,11 @@ Wenn diese Einstellung auf "Aus" oder kein Wert festgelegt wird, wird der einges
           Bereits gespeicherte Passwörter können jedoch weiterhin verwendet werden.
 
           Wenn diese Richtlinie aktiviert oder deaktiviert ist, können Nutzer sie in <ph name="PRODUCT_NAME" /> nicht ändern oder überschreiben. Ist die Richtlinie nicht konfiguriert, so ist das Speichern von Passwörtern zulässig, kann jedoch vom Nutzer deaktiviert werden.</translation>
+<translation id="3492834335089638487">Mit dieser Richtlinie kann die Nutzung von Android-Apps konfiguriert werden, die aus anderen Quellen als Google Play für ein Gerät heruntergeladen wurden.
+
+      Wenn die Richtlinie nicht konfiguriert ist, können keine Apps aus anderen Quellen verwendet werden.
+
+      Die Verfügbarkeit dieser Funktion hängt außerdem von den entsprechenden Nutzerrichtlinien ab.</translation>
 <translation id="3496296378755072552">Passwortmanager</translation>
 <translation id="3500732098526756068">Damit können Sie das Auslösen der Passwortschutzwarnung steuern. Durch diese Meldung werden Nutzer gewarnt, wenn sie ihr geschütztes Passwort auf potenziell verdächtigen Websites wiederverwenden.
 
@@ -1799,7 +1804,6 @@ Wenn diese Einstellung auf "Aus" oder kein Wert festgelegt wird, wird der einges
 <translation id="3715569262675717862">Authentifizierung auf Grundlage von Clientzertifikaten</translation>
 <translation id="3736879847913515635">"Person hinzufügen" im Nutzermanager aktivieren</translation>
 <translation id="3737890474637805114">Große Dateidownloads blockieren</translation>
-<translation id="3738723882663496016">In dieser Richtlinie ist der <ph name="PLUGIN_VM_NAME" />-Lizenzschlüssel für dieses Gerät angegeben.</translation>
 <translation id="3748900290998155147">Gibt an, ob Wakelocks zulässig sind. Wakelocks können von Erweiterungen über die Power Management Extension API oder ARC-Apps angefordert werden.
 
 Falls diese Richtlinie auf "true" gesetzt oder nicht festgelegt wird, werden Wakelocks bei der Energieverwaltung berücksichtigt.
@@ -2326,9 +2330,6 @@ Diese Richtlinie hat keine Auswirkungen darauf, ob die lokalen Nutzerdaten auf d
 <translation id="4432762137771104529">Erweiterte Berichterstellung bei der Verwendung von Safe Browsing aktivieren</translation>
 <translation id="443454694385851356">Veraltet (nicht sicher)</translation>
 <translation id="443665821428652897">Websitedaten beim Schließen des Browsers löschen (veraltet)</translation>
-<translation id="4439132805807595336">PluginVm für dieses Gerät aktivieren.
-
-      Wenn diese Richtlinie auf "false" gesetzt oder nicht konfiguriert ist, ist <ph name="PLUGIN_VM_NAME" /> für das Gerät nicht aktiviert. Ist die Richtlinie auf "true" gesetzt, ist <ph name="PLUGIN_VM_NAME" /> für das Gerät aktiviert, solange andere Einstellungen dies ebenfalls zulassen. <ph name="PLUGIN_VM_ALLOWED_POLICY_NAME" /> muss "true" sein und <ph name="PLUGIN_VM_LICENSE_KEY_POLICY_NAME" /> und <ph name="PLUGIN_VM_IMAGE_POLICY_NAME" /> müssen für <ph name="PLUGIN_VM_NAME" /> aktiviert sein.</translation>
 <translation id="4439336120285389675">Mit dieser Richtlinie kann eine Liste mit eingestellten Webplattformfunktionen festgelegt werden, die vorübergehend wieder aktiviert werden sollen.
 
       Mit der Richtlinie haben Administratoren die Möglichkeit, eingestellte Webplattformfunktionen für einen begrenzten Zeitraum wieder zu aktivieren. Die Funktionen werden durch ein String-Tag identifiziert und die Funktionen, die den Tags in der Liste entsprechen, die durch diese Richtlinie festgelegt wurde, werden wieder aktiviert.
@@ -2909,6 +2910,7 @@ Wenn diese Richtlinie zu "false" geändert wird, wirkt sich dies auf den Start n
 <translation id="5369937289900051171">Nur Farbdruck</translation>
 <translation id="5370279767682621504">HTTP/0.9-Unterstützung für nicht standardmäßige Ports aktivieren</translation>
 <translation id="5377606826822211923">Nutzung von Android-Apps aus nicht vertrauenswürdigen Quellen kontrollieren</translation>
+<translation id="537786648513450280">Nutzung von Android-Apps aus nicht vertrauenswürdigen Quellen für das Gerät konfigurieren</translation>
 <translation id="5378985487213287085">Ermöglicht Ihnen festzulegen, ob Websites Desktop-Benachrichtigungen anzeigen dürfen. Das Anzeigen von Desktop-Benachrichtigungen kann entweder standardmäßig gestattet oder nicht gestattet werden oder auf Anfrage beim Nutzer geschehen. Wenn diese Richtlinie nicht konfiguriert ist, so kommt "AskNotifications" zum Einsatz, wobei dies vom Nutzer geändert werden kann.</translation>
 <translation id="5380329473151894945">Hiermit wird der Standardstatus der Bedienungshilfe "großer Cursor" auf der Anmeldeseite festgelegt.
 
@@ -3809,7 +3811,6 @@ Wenn diese Richtlinie nicht konfiguriert ist, können die Nutzer selbst wählen,
 <translation id="6731757988219967594">Websites auf oberster Ebene (aber nicht eingebettete iFrames) mit Inhalten nur für Erwachsene filtern</translation>
 <translation id="6734521799274931721">Steuert die Verfügbarkeit von Netzwerkfreigaben unter Chrome OS</translation>
 <translation id="6735701345096330595">Aktivierung von Sprachen für die Rechtschreibprüfung erzwingen</translation>
-<translation id="6737677282967014160">Sie können zulassen, dass Nutzer Android-Apps aus nicht vertrauenswürdigen Quellen verwenden können.</translation>
 <translation id="6757613329154374267">"Sichern und wiederherstellen" aktiviert</translation>
 <translation id="6758659208493449452">Mit dieser Richtlinie wird festgelegt, ob Teilnehmer am erweiterten Sicherheitsprogramm zusätzlich geschützt werden. Bei manchen dieser Funktionen werden unter Umständen Daten mit Google geteilt. Teilnehmer am erweiterten Sicherheitsprogramm können beispielsweise ihre heruntergeladenen Dateien für einen Malware-Scan an Google senden. Wird die Richtlinie auf "true" gesetzt oder nicht konfiguriert, werden entsprechende Nutzer zusätzlich geschützt. Wird die Richtlinie auf "false" gesetzt, stehen ihnen nur die Standardfunktionen für Privatnutzer zur Verfügung.</translation>
 <translation id="6762235610019366960">Mit dieser Richtlinie wird festgelegt, ob in <ph name="PRODUCT_NAME" /> Werbung und/oder Bildungsinhalte auf einem ganzen Tab angezeigt werden dürfen.
@@ -3830,7 +3831,7 @@ Wenn diese Richtlinie nicht konfiguriert ist, können die Nutzer selbst wählen,
 <translation id="6786967369487349613">Roaming-Profilverzeichnis festlegen</translation>
 <translation id="6795485990775913659">Drucken nur ohne PIN zulassen</translation>
 <translation id="6810445994095397827">JavaScript auf diesen Websites blockieren</translation>
-<translation id="6813263547126514821">Betrieb und Herunterfahren</translation>
+<translation id="6813263547126514821">Energiesparmodus und Herunterfahren</translation>
 <translation id="681446116407619279">Unterstützte Authentifizierungsschemas</translation>
 <translation id="6821268164692776674"><ph name="CLOUD_PRINT_NAME" />- und "In Google Drive speichern"-Ziele</translation>
 <translation id="6833988859168635883">Start, Startseite und Seite "Neuer Tab"</translation>
@@ -4660,6 +4661,19 @@ Auf nicht verwalteten Geräten dürfen virtuelle Maschinen ausgeführt werden.</
 
       Durch die Richtlinie <ph name="SYNC_DISABLED_POLICY_NAME" /> wird die gesamte Datensynchronisierung deaktiviert und somit <ph name="ROAMING_PROFILE_SUPPORT_ENABLED_POLICY_NAME" /> überschrieben.</translation>
 <translation id="802147957407376460">Bildschirm um 0 Grad drehen</translation>
+<translation id="8027265928215448940">Liste der Einstellungen für Chrome Enterprise-Connector-Services für den Enterprise-Connector "<ph name="ON_FILE_DOWNLOADED_ENTERPRISE_CONNECTOR" />" – dieser wird ausgelöst, wenn eine Datei in Chrome heruntergeladen wird.
+
+      Mit den Feldern "<ph name="ENTERPRISE_CONNECTOR_URL_LIST_FIELD" />", "<ph name="ENTERPRISE_CONNECTOR_TAGS_FIELD" />", "<ph name="ENTERPRISE_CONNECTOR_ENABLE_FIELD" />" und "<ph name="ENTERPRISE_CONNECTOR_DISABLE_FIELD" />" wird ermittelt, ob der Connector eine Datei zur Analyse senden soll, wenn sie von einer bestimmten Seite heruntergeladen wird, und welche Tags für die Analyseanfrage verwendet werden sollen. Ein Tag, das einem "enable"-Muster entspricht, wird der Anfrage hinzugefügt, wenn die Seiten-URL mit einem für das jeweilige Tag passenden Muster übereinstimmt – jedoch nur, wenn kein "disable"-Muster mit demselben Tag mit der Seiten-URL übereinstimmt. Die Analyse wird durchgeführt, wenn die Anfrage mindestens ein Tag enthält.
+
+      Das Feld "<ph name="ENTERPRISE_CONNECTOR_SERVICE_PROVIDER_FIELD" />" legt fest, für welchen Analyseanbieter die Einstellungen gelten.
+
+      Wenn das Feld "<ph name="ENTERPRISE_CONNECTOR_BLOCK_UNTIL_VERDICT_FIELD" />" auf 1 gesetzt ist, wartet Chrome auf eine Antwort des Analyseanbieters, bevor dem Nutzer Zugriff auf die heruntergeladene Datei gewährt wird. Wenn es auf einen anderen Ganzzahlwert gesetzt ist, gewährt Chrome dem Nutzer sofort Zugriff auf die Datei.
+
+      Das Feld "<ph name="ENTERPRISE_CONNECTOR_BLOCK_PASSWORD_PROTECTED_FIELD" />" legt fest, ob Chrome den Zugriff auf Dateien blockiert, die durch ein Passwort geschützt sind.
+
+      Das Feld "<ph name="ENTERPRISE_CONNECTOR_BLOCK_LARGE_FILES_FIELD" />" legt fest, ob Chrome den Zugriff auf Dateien blockiert, die zu groß für die Analyse sind (50 MB oder größer).
+
+      Diese Richtlinie kann nur über die Google Admin-Konsole konfiguriert werden.</translation>
 <translation id="8033913082323846868">Diese Richtlinie wurde in M70 eingestellt, bitte verwenden Sie stattdessen "AutofillAddressEnabled" und "AutofillCreditCardEnabled".
 
       Aktiviert die AutoFill-Funktion von <ph name="PRODUCT_NAME" /> und ermöglicht es Nutzern, Webformulare mit zuvor gespeicherten Informationen wie Adresse oder Kreditkartendaten ausfüllen zu lassen.
@@ -5339,19 +5353,6 @@ Nutzer können diese Einstellung weder ändern noch überschreiben.</translation
           Wird die Richtlinie nicht konfiguriert, obwohl sie auf dem Gerät unterstützt wird, dann wird der Standardmodus für die Akkuaufladung angewendet und kann vom Nutzer nicht geändert werden.
 
           Hinweis: Sofern konfiguriert, überschreibt "<ph name="DEVICE_ADVANCED_BATTERY_CHARGE_MODE_ENABLED_NAME" />" diese Richtlinie.</translation>
-<translation id="9071472304496502510">Liste der Einstellungen für Chrome Enterprise-Connector-Services für den Enterprise-Connector "<ph name="ON_FILE_ATTACHED_ENTERPRISE_CONNECTOR" />" – dieser wird ausgelöst, wenn eine Datei an Chrome angehängt wird.
-
-      Mit den Feldern "<ph name="ENTERPRISE_CONNECTOR_URL_LIST_FIELD" />", "<ph name="ENTERPRISE_CONNECTOR_TAGS_FIELD" />", "<ph name="ENTERPRISE_CONNECTOR_ENABLE_FIELD" />" und "<ph name="ENTERPRISE_CONNECTOR_DISABLE_FIELD" />" wird ermittelt, ob der Connector eine Datei zur Analyse senden soll, wenn sie an eine bestimmte Seite angehängt wird, und welche Tags für die Analyseanfrage verwendet werden sollen. Ein Tag, das einem "enable"-Muster entspricht, wird der Anfrage hinzugefügt, wenn die Seiten-URL mit einem für das jeweilige Tag passenden Muster übereinstimmt – jedoch nur, wenn kein "disable"-Muster mit demselben Tag mit der Seiten-URL übereinstimmt. Die Analyse wird durchgeführt, wenn die Anfrage mindestens ein Tag enthält.
-
-      Das Feld "<ph name="ENTERPRISE_CONNECTOR_SERVICE_PROVIDER_FIELD" />" legt fest, für welchen Analyseanbieter die Einstellungen gelten.
-
-      Wenn das Feld "<ph name="ENTERPRISE_CONNECTOR_BLOCK_UNTIL_VERDICT_FIELD" />" auf 1 gesetzt ist, wartet Chrome auf eine Antwort des Analyseanbieters, bevor der Seite Zugriff auf die Datei gewährt wird. Wenn es auf einen anderen Ganzzahlwert gesetzt ist, gewährt Chrome der Seite sofort Zugriff auf die Datei.
-
-      Das Feld "<ph name="ENTERPRISE_CONNECTOR_BLOCK_PASSWORD_PROTECTED_FIELD" />" legt fest, ob Chrome den Zugriff auf Dateien blockiert, die durch ein Passwort geschützt sind.
-
-      Das Feld "<ph name="ENTERPRISE_CONNECTOR_BLOCK_LARGE_FILES_FIELD" />" legt fest, ob Chrome den Zugriff auf Dateien blockiert, die zu groß für die Analyse sind (50 MB oder größer).
-
-      Diese Richtlinie kann nur über die Google Admin-Konsole konfiguriert werden.</translation>
 <translation id="9077227880520270584">Timer für automatische Anmeldung in lokalem Gerätekonto</translation>
 <translation id="9084985621503260744">Angaben zum Einfluss von Videoaktivitäten auf den Energiesparmodus</translation>
 <translation id="9088433379343318874">Contentanbieter für betreute Nutzer aktivieren</translation>

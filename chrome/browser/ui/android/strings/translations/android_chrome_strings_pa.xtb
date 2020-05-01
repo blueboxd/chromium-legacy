@@ -38,7 +38,6 @@
 <translation id="1258753120186372309">Google ਡੂਡਲ: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1260236875608242557">ਖੋਜੋ ਅਤੇ ਪੜਚੋਲ ਕਰੋ</translation>
 <translation id="1266864766717917324"><ph name="CONTENT_TYPE" /> ਨਾਲ ਸਾਂਝਾ ਨਹੀਂ ਕੀਤਾ ਜਾ ਸਕਿਆ</translation>
-<translation id="1272079795634619415">ਰੋਕੋ</translation>
 <translation id="1283039547216852943">ਵਿਸਤਾਰ ਕਰਨ ਲਈ ਟੈਪ ਕਰੋ</translation>
 <translation id="1285320974508926690">ਕਦੇ ਵੀ ਇਸ ਸਾਈਟ ਦਾ ਅਨੁਵਾਦ ਨਾ ਕਰੋ</translation>
 <translation id="1291207594882862231">ਇਤਿਹਾਸ, ਕੁਕੀਜ਼, ਸਾਈਟ ਡਾਟਾ, ਕੈਸ਼ੇ ਸਾਫ਼ ਕਰੋ…</translation>
@@ -51,7 +50,6 @@
 <translation id="1331212799747679585">Chrome ਅੱਪਡੇਟ ਨਹੀਂ ਕੀਤਾ ਜਾ ਸਕਦਾ। ਹੋਰ ਵਿਕਲਪ</translation>
 <translation id="1332501820983677155">Google Chrome ਵਿਸ਼ੇਸ਼ਤਾ ਸ਼ਾਰਟਕੱਟ</translation>
 <translation id="1360432990279830238">ਕੀ ਸਾਈਨ-ਆਊਟ ਕਰਕੇ ਸਮਕਾਲੀਕਰਨ ਬੰਦ ਕਰਨਾ ਹੈ?</translation>
-<translation id="1364532808393826295"><ph name="APP_NAME" /> - <ph name="NOTIFICATION_MESSAGE" /></translation>
 <translation id="1373696734384179344">ਚੁਣੀ ਗਈ ਸਮੱਗਰੀ ਡਾਊਨਲੋਡ ਕਰਨ ਲਈ ਲੋੜੀਂਦੀ ਮੈਮੋਰੀ ਨਹੀਂ।</translation>
 <translation id="1376578503827013741">ਗਣਨਾ ਕੀਤੀ ਜਾ ਰਹੀ ਹੈ…</translation>
 <translation id="1383876407941801731">ਖੋਜੋ</translation>
@@ -122,7 +120,6 @@
 <translation id="2013642289801508067">{FILE_COUNT,plural, =1{# ਫ਼ਾਈਲ}one{# ਫ਼ਾਈਲ}other{# ਫ਼ਾਈਲਾਂ}}</translation>
 <translation id="2017836877785168846">ਪਤਾ ਪੱਟੀ ਵਿੱਚੋਂ ਇਤਿਹਾਸ ਅਤੇ ਸਵੈ-ਪੂਰਨਤਾਵਾਂ ਨੂੰ ਕਲੀਅਰ ਕਰਦੀ ਹੈ।</translation>
 <translation id="2021896219286479412">ਪੂਰੀ ਸਕ੍ਰੀਨ ਦੇ ਸਾਈਟ ਕੰਟਰੋਲ</translation>
-<translation id="2030769033451695672"><ph name="URL_OF_THE_CURRENT_TAB" /> 'ਤੇ ਵਾਪਸ ਜਾਣ ਲਈ ਟੈਪ ਕਰੋ</translation>
 <translation id="2038563949887743358">ਬੇਨਤੀ ਡੈਸਕਟਾਪ ਸਾਈਟ ਚਾਲੂ ਕਰੋ</translation>
 <translation id="204321170514947529"><ph name="APP_NAME" /> ਦਾ ਡਾਟਾ ਵੀ Chrome ਵਿੱਚ ਹੈ</translation>
 <translation id="2049574241039454490"><ph name="FILE_SIZE_OF_TOTAL" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
@@ -592,7 +589,6 @@
 <translation id="5876056640971328065">ਵੀਡੀਓ ਰੋਕੋ</translation>
 <translation id="5884076754568147479">ਕਾਰਜ ਪੂਰੇ ਕਰਨ ਵਿੱਚ ਤੁਹਾਡੀ ਮਦਦ ਕਰਨ ਲਈ, Google ਨੂੰ ਉਹਨਾਂ ਸਾਈਟਾਂ ਦੇ URL ਅਤੇ ਸਮੱਗਰੀਆਂ ਮਿਲਣਗੀਆਂ ਜਿਨ੍ਹਾਂ 'ਤੇ ਤੁਸੀਂ Assistant ਨੂੰ ਵਰਤਦੇ ਹੋ, ਨਾਲ ਹੀ ਤੁਹਾਡੇ ਵੱਲੋਂ Assistant ਰਾਹੀਂ ਸਪੁਰਦ ਕੀਤੀ ਜਾਣਕਾਰੀ ਵੀ ਮਿਲੇਗੀ</translation>
 <translation id="5919204609460789179">ਸਮਕਾਲੀਕਰਨ ਸ਼ੁਰੂ ਕਰਨ ਲਈ <ph name="PRODUCT_NAME" /> ਨੂੰ ਅੱਪਡੇਟ ਕਰੋ</translation>
-<translation id="5922853908706496913">ਤੁਹਾਡੀ ਸਕ੍ਰੀਨ ਸਾਂਝੀ ਕੀਤੀ ਜਾ ਰਹੀ ਹੈ</translation>
 <translation id="5937580074298050696"><ph name="AMOUNT" /> ਰੱਖਿਅਤ ਕੀਤਾ ਗਿਆ</translation>
 <translation id="5939518447894949180">ਰੀਸੈਟ ਕਰੋ</translation>
 <translation id="5942872142862698679">ਖੋਜ ਲਈ Google ਦੀ ਵਰਤੋਂ ਹੋ ਰਹੀ ਹੈ</translation>
@@ -779,7 +775,6 @@
 <translation id="7514365320538308">ਡਾਊਨਲੋਡ ਕਰੋ</translation>
 <translation id="751961395872307827">ਸਾਈਟ ਨਾਲ ਕਨੈਕਟ ਨਹੀਂ ਕੀਤਾ ਜਾ ਸਕਦਾ</translation>
 <translation id="7542481630195938534">ਸੁਝਾਅ ਪ੍ਰਾਪਤ ਨਹੀਂ ਕੀਤੇ ਜਾ ਸਕਦੇ</translation>
-<translation id="7554752735887601236">ਕੋਈ ਸਾਈਟ ਤੁਹਾਡਾ ਮਾਈਕ੍ਰੋਫ਼ੋਨ ਵਰਤ ਰਹੀ ਹੈ</translation>
 <translation id="7559975015014302720">ਲਾਈਟ ਮੋਡ ਬੰਦ ਹੈ</translation>
 <translation id="7562080006725997899">ਬ੍ਰਾਊਜ਼ਿੰਗ ਡਾਟਾ ਹਟਾ ਰਿਹਾ ਹੈ</translation>
 <translation id="756809126120519699">Chrome ਡਾਟਾ ਕਲੀਅਰ ਕੀਤਾ ਗਿਆ</translation>
@@ -813,7 +808,6 @@
 <translation id="7774809984919390718">{PAYMENT_METHOD,plural, =1{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 ਅਤੇ <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> ਹੋਰ}one{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 ਅਤੇ <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> ਹੋਰ}other{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 ਅਤੇ <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> ਹੋਰ}}</translation>
 <translation id="7791543448312431591">ਜੋੜੋ</translation>
 <translation id="780301667611848630">ਨਹੀਂ ਧੰਨਵਾਦ</translation>
-<translation id="7804248752222191302">ਕੋਈ ਸਾਈਟ ਤੁਹਾਡਾ ਕੈਮਰਾ ਵਰਤ ਰਹੀ ਹੈ</translation>
 <translation id="7810647596859435254">ਇਸ ਨਾਲ ਖੋਲ੍ਹੋ...</translation>
 <translation id="7821588508402923572">ਤੁਹਾਡੀਆਂ ਡਾਟਾ ਬਚਤਾਂ ਇੱਥੇ ਦਿਖਾਈ ਦੇਣਗੀਆਂ</translation>
 <translation id="783819812427904514">ਵੀਡੀਓ ਅਣਮਿਊਟ ਕਰੋ</translation>
@@ -885,9 +879,7 @@
 <translation id="8349013245300336738">ਵਰਤੇ ਗਏ ਡਾਟੇ ਦੀ ਮਾਤਰਾ ਮੁਤਾਬਕ ਕ੍ਰਮ-ਬੱਧ ਕਰੋ</translation>
 <translation id="8364299278605033898">ਪ੍ਰਸਿੱਧ ਵੈੱਬਸਾਈਟਾਂ ਦੇਖੋ</translation>
 <translation id="8368027906805972958">ਅਗਿਆਤ ਜਾਂ ਅਸਮਰਥਿਤ ਡੀਵਾਈਸ (<ph name="DEVICE_ID" />)</translation>
-<translation id="83792324527827022">ਕੋਈ ਸਾਈਟ ਤੁਹਾਡਾ ਕੈਮਰਾ ਅਤੇ ਮਾਈਕ੍ਰੋਫ਼ੋਨ ਵਰਤ ਰਹੀ ਹੈ</translation>
 <translation id="8393700583063109961">ਸੁਨੇਹਾ ਭੇਜੋ</translation>
-<translation id="8394832520002899662">ਸਾਈਟ 'ਤੇ ਵਾਪਸ ਜਾਣ ਲਈ ਟੈਪ ਕਰੋ</translation>
 <translation id="8413126021676339697">ਪੂਰਾ ਇਤਿਹਾਸ ਦਿਖਾਓ</translation>
 <translation id="8427875596167638501">ਪੂਰਵ-ਝਲਕ ਟੈਬ ਅੱਧੀ ਖੁੱਲ੍ਹੀ ਹੋਈ ਹੈ</translation>
 <translation id="8428213095426709021">ਸੈਟਿੰਗਾਂ</translation>
@@ -984,7 +976,6 @@
 <translation id="970715775301869095"><ph name="MINUTES" /> ਮਿੰਟ ਬਾਕੀ</translation>
 <translation id="974555521953189084">ਸਮਕਾਲੀਕਰਨ ਚਾਲੂ ਕਰਨ ਲਈ ਆਪਣਾ ਪਾਸਫਰੇਜ਼ ਦਾਖਲ ਕਰੋ</translation>
 <translation id="981121421437150478">ਆਫ਼ਲਾਈਨ</translation>
-<translation id="982182592107339124">ਇਹ ਸਾਰੀਆਂ ਸਾਈਟਾਂ ਲਈ  ਡਾਟਾ  ਮਿਟਾ ਦੇਵੇਗਾ, ਜਿੰਨ੍ਹਾਂ ਵਿੱਚ ਸ਼ਾਮਲ ਹਨ:</translation>
 <translation id="983192555821071799">ਸਾਰੀਆਂ ਟੈਬਸ ਬੰਦ ਕਰੋ</translation>
 <translation id="987264212798334818">ਸਧਾਰਨ</translation>
 </translationbundle>

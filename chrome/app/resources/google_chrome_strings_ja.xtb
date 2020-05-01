@@ -93,7 +93,6 @@
 <translation id="3582972582564653026">同期してカスタマイズした Chrome をどのデバイスでも使用できます</translation>
 <translation id="3596080736082218006">{COUNT,plural, =0{管理者が、アップデートを適用するために Chrome を再起動するよう求めています}=1{管理者が、アップデートを適用するために Chrome を再起動するよう求めています。シークレット ウィンドウは、再起動後は自動的には開きません。}other{管理者が、アップデートを適用するために Chrome を再起動するよう求めています。現在開いている # 個のシークレット ウィンドウは、再起動後は自動的には開きません。}}</translation>
 <translation id="3622797965165704966">共有パソコンの Chrome で Google アカウントが簡単に使用できるようになりました。</translation>
-<translation id="3637702109597584617">Google Chrome OS <ph name="TERMS_OF_SERVICE_LINK" />利用規約<ph name="END_TERMS_OF_SERVICE_LINK" /></translation>
 <translation id="3718181793972440140">このデバイスから 1 件の項目を削除します。後でデータを取得するには、<ph name="USER_EMAIL" /> として Chrome にログインしてください。</translation>
 <translation id="3735758079232443276">拡張機能「<ph name="EXTENSION_NAME" />」により、Chrome の起動時に表示されるページが変更されました。</translation>
 <translation id="3780814664026482060">Chrome - <ph name="PAGE_TITLE" /></translation>
@@ -110,6 +109,7 @@
 <translation id="4205939740494406371">Chrome でパスワードを確認できません。24 時間後にもう一度お試しいただくか、<ph name="BEGIN_LINK" />Google アカウントでパスワードをご確認ください<ph name="END_LINK" />。</translation>
 <translation id="424864128008805179">Chrome からログアウトしますか？</translation>
 <translation id="4251615635259297716">Chrome データをこのアカウントにリンクしますか？</translation>
+<translation id="4281844954008187215">利用規約</translation>
 <translation id="4293420128516039005">ログインすると、同期してカスタマイズした Chrome をどのデバイスでも使用できます</translation>
 <translation id="4328355335528187361">Google Chrome Dev（mDNS-In）</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
@@ -142,7 +142,6 @@
 <translation id="5132929315877954718">Google Chrome のすばらしいアプリ、ゲーム、拡張機能、テーマをぜひご利用ください。</translation>
 <translation id="5170938038195470297">バージョンが新しい Google Chrome のプロフィールは使用できません。一部の機能が利用できない可能性があります。別の場所のプロフィールを指定するか、新しいバージョンの Chrome をご使用ください。</translation>
 <translation id="5193136243808726294">Google Chrome OS ではこのページを開けません。</translation>
-<translation id="5204098752394657250">Google Chrome <ph name="TERMS_OF_SERVICE_LINK" />利用規約<ph name="END_TERMS_OF_SERVICE_LINK" /></translation>
 <translation id="5251420635869119124">ゲスト ユーザーは、記録を残さずに Chrome を使用できます。</translation>
 <translation id="532046782124376502">警告: 拡張機能による閲覧履歴の記録を Google Chrome で停止することはできません。シークレット モードでこの拡張機能を無効にするには、このオプションの選択を解除してください。</translation>
 <translation id="5386244825306882791">この拡張機能では、Chrome の起動時、またはアドレスバーからの検索時に表示されるページも制御されます。</translation>

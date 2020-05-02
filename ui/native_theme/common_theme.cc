@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/optional.h"
+#include "build/build_config.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
@@ -386,6 +387,10 @@ SkColor GetDefaultColor(NativeTheme::ColorId color_id,
       return SkColorSetRGB(0xf5, 0xf5, 0xf5);
     case NativeTheme::kColorId_NotificationEmptyPlaceholderIconColor:
       return SkColorSetA(SK_ColorWHITE, 0x60);
+#if defined(OS_CHROMEOS)
+    case NativeTheme::kColorId_NotificationButtonBackground:
+      return SkColorSetA(SK_ColorWHITE, 0.9 * 0xff);
+#endif
 
     // Scrollbar
     case NativeTheme::kColorId_OverlayScrollbarThumbBackground:

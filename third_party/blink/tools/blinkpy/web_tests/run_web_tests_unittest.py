@@ -299,10 +299,25 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
 
     def test_device_failure(self):
         # Test that we handle a device going offline during a test properly.
+        host = MockHost()
         details, regular_output, _ = logging_run(
-            ['failures/expected/device_failure.html'], tests_included=True)
-        self.assertEqual(details.exit_code, 0)
-        self.assertTrue('worker/0 has failed' in regular_output.getvalue())
+            ['passes/text.html',
+             'failures/expected/device_failure.html',
+             '--ignore-default-expectations', '--order=none'], tests_included=True,
+            host=host)
+        self.assertEqual(details.exit_code, exit_codes.EARLY_EXIT_STATUS)
+        output = regular_output.getvalue()
+        self.assertIn('failed unexpectedly (skipped due to early exit)', output)
+        self.assertIn('worker/0 has failed', output)
+        results = json.loads(
+            host.filesystem.read_text_file(
+                '/tmp/layout-test-results/full_results.json'))
+        self.assertEqual(results['num_regressions'], 1)
+        test_results = results['tests']['failures']['expected']['device_failure.html']
+        self.assertEqual(test_results['actual'], 'SKIP')
+        self.assertEqual(test_results['is_regression'], True)
+        self.assertIn('All workers have device failures. Exiting.', output)
+        self.assertEqual(results['tests']['passes']['text.html']['actual'], 'PASS')
 
     def test_keyboard_interrupt(self):
         # Note that this also tests running a test marked as SKIP if

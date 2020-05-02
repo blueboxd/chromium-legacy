@@ -35,13 +35,11 @@ public abstract class ImageFetcher {
      */
     public static class Params {
         static final int DEFAULT_IMAGE_SIZE = 0;
-        // TODO(xingliu): Merge with ImageFetcherBridge.INVALID_EXPIRATION_INTERVAL.
         static final int INVALID_EXPIRATION_INTERVAL = 0;
 
         /**
          * Creates image fetcher parameters. The image will not be resized.
-         * @param url The url to fetch the image from.
-         * @param clientName Name of the cached image fetcher client to report UMA metrics for.
+         * @See {@link #Params(String, String, int, int, int)}.
          */
         public static Params create(final String url, String clientName) {
             return new Params(url, clientName, DEFAULT_IMAGE_SIZE, DEFAULT_IMAGE_SIZE,
@@ -50,12 +48,7 @@ public abstract class ImageFetcher {
 
         /**
          * Creates image fetcher parameters with image size specified.
-         * @param url The url to fetch the image from.
-         * @param clientName Name of the cached image fetcher client to report UMA metrics for.
-         * @param width The new bitmap's desired width (in pixels). Image won't be scaled if set to
-         *         {@link #DEFAULT_IMAGE_SIZE}.
-         * @param height The new bitmap's desired height (in pixels). Image won't be scaled if set
-         *         to {@link #DEFAULT_IMAGE_SIZE}.
+         * @See {@link #Params(String, String, int, int, int)}.
          */
         public static Params create(final String url, String clientName, int width, int height) {
             return new Params(url, clientName, width, height, INVALID_EXPIRATION_INTERVAL);
@@ -64,32 +57,27 @@ public abstract class ImageFetcher {
         /**
          * Only used in rare cases. Creates image fetcher parameters that keeps the cache file for a
          * certain period of time.
-         * @param url The url to fetch the image from.
-         * @param clientName Name of the cached image fetcher client to report UMA metrics for.
-         * @param width The new bitmap's desired width (in pixels). Image won't be scaled if set to
-         *         {@link #DEFAULT_IMAGE_SIZE}.
-         * @param height The new bitmap's desired height (in pixels). Image won't be scaled if set
-         *         to {@link #DEFAULT_IMAGE_SIZE}.
-         * @param expirationInterval The duration that image files will stay in cache, measured in
-         *         minutes.
+         * @See {@link #Params(String, String, int, int, int)}.
          */
         public static Params createWithExpirationInterval(final String url, String clientName,
-                int width, int height, int expirationInterval) {
-            assert expirationInterval > INVALID_EXPIRATION_INTERVAL;
-            return new Params(url, clientName, width, height, expirationInterval);
+                int width, int height, int expirationIntervalMinutes) {
+            assert expirationIntervalMinutes > INVALID_EXPIRATION_INTERVAL
+                : "Must specify a positive expiration interval, or use other constructors.";
+            return new Params(url, clientName, width, height, expirationIntervalMinutes);
         }
 
-        private Params(
-                String url, String clientName, int width, int height, int expirationInterval) {
-            assert width >= DEFAULT_IMAGE_SIZE;
-            assert height >= DEFAULT_IMAGE_SIZE;
-            assert expirationInterval >= INVALID_EXPIRATION_INTERVAL;
+        private Params(String url, String clientName, int width, int height,
+                int expirationIntervalMinutes) {
+            assert width >= DEFAULT_IMAGE_SIZE : "Invalid width specified.";
+            assert height >= DEFAULT_IMAGE_SIZE : "Invalid height specified.";
+            assert expirationIntervalMinutes >= INVALID_EXPIRATION_INTERVAL
+                : "Expiration interval should be non negative.";
 
             this.url = url;
             this.clientName = clientName;
             this.width = width;
             this.height = height;
-            this.expirationInterval = expirationInterval;
+            this.expirationIntervalMinutes = expirationIntervalMinutes;
         }
 
         /**
@@ -118,7 +106,7 @@ public abstract class ImageFetcher {
          * Only specifies in rare cases to keep the cache file on disk for certain period of time.
          * Measured in minutes. Any value <= 0 will be ignored.
          */
-        public final int expirationInterval;
+        public final int expirationIntervalMinutes;
     }
 
     /** Base class that can be used for testing. */

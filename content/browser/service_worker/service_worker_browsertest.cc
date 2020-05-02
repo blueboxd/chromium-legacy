@@ -67,6 +67,7 @@
 #include "content/public/test/url_loader_interceptor.h"
 #include "content/shell/browser/shell.h"
 #include "content/test/test_content_browser_client.h"
+#include "media/media_buildflags.h"
 #include "net/cert/cert_status_flags.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/default_handlers.h"
@@ -2473,8 +2474,16 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerURLLoaderThrottleTest,
   ASSERT_TRUE(dict);
 
   // Default headers are present.
+  const char* frame_accept_c_str = network::kFrameAcceptHeaderValue;
+#if BUILDFLAG(ENABLE_AV1_DECODER)
+  if (base::FeatureList::IsEnabled(blink::features::kAVIF)) {
+    frame_accept_c_str =
+        "text/html,application/xhtml+xml,application/xml;q=0.9,"
+        "image/avif,image/webp,image/apng,*/*;q=0.8";
+  }
+#endif
   EXPECT_TRUE(CheckHeader(*dict, "accept",
-                          std::string(network::kFrameAcceptHeaderValue) +
+                          std::string(frame_accept_c_str) +
                               std::string(kAcceptHeaderSignedExchangeSuffix)));
 
   // Injected headers are present.

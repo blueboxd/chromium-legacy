@@ -1586,12 +1586,6 @@ void RenderWidgetHostImpl::SetCursor(const WebCursor& cursor) {
   view_->UpdateCursor(cursor);
 }
 
-void RenderWidgetHostImpl::ShowContextMenuAtPoint(
-    const gfx::Point& point,
-    const ui::MenuSourceType source_type) {
-  Send(new WidgetMsg_ShowContextMenu(GetRoutingID(), source_type, point));
-}
-
 void RenderWidgetHostImpl::OnCursorVisibilityStateChanged(bool is_visible) {
   GetWidgetInputHandler()->CursorVisibilityChanged(is_visible);
 }
@@ -1744,6 +1738,12 @@ void RenderWidgetHostImpl::FilterDropData(DropData* drop_data) {
 
 void RenderWidgetHostImpl::SetCursor(const ui::Cursor& cursor) {
   SetCursor(WebCursor(cursor));
+}
+
+void RenderWidgetHostImpl::ShowContextMenuAtPoint(
+    const gfx::Point& point,
+    const ui::MenuSourceType source_type) {
+  Send(new WidgetMsg_ShowContextMenu(GetRoutingID(), source_type, point));
 }
 
 RenderProcessHost::Priority RenderWidgetHostImpl::GetPriority() {

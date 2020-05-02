@@ -18,7 +18,6 @@ js_type_check("closure_compile") {
 js_library("personalization_options") {
   deps = [
     ":privacy_page_browser_proxy",
-    "..:page_visibility",
     "..:router",
     "../controls:settings_toggle_button",
     "../people_page:signout_dialog",
@@ -66,8 +65,8 @@ js_type_check("closure_compile_module") {
 
 js_library("cookies_page") {
   deps = [
-    "..:metrics_browser_proxy.m",
-    "..:route.m",
+    "..:metrics_browser_proxy",
+    "..:route",
     "..:router.m",
     "../prefs:prefs_behavior.m",
     "../site_settings:site_settings_prefs_browser_proxy",
@@ -88,7 +87,7 @@ js_library("collapse_radio_button") {
 js_library("secure_dns") {
   deps = [
     ":privacy_page_browser_proxy.m",
-    "..:i18n_setup.m",
+    "..:i18n_setup",
     "../prefs:prefs_behavior.m",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
     "//ui/webui/resources/js:web_ui_listener_behavior.m",
@@ -98,7 +97,7 @@ js_library("secure_dns") {
 js_library("secure_dns_input") {
   deps = [
     ":privacy_page_browser_proxy.m",
-    "..:i18n_setup.m",
+    "..:i18n_setup",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
   ]
 }
@@ -112,7 +111,7 @@ js_library("disable_safebrowsing_dialog") {
 
 js_library("do_not_track_toggle") {
   deps = [
-    "..:metrics_browser_proxy.m",
+    "..:metrics_browser_proxy",
     "../controls:settings_toggle_button.m",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
     "//ui/webui/resources/js/cr/ui:focus_without_ink.m",
@@ -121,7 +120,7 @@ js_library("do_not_track_toggle") {
 
 js_library("passwords_leak_detection_toggle") {
   deps = [
-    "..:metrics_browser_proxy.m",
+    "..:metrics_browser_proxy",
     "../people_page:sync_browser_proxy.m",
     "../prefs:prefs_behavior.m",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
@@ -134,7 +133,7 @@ js_library("personalization_options.m") {
   sources = [ "$root_gen_dir/chrome/browser/resources/settings/privacy_page/personalization_options.m.js" ]
   deps = [
     ":privacy_page_browser_proxy.m",
-    "..:i18n_setup.m",
+    "..:i18n_setup",
     "..:lifetime_browser_proxy.m",
     "../controls:settings_toggle_button.m",
     "../people_page:signout_dialog.m",
@@ -149,11 +148,11 @@ js_library("personalization_options.m") {
 js_library("privacy_page") {
   deps = [
     ":privacy_page_browser_proxy.m",
-    "..:hats_browser_proxy.m",
-    "..:i18n_setup.m",
-    "..:metrics_browser_proxy.m",
-    "..:page_visibility.m",
-    "..:route.m",
+    "..:hats_browser_proxy",
+    "..:i18n_setup",
+    "..:metrics_browser_proxy",
+    "..:page_visibility",
+    "..:route",
     "..:router.m",
     "../controls:settings_toggle_button.m",
     "../people_page:sync_browser_proxy.m",
@@ -237,7 +236,7 @@ js_library("security_keys_set_pin_dialog") {
 
 js_library("security_keys_subpage") {
   deps = [
-    "..:i18n_setup.m",
+    "..:i18n_setup",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
     "//ui/webui/resources/js:assert.m",
   ]
@@ -248,9 +247,9 @@ js_library("security_page") {
     ":disable_safebrowsing_dialog",
     ":privacy_page_browser_proxy.m",
     ":safe_browsing_browser_proxy",
-    "..:i18n_setup.m",
-    "..:metrics_browser_proxy.m",
-    "..:route.m",
+    "..:i18n_setup",
+    "..:metrics_browser_proxy",
+    "..:route",
     "..:router.m",
     "../people_page:sync_browser_proxy.m",
     "../prefs:prefs_behavior.m",
@@ -293,6 +292,7 @@ polymer_modulizer("personalization_options") {
   html_file = "personalization_options.html"
   html_type = "dom-module"
   namespace_rewrites = settings_namespace_rewrites
+  migrated_imports = settings_migrated_imports
   auto_imports = settings_auto_imports + [
                    "chrome/browser/resources/settings/privacy_page/privacy_page_browser_proxy.html|PrivacyPageBrowserProxy,PrivacyPageBrowserProxyImpl,MetricsReporting",
                    "chrome/browser/resources/settings/people_page/sync_browser_proxy.html|StatusAction,SyncStatus",

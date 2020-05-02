@@ -390,7 +390,7 @@ std::unique_ptr<RenderWidget> RenderWidget::CreateForFrame(
     bool never_composited) {
   if (g_create_render_widget_for_frame) {
     return g_create_render_widget_for_frame(widget_routing_id, compositor_deps,
-                                            never_composited,
+                                            /*hidden=*/true, never_composited,
                                             mojo::NullReceiver());
   }
 

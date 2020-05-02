@@ -11,7 +11,7 @@ import 'chrome://resources/polymer/v3_0/iron-flex-layout/iron-flex-layout-classe
 import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
 import 'chrome://resources/polymer/v3_0/iron-list/iron-list.js';
 import 'chrome://resources/polymer/v3_0/paper-spinner/paper-spinner-lite.js';
-import '../route.m.js';
+import '../route.js';
 import '../prefs/prefs.m.js';
 import './password_check_edit_dialog.js';
 import './password_check_edit_disclaimer_dialog.js';
@@ -24,9 +24,9 @@ import {I18nBehavior} from 'chrome://resources/js/i18n_behavior.m.js';
 import {WebUIListenerBehavior} from 'chrome://resources/js/web_ui_listener_behavior.m.js';
 import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-import {loadTimeData} from '../i18n_setup.m.js';
+import {loadTimeData} from '../i18n_setup.js';
 import {SyncBrowserProxyImpl, SyncPrefs, SyncStatus} from '../people_page/sync_browser_proxy.m.js';
-import {PluralStringProxyImpl} from '../plural_string_proxy.m.js';
+import {PluralStringProxyImpl} from '../plural_string_proxy.js';
 import {PrefsBehavior} from '../prefs/prefs_behavior.m.js';
 import {Router} from '../router.m.js';
 

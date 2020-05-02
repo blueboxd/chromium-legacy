@@ -188,13 +188,7 @@ const base::Feature kAutocompleteTitles{"OmniboxAutocompleteTitles",
 // Returns whether IsInstantExtendedAPIEnabled should be ignored when deciding
 // the number of Google-provided search suggestions.
 const base::Feature kOmniboxDisableInstantExtendedLimit{
-  "OmniboxDisableInstantExtendedLimit",
-#if defined(OS_ANDROID)
-      base::FEATURE_ENABLED_BY_DEFAULT
-#else
-      base::FEATURE_DISABLED_BY_DEFAULT
-#endif
-};
+    "OmniboxDisableInstantExtendedLimit", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Show the search engine logo in the omnibox on Android (desktop already does
 // this).

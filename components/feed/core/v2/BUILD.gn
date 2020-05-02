@@ -10,6 +10,8 @@ if (is_android) {
 
 source_set("feed_core_v2") {
   sources = [
+    "config.cc",
+    "config.h",
     "enums.cc",
     "enums.h",
     "feed_network.cc",

@@ -242,7 +242,7 @@ TEST_F(AppCacheManifestParserTest, SimpleManifest) {
   EXPECT_TRUE(manifest.fallback_namespaces.empty());
   EXPECT_TRUE(manifest.online_whitelist_namespaces.empty());
   EXPECT_FALSE(manifest.online_whitelist_all);
-  EXPECT_EQ(manifest.parser_version, 1);
+  EXPECT_EQ(manifest.parser_version, 2);
 
   // Verify UMA values show neither the valid or invalid manifest URL since
   // metrics weren't recorded.
@@ -283,7 +283,7 @@ TEST_F(AppCacheManifestParserTest, ExplicitUrls) {
   EXPECT_FALSE(manifest.online_whitelist_all);
   EXPECT_FALSE(manifest.did_ignore_intercept_namespaces);
   EXPECT_FALSE(manifest.did_ignore_fallback_namespaces);
-  EXPECT_EQ(manifest.parser_version, 1);
+  EXPECT_EQ(manifest.parser_version, 2);
 
   std::unordered_set<std::string> urls = manifest.explicit_urls;
   const size_t kExpected = 5;
@@ -721,7 +721,7 @@ TEST_F(AppCacheManifestParserTest, IgnoreDangerousFallbacksWithDefaultScope) {
   EXPECT_TRUE(ParseManifest(kUrl, kScope, kData.c_str(), kData.length(),
                             PARSE_MANIFEST_ALLOWING_DANGEROUS_FEATURES,
                             manifest));
-  EXPECT_EQ(manifest.parser_version, 1);
+  EXPECT_EQ(manifest.parser_version, 2);
   EXPECT_FALSE(manifest.did_ignore_fallback_namespaces);
   EXPECT_EQ(1u, manifest.fallback_namespaces.size());
 
@@ -821,11 +821,13 @@ TEST_F(AppCacheManifestParserTest, OriginTrial) {
   const GURL kUrl("http://mockhost");
   const std::string kScope = kUrl.GetWithoutFilename().path();
 
+// tools/origin_trials/generate_token.py http://mockhost AppCache
+// --expire-days=2000
 #define APPCACHE_ORIGIN_TRIAL_TOKEN                                            \
-  "AnIRfMbu5xrUEIBGno19QnlNiW7gZgKrkLaCysH+/"                                  \
-  "XU2FEpF+"                                                                   \
-  "TLisekclfG9xOkjQgTEllip14FPATbapHAH5ggAAABNeyJvcmlnaW4iOiAiaHR0cDovL21vY2t" \
-  "ob3N0OjgwIiwgImZlYXR1cmUiOiAiQXBwQ2FjaGUiLCAiZXhwaXJ5IjogMTU4ODM1OTM5NH0="
+  "AhiiB7vi3JiEO1/"                                                            \
+  "RQIytQslLSN3WYVu3Xd32abYhTia+91ladjnXSClfU981x+"                            \
+  "aoPimEqYVy6tWoeMZZYTpqlggAAABNeyJvcmlnaW4iOiAiaHR0cDovL21vY2tob3N0OjgwIiwg" \
+  "ImZlYXR1cmUiOiAiQXBwQ2FjaGUiLCAiZXhwaXJ5IjogMTc2MTE2NjQxOH0="
 
   const std::string kData(
       "CACHE MANIFEST\r"

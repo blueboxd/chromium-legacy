@@ -16,6 +16,7 @@ jumbo_static_library("browser") {
     "//base",
     "//components/pdf/common:interfaces",
     "//content/public/browser",
+    "//ui/base",
     "//ui/touch_selection",
   ]
 

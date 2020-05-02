@@ -6,7 +6,9 @@
 
 #include "base/bind.h"
 #include "components/performance_manager/decorators/page_load_tracker_decorator.h"
+#include "components/performance_manager/graph/worker_node_impl_describer.h"
 #include "components/performance_manager/performance_manager_impl.h"
+#include "components/performance_manager/public/decorators/tab_properties_decorator.h"
 #include "components/performance_manager/public/graph/graph.h"
 
 namespace performance_manager {
@@ -17,6 +19,8 @@ void DefaultGraphCreatedCallback(
     GraphCreatedCallback external_graph_created_callback,
     GraphImpl* graph) {
   graph->PassToGraph(std::make_unique<PageLoadTrackerDecorator>());
+  graph->PassToGraph(std::make_unique<TabPropertiesDecorator>());
+  graph->PassToGraph(std::make_unique<WorkerNodeImplDescriber>());
   std::move(external_graph_created_callback).Run(graph);
 }
 

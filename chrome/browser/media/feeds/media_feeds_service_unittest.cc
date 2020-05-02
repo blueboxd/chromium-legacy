@@ -949,4 +949,28 @@ TEST_F(MediaFeedsServiceTest, FetcherShouldDeleteFeedIfGone) {
   }
 }
 
+TEST_F(MediaFeedsServiceTest, FetcherShouldSupportMultipleFetchesForSameFeed) {
+  const GURL feed_url("https://www.google.com/feed");
+
+  SetSafeSearchEnabled(true);
+  safe_search_checker()->SetUpValidResponse(/* is_porn= */ false);
+
+  // Store a Media Feed.
+  GetMediaHistoryService()->DiscoverMediaFeed(feed_url);
+  WaitForDB();
+
+  // Fetch the same feed twice.
+  base::RunLoop run_loop;
+  GetMediaFeedsService()->FetchMediaFeed(1, feed_url, run_loop.QuitClosure());
+
+  base::RunLoop run_loop_alt;
+  GetMediaFeedsService()->FetchMediaFeed(1, feed_url,
+                                         run_loop_alt.QuitClosure());
+
+  // Respond and make sure both run loop quit closures were called.
+  ASSERT_TRUE(RespondToPendingFeedFetch(feed_url));
+  run_loop.Run();
+  run_loop_alt.Run();
+}
+
 }  // namespace media_feeds

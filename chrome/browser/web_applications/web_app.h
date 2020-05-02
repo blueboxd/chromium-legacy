@@ -99,6 +99,39 @@ class WebApp {
   };
   const SyncData& sync_data() const { return sync_data_; }
 
+  // Stores info needed to create app icon shortcuts menu and for downloading
+  // associated shortcut icons when supported by OS platform (eg. Windows).
+  struct WebAppShortcutMenuItemInfo {
+    WebAppShortcutMenuItemInfo();
+    WebAppShortcutMenuItemInfo(const WebAppShortcutMenuItemInfo&);
+    WebAppShortcutMenuItemInfo(WebAppShortcutMenuItemInfo&&) noexcept;
+    ~WebAppShortcutMenuItemInfo();
+    WebAppShortcutMenuItemInfo& operator=(const WebAppShortcutMenuItemInfo&);
+    WebAppShortcutMenuItemInfo& operator=(
+        WebAppShortcutMenuItemInfo&&) noexcept;
+
+    // Title of shortcut item in App Icon Shortcut Menu.
+    base::string16 name;
+
+    // URL launched when shortcut item is selected.
+    GURL url;
+
+    // List of shortcut icon URLs with associated square size.
+    std::vector<WebApplicationIconInfo> shortcut_icon_infos;
+  };
+
+  // Represents the "shortcuts" field in the manifest.
+  const std::vector<WebAppShortcutMenuItemInfo>& shortcut_infos() const {
+    return shortcut_infos_;
+  }
+
+  // Represents which shortcut icon sizes we successfully downloaded from the
+  // shortcut_infos.
+  const std::vector<std::vector<SquareSizePx>>&
+  downloaded_shortcut_icons_sizes() const {
+    return downloaded_shortcut_icons_sizes_;
+  }
+
   // A Web App can be installed from multiple sources simultaneously. Installs
   // add a source to the app. Uninstalls remove a source from the app.
   void AddSource(Source::Type source);
@@ -128,6 +161,9 @@ class WebApp {
   void SetIconInfos(std::vector<WebApplicationIconInfo> icon_infos);
   // Performs sorting of |sizes| vector. Must be called rarely.
   void SetDownloadedIconSizes(std::vector<SquareSizePx> sizes);
+  void SetShortcutInfos(std::vector<WebAppShortcutMenuItemInfo> shortcut_infos);
+  void SetDownloadedShortcutIconsSizes(
+      std::vector<std::vector<SquareSizePx>> icon_sizes);
   void SetFileHandlers(apps::FileHandlers file_handlers);
   void SetAdditionalSearchTerms(
       std::vector<std::string> additional_search_terms);
@@ -161,6 +197,10 @@ class WebApp {
   bool is_in_sync_install_ = false;
   std::vector<WebApplicationIconInfo> icon_infos_;
   std::vector<SquareSizePx> downloaded_icon_sizes_;
+  // TODO(https://crbug.com/1069312): Serialize shortcut_infos_ and
+  // downloaded_shortcut_icons_sizes_ fields in WebAppDatabase.
+  std::vector<WebAppShortcutMenuItemInfo> shortcut_infos_;
+  std::vector<std::vector<SquareSizePx>> downloaded_shortcut_icons_sizes_;
   apps::FileHandlers file_handlers_;
   std::vector<std::string> additional_search_terms_;
 

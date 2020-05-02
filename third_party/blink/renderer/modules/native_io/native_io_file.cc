@@ -61,10 +61,9 @@ struct NativeIOFile::FileState {
 
 NativeIOFile::NativeIOFile(
     base::File backing_file,
-    mojo::Remote<mojom::blink::NativeIOFileHost> backend_file,
+    HeapMojoRemote<mojom::blink::NativeIOFileHost> backend_file,
     ExecutionContext* execution_context)
-    : ExecutionContextLifecycleObserver(execution_context),
-      file_state_(std::make_unique<FileState>(std::move(backing_file))),
+    : file_state_(std::make_unique<FileState>(std::move(backing_file))),
       // TODO(pwnall): Get a dedicated queue when the specification matures.
       resolver_task_runner_(
           execution_context->GetTaskRunner(TaskType::kMiscPlatformAPI)),
@@ -205,12 +204,8 @@ ScriptPromise NativeIOFile::write(ScriptState* script_state,
 
 void NativeIOFile::Trace(Visitor* visitor) {
   ScriptWrappable::Trace(visitor);
-  ExecutionContextLifecycleObserver::Trace(visitor);
   visitor->Trace(queued_close_resolver_);
-}
-
-void NativeIOFile::ContextDestroyed() {
-  backend_file_.reset();
+  visitor->Trace(backend_file_);
 }
 
 void NativeIOFile::OnBackendDisconnect() {
@@ -267,7 +262,7 @@ void NativeIOFile::DidClose(
     return;
   }
 
-  if (!backend_file_) {
+  if (!backend_file_.is_bound()) {
     // If the backend went away, no need to tell it that the file was closed.
     resolver->Resolve();
     return;

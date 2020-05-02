@@ -14,9 +14,13 @@
     <includes>
       <part file="chromeos/os_settings_resources_v3.grdp" />
 
-      <!-- Routes -->
+      <!-- Constants -->
       <include name="IDR_OS_SETTINGS_ROUTES_MOJOM_LITE_JS"
                file="${root_gen_dir}\chrome\browser\ui\webui\settings\chromeos\constants\routes.mojom-lite.js"
+               use_base_dir="false"
+               compress="false" type="BINDATA" />
+      <include name="IDR_OS_SETTINGS_SETTING_MOJOM_LITE_JS"
+               file="${root_gen_dir}\chrome\browser\ui\webui\settings\chromeos\constants\setting.mojom-lite.js"
                use_base_dir="false"
                compress="false" type="BINDATA" />
 

@@ -196,6 +196,8 @@ class BLINK_COMMON_EXPORT WebGestureEvent : public WebInputEvent {
   const gfx::PointF& PositionInScreen() const { return position_in_screen_; }
 
   std::unique_ptr<WebInputEvent> Clone() const override;
+  bool CanCoalesce(const WebInputEvent& event) const override;
+  void Coalesce(const WebInputEvent& event) override;
 
   void SetPositionInWidget(const gfx::PointF& point) {
     position_in_widget_ = point;
@@ -310,6 +312,21 @@ class BLINK_COMMON_EXPORT WebGestureEvent : public WebInputEvent {
         break;
     }
   }
+
+  // Coalesce the |new_event| with |last_event| and optionally
+  // |second_last_event|. Scroll and pinch are two separate gestures so they
+  // would need separate events that is why this method returns a pair.
+  static std::pair<WebGestureEvent, WebGestureEvent> CoalesceScrollAndPinch(
+      const WebGestureEvent* second_last_event,
+      const WebGestureEvent& last_event,
+      const WebGestureEvent& new_event);
+
+  // Whether |event_in_queue| is a touchscreen GesturePinchUpdate or
+  // GestureScrollUpdate and has the same modifiers/source as the new
+  // scroll/pinch event. Compatible touchscreen scroll and pinch event pairs
+  // can be logically coalesced.
+  static bool IsCompatibleScrollorPinch(const WebGestureEvent& new_event,
+                                        const WebGestureEvent& event_in_queue);
 };
 
 }  // namespace blink

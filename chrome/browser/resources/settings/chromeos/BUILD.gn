@@ -39,6 +39,7 @@ if (optimize_webui) {
       "chrome://os-settings/app-management/image.mojom-lite.js",
       "chrome://os-settings/app-management/types.mojom-lite.js",
       "chrome://os-settings/constants/routes.mojom-lite.js",
+      "chrome://os-settings/constants/setting.mojom-lite.js",
       "chrome://os-settings/search/search.mojom-lite.js",
       "chrome://os-settings/search/search_result_icon.mojom-lite.js",
       "chrome://os-settings/search/user_action_recorder.mojom-lite.js",

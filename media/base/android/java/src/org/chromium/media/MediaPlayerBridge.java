@@ -7,7 +7,6 @@ package org.chromium.media;
 import android.annotation.SuppressLint;
 import android.media.MediaPlayer;
 import android.net.Uri;
-import android.os.Build;
 import android.os.ParcelFileDescriptor;
 import android.text.TextUtils;
 import android.util.Base64;
@@ -140,12 +139,9 @@ public class MediaPlayerBridge {
         if (hideUrlLog) headersMap.put("x-hide-urls-from-log", "true");
         if (!TextUtils.isEmpty(cookies)) headersMap.put("Cookie", cookies);
         if (!TextUtils.isEmpty(userAgent)) headersMap.put("User-Agent", userAgent);
-        // The security origin check is enforced for devices above K. For devices below K,
-        // only anonymous media HTTP request (no cookies) may be considered same-origin.
-        // Note that if the server rejects the request we must not consider it same-origin.
-        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.KITKAT) {
-            headersMap.put("allow-cross-domain-redirect", "false");
-        }
+
+        headersMap.put("android-allow-cross-domain-redirect", "0");
+
         try {
             getLocalPlayer().setDataSource(ContextUtils.getApplicationContext(), uri, headersMap);
             return true;

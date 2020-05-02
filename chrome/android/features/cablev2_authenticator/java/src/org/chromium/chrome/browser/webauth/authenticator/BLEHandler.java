@@ -75,6 +75,9 @@ class BLEHandler extends BluetoothGattServerCallback implements Closeable {
 
     // The (G)ATT op-code and attribute handle take three bytes.
     private static final int GATT_MTU_OVERHEAD = 3;
+    // If no MTU is negotiated, the GATT default is just 23 bytes. Subtract three bytes of GATT
+    // overhead.
+    private static final int DEFAULT_MTU = 23 - GATT_MTU_OVERHEAD;
 
     /**
      * The pending fragments to send to each client. If present, the value is
@@ -97,6 +100,7 @@ class BLEHandler extends BluetoothGattServerCallback implements Closeable {
     private BluetoothGattServer mServer;
     private BluetoothGattDescriptor mCccd;
     private BluetoothGattCharacteristic mStatusChar;
+    private BluetoothDevice mConnectedDevice;
 
     BLEHandler(CableAuthenticator authenticator) {
         mPendingFragments = new HashMap<Long, byte[][]>();
@@ -175,6 +179,7 @@ class BLEHandler extends BluetoothGattServerCallback implements Closeable {
 
     @Override
     public void onMtuChanged(BluetoothDevice device, int mtu) {
+        Log.i(TAG, "onMtuChanged(): device=%s, mtu=%s", device.getAddress(), mtu);
         Long client = addressToLong(device.getAddress());
         // At least six bytes is required: three bytes of GATT overhead and
         // three bytes of CTAP2 framing. If the requested MTU is less than
@@ -185,17 +190,16 @@ class BLEHandler extends BluetoothGattServerCallback implements Closeable {
         }
 
         int clientMTU = mtu - GATT_MTU_OVERHEAD;
-
-        mTaskRunner.postTask(() -> {
-            mKnownMtus.put(client, clientMTU);
-            BLEHandlerJni.get().recordClientMtu(client, clientMTU);
-        });
+        mKnownMtus.put(client, clientMTU);
     }
 
     @Override
     public void onCharacteristicReadRequest(BluetoothDevice device, int requestId, int offset,
             BluetoothGattCharacteristic characteristic) {
-        Log.i(TAG, "onCharacteristicReadRequest");
+        Log.i(TAG,
+                "onCharacteristicReadRequest(): device=%s, requestId=%s, "
+                        + "offset=%s, characteristic=%s",
+                device.getAddress(), requestId, offset, characteristic.getUuid().toString());
         if (offset != 0) {
             Log.i(TAG, "onCharacteristicReadRequest: non-zero offset request");
             mServer.sendResponse(device, requestId, BluetoothGatt.GATT_FAILURE, 0, null);
@@ -208,9 +212,7 @@ class BLEHandler extends BluetoothGattServerCallback implements Closeable {
                 mTaskRunner.postTask(() -> {
                     Integer mtu = mKnownMtus.get(client);
                     if (mtu == null) {
-                        // If no MTU is negotiated, the GATT default is just 23
-                        // bytes. Subtract three bytes of GATT overhead.
-                        mtu = 23 - GATT_MTU_OVERHEAD;
+                        mtu = DEFAULT_MTU;
                     }
                     byte[] mtuBytes = {(byte) (mtu >> 8), (byte) (mtu & 0xff)};
                     mServer.sendResponse(
@@ -229,49 +231,55 @@ class BLEHandler extends BluetoothGattServerCallback implements Closeable {
     public void onCharacteristicWriteRequest(BluetoothDevice device, int requestId,
             BluetoothGattCharacteristic characteristic, boolean preparedWrite,
             boolean responseNeeded, int offset, byte[] value) {
-        Log.i(TAG, "onCharacteristicWriteRequest");
+        Log.i(TAG,
+                "onCharacteristicWriteRequest(): device=%s, requestId=%s, "
+                        + "characteristic=%s, preparedWrite=%s, "
+                        + "responseNeeded=%s, offset=%d, value=%s",
+                device.getAddress(), requestId, characteristic.getUuid().toString(), preparedWrite,
+                responseNeeded, offset, hex(value));
 
-        if (value == null) {
-            return;
-        }
+        // fidoControlPoint is the only characteristic that is written to as caBLE clients don't set
+        // the service revision to save a round-trip. The first client to write to this
+        // characteristic "connects" to the authenticator. Writes from all other clients are
+        // rejected.
+        // TODO: signal an error if a connected client disconnects before any other result is
+        // signaled to UI?
 
-        if (offset != 0) {
-            Log.i(TAG, "onCharacteristicWriteRequest: non-zero offset request");
+        if (value == null || offset != 0
+                || !characteristic.getUuid().toString().equals(CONTROL_POINT_UUID)
+                || (mConnectedDevice != null && !mConnectedDevice.equals(device))) {
             if (responseNeeded) {
                 mServer.sendResponse(device, requestId, BluetoothGatt.GATT_FAILURE, 0, null);
             }
             return;
         }
 
-        Long client = addressToLong(device.getAddress());
-        switch (characteristic.getUuid().toString()) {
-            case CONTROL_POINT_UUID:
-                // The buffer containing the data is owned by the BLE stack and
-                // might be reused once this callback returns. Thus a copy is
-                // made for the handler thread.
-                byte[] valueCopy = Arrays.copyOf(value, value.length);
-                mTaskRunner.postTask(() -> {
-                    byte[][] responseFragments =
-                            BLEHandlerJni.get().write(client.longValue(), valueCopy);
-                    if (responseNeeded) {
-                        int status = responseFragments == null ? BluetoothGatt.GATT_FAILURE
-                                                               : BluetoothGatt.GATT_SUCCESS;
-                        mServer.sendResponse(device, requestId, status, 0, null);
-                    }
-                    if (responseFragments != null && responseFragments.length > 0) {
-                        sendNotification(device, responseFragments);
-                    }
-                });
-                break;
-
-            default:
-                // The control-point is the only characteristic that is written
-                // to as caBLE clients don't set the service revision to save
-                // a round-trip.
-                if (responseNeeded) {
-                    mServer.sendResponse(device, requestId, BluetoothGatt.GATT_FAILURE, 0, null);
-                }
+        if (mConnectedDevice == null) {
+            mConnectedDevice = device;
+            mAuthenticator.notifyAuthenticatorConnected();
         }
+
+        Long client = addressToLong(device.getAddress());
+        // The buffer containing the data is owned by the BLE stack and
+        // might be reused once this callback returns. Thus a copy is
+        // made for the handler thread.
+        byte[] valueCopy = Arrays.copyOf(value, value.length);
+        mTaskRunner.postTask(() -> {
+            Integer mtu = mKnownMtus.get(client);
+            if (mtu == null) {
+                mtu = DEFAULT_MTU;
+            }
+            byte[][] responseFragments =
+                    BLEHandlerJni.get().write(client.longValue(), mtu, valueCopy);
+            if (responseNeeded) {
+                int status = responseFragments == null ? BluetoothGatt.GATT_FAILURE
+                                                       : BluetoothGatt.GATT_SUCCESS;
+                mServer.sendResponse(device, requestId, status, 0, null);
+            }
+            if (responseFragments != null && responseFragments.length > 0) {
+                sendNotification(device, responseFragments);
+            }
+        });
     }
 
     /**
@@ -500,15 +508,6 @@ class BLEHandler extends BluetoothGattServerCallback implements Closeable {
     }
 
     /**
-     * Called by native code to notify of a client completing a handshake.
-     */
-    @CalledByNative
-    public void onHandshake(long client) {
-        maybeStopAdvertising();
-        mAuthenticator.onHandshake(client);
-    }
-
-    /**
      * Called by native code to store a new state blob.
      */
     @CalledByNative
@@ -581,13 +580,9 @@ class BLEHandler extends BluetoothGattServerCallback implements Closeable {
          */
         void onQRScanned(String value);
         /**
-         * Called when the MTU of a client is learned.
-         */
-        void recordClientMtu(long client, int mtu);
-        /**
          * Called to alert the C++ code that a GATT client wrote data.
          */
-        byte[][] write(long client, byte[] data);
+        byte[][] write(long client, int mtu, byte[] data);
         /**
          * Called to alert native code of a response to a makeCredential request.
          */

@@ -5,10 +5,9 @@
 /** @fileoverview Handles metrics for the settings pages. */
 
 // clang-format off
-// #import {addSingletonGetter} from 'chrome://resources/js/cr.m.js';
+import {addSingletonGetter} from 'chrome://resources/js/cr.m.js';
 // clang-format on
 
-cr.define('settings', function() {
   /**
    * Contains all possible recorded interactions across privacy settings pages.
    *
@@ -19,7 +18,7 @@ cr.define('settings', function() {
    * histograms/enums.xml
    * @enum {number}
    */
-  /* #export */ const PrivacyElementInteractions = {
+  export const PrivacyElementInteractions = {
     SYNC_AND_GOOGLE_SERVICES: 0,
     CHROME_SIGN_IN: 1,
     DO_NOT_TRACK: 2,
@@ -48,7 +47,7 @@ cr.define('settings', function() {
    * histograms/enums.xml
    * @enum {number}
    */
-  /* #export */ const SafetyCheckInteractions = {
+  export const SafetyCheckInteractions = {
     SAFETY_CHECK_START: 0,
     SAFETY_CHECK_UPDATES_RELAUNCH: 1,
     SAFETY_CHECK_PASSWORDS_MANAGE: 2,
@@ -59,7 +58,7 @@ cr.define('settings', function() {
   };
 
   /** @interface */
-  /* #export */ class MetricsBrowserProxy {
+  export class MetricsBrowserProxy {
     /**
      * Helper function that calls recordAction with one action from
      * tools/metrics/actions/actions.xml.
@@ -70,22 +69,22 @@ cr.define('settings', function() {
     /**
      * Helper function that calls recordHistogram for the
      * Settings.SafetyCheck.Interactions histogram
-     * @param {!settings.SafetyCheckInteractions} interaction
+     * @param {!SafetyCheckInteractions} interaction
      */
     recordSafetyCheckInteractionHistogram(interaction) {}
 
     /**
      * Helper function that calls recordHistogram for the
      * SettingsPage.PrivacyElementInteractions histogram
-     * @param {!settings.PrivacyElementInteractions} interaction
+     * @param {!PrivacyElementInteractions} interaction
      */
     recordSettingsPageHistogram(interaction) {}
   }
 
   /**
-   * @implements {settings.MetricsBrowserProxy}
+   * @implements {MetricsBrowserProxy}
    */
-  /* #export */ class MetricsBrowserProxyImpl {
+  export class MetricsBrowserProxyImpl {
     /** @override */
     recordAction(action) {
       chrome.send('metricsHandler:recordAction', [action]);
@@ -95,7 +94,7 @@ cr.define('settings', function() {
     recordSafetyCheckInteractionHistogram(interaction) {
       chrome.send('metricsHandler:recordInHistogram', [
         'Settings.SafetyCheck.Interactions', interaction,
-        settings.SafetyCheckInteractions.COUNT
+        SafetyCheckInteractions.COUNT
       ]);
     }
 
@@ -103,18 +102,10 @@ cr.define('settings', function() {
     recordSettingsPageHistogram(interaction) {
       chrome.send('metricsHandler:recordInHistogram', [
         'Settings.PrivacyElementInteractions', interaction,
-        settings.PrivacyElementInteractions.COUNT
+        PrivacyElementInteractions.COUNT
       ]);
     }
   }
 
-  cr.addSingletonGetter(MetricsBrowserProxyImpl);
+  addSingletonGetter(MetricsBrowserProxyImpl);
 
-  // #cr_define_end
-  return {
-    MetricsBrowserProxy,
-    MetricsBrowserProxyImpl,
-    PrivacyElementInteractions,
-    SafetyCheckInteractions,
-  };
-});

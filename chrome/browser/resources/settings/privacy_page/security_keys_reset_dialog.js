@@ -14,7 +14,7 @@ import 'chrome://resources/cr_elements/cr_dialog/cr_dialog.m.js';
 import {I18nBehavior} from 'chrome://resources/js/i18n_behavior.m.js';
 import 'chrome://resources/polymer/v3_0/iron-pages/iron-pages.js';
 import 'chrome://resources/polymer/v3_0/paper-spinner/paper-spinner-lite.js';
-import {loadTimeData} from '../i18n_setup.m.js';
+import {loadTimeData} from '../i18n_setup.js';
 import '../settings_shared_css.m.js';
 import {SecurityKeysResetBrowserProxy, SecurityKeysResetBrowserProxyImpl} from './security_keys_browser_proxy.js';
 

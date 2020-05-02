@@ -21,7 +21,6 @@ namespace message_center {
 PaddedButton::PaddedButton(views::ButtonListener* listener)
     : views::ImageButton(listener) {
   SetFocusForPlatform();
-  SetBackground(views::CreateSolidBackground(kControlButtonBackgroundColor));
   SetBorder(views::CreateEmptyBorder(gfx::Insets(kControlButtonBorderSize)));
   set_animate_on_state_change(false);
 
@@ -39,7 +38,12 @@ std::unique_ptr<views::InkDrop> PaddedButton::CreateInkDrop() {
 
 void PaddedButton::OnThemeChanged() {
   ImageButton::OnThemeChanged();
-  set_ink_drop_base_color(GetNativeTheme()->GetSystemColor(
+  auto* theme = GetNativeTheme();
+#if defined(OS_CHROMEOS)
+  SetBackground(views::CreateSolidBackground(theme->GetSystemColor(
+      ui::NativeTheme::kColorId_NotificationButtonBackground)));
+#endif
+  set_ink_drop_base_color(theme->GetSystemColor(
       ui::NativeTheme::kColorId_PaddedButtonInkDropColor));
 }
 

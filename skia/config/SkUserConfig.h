@@ -201,6 +201,12 @@ SK_API void SkDebugf_FileLine(const char* file,
 #define SK_DISABLE_REDUCE_OPLIST_SPLITTING
 #endif
 
+// Many layout tests and unit tests need to updated/rebased to move to less
+// buggy GPU blur.
+#ifndef SK_USE_LEGACY_GPU_BLUR
+#define SK_USE_LEGACY_GPU_BLUR
+#endif
+
 #ifndef SK_SUPPORT_LEGACY_MATRIX44
 #define SK_SUPPORT_LEGACY_MATRIX44
 #endif

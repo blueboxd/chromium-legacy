@@ -4,6 +4,7 @@
 
 #include "chrome/browser/web_applications/components/web_app_install_utils.h"
 
+#include <algorithm>
 #include <utility>
 
 #include "base/metrics/histogram_functions.h"
@@ -16,6 +17,7 @@
 #include "chrome/browser/installable/installable_metrics.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_icon_generator.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/web_application_info.h"
 #include "third_party/blink/public/common/manifest/manifest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -24,17 +26,25 @@ namespace web_app {
 
 namespace {
 
+// We restrict the number of icons to limit disk usage per installed PWA. This
+// value can change overtime as new features are added.
 constexpr int kMaxIcons = 20;
 constexpr SquareSizePx kMaxIconSize = 1024;
 
-// Get a list of non-empty square icons from |icons_map|.
-void FilterSquareIconsFromMap(const IconsMap& icons_map,
-                              std::vector<SkBitmap>* square_icons) {
-  for (const std::pair<const GURL, std::vector<SkBitmap>>& url_icon :
-       icons_map) {
-    for (const SkBitmap& icon : url_icon.second) {
-      if (!icon.empty() && icon.width() == icon.height())
-        square_icons->push_back(icon);
+// Get a list of non-empty square app icons from |icons_map|. We will disregard
+// shortcut icons here.
+void FilterSquareIconsFromMap(
+    const std::vector<WebApplicationIconInfo>& icon_infos,
+    const IconsMap& icons_map,
+    std::vector<SkBitmap>* square_icons) {
+  for (const auto& url_icon : icons_map) {
+    for (const auto& info : icon_infos) {
+      if (info.url == url_icon.first) {
+        for (const SkBitmap& icon : url_icon.second) {
+          if (!icon.empty() && icon.width() == icon.height())
+            square_icons->push_back(icon);
+        }
+      }
     }
   }
 }
@@ -49,6 +59,53 @@ void FilterSquareIconsFromBitmaps(
     if (!icon.second.empty())
       square_icons->push_back(icon.second);
   }
+}
+
+// Populate |web_app_info|'s shortcut_infos vector using the blink::Manifest's
+// shortcuts vector.
+std::vector<WebApplicationShortcutInfo> UpdateShortcutInfosFromManifest(
+    const std::vector<blink::Manifest::ShortcutItem>& shortcuts) {
+  std::vector<WebApplicationShortcutInfo> web_app_shortcut_infos;
+  int num_shortcut_icons = 0;
+  for (const auto& shortcut : shortcuts) {
+    WebApplicationShortcutInfo shortcut_info;
+    shortcut_info.name = shortcut.name;
+    shortcut_info.url = shortcut.url;
+
+    std::vector<WebApplicationIconInfo> shortcut_icons;
+    for (const auto& icon : shortcut.icons) {
+      WebApplicationIconInfo info;
+
+      // Filter out non-square or too large icons.
+      auto valid_size_it = std::find_if(
+          icon.sizes.begin(), icon.sizes.end(), [](const gfx::Size& size) {
+            return size.width() == size.height() &&
+                   size.width() <= kMaxIconSize;
+          });
+      if (valid_size_it == icon.sizes.end())
+        continue;
+      // TODO(https://crbug.com/1071308): Take the declared icon density and
+      // sizes into account.
+      info.square_size_px = valid_size_it->width();
+
+      DCHECK_LE(num_shortcut_icons, kMaxIcons);
+      if (num_shortcut_icons < kMaxIcons) {
+        info.url = icon.src;
+        shortcut_icons.push_back(std::move(info));
+        ++num_shortcut_icons;
+      }
+      if (num_shortcut_icons == kMaxIcons)
+        break;
+    }
+
+    // If any icons are specified in the manifest, they take precedence over
+    // any we picked up from web_app_info.
+    if (!shortcut_icons.empty())
+      shortcut_info.shortcut_icon_infos = std::move(shortcut_icons);
+    web_app_shortcut_infos.push_back(std::move(shortcut_info));
+  }
+
+  return web_app_shortcut_infos;
 }
 
 }  // namespace
@@ -100,7 +157,8 @@ void UpdateWebAppInfoFromManifest(const blink::Manifest& manifest,
                                      });
       if (valid_size == icon.sizes.end())
         continue;
-      // TODO(benwells): Take the declared icon density and sizes into account.
+      // TODO(https://crbug.com/1071308): Take the declared icon density and
+      // sizes into account.
       info.square_size_px = valid_size->width();
     }
 
@@ -111,13 +169,21 @@ void UpdateWebAppInfoFromManifest(const blink::Manifest& manifest,
     if (web_app_icons.size() == kMaxIcons)
       break;
   }
-
   // If any icons are specified in the manifest, they take precedence over any
   // we picked up from the web_app stuff.
   if (!web_app_icons.empty())
     web_app_info->icon_infos = std::move(web_app_icons);
 
   web_app_info->file_handlers = manifest.file_handlers;
+
+  // If any shortcuts are specified in the manifest, they take precedence over
+  // any we picked up from the web_app stuff.
+  if (!manifest.shortcuts.empty() &&
+      base::FeatureList::IsEnabled(
+          features::kDesktopPWAsAppIconShortcutsMenu)) {
+    web_app_info->shortcut_infos =
+        UpdateShortcutInfosFromManifest(manifest.shortcuts);
+  }
 }
 
 std::vector<GURL> GetValidIconUrlsToDownload(
@@ -128,18 +194,54 @@ std::vector<GURL> GetValidIconUrlsToDownload(
       continue;
     web_app_info_icon_urls.push_back(info.url);
   }
+  if (base::FeatureList::IsEnabled(
+          features::kDesktopPWAsAppIconShortcutsMenu)) {
+    // Also add shortcut icon urls, so they can be downloaded.
+    for (const auto& shortcut : web_app_info.shortcut_infos) {
+      for (const auto& icon : shortcut.shortcut_icon_infos) {
+        web_app_info_icon_urls.push_back(icon.url);
+      }
+    }
+  }
   return web_app_info_icon_urls;
+}
+
+void PopulateShortcutItemIcons(WebApplicationInfo* web_app_info,
+                               const IconsMap* icons_map) {
+  for (auto& shortcut : web_app_info->shortcut_infos) {
+    for (const auto& icon : shortcut.shortcut_icon_infos) {
+      auto it = icons_map->find(icon.url);
+      if (it != icons_map->end()) {
+        std::set<SquareSizePx> sizes_to_generate;
+        sizes_to_generate.emplace(icon.square_size_px);
+        std::map<SquareSizePx, SkBitmap> resized_bitmaps(
+            ConstrainBitmapsToSizes(it->second, sizes_to_generate));
+
+        // Don't overwrite as a shortcut item could have multiple icon urls.
+        shortcut.shortcut_icon_bitmaps.insert(resized_bitmaps.begin(),
+                                              resized_bitmaps.end());
+      }
+    }
+  }
 }
 
 void FilterAndResizeIconsGenerateMissing(WebApplicationInfo* web_app_info,
                                          const IconsMap* icons_map) {
-  // Ensure that all icons that are in web_app_info are present, by generating
-  // icons for any sizes which have failed to download. This ensures that the
-  // created manifest for the web app does not contain links to icons
+  if (base::FeatureList::IsEnabled(
+          features::kDesktopPWAsAppIconShortcutsMenu) &&
+      icons_map) {
+    PopulateShortcutItemIcons(web_app_info, icons_map);
+  }
+
+  // Ensure that all top-level icons that are in web_app_info are present, by
+  // generating icons for any sizes which have failed to download. This ensures
+  // that the created manifest for the web app does not contain links to icons
   // which are not actually created and linked on disk.
   std::vector<SkBitmap> square_icons;
-  if (icons_map)
-    FilterSquareIconsFromMap(*icons_map, &square_icons);
+  if (icons_map) {
+    FilterSquareIconsFromMap(web_app_info->icon_infos, *icons_map,
+                             &square_icons);
+  }
   FilterSquareIconsFromBitmaps(web_app_info->icon_bitmaps, &square_icons);
 
   base::char16 icon_letter =

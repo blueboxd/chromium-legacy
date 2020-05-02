@@ -11,14 +11,14 @@ import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.m.js';
 import 'chrome://resources/cr_elements/cr_lazy_render/cr_lazy_render.m.js';
 import 'chrome://resources/polymer/v3_0/iron-collapse/iron-collapse.js';
 import '../settings_shared_css.m.js';
-import '../site_favicon.m.js';
+import '../site_favicon.js';
 
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {FocusRowBehavior} from 'chrome://resources/js/cr/ui/focus_row_behavior.m.js';
 import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-import {loadTimeData} from '../i18n_setup.m.js';
-import {routes} from '../route.m.js';
+import {loadTimeData} from '../i18n_setup.js';
+import {routes} from '../route.js';
 import {Router} from '../router.m.js';
 
 import {AllSitesAction2, SortMethod} from './constants.js';

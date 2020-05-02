@@ -59,6 +59,9 @@ class MESSAGE_CENTER_EXPORT NotificationControlButtonsView
 
   // views::View
   const char* GetClassName() const override;
+#if defined(OS_CHROMEOS)
+  void OnThemeChanged() override;
+#endif
 
   // views::ButtonListener
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;

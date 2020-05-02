@@ -21,9 +21,11 @@
 
 namespace content {
 
-void WebViewTestProxy::Initialize(TestInterfaces* interfaces) {
-  test_interfaces_ = interfaces;
-  test_interfaces()->WindowOpened(this);
+WebViewTestProxy::WebViewTestProxy(CompositorDependencies* compositor_deps,
+                                   const mojom::CreateViewParams& params,
+                                   TestInterfaces* interfaces)
+    : RenderViewImpl(compositor_deps, params), test_interfaces_(interfaces) {
+  test_interfaces_->WindowOpened(this);
 }
 
 blink::WebView* WebViewTestProxy::CreateView(
@@ -101,7 +103,7 @@ WebViewTestProxy::~WebViewTestProxy() {
 }
 
 TestRunner* WebViewTestProxy::GetTestRunner() {
-  return test_interfaces()->GetTestRunner();
+  return test_interfaces_->GetTestRunner();
 }
 
 }  // namespace content

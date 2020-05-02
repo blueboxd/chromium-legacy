@@ -12,7 +12,7 @@ import 'chrome://resources/cr_elements/cr_input/cr_input.m.js';
 
 import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-import {loadTimeData} from '../i18n_setup.m.js';
+import {loadTimeData} from '../i18n_setup.js';
 
 import {SITE_EXCEPTION_WILDCARD} from './constants.js';
 import {SiteException, SiteSettingsPrefsBrowserProxy, SiteSettingsPrefsBrowserProxyImpl} from './site_settings_prefs_browser_proxy.js';

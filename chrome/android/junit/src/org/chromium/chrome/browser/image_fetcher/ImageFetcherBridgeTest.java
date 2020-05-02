@@ -97,7 +97,7 @@ public class ImageFetcherBridgeTest {
         })
                 .when(mNatives)
                 .fetchImage(eq(sNativePointer), eq(mBridge), anyInt(), anyString(), anyString(),
-                        callbackCaptor.capture());
+                        eq(0), callbackCaptor.capture());
 
         mBridge.fetchImage(-1, "", "", 10, 10, mBitmapCallback);
         verify(mBitmapCallback).onResult(bitmap);
@@ -113,7 +113,7 @@ public class ImageFetcherBridgeTest {
         })
                 .when(mNatives)
                 .fetchImage(eq(sNativePointer), eq(mBridge), anyInt(), anyString(), anyString(),
-                        callbackCaptor.capture());
+                        eq(0), callbackCaptor.capture());
 
         mBridge.fetchImage(-1, "", "", 100, 100, mBitmapCallback);
         ArgumentCaptor<Bitmap> bitmapCaptor = ArgumentCaptor.forClass(Bitmap.class);

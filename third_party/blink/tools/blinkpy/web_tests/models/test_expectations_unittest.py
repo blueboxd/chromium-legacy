@@ -454,13 +454,47 @@ class RemoveExpectationsTest(Base):
         expectations_dict['/tmp/TestExpectations'] = ''
         expectations_dict['/tmp/TestExpectations2'] = raw_expectations
         test_expectations = TestExpectations(port, expectations_dict)
-        test_to_exps = test_expectations.expectations[1].individual_exps
+        test_to_exps = test_expectations._expectations[1].individual_exps
         test_expectations.remove_expectations('/tmp/TestExpectations2',
                                               [test_to_exps['test1'][0]])
         test_expectations.commit_changes()
         content = port.host.filesystem.read_text_file('/tmp/TestExpectations2')
         self.assertEqual(content, ('# tags: [ Mac Win ]\n'
                                    '# results: [ Failure ]\n'))
+
+    def test_readd_removed_expectation_instance(self):
+        port = MockHost().port_factory.get('test-win-win7')
+        raw_expectations = ('# tags: [ Mac Win ]\n'
+                            '# results: [ Failure ]\n'
+                            '\n'
+                            '# This comment will not be deleted\n'
+                            '[ mac ] test1 [ Failure ]\n'
+                            '[ mac ] test2 [ Failure ]\n'
+                            '[ mac ] test3 [ Failure ]\n'
+                            '[ mac ] test4 [ Failure ]\n'
+                            '[ mac ] test5 [ Failure ]\n'
+                            '[ mac ] test6 [ Failure ]\n'
+                            '[ mac ] test7 [ Failure ]\n')
+        expectations_dict = OrderedDict()
+        expectations_dict['/tmp/TestExpectations'] = ''
+        expectations_dict['/tmp/TestExpectations2'] = raw_expectations
+        test_expectations = TestExpectations(port, expectations_dict)
+        test_to_exps = test_expectations._expectations[1].individual_exps
+        exp = test_expectations._expectations[1].individual_exps['test1'][0]
+        exps_to_remove = [test_to_exps[
+            'test%d' % case_no][0] for case_no in range(1, 8)]
+        test_expectations.remove_expectations(
+            '/tmp/TestExpectations2', exps_to_remove)
+        test_expectations.add_expectations(
+            '/tmp/TestExpectations2',[exp],
+            lineno=4)
+        test_expectations.commit_changes()
+        content = port.host.filesystem.read_text_file('/tmp/TestExpectations2')
+        self.assertEqual(content, ('# tags: [ Mac Win ]\n'
+                                   '# results: [ Failure ]\n'
+                                   '\n'
+                                   '# This comment will not be deleted\n'
+                                   '[ mac ] test1 [ Failure ]\n'))
 
     def test_remove_added_expectations(self):
         port = MockHost().port_factory.get('test-win-win7')
@@ -504,7 +538,7 @@ class RemoveExpectationsTest(Base):
         expectations_dict['/tmp/TestExpectations'] = ''
         expectations_dict['/tmp/TestExpectations2'] = raw_expectations
         test_expectations = TestExpectations(port, expectations_dict)
-        test_to_exps = test_expectations.expectations[1].individual_exps
+        test_to_exps = test_expectations._expectations[1].individual_exps
         test_expectations.add_expectations('/tmp/TestExpectations2', [
             Expectation(test='test2', results=set([ResultType.Failure])),
             Expectation(
@@ -520,8 +554,8 @@ class RemoveExpectationsTest(Base):
                                    '# results: [ Failure Crash ]\n'
                                    '\n'
                                    '# This comment will not be deleted\n'
-                                   '[ Mac ] test3 [ Crash ]\n'
-                                   'test2 [ Failure ]\n'))
+                                   'test2 [ Failure ]\n'
+                                   '[ Mac ] test3 [ Crash ]\n'))
 
 
 class AddExpectationsTest(Base):

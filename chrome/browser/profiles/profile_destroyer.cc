@@ -31,7 +31,9 @@ ProfileDestroyer::DestroyerSet* ProfileDestroyer::pending_destroyers_ = NULL;
 
 // static
 void ProfileDestroyer::DestroyProfileWhenAppropriate(Profile* const profile) {
-  TRACE_EVENT0("shutdown", "ProfileDestroyer::DestroyProfileWhenAppropriate");
+  TRACE_EVENT2("shutdown", "ProfileDestroyer::DestroyProfileWhenAppropriate",
+               "profile", profile, "is_off_the_record",
+               profile->IsOffTheRecord());
 
   DCHECK(profile);
   profile->MaybeSendDestroyedNotification();
@@ -64,6 +66,10 @@ void ProfileDestroyer::DestroyProfileWhenAppropriate(Profile* const profile) {
       // hosts referring to it are properly terminated.
       new ProfileDestroyer(profile, &profile_hosts);
     } else {
+      TRACE_EVENT1("shutdown",
+                   "ProfileDestroyer::DestroyProfileWhenAppropriate deleting "
+                   "otr profile",
+                   "profile", profile);
       profile->GetOriginalProfile()->DestroyOffTheRecordProfile(profile);
     }
     return;
@@ -77,9 +83,15 @@ void ProfileDestroyer::DestroyProfileWhenAppropriate(Profile* const profile) {
       profile_has_off_the_record ? profile->GetOffTheRecordProfile() : nullptr;
 #endif  // DCHECK_IS_ON()
 
-  // TODO(https://crbug.com/1033903): If profile has OTRs and they have hosts,
-  // create a |ProfileDestroyer| instead.
-  delete profile;
+  {
+    TRACE_EVENT1(
+        "shutdown",
+        "ProfileDestroyer::DestroyProfileWhenAppropriate deleting profile",
+        "profile", profile);
+    // TODO(https://crbug.com/1033903): If profile has OTRs and they have hosts,
+    // create a |ProfileDestroyer| instead.
+    delete profile;
+  }
 
 #if DCHECK_IS_ON()
   // Count the number of hosts that have dangling pointers to the freed Profile
@@ -110,6 +122,8 @@ void ProfileDestroyer::DestroyProfileWhenAppropriate(Profile* const profile) {
 // now, e.g., if the parent profile is being destroyed while the incognito one
 // still pending...
 void ProfileDestroyer::DestroyOffTheRecordProfileNow(Profile* const profile) {
+  TRACE_EVENT1("shutdown", "ProfileDestroyer::DestroyOffTheRecordProfileNow",
+               "profile", profile);
   DCHECK(profile);
   DCHECK(profile->IsOffTheRecord());
   DCHECK(profile->GetOriginalProfile());
@@ -131,6 +145,8 @@ void ProfileDestroyer::DestroyOffTheRecordProfileNow(Profile* const profile) {
 
 ProfileDestroyer::ProfileDestroyer(Profile* const profile, HostSet* hosts)
     : num_hosts_(0), profile_(profile) {
+  TRACE_EVENT2("shutdown", "ProfileDestroyer::ProfileDestroyer", "profile",
+               profile, "host_count", hosts->size());
   DCHECK(profile_->IsOffTheRecord());
   if (pending_destroyers_ == NULL)
     pending_destroyers_ = new DestroyerSet;
@@ -155,6 +171,9 @@ ProfileDestroyer::ProfileDestroyer(Profile* const profile, HostSet* hosts)
 }
 
 ProfileDestroyer::~ProfileDestroyer() {
+  TRACE_EVENT1("shutdown", "ProfileDestroyer::~ProfileDestroyer", "profile",
+               profile_);
+
   if (profile_) {
     ProfileDestroyer::DestroyOffTheRecordProfileNow(profile_);
     DCHECK(!profile_);
@@ -178,6 +197,8 @@ ProfileDestroyer::~ProfileDestroyer() {
 
 void ProfileDestroyer::RenderProcessHostDestroyed(
     content::RenderProcessHost* host) {
+  TRACE_EVENT2("shutdown", "ProfileDestroyer::RenderProcessHostDestroyed",
+               "profile", profile_, "render_process_host", host);
   DCHECK(num_hosts_ > 0);
   --num_hosts_;
   if (num_hosts_ == 0) {
@@ -210,6 +231,8 @@ ProfileDestroyer::HostSet ProfileDestroyer::GetHostsForProfile(
     if (render_process_host->HostHasNotBeenUsed())
       continue;
 
+    TRACE_EVENT2("shutdown", "ProfileDestroyer::GetHostsForProfile", "profile",
+                 profile_ptr, "render_process_host", render_process_host);
     hosts.insert(render_process_host);
   }
   return hosts;

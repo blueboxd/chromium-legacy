@@ -68,6 +68,12 @@ class FakeInputEvent : public blink::WebInputEvent {
   std::unique_ptr<WebInputEvent> Clone() const override {
     return std::make_unique<FakeInputEvent>(*this);
   }
+
+  bool CanCoalesce(const blink::WebInputEvent& event) const override {
+    return false;
+  }
+
+  void Coalesce(const WebInputEvent& event) override { NOTREACHED(); }
 };
 
 class FakeTouchEvent : public blink::WebTouchEvent {

@@ -2744,6 +2744,7 @@ if (enable_java_templates) {
                                "apk_under_test",
                                "base_module_target",
                                "chromium_code",
+                               "enable_jetify",
                                "jacoco_never_instrument",
                                "javac_args",
                                "manifest_package",
@@ -3402,6 +3403,7 @@ if (enable_java_templates) {
                                "disable_checkdiscard",
                                "disable_r8_outlining",
                                "dist_ijar_path",
+                               "enable_jetify",
                                "enable_multidex",
                                "enable_native_mocks",
                                "generate_buildconfig_java",
@@ -4228,6 +4230,7 @@ if (enable_java_templates) {
     _java_library_vars = [
       "enable_bytecode_checks",
       "enable_bytecode_rewriter",
+      "enable_jetify",
       "jar_excluded_patterns",
       "jar_included_patterns",
       "requires_android",

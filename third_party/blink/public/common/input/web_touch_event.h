@@ -50,6 +50,8 @@ class BLINK_COMMON_EXPORT WebTouchEvent : public WebInputEvent {
       : WebInputEvent(type, modifiers, time_stamp) {}
 
   std::unique_ptr<WebInputEvent> Clone() const override;
+  bool CanCoalesce(const WebInputEvent& event) const override;
+  void Coalesce(const WebInputEvent& event) override;
 
   // Sets any scaled values to be their computed values and sets |frame_scale_|
   // back to 1 and |frame_translate_| X and Y coordinates back to 0.

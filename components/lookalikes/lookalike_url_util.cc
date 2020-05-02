@@ -69,30 +69,43 @@ std::string GetMatchingSiteEngagementDomain(
 // top 500 suitable domains, instead of in order by popularity. This means that
 // the resulting "similar" domain may not be the most popular domain that
 // matches.
-std::string GetSimilarDomainFromTop500(const DomainInfo& navigated_domain) {
+std::string GetSimilarDomainFromTop500(
+    const DomainInfo& navigated_domain,
+    const LookalikeTargetAllowlistChecker& target_allowlisted) {
   for (const std::string& navigated_skeleton : navigated_domain.skeletons) {
     for (const char* const top_domain_skeleton :
          top500_domains::kTop500EditDistanceSkeletons) {
-      if (IsEditDistanceAtMostOne(base::UTF8ToUTF16(navigated_skeleton),
-                                  base::UTF8ToUTF16(top_domain_skeleton))) {
-        const std::string top_domain =
-            url_formatter::LookupSkeletonInTopDomains(top_domain_skeleton)
-                .domain;
-        DCHECK(!top_domain.empty());
-        // If the only difference between the navigated and top
-        // domains is the registry part, this is unlikely to be a spoofing
-        // attempt. Ignore this match and continue. E.g. If the navigated domain
-        // is google.com.tw and the top domain is google.com.tr, this won't
-        // produce a match.
-        const std::string top_domain_without_registry =
-            url_formatter::top_domains::HostnameWithoutRegistry(top_domain);
-        DCHECK(url_formatter::top_domains::IsEditDistanceCandidate(
-            top_domain_without_registry));
-        if (navigated_domain.domain_without_registry !=
-            top_domain_without_registry) {
-          return top_domain;
-        }
+      if (!IsEditDistanceAtMostOne(base::UTF8ToUTF16(navigated_skeleton),
+                                   base::UTF8ToUTF16(top_domain_skeleton))) {
+        continue;
       }
+
+      const std::string top_domain =
+          url_formatter::LookupSkeletonInTopDomains(top_domain_skeleton).domain;
+      DCHECK(!top_domain.empty());
+
+      // If the only difference between the navigated and top
+      // domains is the registry part, this is unlikely to be a spoofing
+      // attempt. Ignore this match and continue. E.g. If the navigated domain
+      // is google.com.tw and the top domain is google.com.tr, this won't
+      // produce a match.
+      const std::string top_domain_without_registry =
+          url_formatter::top_domains::HostnameWithoutRegistry(top_domain);
+      DCHECK(url_formatter::top_domains::IsEditDistanceCandidate(
+          top_domain_without_registry));
+      if (navigated_domain.domain_without_registry ==
+          top_domain_without_registry) {
+        continue;
+      }
+
+      // Skip past domains that are allowed to be spoofed.
+      if (target_allowlisted.Run(GURL(std::string(url::kHttpsScheme) +
+                                      url::kStandardSchemeSeparator +
+                                      top_domain))) {
+        continue;
+      }
+
+      return top_domain;
     }
   }
   return std::string();
@@ -102,7 +115,8 @@ std::string GetSimilarDomainFromTop500(const DomainInfo& navigated_domain) {
 // one to |domain_and_registry|.
 std::string GetSimilarDomainFromEngagedSites(
     const DomainInfo& navigated_domain,
-    const std::vector<DomainInfo>& engaged_sites) {
+    const std::vector<DomainInfo>& engaged_sites,
+    const LookalikeTargetAllowlistChecker& target_allowlisted) {
   for (const std::string& navigated_skeleton : navigated_domain.skeletons) {
     for (const DomainInfo& engaged_site : engaged_sites) {
       if (!url_formatter::top_domains::IsEditDistanceCandidate(
@@ -110,18 +124,29 @@ std::string GetSimilarDomainFromEngagedSites(
         continue;
       }
       for (const std::string& engaged_skeleton : engaged_site.skeletons) {
-        if (IsEditDistanceAtMostOne(base::UTF8ToUTF16(navigated_skeleton),
-                                    base::UTF8ToUTF16(engaged_skeleton))) {
-          // If the only difference between the navigated and engaged
-          // domain is the registry part, this is unlikely to be a spoofing
-          // attempt. Ignore this match and continue. E.g. If the navigated
-          // domain is google.com.tw and the top domain is google.com.tr, this
-          // won't produce a match.
-          if (navigated_domain.domain_without_registry !=
-              engaged_site.domain_without_registry) {
-            return engaged_site.domain_and_registry;
-          }
+        if (!IsEditDistanceAtMostOne(base::UTF8ToUTF16(navigated_skeleton),
+                                     base::UTF8ToUTF16(engaged_skeleton))) {
+          continue;
         }
+
+        // If the only difference between the navigated and engaged
+        // domain is the registry part, this is unlikely to be a spoofing
+        // attempt. Ignore this match and continue. E.g. If the navigated
+        // domain is google.com.tw and the top domain is google.com.tr, this
+        // won't produce a match.
+        if (navigated_domain.domain_without_registry ==
+            engaged_site.domain_without_registry) {
+          continue;
+        }
+
+        // Skip past domains that are allowed to be spoofed.
+        if (target_allowlisted.Run(GURL(std::string(url::kHttpsScheme) +
+                                        url::kStandardSchemeSeparator +
+                                        engaged_site.domain_and_registry))) {
+          continue;
+        }
+
+        return engaged_site.domain_and_registry;
       }
     }
   }
@@ -351,8 +376,8 @@ bool GetMatchingDomain(
           navigated_domain.domain_and_registry)) {
     // If we can't find an exact top domain or an engaged site, try to find an
     // engaged domain within an edit distance of one.
-    const std::string similar_engaged_domain =
-        GetSimilarDomainFromEngagedSites(navigated_domain, engaged_sites);
+    const std::string similar_engaged_domain = GetSimilarDomainFromEngagedSites(
+        navigated_domain, engaged_sites, in_target_allowlist);
     if (!similar_engaged_domain.empty() &&
         navigated_domain.domain_and_registry != similar_engaged_domain) {
       *matched_domain = similar_engaged_domain;
@@ -362,7 +387,7 @@ bool GetMatchingDomain(
 
     // Finally, try to find a top domain within an edit distance of one.
     const std::string similar_top_domain =
-        GetSimilarDomainFromTop500(navigated_domain);
+        GetSimilarDomainFromTop500(navigated_domain, in_target_allowlist);
     if (!similar_top_domain.empty() &&
         navigated_domain.domain_and_registry != similar_top_domain) {
       *matched_domain = similar_top_domain;

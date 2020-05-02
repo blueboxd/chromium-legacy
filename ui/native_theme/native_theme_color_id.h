@@ -7,7 +7,7 @@
 
 // Clang format mangles sectioned lists like the below badly.
 // clang-format off
-#define NATIVE_THEME_COLOR_IDS                                                 \
+#define NATIVE_THEME_CROSS_PLATFORM_COLOR_IDS                                  \
   /* Windows */                                                                \
   OP(kColorId_WindowBackground),                                               \
   /* Dialogs */                                                                \
@@ -148,6 +148,20 @@
   OP(kColorId_AlertSeverityHigh),                                              \
   /* Colors for icons in non-menu contexts. */                                 \
   OP(kColorId_DefaultIconColor)
+
+#if defined(OS_CHROMEOS)
+#define NATIVE_THEME_CHROMEOS_COLOR_IDS                                        \
+  /* Notification view */                                                      \
+  OP(kColorId_NotificationButtonBackground)
+#endif
+
+#if defined(OS_CHROMEOS)
+#define NATIVE_THEME_COLOR_IDS                                                 \
+  NATIVE_THEME_CROSS_PLATFORM_COLOR_IDS,                                       \
+  NATIVE_THEME_CHROMEOS_COLOR_IDS
+#else
+#define NATIVE_THEME_COLOR_IDS NATIVE_THEME_CROSS_PLATFORM_COLOR_IDS
+#endif
 
 // clang-format on
 

@@ -5,6 +5,9 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_SETTINGS_CHROMEOS_SEARCH_SEARCH_CONCEPT_H_
 #define CHROME_BROWSER_UI_WEBUI_SETTINGS_CHROMEOS_SEARCH_SEARCH_CONCEPT_H_
 
+#include "chrome/browser/ui/webui/settings/chromeos/constants/routes.mojom.h"
+#include "chrome/browser/ui/webui/settings/chromeos/constants/setting.mojom.h"
+#include "chrome/browser/ui/webui/settings/chromeos/search/search.mojom.h"
 #include "chrome/browser/ui/webui/settings/chromeos/search/search_result_icon.mojom.h"
 
 namespace chromeos {
@@ -18,8 +21,16 @@ namespace settings {
 // Each concept has a canonical description search tag as well as up to
 // |kMaxAltTagsPerConcept| alternate descriptions search tags.
 struct SearchConcept {
-  static constexpr size_t kMaxAltTagsPerConcept = 4;
+  static constexpr size_t kMaxAltTagsPerConcept = 5;
   static constexpr int kAltTagEnd = 0;
+
+  // Identifier for the concept; each concept describes one section, subpage, or
+  // setting.
+  union Identifier {
+    mojom::Section section;
+    mojom::Subpage subpage;
+    mojom::Setting setting;
+  };
 
   SearchConcept(const SearchConcept& other) = default;
   SearchConcept& operator=(const SearchConcept& other) = default;
@@ -41,6 +52,14 @@ struct SearchConcept {
   // Icon to display for search results associated with this concept.
   mojom::SearchResultIcon icon;
 
+  // Default ranking, which is used to break ties when searching for results.
+  mojom::SearchResultDefaultRank default_rank;
+
+  // The type and identifier for this search result. The value of the |type|
+  // field indicates the union member used by |id|.
+  mojom::SearchResultType type;
+  Identifier id;
+
   // Alternate message IDs (from os_settings_search_tag_strings.grdp)
   // corresponding to this concept. These IDs refer to messages which represent
   // an alternate way of describing the same concept (e.g., "Monitor settings"
@@ -50,9 +69,9 @@ struct SearchConcept {
   // all concepts will require this many. A value of kAltTagEnd is used to
   // indicate that there are no further tags.
   //
-  // Example 1 - Four alternate tags: [1234, 1235, 1236, 1237]
-  // Example 2 - Two alternate tags: [1234, 1235, kAltTagEnd, _]
-  // Example 3 - Zero alternate tags: [kAltTagEnd, _, _, _]
+  // Example 1 - Five alternate tags: [1234, 1235, 1236, 1237, 1238]
+  // Example 2 - Two alternate tags: [1234, 1235, kAltTagEnd, _, _]
+  // Example 3 - Zero alternate tags: [kAltTagEnd, _, _, _, _]
   int alt_tag_ids[kMaxAltTagsPerConcept] = {kAltTagEnd};
 };
 

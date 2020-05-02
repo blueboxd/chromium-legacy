@@ -34,6 +34,29 @@ struct WebApplicationIconInfo {
   SquareSizePx square_size_px;
 };
 
+// Structure used when creating app icon shortcuts menu and for downloading
+// associated shortcut icons when supported by OS platform (eg. Windows).
+struct WebApplicationShortcutInfo {
+  WebApplicationShortcutInfo();
+  WebApplicationShortcutInfo(const WebApplicationShortcutInfo&);
+  WebApplicationShortcutInfo(WebApplicationShortcutInfo&&) noexcept;
+  ~WebApplicationShortcutInfo();
+  WebApplicationShortcutInfo& operator=(const WebApplicationShortcutInfo&);
+  WebApplicationShortcutInfo& operator=(WebApplicationShortcutInfo&&) noexcept;
+
+  // Title of shortcut item in App Icon Shortcut Menu.
+  base::string16 name;
+
+  // URL launched when shortcut item is selected.
+  GURL url;
+
+  // List of shortcut icon URLs with associated square size.
+  std::vector<WebApplicationIconInfo> shortcut_icon_infos;
+
+  // Shortcut icon bitmaps keyed by their square size.
+  std::map<SquareSizePx, SkBitmap> shortcut_icon_bitmaps;
+};
+
 // Structure used when installing a web page as an app.
 struct WebApplicationInfo {
   enum MobileCapable {
@@ -91,6 +114,9 @@ struct WebApplicationInfo {
 
   // Additional search terms that users can use to find the app.
   std::vector<std::string> additional_search_terms;
+
+  // Set of shortcut infos populated using shortcuts specified in the manifest.
+  std::vector<WebApplicationShortcutInfo> shortcut_infos;
 };
 
 std::ostream& operator<<(std::ostream& out,

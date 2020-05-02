@@ -30,22 +30,6 @@ struct GestureEventData;
 struct GestureEventDetails;
 class MotionEvent;
 
-bool CanCoalesce(const blink::WebInputEvent& event_to_coalesce,
-                 const blink::WebInputEvent& event);
-
-void Coalesce(const blink::WebInputEvent& event_to_coalesce,
-              blink::WebInputEvent* event);
-
-bool IsCompatibleScrollorPinch(const blink::WebGestureEvent& new_event,
-                               const blink::WebGestureEvent& event_in_queue);
-
-// Coalesces 3 GestureScroll/PinchUpdate into 2 events.
-// Returns <GestureScrollUpdate, GesturePinchUpdate>.
-std::pair<blink::WebGestureEvent, blink::WebGestureEvent>
-CoalesceScrollAndPinch(const blink::WebGestureEvent* second_last_event,
-                       const blink::WebGestureEvent& last_event,
-                       const blink::WebGestureEvent& new_event);
-
 blink::WebTouchEvent CreateWebTouchEventFromMotionEvent(
     const MotionEvent& event,
     bool may_cause_scrolling,

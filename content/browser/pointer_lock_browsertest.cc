@@ -240,7 +240,9 @@ IN_PROC_BROWSER_TEST_F(PointerLockBrowserTest,
                    EXECUTE_SCRIPT_NO_USER_GESTURE));
 }
 
-IN_PROC_BROWSER_TEST_F(PointerLockBrowserTest, PointerLockEventRouting) {
+// Flaky test crbug.com/1077306
+IN_PROC_BROWSER_TEST_F(PointerLockBrowserTest,
+                       DISABLED_PointerLockEventRouting) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b)"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
@@ -514,14 +516,9 @@ IN_PROC_BROWSER_TEST_F(PointerLockBrowserTest, PointerLockOopifCrashes) {
   }
 }
 
-// Flaky on Windows.  https://crbug.com/994228
-#if defined(OS_WIN)
-#define MAYBE_PointerLockWheelEventRouting DISABLED_PointerLockWheelEventRouting
-#else
-#define MAYBE_PointerLockWheelEventRouting PointerLockWheelEventRouting
-#endif
+// Flaky test https://crbug.com/994228
 IN_PROC_BROWSER_TEST_F(PointerLockBrowserTest,
-                       MAYBE_PointerLockWheelEventRouting) {
+                       DISABLED_PointerLockWheelEventRouting) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b)"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));

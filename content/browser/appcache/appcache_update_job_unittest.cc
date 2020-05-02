@@ -58,11 +58,13 @@
 #include "third_party/blink/public/mojom/devtools/console_message.mojom.h"
 
 namespace {
+// tools/origin_trials/generate_token.py http://mockhost AppCache
+// --expire-days=2000
 #define APPCACHE_ORIGIN_TRIAL_TOKEN                                            \
-  "AnIRfMbu5xrUEIBGno19QnlNiW7gZgKrkLaCysH+/"                                  \
-  "XU2FEpF+"                                                                   \
-  "TLisekclfG9xOkjQgTEllip14FPATbapHAH5ggAAABNeyJvcmlnaW4iOiAiaHR0cDovL21vY2t" \
-  "ob3N0OjgwIiwgImZlYXR1cmUiOiAiQXBwQ2FjaGUiLCAiZXhwaXJ5IjogMTU4ODM1OTM5NH0="
+  "AhiiB7vi3JiEO1/"                                                            \
+  "RQIytQslLSN3WYVu3Xd32abYhTia+91ladjnXSClfU981x+"                            \
+  "aoPimEqYVy6tWoeMZZYTpqlggAAABNeyJvcmlnaW4iOiAiaHR0cDovL21vY2tob3N0OjgwIiwg" \
+  "ImZlYXR1cmUiOiAiQXBwQ2FjaGUiLCAiZXhwaXJ5IjogMTc2MTE2NjQxOH0="
 
 const char* kTestAppCacheOriginTrialToken = APPCACHE_ORIGIN_TRIAL_TOKEN;
 
@@ -85,6 +87,16 @@ const base::TimeDelta kOneYear = base::TimeDelta::FromDays(365);
 const char kManifest1Contents[] =
     "CACHE MANIFEST\n"
     "explicit1\n"
+    "FALLBACK:\n"
+    "fallback1 fallback1a\n"
+    "NETWORK:\n"
+    "*\n";
+
+const char kManifest1OriginTrialContents[] =
+    "CACHE MANIFEST\n"
+    "explicit1\n"
+    "ORIGIN-TRIAL:\n" APPCACHE_ORIGIN_TRIAL_TOKEN
+    "\n"
     "FALLBACK:\n"
     "fallback1 fallback1a\n"
     "NETWORK:\n"
@@ -1110,6 +1122,85 @@ class AppCacheUpdateJobTest : public testing::Test,
         blink::mojom::AppCacheEventID::APPCACHE_NO_UPDATE_EVENT);
 
     WaitForUpdateToFinish();
+  }
+
+  void UpgradeNotModifiedVersion1Test() {
+    MakeService();
+    group_ = base::MakeRefCounted<AppCacheGroup>(
+        service_->storage(), MockHttpServer::GetMockUrl("files/notmodified"),
+        service_->storage()->NewGroupId());
+    AppCacheUpdateJob* update =
+        new AppCacheUpdateJob(service_.get(), group_.get());
+    group_->update_job_ = update;
+
+    // Create response writer to get a response id.
+    response_writer_ =
+        service_->storage()->CreateResponseWriter(group_->manifest_url());
+
+    AppCache* cache = MakeCacheForGroup(service_->storage()->NewCacheId(),
+                                        response_writer_->response_id());
+    cache->set_manifest_parser_version(1);
+    EXPECT_EQ(cache->token_expires(), base::Time());
+
+    MockFrontend* frontend = MakeMockFrontend();
+    AppCacheHost* host = MakeHost(frontend);
+    host->AssociateCompleteCache(cache);
+
+    // Set up checks for when update job finishes.
+    do_checks_after_update_finished_ = true;
+    expect_group_obsolete_ = false;
+    expect_group_has_cache_ = true;
+    tested_manifest_path_override_ = "files/notmodified";
+    tested_manifest_ = MANIFEST1;
+
+    // Get the expected expiration date of the test token.
+    {
+      blink::TrialTokenValidator validator;
+      std::string token_feature;
+      ASSERT_EQ(validator.ValidateToken(
+                    kTestAppCacheOriginTrialToken, MockHttpServer::GetOrigin(),
+                    base::Time::Now(), &token_feature, &expect_token_expires_),
+                blink::OriginTrialTokenStatus::kSuccess);
+      EXPECT_EQ(GetAppCacheOriginTrialNameForTesting(), token_feature);
+      EXPECT_NE(base::Time(), expect_token_expires_);
+    }
+
+    frontend->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
+    frontend->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
+    frontend->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);
+    frontend->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);
+    frontend->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);
+    frontend->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_UPDATE_READY_EVENT);
+
+    // Seed the response_info working set with canned data so that an existing
+    // manifest is reused by the update job.
+    const char kData[] =
+        "HTTP/1.1 200 OK\0"
+        "Last-Modified: Sat, 29 Oct 1994 19:43:31 GMT\0"
+        "\0";
+    const std::string kRawHeaders(kData, base::size(kData));
+    MakeAppCacheResponseInfo(group_->manifest_url(),
+                             response_writer_->response_id(), kRawHeaders);
+
+    // Last data parsed pretends to be version 1, and doesn't know about
+    // the origin trial (verified above).  Even with a 304, this should
+    // refresh the token expires field.
+    const std::string seed_data(kManifest1OriginTrialContents);
+    scoped_refptr<net::StringIOBuffer> io_buffer =
+        base::MakeRefCounted<net::StringIOBuffer>(seed_data);
+    response_writer_->WriteData(
+        io_buffer.get(), seed_data.length(),
+        base::BindOnce(
+            &AppCacheUpdateJobTest::StartUpdateAfterSeedingStorageData,
+            base::Unretained(this)));
+
+    // Start update after data write completes asynchronously.
   }
 
   void UpgradeManifestDataChangedScopeUnchangedTest() {
@@ -4081,7 +4172,7 @@ class AppCacheUpdateJobTest : public testing::Test,
                               int64_t manifest_response_id) {
     AppCache* cache = new AppCache(service_->storage(), cache_id);
     cache->set_complete(true);
-    cache->set_manifest_parser_version(1);
+    cache->set_manifest_parser_version(2);
     cache->set_manifest_scope("/");
     cache->set_update_time(base::Time::Now() - kOneHour);
     group_->AddCache(cache);
@@ -4165,6 +4256,7 @@ class AppCacheUpdateJobTest : public testing::Test,
 
     if (expect_group_has_cache_) {
       ASSERT_TRUE(group_->newest_complete_cache() != nullptr);
+      EXPECT_EQ(group_->newest_complete_cache()->manifest_parser_version(), 2);
 
       if (expect_non_null_update_time_)
         EXPECT_TRUE(!group_->newest_complete_cache()->update_time().is_null());
@@ -5023,6 +5115,10 @@ TEST_F(AppCacheUpdateJobTest, CacheAttemptNotModified) {
 
 TEST_F(AppCacheUpdateJobTest, UpgradeNotModified) {
   RunTestOnUIThread(&AppCacheUpdateJobTest::UpgradeNotModifiedTest);
+}
+
+TEST_F(AppCacheUpdateJobTest, UpgradeNotModifiedVersion1) {
+  RunTestOnUIThread(&AppCacheUpdateJobTest::UpgradeNotModifiedVersion1Test);
 }
 
 TEST_F(AppCacheUpdateJobTest, UpgradeManifestDataChangedScopeUnchanged) {

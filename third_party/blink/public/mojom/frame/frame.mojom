@@ -343,6 +343,21 @@ interface LocalFrameHost {
                 array<MenuItem> menu_items,
                 bool right_aligned,
                 bool allow_multiple_selection);
+
+  // Sent when the renderer loads a resource from its memory cache. This message
+  // lets the browser know we loaded a resource from the memory cache and is
+  // needed to display the correct SSL indicators.
+  // TODO(kinuko): Need to check if this comment is still relevant.
+  //
+  // The recipients of this message have no use for data: URLs: they don't
+  // affect the page's insecure content list and are not in the disk cache. To
+  // prevent large (1M+) data: URLs from crashing in the Mojo system, we simply
+  // filter them out before calling this message.
+  //
+  // Note: May only be sent once per URL per frame per committed load.
+  DidLoadResourceFromMemoryCache(
+      url.mojom.Url url, string http_method,
+      string mime_type, network.mojom.RequestDestination request_destination);
 };
 
 // Implemented in Blink, this interface defines frame-specific methods that will

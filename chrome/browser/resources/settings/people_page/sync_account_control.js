@@ -373,13 +373,15 @@ cr.define('settings', function() {
     /** @private */
     onErrorButtonTap_() {
       const router = settings.Router.getInstance();
+      const routes = /** @type {{ SIGN_OUT: !settings.Route }} */(
+          router.getRoutes());
       switch (this.syncStatus.statusAction) {
         case settings.StatusAction.REAUTHENTICATE:
           this.syncBrowserProxy_.startSignIn();
           break;
         case settings.StatusAction.SIGNOUT_AND_SIGNIN:
           if (this.syncStatus.domain) {
-            router.navigateTo(router.getRoutes().SIGN_OUT);
+            router.navigateTo(routes.SIGN_OUT);
           } else {
             // Silently sign the user out without deleting their profile and
             // prompt them to sign back in.
@@ -436,7 +438,9 @@ cr.define('settings', function() {
     onTurnOffButtonTap_() {
       /* This will route to people_page's disconnect dialog. */
       const router = settings.Router.getInstance();
-      router.navigateTo(router.getRoutes().SIGN_OUT);
+      router.navigateTo(/** @type {{ SIGN_OUT: !settings.Route }} */ (
+          router.getRoutes())
+          .SIGN_OUT);
     },
 
     /** @private */

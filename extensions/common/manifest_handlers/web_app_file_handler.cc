@@ -139,6 +139,8 @@ WebAppFileHandlers::~WebAppFileHandlers() = default;
 // static
 const apps::FileHandlers* WebAppFileHandlers::GetWebAppFileHandlers(
     const Extension* extension) {
+  if (!extension)
+    return nullptr;
   WebAppFileHandlers* manifest_data = static_cast<WebAppFileHandlers*>(
       extension->GetManifestData(keys::kWebAppFileHandlers));
   return manifest_data ? &manifest_data->file_handlers : nullptr;

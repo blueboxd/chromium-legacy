@@ -8,7 +8,7 @@
 /**
  * @typedef {{resolver: !PromiseResolver,
  *            callCount: number,
- *            resultMapper: Function}}
+ *            resultMapper: (!Function|undefined)}}
  */
 let MethodData;
 
@@ -56,7 +56,7 @@ let MethodData;
   /**
    * Creates a |TestBrowserProxy|, which has mock functions for all functions of
    * class |clazz|.
-   * @param {Class} clazz
+   * @param {Object} clazz
    * @return {TestBrowserProxy}
    */
   static fromClass(clazz) {
@@ -74,6 +74,7 @@ let MethodData;
    * invoked when a method is called using |setResultMapperFor(methodName)|.
    * @param {!Array<string>} methodNames
    * @protected
+   * @suppress {checkTypes}
    */
   mockMethods(methodNames) {
     methodNames.forEach(methodName => {
@@ -97,7 +98,7 @@ let MethodData;
    * Called by subclasses when a tracked method is called from the code that
    * is being tested.
    * @param {string} methodName
-   * @param {*=} args Optional argument to be forwarded to the testing
+   * @param {*=} opt_arg Optional argument to be forwarded to the testing
    *     code, useful for checking whether the proxy method was called with
    *     the expected arguments.
    * @protected
@@ -113,9 +114,10 @@ let MethodData;
    * Called by subclasses when a tracked method is called from the code that
    * is being tested.
    * @param {string} methodName
-   * @param {!{arg: *, args: Array}} argObject Optional argument to be forwarded
-   *     to the testing code, useful for checking whether the proxy method was
-   *     called with the expected arguments. Only |arg| or |args| should be set.
+   * @param {!{arg: *, args: (!Array|undefined)}} argObject Optional argument to
+   *     be forwarded to the testing code, useful for checking whether the proxy
+   *     method was called with the expected arguments. Only |arg| or |args|
+   *     should be set.
    * @return {*}
    * @private
    */

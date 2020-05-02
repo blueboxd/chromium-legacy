@@ -93,8 +93,8 @@ void SecureDnsHandler::RegisterMessages() {
                           base::Unretained(this)));
 
   web_ui()->RegisterMessageCallback(
-      "validateCustomDnsEntry",
-      base::BindRepeating(&SecureDnsHandler::HandleValidateCustomDnsEntry,
+      "parseCustomDnsEntry",
+      base::BindRepeating(&SecureDnsHandler::HandleParseCustomDnsEntry,
                           base::Unretained(this)));
 
   web_ui()->RegisterMessageCallback(
@@ -211,24 +211,24 @@ void SecureDnsHandler::HandleGetSecureDnsSetting(const base::ListValue* args) {
   ResolveJavascriptCallback(callback_id, *CreateSecureDnsSettingDict());
 }
 
-void SecureDnsHandler::HandleValidateCustomDnsEntry(
-    const base::ListValue* args) {
+void SecureDnsHandler::HandleParseCustomDnsEntry(const base::ListValue* args) {
   AllowJavascript();
   const base::Value* callback_id;
   std::string custom_entry;
   CHECK(args->Get(0, &callback_id));
   CHECK(args->GetString(1, &custom_entry));
 
-  // Return the first template, or none if the entry is invalid.
-  std::string first_template;
-  bool valid = !custom_entry.empty() &&
-               chrome_browser_net::IsValidDohTemplateGroup(custom_entry);
-  if (valid) {
-    first_template =
-        std::string(chrome_browser_net::SplitDohTemplateGroup(custom_entry)[0]);
+  // Return all templates in the entry, or none if they are not all valid.
+  base::Value templates(base::Value::Type::LIST);
+  if (chrome_browser_net::IsValidDohTemplateGroup(custom_entry)) {
+    for (base::StringPiece t :
+         chrome_browser_net::SplitDohTemplateGroup(custom_entry)) {
+      templates.Append(t);
+    }
   }
-  UMA_HISTOGRAM_BOOLEAN("Net.DNS.UI.ValidationAttemptSuccess", valid);
-  ResolveJavascriptCallback(*callback_id, base::Value(first_template));
+  UMA_HISTOGRAM_BOOLEAN("Net.DNS.UI.ValidationAttemptSuccess",
+                        !templates.GetList().empty());
+  ResolveJavascriptCallback(*callback_id, templates);
 }
 
 void SecureDnsHandler::HandleProbeCustomDnsTemplate(

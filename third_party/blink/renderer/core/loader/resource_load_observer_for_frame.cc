@@ -126,8 +126,15 @@ void ResourceLoadObserverForFrame::DidReceiveResponse(
   }
 
   if (response_source == ResponseSource::kFromMemoryCache) {
-    frame_client->DispatchDidLoadResourceFromMemoryCache(
-        ResourceRequest(resource->GetResourceRequest()), response);
+    ResourceRequest request(resource->GetResourceRequest());
+
+    if (!request.Url().ProtocolIs(url::kDataScheme)) {
+      frame_client->DispatchDidLoadResourceFromMemoryCache(request, response);
+      frame->GetLocalFrameHostRemote().DidLoadResourceFromMemoryCache(
+          request.Url(), String::FromUTF8(request.HttpMethod().Utf8()),
+          String::FromUTF8(response.MimeType().Utf8()),
+          request.GetRequestDestination());
+    }
 
     // Note: probe::WillSendRequest needs to precede before this probe method.
     probe::MarkResourceAsCached(frame, document_loader_, identifier);

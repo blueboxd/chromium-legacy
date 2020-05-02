@@ -4,6 +4,24 @@
 
 (function() {
 
+// TODO(rbpotter): Remove this typedef when this file is no longer needed by OS
+// Settings.
+/**
+ * @typedef {{
+ *   BASIC: !settings.Route,
+ *   PEOPLE: !settings.Route,
+ *   SYNC: !settings.Route,
+ *   SYNC_ADVANCED: !settings.Route,
+ * }}
+ */
+let SyncRoutes;
+
+/** @return {!SyncRoutes} */
+function getSyncRoutes() {
+  const router = settings.Router.getInstance();
+  return /** @type {!SyncRoutes} */ (router.getRoutes());
+}
+
 /**
  * @fileoverview
  * 'settings-sync-page' is the settings page containing sync settings.
@@ -185,7 +203,7 @@ Polymer({
         'sync-prefs-changed', this.handleSyncPrefsChanged_.bind(this));
 
     const router = settings.Router.getInstance();
-    if (router.getCurrentRoute() == router.getRoutes().SYNC) {
+    if (router.getCurrentRoute() == getSyncRoutes().SYNC) {
       this.onNavigateToPage_();
     }
   },
@@ -193,7 +211,7 @@ Polymer({
   /** @override */
   detached() {
     const router = settings.Router.getInstance();
-    if (router.getRoutes().SYNC.contains(router.getCurrentRoute())) {
+    if (getSyncRoutes().SYNC.contains(router.getCurrentRoute())) {
       this.onNavigateAwayFromPage_();
     }
 
@@ -240,7 +258,7 @@ Polymer({
   /** @private */
   onFocusConfigChange_() {
     const router = settings.Router.getInstance();
-    this.focusConfig.set(router.getRoutes().SYNC_ADVANCED, () => {
+    this.focusConfig.set(getSyncRoutes().SYNC_ADVANCED.path, () => {
       cr.ui.focusWithoutInk(assert(this.$$('#sync-advanced-row')));
     });
   },
@@ -257,7 +275,7 @@ Polymer({
     this.setupCancelConfirmed_ = true;
     /** @type {!CrDialogElement} */ (this.$$('#setupCancelDialog')).close();
     const router = settings.Router.getInstance();
-    router.navigateTo(router.getRoutes().BASIC);
+    router.navigateTo(getSyncRoutes().BASIC);
     chrome.metricsPrivate.recordUserAction(
         'Signin_Signin_ConfirmCancelAdvancedSyncSettings');
   },
@@ -270,12 +288,12 @@ Polymer({
   /** @protected */
   currentRouteChanged() {
     const router = settings.Router.getInstance();
-    if (router.getCurrentRoute() == router.getRoutes().SYNC) {
+    if (router.getCurrentRoute() == getSyncRoutes().SYNC) {
       this.onNavigateToPage_();
       return;
     }
 
-    if (router.getRoutes().SYNC.contains(router.getCurrentRoute())) {
+    if (getSyncRoutes().SYNC.contains(router.getCurrentRoute())) {
       return;
     }
 
@@ -299,7 +317,7 @@ Polymer({
       // firing). Triggering navigation from within an observer leads to some
       // undefined behavior and runtime errors.
       requestAnimationFrame(() => {
-        router.navigateTo(router.getRoutes().SYNC);
+        router.navigateTo(getSyncRoutes().SYNC);
         this.showSetupCancelDialog_ = true;
         // Flush to make sure that the setup cancel dialog is attached.
         Polymer.dom.flush();
@@ -326,7 +344,7 @@ Polymer({
   /** @private */
   onNavigateToPage_() {
     const router = settings.Router.getInstance();
-    assert(router.getCurrentRoute() == router.getRoutes().SYNC);
+    assert(router.getCurrentRoute() == getSyncRoutes().SYNC);
     if (this.beforeunloadCallback_) {
       return;
     }
@@ -468,8 +486,8 @@ Polymer({
         this.pageStatus_ = pageStatus;
         return;
       case settings.PageStatus.DONE:
-        if (router.getCurrentRoute() == router.getRoutes().SYNC) {
-          router.navigateTo(router.getRoutes().PEOPLE);
+        if (router.getCurrentRoute() == getSyncRoutes().SYNC) {
+          router.navigateTo(getSyncRoutes().PEOPLE);
         }
         return;
       case settings.PageStatus.PASSPHRASE_FAILED:
@@ -534,7 +552,7 @@ Polymer({
   /** @private */
   onSyncAdvancedClick_() {
     const router = settings.Router.getInstance();
-    router.navigateTo(router.getRoutes().SYNC_ADVANCED);
+    router.navigateTo(getSyncRoutes().SYNC_ADVANCED);
   },
 
   /**
@@ -553,7 +571,7 @@ Polymer({
           'Signin_Signin_CancelAdvancedSyncSettings');
     }
     const router = settings.Router.getInstance();
-    router.navigateTo(router.getRoutes().BASIC);
+    router.navigateTo(getSyncRoutes().BASIC);
   },
 
   /**
@@ -566,7 +584,7 @@ Polymer({
         /** @type {!CrInputElement} */ (this.$$('#existingPassphraseInput'));
     const router = settings.Router.getInstance();
     if (passphraseInput &&
-        router.getCurrentRoute() === router.getRoutes().SYNC) {
+        router.getCurrentRoute() === getSyncRoutes().SYNC) {
       passphraseInput.focus();
     }
   },

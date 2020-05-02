@@ -126,15 +126,15 @@
     </template>
 
     <!-- Proxy -->
-    <div class="cr-row">
-      <template is="dom-if"
-          if="[[shouldShowProxyPolicyIndicator_(managedProperties_)]]">
+    <template is="dom-if"
+        if="[[shouldShowProxyPolicyIndicator_(managedProperties_)]]">
+      <div class="cr-row">
         <cr-policy-network-indicator-mojo
             property="[[managedProperties_.proxySettings.type]]">
         </cr-policy-network-indicator-mojo>
         <div>$i18n{networkProxyEnforcedPolicy}</div>
-      </template>
-    </div>
+      </div>
+    </template>
     <div class="cr-row continuation">
       <network-proxy class="flex" editable use-shared-proxies
           on-proxy-change="onProxyChange_"

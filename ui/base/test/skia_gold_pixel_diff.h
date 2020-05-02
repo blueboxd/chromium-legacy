@@ -21,6 +21,12 @@ class SkiaGoldPixelDiff {
  public:
   SkiaGoldPixelDiff();
   virtual ~SkiaGoldPixelDiff();
+
+  // Returns the platform used to generate this image. It is appended to the
+  // golden name of the images uploaded to the Skia Gold Server. This is pubic
+  // to be used in tests.
+  static std::string GetPlatform();
+
   // Call Init method before using this class.
   // Args:
   // screenshot_prefix The prefix for your screenshot name on GCS.

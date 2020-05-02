@@ -237,6 +237,11 @@ const base::Feature kDesktopPWAsLocalUpdatingThrottlePersistence{
 const base::Feature kDesktopPWAsTabStrip{"DesktopPWAsTabStrip",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables Desktop PWA installs to have a menu of shortcuts associated with
+// the app icon in the taskbar on Windows, or the dock on macOS or Linux.
+const base::Feature kDesktopPWAsAppIconShortcutsMenu{
+    "DesktopPWAsAppIconShortcutsMenu", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables or disables use of new Desktop PWAs browser controller (that uses the
 // universal web_app::AppRegistrar) by extensions-based bookmark apps. Note that
 // the new Desktop PWAs implementation (not based on extensions) always uses the

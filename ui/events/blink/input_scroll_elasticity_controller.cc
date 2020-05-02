@@ -99,7 +99,7 @@ InputScrollElasticityController::InputScrollElasticityController(
 InputScrollElasticityController::~InputScrollElasticityController() {
 }
 
-base::WeakPtr<InputScrollElasticityController>
+base::WeakPtr<ElasticOverscrollController>
 InputScrollElasticityController::GetWeakPtr() {
   if (helper_)
     return weak_factory_.GetWeakPtr();

@@ -18,7 +18,7 @@ export class TestPrivacyPageBrowserProxy extends TestBrowserProxy {
       'setBlockAutoplayEnabled',
       'getSecureDnsResolverList',
       'getSecureDnsSetting',
-      'validateCustomDnsEntry',
+      'parseCustomDnsEntry',
       'probeCustomDnsTemplate',
       'recordUserDropdownInteraction',
     ]);
@@ -46,10 +46,16 @@ export class TestPrivacyPageBrowserProxy extends TestBrowserProxy {
     this.resolverList_;
 
     /**
-     * @type {boolean}
+     * @type {!Array<string>}
      * @private
      */
-    this.isEntryValid_;
+    this.parsedEntry_ = [];
+
+    /**
+     * @type {!Object<string, boolean>}
+     * @private
+     */
+    this.probeResults_;
   }
 
   /** @override */
@@ -100,31 +106,33 @@ export class TestPrivacyPageBrowserProxy extends TestBrowserProxy {
   }
 
   /**
-   * Sets the return value for the next validateCustomDnsEntry call.
-   * @param {string} validEntry
+   * Sets the return value for the next parseCustomDnsEntry call.
+   * @param {!Array<string>} parsedEntry
    */
-  setValidEntry(validEntry) {
-    this.validEntry_ = validEntry;
+  setParsedEntry(parsedEntry) {
+    this.parsedEntry_ = parsedEntry;
   }
 
   /** @override */
-  validateCustomDnsEntry(entry) {
-    this.methodCalled('validateCustomDnsEntry', entry);
-    return Promise.resolve(this.validEntry_);
+  parseCustomDnsEntry(entry) {
+    this.methodCalled('parseCustomDnsEntry', entry);
+    return Promise.resolve(this.parsedEntry_);
   }
 
   /**
-   * Sets the return value for the next probeCustomDnsTemplate call.
-   * @param {boolean} success
+   * Sets the return values for probes to each template
+   * @param {!Object<string, boolean>} results
    */
-  setProbeSuccess(success) {
-    this.probeSuccess_ = success;
+  setProbeResults(results) {
+    this.probeResults_ = results;
   }
 
   /** @override */
   probeCustomDnsTemplate(template) {
     this.methodCalled('probeCustomDnsTemplate', template);
-    return Promise.resolve(this.probeSuccess_);
+    // Prohibit unexpected probes.
+    assertFalse(this.probeResults_[template] === undefined);
+    return Promise.resolve(this.probeResults_[template]);
   }
 
   /** @override */

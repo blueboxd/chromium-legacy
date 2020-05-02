@@ -21,6 +21,7 @@
 #include "content/public/common/isolated_world_ids.h"
 #include "content/public/common/use_zoom_for_dsf_policy.h"
 #include "content/public/renderer/render_frame.h"
+#include "content/renderer/render_thread_impl.h"
 #include "content/shell/common/web_test/web_test_string_util.h"
 #include "content/shell/renderer/web_test/blink_test_runner.h"
 #include "content/shell/test_runner/layout_dump.h"
@@ -421,7 +422,10 @@ void TestRunnerForSpecificView::DispatchBeforeInstallPromptCallback(
 }
 
 void TestRunnerForSpecificView::RunIdleTasks(v8::Local<v8::Function> callback) {
-  blink_test_runner()->RunIdleTasks(CreateClosureThatPostsV8Callback(callback));
+  blink::scheduler::WebThreadScheduler* scheduler =
+      content::RenderThreadImpl::current()->GetWebMainThreadScheduler();
+  blink::scheduler::RunIdleTasksForTesting(
+      scheduler, CreateClosureThatPostsV8Callback(std::move(callback)));
 }
 
 bool TestRunnerForSpecificView::IsCommandEnabled(const std::string& command) {

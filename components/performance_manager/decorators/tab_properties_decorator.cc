@@ -7,6 +7,7 @@
 #include "components/performance_manager/decorators/decorators_utils.h"
 #include "components/performance_manager/graph/node_attached_data_impl.h"
 #include "components/performance_manager/graph/page_node_impl.h"
+#include "components/performance_manager/public/graph/node_data_describer_registry.h"
 #include "components/performance_manager/public/performance_manager.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -39,6 +40,8 @@ class TabPropertiesDataImpl
   bool is_tab_ = false;
 };
 
+const char kDescriberName[] = "TabPropertiesDecorator";
+
 }  // namespace
 
 void TabPropertiesDecorator::SetIsTab(content::WebContents* contents,
@@ -53,6 +56,27 @@ void TabPropertiesDecorator::SetIsTabForTesting(PageNode* page_node,
       TabPropertiesDataImpl::GetOrCreate(PageNodeImpl::FromNode(page_node));
   DCHECK(data);
   data->set_is_tab(is_tab);
+}
+
+void TabPropertiesDecorator::OnPassedToGraph(Graph* graph) {
+  graph->GetNodeDataDescriberRegistry()->RegisterDescriber(this,
+                                                           kDescriberName);
+}
+
+void TabPropertiesDecorator::OnTakenFromGraph(Graph* graph) {
+  graph->GetNodeDataDescriberRegistry()->UnregisterDescriber(this);
+}
+
+base::Value TabPropertiesDecorator::DescribePageNodeData(
+    const PageNode* node) const {
+  auto* data = TabPropertiesDecorator::Data::FromPageNode(node);
+  if (!data)
+    return base::Value();
+
+  base::Value ret(base::Value::Type::DICTIONARY);
+  ret.SetBoolKey("IsInTabStrip", data->IsInTabStrip());
+
+  return ret;
 }
 
 TabPropertiesDecorator::Data::Data() = default;

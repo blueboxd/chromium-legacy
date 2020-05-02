@@ -91,6 +91,7 @@ extern const base::Feature kPageInfoPerformanceHints;
 extern const base::Feature kPayWithGoogleV1;
 extern const base::Feature kPhotoPickerVideoSupport;
 extern const base::Feature kPhotoPickerZoom;
+extern const base::Feature kProbabilisticCryptidRenderer;
 extern const base::Feature kReachedCodeProfiler;
 extern const base::Feature kReorderBookmarks;
 extern const base::Feature kReaderModeInCCT;

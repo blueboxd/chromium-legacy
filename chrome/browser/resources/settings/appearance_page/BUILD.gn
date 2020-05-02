@@ -56,8 +56,8 @@ js_library("appearance_fonts_page") {
 js_library("appearance_page") {
   deps = [
     ":appearance_browser_proxy",
-    "..:page_visibility.m",
-    "..:route.m",
+    "..:page_visibility",
+    "..:route",
     "..:router.m",
     "../controls:settings_dropdown_menu.m",
     "../settings_page:settings_animated_pages.m",

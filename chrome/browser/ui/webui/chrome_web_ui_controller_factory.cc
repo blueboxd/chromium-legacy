@@ -956,7 +956,9 @@ bool ChromeWebUIControllerFactory::IsWebUIAllowedToMakeNetworkRequests(
       // https://crbug.com/831813
       origin.host() == chrome::kChromeUIInspectHost ||
       // https://crbug.com/859345
-      origin.host() == chrome::kChromeUIDownloadsHost;
+      origin.host() == chrome::kChromeUIDownloadsHost ||
+      // TODO(crbug.com/1076506): remove when change to iframed OneGoogleBar.
+      origin.host() == chrome::kChromeUINewTabPageHost;
 }
 
 ChromeWebUIControllerFactory::ChromeWebUIControllerFactory() = default;

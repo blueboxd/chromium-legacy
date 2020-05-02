@@ -400,15 +400,14 @@ void CanvasResourceDispatcher::Reshape(const IntSize& size) {
 
 void CanvasResourceDispatcher::DidAllocateSharedBitmap(
     base::ReadOnlySharedMemoryRegion region,
-    ::gpu::mojom::blink::MailboxPtr id) {
+    const gpu::Mailbox& id) {
   if (sink_)
-    sink_->DidAllocateSharedBitmap(std::move(region), std::move(id));
+    sink_->DidAllocateSharedBitmap(std::move(region), id);
 }
 
-void CanvasResourceDispatcher::DidDeleteSharedBitmap(
-    ::gpu::mojom::blink::MailboxPtr id) {
+void CanvasResourceDispatcher::DidDeleteSharedBitmap(const gpu::Mailbox& id) {
   if (sink_)
-    sink_->DidDeleteSharedBitmap(std::move(id));
+    sink_->DidDeleteSharedBitmap(id);
 }
 
 void CanvasResourceDispatcher::SetFilterQuality(

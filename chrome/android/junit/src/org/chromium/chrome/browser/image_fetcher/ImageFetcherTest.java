@@ -124,7 +124,7 @@ public class ImageFetcherTest {
         assertEquals(client, params.clientName);
         assertEquals(0, params.width);
         assertEquals(0, params.height);
-        assertEquals(0, params.expirationInterval);
+        assertEquals(0, params.expirationIntervalMinutes);
 
         // Verifies params with size.
         params = ImageFetcher.Params.create(url, client, WIDTH_PX, HEIGHT_PX);
@@ -132,7 +132,7 @@ public class ImageFetcherTest {
         assertEquals(client, params.clientName);
         assertEquals(WIDTH_PX, params.width);
         assertEquals(HEIGHT_PX, params.height);
-        assertEquals(0, params.expirationInterval);
+        assertEquals(0, params.expirationIntervalMinutes);
     }
 
     @Test
@@ -147,6 +147,6 @@ public class ImageFetcherTest {
         assertEquals(client, params.clientName);
         assertEquals(WIDTH_PX, params.width);
         assertEquals(HEIGHT_PX, params.height);
-        assertEquals(EXPIRATION_INTERVAL, params.expirationInterval);
+        assertEquals(EXPIRATION_INTERVAL, params.expirationIntervalMinutes);
     }
 }

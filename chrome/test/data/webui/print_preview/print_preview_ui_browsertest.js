@@ -1033,6 +1033,33 @@ TEST_F('PrintPreviewKeyEventTest', 'CtrlShiftPOpensSystemDialog', function() {
   this.runMochaTest(key_event_test.TestNames.CtrlShiftPOpensSystemDialog);
 });
 
+GEN('#if defined(OS_CHROMEOS)');
+// eslint-disable-next-line no-var
+var PrintPreviewDestinationSelectTestCrOS = class extends PrintPreviewTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://print/test_loader.html?module=print_preview/destination_select_test_cros.js';
+  }
+
+  /** @override */
+  get suiteName() {
+    return destination_select_test_cros.suiteName;
+  }
+};
+
+TEST_F('PrintPreviewDestinationSelectTestCrOS', 'UpdateStatus', function() {
+  this.runMochaTest(destination_select_test_cros.TestNames.UpdateStatus);
+});
+
+TEST_F('PrintPreviewDestinationSelectTestCrOS', 'ChangeIcon', function() {
+  this.runMochaTest(destination_select_test_cros.TestNames.ChangeIcon);
+});
+
+TEST_F('PrintPreviewDestinationSelectTestCrOS', 'EulaIsDisplayed', function() {
+  this.runMochaTest(destination_select_test_cros.TestNames.EulaIsDisplayed);
+});
+
+GEN('#else');
 // eslint-disable-next-line no-var
 var PrintPreviewDestinationSelectTest = class extends PrintPreviewTest {
   /** @override */
@@ -1052,11 +1079,6 @@ TEST_F('PrintPreviewDestinationSelectTest', 'UpdateStatus', function() {
 
 TEST_F('PrintPreviewDestinationSelectTest', 'ChangeIcon', function() {
   this.runMochaTest(destination_select_test.TestNames.ChangeIcon);
-});
-
-GEN('#if defined(OS_CHROMEOS)');
-TEST_F('PrintPreviewDestinationSelectTest', 'EulaIsDisplayed', function() {
-  this.runMochaTest(destination_select_test.TestNames.EulaIsDisplayed);
 });
 GEN('#endif');
 

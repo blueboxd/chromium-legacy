@@ -24,14 +24,14 @@ import {FindShortcutBehavior} from 'chrome://resources/js/find_shortcut_behavior
 import {listenOnce} from 'chrome://resources/js/util.m.js';
 import 'chrome://resources/polymer/v3_0/paper-styles/color.js';
 import {setGlobalScrollTarget, resetGlobalScrollTargetForTesting} from '../global_scroll_target_behavior.m.js';
-import {loadTimeData} from '../i18n_setup.m.js';
+import {loadTimeData} from '../i18n_setup.js';
 import '../icons.m.js';
 import '../settings_main/settings_main.js';
 import '../settings_menu/settings_menu.js';
 import '../settings_shared_css.m.js';
-import {PageVisibility, pageVisibility} from '../page_visibility.m.js';
+import {PageVisibility, pageVisibility} from '../page_visibility.js';
 import '../prefs/prefs.m.js';
-import {routes} from '../route.m.js';
+import {routes} from '../route.js';
 import {Route, Router, RouteObserverBehavior} from '../router.m.js';
 import '../settings_vars_css.m.js';
 

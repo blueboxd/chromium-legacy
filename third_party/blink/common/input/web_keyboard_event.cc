@@ -10,4 +10,12 @@ std::unique_ptr<WebInputEvent> WebKeyboardEvent::Clone() const {
   return std::make_unique<WebKeyboardEvent>(*this);
 }
 
+bool WebKeyboardEvent::CanCoalesce(const WebInputEvent& event) const {
+  return false;
+}
+
+void WebKeyboardEvent::Coalesce(const WebInputEvent& event) {
+  NOTREACHED();
+}
+
 }  // namespace blink

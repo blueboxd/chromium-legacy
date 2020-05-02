@@ -16,10 +16,10 @@ import '../settings_shared_css.m.js';
 
 import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-import {loadTimeData} from '../i18n_setup.m.js';
-import {OpenWindowProxyImpl} from '../open_window_proxy.m.js';
+import {loadTimeData} from '../i18n_setup.js';
+import {OpenWindowProxyImpl} from '../open_window_proxy.js';
 import {PrefsBehavior} from '../prefs/prefs_behavior.m.js';
-import {routes} from '../route.m.js';
+import {routes} from '../route.js';
 import {Router} from '../router.m.js';
 
 import {PasswordCheckBehavior} from './password_check_behavior.js';

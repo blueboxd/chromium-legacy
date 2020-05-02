@@ -45,12 +45,6 @@ namespace blink {
 class CanvasResourceProvider;
 class StaticBitmapImage;
 
-// TODO(danakj): One day the gpu::mojom::Mailbox type should be shared with
-// blink directly and we won't need to use gpu::mojom::blink::Mailbox, nor the
-// conversion through WTF::Vector.
-gpu::mojom::blink::MailboxPtr SharedBitmapIdToGpuMailboxPtr(
-    const viz::SharedBitmapId& id);
-
 // Generic resource interface, used for locking (RAII) and recycling pixel
 // buffers of any type.
 // Note that this object may be accessed across multiple threads but not

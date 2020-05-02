@@ -604,6 +604,13 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
       bool right_aligned,
       bool allow_multiple_selection);
 
+  virtual void DidLoadResourceFromMemoryCache(
+      RenderFrameHostImpl* source,
+      const GURL& url,
+      const std::string& http_request,
+      const std::string& mime_type,
+      network::mojom::RequestDestination request_destination) {}
+
  protected:
   virtual ~RenderFrameHostDelegate() = default;
 };

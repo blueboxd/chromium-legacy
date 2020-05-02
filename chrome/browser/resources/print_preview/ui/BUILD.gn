@@ -23,7 +23,6 @@ js_type_check("closure_compile_module") {
     ":destination_dialog",
     ":destination_list",
     ":destination_list_item",
-    ":destination_select",
     ":destination_settings",
     ":dpi_settings",
     ":duplex_settings",
@@ -53,7 +52,12 @@ js_type_check("closure_compile_module") {
   ]
 
   if (is_chromeos) {
-    deps += [ ":pin_settings" ]
+    deps += [
+      ":destination_select_cros",
+      ":pin_settings",
+    ]
+  } else {
+    deps += [ ":destination_select" ]
   }
 }
 
@@ -133,7 +137,6 @@ js_library("header") {
 js_library("destination_settings") {
   deps = [
     ":destination_dialog",
-    ":destination_select",
     ":settings_behavior",
     "..:cloud_print_interface_impl",
     "../data:destination",
@@ -146,27 +149,45 @@ js_library("destination_settings") {
     "//ui/webui/resources/js:i18n_behavior.m",
     "//ui/webui/resources/js:web_ui_listener_behavior.m",
   ]
-}
 
-js_library("destination_select") {
-  deps = [
-    ":select_behavior",
-    "..:print_preview_utils",
-    "../data:destination",
-    "//third_party/polymer/v3_0/components-chromium/iron-iconset-svg:iron-iconset-svg",
-    "//third_party/polymer/v3_0/components-chromium/iron-meta:iron-meta",
-    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
-    "//ui/webui/resources/js:i18n_behavior.m",
-  ]
+  if (is_chromeos) {
+    deps += [ ":destination_select_cros" ]
+  } else {
+    deps += [ ":destination_select" ]
+  }
 }
 
 if (is_chromeos) {
+  js_library("destination_select_cros") {
+    deps = [
+      ":select_behavior",
+      "..:print_preview_utils",
+      "../data:destination",
+      "//third_party/polymer/v3_0/components-chromium/iron-iconset-svg:iron-iconset-svg",
+      "//third_party/polymer/v3_0/components-chromium/iron-meta:iron-meta",
+      "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+      "//ui/webui/resources/js:i18n_behavior.m",
+    ]
+  }
+
   js_library("pin_settings") {
     deps = [
       ":input_behavior",
       ":settings_behavior",
       "../data:state",
       "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+    ]
+  }
+} else {
+  js_library("destination_select") {
+    deps = [
+      ":select_behavior",
+      "..:print_preview_utils",
+      "../data:destination",
+      "//third_party/polymer/v3_0/components-chromium/iron-iconset-svg:iron-iconset-svg",
+      "//third_party/polymer/v3_0/components-chromium/iron-meta:iron-meta",
+      "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+      "//ui/webui/resources/js:i18n_behavior.m",
     ]
   }
 }
@@ -493,7 +514,7 @@ html_to_js("web_components") {
     "destination_dialog.js",
     "destination_list_item.js",
     "destination_list.js",
-    "destination_select.js",
+    "destination_select_css.js",
     "destination_settings.js",
     "dpi_settings.js",
     "duplex_settings.js",
@@ -510,7 +531,6 @@ html_to_js("web_components") {
     "other_options_settings.js",
     "pages_per_sheet_settings.js",
     "pages_settings.js",
-    "pin_settings.js",
     "preview_area.js",
     "print_preview_search_box.js",
     "print_preview_shared_css.js",
@@ -522,4 +542,12 @@ html_to_js("web_components") {
     "sidebar.js",
     "throbber_css.js",
   ]
+  if (is_chromeos) {
+    js_files += [
+      "destination_select_cros.js",
+      "pin_settings.js",
+    ]
+  } else {
+    js_files += [ "destination_select.js" ]
+  }
 }

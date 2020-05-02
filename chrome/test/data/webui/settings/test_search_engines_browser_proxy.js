@@ -2,7 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// #import {TestBrowserProxy} from 'chrome://test/test_browser_proxy.m.js';
+// clang-format off
+// #import {TestBrowserProxy} from '../test_browser_proxy.m.js';
+// #import {SearchEnginesBrowserProxy, SearchEnginesInfo, SearchEngine} from 'chrome://settings/settings.js';
+// clang-format on
 
 cr.define('settings_search', function() {
   /**
@@ -89,6 +92,7 @@ cr.define('settings_search', function() {
       default: false,
       displayName: 'Google',
       iconURL: 'http://www.google.com/favicon.ico',
+      id: 0,
       isOmniboxExtension: false,
       keyword: 'google.com',
       modelIndex: 0,

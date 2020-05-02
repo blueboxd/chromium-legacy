@@ -62,6 +62,8 @@ Additional information is available on the following pages:
 * [Threading](docs/threading.md): ChromeDriver threading model.
 * [Chrome Connection](docs/chrome_connection.md):
   How ChromeDriver connects to Chrome and controls it.
+* [DevTools Event Listener](docs/event_listener.md):
+  How ChromeDriver responds to events from Chrome DevTools.
 * [Run JavaScript Code](docs/run_javascript.md):
   How ChromeDriver sends JavaScript code to Chrome for execution.
 

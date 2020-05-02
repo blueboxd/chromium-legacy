@@ -33,12 +33,12 @@ import '../default_browser_page/default_browser_page.js';
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {beforeNextRender, html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-import {loadTimeData} from '../i18n_setup.m.js';
-import {PageVisibility} from '../page_visibility.m.js';
+import {loadTimeData} from '../i18n_setup.js';
+import {PageVisibility} from '../page_visibility.js';
 // <if expr="chromeos">
 import {PrefsBehavior} from '../prefs/prefs_behavior.m.js';
 // </if>
-import {routes} from '../route.m.js';
+import {routes} from '../route.js';
 import {Route, RouteObserverBehavior, Router} from '../router.m.js';
 import {getSearchManager, SearchResult} from '../search_settings.m.js';
 import {MainPageBehavior} from '../settings_page/main_page_behavior.m.js';

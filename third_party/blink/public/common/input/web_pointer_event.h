@@ -35,6 +35,8 @@ class BLINK_COMMON_EXPORT WebPointerEvent : public WebInputEvent,
   WebPointerEvent(WebInputEvent::Type, const WebMouseEvent&);
 
   std::unique_ptr<WebInputEvent> Clone() const override;
+  bool CanCoalesce(const WebInputEvent& event) const override;
+  void Coalesce(const WebInputEvent& event) override;
 
   static WebPointerEvent CreatePointerCausesUaActionEvent(
       WebPointerProperties::PointerType,

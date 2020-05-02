@@ -11,9 +11,9 @@
 #include "base/command_line.h"
 #include "base/debug/debugger.h"
 #include "build/build_config.h"
+#include "content/common/unique_name_helper.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/test/web_test_support_renderer.h"
 #include "content/renderer/loader/web_worker_fetch_context_impl.h"
 #include "content/shell/common/shell_switches.h"
 #include "content/shell/common/web_test/web_test_switches.h"
@@ -21,6 +21,9 @@
 #include "content/shell/renderer/web_test/blink_test_helpers.h"
 #include "content/shell/renderer/web_test/test_websocket_handshake_throttle_provider.h"
 #include "content/shell/renderer/web_test/web_test_render_thread_observer.h"
+#include "content/shell/test_runner/web_frame_test_proxy.h"
+#include "content/shell/test_runner/web_view_test_proxy.h"
+#include "content/shell/test_runner/web_widget_test_proxy.h"
 #include "media/base/audio_latency.h"
 #include "media/base/mime_util.h"
 #include "media/media_buildflags.h"
@@ -45,8 +48,41 @@
 
 namespace content {
 
+namespace {
+
+RenderViewImpl* CreateWebViewTestProxy(CompositorDependencies* compositor_deps,
+                                       const mojom::CreateViewParams& params) {
+  return new WebViewTestProxy(
+      compositor_deps, params,
+      WebTestRenderThreadObserver::GetInstance()->test_interfaces());
+}
+
+std::unique_ptr<RenderWidget> CreateWebWidgetTestProxy(
+    int32_t routing_id,
+    CompositorDependencies* compositor_deps,
+    bool hidden,
+    bool never_composited,
+    mojo::PendingReceiver<mojom::Widget> widget_receiver) {
+  return std::make_unique<WebWidgetTestProxy>(routing_id, compositor_deps,
+                                              /*hidden=*/true, never_composited,
+                                              std::move(widget_receiver));
+}
+
+RenderFrameImpl* CreateWebFrameTestProxy(RenderFrameImpl::CreateParams params) {
+  return new WebFrameTestProxy(std::move(params));
+}
+
+}  // namespace
+
 WebTestContentRendererClient::WebTestContentRendererClient() {
-  EnableWebTestProxyCreation();
+  // Web tests subclass these types, so we inject factory methods to replace
+  // the creation of the production type with the subclasses.
+  RenderViewImpl::InstallCreateHook(CreateWebViewTestProxy);
+  RenderFrameImpl::InstallCreateHook(CreateWebFrameTestProxy);
+  // For RenderWidgets, web tests only subclass the ones attached to frames.
+  RenderWidget::InstallCreateForFrameHook(CreateWebWidgetTestProxy);
+
+  UniqueNameHelper::PreserveStableUniqueNameForTesting();
   WebWorkerFetchContextImpl::InstallRewriteURLFunction(RewriteWebTestsURL);
 }
 

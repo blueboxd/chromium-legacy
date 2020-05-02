@@ -23,7 +23,10 @@ TLSClientSocket::TLSClientSocket(
     const net::NetworkTrafficAnnotationTag& traffic_annotation)
     : observer_(std::move(observer)), traffic_annotation_(traffic_annotation) {}
 
-TLSClientSocket::~TLSClientSocket() {}
+TLSClientSocket::~TLSClientSocket() {
+  if (connect_callback_)
+    OnTLSConnectCompleted(net::ERR_ABORTED);
+}
 
 void TLSClientSocket::Connect(
     const net::HostPortPair& host_port_pair,

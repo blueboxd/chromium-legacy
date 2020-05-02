@@ -307,6 +307,11 @@ class VIEWS_EXPORT DesktopWindowTreeHostWin
   // become activated.
   bool wants_mouse_events_when_inactive_ = false;
 
+  // The location of the most recent mouse event on an occluded window. This is
+  // used to generate the OccludedWindowMouseEvents stat and can be removed
+  // when that stat is no longer tracked.
+  gfx::Point occluded_window_mouse_event_loc_;
+
   // The z-order level of the window; the window exhibits "always on top"
   // behavior if > 0.
   ui::ZOrderLevel z_order_ = ui::ZOrderLevel::kNormal;

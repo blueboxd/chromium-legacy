@@ -12,7 +12,7 @@ import '../controls/controlled_radio_button.m.js';
 import '../controls/extension_controlled_indicator.m.js';
 import '../controls/settings_radio_group.m.js';
 import './startup_urls_page.js';
-import '../i18n_setup.m.js';
+import '../i18n_setup.js';
 import '../settings_shared_css.m.js';
 
 import {WebUIListenerBehavior} from 'chrome://resources/js/web_ui_listener_behavior.m.js';

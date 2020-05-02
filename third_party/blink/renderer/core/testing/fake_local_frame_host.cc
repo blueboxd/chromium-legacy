@@ -173,6 +173,12 @@ void FakeLocalFrameHost::ShowPopupMenu(
     bool right_aligned,
     bool allow_multiple_selection) {}
 
+void FakeLocalFrameHost::DidLoadResourceFromMemoryCache(
+    const KURL& url,
+    const WTF::String& http_method,
+    const WTF::String& mime_type,
+    network::mojom::blink::RequestDestination request_destination) {}
+
 void FakeLocalFrameHost::BindFrameHostReceiver(
     mojo::ScopedInterfaceEndpointHandle handle) {
   receiver_.Bind(mojo::PendingAssociatedReceiver<mojom::blink::LocalFrameHost>(

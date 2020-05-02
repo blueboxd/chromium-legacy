@@ -7,7 +7,12 @@ import 'chrome://resources/cr_elements/hidden_style_css.m.js';
 import 'chrome://resources/cr_elements/shared_vars_css.m.js';
 import '../data/user_manager.js';
 import './destination_dialog.js';
+// <if expr="not chromeos">
 import './destination_select.js';
+// </if>
+// <if expr="chromeos">
+import './destination_select_cros.js';
+// </if>
 import './print_preview_shared_css.js';
 import './print_preview_vars_css.js';
 import './throbber_css.js';

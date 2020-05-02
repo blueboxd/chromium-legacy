@@ -11,7 +11,7 @@ import 'chrome://resources/cr_elements/icons.m.js';
 import '../controls/extension_controlled_indicator.m.js';
 import './search_engine_entry_css.js';
 import '../settings_shared_css.m.js';
-import '../site_favicon.m.js';
+import '../site_favicon.js';
 
 import {AnchorAlignment} from 'chrome://resources/cr_elements/cr_action_menu/cr_action_menu.m.js';
 import {assert} from 'chrome://resources/js/assert.m.js';

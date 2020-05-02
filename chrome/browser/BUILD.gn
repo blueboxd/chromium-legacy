@@ -5560,6 +5560,10 @@ source_set("active_use_util") {
 
 source_set("theme_properties") {
   sources = [ "themes/theme_properties.h" ]
+  deps = [
+    "//skia",
+    "//ui/gfx",
+  ]
 }
 
 proto_library("availability_protos") {

@@ -24,7 +24,7 @@ js_library("clear_browsing_data_browser_proxy") {
 js_library("clear_browsing_data_dialog") {
   deps = [
     ":clear_browsing_data_browser_proxy",
-    "..:route.m",
+    "..:route",
     "..:router.m",
     "../controls:settings_checkbox",
     "../controls:settings_dropdown_menu.m",

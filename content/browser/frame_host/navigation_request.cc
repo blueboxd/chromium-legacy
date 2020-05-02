@@ -265,7 +265,6 @@ void AddAdditionalRequestHeaders(
     BrowserContext* browser_context,
     const std::string& method,
     const std::string& user_agent_override,
-    bool has_user_gesture,
     const base::Optional<url::Origin>& initiator_origin,
     blink::mojom::Referrer* referrer,
     FrameTreeNode* frame_tree_node) {
@@ -1065,8 +1064,8 @@ NavigationRequest::NavigationRequest(
         &headers, common_params_->url, common_params_->navigation_type,
         common_params_->transition, controller->GetBrowserContext(),
         common_params_->method, GetUserAgentOverride(),
-        common_params_->has_user_gesture, common_params_->initiator_origin,
-        common_params_->referrer.get(), frame_tree_node);
+        common_params_->initiator_origin, common_params_->referrer.get(),
+        frame_tree_node);
 
     if (begin_params_->is_form_submission) {
       if (browser_initiated_ && !commit_params_->post_content_type.empty()) {

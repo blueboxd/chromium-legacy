@@ -1998,11 +1998,12 @@ TEST_F(NetworkStateHandlerTest, UpdateGuid) {
   // No service matching kShillManagerClientStubCellular.
   EXPECT_FALSE(
       network_state_handler_->GetNetworkState(kShillManagerClientStubCellular));
-  // The default cellular network should have the same guid as before.
+  // The default cellular network will have a unique assigned guid.
   cellular = network_state_handler_->FirstNetworkByType(
       NetworkTypePattern::Cellular());
   ASSERT_TRUE(cellular);
-  EXPECT_EQ("cellular1_guid", cellular->guid());
+  EXPECT_FALSE(cellular->guid().empty());
+  EXPECT_NE("cellular1_guid", cellular->guid());
 }
 
 TEST_F(NetworkStateHandlerTest, DefaultCellularNetwork) {

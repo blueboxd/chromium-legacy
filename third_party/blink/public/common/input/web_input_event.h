@@ -323,6 +323,13 @@ class BLINK_COMMON_EXPORT WebInputEvent {
 
   virtual std::unique_ptr<WebInputEvent> Clone() const = 0;
 
+  // Returns whether the current event can be merged with the provided
+  // |event|.
+  virtual bool CanCoalesce(const blink::WebInputEvent& event) const = 0;
+
+  // Merge the current event with attributes from |event|.
+  virtual void Coalesce(const WebInputEvent& event) = 0;
+
  protected:
   // The root frame scale.
   float frame_scale_ = 1;
@@ -334,6 +341,9 @@ class BLINK_COMMON_EXPORT WebInputEvent {
       : time_stamp_(time_stamp), type_(type), modifiers_(modifiers) {}
 
   WebInputEvent() { time_stamp_ = base::TimeTicks(); }
+
+  static DispatchType MergeDispatchTypes(DispatchType type_1,
+                                         DispatchType type_2);
 
   // Event time since platform start with microsecond resolution.
   base::TimeTicks time_stamp_;

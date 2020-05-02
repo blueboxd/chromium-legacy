@@ -47,6 +47,7 @@
 #include "content/public/test/url_loader_interceptor.h"
 #include "content/shell/browser/shell.h"
 #include "content/shell/browser/shell_download_manager_delegate.h"
+#include "media/media_buildflags.h"
 #include "net/cert/cert_verify_result.h"
 #include "net/cert/mock_cert_verifier.h"
 #include "net/dns/mock_host_resolver.h"
@@ -1079,15 +1080,23 @@ class SignedExchangeAcceptHeaderBrowserTest
                          bool is_fallback) {
     const auto accept_header = GetInterceptedAcceptHeader(url);
     ASSERT_TRUE(accept_header);
+    const char* frame_accept_c_str = network::kFrameAcceptHeaderValue;
+#if BUILDFLAG(ENABLE_AV1_DECODER)
+    if (base::FeatureList::IsEnabled(blink::features::kAVIF)) {
+      frame_accept_c_str =
+          "text/html,application/xhtml+xml,application/xml;q=0.9,"
+          "image/avif,image/webp,image/apng,*/*;q=0.8";
+    }
+#endif
     EXPECT_EQ(
         *accept_header,
         IsSignedExchangeEnabled() && !is_fallback
             ? (is_navigation
-                   ? std::string(network::kFrameAcceptHeaderValue) +
+                   ? std::string(frame_accept_c_str) +
                          std::string(kAcceptHeaderSignedExchangeSuffix)
                    : std::string(kExpectedSXGEnabledAcceptHeaderForPrefetch))
             : (is_navigation
-                   ? std::string(network::kFrameAcceptHeaderValue)
+                   ? std::string(frame_accept_c_str)
                    : std::string(network::kDefaultAcceptHeaderValue)));
   }
 
@@ -1274,8 +1283,15 @@ IN_PROC_BROWSER_TEST_P(SignedExchangeAcceptHeaderBrowserTest, ServiceWorker) {
   NavigateAndWaitForTitle(https_server_.GetURL("/sxg/service-worker.html"),
                           "Done");
 
-  const std::string frame_accept =
-      std::string(network::kFrameAcceptHeaderValue);
+  const char* frame_accept_c_str = network::kFrameAcceptHeaderValue;
+#if BUILDFLAG(ENABLE_AV1_DECODER)
+  if (base::FeatureList::IsEnabled(blink::features::kAVIF)) {
+    frame_accept_c_str =
+        "text/html,application/xhtml+xml,application/xml;q=0.9,"
+        "image/avif,image/webp,image/apng,*/*;q=0.8";
+  }
+#endif
+  const std::string frame_accept = std::string(frame_accept_c_str);
   const std::string frame_accept_with_sxg =
       frame_accept + std::string(kAcceptHeaderSignedExchangeSuffix);
   const std::vector<std::string> scopes = {"/sxg/sw-scope-generated/",

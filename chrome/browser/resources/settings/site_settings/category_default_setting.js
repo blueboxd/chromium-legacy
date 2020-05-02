@@ -39,8 +39,8 @@ import {assert, assertNotReached} from 'chrome://resources/js/assert.m.js';
 import {WebUIListenerBehavior} from 'chrome://resources/js/web_ui_listener_behavior.m.js';
 import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-import {loadTimeData} from '../i18n_setup.m.js';
-import {routes} from '../route.m.js';
+import {loadTimeData} from '../i18n_setup.js';
+import {routes} from '../route.js';
 
 import {ContentSetting, ContentSettingsTypes} from './constants.js';
 import {SiteSettingsBehavior} from './site_settings_behavior.js';

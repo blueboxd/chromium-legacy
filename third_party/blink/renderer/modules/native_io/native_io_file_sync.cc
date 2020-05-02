@@ -28,10 +28,9 @@ int OperationSize(const DOMArrayBufferView& buffer) {
 
 NativeIOFileSync::NativeIOFileSync(
     base::File backing_file,
-    mojo::Remote<mojom::blink::NativeIOFileHost> backend_file,
+    HeapMojoRemote<mojom::blink::NativeIOFileHost> backend_file,
     ExecutionContext* execution_context)
-    : ExecutionContextLifecycleObserver(execution_context),
-      backing_file_(std::move(backing_file)),
+    : backing_file_(std::move(backing_file)),
       backend_file_(std::move(backend_file)) {
   backend_file_.set_disconnect_handler(WTF::Bind(
       &NativeIOFileSync::OnBackendDisconnect, WrapWeakPersistent(this)));
@@ -42,7 +41,7 @@ NativeIOFileSync::~NativeIOFileSync() = default;
 void NativeIOFileSync::close() {
   backing_file_.Close();
 
-  if (!backend_file_) {
+  if (!backend_file_.is_bound()) {
     // If the backend went away, it already considers the file closed. Nothing
     // to report here.
     return;
@@ -88,12 +87,8 @@ int NativeIOFileSync::write(MaybeShared<DOMArrayBufferView> buffer,
 }
 
 void NativeIOFileSync::Trace(Visitor* visitor) {
+  visitor->Trace(backend_file_);
   ScriptWrappable::Trace(visitor);
-  ExecutionContextLifecycleObserver::Trace(visitor);
-}
-
-void NativeIOFileSync::ContextDestroyed() {
-  backend_file_.reset();
 }
 
 void NativeIOFileSync::OnBackendDisconnect() {

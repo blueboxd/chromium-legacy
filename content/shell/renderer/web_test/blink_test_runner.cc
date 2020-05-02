@@ -39,7 +39,6 @@
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/render_view.h"
-#include "content/public/test/web_test_support_renderer.h"
 #include "content/shell/common/shell_switches.h"
 #include "content/shell/renderer/web_test/blink_test_helpers.h"
 #include "content/shell/renderer/web_test/web_test_render_thread_observer.h"
@@ -538,14 +537,6 @@ blink::WebPlugin* BlinkTestRunner::CreatePluginPlaceholder(
       new plugins::PluginPlaceholder(web_view_test_proxy_->GetMainRenderFrame(),
                                      params, "<div>Test content</div>");
   return placeholder->plugin();
-}
-
-void BlinkTestRunner::RunIdleTasks(base::OnceClosure callback) {
-  SchedulerRunIdleTasks(std::move(callback));
-}
-
-void BlinkTestRunner::ForceTextInputStateUpdate(WebLocalFrame* frame) {
-  ForceTextInputStateUpdateForRenderFrame(RenderFrame::FromWebFrame(frame));
 }
 
 void BlinkTestRunner::SetScreenOrientationChanged() {

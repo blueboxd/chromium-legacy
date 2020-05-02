@@ -48,11 +48,6 @@
 
 namespace content {
 
-bool IsShuttingDown(RenderProcessHost* host) {
-  return !host || host->FastShutdownStarted() ||
-         host->IsKeepAliveRefCountDisabled();
-}
-
 SharedWorkerServiceImpl::SharedWorkerServiceImpl(
     StoragePartitionImpl* storage_partition,
     scoped_refptr<ServiceWorkerContextWrapper> service_worker_context,
@@ -284,7 +279,8 @@ SharedWorkerHost* SharedWorkerServiceImpl::CreateWorker(
   // Allocate the worker in the same process as the creator.
   auto* worker_process_host =
       RenderProcessHost::FromID(creator_render_frame_host_id.child_id);
-  DCHECK(!IsShuttingDown(worker_process_host));
+  DCHECK(worker_process_host);
+  DCHECK(worker_process_host->IsInitializedAndNotDead());
 
   // Create the host. We need to do this even before starting the worker,
   // because we are about to bounce to the IO thread. If another ConnectToWorker

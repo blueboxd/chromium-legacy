@@ -107,6 +107,11 @@ class FakeLocalFrameHost : public mojom::blink::LocalFrameHost {
       Vector<mojom::blink::MenuItemPtr> menu_items,
       bool right_aligned,
       bool allow_multiple_selection) override;
+  void DidLoadResourceFromMemoryCache(
+      const KURL& url,
+      const WTF::String& http_method,
+      const WTF::String& mime_type,
+      network::mojom::blink::RequestDestination request_destination) override;
 
  private:
   void BindFrameHostReceiver(mojo::ScopedInterfaceEndpointHandle handle);

@@ -89,8 +89,7 @@ class CableAuthenticator {
         }
     }
 
-    public void onHandshake(long client) {
-        // TODO: Ensure only a single client may complete a handshake.
+    public void notifyAuthenticatorConnected() {
         mCallback.onAuthenticatorConnected();
     }
 

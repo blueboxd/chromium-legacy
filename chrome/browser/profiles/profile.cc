@@ -406,6 +406,9 @@ bool Profile::IsNewProfile() {
 }
 
 void Profile::MaybeSendDestroyedNotification() {
+  TRACE_EVENT1("shutdown", "Profile::MaybeSendDestroyedNotification", "profile",
+               this);
+
   if (!sent_destroyed_notification_) {
     sent_destroyed_notification_ = true;
 

@@ -656,6 +656,34 @@ IN_PROC_BROWSER_TEST_P(SafetyTipPageInfoBubbleViewBrowserTest,
   SetEngagementScore(browser(), kNavigatedUrl, kLowEngagement);
   NavigateToURL(browser(), kNavigatedUrl, WindowOpenDisposition::CURRENT_TAB);
   EXPECT_FALSE(IsUIShowing());
+  ASSERT_NO_FATAL_FAILURE(CheckPageInfoDoesNotShowSafetyTipInfo(browser()));
+}
+
+// Tests that Safety Tips don't trigger on lookalike domains that are explicitly
+// allowed by the allowlist.
+// Note: UKM is tied to the heuristic triggering, so we record no UKM here since
+// the heuristic doesn't trigger. This is different from the other allowlist
+// where the heuristic triggers, UKM is still recorded, but no UI is shown.
+IN_PROC_BROWSER_TEST_P(SafetyTipPageInfoBubbleViewBrowserTest,
+                       NoTriggersOnEmbeddedAllowlist) {
+  // This domain is one edit distance from one of a top 500 domain.
+  const GURL kNavigatedUrl = GetURL("gooogle.com");
+
+  content::WebContents* contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ReputationWebContentsObserver* rep_observer =
+      ReputationWebContentsObserver::FromWebContents(contents);
+  base::RunLoop loop;
+  rep_observer->RegisterReputationCheckCallbackForTesting(loop.QuitClosure());
+
+  SetSafetyTipAllowlistPatterns({}, {"google\\.com"});
+  SetEngagementScore(browser(), kNavigatedUrl, kLowEngagement);
+
+  NavigateToURL(browser(), kNavigatedUrl, WindowOpenDisposition::CURRENT_TAB);
+  loop.Run();
+  EXPECT_FALSE(IsUIShowing());
+  ASSERT_NO_FATAL_FAILURE(CheckPageInfoDoesNotShowSafetyTipInfo(browser()));
+  CheckRecordedHeuristicsUkmCount(0);
 }
 
 // Disabled due to consistent failure: http://crbug.com/1020109

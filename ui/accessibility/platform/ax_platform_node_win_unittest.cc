@@ -4103,42 +4103,128 @@ TEST_F(AXPlatformNodeWinTest, TestUIAGetPropertyValueFrameworkId) {
 }
 
 TEST_F(AXPlatformNodeWinTest, TestGetPropertyValue_LabeledByTest) {
-  AXNodeData root;
-  root.role = ax::mojom::Role::kListItem;
-  root.id = 1;
-  std::vector<AXNode::AXID> labeledby_ids = {2};
-  root.AddIntListAttribute(ax::mojom::IntListAttribute::kLabelledbyIds,
-                           labeledby_ids);
+  // ++1 root
+  // ++++2 kGenericContainer LabeledBy 3
+  // ++++++3 kStaticText "Hello"
+  // ++++4 kGenericContainer LabeledBy 5
+  // ++++++5 kGenericContainer
+  // ++++++++6 kStaticText "3.14"
+  // ++++7 kAlert LabeledBy 6
+  AXNodeData root_1;
+  AXNodeData gc_2;
+  AXNodeData static_text_3;
+  AXNodeData gc_4;
+  AXNodeData gc_5;
+  AXNodeData static_text_6;
+  AXNodeData alert_7;
 
-  AXNodeData referenced_node;
-  referenced_node.SetName("Name");
-  referenced_node.role = ax::mojom::Role::kNone;
-  referenced_node.id = 2;
+  root_1.id = 1;
+  gc_2.id = 2;
+  static_text_3.id = 3;
+  gc_4.id = 4;
+  gc_5.id = 5;
+  static_text_6.id = 6;
+  alert_7.id = 7;
 
-  root.child_ids.push_back(referenced_node.id);
-  Init(root, referenced_node);
+  root_1.role = ax::mojom::Role::kRootWebArea;
+  root_1.child_ids = {gc_2.id, gc_4.id, alert_7.id};
 
-  ComPtr<IRawElementProviderSimple> root_node =
-      GetRootIRawElementProviderSimple();
-  ScopedVariant propertyValue;
-  EXPECT_EQ(S_OK, root_node->GetPropertyValue(UIA_LabeledByPropertyId,
-                                              propertyValue.Receive()));
-  ASSERT_EQ(propertyValue.type(), VT_UNKNOWN);
-  ComPtr<IRawElementProviderSimple> referenced_element;
-  EXPECT_EQ(S_OK, propertyValue.ptr()->punkVal->QueryInterface(
-                      IID_PPV_ARGS(&referenced_element)));
-  EXPECT_UIA_BSTR_EQ(referenced_element, UIA_NamePropertyId, L"Name");
+  gc_2.role = ax::mojom::Role::kGenericContainer;
+  gc_2.AddIntListAttribute(ax::mojom::IntListAttribute::kLabelledbyIds,
+                           {static_text_3.id});
+  gc_2.child_ids = {static_text_3.id};
 
-  // Remove referenced_node's native event target and verify it's no longer
+  static_text_3.role = ax::mojom::Role::kStaticText;
+  static_text_3.SetName("Hello");
+
+  gc_4.role = ax::mojom::Role::kGenericContainer;
+  gc_4.AddIntListAttribute(ax::mojom::IntListAttribute::kLabelledbyIds,
+                           {gc_5.id});
+  gc_4.child_ids = {gc_5.id};
+
+  gc_5.role = ax::mojom::Role::kGenericContainer;
+  gc_5.child_ids = {static_text_6.id};
+
+  static_text_6.role = ax::mojom::Role::kStaticText;
+  static_text_6.SetName("3.14");
+
+  alert_7.role = ax::mojom::Role::kAlert;
+  alert_7.AddIntListAttribute(ax::mojom::IntListAttribute::kLabelledbyIds,
+                              {static_text_6.id});
+
+  Init(root_1, gc_2, static_text_3, gc_4, gc_5, static_text_6, alert_7);
+
+  AXNode* root_node = GetRootAsAXNode();
+  AXNode* gc_2_node = root_node->children()[0];
+  AXNode* static_text_3_node = gc_2_node->children()[0];
+  AXNode* gc_4_node = root_node->children()[1];
+  AXNode* static_text_6_node = gc_4_node->children()[0]->children()[0];
+  AXNode* alert_7_node = root_node->children()[2];
+
+  // Case 1: |gc_2| is labeled by |static_text_3|.
+
+  ComPtr<IRawElementProviderSimple> gc_2_provider =
+      GetIRawElementProviderSimpleFromTree(gc_2_node->tree()->GetAXTreeID(),
+                                           gc_2_node->id());
+  ScopedVariant property_value;
+  EXPECT_EQ(S_OK, gc_2_provider->GetPropertyValue(UIA_LabeledByPropertyId,
+                                                  property_value.Receive()));
+  ASSERT_EQ(property_value.type(), VT_UNKNOWN);
+  ComPtr<IRawElementProviderSimple> static_text_3_provider;
+  EXPECT_EQ(S_OK, property_value.ptr()->punkVal->QueryInterface(
+                      IID_PPV_ARGS(&static_text_3_provider)));
+  EXPECT_UIA_BSTR_EQ(static_text_3_provider, UIA_NamePropertyId, L"Hello");
+
+  // Case 2: |gc_4| is labeled by |gc_5| and should return the first static text
+  // child of that node, which is |static_text_6|.
+
+  ComPtr<IRawElementProviderSimple> gc_4_provider =
+      GetIRawElementProviderSimpleFromTree(gc_4_node->tree()->GetAXTreeID(),
+                                           gc_4_node->id());
+  property_value.Reset();
+  EXPECT_EQ(S_OK, gc_4_provider->GetPropertyValue(UIA_LabeledByPropertyId,
+                                                  property_value.Receive()));
+  ASSERT_EQ(property_value.type(), VT_UNKNOWN);
+  ComPtr<IRawElementProviderSimple> static_text_6_provider;
+  EXPECT_EQ(S_OK, property_value.ptr()->punkVal->QueryInterface(
+                      IID_PPV_ARGS(&static_text_6_provider)));
+  EXPECT_UIA_BSTR_EQ(static_text_6_provider, UIA_NamePropertyId, L"3.14");
+
+  // Case 3: Some UIA control types always expect an empty value for this
+  // property. The role kAlert corresponds to UIA_TextControlTypeId, which
+  // always expects an empty value. |alert_7| is marked as labeled by
+  // |static_text_6|, but shouldn't expose it to the UIA_LabeledByPropertyId.
+
+  ComPtr<IRawElementProviderSimple> alert_7_provider =
+      GetIRawElementProviderSimpleFromTree(alert_7_node->tree()->GetAXTreeID(),
+                                           alert_7_node->id());
+  property_value.Reset();
+  EXPECT_EQ(S_OK, alert_7_provider->GetPropertyValue(UIA_LabeledByPropertyId,
+                                                     property_value.Receive()));
+  ASSERT_EQ(property_value.type(), VT_EMPTY);
+
+  // Remove the referenced nodes' native event targets and verify it's no longer
   // returned.
-  TestAXNodeWrapper* referenced_node_wrapper = TestAXNodeWrapper::GetOrCreate(
-      GetTree(), GetRootAsAXNode()->children()[0]);
-  referenced_node_wrapper->ResetNativeEventTarget();
 
-  propertyValue.Reset();
-  EXPECT_EQ(S_OK, root_node->GetPropertyValue(UIA_LabeledByPropertyId,
-                                              propertyValue.Receive()));
-  EXPECT_EQ(propertyValue.type(), VT_EMPTY);
+  // Case 1.
+  TestAXNodeWrapper* static_text_3_node_wrapper =
+      TestAXNodeWrapper::GetOrCreate(GetTree(), static_text_3_node);
+  static_text_3_node_wrapper->ResetNativeEventTarget();
+
+  property_value.Reset();
+  EXPECT_EQ(S_OK, gc_2_provider->GetPropertyValue(UIA_LabeledByPropertyId,
+                                                  property_value.Receive()));
+  EXPECT_EQ(property_value.type(), VT_EMPTY);
+
+  // Case 2.
+  TestAXNodeWrapper* static_text_6_node_wrapper =
+      TestAXNodeWrapper::GetOrCreate(GetTree(), static_text_6_node);
+  static_text_6_node_wrapper->ResetNativeEventTarget();
+
+  property_value.Reset();
+  EXPECT_EQ(S_OK, gc_4_provider->GetPropertyValue(UIA_LabeledByPropertyId,
+                                                  property_value.Receive()));
+  EXPECT_EQ(property_value.type(), VT_EMPTY);
 }
 
 TEST_F(AXPlatformNodeWinTest, TestGetPropertyValue_HelpText) {

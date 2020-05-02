@@ -1435,4 +1435,61 @@ TEST_F(BrowserAccessibilityManagerTest, TestShouldFireEventForNode) {
   EXPECT_FALSE(manager->ShouldFireEventForNode(manager->GetFromID(1111)));
 }
 
+TEST_F(BrowserAccessibilityManagerTest, NestedChildRoot) {
+  ui::AXNodeData root;
+  root.id = 1;
+  root.role = ax::mojom::Role::kRootWebArea;
+
+  ui::AXNodeData popup_button;
+  popup_button.id = 2;
+  popup_button.role = ax::mojom::Role::kPopUpButton;
+  root.child_ids.push_back(2);
+
+  ui::AXNodeData child_tree_root;
+  child_tree_root.id = 3;
+  child_tree_root.role = ax::mojom::Role::kRootWebArea;
+  root.child_ids.push_back(3);
+
+  std::unique_ptr<BrowserAccessibilityManager> manager(
+      BrowserAccessibilityManager::Create(
+          MakeAXTreeUpdate(root, popup_button, child_tree_root),
+          test_browser_accessibility_delegate_.get()));
+
+  ASSERT_NE(manager->GetPopupRoot(), nullptr);
+  EXPECT_EQ(manager->GetPopupRoot()->GetId(), 3);
+
+  // Update tree to change the role of the nested child root, add new child root
+  // in same update.
+  child_tree_root.role = ax::mojom::Role::kGroup;
+  ui::AXNodeData second_child_tree_root;
+  second_child_tree_root.id = 4;
+  second_child_tree_root.role = ax::mojom::Role::kRootWebArea;
+  root.child_ids.push_back(4);
+
+  manager->Initialize(
+      MakeAXTreeUpdate(root, child_tree_root, second_child_tree_root));
+
+  ASSERT_NE(manager->GetPopupRoot(), nullptr);
+  EXPECT_EQ(manager->GetPopupRoot()->GetId(), 4);
+
+  // Update tree to change the role of the nested child root, so that there is
+  // no longer any nested child root.
+  second_child_tree_root.role = ax::mojom::Role::kGroup;
+  manager->Initialize(MakeAXTreeUpdate(second_child_tree_root));
+  EXPECT_EQ(manager->GetPopupRoot(), nullptr);
+
+  // Test deleting child root.
+
+  // First, ensure a child root exists.
+  second_child_tree_root.role = ax::mojom::Role::kRootWebArea;
+  manager->Initialize(MakeAXTreeUpdate(second_child_tree_root));
+  ASSERT_NE(manager->GetPopupRoot(), nullptr);
+  EXPECT_EQ(manager->GetPopupRoot()->GetId(), 4);
+
+  // Now remove the child root from the tree.
+  root.child_ids = {2, 3};
+  manager->Initialize(MakeAXTreeUpdate(root));
+  EXPECT_EQ(manager->GetPopupRoot(), nullptr);
+}
+
 }  // namespace content

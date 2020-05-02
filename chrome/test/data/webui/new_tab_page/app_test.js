@@ -36,6 +36,9 @@ suite('NewTabPageAppTest', () => {
     testProxy.handler.setResultFor('getDoodle', Promise.resolve({
       doodle: null,
     }));
+    testProxy.handler.setResultFor('getOneGoogleBarParts', Promise.resolve({
+      parts: null,
+    }));
     testProxy.setResultMapperFor('matchMedia', () => ({
                                                  addListener() {},
                                                  removeListener() {},

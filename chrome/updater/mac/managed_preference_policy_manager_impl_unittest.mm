@@ -36,6 +36,7 @@ TEST(CRUManagedPreferencePolicyManagerTest, TestPolicyValues) {
   EXPECT_TRUE([policyManager managed]);
 
   // Verify global level policies.
+  EXPECT_EQ([policyManager lastCheckPeriodMinutes], kPolicyNotSet);
   EXPECT_EQ([policyManager defaultUpdatePolicy], 3);
   EXPECT_NSEQ([policyManager downloadPreference], @"cacheable");
   EXPECT_EQ([policyManager updatesSuppressed].start_hour, 12);
@@ -55,11 +56,44 @@ TEST(CRUManagedPreferencePolicyManagerTest, TestPolicyValues) {
   EXPECT_EQ([policyManager appUpdatePolicy:chromeID], 2);
   EXPECT_EQ([policyManager rollbackToTargetVersion:chromeID], 1);
   EXPECT_NSEQ([policyManager targetVersionPrefix:chromeID], @"82.");
+
+  NSString* nonExistApp = @"com.google.NonexistProduct";
+  EXPECT_EQ([policyManager appUpdatePolicy:nonExistApp], kPolicyNotSet);
+  EXPECT_EQ([policyManager rollbackToTargetVersion:nonExistApp], kPolicyNotSet);
+  EXPECT_EQ([policyManager targetVersionPrefix:nonExistApp], nil);
+}
+
+TEST(CRUManagedPreferencePolicyManagerTest, TestEmptyPolicyValues) {
+  CRUUpdatePolicyDictionary* policyDict = @{};
+  base::scoped_nsobject<CRUManagedPreferencePolicyManager> policyManager(
+      [[CRUManagedPreferencePolicyManager alloc]
+          initWithDictionary:policyDict]);
+  EXPECT_FALSE([policyManager managed]);
+}
+
+TEST(CRUManagedPreferencePolicyManagerTest, TestNoGlobalPolicy) {
+  CRUUpdatePolicyDictionary* policyDict = @{@"some.app" : @{}};
+  base::scoped_nsobject<CRUManagedPreferencePolicyManager> policyManager(
+      [[CRUManagedPreferencePolicyManager alloc]
+          initWithDictionary:policyDict]);
+  EXPECT_NSEQ([policyManager source], @"ManagedPreference");
+  EXPECT_TRUE([policyManager managed]);
+
+  // Verify global level policies are set to default.
+  EXPECT_EQ([policyManager lastCheckPeriodMinutes], kPolicyNotSet);
+  EXPECT_EQ([policyManager defaultUpdatePolicy], kPolicyNotSet);
+  EXPECT_NSEQ([policyManager downloadPreference], nil);
+  EXPECT_EQ([policyManager updatesSuppressed].start_hour, kPolicyNotSet);
+  EXPECT_EQ([policyManager updatesSuppressed].start_minute, kPolicyNotSet);
+  EXPECT_EQ([policyManager updatesSuppressed].duration_minute, kPolicyNotSet);
+  EXPECT_EQ([policyManager proxyMode], nil);
+  EXPECT_EQ([policyManager proxyServer], nil);
+  EXPECT_EQ([policyManager proxyPacURL], nil);
 }
 
 TEST(CRUManagedPreferencePolicyManagerTest, TestInvalidPolicyValues) {
   // Verify that unexpected policy settings are ignored.
-  CRUUpdatePolicyDictionary* policyDict = @{
+  NSDictionary* policyDict = @{
     @"global" : @{
       @"UpdateDefault" : @"ExpectNumber",
       @"DownloadPreference" : @1,
@@ -69,12 +103,14 @@ TEST(CRUManagedPreferencePolicyManagerTest, TestInvalidPolicyValues) {
     },
     @"com.google.Keystone" : @{
       @"UnknownKey" : @3,
+      @2 : @"KeyIsNotString",
     },
     @"com.google.Chrome" : @{
       @"UpdateDefault" : @"WrongValue",
       @"RollbackToTargetVersion" : @{},
       @"TargetVersionPrefix" : @{},
     },
+    @"com.google.Foo" : @"PolicyValueIsNotDictionary",
   };
   base::scoped_nsobject<CRUManagedPreferencePolicyManager> policyManager(
       [[CRUManagedPreferencePolicyManager alloc]
@@ -83,6 +119,7 @@ TEST(CRUManagedPreferencePolicyManagerTest, TestInvalidPolicyValues) {
   EXPECT_TRUE([policyManager managed]);
 
   // Verify global level policies.
+  EXPECT_EQ([policyManager lastCheckPeriodMinutes], kPolicyNotSet);
   EXPECT_EQ([policyManager defaultUpdatePolicy], kPolicyNotSet);
   EXPECT_EQ([policyManager downloadPreference], nil);
   EXPECT_EQ([policyManager updatesSuppressed].start_hour, kPolicyNotSet);
@@ -102,6 +139,8 @@ TEST(CRUManagedPreferencePolicyManagerTest, TestInvalidPolicyValues) {
   EXPECT_EQ([policyManager appUpdatePolicy:chromeID], kPolicyNotSet);
   EXPECT_EQ([policyManager rollbackToTargetVersion:chromeID], kPolicyNotSet);
   EXPECT_EQ([policyManager targetVersionPrefix:chromeID], nil);
+
+  EXPECT_EQ([policyManager appUpdatePolicy:@"com.google.Foo"], kPolicyNotSet);
 }
 
 }  // namespace updater

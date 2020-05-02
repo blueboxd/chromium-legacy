@@ -17,6 +17,8 @@
 
   #headerContainer {
     border-bottom: var(--cr-separator-line);
+    display: flex;
+    justify-content: space-between;
     padding-bottom: 20px;
     padding-top: 64px;
   }
@@ -32,7 +34,19 @@
 <div class="main-container">
   <div id="headerContainer">
     <h1>[[i18n('printJobTitle')]]</h1>
+    <!-- TODO(crbug/1075701): Add an icon to this button when it becomes
+        available -->
+    <cr-button id="clearAllButton" on-click="onClearHistoryClicked_"
+        disabled="[[!printJobs_.length]]">
+      [[i18n('clearAllHistoryLabel')]]
+    </cr-button>
   </div>
+
+  <template is="dom-if" if="[[showClearAllDialog_]]" restamp>
+    <print-job-clear-history-dialog id="clearHistoryDialog"
+        on-close="onClearHistoryDialogClosed_">
+    </print-job-clear-history-dialog>
+  </template>
 
   <div id="columnHeaders"
       aria-labeledby="fileNameColumn printerNameColumn dateColumn statusColumn">
@@ -56,12 +70,10 @@
 
   <iron-list id="entryList" items="[[printJobs_]]" role="grid">
     <template>
-      <div role="row">
-        <print-job-entry job-entry="[[item]]" tabindex$="[[tabIndex]]"
-            last-focused="{{lastFocused_}}" list-blurred="{{listBlurred_}}"
-            focus-row-index="[[index]]" iron-list-tab-index="[[tabIndex]]">
-        </print-job-entry>
-      </div>
+      <print-job-entry job-entry="[[item]]" tabindex$="[[tabIndex]]"
+          last-focused="{{lastFocused_}}" list-blurred="{{listBlurred_}}"
+          focus-row-index="[[index]]" iron-list-tab-index="[[tabIndex]]">
+      </print-job-entry>
     </template>
   </iron-list>
 </div>

@@ -48,8 +48,8 @@ js_library("address_edit_dialog") {
 js_library("autofill_page") {
   deps = [
     ":password_check_behavior",
-    "..:open_window_proxy.m",
-    "..:route.m",
+    "..:open_window_proxy",
+    "..:route",
     "..:router.m",
     "../prefs:prefs_behavior.m",
   ]
@@ -100,7 +100,7 @@ js_library("password_check") {
     ":blocking_request_manager",
     ":password_check_behavior",
     ":password_manager_proxy",
-    "..:plural_string_proxy.m",
+    "..:plural_string_proxy",
     "../prefs:prefs_behavior.m",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
     "//ui/webui/resources/js:assert.m",
@@ -111,7 +111,7 @@ js_library("password_check") {
 js_library("password_check_behavior") {
   deps = [
     ":password_manager_proxy",
-    "..:plural_string_proxy.m",
+    "..:plural_string_proxy",
   ]
   externs_list = [ "$externs_path/passwords_private.js" ]
 }
@@ -136,7 +136,7 @@ js_library("password_check_list_item") {
   deps = [
     ":blocking_request_manager",
     ":password_manager_proxy",
-    "..:open_window_proxy.m",
+    "..:open_window_proxy",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
     "//ui/webui/resources/js:assert.m",
     "//ui/webui/resources/js:i18n_behavior.m",
@@ -188,8 +188,8 @@ js_library("passwords_section") {
     ":password_list_item",
     ":password_manager_proxy",
     "..:global_scroll_target_behavior.m",
-    "..:plural_string_proxy.m",
-    "..:route.m",
+    "..:plural_string_proxy",
+    "..:route",
     "../people_page:sync_browser_proxy.m",
     "../prefs:prefs_behavior.m",
     "//third_party/polymer/v3_0/components-chromium/iron-a11y-announcer:iron-a11y-announcer",
@@ -224,7 +224,7 @@ js_library("payments_section") {
     ":autofill_section",
     ":credit_card_edit_dialog",
     ":payments_list",
-    "..:metrics_browser_proxy.m",
+    "..:metrics_browser_proxy",
     "//ui/webui/resources/cr_elements/cr_action_menu:cr_action_menu.m",
     "//ui/webui/resources/js:assert.m",
     "//ui/webui/resources/js:cr.m",

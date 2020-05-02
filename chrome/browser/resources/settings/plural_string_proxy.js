@@ -7,10 +7,9 @@
  */
 
 // clang-format off
-// #import {addSingletonGetter, sendWithPromise} from 'chrome://resources/js/cr.m.js';
+import {addSingletonGetter, sendWithPromise} from 'chrome://resources/js/cr.m.js';
 // clang-format on
 
-cr.define('settings', function() {
   /** @interface */
   class PluralStringProxy {
     /**
@@ -23,16 +22,13 @@ cr.define('settings', function() {
     getPluralString(messageName, itemCount) {}
   }
 
-  /** @implements {settings.PluralStringProxy} */
-  /* #export */ class PluralStringProxyImpl {
+  /** @implements {PluralStringProxy} */
+  export class PluralStringProxyImpl {
     /** @override */
     getPluralString(messageName, itemCount) {
-      return cr.sendWithPromise('getPluralString', messageName, itemCount);
+      return sendWithPromise('getPluralString', messageName, itemCount);
     }
   }
 
-  cr.addSingletonGetter(PluralStringProxyImpl);
+  addSingletonGetter(PluralStringProxyImpl);
 
-  // #cr_define_end
-  return {PluralStringProxy, PluralStringProxyImpl};
-});

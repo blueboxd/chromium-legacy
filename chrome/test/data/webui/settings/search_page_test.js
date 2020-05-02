@@ -8,7 +8,10 @@ import 'chrome://settings/settings.js';
 import {webUIListenerCallback} from 'chrome://resources/js/cr.m.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {SearchEnginesBrowserProxyImpl} from 'chrome://settings/settings.js';
-import {createSampleSearchEngine, TestSearchEnginesBrowserProxy} from 'chrome://test/settings/test_search_engines_browser_proxy.m.js';
+
+import {assertEquals, assertFalse, assertNotReached, assertTrue} from '../chai_assert.js';
+
+import {createSampleSearchEngine, TestSearchEnginesBrowserProxy} from './test_search_engines_browser_proxy.m.js';
 
 // clang-format on
 
@@ -31,14 +34,16 @@ suite('SearchPageTests', function() {
   /** @type {?SettingsSearchPageElement} */
   let page = null;
 
+  /** @type {?TestSearchEnginesBrowserProxy} */
   let browserProxy = null;
 
   setup(function() {
     browserProxy = new TestSearchEnginesBrowserProxy();
     browserProxy.setSearchEnginesInfo(generateSearchEngineInfo());
     SearchEnginesBrowserProxyImpl.instance_ = browserProxy;
-    PolymerTest.clearBody();
-    page = document.createElement('settings-search-page');
+    document.body.innerHTML = '';
+    page = /** @type {!SettingsSearchPageElement} */ (
+        document.createElement('settings-search-page'));
     page.prefs = {
       default_search_provider_data: {
         template_url_data: {},

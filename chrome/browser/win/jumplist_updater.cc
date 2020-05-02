@@ -242,3 +242,15 @@ bool JumpListUpdater::AddCustomCategory(const base::string16& category_name,
   return SUCCEEDED(destination_list_->AppendCategory(category_name.c_str(),
                                                      object_array.Get()));
 }
+
+// static
+bool JumpListUpdater::DeleteJumpList(const base::string16& app_user_model_id) {
+  if (!JumpListUpdater::IsEnabled() || app_user_model_id.empty())
+    return false;
+
+  Microsoft::WRL::ComPtr<ICustomDestinationList> destination_list;
+  return SUCCEEDED(::CoCreateInstance(CLSID_DestinationList, nullptr,
+                                      CLSCTX_INPROC_SERVER,
+                                      IID_PPV_ARGS(&destination_list))) &&
+         SUCCEEDED(destination_list->DeleteList(app_user_model_id.c_str()));
+}

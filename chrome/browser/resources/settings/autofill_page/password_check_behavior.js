@@ -4,7 +4,7 @@
 
 import {assert} from 'chrome://resources/js/assert.m.js';
 
-import {PluralStringProxyImpl} from '../plural_string_proxy.m.js';
+import {PluralStringProxyImpl} from '../plural_string_proxy.js';
 
 import {PasswordManagerImpl, PasswordManagerProxy} from './password_manager_proxy.js';
 

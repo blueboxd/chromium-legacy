@@ -38,14 +38,15 @@ namespace {
 
 gfx::ColorSpace GetColorSpace(const avifImage* image) {
   if (image->profileFormat == AVIF_PROFILE_FORMAT_NCLX) {
-    media::VideoColorSpace color_space(
-        image->nclx.colourPrimaries, image->nclx.transferCharacteristics,
-        image->nclx.matrixCoefficients,
-        image->nclx.fullRangeFlag ? gfx::ColorSpace::RangeID::FULL
-                                  : gfx::ColorSpace::RangeID::LIMITED);
+    media::VideoColorSpace color_space(image->nclx.colourPrimaries,
+                                       image->nclx.transferCharacteristics,
+                                       image->nclx.matrixCoefficients,
+                                       image->nclx.range == AVIF_RANGE_FULL
+                                           ? gfx::ColorSpace::RangeID::FULL
+                                           : gfx::ColorSpace::RangeID::LIMITED);
     if (color_space.IsSpecified())
       return color_space.ToGfxColorSpace();
-    if (image->nclx.fullRangeFlag)
+    if (image->nclx.range == AVIF_RANGE_FULL)
       return gfx::ColorSpace::CreateJpeg();
     return gfx::ColorSpace::CreateREC709();
   }

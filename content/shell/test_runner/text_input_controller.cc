@@ -1,4 +1,3 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -399,11 +398,11 @@ void TextInputController::SetComposition(const std::string& text) {
 
 void TextInputController::ForceTextInputStateUpdate() {
   // TODO(lukasza): Finish adding OOPIF support to the web tests harness.
-  CHECK(view()->MainFrame()->IsWebLocalFrame())
-      << "WebView does not have a local main frame and"
-         " cannot handle input method controller tasks.";
-  web_view_test_proxy_->blink_test_runner()->ForceTextInputStateUpdate(
-      view()->MainFrame()->ToWebLocalFrame());
+  RenderFrameImpl* main_frame = web_view_test_proxy_->GetMainRenderFrame();
+  CHECK(main_frame) << "WebView does not have a local main frame and"
+                    << " cannot handle input method controller tasks.";
+  RenderWidget* main_widget = main_frame->GetLocalRootRenderWidget();
+  main_widget->ShowVirtualKeyboard();
 }
 
 blink::WebView* TextInputController::view() {
@@ -420,11 +419,7 @@ TextInputController::GetInputMethodController() {
       << "WebView does not have a local main frame and"
          " cannot handle input method controller tasks.";
 
-  return view()
-      ->MainFrame()
-      ->ToWebLocalFrame()
-      ->FrameWidget()
-      ->GetActiveWebInputMethodController();
+  return view()->MainFrameWidget()->GetActiveWebInputMethodController();
 }
 
 }  // namespace content

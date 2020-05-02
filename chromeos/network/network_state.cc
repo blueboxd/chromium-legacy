@@ -537,9 +537,10 @@ std::string NetworkState::GetSpecifier() const {
   }
   if (type() == shill::kTypeWifi)
     return name() + "_" + security_class_;
-  if (type() != shill::kTypeCellular && !name().empty())
-    return name();
-  return type();  // For unnamed networks, i.e. Ethernet and Cellular.
+  // TODO(b/154014577): Use IMSI for Cellular once available.
+  if (!name().empty())
+    return type() + "_" + name();
+  return type();  // For unnamed networks, i.e. Ethernet.
 }
 
 void NetworkState::SetGuid(const std::string& guid) {

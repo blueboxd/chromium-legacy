@@ -172,20 +172,18 @@ std::unique_ptr<views::View> CreateItemView(const NotificationItem& item) {
   title->SetFontList(font_list);
   title->SetCollapseWhenHidden(true);
   title->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  title->SetEnabledColor(kRegularTextColorMD);
-  title->SetBackgroundColor(kNotificationBackgroundColor);
   title->SetAutoColorReadabilityEnabled(false);
   view->AddChildView(title);
 
-  views::Label* message = new views::Label(l10n_util::GetStringFUTF16(
-      IDS_MESSAGE_CENTER_LIST_NOTIFICATION_MESSAGE_WITH_DIVIDER, item.message));
+  views::Label* message = view->AddChildView(std::make_unique<views::Label>(
+      l10n_util::GetStringFUTF16(
+          IDS_MESSAGE_CENTER_LIST_NOTIFICATION_MESSAGE_WITH_DIVIDER,
+          item.message),
+      views::style::CONTEXT_LABEL, views::style::STYLE_DISABLED));
   message->SetFontList(font_list);
   message->SetCollapseWhenHidden(true);
   message->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  message->SetEnabledColor(kDimTextColorMD);
-  message->SetBackgroundColor(kNotificationBackgroundColor);
   message->SetAutoColorReadabilityEnabled(false);
-  view->AddChildView(message);
   return view;
 }
 
@@ -205,16 +203,13 @@ CompactTitleMessageView::CompactTitleMessageView() {
   title_ = new views::Label();
   title_->SetFontList(font_list);
   title_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  title_->SetEnabledColor(kRegularTextColorMD);
-  title_->SetBackgroundColor(kNotificationBackgroundColor);
   AddChildView(title_);
 
-  message_ = new views::Label();
+  message_ = AddChildView(std::make_unique<views::Label>(
+      base::string16(), views::style::CONTEXT_LABEL,
+      views::style::STYLE_DISABLED));
   message_->SetFontList(font_list);
   message_->SetHorizontalAlignment(gfx::ALIGN_RIGHT);
-  message_->SetEnabledColor(kDimTextColorMD);
-  message_->SetBackgroundColor(kNotificationBackgroundColor);
-  AddChildView(message_);
 }
 
 gfx::Size CompactTitleMessageView::CalculatePreferredSize() const {
@@ -482,13 +477,13 @@ class InlineSettingsRadioButton : public views::RadioButton {
  public:
   explicit InlineSettingsRadioButton(const base::string16& label_text)
       : views::RadioButton(label_text, 1 /* group */) {
-    SetEnabledTextColors(kRegularTextColorMD);
     label()->SetFontList(GetTextFontList());
     label()->SetSubpixelRenderingEnabled(false);
   }
 
   void OnThemeChanged() override {
     RadioButton::OnThemeChanged();
+    SetEnabledTextColors(GetTextColor());
     label()->SetBackgroundColor(GetNativeTheme()->GetSystemColor(
         ui::NativeTheme::kColorId_NotificationInlineSettingsBackground));
   }
@@ -497,7 +492,12 @@ class InlineSettingsRadioButton : public views::RadioButton {
   // views::RadioButton:
   SkColor GetIconImageColor(int icon_state) const override {
     return (icon_state & IconState::CHECKED) ? kActionButtonTextColor
-                                             : kRegularTextColorMD;
+                                             : GetTextColor();
+  }
+
+  SkColor GetTextColor() const {
+    return GetNativeTheme()->GetSystemColor(
+        ui::NativeTheme::kColorId_LabelEnabledColor);
   }
 };
 
@@ -910,8 +910,6 @@ void NotificationViewMD::CreateOrUpdateTitleView(
     title_view_ = new views::Label(title);
     title_view_->SetFontList(font_list);
     title_view_->SetHorizontalAlignment(gfx::ALIGN_TO_HEAD);
-    title_view_->SetEnabledColor(kRegularTextColorMD);
-    title_view_->SetBackgroundColor(kNotificationBackgroundColor);
     title_view_->SetLineHeight(kLineHeightMD);
     // TODO(knollr): multiline should not be required, but we need to set the
     // width of |title_view_| (because of crbug.com/682266), which only works in
@@ -943,16 +941,16 @@ void NotificationViewMD::CreateOrUpdateMessageView(
   if (!message_view_) {
     const gfx::FontList& font_list = GetTextFontList();
 
-    message_view_ = new views::Label(text);
+    message_view_ = left_content_->AddChildViewAt(
+        std::make_unique<views::Label>(text, views::style::CONTEXT_LABEL,
+                                       views::style::STYLE_DISABLED),
+        left_content_count_);
     message_view_->SetFontList(font_list);
     message_view_->SetHorizontalAlignment(gfx::ALIGN_TO_HEAD);
-    message_view_->SetEnabledColor(kDimTextColorMD);
-    message_view_->SetBackgroundColor(kNotificationBackgroundColor);
     message_view_->SetLineHeight(kLineHeightMD);
     message_view_->SetMultiLine(true);
     message_view_->SetMaxLines(kMaxLinesForMessageView);
     message_view_->SetAllowCharacterBreak(true);
-    left_content_->AddChildViewAt(message_view_, left_content_count_);
   } else {
     message_view_->SetText(text);
   }
@@ -1025,13 +1023,14 @@ void NotificationViewMD::CreateOrUpdateProgressStatusView(
 
   if (!status_view_) {
     const gfx::FontList& font_list = GetTextFontList();
-    status_view_ = new views::Label();
+    status_view_ = left_content_->AddChildViewAt(
+        std::make_unique<views::Label>(base::string16(),
+                                       views::style::CONTEXT_LABEL,
+                                       views::style::STYLE_DISABLED),
+        left_content_count_);
     status_view_->SetFontList(font_list);
     status_view_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-    status_view_->SetEnabledColor(kDimTextColorMD);
-    status_view_->SetBackgroundColor(kNotificationBackgroundColor);
     status_view_->SetBorder(views::CreateEmptyBorder(kStatusTextPadding));
-    left_content_->AddChildViewAt(status_view_, left_content_count_);
   }
 
   status_view_->SetText(notification.progress_status());
@@ -1119,8 +1118,6 @@ void NotificationViewMD::CreateOrUpdateImageView(
         std::make_unique<views::FillLayout>());
     image_container_view_->SetBorder(
         views::CreateEmptyBorder(kLargeImageContainerPadding));
-    image_container_view_->SetBackground(
-        views::CreateSolidBackground(kImageBackgroundColor));
     image_container_view_->AddChildView(new LargeImageView());
 
     // Insert the created image container just after the |content_row_|.

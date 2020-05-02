@@ -26,7 +26,6 @@ using quic::ENCRYPTION_ZERO_RTT;
 using quic::kAESG;
 using quic::kC255;
 using quic::kDefaultMaxStreamsPerConnection;
-using quic::kMaximumIdleTimeoutSecs;
 using quic::kQBIC;
 using quic::NullDecrypter;
 using quic::NullEncrypter;
@@ -295,9 +294,6 @@ void MockCryptoClientStream::SetConfigNegotiated() {
 #endif
   cgst.push_back(kQBIC);
   QuicConfig config(config_);
-  config.SetIdleNetworkTimeout(
-      QuicTime::Delta::FromSeconds(2 * kMaximumIdleTimeoutSecs),
-      QuicTime::Delta::FromSeconds(kMaximumIdleTimeoutSecs));
   config.SetBytesForConnectionIdToSend(PACKET_8BYTE_CONNECTION_ID);
   config.SetMaxBidirectionalStreamsToSend(kDefaultMaxStreamsPerConnection / 2);
   config.SetMaxUnidirectionalStreamsToSend(kDefaultMaxStreamsPerConnection / 2);

@@ -20,6 +20,7 @@
 #include "base/path_service.h"
 #include "base/process/launch.h"
 #include "base/process/process.h"
+#include "base/strings/string_util.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/values.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -47,9 +48,7 @@ const char* kJobIdKey = "buildbucket-id";
 const char* kNoLuciAuth = "no-luci-auth";
 const char* kBypassSkiaGoldFunctionality = "bypass-skia-gold-functionality";
 
-SkiaGoldPixelDiff::SkiaGoldPixelDiff() = default;
-
-SkiaGoldPixelDiff::~SkiaGoldPixelDiff() = default;
+namespace {
 
 base::FilePath GetAbsoluteSrcRelativePath(base::FilePath::StringType path) {
   base::FilePath root_path;
@@ -78,32 +77,18 @@ void AppendArgsJustAfterProgram(base::CommandLine& cmd,
 // should be filled in. Eg: operating system, graphics card, processor
 // architecture, screen resolution, etc.
 bool FillInTestEnvironment(const base::FilePath& keys_file) {
-  std::string system = "unknown";
   std::string processor = "unknown";
-#if defined(OS_WIN)
-  system = "windows";
-  SYSTEM_INFO system_info;
-  GetSystemInfo(&system_info);
-  switch (system_info.wProcessorArchitecture) {
-    case PROCESSOR_ARCHITECTURE_INTEL:
-      processor = "x86";
-      break;
-    case PROCESSOR_ARCHITECTURE_AMD64:
-      processor = "x86_64";
-      break;
-    case PROCESSOR_ARCHITECTURE_IA64:
-      processor = "ia_64";
-      break;
-    case PROCESSOR_ARCHITECTURE_ARM:
-      processor = "arm";
-      break;
-  }
+#if defined(ARCH_CPU_X86)
+  processor = "x86";
+#elif defined(ARCH_CPU_X86_64)
+  processor = "x86_64";
 #else
-  LOG(WARNING) << "Other OS not implemented.";
+  LOG(WARNING) << "Unknown Processor.";
 #endif
 
   base::Value::DictStorage ds;
-  ds["system"] = std::make_unique<base::Value>(system);
+  ds["system"] =
+      std::make_unique<base::Value>(SkiaGoldPixelDiff::GetPlatform());
   ds["processor"] = std::make_unique<base::Value>(processor);
   base::Value root(std::move(ds));
   std::string content;
@@ -120,6 +105,23 @@ bool FillInTestEnvironment(const base::FilePath& keys_file) {
     return false;
   }
   return true;
+}
+
+}  // namespace
+
+SkiaGoldPixelDiff::SkiaGoldPixelDiff() = default;
+
+SkiaGoldPixelDiff::~SkiaGoldPixelDiff() = default;
+
+// static
+std::string SkiaGoldPixelDiff::GetPlatform() {
+#if defined(OS_WIN)
+  return "windows";
+#elif defined(OS_MACOSX)
+  return "macOS";
+#elif defined(OS_LINUX) && !defined(OS_CHROMEOS)
+  return "linux";
+#endif
 }
 
 int SkiaGoldPixelDiff::LaunchProcess(const base::CommandLine& cmdline) const {
@@ -244,9 +246,14 @@ bool SkiaGoldPixelDiff::CompareScreenshot(const std::string& screenshot_name,
     LOG(ERROR) << "Encoding SkBitmap to PNG format failed.";
     return false;
   }
-  // The golden image name should be unique on GCS. And also the name
-  // should be valid across all systems.
-  std::string name = prefix_ + "_" + screenshot_name;
+  // The golden image name should be unique on GCS per platform. And also the
+  // name should be valid across all systems.
+  std::string suffix = GetPlatform();
+  std::string normalized_screenshot_name;
+  // Parameterized tests have "/" in their names which isn't allowed in file
+  // names. Replace with "_".
+  base::ReplaceChars(screenshot_name, "/", "_", &normalized_screenshot_name);
+  std::string name = prefix_ + "_" + normalized_screenshot_name + "_" + suffix;
   base::ScopedAllowBlockingForTesting allow_blocking;
   base::FilePath temporary_path =
       working_dir_.Append(base::FilePath::FromUTF8Unsafe(name + ".png"));

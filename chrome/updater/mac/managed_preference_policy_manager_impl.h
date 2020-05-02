@@ -57,6 +57,7 @@ struct CRUUpdatesSuppressed {
 @property(nonatomic, readonly) BOOL managed;
 
 // Global-level policies.
+@property(nonatomic, readonly) int lastCheckPeriodMinutes;
 @property(nonatomic, readonly) int defaultUpdatePolicy;
 @property(nonatomic, readonly, nullable) NSString* downloadPreference;
 @property(nonatomic, readonly) CRUUpdatesSuppressed updatesSuppressed;

@@ -10,7 +10,7 @@ import '../controls/settings_toggle_button.m.js';
 import {focusWithoutInk} from 'chrome://resources/js/cr/ui/focus_without_ink.m.js';
 import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-import {MetricsBrowserProxyImpl, PrivacyElementInteractions} from '../metrics_browser_proxy.m.js';
+import {MetricsBrowserProxyImpl, PrivacyElementInteractions} from '../metrics_browser_proxy.js';
 
 Polymer({
   is: 'settings-do-not-track-toggle',

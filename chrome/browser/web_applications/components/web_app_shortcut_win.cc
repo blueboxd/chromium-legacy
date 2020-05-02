@@ -27,6 +27,7 @@
 #include "base/win/shortcut.h"
 #include "chrome/browser/shell_integration.h"
 #include "chrome/browser/shell_integration_win.h"
+#include "chrome/browser/web_applications/components/web_app_shortcuts_menu_win.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/installer/util/shell_util.h"
 #include "chrome/installer/util/util_constants.h"
@@ -492,6 +493,9 @@ void DeletePlatformShortcuts(const base::FilePath& web_app_path,
     if (base::IsDirectoryEmpty(chrome_apps_dir))
       base::DeleteFile(chrome_apps_dir, false);
   }
+
+  // Delete downloaded shortcut icons for the web app.
+  web_app::internals::DeleteShortcutsMenuIcons(web_app_path);
 }
 
 void DeleteAllShortcutsForProfile(const base::FilePath& profile_path) {

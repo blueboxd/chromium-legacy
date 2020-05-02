@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.tab.state;
 
+import androidx.annotation.VisibleForTesting;
+
 import org.chromium.base.Callback;
 import org.chromium.base.Log;
 import org.chromium.chrome.browser.crypto.CipherFactory;
@@ -23,7 +25,13 @@ public class EncryptedFilePersistedTabDataStorage extends FilePersistedTabDataSt
 
     @Override
     public void save(int tabId, String dataId, byte[] data) {
-        super.save(tabId, dataId, encrypt(data));
+        save(tabId, dataId, data, NO_OP_CALLBACK);
+    }
+
+    @Override
+    @VisibleForTesting
+    protected void save(int tabId, String dataId, byte[] data, Callback<Integer> callback) {
+        super.save(tabId, dataId, encrypt(data), callback);
     }
 
     @Override

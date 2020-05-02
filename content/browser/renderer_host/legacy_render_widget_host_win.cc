@@ -544,36 +544,20 @@ LegacyRenderWidgetHostHWND::GetOrCreateBrowserAccessibilityRoot() {
 
   BrowserAccessibility* root_node = manager->GetRoot();
 
-  // A datetime popup will have a second window with its own kRootWebArea.
-  // However, the BrowserAccessibilityManager is shared with the main window,
-  // and the popup window's kRootWebArea will be inserted as a sibling of the
-  // popup button. When this is called on a popup, we must return the popup
-  // window's kRootWebArea instead of the root document's kRootWebArea. This
-  // will ensure that we're not placing duplicate document roots in the
-  // accessibility tree.
+  // Popups with HTML content (such as <input type="date">) will create a new
+  // HWND with its own fragment root, but will also inject accessible nodes into
+  // the main document's accessibility tree, thus sharing a
+  // BrowserAccessibilityManager with the main document (see documentation for
+  // BrowserAccessibilityManager::child_root_id_). We can't return the same root
+  // node as the main document, as that will cause a cardinality problem - there
+  // would be two different HWND's pointing to the same root. The popup HWND
+  // should return the root of the popup, not the root of the main document
   if (host_->GetWidgetType() == WidgetType::kPopup) {
-    OneShotAccessibilityTreeSearch tree_search(root_node);
-    tree_search.SetStartNode(root_node);
-    tree_search.SetDirection(OneShotAccessibilityTreeSearch::FORWARDS);
-    tree_search.SetImmediateDescendantsOnly(false);
-    tree_search.SetCanWrapToLastElement(false);
-    tree_search.AddPredicate(AccessibilityPopupButtonPredicate);
-
-    size_t matches = tree_search.CountMatches();
-    for (size_t i = 0; i < matches; ++i) {
-      BrowserAccessibility* match = tree_search.GetMatchAtIndex(i);
-      DCHECK(match);
-
-      // The web root should be the next sibling of the popup node, however it
-      // is not created instantly, so sometimes the popup window exists before
-      // the popup's kRootWebArea has been added to the tree. In this case we
-      // will fall back to the main document's root.
-      BrowserAccessibility* popup_web_root = match->PlatformGetNextSibling();
-      if (popup_web_root &&
-          popup_web_root->GetRole() == ax::mojom::Role::kRootWebArea) {
-        return popup_web_root->GetNativeViewAccessible();
-      }
-    }
+    // Check to see if the manager has a child root (it's expected that there
+    // won't be in popups without HTML-based content such as <select> controls).
+    BrowserAccessibility* child_root = manager->GetPopupRoot();
+    if (child_root)
+      return child_root->GetNativeViewAccessible();
   }
 
   return root_node->GetNativeViewAccessible();

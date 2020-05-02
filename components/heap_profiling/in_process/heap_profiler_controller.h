@@ -16,14 +16,17 @@ class HeapProfilerController {
   HeapProfilerController();
   ~HeapProfilerController();
 
-  // Starts periodic heap snapshot collection.
-  void Start();
+  // Starts periodic heap snapshot collection. Next heap collection will occur
+  // some time between now and |heap_collection_interval|.
+  void Start(base::TimeDelta heap_collection_interval);
 
  private:
   using StoppedFlag = base::RefCountedData<base::AtomicFlag>;
 
-  static void ScheduleNextSnapshot(scoped_refptr<StoppedFlag> stopped);
-  static void TakeSnapshot(scoped_refptr<StoppedFlag> stopped);
+  static void ScheduleNextSnapshot(scoped_refptr<StoppedFlag> stopped,
+                                   base::TimeDelta heap_collection_interval);
+  static void TakeSnapshot(scoped_refptr<StoppedFlag> stopped,
+                           base::TimeDelta heap_collection_interval);
   static void RetrieveAndSendSnapshot();
 
   scoped_refptr<StoppedFlag> stopped_;

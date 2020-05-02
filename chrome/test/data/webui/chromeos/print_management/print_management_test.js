@@ -103,6 +103,7 @@ class FakePrintingMetadataProvider {
   resetForTest() {
     this.printJobs_ = [];
     this.resolverMap_.set('getPrintJobs', new PromiseResolver());
+    this.resolverMap_.set('deleteAllPrintJobs', new PromiseResolver());
   }
 
   /**
@@ -162,6 +163,15 @@ class FakePrintingMetadataProvider {
       resolve({printJobs: this.printJobs_ || []});
     });
   }
+
+  /** @return {!Promise<{success: boolean}>} */
+  deleteAllPrintJobs() {
+    return new Promise(resolve => {
+      this.printJobs_ = [];
+      this.methodCalled('deleteAllPrintJobs');
+      resolve({success: true});
+    });
+  }
 }
 
 suite('PrintManagementTest', () => {
@@ -185,7 +195,7 @@ suite('PrintManagementTest', () => {
   });
 
   teardown(function() {
-    mojoApi_ = null;
+    mojoApi_.resetForTest();
     page.remove();
     page = null;
   });
@@ -223,6 +233,55 @@ suite('PrintManagementTest', () => {
       flush();
       verifyPrintJobs(expectedArr, getPrintJobEntries(page));
     });
+  });
+
+  test('ClearAllButtonDisabledWhenNoPrintJobsSaved', () => {
+    // Initialize with no saved print jobs, expect the clear all button to be
+    // disabled.
+    initializePrintManagementApp(/*printJobs=*/[]);
+    return mojoApi_.whenCalled('getPrintJobs').then(() => {
+      flush();
+      assertTrue(page.$$('#clearAllButton').disabled);
+    });
+  });
+
+  test('ClearAllPrintHistory', () => {
+    const expectedArr = [
+      createJobEntry(
+          'fileA', 'titleA', CompletionStatus.PRINTED,
+          new Date(Date.UTC('February 5, 2020 03:24:00')), 'nameA'),
+      createJobEntry(
+          'fileB', 'titleB', CompletionStatus.PRINTED,
+          new Date(Date.UTC('February 6, 2020 03:24:00')), 'nameB'),
+      createJobEntry(
+          'fileC', 'titleC', CompletionStatus.PRINTED,
+          new Date(Date.UTC('February 7, 2020 03:24:00')), 'nameC'),
+    ];
+
+    initializePrintManagementApp(expectedArr);
+    return mojoApi_.whenCalled('getPrintJobs')
+        .then(() => {
+          flush();
+          verifyPrintJobs(expectedArr, getPrintJobEntries(page));
+
+          // Click the clear all button.
+          const button = page.$$('#clearAllButton');
+          button.click();
+          flush();
+          // Verify that the confirmation dialog shows up and click on the
+          // confirmation button.
+          const dialog = page.$$('#clearHistoryDialog');
+          assertTrue(!!dialog);
+          assertTrue(!dialog.$$('.action-button').disabled);
+          dialog.$$('.action-button').click();
+          assertTrue(dialog.$$('.action-button').disabled);
+          return mojoApi_.whenCalled('deleteAllPrintJobs');
+        })
+        .then(() => {
+          flush();
+          verifyPrintJobs(/*expected=*/[], getPrintJobEntries(page));
+          assertTrue(page.$$('#clearAllButton').disabled);
+        });
   });
 });
 
@@ -285,12 +344,12 @@ suite('PrintJobEntryTest', () => {
         'Printed',
         jobEntryTestElement.$$('#completionStatus').textContent.trim());
 
-    // Change date and assert it shows the correct date (Jan 31, 2020);
+    // Change date and assert it shows the correct date (Feb 5, 2020);
     jobEntryTestElement.set('jobEntry.creationTime', {
-      internalValue: convertToMojoTime(new Date(Date.UTC(2020, 1, 1, 0, 0, 0)))
+      internalValue: convertToMojoTime(new Date('February 5, 2020 03:24:00'))
     });
     assertEquals(
-        'Jan 31, 2020',
+        'Feb 5, 2020',
         jobEntryTestElement.$$('#creationTime').textContent.trim());
 
     // Change the completion status and verify it shows the correct status.

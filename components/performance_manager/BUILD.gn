@@ -55,6 +55,8 @@ static_library("performance_manager") {
     "graph/worker_node.cc",
     "graph/worker_node_impl.cc",
     "graph/worker_node_impl.h",
+    "graph/worker_node_impl_describer.cc",
+    "graph/worker_node_impl_describer.h",
     "performance_manager.cc",
     "performance_manager_feature_observer_client.cc",
     "performance_manager_feature_observer_client.h",

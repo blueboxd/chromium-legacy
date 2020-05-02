@@ -139,14 +139,13 @@ void LayoutExampleBase::ChildPanel::ContentsChanged(
 }
 
 Textfield* LayoutExampleBase::ChildPanel::CreateTextfield() {
-  Textfield* textfield = new Textfield();
+  auto textfield = std::make_unique<Textfield>();
   textfield->SetDefaultWidthInChars(3);
   textfield->SizeToPreferredSize();
   textfield->SetText(base::ASCIIToUTF16("0"));
   textfield->set_controller(this);
   textfield->SetVisible(false);
-  AddChildView(textfield);
-  return textfield;
+  return AddChildView(std::move(textfield));
 }
 
 LayoutExampleBase::LayoutExampleBase(const char* title) : ExampleBase(title) {}
@@ -180,7 +179,7 @@ Combobox* LayoutExampleBase::CreateAndAddCombobox(
 Textfield* LayoutExampleBase::CreateAndAddTextfield(
     const base::string16& label_text,
     int* vertical_pos) {
-  Label* label = new Label(label_text);
+  auto label = std::make_unique<Label>(label_text);
   label->SetPosition(gfx::Point(kLayoutExampleLeftPadding, *vertical_pos));
   label->SizeToPreferredSize();
   int horizontal_pos =
@@ -188,7 +187,7 @@ Textfield* LayoutExampleBase::CreateAndAddTextfield(
   std::unique_ptr<Textfield> textfield =
       CreateCommonTextfield(*vertical_pos, horizontal_pos, this);
   label->SetSize(gfx::Size(label->width(), textfield->height()));
-  control_panel_->AddChildView(label);
+  control_panel_->AddChildView(std::move(label));
   auto* textfield_ptr = control_panel_->AddChildView(std::move(textfield));
   *vertical_pos += textfield_ptr->height() + kLayoutExampleVerticalSpacing;
   return textfield_ptr;
@@ -226,17 +225,14 @@ Checkbox* LayoutExampleBase::CreateAndAddCheckbox(
 
 void LayoutExampleBase::CreateExampleView(View* container) {
   container->SetLayoutManager(std::make_unique<FillLayout>());
-  View* full_panel = new FullPanel();
-  container->AddChildView(full_panel);
+  View* full_panel = container->AddChildView(std::make_unique<FullPanel>());
 
   auto* manager = full_panel->SetLayoutManager(
       std::make_unique<BoxLayout>(views::BoxLayout::Orientation::kHorizontal));
-  layout_panel_ = new View();
+  layout_panel_ = full_panel->AddChildView(std::make_unique<View>());
   layout_panel_->SetBorder(CreateSolidBorder(1, SK_ColorLTGRAY));
-  full_panel->AddChildView(layout_panel_);
   manager->SetFlexForView(layout_panel_, 3);
-  control_panel_ = new View();
-  full_panel->AddChildView(control_panel_);
+  control_panel_ = full_panel->AddChildView(std::make_unique<View>());
   manager->SetFlexForView(control_panel_, 1);
 
   int vertical_pos = kLayoutExampleVerticalSpacing;

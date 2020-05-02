@@ -102,10 +102,8 @@ base::Value PageLoadTrackerDecorator::DescribePageNodeData(
     return base::Value();
 
   base::Value ret(base::Value::Type::DICTIONARY);
-  ret.SetKey("load_idle_state_",
-             base::Value(ToString(data->load_idle_state())));
-  ret.SetKey("loading_received_response_",
-             base::Value(data->loading_received_response_));
+  ret.SetStringKey("load_idle_state", ToString(data->load_idle_state()));
+  ret.SetBoolKey("loading_received_response", data->loading_received_response_);
 
   return ret;
 }

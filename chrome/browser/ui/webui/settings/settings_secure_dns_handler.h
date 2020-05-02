@@ -49,8 +49,8 @@ class SecureDnsHandler : public SettingsPageUIHandler {
   // Intended to be called once upon creation of the secure DNS setting.
   void HandleGetSecureDnsSetting(const base::ListValue* args);
 
-  // Returns the first template if a custom entry is valid.
-  void HandleValidateCustomDnsEntry(const base::ListValue* args);
+  // Parses a custom entry into templates, if they are all valid.
+  void HandleParseCustomDnsEntry(const base::ListValue* args);
 
   // Returns whether or not a test query to the resolver succeeds.
   void HandleProbeCustomDnsTemplate(const base::ListValue* args);

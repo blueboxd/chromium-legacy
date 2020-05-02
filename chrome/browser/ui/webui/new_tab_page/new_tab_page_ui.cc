@@ -23,6 +23,7 @@
 #include "chrome/grit/new_tab_page_resources.h"
 #include "chrome/grit/new_tab_page_resources_map.h"
 #include "components/favicon_base/favicon_url_parser.h"
+#include "components/google/core/common/google_util.h"
 #include "components/omnibox/common/omnibox_features.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/url_data_source.h"
@@ -43,8 +44,6 @@ constexpr char kGeneratedPath[] =
 content::WebUIDataSource* CreateNewTabPageUiHtmlSource(Profile* profile) {
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(chrome::kChromeUINewTabPageHost);
-  source->OverrideContentSecurityPolicyChildSrc(base::StringPrintf(
-      "frame-src %s;", chrome::kChromeUIUntrustedNewTabPageUrl));
 
   ui::Accelerator undo_accelerator(ui::VKEY_Z, ui::EF_PLATFORM_ACCELERATOR);
   source->AddString("undoDescription", l10n_util::GetStringFUTF16(
@@ -69,6 +68,10 @@ content::WebUIDataSource* CreateNewTabPageUiHtmlSource(Profile* profile) {
       base::FeatureList::IsEnabled(ntp_features::kRealboxUseGoogleGIcon)
           ? omnibox::kGoogleGIconResourceName
           : omnibox::kSearchIconResourceName);
+
+  source->AddBoolean(
+      "iframeOneGoogleBarEnabled",
+      base::FeatureList::IsEnabled(ntp_features::kIframeOneGoogleBar));
 
   static constexpr webui::LocalizedString kStrings[] = {
       {"doneButton", IDS_DONE},
@@ -182,6 +185,21 @@ content::WebUIDataSource* CreateNewTabPageUiHtmlSource(Profile* profile) {
   webui::SetupWebUIDataSource(
       source, base::make_span(kNewTabPageResources, kNewTabPageResourcesSize),
       kGeneratedPath, IDR_NEW_TAB_PAGE_NEW_TAB_PAGE_HTML);
+
+  // Allows creating <script> and inlining as well as network requests to
+  // support inlining the OneGoogleBar.
+  // TODO(crbug.com/1076506): remove when changing to iframed OneGoogleBar.
+  // Needs to happen after |webui::SetupWebUIDataSource()| since also overrides
+  // script-src.
+  source->OverrideContentSecurityPolicyScriptSrc(
+      "script-src chrome://resources chrome://test 'self' 'unsafe-inline' "
+      "https:;");
+  // Allow embedding of iframes from the One Google Bar and
+  // chrome-untrusted://new-tab-page for other external content and resources.
+  source->OverrideContentSecurityPolicyChildSrc(
+      base::StringPrintf("child-src https://*.google.com/ %s %s;",
+                         google_util::CommandLineGoogleBaseURL().spec().c_str(),
+                         chrome::kChromeUIUntrustedNewTabPageUrl));
 
   return source;
 }

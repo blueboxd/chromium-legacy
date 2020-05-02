@@ -32,6 +32,7 @@
 #include "chrome/browser/search/chrome_colors/chrome_colors_service.h"
 #include "chrome/browser/search/instant_service.h"
 #include "chrome/browser/search/instant_service_factory.h"
+#include "chrome/browser/search/one_google_bar/one_google_bar_service_factory.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/search_provider_logos/logo_service_factory.h"
 #include "chrome/browser/ui/bookmarks/bookmark_stats.h"
@@ -177,6 +178,8 @@ NewTabPageHandler::NewTabPageHandler(
       ntp_background_service_(
           NtpBackgroundServiceFactory::GetForProfile(profile)),
       logo_service_(LogoServiceFactory::GetForProfile(profile)),
+      one_google_bar_service_(
+          OneGoogleBarServiceFactory::GetForProfile(profile)),
       page_{std::move(pending_page)},
       profile_(profile),
       receiver_{this, std::move(pending_page_handler)},
@@ -197,6 +200,11 @@ NewTabPageHandler::NewTabPageHandler(
   instant_service_->UpdateNtpTheme();
   OmniboxTabHelper::CreateForWebContents(web_contents);
   OmniboxTabHelper::FromWebContents(web_contents_)->AddObserver(this);
+  // |one_google_bar_service_| is null in incognito, or when the feature is
+  // disabled.
+  if (one_google_bar_service_) {
+    one_google_bar_service_observer_.Add(one_google_bar_service_);
+  }
 }
 
 NewTabPageHandler::~NewTabPageHandler() {
@@ -426,6 +434,18 @@ void NewTabPageHandler::ChooseLocalCustomBackground(
       base::FilePath::StringType(), web_contents_->GetTopLevelNativeWindow(),
       nullptr);
   choose_local_custom_background_callback_ = std::move(callback);
+}
+
+void NewTabPageHandler::GetOneGoogleBarParts(
+    GetOneGoogleBarPartsCallback callback) {
+  if (!one_google_bar_service_) {
+    return;
+  }
+  one_google_bar_parts_callbacks_.push_back(std::move(callback));
+  if (one_google_bar_service_->one_google_bar_data().has_value()) {
+    OnOneGoogleBarDataUpdated();
+  }
+  one_google_bar_service_->Refresh();
 }
 
 void NewTabPageHandler::OnMostVisitedTilesRendered(
@@ -716,6 +736,31 @@ void NewTabPageHandler::OnOmniboxFocusChanged(OmniboxFocusState state,
   if (web_contents_->GetController().GetPendingEntry() == nullptr) {
     page_->SetFakeboxVisible(reason != OMNIBOX_FOCUS_CHANGE_TYPING);
   }
+}
+
+void NewTabPageHandler::OnOneGoogleBarDataUpdated() {
+  base::Optional<OneGoogleBarData> data =
+      one_google_bar_service_->one_google_bar_data();
+  for (auto& callback : one_google_bar_parts_callbacks_) {
+    if (data.has_value()) {
+      auto parts = new_tab_page::mojom::OneGoogleBarParts::New();
+      parts->bar_html = data->bar_html;
+      parts->in_head_script = data->in_head_script;
+      parts->in_head_style = data->in_head_style;
+      parts->after_bar_script = data->after_bar_script;
+      parts->end_of_body_html = data->end_of_body_html;
+      parts->end_of_body_script = data->end_of_body_script;
+      std::move(callback).Run(std::move(parts));
+    } else {
+      std::move(callback).Run(nullptr);
+    }
+  }
+  one_google_bar_parts_callbacks_.clear();
+}
+
+void NewTabPageHandler::OnOneGoogleBarServiceShuttingDown() {
+  one_google_bar_service_observer_.RemoveAll();
+  one_google_bar_service_ = nullptr;
 }
 
 void NewTabPageHandler::FileSelected(const base::FilePath& path,

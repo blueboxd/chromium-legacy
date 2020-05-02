@@ -11,8 +11,12 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
-#include "chrome/test/pixel/browser_skia_gold_pixel_diff.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+#if defined(OS_WIN) || defined(OS_MACOSX) || \
+    (defined(OS_LINUX) && !defined(OS_CHROMEOS))
+#include "chrome/test/pixel/browser_skia_gold_pixel_diff.h"
+#endif
 
 #if defined(OS_CHROMEOS)
 #include "ash/shell.h"  // mash-ok
@@ -65,7 +69,10 @@ class WidgetCloser {
 TestBrowserDialog::TestBrowserDialog() : TestBrowserUi() {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           "browser-ui-tests-verify-pixels")) {
+#if defined(OS_WIN) || defined(OS_MACOSX) || \
+    (defined(OS_LINUX) && !defined(OS_CHROMEOS))
     pixel_diff_ = std::make_unique<BrowserSkiaGoldPixelDiff>();
+#endif
   }
 }
 
@@ -121,7 +128,7 @@ bool TestBrowserDialog::VerifyUi() {
 
   views::Widget* dialog_widget = *(added.begin());
 // TODO(https://crbug.com/958242) support Mac for pixel tests.
-#if !defined(OS_MACOSX)
+#if defined(OS_WIN) || (defined(OS_LINUX) && !defined(OS_CHROMEOS))
   if (pixel_diff_) {
     dialog_widget->SetBlockCloseForTesting(true);
     // Deactivate before taking screenshot. Deactivated dialog pixel outputs

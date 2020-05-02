@@ -139,8 +139,8 @@ bool RenderWidgetTargeter::TargetingRequest::MergeEventIfPossible(
     const blink::WebInputEvent& new_event) {
   if (event && !blink::WebInputEvent::IsTouchEventType(new_event.GetType()) &&
       !blink::WebInputEvent::IsGestureEventType(new_event.GetType()) &&
-      ui::CanCoalesce(new_event, *event.get())) {
-    ui::Coalesce(new_event, event.get());
+      event->CanCoalesce(new_event)) {
+    event->Coalesce(new_event);
     return true;
   }
   return false;

@@ -425,8 +425,11 @@ bool ParseManifest(const GURL& manifest_url,
   // Changing the manifest, the scope, or the version of the manifest will
   // trigger a refetch of the manifest.
   //
-  // This code generates manifests with parser version 1.
-  manifest.parser_version = 1;
+  // Version 2: Manifests can have an ORIGIN-TRIAL section.  This is a
+  // separate version so that a new version of Chrome will force a refetch.
+  //
+  // This code generates manifests with parser version 2.
+  manifest.parser_version = 2;
   manifest.scope = manifest_scope;
 
   const GURL manifest_scope_url = manifest_url.Resolve(manifest_scope);

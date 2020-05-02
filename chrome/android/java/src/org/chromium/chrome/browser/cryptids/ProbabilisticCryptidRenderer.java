@@ -8,6 +8,7 @@ import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.Log;
 import org.chromium.chrome.browser.enterprise.util.ManagedBrowserUtils;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -19,21 +20,32 @@ public class ProbabilisticCryptidRenderer {
     // Probabilities are expressed as instances per million.
     protected static final int DENOMINATOR = 1000000;
 
+    private static final String MORATORIUM_LENGTH_PARAM_NAME = "moratorium-length-millis";
+    private static final String RAMP_UP_LENGTH_PARAM_NAME = "ramp-up-length-millis";
+    private static final String MAX_PROBABILITY_PARAM_NAME = "max-probability-per-million";
+
+    private static final long ONE_DAY = 24 * 60 * 60 * 1000;
+    private static final long DEFAULT_MORATORIUM_LENGTH = 4 * ONE_DAY;
+    private static final long DEFAULT_RAMP_UP_LENGTH = 21 * ONE_DAY;
+    private static final int DEFAULT_MAX_PROBABILITY = 20000; // 2%
+
     private static final String TAG = "ProbabilisticCryptid";
 
     /**
      * Determines whether cryptid should be rendered on this NTP instance, based on probability
-     * factors as well as variations groups.
+     * factors as well as certain restrictions (managed non-null profile, incognito, or disabled
+     * Feature flag will prevent display).
      * @param profile the current user profile. Should not be null, except in tests.
-     * @return true if the probability conditions are met and cryptid should be shown,
-     *         false otherwise
+     * @return true if the conditions are met and cryptid should be shown, false otherwise
      */
     public boolean shouldUseCryptidRendering(Profile profile) {
         // Profile may be null for testing.
         if (profile != null && isBlocked(profile)) {
             return false;
+        } else if (!ChromeFeatureList.isEnabled(ChromeFeatureList.PROBABILISTIC_CRYPTID_RENDERER)) {
+            return false;
         }
-        // TODO: This should be disabled unless enabled by variations.
+
         return getRandom() < calculateProbability();
     }
 
@@ -59,18 +71,15 @@ public class ProbabilisticCryptidRenderer {
     }
 
     protected long getRenderingMoratoriumLengthMillis() {
-        // TODO: This default should be overwritable by variations.
-        return 4 * 24 * 60 * 60 * 1000; // 4 days
+        return getParamValue(MORATORIUM_LENGTH_PARAM_NAME, DEFAULT_MORATORIUM_LENGTH);
     }
 
     protected long getRampUpLengthMillis() {
-        // TODO: This default should be overwritable by variations.
-        return 21 * 24 * 60 * 60 * 1000; // 21 days
+        return getParamValue(RAMP_UP_LENGTH_PARAM_NAME, DEFAULT_RAMP_UP_LENGTH);
     }
 
     protected int getMaxProbability() {
-        // TODO: This default should be overwritable by variations.
-        return 20000; // 2%
+        return getParamValue(MAX_PROBABILITY_PARAM_NAME, DEFAULT_MAX_PROBABILITY);
     }
 
     protected int getRandom() {
@@ -134,5 +143,43 @@ public class ProbabilisticCryptidRenderer {
      */
     private boolean isBlocked(Profile profile) {
         return profile.isOffTheRecord() || ManagedBrowserUtils.hasBrowserPoliciesApplied(profile);
+    }
+
+    /**
+     * Helper method for getting and parsing a Feature param associated with this class's Feature,
+     * with type long. Returns the provided default if no such param value is set, or if the value
+     * provided can't be parsed as a long (in which case an error is also logged).
+     */
+    private long getParamValue(String name, long defaultValue) {
+        String paramVal = ChromeFeatureList.getFieldTrialParamByFeature(
+                ChromeFeatureList.PROBABILISTIC_CRYPTID_RENDERER, name);
+        try {
+            if (paramVal.length() > 0) {
+                return Long.parseLong(paramVal);
+            }
+        } catch (NumberFormatException e) {
+            Log.e(TAG, String.format("Invalid long value %s for param %s", paramVal, name), e);
+        }
+
+        return defaultValue;
+    }
+
+    /**
+     * Helper method for getting and parsing a Feature param associated with this class's Feature,
+     * with type int. Returns the provided default if no such param value is set, or if the value
+     * provided can't be parsed as a int (in which case an error is also logged).
+     */
+    private int getParamValue(String name, int defaultValue) {
+        String paramVal = ChromeFeatureList.getFieldTrialParamByFeature(
+                ChromeFeatureList.PROBABILISTIC_CRYPTID_RENDERER, name);
+        try {
+            if (paramVal.length() > 0) {
+                return Integer.parseInt(paramVal);
+            }
+        } catch (NumberFormatException e) {
+            Log.e(TAG, String.format("Invalid int value %s for param %s", paramVal, name), e);
+        }
+
+        return defaultValue;
     }
 }

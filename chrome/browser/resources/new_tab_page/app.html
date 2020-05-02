@@ -22,6 +22,7 @@
   #backgroundGradient {
     height: 100%;
     position: fixed;
+    top: 0;
     width: 100%;
   }
 
@@ -45,14 +46,17 @@
     align-items: center;
     display: flex;
     flex-direction: column;
-    min-height: calc(100vh - var(--ntp-one-google-bar-height));
-    padding-top: var(--ntp-one-google-bar-height);
+    height: calc(100vh - var(--ntp-one-google-bar-height));
     position: relative;
+  }
+
+  :host([iframe-one-google-bar-enabled_]) #content {
+    padding-top: var(--ntp-one-google-bar-height);
   }
 
   #logo {
     margin-bottom: 8px;
-    z-index: 1;  /* Needed so it layers on top of OGB. */
+    z-index: 1;  /* Needed so it layers on top of OneGoogleBar. */
   }
 
   ntp-fakebox,
@@ -220,7 +224,7 @@
         --ntp-theme-shortcut-background-color:
               [[rgbaOrInherit_(theme_.shortcutBackgroundColor)]];
         --ntp-logo-color: [[rgbaOrInherit_(logoColor_)]];">
-  <dom-if if="[[lazyRender_]]">
+  <dom-if if="[[showIframedOneGoogleBar_]]">
     <template>
       <ntp-untrusted-iframe id="oneGoogleBar" path="one-google-bar"
           hidden$="[[!oneGoogleBarLoaded_]]">

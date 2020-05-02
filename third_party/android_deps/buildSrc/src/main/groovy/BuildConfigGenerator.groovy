@@ -367,10 +367,6 @@ class BuildConfigGenerator extends DefaultTask {
                 |
                 |""".stripMargin())
                 break
-            case 'com_google_android_gms_play_services_basement':
-                // Deprecated deps jar but still needed by play services basement.
-                sb.append('  input_jars_paths=["\\$android_sdk/optional/org.apache.http.legacy.jar"]\n')
-                break
             case 'com_google_ar_core':
                 // Target .aar file contains .so libraries that need to be extracted,
                 // and android_aar_prebuilt template will fail if it's not set explictly.
@@ -410,6 +406,19 @@ class BuildConfigGenerator extends DefaultTask {
                 // Replace broad library -keep rules with a more limited set in
                 // chrome/android/java/proguard.flags instead.
                 sb.append('  ignore_proguard_configs = true\n')
+                break
+            case 'com_google_android_gms_play_services_basement':
+                // Deprecated deps jar but still needed by play services basement.
+                sb.append('  input_jars_paths=["\\$android_sdk/optional/org.apache.http.legacy.jar"]\n')
+                // fall through.
+            case 'com_google_android_gms_play_services_auth':
+            case 'com_google_android_gms_play_services_base':
+            case 'com_google_android_gms_play_services_cast_framework':
+            case 'com_google_android_gms_play_services_gcm':
+            case 'com_google_android_gms_play_services_udc':
+            case 'com_google_android_gms_play_services_maps':
+            case 'com_google_android_gms_play_services_stats':
+                sb.append('  enable_jetify = true\n')
                 break
         }
     }

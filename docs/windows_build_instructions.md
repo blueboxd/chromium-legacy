@@ -248,10 +248,13 @@ don't' set enable_nacl = false then build times may get worse.
 * `blink_symbol_level = 0` - turn off source-level debugging for
 blink to reduce build times, appropriate if you don't plan to debug blink.
 
-In order to speed up linking you can set `symbol_level = 1` - this option
-reduces the work the linker has to do but when this option is set you cannot do
-source-level debugging. Switching from `symbol_level = 2` (the default) to
-`symbol_level = 1` requires recompiling everything.
+In order to speed up linking you can set `symbol_level = 1` or
+`symbol_level = 0` - these options reduce the work the compiler and linker have
+to do. With `symbol_level = 1` the compiler emits file name and line number
+information so you can still do source-level debugging but there will be no
+local variable or type information. With `symbol_level = 0` there is no
+source-level debugging but call stacks still have function names. Changing
+`symbol_level` requires recompiling everything.
 
 In addition, Google employees should use goma, a distributed compilation system.
 Detailed information is available internally but the relevant gn arg is:

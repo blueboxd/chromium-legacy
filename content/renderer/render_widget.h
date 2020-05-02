@@ -168,8 +168,9 @@ class CONTENT_EXPORT RenderWidget
   // Convenience type for creation method taken by InstallCreateForFrameHook().
   // The method signature matches the RenderWidget constructor.
   using CreateRenderWidgetFunction = std::unique_ptr<RenderWidget> (*)(
-      int32_t,
+      int32_t routing_id,
       CompositorDependencies*,
+      bool hidden,
       bool never_composited,
       mojo::PendingReceiver<mojom::Widget> widget_receiver);
   // Overrides the implementation of CreateForFrame() function below. Used by

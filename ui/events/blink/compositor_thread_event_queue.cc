@@ -39,8 +39,9 @@ void CompositorThreadEventQueue::Queue(
   if (queue_.empty() ||
       !IsContinuousGestureEvent(new_event->event().GetType()) ||
       !(queue_.back()->CanCoalesceWith(*new_event) ||
-        IsCompatibleScrollorPinch(ToWebGestureEvent(new_event->event()),
-                                  ToWebGestureEvent(queue_.back()->event())))) {
+        blink::WebGestureEvent::IsCompatibleScrollorPinch(
+            ToWebGestureEvent(new_event->event()),
+            ToWebGestureEvent(queue_.back()->event())))) {
     if (new_event->first_original_event()) {
       // Trace could be nested as there might be multiple events in queue.
       // e.g. |ScrollUpdate|, |ScrollEnd|, and another scroll sequence.
@@ -102,9 +103,9 @@ void CompositorThreadEventQueue::Queue(
   // Extract the second last event in queue IF it's a scroll or a pinch for the
   // same target.
   std::unique_ptr<EventWithCallback> second_last_event = nullptr;
-  if (!queue_.empty() &&
-      IsCompatibleScrollorPinch(ToWebGestureEvent(new_event->event()),
-                                ToWebGestureEvent(queue_.back()->event()))) {
+  if (!queue_.empty() && blink::WebGestureEvent::IsCompatibleScrollorPinch(
+                             ToWebGestureEvent(new_event->event()),
+                             ToWebGestureEvent(queue_.back()->event()))) {
     second_last_event = std::move(queue_.back());
     queue_.pop_back();
     // second_last_event's trace_id might not be less than last_event if we had
@@ -152,7 +153,7 @@ void CompositorThreadEventQueue::Queue(
                scroll_latency.trace_id() != -1 ? scroll_latency.trace_id()
                                                : pinch_latency.trace_id());
   std::pair<blink::WebGestureEvent, blink::WebGestureEvent> coalesced_events =
-      CoalesceScrollAndPinch(
+      blink::WebGestureEvent::CoalesceScrollAndPinch(
           second_last_event ? &ToWebGestureEvent(second_last_event->event())
                             : nullptr,
           ToWebGestureEvent(last_event->event()),

@@ -11,6 +11,15 @@ import "url/mojom/url.mojom";
 import "mojo/public/mojom/base/string16.mojom";
 import "chrome/common/search/omnibox.mojom";
 
+struct OneGoogleBarParts {
+  string bar_html;
+  string in_head_script;
+  string in_head_style;
+  string after_bar_script;
+  string end_of_body_html;
+  string end_of_body_script;
+};
+
 struct MostVisitedTile {
   string title;
   mojo_base.mojom.TextDirection title_direction;
@@ -256,6 +265,8 @@ interface PageHandler {
   GetDoodle() => (Doodle? doodle);
   // Choose custom background from local file system.
   ChooseLocalCustomBackground() => (bool success);
+  // Get the OneGoogleBarParts to be inlined in the NTP.
+  GetOneGoogleBarParts() => (OneGoogleBarParts? parts);
 
   // ======= METRICS =======
   // Logs that |tiles| were displayed / updated at |time|. The first instance of

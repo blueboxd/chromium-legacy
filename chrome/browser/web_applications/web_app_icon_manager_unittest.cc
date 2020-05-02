@@ -65,11 +65,46 @@ class WebAppIconManagerTest : public WebAppTest {
 
     base::RunLoop run_loop;
     icon_manager_->WriteData(app_id, std::move(web_app_info->icon_bitmaps),
+                             std::vector<std::map<SquareSizePx, SkBitmap>>(),
                              base::BindLambdaForTesting([&](bool success) {
                                EXPECT_TRUE(success);
                                run_loop.Quit();
                              }));
     run_loop.Run();
+  }
+
+  void WriteShortcutIcons(const AppId& app_id,
+                          const std::vector<int>& sizes_px,
+                          const std::vector<SkColor>& colors) {
+    DCHECK_EQ(sizes_px.size(), colors.size());
+    std::vector<std::map<SquareSizePx, SkBitmap>> shortcut_icons;
+    for (size_t i = 0; i < sizes_px.size(); i++) {
+      std::map<SquareSizePx, SkBitmap> shortcut_icon_map;
+      std::vector<SquareSizePx> icon_sizes;
+      shortcut_icon_map.emplace(sizes_px[i],
+                                CreateSquareIcon(sizes_px[i], colors[i]));
+      shortcut_icons.push_back(std::move(shortcut_icon_map));
+    }
+
+    base::RunLoop run_loop;
+    icon_manager_->WriteData(app_id, std::map<SquareSizePx, SkBitmap>(),
+                             shortcut_icons,
+                             base::BindLambdaForTesting([&](bool success) {
+                               EXPECT_TRUE(success);
+                               run_loop.Quit();
+                             }));
+    run_loop.Run();
+  }
+
+  std::vector<std::vector<SquareSizePx>> CreateDownloadedShortcutIconsSizes(
+      std::vector<SquareSizePx> sizes_px) {
+    std::vector<std::vector<SquareSizePx>> downloaded_shortcut_icons_sizes;
+    for (const auto& size : sizes_px) {
+      std::vector<SquareSizePx> icon_sizes;
+      icon_sizes.push_back(size);
+      downloaded_shortcut_icons_sizes.push_back(std::move(icon_sizes));
+    }
+    return downloaded_shortcut_icons_sizes;
   }
 
   std::vector<uint8_t> ReadSmallestCompressedIcon(const AppId& app_id,
@@ -210,6 +245,7 @@ TEST_F(WebAppIconManagerTest, OverwriteIcons) {
 
     // Overwrite red icons with green ones.
     icon_manager().WriteData(app_id, std::move(icon_bitmaps),
+                             std::vector<std::map<SquareSizePx, SkBitmap>>(),
                              base::BindLambdaForTesting([&](bool success) {
                                EXPECT_TRUE(success);
                                run_loop.Quit();
@@ -266,6 +302,46 @@ TEST_F(WebAppIconManagerTest, ReadAllIcons) {
               EXPECT_EQ(2u, icons_map.size());
               EXPECT_EQ(colors[0], icons_map[sizes_px[0]].getColor(0, 0));
               EXPECT_EQ(colors[1], icons_map[sizes_px[1]].getColor(0, 0));
+              run_loop.Quit();
+            }));
+
+    run_loop.Run();
+  }
+}
+
+TEST_F(WebAppIconManagerTest, WriteAndReadAllShortcutIcons) {
+  auto web_app = CreateWebApp();
+  const AppId app_id = web_app->app_id();
+
+  const std::vector<int> sizes_px = {icon_size::k64, icon_size::k128,
+                                     icon_size::k256};
+  const std::vector<SkColor> colors = {SK_ColorRED, SK_ColorWHITE,
+                                       SK_ColorBLUE};
+
+  WriteShortcutIcons(app_id, sizes_px, colors);
+
+  web_app->SetDownloadedShortcutIconsSizes(
+      CreateDownloadedShortcutIconsSizes(sizes_px));
+
+  controller().RegisterApp(std::move(web_app));
+  {
+    base::RunLoop run_loop;
+
+    icon_manager().ReadAllShortcutIcons(
+        app_id,
+        base::BindLambdaForTesting(
+            [&](std::vector<std::map<SquareSizePx, SkBitmap>>
+                    shortcut_icons_map) {
+              EXPECT_EQ(3u, shortcut_icons_map.size());
+              EXPECT_EQ(sizes_px[0], shortcut_icons_map[0].begin()->first);
+              EXPECT_EQ(colors[0],
+                        shortcut_icons_map[0].begin()->second.getColor(0, 0));
+              EXPECT_EQ(sizes_px[1], shortcut_icons_map[1].begin()->first);
+              EXPECT_EQ(colors[1],
+                        shortcut_icons_map[1].begin()->second.getColor(0, 0));
+              EXPECT_EQ(sizes_px[2], shortcut_icons_map[2].begin()->first);
+              EXPECT_EQ(colors[2],
+                        shortcut_icons_map[2].begin()->second.getColor(0, 0));
               run_loop.Quit();
             }));
 

@@ -618,6 +618,12 @@ const char kDesktopPWAsLocalUpdatingThrottlePersistenceDescription[] =
     "Persist the throttling of local PWA manifest update checks across browser "
     "restarts.";
 
+extern const char kDesktopPWAsAppIconShortcutsMenuName[] =
+    "Desktop PWAs app icon shortcuts menu";
+extern const char kDesktopPWAsAppIconShortcutsMenuDescription[] =
+    "Enable installed PWAs to include a menu of shortcuts associated with the "
+    "app icon in the taskbar on Windows, or the dock on macOS or Linux.";
+
 const char kDesktopPWAsTabStripName[] = "Desktop PWA tab strips";
 const char kDesktopPWAsTabStripDescription[] =
     "Experimental UI for exploring what PWA windows would look like with a tab "
@@ -2797,6 +2803,11 @@ const char kNtpDismissPromosName[] = "Dismiss promos on the New Tab Page";
 const char kNtpDismissPromosDescription[] =
     "Enables a UI to persistently dismiss [non-emergency] promos on the "
     "bottom/middle of the New Tab Page";
+
+const char kNtpIframeOneGoogleBarName[] = "Load OneGoogleBar in an iframe";
+const char kNtpIframeOneGoogleBarDescription[] =
+    "Enables loading the OneGoogleBar in an iframe. Otherwise, the "
+    "OneGoogleBar is loaded inline on chrome://new-tab-page.";
 
 const char kNtpRealboxName[] = "Real search box in New Tab Page";
 const char kNtpRealboxDescription[] =

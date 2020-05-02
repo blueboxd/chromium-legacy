@@ -95,7 +95,6 @@ void EmptyLocalFrameClient::BeginNavigation(
     DocumentLoader*,
     WebNavigationType,
     NavigationPolicy,
-    bool,
     WebFrameLoadType,
     bool,
     TriggeringEventInfo,

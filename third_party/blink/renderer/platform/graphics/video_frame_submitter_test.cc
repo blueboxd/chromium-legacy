@@ -105,19 +105,10 @@ class VideoMockCompositorFrameSink
   }
 
   MOCK_METHOD1(DidNotProduceFrame, void(const viz::BeginFrameAck&));
-
-  MOCK_METHOD2(DidAllocateSharedBitmap_,
-               void(base::ReadOnlySharedMemoryRegion* region,
-                    gpu::mojom::blink::MailboxPtr* id));
-  void DidAllocateSharedBitmap(base::ReadOnlySharedMemoryRegion region,
-                               gpu::mojom::blink::MailboxPtr id) override {
-    DidAllocateSharedBitmap_(&region, &id);
-  }
-
-  MOCK_METHOD1(DidDeleteSharedBitmap_, void(gpu::mojom::blink::MailboxPtr* id));
-  void DidDeleteSharedBitmap(gpu::mojom::blink::MailboxPtr id) override {
-    DidDeleteSharedBitmap_(&id);
-  }
+  MOCK_METHOD2(DidAllocateSharedBitmap,
+               void(base::ReadOnlySharedMemoryRegion region,
+                    const gpu::Mailbox& id));
+  MOCK_METHOD1(DidDeleteSharedBitmap, void(const gpu::Mailbox& id));
   MOCK_METHOD1(InitializeCompositorFrameSinkType,
                void(viz::mojom::CompositorFrameSinkType));
 

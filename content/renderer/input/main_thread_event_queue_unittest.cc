@@ -361,7 +361,7 @@ TEST_F(MainThreadEventQueueTest, NonBlockingWheel) {
     EXPECT_EQ(WebInputEvent::DispatchType::kListenersNonBlockingPassive,
               last_wheel_event->dispatch_type);
     WebMouseWheelEvent coalesced_event = kEvents[0];
-    ui::Coalesce(kEvents[1], &coalesced_event);
+    coalesced_event.Coalesce(kEvents[1]);
     coalesced_event.dispatch_type =
         WebInputEvent::DispatchType::kListenersNonBlockingPassive;
     EXPECT_TRUE(Equal(coalesced_event, *last_wheel_event));
@@ -390,7 +390,7 @@ TEST_F(MainThreadEventQueueTest, NonBlockingWheel) {
         static_cast<const WebMouseWheelEvent*>(
             handled_tasks_.at(1)->taskAsEvent()->EventPointer());
     WebMouseWheelEvent coalesced_event = kEvents[2];
-    ui::Coalesce(kEvents[3], &coalesced_event);
+    coalesced_event.Coalesce(kEvents[3]);
     coalesced_event.dispatch_type =
         WebInputEvent::DispatchType::kListenersNonBlockingPassive;
     EXPECT_TRUE(Equal(coalesced_event, *last_wheel_event));
@@ -480,7 +480,7 @@ TEST_F(MainThreadEventQueueTest, NonBlockingTouch) {
   last_touch_event = static_cast<const WebTouchEvent*>(
       handled_tasks_.at(2)->taskAsEvent()->EventPointer());
   WebTouchEvent coalesced_event = kEvents[2];
-  ui::Coalesce(kEvents[3], &coalesced_event);
+  coalesced_event.Coalesce(kEvents[3]);
   coalesced_event.dispatch_type =
       WebInputEvent::DispatchType::kListenersNonBlockingPassive;
   EXPECT_TRUE(Equal(coalesced_event, *last_touch_event));
@@ -606,7 +606,7 @@ TEST_F(MainThreadEventQueueTest, InterleavedEvents) {
     EXPECT_EQ(WebInputEvent::DispatchType::kListenersNonBlockingPassive,
               last_wheel_event->dispatch_type);
     WebMouseWheelEvent coalesced_event = kWheelEvents[0];
-    ui::Coalesce(kWheelEvents[1], &coalesced_event);
+    coalesced_event.Coalesce(kWheelEvents[1]);
     coalesced_event.dispatch_type =
         WebInputEvent::DispatchType::kListenersNonBlockingPassive;
     EXPECT_TRUE(Equal(coalesced_event, *last_wheel_event));
@@ -617,7 +617,7 @@ TEST_F(MainThreadEventQueueTest, InterleavedEvents) {
     const WebTouchEvent* last_touch_event = static_cast<const WebTouchEvent*>(
         handled_tasks_.at(1)->taskAsEvent()->EventPointer());
     WebTouchEvent coalesced_event = kTouchEvents[0];
-    ui::Coalesce(kTouchEvents[1], &coalesced_event);
+    coalesced_event.Coalesce(kTouchEvents[1]);
     coalesced_event.dispatch_type =
         WebInputEvent::DispatchType::kListenersNonBlockingPassive;
     EXPECT_TRUE(Equal(coalesced_event, *last_touch_event));

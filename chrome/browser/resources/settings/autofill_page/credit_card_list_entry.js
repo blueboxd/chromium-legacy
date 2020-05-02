@@ -12,7 +12,7 @@ import {Polymer, html} from 'chrome://resources/polymer/v3_0/polymer/polymer_bun
 import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.m.js';
 import 'chrome://resources/cr_elements/shared_vars_css.m.js';
 import {I18nBehavior} from 'chrome://resources/js/i18n_behavior.m.js';
-import '../i18n_setup.m.js';
+import '../i18n_setup.js';
 import '../settings_shared_css.m.js';
 import './passwords_shared_css.js';
 

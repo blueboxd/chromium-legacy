@@ -44,6 +44,7 @@ class ImageFetcherBridge {
                   const jint j_image_fetcher_config,
                   const base::android::JavaRef<jstring>& j_url,
                   const base::android::JavaRef<jstring>& j_client_name,
+                  const jint j_expiration_interval_mins,
                   const base::android::JavaRef<jobject>& j_callback);
 
   void ReportEvent(JNIEnv* j_env,

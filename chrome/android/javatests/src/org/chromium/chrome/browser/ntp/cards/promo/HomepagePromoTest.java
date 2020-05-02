@@ -14,6 +14,7 @@ import static org.hamcrest.Matchers.instanceOf;
 
 import static org.chromium.chrome.test.util.ViewUtils.waitForView;
 
+import android.os.Build.VERSION_CODES;
 import android.support.test.espresso.contrib.RecyclerViewActions;
 import android.view.View;
 import android.view.ViewGroup;
@@ -34,6 +35,7 @@ import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisableIf;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
@@ -200,6 +202,7 @@ public class HomepagePromoTest {
 
     @Test
     @MediumTest
+    @DisableIf.Build(sdk_is_greater_than = VERSION_CODES.O, message = "crbug.com/1077316s")
     public void testChangeHomepageAndUndo() {
         SignInPromo.setDisablePromoForTests(true);
         mActivityTestRule.loadUrl(UrlConstants.NTP_URL);

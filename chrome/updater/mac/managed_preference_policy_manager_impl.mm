@@ -59,6 +59,7 @@ base::scoped_nsobject<NSString> ReadPolicyString(id value) {
   base::scoped_nsobject<NSString> _downloadPreference;
 };
 
+@property(nonatomic, readonly) int lastCheckPeriodMinutes;
 @property(nonatomic, readonly) int defaultUpdatePolicy;
 @property(nonatomic, readonly, nullable) NSString* downloadPreference;
 @property(nonatomic, readonly, nullable) NSString* proxyMode;
@@ -87,6 +88,11 @@ base::scoped_nsobject<NSString> ReadPolicyString(id value) {
         policyDict[kUpdatesSuppressedDurationMinuteKey]);
   }
   return self;
+}
+
+- (int)lastCheckPeriodMinutes {
+  // LastCheckPeriodMinutes is not supported in Managed Preference policy.
+  return kPolicyNotSet;
 }
 
 - (NSString*)downloadPreference {
@@ -163,10 +169,16 @@ base::scoped_nsobject<NSString> ReadPolicyString(id value) {
   if (([super init])) {
     _managed = (policies.count > 0);
 
+    // Always create a global policy instance for default values.
+    _globalPolicy.reset([[CRUManagedPreferenceGlobalPolicySettings alloc]
+        initWithDictionary:nil]);
+
     _appPolicies.reset([[NSMutableDictionary alloc] init]);
     for (NSString* appid in policies.allKeys) {
-      CRUAppPolicyDictionary* policyDict = policies[appid];
+      if (![policies[appid] isKindOfClass:[CRUAppPolicyDictionary class]])
+        continue;
 
+      CRUAppPolicyDictionary* policyDict = policies[appid];
       appid = appid.lowercaseString;
       if ([appid isEqualToString:kGlobalPolicyKey]) {
         _globalPolicy.reset([[CRUManagedPreferenceGlobalPolicySettings alloc]
@@ -202,6 +214,10 @@ base::scoped_nsobject<NSString> ReadPolicyString(id value) {
   return [_globalPolicy proxyPacURL];
 }
 
+- (int)lastCheckPeriodMinutes {
+  return [_globalPolicy lastCheckPeriodMinutes];
+}
+
 - (int)defaultUpdatePolicy {
   return [_globalPolicy defaultUpdatePolicy];
 }
@@ -212,6 +228,8 @@ base::scoped_nsobject<NSString> ReadPolicyString(id value) {
 
 - (int)appUpdatePolicy:(NSString*)appid {
   appid = appid.lowercaseString;
+  if (![_appPolicies objectForKey:appid])
+    return kPolicyNotSet;
   return [_appPolicies objectForKey:appid].updatePolicy;
 }
 
@@ -222,6 +240,8 @@ base::scoped_nsobject<NSString> ReadPolicyString(id value) {
 
 - (int)rollbackToTargetVersion:(NSString*)appid {
   appid = appid.lowercaseString;
+  if (![_appPolicies objectForKey:appid])
+    return kPolicyNotSet;
   return [_appPolicies objectForKey:appid].rollbackToTargetVersion;
 }
 

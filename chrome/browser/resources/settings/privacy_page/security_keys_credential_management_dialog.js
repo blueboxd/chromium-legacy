@@ -19,9 +19,9 @@ import 'chrome://resources/polymer/v3_0/iron-list/iron-list.js';
 import 'chrome://resources/polymer/v3_0/iron-pages/iron-pages.js';
 import 'chrome://resources/polymer/v3_0/paper-spinner/paper-spinner-lite.js';
 
-import {loadTimeData} from '../i18n_setup.m.js';
+import {loadTimeData} from '../i18n_setup.js';
 import '../settings_shared_css.m.js';
-import '../site_favicon.m.js';
+import '../site_favicon.js';
 import {SecurityKeysCredentialBrowserProxy, SecurityKeysCredentialBrowserProxyImpl, Credential} from './security_keys_browser_proxy.js';
 import './security_keys_pin_field.js';
 

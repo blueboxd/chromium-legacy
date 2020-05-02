@@ -668,7 +668,7 @@ component("features") {
   ]
 }
 
-if (!is_ios) {
+if (is_win || is_mac || (is_linux && !is_chromeos)) {
   jumbo_static_library("pixel_diff_test_support") {
     testonly = true
     sources = [
@@ -686,7 +686,9 @@ if (!is_ios) {
       data_deps = [ ":goldctl" ]
     }
   }
+}
 
+if (!is_ios) {
   group("goldctl") {
     data = []
 
@@ -977,12 +979,10 @@ test("ui_base_unittests") {
       "models/list_model_unittest.cc",
       "models/list_selection_model_unittest.cc",
       "models/tree_node_model_unittest.cc",
-      "test/skia_gold_pixel_diff_unittest.cc",
       "text/bytes_formatting_unittest.cc",
       "webui/web_ui_util_unittest.cc",
     ]
     deps += [
-      ":pixel_diff_test_support",
       "//components/system_media_controls:test_support",
       "//ui/base/mojom:cursor_type",
     ]
@@ -1006,6 +1006,11 @@ test("ui_base_unittests") {
         "cocoa/weak_ptr_nsobject_unittest.mm",
       ]
     }
+  }
+
+  if (is_win || is_mac || (is_linux && !is_chromeos)) {
+    sources += [ "test/skia_gold_pixel_diff_unittest.cc" ]
+    deps += [ ":pixel_diff_test_support" ]
   }
 
   if (build_ime) {

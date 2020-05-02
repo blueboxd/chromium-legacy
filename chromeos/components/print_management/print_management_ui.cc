@@ -35,6 +35,12 @@ void AddPrintManagementStrings(content::WebUIDataSource* html_source) {
       {"dateColumn", IDS_PRINT_MANAGEMENT_DATE_COLUMN},
       {"statusColumn", IDS_PRINT_MANAGEMENT_STATUS_COLUMN},
       {"printJobTitle", IDS_PRINT_MANAGEMENT_TITLE},
+      {"clearAllHistoryLabel",
+       IDS_PRINT_MANAGEMENT_CLEAR_ALL_HISTORY_BUTTON_TEXT},
+      {"clearHistoryConfirmationText",
+       IDS_PRINT_MANAGEMENT_CLEAR_ALL_HISTORY_CONFIRMATION_TEXT},
+      {"cancelButtonLabel", IDS_PRINT_MANAGEMENT_CANCEL_BUTTON_LABEL},
+      {"clearButtonLabel", IDS_PRINT_MANAGEMENT_CLEAR_BUTTON_LABEL},
   };
 
   for (const auto& str : kLocalizedStrings) {
@@ -72,6 +78,12 @@ PrintManagementUI::PrintManagementUI(
                                IDR_PRINT_MANAGEMENT_SHARED_CSS_HTML);
   html_source->AddResourcePath("print_management_shared_css.js",
                                IDR_PRINT_MANAGEMENT_SHARED_CSS_JS);
+  html_source->AddResourcePath(
+      "print_job_clear_history_dialog.html",
+      IDR_PRINT_MANAGEMENT_PRINT_JOB_CLEAR_HISTORY_DIALOG_HTML);
+  html_source->AddResourcePath(
+      "print_job_clear_history_dialog.js",
+      IDR_PRINT_MANAGEMENT_PRINT_JOB_CLEAR_HISTORY_DIALOG_JS);
   html_source->SetDefaultResource(IDR_PRINT_MANAGEMENT_INDEX_HTML);
 
   AddPrintManagementStrings(html_source.get());

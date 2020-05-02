@@ -596,7 +596,7 @@ void NetworkConfigurationHandler::GetPropertiesCallback(
   // Get the GUID property from NetworkState if it is not set in Shill.
   const std::string* guid =
       properties.FindStringKey(::onc::network_config::kGUID);
-  if (!guid) {
+  if (!guid || guid->empty()) {
     const NetworkState* network_state =
         network_state_handler_->GetNetworkState(service_path);
     if (network_state) {

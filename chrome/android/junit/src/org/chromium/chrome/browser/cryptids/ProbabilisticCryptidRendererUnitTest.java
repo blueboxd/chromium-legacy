@@ -8,11 +8,15 @@ import android.support.test.filters.MediumTest;
 import android.support.test.filters.SmallTest;
 
 import org.junit.Assert;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
 
 import org.chromium.base.test.BaseRobolectricTestRunner;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
+import org.chromium.chrome.test.util.browser.Features;
 
 import java.util.Random;
 
@@ -21,7 +25,11 @@ import java.util.Random;
  */
 @RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
+@Features.EnableFeatures(ChromeFeatureList.PROBABILISTIC_CRYPTID_RENDERER)
 public class ProbabilisticCryptidRendererUnitTest {
+    @Rule
+    public TestRule mProcessor = new Features.JUnitProcessor();
+
     private static final long PERIOD_LENGTH = 60 * 60 * 24 * 1000; // Arbitrary value of 1 day
     private static final int MAX_PROBABILITY = 200000; // Arbitrary value of 20%
     private static final int NUM_RUNS = 10000; // How many runs to use for aggregator tests.

@@ -374,6 +374,9 @@ extern const char kDesktopPWAsLocalUpdatingDescription[];
 extern const char kDesktopPWAsLocalUpdatingThrottlePersistenceName[];
 extern const char kDesktopPWAsLocalUpdatingThrottlePersistenceDescription[];
 
+extern const char kDesktopPWAsAppIconShortcutsMenuName[];
+extern const char kDesktopPWAsAppIconShortcutsMenuDescription[];
+
 extern const char kDesktopPWAsTabStripName[];
 extern const char kDesktopPWAsTabStripDescription[];
 
@@ -1608,6 +1611,9 @@ extern const char kNtpConfirmSuggestionRemovalsDescription[];
 
 extern const char kNtpDismissPromosName[];
 extern const char kNtpDismissPromosDescription[];
+
+extern const char kNtpIframeOneGoogleBarName[];
+extern const char kNtpIframeOneGoogleBarDescription[];
 
 extern const char kNtpRealboxName[];
 extern const char kNtpRealboxDescription[];

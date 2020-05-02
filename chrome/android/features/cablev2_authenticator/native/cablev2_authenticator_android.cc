@@ -284,7 +284,6 @@ class Client {
   class Delegate {
    public:
     virtual ~Delegate() = default;
-    virtual void OnHandshake(Client* client) = 0;
     virtual void MakeCredential(
         Client* client,
         const std::string& origin,
@@ -337,6 +336,7 @@ class Client {
   }
 
   uint64_t addr() { return addr_; }
+  uint16_t mtu() { return mtu_; }
 
  private:
   enum State {
@@ -412,7 +412,6 @@ class Client {
         }
         crypter_ = std::move(handshake_result.value());
         state_ = State::kConnected;
-        delegate_->OnHandshake(this);
         break;
       }
 
@@ -694,11 +693,10 @@ class CableInterface : public Client::Delegate {
 
   void Stop() {
     ble_handler_.Reset();
-    clients_.clear();
-    known_mtus_.clear();
     auth_state_.identity_key.reset();
     auth_state_.qr_advert.reset();
     auth_state_.qr_psk_gen_key.reset();
+    client_ = nullptr;
     env_ = nullptr;
   }
 
@@ -741,37 +739,32 @@ class CableInterface : public Client::Delegate {
                      &auth_state_.qr_advert.emplace());
   }
 
-  void RecordClientMTU(uint64_t client_adr, uint16_t mtu_bytes) {
-    known_mtus_.emplace(client_adr, mtu_bytes);
-  }
-
-  ScopedJavaLocalRef<jobjectArray> Write(jlong client_addr,
+  ScopedJavaLocalRef<jobjectArray> Write(uint64_t client_addr,
+                                         uint16_t mtu,
                                          const JavaParamRef<jbyteArray>& data) {
-    auto it = clients_.find(client_addr);
-    if (it == clients_.end()) {
-      // If no MTU is negotiated, the GATT default is just 23 bytes. Subtract
-      // three bytes of GATT overhead.
-      static constexpr uint16_t kDefaultMTU = 23 - 3;
-      // TODO: once we only handle a single client, the Java code can ensure
-      // that an MTU has always been set and this code wont need to know a
-      // default.
-      const auto& mtu_it = known_mtus_.find(client_addr);
-      const uint16_t mtu =
-          mtu_it == known_mtus_.end() ? kDefaultMTU : mtu_it->second;
-      it = clients_
-               .emplace(client_addr,
-                        new Client(client_addr, mtu, &auth_state_, this))
-               .first;
+    // First client to write to the fidoControlPoint characteristic becomes the
+    // only permissible client for the lifetime of this instance. The Java side
+    // filters writes from all other clients.
+    if (client_ == nullptr) {
+      client_ = std::make_unique<Client>(client_addr, mtu, &auth_state_, this);
+    } else if (client_->addr() != static_cast<uint64_t>(client_addr)) {
+      NOTREACHED() << "Write from unknown client " << client_->addr();
+      return nullptr;
     }
-    Client* const client = it->second.get();
+    if (client_->mtu() != mtu) {
+      // MTU must not be changed after the initial write. Keep going, but things
+      // might fail at this point.
+      FIDO_LOG(ERROR) << "MTU changed after first write: " << client_->mtu()
+                      << " != " << mtu;
+    }
 
     const size_t data_len = env_->GetArrayLength(data);
     jbyte* data_bytes = env_->GetByteArrayElements(data, /*iscopy=*/nullptr);
     base::Optional<std::vector<std::vector<uint8_t>>> response_fragments;
     const bool process_ok =
-        client->Process(base::span<const uint8_t>(
-                            reinterpret_cast<uint8_t*>(data_bytes), data_len),
-                        &response_fragments);
+        client_->Process(base::span<const uint8_t>(
+                             reinterpret_cast<uint8_t*>(data_bytes), data_len),
+                         &response_fragments);
     env_->ReleaseByteArrayElements(data, data_bytes, JNI_ABORT);
     if (!process_ok) {
       return nullptr;
@@ -780,11 +773,6 @@ class CableInterface : public Client::Delegate {
     static std::vector<std::vector<uint8_t>> kEmptyFragments;
     return ToJavaArrayOfByteArray(
         env_, response_fragments ? *response_fragments : kEmptyFragments);
-  }
-
-  void OnHandshake(Client* client) override {
-    // TODO: ignore other clients and disconnect them
-    Java_BLEHandler_onHandshake(env_, ble_handler_, client->addr());
   }
 
   void MakeCredential(Client* client,
@@ -823,11 +811,11 @@ class CableInterface : public Client::Delegate {
                                 base::span<const uint8_t> client_data_json,
                                 base::span<const uint8_t> attestation_object) {
     DCHECK_LE(ctap_status, 0xFFu);
-    auto it = clients_.find(client_addr);
-    if (it == clients_.end()) {
-      FIDO_LOG(ERROR) << "unknown client " << client_addr;
+    if (!client_) {
+      NOTREACHED() << "OnMakeCredentialResponse() without a connected client";
       return;
     }
+    DCHECK_EQ(client_->addr(), client_addr);
 
     std::vector<uint8_t> response = {base::checked_cast<uint8_t>(ctap_status)};
     if (ctap_status == static_cast<uint8_t>(CtapDeviceResponseCode::kSuccess)) {
@@ -865,7 +853,7 @@ class CableInterface : public Client::Delegate {
     }
 
     base::Optional<std::vector<std::vector<uint8_t>>> response_fragments =
-        it->second->EncryptAndFragment(response);
+        client_->EncryptAndFragment(response);
     if (!response_fragments) {
       FIDO_LOG(ERROR) << "EncryptAndFragment() failed for " << client_addr;
       return;
@@ -883,11 +871,11 @@ class CableInterface : public Client::Delegate {
                               std::vector<uint8_t> authenticator_data,
                               std::vector<uint8_t> signature) {
     DCHECK_LE(ctap_status, 0xFFu);
-    auto it = clients_.find(client_addr);
-    if (it == clients_.end()) {
-      FIDO_LOG(ERROR) << "unknown client " << client_addr;
+    if (!client_) {
+      NOTREACHED() << "OnGetAssertionResponse() without a connected client";
       return;
     }
+    DCHECK_EQ(client_->addr(), client_addr);
 
     std::vector<uint8_t> response = {base::checked_cast<uint8_t>(ctap_status)};
 
@@ -917,7 +905,7 @@ class CableInterface : public Client::Delegate {
     }
 
     base::Optional<std::vector<std::vector<uint8_t>>> response_fragments =
-        it->second->EncryptAndFragment(response);
+        client_->EncryptAndFragment(response);
     if (!response_fragments) {
       FIDO_LOG(ERROR) << "EncryptAndFragment() failed for " << client_addr;
       return;
@@ -1036,8 +1024,7 @@ class CableInterface : public Client::Delegate {
   JNIEnv* env_ = nullptr;
   base::android::ScopedJavaGlobalRef<jobject> ble_handler_;
   AuthenticatorState auth_state_;
-  std::map<uint64_t, uint16_t> known_mtus_;
-  std::map<uint64_t, std::unique_ptr<Client>> clients_;
+  std::unique_ptr<Client> client_;
 };
 
 }  // anonymous namespace
@@ -1059,20 +1046,17 @@ static void JNI_BLEHandler_OnQRScanned(JNIEnv* env,
   CableInterface::GetInstance()->OnQRScanned(ConvertJavaStringToUTF8(jvalue));
 }
 
-static void JNI_BLEHandler_RecordClientMtu(JNIEnv* env,
-                                           jlong client,
-                                           jint mtu_bytes) {
-  if (mtu_bytes > 0xffff) {
-    mtu_bytes = 0xffff;
-  }
-  CableInterface::GetInstance()->RecordClientMTU(client, mtu_bytes);
-}
-
 static ScopedJavaLocalRef<jobjectArray> JNI_BLEHandler_Write(
     JNIEnv* env,
     jlong client,
+    jint mtu,
     const JavaParamRef<jbyteArray>& data) {
-  return CableInterface::GetInstance()->Write(client, data);
+  if (mtu < 0) {
+    mtu = 0;
+  } else if (mtu > 0xffff) {
+    mtu = 0xffff;
+  }
+  return CableInterface::GetInstance()->Write(client, mtu, data);
 }
 
 static void JNI_BLEHandler_OnAuthenticatorAttestationResponse(

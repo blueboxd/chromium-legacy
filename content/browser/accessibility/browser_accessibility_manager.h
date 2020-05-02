@@ -175,6 +175,11 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeObserver,
   // If this tree has a parent tree, return the parent node in that tree.
   BrowserAccessibility* GetParentNodeFromParentTree() const;
 
+  // In general, there is only a single node with the role of kRootWebArea,
+  // but if a popup is opened, a second nested "root" is created in the same
+  // tree as the "true" root. This will keep track of the nested root node.
+  BrowserAccessibility* GetPopupRoot() const;
+
   // Get the AXTreeData for this frame.
   const ui::AXTreeData& GetTreeData() const;
 
@@ -411,6 +416,10 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeObserver,
   void OnNodeCreated(ui::AXTree* tree, ui::AXNode* node) override;
   void OnNodeDeleted(ui::AXTree* tree, int32_t node_id) override;
   void OnNodeReparented(ui::AXTree* tree, ui::AXNode* node) override;
+  void OnRoleChanged(ui::AXTree* tree,
+                     ui::AXNode* node,
+                     ax::mojom::Role old_role,
+                     ax::mojom::Role new_role) override;
   void OnAtomicUpdateFinished(
       ui::AXTree* tree,
       bool root_changed,
@@ -539,6 +548,10 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeObserver,
 
   // For testing only: A function to call when a generated event is fired.
   GeneratedEventCallbackForTesting generated_event_callback_for_testing_;
+
+  // Keeps track of the nested popup root's id, if it exists. See GetPopupRoot()
+  // for details.
+  std::set<int32_t> popup_root_ids_;
 
   // Fire all events regardless of focus and with no delay, to avoid test
   // flakiness. See NeverSuppressOrDelayEventsForTesting() for details.

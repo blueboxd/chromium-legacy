@@ -20,7 +20,7 @@ ScopedWebInputEventWithLatencyInfo::~ScopedWebInputEventWithLatencyInfo() {}
 
 bool ScopedWebInputEventWithLatencyInfo::CanCoalesceWith(
     const ScopedWebInputEventWithLatencyInfo& other) const {
-  return ui::CanCoalesce(other.event(), event());
+  return event().CanCoalesce(other.event());
 }
 
 void ScopedWebInputEventWithLatencyInfo::CoalesceWith(
@@ -35,7 +35,7 @@ void ScopedWebInputEventWithLatencyInfo::CoalesceWith(
   // New events get coalesced into older events, and the newer timestamp
   // should always be preserved.
   const base::TimeTicks time_stamp = other.event().TimeStamp();
-  ui::Coalesce(other.event(), event_->EventPointer());
+  event_->EventPointer()->Coalesce(other.event());
   event_->EventPointer()->SetTimeStamp(time_stamp);
   event_->AddCoalescedEvent(other.event());
 

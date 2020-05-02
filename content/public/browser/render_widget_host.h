@@ -22,6 +22,7 @@
 #include "third_party/blink/public/common/input/web_input_event.h"
 #include "third_party/blink/public/mojom/input/input_event_result.mojom-shared.h"
 #include "third_party/blink/public/platform/web_drag_operation.h"
+#include "ui/base/ui_base_types.h"
 #include "ui/surface/transport_dib.h"
 
 namespace blink {
@@ -317,6 +318,10 @@ class CONTENT_EXPORT RenderWidgetHost : public IPC::Sender {
 
   // Sets cursor to a specified one when it is over this widget.
   virtual void SetCursor(const ui::Cursor& cursor) {}
+
+  // Shows the context menu using the specified point as anchor point.
+  virtual void ShowContextMenuAtPoint(const gfx::Point& point,
+                                      const ui::MenuSourceType source_type) {}
 };
 
 }  // namespace content

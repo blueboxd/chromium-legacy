@@ -45,7 +45,7 @@ EventWithCallback::EventWithCallback(
 EventWithCallback::~EventWithCallback() {}
 
 bool EventWithCallback::CanCoalesceWith(const EventWithCallback& other) const {
-  return CanCoalesce(other.event(), event());
+  return event().CanCoalesce(other.event());
 }
 
 void EventWithCallback::SetScrollbarManipulationHandledOnCompositorThread() {
@@ -65,7 +65,7 @@ void EventWithCallback::CoalesceWith(EventWithCallback* other,
   // New events get coalesced into older events, and the newer timestamp
   // should always be preserved.
   const base::TimeTicks time_stamp = other->event().TimeStamp();
-  Coalesce(other->event(), event_.get());
+  event_->Coalesce(other->event());
   event_->SetTimeStamp(time_stamp);
 
   // When coalescing two input events, we keep the oldest LatencyInfo

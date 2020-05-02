@@ -1504,33 +1504,41 @@ void QuicChromiumClientSession::OnCanCreateNewOutgoingStream(
 
 void QuicChromiumClientSession::OnConfigNegotiated() {
   quic::QuicSpdyClientSessionBase::OnConfigNegotiated();
-  if (!stream_factory_ || !config()->HasReceivedAlternateServerAddress())
+  if (!stream_factory_ || !stream_factory_->allow_server_migration() ||
+      (!config()->HasReceivedIPv6AlternateServerAddress() &&
+       !config()->HasReceivedIPv4AlternateServerAddress())) {
     return;
+  }
 
   // Server has sent an alternate address to connect to.
-  IPEndPoint new_address =
-      ToIPEndPoint(config()->ReceivedAlternateServerAddress());
   IPEndPoint old_address;
   GetDefaultSocket()->GetPeerAddress(&old_address);
 
   // Migrate only if address families match, or if new address family is v6,
   // since a v4 address should be reachable over a v6 network (using a
   // v4-mapped v6 address).
-  if (old_address.GetFamily() != new_address.GetFamily() &&
-      old_address.GetFamily() == ADDRESS_FAMILY_IPV4) {
-    return;
+  IPEndPoint new_address;
+  if (old_address.GetFamily() == ADDRESS_FAMILY_IPV6) {
+    if (config()->HasReceivedIPv6AlternateServerAddress()) {
+      new_address =
+          ToIPEndPoint(config()->ReceivedIPv6AlternateServerAddress());
+    } else {
+      new_address =
+          ToIPEndPoint(config()->ReceivedIPv4AlternateServerAddress());
+      // Use a v4-mapped v6 address.
+      new_address =
+          IPEndPoint(ConvertIPv4ToIPv4MappedIPv6(new_address.address()),
+                     new_address.port());
+    }
+  } else if (old_address.GetFamily() == ADDRESS_FAMILY_IPV4) {
+    if (config()->HasReceivedIPv4AlternateServerAddress()) {
+      new_address =
+          ToIPEndPoint(config()->ReceivedIPv4AlternateServerAddress());
+    } else {
+      return;
+    }
   }
-
-  if (old_address.GetFamily() != new_address.GetFamily()) {
-    DCHECK_EQ(old_address.GetFamily(), ADDRESS_FAMILY_IPV6);
-    DCHECK_EQ(new_address.GetFamily(), ADDRESS_FAMILY_IPV4);
-    // Use a v4-mapped v6 address.
-    new_address = IPEndPoint(ConvertIPv4ToIPv4MappedIPv6(new_address.address()),
-                             new_address.port());
-  }
-
-  if (!stream_factory_->allow_server_migration())
-    return;
+  DCHECK_EQ(new_address.GetFamily(), old_address.GetFamily());
 
   // Specifying kInvalidNetworkHandle for the |network| parameter
   // causes the session to use the default network for the new socket.

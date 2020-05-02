@@ -101,7 +101,7 @@ SharedWorkerHost::SharedWorkerHost(SharedWorkerServiceImpl* service,
       scoped_process_host_observer_(this),
       next_connection_request_id_(1) {
   DCHECK(worker_process_host_);
-  DCHECK(!IsShuttingDown(worker_process_host_));
+  DCHECK(worker_process_host_->IsInitializedAndNotDead());
 
   // Set up the worker pending receiver. This is needed first in either
   // AddClient() or Start(). AddClient() can sometimes be called before Start()

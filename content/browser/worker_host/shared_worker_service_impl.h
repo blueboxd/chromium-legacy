@@ -37,9 +37,6 @@ class SharedWorkerInstance;
 class SharedWorkerHost;
 class StoragePartitionImpl;
 
-// Shared helper function
-bool IsShuttingDown(RenderProcessHost* host);
-
 // Created per StoragePartition.
 class CONTENT_EXPORT SharedWorkerServiceImpl : public SharedWorkerService {
  public:

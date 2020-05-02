@@ -2669,6 +2669,11 @@ const FeatureEntry kFeatureEntries[] = {
      kOsDesktop,
      FEATURE_VALUE_TYPE(
          features::kDesktopPWAsLocalUpdatingThrottlePersistence)},
+    // TODO(https://crbug.com/1069293): Add macOS and Linux implementations.
+    {"enable-desktop-pwas-app-icon-shortcuts-menu",
+     flag_descriptions::kDesktopPWAsAppIconShortcutsMenuName,
+     flag_descriptions::kDesktopPWAsAppIconShortcutsMenuDescription, kOsWin,
+     FEATURE_VALUE_TYPE(features::kDesktopPWAsAppIconShortcutsMenu)},
     {"enable-desktop-pwas-tab-strip",
      flag_descriptions::kDesktopPWAsTabStripName,
      flag_descriptions::kDesktopPWAsTabStripDescription, kOsDesktop,
@@ -3599,6 +3604,10 @@ const FeatureEntry kFeatureEntries[] = {
     {"ntp-dismiss-promos", flag_descriptions::kNtpDismissPromosName,
      flag_descriptions::kNtpDismissPromosDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(ntp_features::kDismissPromos)},
+
+    {"ntp-iframe-one-google-bar", flag_descriptions::kNtpIframeOneGoogleBarName,
+     flag_descriptions::kNtpIframeOneGoogleBarDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(ntp_features::kIframeOneGoogleBar)},
 
     {"ntp-realbox", flag_descriptions::kNtpRealboxName,
      flag_descriptions::kNtpRealboxDescription, kOsDesktop,

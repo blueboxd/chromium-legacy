@@ -279,15 +279,13 @@ void VideoFrameSubmitter::DidAllocateSharedBitmap(
     const viz::SharedBitmapId& id) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(compositor_frame_sink_);
-  compositor_frame_sink_->DidAllocateSharedBitmap(
-      std::move(region), SharedBitmapIdToGpuMailboxPtr(id));
+  compositor_frame_sink_->DidAllocateSharedBitmap(std::move(region), id);
 }
 
 void VideoFrameSubmitter::DidDeleteSharedBitmap(const viz::SharedBitmapId& id) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(compositor_frame_sink_);
-  compositor_frame_sink_->DidDeleteSharedBitmap(
-      SharedBitmapIdToGpuMailboxPtr(id));
+  compositor_frame_sink_->DidDeleteSharedBitmap(id);
 }
 
 void VideoFrameSubmitter::OnReceivedContextProvider(
@@ -601,7 +599,10 @@ viz::CompositorFrame VideoFrameSubmitter::CreateCompositorFrame(
       child_local_surface_id_allocator_.GetCurrentLocalSurfaceIdAllocation()
           .allocation_time();
 
-  auto render_pass = viz::RenderPass::Create();
+  // Specify size of shared quad state and quad lists so that RenderPass doesn't
+  // allocate using the defaults of 32 and 128 since we only append one quad.
+  auto render_pass = viz::RenderPass::Create(/*shared_quad_state_list_size=*/1u,
+                                             /*quad_list_size*/ 1u);
   render_pass->SetNew(1, gfx::Rect(frame_size_), gfx::Rect(frame_size_),
                       gfx::Transform());
 

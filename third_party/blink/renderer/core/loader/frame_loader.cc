@@ -808,16 +808,8 @@ void FrameLoader::StartNavigation(FrameLoadRequest& request,
     return;
   }
 
-  bool has_transient_activation =
-      LocalFrame::HasTransientUserActivation(frame_);
-  // TODO(csharrison): In M71 when UserActivation v2 should ship, we can remove
-  // the check that the pages are equal, because consumption should not be
-  // shared across pages. After that, we can also get rid of consumption call
-  // in RenderFrameImpl::OpenURL.
-  if (frame_->IsMainFrame() && origin_document &&
-      frame_->GetPage() == origin_document->GetPage()) {
+  if (frame_->IsMainFrame())
     LocalFrame::ConsumeTransientUserActivation(frame_);
-  }
 
   // The main resource request gets logged here, because V8DOMActivityLogger
   // is looked up based on the current v8::Context. When the request actually
@@ -846,7 +838,7 @@ void FrameLoader::StartNavigation(FrameLoadRequest& request,
   Client()->BeginNavigation(
       resource_request, request.GetFrameType(), origin_document,
       nullptr /* document_loader */, navigation_type,
-      request.GetNavigationPolicy(), has_transient_activation, frame_load_type,
+      request.GetNavigationPolicy(), frame_load_type,
       request.ClientRedirect() == ClientRedirectPolicy::kClientRedirect,
       request.GetTriggeringEventInfo(), request.Form(),
       request.ShouldCheckMainWorldContentSecurityPolicy(),

@@ -9,6 +9,7 @@
 #include <set>
 
 #include "base/memory/weak_ptr.h"
+#include "base/threading/thread_checker.h"
 #include "chrome/browser/media/feeds/media_feeds_fetcher.h"
 #include "chrome/browser/media/feeds/media_feeds_store.mojom.h"
 #include "chrome/browser/media/history/media_history_keyed_service.h"
@@ -83,10 +84,11 @@ class MediaFeedsService : public KeyedService {
   bool IsSafeSearchCheckingEnabled() const;
 
   void OnFetchResponse(int64_t feed_id,
-                       base::OnceClosure callback,
                        const schema_org::improved::mojom::EntityPtr& response,
                        MediaFeedsFetcher::Status status,
                        bool was_fetched_via_cache);
+
+  void OnCompleteFetch(const int64_t feed_id, const bool has_items);
 
   void OnSafeSearchPrefChanged();
 
@@ -97,8 +99,20 @@ class MediaFeedsService : public KeyedService {
 
   PrefChangeRegistrar pref_change_registrar_;
 
-  // Used to fetch media feeds. Null if no fetch is ongoing.
-  std::map<int64_t, std::unique_ptr<MediaFeedsFetcher>> fetchers_;
+  struct InflightFeedFetch {
+    InflightFeedFetch(std::unique_ptr<MediaFeedsFetcher> fetcher,
+                      base::OnceClosure callback);
+    ~InflightFeedFetch();
+    InflightFeedFetch(InflightFeedFetch&& t);
+    InflightFeedFetch(const InflightFeedFetch&) = delete;
+    InflightFeedFetch& operator=(const InflightFeedFetch&) = delete;
+
+    std::vector<base::OnceClosure> callbacks;
+
+    std::unique_ptr<MediaFeedsFetcher> fetcher;
+  };
+
+  std::map<int64_t, InflightFeedFetch> fetches_;
 
   struct InflightSafeSearchCheck {
     explicit InflightSafeSearchCheck(const std::set<GURL>& urls);
@@ -123,6 +137,8 @@ class MediaFeedsService : public KeyedService {
 
   std::unique_ptr<safe_search_api::URLChecker> safe_search_url_checker_;
   Profile* const profile_;
+
+  THREAD_CHECKER(thread_checker_);
 
   base::WeakPtrFactory<MediaFeedsService> weak_factory_{this};
 };

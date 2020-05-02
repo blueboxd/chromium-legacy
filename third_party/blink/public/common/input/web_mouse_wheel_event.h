@@ -97,6 +97,11 @@ class BLINK_COMMON_EXPORT WebMouseWheelEvent : public WebMouseEvent {
   bool IsCancelable() const { return dispatch_type == DispatchType::kBlocking; }
 
   std::unique_ptr<WebInputEvent> Clone() const override;
+  bool CanCoalesce(const WebInputEvent& event) const override;
+  void Coalesce(const WebInputEvent& event) override;
+
+ private:
+  bool HaveConsistentPhase(const WebMouseWheelEvent& event) const;
 };
 
 }  // namespace blink

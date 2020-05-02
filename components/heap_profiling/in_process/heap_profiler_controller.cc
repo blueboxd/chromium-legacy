@@ -25,9 +25,6 @@ namespace {
 // Sets heap sampling interval in bytes.
 const char kHeapProfilerSamplingRate[] = "sampling-rate";
 
-constexpr base::TimeDelta kHeapCollectionInterval =
-    base::TimeDelta::FromHours(24);
-
 base::TimeDelta RandomInterval(base::TimeDelta mean) {
   // Time intervals between profile collections form a Poisson stream with
   // given mean interval.
@@ -43,7 +40,7 @@ HeapProfilerController::~HeapProfilerController() {
   stopped_->data.Set();
 }
 
-void HeapProfilerController::Start() {
+void HeapProfilerController::Start(base::TimeDelta heap_collection_interval) {
   if (!base::FeatureList::IsEnabled(
           metrics::CallStackProfileMetricsProvider::kHeapProfilerReporting)) {
     return;
@@ -54,24 +51,28 @@ void HeapProfilerController::Start() {
   if (sampling_rate > 0)
     base::SamplingHeapProfiler::Get()->SetSamplingInterval(sampling_rate);
   base::SamplingHeapProfiler::Get()->Start();
-  ScheduleNextSnapshot(stopped_);
+  ScheduleNextSnapshot(stopped_, heap_collection_interval);
 }
 
 // static
 void HeapProfilerController::ScheduleNextSnapshot(
-    scoped_refptr<StoppedFlag> stopped) {
+    scoped_refptr<StoppedFlag> stopped,
+    base::TimeDelta heap_collection_interval) {
   base::ThreadPool::PostDelayedTask(
       FROM_HERE, {base::TaskPriority::BEST_EFFORT},
-      base::BindOnce(&HeapProfilerController::TakeSnapshot, std::move(stopped)),
-      RandomInterval(kHeapCollectionInterval));
+      base::BindOnce(&HeapProfilerController::TakeSnapshot, std::move(stopped),
+                     heap_collection_interval),
+      RandomInterval(heap_collection_interval));
 }
 
 // static
-void HeapProfilerController::TakeSnapshot(scoped_refptr<StoppedFlag> stopped) {
+void HeapProfilerController::TakeSnapshot(
+    scoped_refptr<StoppedFlag> stopped,
+    base::TimeDelta heap_collection_interval) {
   if (stopped->data.IsSet())
     return;
   RetrieveAndSendSnapshot();
-  ScheduleNextSnapshot(std::move(stopped));
+  ScheduleNextSnapshot(std::move(stopped), heap_collection_interval);
 }
 
 // static

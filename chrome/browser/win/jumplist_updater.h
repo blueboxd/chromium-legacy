@@ -126,6 +126,9 @@ class JumpListUpdater {
                          const ShellLinkItemList& link_items,
                          size_t max_items);
 
+  // Removes the Windows JumpList for an app with given app_user_model_id.
+  static bool DeleteJumpList(const base::string16& app_user_model_id);
+
  private:
   // The app ID.
   base::string16 app_user_model_id_;

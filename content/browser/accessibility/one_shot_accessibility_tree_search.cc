@@ -414,11 +414,6 @@ bool AccessibilityMediaPredicate(BrowserAccessibility* start,
   return tag == "audio" || tag == "video";
 }
 
-bool AccessibilityPopupButtonPredicate(BrowserAccessibility* start,
-                                       BrowserAccessibility* node) {
-  return (node->GetRole() == ax::mojom::Role::kPopUpButton);
-}
-
 bool AccessibilityRadioButtonPredicate(BrowserAccessibility* start,
                                        BrowserAccessibility* node) {
   return (node->GetRole() == ax::mojom::Role::kRadioButton ||

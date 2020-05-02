@@ -79,7 +79,6 @@
 #include "remoting/host/security_key/security_key_auth_handler.h"
 #include "remoting/host/security_key/security_key_extension.h"
 #include "remoting/host/shutdown_watchdog.h"
-#include "remoting/host/single_window_desktop_environment.h"
 #include "remoting/host/switches.h"
 #include "remoting/host/test_echo_extension.h"
 #include "remoting/host/third_party_auth_config.h"
@@ -180,8 +179,6 @@ const char kEnableVp9SwitchName[] = "enable-vp9";
 
 // Command line switch used to enable hardware H264 encoding.
 const char kEnableH264SwitchName[] = "enable-h264";
-
-const char kWindowIdSwitchName[] = "window-id";
 
 // Command line switch used to send a custom offline reason and exit.
 const char kReportOfflineReasonSwitchName[] = "report-offline-reason";
@@ -395,10 +392,6 @@ class HostProcess : public ConfigWatcher::Delegate,
   bool security_key_auth_policy_enabled_ = false;
   bool security_key_extension_supported_ = true;
 
-  // Boolean to change flow, where necessary, if we're
-  // capturing a window instead of the entire desktop.
-  bool enable_window_capture_ = false;
-
   // Used to specify which window to stream, if enabled.
   webrtc::WindowId window_id_ = 0;
 
@@ -570,27 +563,6 @@ bool HostProcess::InitWithCommandLine(const base::CommandLine* cmd_line) {
     if (report_offline_reason_.empty()) {
       LOG(ERROR) << "--" << kReportOfflineReasonSwitchName
                  << " requires an argument.";
-      return false;
-    }
-  }
-
-  enable_window_capture_ = cmd_line->HasSwitch(kWindowIdSwitchName);
-  if (enable_window_capture_) {
-
-#if defined(OS_LINUX) || defined(OS_WIN)
-    LOG(WARNING) << "Window capturing is not fully supported on Linux or "
-                    "Windows.";
-#endif  // defined(OS_LINUX) || defined(OS_WIN)
-
-    // uint32_t is large enough to hold window IDs on all platforms.
-    uint32_t window_id;
-    if (base::StringToUint(
-            cmd_line->GetSwitchValueASCII(kWindowIdSwitchName),
-            &window_id)) {
-      window_id_ = static_cast<webrtc::WindowId>(window_id);
-    } else {
-      LOG(ERROR) << "Window with window id: " << window_id_
-                 << " not found. Shutting down host.";
       return false;
     }
   }
@@ -894,15 +866,9 @@ void HostProcess::StartOnUiThread() {
   desktop_session_connector_ = desktop_environment_factory;
 #else  // !defined(REMOTING_MULTI_PROCESS)
   BasicDesktopEnvironmentFactory* desktop_environment_factory;
-  if (enable_window_capture_) {
-    desktop_environment_factory = new SingleWindowDesktopEnvironmentFactory(
-        context_->network_task_runner(), context_->video_capture_task_runner(),
-        context_->input_task_runner(), context_->ui_task_runner(), window_id_);
-  } else {
-    desktop_environment_factory = new Me2MeDesktopEnvironmentFactory(
-        context_->network_task_runner(), context_->video_capture_task_runner(),
-        context_->input_task_runner(), context_->ui_task_runner());
-  }
+  desktop_environment_factory = new Me2MeDesktopEnvironmentFactory(
+      context_->network_task_runner(), context_->video_capture_task_runner(),
+      context_->input_task_runner(), context_->ui_task_runner());
 #endif  // !defined(REMOTING_MULTI_PROCESS)
 
   desktop_environment_factory_.reset(desktop_environment_factory);

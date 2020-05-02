@@ -45,7 +45,7 @@ js_library("omnibox_extension_entry") {
 js_library("search_engine_dialog") {
   deps = [
     ":search_engines_browser_proxy.m",
-    "..:i18n_setup.m",
+    "..:i18n_setup",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
     "//ui/webui/resources/cr_elements/cr_dialog:cr_dialog.m",
     "//ui/webui/resources/js:web_ui_listener_behavior.m",
@@ -79,7 +79,7 @@ js_library("search_engines_page") {
   deps = [
     ":search_engines_browser_proxy.m",
     "..:global_scroll_target_behavior.m",
-    "..:settings_routes.m",
+    "..:settings_routes",
     "//third_party/polymer/v3_0/components-chromium/iron-list",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
     "//ui/webui/resources/js:assert.m",

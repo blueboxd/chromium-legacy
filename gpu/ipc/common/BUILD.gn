@@ -228,6 +228,49 @@ mojom("interfaces") {
     enabled_features += [ "use_x11" ]
   }
 
+  shared_cpp_typemaps = [
+    {
+      types = [
+        {
+          mojom = "gpu.mojom.Mailbox"
+          cpp = "::gpu::Mailbox"
+        },
+      ]
+      traits_headers = [ "mailbox_mojom_traits.h" ]
+      traits_public_deps = [ ":shared_mojom_traits" ]
+    },
+    {
+      types = [
+        {
+          mojom = "gpu.mojom.MailboxHolder"
+          cpp = "::gpu::MailboxHolder"
+        },
+      ]
+      traits_headers = [ "mailbox_holder_mojom_traits.h" ]
+      traits_public_deps = [
+        ":mojom_traits",
+        ":shared_mojom_traits",
+        "//gpu/command_buffer/common",
+      ]
+    },
+    {
+      types = [
+        {
+          mojom = "gpu.mojom.SyncToken"
+          cpp = "::gpu::SyncToken"
+        },
+      ]
+      traits_headers = [ "sync_token_mojom_traits.h" ]
+      traits_public_deps = [
+        ":mojom_traits",
+        "//gpu/command_buffer/common",
+      ]
+    },
+  ]
+
+  cpp_typemaps = shared_cpp_typemaps
+  blink_cpp_typemaps = shared_cpp_typemaps
+
   export_class_attribute_blink = "BLINK_PLATFORM_EXPORT"
   export_define_blink = "BLINK_PLATFORM_IMPLEMENTATION=1"
   export_header_blink = "third_party/blink/public/platform/web_common.h"
@@ -315,4 +358,19 @@ source_set("mojom_traits") {
   if (enable_vulkan) {
     deps += [ ":vulkan_types_mojom_traits" ]
   }
+}
+
+component("shared_mojom_traits") {
+  output_name = "gpu_shared_mojom_traits"
+  sources = [
+    "mailbox_mojom_traits.cc",
+    "mailbox_mojom_traits.h",
+  ]
+  defines = [ "IS_GPU_SHARED_MOJOM_TRAITS_IMPL" ]
+  public_deps = [
+    ":interfaces_shared",
+    "//base",
+    "//gpu/command_buffer/common",
+    "//mojo/public/cpp/bindings",
+  ]
 }

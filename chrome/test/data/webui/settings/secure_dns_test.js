@@ -60,23 +60,22 @@ suite('SettingsSecureDnsInput', function() {
 
   test('SecureDnsInputEmpty', async function() {
     // Trigger validation on an empty input.
-    testBrowserProxy.setValidEntry('');
+    testBrowserProxy.setParsedEntry([]);
     testElement.validate();
-    assertEquals(
-        '', await testBrowserProxy.whenCalled('validateCustomDnsEntry'));
+    assertEquals('', await testBrowserProxy.whenCalled('parseCustomDnsEntry'));
     assertFalse(crInput.invalid);
     assertFalse(testElement.isInvalid());
   });
 
   test('SecureDnsInputValidFormatAndProbeFail', async function() {
-    // Enter two valid servers but make the first one fail the test query.
-    testElement.value = `${validFailEntry} ${validSuccessEntry}`;
-    testBrowserProxy.setValidEntry(validFailEntry);
-    testBrowserProxy.setProbeSuccess(false);
+    // Enter a valid server that fails the test query.
+    testElement.value = validFailEntry;
+    testBrowserProxy.setParsedEntry([validFailEntry]);
+    testBrowserProxy.setProbeResults({[validFailEntry]: false});
     testElement.validate();
     assertEquals(
-        `${validFailEntry} ${validSuccessEntry}`,
-        await testBrowserProxy.whenCalled('validateCustomDnsEntry'));
+        validFailEntry,
+        await testBrowserProxy.whenCalled('parseCustomDnsEntry'));
     assertEquals(
         validFailEntry,
         await testBrowserProxy.whenCalled('probeCustomDnsTemplate'));
@@ -88,12 +87,12 @@ suite('SettingsSecureDnsInput', function() {
   test('SecureDnsInputValidFormatAndProbeSuccess', async function() {
     // Enter a valid input and make the test query succeed.
     testElement.value = validSuccessEntry;
-    testBrowserProxy.setValidEntry(validSuccessEntry);
-    testBrowserProxy.setProbeSuccess(true);
+    testBrowserProxy.setParsedEntry([validSuccessEntry]);
+    testBrowserProxy.setProbeResults({[validSuccessEntry]: true});
     testElement.validate();
     assertEquals(
         validSuccessEntry,
-        await testBrowserProxy.whenCalled('validateCustomDnsEntry'));
+        await testBrowserProxy.whenCalled('parseCustomDnsEntry'));
     assertEquals(
         validSuccessEntry,
         await testBrowserProxy.whenCalled('probeCustomDnsTemplate'));
@@ -101,14 +100,31 @@ suite('SettingsSecureDnsInput', function() {
     assertFalse(testElement.isInvalid());
   });
 
+  test('SecureDnsInputValidFormatAndProbeTwice', async function() {
+    // Enter two valid servers but make the first one fail the test query.
+    testElement.value = `${validFailEntry} ${validSuccessEntry}`;
+    testBrowserProxy.setParsedEntry([validFailEntry, validSuccessEntry]);
+    testBrowserProxy.setProbeResults({
+      [validFailEntry]: false,
+      [validSuccessEntry]: true,
+    });
+    testElement.validate();
+    assertEquals(
+        `${validFailEntry} ${validSuccessEntry}`,
+        await testBrowserProxy.whenCalled('parseCustomDnsEntry'));
+    await flushTasks();
+    assertEquals(2, testBrowserProxy.getCallCount('probeCustomDnsTemplate'));
+    assertFalse(crInput.invalid);
+    assertFalse(testElement.isInvalid());
+  });
+
   test('SecureDnsInputInvalid', async function() {
     // Enter an invalid input and trigger validation.
     testElement.value = invalidEntry;
-    testBrowserProxy.setValidEntry('');
+    testBrowserProxy.setParsedEntry([]);
     testElement.validate();
     assertEquals(
-        invalidEntry,
-        await testBrowserProxy.whenCalled('validateCustomDnsEntry'));
+        invalidEntry, await testBrowserProxy.whenCalled('parseCustomDnsEntry'));
     assertTrue(crInput.invalid);
     assertTrue(testElement.isInvalid());
     assertEquals(invalidFormat, crInput.errorMessage);

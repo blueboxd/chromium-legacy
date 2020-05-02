@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/feature_list.h"
 #include "base/logging.h"
 #include "chrome/browser/favicon/favicon_utils.h"
 #include "chrome/browser/installable/installable_manager.h"
@@ -26,6 +27,7 @@
 #include "chrome/browser/web_applications/components/web_app_install_utils.h"
 #include "chrome/browser/web_applications/components/web_app_url_loader.h"
 #include "chrome/browser/web_applications/components/web_app_utils.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/web_application_info.h"
 #include "components/performance_manager/embedder/performance_manager_registry.h"
 #include "content/public/browser/browser_thread.h"
@@ -34,10 +36,8 @@
 #include "url/gurl.h"
 
 #if defined(OS_CHROMEOS)
-#include "base/feature_list.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/common/chrome_features.h"
 #include "components/arc/arc_service_manager.h"
 #include "components/arc/mojom/app.mojom.h"
 #include "components/arc/mojom/intent_helper.mojom.h"
@@ -796,6 +796,14 @@ void WebAppInstallTask::OnShortcutsCreated(
   if (registrar_->IsLocallyInstalled(app_id))
     file_handler_manager_->EnableAndRegisterOsFileHandlers(app_id);
 
+  // TODO(https://crbug.com/1069298) - Also create App Icon Shortcuts Menu when
+  // synced apps are locally installed from the chrome://apps page.
+  if (base::FeatureList::IsEnabled(
+          features::kDesktopPWAsAppIconShortcutsMenu) &&
+      !web_app_info->shortcut_infos.empty()) {
+    shortcut_manager_->RegisterShortcutsMenuWithOs(web_app_info->shortcut_infos,
+                                                   app_id);
+  }
   CallInstallCallback(app_id, InstallResultCode::kSuccessNewInstall);
 }
 

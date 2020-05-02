@@ -9,9 +9,11 @@
 #include "base/i18n/message_formatter.h"
 #include "base/i18n/number_formatting.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/tabs/tab_strip_model_delegate.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
@@ -19,15 +21,24 @@
 #include "chrome/browser/ui/views/feature_promos/feature_promo_colors.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_ink_drop_util.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/vector_icons/vector_icons.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/models/image_model.h"
+#include "ui/base/models/menu_separator_types.h"
+#include "ui/base/models/simple_menu_model.h"
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/animation/multi_animation.h"
 #include "ui/gfx/animation/slide_animation.h"
 #include "ui/gfx/animation/tween.h"
 #include "ui/gfx/color_palette.h"
+#include "ui/gfx/favicon_size.h"
+#include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/animation/ink_drop.h"
 #include "ui/views/animation/ink_drop_highlight.h"
+#include "ui/views/context_menu_controller.h"
 #include "ui/views/controls/label.h"
+#include "ui/views/controls/menu/menu_model_adapter.h"
+#include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/layout/flex_layout.h"
 #include "ui/views/layout/layout_provider.h"
 #include "ui/views/view_class_properties.h"
@@ -187,14 +198,20 @@ class TabCounterAnimator : public gfx::AnimationDelegate {
 };
 
 class WebUITabCounterButton : public views::Button,
-                              public TabStripModelObserver {
+                              public TabStripModelObserver,
+                              public views::ContextMenuController,
+                              public ui::SimpleMenuModel::Delegate {
  public:
-  explicit WebUITabCounterButton(views::ButtonListener* listener);
+  static constexpr int WEBUI_TAB_COUNTER_CXMENU_CLOSE_TAB = 13;
+  static constexpr int WEBUI_TAB_COUNTER_CXMENU_NEW_TAB = 14;
+
+  WebUITabCounterButton(views::ButtonListener* listener,
+                        TabStripModel* tab_strip_model);
   ~WebUITabCounterButton() override;
 
   void UpdateText(int num_tabs);
   void UpdateColors();
-  void Init(TabStripModel* model);
+  void Init();
 
   // views::Button:
   void AfterPropertyChange(const void* key, int64_t old_value) override;
@@ -209,18 +226,31 @@ class WebUITabCounterButton : public views::Button,
       const TabStripModelChange& change,
       const TabStripSelectionChange& selection) override;
 
+  // views::ContextMenuController:
+  void ShowContextMenuForViewImpl(views::View* source,
+                                  const gfx::Point& point,
+                                  ui::MenuSourceType source_type) override;
+
+  // ui::SimpleMenuModel::Delegate:
+  void ExecuteCommand(int command_id, int event_flags) override;
+
   views::InkDropContainerView* ink_drop_container_;
   views::Label* appearing_label_;
   views::Label* disappearing_label_;
   views::View* border_view_;
   std::unique_ptr<TabCounterAnimator> animator_;
 
+  std::unique_ptr<ui::SimpleMenuModel> menu_model_;
+  std::unique_ptr<views::MenuRunner> menu_runner_;
+
   base::Optional<int> last_num_tabs_ = base::nullopt;
   int num_tabs_ = 0;
+  TabStripModel* tab_strip_model_;
 };
 
-WebUITabCounterButton::WebUITabCounterButton(views::ButtonListener* listener)
-    : views::Button(listener) {}
+WebUITabCounterButton::WebUITabCounterButton(views::ButtonListener* listener,
+                                             TabStripModel* tab_strip_model)
+    : views::Button(listener), tab_strip_model_(tab_strip_model) {}
 
 WebUITabCounterButton::~WebUITabCounterButton() = default;
 
@@ -277,7 +307,7 @@ void WebUITabCounterButton::UpdateColors() {
       current_text_color));
 }
 
-void WebUITabCounterButton::Init(TabStripModel* tab_strip_model) {
+void WebUITabCounterButton::Init() {
   SetID(VIEW_ID_WEBUI_TAB_STRIP_TAB_COUNTER);
 
   SetProperty(
@@ -304,8 +334,27 @@ void WebUITabCounterButton::Init(TabStripModel* tab_strip_model) {
   animator_ = std::make_unique<TabCounterAnimator>(
       appearing_label_, disappearing_label_, border_view_);
 
-  tab_strip_model->AddObserver(this);
-  UpdateText(tab_strip_model->count());
+  set_context_menu_controller(this);
+  menu_model_ = std::make_unique<ui::SimpleMenuModel>(this);
+  menu_model_->AddItemWithIcon(
+      WEBUI_TAB_COUNTER_CXMENU_CLOSE_TAB,
+      l10n_util::GetStringUTF16(
+          IDS_WEBUI_TAB_STRIP_TAB_COUNTER_CXMENU_CLOSE_TAB),
+      ui::ImageModel::FromImageSkia(gfx::CreateVectorIcon(
+          vector_icons::kCloseIcon, gfx::kFaviconSize, SK_ColorGRAY)));
+  menu_model_->AddSeparator(ui::MenuSeparatorType::NORMAL_SEPARATOR);
+  menu_model_->AddItemWithIcon(
+      WEBUI_TAB_COUNTER_CXMENU_NEW_TAB,
+      l10n_util::GetStringUTF16(IDS_WEBUI_TAB_STRIP_TAB_COUNTER_CXMENU_NEW_TAB),
+      ui::ImageModel::FromImageSkia(
+          gfx::CreateVectorIcon(kAddIcon, gfx::kFaviconSize, SK_ColorGRAY)));
+  menu_runner_ = std::make_unique<views::MenuRunner>(
+      menu_model_.get(), views::MenuRunner::HAS_MNEMONICS |
+                             views::MenuRunner::CONTEXT_MENU |
+                             views::MenuRunner::FIXED_ANCHOR);
+
+  tab_strip_model_->AddObserver(this);
+  UpdateText(tab_strip_model_->count());
 }
 
 void WebUITabCounterButton::AfterPropertyChange(const void* key,
@@ -352,14 +401,41 @@ void WebUITabCounterButton::OnTabStripModelChanged(
   UpdateText(tab_strip_model->count());
 }
 
+void WebUITabCounterButton::ShowContextMenuForViewImpl(
+    views::View* source,
+    const gfx::Point& point,
+    ui::MenuSourceType source_type) {
+  menu_runner_->RunMenuAt(GetWidget(), nullptr,
+                          border_view_->GetBoundsInScreen(),
+                          views::MenuAnchorPosition::kTopRight, source_type);
+}
+
+void WebUITabCounterButton::ExecuteCommand(int command_id, int event_flags) {
+  switch (command_id) {
+    case WEBUI_TAB_COUNTER_CXMENU_CLOSE_TAB: {
+      tab_strip_model_->CloseWebContentsAt(
+          tab_strip_model_->active_index(),
+          TabStripModel::CLOSE_USER_GESTURE |
+              TabStripModel::CLOSE_CREATE_HISTORICAL_TAB);
+      break;
+    }
+    case WEBUI_TAB_COUNTER_CXMENU_NEW_TAB:
+      tab_strip_model_->delegate()->AddTabAt(GURL(), -1, true);
+      break;
+    default:
+      NOTREACHED();
+  }
+}
+
 }  // namespace
 
 std::unique_ptr<views::View> CreateWebUITabCounterButton(
     views::ButtonListener* listener,
     TabStripModel* tab_strip_model) {
-  auto tab_counter = std::make_unique<WebUITabCounterButton>(listener);
+  auto tab_counter =
+      std::make_unique<WebUITabCounterButton>(listener, tab_strip_model);
 
-  tab_counter->Init(tab_strip_model);
+  tab_counter->Init();
 
   return tab_counter;
 }

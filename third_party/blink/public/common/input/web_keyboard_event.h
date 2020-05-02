@@ -68,6 +68,8 @@ class BLINK_COMMON_EXPORT WebKeyboardEvent : public WebInputEvent {
   WebKeyboardEvent() = default;
 
   std::unique_ptr<WebInputEvent> Clone() const override;
+  bool CanCoalesce(const WebInputEvent& event) const override;
+  void Coalesce(const WebInputEvent& event) override;
 
   // Please refer to bug http://b/issue?id=961192, which talks about Webkit
   // keyboard event handling changes. It also mentions the list of keys

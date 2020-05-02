@@ -95,7 +95,6 @@ js_library("multidevice_subpage") {
     ":multidevice_constants",
     "..:os_route",
     "..:os_settings_routes",
-    "../..:settings_routes",
     "//ui/webui/resources/cr_components/chromeos/network:network_listener_behavior",
   ]
   externs_list = [ "$externs_path/networking_private.js" ]
@@ -107,7 +106,6 @@ js_library("multidevice_tether_item") {
     ":multidevice_feature_behavior",
     "..:os_route",
     "..:os_settings_routes",
-    "../..:settings_routes",
     "//ui/webui/resources/cr_components/chromeos/network:network_listener_behavior",
     "//ui/webui/resources/cr_components/chromeos/network:onc_mojo",
   ]

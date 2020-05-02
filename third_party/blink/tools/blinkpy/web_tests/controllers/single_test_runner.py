@@ -49,7 +49,9 @@ def run_single_test(port, options, results_directory, worker_name, driver,
         return test_result
     except DeviceFailure as error:
         _log.error('device failed: %s', error)
-        return TestResult(test_input.test_name, device_failed=True)
+        return TestResult(
+            test_input.test_name, device_failed=True,
+            failures=[test_failures.FailureEarlyExit()])
 
 
 class SingleTestRunner(object):

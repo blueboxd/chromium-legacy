@@ -97,16 +97,32 @@ IN_PROC_BROWSER_TEST_F(AcceptHeaderTest, Check) {
       shell(), embedded_test_server()->GetURL("/accept-header.html")));
 
   // ResourceType::kMainFrame
-  EXPECT_EQ(
+  const char* expected_main_frame_accept_header =
       "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,"
-      "image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
-      GetFor("/accept-header.html"));
+      "image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9";
+#if BUILDFLAG(ENABLE_AV1_DECODER)
+  if (base::FeatureList::IsEnabled(blink::features::kAVIF)) {
+    expected_main_frame_accept_header =
+        "text/html,application/xhtml+xml,application/xml;q=0.9,"
+        "image/avif,image/webp,image/apng,*/*;q=0.8,"
+        "application/signed-exchange;v=b3;q=0.9";
+  }
+#endif
+  EXPECT_EQ(expected_main_frame_accept_header, GetFor("/accept-header.html"));
 
   // ResourceType::kSubFrame
-  EXPECT_EQ(
+  const char* expected_sub_frame_accept_header =
       "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,"
-      "image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
-      GetFor("/iframe.html"));
+      "image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9";
+#if BUILDFLAG(ENABLE_AV1_DECODER)
+  if (base::FeatureList::IsEnabled(blink::features::kAVIF)) {
+    expected_sub_frame_accept_header =
+        "text/html,application/xhtml+xml,application/xml;q=0.9,"
+        "image/avif,image/webp,image/apng,*/*;q=0.8,"
+        "application/signed-exchange;v=b3;q=0.9";
+  }
+#endif
+  EXPECT_EQ(expected_sub_frame_accept_header, GetFor("/iframe.html"));
 
   // ResourceType::kStylesheet
   EXPECT_EQ("text/css,*/*;q=0.1", GetFor("/test.css"));

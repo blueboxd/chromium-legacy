@@ -5,6 +5,9 @@
 #ifndef COMPONENTS_PERFORMANCE_MANAGER_PUBLIC_DECORATORS_TAB_PROPERTIES_DECORATOR_H_
 #define COMPONENTS_PERFORMANCE_MANAGER_PUBLIC_DECORATORS_TAB_PROPERTIES_DECORATOR_H_
 
+#include "components/performance_manager/public/graph/graph.h"
+#include "components/performance_manager/public/graph/node_data_describer.h"
+
 namespace content {
 class WebContents;
 }  // namespace content
@@ -18,13 +21,14 @@ class PageNode;
 // parameter should only be called from the UI thread, the event will be
 // forwarded to the corresponding PageNode on the Performance Manager's
 // sequence.
-class TabPropertiesDecorator {
+class TabPropertiesDecorator : public GraphOwned,
+                               public NodeDataDescriberDefaultImpl {
  public:
   class Data;
 
   // This object should only be used via its static methods.
-  TabPropertiesDecorator() = delete;
-  ~TabPropertiesDecorator() = delete;
+  TabPropertiesDecorator() = default;
+  ~TabPropertiesDecorator() override = default;
   TabPropertiesDecorator(const TabPropertiesDecorator& other) = delete;
   TabPropertiesDecorator& operator=(const TabPropertiesDecorator&) = delete;
 
@@ -32,6 +36,14 @@ class TabPropertiesDecorator {
   static void SetIsTab(content::WebContents* contents, bool is_tab);
 
   static void SetIsTabForTesting(PageNode* page_node, bool is_tab);
+
+ private:
+  // GraphOwned implementation:
+  void OnPassedToGraph(Graph* graph) override;
+  void OnTakenFromGraph(Graph* graph) override;
+
+  // NodeDataDescriber implementation:
+  base::Value DescribePageNodeData(const PageNode* node) const override;
 };
 
 class TabPropertiesDecorator::Data {

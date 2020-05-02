@@ -52,7 +52,9 @@ class BrowserSkiaGoldPixelDiffTest : public views::test::WidgetTest {
 TEST_F(BrowserSkiaGoldPixelDiffTest, CompareScreenshotByView) {
   views::View view;
   MockBrowserSkiaGoldPixelDiffMockUpload mock_pixel;
-  EXPECT_CALL(mock_pixel, UploadToSkiaGoldServer(_, "Prefix_Demo"))
+  EXPECT_CALL(mock_pixel,
+              UploadToSkiaGoldServer(
+                  _, "Prefix_Demo_" + SkiaGoldPixelDiff::GetPlatform()))
       .Times(1)
       .WillOnce(Return(true));
   views::Widget* widget = CreateTopLevelNativeWidget();

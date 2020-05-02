@@ -219,7 +219,7 @@ void ServiceWorkerContextAdapter::OnVersionStartedRunning(
 
   // It's possible that the renderer is already gone since the notification
   // comes asynchronously. Ignore this service worker.
-  if (!worker_process_host || !worker_process_host->IsReady()) {
+  if (!worker_process_host || !worker_process_host->IsInitializedAndNotDead()) {
 #if DCHECK_IS_ON()
     // A OnVersionStoppedRunning() notification is still expected to be sent.
     bool inserted = stopped_service_workers_.insert(version_id).second;

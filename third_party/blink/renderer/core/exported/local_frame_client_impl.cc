@@ -532,7 +532,6 @@ void LocalFrameClientImpl::BeginNavigation(
     DocumentLoader* document_loader,
     WebNavigationType type,
     NavigationPolicy policy,
-    bool has_transient_activation,
     WebFrameLoadType frame_load_type,
     bool is_client_redirect,
     TriggeringEventInfo triggering_event_info,
@@ -556,7 +555,7 @@ void LocalFrameClientImpl::BeginNavigation(
   navigation_info->frame_type = frame_type;
   navigation_info->navigation_type = type;
   navigation_info->navigation_policy = static_cast<WebNavigationPolicy>(policy);
-  navigation_info->has_transient_user_activation = has_transient_activation;
+  navigation_info->has_transient_user_activation = request.HasUserGesture();
   navigation_info->frame_load_type = frame_load_type;
   navigation_info->is_client_redirect = is_client_redirect;
   navigation_info->triggering_event_info = triggering_event_info;

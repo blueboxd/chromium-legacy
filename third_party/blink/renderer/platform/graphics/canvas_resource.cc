@@ -35,17 +35,6 @@
 
 namespace blink {
 
-// TODO(danakj): One day the gpu::mojom::Mailbox type should be shared with
-// blink directly and we won't need to use gpu::mojom::blink::Mailbox, nor the
-// conversion through WTF::Vector.
-gpu::mojom::blink::MailboxPtr SharedBitmapIdToGpuMailboxPtr(
-    const viz::SharedBitmapId& id) {
-  WTF::Vector<int8_t> name(GL_MAILBOX_SIZE_CHROMIUM);
-  for (int i = 0; i < GL_MAILBOX_SIZE_CHROMIUM; ++i)
-    name[i] = id.name[i];
-  return {base::in_place, name};
-}
-
 CanvasResource::CanvasResource(base::WeakPtr<CanvasResourceProvider> provider,
                                SkFilterQuality filter_quality,
                                const CanvasColorParams& color_params)
@@ -223,9 +212,8 @@ CanvasResourceSharedBitmap::CanvasResourceSharedBitmap(
   CanvasResourceDispatcher* resource_dispatcher =
       Provider() ? Provider()->ResourceDispatcher() : nullptr;
   if (resource_dispatcher) {
-    resource_dispatcher->DidAllocateSharedBitmap(
-        std::move(shm.region),
-        SharedBitmapIdToGpuMailboxPtr(shared_bitmap_id_));
+    resource_dispatcher->DidAllocateSharedBitmap(std::move(shm.region),
+                                                 shared_bitmap_id_);
   }
 }
 
@@ -278,10 +266,8 @@ scoped_refptr<CanvasResourceSharedBitmap> CanvasResourceSharedBitmap::Create(
 void CanvasResourceSharedBitmap::TearDown() {
   CanvasResourceDispatcher* resource_dispatcher =
       Provider() ? Provider()->ResourceDispatcher() : nullptr;
-  if (resource_dispatcher && !shared_bitmap_id_.IsZero()) {
-    resource_dispatcher->DidDeleteSharedBitmap(
-        SharedBitmapIdToGpuMailboxPtr(shared_bitmap_id_));
-  }
+  if (resource_dispatcher && !shared_bitmap_id_.IsZero())
+    resource_dispatcher->DidDeleteSharedBitmap(shared_bitmap_id_);
   shared_mapping_ = {};
 }
 

@@ -161,8 +161,7 @@ WebViewTestProxy* WebWidgetTestProxy::GetWebViewTestProxy() {
     auto* web_widget = static_cast<blink::WebFrameWidget*>(GetWebWidget());
     blink::WebView* web_view = web_widget->LocalRoot()->View();
 
-    content::RenderView* render_view =
-        content::RenderView::FromWebView(web_view);
+    RenderView* render_view = RenderView::FromWebView(web_view);
     // RenderViews are always WebViewTestProxy within the test_runner namespace.
     return static_cast<WebViewTestProxy*>(render_view);
   }

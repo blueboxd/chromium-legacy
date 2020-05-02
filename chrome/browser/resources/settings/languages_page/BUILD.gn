@@ -81,7 +81,7 @@ js_library("edit_dictionary_page") {
   deps = [
     ":languages_browser_proxy.m",
     "..:global_scroll_target_behavior.m",
-    "..:route.m",
+    "..:route",
     "../prefs:prefs.m",
     "//third_party/polymer/v3_0/components-chromium/iron-list:iron-list",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
@@ -134,7 +134,7 @@ js_library("languages_page") {
   deps = [
     ":languages.m",
     "..:lifetime_browser_proxy.m",
-    "..:route.m",
+    "..:route",
     "..:router.m",
     "../settings_page:settings_animated_pages.m",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",

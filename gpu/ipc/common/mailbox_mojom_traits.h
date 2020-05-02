@@ -5,6 +5,9 @@
 #ifndef GPU_IPC_COMMON_MAILBOX_MOJOM_TRAITS_H_
 #define GPU_IPC_COMMON_MAILBOX_MOJOM_TRAITS_H_
 
+#include <stdint.h>
+
+#include "base/component_export.h"
 #include "base/containers/span.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/ipc/common/mailbox.mojom-shared.h"
@@ -13,7 +16,8 @@
 namespace mojo {
 
 template <>
-struct StructTraits<gpu::mojom::MailboxDataView, gpu::Mailbox> {
+struct COMPONENT_EXPORT(GPU_SHARED_MOJOM_TRAITS)
+    StructTraits<gpu::mojom::MailboxDataView, gpu::Mailbox> {
   static base::span<const int8_t> name(const gpu::Mailbox& mailbox) {
     return mailbox.name;
   }

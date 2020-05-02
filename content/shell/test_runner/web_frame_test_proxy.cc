@@ -28,9 +28,9 @@ void PrintFrameUserGestureStatus(BlinkTestRunner* blink_test_runner,
                                   msg);
 }
 
-class TestRenderFrameObserver : public content::RenderFrameObserver {
+class TestRenderFrameObserver : public RenderFrameObserver {
  public:
-  TestRenderFrameObserver(content::RenderFrame* frame, WebViewTestProxy* proxy)
+  TestRenderFrameObserver(RenderFrame* frame, WebViewTestProxy* proxy)
       : RenderFrameObserver(frame), web_view_test_proxy_(proxy) {}
 
   ~TestRenderFrameObserver() override {}
@@ -44,7 +44,7 @@ class TestRenderFrameObserver : public content::RenderFrameObserver {
     return web_view_test_proxy_->blink_test_runner();
   }
 
-  // content::RenderFrameObserver overrides.
+  // RenderFrameObserver overrides.
   void OnDestruct() override { delete this; }
 
   void DidStartNavigation(
@@ -176,7 +176,7 @@ void WebFrameTestProxy::Reset() {
 }
 
 std::string WebFrameTestProxy::GetFrameNameForWebTests() {
-  return content::UniqueNameHelper::ExtractStableNameForTesting(unique_name());
+  return UniqueNameHelper::ExtractStableNameForTesting(unique_name());
 }
 
 void WebFrameTestProxy::UpdateAllLifecyclePhasesAndCompositeForTesting() {

@@ -81,6 +81,7 @@ class ExpandButton : public views::ImageView {
   void OnPaint(gfx::Canvas* canvas) override;
   void OnFocus() override;
   void OnBlur() override;
+  void OnThemeChanged() override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
 
  private:
@@ -88,8 +89,6 @@ class ExpandButton : public views::ImageView {
 };
 
 ExpandButton::ExpandButton() {
-  focus_painter_ = views::Painter::CreateSolidFocusPainter(
-      kFocusBorderColor, gfx::Insets(0, 0, 1, 1));
   SetFocusBehavior(FocusBehavior::ALWAYS);
 }
 
@@ -110,6 +109,14 @@ void ExpandButton::OnFocus() {
 void ExpandButton::OnBlur() {
   views::ImageView::OnBlur();
   SchedulePaint();
+}
+
+void ExpandButton::OnThemeChanged() {
+  ImageView::OnThemeChanged();
+  focus_painter_ = views::Painter::CreateSolidFocusPainter(
+      GetNativeTheme()->GetSystemColor(
+          ui::NativeTheme::kColorId_FocusedBorderColor),
+      gfx::Insets(0, 0, 1, 1));
 }
 
 void ExpandButton::GetAccessibleNodeData(ui::AXNodeData* node_data) {
@@ -350,8 +357,6 @@ void NotificationHeaderView::SetAccentColor(SkColor color) {
   app_name_view_->SetEnabledColor(accent_color_);
   summary_text_view_->SetEnabledColor(accent_color_);
   summary_text_divider_->SetEnabledColor(accent_color_);
-  timestamp_divider_->SetEnabledColor(kRegularTextColorMD);
-  timestamp_view_->SetEnabledColor(kRegularTextColorMD);
   SetExpanded(is_expanded_);
 
   // If we are using the default app icon we should clear it so we refresh it

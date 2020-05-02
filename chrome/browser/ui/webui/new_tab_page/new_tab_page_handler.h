@@ -7,9 +7,12 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/scoped_observer.h"
 #include "base/time/time.h"
 #include "chrome/browser/search/background/ntp_background_service_observer.h"
 #include "chrome/browser/search/instant_service_observer.h"
+#include "chrome/browser/search/one_google_bar/one_google_bar_service.h"
+#include "chrome/browser/search/one_google_bar/one_google_bar_service_observer.h"
 #include "chrome/browser/ui/omnibox/omnibox_tab_helper.h"
 #include "chrome/browser/ui/webui/new_tab_page/new_tab_page.mojom.h"
 #include "chrome/common/search/instant_types.h"
@@ -44,6 +47,7 @@ class NewTabPageHandler : public new_tab_page::mojom::PageHandler,
                           public InstantServiceObserver,
                           public NtpBackgroundServiceObserver,
                           public OmniboxTabHelper::Observer,
+                          public OneGoogleBarServiceObserver,
                           public ui::SelectFileDialog::Listener,
                           public AutocompleteController::Observer {
  public:
@@ -90,6 +94,7 @@ class NewTabPageHandler : public new_tab_page::mojom::PageHandler,
   void GetDoodle(GetDoodleCallback callback) override;
   void ChooseLocalCustomBackground(
       ChooseLocalCustomBackgroundCallback callback) override;
+  void GetOneGoogleBarParts(GetOneGoogleBarPartsCallback callback) override;
   void OnMostVisitedTilesRendered(
       std::vector<new_tab_page::mojom::MostVisitedTilePtr> tiles,
       double time) override;
@@ -127,6 +132,10 @@ class NewTabPageHandler : public new_tab_page::mojom::PageHandler,
   void OnOmniboxFocusChanged(OmniboxFocusState state,
                              OmniboxFocusChangeReason reason) override;
 
+  // OneGoogleBarServiceObserver:
+  void OnOneGoogleBarDataUpdated() override;
+  void OnOneGoogleBarServiceShuttingDown() override;
+
   // SelectFileDialog::Listener:
   void FileSelected(const base::FilePath& path,
                     int index,
@@ -158,6 +167,10 @@ class NewTabPageHandler : public new_tab_page::mojom::PageHandler,
   GetBackgroundCollectionsCallback background_collections_callback_;
   std::string images_request_collection_id_;
   GetBackgroundImagesCallback background_images_callback_;
+  std::vector<GetOneGoogleBarPartsCallback> one_google_bar_parts_callbacks_;
+  OneGoogleBarService* one_google_bar_service_;
+  ScopedObserver<OneGoogleBarService, OneGoogleBarServiceObserver>
+      one_google_bar_service_observer_{this};
   mojo::Remote<new_tab_page::mojom::Page> page_;
   Profile* profile_;
   mojo::Receiver<new_tab_page::mojom::PageHandler> receiver_;

@@ -102,12 +102,29 @@ mojom::SearchResultPtr SearchHandler::ResultToSearchResult(
   if (!concept)
     return nullptr;
 
+  mojom::SearchResultIdentifierPtr result_id;
+  switch (concept->type) {
+    case mojom::SearchResultType::kSection:
+      result_id =
+          mojom::SearchResultIdentifier::NewSection(concept->id.section);
+      break;
+    case mojom::SearchResultType::kSubpage:
+      result_id =
+          mojom::SearchResultIdentifier::NewSubpage(concept->id.subpage);
+      break;
+    case mojom::SearchResultType::kSetting:
+      result_id =
+          mojom::SearchResultIdentifier::NewSetting(concept->id.setting);
+      break;
+  }
+
   // TODO(https://crbug.com/1071700): Generate real hierarchy instead of using
   // GenerateDummySettingsHierarchy().
   return mojom::SearchResult::New(
       l10n_util::GetStringUTF16(message_id), concept->url_path_with_parameters,
       concept->icon, result.score,
-      GenerateDummySettingsHierarchy(concept->url_path_with_parameters));
+      GenerateDummySettingsHierarchy(concept->url_path_with_parameters),
+      concept->default_rank, concept->type, std::move(result_id));
 }
 
 void SearchHandler::Shutdown() {

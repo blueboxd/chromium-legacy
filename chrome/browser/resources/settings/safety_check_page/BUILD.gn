@@ -22,11 +22,11 @@ js_library("safety_check_browser_proxy") {
 js_library("safety_check_page") {
   deps = [
     ":safety_check_browser_proxy",
-    "..:hats_browser_proxy.m",
+    "..:hats_browser_proxy",
     "..:lifetime_browser_proxy.m",
-    "..:metrics_browser_proxy.m",
-    "..:open_window_proxy.m",
-    "..:route.m",
+    "..:metrics_browser_proxy",
+    "..:open_window_proxy",
+    "..:route",
     "..:router.m",
     "../autofill_page:password_manager_proxy",
     "//third_party/polymer/v3_0/components-chromium/iron-a11y-announcer:iron-a11y-announcer",

@@ -34,7 +34,7 @@ js_type_check("closure_compile_module") {
 js_library("a11y_page") {
   deps = [
     ":captions_browser_proxy",
-    "..:route.m",
+    "..:route",
     "..:router.m",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
     "//ui/webui/resources/js:load_time_data.m",
@@ -76,6 +76,7 @@ polymer_modulizer("captions_subpage") {
   js_file = "captions_subpage.js"
   html_file = "captions_subpage.html"
   html_type = "dom-module"
+  migrated_imports = settings_migrated_imports
   auto_imports = settings_auto_imports + [
                    "chrome/browser/resources/settings/controls/settings_dropdown_menu.html|DropdownMenuOptionList",
                    "chrome/browser/resources/settings/appearance_page/fonts_browser_proxy.html|FontsBrowserProxy, FontsBrowserProxyImpl, FontsData",

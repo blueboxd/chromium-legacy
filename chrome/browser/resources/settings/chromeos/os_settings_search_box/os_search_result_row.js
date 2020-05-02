@@ -350,14 +350,79 @@ cr.define('settings', function() {
     getResultIcon_() {
       const Icon = chromeos.settings.mojom.SearchResultIcon;
       switch (this.searchResult.icon) {
+        case Icon.kA11y:
+          return 'os-settings:accessibility';
+        case Icon.kAndroid:
+          return 'os-settings:android';
+        case Icon.kAppsGrid:
+          return 'os-settings:apps';
+        case Icon.kAssistant:
+          return 'os-settings:assistant';
+        case Icon.kAvatar:
+          return 'cr:person';
+        case Icon.kBluetooth:
+          return 'cr:bluetooth';
         case Icon.kCellular:
-          return 'os-settings:multidevice-better-together-suite';
+          return 'os-settings:cellular';
+        case Icon.kChrome:
+          return 'os-settings:chrome';
+        case Icon.kClock:
+          return 'os-settings:access-time';
+        case Icon.kDisplay:
+          return 'os-settings:display';
+        case Icon.kDrive:
+          return 'os-settings:google-drive';
         case Icon.kEthernet:
           return 'os-settings:settings-ethernet';
+        case Icon.kFingerprint:
+          return 'os-settings:fingerprint';
+        case Icon.kFolder:
+          return 'os-settings:folder-outline';
+        case Icon.kGlobe:
+          return 'os-settings:language';
+        case Icon.kGooglePlay:
+          return 'os-settings:google-play';
+        case Icon.kHardDrive:
+          return 'os-settings:hard-drive';
+        case Icon.kInstantTethering:
+          return 'os-settings:magic-tethering';
+        case Icon.kKeyboard:
+          return 'os-settings:keyboard';
+        case Icon.kLaptop:
+          return 'os-settings:laptop-chromebook';
+        case Icon.kLock:
+          return 'os-settings:lock';
+        case Icon.kMagnifyingGlass:
+          return 'cr:search';
+        case Icon.kMessages:
+          return 'os-settings:multidevice-messages';
+        case Icon.kMouse:
+          return 'os-settings:mouse';
+        case Icon.kPaintbrush:
+          return 'os-settings:paint-brush';
+        case Icon.kPenguin:
+          return 'os-settings:crostini-mascot';
+        case Icon.kPhone:
+          return 'os-settings:multidevice-better-together-suite';
+        case Icon.kPluginVm:
+          return 'os-settings:plugin-vm';
+        case Icon.kPower:
+          return 'os-settings:power';
+        case Icon.kPrinter:
+          return 'os-settings:print';
+        case Icon.kReset:
+          return 'os-settings:restore';
+        case Icon.kShield:
+          return 'cr:security';
+        case Icon.kStylus:
+          return 'os-settings:stylus';
+        case Icon.kSync:
+          return 'os-settings:sync';
+        case Icon.kWallpaper:
+          return 'os-settings:wallpaper';
         case Icon.kWifi:
           return 'os-settings:network-wifi';
         default:
-          // TODO(crbug/1056909): assertNotReached() when all icons are added.
           return 'os-settings:settings-general';
       }
     },

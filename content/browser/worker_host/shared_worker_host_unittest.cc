@@ -41,6 +41,7 @@ class SharedWorkerHostTest : public testing::Test {
  public:
   void SetUp() override {
     helper_.reset(new EmbeddedWorkerTestHelper(base::FilePath()));
+    ASSERT_TRUE(mock_render_process_host_.Init());
   }
 
   SharedWorkerHostTest()

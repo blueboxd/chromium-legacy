@@ -31,7 +31,14 @@ mojom("web_ui_test_bindings") {
   ]
 }
 
-js_type_check("closure_compile") {
+group("closure_compile") {
+  deps = [ ":closure_compile_local" ]
+  if (!is_android) {
+    deps += [ "webui:closure_compile" ]
+  }
+}
+
+js_type_check("closure_compile_local") {
   deps = [ ":test_api_js" ]
 }
 

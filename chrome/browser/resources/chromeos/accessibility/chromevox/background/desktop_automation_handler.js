@@ -519,7 +519,7 @@ DesktopAutomationHandler = class extends BaseAutomationHandler {
     // editable leading to braille output routing to the editable.
     this.textEditHandler_ = null;
 
-    chrome.automation.getFocus(function(focus) {
+    chrome.automation.getFocus((focus) => {
       // Desktop tabs get "selection" when there's a focused webview during
       // tab switching. Ignore it.
       if (evt.target.role == RoleType.TAB &&
@@ -531,11 +531,12 @@ DesktopAutomationHandler = class extends BaseAutomationHandler {
       // that focus is an ancestor of a selection target.
       const override = AutomationPredicate.menuItem(evt.target) ||
           (evt.target.root == focus.root &&
-           focus.root.role == RoleType.DESKTOP);
+           focus.root.role == RoleType.DESKTOP) ||
+          evt.target.role === RoleType.IME_CANDIDATE;
       if (override || AutomationUtil.isDescendantOf(evt.target, focus)) {
         this.onEventDefault(evt);
       }
-    }.bind(this));
+    });
   }
 
   /**

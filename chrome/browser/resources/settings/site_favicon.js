@@ -7,8 +7,14 @@
  * site URL.
  */
 
+import {Polymer, html} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
+import {getFavicon, getFaviconForPageURL} from 'chrome://resources/js/icon.m.js';
+
 Polymer({
   is: 'site-favicon',
+
+  _template: html`{__html_template__}`,
 
   properties: {
     faviconUrl: String,
@@ -17,14 +23,14 @@ Polymer({
 
   /** @private */
   getBackgroundImage_() {
-    let backgroundImage = cr.icon.getFavicon('');
+    let backgroundImage = getFavicon('');
     if (this.faviconUrl) {
       const url = this.ensureUrlHasScheme_(this.faviconUrl);
-      backgroundImage = cr.icon.getFavicon(url);
+      backgroundImage = getFavicon(url);
     } else if (this.url) {
       let url = this.removePatternWildcard_(this.url);
       url = this.ensureUrlHasScheme_(url);
-      backgroundImage = cr.icon.getFaviconForPageURL(url || '', false);
+      backgroundImage = getFaviconForPageURL(url || '', false);
     }
     return backgroundImage;
   },

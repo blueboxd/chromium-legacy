@@ -145,6 +145,11 @@ class WebTestRunner(object):
                         pool.run(('test_list', shard.name, shard.test_inputs,
                                   batch_size)
                                  for shard in self._shards_to_redo)
+                else:
+                    self._mark_interrupted_tests_as_skipped(
+                        self._current_run_results)
+                    raise TestRunInterruptedException(
+                        'All workers have device failures. Exiting.')
         except TestRunInterruptedException as error:
             _log.warning(error.reason)
             test_run_results.interrupted = True

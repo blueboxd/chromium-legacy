@@ -260,7 +260,11 @@ void GPUBuffer::DetachArrayBufferForCurrentMapping(ScriptState* script_state) {
 
   // Detach the array buffer by transferring the contents out and dropping them.
   ArrayBufferContents contents;
-  DCHECK(mapped_buffer->Transfer(isolate, contents));
+  bool did_detach = mapped_buffer->Transfer(isolate, contents);
+
+  // |did_detach| would be false if the buffer were already detached.
+  DCHECK(did_detach);
+  DCHECK(mapped_buffer->IsDetached());
 }
 
 }  // namespace blink

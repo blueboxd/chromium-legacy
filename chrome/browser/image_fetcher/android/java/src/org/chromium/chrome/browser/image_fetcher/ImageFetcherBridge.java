@@ -101,7 +101,8 @@ public class ImageFetcherBridge {
             int height, Callback<Bitmap> callback) {
         assert mNativeImageFetcherBridge != 0 : "fetchImage called after destroy";
         ImageFetcherBridgeJni.get().fetchImage(mNativeImageFetcherBridge, ImageFetcherBridge.this,
-                config, url, clientName, (bitmap) -> {
+                config, url, clientName, ImageFetcher.Params.INVALID_EXPIRATION_INTERVAL,
+                (bitmap) -> {
                     callback.onResult(ImageFetcher.resizeImage(bitmap, width, height));
                 });
     }
@@ -165,7 +166,7 @@ public class ImageFetcherBridge {
                 Callback<byte[]> callback);
         void fetchImage(long nativeImageFetcherBridge, ImageFetcherBridge caller,
                 @ImageFetcherConfig int config, String url, String clientName,
-                Callback<Bitmap> callback);
+                int expirationIntervalMinutes, Callback<Bitmap> callback);
         void reportEvent(long nativeImageFetcherBridge, ImageFetcherBridge caller,
                 String clientName, int eventId);
         void reportCacheHitTime(long nativeImageFetcherBridge, ImageFetcherBridge caller,

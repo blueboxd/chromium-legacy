@@ -73,11 +73,11 @@ cr.define('settings', function() {
     getSecureDnsSetting() {}
 
     /**
-     * Returns the first valid URL template, if they are all valid.
+     * Returns the URL templates, if they are all valid.
      * @param {string} entry
-     * @return {!Promise<string>}
+     * @return {!Promise<!Array<string>>}
      */
-    validateCustomDnsEntry(entry) {}
+    parseCustomDnsEntry(entry) {}
 
     /**
      * Returns True if a test query to the secure DNS template succeeded
@@ -135,8 +135,8 @@ cr.define('settings', function() {
     }
 
     /** @override */
-    validateCustomDnsEntry(entry) {
-      return cr.sendWithPromise('validateCustomDnsEntry', entry);
+    parseCustomDnsEntry(entry) {
+      return cr.sendWithPromise('parseCustomDnsEntry', entry);
     }
 
     /** @override */

@@ -200,7 +200,6 @@ extern const char kGoogleUpdateIsMachineEnvVar[];
 }  // namespace env_vars
 
 extern const wchar_t kActiveSetupExe[];
-extern const wchar_t kChromeChildDll[];
 extern const wchar_t kChromeDll[];
 extern const wchar_t kChromeExe[];
 extern const wchar_t kChromeNewExe[];

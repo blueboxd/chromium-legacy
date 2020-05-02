@@ -1,4 +1,4 @@
 Document
-++Group Name='span-A4' LabeledBy='span-A4'
-++Group Name='span-A2' LabeledBy='span-A2'
+++Group Name='span-A4'
+++Group Name='span-A2'
 ++Group Name='span-C'

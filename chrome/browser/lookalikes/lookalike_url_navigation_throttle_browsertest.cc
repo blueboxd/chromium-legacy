@@ -567,6 +567,49 @@ IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationThrottleBrowserTest,
   CheckUkm({kNavigatedUrl}, "MatchType", LookalikeUrlMatchType::kEditDistance);
 }
 
+// Navigate to a domain within an edit distance of 1 to a top domain, but that
+// matches the allowlist. This should neither record metrics nor show an
+// interstitial.
+IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationThrottleBrowserTest,
+                       EditDistance_TopDomain_Target_Allowlist) {
+  base::HistogramTester histograms;
+  SetSafetyTipAllowlistPatterns({}, {"google\\.com"});
+
+  // The skeleton of this domain, gooogle.corn, is one 1 edit away from
+  // google.corn, the skeleton of google.com.
+  const GURL kNavigatedUrl = GetURL("goooglé.com");
+  // Even if the navigated site has a low engagement score, it should be
+  // considered for lookalike suggestions.
+  SetEngagementScore(browser(), kNavigatedUrl, kLowEngagement);
+
+  TestInterstitialNotShown(browser(), kNavigatedUrl);
+  histograms.ExpectTotalCount(lookalikes::kHistogramName, 0);
+  CheckNoUkm();
+}
+
+// Navigate to a domain within an edit distance of 1 to an engaged domain, but
+// that matches the allowlist. This should neither record metrics nor show an
+// interstitial.
+IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationThrottleBrowserTest,
+                       EditDistance_EngagedDomain_Target_Allowlist) {
+  base::HistogramTester histograms;
+  SetEngagementScore(browser(), GURL("https://test-site.com"), kHighEngagement);
+  SetSafetyTipAllowlistPatterns({}, {"test-site\\.com"});
+
+  // The skeleton of this domain is one 1 edit away from the skeleton of
+  // test-site.com.
+  const GURL kNavigatedUrl = GetURL("best-sité.com");
+  // Even if the navigated site has a low engagement score, it should be
+  // considered for lookalike suggestions.
+  SetEngagementScore(browser(), kNavigatedUrl, kLowEngagement);
+  // Advance clock to force a fetch of new engaged sites list.
+  test_clock()->Advance(base::TimeDelta::FromHours(1));
+
+  TestInterstitialNotShown(browser(), kNavigatedUrl);
+  histograms.ExpectTotalCount(lookalikes::kHistogramName, 0);
+  CheckNoUkm();
+}
+
 // Tests negative examples for the edit distance.
 IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationThrottleBrowserTest,
                        EditDistance_TopDomain_NoMatch) {

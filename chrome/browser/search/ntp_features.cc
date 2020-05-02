@@ -22,6 +22,10 @@ const base::Feature kConfirmSuggestionRemovals{
 const base::Feature kDismissPromos{"DismissNtpPromos",
                                    base::FEATURE_DISABLED_BY_DEFAULT};
 
+// If enabled, the OneGooleBar is loaded in an iframe. Otherwise, it is inlined.
+const base::Feature kIframeOneGoogleBar{"IframeOneGoogleBar",
+                                        base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Depends on kRealbox being enabled. If enabled, the NTP "realbox" will be
 // themed like the omnibox (same background/text/selected/hover colors).
 const base::Feature kRealboxMatchOmniboxTheme{

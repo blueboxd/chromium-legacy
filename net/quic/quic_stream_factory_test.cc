@@ -1635,7 +1635,7 @@ TEST_P(QuicStreamFactoryTest, PoolingWithServerMigration) {
                                             "192.168.0.1", "");
   IPEndPoint alt_address = IPEndPoint(IPAddress(1, 2, 3, 4), 443);
   quic::QuicConfig config;
-  config.SetAlternateServerAddressToSend(ToQuicSocketAddress(alt_address));
+  config.SetIPv4AlternateServerAddressToSend(ToQuicSocketAddress(alt_address));
 
   VerifyServerMigration(config, alt_address);
 
@@ -10180,7 +10180,7 @@ TEST_P(QuicStreamFactoryTest, ServerMigrationIPv4ToIPv4) {
   // Add alternate IPv4 server address to config.
   IPEndPoint alt_address = IPEndPoint(IPAddress(1, 2, 3, 4), 123);
   quic::QuicConfig config;
-  config.SetAlternateServerAddressToSend(ToQuicSocketAddress(alt_address));
+  config.SetIPv4AlternateServerAddressToSend(ToQuicSocketAddress(alt_address));
   VerifyServerMigration(config, alt_address);
 }
 
@@ -10192,7 +10192,7 @@ TEST_P(QuicStreamFactoryTest, ServerMigrationIPv6ToIPv6) {
   IPEndPoint alt_address = IPEndPoint(
       IPAddress(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16), 123);
   quic::QuicConfig config;
-  config.SetAlternateServerAddressToSend(ToQuicSocketAddress(alt_address));
+  config.SetIPv6AlternateServerAddressToSend(ToQuicSocketAddress(alt_address));
   VerifyServerMigration(config, alt_address);
 }
 
@@ -10203,7 +10203,7 @@ TEST_P(QuicStreamFactoryTest, ServerMigrationIPv6ToIPv4) {
   // Add alternate IPv4 server address to config.
   IPEndPoint alt_address = IPEndPoint(IPAddress(1, 2, 3, 4), 123);
   quic::QuicConfig config;
-  config.SetAlternateServerAddressToSend(ToQuicSocketAddress(alt_address));
+  config.SetIPv4AlternateServerAddressToSend(ToQuicSocketAddress(alt_address));
   IPEndPoint expected_address(
       ConvertIPv4ToIPv4MappedIPv6(alt_address.address()), alt_address.port());
   VerifyServerMigration(config, expected_address);
@@ -10220,7 +10220,7 @@ TEST_P(QuicStreamFactoryTest, ServerMigrationIPv4ToIPv6Fails) {
   IPEndPoint alt_address = IPEndPoint(
       IPAddress(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16), 123);
   quic::QuicConfig config;
-  config.SetAlternateServerAddressToSend(ToQuicSocketAddress(alt_address));
+  config.SetIPv6AlternateServerAddressToSend(ToQuicSocketAddress(alt_address));
 
   ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
   crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);

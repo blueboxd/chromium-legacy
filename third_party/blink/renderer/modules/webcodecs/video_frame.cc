@@ -111,7 +111,7 @@ VideoFrame* VideoFrame::Create(VideoFrameInit* init,
 
   // Full copy #2
   int error =
-      libyuv::ARGBToI420(pixel_data.data(), source->width() * 4,
+      libyuv::ABGRToI420(pixel_data.data(), source->width() * 4,
                          frame->visible_data(media::VideoFrame::kYPlane),
                          frame->stride(media::VideoFrame::kYPlane),
                          frame->visible_data(media::VideoFrame::kUPlane),

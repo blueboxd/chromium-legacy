@@ -17,11 +17,11 @@ JaPhoneticData.init = function() {
   for (const [char, reading] of Object.entries(
            JaPhoneticData.phoneticMap_ || {})) {
     if (JaPhoneticData.isHiragana(char)) {
-      JaPhoneticData.phoneticMap_[char] = reading + ' ひらがな';
+      JaPhoneticData.phoneticMap_[char] = 'ひらがなの' + reading;
     } else if (JaPhoneticData.isKatakana(char)) {
-      JaPhoneticData.phoneticMap_[char] = reading + ' カタカナ';
+      JaPhoneticData.phoneticMap_[char] = 'カタカナの' + reading;
     } else if (JaPhoneticData.isHalfWidth(char)) {
-      JaPhoneticData.phoneticMap_[char] = reading + ' ハンカク';
+      JaPhoneticData.phoneticMap_[char] = 'ハンカクの' + reading;
     }
   }
 };

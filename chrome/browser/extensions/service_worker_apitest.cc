@@ -61,6 +61,7 @@
 #include "extensions/browser/extension_host.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/process_manager.h"
+#include "extensions/browser/service_worker/service_worker_test_utils.h"
 #include "extensions/browser/service_worker_task_queue.h"
 #include "extensions/common/api/test.h"
 #include "extensions/common/extensions_client.h"
@@ -1590,54 +1591,6 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerTest, MimeHandlerView) {
   ASSERT_TRUE(RunExtensionTest("service_worker/mime_handler_view"));
 }
 
-// An observer for service worker registration events.
-class TestRegistrationObserver : public content::ServiceWorkerContextObserver {
- public:
-  using RegistrationsMap = std::map<GURL, int>;
-
-  explicit TestRegistrationObserver(content::ServiceWorkerContext* context)
-      : context_(context) {
-    context_->AddObserver(this);
-  }
-
-  ~TestRegistrationObserver() override {
-    if (context_) {
-      context_->RemoveObserver(this);
-    }
-  }
-
-  // Wait for the first service worker registration with an extension scheme
-  // scope to be stored.
-  void WaitForRegistrationStored() { stored_run_loop_.Run(); }
-
-  int GetCompletedCount(const GURL& scope) const {
-    const auto it = registrations_completed_map_.find(scope);
-    return it == registrations_completed_map_.end() ? 0 : it->second;
-  }
-
- private:
-  // ServiceWorkerContextObserver overrides.
-  void OnRegistrationCompleted(const GURL& scope) override {
-    ++registrations_completed_map_[scope];
-  }
-
-  void OnRegistrationStored(int64_t registration_id,
-                            const GURL& scope) override {
-    if (scope.SchemeIs(kExtensionScheme)) {
-      stored_run_loop_.Quit();
-    }
-  }
-
-  void OnDestruct(content::ServiceWorkerContext* context) override {
-    context_->RemoveObserver(this);
-    context_ = nullptr;
-  }
-
-  RegistrationsMap registrations_completed_map_;
-  base::RunLoop stored_run_loop_;
-  content::ServiceWorkerContext* context_;
-};
-
 // Observer for an extension service worker to start and stop.
 class TestWorkerObserver : public content::ServiceWorkerContextObserver {
  public:
@@ -1704,7 +1657,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest,
       storage_partition->GetServiceWorkerContext();
 
   // Set up an observer to wait for the registration to be stored.
-  TestRegistrationObserver observer(context);
+  service_worker_test_utils::TestRegistrationObserver observer(context);
 
   ExtensionTestMessageListener event_listener_added("ready", false);
   event_listener_added.set_failure_message("ERROR");
@@ -1960,7 +1913,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest,
   // Set up an observer to track all SW registrations. We expect only
   // one for the extension's root scope. This test attempts to register
   // an additional service worker, which will fail.
-  TestRegistrationObserver observer(context);
+  service_worker_test_utils::TestRegistrationObserver observer(context);
   ExtensionTestMessageListener registration_listener("REGISTRATION_FAILED",
                                                      false);
   registration_listener.set_failure_message("WORKER_STARTED");

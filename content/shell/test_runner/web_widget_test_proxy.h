@@ -50,7 +50,7 @@ class WebViewTestProxy;
 // Historically, the overridden functionality has been small enough to not
 // cause too much trouble. If that changes, then this entire testing
 // architecture should be revisited.
-class WebWidgetTestProxy : public content::RenderWidget {
+class WebWidgetTestProxy : public RenderWidget {
  public:
   template <typename... Args>
   explicit WebWidgetTestProxy(Args&&... args)
@@ -107,7 +107,7 @@ class WebWidgetTestProxy : public content::RenderWidget {
   void AnimateNow();
 
   // Perform the synchronous composite step for a given RenderWidget.
-  static void DoComposite(content::RenderWidget* widget, bool do_raster);
+  static void DoComposite(RenderWidget* widget, bool do_raster);
 
   EventSender event_sender_{this};
 

@@ -4,10 +4,96 @@
 
 #include "third_party/blink/public/common/input/web_gesture_event.h"
 
+#include <limits>
+
+#include "ui/gfx/transform.h"
+
 namespace blink {
+
+namespace {
+
+bool IsContinuousGestureEvent(WebInputEvent::Type type) {
+  switch (type) {
+    case WebGestureEvent::Type::kGestureScrollUpdate:
+    case WebGestureEvent::Type::kGesturePinchUpdate:
+      return true;
+    default:
+      return false;
+  }
+}
+
+// Returns the transform matrix corresponding to the gesture event.
+gfx::Transform GetTransformForEvent(const WebGestureEvent& gesture_event) {
+  gfx::Transform gesture_transform;
+  if (gesture_event.GetType() == WebInputEvent::Type::kGestureScrollUpdate) {
+    gesture_transform.Translate(gesture_event.data.scroll_update.delta_x,
+                                gesture_event.data.scroll_update.delta_y);
+  } else if (gesture_event.GetType() ==
+             WebInputEvent::Type::kGesturePinchUpdate) {
+    float scale = gesture_event.data.pinch_update.scale;
+    gesture_transform.Translate(-gesture_event.PositionInWidget().x(),
+                                -gesture_event.PositionInWidget().y());
+    gesture_transform.Scale(scale, scale);
+    gesture_transform.Translate(gesture_event.PositionInWidget().x(),
+                                gesture_event.PositionInWidget().y());
+  } else {
+    NOTREACHED() << "Invalid event type for transform retrieval: "
+                 << WebInputEvent::GetName(gesture_event.GetType());
+  }
+  return gesture_transform;
+}
+
+}  // namespace
 
 std::unique_ptr<WebInputEvent> WebGestureEvent::Clone() const {
   return std::make_unique<WebGestureEvent>(*this);
+}
+
+bool WebGestureEvent::CanCoalesce(const WebInputEvent& event) const {
+  if (!IsGestureEventType(event.GetType()))
+    return false;
+  const WebGestureEvent& gesture_event =
+      static_cast<const WebGestureEvent&>(event);
+  if (GetType() != gesture_event.GetType() ||
+      SourceDevice() != gesture_event.SourceDevice() ||
+      GetModifiers() != gesture_event.GetModifiers())
+    return false;
+
+  if (GetType() == WebInputEvent::Type::kGestureScrollUpdate)
+    return true;
+
+  // GesturePinchUpdate scales can be combined only if they share a focal point,
+  // e.g., with double-tap drag zoom.
+  // Due to the imprecision of OOPIF coordinate conversions, the positions may
+  // not be exactly equal, so we only require approximate equality.
+  constexpr float kAnchorTolerance = 1.f;
+  if (GetType() == WebInputEvent::Type::kGesturePinchUpdate &&
+      (std::abs(PositionInWidget().x() - gesture_event.PositionInWidget().x()) <
+       kAnchorTolerance) &&
+      (std::abs(PositionInWidget().y() - gesture_event.PositionInWidget().y()) <
+       kAnchorTolerance)) {
+    return true;
+  }
+
+  return false;
+}
+
+void WebGestureEvent::Coalesce(const WebInputEvent& event) {
+  DCHECK(CanCoalesce(event));
+  const WebGestureEvent& gesture_event =
+      static_cast<const WebGestureEvent&>(event);
+  if (GetType() == WebInputEvent::Type::kGestureScrollUpdate) {
+    data.scroll_update.delta_x += gesture_event.data.scroll_update.delta_x;
+    data.scroll_update.delta_y += gesture_event.data.scroll_update.delta_y;
+  } else if (GetType() == WebInputEvent::Type::kGesturePinchUpdate) {
+    data.pinch_update.scale *= gesture_event.data.pinch_update.scale;
+    // Ensure the scale remains bounded above 0 and below Infinity so that
+    // we can reliably perform operations like log on the values.
+    if (data.pinch_update.scale < std::numeric_limits<float>::min())
+      data.pinch_update.scale = std::numeric_limits<float>::min();
+    else if (data.pinch_update.scale > std::numeric_limits<float>::max())
+      data.pinch_update.scale = std::numeric_limits<float>::max();
+  }
 }
 
 float WebGestureEvent::DeltaXInRootFrame() const {
@@ -171,6 +257,78 @@ void WebGestureEvent::FlattenTransform() {
   SetPositionInWidget(PositionInRootFrame());
   frame_translate_ = gfx::Vector2dF();
   frame_scale_ = 1;
+}
+
+// Whether |event_in_queue| is a touchscreen GesturePinchUpdate or
+// GestureScrollUpdate and has the same modifiers/source as the new
+// scroll/pinch event. Compatible touchscreen scroll and pinch event pairs
+// can be logically coalesced.
+bool WebGestureEvent::IsCompatibleScrollorPinch(
+    const WebGestureEvent& new_event,
+    const WebGestureEvent& event_in_queue) {
+  DCHECK(new_event.GetType() == WebInputEvent::Type::kGestureScrollUpdate ||
+         new_event.GetType() == WebInputEvent::Type::kGesturePinchUpdate)
+      << "Invalid event type for pinch/scroll coalescing: "
+      << WebInputEvent::GetName(new_event.GetType());
+  DLOG_IF(WARNING, new_event.TimeStamp() < event_in_queue.TimeStamp())
+      << "Event time not monotonic?\n";
+  return (event_in_queue.GetType() ==
+              WebInputEvent::Type::kGestureScrollUpdate ||
+          event_in_queue.GetType() ==
+              WebInputEvent::Type::kGesturePinchUpdate) &&
+         event_in_queue.GetModifiers() == new_event.GetModifiers() &&
+         event_in_queue.SourceDevice() == WebGestureDevice::kTouchscreen &&
+         new_event.SourceDevice() == WebGestureDevice::kTouchscreen;
+}
+
+std::pair<WebGestureEvent, WebGestureEvent>
+WebGestureEvent::CoalesceScrollAndPinch(
+    const WebGestureEvent* second_last_event,
+    const WebGestureEvent& last_event,
+    const WebGestureEvent& new_event) {
+  DCHECK(!last_event.CanCoalesce(new_event))
+      << "New event can't be coalesced with the last event in queue directly.";
+  DCHECK(IsContinuousGestureEvent(new_event.GetType()));
+  DCHECK(IsCompatibleScrollorPinch(new_event, last_event));
+  DCHECK(!second_last_event ||
+         IsCompatibleScrollorPinch(new_event, *second_last_event));
+
+  WebGestureEvent scroll_event(WebInputEvent::Type::kGestureScrollUpdate,
+                               new_event.GetModifiers(), new_event.TimeStamp(),
+                               new_event.SourceDevice());
+  WebGestureEvent pinch_event;
+  scroll_event.primary_pointer_type = new_event.primary_pointer_type;
+  pinch_event = scroll_event;
+  pinch_event.SetType(WebInputEvent::Type::kGesturePinchUpdate);
+  pinch_event.SetPositionInWidget(
+      new_event.GetType() == WebInputEvent::Type::kGesturePinchUpdate
+          ? new_event.PositionInWidget()
+          : last_event.PositionInWidget());
+
+  gfx::Transform combined_scroll_pinch = GetTransformForEvent(last_event);
+  if (second_last_event) {
+    combined_scroll_pinch.PreconcatTransform(
+        GetTransformForEvent(*second_last_event));
+  }
+  combined_scroll_pinch.ConcatTransform(GetTransformForEvent(new_event));
+
+  float combined_scale =
+      SkScalarToFloat(combined_scroll_pinch.matrix().get(0, 0));
+  float combined_scroll_pinch_x =
+      SkScalarToFloat(combined_scroll_pinch.matrix().get(0, 3));
+  float combined_scroll_pinch_y =
+      SkScalarToFloat(combined_scroll_pinch.matrix().get(1, 3));
+  scroll_event.data.scroll_update.delta_x =
+      (combined_scroll_pinch_x + pinch_event.PositionInWidget().x()) /
+          combined_scale -
+      pinch_event.PositionInWidget().x();
+  scroll_event.data.scroll_update.delta_y =
+      (combined_scroll_pinch_y + pinch_event.PositionInWidget().y()) /
+          combined_scale -
+      pinch_event.PositionInWidget().y();
+  pinch_event.data.pinch_update.scale = combined_scale;
+
+  return std::make_pair(scroll_event, pinch_event);
 }
 
 }  // namespace blink

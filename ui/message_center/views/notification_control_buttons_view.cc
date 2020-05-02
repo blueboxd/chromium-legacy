@@ -37,8 +37,6 @@ NotificationControlButtonsView::NotificationControlButtonsView(
   // Use layer to change the opacity.
   SetPaintToLayer();
   layer()->SetFillsBoundsOpaquely(false);
-
-  SetBackground(views::CreateSolidBackground(kControlButtonBackgroundColor));
 }
 
 NotificationControlButtonsView::~NotificationControlButtonsView() = default;
@@ -164,6 +162,14 @@ views::Button* NotificationControlButtonsView::snooze_button() const {
 const char* NotificationControlButtonsView::GetClassName() const {
   return kViewClassName;
 }
+
+#if defined(OS_CHROMEOS)
+void NotificationControlButtonsView::OnThemeChanged() {
+  View::OnThemeChanged();
+  SetBackground(views::CreateSolidBackground(GetNativeTheme()->GetSystemColor(
+      ui::NativeTheme::kColorId_NotificationButtonBackground)));
+}
+#endif
 
 void NotificationControlButtonsView::ButtonPressed(views::Button* sender,
                                                    const ui::Event& event) {

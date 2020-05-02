@@ -4743,24 +4743,11 @@ void RenderFrameImpl::WillSendRequestInternal(
 void RenderFrameImpl::DidLoadResourceFromMemoryCache(
     const blink::WebURLRequest& request,
     const blink::WebURLResponse& response) {
-  // The recipients of this message have no use for data: URLs: they don't
-  // affect the page's insecure content list and are not in the disk cache. To
-  // prevent large (1M+) data: URLs from crashing in the IPC system, we simply
-  // filter them out here.
-  if (request.Url().ProtocolIs(url::kDataScheme))
-    return;
-
   for (auto& observer : observers_) {
     observer.DidLoadResourceFromMemoryCache(
         request.Url(), response.RequestId(), response.EncodedBodyLength(),
         response.MimeType().Utf8(), response.FromArchive());
   }
-
-  // Let the browser know we loaded a resource from the memory cache.  This
-  // message is needed to display the correct SSL indicators.
-  Send(new FrameHostMsg_DidLoadResourceFromMemoryCache(
-      routing_id_, request.Url(), request.HttpMethod().Utf8(),
-      response.MimeType().Utf8(), request.GetRequestDestination()));
 }
 
 void RenderFrameImpl::DidStartResponse(
@@ -5653,9 +5640,7 @@ void RenderFrameImpl::BeginNavigation(
         !weak_self) {
       return;
     }
-  }
 
-  if (info->navigation_policy == blink::kWebNavigationPolicyCurrentTab) {
     if (!info->form.IsNull()) {
       for (auto& observer : observers_)
         observer.WillSubmitForm(info->form);
@@ -5901,14 +5886,14 @@ void RenderFrameImpl::OpenURL(std::unique_ptr<blink::WebNavigationInfo> info) {
   if (GetContentClient()->renderer()->AllowPopup())
     params.user_gesture = true;
 
-  // TODO(csharrison,dgozman): FrameLoader::StartNavigation already consumes for
-  // all main frame navigations, except in the case where page A is navigating
-  // page B (e.g. using anchor targets). This edge case can go away when
-  // UserActivationV2 ships, which would make the conditional below redundant.
-  if (is_main_frame_ || policy == blink::kWebNavigationPolicyNewBackgroundTab ||
-      policy == blink::kWebNavigationPolicyNewForegroundTab ||
-      policy == blink::kWebNavigationPolicyNewWindow ||
-      policy == blink::kWebNavigationPolicyNewPopup) {
+  // A main frame navigation should already have consumed an activation in
+  // FrameLoader::StartNavigation.
+  DCHECK(!is_main_frame_ || !frame_->HasTransientUserActivation());
+  if (!is_main_frame_ &&
+      (policy == blink::kWebNavigationPolicyNewBackgroundTab ||
+       policy == blink::kWebNavigationPolicyNewForegroundTab ||
+       policy == blink::kWebNavigationPolicyNewWindow ||
+       policy == blink::kWebNavigationPolicyNewPopup)) {
     frame_->ConsumeTransientUserActivation();
   }
 

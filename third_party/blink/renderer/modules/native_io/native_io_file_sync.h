@@ -8,13 +8,13 @@
 #include <stdint.h>
 
 #include "base/files/file.h"
-#include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/mojom/native_io/native_io.mojom-blink.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/typed_arrays/array_buffer_view_helpers.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer_view.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/mojo/heap_mojo_remote.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
@@ -23,14 +23,12 @@ namespace blink {
 class ExceptionState;
 class ExecutionContext;
 
-class NativeIOFileSync final : public ScriptWrappable,
-                               public ExecutionContextLifecycleObserver {
+class NativeIOFileSync final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(NativeIOFileSync);
 
  public:
   NativeIOFileSync(base::File backing_file,
-                   mojo::Remote<mojom::blink::NativeIOFileHost> backend_file,
+                   HeapMojoRemote<mojom::blink::NativeIOFileHost> backend_file,
                    ExecutionContext*);
 
   NativeIOFileSync(const NativeIOFileSync&) = delete;
@@ -50,9 +48,6 @@ class NativeIOFileSync final : public ScriptWrappable,
   // GarbageCollected
   void Trace(Visitor* visitor) override;
 
-  // ExecutionContextLifecycleObserver
-  void ContextDestroyed() override;
-
  private:
   // Called when the mojo backend disconnects.
   void OnBackendDisconnect();
@@ -61,7 +56,7 @@ class NativeIOFileSync final : public ScriptWrappable,
   base::File backing_file_;
 
   // Mojo pipe that holds the renderer's lock on the file.
-  mojo::Remote<mojom::blink::NativeIOFileHost> backend_file_;
+  HeapMojoRemote<mojom::blink::NativeIOFileHost> backend_file_;
 };
 
 }  // namespace blink

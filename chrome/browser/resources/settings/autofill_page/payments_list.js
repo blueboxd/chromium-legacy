@@ -14,7 +14,7 @@ import './upi_id_list_entry.js';
 
 import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-import {loadTimeData} from '../i18n_setup.m.js';
+import {loadTimeData} from '../i18n_setup.js';
 
 import {CreditCardEntry} from './credit_card_list_entry.js';
 

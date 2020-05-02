@@ -178,6 +178,34 @@ void WebApp::SetAdditionalSearchTerms(
   additional_search_terms_ = std::move(additional_search_terms);
 }
 
+void WebApp::SetShortcutInfos(
+    std::vector<WebAppShortcutMenuItemInfo> shortcut_infos) {
+  shortcut_infos_ = std::move(shortcut_infos);
+}
+
+void WebApp::SetDownloadedShortcutIconsSizes(
+    std::vector<std::vector<SquareSizePx>> sizes) {
+  downloaded_shortcut_icons_sizes_ = std::move(sizes);
+}
+
+WebApp::WebAppShortcutMenuItemInfo::WebAppShortcutMenuItemInfo() = default;
+
+WebApp::WebAppShortcutMenuItemInfo::WebAppShortcutMenuItemInfo(
+    const WebAppShortcutMenuItemInfo& other) = default;
+
+WebApp::WebAppShortcutMenuItemInfo::WebAppShortcutMenuItemInfo(
+    WebAppShortcutMenuItemInfo&&) = default;
+
+WebApp::WebAppShortcutMenuItemInfo::~WebAppShortcutMenuItemInfo() = default;
+
+WebApp::WebAppShortcutMenuItemInfo&
+WebApp::WebAppShortcutMenuItemInfo::operator=(
+    const WebAppShortcutMenuItemInfo&) = default;
+
+WebApp::WebAppShortcutMenuItemInfo&
+WebApp::WebAppShortcutMenuItemInfo::operator=(WebAppShortcutMenuItemInfo&&) =
+    default;
+
 void WebApp::SetSyncData(SyncData sync_data) {
   sync_data_ = std::move(sync_data);
 }

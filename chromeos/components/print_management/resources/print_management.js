@@ -2,11 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
 import 'chrome://resources/polymer/v3_0/iron-list/iron-list.js';
 import 'chrome://resources/mojo/mojo/public/mojom/base/big_buffer.mojom-lite.js';
 import 'chrome://resources/mojo/mojo/public/mojom/base/string16.mojom-lite.js';
 import 'chrome://resources/mojo/mojo/public/mojom/base/time.mojom-lite.js';
 import 'chrome://resources/mojo/url/mojom/url.mojom-lite.js';
+import './print_job_clear_history_dialog.js';
 import './print_job_entry.js';
 import './print_management_shared_css.js';
 
@@ -61,6 +63,16 @@ Polymer({
      * @private
      */
     listBlurred_: Boolean,
+
+    /** @private */
+    showClearAllDialog_: {
+      type: Boolean,
+      value: false,
+    },
+  },
+
+  listeners: {
+    'all-history-cleared': 'getPrintJobs_',
   },
 
   /** @override */
@@ -70,8 +82,7 @@ Polymer({
 
   /** @override */
   ready() {
-    this.mojoInterfaceProvider_.getPrintJobs()
-        .then(this.onPrintJobsReceived_.bind(this));
+    this.getPrintJobs_();
   },
 
   /**
@@ -87,5 +98,21 @@ Polymer({
       return Number(second.creationTime.internalValue) -
           Number(first.creationTime.internalValue);
     });
-  }
+  },
+
+  /** @private */
+  getPrintJobs_() {
+    this.mojoInterfaceProvider_.getPrintJobs()
+        .then(this.onPrintJobsReceived_.bind(this));
+  },
+
+  /** @private */
+  onClearHistoryClicked_() {
+    this.showClearAllDialog_ = true;
+  },
+
+  /** @private */
+  onClearHistoryDialogClosed_() {
+    this.showClearAllDialog_ = false;
+  },
 });

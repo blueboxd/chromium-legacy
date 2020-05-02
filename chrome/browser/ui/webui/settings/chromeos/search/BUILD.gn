@@ -13,5 +13,8 @@ mojom("mojo_bindings") {
     "user_action_recorder.mojom",
   ]
 
-  public_deps = [ "//mojo/public/mojom/base" ]
+  public_deps = [
+    "../constants:mojom",
+    "//mojo/public/mojom/base",
+  ]
 }

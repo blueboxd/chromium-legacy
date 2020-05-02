@@ -90,6 +90,8 @@ void MediaFeedsService::RegisterProfilePrefs(
 
 void MediaFeedsService::CheckItemsAgainstSafeSearch(
     media_history::MediaHistoryKeyedService::PendingSafeSearchCheckList list) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
   if (!IsSafeSearchCheckingEnabled()) {
     MaybeCallCompletionCallback();
     return;
@@ -117,22 +119,26 @@ void MediaFeedsService::SetSafeSearchCompletionCallbackForTest(
 void MediaFeedsService::FetchMediaFeed(int64_t feed_id,
                                        const GURL& url,
                                        base::OnceClosure callback) {
-  // Skip the fetch if there is already an ongoing fetch for this feed.
-  if (fetchers_.find(feed_id) != fetchers_.end()) {
-    std::move(callback).Run();
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
+  // Skip the fetch if there is already an ongoing fetch for this feed. However,
+  // add the callback so it will resolve when the ongoing fetch is complete.
+  if (base::Contains(fetches_, feed_id)) {
+    fetches_.at(feed_id).callbacks.push_back(std::move(callback));
     return;
   }
 
-  fetchers_.emplace(std::make_pair(
-      feed_id,
-      std::make_unique<MediaFeedsFetcher>(GetURLLoaderFactoryForFetcher())));
+  fetches_.emplace(feed_id,
+                   InflightFeedFetch(std::make_unique<MediaFeedsFetcher>(
+                                         GetURLLoaderFactoryForFetcher()),
+                                     std::move(callback)));
 
-  fetchers_.find(feed_id)->second->FetchFeed(
+  fetches_.at(feed_id).fetcher->FetchFeed(
       url,
       // Use of unretained is safe because the callback is owned
       // by fetcher_, which will not outlive this.
       base::BindOnce(&MediaFeedsService::OnFetchResponse,
-                     base::Unretained(this), feed_id, std::move(callback)));
+                     base::Unretained(this), feed_id));
 }
 
 media_history::MediaHistoryKeyedService*
@@ -146,6 +152,8 @@ MediaFeedsService::GetMediaHistoryService() {
 
 bool MediaFeedsService::AddInflightSafeSearchCheck(const int64_t id,
                                                    const std::set<GURL>& urls) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
   if (base::Contains(inflight_safe_search_checks_, id))
     return false;
 
@@ -156,6 +164,7 @@ bool MediaFeedsService::AddInflightSafeSearchCheck(const int64_t id,
 }
 
 void MediaFeedsService::CheckForSafeSearch(const int64_t id, const GURL& url) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(IsSafeSearchCheckingEnabled());
 
   if (!safe_search_url_checker_) {
@@ -212,6 +221,7 @@ void MediaFeedsService::OnCheckURLDone(
     const GURL& url,
     safe_search_api::Classification classification,
     bool uncertain) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(IsSafeSearchCheckingEnabled());
 
   // Get the inflight safe search check data.
@@ -270,6 +280,18 @@ bool MediaFeedsService::IsSafeSearchCheckingEnabled() const {
          profile_->GetPrefs()->GetBoolean(prefs::kMediaFeedsSafeSearchEnabled);
 }
 
+MediaFeedsService::InflightFeedFetch::InflightFeedFetch(
+    std::unique_ptr<MediaFeedsFetcher> fetcher,
+    base::OnceClosure callback)
+    : fetcher(std::move(fetcher)) {
+  callbacks.push_back(std::move(callback));
+}
+
+MediaFeedsService::InflightFeedFetch::~InflightFeedFetch() = default;
+
+MediaFeedsService::InflightFeedFetch::InflightFeedFetch(InflightFeedFetch&& t) =
+    default;
+
 MediaFeedsService::InflightSafeSearchCheck::InflightSafeSearchCheck(
     const std::set<GURL>& urls)
     : pending(urls) {}
@@ -279,13 +301,15 @@ MediaFeedsService::InflightSafeSearchCheck::~InflightSafeSearchCheck() =
 
 void MediaFeedsService::OnFetchResponse(
     int64_t feed_id,
-    base::OnceClosure callback,
     const schema_org::improved::mojom::EntityPtr& response,
     MediaFeedsFetcher::Status status,
     bool was_fetched_via_cache) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
   if (status == MediaFeedsFetcher::Status::kGone) {
-    GetMediaHistoryService()->DeleteMediaFeed(feed_id, std::move(callback));
-    fetchers_.erase(feed_id);
+    GetMediaHistoryService()->DeleteMediaFeed(
+        feed_id, base::BindOnce(&MediaFeedsService::OnCompleteFetch,
+                                weak_factory_.GetWeakPtr(), feed_id, false));
     return;
   }
 
@@ -299,9 +323,21 @@ void MediaFeedsService::OnFetchResponse(
   GetMediaHistoryService()->StoreMediaFeedFetchResult(
       feed_id, std::move(feed_items), GetFetchResult(status),
       was_fetched_via_cache, std::move(logos), display_name,
-      std::set<url::Origin>(), std::move(callback));
+      std::set<url::Origin>(),
+      base::BindOnce(&MediaFeedsService::OnCompleteFetch,
+                     weak_factory_.GetWeakPtr(), feed_id, has_items));
+}
 
-  fetchers_.erase(feed_id);
+void MediaFeedsService::OnCompleteFetch(const int64_t feed_id,
+                                        const bool has_items) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK(base::Contains(fetches_, feed_id));
+
+  for (auto& callback : fetches_.at(feed_id).callbacks) {
+    std::move(callback).Run();
+  }
+
+  fetches_.erase(feed_id);
 
   // If safe search checking is enabled then we should check the new feed items
   // against the Safe Search API.

@@ -9,10 +9,12 @@
 
 #include "ash/ash_export.h"
 #include "ash/display/window_tree_host_manager.h"
+#include "ash/drag_drop/tab_drag_drop_delegate.h"
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "base/optional.h"
 #include "base/time/time.h"
 #include "ui/aura/client/drag_drop_client.h"
 #include "ui/aura/window_observer.h"
@@ -34,7 +36,6 @@ namespace ash {
 class DragDropTracker;
 class DragDropTrackerDelegate;
 class DragImageView;
-class SplitViewDragIndicators;
 
 class ASH_EXPORT DragDropController : public aura::client::DragDropClient,
                                       public ui::EventHandler,
@@ -119,9 +120,8 @@ class ASH_EXPORT DragDropController : public aura::client::DragDropClient,
   int drag_operation_;
   int current_drag_actions_ = 0;
 
-  // Tab drag specific members.
-  bool is_chrome_tab_drag_ = false;
-  std::unique_ptr<SplitViewDragIndicators> split_view_drag_indicators_;
+  // Used when processing a Chrome tab drag from a WebUI tab strip.
+  base::Optional<TabDragDropDelegate> tab_drag_drop_delegate_;
 
   // Window that is currently under the drag cursor.
   aura::Window* drag_window_;

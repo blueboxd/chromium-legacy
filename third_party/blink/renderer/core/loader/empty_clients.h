@@ -260,7 +260,6 @@ class CORE_EXPORT EmptyLocalFrameClient : public LocalFrameClient {
       DocumentLoader*,
       WebNavigationType,
       NavigationPolicy,
-      bool,
       WebFrameLoadType,
       bool,
       TriggeringEventInfo,

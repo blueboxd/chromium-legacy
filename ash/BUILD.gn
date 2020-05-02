@@ -334,6 +334,8 @@ component("ash") {
     "drag_drop/drag_drop_tracker.h",
     "drag_drop/drag_image_view.cc",
     "drag_drop/drag_image_view.h",
+    "drag_drop/tab_drag_drop_delegate.cc",
+    "drag_drop/tab_drag_drop_delegate.h",
     "events/event_rewriter_controller_impl.cc",
     "events/event_rewriter_controller_impl.h",
     "events/keyboard_driven_event_rewriter.cc",

@@ -4362,6 +4362,15 @@ void RenderFrameHostImpl::ShowPopupMenu(
 #endif
 }
 
+void RenderFrameHostImpl::DidLoadResourceFromMemoryCache(
+    const GURL& url,
+    const std::string& http_method,
+    const std::string& mime_type,
+    network::mojom::RequestDestination request_destination) {
+  delegate_->DidLoadResourceFromMemoryCache(this, url, http_method, mime_type,
+                                            request_destination);
+}
+
 void RenderFrameHostImpl::BindInterfaceProviderReceiver(
     mojo::PendingReceiver<service_manager::mojom::InterfaceProvider>
         interface_provider_receiver) {

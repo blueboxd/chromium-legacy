@@ -64,7 +64,8 @@ class OmniboxRowView::HeaderView : public views::View,
 
   // views::View:
   gfx::Insets GetInsets() const override {
-    constexpr int vertical = 8;
+    // Makes the header height roughly the same as the single-line row height.
+    constexpr int vertical = 6;
 
     // Aligns the header text with the icons of ordinary matches. The assumed
     // small icon width here is lame, but necessary, since it's not explicitly

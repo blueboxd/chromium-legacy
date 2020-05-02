@@ -3266,6 +3266,9 @@ if (enable_java_templates) {
   template("java_library_impl") {
     # TODO(crbug.com/1042017): Remove.
     not_needed(invoker, [ "no_build_hooks" ])
+
+    # TODO(bjoyce): Remove when able to use.
+    not_needed(invoker, [ "enable_jetify" ])
     set_sources_assignment_filter([])
     forward_variables_from(invoker, [ "testonly" ])
     _is_prebuilt = defined(invoker.jar_path)

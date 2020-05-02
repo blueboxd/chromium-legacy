@@ -47,6 +47,10 @@ std::vector<GURL> GetValidIconUrlsToDownload(
 // A map of icon urls to the bitmaps provided by that url.
 using IconsMap = std::map<GURL, std::vector<SkBitmap>>;
 
+// Populate shortcut item icon maps in WebApplicationInfo using the IconsMap.
+void PopulateShortcutItemIcons(WebApplicationInfo* web_app_info,
+                               const IconsMap* icons_map);
+
 // Filter out square icons, ensure that the necessary-sized icons are available
 // by resizing larger icons down to smaller sizes, and generating icons for
 // sizes where resizing is not possible. |icons_map| is optional.

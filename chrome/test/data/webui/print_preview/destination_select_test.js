@@ -4,7 +4,6 @@
 
 import {Destination, DestinationConnectionStatus, DestinationOrigin, DestinationType, getSelectDropdownBackground} from 'chrome://print/print_preview.js';
 import {assert} from 'chrome://resources/js/assert.m.js';
-import {isChromeOS} from 'chrome://resources/js/cr.m.js';
 import {getGoogleDriveDestination, selectOption} from 'chrome://test/print_preview/print_preview_test_utils.js';
 
 window.destination_select_test = {};
@@ -13,7 +12,6 @@ destination_select_test.suiteName = 'DestinationSelectTest';
 destination_select_test.TestNames = {
   UpdateStatus: 'update status',
   ChangeIcon: 'change icon',
-  EulaIsDisplayed: 'eula is displayed'
 };
 
 suite(destination_select_test.suiteName, function() {
@@ -120,19 +118,4 @@ suite(destination_select_test.suiteName, function() {
           compareIcon(selectEl, 'print');
         });
   });
-
-  if (isChromeOS) {
-    /**
-     * Tests that destinations with a EULA will display the EULA URL.
-     */
-    test(assert(destination_select_test.TestNames.EulaIsDisplayed), function() {
-      destinationSelect.destination = recentDestinationList[0];
-      destinationSelect.loaded = true;
-      assertTrue(destinationSelect.$.destinationEulaWrapper.hidden);
-
-      destinationSelect.set('destination.eulaUrl', 'chrome://os-credits/eula');
-      const eulaWrapper = destinationSelect.$.destinationEulaWrapper;
-      assertFalse(destinationSelect.$.destinationEulaWrapper.hidden);
-    });
-  }
 });

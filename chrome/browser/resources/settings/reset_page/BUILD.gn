@@ -24,7 +24,7 @@ js_library("reset_browser_proxy") {
 js_library("reset_page") {
   deps = [
     ":reset_profile_dialog",
-    "..:route.m",
+    "..:route",
     "..:router.m",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
     "//ui/webui/resources/cr_elements/cr_lazy_render:cr_lazy_render.m",
@@ -36,7 +36,7 @@ js_library("reset_page") {
 js_library("reset_profile_banner") {
   deps = [
     ":reset_browser_proxy",
-    "..:route.m",
+    "..:route",
     "..:router.m",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
     "//ui/webui/resources/cr_elements/cr_dialog:cr_dialog.m",
@@ -46,7 +46,7 @@ js_library("reset_profile_banner") {
 js_library("reset_profile_dialog") {
   deps = [
     ":reset_browser_proxy",
-    "..:route.m",
+    "..:route",
     "..:router.m",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
     "//ui/webui/resources/js:load_time_data.m",

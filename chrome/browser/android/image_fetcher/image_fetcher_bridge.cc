@@ -131,6 +131,7 @@ void ImageFetcherBridge::FetchImage(JNIEnv* j_env,
                                     const jint j_image_fetcher_config,
                                     const JavaRef<jstring>& j_url,
                                     const JavaRef<jstring>& j_client_name,
+                                    const jint j_expiration_interval_mins,
                                     const JavaRef<jobject>& j_callback) {
   ScopedJavaGlobalRef<jobject> callback(j_callback);
   ImageFetcherConfig config =
@@ -140,6 +141,10 @@ void ImageFetcherBridge::FetchImage(JNIEnv* j_env,
       base::android::ConvertJavaStringToUTF8(j_client_name);
 
   ImageFetcherParams params(kTrafficAnnotation, client_name);
+  if (j_expiration_interval_mins > 0) {
+    params.set_hold_for_expiration_interval(
+        base::TimeDelta::FromMinutes(j_expiration_interval_mins));
+  }
   image_fetcher_service_->GetImageFetcher(config)->FetchImage(
       GURL(url),
       base::BindOnce(&ImageFetcherBridge::OnImageFetched,

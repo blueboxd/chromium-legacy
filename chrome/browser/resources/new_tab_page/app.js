@@ -35,6 +35,13 @@ class AppElement extends PolymerElement {
   static get properties() {
     return {
       /** @private */
+      iframeOneGoogleBarEnabled_: {
+        type: Boolean,
+        value: () => loadTimeData.getBoolean('iframeOneGoogleBarEnabled'),
+        reflectToAttribute: true,
+      },
+
+      /** @private */
       oneGoogleBarLoaded_: {
         observer: 'oneGoogleBarLoadedChange_',
         type: Boolean,
@@ -47,6 +54,14 @@ class AppElement extends PolymerElement {
         computed: `computeOneGoogleBarDarkThemeEnabled_(oneGoogleBarLoaded_,
             theme_, backgroundSelection_)`,
         observer: 'onOneGoogleBarDarkThemeEnabledChange_',
+      },
+
+      /** @private */
+      showIframedOneGoogleBar_: {
+        type: Boolean,
+        value: false,
+        computed: `computeShowIframedOneGoogleBar_(iframeOneGoogleBarEnabled_,
+            lazyRender_)`,
       },
 
       /** @private */
@@ -143,6 +158,7 @@ class AppElement extends PolymerElement {
     this.setThemeListenerId_ = null;
     /** @private {!EventTracker} */
     this.eventTracker_ = new EventTracker();
+    this.loadOneGoogleBar_();
   }
 
   /** @override */
@@ -204,15 +220,82 @@ class AppElement extends PolymerElement {
     }
   }
 
+  /**
+   * @return {!Promise}
+   * @private
+   */
+  async loadOneGoogleBar_() {
+    if (this.iframeOneGoogleBarEnabled_) {
+      const oneGoogleBar = document.querySelector('#oneGoogleBar');
+      oneGoogleBar.remove();
+      return;
+    }
+
+    const {parts} =
+        await BrowserProxy.getInstance().handler.getOneGoogleBarParts();
+    if (!parts) {
+      return;
+    }
+
+    const inHeadStyle = document.createElement('style');
+    inHeadStyle.type = 'text/css';
+    inHeadStyle.appendChild(document.createTextNode(parts.inHeadStyle));
+    document.head.appendChild(inHeadStyle);
+
+    const inHeadScript = document.createElement('script');
+    inHeadScript.type = 'text/javascript';
+    inHeadScript.appendChild(document.createTextNode(parts.inHeadScript));
+    document.head.appendChild(inHeadScript);
+
+    this.oneGoogleBarLoaded_ = true;
+    const oneGoogleBar = document.querySelector('#oneGoogleBar');
+    oneGoogleBar.innerHTML = parts.barHtml;
+
+    const afterBarScript = document.createElement('script');
+    afterBarScript.type = 'text/javascript';
+    afterBarScript.appendChild(document.createTextNode(parts.afterBarScript));
+    oneGoogleBar.parentNode.insertBefore(
+        afterBarScript, oneGoogleBar.nextSibling);
+
+    document.querySelector('#oneGoogleBarEndOfBody').innerHTML =
+        parts.endOfBodyHtml;
+
+    const endOfBodyScript = document.createElement('script');
+    endOfBodyScript.type = 'text/javascript';
+    endOfBodyScript.appendChild(document.createTextNode(parts.endOfBodyScript));
+    document.body.appendChild(endOfBodyScript);
+  }
+
   /** @private */
-  onOneGoogleBarDarkThemeEnabledChange_() {
+  async onOneGoogleBarDarkThemeEnabledChange_() {
     if (!this.oneGoogleBarLoaded_) {
       return;
     }
-    $$(this, '#oneGoogleBar').postMessage({
-      type: 'enableDarkTheme',
-      enabled: this.oneGoogleBarDarkThemeEnabled_,
-    });
+    if (this.iframeOneGoogleBarEnabled_) {
+      $$(this, '#oneGoogleBar').postMessage({
+        type: 'enableDarkTheme',
+        enabled: this.oneGoogleBarDarkThemeEnabled_,
+      });
+      return;
+    }
+    const {gbar} = /** @type {{gbar}} */ (window);
+    if (!gbar) {
+      return;
+    }
+    const oneGoogleBar =
+        await /** @type {!{a: {bf: function(): !Promise<{pc: !Function}>}}} */ (
+            gbar)
+            .a.bf();
+    oneGoogleBar.pc.call(
+        oneGoogleBar, this.oneGoogleBarDarkThemeEnabled_ ? 1 : 0);
+  }
+
+  /**
+   * @return {boolean}
+   * @private
+   */
+  computeShowIframedOneGoogleBar_() {
+    return this.iframeOneGoogleBarEnabled_ && this.lazyRender_;
   }
 
   /**
@@ -457,10 +540,9 @@ class AppElement extends PolymerElement {
 
   /** @private */
   oneGoogleBarLoadedChange_() {
-    if (!this.oneGoogleBarLoaded_) {
-      return;
+    if (this.oneGoogleBarLoaded_ && this.iframeOneGoogleBarEnabled_) {
+      this.setupShortcutDragDropOneGoogleBarWorkaround_();
     }
-    this.setupShortcutDragDropOgbWorkaround_();
   }
 
   /**
@@ -475,7 +557,7 @@ class AppElement extends PolymerElement {
    * fires if the pointer has left ntp-most-visited.
    * @private
    */
-  setupShortcutDragDropOgbWorkaround_() {
+  setupShortcutDragDropOneGoogleBarWorkaround_() {
     const iframe = $$(this, '#oneGoogleBar');
     let resetAtDragEnd = false;
     let dragging = false;

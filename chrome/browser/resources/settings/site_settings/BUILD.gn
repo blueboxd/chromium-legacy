@@ -74,7 +74,7 @@ js_library("category_default_setting") {
   deps = [
     ":constants",
     ":site_settings_behavior",
-    "..:route.m",
+    "..:route",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
     "//ui/webui/resources/js:assert.m",
     "//ui/webui/resources/js:load_time_data.m",
@@ -172,7 +172,7 @@ js_library("site_data") {
     ":site_data_entry",
     ":site_settings_behavior",
     "..:global_scroll_target_behavior.m",
-    "..:route.m",
+    "..:route",
     "//third_party/polymer/v3_0/components-chromium/iron-list:iron-list",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
     "//ui/webui/resources/cr_elements/cr_search_field:cr_search_field.m",
@@ -188,7 +188,7 @@ js_library("site_data") {
 js_library("site_data_details_subpage") {
   deps = [
     ":local_data_browser_proxy",
-    "..:route.m",
+    "..:route",
     "..:router.m",
     "//third_party/polymer/v3_0/components-chromium/iron-list:iron-list",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
@@ -239,7 +239,7 @@ js_library("site_entry") {
     ":local_data_browser_proxy",
     ":site_settings_behavior",
     ":site_settings_prefs_browser_proxy",
-    "..:route.m",
+    "..:route",
     "..:router.m",
     "//third_party/polymer/v3_0/components-chromium/iron-collapse:iron-collapse",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
@@ -272,7 +272,7 @@ js_library("site_list_entry") {
   deps = [
     ":constants",
     ":site_settings_behavior",
-    "..:route.m",
+    "..:route",
     "..:router.m",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
     "//ui/webui/resources/cr_elements/policy:cr_policy_pref_indicator.m",

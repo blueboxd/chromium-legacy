@@ -41,7 +41,7 @@ class EventWithLatencyInfo {
     if (other.event.GetType() != event.GetType())
       return false;
 
-    return ui::CanCoalesce(other.event, event);
+    return event.CanCoalesce(other.event);
   }
 
   void CoalesceWith(const EventWithLatencyInfo& other) {
@@ -52,7 +52,7 @@ class EventWithLatencyInfo {
     // New events get coalesced into older events, and the newer timestamp
     // should always be preserved.
     const base::TimeTicks time_stamp = other.event.TimeStamp();
-    ui::Coalesce(other.event, &event);
+    event.Coalesce(other.event);
     event.SetTimeStamp(time_stamp);
 
     // When coalescing two input events, we keep the oldest LatencyInfo

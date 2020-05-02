@@ -1,41 +1,4 @@
-<style include="print-preview-shared throbber md-select cr-hidden-style">
-  :host {
-    --printer-icon-side-padding: 4px;
-    --printer-icon-size: 20px;
-  }
-
-  .throbber-container {
-    align-items: center;
-    display: flex;
-    overflow: hidden;
-  }
-
-  .destination-additional-info,
-  .destination-additional-info div {
-    height: 100%;
-    min-height: 0;
-  }
-
-  .destination-status {
-    color: var(--cr-secondary-text-color);
-    font-size: calc(12/13 * 1em);
-    overflow: hidden;
-    padding-top: 4px;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-
-  select.md-select {
-    background-position: var(--printer-icon-side-padding) center,
-        calc(100% - var(--md-select-side-padding)) center;
-    background-size: var(--printer-icon-size), var(--md-arrow-width);
-    padding-inline-start: 32px;
-  }
-
-  :host-context([dir=rtl]) .md-select {
-    background-position-x: calc(100% - var(--printer-icon-side-padding)),
-        var(--md-select-side-padding);
-  }
+<style include="print-preview-shared throbber md-select destination-select cr-hidden-style">
 </style>
 <print-preview-settings-section>
   <span slot="title">$i18n{destinationLabel}</span>
@@ -77,16 +40,3 @@
     <div class="destination-status">[[statusText_]]</div>
   </div>
 </print-preview-settings-section>
-<if expr="chromeos">
-  <print-preview-settings-section class="destination-additional-info"
-      id="destinationEulaWrapper"
-      hidden$="[[!destination.eulaUrl]]">
-    <div slot="title"></div>
-    <div slot="controls">
-      <a class="destination-status" href="[[destination.eulaUrl]]"
-          target="_blank">
-       $i18n{printerEulaURL}
-      </a>
-    </div>
-  </print-preview-settings-section>
-</if>

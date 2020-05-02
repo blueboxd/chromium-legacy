@@ -4,8 +4,39 @@
 
 module chromeos.settings.mojom;
 
+import "chrome/browser/ui/webui/settings/chromeos/constants/routes.mojom";
+import "chrome/browser/ui/webui/settings/chromeos/constants/setting.mojom";
 import "chrome/browser/ui/webui/settings/chromeos/search/search_result_icon.mojom";
 import "mojo/public/mojom/base/string16.mojom";
+
+// Describes the type of settings result.
+enum SearchResultType {
+  // Result corresponding to a Section (top-level item in Settings navigation).
+  kSection,
+
+  // Result corresponding to a Subpage (nested full page).
+  kSubpage,
+
+  // Result corresponding to an individual setting.
+  kSetting,
+};
+
+// Default ranking, which is used to break ties when searching for results.
+// Manually set by the settings team to ensure that certain results can be
+// displayed more prominently.
+enum SearchResultDefaultRank {
+  kHigh,
+  kMedium,
+  kLow,
+};
+
+// Identifier for the result; each result describes one section, subpage, or
+// setting.
+union SearchResultIdentifier {
+  Section section;
+  Subpage subpage;
+  Setting setting;
+};
 
 // Search result metadata.
 struct SearchResult {
@@ -34,6 +65,14 @@ struct SearchResult {
   // Example 2 - External storage: ["Settings", "Device", "Storage management",
   //                                "External storage preferences"]
   array<mojo_base.mojom.String16> settings_page_hierarchy;
+
+  // Default ranking, which is used to break ties when searching for results.
+  SearchResultDefaultRank default_rank;
+
+  // The type and identifier for this search result. The value of the |type|
+  // field indicates the union member used by |id|.
+  SearchResultType type;
+  SearchResultIdentifier id;
 };
 
 // Provides settings search results. Implemented in the browser process;

@@ -237,12 +237,6 @@ class CONTENT_EXPORT RenderThreadImpl
 
   blink::AssociatedInterfaceRegistry* GetAssociatedInterfaceRegistry();
 
-  // True if we are running web tests. This currently disables forwarding
-  // various status messages to the console, skips network error pages, and
-  // short circuits size update and focus events.
-  bool web_test_mode() const { return web_test_mode_; }
-  void enable_web_test_mode() { web_test_mode_ = true; }
-
   base::DiscardableMemoryAllocator* GetDiscardableMemoryAllocatorForTest()
       const {
     return discardable_memory_allocator_.get();
@@ -557,9 +551,6 @@ class CONTENT_EXPORT RenderThreadImpl
 
   blink::WebString user_agent_;
   blink::UserAgentMetadata user_agent_metadata_;
-
-  // Used to control web test specific behavior.
-  bool web_test_mode_ = false;
 
   // Sticky once true, indicates that compositing is done without Gpu, so
   // resources given to the compositor or to the viz service should be

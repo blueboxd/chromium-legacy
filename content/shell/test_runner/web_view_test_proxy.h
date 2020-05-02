@@ -59,12 +59,11 @@ class TextInputController;
 // Historically, the overridden functionality has been small enough to not
 // cause too much trouble. If that changes, then this entire testing
 // architecture should be revisited.
-class WebViewTestProxy : public content::RenderViewImpl {
+class WebViewTestProxy : public RenderViewImpl {
  public:
-  template <typename... Args>
-  explicit WebViewTestProxy(Args&&... args)
-      : RenderViewImpl(std::forward<Args>(args)...), blink_test_runner_(this) {}
-  void Initialize(TestInterfaces* interfaces);
+  explicit WebViewTestProxy(CompositorDependencies* compositor_deps,
+                            const mojom::CreateViewParams& params,
+                            TestInterfaces* interfaces);
 
   // WebViewClient implementation.
   blink::WebView* CreateView(blink::WebLocalFrame* creator,
@@ -98,7 +97,7 @@ class WebViewTestProxy : public content::RenderViewImpl {
 
   TestRunner* GetTestRunner();
 
-  BlinkTestRunner blink_test_runner_;
+  BlinkTestRunner blink_test_runner_{this};
 
   TestInterfaces* test_interfaces_ = nullptr;
 

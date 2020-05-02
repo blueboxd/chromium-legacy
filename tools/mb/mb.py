@@ -1591,12 +1591,14 @@ class MetaBuildWrapper(object):
 
     # This should be true if tests with type='windowed_test_launcher' or
     # type='windowed_script' are expected to run using xvfb. For example,
-    # Linux Desktop, X11 CrOS and Ozone CrOS builds. Note that one Ozone build
-    # can be used to run different backends. Currently, tests are executed for
-    # the headless and X11 backends and both can run under Xvfb.
+    # Linux Desktop, X11 CrOS and Ozone CrOS builds on Linux (xvfb is not used
+    # on CrOS HW or VMs). Note that one Ozone build can be used to run
+    # different backends. Currently, tests are executed for the headless and
+    # X11 backends and both can run under Xvfb on Linux.
     # TODO(tonikitoo,msisov,fwang): Find a way to run tests for the Wayland
     # backend.
-    use_xvfb = self.platform == 'linux2' and not is_android and not is_fuchsia
+    use_xvfb = (self.platform == 'linux2' and not is_android and not is_fuchsia
+                and not is_cros_device)
 
     asan = 'is_asan=true' in vals['gn_args']
     msan = 'is_msan=true' in vals['gn_args']

@@ -32,7 +32,7 @@ js_library("printing_browser_proxy") {
 js_library("printing_page") {
   deps = [
     ":printing_browser_proxy",
-    "..:route.m",
+    "..:route",
     "..:router.m",
     "../settings_page:settings_animated_pages.m",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",

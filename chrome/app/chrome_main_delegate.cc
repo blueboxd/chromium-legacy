@@ -607,7 +607,8 @@ void ChromeMainDelegate::PostFieldTrialInitialization() {
   // memory allocations.
   if (is_browser_process) {
     heap_profiler_controller_ = std::make_unique<HeapProfilerController>();
-    heap_profiler_controller_->Start();
+    constexpr auto kCollectionInterval = base::TimeDelta::FromHours(24);
+    heap_profiler_controller_->Start(kCollectionInterval);
 
 #if defined(OS_CHROMEOS)
     chromeos::ConfigureSwap();

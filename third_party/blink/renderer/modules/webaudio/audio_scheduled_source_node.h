@@ -95,6 +95,15 @@ class AudioScheduledSourceHandler
   // don't progress in time so we need to handle this specially.
   virtual void HandleStoppableSourceNode() = 0;
 
+  // Returns true if the onended event has not been sent (is pending).
+  bool IsOnEndedNotificationPending() const {
+    return on_ended_notification_pending_;
+  }
+
+  void SetOnEndedNotificationPending() {
+    on_ended_notification_pending_ = true;
+  }
+
  protected:
   // Get frame information for the current time quantum.
   // We handle the transition into PLAYING_STATE and FINISHED_STATE here,
@@ -159,6 +168,10 @@ class AudioScheduledSourceHandler
   std::atomic<PlaybackState> playback_state_;
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+
+  // Onended event is pending.  Becomes true when the node is started,
+  // and is false when the onended event is fired.
+  bool on_ended_notification_pending_ = false;
 };
 
 class AudioScheduledSourceNode

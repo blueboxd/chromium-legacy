@@ -5,6 +5,7 @@
 import("//chrome/common/features.gni")
 import("//third_party/closure_compiler/compile_js.gni")
 import("//tools/grit/grit_rule.gni")
+import("//tools/polymer/html_to_js.gni")
 import("//tools/polymer/polymer.gni")
 import("//ui/webui/resources/tools/js_modulizer.gni")
 import("//ui/webui/webui_features.gni")
@@ -89,16 +90,9 @@ js_type_check("settings_resources") {
   deps = [
     ":extension_control_browser_proxy",
     ":global_scroll_target_behavior",
-    ":hats_browser_proxy",
     ":lifetime_browser_proxy",
-    ":metrics_browser_proxy",
-    ":open_window_proxy",
-    ":page_visibility",
-    ":plural_string_proxy",
-    ":route",
     ":router",
     ":search_settings",
-    ":settings_routes",
   ]
 }
 
@@ -117,37 +111,9 @@ js_library("global_scroll_target_behavior") {
   ]
 }
 
-js_library("hats_browser_proxy") {
-  deps = [ "//ui/webui/resources/js:cr" ]
-  externs_list = [ "$externs_path/chrome_send.js" ]
-}
-
 js_library("lifetime_browser_proxy") {
   deps = [ "//ui/webui/resources/js:cr" ]
   externs_list = [ "$externs_path/chrome_send.js" ]
-}
-
-js_library("metrics_browser_proxy") {
-  deps = [ "//ui/webui/resources/js:cr" ]
-  externs_list = [ "$externs_path/chrome_send.js" ]
-}
-
-js_library("open_window_proxy") {
-  deps = [ "//ui/webui/resources/js:cr" ]
-}
-
-js_library("plural_string_proxy") {
-  deps = [ "//ui/webui/resources/js:cr" ]
-}
-
-js_library("route") {
-  deps = [
-    ":page_visibility",
-    ":router",
-    ":settings_routes",
-    "//ui/webui/resources/js:cr",
-    "//ui/webui/resources/js:load_time_data",
-  ]
 }
 
 js_library("router") {
@@ -156,17 +122,6 @@ js_library("router") {
     "//ui/webui/resources/js:load_time_data",
   ]
   externs_list = [ "$externs_path/metrics_private.js" ]
-}
-
-js_library("settings_routes") {
-  deps = [ ":router" ]
-}
-
-js_library("page_visibility") {
-  deps = [
-    "//ui/webui/resources/js:cr",
-    "//ui/webui/resources/js:load_time_data",
-  ]
 }
 
 js_library("search_settings") {
@@ -230,21 +185,30 @@ group("closure_compile_module") {
 
 js_type_check("closure_compile_local_module") {
   is_polymer3 = true
+  closure_flags = settings_closure_flags
   deps = [
     ":extension_control_browser_proxy.m",
     ":global_scroll_target_behavior.m",
-    ":hats_browser_proxy.m",
-    ":i18n_setup.m",
+    ":hats_browser_proxy",
+    ":i18n_setup",
     ":lifetime_browser_proxy.m",
-    ":metrics_browser_proxy.m",
-    ":open_window_proxy.m",
-    ":page_visibility.m",
-    ":plural_string_proxy.m",
-    ":route.m",
+    ":metrics_browser_proxy",
+    ":open_window_proxy",
+    ":page_visibility",
+    ":plural_string_proxy",
+    ":route",
     ":router.m",
     ":search_settings.m",
-    ":settings_routes.m",
-    ":site_favicon.m",
+    ":settings",
+    ":settings_routes",
+    ":site_favicon",
+  ]
+}
+
+js_library("settings") {
+  deps = [
+    "search_engines_page:search_engines_browser_proxy.m",
+    "settings_ui:settings_ui",
   ]
 }
 
@@ -255,7 +219,7 @@ js_library("extension_control_browser_proxy.m") {
   externs_list = [ "$externs_path/chrome_send.js" ]
 }
 
-js_library("i18n_setup.m") {
+js_library("i18n_setup") {
   deps = [ "//ui/webui/resources/js:load_time_data.m" ]
 }
 
@@ -268,12 +232,8 @@ js_library("global_scroll_target_behavior.m") {
   extra_deps = [ ":modulize" ]
 }
 
-js_library("hats_browser_proxy.m") {
-  sources = [
-    "$root_gen_dir/chrome/browser/resources/settings/hats_browser_proxy.m.js",
-  ]
+js_library("hats_browser_proxy") {
   deps = [ "//ui/webui/resources/js:cr.m" ]
-  extra_deps = [ ":modulize" ]
 }
 
 js_library("lifetime_browser_proxy.m") {
@@ -282,44 +242,29 @@ js_library("lifetime_browser_proxy.m") {
   extra_deps = [ ":modulize" ]
 }
 
-js_library("metrics_browser_proxy.m") {
-  sources = [ "$root_gen_dir/chrome/browser/resources/settings/metrics_browser_proxy.m.js" ]
+js_library("metrics_browser_proxy") {
   deps = [ "//ui/webui/resources/js:cr.m" ]
-  extra_deps = [ ":modulize" ]
 }
 
-js_library("open_window_proxy.m") {
-  sources = [
-    "$root_gen_dir/chrome/browser/resources/settings/open_window_proxy.m.js",
-  ]
+js_library("open_window_proxy") {
   deps = [ "//ui/webui/resources/js:cr.m" ]
-  extra_deps = [ ":modulize" ]
 }
 
-js_library("page_visibility.m") {
-  sources =
-      [ "$root_gen_dir/chrome/browser/resources/settings/page_visibility.m.js" ]
+js_library("page_visibility") {
   deps = [ "//ui/webui/resources/js:load_time_data.m" ]
-  extra_deps = [ ":modulize" ]
 }
 
-js_library("plural_string_proxy.m") {
-  sources = [
-    "$root_gen_dir/chrome/browser/resources/settings/plural_string_proxy.m.js",
-  ]
+js_library("plural_string_proxy") {
   deps = [ "//ui/webui/resources/js:cr.m" ]
-  extra_deps = [ ":modulize" ]
 }
 
-js_library("route.m") {
-  sources = [ "$root_gen_dir/chrome/browser/resources/settings/route.m.js" ]
+js_library("route") {
   deps = [
-    ":page_visibility.m",
+    ":page_visibility",
     ":router.m",
-    ":settings_routes.m",
+    ":settings_routes",
     "//ui/webui/resources/js:load_time_data.m",
   ]
-  extra_deps = [ ":modulize" ]
 }
 
 js_library("router.m") {
@@ -346,21 +291,15 @@ js_library("search_settings.m") {
   extra_deps = [ ":modulize" ]
 }
 
-js_library("settings_routes.m") {
-  sources =
-      [ "$root_gen_dir/chrome/browser/resources/settings/settings_routes.m.js" ]
+js_library("settings_routes") {
   deps = [ ":router.m" ]
-  extra_deps = [ ":modulize" ]
 }
 
-js_library("site_favicon.m") {
-  sources =
-      [ "$root_gen_dir/chrome/browser/resources/settings/site_favicon.m.js" ]
+js_library("site_favicon") {
   deps = [
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
     "//ui/webui/resources/js:icon.m",
   ]
-  extra_deps = [ ":site_favicon_module" ]
 }
 
 group("polymer3_elements") {
@@ -392,13 +331,12 @@ group("polymer3_elements") {
     "site_settings_page:web_components",
 
     # Local targets
-    ":ensure_lazy_loaded_module",
     ":icons_module",
     ":modulize",
     ":settings_page_css_module",
     ":settings_shared_css_module",
     ":settings_vars_css_module",
-    ":site_favicon_module",
+    ":web_components_local",
   ]
 
   if (!is_chromeos) {
@@ -440,34 +378,17 @@ polymer_modulizer("settings_vars_css") {
   html_type = "custom-style"
 }
 
-polymer_modulizer("site_favicon") {
-  js_file = "site_favicon.js"
-  html_file = "site_favicon.html"
-  html_type = "dom-module"
-  auto_imports =
-      [ "ui/webui/resources/html/icon.html|getFavicon,getFaviconForPageURL" ]
-}
-
-polymer_modulizer("ensure_lazy_loaded") {
-  js_file = "ensure_lazy_loaded.m.js"
-  html_file = "ensure_lazy_loaded.html"
-  html_type = "v3-ready"
+html_to_js("web_components_local") {
+  js_files = [ "site_favicon.js" ]
 }
 
 js_modulizer("modulize") {
   input_files = [
     "extension_control_browser_proxy.js",
     "global_scroll_target_behavior.js",
-    "hats_browser_proxy.js",
     "lifetime_browser_proxy.js",
-    "metrics_browser_proxy.js",
-    "open_window_proxy.js",
-    "plural_string_proxy.js",
-    "page_visibility.js",
-    "route.js",
     "router.js",
     "search_settings.js",
-    "settings_routes.js",
   ]
   namespace_rewrites = settings_namespace_rewrites + [
                          "cr.search_highlight_utils.createEmptySearchBubble|createEmptySearchBubble",

@@ -66,7 +66,7 @@ class ScrollPredictorTest : public testing::Test {
 
   void CoalesceWith(const WebScopedInputEvent& new_event,
                     WebScopedInputEvent& old_event) {
-    Coalesce(*new_event, old_event.get());
+    old_event->Coalesce(*new_event);
   }
 
   void SendGestureScrollBegin() {

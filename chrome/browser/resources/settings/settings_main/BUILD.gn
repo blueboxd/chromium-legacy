@@ -14,8 +14,8 @@ js_type_check("closure_compile_module") {
 
 js_library("settings_main") {
   deps = [
-    "..:page_visibility.m",
-    "..:route.m",
+    "..:page_visibility",
+    "..:route",
     "..:router.m",
     "..:search_settings.m",
     "../about_page:about_page",

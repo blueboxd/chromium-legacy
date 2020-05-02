@@ -247,9 +247,8 @@
            compress="false" type="BINDATA"
            preprocess="true" />
   <include name="IDR_SETTINGS_ENSURE_LAZY_LOADED_JS"
-           file="${root_gen_dir}/chrome/browser/resources/settings/ensure_lazy_loaded.m.js"
+           file="ensure_lazy_loaded.js"
            preprocess="true"
-           use_base_dir="false"
            compress="false" type="BINDATA" />
   <include name="IDR_SETTINGS_EXTENSION_CONTROL_BROWSER_PROXY_M_JS"
            file="${root_gen_dir}/chrome/browser/resources/settings/extension_control_browser_proxy.m.js"
@@ -259,12 +258,11 @@
            file="${root_gen_dir}/chrome/browser/resources/settings/global_scroll_target_behavior.m.js"
            use_base_dir="false"
            compress="false" type="BINDATA" />
-  <include name="IDR_SETTINGS_HATS_BROWSER_PROXY_M_JS"
-           file="${root_gen_dir}/chrome/browser/resources/settings/hats_browser_proxy.m.js"
-           use_base_dir="false"
+  <include name="IDR_SETTINGS_HATS_BROWSER_PROXY_JS"
+           file="hats_browser_proxy.js"
            compress="false" type="BINDATA" />
-  <include name="IDR_SETTINGS_I18N_SETUP_M_JS"
-           file="i18n_setup.m.js"
+  <include name="IDR_SETTINGS_I18N_SETUP_JS"
+           file="i18n_setup.js"
            compress="false" type="BINDATA" />
   <include name="IDR_SETTINGS_ICONS_M_JS"
            file="${root_gen_dir}/chrome/browser/resources/settings/icons.m.js"
@@ -323,9 +321,8 @@
            use_base_dir="false"
            compress="false" type="BINDATA"
            preprocess="true" />
-  <include name="IDR_SETTINGS_METRICS_BROWSER_PROXY_M_JS"
-           file="${root_gen_dir}/chrome/browser/resources/settings/metrics_browser_proxy.m.js"
-           use_base_dir="false"
+  <include name="IDR_SETTINGS_METRICS_BROWSER_PROXY_JS"
+           file="metrics_browser_proxy.js"
            compress="false" type="BINDATA" />
   <include name="IDR_SETTINGS_ON_STARTUP_PAGE_ON_STARTUP_BROWSER_PROXY_JS"
            file="on_startup_page/on_startup_browser_proxy.js"
@@ -349,13 +346,11 @@
   <include name="IDR_SETTINGS_ON_STARTUP_PAGE_STARTUP_URLS_PAGE_BROWSER_PROXY_JS"
            file="on_startup_page/startup_urls_page_browser_proxy.js"
            compress="false" type="BINDATA" />
-  <include name="IDR_SETTINGS_OPEN_WINDOW_PROXY_M_JS"
-           file="${root_gen_dir}/chrome/browser/resources/settings/open_window_proxy.m.js"
-           use_base_dir="false"
+  <include name="IDR_SETTINGS_OPEN_WINDOW_PROXY_JS"
+           file="open_window_proxy.js"
            compress="false" type="BINDATA" />
-  <include name="IDR_SETTINGS_PAGE_VISIBILITY_M_JS"
-           file="${root_gen_dir}/chrome/browser/resources/settings/page_visibility.m.js"
-           use_base_dir="false"
+  <include name="IDR_SETTINGS_PAGE_VISIBILITY_JS"
+           file="page_visibility.js"
            preprocess="true"
            compress="false" type="BINDATA" />
   <if expr="not chromeos">
@@ -417,9 +412,8 @@
            use_base_dir="false"
            preprocess="true"
            compress="false" type="BINDATA" />
-  <include name="IDR_SETTINGS_PLURAL_STRING_PROXY_M_JS"
-           file="${root_gen_dir}/chrome/browser/resources/settings/plural_string_proxy.m.js"
-           use_base_dir="false"
+  <include name="IDR_SETTINGS_PLURAL_STRING_PROXY_JS"
+           file="plural_string_proxy.js"
            compress="false" type="BINDATA" />
   <include name="IDR_SETTINGS_PREFS_PREFS_M_JS"
            file="${root_gen_dir}/chrome/browser/resources/settings/prefs/prefs.m.js"
@@ -542,9 +536,8 @@
            file="reset_page/reset_browser_proxy.js"
            preprocess="true"
            compress="false" type="BINDATA" />
-  <include name="IDR_SETTINGS_ROUTE_M_JS"
-           file="${root_gen_dir}/chrome/browser/resources/settings/route.m.js"
-           use_base_dir="false"
+  <include name="IDR_SETTINGS_ROUTE_JS"
+           file="route.js"
            preprocess="true"
            compress="false" type="BINDATA" />
   <include name="IDR_SETTINGS_ROUTER_M_JS"
@@ -620,9 +613,8 @@
            use_base_dir="false"
            compress="false" type="BINDATA"
            preprocess="true" />
-  <include name="IDR_SETTINGS_SETTINGS_ROUTES_M_JS"
-           file="${root_gen_dir}/chrome/browser/resources/settings/settings_routes.m.js"
-           use_base_dir="false"
+  <include name="IDR_SETTINGS_SETTINGS_ROUTES_JS"
+           file="settings_routes.js"
            compress="false" type="BINDATA" />
   <include name="IDR_SETTINGS_SETTINGS_PAGE_CSS_M_JS"
            file="${root_gen_dir}/chrome/browser/resources/settings/settings_page_css.m.js"
@@ -645,8 +637,8 @@
            file="settings.js"
            compress="false" type="BINDATA"
            preprocess="true" />
-  <include name="IDR_SETTINGS_SITE_FAVICON_M_JS"
-           file="${root_gen_dir}/chrome/browser/resources/settings/site_favicon.m.js"
+  <include name="IDR_SETTINGS_SITE_FAVICON_JS"
+           file="${root_gen_dir}/chrome/browser/resources/settings/site_favicon.js"
            use_base_dir="false"
            compress="false" type="BINDATA" />
   <include name="IDR_SETTINGS_SITE_SETTINGS_ADD_SITE_DIALOG_JS"

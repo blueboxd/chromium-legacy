@@ -14,7 +14,7 @@ import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {WebUIListenerBehavior} from 'chrome://resources/js/web_ui_listener_behavior.m.js';
 import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-import {routes} from '../route.m.js';
+import {routes} from '../route.js';
 import {Route, RouteObserverBehavior, Router} from '../router.m.js';
 import {AllSitesAction, ContentSetting, SiteSettingSource} from '../site_settings/constants.js';
 import {SiteSettingsBehavior} from '../site_settings/site_settings_behavior.js';

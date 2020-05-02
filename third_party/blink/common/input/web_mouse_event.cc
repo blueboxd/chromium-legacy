@@ -38,6 +38,30 @@ std::unique_ptr<WebInputEvent> WebMouseEvent::Clone() const {
   return std::make_unique<WebMouseEvent>(*this);
 }
 
+bool WebMouseEvent::CanCoalesce(const WebInputEvent& event) const {
+  if (!IsMouseEventType(event.GetType()))
+    return false;
+  const WebMouseEvent& mouse_event = static_cast<const WebMouseEvent&>(event);
+  // Since we start supporting the stylus input and they are constructed as
+  // mouse events or touch events, we should check the ID and pointer type when
+  // coalescing mouse events.
+  return GetType() == WebInputEvent::Type::kMouseMove &&
+         GetType() == mouse_event.GetType() &&
+         GetModifiers() == mouse_event.GetModifiers() && id == mouse_event.id &&
+         pointer_type == mouse_event.pointer_type;
+}
+
+void WebMouseEvent::Coalesce(const WebInputEvent& event) {
+  DCHECK(CanCoalesce(event));
+  const WebMouseEvent& mouse_event = static_cast<const WebMouseEvent&>(event);
+  // Accumulate movement deltas.
+  int x = movement_x;
+  int y = movement_y;
+  *this = mouse_event;
+  movement_x += x;
+  movement_y += y;
+}
+
 WebMouseEvent WebMouseEvent::FlattenTransform() const {
   WebMouseEvent result = *this;
   result.FlattenTransformSelf();

@@ -11,7 +11,7 @@ import {focusWithoutInk} from 'chrome://resources/js/cr/ui/focus_without_ink.m.j
 import {I18nBehavior} from 'chrome://resources/js/i18n_behavior.m.js';
 import {WebUIListenerBehavior} from 'chrome://resources/js/web_ui_listener_behavior.m.js';
 import '../icons.m.js';
-import {loadTimeData} from '../i18n_setup.m.js';
+import {loadTimeData} from '../i18n_setup.js';
 import {Route, Router} from '../router.m.js';
 import '../settings_shared_css.m.js';
 import {ContentSetting, ContentSettingsTypes} from '../site_settings/constants.js';

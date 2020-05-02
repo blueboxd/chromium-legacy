@@ -18,6 +18,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind_test_util.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/installable/installable_data.h"
 #include "chrome/browser/installable/installable_metrics.h"
@@ -42,6 +43,7 @@
 #include "chrome/browser/web_applications/web_app_install_manager.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
 #include "chrome/browser/web_applications/web_app_sync_bridge.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/web_application_info.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
@@ -574,6 +576,9 @@ TEST_F(WebAppInstallTaskTest, GetIcons) {
 
   // Generated icons are not considered part of the manifest icons.
   EXPECT_TRUE(web_app_info->icon_infos.empty());
+
+  // Generated icons are not considered part of the manifest shortcut icons.
+  EXPECT_TRUE(web_app_info->shortcut_infos.empty());
 }
 
 TEST_F(WebAppInstallTaskTest, GetIcons_NoIconsProvided) {
@@ -596,6 +601,9 @@ TEST_F(WebAppInstallTaskTest, GetIcons_NoIconsProvided) {
 
   // Generated icons are not considered part of the manifest icons.
   EXPECT_TRUE(web_app_info->icon_infos.empty());
+
+  // Generated icons are not considered part of the manifest shortcut icons.
+  EXPECT_TRUE(web_app_info->shortcut_infos.empty());
 }
 
 TEST_F(WebAppInstallTaskTest, WriteDataToDisk) {
@@ -797,6 +805,48 @@ TEST_F(WebAppInstallTaskTest, InstallWebAppFromManifest_Success) {
           }));
 
   run_loop.Run();
+}
+
+TEST_F(WebAppInstallTaskTest,
+       InstallWebAppFromManifest_CreateShortcutsMenu_Success) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      features::kDesktopPWAsAppIconShortcutsMenu);
+  const GURL url = GURL("https://example.com/path");
+  const AppId app_id = GenerateAppIdFromURL(url);
+
+  auto manifest = std::make_unique<blink::Manifest>();
+  manifest->start_url = url;
+
+  // Add shortcuts to manifest.
+  blink::Manifest::ShortcutItem shortcut_item;
+  shortcut_item.name = base::UTF8ToUTF16("shortcut");
+  shortcut_item.url = GURL("https://example.com/path/page");
+  blink::Manifest::ImageResource icon;
+  icon.src = GURL("https://example.com/icons/shortcut.png");
+  icon.sizes.push_back(gfx::Size(10, 10));
+  shortcut_item.icons.push_back(icon);
+  manifest->shortcuts.push_back(shortcut_item);
+
+  data_retriever_->SetManifest(std::move(manifest), /*is_installable=*/true);
+
+  base::RunLoop run_loop;
+  bool callback_called = false;
+
+  install_task_->InstallWebAppFromManifest(
+      web_contents(), WebappInstallSource::MENU_BROWSER_TAB,
+      base::BindOnce(TestAcceptDialogCallback),
+      base::BindLambdaForTesting(
+          [&](const AppId& installed_app_id, InstallResultCode code) {
+            EXPECT_EQ(InstallResultCode::kSuccessNewInstall, code);
+            EXPECT_EQ(app_id, installed_app_id);
+            callback_called = true;
+            run_loop.Quit();
+          }));
+
+  run_loop.Run();
+
+  EXPECT_TRUE(callback_called);
 }
 
 TEST_F(WebAppInstallTaskTest, InstallWebAppFromInfo_Success) {

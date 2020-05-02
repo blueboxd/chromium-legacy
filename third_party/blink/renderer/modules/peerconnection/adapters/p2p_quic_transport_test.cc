@@ -469,9 +469,6 @@ class ConnectedCryptoClientStream final : public quic::QuicCryptoClientStream {
     // handshake has been confirmed. The easiest way to fake negotiated values
     // is to have the config object process a hello message.
     quic::QuicConfig config;
-    config.SetIdleNetworkTimeout(
-        quic::QuicTime::Delta::FromSeconds(2 * quic::kMaximumIdleTimeoutSecs),
-        quic::QuicTime::Delta::FromSeconds(quic::kMaximumIdleTimeoutSecs));
     config.SetBytesForConnectionIdToSend(quic::PACKET_8BYTE_CONNECTION_ID);
     config.SetMaxBidirectionalStreamsToSend(
         quic::kDefaultMaxStreamsPerConnection / 2);

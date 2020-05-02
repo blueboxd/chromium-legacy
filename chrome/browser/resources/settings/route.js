@@ -2,12 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// #import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
-// #import {Router, Route} from './router.m.js';
-// #import {pageVisibility} from './page_visibility.m.js';
-// #import {SettingsRoutes} from './settings_routes.m.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+import {Router, Route} from './router.m.js';
+import {pageVisibility} from './page_visibility.js';
+import {SettingsRoutes} from './settings_routes.js';
 
-cr.define('settings', function() {
   /**
    * Add all of the child routes that originate from the privacy route,
    * regardless of whether the privacy section under basic or advanced.
@@ -109,8 +108,8 @@ cr.define('settings', function() {
     const r = /** @type {!SettingsRoutes} */ ({});
 
     // Root pages.
-    r.BASIC = new settings.Route('/');
-    r.ABOUT = new settings.Route('/help');
+    r.BASIC = new Route('/');
+    r.ABOUT = new Route('/help');
 
     r.SIGN_OUT = r.BASIC.createChild('/signOut');
     r.SIGN_OUT.isNavigableDialog = true;
@@ -122,7 +121,7 @@ cr.define('settings', function() {
       r.SYNC_ADVANCED = r.SYNC.createChild('/syncSetup/advanced');
     }
 
-    const visibility = settings.pageVisibility || {};
+    const visibility = pageVisibility || {};
 
     // <if expr="not chromeos">
     r.IMPORT_DATA = r.BASIC.createChild('/importData');
@@ -176,7 +175,7 @@ cr.define('settings', function() {
 
     // Advanced Routes
     if (visibility.advancedSettings !== false) {
-      r.ADVANCED = new settings.Route('/advanced');
+      r.ADVANCED = new Route('/advanced');
 
       r.LANGUAGES = r.ADVANCED.createSection('/languages', 'languages');
       // <if expr="not is_macosx">
@@ -226,17 +225,17 @@ cr.define('settings', function() {
   }
 
   /**
-   * @return {!settings.Router} A router with the browser settings routes.
+   * @return {!Router} A router with the browser settings routes.
    */
-  /* #export */ function buildRouter() {
-    return new settings.Router(createBrowserSettingsRoutes());
+  export function buildRouter() {
+    return new Router(createBrowserSettingsRoutes());
   }
 
-  settings.Router.setInstance(buildRouter());
+  Router.setInstance(buildRouter());
 
   window.addEventListener('popstate', function(event) {
     // On pop state, do not push the state onto the window.history again.
-    const routerInstance = settings.Router.getInstance();
+    const routerInstance = Router.getInstance();
     routerInstance.setCurrentRoute(
         routerInstance.getRouteForPath(window.location.pathname) ||
             routerInstance.getRoutes().BASIC,
@@ -245,12 +244,6 @@ cr.define('settings', function() {
 
   // TODO(dpapad): Change to 'get routes() {}' in export when we fix a bug in
   // ChromePass that limits the syntax of what can be returned from cr.define().
-  /* #export */ const routes = /** @type {!SettingsRoutes} */ (
-      settings.Router.getInstance().getRoutes());
+  export const routes = /** @type {!SettingsRoutes} */ (
+      Router.getInstance().getRoutes());
 
-  // #cr_define_end
-  return {
-    buildRouterForTesting: buildRouter,
-    routes: routes,
-  };
-});

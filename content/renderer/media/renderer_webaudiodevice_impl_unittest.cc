@@ -71,7 +71,7 @@ class RendererWebAudioDeviceImplTest
     webaudio_device_.reset(new RendererWebAudioDeviceImplUnderTest(
         media::CHANNEL_LAYOUT_MONO, 1, latencyHint, this,
         base::UnguessableToken()));
-    webaudio_device_->SetMediaTaskRunnerForTesting(
+    webaudio_device_->SetSuspenderTaskRunnerForTesting(
         blink::scheduler::GetSingleThreadTaskRunnerForTesting());
   }
 
@@ -81,7 +81,7 @@ class RendererWebAudioDeviceImplTest
         blink::WebAudioLatencyHint(
             blink::WebAudioLatencyHint::kCategoryInteractive),
         this, base::UnguessableToken()));
-    webaudio_device_->SetMediaTaskRunnerForTesting(
+    webaudio_device_->SetSuspenderTaskRunnerForTesting(
         blink::scheduler::GetSingleThreadTaskRunnerForTesting());
   }
 

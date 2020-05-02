@@ -9,20 +9,10 @@
 
 #include "ash/drag_drop/drag_drop_tracker.h"
 #include "ash/drag_drop/drag_image_view.h"
-#include "ash/public/cpp/ash_features.h"
-#include "ash/screen_util.h"
 #include "ash/shell.h"
-#include "ash/shell_delegate.h"
-#include "ash/wm/splitview/split_view_constants.h"
-#include "ash/wm/splitview/split_view_drag_indicators.h"
-#include "ash/wm/splitview/split_view_utils.h"
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/no_destructor.h"
-#include "base/optional.h"
-#include "base/pickle.h"
 #include "base/run_loop.h"
-#include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "ui/aura/client/capture_client.h"
@@ -32,8 +22,6 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/aura/window_event_dispatcher.h"
-#include "ui/base/clipboard/clipboard_format_type.h"
-#include "ui/base/clipboard/custom_data_helper.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/base/hit_test.h"
@@ -64,16 +52,6 @@ const int kCancelAnimationFrameRate = 60;
 static const float kTouchDragImageScale = 1.2f;
 static const int kTouchDragImageVerticalOffset = -25;
 
-// The following distances are copied from tablet_mode_window_drag_delegate.cc.
-// TODO(https://crbug.com/1069869): share these constants.
-
-// Items dragged to within |kDistanceFromEdgeDp| of the screen will get snapped
-// even if they have not moved by |kMinimumDragToSnapDistanceDp|.
-constexpr float kDistanceFromEdgeDp = 16.f;
-// The minimum distance that an item must be moved before it is snapped. This
-// prevents accidental snaps.
-constexpr float kMinimumDragToSnapDistanceDp = 96.f;
-
 // Adjusts the drag image bounds such that the new bounds are scaled by |scale|
 // and translated by the |drag_image_offset| and and additional
 // |vertical_offset|.
@@ -101,36 +79,6 @@ void DispatchGestureEndToWindow(aura::Window* window) {
     ui::GestureEvent gesture_end(0, 0, 0, ui::EventTimeForNow(), details);
     window->delegate()->OnGestureEvent(&gesture_end);
   }
-}
-
-bool IsChromeTabDrag(const ui::OSExchangeData& drag_data) {
-  if (!features::IsWebUITabStripTabDragIntegrationEnabled())
-    return false;
-
-  base::Pickle pickle;
-  drag_data.GetPickledData(ui::ClipboardFormatType::GetWebCustomDataType(),
-                           &pickle);
-  base::PickleIterator iter(pickle);
-
-  uint32_t entry_count = 0;
-  if (!iter.ReadUInt32(&entry_count))
-    return false;
-
-  for (uint32_t i = 0; i < entry_count; ++i) {
-    base::StringPiece16 type;
-    base::StringPiece16 data;
-    if (!iter.ReadStringPiece16(&type) || !iter.ReadStringPiece16(&data))
-      return false;
-
-    // TODO(https://crbug.com/1069869): share this constant between Ash
-    // and Chrome instead of hardcoding it in both places.
-    static const base::NoDestructor<base::string16> chrome_tab_type(
-        base::ASCIIToUTF16("application/vnd.chromium.tab"));
-    if (type == *chrome_tab_type)
-      return true;
-  }
-
-  return false;
 }
 
 }  // namespace
@@ -247,7 +195,6 @@ int DragDropController::StartDragAndDrop(
   drag_data_ = std::move(data);
   drag_operation_ = operation;
   current_drag_actions_ = 0;
-  is_chrome_tab_drag_ = IsChromeTabDrag(*drag_data_);
 
   start_location_ = screen_location;
   current_location_ = screen_location;
@@ -263,12 +210,10 @@ int DragDropController::StartDragAndDrop(
   for (aura::client::DragDropClientObserver& observer : observers_)
     observer.OnDragStarted();
 
-  if (is_chrome_tab_drag_) {
-    // TODO(crbug.com/1069869): move tab dragging logic to delegate or observer.
-    split_view_drag_indicators_ = std::make_unique<SplitViewDragIndicators>(
-        Shell::GetPrimaryRootWindow());
-    split_view_drag_indicators_->SetDraggedWindow(
-        drag_image_->GetWidget()->GetNativeView());
+  if (TabDragDropDelegate::IsChromeTabDrag(*drag_data_)) {
+    DCHECK(!tab_drag_drop_delegate_);
+    tab_drag_drop_delegate_.emplace(root_window, drag_source_window_,
+                                    start_location_);
   }
 
   if (should_block_during_drag_drop_) {
@@ -553,36 +498,13 @@ void DragDropController::DragUpdate(aura::Window* target,
     drag_image_->SetTouchDragOperation(op);
   }
 
-  if (is_chrome_tab_drag_) {
-    aura::Window* const drag_image_window =
-        drag_image_->GetWidget()->GetNativeView();
-    const gfx::Rect area =
-        screen_util::GetDisplayWorkAreaBoundsInScreenForActiveDeskContainer(
-            drag_image_window);
+  if (tab_drag_drop_delegate_) {
+    // TabDragDropDelegate assumes the root window doesn't change. Tab drags are
+    // only seen in tablet mode which precludes dragging between displays.
+    // DCHECK just to make sure.
+    DCHECK_EQ(target->GetRootWindow(), tab_drag_drop_delegate_->root_window());
 
-    // These should only be seen in tablet mode which precludes dragging between
-    // displays.
-    DCHECK_EQ(drag_image_window->GetRootWindow(), target->GetRootWindow());
-
-    SplitViewController::SnapPosition snap_position =
-        ::ash::GetSnapPositionForLocation(
-            Shell::GetPrimaryRootWindow(), root_location_in_screen,
-            start_location_,
-            /*snap_distance_from_edge=*/kDistanceFromEdgeDp,
-            /*minimum_drag_distance=*/kMinimumDragToSnapDistanceDp,
-            /*horizontal_edge_inset=*/area.width() *
-                    kHighlightScreenPrimaryAxisRatio +
-                kHighlightScreenEdgePaddingDp,
-            /*vertical_edge_inset=*/area.height() *
-                    kHighlightScreenPrimaryAxisRatio +
-                kHighlightScreenEdgePaddingDp);
-    split_view_drag_indicators_->SetWindowDraggingState(
-        SplitViewDragIndicators::ComputeWindowDraggingState(
-            true, SplitViewDragIndicators::WindowDraggingState::kFromTop,
-            snap_position));
-
-    // TODO(https://crbug.com/1069869): scale source window up/down similar to
-    // |TabletModeBrowserWindowDragDelegate::UpdateSourceWindow()|.
+    tab_drag_drop_delegate_->DragUpdate(root_location_in_screen);
   }
 }
 
@@ -607,11 +529,10 @@ void DragDropController::Drop(aura::Window* target,
 
     ui::OSExchangeData copied_data(drag_data_->provider().Clone());
     drag_operation_ = delegate->OnPerformDrop(e, std::move(drag_data_));
-    if (drag_operation_ == 0 && is_chrome_tab_drag_) {
-      Shell::Get()->shell_delegate()->CreateBrowserForTabDrop(
-          drag_source_window_, copied_data);
-      // TODO(https://crbug.com/1069869): snap the created browser if
-      // necessary.
+    if (drag_operation_ == 0 && tab_drag_drop_delegate_) {
+      gfx::Point location_in_screen = event.root_location();
+      ::wm::ConvertPointToScreen(target->GetRootWindow(), &location_in_screen);
+      tab_drag_drop_delegate_->Drop(location_in_screen, copied_data);
       StartCanceledAnimation(kCancelAnimationDuration);
     } else if (drag_operation_ == 0) {
       StartCanceledAnimation(kCancelAnimationDuration);
@@ -722,12 +643,7 @@ void DragDropController::Cleanup() {
   drag_window_ = NULL;
   drag_data_.reset();
 
-  if (is_chrome_tab_drag_) {
-    split_view_drag_indicators_->SetWindowDraggingState(
-        SplitViewDragIndicators::WindowDraggingState::kNoDrag);
-    split_view_drag_indicators_.reset();
-    is_chrome_tab_drag_ = false;
-  }
+  tab_drag_drop_delegate_.reset();
 
   // Cleanup can be called again while deleting DragDropTracker, so delete
   // the pointer with a local variable to avoid double free.

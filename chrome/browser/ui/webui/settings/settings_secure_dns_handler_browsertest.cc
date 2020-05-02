@@ -28,6 +28,7 @@
 
 using net::DohProviderEntry;
 using testing::_;
+using testing::IsEmpty;
 using testing::Return;
 
 namespace settings {
@@ -35,7 +36,7 @@ namespace settings {
 namespace {
 
 constexpr char kGetSecureDnsResolverList[] = "getSecureDnsResolverList";
-constexpr char kValidateCustomDnsEntry[] = "validateCustomDnsEntry";
+constexpr char kParseCustomDnsEntry[] = "parseCustomDnsEntry";
 constexpr char kProbeCustomDnsTemplate[] = "probeCustomDnsTemplate";
 constexpr char kRecordUserDropdownInteraction[] =
     "recordUserDropdownInteraction";
@@ -479,15 +480,16 @@ IN_PROC_BROWSER_TEST_F(SecureDnsHandlerTest, TemplateValid) {
   args.AppendString("https://example.template/dns-query");
 
   base::HistogramTester histograms;
-  web_ui_.HandleReceivedMessage(kValidateCustomDnsEntry, &args);
+  web_ui_.HandleReceivedMessage(kParseCustomDnsEntry, &args);
   const content::TestWebUI::CallData& call_data = *web_ui_.call_data().back();
   EXPECT_EQ("cr.webUIResponse", call_data.function_name());
   EXPECT_EQ(kWebUiFunctionName, call_data.arg1()->GetString());
   // The request should be successful.
   ASSERT_TRUE(call_data.arg2()->GetBool());
   // The template should be valid.
-  ASSERT_EQ("https://example.template/dns-query",
-            call_data.arg3()->GetString());
+  auto result = call_data.arg3()->GetList();
+  ASSERT_EQ(1u, result.size());
+  EXPECT_EQ(result[0].GetString(), "https://example.template/dns-query");
   histograms.ExpectBucketCount("Net.DNS.UI.ValidationAttemptSuccess", false, 0);
   histograms.ExpectBucketCount("Net.DNS.UI.ValidationAttemptSuccess", true, 1);
 }
@@ -498,14 +500,14 @@ IN_PROC_BROWSER_TEST_F(SecureDnsHandlerTest, TemplateInvalid) {
   args.AppendString("invalid_template");
 
   base::HistogramTester histograms;
-  web_ui_.HandleReceivedMessage(kValidateCustomDnsEntry, &args);
+  web_ui_.HandleReceivedMessage(kParseCustomDnsEntry, &args);
   const content::TestWebUI::CallData& call_data = *web_ui_.call_data().back();
   EXPECT_EQ("cr.webUIResponse", call_data.function_name());
   EXPECT_EQ(kWebUiFunctionName, call_data.arg1()->GetString());
   // The request should be successful.
   ASSERT_TRUE(call_data.arg2()->GetBool());
   // The template should be invalid.
-  ASSERT_EQ(std::string(), call_data.arg3()->GetString());
+  EXPECT_THAT(call_data.arg3()->GetList(), IsEmpty());
   histograms.ExpectBucketCount("Net.DNS.UI.ValidationAttemptSuccess", false, 1);
   histograms.ExpectBucketCount("Net.DNS.UI.ValidationAttemptSuccess", true, 0);
 }
@@ -516,23 +518,25 @@ IN_PROC_BROWSER_TEST_F(SecureDnsHandlerTest, MultipleTemplates) {
   args_valid.AppendString(kWebUiFunctionName);
   args_valid.AppendString(
       "https://example1.template/dns    https://example2.template/dns-query");
-  web_ui_.HandleReceivedMessage(kValidateCustomDnsEntry, &args_valid);
+  web_ui_.HandleReceivedMessage(kParseCustomDnsEntry, &args_valid);
   const content::TestWebUI::CallData& call_data_valid =
       *web_ui_.call_data().back();
   EXPECT_EQ("cr.webUIResponse", call_data_valid.function_name());
   EXPECT_EQ(kWebUiFunctionName, call_data_valid.arg1()->GetString());
   // The request should be successful.
   ASSERT_TRUE(call_data_valid.arg2()->GetBool());
-  // Both templates are valid, so validate returns the first.
-  ASSERT_EQ("https://example1.template/dns",
-            call_data_valid.arg3()->GetString());
+  // Both templates should be valid.
+  auto result = call_data_valid.arg3()->GetList();
+  ASSERT_EQ(2u, result.size());
+  EXPECT_EQ(result[0].GetString(), "https://example1.template/dns");
+  EXPECT_EQ(result[1].GetString(), "https://example2.template/dns-query");
   histograms.ExpectBucketCount("Net.DNS.UI.ValidationAttemptSuccess", false, 0);
   histograms.ExpectBucketCount("Net.DNS.UI.ValidationAttemptSuccess", true, 1);
 
   base::ListValue args_invalid;
   args_invalid.AppendString(kWebUiFunctionName);
   args_invalid.AppendString("invalid_template https://example.template/dns");
-  web_ui_.HandleReceivedMessage(kValidateCustomDnsEntry, &args_invalid);
+  web_ui_.HandleReceivedMessage(kParseCustomDnsEntry, &args_invalid);
   const content::TestWebUI::CallData& call_data_invalid =
       *web_ui_.call_data().back();
   EXPECT_EQ("cr.webUIResponse", call_data_invalid.function_name());
@@ -540,7 +544,7 @@ IN_PROC_BROWSER_TEST_F(SecureDnsHandlerTest, MultipleTemplates) {
   // The request should be successful.
   ASSERT_TRUE(call_data_invalid.arg2()->GetBool());
   // The entry should be invalid.
-  ASSERT_EQ(std::string(), call_data_invalid.arg3()->GetString());
+  EXPECT_THAT(call_data_invalid.arg3()->GetList(), IsEmpty());
   histograms.ExpectBucketCount("Net.DNS.UI.ValidationAttemptSuccess", false, 1);
   histograms.ExpectBucketCount("Net.DNS.UI.ValidationAttemptSuccess", true, 1);
 }

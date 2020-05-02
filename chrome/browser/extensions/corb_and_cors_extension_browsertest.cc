@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/json/json_reader.h"
+#include "base/run_loop.h"
 #include "base/strings/string16.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -154,13 +155,17 @@ class ServiceWorkerConsoleObserver
   using Message = content::ConsoleMessage;
   const std::vector<Message>& messages() const { return messages_; }
 
+  void WaitForMessages() { run_loop_.Run(); }
+
  private:
   // ServiceWorkerContextObserver:
   void OnReportConsoleMessage(int64_t version_id,
                               const Message& message) override {
     messages_.push_back(message);
+    run_loop_.Quit();
   }
 
+  base::RunLoop run_loop_;
   std::vector<Message> messages_;
   ScopedObserver<content::ServiceWorkerContext,
                  content::ServiceWorkerContextObserver>
@@ -1688,6 +1693,7 @@ IN_PROC_BROWSER_TEST_P(CorbAndCorsExtensionBrowserTest,
 
     // Verify that CORS blocked the response.
     EXPECT_EQ(kCorsErrorWhenFetching, fetch_result);
+    console_observer.WaitForMessages();
     VerifyFetchWasBlockedByCors(console_observer);
 
     // CORB should be disabled for extension origins.

@@ -34,9 +34,9 @@
 #include "ui/events/blink/blink_event_util.h"
 #include "ui/events/blink/compositor_thread_event_queue.h"
 #include "ui/events/blink/did_overscroll_params.h"
+#include "ui/events/blink/elastic_overscroll_controller.h"
 #include "ui/events/blink/event_with_callback.h"
 #include "ui/events/blink/input_handler_proxy_client.h"
-#include "ui/events/blink/input_scroll_elasticity_controller.h"
 #include "ui/events/blink/momentum_scroll_jank_tracker.h"
 #include "ui/events/blink/scroll_predictor.h"
 #include "ui/events/blink/web_input_event_traits.h"
@@ -194,8 +194,8 @@ InputHandlerProxy::InputHandlerProxy(cc::InputHandler* input_handler,
   cc::ScrollElasticityHelper* scroll_elasticity_helper =
       input_handler_->CreateScrollElasticityHelper();
   if (scroll_elasticity_helper) {
-    scroll_elasticity_controller_.reset(
-        new InputScrollElasticityController(scroll_elasticity_helper));
+    elastic_overscroll_controller_ =
+        ElasticOverscrollController::Create(scroll_elasticity_helper);
   }
   compositor_event_queue_ = std::make_unique<CompositorThreadEventQueue>();
   scroll_predictor_ =
@@ -225,8 +225,8 @@ InputHandlerProxy::InputHandlerProxy(cc::InputHandler* input_handler,
 InputHandlerProxy::~InputHandlerProxy() {}
 
 void InputHandlerProxy::WillShutdown() {
-  scroll_elasticity_controller_.reset();
-  input_handler_ = NULL;
+  elastic_overscroll_controller_.reset();
+  input_handler_ = nullptr;
   client_->WillShutdown();
 }
 
@@ -925,7 +925,7 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleGestureScrollBegin(
       result = DROP_EVENT;
       break;
   }
-  if (scroll_elasticity_controller_ && result != DID_NOT_HANDLE)
+  if (elastic_overscroll_controller_ && result != DID_NOT_HANDLE)
     HandleScrollElasticityOverscroll(gesture_event,
                                      cc::InputHandlerScrollResult());
 
@@ -988,7 +988,7 @@ InputHandlerProxy::HandleGestureScrollUpdate(
 
   HandleOverscroll(gesture_event.PositionInWidget(), scroll_result);
 
-  if (scroll_elasticity_controller_)
+  if (elastic_overscroll_controller_)
     HandleScrollElasticityOverscroll(gesture_event, scroll_result);
 
   return scroll_result.did_scroll ? DID_HANDLE : DROP_EVENT;
@@ -1016,7 +1016,7 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleGestureScrollEnd(
     return DROP_EVENT;
 
   InputHandlerScrollEnd();
-  if (scroll_elasticity_controller_)
+  if (elastic_overscroll_controller_)
     HandleScrollElasticityOverscroll(gesture_event,
                                      cc::InputHandlerScrollResult());
 
@@ -1229,15 +1229,15 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleTouchEnd(
 }
 
 void InputHandlerProxy::Animate(base::TimeTicks time) {
-  if (scroll_elasticity_controller_)
-    scroll_elasticity_controller_->Animate(time);
+  if (elastic_overscroll_controller_)
+    elastic_overscroll_controller_->Animate(time);
 
   snap_fling_controller_->Animate(time);
 }
 
 void InputHandlerProxy::ReconcileElasticOverscrollAndRootScroll() {
-  if (scroll_elasticity_controller_)
-    scroll_elasticity_controller_->ReconcileStretchAndScroll();
+  if (elastic_overscroll_controller_)
+    elastic_overscroll_controller_->ReconcileStretchAndScroll();
 }
 
 void InputHandlerProxy::UpdateRootLayerStateForSynchronousInputHandler(
@@ -1352,9 +1352,9 @@ void InputHandlerProxy::RequestAnimation() {
 void InputHandlerProxy::HandleScrollElasticityOverscroll(
     const WebGestureEvent& gesture_event,
     const cc::InputHandlerScrollResult& scroll_result) {
-  DCHECK(scroll_elasticity_controller_);
-  scroll_elasticity_controller_->ObserveGestureEventAndResult(gesture_event,
-                                                              scroll_result);
+  DCHECK(elastic_overscroll_controller_);
+  elastic_overscroll_controller_->ObserveGestureEventAndResult(gesture_event,
+                                                               scroll_result);
 }
 
 void InputHandlerProxy::SetTickClockForTesting(

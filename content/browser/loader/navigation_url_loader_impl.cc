@@ -70,6 +70,7 @@
 #include "content/public/common/url_constants.h"
 #include "content/public/common/url_utils.h"
 #include "content/public/common/webplugininfo.h"
+#include "media/media_buildflags.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/load_flags.h"
@@ -90,6 +91,7 @@
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/public/cpp/wrapper_shared_url_loader_factory.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/loader/mime_sniffing_throttle.h"
 #include "third_party/blink/public/common/loader/throttling_url_loader.h"
 #include "third_party/blink/public/common/mime_util/mime_util.h"
@@ -317,6 +319,21 @@ void UnknownSchemeCallback(
           handled_externally ? net::ERR_ABORTED : net::ERR_UNKNOWN_URL_SCHEME));
 }
 
+const char* FrameAcceptHeaderValue() {
+#if BUILDFLAG(ENABLE_AV1_DECODER)
+  static const char kFrameAcceptHeaderValueWithAvif[] =
+      "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,"
+      "image/webp,image/apng,*/*;q=0.8";
+  static const char* accept_value =
+      base::FeatureList::IsEnabled(blink::features::kAVIF)
+          ? kFrameAcceptHeaderValueWithAvif
+          : network::kFrameAcceptHeaderValue;
+  return accept_value;
+#else
+  return network::kFrameAcceptHeaderValue;
+#endif
+}
+
 }  // namespace
 
 // Kept around during the lifetime of the navigation request, and is
@@ -436,7 +453,7 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
               std::move(factory));
     }
 
-    std::string accept_value = network::kFrameAcceptHeaderValue;
+    std::string accept_value = FrameAcceptHeaderValue();
     if (signed_exchange_utils::IsSignedExchangeHandlingEnabled(
             browser_context_)) {
       accept_value.append(kAcceptHeaderSignedExchangeSuffix);
@@ -826,9 +843,9 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
     // Don't send Accept: application/signed-exchange for fallback redirects.
     if (redirect_info_.is_signed_exchange_fallback_redirect) {
       url_loader_modified_headers_.SetHeader(net::HttpRequestHeaders::kAccept,
-                                             network::kFrameAcceptHeaderValue);
+                                             FrameAcceptHeaderValue());
       resource_request_->headers.SetHeader(net::HttpRequestHeaders::kAccept,
-                                           network::kFrameAcceptHeaderValue);
+                                           FrameAcceptHeaderValue());
     }
 
     Restart();

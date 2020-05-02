@@ -930,8 +930,6 @@ bool WebContentsImpl::OnMessageReceived(RenderFrameHostImpl* render_frame_host,
   IPC_BEGIN_MESSAGE_MAP_WITH_PARAM(WebContentsImpl, message, render_frame_host)
     IPC_MESSAGE_HANDLER(FrameHostMsg_DomOperationResponse,
                         OnDomOperationResponse)
-    IPC_MESSAGE_HANDLER(FrameHostMsg_DidLoadResourceFromMemoryCache,
-                        OnDidLoadResourceFromMemoryCache)
     IPC_MESSAGE_HANDLER(FrameHostMsg_DidRunInsecureContent,
                         OnDidRunInsecureContent)
     IPC_MESSAGE_HANDLER(FrameHostMsg_DidDisplayContentWithCertificateErrors,
@@ -4752,7 +4750,7 @@ void WebContentsImpl::OnThemeColorChanged(RenderViewHostImpl* source) {
   }
 }
 
-void WebContentsImpl::OnDidLoadResourceFromMemoryCache(
+void WebContentsImpl::DidLoadResourceFromMemoryCache(
     RenderFrameHostImpl* source,
     const GURL& url,
     const std::string& http_method,

@@ -4,7 +4,7 @@
 
 // #import {assert, assertNotReached} from 'chrome://resources/js/assert.m.js';
 // #import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
-// #import './i18n_setup.m.js';
+// #import './i18n_setup.js';
 
 cr.define('settings', function() {
   /**

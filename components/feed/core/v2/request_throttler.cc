@@ -7,18 +7,18 @@
 #include <vector>
 
 #include "base/time/clock.h"
+#include "components/feed/core/v2/config.h"
 #include "components/feed/core/v2/prefs.h"
 #include "components/prefs/pref_service.h"
 
 namespace feed {
 namespace {
 int GetMaxRequestsPerDay(NetworkRequestType request_type) {
-  // TODO(harringtond): Decide what launchable values are.
   switch (request_type) {
     case NetworkRequestType::kFeedQuery:
-      return 20;
+      return GetFeedConfig().max_feed_query_requests_per_day;
     case NetworkRequestType::kUploadActions:
-      return 20;
+      return GetFeedConfig().max_action_upload_requests_per_day;
   }
 }
 

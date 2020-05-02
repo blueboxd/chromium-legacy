@@ -327,6 +327,18 @@ BrowserAccessibility* BrowserAccessibilityManager::GetParentNodeFromParentTree()
   return parent ? parent_manager->GetFromAXNode(parent) : nullptr;
 }
 
+BrowserAccessibility* BrowserAccessibilityManager::GetPopupRoot() const {
+  DCHECK(popup_root_ids_.size() <= 1);
+  if (popup_root_ids_.size() == 1) {
+    BrowserAccessibility* node = GetFromID(*popup_root_ids_.begin());
+    if (node) {
+      DCHECK(node->GetData().role == ax::mojom::Role::kRootWebArea);
+      return node;
+    }
+  }
+  return nullptr;
+}
+
 const ui::AXTreeData& BrowserAccessibilityManager::GetTreeData() const {
   return ax_tree()->data();
 }
@@ -1270,6 +1282,11 @@ void BrowserAccessibilityManager::OnNodeCreated(ui::AXTree* tree,
   BrowserAccessibility* wrapper = BrowserAccessibility::Create();
   id_wrapper_map_[node->id()] = wrapper;
   wrapper->Init(this, node);
+
+  if (tree->root() != node &&
+      node->data().role == ax::mojom::Role::kRootWebArea) {
+    popup_root_ids_.insert(node->id());
+  }
 }
 
 void BrowserAccessibilityManager::OnNodeDeleted(ui::AXTree* tree,
@@ -1279,6 +1296,9 @@ void BrowserAccessibilityManager::OnNodeDeleted(ui::AXTree* tree,
     id_wrapper_map_.erase(node_id);
     delete wrapper;
   }
+
+  if (popup_root_ids_.find(node_id) != popup_root_ids_.end())
+    popup_root_ids_.erase(node_id);
 }
 
 void BrowserAccessibilityManager::OnNodeReparented(ui::AXTree* tree,
@@ -1290,6 +1310,20 @@ void BrowserAccessibilityManager::OnNodeReparented(ui::AXTree* tree,
     id_wrapper_map_[node->id()] = wrapper;
   }
   wrapper->Init(this, node);
+}
+
+void BrowserAccessibilityManager::OnRoleChanged(ui::AXTree* tree,
+                                                ui::AXNode* node,
+                                                ax::mojom::Role old_role,
+                                                ax::mojom::Role new_role) {
+  DCHECK(node);
+  if (tree->root() == node)
+    return;
+  if (new_role == ax::mojom::Role::kRootWebArea) {
+    popup_root_ids_.insert(node->id());
+  } else if (old_role == ax::mojom::Role::kRootWebArea) {
+    popup_root_ids_.erase(node->id());
+  }
 }
 
 void BrowserAccessibilityManager::OnAtomicUpdateFinished(

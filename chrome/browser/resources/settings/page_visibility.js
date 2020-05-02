@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// #import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 
 /**
  * Specifies page visibility based on incognito status and Chrome OS guest mode.
@@ -21,7 +21,7 @@
  *   reset: (boolean|undefined),
  * }}
  */
-/* #export */ let PageVisibility;
+export let PageVisibility;
 
 /**
  * @typedef {{
@@ -31,7 +31,7 @@
  *   setTheme: boolean,
  * }}
  */
-/* #export */ let AppearancePageVisibility;
+export let AppearancePageVisibility;
 
 /**
  * @typedef {{
@@ -39,14 +39,13 @@
  *   searchPrediction: boolean,
  * }}
  */
-/* #export */ let PrivacyPageVisibility;
+export let PrivacyPageVisibility;
 
-cr.define('settings', function() {
   /**
    * Dictionary defining page visibility.
    * @type {!PageVisibility}
    */
-  /* #export */ let pageVisibility;
+  export let pageVisibility;
 
   if (loadTimeData.getBoolean('isGuest')) {
     // "if not chromeos" and "if chromeos" in two completely separate blocks
@@ -122,13 +121,7 @@ cr.define('settings', function() {
     // </if>
   }
 
-  /* #export */ function setPageVisibilityForTesting(testVisibility) {
-    settings.pageVisibility = testVisibility;
+  export function setPageVisibilityForTesting(testVisibility) {
+    pageVisibility = testVisibility;
   }
 
-  // #cr_define_end
-  return {
-    pageVisibility: pageVisibility,
-    setPageVisibilityForTesting: setPageVisibilityForTesting,
-  };
-});

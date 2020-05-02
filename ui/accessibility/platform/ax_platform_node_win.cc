@@ -4165,15 +4165,10 @@ IFACEMETHODIMP AXPlatformNodeWin::GetPropertyValue(PROPERTYID property_id,
     }
 
     case UIA_LabeledByPropertyId:
-      for (int32_t id : data.GetIntListAttribute(
-               ax::mojom::IntListAttribute::kLabelledbyIds)) {
-        auto* node_win = GetDelegate()->GetFromNodeID(id);
-        if (IsValidUiaRelationTarget(node_win)) {
-          result->vt = VT_UNKNOWN;
-          result->punkVal = node_win->GetNativeViewAccessible();
-          result->punkVal->AddRef();
-          break;
-        }
+      if (AXPlatformNodeWin* node = ComputeUIALabeledBy()) {
+        result->vt = VT_UNKNOWN;
+        result->punkVal = node->GetNativeViewAccessible();
+        result->punkVal->AddRef();
       }
       break;
 
@@ -6718,6 +6713,68 @@ LONG AXPlatformNodeWin::ComputeUIAControlType() {  // NOLINT(runtime/int)
 
   NOTREACHED();
   return UIA_DocumentControlTypeId;
+}
+
+AXPlatformNodeWin* AXPlatformNodeWin::ComputeUIALabeledBy() {
+  // Not all control types expect a value for this property.
+  if (!CanHaveUIALabeledBy())
+    return nullptr;
+
+  // This property only accepts static text elements to be returned. Find the
+  // first static text used to label this node.
+  for (int32_t id : GetData().GetIntListAttribute(
+           ax::mojom::IntListAttribute::kLabelledbyIds)) {
+    auto* node_win =
+        static_cast<AXPlatformNodeWin*>(GetDelegate()->GetFromNodeID(id));
+    if (!node_win)
+      continue;
+
+    // If this node is a static text, then simply return the node itself.
+    if (IsValidUiaRelationTarget(node_win) &&
+        node_win->GetData().role == ax::mojom::Role::kStaticText) {
+      return node_win;
+    }
+
+    // Otherwise, find the first static text node in its descendants.
+    for (auto iter = node_win->GetDelegate()->ChildrenBegin();
+         *iter != *node_win->GetDelegate()->ChildrenEnd(); ++(*iter)) {
+      AXPlatformNodeWin* child = static_cast<AXPlatformNodeWin*>(
+          AXPlatformNode::FromNativeViewAccessible(
+              iter->GetNativeViewAccessible()));
+      if (IsValidUiaRelationTarget(child) &&
+          child->GetData().role == ax::mojom::Role::kStaticText) {
+        return child;
+      }
+    }
+  }
+
+  return nullptr;
+}
+
+bool AXPlatformNodeWin::CanHaveUIALabeledBy() {
+  // Not all control types expect a value for this property. See
+  // https://docs.microsoft.com/en-us/windows/win32/winauto/uiauto-supportinguiautocontroltypes
+  // for a complete list of control types. Each one of them has specific
+  // expectations regarding the UIA_LabeledByPropertyId.
+  switch (ComputeUIAControlType()) {
+    case UIA_ButtonControlTypeId:
+    case UIA_CheckBoxControlTypeId:
+    case UIA_DataItemControlTypeId:
+    case UIA_MenuControlTypeId:
+    case UIA_MenuBarControlTypeId:
+    case UIA_RadioButtonControlTypeId:
+    case UIA_ScrollBarControlTypeId:
+    case UIA_SeparatorControlTypeId:
+    case UIA_StatusBarControlTypeId:
+    case UIA_TabItemControlTypeId:
+    case UIA_TextControlTypeId:
+    case UIA_ToolBarControlTypeId:
+    case UIA_ToolTipControlTypeId:
+    case UIA_TreeItemControlTypeId:
+      return false;
+    default:
+      return true;
+  }
 }
 
 bool AXPlatformNodeWin::IsNameExposed() const {

@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_WEB_APPLICATIONS_COMPONENTS_APP_SHORTCUT_MANAGER_H_
 
 #include <memory>
+#include <vector>
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
@@ -16,6 +17,8 @@
 #include "chrome/browser/web_applications/components/app_registrar_observer.h"
 #include "chrome/browser/web_applications/components/web_app_id.h"
 #include "chrome/browser/web_applications/components/web_app_shortcut.h"
+#include "chrome/browser/web_applications/components/web_app_shortcuts_menu.h"
+#include "chrome/common/web_application_info.h"
 
 class Profile;
 
@@ -59,6 +62,14 @@ class AppShortcutManager : public AppRegistrarObserver {
   virtual void CreateShortcuts(const AppId& app_id,
                                bool add_to_desktop,
                                CreateShortcutsCallback callback);
+
+  // Registers a shortcuts menu for the web app's icon with the OS.
+  void RegisterShortcutsMenuWithOs(
+      const std::vector<WebApplicationShortcutInfo>& shortcuts,
+      const AppId& app_id);
+
+  // TODO(https://crbug.com/1069306): Implement UnregisterShortcutsMenuWithOS()
+  // to support local offline installs and uninstalls.
 
   // The result of a call to GetShortcutInfo.
   using GetShortcutInfoCallback =

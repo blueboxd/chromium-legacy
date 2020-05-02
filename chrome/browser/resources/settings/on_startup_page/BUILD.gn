@@ -33,7 +33,7 @@ js_library("on_startup_page") {
 js_library("startup_url_dialog") {
   deps = [
     ":startup_urls_page_browser_proxy",
-    "..:i18n_setup.m",
+    "..:i18n_setup",
     "//ui/webui/resources/cr_elements/cr_dialog:cr_dialog.m",
   ]
 }

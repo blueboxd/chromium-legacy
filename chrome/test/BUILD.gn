@@ -228,7 +228,6 @@ static_library("test_support") {
     "//third_party/leveldatabase",
     "//third_party/zlib",
     "//ui/base",
-    "//ui/base:pixel_diff_test_support",
     "//ui/events:events_base",
     "//ui/gfx:test_support",
     "//ui/gl",
@@ -257,8 +256,6 @@ static_library("test_support") {
       "base/dialog_test_browser_window.h",
       "base/test_browser_window.cc",
       "base/test_browser_window.h",
-      "pixel/browser_skia_gold_pixel_diff.cc",
-      "pixel/browser_skia_gold_pixel_diff.h",
     ]
   }
 
@@ -322,6 +319,14 @@ static_library("test_support") {
       "//ui/aura",
       "//ui/aura:test_support",
       "//ui/base/ime/init",
+    ]
+  }
+
+  if (is_win || is_mac || (is_linux && !is_chromeos)) {
+    public_deps += [ "//ui/base:pixel_diff_test_support" ]
+    sources += [
+      "pixel/browser_skia_gold_pixel_diff.cc",
+      "pixel/browser_skia_gold_pixel_diff.h",
     ]
   }
 
@@ -3577,7 +3582,6 @@ test("unit_tests") {
       "../browser/upgrade_detector/mock_build_state_observer.h",
       "../browser/webauthn/authenticator_request_scheduler_unittest.cc",
       "../browser/webauthn/chrome_authenticator_request_delegate_unittest.cc",
-      "../test/pixel/browser_skia_gold_pixel_diff_unittest.cc",
     ]
   }
   if (is_chromeos) {
@@ -3587,6 +3591,10 @@ test("unit_tests") {
       "../browser/ui/webui/chromeos/edu_account_login_handler_unittest.cc",
       "../renderer/chromeos_delayed_callback_group_unittest.cc",
     ]
+  }
+
+  if (is_win || is_mac || (is_linux && !is_chromeos)) {
+    sources += [ "../test/pixel/browser_skia_gold_pixel_diff_unittest.cc" ]
   }
 
   if (enable_webui_tab_strip) {

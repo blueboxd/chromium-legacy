@@ -40,17 +40,27 @@
       <include name="IDR_PRINT_PREVIEW_UI_SETTINGS_SELECT_JS"
                file="${root_gen_dir}/chrome/browser/resources/print_preview/ui/settings_select.js"
                use_base_dir="false" compress="false" type="BINDATA"/>
-      <include name="IDR_PRINT_PREVIEW_UI_DESTINATION_SELECT_JS"
-               file="${root_gen_dir}/chrome/browser/resources/print_preview/ui/destination_select.js"
-               use_base_dir="false" compress="false" type="BINDATA" preprocess="true"/>
+      <if expr="not chromeos">
+        <include name="IDR_PRINT_PREVIEW_UI_DESTINATION_SELECT_JS"
+                 file="${root_gen_dir}/chrome/browser/resources/print_preview/ui/destination_select.js"
+                 use_base_dir="false" compress="false" type="BINDATA"/>
+      </if>
+      <if expr="chromeos">
+        <include name="IDR_PRINT_PREVIEW_UI_DESTINATION_SELECT_CROS_JS"
+                 file="${root_gen_dir}/chrome/browser/resources/print_preview/ui/destination_select_cros.js"
+                 use_base_dir="false" compress="false" type="BINDATA"/>
+      </if>
+      <include name="IDR_PRINT_PREVIEW_UI_DESTINATION_SELECT_CSS_JS"
+               file="${root_gen_dir}/chrome/browser/resources/print_preview/ui/destination_select_css.js"
+               use_base_dir="false" compress="false" type="BINDATA"/>
       <include name="IDR_PRINT_PREVIEW_UI_DESTINATION_SETTINGS_JS"
                file="${root_gen_dir}/chrome/browser/resources/print_preview/ui/destination_settings.js"
                use_base_dir="false" compress="false" type="BINDATA" preprocess="true"/>
-    <if expr="chromeos">
-      <include name="IDR_PRINT_PREVIEW_UI_PIN_SETTINGS_JS"
-               file="${root_gen_dir}/chrome/browser/resources/print_preview/ui/pin_settings.js"
-               use_base_dir="false" compress="false" type="BINDATA"/>
-    </if>
+      <if expr="chromeos">
+        <include name="IDR_PRINT_PREVIEW_UI_PIN_SETTINGS_JS"
+                 file="${root_gen_dir}/chrome/browser/resources/print_preview/ui/pin_settings.js"
+                 use_base_dir="false" compress="false" type="BINDATA"/>
+      </if>
       <include name="IDR_PRINT_PREVIEW_UI_PAGES_SETTINGS_JS"
                file="${root_gen_dir}/chrome/browser/resources/print_preview/ui/pages_settings.js"
                use_base_dir="false" compress="false" type="BINDATA"/>
@@ -99,11 +109,11 @@
       <include name="IDR_PRINT_PREVIEW_UI_NUMBER_SETTINGS_SECTION_JS"
                file="${root_gen_dir}/chrome/browser/resources/print_preview/ui/number_settings_section.js"
                use_base_dir="false" compress="false" type="BINDATA"/>
-    <if expr="not chromeos">
-      <include name="IDR_PRINT_PREVIEW_UI_LINK_CONTAINER_JS"
-               file="${root_gen_dir}/chrome/browser/resources/print_preview/ui/link_container.js"
-               use_base_dir="false" compress="false" type="BINDATA" preprocess="true"/>
-    </if>
+      <if expr="not chromeos">
+        <include name="IDR_PRINT_PREVIEW_UI_LINK_CONTAINER_JS"
+                 file="${root_gen_dir}/chrome/browser/resources/print_preview/ui/link_container.js"
+                 use_base_dir="false" compress="false" type="BINDATA" preprocess="true"/>
+      </if>
       <include name="IDR_PRINT_PREVIEW_UI_DESTINATION_DIALOG_JS"
                file="${root_gen_dir}/chrome/browser/resources/print_preview/ui/destination_dialog.js"
                use_base_dir="false" compress="false" type="BINDATA" preprocess="true"/>
@@ -171,12 +181,12 @@
                  file="data/destination_match.js"
                  compress="false"
                  type="chrome_html" />
-    <if expr="chromeos">
-      <structure name="IDR_PRINT_PREVIEW_DATA_DESTINATION_POLICIES_JS"
-                 file="data/destination_policies.js"
-                 compress="false"
-                 type="chrome_html" />
-    </if>
+      <if expr="chromeos">
+        <structure name="IDR_PRINT_PREVIEW_DATA_DESTINATION_POLICIES_JS"
+                   file="data/destination_policies.js"
+                   compress="false"
+                   type="chrome_html" />
+      </if>
       <structure name="IDR_PRINT_PREVIEW_DATA_DESTINATION_STORE_JS"
                  file="data/destination_store.js"
                  compress="false"

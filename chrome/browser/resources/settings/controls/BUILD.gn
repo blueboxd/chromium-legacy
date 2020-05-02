@@ -303,6 +303,7 @@ polymer_modulizer("controlled_button") {
   html_file = "controlled_button.html"
   html_type = "dom-module"
   auto_imports = settings_auto_imports
+  migrated_imports = settings_migrated_imports
 }
 
 polymer_modulizer("controlled_radio_button") {
@@ -325,6 +326,7 @@ polymer_modulizer("extension_controlled_indicator") {
     "chrome/browser/resources/settings/extension_control_browser_proxy.html|ExtensionControlBrowserProxyImpl",
     "ui/webui/resources/html/assert.html|assert",
   ]
+  migrated_imports = settings_migrated_imports
   namespace_rewrites = settings_namespace_rewrites
 }
 
@@ -338,6 +340,7 @@ polymer_modulizer("settings_dropdown_menu") {
   js_file = "settings_dropdown_menu.js"
   html_file = "settings_dropdown_menu.html"
   html_type = "dom-module"
+  migrated_imports = settings_migrated_imports
   auto_imports = settings_auto_imports + [
                    "chrome/browser/resources/settings/prefs/pref_util.html|stringToPrefValue, prefToString",
                    "ui/webui/resources/html/assert.html|assert",
@@ -349,6 +352,7 @@ polymer_modulizer("settings_idle_load") {
   js_file = "settings_idle_load.js"
   html_file = "settings_idle_load.html"
   html_type = "dom-module"
+  migrated_imports = settings_migrated_imports
   auto_imports = [
     "chrome/browser/resources/settings/ensure_lazy_loaded.html|ensureLazyLoaded",
     "ui/webui/resources/html/assert.html|assert",
@@ -370,6 +374,7 @@ polymer_modulizer("settings_slider") {
   js_file = "settings_slider.js"
   html_file = "settings_slider.html"
   html_type = "dom-module"
+  migrated_imports = settings_migrated_imports
   auto_imports =
       settings_auto_imports + [
         "ui/webui/resources/html/assert.html|assert",

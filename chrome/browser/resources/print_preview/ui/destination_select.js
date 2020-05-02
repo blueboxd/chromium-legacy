@@ -2,12 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+/**
+ * Note: Chrome OS uses print-preview-destination-select-cros rather than the
+ * element in this file. Ensure any fixes for cross platform bugs work on both
+ * Chrome OS and non-Chrome OS.
+ */
+
 import 'chrome://resources/cr_elements/hidden_style_css.m.js';
 import 'chrome://resources/cr_elements/shared_vars_css.m.js';
 import 'chrome://resources/cr_elements/md_select_css.m.js';
 import 'chrome://resources/js/util.m.js';
 import 'chrome://resources/polymer/v3_0/iron-iconset-svg/iron-iconset-svg.js';
 import 'chrome://resources/polymer/v3_0/iron-meta/iron-meta.js';
+import './destination_select_css.js';
 import './icons.js';
 import './print_preview_shared_css.js';
 import './throbber_css.js';

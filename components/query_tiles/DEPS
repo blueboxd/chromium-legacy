@@ -6,6 +6,7 @@ include_rules = [
   "+components/leveldb_proto",
   "+net",
   "+services/network/public",
+  "+services/network/test",
   "+third_party/skia",
   "+ui/gfx",
 ]

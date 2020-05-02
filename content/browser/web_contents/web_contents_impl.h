@@ -755,6 +755,12 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
       std::vector<blink::mojom::MenuItemPtr>* menu_items,
       bool right_aligned,
       bool allow_multiple_selection) override;
+  void DidLoadResourceFromMemoryCache(
+      RenderFrameHostImpl* source,
+      const GURL& url,
+      const std::string& http_request,
+      const std::string& mime_type,
+      network::mojom::RequestDestination request_destination) override;
 
   // RenderViewHostDelegate ----------------------------------------------------
   RenderViewHostDelegateView* GetDelegateView() override;
@@ -1427,12 +1433,6 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
                       const base::string16& user_input);
 
   // IPC message handlers.
-  void OnDidLoadResourceFromMemoryCache(
-      RenderFrameHostImpl* source,
-      const GURL& url,
-      const std::string& http_request,
-      const std::string& mime_type,
-      network::mojom::RequestDestination request_destination);
   void OnDidRunInsecureContent(RenderFrameHostImpl* source,
                                const GURL& security_origin,
                                const GURL& target_url);

@@ -4,10 +4,14 @@
 
 #include "chrome/browser/web_applications/components/app_shortcut_manager.h"
 
+#include <utility>
+
 #include "base/callback.h"
+#include "base/feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_applications/components/app_shortcut_observer.h"
+#include "chrome/common/chrome_features.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -16,6 +20,23 @@
 #endif
 
 namespace web_app {
+
+namespace {
+
+void OnShortcutsInfoRetrievedRegisterShortcutsMenuWithOs(
+    const std::vector<WebApplicationShortcutInfo>& shortcuts,
+    std::unique_ptr<ShortcutInfo> shortcut_info) {
+  // |shortcut_data_dir| is located in per-app OS integration resources
+  // directory. See GetOsIntegrationResourcesDirectoryForApp function for more
+  // info.
+  base::FilePath shortcut_data_dir =
+      internals::GetShortcutDataDir(*shortcut_info);
+  RegisterShortcutsMenuWithOs(
+      std::move(shortcut_data_dir), std::move(shortcut_info->extension_id),
+      std::move(shortcut_info->profile_path), shortcuts);
+}
+
+}  // namespace
 
 AppShortcutManager::AppShortcutManager(Profile* profile) : profile_(profile) {}
 
@@ -114,6 +135,19 @@ void AppShortcutManager::CreateShortcuts(const AppId& app_id,
                                  std::move(callback))));
 }
 
+void AppShortcutManager::RegisterShortcutsMenuWithOs(
+    const std::vector<WebApplicationShortcutInfo>& shortcuts,
+    const AppId& app_id) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  if (!web_app::ShouldRegisterShortcutsMenuWithOs())
+    return;
+
+  GetShortcutInfoForApp(
+      app_id,
+      base::BindOnce(&OnShortcutsInfoRetrievedRegisterShortcutsMenuWithOs,
+                     shortcuts));
+}
+
 void AppShortcutManager::OnShortcutsCreated(const AppId& app_id,
                                             CreateShortcutsCallback callback,
                                             bool success) {
@@ -139,6 +173,13 @@ void AppShortcutManager::OnShortcutInfoRetrievedCreateShortcuts(
   ShortcutLocations locations;
   locations.on_desktop = add_to_desktop;
   locations.applications_menu_location = APP_MENU_LOCATION_SUBDIR_CHROMEAPPS;
+
+  // Remove any previously created App Icon Shortcuts Menu.
+  if (!base::FeatureList::IsEnabled(
+          features::kDesktopPWAsAppIconShortcutsMenu) &&
+      web_app::ShouldRegisterShortcutsMenuWithOs()) {
+    UnregisterShortcutsMenuWithOs(info->extension_id, info->profile_path);
+  }
 
   internals::ScheduleCreatePlatformShortcuts(
       std::move(shortcut_data_dir), locations, SHORTCUT_CREATION_BY_USER,

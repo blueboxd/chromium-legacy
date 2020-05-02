@@ -8,9 +8,11 @@
 
 #include "base/memory/ptr_util.h"
 #include "components/pdf/browser/pdf_web_contents_helper_client.h"
+#include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/common/referrer_type_converters.h"
 #include "ui/base/pointer/touch_editing_controller.h"
+#include "ui/base/ui_base_types.h"
 #include "ui/gfx/geometry/point_conversions.h"
 #include "ui/gfx/geometry/point_f.h"
 
@@ -189,8 +191,34 @@ void PDFWebContentsHelper::ExecuteCommand(int command_id, int event_flags) {
 }
 
 void PDFWebContentsHelper::RunContextMenu() {
-  // TouchSelectionControllerClientAura will handle this for us.
-  NOTIMPLEMENTED();
+  content::RenderWidgetHostView* view =
+      web_contents()->GetRenderWidgetHostView();
+
+  if (!view)
+    return;
+
+  if (!touch_selection_controller_client_manager_)
+    InitTouchSelectionClientManager();
+
+  if (!touch_selection_controller_client_manager_)
+    return;
+
+  ui::TouchSelectionController* touch_selection_controller =
+      touch_selection_controller_client_manager_->GetTouchSelectionController();
+  gfx::RectF anchor_rect =
+      touch_selection_controller->GetVisibleRectBetweenBounds();
+  gfx::PointF anchor_point =
+      gfx::PointF(anchor_rect.CenterPoint().x(), anchor_rect.y());
+
+  gfx::PointF origin = view->TransformPointToRootCoordSpaceF(gfx::PointF());
+  anchor_point.Offset(-origin.x(), -origin.y());
+  view->GetRenderWidgetHost()->ShowContextMenuAtPoint(
+      gfx::ToRoundedPoint(anchor_point), ui::MENU_SOURCE_TOUCH_EDIT_MENU);
+
+  // Hide selection handles after getting rect-between-bounds from touch
+  // selection controller; otherwise, rect would be empty and the above
+  // calculations would be invalid.
+  touch_selection_controller->HideAndDisallowShowingAutomatically();
 }
 
 bool PDFWebContentsHelper::ShouldShowQuickMenu() {

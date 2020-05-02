@@ -8,6 +8,7 @@
 
 #include "base/test/simple_test_clock.h"
 #include "components/feed/core/common/pref_names.h"
+#include "components/feed/core/v2/config.h"
 #include "components/prefs/testing_pref_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -15,10 +16,17 @@ namespace feed {
 namespace {
 
 const int kMaximumQueryRequestsPerDay = 20;
+const int kMaximumUploadActionsRequestsPerDay = 10;
 
 class FeedRequestThrottlerTest : public testing::Test {
  public:
   FeedRequestThrottlerTest() {
+    feed::Config config;
+    config.max_action_upload_requests_per_day =
+        kMaximumUploadActionsRequestsPerDay;
+    config.max_feed_query_requests_per_day = kMaximumQueryRequestsPerDay;
+    SetFeedConfigForTesting(config);
+
     RegisterProfilePrefs(test_prefs_.registry());
 
     base::Time now;
@@ -40,7 +48,7 @@ TEST_F(FeedRequestThrottlerTest, RequestQuotaAllAtOnce) {
 }
 
 TEST_F(FeedRequestThrottlerTest, QuotaIsPerDay) {
-  for (int i = 0; i < kMaximumQueryRequestsPerDay; ++i) {
+  for (int i = 0; i < kMaximumUploadActionsRequestsPerDay; ++i) {
     EXPECT_TRUE(throttler_.RequestQuota(NetworkRequestType::kUploadActions));
   }
   // Because we started at 12:01AM, we need to advance 24 hours before making

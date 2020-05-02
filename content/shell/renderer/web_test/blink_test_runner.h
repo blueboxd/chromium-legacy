@@ -36,9 +36,7 @@ class DictionaryValue;
 }  // namespace base
 
 namespace blink {
-class WebLocalFrame;
 class WebPlugin;
-class WebView;
 struct WebPluginParams;
 struct WebSize;
 }  // namespace blink
@@ -186,13 +184,6 @@ class BlinkTestRunner {
 
   blink::WebPlugin* CreatePluginPlaceholder(
       const blink::WebPluginParams& params);
-
-  // Run all pending idle tasks, and then run callback.
-  void RunIdleTasks(base::OnceClosure callback);
-
-  // Forces a text input state update for the client of WebFrameWidget
-  // associated with |frame|.
-  void ForceTextInputStateUpdate(blink::WebLocalFrame* frame);
 
   // Mark the orientation changed for fullscreen layout tests.
   void SetScreenOrientationChanged();

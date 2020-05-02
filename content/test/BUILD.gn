@@ -763,38 +763,6 @@ static_library("web_test_support_browser") {
   ]
 }
 
-static_library("web_test_support_renderer") {
-  testonly = true
-
-  # See comment at the top of //content/BUILD.gn for why this is disabled in
-  # component builds.
-  if (is_component_build) {
-    check_includes = false
-  }
-
-  sources = [
-    "../public/test/web_test_support_renderer.h",
-    "web_test_support_renderer.cc",
-  ]
-
-  deps = [
-    ":test_support",
-    "//content/public/common",
-    "//content/public/renderer",
-    "//content/renderer:for_content_tests",
-    "//ui/events/blink",
-    "//ui/gfx/geometry",
-
-    # This needs content/shell/common/web_test/web_test.mojom.h, and the file is
-    # included through
-    # content/shell/renderer/web_test/web_test_render_thread_observer.h. However
-    # adding a dependency on //content/shell:content_shell_lib as that would
-    # cause a circular dependency. Instead add this dependency directly to fix a
-    # flaky build (see https://crbug.com/971978 for more details).
-    "//content/shell:web_test_common_mojom",
-  ]
-}
-
 static_library("blink_test_browser_support") {
   testonly = true
 

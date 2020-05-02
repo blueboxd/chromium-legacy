@@ -791,16 +791,6 @@ IPC_SYNC_MESSAGE_ROUTED1_2(FrameHostMsg_RunBeforeUnloadConfirm,
                            bool /* out - success */,
                            base::string16 /* out - This is ignored.*/)
 
-// Sent when the renderer loads a resource from its memory cache.
-// The security info is non empty if the resource was originally loaded over
-// a secure connection.
-// Note: May only be sent once per URL per frame per committed load.
-IPC_MESSAGE_ROUTED4(FrameHostMsg_DidLoadResourceFromMemoryCache,
-                    GURL /* url */,
-                    std::string /* http method */,
-                    std::string /* mime type */,
-                    network::mojom::RequestDestination)
-
 // Sent as a response to FrameMsg_VisualStateRequest.
 // The message is delivered using RenderWidget::QueueMessage.
 IPC_MESSAGE_ROUTED1(FrameHostMsg_VisualStateResponse, uint64_t /* id */)

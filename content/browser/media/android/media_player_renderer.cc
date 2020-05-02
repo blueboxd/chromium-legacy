@@ -6,7 +6,6 @@
 
 #include <memory>
 
-#include "base/android/build_info.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/task/post_task.h"
@@ -118,17 +117,12 @@ void MediaPlayerRenderer::CreateMediaPlayer(
 
   const std::string user_agent = GetContentClient()->browser()->GetUserAgent();
 
-  // Never allow credentials on KitKat. See https://crbug.com/936566.
-  bool allow_credentials = url_params.allow_credentials &&
-                           base::android::BuildInfo::GetInstance()->sdk_int() >
-                               base::android::SDK_VERSION_KITKAT;
-
   media_player_.reset(new media::MediaPlayerBridge(
       url_params.media_url, url_params.site_for_cookies,
       url_params.top_frame_origin, user_agent,
       false,  // hide_url_log
       this,   // MediaPlayerBridge::Client
-      allow_credentials, url_params.is_hls));
+      url_params.allow_credentials, url_params.is_hls));
 
   media_player_->Initialize();
   UpdateVolume();

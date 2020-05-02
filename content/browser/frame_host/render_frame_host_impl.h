@@ -82,6 +82,7 @@
 #include "services/device/public/mojom/wake_lock_context.mojom.h"
 #include "services/network/public/cpp/content_security_policy/csp_context.h"
 #include "services/network/public/cpp/cross_origin_embedder_policy.h"
+#include "services/network/public/mojom/fetch_api.mojom-forward.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/public/mojom/trust_tokens.mojom.h"
 #include "services/service_manager/public/mojom/interface_provider.mojom.h"
@@ -1522,6 +1523,11 @@ class CONTENT_EXPORT RenderFrameHostImpl
       std::vector<blink::mojom::MenuItemPtr> menu_items,
       bool right_aligned,
       bool allow_multiple_selection) override;
+  void DidLoadResourceFromMemoryCache(
+      const GURL& url,
+      const std::string& http_method,
+      const std::string& mime_type,
+      network::mojom::RequestDestination request_destination) override;
 
   // blink::LocalMainFrameHost overrides:
   void ScaleFactorChanged(float scale) override;

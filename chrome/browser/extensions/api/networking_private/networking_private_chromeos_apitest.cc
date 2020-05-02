@@ -611,8 +611,6 @@ IN_PROC_BROWSER_TEST_F(NetworkingPrivateChromeOSApiTest,
           ->network_state_handler()
           ->FirstNetworkByType(chromeos::NetworkTypePattern::Cellular());
   ASSERT_TRUE(cellular);
-  std::string cellular_guid = std::string(kCellular1ServicePath) + "_guid";
-  EXPECT_EQ(cellular_guid, cellular->guid());
   // Remove the Cellular service. This should create a default Cellular network.
   service_test_->RemoveService(kCellular1ServicePath);
   content::RunAllPendingInMessageLoop();
@@ -620,7 +618,6 @@ IN_PROC_BROWSER_TEST_F(NetworkingPrivateChromeOSApiTest,
                  ->network_state_handler()
                  ->FirstNetworkByType(chromeos::NetworkTypePattern::Cellular());
   ASSERT_TRUE(cellular);
-  EXPECT_EQ(cellular_guid, cellular->guid());
   EXPECT_TRUE(RunNetworkingSubtest("getPropertiesCellularDefault")) << message_;
 }
 

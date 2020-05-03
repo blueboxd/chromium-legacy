@@ -6,6 +6,7 @@
 #include <set>
 #include <string>
 
+#include "base/files/file_path.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/strings/utf_string_conversions.h"
 
@@ -29,7 +30,9 @@
 #if defined(OS_CHROMEOS)
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_simple_task_runner.h"
+#include "chrome/browser/chromeos/crostini/crostini_features.h"
 #include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
+#include "chrome/browser/chromeos/crostini/fake_crostini_features.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_initializer.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_manager_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_store_chromeos.h"
@@ -179,7 +182,7 @@ class TestManagementUIHandler : public ManagementUIHandler {
       const TestDeviceCloudPolicyManagerChromeOS* manager,
       const TestDeviceStatusCollector* collector,
       const policy::SystemLogUploader* uploader,
-      const Profile* profile) {
+      Profile* profile) {
     base::Value report_sources = base::Value(base::Value::Type::LIST);
     AddDeviceReportingInfo(&report_sources, collector, uploader, profile);
     return report_sources;
@@ -284,6 +287,7 @@ class ManagementUIHandlerTests : public TestingBaseClass {
     bool managed_account;
     bool managed_device;
     std::string device_domain;
+    base::FilePath crostini_ansible_playbook_filepath;
   };
 
   void ResetTestConfig() { ResetTestConfig(true); }
@@ -313,6 +317,7 @@ class ManagementUIHandlerTests : public TestingBaseClass {
             chromeos::StubInstallAttributes::CreateUnset());
     scoped_feature_list_.Init();
 
+    crostini_features_ = std::make_unique<crostini::FakeCrostiniFeatures>();
     SetUpConnectManager();
   }
   void TearDown() override {
@@ -358,6 +363,11 @@ class ManagementUIHandlerTests : public TestingBaseClass {
     scoped_feature_list()->InitAndEnableFeature(
         features::kEnterpriseReportingInChromeOS);
 
+    profile_->GetPrefs()->SetFilePath(
+        crostini::prefs::kCrostiniAnsiblePlaybookFilePath,
+        GetTestConfig().crostini_ansible_playbook_filepath);
+    crostini_features()->set_allowed(true);
+
     const policy::SystemLogUploader* system_uploader =
         new policy::SystemLogUploader(/*syslog_delegate=*/nullptr,
                                       /*task_runner=*/task_runner_);
@@ -396,10 +406,15 @@ class ManagementUIHandlerTests : public TestingBaseClass {
     return &scoped_feature_list_;
   }
 
+  crostini::FakeCrostiniFeatures* crostini_features() {
+    return crostini_features_.get();
+  }
 #else
+
   base::string16 GetBrowserManagementNotice() const {
     return extracted_.browser_management_notice;
   }
+
 #endif
 
   base::string16 GetExtensionReportingTitle() const {
@@ -408,7 +423,7 @@ class ManagementUIHandlerTests : public TestingBaseClass {
 
   base::string16 GetPageSubtitle() const { return extracted_.subtitle; }
 
-  const TestingProfile* GetProfile() const { return profile_.get(); }
+  TestingProfile* GetProfile() const { return profile_.get(); }
 
   TestConfig& GetTestConfig() { return setup_config_; }
 
@@ -421,6 +436,7 @@ class ManagementUIHandlerTests : public TestingBaseClass {
   ContextualManagementSourceUpdate extracted_;
 #if defined(OS_CHROMEOS)
   std::unique_ptr<chromeos::ScopedStubInstallAttributes> install_attributes_;
+  std::unique_ptr<crostini::FakeCrostiniFeatures> crostini_features_;
   TestingPrefServiceSimple local_state_;
   base::test::ScopedFeatureList scoped_feature_list_;
   std::unique_ptr<TestDeviceCloudPolicyManagerChromeOS> manager_;
@@ -771,6 +787,27 @@ TEST_F(ManagementUIHandlerTests, AllEnabledDeviceReportingInfo) {
       {kManagementLogUploadEnabled, "logs"},
       {kManagementPrinting, "print"},
       {kManagementCrostini, "crostini"},
+      {kManagementExtensionReportUsername, "username"},
+      {kManagementReportExtensions, "extension"},
+      {kManagementReportAndroidApplications, "android application"}};
+
+  ASSERT_PRED_FORMAT2(ReportingElementsToBeEQ, info.GetList(),
+                      expected_elements);
+}
+
+TEST_F(ManagementUIHandlerTests,
+       AllEnabledCrostiniAnsiblePlaybookDeviceReportingInfo) {
+  ResetTestConfig(true);
+  GetTestConfig().crostini_ansible_playbook_filepath = base::FilePath("/tmp/");
+  const base::Value info = SetUpForReportingInfo();
+  const std::map<std::string, std::string> expected_elements = {
+      {kManagementReportActivityTimes, "device activity"},
+      {kManagementReportHardwareStatus, "device statistics"},
+      {kManagementReportNetworkInterfaces, "device"},
+      {kManagementReportCrashReports, "crash report"},
+      {kManagementLogUploadEnabled, "logs"},
+      {kManagementPrinting, "print"},
+      {kManagementCrostiniContainerConfiguration, "crostini"},
       {kManagementExtensionReportUsername, "username"},
       {kManagementReportExtensions, "extension"},
       {kManagementReportAndroidApplications, "android application"}};

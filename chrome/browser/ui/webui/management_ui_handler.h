@@ -137,7 +137,7 @@ class ManagementUIHandler : public content::WebUIMessageHandler,
   void AddDeviceReportingInfo(base::Value* report_sources,
                               const policy::StatusCollector* collector,
                               const policy::SystemLogUploader* uploader,
-                              const Profile* profile) const;
+                              Profile* profile) const;
 #endif  // defined(OS_CHROMEOS)
  private:
   void GetManagementStatus(Profile* profile, base::Value* status) const;

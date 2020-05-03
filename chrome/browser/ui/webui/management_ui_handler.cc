@@ -504,7 +504,7 @@ void ManagementUIHandler::AddDeviceReportingInfo(
     base::Value* report_sources,
     const policy::StatusCollector* collector,
     const policy::SystemLogUploader* uploader,
-    const Profile* profile) const {
+    Profile* profile) const {
   if (!collector || !profile || !uploader)
     return;
 
@@ -542,10 +542,18 @@ void ManagementUIHandler::AddDeviceReportingInfo(
                               DeviceReportingType::kPrint);
   }
 
-  if (profile->GetPrefs()->GetBoolean(
-          crostini::prefs::kReportCrostiniUsageEnabled)) {
-    AddDeviceReportingElement(report_sources, kManagementCrostini,
-                              DeviceReportingType::kCrostini);
+  if (crostini::CrostiniFeatures::Get()->IsAllowed(profile)) {
+    if (!profile->GetPrefs()
+             ->GetFilePath(crostini::prefs::kCrostiniAnsiblePlaybookFilePath)
+             .empty()) {
+      AddDeviceReportingElement(report_sources,
+                                kManagementCrostiniContainerConfiguration,
+                                DeviceReportingType::kCrostini);
+    } else if (profile->GetPrefs()->GetBoolean(
+                   crostini::prefs::kReportCrostiniUsageEnabled)) {
+      AddDeviceReportingElement(report_sources, kManagementCrostini,
+                                DeviceReportingType::kCrostini);
+    }
   }
 
   if (g_browser_process->local_state()->GetBoolean(

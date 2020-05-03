@@ -43,50 +43,26 @@ class NavigationControllerImpl : public NavigationController,
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& java_controller);
   void Navigate(JNIEnv* env,
-                const base::android::JavaParamRef<jobject>& obj,
                 const base::android::JavaParamRef<jstring>& url);
   void NavigateWithParams(JNIEnv* env,
-                          const base::android::JavaParamRef<jobject>& obj,
                           const base::android::JavaParamRef<jstring>& url,
                           jboolean should_replace_current_entry);
-  void GoBack(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj) {
-    GoBack();
-  }
-  void GoForward(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj) {
-    GoForward();
-  }
-  bool CanGoBack(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj) {
-    return CanGoBack();
-  }
-  bool CanGoForward(JNIEnv* env,
-                    const base::android::JavaParamRef<jobject>& obj) {
-    return CanGoForward();
-  }
-  void GoToIndex(JNIEnv* env,
-                 const base::android::JavaParamRef<jobject>& obj,
-                 int index);
-  void Reload(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj) {
-    Reload();
-  }
-  void Stop(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj) {
-    Stop();
-  }
-  int GetNavigationListSize(JNIEnv* env,
-                            const base::android::JavaParamRef<jobject>& obj) {
-    return GetNavigationListSize();
-  }
-  int GetNavigationListCurrentIndex(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& obj) {
+  void GoBack(JNIEnv* env) { GoBack(); }
+  void GoForward(JNIEnv* env) { GoForward(); }
+  bool CanGoBack(JNIEnv* env) { return CanGoBack(); }
+  bool CanGoForward(JNIEnv* env) { return CanGoForward(); }
+  void GoToIndex(JNIEnv* env, int index) { return GoToIndex(index); }
+  void Reload(JNIEnv* env) { Reload(); }
+  void Stop(JNIEnv* env) { Stop(); }
+  int GetNavigationListSize(JNIEnv* env) { return GetNavigationListSize(); }
+  int GetNavigationListCurrentIndex(JNIEnv* env) {
     return GetNavigationListCurrentIndex();
   }
   base::android::ScopedJavaLocalRef<jstring> GetNavigationEntryDisplayUri(
       JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& obj,
       int index);
   base::android::ScopedJavaLocalRef<jstring> GetNavigationEntryTitle(
       JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& obj,
       int index);
 #endif
 

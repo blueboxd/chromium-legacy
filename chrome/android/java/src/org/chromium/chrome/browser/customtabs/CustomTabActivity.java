@@ -53,7 +53,6 @@ import org.chromium.chrome.browser.page_info.ChromePageInfoControllerDelegate;
 import org.chromium.chrome.browser.previews.Previews;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.ui.appmenu.AppMenuPropertiesDelegate;
-import org.chromium.chrome.browser.usage_stats.UsageStatsService;
 import org.chromium.components.page_info.PageInfoController;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.WebContents;
@@ -154,10 +153,6 @@ public class CustomTabActivity extends BaseCustomTabActivity<CustomTabActivityCo
         if (!mIntentDataProvider.isInfoPage()) FirstRunSignInProcessor.start(this);
 
         mConnection.showSignInToastIfNecessary(mSession, getIntent());
-
-        if (isTaskRoot() && UsageStatsService.isEnabled()) {
-            UsageStatsService.getInstance().createPageViewObserver(getTabModelSelector(), this);
-        }
 
         super.finishNativeInitialization();
 

@@ -29,8 +29,7 @@ class FullscreenCallbackProxy : public FullscreenDelegate {
   void ExitFullscreen() override;
 
   // Called from the Java side to exit fullscreen.
-  void DoExitFullscreen(JNIEnv* env,
-                        const base::android::JavaParamRef<jobject>& caller);
+  void DoExitFullscreen(JNIEnv* env);
 
  private:
   Tab* tab_;

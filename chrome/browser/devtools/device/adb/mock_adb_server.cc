@@ -76,7 +76,9 @@ const char kSampleOpenedUnixSockets[] =
     "00000000: 00000002 00000000"
     " 00010000 0001 01 20894 @chrome_devtools_remote_1002\n"
     "00000000: 00000002 00000000"
-    " 00010000 0001 01 20895 @noprocess_devtools_remote\n";
+    " 00010000 0001 01 20895 @noprocess_devtools_remote\n"
+    "00000000: 00000002 00000000"
+    " 00010000 0001 01 20895 @node_devtools_remote\n";
 
 const char kSampleListProcesses[] =
     "USER    PID  PPID VSIZE  RSS    WCHAN    PC         NAME\n"
@@ -124,6 +126,11 @@ char kSampleWebViewVersion[] = "{\n"
     "   \"User-Agent\": \"Mozilla/5.0 (Linux; Android 4.3; Build/KRS74B) "
     "AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Safari/537.36\",\n"
     "   \"WebKit-Version\": \"537.36 (@157588)\"\n"
+    "}";
+
+char kSampleNodeVersion[] = "{\n"
+    "   \"Browser\": \"node.js/v10.15.3\","
+    "   \"Protocol-Version\": \"1.1\""
     "}";
 
 char kSampleChromePages[] = "[ {\n"
@@ -178,6 +185,20 @@ char kSampleWebViewPages[] = "[ {\n"
     "   \"webSocketDebuggerUrl\": \"ws:///devtools/page/"
     "44681551-ADFD-2411-076B-3AB14C1C60E2\"\n"
     "}]";
+
+char kSampleNodePage[] = "[ {\n"
+    "   \"description\": \"\","
+    "   \"devtoolsFrontendUrl\": \"chrome-devtools://devtools/bundled/"
+    "js_app.html?experiments=true&v8only=true&ws=192.168.86.1:33279/"
+    "148b8b92-8ca0-43fd-b8c8-a351864644f8\","
+    "   \"faviconUrl\": \"https://nodejs.org/static/favicon.ico\","
+    "   \"id\": \"148b8b92-8ca0-43fd-b8c8-a351864644f8\","
+    "   \"title\": \"a-node-process\","
+    "   \"type\": \"node\","
+    "   \"url\": \"about:blank\",\n"
+    "   \"webSocketDebuggerUrl\": \"ws://192.168.86.1:33279/"
+    "148b8b92-8ca0-43fd-b8c8-a351864644f8\""
+    "} ]";
 
 static const int kBufferSize = 16*1024;
 static const uint16_t kAdbPort = 5037;
@@ -569,6 +590,13 @@ void MockAndroidConnection::Receive(const std::string& data) {
       SendHTTPResponse(kSampleWebViewVersion);
     else if (path == kJsonListPath)
       SendHTTPResponse(kSampleWebViewPages);
+    else
+      NOTREACHED() << "Unknown command " << request;
+  } else if (socket_name_ == "node_devtools_remote") {
+    if (path == kJsonVersionPath)
+      SendHTTPResponse(kSampleNodeVersion);
+    else if (path == kJsonListPath)
+      SendHTTPResponse(kSampleNodePage);
     else
       NOTREACHED() << "Unknown command " << request;
   } else {

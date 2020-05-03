@@ -37,89 +37,80 @@ public final class NavigationControllerImpl extends INavigationController.Stub {
             assert params == null;
         }
         if (params == null) {
-            NavigationControllerImplJni.get().navigate(
-                    mNativeNavigationController, NavigationControllerImpl.this, uri);
+            NavigationControllerImplJni.get().navigate(mNativeNavigationController, uri);
         } else {
-            NavigationControllerImplJni.get().navigateWithParams(mNativeNavigationController,
-                    NavigationControllerImpl.this, uri, params.mShouldReplaceCurrentEntry);
+            NavigationControllerImplJni.get().navigateWithParams(
+                    mNativeNavigationController, uri, params.mShouldReplaceCurrentEntry);
         }
     }
 
     @Override
     public void goBack() {
         StrictModeWorkaround.apply();
-        NavigationControllerImplJni.get().goBack(
-                mNativeNavigationController, NavigationControllerImpl.this);
+        NavigationControllerImplJni.get().goBack(mNativeNavigationController);
     }
 
     @Override
     public void goForward() {
         StrictModeWorkaround.apply();
-        NavigationControllerImplJni.get().goForward(
-                mNativeNavigationController, NavigationControllerImpl.this);
+        NavigationControllerImplJni.get().goForward(mNativeNavigationController);
     }
 
     @Override
     public boolean canGoBack() {
         StrictModeWorkaround.apply();
-        return NavigationControllerImplJni.get().canGoBack(
-                mNativeNavigationController, NavigationControllerImpl.this);
+        return NavigationControllerImplJni.get().canGoBack(mNativeNavigationController);
     }
 
     @Override
     public boolean canGoForward() {
         StrictModeWorkaround.apply();
-        return NavigationControllerImplJni.get().canGoForward(
-                mNativeNavigationController, NavigationControllerImpl.this);
+        return NavigationControllerImplJni.get().canGoForward(mNativeNavigationController);
     }
 
     @Override
     public void goToIndex(int index) {
         StrictModeWorkaround.apply();
-        NavigationControllerImplJni.get().goToIndex(
-                mNativeNavigationController, NavigationControllerImpl.this, index);
+        NavigationControllerImplJni.get().goToIndex(mNativeNavigationController, index);
     }
 
     @Override
     public void reload() {
         StrictModeWorkaround.apply();
-        NavigationControllerImplJni.get().reload(
-                mNativeNavigationController, NavigationControllerImpl.this);
+        NavigationControllerImplJni.get().reload(mNativeNavigationController);
     }
 
     @Override
     public void stop() {
         StrictModeWorkaround.apply();
-        NavigationControllerImplJni.get().stop(
-                mNativeNavigationController, NavigationControllerImpl.this);
+        NavigationControllerImplJni.get().stop(mNativeNavigationController);
     }
 
     @Override
     public int getNavigationListSize() {
         StrictModeWorkaround.apply();
-        return NavigationControllerImplJni.get().getNavigationListSize(
-                mNativeNavigationController, NavigationControllerImpl.this);
+        return NavigationControllerImplJni.get().getNavigationListSize(mNativeNavigationController);
     }
 
     @Override
     public int getNavigationListCurrentIndex() {
         StrictModeWorkaround.apply();
         return NavigationControllerImplJni.get().getNavigationListCurrentIndex(
-                mNativeNavigationController, NavigationControllerImpl.this);
+                mNativeNavigationController);
     }
 
     @Override
     public String getNavigationEntryDisplayUri(int index) {
         StrictModeWorkaround.apply();
         return NavigationControllerImplJni.get().getNavigationEntryDisplayUri(
-                mNativeNavigationController, NavigationControllerImpl.this, index);
+                mNativeNavigationController, index);
     }
 
     @Override
     public String getNavigationEntryTitle(int index) {
         StrictModeWorkaround.apply();
         return NavigationControllerImplJni.get().getNavigationEntryTitle(
-                mNativeNavigationController, NavigationControllerImpl.this, index);
+                mNativeNavigationController, index);
     }
 
     @CalledByNative
@@ -173,25 +164,19 @@ public final class NavigationControllerImpl extends INavigationController.Stub {
         void setNavigationControllerImpl(
                 long nativeNavigationControllerImpl, NavigationControllerImpl caller);
         long getNavigationController(long tab);
-        void navigate(
-                long nativeNavigationControllerImpl, NavigationControllerImpl caller, String uri);
-        void navigateWithParams(long nativeNavigationControllerImpl,
-                NavigationControllerImpl caller, String uri, boolean shouldReplaceCurrentEntry);
-        void goBack(long nativeNavigationControllerImpl, NavigationControllerImpl caller);
-        void goForward(long nativeNavigationControllerImpl, NavigationControllerImpl caller);
-        boolean canGoBack(long nativeNavigationControllerImpl, NavigationControllerImpl caller);
-        boolean canGoForward(long nativeNavigationControllerImpl, NavigationControllerImpl caller);
-        void goToIndex(
-                long nativeNavigationControllerImpl, NavigationControllerImpl caller, int index);
-        void reload(long nativeNavigationControllerImpl, NavigationControllerImpl caller);
-        void stop(long nativeNavigationControllerImpl, NavigationControllerImpl caller);
-        int getNavigationListSize(
-                long nativeNavigationControllerImpl, NavigationControllerImpl caller);
-        int getNavigationListCurrentIndex(
-                long nativeNavigationControllerImpl, NavigationControllerImpl caller);
-        String getNavigationEntryDisplayUri(
-                long nativeNavigationControllerImpl, NavigationControllerImpl caller, int index);
-        String getNavigationEntryTitle(
-                long nativeNavigationControllerImpl, NavigationControllerImpl caller, int index);
+        void navigate(long nativeNavigationControllerImpl, String uri);
+        void navigateWithParams(
+                long nativeNavigationControllerImpl, String uri, boolean shouldReplaceCurrentEntry);
+        void goBack(long nativeNavigationControllerImpl);
+        void goForward(long nativeNavigationControllerImpl);
+        boolean canGoBack(long nativeNavigationControllerImpl);
+        boolean canGoForward(long nativeNavigationControllerImpl);
+        void goToIndex(long nativeNavigationControllerImpl, int index);
+        void reload(long nativeNavigationControllerImpl);
+        void stop(long nativeNavigationControllerImpl);
+        int getNavigationListSize(long nativeNavigationControllerImpl);
+        int getNavigationListCurrentIndex(long nativeNavigationControllerImpl);
+        String getNavigationEntryDisplayUri(long nativeNavigationControllerImpl, int index);
+        String getNavigationEntryTitle(long nativeNavigationControllerImpl, int index);
     }
 }

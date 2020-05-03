@@ -45,8 +45,6 @@ class HttpEquiv {
       const AtomicString& equiv,
       const AtomicString& content);
   static void ProcessHttpEquivAcceptCH(Document&, const AtomicString& content);
-  static void ProcessHttpEquivAcceptCHLifetime(Document&,
-                                               const AtomicString& content);
 };
 
 }  // namespace blink

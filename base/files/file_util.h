@@ -195,6 +195,16 @@ BASE_EXPORT bool ReadFileToStringWithMaxSize(const FilePath& path,
                                              std::string* contents,
                                              size_t max_size);
 
+// As ReadFileToString, but reading from an open stream after seeking to its
+// start (if supported by the stream).
+BASE_EXPORT bool ReadStreamToString(FILE* stream, std::string* contents);
+
+// As ReadFileToStringWithMaxSize, but reading from an open stream after seeking
+// to its start (if supported by the stream).
+BASE_EXPORT bool ReadStreamToStringWithMaxSize(FILE* stream,
+                                               size_t max_size,
+                                               std::string* contents);
+
 #if defined(OS_POSIX) || defined(OS_FUCHSIA)
 
 // Read exactly |bytes| bytes from file descriptor |fd|, storing the result
@@ -282,6 +292,13 @@ BASE_EXPORT bool GetTempDir(FilePath* path);
 // Path service may also override DIR_HOME.
 BASE_EXPORT FilePath GetHomeDir();
 
+// Returns a new temporary file in |dir| with a unique name. The file is opened
+// for exclusive read, write, and delete access (note: exclusivity is unique to
+// Windows). On Windows, the returned file supports File::DeleteOnClose.
+// On success, |temp_file| is populated with the full path to the created file.
+BASE_EXPORT File CreateAndOpenTemporaryFileInDir(const FilePath& dir,
+                                                 FilePath* temp_file);
+
 // Creates a temporary file. The full path is placed in |path|, and the
 // function returns true if was successful in creating the file. The file will
 // be empty and all handles closed after this function returns.
@@ -291,9 +308,9 @@ BASE_EXPORT bool CreateTemporaryFile(FilePath* path);
 BASE_EXPORT bool CreateTemporaryFileInDir(const FilePath& dir,
                                           FilePath* temp_file);
 
-// Create and open a temporary file.  File is opened for read/write.
-// The full path is placed in |path|.
-// Returns a handle to the opened file or NULL if an error occurred.
+// Create and open a temporary file stream for exclusive read, write, and delete
+// access (note: exclusivity is unique to Windows). The full path is placed in
+// |path|. Returns the opened file stream, or null in case of error.
 BASE_EXPORT ScopedFILE CreateAndOpenTemporaryStream(FilePath* path);
 
 // Similar to CreateAndOpenTemporaryStream, but the file is created in |dir|.
@@ -381,6 +398,9 @@ BASE_EXPORT bool CloseFile(FILE* file);
 // Associates a standard FILE stream with an existing File. Note that this
 // functions take ownership of the existing File.
 BASE_EXPORT FILE* FileToFILE(File file, const char* mode);
+
+// Returns a new handle to the file underlying |file_stream|.
+BASE_EXPORT File FILEToFile(FILE* file_stream);
 
 // Truncates an open file to end at the location of the current file pointer.
 // This is a cross-platform analog to Windows' SetEndOfFile() function.

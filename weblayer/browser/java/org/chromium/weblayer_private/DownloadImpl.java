@@ -211,29 +211,28 @@ public final class DownloadImpl extends IDownload.Stub {
     public int getState() {
         StrictModeWorkaround.apply();
         throwIfNativeDestroyed();
-        return implStateToJavaType(
-                DownloadImplJni.get().getState(mNativeDownloadImpl, DownloadImpl.this));
+        return implStateToJavaType(DownloadImplJni.get().getState(mNativeDownloadImpl));
     }
 
     @Override
     public long getTotalBytes() {
         StrictModeWorkaround.apply();
         throwIfNativeDestroyed();
-        return DownloadImplJni.get().getTotalBytes(mNativeDownloadImpl, DownloadImpl.this);
+        return DownloadImplJni.get().getTotalBytes(mNativeDownloadImpl);
     }
 
     @Override
     public long getReceivedBytes() {
         StrictModeWorkaround.apply();
         throwIfNativeDestroyed();
-        return DownloadImplJni.get().getReceivedBytes(mNativeDownloadImpl, DownloadImpl.this);
+        return DownloadImplJni.get().getReceivedBytes(mNativeDownloadImpl);
     }
 
     @Override
     public void pause() {
         StrictModeWorkaround.apply();
         throwIfNativeDestroyed();
-        DownloadImplJni.get().pause(mNativeDownloadImpl, DownloadImpl.this);
+        DownloadImplJni.get().pause(mNativeDownloadImpl);
         updateNotification();
     }
 
@@ -241,7 +240,7 @@ public final class DownloadImpl extends IDownload.Stub {
     public void resume() {
         StrictModeWorkaround.apply();
         throwIfNativeDestroyed();
-        DownloadImplJni.get().resume(mNativeDownloadImpl, DownloadImpl.this);
+        DownloadImplJni.get().resume(mNativeDownloadImpl);
         updateNotification();
     }
 
@@ -249,7 +248,7 @@ public final class DownloadImpl extends IDownload.Stub {
     public void cancel() {
         StrictModeWorkaround.apply();
         throwIfNativeDestroyed();
-        DownloadImplJni.get().cancel(mNativeDownloadImpl, DownloadImpl.this);
+        DownloadImplJni.get().cancel(mNativeDownloadImpl);
         updateNotification();
     }
 
@@ -257,14 +256,14 @@ public final class DownloadImpl extends IDownload.Stub {
     public String getLocation() {
         StrictModeWorkaround.apply();
         throwIfNativeDestroyed();
-        return DownloadImplJni.get().getLocation(mNativeDownloadImpl, DownloadImpl.this);
+        return DownloadImplJni.get().getLocation(mNativeDownloadImpl);
     }
 
     @Override
     public String getMimeType() {
         StrictModeWorkaround.apply();
         throwIfNativeDestroyed();
-        return DownloadImplJni.get().getMimeTypeImpl(mNativeDownloadImpl, DownloadImpl.this);
+        return DownloadImplJni.get().getMimeTypeImpl(mNativeDownloadImpl);
     }
 
     @Override
@@ -272,8 +271,7 @@ public final class DownloadImpl extends IDownload.Stub {
     public int getError() {
         StrictModeWorkaround.apply();
         throwIfNativeDestroyed();
-        return implErrorToJavaType(
-                DownloadImplJni.get().getError(mNativeDownloadImpl, DownloadImpl.this));
+        return implErrorToJavaType(DownloadImplJni.get().getError(mNativeDownloadImpl));
     }
 
     @Override
@@ -502,14 +500,14 @@ public final class DownloadImpl extends IDownload.Stub {
     @NativeMethods
     interface Natives {
         void setJavaDownload(long nativeDownloadImpl, DownloadImpl caller);
-        int getState(long nativeDownloadImpl, DownloadImpl caller);
-        long getTotalBytes(long nativeDownloadImpl, DownloadImpl caller);
-        long getReceivedBytes(long nativeDownloadImpl, DownloadImpl caller);
-        void pause(long nativeDownloadImpl, DownloadImpl caller);
-        void resume(long nativeDownloadImpl, DownloadImpl caller);
-        void cancel(long nativeDownloadImpl, DownloadImpl caller);
-        String getLocation(long nativeDownloadImpl, DownloadImpl caller);
-        String getMimeTypeImpl(long nativeDownloadImpl, DownloadImpl caller);
-        int getError(long nativeDownloadImpl, DownloadImpl caller);
+        int getState(long nativeDownloadImpl);
+        long getTotalBytes(long nativeDownloadImpl);
+        long getReceivedBytes(long nativeDownloadImpl);
+        void pause(long nativeDownloadImpl);
+        void resume(long nativeDownloadImpl);
+        void cancel(long nativeDownloadImpl);
+        String getLocation(long nativeDownloadImpl);
+        String getMimeTypeImpl(long nativeDownloadImpl);
+        int getError(long nativeDownloadImpl);
     }
 }

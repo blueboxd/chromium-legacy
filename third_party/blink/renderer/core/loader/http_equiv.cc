@@ -28,18 +28,6 @@ namespace blink {
 
 namespace {
 
-// Returns true if the origin of |url| is same as the origin of the top level
-// frame's main resource.
-bool IsFirstPartyOrigin(Frame* frame, const KURL& url) {
-  if (!frame)
-    return false;
-  return frame->Tree()
-      .Top()
-      .GetSecurityContext()
-      ->GetSecurityOrigin()
-      ->IsSameOriginWith(SecurityOrigin::Create(url).get());
-}
-
 // Returns true if execution of scripts from the url are allowed. Compared to
 // AllowScriptFromSource(), this method does not generate any
 // notification to the |ContentSettingsClient| that the execution of the
@@ -54,40 +42,6 @@ bool AllowScriptFromSourceWithoutNotifying(
   if (settings_client)
     allow_script = settings_client->AllowScriptFromSource(allow_script, url);
   return allow_script;
-}
-
-// Notifies content settings client of persistent client hint headers.
-void NotifyPersistentClientHintsToContentSettingsClient(Document& document) {
-  base::TimeDelta persist_duration;
-  if (RuntimeEnabledFeatures::FeaturePolicyForClientHintsEnabled()) {
-    persist_duration = base::TimeDelta::Max();
-  } else {
-    persist_duration =
-        document.GetFrame()->GetClientHintsPreferences().GetPersistDuration();
-  }
-
-  if (persist_duration.InSeconds() <= 0)
-    return;
-
-  WebEnabledClientHints enabled_client_hints = document.GetFrame()
-                                                   ->GetClientHintsPreferences()
-                                                   .GetWebEnabledClientHints();
-  if (!AllowScriptFromSourceWithoutNotifying(
-          document.Url(), document.GetFrame()->GetContentSettingsClient(),
-          document.GetFrame()->GetSettings())) {
-    // Do not persist client hint preferences if the JavaScript is disabled.
-    return;
-  }
-
-  if (!document.GetFrame()->IsMainFrame() &&
-      !IsFirstPartyOrigin(document.GetFrame(), document.Url())) {
-    return;
-  }
-
-  if (auto* settings_client = document.GetFrame()->GetContentSettingsClient()) {
-    settings_client->PersistClientHints(enabled_client_hints, persist_duration,
-                                        document.Url());
-  }
 }
 
 }  // namespace
@@ -118,8 +72,6 @@ void HttpEquiv::Process(Document& document,
         "document. It may not be set inside <meta>."));
   } else if (EqualIgnoringASCIICase(equiv, http_names::kAcceptCH)) {
     ProcessHttpEquivAcceptCH(document, content);
-  } else if (EqualIgnoringASCIICase(equiv, http_names::kAcceptCHLifetime)) {
-    ProcessHttpEquivAcceptCHLifetime(document, content);
   } else if (EqualIgnoringASCIICase(equiv, "content-security-policy") ||
              EqualIgnoringASCIICase(equiv,
                                     "content-security-policy-report-only")) {
@@ -161,27 +113,21 @@ void HttpEquiv::ProcessHttpEquivAcceptCH(Document& document,
   if (!frame)
     return;
 
+  if (!document.GetFrame()->IsMainFrame()) {
+    return;
+  }
+
+  if (!AllowScriptFromSourceWithoutNotifying(
+          document.Url(), document.GetFrame()->GetContentSettingsClient(),
+          document.GetFrame()->GetSettings())) {
+    // Do not allow configuring client hints if JavaScript is disabled.
+    return;
+  }
+
   UseCounter::Count(document, WebFeature::kClientHintsMetaAcceptCH);
   FrameClientHintsPreferencesContext hints_context(frame);
   frame->GetClientHintsPreferences().UpdateFromAcceptClientHintsHeader(
       content, document.Url(), &hints_context);
-  NotifyPersistentClientHintsToContentSettingsClient(document);
-}
-
-void HttpEquiv::ProcessHttpEquivAcceptCHLifetime(Document& document,
-                                                 const AtomicString& content) {
-  LocalFrame* frame = document.GetFrame();
-  if (!frame)
-    return;
-
-  if (RuntimeEnabledFeatures::FeaturePolicyForClientHintsEnabled())
-    return;
-
-  UseCounter::Count(document, WebFeature::kClientHintsMetaAcceptCHLifetime);
-  FrameClientHintsPreferencesContext hints_context(frame);
-  frame->GetClientHintsPreferences().UpdateFromAcceptClientHintsLifetimeHeader(
-      content, document.Url(), &hints_context);
-  NotifyPersistentClientHintsToContentSettingsClient(document);
 }
 
 void HttpEquiv::ProcessHttpEquivDefaultStyle(Document& document,

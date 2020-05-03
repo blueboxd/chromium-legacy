@@ -7,6 +7,7 @@
 #include "components/performance_manager/decorators/decorators_utils.h"
 #include "components/performance_manager/graph/node_attached_data_impl.h"
 #include "components/performance_manager/graph/page_node_impl.h"
+#include "components/performance_manager/public/graph/node_data_describer_registry.h"
 #include "components/performance_manager/public/performance_manager.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -81,6 +82,8 @@ class PageLiveStateDataImpl
   bool was_discarded_ = false;
 };
 
+const char kDescriberName[] = "PageLiveStateDecorator";
+
 }  // namespace
 
 // static
@@ -151,6 +154,35 @@ void PageLiveStateDecorator::SetWasDiscarded(content::WebContents* contents,
                                              bool was_discarded) {
   SetPropertyForWebContentsPageNode(
       contents, &PageLiveStateDataImpl::set_was_discarded, was_discarded);
+}
+
+void PageLiveStateDecorator::OnPassedToGraph(Graph* graph) {
+  graph->GetNodeDataDescriberRegistry()->RegisterDescriber(this,
+                                                           kDescriberName);
+}
+
+void PageLiveStateDecorator::OnTakenFromGraph(Graph* graph) {
+  graph->GetNodeDataDescriberRegistry()->UnregisterDescriber(this);
+}
+
+base::Value PageLiveStateDecorator::DescribePageNodeData(
+    const PageNode* node) const {
+  auto* data = Data::FromPageNode(node);
+  if (!data)
+    return base::Value();
+
+  base::Value ret(base::Value::Type::DICTIONARY);
+  ret.SetBoolKey("IsConnectedToUSBDevice", data->IsConnectedToUSBDevice());
+  ret.SetBoolKey("IsConnectedToBluetoothDevice",
+                 data->IsConnectedToBluetoothDevice());
+  ret.SetBoolKey("IsCapturingVideo", data->IsCapturingVideo());
+  ret.SetBoolKey("IsCapturingAudio", data->IsCapturingAudio());
+  ret.SetBoolKey("IsBeingMirrored", data->IsBeingMirrored());
+  ret.SetBoolKey("IsCapturingDesktop", data->IsCapturingDesktop());
+  ret.SetBoolKey("IsAutoDiscardable", data->IsAutoDiscardable());
+  ret.SetBoolKey("WasDiscarded", data->WasDiscarded());
+
+  return ret;
 }
 
 PageLiveStateDecorator::Data::Data() = default;

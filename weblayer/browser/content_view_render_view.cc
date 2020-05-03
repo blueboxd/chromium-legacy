@@ -75,6 +75,7 @@ void ContentViewRenderView::OnPhysicalBackingSizeChanged(
     const JavaParamRef<jobject>& jweb_contents,
     jint width,
     jint height) {
+  height_ = height;
   content::WebContents* web_contents =
       content::WebContents::FromJavaWebContents(jweb_contents);
   gfx::Size size(width, height);

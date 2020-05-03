@@ -64,45 +64,42 @@ public final class NavigationImpl extends INavigation.Stub {
     public int getState() {
         StrictModeWorkaround.apply();
         throwIfNativeDestroyed();
-        return implTypeToJavaType(
-                NavigationImplJni.get().getState(mNativeNavigationImpl, NavigationImpl.this));
+        return implTypeToJavaType(NavigationImplJni.get().getState(mNativeNavigationImpl));
     }
 
     @Override
     public String getUri() {
         StrictModeWorkaround.apply();
         throwIfNativeDestroyed();
-        return NavigationImplJni.get().getUri(mNativeNavigationImpl, NavigationImpl.this);
+        return NavigationImplJni.get().getUri(mNativeNavigationImpl);
     }
 
     @Override
     public List<String> getRedirectChain() {
         StrictModeWorkaround.apply();
         throwIfNativeDestroyed();
-        return Arrays.asList(NavigationImplJni.get().getRedirectChain(
-                mNativeNavigationImpl, NavigationImpl.this));
+        return Arrays.asList(NavigationImplJni.get().getRedirectChain(mNativeNavigationImpl));
     }
 
     @Override
     public int getHttpStatusCode() {
         StrictModeWorkaround.apply();
         throwIfNativeDestroyed();
-        return NavigationImplJni.get().getHttpStatusCode(
-                mNativeNavigationImpl, NavigationImpl.this);
+        return NavigationImplJni.get().getHttpStatusCode(mNativeNavigationImpl);
     }
 
     @Override
     public boolean isSameDocument() {
         StrictModeWorkaround.apply();
         throwIfNativeDestroyed();
-        return NavigationImplJni.get().isSameDocument(mNativeNavigationImpl, NavigationImpl.this);
+        return NavigationImplJni.get().isSameDocument(mNativeNavigationImpl);
     }
 
     @Override
     public boolean isErrorPage() {
         StrictModeWorkaround.apply();
         throwIfNativeDestroyed();
-        return NavigationImplJni.get().isErrorPage(mNativeNavigationImpl, NavigationImpl.this);
+        return NavigationImplJni.get().isErrorPage(mNativeNavigationImpl);
     }
 
     @Override
@@ -110,7 +107,7 @@ public final class NavigationImpl extends INavigation.Stub {
         StrictModeWorkaround.apply();
         throwIfNativeDestroyed();
         return implLoadErrorToLoadError(
-                NavigationImplJni.get().getLoadError(mNativeNavigationImpl, NavigationImpl.this));
+                NavigationImplJni.get().getLoadError(mNativeNavigationImpl));
     }
 
     @Override
@@ -121,7 +118,7 @@ public final class NavigationImpl extends INavigation.Stub {
         if (!NavigationImplJni.get().isValidRequestHeaderValue(value)) {
             throw new IllegalArgumentException("Invalid value");
         }
-        if (!NavigationImplJni.get().setRequestHeader(mNativeNavigationImpl, this, name, value)) {
+        if (!NavigationImplJni.get().setRequestHeader(mNativeNavigationImpl, name, value)) {
             throw new IllegalStateException();
         }
     }
@@ -161,15 +158,14 @@ public final class NavigationImpl extends INavigation.Stub {
     @NativeMethods
     interface Natives {
         void setJavaNavigation(long nativeNavigationImpl, NavigationImpl caller);
-        int getState(long nativeNavigationImpl, NavigationImpl caller);
-        String getUri(long nativeNavigationImpl, NavigationImpl caller);
-        String[] getRedirectChain(long nativeNavigationImpl, NavigationImpl caller);
-        int getHttpStatusCode(long nativeNavigationImpl, NavigationImpl caller);
-        boolean isSameDocument(long nativeNavigationImpl, NavigationImpl caller);
-        boolean isErrorPage(long nativeNavigationImpl, NavigationImpl caller);
-        int getLoadError(long nativeNavigationImpl, NavigationImpl caller);
-        boolean setRequestHeader(
-                long nativeNavigationImpl, NavigationImpl caller, String name, String value);
+        int getState(long nativeNavigationImpl);
+        String getUri(long nativeNavigationImpl);
+        String[] getRedirectChain(long nativeNavigationImpl);
+        int getHttpStatusCode(long nativeNavigationImpl);
+        boolean isSameDocument(long nativeNavigationImpl);
+        boolean isErrorPage(long nativeNavigationImpl);
+        int getLoadError(long nativeNavigationImpl);
+        boolean setRequestHeader(long nativeNavigationImpl, String name, String value);
         boolean isValidRequestHeaderName(String name);
         boolean isValidRequestHeaderValue(String value);
     }

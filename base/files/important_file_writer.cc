@@ -36,17 +36,15 @@ namespace {
 
 constexpr auto kDefaultCommitInterval = TimeDelta::FromSeconds(10);
 
-// This enum is used to define the buckets for an enumerated UMA histogram.
-// Hence,
-//   (a) existing enumerated constants should never be deleted or reordered, and
-//   (b) new constants should only be appended at the end of the enumeration.
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
 enum TempFileFailure {
-  FAILED_CREATING,
-  FAILED_OPENING,
-  FAILED_CLOSING,  // Unused.
-  FAILED_WRITING,
-  FAILED_RENAMING,
-  FAILED_FLUSHING,
+  FAILED_CREATING = 0,
+  // FAILED_OPENING = 1,
+  // FAILED_CLOSING = 2,
+  FAILED_WRITING = 3,
+  FAILED_RENAMING = 4,
+  FAILED_FLUSHING = 5,
   TEMP_FILE_FAILURE_MAX
 };
 
@@ -99,9 +97,30 @@ void WriteScopedStringToFileAtomically(
     std::move(after_write_callback).Run(result);
 }
 
-void DeleteTmpFile(const FilePath& tmp_file_path,
+// Deletes the file named |tmp_file_path|, which may be open as |tmp_file|. On
+// Windows, the delete is accomplished by marking the open file for deletion
+// upon closure. Otherwise (if the file is not open, or not on Windows), the
+// file is deleted the usual way.
+void DeleteTmpFile(base::File tmp_file,
+                   const FilePath& tmp_file_path,
                    StringPiece histogram_suffix) {
-  if (!DeleteFile(tmp_file_path, false)) {
+#if defined(OS_WIN)
+  // Mark the file for deletion when it is closed and then close it implicitly.
+  if (tmp_file.IsValid()) {
+    if (tmp_file.DeleteOnClose(true))
+      return;
+    // The file was opened with exclusive r/w access, so it would be very odd
+    // for this to fail.
+    UmaHistogramExactLinearWithSuffix(
+        "ImportantFile.DeleteOnCloseError", histogram_suffix,
+        -base::File::GetLastFileError(), -base::File::FILE_ERROR_MAX);
+    // Go ahead and close the file. The call to DeleteFile below will basically
+    // repeat the above, but maybe it will somehow succeed.
+    tmp_file.Close();
+  }
+#endif
+
+  if (!DeleteFile(tmp_file_path, /*recursive=*/false)) {
     UmaHistogramExactLinearWithSuffix(
         "ImportantFile.FileDeleteError", histogram_suffix,
         -base::File::GetLastFileError(), -base::File::FILE_ERROR_MAX);
@@ -142,59 +161,58 @@ bool ImportantFileWriter::WriteFileAtomically(const FilePath& path,
   // as target file, so it can be moved in one step, and that the temp file
   // is securely created.
   FilePath tmp_file_path;
-  if (!CreateTemporaryFileInDir(path.DirName(), &tmp_file_path)) {
-    const auto last_file_error = base::File::GetLastFileError();
-    UmaHistogramExactLinearWithSuffix("ImportantFile.FileCreateError",
-                                      histogram_suffix, -last_file_error,
-                                      -base::File::FILE_ERROR_MAX);
+  File tmp_file =
+      CreateAndOpenTemporaryFileInDir(path.DirName(), &tmp_file_path);
+  if (!tmp_file.IsValid()) {
+    UmaHistogramExactLinearWithSuffix(
+        "ImportantFile.FileCreateError", histogram_suffix,
+        -tmp_file.error_details(), -File::FILE_ERROR_MAX);
     LogFailure(path, histogram_suffix, FAILED_CREATING,
                "could not create temporary file");
     return false;
   }
 
-  File tmp_file(tmp_file_path, File::FLAG_OPEN | File::FLAG_WRITE);
-  if (!tmp_file.IsValid()) {
-    UmaHistogramExactLinearWithSuffix(
-        "ImportantFile.FileOpenError", histogram_suffix,
-        -tmp_file.error_details(), -base::File::FILE_ERROR_MAX);
-    LogFailure(path, histogram_suffix, FAILED_OPENING,
-               "could not open temporary file");
-    DeleteFile(tmp_file_path, false);
-    return false;
+  // Don't write all of the data at once because this can lead to kernel
+  // address-space exhaustion on 32-bit Windows (see https://crbug.com/1001022
+  // for details).
+  constexpr ptrdiff_t kMaxWriteAmount = 8 * 1024 * 1024;
+  int bytes_written = 0;
+  for (const char *scan = data.data(), *const end = scan + data.length();
+       scan < end; scan += bytes_written) {
+    const int write_amount = std::min(kMaxWriteAmount, end - scan);
+    bytes_written = tmp_file.WriteAtCurrentPos(scan, write_amount);
+    if (bytes_written != write_amount) {
+      UmaHistogramExactLinearWithSuffix(
+          "ImportantFile.FileWriteError", histogram_suffix,
+          -base::File::GetLastFileError(), -base::File::FILE_ERROR_MAX);
+      LogFailure(
+          path, histogram_suffix, FAILED_WRITING,
+          "error writing, bytes_written=" + NumberToString(bytes_written));
+      DeleteTmpFile(std::move(tmp_file), tmp_file_path, histogram_suffix);
+      return false;
+    }
   }
 
-  // If this fails in the wild, something really bad is going on.
-  const int data_length = checked_cast<int32_t>(data.length());
-  int bytes_written = tmp_file.Write(0, data.data(), data_length);
-  if (bytes_written < data_length) {
-    UmaHistogramExactLinearWithSuffix(
-        "ImportantFile.FileWriteError", histogram_suffix,
-        -base::File::GetLastFileError(), -base::File::FILE_ERROR_MAX);
-  }
-  bool flush_success = tmp_file.Flush();
-  tmp_file.Close();
-
-  if (bytes_written < data_length) {
-    LogFailure(path, histogram_suffix, FAILED_WRITING,
-               "error writing, bytes_written=" + NumberToString(bytes_written));
-    DeleteTmpFile(tmp_file_path, histogram_suffix);
-    return false;
-  }
-
-  if (!flush_success) {
+  if (!tmp_file.Flush()) {
     LogFailure(path, histogram_suffix, FAILED_FLUSHING, "error flushing");
-    DeleteTmpFile(tmp_file_path, histogram_suffix);
+    DeleteTmpFile(std::move(tmp_file), tmp_file_path, histogram_suffix);
     return false;
   }
 
-  base::File::Error replace_file_error = base::File::FILE_OK;
+  File::Error replace_file_error = File::FILE_OK;
+
+  // The file must be closed for ReplaceFile to do its job, which opens up a
+  // race with other software that may open the temp file (e.g., an A/V scanner
+  // doing its job without oplocks). Close as late as possible to improve the
+  // chances that the other software will lose the race.
+  tmp_file.Close();
   if (!ReplaceFile(tmp_file_path, path, &replace_file_error)) {
     UmaHistogramExactLinearWithSuffix("ImportantFile.FileRenameError",
                                       histogram_suffix, -replace_file_error,
-                                      -base::File::FILE_ERROR_MAX);
+                                      -File::FILE_ERROR_MAX);
     LogFailure(path, histogram_suffix, FAILED_RENAMING,
                "could not rename temporary file");
-    DeleteTmpFile(tmp_file_path, histogram_suffix);
+    DeleteTmpFile(File(), tmp_file_path, histogram_suffix);
     return false;
   }
 

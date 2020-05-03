@@ -217,6 +217,25 @@ public class Browser {
     }
 
     /**
+     * Sets the View shown at the bottom of the browser. A value of null removes the view.
+     *
+     * @param view The new bottom-view.
+     *
+     * @since 84
+     */
+    public void setBottomView(@Nullable View view) {
+        ThreadCheck.ensureOnUiThread();
+        if (WebLayer.getSupportedMajorVersionInternal() < 84) {
+            throw new UnsupportedOperationException();
+        }
+        try {
+            mImpl.setBottomView(ObjectWrapper.wrap(view));
+        } catch (RemoteException e) {
+            throw new APICallException(e);
+        }
+    }
+
+    /**
      * Control support for embedding use cases such as animations. This should be enabled when the
      * container view of the fragment is animated in any way, needs to be rotated or blended, or
      * need to control z-order with other views or other BrowserFragmentImpls. Note embedder should

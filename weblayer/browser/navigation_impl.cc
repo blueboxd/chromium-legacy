@@ -50,16 +50,12 @@ void NavigationImpl::SetJavaNavigation(
   java_navigation_ = java_navigation;
 }
 
-ScopedJavaLocalRef<jstring> NavigationImpl::GetUri(
-    JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& obj) {
+ScopedJavaLocalRef<jstring> NavigationImpl::GetUri(JNIEnv* env) {
   return ScopedJavaLocalRef<jstring>(
       base::android::ConvertUTF8ToJavaString(env, GetURL().spec()));
 }
 
-ScopedJavaLocalRef<jobjectArray> NavigationImpl::GetRedirectChain(
-    JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& obj) {
+ScopedJavaLocalRef<jobjectArray> NavigationImpl::GetRedirectChain(JNIEnv* env) {
   std::vector<std::string> jni_redirects;
   for (const GURL& redirect : GetRedirectChain())
     jni_redirects.push_back(redirect.spec());
@@ -68,7 +64,6 @@ ScopedJavaLocalRef<jobjectArray> NavigationImpl::GetRedirectChain(
 
 jboolean NavigationImpl::SetRequestHeader(
     JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& obj,
     const base::android::JavaParamRef<jstring>& name,
     const base::android::JavaParamRef<jstring>& value) {
   if (!safe_to_set_request_headers_)

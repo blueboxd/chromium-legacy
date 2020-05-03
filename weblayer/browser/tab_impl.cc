@@ -449,18 +449,20 @@ static void JNI_TabImpl_DeleteTab(JNIEnv* env, jlong tab) {
     owned_tab.reset(tab_impl);
 }
 
-ScopedJavaLocalRef<jobject> TabImpl::GetWebContents(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj) {
+ScopedJavaLocalRef<jobject> TabImpl::GetWebContents(JNIEnv* env) {
   return web_contents_->GetJavaWebContents();
 }
 
-void TabImpl::SetTopControlsContainerView(
+void TabImpl::SetBrowserControlsContainerViews(
     JNIEnv* env,
-    jlong native_top_controls_container_view) {
+    jlong native_top_controls_container_view,
+    jlong native_bottom_controls_container_view) {
   top_controls_container_view_ =
       reinterpret_cast<BrowserControlsContainerView*>(
           native_top_controls_container_view);
+  bottom_controls_container_view_ =
+      reinterpret_cast<BrowserControlsContainerView*>(
+          native_bottom_controls_container_view);
 }
 
 void TabImpl::ExecuteScript(JNIEnv* env,
@@ -674,8 +676,19 @@ void TabImpl::RunFileChooser(
 
 int TabImpl::GetTopControlsHeight() {
 #if defined(OS_ANDROID)
-  return top_controls_container_view_
-             ? top_controls_container_view_->GetTopControlsHeight()
+  int height = top_controls_container_view_
+                   ? top_controls_container_view_->GetControlsHeight()
+                   : 0;
+  return height;
+#else
+  return 0;
+#endif
+}
+
+int TabImpl::GetBottomControlsHeight() {
+#if defined(OS_ANDROID)
+  return bottom_controls_container_view_
+             ? bottom_controls_container_view_->GetControlsHeight()
              : 0;
 #else
   return 0;

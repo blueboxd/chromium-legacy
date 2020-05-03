@@ -86,8 +86,8 @@ OsSettingsManager::OsSettingsManager(
   sections_.push_back(std::make_unique<PeopleSection>(
       profile, /*delegate=*/this, sync_service, supervised_user_service,
       kerberos_credentials_manager, identity_manager, profile->GetPrefs()));
-  sections_.push_back(
-      std::make_unique<DeviceSection>(profile, /*delegate=*/this));
+  sections_.push_back(std::make_unique<DeviceSection>(
+      profile, /*delegate=*/this, profile->GetPrefs()));
   sections_.push_back(std::make_unique<PersonalizationSection>(
       profile, /*delegate=*/this, profile->GetPrefs()));
   sections_.push_back(

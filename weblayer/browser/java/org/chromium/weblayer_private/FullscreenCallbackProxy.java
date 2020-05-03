@@ -49,8 +49,7 @@ public final class FullscreenCallbackProxy {
                 if (mNativeFullscreenCallbackProxy == 0) {
                     throw new IllegalStateException("Called after destroy()");
                 }
-                FullscreenCallbackProxyJni.get().doExitFullscreen(
-                        mNativeFullscreenCallbackProxy, FullscreenCallbackProxy.this);
+                FullscreenCallbackProxyJni.get().doExitFullscreen(mNativeFullscreenCallbackProxy);
             }
         };
         mClient.enterFullscreen(ObjectWrapper.wrap(exitFullscreenCallback));
@@ -65,6 +64,6 @@ public final class FullscreenCallbackProxy {
     interface Natives {
         long createFullscreenCallbackProxy(FullscreenCallbackProxy proxy, long tab);
         void deleteFullscreenCallbackProxy(long proxy);
-        void doExitFullscreen(long nativeFullscreenCallbackProxy, FullscreenCallbackProxy proxy);
+        void doExitFullscreen(long nativeFullscreenCallbackProxy);
     }
 }

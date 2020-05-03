@@ -249,7 +249,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': '6d3b46999cd6b4b2c6c5c8ed8a937d0831115d9d',
+  'devtools_frontend_revision': 'a13312320fe43be939f67be227e9841fb08c3ea6',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -524,7 +524,7 @@ deps = {
   },
 
   'src/ios/third_party/material_components_ios/src': {
-      'url': Var('chromium_git') + '/external/github.com/material-components/material-components-ios.git' + '@' + '9e3ab8703b8d7f2f124ceb90e9ceb01d7a60be99',
+      'url': Var('chromium_git') + '/external/github.com/material-components/material-components-ios.git' + '@' + 'b9822411b97730324dedca19492d895c68fc880a',
       'condition': 'checkout_ios',
   },
 
@@ -871,7 +871,7 @@ deps = {
   },
 
   'src/third_party/depot_tools':
-    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + '4eadc541096baef2ff303f1aa39472d106353303',
+    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + '082a11aa492205ba8470b2d41dce40a9979a3509',
 
   'src/third_party/devtools-frontend/src':
     Var('chromium_git') + '/devtools/devtools-frontend' + '@' + Var('devtools_frontend_revision'),
@@ -1220,7 +1220,7 @@ deps = {
   },
 
   'src/third_party/perfetto':
-    Var('android_git') + '/platform/external/perfetto.git' + '@' + '9ad32a74683b0d16260908c7bd5a4167517a8450',
+    Var('android_git') + '/platform/external/perfetto.git' + '@' + '7516705df187acc2c18d2259de35f071e1bcc4a5',
 
   'src/third_party/perl': {
       'url': Var('chromium_git') + '/chromium/deps/perl.git' + '@' + '6f3e5028eb65d0b4c5fdd792106ac4c84eee1eb3',
@@ -1412,6 +1412,9 @@ deps = {
   'src/third_party/usrsctp/usrsctplib':
     Var('chromium_git') + '/external/github.com/sctplab/usrsctp' + '@' + 'a8c51df76caae94254b1e59999405f739467490e',
 
+  'src/third_party/vulkanmemoryallocator':
+    Var('chromium_git') + '/external/github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator.git' + '@' + 'cb11e420fa92938eb6b9cac50dde3c6fb21d14f3',
+
   # Display server protocol for Linux.
   'src/third_party/wayland/src': {
       'url': Var('chromium_git') + '/external/anongit.freedesktop.org/git/wayland/wayland.git' + '@' + 'e091839dd08354289e501a47219e0c7a6472dff3',
@@ -1522,7 +1525,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@1ff539bda023d273ef0115bd5f4570603ffe5ad9',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@46b0786d8a8169e07ca9b0bd1e23a8ddddc47bd1',
     'condition': 'checkout_src_internal',
   },
 

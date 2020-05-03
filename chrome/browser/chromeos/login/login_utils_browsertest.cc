@@ -9,6 +9,7 @@
 #include "base/run_loop.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/login_manager_test.h"
+#include "chrome/browser/chromeos/login/session/user_session_initializer.h"
 #include "chrome/browser/chromeos/login/test/login_manager_mixin.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/common/pref_names.h"
@@ -63,11 +64,10 @@ IN_PROC_BROWSER_TEST_F(LoginUtilsTest, RlzInitialized) {
   // Wait for blocking RLZ tasks to complete.
   {
     base::RunLoop loop;
-    PrefChangeRegistrar registrar;
-    registrar.Init(local_state());
-    registrar.Add(prefs::kRLZBrand, loop.QuitClosure());
-
     WizardController::SkipPostLoginScreensForTesting();
+    UserSessionInitializer::Get()->set_init_rlz_impl_closure_for_testing(
+        loop.QuitClosure());
+
     login_manager_.LoginAsNewReguarUser();
     login_manager_.WaitForActiveSession();
 

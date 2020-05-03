@@ -5,6 +5,10 @@
 #ifndef COMPONENTS_PERFORMANCE_MANAGER_PUBLIC_DECORATORS_PAGE_LIVE_STATE_DECORATOR_H_
 #define COMPONENTS_PERFORMANCE_MANAGER_PUBLIC_DECORATORS_PAGE_LIVE_STATE_DECORATOR_H_
 
+#include "components/performance_manager/public/graph/graph.h"
+#include "components/performance_manager/public/graph/node_data_describer.h"
+#include "components/performance_manager/public/graph/page_node.h"
+
 namespace content {
 class WebContents;
 }  // namespace content
@@ -17,13 +21,14 @@ class PageNode;
 // All the functions that take a WebContents* as a parameter should only be
 // called from the UI thread, the event will be forwarded to the corresponding
 // PageNode on the Performance Manager's sequence.
-class PageLiveStateDecorator {
+class PageLiveStateDecorator : public GraphOwnedDefaultImpl,
+                               public NodeDataDescriberDefaultImpl {
  public:
   class Data;
 
   // This object should only be used via its static methods.
-  PageLiveStateDecorator() = delete;
-  ~PageLiveStateDecorator() = delete;
+  PageLiveStateDecorator() = default;
+  ~PageLiveStateDecorator() override = default;
   PageLiveStateDecorator(const PageLiveStateDecorator& other) = delete;
   PageLiveStateDecorator& operator=(const PageLiveStateDecorator&) = delete;
 
@@ -53,6 +58,14 @@ class PageLiveStateDecorator {
 
   static void SetWasDiscarded(content::WebContents* contents,
                               bool was_discarded);
+
+ private:
+  // GraphOwned implementation:
+  void OnPassedToGraph(Graph* graph) override;
+  void OnTakenFromGraph(Graph* graph) override;
+
+  // NodeDataDescriber implementation:
+  base::Value DescribePageNodeData(const PageNode* node) const override;
 };
 
 class PageLiveStateDecorator::Data {

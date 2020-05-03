@@ -7,6 +7,8 @@
 #include "base/android/jni_string.h"
 #include "cc/layers/ui_resource_layer.h"
 #include "content/public/browser/android/compositor.h"
+#include "content/public/browser/render_view_host.h"
+#include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/browser_controls_state.h"
 #include "ui/android/resources/resource.h"
@@ -21,88 +23,87 @@ using base::android::JavaParamRef;
 namespace weblayer {
 
 BrowserControlsContainerView::BrowserControlsContainerView(
-    const JavaParamRef<jobject>& java_top_controls_container_view,
+    const JavaParamRef<jobject>& java_browser_controls_container_view,
     ContentViewRenderView* content_view_render_view)
-    : java_top_controls_container_view_(java_top_controls_container_view),
+    : java_browser_controls_container_view_(
+          java_browser_controls_container_view),
       content_view_render_view_(content_view_render_view) {
   DCHECK(content_view_render_view_);
 }
 
 BrowserControlsContainerView::~BrowserControlsContainerView() = default;
 
-int BrowserControlsContainerView::GetTopControlsHeight() {
-  return top_controls_layer_ ? top_controls_layer_->bounds().height() : 0;
+int BrowserControlsContainerView::GetControlsHeight() {
+  return controls_layer_ ? controls_layer_->bounds().height() : 0;
 }
 
-void BrowserControlsContainerView::CreateTopControlsLayer(
+void BrowserControlsContainerView::CreateControlsLayer(
     JNIEnv* env,
-    const JavaParamRef<jobject>& caller,
     int id) {
-  top_controls_resource_id_ = id;
-  top_controls_layer_ = cc::UIResourceLayer::Create();
-  // Real size is sent in SetTopControlsSize().
-  top_controls_layer_->SetBounds(gfx::Size(1, 1));
-  top_controls_layer_->SetPosition(gfx::PointF(0, 0));
-  top_controls_layer_->SetElementId(cc::ElementId(top_controls_layer_->id()));
-  top_controls_layer_->SetHitTestable(false);
-  top_controls_layer_->SetIsDrawable(true);
-  content_view_render_view_->root_container_layer()->AddChild(
-      top_controls_layer_);
-  UpdateTopControlsResource(env, caller);
+  controls_resource_id_ = id;
+  controls_layer_ = cc::UIResourceLayer::Create();
+  // Real size is sent in SetControlsSize().
+  controls_layer_->SetBounds(gfx::Size(1, 1));
+  controls_layer_->SetPosition(gfx::PointF(0, 0));
+  controls_layer_->SetElementId(cc::ElementId(controls_layer_->id()));
+  controls_layer_->SetHitTestable(false);
+  controls_layer_->SetIsDrawable(true);
+  content_view_render_view_->root_container_layer()->AddChild(controls_layer_);
+  UpdateControlsResource(env);
 }
 
-void BrowserControlsContainerView::DeleteTopControlsContainerView(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& caller) {
+void BrowserControlsContainerView::DeleteBrowserControlsContainerView(
+    JNIEnv* env) {
   delete this;
 }
 
-void BrowserControlsContainerView::DeleteTopControlsLayer(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& caller) {
-  top_controls_layer_.reset();
+void BrowserControlsContainerView::DeleteControlsLayer(JNIEnv* env) {
+  controls_layer_.reset();
 }
 
-void BrowserControlsContainerView::SetTopControlsOffset(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& caller,
-    int top_controls_offset_y,
-    int top_content_offset_y) {
-  // |top_controls_layer_| may not be created if the top controls view has 0
-  // height.
-  if (top_controls_layer_)
-    top_controls_layer_->SetPosition(gfx::PointF(0, top_controls_offset_y));
+void BrowserControlsContainerView::SetTopControlsOffset(JNIEnv* env,
+                                                        int controls_offset_y,
+                                                        int content_offset_y) {
+  // |controls_layer_| may not be created if the controls view has 0 height.
+  if (controls_layer_)
+    controls_layer_->SetPosition(gfx::PointF(0, controls_offset_y));
   if (web_contents()) {
     web_contents()->GetNativeView()->GetLayer()->SetPosition(
-        gfx::PointF(0, top_content_offset_y));
+        gfx::PointF(0, content_offset_y));
   }
 }
 
-void BrowserControlsContainerView::SetTopControlsSize(
+void BrowserControlsContainerView::SetBottomControlsOffset(
     JNIEnv* env,
-    const JavaParamRef<jobject>& caller,
-    int width,
-    int height) {
-  DCHECK(top_controls_layer_);
-  top_controls_layer_->SetBounds(gfx::Size(width, height));
+    int controls_offset_y) {
+  // |controls_layer_| may not be created if the controls view has 0 height.
+  if (controls_layer_) {
+    controls_layer_->SetPosition(
+        gfx::PointF(0, content_view_render_view_->height() -
+                           GetControlsHeight() + controls_offset_y));
+  }
 }
 
-void BrowserControlsContainerView::UpdateTopControlsResource(
+void BrowserControlsContainerView::SetControlsSize(
     JNIEnv* env,
-    const JavaParamRef<jobject>& caller) {
-  DCHECK(top_controls_layer_);
+    int width,
+    int height) {
+  DCHECK(controls_layer_);
+  controls_layer_->SetBounds(gfx::Size(width, height));
+}
+
+void BrowserControlsContainerView::UpdateControlsResource(JNIEnv* env) {
+  DCHECK(controls_layer_);
   ui::ResourceManager& resource_manager =
       content_view_render_view_->compositor()->GetResourceManager();
-  ui::Resource* top_controls_resource = resource_manager.GetResource(
-      ui::ANDROID_RESOURCE_TYPE_DYNAMIC, top_controls_resource_id_);
-  DCHECK(top_controls_resource);
-  top_controls_layer_->SetUIResourceId(
-      top_controls_resource->ui_resource()->id());
+  ui::Resource* controls_resource = resource_manager.GetResource(
+      ui::ANDROID_RESOURCE_TYPE_DYNAMIC, controls_resource_id_);
+  DCHECK(controls_resource);
+  controls_layer_->SetUIResourceId(controls_resource->ui_resource()->id());
 }
 
 void BrowserControlsContainerView::SetWebContents(
     JNIEnv* env,
-    const JavaParamRef<jobject>& caller,
     const JavaParamRef<jobject>& web_contents) {
   Observe(content::WebContents::FromJavaWebContents(web_contents));
 }
@@ -114,16 +115,17 @@ void BrowserControlsContainerView::DidToggleFullscreenModeForTab(
       "weblayer",
       "Java_BrowserControlsContainerView_didToggleFullscreenModeForTab");
   Java_BrowserControlsContainerView_didToggleFullscreenModeForTab(
-      AttachCurrentThread(), java_top_controls_container_view_,
+      AttachCurrentThread(), java_browser_controls_container_view_,
       entered_fullscreen);
 }
 
-static jlong JNI_BrowserControlsContainerView_CreateTopControlsContainerView(
+static jlong
+JNI_BrowserControlsContainerView_CreateBrowserControlsContainerView(
     JNIEnv* env,
-    const JavaParamRef<jobject>& java_top_controls_container_view,
+    const JavaParamRef<jobject>& java_browser_controls_container_view,
     jlong native_content_view_render_view) {
   return reinterpret_cast<jlong>(
-      new BrowserControlsContainerView(java_top_controls_container_view,
+      new BrowserControlsContainerView(java_browser_controls_container_view,
                                        reinterpret_cast<ContentViewRenderView*>(
                                            native_content_view_render_view)));
 }

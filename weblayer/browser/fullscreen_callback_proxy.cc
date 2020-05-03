@@ -42,9 +42,7 @@ void FullscreenCallbackProxy::ExitFullscreen() {
                                               java_delegate_);
 }
 
-void FullscreenCallbackProxy::DoExitFullscreen(
-    JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& caller) {
+void FullscreenCallbackProxy::DoExitFullscreen(JNIEnv* env) {
   if (exit_fullscreen_closure_)
     std::move(exit_fullscreen_closure_).Run();
 }

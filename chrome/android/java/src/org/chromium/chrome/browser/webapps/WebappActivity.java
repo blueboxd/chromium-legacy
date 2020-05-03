@@ -39,7 +39,6 @@ import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabBrowserControlsConstraintsHelper;
 import org.chromium.chrome.browser.ui.appmenu.AppMenuPropertiesDelegate;
-import org.chromium.chrome.browser.usage_stats.UsageStatsService;
 import org.chromium.chrome.browser.util.AndroidTaskUtils;
 import org.chromium.chrome.browser.webapps.dependency_injection.WebappActivityComponent;
 import org.chromium.chrome.browser.webapps.dependency_injection.WebappActivityModule;
@@ -241,11 +240,6 @@ public class WebappActivity extends BaseCustomTabActivity<WebappActivityComponen
             StrictMode.setThreadPolicy(oldPolicy);
         }
 
-        // When turning on TalkBack on Android, hitting app switcher to bring a WebappActivity to
-        // front will speak "Web App", which is the label of WebappActivity. Therefore, we set title
-        // of the WebappActivity explicitly to make it speak the short name of the Web App.
-        setTitle(mWebappInfo.shortName());
-
         super.performPreInflationStartup();
 
         if (mWebappInfo.displayMode() == WebDisplayMode.FULLSCREEN) {
@@ -284,10 +278,6 @@ public class WebappActivity extends BaseCustomTabActivity<WebappActivityComponen
 
     @Override
     public void finishNativeInitialization() {
-        if (UsageStatsService.isEnabled() && !mWebappInfo.isSplashProvidedByWebApk()) {
-            UsageStatsService.getInstance().createPageViewObserver(getTabModelSelector(), this);
-        }
-
         getFullscreenManager().setTab(getActivityTab());
         super.finishNativeInitialization();
     }

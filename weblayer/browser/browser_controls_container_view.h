@@ -29,49 +29,39 @@ class ContentViewRenderView;
 class BrowserControlsContainerView : public content::WebContentsObserver {
  public:
   BrowserControlsContainerView(const base::android::JavaParamRef<jobject>&
-                                   java_top_controls_container_view,
+                                   java_browser_controls_container_view,
                                ContentViewRenderView* content_view_render_view);
   ~BrowserControlsContainerView() override;
 
-  // Height needed to display the top-control.
-  int GetTopControlsHeight();
+  // Height needed to display the control.
+  int GetControlsHeight();
 
-  // Creates |top_controls_layer_|.
-  void CreateTopControlsLayer(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& caller,
-      int id);
+  // Creates |controls_layer_|.
+  void CreateControlsLayer(JNIEnv* env,
+                           int id);
 
   // Deletes |this|.
-  void DeleteTopControlsContainerView(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& caller);
+  void DeleteBrowserControlsContainerView(JNIEnv* env);
 
-  // Deletes |top_controls_layer_|.
-  void DeleteTopControlsLayer(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& caller);
+  // Deletes |controls_layer_|.
+  void DeleteControlsLayer(JNIEnv* env);
 
-  // Sets the offsets of the top-controls and content. See ViewAndroidDelegate
-  // for details on this.
+  // Sets the offsets of the controls and content. See
+  // BrowserControlsContainerView's javadoc for details on this.
   void SetTopControlsOffset(JNIEnv* env,
-                            const base::android::JavaParamRef<jobject>& caller,
-                            int top_controls_offset_y,
-                            int top_content_offset_y);
+                            int controls_offset_y,
+                            int content_offset_y);
+  void SetBottomControlsOffset(JNIEnv* env, int controls_offset_y);
 
-  // Sets the size of |top_controls_layer_|.
-  void SetTopControlsSize(JNIEnv* env,
-                          const base::android::JavaParamRef<jobject>& caller,
-                          int width,
-                          int height);
+  // Sets the size of |controls_layer_|.
+  void SetControlsSize(JNIEnv* env,
+                       int width,
+                       int height);
 
-  // Triggers updating the resource (bitmap) shown in |top_controls_layer_|.
-  void UpdateTopControlsResource(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& caller);
+  // Triggers updating the resource (bitmap) shown in |controls_layer_|.
+  void UpdateControlsResource(JNIEnv* env);
 
   void SetWebContents(JNIEnv* env,
-                      const base::android::JavaParamRef<jobject>& caller,
                       const base::android::JavaParamRef<jobject>& web_contents);
 
  private:
@@ -79,13 +69,14 @@ class BrowserControlsContainerView : public content::WebContentsObserver {
   void DidToggleFullscreenModeForTab(bool entered_fullscreen,
                                      bool will_cause_resize) override;
 
-  base::android::ScopedJavaGlobalRef<jobject> java_top_controls_container_view_;
+  base::android::ScopedJavaGlobalRef<jobject>
+      java_browser_controls_container_view_;
   ContentViewRenderView* content_view_render_view_;
-  int top_controls_resource_id_ = -1;
+  int controls_resource_id_ = -1;
 
-  // Layer containing showing the image for the top-controls. This is a sibling
-  // of the WebContents layer.
-  scoped_refptr<cc::UIResourceLayer> top_controls_layer_;
+  // Layer containing showing the image for the controls. This is a sibling of
+  // the WebContents layer.
+  scoped_refptr<cc::UIResourceLayer> controls_layer_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserControlsContainerView);
 };

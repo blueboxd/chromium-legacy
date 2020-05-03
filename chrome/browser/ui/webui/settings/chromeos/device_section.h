@@ -18,6 +18,8 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "ui/events/devices/input_device_event_observer.h"
 
+class PrefService;
+
 namespace content {
 class WebUIDataSource;
 }  // namespace content
@@ -33,12 +35,15 @@ class DeviceSection : public OsSettingsSection,
                       public ash::mojom::CrosDisplayConfigObserver,
                       public PowerManagerClient::Observer {
  public:
-  DeviceSection(Profile* profile, Delegate* per_page_delegate);
+  DeviceSection(Profile* profile,
+                Delegate* per_page_delegate,
+                PrefService* pref_service);
   ~DeviceSection() override;
 
  private:
   // OsSettingsSection:
   void AddLoadTimeData(content::WebUIDataSource* html_source) override;
+  void AddHandlers(content::WebUI* web_ui) override;
 
   // system::PointerDeviceObserver::Observer:
   void TouchpadExists(bool exists) override;
@@ -69,6 +74,7 @@ class DeviceSection : public OsSettingsSection,
 
   void AddDevicePointersStrings(content::WebUIDataSource* html_source);
 
+  PrefService* pref_service_;
   system::PointerDeviceObserver pointer_device_observer_;
   mojo::Remote<ash::mojom::CrosDisplayConfigController> cros_display_config_;
   mojo::AssociatedReceiver<ash::mojom::CrosDisplayConfigObserver>

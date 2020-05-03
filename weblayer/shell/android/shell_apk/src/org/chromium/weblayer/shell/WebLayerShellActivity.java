@@ -131,6 +131,7 @@ public class WebLayerShellActivity extends FragmentActivity {
     private TabListCallback mTabListCallback;
     private List<Tab> mPreviousTabList = new ArrayList<>();
     private Runnable mExitFullscreenRunnable;
+    private View mBottomView;
 
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
@@ -169,6 +170,8 @@ public class WebLayerShellActivity extends FragmentActivity {
         mMenuButton.setOnClickListener(v -> {
             PopupMenu popup = new PopupMenu(WebLayerShellActivity.this, v);
             popup.getMenuInflater().inflate(R.menu.app_menu, popup.getMenu());
+            MenuItem bottomMenuItem = popup.getMenu().findItem(R.id.toggle_bottom_view_id);
+            bottomMenuItem.setChecked(mBottomView != null);
             popup.setOnMenuItemClickListener(item -> {
                 if (item.getItemId() == R.id.reload_menu_id) {
                     mBrowser.getActiveTab().getNavigationController().reload();
@@ -186,6 +189,17 @@ public class WebLayerShellActivity extends FragmentActivity {
 
                 if (item.getItemId() == R.id.find_end_menu_id) {
                     mBrowser.getActiveTab().getFindInPageController().setFindInPageCallback(null);
+                    return true;
+                }
+
+                if (item.getItemId() == R.id.toggle_bottom_view_id) {
+                    if (mBottomView == null) {
+                        mBottomView =
+                                LayoutInflater.from(this).inflate(R.layout.bottom_controls, null);
+                    } else {
+                        mBottomView = null;
+                    }
+                    mBrowser.setBottomView(mBottomView);
                     return true;
                 }
 

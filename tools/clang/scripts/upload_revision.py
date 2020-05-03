@@ -43,6 +43,7 @@ Cq-Include-Trybots: chromium/try:win-angle-deqp-rel-64
 Cq-Include-Trybots: chromium/try:dawn-win10-x86-deps-rel
 Cq-Include-Trybots: chrome/try:iphone-device,ipad-device
 Cq-Include-Trybots: chrome/try:linux-chromeos-chrome
+Cq-Include-Trybots: chrome/try:win-chrome,win64-chrome,mac-chrome
 '''
 
 is_win = sys.platform.startswith('win32')

@@ -636,13 +636,16 @@ FilePath GetHomeDir() {
 }
 #endif  // !defined(OS_MACOSX)
 
-bool CreateTemporaryFile(FilePath* path) {
+File CreateAndOpenTemporaryFileInDir(const FilePath& dir, FilePath* temp_file) {
   // For call to close() inside ScopedFD.
   ScopedBlockingCall scoped_blocking_call(FROM_HERE, BlockingType::MAY_BLOCK);
-  FilePath directory;
-  if (!GetTempDir(&directory))
-    return false;
-  ScopedFD fd = CreateAndOpenFdForTemporaryFileInDir(directory, path);
+  return File(CreateAndOpenFdForTemporaryFileInDir(dir, temp_file));
+}
+
+bool CreateTemporaryFileInDir(const FilePath& dir, FilePath* temp_file) {
+  // For call to close() inside ScopedFD.
+  ScopedBlockingCall scoped_blocking_call(FROM_HERE, BlockingType::MAY_BLOCK);
+  ScopedFD fd = CreateAndOpenFdForTemporaryFileInDir(dir, temp_file);
   return fd.is_valid();
 }
 
@@ -657,13 +660,6 @@ ScopedFILE CreateAndOpenTemporaryStreamInDir(const FilePath& dir,
   if (!file)
     close(fd);
   return ScopedFILE(file);
-}
-
-bool CreateTemporaryFileInDir(const FilePath& dir, FilePath* temp_file) {
-  // For call to close() inside ScopedFD.
-  ScopedBlockingCall scoped_blocking_call(FROM_HERE, BlockingType::MAY_BLOCK);
-  ScopedFD fd = CreateAndOpenFdForTemporaryFileInDir(dir, temp_file);
-  return fd.is_valid();
 }
 
 static bool CreateTemporaryDirInDirImpl(const FilePath& base_dir,
@@ -820,6 +816,18 @@ FILE* FileToFILE(File file, const char* mode) {
   if (stream)
     file.TakePlatformFile();
   return stream;
+}
+
+File FILEToFile(FILE* file_stream) {
+  if (!file_stream)
+    return File();
+
+  PlatformFile fd = fileno(file_stream);
+  DCHECK_NE(fd, -1);
+  ScopedPlatformFile other_fd(HANDLE_EINTR(dup(fd)));
+  if (!other_fd.is_valid())
+    return File(File::GetLastFileError());
+  return File(std::move(other_fd));
 }
 #endif  // !defined(OS_NACL)
 

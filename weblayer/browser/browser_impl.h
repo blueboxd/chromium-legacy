@@ -52,44 +52,28 @@ class BrowserImpl : public Browser {
   bool CompositorHasSurface();
 
   void AddTab(JNIEnv* env,
-              const base::android::JavaParamRef<jobject>& caller,
               long native_tab);
   void RemoveTab(JNIEnv* env,
-                 const base::android::JavaParamRef<jobject>& caller,
                  long native_tab);
-  base::android::ScopedJavaLocalRef<jobjectArray> GetTabs(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& caller);
+  base::android::ScopedJavaLocalRef<jobjectArray> GetTabs(JNIEnv* env);
   void SetActiveTab(JNIEnv* env,
-                    const base::android::JavaParamRef<jobject>& caller,
                     long native_tab);
-  base::android::ScopedJavaLocalRef<jobject> GetActiveTab(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& caller);
-  void PrepareForShutdown(JNIEnv* env,
-                          const base::android::JavaParamRef<jobject>& caller);
-  base::android::ScopedJavaLocalRef<jstring> GetPersistenceId(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& caller);
-  void SaveBrowserPersisterIfNecessary(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& caller);
+  base::android::ScopedJavaLocalRef<jobject> GetActiveTab(JNIEnv* env);
+  void PrepareForShutdown(JNIEnv* env);
+  base::android::ScopedJavaLocalRef<jstring> GetPersistenceId(JNIEnv* env);
+  void SaveBrowserPersisterIfNecessary(JNIEnv* env);
   base::android::ScopedJavaLocalRef<jbyteArray> GetBrowserPersisterCryptoKey(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& caller);
+      JNIEnv* env);
   base::android::ScopedJavaLocalRef<jbyteArray> GetMinimalPersistenceState(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& caller);
+      JNIEnv* env);
   void RestoreStateIfNecessary(
       JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& caller,
       const base::android::JavaParamRef<jstring>& j_persistence_id,
       const base::android::JavaParamRef<jbyteArray>& j_persistence_crypto_key,
       const base::android::JavaParamRef<jbyteArray>&
           j_minimal_persistence_state);
   void WebPreferencesChanged(JNIEnv* env);
-  void OnFragmentStart(JNIEnv* env,
-                       const base::android::JavaParamRef<jobject>& caller);
+  void OnFragmentStart(JNIEnv* env);
 #endif
 
   // Used in tests to specify a non-default max (0 means use the default).

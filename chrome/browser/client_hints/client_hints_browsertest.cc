@@ -821,35 +821,54 @@ IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest, CorsChecks) {
       network::cors::IsCorsSafelistedHeader("save-data", "on" /* value */));
 }
 
+IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest, HttpEquivWorks) {
+  const GURL gurl = http_equiv_accept_ch_without_lifetime_img_localhost();
+  base::HistogramTester histogram_tester;
+
+  SetClientHintExpectationsOnMainFrame(false);
+  SetClientHintExpectationsOnSubresources(true);
+
+  ui_test_utils::NavigateToURL(browser(), gurl);
+  histogram_tester.ExpectTotalCount("ClientHints.UpdateEventCount", 0);
+}
+
 // Loads a webpage that requests persisting of client hints. Verifies that
 // the browser receives the mojo notification from the renderer and persists the
-// client hints to the disk.
+// client hints to the disk --- unless it's using http-equiv which shouldn't
+// persist.
 IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest, ClientHintsHttps) {
   base::HistogramTester histogram_tester;
   const GURL gurl = GetParam() ? http_equiv_accept_ch_with_lifetime()
                                : accept_ch_with_lifetime_url();
   ui_test_utils::NavigateToURL(browser(), gurl);
 
-  histogram_tester.ExpectUniqueSample("ClientHints.UpdateEventCount", 1, 1);
+  if (GetParam())
+    histogram_tester.ExpectTotalCount("ClientHints.UpdateEventCount", 0);
+  else
+    histogram_tester.ExpectUniqueSample("ClientHints.UpdateEventCount", 1, 1);
 
   content::FetchHistogramsFromChildProcesses();
   SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
 
-  // client_hints_url() sets the expected number of client hints.
-  histogram_tester.ExpectUniqueSample("ClientHints.UpdateSize",
-                                      expected_client_hints_number, 1);
-  // accept_ch_with_lifetime_url() sets client hints persist duration to 3600
-  // seconds.
-  histogram_tester.ExpectUniqueSample("ClientHints.PersistDuration",
-                                      3600 * 1000, 1);
+  if (GetParam()) {
+    histogram_tester.ExpectTotalCount("ClientHints.UpdateSize", 0);
+    histogram_tester.ExpectTotalCount("ClientHints.PersistDuration", 0);
+  } else {
+    // client_hints_url() sets the expected number of client hints.
+    histogram_tester.ExpectUniqueSample("ClientHints.UpdateSize",
+                                        expected_client_hints_number, 1);
+    // accept_ch_with_lifetime_url() sets client hints persist duration to 3600
+    // seconds.
+    histogram_tester.ExpectUniqueSample("ClientHints.PersistDuration",
+                                        3600 * 1000, 1);
+  }
 }
 
 // Test that client hints are attached to subresources only if they belong
 // to the same host as document host.
-IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest,
+IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest,
                        ClientHintsHttpsSubresourceDifferentOrigin) {
-  const GURL gurl = GetParam() ? http_equiv_accept_ch_with_lifetime()
-                               : accept_ch_with_lifetime_url();
+  const GURL gurl = accept_ch_with_lifetime_url();
 
   base::HistogramTester histogram_tester;
 
@@ -924,10 +943,9 @@ IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest,
 
 // Test that client hints are attached to subresources checks the right setting
 // for OTR profile.
-IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest,
+IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest,
                        ClientHintsHttpsSubresourceOffTheRecord) {
-  const GURL gurl = GetParam() ? http_equiv_accept_ch_with_lifetime()
-                               : accept_ch_with_lifetime_url();
+  const GURL gurl = accept_ch_with_lifetime_url();
 
   base::HistogramTester histogram_tester;
 
@@ -963,9 +981,8 @@ IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest,
 
 // Verify that we send only major version information in the `Sec-CH-UA` header
 // by default, regardless of opt-in.
-IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest, UserAgentVersion) {
-  const GURL gurl = GetParam() ? http_equiv_accept_ch_with_lifetime()
-                               : accept_ch_with_lifetime_url();
+IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest, UserAgentVersion) {
+  const GURL gurl = accept_ch_with_lifetime_url();
 
   blink::UserAgentMetadata ua = ::GetUserAgentMetadata();
 
@@ -987,9 +1004,8 @@ IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest, UserAgentVersion) {
   EXPECT_EQ(main_frame_ua_full_version_observed(), expected_full_version);
 }
 
-IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest, UAHintsTabletMode) {
-  const GURL gurl = GetParam() ? http_equiv_accept_ch_with_lifetime()
-                               : accept_ch_with_lifetime_url();
+IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest, UAHintsTabletMode) {
+  const GURL gurl = accept_ch_with_lifetime_url();
 
   blink::UserAgentMetadata ua = ::GetUserAgentMetadata();
 
@@ -1068,8 +1084,7 @@ IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest, UserAgentOverrideClientHints) {
 
 void ClientHintsBrowserTest::TestProfilesIndependent(Browser* browser_a,
                                                      Browser* browser_b) {
-  const GURL gurl = GetParam() ? http_equiv_accept_ch_with_lifetime()
-                               : accept_ch_with_lifetime_url();
+  const GURL gurl = accept_ch_with_lifetime_url();
 
   blink::UserAgentMetadata ua = ::GetUserAgentMetadata();
 
@@ -1099,14 +1114,14 @@ void ClientHintsBrowserTest::TestProfilesIndependent(Browser* browser_a,
 
 // Check that client hints attached to navigation inside OTR profiles
 // use the right settings, regular -> OTR direction.
-IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest, OffTheRecordIndependent) {
+IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest, OffTheRecordIndependent) {
   TestProfilesIndependent(browser(),
                           CreateIncognitoBrowser(browser()->profile()));
 }
 
 // Check that client hints attached to navigation inside OTR profiles
 // use the right settings, OTR -> regular direction.
-IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest, OffTheRecordIndependent2) {
+IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest, OffTheRecordIndependent2) {
   TestProfilesIndependent(CreateIncognitoBrowser(browser()->profile()),
                           browser());
 }
@@ -1172,11 +1187,9 @@ IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest,
 // A same-origin iframe loaded by the webpage requests persistence of client
 // hints. Verify that the request from the iframe is honored, and client hints
 // preference is persisted.
-IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest,
+IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest,
                        PersistenceRequestIframe_SameOrigin) {
-  const GURL gurl =
-      GetParam() ? accept_ch_without_lifetime_with_iframe_url()
-                 : http_equiv_accept_ch_without_lifetime_with_iframe_url();
+  const GURL gurl = accept_ch_without_lifetime_with_iframe_url();
   base::HistogramTester histogram_tester;
   ContentSettingsForOneType host_settings;
 
@@ -1306,11 +1319,9 @@ IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest,
 // requests persisting of client hints. Verifies that the browser receives the
 // mojo notification from the renderer and persists the client hints to the
 // disk.
-IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest,
+IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest,
                        ClientHintsLifetimeFollowedByNoClientHintHttpLocal) {
-  const GURL gurl = GetParam()
-                        ? http_equiv_accept_ch_with_lifetime_http_local_url()
-                        : accept_ch_with_lifetime_http_local_url();
+  const GURL gurl = accept_ch_with_lifetime_http_local_url();
 
   base::HistogramTester histogram_tester;
   ContentSettingsForOneType host_settings;
@@ -1385,30 +1396,39 @@ IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest,
                               &host_settings);
   EXPECT_EQ(0u, host_settings.size());
 
-  // Fetching |gurl| should persist the request for client hints.
+  // Fetching |gurl| should persist the request for client hints iff using
+  // headers and not http-equiv.
   ui_test_utils::NavigateToURL(browser(), gurl);
 
-  histogram_tester.ExpectUniqueSample("ClientHints.UpdateEventCount", 1, 1);
+  if (GetParam())
+    histogram_tester.ExpectTotalCount("ClientHints.UpdateEventCount", 0);
+  else
+    histogram_tester.ExpectUniqueSample("ClientHints.UpdateEventCount", 1, 1);
 
   content::FetchHistogramsFromChildProcesses();
   SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
-
-  histogram_tester.ExpectUniqueSample("ClientHints.UpdateSize",
-                                      expected_client_hints_number, 1);
-  // accept_ch_with_lifetime_url() sets client hints persist duration to 3600
-  // seconds.
-  histogram_tester.ExpectUniqueSample("ClientHints.PersistDuration",
-                                      3600 * 1000, 1);
   base::RunLoop().RunUntilIdle();
 
-  // Clients hints preferences for one origin should be persisted.
-  HostContentSettingsMapFactory::GetForProfile(browser()->profile())
-      ->GetSettingsForOneType(ContentSettingsType::CLIENT_HINTS, std::string(),
-                              &host_settings);
-  EXPECT_EQ(1u, host_settings.size());
+  if (GetParam()) {
+    histogram_tester.ExpectTotalCount("ClientHints.UpdateSize", 0);
+    histogram_tester.ExpectTotalCount("ClientHints.PersistDuration", 0);
+  } else {
+    histogram_tester.ExpectUniqueSample("ClientHints.UpdateSize",
+                                        expected_client_hints_number, 1);
+    // accept_ch_with_lifetime_url() sets client hints persist duration to 3600
+    // seconds.
+    histogram_tester.ExpectUniqueSample("ClientHints.PersistDuration",
+                                        3600 * 1000, 1);
 
-  SetClientHintExpectationsOnMainFrame(true);
-  SetClientHintExpectationsOnSubresources(true);
+    // Clients hints preferences for one origin should be persisted.
+    HostContentSettingsMapFactory::GetForProfile(browser()->profile())
+        ->GetSettingsForOneType(ContentSettingsType::CLIENT_HINTS,
+                                std::string(), &host_settings);
+    EXPECT_EQ(1u, host_settings.size());
+  }
+
+  SetClientHintExpectationsOnMainFrame(!GetParam());
+  SetClientHintExpectationsOnSubresources(!GetParam());
   ui_test_utils::NavigateToURL(browser(),
                                without_accept_ch_without_lifetime_url());
 
@@ -1418,7 +1438,7 @@ IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest,
 
   // Expected number of hints attached to the image request, and the same number
   // to the main frame request.
-  EXPECT_EQ(expected_client_hints_number * 2,
+  EXPECT_EQ(GetParam() ? 0 : expected_client_hints_number * 2,
             count_client_hints_headers_seen());
 }
 
@@ -1483,10 +1503,9 @@ IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest,
 // on receiving redirect to an origin for which the browser has persisted client
 // hints prefs, the browser attaches the client hints headers when fetching the
 // redirected URL.
-IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest,
+IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest,
                        ClientHintsLifetimeFollowedByRedirectToNoClientHint) {
-  const GURL gurl = GetParam() ? http_equiv_accept_ch_with_lifetime()
-                               : accept_ch_with_lifetime_url();
+  const GURL gurl = accept_ch_with_lifetime_url();
 
   base::HistogramTester histogram_tester;
   ContentSettingsForOneType host_settings;
@@ -1534,10 +1553,9 @@ IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest,
 
 // Ensure that even when cookies are blocked, client hint preferences are
 // persisted.
-IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest,
+IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest,
                        ClientHintsLifetimePersistedCookiesBlocked) {
-  const GURL gurl_with = GetParam() ? http_equiv_accept_ch_with_lifetime()
-                                    : accept_ch_with_lifetime_url();
+  const GURL gurl_with = accept_ch_with_lifetime_url();
 
   scoped_refptr<content_settings::CookieSettings> cookie_settings_ =
       CookieSettingsFactory::GetForProfile(browser()->profile());
@@ -1560,13 +1578,10 @@ IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest,
   VerifyContentSettingsNotNotified();
 }
 
-IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest,
+IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest,
                        ClientHintsLifetimeAttachedCookiesBlocked) {
-  const GURL gurl_with = GetParam() ? http_equiv_accept_ch_with_lifetime()
-                                    : accept_ch_with_lifetime_url();
-  const GURL gurl_without = GetParam()
-                                ? http_equiv_accept_ch_without_lifetime_url()
-                                : accept_ch_without_lifetime_url();
+  const GURL gurl_with = accept_ch_with_lifetime_url();
+  const GURL gurl_without = accept_ch_without_lifetime_url();
   base::HistogramTester histogram_tester;
   ContentSettingsForOneType host_settings;
 
@@ -1580,13 +1595,13 @@ IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest,
   histogram_tester.ExpectUniqueSample("ClientHints.UpdateEventCount", 1, 1);
   content::FetchHistogramsFromChildProcesses();
   SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
+  base::RunLoop().RunUntilIdle();
 
   histogram_tester.ExpectUniqueSample("ClientHints.UpdateSize",
                                       expected_client_hints_number, 1);
   // |gurl_with| tries to set client hints persist duration to 3600 seconds.
   histogram_tester.ExpectUniqueSample("ClientHints.PersistDuration",
                                       3600 * 1000, 1);
-  base::RunLoop().RunUntilIdle();
 
   // Clients hints preferences for one origin should be persisted.
   HostContentSettingsMapFactory::GetForProfile(browser()->profile())
@@ -1664,10 +1679,9 @@ IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest,
 
 // Ensure that when the JavaScript is blocked, persisted client hints are not
 // attached to the request headers.
-IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest,
+IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest,
                        ClientHintsLifetimeNotAttachedJavaScriptBlocked) {
-  const GURL gurl = GetParam() ? http_equiv_accept_ch_with_lifetime()
-                               : accept_ch_with_lifetime_url();
+  const GURL gurl = accept_ch_with_lifetime_url();
 
   base::HistogramTester histogram_tester;
   ContentSettingsForOneType host_settings;
@@ -1898,10 +1912,9 @@ IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest,
 
 // Verify that client hints are sent in the incognito profiles, and server
 // client hint opt-ins are honored within the incognito profile.
-IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest,
+IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest,
                        ClientHintsLifetimeFollowedByNoClientHintIncognito) {
-  const GURL gurl = GetParam() ? http_equiv_accept_ch_with_lifetime()
-                               : accept_ch_with_lifetime_url();
+  const GURL gurl = accept_ch_with_lifetime_url();
 
   base::HistogramTester histogram_tester;
   Browser* incognito = CreateIncognitoBrowser();

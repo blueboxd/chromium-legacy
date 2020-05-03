@@ -116,21 +116,13 @@ void NavigationControllerImpl::SetNavigationControllerImpl(
   java_controller_ = java_controller;
 }
 
-void NavigationControllerImpl::GoToIndex(JNIEnv* env,
-                                         const JavaParamRef<jobject>& obj,
-                                         int index) {
-  return GoToIndex(index);
-}
-
 void NavigationControllerImpl::Navigate(JNIEnv* env,
-                                        const JavaParamRef<jobject>& obj,
                                         const JavaParamRef<jstring>& url) {
   Navigate(GURL(base::android::ConvertJavaStringToUTF8(env, url)));
 }
 
 void NavigationControllerImpl::NavigateWithParams(
     JNIEnv* env,
-    const JavaParamRef<jobject>& obj,
     const JavaParamRef<jstring>& url,
     jboolean should_replace_current_entry) {
   auto params = std::make_unique<content::NavigationController::LoadURLParams>(
@@ -142,7 +134,6 @@ void NavigationControllerImpl::NavigateWithParams(
 ScopedJavaLocalRef<jstring>
 NavigationControllerImpl::GetNavigationEntryDisplayUri(
     JNIEnv* env,
-    const JavaParamRef<jobject>& obj,
     int index) {
   return ScopedJavaLocalRef<jstring>(base::android::ConvertUTF8ToJavaString(
       env, GetNavigationEntryDisplayURL(index).spec()));
@@ -150,7 +141,6 @@ NavigationControllerImpl::GetNavigationEntryDisplayUri(
 
 ScopedJavaLocalRef<jstring> NavigationControllerImpl::GetNavigationEntryTitle(
     JNIEnv* env,
-    const JavaParamRef<jobject>& obj,
     int index) {
   return ScopedJavaLocalRef<jstring>(base::android::ConvertUTF8ToJavaString(
       env, GetNavigationEntryTitle(index)));

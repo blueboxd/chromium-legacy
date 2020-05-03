@@ -3,9 +3,11 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/chromeos/cert_provisioning/cert_provisioning_scheduler.h"
+
 #include <memory>
 
 #include "base/bind.h"
+#include "base/location.h"
 #include "base/logging.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
@@ -17,6 +19,8 @@
 #include "chrome/browser/chromeos/policy/user_cloud_policy_manager_chromeos.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/common/pref_names.h"
+#include "chromeos/network/network_handler.h"
+#include "chromeos/network/network_state_handler.h"
 #include "components/prefs/pref_service.h"
 
 namespace chromeos {
@@ -65,6 +69,14 @@ policy::CloudPolicyClient* GetCloudPolicyClientForUser(Profile* profile) {
   return core->client();
 }
 
+NetworkStateHandler* GetNetworkStateHandler() {
+  // Can happen in tests.
+  if (!NetworkHandler::IsInitialized()) {
+    return nullptr;
+  }
+  return NetworkHandler::Get()->network_state_handler();
+}
+
 }  // namespace
 
 // static
@@ -74,15 +86,18 @@ CertProvisioningScheduler::CreateUserCertProvisioningScheduler(
   PrefService* pref_service = profile->GetPrefs();
   policy::CloudPolicyClient* cloud_policy_client =
       GetCloudPolicyClientForUser(profile);
+  NetworkStateHandler* network_state_handler = GetNetworkStateHandler();
 
-  if (!profile || !pref_service || !cloud_policy_client) {
+  if (!profile || !pref_service || !cloud_policy_client ||
+      !network_state_handler) {
     LOG(ERROR) << "Failed to create user certificate provisioning scheduler";
     return nullptr;
   }
 
   return std::make_unique<CertProvisioningScheduler>(
       CertScope::kUser, profile, pref_service,
-      prefs::kRequiredClientCertificateForUser, cloud_policy_client);
+      prefs::kRequiredClientCertificateForUser, cloud_policy_client,
+      network_state_handler);
 }
 
 // static
@@ -92,15 +107,18 @@ CertProvisioningScheduler::CreateDeviceCertProvisioningScheduler() {
   PrefService* pref_service = g_browser_process->local_state();
   policy::CloudPolicyClient* cloud_policy_client =
       GetCloudPolicyClientForDevice();
+  NetworkStateHandler* network_state_handler = GetNetworkStateHandler();
 
-  if (!profile || !pref_service || !cloud_policy_client) {
+  if (!profile || !pref_service || !cloud_policy_client ||
+      !network_state_handler) {
     LOG(ERROR) << "Failed to create device certificate provisioning scheduler";
     return nullptr;
   }
 
   return std::make_unique<CertProvisioningScheduler>(
       CertScope::kDevice, profile, pref_service,
-      prefs::kRequiredClientCertificateForDevice, cloud_policy_client);
+      prefs::kRequiredClientCertificateForDevice, cloud_policy_client,
+      network_state_handler);
 }
 
 CertProvisioningScheduler::CertProvisioningScheduler(
@@ -108,12 +126,14 @@ CertProvisioningScheduler::CertProvisioningScheduler(
     Profile* profile,
     PrefService* pref_service,
     const char* pref_name,
-    policy::CloudPolicyClient* cloud_policy_client)
+    policy::CloudPolicyClient* cloud_policy_client,
+    NetworkStateHandler* network_state_handler)
     : cert_scope_(cert_scope),
       profile_(profile),
       pref_service_(pref_service),
       pref_name_(pref_name),
-      cloud_policy_client_(cloud_policy_client) {
+      cloud_policy_client_(cloud_policy_client),
+      network_state_handler_(network_state_handler) {
   CHECK(pref_service_);
   CHECK(pref_name_);
   CHECK(cloud_policy_client_);
@@ -128,11 +148,15 @@ CertProvisioningScheduler::CertProvisioningScheduler(
       pref_name_, base::BindRepeating(&CertProvisioningScheduler::OnPrefsChange,
                                       weak_factory_.GetWeakPtr()));
 
+  network_state_handler_->AddObserver(this, FROM_HERE);
+
   ScheduleInitialUpdate();
   ScheduleDailyUpdate();
 }
 
-CertProvisioningScheduler::~CertProvisioningScheduler() = default;
+CertProvisioningScheduler::~CertProvisioningScheduler() {
+  network_state_handler_->RemoveObserver(this, FROM_HERE);
+}
 
 void CertProvisioningScheduler::ScheduleInitialUpdate() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -238,6 +262,12 @@ void CertProvisioningScheduler::OnPrefsChange() {
 
 void CertProvisioningScheduler::UpdateCerts() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  if (!IsOnline()) {
+    is_waiting_for_online_ = true;
+    return;
+  }
+  is_waiting_for_online_ = false;
 
   if (certs_with_ids_getter_ && certs_with_ids_getter_->IsRunning()) {
     // Another UpdateCerts was started recently and still gethering info about
@@ -396,6 +426,28 @@ const std::set<std::string>&
 CertProvisioningScheduler::GetFailedCertProfilesIds() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return failed_cert_profiles_;
+}
+
+bool CertProvisioningScheduler::IsOnline() const {
+  const NetworkState* network = network_state_handler_->DefaultNetwork();
+  return network && network->IsOnline();
+}
+
+void CertProvisioningScheduler::OnNetworkChange(
+    const chromeos::NetworkState* network) {
+  if (is_waiting_for_online_ && network && network->IsOnline()) {
+    UpdateCerts();
+  }
+}
+
+void CertProvisioningScheduler::DefaultNetworkChanged(
+    const chromeos::NetworkState* network) {
+  OnNetworkChange(network);
+}
+
+void CertProvisioningScheduler::NetworkConnectionStateChanged(
+    const chromeos::NetworkState* network) {
+  OnNetworkChange(network);
 }
 
 }  // namespace cert_provisioning

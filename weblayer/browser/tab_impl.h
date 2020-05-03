@@ -118,12 +118,11 @@ class TabImpl : public Tab,
   // on the Java side to have the desired effect.
   static void DisableAutofillSystemIntegrationForTesting();
 
-  base::android::ScopedJavaLocalRef<jobject> GetWebContents(
+  base::android::ScopedJavaLocalRef<jobject> GetWebContents(JNIEnv* env);
+  void SetBrowserControlsContainerViews(
       JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& obj);
-  void SetTopControlsContainerView(
-      JNIEnv* env,
-      jlong native_top_controls_container_view);
+      jlong native_top_browser_controls_container_view,
+      jlong native_bottom_browser_controls_container_view);
   void ExecuteScript(JNIEnv* env,
                      const base::android::JavaParamRef<jstring>& script,
                      bool use_separate_isolate,
@@ -196,6 +195,7 @@ class TabImpl : public Tab,
                       std::unique_ptr<content::FileSelectListener> listener,
                       const blink::mojom::FileChooserParams& params) override;
   int GetTopControlsHeight() override;
+  int GetBottomControlsHeight() override;
   bool DoBrowserControlsShrinkRendererSize(
       const content::WebContents* web_contents) override;
   bool EmbedsFullscreenWidget() override;
@@ -285,6 +285,7 @@ class TabImpl : public Tab,
   std::unique_ptr<i18n::LocaleChangeSubscription> locale_change_subscription_;
 #if defined(OS_ANDROID)
   BrowserControlsContainerView* top_controls_container_view_ = nullptr;
+  BrowserControlsContainerView* bottom_controls_container_view_ = nullptr;
   base::android::ScopedJavaGlobalRef<jobject> java_impl_;
   base::OneShotTimer update_browser_controls_state_timer_;
 #endif

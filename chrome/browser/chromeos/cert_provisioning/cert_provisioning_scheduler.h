@@ -12,6 +12,7 @@
 #include "base/sequence_checker.h"
 #include "chrome/browser/chromeos/cert_provisioning/cert_provisioning_common.h"
 #include "chrome/browser/chromeos/cert_provisioning/cert_provisioning_platform_keys_helpers.h"
+#include "chromeos/network/network_state_handler_observer.h"
 #include "components/prefs/pref_change_registrar.h"
 
 class Profile;
@@ -22,12 +23,13 @@ class CloudPolicyClient;
 }
 
 namespace chromeos {
+
+class NetworkStateHandler;
+
 namespace platform_keys {
 class PlatformKeysService;
 }  // namespace platform_keys
-}  // namespace chromeos
 
-namespace chromeos {
 namespace cert_provisioning {
 
 class CertProvisioningWorker;
@@ -35,7 +37,7 @@ class CertProvisioningWorker;
 // This class is a part of certificate provisioning feature. It tracks updates
 // of |RequiredClientCertificateForUser|, |RequiredClientCertificateForDevice|
 // policies and creates one CertProvisioningWorker for every policy entry.
-class CertProvisioningScheduler {
+class CertProvisioningScheduler : public NetworkStateHandlerObserver {
  public:
   static std::unique_ptr<CertProvisioningScheduler>
   CreateUserCertProvisioningScheduler(Profile* profile);
@@ -46,8 +48,9 @@ class CertProvisioningScheduler {
                             Profile* profile,
                             PrefService* pref_service,
                             const char* pref_name,
-                            policy::CloudPolicyClient* cloud_policy_client);
-  ~CertProvisioningScheduler();
+                            policy::CloudPolicyClient* cloud_policy_client,
+                            NetworkStateHandler* network_state_handler);
+  ~CertProvisioningScheduler() override;
 
   CertProvisioningScheduler(const CertProvisioningScheduler&) = delete;
   CertProvisioningScheduler& operator=(const CertProvisioningScheduler&) =
@@ -90,17 +93,27 @@ class CertProvisioningScheduler {
   void CreateCertProvisioningWorker(CertProfile profile);
   CertProvisioningWorker* FindWorker(CertProfileId profile_id);
 
+  bool IsOnline() const;
+  void OnNetworkChange(const NetworkState* network);
+  // NetworkStateHandlerObserver
+  void DefaultNetworkChanged(const NetworkState* network) override;
+  void NetworkConnectionStateChanged(const NetworkState* network) override;
+
   CertScope cert_scope_ = CertScope::kUser;
   Profile* profile_ = nullptr;
   PrefService* pref_service_ = nullptr;
   const char* pref_name_ = nullptr;
   policy::CloudPolicyClient* cloud_policy_client_ = nullptr;
+  NetworkStateHandler* network_state_handler_ = nullptr;
   platform_keys::PlatformKeysService* platform_keys_service_ = nullptr;
   PrefChangeRegistrar pref_change_registrar_;
   std::map<CertProfileId, std::unique_ptr<CertProvisioningWorker>> workers_;
   // Collection of cert profile ids that failed recently. They will not be
   // retried until next |DailyUpdateCerts|.
   std::set<std::string> failed_cert_profiles_;
+  // Equals true if the last attempt to update certificates failed because there
+  // was no internet connection.
+  bool is_waiting_for_online_ = false;
 
   std::unique_ptr<CertProvisioningCertsWithIdsGetter> certs_with_ids_getter_;
   std::unique_ptr<CertProvisioningCertDeleter> cert_deleter_;

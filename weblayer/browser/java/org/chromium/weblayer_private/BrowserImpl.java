@@ -141,17 +141,16 @@ public class BrowserImpl extends IBrowser.Stub {
     }
 
     public void onSaveInstanceState(Bundle outState) {
-        boolean hasPersistenceId =
-                !BrowserImplJni.get().getPersistenceId(mNativeBrowser, this).isEmpty();
+        boolean hasPersistenceId = !BrowserImplJni.get().getPersistenceId(mNativeBrowser).isEmpty();
         if (mProfile.isIncognito() && hasPersistenceId) {
             // Trigger a save now as saving may generate a new crypto key. This doesn't actually
             // save synchronously, rather triggers a save on a background task runner.
-            BrowserImplJni.get().saveBrowserPersisterIfNecessary(mNativeBrowser, this);
+            BrowserImplJni.get().saveBrowserPersisterIfNecessary(mNativeBrowser);
             outState.putByteArray(SAVED_STATE_SESSION_SERVICE_CRYPTO_KEY,
-                    BrowserImplJni.get().getBrowserPersisterCryptoKey(mNativeBrowser, this));
+                    BrowserImplJni.get().getBrowserPersisterCryptoKey(mNativeBrowser));
         } else if (!hasPersistenceId) {
             outState.putByteArray(SAVED_STATE_MINIMAL_PERSISTENCE_STATE_KEY,
-                    BrowserImplJni.get().getMinimalPersistenceState(mNativeBrowser, this));
+                    BrowserImplJni.get().getMinimalPersistenceState(mNativeBrowser));
         }
     }
 
@@ -172,6 +171,12 @@ public class BrowserImpl extends IBrowser.Stub {
     public void setTopView(IObjectWrapper viewWrapper) {
         StrictModeWorkaround.apply();
         getViewController().setTopView(ObjectWrapper.unwrap(viewWrapper, View.class));
+    }
+
+    @Override
+    public void setBottomView(IObjectWrapper viewWrapper) {
+        StrictModeWorkaround.apply();
+        getViewController().setBottomView(ObjectWrapper.unwrap(viewWrapper, View.class));
     }
 
     @Override
@@ -213,7 +218,7 @@ public class BrowserImpl extends IBrowser.Stub {
         StrictModeWorkaround.apply();
         TabImpl tab = (TabImpl) iTab;
         if (tab.getBrowser() == this) return;
-        BrowserImplJni.get().addTab(mNativeBrowser, this, tab.getNativeTab());
+        BrowserImplJni.get().addTab(mNativeBrowser, tab.getNativeTab());
     }
 
     @CalledByNative
@@ -317,19 +322,18 @@ public class BrowserImpl extends IBrowser.Stub {
         StrictModeWorkaround.apply();
         TabImpl tab = (TabImpl) controller;
         if (tab != null && tab.getBrowser() != this) return false;
-        BrowserImplJni.get().setActiveTab(
-                mNativeBrowser, this, tab != null ? tab.getNativeTab() : 0);
+        BrowserImplJni.get().setActiveTab(mNativeBrowser, tab != null ? tab.getNativeTab() : 0);
         return true;
     }
 
     public TabImpl getActiveTab() {
-        return BrowserImplJni.get().getActiveTab(mNativeBrowser, this);
+        return BrowserImplJni.get().getActiveTab(mNativeBrowser);
     }
 
     @Override
     public List getTabs() {
         StrictModeWorkaround.apply();
-        return Arrays.asList(BrowserImplJni.get().getTabs(mNativeBrowser, this));
+        return Arrays.asList(BrowserImplJni.get().getTabs(mNativeBrowser));
     }
 
     @Override
@@ -349,9 +353,8 @@ public class BrowserImpl extends IBrowser.Stub {
         assert mPersistenceInfo != null;
         PersistenceInfo persistenceInfo = mPersistenceInfo;
         mPersistenceInfo = null;
-        BrowserImplJni.get().restoreStateIfNecessary(mNativeBrowser, this,
-                persistenceInfo.mPersistenceId, persistenceInfo.mCryptoKey,
-                persistenceInfo.mMinimalPersistenceState);
+        BrowserImplJni.get().restoreStateIfNecessary(mNativeBrowser, persistenceInfo.mPersistenceId,
+                persistenceInfo.mCryptoKey, persistenceInfo.mMinimalPersistenceState);
 
         if (getTabs().size() > 0) {
             updateAllTabsAndSetActive();
@@ -373,7 +376,7 @@ public class BrowserImpl extends IBrowser.Stub {
     }
 
     private void destroyTabImpl(TabImpl tab) {
-        BrowserImplJni.get().removeTab(mNativeBrowser, this, tab.getNativeTab());
+        BrowserImplJni.get().removeTab(mNativeBrowser, tab.getNativeTab());
         tab.destroy();
     }
 
@@ -389,7 +392,7 @@ public class BrowserImpl extends IBrowser.Stub {
 
     public void destroy() {
         mInDestroy = true;
-        BrowserImplJni.get().prepareForShutdown(mNativeBrowser, this);
+        BrowserImplJni.get().prepareForShutdown(mNativeBrowser);
         setActiveTab(null);
         for (Object tab : getTabs()) {
             destroyTabImpl((TabImpl) tab);
@@ -404,7 +407,7 @@ public class BrowserImpl extends IBrowser.Stub {
 
     public void onFragmentStart() {
         mFragmentStarted = true;
-        BrowserImplJni.get().onFragmentStart(mNativeBrowser, this);
+        BrowserImplJni.get().onFragmentStart(mNativeBrowser);
         updateAllTabs();
         checkPreferences();
     }
@@ -465,19 +468,19 @@ public class BrowserImpl extends IBrowser.Stub {
     interface Natives {
         long createBrowser(long profile, BrowserImpl caller);
         void deleteBrowser(long browser);
-        void addTab(long nativeBrowserImpl, BrowserImpl browser, long nativeTab);
-        void removeTab(long nativeBrowserImpl, BrowserImpl browser, long nativeTab);
-        TabImpl[] getTabs(long nativeBrowserImpl, BrowserImpl browser);
-        void setActiveTab(long nativeBrowserImpl, BrowserImpl browser, long nativeTab);
-        TabImpl getActiveTab(long nativeBrowserImpl, BrowserImpl browser);
-        void prepareForShutdown(long nativeBrowserImpl, BrowserImpl browser);
-        String getPersistenceId(long nativeBrowserImpl, BrowserImpl browser);
-        void saveBrowserPersisterIfNecessary(long nativeBrowserImpl, BrowserImpl browser);
-        byte[] getBrowserPersisterCryptoKey(long nativeBrowserImpl, BrowserImpl browser);
-        byte[] getMinimalPersistenceState(long nativeBrowserImpl, BrowserImpl browser);
-        void restoreStateIfNecessary(long nativeBrowserImpl, BrowserImpl browser,
-                String persistenceId, byte[] persistenceCryptoKey, byte[] minimalPersistenceState);
+        void addTab(long nativeBrowserImpl, long nativeTab);
+        void removeTab(long nativeBrowserImpl, long nativeTab);
+        TabImpl[] getTabs(long nativeBrowserImpl);
+        void setActiveTab(long nativeBrowserImpl, long nativeTab);
+        TabImpl getActiveTab(long nativeBrowserImpl);
+        void prepareForShutdown(long nativeBrowserImpl);
+        String getPersistenceId(long nativeBrowserImpl);
+        void saveBrowserPersisterIfNecessary(long nativeBrowserImpl);
+        byte[] getBrowserPersisterCryptoKey(long nativeBrowserImpl);
+        byte[] getMinimalPersistenceState(long nativeBrowserImpl);
+        void restoreStateIfNecessary(long nativeBrowserImpl, String persistenceId,
+                byte[] persistenceCryptoKey, byte[] minimalPersistenceState);
         void webPreferencesChanged(long nativeBrowserImpl);
-        void onFragmentStart(long nativeBrowserImpl, BrowserImpl caller);
+        void onFragmentStart(long nativeBrowserImpl);
     }
 }

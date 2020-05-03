@@ -1561,20 +1561,21 @@ RenderFrameHostManager::GetSiteInstanceForNavigation(
   return new_instance;
 }
 
-void RenderFrameHostManager::InitializeRenderFrameIfNecessary(
-    RenderFrameHostImpl* render_frame_host) {
+void RenderFrameHostManager::InitializeRenderFrameForDebugURLIfNecessary() {
   // TODO(jam): this copies some logic inside GetFrameHostForNavigation, which
   // also duplicates logic in Navigate. They should all use this method, but
   // that involves slight reordering.
   // http://crbug.com/794229
-  if (render_frame_host->IsRenderFrameLive())
+  if (render_frame_host_->IsRenderFrameLive()) {
+    NOTREACHED();
     return;
+  }
 
-  if (!ReinitializeRenderFrame(render_frame_host))
+  render_frame_host_->reset_must_be_replaced();
+  if (!ReinitializeRenderFrame(render_frame_host_.get())) {
+    NOTREACHED();
     return;
-
-  if (render_frame_host != render_frame_host_.get())
-    return;
+  }
 
   // TODO(jam): uncomment this when the method is shared. Not adding the call
   // now to make merge to 63 easier.
@@ -2528,6 +2529,7 @@ bool RenderFrameHostManager::ReinitializeRenderFrame(
     RenderFrameHostImpl* render_frame_host) {
   // This should be used only when the RenderFrame is not live.
   DCHECK(!render_frame_host->IsRenderFrameLive());
+  DCHECK(!render_frame_host->must_be_replaced());
 
   // Recreate the opener chain.
   CreateOpenerProxies(render_frame_host->GetSiteInstance(), frame_tree_node_);

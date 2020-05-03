@@ -519,8 +519,13 @@ DevToolsDeviceDiscovery::RemotePage::CreateTarget() {
       BuildUniqueTargetId(device_->serial(), browser_id_, dict_);
   std::string target_path = GetTargetPath(dict_);
   std::string type = GetStringProperty(dict_, "type");
+
+  std::string port_num = browser_id_;
+  if (type == "node")
+    port_num = GURL(GetStringProperty(dict_, "webSocketDebuggerUrl")).port();
+
   agent_host_ = AgentHostDelegate::GetOrCreateAgentHost(
-      device_, browser_id_, browser_version_, local_id, target_path, type,
+      device_, port_num, browser_version_, local_id, target_path, type,
       &dict_);
   return agent_host_;
 }

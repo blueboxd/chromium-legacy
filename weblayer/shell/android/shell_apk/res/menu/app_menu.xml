@@ -12,4 +12,7 @@
         android:title="Find in page" />
     <item android:id="@+id/find_end_menu_id"
         android:title="Clear find in page" />
+    <item android:id="@+id/toggle_bottom_view_id"
+          android:checkable="true"
+        android:title="Bottom view" />
 </menu>

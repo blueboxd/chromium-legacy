@@ -42,6 +42,8 @@ def _call_profdata_tool(profile_input_file_paths,
   Raises:
     CalledProcessError: An error occurred merging profiles.
   """
+  logging.debug('Profile input paths: %r' % profile_input_file_paths)
+  logging.debug('Profile output path: %r' % profile_output_file_path)
   try:
     subprocess_cmd = [
         profdata_tool_path, 'merge', '-o', profile_output_file_path,
@@ -107,7 +109,9 @@ def _get_profile_paths(input_dir,
   return paths
 
 
-def _validate_and_convert_profraws(profraw_files, profdata_tool_path):
+def _validate_and_convert_profraws(profraw_files,
+                                   profdata_tool_path,
+                                   sparse=True):
   """Validates and converts profraws to profdatas.
 
   For each given .profraw file in the input, this method first validates it by
@@ -120,6 +124,8 @@ def _validate_and_convert_profraws(profraw_files, profdata_tool_path):
   Args:
     profraw_files: A list of .profraw paths.
     profdata_tool_path: The path to the llvm-profdata executable.
+    sparse (bool): flag to indicate whether to run llvm-profdata with --sparse.
+      Doc: https://llvm.org/docs/CommandGuide/llvm-profdata.html#profdata-merge
 
   Returns:
     A tulple:
@@ -143,7 +149,7 @@ def _validate_and_convert_profraws(profraw_files, profdata_tool_path):
     pool.apply_async(
         _validate_and_convert_profraw,
         (profraw_file, output_profdata_files, invalid_profraw_files,
-         counter_overflows, profdata_tool_path))
+         counter_overflows, profdata_tool_path, sparse))
 
   pool.close()
   pool.join()
@@ -158,15 +164,24 @@ def _validate_and_convert_profraws(profraw_files, profdata_tool_path):
 
 def _validate_and_convert_profraw(profraw_file, output_profdata_files,
                                   invalid_profraw_files, counter_overflows,
-                                  profdata_tool_path):
+                                  profdata_tool_path, sparse=True):
   output_profdata_file = profraw_file.replace('.profraw', '.profdata')
   subprocess_cmd = [
-      profdata_tool_path, 'merge', '-o', output_profdata_file, '-sparse=true',
-      profraw_file
+      profdata_tool_path,
+      'merge',
+      '-o',
+      output_profdata_file,
   ]
+  if sparse:
+    subprocess_cmd.append('--sparse')
+
+  subprocess_cmd.append(profraw_file)
+
   profile_valid = False
   counter_overflow = False
   validation_output = None
+
+  logging.info('profdata command: %r', ' '.join(subprocess_cmd))
 
   # 1. Determine if the profile is valid.
   try:
@@ -263,7 +278,8 @@ def merge_profiles(input_dir,
   if input_extension == '.profraw':
     profile_input_file_paths, invalid_profraw_files, counter_overflows = (
         _validate_and_convert_profraws(profile_input_file_paths,
-                                       profdata_tool_path))
+                                       profdata_tool_path,
+                                       sparse=sparse))
     logging.info('List of converted .profdata files: %r',
                  profile_input_file_paths)
     logging.info((

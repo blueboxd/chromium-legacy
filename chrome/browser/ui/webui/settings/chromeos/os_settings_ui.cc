@@ -51,12 +51,7 @@
 #include "chrome/browser/ui/webui/settings/chromeos/crostini_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/cups_printers_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/date_time_handler.h"
-#include "chrome/browser/ui/webui/settings/chromeos/device_display_handler.h"
-#include "chrome/browser/ui/webui/settings/chromeos/device_keyboard_handler.h"
-#include "chrome/browser/ui/webui/settings/chromeos/device_pointer_handler.h"
-#include "chrome/browser/ui/webui/settings/chromeos/device_power_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/device_storage_handler.h"
-#include "chrome/browser/ui/webui/settings/chromeos/device_stylus_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/google_assistant_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/internet_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/kerberos_accounts_handler.h"
@@ -268,14 +263,6 @@ void OSSettingsUI::InitOSWebUIHandlers(content::WebUIDataSource* html_source) {
     web_ui()->AddMessageHandler(std::move(kerberos_accounts_handler));
   }
 
-  if (ash::features::IsDisplayIdentificationEnabled()) {
-    web_ui()->AddMessageHandler(
-        std::make_unique<chromeos::settings::DisplayHandler>());
-  }
-
-  web_ui()->AddMessageHandler(
-      std::make_unique<chromeos::settings::KeyboardHandler>());
-
   web_ui()->AddMessageHandler(
       std::make_unique<chromeos::settings::WallpaperHandler>(web_ui()));
 
@@ -285,12 +272,8 @@ void OSSettingsUI::InitOSWebUIHandlers(content::WebUIDataSource* html_source) {
         std::make_unique<chromeos::settings::PluginVmHandler>(profile));
   }
   web_ui()->AddMessageHandler(
-      std::make_unique<chromeos::settings::PointerHandler>());
-  web_ui()->AddMessageHandler(
       std::make_unique<chromeos::settings::StorageHandler>(profile,
                                                            html_source));
-  web_ui()->AddMessageHandler(
-      std::make_unique<chromeos::settings::StylusHandler>());
   web_ui()->AddMessageHandler(
       std::make_unique<chromeos::settings::InternetHandler>(profile));
   web_ui()->AddMessageHandler(std::make_unique<::settings::TtsHandler>());
@@ -330,9 +313,6 @@ void OSSettingsUI::InitOSWebUIHandlers(content::WebUIDataSource* html_source) {
 
   html_source->AddBoolean("isDemoSession",
                           chromeos::DemoSession::IsDeviceInDemoMode());
-
-  web_ui()->AddMessageHandler(
-      std::make_unique<chromeos::settings::PowerHandler>(profile->GetPrefs()));
 }
 
 void OSSettingsUI::AddSettingsPageUIHandler(

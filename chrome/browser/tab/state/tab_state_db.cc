@@ -30,49 +30,79 @@ bool DatabasePrefixFilter(const std::string& key_prefix,
 
 TabStateDB::~TabStateDB() = default;
 
-bool TabStateDB::IsInitialized() const {
-  return database_status_ == leveldb_proto::Enums::InitStatus::kOK;
-}
-
 void TabStateDB::LoadContent(const std::string& key, LoadCallback callback) {
-  storage_database_->LoadEntriesWithFilter(
-      base::BindRepeating(&DatabasePrefixFilter, key), CreateReadOptions(),
-      /* target_prefix */ "",
-      base::BindOnce(&TabStateDB::OnLoadContent, weak_ptr_factory_.GetWeakPtr(),
-                     std::move(callback)));
+  if (InitStatusUnknown()) {
+    deferred_operations_.push_back(
+        base::BindOnce(&TabStateDB::LoadContent, weak_ptr_factory_.GetWeakPtr(),
+                       std::move(key), std::move(callback)));
+  } else if (FailedToInit()) {
+    base::PostTask(FROM_HERE, base::BindOnce(std::move(callback), false,
+                                             std::vector<KeyAndValue>()));
+  } else {
+    storage_database_->LoadEntriesWithFilter(
+        base::BindRepeating(&DatabasePrefixFilter, key), CreateReadOptions(),
+        /* target_prefix */ "",
+        base::BindOnce(&TabStateDB::OnLoadContent,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+  }
 }
 
 void TabStateDB::InsertContent(const std::string& key,
                                const std::vector<uint8_t>& value,
                                OperationCallback callback) {
-  auto contents_to_save = std::make_unique<ContentEntry>();
-  tab_state_db::TabStateContentProto proto;
-  proto.set_key(key);
-  proto.set_content_data(value.data(), value.size());
-  contents_to_save->emplace_back(proto.key(), std::move(proto));
-  storage_database_->UpdateEntries(
-      std::move(contents_to_save), std::make_unique<std::vector<std::string>>(),
-      base::BindOnce(&TabStateDB::OnOperationCommitted,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+  if (InitStatusUnknown()) {
+    deferred_operations_.push_back(base::BindOnce(
+        &TabStateDB::InsertContent, weak_ptr_factory_.GetWeakPtr(),
+        std::move(key), std::move(value), std::move(callback)));
+  } else if (FailedToInit()) {
+    base::PostTask(FROM_HERE, base::BindOnce(std::move(callback), false));
+  } else {
+    auto contents_to_save = std::make_unique<ContentEntry>();
+    tab_state_db::TabStateContentProto proto;
+    proto.set_key(key);
+    proto.set_content_data(value.data(), value.size());
+    contents_to_save->emplace_back(proto.key(), std::move(proto));
+    storage_database_->UpdateEntries(
+        std::move(contents_to_save),
+        std::make_unique<std::vector<std::string>>(),
+        base::BindOnce(&TabStateDB::OnOperationCommitted,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+  }
 }
 
 void TabStateDB::DeleteContent(const std::string& key,
                                OperationCallback callback) {
-  storage_database_->UpdateEntriesWithRemoveFilter(
-      std::make_unique<ContentEntry>(),
-      std::move(base::BindRepeating(&DatabasePrefixFilter, std::move(key))),
-      base::BindOnce(&TabStateDB::OnOperationCommitted,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+  if (InitStatusUnknown()) {
+    deferred_operations_.push_back(base::BindOnce(
+        &TabStateDB::DeleteContent, weak_ptr_factory_.GetWeakPtr(),
+        std::move(key), std::move(callback)));
+  } else if (FailedToInit()) {
+    base::PostTask(FROM_HERE, base::BindOnce(std::move(callback), false));
+  } else {
+    storage_database_->UpdateEntriesWithRemoveFilter(
+        std::make_unique<ContentEntry>(),
+        std::move(base::BindRepeating(&DatabasePrefixFilter, std::move(key))),
+        base::BindOnce(&TabStateDB::OnOperationCommitted,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+  }
 }
 
 void TabStateDB::DeleteAllContent(OperationCallback callback) {
-  storage_database_->Destroy(std::move(callback));
+  if (InitStatusUnknown()) {
+    deferred_operations_.push_back(
+        base::BindOnce(&TabStateDB::DeleteAllContent,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+  } else if (FailedToInit()) {
+    base::PostTask(FROM_HERE, base::BindOnce(std::move(callback), false));
+  } else {
+    storage_database_->Destroy(std::move(callback));
+  }
 }
 
 TabStateDB::TabStateDB(
     leveldb_proto::ProtoDatabaseProvider* proto_database_provider,
     const base::FilePath& profile_directory)
-    : database_status_(leveldb_proto::Enums::InitStatus::kNotInitialized),
+    : database_status_(base::nullopt),
       storage_database_(
           proto_database_provider->GetDB<tab_state_db::TabStateContentProto>(
               leveldb_proto::ProtoDbType::TAB_STATE_DATABASE,
@@ -81,29 +111,27 @@ TabStateDB::TabStateDB(
                   {base::ThreadPool(), base::MayBlock(),
                    base::TaskPriority::USER_VISIBLE}))) {
   storage_database_->Init(base::BindOnce(&TabStateDB::OnDatabaseInitialized,
-                                         weak_ptr_factory_.GetWeakPtr(),
-                                         base::DoNothing::Once()));
+                                         weak_ptr_factory_.GetWeakPtr()));
 }
 
 TabStateDB::TabStateDB(
     std::unique_ptr<leveldb_proto::ProtoDatabase<
         tab_state_db::TabStateContentProto>> storage_database,
-    scoped_refptr<base::SequencedTaskRunner> task_runner,
-    base::OnceClosure closure)
-    : database_status_(leveldb_proto::Enums::InitStatus::kNotInitialized),
+    scoped_refptr<base::SequencedTaskRunner> task_runner)
+    : database_status_(base::nullopt),
       storage_database_(std::move(storage_database)) {
   storage_database_->Init(base::BindOnce(&TabStateDB::OnDatabaseInitialized,
-                                         weak_ptr_factory_.GetWeakPtr(),
-                                         std::move(closure)));
+                                         weak_ptr_factory_.GetWeakPtr()));
 }
 
 void TabStateDB::OnDatabaseInitialized(
-    base::OnceClosure closure,
     leveldb_proto::Enums::InitStatus status) {
-  DCHECK_EQ(database_status_,
-            leveldb_proto::Enums::InitStatus::kNotInitialized);
-  database_status_ = status;
-  std::move(closure).Run();
+  database_status_ =
+      base::make_optional<leveldb_proto::Enums::InitStatus>(status);
+  for (auto& deferred_operation : deferred_operations_) {
+    std::move(deferred_operation).Run();
+  }
+  deferred_operations_.clear();
 }
 
 void TabStateDB::OnLoadContent(
@@ -126,4 +154,13 @@ void TabStateDB::OnLoadContent(
 void TabStateDB::OnOperationCommitted(OperationCallback callback,
                                       bool success) {
   std::move(callback).Run(success);
+}
+
+bool TabStateDB::InitStatusUnknown() const {
+  return database_status_ == base::nullopt;
+}
+
+bool TabStateDB::FailedToInit() const {
+  return database_status_.has_value() &&
+         database_status_.value() != leveldb_proto::Enums::InitStatus::kOK;
 }

@@ -34,36 +34,16 @@ class DownloadImpl : public Download, public base::SupportsUserData::Data {
   void SetJavaDownload(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& java_download);
-  int GetState(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj) {
-    return static_cast<int>(GetState());
-  }
-  jlong GetTotalBytes(JNIEnv* env,
-                      const base::android::JavaParamRef<jobject>& obj) {
-    return GetTotalBytes();
-  }
-  jlong GetReceivedBytes(JNIEnv* env,
-                         const base::android::JavaParamRef<jobject>& obj) {
-    return GetReceivedBytes();
-  }
-  void Pause(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj) {
-    Pause();
-  }
-  void Resume(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj) {
-    Resume();
-  }
-  void Cancel(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj) {
-    Cancel();
-  }
-  base::android::ScopedJavaLocalRef<jstring> GetLocation(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& obj);
+  int GetState(JNIEnv* env) { return static_cast<int>(GetState()); }
+  jlong GetTotalBytes(JNIEnv* env) { return GetTotalBytes(); }
+  jlong GetReceivedBytes(JNIEnv* env) { return GetReceivedBytes(); }
+  void Pause(JNIEnv* env) { Pause(); }
+  void Resume(JNIEnv* env) { Resume(); }
+  void Cancel(JNIEnv* env) { Cancel(); }
+  base::android::ScopedJavaLocalRef<jstring> GetLocation(JNIEnv* env);
   // Add Impl suffix to avoid compiler clash with the C++ interface method.
-  base::android::ScopedJavaLocalRef<jstring> GetMimeTypeImpl(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& obj);
-  int GetError(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj) {
-    return static_cast<int>(GetError());
-  }
+  base::android::ScopedJavaLocalRef<jstring> GetMimeTypeImpl(JNIEnv* env);
+  int GetError(JNIEnv* env) { return static_cast<int>(GetError()); }
 
   base::android::ScopedJavaGlobalRef<jobject> java_download() {
     return java_download_;

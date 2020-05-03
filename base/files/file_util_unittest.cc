@@ -2542,6 +2542,24 @@ TEST_F(FileUtilTest, OpenFileNoInheritance) {
   }
 }
 
+TEST_F(FileUtilTest, CreateAndOpenTemporaryFileInDir) {
+  // Create a temporary file.
+  FilePath path;
+  File file = CreateAndOpenTemporaryFileInDir(temp_dir_.GetPath(), &path);
+  ASSERT_TRUE(file.IsValid());
+  EXPECT_FALSE(path.empty());
+
+  // Try to open another handle to it.
+  File file2(path, File::FLAG_OPEN | File::FLAG_READ | File::FLAG_SHARE_DELETE);
+#if defined(OS_WIN)
+  // The file cannot be opened again on account of the exclusive access.
+  EXPECT_FALSE(file2.IsValid());
+#else
+  // Exclusive access isn't a thing on non-Windows platforms.
+  EXPECT_TRUE(file2.IsValid());
+#endif
+}
+
 TEST_F(FileUtilTest, CreateTemporaryFileTest) {
   FilePath temp_files[3];
   for (auto& i : temp_files) {
@@ -2634,6 +2652,19 @@ TEST_F(FileUtilTest, FileToFILE) {
   EXPECT_TRUE(stream);
   EXPECT_FALSE(file.IsValid());
   EXPECT_TRUE(CloseFile(stream));
+}
+
+TEST_F(FileUtilTest, FILEToFile) {
+  ScopedFILE stream;
+  EXPECT_FALSE(FILEToFile(stream.get()).IsValid());
+
+  stream.reset(OpenFile(temp_dir_.GetPath().Append(FPL("hello.txt")), "wb+"));
+  ASSERT_TRUE(stream);
+  File file = FILEToFile(stream.get());
+  EXPECT_TRUE(file.IsValid());
+  ASSERT_EQ(fprintf(stream.get(), "there"), 5);
+  ASSERT_EQ(fflush(stream.get()), 0);
+  EXPECT_EQ(file.GetLength(), 5L);
 }
 
 TEST_F(FileUtilTest, CreateNewTempDirectoryTest) {
@@ -3477,6 +3508,33 @@ TEST_F(FileUtilTest, ReadFileToStringWithLargeFile) {
   EXPECT_FALSE(
       ReadFileToStringWithMaxSize(file_path, &actual_data, kLargeFileSize - 1));
   EXPECT_EQ(std::string(kLargeFileSize - 1, 'c'), actual_data);
+}
+
+TEST_F(FileUtilTest, ReadStreamToString) {
+  ScopedFILE stream(
+      OpenFile(temp_dir_.GetPath().Append(FPL("hello.txt")), "wb+"));
+  ASSERT_TRUE(stream);
+  File file = FILEToFile(stream.get());
+  ASSERT_TRUE(file.IsValid());
+  ASSERT_EQ(fprintf(stream.get(), "there"), 5);
+  ASSERT_EQ(fflush(stream.get()), 0);
+
+  std::string contents;
+  EXPECT_TRUE(ReadStreamToString(stream.get(), &contents));
+  EXPECT_EQ(contents, std::string("there"));
+}
+
+TEST_F(FileUtilTest, ReadStreamToStringWithMaxSize) {
+  ScopedFILE stream(
+      OpenFile(temp_dir_.GetPath().Append(FPL("hello.txt")), "wb+"));
+  ASSERT_TRUE(stream);
+  File file = FILEToFile(stream.get());
+  ASSERT_TRUE(file.IsValid());
+  ASSERT_EQ(fprintf(stream.get(), "there"), 5);
+  ASSERT_EQ(fflush(stream.get()), 0);
+
+  std::string contents;
+  EXPECT_FALSE(ReadStreamToStringWithMaxSize(stream.get(), 2, &contents));
 }
 
 TEST_F(FileUtilTest, TouchFile) {

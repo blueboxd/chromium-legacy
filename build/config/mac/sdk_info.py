@@ -18,8 +18,6 @@ ROOT_SRC_DIR = os.path.dirname(
     os.path.dirname(
         os.path.dirname(os.path.dirname(os.path.realpath(__file__)))))
 
-# src/build/xcode_links
-XCODE_LINK_DIR = os.path.join(ROOT_SRC_DIR, "build", "xcode_links")
 
 # This script prints information about the build system, the operating
 # system and the iOS or Mac SDK (depending on the platform "iphonesimulator",
@@ -99,13 +97,8 @@ def FillSDKPathAndVersion(settings, platform, xcode_version):
       'xcrun', '-sdk', platform, '--show-sdk-version']).strip()
   settings['sdk_platform_path'] = subprocess.check_output([
       'xcrun', '-sdk', platform, '--show-sdk-platform-path']).strip()
-  # TODO: unconditionally use --show-sdk-build-version once Xcode 7.2 or
-  # higher is required to build Chrome for iOS or OS X.
-  if xcode_version >= '0720':
-    settings['sdk_build'] = subprocess.check_output([
-        'xcrun', '-sdk', platform, '--show-sdk-build-version']).strip()
-  else:
-    settings['sdk_build'] = settings['sdk_version']
+  settings['sdk_build'] = subprocess.check_output(
+      ['xcrun', '-sdk', platform, '--show-sdk-build-version']).strip()
 
 
 def CreateXcodeSymlinkAt(src, dst):

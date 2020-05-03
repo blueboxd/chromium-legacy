@@ -1901,12 +1901,12 @@
   {
     "name": "enable-quick-answers",
     "owners": [ "croissant-eng" ],
-    "expiry_milestone": 82
+    "expiry_milestone": 86
   },
   {
     "name": "enable-quick-answers-rich-ui",
     "owners": [ "croissant-eng" ],
-    "expiry_milestone": 83
+    "expiry_milestone": 86
   },
   {
     "name": "enable-reader-mode",
@@ -2948,7 +2948,7 @@
   {
     "name": "native-file-system-api",
     "owners": [ "mek", "pwnall" ],
-    "expiry_milestone":  84
+    "expiry_milestone":  87
   },
   {
     "name": "nearby-sharing",
@@ -3566,7 +3566,7 @@
   {
     "name": "raw-clipboard",
     "owners": ["huangdarwin", "pwnall"],
-    "expiry_milestone": 84
+    "expiry_milestone": 88
   },
   {
     "name": "reader-mode-heuristics",

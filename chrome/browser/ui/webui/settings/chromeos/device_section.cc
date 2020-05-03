@@ -13,6 +13,11 @@
 #include "base/no_destructor.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/ui/webui/settings/chromeos/device_display_handler.h"
+#include "chrome/browser/ui/webui/settings/chromeos/device_keyboard_handler.h"
+#include "chrome/browser/ui/webui/settings/chromeos/device_pointer_handler.h"
+#include "chrome/browser/ui/webui/settings/chromeos/device_power_handler.h"
+#include "chrome/browser/ui/webui/settings/chromeos/device_stylus_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/os_settings_features_util.h"
 #include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/common/chrome_features.h"
@@ -21,6 +26,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/constants/chromeos_switches.h"
+#include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/webui/web_ui_util.h"
@@ -36,35 +42,236 @@ namespace {
 
 const std::vector<SearchConcept>& GetDeviceSearchConcepts() {
   static const base::NoDestructor<std::vector<SearchConcept>> tags({
-      // TODO(khorimoto): Add "Device" search concepts.
+      {IDS_OS_SETTINGS_TAG_KEYBOARD,
+       mojom::kKeyboardSubpagePath,
+       mojom::SearchResultIcon::kKeyboard,
+       mojom::SearchResultDefaultRank::kHigh,
+       mojom::SearchResultType::kSubpage,
+       {.subpage = mojom::Subpage::kKeyboard}},
+      {IDS_OS_SETTINGS_TAG_KEYBOARD_AUTO_REPEAT,
+       mojom::kKeyboardSubpagePath,
+       mojom::SearchResultIcon::kKeyboard,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSetting,
+       {.setting = mojom::Setting::kKeyboardAutoRepeat},
+       {IDS_OS_SETTINGS_TAG_KEYBOARD_AUTO_REPEAT_ALT1,
+        SearchConcept::kAltTagEnd}},
+      {IDS_OS_SETTINGS_TAG_POWER,
+       mojom::kPowerSubpagePath,
+       mojom::SearchResultIcon::kPower,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSubpage,
+       {.subpage = mojom::Subpage::kPower}},
+      {IDS_OS_SETTINGS_TAG_DISPLAY_SIZE,
+       mojom::kDisplaySubpagePath,
+       mojom::SearchResultIcon::kDisplay,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSetting,
+       {.setting = mojom::Setting::kDisplaySize},
+       {
+           IDS_OS_SETTINGS_TAG_DISPLAY_SIZE_ALT1,
+           IDS_OS_SETTINGS_TAG_DISPLAY_SIZE_ALT2,
+           IDS_OS_SETTINGS_TAG_DISPLAY_SIZE_ALT3,
+           IDS_OS_SETTINGS_TAG_DISPLAY_SIZE_ALT4,
+           IDS_OS_SETTINGS_TAG_DISPLAY_SIZE_ALT5,
+       }},
+      {IDS_OS_SETTINGS_TAG_STORAGE,
+       mojom::kStorageSubpagePath,
+       mojom::SearchResultIcon::kHardDrive,
+       mojom::SearchResultDefaultRank::kHigh,
+       mojom::SearchResultType::kSubpage,
+       {.subpage = mojom::Subpage::kStorage},
+       {IDS_OS_SETTINGS_TAG_STORAGE_ALT1, IDS_OS_SETTINGS_TAG_STORAGE_ALT2,
+        SearchConcept::kAltTagEnd}},
+      {IDS_OS_SETTINGS_TAG_DISPLAY_NIGHT_LIGHT,
+       mojom::kDisplaySubpagePath,
+       mojom::SearchResultIcon::kDisplay,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSetting,
+       {.setting = mojom::Setting::kNightLight},
+       {IDS_OS_SETTINGS_TAG_DISPLAY_NIGHT_LIGHT_ALT1,
+        IDS_OS_SETTINGS_TAG_DISPLAY_NIGHT_LIGHT_ALT2,
+        SearchConcept::kAltTagEnd}},
+      {IDS_OS_SETTINGS_TAG_DISPLAY,
+       mojom::kDisplaySubpagePath,
+       mojom::SearchResultIcon::kDisplay,
+       mojom::SearchResultDefaultRank::kHigh,
+       mojom::SearchResultType::kSubpage,
+       {.subpage = mojom::Subpage::kDisplay},
+       {IDS_OS_SETTINGS_TAG_DISPLAY_ALT1, IDS_OS_SETTINGS_TAG_DISPLAY_ALT2,
+        SearchConcept::kAltTagEnd}},
+      {IDS_OS_SETTINGS_TAG_KEYBOARD_SHORTCUTS,
+       mojom::kKeyboardSubpagePath,
+       mojom::SearchResultIcon::kKeyboard,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSetting,
+       {.setting = mojom::Setting::kKeyboardShortcuts}},
+      {IDS_OS_SETTINGS_TAG_DEVICE,
+       mojom::kDeviceSectionPath,
+       mojom::SearchResultIcon::kLaptop,
+       mojom::SearchResultDefaultRank::kHigh,
+       mojom::SearchResultType::kSection,
+       {.section = mojom::Section::kDevice}},
+      {IDS_OS_SETTINGS_TAG_KEYBOARD_FUNCTION_KEYS,
+       mojom::kKeyboardSubpagePath,
+       mojom::SearchResultIcon::kKeyboard,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSetting,
+       {.setting = mojom::Setting::kKeyboardFunctionKeys}},
+      {IDS_OS_SETTINGS_TAG_POWER_IDLE,
+       mojom::kPowerSubpagePath,
+       mojom::SearchResultIcon::kPower,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSetting,
+       {.setting = mojom::Setting::kPowerIdleBehavior},
+       {IDS_OS_SETTINGS_TAG_POWER_IDLE_ALT1, SearchConcept::kAltTagEnd}},
   });
   return *tags;
 }
 
 const std::vector<SearchConcept>& GetTouchpadSearchConcepts() {
   static const base::NoDestructor<std::vector<SearchConcept>> tags({
-      // TODO(khorimoto): Add "Touchpad" search concepts.
+      {IDS_OS_SETTINGS_TAG_TOUCHPAD_SPEED,
+       mojom::kPointersSubpagePath,
+       mojom::SearchResultIcon::kLaptop,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSetting,
+       {.setting = mojom::Setting::kTouchpadSpeed}},
+      {IDS_OS_SETTINGS_TAG_TOUCHPAD_TAP_DRAGGING,
+       mojom::kPointersSubpagePath,
+       mojom::SearchResultIcon::kLaptop,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSetting,
+       {.setting = mojom::Setting::kTouchpadTapDragging}},
+      {IDS_OS_SETTINGS_TAG_TOUCHPAD_TAP_TO_CLICK,
+       mojom::kPointersSubpagePath,
+       mojom::SearchResultIcon::kLaptop,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSetting,
+       {.setting = mojom::Setting::kTouchpadTapToClick}},
+      {IDS_OS_SETTINGS_TAG_TOUCHPAD,
+       mojom::kPointersSubpagePath,
+       mojom::SearchResultIcon::kLaptop,
+       mojom::SearchResultDefaultRank::kHigh,
+       mojom::SearchResultType::kSubpage,
+       {.subpage = mojom::Subpage::kPointers},
+       {IDS_OS_SETTINGS_TAG_TOUCHPAD_ALT1, SearchConcept::kAltTagEnd}},
+      {IDS_OS_SETTINGS_TAG_TOUCHPAD_SCROLL_ACCELERATION,
+       mojom::kPointersSubpagePath,
+       mojom::SearchResultIcon::kLaptop,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSetting,
+       {.setting = mojom::Setting::kTouchpadScrollAcceleration}},
+      {IDS_OS_SETTINGS_TAG_TOUCHPAD_REVERSE_SCROLLING,
+       mojom::kPointersSubpagePath,
+       mojom::SearchResultIcon::kLaptop,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSetting,
+       {.setting = mojom::Setting::kTouchpadReverseScrolling}},
+      {IDS_OS_SETTINGS_TAG_TOUCHPAD_ACCELERATION,
+       mojom::kPointersSubpagePath,
+       mojom::SearchResultIcon::kLaptop,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSetting,
+       {.setting = mojom::Setting::kTouchpadAcceleration}},
   });
   return *tags;
 }
 
 const std::vector<SearchConcept>& GetMouseSearchConcepts() {
   static const base::NoDestructor<std::vector<SearchConcept>> tags({
-      // TODO(khorimoto): Add "Mouse" search concepts.
+      {IDS_OS_SETTINGS_TAG_MOUSE_ACCELERATION,
+       mojom::kPointersSubpagePath,
+       mojom::SearchResultIcon::kMouse,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSetting,
+       {.setting = mojom::Setting::kMouseAcceleration}},
+      {IDS_OS_SETTINGS_TAG_MOUSE_SWAP_BUTTON,
+       mojom::kPointersSubpagePath,
+       mojom::SearchResultIcon::kMouse,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSetting,
+       {.setting = mojom::Setting::kMouseSwapPrimaryButtons}},
+      {IDS_OS_SETTINGS_TAG_MOUSE_SPEED,
+       mojom::kPointersSubpagePath,
+       mojom::SearchResultIcon::kMouse,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSetting,
+       {.setting = mojom::Setting::kMouseSpeed}},
+      {IDS_OS_SETTINGS_TAG_MOUSE_REVERSE_SCROLLING,
+       mojom::kPointersSubpagePath,
+       mojom::SearchResultIcon::kMouse,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSetting,
+       {.setting = mojom::Setting::kMouseReverseScrolling}},
+      {IDS_OS_SETTINGS_TAG_MOUSE,
+       mojom::kPointersSubpagePath,
+       mojom::SearchResultIcon::kMouse,
+       mojom::SearchResultDefaultRank::kHigh,
+       mojom::SearchResultType::kSubpage,
+       {.subpage = mojom::Subpage::kPointers}},
+      {IDS_OS_SETTINGS_TAG_MOUSE_SCROLL_ACCELERATION,
+       mojom::kPointersSubpagePath,
+       mojom::SearchResultIcon::kMouse,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSetting,
+       {.setting = mojom::Setting::kMouseScrollAcceleration}},
   });
   return *tags;
 }
 
 const std::vector<SearchConcept>& GetStylusSearchConcepts() {
   static const base::NoDestructor<std::vector<SearchConcept>> tags({
-      // TODO(khorimoto): Add "Stylus" search concepts.
+      {IDS_OS_SETTINGS_TAG_STYLUS_NOTE_APP,
+       mojom::kStylusSubpagePath,
+       mojom::SearchResultIcon::kStylus,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSetting,
+       {.setting = mojom::Setting::kStylusNoteTakingApp},
+       {IDS_OS_SETTINGS_TAG_STYLUS_NOTE_APP_ALT1,
+        IDS_OS_SETTINGS_TAG_STYLUS_NOTE_APP_ALT2, SearchConcept::kAltTagEnd}},
+      {IDS_OS_SETTINGS_TAG_STYLUS_LOCK_SCREEN_LATEST_NOTE,
+       mojom::kStylusSubpagePath,
+       mojom::SearchResultIcon::kStylus,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSetting,
+       {.setting = mojom::Setting::kStylusLatestNoteOnLockScreen}},
+      {IDS_OS_SETTINGS_TAG_STYLUS_LOCK_SCREEN_NOTES,
+       mojom::kStylusSubpagePath,
+       mojom::SearchResultIcon::kStylus,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSetting,
+       {.setting = mojom::Setting::kStylusNoteTakingFromLockScreen}},
+      {IDS_OS_SETTINGS_TAG_STYLUS_SHELF_TOOLS,
+       mojom::kStylusSubpagePath,
+       mojom::SearchResultIcon::kStylus,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSetting,
+       {.setting = mojom::Setting::kStylusToolsInShelf},
+       {IDS_OS_SETTINGS_TAG_STYLUS_SHELF_TOOLS_ALT1,
+        IDS_OS_SETTINGS_TAG_STYLUS_SHELF_TOOLS_ALT2,
+        SearchConcept::kAltTagEnd}},
+      {IDS_OS_SETTINGS_TAG_STYLUS,
+       mojom::kStylusSubpagePath,
+       mojom::SearchResultIcon::kStylus,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSubpage,
+       {.subpage = mojom::Subpage::kStylus}},
   });
   return *tags;
 }
 
 const std::vector<SearchConcept>& GetDisplayArrangementSearchConcepts() {
   static const base::NoDestructor<std::vector<SearchConcept>> tags({
-      // TODO(khorimoto): Add "Display arrangement" search concepts.
+      {IDS_OS_SETTINGS_TAG_DISPLAY_ARRANGEMENT,
+       mojom::kDisplaySubpagePath,
+       mojom::SearchResultIcon::kDisplay,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSetting,
+       {.setting = mojom::Setting::kDisplayArrangement},
+       {IDS_OS_SETTINGS_TAG_DISPLAY_ARRANGEMENT_ALT1,
+        IDS_OS_SETTINGS_TAG_DISPLAY_ARRANGEMENT_ALT2,
+        SearchConcept::kAltTagEnd}},
   });
   return *tags;
 }
@@ -92,7 +299,15 @@ const std::vector<SearchConcept>& GetDisplayMultipleSearchConcepts() {
 
 const std::vector<SearchConcept>& GetDisplayExternalSearchConcepts() {
   static const base::NoDestructor<std::vector<SearchConcept>> tags({
-      // TODO(khorimoto): Add "Display external" search concepts.
+      {IDS_OS_SETTINGS_TAG_DISPLAY_ORIENTATION,
+       mojom::kDisplaySubpagePath,
+       mojom::SearchResultIcon::kDisplay,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSetting,
+       {.setting = mojom::Setting::kDisplayOrientation},
+       {IDS_OS_SETTINGS_TAG_DISPLAY_ORIENTATION_ALT1,
+        IDS_OS_SETTINGS_TAG_DISPLAY_ORIENTATION_ALT2,
+        SearchConcept::kAltTagEnd}},
   });
   return *tags;
 }
@@ -127,21 +342,41 @@ const std::vector<SearchConcept>& GetDisplayNightLightOnSearchConcepts() {
 
 const std::vector<SearchConcept>& GetExternalStorageSearchConcepts() {
   static const base::NoDestructor<std::vector<SearchConcept>> tags({
-      // TODO(khorimoto): Add "External storage" search concepts.
+      {IDS_OS_SETTINGS_TAG_EXTERNAL_STORAGE,
+       mojom::kExternalStorageSubpagePath,
+       mojom::SearchResultIcon::kHardDrive,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSubpage,
+       {.subpage = mojom::Subpage::kExternalStorage}},
   });
   return *tags;
 }
 
 const std::vector<SearchConcept>& GetPowerWithBatterySearchConcepts() {
   static const base::NoDestructor<std::vector<SearchConcept>> tags({
-      // TODO(khorimoto): Add "Power with battery" search concepts.
+      {IDS_OS_SETTINGS_TAG_POWER_SOURCE,
+       mojom::kPowerSubpagePath,
+       mojom::SearchResultIcon::kPower,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSetting,
+       {.setting = mojom::Setting::kPowerSource},
+       {IDS_OS_SETTINGS_TAG_POWER_SOURCE_ALT1,
+        IDS_OS_SETTINGS_TAG_POWER_SOURCE_ALT2, SearchConcept::kAltTagEnd}},
   });
   return *tags;
 }
 
 const std::vector<SearchConcept>& GetPowerWithLaptopLidSearchConcepts() {
   static const base::NoDestructor<std::vector<SearchConcept>> tags({
-      // TODO(khorimoto): Add "Power with laptop lid" search concepts.
+      {IDS_OS_SETTINGS_TAG_POWER_SLEEP_COVER_CLOSED,
+       mojom::kPowerSubpagePath,
+       mojom::SearchResultIcon::kPower,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSetting,
+       {.setting = mojom::Setting::kSleepWhenLaptopLidClosed},
+       {IDS_OS_SETTINGS_TAG_POWER_SLEEP_COVER_CLOSED_ALT1,
+        IDS_OS_SETTINGS_TAG_POWER_SLEEP_COVER_CLOSED_ALT2,
+        SearchConcept::kAltTagEnd}},
   });
   return *tags;
 }
@@ -396,8 +631,11 @@ void AddDevicePowerStrings(content::WebUIDataSource* html_source) {
 
 }  // namespace
 
-DeviceSection::DeviceSection(Profile* profile, Delegate* per_page_delegate)
-    : OsSettingsSection(profile, per_page_delegate) {
+DeviceSection::DeviceSection(Profile* profile,
+                             Delegate* per_page_delegate,
+                             PrefService* pref_service)
+    : OsSettingsSection(profile, per_page_delegate),
+      pref_service_(pref_service) {
   delegate()->AddSearchTags(GetDeviceSearchConcepts());
 
   if (features::ShouldShowExternalStorageSettings(profile))
@@ -474,6 +712,22 @@ void DeviceSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
   AddDeviceStorageStrings(
       html_source, features::ShouldShowExternalStorageSettings(profile()));
   AddDevicePowerStrings(html_source);
+}
+
+void DeviceSection::AddHandlers(content::WebUI* web_ui) {
+  if (ash::features::IsDisplayIdentificationEnabled()) {
+    web_ui->AddMessageHandler(
+        std::make_unique<chromeos::settings::DisplayHandler>());
+  }
+
+  web_ui->AddMessageHandler(
+      std::make_unique<chromeos::settings::KeyboardHandler>());
+  web_ui->AddMessageHandler(
+      std::make_unique<chromeos::settings::PointerHandler>());
+  web_ui->AddMessageHandler(
+      std::make_unique<chromeos::settings::PowerHandler>(pref_service_));
+  web_ui->AddMessageHandler(
+      std::make_unique<chromeos::settings::StylusHandler>());
 }
 
 void DeviceSection::TouchpadExists(bool exists) {

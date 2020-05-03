@@ -47,33 +47,14 @@ class NavigationImpl : public Navigation {
   void SetJavaNavigation(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& java_navigation);
-  int GetState(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj) {
-    return static_cast<int>(GetState());
-  }
-  base::android::ScopedJavaLocalRef<jstring> GetUri(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& obj);
-  base::android::ScopedJavaLocalRef<jobjectArray> GetRedirectChain(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& obj);
-  int GetHttpStatusCode(JNIEnv* env,
-                        const base::android::JavaParamRef<jobject>& obj) {
-    return GetHttpStatusCode();
-  }
-  bool IsSameDocument(JNIEnv* env,
-                      const base::android::JavaParamRef<jobject>& obj) {
-    return IsSameDocument();
-  }
-  bool IsErrorPage(JNIEnv* env,
-                   const base::android::JavaParamRef<jobject>& obj) {
-    return IsErrorPage();
-  }
-  int GetLoadError(JNIEnv* env,
-                   const base::android::JavaParamRef<jobject>& obj) {
-    return static_cast<int>(GetLoadError());
-  }
+  int GetState(JNIEnv* env) { return static_cast<int>(GetState()); }
+  base::android::ScopedJavaLocalRef<jstring> GetUri(JNIEnv* env);
+  base::android::ScopedJavaLocalRef<jobjectArray> GetRedirectChain(JNIEnv* env);
+  int GetHttpStatusCode(JNIEnv* env) { return GetHttpStatusCode(); }
+  bool IsSameDocument(JNIEnv* env) { return IsSameDocument(); }
+  bool IsErrorPage(JNIEnv* env) { return IsErrorPage(); }
+  int GetLoadError(JNIEnv* env) { return static_cast<int>(GetLoadError()); }
   jboolean SetRequestHeader(JNIEnv* env,
-                            const base::android::JavaParamRef<jobject>& obj,
                             const base::android::JavaParamRef<jstring>& name,
                             const base::android::JavaParamRef<jstring>& value);
 

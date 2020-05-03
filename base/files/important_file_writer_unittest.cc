@@ -347,4 +347,15 @@ TEST_F(ImportantFileWriterTest, WriteFileAtomicallyHistogramSuffixTest) {
   histogram_tester.ExpectTotalCount("ImportantFile.FileCreateError.test", 1);
 }
 
+// Test that the chunking to avoid very large writes works.
+TEST_F(ImportantFileWriterTest, WriteLargeFile) {
+  // One byte larger than kMaxWriteAmount.
+  const std::string large_data(8 * 1024 * 1024 + 1, 'g');
+  EXPECT_FALSE(PathExists(file_));
+  EXPECT_TRUE(ImportantFileWriter::WriteFileAtomically(file_, large_data));
+  std::string actual;
+  EXPECT_TRUE(ReadFileToString(file_, &actual));
+  EXPECT_EQ(large_data, actual);
+}
+
 }  // namespace base

@@ -65511,8 +65511,8 @@ would be helpful to identify which type is being sent.
 
 <enum name="TempFileFailure">
   <int value="0" label="Creating"/>
-  <int value="1" label="Opening"/>
-  <int value="2" label="Closing (unused)"/>
+  <int value="1" label="Opening (obsolete)"/>
+  <int value="2" label="Closing (obsolete)"/>
   <int value="3" label="Writing"/>
   <int value="4" label="Renaming"/>
   <int value="5" label="Flushing"/>

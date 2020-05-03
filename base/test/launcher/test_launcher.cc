@@ -509,6 +509,13 @@ ChildProcessResults DoLaunchChildTestProcess(
   if (redirect_stdio) {
     output_file = CreateAndOpenTemporaryStream(&output_filename);
     CHECK(output_file);
+#if defined(OS_WIN)
+    // Paint the file so that it will be deleted when all handles are closed.
+    if (!FILEToFile(output_file.get()).DeleteOnClose(true)) {
+      PLOG(WARNING) << "Failed to mark " << output_filename.AsUTF8Unsafe()
+                    << " for deletion on close";
+    }
+#endif
   }
 
   LaunchOptions options;
@@ -562,17 +569,21 @@ ChildProcessResults DoLaunchChildTestProcess(
 
   if (redirect_stdio) {
     fflush(output_file.get());
-    output_file.reset();
+
     // Reading the file can sometimes fail when the process was killed midflight
     // (e.g. on test suite timeout): https://crbug.com/826408. Attempt to read
     // the output file anyways, but do not crash on failure in this case.
-    CHECK(ReadFileToString(output_filename, &result.output_file_contents) ||
+    CHECK(ReadStreamToString(output_file.get(), &result.output_file_contents) ||
           result.exit_code != 0);
 
-    if (!DeleteFile(output_filename, false)) {
-      // This needs to be non-fatal at least for Windows.
+    output_file.reset();
+#if !defined(OS_WIN)
+    // On Windows, the reset() above is enough to delete the file since it was
+    // painted for such after being opened. Lesser platforms require an explicit
+    // delete now.
+    if (!DeleteFile(output_filename, /*recursive=*/false))
       LOG(WARNING) << "Failed to delete " << output_filename.AsUTF8Unsafe();
-    }
+#endif
   }
   result.elapsed_time = TimeTicks::Now() - start_time;
   return result;

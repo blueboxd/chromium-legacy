@@ -7017,6 +7017,52 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest,
   EXPECT_TRUE(is_proxy_live(c5, b_site_instance));
 }
 
+// With just the right initial navigations using RendererDebugURLs, creating a
+// new RenderFrameHost can fail. https://crbug.com/1006814
+IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest,
+                       NavigateFromRevivedRendererDebugURL) {
+  StartEmbeddedServer();
+  // This matches IsRendererDebugURL.
+  GURL debug_url("javascript:'hello'");
+  // Just needs to be any URL that would navigate successfully.
+  GURL other_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  WebContentsImpl* web_contents =
+      static_cast<WebContentsImpl*>(shell()->web_contents());
+
+  // Go to the debug URL. This is a synchronous navigation.
+  shell()->LoadURL(debug_url);
+  ASSERT_EQ("hello", EvalJs(shell(), "document.body.innerText"));
+
+  // Crash the renderer.
+  FrameTreeNode* root = web_contents->GetFrameTree()->root();
+  RenderFrameHostImpl* rfh = root->current_frame_host();
+  RenderProcessHost* process = rfh->GetProcess();
+  RenderProcessHostWatcher crash_observer(
+      process, RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
+  process->Shutdown(0);
+  crash_observer.Wait();
+
+  // Load the URL again. This will cause the RenderWidgetHost to be revived,
+  // pointing to a RenderWidget in a new process.
+  shell()->LoadURL(debug_url);
+  ASSERT_EQ("hello", EvalJs(shell(), "document.body.innerText"));
+  RenderProcessHost* new_process = root->current_frame_host()->GetProcess();
+
+  // Now try load another URL. It should cope smoothly with the fact that the
+  // RenderWidgetHost is already revived.
+  ASSERT_TRUE(NavigateToURL(web_contents, other_url));
+
+  // In https://crbug.com/1006814 with site-isolation disabled when creating new
+  // hosts for crashed frames, the process does not change. We check that here
+  // to make sure that we actually recreated the bug. With site-isolation
+  // enabled, the process should change.
+  if (!AreAllSitesIsolatedForTesting()) {
+    ASSERT_EQ(new_process, root->current_frame_host()->GetProcess());
+  } else {
+    ASSERT_NE(new_process, root->current_frame_host()->GetProcess());
+  }
+}
+
 INSTANTIATE_TEST_SUITE_P(All,
                          RenderFrameHostManagerTest,
                          testing::ValuesIn(RenderDocumentFeatureLevelValues()));

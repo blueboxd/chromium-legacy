@@ -36,8 +36,10 @@ import org.chromium.chrome.browser.tabmodel.ChromeTabCreator;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorImpl;
 import org.chromium.chrome.browser.ui.RootUiCoordinator;
+import org.chromium.chrome.browser.usage_stats.UsageStatsService;
 import org.chromium.chrome.browser.webapps.SameTaskWebApkActivity;
 import org.chromium.chrome.browser.webapps.WebappActivityCoordinator;
+import org.chromium.chrome.browser.webapps.WebappExtras;
 import org.chromium.components.embedder_support.delegate.WebContentsDelegateAndroid;
 
 /**
@@ -132,6 +134,28 @@ public abstract class BaseCustomTabActivity<C extends BaseCustomTabActivityCompo
         final int separateTaskFlags =
                 Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_NEW_DOCUMENT;
         return (getIntent().getFlags() & separateTaskFlags) != 0;
+    }
+
+    @Override
+    public void performPreInflationStartup() {
+        super.performPreInflationStartup();
+
+        WebappExtras webappExtras = getIntentDataProvider().getWebappExtras();
+        if (webappExtras != null) {
+            // Set the title for web apps so that TalkBack says the web app's short name instead of
+            // 'Chrome' or the activity's label ("Web app") when either launching the web app or
+            // bringing it to the foreground via Android Recents.
+            setTitle(webappExtras.shortName);
+        }
+    }
+
+    @Override
+    public void finishNativeInitialization() {
+        if (isTaskRoot() && UsageStatsService.isEnabled()) {
+            UsageStatsService.getInstance().createPageViewObserver(getTabModelSelector(), this);
+        }
+
+        super.finishNativeInitialization();
     }
 
     @Override

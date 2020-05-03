@@ -37,6 +37,8 @@ public final class BrowserViewController
     private final ContentView mContentView;
     // Child of mContentView, holds top-view from client.
     private final BrowserControlsContainerView mTopControlsContainerView;
+    // Child of mContentView, holds bottom-view from client.
+    private final BrowserControlsContainerView mBottomControlsContainerView;
     // Other child of mContentView, which holds views that sit on top of the web contents, such as
     // tab modal dialogs.
     private final FrameLayout mWebContentsOverlayView;
@@ -63,8 +65,11 @@ public final class BrowserViewController
         mContentViewRenderView.onNativeLibraryLoaded(
                 mWindowAndroid, ContentViewRenderView.MODE_SURFACE_VIEW);
         mTopControlsContainerView =
-                new BrowserControlsContainerView(context, mContentViewRenderView, this);
+                new BrowserControlsContainerView(context, mContentViewRenderView, this, true);
         mTopControlsContainerView.setId(View.generateViewId());
+        mBottomControlsContainerView =
+                new BrowserControlsContainerView(context, mContentViewRenderView, this, false);
+        mBottomControlsContainerView.setId(View.generateViewId());
         mContentView = ContentView.createContentView(
                 context, mTopControlsContainerView.getEventOffsetHandler());
         mContentViewRenderView.addView(mContentView,
@@ -73,12 +78,17 @@ public final class BrowserViewController
         mContentView.addView(mTopControlsContainerView,
                 new RelativeLayout.LayoutParams(
                         LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
+        RelativeLayout.LayoutParams bottomControlsContainerViewParams =
+                new RelativeLayout.LayoutParams(
+                        LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);
+        bottomControlsContainerViewParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
+        mContentView.addView(mBottomControlsContainerView, bottomControlsContainerViewParams);
 
         mWebContentsOverlayView = new FrameLayout(context);
         RelativeLayout.LayoutParams overlayParams =
                 new RelativeLayout.LayoutParams(LayoutParams.MATCH_PARENT, 0);
         overlayParams.addRule(RelativeLayout.BELOW, mTopControlsContainerView.getId());
-        overlayParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
+        overlayParams.addRule(RelativeLayout.ABOVE, mBottomControlsContainerView.getId());
         mContentView.addView(mWebContentsOverlayView, overlayParams);
         mWindowAndroid.setAnimationPlaceholderView(mWebContentsOverlayView);
 
@@ -94,6 +104,7 @@ public final class BrowserViewController
         mWindowAndroid.setModalDialogManager(null);
         setActiveTab(null);
         mTopControlsContainerView.destroy();
+        mBottomControlsContainerView.destroy();
         mContentViewRenderView.destroy();
     }
 
@@ -136,8 +147,10 @@ public final class BrowserViewController
 
         mContentViewRenderView.setWebContents(webContents);
         mTopControlsContainerView.setWebContents(webContents);
+        mBottomControlsContainerView.setWebContents(webContents);
         if (mTab != null) {
-            mTab.onDidGainActive(mTopControlsContainerView.getNativeHandle());
+            mTab.onDidGainActive(mTopControlsContainerView.getNativeHandle(),
+                    mBottomControlsContainerView.getNativeHandle());
             mContentView.requestFocus();
         }
     }
@@ -150,12 +163,16 @@ public final class BrowserViewController
         mTopControlsContainerView.setView(view);
     }
 
+    public void setBottomView(View view) {
+        mBottomControlsContainerView.setView(view);
+    }
+
     public boolean compositorHasSurface() {
         return mContentViewRenderView.hasSurface();
     }
 
     @Override
-    public void onTopControlsCompletelyShownOrHidden() {
+    public void onBrowserControlsCompletelyShownOrHidden() {
         adjustWebContentsHeightIfNecessary();
     }
 
@@ -163,7 +180,8 @@ public final class BrowserViewController
     public void onGestureStateChanged() {
         if (mGestureStateTracker.isInGestureOrScroll()) {
             mCachedDoBrowserControlsShrinkRendererSize =
-                    mTopControlsContainerView.isTopControlVisible();
+                    mTopControlsContainerView.isControlVisible()
+                    || mBottomControlsContainerView.isControlVisible();
         }
         adjustWebContentsHeightIfNecessary();
     }
@@ -192,11 +210,13 @@ public final class BrowserViewController
 
     private void adjustWebContentsHeightIfNecessary() {
         if (mGestureStateTracker.isInGestureOrScroll()
-                || !mTopControlsContainerView.isTopControlsCompletelyShownOrHidden()) {
+                || !mTopControlsContainerView.isCompletelyShownOrHidden()
+                || !mBottomControlsContainerView.isCompletelyShownOrHidden()) {
             return;
         }
         mContentViewRenderView.setWebContentsHeightDelta(
-                mTopControlsContainerView.getTopContentOffset());
+                mTopControlsContainerView.getContentHeightDelta()
+                + mBottomControlsContainerView.getContentHeightDelta());
     }
 
     public void setSupportsEmbedding(boolean enable, ValueCallback<Boolean> callback) {
@@ -206,13 +226,18 @@ public final class BrowserViewController
     }
 
     public void onTopControlsChanged(int topControlsOffsetY, int topContentOffsetY) {
-        mTopControlsContainerView.onTopControlsChanged(topControlsOffsetY, topContentOffsetY);
+        mTopControlsContainerView.onOffsetsChanged(topControlsOffsetY, topContentOffsetY);
+    }
+
+    public void onBottomControlsChanged(int bottomControlsOffsetY) {
+        mBottomControlsContainerView.onOffsetsChanged(bottomControlsOffsetY, 0);
     }
 
     public boolean doBrowserControlsShrinkRendererSize() {
-        return (mGestureStateTracker.isInGestureOrScroll())
+        return mGestureStateTracker.isInGestureOrScroll()
                 ? mCachedDoBrowserControlsShrinkRendererSize
-                : mTopControlsContainerView.isTopControlVisible();
+                : (mTopControlsContainerView.isControlVisible()
+                        || mBottomControlsContainerView.isControlVisible());
     }
 
     /**

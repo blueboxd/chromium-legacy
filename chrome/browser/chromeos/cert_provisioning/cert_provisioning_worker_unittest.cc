@@ -752,6 +752,34 @@ TEST_F(CertProvisioningWorkerTest, ResponseErrorHandling) {
   worker->DoStep();
 }
 
+TEST_F(CertProvisioningWorkerTest, InconsistentDataErrorHandling) {
+  CertProfile cert_profile{kCertProfileId, kCertProfileVersion};
+
+  MockTpmChallengeKeySubtle* mock_tpm_challenge_key = PrepareTpmChallengeKey();
+  auto worker = CertProvisioningWorkerFactory::Get()->Create(
+      CertScope::kUser, testing_profile_, &testing_pref_service_, cert_profile,
+      &cloud_policy_client_, GetCallback());
+
+  {
+    testing::InSequence seq;
+
+    EXPECT_PREPARE_KEY_OK(
+        *mock_tpm_challenge_key,
+        StartPrepareKeyStep(attestation::AttestationKeyType::KEY_USER, kKeyName,
+                            /*profile=*/_, /*key_name_for_spkac=*/"",
+                            /*callback=*/_));
+
+    EXPECT_START_CSR_INCONSISTENT_DATA(ClientCertProvisioningStartCsr);
+
+    EXPECT_CALL(callback_observer_,
+                Callback(cert_profile,
+                         CertProvisioningWorkerState::kInconsistentDataError))
+        .Times(1);
+  }
+
+  worker->DoStep();
+}
+
 // Checks that when the server returns TEMPORARY_UNAVAILABLE status code, the
 // worker will automatically retry a request using exponential backoff strategy.
 TEST_F(CertProvisioningWorkerTest, BackoffStrategy) {

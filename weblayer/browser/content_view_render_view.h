@@ -36,6 +36,9 @@ class ContentViewRenderView : public content::CompositorClient {
     return root_container_layer_;
   }
 
+  // Height, in pixels.
+  int height() const { return height_; }
+
   // Methods called from Java via JNI -----------------------------------------
   void Destroy(JNIEnv* env);
   void SetCurrentWebContents(
@@ -77,6 +80,8 @@ class ContentViewRenderView : public content::CompositorClient {
   scoped_refptr<cc::Layer> web_contents_layer_;
 
   int current_surface_format_ = 0;
+
+  int height_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(ContentViewRenderView);
 };

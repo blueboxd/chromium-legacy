@@ -4,6 +4,8 @@
 
 import("//third_party/blink/renderer/config.gni")
 
+# Statically-defined (not runtime-generated) IDL files in 'modules' component.
+#
 # CAUTION: static_idl_files_in_modules is used only by a new V8 bindings
 # generator, which is under development.  You have to update
 # modules/modules_idl_files.gni in addition to this list.
@@ -1024,9 +1026,12 @@ if (support_webgl2_compute_context) {
           "abspath")
 }
 
+# Statically-defined (not runtime-generated) IDL files in 'modules' component.
+# These IDL definitions are used only for testing.
 static_idl_files_in_modules_for_testing = get_path_info(
         [
           "//third_party/blink/renderer/modules/accessibility/testing/internals_accessibility.idl",
+          "//third_party/blink/renderer/modules/canvas/canvas2d/testing/internals_canvas_rendering_context_2d.idl",
           "//third_party/blink/renderer/modules/mediastream/testing/internals_media_stream.idl",
           "//third_party/blink/renderer/modules/netinfo/testing/internals_net_info.idl",
           "//third_party/blink/renderer/modules/peerconnection/testing/internals_rtc_certificate.idl",

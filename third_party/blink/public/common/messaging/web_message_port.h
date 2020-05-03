@@ -10,8 +10,8 @@
 #include "base/strings/string16.h"
 #include "mojo/public/cpp/bindings/connector.h"
 #include "mojo/public/cpp/bindings/message.h"
-#include "mojo/public/cpp/system/message_pipe.h"
 #include "third_party/blink/public/common/common_export.h"
+#include "third_party/blink/public/common/messaging/message_port_descriptor.h"
 
 namespace blink {
 
@@ -41,10 +41,10 @@ namespace blink {
 //  // main frame of that WebContents. See
 //  // content/browser/public/message_port_provider.h for the API that allows
 //  // this injection.
-//  std::vector<mojo::ScopedMessagePipeHandle> handles;
-//  handles.emplace_back(ports.second.PassHandle());
+//  std::vector<MessagePortDescriptor> ports;
+//  ports.emplace_back(ports.second.PassPort());
 //  MessagePortProvider::PostMessageToFrame(
-//      web_contents, ..., std::move(handles));
+//      web_contents, ..., std::move(ports));
 //
 //  // The web contents can now talk back to us via |embedder_port|, and we can
 //  // talk back directly to it over that same pipe.
@@ -82,12 +82,6 @@ class BLINK_COMMON_EXPORT WebMessagePort : public mojo::MessageReceiver {
   // Factory function for creating two ends of a message channel. The two ports
   // are conjugates of each other.
   static std::pair<WebMessagePort, WebMessagePort> CreatePair();
-
-  // Factory function that creates a MessagePort from a raw Mojo pipe. This is
-  // deprecated, as clients should prefer to use CreatePair above.
-  // TODO(chrisha): Remove this once all downstream clients have been migrated
-  // away from using raw Mojo pipes.
-  static WebMessagePort Create(mojo::ScopedMessagePipeHandle port);
 
   // Sets a message receiver for this message port. Once bound any incoming
   // messages to this port will be routed to the provided |receiver| with
@@ -153,16 +147,16 @@ class BLINK_COMMON_EXPORT WebMessagePort : public mojo::MessageReceiver {
   // states. Can be called at any time, and repeatedly.
   void Reset();
 
-  // Passes out the underlying handle. This port will be reset after calling
-  // this (all of "IsValid", "is_closed" and "is_errored" will return false).
-  // This can only be called if "is_transferable()" returns true.
-  mojo::ScopedMessagePipeHandle PassHandle();
+  // Passes out the underlying port descriptor. This port will be reset after
+  // calling this (all of "IsValid", "is_closed" and "is_errored" will return
+  // false). This can only be called if "is_transferable()" returns true.
+  MessagePortDescriptor PassPort();
 
  private:
   // Creates a message port that wraps the provided |port|. This provided |port|
   // must be valid. This is private as it should only be called by message
   // deserialization code, or the CreatePair factory.
-  explicit WebMessagePort(mojo::ScopedMessagePipeHandle&& port);
+  explicit WebMessagePort(MessagePortDescriptor&& port);
 
   void Take(WebMessagePort&& other);
   void OnPipeError();
@@ -171,7 +165,7 @@ class BLINK_COMMON_EXPORT WebMessagePort : public mojo::MessageReceiver {
   // mojo::MessageReceiver implementation:
   bool Accept(mojo::Message* mojo_message) override;
 
-  mojo::ScopedMessagePipeHandle port_;
+  MessagePortDescriptor port_;
   std::unique_ptr<mojo::Connector> connector_;
   bool is_closed_ = true;
   bool is_errored_ = false;

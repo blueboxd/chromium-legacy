@@ -37,7 +37,6 @@
 #include "chrome/browser/ui/webui/app_management/app_management.mojom.h"
 #include "chrome/browser/ui/webui/app_management/app_management_page_handler.h"
 #include "chrome/browser/ui/webui/chromeos/smb_shares/smb_handler.h"
-#include "chrome/browser/ui/webui/chromeos/sync/os_sync_handler.h"
 #include "chrome/browser/ui/webui/managed_ui_handler.h"
 #include "chrome/browser/ui/webui/metrics_handler.h"
 #include "chrome/browser/ui/webui/plural_string_handler.h"
@@ -58,7 +57,6 @@
 #include "chrome/browser/ui/webui/settings/chromeos/device_power_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/device_storage_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/device_stylus_handler.h"
-#include "chrome/browser/ui/webui/settings/chromeos/fingerprint_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/google_assistant_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/internet_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/kerberos_accounts_handler.h"
@@ -66,10 +64,8 @@
 #include "chrome/browser/ui/webui/settings/chromeos/os_settings_features_util.h"
 #include "chrome/browser/ui/webui/settings/chromeos/os_settings_manager.h"
 #include "chrome/browser/ui/webui/settings/chromeos/os_settings_manager_factory.h"
-#include "chrome/browser/ui/webui/settings/chromeos/parental_controls_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/plugin_vm_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/pref_names.h"
-#include "chrome/browser/ui/webui/settings/chromeos/quick_unlock_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/search/search_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/search/search_handler_factory.h"
 #include "chrome/browser/ui/webui/settings/chromeos/search/settings_user_action_tracker.h"
@@ -78,7 +74,6 @@
 #include "chrome/browser/ui/webui/settings/extension_control_handler.h"
 #include "chrome/browser/ui/webui/settings/font_handler.h"
 #include "chrome/browser/ui/webui/settings/languages_handler.h"
-#include "chrome/browser/ui/webui/settings/people_handler.h"
 #include "chrome/browser/ui/webui/settings/profile_info_handler.h"
 #include "chrome/browser/ui/webui/settings/protocol_handlers_handler.h"
 #include "chrome/browser/ui/webui/settings/reset_settings_handler.h"
@@ -148,10 +143,6 @@ OSSettingsUI::OSSettingsUI(content::WebUI* web_ui)
   AddSettingsPageUIHandler(std::make_unique<::settings::FontHandler>(web_ui));
   AddSettingsPageUIHandler(
       std::make_unique<::settings::LanguagesHandler>(web_ui));
-  if (chromeos::features::IsSplitSettingsSyncEnabled())
-    AddSettingsPageUIHandler(std::make_unique<OSSyncHandler>(profile));
-  AddSettingsPageUIHandler(
-      std::make_unique<::settings::PeopleHandler>(profile));
   AddSettingsPageUIHandler(
       std::make_unique<::settings::ProfileInfoHandler>(profile));
   AddSettingsPageUIHandler(
@@ -249,26 +240,6 @@ void OSSettingsUI::InitOSWebUIHandlers(content::WebUIDataSource* html_source) {
   Profile* profile = Profile::FromWebUI(web_ui());
   OsSettingsManagerFactory::GetForProfile(profile)->AddHandlers(web_ui());
 
-  // TODO(jamescook): Sort out how account management is split between Chrome OS
-  // and browser settings.
-  if (chromeos::IsAccountManagerAvailable(profile)) {
-    chromeos::AccountManagerFactory* factory =
-        g_browser_process->platform_part()->GetAccountManagerFactory();
-    chromeos::AccountManager* account_manager =
-        factory->GetAccountManager(profile->GetPath().value());
-    DCHECK(account_manager);
-
-    web_ui()->AddMessageHandler(
-        std::make_unique<chromeos::settings::AccountManagerUIHandler>(
-            account_manager, IdentityManagerFactory::GetForProfile(profile)));
-    html_source->AddBoolean(
-        "secondaryGoogleAccountSigninAllowed",
-        profile->GetPrefs()->GetBoolean(
-            chromeos::prefs::kSecondaryGoogleAccountSigninAllowed));
-    html_source->AddBoolean("isEduCoexistenceEnabled",
-                            ::chromeos::features::IsEduCoexistenceEnabled());
-  }
-
   web_ui()->AddMessageHandler(
       std::make_unique<chromeos::settings::ChangePictureHandler>());
 
@@ -285,8 +256,6 @@ void OSSettingsUI::InitOSWebUIHandlers(content::WebUIDataSource* html_source) {
       chromeos::settings::CupsPrintersHandler::Create(web_ui()));
   web_ui()->AddMessageHandler(base::WrapUnique(
       chromeos::settings::DateTimeHandler::Create(html_source)));
-  web_ui()->AddMessageHandler(
-      std::make_unique<chromeos::settings::FingerprintHandler>(profile));
   web_ui()->AddMessageHandler(
       std::make_unique<chromeos::settings::GoogleAssistantHandler>());
 
@@ -318,8 +287,6 @@ void OSSettingsUI::InitOSWebUIHandlers(content::WebUIDataSource* html_source) {
   web_ui()->AddMessageHandler(
       std::make_unique<chromeos::settings::PointerHandler>());
   web_ui()->AddMessageHandler(
-      std::make_unique<chromeos::settings::QuickUnlockHandler>());
-  web_ui()->AddMessageHandler(
       std::make_unique<chromeos::settings::StorageHandler>(profile,
                                                            html_source));
   web_ui()->AddMessageHandler(
@@ -345,11 +312,6 @@ void OSSettingsUI::InitOSWebUIHandlers(content::WebUIDataSource* html_source) {
                 : nullptr,
             android_sms_service ? android_sms_service->android_sms_app_manager()
                                 : nullptr));
-    if (features::ShouldShowParentalControlSettings(profile)) {
-      web_ui()->AddMessageHandler(
-          std::make_unique<chromeos::settings::ParentalControlsHandler>(
-              profile));
-    }
 
     if (chromeos::features::IsAmbientModeEnabled()) {
       web_ui()->AddMessageHandler(

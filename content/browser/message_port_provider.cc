@@ -17,7 +17,7 @@
 
 #if defined(OS_ANDROID)
 #include "base/android/jni_string.h"
-#include "content/browser/android/app_web_message_port.h"
+#include "content/public/browser/android/app_web_message_port.h"
 #endif
 
 using blink::MessagePortChannel;
@@ -25,12 +25,19 @@ using blink::MessagePortChannel;
 namespace content {
 namespace {
 
-void PostMessageToFrameInternal(WebContents* web_contents,
-                                const base::string16& source_origin,
-                                const base::string16& target_origin,
-                                const base::string16& data,
-                                std::vector<MessagePortChannel> channels) {
+void PostMessageToFrameInternal(
+    WebContents* web_contents,
+    const base::string16& source_origin,
+    const base::string16& target_origin,
+    const base::string16& data,
+    std::vector<blink::MessagePortDescriptor> ports) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  // TODO(chrisha): Kill off MessagePortChannel, as MessagePortDescriptor now
+  // plays that role.
+  std::vector<MessagePortChannel> channels;
+  for (auto& port : ports)
+    channels.emplace_back(MessagePortChannel(std::move(port)));
 
   blink::TransferableMessage message;
   message.owned_encoded_message = blink::EncodeStringMessage(data);
@@ -62,7 +69,7 @@ void MessagePortProvider::PostMessageToFrame(
     const base::string16& target_origin,
     const base::string16& data) {
   PostMessageToFrameInternal(web_contents, source_origin, target_origin, data,
-                             std::vector<MessagePortChannel>());
+                             std::vector<blink::MessagePortDescriptor>());
 }
 
 #if defined(OS_ANDROID)
@@ -81,37 +88,21 @@ void MessagePortProvider::PostMessageToFrame(
 #endif
 
 #if defined(OS_FUCHSIA) || BUILDFLAG(IS_CHROMECAST)
-// TODO(crbug.com/803242): Deprecated and will be shortly removed.
 // static
 void MessagePortProvider::PostMessageToFrame(
     WebContents* web_contents,
     const base::string16& source_origin,
     const base::Optional<base::string16>& target_origin,
     const base::string16& data,
-    std::vector<mojo::ScopedMessagePipeHandle> channels) {
-  std::vector<MessagePortChannel> channels_wrapped;
-  for (mojo::ScopedMessagePipeHandle& handle : channels) {
-    channels_wrapped.emplace_back(std::move(handle));
-  }
+    std::vector<blink::WebMessagePort> ports) {
+  // Extract the underlying descriptors.
+  std::vector<blink::MessagePortDescriptor> descriptors;
+  descriptors.reserve(ports.size());
+  for (size_t i = 0; i < ports.size(); ++i)
+    descriptors.push_back(ports[i].PassPort());
   PostMessageToFrameInternal(web_contents, source_origin,
                              target_origin.value_or(base::EmptyString16()),
-                             data, channels_wrapped);
-}
-
-// static
-void MessagePortProvider::PostMessageToFrame(
-    WebContents* web_contents,
-    const base::string16& source_origin,
-    const base::Optional<base::string16>& target_origin,
-    const base::string16& data,
-    std::vector<blink::WebMessagePort> channels) {
-  std::vector<MessagePortChannel> channels_wrapped;
-  for (blink::WebMessagePort& port : channels) {
-    channels_wrapped.emplace_back(port.PassHandle());
-  }
-  PostMessageToFrameInternal(web_contents, source_origin,
-                             target_origin.value_or(base::EmptyString16()),
-                             data, channels_wrapped);
+                             data, std::move(descriptors));
 }
 #endif
 

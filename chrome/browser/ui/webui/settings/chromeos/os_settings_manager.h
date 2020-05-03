@@ -27,6 +27,10 @@ namespace local_search_service {
 class LocalSearchService;
 }  // namespace local_search_service
 
+namespace signin {
+class IdentityManager;
+}  // namespace signin
+
 namespace syncer {
 class SyncService;
 }  // namespace syncer
@@ -78,7 +82,8 @@ class OsSettingsManager : public KeyedService,
       syncer::SyncService* sync_service,
       SupervisedUserService* supervised_user_service,
       KerberosCredentialsManager* kerberos_credentials_manager,
-      ArcAppListPrefs* arc_app_list_prefs);
+      ArcAppListPrefs* arc_app_list_prefs,
+      signin::IdentityManager* identity_manager);
   OsSettingsManager(const OsSettingsManager& other) = delete;
   OsSettingsManager& operator=(const OsSettingsManager& other) = delete;
   ~OsSettingsManager() override;

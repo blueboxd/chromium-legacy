@@ -7,6 +7,10 @@
 #include "base/bind.h"
 #include "base/no_destructor.h"
 #include "chrome/browser/ui/webui/chromeos/bluetooth_dialog_localized_strings_provider.h"
+#include "chrome/browser/ui/webui/settings/chromeos/constants/routes.mojom.h"
+#include "chrome/browser/ui/webui/settings/chromeos/constants/setting.mojom.h"
+#include "chrome/browser/ui/webui/settings/chromeos/search/search.mojom.h"
+#include "chrome/browser/ui/webui/settings/chromeos/search/search_result_icon.mojom.h"
 #include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/generated_resources.h"
@@ -23,21 +27,64 @@ namespace {
 
 const std::vector<SearchConcept>& GetBluetoothSearchConcepts() {
   static const base::NoDestructor<std::vector<SearchConcept>> tags({
-      // TODO(khorimoto): Add "Bluetooth" search concepts.
+      {IDS_OS_SETTINGS_TAG_BLUETOOTH_PAIR,
+       mojom::kBluetoothDevicesSubpagePath,
+       mojom::SearchResultIcon::kBluetooth,
+       mojom::SearchResultDefaultRank::kHigh,
+       mojom::SearchResultType::kSetting,
+       {.setting = mojom::Setting::kBluetoothPairDevice}},
+      {IDS_OS_SETTINGS_TAG_BLUETOOTH_CONNECT,
+       mojom::kBluetoothDevicesSubpagePath,
+       mojom::SearchResultIcon::kBluetooth,
+       mojom::SearchResultDefaultRank::kHigh,
+       mojom::SearchResultType::kSetting,
+       {.setting = mojom::Setting::kBluetoothConnectToDevice}},
+      {IDS_OS_SETTINGS_TAG_BLUETOOTH,
+       mojom::kBluetoothDevicesSubpagePath,
+       mojom::SearchResultIcon::kBluetooth,
+       mojom::SearchResultDefaultRank::kHigh,
+       mojom::SearchResultType::kSubpage,
+       {.subpage = mojom::Subpage::kBluetoothDevices}},
+      {IDS_OS_SETTINGS_TAG_BLUETOOTH_DISCONNECT,
+       mojom::kBluetoothDevicesSubpagePath,
+       mojom::SearchResultIcon::kBluetooth,
+       mojom::SearchResultDefaultRank::kHigh,
+       mojom::SearchResultType::kSetting,
+       {.setting = mojom::Setting::kBluetoothDisconnectFromDevice}},
+      {IDS_OS_SETTINGS_TAG_BLUETOOTH_UNPAIR,
+       mojom::kBluetoothDevicesSubpagePath,
+       mojom::SearchResultIcon::kBluetooth,
+       mojom::SearchResultDefaultRank::kHigh,
+       mojom::SearchResultType::kSetting,
+       {.setting = mojom::Setting::kBluetoothUnpairDevice},
+       {IDS_OS_SETTINGS_TAG_BLUETOOTH_UNPAIR_ALT1, SearchConcept::kAltTagEnd}},
   });
   return *tags;
 }
 
 const std::vector<SearchConcept>& GetBluetoothOnSearchConcepts() {
   static const base::NoDestructor<std::vector<SearchConcept>> tags({
-      // TODO(khorimoto): Add "Bluetooth on" search concepts.
+      {IDS_OS_SETTINGS_TAG_BLUETOOTH_TURN_OFF,
+       mojom::kBluetoothDevicesSubpagePath,
+       mojom::SearchResultIcon::kBluetooth,
+       mojom::SearchResultDefaultRank::kHigh,
+       mojom::SearchResultType::kSetting,
+       {.setting = mojom::Setting::kBluetoothOnOff},
+       {IDS_OS_SETTINGS_TAG_BLUETOOTH_TURN_OFF_ALT1,
+        SearchConcept::kAltTagEnd}},
   });
   return *tags;
 }
 
 const std::vector<SearchConcept>& GetBluetoothOffSearchConcepts() {
   static const base::NoDestructor<std::vector<SearchConcept>> tags({
-      // TODO(khorimoto): Add "Bluetooth off" search concepts.
+      {IDS_OS_SETTINGS_TAG_BLUETOOTH_TURN_ON,
+       mojom::kBluetoothDevicesSubpagePath,
+       mojom::SearchResultIcon::kBluetooth,
+       mojom::SearchResultDefaultRank::kHigh,
+       mojom::SearchResultType::kSetting,
+       {.setting = mojom::Setting::kBluetoothOnOff},
+       {IDS_OS_SETTINGS_TAG_BLUETOOTH_TURN_ON_ALT1, SearchConcept::kAltTagEnd}},
   });
   return *tags;
 }

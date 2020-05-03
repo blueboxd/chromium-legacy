@@ -117,6 +117,8 @@ constexpr char kJSDataToSave[] = "dataToSave";
 constexpr char kJSHasUnsavedChanges[] = "hasUnsavedChanges";
 // Consume save token (Plugin -> Page)
 constexpr char kJSConsumeSaveTokenType[] = "consumeSaveToken";
+// Notify when touch selection occurs (Plugin -> Page)
+constexpr char kJSTouchSelectionOccurredType[] = "touchSelectionOccurred";
 // Go to page (Plugin -> Page)
 constexpr char kJSGoToPageType[] = "goToPage";
 constexpr char kJSPageNumber[] = "page";
@@ -1442,6 +1444,12 @@ void OutOfProcessInstance::NotifySelectedFindResultChanged(
     int current_find_index) {
   DCHECK_GE(current_find_index, -1);
   SelectedFindResultChanged(current_find_index);
+}
+
+void OutOfProcessInstance::NotifyTouchSelectionOccurred() {
+  pp::VarDictionary message;
+  message.Set(kType, kJSTouchSelectionOccurredType);
+  PostMessage(message);
 }
 
 void OutOfProcessInstance::GetDocumentPassword(

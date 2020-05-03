@@ -370,7 +370,7 @@ suite(preview_generation_test.suiteName, function() {
           nativeLayer.resetResolver('getPreview');
           // DEFAULT -> CUSTOM
           page.setSetting('scalingType', ScalingType.CUSTOM);
-          // Need to set custom value != 100 for preview to regenerate.
+          // Need to set custom value !== '100' for preview to regenerate.
           page.setSetting('scaling', '90');
           return nativeLayer.whenCalled('getPreview');
         })
@@ -533,7 +533,7 @@ suite(preview_generation_test.suiteName, function() {
           nativeLayer.resetResolver('getPreview');
           // DEFAULT -> CUSTOM
           page.setSetting('scalingTypePdf', ScalingType.CUSTOM);
-          // Need to set custom value != 100 for preview to regenerate.
+          // Need to set custom value !== '100' for preview to regenerate.
           page.setSetting('scaling', '120');
           return nativeLayer.whenCalled('getPreview');
         })

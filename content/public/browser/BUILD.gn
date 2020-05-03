@@ -29,6 +29,7 @@ jumbo_source_set("browser_sources") {
     "allow_service_worker_result.cc",
     "allow_service_worker_result.h",
     "android/android_overlay_provider.h",
+    "android/app_web_message_port.h",
     "android/child_process_importance.h",
     "android/compositor.h",
     "android/compositor_client.h",

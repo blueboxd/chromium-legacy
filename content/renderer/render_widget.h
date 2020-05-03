@@ -34,7 +34,6 @@
 #include "content/common/content_export.h"
 #include "content/common/content_to_visible_time_reporter.h"
 #include "content/common/drag_event_source_info.h"
-#include "content/common/edit_command.h"
 #include "content/common/widget.mojom.h"
 #include "content/public/common/drop_data.h"
 #include "content/renderer/input/main_thread_event_queue.h"
@@ -52,6 +51,7 @@
 #include "ppapi/buildflags/buildflags.h"
 #include "services/network/public/mojom/referrer_policy.mojom.h"
 #include "third_party/blink/public/common/input/web_input_event.h"
+#include "third_party/blink/public/mojom/input/input_handler.mojom-shared.h"
 #include "third_party/blink/public/platform/viewport_intersection_state.h"
 #include "third_party/blink/public/platform/web_rect.h"
 #include "third_party/blink/public/platform/web_text_input_info.h"
@@ -275,7 +275,9 @@ class CONTENT_EXPORT RenderWidget
   bool IsForProvisionalFrame() const;
 
   // Manage edit commands to be used for the next keyboard event.
-  const EditCommands& edit_commands() const { return edit_commands_; }
+  const std::vector<blink::mojom::EditCommandPtr>& edit_commands() const {
+    return edit_commands_;
+  }
   void SetEditCommandForNextKeyEvent(const std::string& name,
                                      const std::string& value);
   void ClearEditCommands();
@@ -519,7 +521,8 @@ class CONTENT_EXPORT RenderWidget
   void OnSetFocus(bool enable);
   void OnMouseCaptureLost();
   void OnCursorVisibilityChange(bool is_visible);
-  void OnSetEditCommandsForNextKeyEvent(const EditCommands& edit_commands);
+  void OnSetEditCommandsForNextKeyEvent(
+      std::vector<blink::mojom::EditCommandPtr> edit_commands);
   void OnImeSetComposition(
       const base::string16& text,
       const std::vector<blink::WebImeTextSpan>& ime_text_spans,
@@ -983,7 +986,7 @@ class CONTENT_EXPORT RenderWidget
 
   // Stores edit commands associated to the next key event.
   // Will be cleared as soon as the next key event is processed.
-  EditCommands edit_commands_;
+  std::vector<blink::mojom::EditCommandPtr> edit_commands_;
 
   // This field stores drag/drop related info for the event that is currently
   // being handled. If the current event results in starting a drag/drop

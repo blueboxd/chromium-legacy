@@ -53,7 +53,7 @@ bool MockSharedWorker::CheckReceivedTerminate() {
 }
 
 void MockSharedWorker::Connect(int connection_request_id,
-                               mojo::ScopedMessagePipeHandle port) {
+                               blink::MessagePortDescriptor port) {
   connect_received_.emplace(connection_request_id,
                             blink::MessagePortChannel(std::move(port)));
 }

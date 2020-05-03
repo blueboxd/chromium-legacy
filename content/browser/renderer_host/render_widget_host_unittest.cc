@@ -34,7 +34,6 @@
 #include "content/browser/renderer_host/render_widget_host_delegate.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/common/content_constants_internal.h"
-#include "content/common/edit_command.h"
 #include "content/common/input/synthetic_web_input_event_builders.h"
 #include "content/common/input_messages.h"
 #include "content/common/render_frame_metadata.mojom.h"
@@ -57,6 +56,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/page/page_zoom.h"
+#include "third_party/blink/public/mojom/input/input_handler.mojom-shared.h"
 #include "ui/display/screen.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/blink/blink_features.h"
@@ -592,10 +592,10 @@ class RenderWidgetHostTest : public testing::Test {
 
   void SimulateKeyboardEventWithCommands(WebInputEvent::Type type) {
     NativeWebKeyboardEvent native_event(type, 0, GetNextSimulatedEventTime());
-    EditCommands commands;
-    commands.emplace_back("name", "value");
+    std::vector<blink::mojom::EditCommandPtr> edit_commands;
+    edit_commands.push_back(blink::mojom::EditCommand::New("name", "value"));
     host_->ForwardKeyboardEventWithCommands(native_event, ui::LatencyInfo(),
-                                            &commands, nullptr);
+                                            std::move(edit_commands), nullptr);
   }
 
   void SimulateMouseEvent(WebInputEvent::Type type) {

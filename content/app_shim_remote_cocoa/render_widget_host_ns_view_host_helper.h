@@ -6,6 +6,7 @@
 #define CONTENT_APP_SHIM_REMOTE_COCOA_RENDER_WIDGET_HOST_NS_VIEW_HOST_HELPER_H_
 
 #include "base/macros.h"
+#include "third_party/blink/public/mojom/input/input_handler.mojom-forward.h"
 
 #include <vector>
 
@@ -21,7 +22,6 @@ class LatencyInfo;
 }  // namespace ui
 
 namespace content {
-struct EditCommand;
 struct NativeWebKeyboardEvent;
 }  // namespace content
 
@@ -60,7 +60,7 @@ class RenderWidgetHostNSViewHostHelper {
   virtual void ForwardKeyboardEventWithCommands(
       const content::NativeWebKeyboardEvent& key_event,
       const ui::LatencyInfo& latency_info,
-      const std::vector<content::EditCommand>& commands) = 0;
+      std::vector<blink::mojom::EditCommandPtr> commands) = 0;
 
   // Forward events to the renderer or the input router, as appropriate.
   virtual void RouteOrProcessMouseEvent(

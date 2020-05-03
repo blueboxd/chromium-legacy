@@ -14,6 +14,7 @@ mojom("common_mojom") {
   public_deps = [
     "//mojo/public/mojom/base",
     "//services/network/public/mojom:mojom",
+    "//third_party/blink/public/mojom:mojom_core",
   ]
 
   cpp_typemaps = [

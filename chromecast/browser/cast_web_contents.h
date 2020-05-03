@@ -364,11 +364,6 @@ class CastWebContents {
   // See html.spec.whatwg.org/multipage/web-messaging.html sect. 9.4.3
   // for more details on how the target origin policy is applied.
   // Should be called on UI thread.
-  // TODO(crbug.com/803242): Deprecated and will be shortly removed.
-  virtual void PostMessageToMainFrame(
-      const std::string& target_origin,
-      const std::string& data,
-      std::vector<mojo::ScopedMessagePipeHandle> channels) = 0;
   virtual void PostMessageToMainFrame(
       const std::string& target_origin,
       const std::string& data,

@@ -8,6 +8,7 @@ import "content/common/native_types.mojom";
 import "content/common/input/input_handler.mojom";
 import "mojo/public/mojom/base/string16.mojom";
 import "ui/base/ime/mojom/ime_types.mojom";
+import "third_party/blink/public/mojom/input/input_handler.mojom";
 import "ui/display/mojom/display.mojom";
 import "ui/events/mojom/event.mojom";
 import "ui/gfx/geometry/mojom/geometry.mojom";
@@ -140,7 +141,7 @@ interface RenderWidgetHostNSViewHost {
       content.mojom.Event event,
       array<uint8> native_event_data,
       bool skip_in_browser,
-      array<content.mojom.EditCommand> commands);
+      array<blink.mojom.EditCommand> commands);
 
   // Forward events to the renderer or the input router, as appropriate.
   RouteOrProcessMouseEvent(content.mojom.Event event);

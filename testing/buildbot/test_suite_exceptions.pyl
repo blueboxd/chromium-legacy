@@ -566,6 +566,12 @@
       },
     },
   },
+  'cacheinvalidation_unittests': {
+    'remove_from': [
+      'Fuchsia ARM64',  # https://crbug.com/1077462
+      'Fuchsia x64',  # https://crbug.com/1077462
+    ],
+  },
   'capture_unittests': {
     'remove_from': [
       'Fuchsia ARM64',  # https://crbug.com/1075762
@@ -995,6 +1001,12 @@
         ],
       },
     },
+  },
+  'display_unittests': {
+    'remove_from': [
+      'Fuchsia ARM64',  # https://crbug.com/1077462
+      'Fuchsia x64',  # https://crbug.com/1077462
+    ],
   },
   'extensions_browsertests': {
     'remove_from': [
@@ -1981,6 +1993,12 @@
         ],
       },
     },
+  },
+  'storage_unittests': {
+    'remove_from': [
+      'Fuchsia ARM64',  # https://crbug.com/1077462
+      'Fuchsia x64',  # https://crbug.com/1077462
+    ],
   },
   'swiftshader_unittests': {
     'remove_from': [

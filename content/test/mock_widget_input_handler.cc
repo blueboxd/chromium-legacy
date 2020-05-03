@@ -42,9 +42,9 @@ void MockWidgetInputHandler::MouseCaptureLost() {
 }
 
 void MockWidgetInputHandler::SetEditCommandsForNextKeyEvent(
-    const std::vector<content::EditCommand>& commands) {
+    std::vector<blink::mojom::EditCommandPtr> commands) {
   dispatched_messages_.emplace_back(
-      std::make_unique<DispatchedEditCommandMessage>(commands));
+      std::make_unique<DispatchedEditCommandMessage>(std::move(commands)));
 }
 
 void MockWidgetInputHandler::CursorVisibilityChanged(bool visible) {
@@ -183,8 +183,8 @@ bool MockWidgetInputHandler::DispatchedIMEMessage::Matches(
 
 MockWidgetInputHandler::DispatchedEditCommandMessage::
     DispatchedEditCommandMessage(
-        const std::vector<content::EditCommand>& commands)
-    : DispatchedMessage("SetEditComamnds"), commands_(commands) {}
+        std::vector<blink::mojom::EditCommandPtr> commands)
+    : DispatchedMessage("SetEditComamnds"), commands_(std::move(commands)) {}
 
 MockWidgetInputHandler::DispatchedEditCommandMessage::
     ~DispatchedEditCommandMessage() {}
@@ -193,7 +193,7 @@ MockWidgetInputHandler::DispatchedEditCommandMessage::ToEditCommand() {
   return this;
 }
 
-const std::vector<content::EditCommand>&
+const std::vector<blink::mojom::EditCommandPtr>&
 MockWidgetInputHandler::DispatchedEditCommandMessage::Commands() const {
   return commands_;
 }

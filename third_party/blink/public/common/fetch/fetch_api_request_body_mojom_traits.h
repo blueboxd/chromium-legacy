@@ -11,13 +11,15 @@
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/network/public/cpp/resource_request_body.h"
 #include "services/network/public/mojom/url_loader.mojom-forward.h"
+#include "third_party/blink/public/common/common_export.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-forward.h"
 
 namespace mojo {
 
 template <>
-struct StructTraits<blink::mojom::FetchAPIRequestBodyDataView,
-                    scoped_refptr<network::ResourceRequestBody>> {
+struct BLINK_COMMON_EXPORT
+    StructTraits<blink::mojom::FetchAPIRequestBodyDataView,
+                 scoped_refptr<network::ResourceRequestBody>> {
   static bool IsNull(const scoped_refptr<network::ResourceRequestBody>& r) {
     return !r;
   }
@@ -46,8 +48,9 @@ struct StructTraits<blink::mojom::FetchAPIRequestBodyDataView,
 };
 
 template <>
-struct StructTraits<blink::mojom::FetchAPIDataElementDataView,
-                    network::DataElement> {
+struct BLINK_COMMON_EXPORT
+    StructTraits<blink::mojom::FetchAPIDataElementDataView,
+                 network::DataElement> {
   static const network::mojom::DataElementType& type(
       const network::DataElement& element) {
     return element.type_;

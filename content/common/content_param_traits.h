@@ -25,6 +25,7 @@
 namespace blink {
 class PolicyValue;
 class MessagePortChannel;
+class MessagePortDescriptor;
 struct TransferableMessage;
 }
 
@@ -55,6 +56,16 @@ struct CONTENT_EXPORT ParamTraits<content::WebCursor> {
 template <>
 struct CONTENT_EXPORT ParamTraits<blink::MessagePortChannel> {
   typedef blink::MessagePortChannel param_type;
+  static void Write(base::Pickle* m, const param_type& p);
+  static bool Read(const base::Pickle* m,
+                   base::PickleIterator* iter,
+                   param_type* r);
+  static void Log(const param_type& p, std::string* l);
+};
+
+template <>
+struct CONTENT_EXPORT ParamTraits<blink::MessagePortDescriptor> {
+  typedef blink::MessagePortDescriptor param_type;
   static void Write(base::Pickle* m, const param_type& p);
   static bool Read(const base::Pickle* m,
                    base::PickleIterator* iter,

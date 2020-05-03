@@ -1083,8 +1083,8 @@ void RenderWidget::OnMouseCaptureLost() {
 }
 
 void RenderWidget::OnSetEditCommandsForNextKeyEvent(
-    const EditCommands& edit_commands) {
-  edit_commands_ = edit_commands;
+    std::vector<blink::mojom::EditCommandPtr> edit_commands) {
+  edit_commands_ = std::move(edit_commands);
 }
 
 void RenderWidget::OnSetActive(bool active) {
@@ -1248,7 +1248,7 @@ void RenderWidget::OnDidHandleKeyEvent() {
 void RenderWidget::SetEditCommandForNextKeyEvent(const std::string& name,
                                                  const std::string& value) {
   ClearEditCommands();
-  edit_commands_.emplace_back(name, value);
+  edit_commands_.push_back(blink::mojom::EditCommand::New(name, value));
 }
 
 void RenderWidget::ClearEditCommands() {

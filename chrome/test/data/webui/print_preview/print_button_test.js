@@ -118,7 +118,7 @@ suite(print_button_test.suiteName, function() {
                   .$$('print-preview-destination-settings');
           const pdfDestination =
               destinationSettings.destinationStore_.destinations().find(
-                  d => d.id == 'Save as PDF');
+                  d => d.id === 'Save as PDF');
           assertTrue(!!pdfDestination);
           destinationSettings.destinationStore_.selectDestination(
               pdfDestination);

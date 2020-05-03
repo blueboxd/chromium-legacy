@@ -1500,10 +1500,10 @@ void RenderWidgetHostViewMac::ForwardKeyboardEvent(
 void RenderWidgetHostViewMac::ForwardKeyboardEventWithCommands(
     const NativeWebKeyboardEvent& key_event,
     const ui::LatencyInfo& latency_info,
-    const std::vector<EditCommand>& commands) {
+    std::vector<blink::mojom::EditCommandPtr> commands) {
   if (auto* widget_host = GetWidgetForKeyboardEvent()) {
     widget_host->ForwardKeyboardEventWithCommands(key_event, latency_info,
-                                                  &commands);
+                                                  std::move(commands));
   }
 }
 
@@ -1888,7 +1888,7 @@ void RenderWidgetHostViewMac::ForwardKeyboardEventWithCommands(
     std::unique_ptr<InputEvent> input_event,
     const std::vector<uint8_t>& native_event_data,
     bool skip_in_browser,
-    const std::vector<EditCommand>& commands) {
+    std::vector<blink::mojom::EditCommandPtr> edit_commands) {
   if (!input_event || !input_event->web_event ||
       !blink::WebInputEvent::IsKeyboardEventType(
           input_event->web_event->GetType())) {
@@ -1906,7 +1906,7 @@ void RenderWidgetHostViewMac::ForwardKeyboardEventWithCommands(
   [native_event.os_event release];
   native_event.os_event = [ui::EventFromData(native_event_data) retain];
   ForwardKeyboardEventWithCommands(native_event, input_event->latency_info,
-                                   commands);
+                                   std::move(edit_commands));
 }
 
 void RenderWidgetHostViewMac::RouteOrProcessMouseEvent(

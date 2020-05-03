@@ -21,6 +21,7 @@
 #include "services/network/public/cpp/net_ipc_param_traits.h"
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
 #include "third_party/blink/public/common/messaging/message_port_channel.h"
+#include "third_party/blink/public/common/messaging/message_port_descriptor.h"
 #include "third_party/blink/public/common/messaging/transferable_message.h"
 #include "third_party/blink/public/mojom/feature_policy/policy_value.mojom.h"
 #include "third_party/blink/public/mojom/messaging/transferable_message.mojom.h"
@@ -73,16 +74,16 @@ void ParamTraits<content::WebCursor>::Log(const param_type& p, std::string* l) {
 
 void ParamTraits<blink::MessagePortChannel>::Write(base::Pickle* m,
                                                    const param_type& p) {
-  ParamTraits<mojo::MessagePipeHandle>::Write(m, p.ReleaseHandle().release());
+  ParamTraits<blink::MessagePortDescriptor>::Write(m, p.ReleaseHandle());
 }
 
 bool ParamTraits<blink::MessagePortChannel>::Read(const base::Pickle* m,
                                                   base::PickleIterator* iter,
                                                   param_type* r) {
-  mojo::MessagePipeHandle handle;
-  if (!ParamTraits<mojo::MessagePipeHandle>::Read(m, iter, &handle))
+  blink::MessagePortDescriptor port;
+  if (!ParamTraits<blink::MessagePortDescriptor>::Read(m, iter, &port))
     return false;
-  *r = blink::MessagePortChannel(mojo::ScopedMessagePipeHandle(handle));
+  *r = blink::MessagePortChannel(std::move(port));
   return true;
 }
 
@@ -104,6 +105,37 @@ void ParamTraits<blink::PolicyValue>::Write(base::Pickle* m,
       break;
   }
 }
+
+void ParamTraits<blink::MessagePortDescriptor>::Write(
+    base::Pickle* m,
+    const param_type& pconst) {
+  // Serializing this object is a move of the object contents, thus we need a
+  // mutable reference to it.
+  param_type& p = const_cast<param_type&>(pconst);
+  ParamTraits<mojo::MessagePipeHandle>::Write(
+      m, p.TakeHandleForSerialization().release());
+  ParamTraits<base::UnguessableToken>::Write(m, p.TakeIdForSerialization());
+  ParamTraits<uint64_t>::Write(m, p.TakeSequenceNumberForSerialization());
+}
+
+bool ParamTraits<blink::MessagePortDescriptor>::Read(const base::Pickle* m,
+                                                     base::PickleIterator* iter,
+                                                     param_type* r) {
+  mojo::MessagePipeHandle port;
+  base::UnguessableToken id;
+  uint64_t sequence_number = 0;
+  if (!ParamTraits<mojo::MessagePipeHandle>::Read(m, iter, &port) ||
+      !ParamTraits<base::UnguessableToken>::Read(m, iter, &id) ||
+      !ParamTraits<uint64_t>::Read(m, iter, &sequence_number)) {
+    return false;
+  }
+  r->InitializeFromSerializedValues(mojo::ScopedMessagePipeHandle(port), id,
+                                    sequence_number);
+  return true;
+}
+
+void ParamTraits<blink::MessagePortDescriptor>::Log(const param_type& p,
+                                                    std::string* l) {}
 
 bool ParamTraits<blink::PolicyValue>::Read(const base::Pickle* m,
                                            base::PickleIterator* iter,

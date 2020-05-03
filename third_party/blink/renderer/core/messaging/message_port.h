@@ -30,9 +30,11 @@
 #include <memory>
 #include "base/memory/scoped_refptr.h"
 #include "base/single_thread_task_runner.h"
+#include "base/unguessable_token.h"
 #include "mojo/public/cpp/bindings/connector.h"
 #include "mojo/public/cpp/bindings/message.h"
 #include "third_party/blink/public/common/messaging/message_port_channel.h"
+#include "third_party/blink/public/common/messaging/message_port_descriptor.h"
 #include "third_party/blink/public/platform/web_vector.h"
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
 #include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
@@ -73,7 +75,7 @@ class CORE_EXPORT MessagePort : public EventTargetWithInlineData,
   void start();
   void close();
 
-  void Entangle(mojo::ScopedMessagePipeHandle);
+  void Entangle(MessagePortDescriptor);
   void Entangle(MessagePortChannel);
   MessagePortChannel Disentangle();
 
@@ -143,6 +145,10 @@ class CORE_EXPORT MessagePort : public EventTargetWithInlineData,
   bool closed_ = false;
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+
+  // The internal port owned by this class. The handle itself is moved into the
+  // |connector_| while entangled.
+  MessagePortDescriptor port_;
 };
 
 }  // namespace blink

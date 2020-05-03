@@ -12,13 +12,19 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/account_manager/account_manager_util.h"
 #include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_utils.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/supervised_user/supervised_user_service.h"
 #include "chrome/browser/ui/ui_features.h"
+#include "chrome/browser/ui/webui/chromeos/sync/os_sync_handler.h"
+#include "chrome/browser/ui/webui/settings/chromeos/account_manager_handler.h"
+#include "chrome/browser/ui/webui/settings/chromeos/fingerprint_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/os_settings_features_util.h"
 #include "chrome/browser/ui/webui/settings/chromeos/parental_controls_handler.h"
+#include "chrome/browser/ui/webui/settings/chromeos/quick_unlock_handler.h"
+#include "chrome/browser/ui/webui/settings/people_handler.h"
 #include "chrome/browser/ui/webui/settings/shared_settings_localized_strings_provider.h"
 #include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/common/pref_names.h"
@@ -26,12 +32,15 @@
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
+#include "chromeos/components/account_manager/account_manager_factory.h"
 #include "chromeos/constants/chromeos_features.h"
+#include "chromeos/constants/chromeos_pref_names.h"
 #include "components/google/core/common/google_util.h"
 #include "components/prefs/pref_service.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/driver/sync_user_settings.h"
 #include "components/user_manager/user_manager.h"
+#include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/webui/web_ui_util.h"
@@ -43,42 +52,184 @@ namespace {
 
 const std::vector<SearchConcept>& GetPeopleSearchConcepts() {
   static const base::NoDestructor<std::vector<SearchConcept>> tags({
-      // TODO(khorimoto): Add "People" search concepts.
+      {IDS_OS_SETTINGS_TAG_PEOPLE,
+       mojom::kPeopleSectionPath,
+       mojom::SearchResultIcon::kAvatar,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSection,
+       {.section = mojom::Section::kPeople}},
+      {IDS_OS_SETTINGS_TAG_LOCK_SCREEN_PIN_OR_PASSWORD,
+       mojom::kSecurityAndSignInSubpagePath,
+       mojom::SearchResultIcon::kLock,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSetting,
+       {.setting = mojom::Setting::kChangeAuthPin}},
+      {IDS_OS_SETTINGS_TAG_USERNAMES_AND_PHOTOS,
+       mojom::kManageOtherPeopleSubpagePath,
+       mojom::SearchResultIcon::kAvatar,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSetting,
+       {.setting = mojom::Setting::kShowUsernamesAndPhotosAtSignIn},
+       {IDS_OS_SETTINGS_TAG_USERNAMES_AND_PHOTOS_ALT1,
+        IDS_OS_SETTINGS_TAG_USERNAMES_AND_PHOTOS_ALT2,
+        SearchConcept::kAltTagEnd}},
+      {IDS_OS_SETTINGS_TAG_PEOPLE_ACCOUNTS,
+       mojom::kMyAccountsSubpagePath,
+       mojom::SearchResultIcon::kAvatar,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSubpage,
+       {.subpage = mojom::Subpage::kMyAccounts}},
+      {IDS_OS_SETTINGS_TAG_PEOPLE_ACCOUNTS_ADD,
+       mojom::kMyAccountsSubpagePath,
+       mojom::SearchResultIcon::kAvatar,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSetting,
+       {.setting = mojom::Setting::kAddAccount}},
+      {IDS_OS_SETTINGS_TAG_RESTRICT_SIGN_IN_REMOVE,
+       mojom::kManageOtherPeopleSubpagePath,
+       mojom::SearchResultIcon::kAvatar,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSetting,
+       {.setting = mojom::Setting::kRemoveFromUserWhitelist}},
+      {IDS_OS_SETTINGS_TAG_GUEST_BROWSING,
+       mojom::kManageOtherPeopleSubpagePath,
+       mojom::SearchResultIcon::kAvatar,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSetting,
+       {.setting = mojom::Setting::kGuestBrowsing}},
+      {IDS_OS_SETTINGS_TAG_LOCK_SCREEN_WHEN_WAKING,
+       mojom::kSecurityAndSignInSubpagePath,
+       mojom::SearchResultIcon::kLock,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSetting,
+       {.setting = mojom::Setting::kLockScreen},
+       {IDS_OS_SETTINGS_TAG_LOCK_SCREEN_WHEN_WAKING_ALT1,
+        SearchConcept::kAltTagEnd}},
+      {IDS_OS_SETTINGS_TAG_SYNC,
+       mojom::kSyncSubpagePath,
+       mojom::SearchResultIcon::kSync,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSubpage,
+       {.subpage = mojom::Subpage::kSync}},
+      {IDS_OS_SETTINGS_TAG_PEOPLE_ACCOUNTS_REMOVE,
+       mojom::kMyAccountsSubpagePath,
+       mojom::SearchResultIcon::kAvatar,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSetting,
+       {.setting = mojom::Setting::kRemoveAccount}},
+      {IDS_OS_SETTINGS_TAG_RESTRICT_SIGN_IN,
+       mojom::kManageOtherPeopleSubpagePath,
+       mojom::SearchResultIcon::kAvatar,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSetting,
+       {.setting = mojom::Setting::kRestrictSignIn},
+       {IDS_OS_SETTINGS_TAG_RESTRICT_SIGN_IN_ALT1, SearchConcept::kAltTagEnd}},
+      {IDS_OS_SETTINGS_TAG_LOCK_SCREEN,
+       mojom::kSecurityAndSignInSubpagePath,
+       mojom::SearchResultIcon::kLock,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSubpage,
+       {.subpage = mojom::Subpage::kSecurityAndSignIn}},
+      {IDS_OS_SETTINGS_TAG_RESTRICT_SIGN_IN_ADD,
+       mojom::kManageOtherPeopleSubpagePath,
+       mojom::SearchResultIcon::kAvatar,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSetting,
+       {.setting = mojom::Setting::kAddToUserWhitelist}},
   });
   return *tags;
 }
 
 const std::vector<SearchConcept>& GetSyncOnSearchConcepts() {
   static const base::NoDestructor<std::vector<SearchConcept>> tags({
-      // TODO(khorimoto): Add "Sync on" search concepts.
+      {IDS_OS_SETTINGS_TAG_SYNC_TURN_OFF,
+       mojom::kSyncSubpagePath,
+       mojom::SearchResultIcon::kSync,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSetting,
+       {.setting = mojom::Setting::kSyncOnOff},
+       {IDS_OS_SETTINGS_TAG_SYNC_TURN_OFF_ALT1, SearchConcept::kAltTagEnd}},
   });
   return *tags;
 }
 
 const std::vector<SearchConcept>& GetSyncOffSearchConcepts() {
   static const base::NoDestructor<std::vector<SearchConcept>> tags({
-      // TODO(khorimoto): Add "Sync off" search concepts.
+      {IDS_OS_SETTINGS_TAG_SYNC_TURN_ON,
+       mojom::kSyncSubpagePath,
+       mojom::SearchResultIcon::kSync,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSetting,
+       {.setting = mojom::Setting::kSyncOnOff},
+       {IDS_OS_SETTINGS_TAG_SYNC_TURN_ON_ALT1, SearchConcept::kAltTagEnd}},
   });
   return *tags;
 }
 
 const std::vector<SearchConcept>& GetKerberosSearchConcepts() {
   static const base::NoDestructor<std::vector<SearchConcept>> tags({
-      // TODO(khorimoto): Add "Kerberos" search concepts.
+      {IDS_OS_SETTINGS_TAG_KERBEROS_ADD,
+       mojom::kKerberosSubpagePath,
+       mojom::SearchResultIcon::kAvatar,
+       mojom::SearchResultDefaultRank::kLow,
+       mojom::SearchResultType::kSetting,
+       {.setting = mojom::Setting::kAddKerberosTicket}},
+      {IDS_OS_SETTINGS_TAG_KERBEROS_REMOVE,
+       mojom::kKerberosSubpagePath,
+       mojom::SearchResultIcon::kAvatar,
+       mojom::SearchResultDefaultRank::kLow,
+       mojom::SearchResultType::kSetting,
+       {.setting = mojom::Setting::kRemoveKerberosTicket}},
+      {IDS_OS_SETTINGS_TAG_KERBEROS,
+       mojom::kKerberosSubpagePath,
+       mojom::SearchResultIcon::kAvatar,
+       mojom::SearchResultDefaultRank::kLow,
+       mojom::SearchResultType::kSubpage,
+       {.subpage = mojom::Subpage::kKerberos}},
+      {IDS_OS_SETTINGS_TAG_KERBEROS_ACTIVE,
+       mojom::kKerberosSubpagePath,
+       mojom::SearchResultIcon::kAvatar,
+       mojom::SearchResultDefaultRank::kLow,
+       mojom::SearchResultType::kSetting,
+       {.setting = mojom::Setting::kSetActiveKerberosTicket}},
   });
   return *tags;
 }
 
 const std::vector<SearchConcept>& GetFingerprintSearchConcepts() {
   static const base::NoDestructor<std::vector<SearchConcept>> tags({
-      // TODO(khorimoto): Add "Fingerprint" search concepts.
+      {IDS_OS_SETTINGS_TAG_FINGERPRINT_REMOVE,
+       mojom::kFingerprintSubpathPath,
+       mojom::SearchResultIcon::kFingerprint,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSetting,
+       {.setting = mojom::Setting::kRemoveFingerprint}},
+      {IDS_OS_SETTINGS_TAG_FINGERPRINT_ADD,
+       mojom::kFingerprintSubpathPath,
+       mojom::SearchResultIcon::kFingerprint,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSetting,
+       {.setting = mojom::Setting::kAddFingerprint}},
+      {IDS_OS_SETTINGS_TAG_FINGERPRINT,
+       mojom::kFingerprintSubpathPath,
+       mojom::SearchResultIcon::kFingerprint,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSubpage,
+       {.subpage = mojom::Subpage::kFingerprint}},
   });
   return *tags;
 }
 
 const std::vector<SearchConcept>& GetParentalSearchConcepts() {
   static const base::NoDestructor<std::vector<SearchConcept>> tags({
-      // TODO(khorimoto): Add "Parental controls" search concepts.
+      {IDS_OS_SETTINGS_TAG_PARENTAL_CONTROLS,
+       mojom::kPeopleSectionPath,
+       mojom::SearchResultIcon::kAvatar,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSetting,
+       {.setting = mojom::Setting::kSetUpParentalControls},
+       {IDS_OS_SETTINGS_TAG_PARENTAL_CONTROLS_ALT1,
+        IDS_OS_SETTINGS_TAG_PARENTAL_CONTROLS_ALT2, SearchConcept::kAltTagEnd}},
   });
   return *tags;
 }
@@ -184,7 +335,7 @@ void AddKerberosAddAccountDialogStrings(content::WebUIDataSource* html_source) {
   // Whether the 'Remember password' checkbox is enabled.
   html_source->AddBoolean(
       "kerberosRememberPasswordEnabled",
-      local_state->GetBoolean(prefs::kKerberosRememberPasswordEnabled));
+      local_state->GetBoolean(::prefs::kKerberosRememberPasswordEnabled));
 
   // Kerberos default configuration.
   html_source->AddString(
@@ -452,11 +603,15 @@ PeopleSection::PeopleSection(
     Delegate* per_page_delegate,
     syncer::SyncService* sync_service,
     SupervisedUserService* supervised_user_service,
-    KerberosCredentialsManager* kerberos_credentials_manager)
+    KerberosCredentialsManager* kerberos_credentials_manager,
+    signin::IdentityManager* identity_manager,
+    PrefService* pref_service)
     : OsSettingsSection(profile, per_page_delegate),
       sync_service_(sync_service),
       supervised_user_service_(supervised_user_service),
-      kerberos_credentials_manager_(kerberos_credentials_manager) {
+      kerberos_credentials_manager_(kerberos_credentials_manager),
+      identity_manager_(identity_manager),
+      pref_service_(pref_service) {
   // No search tags are registered if in guest mode.
   if (features::IsGuestModeActive())
     return;
@@ -544,6 +699,13 @@ void PeopleSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
       l10n_util::GetStringFUTF8(IDS_SETTINGS_SYNC_DISCONNECT_EXPLANATION,
                                 base::ASCIIToUTF16(sync_dashboard_url)));
 
+  html_source->AddBoolean(
+      "secondaryGoogleAccountSigninAllowed",
+      pref_service_->GetBoolean(
+          chromeos::prefs::kSecondaryGoogleAccountSigninAllowed));
+  html_source->AddBoolean("isEduCoexistenceEnabled",
+                          ::chromeos::features::IsEduCoexistenceEnabled());
+
   AddAccountManagerPageStrings(html_source);
   AddKerberosAccountsPageStrings(html_source);
   AddKerberosAddAccountDialogStrings(html_source);
@@ -562,6 +724,41 @@ void PeopleSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
   ::settings::AddSyncAccountControlStrings(html_source);
   ::settings::AddPasswordPromptDialogStrings(html_source);
   ::settings::AddSyncPageStrings(html_source);
+}
+
+void PeopleSection::AddHandlers(content::WebUI* web_ui) {
+  web_ui->AddMessageHandler(
+      std::make_unique<::settings::PeopleHandler>(profile()));
+
+  // TODO(jamescook): Sort out how account management is split between Chrome OS
+  // and browser settings.
+  if (chromeos::IsAccountManagerAvailable(profile())) {
+    chromeos::AccountManagerFactory* factory =
+        g_browser_process->platform_part()->GetAccountManagerFactory();
+    chromeos::AccountManager* account_manager =
+        factory->GetAccountManager(profile()->GetPath().value());
+    DCHECK(account_manager);
+
+    web_ui->AddMessageHandler(
+        std::make_unique<chromeos::settings::AccountManagerUIHandler>(
+            account_manager, identity_manager_));
+  }
+
+  if (chromeos::features::IsSplitSettingsSyncEnabled())
+    web_ui->AddMessageHandler(std::make_unique<OSSyncHandler>(profile()));
+
+  web_ui->AddMessageHandler(
+      std::make_unique<chromeos::settings::QuickUnlockHandler>());
+
+  web_ui->AddMessageHandler(
+      std::make_unique<chromeos::settings::FingerprintHandler>(profile()));
+
+  if (!profile()->IsGuestSession() &&
+      features::ShouldShowParentalControlSettings(profile())) {
+    web_ui->AddMessageHandler(
+        std::make_unique<chromeos::settings::ParentalControlsHandler>(
+            profile()));
+  }
 }
 
 void PeopleSection::OnStateChanged(syncer::SyncService* sync_service) {
@@ -619,7 +816,7 @@ void PeopleSection::AddKerberosAccountsPageStrings(
   // Whether new Kerberos accounts may be added.
   html_source->AddBoolean(
       "kerberosAddAccountsAllowed",
-      local_state->GetBoolean(prefs::kKerberosAddAccountsAllowed));
+      local_state->GetBoolean(::prefs::kKerberosAddAccountsAllowed));
 
   // Kerberos accounts page with "Learn more" link.
   html_source->AddString(

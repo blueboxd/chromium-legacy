@@ -353,7 +353,6 @@ jumbo_source_set("browser") {
     "android/android_overlay_provider_impl.cc",
     "android/android_overlay_provider_impl.h",
     "android/app_web_message_port.cc",
-    "android/app_web_message_port.h",
     "android/background_sync_network_observer_android.cc",
     "android/background_sync_network_observer_android.h",
     "android/browser_startup_controller.cc",

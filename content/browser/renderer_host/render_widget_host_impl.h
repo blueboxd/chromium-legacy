@@ -106,7 +106,6 @@ class SyntheticGestureController;
 class TimeoutMonitor;
 class TouchEmulator;
 class WebCursor;
-struct EditCommand;
 struct VisualProperties;
 struct ScreenInfo;
 struct TextInputState;
@@ -434,7 +433,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   void ForwardKeyboardEventWithCommands(
       const NativeWebKeyboardEvent& key_event,
       const ui::LatencyInfo& latency,
-      const std::vector<EditCommand>* commands,
+      std::vector<blink::mojom::EditCommandPtr> commands,
       bool* update_event = nullptr);
 
   // Forwards the given message to the renderer. These are called by the view

@@ -61,16 +61,9 @@ WebMessagePort::~WebMessagePort() {
 
 // static
 std::pair<WebMessagePort, WebMessagePort> WebMessagePort::CreatePair() {
-  mojo::ScopedMessagePipeHandle handle0, handle1;
-  CHECK_EQ(MOJO_RESULT_OK,
-           mojo::CreateMessagePipe(nullptr, &handle0, &handle1));
-  return std::make_pair(WebMessagePort(std::move(handle0)),
-                        WebMessagePort(std::move(handle1)));
-}
-
-// static
-WebMessagePort WebMessagePort::Create(mojo::ScopedMessagePipeHandle port) {
-  return WebMessagePort(std::move(port));
+  MessagePortDescriptorPair port_pair;
+  return std::make_pair(WebMessagePort(port_pair.TakePort0()),
+                        WebMessagePort(port_pair.TakePort1()));
 }
 
 void WebMessagePort::SetReceiver(
@@ -79,7 +72,7 @@ void WebMessagePort::SetReceiver(
   DCHECK(receiver);
   DCHECK(runner.get());
 
-  DCHECK(port_.is_valid());
+  DCHECK(port_.IsValid());
   DCHECK(!connector_);
   DCHECK(!is_closed_);
   DCHECK(!is_errored_);
@@ -88,8 +81,8 @@ void WebMessagePort::SetReceiver(
   is_transferable_ = false;
   receiver_ = receiver;
   connector_ = std::make_unique<mojo::Connector>(
-      std::move(port_), mojo::Connector::SINGLE_THREADED_SEND,
-      std::move(runner));
+      port_.TakeHandleToEntangleWithEmbedder(),
+      mojo::Connector::SINGLE_THREADED_SEND, std::move(runner));
   connector_->set_incoming_receiver(this);
   connector_->set_connection_error_handler(
       base::BindOnce(&WebMessagePort::OnPipeError, base::Unretained(this)));
@@ -98,7 +91,7 @@ void WebMessagePort::SetReceiver(
 void WebMessagePort::ClearReceiver() {
   if (!connector_)
     return;
-  port_ = connector_->PassMessagePipe();
+  port_.GiveDisentangledHandle(connector_->PassMessagePipe());
   connector_.reset();
   receiver_ = nullptr;
 }
@@ -109,20 +102,20 @@ base::SequencedTaskRunner* WebMessagePort::GetTaskRunner() const {
   return connector_->task_runner();
 }
 
-mojo::ScopedMessagePipeHandle WebMessagePort::PassHandle() {
+MessagePortDescriptor WebMessagePort::PassPort() {
   DCHECK(is_transferable_);
 
   // Clear the receiver, which takes the handle out of the connector if it
   // exists, and puts it back in |port_|.
   ClearReceiver();
-  mojo::ScopedMessagePipeHandle handle = std::move(port_);
+  MessagePortDescriptor port = std::move(port_);
   Reset();
-  return handle;
+  return port;
 }
 
-WebMessagePort::WebMessagePort(mojo::ScopedMessagePipeHandle&& port)
+WebMessagePort::WebMessagePort(MessagePortDescriptor&& port)
     : port_(std::move(port)), is_closed_(false), is_transferable_(true) {
-  DCHECK(port_.is_valid());
+  DCHECK(port_.IsValid());
 }
 
 bool WebMessagePort::CanPostMessage() const {
@@ -136,13 +129,13 @@ bool WebMessagePort::PostMessage(Message&& message) {
 
   // Extract the underlying handles for transport in a
   // blink::TransferableMessage.
-  std::vector<mojo::ScopedMessagePipeHandle> handles;
+  std::vector<MessagePortDescriptor> ports;
   for (auto& port : message.ports) {
     // We should not be trying to send ourselves in a message. Mojo prevents
     // this at a deeper level, but we can also check here.
     DCHECK_NE(this, &port);
 
-    handles.emplace_back(port.PassHandle());
+    ports.emplace_back(port.PassPort());
   }
 
   // Build the message.
@@ -154,7 +147,7 @@ bool WebMessagePort::PostMessage(Message&& message) {
   transferable_message.encoded_message =
       transferable_message.owned_encoded_message;
   transferable_message.ports =
-      blink::MessagePortChannel::CreateFromHandles(std::move(handles));
+      blink::MessagePortChannel::CreateFromHandles(std::move(ports));
 
   // TODO(chrisha): Notify the instrumentation delegate of a message being sent!
 
@@ -171,7 +164,7 @@ bool WebMessagePort::PostMessage(Message&& message) {
 bool WebMessagePort::IsValid() const {
   if (connector_)
     return connector_->is_valid();
-  return port_.is_valid();
+  return port_.IsValid();
 }
 
 void WebMessagePort::Close() {
@@ -208,7 +201,7 @@ void WebMessagePort::CloseIfNecessary() {
     return;
   is_closed_ = true;
   ClearReceiver();
-  port_.reset();
+  port_.Reset();
 }
 
 bool WebMessagePort::Accept(mojo::Message* mojo_message) {

@@ -448,10 +448,10 @@ void SerializedScriptValue::TransferTransformStreams(
 // a MessagePortChannel, and returns the other end as a MessagePort.
 MessagePort* SerializedScriptValue::AddStreamChannel(
     ExecutionContext* execution_context) {
-  mojo::MessagePipe pipe;
+  MessagePortDescriptorPair pipe;
   auto* local_port = MakeGarbageCollected<MessagePort>(*execution_context);
-  local_port->Entangle(std::move(pipe.handle0));
-  stream_channels_.push_back(MessagePortChannel(std::move(pipe.handle1)));
+  local_port->Entangle(pipe.TakePort0());
+  stream_channels_.push_back(MessagePortChannel(pipe.TakePort1()));
   return local_port;
 }
 

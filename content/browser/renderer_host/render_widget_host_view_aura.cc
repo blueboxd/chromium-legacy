@@ -2366,21 +2366,22 @@ void RenderWidgetHostViewAura::ForwardKeyboardEventWithLatencyInfo(
       event.os_event &&
       keybinding_delegate->MatchEvent(*event.os_event, &commands)) {
     // Transform from ui/ types to content/ types.
-    EditCommands edit_commands;
+    std::vector<blink::mojom::EditCommandPtr> edit_commands;
     for (std::vector<ui::TextEditCommandAuraLinux>::const_iterator it =
              commands.begin(); it != commands.end(); ++it) {
-      edit_commands.push_back(EditCommand(it->GetCommandString(),
-                                          it->argument()));
+      edit_commands.push_back(blink::mojom::EditCommand::New(
+          it->GetCommandString(), it->argument()));
     }
 
-    target_host->ForwardKeyboardEventWithCommands(event, latency,
-                                                  &edit_commands, update_event);
+    target_host->ForwardKeyboardEventWithCommands(
+        event, latency, std::move(edit_commands), update_event);
     return;
   }
 #endif
 
-  target_host->ForwardKeyboardEventWithCommands(event, latency, nullptr,
-                                                update_event);
+  target_host->ForwardKeyboardEventWithCommands(
+      event, latency, std::vector<blink::mojom::EditCommandPtr>(),
+      update_event);
 }
 
 void RenderWidgetHostViewAura::CreateSelectionController() {

@@ -9,6 +9,7 @@
 #include "chrome/browser/chromeos/multidevice_setup/multidevice_setup_client_factory.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/supervised_user/supervised_user_service_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs_factory.h"
@@ -40,6 +41,7 @@ OsSettingsManagerFactory::OsSettingsManagerFactory()
   DependsOn(SupervisedUserServiceFactory::GetInstance());
   DependsOn(KerberosCredentialsManagerFactory::GetInstance());
   DependsOn(ArcAppListPrefsFactory::GetInstance());
+  DependsOn(IdentityManagerFactory::GetInstance());
 }
 
 OsSettingsManagerFactory::~OsSettingsManagerFactory() = default;
@@ -54,7 +56,8 @@ KeyedService* OsSettingsManagerFactory::BuildServiceInstanceFor(
       ProfileSyncServiceFactory::GetForProfile(profile),
       SupervisedUserServiceFactory::GetForProfile(profile),
       KerberosCredentialsManagerFactory::Get(profile),
-      ArcAppListPrefsFactory::GetForBrowserContext(profile));
+      ArcAppListPrefsFactory::GetForBrowserContext(profile),
+      IdentityManagerFactory::GetForProfile(profile));
 }
 
 bool OsSettingsManagerFactory::ServiceIsNULLWhileTesting() const {

@@ -36,10 +36,13 @@
 #include "third_party/blink/renderer/core/events/message_event.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/user_activation.h"
 #include "third_party/blink/renderer/core/inspector/thread_debugger.h"
 #include "third_party/blink/renderer/core/messaging/blink_transferable_message_mojom_traits.h"
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
+#include "third_party/blink/renderer/core/workers/worker_or_worklet_global_scope.h"
+#include "third_party/blink/renderer/core/workers/worker_thread.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
@@ -54,6 +57,11 @@ MessagePort::MessagePort(ExecutionContext& execution_context)
 
 MessagePort::~MessagePort() {
   DCHECK(!started_ || !IsEntangled());
+  if (!IsNeutered()) {
+    // Disentangle before teardown. The MessagePortDescriptor will blow up if it
+    // hasn't had its underlying handle returned to it before teardown.
+    Disentangle();
+  }
 }
 
 void MessagePort::postMessage(ScriptState* script_state,
@@ -121,9 +129,9 @@ void MessagePort::postMessage(ScriptState* script_state,
 
 MessagePortChannel MessagePort::Disentangle() {
   DCHECK(!IsNeutered());
-  auto result = MessagePortChannel(connector_->PassMessagePipe());
+  port_.GiveDisentangledHandle(connector_->PassMessagePipe());
   connector_ = nullptr;
-  return result;
+  return MessagePortChannel(std::move(port_));
 }
 
 void MessagePort::start() {
@@ -145,19 +153,21 @@ void MessagePort::close() {
   // A closed port should not be neutered, so rather than merely disconnecting
   // from the mojo message pipe, also entangle with a new dangling message pipe.
   if (!IsNeutered()) {
-    connector_ = nullptr;
-    Entangle(mojo::MessagePipe().handle0);
+    Disentangle().ReleaseHandle();
+    MessagePortDescriptorPair pipe;
+    Entangle(pipe.TakePort0());
   }
   closed_ = true;
 }
 
-void MessagePort::Entangle(mojo::ScopedMessagePipeHandle handle) {
-  // Only invoked to set our initial entanglement.
-  DCHECK(handle.is_valid());
+void MessagePort::Entangle(MessagePortDescriptor port) {
+  DCHECK(port.IsValid());
   DCHECK(!connector_);
-  DCHECK(GetExecutionContext());
+
+  port_ = std::move(port);
   connector_ = std::make_unique<mojo::Connector>(
-      std::move(handle), mojo::Connector::SINGLE_THREADED_SEND, task_runner_);
+      port_.TakeHandleToEntangle(GetExecutionContext()),
+      mojo::Connector::SINGLE_THREADED_SEND, task_runner_);
   connector_->PauseIncomingMethodCallProcessing();
   connector_->set_incoming_receiver(this);
   connector_->set_connection_error_handler(

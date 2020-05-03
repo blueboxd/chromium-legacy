@@ -19,52 +19,6 @@
 using base::android::JavaRef;
 using base::android::ScopedJavaLocalRef;
 
-namespace blink {
-
-// Helper that provides access to protected member functions of
-// blink::MessagePortDescriptor.
-class MessagePortJavaAccess {
- public:
-  static MessagePortDescriptor::InstrumentationDelegate* GetDelegate() {
-    return MessagePortDescriptor::GetInstrumentationDelegate();
-  }
-
-  static mojo::ScopedMessagePipeHandle TakeHandleToEntangleWithEmbedder(
-      blink::MessagePortDescriptor* message_port_descriptor) {
-    return message_port_descriptor->TakeHandleToEntangleWithEmbedder();
-  }
-
-  static void GiveDisentangledHandle(
-      blink::MessagePortDescriptor* message_port_descriptor,
-      mojo::ScopedMessagePipeHandle handle) {
-    message_port_descriptor->GiveDisentangledHandle(std::move(handle));
-  }
-
-  static void Init(blink::MessagePortDescriptor* message_port_descriptor,
-                   mojo::ScopedMessagePipeHandle handle,
-                   const base::UnguessableToken& id,
-                   uint64_t sequence_number) {
-    message_port_descriptor->Init(std::move(handle), id, sequence_number);
-  }
-
-  static mojo::ScopedMessagePipeHandle TakeHandle(
-      blink::MessagePortDescriptor* message_port_descriptor) {
-    return message_port_descriptor->TakeHandle();
-  }
-
-  static base::UnguessableToken TakeId(
-      blink::MessagePortDescriptor* message_port_descriptor) {
-    return message_port_descriptor->TakeId();
-  }
-
-  static uint64_t TakeSequenceNumber(
-      blink::MessagePortDescriptor* message_port_descriptor) {
-    return message_port_descriptor->TakeSequenceNumber();
-  }
-};
-
-}  // namespace blink
-
 namespace {
 
 mojo::ScopedMessagePipeHandle WrapNativeHandle(jint native_handle) {
@@ -103,8 +57,8 @@ JNI_EXPORT jlong JNI_AppWebMessagePortDescriptor_Create(JNIEnv* env,
   // Ownership is passed to the Java code. This is cleaned up when
   // CloseAndDestroy is called.
   blink::MessagePortDescriptor* port = new blink::MessagePortDescriptor();
-  blink::MessagePortJavaAccess::Init(port, WrapNativeHandle(native_handle), id,
-                                     sequence_number);
+  port->InitializeFromSerializedValues(WrapNativeHandle(native_handle), id,
+                                       sequence_number);
 
   return reinterpret_cast<jlong>(port);
 }
@@ -119,10 +73,10 @@ JNI_EXPORT jint JNI_AppWebMessagePortDescriptor_TakeHandleToEntangle(
   DCHECK(!message_port_descriptor->IsEntangled());
 
   // Ownership of the underlying native handle is passed to Java. It is returned
-  // before tear-down via GiveDisentangledHandle.
+  // before tear-down via "giveDisentangledHandle", or marked as having been
+  // closed via "onConnectionError".
   mojo::ScopedMessagePipeHandle handle =
-      blink::MessagePortJavaAccess::TakeHandleToEntangleWithEmbedder(
-          message_port_descriptor);
+      message_port_descriptor->TakeHandleToEntangleWithEmbedder();
 
   return static_cast<jint>(handle.release().value());
 }
@@ -137,8 +91,24 @@ JNI_EXPORT void JNI_AppWebMessagePortDescriptor_GiveDisentangledHandle(
   DCHECK(message_port_descriptor->IsValid());
   DCHECK(message_port_descriptor->IsEntangled());
 
-  blink::MessagePortJavaAccess::GiveDisentangledHandle(
-      message_port_descriptor, WrapNativeHandle(native_handle));
+  message_port_descriptor->GiveDisentangledHandle(
+      WrapNativeHandle(native_handle));
+}
+
+JNI_EXPORT void JNI_AppWebMessagePortDescriptor_OnConnectionError(
+    JNIEnv* env,
+    jlong native_message_port_decriptor) {
+  blink::MessagePortDescriptor* message_port_descriptor =
+      reinterpret_cast<blink::MessagePortDescriptor*>(
+          native_message_port_decriptor);
+  DCHECK(message_port_descriptor->IsValid());
+  DCHECK(message_port_descriptor->IsEntangled());
+
+  // Return an empty message pipe.
+  // TODO(chrisha): Once MessagePortDescriptor vends Connectors directly,
+  // this should use a dedicated member function much like the Java counterpart.
+  message_port_descriptor->GiveDisentangledHandle(
+      mojo::ScopedMessagePipeHandle());
 }
 
 JNI_EXPORT ScopedJavaLocalRef<jlongArray>
@@ -153,11 +123,10 @@ JNI_AppWebMessagePortDescriptor_PassSerialized(
 
   // Tear down and free the native object.
   mojo::ScopedMessagePipeHandle handle =
-      blink::MessagePortJavaAccess::TakeHandle(message_port_descriptor);
-  base::UnguessableToken id =
-      blink::MessagePortJavaAccess::TakeId(message_port_descriptor);
+      message_port_descriptor->TakeHandleForSerialization();
+  base::UnguessableToken id = message_port_descriptor->TakeIdForSerialization();
   uint64_t sequence_number =
-      blink::MessagePortJavaAccess::TakeSequenceNumber(message_port_descriptor);
+      message_port_descriptor->TakeSequenceNumberForSerialization();
   delete message_port_descriptor;
 
   // Serialize its contents and pass to the Java implementation.
@@ -177,6 +146,29 @@ JNI_EXPORT void JNI_AppWebMessagePortDescriptor_CloseAndDestroy(
           native_message_port_decriptor);
   DCHECK(message_port_descriptor->IsValid());
   DCHECK(!message_port_descriptor->IsEntangled());
+  message_port_descriptor->Reset();
+  delete message_port_descriptor;
+}
+
+JNI_EXPORT void JNI_AppWebMessagePortDescriptor_DisentangleCloseAndDestroy(
+    JNIEnv* env,
+    jlong native_message_port_descriptor) {
+  DCHECK_NE(0u, native_message_port_descriptor);
+  blink::MessagePortDescriptor* message_port_descriptor =
+      reinterpret_cast<blink::MessagePortDescriptor*>(
+          native_message_port_descriptor);
+  // The descriptor should be valid.
+  DCHECK(message_port_descriptor->IsValid());
+
+  // If the descriptor is entangled, then disentangle it with a dummy handle.
+  // This is because the handle has actually been closed down directly by the
+  // Java code.
+  if (message_port_descriptor->IsEntangled()) {
+    message_port_descriptor->GiveDisentangledHandle(
+        mojo::ScopedMessagePipeHandle());
+  }
+
+  // Reset it and finally delete the object.
   message_port_descriptor->Reset();
   delete message_port_descriptor;
 }

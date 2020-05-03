@@ -41,8 +41,8 @@ static void SaveStatusCallback(bool* called,
 
 void SetUpDummyMessagePort(std::vector<blink::MessagePortChannel>* ports) {
   // Let the other end of the pipe close.
-  mojo::MessagePipe pipe;
-  ports->push_back(blink::MessagePortChannel(std::move(pipe.handle0)));
+  blink::MessagePortDescriptorPair pipe;
+  ports->push_back(blink::MessagePortChannel(pipe.TakePort0()));
 }
 
 // A worker that holds on to ExtendableMessageEventPtr so it doesn't get

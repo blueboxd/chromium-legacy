@@ -104,16 +104,16 @@ class MockWidgetInputHandler : public mojom::WidgetInputHandler {
   class DispatchedEditCommandMessage : public DispatchedMessage {
    public:
     explicit DispatchedEditCommandMessage(
-        const std::vector<content::EditCommand>& commands);
+        std::vector<blink::mojom::EditCommandPtr> commands);
     ~DispatchedEditCommandMessage() override;
 
     // Override and return |this|.
     DispatchedEditCommandMessage* ToEditCommand() override;
 
-    const std::vector<content::EditCommand>& Commands() const;
+    const std::vector<blink::mojom::EditCommandPtr>& Commands() const;
 
    private:
-    std::vector<content::EditCommand> commands_;
+    std::vector<blink::mojom::EditCommandPtr> commands_;
 
     DISALLOW_COPY_AND_ASSIGN(DispatchedEditCommandMessage);
   };
@@ -197,7 +197,7 @@ class MockWidgetInputHandler : public mojom::WidgetInputHandler {
   void SetFocus(bool focused) override;
   void MouseCaptureLost() override;
   void SetEditCommandsForNextKeyEvent(
-      const std::vector<content::EditCommand>& commands) override;
+      std::vector<blink::mojom::EditCommandPtr> commands) override;
   void CursorVisibilityChanged(bool visible) override;
   void ImeSetComposition(const base::string16& text,
                          const std::vector<ui::ImeTextSpan>& ime_text_spans,

@@ -75,7 +75,7 @@ suite(advanced_dialog_test.suiteName, function() {
   function verifyListWithItemCount(count) {
     // Search box should be hidden if there is only 1 item.
     const searchBox = dialog.$.searchBox;
-    assertEquals(count == 1, searchBox.hidden);
+    assertEquals(count === 1, searchBox.hidden);
 
     // Verify item is displayed.
     const items = dialog.shadowRoot.querySelectorAll(
@@ -209,12 +209,12 @@ suite(advanced_dialog_test.suiteName, function() {
 
         // Searching for Watermark should show only the watermark setting.
         searchBox.searchQuery = /(Watermark)/ig;
-        items.forEach((item, index) => assertEquals(index != 2, item.hidden));
+        items.forEach((item, index) => assertEquals(index !== 2, item.hidden));
         assertTrue(noMatchHint.hidden);
 
         // Searching for A4 should show only the print area setting.
         searchBox.searchQuery = /(A4)/ig;
-        items.forEach((item, index) => assertEquals(index != 0, item.hidden));
+        items.forEach((item, index) => assertEquals(index !== 0, item.hidden));
         assertTrue(noMatchHint.hidden);
 
         // Searching for WXYZ should show no settings and display the "no match"

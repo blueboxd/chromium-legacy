@@ -873,9 +873,9 @@ TEST(V8ScriptValueSerializerTest, InvalidImageDataDecodeV18) {
 MessagePort* MakeMessagePort(ExecutionContext* execution_context,
                              ::MojoHandle* unowned_handle_out = nullptr) {
   auto* port = MakeGarbageCollected<MessagePort>(*execution_context);
-  mojo::MessagePipe pipe;
-  ::MojoHandle unowned_handle = pipe.handle0.get().value();
-  port->Entangle(std::move(pipe.handle0));
+  blink::MessagePortDescriptorPair pipe;
+  ::MojoHandle unowned_handle = pipe.port0().handle().get().value();
+  port->Entangle(pipe.TakePort0());
   EXPECT_TRUE(port->IsEntangled());
   EXPECT_EQ(unowned_handle, port->EntangledHandleForTesting());
   if (unowned_handle_out)

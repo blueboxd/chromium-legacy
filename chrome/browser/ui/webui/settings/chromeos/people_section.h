@@ -9,12 +9,17 @@
 #include "chrome/browser/ui/webui/settings/chromeos/os_settings_section.h"
 #include "components/sync/driver/sync_service_observer.h"
 
+class PrefService;
 class Profile;
 class SupervisedUserService;
 
 namespace content {
 class WebUIDataSource;
 }  // namespace content
+
+namespace signin {
+class IdentityManager;
+}  // namespace signin
 
 namespace syncer {
 class SyncService;
@@ -38,12 +43,15 @@ class PeopleSection : public OsSettingsSection,
                 Delegate* per_page_delegate,
                 syncer::SyncService* sync_service,
                 SupervisedUserService* supervised_user_service,
-                KerberosCredentialsManager* kerberos_credentials_manager);
+                KerberosCredentialsManager* kerberos_credentials_manager,
+                signin::IdentityManager* identity_manager,
+                PrefService* pref_service);
   ~PeopleSection() override;
 
  private:
   // OsSettingsSection:
   void AddLoadTimeData(content::WebUIDataSource* html_source) override;
+  void AddHandlers(content::WebUI* web_ui) override;
 
   // syncer::SyncServiceObserver:
   void OnStateChanged(syncer::SyncService* sync_service) override;
@@ -58,6 +66,8 @@ class PeopleSection : public OsSettingsSection,
   syncer::SyncService* sync_service_;
   SupervisedUserService* supervised_user_service_;
   KerberosCredentialsManager* kerberos_credentials_manager_;
+  signin::IdentityManager* identity_manager_;
+  PrefService* pref_service_;
 };
 
 }  // namespace settings

@@ -317,7 +317,7 @@ suite(restore_state_test.suiteName, function() {
         .then(function() {
           // Set all the settings sections.
           testData.forEach((testValue, index) => {
-            if (index == testData.length - 1) {
+            if (index === testData.length - 1) {
               nativeLayer.resetResolver('saveAppState');
             }
             // Since advanced options settings doesn't set this setting in

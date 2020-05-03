@@ -49,6 +49,7 @@ def _call_profdata_tool(profile_input_file_paths,
     if sparse:
       subprocess_cmd += ['-sparse=true',]
     subprocess_cmd.extend(profile_input_file_paths)
+    logging.info('profdata command: %r', ' '.join(subprocess_cmd))
 
     # Redirecting stderr is required because when error happens, llvm-profdata
     # writes the error output to stderr and our error handling logic relies on

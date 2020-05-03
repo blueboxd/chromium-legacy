@@ -86,10 +86,10 @@ void WidgetInputHandlerImpl::MouseCaptureLost() {
 }
 
 void WidgetInputHandlerImpl::SetEditCommandsForNextKeyEvent(
-    const std::vector<EditCommand>& commands) {
+    std::vector<blink::mojom::EditCommandPtr> commands) {
   RunOnMainThread(
       base::BindOnce(&RenderWidget::OnSetEditCommandsForNextKeyEvent,
-                     render_widget_, commands));
+                     render_widget_, std::move(commands)));
 }
 
 void WidgetInputHandlerImpl::CursorVisibilityChanged(bool visible) {

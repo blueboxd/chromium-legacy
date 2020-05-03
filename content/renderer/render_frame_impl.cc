@@ -52,7 +52,6 @@
 #include "content/common/associated_interfaces.mojom.h"
 #include "content/common/content_constants_internal.h"
 #include "content/common/content_navigation_policy.h"
-#include "content/common/edit_command.h"
 #include "content/common/frame.mojom.h"
 #include "content/common/frame_messages.h"
 #include "content/common/frame_replication_state.h"
@@ -171,6 +170,7 @@
 #include "third_party/blink/public/mojom/frame/frame_owner_properties.mojom.h"
 #include "third_party/blink/public/mojom/frame/user_activation_update_types.mojom.h"
 #include "third_party/blink/public/mojom/input/focus_type.mojom.h"
+#include "third_party/blink/public/mojom/input/input_handler.mojom-shared.h"
 #include "third_party/blink/public/mojom/loader/request_context_frame_type.mojom.h"
 #include "third_party/blink/public/mojom/permissions/permission.mojom.h"
 #include "third_party/blink/public/mojom/referrer.mojom.h"
@@ -4560,12 +4560,12 @@ void RenderFrameImpl::DidChangeSelection(bool is_empty_selection) {
 
 bool RenderFrameImpl::HandleCurrentKeyboardEvent() {
   bool did_execute_command = false;
-  for (auto command : GetLocalRootRenderWidget()->edit_commands()) {
+  for (const auto& command : GetLocalRootRenderWidget()->edit_commands()) {
     // In gtk and cocoa, it's possible to bind multiple edit commands to one
     // key (but it's the exception). Once one edit command is not executed, it
     // seems safest to not execute the rest.
-    if (!frame_->ExecuteCommand(blink::WebString::FromUTF8(command.name),
-                                blink::WebString::FromUTF8(command.value)))
+    if (!frame_->ExecuteCommand(blink::WebString::FromUTF8(command->name),
+                                blink::WebString::FromUTF8(command->value)))
       break;
     did_execute_command = true;
   }

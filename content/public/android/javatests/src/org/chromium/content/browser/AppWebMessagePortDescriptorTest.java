@@ -14,7 +14,7 @@ import org.junit.runner.RunWith;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.blink.mojom.MessagePortDescriptor;
 import org.chromium.mojo.MojoTestRule;
-import org.chromium.mojo.system.MessagePipeHandle;
+import org.chromium.mojo.bindings.Connector;
 import org.chromium.mojo.system.Pair;
 
 /**
@@ -45,11 +45,12 @@ public class AppWebMessagePortDescriptorTest {
 
         // Do a round trip through entanglement/disentanglement.
 
-        MessagePipeHandle handle = port0.takeHandleToEntangle();
+        Connector connector = port0.entangleWithConnector();
         Assert.assertTrue(port0.isValid());
         Assert.assertTrue(port0.isEntangled());
 
-        port0.giveDisentangledHandle(handle.pass());
+        port0.disentangleFromConnector();
+        connector = null;
         Assert.assertTrue(port0.isValid());
         Assert.assertFalse(port0.isEntangled());
 

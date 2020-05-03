@@ -51,12 +51,6 @@ class MockCastWebContents : public CastWebContents {
               PostMessageToMainFrame,
               (const std::string&,
                const std::string&,
-               std::vector<mojo::ScopedMessagePipeHandle>),
-              (override));
-  MOCK_METHOD(void,
-              PostMessageToMainFrame,
-              (const std::string&,
-               const std::string&,
                std::vector<blink::WebMessagePort>),
               (override));
   MOCK_METHOD(void,

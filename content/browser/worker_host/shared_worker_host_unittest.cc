@@ -31,6 +31,7 @@
 #include "services/network/public/cpp/features.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/messaging/message_port_channel.h"
+#include "third_party/blink/public/common/messaging/message_port_descriptor.h"
 #include "url/origin.h"
 
 using blink::MessagePortChannel;
@@ -131,9 +132,9 @@ class SharedWorkerHostTest : public testing::Test {
     GlobalFrameRoutingId dummy_render_frame_host_id(
         mock_render_process_host_.GetID(), 22);
 
-    mojo::MessagePipe message_pipe;
-    MessagePortChannel local_port(std::move(message_pipe.handle0));
-    MessagePortChannel remote_port(std::move(message_pipe.handle1));
+    blink::MessagePortDescriptorPair port_pair;
+    MessagePortChannel local_port(port_pair.TakePort0());
+    MessagePortChannel remote_port(port_pair.TakePort1());
     host->AddClient(std::move(client), dummy_render_frame_host_id,
                     std::move(remote_port));
     return local_port;

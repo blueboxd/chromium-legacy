@@ -211,7 +211,7 @@ suite(invalid_settings_browsertest.suiteName, function() {
               // Select a new destination
               const barDestination =
                   destinationSettings.destinationStore_.destinations().find(
-                      d => d.id == 'BarDevice');
+                      d => d.id === 'BarDevice');
               destinationSettings.destinationStore_.selectDestination(
                   barDestination);
 
@@ -240,7 +240,7 @@ suite(invalid_settings_browsertest.suiteName, function() {
                   const ticket = JSON.parse(printTicket);
                   assertEquals(barDevice.printer.deviceName, ticket.deviceName);
                   assertEquals(
-                      getDefaultOrientation(barDevice) == 'LANDSCAPE',
+                      getDefaultOrientation(barDevice) === 'LANDSCAPE',
                       ticket.landscape);
                   assertEquals(1, ticket.copies);
                   const mediaDefault = getDefaultMediaSize(barDevice);

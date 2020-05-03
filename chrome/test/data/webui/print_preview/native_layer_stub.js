@@ -110,12 +110,12 @@ export class NativeLayerStub extends TestBrowserProxy {
   /** @override */
   getPrinters(type) {
     this.methodCalled('getPrinters', type);
-    if (type == PrinterType.LOCAL_PRINTER &&
+    if (type === PrinterType.LOCAL_PRINTER &&
         this.localDestinationInfos_.length > 0) {
       webUIListenerCallback(
           'printers-added', type, this.localDestinationInfos_);
     } else if (
-        type == PrinterType.EXTENSION_PRINTER &&
+        type === PrinterType.EXTENSION_PRINTER &&
         this.extensionDestinationInfos_.length > 0) {
       webUIListenerCallback(
           'printers-added', type, this.extensionDestinationInfos_);
@@ -127,7 +127,7 @@ export class NativeLayerStub extends TestBrowserProxy {
   getPreview(printTicket) {
     this.methodCalled('getPreview', {printTicket: printTicket});
     const printTicketParsed = JSON.parse(printTicket);
-    if (printTicketParsed.deviceName == this.badPrinterId_) {
+    if (printTicketParsed.deviceName === this.badPrinterId_) {
       return Promise.reject('SETTINGS_INVALID');
     }
     const pageRanges = printTicketParsed.pageRange;
@@ -135,7 +135,7 @@ export class NativeLayerStub extends TestBrowserProxy {
     if (this.pageLayoutInfo_) {
       webUIListenerCallback('page-layout-ready', this.pageLayoutInfo_, false);
     }
-    if (pageRanges.length == 0) {  // assume full length document, 1 page.
+    if (pageRanges.length === 0) {  // assume full length document, 1 page.
       webUIListenerCallback(
           'page-count-ready', this.pageCount_, requestId, 100);
       for (let i = 0; i < this.pageCount_; i++) {
@@ -175,13 +175,13 @@ export class NativeLayerStub extends TestBrowserProxy {
         this.multipleCapabilitiesPromise_ = null;
       }
     }
-    if (printerId == Destination.GooglePromotedId.SAVE_AS_PDF) {
+    if (printerId === Destination.GooglePromotedId.SAVE_AS_PDF) {
       return Promise.resolve({
         deviceName: 'Save as PDF',
         capabilities: getPdfPrinter(),
       });
     }
-    if (type != PrinterType.LOCAL_PRINTER) {
+    if (type !== PrinterType.LOCAL_PRINTER) {
       return Promise.reject();
     }
     return this.localDestinationCapabilities_.get(printerId) ||
@@ -198,7 +198,7 @@ export class NativeLayerStub extends TestBrowserProxy {
   /** @override */
   print(printTicket) {
     this.methodCalled('print', printTicket);
-    if (JSON.parse(printTicket).printerType == PrinterType.CLOUD_PRINTER) {
+    if (JSON.parse(printTicket).printerType === PrinterType.CLOUD_PRINTER) {
       return Promise.resolve('sample data');
     }
     return Promise.resolve();

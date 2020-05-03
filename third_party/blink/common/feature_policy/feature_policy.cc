@@ -57,13 +57,10 @@ ParsedFeaturePolicyDeclaration::~ParsedFeaturePolicyDeclaration() = default;
 
 bool operator==(const ParsedFeaturePolicyDeclaration& lhs,
                 const ParsedFeaturePolicyDeclaration& rhs) {
-  if (lhs.feature != rhs.feature)
-    return false;
-  if (!(lhs.fallback_value == rhs.fallback_value))
-    return false;
-  if (!(lhs.opaque_value == rhs.opaque_value))
-    return false;
-  return lhs.allowed_origins == rhs.allowed_origins;
+  return std::tie(lhs.feature, lhs.fallback_value, lhs.opaque_value,
+                  lhs.allowed_origins) ==
+         std::tie(rhs.feature, rhs.fallback_value, rhs.opaque_value,
+                  rhs.allowed_origins);
 }
 
 FeaturePolicy::Allowlist::Allowlist()
@@ -149,8 +146,6 @@ bool FeaturePolicy::GetFeatureValueForOrigin(
   }
 
   // If no "allowlist" is specified, return default feature value.
-  // Note that combining value "v" with min value "min_v" is "min_v" and
-  // comining "v" with max value "max_v" is "v".
   const FeaturePolicy::FeatureDefault default_policy =
       feature_list_.at(feature);
   if (default_policy == FeaturePolicy::FeatureDefault::DisableForAll ||
@@ -187,7 +182,7 @@ const FeaturePolicy::Allowlist FeaturePolicy::GetAllowlistForFeature(
   DCHECK(base::Contains(feature_list_, feature));
   DCHECK(base::Contains(inherited_policies_, feature));
   // Return an empty allowlist when disabled through inheritance.
-  if (inherited_policies_.at(feature) <= false)
+  if (!inherited_policies_.at(feature))
     return FeaturePolicy::Allowlist();
 
   // Return defined policy if exists; otherwise return default policy.
@@ -251,7 +246,7 @@ std::unique_ptr<FeaturePolicy> FeaturePolicy::CreateFromParentPolicy(
   // returns true if |feature| is enabled in |parent_policy| for |origin|.
   for (const auto& feature : features) {
     if (!parent_policy) {
-      // If no parent policy, set inherited policy to max value.
+      // If no parent policy, set inherited policy to true.
       new_policy->inherited_policies_[feature.first] = true;
       // Temporary code to support metrics (https://crbug.com/937131)
       new_policy->proposed_inherited_policies_[feature.first] = true;
@@ -328,9 +323,7 @@ void FeaturePolicy::AddContainerPolicy(
     // matches |origin|.
     auto parent_value = parent_policy->GetFeatureValueForOrigin(
         feature, parent_policy->origin_);
-    inherited_value =
-        inherited_value > parent_value ? inherited_value : parent_value;
-
+    inherited_value = inherited_value || parent_value;
     inherited_value = inherited_value && AllowlistFromDeclaration(
                                              parsed_declaration, feature_list_)
                                              ->GetValueForOrigin(origin_);

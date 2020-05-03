@@ -6,6 +6,7 @@ module blink.mojom;
 
 import "third_party/blink/public/mojom/blob/blob_url_store.mojom";
 import "third_party/blink/public/mojom/loader/fetch_client_settings_object.mojom";
+import "third_party/blink/public/mojom/messaging/message_port_descriptor.mojom";
 import "third_party/blink/public/mojom/worker/shared_worker_client.mojom";
 import "third_party/blink/public/mojom/worker/shared_worker_creation_context_type.mojom";
 import "third_party/blink/public/mojom/worker/shared_worker_info.mojom";
@@ -22,6 +23,6 @@ interface SharedWorkerConnector {
   Connect(SharedWorkerInfo info,
           pending_remote<SharedWorkerClient> client,
           SharedWorkerCreationContextType creation_context_type,
-          handle<message_pipe> message_port,
+          MessagePortDescriptor message_port,
           pending_remote<BlobURLToken>? blob_url_token);
 };

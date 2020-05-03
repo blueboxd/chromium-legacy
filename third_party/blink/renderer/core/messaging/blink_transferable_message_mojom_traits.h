@@ -8,6 +8,8 @@
 #include "mojo/public/cpp/bindings/array_traits_wtf_vector.h"
 #include "skia/public/mojom/bitmap_skbitmap_mojom_traits.h"
 #include "third_party/blink/public/common/messaging/message_port_channel.h"
+#include "third_party/blink/public/common/messaging/message_port_descriptor.h"
+#include "third_party/blink/public/common/messaging/message_port_descriptor_mojom_traits.h"
 #include "third_party/blink/public/mojom/messaging/transferable_message.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
 #include "third_party/blink/renderer/core/core_export.h"
@@ -25,18 +27,18 @@ struct CORE_EXPORT
     return input;
   }
 
-  static Vector<mojo::ScopedMessagePipeHandle> ports(
+  static Vector<blink::MessagePortDescriptor> ports(
       blink::BlinkTransferableMessage& input) {
-    Vector<mojo::ScopedMessagePipeHandle> result;
+    Vector<blink::MessagePortDescriptor> result;
     result.ReserveInitialCapacity(input.ports.size());
     for (const auto& port : input.ports)
       result.push_back(port.ReleaseHandle());
     return result;
   }
 
-  static Vector<mojo::ScopedMessagePipeHandle> stream_channels(
+  static Vector<blink::MessagePortDescriptor> stream_channels(
       blink::BlinkTransferableMessage& input) {
-    Vector<mojo::ScopedMessagePipeHandle> result;
+    Vector<blink::MessagePortDescriptor> result;
     auto& stream_channels = input.message->GetStreamChannels();
     result.ReserveInitialCapacity(stream_channels.size());
     for (const auto& port : stream_channels)

@@ -11,6 +11,7 @@
 #include "base/numerics/safe_conversions.h"
 #include "build/build_config.h"
 #include "testing/libfuzzer/libfuzzer_exports.h"
+#include "third_party/blink/public/common/messaging/message_port_descriptor.h"
 #include "third_party/blink/public/platform/web_blob_info.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
@@ -74,7 +75,9 @@ int LLVMFuzzerTestOneInput(const uint8_t* data, size_t data_size) {
     std::generate(message_ports->begin(), message_ports->end(), []() {
       auto* port = MakeGarbageCollected<MessagePort>(
           *g_page_holder->GetFrame().DomWindow());
-      port->Entangle(mojo::MessagePipe().handle0);
+      // Let the other end of the pipe close itself.
+      blink::MessagePortDescriptorPair pipe;
+      port->Entangle(pipe.TakePort0());
       return port;
     });
     options.message_ports = message_ports;

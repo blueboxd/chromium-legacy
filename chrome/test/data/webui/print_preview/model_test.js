@@ -111,8 +111,8 @@ suite(model_test.suiteName, function() {
               const set = settingsSet.includes(settingName);
               assertEquals(set, settings[settingName] !== undefined);
               if (set) {
-                const toCompare = settingName == field ? stickySettingsChange :
-                                                         stickySettingsDefault;
+                const toCompare = settingName === field ? stickySettingsChange :
+                                                          stickySettingsDefault;
                 assertDeepEquals(toCompare[settingName], settings[settingName]);
               }
             });

@@ -76,8 +76,8 @@ suite(destination_list_test.suiteName, function() {
     assertFalse(ironList.hidden);
     assertEquals(undefined, Array.from(items).find(item => {
       return !item.parentNode.hidden &&
-          (item.destination.displayName == 'Two' ||
-           item.destination.displayName == 'Four');
+          (item.destination.displayName === 'Two' ||
+           item.destination.displayName === 'Four');
     }));
     assertTrue(noMatchHint.hidden);
 
@@ -86,8 +86,9 @@ suite(destination_list_test.suiteName, function() {
     flush();
     assertFalse(ironList.hidden);
     assertEquals(undefined, Array.from(items).find(item => {
-      return !item.parentNode.hidden && item.destination.displayName != 'One' &&
-          item.destination.displayName != 'Three';
+      return !item.parentNode.hidden &&
+          item.destination.displayName !== 'One' &&
+          item.destination.displayName !== 'Three';
     }));
     assertTrue(noMatchHint.hidden);
 
@@ -97,8 +98,8 @@ suite(destination_list_test.suiteName, function() {
     assertFalse(ironList.hidden);
     assertEquals(undefined, Array.from(items).find(item => {
       return !item.parentNode.hidden &&
-          item.destination.displayName != 'Four' &&
-          item.destination.displayName != 'Five';
+          item.destination.displayName !== 'Four' &&
+          item.destination.displayName !== 'Five';
     }));
     assertTrue(noMatchHint.hidden);
 
@@ -115,8 +116,8 @@ suite(destination_list_test.suiteName, function() {
     assertFalse(ironList.hidden);
     assertEquals(undefined, Array.from(items).find(item => {
       return !item.parentNode.hidden &&
-          (item.destination.displayName == 'One' ||
-           item.destination.displayName == 'Two');
+          (item.destination.displayName === 'One' ||
+           item.destination.displayName === 'Two');
     }));
     assertTrue(noMatchHint.hidden);
 

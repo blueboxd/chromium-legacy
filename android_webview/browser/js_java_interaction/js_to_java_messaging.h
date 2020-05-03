@@ -16,7 +16,7 @@
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
-#include "mojo/public/cpp/system/message_pipe.h"
+#include "third_party/blink/public/common/messaging/message_port_descriptor.h"
 
 namespace content {
 class RenderFrameHost;
@@ -37,7 +37,7 @@ class JsToJavaMessaging : public mojom::JsToJavaMessaging {
 
   // mojom::JsToJavaMessaging implementation.
   void PostMessage(const base::string16& message,
-                   std::vector<mojo::ScopedMessagePipeHandle> ports) override;
+                   std::vector<blink::MessagePortDescriptor> ports) override;
   void SetJavaToJsMessaging(
       mojo::PendingAssociatedRemote<mojom::JavaToJsMessaging>
           java_to_js_messaging) override;

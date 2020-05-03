@@ -31,8 +31,8 @@ bool StructTraits<blink::mojom::blink::TransferableMessage::DataView,
                   blink::BlinkTransferableMessage>::
     Read(blink::mojom::blink::TransferableMessage::DataView data,
          blink::BlinkTransferableMessage* out) {
-  Vector<mojo::ScopedMessagePipeHandle> ports;
-  Vector<mojo::ScopedMessagePipeHandle> stream_channels;
+  Vector<blink::MessagePortDescriptor> ports;
+  Vector<blink::MessagePortDescriptor> stream_channels;
   blink::SerializedScriptValue::ArrayBufferContentsArray
       array_buffer_contents_array;
   Vector<SkBitmap> sk_bitmaps;

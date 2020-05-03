@@ -10,6 +10,7 @@
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/stl_util.h"
+#include "content/public/browser/android/app_web_message_port.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
@@ -33,7 +34,7 @@ JsToJavaMessaging::~JsToJavaMessaging() {}
 
 void JsToJavaMessaging::PostMessage(
     const base::string16& message,
-    std::vector<mojo::ScopedMessagePipeHandle> ports) {
+    std::vector<blink::MessagePortDescriptor> ports) {
   DCHECK(render_frame_host_);
 
   content::WebContents* web_contents =
@@ -50,11 +51,6 @@ void JsToJavaMessaging::PostMessage(
   if (!origin_matcher_.Matches(source_origin))
     return;
 
-  std::vector<int> int_ports(ports.size(), MOJO_HANDLE_INVALID /* 0 */);
-  for (size_t i = 0; i < ports.size(); ++i) {
-    int_ports[i] = ports[i].release().value();
-  }
-
   // We want to pass a string "null" for local file schemes, to make it
   // consistent to the Blink side SecurityOrigin serialization. When both
   // setAllow{File,Universal}AccessFromFileURLs are false, Blink::SecurityOrigin
@@ -68,11 +64,15 @@ void JsToJavaMessaging::PostMessage(
           ? "null"
           : source_origin.Serialize();
   JNIEnv* env = base::android::AttachCurrentThread();
+
+  // Convert to an array of AppWebMessagePorts.
+  base::android::ScopedJavaGlobalRef<jobjectArray> jports =
+      content::AppWebMessagePort::WrapJavaArray(env, std::move(ports));
+
   Java_WebMessageListenerHolder_onPostMessage(
       env, listener_ref_, base::android::ConvertUTF16ToJavaString(env, message),
       base::android::ConvertUTF8ToJavaString(env, origin_string),
-      web_contents->GetMainFrame() == render_frame_host_,
-      base::android::ToJavaIntArray(env, int_ports.data(), int_ports.size()),
+      web_contents->GetMainFrame() == render_frame_host_, jports,
       reply_proxy_->GetJavaPeer());
 }
 

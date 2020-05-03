@@ -37,16 +37,15 @@ if (crashpad_is_in_chromium || crashpad_is_in_fuchsia) {
   test("crashpad_tests") {
     deps = [
       "client:client_test",
+      "minidump:minidump_test",
       "test:gmock_main",
       "test:test_test",
     ]
     if (!crashpad_is_ios) {
-      deps += [
-        "handler:handler_test",
-        "minidump:minidump_test",
-        "snapshot:snapshot_test",
-        "util:util_test",
-      ]
+      deps += [ "snapshot:snapshot_test" ]
+    }
+    if (!crashpad_is_ios && !crashpad_is_fuchsia) {
+      deps += [ "handler:handler_test" ]
     }
     if (crashpad_is_in_fuchsia) {
       # TODO(fuchsia:46559): Fix the leaks and remove this.
@@ -63,9 +62,7 @@ if (crashpad_is_in_chromium || crashpad_is_in_fuchsia) {
           "util/net/testdata/binary_http_body.dat",
         ]
 
-        outputs = [
-          "$root_out_dir/crashpad_test_data/{{source}}",
-        ]
+        outputs = [ "$root_out_dir/crashpad_test_data/{{source}}" ]
       }
 
       deps += [ ":crashpad_test_data" ]
@@ -185,7 +182,7 @@ if (crashpad_is_in_chromium || crashpad_is_in_fuchsia) {
       "handler:handler_test",
       "test:gtest_main",
     ]
-    if (crashpad_is_ios) {
+    if (crashpad_is_ios || crashpad_is_fuchsia) {
       deps -= [ "handler:handler_test" ]
     }
   }
@@ -195,9 +192,6 @@ if (crashpad_is_in_chromium || crashpad_is_in_fuchsia) {
       "minidump:minidump_test",
       "test:gtest_main",
     ]
-    if (crashpad_is_ios) {
-      deps -= [ "minidump:minidump_test" ]
-    }
   }
 
   test("crashpad_snapshot_test") {
@@ -222,9 +216,6 @@ if (crashpad_is_in_chromium || crashpad_is_in_fuchsia) {
       "test:gmock_main",
       "util:util_test",
     ]
-    if (crashpad_is_ios) {
-      deps -= [ "util:util_test" ]
-    }
   }
 }
 

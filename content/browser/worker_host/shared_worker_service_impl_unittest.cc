@@ -59,15 +59,15 @@ void ConnectToSharedWorker(
           network::mojom::ReferrerPolicy::kDefault, GURL(),
           blink::mojom::InsecureRequestsPolicy::kDoNotUpgrade)));
 
-  mojo::MessagePipe message_pipe;
-  *local_port = MessagePortChannel(std::move(message_pipe.handle0));
+  blink::MessagePortDescriptorPair pipe;
+  *local_port = MessagePortChannel(pipe.TakePort0());
 
   mojo::PendingRemote<blink::mojom::SharedWorkerClient> client_proxy;
   client->Bind(client_proxy.InitWithNewPipeAndPassReceiver());
 
   connector->Connect(std::move(info), std::move(client_proxy),
                      blink::mojom::SharedWorkerCreationContextType::kSecure,
-                     std::move(message_pipe.handle1), mojo::NullRemote());
+                     pipe.TakePort1(), mojo::NullRemote());
 }
 
 // Helper to delete the given WebContents and shut down its process. This is
@@ -263,11 +263,11 @@ TEST_F(SharedWorkerServiceImplTest, BasicTest) {
 
   // Verify that |port| corresponds to |connector->local_port()|.
   std::string expected_message("test1");
-  EXPECT_TRUE(mojo::test::WriteTextMessage(local_port.GetHandle().get(),
-                                           expected_message));
+  EXPECT_TRUE(mojo::test::WriteTextMessage(
+      local_port.GetHandle().handle().get(), expected_message));
   std::string received_message;
-  EXPECT_TRUE(
-      mojo::test::ReadTextMessage(port.GetHandle().get(), &received_message));
+  EXPECT_TRUE(mojo::test::ReadTextMessage(port.GetHandle().handle().get(),
+                                          &received_message));
   EXPECT_EQ(expected_message, received_message);
 
   // Send feature from shared worker to host.
@@ -389,11 +389,11 @@ TEST_F(SharedWorkerServiceImplTest, TwoRendererTest) {
 
   // Verify that |port0| corresponds to |connector0->local_port()|.
   std::string expected_message0("test1");
-  EXPECT_TRUE(mojo::test::WriteTextMessage(local_port0.GetHandle().get(),
-                                           expected_message0));
+  EXPECT_TRUE(mojo::test::WriteTextMessage(
+      local_port0.GetHandle().handle().get(), expected_message0));
   std::string received_message0;
-  EXPECT_TRUE(
-      mojo::test::ReadTextMessage(port0.GetHandle().get(), &received_message0));
+  EXPECT_TRUE(mojo::test::ReadTextMessage(port0.GetHandle().handle().get(),
+                                          &received_message0));
   EXPECT_EQ(expected_message0, received_message0);
 
   auto feature1 = static_cast<blink::mojom::WebFeature>(124);
@@ -448,11 +448,11 @@ TEST_F(SharedWorkerServiceImplTest, TwoRendererTest) {
 
   // Verify that |worker_msg_port2| corresponds to |connector1->local_port()|.
   std::string expected_message1("test2");
-  EXPECT_TRUE(mojo::test::WriteTextMessage(local_port1.GetHandle().get(),
-                                           expected_message1));
+  EXPECT_TRUE(mojo::test::WriteTextMessage(
+      local_port1.GetHandle().handle().get(), expected_message1));
   std::string received_message1;
-  EXPECT_TRUE(
-      mojo::test::ReadTextMessage(port1.GetHandle().get(), &received_message1));
+  EXPECT_TRUE(mojo::test::ReadTextMessage(port1.GetHandle().handle().get(),
+                                          &received_message1));
   EXPECT_EQ(expected_message1, received_message1);
 
   worker_host->OnFeatureUsed(feature1);

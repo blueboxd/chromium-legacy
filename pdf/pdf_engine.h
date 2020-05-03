@@ -176,6 +176,8 @@ class PDFEngine {
     // Updates the index of the currently selected search item.
     virtual void NotifySelectedFindResultChanged(int current_find_index) {}
 
+    virtual void NotifyTouchSelectionOccurred() {}
+
     // Prompts the user for a password to open this document. The callback is
     // called when the password is retrieved.
     virtual void GetDocumentPassword(

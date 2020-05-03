@@ -36,7 +36,7 @@ void SharedWorkerConnectorImpl::Connect(
     blink::mojom::SharedWorkerInfoPtr info,
     mojo::PendingRemote<blink::mojom::SharedWorkerClient> client,
     blink::mojom::SharedWorkerCreationContextType creation_context_type,
-    mojo::ScopedMessagePipeHandle message_port,
+    blink::MessagePortDescriptor message_port,
     mojo::PendingRemote<blink::mojom::BlobURLToken> blob_url_token) {
   RenderProcessHost* host =
       RenderProcessHost::FromID(client_render_frame_host_id_.child_id);

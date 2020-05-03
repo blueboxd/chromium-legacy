@@ -14,9 +14,9 @@
 #include "base/mac/scoped_nsobject.h"
 #include "base/optional.h"
 #include "content/browser/renderer_host/input/mouse_wheel_rails_filter_mac.h"
-#include "content/common/edit_command.h"
 #include "content/common/render_widget_host_ns_view.mojom.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "third_party/blink/public/mojom/input/input_handler.mojom-shared.h"
 #import "ui/base/cocoa/command_dispatcher.h"
 #import "ui/base/cocoa/tool_tip_base_view.h"
 #include "ui/base/ime/ime_text_span.h"
@@ -169,7 +169,7 @@ struct DidOverscrollParams;
   // Contains edit commands received by the -doCommandBySelector: method when
   // handling a key down event, not including inserting commands, eg. insertTab,
   // etc.
-  content::EditCommands _editCommands;
+  std::vector<blink::mojom::EditCommandPtr> _editCommands;
 
   // Whether the previous mouse event was ignored due to hitTest check.
   BOOL _mouseEventWasIgnored;

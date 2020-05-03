@@ -248,7 +248,7 @@ class UnboundWidgetInputHandler : public mojom::WidgetInputHandler {
     DLOG(WARNING) << "Input request on unbound interface";
   }
   void SetEditCommandsForNextKeyEvent(
-      const std::vector<content::EditCommand>& commands) override {
+      std::vector<blink::mojom::EditCommandPtr> commands) override {
     DLOG(WARNING) << "Input request on unbound interface";
   }
   void CursorVisibilityChanged(bool visible) override {
@@ -1431,13 +1431,14 @@ void RenderWidgetHostImpl::ForwardKeyboardEvent(
 void RenderWidgetHostImpl::ForwardKeyboardEventWithLatencyInfo(
     const NativeWebKeyboardEvent& key_event,
     const ui::LatencyInfo& latency) {
-  ForwardKeyboardEventWithCommands(key_event, latency, nullptr, nullptr);
+  ForwardKeyboardEventWithCommands(
+      key_event, latency, std::vector<blink::mojom::EditCommandPtr>(), nullptr);
 }
 
 void RenderWidgetHostImpl::ForwardKeyboardEventWithCommands(
     const NativeWebKeyboardEvent& key_event,
     const ui::LatencyInfo& latency,
-    const std::vector<EditCommand>* commands,
+    std::vector<blink::mojom::EditCommandPtr> commands,
     bool* update_event) {
   DCHECK(WebInputEvent::IsKeyboardEventType(key_event.GetType()));
 
@@ -1520,8 +1521,9 @@ void RenderWidgetHostImpl::ForwardKeyboardEventWithCommands(
   // WidgetInputHandler::SetEditCommandsForNextKeyEvent should only be sent if
   // WidgetInputHandler::DispatchEvent is, but has to be sent first.
   // https://crbug.com/684298
-  if (commands && !commands->empty())
-    GetWidgetInputHandler()->SetEditCommandsForNextKeyEvent(*commands);
+  if (!commands.empty())
+    GetWidgetInputHandler()->SetEditCommandsForNextKeyEvent(
+        std::move(commands));
 
   input_router_->SendKeyboardEvent(
       key_event_with_latency,

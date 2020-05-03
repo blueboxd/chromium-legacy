@@ -48,7 +48,7 @@ class MockSharedWorker : public blink::mojom::SharedWorker {
  private:
   // blink::mojom::SharedWorker methods:
   void Connect(int connection_request_id,
-               mojo::ScopedMessagePipeHandle port) override;
+               blink::MessagePortDescriptor port) override;
   void Terminate() override;
 
   mojo::Receiver<blink::mojom::SharedWorker> receiver_;

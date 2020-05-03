@@ -79,6 +79,7 @@ mojom("mojom_platform") {
     "input/gesture_event.mojom",
     "input/input_event.mojom",
     "input/input_event_result.mojom",
+    "input/input_handler.mojom",
     "input/pointer_lock_context.mojom",
     "input/pointer_lock_result.mojom",
     "input/scroll_direction.mojom",
@@ -177,9 +178,7 @@ mojom("mojom_platform") {
     "webtransport/quic_transport_connector.mojom",
     "window_features/window_features.mojom",
     "worker/dedicated_worker_host.mojom",
-    "worker/shared_worker.mojom",
     "worker/shared_worker_client.mojom",
-    "worker/shared_worker_connector.mojom",
     "worker/shared_worker_creation_context_type.mojom",
     "worker/shared_worker_host.mojom",
     "worker/shared_worker_info.mojom",
@@ -357,6 +356,12 @@ mojom("mojom_core") {
     "service_worker/service_worker_object.mojom",
     "service_worker/service_worker_provider.mojom",
     "service_worker/service_worker_registration.mojom",
+
+    # Similarly, shared_worker.mojom and shared_worker_connector.mojom have a
+    # dependency on message_port_descriptor.mojom, so are put here rather than
+    # in the mojom_platform target.
+    "worker/shared_worker.mojom",
+    "worker/shared_worker_connector.mojom",
 
     # Depends on controller_service_worker.mojom.
     "worker/dedicated_worker_host_factory.mojom",

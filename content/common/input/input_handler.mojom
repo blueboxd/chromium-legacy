@@ -11,6 +11,7 @@ import "mojo/public/mojom/base/string16.mojom";
 import "mojo/public/mojom/base/time.mojom";
 import "third_party/blink/public/mojom/input/gesture_event.mojom";
 import "third_party/blink/public/mojom/input/input_event.mojom";
+import "third_party/blink/public/mojom/input/input_handler.mojom";
 import "third_party/blink/public/mojom/input/input_event_result.mojom";
 import "third_party/blink/public/mojom/input/pointer_lock_result.mojom";
 import "third_party/blink/public/mojom/input/touch_event.mojom";
@@ -235,17 +236,17 @@ interface WidgetInputHandler {
 
   // This message notifies the renderer that the next key event is bound to one
   // or more pre-defined edit commands. If the next key event is not handled
-  // by webkit, the specified edit commands shall be executed against current
+  // by blink, the specified edit commands shall be executed against current
   // focused frame.
   // Parameters
-  // * edit_commands (see chrome/common/edit_command_types.h)
+  // * edit_commands
+  //   See t_p/b/renderer/core/editing/commands/editing_command_type.h
   //   Contains one or more edit commands.
-  // See third_party/WebKit/Source/WebCore/editing/EditorCommand.cpp for
+  // See t_p/b/renderer/core/editing/commands/editor_command.cc for
   // detailed definition of webkit edit commands.
   //
   // This message must be sent just before sending a key event.
-
-  SetEditCommandsForNextKeyEvent(array<content.mojom.EditCommand> commands);
+  SetEditCommandsForNextKeyEvent(array<blink.mojom.EditCommand> edit_commands);
 
   // Sends the cursor visibility state to the render widget.
   CursorVisibilityChanged(bool visible);

@@ -70,7 +70,8 @@ OsSettingsManager::OsSettingsManager(
     syncer::SyncService* sync_service,
     SupervisedUserService* supervised_user_service,
     KerberosCredentialsManager* kerberos_credentials_manager,
-    ArcAppListPrefs* arc_app_list_prefs)
+    ArcAppListPrefs* arc_app_list_prefs,
+    signin::IdentityManager* identity_manager)
     : index_(local_search_service->GetIndex(
           local_search_service::IndexId::kCrosSettings)) {
   // Add per-page string providers.
@@ -84,7 +85,7 @@ OsSettingsManager::OsSettingsManager(
       profile, /*delegate=*/this, multidevice_setup_client));
   sections_.push_back(std::make_unique<PeopleSection>(
       profile, /*delegate=*/this, sync_service, supervised_user_service,
-      kerberos_credentials_manager));
+      kerberos_credentials_manager, identity_manager, profile->GetPrefs()));
   sections_.push_back(
       std::make_unique<DeviceSection>(profile, /*delegate=*/this));
   sections_.push_back(std::make_unique<PersonalizationSection>(

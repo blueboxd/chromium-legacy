@@ -37,10 +37,133 @@
   </message>
 
   <!-- Bluetooth section. -->
+  <message name="IDS_OS_SETTINGS_TAG_BLUETOOTH" desc="Text for search result item which, when clicked, navigates the user to Bluetooth settings.">
+    Bluetooth
+  </message>
+  <message name="IDS_OS_SETTINGS_TAG_BLUETOOTH_CONNECT" desc="Text for search result item which, when clicked, navigates the user to Bluetooth settings, with an option to connect to devices.">
+    Connect Bluetooth device
+  </message>
+  <message name="IDS_OS_SETTINGS_TAG_BLUETOOTH_DISCONNECT" desc="Text for search result item which, when clicked, navigates the user to Bluetooth settings, with an option to disconnect from devices.">
+    Disconnect Bluetooth device
+  </message>
+  <message name="IDS_OS_SETTINGS_TAG_BLUETOOTH_PAIR" desc="Text for search result item which, when clicked, navigates the user to Bluetooth settings, with an option to pair to a device.">
+    Pair Bluetooth device
+  </message>
+  <message name="IDS_OS_SETTINGS_TAG_BLUETOOTH_UNPAIR" desc="Text for search result item which, when clicked, navigates the user to Bluetooth settings, with an option to unpair from a device. Alternate phrase for: 'Forget Bluetooth device'">
+    Unpair Bluetooth device
+  </message>
+  <message name="IDS_OS_SETTINGS_TAG_BLUETOOTH_UNPAIR_ALT1" desc="Text for search result item which, when clicked, navigates the user to Bluetooth settings, with an option to unpair from a device. Alternate phrase for: 'Unpair from a Bluetooth device'">
+    Forget Bluetooth device
+  </message>
+  <message name="IDS_OS_SETTINGS_TAG_BLUETOOTH_TURN_OFF" desc="Text for search result item which, when clicked, navigates the user to Bluetooth settings, with a toggle to turn off Bluetooth. Alternate phrase for: 'Disable Bluetooth'">
+    Turn off Bluetooth
+  </message>
+  <message name="IDS_OS_SETTINGS_TAG_BLUETOOTH_TURN_OFF_ALT1" desc="Text for search result item which, when clicked, navigates the user to Bluetooth settings, with a toggle to turn off Bluetooth. Alternate phrase for: 'Turn off Bluetooth'">
+    Disable Bluetooth
+  </message>
+  <message name="IDS_OS_SETTINGS_TAG_BLUETOOTH_TURN_ON" desc="Text for search result item which, when clicked, navigates the user to Bluetooth settings, with a toggle to turn on Bluetooth. Alternate phrase for: 'Enable Bluetooth'">
+    Turn on Bluetooth
+  </message>
+  <message name="IDS_OS_SETTINGS_TAG_BLUETOOTH_TURN_ON_ALT1" desc="Text for search result item which, when clicked, navigates the user to Bluetooth settings, with a toggle to turn on Bluetooth. Alternate phrase for: 'Turn on Bluetooth'">
+    Enable Bluetooth
+  </message>
 
   <!-- MultiDevice section. -->
 
   <!-- People section. -->
+  <message name="IDS_OS_SETTINGS_TAG_PEOPLE" desc="Text for search result item which, when clicked, navigates the user to people settings.">
+    People
+  </message>
+  <message name="IDS_OS_SETTINGS_TAG_PEOPLE_ACCOUNTS" desc="Text for search result item which, when clicked, navigates the user to accounts settings.">
+    My accounts
+  </message>
+  <message name="IDS_OS_SETTINGS_TAG_PEOPLE_ACCOUNTS_ADD" desc="Text for search result item which, when clicked, navigates the user to accounts settings, with a button to add a new account.">
+    Add account
+  </message>
+  <message name="IDS_OS_SETTINGS_TAG_PEOPLE_ACCOUNTS_REMOVE" desc="Text for search result item which, when clicked, navigates the user to accounts settings, with an option to remove an account.">
+    Remove account
+  </message>
+  <message name="IDS_OS_SETTINGS_TAG_SYNC" desc="Text for search result item which, when clicked, navigates the user to sync settings.">
+    Sync
+  </message>
+  <message name="IDS_OS_SETTINGS_TAG_LOCK_SCREEN" desc="Text for search result item which, when clicked, navigates the user to security and sign-in settings.">
+    Security and sign-in
+  </message>
+  <message name="IDS_OS_SETTINGS_TAG_LOCK_SCREEN_WHEN_WAKING" desc="Text for search result item which, when clicked, navigates the user to lock screen settings. Alternate phrase for: 'Login screen'">
+    Lock screen
+  </message>
+  <message name="IDS_OS_SETTINGS_TAG_LOCK_SCREEN_WHEN_WAKING_ALT1" desc="Text for search result item which, when clicked, navigates the user to lock screen settings. Alternate phrase for: 'Lock screen settings'">
+    Login screen
+  </message>
+  <message name="IDS_OS_SETTINGS_TAG_LOCK_SCREEN_PIN_OR_PASSWORD" desc="Text for search result item which, when clicked, navigates the user to lock screen settings, with an option to determine whether the device can be unlocked with a PIN.">
+    PIN lock screen settings
+  </message>
+  <message name="IDS_OS_SETTINGS_TAG_GUEST_BROWSING" desc="Text for search result item which, when clicked, navigates the user to account settings, with a toggle to enable/disable guest browsing.">
+    Guest browsing
+  </message>
+  <message name="IDS_OS_SETTINGS_TAG_USERNAMES_AND_PHOTOS" desc="Text for search result item which, when clicked, navigates the user to account settings, with a toggle to show/hide photos and usernames on the sign-in screen. Alternate phrase for: 'Sign-in screen username', 'Sign-in screen photos'">
+    Show usernames and photos on the sign-in screen
+  </message>
+  <message name="IDS_OS_SETTINGS_TAG_USERNAMES_AND_PHOTOS_ALT1" desc="Text for search result item which, when clicked, navigates the user to account settings, with a toggle to show/hide photos and usernames on the sign-in screen. Alternate phrase for: 'Show usernames and photos on the sign-in screen', 'Sign-in screen photos'">
+    Sign-in screen username
+  </message>
+  <message name="IDS_OS_SETTINGS_TAG_USERNAMES_AND_PHOTOS_ALT2" desc="Text for search result item which, when clicked, navigates the user to account settings, with a toggle to show/hide photos and usernames on the sign-in screen. Alternate phrase for: 'Show usernames and photos on the sign-in screen', 'Sign-in screen username'">
+    Sign-in screen photos
+  </message>
+  <message name="IDS_OS_SETTINGS_TAG_RESTRICT_SIGN_IN" desc="Text for search result item which, when clicked, navigates the user to account settings, with a toggle to restrict sign-in to a particular set of users. Alternate phrase for: 'Limit sign-in'">
+    Restrict sign-in
+  </message>
+  <message name="IDS_OS_SETTINGS_TAG_RESTRICT_SIGN_IN_ALT1" desc="Text for search result item which, when clicked, navigates the user to account settings, with a toggle to restrict sign-in to a particular set of users. Alternate phrase for: 'Restrict sign-in'">
+    Limit sign-in
+  </message>
+  <message name="IDS_OS_SETTINGS_TAG_RESTRICT_SIGN_IN_ADD" desc="Text for search result item which, when clicked, navigates the user to account settings, with an option to add to the whitelist of restricted users.">
+    Add restricted user
+  </message>
+  <message name="IDS_OS_SETTINGS_TAG_RESTRICT_SIGN_IN_REMOVE" desc="Text for search result item which, when clicked, navigates the user to account settings, with an option to remove from the whitelist of restricted users.">
+    Remove restricted user
+  </message>
+  <message name="IDS_OS_SETTINGS_TAG_SYNC_TURN_OFF" desc="Text for search result item which, when clicked, navigates the user to sync settings, with an option to turn off syncing. Alternate phrase for: 'Disable sync'">
+    Turn off sync
+  </message>
+  <message name="IDS_OS_SETTINGS_TAG_SYNC_TURN_OFF_ALT1" desc="Text for search result item which, when clicked, navigates the user to sync settings, with an option to turn off syncing. Alternate phrase for: 'Turn off sync'">
+    Disable sync
+  </message>
+  <message name="IDS_OS_SETTINGS_TAG_SYNC_TURN_ON" desc="Text for search result item which, when clicked, navigates the user to sync settings, with an option to turn on syncing. Alternate phrase for: 'Enable sync'">
+    Turn on sync
+  </message>
+  <message name="IDS_OS_SETTINGS_TAG_SYNC_TURN_ON_ALT1" desc="Text for search result item which, when clicked, navigates the user to sync settings, with an option to turn on syncing. Alternate phrase for: 'Turn on sync'">
+    Enable sync
+  </message>
+  <message name="IDS_OS_SETTINGS_TAG_KERBEROS" desc="Text for search result item which, when clicked, navigates the user to Kerberos (authentication mechanism) account settings.">
+    Kerberos settings
+  </message>
+  <message name="IDS_OS_SETTINGS_TAG_KERBEROS_ADD" desc="Text for search result item which, when clicked, navigates the user to Kerberos (authentication mechanism) account settings, with an option to add a new ticket.">
+    Add Kerberos ticket
+  </message>
+  <message name="IDS_OS_SETTINGS_TAG_KERBEROS_REMOVE" desc="Text for search result item which, when clicked, navigates the user to Kerberos (authentication mechanism) account settings, with an option to remove an existing ticket.">
+    Remove Kerberos ticket
+  </message>
+  <message name="IDS_OS_SETTINGS_TAG_KERBEROS_ACTIVE" desc="Text for search result item which, when clicked, navigates the user to Kerberos (authentication mechanism) account settings, with an option to set the active ticket.">
+    Set active Kerberos ticket
+  </message>
+  <message name="IDS_OS_SETTINGS_TAG_FINGERPRINT" desc="Text for search result item which, when clicked, navigates the user to fingerprint authentication settings.">
+    Fingerprint settings
+  </message>
+  <message name="IDS_OS_SETTINGS_TAG_FINGERPRINT_ADD" desc="Text for search result item which, when clicked, navigates the user to fingerprint authentication settings, with an option to add a fingerprint.">
+    Add fingerprint
+  </message>
+  <message name="IDS_OS_SETTINGS_TAG_FINGERPRINT_REMOVE" desc="Text for search result item which, when clicked, navigates the user to fingerprint authentication settings, with an option to remove a fingerprint.">
+    Remove fingerprint
+  </message>
+  <message name="IDS_OS_SETTINGS_TAG_PARENTAL_CONTROLS" desc="Text for search result item which, when clicked, navigates the user to parental control settings. Alternate phrase for: 'Child accounts', 'Family Link'">
+    Parental controls
+  </message>
+  <message name="IDS_OS_SETTINGS_TAG_PARENTAL_CONTROLS_ALT1" desc="Text for search result item which, when clicked, navigates the user to parental control settings. Alternate phrase for: 'Parental controls', 'Family Link'">
+    Child accounts
+  </message>
+  <message name="IDS_OS_SETTINGS_TAG_PARENTAL_CONTROLS_ALT2" desc="Text for search result item which, when clicked, navigates the user to parental control settings. Alternate phrase for: 'Parental controls', 'Child accounts'">
+    Family Link
+  </message>
 
   <!-- Device section. -->
 

@@ -162,7 +162,7 @@ suite(destination_store_test.suiteName, function() {
           const reportedPrinters = destinationStore.destinations();
           destinations.forEach((destination, index) => {
             const match = reportedPrinters.find((reportedPrinter) => {
-              return reportedPrinter.id == destination.id;
+              return reportedPrinter.id === destination.id;
             });
             assertEquals(index >= 3, typeof match === 'undefined');
           });
@@ -199,7 +199,7 @@ suite(destination_store_test.suiteName, function() {
           assertEquals(4, reportedPrinters.length);
           destinations.forEach((destination, index) => {
             assertEquals(
-                index < 3, reportedPrinters.some(p => p.id == destination.id));
+                index < 3, reportedPrinters.some(p => p.id === destination.id));
           });
           assertEquals(1, numPrintersSelected);
         });
@@ -425,7 +425,8 @@ suite(destination_store_test.suiteName, function() {
               cloudDestinations.forEach((destination) => {
                 assertEquals(
                     destination.account === account1,
-                    loadedPrintersAccount1.some(p => p.key == destination.key));
+                    loadedPrintersAccount1.some(
+                        p => p.key === destination.key));
               });
               assertEquals(1, numPrintersSelected);
 

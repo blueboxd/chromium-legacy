@@ -1262,6 +1262,7 @@
       'blink_platform_unittests': {},
       'boringssl_crypto_tests': {},
       'boringssl_ssl_tests': {},
+      'cacheinvalidation_unittests': {},
       'capture_unittests': {},
       'cast_runner_browsertests': {},
       'cast_runner_integration_tests': {},
@@ -1288,6 +1289,7 @@
       'cronet_tests': {},
       'cronet_unittests': {},
       'crypto_unittests': {},
+      'display_unittests': {},
       'events_unittests': {},
       'gfx_unittests': {},
       'gin_unittests': {},
@@ -1316,6 +1318,11 @@
       },
       'skia_unittests': {},
       'sql_unittests': {},
+      'storage_unittests': {
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.storage_unittests.filter',
+        ],
+      },
       'ui_base_unittests': {
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.ui_base_unittests.filter',

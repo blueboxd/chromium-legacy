@@ -94,7 +94,6 @@ source_set("common") {
     "drag_event_source_info.h",
     "drag_messages.h",
     "drag_traits.h",
-    "edit_command.h",
     "fetch/fetch_api_request_proto.cc",
     "fetch/fetch_api_request_proto.h",
     "fetch/fetch_request_type_converters.cc",
@@ -579,10 +578,6 @@ mojom("mojo_bindings") {
           cpp = "::ui::DidOverscrollParams"
         },
         {
-          mojom = "content.mojom.EditCommand"
-          cpp = "::content::EditCommand"
-        },
-        {
           mojom = "content.mojom.Event"
           cpp = "::std::unique_ptr<::content::InputEvent>"
           move_only = true
@@ -644,7 +639,6 @@ mojom("mojo_bindings") {
       traits_headers = [
         "//cc/input/touch_action.h",
         "//content/common/cursors/webcursor.h",
-        "//content/common/edit_command.h",
         "//content/common/frame_replication_state.h",
         "//content/common/input/input_event.h",
         "//content/common/input/synthetic_pinch_gesture_params.h",

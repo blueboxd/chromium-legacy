@@ -51,9 +51,11 @@ class WebLayerNotificationChannels extends ChannelDefinitions {
      * channel, remove the ID from this StringDef, remove its entry from Predefined Channels.MAP,
      * and add it to the return value of {@link #getLegacyChannelIds()}.
      */
-    @StringDef({ChannelId.MEDIA})
+    @StringDef({ChannelId.ACTIVE_DOWNLOADS, ChannelId.COMPLETED_DOWNLOADS, ChannelId.MEDIA})
     @Retention(RetentionPolicy.SOURCE)
     public @interface ChannelId {
+        String ACTIVE_DOWNLOADS = "org.chromium.weblayer.active_downloads";
+        String COMPLETED_DOWNLOADS = "org.chromium.weblayer.completed_downloads";
         String MEDIA = "org.chromium.weblayer.media";
     }
 
@@ -70,6 +72,14 @@ class WebLayerNotificationChannels extends ChannelDefinitions {
 
         static {
             Map<String, PredefinedChannel> map = new HashMap<>();
+            map.put(ChannelId.ACTIVE_DOWNLOADS,
+                    new PredefinedChannel(ChannelId.ACTIVE_DOWNLOADS,
+                            R.string.notification_category_downloads,
+                            NotificationManager.IMPORTANCE_LOW, ChannelGroupId.WEBLAYER));
+            map.put(ChannelId.COMPLETED_DOWNLOADS,
+                    new PredefinedChannel(ChannelId.COMPLETED_DOWNLOADS,
+                            R.string.notification_category_completed_downloads,
+                            NotificationManager.IMPORTANCE_LOW, ChannelGroupId.WEBLAYER));
             map.put(ChannelId.MEDIA,
                     new PredefinedChannel(ChannelId.MEDIA, R.string.notification_category_media,
                             NotificationManager.IMPORTANCE_LOW, ChannelGroupId.WEBLAYER));

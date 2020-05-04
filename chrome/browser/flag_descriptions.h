@@ -365,9 +365,6 @@ extern const char kEnableDataReductionProxyServerExperimentDescription[];
 extern const char kColorProviderRedirectionName[];
 extern const char kColorProviderRedirectionDescription[];
 
-extern const char kDesktopMinimalUIName[];
-extern const char kDesktopMinimalUIDescription[];
-
 extern const char kDesktopPWAsLocalUpdatingName[];
 extern const char kDesktopPWAsLocalUpdatingDescription[];
 
@@ -960,6 +957,9 @@ extern const char kPrintJobManagementAppDescription[];
 
 extern const char kPrivacySettingsRedesignName[];
 extern const char kPrivacySettingsRedesignDescription[];
+
+extern const char kSafetyCheckAndroidName[];
+extern const char kSafetyCheckAndroidDescription[];
 
 extern const char kProminentDarkModeActiveTabTitleName[];
 extern const char kProminentDarkModeActiveTabTitleDescription[];

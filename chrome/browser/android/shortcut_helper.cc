@@ -330,11 +330,8 @@ std::string ShortcutHelper::QueryFirstWebApkPackage(const GURL& url) {
 
 // static
 bool ShortcutHelper::IsWebApkInstalled(content::BrowserContext* browser_context,
-                                       const GURL& start_url,
-                                       const GURL& manifest_url) {
-  return !QueryFirstWebApkPackage(start_url).empty() ||
-         (!manifest_url.is_empty() && WebApkInstallService::Get(browser_context)
-                                          ->IsInstallInProgress(manifest_url));
+                                       const GURL& url) {
+  return !QueryFirstWebApkPackage(url).empty();
 }
 
 // static

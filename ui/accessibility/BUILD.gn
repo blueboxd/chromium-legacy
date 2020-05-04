@@ -321,9 +321,9 @@ test("accessibility_unittests") {
     ]
   }
 
-  if (!is_chromeos) {
-    # NativeViewAccessible, on which this test heavily depends, is not
-    # implemented on Chrome OS.
+  if (has_native_accessibility) {
+    # This test depends heavily on NativeViewAccessible, which is only
+    # implemented on these platforms.
     sources += [ "platform/ax_platform_node_base_unittest.cc" ]
   }
 

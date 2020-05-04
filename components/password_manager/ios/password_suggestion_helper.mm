@@ -18,6 +18,8 @@
 
 using autofill::FormData;
 using autofill::PasswordFormFillData;
+using autofill::FormRendererId;
+using autofill::FieldRendererId;
 using base::SysNSStringToUTF16;
 using base::SysNSStringToUTF8;
 using base::SysUTF16ToNSString;
@@ -67,19 +69,17 @@ NSString* const kPasswordFieldType = @"password";
 #pragma mark - Public methods
 
 - (NSArray<FormSuggestion*>*)
-retrieveSuggestionsWithFormName:(NSString*)formName
-                fieldIdentifier:(NSString*)fieldIdentifier
-                      fieldType:(NSString*)fieldType {
-  base::string16 utfFormName = SysNSStringToUTF16(formName);
-  base::string16 utfFieldIdentifier = SysNSStringToUTF16(fieldIdentifier);
+    retrieveSuggestionsWithFormID:(FormRendererId)formIdentifier
+                  fieldIdentifier:(FieldRendererId)fieldIdentifier
+                        fieldType:(NSString*)fieldType {
   BOOL isPasswordField = [fieldType isEqual:kPasswordFieldType];
 
   NSMutableArray<FormSuggestion*>* results = [NSMutableArray array];
 
-  if (_fillData.IsSuggestionsAvailable(utfFormName, utfFieldIdentifier,
+  if (_fillData.IsSuggestionsAvailable(formIdentifier, fieldIdentifier,
                                        isPasswordField)) {
     std::vector<password_manager::UsernameAndRealm> usernameAndRealms =
-        _fillData.RetrieveSuggestions(utfFormName, utfFieldIdentifier,
+        _fillData.RetrieveSuggestions(formIdentifier, fieldIdentifier,
                                       isPasswordField);
 
     for (const auto& usernameAndRealm : usernameAndRealms) {
@@ -98,7 +98,9 @@ retrieveSuggestionsWithFormName:(NSString*)formName
 }
 
 - (void)checkIfSuggestionsAvailableForForm:(NSString*)formName
+                              uniqueFormID:(FormRendererId)uniqueFormID
                            fieldIdentifier:(NSString*)fieldIdentifier
+                             uniqueFieldID:(FieldRendererId)uniqueFieldID
                                  fieldType:(NSString*)fieldType
                                       type:(NSString*)type
                                    frameID:(NSString*)frameID
@@ -132,18 +134,15 @@ retrieveSuggestionsWithFormName:(NSString*)formName
     _suggestionsAvailableCompletion = ^(const AccountSelectFillData* fillData) {
       completion(!fillData ? NO
                            : fillData->IsSuggestionsAvailable(
-                                 SysNSStringToUTF16(formName),
-                                 SysNSStringToUTF16(fieldIdentifier),
-                                 isPasswordField));
+                                 uniqueFormID, uniqueFieldID, isPasswordField));
     };
     // Form extraction is required for this check.
     [self.delegate suggestionHelperShouldTriggerFormExtraction:self];
     return;
   }
 
-  completion(_fillData.IsSuggestionsAvailable(
-      SysNSStringToUTF16(formName), SysNSStringToUTF16(fieldIdentifier),
-      isPasswordField));
+  completion(_fillData.IsSuggestionsAvailable(uniqueFormID, uniqueFieldID,
+                                              isPasswordField));
 }
 
 - (std::unique_ptr<password_manager::FillData>)getFillDataForUsername:

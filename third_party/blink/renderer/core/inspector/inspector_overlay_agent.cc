@@ -727,6 +727,7 @@ Response InspectorOverlayAgent::getHighlightObjectForTest(
     int node_id,
     Maybe<bool> include_distance,
     Maybe<bool> include_style,
+    Maybe<String> colorFormat,
     std::unique_ptr<protocol::DictionaryValue>* result) {
   Node* node = nullptr;
   Response response = dom_agent_->AssertNode(node_id, node);
@@ -744,6 +745,18 @@ Response InspectorOverlayAgent::getHighlightObjectForTest(
 
   InspectorHighlightConfig config = InspectorHighlight::DefaultConfig();
   config.show_styles = include_style.fromMaybe(false);
+
+  String format = colorFormat.fromMaybe("hex");
+
+  namespace ColorFormatEnum = protocol::Overlay::ColorFormatEnum;
+  if (format == ColorFormatEnum::Hsl) {
+    config.color_format = ColorFormat::HSL;
+  } else if (format == ColorFormatEnum::Rgb) {
+    config.color_format = ColorFormat::RGB;
+  } else {
+    config.color_format = ColorFormat::HEX;
+  }
+
   InspectorHighlight highlight(node, config, InspectorHighlightContrastInfo(),
                                true /* append_element_info */,
                                include_distance.fromMaybe(false),
@@ -1283,6 +1296,16 @@ Response InspectorOverlayAgent::HighlightConfigFromInspectorObject(
   }
   protocol::Overlay::HighlightConfig* config =
       highlight_inspector_object.fromJust();
+
+  namespace ColorFormatEnum = protocol::Overlay::ColorFormatEnum;
+
+  String format = config->getColorFormat("hex");
+
+  if (format != ColorFormatEnum::Rgb && format != ColorFormatEnum::Hex &&
+      format != ColorFormatEnum::Hsl) {
+    return Response::InvalidParams("Unknown color format");
+  }
+
   *out_config = InspectorOverlayAgent::ToHighlightConfig(config);
   return Response::Success();
 }
@@ -1313,6 +1336,19 @@ InspectorOverlayAgent::ToHighlightConfig(
       InspectorDOMAgent::ParseColor(config->getShapeMarginColor(nullptr));
   highlight_config->css_grid =
       InspectorDOMAgent::ParseColor(config->getCssGridColor(nullptr));
+
+  namespace ColorFormatEnum = protocol::Overlay::ColorFormatEnum;
+
+  String format = config->getColorFormat("hex");
+
+  if (format == ColorFormatEnum::Hsl) {
+    highlight_config->color_format = ColorFormat::HSL;
+  } else if (format == ColorFormatEnum::Rgb) {
+    highlight_config->color_format = ColorFormat::RGB;
+  } else {
+    highlight_config->color_format = ColorFormat::HEX;
+  }
+
   return highlight_config;
 }
 

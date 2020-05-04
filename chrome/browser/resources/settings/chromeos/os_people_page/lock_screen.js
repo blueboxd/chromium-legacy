@@ -260,7 +260,7 @@ Polymer({
    */
   onConfigurePin_(e) {
     e.preventDefault();
-    this.writeUma_(LockScreenProgress.CHOOSE_PIN_OR_PASSWORD);
+    this.writeUma_(settings.LockScreenProgress.CHOOSE_PIN_OR_PASSWORD);
     this.showSetupPinDialog_ = true;
   },
 

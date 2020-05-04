@@ -230,7 +230,7 @@ void WebAppInstallFinalizer::FinalizeUninstallAfterSync(
     const AppId& app_id,
     UninstallWebAppCallback callback) {
   // WebAppSyncBridge::ApplySyncChangesToRegistrar does the actual
-  // unregistration of the app from the registry.
+  // NotifyWebAppUninstalled and unregistration of the app from the registry.
   DCHECK(!GetWebAppRegistrar().GetAppById(app_id));
 
   icon_manager_->DeleteData(
@@ -321,7 +321,7 @@ void WebAppInstallFinalizer::FinalizeUpdate(
 
 void WebAppInstallFinalizer::UninstallWebApp(const AppId& app_id,
                                              UninstallWebAppCallback callback) {
-  registrar().NotifyWebAppWillBeUninstalled(app_id);
+  registrar().NotifyWebAppUninstalled(app_id);
 
   // TODO(https://crbug.com/1069306): We should do UnregisterShortcutsMenuWithOs
   // on local uninstall as well.
@@ -446,7 +446,6 @@ void WebAppInstallFinalizer::OnIconsDataDeleted(
     const AppId& app_id,
     UninstallWebAppCallback callback,
     bool success) {
-  registrar().NotifyWebAppUninstalled(app_id);
   std::move(callback).Run(success);
 }
 

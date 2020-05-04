@@ -12,15 +12,15 @@ cr.define('settings', function() {
    */
   function FakeQuickUnlockUma() {
     this.histogram = {};
-    for (const key in LockScreenProgress) {
-      this.histogram[LockScreenProgress[key]] = 0;
+    for (const key in settings.LockScreenProgress) {
+      this.histogram[settings.LockScreenProgress[key]] = 0;
     }
   }
 
   FakeQuickUnlockUma.prototype = {
     /**
      * Update the histgoram at |key| by one.
-     * @param {LockScreenProgress} key
+     * @param {settings.LockScreenProgress} key
      */
     recordProgress: function(key) {
       if (!(key in this.histogram)) {
@@ -31,7 +31,7 @@ cr.define('settings', function() {
 
     /**
      * Get the value of the uma histogram at |key|.
-     * @param {LockScreenProgress} key
+     * @param {settings.LockScreenProgress} key
      * @return {Number}
      */
     getHistogramValue: function(key) {

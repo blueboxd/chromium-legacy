@@ -78,7 +78,6 @@ class ExtensionAppsBase : public apps::PublisherBase,
   // Calculate the icon effects for the extension.
   IconEffects GetIconEffects(const extensions::Extension* extension);
 
-  content::WebContents* LaunchImpl(const AppLaunchParams& params);
   content::WebContents* LaunchAppWithIntentImpl(
       const std::string& app_id,
       int32_t event_flags,
@@ -167,6 +166,8 @@ class ExtensionAppsBase : public apps::PublisherBase,
   // running, and run |callback| to launch the app.
   bool RunExtensionEnableFlow(const std::string& app_id,
                               base::OnceClosure callback);
+
+  content::WebContents* LaunchImpl(const AppLaunchParams& params);
 
   virtual bool ShouldShownInLauncher(
       const extensions::Extension* extension) = 0;

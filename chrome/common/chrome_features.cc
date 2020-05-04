@@ -208,10 +208,6 @@ const base::Feature kWilcoDtc{"WilcoDtc", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kDesktopCaptureTabSharingInfobar{
     "DesktopCaptureTabSharingInfobar", base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Enables or disables new Desktop PWA support for minimal-ui display mode.
-const base::Feature kDesktopMinimalUI{"DesktopMinimalUI",
-                                      base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Enables or disables new Desktop PWAs implementation that does not use
 // extensions.
 const base::Feature kDesktopPWAsWithoutExtensions{
@@ -226,11 +222,6 @@ const base::Feature kDesktopPWAsCacheDuringDefaultInstall{
 // changes its manifest.
 const base::Feature kDesktopPWAsLocalUpdating{"DesktopPWAsLocalUpdating",
                                               base::FEATURE_ENABLED_BY_DEFAULT};
-
-// Whether PWA update check throttling persists across browser restarts.
-const base::Feature kDesktopPWAsLocalUpdatingThrottlePersistence{
-    "DesktopPWAsLocalUpdatingThrottlePersistence",
-    base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Adds a tab strip to PWA windows, used for UI experimentation.
 // TODO(crbug.com/897314): Enable this feature.
@@ -564,6 +555,11 @@ const base::Feature kPrerenderFallbackToPreconnect{
 // to the user.
 const base::Feature kPrivacySettingsRedesign{"PrivacySettingsRedesign",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
+
+#if defined(OS_ANDROID)
+const base::Feature kSafetyCheckAndroid{"SafetyCheckAndroid",
+                                        base::FEATURE_DISABLED_BY_DEFAULT};
+#endif
 
 #if BUILDFLAG(ENABLE_PLUGINS)
 // Show Flash deprecation warning to users who have manually enabled Flash.

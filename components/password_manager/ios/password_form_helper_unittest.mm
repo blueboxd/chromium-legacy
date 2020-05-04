@@ -286,10 +286,13 @@ TEST_F(PasswordFormHelperTest, FillPasswordFormWithFillData) {
   LoadHtml(
       @"<form><input id='u1' type='text' name='un1'>"
        "<input id='p1' type='password' name='pw1'></form>");
+  ExecuteJavaScript(@"__gCrWeb.fill.setUpForUniqueIDs(0);");
+  // Run password forms search to set up unique IDs.
+  EXPECT_TRUE(ExecuteJavaScript(@"__gCrWeb.passwords.findPasswordForms();"));
   const std::string base_url = BaseUrl();
   FillData fill_data;
-  SetFillData(base_url, "gChrome~form~0", "u1", "john.doe@gmail.com", "p1",
-              "super!secret", &fill_data);
+  SetFillData(base_url, "gChrome~form~0", 0, "u1", 1, "john.doe@gmail.com",
+              "p1", 2, "super!secret", &fill_data);
 
   __block int call_counter = 0;
   [helper_ fillPasswordFormWithFillData:fill_data
@@ -310,6 +313,9 @@ TEST_F(PasswordFormHelperTest, FindAndFillOnePasswordForm) {
   LoadHtml(
       @"<form><input id='u1' type='text' name='un1'>"
        "<input id='p1' type='password' name='pw1'></form>");
+  ExecuteJavaScript(@"__gCrWeb.fill.setUpForUniqueIDs(0);");
+  // Run password forms search to set up unique IDs.
+  EXPECT_TRUE(ExecuteJavaScript(@"__gCrWeb.passwords.findPasswordForms();"));
   __block int call_counter = 0;
   __block int success_counter = 0;
   [helper_ findAndFillPasswordFormsWithUserName:@"john.doe@gmail.com"
@@ -344,6 +350,9 @@ TEST_F(PasswordFormHelperTest, FindAndFillMultiplePasswordForms) {
        "<input id='p2' type='password' name='pw2'></form>"
        "<form><input id='u3' type='text' name='un3'>"
        "<input id='p3' type='password' name='pw3'></form>");
+  ExecuteJavaScript(@"__gCrWeb.fill.setUpForUniqueIDs(0);");
+  // Run password forms search to set up unique IDs.
+  EXPECT_TRUE(ExecuteJavaScript(@"__gCrWeb.passwords.findPasswordForms();"));
   __block int call_counter = 0;
   __block int success_counter = 0;
   [helper_ findAndFillPasswordFormsWithUserName:@"john.doe@gmail.com"

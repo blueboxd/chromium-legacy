@@ -2977,6 +2977,7 @@ source_set("unit_tests") {
     "guest_os/guest_os_share_path_unittest.cc",
     "hats/hats_finch_helper_unittest.cc",
     "hats/hats_notification_controller_unittest.cc",
+    "input_method/assistive_window_controller_unittest.cc",
     "input_method/input_method_configuration_unittest.cc",
     "input_method/input_method_engine_unittest.cc",
     "input_method/input_method_manager_impl_unittest.cc",

@@ -1000,15 +1000,12 @@ Status WritePrefsFile(
     const std::string& template_string,
     const base::DictionaryValue* custom_prefs,
     const base::FilePath& path) {
-  int code;
-  std::string error_msg;
-  std::unique_ptr<base::Value> template_value =
-      base::JSONReader::ReadAndReturnErrorDeprecated(template_string, 0, &code,
-                                                     &error_msg);
+  base::JSONReader::ValueWithError parsed_json =
+      base::JSONReader::ReadAndReturnValueWithError(template_string);
   base::DictionaryValue* prefs;
-  if (!template_value || !template_value->GetAsDictionary(&prefs)) {
-    return Status(kUnknownError,
-                  "cannot parse internal JSON template: " + error_msg);
+  if (!parsed_json.value || !parsed_json.value->GetAsDictionary(&prefs)) {
+    return Status(kUnknownError, "cannot parse internal JSON template: " +
+                                     parsed_json.error_message);
   }
 
   if (custom_prefs) {

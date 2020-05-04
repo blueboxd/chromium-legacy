@@ -31,6 +31,8 @@ class AssistiveWindowController : public views::WidgetObserver,
   AssistiveWindowController();
   ~AssistiveWindowController() override;
 
+  ui::ime::SuggestionWindowView* GetSuggestionWindowViewForTesting();
+
  private:
   // IMEAssistiveWindowHandlerInterface implementation.
   void SetBounds(const gfx::Rect& cursor_bounds) override;

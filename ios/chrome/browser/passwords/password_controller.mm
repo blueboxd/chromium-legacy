@@ -27,6 +27,7 @@
 #include "components/autofill/core/common/password_form.h"
 #include "components/autofill/core/common/password_form_fill_data.h"
 #include "components/autofill/core/common/password_form_generation_data.h"
+#include "components/autofill/core/common/renderer_id.h"
 #include "components/autofill/ios/browser/autofill_util.h"
 #import "components/autofill/ios/form_util/form_activity_observer_bridge.h"
 #include "components/autofill/ios/form_util/form_activity_params.h"
@@ -83,6 +84,8 @@ using autofill::FormActivityObserverBridge;
 using autofill::FormData;
 using autofill::PasswordFormGenerationData;
 using autofill::PasswordForm;
+using autofill::FormRendererId;
+using autofill::FieldRendererId;
 using base::SysNSStringToUTF16;
 using base::SysUTF16ToNSString;
 using l10n_util::GetNSString;
@@ -376,7 +379,9 @@ NSString* const kSuggestionSuffix = @" ••••••••";
 }
 
 - (void)checkIfSuggestionsAvailableForForm:(NSString*)formName
+                              uniqueFormID:(FormRendererId)uniqueFormID
                            fieldIdentifier:(NSString*)fieldIdentifier
+                             uniqueFieldID:(FieldRendererId)uniqueFieldID
                                  fieldType:(NSString*)fieldType
                                       type:(NSString*)type
                                 typedValue:(NSString*)typedValue
@@ -390,7 +395,9 @@ NSString* const kSuggestionSuffix = @" ••••••••";
     return;
   [self.suggestionHelper
       checkIfSuggestionsAvailableForForm:formName
+                            uniqueFormID:uniqueFormID
                          fieldIdentifier:fieldIdentifier
+                           uniqueFieldID:uniqueFieldID
                                fieldType:fieldType
                                     type:type
                                  frameID:frameID
@@ -436,7 +443,9 @@ NSString* const kSuggestionSuffix = @" ••••••••";
 }
 
 - (void)retrieveSuggestionsForForm:(NSString*)formName
+                      uniqueFormID:(FormRendererId)uniqueFormID
                    fieldIdentifier:(NSString*)fieldIdentifier
+                     uniqueFieldID:(FieldRendererId)uniqueFieldID
                          fieldType:(NSString*)fieldType
                               type:(NSString*)type
                         typedValue:(NSString*)typedValue
@@ -446,9 +455,9 @@ NSString* const kSuggestionSuffix = @" ••••••••";
   if (!GetPageURLAndCheckTrustLevel(webState, nullptr))
     return;
   NSArray<FormSuggestion*>* rawSuggestions =
-      [self.suggestionHelper retrieveSuggestionsWithFormName:formName
-                                             fieldIdentifier:fieldIdentifier
-                                                   fieldType:fieldType];
+      [self.suggestionHelper retrieveSuggestionsWithFormID:uniqueFormID
+                                           fieldIdentifier:uniqueFieldID
+                                                 fieldType:fieldType];
 
   NSMutableArray<FormSuggestion*>* suggestions = [NSMutableArray array];
   bool isPasswordField = [fieldType isEqual:@"password"];

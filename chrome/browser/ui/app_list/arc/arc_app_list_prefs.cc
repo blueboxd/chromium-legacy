@@ -1095,12 +1095,19 @@ void ArcAppListPrefs::AddAppAndShortcut(const std::string& name,
                                         const bool launchable) {
   const std::string app_id = shortcut ? GetAppId(package_name, intent_uri)
                                       : GetAppId(package_name, activity);
-  // TODO(khmel): Use show_in_launcher flag to hide the Play Store app.
-  if (app_id == arc::kPlayStoreAppId &&
-      arc::IsRobotOrOfflineDemoAccountMode() &&
-      !(chromeos::DemoSession::IsDeviceInDemoMode() &&
-        chromeos::features::ShouldShowPlayStoreInDemoMode())) {
-    return;
+
+  // Do not add Play Store in certain conditions.
+  if (app_id == arc::kPlayStoreAppId) {
+    // TODO(khmel): Use show_in_launcher flag to hide the Play Store app.
+    // Display Play Store if we are in Demo Mode.
+    // TODO(b/154290639): Remove check for |IsDemoModeOfflineEnrolled| when
+    //                    fixed in Play Store.
+    if (arc::IsRobotOrOfflineDemoAccountMode() &&
+        !(chromeos::DemoSession::IsDeviceInDemoMode() &&
+          chromeos::features::ShouldShowPlayStoreInDemoMode() &&
+          !chromeos::DemoSession::IsDemoModeOfflineEnrolled())) {
+      return;
+    }
   }
 
   std::string updated_name = name;

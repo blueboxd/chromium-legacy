@@ -28,6 +28,9 @@
 #error "This file requires ARC support."
 #endif
 
+using autofill::FormRendererId;
+using autofill::FieldRendererId;
+
 namespace {
 
 // Struct that describes suggestion state.
@@ -179,8 +182,10 @@ AutofillSuggestionState::AutofillSuggestionState(
 
   __weak FormSuggestionController* weakSelf = self;
   NSString* strongFormName = base::SysUTF8ToNSString(params.form_name);
+  FormRendererId uniqueFormID = FormRendererId(params.unique_form_id);
   NSString* strongFieldIdentifier =
       base::SysUTF8ToNSString(params.field_identifier);
+  FieldRendererId uniqueFieldID = FieldRendererId(params.unique_field_id);
   NSString* strongFrameId = base::SysUTF8ToNSString(params.frame_id);
   NSString* strongFieldType = base::SysUTF8ToNSString(params.field_type);
   NSString* strongType = base::SysUTF8ToNSString(params.type);
@@ -206,7 +211,9 @@ AutofillSuggestionState::AutofillSuggestionState(
           id<FormSuggestionProvider> provider =
               strongSelf->_suggestionProviders[i];
           [provider checkIfSuggestionsAvailableForForm:strongFormName
+                                          uniqueFormID:uniqueFormID
                                        fieldIdentifier:strongFieldIdentifier
+                                         uniqueFieldID:uniqueFieldID
                                              fieldType:strongFieldType
                                                   type:strongType
                                             typedValue:strongValue
@@ -242,7 +249,9 @@ AutofillSuggestionState::AutofillSuggestionState(
     id<FormSuggestionProvider> provider =
         strongSelf->_suggestionProviders[providerIndex];
     [provider retrieveSuggestionsForForm:strongFormName
+                            uniqueFormID:uniqueFormID
                          fieldIdentifier:strongFieldIdentifier
+                           uniqueFieldID:uniqueFieldID
                                fieldType:strongFieldType
                                     type:strongType
                               typedValue:strongValue

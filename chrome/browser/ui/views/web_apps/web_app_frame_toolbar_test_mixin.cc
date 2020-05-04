@@ -11,7 +11,6 @@
 #include "chrome/browser/ui/views/web_apps/web_app_frame_toolbar_view.h"
 #include "chrome/browser/ui/web_applications/test/web_app_browsertest_util.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
-#include "chrome/common/chrome_features.h"
 #include "chrome/common/web_application_info.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "ui/views/widget/widget.h"
@@ -19,7 +18,6 @@
 #include "url/gurl.h"
 
 WebAppFrameToolbarTestMixin::WebAppFrameToolbarTestMixin() {
-  scoped_feature_list_.InitAndEnableFeature(features::kDesktopMinimalUI);
   WebAppFrameToolbarView::DisableAnimationForTesting();
 }
 

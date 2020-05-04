@@ -30,7 +30,7 @@ const char kURL1[] = "data:text/html,<html><title>Test</title></html>";
 class TwoClientPollingSyncTest : public SyncTest {
  public:
   TwoClientPollingSyncTest() : SyncTest(TWO_CLIENT) {}
-  ~TwoClientPollingSyncTest() override {}
+  ~TwoClientPollingSyncTest() override = default;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TwoClientPollingSyncTest);
@@ -68,10 +68,6 @@ class SessionCountMatchChecker : public SingleClientStatusChangeChecker {
 // Flaky: crbug.com/988161
 IN_PROC_BROWSER_TEST_F(TwoClientPollingSyncTest, DISABLED_ShouldPollOnStartup) {
   ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
-
-  // Choose larger interval to verify the poll-on-start logic.
-  SyncPrefs remote_prefs(GetProfile(1)->GetPrefs());
-  remote_prefs.SetPollInterval(base::TimeDelta::FromMinutes(2));
 
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
@@ -119,10 +115,15 @@ IN_PROC_BROWSER_TEST_F(TwoClientPollingSyncTest, DISABLED_ShouldPollOnStartup) {
   // start-up) and verify it receives the latest changes and the poll cycle
   // updated the last-poll-time.
   // All data is already there, so we can get it in the first poll.
+  SyncPrefs remote_prefs(GetProfile(1)->GetPrefs());
+  // Note: SyncSchedulerImpl delays a poll on startup by up to 1% of the poll
+  // interval. 1% of 4 hours (the default poll interval) is still a while, so
+  // set a shorter poll interval here.
+  base::TimeDelta poll_interval = base::TimeDelta::FromMinutes(2);
+  remote_prefs.SetPollInterval(poll_interval);
   base::Time remote_start = base::Time::Now();
-  base::Time new_last_poll_time = base::Time::Now() -
-                                  base::TimeDelta::FromMinutes(2) -
-                                  base::TimeDelta::FromMilliseconds(100);
+  base::Time new_last_poll_time =
+      remote_start - poll_interval - base::TimeDelta::FromMilliseconds(100);
   remote_prefs.SetLastPollTime(new_last_poll_time);
   ASSERT_TRUE(GetClient(1)->StartSyncService()) << "SetupSync() failed.";
   GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1));

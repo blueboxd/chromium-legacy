@@ -12,6 +12,7 @@
 #include "base/containers/unique_ptr_adapters.h"
 #include "base/macros.h"
 #include "chrome/browser/web_applications/components/web_app_id.h"
+#include "ui/gfx/native_widget_types.h"
 
 class BrowserWindow;
 class Profile;
@@ -38,6 +39,11 @@ class WebAppDialogManager {
   void UninstallWebApp(const AppId& app_id,
                        UninstallSource uninstall_source,
                        BrowserWindow* parent_window,
+                       Callback callback);
+
+  void UninstallWebApp(const AppId& app_id,
+                       UninstallSource uninstall_source,
+                       gfx::NativeWindow parent_window,
                        Callback callback);
 
  private:

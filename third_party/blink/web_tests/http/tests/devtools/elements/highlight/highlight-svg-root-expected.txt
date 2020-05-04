@@ -82,6 +82,7 @@ svg-root{
   ],
   "showRulers": true,
   "showExtensionLines": true,
+  "colorFormat": "hex",
   "elementInfo": {
     "tagName": "svg",
     "idValue": "svg-root",

@@ -7,6 +7,9 @@
 #include "base/strings/string_util.h"
 #include "components/autofill/core/common/password_form_fill_data.h"
 
+using autofill::FieldRendererId;
+using autofill::FormRendererId;
+
 namespace password_manager {
 
 FillData::FillData() = default;
@@ -27,12 +30,16 @@ AccountSelectFillData::~AccountSelectFillData() = default;
 
 void AccountSelectFillData::Add(
     const autofill::PasswordFormFillData& form_data) {
-  auto iter_ok = forms_.insert(std::make_pair(form_data.name, FormInfo()));
+  auto iter_ok = forms_.insert(
+      std::make_pair(form_data.form_renderer_id.value(), FormInfo()));
   FormInfo& form_info = iter_ok.first->second;
   form_info.origin = form_data.origin;
   form_info.name = form_data.name;
+  form_info.form_id = form_data.form_renderer_id;
   form_info.username_element = form_data.username_field.name;
+  form_info.username_element_id = form_data.username_field.unique_renderer_id;
   form_info.password_element = form_data.password_field.name;
+  form_info.password_element_id = form_data.password_field.unique_renderer_id;
 
   // Suggested credentials don't depend on a clicked form. It's better to use
   // the latest known credentials, since credentials can be updated between
@@ -61,23 +68,22 @@ bool AccountSelectFillData::Empty() const {
 }
 
 bool AccountSelectFillData::IsSuggestionsAvailable(
-    const base::string16& form_name,
-    const base::string16& field_identifier,
+    FormRendererId form_identifier,
+    FieldRendererId field_identifier,
     bool is_password_field) const {
-  return GetFormInfo(form_name, field_identifier, is_password_field) != nullptr;
+  return GetFormInfo(form_identifier, field_identifier, is_password_field) !=
+         nullptr;
 }
 
 std::vector<UsernameAndRealm> AccountSelectFillData::RetrieveSuggestions(
-    const base::string16& form_name,
-    const base::string16& field_identifier,
-    bool is_password_field) const {
+    FormRendererId form_identifier,
+    FieldRendererId field_identifier,
+    bool is_password_field) {
   last_requested_form_ =
-      GetFormInfo(form_name, field_identifier, is_password_field);
+      GetFormInfo(form_identifier, field_identifier, is_password_field);
   DCHECK(last_requested_form_);
-  if (is_password_field)
-    last_requested_password_field_ = field_identifier;
-  else
-    last_requested_password_field_.clear();
+  last_requested_password_field_id_ =
+      is_password_field ? field_identifier : FieldRendererId();
   std::vector<UsernameAndRealm> result;
   for (const Credential& credential : credentials_)
     result.push_back({credential.username, credential.realm});
@@ -102,23 +108,28 @@ std::unique_ptr<FillData> AccountSelectFillData::GetFillData(
   auto result = std::make_unique<FillData>();
   result->origin = last_requested_form_->origin;
   result->name = last_requested_form_->name;
+  result->form_id = last_requested_form_->form_id;
   result->username_element = last_requested_form_->username_element;
+  result->username_element_id = last_requested_form_->username_element_id;
   result->username_value = credential.username;
-  result->password_element = last_requested_password_field_.empty()
+  result->password_element = last_requested_password_field_id_.is_null()
                                  ? last_requested_form_->password_element
                                  : last_requested_password_field_;
+  result->password_element_id = last_requested_password_field_id_.is_null()
+                                    ? last_requested_form_->password_element_id
+                                    : last_requested_password_field_id_;
   result->password_value = credential.password;
   return result;
 }
 
 const FormInfo* AccountSelectFillData::GetFormInfo(
-    const base::string16& form_name,
-    const base::string16& field_identifier,
+    FormRendererId form_identifier,
+    FieldRendererId field_identifier,
     bool is_password_field) const {
-  auto it = forms_.find(form_name);
+  auto it = forms_.find(form_identifier);
   if (it == forms_.end())
     return nullptr;
-  return is_password_field || it->second.username_element == field_identifier
+  return is_password_field || it->second.username_element_id == field_identifier
              ? &it->second
              : nullptr;
 }

@@ -4,6 +4,7 @@
 
 "\"origin\""
 "\"isSubdomain\""
+"\"isThirdParty\""
 "\"feature\""
 "\"expiry\""
 "https://"

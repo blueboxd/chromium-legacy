@@ -5,196 +5,44 @@
 #ifndef CHROME_BROWSER_APPS_APP_SERVICE_WEB_APPS_H_
 #define CHROME_BROWSER_APPS_APP_SERVICE_WEB_APPS_H_
 
-#include <memory>
 #include <string>
 
-#include "base/memory/weak_ptr.h"
-#include "base/scoped_observer.h"
-#include "chrome/browser/apps/app_service/app_icon_factory.h"
-#include "chrome/browser/apps/app_service/app_notifications.h"
 #include "chrome/browser/apps/app_service/icon_key_util.h"
-#include "chrome/browser/apps/app_service/paused_apps.h"
-#include "chrome/browser/notifications/notification_common.h"
-#include "chrome/browser/notifications/notification_display_service.h"
-#include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
-#include "chrome/browser/web_applications/components/app_registrar.h"
-#include "chrome/browser/web_applications/components/app_registrar_observer.h"
-#include "chrome/browser/web_applications/components/web_app_helpers.h"
-#include "chrome/browser/web_applications/components/web_app_id.h"
-#include "chrome/services/app_service/public/cpp/instance_registry.h"
-#include "chrome/services/app_service/public/cpp/publisher_base.h"
+#include "chrome/browser/apps/app_service/web_apps_base.h"
 #include "chrome/services/app_service/public/mojom/app_service.mojom.h"
-#include "components/content_settings/core/browser/content_settings_observer.h"
-#include "components/content_settings/core/browser/host_content_settings_map.h"
-#include "mojo/public/cpp/bindings/pending_remote.h"
-#include "mojo/public/cpp/bindings/receiver.h"
+#include "chrome/services/app_service/public/mojom/types.mojom.h"
 #include "mojo/public/cpp/bindings/remote.h"
-#include "mojo/public/cpp/bindings/remote_set.h"
+#include "ui/gfx/native_widget_types.h"
 
 class Profile;
 
 namespace web_app {
 class WebApp;
-class WebAppLaunchManager;
-class WebAppProvider;
-class WebAppRegistrar;
 }  // namespace web_app
 
 namespace apps {
 
 // An app publisher (in the App Service sense) of Web Apps.
-class WebApps : public apps::PublisherBase,
-                public web_app::AppRegistrarObserver,
-                public content_settings::Observer,
-                public ArcAppListPrefs::Observer,
-                public NotificationDisplayService::Observer {
+class WebApps : public WebAppsBase {
  public:
   WebApps(const mojo::Remote<apps::mojom::AppService>& app_service,
-          Profile* profile,
-          apps::InstanceRegistry* instance_registry);
+          Profile* profile);
   WebApps(const WebApps&) = delete;
   WebApps& operator=(const WebApps&) = delete;
   ~WebApps() override;
 
-  void Shutdown();
-
-  void ObserveArc();
+  // Uninstall for web apps on Chrome.
+  static void UninstallImpl(Profile* profile,
+                            const std::string& app_id,
+                            gfx::NativeWindow parent_window);
 
  private:
-  void Initialize(const mojo::Remote<apps::mojom::AppService>& app_service);
-
-  const web_app::WebApp* GetWebApp(const web_app::AppId& app_id) const;
-  const web_app::WebAppRegistrar& GetRegistrar() const;
-
-  // apps::mojom::Publisher overrides.
-  void Connect(mojo::PendingRemote<apps::mojom::Subscriber> subscriber_remote,
-               apps::mojom::ConnectOptionsPtr opts) override;
-  void LoadIcon(const std::string& app_id,
-                apps::mojom::IconKeyPtr icon_key,
-                apps::mojom::IconCompression icon_compression,
-                int32_t size_hint_in_dip,
-                bool allow_placeholder_icon,
-                LoadIconCallback callback) override;
-  void Launch(const std::string& app_id,
-              int32_t event_flags,
-              apps::mojom::LaunchSource launch_source,
-              int64_t display_id) override;
-  void LaunchAppWithFiles(const std::string& app_id,
-                          apps::mojom::LaunchContainer container,
-                          int32_t event_flags,
-                          apps::mojom::LaunchSource launch_source,
-                          apps::mojom::FilePathsPtr file_paths) override;
-  void LaunchAppWithIntent(const std::string& app_id,
-                           int32_t event_flags,
-                           apps::mojom::IntentPtr intent,
-                           apps::mojom::LaunchSource launch_source,
-                           int64_t display_id) override;
-  void SetPermission(const std::string& app_id,
-                     apps::mojom::PermissionPtr permission) override;
-  void Uninstall(const std::string& app_id,
-                 bool clear_site_data,
-                 bool report_abuse) override;
-  void PauseApp(const std::string& app_id) override;
-  void UnpauseApps(const std::string& app_id) override;
-  void GetMenuModel(const std::string& app_id,
-                    apps::mojom::MenuType menu_type,
-                    int64_t display_id,
-                    GetMenuModelCallback callback) override;
-  void OpenNativeSettings(const std::string& app_id) override;
-
-  // content_settings::Observer overrides.
-  void OnContentSettingChanged(const ContentSettingsPattern& primary_pattern,
-                               const ContentSettingsPattern& secondary_pattern,
-                               ContentSettingsType content_type,
-                               const std::string& resource_identifier) override;
-
-  // web_app::AppRegistrarObserver:
-  void OnWebAppInstalled(const web_app::AppId& app_id) override;
-  void OnWebAppWillBeUninstalled(const web_app::AppId& app_id) override;
-  void OnAppRegistrarDestroyed() override;
-  void OnWebAppDisabledStateChanged(const web_app::AppId& app_id,
-                                    bool is_disabled) override;
-  // TODO(loyso): Implement app->last_launch_time field for the new system.
-
-  // ArcAppListPrefs::Observer overrides.
-  void OnPackageInstalled(
-      const arc::mojom::ArcPackageInfo& package_info) override;
-  void OnPackageRemoved(const std::string& package_name,
-                        bool uninstalled) override;
-  void OnPackageListInitialRefreshed() override;
-  void OnArcAppListPrefsDestroyed() override;
-
-  // NotificationDisplayService::Observer overrides.
-  void OnNotificationDisplayed(
-      const message_center::Notification& notification,
-      const NotificationCommon::Metadata* const metadata) override;
-  void OnNotificationClosed(const std::string& notification_id) override;
-  void OnNotificationDisplayServiceDestroyed(
-      NotificationDisplayService* service) override;
-
-  void MaybeAddNotification(const std::string& app_id,
-                            const std::string& notification_id);
-  void MaybeAddWebPageNotifications(
-      const message_center::Notification& notification,
-      const NotificationCommon::Metadata* const metadata);
-
-  void SetShowInFields(apps::mojom::AppPtr& app,
-                       const web_app::WebApp* web_app);
-  void PopulatePermissions(const web_app::WebApp* web_app,
-                           std::vector<mojom::PermissionPtr>* target);
-  void PopulateIntentFilters(const base::Optional<GURL>& app_scope,
-                             std::vector<mojom::IntentFilterPtr>* target);
+  // WebAppsBase overrides.
   apps::mojom::AppPtr Convert(const web_app::WebApp* web_app,
-                              apps::mojom::Readiness readiness);
-  void ConvertWebApps(apps::mojom::Readiness readiness,
-                      std::vector<apps::mojom::AppPtr>* apps_out);
-  void StartPublishingWebApps(
-      mojo::PendingRemote<apps::mojom::Subscriber> subscriber_remote);
-
-  IconEffects GetIconEffects(const web_app::WebApp* web_app, bool paused);
-
-  // Get the equivalent Chrome app from |arc_package_name| and set the Chrome
-  // app badge on the icon effects for the equivalent Chrome apps. If the
-  // equivalent ARC app is installed, add the Chrome app badge, otherwise,
-  // remove the Chrome app badge.
-  void ApplyChromeBadge(const std::string& arc_package_name);
-
-  void SetIconEffect(const std::string& app_id);
-
-  bool Accepts(const std::string& app_id);
-
-  mojo::RemoteSet<apps::mojom::Subscriber> subscribers_;
-
-  Profile* const profile_;
-
-  ScopedObserver<web_app::AppRegistrar, web_app::AppRegistrarObserver>
-      registrar_observer_{this};
-
-  ScopedObserver<HostContentSettingsMap, content_settings::Observer>
-      content_settings_observer_{this};
+                              apps::mojom::Readiness readiness) override;
+  bool Accepts(const std::string& app_id) override;
 
   apps_util::IncrementingIconKeyFactory icon_key_factory_;
-
-  apps::InstanceRegistry* instance_registry_;
-
-  PausedApps paused_apps_;
-
-  web_app::WebAppProvider* provider_ = nullptr;
-
-  std::unique_ptr<web_app::WebAppLaunchManager> web_app_launch_manager_;
-
-  ArcAppListPrefs* arc_prefs_ = nullptr;
-
-  // app_service_ is owned by the object that owns this object.
-  apps::mojom::AppService* app_service_;
-
-  ScopedObserver<NotificationDisplayService,
-                 NotificationDisplayService::Observer>
-      notification_display_service_{this};
-
-  AppNotifications app_notifications_;
-
-  base::WeakPtrFactory<WebApps> weak_ptr_factory_{this};
 };
 
 }  // namespace apps

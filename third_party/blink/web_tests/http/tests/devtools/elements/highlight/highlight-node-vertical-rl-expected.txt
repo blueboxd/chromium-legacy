@@ -82,6 +82,7 @@ container{
   ],
   "showRulers": true,
   "showExtensionLines": true,
+  "colorFormat": "hex",
   "elementInfo": {
     "tagName": "div",
     "idValue": "container",
@@ -174,6 +175,7 @@ child{
   ],
   "showRulers": true,
   "showExtensionLines": true,
+  "colorFormat": "hex",
   "elementInfo": {
     "tagName": "div",
     "idValue": "child",
@@ -266,6 +268,7 @@ span{
   ],
   "showRulers": true,
   "showExtensionLines": true,
+  "colorFormat": "hex",
   "elementInfo": {
     "tagName": "span",
     "idValue": "span",
@@ -358,6 +361,7 @@ TEXT{
   ],
   "showRulers": true,
   "showExtensionLines": true,
+  "colorFormat": "hex",
   "elementInfo": {
     "nodeWidth": "10",
     "nodeHeight": "70",

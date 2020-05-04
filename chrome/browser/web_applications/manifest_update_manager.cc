@@ -17,58 +17,7 @@
 
 namespace web_app {
 
-namespace {
-
-const char kLastUpdateCheckKey[] = "last_update_check";
-
-class AppPrefs {
- public:
-  AppPrefs(Profile* profile, const GURL& origin) {
-    settings_ = HostContentSettingsMapFactory::GetForProfile(profile);
-    if (!settings_)
-      return;
-    origin_data_ = settings_->GetWebsiteSetting(
-        origin, GURL(), ContentSettingsType::INSTALLED_WEB_APP_METADATA,
-        std::string(), nullptr);
-  }
-
-  bool IsAvailable() const { return settings_; }
-
-  const base::Value* GetAppData(const AppId& app_id) const {
-    if (!origin_data_)
-      return nullptr;
-    return origin_data_->FindKey(app_id);
-  }
-
-  base::Value& GetAppDataMutable(const AppId& app_id) {
-    DCHECK(IsAvailable());
-    if (!origin_data_)
-      origin_data_ =
-          std::make_unique<base::Value>(base::Value::Type::DICTIONARY);
-    base::Value* app_data = origin_data_->FindKey(app_id);
-    if (!app_data) {
-      app_data = origin_data_->SetKey(
-          app_id, base::Value(base::Value::Type::DICTIONARY));
-    }
-    return *app_data;
-  }
-
-  void Save(const GURL& origin) {
-    DCHECK(IsAvailable());
-    settings_->SetWebsiteSettingDefaultScope(
-        origin, GURL(), ContentSettingsType::INSTALLED_WEB_APP_METADATA,
-        std::string(), std::move(origin_data_));
-  }
-
- private:
-  HostContentSettingsMap* settings_ = nullptr;
-  std::unique_ptr<base::Value> origin_data_;
-};
-
-}  // namespace
-
-ManifestUpdateManager::ManifestUpdateManager(Profile* profile)
-    : profile_(profile) {}
+ManifestUpdateManager::ManifestUpdateManager() = default;
 
 ManifestUpdateManager::~ManifestUpdateManager() = default;
 
@@ -163,37 +112,14 @@ bool ManifestUpdateManager::MaybeConsumeUpdateCheck(const GURL& origin,
 base::Optional<base::Time> ManifestUpdateManager::GetLastUpdateCheckTime(
     const GURL& origin,
     const AppId& app_id) const {
-  if (!base::FeatureList::IsEnabled(
-          features::kDesktopPWAsLocalUpdatingThrottlePersistence)) {
-    auto it = last_update_check_.find(app_id);
-    return it != last_update_check_.end() ? it->second : base::Time();
-  }
-
-  AppPrefs app_prefs(profile_, origin);
-  if (!app_prefs.IsAvailable())
-    return base::nullopt;
-  const base::Value* app_data = app_prefs.GetAppData(app_id);
-  if (!app_data)
-    return base::Time();
-  return util::ValueToTime(app_data->FindKey(kLastUpdateCheckKey))
-      .value_or(base::Time());
+  auto it = last_update_check_.find(app_id);
+  return it != last_update_check_.end() ? it->second : base::Time();
 }
 
 void ManifestUpdateManager::SetLastUpdateCheckTime(const GURL& origin,
                                                    const AppId& app_id,
                                                    base::Time time) {
-  if (!base::FeatureList::IsEnabled(
-          features::kDesktopPWAsLocalUpdatingThrottlePersistence)) {
-    last_update_check_[app_id] = time;
-    return;
-  }
-
-  AppPrefs app_prefs(profile_, origin);
-  if (!app_prefs.IsAvailable())
-    return;
-  base::Value& app_data = app_prefs.GetAppDataMutable(app_id);
-  app_data.SetKey(kLastUpdateCheckKey, util::TimeToValue(time));
-  app_prefs.Save(origin);
+  last_update_check_[app_id] = time;
 }
 
 void ManifestUpdateManager::OnUpdateStopped(const ManifestUpdateTask& task,

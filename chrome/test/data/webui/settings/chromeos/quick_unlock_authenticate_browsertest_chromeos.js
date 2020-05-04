@@ -158,7 +158,7 @@ cr.define('settings_people_page_quick_unlock', function() {
         assertEquals(
             0,
             fakeUma.getHistogramValue(
-                LockScreenProgress.ENTER_PASSWORD_CORRECTLY));
+                settings.LockScreenProgress.ENTER_PASSWORD_CORRECTLY));
         assertFalse(authTokenObtainedFired);
       });
 
@@ -173,7 +173,7 @@ cr.define('settings_people_page_quick_unlock', function() {
         assertEquals(
             1,
             fakeUma.getHistogramValue(
-                LockScreenProgress.ENTER_PASSWORD_CORRECTLY));
+                settings.LockScreenProgress.ENTER_PASSWORD_CORRECTLY));
         assertTrue(authTokenObtainedFired);
       });
 
@@ -428,7 +428,7 @@ cr.define('settings_people_page_quick_unlock', function() {
         assertEquals(
             0,
             fakeUma.getHistogramValue(
-                LockScreenProgress.CHOOSE_PIN_OR_PASSWORD));
+                settings.LockScreenProgress.CHOOSE_PIN_OR_PASSWORD));
         assertRadioButtonChecked(passwordRadioButton);
 
         pinPasswordRadioButton.click();
@@ -443,7 +443,7 @@ cr.define('settings_people_page_quick_unlock', function() {
         assertEquals(
             1,
             fakeUma.getHistogramValue(
-                LockScreenProgress.CHOOSE_PIN_OR_PASSWORD));
+                settings.LockScreenProgress.CHOOSE_PIN_OR_PASSWORD));
       });
     });
   }
@@ -647,19 +647,23 @@ cr.define('settings_people_page_quick_unlock', function() {
         // Entering the same (even weak) pin twice calls the quick unlock API
         // and sets up a PIN.
         assertEquals(
-            0, fakeUma.getHistogramValue(LockScreenProgress.ENTER_PIN));
+            0,
+            fakeUma.getHistogramValue(settings.LockScreenProgress.ENTER_PIN));
         assertEquals(
-            0, fakeUma.getHistogramValue(LockScreenProgress.CONFIRM_PIN));
+            0,
+            fakeUma.getHistogramValue(settings.LockScreenProgress.CONFIRM_PIN));
         pinKeyboard.value = '1111';
         continueButton.click();
         assertEquals(
-            1, fakeUma.getHistogramValue(LockScreenProgress.ENTER_PIN));
+            1,
+            fakeUma.getHistogramValue(settings.LockScreenProgress.ENTER_PIN));
 
         pinKeyboard.value = '1111';
         continueButton.click();
 
         assertEquals(
-            1, fakeUma.getHistogramValue(LockScreenProgress.CONFIRM_PIN));
+            1,
+            fakeUma.getHistogramValue(settings.LockScreenProgress.CONFIRM_PIN));
         assertDeepEquals(['PIN'], quickUnlockPrivateApi.activeModes);
         assertDeepEquals(['1111'], quickUnlockPrivateApi.credentials);
       });

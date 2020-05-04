@@ -5,8 +5,6 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_WEB_APPS_WEB_APP_FRAME_TOOLBAR_TEST_MIXIN_H_
 #define CHROME_BROWSER_UI_VIEWS_WEB_APPS_WEB_APP_FRAME_TOOLBAR_TEST_MIXIN_H_
 
-#include "base/test/scoped_feature_list.h"
-
 class Browser;
 class BrowserNonClientFrameView;
 class BrowserView;
@@ -28,8 +26,6 @@ class WebAppFrameToolbarTestMixin {
   }
 
  private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-
   Browser* app_browser_ = nullptr;
   BrowserView* browser_view_ = nullptr;
   BrowserNonClientFrameView* frame_view_ = nullptr;

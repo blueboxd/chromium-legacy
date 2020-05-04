@@ -2663,12 +2663,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kDesktopPWAsLocalUpdatingName,
      flag_descriptions::kDesktopPWAsLocalUpdatingDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kDesktopPWAsLocalUpdating)},
-    {"enable-desktop-pwas-local-updating-throttle-persistence",
-     flag_descriptions::kDesktopPWAsLocalUpdatingThrottlePersistenceName,
-     flag_descriptions::kDesktopPWAsLocalUpdatingThrottlePersistenceDescription,
-     kOsDesktop,
-     FEATURE_VALUE_TYPE(
-         features::kDesktopPWAsLocalUpdatingThrottlePersistence)},
     // TODO(https://crbug.com/1069293): Add macOS and Linux implementations.
     {"enable-desktop-pwas-app-icon-shortcuts-menu",
      flag_descriptions::kDesktopPWAsAppIconShortcutsMenuName,
@@ -4782,6 +4776,12 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kPrivacySettingsRedesignDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kPrivacySettingsRedesign)},
 
+#if defined(OS_ANDROID)
+    {"safety-check-android", flag_descriptions::kSafetyCheckAndroidName,
+     flag_descriptions::kSafetyCheckAndroidDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(features::kSafetyCheckAndroid)},
+#endif
+
 #if defined(OS_CHROMEOS)
     {"gesture-properties-dbus-service",
      flag_descriptions::kEnableGesturePropertiesDBusServiceName,
@@ -5168,10 +5168,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kMixBrowserTypeTabsDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kMixBrowserTypeTabs)},
 #endif  // !defined(OS_ANDROID)
-
-    {"enable-desktop-minimal-ui", flag_descriptions::kDesktopMinimalUIName,
-     flag_descriptions::kDesktopMinimalUIDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(features::kDesktopMinimalUI)},
 
     {"enable-media-internals-devtools",
      flag_descriptions::kMediaInspectorLoggingName,

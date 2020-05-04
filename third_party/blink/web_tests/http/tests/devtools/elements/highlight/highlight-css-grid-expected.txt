@@ -82,6 +82,7 @@ paddedGrid{
   ],
   "showRulers": true,
   "showExtensionLines": true,
+  "colorFormat": "hex",
   "elementInfo": {
     "tagName": "div",
     "idValue": "paddedGrid",
@@ -237,6 +238,7 @@ nestedGrid{
   ],
   "showRulers": true,
   "showExtensionLines": true,
+  "colorFormat": "hex",
   "elementInfo": {
     "tagName": "div",
     "idValue": "nestedGrid",

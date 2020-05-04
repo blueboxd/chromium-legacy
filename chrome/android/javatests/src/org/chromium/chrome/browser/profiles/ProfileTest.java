@@ -120,4 +120,18 @@ public class ProfileTest {
                     nonPrimaryOtrProfile1, nonPrimaryOtrProfile2);
         });
     }
+
+    /** Test if creating unique otr profile ids works as expected. */
+    @Test
+    @LargeTest
+    public void testCreatingUniqueOTRProfileIDs() throws Exception {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            OTRProfileID profileID1 = OTRProfileID.createUnique("test::OTRProfile");
+            OTRProfileID profileID2 = OTRProfileID.createUnique("test::OTRProfile");
+
+            Assert.assertNotSame("Two calls to OTRProfileID.CreateUnique with the same prefix"
+                            + "should return different objects.",
+                    profileID1, profileID2);
+        });
+    }
 }

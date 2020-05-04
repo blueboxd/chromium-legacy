@@ -102,6 +102,23 @@ const breadCrumbTemplate = `
       width: 36px;
     }
 
+    button.dropdown-item {
+      position: relative;
+    }
+
+    :host-context(:root.pointer-active) button.dropdown-item:active {
+      background-color: rgba(0, 0, 0, 4%);
+    }
+
+    :host-context(:root:not(.pointer-active)) button.dropdown-item > paper-ripple {
+      display: none;
+    }
+
+    button.dropdown-item > paper-ripple {
+      --paper-ripple-opacity: 8%;
+      color: black;
+    }
+
     button:not([disabled]):not(:active):hover {
       background-color: rgba(0, 0, 0, 4%);
     }
@@ -292,7 +309,8 @@ class BreadCrumb extends HTMLElement {
 
     let elidedParts = '';
     for (let i = 1; i < parts.length - 2; ++i) {
-      elidedParts += `<button class='dropdown-item'>${parts[i]}</button>`;
+      elidedParts += `<button class='dropdown-item'>${
+          parts[i]}<paper-ripple></paper-ripple></button>`;
     }
 
     const menu = this.shadowRoot.querySelector('cr-action-menu');

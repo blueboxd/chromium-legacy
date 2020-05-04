@@ -20,8 +20,9 @@
 bool IsWebAppInstalledForUrl(content::BrowserContext* browser_context,
                              const GURL& url) {
 #if defined(OS_ANDROID)
-  return ShortcutHelper::IsWebApkInstalled(browser_context, url,
-                                           GURL::EmptyGURL());
+  // This will still detect the presence of a WebAPK even if Chrome's data is
+  // cleared
+  return ShortcutHelper::IsWebApkInstalled(browser_context, url);
 #else
   return web_app::FindInstalledAppWithUrlInScope(
              Profile::FromBrowserContext(browser_context), url)

@@ -173,6 +173,8 @@ IN_PROC_BROWSER_TEST_P(SystemWebAppManagerBrowserTest, Install) {
     EXPECT_EQ(extensions::Manifest::EXTERNAL_COMPONENT, extension->location());
   }
 
+  // OS Integration only relevant for Chrome OS.
+#if defined(OS_CHROMEOS)
   apps::AppServiceProxy* proxy =
       apps::AppServiceProxyFactory::GetForProfile(browser()->profile());
   proxy->AppRegistryCache().ForOneApp(
@@ -182,6 +184,7 @@ IN_PROC_BROWSER_TEST_P(SystemWebAppManagerBrowserTest, Install) {
         EXPECT_EQ(apps::mojom::OptionalBool::kFalse, update.ShowInManagement());
         EXPECT_EQ(apps::mojom::Readiness::kReady, update.Readiness());
       });
+#endif  // defined(OS_CHROMEOS)
 }
 
 // Check the toolbar is not shown for system web apps for pages on the chrome://
@@ -736,14 +739,14 @@ IN_PROC_BROWSER_TEST_P(SystemWebAppManagerNotShownInLauncherTest,
   WaitForSystemAppInstallAndLaunch(GetMockAppType());
   AppId app_id = GetManager().GetAppIdForSystemApp(GetMockAppType()).value();
 
+  // OS Integration only relevant for Chrome OS.
+#if defined(OS_CHROMEOS)
   apps::AppServiceProxy* proxy =
       apps::AppServiceProxyFactory::GetForProfile(browser()->profile());
   proxy->AppRegistryCache().ForOneApp(
       app_id, [](const apps::AppUpdate& update) {
         EXPECT_EQ(apps::mojom::OptionalBool::kFalse, update.ShowInLauncher());
       });
-  // OS Integration only relevant for Chrome OS.
-#if defined(OS_CHROMEOS)
   // The |AppList| should have all apps visible in the launcher, apps get
   // removed from the |AppList| when they are hidden.
   AppListClientImpl* client = AppListClientImpl::GetInstance();
@@ -771,12 +774,15 @@ IN_PROC_BROWSER_TEST_P(SystemWebAppManagerNotShownInSearchTest,
   WaitForSystemAppInstallAndLaunch(GetMockAppType());
   AppId app_id = GetManager().GetAppIdForSystemApp(GetMockAppType()).value();
 
+  // OS Integration only relevant for Chrome OS.
+#if defined(OS_CHROMEOS)
   apps::AppServiceProxy* proxy =
       apps::AppServiceProxyFactory::GetForProfile(browser()->profile());
   proxy->AppRegistryCache().ForOneApp(
       app_id, [](const apps::AppUpdate& update) {
         EXPECT_EQ(apps::mojom::OptionalBool::kFalse, update.ShowInSearch());
       });
+#endif  // defined(OS_CHROMEOS)
 }
 
 class SystemWebAppManagerAdditionalSearchTermsTest

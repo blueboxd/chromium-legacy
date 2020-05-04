@@ -14,6 +14,7 @@
 #include "chrome/browser/android/shortcut_helper.h"
 #include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/android/tab_web_contents_delegate_android.h"
+#include "chrome/browser/android/webapk/webapk_install_service.h"
 #include "chrome/browser/android/webapk/webapk_metrics.h"
 #include "chrome/browser/android/webapk/webapk_ukm_recorder.h"
 #include "chrome/browser/android/webapk/webapk_web_manifest_checker.h"
@@ -154,12 +155,12 @@ std::string AppBannerManagerAndroid::GetBannerType() {
 }
 
 bool AppBannerManagerAndroid::IsWebAppConsideredInstalled() {
-  // Whether a WebAPK is installed or is being installed. IsWebApkInstalled
-  // will still detect the presence of a WebAPK even if Chrome's data is
-  // cleared.
-  DCHECK(!manifest_.IsEmpty());
-  return ShortcutHelper::IsWebApkInstalled(web_contents()->GetBrowserContext(),
-                                           manifest_.start_url, manifest_url_);
+  // Also check if a WebAPK is currently being installed. Installation may take
+  // some time, so ensure we don't accidentally allow a new installation whilst
+  // one is in flight for the current site.
+  return AppBannerManager::IsWebAppConsideredInstalled() ||
+         WebApkInstallService::Get(web_contents()->GetBrowserContext())
+             ->IsInstallInProgress(manifest_url_);
 }
 
 InstallableParams

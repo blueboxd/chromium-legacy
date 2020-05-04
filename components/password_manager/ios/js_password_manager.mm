@@ -21,23 +21,29 @@ namespace password_manager {
 
 NSString* SerializeFillData(const GURL& origin,
                             const base::string16& name,
+                            uint32_t unique_renderer_id,
                             const base::string16& username_element,
+                            uint32_t username_element_id,
                             const base::string16& username_value,
                             const base::string16& password_element,
+                            uint32_t password_element_id,
                             const base::string16& password_value) {
   base::DictionaryValue rootDict;
   rootDict.SetString("origin", origin.spec());
   rootDict.SetString("name", name);
+  rootDict.SetInteger("unique_renderer_id", unique_renderer_id);
 
   auto fieldList = std::make_unique<base::ListValue>();
 
   auto usernameField = std::make_unique<base::DictionaryValue>();
   usernameField->SetString("name", username_element);
+  usernameField->SetInteger("unique_renderer_id", username_element_id);
   usernameField->SetString("value", username_value);
   fieldList->Append(std::move(usernameField));
 
   auto passwordField = std::make_unique<base::DictionaryValue>();
   passwordField->SetString("name", password_element);
+  passwordField->SetInteger("unique_renderer_id", password_element_id);
   passwordField->SetString("value", password_value);
   fieldList->Append(std::move(passwordField));
 
@@ -51,15 +57,20 @@ NSString* SerializeFillData(const GURL& origin,
 NSString* SerializePasswordFormFillData(
     const autofill::PasswordFormFillData& formData) {
   return SerializeFillData(
-      formData.origin, formData.name, formData.username_field.name,
+      formData.origin, formData.name, formData.form_renderer_id.value(),
+      formData.username_field.name,
+      formData.username_field.unique_renderer_id.value(),
       formData.username_field.value, formData.password_field.name,
+      formData.password_field.unique_renderer_id.value(),
       formData.password_field.value);
 }
 
 NSString* SerializeFillData(const password_manager::FillData& fillData) {
-  return SerializeFillData(fillData.origin, fillData.name,
-                           fillData.username_element, fillData.username_value,
-                           fillData.password_element, fillData.password_value);
+  return SerializeFillData(
+      fillData.origin, fillData.name, fillData.form_id.value(),
+      fillData.username_element, fillData.username_element_id.value(),
+      fillData.username_value, fillData.password_element,
+      fillData.password_element_id.value(), fillData.password_value);
 }
 
 }  // namespace password_manager

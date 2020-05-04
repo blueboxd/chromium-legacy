@@ -131,18 +131,16 @@ bool FakeLog::Emptied() const {
 
 std::unique_ptr<base::DictionaryValue> ParseDictionary(
     const std::string& json) {
-  std::string error;
-  std::unique_ptr<base::Value> value =
-      base::JSONReader::ReadAndReturnErrorDeprecated(json, base::JSON_PARSE_RFC,
-                                                     nullptr, &error);
-  if (value == nullptr) {
+  base::JSONReader::ValueWithError parsed_json =
+      base::JSONReader::ReadAndReturnValueWithError(json);
+  if (!parsed_json.value) {
     SCOPED_TRACE(json.c_str());
-    SCOPED_TRACE(error.c_str());
+    SCOPED_TRACE(parsed_json.error_message.c_str());
     ADD_FAILURE();
     return std::unique_ptr<base::DictionaryValue>();
   }
   base::DictionaryValue* dict = nullptr;
-  if (!value->GetAsDictionary(&dict)) {
+  if (!parsed_json.value->GetAsDictionary(&dict)) {
     SCOPED_TRACE("JSON object is not a dictionary");
     ADD_FAILURE();
     return std::unique_ptr<base::DictionaryValue>();

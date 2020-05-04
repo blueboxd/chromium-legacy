@@ -8,6 +8,7 @@
 #import <Foundation/Foundation.h>
 #include <memory>
 
+#include "components/autofill/core/common/renderer_id.h"
 #import "components/autofill/ios/browser/form_suggestion_provider.h"
 
 NS_ASSUME_NONNULL_BEGIN
@@ -53,24 +54,27 @@ class WebState;
 // items, |value| field will be the username and |displayDescription| will be
 // the realm.
 - (NSArray<FormSuggestion*>*)
-retrieveSuggestionsWithFormName:(NSString*)formName
-                fieldIdentifier:(NSString*)fieldIdentifier
-                      fieldType:(NSString*)fieldType;
+    retrieveSuggestionsWithFormID:(autofill::FormRendererId)formIdentifier
+                  fieldIdentifier:(autofill::FieldRendererId)fieldIdentifier
+                        fieldType:(NSString*)fieldType;
 
 // Checks if suggestions are available for the field.
 // |completion| will be called when the check is completed, with boolean
 // parameter indicating whether suggestions are available or not.
 // See //components/autofill/ios/form_util/form_activity_params.h for definition
 // of other parameters.
-- (void)checkIfSuggestionsAvailableForForm:(NSString*)formName
-                           fieldIdentifier:(NSString*)fieldIdentifier
-                                 fieldType:(NSString*)fieldType
-                                      type:(NSString*)type
-                                   frameID:(NSString*)frameID
-                               isMainFrame:(BOOL)isMainFrame
-                                  webState:(web::WebState*)webState
-                         completionHandler:
-                             (SuggestionsAvailableCompletion)completion;
+- (void)
+    checkIfSuggestionsAvailableForForm:(NSString*)formName
+                          uniqueFormID:(autofill::FormRendererId)uniqueFormID
+                       fieldIdentifier:(NSString*)fieldIdentifier
+                         uniqueFieldID:(autofill::FieldRendererId)uniqueFieldID
+                             fieldType:(NSString*)fieldType
+                                  type:(NSString*)type
+                               frameID:(NSString*)frameID
+                           isMainFrame:(BOOL)isMainFrame
+                              webState:(web::WebState*)webState
+                     completionHandler:
+                         (SuggestionsAvailableCompletion)completion;
 
 // Retrieves password form fill data for |username| for use in
 // |PasswordFormHelper|'s

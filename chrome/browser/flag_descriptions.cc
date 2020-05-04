@@ -602,11 +602,6 @@ const char kEnableDataReductionProxyServerExperimentDescription[] =
     "Enable a different approach to saving data by configuring the back end "
     "server";
 
-const char kDesktopMinimalUIName[] = "Desktop PWAs support minimal-ui";
-const char kDesktopMinimalUIDescription[] =
-    "PWAs with display mode minimal-ui open in a window with Back and Refresh "
-    "buttons.";
-
 const char kDesktopPWAsLocalUpdatingName[] = "Desktop PWAs local updating";
 const char kDesktopPWAsLocalUpdatingDescription[] =
     "Enable installed PWAs to update their app manifest data when the site "
@@ -1642,6 +1637,10 @@ const char kPrivacySettingsRedesignName[] = "Privacy Settings Redesign";
 const char kPrivacySettingsRedesignDescription[] =
     "Redesign of the privacy settings card to make it more prominent and "
     "and easier to use.";
+
+const char kSafetyCheckAndroidName[] = "Safety Check on Android";
+const char kSafetyCheckAndroidDescription[] =
+    "A settings component for checking multiple areas of browser safety.";
 
 const char kProminentDarkModeActiveTabTitleName[] =
     "Prominent Dark Mode Active Tab Titles";

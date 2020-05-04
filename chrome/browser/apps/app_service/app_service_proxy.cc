@@ -144,16 +144,17 @@ void AppServiceProxy::Initialize() {
         &instance_registry_);
     plugin_vm_apps_ = std::make_unique<PluginVmApps>(app_service_, profile_);
     if (base::FeatureList::IsEnabled(features::kDesktopPWAsWithoutExtensions)) {
-      web_apps_ = std::make_unique<WebApps>(app_service_, profile_,
-                                            &instance_registry_);
+      web_apps_ = std::make_unique<WebAppsChromeOs>(app_service_, profile_,
+                                                    &instance_registry_);
     } else {
       extension_web_apps_ = std::make_unique<ExtensionAppsChromeOs>(
           app_service_, profile_, apps::mojom::AppType::kWeb,
           &instance_registry_);
     }
 #else
-    if (!base::FeatureList::IsEnabled(
-            features::kDesktopPWAsWithoutExtensions)) {
+    if (base::FeatureList::IsEnabled(features::kDesktopPWAsWithoutExtensions)) {
+      web_apps_ = std::make_unique<WebApps>(app_service_, profile_);
+    } else {
       extension_web_apps_ = std::make_unique<ExtensionApps>(
           app_service_, profile_, apps::mojom::AppType::kWeb);
     }
@@ -303,7 +304,7 @@ void AppServiceProxy::Uninstall(const std::string& app_id,
             features::kDesktopPWAsWithoutExtensions)) {
       ExtensionApps::UninstallImpl(profile_, app_id, parent_window);
     } else {
-      // TODO(crbug.com/1074774): Implement uninstall for WebApps.
+      WebApps::UninstallImpl(profile_, app_id, parent_window);
     }
   }
 #endif

@@ -164,7 +164,12 @@ void AppShortcutManager::OnShortcutInfoRetrievedCreateShortcuts(
     CreateShortcutsCallback callback,
     std::unique_ptr<ShortcutInfo> info) {
   if (suppress_shortcuts_for_testing_) {
-    std::move(callback).Run(true);
+    std::move(callback).Run(/*shortcut_created=*/true);
+    return;
+  }
+
+  if (info == nullptr) {
+    std::move(callback).Run(/*shortcut_created=*/false);
     return;
   }
 

@@ -223,9 +223,6 @@ CHAR-LIMIT guidelines:
       <message name="IDS_NOTIFICATION_CATEGORY_INCOGNITO" desc="Label for notification that indicates incognito mode is active, within a list of notification categories. [CHAR-LIMIT=32]">
         Incognito
       </message>
-      <message name="IDS_NOTIFICATION_CATEGORY_DOWNLOADS" desc="Label for notifications shown when something is downloading, within a list of notification categories. [CHAR-LIMIT=32]">
-        Downloads
-      </message>
       <message name="IDS_NOTIFICATION_CATEGORY_SHARING" desc="Label for sharing-related notifications, within a list of notification categories. [CHAR-LIMIT=32]">
         Sharing
       </message>
@@ -249,9 +246,6 @@ CHAR-LIMIT guidelines:
       </message>
       <message name="IDS_NOTIFICATION_CATEGORY_UPDATES" desc="Label for update notifications, within a list of notification categories. [CHAR-LIMIT=32]">
         Updates
-      </message>
-      <message name="IDS_NOTIFICATION_CATEGORY_COMPLETED_DOWNLOADS" desc="Label for completed download notifications, within a list of notification categories. [CHAR-LIMIT=32]">
-        Completed downloads
       </message>
       <message name="IDS_NOTIFICATION_CATEGORY_ANNOUNCEMENT" desc="Label for announcements notifications, within a list of notification categories. [CHAR-LIMIT=32]">
         Announcements

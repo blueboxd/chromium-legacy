@@ -53,6 +53,9 @@
 #include "ios/web_view/internal/web_view_browser_state.h"
 #import "ios/web_view/public/cwv_autofill_controller_delegate.h"
 
+using autofill::FormRendererId;
+using autofill::FieldRendererId;
+
 @interface CWVAutofillController ()<AutofillDriverIOSBridge,
                                     CRWWebStateObserver,
                                     CWVAutofillClientIOSBridge,
@@ -113,6 +116,9 @@ fetchNonPasswordSuggestionsForFormWithName:(NSString*)formName
       _formActivityObserverBridge;
 
   NSString* _lastFocusFormActivityWebFrameID;
+
+  FormRendererId _lastFormActivityUniqueFormID;
+  FieldRendererId _lastFormActivityUniqueFieldID;
 }
 
 @synthesize delegate = _delegate;
@@ -206,7 +212,9 @@ fetchNonPasswordSuggestionsForFormWithName:(NSString*)formName
   // Fetch password suggestion first.
   [_passwordController
       fetchSuggestionsForFormWithName:formName
+                         uniqueFormID:_lastFormActivityUniqueFormID
                       fieldIdentifier:fieldIdentifier
+                        uniqueFieldID:_lastFormActivityUniqueFieldID
                             fieldType:fieldType
                               frameID:frameID
                     completionHandler:^(
@@ -257,7 +265,9 @@ fetchNonPasswordSuggestionsForFormWithName:(NSString*)formName
       completionHandler([autofillSuggestions copy]);
     };
     [strongSelf->_autofillAgent retrieveSuggestionsForForm:formName
+                                              uniqueFormID:FormRendererId()
                                            fieldIdentifier:fieldIdentifier
+                                             uniqueFieldID:FieldRendererId()
                                                  fieldType:fieldType
                                                       type:nil
                                                 typedValue:nil
@@ -272,7 +282,9 @@ fetchNonPasswordSuggestionsForFormWithName:(NSString*)formName
       base::SysUTF8ToNSString(web::GetMainWebFrameId(_webState));
   BOOL isMainFrame = [frameID isEqualToString:mainFrameID];
   [_autofillAgent checkIfSuggestionsAvailableForForm:formName
+                                        uniqueFormID:FormRendererId()
                                      fieldIdentifier:fieldIdentifier
+                                       uniqueFieldID:FieldRendererId()
                                            fieldType:fieldType
                                                 type:nil
                                           typedValue:nil
@@ -509,8 +521,10 @@ showUnmaskPromptForCard:(const autofill::CreditCard&)creditCard
   DCHECK_EQ(_webState, webState);
 
   NSString* nsFormName = base::SysUTF8ToNSString(params.form_name);
+  _lastFormActivityUniqueFormID = FormRendererId(params.unique_form_id);
   NSString* nsFieldIdentifier =
       base::SysUTF8ToNSString(params.field_identifier);
+  _lastFormActivityUniqueFieldID = FieldRendererId(params.unique_field_id);
   NSString* nsFieldType = base::SysUTF8ToNSString(params.field_type);
   NSString* nsFrameID = base::SysUTF8ToNSString(GetWebFrameId(frame));
   NSString* nsValue = base::SysUTF8ToNSString(params.value);

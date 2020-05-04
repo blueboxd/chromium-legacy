@@ -42,8 +42,9 @@ PAYLOAD_LENGTH_OFFSET = SIGNATURE_OFFSET + SIGNATURE_SIZE
 PAYLOAD_LENGTH_SIZE = 4
 PAYLOAD_OFFSET = PAYLOAD_LENGTH_OFFSET + PAYLOAD_LENGTH_SIZE
 
-# This script only supports Version 2 tokens.
+# This script supports Version 2 and Version 3 tokens.
 VERSION2 = "\x02"
+VERSION3 = "\x03"
 
 # Chrome public key, used by default to validate signatures
 #  - Copied from chrome/common/origin_trials/chrome_origin_trial_policy.cc
@@ -58,12 +59,13 @@ DEFAULT_KEY_FILE = 'eftest.key'
 
 
 class OverrideKeyFileAction(argparse.Action):
-     def __init__(self, option_strings, dest, **kwargs):
-         super(OverrideKeyFileAction, self).__init__(
-            option_strings, dest, **kwargs)
-     def __call__(self, parser, namespace, values, option_string=None):
-         setattr(namespace, "use_chrome_key", None)
-         setattr(namespace, self.dest, values)
+  def __init__(self, option_strings, dest, **kwargs):
+    super(OverrideKeyFileAction, self).__init__(option_strings, dest, **kwargs)
+
+  def __call__(self, parser, namespace, values, option_string=None):
+    setattr(namespace, "use_chrome_key", None)
+    setattr(namespace, self.dest, values)
+
 
 def main():
   parser = argparse.ArgumentParser(
@@ -130,18 +132,18 @@ def main():
     sys.exit(1)
 
 
-  # Only version 2 currently supported.
+  # Only version 2 and version 3 currently supported.
   if (len(token_contents) < (VERSION_OFFSET + VERSION_SIZE)):
     print("Token is malformed - too short.")
     sys.exit(1)
 
   version = token_contents[VERSION_OFFSET:(VERSION_OFFSET + VERSION_SIZE)]
-  if (version != VERSION2):
-    # Convert the version string to a number
-    version_number = 0
-    for x in version:
-      version_number <<= 8
-      version_number += ord(x)
+  # Convert the version string to a number
+  version_number = 0
+  for x in version:
+    version_number <<= 8
+    version_number += ord(x)
+  if (version != VERSION2 and version != VERSION3):
     print("Token has wrong version: %d" % version_number)
     sys.exit(1)
 
@@ -208,11 +210,18 @@ def main():
 
   # Extract the optional fields
   is_subdomain = token_data.get("isSubdomain")
+  is_third_party = token_data.get("isThirdParty")
+  if (is_third_party is not None and version != VERSION3):
+    print("isThirdParty flag can only be be set in Version 3 token.")
+    sys.exit(1)
 
   # Output the token details
   print("Token details:")
+  print(" Version: %s" % version_number)
   print(" Origin: %s" % origin)
   print(" Is Subdomain: %s" % is_subdomain)
+  if (version == VERSION3):
+    print(" Is Third Party: %s" % is_third_party)
   print(" Feature: %s" % trial_name)
   print(" Expiry: %d (%s UTC)" % (expiry, datetime.utcfromtimestamp(expiry)))
   print(" Signature: %s" % ", ".join('0x%02x' % ord(x) for x in signature))

@@ -180,6 +180,10 @@ class PwaInstallViewBrowserTest
     return https_server_.GetURL("/banners/manifest_test_page.html");
   }
 
+  GURL GetNestedInstallableAppURL() {
+    return https_server_.GetURL("/banners/scope_a/page_1.html");
+  }
+
   GURL GetNonInstallableAppURL() {
     return https_server_.GetURL("app.com", "/simple.html");
   }
@@ -274,6 +278,29 @@ IN_PROC_BROWSER_TEST_P(PwaInstallViewBrowserTest,
   // Use a new tab because installed app may have opened in new window.
   OpenTabResult result = OpenTab(GetInstallableAppURL());
 
+  EXPECT_EQ(
+      result.app_banner_manager->GetInstallableWebAppCheckResultForTesting(),
+      banners::AppBannerManager::InstallableWebAppCheckResult::kNo);
+  EXPECT_FALSE(pwa_install_view_->GetVisible());
+}
+
+// Tests that the plus icon is not shown when an outer app is installed and we
+// navigate to a nested app.
+IN_PROC_BROWSER_TEST_P(PwaInstallViewBrowserTest,
+                       NestedPwaIsNotInstallableWhenOuterPwaIsInstalled) {
+  // When nothing is installed, the nested PWA should be installable.
+  StartNavigateToUrl(GetNestedInstallableAppURL());
+  ASSERT_TRUE(app_banner_manager_->WaitForInstallableCheck());
+  EXPECT_TRUE(pwa_install_view_->GetVisible());
+
+  // Install the outer PWA.
+  ASSERT_TRUE(OpenTab(GetInstallableAppURL()).installable);
+  ExecutePwaInstallIcon();
+
+  // Use a new tab because installed app may have opened in new window.
+  OpenTabResult result = OpenTab(GetNestedInstallableAppURL());
+
+  // The nested PWA should now not be installable.
   EXPECT_EQ(
       result.app_banner_manager->GetInstallableWebAppCheckResultForTesting(),
       banners::AppBannerManager::InstallableWebAppCheckResult::kNo);

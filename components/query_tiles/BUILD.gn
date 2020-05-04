@@ -100,13 +100,10 @@ if (is_android) {
 group("unit_tests") {
   testonly = true
 
-  # TODO(shaktisahu): Remove this check once we don't have content dependency due to background task.
-  if (!is_ios) {
-    deps = [
-      ":query_tiles_unit_tests",
-      "internal:unit_tests",
-    ]
-  }
+  deps = [
+    ":query_tiles_unit_tests",
+    "internal:unit_tests",
+  ]
 
   data_deps = [ ":components_unittests_gtest_filter" ]
 }

@@ -52,6 +52,21 @@ void TestWebAppRegistryController::UnregisterAll() {
     update->DeleteApp(app_id);
 }
 
+void TestWebAppRegistryController::ApplySyncChanges_DeleteApps(
+    std::vector<AppId> app_ids_to_delete) {
+  std::unique_ptr<syncer::MetadataChangeList> metadata_change_list =
+      sync_bridge().CreateMetadataChangeList();
+  syncer::EntityChangeList entity_changes;
+
+  for (const AppId& app_id : app_ids_to_delete) {
+    auto entity_change = syncer::EntityChange::CreateDelete(app_id);
+    entity_changes.push_back(std::move(entity_change));
+  }
+
+  sync_bridge().ApplySyncChanges(std::move(metadata_change_list),
+                                 std::move(entity_changes));
+}
+
 void TestWebAppRegistryController::SetInstallWebAppsAfterSyncDelegate(
     InstallWebAppsAfterSyncDelegate delegate) {
   install_web_apps_after_sync_delegate_ = delegate;

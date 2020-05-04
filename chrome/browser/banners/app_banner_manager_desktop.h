@@ -72,7 +72,6 @@ class AppBannerManagerDesktop
   web_app::AppRegistrar& registrar();
 
   // AppBannerManager overrides.
-  bool IsWebAppConsideredInstalled() override;
   bool ShouldAllowWebAppReplacementInstall() override;
   void ShowBannerUi(WebappInstallSource install_source) override;
 

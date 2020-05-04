@@ -62,6 +62,8 @@
 
 using autofill::FormData;
 using autofill::FormFieldData;
+using autofill::FormRendererId;
+using autofill::FieldRendererId;
 using autofill::PasswordForm;
 using autofill::PasswordFormFillData;
 using base::SysUTF8ToNSString;
@@ -322,13 +324,17 @@ class PasswordControllerTest : public ChromeWebTest {
   }
 
   void SimulateUserTyping(const std::string& form_name,
+                          FormRendererId uniqueFormID,
                           const std::string& field_identifier,
+                          FieldRendererId uniqueFieldID,
                           const std::string& typed_value,
                           const std::string& main_frame_id) {
     __block BOOL completion_handler_called = NO;
     [passwordController_
         checkIfSuggestionsAvailableForForm:SysUTF8ToNSString(form_name)
+                              uniqueFormID:uniqueFormID
                            fieldIdentifier:SysUTF8ToNSString(field_identifier)
+                             uniqueFieldID:uniqueFieldID
                                  fieldType:@"not_important"
                                       type:@"text"
                                 typedValue:SysUTF8ToNSString(typed_value)
@@ -498,66 +504,66 @@ TEST_F(PasswordControllerTest, FLAKY_FindPasswordFormsInView) {
 static NSString* kHtmlWithMultiplePasswordForms =
     @""
      // Basic form.
-     "<form>"
-     "<input id='un0' type='text' name='u0'>"
-     "<input id='pw0' type='password' name='p0'>"
+     "<form>"                                      // unique_id 0
+     "<input id='un0' type='text' name='u0'>"      // unique_id 1
+     "<input id='pw0' type='password' name='p0'>"  // unique_id 2
      "</form>"
      // Form with action in the same origin.
-     "<form action='?query=yes#reference'>"
-     "<input id='un1' type='text' name='u1'>"
-     "<input id='pw1' type='password' name='p1'>"
+     "<form action='?query=yes#reference'>"        // unique_id 3
+     "<input id='un1' type='text' name='u1'>"      // unique_id 4
+     "<input id='pw1' type='password' name='p1'>"  // unique_id 5
      "</form>"
      // Form with two exactly same password fields.
-     "<form>"
-     "<input id='un2' type='text' name='u2'>"
-     "<input id='pw2' type='password' name='p2'>"
-     "<input id='pw2' type='password' name='p2'>"
+     "<form>"                                      // unique_id 6
+     "<input id='un2' type='text' name='u2'>"      // unique_id 7
+     "<input id='pw2' type='password' name='p2'>"  // unique_id 8
+     "<input id='pw2' type='password' name='p2'>"  // unique_id 9
      "</form>"
      // Forms with same names but different ids (1 of 2).
-     "<form>"
-     "<input id='un3' type='text' name='u3'>"
-     "<input id='pw3' type='password' name='p3'>"
+     "<form>"                                      // unique_id 10
+     "<input id='un3' type='text' name='u3'>"      // unique_id 11
+     "<input id='pw3' type='password' name='p3'>"  // unique_id 12
      "</form>"
      // Forms with same names but different ids (2 of 2).
-     "<form>"
-     "<input id='un4' type='text' name='u4'>"
-     "<input id='pw4' type='password' name='p4'>"
+     "<form>"                                      // unique_id 13
+     "<input id='un4' type='text' name='u4'>"      // unique_id 14
+     "<input id='pw4' type='password' name='p4'>"  // unique_id 15
      "</form>"
      // Basic form, but with quotes in the names and IDs.
-     "<form name=\"f5'\">"
-     "<input id=\"un5'\" type='text' name=\"u5'\">"
-     "<input id=\"pw5'\" type='password' name=\"p5'\">"
+     "<form name=\"f5'\">"                               // unique_id 16
+     "<input id=\"un5'\" type='text' name=\"u5'\">"      // unique_id 17
+     "<input id=\"pw5'\" type='password' name=\"p5'\">"  // unique_id 18
      "</form>"
-     // Test forms inside iframes.
+     // Fields inside this form don't have name.
+     "<form>"                            // unique_id 19
+     "<input id='un6' type='text'>"      // unique_id 20
+     "<input id='pw6' type='password'>"  // unique_id 21
+     "</form>"
+     // Fields in this form is attached by form's id.
+     "<form id='form7'></form>"                       // unique_id 22
+     "<input id='un7' type='text' form='form7'>"      // unique_id 23
+     "<input id='pw7' type='password' form='form7'>"  // unique_id 24
+     // Fields that are outside the <form> tag.
+     "<input id='un8' type='text'>"      // unique_id 25
+     "<input id='pw8' type='password'>"  // unique_id 26
+                                         // Test forms inside iframes.
      "<iframe id='pf' name='pf'></iframe>"
      "<iframe id='npf' name='npf'></iframe>"
      "<script>"
      "  var doc = frames['pf'].document.open();"
      // Add a form inside iframe. It should also be matched and autofilled.
      "  doc.write('<form id=\\'f10\\'><input id=\\'un10\\' type=\\'text\\' "
-     "name=\\'u10\\'>');"
+     "name=\\'u10\\'>');"  // unique_id 27
      "  doc.write('<input id=\\'pw10\\' type=\\'password\\' name=\\'p10\\'>');"
-     "  doc.write('</form>');"
+     "  doc.write('</form>');"  // unique_id 28-29
      // Add a non-password form inside iframe. It should not be matched.
      "  var doc = frames['npf'].document.open();"
      "  doc.write('<form id=\\'f10\\'><input id=\\'un10\\' type=\\'text\\' "
-     "name=\\'u10\\'>');"
+     "name=\\'u10\\'>');"  // unique_id 30
      "  doc.write('<input id=\\'pw10\\' type=\\'text\\' name=\\'p10\\'>');"
-     "  doc.write('</form>');"
+     "  doc.write('</form>');"  // unique_id 31-32
      "  doc.close();"
-     "</script>"
-     // Fields inside this form don't have name.
-     "<form>"
-     "<input id='un6' type='text'>"
-     "<input id='pw6' type='password'>"
-     "</form>"
-     // Fields in this form is attached by form's id.
-     "<form id='form7'></form>"
-     "<input id='un7' type='text' form='form7'>"
-     "<input id='pw7' type='password' form='form7'>"
-     // Fields that are outside the <form> tag.
-     "<input id='un8' type='text'>"
-     "<input id='pw8' type='password'>";
+     "</script>";
 
 // A script that resets all text fields, including those in iframes.
 static NSString* kClearInputFieldsScript =
@@ -600,9 +606,12 @@ static NSString* kInputFieldValueVerificationScript =
 struct FillPasswordFormTestData {
   const std::string origin;
   const char* name;
+  uint32_t form_unique_ID;
   const char* username_field;
+  uint32_t username_unique_ID;
   const char* username_value;
   const char* password_field;
+  uint32_t password_unique_ID;
   const char* password_value;
   const BOOL should_succeed;
   // Expected result generated by |kInputFieldValueVerificationScript|.
@@ -612,6 +621,8 @@ struct FillPasswordFormTestData {
 // Tests that filling password forms works correctly.
 TEST_F(PasswordControllerTest, FillPasswordForm) {
   LoadHtml(kHtmlWithMultiplePasswordForms);
+  // Run password forms search to set up unique IDs.
+  EXPECT_TRUE(ExecuteJavaScript(@"__gCrWeb.passwords.findPasswordForms();"));
 
   const std::string base_url = BaseUrl();
   // clang-format off
@@ -620,9 +631,12 @@ TEST_F(PasswordControllerTest, FillPasswordForm) {
     {
       base_url,
       "gChrome~form~0",
+      0,
       "un0",
+      1,
       "test_user",
       "pw0",
+      2,
       "test_password",
       YES,
       @"un0=test_user;pw0=test_password;"
@@ -632,9 +646,12 @@ TEST_F(PasswordControllerTest, FillPasswordForm) {
     {
       base_url,
       "gChrome~form~1",
+      3,
       "un1",
+      4,
       "test_user",
       "pw1",
+      5,
       "test_password",
       YES,
       @"un1=test_user;pw1=test_password;"
@@ -643,9 +660,12 @@ TEST_F(PasswordControllerTest, FillPasswordForm) {
     {
       "http://someotherfakedomain.com",
       "gChrome~form~0",
+      0,
       "un0",
+      1,
       "test_user",
       "pw0",
+      2,
       "test_password",
       NO,
       @""
@@ -654,9 +674,12 @@ TEST_F(PasswordControllerTest, FillPasswordForm) {
     {
       base_url,
       "gChrome~form~0",
+      0,
       "un0",
+      1,
       "test_user",
       "pw1",
+      5,
       "test_password",
       NO,
       @""
@@ -666,9 +689,12 @@ TEST_F(PasswordControllerTest, FillPasswordForm) {
     {
       base_url,
       "gChrome~form~2",
+      6,
       "un2",
+      7,
       "test_user",
       "pw2",
+      8,
       "test_password",
       YES,
       @"un2=test_user;pw2=test_password;"
@@ -677,9 +703,12 @@ TEST_F(PasswordControllerTest, FillPasswordForm) {
     {
       base_url,
       "f5'",
+      16,
       "un5'",
+      17,
       "test_user",
       "pw5'",
+      18,
       "test_password",
       YES,
       @"un5'=test_user;pw5'=test_password;"
@@ -689,9 +718,12 @@ TEST_F(PasswordControllerTest, FillPasswordForm) {
     {
       base_url,
       "gChrome~form~6",
+      19,
       "un6",
+      20,
       "test_user",
       "pw6",
+      21,
       "test_password",
       YES,
       @"un6=test_user;pw6=test_password;"
@@ -700,9 +732,12 @@ TEST_F(PasswordControllerTest, FillPasswordForm) {
     {
       base_url,
       "form7",
+      22,
       "un7",
+      23,
       "test_user",
       "pw7",
+      24,
       "test_password",
       YES,
       @"un7=test_user;pw7=test_password;"
@@ -711,9 +746,12 @@ TEST_F(PasswordControllerTest, FillPasswordForm) {
     {
       base_url,
       "f10",
+      27,
       "un10",
+      28,
       "test_user",
       "pw10",
+      29,
       "test_password",
       YES,
       @"pf.un10=test_user;pf.pw10=test_password;"
@@ -722,9 +760,12 @@ TEST_F(PasswordControllerTest, FillPasswordForm) {
     {
       base_url,
       "",
+      std::numeric_limits<uint32_t>::max(),
       "un8",
+      25,
       "test_user",
       "pw8",
+      26,
       "test_password",
       YES,
       @"un8=test_user;pw8=test_password;"
@@ -736,10 +777,11 @@ TEST_F(PasswordControllerTest, FillPasswordForm) {
     ExecuteJavaScript(kClearInputFieldsScript);
 
     PasswordFormFillData form_data;
-    SetPasswordFormFillData(data.origin, data.name, data.username_field,
+    SetPasswordFormFillData(data.origin, data.name, data.form_unique_ID,
+                            data.username_field, data.username_unique_ID,
                             data.username_value, data.password_field,
-                            data.password_value, nullptr, nullptr, false,
-                            &form_data);
+                            data.password_unique_ID, data.password_value,
+                            nullptr, nullptr, false, &form_data);
 
     __block BOOL block_was_called = NO;
     [passwordController_ fillPasswordForm:form_data
@@ -819,8 +861,9 @@ BOOL PasswordControllerTest::BasicFormFill(NSString* html) {
   LoadHtml(html);
   const std::string base_url = BaseUrl();
   PasswordFormFillData form_data;
-  SetPasswordFormFillData(base_url, "gChrome~form~0", "un0", "test_user", "pw0",
-                          "test_password", nullptr, nullptr, false, &form_data);
+  SetPasswordFormFillData(base_url, "gChrome~form~0", 0, "un0", 1, "test_user",
+                          "pw0", 2, "test_password", nullptr, nullptr, false,
+                          &form_data);
   __block BOOL block_was_called = NO;
   __block BOOL return_value = NO;
   [passwordController_ fillPasswordForm:form_data
@@ -959,8 +1002,8 @@ TEST_F(PasswordControllerTest, SuggestionUpdateTests) {
   // we can test with an initially-empty username field. Testing with a
   // username field that contains input is performed by a specific test below.
   PasswordFormFillData form_data;
-  SetPasswordFormFillData(base_url, "gChrome~form~0", "un", "user0", "pw",
-                          "password0", "abc", "def", true, &form_data);
+  SetPasswordFormFillData(base_url, "gChrome~form~0", 0, "un", 1, "user0", "pw",
+                          2, "password0", "abc", "def", true, &form_data);
 
   __block BOOL block_was_called = NO;
   [passwordController_ fillPasswordForm:form_data
@@ -1061,13 +1104,19 @@ TEST_F(PasswordControllerTest, SuggestionUpdateTests) {
 // Tests that selecting a suggestion will fill the corresponding form and field.
 TEST_F(PasswordControllerTest, SelectingSuggestionShouldFillPasswordForm) {
   LoadHtml(kHtmlWithTwoPasswordForms);
+  // Run password forms search to set up unique IDs.
+  EXPECT_TRUE(ExecuteJavaScript(@"__gCrWeb.passwords.findPasswordForms();"));
   const std::string base_url = BaseUrl();
 
   struct TestData {
     const char* form_name;
+    const uint32_t form_renderer_id;
     const char* username_element;
+    const uint32_t username_renderer_id;
     const char* password_element;
-  } const kTestData[] = {{"f1", "u1", "p1"}, {"f2", "u2", "p2"}};
+    const uint32_t password_renderer_id;
+  } const kTestData[] = {{"f1", 0, "u1", 1, "p1", 2},
+                         {"f2", 3, "u2", 4, "p2", 5}};
 
   // Send fill data to passwordController_.
   for (size_t form_i = 0; form_i < base::size(kTestData); ++form_i) {
@@ -1077,10 +1126,11 @@ TEST_F(PasswordControllerTest, SelectingSuggestionShouldFillPasswordForm) {
     const auto& test_data = kTestData[form_i];
 
     PasswordFormFillData form_data;
-    SetPasswordFormFillData(base_url, test_data.form_name,
-                            test_data.username_element, "user0",
-                            test_data.password_element, "password0", "abc",
-                            "def", true, &form_data);
+    SetPasswordFormFillData(
+        base_url, test_data.form_name, test_data.form_renderer_id,
+        test_data.username_element, test_data.username_renderer_id, "user0",
+        test_data.password_element, test_data.password_renderer_id, "password0",
+        "abc", "def", true, &form_data);
 
     __block BOOL block_was_called = NO;
     [passwordController_ fillPasswordForm:form_data
@@ -1099,7 +1149,11 @@ TEST_F(PasswordControllerTest, SelectingSuggestionShouldFillPasswordForm) {
   for (size_t form_i = 0; form_i < base::size(kTestData); ++form_i) {
     const auto& test_data = kTestData[form_i];
     NSString* form_name = SysUTF8ToNSString(test_data.form_name);
+    FormRendererId form_renderer_id =
+        FormRendererId(test_data.form_renderer_id);
     NSString* username_element = SysUTF8ToNSString(test_data.username_element);
+    FieldRendererId username_renderer_id =
+        FieldRendererId(test_data.username_renderer_id);
     NSString* password_element = SysUTF8ToNSString(test_data.password_element);
 
     // Prepare username and passwords for checking.
@@ -1118,7 +1172,9 @@ TEST_F(PasswordControllerTest, SelectingSuggestionShouldFillPasswordForm) {
     __block BOOL block_was_called = NO;
     [passwordController_
         retrieveSuggestionsForForm:form_name
+                      uniqueFormID:form_renderer_id
                    fieldIdentifier:username_element
+                     uniqueFieldID:username_renderer_id
                          fieldType:@"text"
                               type:@"focus"
                         typedValue:@""
@@ -1364,6 +1420,7 @@ TEST_F(PasswordControllerTest, SavingFromSameOriginIframe) {
 TEST_F(PasswordControllerTest, CheckAsyncSuggestions) {
   for (bool store_has_credentials : {false, true}) {
     LoadHtml(kHtmlWithoutPasswordForm);
+    ExecuteJavaScript(@"__gCrWeb.fill.setUpForUniqueIDs(0);");
     ExecuteJavaScript(kAddFormDynamicallyScript);
 
     __block BOOL completion_handler_success = NO;
@@ -1382,7 +1439,9 @@ TEST_F(PasswordControllerTest, CheckAsyncSuggestions) {
     std::string mainFrameID = web::GetMainWebFrameId(web_state());
     [passwordController_
         checkIfSuggestionsAvailableForForm:@"dynamic_form"
+                              uniqueFormID:FormRendererId(0)
                            fieldIdentifier:@"username"
+                             uniqueFieldID:FieldRendererId(1)
                                  fieldType:@"text"
                                       type:@"focus"
                                 typedValue:@""
@@ -1409,20 +1468,20 @@ TEST_F(PasswordControllerTest, CheckAsyncSuggestions) {
 // suggestions are shown.
 TEST_F(PasswordControllerTest, CheckNoAsyncSuggestionsOnNonUsernameField) {
   LoadHtml(kHtmlWithoutPasswordForm);
+  ExecuteJavaScript(@"__gCrWeb.fill.setUpForUniqueIDs(0);");
   ExecuteJavaScript(kAddFormDynamicallyScript);
 
   __block BOOL completion_handler_success = NO;
   __block BOOL completion_handler_called = NO;
 
   PasswordForm form(CreatePasswordForm(BaseUrl().c_str(), "user", "pw"));
-  // TODO(crbug.com/949519): replace WillRepeatedly with WillOnce when the old
-  // parser is gone.
-  EXPECT_CALL(*store_, GetLogins)
-      .WillRepeatedly(WithArg<1>(InvokeConsumer(form)));
+  EXPECT_CALL(*store_, GetLogins).WillOnce(WithArg<1>(InvokeConsumer(form)));
   std::string mainFrameID = web::GetMainWebFrameId(web_state());
   [passwordController_
       checkIfSuggestionsAvailableForForm:@"dynamic_form"
+                            uniqueFormID:FormRendererId(0)
                          fieldIdentifier:@"address"
+                           uniqueFieldID:FieldRendererId(3)
                                fieldType:@"text"
                                     type:@"focus"
                               typedValue:@""
@@ -1454,7 +1513,9 @@ TEST_F(PasswordControllerTest, CheckNoAsyncSuggestionsOnNoPasswordForms) {
   std::string mainFrameID = web::GetMainWebFrameId(web_state());
   [passwordController_
       checkIfSuggestionsAvailableForForm:@"form"
+                            uniqueFormID:FormRendererId(0)
                          fieldIdentifier:@"address"
+                           uniqueFieldID:FieldRendererId(1)
                                fieldType:@"text"
                                     type:@"focus"
                               typedValue:@""
@@ -1492,8 +1553,8 @@ TEST_F(PasswordControllerTest, CheckPasswordGenerationSuggestion) {
   // we can test with an initially-empty username field. Testing with a
   // username field that contains input is performed by a specific test below.
   PasswordFormFillData form_data;
-  SetPasswordFormFillData(base_url, "gChrome~form~0", "un", "user0", "pw",
-                          "password0", "abc", "def", true, &form_data);
+  SetPasswordFormFillData(base_url, "gChrome~form~0", 0, "un", 1, "user0", "pw",
+                          2, "password0", "abc", "def", true, &form_data);
 
   __block BOOL block_was_called = NO;
   [passwordController_ fillPasswordForm:form_data
@@ -1729,8 +1790,10 @@ TEST_F(PasswordControllerTest, SavingOnNavigateMainFrame) {
         LoadHtml(SysUTF8ToNSString(kHtml));
         std::string main_frame_id = web::GetMainWebFrameId(web_state());
 
-        SimulateUserTyping("login_form", "username", "user1", main_frame_id);
-        SimulateUserTyping("login_form", "pw", "password1", main_frame_id);
+        SimulateUserTyping("login_form", FormRendererId(0), "username",
+                           FieldRendererId(1), "user1", main_frame_id);
+        SimulateUserTyping("login_form", FormRendererId(0), "pw",
+                           FieldRendererId(2), "password1", main_frame_id);
 
         bool prompt_should_be_shown =
             has_commited && !is_same_document && is_renderer_initiated;
@@ -1783,8 +1846,10 @@ TEST_F(PasswordControllerTest, NoSavingOnNavigateMainFrameFailedSubmission) {
 
   std::string main_frame_id = web::GetMainWebFrameId(web_state());
 
-  SimulateUserTyping("login_form", "username", "user1", main_frame_id);
-  SimulateUserTyping("login_form", "pw", "password1", main_frame_id);
+  SimulateUserTyping("login_form", FormRendererId(0), "username",
+                     FieldRendererId(1), "user1", main_frame_id);
+  SimulateUserTyping("login_form", FormRendererId(0), "pw", FieldRendererId(2),
+                     "password1", main_frame_id);
 
   EXPECT_CALL(*weak_client_, PromptUserToSaveOrUpdatePasswordPtr).Times(0);
 

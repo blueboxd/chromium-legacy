@@ -1180,7 +1180,13 @@ void LayoutBlockFlow::LayoutRunsAndFloatsInRange(
           resolver, bidi_runs, end_of_line, override,
           layout_state.GetLineInfo().PreviousLineBrokeCleanly(),
           is_new_uba_paragraph);
-      DCHECK(resolver.GetPosition() == end_of_line);
+      // |resolver| to be at |end_of_line| is critical, because
+      // |SetLineBreakInfo| below copies |end_of_line.current_| to
+      // |RootInlineBox::line_break_obj_|. When the object is destroyed,
+      // |RootInlineBox::ChildRemoved()| clears |line_break_obj_| to avoid
+      // use-after-free, but we cannot find the correct |RootInlineBox| if
+      // |end_of_line| is actually not in this |RootInlineBox|.
+      CHECK(resolver.GetPosition() == end_of_line);
 
       BidiRun* trailing_space_run = resolver.TrailingSpaceRun();
 

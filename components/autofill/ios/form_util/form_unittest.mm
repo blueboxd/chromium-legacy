@@ -161,7 +161,7 @@ TEST_F(FormJsTest, FormSameOriginIFrame) {
 // Tests that a new form triggers form_changed event.
 TEST_F(FormJsTest, AddForm) {
   LoadHtml(@"<body></body>");
-
+  ExecuteJavaScript(@"__gCrWeb.fill.setUpForUniqueIDs(0);");
   ExecuteJavaScript(
       @"__gCrWeb.formHandlers.trackFormMutations(10);"
       @"var form = document.createElement('form');"

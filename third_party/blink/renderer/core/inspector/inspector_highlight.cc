@@ -443,17 +443,19 @@ PhysicalRect TextFragmentRectInRootFrame(
 
 }  // namespace
 
-InspectorHighlight::InspectorHighlight(float scale)
-    : highlight_paths_(protocol::ListValue::create()),
-      show_rulers_(false),
-      show_extension_lines_(false),
-      scale_(scale) {}
-
 InspectorHighlightConfig::InspectorHighlightConfig()
     : show_info(false),
       show_styles(false),
       show_rulers(false),
-      show_extension_lines(false) {}
+      show_extension_lines(false),
+      color_format(ColorFormat::HEX) {}
+
+InspectorHighlight::InspectorHighlight(float scale)
+    : highlight_paths_(protocol::ListValue::create()),
+      show_rulers_(false),
+      show_extension_lines_(false),
+      scale_(scale),
+      color_format_(ColorFormat::HEX) {}
 
 InspectorHighlight::InspectorHighlight(
     Node* node,
@@ -465,7 +467,8 @@ InspectorHighlight::InspectorHighlight(
     : highlight_paths_(protocol::ListValue::create()),
       show_rulers_(highlight_config.show_rulers),
       show_extension_lines_(highlight_config.show_extension_lines),
-      scale_(1.f) {
+      scale_(1.f),
+      color_format_(highlight_config.color_format) {
   DCHECK(!DisplayLockUtilities::NearestLockedExclusiveAncestor(*node));
   LocalFrameView* frame_view = node->GetDocument().View();
   if (frame_view) {
@@ -513,10 +516,7 @@ void InspectorHighlight::AppendDistanceInfo(Node* node) {
       continue;
     if (value->IsColorValue()) {
       Color color = static_cast<const cssvalue::CSSColorValue*>(value)->Value();
-      String hex_color =
-          String::Format("#%02X%02X%02X%02X", color.Red(), color.Green(),
-                         color.Blue(), color.Alpha());
-      computed_style_->setString(name, hex_color);
+      computed_style_->setString(name, ToHEXA(color));
     } else {
       computed_style_->setString(name, value->CssText());
     }
@@ -696,6 +696,18 @@ std::unique_ptr<protocol::DictionaryValue> InspectorHighlight::AsProtocolValue()
   object->setValue("paths", highlight_paths_->clone());
   object->setBoolean("showRulers", show_rulers_);
   object->setBoolean("showExtensionLines", show_extension_lines_);
+  switch (color_format_) {
+    case ColorFormat::RGB:
+      object->setString("colorFormat", "rgb");
+      break;
+    case ColorFormat::HSL:
+      object->setString("colorFormat", "hsl");
+      break;
+    case ColorFormat::HEX:
+      object->setString("colorFormat", "hex");
+      break;
+  }
+
   if (model_) {
     std::unique_ptr<protocol::DictionaryValue> distance_info =
         protocol::DictionaryValue::create();
@@ -948,6 +960,7 @@ InspectorHighlightConfig InspectorHighlight::DefaultConfig() {
   config.show_rulers = true;
   config.show_extension_lines = true;
   config.css_grid = Color(128, 128, 128, 0);
+  config.color_format = ColorFormat::HEX;
   return config;
 }
 

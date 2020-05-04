@@ -37,6 +37,8 @@
 
 using autofill::POPUP_ITEM_ID_CLEAR_FORM;
 using autofill::POPUP_ITEM_ID_SHOW_ACCOUNT_CARDS;
+using autofill::FormRendererId;
+using autofill::FieldRendererId;
 using base::test::ios::WaitUntilCondition;
 
 // Subclass of web::FakeWebFrame that allow to set a callback before any
@@ -240,7 +242,9 @@ TEST_F(AutofillAgentTests,
       autofill::features::kAutofillRestrictUnownedFieldsToFormlessCheckout);
   scoped_feature_list.InitWithFeatures(enabled_features, disabled_features);
   [autofill_agent_ checkIfSuggestionsAvailableForForm:@"form"
+                                         uniqueFormID:FormRendererId(0)
                                       fieldIdentifier:@"address"
+                                        uniqueFieldID:FieldRendererId(1)
                                             fieldType:@"text"
                                                  type:@"focus"
                                            typedValue:@""
@@ -263,7 +267,9 @@ TEST_F(AutofillAgentTests,
   __block BOOL completion_handler_called = NO;
 
   [autofill_agent_ checkIfSuggestionsAvailableForForm:@"form"
+                                         uniqueFormID:FormRendererId(0)
                                       fieldIdentifier:@"address"
+                                        uniqueFieldID:FieldRendererId(1)
                                             fieldType:@"text"
                                                  type:@"focus"
                                            typedValue:@""
@@ -304,7 +310,9 @@ TEST_F(AutofillAgentTests, onSuggestionsReady_ShowAccountCards) {
     completion_handler_called = YES;
   };
   [autofill_agent_ retrieveSuggestionsForForm:@"form"
+                                 uniqueFormID:FormRendererId(0)
                               fieldIdentifier:@"address"
+                                uniqueFieldID:FieldRendererId(1)
                                     fieldType:@"text"
                                          type:@"focus"
                                    typedValue:@""
@@ -348,7 +356,9 @@ TEST_F(AutofillAgentTests, onSuggestionsReady_ClearForm) {
     completion_handler_called = YES;
   };
   [autofill_agent_ retrieveSuggestionsForForm:@"form"
+                                 uniqueFormID:FormRendererId(0)
                               fieldIdentifier:@"address"
+                                uniqueFieldID:FieldRendererId(1)
                                     fieldType:@"text"
                                          type:@"focus"
                                    typedValue:@""
@@ -394,7 +404,9 @@ TEST_F(AutofillAgentTests, onSuggestionsReady_ClearFormWithGPay) {
     completion_handler_called = YES;
   };
   [autofill_agent_ retrieveSuggestionsForForm:@"form"
+                                 uniqueFormID:FormRendererId(0)
                               fieldIdentifier:@"address"
+                                uniqueFieldID:FieldRendererId(1)
                                     fieldType:@"text"
                                          type:@"focus"
                                    typedValue:@""

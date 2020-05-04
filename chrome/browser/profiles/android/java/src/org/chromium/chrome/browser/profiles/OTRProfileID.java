@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.profiles;
 
 import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.annotations.NativeMethods;
 
 /**
  * Wrapper that allows passing a OTRProfileID reference around in the Java layer.
@@ -23,6 +24,11 @@ public class OTRProfileID {
         return mProfileID;
     }
 
+    /** Creates a unique profile id by appending a unique serial number to the given prefix. */
+    public static OTRProfileID createUnique(String profileIDPrefix) {
+        return OTRProfileIDJni.get().createUniqueOTRProfileID(profileIDPrefix);
+    }
+
     @Override
     public String toString() {
         return String.format("OTRProfileID{%s}", mProfileID);
@@ -38,5 +44,10 @@ public class OTRProfileID {
         if (!(obj instanceof OTRProfileID)) return false;
         OTRProfileID other = (OTRProfileID) obj;
         return mProfileID.equals(other.mProfileID);
+    }
+
+    @NativeMethods
+    public interface Natives {
+        OTRProfileID createUniqueOTRProfileID(String profileIDPrefix);
     }
 }

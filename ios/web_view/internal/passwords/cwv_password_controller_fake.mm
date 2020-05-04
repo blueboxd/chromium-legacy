@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/task/post_task.h"
+#include "components/autofill/core/common/renderer_id.h"
 #include "ios/web/public/thread/web_task_traits.h"
 #include "ios/web/public/thread/web_thread.h"
 
@@ -39,7 +40,9 @@
 }
 
 - (void)fetchSuggestionsForFormWithName:(NSString*)formName
+                           uniqueFormID:(autofill::FormRendererId)uniqueFormID
                         fieldIdentifier:(NSString*)fieldIdentifier
+                          uniqueFieldID:(autofill::FieldRendererId)uniqueFieldID
                               fieldType:(NSString*)fieldType
                                 frameID:(NSString*)frameID
                       completionHandler:

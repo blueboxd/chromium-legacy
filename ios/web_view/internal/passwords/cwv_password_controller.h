@@ -29,6 +29,11 @@ namespace web {
 class WebState;
 }  // namespace web
 
+namespace autofill {
+class FormRendererId;
+class FieldRendererId;
+}  // namespace autofill
+
 // Internal protocol to receive callbacks related to password autofilling.
 @protocol CWVPasswordControllerDelegate
 
@@ -78,7 +83,9 @@ class WebState;
 // See same method in |CWVAutofillController|. This one only fetches password
 // autofill suggestions.
 - (void)fetchSuggestionsForFormWithName:(NSString*)formName
+                           uniqueFormID:(autofill::FormRendererId)uniqueFormID
                         fieldIdentifier:(NSString*)fieldIdentifier
+                          uniqueFieldID:(autofill::FieldRendererId)uniqueFieldID
                               fieldType:(NSString*)fieldType
                                 frameID:(NSString*)frameID
                       completionHandler:

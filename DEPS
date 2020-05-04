@@ -241,7 +241,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling catapult
   # and whatever else without interference from each other.
-  'catapult_revision': '72830dfa568489abdbef850896a20e6488192f9a',
+  'catapult_revision': 'f4e9fd92612dfacc843beebe712eac73565d11c7',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libFuzzer
   # and whatever else without interference from each other.
@@ -249,7 +249,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': 'e250cb2328f2a48826df65aba51abbaf424e4e84',
+  'devtools_frontend_revision': 'a952a5b302970442537a7741957a061bd8e232d8',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -301,7 +301,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'dawn_revision': '303a3daf0decb8eaacb251346be317be00dda479',
+  'dawn_revision': 'ccc40f6ffaa675641c7edcddb42c09e3272934e3',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -1298,7 +1298,7 @@ deps = {
       'packages': [
           {
               'package': 'fuchsia/third_party/aemu/linux-amd64',
-              'version': 'KkC1dMnOt3dQMJqp-GzpAoyULRktX6-7fxUPrsEeEJMC'
+              'version': 'i0Kh0s13OUsO28Cn7E_Vm5Rv0jN7IXSm_qrvu2cBDmMC'
           },
       ],
       'condition': 'host_os == "linux" and checkout_fuchsia',

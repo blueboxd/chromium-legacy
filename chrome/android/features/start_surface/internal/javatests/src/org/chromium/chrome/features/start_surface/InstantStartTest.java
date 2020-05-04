@@ -103,7 +103,7 @@ public class InstantStartTest {
         mActivityTestRule.startActivityCompletely(intent);
     }
 
-    private Bitmap createThumbnailBitmapAndWriteToFile(int tabId) {
+    public static Bitmap createThumbnailBitmapAndWriteToFile(int tabId) {
         final Bitmap thumbnailBitmap = Bitmap.createBitmap(100, 100, Bitmap.Config.ARGB_8888);
 
         try {
@@ -166,8 +166,17 @@ public class InstantStartTest {
      * Create all the files so that tab models can be restored
      * @param tabIds all the Tab IDs in the normal tab model.
      */
-    static void createTabStateFile(int[] tabIds) throws IOException {
-        TabModelMetadata normalInfo = new TabModelMetadata(0);
+    public static void createTabStateFile(int[] tabIds) throws IOException {
+        createTabStateFile(tabIds, 0);
+    }
+
+    /**
+     * Create all the files so that tab models can be restored
+     * @param tabIds all the Tab IDs in the normal tab model.
+     * @param selectedIndex the selected index of normal tab model.
+     */
+    public static void createTabStateFile(int[] tabIds, int selectedIndex) throws IOException {
+        TabModelMetadata normalInfo = new TabModelMetadata(selectedIndex);
         for (int tabId : tabIds) {
             normalInfo.ids.add(tabId);
             normalInfo.urls.add("");

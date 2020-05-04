@@ -22,16 +22,12 @@ class BackgroundTask {
  public:
   // The following two methods represent the callback from
   // BackgroundTaskScheduler when your task should start processing. It is
-  // invoked on the main thread, and if your task finishes quickly, you should
-  // return false from this method when you are done processing. If this is a
-  // long-running task, you should return true from this method, and instead
-  // invoke the |callback| when the processing is finished on some other thread.
-  // While this method is running the system holds a wakelock. If false is
-  // returned from this method, the wakelock is immediately released, but if
-  // this method returns true, the wakelock is not released until either the
-  // |callback| is invoked, or the system calls onStopTask. Depending on whether
-  // Chrome is running in service manager only mode or full browser mode, one or
-  // both of the following two methods are invoked.
+  // invoked on the main thread, and after your task finishes, you should
+  // run the |callback|. While this method is running the system holds a
+  // wakelock and the wakelock is not released until either the |callback| is
+  // invoked, or the system calls onStopTask. Depending on whether Chrome is
+  // running in service manager only mode or full browser mode, one or both of
+  // the following methods are invoked.
 
   // Callback invoked when chrome is running in service manager only mode. User
   // can start executing the task here or save the params and wait till full
@@ -41,7 +37,7 @@ class BackgroundTask {
                                         SimpleFactoryKey* key) {}
 
   // Callback invoked when Chrome is running in full browser mode. This is
-  // invoked only if the chrome was started in reduced mode.
+  // invoked only if the chrome was started in full browser mode.
   virtual void OnStartTaskWithFullBrowser(
       const TaskParameters& task_params,
       TaskFinishedCallback callback,
@@ -56,7 +52,9 @@ class BackgroundTask {
   // TaskFinishedCallback has been invoked. This will typically happen whenever
   // the required conditions for the task are no longer met. See TaskInfo for
   // more details. A wakelock is held by the system while this callback is
-  // invoked, and immediately released after this method returns.
+  // invoked, and immediately released after this method returns. If true is
+  // returned from this method, the task will be rescheduled, for false, the
+  // task will not be rescheduled.
   virtual bool OnStopTask(const TaskParameters& task_params) = 0;
 
   // Destructor.

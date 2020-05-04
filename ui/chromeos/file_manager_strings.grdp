@@ -1380,8 +1380,8 @@
   <message name="IDS_FILE_BROWSER_GEAR_BUTTON_TOOLTIP" desc="Tooltip for the gear button in the Files app.">
     More...
   </message>
-<message name="IDS_FILE_BROWSER_READONLY_INDICATOR_TOOLTIP" desc="Tooltip for the readonly indicator in the Files app. It should be in 2 lines to be displayed same in UI in multiline.">
-    Files in this folders are read only.<ph name="BREAKS">&lt;br&gt;</ph>Some activities are not supported.
+<message name="IDS_FILE_BROWSER_READONLY_INDICATOR_TOOLTIP" desc="Tooltip for the readonly indicator in the Files app.">
+    Files in this folders are read only. Some activities are not supported.
   </message>
   <message name="IDS_FILE_BROWSER_SELECTION_MENU_BUTTON_TOOLTIP" desc="Tooltip for the button to open the context menu of currently selected items in the Files app.">
     More...

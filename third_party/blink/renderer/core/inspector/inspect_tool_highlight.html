@@ -443,14 +443,68 @@ function parseHexa(hexa) {
 }
 
 /**
- * @param {!String} hexa
+ * TODO(alexrudenko): import this and other color helpers from DevTools
+ * @param {!Array<number>} rgba
  * @return {!Array<number>}
  */
-function normalizeColorString(hexa) {
-  if (hexa.endsWith("FF"))
+function rgbaToHsla(rgba) {
+    const [r, g, b] = rgba;
+    const max = Math.max(r, g, b);
+    const min = Math.min(r, g, b);
+    const diff = max - min;
+    const sum = max + min;
+
+    let h;
+    if (min === max) {
+      h = 0;
+    } else if (r === max) {
+      h = ((1 / 6 * (g - b) / diff) + 1) % 1;
+    } else if (g === max) {
+      h = (1 / 6 * (b - r) / diff) + 1 / 3;
+    } else {
+      h = (1 / 6 * (r - g) / diff) + 2 / 3;
+    }
+
+    const l = 0.5 * sum;
+
+    let s;
+    if (l === 0) {
+      s = 0;
+    } else if (l === 1) {
+      s = 0;
+    } else if (l <= 0.5) {
+      s = diff / sum;
+    } else {
+      s = diff / (2 - sum);
+    }
+
+    return [h, s, l, rgba[3]];
+}
+
+/**
+ * @param {!String} hexa
+ * @param {!String} colorFormat
+ * @return {!String}
+ */
+function formatColor(hexa, colorFormat) {
+  if (colorFormat === 'rgb') {
+    const [r, g, b, a] = parseHexa(hexa);
+    // rgb(r g b [ / a])
+    return `rgb(${(r * 255).toFixed()} ${(g * 255).toFixed()} ${(b * 255).toFixed()}${a === 1 ? '' : ' / ' + Math.round(a * 100) / 100})`;
+  }
+
+  if (colorFormat === 'hsl') {
+    const [h, s, l, a] = rgbaToHsla(parseHexa(hexa));
+    // hsl(hdeg s l [ / a])
+    return `hsl(${Math.round(h * 360)}deg ${Math.round(s * 100)} ${Math.round(l * 100)}${a === 1 ? '' : ' / ' + Math.round(a * 100) / 100})`;
+  }
+
+  if (hexa.endsWith("FF")) {
+    // short hex if no alpha
     return hexa.substr(0, 7);
-  const [r, g, b, a] = parseHexa(hexa);
-  return `rgba(${(r * 255).toFixed()}, ${(g * 255).toFixed()}, ${(b * 255).toFixed()}, ${Math.round(a * 100) / 100})`;
+  }
+
+  return hexa;
 }
 
 /**
@@ -520,7 +574,7 @@ function computeIsLargeFont(contrast) {
       return fontSizePt >= 18;
 }
 
-function _createElementDescription(elementInfo)
+function _createElementDescription(elementInfo, colorFormat)
 {
     const elementInfoElement = createElement("div", "element-info");
     const elementInfoHeaderElement = elementInfoElement.createChild("div", "element-info-header");
@@ -549,7 +603,7 @@ function _createElementDescription(elementInfo)
 
     const color = style["color"];
     if (color && color !== "#00000000")
-        addColorRow("Color", color);
+        addColorRow("Color", color, colorFormat);
 
     const fontFamily = style["font-family"];
     const fontSize = style["font-size"];
@@ -558,7 +612,7 @@ function _createElementDescription(elementInfo)
 
     const bgcolor = style["background-color"];
     if (bgcolor && bgcolor !== "#00000000")
-        addColorRow("Background", bgcolor);
+        addColorRow("Background", bgcolor, colorFormat);
 
     const margin = style["margin"];
     if (margin && margin !== "0px")
@@ -614,12 +668,12 @@ function _createElementDescription(elementInfo)
         addRow(name, "", "element-info-value-text").createTextChild(value);
     }
 
-    function addColorRow(name, color) {
+    function addColorRow(name, color, colorFormat) {
         const valueElement = addRow(name, "", "element-info-value-color");
         const swatch = valueElement.createChild("div", "color-swatch");
         const inner = swatch.createChild("div", "color-swatch-inner");
         inner.style.backgroundColor = color;
-        valueElement.createTextChild(normalizeColorString(color));
+        valueElement.createTextChild(formatColor(color, colorFormat));
     }
 
     function addContrastRow(fgColor, contrast) {
@@ -638,11 +692,11 @@ function _createElementDescription(elementInfo)
     return elementInfoElement;
 }
 
-function _drawElementTitle(elementInfo, bounds)
+function _drawElementTitle(elementInfo, bounds, colorFormat)
 {
     const tooltipContainer = document.getElementById("tooltip-container");
     tooltipContainer.removeChildren();
-    _createMaterialTooltip(tooltipContainer, bounds, _createElementDescription(elementInfo), true);
+    _createMaterialTooltip(tooltipContainer, bounds, _createElementDescription(elementInfo, colorFormat), true);
 }
 
 function _createMaterialTooltip(parentElement, bounds, contentElement, withArrow)
@@ -918,7 +972,7 @@ function drawHighlight(highlight, context)
             _drawRulers(context, bounds, rulerAtRight, rulerAtBottom);
 
         if (highlight.elementInfo)
-           _drawElementTitle(highlight.elementInfo, bounds);
+           _drawElementTitle(highlight.elementInfo, bounds, highlight.colorFormat);
     }
     if (highlight.gridInfo) {
         for (var grid of highlight.gridInfo)
@@ -935,7 +989,7 @@ function test() {
     drawHighlight(
         {"paths":[{"path":["M",122,133.796875,"L",822,133.796875,"L",822,208.796875,"L",122,208.796875,"Z"], "fillColor":"rgba(111, 168, 220, 0.658823529411765)","name":"content"},
         {"path":["M",122,113.796875,"L",822,113.796875,"L",822,228.796875,"L",122,228.796875,"Z"],"fillColor":"rgba(246, 178, 107, 0.66)","name":"margin"}],"showRulers":false,"showExtensionLines":false,
-        "elementInfo":{"tagName":"button","className":"class.name", "idValue":"download-hero","nodeWidth":"700","nodeHeight":"75","style":{"color":"#FFFFFFFF","font-family":"\"Product Sans\", \"Open Sans\", Roboto, Arial, \"Product Sans\", \"Open Sans\", Roboto, Arial","font-size":"20px","line-height":"25px","padding":"0px","margin":"20px 0px","background-color":"#00000000"},"contrast":{"fontSize":"20px","fontWeight":"400","backgroundColor":"#F9B826BF"},"isKeyboardFocusable":false,"accessibleName":"name","accessibleRole":"role"}, showExtensionLines: true, showRulers: true});
+        "elementInfo":{"tagName":"button","className":"class.name", "idValue":"download-hero","nodeWidth":"700","nodeHeight":"75","style":{"color":"#FFFFFFFF","font-family":"\"Product Sans\", \"Open Sans\", Roboto, Arial, \"Product Sans\", \"Open Sans\", Roboto, Arial","font-size":"20px","line-height":"25px","padding":"0px","margin":"20px 0px","background-color":"#00000000"},"contrast":{"fontSize":"20px","fontWeight":"400","backgroundColor":"#F9B826BF"},"isKeyboardFocusable":false,"accessibleName":"name","accessibleRole":"role"}, showExtensionLines: true, showRulers: true, colorFormat: "hsl"});
 }
 
 </script>

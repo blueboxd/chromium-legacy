@@ -95,7 +95,7 @@ async function createTestImageFile(
 // chrome-untrusted://media-app/". This test also fails if the guest renderer is
 // terminated, e.g., due to webui performing bad IPC such as network requests
 // (failure detected in content/public/test/no_renderer_crashes_assertion.cc).
-TEST_F('MediaAppUIBrowserTest', 'DISABLED_GuestCanLoad', async () => {
+TEST_F('MediaAppUIBrowserTest', 'GuestCanLoad', async () => {
   const guest = document.querySelector('iframe');
   const app = await driver.waitForElementInGuest('backlight-app', 'tagName');
 
@@ -113,7 +113,7 @@ TEST_F('MediaAppUIBrowserTest', 'HasTitleAndLang', () => {
   testDone();
 });
 
-TEST_F('MediaAppUIBrowserTest', 'DISABLED_LoadFile', async () => {
+TEST_F('MediaAppUIBrowserTest', 'LoadFile', async () => {
   await loadFile(await createTestImageFile(), new FakeFileSystemFileHandle());
   const result =
       await driver.waitForElementInGuest('img[src^="blob:"]', 'naturalWidth');
@@ -132,7 +132,7 @@ TEST_F('MediaAppUIBrowserTest', 'CanOpenFeedbackDialog', async () => {
 });
 
 // Tests that video elements in the guest can be full-screened.
-TEST_F('MediaAppUIBrowserTest', 'DISABLED_CanFullscreenVideo', async () => {
+TEST_F('MediaAppUIBrowserTest', 'CanFullscreenVideo', async () => {
   // Remove `overflow: hidden` to work around a spurious DCHECK in Blink
   // layout. See crbug.com/1052791. Oddly, even though the video is in the guest
   // iframe document (which also has these styles on its body), it is necessary

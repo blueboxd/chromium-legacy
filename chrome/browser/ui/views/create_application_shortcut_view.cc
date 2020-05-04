@@ -203,7 +203,7 @@ bool CreateChromeApplicationShortcutView::IsDialogButtonEnabled(
     return true;
 
   if (!shortcut_info_)
-    // Dialog's not ready yet because app info hasn't been loaded.
+    // Dialog's not ready because app info hasn't been loaded.
     return false;
 
   // One of the three location checkboxes must be checked:
@@ -230,9 +230,12 @@ base::string16 CreateChromeApplicationShortcutView::GetWindowTitle() const {
 void CreateChromeApplicationShortcutView::OnDialogAccepted() {
   DCHECK(IsDialogButtonEnabled(ui::DIALOG_BUTTON_OK));
 
-  // NOTE: This procedure will reset |shortcut_info_| to null.
   if (!close_callback_.is_null())
-    close_callback_.Run(true);
+    close_callback_.Run(/*success=*/shortcut_info_ != nullptr);
+
+  // Shortcut can't be created because app info hasn't been loaded.
+  if (!shortcut_info_)
+    return;
 
   web_app::ShortcutLocations creation_locations;
   creation_locations.on_desktop = desktop_check_box_->GetChecked();
@@ -283,6 +286,8 @@ CreateChromeApplicationShortcutView::AddCheckbox(const base::string16& text,
 
 void CreateChromeApplicationShortcutView::OnAppInfoLoaded(
     std::unique_ptr<web_app::ShortcutInfo> shortcut_info) {
+  // GetShortcutInfoForApp request may return nullptr |shortcut_info| to this
+  // callback if web app was uninstalled during that asynchronous request.
   shortcut_info_ = std::move(shortcut_info);
   // This may cause there to be shortcut info when there was none before, so
   // make sure the accept button gets enabled.

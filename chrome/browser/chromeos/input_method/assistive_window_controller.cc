@@ -35,9 +35,9 @@ gfx::NativeView GetParentView() {
 AssistiveWindowController::AssistiveWindowController() = default;
 
 AssistiveWindowController::~AssistiveWindowController() {
-  if (suggestion_window_view_)
+  if (suggestion_window_view_ && suggestion_window_view_->GetWidget())
     suggestion_window_view_->GetWidget()->RemoveObserver(this);
-  if (undo_window_)
+  if (undo_window_ && undo_window_->GetWidget())
     undo_window_->GetWidget()->RemoveObserver(this);
 }
 
@@ -80,7 +80,7 @@ void AssistiveWindowController::HideSuggestion() {
 }
 
 void AssistiveWindowController::SetBounds(const gfx::Rect& cursor_bounds) {
-  if (suggestion_window_view_)
+  if (suggestion_window_view_ && confirmed_length_ == 0)
     suggestion_window_view_->SetBounds(cursor_bounds);
   if (undo_window_)
     undo_window_->SetBounds(cursor_bounds);
@@ -124,6 +124,11 @@ void AssistiveWindowController::SetAssistiveWindowProperties(
 void AssistiveWindowController::AssistiveWindowClicked(
     ui::ime::ButtonId id,
     ui::ime::AssistiveWindowType type) {}
+
+ui::ime::SuggestionWindowView*
+AssistiveWindowController::GetSuggestionWindowViewForTesting() {
+  return suggestion_window_view_;
+}
 
 }  // namespace input_method
 }  // namespace chromeos

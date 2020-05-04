@@ -24,6 +24,7 @@ svg-rect{
   ],
   "showRulers": true,
   "showExtensionLines": true,
+  "colorFormat": "hex",
   "elementInfo": {
     "tagName": "rect",
     "idValue": "svg-rect",

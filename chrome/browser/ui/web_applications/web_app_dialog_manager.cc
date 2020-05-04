@@ -34,9 +34,18 @@ void WebAppDialogManager::UninstallWebApp(const AppId& app_id,
                                           UninstallSource uninstall_source,
                                           BrowserWindow* parent_window,
                                           Callback callback) {
+  UninstallWebApp(app_id, uninstall_source,
+                  parent_window ? parent_window->GetNativeWindow() : nullptr,
+                  std::move(callback));
+}
+
+void WebAppDialogManager::UninstallWebApp(const AppId& app_id,
+                                          UninstallSource uninstall_source,
+                                          gfx::NativeWindow parent_window,
+                                          Callback callback) {
   std::unique_ptr<WebAppUninstallDialog> uninstall_dialog =
-      WebAppUninstallDialog::Create(
-          profile_, parent_window ? parent_window->GetNativeWindow() : nullptr);
+      WebAppUninstallDialog::Create(profile_,
+                                    parent_window ? parent_window : nullptr);
 
   uninstall_dialog->ConfirmUninstall(
       app_id,

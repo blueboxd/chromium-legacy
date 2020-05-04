@@ -1757,9 +1757,6 @@
     ],
     "gtest_tests": [
       {
-        "args": [
-          "--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.accessibility_unittests.filter"
-        ],
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -2486,7 +2483,6 @@
     "gtest_tests": [
       {
         "args": [
-          "--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.accessibility_unittests.filter",
           "--device=aemu"
         ],
         "merge": {

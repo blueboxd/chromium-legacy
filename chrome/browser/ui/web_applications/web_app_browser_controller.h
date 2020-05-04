@@ -57,7 +57,7 @@ class WebAppBrowserController : public AppBrowserController,
   bool IsHostedApp() const override;
 
   // AppRegistrarObserver:
-  void OnWebAppWillBeUninstalled(const AppId& app_id) override;
+  void OnWebAppUninstalled(const AppId& app_id) override;
   void OnAppRegistrarDestroyed() override;
 
   void SetReadIconCallbackForTesting(base::OnceClosure callback);

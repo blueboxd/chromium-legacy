@@ -36,6 +36,8 @@
 #endif
 
 using autofill::FormData;
+using autofill::FormRendererId;
+using autofill::FieldRendererId;
 using autofill::PasswordForm;
 using password_manager::AccountSelectFillData;
 using password_manager::FillData;
@@ -369,7 +371,9 @@ typedef void (^PasswordSuggestionsAvailableCompletion)(
 #pragma mark - Public
 
 - (void)fetchSuggestionsForFormWithName:(NSString*)formName
+                           uniqueFormID:(FormRendererId)uniqueFormID
                         fieldIdentifier:(NSString*)fieldIdentifier
+                          uniqueFieldID:(FieldRendererId)uniqueFieldID
                               fieldType:(NSString*)fieldType
                                 frameID:(NSString*)frameID
                       completionHandler:
@@ -387,7 +391,9 @@ typedef void (^PasswordSuggestionsAvailableCompletion)(
   // |PasswordSuggestionHelper|.
   [self.suggestionHelper
       checkIfSuggestionsAvailableForForm:formName
+                            uniqueFormID:uniqueFormID
                          fieldIdentifier:fieldIdentifier
+                           uniqueFieldID:uniqueFieldID
                                fieldType:fieldType
                                     type:@"focus"
                                  frameID:frameID
@@ -401,9 +407,12 @@ typedef void (^PasswordSuggestionsAvailableCompletion)(
                          }
                          NSArray<FormSuggestion*>* suggestions =
                              [strongSelf.suggestionHelper
-                                 retrieveSuggestionsWithFormName:formName
-                                                 fieldIdentifier:fieldIdentifier
-                                                       fieldType:fieldType];
+                                 retrieveSuggestionsWithFormID:FormRendererId(
+                                                                   uniqueFormID)
+                                               fieldIdentifier:
+                                                   FieldRendererId(
+                                                       uniqueFieldID)
+                                                     fieldType:fieldType];
                          NSMutableArray<CWVAutofillSuggestion*>*
                              autofillSuggestions = [NSMutableArray array];
                          for (FormSuggestion* formSuggestion in suggestions) {

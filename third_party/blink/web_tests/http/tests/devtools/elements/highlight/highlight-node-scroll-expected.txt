@@ -82,6 +82,7 @@ inspectedElement1{
   ],
   "showRulers": true,
   "showExtensionLines": true,
+  "colorFormat": "hex",
   "elementInfo": {
     "tagName": "div",
     "idValue": "inspectedElement1",
@@ -175,6 +176,7 @@ inspectedElement2{
   ],
   "showRulers": true,
   "showExtensionLines": true,
+  "colorFormat": "hex",
   "elementInfo": {
     "tagName": "div",
     "idValue": "inspectedElement2",

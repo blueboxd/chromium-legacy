@@ -290,7 +290,7 @@ TEST_F(ThemeServiceTest, IncognitoTest) {
 
   // Should get the same ThemeService for incognito and original profiles.
   ThemeService* otr_theme_service =
-      ThemeServiceFactory::GetForProfile(profile_->GetOffTheRecordProfile());
+      ThemeServiceFactory::GetForProfile(profile_->GetPrimaryOTRProfile());
   EXPECT_EQ(theme_service_, otr_theme_service);
 
 #if !defined(OS_MACOSX)
@@ -299,7 +299,7 @@ TEST_F(ThemeServiceTest, IncognitoTest) {
       ThemeService::GetThemeProviderForProfile(profile());
   const ui::ThemeProvider& otr_provider =
       ThemeService::GetThemeProviderForProfile(
-          profile_->GetOffTheRecordProfile());
+          profile_->GetPrimaryOTRProfile());
   EXPECT_NE(&provider, &otr_provider);
   // And (some) colors should be different.
   EXPECT_NE(provider.GetColor(ThemeProperties::COLOR_TOOLBAR),

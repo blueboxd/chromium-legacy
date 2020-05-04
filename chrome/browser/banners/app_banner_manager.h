@@ -212,8 +212,7 @@ class AppBannerManager : public content::WebContentsObserver,
       const blink::Manifest::RelatedApplication& related_app) const = 0;
 
   // Returns whether the current page is already installed as a web app, or
-  // should be considered installed. On Android, we rely on a heuristic that
-  // may yield false negatives or false positives (crbug.com/786268).
+  // should be considered as installed.
   virtual bool IsWebAppConsideredInstalled();
 
   // Returns whether the installed web app at the current page can be

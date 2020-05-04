@@ -5,31 +5,29 @@
 /**
  * @fileoverview Constants used for logging the pin unlock setup uma.
  */
-
-/**
- * Name of the pin unlock setup uma histogram.
- * @type {string}
- */
-const PinUnlockUmaHistogramName = 'Settings.PinUnlockSetup';
-
-/**
- * Stages the user can enter while setting up pin unlock.
- * @enum {number}
- */
-const LockScreenProgress = {
-  START_SCREEN_LOCK: 0,
-  ENTER_PASSWORD_CORRECTLY: 1,
-  CHOOSE_PIN_OR_PASSWORD: 2,
-  ENTER_PIN: 3,
-  CONFIRM_PIN: 4,
-  MAX_BUCKET: 5
-};
-
 cr.define('settings', function() {
+  /**
+   * Name of the pin unlock setup uma histogram.
+   * @type {string}
+   */
+  const PinUnlockUmaHistogramName = 'Settings.PinUnlockSetup';
+
+  /**
+   * Stages the user can enter while setting up pin unlock.
+   * @enum {number}
+   */
+  const LockScreenProgress = {
+    START_SCREEN_LOCK: 0,
+    ENTER_PASSWORD_CORRECTLY: 1,
+    CHOOSE_PIN_OR_PASSWORD: 2,
+    ENTER_PIN: 3,
+    CONFIRM_PIN: 4,
+    MAX_BUCKET: 5
+  };
   /**
    * Helper function to send the progress of the pin setup to be recorded in the
    * histogram.
-   * @param {LockScreenProgress} currentProgress
+   * @param {settings.LockScreenProgress} currentProgress
    */
   const recordLockScreenProgress = function(currentProgress) {
     if (currentProgress >= LockScreenProgress.MAX_BUCKET) {
@@ -43,5 +41,9 @@ cr.define('settings', function() {
     ]);
   };
 
-  return {recordLockScreenProgress: recordLockScreenProgress};
+  // #cr_define_end
+  return {
+    recordLockScreenProgress: recordLockScreenProgress,
+    LockScreenProgress: LockScreenProgress
+  };
 });

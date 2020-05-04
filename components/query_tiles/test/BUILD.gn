@@ -11,6 +11,8 @@ source_set("test_lib") {
   ]
 
   sources = [
+    "fake_tile_service.cc",
+    "fake_tile_service.h",
     "test_utils.cc",
     "test_utils.h",
   ]

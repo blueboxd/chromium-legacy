@@ -33,6 +33,9 @@
 #error "This file requires ARC support."
 #endif
 
+using autofill::FormRendererId;
+using autofill::FieldRendererId;
+
 // Test provider that records invocations of its interface methods.
 @interface TestSuggestionProvider : NSObject<FormSuggestionProvider>
 
@@ -101,7 +104,9 @@
 }
 
 - (void)checkIfSuggestionsAvailableForForm:(NSString*)formName
+                              uniqueFormID:(FormRendererId)uniqueFormID
                            fieldIdentifier:(NSString*)fieldIdentifier
+                             uniqueFieldID:(FieldRendererId)uniqueFieldID
                                  fieldType:(NSString*)fieldType
                                       type:(NSString*)type
                                 typedValue:(NSString*)typedValue
@@ -116,7 +121,9 @@
 }
 
 - (void)retrieveSuggestionsForForm:(NSString*)formName
+                      uniqueFormID:(FormRendererId)uniqueFormID
                    fieldIdentifier:(NSString*)fieldIdentifier
+                     uniqueFieldID:(FieldRendererId)uniqueFieldID
                          fieldType:(NSString*)fieldType
                               type:(NSString*)type
                         typedValue:(NSString*)typedValue

@@ -82,6 +82,7 @@ inspectedElement{
   ],
   "showRulers": true,
   "showExtensionLines": true,
+  "colorFormat": "hex",
   "elementInfo": {
     "tagName": "div",
     "idValue": "inspectedElement",
@@ -175,6 +176,7 @@ First text node{
   ],
   "showRulers": true,
   "showExtensionLines": true,
+  "colorFormat": "hex",
   "elementInfo": {
     "nodeWidth": "Width within 3px from 28? true",
     "nodeHeight": "Height within 3px from 25? false",
@@ -264,6 +266,7 @@ Second text node{
   ],
   "showRulers": true,
   "showExtensionLines": true,
+  "colorFormat": "hex",
   "elementInfo": {
     "nodeWidth": "Width within 3px from 30? true",
     "nodeHeight": "Height within 3px from 24? true",

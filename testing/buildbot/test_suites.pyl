@@ -1249,11 +1249,7 @@
     },
 
     'fuchsia_gtests': {
-      'accessibility_unittests': {
-        'args': [
-          '--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.accessibility_unittests.filter',
-        ],
-      },
+      'accessibility_unittests': {},
       'angle_unittests': {},
       'base_unittests': {},
       'base_util_unittests': {},

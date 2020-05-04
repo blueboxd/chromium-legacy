@@ -364,21 +364,6 @@ IconEffects ExtensionAppsBase::GetIconEffects(
   return icon_effects;
 }
 
-content::WebContents* ExtensionAppsBase::LaunchImpl(
-    const AppLaunchParams& params) {
-  if (web_app_launch_manager_) {
-    return web_app_launch_manager_->OpenApplication(params);
-  }
-
-  if (params.container ==
-          apps::mojom::LaunchContainer::kLaunchContainerWindow &&
-      app_type_ == apps::mojom::AppType::kWeb) {
-    web_app::RecordAppWindowLaunch(profile_, params.app_id);
-  }
-
-  return ::OpenApplication(profile_, params);
-}
-
 content::WebContents* ExtensionAppsBase::LaunchAppWithIntentImpl(
     const std::string& app_id,
     int32_t event_flags,
@@ -799,6 +784,36 @@ void ExtensionAppsBase::OnSystemWebAppsInstalled() {
   }
 }
 
+bool ExtensionAppsBase::RunExtensionEnableFlow(const std::string& app_id,
+                                               base::OnceClosure callback) {
+  if (extensions::util::IsAppLaunchableWithoutEnabling(app_id, profile_)) {
+    return false;
+  }
+
+  if (enable_flow_map_.find(app_id) == enable_flow_map_.end()) {
+    enable_flow_map_[app_id] =
+        std::make_unique<ExtensionAppsEnableFlow>(profile_, app_id);
+  }
+
+  enable_flow_map_[app_id]->Run(std::move(callback));
+  return true;
+}
+
+content::WebContents* ExtensionAppsBase::LaunchImpl(
+    const AppLaunchParams& params) {
+  if (web_app_launch_manager_) {
+    return web_app_launch_manager_->OpenApplication(params);
+  }
+
+  if (params.container ==
+          apps::mojom::LaunchContainer::kLaunchContainerWindow &&
+      app_type_ == apps::mojom::AppType::kWeb) {
+    web_app::RecordAppWindowLaunch(profile_, params.app_id);
+  }
+
+  return ::OpenApplication(profile_, params);
+}
+
 // static
 bool ExtensionAppsBase::ShouldShow(const extensions::Extension* extension,
                                    Profile* profile) {
@@ -879,21 +894,6 @@ void ExtensionAppsBase::ConvertVector(
       apps_out->push_back(Convert(extension.get(), readiness));
     }
   }
-}
-
-bool ExtensionAppsBase::RunExtensionEnableFlow(const std::string& app_id,
-                                               base::OnceClosure callback) {
-  if (extensions::util::IsAppLaunchableWithoutEnabling(app_id, profile_)) {
-    return false;
-  }
-
-  if (enable_flow_map_.find(app_id) == enable_flow_map_.end()) {
-    enable_flow_map_[app_id] =
-        std::make_unique<ExtensionAppsEnableFlow>(profile_, app_id);
-  }
-
-  enable_flow_map_[app_id]->Run(std::move(callback));
-  return true;
 }
 
 }  // namespace apps

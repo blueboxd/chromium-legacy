@@ -60,6 +60,9 @@
 #error "This file requires ARC support."
 #endif
 
+using autofill::FormRendererId;
+using autofill::FieldRendererId;
+
 namespace {
 
 using FormDataVector = std::vector<autofill::FormData>;
@@ -315,7 +318,9 @@ autofillManagerFromWebState:(web::WebState*)webState
 }
 
 - (void)checkIfSuggestionsAvailableForForm:(NSString*)formName
+                              uniqueFormID:(FormRendererId)uniqueFormID
                            fieldIdentifier:(NSString*)fieldIdentifier
+                             uniqueFieldID:(FieldRendererId)uniqueFieldID
                                  fieldType:(NSString*)fieldType
                                       type:(NSString*)type
                                 typedValue:(NSString*)typedValue
@@ -371,7 +376,9 @@ autofillManagerFromWebState:(web::WebState*)webState
 }
 
 - (void)retrieveSuggestionsForForm:(NSString*)formName
+                      uniqueFormID:(FormRendererId)uniqueFormID
                    fieldIdentifier:(NSString*)fieldIdentifier
+                     uniqueFieldID:(FieldRendererId)uniqueFieldID
                          fieldType:(NSString*)fieldType
                               type:(NSString*)type
                         typedValue:(NSString*)typedValue
@@ -380,7 +387,8 @@ autofillManagerFromWebState:(web::WebState*)webState
                  completionHandler:(SuggestionsReadyCompletion)completion {
   DCHECK(_mostRecentSuggestions)
       << "Requestor should have called "
-      << "|checkIfSuggestionsAvailableForForm:fieldIdentifier:fieldType:type:"
+      << "|checkIfSuggestionsAvailableForForm:uniqueFormId:fieldIdentifier:"
+         "uniqueFieldId:fieldType:type:"
       << "typedValue:frameID:isMainFrame:hasUserGesture:webState:"
       << "completionHandler:| and waited for the result before calling "
       << "|retrieveSuggestionsForForm:fieldIdentifier:fieldType:type:"

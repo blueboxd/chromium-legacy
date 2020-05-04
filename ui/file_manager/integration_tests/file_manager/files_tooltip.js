@@ -106,7 +106,7 @@
         await remoteCall.waitForElement(appId, [tooltipQueryVisible, '#label']);
     chrome.test.assertEq(
         'Files in this folders are read only.' +
-            'Some activities are not supported.',
+            ' Some activities are not supported.',
         label.text);
     chrome.test.assertEq('card-tooltip', tooltip.attributes.class);
     chrome.test.assertEq('card-label', label.attributes.class);

@@ -473,11 +473,17 @@
     <message name="IDS_NOTIFICATION_INCOGNITO_TAB" desc="Text used as notifications source when the notification is from incognito tabs.">
       Incognito tab
     </message>
-    <message name="IDS_SCREEN_CAPTURE_NOTIFICATION_TITLE" desc="Text to be shown as a notification when screen capture is in progress.">
-      Sharing your screen
+    <message name="IDS_NOTIFICATION_CATEGORY_COMPLETED_DOWNLOADS" desc="Label for completed download notifications, within a list of notification categories. [CHAR-LIMIT=32]">
+      Completed downloads
+    </message>
+    <message name="IDS_NOTIFICATION_CATEGORY_DOWNLOADS" desc="Label for notifications shown when something is downloading, within a list of notification categories. [CHAR-LIMIT=32]">
+      Downloads
     </message>
     <message name="IDS_NOTIFICATION_CATEGORY_MEDIA" desc="Label for notifications shown when media is playing or recording, within a list of notification categories. [CHAR-LIMIT=32]">
       Media
+    </message>
+    <message name="IDS_SCREEN_CAPTURE_NOTIFICATION_TITLE" desc="Text to be shown as a notification when screen capture is in progress.">
+      Sharing your screen
     </message>
 
     </messages>

@@ -36,7 +36,7 @@ WebAppShortcutManager::WebAppShortcutManager(
 
 WebAppShortcutManager::~WebAppShortcutManager() = default;
 
-void WebAppShortcutManager::OnWebAppWillBeUninstalled(const AppId& app_id) {
+void WebAppShortcutManager::OnWebAppUninstalled(const AppId& app_id) {
   const WebApp* app = GetWebAppRegistrar().GetAppById(app_id);
   DCHECK(app);
 
@@ -47,6 +47,10 @@ void WebAppShortcutManager::OnWebAppWillBeUninstalled(const AppId& app_id) {
   internals::PostShortcutIOTask(
       base::BindOnce(&internals::DeletePlatformShortcuts, shortcut_data_dir),
       std::move(shortcut_info));
+
+  // TODO(crbug.com/1071810, crbug.com/860581): Reintroduce BuildShortcutInfo
+  // method and move OnWebAppUninstalled override to the base class.
+  AppShortcutManager::OnWebAppUninstalled(app_id);
 }
 
 void WebAppShortcutManager::GetShortcutInfoForApp(

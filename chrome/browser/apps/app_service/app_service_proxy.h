@@ -30,10 +30,11 @@
 #include "chrome/browser/apps/app_service/crostini_apps.h"
 #include "chrome/browser/apps/app_service/extension_apps_chromeos.h"
 #include "chrome/browser/apps/app_service/plugin_vm_apps.h"
-#include "chrome/browser/apps/app_service/web_apps.h"
+#include "chrome/browser/apps/app_service/web_apps_chromeos.h"
 #include "chrome/services/app_service/public/cpp/instance_registry.h"
 #else
 #include "chrome/browser/apps/app_service/extension_apps.h"
+#include "chrome/browser/apps/app_service/web_apps.h"
 #endif  // OS_CHROMEOS
 
 class PrefRegistrySimple;
@@ -83,7 +84,7 @@ class AppServiceProxy : public KeyedService,
   apps::InstanceRegistry& InstanceRegistry();
 #endif
 
-  BrowserAppLauncher& BrowserAppLauncher();
+  apps::BrowserAppLauncher& BrowserAppLauncher();
 
   apps::PreferredAppsList& PreferredApps();
 
@@ -377,8 +378,7 @@ class AppServiceProxy : public KeyedService,
   // TODO(crbug.com/877898): Erase extension_web_apps_. One of these is always
   // nullptr.
   std::unique_ptr<ExtensionAppsChromeOs> extension_web_apps_;
-  // TODO(crbug.com/1074774): Move web_apps_ to Chrome.
-  std::unique_ptr<WebApps> web_apps_;
+  std::unique_ptr<WebAppsChromeOs> web_apps_;
 
   bool arc_is_registered_ = false;
 
@@ -397,6 +397,7 @@ class AppServiceProxy : public KeyedService,
 #else
   // TODO(crbug.com/877898): Erase extension_web_apps_ when BMO is on.
   std::unique_ptr<ExtensionApps> extension_web_apps_;
+  std::unique_ptr<WebApps> web_apps_;
 #endif
 
   Profile* profile_;

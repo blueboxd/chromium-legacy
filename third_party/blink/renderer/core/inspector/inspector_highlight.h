@@ -17,6 +17,8 @@ namespace blink {
 
 class Color;
 
+enum class ColorFormat { RGB, HEX, HSL };
+
 struct CORE_EXPORT InspectorHighlightConfig {
   USING_FAST_MALLOC(InspectorHighlightConfig);
 
@@ -39,6 +41,7 @@ struct CORE_EXPORT InspectorHighlightConfig {
   bool show_extension_lines;
 
   String selector_list;
+  ColorFormat color_format;
 };
 
 struct InspectorHighlightContrastInfo {
@@ -106,6 +109,7 @@ class CORE_EXPORT InspectorHighlight {
   bool show_rulers_;
   bool show_extension_lines_;
   float scale_;
+  ColorFormat color_format_;
 };
 
 }  // namespace blink

@@ -84,6 +84,10 @@ void CreateShortcutsWithInfo(ShortcutCreationReason reason,
                              CreateShortcutsCallback callback,
                              std::unique_ptr<ShortcutInfo> shortcut_info) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  if (shortcut_info == nullptr) {
+    std::move(callback).Run(/*created_shortcut=*/false);
+    return;
+  }
 
   // If the shortcut is for an application shortcut with the new bookmark app
   // flow disabled, there will be no corresponding extension.

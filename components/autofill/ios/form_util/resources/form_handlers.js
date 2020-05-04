@@ -110,10 +110,22 @@ function formActivity_(evt) {
   if (target !== lastFocusedElement) {
     return;
   }
+  let formUniqueIdString = '-1';
+  let fieldUniqueIdString = '-1';
+  try {
+    __gCrWeb.fill.setUniqueIDIfNeeded(target.form);
+    __gCrWeb.fill.setUniqueIDIfNeeded(target);
+    const uniqueID = Symbol.for('__gChrome~uniqueID');
+    formUniqueIdString = target.form[uniqueID].toString();
+    fieldUniqueIdString = target[uniqueID].toString();
+  } catch (e) {
+  }
   const msg = {
     'command': 'form.activity',
-    'formName': __gCrWeb.form.getFormIdentifier(evt.target.form),
+    'formName': __gCrWeb.form.getFormIdentifier(target.form),
+    'uniqueFormID': formUniqueIdString,
     'fieldIdentifier': __gCrWeb.form.getFieldIdentifier(target),
+    'uniqueFieldID': fieldUniqueIdString,
     'fieldType': fieldType,
     'type': evt.type,
     'value': value,
@@ -245,7 +257,9 @@ __gCrWeb.formHandlers['trackFormMutations'] = function(delay) {
         const msg = {
           'command': 'form.activity',
           'formName': '',
+          'uniqueFormID': '',
           'fieldIdentifier': '',
+          'uniqueFieldID': '',
           'fieldType': '',
           'type': 'form_changed',
           'value': '',

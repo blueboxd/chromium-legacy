@@ -4,19 +4,14 @@
 
 package org.chromium.weblayer_private;
 
-import android.app.NotificationChannel;
-import android.app.NotificationManager;
-import android.app.PendingIntent;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Resources;
-import android.os.Build;
 import android.os.RemoteException;
 import android.text.TextUtils;
 
 import androidx.core.app.NotificationCompat;
-import androidx.core.app.NotificationManagerCompat;
 
 import org.chromium.base.ContentUriUtils;
 import org.chromium.base.ContextUtils;
@@ -24,6 +19,12 @@ import org.chromium.base.Log;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
+import org.chromium.components.browser_ui.notifications.NotificationBuilder;
+import org.chromium.components.browser_ui.notifications.NotificationManagerProxy;
+import org.chromium.components.browser_ui.notifications.NotificationManagerProxyImpl;
+import org.chromium.components.browser_ui.notifications.NotificationMetadata;
+import org.chromium.components.browser_ui.notifications.PendingIntentProvider;
+import org.chromium.components.browser_ui.notifications.channels.ChannelsInitializer;
 import org.chromium.components.browser_ui.util.DownloadUtils;
 import org.chromium.weblayer_private.interfaces.APICallException;
 import org.chromium.weblayer_private.interfaces.DownloadError;
@@ -57,7 +58,6 @@ public final class DownloadImpl extends IDownload.Stub {
             DOWNLOADS_PREFIX + ".NOTIFICATION_MIME_TYPE";
     private static final String EXTRA_NOTIFICATION_PROFILE =
             DOWNLOADS_PREFIX + ".NOTIFICATION_PROFILE";
-    private static final String CHANNEL_ID = DOWNLOADS_PREFIX + ".channel";
     // The intent prefix is used as the notification's tag since it's guaranteed not to conflict
     // with intent prefixes used by other subsystems that display notifications.
     private static final String NOTIFICATION_TAG = DOWNLOADS_PREFIX;
@@ -71,8 +71,6 @@ public final class DownloadImpl extends IDownload.Stub {
     private boolean mDisableNotification;
 
     private final int mNotificationId;
-    private NotificationCompat.Builder mBuilder;
-    private static boolean sCreatedChannel = false;
     private static final HashMap<Integer, DownloadImpl> sMap = new HashMap<Integer, DownloadImpl>();
 
     /**
@@ -280,13 +278,8 @@ public final class DownloadImpl extends IDownload.Stub {
         throwIfNativeDestroyed();
         mDisableNotification = true;
 
-        if (mBuilder != null) {
-            NotificationManagerCompat notificationManager = getNotificationManager();
-            if (notificationManager != null) {
-                notificationManager.cancel(NOTIFICATION_TAG, mNotificationId);
-            }
-            mBuilder = null;
-        }
+        NotificationManagerProxy notificationManager = getNotificationManager();
+        notificationManager.cancel(NOTIFICATION_TAG, mNotificationId);
     }
 
     private void throwIfNativeDestroyed() {
@@ -313,83 +306,64 @@ public final class DownloadImpl extends IDownload.Stub {
         // TODO(jam): create a foreground service while the download is running to avoid the process
         // being shut down if the user switches apps.
 
-        if (!sCreatedChannel) createNotificationChannel();
-
         sMap.put(Integer.valueOf(mNotificationId), this);
-
-        Intent deleteIntent = createIntent();
-        deleteIntent.setAction(DELETE_INTENT);
-        deleteIntent.putExtra(EXTRA_NOTIFICATION_ID, mNotificationId);
-        deleteIntent.putExtra(EXTRA_NOTIFICATION_PROFILE, mProfileName);
-        PendingIntent deletePendingIntent = PendingIntent.getBroadcast(
-                ContextUtils.getApplicationContext(), mNotificationId, deleteIntent, 0);
-
-        mBuilder = new NotificationCompat.Builder(ContextUtils.getApplicationContext(), CHANNEL_ID)
-                           .setSmallIcon(android.R.drawable.stat_sys_download)
-                           .setOngoing(true)
-                           .setDeleteIntent(deletePendingIntent)
-                           .setPriority(NotificationCompat.PRIORITY_DEFAULT);
 
         updateNotification();
     }
 
     public void downloadProgressChanged() {
-        if (mBuilder == null) return;
-
         updateNotification();
     }
 
     public void downloadCompleted() {
-        if (mBuilder == null) return;
-
         updateNotification();
     }
 
     public void downloadFailed() {
-        if (mBuilder == null) return;
         updateNotification();
     }
 
-    private void createNotificationChannel() {
-        // Create the NotificationChannel, but only on API 26+ because
-        // the NotificationChannel class is new and not in the support library
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            int importance = NotificationManager.IMPORTANCE_LOW;
-            NotificationChannel channel =
-                    new NotificationChannel(CHANNEL_ID, "Downloads", importance);
-            NotificationManager notificationManager =
-                    ContextUtils.getApplicationContext().getSystemService(
-                            NotificationManager.class);
-            notificationManager.createNotificationChannel(channel);
-        }
-
-        sCreatedChannel = true;
-    }
-
     private void updateNotification() {
-        if (mBuilder == null) return;
+        NotificationManagerProxy notificationManager = getNotificationManager();
+        if (mDisableNotification || notificationManager == null) return;
 
-        NotificationManagerCompat notificationManager = getNotificationManager();
+        Context context = ContextUtils.getApplicationContext();
+
+        Intent deleteIntent = createIntent();
+        deleteIntent.setAction(DELETE_INTENT);
+        deleteIntent.putExtra(EXTRA_NOTIFICATION_ID, mNotificationId);
+        deleteIntent.putExtra(EXTRA_NOTIFICATION_PROFILE, mProfileName);
+        PendingIntentProvider deletePendingIntent =
+                PendingIntentProvider.getBroadcast(context, mNotificationId, deleteIntent, 0);
+
+        ChannelsInitializer channelsInitializer = new ChannelsInitializer(notificationManager,
+                WebLayerNotificationChannels.getInstance(), context.getResources());
+
+        @DownloadState
+        int state = getState();
+        String channelId = state == DownloadState.COMPLETE
+                ? WebLayerNotificationChannels.ChannelId.COMPLETED_DOWNLOADS
+                : WebLayerNotificationChannels.ChannelId.ACTIVE_DOWNLOADS;
+
+        NotificationBuilder builder =
+                new NotificationBuilder(context, channelId, channelsInitializer,
+                        new NotificationMetadata(0, NOTIFICATION_TAG, mNotificationId));
+        builder.setOngoing(true)
+                .setDeleteIntent(deletePendingIntent)
+                .setPriorityBeforeO(NotificationCompat.PRIORITY_DEFAULT);
 
         // The filename might not have been available initially.
         String location = getLocation();
         if (!TextUtils.isEmpty((location))) {
-            mBuilder.setContentTitle((new File(location)).getName());
+            builder.setContentTitle((new File(location)).getName());
         }
 
-        @DownloadState
-        int state = getState();
         if (state == DownloadState.CANCELLED) {
-            if (notificationManager != null) {
-                notificationManager.cancel(NOTIFICATION_TAG, mNotificationId);
-            }
-            mBuilder = null;
+            notificationManager.cancel(NOTIFICATION_TAG, mNotificationId);
+            mDisableNotification = true;
             return;
         }
 
-        mBuilder.mActions.clear();
-
-        Context context = ContextUtils.getApplicationContext();
         Resources resources = context.getResources();
 
         if (state == DownloadState.COMPLETE) {
@@ -399,20 +373,20 @@ public final class DownloadImpl extends IDownload.Stub {
             openIntent.putExtra(EXTRA_NOTIFICATION_PROFILE, mProfileName);
             openIntent.putExtra(EXTRA_NOTIFICATION_LOCATION, getLocation());
             openIntent.putExtra(EXTRA_NOTIFICATION_MIME_TYPE, getMimeType());
-            PendingIntent openPendingIntent =
-                    PendingIntent.getBroadcast(context, mNotificationId, openIntent, 0);
+            PendingIntentProvider openPendingIntent =
+                    PendingIntentProvider.getBroadcast(context, mNotificationId, openIntent, 0);
 
             String contextText =
                     resources.getString(R.string.download_notification_completed_with_size,
                             DownloadUtils.getStringForBytes(context, getTotalBytes()));
-            mBuilder.setContentText(contextText)
+            builder.setContentText(contextText)
                     .setOngoing(false)
                     .setSmallIcon(android.R.drawable.stat_sys_download_done)
                     .setContentIntent(openPendingIntent)
                     .setAutoCancel(true)
                     .setProgress(0, 0, false);
         } else if (state == DownloadState.FAILED) {
-            mBuilder.setContentText(resources.getString(R.string.download_notification_failed))
+            builder.setContentText(resources.getString(R.string.download_notification_failed))
                     .setOngoing(false)
                     .setSmallIcon(android.R.drawable.stat_sys_download_done)
                     .setProgress(0, 0, false);
@@ -421,8 +395,8 @@ public final class DownloadImpl extends IDownload.Stub {
             pauseIntent.setAction(PAUSE_INTENT);
             pauseIntent.putExtra(EXTRA_NOTIFICATION_ID, mNotificationId);
             pauseIntent.putExtra(EXTRA_NOTIFICATION_PROFILE, mProfileName);
-            PendingIntent pausePendingIntent =
-                    PendingIntent.getBroadcast(context, mNotificationId, pauseIntent, 0);
+            PendingIntentProvider pausePendingIntent =
+                    PendingIntentProvider.getBroadcast(context, mNotificationId, pauseIntent, 0);
 
             long bytes = getReceivedBytes();
             long totalBytes = getTotalBytes();
@@ -440,10 +414,10 @@ public final class DownloadImpl extends IDownload.Stub {
                 contentText = resources.getString(
                         R.string.download_ui_determinate_bytes, bytesString, totalString);
             }
-            mBuilder.setContentText(contentText)
+            builder.setContentText(contentText)
                     .addAction(0 /* no icon */,
                             resources.getString(R.string.download_notification_pause_button),
-                            pausePendingIntent)
+                            pausePendingIntent, 0 /* no action for UMA */)
                     .setSmallIcon(android.R.drawable.stat_sys_download)
                     .setProgress(100, progressCurrent, indeterminate);
         } else if (state == DownloadState.PAUSED) {
@@ -451,12 +425,12 @@ public final class DownloadImpl extends IDownload.Stub {
             resumeIntent.setAction(RESUME_INTENT);
             resumeIntent.putExtra(EXTRA_NOTIFICATION_ID, mNotificationId);
             resumeIntent.putExtra(EXTRA_NOTIFICATION_PROFILE, mProfileName);
-            PendingIntent resumePendingIntent =
-                    PendingIntent.getBroadcast(context, mNotificationId, resumeIntent, 0);
-            mBuilder.setContentText(resources.getString(R.string.download_notification_paused))
+            PendingIntentProvider resumePendingIntent =
+                    PendingIntentProvider.getBroadcast(context, mNotificationId, resumeIntent, 0);
+            builder.setContentText(resources.getString(R.string.download_notification_paused))
                     .addAction(0 /* no icon */,
                             resources.getString(R.string.download_notification_resume_button),
-                            resumePendingIntent)
+                            resumePendingIntent, 0 /* no action for UMA */)
                     .setSmallIcon(android.R.drawable.ic_media_pause)
                     .setProgress(0, 0, false);
         }
@@ -466,28 +440,21 @@ public final class DownloadImpl extends IDownload.Stub {
             cancelIntent.setAction(CANCEL_INTENT);
             cancelIntent.putExtra(EXTRA_NOTIFICATION_ID, mNotificationId);
             cancelIntent.putExtra(EXTRA_NOTIFICATION_PROFILE, mProfileName);
-            PendingIntent cancelPendingIntent =
-                    PendingIntent.getBroadcast(context, mNotificationId, cancelIntent, 0);
-            mBuilder.addAction(0 /* no icon */,
+            PendingIntentProvider cancelPendingIntent =
+                    PendingIntentProvider.getBroadcast(context, mNotificationId, cancelIntent, 0);
+            builder.addAction(0 /* no icon */,
                     resources.getString(R.string.download_notification_cancel_button),
-                    cancelPendingIntent);
+                    cancelPendingIntent, 0 /* no action for UMA */);
         }
 
-        if (notificationManager != null) {
-            // mNotificationId is a unique int for each notification that you must define.
-            notificationManager.notify(NOTIFICATION_TAG, mNotificationId, mBuilder.build());
-        }
+        notificationManager.notify(builder.buildChromeNotification());
     }
 
     /**
-     * Returns the notification manager. May return null if there's no context, e.g. when the
-     * fragment is moving between activies or when the activity is destroyed before the fragment.
+     * Returns the notification manager.
      */
-    private NotificationManagerCompat getNotificationManager() {
-        if (ContextUtils.getApplicationContext() == null) {
-            return null;
-        }
-        return NotificationManagerCompat.from(ContextUtils.getApplicationContext());
+    private static NotificationManagerProxy getNotificationManager() {
+        return new NotificationManagerProxyImpl(ContextUtils.getApplicationContext());
     }
 
     @CalledByNative

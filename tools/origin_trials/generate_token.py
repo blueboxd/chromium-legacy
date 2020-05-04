@@ -9,7 +9,8 @@ usage: generate_token.py [-h] [--key-file KEY_FILE]
                          [--expire-days EXPIRE_DAYS |
                           --expire-timestamp EXPIRE_TIMESTAMP]
                          [--is_subdomain | --no-subdomain]
-                         origin trial_name
+                         [--is_third-party | --no-third-party]
+                         version origin trial_name
 
 Run "generate_token.py -h" for more help on usage.
 """
@@ -36,11 +37,24 @@ import ed25519
 # no longer than 63 ASCII characters)
 DNS_LABEL_REGEX = re.compile(r"^(?!-)[a-z\d-]{1,63}(?<!-)$", re.IGNORECASE)
 
-# This script generates Version 2 tokens.
-VERSION = "\x02"
+# This script generates Version 2 and 3 tokens.
+VERSION = {"2": (2, "\x02"), "3": (3, "\x03")}
 
 # Default key file, relative to script_dir.
 DEFAULT_KEY_FILE = 'eftest.key'
+
+
+def VersionFromArg(arg):
+  """Determines whether a string represents a valid version.
+  Only Version 2 and Version 3 are currently supported.
+
+  Returns a tuple (version number, version byte) if version is valid.
+  Returns None if version is not valid.
+  """
+  if not arg or len(arg) > 1:
+    return None
+  return VERSION.get(arg, None)
+
 
 def HostnameFromArg(arg):
   """Determines whether a string represents a valid hostname.
@@ -89,12 +103,17 @@ def ExpiryFromArgs(args):
     return int(args.expire_timestamp)
   return (int(time.time()) + (int(args.expire_days) * 86400))
 
-def GenerateTokenData(origin, is_subdomain, feature_name, expiry):
+
+def GenerateTokenData(version, origin, is_subdomain, is_third_party,
+                      feature_name, expiry):
   data = {"origin": origin,
           "feature": feature_name,
           "expiry": expiry}
   if is_subdomain is not None:
     data["isSubdomain"] = is_subdomain
+  # Only version 3 token supports is_third_party flag.
+  if version == 3 and is_third_party is not None:
+    data["isThirdParty"] = is_third_party
   return json.dumps(data).encode('utf-8')
 
 def GenerateDataToSign(version, data):
@@ -112,6 +131,11 @@ def main():
 
   parser = argparse.ArgumentParser(
       description="Generate tokens for enabling experimental features")
+  parser.add_argument(
+      "version",
+      help="Token version to use. Currently only version 2"
+      "and version 3 are supported.",
+      type=VersionFromArg)
   parser.add_argument("origin",
                       help="Origin for which to enable the feature. This can "
                            "be either a hostname (default scheme HTTPS, "
@@ -138,6 +162,21 @@ def main():
                                action="store_false")
   parser.set_defaults(is_subdomain=None)
 
+  third_party_group = parser.add_mutually_exclusive_group()
+  third_party_group.add_argument(
+      "--is-third-party",
+      help="Token will enable the feature for third "
+      "party origins. This option is only available for token version 3",
+      dest="is_third_party",
+      action="store_true")
+  third_party_group.add_argument(
+      "--no-third-party",
+      help="Token will only match first party origin. This option is only "
+      "available for token version 3",
+      dest="is_third_party",
+      action="store_false")
+  parser.set_defaults(is_third_party=None)
+
   expiry_group = parser.add_mutually_exclusive_group()
   expiry_group.add_argument("--expire-days",
                             help="Days from now when the token should expire",
@@ -162,9 +201,18 @@ def main():
     print("Unable to use the specified private key file.")
     sys.exit(1)
 
-  token_data = GenerateTokenData(args.origin, args.is_subdomain,
+  if (not args.version):
+    print("Invalid token version.")
+    sys.exit(1)
+
+  if (args.is_third_party is not None and args.version != 3):
+    print("Only version 3 token supports is_third_party flag.")
+    sys.exit(1)
+
+  token_data = GenerateTokenData(args.version[0], args.origin,
+                                 args.is_subdomain, args.is_third_party,
                                  args.trial_name, expiry)
-  data_to_sign = GenerateDataToSign(VERSION, token_data)
+  data_to_sign = GenerateDataToSign(args.version[1], token_data)
   signature = Sign(private_key, data_to_sign)
 
   # Verify that that the signature is correct before printing it.
@@ -178,8 +226,11 @@ def main():
 
   # Output the token details
   print("Token details:")
+  print(" Version: %s" % args.version[0])
   print(" Origin: %s" % args.origin)
   print(" Is Subdomain: %s" % args.is_subdomain)
+  if args.version[0] == 3:
+    print(" Is Third Party: %s" % args.is_third_party)
   print(" Feature: %s" % args.trial_name)
   print(" Expiry: %d (%s UTC)" % (expiry, datetime.utcfromtimestamp(expiry)))
   print(" Signature: %s" % ", ".join('0x%02x' % ord(x) for x in signature))
@@ -187,7 +238,7 @@ def main():
   print()
 
   # Output the properly-formatted token.
-  print(FormatToken(VERSION, signature, token_data))
+  print(FormatToken(args.version[1], signature, token_data))
 
 
 if __name__ == "__main__":

@@ -170,14 +170,12 @@ bool AppBannerManagerDesktop::IsExternallyInstalledWebApp() {
   return false;
 }
 
-bool AppBannerManagerDesktop::IsWebAppConsideredInstalled() {
-  DCHECK(!manifest_.IsEmpty());
-  return registrar().IsLocallyInstalled(manifest_.start_url);
-}
-
 bool AppBannerManagerDesktop::ShouldAllowWebAppReplacementInstall() {
+  // Only allow replacement install if this specific app is already installed.
   web_app::AppId app_id = web_app::GenerateAppIdFromURL(manifest_.start_url);
-  DCHECK(registrar().IsLocallyInstalled(app_id));
+  if (!registrar().IsLocallyInstalled(app_id))
+    return false;
+
   if (IsExternallyInstalledWebApp())
     return false;
   auto display_mode = registrar().GetAppUserDisplayMode(app_id);

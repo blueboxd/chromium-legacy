@@ -93,11 +93,9 @@ class ShortcutHelper {
   // Returns an empty string if there are no matches.
   static std::string QueryFirstWebApkPackage(const GURL& url);
 
-  // Returns true if WebAPKs are enabled and there is an installed WebAPK which
-  // can handle |start_url|, or there is one is being installed.
+  // Returns true if there is an installed WebAPK which can handle |url|.
   static bool IsWebApkInstalled(content::BrowserContext* browser_context,
-                                const GURL& start_url,
-                                const GURL& manifest_url);
+                                const GURL& url);
 
   // Returns true if there is a WebAPK installed under |origin|, and false
   // otherwise.

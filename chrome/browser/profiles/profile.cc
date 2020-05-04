@@ -153,6 +153,17 @@ Profile::OTRProfileID Profile::OTRProfileID::ConvertFromJavaOTRProfileID(
       base::UTF16ToASCII(base::android::ConvertJavaStringToUTF16(
           env, Java_OTRProfileID_getProfileID(env, j_otr_profile_id))));
 }
+
+// static
+base::android::ScopedJavaLocalRef<jobject>
+JNI_OTRProfileID_CreateUniqueOTRProfileID(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jstring>& j_profile_id_prefix) {
+  Profile::OTRProfileID profile_id =
+      Profile::OTRProfileID::CreateUnique(base::UTF16ToASCII(
+          base::android::ConvertJavaStringToUTF16(env, j_profile_id_prefix)));
+  return profile_id.ConvertToJavaOTRProfileID(env);
+}
 #endif
 
 Profile::Profile()

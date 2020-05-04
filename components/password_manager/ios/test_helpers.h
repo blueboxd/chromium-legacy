@@ -20,9 +20,12 @@ namespace test_helpers {
 // Populates |form_data| with test values.
 void SetPasswordFormFillData(const std::string& origin,
                              const char* form_name,
+                             uint32_t unique_renderer_id,
                              const char* username_field,
+                             uint32_t username_field_id,
                              const char* username_value,
                              const char* password_field,
+                             uint32_t password_field_id,
                              const char* password_value,
                              const char* additional_username,
                              const char* additional_password,
@@ -32,9 +35,12 @@ void SetPasswordFormFillData(const std::string& origin,
 // Populates |fill_data| with test values.
 void SetFillData(const std::string& origin,
                  const char* form_name,
+                 uint32_t unique_renderer_id,
                  const char* username_field,
+                 uint32_t username_field_id,
                  const char* username_value,
                  const char* password_field,
+                 uint32_t password_field_id,
                  const char* password_value,
                  password_manager::FillData* fill_data);
 

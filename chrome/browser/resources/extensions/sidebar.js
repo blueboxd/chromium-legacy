@@ -16,10 +16,6 @@ Polymer({
 
   _template: html`{__html_template__}`,
 
-  properties: {
-    isSupervised: Boolean,
-  },
-
   hostAttributes: {
     role: 'navigation',
   },
@@ -42,7 +38,6 @@ Polymer({
 
   /** @private */
   onMoreExtensionsTap_() {
-    assert(!this.isSupervised);
     chrome.metricsPrivate.recordUserAction('Options_GetMoreExtensions');
   },
 });

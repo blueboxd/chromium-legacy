@@ -72,6 +72,7 @@ class BLINK_COMMON_EXPORT TrialToken {
   std::string feature_name() { return feature_name_; }
   base::Time expiry_time() { return expiry_time_; }
   std::string signature() { return signature_; }
+  bool is_third_party() const { return is_third_party_; }
 
  protected:
   // Tests can access the Parse method directly to validate it, and so are
@@ -82,18 +83,21 @@ class BLINK_COMMON_EXPORT TrialToken {
   friend int ::LLVMFuzzerTestOneInput(const uint8_t*, size_t);
 
   // If the string represents a properly signed and well-formed token, success
-  // is returned, with the token payload and signature returned in the
-  // |out_token_payload| and |out_token_signature| parameters, respectively.
-  // Otherwise,the return code indicates what was wrong with the string, and
-  // |out_token_payload| and |out_token_signature| are unchanged.
+  // is returned, with the token payload, signature and version returned in the
+  // |out_token_payload|, |out_token_signature| and |out_token_version|
+  // parameters, respectively. Otherwise,the return code indicates what was
+  // wrong with the string, and |out_token_payload|, |out_token_signature| and
+  // |out_token_version| are unchanged.
   static OriginTrialTokenStatus Extract(base::StringPiece token_text,
                                         base::StringPiece public_key,
                                         std::string* out_token_payload,
-                                        std::string* out_token_signature);
+                                        std::string* out_token_signature,
+                                        uint8_t* out_token_version);
 
   // Returns a token object if the string represents a well-formed JSON token
   // payload, or nullptr otherwise.
-  static std::unique_ptr<TrialToken> Parse(const std::string& token_payload);
+  static std::unique_ptr<TrialToken> Parse(const std::string& token_payload,
+                                           const uint8_t version);
 
   bool ValidateOrigin(const url::Origin& origin) const;
   bool ValidateFeatureName(base::StringPiece feature_name) const;
@@ -107,7 +111,8 @@ class BLINK_COMMON_EXPORT TrialToken {
   TrialToken(const url::Origin& origin,
              bool match_subdomains,
              const std::string& feature_name,
-             uint64_t expiry_timestamp);
+             uint64_t expiry_timestamp,
+             bool is_third_party);
 
   // The origin for which this token is valid. Must be a secure origin.
   url::Origin origin_;
@@ -123,6 +128,12 @@ class BLINK_COMMON_EXPORT TrialToken {
 
   // The signature identifying the fully signed contents of the token.
   std::string signature_;
+
+  // Indicates whether the token should validate against third party origin.
+  // See design doc
+  // https://docs.google.com/document/d/1xALH9W7rWmX0FpjudhDeS2TNTEOXuPn4Tlc9VmuPdHA
+  // for more details.
+  bool is_third_party_;
 };
 
 }  // namespace blink

@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/json/json_string_value_serializer.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
@@ -26,6 +27,25 @@ const char kAppServicePreferredApps[] = "app_service.preferred_apps";
 const base::FilePath::CharType kPreferredAppsDirname[] =
     FILE_PATH_LITERAL("PreferredApps");
 
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class PreferredAppsFileIOAction {
+  kWriteSuccess = 0,
+  kWriteFailed = 1,
+  kReadSuccess = 2,
+  kReadFailed = 3,
+  kMaxValue = kReadFailed,
+};
+
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class PreferredAppsUpdateAction {
+  kAdd = 0,
+  kDeleteForFilter = 1,
+  kDeleteForAppId = 2,
+  kMaxValue = kDeleteForAppId,
+};
+
 void Connect(apps::mojom::Publisher* publisher,
              apps::mojom::Subscriber* subscriber) {
   mojo::PendingRemote<apps::mojom::Subscriber> clone;
@@ -34,14 +54,27 @@ void Connect(apps::mojom::Publisher* publisher,
   publisher->Connect(std::move(clone), nullptr);
 }
 
+void LogPreferredAppFileIOAction(PreferredAppsFileIOAction action) {
+  UMA_HISTOGRAM_ENUMERATION("PreferredApps.FileIOAction", action);
+}
+
+void LogPreferredAppUpdateAction(PreferredAppsUpdateAction action) {
+  UMA_HISTOGRAM_ENUMERATION("PreferredApps.UpdateAction", action);
+}
+
 // Performs blocking I/O. Called on another thread.
 void WriteDataBlocking(const base::FilePath& preferred_apps_file,
                        const std::string& preferred_apps) {
   base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
                                                 base::BlockingType::MAY_BLOCK);
-  if (base::WriteFile(preferred_apps_file, preferred_apps.c_str(),
-                      preferred_apps.size()) == -1) {
+  bool write_success =
+      base::WriteFile(preferred_apps_file, preferred_apps.c_str(),
+                      preferred_apps.size()) != -1;
+  if (write_success) {
+    LogPreferredAppFileIOAction(PreferredAppsFileIOAction::kWriteSuccess);
+  } else {
     DVLOG(0) << "Fail to write preferred apps to " << preferred_apps_file;
+    LogPreferredAppFileIOAction(PreferredAppsFileIOAction::kWriteFailed);
   }
 }
 
@@ -50,8 +83,13 @@ std::string ReadDataBlocking(const base::FilePath& preferred_apps_file) {
   base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
                                                 base::BlockingType::MAY_BLOCK);
   std::string preferred_apps_string;
-  if (!base::ReadFileToString(preferred_apps_file, &preferred_apps_string)) {
+  bool read_success =
+      base::ReadFileToString(preferred_apps_file, &preferred_apps_string);
+  if (read_success) {
+    LogPreferredAppFileIOAction(PreferredAppsFileIOAction::kReadSuccess);
+  } else {
     DVLOG(0) << "Fail to read file from " << preferred_apps_file;
+    LogPreferredAppFileIOAction(PreferredAppsFileIOAction::kReadFailed);
   }
   return preferred_apps_string;
 }
@@ -271,6 +309,8 @@ void AppServiceImpl::AddPreferredApp(apps::mojom::AppType app_type,
   apps::mojom::ReplacedAppPreferencesPtr replaced_app_preferences =
       preferred_apps_.AddPreferredApp(app_id, intent_filter);
 
+  LogPreferredAppUpdateAction(PreferredAppsUpdateAction::kAdd);
+
   WriteToJSON(profile_dir_, preferred_apps_);
 
   for (auto& subscriber : subscribers_) {
@@ -307,6 +347,8 @@ void AppServiceImpl::RemovePreferredApp(apps::mojom::AppType app_type,
 
   preferred_apps_.DeleteAppId(app_id);
 
+  LogPreferredAppUpdateAction(PreferredAppsUpdateAction::kDeleteForAppId);
+
   WriteToJSON(profile_dir_, preferred_apps_);
 }
 
@@ -330,6 +372,8 @@ void AppServiceImpl::RemovePreferredAppForFilter(
   for (auto& subscriber : subscribers_) {
     subscriber->OnPreferredAppRemoved(app_id, intent_filter->Clone());
   }
+
+  LogPreferredAppUpdateAction(PreferredAppsUpdateAction::kDeleteForFilter);
 }
 
 PreferredAppsList& AppServiceImpl::GetPreferredAppsForTesting() {

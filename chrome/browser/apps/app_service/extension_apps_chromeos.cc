@@ -328,8 +328,10 @@ void ExtensionAppsChromeOs::GetMenuModel(const std::string& app_id,
                                          apps::mojom::MenuType menu_type,
                                          int64_t display_id,
                                          GetMenuModelCallback callback) {
+  apps::mojom::MenuItemsPtr menu_items = apps::mojom::MenuItems::New();
   const auto* extension = MaybeGetExtension(app_id);
   if (!extension) {
+    std::move(callback).Run(std::move(menu_items));
     return;
   }
 
@@ -338,7 +340,6 @@ void ExtensionAppsChromeOs::GetMenuModel(const std::string& app_id,
     return;
   }
 
-  apps::mojom::MenuItemsPtr menu_items = apps::mojom::MenuItems::New();
   bool is_platform_app = extension->is_platform_app();
   bool is_system_web_app = web_app::WebAppProvider::Get(profile())
                                ->system_web_app_manager()

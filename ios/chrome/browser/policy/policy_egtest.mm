@@ -12,7 +12,11 @@
 #include "ios/chrome/browser/chrome_switches.h"
 #import "ios/chrome/browser/policy/policy_app_interface.h"
 #include "ios/chrome/browser/pref_names.h"
+#import "ios/chrome/browser/translate/translate_app_interface.h"
+#import "ios/chrome/browser/ui/popup_menu/popup_menu_constants.h"
 #include "ios/chrome/test/earl_grey/chrome_earl_grey.h"
+#import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
+#import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #include "ios/chrome/test/earl_grey/chrome_test_case.h"
 #include "ios/testing/earl_grey/app_launch_configuration.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -82,6 +86,12 @@ void VerifyBoolPolicy(const std::string& policy_key,
   SetPolicy(true, policy_key);
   GREYAssertTrue([ChromeEarlGrey userBooleanPref:pref_name],
                  @"Preference was unexpectedly false");
+}
+
+// Returns a matcher for the Translate manual trigger button in the tools menu.
+id<GREYMatcher> ToolsMenuTranslateButton() {
+  return grey_allOf(grey_accessibilityID(kToolsMenuTranslateId),
+                    grey_interactable(), nil);
 }
 
 }  // namespace
@@ -174,6 +184,52 @@ void VerifyBoolPolicy(const std::string& policy_key,
 - (void)testSearchSuggestEnabled {
   VerifyBoolPolicy(policy::key::kSearchSuggestEnabled,
                    prefs::kSearchSuggestEnabled);
+}
+
+// Tests that language detection is not performed and the tool manual trigger
+// button is disabled when the pref kOfferTranslateEnabled is set to false.
+- (void)testTranslateEnabled {
+  GREYAssertTrue(self.testServer->Start(), @"Test server failed to start.");
+  const GURL testURL = self.testServer->GetURL("/pony.html");
+  const std::string pageText = "pony";
+
+  // Set up a fake language detection observer.
+  [TranslateAppInterface
+      setUpWithScriptServer:base::SysUTF8ToNSString(testURL.spec())];
+
+  // Disable TranslateEnabled policy.
+  SetPolicy(false, policy::key::kTranslateEnabled);
+
+  // Open some webpage.
+  [ChromeEarlGrey loadURL:testURL];
+
+  // Check that no language has been detected.
+  GREYCondition* condition = [GREYCondition
+      conditionWithName:@"Wait for language detection"
+                  block:^BOOL() {
+                    return [TranslateAppInterface isLanguageDetected];
+                  }];
+
+  GREYAssertFalse([condition waitWithTimeout:2],
+                  @"The Language is unexpectedly detected.");
+
+  // Make sure the Translate manual trigger button disabled.
+  [ChromeEarlGreyUI openToolsMenu];
+  [[[EarlGrey selectElementWithMatcher:ToolsMenuTranslateButton()]
+         usingSearchAction:grey_scrollInDirection(kGREYDirectionDown,
+                                                  /*amount=*/200)
+      onElementWithMatcher:chrome_test_util::ToolsMenuView()]
+      assertWithMatcher:grey_accessibilityTrait(
+                            UIAccessibilityTraitNotEnabled)];
+
+  // Close the tools menu.
+  [ChromeTestCase removeAnyOpenMenusAndInfoBars];
+
+  // Remove any tranlation related setup properly.
+  [TranslateAppInterface tearDown];
+
+  // Enable the policy.
+  SetPolicy(true, policy::key::kTranslateEnabled);
 }
 
 @end

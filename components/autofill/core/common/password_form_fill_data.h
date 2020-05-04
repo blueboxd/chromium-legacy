@@ -43,19 +43,6 @@ struct PasswordFormFillData {
   using LoginCollection = std::vector<PasswordAndMetadata>;
 
   PasswordFormFillData();
-
-  // Create a FillData structure in preparation for autofilling a form, from
-  // basic_data identifying which form to fill, and a collection of matching
-  // stored logins to use as username/password values. |preferred_match| should
-  // equal (address) one of matches. |wait_for_username| is true if we should
-  // not autofill anything until the user typed in a valid username and blurred
-  // the field. If |enable_possible_usernames| is true, we will populate
-  // possible_usernames.
-  PasswordFormFillData(const PasswordForm& form_on_page,
-                       const std::vector<const PasswordForm*>& matches,
-                       const PasswordForm& preferred_match,
-                       bool wait_for_username);
-
   PasswordFormFillData(const PasswordFormFillData&);
   PasswordFormFillData& operator=(const PasswordFormFillData&);
   PasswordFormFillData(PasswordFormFillData&&);

@@ -14,7 +14,7 @@ source_set("lookalikes") {
   ]
   deps = [
     "//base",
-    "//components/lookalikes",
+    "//components/lookalikes/core",
     "//components/security_interstitials/core",
     "//components/url_formatter/spoof_checks/top_domains:common",
     "//ios/components/security_interstitials",

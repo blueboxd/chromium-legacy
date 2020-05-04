@@ -5,6 +5,7 @@
 #import "chrome/updater/mac/setup/info_plist.h"
 
 #include "base/files/file_path.h"
+#include "base/mac/bundle_locations.h"
 #include "base/mac/foundation_util.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/sys_string_conversions.h"
@@ -68,6 +69,22 @@ InfoPlist::GoogleUpdateServiceLaunchdNameVersioned() const {
   return base::ScopedCFTypeRef<CFStringRef>(CFStringCreateWithFormat(
       kCFAllocatorDefault, nullptr, CFSTR("%@.%s"),
       CopyGoogleUpdateServiceLaunchDName().get(), bundle_version_.c_str()));
+}
+
+base::FilePath InfoPlistPath(const base::FilePath& bundle_path) {
+  return bundle_path.Append("Contents").Append("Info.plist");
+}
+
+base::FilePath InfoPlistPath() {
+  return InfoPlistPath(base::mac::OuterBundlePath());
+}
+
+base::FilePath GetLocalLibraryDirectory() {
+  base::FilePath local_library_path;
+  if (!base::mac::GetLocalDirectory(NSLibraryDirectory, &local_library_path)) {
+    VLOG(1) << "Could not get local library path";
+  }
+  return local_library_path;
 }
 
 }  // namespace updater

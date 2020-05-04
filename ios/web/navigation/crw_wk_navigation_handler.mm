@@ -1448,7 +1448,6 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
     headers->GetNormalizedHeader("content-disposition", &contentDisposition);
   }
 
-  ui::PageTransition transition = ui::PAGE_TRANSITION_AUTO_SUBFRAME;
   NSString* HTTPMethod = @"GET";
   if (WKResponse.forMainFrame) {
     web::NavigationContextImpl* context =
@@ -1460,22 +1459,12 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
     }
     // Navigation callbacks can only be called for the main frame.
     self.webStateImpl->OnNavigationFinished(context);
-    transition = context->GetPageTransition();
-    bool transitionIsLink = ui::PageTransitionTypeIncludingQualifiersIs(
-        transition, ui::PAGE_TRANSITION_LINK);
-    if (transitionIsLink && !context->HasUserGesture()) {
-      // Link click is not possible without user gesture, so this transition
-      // was incorrectly classified and should be "client redirect" instead.
-      // TODO(crbug.com/549301): Remove this workaround when transition
-      // detection is fixed.
-      transition = ui::PAGE_TRANSITION_CLIENT_REDIRECT;
-    }
   }
   web::DownloadController::FromBrowserState(
       self.webStateImpl->GetBrowserState())
       ->CreateDownloadTask(self.webStateImpl, [NSUUID UUID].UUIDString,
                            responseURL, HTTPMethod, contentDisposition,
-                           contentLength, MIMEType, transition);
+                           contentLength, MIMEType);
 }
 
 // Updates URL for navigation context and navigation item.

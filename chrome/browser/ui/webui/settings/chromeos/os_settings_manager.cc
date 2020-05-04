@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/webui/settings/chromeos/os_settings_manager.h"
 
+#include "base/feature_list.h"
 #include "chrome/browser/chromeos/local_search_service/local_search_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/settings/chromeos/about_section.h"
@@ -26,6 +27,7 @@
 #include "chrome/browser/ui/webui/settings/chromeos/reset_section.h"
 #include "chrome/browser/ui/webui/settings/chromeos/search/search_concept.h"
 #include "chrome/browser/ui/webui/settings/chromeos/search_section.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -71,7 +73,8 @@ OsSettingsManager::OsSettingsManager(
     SupervisedUserService* supervised_user_service,
     KerberosCredentialsManager* kerberos_credentials_manager,
     ArcAppListPrefs* arc_app_list_prefs,
-    signin::IdentityManager* identity_manager)
+    signin::IdentityManager* identity_manager,
+    android_sms::AndroidSmsService* android_sms_service)
     : index_(local_search_service->GetIndex(
           local_search_service::IndexId::kCrosSettings)) {
   // Add per-page string providers.
@@ -82,7 +85,8 @@ OsSettingsManager::OsSettingsManager(
   sections_.push_back(
       std::make_unique<BluetoothSection>(profile, /*delegate=*/this));
   sections_.push_back(std::make_unique<MultiDeviceSection>(
-      profile, /*delegate=*/this, multidevice_setup_client));
+      profile, /*delegate=*/this, multidevice_setup_client, android_sms_service,
+      profile->GetPrefs()));
   sections_.push_back(std::make_unique<PeopleSection>(
       profile, /*delegate=*/this, sync_service, supervised_user_service,
       kerberos_credentials_manager, identity_manager, profile->GetPrefs()));
@@ -146,8 +150,8 @@ void OsSettingsManager::Shutdown() {
 
 void OsSettingsManager::AddSearchTags(
     const std::vector<SearchConcept>& tags_group) {
-  // Note: Can be null after Shutdown().
-  if (!index_)
+  // Note: |index_| is null after Shutdown().
+  if (!index_ || !base::FeatureList::IsEnabled(features::kNewOsSettingsSearch))
     return;
 
   index_->AddOrUpdate(ConceptVectorToDataVector(tags_group));
@@ -161,8 +165,8 @@ void OsSettingsManager::AddSearchTags(
 
 void OsSettingsManager::RemoveSearchTags(
     const std::vector<SearchConcept>& tags_group) {
-  // Note: Can be null after Shutdown().
-  if (!index_)
+  // Note: |index_| is null after Shutdown().
+  if (!index_ || !base::FeatureList::IsEnabled(features::kNewOsSettingsSearch))
     return;
 
   std::vector<std::string> ids;

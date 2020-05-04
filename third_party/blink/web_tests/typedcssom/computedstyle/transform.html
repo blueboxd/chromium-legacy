@@ -99,7 +99,7 @@ test(function() {
   assert_equals(result.toString(), 'matrix3d(2, 0, 0, 0, 0, 3, 0, 0, 0, 0, 1, 0, 4, 5, 0, 1)',
       'Computes as specified (matrix3d)');
   assert_equals(getComputedStyle(testElement).transform, 'matrix(2, 0, 0, 3, 4, 5)', 'Resolves as 2D');
-}, 'transform preserved a matrix3d value which reperesents a 2d transform')
+}, 'transform preserves a matrix3d value which reperesents a 2d transform');
 
 test(function() {
   // Chosen for floating-point stability as 90deg was returning episilon
@@ -110,7 +110,21 @@ test(function() {
   // TODO(https://github.com/w3c/csswg-drafts/issues/5011):
   // Update this once there is consensus.
   assert_equals(result.toString(), "matrix(0.707107, 0.707107, -0.707107, 0.707107, 2.92893, -7.07107)");
-}, 'transform serializes a three-valued rotate from an svg presentation attribute value as a matrix.')
+}, 'transform serializes a three-valued rotate from an svg presentation attribute value as a matrix.');
+
+test(function() {
+  testElement.style.width = '100px';
+  var anim = testElement.animate({transform: ['translate(0px, 25px) rotate(90deg)', 'translate(0px, 25px) translateX(100%)']}, 1000);
+  anim.pause();
+  anim.currentTime = 500;
+  var result = computedStyleMap.get('transform');
+
+
+  assert_equals(result.toString(), 'translate(0px, 25px) matrix(0.707107, 0.707107, -0.707107, 0.707107, 0, 0)',
+      'Computes as the absolute part of a deferred interpolation.');
+  assert_equals(getComputedStyle(testElement).transform, 'matrix(0.707107, 0.707107, -0.707107, 0.707107, 50, 25)',
+      'Resolves as the full transform, including relative parts.');
+}, 'transform preserves as much of a deferred interpolation as currently possible');
 
 </script>
 </body>

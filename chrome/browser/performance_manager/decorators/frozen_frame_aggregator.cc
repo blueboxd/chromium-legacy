@@ -9,6 +9,7 @@
 #include "components/performance_manager/graph/node_attached_data_impl.h"
 #include "components/performance_manager/graph/page_node_impl.h"
 #include "components/performance_manager/graph/process_node_impl.h"
+#include "components/performance_manager/public/graph/node_data_describer_registry.h"
 
 namespace performance_manager {
 
@@ -39,6 +40,8 @@ class FrozenFrameAggregatorAccess {
 };
 
 namespace {
+
+const char kDescriberName[] = "FrozenFrameAggregator";
 
 // Private implementation of the node attached data. This keeps the complexity
 // out of the header file.
@@ -140,9 +143,12 @@ void FrozenFrameAggregator::OnFrameLifecycleStateChanged(
 
 void FrozenFrameAggregator::OnPassedToGraph(Graph* graph) {
   RegisterObservers(graph);
+  graph->GetNodeDataDescriberRegistry()->RegisterDescriber(this,
+                                                           kDescriberName);
 }
 
 void FrozenFrameAggregator::OnTakenFromGraph(Graph* graph) {
+  graph->GetNodeDataDescriberRegistry()->UnregisterDescriber(this);
   UnregisterObservers(graph);
 }
 
@@ -155,6 +161,30 @@ void FrozenFrameAggregator::OnPageNodeAdded(const PageNode* page_node) {
 void FrozenFrameAggregator::OnProcessNodeAdded(
     const ProcessNode* process_node) {
   FrozenDataImpl::GetOrCreate(ProcessNodeImpl::FromNode(process_node));
+}
+
+base::Value FrozenFrameAggregator::DescribePageNodeData(
+    const PageNode* node) const {
+  FrozenDataImpl* data = FrozenDataImpl::Get(PageNodeImpl::FromNode(node));
+  if (data == nullptr)
+    return base::Value();
+
+  base::Value ret(base::Value::Type::DICTIONARY);
+  ret.SetIntKey("current_frame_count", data->current_frame_count);
+  ret.SetIntKey("frozen_frame_count", data->frozen_frame_count);
+  return ret;
+}
+
+base::Value FrozenFrameAggregator::DescribeProcessNodeData(
+    const ProcessNode* node) const {
+  FrozenDataImpl* data = FrozenDataImpl::Get(ProcessNodeImpl::FromNode(node));
+  if (data == nullptr)
+    return base::Value();
+
+  base::Value ret(base::Value::Type::DICTIONARY);
+  ret.SetIntKey("current_frame_count", data->current_frame_count);
+  ret.SetIntKey("frozen_frame_count", data->frozen_frame_count);
+  return ret;
 }
 
 void FrozenFrameAggregator::RegisterObservers(Graph* graph) {

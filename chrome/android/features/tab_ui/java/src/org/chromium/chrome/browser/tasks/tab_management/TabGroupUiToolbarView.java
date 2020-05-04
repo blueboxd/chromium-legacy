@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.tasks.tab_management;
 import android.content.Context;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
+import android.graphics.PorterDuff;
 import android.text.TextWatcher;
 import android.util.AttributeSet;
 import android.view.Gravity;
@@ -30,6 +31,8 @@ public class TabGroupUiToolbarView extends FrameLayout {
     private ChromeImageView mRightButton;
     private ChromeImageView mLeftButton;
     private ChromeImageView mMenuButton;
+    private ChromeImageView mFadingEdgeStart;
+    private ChromeImageView mFadingEdgeEnd;
     private ViewGroup mContainerView;
     private EditText mTitleTextView;
     private LinearLayout mMainContent;
@@ -45,6 +48,8 @@ public class TabGroupUiToolbarView extends FrameLayout {
         mLeftButton = findViewById(R.id.toolbar_left_button);
         mRightButton = findViewById(R.id.toolbar_right_button);
         mMenuButton = findViewById(R.id.toolbar_menu_button);
+        mFadingEdgeStart = findViewById(R.id.tab_strip_fading_edge_start);
+        mFadingEdgeEnd = findViewById(R.id.tab_strip_fading_edge_end);
         mContainerView = (ViewGroup) findViewById(R.id.toolbar_container_view);
         mTitleTextView = (EditText) findViewById(R.id.title);
         mMainContent = findViewById(R.id.main_content);
@@ -106,6 +111,9 @@ public class TabGroupUiToolbarView extends FrameLayout {
 
     void setPrimaryColor(int color) {
         mMainContent.setBackgroundColor(color);
+        if (mFadingEdgeStart == null || mFadingEdgeEnd == null) return;
+        mFadingEdgeStart.setColorFilter(color, PorterDuff.Mode.SRC_IN);
+        mFadingEdgeEnd.setColorFilter(color, PorterDuff.Mode.SRC_IN);
     }
 
     void setTint(ColorStateList tint) {

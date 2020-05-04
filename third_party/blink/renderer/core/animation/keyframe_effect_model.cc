@@ -183,31 +183,20 @@ bool KeyframeEffectModelBase::SnapshotCompositableProperties(
   if (!property_registry)
     return updated;
 
-  if (auto* inherited_variables = computed_style.InheritedVariables()) {
-    for (const auto& name : inherited_variables->GetCustomPropertyNames()) {
-      if (property_registry->WasReferenced(name)) {
-        // This variable has been referenced as a property value at least once
-        // during style resolution in the document. Animating this property on
-        // the compositor could introduce misalignment in frame synchronization.
-        continue;
-      }
-      updated |= SnapshotCompositorKeyFrames(
-          PropertyHandle(name), element, computed_style, parent_style,
-          should_snapshot_property_callback, should_snapshot_keyframe_callback);
+  for (const AtomicString& name : computed_style.GetVariableNames()) {
+    if (property_registry->WasReferenced(name)) {
+      // This variable has been referenced as a property value at least once
+      // during style resolution in the document. Animating this property on
+      // the compositor could introduce misalignment in frame synchronization.
+      //
+      // TODO(kevers): For non-inherited properites, check if referenced in
+      // computed style. References elsewhere in the document should not prevent
+      // compositing.
+      continue;
     }
-  }
-  if (auto* non_inherited_variables = computed_style.NonInheritedVariables()) {
-    for (const auto& name : non_inherited_variables->GetCustomPropertyNames()) {
-      // TODO(kevers): Check if referenced in computed style. References
-      // elsewhere in the document should not prevent compositing.
-      if (property_registry->WasReferenced(name)) {
-        // Avoid potential side-effect of animating on compositor.
-        continue;
-      }
-      updated |= SnapshotCompositorKeyFrames(
-          PropertyHandle(name), element, computed_style, parent_style,
-          should_snapshot_property_callback, should_snapshot_keyframe_callback);
-    }
+    updated |= SnapshotCompositorKeyFrames(
+        PropertyHandle(name), element, computed_style, parent_style,
+        should_snapshot_property_callback, should_snapshot_keyframe_callback);
   }
   return updated;
 }

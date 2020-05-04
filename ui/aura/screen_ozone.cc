@@ -33,24 +33,19 @@ bool ScreenOzone::IsWindowUnderCursor(gfx::NativeWindow window) {
 }
 
 gfx::NativeWindow ScreenOzone::GetWindowAtScreenPoint(const gfx::Point& point) {
-  auto widget = platform_screen_->GetAcceleratedWidgetAtScreenPoint(point);
-  if (!widget)
-    return nullptr;
+  return GetNativeWindowFromAcceleratedWidget(
+      platform_screen_->GetAcceleratedWidgetAtScreenPoint(point));
+}
 
-  aura::WindowTreeHost* host =
-      aura::WindowTreeHost::GetForAcceleratedWidget(widget);
-  if (!host)
-    return nullptr;
+gfx::NativeWindow ScreenOzone::GetLocalProcessWindowAtPoint(
+    const gfx::Point& point,
+    const std::set<gfx::NativeWindow>& ignore) {
+  std::set<gfx::AcceleratedWidget> ignore_top_level;
+  for (auto* const window : ignore)
+    ignore_top_level.emplace(window->GetHost()->GetAcceleratedWidget());
 
-  gfx::NativeWindow window = host->window();
-  gfx::Point local_point = point;
-
-  aura::client::ScreenPositionClient* position_client =
-      aura::client::GetScreenPositionClient(window);
-  if (position_client)
-    position_client->ConvertPointFromScreen(window, &local_point);
-
-  return window->GetEventHandlerForPoint(local_point);
+  return GetNativeWindowFromAcceleratedWidget(
+      platform_screen_->GetLocalProcessWidgetAtPoint(point, ignore_top_level));
 }
 
 int ScreenOzone::GetNumDisplays() const {
@@ -99,6 +94,11 @@ void ScreenOzone::RemoveObserver(display::DisplayObserver* observer) {
 
 std::string ScreenOzone::GetCurrentWorkspace() {
   return platform_screen_->GetCurrentWorkspace();
+}
+
+gfx::NativeWindow ScreenOzone::GetNativeWindowFromAcceleratedWidget(
+    gfx::AcceleratedWidget widget) const {
+  return nullptr;
 }
 
 gfx::AcceleratedWidget ScreenOzone::GetAcceleratedWidgetForWindow(

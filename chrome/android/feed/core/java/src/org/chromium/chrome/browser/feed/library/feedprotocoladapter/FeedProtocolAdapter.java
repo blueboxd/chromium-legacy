@@ -104,21 +104,17 @@ public final class FeedProtocolAdapter implements ProtocolAdapter, Dumpable {
 
         FeedResponse feedResponse = response.getExtension(FeedResponse.feedResponse);
         Logger.i(TAG, "createModel, operations %s", feedResponse.getDataOperationCount());
-        Result<List<StreamDataOperation>> result = createOperations(
+        List<StreamDataOperation> operations = createOperations(
                 feedResponse.getDataOperationList(), feedResponse.getFeedResponseMetadata());
-        if (result.isSuccessful()) {
-            return Result.success(Model.of(result.getValue()));
-        } else {
-            return Result.failure();
-        }
+        return Result.success(Model.of(operations));
     }
 
     @Override
-    public Result<List<StreamDataOperation>> createOperations(List<DataOperation> dataOperations) {
+    public List<StreamDataOperation> createOperations(List<DataOperation> dataOperations) {
         return createOperations(dataOperations, FeedResponseMetadata.getDefaultInstance());
     }
 
-    private Result<List<StreamDataOperation>> createOperations(
+    private List<StreamDataOperation> createOperations(
             List<DataOperation> dataOperations, FeedResponseMetadata responseMetadata) {
         ElapsedTimeTracker totalTimeTracker = mTimingUtils.getElapsedTimeTracker(TAG);
         List<StreamDataOperation> streamDataOperations = new ArrayList<>();
@@ -191,7 +187,7 @@ public final class FeedProtocolAdapter implements ProtocolAdapter, Dumpable {
         }
 
         totalTimeTracker.stop("task", "convertWireProtocol", "mutations", dataOperations.size());
-        return Result.success(streamDataOperations);
+        return streamDataOperations;
     }
 
     private void handleFeatureOperation(DataOperation operation,

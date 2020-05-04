@@ -23,6 +23,35 @@ import {BrowserProxy} from './browser_proxy.js';
 import {BackgroundSelection, BackgroundSelectionType} from './customize_dialog.js';
 import {$$, hexColorToSkColor, skColorToRgba} from './utils.js';
 
+/**
+ * Prints performance measurements to the console. Also, installs  performance
+ * observer to continuously print performance measurements after.
+ */
+function printPerformance() {
+  const entryTypes = ['paint', 'measure'];
+  const log = (entry) => {
+    const time = entry.duration ? entry.duration : entry.startTime;
+    const auxTime = entry.duration && entry.startTime ? entry.startTime : 0;
+    if (!auxTime) {
+      console.log(`${entry.name}: ${time}`);
+    } else {
+      console.log(`${entry.name}: ${time} (${auxTime})`);
+    }
+  };
+  const observer = new PerformanceObserver(list => {
+    list.getEntries().forEach((entry) => {
+      log(entry);
+    });
+  });
+  observer.observe({entryTypes: entryTypes});
+  performance.getEntries().forEach((entry) => {
+    if (!entryTypes.includes(entry.entryType)) {
+      return;
+    }
+    log(entry);
+  });
+}
+
 class AppElement extends PolymerElement {
   static get is() {
     return 'ntp-app';
@@ -151,6 +180,7 @@ class AppElement extends PolymerElement {
   }
 
   constructor() {
+    performance.mark('app-creation-start');
     super();
     /** @private {!newTabPage.mojom.PageCallbackRouter} */
     this.callbackRouter_ = BrowserProxy.getInstance().callbackRouter;
@@ -199,6 +229,11 @@ class AppElement extends PolymerElement {
     BrowserProxy.getInstance().waitForLazyRender().then(() => {
       this.lazyRender_ = true;
     });
+
+    if (new URLSearchParams(location.search).has('print_perf')) {
+      printPerformance();
+    }
+    performance.measure('app-creation', 'app-creation-start');
   }
 
   /**

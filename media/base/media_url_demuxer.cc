@@ -84,7 +84,7 @@ int64_t MediaUrlDemuxer::GetMemoryUsage() const {
 
 base::Optional<container_names::MediaContainerName>
 MediaUrlDemuxer::GetContainerForMetrics() const {
-  return base::Optional<container_names::MediaContainerName>();
+  return base::nullopt;
 }
 
 void MediaUrlDemuxer::OnEnabledAudioTracksChanged(

@@ -163,3 +163,14 @@ message KeyboardLayout {
   // Map USB code to key behavior.
   map<uint32, KeyBehavior> keys = 1;
 }
+
+// Next ID: 2
+message TransportInfo {
+  // Transport layer protocol the message sender uses to connect to the relay
+  // server or the peer (if connection not relayed).
+  // Possible values are those defined in the protocol and relayProtocol fields
+  // in the RTCIceCandidateStats dictionary.
+  // If the host failed to get protocol using WebRTC API, this field will be set
+  // to "api-error".
+  optional string protocol = 1;
+}

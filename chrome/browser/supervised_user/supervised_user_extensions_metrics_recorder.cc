@@ -8,38 +8,33 @@
 #include "base/metrics/user_metrics.h"
 
 namespace {
-constexpr char kHistogramName[] = "SupervisedUsers.Extensions";
-constexpr char kNewExtensionApprovalGrantedActionName[] =
-    "SupervisedUsers_Extensions_NewExtensionApprovalGranted";
-constexpr char kNewVersionApprovalGrantedActionName[] =
-    "SupervisedUsers_Extensions_NewVersionApprovalGranted";
-constexpr char kRemovedActionName[] = "SupervisedUsers_Extensions_Removed";
+constexpr char kHistogramName[] = "SupervisedUsers.Extensions2";
+constexpr char kApprovalGrantedActionName[] =
+    "SupervisedUsers_Extensions_ApprovalGranted";
+constexpr char kPermissionsIncreaseGrantedActionName[] =
+    "SupervisedUsers_Extensions_PermissionsIncreaseGranted";
+constexpr char kApprovalRemovedActionName[] =
+    "SupervisedUsers_Extensions_ApprovalRemoved";
 }  // namespace
 
 // static
 void SupervisedUserExtensionsMetricsRecorder::RecordExtensionsUmaMetrics(
-    SupervisedUserService::ApprovedExtensionChange type) {
-  switch (type) {
-    case SupervisedUserService::ApprovedExtensionChange::kNew:
+    UmaExtensionState state) {
+  base::UmaHistogramEnumeration(kHistogramName, state);
+  switch (state) {
+    case UmaExtensionState::kApprovalGranted:
       // Record UMA metrics for custodian approval for a new extension.
-      base::RecordAction(
-          base::UserMetricsAction(kNewExtensionApprovalGrantedActionName));
-      base::UmaHistogramEnumeration(
-          kHistogramName, UmaExtensionState::kNewExtensionApprovalGranted);
+      base::RecordAction(base::UserMetricsAction(kApprovalGrantedActionName));
       break;
-    case SupervisedUserService::ApprovedExtensionChange::kUpdate:
+    case UmaExtensionState::kPermissionsIncreaseGranted:
       // Record UMA metrics for child approval for a newer version of an
-      // existing extension.
+      // existing extension with increased permissions.
       base::RecordAction(
-          base::UserMetricsAction(kNewVersionApprovalGrantedActionName));
-      base::UmaHistogramEnumeration(
-          kHistogramName, UmaExtensionState::kNewVersionApprovalGranted);
+          base::UserMetricsAction(kPermissionsIncreaseGrantedActionName));
       break;
-    case SupervisedUserService::ApprovedExtensionChange::kRemove:
+    case UmaExtensionState::kApprovalRemoved:
       // Record UMA metrics for removing an extension.
-      base::RecordAction(base::UserMetricsAction(kRemovedActionName));
-      base::UmaHistogramEnumeration(kHistogramName,
-                                    UmaExtensionState::kRemoved);
+      base::RecordAction(base::UserMetricsAction(kApprovalRemovedActionName));
       break;
   }
 }

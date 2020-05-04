@@ -243,6 +243,12 @@ TabImpl::TabImpl(ProfileImpl* profile,
     web_contents_ = content::WebContents::Create(create_params);
   }
 
+  // By default renderer initiated navigations inherit the user-agent override
+  // of the current NavigationEntry. For WebLayer, the user-agent override is
+  // set on a per NavigationEntry entry basis.
+  web_contents_->SetRendererInitiatedUserAgentOverrideOption(
+      content::NavigationController::UA_OVERRIDE_FALSE);
+
   UpdateRendererPrefs(false);
   locale_change_subscription_ =
       i18n::RegisterLocaleChangeCallback(base::BindRepeating(

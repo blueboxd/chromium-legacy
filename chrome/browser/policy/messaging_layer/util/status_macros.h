@@ -28,7 +28,7 @@ namespace reporting {
 #define STATUS_MACROS_CONCAT_NAME(x, y) STATUS_MACROS_CONCAT_NAME_INNER(x, y)
 
 #define ASSIGN_OR_RETURN_IMPL(result, lhs, rexpr) \
-  const auto result = (rexpr).status;             \
+  const auto result = (rexpr);                    \
   if (__builtin_expect(!result.ok(), 0)) {        \
     return result.status();                       \
   }                                               \
@@ -41,11 +41,40 @@ namespace reporting {
 //   ValueType value;
 //   ASSIGN_OR_RETURN(value, MaybeGetValue(arg));
 //
+// Example: Creating and assigning variable in one line.
+//   ASSIGN_OR_RETURN(ValueType value, MaybeGetValue(arg));
+//   DoSomethingWithValueType(value);
+//
 // WARNING: ASSIGN_OR_RETURN expands into multiple statements; it cannot be used
 //  in a single statement (e.g. as the body of an if statement without {})!
 #define ASSIGN_OR_RETURN(lhs, rexpr) \
   ASSIGN_OR_RETURN_IMPL(             \
       STATUS_MACROS_CONCAT_NAME(_status_or_value, __COUNTER__), lhs, rexpr)
+
+#define ASSIGN_OR_ONCE_CALLBACK_AND_RETURN_IMPL(result, lhs, callback, rexpr) \
+  const auto result = (rexpr);                                                \
+  if (__builtin_expect(!result.ok(), 0)) {                                    \
+    std::move(callback).Run(result.status());                                 \
+    return;                                                                   \
+  }                                                                           \
+  lhs = result.ValueOrDie();
+
+// Executes an expression that returns a StatusOr, extracting its value into the
+// variabled defined by lhs (or calls callback with error and returns).
+//
+// Example:
+//   base::OnceCallback<void(Status)> callback =
+//     base::BindOnce([](Status status) {...});
+//   ASSIGN_OR_ONCE_CALLBACK_AND_RETURN(ValueType value,
+//                                      callback,
+//                                      MaybeGetValue(arg));
+//
+// WARNING: ASSIGN_OR_RETURN expands into multiple statements; it cannot be used
+//  in a single statement (e.g. as the body of an if statement without {})!
+#define ASSIGN_OR_ONCE_CALLBACK_AND_RETURN(lhs, callback, rexpr)               \
+  ASSIGN_OR_ONCE_CALLBACK_AND_RETURN_IMPL(                                     \
+      STATUS_MACROS_CONCAT_NAME(_status_or_value, __COUNTER__), lhs, callback, \
+      rexpr)
 
 }  // namespace reporting
 

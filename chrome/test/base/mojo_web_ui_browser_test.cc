@@ -20,9 +20,9 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_client.h"
+#include "mojo/public/cpp/bindings/binder_map.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
-#include "services/service_manager/public/cpp/binder_map.h"
 #include "ui/base/resource/resource_bundle.h"
 
 namespace {
@@ -68,8 +68,7 @@ class MojoWebUIBrowserTest::WebUITestContentBrowserClient
 
   void RegisterBrowserInterfaceBindersForFrame(
       content::RenderFrameHost* render_frame_host,
-      service_manager::BinderMapWithContext<content::RenderFrameHost*>* map)
-      override {
+      mojo::BinderMapWithContext<content::RenderFrameHost*>* map) override {
     ChromeContentBrowserClient::RegisterBrowserInterfaceBindersForFrame(
         render_frame_host, map);
     map->Add<web_ui_test::mojom::TestRunner>(

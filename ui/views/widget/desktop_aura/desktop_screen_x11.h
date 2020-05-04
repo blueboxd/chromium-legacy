@@ -40,6 +40,9 @@ class VIEWS_EXPORT DesktopScreenX11 : public display::Screen,
   gfx::Point GetCursorScreenPoint() override;
   bool IsWindowUnderCursor(gfx::NativeWindow window) override;
   gfx::NativeWindow GetWindowAtScreenPoint(const gfx::Point& point) override;
+  gfx::NativeWindow GetLocalProcessWindowAtPoint(
+      const gfx::Point& point,
+      const std::set<gfx::NativeWindow>& ignore) override;
   int GetNumDisplays() const override;
   const std::vector<display::Display>& GetAllDisplays() const override;
   display::Display GetDisplayNearestWindow(

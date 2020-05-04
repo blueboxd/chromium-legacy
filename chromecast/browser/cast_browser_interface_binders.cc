@@ -43,8 +43,7 @@ void BindApplicationMediaCapabilities(
 
 void PopulateCastFrameBinders(
     content::RenderFrameHost* render_frame_host,
-    service_manager::BinderMapWithContext<content::RenderFrameHost*>*
-        binder_map) {
+    mojo::BinderMapWithContext<content::RenderFrameHost*>* binder_map) {
   binder_map->Add<network_hints::mojom::NetworkHintsHandler>(
       base::BindRepeating(&BindNetworkHintsHandler));
   binder_map->Add<mojom::ApplicationMediaCapabilities>(

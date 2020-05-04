@@ -737,7 +737,7 @@ void DownloadItemView::ButtonPressed(views::Button* sender,
       content::WebContents* current_web_contents =
           shelf_->browser()->tab_strip_model()->GetActiveWebContents();
       safe_browsing::PromptForScanningModalDialog::ShowForWebContents(
-          current_web_contents,
+          current_web_contents, ElidedFilename(),
           base::BindOnce(&DownloadItemView::ConfirmDeepScanning,
                          weak_ptr_factory_.GetWeakPtr()),
           base::BindOnce(&DownloadItemView::BypassDeepScanning,

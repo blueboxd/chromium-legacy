@@ -9,7 +9,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/shell/browser/shell.h"
 #include "content/shell/browser/shell_content_browser_client.h"
-#include "services/service_manager/public/cpp/binder_map.h"
+#include "mojo/public/cpp/bindings/binder_map.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 
 namespace performance_manager {
@@ -59,12 +59,12 @@ void PerformanceManagerBrowserTestHarness::CreatedBrowserMainParts(
   // Expose interfaces to RenderFrame.
   content::ShellContentBrowserClient::Get()
       ->set_register_browser_interface_binders_for_frame_callback(
-          base::BindRepeating([](content::RenderFrameHost* render_frame_host,
-                                 service_manager::BinderMapWithContext<
-                                     content::RenderFrameHost*>* map) {
-            PerformanceManagerRegistry::GetInstance()
-                ->ExposeInterfacesToRenderFrame(map);
-          }));
+          base::BindRepeating(
+              [](content::RenderFrameHost* render_frame_host,
+                 mojo::BinderMapWithContext<content::RenderFrameHost*>* map) {
+                PerformanceManagerRegistry::GetInstance()
+                    ->ExposeInterfacesToRenderFrame(map);
+              }));
 }
 
 content::Shell* PerformanceManagerBrowserTestHarness::CreateShell() {

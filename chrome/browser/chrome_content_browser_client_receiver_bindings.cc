@@ -206,7 +206,7 @@ void ChromeContentBrowserClient::BindMediaServiceReceiver(
 
 void ChromeContentBrowserClient::RegisterBrowserInterfaceBindersForFrame(
     content::RenderFrameHost* render_frame_host,
-    service_manager::BinderMapWithContext<content::RenderFrameHost*>* map) {
+    mojo::BinderMapWithContext<content::RenderFrameHost*>* map) {
   chrome::internal::PopulateChromeFrameBinders(map);
   chrome::internal::PopulateChromeWebUIFrameBinders(map);
 

@@ -36,7 +36,7 @@
 //
 //  StatusOr<std::unique_ptr<Foo>> result = FooFactory::MakeNewFoo(arg);
 //  if (result.ok()) {
-//    std::unique_ptr<Foo> foo = result.ValueOrDie();
+//    std::unique_ptr<Foo> foo = std::move(result.ValueOrDie());
 //    foo->DoSomethingCool();
 //  } else {
 //    LOG(ERROR) << result.status();
@@ -62,202 +62,244 @@
 #include <utility>
 
 #include "base/compiler_specific.h"
+#include "base/optional.h"
 #include "chrome/browser/policy/messaging_layer/util/status.h"
 
 namespace reporting {
+
+namespace internal {
+
+// Helper class for StatusOr to use.
+class StatusOrHelper {
+ public:
+  static const Status& NotInitializedStatus();
+  static const Status& MovedOutStatus();
+  static void Crash(const Status& status);
+};
+
+}  // namespace internal
 
 template <typename T>
 class WARN_UNUSED_RESULT StatusOr {
   template <typename U>
   friend class StatusOr;
 
- public:
-  // Construct a new StatusOr with UNKNOWN status and no value.
-  StatusOr();
+  // A traits class that determines whether a type U is implicitly convertible
+  // from a type V. If it is convertible, then the |value| member of this class
+  // is statically set to true, otherwise it is statically set to false.
+  template <class U, typename V>
+  struct is_implicitly_constructible
+      : base::conjunction<std::is_constructible<U, V>,
+                          std::is_convertible<V, U>> {};
 
-  // Construct a new StatusOr with the given non-ok status. After calling
+ public:
+  // Constructs a new StatusOr with UNINITIALIZED status and no value.
+  StatusOr() : status_(internal::StatusOrHelper::NotInitializedStatus()) {}
+
+  // Constructs a new StatusOr with the given non-ok status. After calling
   // this constructor, calls to ValueOrDie() will CHECK-fail.
   //
-  // NOTE: Not explicit - we want to use StatusOr<T> as a return
-  // value, so it is convenient and sensible to be able to do 'return
-  // Status()' when the return type is StatusOr<T>.
+  // This constructor is not declared explicit so that a function with a return
+  // type of |StatusOr<T>| can return a Status object, and the status will be
+  // implicitly converted to the appropriate return type as a matter of
+  // convenience.
+  // REQUIRES: !status.ok().
+  StatusOr(const Status& status)  // NOLINT(runtime/explicit)
+      : status_(status) {
+    if (status.ok()) {
+      internal::StatusOrHelper::Crash(status);
+    }
+  }
+
+  // Constructs a StatusOr object that contains |value|. The resulting object
+  // is considered to have an OK status. The wrapped element can be accessed
+  // with ValueOrDie().
   //
-  // REQUIRES: IsOK(status). This requirement is CHECKed.
-  // In optimized builds, passing Status::StatusOK() here will have the effect
-  // of passing PosixErrorSpace::EINVAL as a fallback.
-  StatusOr(const Status& status);  // NOLINT
-
-  // Construct a new StatusOr with the given value. If T is a plain pointer,
-  // value must not be nullptr. After calling this constructor, calls to
-  // ValueOrDie() will succeed, and calls to status() will return OK.
+  // This constructor is made implicit so that a function with a return type of
+  // |StatusOr<T>| can return an object of type |U&&|, implicitly converting
+  // it to a |StatusOr<T>| object.
   //
-  // NOTE: Not explicit - we want to use StatusOr<T> as a return type
-  // so it is convenient and sensible to be able to do 'return T()'
-  // when the return type is StatusOr<T>.
+  // Note that |T| must be implicitly constructible from |U|, and |U| must not
+  // be a (cv-qualified) Status or Status-reference type. Due to C++
+  // reference-collapsing rules and perfect-forwarding semantics, this
+  // constructor matches invocations that pass |value| either as a const
+  // reference or as an rvalue reference. Since StatusOr needs to work for both
+  // reference and rvalue-reference types, the constructor uses perfect
+  // forwarding to avoid invalidating arguments that were passed by reference.
+  template <typename U,
+            typename E = typename std::enable_if<
+                is_implicitly_constructible<T, U>::value &&
+                !std::is_same<typename std::remove_reference<
+                                  typename std::remove_cv<U>::type>::type,
+                              Status>::value>::type>
+  StatusOr(U&& value)  // NOLINT(runtime/explicit)
+      : status_(Status::StatusOK()), value_(std::forward<U>(value)) {}
+
+  // Copy constructor.
   //
-  // REQUIRES: if T is a plain pointer, value != nullptr. This requirement is
-  // CHECKed. In optimized builds, passing a null pointer here will have
-  // the effect of passing PosixErrorSpace::EINVAL as a fallback.
-  StatusOr(const T& value);  // NOLINT
+  // This constructor needs to be explicitly defined because the presence of
+  // the move-assignment operator deletes the default copy constructor. In such
+  // a scenario, since the deleted copy constructor has stricter binding rules
+  // than the templated copy constructor, the templated constructor cannot act
+  // as a copy constructor, and any attempt to copy-construct a |StatusOr|
+  // object results in a compilation error.
+  StatusOr(const StatusOr& other)
+      : status_(other.status_), value_(other.value_) {}
 
-  // Construct a new StatusOr taking ownership of given value. Value must not be
-  // nullptr. After calling this constructor, calls to ValueOrDie() will
-  // succeed, and calls to status() will return OK.
+  // Templatized constructor that constructs a |StatusOr<T>| from a const
+  // reference to a |StatusOr<U>|.
   //
-  // NOTE: Not explicit - we want to use StatusOr<T> as a return type
-  // so it is convenient and sensible to be able to do 'return T()'
-  // when the return type is StatusOr<T>.
-  StatusOr(T&& value);  // NOLINT
+  // |T| must be implicitly constructible from |const U&|.
+  template <typename U,
+            typename E = typename std::enable_if<
+                is_implicitly_constructible<T, const U&>::value>::type>
+  StatusOr(const StatusOr<U>& other)  // NOLINT(runtime/explicit)
+      : status_(other.status_), value_(other.value_) {}
 
-  // StatusOr<T> will be copy constructible/assignable if T is copy
-  // constructible.
-  StatusOr(const StatusOr&);
-  StatusOr& operator=(const StatusOr&);
+  // Copy-assignment operator.
+  StatusOr& operator=(const StatusOr& other) {
+    // Check for self-assignment.
+    if (this == &other) {
+      return *this;
+    }
 
-  // StatusOr<T> will be move constructible/assignable if T is move
-  // constructible.
-  StatusOr(StatusOr&&);
-  StatusOr& operator=(StatusOr&&);
+    if (other.status_.ok()) {
+      AssignValue(other.value_);
+    } else {
+      AssignStatus(other.status_);
+    }
+    return *this;
+  }
 
-  // Conversion copy constructor, T must be copy constructible from U
-  template <typename U>
-  StatusOr(const StatusOr<U>& other);
+  // Templatized constructor which constructs a |StatusOr<T>| by moving the
+  // contents of a |StatusOr<U>|. |T| must be implicitly constructible from
+  // |U&&|.
+  //
+  // Sets |other| to contain a non-OK status with a|error::UNKNOWN|
+  // error code.
+  template <typename U,
+            typename E = typename std::enable_if<
+                is_implicitly_constructible<T, U&&>::value>::type>
+  StatusOr(StatusOr<U>&& other)  // NOLINT(runtime/explicit)
+      : status_(std::move(other.status_)), value_(std::move(other.value_)) {
+    other.status_ = internal::StatusOrHelper::MovedOutStatus();
+  }
 
-  // Conversion assignment operator, T must be assignable from U
-  template <typename U>
-  StatusOr& operator=(const StatusOr<U>& other);
+  // Move-assignment operator.
+  //
+  // Sets |other| to contain a non-OK status with a |error::UNKNOWN| error
+  // code.
+  StatusOr& operator=(StatusOr&& other) {
+    // Check for self-assignment.
+    if (this == &other) {
+      return *this;
+    }
 
-  // Returns a reference to our status. If this contains a T, then
-  // returns Status::StatusOK().
-  const Status& status() const;
+    if (other.status_.ok()) {
+      AssignValue(std::move(other.value_.value()));
+    } else {
+      AssignStatus(std::move(other.status_));
+    }
+    other.status_ = internal::StatusOrHelper::MovedOutStatus();
 
-  // Returns this->status().ok()
-  bool ok() const;
+    return *this;
+  }
 
-  // Returns a reference to our current value, or CHECK-fails if !this->ok().
-  const T& ValueOrDie() const;
+  // Indicates whether the object contains a |T| value.
+  bool ok() const { return status_.ok(); }
 
-  // Moves and returns our current value, or CHECK-fails if !this->ok().
-  // The StatusOr object is invalidated after this call and will be updated to
-  // contain error::UNKNOWN error code.
-  T&& ValueOrDie();
+  // Gets the stored status object, or an OK status if a |T| value is stored.
+  Status status() const { return status_; }
+
+  // Gets the stored |T| value.
+  //
+  // This method should only be called if this StatusOr object's status is OK
+  // (i.e. a call to ok() returns true), otherwise this call will abort.
+  const T& WARN_UNUSED_RESULT ValueOrDie() const& {
+    if (!ok()) {
+      internal::StatusOrHelper::Crash(status_);
+    }
+    return value_.value();
+  }
+
+  // Gets a mutable reference to the stored |T| value.
+  //
+  // This method should only be called if this StatusOr object's status is OK
+  // (i.e. a call to ok() returns true), otherwise this call will abort.
+  T& WARN_UNUSED_RESULT ValueOrDie() & {
+    if (!ok()) {
+      internal::StatusOrHelper::Crash(status_);
+    }
+    return value_.value();
+  }
+
+  // Moves and returns the internally-stored |T| value.
+  //
+  // This method should only be called if this StatusOr object's status is OK
+  // (i.e. a call to ok() returns true), otherwise this call will abort. The
+  // StatusOr object is invalidated after this call and will be updated to
+  // contain a non-OK status with a |error::UNKNOWN| error code.
+  T WARN_UNUSED_RESULT ValueOrDie() && {
+    if (!ok()) {
+      internal::StatusOrHelper::Crash(status_);
+    }
+
+    // Invalidate this StatusOr object before returning control to caller.
+    StatusResetter set_moved_status(this,
+                                    internal::StatusOrHelper::MovedOutStatus());
+    return std::move(value_.value());
+  }
 
  private:
+  class StatusResetter {
+   public:
+    StatusResetter(StatusOr<T>* status_or, const Status& reset_to_status)
+        : status_or_(status_or), reset_to_status_(reset_to_status) {}
+    StatusResetter(const StatusResetter& other) = delete;
+    StatusResetter& operator=(const StatusResetter& other) = delete;
+    ~StatusResetter() {
+      status_or_->OverwriteValueWithStatus(reset_to_status_);
+    }
+
+   private:
+    StatusOr<T>* const status_or_;
+    const Status reset_to_status_;
+  };
+
+  // Resets |this| to contain |status|.
+  template <class U>
+  void AssignStatus(U&& status) {
+    if (ok()) {
+      OverwriteValueWithStatus(std::forward<U>(status));
+    } else {
+      status_ = std::forward<U>(status);
+    }
+  }
+
+  // Under the assumption that |this| is currently holding a value, resets the
+  // |value_| member and sets |status_| to indicate that |this| does not have
+  // a value.
+  template <class U>
+  void OverwriteValueWithStatus(U&& status) {
+    if (!ok()) {
+      LOG(FATAL) << "Object does not have a value to change from";
+    }
+    value_.reset();
+    status_ = std::forward<U>(status);
+  }
+
+  // Resets |value_| to contain the |value| and sets |status_|
+  // to OK, indicating that the StatusOr object has a value.
+  // Destroys the existing |value_|.
+  template <class U>
+  void AssignValue(U&& value) {
+    value_ = std::forward<U>(value);
+    status_ = Status::StatusOK();
+  }
+
   Status status_;
-  T value_;
+  base::Optional<T> value_;
 };
-
-////////////////////////////////////////////////////////////////////////////////
-// Implementation details for StatusOr<T>
-
-namespace internal {
-
-class StatusOrHelper {
- public:
-  // Move type-agnostic error handling to the .cc.
-  static void Crash(const Status& status);
-};
-
-class StatusResetter {
- public:
-  StatusResetter(Status* status, const Status& reset_to_status)
-      : status_(status), reset_to_status_(reset_to_status) {}
-  StatusResetter(const StatusResetter& other) = delete;
-  StatusResetter& operator=(const StatusResetter& other) = delete;
-  ~StatusResetter() { *status_ = reset_to_status_; }
-
- private:
-  Status* const status_;
-  const Status reset_to_status_;
-};
-
-}  // namespace internal
-
-template <typename T>
-inline StatusOr<T>::StatusOr() : status_(error::UNKNOWN, "") {}
-
-template <typename T>
-inline StatusOr<T>::StatusOr(const Status& status) {
-  if (status.ok()) {
-    status_ =
-        Status(error::INTERNAL, "Status::StatusOK() is not a valid argument.");
-  } else {
-    status_ = status;
-  }
-}
-
-template <typename T>
-inline StatusOr<T>::StatusOr(const T& value) {
-  if (std::is_pointer<T>::value && !value) {
-    status_ = Status(error::INTERNAL, "nullptr is not a vaild argument.");
-  } else {
-    status_ = Status::StatusOK();
-    value_ = value;
-  }
-}
-
-template <typename T>
-inline StatusOr<T>::StatusOr(T&& value) {
-  if (std::is_pointer<T>::value && !value) {
-    status_ = Status(error::INTERNAL, "nullptr is not a vaild argument.");
-  } else {
-    status_ = Status::StatusOK();
-    value_ = std::move(value);
-  }
-}
-
-template <typename T>
-inline StatusOr<T>::StatusOr(const StatusOr<T>& other)
-    : status_(other.status_), value_(other.value_) {}
-
-template <typename T>
-inline StatusOr<T>& StatusOr<T>::operator=(const StatusOr<T>& other) {
-  status_ = other.status_;
-  value_ = other.value_;
-  return *this;
-}
-
-template <typename T>
-template <typename U>
-inline StatusOr<T>::StatusOr(const StatusOr<U>& other)
-    : status_(other.status_), value_(other.status_.ok() ? other.value_ : T()) {}
-
-template <typename T>
-template <typename U>
-inline StatusOr<T>& StatusOr<T>::operator=(const StatusOr<U>& other) {
-  status_ = other.status_;
-  if (status_.ok())
-    value_ = other.value_;
-  return *this;
-}
-
-template <typename T>
-inline const Status& StatusOr<T>::status() const {
-  return status_;
-}
-
-template <typename T>
-inline bool StatusOr<T>::ok() const {
-  return status().ok();
-}
-
-template <typename T>
-inline const T& StatusOr<T>::ValueOrDie() const {
-  if (!status_.ok()) {
-    internal::StatusOrHelper::Crash(status_);
-  }
-  return value_;
-}
-
-template <typename T>
-inline T&& StatusOr<T>::ValueOrDie() {
-  if (!status_.ok()) {
-    internal::StatusOrHelper::Crash(status_);
-  }
-  internal::StatusResetter resetter(&status_,
-                                    Status(error::UNKNOWN, "Value moved out"));
-  return std::move(value_);
-}
 
 }  // namespace reporting
 

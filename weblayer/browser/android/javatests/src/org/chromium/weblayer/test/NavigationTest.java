@@ -660,4 +660,32 @@ public class NavigationTest {
         mActivityTestRule.navigateAndWait(URL1);
         assertTrue(setter.mGotIllegalArgumentException);
     }
+
+    // NavigationCallback implementation that sets the user-agent string in onNavigationStarted().
+    private static final class UserAgentSetter extends NavigationCallback {
+        private final String mValue;
+
+        UserAgentSetter(String value) {
+            mValue = value;
+        }
+
+        @Override
+        public void onNavigationStarted(Navigation navigation) {
+            navigation.setUserAgentString(mValue);
+        }
+    }
+
+    @Test
+    @SmallTest
+    public void testSetUserAgentString() throws Exception {
+        TestWebServer testServer = TestWebServer.start();
+        InstrumentationActivity activity = mActivityTestRule.launchShellWithUrl(null);
+        String customUserAgent = "custom-ua";
+        UserAgentSetter setter = new UserAgentSetter(customUserAgent);
+        registerNavigationCallback(setter);
+        String url = testServer.setResponse("/ok.html", "<html>ok</html>", null);
+        mActivityTestRule.navigateAndWait(url);
+        String actualUserAgent = testServer.getLastRequest("/ok.html").headerValue("User-Agent");
+        assertEquals(customUserAgent, actualUserAgent);
+    }
 }

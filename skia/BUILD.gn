@@ -49,10 +49,7 @@ config("skia_config") {
     }
   }
   if (enable_vulkan) {
-    include_dirs += [
-      "//third_party/vulkan/include",
-      "//third_party/skia/third_party/vulkanmemoryallocator",
-    ]
+    include_dirs += [ "//third_party/vulkan/include" ]
     configs = [ "//third_party/vulkan:vulkan_config" ]
   }
 
@@ -83,7 +80,6 @@ config("skia_config") {
     defines += [
       "SK_VULKAN_HEADER=\"../../skia/config/SkVulkanConfig.h\"",
       "SK_VULKAN=1",
-      "SK_USE_VMA",
     ]
   }
   if (skia_use_dawn) {
@@ -585,10 +581,6 @@ component("skia") {
     }
     if (enable_vulkan) {
       sources += skia_vk_sources
-      sources += [
-        "//third_party/skia/third_party/vulkanmemoryallocator/GrVulkanMemoryAllocator.cpp",
-        "//third_party/skia/third_party/vulkanmemoryallocator/GrVulkanMemoryAllocator.h",
-      ]
     }
     deps += [ "//gpu/config:workaround_list" ]
   }

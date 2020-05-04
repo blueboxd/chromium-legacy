@@ -50,6 +50,7 @@ ALIGNMENT_ORDER = [
     'FillLayer',
     'NinePieceImage',
     'IntrinsicLength',
+    'TextDecorationThickness',
     # Aligns like float
     'StyleOffsetRotation',
     'TransformOrigin',

@@ -12,7 +12,6 @@
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/component_export.h"
-#include "base/containers/queue.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
@@ -20,7 +19,6 @@
 #include "base/sequenced_task_runner.h"
 #include "mojo/public/cpp/bindings/connection_group.h"
 #include "mojo/public/cpp/bindings/message.h"
-#include "mojo/public/cpp/bindings/sequence_local_sync_event_watcher.h"
 #include "mojo/public/cpp/bindings/sync_handle_watcher.h"
 #include "mojo/public/cpp/system/core.h"
 #include "mojo/public/cpp/system/handle_signal_tracker.h"
@@ -223,6 +221,8 @@ class COMPONENT_EXPORT(MOJO_CPP_BINDINGS) Connector : public MessageReceiver {
 
   void WaitToReadMore();
 
+  uint64_t QueryPendingMessageCount() const;
+
   // Attempts to read a single Message from the pipe. Returns |MOJO_RESULT_OK|
   // and a valid message in |*message| iff a message was successfully read and
   // prepared for dispatch.
@@ -233,24 +233,17 @@ class COMPONENT_EXPORT(MOJO_CPP_BINDINGS) Connector : public MessageReceiver {
   // validation).
   bool DispatchMessage(Message message);
 
-  // Posts a task to dispatch the next message in |dispatch_queue_|. These two
-  // functions keep |num_pending_dispatch_tasks_| up to date, so as to allow
-  // bounding the number of posted tasks when the Connector is e.g. paused and
-  // resumed repeatedly.
-  void PostDispatchNextMessageInQueue();
-  void CallDispatchNextMessageInQueue();
+  // Posts a task to read the next message from the pipe. These two functions
+  // keep |num_pending_read_tasks_| up to date to limit the number of posted
+  // tasks when the Connector is e.g. paused and resumed repeatedly.
+  void PostDispatchNextMessageFromPipe();
+  void CallDispatchNextMessageFromPipe();
 
-  // Used to schedule dispatch of a single message from the front of
-  // |dispatch_queue_|. Returns |true| if the dispatch succeeded and |false|
-  // otherwise (e.g. if the message failed validation).
-  bool DispatchNextMessageInQueue();
-
-  // Dispatches all queued messages to the receiver immediately. This is
-  // necessary to ensure proper ordering when beginning to wait for a sync
-  // response, because new incoming messages need to be dispatched as they
-  // arrive. Returns |true| if all queued messages were successfully dispatched,
-  // and |false| if any dispatch fails.
-  bool DispatchAllQueuedMessages();
+  // Ensures that enough tasks are posted to dispatch |pending_message_count|
+  // messages based on current |num_pending_dispatch_tasks_| value. If there are
+  // no more pending messages, it will call ArmOrNotify() on |handle_watcher_|.
+  void ScheduleDispatchOfPendingMessagesOrWaitForMore(
+      uint64_t pending_message_count);
 
   // Reads all available messages off of the pipe, possibly dispatching one or
   // more of them depending on the state of the Connector when this is called.
@@ -262,7 +255,7 @@ class COMPONENT_EXPORT(MOJO_CPP_BINDINGS) Connector : public MessageReceiver {
   // asynchronously.
   void HandleError(bool force_pipe_reset, bool force_async_handler);
 
-  // Cancels any calls made to |waiter_|.
+  // Cancels any calls made to |handle_watcher_|.
   void CancelWait();
 
   void EnsureSyncWatcherExists();
@@ -292,18 +285,6 @@ class COMPONENT_EXPORT(MOJO_CPP_BINDINGS) Connector : public MessageReceiver {
   // See |set_force_immediate_dispatch()|.
   bool force_immediate_dispatch_;
 
-  // Messages which have been read off the pipe but not yet dispatched. This
-  // exists so that we can schedule individual dispatch tasks for each read
-  // message in parallel rather than having to do it in series as each message
-  // is read off the pipe.
-  base::queue<Message> dispatch_queue_;
-
-  // Indicates whether a non-fatal pipe error (i.e. peer closure and no more
-  // incoming messages) was detected while |dispatch_queue_| was non-empty.
-  // When |true|, ensures that an error will be propagated outward as soon as
-  // |dispatch_queue_| is fully flushed.
-  bool pending_error_dispatch_ = false;
-
   OutgoingSerializationMode outgoing_serialization_mode_;
   IncomingSerializationMode incoming_serialization_mode_;
 
@@ -312,7 +293,6 @@ class COMPONENT_EXPORT(MOJO_CPP_BINDINGS) Connector : public MessageReceiver {
   base::Optional<base::Lock> lock_;
 
   std::unique_ptr<SyncHandleWatcher> sync_watcher_;
-  std::unique_ptr<SequenceLocalSyncEventWatcher> dispatch_queue_watcher_;
 
   bool allow_woken_up_by_others_ = false;
   // If non-zero, currently the control flow is inside the sync handle watcher
@@ -339,7 +319,7 @@ class COMPONENT_EXPORT(MOJO_CPP_BINDINGS) Connector : public MessageReceiver {
   // nested dispatch operations.
   bool is_dispatching_ = false;
 
-  // The number of outstanding tasks for CallDispatchNextMessageInQueue.
+  // The number of pending tasks for |CallDispatchNextMessageFromPipe|.
   size_t num_pending_dispatch_tasks_ = 0;
 
 #if defined(ENABLE_IPC_FUZZER)

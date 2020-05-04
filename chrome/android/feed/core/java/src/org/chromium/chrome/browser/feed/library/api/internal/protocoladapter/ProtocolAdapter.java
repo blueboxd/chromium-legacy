@@ -26,7 +26,7 @@ public interface ProtocolAdapter {
      * Create {@link StreamDataOperation}s from the internal protocol for the wire protocol
      * DataOperations.
      */
-    Result<List<StreamDataOperation>> createOperations(List<DataOperation> dataOperations);
+    List<StreamDataOperation> createOperations(List<DataOperation> dataOperations);
 
     /**
      * Convert a wire protocol ContentId into the {@code String} version. Inverse of {@link

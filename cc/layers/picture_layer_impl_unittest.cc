@@ -5389,6 +5389,124 @@ TEST_F(LegacySWPictureLayerImplTest, CompositedImageRasterScaleChanges) {
   }
 }
 
+TEST_F(LegacySWPictureLayerImplTest, CompositedImageRasterOnChange) {
+  gfx::Size layer_bounds(400, 400);
+  scoped_refptr<FakeRasterSource> pending_raster_source =
+      FakeRasterSource::CreateFilled(layer_bounds);
+
+  SetupPendingTree(pending_raster_source);
+
+  // Set an image size that is smaller than the layer bounds.
+  gfx::Size image_size(200, 200);
+  pending_layer()->SetDirectlyCompositedImageSize(image_size);
+  SetupDrawPropertiesAndUpdateTiles(pending_layer(), 1.f, 1.f, 1.f, 1.f, 1.f,
+                                    false);
+  EXPECT_FLOAT_EQ(0.5f, pending_layer()
+                            ->picture_layer_tiling_set()
+                            ->FindTilingWithResolution(HIGH_RESOLUTION)
+                            ->contents_scale_key());
+
+  // Change the bounds and ensure we recalculated raster scale.
+  pending_layer()->SetBounds(gfx::Size(320, 320));
+  SetupDrawPropertiesAndUpdateTiles(pending_layer(), 1.f, 1.f, 1.f, 1.f, 1.f,
+                                    false);
+  EXPECT_FLOAT_EQ(0.625f, pending_layer()
+                              ->picture_layer_tiling_set()
+                              ->FindTilingWithResolution(HIGH_RESOLUTION)
+                              ->contents_scale_key());
+
+  // Set an image size much larger than the layer bounds (5x). Verify that the
+  // scaling down code is triggered (we should halve the raster scale until it
+  // is less than 4x the ideal source scale).
+  pending_layer()->SetBounds(layer_bounds);
+  pending_layer()->SetDirectlyCompositedImageSize(gfx::Size(2000, 2000));
+  SetupDrawPropertiesAndUpdateTiles(pending_layer(), 1.f, 1.f, 1.f, 1.f, 1.f,
+                                    false);
+  EXPECT_FLOAT_EQ(2.5f, pending_layer()
+                            ->picture_layer_tiling_set()
+                            ->FindTilingWithResolution(HIGH_RESOLUTION)
+                            ->contents_scale_key());
+
+  // Update the bounds to no longer match the aspect ratio, but still compute
+  // the same raster scale.
+  pending_layer()->SetBounds(gfx::Size(600, 500));
+  SetupDrawPropertiesAndUpdateTiles(pending_layer(), 1.f, 1.f, 1.f, 1.f, 1.f,
+                                    false);
+  EXPECT_FLOAT_EQ(4.f, pending_layer()
+                           ->picture_layer_tiling_set()
+                           ->FindTilingWithResolution(HIGH_RESOLUTION)
+                           ->contents_scale_key());
+
+  // Update the bounds and and bump up the ideal scale so that the scale down
+  // restriction is lifted.
+  pending_layer()->SetBounds(layer_bounds);
+  SetupDrawPropertiesAndUpdateTiles(pending_layer(), 4.f, 1.f, 1.f, 1.f, 1.f,
+                                    false);
+  EXPECT_FLOAT_EQ(5.f, pending_layer()
+                           ->picture_layer_tiling_set()
+                           ->FindTilingWithResolution(HIGH_RESOLUTION)
+                           ->contents_scale_key());
+
+  // Lower the ideal scale to see that the clamping still applied as it is
+  // lowered.
+  SetupDrawPropertiesAndUpdateTiles(pending_layer(), 0.5f, 1.f, 1.f, 1.f, 1.f,
+                                    false);
+  EXPECT_FLOAT_EQ(1.25f, pending_layer()
+                             ->picture_layer_tiling_set()
+                             ->FindTilingWithResolution(HIGH_RESOLUTION)
+                             ->contents_scale_key());
+
+  SetupDrawPropertiesAndUpdateTiles(pending_layer(), 0.25f, 1.f, 1.f, 1.f, 1.f,
+                                    false);
+  EXPECT_FLOAT_EQ(0.625f, pending_layer()
+                              ->picture_layer_tiling_set()
+                              ->FindTilingWithResolution(HIGH_RESOLUTION)
+                              ->contents_scale_key());
+}
+
+TEST_F(LegacySWPictureLayerImplTest, CompositedImageRasterOptOutTransitions) {
+  gfx::Size layer_bounds(5, 5);
+  scoped_refptr<FakeRasterSource> pending_raster_source =
+      FakeRasterSource::CreateFilled(layer_bounds);
+
+  SetupPendingTree(pending_raster_source);
+
+  // Start with image and bounds matching to have this layer initially opted
+  // in to directly composited images.
+  pending_layer()->SetBounds(layer_bounds);
+  pending_layer()->SetDirectlyCompositedImageSize(layer_bounds);
+  SetupDrawPropertiesAndUpdateTiles(pending_layer(), 0.3f, 1.f, 1.f, 1.f, 1.f,
+                                    false);
+  EXPECT_FLOAT_EQ(1.f, pending_layer()
+                           ->picture_layer_tiling_set()
+                           ->FindTilingWithResolution(HIGH_RESOLUTION)
+                           ->contents_scale_key());
+
+  // Change the image and bounds to values that make the layer not eligible for
+  // direct compositing. This must be reflected by a |contents_scale_key()| of
+  // 0.1f (matching the ideal source scale).
+  gfx::Size image_size(300, 300);
+  pending_layer()->SetDirectlyCompositedImageSize(image_size);
+  SetupDrawPropertiesAndUpdateTiles(pending_layer(), 0.2f, 1.f, 1.f, 1.f, 1.f,
+                                    false);
+  EXPECT_FLOAT_EQ(0.2f, pending_layer()
+                            ->picture_layer_tiling_set()
+                            ->FindTilingWithResolution(HIGH_RESOLUTION)
+                            ->contents_scale_key());
+
+  // Ensure we get back to a directly composited image if the input values
+  // change such that the optimization should apply.
+  pending_layer()->SetBounds(ScaleToFlooredSize(layer_bounds, 2));
+  pending_layer()->SetDirectlyCompositedImageSize(
+      ScaleToFlooredSize(image_size, 2));
+  SetupDrawPropertiesAndUpdateTiles(pending_layer(), 0.2f, 1.f, 1.f, 1.f, 1.f,
+                                    false);
+  EXPECT_FLOAT_EQ(0.46875, pending_layer()
+                               ->picture_layer_tiling_set()
+                               ->FindTilingWithResolution(HIGH_RESOLUTION)
+                               ->contents_scale_key());
+}
+
 TEST_F(LegacySWPictureLayerImplTest,
        ChangeRasterTranslationNukePendingLayerTiles) {
   gfx::Size layer_bounds(200, 200);

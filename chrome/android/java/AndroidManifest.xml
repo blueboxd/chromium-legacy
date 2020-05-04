@@ -1108,9 +1108,6 @@ by a child template that "extends" this file.
 
         {% for i in range(num_privileged_services) %}
         {% set privileged_process_name = ':privileged_process%d' % i %}
-        <!-- TODO(tedchoc): Omit this for release builds as MultiDex is debug only. -->
-        <meta-data android:name="{{ manifest_package }}{{ privileged_process_name }}.ignore_multidex"
-android:value="true" />
         <service android:name="org.chromium.content.app.PrivilegedProcessService{{ i }}"
             android:process="{{ privileged_process_name }}"
             android:permission="{{ manifest_package }}.permission.CHILD_SERVICE"

@@ -42,6 +42,16 @@ class ReputationWebContentsObserver
   // check finishes.
   void RegisterReputationCheckCallbackForTesting(base::OnceClosure callback);
 
+  // Allows tests to see whether a reputation check has already completed since
+  // construction or last reset, and selectively register a callback if not.
+  bool reputation_check_pending_for_testing() {
+    return reputation_check_pending_for_testing_;
+  }
+
+  void reset_reputation_check_pending_for_testing() {
+    reputation_check_pending_for_testing_ = true;
+  }
+
  private:
   friend class content::WebContentsUserData<ReputationWebContentsObserver>;
 
@@ -79,6 +89,7 @@ class ReputationWebContentsObserver
   int last_safety_tip_navigation_entry_id_ = 0;
 
   base::OnceClosure reputation_check_callback_for_testing_;
+  bool reputation_check_pending_for_testing_;
 
   base::WeakPtrFactory<ReputationWebContentsObserver> weak_factory_{this};
   WEB_CONTENTS_USER_DATA_KEY_DECL();

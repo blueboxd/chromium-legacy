@@ -29,16 +29,10 @@
 #include "ui/accessibility/platform/atk_util_auralinux.h"
 #endif
 
-DEFINE_UI_CLASS_PROPERTY_TYPE(views::DesktopWindowTreeHostLinux*)
-
 namespace views {
 
 std::list<gfx::AcceleratedWidget>* DesktopWindowTreeHostLinux::open_windows_ =
     nullptr;
-
-DEFINE_UI_CLASS_PROPERTY_KEY(DesktopWindowTreeHostLinux*,
-                             kHostForRootWindow,
-                             nullptr)
 
 namespace {
 
@@ -82,30 +76,13 @@ DesktopWindowTreeHostLinux::DesktopWindowTreeHostLinux(
     : DesktopWindowTreeHostPlatform(native_widget_delegate,
                                     desktop_native_widget_aura) {}
 
-DesktopWindowTreeHostLinux::~DesktopWindowTreeHostLinux() {
-  window()->ClearProperty(kHostForRootWindow);
-}
-
-// static
-aura::Window* DesktopWindowTreeHostLinux::GetContentWindowForWidget(
-    gfx::AcceleratedWidget widget) {
-  auto* host = DesktopWindowTreeHostLinux::GetHostForWidget(widget);
-  return host ? host->GetContentWindow() : nullptr;
-}
-
-// static
-DesktopWindowTreeHostLinux* DesktopWindowTreeHostLinux::GetHostForWidget(
-    gfx::AcceleratedWidget widget) {
-  aura::WindowTreeHost* host =
-      aura::WindowTreeHost::GetForAcceleratedWidget(widget);
-  return host ? host->window()->GetProperty(kHostForRootWindow) : nullptr;
-}
+DesktopWindowTreeHostLinux::~DesktopWindowTreeHostLinux() = default;
 
 // static
 std::vector<aura::Window*> DesktopWindowTreeHostLinux::GetAllOpenWindows() {
   std::vector<aura::Window*> windows(open_windows().size());
   std::transform(open_windows().begin(), open_windows().end(), windows.begin(),
-                 GetContentWindowForWidget);
+                 DesktopWindowTreeHostPlatform::GetContentWindowForWidget);
   return windows;
 }
 
@@ -116,7 +93,7 @@ void DesktopWindowTreeHostLinux::CleanUpWindowList(
     return;
   while (!open_windows_->empty()) {
     gfx::AcceleratedWidget widget = open_windows_->front();
-    func(GetContentWindowForWidget(widget));
+    func(DesktopWindowTreeHostPlatform::GetContentWindowForWidget(widget));
     if (!open_windows_->empty() && open_windows_->front() == widget)
       open_windows_->erase(open_windows_->begin());
   }
@@ -175,8 +152,6 @@ void DesktopWindowTreeHostLinux::Init(const Widget::InitParams& params) {
 
 void DesktopWindowTreeHostLinux::OnNativeWidgetCreated(
     const Widget::InitParams& params) {
-  window()->SetProperty(kHostForRootWindow, this);
-
   CreateNonClientEventFilter();
   DesktopWindowTreeHostPlatform::OnNativeWidgetCreated(params);
 }

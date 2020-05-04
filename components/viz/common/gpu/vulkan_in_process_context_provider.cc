@@ -5,6 +5,7 @@
 #include "components/viz/common/gpu/vulkan_in_process_context_provider.h"
 
 #include "gpu/vulkan/buildflags.h"
+#include "gpu/vulkan/init/gr_vk_memory_allocator_impl.h"
 #include "gpu/vulkan/vulkan_device_queue.h"
 #include "gpu/vulkan/vulkan_fence_helper.h"
 #include "gpu/vulkan/vulkan_function_pointers.h"
@@ -65,6 +66,8 @@ bool VulkanInProcessContextProvider::Initialize(
   backend_context.fMaxAPIVersion = vulkan_implementation_->GetVulkanInstance()
                                        ->vulkan_info()
                                        .used_api_version;
+  backend_context.fMemoryAllocator =
+      gpu::CreateGrVkMemoryAllocator(device_queue_.get());
 
   GrVkGetProc get_proc = [](const char* proc_name, VkInstance instance,
                             VkDevice device) {

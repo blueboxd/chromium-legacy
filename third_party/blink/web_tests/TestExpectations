@@ -1435,7 +1435,6 @@ crbug.com/6606 external/wpt/mathml/relations/css-styling/displaystyle-1.html [ F
 crbug.com/6606 external/wpt/mathml/relations/css-styling/displaystyle-2.html [ Failure ]
 crbug.com/6606 external/wpt/mathml/relations/css-styling/ignored-properties-001.html [ Failure Timeout ]
 crbug.com/6606 external/wpt/mathml/relations/css-styling/lengths-2.html [ Failure ]
-crbug.com/6606 external/wpt/mathml/relations/css-styling/mathvariant-auto.html [ Failure ]
 crbug.com/6606 external/wpt/mathml/relations/css-styling/mathvariant-bold-fraktur.html [ Failure ]
 crbug.com/6606 external/wpt/mathml/relations/css-styling/mathvariant-bold-italic.html [ Failure ]
 crbug.com/6606 external/wpt/mathml/relations/css-styling/mathvariant-bold-sans-serif.html [ Failure ]
@@ -1478,7 +1477,6 @@ crbug.com/6606 [ Mac ] external/wpt/mathml/relations/text-and-math/use-typo-metr
 crbug.com/626703 external/wpt/css/css-text/text-transform/math/text-transform-math-fraktur-001.tentative.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-text/text-transform/math/text-transform-math-stretched-001.tentative.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-text/text-transform/math/text-transform-math-looped-001.tentative.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-text/text-transform/math/text-transform-math-auto-002.tentative.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-text/text-transform/math/text-transform-math-double-struck-001.tentative.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-text/text-transform/math/text-transform-math-initial-001.tentative.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-text/text-transform/math/text-transform-math-italic-001.tentative.html [ Failure ]
@@ -1490,7 +1488,6 @@ crbug.com/626703 external/wpt/css/css-text/text-transform/math/text-transform-ma
 crbug.com/626703 external/wpt/css/css-text/text-transform/math/text-transform-math-bold-sans-serif-001.tentative.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-text/text-transform/math/text-transform-math-monospace-001.tentative.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-text/text-transform/math/text-transform-math-bold-fraktur-001.tentative.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-text/text-transform/math/text-transform-math-auto-001.tentative.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-text/text-transform/math/text-transform-math-script-001.tentative.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-text/text-transform/math/text-transform-math-sans-serif-bold-italic-001.tentative.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-text/text-transform/math/text-transform-math-sans-serif-001.tentative.html [ Failure ]
@@ -2887,14 +2884,14 @@ crbug.com/1012242 external/wpt/webvtt/rendering/cues-with-video/processing-model
 crbug.com/965409 external/wpt/css/css-font-loading/fontface-descriptor-updates.html [ Failure ]
 
 # Implement text-decoration-thickness and text-decoration-offset
-crbug.com/785230 external/wpt/css/css-text-decor/text-underline-offset-002.html [ Failure ]
 crbug.com/785230 external/wpt/css/css-text-decor/text-decoration-thickness-001.html [ Failure ]
-crbug.com/785230 external/wpt/css/css-text-decor/text-decoration-thickness-overline-001.html [ Failure ]
-crbug.com/785230 external/wpt/css/css-text-decor/text-decoration-thickness-vertical-001.html [ Failure ]
-crbug.com/785230 external/wpt/css/css-text-decor/text-decoration-thickness-scroll-001.html [ Failure ]
 crbug.com/785230 external/wpt/css/css-text-decor/text-decoration-thickness-linethrough-001.html [ Failure ]
+crbug.com/785230 external/wpt/css/css-text-decor/text-decoration-thickness-overline-001.html [ Failure ]
+crbug.com/785230 external/wpt/css/css-text-decor/text-decoration-thickness-scroll-001.html [ Failure ]
 crbug.com/785230 external/wpt/css/css-text-decor/text-decoration-thickness-underline-001.html [ Failure ]
+crbug.com/785230 external/wpt/css/css-text-decor/text-decoration-thickness-vertical-001.html [ Failure ]
 crbug.com/785230 external/wpt/css/css-text-decor/text-decoration-thickness-vertical-002.html [ Failure ]
+crbug.com/785230 external/wpt/css/css-text-decor/text-underline-offset-002.html [ Failure ]
 
 # Implement support for percentage values in scale
 crbug.com/1029997 external/wpt/css/css-transforms/transform-scale-percent-001.html [ Failure ]
@@ -4122,12 +4119,6 @@ crbug.com/888443 external/wpt/css/cssom-view/scroll-behavior-scrollintoview-nest
 crbug.com/888443 external/wpt/css/cssom-view/scroll-behavior-smooth-positions.html [ Skip ]
 crbug.com/888443 external/wpt/css/cssom-view/scroll-behavior-subframe-root.html [ Skip ]
 crbug.com/888443 external/wpt/css/cssom-view/scroll-behavior-subframe-window.html [ Skip ]
-
-# Can't add baselines because a generated unique ID is part of the failure message.
-crbug.com/888470 external/wpt/referrer-policy/css-integration/child-css/internal-import-stylesheet.html [ Failure ]
-crbug.com/888470 external/wpt/referrer-policy/css-integration/child-css/processing-instruction.html [ Failure ]
-crbug.com/888470 virtual/omt-worker-fetch/external/wpt/referrer-policy/css-integration/child-css/internal-import-stylesheet.html [ Failure ]
-crbug.com/888470 virtual/omt-worker-fetch/external/wpt/referrer-policy/css-integration/child-css/processing-instruction.html [ Failure ]
 
 crbug.com/805756 external/wpt/html/semantics/tabular-data/processing-model-1/span-limits.html [ Pass Timeout ]
 
@@ -5484,23 +5475,16 @@ crbug.com/921151 [ Linux ] http/tests/security/mixedContent/insecure-iframe-with
 # production code. Because such timing bugs are relatively common in tests and it would thus be very
 # difficult to land the dispatch change without some temporary breakage, these tests are disabled
 crbug.com/922951 external/wpt/pointerevents/pointerevent_capture_mouse.html [ Failure Pass Timeout Crash ]
-crbug.com/922951 external/wpt/pointerevents/pointerevent_releasepointercapture_invalid_pointerid.html [ Failure Pass Timeout Crash ]
 crbug.com/922951 external/wpt/pointerevents/pointerevent_setpointercapture_disconnected.html [ Failure Pass Timeout Crash ]
 crbug.com/922951 external/wpt/pointerevents/pointerevent_setpointercapture_invalid_pointerid.html [ Failure Pass Timeout Crash ]
 crbug.com/922951 fast/css/pseudo-hover-active-display-none.html [ Failure Pass Timeout Crash ]
-crbug.com/922951 fast/dom/shadow/move-marquee-crossing-treescope-crash.html [ Failure Pass Timeout Crash ]
 crbug.com/922951 fast/forms/number/number-input-event-composed.html [ Failure Pass Timeout Crash ]
-crbug.com/922951 fast/loader/detach-while-printing.html [ Failure Pass Timeout Crash ]
-crbug.com/922951 fast/loader/document-open-iframe-then-detach.html [ Failure Pass Timeout Crash ]
-crbug.com/922951 virtual/text-antialias/international/inline-plaintext-relayout-with-leading-neutrals.html [ Failure Pass Timeout Crash ]
 crbug.com/922951 http/tests/cache/subresource-fragment-identifier.html [ Failure Pass Timeout Crash ]
 crbug.com/922951 http/tests/devtools/tracing/timeline-network-received-data.js [ Failure Pass Timeout Crash ]
 crbug.com/922951 http/tests/history/back-to-post.html [ Failure Pass Timeout Crash ]
 crbug.com/922951 http/tests/security/cookies/basic.html [ Failure Pass Timeout Crash ]
 crbug.com/922951 http/tests/webaudio/autoplay-crossorigin.html [ Failure Pass Timeout Crash ]
 crbug.com/922951 media/controls/overflow-menu-hide-on-click-outside-stoppropagation.html [ Failure Pass Timeout Crash ]
-crbug.com/922951 media/controls/overflow-menu-hide-on-click-outside.html [ Failure Pass Timeout Crash ]
-crbug.com/922951 media/controls/overflow-menu-toggle-class-for-animation.html [ Failure Pass Timeout Crash ]
 crbug.com/922951 virtual/prefer_compositing_to_lcd_text/scrollbars/resize-scales-with-dpi-150.html [ Failure Pass Timeout Crash ]
 crbug.com/922951 virtual/scalefactor150/fast/events/synthetic-events/tap-on-scaled-screen.html [ Failure Pass Timeout Crash ]
 crbug.com/922951 virtual/threaded/http/tests/devtools/tracing/frame-model-instrumentation.js [ Failure Pass Timeout Crash ]
@@ -6652,7 +6636,7 @@ crbug.com/1073505 [ Mac10.13 ] external/wpt/html/semantics/scripting-1/the-scrip
 crbug.com/1073505 [ Mac10.13 ] external/wpt/html/semantics/scripting-1/the-script-element/moving-between-documents/before-prepare-iframe-fetch-error-external-module.html [ Pass Failure ]
 
 # Sheriff 2020-04-23
-crbug.com/1073792 [ Mac10.13 ] virtual/threaded-prefer-compositing/fast/scrolling/events/scrollend-event-fired-after-snap.html [ Pass Failure ]
+crbug.com/1073792 [ Mac ] virtual/threaded-prefer-compositing/fast/scrolling/events/scrollend-event-fired-after-snap.html [ Pass Failure ]
 
 # the inspector-protocol/media tests only work in the virtual test environment.
 crbug.com/1074129 inspector-protocol/media/media-player.js [ TIMEOUT ]
@@ -6663,3 +6647,7 @@ crbug.com/1076467 [ Mac ] virtual/font-access/http/tests/font-access/font-access
 
 # Sheriff 2020-04-30
 crbug.com/1068681 fast/peerconnection/RTCPeerConnection-insertable-streams.html [ Pass Timeout ]
+
+# Sheriff 2020-05-04
+crbug.com/952717 [ Debug ] http/tests/xmlhttprequest/redirect-cross-origin-post.html [ Pass Failure ]
+crbug.com/984467 [ Mac Debug ] virtual/gpu/fast/canvas/canvas-composite-stroke-alpha.html [ Pass Timeout ]

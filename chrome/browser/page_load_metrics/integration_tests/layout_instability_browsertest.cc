@@ -27,18 +27,6 @@ int32_t LayoutShiftUmaValue(float shift_score) {
   return static_cast<int>(roundf(std::min(shift_score, 10.0f) * 10.0f));
 }
 
-std::vector<double> LayoutShiftScores(TraceAnalyzer& analyzer) {
-  std::vector<double> scores;
-  TraceEventVector events;
-  analyzer.FindEvents(Query::EventNameIs("LayoutShift"), &events);
-  for (auto* event : events) {
-    std::unique_ptr<Value> data;
-    event->GetArgAsValue("data", &data);
-    scores.push_back(*data->FindDoubleKey("score"));
-  }
-  return scores;
-}
-
 void CheckRect(const Value& list_value, int x, int y, int width, int height) {
   auto list = list_value.GetList();
   EXPECT_EQ(list[0].GetInt(), x);
@@ -49,30 +37,66 @@ void CheckRect(const Value& list_value, int x, int y, int width, int height) {
 
 }  // namespace
 
-IN_PROC_BROWSER_TEST_F(MetricIntegrationTest, LayoutInstability) {
+class LayoutInstabilityTest : public MetricIntegrationTest {
+ protected:
+  void RunWPT(const std::string& test_file);
+
+ private:
+  double CheckTraceData(base::ListValue& expectations, TraceAnalyzer&);
+};
+
+void LayoutInstabilityTest::RunWPT(const std::string& test_file) {
   Start();
-  Load("/layout-instability.html");
   StartTracing({"loading"});
+  Load("/layout-instability/" + test_file);
 
   // Check web perf API.
-  double expected_score = EvalJs(web_contents(), "runtest()").ExtractDouble();
+  base::ListValue expectations =
+      EvalJs(web_contents(), "cls_run_tests").ExtractList();
 
-  // Check trace event.
-  auto trace_scores = LayoutShiftScores(*StopTracingAndAnalyze());
-  EXPECT_EQ(1u, trace_scores.size());
-  EXPECT_EQ(expected_score, trace_scores[0]);
+  // Check trace data.
+  double final_score = CheckTraceData(expectations, *StopTracingAndAnalyze());
 
+  // Finish session.
   ui_test_utils::NavigateToURL(browser(), GURL("about:blank"));
 
   // Check UKM.
   ExpectUKMPageLoadMetric(PageLoad::kLayoutInstability_CumulativeShiftScoreName,
-                          LayoutShiftUkmValue(expected_score));
+                          LayoutShiftUkmValue(final_score));
 
   // Check UMA.
   auto samples = histogram_tester().GetAllSamples(
       "PageLoad.LayoutInstability.CumulativeShiftScore");
   EXPECT_EQ(1ul, samples.size());
-  EXPECT_EQ(samples[0], Bucket(LayoutShiftUmaValue(expected_score), 1));
+  EXPECT_EQ(samples[0], Bucket(LayoutShiftUmaValue(final_score), 1));
+}
+
+double LayoutInstabilityTest::CheckTraceData(base::ListValue& expectations,
+                                             TraceAnalyzer& analyzer) {
+  double final_score = 0.0;
+
+  TraceEventVector events;
+  analyzer.FindEvents(Query::EventNameIs("LayoutShift"), &events);
+
+  size_t expectation_count = expectations.GetSize();
+  EXPECT_EQ(expectation_count, events.size());
+
+  for (size_t i = 0; i < expectation_count; i++) {
+    std::unique_ptr<Value> data;
+    events[i]->GetArgAsValue("data", &data);
+    auto& expectation = expectations.GetList()[i];
+
+    auto score = expectation.FindDoubleKey("score");
+    if (score) {
+      EXPECT_EQ(score, *data->FindDoubleKey("score"));
+      final_score = *score;
+    }
+  }
+  return final_score;
+}
+
+IN_PROC_BROWSER_TEST_F(LayoutInstabilityTest, SimpleBlockMovement) {
+  RunWPT("simple-block-movement.html");
 }
 
 IN_PROC_BROWSER_TEST_F(MetricIntegrationTest, CLSAttribution_Enclosure) {

@@ -60,11 +60,29 @@ bool DesktopScreenX11::IsWindowUnderCursor(gfx::NativeWindow window) {
 
 gfx::NativeWindow DesktopScreenX11::GetWindowAtScreenPoint(
     const gfx::Point& point) {
-  auto widget = ui::X11TopmostWindowFinder().FindLocalProcessWindowAt(
-      gfx::ConvertPointToPixel(GetXDisplayScaleFactor(), point), {});
-  return widget ? views::DesktopWindowTreeHostLinux::GetContentWindowForWidget(
-                      static_cast<gfx::AcceleratedWidget>(widget))
-                : nullptr;
+  auto accelerated_widget =
+      ui::X11TopmostWindowFinder().FindLocalProcessWindowAt(
+          gfx::ConvertPointToPixel(GetXDisplayScaleFactor(), point), {});
+  return accelerated_widget
+             ? views::DesktopWindowTreeHostPlatform::GetContentWindowForWidget(
+                   static_cast<gfx::AcceleratedWidget>(accelerated_widget))
+             : nullptr;
+}
+
+gfx::NativeWindow DesktopScreenX11::GetLocalProcessWindowAtPoint(
+    const gfx::Point& point,
+    const std::set<gfx::NativeWindow>& ignore) {
+  std::set<gfx::AcceleratedWidget> ignore_widgets;
+  for (auto* const window : ignore)
+    ignore_widgets.emplace(window->GetHost()->GetAcceleratedWidget());
+  auto accelerated_widget =
+      ui::X11TopmostWindowFinder().FindLocalProcessWindowAt(
+          gfx::ConvertPointToPixel(GetXDisplayScaleFactor(), point),
+          ignore_widgets);
+  return accelerated_widget
+             ? views::DesktopWindowTreeHostPlatform::GetContentWindowForWidget(
+                   static_cast<gfx::AcceleratedWidget>(accelerated_widget))
+             : nullptr;
 }
 
 int DesktopScreenX11::GetNumDisplays() const {

@@ -338,12 +338,12 @@ def _FixPackageIds(resource_value):
   # Resource IDs for resources belonging to regular APKs have their first byte
   # as 0x7f (package id). However with webview, since it is not a regular apk
   # but used as a shared library, aapt is passed the --shared-resources flag
-  # which changes some of the package ids to 0x00 and 0x02.  This function
-  # normalises these (0x00 and 0x02) package ids to 0x7f, which the generated
-  # code in R.java changes to the correct package id at runtime.
-  # resource_value is a string with either, a single value '0x12345678', or an
-  # array of values like '{ 0xfedcba98, 0x01234567, 0x56789abc }'
-  return re.sub(r'0x(?:00|02)', r'0x7f', resource_value)
+  # which changes some of the package ids to 0x00.  This function normalises
+  # these (0x00) package ids to 0x7f, which the generated code in R.java changes
+  # to the correct package id at runtime.  resource_value is a string with
+  # either, a single value '0x12345678', or an array of values like '{
+  # 0xfedcba98, 0x01234567, 0x56789abc }'
+  return resource_value.replace('0x00', '0x7f')
 
 
 def _GetRTxtResourceNames(r_txt_path):
@@ -399,6 +399,7 @@ class RJavaBuildOptions:
     self.resources_allowlist = None
     self.has_on_resources_loaded = False
     self.export_const_styleable = False
+    self.final_package_id = None
 
   def ExportNoResources(self):
     """Make all resource IDs final, and don't generate a method."""
@@ -441,6 +442,30 @@ class RJavaBuildOptions:
     or --app-as-shared-lib flags of 'aapt package'.
     """
     self.has_on_resources_loaded = True
+
+  def SetFinalPackageId(self, package_id):
+    """Sets a package ID to be used for resources marked final."""
+    self.final_package_id = package_id
+
+  def _MaybeRewriteRTxtPackageIds(self, r_txt_path):
+    """Rewrites package IDs in the R.txt file if necessary.
+
+    If SetFinalPackageId() was called, some of the resource IDs may have had
+    their package ID changed. This function rewrites the R.txt file to match
+    those changes.
+    """
+    if self.final_package_id is None:
+      return
+
+    entries = _ParseTextSymbolsFile(r_txt_path)
+    with open(r_txt_path, 'w') as f:
+      for entry in entries:
+        value = entry.value
+        if self._IsResourceFinal(entry):
+          value = re.sub(r'0x(?:00|7f)',
+                         '0x{:02x}'.format(self.final_package_id), value)
+        f.write('{} {} {} {}\n'.format(entry.java_type, entry.resource_type,
+                                       entry.name, value))
 
   def _IsResourceFinal(self, entry):
     """Determines whether a resource should be final or not.
@@ -502,6 +527,7 @@ def CreateRJavaFiles(srcjar_dir,
   """
   assert len(extra_res_packages) == len(extra_r_txt_files), \
          'Need one R.txt file per package'
+  rjava_build_options._MaybeRewriteRTxtPackageIds(main_r_txt_file)
 
   packages = list(extra_res_packages)
   r_txt_files = list(extra_r_txt_files)

@@ -4,9 +4,9 @@
 
 #include "ui/compositor/overscroll/scroll_input_handler.h"
 
-#include "cc/input/scroll_input_type.h"
 #include "ui/compositor/layer.h"
 #include "ui/events/event.h"
+#include "ui/events/types/scroll_input_type.h"
 
 namespace ui {
 
@@ -66,7 +66,7 @@ bool ScrollInputHandler::OnScrollEvent(const ScrollEvent& event,
   // Note: the WHEEL type covers both actual wheels as well as trackpad
   // scrolling.
   input_handler_weak_ptr_->ScrollBegin(&scroll_state_begin,
-                                       cc::ScrollInputType::kWheel);
+                                       ui::ScrollInputType::kWheel);
 
   cc::ScrollState scroll_state = CreateScrollState(event, false);
   input_handler_weak_ptr_->ScrollUpdate(&scroll_state, base::TimeDelta());

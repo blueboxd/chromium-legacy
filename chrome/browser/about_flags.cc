@@ -51,7 +51,7 @@
 #include "chrome/browser/sharing/shared_clipboard/feature_flags.h"
 #include "chrome/browser/sharing/sms/sms_flags.h"
 #include "chrome/browser/sharing/webrtc/webrtc_flags.h"
-#include "chrome/browser/signin/account_consistency_mode_manager.h"
+#include "chrome/browser/signin/signin_features.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/unexpire_flags.h"
 #include "chrome/browser/unexpire_flags_gen.h"
@@ -4808,10 +4808,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kFontAccessAPIDescription, kOsAll,
      FEATURE_VALUE_TYPE(blink::features::kFontAccess)},
 
-    {"font-src-local-matching", flag_descriptions::kFontSrcLocalMatchingName,
-     flag_descriptions::kFontSrcLocalMatchingDescription, kOsAll,
-     FEATURE_VALUE_TYPE(features::kFontSrcLocalMatching)},
-
 #if defined(OS_CHROMEOS)
     {"enable-parental-controls-settings",
      flag_descriptions::kEnableParentalControlsSettingsName,
@@ -5492,6 +5488,14 @@ const FeatureEntry kFeatureEntries[] = {
     {"permission-chip", flag_descriptions::kPermissionChipName,
      flag_descriptions::kPermissionChipDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kPermissionChip)},
+
+#if BUILDFLAG(ENABLE_DICE_SUPPORT)
+    {"dice-web-signin-interception",
+     flag_descriptions::kDiceWebSigninInterceptionName,
+     flag_descriptions::kDiceWebSigninInterceptionDescription,
+     kOsMac | kOsWin | kOsLinux,
+     FEATURE_VALUE_TYPE(kDiceWebSigninInterceptionFeature)},
+#endif  // ENABLE_DICE_SUPPORT
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

@@ -7,8 +7,8 @@
 
 #include <stddef.h>
 
-#include <map>
 #include <memory>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -88,13 +88,11 @@ class SupervisedUserService : public KeyedService,
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   // These enum values represent operations to manage the
-  // kSupervisedUserApprovedExtensions user pref, which maps extension ids to
-  // approved versions.
+  // kSupervisedUserApprovedExtensions user pref, which stores parent approved
+  // extension ids.
   enum class ApprovedExtensionChange {
     // Adds a new approved extension to the pref.
-    kNew,
-    // Updates the version of an already-approved extension.
-    kUpdate,
+    kAdd,
     // Removes extension approval.
     kRemove
   };
@@ -204,19 +202,15 @@ class SupervisedUserService : public KeyedService,
       std::unique_ptr<PermissionRequestCreator> permission_creator);
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-  // Updates the map of approved extensions to add approval for |extension|.
-  void AddOrUpdateExtensionApproval(const extensions::Extension& extension);
+  // Updates the set of approved extensions to add approval for |extension|.
+  void AddExtensionApproval(const extensions::Extension& extension);
 
-  // Updates the map of approved extensions to remove approval for |extension|.
+  // Updates the set of approved extensions to remove approval for |extension|.
   void RemoveExtensionApproval(const extensions::Extension& extension);
 
-  // Simulates a custodian or child approval for enabling the extension coming
-  // in through Sync by adding the approved version to the map of approved
-  // extensions. Removes approval by passing in
-  // ApprovedExtensionChange::kRemove. It doesn't simulate a change in the
-  // disable reasons.
+  // Wraps UpdateApprovedExtension() for testing. Use this to simulate adding or
+  // removing custodian approval for an extension via sync.
   void UpdateApprovedExtensionForTesting(const std::string& extension_id,
-                                         const std::string& version,
                                          ApprovedExtensionChange type);
 
   bool GetSupervisedUserExtensionsMayRequestPermissionsPref() const;
@@ -289,26 +283,26 @@ class SupervisedUserService : public KeyedService,
   // "Permissions for sites, apps and extensions" toggle.
   bool ShouldBlockExtension(const std::string& extension_id) const;
 
-  // Enables/Disables extensions upon change in approved version of the
-  // extension_id. This function is idempotent.
+  // Enables/Disables extensions upon change in approvals. This function is
+  // idempotent.
   void ChangeExtensionStateIfNecessary(const std::string& extension_id);
 
-  // Updates the map of approved extensions.
-  // Use AddOrUpdateExtensionApproval() or RemoveExtensionApproval() for public
-  // access.
-  // If |type| is kNew, then adds custodian approval for enabling the extension
-  // by adding the approved version to the map of approved extensions.
-  // If |type| is kUpdate, then updates the approved version for the extension
-  // in the map.
-  // If |type| is kRemove, then removes the extension from the map of approved
-  // extensions.
+  // Updates the synced set of approved extension ids.
+  // Use AddExtensionApproval() or RemoveExtensionApproval() for public access.
+  // If |type| is kAdd, then add approval.
+  // If |type| is kRemove, then remove approval.
+  // Triggers a call to RefreshApprovedExtensionsFromPrefs() via a listener.
+  // TODO(crbug/1072857): We don't need the extension version information. It's
+  // only included for backwards compatibility with previous versions of Chrome.
+  // Remove the version information once a sufficient number of users have
+  // migrated away from M83.
   void UpdateApprovedExtension(const std::string& extension_id,
                                const std::string& version,
                                ApprovedExtensionChange type);
 
-  // Updates the map of approved extensions when the corresponding preference is
+  // Updates the set of approved extensions when the corresponding preference is
   // changed.
-  void UpdateApprovedExtensions();
+  void RefreshApprovedExtensionsFromPrefs();
 
   // Extensions helper to SetActive().
   void SetExtensionsActive();
@@ -387,9 +381,9 @@ class SupervisedUserService : public KeyedService,
 
   SupervisedUserURLFilter url_filter_;
 
-  // Stores a map from extension_id -> approved version by the custodian.
+  // Store a set of extension ids approved by the custodian.
   // It is only relevant for SU-initiated installs.
-  std::map<std::string, base::Version> approved_extensions_map_;
+  std::set<std::string> approved_extensions_set_;
 
   enum class BlacklistLoadState {
     NOT_LOADED,

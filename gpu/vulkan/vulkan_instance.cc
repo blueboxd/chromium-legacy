@@ -10,8 +10,10 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "build/build_config.h"
+#include "gpu/vulkan/vulkan_crash_keys.h"
 #include "gpu/vulkan/vulkan_device_queue.h"
 #include "gpu/vulkan/vulkan_function_pointers.h"
+#include "gpu/vulkan/vulkan_util.h"
 
 namespace gpu {
 
@@ -82,6 +84,9 @@ bool VulkanInstance::Initialize(
 
   if (vulkan_info_.api_version < VK_MAKE_VERSION(1, 1, 0))
     return false;
+
+  gpu::crash_keys::vulkan_api_version.Set(
+      VkVersionToString(vulkan_info_.api_version));
 
   // Use Vulkan 1.1 if it's available.
   vulkan_info_.used_api_version = VK_MAKE_VERSION(1, 1, 0);

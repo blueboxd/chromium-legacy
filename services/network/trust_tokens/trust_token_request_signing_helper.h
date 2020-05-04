@@ -200,8 +200,9 @@ class TrustTokenRequestSigningHelper : public TrustTokenRequestHelper {
 
   // Immediately returns kOk with no other effect. (Signing is an operation that
   // only needs to process requests, not their corresponding responses.)
-  mojom::TrustTokenOperationStatus Finalize(
-      mojom::URLResponseHead* response) override;
+  void Finalize(
+      mojom::URLResponseHead* response,
+      base::OnceCallback<void(mojom::TrustTokenOperationStatus)> done) override;
 
  private:
   // Given (unencoded) bytestrings |public_key| and |signature|, returns the

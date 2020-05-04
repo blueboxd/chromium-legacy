@@ -38,8 +38,9 @@ class TrustTokenRequestHelper {
   // Checks |response| for issuance response headers; if these are present and
   // valid, removes the headers, updates internal protocol state, and returns
   // true. Otherwise, returns false.
-  virtual mojom::TrustTokenOperationStatus Finalize(
-      mojom::URLResponseHead* response) = 0;
+  virtual void Finalize(
+      mojom::URLResponseHead* response,
+      base::OnceCallback<void(mojom::TrustTokenOperationStatus)> done) = 0;
 };
 
 }  // namespace network

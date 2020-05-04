@@ -762,11 +762,6 @@
         <data android:scheme="file"/>
       </intent-filter>
     </activity-alias>
-    <meta-data android:name="$PACKAGE:privileged_process0.ignore_multidex" android:value="true"/>
-    <meta-data android:name="$PACKAGE:privileged_process1.ignore_multidex" android:value="true"/>
-    <meta-data android:name="$PACKAGE:privileged_process2.ignore_multidex" android:value="true"/>
-    <meta-data android:name="$PACKAGE:privileged_process3.ignore_multidex" android:value="true"/>
-    <meta-data android:name="$PACKAGE:privileged_process4.ignore_multidex" android:value="true"/>
     <meta-data android:name="android.allow_multiple_resumed_activities" android:value="true"/>
     <meta-data
         android:name="android.content.APP_RESTRICTIONS"

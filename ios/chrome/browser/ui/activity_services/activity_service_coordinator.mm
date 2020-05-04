@@ -19,7 +19,7 @@
 #import "ios/chrome/browser/ui/activity_services/data/share_to_data.h"
 #import "ios/chrome/browser/ui/activity_services/data/share_to_data_builder.h"
 #import "ios/chrome/browser/ui/activity_services/requirements/activity_service_positioner.h"
-#import "ios/chrome/browser/ui/commands/activity_service_commands.h"
+#import "ios/chrome/browser/ui/activity_services/requirements/activity_service_presentation.h"
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/chrome/browser/ui/commands/snackbar_commands.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
@@ -41,8 +41,7 @@ const char kSharePageLatencyHistogram[] = "IOS.SharePageLatency";
 
 @interface ActivityServiceCoordinator ()
 
-@property(nonatomic, weak) id<ActivityServiceCommands,
-                              BrowserCommands,
+@property(nonatomic, weak) id<BrowserCommands,
                               FindInPageCommands,
                               QRGenerationCommands,
                               SnackbarCommands>
@@ -62,10 +61,9 @@ const char kSharePageLatencyHistogram[] = "IOS.SharePageLatency";
 #pragma mark - Public methods
 
 - (void)start {
-  self.handler = static_cast<
-      id<ActivityServiceCommands, BrowserCommands, FindInPageCommands,
-         QRGenerationCommands, SnackbarCommands>>(
-      self.browser->GetCommandDispatcher());
+  self.handler =
+      static_cast<id<BrowserCommands, FindInPageCommands, QRGenerationCommands,
+                     SnackbarCommands>>(self.browser->GetCommandDispatcher());
 
   ChromeBrowserState* browserState = self.browser->GetBrowserState();
   bookmarks::BookmarkModel* bookmarkModel =
@@ -126,7 +124,8 @@ const char kSharePageLatencyHistogram[] = "IOS.SharePageLatency";
                                          returnedItems:returnedItems
                                                  error:activityError];
 
-    [strongSelf.handler hideActivityView];
+    // Signal the presentation provider that our scenario is over.
+    [strongSelf.presentationProvider activityServiceDidEndPresenting];
   }];
 
   [self.baseViewController presentViewController:self.viewController

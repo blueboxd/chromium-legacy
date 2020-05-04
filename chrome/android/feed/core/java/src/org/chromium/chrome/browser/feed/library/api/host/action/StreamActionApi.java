@@ -40,6 +40,9 @@ public interface StreamActionApi extends ActionApi {
     void handleNotInterestedIn(List<StreamDataOperation> dataOperations, UndoAction undoAction,
             ActionPayload payload, int interestType);
 
+    /** Handles the block content action. **/
+    void handleBlockContent(List<StreamDataOperation> dataOperations, ActionPayload payload);
+
     /** Called when a client action has been performed. */
     void onClientAction(@ActionType int actionType);
 

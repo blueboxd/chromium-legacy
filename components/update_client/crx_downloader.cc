@@ -129,13 +129,14 @@ void CrxDownloader::OnDownloadComplete(
                                   download_metrics));
 }
 
-void CrxDownloader::OnDownloadProgress() {
+void CrxDownloader::OnDownloadProgress(int64_t downloaded_bytes,
+                                       int64_t total_bytes) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (progress_callback_.is_null())
     return;
 
-  progress_callback_.Run();
+  progress_callback_.Run(downloaded_bytes, total_bytes);
 }
 
 // The function mutates the values of the parameters |result| and

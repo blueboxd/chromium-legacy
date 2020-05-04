@@ -7,11 +7,11 @@
 #include <utility>
 #include <vector>
 
-#include "cc/input/scroll_input_type.h"
 #include "cc/metrics/event_metrics.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/types/event_type.h"
+#include "ui/events/types/scroll_input_type.h"
 
 namespace cc {
 namespace {

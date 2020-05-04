@@ -163,6 +163,12 @@ gfx::NativeWindow TestScreen::GetWindowAtScreenPoint(const gfx::Point& point) {
   return host_->window()->GetEventHandlerForPoint(point);
 }
 
+gfx::NativeWindow TestScreen::GetLocalProcessWindowAtPoint(
+    const gfx::Point& point,
+    const std::set<gfx::NativeWindow>& ignore) {
+  return nullptr;
+}
+
 display::Display TestScreen::GetDisplayNearestWindow(
     gfx::NativeWindow window) const {
   return GetPrimaryDisplay();

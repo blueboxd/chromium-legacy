@@ -13,6 +13,17 @@
 
 namespace enterprise_connectors {
 
+// Keys used to read a connector's policy values.
+constexpr char kKeyServiceProvider[] = "service_provider";
+constexpr char kKeyEnable[] = "enable";
+constexpr char kKeyDisable[] = "disable";
+constexpr char kKeyUrlList[] = "url_list";
+constexpr char kKeyTags[] = "tags";
+constexpr char kKeyBlockUntilVerdict[] = "block_until_verdict";
+constexpr char kKeyBlockPasswordProtected[] = "block_password_protected";
+constexpr char kKeyBlockLargeFiles[] = "block_large_files";
+constexpr char kKeyBlockUnsupportedFileTypes[] = "block_unsupported_file_types";
+
 // Enums representing each connector to be used as arguments so the appropriate
 // policies/settings can be read.
 enum class AnalysisConnector {
@@ -57,6 +68,8 @@ struct ReportingSettings {
 
   std::vector<GURL> reporting_urls;
 };
+
+const char* ConnectorPref(AnalysisConnector connector);
 
 }  // namespace enterprise_connectors
 

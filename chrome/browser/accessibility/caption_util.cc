@@ -11,6 +11,19 @@
 #include "ui/base/ui_base_switches.h"
 #include "ui/native_theme/native_theme.h"
 
+namespace {
+
+// Returns whether the style is default or not. If the user has changed any of
+// the captions settings from the default value, that is an interesting metric
+// to observe.
+bool IsDefaultStyle(base::Optional<ui::CaptionStyle> style) {
+  return (style.has_value() && style->text_size.empty() &&
+          style->font_family.empty() && style->text_color.empty() &&
+          style->background_color.empty() && style->text_shadow.empty());
+}
+
+}  // namespace
+
 namespace captions {
 
 base::Optional<ui::CaptionStyle> GetCaptionStyleFromUserSettings(
@@ -31,19 +44,19 @@ base::Optional<ui::CaptionStyle> GetCaptionStyleFromUserSettings(
   if (!style) {
     ui::NativeTheme* native_theme = ui::NativeTheme::GetInstanceForWeb();
     style = native_theme->GetSystemCaptionStyle();
-    if (record_metrics) {
+    if (record_metrics && style.has_value()) {
       base::UmaHistogramBoolean(
           "Accessibility.CaptionSettingsLoadedFromSystemSettings",
-          style.has_value());
+          !IsDefaultStyle(style));
     }
   }
 
   // Apply caption style from preferences if system caption style is undefined.
   if (!style) {
     style = pref_names_util::GetCaptionStyleFromPrefs(prefs);
-    if (record_metrics) {
+    if (record_metrics && style.has_value()) {
       base::UmaHistogramBoolean("Accessibility.CaptionSettingsLoadedFromPrefs",
-                                style.has_value());
+                                !IsDefaultStyle(style));
     }
   }
 

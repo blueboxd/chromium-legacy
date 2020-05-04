@@ -100,8 +100,9 @@ bool FidoDeviceDiscovery::AddDevice(std::unique_ptr<FidoDevice> device) {
 
   auto authenticator =
       std::make_unique<FidoDeviceAuthenticator>(std::move(device));
-  const auto result =
-      authenticators_.emplace(authenticator->GetId(), std::move(authenticator));
+  std::string authenticator_id = authenticator->GetId();
+  const auto result = authenticators_.emplace(std::move(authenticator_id),
+                                              std::move(authenticator));
   if (!result.second) {
     return false;  // Duplicate device id.
   }

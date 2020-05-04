@@ -43,14 +43,6 @@ class VIEWS_EXPORT DesktopWindowTreeHostLinux
       DesktopNativeWidgetAura* desktop_native_widget_aura);
   ~DesktopWindowTreeHostLinux() override;
 
-  // A way of converting a |widget| into the content_window()
-  // of the associated DesktopNativeWidgetAura.
-  static aura::Window* GetContentWindowForWidget(gfx::AcceleratedWidget widget);
-
-  // A way of converting a |widget| into this object.
-  static DesktopWindowTreeHostLinux* GetHostForWidget(
-      gfx::AcceleratedWidget widget);
-
   // Get all open top-level windows. This includes windows that may not be
   // visible. This list is sorted in their stacking order, i.e. the first window
   // is the topmost window.

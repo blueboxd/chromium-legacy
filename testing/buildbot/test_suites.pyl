@@ -3488,16 +3488,9 @@
       },
     },
 
+    # TODO(https://crbug.com/1057802): Remove these tests once Out-of-Process
+    # Storage is on by default.
     'storage_service_gtests': {
-      'storage_service_unsandboxed_browser_tests': {
-        'args': [
-          '--enable-features=StorageServiceOutOfProcess',
-        ],
-        'swarming': {
-          'shards': 15,
-        },
-        'test': 'browser_tests',
-      },
       'storage_service_unsandboxed_content_browsertests': {
         'args': [
           '--enable-features=StorageServiceOutOfProcess',
@@ -3516,6 +3509,44 @@
       'storage_service_unsandboxed_interactive_ui_tests': {
         'args': [
           '--enable-features=StorageServiceOutOfProcess'
+        ],
+        'swarming': {
+          'shards': 3,
+        },
+        'test': 'interactive_ui_tests',
+      },
+    },
+
+    # TODO(https://crbug.com/1057802): Remove these tests once Out-of-Process
+    # Storage sandboxing is on by default.
+    'storage_service_sandbox_gtests': {
+      'storage_service_sandboxed_browser_tests': {
+        'args': [
+          '--enable-features=StorageServiceOutOfProcess,StorageServiceSandbox',
+        ],
+        'swarming': {
+          'shards': 15,
+        },
+        'test': 'browser_tests',
+      },
+      'storage_service_sandboxed_content_browsertests': {
+        'args': [
+          '--enable-features=StorageServiceOutOfProcess,StorageServiceSandbox',
+        ],
+        'swarming': {
+          'shards': 2,
+        },
+        'test': 'content_browsertests',
+      },
+      'storage_service_sandboxed_extensions_browsertests': {
+        'args': [
+          '--enable-features=StorageServiceOutOfProcess,StorageServiceSandbox',
+        ],
+        'test': 'extensions_browsertests',
+      },
+      'storage_service_sandboxed_interactive_ui_tests': {
+        'args': [
+          '--enable-features=StorageServiceOutOfProcess,StorageServiceSandbox',
         ],
         'swarming': {
           'shards': 3,
@@ -4177,6 +4208,7 @@
       'linux_specific_xr_gtests',
       'non_android_and_cast_and_chromeos_chromium_gtests',
       'non_android_chromium_gtests',
+      'storage_service_gtests',
       'vr_platform_specific_chromium_gtests',
       'weblayer_gtests',
       'weblayer_unittests',
@@ -4220,6 +4252,7 @@
       'non_android_chromium_gtests',
       'non_skia_renderer_gtests',
       'pixel_browser_tests_gtests',
+      'storage_service_gtests',
       'vr_platform_specific_chromium_gtests',
       'weblayer_gtests',
       'weblayer_unittests',
@@ -4724,6 +4757,7 @@
       'linux_chromeos_specific_gtests',
       'linux_flavor_specific_chromium_gtests',
       'non_android_chromium_gtests',
+      'storage_service_gtests',
     ],
 
     'linux_viz_gtests': [
@@ -4751,18 +4785,18 @@
       'aura_gtests',
       'mojo_chromiumos_specific_gtests',
       'network_service_gtests',
-      'storage_service_gtests',
+      'storage_service_sandbox_gtests',
     ],
 
     'mojo_linux_gtests': [
-      'storage_service_gtests',
+      'storage_service_sandbox_gtests',
     ],
 
     'mojo_windows_gtests': [
       'mojo_windows_specific_gtests',
       'network_service_fyi_gtests',
       'network_service_in_process_gtests',
-      'storage_service_gtests',
+      'storage_service_sandbox_gtests',
     ],
 
     'network_service_extra_gtests': [

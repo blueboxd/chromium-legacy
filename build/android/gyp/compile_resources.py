@@ -68,6 +68,10 @@ _PNG_WEBP_EXCLUSION_PATTERN = re.compile('|'.join([
     r'.*daydream_icon_.*\.png'
 ]))
 
+# The package ID hardcoded for shared libraries. See
+# _HardcodeSharedLibraryDynamicAttributes() for more details.
+_SHARED_LIBRARY_HARDCODED_ID = 2
+
 
 def _ParseArgs(args):
   """Parses command line options.
@@ -711,10 +715,10 @@ def _ProcessProtoItem(item):
     return
 
   # If this is a dynamic attribute (type ATTRIBUTE, package ID 0), hardcode
-  # the package to 0x02.
+  # the package to _SHARED_LIBRARY_HARDCODED_ID.
   if item.ref.type == Resources_pb2.Reference.ATTRIBUTE and not (
       item.ref.id & 0xff000000):
-    item.ref.id |= 0x02000000
+    item.ref.id |= (0x01000000 * _SHARED_LIBRARY_HARDCODED_ID)
     item.ref.ClearField('is_dynamic')
 
 
@@ -1168,9 +1172,7 @@ def _OnStaleMd5(options):
 
     # If --shared-resources-allowlist is used, all the resources listed in the
     # corresponding R.txt file will be non-final, and an onResourcesLoaded()
-    # will be generated to adjust them at runtime. If --shared-resources is used
-    # then ignore the allowlist, since there is never a case where those
-    # resources should be final.
+    # will be generated to adjust them at runtime.
     #
     # Otherwise, if --shared-resources is used, the all resources will be
     # non-final, and an onResourcesLoaded() method will be generated too.
@@ -1178,10 +1180,14 @@ def _OnStaleMd5(options):
     # Otherwise, all resources will be final, and no method will be generated.
     #
     rjava_build_options = resource_utils.RJavaBuildOptions()
-    if options.shared_resources_allowlist and not options.shared_resources:
+    if options.shared_resources_allowlist:
       rjava_build_options.ExportSomeResources(
           options.shared_resources_allowlist)
       rjava_build_options.GenerateOnResourcesLoaded()
+      if options.shared_resources:
+        # The final resources will only be used in WebLayer, so hardcode the
+        # package ID to be what WebLayer expects.
+        rjava_build_options.SetFinalPackageId(_SHARED_LIBRARY_HARDCODED_ID)
     elif options.shared_resources or options.app_as_shared_lib:
       rjava_build_options.ExportAllResources()
       rjava_build_options.GenerateOnResourcesLoaded()

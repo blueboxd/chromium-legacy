@@ -28,8 +28,6 @@ import org.chromium.base.task.PostTask;
 import org.chromium.base.task.TaskTraits;
 
 import java.io.File;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.concurrent.RejectedExecutionException;
 
 /**
@@ -103,25 +101,11 @@ public class DownloadManagerBridge {
         if (downloadId != DownloadConstants.INVALID_DOWNLOAD_ID) return downloadId;
 
         if (Build.VERSION.SDK_INT > Build.VERSION_CODES.M) {
-            Class<?> c = manager.getClass();
-            try {
-                Class[] args = {String.class, String.class, boolean.class, String.class,
-                        String.class, long.class, boolean.class, Uri.class, Uri.class};
-                Method method = c.getMethod("addCompletedDownload", args);
-                // OriginalUri has to be null or non-empty http(s) scheme.
-                Uri originalUri = UriUtils.parseOriginalUrl(originalUrl);
-                Uri refererUri = TextUtils.isEmpty(referer) ? null : Uri.parse(referer);
-                downloadId = (Long) method.invoke(manager, fileName, description, true, mimeType,
-                        filePath, fileSizeBytes, useSystemNotification, originalUri, refererUri);
-            } catch (SecurityException e) {
-                Log.e(TAG, "Cannot access the needed method.");
-            } catch (NoSuchMethodException e) {
-                Log.e(TAG, "Cannot find the needed method.");
-            } catch (InvocationTargetException e) {
-                Log.e(TAG, "Error calling the needed method.");
-            } catch (IllegalAccessException e) {
-                Log.e(TAG, "Error accessing the needed method.");
-            }
+            // OriginalUri has to be null or non-empty http(s) scheme.
+            Uri originalUri = UriUtils.parseOriginalUrl(originalUrl);
+            Uri refererUri = TextUtils.isEmpty(referer) ? null : Uri.parse(referer);
+            downloadId = manager.addCompletedDownload(fileName, description, true, mimeType,
+                    filePath, fileSizeBytes, useSystemNotification, originalUri, refererUri);
         } else {
             downloadId = manager.addCompletedDownload(fileName, description, true, mimeType,
                     filePath, fileSizeBytes, useSystemNotification);

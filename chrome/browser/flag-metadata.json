@@ -36,7 +36,7 @@
   {
     "name": "account-id-migration",
     "owners": [ "msarda" ],
-    "expiry_milestone": 84
+    "expiry_milestone": 88
   },
   {
     "name": "aggregated-ml-app-ranking",
@@ -456,7 +456,7 @@
   {
     "name": "change-tab-switcher-position",
     "owners": [ "ewannpv", "gambard" ],
-    "expiry_milestone": 84
+    "expiry_milestone": 87
   },
   {
     "name": "chrome-share-screenshot",
@@ -538,7 +538,7 @@
   {
     "name": "contained-browser-bvc",
     "owners": [ "gambard" ],
-    "expiry_milestone": 84
+    "expiry_milestone": 87
   },
   {
     "name": "content-indexing-download-home",
@@ -751,7 +751,7 @@
   {
     "name": "desktop-version-default",
     "owners": [ "gambard" ],
-    "expiry_milestone": 85
+    "expiry_milestone": 87
   },
   {
     "name": "detect-main-thread-freeze",
@@ -772,6 +772,11 @@
     "name": "dial-media-route-provider",
     "owners": [ "mfoltz", "takumif" ],
     "expiry_milestone": 83
+  },
+  {
+    "name": "dice-web-signin-interception",
+    "owners": [ "droger", "my-chrome-everywhere@google.com" ],
+    "expiry_milestone": 90
   },
   {
     "name": "dim-shelf",
@@ -1399,11 +1404,6 @@
     "expiry_milestone": 88
   },
   {
-    "name": "enable-display-locking",
-    "owners": [ "//third_party/blink/renderer/core/display_lock/OWNERS" ],
-    "expiry_milestone": 82
-  },
-  {
     "name": "enable-duet-tabstrip-integration",
     "owners": [ "memex-team@google.com" ],
     "expiry_milestone": 84
@@ -1528,7 +1528,7 @@
   {
     "name": "enable-ftp",
     "owners": [ "asanka" ],
-    "expiry_milestone": 82
+    "expiry_milestone": 86
   },
   {
     "name": "enable-future-v8-vm-features",
@@ -1831,7 +1831,7 @@
   {
     "name": "enable-persistent-downloads",
     "owners": [ "ewannpv", "gambard" ],
-    "expiry_milestone": 84
+    "expiry_milestone": 87
   },
   {
     "name": "enable-pixel-canvas-recording",
@@ -1913,7 +1913,7 @@
   {
     "name": "enable-removing-all-third-party-cookies",
     "owners": [ "dullweber" ],
-    "expiry_milestone": 82
+    "expiry_milestone": 88
   },
   {
     "name": "enable-reopen-tab-in-product-help",
@@ -2205,11 +2205,6 @@
     "expiry_milestone": -1
   },
   {
-    "name": "enable-viz-hit-test-surface-layer",
-    "owners": [ "yigu", "rjkroege", "kylechar" ],
-    "expiry_milestone": 81
-  },
-  {
     "name": "enable-vulkan",
     "owners": [ "penghuang" ],
     "expiry_milestone": 90
@@ -2450,11 +2445,6 @@
     "name": "font-access",
     "owners": [ "cmp", "oyiptong" ],
     "expiry_milestone": 85
-  },
-  {
-    "name": "font-src-local-matching",
-    "owners": [ "drott", "layout-dev" ],
-    "expiry_milestone": 82
   },
   {
     "name": "force-color-profile",
@@ -2913,7 +2903,7 @@
   {
     "name": "mobile-google-srp",
     "owners": [ "gambard" ],
-    "expiry_milestone": 86
+    "expiry_milestone": 88
   },
   {
     "name": "mobile-identity-consistency",
@@ -3328,7 +3318,7 @@
   {
     "name": "open-downloads-in-files.app",
     "owners": [ "ewannpv", "gambard" ],
-    "expiry_milestone": 86
+    "expiry_milestone": 87
   },
   {
     "name": "overlay-new-layout",
@@ -3365,7 +3355,7 @@
   {
     "name": "page-info-chrome-guard",
        "owners": ["ewannpv", "gambard" ],
-       "expiry_milestone": 85
+       "expiry_milestone": 88
   },
   {
     "name": "page-info-performance-hints",
@@ -3375,12 +3365,12 @@
   {
     "name": "page-info-refactoring",
     "owners": [ "ewannpv", "gambard" ],
-    "expiry_milestone": 84
+    "expiry_milestone": 88
   },
   {
     "name": "paint-preview-demo",
     "owners": [ "ckitagawa", "fredmello", "mahmoudi" ],
-    "expiry_milestone": 84
+    "expiry_milestone": 88
   },
   {
     "name": "passive-listener-default",
@@ -3602,7 +3592,7 @@
   {
     "name": "reload-sad-tab",
     "owners": [ "gambard" ],
-    "expiry_milestone": 84
+    "expiry_milestone": 85
   },
   {
     "name": "remote-copy-image-notification",
@@ -3705,7 +3695,7 @@
   {
     "name": "settings-refresh",
     "owners": [ "gambard" ],
-    "expiry_milestone": 85
+    "expiry_milestone": 89
   },
   {
     "name": "share-button-in-top-toolbar",
@@ -3730,12 +3720,12 @@
   {
     "name": "sharing-peer-connection-receiver",
     "owners": [ "//chrome/browser/sharing/OWNERS" ],
-    "expiry_milestone": 83
+    "expiry_milestone": 84
   },
   {
     "name": "sharing-peer-connection-sender",
     "owners": [ "//chrome/browser/sharing/OWNERS" ],
-    "expiry_milestone": 83
+    "expiry_milestone": 84
   },
   {
     "name": "sharing-qr-code-generator",
@@ -4068,7 +4058,7 @@
   {
     "name": "translate-force-trigger-on-english",
     "owners": [ "anthonyvd", "frechette", "chrome-language@google.com" ],
-    "expiry_milestone": 78
+    "expiry_milestone": 90
   },
   {
     "name": "treat-unsafe-downloads-as-active-content",
@@ -4183,7 +4173,7 @@
   {
     "name": "use-js-error-page",
     "owners": [ "gambard" ],
-    "expiry_milestone": 85
+    "expiry_milestone": 89
   },
   {
     "name": "use_messages_staging_url",

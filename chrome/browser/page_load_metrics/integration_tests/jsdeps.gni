@@ -6,5 +6,6 @@ metric_integration_jsdeps = [
   "//third_party/blink/web_tests/external/wpt/images/blue96x96.png",
   "//third_party/blink/web_tests/external/wpt/images/green-16x16.png",
   "//third_party/blink/web_tests/external/wpt/layout-instability/resources/util.js",
+  "//third_party/blink/web_tests/external/wpt/layout-instability/simple-block-movement.html",
   "//third_party/blink/web_tests/external/wpt/resources/testharness.js",
 ]

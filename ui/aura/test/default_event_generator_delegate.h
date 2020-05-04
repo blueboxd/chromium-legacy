@@ -16,6 +16,7 @@ class DefaultEventGeneratorDelegate : public EventGeneratorDelegateAura {
   ~DefaultEventGeneratorDelegate() override = default;
 
   // EventGeneratorDelegateAura:
+  void SetTargetWindow(gfx::NativeWindow target_window) override;
   ui::EventTarget* GetTargetAt(const gfx::Point& location) override;
   client::ScreenPositionClient* GetScreenPositionClient(
       const Window* window) const override;

@@ -7242,5 +7242,6 @@
         "prefs": { "policy.native_window_occlusion_enabled":  {"local_state":  true} }
       }
     ]
-  }
+  },
+  "TabFreezingEnabled":  {}
 }

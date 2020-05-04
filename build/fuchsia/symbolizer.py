@@ -57,6 +57,12 @@ def SymbolizerFilter(input_file, build_ids_files):
     line = symbolizer_proc.stdout.readline()
     if not line:
       break
+
+    # Skip spam emitted by the symbolizer that obscures the symbolized output.
+    # TODO(https://crbug.com/1069446): Fix the symbolizer and remove this.
+    if '[[[ELF ' in line:
+      continue
+
     yield line
 
   symbolizer_proc.wait()

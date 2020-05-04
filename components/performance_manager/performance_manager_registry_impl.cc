@@ -121,7 +121,7 @@ void PerformanceManagerRegistryImpl::
 }
 
 void PerformanceManagerRegistryImpl::ExposeInterfacesToRenderFrame(
-    service_manager::BinderMapWithContext<content::RenderFrameHost*>* map) {
+    mojo::BinderMapWithContext<content::RenderFrameHost*>* map) {
   map->Add<performance_manager::mojom::DocumentCoordinationUnit>(
       base::BindRepeating(&BindDocumentCoordinationUnit));
 }

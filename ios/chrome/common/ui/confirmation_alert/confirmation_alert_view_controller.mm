@@ -384,6 +384,12 @@ constexpr CGFloat kSafeAreaMultiplier = 0.8;
 - (UIImageView*)createImageView {
   UIImageView* imageView = [[UIImageView alloc] initWithImage:self.image];
   imageView.contentMode = UIViewContentModeScaleAspectFit;
+
+  if (self.imageAccessibilityLabel) {
+    imageView.isAccessibilityElement = YES;
+    imageView.accessibilityLabel = self.imageAccessibilityLabel;
+  }
+
   imageView.translatesAutoresizingMaskIntoConstraints = NO;
   return imageView;
 }

@@ -96,7 +96,7 @@ class StubInstalledAppProvider : public blink::mojom::InstalledAppProvider {
 
 void PopulateWebLayerFrameBinders(
     content::RenderFrameHost* render_frame_host,
-    service_manager::BinderMapWithContext<content::RenderFrameHost*>* map) {
+    mojo::BinderMapWithContext<content::RenderFrameHost*>* map) {
   map->Add<weblayer_internals::mojom::PageHandler>(
       base::BindRepeating(&BindPageHandler));
 

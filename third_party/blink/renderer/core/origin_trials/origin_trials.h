@@ -28,6 +28,10 @@ CORE_EXPORT bool IsTrialValid(const StringView& trial_name);
 // Return true if |trial_name| can be enabled in an insecure context.
 CORE_EXPORT bool IsTrialEnabledForInsecureContext(const StringView& trial_name);
 
+// Return true if |trial_name| can be enabled from third party origins.
+CORE_EXPORT bool IsTrialEnabledForThirdPartyOrigins(
+    const StringView& trial_name);
+
 // Returns the trial type of the given |feature|.
 CORE_EXPORT OriginTrialType GetTrialType(OriginTrialFeature feature);
 

@@ -44,9 +44,13 @@ class TileServiceImpl : public TileService {
   void ScheduleDailyTask();
 
   // Called when fetching from server is completed.
-  void OnFetchFinished(BackgroundTaskFinishedCallback callback,
+  void OnFetchFinished(BackgroundTaskFinishedCallback task_finished_callback,
                        TileInfoRequestStatus status,
                        const std::unique_ptr<std::string> response_body);
+
+  // Called when saving to db via manager layer is completed.
+  void OnTilesSaved(BackgroundTaskFinishedCallback task_finished_callback,
+                    TileGroupStatus status);
 
   // Used to load tile images.
   std::unique_ptr<ImageLoader> image_loader_;

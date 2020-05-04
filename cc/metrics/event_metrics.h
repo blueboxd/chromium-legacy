@@ -8,8 +8,8 @@
 #include "base/optional.h"
 #include "base/time/time.h"
 #include "cc/cc_export.h"
-#include "cc/input/scroll_input_type.h"
 #include "ui/events/types/event_type.h"
+#include "ui/events/types/scroll_input_type.h"
 
 namespace cc {
 
@@ -19,7 +19,7 @@ class CC_EXPORT EventMetrics {
  public:
   EventMetrics(ui::EventType type,
                base::TimeTicks time_stamp,
-               base::Optional<ScrollInputType> scroll_input_type);
+               base::Optional<ui::ScrollInputType> scroll_input_type);
 
   EventMetrics(const EventMetrics&);
   EventMetrics& operator=(const EventMetrics&);
@@ -40,7 +40,7 @@ class CC_EXPORT EventMetrics {
 
   base::TimeTicks time_stamp() const { return time_stamp_; }
 
-  const base::Optional<ScrollInputType>& scroll_input_type() const {
+  const base::Optional<ui::ScrollInputType>& scroll_input_type() const {
     return scroll_input_type_;
   }
 
@@ -53,7 +53,7 @@ class CC_EXPORT EventMetrics {
 
   // Only available for scroll events and represents the type of input device
   // for the event.
-  base::Optional<ScrollInputType> scroll_input_type_;
+  base::Optional<ui::ScrollInputType> scroll_input_type_;
 };
 
 // Struct storing event metrics from both main and impl threads.

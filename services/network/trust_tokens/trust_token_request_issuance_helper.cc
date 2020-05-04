@@ -131,8 +131,9 @@ void TrustTokenRequestIssuanceHelper::OnGotKeyCommitment(
   std::move(done).Run(mojom::TrustTokenOperationStatus::kOk);
 }
 
-mojom::TrustTokenOperationStatus TrustTokenRequestIssuanceHelper::Finalize(
-    mojom::URLResponseHead* response) {
+void TrustTokenRequestIssuanceHelper::Finalize(
+    mojom::URLResponseHead* response,
+    base::OnceCallback<void(mojom::TrustTokenOperationStatus)> done) {
   DCHECK(response);
 
   // A response headers object should be present on all responses for
@@ -145,7 +146,8 @@ mojom::TrustTokenOperationStatus TrustTokenRequestIssuanceHelper::Finalize(
   // if any.
   if (!response->headers->EnumerateHeader(
           /*iter=*/nullptr, kTrustTokensSecTrustTokenHeader, &header_value)) {
-    return mojom::TrustTokenOperationStatus::kBadResponse;
+    std::move(done).Run(mojom::TrustTokenOperationStatus::kBadResponse);
+    return;
   }
 
   response->headers->RemoveHeader(kTrustTokensSecTrustTokenHeader);
@@ -156,13 +158,15 @@ mojom::TrustTokenOperationStatus TrustTokenRequestIssuanceHelper::Finalize(
   if (!maybe_tokens) {
     // The response was rejected by the underlying cryptographic library as
     // malformed or otherwise invalid.
-    return mojom::TrustTokenOperationStatus::kBadResponse;
+    std::move(done).Run(mojom::TrustTokenOperationStatus::kBadResponse);
+    return;
   }
 
   token_store_->AddTokens(*issuer_, base::make_span(maybe_tokens->tokens),
                           maybe_tokens->body_of_verifying_key);
 
-  return mojom::TrustTokenOperationStatus::kOk;
+  std::move(done).Run(mojom::TrustTokenOperationStatus::kOk);
+  return;
 }
 
 }  // namespace network

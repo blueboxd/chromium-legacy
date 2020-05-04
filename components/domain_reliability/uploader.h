@@ -16,13 +16,10 @@
 
 namespace net {
 class URLRequest;
-class URLRequestContextGetter;
+class URLRequestContext;
 }  // namespace net
 
 namespace domain_reliability {
-
-// Forward declared so that deprecated URLFetcher class can friend it.
-class DomainReliabilityUploaderImpl;
 
 class MockableTime;
 
@@ -44,19 +41,17 @@ class DOMAIN_RELIABILITY_EXPORT DomainReliabilityUploader {
     base::TimeDelta retry_after;
   };
 
-  typedef base::OnceCallback<void(const UploadResult& result)> UploadCallback;
+  using UploadCallback = base::OnceCallback<void(const UploadResult& result)>;
 
   DomainReliabilityUploader();
 
   virtual ~DomainReliabilityUploader();
 
-  // Creates an uploader that uses the given |url_request_context_getter| to
-  // get a URLRequestContext to use for uploads. (See test_util.h for a mock
-  // version.)
+  // Creates an uploader that uses the given |url_request_context| for uploads.
+  // (See test_util.h for a mock version.)
   static std::unique_ptr<DomainReliabilityUploader> Create(
       MockableTime* time,
-      const scoped_refptr<net::URLRequestContextGetter>&
-          url_request_context_getter);
+      net::URLRequestContext* url_request_context);
 
   // Uploads |report_json| to |upload_url| and calls |callback| when the upload
   // has either completed or failed.
@@ -68,7 +63,7 @@ class DOMAIN_RELIABILITY_EXPORT DomainReliabilityUploader {
   // Shuts down the uploader prior to destruction. Currently, terminates pending
   // uploads and prevents the uploader from starting new ones to avoid hairy
   // lifetime issues at destruction.
-  virtual void Shutdown();
+  virtual void Shutdown() = 0;
 
   // Sets whether the uploader will discard uploads but pretend they succeeded.
   // In Chrome, this is used when the user has not opted in to metrics

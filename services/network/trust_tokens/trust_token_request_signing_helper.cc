@@ -289,9 +289,10 @@ void TrustTokenRequestSigningHelper::Begin(
   std::move(done).Run(mojom::TrustTokenOperationStatus::kOk);
 }
 
-mojom::TrustTokenOperationStatus TrustTokenRequestSigningHelper::Finalize(
-    mojom::URLResponseHead* response) {
-  return mojom::TrustTokenOperationStatus::kOk;
+void TrustTokenRequestSigningHelper::Finalize(
+    mojom::URLResponseHead* response,
+    base::OnceCallback<void(mojom::TrustTokenOperationStatus)> done) {
+  return std::move(done).Run(mojom::TrustTokenOperationStatus::kOk);
 }
 
 base::Optional<std::string>

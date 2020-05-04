@@ -351,6 +351,7 @@ void FormCache::ClearElement(WebFormControlElement& control_element,
         select_element.Value().Utf16() != initial_value_iter->second) {
       select_element.SetAutofillValue(
           blink::WebString::FromUTF16(initial_value_iter->second));
+      select_element.SetUserHasEditedTheField(false);
     }
   } else {
     WebInputElement input_element = control_element.To<WebInputElement>();

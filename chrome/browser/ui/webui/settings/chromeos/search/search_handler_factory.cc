@@ -4,11 +4,13 @@
 
 #include "chrome/browser/ui/webui/settings/chromeos/search/search_handler_factory.h"
 
+#include "base/feature_list.h"
 #include "chrome/browser/chromeos/local_search_service/local_search_service_factory.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/settings/chromeos/os_settings_manager_factory.h"
 #include "chrome/browser/ui/webui/settings/chromeos/search/search_handler.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 
 namespace chromeos {
@@ -38,6 +40,9 @@ SearchHandlerFactory::~SearchHandlerFactory() = default;
 
 KeyedService* SearchHandlerFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
+  if (!base::FeatureList::IsEnabled(features::kNewOsSettingsSearch))
+    return nullptr;
+
   Profile* profile = Profile::FromBrowserContext(context);
   return new SearchHandler(
       OsSettingsManagerFactory::GetForProfile(profile),

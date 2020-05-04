@@ -39,6 +39,7 @@
 #include "build/build_config.h"
 #include "cc/animation/animation_host.h"
 #include "cc/layers/picture_layer.h"
+#include "third_party/blink/public/common/page/page_zoom.h"
 #include "third_party/blink/public/mojom/input/focus_type.mojom-blink.h"
 #include "third_party/blink/public/platform/web_float_rect.h"
 #include "third_party/blink/public/platform/web_rect.h"
@@ -1223,6 +1224,10 @@ void ChromeClientImpl::DocumentDetached(Document& document) {
     if (it->FrameOrNull() == document.GetFrame())
       it->DisconnectClient();
   }
+}
+
+double ChromeClientImpl::UserZoomFactor() const {
+  return PageZoomLevelToZoomFactor(web_view_->ZoomLevel());
 }
 
 }  // namespace blink

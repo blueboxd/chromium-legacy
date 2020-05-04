@@ -464,7 +464,7 @@ TEST_F(TrustTokenRequestRedemptionHelperTest, RejectsIfResponseOmitsHeader) {
       net::HttpResponseHeaders::TryToCreate("HTTP/1.1 200 OK\r\n");
 
   // As a consequence, |Finalize| should fail.
-  EXPECT_EQ(helper.Finalize(response_head.get()),
+  EXPECT_EQ(ExecuteFinalizeAndWaitForResult(&helper, response_head.get()),
             mojom::TrustTokenOperationStatus::kBadResponse);
 }
 
@@ -527,7 +527,7 @@ TEST_F(TrustTokenRequestRedemptionHelperTest, RejectsIfResponseIsUnusable) {
 
   // Since the cryptographer rejected the response header by returning nullopt
   // on ConfirmRedemption, expect to fail with kBadResponse.
-  EXPECT_EQ(helper.Finalize(response_head.get()),
+  EXPECT_EQ(ExecuteFinalizeAndWaitForResult(&helper, response_head.get()),
             mojom::TrustTokenOperationStatus::kBadResponse);
 
   // Processing the response should have stripped the header.
@@ -594,7 +594,7 @@ TEST_F(TrustTokenRequestRedemptionHelperTest, Success) {
 
   // After a successfully constructed request, when the response is well-formed
   // and the delegate accepts the response, Finalize should succeed.
-  EXPECT_EQ(helper.Finalize(response_head.get()),
+  EXPECT_EQ(ExecuteFinalizeAndWaitForResult(&helper, response_head.get()),
             mojom::TrustTokenOperationStatus::kOk);
 
   // Processing the response should have stripped the header.
@@ -709,7 +709,7 @@ TEST_F(TrustTokenRequestRedemptionHelperTest, StoresObtainedRedemptionRecord) {
   response_head->headers =
       net::HttpResponseHeaders::TryToCreate("HTTP/1.1 200 OK\r\n");
   response_head->headers->SetHeader(kTrustTokensSecTrustTokenHeader, "");
-  EXPECT_EQ(helper.Finalize(response_head.get()),
+  EXPECT_EQ(ExecuteFinalizeAndWaitForResult(&helper, response_head.get()),
             mojom::TrustTokenOperationStatus::kOk);
 
   // After the operation has successfully finished, the SRR parsed from the
@@ -840,7 +840,7 @@ TEST_F(TrustTokenRequestRedemptionHelperTest,
   response_head->headers =
       net::HttpResponseHeaders::TryToCreate("HTTP/1.1 200 OK\r\n");
   response_head->headers->SetHeader(kTrustTokensSecTrustTokenHeader, "");
-  EXPECT_EQ(helper.Finalize(response_head.get()),
+  EXPECT_EQ(ExecuteFinalizeAndWaitForResult(&helper, response_head.get()),
             mojom::TrustTokenOperationStatus::kOk);
 
   // After the operation has successfully finished, the SRR parsed from the

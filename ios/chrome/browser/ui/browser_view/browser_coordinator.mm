@@ -22,6 +22,7 @@
 #import "ios/chrome/browser/store_kit/store_kit_tab_helper.h"
 #import "ios/chrome/browser/tabs/tab_title_util.h"
 #import "ios/chrome/browser/ui/activity_services/activity_service_coordinator.h"
+#import "ios/chrome/browser/ui/activity_services/requirements/activity_service_presentation.h"
 #import "ios/chrome/browser/ui/alert_coordinator/repost_form_coordinator.h"
 #import "ios/chrome/browser/ui/autofill/form_input_accessory/form_input_accessory_coordinator.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_all_password_coordinator.h"
@@ -82,6 +83,7 @@
 #endif
 
 @interface BrowserCoordinator () <ActivityServiceCommands,
+                                  ActivityServicePresentation,
                                   AutofillSecurityAlertPresenter,
                                   BrowserCoordinatorCommands,
                                   FormInputAccessoryCoordinatorNavigator,
@@ -523,10 +525,13 @@
                          browser:self.browser];
   self.activityServiceCoordinator.positionProvider =
       [self.viewController activityServicePositioner];
+  self.activityServiceCoordinator.presentationProvider = self;
   [self.activityServiceCoordinator start];
 }
 
-- (void)hideActivityView {
+#pragma mark - ActivityServicePresentation
+
+- (void)activityServiceDidEndPresenting {
   [self.activityServiceCoordinator stop];
   self.activityServiceCoordinator = nil;
 }

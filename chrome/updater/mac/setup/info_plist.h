@@ -52,6 +52,16 @@ class InfoPlist {
   const std::string bundle_version_;
 };
 
+// Gets the path to an Info.plist specified at the bundle path.
+base::FilePath InfoPlistPath(const base::FilePath& bundle_path);
+
+// Gets the path to an Info.plist for the current application specified by
+// |base::mac::OuterBundlePath()|.
+base::FilePath InfoPlistPath();
+
+// Gets the path to local Library directory (~/Library) for the user.
+base::FilePath GetLocalLibraryDirectory();
+
 }  // namespace updater
 
 #endif  // CHROME_UPDATER_MAC_SETUP_INFO_PLIST_H_

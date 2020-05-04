@@ -492,7 +492,7 @@ void RenderViewTest::TearDown() {
   mojo::Remote<blink::mojom::LeakDetector> leak_detector;
   mojo::GenericPendingReceiver receiver(
       leak_detector.BindNewPipeAndPassReceiver());
-  ignore_result(binders_.Bind(&receiver));
+  ignore_result(binders_.TryBind(&receiver));
 
   // Close the main |view_| as well as any other windows that might have been
   // opened by the test.

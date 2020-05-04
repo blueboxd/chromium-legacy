@@ -80,6 +80,7 @@ class MockConnectionToClientEventHandler
   MOCK_METHOD0(CreateMediaStreams, void());
   MOCK_METHOD0(OnConnectionChannelsConnected, void());
   MOCK_METHOD1(OnConnectionClosed, void(ErrorCode error));
+  MOCK_METHOD1(OnTransportProtocolChange, void(const std::string& protocol));
   MOCK_METHOD1(OnCreateVideoEncoder,
                void(std::unique_ptr<VideoEncoder>* encoder));
   MOCK_METHOD2(OnRouteChange,
@@ -152,6 +153,7 @@ class MockClientStub : public ClientStub {
                void(const PairingResponse& pairing_response));
   MOCK_METHOD1(DeliverHostMessage, void(const ExtensionMessage& message));
   MOCK_METHOD1(SetVideoLayout, void(const VideoLayout& layout));
+  MOCK_METHOD1(SetTransportInfo, void(const TransportInfo& transport_info));
 
   // ClipboardStub mock implementation.
   MOCK_METHOD1(InjectClipboardEvent, void(const ClipboardEvent& event));

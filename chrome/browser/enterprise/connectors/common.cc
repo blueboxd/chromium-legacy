@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/enterprise/connectors/common.h"
+#include "chrome/browser/enterprise/connectors/connectors_prefs.h"
 
 namespace enterprise_connectors {
 
@@ -15,5 +16,18 @@ ReportingSettings::ReportingSettings() = default;
 ReportingSettings::ReportingSettings(ReportingSettings&&) = default;
 ReportingSettings& ReportingSettings::operator=(ReportingSettings&&) = default;
 ReportingSettings::~ReportingSettings() = default;
+
+const char* ConnectorPref(AnalysisConnector connector) {
+  switch (connector) {
+    case AnalysisConnector::BULK_DATA_ENTRY:
+      // TODO(crbug/1067631): Return the corresponding prefs for these analysis
+      // connectors once they exist.
+      return nullptr;
+    case AnalysisConnector::FILE_DOWNLOADED:
+      return kOnFileDownloadedPref;
+    case AnalysisConnector::FILE_ATTACHED:
+      return kOnFileAttachedPref;
+  }
+}
 
 }  // namespace enterprise_connectors

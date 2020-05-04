@@ -44,8 +44,6 @@ namespace {
 
 const char kCrOSTracingAgentName[] = "cros";
 const char kCrOSTraceLabel[] = "systemTraceEvents";
-// TODO(b/149874690) Remove this when dbus::kBackupArcBugReport is available.
-const char kBackupArcBugReport[] = "BackupArcBugReport";
 
 // Because the cheets logs are very huge, we set the D-Bus timeout to 2 minutes.
 const int kBigLogsDBusTimeoutMS = 120 * 1000;
@@ -262,7 +260,8 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
 
   void BackupArcBugReport(const std::string& userhash,
                           VoidDBusMethodCallback callback) override {
-    dbus::MethodCall method_call(debugd::kDebugdInterface, kBackupArcBugReport);
+    dbus::MethodCall method_call(debugd::kDebugdInterface,
+                                 debugd::kBackupArcBugReport);
     dbus::MessageWriter writer(&method_call);
     writer.AppendString(userhash);
 

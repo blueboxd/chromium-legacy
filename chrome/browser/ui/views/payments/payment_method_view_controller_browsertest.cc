@@ -5,19 +5,58 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/views/payments/payment_request_browsertest_base.h"
 #include "chrome/browser/ui/views/payments/payment_request_dialog_view_ids.h"
+#include "chrome/test/base/ui_test_utils.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/payments/content/payment_request.h"
 #include "components/payments/content/payment_request_state.h"
+#include "components/payments/content/service_worker_payment_app_finder.h"
+#include "components/payments/core/test_payment_manifest_downloader.h"
+#include "content/public/browser/browser_context.h"
+#include "content/public/browser/storage_partition.h"
+#include "net/dns/mock_host_resolver.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace payments {
 
 class PaymentMethodViewControllerTest : public PaymentRequestBrowserTestBase {
  protected:
-  PaymentMethodViewControllerTest() {}
+  PaymentMethodViewControllerTest()
+      : gpay_server_(net::EmbeddedTestServer::TYPE_HTTPS),
+        kylepay_server_(net::EmbeddedTestServer::TYPE_HTTPS) {}
+
+  void SetUpOnMainThread() override {
+    host_resolver()->AddRule("*", "127.0.0.1");
+    gpay_server_.ServeFilesFromSourceDirectory(
+        "components/test/data/payments/google.com/");
+    ASSERT_TRUE(gpay_server_.Start());
+
+    kylepay_server_.ServeFilesFromSourceDirectory(
+        "components/test/data/payments/kylepay.com/");
+    ASSERT_TRUE(kylepay_server_.Start());
+    PaymentRequestBrowserTestBase::SetUpOnMainThread();
+  }
+
+  void SetDownloaderAndIgnorePortInOriginComparisonForTesting() {
+    content::BrowserContext* context =
+        GetActiveWebContents()->GetBrowserContext();
+    auto downloader = std::make_unique<TestDownloader>(
+        content::BrowserContext::GetDefaultStoragePartition(context)
+            ->GetURLLoaderFactoryForBrowserProcess());
+    downloader->AddTestServerURL("https://kylepay.com/",
+                                 kylepay_server_.GetURL("kylepay.com", "/"));
+    downloader->AddTestServerURL("https://google.com/",
+                                 gpay_server_.GetURL("google.com", "/"));
+    ServiceWorkerPaymentAppFinder::GetInstance()
+        ->SetDownloaderAndIgnorePortInOriginComparisonForTesting(
+            std::move(downloader));
+  }
 
  private:
+  net::EmbeddedTestServer gpay_server_;
+  net::EmbeddedTestServer kylepay_server_;
+
   DISALLOW_COPY_AND_ASSIGN(PaymentMethodViewControllerTest);
 };
 
@@ -127,6 +166,26 @@ IN_PROC_BROWSER_TEST_F(PaymentMethodViewControllerTest, EditButtonOpensEditor) {
 
   ResetEventWaiter(DialogEvent::CREDIT_CARD_EDITOR_OPENED);
   ClickOnDialogViewAndWait(edit_button);
+}
+
+IN_PROC_BROWSER_TEST_F(PaymentMethodViewControllerTest,
+                       DoNotShowAddCardWhenBasicCardIsNotSupported) {
+  SetDownloaderAndIgnorePortInOriginComparisonForTesting();
+  NavigateTo("/payment_request_bobpay_and_cards_test.html");
+
+  ResetEventWaiterForDialogOpened();
+  EXPECT_TRUE(content::ExecJs(GetActiveWebContents(),
+                              "testPaymentMethods([{supportedMethods: "
+                              "'https://google.com/pay'},{supportedMethods: "
+                              "'https://kylepay.com/webpay'}])"));
+  WaitForObservedEvent();
+
+  // Confirm that "Add card" button is not shown since "basic-card" is not
+  // requested.
+  OpenPaymentMethodScreen();
+  views::View* add_card_button = dialog_view()->GetViewByID(
+      static_cast<int>(DialogViewID::PAYMENT_METHOD_ADD_CARD_BUTTON));
+  EXPECT_EQ(nullptr, add_card_button);
 }
 
 }  // namespace payments

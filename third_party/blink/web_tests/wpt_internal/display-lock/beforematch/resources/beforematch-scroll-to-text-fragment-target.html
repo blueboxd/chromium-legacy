@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<title>beforematch fired on ScrollToTextFragment</title>
+<link rel="author" title="Joey Arhar" href="mailto:jarhar@chromium.org">
+<link rel="help" href="https://github.com/WICG/display-locking">
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
+
+<!-- This test is navigated to with the fragment #:~:text=foo -->
+
+<body>
+  <div style="height: 4000px;">spacer</div>
+  <script>
+    async_test(t => {
+      const foo = document.createElement('div');
+      foo.textContent = 'foo';
+      document.body.appendChild(foo);
+      window.beforematchFiredOnFoo = false;
+      foo.addEventListener('beforematch', t.step_func(() => {
+        assert_equals(window.pageYOffset, 0, 'scrolling should happen after beforematch is fired.');
+        window.beforematchFiredOnFoo = true;
+      }));
+
+      const bar = document.createElement('div');
+      bar.textContent = 'bar';
+      document.body.appendChild(bar);
+      window.beforematchFiredOnBar = false;
+      bar.addEventListener('beforematch', () => {
+        window.beforematchFiredOnBar = true;
+      });
+
+      requestAnimationFrame(() => {
+        requestAnimationFrame(t.step_func_done(() => {
+          assert_true(window.beforematchFiredOnFoo, 'foo was searched for, so it should get the beforematch event.');
+          assert_false(window.beforematchFiredOnBar, 'bar was not searched for, so it should not get the beforematch event.');
+          assert_true(window.pageYOffset > 0, 'the page should be scrolled down to foo.');
+        }));
+      });
+    }, 'Verifies that the beforematch event is fired on the matching element of a ScrollToTextFragment navigation.');
+  </script>
+</body>

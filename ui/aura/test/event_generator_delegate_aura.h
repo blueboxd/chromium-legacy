@@ -29,7 +29,7 @@ class EventGeneratorDelegateAura : public ui::test::EventGeneratorDelegate {
   static std::unique_ptr<ui::test::EventGeneratorDelegate> Create(
       ui::test::EventGenerator* owner,
       gfx::NativeWindow root_window,
-      gfx::NativeWindow window);
+      gfx::NativeWindow target_window);
 
   // Returns the screen position client that determines the
   // coordinates used in EventGenerator. EventGenerator uses
@@ -38,6 +38,7 @@ class EventGeneratorDelegateAura : public ui::test::EventGeneratorDelegate {
       const Window* window) const;
 
   // Overridden from ui::test::EventGeneratorDelegate:
+  void SetTargetWindow(gfx::NativeWindow target_window) override;
   ui::EventSource* GetEventSource(ui::EventTarget* target) override;
   gfx::Point CenterOfTarget(const ui::EventTarget* target) const override;
   gfx::Point CenterOfWindow(gfx::NativeWindow window) const override;

@@ -1228,6 +1228,7 @@ class ComputedStyle : public ComputedStyleBase,
 
   // Variables.
   bool HasVariables() const;
+  CORE_EXPORT HashSet<AtomicString> GetVariableNames() const;
   CORE_EXPORT StyleInheritedVariables* InheritedVariables() const;
   CORE_EXPORT StyleNonInheritedVariables* NonInheritedVariables() const;
 
@@ -2913,7 +2914,7 @@ class ComputedStyle : public ComputedStyleBase,
   StyleInheritedVariables& MutableInheritedVariables();
   StyleNonInheritedVariables& MutableNonInheritedVariables();
 
-  void SetInitialData(scoped_refptr<StyleInitialData>);
+  CORE_EXPORT void SetInitialData(scoped_refptr<StyleInitialData>);
 
   PhysicalToLogical<const Length&> PhysicalMarginToLogical(
       const ComputedStyle& other) const {
@@ -2993,6 +2994,9 @@ class ComputedStyle : public ComputedStyleBase,
                            UpdatePropertySpecificDifferencesHasAlpha);
   FRIEND_TEST_ALL_PREFIXES(ComputedStyleTest, CustomPropertiesEqual_Values);
   FRIEND_TEST_ALL_PREFIXES(ComputedStyleTest, CustomPropertiesEqual_Data);
+  FRIEND_TEST_ALL_PREFIXES(ComputedStyleTest, InitialVariableNames);
+  FRIEND_TEST_ALL_PREFIXES(ComputedStyleTest,
+                           InitialAndInheritedAndNonInheritedVariableNames);
 };
 
 inline bool ComputedStyle::HasAnyPseudoElementStyles() const {

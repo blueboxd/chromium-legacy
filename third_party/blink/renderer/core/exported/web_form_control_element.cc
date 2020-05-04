@@ -85,6 +85,13 @@ bool WebFormControlElement::UserHasEditedTheField() const {
   return true;
 }
 
+void WebFormControlElement::SetUserHasEditedTheField(bool value) {
+  if (auto* input = DynamicTo<HTMLInputElement>(*private_))
+    input->SetUserHasEditedTheField(value);
+  if (auto* select_element = DynamicTo<HTMLSelectElement>(*private_))
+    select_element->SetUserHasEditedTheField(value);
+}
+
 void WebFormControlElement::SetUserHasEditedTheFieldForTest() {
   if (auto* input = DynamicTo<HTMLInputElement>(*private_))
     input->SetUserHasEditedTheFieldForTest();

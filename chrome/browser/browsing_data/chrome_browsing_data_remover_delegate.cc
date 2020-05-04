@@ -47,6 +47,8 @@
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/history/web_history_service_factory.h"
 #include "chrome/browser/language/url_language_histogram_factory.h"
+#include "chrome/browser/media/history/media_history_keyed_service.h"
+#include "chrome/browser/media/history/media_history_keyed_service_factory.h"
 #include "chrome/browser/media/media_device_id_salt.h"
 #include "chrome/browser/media/media_engagement_service.h"
 #include "chrome/browser/media/webrtc/webrtc_event_log_manager.h"
@@ -952,6 +954,14 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
         ContentSuggestionsServiceFactory::GetForProfileIfExists(profile_);
     if (content_suggestions_service)
       content_suggestions_service->ClearAllCachedSuggestions();
+
+    media_history::MediaHistoryKeyedService* media_history_service =
+        media_history::MediaHistoryKeyedServiceFactory::GetForProfile(profile_);
+    if (media_history_service) {
+      media_history_service->ResetMediaFeedDueToCacheClearing(
+          delete_begin_, delete_end_, nullable_filter,
+          CreateTaskCompletionClosure(TracingDataType::kMediaFeeds));
+    }
 
 #if defined(OS_ANDROID)
 #if BUILDFLAG(ENABLE_FEED_IN_CHROME)

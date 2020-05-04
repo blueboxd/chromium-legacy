@@ -35,6 +35,12 @@ gfx::NativeWindow HeadlessScreen::GetWindowAtScreenPoint(
   return nullptr;
 }
 
+gfx::NativeWindow HeadlessScreen::GetLocalProcessWindowAtPoint(
+    const gfx::Point& point,
+    const std::set<gfx::NativeWindow>& ignore) {
+  return nullptr;
+}
+
 display::Display HeadlessScreen::GetDisplayNearestWindow(
     gfx::NativeWindow window) const {
   return GetPrimaryDisplay();

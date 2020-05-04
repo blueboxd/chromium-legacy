@@ -33,7 +33,10 @@ std::unique_ptr<ArcClientAdapter> CreateArcVmClientAdapterForTesting(
     const FileSystemStatusRewriter& rewriter);
 
 // Sets the path of the boot notification server socket for testing.
-void SetArcVmBootNotificationServerAddressForTesting(const std::string& path);
+void SetArcVmBootNotificationServerAddressForTesting(
+    const std::string& path,
+    base::TimeDelta connect_timeout_limit,
+    base::TimeDelta connect_sleep_duration_initial);
 
 // Generates a list of props from |upgrade_params|, each of which takes the form
 // "prefix.prop_name=value"

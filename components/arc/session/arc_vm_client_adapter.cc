@@ -72,6 +72,14 @@ constexpr const char kArcVmBootNotificationServerSocketPath[] =
 
 constexpr int64_t kInvalidCid = -1;
 
+constexpr base::TimeDelta kConnectTimeoutLimit =
+    base::TimeDelta::FromSeconds(20);
+constexpr base::TimeDelta kConnectSleepDurationInitial =
+    base::TimeDelta::FromMilliseconds(100);
+
+base::Optional<base::TimeDelta> g_connect_timeout_limit_for_testing;
+base::Optional<base::TimeDelta> g_connect_sleep_duration_initial_for_testing;
+
 chromeos::ConciergeClient* GetConciergeClient() {
   return chromeos::DBusThreadManager::Get()->GetConciergeClient();
 }
@@ -335,8 +343,13 @@ base::ScopedFD ConnectToArcVmBootNotificationServer() {
 // base::MayBlock().
 bool IsArcVmBootNotificationServerListening() {
   const base::ElapsedTimer timer;
-  constexpr base::TimeDelta limit = base::TimeDelta::FromSeconds(20);
-  base::TimeDelta sleep_duration = base::TimeDelta::FromMilliseconds(100);
+  const base::TimeDelta limit = g_connect_timeout_limit_for_testing
+                                    ? *g_connect_timeout_limit_for_testing
+                                    : kConnectTimeoutLimit;
+  base::TimeDelta sleep_duration =
+      g_connect_sleep_duration_initial_for_testing
+          ? *g_connect_sleep_duration_initial_for_testing
+          : kConnectSleepDurationInitial;
 
   do {
     if (ConnectToArcVmBootNotificationServer().is_valid())
@@ -863,14 +876,21 @@ std::unique_ptr<ArcClientAdapter> CreateArcVmClientAdapterForTesting(
 }
 
 void SetArcVmBootNotificationServerAddressForTesting(
-    const std::string& new_address) {
+    const std::string& new_address,
+    base::TimeDelta connect_timeout_limit,
+    base::TimeDelta connect_sleep_duration_initial) {
   sockaddr_un* address =
       const_cast<sockaddr_un*>(GetArcVmBootNotificationServerAddress());
   DCHECK_GE(sizeof(address->sun_path), new_address.size());
+  DCHECK_GT(connect_timeout_limit, connect_sleep_duration_initial);
+
   memset(address->sun_path, 0, sizeof(address->sun_path));
   // |new_address| may contain '\0' if it is an abstract socket address, so use
   // memcpy instead of strcpy.
   memcpy(address->sun_path, new_address.data(), new_address.size());
+
+  g_connect_timeout_limit_for_testing = connect_timeout_limit;
+  g_connect_sleep_duration_initial_for_testing = connect_sleep_duration_initial;
 }
 
 std::vector<std::string> GenerateUpgradeProps(

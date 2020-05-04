@@ -206,6 +206,8 @@ class FakeConnectionEventLogger::CounterClientStub
   void SetKeyboardLayout(const protocol::KeyboardLayout& layout) override {}
   void SetPairingResponse(const protocol::PairingResponse& response) override {}
   void SetVideoLayout(const protocol::VideoLayout& video_layout) override {}
+  void SetTransportInfo(
+      const protocol::TransportInfo& transport_info) override {}
 };
 
 FakeConnectionEventLogger::CounterClientStub::CounterClientStub()

@@ -287,8 +287,6 @@ public class StartSurfaceLayoutTest {
         assertTrue(mActivityTestRule.getActivity().getCurrentTabModel().isIncognito());
         ChromeTabUtils.switchTabInCurrentTabModel(mActivityTestRule.getActivity(), 0);
         enterGTSWithThumbnailChecking();
-        // See crbug.com/1063620
-        mRenderTestRule.setPixelDiffThreshold(3);
         mRenderTestRule.render(mActivityTestRule.getActivity().findViewById(R.id.tab_list_view),
                 "3_incognito_ntps");
     }

@@ -86,11 +86,9 @@ bool StyleVariables::IsEmpty() const {
   return data_.IsEmpty() && values_->IsEmpty();
 }
 
-HashSet<AtomicString> StyleVariables::GetNames() const {
-  HashSet<AtomicString> names;
+void StyleVariables::CollectNames(HashSet<AtomicString>& names) const {
   for (const auto& pair : data_)
     names.insert(pair.key);
-  return names;
 }
 
 }  // namespace blink

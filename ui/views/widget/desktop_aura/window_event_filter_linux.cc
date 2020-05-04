@@ -112,6 +112,10 @@ void WindowEventFilterLinux::OnClickedCaption(ui::MouseEvent* event,
       if (!view || !view->context_menu_controller())
         break;
       gfx::Point location(event->location());
+      // Controller requires locations to be in DIP, while |this| receives the
+      // location in px.
+      desktop_window_tree_host_->GetRootTransform().TransformPointReverse(
+          &location);
       views::View::ConvertPointToScreen(view, &location);
       view->ShowContextMenu(location, ui::MENU_SOURCE_MOUSE);
       event->SetHandled();

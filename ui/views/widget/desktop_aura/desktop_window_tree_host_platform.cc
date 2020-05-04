@@ -31,7 +31,13 @@
 #include "ui/wm/core/window_util.h"
 #include "ui/wm/public/window_move_client.h"
 
+DEFINE_UI_CLASS_PROPERTY_TYPE(views::DesktopWindowTreeHostPlatform*)
+
 namespace views {
+
+DEFINE_UI_CLASS_PROPERTY_KEY(DesktopWindowTreeHostPlatform*,
+                             kHostForRootWindow,
+                             nullptr)
 
 namespace {
 
@@ -114,9 +120,25 @@ DesktopWindowTreeHostPlatform::DesktopWindowTreeHostPlatform(
       window_move_client_(this) {}
 
 DesktopWindowTreeHostPlatform::~DesktopWindowTreeHostPlatform() {
+  window()->ClearProperty(kHostForRootWindow);
   DCHECK(!platform_window()) << "The host must be closed before destroying it.";
   desktop_native_widget_aura_->OnDesktopWindowTreeHostDestroyed(this);
   DestroyDispatcher();
+}
+
+// static
+aura::Window* DesktopWindowTreeHostPlatform::GetContentWindowForWidget(
+    gfx::AcceleratedWidget widget) {
+  auto* host = DesktopWindowTreeHostPlatform::GetHostForWidget(widget);
+  return host ? host->GetContentWindow() : nullptr;
+}
+
+// static
+DesktopWindowTreeHostPlatform* DesktopWindowTreeHostPlatform::GetHostForWidget(
+    gfx::AcceleratedWidget widget) {
+  aura::WindowTreeHost* host =
+      aura::WindowTreeHost::GetForAcceleratedWidget(widget);
+  return host ? host->window()->GetProperty(kHostForRootWindow) : nullptr;
 }
 
 aura::Window* DesktopWindowTreeHostPlatform::GetContentWindow() {
@@ -163,6 +185,7 @@ void DesktopWindowTreeHostPlatform::Init(const Widget::InitParams& params) {
 
 void DesktopWindowTreeHostPlatform::OnNativeWidgetCreated(
     const Widget::InitParams& params) {
+  window()->SetProperty(kHostForRootWindow, this);
   // This reroutes RunMoveLoop requests to the DesktopWindowTreeHostPlatform.
   // The availability of this feature depends on a platform (PlatformWindow)
   // that implements RunMoveLoop.

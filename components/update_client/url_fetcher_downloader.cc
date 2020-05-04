@@ -149,7 +149,7 @@ void UrlFetcherDownloader::OnResponseStarted(int response_code,
 
 void UrlFetcherDownloader::OnDownloadProgress(int64_t current) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  CrxDownloader::OnDownloadProgress();
+  CrxDownloader::OnDownloadProgress(current, total_bytes_);
 }
 
 }  // namespace update_client

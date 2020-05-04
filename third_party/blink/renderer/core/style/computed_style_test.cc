@@ -16,6 +16,7 @@
 #include "third_party/blink/renderer/core/css/css_value_list.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser.h"
 #include "third_party/blink/renderer/core/css/properties/css_property_ref.h"
+#include "third_party/blink/renderer/core/css/property_registry.h"
 #include "third_party/blink/renderer/core/css/resolver/style_resolver_state.h"
 #include "third_party/blink/renderer/core/css/style_engine.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -25,6 +26,7 @@
 #include "third_party/blink/renderer/core/style/shape_value.h"
 #include "third_party/blink/renderer/core/style/style_difference.h"
 #include "third_party/blink/renderer/core/style/style_generated_image.h"
+#include "third_party/blink/renderer/core/style/style_initial_data.h"
 #include "third_party/blink/renderer/core/testing/color_scheme_helper.h"
 #include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
@@ -707,6 +709,97 @@ TEST(ComputedStyleTest, StrokeWidthZoomAndCalc) {
   ASSERT_TRUE(numeric_value);
   EXPECT_TRUE(numeric_value->IsPx());
   EXPECT_EQ(10, numeric_value->DoubleValue());
+}
+
+TEST(ComputedStyleTest, InitialVariableNamesEmpty) {
+  scoped_refptr<ComputedStyle> style = ComputedStyle::Create();
+  EXPECT_TRUE(style->GetVariableNames().IsEmpty());
+}
+
+TEST(ComputedStyleTest, InitialVariableNames) {
+  using css_test_helpers::CreateLengthRegistration;
+
+  scoped_refptr<ComputedStyle> style = ComputedStyle::Create();
+
+  PropertyRegistry* registry = MakeGarbageCollected<PropertyRegistry>();
+  registry->RegisterProperty("--x", *CreateLengthRegistration("--x", 1));
+  registry->RegisterProperty("--y", *CreateLengthRegistration("--y", 2));
+  style->SetInitialData(StyleInitialData::Create(*registry));
+
+  EXPECT_EQ(2u, style->GetVariableNames().size());
+  EXPECT_TRUE(style->GetVariableNames().Contains("--x"));
+  EXPECT_TRUE(style->GetVariableNames().Contains("--y"));
+}
+
+TEST(ComputedStyleTest, InheritedVariableNames) {
+  using css_test_helpers::CreateVariableData;
+
+  scoped_refptr<ComputedStyle> style = ComputedStyle::Create();
+
+  const bool inherited = true;
+  style->SetVariableData("--a", CreateVariableData("foo"), inherited);
+  style->SetVariableData("--b", CreateVariableData("bar"), inherited);
+
+  EXPECT_EQ(2u, style->GetVariableNames().size());
+  EXPECT_TRUE(style->GetVariableNames().Contains("--a"));
+  EXPECT_TRUE(style->GetVariableNames().Contains("--b"));
+}
+
+TEST(ComputedStyleTest, NonInheritedVariableNames) {
+  using css_test_helpers::CreateVariableData;
+
+  scoped_refptr<ComputedStyle> style = ComputedStyle::Create();
+
+  const bool inherited = true;
+  style->SetVariableData("--a", CreateVariableData("foo"), !inherited);
+  style->SetVariableData("--b", CreateVariableData("bar"), !inherited);
+
+  EXPECT_EQ(2u, style->GetVariableNames().size());
+  EXPECT_TRUE(style->GetVariableNames().Contains("--a"));
+  EXPECT_TRUE(style->GetVariableNames().Contains("--b"));
+}
+
+TEST(ComputedStyleTest, InheritedAndNonInheritedVariableNames) {
+  using css_test_helpers::CreateVariableData;
+
+  scoped_refptr<ComputedStyle> style = ComputedStyle::Create();
+
+  const bool inherited = true;
+  style->SetVariableData("--a", CreateVariableData("foo"), inherited);
+  style->SetVariableData("--b", CreateVariableData("bar"), inherited);
+  style->SetVariableData("--d", CreateVariableData("foz"), !inherited);
+  style->SetVariableData("--c", CreateVariableData("baz"), !inherited);
+
+  EXPECT_EQ(4u, style->GetVariableNames().size());
+  EXPECT_TRUE(style->GetVariableNames().Contains("--a"));
+  EXPECT_TRUE(style->GetVariableNames().Contains("--b"));
+  EXPECT_TRUE(style->GetVariableNames().Contains("--c"));
+  EXPECT_TRUE(style->GetVariableNames().Contains("--d"));
+}
+
+TEST(ComputedStyleTest, InitialAndInheritedAndNonInheritedVariableNames) {
+  using css_test_helpers::CreateLengthRegistration;
+  using css_test_helpers::CreateVariableData;
+
+  scoped_refptr<ComputedStyle> style = ComputedStyle::Create();
+
+  PropertyRegistry* registry = MakeGarbageCollected<PropertyRegistry>();
+  registry->RegisterProperty("--b", *CreateLengthRegistration("--b", 1));
+  registry->RegisterProperty("--e", *CreateLengthRegistration("--e", 2));
+  style->SetInitialData(StyleInitialData::Create(*registry));
+
+  const bool inherited = true;
+  style->SetVariableData("--a", CreateVariableData("foo"), inherited);
+  style->SetVariableData("--b", CreateVariableData("bar"), inherited);
+  style->SetVariableData("--d", CreateVariableData("foz"), !inherited);
+  style->SetVariableData("--c", CreateVariableData("baz"), !inherited);
+
+  EXPECT_EQ(5u, style->GetVariableNames().size());
+  EXPECT_TRUE(style->GetVariableNames().Contains("--a"));
+  EXPECT_TRUE(style->GetVariableNames().Contains("--b"));
+  EXPECT_TRUE(style->GetVariableNames().Contains("--c"));
+  EXPECT_TRUE(style->GetVariableNames().Contains("--d"));
+  EXPECT_TRUE(style->GetVariableNames().Contains("--e"));
 }
 
 }  // namespace blink

@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//base/allocator/allocator.gni")
 import("//build/config/features.gni")
 import("//build/config/ios/rules.gni")
 import("//build/mac/tweak_info_plist.gni")
@@ -193,6 +194,7 @@ source_set("browser_impl") {
   deps = [
     ":browser",
     "//base",
+    "//base/allocator:buildflags",
     "//components/component_updater",
     "//components/content_settings/core/browser",
     "//components/content_settings/core/common",
@@ -203,6 +205,7 @@ source_set("browser_impl") {
     "//components/language/core/browser",
     "//components/language_usage_metrics",
     "//components/metrics",
+    "//components/metrics:child_call_stack_profile_builder",
     "//components/metrics_services_manager",
     "//components/net_log",
     "//components/network_time",
@@ -254,6 +257,13 @@ source_set("browser_impl") {
 
   if (enable_rlz) {
     deps += [ "//ios/chrome/browser/rlz" ]
+  }
+
+  # Heap profiling is not compiled unless use_allocator_shim is true, as some of
+  # its dependencies require the allocator shim. This variable may be set to
+  # false, for example, in cronet builds.
+  if (use_allocator_shim) {
+    deps += [ "//components/heap_profiling/in_process" ]
   }
 }
 

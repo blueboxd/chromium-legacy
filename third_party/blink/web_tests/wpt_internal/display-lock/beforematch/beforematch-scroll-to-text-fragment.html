@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<title>beforematch fired on ScrollToTextFragment</title>
+<link rel="author" title="Joey Arhar" href="mailto:jarhar@chromium.org">
+<link rel="help" href="https://github.com/WICG/display-locking">
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
+<script src="/resources/testdriver.js"></script>
+<script src="/resources/testdriver-vendor.js"></script>
+
+<body>
+  <script>
+    window.onload = () => {
+      test_driver.bless('Open a scroll to text fragment URL', () => {
+        window.open('resources/beforematch-scroll-to-text-fragment-target.html#:~:text=foo', '_current', 'noopener');
+      });
+
+      test_driver.bless('Open a scroll to text fragment URL', () => {
+        window.open('resources/beforematch-scroll-to-text-fragment-target.html#:~:text=foo', '_current', 'noopener');
+      });
+    };
+
+    // TODO(jarhar): Write more tests here once we decide on a behavior here: https://github.com/WICG/display-locking/issues/150
+  </script>
+</body>

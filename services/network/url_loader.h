@@ -268,6 +268,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
       TrustTokenStatusOrRequestHelper status_or_helper);
   void OnDoneBeginningTrustTokenOperation(
       mojom::TrustTokenOperationStatus status);
+  // Continuation of |OnResponseStarted| after possibly asynchronously
+  // concluding the request's Trust Tokens operation.
+  void ContinueOnResponseStarted(net::URLRequest* url_request, int net_error);
 
   void ScheduleStart();
   void ReadMore();

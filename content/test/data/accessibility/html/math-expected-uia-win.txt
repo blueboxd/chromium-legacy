@@ -2,12 +2,12 @@ Document
 ++Group IsControlElement=false
 ++++Group IsControlElement=false
 ++++++Group IsControlElement=false
-++++++++Text Name='a'
+++++++++Text Name='𝐴'
 ++++++Group IsControlElement=false
 ++++++++Text Name='2'
 ++++++Group IsControlElement=false
 ++++++++Text Name='+'
 ++++++Group IsControlElement=false
-++++++++Text Name='b'
+++++++++Text Name='𝐵'
 ++++++Group IsControlElement=false
 ++++++++Text Name='2'

@@ -282,6 +282,8 @@ class CORE_EXPORT LayoutView final : public LayoutBlockFlow {
                           TransformState&,
                           MapCoordinatesFlags) const override;
 
+  bool ShouldUsePrintingLayout() const;
+
  private:
   void MapLocalToAncestor(const LayoutBoxModelObject* ancestor,
                           TransformState&,
@@ -299,8 +301,6 @@ class CORE_EXPORT LayoutView final : public LayoutBlockFlow {
 #endif
 
   void UpdateFromStyle() override;
-
-  bool ShouldUsePrintingLayout() const;
 
   int ViewLogicalWidthForBoxSizing() const {
     return ViewLogicalWidth(kIncludeScrollbars);

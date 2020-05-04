@@ -107,12 +107,18 @@ EventGenerator::EventGenerator(gfx::NativeWindow root_window,
 }
 
 EventGenerator::EventGenerator(gfx::NativeWindow root_window,
-                               gfx::NativeWindow window) {
-  Init(root_window, window);
+                               gfx::NativeWindow target_window) {
+  Init(root_window, target_window);
 }
 
 EventGenerator::~EventGenerator() {
   ui::SetEventTickClockForTesting(nullptr);
+}
+
+void EventGenerator::SetTargetWindow(gfx::NativeWindow target_window) {
+  delegate()->SetTargetWindow(target_window);
+  current_screen_location_ = delegate()->CenterOfWindow(target_window);
+  UpdateCurrentDispatcher(current_screen_location_);
 }
 
 void EventGenerator::PressLeftButton() {
@@ -607,16 +613,16 @@ void EventGenerator::Dispatch(ui::Event* event) {
 }
 
 void EventGenerator::Init(gfx::NativeWindow root_window,
-                          gfx::NativeWindow window_context) {
+                          gfx::NativeWindow target_window) {
   tick_clock_ = std::make_unique<TestTickClock>();
   ui::SetEventTickClockForTesting(tick_clock_.get());
   if (!delegate_) {
     DCHECK(g_event_generator_delegate_factory);
     delegate_ = g_event_generator_delegate_factory.Run(this, root_window,
-                                                       window_context);
+                                                       target_window);
   }
-  if (window_context)
-    current_screen_location_ = delegate()->CenterOfWindow(window_context);
+  if (target_window)
+    current_screen_location_ = delegate()->CenterOfWindow(target_window);
   else if (root_window)
     delegate()->ConvertPointFromWindow(root_window, &current_screen_location_);
   current_target_ = delegate()->GetTargetAt(current_screen_location_);

@@ -99,6 +99,11 @@ class AudioManager;
 enum class EncryptionScheme;
 }  // namespace media
 
+namespace mojo {
+template <typename>
+class BinderMapWithContext;
+}  // namespace mojo
+
 namespace network {
 enum class OriginPolicyState;
 class SharedURLLoaderFactory;
@@ -116,9 +121,6 @@ class Service;
 template <typename...>
 class BinderRegistryWithArgs;
 using BinderRegistry = BinderRegistryWithArgs<>;
-
-template <typename>
-class BinderMapWithContext;
 
 namespace mojom {
 class Service;
@@ -999,7 +1001,7 @@ class CONTENT_EXPORT ContentBrowserClient {
   // handling InterfaceProvider's GetInterface() calls (see crbug.com/718652).
   virtual void RegisterBrowserInterfaceBindersForFrame(
       RenderFrameHost* render_frame_host,
-      service_manager::BinderMapWithContext<RenderFrameHost*>* map) {}
+      mojo::BinderMapWithContext<RenderFrameHost*>* map) {}
 
   // Content was unable to bind a receiver for this associated interface, so the
   // embedder should try. Returns true if the |handle| was actually taken and

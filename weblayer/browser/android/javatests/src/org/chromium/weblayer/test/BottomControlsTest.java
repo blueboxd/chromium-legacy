@@ -15,7 +15,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.content_public.browser.test.util.Criteria;
@@ -48,8 +47,6 @@ public class BottomControlsTest {
     @MinAndroidSdkLevel(Build.VERSION_CODES.M)
     @Test
     @SmallTest
-    // TODO(sky): temporarily disabled, will enable shortly.
-    @DisabledTest
     public void testBasic() throws Exception {
         final String url = UrlUtils.encodeHtmlDataUri("<body><p style='height:5000px'>");
         InstrumentationActivity activity = mActivityTestRule.launchShellWithUrl(url);
@@ -93,8 +90,6 @@ public class BottomControlsTest {
     @MinAndroidSdkLevel(Build.VERSION_CODES.M)
     @Test
     @SmallTest
-    // TODO(sky): temporarily disabled, will enable shortly.
-    @DisabledTest
     public void testNoTopControl() throws Exception {
         final String url = UrlUtils.encodeHtmlDataUri("<body><p style='height:5000px'>");
         InstrumentationActivity activity = mActivityTestRule.launchShellWithUrl(url);

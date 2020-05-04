@@ -64,6 +64,9 @@ GetVkSemaphoreHandle(VkDevice vk_device,
                      VkSemaphore vk_semaphore,
                      VkExternalSemaphoreHandleTypeFlagBits handle_type);
 
+VULKAN_EXPORT
+std::string VkVersionToString(uint32_t version);
+
 }  // namespace gpu
 
 #endif  // GPU_VULKAN_VULKAN_UTIL_H_

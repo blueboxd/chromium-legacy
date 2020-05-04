@@ -148,6 +148,13 @@ gfx::AcceleratedWidget X11ScreenOzone::GetAcceleratedWidgetAtScreenPoint(
   return window ? window->GetWidget() : gfx::kNullAcceleratedWidget;
 }
 
+gfx::AcceleratedWidget X11ScreenOzone::GetLocalProcessWidgetAtPoint(
+    const gfx::Point& point,
+    const std::set<gfx::AcceleratedWidget>& ignore) const {
+  NOTIMPLEMENTED_LOG_ONCE();
+  return gfx::kNullAcceleratedWidget;
+}
+
 display::Display X11ScreenOzone::GetDisplayNearestPoint(
     const gfx::Point& point) const {
   auto displays = GetAllDisplays();

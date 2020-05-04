@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/core/display_lock/display_lock_context.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/dom/node.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/svg/svg_svg_element.h"
@@ -88,6 +89,9 @@ ElementFragmentAnchor* ElementFragmentAnchor::TryCreate(const KURL& url,
   // Element fragment anchors only need to be kept alive if they need scrolling.
   if (!should_scroll)
     return nullptr;
+
+  if (RuntimeEnabledFeatures::BeforeMatchEventEnabled())
+    anchor_node->DispatchEvent(*Event::Create(event_type_names::kBeforematch));
 
   return MakeGarbageCollected<ElementFragmentAnchor>(*anchor_node, frame);
 }

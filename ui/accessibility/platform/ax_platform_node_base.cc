@@ -231,27 +231,36 @@ bool AXPlatformNodeBase::IsDescendantOf(AXPlatformNode* ancestor) const {
   return parent->IsDescendantOf(ancestor);
 }
 
+AXPlatformNodeBase::AXPlatformNodeChildIterator
+AXPlatformNodeBase::AXPlatformNodeChildrenBegin() const {
+  return AXPlatformNodeChildIterator(this, GetFirstChild());
+}
+
+AXPlatformNodeBase::AXPlatformNodeChildIterator
+AXPlatformNodeBase::AXPlatformNodeChildrenEnd() const {
+  return AXPlatformNodeChildIterator(this, nullptr);
+}
 // Helpers.
 
-AXPlatformNodeBase* AXPlatformNodeBase::GetPreviousSibling() {
+AXPlatformNodeBase* AXPlatformNodeBase::GetPreviousSibling() const {
   if (!delegate_)
     return nullptr;
   return FromNativeViewAccessible(delegate_->GetPreviousSibling());
 }
 
-AXPlatformNodeBase* AXPlatformNodeBase::GetNextSibling() {
+AXPlatformNodeBase* AXPlatformNodeBase::GetNextSibling() const {
   if (!delegate_)
     return nullptr;
   return FromNativeViewAccessible(delegate_->GetNextSibling());
 }
 
-AXPlatformNodeBase* AXPlatformNodeBase::GetFirstChild() {
+AXPlatformNodeBase* AXPlatformNodeBase::GetFirstChild() const {
   if (!delegate_)
     return nullptr;
   return FromNativeViewAccessible(delegate_->GetFirstChild());
 }
 
-AXPlatformNodeBase* AXPlatformNodeBase::GetLastChild() {
+AXPlatformNodeBase* AXPlatformNodeBase::GetLastChild() const {
   if (!delegate_)
     return nullptr;
   return FromNativeViewAccessible(delegate_->GetLastChild());
@@ -1286,18 +1295,16 @@ void AXPlatformNodeBase::UpdateComputedHypertext() const {
   // the character index of each embedded object character to the id of the
   // child object it points to.
   base::string16 hypertext;
-  // TODO(Nektar): Remove const_cast by making all tree traversal methods const.
-  AXPlatformNodeBase* child =
-      const_cast<AXPlatformNodeBase*>(this)->GetFirstChild();
-  for (; child; child = child->GetNextSibling()) {
+  for (AXPlatformNodeChildIterator child_iter = AXPlatformNodeChildrenBegin();
+       child_iter != AXPlatformNodeChildrenEnd(); ++child_iter) {
     // Similar to Firefox, we don't expose text-only objects in IA2 and ATK
     // hypertext with the embedded object character. We copy all of their text
     // instead.
-    if (child->IsTextOnlyObject()) {
-      hypertext_.hypertext += child->GetNameAsString16();
+    if (child_iter->IsTextOnlyObject()) {
+      hypertext_.hypertext += child_iter->GetNameAsString16();
     } else {
       int32_t char_offset = static_cast<int32_t>(hypertext_.hypertext.size());
-      int32_t child_unique_id = child->GetUniqueId();
+      int32_t child_unique_id = child_iter->GetUniqueId();
       int32_t index = static_cast<int32_t>(hypertext_.hyperlinks.size());
       hypertext_.hyperlink_offset_to_index[char_offset] = index;
       hypertext_.hyperlinks.push_back(child_unique_id);

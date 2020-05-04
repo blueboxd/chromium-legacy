@@ -75,6 +75,12 @@ sql::InitStatus MediaHistoryFeedsTable::CreateTableIfNonExistent() {
             .c_str());
   }
 
+  if (success) {
+    success = DB()->Execute(
+        "CREATE INDEX IF NOT EXISTS mediaFeed_fetch_time_index ON "
+        "mediaFeed (last_fetch_time_s)");
+  }
+
   if (!success) {
     ResetDB();
     LOG(ERROR) << "Failed to create media history feeds table.";
@@ -425,6 +431,10 @@ bool MediaHistoryFeedsTable::UpdateDisplayTime(const int64_t feed_id) {
 
 bool MediaHistoryFeedsTable::RecalculateSafeSearchItemCount(
     const int64_t feed_id) {
+  DCHECK_LT(0, DB()->transaction_nesting());
+  if (!CanAccessDatabase())
+    return false;
+
   sql::Statement statement(DB()->GetCachedStatement(
       SQL_FROM_HERE,
       "UPDATE mediaFeed SET last_fetch_safe_item_count = (SELECT COUNT(id) "
@@ -440,6 +450,10 @@ bool MediaHistoryFeedsTable::RecalculateSafeSearchItemCount(
 bool MediaHistoryFeedsTable::Reset(
     const int64_t feed_id,
     const media_feeds::mojom::ResetReason reason) {
+  DCHECK_LT(0, DB()->transaction_nesting());
+  if (!CanAccessDatabase())
+    return false;
+
   sql::Statement statement(DB()->GetCachedStatement(
       SQL_FROM_HERE,
       "UPDATE mediaFeed SET last_fetch_time_s = NULL, last_fetch_result = 0, "

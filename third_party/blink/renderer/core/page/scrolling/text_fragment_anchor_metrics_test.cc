@@ -43,6 +43,17 @@ class TextFragmentAnchorMetricsTest : public SimTest {
     GetDocument().GetFrame()->GetEventHandler().HandleMousePressEvent(event);
   }
 
+  void BeginEmptyFrame() {
+    // If a test case doesn't find a match and therefore doesn't schedule the
+    // beforematch event, we should still render a second frame as if we did
+    // schedule the event to retain test coverage.
+    // When the beforematch event is not scheduled, a DCHECK will fail on
+    // BeginFrame() because no event was scheduled, so we schedule an empty task
+    // here.
+    GetDocument().EnqueueAnimationFrameTask(WTF::Bind([]() {}));
+    Compositor().BeginFrame();
+  }
+
   HistogramTester histogram_tester_;
 };
 
@@ -67,7 +78,9 @@ TEST_F(TextFragmentAnchorMetricsTest, UMAMetricsCollected) {
   )HTML");
   RunAsyncMatchingTasks();
 
+  // Render two frames to handle the async step added by the beforematch event.
   Compositor().BeginFrame();
+  BeginEmptyFrame();
 
   histogram_tester_.ExpectTotalCount("TextFragmentAnchor.SelectorCount", 1);
   histogram_tester_.ExpectUniqueSample("TextFragmentAnchor.SelectorCount", 2,
@@ -111,7 +124,9 @@ TEST_F(TextFragmentAnchorMetricsTest, NoMatchFound) {
   )HTML");
   RunAsyncMatchingTasks();
 
+  // Render two frames to handle the async step added by the beforematch event.
   Compositor().BeginFrame();
+  BeginEmptyFrame();
 
   histogram_tester_.ExpectTotalCount("TextFragmentAnchor.SelectorCount", 1);
   histogram_tester_.ExpectUniqueSample("TextFragmentAnchor.SelectorCount", 1,
@@ -142,7 +157,9 @@ TEST_F(TextFragmentAnchorMetricsTest, NoTextFragmentAnchor) {
     <!DOCTYPE html>
     <p>This is a test page</p>
   )HTML");
+  // Render two frames to handle the async step added by the beforematch event.
   Compositor().BeginFrame();
+  BeginEmptyFrame();
 
   RunAsyncMatchingTasks();
 
@@ -171,7 +188,9 @@ TEST_F(TextFragmentAnchorMetricsTest, MatchFoundNoScroll) {
   )HTML");
   RunAsyncMatchingTasks();
 
+  // Render two frames to handle the async step added by the beforematch event.
   Compositor().BeginFrame();
+  BeginEmptyFrame();
 
   histogram_tester_.ExpectTotalCount("TextFragmentAnchor.SelectorCount", 1);
   histogram_tester_.ExpectUniqueSample("TextFragmentAnchor.SelectorCount", 1,
@@ -233,7 +252,9 @@ TEST_F(TextFragmentAnchorMetricsTest, ScrollCancelled) {
   css_request.Complete("p { visibility: visible; top: 1001px; }");
   RunAsyncMatchingTasks();
 
+  // Render two frames to handle the async step added by the beforematch event.
   Compositor().BeginFrame();
+  BeginEmptyFrame();
 
   histogram_tester_.ExpectTotalCount("TextFragmentAnchor.SelectorCount", 1);
   histogram_tester_.ExpectUniqueSample("TextFragmentAnchor.SelectorCount", 1,
@@ -277,7 +298,9 @@ TEST_F(TextFragmentAnchorMetricsTest, TapToDismiss) {
   )HTML");
   RunAsyncMatchingTasks();
 
+  // Render two frames to handle the async step added by the beforematch event.
   Compositor().BeginFrame();
+  BeginEmptyFrame();
 
   EXPECT_TRUE(GetDocument().IsUseCounted(WebFeature::kTextFragmentAnchor));
   EXPECT_TRUE(
@@ -316,7 +339,10 @@ TEST_F(TextFragmentAnchorMetricsTest, InvalidFragmentDirective) {
       <!DOCTYPE html>
       <p id="element">This is a test page</p>
     )HTML");
+    // Render two frames to handle the async step added by the beforematch
+    // event.
     Compositor().BeginFrame();
+    BeginEmptyFrame();
 
     RunAsyncMatchingTasks();
 
@@ -401,7 +427,10 @@ TEST_P(TextFragmentRelatedMetricTest, ElementIdSuccessFailureCounts) {
       <p id=":~:text=name">This is a test page</p>
       <p id="element:~:text=name">This is a test page</p>
     )HTML");
+    // Render two frames to handle the async step added by the beforematch
+    // event.
     Compositor().BeginFrame();
+    BeginEmptyFrame();
 
     RunAsyncMatchingTasks();
 
@@ -464,7 +493,10 @@ TEST_P(TextFragmentRelatedMetricTest, TildeAmpersandTildeUseCounter) {
       <!DOCTYPE html>
       <p id="element">This is a test page</p>
     )HTML");
+    // Render two frames to handle the async step added by the beforematch
+    // event.
     Compositor().BeginFrame();
+    BeginEmptyFrame();
 
     RunAsyncMatchingTasks();
 
@@ -502,7 +534,10 @@ TEST_P(TextFragmentRelatedMetricTest, TildeAtTildeUseCounter) {
       <!DOCTYPE html>
       <p id="element">This is a test page</p>
     )HTML");
+    // Render two frames to handle the async step added by the beforematch
+    // event.
     Compositor().BeginFrame();
+    BeginEmptyFrame();
 
     RunAsyncMatchingTasks();
 
@@ -542,7 +577,10 @@ TEST_P(TextFragmentRelatedMetricTest, AmpersandDelimiterQuestionUseCounter) {
       <!DOCTYPE html>
       <p id="element">This is a test page</p>
     )HTML");
+    // Render two frames to handle the async step added by the beforematch
+    // event.
     Compositor().BeginFrame();
+    BeginEmptyFrame();
 
     RunAsyncMatchingTasks();
 
@@ -584,7 +622,10 @@ TEST_P(TextFragmentRelatedMetricTest, NewDelimiterUseCounter) {
       <!DOCTYPE html>
       <p id="element">This is a test page</p>
     )HTML");
+    // Render two frames to handle the async step added by the beforematch
+    // event.
     Compositor().BeginFrame();
+    BeginEmptyFrame();
 
     RunAsyncMatchingTasks();
 

@@ -38,10 +38,10 @@ bool ExtensionHasPermission(const Extension* extension,
 
 }  // namespace
 
-void PopulateExtensionFrameBinders(service_manager::BinderMapWithContext<
-                                       content::RenderFrameHost*>* binder_map,
-                                   content::RenderFrameHost* render_frame_host,
-                                   const Extension* extension) {
+void PopulateExtensionFrameBinders(
+    mojo::BinderMapWithContext<content::RenderFrameHost*>* binder_map,
+    content::RenderFrameHost* render_frame_host,
+    const Extension* extension) {
   DCHECK(extension);
 
   auto* context = render_frame_host->GetProcess()->GetBrowserContext();

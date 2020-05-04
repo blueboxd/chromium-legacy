@@ -1308,6 +1308,7 @@ jumbo_source_set("unit_tests") {
     "messaging/blink_transferable_message_mojom_traits_test.cc",
     "messaging/message_port_descriptor_mojom_traits_test.cc",
     "origin_trials/origin_trial_context_test.cc",
+    "origin_trials/origin_trials_test.cc",
     "page/autoscroll_controller_test.cc",
     "page/chrome_client_impl_test.cc",
     "page/chrome_client_test.cc",

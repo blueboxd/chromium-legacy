@@ -3,5 +3,8 @@
 # found in the LICENSE file.
 
 source_set("requirements") {
-  sources = [ "activity_service_positioner.h" ]
+  sources = [
+    "activity_service_positioner.h",
+    "activity_service_presentation.h",
+  ]
 }

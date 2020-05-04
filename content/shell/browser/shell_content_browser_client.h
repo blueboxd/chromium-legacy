@@ -75,7 +75,7 @@ class ShellContentBrowserClient : public ContentBrowserClient {
       override;
   void RegisterBrowserInterfaceBindersForFrame(
       RenderFrameHost* render_frame_host,
-      service_manager::BinderMapWithContext<RenderFrameHost*>* map) override;
+      mojo::BinderMapWithContext<RenderFrameHost*>* map) override;
   void OpenURL(SiteInstance* site_instance,
                const OpenURLParams& params,
                base::OnceCallback<void(WebContents*)> callback) override;
@@ -152,7 +152,7 @@ class ShellContentBrowserClient : public ContentBrowserClient {
   void set_register_browser_interface_binders_for_frame_callback(
       base::RepeatingCallback<
           void(RenderFrameHost* render_frame_host,
-               service_manager::BinderMapWithContext<RenderFrameHost*>* map)>
+               mojo::BinderMapWithContext<RenderFrameHost*>* map)>
           register_browser_interface_binders_for_frame_callback) {
     register_browser_interface_binders_for_frame_callback_ =
         register_browser_interface_binders_for_frame_callback;
@@ -187,7 +187,7 @@ class ShellContentBrowserClient : public ContentBrowserClient {
       expose_interfaces_to_renderer_callback_;
   base::RepeatingCallback<void(
       RenderFrameHost* render_frame_host,
-      service_manager::BinderMapWithContext<RenderFrameHost*>* map)>
+      mojo::BinderMapWithContext<RenderFrameHost*>* map)>
       register_browser_interface_binders_for_frame_callback_;
 
   // Owned by content::BrowserMainLoop.

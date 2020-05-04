@@ -194,6 +194,15 @@ void WebrtcConnectionToClient::OnWebrtcTransportError(ErrorCode error) {
   Disconnect(error);
 }
 
+void WebrtcConnectionToClient::OnWebrtcTransportProtocolChanged() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  // If not all channels are connected, this call will be deferred to
+  // OnChannelInitialized() when all channels are connected.
+  if (allChannelsConnected()) {
+    event_handler_->OnTransportProtocolChange(transport_->transport_protocol());
+  }
+}
+
 void WebrtcConnectionToClient::OnWebrtcTransportIncomingDataChannel(
     const std::string& name,
     std::unique_ptr<MessagePipe> pipe) {
@@ -224,9 +233,12 @@ void WebrtcConnectionToClient::OnChannelInitialized(
     ChannelDispatcherBase* channel_dispatcher) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  if (control_dispatcher_ && control_dispatcher_->is_connected() &&
-      event_dispatcher_ && event_dispatcher_->is_connected()) {
+  if (allChannelsConnected()) {
     event_handler_->OnConnectionChannelsConnected();
+    if (!transport_->transport_protocol().empty()) {
+      event_handler_->OnTransportProtocolChange(
+          transport_->transport_protocol());
+    }
   }
 }
 
@@ -237,6 +249,11 @@ void WebrtcConnectionToClient::OnChannelClosed(
   LOG(ERROR) << "Channel " << channel_dispatcher->channel_name()
              << " was closed unexpectedly.";
   Disconnect(INCOMPATIBLE_PROTOCOL);
+}
+
+bool WebrtcConnectionToClient::allChannelsConnected() {
+  return control_dispatcher_ && control_dispatcher_->is_connected() &&
+         event_dispatcher_ && event_dispatcher_->is_connected();
 }
 
 }  // namespace protocol

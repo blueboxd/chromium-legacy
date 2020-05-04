@@ -1764,6 +1764,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/webapps/WebApkOfflineDialog.java",
   "java/src/org/chromium/chrome/browser/webapps/WebApkPostShareTargetNavigator.java",
   "java/src/org/chromium/chrome/browser/webapps/WebApkServiceClient.java",
+  "java/src/org/chromium/chrome/browser/webapps/WebApkShareTarget.java",
   "java/src/org/chromium/chrome/browser/webapps/WebApkShareTargetUtil.java",
   "java/src/org/chromium/chrome/browser/webapps/WebApkSplashNetworkErrorObserver.java",
   "java/src/org/chromium/chrome/browser/webapps/WebApkUkmRecorder.java",

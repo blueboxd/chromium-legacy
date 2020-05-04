@@ -41,6 +41,10 @@ extern NSString* const
 // The image. Must be set before the view is loaded.
 @property(nonatomic, strong) UIImage* image;
 
+// The accessibility label for the image view. If nil, the image won't be
+// accessible.
+@property(nonatomic, strong) NSString* imageAccessibilityLabel;
+
 // Value to determine whether or not the image's size should be scaled.
 @property(nonatomic) BOOL imageHasFixedSize;
 

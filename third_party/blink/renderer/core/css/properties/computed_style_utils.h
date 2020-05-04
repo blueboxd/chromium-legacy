@@ -7,6 +7,7 @@
 
 #include "cc/input/scroll_snap_data.h"
 #include "third_party/blink/renderer/core/css/css_border_image_slice_value.h"
+#include "third_party/blink/renderer/core/css/css_function_value.h"
 #include "third_party/blink/renderer/core/css/css_identifier_value.h"
 #include "third_party/blink/renderer/core/css/css_value_list.h"
 #include "third_party/blink/renderer/core/css/css_value_pair.h"
@@ -152,11 +153,17 @@ class CORE_EXPORT ComputedStyleUtils {
   // value (for serializing a matrix3d in a transform list), otherwise it
   // will give a matrix() where possible (for serializing matrix in transform
   // lists or resolved transformation matrices).
-  static CSSValue* ValueForTransformationMatrix(const TransformationMatrix&,
-                                                float zoom,
-                                                bool force_matrix3d);
-  static CSSValue* ValueForTransformOperation(const TransformOperation&,
-                                              float zoom);
+  static CSSFunctionValue* ValueForTransformationMatrix(
+      const TransformationMatrix&,
+      float zoom,
+      bool force_matrix3d);
+  // Values unreperesentable in CSS will be converted to an equivalent matrix()
+  // value. The box_size parameter is used for deferred, layout-dependent
+  // interpolations and is not needed in the absence of animations.
+  static CSSFunctionValue* ValueForTransformOperation(
+      const TransformOperation&,
+      float zoom,
+      FloatSize box_size = FloatSize(0, 0));
   // Serialize a transform list.
   static CSSValue* ValueForTransformList(const TransformOperations&,
                                          float zoom);

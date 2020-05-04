@@ -135,7 +135,11 @@ LayoutUnit LayoutSVGRoot::ComputeReplacedLogicalWidth(
   if (IsEmbeddedThroughFrameContainingSVGDocument())
     return ContainingBlock()->AvailableLogicalWidth();
 
-  return LayoutReplaced::ComputeReplacedLogicalWidth(should_compute_preferred);
+  LayoutUnit width =
+      LayoutReplaced::ComputeReplacedLogicalWidth(should_compute_preferred);
+  if (StyleRef().LogicalWidth().IsPercentOrCalc())
+    width *= LogicalSizeScaleFactorForPercentageLengths();
+  return width;
 }
 
 LayoutUnit LayoutSVGRoot::ComputeReplacedLogicalHeight(
@@ -152,12 +156,27 @@ LayoutUnit LayoutSVGRoot::ComputeReplacedLogicalHeight(
 
   const Length& logical_height = StyleRef().LogicalHeight();
   if (IsDocumentElement() && logical_height.IsPercentOrCalc()) {
-    return ValueForLength(
+    LayoutUnit height = ValueForLength(
         logical_height,
         GetDocument().GetLayoutView()->ViewLogicalHeightForPercentages());
+    height *= LogicalSizeScaleFactorForPercentageLengths();
+    return height;
   }
 
   return LayoutReplaced::ComputeReplacedLogicalHeight(estimated_used_width);
+}
+
+double LayoutSVGRoot::LogicalSizeScaleFactorForPercentageLengths() const {
+  if (!IsDocumentElement() || !GetDocument().IsInMainFrame())
+    return 1;
+  if (GetDocument().GetLayoutView()->ShouldUsePrintingLayout())
+    return 1;
+  // This will return the zoom factor which is different from the typical usage
+  // of "zoom factor" in blink (e.g., |LocalFrame::PageZoomFactor()|) which
+  // includes CSS zoom and the device scale factor (if use-zoom-for-dsf is
+  // enabled). For this special-case, we only want to include the user's zoom
+  // factor, as all other types of zoom should not scale a percentage-sized svg.
+  return GetFrame()->GetChromeClient().UserZoomFactor();
 }
 
 void LayoutSVGRoot::UpdateLayout() {

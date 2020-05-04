@@ -28,6 +28,13 @@ function checkScroll() {
   let key = (new URL(document.location)).searchParams.get("key");
   stashResultsThenClose(key, results);
 }
+function doubleRafCheckScroll() {
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      checkScroll();
+    });
+  });
+}
 </script>
 
 <style>
@@ -35,11 +42,11 @@ function checkScroll() {
   height: 10000px;
 }
 .auto {
-  content-visibility: auto;
+  subtree-visibility: auto;
 }
 </style>
 
-<body onload="requestAnimationFrame(checkScroll)">
+<body onload="doubleRafCheckScroll()">
 <div class=spacer></div>
 <div class=auto>
   <div id=text>hiddentext</div>

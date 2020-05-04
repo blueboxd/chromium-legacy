@@ -30,7 +30,7 @@ Window* WindowFromTarget(ui::EventTarget* event_target) {
 std::unique_ptr<ui::test::EventGeneratorDelegate>
 EventGeneratorDelegateAura::Create(ui::test::EventGenerator* owner,
                                    gfx::NativeWindow root_window,
-                                   gfx::NativeWindow window) {
+                                   gfx::NativeWindow target_window) {
   // Tests should not create event generators for a "root window" that's not
   // actually the root window.
   if (root_window)
@@ -47,6 +47,11 @@ client::ScreenPositionClient*
 EventGeneratorDelegateAura::GetScreenPositionClient(
     const Window* window) const {
   return client::GetScreenPositionClient(window->GetRootWindow());
+}
+
+void EventGeneratorDelegateAura::SetTargetWindow(
+    gfx::NativeWindow target_window) {
+  NOTIMPLEMENTED();
 }
 
 ui::EventSource* EventGeneratorDelegateAura::GetEventSource(

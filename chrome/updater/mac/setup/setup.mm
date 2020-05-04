@@ -52,14 +52,6 @@ bool IsSystemInstall() {
   return geteuid() == 0;
 }
 
-const base::FilePath GetLocalLibraryDirectory() {
-  base::FilePath local_library_path;
-  if (!base::mac::GetLocalDirectory(NSLibraryDirectory, &local_library_path)) {
-    DLOG(WARNING) << "Could not get local library path";
-  }
-  return local_library_path;
-}
-
 const base::FilePath GetLibraryFolderPath() {
   // For user installations: the "~/Library" for the logged in user.
   // For system installations: "/Library".
@@ -195,14 +187,6 @@ bool StartLaunchdServiceVersionedTask(
 
 bool StartLaunchdServiceTask() {
   return StartLaunchdServiceVersionedTask(CopyGoogleUpdateServiceLaunchDName());
-}
-
-base::FilePath InfoPlistPath(const base::FilePath& bundle_path) {
-  return bundle_path.Append("Contents").Append("Info.plist");
-}
-
-base::FilePath InfoPlistPath() {
-  return InfoPlistPath(base::mac::OuterBundlePath());
 }
 
 bool RemoveUpdateCheckFromLaunchd(base::ScopedCFTypeRef<CFStringRef> name) {

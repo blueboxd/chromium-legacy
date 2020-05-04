@@ -141,8 +141,9 @@ void TrustTokenRequestRedemptionHelper::OnGotKeyCommitment(
   std::move(done).Run(mojom::TrustTokenOperationStatus::kOk);
 }
 
-mojom::TrustTokenOperationStatus TrustTokenRequestRedemptionHelper::Finalize(
-    mojom::URLResponseHead* response) {
+void TrustTokenRequestRedemptionHelper::Finalize(
+    mojom::URLResponseHead* response,
+    base::OnceCallback<void(mojom::TrustTokenOperationStatus)> done) {
   // Numbers 1-4 below correspond to the lines of the "Process a redemption
   // response" pseudocode from the design doc.
 
@@ -160,7 +161,8 @@ mojom::TrustTokenOperationStatus TrustTokenRequestRedemptionHelper::Finalize(
   // if any.
   if (!response->headers->EnumerateHeader(
           /*iter=*/nullptr, kTrustTokensSecTrustTokenHeader, &header_value)) {
-    return mojom::TrustTokenOperationStatus::kBadResponse;
+    std::move(done).Run(mojom::TrustTokenOperationStatus::kBadResponse);
+    return;
   }
 
   // 2. Strip the Sec-Trust-Token header, from the response and pass the header,
@@ -176,7 +178,8 @@ mojom::TrustTokenOperationStatus TrustTokenRequestRedemptionHelper::Finalize(
   if (!maybe_signed_redemption_record) {
     // The response was rejected by the underlying cryptographic library as
     // malformed or otherwise invalid.
-    return mojom::TrustTokenOperationStatus::kBadResponse;
+    std::move(done).Run(mojom::TrustTokenOperationStatus::kBadResponse);
+    return;
   }
 
   // 4. Otherwise, if these checks succeed, store the SRR and return success.
@@ -188,7 +191,8 @@ mojom::TrustTokenOperationStatus TrustTokenRequestRedemptionHelper::Finalize(
   token_store_->SetRedemptionRecord(*issuer_, top_level_origin_,
                                     std::move(record_to_store));
 
-  return mojom::TrustTokenOperationStatus::kOk;
+  std::move(done).Run(mojom::TrustTokenOperationStatus::kOk);
+  return;
 }
 
 base::Optional<TrustToken>

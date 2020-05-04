@@ -58,18 +58,24 @@ jumbo_component("display") {
 
   if (is_win) {
     sources += [
+      "win/base_window_finder_win.cc",
+      "win/base_window_finder_win.h",
       "win/color_profile_reader.cc",
       "win/color_profile_reader.h",
       "win/display_info.cc",
       "win/display_info.h",
       "win/dpi.cc",
       "win/dpi.h",
+      "win/local_process_window_finder_win.cc",
+      "win/local_process_window_finder_win.h",
       "win/scaling_util.cc",
       "win/scaling_util.h",
       "win/screen_win.cc",
       "win/screen_win.h",
       "win/screen_win_display.cc",
       "win/screen_win_display.h",
+      "win/topmost_window_finder_win.cc",
+      "win/topmost_window_finder_win.h",
       "win/uwp_text_scale_factor.cc",
       "win/uwp_text_scale_factor.h",
     ]

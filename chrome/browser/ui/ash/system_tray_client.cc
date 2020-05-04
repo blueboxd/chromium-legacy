@@ -280,7 +280,7 @@ void SystemTrayClient::ShowAccessibilityHelp() {
 void SystemTrayClient::ShowAccessibilitySettings() {
   base::RecordAction(base::UserMetricsAction("ShowAccessibilitySettings"));
   ShowSettingsSubPageForActiveUser(
-      chromeos::settings::mojom::kAccessibilitySectionPath);
+      chromeos::settings::mojom::kManageAccessibilitySubpagePath);
 }
 
 void SystemTrayClient::ShowGestureEducationHelp() {

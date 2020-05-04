@@ -25,9 +25,6 @@ namespace {
 const char kPdfMimeType[] = "application/pdf";
 const char kPwgRasterMimeType[] = "image/pwg-raster";
 
-const char kPwgRasterDocumentResolutionSupported[] =
-    "Printing.CUPS.PwgRasterDocumentResolutionSupported";
-
 // List of known multi-word printer manufacturers to help with make-and-model
 // string parsing.  Keep in UPPER CASE as that's how matches are performed.
 const std::array<const char* const, 4> kMultiWordManufacturers{
@@ -180,8 +177,6 @@ void OnPrinterQueried(chromeos::PrinterInfoCallback callback,
     model = make_and_model;
   }
 
-  base::UmaHistogramBoolean(kPwgRasterDocumentResolutionSupported,
-                            printer_info.supports_pwg_raster_resolution);
   DCHECK(!printer_info.ipp_versions.empty())
       << "Properly queried PrinterInfo always has at least one version";
   base::UmaHistogramEnumeration(

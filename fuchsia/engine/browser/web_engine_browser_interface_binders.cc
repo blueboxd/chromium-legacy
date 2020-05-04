@@ -9,7 +9,7 @@
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 
 void PopulateFuchsiaFrameBinders(
-    service_manager::BinderMapWithContext<content::RenderFrameHost*>* map,
+    mojo::BinderMapWithContext<content::RenderFrameHost*>* map,
     MediaResourceProviderService* media_resource_provider_service) {
   map->Add<media::mojom::FuchsiaMediaResourceProvider>(
       base::BindRepeating(&MediaResourceProviderService::Bind,

@@ -23,6 +23,9 @@ class ContextualSearchInternalStateControllerWrapper
     static final List<Integer> EXPECTED_LONGPRESS_SEQUENCE =
             CollectionUtil.newArrayList(InternalState.LONG_PRESS_RECOGNIZED,
                     InternalState.GATHERING_SURROUNDINGS, InternalState.SHOWING_LONGPRESS_SEARCH);
+    static final List<Integer> EXPECTED_LONGPRESS_RESOLVE_SEQUENCE = CollectionUtil.newArrayList(
+            InternalState.RESOLVING_LONG_PRESS_RECOGNIZED, InternalState.GATHERING_SURROUNDINGS,
+            InternalState.SHOW_RESOLVING_UI, InternalState.RESOLVING);
 
     private List<Integer> mStartedStates = new ArrayList<Integer>();
     private List<Integer> mFinishedStates = new ArrayList<Integer>();

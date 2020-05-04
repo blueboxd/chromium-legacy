@@ -61,10 +61,6 @@ WebNode WebHitTestResult::GetNode() const {
   return WebNode(private_->Result().InnerNode());
 }
 
-gfx::Point WebHitTestResult::LocalPoint() const {
-  return RoundedIntPoint(private_->Result().LocalPoint());
-}
-
 gfx::PointF WebHitTestResult::LocalPointWithoutContentBoxOffset() const {
   FloatPoint local_point = FloatPoint(private_->Result().LocalPoint());
   LayoutObject* object = private_->Result().GetLayoutObject();

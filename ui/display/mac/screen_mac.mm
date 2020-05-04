@@ -4,6 +4,7 @@
 
 #include "ui/display/screen.h"
 
+#import <AppKit/AppKit.h>
 #import <ApplicationServices/ApplicationServices.h>
 #import <Cocoa/Cocoa.h>
 #include <stdint.h>
@@ -22,6 +23,7 @@
 #include "ui/display/display.h"
 #include "ui/display/display_change_notifier.h"
 #include "ui/display/mac/display_link_mac.h"
+#include "ui/gfx/geometry/point.h"
 #include "ui/gfx/icc_profile.h"
 #include "ui/gfx/mac/coordinate_conversion.h"
 
@@ -259,6 +261,31 @@ class ScreenMac : public Screen {
   gfx::NativeWindow GetWindowAtScreenPoint(const gfx::Point& point) override {
     NOTIMPLEMENTED();
     return gfx::NativeWindow();
+  }
+
+  gfx::NativeWindow GetLocalProcessWindowAtPoint(
+      const gfx::Point& point,
+      const std::set<gfx::NativeWindow>& ignore) override {
+    const NSPoint ns_point = gfx::ScreenPointToNSPoint(point);
+
+    // Note: [NSApp orderedWindows] doesn't include NSPanels.
+    for (NSWindow* window : [NSApp orderedWindows]) {
+      if (ignore.count(window))
+        continue;
+
+      if (![window isOnActiveSpace])
+        continue;
+
+      // NativeWidgetMac::Close() calls -orderOut: on NSWindows before actually
+      // closing them.
+      if (![window isVisible])
+        continue;
+
+      if (NSPointInRect(ns_point, [window frame]))
+        return window;
+    }
+
+    return nil;
   }
 
   int GetNumDisplays() const override { return GetAllDisplays().size(); }

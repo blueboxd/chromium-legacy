@@ -33,6 +33,7 @@ class HostControlDispatcher : public ChannelDispatcherBase,
   void SetPairingResponse(const PairingResponse& pairing_response) override;
   void DeliverHostMessage(const ExtensionMessage& message) override;
   void SetVideoLayout(const VideoLayout& layout) override;
+  void SetTransportInfo(const TransportInfo& transport_info) override;
 
   // ClipboardStub implementation for sending clipboard data to client.
   void InjectClipboardEvent(const ClipboardEvent& event) override;

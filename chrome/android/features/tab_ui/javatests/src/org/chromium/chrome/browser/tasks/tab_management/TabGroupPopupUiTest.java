@@ -238,20 +238,20 @@ public class TabGroupPopupUiTest {
 
         FullscreenManagerTestUtils.scrollBrowserControls(mActivityTestRule, false);
 
-        onView(withId(R.id.main_content))
+        onView(withId(R.id.tab_group_ui_toolbar_view))
                 .inRoot(withDecorView(not(cta.getWindow().getDecorView())))
                 .check((v, e) -> {
-                    View stripContainerView = (View) v.getParent().getParent();
+                    View stripContainerView = (View) v.getParent();
                     assertTrue(stripContainerView instanceof FrameLayout);
                     assertEquals(0f, stripContainerView.getAlpha(), 0);
                 });
 
         FullscreenManagerTestUtils.scrollBrowserControls(mActivityTestRule, true);
 
-        onView(withId(R.id.main_content))
+        onView(withId(R.id.tab_group_ui_toolbar_view))
                 .inRoot(withDecorView(not(cta.getWindow().getDecorView())))
                 .check((v, e) -> {
-                    View stripContainerView = (View) v.getParent().getParent();
+                    View stripContainerView = (View) v.getParent();
                     assertTrue(stripContainerView instanceof FrameLayout);
                     assertEquals(1f, stripContainerView.getAlpha(), 0);
                 });

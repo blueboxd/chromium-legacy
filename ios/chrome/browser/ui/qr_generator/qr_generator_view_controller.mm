@@ -26,6 +26,8 @@ const CGFloat kQRCodeImageSize = 200.0;
 
 - (void)loadView {
   self.image = [self createQRCodeImage];
+  self.imageAccessibilityLabel =
+      l10n_util::GetNSString(IDS_IOS_QR_CODE_ACCESSIBILITY_LABEL);
   self.imageHasFixedSize = YES;
 
   self.titleTextStyle = UIFontTextStyleTitle3;

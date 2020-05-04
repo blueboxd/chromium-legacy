@@ -1753,10 +1753,7 @@ TEST_P(TabletModeControllerScreenshotTest, EnterTabletModeWhileAnimating) {
 
 // Tests that the screenshot is visible when a window animation happens when
 // entering tablet mode.
-// TODO(http://crbug.com/1035356): This test fails on bots but not locally so
-// suspected to be a timing issue. Possible that the screenshot is deleted
-// before the waiter is done waiting.
-TEST_P(TabletModeControllerScreenshotTest, DISABLED_ScreenshotVisibility) {
+TEST_P(TabletModeControllerScreenshotTest, ScreenshotVisibility) {
   auto window = CreateTestWindow(gfx::Rect(200, 200));
   auto window2 = CreateTestWindow(gfx::Rect(300, 200));
 
@@ -1767,6 +1764,11 @@ TEST_P(TabletModeControllerScreenshotTest, DISABLED_ScreenshotVisibility) {
   TabletMode::Waiter waiter(/*enable=*/true);
   SetTabletMode(true);
   EXPECT_FALSE(IsScreenshotShown());
+  EXPECT_FALSE(window2->layer()->GetAnimator()->is_animating());
+  // The layer we observer is actually the windows layer before starting the
+  // animation. The animation performed is a cross-fade animation which copies
+  // the window layer to another layer host. So cache them here for later use.
+  ui::Layer* old_layer = window2->layer();
 
   // Tests that after waiting for the async tablet mode entry, the screenshot is
   // shown.
@@ -1775,6 +1777,7 @@ TEST_P(TabletModeControllerScreenshotTest, DISABLED_ScreenshotVisibility) {
   EXPECT_TRUE(window2->layer()->GetAnimator()->is_animating());
 
   // Tests that the screenshot is destroyed after the window is done animating.
+  old_layer->GetAnimator()->StopAnimating();
   window2->layer()->GetAnimator()->StopAnimating();
   EXPECT_FALSE(IsScreenshotShown());
 }

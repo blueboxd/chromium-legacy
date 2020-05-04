@@ -97,10 +97,6 @@ std::string FakeDownloadTask::GetMimeType() const {
   return mime_type_;
 }
 
-ui::PageTransition FakeDownloadTask::GetTransitionType() const {
-  return page_transition_;
-}
-
 base::string16 FakeDownloadTask::GetSuggestedFilename() const {
   return suggested_file_name_;
 }
@@ -161,11 +157,6 @@ void FakeDownloadTask::SetContentDisposition(
 
 void FakeDownloadTask::SetMimeType(const std::string& mime_type) {
   mime_type_ = mime_type;
-  OnDownloadUpdated();
-}
-
-void FakeDownloadTask::SetTransitionType(ui::PageTransition page_transition) {
-  page_transition_ = page_transition;
   OnDownloadUpdated();
 }
 

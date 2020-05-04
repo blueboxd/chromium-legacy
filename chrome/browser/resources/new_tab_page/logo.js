@@ -117,6 +117,7 @@ class LogoElement extends PolymerElement {
   }
 
   constructor() {
+    performance.mark('logo-creation-start');
     super();
     /** @private {!EventTracker} */
     this.eventTracker_ = new EventTracker();
@@ -147,6 +148,12 @@ class LogoElement extends PolymerElement {
   disconnectedCallback() {
     super.disconnectedCallback();
     this.eventTracker_.removeAll();
+  }
+
+  /** @override */
+  ready() {
+    super.ready();
+    performance.measure('logo-creation', 'logo-creation-start');
   }
 
   /**

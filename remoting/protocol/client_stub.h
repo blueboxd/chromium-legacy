@@ -21,6 +21,7 @@ namespace protocol {
 class Capabilities;
 class ExtensionMessage;
 class PairingResponse;
+class TransportInfo;
 class VideoLayout;
 
 class ClientStub : public ClipboardStub,
@@ -41,6 +42,9 @@ class ClientStub : public ClipboardStub,
 
   // Sets video layout.
   virtual void SetVideoLayout(const VideoLayout& video_layout) = 0;
+
+  // Passes the host's transport info to the client.
+  virtual void SetTransportInfo(const TransportInfo& transport_info) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ClientStub);

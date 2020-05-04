@@ -53,8 +53,8 @@ class CORE_EXPORT StyleNonInheritedVariables {
     return variables_.GetValue(name);
   }
 
-  HashSet<AtomicString> GetCustomPropertyNames() const {
-    return variables_.GetNames();
+  void CollectNames(HashSet<AtomicString>& names) const {
+    variables_.CollectNames(names);
   }
 
   const StyleVariables::DataMap& Data() const { return variables_.Data(); }

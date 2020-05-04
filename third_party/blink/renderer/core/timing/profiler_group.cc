@@ -6,6 +6,7 @@
 
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/bindings/core/v8/profiler_trace_builder.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_profiler_init_options.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_profiler_trace.h"
@@ -15,6 +16,7 @@
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
+#include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 #include "v8/include/v8-profiler.h"
 #include "v8/include/v8.h"
@@ -107,9 +109,9 @@ Profiler* ProfilerGroup::CreateProfiler(ScriptState* script_state,
          effective_sample_interval_ms % kBaseSampleIntervalMs);
   }
 
-  auto* profiler = MakeGarbageCollected<Profiler>(this, profiler_id,
-                                                  effective_sample_interval_ms,
-                                                  source_origin, time_origin);
+  auto* profiler = MakeGarbageCollected<Profiler>(
+      this, script_state, profiler_id, effective_sample_interval_ms,
+      source_origin, time_origin);
   profilers_.insert(profiler);
 
   num_active_profilers_++;
@@ -125,7 +127,8 @@ ProfilerGroup::~ProfilerGroup() {
 void ProfilerGroup::WillBeDestroyed() {
   for (auto& profiler : profilers_) {
     DCHECK(profiler);
-    profiler->Dispose();
+    CancelProfiler(profiler);
+    profiler->RemovedFromProfilerGroup();
     DCHECK(profiler->stopped());
   }
 
@@ -183,11 +186,24 @@ void ProfilerGroup::StopProfiler(ScriptState* script_state,
 void ProfilerGroup::CancelProfiler(Profiler* profiler) {
   DCHECK(cpu_profiler_);
   DCHECK(!profiler->stopped());
+  CancelProfilerImpl(profiler->ProfilerId());
+}
 
+void ProfilerGroup::CancelProfilerAsync(ScriptState* script_state,
+                                        Profiler* profiler) {
+  DCHECK(cpu_profiler_);
+  DCHECK(!profiler->stopped());
+  ExecutionContext::From(script_state)
+      ->GetTaskRunner(TaskType::kInternalDefault)
+      ->PostTask(FROM_HERE,
+                 WTF::Bind(&ProfilerGroup::CancelProfilerImpl,
+                           WrapPersistent(this), profiler->ProfilerId()));
+}
+
+void ProfilerGroup::CancelProfilerImpl(String profiler_id) {
   v8::HandleScope scope(isolate_);
-  v8::Local<v8::String> profiler_id =
-      V8String(isolate_, profiler->ProfilerId());
-  auto* profile = cpu_profiler_->StopProfiling(profiler_id);
+  v8::Local<v8::String> v8_profiler_id = V8String(isolate_, profiler_id);
+  auto* profile = cpu_profiler_->StopProfiling(v8_profiler_id);
 
   profile->Delete();
 

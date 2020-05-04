@@ -245,6 +245,16 @@ public class StreamActionApiImplTest {
     }
 
     @Test
+    public void testHandleBlockContent() {
+        List<StreamDataOperation> streamDataOperations =
+                Collections.singletonList(StreamDataOperation.getDefaultInstance());
+        mStreamActionApi.handleBlockContent(streamDataOperations, ACTION_PAYLOAD);
+
+        verify(mActionManager).dismiss(streamDataOperations, SESSION_ID);
+        verify(mActionManager).createAndUploadAction(CONTENT_ID, ACTION_PAYLOAD);
+    }
+
+    @Test
     public void testOnClientAction() {
         mStreamActionApi.onClientAction(ActionType.OPEN_URL);
 

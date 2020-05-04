@@ -6,6 +6,7 @@
 
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/public/cpp/ash_switches.h"
+#include "ash/public/cpp/window_finder.h"
 #include "ash/root_window_controller.h"
 #include "ash/root_window_settings.h"
 #include "ash/shelf/shelf_widget.h"
@@ -47,7 +48,12 @@ class ScreenForShutdown : public display::Screen {
   gfx::Point GetCursorScreenPoint() override { return gfx::Point(); }
   bool IsWindowUnderCursor(gfx::NativeWindow window) override { return false; }
   gfx::NativeWindow GetWindowAtScreenPoint(const gfx::Point& point) override {
-    return NULL;
+    return nullptr;
+  }
+  gfx::NativeWindow GetLocalProcessWindowAtPoint(
+      const gfx::Point& point,
+      const std::set<gfx::NativeWindow>& ignore) override {
+    return nullptr;
   }
   int GetNumDisplays() const override { return display_list_.size(); }
   const std::vector<display::Display>& GetAllDisplays() const override {
@@ -108,6 +114,12 @@ gfx::NativeWindow ScreenAsh::GetWindowAtScreenPoint(const gfx::Point& point) {
     position_client->ConvertPointFromScreen(root_window, &local_point);
 
   return root_window->GetEventHandlerForPoint(local_point);
+}
+
+gfx::NativeWindow ScreenAsh::GetLocalProcessWindowAtPoint(
+    const gfx::Point& point,
+    const std::set<gfx::NativeWindow>& ignore) {
+  return ash::GetTopmostWindowAtPoint(point, ignore);
 }
 
 int ScreenAsh::GetNumDisplays() const {

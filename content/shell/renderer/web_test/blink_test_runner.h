@@ -20,7 +20,7 @@
 #include "content/public/common/page_state.h"
 #include "content/shell/common/web_test/web_test.mojom.h"
 #include "content/shell/common/web_test/web_test_bluetooth_fake_adapter_setter.mojom.h"
-#include "content/shell/test_runner/test_preferences.h"
+#include "content/shell/renderer/web_test/test_preferences.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/platform/web_string.h"
@@ -34,12 +34,6 @@ class SkBitmap;
 namespace base {
 class DictionaryValue;
 }  // namespace base
-
-namespace blink {
-class WebPlugin;
-struct WebPluginParams;
-struct WebSize;
-}  // namespace blink
 
 namespace content {
 class AppBannerService;
@@ -74,13 +68,6 @@ class BlinkTestRunner {
   TestPreferences* Preferences();
   void ApplyPreferences();
   void SetPopupBlockingEnabled(bool block_popups);
-
-  // Controls auto resize mode.
-  void EnableAutoResizeMode(const blink::WebSize& min_size,
-                            const blink::WebSize& max_size);
-  void DisableAutoResizeMode(const blink::WebSize& new_size);
-  // Resets auto resize mode off in between tests, without requiring a size.
-  void ResetAutoResizeMode();
 
   // Controls WebSQL databases.
   void ClearAllDatabases();
@@ -181,9 +168,6 @@ class BlinkTestRunner {
   // Resolves the in-flight beforeinstallprompt event userChoice promise with a
   // platform of |platform|.
   void ResolveBeforeInstallPromptPromise(const std::string& platform);
-
-  blink::WebPlugin* CreatePluginPlaceholder(
-      const blink::WebPluginParams& params);
 
   // Mark the orientation changed for fullscreen layout tests.
   void SetScreenOrientationChanged();

@@ -7,9 +7,11 @@
 #import <CoreGraphics/CoreGraphics.h>
 #include <algorithm>
 
+#include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/numerics/ranges.h"
 #import "ios/chrome/browser/ui/tab_grid/tab_grid_constants.h"
+#include "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -36,6 +38,7 @@
 //  * The background view, a grey roundrect with vertical transparent bars.
 //  * The background image views.
 //  * The numeric label on the regular tab icon.
+//  * The hover views, which allow for pointer interactions.
 //  * The "slider" view -- a white roundrect that's taller and wider than each
 //    of the background segments. It clips its subview to its bounds, and it
 //    adjusts its subview's frame so that it (the subview) remains fixed
@@ -125,6 +128,11 @@ UIImage* ImageForSegment(NSString* segment, BOOL selected) {
 @interface TabGridPageControlBackground : UIView
 @end
 
+#if defined(__IPHONE_13_4)
+@interface TabGridPageControl (Pointer) <UIPointerInteractionDelegate>
+@end
+#endif  // defined(__IPHONE_13_4)
+
 @interface TabGridPageControl () <UIGestureRecognizerDelegate> {
   UIAccessibilityElement* _incognitoAccessibilityElement;
   UIAccessibilityElement* _regularAccessibilityElement;
@@ -147,9 +155,18 @@ UIImage* ImageForSegment(NSString* segment, BOOL selected) {
 @property(nonatomic, weak) UIView* regularSelectedIcon;
 @property(nonatomic, weak) UILabel* regularLabel;
 @property(nonatomic, weak) UILabel* regularSelectedLabel;
-
 @property(nonatomic, weak) UIView* remoteIcon;
 @property(nonatomic, weak) UIView* remoteSelectedIcon;
+
+// Standard pointer interactions provided UIKit require views on which to attach
+// interactions. These transparent views are the size of the whole segment and
+// are visually below the slider. All touch events are properly received by the
+// parent page control. And these views properly receive hover events by a
+// pointer.
+@property(nonatomic, weak) UIView* incognitoHoverView;
+@property(nonatomic, weak) UIView* regularHoverView;
+@property(nonatomic, weak) UIView* remoteHoverView;
+
 // The center point for the slider corresponding to a |sliderPosition| of 0.
 @property(nonatomic) CGFloat sliderOrigin;
 // The (signed) x-coordinate distance the slider moves over. The slider's
@@ -162,6 +179,7 @@ UIImage* ImageForSegment(NSString* segment, BOOL selected) {
 // drags.
 @property(nonatomic) CGPoint dragStart;
 @property(nonatomic) CGFloat dragStartPosition;
+@property(nonatomic) BOOL draggingSlider;
 @end
 
 @implementation TabGridPageControl
@@ -290,20 +308,29 @@ UIImage* ImageForSegment(NSString* segment, BOOL selected) {
   }
 }
 
-#pragma mark - UIControl
+#pragma mark - UIResponder
 
-- (BOOL)beginTrackingWithTouch:(UITouch*)touch withEvent:(UIEvent*)event {
+- (void)touchesBegan:(NSSet<UITouch*>*)touches withEvent:(UIEvent*)event {
+  [super touchesBegan:touches withEvent:event];
+  DCHECK(!self.multipleTouchEnabled);
+  DCHECK_EQ(1U, touches.count);
+  DCHECK(!self.draggingSlider);
+  UITouch* touch = [touches anyObject];
   CGPoint locationInSlider = [touch locationInView:self.sliderView];
   if ([self.sliderView pointInside:locationInSlider withEvent:event]) {
     self.dragStart = [touch locationInView:self];
     self.dragStartPosition = self.sliderPosition;
-    return YES;
+    self.draggingSlider = YES;
   }
-  return NO;
 }
 
-- (BOOL)continueTrackingWithTouch:(UITouch*)touch withEvent:(UIEvent*)event {
-  // Compute x-distance offset
+- (void)touchesMoved:(NSSet<UITouch*>*)touches withEvent:(UIEvent*)event {
+  [super touchesMoved:touches withEvent:event];
+  if (!self.draggingSlider)
+    return;
+  DCHECK(!self.multipleTouchEnabled);
+  DCHECK_EQ(1U, touches.count);
+  UITouch* touch = [touches anyObject];
   CGPoint position = [touch locationInView:self];
   CGFloat deltaX = position.x - self.dragStart.x;
   // Convert to position change.
@@ -311,22 +338,23 @@ UIImage* ImageForSegment(NSString* segment, BOOL selected) {
 
   self.sliderPosition = self.dragStartPosition + positionChange;
   [self sendActionsForControlEvents:UIControlEventValueChanged];
-  return YES;
 }
 
-- (void)endTrackingWithTouch:(UITouch*)touch withEvent:(UIEvent*)event {
-  // UIControl requires that the superclass method is called.
-  [super endTrackingWithTouch:touch withEvent:event];
+- (void)touchesEnded:(NSSet<UITouch*>*)touches withEvent:(UIEvent*)event {
+  [super touchesEnded:touches withEvent:event];
+  DCHECK(!self.multipleTouchEnabled);
+  DCHECK_EQ(1U, touches.count);
+  self.draggingSlider = NO;
   [self setSelectedPage:self.selectedPage animated:YES];
-  // UIControl will send actions for UIControlEventTouchUpInside as part of its
-  // UIResponder implementation, so there's no need to send them at this point.
+  [self sendActionsForControlEvents:UIControlEventTouchUpInside];
 }
 
-- (void)cancelTrackingWithEvent:(UIEvent*)event {
-  [super cancelTrackingWithEvent:event];
+- (void)touchesCancelled:(NSSet<UITouch*>*)touches withEvent:(UIEvent*)event {
+  [super touchesCancelled:touches withEvent:event];
+  DCHECK(!self.multipleTouchEnabled);
+  DCHECK_EQ(1U, touches.count);
+  self.draggingSlider = NO;
   [self setSelectedPage:self.selectedPage animated:YES];
-  // UIControl doesn't sent control events for -cancelTrackingWithEvent:, so
-  // explicitly do so here.
   [self sendActionsForControlEvents:UIControlEventTouchUpInside];
 }
 
@@ -349,7 +377,8 @@ UIImage* ImageForSegment(NSString* segment, BOOL selected) {
   [super layoutSubviews];
   [self updateAccessibilityFrames];
 
-  // Position the section images and labels, which depend on the layout guides.
+  // Position the section images, labels and hover views, which depend on the
+  // layout guides.
   self.incognitoIcon.center = [self centerOfSegment:TabGridPageIncognitoTabs];
   self.incognitoSelectedIcon.center =
       [self centerOfSegment:TabGridPageIncognitoTabs];
@@ -363,6 +392,19 @@ UIImage* ImageForSegment(NSString* segment, BOOL selected) {
 
   self.remoteIcon.center = [self centerOfSegment:TabGridPageRemoteTabs];
   self.remoteSelectedIcon.center = [self centerOfSegment:TabGridPageRemoteTabs];
+
+#if defined(__IPHONE_13_4)
+  if (@available(iOS 13.4, *)) {
+    if (base::FeatureList::IsEnabled(kPointerSupport)) {
+      self.incognitoHoverView.center =
+          [self centerOfSegment:TabGridPageIncognitoTabs];
+      self.regularHoverView.center =
+          [self centerOfSegment:TabGridPageRegularTabs];
+      self.remoteHoverView.center =
+          [self centerOfSegment:TabGridPageRemoteTabs];
+    }
+  }
+#endif  // defined(__IPHONE_13_4)
 
   // Determine the slider origin and range; this is based on the layout guides
   // and can't be computed until they are determined.
@@ -416,7 +458,7 @@ UIImage* ImageForSegment(NSString* segment, BOOL selected) {
 
 - (BOOL)gestureRecognizerShouldBegin:(UIGestureRecognizer*)gestureRecognizer {
   // Don't recognize taps if drag touches are being tracked.
-  return !self.tracking;
+  return !self.draggingSlider;
 }
 
 #pragma mark - Private
@@ -470,7 +512,6 @@ UIImage* ImageForSegment(NSString* segment, BOOL selected) {
   // Add the slider above the section images and labels.
   CGRect sliderFrame = CGRectMake(0, 0, kSliderWidth, kSliderHeight);
   UIView* slider = [[UIView alloc] initWithFrame:sliderFrame];
-  slider.userInteractionEnabled = NO;
   slider.layer.cornerRadius = kCornerRadius;
   slider.layer.masksToBounds = YES;
   slider.backgroundColor = UIColorFromRGB(kSliderColor);
@@ -527,6 +568,32 @@ UIImage* ImageForSegment(NSString* segment, BOOL selected) {
   remoteSelectedIcon.tintColor = UIColorFromRGB(kSelectedColor);
   [self.selectedImageView addSubview:remoteSelectedIcon];
   self.remoteSelectedIcon = remoteSelectedIcon;
+
+#if defined(__IPHONE_13_4)
+  if (@available(iOS 13.4, *)) {
+    if (base::FeatureList::IsEnabled(kPointerSupport)) {
+      CGRect segmentRect = CGRectMake(0, 0, kSegmentWidth, kOverallHeight);
+      UIView* incognitoHoverView = [[UIView alloc] initWithFrame:segmentRect];
+      UIView* regularHoverView = [[UIView alloc] initWithFrame:segmentRect];
+      UIView* remoteHoverView = [[UIView alloc] initWithFrame:segmentRect];
+      [self insertSubview:incognitoHoverView belowSubview:self.sliderView];
+      [self insertSubview:regularHoverView belowSubview:self.sliderView];
+      [self insertSubview:remoteHoverView belowSubview:self.sliderView];
+      self.incognitoHoverView = incognitoHoverView;
+      self.regularHoverView = regularHoverView;
+      self.remoteHoverView = remoteHoverView;
+
+      [self.incognitoHoverView
+          addInteraction:[[UIPointerInteraction alloc] initWithDelegate:self]];
+      [self.regularHoverView
+          addInteraction:[[UIPointerInteraction alloc] initWithDelegate:self]];
+      [self.remoteHoverView
+          addInteraction:[[UIPointerInteraction alloc] initWithDelegate:self]];
+      [self.sliderView
+          addInteraction:[[UIPointerInteraction alloc] initWithDelegate:self]];
+    }
+  }
+#endif  // defined(__IPHONE_13_4)
 
   // Update the label text, in case these properties have been set before the
   // views were set up.
@@ -594,6 +661,30 @@ UIImage* ImageForSegment(NSString* segment, BOOL selected) {
       return RectCenter(self.remoteGuide.layoutFrame);
   }
 }
+
+#if defined(__IPHONE_13_4)
+
+#pragma mark UIPointerInteractionDelegate
+
+- (UIPointerRegion*)pointerInteraction:(UIPointerInteraction*)interaction
+                      regionForRequest:(UIPointerRegionRequest*)request
+                         defaultRegion:(UIPointerRegion*)defaultRegion
+    API_AVAILABLE(ios(13.4)) {
+  return defaultRegion;
+}
+
+- (UIPointerStyle*)pointerInteraction:(UIPointerInteraction*)interaction
+                       styleForRegion:(UIPointerRegion*)region
+    API_AVAILABLE(ios(13.4)) {
+  UIPointerHighlightEffect* effect = [UIPointerHighlightEffect
+      effectWithPreview:[[UITargetedPreview alloc]
+                            initWithView:interaction.view]];
+  UIPointerShape* shape =
+      [UIPointerShape shapeWithRoundedRect:interaction.view.frame
+                              cornerRadius:kCornerRadius];
+  return [UIPointerStyle styleWithEffect:effect shape:shape];
+}
+#endif  // defined(__IPHONE_13_4)
 
 @end
 

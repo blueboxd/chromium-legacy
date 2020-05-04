@@ -5,8 +5,10 @@
 #include "weblayer/browser/navigation_impl.h"
 
 #include "content/public/browser/navigation_handle.h"
+#include "content/public/browser/web_contents.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_util.h"
+#include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/jni_array.h"
@@ -74,6 +76,15 @@ jboolean NavigationImpl::SetRequestHeader(
   return true;
 }
 
+jboolean NavigationImpl::SetUserAgentString(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jstring>& value) {
+  if (!safe_to_set_user_agent_)
+    return false;
+  SetUserAgentString(ConvertJavaStringToUTF8(value));
+  return true;
+}
+
 #endif
 
 GURL NavigationImpl::GetURL() {
@@ -133,6 +144,14 @@ void NavigationImpl::SetRequestHeader(const std::string& name,
                                       const std::string& value) {
   // Any headers coming from the client should be exempt from CORS checks.
   navigation_handle_->SetCorsExemptRequestHeader(name, value);
+}
+
+void NavigationImpl::SetUserAgentString(const std::string& value) {
+  DCHECK(safe_to_set_user_agent_);
+  navigation_handle_->GetWebContents()->SetUserAgentOverride(
+      blink::UserAgentOverride::UserAgentOnly(value),
+      /* override_in_new_tabs */ false);
+  navigation_handle_->SetIsOverridingUserAgent(!value.empty());
 }
 
 #if defined(OS_ANDROID)

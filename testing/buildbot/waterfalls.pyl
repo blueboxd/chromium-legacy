@@ -761,7 +761,11 @@
           'walleye',
         ],
         'additional_compile_targets': [
+          'chrome_modern_public_bundle__base_libs_and_assets_expectations',
+          'monochrome_public_bundle__base_libs_and_assets_expectations',
           'monochrome_static_initializers',
+          'trichrome_chrome_bundle__base_libs_and_assets_expectations',
+          'trichrome_library_apk_libs_and_assets_expectations',
           'weblayer_shell',
         ],
         'test_suites': {

@@ -5,6 +5,7 @@
 #include "gpu/vulkan/vulkan_util.h"
 
 #include "base/logging.h"
+#include "base/strings/stringprintf.h"
 #include "gpu/vulkan/vulkan_function_pointers.h"
 
 namespace gpu {
@@ -72,6 +73,12 @@ VkSemaphore CreateExternalVkSemaphore(
   }
 
   return semaphore;
+}
+
+std::string VkVersionToString(uint32_t version) {
+  return base::StringPrintf("%u.%u.%u", VK_VERSION_MAJOR(version),
+                            VK_VERSION_MINOR(version),
+                            VK_VERSION_PATCH(version));
 }
 
 }  // namespace gpu

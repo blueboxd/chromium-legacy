@@ -7,6 +7,7 @@
 
 #include "components/performance_manager/public/graph/frame_node.h"
 #include "components/performance_manager/public/graph/graph.h"
+#include "components/performance_manager/public/graph/node_data_describer.h"
 
 namespace performance_manager {
 
@@ -19,7 +20,8 @@ namespace performance_manager {
 //   - The form interaction bit: This indicates if a form contained in one of
 //     the page's frames has been interacted with.
 class PageAggregator : public FrameNode::ObserverDefaultImpl,
-                       public GraphOwnedDefaultImpl {
+                       public GraphOwnedDefaultImpl,
+                       public NodeDataDescriberDefaultImpl {
  public:
   PageAggregator();
   ~PageAggregator() override;
@@ -42,6 +44,9 @@ class PageAggregator : public FrameNode::ObserverDefaultImpl,
   // GraphOwned implementation:
   void OnPassedToGraph(Graph* graph) override;
   void OnTakenFromGraph(Graph* graph) override;
+
+  // NodeDataDescriber implementation:
+  base::Value DescribePageNodeData(const PageNode* node) const override;
 
   DISALLOW_COPY_AND_ASSIGN(PageAggregator);
 };

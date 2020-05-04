@@ -177,6 +177,7 @@ namespace http://www.w3.org/1999/xhtml
     property onauxclick
     property onbeforecopy
     property onbeforecut
+    property onbeforematch
     property onbeforepaste
     property onbeforexrselect
     property onblur
@@ -1369,6 +1370,7 @@ namespace http://www.w3.org/2000/svg
     property onauxclick
     property onbeforecopy
     property onbeforecut
+    property onbeforematch
     property onbeforepaste
     property onbeforexrselect
     property onblur

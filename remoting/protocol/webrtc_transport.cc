@@ -95,49 +95,80 @@ void UpdateCodecParameters(SdpMessage* sdp_message, bool incoming) {
   }
 }
 
-// Returns true if the RTC stats report indicates a relay connection. If the
-// connection type cannot be determined (which should never happen with a valid
-// RTCStatsReport), nullopt is returned.
-base::Optional<bool> IsConnectionRelayed(
+const webrtc::RTCIceCandidatePairStats* GetSelectedCandidatePair(
     const rtc::scoped_refptr<const webrtc::RTCStatsReport>& report) {
   auto transport_stats_list =
       report->GetStatsOfType<webrtc::RTCTransportStats>();
   if (transport_stats_list.size() != 1) {
     LOG(ERROR) << "Unexpected number of transport stats: "
                << transport_stats_list.size();
-    return base::nullopt;
+    return nullptr;
   }
   std::string selected_candidate_pair_id =
       *(transport_stats_list[0]->selected_candidate_pair_id);
-  const webrtc::RTCStats* selected_candidate_pair =
-      report->Get(selected_candidate_pair_id);
+  const auto* selected_candidate_pair =
+      report->GetAs<webrtc::RTCIceCandidatePairStats>(
+          selected_candidate_pair_id);
   if (!selected_candidate_pair) {
     LOG(ERROR) << "Expected to find RTC stats for id: "
                << selected_candidate_pair;
-    return base::nullopt;
   }
-  std::string local_candidate_id =
-      *(selected_candidate_pair->cast_to<webrtc::RTCIceCandidatePairStats>()
-            .local_candidate_id);
-  const webrtc::RTCStats* local_candidate = report->Get(local_candidate_id);
+  return selected_candidate_pair;
+}
+
+template <typename T>
+const T* GetIceCandidate(
+    const rtc::scoped_refptr<const webrtc::RTCStatsReport>& report,
+    const std::string& candidate_id) {
+  const T* candidate = report->GetAs<T>(candidate_id);
+  if (!candidate) {
+    LOG(ERROR) << "Expected to find RTC stats for id: " << candidate_id;
+  }
+  return candidate;
+}
+
+std::string GetTransportProtocol(
+    const rtc::scoped_refptr<const webrtc::RTCStatsReport>& report) {
+  const webrtc::RTCIceCandidatePairStats* selected_candidate_pair =
+      GetSelectedCandidatePair(report);
+  if (!selected_candidate_pair) {
+    return "api-error";
+  }
+  const auto* local_candidate =
+      GetIceCandidate<webrtc::RTCLocalIceCandidateStats>(
+          report, *selected_candidate_pair->local_candidate_id);
   if (!local_candidate) {
-    LOG(ERROR) << "Expected to find RTC stats for id: " << local_candidate_id;
+    return "api-error";
+  }
+  return *local_candidate->candidate_type == "relay"
+             ? *local_candidate->relay_protocol
+             : *local_candidate->protocol;
+}
+
+// Returns true if the RTC stats report indicates a relay connection. If the
+// connection type cannot be determined (which should never happen with a valid
+// RTCStatsReport), nullopt is returned.
+base::Optional<bool> IsConnectionRelayed(
+    const rtc::scoped_refptr<const webrtc::RTCStatsReport>& report) {
+  const webrtc::RTCIceCandidatePairStats* selected_candidate_pair =
+      GetSelectedCandidatePair(report);
+  if (!selected_candidate_pair) {
     return base::nullopt;
   }
-  std::string local_candidate_type =
-      *(local_candidate->cast_to<webrtc::RTCLocalIceCandidateStats>()
-            .candidate_type);
-  std::string remote_candidate_id =
-      *(selected_candidate_pair->cast_to<webrtc::RTCIceCandidatePairStats>()
-            .remote_candidate_id);
-  const webrtc::RTCStats* remote_candidate = report->Get(remote_candidate_id);
+  const auto* local_candidate =
+      GetIceCandidate<webrtc::RTCLocalIceCandidateStats>(
+          report, *selected_candidate_pair->local_candidate_id);
+  if (!local_candidate) {
+    return base::nullopt;
+  }
+  std::string local_candidate_type = *local_candidate->candidate_type;
+  const auto* remote_candidate =
+      GetIceCandidate<webrtc::RTCRemoteIceCandidateStats>(
+          report, *selected_candidate_pair->remote_candidate_id);
   if (!remote_candidate) {
-    LOG(ERROR) << "Expected to find RTC stats for id: " << remote_candidate_id;
     return base::nullopt;
   }
-  std::string remote_candidate_type =
-      *(remote_candidate->cast_to<webrtc::RTCRemoteIceCandidateStats>()
-            .candidate_type);
+  std::string remote_candidate_type = *remote_candidate->candidate_type;
 
   return local_candidate_type == "relay" || remote_candidate_type == "relay";
 }
@@ -797,6 +828,12 @@ void WebrtcTransport::OnStatsDelivered(
       base::BindOnce(&WebrtcTransport::RequestRtcStats,
                      weak_factory_.GetWeakPtr()),
       kRtcStatsPollingInterval);
+
+  std::string transport_protocol = GetTransportProtocol(report);
+  if (transport_protocol != transport_protocol_) {
+    transport_protocol_ = transport_protocol;
+    event_handler_->OnWebrtcTransportProtocolChanged();
+  }
 
   base::Optional<bool> connection_relayed = IsConnectionRelayed(report);
   if (connection_relayed == connection_relayed_) {

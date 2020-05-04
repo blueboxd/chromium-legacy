@@ -19,6 +19,7 @@
 #include "gpu/command_buffer/service/external_vk_image_skia_representation.h"
 #include "gpu/command_buffer/service/skia_utils.h"
 #include "gpu/ipc/common/vulkan_ycbcr_info.h"
+#include "gpu/vulkan/vma_wrapper.h"
 #include "gpu/vulkan/vulkan_command_buffer.h"
 #include "gpu/vulkan/vulkan_command_pool.h"
 #include "gpu/vulkan/vulkan_fence_helper.h"
@@ -79,26 +80,6 @@ static const struct {
 };
 static_assert(base::size(kFormatTable) == (viz::RESOURCE_FORMAT_MAX + 1),
               "kFormatTable does not handle all cases.");
-
-uint32_t FindMemoryTypeIndex(SharedContextState* context_state,
-                             const VkMemoryRequirements& requirements,
-                             VkMemoryPropertyFlags flags) {
-  VkPhysicalDevice physical_device = context_state->vk_context_provider()
-                                         ->GetDeviceQueue()
-                                         ->GetVulkanPhysicalDevice();
-  VkPhysicalDeviceMemoryProperties properties;
-  vkGetPhysicalDeviceMemoryProperties(physical_device, &properties);
-  constexpr uint32_t kInvalidTypeIndex = 32;
-  for (uint32_t i = 0; i < kInvalidTypeIndex; i++) {
-    if (((1u << i) & requirements.memoryTypeBits) == 0)
-      continue;
-    if ((properties.memoryTypes[i].propertyFlags & flags) != flags)
-      continue;
-    return i;
-  }
-  NOTREACHED();
-  return kInvalidTypeIndex;
-}
 
 class ScopedPixelStore {
  public:
@@ -756,70 +737,42 @@ bool ExternalVkImageBacking::WritePixels(size_t data_size,
                                          size_t stride,
                                          FillBufferCallback callback) {
   DCHECK(stride == 0 || size().height() * stride <= data_size);
+
   VkBufferCreateInfo buffer_create_info = {
       .sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
       .size = data_size,
       .usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
       .sharingMode = VK_SHARING_MODE_EXCLUSIVE,
   };
+
+  VmaAllocator allocator =
+      context_state()->vk_context_provider()->GetDeviceQueue()->vma_allocator();
   VkBuffer stage_buffer = VK_NULL_HANDLE;
-  // TODO: Consider reusing stage_buffer and stage_memory, if allocation causes
-  // performance issue.
-  VkResult result = vkCreateBuffer(device(), &buffer_create_info,
-                                   nullptr /* pAllocator */, &stage_buffer);
+  VmaAllocation stage_allocation = VK_NULL_HANDLE;
+  VkResult result = vma::CreateBuffer(allocator, &buffer_create_info,
+                                      VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
+                                          VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+                                      0, &stage_buffer, &stage_allocation);
   if (result != VK_SUCCESS) {
     DLOG(ERROR) << "vkCreateBuffer() failed." << result;
     return false;
   }
 
-  VkMemoryRequirements memory_requirements;
-  vkGetBufferMemoryRequirements(device(), stage_buffer, &memory_requirements);
-
-  VkMemoryAllocateInfo memory_allocate_info = {
-      .sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
-      .allocationSize = memory_requirements.size,
-      .memoryTypeIndex =
-          FindMemoryTypeIndex(context_state_, memory_requirements,
-                              VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
-                                  VK_MEMORY_PROPERTY_HOST_COHERENT_BIT),
-
-  };
-  VkDeviceMemory stage_memory = VK_NULL_HANDLE;
-  result = vkAllocateMemory(device(), &memory_allocate_info,
-                            nullptr /* pAllocator */, &stage_memory);
-  if (result != VK_SUCCESS) {
-    DLOG(ERROR) << "vkAllocateMemory() failed. " << result;
-    vkDestroyBuffer(device(), stage_buffer, nullptr /* pAllocator */);
-    return false;
-  }
-
-  result = vkBindBufferMemory(device(), stage_buffer, stage_memory,
-                              0 /* memoryOffset */);
-  if (result != VK_SUCCESS) {
-    DLOG(ERROR) << "vkBindBufferMemory() failed. " << result;
-    vkDestroyBuffer(device(), stage_buffer, nullptr /* pAllocator */);
-    vkFreeMemory(device(), stage_memory, nullptr /* pAllocator */);
-    return false;
-  }
-
   void* buffer = nullptr;
-  result = vkMapMemory(device(), stage_memory, 0 /* memoryOffset */, data_size,
-                       0, &buffer);
+  result = vma::MapMemory(allocator, stage_allocation, &buffer);
   if (result != VK_SUCCESS) {
-    DLOG(ERROR) << "vkMapMemory() failed. " << result;
-    vkDestroyBuffer(device(), stage_buffer, nullptr /* pAllocator */);
-    vkFreeMemory(device(), stage_memory, nullptr /* pAllocator */);
+    DLOG(ERROR) << "vma::MapMemory() failed. " << result;
+    vma::DestroyBuffer(allocator, stage_buffer, stage_allocation);
     return false;
   }
 
   std::move(callback).Run(buffer);
-  vkUnmapMemory(device(), stage_memory);
+  vma::UnmapMemory(allocator, stage_allocation);
 
   std::vector<gpu::SemaphoreHandle> handles;
   if (!BeginAccessInternal(false /* readonly */, &handles)) {
     DLOG(ERROR) << "BeginAccess() failed.";
-    vkDestroyBuffer(device(), stage_buffer, nullptr /* pAllocator */);
-    vkFreeMemory(device(), stage_memory, nullptr /* pAllocator */);
+    vma::DestroyBuffer(allocator, stage_buffer, stage_allocation);
     return false;
   }
 
@@ -854,7 +807,7 @@ bool ExternalVkImageBacking::WritePixels(size_t data_size,
     fence_helper->EnqueueVulkanObjectCleanupForSubmittedWork(
         std::move(command_buffer));
     fence_helper->EnqueueBufferCleanupForSubmittedWork(stage_buffer,
-                                                       stage_memory);
+                                                       stage_allocation);
 
     return true;
   }
@@ -886,7 +839,7 @@ bool ExternalVkImageBacking::WritePixels(size_t data_size,
   fence_helper->EnqueueSemaphoresCleanupForSubmittedWork(
       begin_access_semaphores);
   fence_helper->EnqueueBufferCleanupForSubmittedWork(stage_buffer,
-                                                     stage_memory);
+                                                     stage_allocation);
 
   return true;
 }

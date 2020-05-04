@@ -34,11 +34,15 @@ source_set("qr_generator") {
   deps = [
     ":ui",
     "//base",
+    "//ios/chrome/app/strings",
     "//ios/chrome/browser/main:public",
+    "//ios/chrome/browser/ui/activity_services",
+    "//ios/chrome/browser/ui/activity_services/requirements",
     "//ios/chrome/browser/ui/commands",
     "//ios/chrome/browser/ui/coordinators:chrome_coordinators",
     "//ios/chrome/common/ui/confirmation_alert",
     "//net",
+    "//ui/base",
   ]
 }
 

@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/rand_util.h"
+#include "components/query_tiles/internal/proto_conversion.h"
 
 namespace upboarding {
 namespace {
@@ -38,6 +39,8 @@ TileServiceImpl::TileServiceImpl(
       config_(std::move(config)),
       scheduler_(scheduler),
       tile_fetcher_(std::move(tile_fetcher)) {
+  // TODO(crbug.com/1077172): Initialize tile_db within tile_manager from
+  // init_aware layer.
   ScheduleDailyTask();
 }
 
@@ -78,18 +81,41 @@ void TileServiceImpl::ScheduleDailyTask() {
 }
 
 void TileServiceImpl::StartFetchForTiles(
-    BackgroundTaskFinishedCallback callback) {
+    BackgroundTaskFinishedCallback task_finished_callback) {
   DCHECK(tile_fetcher_);
-  tile_fetcher_->StartFetchForTiles(
-      base::BindOnce(&TileServiceImpl::OnFetchFinished,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+  tile_fetcher_->StartFetchForTiles(base::BindOnce(
+      &TileServiceImpl::OnFetchFinished, weak_ptr_factory_.GetWeakPtr(),
+      std::move(task_finished_callback)));
 }
 
+// TODO(crbug.com/1077173): Handle the failures, retry mechanism and
+// related metrics.
 void TileServiceImpl::OnFetchFinished(
-    BackgroundTaskFinishedCallback callback,
+    BackgroundTaskFinishedCallback task_finished_callback,
     TileInfoRequestStatus status,
     const std::unique_ptr<std::string> response_body) {
-  std::move(callback).Run(false /*reschedule*/);
+  query_tiles::proto::ServerResponse response_proto;
+  if (status == TileInfoRequestStatus::kSuccess) {
+    bool parse_success = response_proto.ParseFromString(*response_body.get());
+    if (parse_success) {
+      TileGroup group;
+      TileGroupFromResponse(response_proto, &group);
+      // TODO(crbug.com/1077288): Validate tile group.
+      tile_manager_->SaveTiles(
+          std::move(group.tiles),
+          base::BindOnce(&TileServiceImpl::OnTilesSaved,
+                         weak_ptr_factory_.GetWeakPtr(),
+                         std::move(task_finished_callback)));
+    }
+  } else {
+    std::move(task_finished_callback).Run(false /*reschedule*/);
+  }
+}
+
+void TileServiceImpl::OnTilesSaved(
+    BackgroundTaskFinishedCallback task_finished_callback,
+    TileGroupStatus status) {
+  std::move(task_finished_callback).Run(false /*reschedule*/);
 }
 
 }  // namespace upboarding

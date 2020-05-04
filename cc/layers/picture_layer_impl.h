@@ -182,9 +182,20 @@ class CC_EXPORT PictureLayerImpl
   float MaximumContentsScale() const;
   void UpdateViewportRectForTilePriorityInContentSpace();
   PictureLayerImpl* GetRecycledTwinLayer() const;
-  bool ShouldDirectlyCompositeImage(base::Optional<gfx::Size> size) const;
-  bool IsDirectlyCompositedImageRasteredAtIntrinsicRatio() const;
-  float GetDirectlyCompositedImageRasterScale(gfx::Size) const;
+  bool ShouldDirectlyCompositeImage(float raster_scale) const;
+
+  // Returns the default raster scale used for current layer bounds and directly
+  // composited image size. To avoid re-raster on scale changes, this may be
+  // different than the used raster scale, see: |RecalculateRasterScales()| and
+  // |CalculateDirectlyCompositedImageRasterScale()|.
+  float GetDefaultDirectlyCompositedImageRasterScale() const;
+
+  // Returns the raster scale that should be used for a directly composited
+  // image. This takes into account the ideal contents scale to ensure we don't
+  // use too much memory for layers that are small due to contents scale
+  // factors, and bumps up the reduced scale if those layers end up increasing
+  // their contents scale.
+  float CalculateDirectlyCompositedImageRasterScale() const;
 
   void SanityCheckTilingState() const;
 
@@ -249,11 +260,11 @@ class CC_EXPORT PictureLayerImpl
   // cases we attempt to raster the image at its intrinsic size.
   base::Optional<gfx::Size> directly_composited_image_size_;
 
-  // If |directly_composited_image_size_| is set, this is the aspect ratio of
-  // the *layer* (and thus the rasterized contents) when the
-  // raster_contents_scale_ was last calculated. See comments in
-  // |ShouldAdjustRasterScale| for an explanation of how this is used.
-  float directly_composited_image_raster_aspect_ratio_;
+  // The default raster source scale for a directly composited image, the last
+  // time raster scales were calculated. This will be the same as
+  // |raster_source_scale_| if no adjustments were made in
+  // |CalculateDirectlyCompositedImageRasterScale()|.
+  float directly_composited_image_initial_raster_scale_;
 
   // Use this instead of |visible_layer_rect()| for tiling calculations. This
   // takes external viewport and transform for tile priority into account.

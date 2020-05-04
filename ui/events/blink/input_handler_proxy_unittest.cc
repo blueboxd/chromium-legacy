@@ -18,7 +18,6 @@
 #include "base/test/trace_event_analyzer.h"
 #include "build/build_config.h"
 #include "cc/input/main_thread_scrolling_reason.h"
-#include "cc/input/scroll_input_type.h"
 #include "cc/trees/swap_promise_monitor.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -37,6 +36,7 @@
 #include "ui/events/blink/input_handler_proxy_client.h"
 #include "ui/events/blink/scroll_predictor.h"
 #include "ui/events/blink/web_input_event_traits.h"
+#include "ui/events/types/scroll_input_type.h"
 #include "ui/gfx/geometry/scroll_offset.h"
 #include "ui/gfx/geometry/size_f.h"
 #include "ui/latency/latency_info.h"
@@ -111,16 +111,16 @@ class MockInputHandler : public cc::InputHandler {
   MOCK_METHOD0(SetNeedsAnimateInput, void());
 
   MOCK_METHOD2(ScrollBegin,
-               ScrollStatus(cc::ScrollState*, cc::ScrollInputType type));
+               ScrollStatus(cc::ScrollState*, ui::ScrollInputType type));
   MOCK_METHOD2(RootScrollBegin,
-               ScrollStatus(cc::ScrollState*, cc::ScrollInputType type));
+               ScrollStatus(cc::ScrollState*, ui::ScrollInputType type));
   MOCK_METHOD2(ScrollUpdate,
                cc::InputHandlerScrollResult(cc::ScrollState*, base::TimeDelta));
   MOCK_METHOD1(ScrollEnd, void(bool));
   MOCK_METHOD2(RecordScrollBegin,
-               void(cc::ScrollInputType type,
+               void(ui::ScrollInputType type,
                     cc::ScrollBeginThreadState state));
-  MOCK_METHOD1(RecordScrollEnd, void(cc::ScrollInputType type));
+  MOCK_METHOD1(RecordScrollEnd, void(ui::ScrollInputType type));
   MOCK_METHOD0(ScrollingShouldSwitchtoMainThread, bool());
 
   std::unique_ptr<cc::SwapPromiseMonitor> CreateLatencyInfoSwapPromiseMonitor(
@@ -569,7 +569,7 @@ TEST_P(InputHandlerProxyTest, NestedGestureBasedScrolls) {
       .WillOnce(testing::Return(kImplThreadScrollState));
   EXPECT_CALL(
       mock_input_handler_,
-      RecordScrollBegin(cc::ScrollInputType::kWheel,
+      RecordScrollBegin(ui::ScrollInputType::kWheel,
                         cc::ScrollBeginThreadState::kScrollingOnCompositor))
       .Times(1);
 
@@ -584,7 +584,7 @@ TEST_P(InputHandlerProxyTest, NestedGestureBasedScrolls) {
 
   // Before ScrollEnd for touchpad is fired, user starts a thumb drag. This is
   // expected to immediately end the touchpad scroll.
-  EXPECT_CALL(mock_input_handler_, RecordScrollEnd(cc::ScrollInputType::kWheel))
+  EXPECT_CALL(mock_input_handler_, RecordScrollEnd(ui::ScrollInputType::kWheel))
       .Times(1);
   EXPECT_CALL(mock_input_handler_, ScrollEnd(true)).Times(1);
   EXPECT_CALL(mock_input_handler_, ScrollBegin(_, _))
@@ -592,7 +592,7 @@ TEST_P(InputHandlerProxyTest, NestedGestureBasedScrolls) {
   // TODO(crbug.com/1060708): This should be called once.
   EXPECT_CALL(
       mock_input_handler_,
-      RecordScrollBegin(cc::ScrollInputType::kScrollbar,
+      RecordScrollBegin(ui::ScrollInputType::kScrollbar,
                         cc::ScrollBeginThreadState::kScrollingOnCompositor))
       .Times(0);
   EXPECT_CALL(mock_input_handler_, ScrollUpdate(_, _)).Times(1);
@@ -614,7 +614,7 @@ TEST_P(InputHandlerProxyTest, NestedGestureBasedScrolls) {
   gesture_.SetType(WebInputEvent::Type::kGestureScrollEnd);
   gesture_.SetSourceDevice(blink::WebGestureDevice::kTouchpad);
   gesture_.data.scroll_update.delta_y = 0;
-  EXPECT_CALL(mock_input_handler_, RecordScrollEnd(cc::ScrollInputType::kWheel))
+  EXPECT_CALL(mock_input_handler_, RecordScrollEnd(ui::ScrollInputType::kWheel))
       .Times(1);
   EXPECT_EQ(InputHandlerProxy::DROP_EVENT,
             HandleInputEventAndFlushEventQueue(mock_input_handler_,
@@ -623,7 +623,7 @@ TEST_P(InputHandlerProxyTest, NestedGestureBasedScrolls) {
 
   // The GSE from the scrollbar needs to be handled.
   EXPECT_CALL(mock_input_handler_,
-              RecordScrollEnd(cc::ScrollInputType::kScrollbar))
+              RecordScrollEnd(ui::ScrollInputType::kScrollbar))
       .Times(1);
   EXPECT_CALL(mock_input_handler_, ScrollEnd(true)).Times(1);
   mouse_event.SetType(WebInputEvent::Type::kMouseUp);
@@ -752,7 +752,7 @@ TEST_P(InputHandlerProxyTest, ScrollbarScrollEndOnDeviceChange) {
       .WillOnce(testing::Return(kImplThreadScrollState));
   EXPECT_CALL(
       mock_input_handler_,
-      RecordScrollBegin(cc::ScrollInputType::kScrollbar,
+      RecordScrollBegin(ui::ScrollInputType::kScrollbar,
                         cc::ScrollBeginThreadState::kScrollingOnCompositor))
       .Times(0);
   EXPECT_CALL(mock_input_handler_, ScrollUpdate(_, _)).Times(1);
@@ -773,14 +773,14 @@ TEST_P(InputHandlerProxyTest, ScrollbarScrollEndOnDeviceChange) {
 
   // A mousewheel tick takes place before the scrollbar scroll ends.
   EXPECT_CALL(mock_input_handler_,
-              RecordScrollEnd(cc::ScrollInputType::kScrollbar))
+              RecordScrollEnd(ui::ScrollInputType::kScrollbar))
       .Times(1);
   EXPECT_CALL(mock_input_handler_, ScrollEnd(true)).Times(1);
   EXPECT_CALL(mock_input_handler_, ScrollBegin(_, _))
       .WillOnce(testing::Return(kImplThreadScrollState));
   EXPECT_CALL(
       mock_input_handler_,
-      RecordScrollBegin(cc::ScrollInputType::kWheel,
+      RecordScrollBegin(ui::ScrollInputType::kWheel,
                         cc::ScrollBeginThreadState::kScrollingOnCompositor))
       .Times(1);
 
@@ -796,7 +796,7 @@ TEST_P(InputHandlerProxyTest, ScrollbarScrollEndOnDeviceChange) {
   VERIFY_AND_RESET_MOCKS();
 
   // Mousewheel GSE is then fired and the mousewheel scroll ends.
-  EXPECT_CALL(mock_input_handler_, RecordScrollEnd(cc::ScrollInputType::kWheel))
+  EXPECT_CALL(mock_input_handler_, RecordScrollEnd(ui::ScrollInputType::kWheel))
       .Times(1);
   EXPECT_CALL(mock_input_handler_, ScrollEnd(true)).Times(1);
 
@@ -811,7 +811,7 @@ TEST_P(InputHandlerProxyTest, ScrollbarScrollEndOnDeviceChange) {
   // Mouse up gets ignored as the scrollbar scroll already ended before the
   // mousewheel tick took place.
   EXPECT_CALL(mock_input_handler_,
-              RecordScrollEnd(cc::ScrollInputType::kScrollbar))
+              RecordScrollEnd(ui::ScrollInputType::kScrollbar))
       .Times(1);
   mouse_event.SetType(WebInputEvent::Type::kMouseUp);
   EXPECT_EQ(InputHandlerProxy::DID_NOT_HANDLE,

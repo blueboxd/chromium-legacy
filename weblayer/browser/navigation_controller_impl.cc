@@ -263,6 +263,7 @@ void NavigationControllerImpl::DidStartNavigation(
   base::AutoReset<NavigationImpl*> auto_reset(&navigation_starting_,
                                               navigation);
   navigation->set_safe_to_set_request_headers(true);
+  navigation->set_safe_to_set_user_agent(true);
 #if defined(OS_ANDROID)
   if (java_controller_) {
     JNIEnv* env = AttachCurrentThread();
@@ -279,6 +280,7 @@ void NavigationControllerImpl::DidStartNavigation(
 #endif
   for (auto& observer : observers_)
     observer.NavigationStarted(navigation);
+  navigation->set_safe_to_set_user_agent(false);
   navigation->set_safe_to_set_request_headers(false);
 }
 
@@ -395,6 +397,10 @@ void NavigationControllerImpl::NotifyLoadStateChanged() {
 
 void NavigationControllerImpl::DoNavigate(
     std::unique_ptr<content::NavigationController::LoadURLParams> params) {
+  // Navigations should use the default user-agent. If the embedder wants a
+  // custom user-agent, the embedder will call Navigation::SetUserAgentString().
+  params->override_user_agent =
+      content::NavigationController::UA_OVERRIDE_FALSE;
   if (navigation_starting_) {
     // DoNavigate() is being called reentrantly. Delay processing until it's
     // safe.

@@ -14,3 +14,9 @@ interface TestGenericBinder {
 interface TestInterface1 {};
 interface TestInterface2 {};
 
+interface RebindTestInterface {
+  BlockingUntilExternalSignalCall();
+  NormalCall();
+  [Sync]
+  SyncCall() => ();
+};

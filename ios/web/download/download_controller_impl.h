@@ -35,8 +35,7 @@ class DownloadControllerImpl : public DownloadController,
                           NSString* http_method,
                           const std::string& content_disposition,
                           int64_t total_bytes,
-                          const std::string& mime_type,
-                          ui::PageTransition page_transition) override;
+                          const std::string& mime_type) override;
   void SetDelegate(DownloadControllerDelegate* delegate) override;
   DownloadControllerDelegate* GetDelegate() const override;
 

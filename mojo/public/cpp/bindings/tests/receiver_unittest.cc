@@ -13,7 +13,9 @@
 #include "base/memory/weak_ptr.h"
 #include "base/notreached.h"
 #include "base/run_loop.h"
+#include "base/synchronization/waitable_event.h"
 #include "base/test/bind_test_util.h"
+#include "base/threading/thread.h"
 #include "mojo/core/embedder/embedder.h"
 #include "mojo/public/cpp/bindings/lib/validation_errors.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
@@ -580,6 +582,64 @@ TEST_P(ReceiverTest, GenericPendingReceiver) {
   auto sample_receiver = receiver.As<sample::Service>();
   EXPECT_TRUE(sample_receiver.is_valid());
   EXPECT_FALSE(receiver.is_valid());
+}
+
+class RebindTestImpl : public mojom::RebindTestInterface {
+ public:
+  explicit RebindTestImpl(base::WaitableEvent* event) : event_(event) {
+    DCHECK(event_);
+  }
+  ~RebindTestImpl() override = default;
+
+  // mojom::RebindTestInterface
+  void BlockingUntilExternalSignalCall() override { event_->Wait(); }
+  void NormalCall() override {}
+  void SyncCall(SyncCallCallback callback) override {
+    std::move(callback).Run();
+  }
+
+ private:
+  base::WaitableEvent* event_;
+};
+
+TEST_P(ReceiverTest, RebindWithScheduledSyncMessage) {
+  base::WaitableEvent event{base::WaitableEvent::ResetPolicy::MANUAL,
+                            base::WaitableEvent::InitialState::NOT_SIGNALED};
+  RebindTestImpl impl{&event};
+  base::Thread receiver_thread{"receiver"};
+  Remote<mojom::RebindTestInterface> remote;
+  // Accessible only on receiver thread
+  Receiver<mojom::RebindTestInterface> receiver1{&impl};
+  Receiver<mojom::RebindTestInterface> receiver2{&impl};
+
+  receiver_thread.Start();
+
+  // Setup of remote and receiver
+  auto pending_receiver = remote.BindNewPipeAndPassReceiver();
+  receiver_thread.task_runner()->PostTask(
+      FROM_HERE, base::BindLambdaForTesting(
+                     [&]() { receiver1.Bind(std::move(pending_receiver)); }));
+  receiver_thread.FlushForTesting();
+
+  // Perform test
+  remote->BlockingUntilExternalSignalCall();
+  remote->NormalCall();
+
+  receiver_thread.task_runner()->PostTask(
+      FROM_HERE, base::BindLambdaForTesting(
+                     [&]() { receiver2.Bind(receiver1.Unbind()); }));
+  event.Signal();
+
+  remote->SyncCall();
+
+  // Cleanup
+  remote.reset();
+  receiver_thread.task_runner()->PostTask(FROM_HERE,
+                                          base::BindLambdaForTesting([&]() {
+                                            receiver1.reset();
+                                            receiver2.reset();
+                                          }));
+  receiver_thread.FlushForTesting();
 }
 
 class TestGenericBinderImpl : public mojom::TestGenericBinder {

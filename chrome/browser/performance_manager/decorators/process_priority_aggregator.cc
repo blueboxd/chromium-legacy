@@ -7,6 +7,7 @@
 #include "components/performance_manager/graph/frame_node_impl.h"
 #include "components/performance_manager/graph/node_attached_data_impl.h"
 #include "components/performance_manager/graph/process_node_impl.h"
+#include "components/performance_manager/public/graph/node_data_describer_registry.h"
 
 namespace performance_manager {
 
@@ -21,6 +22,8 @@ class ProcessPriorityAggregatorAccess {
 };
 
 namespace {
+
+const char kDescriberName[] = "ProcessPriorityAggregator";
 
 class DataImpl : public ProcessPriorityAggregator::Data,
                  public NodeAttachedDataImpl<DataImpl> {
@@ -150,9 +153,12 @@ void ProcessPriorityAggregator::OnPriorityAndReasonChanged(
 void ProcessPriorityAggregator::OnPassedToGraph(Graph* graph) {
   graph->AddFrameNodeObserver(this);
   graph->AddProcessNodeObserver(this);
+  graph->GetNodeDataDescriberRegistry()->RegisterDescriber(this,
+                                                           kDescriberName);
 }
 
 void ProcessPriorityAggregator::OnTakenFromGraph(Graph* graph) {
+  graph->GetNodeDataDescriberRegistry()->UnregisterDescriber(this);
   graph->RemoveProcessNodeObserver(this);
   graph->RemoveFrameNodeObserver(this);
 }
@@ -174,6 +180,18 @@ void ProcessPriorityAggregator::OnBeforeProcessNodeRemoved(
   DataImpl* data = DataImpl::Get(process_node_impl);
   DCHECK(data->IsEmpty());
 #endif
+}
+
+base::Value ProcessPriorityAggregator::DescribeProcessNodeData(
+    const ProcessNode* node) const {
+  DataImpl* data = DataImpl::Get(ProcessNodeImpl::FromNode(node));
+  if (data == nullptr)
+    return base::Value();
+
+  base::Value ret(base::Value::Type::DICTIONARY);
+  ret.SetIntKey("user_visible_count", data->user_visible_count_);
+  ret.SetIntKey("user_blocking_count", data->user_blocking_count_);
+  return ret;
 }
 
 }  // namespace performance_manager

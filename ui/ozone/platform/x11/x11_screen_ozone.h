@@ -39,6 +39,9 @@ class X11ScreenOzone : public PlatformScreen,
   gfx::Point GetCursorScreenPoint() const override;
   gfx::AcceleratedWidget GetAcceleratedWidgetAtScreenPoint(
       const gfx::Point& point) const override;
+  gfx::AcceleratedWidget GetLocalProcessWidgetAtPoint(
+      const gfx::Point& point,
+      const std::set<gfx::AcceleratedWidget>& ignore) const override;
   display::Display GetDisplayNearestPoint(
       const gfx::Point& point) const override;
   display::Display GetDisplayMatching(

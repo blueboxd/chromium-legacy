@@ -155,6 +155,7 @@ ReputationWebContentsObserver::ReputationWebContentsObserver(
     content::WebContents* web_contents)
     : WebContentsObserver(web_contents),
       profile_(Profile::FromBrowserContext(web_contents->GetBrowserContext())),
+      reputation_check_pending_for_testing_(true),
       weak_factory_(this) {
   last_navigation_safety_tip_info_ = {security_state::SafetyTipStatus::kUnknown,
                                       GURL()};
@@ -165,11 +166,13 @@ void ReputationWebContentsObserver::MaybeShowSafetyTip(
     bool record_ukm_if_tip_not_shown) {
   if (web_contents()->GetMainFrame()->GetVisibilityState() !=
       content::PageVisibilityState::kVisible) {
+    MaybeCallReputationCheckCallback();
     return;
   }
 
   const GURL& url = web_contents()->GetLastCommittedURL();
   if (!url.SchemeIsHTTPOrHTTPS()) {
+    MaybeCallReputationCheckCallback();
     return;
   }
 
@@ -249,6 +252,7 @@ void ReputationWebContentsObserver::HandleReputationCheckResult(
 }
 
 void ReputationWebContentsObserver::MaybeCallReputationCheckCallback() {
+  reputation_check_pending_for_testing_ = false;
   if (reputation_check_callback_for_testing_.is_null())
     return;
   std::move(reputation_check_callback_for_testing_).Run();

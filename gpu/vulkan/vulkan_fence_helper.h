@@ -12,6 +12,7 @@
 #include "base/containers/circular_deque.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "gpu/vulkan/vma_wrapper.h"
 #include "gpu/vulkan/vulkan_export.h"
 
 namespace gpu {
@@ -108,7 +109,7 @@ class VULKAN_EXPORT VulkanFenceHelper {
   void EnqueueImageCleanupForSubmittedWork(VkImage image,
                                            VkDeviceMemory memory);
   void EnqueueBufferCleanupForSubmittedWork(VkBuffer buffer,
-                                            VkDeviceMemory memory);
+                                            VmaAllocation allocation);
   // Helpers for VulkanCommandBuffer, VulkanCommandPool, etc
   template <typename T>
   void EnqueueVulkanObjectCleanupForSubmittedWork(std::unique_ptr<T> obj);

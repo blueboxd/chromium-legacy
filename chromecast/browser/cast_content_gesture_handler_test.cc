@@ -7,6 +7,7 @@
 #include "base/callback_helpers.h"
 #include "base/memory/weak_ptr.h"
 #include "chromecast/base/chromecast_switches.h"
+#include "chromecast/browser/test/mock_cast_content_window_delegate.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_base.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -46,32 +47,6 @@ ACTION_TEMPLATE(InvokeCallbackArgument,
 }
 
 }  // namespace
-
-class MockCastContentWindowDelegate
-    : public base::SupportsWeakPtr<MockCastContentWindowDelegate>,
-      public CastContentWindow::Delegate {
- public:
-  ~MockCastContentWindowDelegate() override = default;
-
-  MOCK_METHOD1(CanHandleGesture, bool(GestureType gesture_type));
-  MOCK_METHOD2(ConsumeGesture,
-               void(GestureType gesture_type,
-                    base::RepeatingCallback<void(bool)> handled_callback));
-  MOCK_METHOD2(CancelGesture,
-               void(GestureType gesture_type,
-                    const gfx::Point& touch_location));
-  MOCK_METHOD2(GestureProgress,
-               void(GestureType gesture_type,
-                    const gfx::Point& touch_location));
-
-  void ConsumeGesture(GestureType gesture_type,
-                      GestureHandledCallback handled_callback) override {
-    ConsumeGesture(gesture_type, base::AdaptCallbackForRepeating(
-                                     std::move(handled_callback)));
-  }
-
-  std::string GetId() override { return "mockContentWindowDelegate"; }
-};
 
 class CastContentGestureHandlerTest : public testing::Test {
  public:

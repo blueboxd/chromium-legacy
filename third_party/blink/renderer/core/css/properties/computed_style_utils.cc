@@ -1738,7 +1738,7 @@ CSSValue* ComputedStyleUtils::ValueForBorderRadiusCorner(
       CSSValuePair::kDropIdenticalValues);
 }
 
-CSSValue* ComputedStyleUtils::ValueForTransformationMatrix(
+CSSFunctionValue* ComputedStyleUtils::ValueForTransformationMatrix(
     const TransformationMatrix& matrix,
     float zoom,
     bool force_matrix3d) {
@@ -1778,9 +1778,10 @@ CSSValue* ComputedStyleUtils::ValueForTransformationMatrix(
 
 // We collapse functions like translateX into translate, since we will reify
 // them as a translate anyway.
-CSSValue* ComputedStyleUtils::ValueForTransformOperation(
+CSSFunctionValue* ComputedStyleUtils::ValueForTransformOperation(
     const TransformOperation& operation,
-    float zoom) {
+    float zoom,
+    FloatSize box_size) {
   switch (operation.GetType()) {
     case TransformOperation::kScaleX:
     case TransformOperation::kScaleY:
@@ -1896,9 +1897,15 @@ CSSValue* ComputedStyleUtils::ValueForTransformOperation(
                                           /*force_matrix3d=*/true);
     }
     case TransformOperation::kInterpolated:
-      // TODO(816803): The computed value in this case is not fully spec'd
-      // See https://github.com/w3c/css-houdini-drafts/issues/425
-      return CSSIdentifierValue::Create(CSSValueID::kNone);
+      // TODO(https://github.com/w3c/csswg-drafts/issues/2854):
+      // Deferred interpolations are currently unreperesentable in CSS.
+      // This currently converts the operation to a matrix, using box_size if
+      // provided, 0x0 if not (returning all but the relative translate
+      // portion of the transform). Update this once the spec is updated.
+      TransformationMatrix matrix;
+      operation.Apply(matrix, box_size);
+      return ValueForTransformationMatrix(matrix, zoom,
+                                          /*force_matrix3d=*/false);
   }
 }
 
@@ -1911,8 +1918,7 @@ CSSValue* ComputedStyleUtils::ValueForTransformList(
   CSSValueList* components = CSSValueList::CreateSpaceSeparated();
   for (const auto& operation : transform_list.Operations()) {
     CSSValue* op_value = ValueForTransformOperation(*operation, zoom);
-    if (op_value)
-      components->Append(*op_value);
+    components->Append(*op_value);
   }
   return components;
 }

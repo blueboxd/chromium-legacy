@@ -9,6 +9,7 @@ import android.webkit.WebViewClient;
 
 import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.AwRenderProcess;
+import org.chromium.android_webview.ScriptReference;
 import org.chromium.android_webview.WebMessageListener;
 import org.chromium.android_webview.WebViewChromiumRunQueue;
 import org.chromium.base.ThreadUtils;
@@ -134,6 +135,15 @@ public class SharedWebViewChromium {
             return;
         }
         mAwContents.removeWebMessageListener(jsObjectName);
+    }
+
+    public ScriptReference addDocumentStartJavascript(
+            final String script, final String[] allowedOriginRules) {
+        if (checkNeedsPost()) {
+            return mRunQueue.runOnUiThreadBlocking(
+                    () -> addDocumentStartJavascript(script, allowedOriginRules));
+        }
+        return mAwContents.addDocumentStartJavascript(script, allowedOriginRules);
     }
 
     public void setWebViewRendererClientAdapter(

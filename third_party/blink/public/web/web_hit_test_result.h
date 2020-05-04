@@ -53,9 +53,6 @@ class WebHitTestResult {
   // The node that was hit (only one for point-based tests).
   BLINK_EXPORT WebNode GetNode() const;
 
-  // Coordinates of the point that was hit. Relative to the node.
-  BLINK_EXPORT gfx::Point LocalPoint() const;
-
   // Coordinates of the point that was hit. Relative to the node, but with
   // ContentBoxOffset removed if the node has box layout.
   BLINK_EXPORT gfx::PointF LocalPointWithoutContentBoxOffset() const;

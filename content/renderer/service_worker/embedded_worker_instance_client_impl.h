@@ -50,7 +50,7 @@ class CONTENT_EXPORT EmbeddedWorkerInstanceClientImpl
           receiver);
 
   // TODO(https://crbug.com/955171): Remove this method and use Create once
-  // RenderFrameHostImpl uses service_manager::BinderMap instead of
+  // RenderFrameHostImpl uses mojo::BinderMap instead of
   // service_manager::BinderRegistry.
   static void CreateForRequest(
       scoped_refptr<base::SingleThreadTaskRunner> initiator_task_runner,

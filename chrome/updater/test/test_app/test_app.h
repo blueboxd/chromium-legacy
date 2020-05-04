@@ -7,14 +7,8 @@
 
 namespace updater {
 
-// Initiates a foreground update through IPC.
-void DoForegroundUpdate();
-
 // Installs the updater.
 void InstallUpdater();
-
-// Registers the test app to the updater through IPC.
-void RegisterToUpdater();
 
 int TestAppMain(int argc, const char** argv);
 

@@ -76,6 +76,7 @@
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
 #include "third_party/blink/renderer/platform/wtf/size_assertions.h"
 #include "third_party/blink/renderer/platform/wtf/text/case_map.h"
+#include "third_party/blink/renderer/platform/wtf/text/math_transform.h"
 #include "ui/base/ui_base_features.h"
 
 namespace blink {
@@ -1635,6 +1636,26 @@ static String DisableNewGeorgianCapitalLetters(const String& text) {
   return result.ToString();
 }
 
+namespace {
+
+// TODO(https://crbug.com/1076420): this needs to handle all text-transform
+// values.
+static void ApplyMathTransform(String* text, ETextTransform math_variant) {
+  DCHECK(math_variant == ETextTransform::kMathAuto);
+  DCHECK_EQ(text->length(), 1u);
+  UChar character = (*text)[0];
+  UChar32 transformed_char = MathVariant((*text)[0]);
+  if (transformed_char == static_cast<UChar32>(character))
+    return;
+
+  Vector<UChar> transformed_text(U16_LENGTH(transformed_char));
+  int i = 0;
+  U16_APPEND_UNSAFE(transformed_text, i, transformed_char);
+  *text = String(transformed_text);
+}
+
+}  // namespace
+
 void ComputedStyle::ApplyTextTransform(String* text,
                                        UChar previous_character) const {
   switch (TextTransform()) {
@@ -1655,6 +1676,10 @@ void ComputedStyle::ApplyTextTransform(String* text,
       *text = case_map.ToLower(*text);
       return;
     }
+    case ETextTransform::kMathAuto:
+      if (text->length() == 1)
+        ApplyMathTransform(text, ETextTransform::kMathAuto);
+      return;
   }
   NOTREACHED();
 }
@@ -1832,6 +1857,17 @@ static bool HasInitialVariables(const StyleInitialData* initial_data) {
 bool ComputedStyle::HasVariables() const {
   return InheritedVariables() || NonInheritedVariables() ||
          HasInitialVariables(InitialDataInternal().get());
+}
+
+HashSet<AtomicString> ComputedStyle::GetVariableNames() const {
+  HashSet<AtomicString> names;
+  if (auto* initial_data = InitialDataInternal().get())
+    initial_data->CollectVariableNames(names);
+  if (auto* inherited_variables = InheritedVariables())
+    inherited_variables->CollectNames(names);
+  if (auto* non_inherited_variables = NonInheritedVariables())
+    non_inherited_variables->CollectNames(names);
+  return names;
 }
 
 StyleInheritedVariables* ComputedStyle::InheritedVariables() const {

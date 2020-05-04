@@ -10,8 +10,8 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos', function() {
   return {
     EXTERNAL_API: [
       'setMetricsMode', 'setBackupAndRestoreMode', 'setLocationServicesMode',
-      'loadPlayStoreToS', 'setArcManaged', 'hideSkipButton', 'setupForDemoMode',
-      'clearDemoMode', 'setTosForTesting'
+      'loadPlayStoreToS', 'setArcManaged', 'setupForDemoMode', 'clearDemoMode',
+      'setTosForTesting'
     ],
 
     /** @override */
@@ -148,13 +148,6 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos', function() {
       $('arc-tos-root').backupRestore = enabled;
       $('arc-tos-root').backupRestoreManaged = managed;
     },
-
-    /**
-     * Hides the "Skip" button in the ToS screen.
-     * TODO(lgcheng@, crbug/1059048) remove this external API and related
-     * skip code.
-     */
-    hideSkipButton() {},
 
     /**
      * Loads Play Store ToS in case country code has been changed or previous

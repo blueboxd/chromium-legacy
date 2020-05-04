@@ -22984,7 +22984,29 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="SupervisedUsers_Extensions_ApprovalGranted">
+  <owner>tobyhuang@chromium.org</owner>
+  <owner>agawronska@chromium.org</owner>
+  <owner>danan@chromium.org</owner>
+  <owner>cros-families@google.com</owner>
+  <description>
+    Emitted when the custodian locally approves the supervised user's request to
+    install an extension by entering the custodian's password.
+  </description>
+</action>
+
+<action name="SupervisedUsers_Extensions_ApprovalRemoved">
+  <owner>tobyhuang@chromium.org</owner>
+  <owner>agawronska@chromium.org</owner>
+  <owner>danan@chromium.org</owner>
+  <owner>cros-families@google.com</owner>
+  <description>
+    Emitted when the supervised user removes an extension.
+  </description>
+</action>
+
 <action name="SupervisedUsers_Extensions_NewExtensionApprovalGranted">
+  <obsolete>Renamed to SupervisedUsers_Extensions_ApprovalGranted.</obsolete>
   <owner>tobyhuang@chromium.org</owner>
   <owner>agawronska@chromium.org</owner>
   <owner>danan@chromium.org</owner>
@@ -22996,6 +23018,9 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="SupervisedUsers_Extensions_NewVersionApprovalGranted">
+  <obsolete>
+    Renamed to SupervisedUsers_Extensions_PermissionsIncreaseGranted.
+  </obsolete>
   <owner>tobyhuang@chromium.org</owner>
   <owner>agawronska@chromium.org</owner>
   <owner>danan@chromium.org</owner>
@@ -23006,7 +23031,19 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="SupervisedUsers_Extensions_PermissionsIncreaseGranted">
+  <owner>tobyhuang@chromium.org</owner>
+  <owner>agawronska@chromium.org</owner>
+  <owner>danan@chromium.org</owner>
+  <owner>cros-families@google.com</owner>
+  <description>
+    Emitted when the supervised user approves a new version of an existing
+    extension with increased permissions.
+  </description>
+</action>
+
 <action name="SupervisedUsers_Extensions_Removed">
+  <obsolete>Renamed to SupervisedUsers_Extensions_ApprovalRemoved.</obsolete>
   <owner>tobyhuang@chromium.org</owner>
   <owner>agawronska@chromium.org</owner>
   <owner>danan@chromium.org</owner>

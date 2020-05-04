@@ -8,11 +8,18 @@
 #include "chrome/browser/ui/webui/settings/chromeos/os_settings_section.h"
 #include "chromeos/services/multidevice_setup/public/cpp/multidevice_setup_client.h"
 
+class PrefService;
+
 namespace content {
 class WebUIDataSource;
 }  // namespace content
 
 namespace chromeos {
+
+namespace android_sms {
+class AndroidSmsService;
+}  // namespace android_sms
+
 namespace settings {
 
 // Provides UI strings and search tags for MultiDevice settings. Different
@@ -25,12 +32,15 @@ class MultiDeviceSection
   MultiDeviceSection(
       Profile* profile,
       Delegate* per_page_delegate,
-      multidevice_setup::MultiDeviceSetupClient* multidevice_setup_client);
+      multidevice_setup::MultiDeviceSetupClient* multidevice_setup_client,
+      android_sms::AndroidSmsService* android_sms_service,
+      PrefService* pref_service);
   ~MultiDeviceSection() override;
 
  private:
   // OsSettingsSection:
   void AddLoadTimeData(content::WebUIDataSource* html_source) override;
+  void AddHandlers(content::WebUI* web_ui) override;
 
   // multidevice_setup::MultiDeviceSetupClient::Observer:
   void OnHostStatusChanged(
@@ -38,6 +48,8 @@ class MultiDeviceSection
           host_status_with_device) override;
 
   multidevice_setup::MultiDeviceSetupClient* multidevice_setup_client_;
+  android_sms::AndroidSmsService* android_sms_service_;
+  PrefService* pref_service_;
 };
 
 }  // namespace settings

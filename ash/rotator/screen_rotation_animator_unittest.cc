@@ -377,8 +377,16 @@ TEST_F(ScreenRotationAnimatorSlowAnimationTest, ShouldCompleteAnimations) {
 
 // Test that slow screen rotation animation will not interrupt hide animation.
 // The OverviewButton should be hidden.
+// TODO(crbug.com/1077712): Test is flaky with MSAN.
+#if defined(MEMORY_SANITIZER)
+#define MAYBE_OverviewButtonTrayHideAnimationAlwaysCompletes \
+  DISABLED_OverviewButtonTrayHideAnimationAlwaysCompletes
+#else
+#define MAYBE_OverviewButtonTrayHideAnimationAlwaysCompletes \
+  OverviewButtonTrayHideAnimationAlwaysCompletes
+#endif
 TEST_F(ScreenRotationAnimatorSlowAnimationTest,
-       OverviewButtonTrayHideAnimationAlwaysCompletes) {
+       MAYBE_OverviewButtonTrayHideAnimationAlwaysCompletes) {
   Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
 
   // Long duration for hide animation, to allow it to be interrupted.

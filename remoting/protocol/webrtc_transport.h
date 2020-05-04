@@ -51,6 +51,10 @@ class WebrtcTransport : public Transport, public SessionOptionsProvider {
     // Called when there is an error connecting the session.
     virtual void OnWebrtcTransportError(ErrorCode error) = 0;
 
+    // Called when the transport protocol has been changed. Note that this might
+    // be called before the channels become ready.
+    virtual void OnWebrtcTransportProtocolChanged() = 0;
+
     // Called when a new data channel is created by the peer.
     virtual void OnWebrtcTransportIncomingDataChannel(
         const std::string& name,
@@ -99,6 +103,12 @@ class WebrtcTransport : public Transport, public SessionOptionsProvider {
   // Called when a new video transceiver has been created by the PeerConnection.
   void OnVideoTransceiverCreated(
       rtc::scoped_refptr<webrtc::RtpTransceiverInterface> transceiver);
+
+  // Transport layer protocol used to connect to the relay server or the peer.
+  // Possible values are those defined in the protocol and relayProtocol fields
+  // in the RTCIceCandidateStats dictionary.  Empty if the protocol is not known
+  // yet, "api-error" if failed to get the current protocol.
+  const std::string& transport_protocol() const { return transport_protocol_; }
 
  private:
   // PeerConnectionWrapper is responsible for PeerConnection creation,
@@ -176,6 +186,8 @@ class WebrtcTransport : public Transport, public SessionOptionsProvider {
   bool connected_ = false;
 
   base::Optional<bool> connection_relayed_;
+
+  std::string transport_protocol_;
 
   bool want_ice_restart_ = false;
 

@@ -7,8 +7,8 @@
 
 #include "content/browser/service_worker/service_worker_info.h"
 #include "content/common/content_export.h"
+#include "mojo/public/cpp/bindings/binder_map.h"
 #include "services/device/public/mojom/vibration_manager.mojom-forward.h"
-#include "services/service_manager/public/cpp/binder_map.h"
 #include "url/origin.h"
 
 namespace content {
@@ -31,35 +31,31 @@ namespace internal {
 // handling InterfaceProvider's GetInterface() calls (see crbug.com/718652).
 
 // Registers the handlers for interfaces requested by frames.
-void PopulateBinderMap(RenderFrameHostImpl* host,
-                       service_manager::BinderMap* map);
+void PopulateBinderMap(RenderFrameHostImpl* host, mojo::BinderMap* map);
 void PopulateBinderMapWithContext(
     RenderFrameHostImpl* host,
-    service_manager::BinderMapWithContext<RenderFrameHost*>* map);
+    mojo::BinderMapWithContext<RenderFrameHost*>* map);
 RenderFrameHost* GetContextForHost(RenderFrameHostImpl* host);
 
 // Registers the handlers for interfaces requested by dedicated workers.
-void PopulateBinderMap(DedicatedWorkerHost* host,
-                       service_manager::BinderMap* map);
+void PopulateBinderMap(DedicatedWorkerHost* host, mojo::BinderMap* map);
 void PopulateBinderMapWithContext(
     DedicatedWorkerHost* host,
-    service_manager::BinderMapWithContext<const url::Origin&>* map);
+    mojo::BinderMapWithContext<const url::Origin&>* map);
 const url::Origin& GetContextForHost(DedicatedWorkerHost* host);
 
 // Registers the handlers for interfaces requested by shared workers.
-void PopulateBinderMap(SharedWorkerHost* host, service_manager::BinderMap* map);
+void PopulateBinderMap(SharedWorkerHost* host, mojo::BinderMap* map);
 void PopulateBinderMapWithContext(
     SharedWorkerHost* host,
-    service_manager::BinderMapWithContext<const url::Origin&>* map);
+    mojo::BinderMapWithContext<const url::Origin&>* map);
 url::Origin GetContextForHost(SharedWorkerHost* host);
 
 // Registers the handlers for interfaces requested by service workers.
-void PopulateBinderMap(ServiceWorkerProviderHost* host,
-                       service_manager::BinderMap* map);
+void PopulateBinderMap(ServiceWorkerProviderHost* host, mojo::BinderMap* map);
 void PopulateBinderMapWithContext(
     ServiceWorkerProviderHost* host,
-    service_manager::BinderMapWithContext<const ServiceWorkerVersionInfo&>*
-        map);
+    mojo::BinderMapWithContext<const ServiceWorkerVersionInfo&>* map);
 ServiceWorkerVersionInfo GetContextForHost(ServiceWorkerProviderHost* host);
 
 }  // namespace internal

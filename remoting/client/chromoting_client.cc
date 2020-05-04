@@ -201,6 +201,9 @@ void ChromotingClient::SetVideoLayout(const protocol::VideoLayout& layout) {
   }
 }
 
+void ChromotingClient::SetTransportInfo(
+    const protocol::TransportInfo& transport_info) {}
+
 void ChromotingClient::InjectClipboardEvent(
     const protocol::ClipboardEvent& event) {
   DCHECK(thread_checker_.CalledOnValidThread());

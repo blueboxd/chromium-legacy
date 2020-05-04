@@ -368,14 +368,6 @@ const char kFontAccessAPIDescription[] =
     "Enables the experimental Font Access APIs, giving websites access "
     "to enumerate local fonts and access their table data.";
 
-const char kFontSrcLocalMatchingName[] =
-    "Match @font-face { src: local(<name>) } names by PostScript and full font "
-    "name.";
-const char kFontSrcLocalMatchingDescription[] =
-    "Match local() src attributes in @font-face declarations precisely by "
-    "PostScript name and full font name instead of the previous behavior of "
-    "matching those unspecifically as family names.";
-
 const char kForceColorProfileSRGB[] = "sRGB";
 const char kForceColorProfileP3[] = "Display P3 D65";
 const char kForceColorProfileColorSpin[] = "Color spin with gamma 2.4";
@@ -3976,6 +3968,12 @@ const char kDcheckIsFatalDescription[] =
     "By default Chrome will evaluate in this build, but only log failures, "
     "rather than crashing. If enabled, DCHECKs will crash the calling process.";
 #endif  // defined(DCHECK_IS_CONFIGURABLE)
+
+#if BUILDFLAG(ENABLE_DICE_SUPPORT)
+const char kDiceWebSigninInterceptionName[] = "Dice Web-Signin Interception";
+const char kDiceWebSigninInterceptionDescription[] =
+    "If enabled, Chrome may promote profile creation after signin on the web.";
+#endif
 
 #if BUILDFLAG(ENABLE_NACL)
 const char kNaclName[] = "Native Client";

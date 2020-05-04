@@ -61,17 +61,21 @@ class CrxDownloader {
     base::FilePath response;
   };
 
-  // The callback fires only once, regardless of how many urls are tried, and
-  // how many successors in the chain of downloaders have handled the
-  // download. The callback interface can be extended if needed to provide
-  // more visibility into how the download has been handled, including
-  // specific error codes and download metrics.
+  // The callback is posted only once, when the download is handled, regardless
+  // of how many urls have been tried, and how many successors in the chain of
+  // downloaders have handled the download.
   using DownloadCallback = base::OnceCallback<void(const Result& result)>;
 
-  // The callback may fire 0 or once during a download. Since this
-  // class implements a chain of responsibility, the callback can fire for
-  // different urls and different downloaders.
-  using ProgressCallback = base::RepeatingCallback<void()>;
+  // The callback may be posted when progress is made during a download.
+  // Since this class implements a chain of responsibility, the callback could
+  // be invoked for different urls and different downloaders, as progress is
+  // being made down the chain. |downloaded_bytes| and |total_bytes| contain the
+  // number of bytes downloaded up to this point, and the number of bytes to
+  // download (which is the size of the CRX). When the number of bytes is not
+  // known, the values are -1.
+  using ProgressCallback =
+      base::RepeatingCallback<void(int64_t downloaded_bytes,
+                                   int64_t total_bytes)>;
 
   using Factory =
       std::unique_ptr<CrxDownloader> (*)(bool,
@@ -119,7 +123,7 @@ class CrxDownloader {
                           const DownloadMetrics& download_metrics);
 
   // Calls the callback when progress is made.
-  void OnDownloadProgress();
+  void OnDownloadProgress(int64_t downloaded_bytes, int64_t total_bytes);
 
   // Returns the url which is currently being downloaded from.
   GURL url() const;

@@ -5,9 +5,12 @@
 #include "chrome/browser/safe_browsing/cloud_content_scanning/deep_scanning_test_utils.h"
 
 #include "base/values.h"
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/enterprise/connectors/common.h"
 #include "chrome/browser/extensions/api/safe_browsing_private/safe_browsing_private_event_router.h"
 #include "components/policy/core/common/cloud/mock_cloud_policy_client.h"
 #include "components/policy/core/common/cloud/realtime_reporting_job_configuration.h"
+#include "components/prefs/scoped_user_pref_update.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -15,6 +18,75 @@ using extensions::SafeBrowsingPrivateEventRouter;
 using ::testing::_;
 
 namespace safe_browsing {
+
+namespace {
+
+base::Value MakeListValue(const std::vector<std::string>& elements) {
+  base::Value list(base::Value::Type::LIST);
+  for (const std::string& element : elements)
+    list.Append(element);
+  return list;
+}
+
+base::Value DefaultConnectorSettings() {
+  base::Value settings(base::Value::Type::DICTIONARY);
+
+  settings.SetKey(enterprise_connectors::kKeyEnable,
+                  base::Value(base::Value::Type::LIST));
+  settings.SetKey(enterprise_connectors::kKeyDisable,
+                  base::Value(base::Value::Type::LIST));
+
+  return settings;
+}
+
+void InitConnectorPrefIfEmpty(
+    enterprise_connectors::AnalysisConnector connector) {
+  ListPrefUpdate settings_list(g_browser_process->local_state(),
+                               ConnectorPref(connector));
+  DCHECK(settings_list.Get());
+  if (settings_list->empty())
+    settings_list->Append(DefaultConnectorSettings());
+}
+
+void AddConnectorUrlPattern(enterprise_connectors::AnalysisConnector connector,
+                            bool enable,
+                            base::Value url_list,
+                            base::Value tags) {
+  InitConnectorPrefIfEmpty(connector);
+
+  ListPrefUpdate settings_list(g_browser_process->local_state(),
+                               ConnectorPref(connector));
+  base::Value* settings = nullptr;
+  DCHECK(settings_list->Get(0, &settings));
+  DCHECK(settings);
+  DCHECK(settings->is_dict());
+
+  base::Value* list =
+      settings->FindListPath(enable ? enterprise_connectors::kKeyEnable
+                                    : enterprise_connectors::kKeyDisable);
+  DCHECK(list);
+
+  base::Value list_element(base::Value::Type::DICTIONARY);
+  list_element.SetKey(enterprise_connectors::kKeyUrlList, std::move(url_list));
+  list_element.SetKey(enterprise_connectors::kKeyTags, std::move(tags));
+
+  list->Append(std::move(list_element));
+}
+
+void SetConnectorField(enterprise_connectors::AnalysisConnector connector,
+                       const char* key,
+                       bool value) {
+  InitConnectorPrefIfEmpty(connector);
+  ListPrefUpdate settings_list(g_browser_process->local_state(),
+                               ConnectorPref(connector));
+  base::Value* settings = nullptr;
+  DCHECK(settings_list->Get(0, &settings));
+  DCHECK(settings);
+  DCHECK(settings->is_dict());
+  settings->SetKey(key, base::Value(std::move(value)));
+}
+
+}  // namespace
 
 EventReportValidator::EventReportValidator(
     policy::MockCloudPolicyClient* client)
@@ -265,6 +337,164 @@ void EventReportValidator::ValidateField(
 
 void EventReportValidator::SetDoneClosure(base::RepeatingClosure closure) {
   done_closure_ = std::move(closure);
+}
+
+void SetDlpPolicyForConnectors(CheckContentComplianceValues state) {
+  // The legacy DLP policy has the following behavior:
+  // - On uploads, scan everything for DLP if it's enabled unless the URL
+  //   matches kURLsToNotCheckComplianceOfUploadedContent, and scan nothing if
+  //   it is disabled.
+  // - On downloads, only scan URLs matching
+  //   kURLsToCheckComplianceOfDownloadedContent if it's enabled, otherwise scan
+  //   nothing for DLP.
+
+  // This is replicated in the connector policies by adding the wildcard pattern
+  // on upload connectors with the "dlp" tag in "enable" or "disable". The
+  // wildcard pattern should also be included in the disable list if the policy
+  // is disabled for downloads since no scan can occur with the legacy policy
+  // when it is disabled.
+
+  bool enable_uploads =
+      state == CHECK_UPLOADS || state == CHECK_UPLOADS_AND_DOWNLOADS;
+
+  AddConnectorUrlPattern(
+      enterprise_connectors::AnalysisConnector::FILE_ATTACHED, enable_uploads,
+      MakeListValue({"*"}), MakeListValue({"dlp"}));
+  AddConnectorUrlPattern(
+      enterprise_connectors::AnalysisConnector::BULK_DATA_ENTRY, enable_uploads,
+      MakeListValue({"*"}), MakeListValue({"dlp"}));
+
+  if (state != CHECK_DOWNLOADS && state != CHECK_UPLOADS_AND_DOWNLOADS) {
+    AddConnectorUrlPattern(
+        enterprise_connectors::AnalysisConnector::FILE_DOWNLOADED, false,
+        MakeListValue({"*"}), MakeListValue({"dlp"}));
+  }
+}
+
+void SetMalwarePolicyForConnectors(SendFilesForMalwareCheckValues state) {
+  // The legacy Malware policy has the following behavior:
+  // - On uploads, only scan URLs matching
+  //   kURLsToCheckForMalwareOfUploadedContent if it's enabled, otherwise scan
+  //   nothing for malware.
+  // - On downloard, scan everything for malware if it's enabled unless the URL
+  //   matches kURLsToNotCheckForMalwareOfDownloadedContent, and scan nothing if
+  //   it's disabled.
+
+  // This is replicated in the connector policies by adding the wildcard pattern
+  // on the download connector with the "malware" tag in "enable" or "disable".
+  // The wildcard pattern should also be included in the disable list if the
+  // policy is disabled for uploads since no scan can occur with the legacy
+  // policy when it is disabled.
+
+  bool enable_downloads =
+      state == SEND_DOWNLOADS || state == SEND_UPLOADS_AND_DOWNLOADS;
+
+  AddConnectorUrlPattern(
+      enterprise_connectors::AnalysisConnector::FILE_DOWNLOADED,
+      enable_downloads, MakeListValue({"*"}), MakeListValue({"malware"}));
+
+  if (state != SEND_UPLOADS && state != SEND_UPLOADS_AND_DOWNLOADS) {
+    AddConnectorUrlPattern(
+        enterprise_connectors::AnalysisConnector::FILE_ATTACHED, false,
+        MakeListValue({"*"}), MakeListValue({"malware"}));
+    AddConnectorUrlPattern(
+        enterprise_connectors::AnalysisConnector::BULK_DATA_ENTRY, false,
+        MakeListValue({"*"}), MakeListValue({"malware"}));
+  }
+}
+
+void SetDelayDeliveryUntilVerdictPolicyForConnectors(
+    DelayDeliveryUntilVerdictValues state) {
+  bool delay_uploads =
+      state == DELAY_UPLOADS || state == DELAY_UPLOADS_AND_DOWNLOADS;
+  bool delay_downloads =
+      state == DELAY_DOWNLOADS || state == DELAY_UPLOADS_AND_DOWNLOADS;
+  SetConnectorField(enterprise_connectors::AnalysisConnector::BULK_DATA_ENTRY,
+                    enterprise_connectors::kKeyBlockUntilVerdict,
+                    delay_uploads);
+  SetConnectorField(enterprise_connectors::AnalysisConnector::FILE_ATTACHED,
+                    enterprise_connectors::kKeyBlockUntilVerdict,
+                    delay_uploads);
+  SetConnectorField(enterprise_connectors::AnalysisConnector::FILE_DOWNLOADED,
+                    enterprise_connectors::kKeyBlockUntilVerdict,
+                    delay_downloads);
+}
+
+void SetAllowPasswordProtectedFilesPolicyForConnectors(
+    AllowPasswordProtectedFilesValues state) {
+  bool allow_uploads =
+      state == ALLOW_UPLOADS || state == ALLOW_UPLOADS_AND_DOWNLOADS;
+  bool allow_downloads =
+      state == ALLOW_DOWNLOADS || state == ALLOW_UPLOADS_AND_DOWNLOADS;
+  SetConnectorField(enterprise_connectors::AnalysisConnector::FILE_ATTACHED,
+                    enterprise_connectors::kKeyBlockPasswordProtected,
+                    allow_uploads);
+  SetConnectorField(enterprise_connectors::AnalysisConnector::FILE_DOWNLOADED,
+                    enterprise_connectors::kKeyBlockPasswordProtected,
+                    allow_downloads);
+}
+
+void SetBlockUnsupportedFileTypesPolicyForConnectors(
+    BlockUnsupportedFiletypesValues state) {
+  bool block_uploads =
+      state == BLOCK_UNSUPPORTED_FILETYPES_UPLOADS ||
+      state == BLOCK_UNSUPPORTED_FILETYPES_UPLOADS_AND_DOWNLOADS;
+  bool block_downloads =
+      state == BLOCK_UNSUPPORTED_FILETYPES_DOWNLOADS ||
+      state == BLOCK_UNSUPPORTED_FILETYPES_UPLOADS_AND_DOWNLOADS;
+  SetConnectorField(enterprise_connectors::AnalysisConnector::FILE_ATTACHED,
+                    enterprise_connectors::kKeyBlockUnsupportedFileTypes,
+                    block_uploads);
+  SetConnectorField(enterprise_connectors::AnalysisConnector::FILE_DOWNLOADED,
+                    enterprise_connectors::kKeyBlockUnsupportedFileTypes,
+                    block_downloads);
+}
+
+void SetBlockLargeFileTransferPolicyForConnectors(
+    BlockLargeFileTransferValues state) {
+  bool block_uploads = state == BLOCK_LARGE_UPLOADS ||
+                       state == BLOCK_LARGE_UPLOADS_AND_DOWNLOADS;
+  bool block_downloads = state == BLOCK_LARGE_DOWNLOADS ||
+                         state == BLOCK_LARGE_UPLOADS_AND_DOWNLOADS;
+  SetConnectorField(enterprise_connectors::AnalysisConnector::FILE_ATTACHED,
+                    enterprise_connectors::kKeyBlockLargeFiles, block_uploads);
+  SetConnectorField(enterprise_connectors::AnalysisConnector::FILE_DOWNLOADED,
+                    enterprise_connectors::kKeyBlockLargeFiles,
+                    block_downloads);
+}
+
+void AddUrlsToCheckComplianceOfDownloadsForConnectors(
+    const std::vector<std::string>& urls) {
+  AddConnectorUrlPattern(
+      enterprise_connectors::AnalysisConnector::FILE_DOWNLOADED, true,
+      MakeListValue(urls), MakeListValue({"dlp"}));
+}
+
+void AddUrlsToNotCheckComplianceOfUploadsForConnectors(
+    const std::vector<std::string>& urls) {
+  for (auto connector :
+       {enterprise_connectors::AnalysisConnector::FILE_ATTACHED,
+        enterprise_connectors::AnalysisConnector::BULK_DATA_ENTRY}) {
+    AddConnectorUrlPattern(connector, false, MakeListValue(urls),
+                           MakeListValue({"dlp"}));
+  }
+}
+
+void AddUrlsToCheckForMalwareOfUploadsForConnectors(
+    const std::vector<std::string>& urls) {
+  for (auto connector :
+       {enterprise_connectors::AnalysisConnector::FILE_ATTACHED,
+        enterprise_connectors::AnalysisConnector::BULK_DATA_ENTRY}) {
+    AddConnectorUrlPattern(connector, true, MakeListValue(urls),
+                           MakeListValue({"malware"}));
+  }
+}
+
+void AddUrlsToNotCheckForMalwareOfDownloadsForConnectors(
+    const std::vector<std::string>& urls) {
+  AddConnectorUrlPattern(
+      enterprise_connectors::AnalysisConnector::FILE_DOWNLOADED, false,
+      MakeListValue(urls), MakeListValue({"malware"}));
 }
 
 }  // namespace safe_browsing

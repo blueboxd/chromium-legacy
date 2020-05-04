@@ -173,6 +173,12 @@ const base::Feature kCrostiniArcSideload{"CrostiniArcSideload",
 const base::Feature kCryptohomeDistributedModel{
     "CryptohomeDistributedModel", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables cryptohome UserDataAuth interface, a new dbus interface that is
+// fully protobuf and uses libbrillo for dbus instead of the deprecated
+// glib-dbus.
+const base::Feature kCryptohomeUserDataAuth{"CryptohomeUserDataAuth",
+                                            base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enable support for "Plugin VMs" on Chrome OS.
 const base::Feature kPluginVm{"PluginVm", base::FEATURE_DISABLED_BY_DEFAULT};
 

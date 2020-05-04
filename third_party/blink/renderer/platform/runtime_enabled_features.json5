@@ -88,6 +88,12 @@
       valid_type: "bool",
     },
 
+    // origin_trial_allows_third_party specifies whether the trial can be enabled
+    // from third party origins, with default being false.
+    origin_trial_allows_third_party: {
+      valid_type: "bool",
+    },
+
     // settable_from_internals specifies whether a feature can be set from
     // internals.runtimeFlags, with the default being false.
     settable_from_internals: {
@@ -230,6 +236,11 @@
     {
       name: "BarcodeDetector",
       status: "stable",
+    },
+    {
+      // https://github.com/WICG/display-locking/blob/master/explainer-beforematch.md
+      name: "BeforeMatchEvent",
+      status: "experimental",
     },
     {
       name: "BidiCaretAffinity",
@@ -486,6 +497,11 @@
     },
     {
       name: "CSSMathSuperscriptShiftStyle",
+      status: "experimental",
+      implied_by: ["MathMLCore"],
+    },
+    {
+      name: "CSSMathVariant",
       status: "experimental",
       implied_by: ["MathMLCore"],
     },
@@ -1042,6 +1058,9 @@
       status: {"Android": "stable"},
     },
     {
+      name: "MediaControlsUseCutOutByDefault"
+    },
+    {
       name: "MediaDocumentDownloadButton",
     },
     {
@@ -1264,6 +1283,13 @@
     {
       name: "OriginTrialsSampleAPINavigation",
       origin_trial_feature_name: "FrobulateNavigation",
+    },
+    // As above. Do not change this flag to stable, as it exists solely to
+    // generate code used by the origin trials sample API implementation.
+    {
+      name: "OriginTrialsSampleAPIThirdParty",
+      origin_trial_feature_name: "FrobulateThirdParty",
+      origin_trial_allows_third_party: true,
     },
     {
       name: "OutOfBlinkCors",

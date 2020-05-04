@@ -456,6 +456,14 @@ void ClientSession::OnConnectionClosed(protocol::ErrorCode error) {
   event_handler_->OnSessionClosed(this);
 }
 
+void ClientSession::OnTransportProtocolChange(const std::string& protocol) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  HOST_LOG << "Transport protocol: " << protocol;
+  protocol::TransportInfo transport_info;
+  transport_info.set_protocol(protocol);
+  connection_->client_stub()->SetTransportInfo(transport_info);
+}
+
 void ClientSession::OnRouteChange(const std::string& channel_name,
                                   const protocol::TransportRoute& route) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);

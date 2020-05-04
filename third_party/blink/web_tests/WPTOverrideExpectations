@@ -1046,9 +1046,6 @@ external/wpt/preload/modulepreload.html [ Pass ] # wpt_subtest_failure
 external/wpt/presentation-api/controlling-ua/getAvailability.https.html [ Failure Pass ] # wpt_subtest_failure
 external/wpt/quirks/percentage-height-calculation.html [ Failure Pass ] # wpt_subtest_failure
 external/wpt/quirks/table-cell-nowrap-minimum-width-calculation.html [ Failure Pass ] # wpt_subtest_failure
-external/wpt/referrer-policy/css-integration/child-css/external-import-stylesheet.html [ Failure Timeout Pass ]
-external/wpt/referrer-policy/css-integration/child-css/internal-import-stylesheet.html [ Failure Timeout Pass ] # wpt_subtest_failure
-external/wpt/referrer-policy/css-integration/child-css/processing-instruction.html [ Failure Timeout Pass ] # wpt_subtest_failure
 external/wpt/referrer-policy/css-integration/font-face/external-import-stylesheet.html [ Failure Timeout Pass ]
 external/wpt/referrer-policy/css-integration/font-face/external-stylesheet.html [ Failure Timeout Pass ]
 external/wpt/referrer-policy/css-integration/font-face/internal-import-stylesheet.html [ Failure Timeout Pass ]

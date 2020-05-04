@@ -61,8 +61,7 @@ class PerformanceManagerRegistryImpl
       service_manager::BinderRegistry* registry,
       content::RenderProcessHost* render_process_host) override;
   void ExposeInterfacesToRenderFrame(
-      service_manager::BinderMapWithContext<content::RenderFrameHost*>* map)
-      override;
+      mojo::BinderMapWithContext<content::RenderFrameHost*>* map) override;
   void TearDown() override;
 
   // PerformanceManagerTabHelper::DestructionObserver:

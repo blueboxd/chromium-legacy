@@ -22,6 +22,7 @@
 #include "ui/display/display_layout_builder.h"
 #include "ui/display/win/display_info.h"
 #include "ui/display/win/dpi.h"
+#include "ui/display/win/local_process_window_finder_win.h"
 #include "ui/display/win/scaling_util.h"
 #include "ui/display/win/screen_win_display.h"
 #include "ui/gfx/geometry/point_conversions.h"
@@ -667,6 +668,20 @@ bool ScreenWin::IsWindowUnderCursor(gfx::NativeWindow window) {
 gfx::NativeWindow ScreenWin::GetWindowAtScreenPoint(const gfx::Point& point) {
   const gfx::Point screen_point = DIPToScreenPoint(point);
   return GetNativeWindowFromHWND(WindowFromPoint(screen_point.ToPOINT()));
+}
+
+gfx::NativeWindow ScreenWin::GetLocalProcessWindowAtPoint(
+    const gfx::Point& point,
+    const std::set<gfx::NativeWindow>& ignore) {
+  std::set<HWND> hwnd_set;
+  for (auto* const window : ignore) {
+    HWND w = GetHWNDFromNativeWindow(window);
+    if (w)
+      hwnd_set.emplace(w);
+  }
+
+  return LocalProcessWindowFinder::GetProcessWindowAtPoint(point, hwnd_set,
+                                                           this);
 }
 
 int ScreenWin::GetNumDisplays() const {

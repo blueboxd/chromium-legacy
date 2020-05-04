@@ -14,6 +14,7 @@
 #include "components/autofill/content/common/mojom/autofill_agent.mojom.h"
 #include "components/autofill/core/browser/logging/stub_log_manager.h"
 #include "components/autofill/core/browser/test_autofill_client.h"
+#include "components/password_manager/core/browser/password_form_filling.h"
 #include "components/password_manager/core/browser/stub_password_manager_client.h"
 #include "components/safe_browsing/buildflags.h"
 #include "content/public/browser/navigation_entry.h"
@@ -126,7 +127,8 @@ PasswordFormFillData GetTestPasswordFormFillData() {
   non_preferred_match.password_value = ASCIIToUTF16("test1");
   matches.push_back(&non_preferred_match);
 
-  return PasswordFormFillData(form_on_page, matches, preferred_match, true);
+  return CreatePasswordFormFillData(form_on_page, matches, preferred_match,
+                                    true);
 }
 
 MATCHER(WerePasswordsCleared, "Passwords not cleared") {

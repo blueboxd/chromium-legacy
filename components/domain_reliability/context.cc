@@ -18,7 +18,6 @@
 #include "components/domain_reliability/uploader.h"
 #include "components/domain_reliability/util.h"
 #include "net/base/net_errors.h"
-#include "net/url_request/url_request_context_getter.h"
 
 using base::DictionaryValue;
 using base::ListValue;

@@ -69,6 +69,45 @@
   </message>
 
   <!-- MultiDevice section. -->
+  <message name="IDS_OS_SETTINGS_TAG_MULTIDEVICE" desc="Text for search result item which, when clicked, navigates the user to multi-device settings (connects Android phone to Chromebook). Alternate phrase for: 'Better Together', 'Multi-device', 'Phone'">
+    Connected devices settings
+  </message>
+  <message name="IDS_OS_SETTINGS_TAG_MULTIDEVICE_ALT1" desc="Text for search result item which, when clicked, navigates the user to multi-device settings (connects Android phone to Chromebook). Alternate phrase for: 'Connected devices settings', 'Multi-device', 'Phone'">
+    Better Together
+  </message>
+  <message name="IDS_OS_SETTINGS_TAG_MULTIDEVICE_ALT2" desc="Text for search result item which, when clicked, navigates the user to multi-device settings (connects Android phone to Chromebook). Alternate phrase for: 'Connected devices settings', 'Better Together', 'Phone'">
+    Multi-device
+  </message>
+  <message name="IDS_OS_SETTINGS_TAG_MULTIDEVICE_ALT3" desc="Text for search result item which, when clicked, navigates the user to multi-device settings (connects Android phone to Chromebook). Alternate phrase for: 'Connected devices settings', 'Better Together', 'Multi-device'">
+    Phone
+  </message>
+  <message name="IDS_OS_SETTINGS_TAG_MULTIDEVICE_SMART_LOCK" desc="Text for search result item which, when clicked, navigates the user to Smart Lock settings (unlock Chromebook with Android phone). Alternate phrase for: 'EasyUnlock'">
+    Smart Lock
+  </message>
+  <message name="IDS_OS_SETTINGS_TAG_MULTIDEVICE_SMART_LOCK_ALT1" desc="Text for search result item which, when clicked, navigates the user to Smart Lock settings (unlock Chromebook with Android phone). Alternate phrase for: 'Smart Lock settings'">
+    EasyUnlock
+  </message>
+  <message name="IDS_OS_SETTINGS_TAG_MULTIDEVICE_MESSAGES" desc="Text for search result item which, when clicked, navigates the user to Messages settings (sync SMS between Chromebook and Android phone). Alternate phrase for: 'Android messages'">
+    Messages settings
+  </message>
+  <message name="IDS_OS_SETTINGS_TAG_MULTIDEVICE_MESSAGES_ALT1" desc="Text for search result item which, when clicked, navigates the user to Messages settings (sync SMS between Chromebook and Android phone). Alternate phrase for: 'Messages settings'">
+    Android messages
+  </message>
+  <message name="IDS_OS_SETTINGS_TAG_MULTIDEVICE_SMART_LOCK_OPTIONS" desc="Text for search result item which, when clicked, navigates the user to Smart Lock screen lock settings (for signing into Chromebook with Android phone). Alternate phrase for: 'EasyUnlock screen lock'">
+    Smart Lock screen lock options
+  </message>
+  <message name="IDS_OS_SETTINGS_TAG_MULTIDEVICE_SMART_LOCK_OPTIONS_ALT1" desc="Text for search result item which, when clicked, navigates the user to Smart Lock screen lock settings (for signing into Chromebook with Android phone). Alternate phrase for: 'Smart Lock screen lock options'">
+    EasyUnlock screen lock
+  </message>
+  <message name="IDS_OS_SETTINGS_TAG_MULTIDEVICE_FORGET" desc="Text for search result item which, when clicked, navigates the user to multi-device settings, which an option to disconnect the currently-connected Android phone. Alternate phrase for: 'Disconnect connected phone'">
+    Forget connected phone
+  </message>
+  <message name="IDS_OS_SETTINGS_TAG_MULTIDEVICE_FORGET_ALT1" desc="Text for search result item which, when clicked, navigates the user to multi-device settings, which an option to disconnect the currently-connected Android phone. Alternate phrase for: 'Forget connected phone'">
+    Disconnect connected phone
+  </message>
+  <message name="IDS_OS_SETTINGS_TAG_MULTIDEVICE_SET_UP" desc="Text for search result item which, when clicked, navigates the user to connected devices settings, with a button to set up the feature.">
+    Connected devices setup
+  </message>
 
   <!-- People section. -->
   <message name="IDS_OS_SETTINGS_TAG_PEOPLE" desc="Text for search result item which, when clicked, navigates the user to people settings.">

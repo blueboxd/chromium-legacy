@@ -106,6 +106,14 @@ void ChromeFeaturesServiceProvider::Start(
                           weak_ptr_factory_.GetWeakPtr()));
   exported_object->ExportMethod(
       kChromeFeaturesServiceInterface,
+      kChromeFeaturesServiceIsCryptohomeUserDataAuthEnabledMethod,
+      base::BindRepeating(
+          &ChromeFeaturesServiceProvider::IsCryptohomeUserDataAuthEnabled,
+          weak_ptr_factory_.GetWeakPtr()),
+      base::BindRepeating(&ChromeFeaturesServiceProvider::OnExported,
+                          weak_ptr_factory_.GetWeakPtr()));
+  exported_object->ExportMethod(
+      kChromeFeaturesServiceInterface,
       kChromeFeaturesServiceIsVmManagementCliAllowedMethod,
       base::BindRepeating(
           &ChromeFeaturesServiceProvider::IsVmManagementCliAllowed,
@@ -183,6 +191,14 @@ void ChromeFeaturesServiceProvider::IsCryptohomeDistributedModelEnabled(
   SendResponse(
       method_call, std::move(response_sender),
       base::FeatureList::IsEnabled(::features::kCryptohomeDistributedModel));
+}
+
+void ChromeFeaturesServiceProvider::IsCryptohomeUserDataAuthEnabled(
+    dbus::MethodCall* method_call,
+    dbus::ExportedObject::ResponseSender response_sender) {
+  SendResponse(
+      method_call, std::move(response_sender),
+      base::FeatureList::IsEnabled(::features::kCryptohomeUserDataAuth));
 }
 
 void ChromeFeaturesServiceProvider::IsPluginVmEnabled(

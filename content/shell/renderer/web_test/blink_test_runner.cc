@@ -30,7 +30,6 @@
 #include "base/time/time.h"
 #include "base/values.h"
 #include "build/build_config.h"
-#include "components/plugins/renderer/plugin_placeholder.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/service_names.mojom.h"
 #include "content/public/common/url_constants.h"
@@ -40,14 +39,14 @@
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/render_view.h"
 #include "content/shell/common/shell_switches.h"
+#include "content/shell/renderer/web_test/app_banner_service.h"
 #include "content/shell/renderer/web_test/blink_test_helpers.h"
+#include "content/shell/renderer/web_test/gamepad_controller.h"
+#include "content/shell/renderer/web_test/pixel_dump.h"
+#include "content/shell/renderer/web_test/test_interfaces.h"
+#include "content/shell/renderer/web_test/test_runner.h"
 #include "content/shell/renderer/web_test/web_test_render_thread_observer.h"
-#include "content/shell/test_runner/app_banner_service.h"
-#include "content/shell/test_runner/gamepad_controller.h"
-#include "content/shell/test_runner/pixel_dump.h"
-#include "content/shell/test_runner/test_interfaces.h"
-#include "content/shell/test_runner/test_runner.h"
-#include "content/shell/test_runner/web_view_test_proxy.h"
+#include "content/shell/renderer/web_test/web_view_test_proxy.h"
 #include "ipc/ipc_sync_channel.h"
 #include "media/base/audio_capturer_source.h"
 #include "media/base/audio_parameters.h"
@@ -103,55 +102,11 @@ using blink::WebView;
 
 namespace content {
 
-namespace {
-
-class MockVideoCapturerSource : public media::VideoCapturerSource {
- public:
-  MockVideoCapturerSource() = default;
-  ~MockVideoCapturerSource() override {}
-
-  media::VideoCaptureFormats GetPreferredFormats() override {
-    const int supported_width = 640;
-    const int supported_height = 480;
-    const float supported_framerate = 60.0;
-    return media::VideoCaptureFormats(
-        1, media::VideoCaptureFormat(
-               gfx::Size(supported_width, supported_height),
-               supported_framerate, media::PIXEL_FORMAT_I420));
-  }
-  void StartCapture(const media::VideoCaptureParams& params,
-                    const VideoCaptureDeliverFrameCB& new_frame_callback,
-                    const RunningCallback& running_callback) override {
-    running_callback.Run(true);
-  }
-  void StopCapture() override {}
-};
-
-class MockAudioCapturerSource : public media::AudioCapturerSource {
- public:
-  MockAudioCapturerSource() = default;
-
-  void Initialize(const media::AudioParameters& params,
-                  CaptureCallback* callback) override {}
-  void Start() override {}
-  void Stop() override {}
-  void SetVolume(double volume) override {}
-  void SetAutomaticGainControl(bool enable) override {}
-  void SetOutputDeviceForAec(const std::string& output_device_id) override {}
-
- protected:
-  ~MockAudioCapturerSource() override {}
-};
-
-}  // namespace
-
 BlinkTestRunner::BlinkTestRunner(WebViewTestProxy* web_view_test_proxy)
     : web_view_test_proxy_(web_view_test_proxy),
       test_config_(mojom::WebTestRunTestConfiguration::New()) {}
 
 BlinkTestRunner::~BlinkTestRunner() = default;
-
-// WebTestDelegate  -----------------------------------------------------------
 
 void BlinkTestRunner::PrintMessageToStderr(const std::string& message) {
   GetWebTestControlHostRemote()->PrintMessageToStderr(message);
@@ -196,40 +151,6 @@ void BlinkTestRunner::ApplyPreferences() {
 
 void BlinkTestRunner::SetPopupBlockingEnabled(bool block_popups) {
   GetWebTestControlHostRemote()->SetPopupBlockingEnabled(block_popups);
-}
-
-void BlinkTestRunner::EnableAutoResizeMode(const WebSize& min_size,
-                                           const WebSize& max_size) {
-  DCHECK(web_view_test_proxy_->GetMainRenderFrame());
-
-  RenderWidget* widget =
-      web_view_test_proxy_->GetMainRenderFrame()->GetLocalRootRenderWidget();
-  widget->EnableAutoResizeForTesting(min_size, max_size);
-}
-
-void BlinkTestRunner::DisableAutoResizeMode(const WebSize& new_size) {
-  DCHECK(web_view_test_proxy_->GetMainRenderFrame());
-
-  RenderWidget* widget =
-      web_view_test_proxy_->GetMainRenderFrame()->GetLocalRootRenderWidget();
-  widget->DisableAutoResizeForTesting(new_size);
-
-  gfx::Rect window_rect(widget->WindowRect().x, widget->WindowRect().y,
-                        new_size.width, new_size.height);
-  widget->SetWindowRectSynchronouslyForTesting(window_rect);
-}
-
-void BlinkTestRunner::ResetAutoResizeMode() {
-  DCHECK(web_view_test_proxy_->GetMainRenderFrame());
-
-  RenderWidget* widget =
-      web_view_test_proxy_->GetMainRenderFrame()->GetLocalRootRenderWidget();
-  // An empty size indicates to keep the size as is, the next test will set up
-  // the window's size in OnSetTestConfiguration().
-  // TODO(danakj): We don't really need the empty size anymore, that was to
-  // avoid an IPC race. We could just have a global constant because all windows
-  // are 800x600 at the start of a test.
-  widget->DisableAutoResizeForTesting(gfx::Size());
 }
 
 void BlinkTestRunner::ClearAllDatabases() {
@@ -528,17 +449,6 @@ void BlinkTestRunner::ResolveBeforeInstallPromptPromise(
   }
 }
 
-blink::WebPlugin* BlinkTestRunner::CreatePluginPlaceholder(
-    const blink::WebPluginParams& params) {
-  if (params.mime_type != "application/x-plugin-placeholder-test")
-    return nullptr;
-
-  plugins::PluginPlaceholder* placeholder =
-      new plugins::PluginPlaceholder(web_view_test_proxy_->GetMainRenderFrame(),
-                                     params, "<div>Test content</div>");
-  return placeholder->plugin();
-}
-
 void BlinkTestRunner::SetScreenOrientationChanged() {
   GetWebTestControlHostRemote()->SetScreenOrientationChanged();
 }
@@ -557,8 +467,6 @@ void BlinkTestRunner::SetTrustTokenKeyCommitments(
 void BlinkTestRunner::ClearTrustTokenState(base::OnceClosure callback) {
   GetWebTestClientRemote()->ClearTrustTokenState(std::move(callback));
 }
-
-// Public methods - -----------------------------------------------------------
 
 void BlinkTestRunner::CaptureDump(
     mojom::WebTestRenderFrame::CaptureDumpCallback callback) {
@@ -589,8 +497,6 @@ void BlinkTestRunner::DidCommitNavigationInMainFrame() {
   waiting_for_reset_navigation_to_about_blank_ = false;
   GetWebTestControlHostRemote()->ResetRendererAfterWebTestDone();
 }
-
-// Private methods  -----------------------------------------------------------
 
 mojom::WebTestBluetoothFakeAdapterSetter&
 BlinkTestRunner::GetBluetoothFakeAdapterSetter() {

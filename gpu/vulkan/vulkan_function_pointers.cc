@@ -414,6 +414,14 @@ bool VulkanFunctionPointers::BindDeviceFunctionPointers(
     return false;
   }
 
+  vkCmdCopyBufferFn = reinterpret_cast<PFN_vkCmdCopyBuffer>(
+      vkGetDeviceProcAddr(vk_device, "vkCmdCopyBuffer"));
+  if (!vkCmdCopyBufferFn) {
+    DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
+                  << "vkCmdCopyBuffer";
+    return false;
+  }
+
   vkCmdCopyBufferToImageFn = reinterpret_cast<PFN_vkCmdCopyBufferToImage>(
       vkGetDeviceProcAddr(vk_device, "vkCmdCopyBufferToImage"));
   if (!vkCmdCopyBufferToImageFn) {
@@ -664,6 +672,14 @@ bool VulkanFunctionPointers::BindDeviceFunctionPointers(
     return false;
   }
 
+  vkFlushMappedMemoryRangesFn = reinterpret_cast<PFN_vkFlushMappedMemoryRanges>(
+      vkGetDeviceProcAddr(vk_device, "vkFlushMappedMemoryRanges"));
+  if (!vkFlushMappedMemoryRangesFn) {
+    DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
+                  << "vkFlushMappedMemoryRanges";
+    return false;
+  }
+
   vkEndCommandBufferFn = reinterpret_cast<PFN_vkEndCommandBuffer>(
       vkGetDeviceProcAddr(vk_device, "vkEndCommandBuffer"));
   if (!vkEndCommandBufferFn) {
@@ -693,6 +709,15 @@ bool VulkanFunctionPointers::BindDeviceFunctionPointers(
   if (!vkFreeMemoryFn) {
     DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
                   << "vkFreeMemory";
+    return false;
+  }
+
+  vkInvalidateMappedMemoryRangesFn =
+      reinterpret_cast<PFN_vkInvalidateMappedMemoryRanges>(
+          vkGetDeviceProcAddr(vk_device, "vkInvalidateMappedMemoryRanges"));
+  if (!vkInvalidateMappedMemoryRangesFn) {
+    DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
+                  << "vkInvalidateMappedMemoryRanges";
     return false;
   }
 
@@ -800,6 +825,15 @@ bool VulkanFunctionPointers::BindDeviceFunctionPointers(
     if (!vkGetDeviceQueue2Fn) {
       DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
                     << "vkGetDeviceQueue2";
+      return false;
+    }
+
+    vkGetBufferMemoryRequirements2Fn =
+        reinterpret_cast<PFN_vkGetBufferMemoryRequirements2>(
+            vkGetDeviceProcAddr(vk_device, "vkGetBufferMemoryRequirements2"));
+    if (!vkGetBufferMemoryRequirements2Fn) {
+      DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
+                    << "vkGetBufferMemoryRequirements2";
       return false;
     }
 

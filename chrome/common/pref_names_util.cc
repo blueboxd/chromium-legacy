@@ -82,12 +82,6 @@ base::Optional<ui::CaptionStyle> GetCaptionStyleFromPrefs(PrefService* prefs) {
   style.text_shadow = AddCSSImportant(
       prefs->GetString(prefs::kAccessibilityCaptionsTextShadow));
 
-  if (style.text_size.empty() && style.font_family.empty() &&
-      style.text_color.empty() && style.background_color.empty() &&
-      style.text_shadow.empty()) {
-    return base::nullopt;
-  }
-
   return style;
 }
 

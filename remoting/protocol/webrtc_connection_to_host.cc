@@ -130,6 +130,8 @@ void WebrtcConnectionToHost::OnWebrtcTransportError(ErrorCode error) {
   SetState(FAILED, error);
 }
 
+void WebrtcConnectionToHost::OnWebrtcTransportProtocolChanged() {}
+
 void WebrtcConnectionToHost::OnWebrtcTransportIncomingDataChannel(
     const std::string& name,
     std::unique_ptr<MessagePipe> pipe) {

@@ -299,7 +299,7 @@ ShellContentBrowserClient::RunSecondaryMediaService() {
 
 void ShellContentBrowserClient::RegisterBrowserInterfaceBindersForFrame(
     RenderFrameHost* render_frame_host,
-    service_manager::BinderMapWithContext<RenderFrameHost*>* map) {
+    mojo::BinderMapWithContext<RenderFrameHost*>* map) {
   if (register_browser_interface_binders_for_frame_callback_)
     register_browser_interface_binders_for_frame_callback_.Run(
         render_frame_host, map);

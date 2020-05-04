@@ -477,14 +477,13 @@ IN_PROC_BROWSER_TEST_F(WebUINavigationBrowserTest,
         embedded_test_server()->GetURL("/title1.html?childsrc="));
     ASSERT_TRUE(NavigateToURL(web_contents, main_frame_url));
 
-    auto console_delegate = std::make_unique<ConsoleObserverDelegate>(
-        web_contents,
-        "Not allowed to load local resource: " + iframe_url.spec());
-    web_contents->SetDelegate(console_delegate.get());
+    WebContentsConsoleObserver console_observer(web_contents);
+    console_observer.SetPattern("Not allowed to load local resource: " +
+                                iframe_url.spec());
 
     EXPECT_TRUE(ExecJs(shell(), JsReplace(kAddIframeScript, iframe_url),
                        EXECUTE_SCRIPT_DEFAULT_OPTIONS, 1 /* world_id */));
-    console_delegate->Wait();
+    console_observer.Wait();
 
     FrameTreeNode* root =
         static_cast<WebContentsImpl*>(web_contents)->GetFrameTree()->root();
@@ -529,14 +528,13 @@ IN_PROC_BROWSER_TEST_F(WebUINavigationBrowserTest,
         embedded_test_server()->GetURL("/title1.html?childsrc="));
     EXPECT_TRUE(NavigateToURL(shell(), main_frame_url));
 
-    auto console_delegate = std::make_unique<ConsoleObserverDelegate>(
-        web_contents,
-        "Not allowed to load local resource: " + iframe_url.spec());
-    web_contents->SetDelegate(console_delegate.get());
+    WebContentsConsoleObserver console_observer(web_contents);
+    console_observer.SetPattern("Not allowed to load local resource: " +
+                                iframe_url.spec());
 
     EXPECT_TRUE(ExecJs(shell(), JsReplace(kAddIframeScript, iframe_url),
                        EXECUTE_SCRIPT_DEFAULT_OPTIONS, 1 /* world_id */));
-    console_delegate->Wait();
+    console_observer.Wait();
 
     FrameTreeNode* root =
         static_cast<WebContentsImpl*>(web_contents)->GetFrameTree()->root();
@@ -578,14 +576,13 @@ IN_PROC_BROWSER_TEST_F(WebUINavigationBrowserTest,
     GURL main_frame_url(
         embedded_test_server()->GetURL("/title1.html?childsrc="));
     ASSERT_TRUE(NavigateToURL(web_contents, main_frame_url));
-    auto console_delegate = std::make_unique<ConsoleObserverDelegate>(
-        web_contents,
-        "Not allowed to load local resource: " + iframe_url.spec());
-    web_contents->SetDelegate(console_delegate.get());
+    WebContentsConsoleObserver console_observer(web_contents);
+    console_observer.SetPattern("Not allowed to load local resource: " +
+                                iframe_url.spec());
 
     EXPECT_TRUE(ExecJs(shell(), JsReplace(kAddIframeScript, iframe_url),
                        EXECUTE_SCRIPT_DEFAULT_OPTIONS, 1 /* world_id */));
-    console_delegate->Wait();
+    console_observer.Wait();
 
     FrameTreeNode* root =
         static_cast<WebContentsImpl*>(web_contents)->GetFrameTree()->root();
@@ -648,16 +645,15 @@ IN_PROC_BROWSER_TEST_F(WebUINavigationBrowserTest,
   EXPECT_TRUE(NavigateToURL(shell(), main_frame_url));
 
   GURL webui_url(GetWebUIURL("web-ui/title1.html?noxfo=true"));
-  auto console_delegate = std::make_unique<ConsoleObserverDelegate>(
-      shell()->web_contents(),
-      "Not allowed to load local resource: " + webui_url.spec());
-  shell()->web_contents()->SetDelegate(console_delegate.get());
+  WebContentsConsoleObserver console_observer(shell()->web_contents());
+  console_observer.SetPattern("Not allowed to load local resource: " +
+                              webui_url.spec());
 
   // Add iframe and navigate it to a chrome:// URL and verify that the
   // navigation was blocked.
   EXPECT_TRUE(ExecJs(shell(), JsReplace(kAddIframeScript, webui_url),
                      EXECUTE_SCRIPT_DEFAULT_OPTIONS, 1 /* world_id */));
-  console_delegate->Wait();
+  console_observer.Wait();
 
   FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
                             ->GetFrameTree()

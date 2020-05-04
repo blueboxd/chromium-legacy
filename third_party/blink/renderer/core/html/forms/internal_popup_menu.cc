@@ -9,6 +9,7 @@
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/core/css/css_font_selector.h"
+#include "third_party/blink/renderer/core/css/css_value_id_mappings.h"
 #include "third_party/blink/renderer/core/css/style_engine.h"
 #include "third_party/blink/renderer/core/dom/element_traversal.h"
 #include "third_party/blink/renderer/core/dom/events/scoped_event_queue.h"
@@ -46,18 +47,7 @@ const char* FontStyleToString(FontSelectionValue slope) {
 }
 
 const char* TextTransformToString(ETextTransform transform) {
-  switch (transform) {
-    case ETextTransform::kCapitalize:
-      return "capitalize";
-    case ETextTransform::kUppercase:
-      return "uppercase";
-    case ETextTransform::kLowercase:
-      return "lowercase";
-    case ETextTransform::kNone:
-      return "none";
-  }
-  NOTREACHED();
-  return "";
+  return getValueName(PlatformEnumToCSSValueID(transform));
 }
 
 }  // anonymous namespace

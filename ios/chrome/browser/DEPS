@@ -24,6 +24,7 @@ include_rules = [
   "+components/gcm_driver",
   "+components/google/core",
   "+components/handoff",
+  "+components/heap_profiling/in_process",
   "+components/history/core/browser",
   "+components/history/core/common",
   "+components/history/ios/browser",

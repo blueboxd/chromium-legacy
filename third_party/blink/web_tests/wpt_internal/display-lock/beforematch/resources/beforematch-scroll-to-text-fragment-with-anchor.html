@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<title>beforematch fired on ScrollToTextFragment</title>
+<link rel="author" title="Joey Arhar" href="mailto:jarhar@chromium.org">
+<link rel="help" href="https://github.com/WICG/display-locking">
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
+
+<!-- This test is navigated to with the fragment #bar:~:text=foo -->
+
+<body>
+  <div id=foo>foo</div>
+  <div id=bar>bar</div>
+  <script>
+    async_test(t => {
+      window.beforematchFiredOnFoo = false;
+      foo.addEventListener('beforematch', t.step_func(() => {
+        window.beforematchFiredOnFoo = true;
+      }));
+
+      window.beforematchFiredOnBar = false;
+      bar.addEventListener('beforematch', () => {
+        window.beforematchFiredOnBar = true;
+      });
+
+      requestAnimationFrame(() => {
+        requestAnimationFrame(t.step_func_done(() => {
+          assert_true(window.beforematchFiredOnFoo, 'foo was searched for, so it should get the beforematch event.');
+          assert_false(window.beforematchFiredOnBar, 'bar should not get the beforematch event despite being the target of an element fragment due to the text fragment.');
+        }));
+      });
+    }, 'Verifies that beforematch is only fired on elements targeted by a text fragment when there is both a text fragment and an element fragment.');
+  </script>
+</body>

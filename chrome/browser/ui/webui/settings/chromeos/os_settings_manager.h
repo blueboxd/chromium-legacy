@@ -39,6 +39,10 @@ namespace chromeos {
 
 class KerberosCredentialsManager;
 
+namespace android_sms {
+class AndroidSmsService;
+}  // namespace android_sms
+
 namespace multidevice_setup {
 class MultiDeviceSetupClient;
 }  // namespace multidevice_setup
@@ -83,7 +87,8 @@ class OsSettingsManager : public KeyedService,
       SupervisedUserService* supervised_user_service,
       KerberosCredentialsManager* kerberos_credentials_manager,
       ArcAppListPrefs* arc_app_list_prefs,
-      signin::IdentityManager* identity_manager);
+      signin::IdentityManager* identity_manager,
+      android_sms::AndroidSmsService* android_sms_service);
   OsSettingsManager(const OsSettingsManager& other) = delete;
   OsSettingsManager& operator=(const OsSettingsManager& other) = delete;
   ~OsSettingsManager() override;

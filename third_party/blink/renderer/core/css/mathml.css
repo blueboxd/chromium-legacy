@@ -81,3 +81,8 @@ munderover[accent="true" i] > :first-child {
   math-superscript-shift-style: inline;
 }
 
+/* Token elements */
+mi {
+  text-transform: math-auto;
+}
+

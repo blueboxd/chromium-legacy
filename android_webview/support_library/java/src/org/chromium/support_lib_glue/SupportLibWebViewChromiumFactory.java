@@ -79,6 +79,7 @@ class SupportLibWebViewChromiumFactory implements WebViewProviderFactoryBoundary
                     Features.FORCE_DARK_BEHAVIOR,
                     Features.WEB_MESSAGE_LISTENER,
                     Features.SET_SUPPORT_LIBRARY_VERSION + Features.DEV_SUFFIX,
+                    Features.DOCUMENT_START_SCRIPT + Features.DEV_SUFFIX,
             };
 
     // These values are persisted to logs. Entries should not be renumbered and
@@ -134,7 +135,9 @@ class SupportLibWebViewChromiumFactory implements WebViewProviderFactoryBoundary
             ApiCall.WEB_SETTINGS_SET_OFFSCREEN_PRE_RASTER,
             ApiCall.WEB_SETTINGS_SET_SAFE_BROWSING_ENABLED,
             ApiCall.WEB_SETTINGS_SET_WILL_SUPPRESS_ERROR_PAGE,
-            ApiCall.WEBVIEW_RENDERER_TERMINATE})
+            ApiCall.WEBVIEW_RENDERER_TERMINATE,
+            ApiCall.ADD_DOCUMENT_START_SCRIPT,
+            ApiCall.REMOVE_DOCUMENT_START_SCRIPT})
     public @interface ApiCall {
         int ADD_WEB_MESSAGE_LISTENER = 0;
         int CLEAR_PROXY_OVERRIDE = 1;
@@ -188,7 +191,9 @@ class SupportLibWebViewChromiumFactory implements WebViewProviderFactoryBoundary
         int WEB_SETTINGS_SET_SAFE_BROWSING_ENABLED = 49;
         int WEB_SETTINGS_SET_WILL_SUPPRESS_ERROR_PAGE = 50;
         int WEBVIEW_RENDERER_TERMINATE = 51;
-        int COUNT = 52;
+        int ADD_DOCUMENT_START_SCRIPT = 52;
+        int REMOVE_DOCUMENT_START_SCRIPT = 53;
+        int COUNT = 54;
     }
     // clang-format on
 

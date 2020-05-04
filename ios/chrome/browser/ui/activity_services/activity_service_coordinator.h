@@ -8,6 +8,7 @@
 #import "ios/chrome/browser/ui/coordinators/chrome_coordinator.h"
 
 @protocol ActivityServicePositioner;
+@protocol ActivityServicePresentation;
 
 // ActivityServiceCoordinator provides a public interface for the share
 // menu feature.
@@ -23,6 +24,10 @@
 
 // Title of the content that will be shared.
 @property(nonatomic, strong) NSString* title;
+
+// Provider of share action presentation.
+@property(nonatomic, readwrite, weak) id<ActivityServicePresentation>
+    presentationProvider;
 
 @end
 

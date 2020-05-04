@@ -12,6 +12,7 @@
 #include "chrome/common/buildflags.h"
 #include "components/nacl/common/buildflags.h"
 #include "components/paint_preview/buildflags/buildflags.h"
+#include "components/signin/public/base/signin_buildflags.h"
 #include "components/spellcheck/spellcheck_buildflags.h"
 #include "device/vr/buildflags/buildflags.h"
 #include "media/media_buildflags.h"
@@ -236,9 +237,6 @@ extern const char kExportTaggedPDFDescription[];
 
 extern const char kFontAccessAPIName[];
 extern const char kFontAccessAPIDescription[];
-
-extern const char kFontSrcLocalMatchingName[];
-extern const char kFontSrcLocalMatchingDescription[];
 
 extern const char kForceColorProfileSRGB[];
 extern const char kForceColorProfileP3[];
@@ -2338,6 +2336,11 @@ extern const char kWebContentsOcclusionDescription[];
 extern const char kDcheckIsFatalName[];
 extern const char kDcheckIsFatalDescription[];
 #endif  // defined(DCHECK_IS_CONFIGURABLE)
+
+#if BUILDFLAG(ENABLE_DICE_SUPPORT)
+extern const char kDiceWebSigninInterceptionName[];
+extern const char kDiceWebSigninInterceptionDescription[];
+#endif  // ENABLE_DICE_SUPPORT
 
 #if BUILDFLAG(ENABLE_NACL)
 extern const char kNaclName[];

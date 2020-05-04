@@ -40,6 +40,14 @@
         <category android:name="android.intent.category.FRAMEWORK_INSTRUMENTATION_TEST" />
       </intent-filter>
     </activity>
+
+    <!-- WebView Developer UI Activities. If you change these Activities, please update
+         android_webview/nonembedded/java/AndroidManifest.xml as well. -->
+    <activity android:name="org.chromium.android_webview.devui.MainActivity"
+              android:theme="@style/Theme.DevUi.DayNight"
+              android:launchMode="singleTask">
+    </activity>
+
     <provider android:name="org.chromium.android_webview.test.TestContentProvider"
         android:authorities="org.chromium.android_webview.test.TestContentProvider" />
     <!-- Some tests require 3 sandboxed services -->

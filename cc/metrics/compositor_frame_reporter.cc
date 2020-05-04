@@ -167,7 +167,7 @@ constexpr int kCompositorLatencyHistogramBucketCount = 50;
 constexpr int kEventLatencyEventTypeCount =
     static_cast<int>(ui::EventType::ET_LAST);
 constexpr int kEventLatencyScrollTypeCount =
-    static_cast<int>(ScrollInputType::kMaxValue) + 1;
+    static_cast<int>(ui::ScrollInputType::kMaxValue) + 1;
 constexpr int kMaxEventLatencyHistogramBaseIndex =
     kEventLatencyEventTypeCount * kEventLatencyScrollTypeCount;
 constexpr int kMaxEventLatencyHistogramIndex =

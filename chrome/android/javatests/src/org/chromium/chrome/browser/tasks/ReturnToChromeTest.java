@@ -10,10 +10,12 @@ import static org.junit.Assert.assertEquals;
 
 import static org.chromium.chrome.browser.tasks.ReturnToChromeExperimentsUtil.TAB_SWITCHER_ON_RETURN_MS_PARAM;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
 import android.support.test.filters.SmallTest;
+import android.text.TextUtils;
 
 import org.junit.Assert;
 import org.junit.Rule;
@@ -21,20 +23,32 @@ import org.junit.Test;
 import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.ActivityState;
+import org.chromium.base.ApplicationStatus;
+import org.chromium.base.ApplicationStatus.ActivityStateListener;
+import org.chromium.base.CommandLine;
+import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.base.test.params.ParameterAnnotations;
+import org.chromium.base.test.params.ParameterAnnotations.UseRunnerDelegate;
+import org.chromium.base.test.params.ParameterSet;
+import org.chromium.base.test.params.ParameterizedRunner;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.FlakyTest;
 import org.chromium.base.test.util.Restriction;
+import org.chromium.chrome.browser.ChromeTabbedActivity;
+import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
+import org.chromium.chrome.browser.lifecycle.InflationObserver;
 import org.chromium.chrome.browser.tabmodel.TestTabModelDirectory;
 import org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper;
 import org.chromium.chrome.features.start_surface.InstantStartTest;
 import org.chromium.chrome.features.start_surface.StartSurfaceConfiguration;
-import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.ChromeJUnit4RunnerDelegate;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.ChromeRenderTestRule;
 import org.chromium.chrome.test.util.browser.Features;
@@ -46,11 +60,16 @@ import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.net.test.EmbeddedTestServer;
 import org.chromium.ui.test.util.UiRestriction;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
+
 /**
  * Tests the functionality of return to chrome features that open overview mode if the timeout
  * has passed.
  */
-@RunWith(ChromeJUnit4ClassRunner.class)
+@RunWith(ParameterizedRunner.class)
+@UseRunnerDelegate(ChromeJUnit4RunnerDelegate.class)
 @EnableFeatures({ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID,
         ChromeFeatureList.TAB_SWITCHER_ON_RETURN + "<Study"})
 // clang-format off
@@ -58,6 +77,11 @@ import org.chromium.ui.test.util.UiRestriction;
         "force-fieldtrials=Study/Group"})
 public class ReturnToChromeTest {
     // clang-format on
+    @ParameterAnnotations.ClassParameter
+    private static List<ParameterSet> sClassParams =
+            Arrays.asList(new ParameterSet().value(false).name("NoInstant"),
+                    new ParameterSet().value(true).name("Instant"));
+
     private static final String BASE_PARAMS =
             "force-fieldtrial-params=Study.Group:" + TAB_SWITCHER_ON_RETURN_MS_PARAM + "/0";
     @Rule
@@ -68,6 +92,35 @@ public class ReturnToChromeTest {
 
     @Rule
     public TestRule mProcessor = new Features.InstrumentationProcessor();
+
+    class ActivityInflationObserver implements ActivityStateListener, InflationObserver {
+        @Override
+        public void onActivityStateChange(Activity activity, @ActivityState int newState) {
+            if (newState == ActivityState.CREATED && activity instanceof ChromeTabbedActivity) {
+                ((ChromeTabbedActivity) activity).getLifecycleDispatcher().register(this);
+            }
+        }
+
+        @Override
+        public void onPreInflationStartup() {}
+
+        @Override
+        public void onPostInflationStartup() {
+            mInflated.set(true);
+        }
+    }
+    private final AtomicBoolean mInflated = new AtomicBoolean();
+
+    private final boolean mUseInstantStart;
+
+    public ReturnToChromeTest(boolean useInstantStart) {
+        mUseInstantStart = useInstantStart;
+        CachedFeatureFlags.setForTesting(ChromeFeatureList.INSTANT_START, useInstantStart);
+        if (mUseInstantStart) {
+            CommandLine.getInstance().appendSwitch(ChromeSwitches.DISABLE_NATIVE_INITIALIZATION);
+        }
+        ApplicationStatus.registerStateListenerForAllActivities(new ActivityInflationObserver());
+    }
 
     /**
      * Test that overview mode is not triggered if the delay is longer than the interval between
@@ -83,7 +136,7 @@ public class ReturnToChromeTest {
     public void testTabSwitcherModeNotTriggeredWithinThreshold() throws Exception {
         // clang-format on
         InstantStartTest.createTabStateFile(new int[] {0, 1});
-        mActivityTestRule.startMainActivityFromLauncher();
+        startMainActivityWithURLWithoutCurrentTab(null);
 
         Assert.assertEquals("single", StartSurfaceConfiguration.START_SURFACE_VARIATION.getValue());
         TestThreadUtils.runOnUiThreadBlocking(
@@ -92,9 +145,13 @@ public class ReturnToChromeTest {
                                                      .shouldShowStartSurfaceAsTheHomePage()));
 
         Assert.assertFalse(mActivityTestRule.getActivity().getLayoutManager().overviewVisible());
+
+        waitTabModelRestoration();
         assertEquals(0,
                 RecordHistogram.getHistogramTotalCountForTesting(
                         ReturnToChromeExperimentsUtil.UMA_TIME_TO_GTS_FIRST_MEANINGFUL_PAINT));
+        assertEquals(2, mActivityTestRule.getActivity().getTabModelSelector().getTotalTabCount());
+        Assert.assertFalse(mActivityTestRule.getActivity().getLayoutManager().overviewVisible());
     }
 
     /**
@@ -110,7 +167,10 @@ public class ReturnToChromeTest {
             + "/start_surface_variation/single"})
     public void testTabSwitcherModeTriggeredWithinThreshold_NoTab() {
         // clang-format on
-        startMainActivityFromLauncherWithoutCurrentTab();
+        // TODO(crbug.com/1077627): Start surface should show with Instant start.
+        if (mUseInstantStart) return;
+
+        startMainActivityWithURLWithoutCurrentTab(null);
 
         Assert.assertEquals("single", StartSurfaceConfiguration.START_SURFACE_VARIATION.getValue());
         TestThreadUtils.runOnUiThreadBlocking(
@@ -122,12 +182,11 @@ public class ReturnToChromeTest {
             Assert.assertTrue(mActivityTestRule.getActivity().getLayoutManager().overviewVisible());
         }
 
-        CriteriaHelper.pollUiThread(Criteria.equals(true,
-                mActivityTestRule.getActivity()
-                        .getTabModelSelector()
-                        .getTabModelFilterProvider()
-                        .getCurrentTabModelFilter()::isTabModelRestored));
+        waitTabModelRestoration();
         assertEquals(0, mActivityTestRule.getActivity().getTabModelSelector().getTotalTabCount());
+        if (!mActivityTestRule.getActivity().isTablet()) {
+            Assert.assertTrue(mActivityTestRule.getActivity().getLayoutManager().overviewVisible());
+        }
     }
 
     /**
@@ -143,8 +202,11 @@ public class ReturnToChromeTest {
             + "/start_surface_variation/single"})
     public void testTabSwitcherModeTriggeredWithinThreshold_NTP() throws Exception {
         // clang-format on
+        // TODO(crbug.com/1077627): Start surface should show with Instant start.
+        if (mUseInstantStart) return;
+
         InstantStartTest.createTabStateFile(new int[] {0, 1});
-        mActivityTestRule.startMainActivityWithURL(UrlConstants.NTP_URL);
+        startMainActivityWithURLWithoutCurrentTab(UrlConstants.NTP_URL);
 
         Assert.assertEquals("single", StartSurfaceConfiguration.START_SURFACE_VARIATION.getValue());
         TestThreadUtils.runOnUiThreadBlocking(
@@ -156,13 +218,12 @@ public class ReturnToChromeTest {
             Assert.assertTrue(mActivityTestRule.getActivity().getLayoutManager().overviewVisible());
         }
 
-        CriteriaHelper.pollUiThread(Criteria.equals(true,
-                mActivityTestRule.getActivity()
-                        .getTabModelSelector()
-                        .getTabModelFilterProvider()
-                        .getCurrentTabModelFilter()::isTabModelRestored));
+        waitTabModelRestoration();
         // Not 3 because we don't create a tab for NTP in this case.
         assertEquals(2, mActivityTestRule.getActivity().getTabModelSelector().getTotalTabCount());
+        if (!mActivityTestRule.getActivity().isTablet()) {
+            Assert.assertTrue(mActivityTestRule.getActivity().getLayoutManager().overviewVisible());
+        }
     }
 
     /**
@@ -174,20 +235,21 @@ public class ReturnToChromeTest {
     @Feature({"ReturnToChrome"})
     @CommandLineFlags.Add({BASE_PARAMS + "/" + TAB_SWITCHER_ON_RETURN_MS_PARAM + "/0"})
     public void testTabSwitcherModeTriggeredBeyondThreshold() throws Exception {
+        // TODO(crbug.com/1077627): Start surface should show with Instant start.
+        if (mUseInstantStart) return;
+
         InstantStartTest.createTabStateFile(new int[] {0, 1});
-        mActivityTestRule.startMainActivityFromLauncher();
+        startMainActivityWithURLWithoutCurrentTab(null);
 
         if (!mActivityTestRule.getActivity().isTablet()) {
             Assert.assertTrue(mActivityTestRule.getActivity().getLayoutManager().overviewVisible());
         }
 
-        CriteriaHelper.pollUiThread(Criteria.equals(true,
-                mActivityTestRule.getActivity()
-                        .getTabModelSelector()
-                        .getTabModelFilterProvider()
-                        .getCurrentTabModelFilter()::isTabModelRestored));
-
+        waitTabModelRestoration();
         assertEquals(2, mActivityTestRule.getActivity().getTabModelSelector().getTotalTabCount());
+        if (!mActivityTestRule.getActivity().isTablet()) {
+            Assert.assertTrue(mActivityTestRule.getActivity().getLayoutManager().overviewVisible());
+        }
     }
 
     /**
@@ -201,6 +263,9 @@ public class ReturnToChromeTest {
     @CommandLineFlags.Add({BASE_PARAMS + "/" + TAB_SWITCHER_ON_RETURN_MS_PARAM + "/0"})
     @FlakyTest(message = "crbug.com/1040896")
     public void testTabSwitcherModeTriggeredBeyondThreshold_UMA() throws Exception {
+        // TODO(crbug.com/1077627): Start surface should show with Instant start.
+        if (mUseInstantStart) return;
+
         testTabSwitcherModeTriggeredBeyondThreshold();
 
         assertThat(mActivityTestRule.getActivity().isTablet()).isFalse();
@@ -232,6 +297,9 @@ public class ReturnToChromeTest {
     @Feature({"ReturnToChrome"})
     @CommandLineFlags.Add({BASE_PARAMS + "/" + TAB_SWITCHER_ON_RETURN_MS_PARAM + "/0"})
     public void testTabSwitcherModeTriggeredBeyondThreshold_WarmStart() throws Exception {
+        // TODO(crbug.com/1077627): Start surface should show with Instant start.
+        if (mUseInstantStart) return;
+
         testTabSwitcherModeTriggeredBeyondThreshold();
 
         // Redo to trigger warm startup UMA.
@@ -262,6 +330,9 @@ public class ReturnToChromeTest {
     @CommandLineFlags.Add({BASE_PARAMS + "/" + TAB_SWITCHER_ON_RETURN_MS_PARAM + "/0"})
     @FlakyTest(message = "crbug.com/1040896")
     public void testTabSwitcherModeTriggeredBeyondThreshold_WarmStart_UMA() throws Exception {
+        // TODO(crbug.com/1077627): Start surface should show with Instant start.
+        if (mUseInstantStart) return;
+
         testTabSwitcherModeTriggeredBeyondThreshold_WarmStart();
 
         assertThat(mActivityTestRule.getActivity().isTablet()).isFalse();
@@ -293,21 +364,22 @@ public class ReturnToChromeTest {
     @Feature({"ReturnToChrome"})
     @CommandLineFlags.Add({BASE_PARAMS + "/" + TAB_SWITCHER_ON_RETURN_MS_PARAM + "/0"})
     public void testTabSwitcherModeTriggeredBeyondThreshold_NoTabs() {
+        // TODO(crbug.com/1077627): Start surface should show with Instant start.
+        if (mUseInstantStart) return;
+
         // Cannot use ChromeTabbedActivityTestRule.startMainActivityFromLauncher() because
         // there's no tab.
-        startMainActivityFromLauncherWithoutCurrentTab();
+        startMainActivityWithURLWithoutCurrentTab(null);
 
         if (!mActivityTestRule.getActivity().isTablet()) {
             Assert.assertTrue(mActivityTestRule.getActivity().getLayoutManager().overviewVisible());
         }
 
-        CriteriaHelper.pollUiThread(Criteria.equals(true,
-                mActivityTestRule.getActivity()
-                        .getTabModelSelector()
-                        .getTabModelFilterProvider()
-                        .getCurrentTabModelFilter()::isTabModelRestored));
-
+        waitTabModelRestoration();
         assertEquals(0, mActivityTestRule.getActivity().getTabModelSelector().getTotalTabCount());
+        if (!mActivityTestRule.getActivity().isTablet()) {
+            Assert.assertTrue(mActivityTestRule.getActivity().getLayoutManager().overviewVisible());
+        }
     }
 
     /**
@@ -321,6 +393,9 @@ public class ReturnToChromeTest {
     @CommandLineFlags.Add({BASE_PARAMS + "/" + TAB_SWITCHER_ON_RETURN_MS_PARAM + "/0"})
     @DisabledTest(message = "http://crbug.com/1027315")
     public void testTabSwitcherModeTriggeredBeyondThreshold_NoTabs_UMA() {
+        // TODO(crbug.com/1077627): Start surface should show with Instant start.
+        if (mUseInstantStart) return;
+
         testTabSwitcherModeTriggeredBeyondThreshold_NoTabs();
 
         assertThat(mActivityTestRule.getActivity().isTablet()).isFalse();
@@ -361,6 +436,9 @@ public class ReturnToChromeTest {
     @DisableIf.Build(hardware_is = "bullhead", message = "https://crbug.com/1025241")
     public void testInitialScrollIndex() throws Exception {
         // clang-format on
+        // Instant start is not applicable since we need to create tabs and restart.
+        if (mUseInstantStart) return;
+
         EmbeddedTestServer testServer =
                 EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
         String url = testServer.getURL("/chrome/test/data/android/about.html");
@@ -394,14 +472,44 @@ public class ReturnToChromeTest {
     }
 
     /**
-     * Similar to {@link ChromeTabbedActivityTestRule#startMainActivityFromLauncher} but skip
-     * verification and tasks regarding current tab.
+     * Similar to {@link ChromeTabbedActivityTestRule#startMainActivityWithURL(String url)}
+     * but skip verification and tasks regarding current tab.
      */
-    private void startMainActivityFromLauncherWithoutCurrentTab() {
-        Intent intent = new Intent(Intent.ACTION_MAIN);
+    private void startMainActivityWithURLWithoutCurrentTab(String url) {
+        Intent intent =
+                new Intent(TextUtils.isEmpty(url) ? Intent.ACTION_MAIN : Intent.ACTION_VIEW);
         intent.addCategory(Intent.CATEGORY_LAUNCHER);
-        mActivityTestRule.prepareUrlIntent(intent, null);
+        mActivityTestRule.prepareUrlIntent(intent, url);
+        Assert.assertFalse(mInflated.get());
         mActivityTestRule.startActivityCompletely(intent);
-        mActivityTestRule.waitForActivityNativeInitializationComplete();
+        if (mUseInstantStart) {
+            CriteriaHelper.pollUiThread(mInflated::get);
+        } else {
+            mActivityTestRule.waitForActivityNativeInitializationComplete();
+        }
+    }
+
+    private void waitTabModelRestoration() {
+        if (mUseInstantStart) {
+            Assert.assertFalse(LibraryLoader.getInstance().isInitialized());
+
+            CommandLine.getInstance().removeSwitch(ChromeSwitches.DISABLE_NATIVE_INITIALIZATION);
+            TestThreadUtils.runOnUiThreadBlocking(
+                    ()
+                            -> mActivityTestRule.getActivity()
+                                       .startDelayedNativeInitializationForTests());
+        }
+        CriteriaHelper.pollUiThread(()
+                                            -> mActivityTestRule.getActivity()
+                                                       .getTabModelSelector()
+                                                       .getTabModelFilterProvider()
+                                                       .getCurrentTabModelFilter()
+                                != null
+                        && mActivityTestRule.getActivity()
+                                   .getTabModelSelector()
+                                   .getTabModelFilterProvider()
+                                   .getCurrentTabModelFilter()
+                                   .isTabModelRestored());
+        Assert.assertTrue(LibraryLoader.getInstance().isInitialized());
     }
 }

@@ -779,6 +779,7 @@ jumbo_component("views") {
         ]
         deps += [ "//ui/events:dom_keyboard_layout" ]
       } else if (use_ozone) {
+        public += [ "widget/desktop_aura/desktop_screen_ozone.h" ]
         sources += [
           "widget/desktop_aura/desktop_drag_drop_client_ozone.cc",
           "widget/desktop_aura/desktop_drag_drop_client_ozone.h",
@@ -921,8 +922,6 @@ jumbo_source_set("test_support") {
     "test/widget_test.h",
     "test/widget_test_api.cc",
     "test/widget_test_api.h",
-    "test/x11_property_change_waiter.cc",
-    "test/x11_property_change_waiter.h",
     "view_test_api.h",
     "views_test_suite.cc",
     "views_test_suite.h",
@@ -1016,12 +1015,6 @@ jumbo_source_set("test_support") {
   }
   if (ozone_platform_x11) {
     deps += [ "//ui/base/x" ]
-  }
-  if (use_ozone || !use_x11) {
-    sources -= [
-      "test/x11_property_change_waiter.cc",
-      "test/x11_property_change_waiter.h",
-    ]
   }
 }
 
@@ -1270,6 +1263,7 @@ test("views_unittests") {
           "widget/desktop_aura/desktop_screen_x11_unittest.cc",
           "widget/desktop_aura/desktop_window_tree_host_x11_unittest.cc",
         ]
+        deps += [ "//ui/base/x:test_support" ]
       }
       if (is_linux || is_fuchsia) {
         sources += [
@@ -1363,6 +1357,7 @@ source_set("views_interactive_ui_tests") {
       "widget/desktop_aura/x11_topmost_window_finder_interactive_uitest.cc",
     ]
     deps += [
+      "//ui/base/x:test_support",
       "//ui/events/platform/x11:x11",
       "//ui/platform_window/x11",
     ]

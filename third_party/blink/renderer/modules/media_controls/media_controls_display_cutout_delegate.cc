@@ -63,6 +63,9 @@ void MediaControlsDisplayCutoutDelegate::Trace(Visitor* visitor) {
 }
 
 void MediaControlsDisplayCutoutDelegate::DidEnterFullscreen() {
+  if (RuntimeEnabledFeatures::MediaControlsUseCutOutByDefaultEnabled())
+    GetDocument().GetViewportData().SetExpandIntoDisplayCutout(true);
+
   video_element_->addEventListener(event_type_names::kTouchstart, this, true);
   video_element_->addEventListener(event_type_names::kTouchend, this, true);
   video_element_->addEventListener(event_type_names::kTouchmove, this, true);

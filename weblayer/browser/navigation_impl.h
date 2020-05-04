@@ -6,6 +6,7 @@
 #define WEBLAYER_BROWSER_NAVIGATION_IMPL_H_
 
 #include <memory>
+
 #include "base/macros.h"
 #include "base/optional.h"
 #include "build/build_config.h"
@@ -38,6 +39,10 @@ class NavigationImpl : public Navigation {
     safe_to_set_request_headers_ = value;
   }
 
+  void set_safe_to_set_user_agent(bool value) {
+    safe_to_set_user_agent_ = value;
+  }
+
   void SetParamsToLoadWhenSafe(
       std::unique_ptr<content::NavigationController::LoadURLParams> params);
   std::unique_ptr<content::NavigationController::LoadURLParams>
@@ -57,6 +62,9 @@ class NavigationImpl : public Navigation {
   jboolean SetRequestHeader(JNIEnv* env,
                             const base::android::JavaParamRef<jstring>& name,
                             const base::android::JavaParamRef<jstring>& value);
+  jboolean SetUserAgentString(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jstring>& value);
 
   base::android::ScopedJavaGlobalRef<jobject> java_navigation() {
     return java_navigation_;
@@ -74,6 +82,7 @@ class NavigationImpl : public Navigation {
   LoadError GetLoadError() override;
   void SetRequestHeader(const std::string& name,
                         const std::string& value) override;
+  void SetUserAgentString(const std::string& value) override;
 
   content::NavigationHandle* navigation_handle_;
 
@@ -83,6 +92,9 @@ class NavigationImpl : public Navigation {
 
   // Whether SetRequestHeader() is allowed at this time.
   bool safe_to_set_request_headers_ = false;
+
+  // Whether SetUserAgentString() is allowed at this time.
+  bool safe_to_set_user_agent_ = false;
 
 #if defined(OS_ANDROID)
   base::android::ScopedJavaGlobalRef<jobject> java_navigation_;

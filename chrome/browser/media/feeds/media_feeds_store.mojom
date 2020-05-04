@@ -87,6 +87,9 @@ enum FetchResult {
 
   // The feed failed to fetch because of a network error.
   kFailedNetworkError = 3,
+
+  // The feed failed to fetch because the feed data was invalid.
+  kInvalidFeed = 4,
 };
 
 // The reason why a feed has been reset. This enum is committed to storage so

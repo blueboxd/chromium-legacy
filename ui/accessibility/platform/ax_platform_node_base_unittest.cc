@@ -43,6 +43,114 @@ void SetRole(AXTree* tree, int id, ax::mojom::Role role) {
 
 }  // namespace
 
+TEST(AXPlatformNodeBaseTest, GetHypertext) {
+  AXTreeUpdate update;
+
+  // RootWebArea #1
+  // ++++StaticText "text1" #2
+  // ++++StaticText "text2" #3
+  // ++++StaticText "text3" #4
+
+  update.root_id = 1;
+  update.nodes.resize(4);
+
+  update.nodes[0].id = 1;
+  update.nodes[0].role = ax::mojom::Role::kWebArea;
+  update.nodes[0].child_ids = {2, 3, 4};
+
+  MakeStaticText(&update.nodes[1], 2, "text1");
+  MakeStaticText(&update.nodes[2], 3, "text2");
+  MakeStaticText(&update.nodes[3], 4, "text3");
+
+  AXTree tree(update);
+
+  // Set an AXMode on the AXPlatformNode as some platforms (auralinux) use it to
+  // determine if it should enable accessibility.
+  AXPlatformNodeBase::NotifyAddAXModeFlags(kAXModeComplete);
+
+  AXPlatformNodeBase* root = static_cast<AXPlatformNodeBase*>(
+      TestAXNodeWrapper::GetOrCreate(&tree, tree.root())->ax_platform_node());
+
+  EXPECT_EQ(root->GetHypertext(), base::UTF8ToUTF16("text1text2text3"));
+
+  AXPlatformNodeBase* text1 = static_cast<AXPlatformNodeBase*>(
+      AXPlatformNode::FromNativeViewAccessible(root->ChildAtIndex(0)));
+  EXPECT_EQ(text1->GetHypertext(), base::UTF8ToUTF16("text1"));
+
+  AXPlatformNodeBase* text2 = static_cast<AXPlatformNodeBase*>(
+      AXPlatformNode::FromNativeViewAccessible(root->ChildAtIndex(1)));
+  EXPECT_EQ(text2->GetHypertext(), base::UTF8ToUTF16("text2"));
+
+  AXPlatformNodeBase* text3 = static_cast<AXPlatformNodeBase*>(
+      AXPlatformNode::FromNativeViewAccessible(root->ChildAtIndex(2)));
+  EXPECT_EQ(text3->GetHypertext(), base::UTF8ToUTF16("text3"));
+}
+
+TEST(AXPlatformNodeBaseTest, GetHypertextIgnoredContainerSiblings) {
+  AXTreeUpdate update;
+
+  // RootWebArea #1
+  // ++genericContainer IGNORED #2
+  // ++++StaticText "text1" #3
+  // ++genericContainer IGNORED #4
+  // ++++StaticText "text2" #5
+  // ++genericContainer IGNORED #6
+  // ++++StaticText "text3" #7
+
+  update.root_id = 1;
+  update.nodes.resize(7);
+
+  update.nodes[0].id = 1;
+  update.nodes[0].role = ax::mojom::Role::kWebArea;
+  update.nodes[0].child_ids = {2, 4, 6};
+
+  update.nodes[1].id = 2;
+  update.nodes[1].child_ids = {3};
+  update.nodes[1].role = ax::mojom::Role::kGenericContainer;
+  update.nodes[1].AddState(ax::mojom::State::kIgnored);
+  MakeStaticText(&update.nodes[2], 3, "text1");
+
+  update.nodes[3].id = 4;
+  update.nodes[3].child_ids = {5};
+  update.nodes[3].role = ax::mojom::Role::kGenericContainer;
+  update.nodes[3].AddState(ax::mojom::State::kIgnored);
+  MakeStaticText(&update.nodes[4], 5, "text2");
+
+  update.nodes[5].id = 6;
+  update.nodes[5].child_ids = {7};
+  update.nodes[5].role = ax::mojom::Role::kGenericContainer;
+  update.nodes[5].AddState(ax::mojom::State::kIgnored);
+  MakeStaticText(&update.nodes[6], 7, "text3");
+
+  AXTree tree(update);
+  // Set an AXMode on the AXPlatformNode as some platforms (auralinux) use it to
+  // determine if it should enable accessibility.
+  AXPlatformNodeBase::NotifyAddAXModeFlags(kAXModeComplete);
+
+  AXPlatformNodeBase* root = static_cast<AXPlatformNodeBase*>(
+      TestAXNodeWrapper::GetOrCreate(&tree, tree.root())->ax_platform_node());
+
+  EXPECT_EQ(root->GetHypertext(), base::UTF8ToUTF16("text1text2text3"));
+
+  AXPlatformNodeBase* text1_ignored_container =
+      static_cast<AXPlatformNodeBase*>(
+          AXPlatformNode::FromNativeViewAccessible(root->ChildAtIndex(0)));
+  EXPECT_EQ(text1_ignored_container->GetHypertext(),
+            base::UTF8ToUTF16("text1"));
+
+  AXPlatformNodeBase* text2_ignored_container =
+      static_cast<AXPlatformNodeBase*>(
+          AXPlatformNode::FromNativeViewAccessible(root->ChildAtIndex(1)));
+  EXPECT_EQ(text2_ignored_container->GetHypertext(),
+            base::UTF8ToUTF16("text2"));
+
+  AXPlatformNodeBase* text3_ignored_container =
+      static_cast<AXPlatformNodeBase*>(
+          AXPlatformNode::FromNativeViewAccessible(root->ChildAtIndex(2)));
+  EXPECT_EQ(text3_ignored_container->GetHypertext(),
+            base::UTF8ToUTF16("text3"));
+}
+
 TEST(AXPlatformNodeBaseTest, InnerTextIgnoresInvisibleAndIgnored) {
   AXTreeUpdate update;
 

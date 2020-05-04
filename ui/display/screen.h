@@ -5,6 +5,7 @@
 #ifndef UI_DISPLAY_SCREEN_H_
 #define UI_DISPLAY_SCREEN_H_
 
+#include <set>
 #include <vector>
 
 #include "base/macros.h"
@@ -50,6 +51,14 @@ class DISPLAY_EXPORT Screen {
 
   // Returns the window at the given screen coordinate |point|.
   virtual gfx::NativeWindow GetWindowAtScreenPoint(const gfx::Point& point) = 0;
+
+  // Finds the topmost visible chrome window at |screen_point|. This should
+  // return nullptr if |screen_point| is in another program's window which
+  // occludes the topmost chrome window. Ignores the windows in |ignore|, which
+  // contain windows such as the tab being dragged right now.
+  virtual gfx::NativeWindow GetLocalProcessWindowAtPoint(
+      const gfx::Point& point,
+      const std::set<gfx::NativeWindow>& ignore) = 0;
 
   // Returns the number of displays.
   // Mirrored displays are excluded; this method is intended to return the

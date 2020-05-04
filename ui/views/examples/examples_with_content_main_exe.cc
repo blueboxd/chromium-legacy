@@ -3,8 +3,11 @@
 // found in the LICENSE file.
 
 #include "base/bind.h"
+#include "base/files/file_path.h"
+#include "base/path_service.h"
 #include "build/build_config.h"
 #include "content/public/browser/browser_context.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "ui/views/examples/examples_window_with_content.h"
 #include "ui/views_content_client/views_content_client.h"
 
@@ -18,6 +21,14 @@ namespace {
 void ShowContentExampleWindow(ui::ViewsContentClient* views_content_client,
                               content::BrowserContext* browser_context,
                               gfx::NativeWindow window_context) {
+  base::FilePath views_examples_resources_pak_path;
+  CHECK(base::PathService::Get(base::DIR_MODULE,
+                               &views_examples_resources_pak_path));
+  ui::ResourceBundle::GetSharedInstance().AddDataPackFromPath(
+      views_examples_resources_pak_path.AppendASCII(
+          "views_examples_resources.pak"),
+      ui::SCALE_FACTOR_100P);
+
   views::examples::ShowExamplesWindowWithContent(
       std::move(views_content_client->quit_closure()), browser_context,
       window_context);

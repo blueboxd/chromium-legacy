@@ -7,6 +7,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_property_definition.h"
 #include "third_party/blink/renderer/core/css/css_custom_ident_value.h"
+#include "third_party/blink/renderer/core/css/css_numeric_literal_value.h"
 #include "third_party/blink/renderer/core/css/css_rule_list.h"
 #include "third_party/blink/renderer/core/css/css_style_sheet.h"
 #include "third_party/blink/renderer/core/css/css_syntax_string_parser.h"
@@ -69,6 +70,16 @@ PropertyRegistration* CreatePropertyRegistration(const String& name) {
   return MakeGarbageCollected<PropertyRegistration>(
       AtomicString(name), *syntax_definition, false /* inherits */,
       nullptr /* initial */, nullptr /* initial_variable_data */);
+}
+
+PropertyRegistration* CreateLengthRegistration(const String& name, int px) {
+  auto syntax_definition = CSSSyntaxStringParser("<length>").Parse();
+  DCHECK(syntax_definition);
+  const CSSValue* initial =
+      CSSNumericLiteralValue::Create(px, CSSPrimitiveValue::UnitType::kPixels);
+  return MakeGarbageCollected<PropertyRegistration>(
+      AtomicString(name), *syntax_definition, false /* inherits */, initial,
+      CreateVariableData(initial->CssText()));
 }
 
 void RegisterProperty(Document& document,

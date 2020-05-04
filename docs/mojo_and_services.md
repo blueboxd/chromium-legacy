@@ -218,7 +218,7 @@ void RenderFrameHostImpl::GetPingResponder(
 
 // browser_interface_binders.cc
 void PopulateFrameBinders(RenderFrameHostImpl* host,
-                          service_manager::BinderMap* map) {
+                          mojo::BinderMap* map) {
 ...
   // Register the handler for PingResponder.
   map->Add<example::mojom::PingResponder>(base::BindRepeating(
@@ -447,7 +447,7 @@ which maps specific interfaces to their handlers in respective hosts:
 ``` cpp
 // //content/browser/browser_interface_binders.cc
 void PopulateFrameBinders(RenderFrameHostImpl* host,
-                          service_manager::BinderMap* map) {
+                          mojo::BinderMap* map) {
 ...
   map->Add<magic::mojom::GoatTeleporter>(base::BindRepeating(
       &RenderFrameHostImpl::GetGoatTeleporter, base::Unretained(host)));

@@ -274,14 +274,10 @@ bool FullscreenController::HandleUserPressedEscape() {
     return true;
   }
 
-// On macOS, it's idiomatic to exit application fullscreen on Esc.
-#if !defined(OS_MACOSX)
   if (!IsWindowFullscreenForTabOrPending())
     return false;
-  ExitFullscreenModeForTab(exclusive_access_tab());
-#else
-  ExitExclusiveAccessToPreviousState();
-#endif
+
+  ExitExclusiveAccessIfNecessary();
   return true;
 }
 

@@ -17,6 +17,7 @@
     "mathbackground",
     "mathcolor",
     "mathsize",
+    "mathvariant",
     "width",
   ],
 }

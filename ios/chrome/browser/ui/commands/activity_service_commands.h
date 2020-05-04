@@ -10,9 +10,6 @@
 // Shows the share sheet for the current page.
 - (void)sharePage;
 
-// Hides the activity view.
-- (void)hideActivityView;
-
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_COMMANDS_ACTIVITY_SERVICE_COMMANDS_H_

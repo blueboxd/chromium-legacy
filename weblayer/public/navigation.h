@@ -82,6 +82,14 @@ class Navigation {
   // not contain '\0', '\n' or '\r'.
   virtual void SetRequestHeader(const std::string& name,
                                 const std::string& value) = 0;
+
+  // Sets the user-agent string used for this navigation. The user-agent is
+  // not sticky, it applies to this navigation only (and any redirects). This
+  // function may only be called from NavigationObserver::NavigationStarted().
+  // Any value specified during start carries through to a redirect. |value|
+  // must not contain any illegal characters as documented in
+  // SetRequestHeader().
+  virtual void SetUserAgentString(const std::string& value) = 0;
 };
 
 }  // namespace weblayer

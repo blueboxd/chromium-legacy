@@ -37,6 +37,7 @@ class RealboxElement extends PolymerElement {
   }
 
   constructor() {
+    performance.mark('realbox-creation-start');
     super();
     /** @private {newTabPage.mojom.PageHandlerRemote} */
     this.pageHandler_ = BrowserProxy.getInstance().handler;
@@ -62,6 +63,12 @@ class RealboxElement extends PolymerElement {
     super.disconnectedCallback();
     this.callbackRouter_.removeListener(
         assert(this.autocompleteResultChangedListenerId_));
+  }
+
+  /** @override */
+  ready() {
+    super.ready();
+    performance.measure('realbox-creation', 'realbox-creation-start');
   }
 
   /**

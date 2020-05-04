@@ -1134,16 +1134,31 @@ void URLLoader::OnResponseStarted(net::URLRequest* url_request, int net_error) {
   // Parse and remove the Trust Tokens response headers, if any are expected,
   // potentially failing the request if an error occurs.
   if (trust_token_helper_) {
-    mojom::TrustTokenOperationStatus status =
-        trust_token_helper_->Finalize(response_.get());
-    if (status != mojom::TrustTokenOperationStatus::kOk) {
-      trust_token_status_ = status;
-      NotifyCompleted(net::ERR_TRUST_TOKEN_OPERATION_FAILED);
-      // |this| may have been deleted.
-      return;
-    }
+    trust_token_helper_->Finalize(
+        response_.get(),
+        base::BindOnce(
+            [](base::WeakPtr<URLLoader> loader, net::URLRequest* request,
+               int net_error, mojom::TrustTokenOperationStatus status) {
+              if (!loader)
+                return;
+              if (status != mojom::TrustTokenOperationStatus::kOk) {
+                loader->trust_token_status_ = status;
+                loader->NotifyCompleted(net::ERR_TRUST_TOKEN_OPERATION_FAILED);
+                // |loader| may have been deleted.
+                return;
+              }
+              loader->ContinueOnResponseStarted(request, net_error);
+            },
+            weak_ptr_factory_.GetWeakPtr(), url_request, net_error));
+    // |this| may have been deleted.
+    return;
   }
 
+  ContinueOnResponseStarted(url_request, net_error);
+}
+
+void URLLoader::ContinueOnResponseStarted(net::URLRequest* url_request,
+                                          int net_error) {
   // Figure out if we need to sniff (for MIME type detection or for Cross-Origin
   // Read Blocking / CORB).
   if (factory_params_->is_corb_enabled && !is_nocors_corb_excluded_request_) {

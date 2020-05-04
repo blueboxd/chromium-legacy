@@ -241,9 +241,6 @@ bool Connector::WaitForIncomingMessage(MojoDeadline deadline) {
   // INDEFINITE deadlines at present, so we only support those.
   DCHECK(deadline == 0 || deadline == MOJO_DEADLINE_INDEFINITE);
 
-  if (!dispatch_queue_.empty())
-    return DispatchNextMessageInQueue();
-
   MojoResult rv = MOJO_RESULT_UNKNOWN;
   if (deadline == 0 && !message_pipe_->QuerySignalsState().readable())
     return false;
@@ -285,20 +282,6 @@ void Connector::ResumeIncomingMethodCallProcessing() {
 
   if (!paused_)
     return;
-
-  // Some number of queued dispatch tasks may have been aborted due to the
-  // Connector being paused at task execution time. We either dispatch them all
-  // now (if immediate dispatch is enabled) or schedule new tasks for each of
-  // them. Some of the scheduled tasks may be redundant, but that's OK.
-  if (should_dispatch_messages_immediately()) {
-    base::WeakPtr<Connector> weak_self = weak_self_;
-    DispatchAllQueuedMessages();
-    if (!weak_self)
-      return;
-  } else {
-    while (num_pending_dispatch_tasks_ < dispatch_queue_.size())
-      PostDispatchNextMessageInQueue();
-  }
 
   paused_ = false;
   WaitToReadMore();
@@ -376,7 +359,6 @@ void Connector::AllowWokenUpBySyncWatchOnSameThread() {
 
   EnsureSyncWatcherExists();
   sync_watcher_->AllowWokenUpBySyncWatchOnSameThread();
-  dispatch_queue_watcher_->AllowWokenUpBySyncWatchOnSameSequence();
 }
 
 void Connector::SetWatcherHeapProfilerTag(const char* tag) {
@@ -424,24 +406,14 @@ void Connector::OnHandleReadyInternal(MojoResult result) {
 
   if (result == MOJO_RESULT_FAILED_PRECONDITION) {
     // No more messages on the pipe and the peer is closed.
-    if (dispatch_queue_.empty()) {
-      HandleError(false /* force_pipe_reset */,
-                  false /* force_async_handler */);
-      return;
-    } else {
-      // We don't want to propagate an error signal yet because we still have
-      // queued messages to dispatch.
-      pending_error_dispatch_ = true;
-    }
+    HandleError(false /* force_pipe_reset */, false /* force_async_handler */);
+    return;
   } else if (result != MOJO_RESULT_OK) {
     // Some other fatal error condition was encountered. We can propagate this
     // immediately.
     HandleError(true /* force_pipe_reset */, false /* force_async_handler */);
     return;
   }
-
-  if (dispatch_queue_watcher_)
-    dispatch_queue_watcher_->ResetEvent();
 
   ReadAllAvailableMessages();
   // At this point, this object might have been deleted. Return.
@@ -478,8 +450,16 @@ void Connector::WaitToReadMore() {
   if (allow_woken_up_by_others_) {
     EnsureSyncWatcherExists();
     sync_watcher_->AllowWokenUpBySyncWatchOnSameThread();
-    dispatch_queue_watcher_->AllowWokenUpBySyncWatchOnSameSequence();
   }
+}
+
+uint64_t Connector::QueryPendingMessageCount() const {
+  uint64_t unused_current_limit = 0;
+  uint64_t pending_message_count = 0;
+  MojoQueryQuota(
+      message_pipe_.get().value(), MOJO_QUOTA_TYPE_RECEIVE_QUEUE_LENGTH,
+      /*options=*/nullptr, &unused_current_limit, &pending_message_count);
+  return pending_message_count;
 }
 
 MojoResult Connector::ReadMessage(Message* message) {
@@ -553,109 +533,76 @@ bool Connector::DispatchMessage(Message message) {
   return true;
 }
 
-void Connector::PostDispatchNextMessageInQueue() {
-  DCHECK_LT(num_pending_dispatch_tasks_, dispatch_queue_.size());
+void Connector::PostDispatchNextMessageFromPipe() {
   ++num_pending_dispatch_tasks_;
   task_runner_->PostTask(
       FROM_HERE,
-      base::BindOnce(&Connector::CallDispatchNextMessageInQueue, weak_self_));
+      base::BindOnce(&Connector::CallDispatchNextMessageFromPipe, weak_self_));
 }
 
-void Connector::CallDispatchNextMessageInQueue() {
+void Connector::CallDispatchNextMessageFromPipe() {
+  DCHECK_GT(num_pending_dispatch_tasks_, 0u);
   --num_pending_dispatch_tasks_;
-  DispatchNextMessageInQueue();
+  ReadAllAvailableMessages();
 }
 
-bool Connector::DispatchNextMessageInQueue() {
-  if (error_ || paused_)
-    return false;
-
-  if (dispatch_queue_.empty())
-    return true;
-
-  Message message = std::move(dispatch_queue_.front());
-  dispatch_queue_.pop();
-
-  base::WeakPtr<Connector> weak_self = weak_self_;
-
-  // NOTE: May delete |this|.
-  bool result = DispatchMessage(std::move(message));
-  if (weak_self) {
-    // If that was our last queued message and we've detected a pipe error, we
-    // can propagate it now.
-    if (dispatch_queue_.empty() && pending_error_dispatch_) {
-      HandleError(false /* force_pipe_reset */,
-                  false /* force_async_handler */);
-    }
-  }
-
-  return result;
-}
-
-bool Connector::DispatchAllQueuedMessages() {
-  base::WeakPtr<Connector> weak_self = weak_self_;
-  while (weak_self && !dispatch_queue_.empty()) {
-    if (!DispatchNextMessageInQueue())
-      return false;
-  }
-
-  return true;
-}
-
-void Connector::ReadAllAvailableMessages() {
-  base::WeakPtr<Connector> weak_self = weak_self_;
-  if (should_dispatch_messages_immediately()) {
-    // If we're dispatching messages immediately, we have to ensure that the
-    // pending dispatch queue is flushed before we started reading and
-    // dispatching messages fresh off the pipe. Otherwise messages would get
-    // reordered.
-    if (!DispatchAllQueuedMessages() || !weak_self)
-      return;
-  }
-
-  // Flush all messages from the pipe.
-  Message message;
-  MojoResult rv;
-  bool first_message_in_batch = dispatch_queue_.empty();
-  while ((rv = ReadMessage(&message)) == MOJO_RESULT_OK) {
-    DCHECK(!message.IsNull());
-
-    if (first_message_in_batch || should_dispatch_messages_immediately()) {
-      // Dispatch immediately if this is the first available message or if
-      // immediate dispatch is currently enabled for whatever reason.
-      DCHECK(dispatch_queue_.empty());
-      if (!DispatchMessage(std::move(message)) || !weak_self || paused_)
-        return;
-    } else {
-      dispatch_queue_.push(std::move(message));
-      if (num_pending_dispatch_tasks_ < dispatch_queue_.size())
-        PostDispatchNextMessageInQueue();
-    }
-
-    first_message_in_batch = false;
-  }
-
-  if (!dispatch_queue_.empty() && dispatch_queue_watcher_)
-    dispatch_queue_watcher_->SignalEvent();
-
-  if (rv == MOJO_RESULT_SHOULD_WAIT) {
+void Connector::ScheduleDispatchOfPendingMessagesOrWaitForMore(
+    uint64_t pending_message_count) {
+  if (pending_message_count == 0) {
     // We're done only because there are no more messages to read, so go back to
     // watching the pipe for more.
     handle_watcher_->ArmOrNotify();
     return;
   }
 
-  if (rv != MOJO_RESULT_FAILED_PRECONDITION) {
-    // A fatal error occurred on the pipe, handle it immediately.
-    HandleError(true /* force_pipe_reset */, false /* force_async_handler */);
-  } else if (dispatch_queue_.empty()) {
-    // The peer endpoint was closed and there are no more messages to read, and
-    // our dispatch queue is empty. We can signal an error right away.
-    HandleError(false /* force_pipe_reset */, false /* force_async_handler */);
-  } else {
-    // Peer closed but we still have messages to dispatch. Defer error
-    // propagation.
-    pending_error_dispatch_ = true;
+  while (pending_message_count > num_pending_dispatch_tasks_) {
+    PostDispatchNextMessageFromPipe();
+  }
+}
+
+void Connector::ReadAllAvailableMessages() {
+  if (paused_) {
+    return;
+  }
+
+  base::WeakPtr<Connector> weak_self = weak_self_;
+
+  do {
+    Message message;
+    MojoResult rv = ReadMessage(&message);
+
+    switch (rv) {
+      case MOJO_RESULT_OK:
+        DCHECK(!message.IsNull());
+        if (!DispatchMessage(std::move(message)) || !weak_self || paused_) {
+          return;
+        }
+        break;
+
+      case MOJO_RESULT_SHOULD_WAIT:
+        // No more messages - we need to wait for new ones to arrive.
+        ScheduleDispatchOfPendingMessagesOrWaitForMore(
+            /*pending_message_count*/ 0u);
+        return;
+
+      case MOJO_RESULT_FAILED_PRECONDITION:
+        // The peer endpoint was closed and there are no more messages to read.
+        // We can signal an error right away.
+        HandleError(false /* force_pipe_reset */,
+                    false /* force_async_handler */);
+        return;
+
+      default:
+        // A fatal error occurred on the pipe, handle it immediately.
+        HandleError(true /* force_pipe_reset */,
+                    false /* force_async_handler */);
+        return;
+    }
+  } while (weak_self && should_dispatch_messages_immediately());
+
+  if (weak_self) {
+    const auto pending_message_count = QueryPendingMessageCount();
+    ScheduleDispatchOfPendingMessagesOrWaitForMore(pending_message_count);
   }
 }
 
@@ -663,7 +610,6 @@ void Connector::CancelWait() {
   peer_remoteness_tracker_.reset();
   handle_watcher_.reset();
   sync_watcher_.reset();
-  dispatch_queue_watcher_.reset();
 }
 
 void Connector::HandleError(bool force_pipe_reset, bool force_async_handler) {
@@ -707,11 +653,6 @@ void Connector::EnsureSyncWatcherExists() {
       message_pipe_.get(), MOJO_HANDLE_SIGNAL_READABLE,
       base::BindRepeating(&Connector::OnSyncHandleWatcherHandleReady,
                           base::Unretained(this))));
-  dispatch_queue_watcher_ = std::make_unique<SequenceLocalSyncEventWatcher>(
-      base::BindRepeating(&Connector::OnSyncHandleWatcherHandleReady,
-                          base::Unretained(this), MOJO_RESULT_OK));
-  if (!dispatch_queue_.empty())
-    dispatch_queue_watcher_->SignalEvent();
 }
 
 }  // namespace mojo

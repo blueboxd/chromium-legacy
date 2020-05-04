@@ -513,6 +513,8 @@ void AssistantManagerServiceImpl::StartTextInteraction(
     bool allow_tts) {
   assistant_client::VoicelessOptions options;
   options.is_user_initiated = true;
+  options.enable_on_device_assistant_for_voiceless =
+      assistant::features::IsOnDeviceAssistantEnabled();
 
   if (!allow_tts) {
     options.modality =

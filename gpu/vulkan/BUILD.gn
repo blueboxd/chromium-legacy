@@ -7,6 +7,7 @@ import("//build/config/dcheck_always_on.gni")
 import("//build/config/jumbo.gni")
 import("//build/config/ui.gni")
 import("//testing/test.gni")
+import("//third_party/vulkanmemoryallocator/vulkan_memory_allocator.gni")
 import("//ui/ozone/ozone.gni")
 import("features.gni")
 
@@ -33,16 +34,24 @@ if (enable_vulkan) {
     }
   }
 
+  vulkan_memory_allocator("vulkanmemoryallocator") {
+    vulkan_memory_allocator_dir = "//third_party/vulkanmemoryallocator"
+  }
+
   jumbo_component("vulkan") {
     output_name = "vulkan_wrapper"
 
     sources = [
       "semaphore_handle.cc",
       "semaphore_handle.h",
+      "vma_wrapper.cc",
+      "vma_wrapper.h",
       "vulkan_command_buffer.cc",
       "vulkan_command_buffer.h",
       "vulkan_command_pool.cc",
       "vulkan_command_pool.h",
+      "vulkan_crash_keys.cc",
+      "vulkan_crash_keys.h",
       "vulkan_device_queue.cc",
       "vulkan_device_queue.h",
       "vulkan_export.h",
@@ -67,13 +76,20 @@ if (enable_vulkan) {
     configs += [ "//build/config:precompiled_headers" ]
     public_configs = [ ":vulkan_config" ]
 
-    defines = [ "VULKAN_IMPLEMENTATION" ]
+    defines = [
+      "VULKAN_IMPLEMENTATION",
+      "VMA_DYNAMIC_VULKAN_FUNCTIONS=0",
+      "VMA_STATS_STRING_ENABLED=0",
+      "VMA_IMPLEMENTATION",
+    ]
 
     all_dependent_configs = [ "//third_party/vulkan:vulkan_config" ]
 
     deps = [
+      ":vulkanmemoryallocator",
       "//base",
       "//base/util/type_safety",
+      "//components/crash/core/common:crash_key",
       "//gpu/ipc/common:vulkan_ycbcr_info",
       "//ui/gfx",
     ]

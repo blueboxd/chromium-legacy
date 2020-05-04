@@ -26,7 +26,7 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/no_renderer_crashes_assertion.h"
 #include "content/public/test/test_utils.h"
-#include "services/service_manager/public/cpp/binder_map.h"
+#include "mojo/public/cpp/bindings/binder_map.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "url/gurl.h"
@@ -182,8 +182,7 @@ class MojoWebUIControllerBrowserTest : public InProcessBrowserTest {
 
     void RegisterBrowserInterfaceBindersForFrame(
         content::RenderFrameHost* render_frame_host,
-        service_manager::BinderMapWithContext<content::RenderFrameHost*>* map)
-        override {
+        mojo::BinderMapWithContext<content::RenderFrameHost*>* map) override {
       ChromeContentBrowserClient::RegisterBrowserInterfaceBindersForFrame(
           render_frame_host, map);
       chrome::internal::RegisterWebUIControllerInterfaceBinder<

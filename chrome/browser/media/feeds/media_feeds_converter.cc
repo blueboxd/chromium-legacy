@@ -17,6 +17,7 @@
 #include "chrome/browser/media/feeds/media_feeds_store.mojom-forward.h"
 #include "chrome/browser/media/feeds/media_feeds_store.mojom-shared.h"
 #include "chrome/browser/media/feeds/media_feeds_store.mojom.h"
+#include "chrome/browser/media/history/media_history_keyed_service.h"
 #include "components/autofill/core/browser/validation.h"
 #include "components/schema_org/common/improved_metadata.mojom-forward.h"
 #include "components/schema_org/common/improved_metadata.mojom.h"
@@ -349,9 +350,9 @@ base::Optional<std::vector<mojom::MediaImagePtr>> GetLogoImages(
 
 // Validates the provider property of an entity. Outputs the name and images
 // properties.
-bool ValidateProvider(const Property& provider,
-                      std::string* display_name,
-                      std::vector<mojom::MediaImagePtr>* images) {
+bool ValidateProvider(
+    const Property& provider,
+    media_history::MediaHistoryKeyedService::MediaFeedFetchResult* result) {
   if (provider.values->entity_values.empty())
     return false;
 
@@ -367,7 +368,6 @@ bool ValidateProvider(const Property& provider,
   auto* name = GetProperty(organization->get(), schema_org::property::kName);
   if (!name || !IsNonEmptyString(*name))
     return false;
-  *display_name = name->values->string_values[0];
 
   auto* logo = GetProperty(organization->get(), schema_org::property::kLogo);
   if (!logo)
@@ -377,7 +377,8 @@ bool ValidateProvider(const Property& provider,
   if (!maybe_images.has_value() || maybe_images.value().empty())
     return false;
 
-  *images = std::move(maybe_images.value());
+  result->display_name = name->values->string_values[0];
+  result->logos = std::move(maybe_images.value());
 
   return true;
 }
@@ -1106,19 +1107,17 @@ void GetDataFeedItems(
 }
 
 // static
-base::Optional<std::vector<mojom::MediaFeedItemPtr>> GetMediaFeeds(
-    const EntityPtr& entity,
-    std::vector<mojom::MediaImagePtr>* logos,
-    std::string* display_name) {
+bool ConvertMediaFeed(
+    const schema_org::improved::mojom::EntityPtr& entity,
+    media_history::MediaHistoryKeyedService::MediaFeedFetchResult* result) {
   if (!entity || entity->type != schema_org::entity::kCompleteDataFeed)
-    return base::nullopt;
+    return false;
 
-  DCHECK(logos && display_name);
+  DCHECK(result);
   auto* provider = GetProperty(entity.get(), schema_org::property::kProvider);
-  if (!ValidateProvider(*provider, display_name, logos))
-    return base::nullopt;
+  if (!ValidateProvider(*provider, result))
+    return false;
 
-  std::vector<mojom::MediaFeedItemPtr> media_feed_items;
   auto data_feed_items = std::find_if(
       entity->properties.begin(), entity->properties.end(),
       [](const PropertyPtr& property) {
@@ -1126,10 +1125,10 @@ base::Optional<std::vector<mojom::MediaFeedItemPtr>> GetMediaFeeds(
       });
   if (data_feed_items != entity->properties.end() &&
       (*data_feed_items)->values) {
-    GetDataFeedItems(*data_feed_items, &media_feed_items);
+    GetDataFeedItems(*data_feed_items, &result->items);
   }
 
-  return media_feed_items;
+  return true;
 }
 
 }  // namespace media_feeds

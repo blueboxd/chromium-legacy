@@ -457,8 +457,7 @@ void BindVibrationManager(
 }  // namespace
 
 // Documents/frames
-void PopulateFrameBinders(RenderFrameHostImpl* host,
-                          service_manager::BinderMap* map) {
+void PopulateFrameBinders(RenderFrameHostImpl* host, mojo::BinderMap* map) {
   map->Add<blink::mojom::AppCacheBackend>(base::BindRepeating(
       &RenderFrameHostImpl::CreateAppCacheBackend, base::Unretained(host)));
 
@@ -671,7 +670,7 @@ void PopulateFrameBinders(RenderFrameHostImpl* host,
 
 void PopulateBinderMapWithContext(
     RenderFrameHostImpl* host,
-    service_manager::BinderMapWithContext<RenderFrameHost*>* map) {
+    mojo::BinderMapWithContext<RenderFrameHost*>* map) {
   // Register empty binders for interfaces not bound by content but requested
   // by blink.
   // This avoids renderer kills when no binder is found in the absence of the
@@ -742,8 +741,7 @@ void PopulateBinderMapWithContext(
                                                                          map);
 }
 
-void PopulateBinderMap(RenderFrameHostImpl* host,
-                       service_manager::BinderMap* map) {
+void PopulateBinderMap(RenderFrameHostImpl* host, mojo::BinderMap* map) {
   PopulateFrameBinders(host, map);
 }
 
@@ -757,7 +755,7 @@ const url::Origin& GetContextForHost(DedicatedWorkerHost* host) {
 }
 
 void PopulateDedicatedWorkerBinders(DedicatedWorkerHost* host,
-                                    service_manager::BinderMap* map) {
+                                    mojo::BinderMap* map) {
   // Do nothing for interfaces that the renderer might request, but doesn't
   // always expect to be bound.
   map->Add<blink::mojom::FeatureObserver>(base::DoNothing());
@@ -807,7 +805,7 @@ void PopulateDedicatedWorkerBinders(DedicatedWorkerHost* host,
 
 void PopulateBinderMapWithContext(
     DedicatedWorkerHost* host,
-    service_manager::BinderMapWithContext<const url::Origin&>* map) {
+    mojo::BinderMapWithContext<const url::Origin&>* map) {
   // render process host binders taking an origin
   map->Add<payments::mojom::PaymentManager>(BindWorkerReceiverForOrigin(
       &RenderProcessHostImpl::CreatePaymentManagerForOrigin, host));
@@ -834,8 +832,7 @@ void PopulateBinderMapWithContext(
           &RenderProcessHostImpl::BindQuotaManagerHost, host));
 }
 
-void PopulateBinderMap(DedicatedWorkerHost* host,
-                       service_manager::BinderMap* map) {
+void PopulateBinderMap(DedicatedWorkerHost* host, mojo::BinderMap* map) {
   PopulateDedicatedWorkerBinders(host, map);
 }
 
@@ -844,8 +841,7 @@ url::Origin GetContextForHost(SharedWorkerHost* host) {
   return url::Origin::Create(host->instance().url());
 }
 
-void PopulateSharedWorkerBinders(SharedWorkerHost* host,
-                                 service_manager::BinderMap* map) {
+void PopulateSharedWorkerBinders(SharedWorkerHost* host, mojo::BinderMap* map) {
   // Do nothing for interfaces that the renderer might request, but doesn't
   // always expect to be bound.
   map->Add<blink::mojom::FeatureObserver>(base::DoNothing());
@@ -877,7 +873,7 @@ void PopulateSharedWorkerBinders(SharedWorkerHost* host,
 
 void PopulateBinderMapWithContext(
     SharedWorkerHost* host,
-    service_manager::BinderMapWithContext<const url::Origin&>* map) {
+    mojo::BinderMapWithContext<const url::Origin&>* map) {
   // render process host binders taking an origin
   map->Add<blink::mojom::FileSystemManager>(BindWorkerReceiverForOrigin(
       &RenderProcessHostImpl::BindFileSystemManager, host));
@@ -906,8 +902,7 @@ void PopulateBinderMapWithContext(
           &RenderProcessHostImpl::BindQuotaManagerHost, host));
 }
 
-void PopulateBinderMap(SharedWorkerHost* host,
-                       service_manager::BinderMap* map) {
+void PopulateBinderMap(SharedWorkerHost* host, mojo::BinderMap* map) {
   PopulateSharedWorkerBinders(host, map);
 }
 
@@ -919,7 +914,7 @@ ServiceWorkerVersionInfo GetContextForHost(ServiceWorkerProviderHost* host) {
 }
 
 void PopulateServiceWorkerBinders(ServiceWorkerProviderHost* host,
-                                  service_manager::BinderMap* map) {
+                                  mojo::BinderMap* map) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
 
   // Do nothing for interfaces that the renderer might request, but doesn't
@@ -952,8 +947,7 @@ void PopulateServiceWorkerBinders(ServiceWorkerProviderHost* host,
 
 void PopulateBinderMapWithContext(
     ServiceWorkerProviderHost* host,
-    service_manager::BinderMapWithContext<const ServiceWorkerVersionInfo&>*
-        map) {
+    mojo::BinderMapWithContext<const ServiceWorkerVersionInfo&>* map) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
 
   // static binders
@@ -1011,8 +1005,7 @@ void PopulateBinderMapWithContext(
           &RenderProcessHostImpl::BindQuotaManagerHost, host));
 }
 
-void PopulateBinderMap(ServiceWorkerProviderHost* host,
-                       service_manager::BinderMap* map) {
+void PopulateBinderMap(ServiceWorkerProviderHost* host, mojo::BinderMap* map) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   PopulateServiceWorkerBinders(host, map);
 }

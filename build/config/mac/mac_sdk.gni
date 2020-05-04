@@ -41,7 +41,8 @@ declare_args() {
   # Production builds should use hermetic Xcode. If you want to do production
   # builds with system Xcode to test new SDKs, set this.
   # Don't set this on any bots.
-  mac_allow_system_xcode_for_official_builds_for_testing = false
+  # TODO(thakis): Set this to false once https://crbug.com/1077773 is fixed.
+  mac_allow_system_xcode_for_official_builds_for_testing = true
 }
 
 # Check that the version of macOS SDK used is the one requested when building

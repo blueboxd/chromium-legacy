@@ -133,6 +133,7 @@ class ClientSession : public protocol::HostStub,
   void CreateMediaStreams() override;
   void OnConnectionChannelsConnected() override;
   void OnConnectionClosed(protocol::ErrorCode error) override;
+  void OnTransportProtocolChange(const std::string& protocol) override;
   void OnRouteChange(const std::string& channel_name,
                      const protocol::TransportRoute& route) override;
   void OnIncomingDataChannel(

@@ -195,10 +195,9 @@ MenuExample::~MenuExample() = default;
 
 void MenuExample::CreateExampleView(View* container) {
   // We add a button to open a menu.
-  ExampleMenuButton* menu_button =
-      new ExampleMenuButton(ASCIIToUTF16("Open a menu"));
   container->SetLayoutManager(std::make_unique<FillLayout>());
-  container->AddChildView(menu_button);
+  container->AddChildView(
+      std::make_unique<ExampleMenuButton>(ASCIIToUTF16("Open a menu")));
 }
 
 }  // namespace examples

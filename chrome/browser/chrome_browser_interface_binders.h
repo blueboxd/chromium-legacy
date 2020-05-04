@@ -10,7 +10,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_controller.h"
-#include "services/service_manager/public/cpp/binder_map.h"
+#include "mojo/public/cpp/bindings/binder_map.h"
 
 namespace content {
 
@@ -28,13 +28,13 @@ namespace internal {
 // GetInterface() handler callbacks for chrome-specific document-scoped
 // interfaces.
 void PopulateChromeFrameBinders(
-    service_manager::BinderMapWithContext<content::RenderFrameHost*>* map);
+    mojo::BinderMapWithContext<content::RenderFrameHost*>* map);
 
 // PopulateChromeWebUIFrameBinders() registers BrowserInterfaceBroker's
 // GetInterface() handler callbacks for chrome-specific document-scoped
 // interfaces used from WebUI pages (e.g. chrome://bluetooth-internals).
 void PopulateChromeWebUIFrameBinders(
-    service_manager::BinderMapWithContext<content::RenderFrameHost*>* map);
+    mojo::BinderMapWithContext<content::RenderFrameHost*>* map);
 
 template <typename Interface, int N, typename... Subclasses>
 struct BinderHelper;
@@ -83,7 +83,7 @@ struct BinderHelper<Interface, 0, std::tuple<Subclass, Subclasses...>> {
 // has a WebUIController among type |WebUIControllerSubclasses|.
 template <typename Interface, typename... WebUIControllerSubclasses>
 void RegisterWebUIControllerInterfaceBinder(
-    service_manager::BinderMapWithContext<content::RenderFrameHost*>* map) {
+    mojo::BinderMapWithContext<content::RenderFrameHost*>* map) {
   map->Add<Interface>(
       base::BindRepeating([](content::RenderFrameHost* host,
                              mojo::PendingReceiver<Interface> receiver) {

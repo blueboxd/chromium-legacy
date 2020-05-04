@@ -44,7 +44,12 @@ class BASE_EXPORT UkmSourceId {
     // type and associated events are expected to be recorded within the same
     // report interval; it will not be kept in memory between different reports.
     PAYMENT_APP_ID = 5,
-    kMaxValue = PAYMENT_APP_ID,
+    // Source ID for desktop web apps, based on the start_url in the web app
+    // manifest. A new source of this type and associated events are expected to
+    // be recorded within the same report interval; it will not be kept in
+    // memory between different reports.
+    DESKTOP_WEB_APP_ID = 6,
+    kMaxValue = DESKTOP_WEB_APP_ID,
   };
 
   // Default constructor has the invalid value.

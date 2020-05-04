@@ -10,7 +10,7 @@
 
 #include "base/macros.h"
 #include "base/time/time.h"
-#include "components/lookalikes/lookalike_url_util.h"
+#include "components/lookalikes/core/lookalike_url_util.h"
 #include "components/security_interstitials/content/security_interstitial_page.h"
 #include "content/public/browser/interstitial_page_delegate.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"

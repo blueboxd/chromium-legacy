@@ -36,7 +36,7 @@ class VIEWS_EXAMPLES_EXPORT WidgetExample : public ExampleBase,
   };
 
   // Construct a button with the specified |label| and |tag| in |container|.
-  void BuildButton(View* container, const std::string& label, int tag);
+  void BuildButton(View* container, const base::string16& label, int tag);
 
   // Construct a Widget for |sender|, initialize with |params|, and call Show().
   void ShowWidget(View* sender, Widget::InitParams params);

@@ -14,12 +14,12 @@
 #include "third_party/skia/include/core/SkRect.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
+#include "ui/base/x/test/x11_property_change_waiter.h"
 #include "ui/events/platform/x11/x11_event_source.h"
 #include "ui/gfx/x/x11.h"
 #include "ui/gfx/x/x11_atom_cache.h"
 #include "ui/gfx/x/x11_path.h"
 #include "ui/views/test/widget_test.h"
-#include "ui/views/test/x11_property_change_waiter.h"
 #include "ui/views/widget/desktop_aura/desktop_native_widget_aura.h"
 #include "ui/views/widget/desktop_aura/desktop_window_tree_host_linux.h"
 #include "ui/views/widget/widget.h"
@@ -29,15 +29,15 @@ namespace views {
 namespace {
 
 // Waits till |window| is minimized.
-class MinimizeWaiter : public X11PropertyChangeWaiter {
+class MinimizeWaiter : public ui::X11PropertyChangeWaiter {
  public:
   explicit MinimizeWaiter(XID window)
-      : X11PropertyChangeWaiter(window, "_NET_WM_STATE") {}
+      : ui::X11PropertyChangeWaiter(window, "_NET_WM_STATE") {}
 
   ~MinimizeWaiter() override = default;
 
  private:
-  // X11PropertyChangeWaiter:
+  // ui::X11PropertyChangeWaiter:
   bool ShouldKeepOnWaiting(XEvent* event) override {
     std::vector<Atom> wm_states;
     if (ui::GetAtomArrayProperty(xwindow(), "_NET_WM_STATE", &wm_states)) {
@@ -51,11 +51,11 @@ class MinimizeWaiter : public X11PropertyChangeWaiter {
 
 // Waits till |_NET_CLIENT_LIST_STACKING| is updated to include
 // |expected_windows|.
-class StackingClientListWaiter : public X11PropertyChangeWaiter {
+class StackingClientListWaiter : public ui::X11PropertyChangeWaiter {
  public:
   StackingClientListWaiter(XID* expected_windows, size_t count)
-      : X11PropertyChangeWaiter(ui::GetX11RootWindow(),
-                                "_NET_CLIENT_LIST_STACKING"),
+      : ui::X11PropertyChangeWaiter(ui::GetX11RootWindow(),
+                                    "_NET_CLIENT_LIST_STACKING"),
         expected_windows_(expected_windows, expected_windows + count) {}
 
   ~StackingClientListWaiter() override = default;
@@ -67,11 +67,11 @@ class StackingClientListWaiter : public X11PropertyChangeWaiter {
     if (!ShouldKeepOnWaiting(nullptr))
       return;
 
-    X11PropertyChangeWaiter::Wait();
+    ui::X11PropertyChangeWaiter::Wait();
   }
 
  private:
-  // X11PropertyChangeWaiter:
+  // ui::X11PropertyChangeWaiter:
   bool ShouldKeepOnWaiting(XEvent* event) override {
     std::vector<XID> stack;
     ui::GetXWindowStack(ui::GetX11RootWindow(), &stack);
@@ -158,7 +158,7 @@ class X11TopmostWindowFinderTest : public test::DesktopWidgetTestInteractive {
     ui::X11TopmostWindowFinder finder;
     auto widget =
         finder.FindLocalProcessWindowAt(gfx::Point(screen_x, screen_y), {});
-    return widget ? DesktopWindowTreeHostLinux::GetContentWindowForWidget(
+    return widget ? DesktopWindowTreeHostPlatform::GetContentWindowForWidget(
                         static_cast<gfx::AcceleratedWidget>(widget))
                   : nullptr;
   }
@@ -175,7 +175,7 @@ class X11TopmostWindowFinderTest : public test::DesktopWidgetTestInteractive {
     ui::X11TopmostWindowFinder finder;
     auto widget =
         finder.FindLocalProcessWindowAt(gfx::Point(screen_x, screen_y), ignore);
-    return widget ? DesktopWindowTreeHostLinux::GetContentWindowForWidget(
+    return widget ? DesktopWindowTreeHostPlatform::GetContentWindowForWidget(
                         static_cast<gfx::AcceleratedWidget>(widget))
                   : nullptr;
   }

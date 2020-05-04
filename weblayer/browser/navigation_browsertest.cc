@@ -362,6 +362,156 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest, SetRequestHeaderInRedirect) {
   EXPECT_EQ(header_value, response_2.http_request()->headers.at(header_name));
 }
 
+IN_PROC_BROWSER_TEST_F(NavigationBrowserTest, PageSeesUserAgentString) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  const std::string custom_ua = "custom";
+  NavigationObserverImpl observer(GetNavigationController());
+  observer.SetStartedCallback(
+      base::BindLambdaForTesting([&](Navigation* navigation) {
+        navigation->SetUserAgentString(custom_ua);
+      }));
+  OneShotNavigationObserver navigation_observer(shell());
+  shell()->LoadURL(embedded_test_server()->GetURL("/simple_page.html"));
+  navigation_observer.WaitForNavigation();
+
+  base::RunLoop run_loop;
+  shell()->tab()->ExecuteScript(
+      base::ASCIIToUTF16("navigator.userAgent;"), false,
+      base::BindLambdaForTesting([&](base::Value value) {
+        ASSERT_TRUE(value.is_string());
+        EXPECT_EQ(custom_ua, value.GetString());
+        run_loop.Quit();
+      }));
+  run_loop.Run();
+}
+
+IN_PROC_BROWSER_TEST_F(NavigationBrowserTest, SetUserAgentString) {
+  net::test_server::ControllableHttpResponse response_1(embedded_test_server(),
+                                                        "", true);
+  net::test_server::ControllableHttpResponse response_2(embedded_test_server(),
+                                                        "", true);
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  const std::string custom_ua = "CUSTOM";
+  NavigationObserverImpl observer(GetNavigationController());
+  observer.SetStartedCallback(
+      base::BindLambdaForTesting([&](Navigation* navigation) {
+        navigation->SetUserAgentString(custom_ua);
+      }));
+
+  shell()->LoadURL(embedded_test_server()->GetURL("/simple_page.html"));
+  response_1.WaitForRequest();
+
+  // |custom_ua| should be present in initial request.
+  ASSERT_TRUE(base::Contains(response_1.http_request()->headers,
+                             net::HttpRequestHeaders::kUserAgent));
+  const std::string new_header = response_1.http_request()->headers.at(
+      net::HttpRequestHeaders::kUserAgent);
+  EXPECT_EQ(custom_ua, new_header);
+
+  // Header should carry through to redirect.
+  response_1.Send(
+      "HTTP/1.1 302 Moved Temporarily\r\nLocation: /new_doc\r\n\r\n");
+  response_1.Done();
+  response_2.WaitForRequest();
+  EXPECT_EQ(custom_ua, response_2.http_request()->headers.at(
+                           net::HttpRequestHeaders::kUserAgent));
+}
+
+// Verifies changing the user agent twice in a row works.
+IN_PROC_BROWSER_TEST_F(NavigationBrowserTest, UserAgentDoesntCarryThrough1) {
+  net::test_server::ControllableHttpResponse response_1(embedded_test_server(),
+                                                        "", true);
+  net::test_server::ControllableHttpResponse response_2(embedded_test_server(),
+                                                        "", true);
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  const std::string custom_ua1 = "my ua1";
+  const std::string custom_ua2 = "my ua2";
+  NavigationObserverImpl observer(GetNavigationController());
+  observer.SetStartedCallback(
+      base::BindLambdaForTesting([&](Navigation* navigation) {
+        navigation->SetUserAgentString(custom_ua1);
+      }));
+
+  shell()->LoadURL(embedded_test_server()->GetURL("/simple_page.html"));
+  response_1.WaitForRequest();
+  EXPECT_EQ(custom_ua1, response_1.http_request()->headers.at(
+                            net::HttpRequestHeaders::kUserAgent));
+
+  // Before the request is done, start another navigation.
+  observer.SetStartedCallback(
+      base::BindLambdaForTesting([&](Navigation* navigation) {
+        navigation->SetUserAgentString(custom_ua2);
+      }));
+  shell()->LoadURL(embedded_test_server()->GetURL("/simple_page2.html"));
+  response_2.WaitForRequest();
+  EXPECT_EQ(custom_ua2, response_2.http_request()->headers.at(
+                            net::HttpRequestHeaders::kUserAgent));
+}
+
+// Verifies changing the user agent doesn't bleed through to next navigation.
+IN_PROC_BROWSER_TEST_F(NavigationBrowserTest, UserAgentDoesntCarryThrough2) {
+  net::test_server::ControllableHttpResponse response_1(embedded_test_server(),
+                                                        "", true);
+  net::test_server::ControllableHttpResponse response_2(embedded_test_server(),
+                                                        "", true);
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  const std::string custom_ua = "my ua1";
+  NavigationObserverImpl observer(GetNavigationController());
+  observer.SetStartedCallback(
+      base::BindLambdaForTesting([&](Navigation* navigation) {
+        navigation->SetUserAgentString(custom_ua);
+      }));
+
+  shell()->LoadURL(embedded_test_server()->GetURL("/simple_page.html"));
+  response_1.WaitForRequest();
+  EXPECT_EQ(custom_ua, response_1.http_request()->headers.at(
+                           net::HttpRequestHeaders::kUserAgent));
+
+  // Before the request is done, start another navigation.
+  observer.SetStartedCallback(base::DoNothing());
+  shell()->LoadURL(embedded_test_server()->GetURL("/simple_page2.html"));
+  response_2.WaitForRequest();
+  EXPECT_NE(custom_ua, response_2.http_request()->headers.at(
+                           net::HttpRequestHeaders::kUserAgent));
+  EXPECT_FALSE(response_2.http_request()
+                   ->headers.at(net::HttpRequestHeaders::kUserAgent)
+                   .empty());
+}
+
+// Verifies changing the user-agent applies to child resources, such as an
+// <img>.
+IN_PROC_BROWSER_TEST_F(NavigationBrowserTest,
+                       UserAgentAppliesToChildResources) {
+  net::test_server::ControllableHttpResponse response_1(embedded_test_server(),
+                                                        "", true);
+  net::test_server::ControllableHttpResponse response_2(embedded_test_server(),
+                                                        "", true);
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  const std::string custom_ua = "custom-ua";
+  NavigationObserverImpl observer(GetNavigationController());
+  observer.SetStartedCallback(
+      base::BindLambdaForTesting([&](Navigation* navigation) {
+        navigation->SetUserAgentString(custom_ua);
+      }));
+
+  shell()->LoadURL(embedded_test_server()->GetURL("/foo.html"));
+  response_1.WaitForRequest();
+  response_1.Send(net::HTTP_OK, "text/html", "<img src=\"image.png\">");
+  response_1.Done();
+  EXPECT_EQ(custom_ua, response_1.http_request()->headers.at(
+                           net::HttpRequestHeaders::kUserAgent));
+  observer.SetStartedCallback(base::DoNothing());
+
+  response_2.WaitForRequest();
+  EXPECT_EQ(custom_ua, response_2.http_request()->headers.at(
+                           net::HttpRequestHeaders::kUserAgent));
+}
+
 class NavigationBrowserTest2 : public NavigationBrowserTest {
  public:
   void SetUp() override {

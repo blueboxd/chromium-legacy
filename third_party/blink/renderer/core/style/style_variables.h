@@ -62,7 +62,7 @@ class CORE_EXPORT StyleVariables {
   void SetValue(const AtomicString&, const CSSValue*);
 
   bool IsEmpty() const;
-  HashSet<AtomicString> GetNames() const;
+  void CollectNames(HashSet<AtomicString>&) const;
 
   const DataMap& Data() const { return data_; }
   const ValueMap& Values() const { return *values_; }

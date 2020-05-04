@@ -11,12 +11,12 @@
 #include "base/strings/strcat.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/simple_test_tick_clock.h"
-#include "cc/input/scroll_input_type.h"
 #include "cc/metrics/compositor_frame_reporting_controller.h"
 #include "cc/metrics/event_metrics.h"
 #include "components/viz/common/frame_timing_details.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/events/types/scroll_input_type.h"
 
 namespace cc {
 namespace {
@@ -374,9 +374,9 @@ TEST_F(CompositorFrameReporterTest,
 
   const base::TimeTicks event_time = Now();
   std::vector<EventMetrics> events_metrics = {
-      {ui::ET_GESTURE_SCROLL_BEGIN, event_time, ScrollInputType::kWheel},
-      {ui::ET_GESTURE_SCROLL_UPDATE, event_time, ScrollInputType::kWheel},
-      {ui::ET_GESTURE_SCROLL_UPDATE, event_time, ScrollInputType::kWheel},
+      {ui::ET_GESTURE_SCROLL_BEGIN, event_time, ui::ScrollInputType::kWheel},
+      {ui::ET_GESTURE_SCROLL_UPDATE, event_time, ui::ScrollInputType::kWheel},
+      {ui::ET_GESTURE_SCROLL_UPDATE, event_time, ui::ScrollInputType::kWheel},
   };
   EXPECT_THAT(events_metrics, ::testing::Each(IsWhitelisted()));
 

@@ -10,9 +10,16 @@
 #include "components/performance_manager/graph/page_node_impl.h"
 #include "components/performance_manager/public/graph/frame_node.h"
 #include "components/performance_manager/public/graph/graph_operations.h"
+#include "components/performance_manager/public/graph/node_data_describer_registry.h"
 #include "components/performance_manager/public/mojom/coordination_unit.mojom.h"
 
 namespace performance_manager {
+
+namespace {
+
+const char kDescriberName[] = "PageAggregator";
+
+}
 
 using performance_manager::mojom::InterventionPolicy;
 
@@ -100,6 +107,8 @@ class PageAggregator::Data : public NodeAttachedDataImpl<Data> {
       const FrameNode* frame_node_being_removed);
 
  private:
+  friend class PageAggregator;
+
   // Computes the page's origin trial freeze policy from current data.
   InterventionPolicy ComputeOriginTrialFreezePolicy() const;
 
@@ -297,10 +306,28 @@ void PageAggregator::OnPassedToGraph(Graph* graph) {
   // graph.
   DCHECK(GraphImpl::FromGraph(graph)->nodes().empty());
   graph->AddFrameNodeObserver(this);
+  graph->GetNodeDataDescriberRegistry()->RegisterDescriber(this,
+                                                           kDescriberName);
 }
 
 void PageAggregator::OnTakenFromGraph(Graph* graph) {
+  graph->GetNodeDataDescriberRegistry()->UnregisterDescriber(this);
   graph->RemoveFrameNodeObserver(this);
+}
+
+base::Value PageAggregator::DescribePageNodeData(const PageNode* node) const {
+  Data* data = Data::Get(PageNodeImpl::FromNode(node));
+  if (data == nullptr)
+    return base::Value();
+
+  base::Value ret(base::Value::Type::DICTIONARY);
+  ret.SetIntKey("num_frames_holding_web_lock",
+                data->num_frames_holding_web_lock_);
+  ret.SetIntKey("num_frames_holding_indexeddb_lock",
+                data->num_frames_holding_web_lock_);
+  ret.SetIntKey("num_current_frames_with_form_interaction",
+                data->num_current_frames_with_form_interaction_);
+  return ret;
 }
 
 }  // namespace performance_manager

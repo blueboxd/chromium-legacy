@@ -164,7 +164,7 @@ TranslateLanguageList::TranslateLanguageList()
   if (update_is_disabled)
     return;
 
-  language_list_fetcher_.reset(new TranslateURLFetcher);
+  language_list_fetcher_ = std::make_unique<TranslateURLFetcher>();
   language_list_fetcher_->set_max_retry_on_5xx(kMaxRetryOn5xx);
 }
 

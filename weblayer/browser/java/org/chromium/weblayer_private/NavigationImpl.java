@@ -123,6 +123,16 @@ public final class NavigationImpl extends INavigation.Stub {
         }
     }
 
+    @Override
+    public void setUserAgentString(String value) {
+        if (!NavigationImplJni.get().isValidRequestHeaderValue(value)) {
+            throw new IllegalArgumentException("Invalid value");
+        }
+        if (!NavigationImplJni.get().setUserAgentString(mNativeNavigationImpl, value)) {
+            throw new IllegalStateException();
+        }
+    }
+
     private void throwIfNativeDestroyed() {
         if (mNativeNavigationImpl == 0) {
             throw new IllegalStateException("Using Navigation after native destroyed");
@@ -168,5 +178,6 @@ public final class NavigationImpl extends INavigation.Stub {
         boolean setRequestHeader(long nativeNavigationImpl, String name, String value);
         boolean isValidRequestHeaderName(String name);
         boolean isValidRequestHeaderValue(String value);
+        boolean setUserAgentString(long nativeNavigationImpl, String value);
     }
 }

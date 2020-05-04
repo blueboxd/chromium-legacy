@@ -73,6 +73,10 @@ class TrustTokenRequestHelperTest : public ::testing::Test {
   mojom::TrustTokenOperationStatus ExecuteBeginOperationAndWaitForResult(
       TrustTokenRequestHelper* helper,
       net::URLRequest* request);
+
+  mojom::TrustTokenOperationStatus ExecuteFinalizeAndWaitForResult(
+      TrustTokenRequestHelper* helper,
+      mojom::URLResponseHead* reponse);
 };
 
 // The following helper methods unify parameterized unit/integration testing of

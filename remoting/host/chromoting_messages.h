@@ -125,11 +125,6 @@ IPC_MESSAGE_CONTROL(ChromotingNetworkDaemonMsg_HostStarted,
 
 IPC_MESSAGE_CONTROL(ChromotingNetworkDaemonMsg_HostShutdown)
 
-// Instructs the daemon process to update the config file, replacing the current
-// OAuth refresh token with the one provided.
-IPC_MESSAGE_CONTROL(ChromotingNetworkDaemonMsg_UpdateConfigRefreshToken,
-                    std::string /* token */)
-
 //-----------------------------------------------------------------------------
 // Chromoting messages sent from the desktop to the daemon process.
 

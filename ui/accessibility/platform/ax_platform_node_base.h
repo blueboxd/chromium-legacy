@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "build/build_config.h"
 #include "ui/accessibility/ax_enums.mojom-forward.h"
+#include "ui/accessibility/ax_node.h"
 #include "ui/accessibility/platform/ax_platform_node.h"
 #include "ui/accessibility/platform/ax_platform_node_delegate.h"
 #include "ui/accessibility/platform/ax_platform_text_boundary.h"
@@ -86,11 +87,20 @@ class AX_EXPORT AXPlatformNodeBase : public AXPlatformNode {
   bool IsDescendantOf(AXPlatformNode* ancestor) const override;
 
   // Helpers.
-  AXPlatformNodeBase* GetPreviousSibling();
-  AXPlatformNodeBase* GetNextSibling();
-  AXPlatformNodeBase* GetFirstChild();
-  AXPlatformNodeBase* GetLastChild();
+  AXPlatformNodeBase* GetPreviousSibling() const;
+  AXPlatformNodeBase* GetNextSibling() const;
+  AXPlatformNodeBase* GetFirstChild() const;
+  AXPlatformNodeBase* GetLastChild() const;
   bool IsDescendant(AXPlatformNodeBase* descendant);
+
+  using AXPlatformNodeChildIterator =
+      ui::AXNode::ChildIteratorBase<AXPlatformNodeBase,
+                                    &AXPlatformNodeBase::GetNextSibling,
+                                    &AXPlatformNodeBase::GetPreviousSibling,
+                                    &AXPlatformNodeBase::GetFirstChild,
+                                    &AXPlatformNodeBase::GetLastChild>;
+  AXPlatformNodeChildIterator AXPlatformNodeChildrenBegin() const;
+  AXPlatformNodeChildIterator AXPlatformNodeChildrenEnd() const;
 
   bool HasBoolAttribute(ax::mojom::BoolAttribute attr) const;
   bool GetBoolAttribute(ax::mojom::BoolAttribute attr) const;

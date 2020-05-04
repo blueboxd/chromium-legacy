@@ -14,7 +14,7 @@ UIImage* GenerateQRCode(NSData* data, CGFloat imageLength) {
   // Generate the QR Code with the given data.
   CIFilter* qrFilter = [CIFilter filterWithName:@"CIQRCodeGenerator"];
   [qrFilter setValue:data forKey:@"inputMessage"];
-  [qrFilter setValue:@"M" forKey:@"inputCorrectionLevel"];
+  [qrFilter setValue:@"L" forKey:@"inputCorrectionLevel"];
   CIImage* ciImage = qrFilter.outputImage;
 
   // Scale the square image.

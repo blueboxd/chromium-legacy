@@ -258,13 +258,12 @@ void UpdateLegacyMultiColumnFlowThread(
   flow_thread->ClearNeedsLayout();
 }
 
-NGConstraintSpaceBuilder CreateConstraintSpaceBuilderForMinMax(
-    NGBlockNode node) {
+NGConstraintSpace CreateConstraintSpaceForMinMax(const NGBlockNode& node) {
   NGConstraintSpaceBuilder builder(node.Style().GetWritingMode(),
                                    node.Style().GetWritingMode(),
                                    node.CreatesNewFormattingContext());
   builder.SetTextDirection(node.Style().Direction());
-  return builder;
+  return builder.ToConstraintSpace();
 }
 
 LayoutUnit CalculateAvailableInlineSizeForLegacy(
@@ -328,15 +327,11 @@ void SetupBoxLayoutExtraInput(const NGConstraintSpace& space,
 }
 
 bool CanUseCachedIntrinsicInlineSizes(const MinMaxSizesInput& input,
-                                      const NGBlockNode& node,
-                                      bool is_orthogonal_flow_root) {
+                                      const NGBlockNode& node) {
   const auto& box = *node.GetLayoutBox();
 
   // Obviously can't use the cache if our intrinsic logical widths are dirty.
   if (box.IntrinsicLogicalWidthsDirty())
-    return false;
-
-  if (is_orthogonal_flow_root)
     return false;
 
   // We don't store the float inline sizes for comparison, always skip the
@@ -705,45 +700,42 @@ MinMaxSizes NGBlockNode::ComputeMinMaxSizes(
   if (IsListItem())
     ToLayoutNGListItem(box_)->UpdateMarkerTextIfNeeded();
 
+  MinMaxSizes sizes;
   bool is_orthogonal_flow_root =
       !IsParallelWritingMode(container_writing_mode, Style().GetWritingMode());
 
-  if (CanUseCachedIntrinsicInlineSizes(input, *this, is_orthogonal_flow_root)) {
+  // If we're orthogonal, run layout to compute the sizes.
+  if (is_orthogonal_flow_root) {
+    // Some other areas of the code can query the intrinsic-sizes while outside
+    // of the layout phase.
+    // TODO(ikilpatrick): Remove this check.
+    if (!box_->GetFrameView()->IsInPerformLayout())
+      return ComputeMinMaxSizesFromLegacy(input);
+
+    DCHECK(constraint_space);
+    scoped_refptr<const NGLayoutResult> layout_result =
+        Layout(*constraint_space);
+    DCHECK_EQ(layout_result->Status(), NGLayoutResult::kSuccess);
+    sizes =
+        NGFragment(container_writing_mode, layout_result->PhysicalFragment())
+            .InlineSize();
+    return sizes;
+  }
+
+  // Attempt to use our cached sizes.
+  if (CanUseCachedIntrinsicInlineSizes(input, *this)) {
     return box_->IsTable() ? box_->PreferredLogicalWidths()
                            : box_->IntrinsicLogicalWidths();
   }
 
   box_->SetIntrinsicLogicalWidthsDirty();
 
-  MinMaxSizes sizes;
-  // If we're orthogonal, we have to run layout to compute the sizes. However,
-  // if we're outside of layout, we can't do that. This can happen on Mac.
-  if ((!CanUseNewLayout() && !is_orthogonal_flow_root) ||
-      (is_orthogonal_flow_root && !box_->GetFrameView()->IsInPerformLayout()))
+  if (!CanUseNewLayout())
     return ComputeMinMaxSizesFromLegacy(input);
 
-  NGConstraintSpace zero_constraint_space =
-      CreateConstraintSpaceBuilderForMinMax(*this).ToConstraintSpace();
-
-  if (!constraint_space) {
-    // Using the zero-sized constraint space when measuring for an orthogonal
-    // flow root isn't going to give the right result.
-    DCHECK(!is_orthogonal_flow_root);
-
+  auto zero_constraint_space = CreateConstraintSpaceForMinMax(*this);
+  if (!constraint_space)
     constraint_space = &zero_constraint_space;
-  }
-
-  if (is_orthogonal_flow_root || !CanUseNewLayout()) {
-    scoped_refptr<const NGLayoutResult> layout_result =
-        Layout(*constraint_space);
-    DCHECK_EQ(layout_result->Status(), NGLayoutResult::kSuccess);
-    NGBoxFragment fragment(
-        container_writing_mode,
-        TextDirection::kLtr,  // irrelevant here
-        To<NGPhysicalBoxFragment>(layout_result->PhysicalFragment()));
-    sizes.min_size = sizes.max_size = fragment.Size().inline_size;
-    return sizes;
-  }
 
   NGFragmentGeometry fragment_geometry =
       CalculateInitialMinMaxFragmentGeometry(*constraint_space, *this);
@@ -751,12 +743,13 @@ MinMaxSizes NGBlockNode::ComputeMinMaxSizes(
       NGLayoutAlgorithmParams(*this, fragment_geometry, *constraint_space),
       input);
 
-  auto* html_marquee_element = DynamicTo<HTMLMarqueeElement>(box_->GetNode());
+  const auto* node = box_->GetNode();
+  const auto* html_marquee_element = DynamicTo<HTMLMarqueeElement>(node);
   if (UNLIKELY(html_marquee_element && html_marquee_element->IsHorizontal()))
     sizes.min_size = LayoutUnit();
-  else if (UNLIKELY(IsA<HTMLSelectElement>(box_->GetNode()) ||
-                    (IsA<HTMLInputElement>(box_->GetNode()) &&
-                     To<HTMLInputElement>(box_->GetNode())->type() ==
+  else if (UNLIKELY(IsA<HTMLSelectElement>(node) ||
+                    (IsA<HTMLInputElement>(node) &&
+                     To<HTMLInputElement>(node)->type() ==
                          input_type_names::kFile)) &&
            Style().LogicalWidth().IsPercentOrCalc())
     sizes.min_size = LayoutUnit();

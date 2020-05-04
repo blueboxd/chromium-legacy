@@ -123,7 +123,7 @@ void WebEngineContentBrowserClient::OverrideWebkitPrefs(
 
 void WebEngineContentBrowserClient::RegisterBrowserInterfaceBindersForFrame(
     content::RenderFrameHost* render_frame_host,
-    service_manager::BinderMapWithContext<content::RenderFrameHost*>* map) {
+    mojo::BinderMapWithContext<content::RenderFrameHost*>* map) {
   PopulateFuchsiaFrameBinders(map, &media_resource_provider_service_);
 }
 

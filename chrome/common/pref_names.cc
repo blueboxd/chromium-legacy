@@ -1873,6 +1873,13 @@ const char kWebAppInstallForceList[] = "profile.web_app.install.forcelist";
 // Dictionary that maps web app ids to installation metrics used by UMA.
 const char kWebAppInstallMetrics[] = "web_app_install_metrics";
 
+// Dictionary that maps web app start URLs to temporary metric info to be
+// emitted once the date changes.
+const char kWebAppsDailyMetrics[] = "web_apps.daily_metrics";
+
+// Time representing the date for which |kWebAppsDailyMetrics| is stored.
+const char kWebAppsDailyMetricsDate[] = "web_apps.daily_metrics_date";
+
 // Dictionary that maps web app URLs to Chrome extension IDs.
 const char kWebAppsExtensionIDs[] = "web_apps.extension_ids";
 

@@ -2070,11 +2070,10 @@ URLRequestContextOwner NetworkContext::MakeURLRequestContext() {
   if (params_->enable_domain_reliability) {
     domain_reliability_monitor_ =
         std::make_unique<domain_reliability::DomainReliabilityMonitor>(
+            result.url_request_context.get(),
             params_->domain_reliability_upload_reporter,
             base::BindRepeating(&NetworkContext::CanUploadDomainReliability,
                                 base::Unretained(this)));
-    domain_reliability_monitor_->InitURLRequestContext(
-        result.url_request_context.get());
     domain_reliability_monitor_->AddBakedInConfigs();
     domain_reliability_monitor_->SetDiscardUploads(
         params_->discard_domain_reliablity_uploads);

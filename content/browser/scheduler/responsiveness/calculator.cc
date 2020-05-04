@@ -141,7 +141,17 @@ void Calculator::TaskOrEventFinishedOnIOThread(
   }
 }
 
-void Calculator::EmitResponsiveness(JankType jank_type, size_t janky_slices) {
+void Calculator::SetProcessSuspended(bool suspended) {
+  // Keep track of the current power state.
+  is_process_suspended_ = suspended;
+  // Regardless of whether the process is entering or exiting suspension, the
+  // current 30-second interval should be flagged as containing suspended state.
+  was_process_suspended_ = true;
+}
+
+void Calculator::EmitResponsiveness(JankType jank_type,
+                                    size_t janky_slices,
+                                    bool was_process_suspended) {
   constexpr size_t kMaxJankySlices = 300;
   DCHECK_LE(janky_slices, kMaxJankySlices);
   switch (jank_type) {
@@ -149,6 +159,11 @@ void Calculator::EmitResponsiveness(JankType jank_type, size_t janky_slices) {
       UMA_HISTOGRAM_COUNTS_1000(
           "Browser.Responsiveness.JankyIntervalsPerThirtySeconds",
           janky_slices);
+      if (!was_process_suspended) {
+        UMA_HISTOGRAM_COUNTS_1000(
+            "Browser.Responsiveness.JankyIntervalsPerThirtySeconds.NoSuspend",
+            janky_slices);
+      }
       break;
     }
     case JankType::kQueueAndExecution: {
@@ -233,6 +248,7 @@ void Calculator::CalculateResponsivenessIfNecessary(
       last_calculation_time_, new_calculation_time);
 
   last_calculation_time_ = new_calculation_time;
+  was_process_suspended_ = is_process_suspended_;
 }
 
 void Calculator::CalculateResponsiveness(
@@ -261,7 +277,7 @@ void Calculator::CalculateResponsiveness(
       }
     }
 
-    EmitResponsiveness(jank_type, janky_slices.size());
+    EmitResponsiveness(jank_type, janky_slices.size(), was_process_suspended_);
 
     start_time = current_interval_end_time;
   }

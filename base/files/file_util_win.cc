@@ -404,11 +404,6 @@ bool ReplaceFile(const FilePath& from_path,
                  const FilePath& to_path,
                  File::Error* error) {
   ScopedBlockingCall scoped_blocking_call(FROM_HERE, BlockingType::MAY_BLOCK);
-  // Try a simple move first.  It will only succeed when |to_path| doesn't
-  // already exist.
-  if (::MoveFile(from_path.value().c_str(), to_path.value().c_str()))
-    return true;
-  File::Error move_error = File::OSErrorToFileError(GetLastError());
 
   // Alias paths for investigation of shutdown hangs. crbug.com/1054164
   FilePath::CharType from_path_str[MAX_PATH];
@@ -419,21 +414,29 @@ bool ReplaceFile(const FilePath& from_path,
   base::wcslcpy(to_path_str, to_path.value().c_str(), base::size(to_path_str));
   base::debug::Alias(to_path_str);
 
-  // Try the full-blown replace if the move fails, as ReplaceFile will only
-  // succeed when |to_path| does exist. When writing to a network share, we
-  // may not be able to change the ACLs. Ignore ACL errors then
-  // (REPLACEFILE_IGNORE_MERGE_ERRORS).
+  // Assume that |to_path| already exists and try the normal replace. This will
+  // fail with ERROR_FILE_NOT_FOUND if |to_path| does not exist. When writing to
+  // a network share, we may not be able to change the ACLs. Ignore ACL errors
+  // then (REPLACEFILE_IGNORE_MERGE_ERRORS).
   if (::ReplaceFile(to_path.value().c_str(), from_path.value().c_str(), NULL,
                     REPLACEFILE_IGNORE_MERGE_ERRORS, NULL, NULL)) {
     return true;
   }
+
+  File::Error replace_error = File::OSErrorToFileError(GetLastError());
+
+  // Try a simple move next. It will only succeed when |to_path| doesn't already
+  // exist.
+  if (::MoveFile(from_path.value().c_str(), to_path.value().c_str()))
+    return true;
+
   // In the case of FILE_ERROR_NOT_FOUND from ReplaceFile, it is likely that
   // |to_path| does not exist. In this case, the more relevant error comes
   // from the call to MoveFile.
   if (error) {
-    File::Error replace_error = File::OSErrorToFileError(GetLastError());
-    *error = replace_error == File::FILE_ERROR_NOT_FOUND ? move_error
-                                                         : replace_error;
+    *error = replace_error == File::FILE_ERROR_NOT_FOUND
+                 ? File::GetLastFileError()
+                 : replace_error;
   }
   return false;
 }

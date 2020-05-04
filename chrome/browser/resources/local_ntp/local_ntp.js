@@ -1718,6 +1718,9 @@ function renderAutocompleteMatches(matches, suggestionGroupsMap) {
     groupEl.classList.toggle(CLASSES.COLLAPSED, suggestionGroup.hidden);
     const headerEl = document.createElement('a');
     headerEl.classList.add(CLASSES.HEADER);
+    // The header cannot be tabbed into but it will get focus when clicked;
+    // preventing the popup from losing focus and closing as a result.
+    headerEl.tabIndex = -1;
     headerEl.append(document.createTextNode(suggestionGroup.header));
     if (configData.suggestionTransparencyEnabled) {
       const remove = createRemoveButton(() => {

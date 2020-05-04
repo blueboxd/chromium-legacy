@@ -13,7 +13,7 @@
 #include "chrome/browser/lookalikes/lookalike_url_service.h"
 #include "chrome/browser/reputation/safety_tips_config.h"
 #include "chrome/common/chrome_features.h"
-#include "components/lookalikes/lookalike_url_util.h"
+#include "components/lookalikes/core/lookalike_url_util.h"
 #include "components/security_state/core/features.h"
 #include "components/url_formatter/spoof_checks/top_domains/top_domain_util.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"

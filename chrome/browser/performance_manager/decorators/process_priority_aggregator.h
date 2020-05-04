@@ -7,6 +7,7 @@
 
 #include "components/performance_manager/public/graph/frame_node.h"
 #include "components/performance_manager/public/graph/graph.h"
+#include "components/performance_manager/public/graph/node_data_describer.h"
 #include "components/performance_manager/public/graph/page_node.h"
 #include "components/performance_manager/public/graph/process_node.h"
 
@@ -20,6 +21,7 @@ class ProcessNodeImpl;
 // priority context that it hosts.
 class ProcessPriorityAggregator : public FrameNode::ObserverDefaultImpl,
                                   public GraphOwnedDefaultImpl,
+                                  public NodeDataDescriberDefaultImpl,
                                   public ProcessNode::ObserverDefaultImpl {
  public:
   class Data;
@@ -41,6 +43,8 @@ class ProcessPriorityAggregator : public FrameNode::ObserverDefaultImpl,
   // ProcessNodeObserver implementation:
   void OnProcessNodeAdded(const ProcessNode* process_node) override;
   void OnBeforeProcessNodeRemoved(const ProcessNode* process_node) override;
+
+  base::Value DescribeProcessNodeData(const ProcessNode* node) const override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ProcessPriorityAggregator);
@@ -77,6 +81,8 @@ class ProcessPriorityAggregator::Data {
   static Data* GetForTesting(ProcessNodeImpl* process_node);
 
  private:
+  friend class ProcessPriorityAggregator;
+
   // The number of frames at the given priority levels. The lowest priority
   // level isn't explicitly tracked as that's the default level.
 #if DCHECK_IS_ON()

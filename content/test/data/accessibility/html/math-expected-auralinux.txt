@@ -2,12 +2,12 @@
 ++[section]
 ++++[math]
 ++++++[section]
-++++++++[static] name='a'
+++++++++[static] name='𝐴'
 ++++++[section]
 ++++++++[static] name='2'
 ++++++[section]
 ++++++++[static] name='+'
 ++++++[section]
-++++++++[static] name='b'
+++++++++[static] name='𝐵'
 ++++++[section]
 ++++++++[static] name='2'

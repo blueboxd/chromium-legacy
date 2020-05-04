@@ -584,6 +584,9 @@
   "ui/strings/ui_strings.grd": {
     "messages": [3760],
   },
+  "ui/views/examples/views_examples_resources.grd": {
+    "messages": [3770],
+  },
   "ui/views/resources/views_resources.grd": {
     "structures": [3780],
   },

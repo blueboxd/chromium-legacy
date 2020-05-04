@@ -25,12 +25,10 @@ import org.chromium.chrome.browser.feed.library.api.host.logging.InternalFeedErr
 import org.chromium.chrome.browser.feed.library.api.internal.actionparser.ActionParser;
 import org.chromium.chrome.browser.feed.library.api.internal.actionparser.ActionSource;
 import org.chromium.chrome.browser.feed.library.api.internal.protocoladapter.ProtocolAdapter;
-import org.chromium.chrome.browser.feed.library.common.Result;
 import org.chromium.chrome.browser.feed.library.common.logging.Logger;
 import org.chromium.chrome.browser.feed.library.feedactionparser.internal.ActionTypesConverter;
 import org.chromium.chrome.browser.feed.library.feedactionparser.internal.PietFeedActionPayloadRetriever;
 import org.chromium.chrome.browser.feed.library.feedactionparser.internal.TooltipInfoImpl;
-import org.chromium.components.feed.core.proto.libraries.api.internal.StreamDataProto.StreamDataOperation;
 import org.chromium.components.feed.core.proto.ui.action.FeedActionPayloadProto.FeedActionPayload;
 import org.chromium.components.feed.core.proto.ui.action.FeedActionProto.FeedAction;
 import org.chromium.components.feed.core.proto.ui.action.FeedActionProto.FeedActionMetadata;
@@ -39,8 +37,6 @@ import org.chromium.components.feed.core.proto.ui.action.FeedActionProto.OpenUrl
 import org.chromium.components.feed.core.proto.ui.action.FeedActionProto.ViewReportData;
 import org.chromium.components.feed.core.proto.ui.piet.ActionsProto.Action;
 import org.chromium.components.feed.core.proto.ui.piet.LogDataProto.LogData;
-
-import java.util.List;
 
 /**
  * Action parser which is able to parse Feed actions and notify clients about which action needs to
@@ -117,23 +113,17 @@ public final class FeedActionParser implements ActionParser {
                     return;
                 }
 
-                Result<List<StreamDataOperation>> streamDataOperationsResult =
-                        mProtocolAdapter.createOperations(
-                                feedActionMetadata.getDismissData().getDataOperationsList());
-
-                if (!streamDataOperationsResult.isSuccessful()) {
-                    Logger.e(TAG, "Cannot dismiss: conversion to StreamDataOperation failed.");
-                    return;
-                }
                 if (!feedActionMetadata.getDismissData().hasContentId()) {
                     Logger.e(TAG, "Cannot dismiss: no Content Id");
                     return;
                 }
+
                 // TODO: Once we start logging DISMISS via the feed action end point, DISMISS
                 // and DISMISS_LOCAL should not be handled in the exact same way.
                 streamActionApi.dismiss(mProtocolAdapter.getStreamContentId(
                                                 feedActionMetadata.getDismissData().getContentId()),
-                        streamDataOperationsResult.getValue(),
+                        mProtocolAdapter.createOperations(
+                                feedActionMetadata.getDismissData().getDataOperationsList()),
                         feedActionMetadata.getDismissData().getUndoAction(),
                         feedActionMetadata.getDismissData().getPayload());
 
@@ -145,20 +135,10 @@ public final class FeedActionParser implements ActionParser {
                                     + " not support it.");
                     return;
                 }
-
-                Result<List<StreamDataOperation>> streamDataOperationResult =
+                streamActionApi.handleNotInterestedIn(
                         mProtocolAdapter.createOperations(
                                 feedActionMetadata.getNotInterestedInData()
-                                        .getDataOperationsList());
-
-                if (!streamDataOperationResult.isSuccessful()) {
-                    Logger.e(TAG,
-                            "Cannot preform action not interested in action: conversion to"
-                                    + " StreamDataOperation failed.");
-                    return;
-                }
-
-                streamActionApi.handleNotInterestedIn(streamDataOperationResult.getValue(),
+                                        .getDataOperationsList()),
                         feedActionMetadata.getNotInterestedInData().getUndoAction(),
                         feedActionMetadata.getNotInterestedInData().getPayload(),
                         feedActionMetadata.getNotInterestedInData().getInterestTypeValue());
@@ -219,6 +199,12 @@ public final class FeedActionParser implements ActionParser {
             case SEND_FEEDBACK:
                 Log.d(TAG, "SendFeedback menu item clicked.");
                 streamActionApi.sendFeedback(this.mContentMetadata.get());
+                break;
+            case BLOCK_CONTENT:
+                streamActionApi.handleBlockContent(
+                        mProtocolAdapter.createOperations(
+                                feedActionMetadata.getBlockContentData().getDataOperationsList()),
+                        feedActionMetadata.getBlockContentData().getPayload());
                 break;
             case REPORT_VIEW:
                 ViewReportData viewReportData = feedActionMetadata.getViewReportData();

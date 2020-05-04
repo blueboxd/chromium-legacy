@@ -491,6 +491,8 @@ cast_source_set("test_support") {
   sources = [
     "test/cast_browser_test.cc",
     "test/cast_browser_test.h",
+    "test/mock_cast_content_window_delegate.cc",
+    "test/mock_cast_content_window_delegate.h",
     "test/mock_cast_web_view.cc",
     "test/mock_cast_web_view.h",
   ]

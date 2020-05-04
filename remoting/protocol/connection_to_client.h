@@ -53,6 +53,10 @@ class ConnectionToClient {
     // Called when the network connection is closed or failed.
     virtual void OnConnectionClosed(ErrorCode error) = 0;
 
+    // Called when the transport protocol (TCP/UDP) changes and all channels are
+    // connected.
+    virtual void OnTransportProtocolChange(const std::string& protocol) = 0;
+
     // Called on notification of a route change event, which happens when a
     // channel is connected.
     virtual void OnRouteChange(const std::string& channel_name,

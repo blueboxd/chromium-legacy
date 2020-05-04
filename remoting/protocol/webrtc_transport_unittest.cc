@@ -72,6 +72,7 @@ class TestTransportEventHandler : public WebrtcTransport::EventHandler {
   void OnWebrtcTransportError(ErrorCode error) override {
     error_callback_.Run(error);
   }
+  void OnWebrtcTransportProtocolChanged() override {}
   void OnWebrtcTransportIncomingDataChannel(
       const std::string& name,
       std::unique_ptr<MessagePipe> pipe) override {

@@ -28,6 +28,9 @@ class AURA_EXPORT ScreenOzone : public display::Screen {
   gfx::Point GetCursorScreenPoint() override;
   bool IsWindowUnderCursor(gfx::NativeWindow window) override;
   gfx::NativeWindow GetWindowAtScreenPoint(const gfx::Point& point) override;
+  gfx::NativeWindow GetLocalProcessWindowAtPoint(
+      const gfx::Point& point,
+      const std::set<gfx::NativeWindow>& ignore) override;
   int GetNumDisplays() const override;
   const std::vector<display::Display>& GetAllDisplays() const override;
   display::Display GetDisplayNearestWindow(
@@ -41,6 +44,10 @@ class AURA_EXPORT ScreenOzone : public display::Screen {
   void AddObserver(display::DisplayObserver* observer) override;
   void RemoveObserver(display::DisplayObserver* observer) override;
   std::string GetCurrentWorkspace() override;
+
+  // Returns the NativeWindow associated with the AcceleratedWidget.
+  virtual gfx::NativeWindow GetNativeWindowFromAcceleratedWidget(
+      gfx::AcceleratedWidget widget) const;
 
  private:
   gfx::AcceleratedWidget GetAcceleratedWidgetForWindow(

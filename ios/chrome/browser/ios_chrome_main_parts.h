@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/allocator/buildflags.h"
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/metrics/field_trial.h"
@@ -14,6 +15,7 @@
 #include "ios/web/public/init/web_main_parts.h"
 
 class ApplicationContextImpl;
+class HeapProfilerController;
 class PrefService;
 
 class IOSChromeMainParts : public web::WebMainParts {
@@ -23,6 +25,7 @@ class IOSChromeMainParts : public web::WebMainParts {
 
  private:
   // web::WebMainParts implementation.
+  void PreEarlyInitialization() override;
   void PreMainMessageLoopStart() override;
   void PreCreateThreads() override;
   void PreMainMessageLoopRun() override;
@@ -51,6 +54,11 @@ class IOSChromeMainParts : public web::WebMainParts {
   PrefService* local_state_;
 
   IOSChromeFieldTrials ios_field_trials_;
+
+#if BUILDFLAG(USE_ALLOCATOR_SHIM)
+  // Manages heap (memory) profiling. Requires the allocator shim to be enabled.
+  std::unique_ptr<HeapProfilerController> heap_profiler_controller_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(IOSChromeMainParts);
 };

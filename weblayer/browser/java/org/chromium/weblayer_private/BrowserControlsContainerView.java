@@ -128,6 +128,12 @@ class BrowserControlsContainerView extends FrameLayout {
         mWebContents = webContents;
         BrowserControlsContainerViewJni.get().setWebContents(
                 mNativeBrowserControlsContainerView, webContents);
+
+        if (mWebContents == null) return;
+        if (mSystemUiFullscreenResizeRunnable != null) {
+            removeCallbacks(mSystemUiFullscreenResizeRunnable);
+        }
+        processFullscreenChanged(mWebContents.isFullscreenForCurrentTab());
     }
 
     public void destroy() {
@@ -307,7 +313,11 @@ class BrowserControlsContainerView extends FrameLayout {
         mLastHeight = getHeight();
         BrowserControlsContainerViewJni.get().setControlsSize(
                 mNativeBrowserControlsContainerView, mLastWidth, mLastHeight);
-        setControlsOffset(0, mLastHeight);
+        if (mIsFullscreen) {
+            setFullscreenControlsOffset();
+        } else {
+            setControlsOffset(0, mLastHeight);
+        }
     }
 
     private void finishScroll(int contentOffsetY) {
@@ -365,14 +375,18 @@ class BrowserControlsContainerView extends FrameLayout {
         mSystemUiFullscreenResizeRunnable = null;
         if (mIsFullscreen == isFullscreen) return;
         mIsFullscreen = isFullscreen;
-        if (mView == null) return;
         if (mIsFullscreen) {
             hideControls();
-            setControlsOffset(mIsTop ? -mLastHeight : mLastHeight, 0);
+            setFullscreenControlsOffset();
         } else {
             showControls();
             setControlsOffset(0, mIsTop ? mLastHeight : 0);
         }
+    }
+
+    private void setFullscreenControlsOffset() {
+        assert mIsFullscreen;
+        setControlsOffset(mIsTop ? -mLastHeight : mLastHeight, 0);
     }
 
     private int getResourceId() {

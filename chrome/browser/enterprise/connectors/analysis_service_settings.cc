@@ -8,21 +8,6 @@
 
 namespace enterprise_connectors {
 
-namespace {
-
-// Keys used to read a connector's policy values.
-constexpr char kKeyServiceProvider[] = "service_provider";
-constexpr char kKeyEnable[] = "enable";
-constexpr char kKeyDisable[] = "disable";
-constexpr char kKeyUrlList[] = "url_list";
-constexpr char kKeyTags[] = "tags";
-constexpr char kKeyBlockUntilVerdict[] = "block_until_verdict";
-constexpr char kKeyBlockPasswordProtected[] = "block_password_protected";
-constexpr char kKeyBlockLargeFiles[] = "block_large_files";
-constexpr char kKeyBlockUnsupportedFileTypes[] = "block_unsupported_file_types";
-
-}  // namespace
-
 AnalysisServiceSettings::AnalysisServiceSettings(
     const base::Value& settings_value) {
   if (!settings_value.is_dict())

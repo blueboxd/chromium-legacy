@@ -578,7 +578,7 @@ int64_t ChunkDemuxer::GetMemoryUsage() const {
 
 base::Optional<container_names::MediaContainerName>
 ChunkDemuxer::GetContainerForMetrics() const {
-  return base::Optional<container_names::MediaContainerName>();
+  return base::nullopt;
 }
 
 void ChunkDemuxer::AbortPendingReads() {

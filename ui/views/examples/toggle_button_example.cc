@@ -22,11 +22,10 @@ ToggleButtonExample::ToggleButtonExample() : ExampleBase("Toggle button") {}
 ToggleButtonExample::~ToggleButtonExample() = default;
 
 void ToggleButtonExample::CreateExampleView(View* container) {
-  button_ = new ToggleButton(this);
   auto layout = std::make_unique<BoxLayout>(BoxLayout::Orientation::kVertical);
   layout->set_cross_axis_alignment(BoxLayout::CrossAxisAlignment::kCenter);
   container->SetLayoutManager(std::move(layout));
-  container->AddChildView(button_);
+  button_ = container->AddChildView(std::make_unique<ToggleButton>(this));
 }
 
 void ToggleButtonExample::ButtonPressed(Button* sender,

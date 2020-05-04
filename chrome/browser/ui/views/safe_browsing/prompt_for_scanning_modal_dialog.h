@@ -28,12 +28,14 @@ class PromptForScanningModalDialog : public views::DialogDelegateView,
  public:
   // Show this dialog for the given |web_contents|.
   static void ShowForWebContents(content::WebContents* web_contents,
+                                 const base::string16& filename,
                                  base::OnceClosure accept_callback,
                                  base::OnceClosure open_now_callback);
 
   // Create a PromptForScanningModalDialog attached to |web_contents|. The
   // dialog will call |accept_callback| if the user accepts the prompt.
   PromptForScanningModalDialog(content::WebContents* web_contents,
+                               const base::string16& filename,
                                base::OnceClosure accept_callback,
                                base::OnceClosure open_now_callback);
   PromptForScanningModalDialog(const PromptForScanningModalDialog&) = delete;
@@ -60,6 +62,9 @@ class PromptForScanningModalDialog : public views::DialogDelegateView,
  private:
   // The WebContents this dialog is attached to. This is unowned.
   content::WebContents* web_contents_;
+
+  // The name of the file that this prompt was created for.
+  base::string16 filename_;
 
   // The open now button for this dialog. The pointer is unowned, but this is a
   // child View of this dialog's View, so it has the same lifetime.

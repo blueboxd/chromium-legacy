@@ -116,6 +116,7 @@ VULKAN_DEVICE_FUNCTIONS = [
       'vkBindBufferMemory',
       'vkBindImageMemory',
       'vkCmdBeginRenderPass',
+      'vkCmdCopyBuffer',
       'vkCmdCopyBufferToImage',
       'vkCmdEndRenderPass',
       'vkCmdExecuteCommands',
@@ -147,10 +148,12 @@ VULKAN_DEVICE_FUNCTIONS = [
       'vkDestroySemaphore',
       'vkDestroyShaderModule',
       'vkDeviceWaitIdle',
+      'vkFlushMappedMemoryRanges',
       'vkEndCommandBuffer',
       'vkFreeCommandBuffers',
       'vkFreeDescriptorSets',
       'vkFreeMemory',
+      'vkInvalidateMappedMemoryRanges',
       'vkGetBufferMemoryRequirements',
       'vkGetDeviceQueue',
       'vkGetFenceStatus',
@@ -169,6 +172,7 @@ VULKAN_DEVICE_FUNCTIONS = [
     'min_api_version': 'VK_API_VERSION_1_1',
     'functions': [
       'vkGetDeviceQueue2',
+      'vkGetBufferMemoryRequirements2',
       'vkGetImageMemoryRequirements2',
     ]
   },
@@ -388,6 +392,8 @@ struct VulkanFunctionPointers {
   template <typename R, typename ...Args>
   class VulkanFunction <R(VKAPI_PTR*)(Args...)> {
    public:
+    using Fn = R(VKAPI_PTR*)(Args...);
+
     explicit operator bool() {
       return !!fn_;
     }
@@ -397,9 +403,10 @@ struct VulkanFunctionPointers {
       return fn_(args...);
     }
 
+    Fn get() const { return fn_; }
+
    private:
     friend VulkanFunctionPointers;
-    using Fn = R(VKAPI_PTR*)(Args...);
 
     Fn operator=(Fn fn) {
       fn_ = fn;

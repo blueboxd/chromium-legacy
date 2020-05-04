@@ -27,22 +27,19 @@ class BrowserInterfaceBrokerImpl : public blink::mojom::BrowserInterfaceBroker {
   // blink::mojom::BrowserInterfaceBroker
   void GetInterface(mojo::GenericPendingReceiver receiver) {
     DCHECK(receiver.interface_name().has_value());
-    auto interface_name = receiver.interface_name().value();
-    auto pipe = receiver.PassPipe();
-    if (!binder_map_.TryBind(interface_name, &pipe)) {
+    if (!binder_map_.TryBind(&receiver)) {
       if (!binder_map_with_context_.TryBind(internal::GetContextForHost(host_),
-                                            interface_name, &pipe)) {
+                                            &receiver)) {
         host_->ReportNoBinderForInterface("No binder found for interface " +
-                                          interface_name);
+                                          *receiver.interface_name());
       }
     }
   }
 
  private:
   ExecutionContextHost* const host_;
-  service_manager::BinderMap binder_map_;
-  service_manager::BinderMapWithContext<InterfaceBinderContext>
-      binder_map_with_context_;
+  mojo::BinderMap binder_map_;
+  mojo::BinderMapWithContext<InterfaceBinderContext> binder_map_with_context_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserInterfaceBrokerImpl);
 };

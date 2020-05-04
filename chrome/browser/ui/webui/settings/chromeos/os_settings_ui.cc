@@ -28,7 +28,6 @@
 #include "chrome/browser/chromeos/crostini/crostini_features.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
 #include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_utils.h"
-#include "chrome/browser/chromeos/multidevice_setup/multidevice_setup_client_factory.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_pref_names.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_util.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -55,7 +54,6 @@
 #include "chrome/browser/ui/webui/settings/chromeos/google_assistant_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/internet_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/kerberos_accounts_handler.h"
-#include "chrome/browser/ui/webui/settings/chromeos/multidevice_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/os_settings_features_util.h"
 #include "chrome/browser/ui/webui/settings/chromeos/os_settings_manager.h"
 #include "chrome/browser/ui/webui/settings/chromeos/os_settings_manager_factory.h"
@@ -90,7 +88,6 @@
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/constants/chromeos_pref_names.h"
 #include "chromeos/login/auth/password_visibility_utils.h"
-#include "chromeos/services/multidevice_setup/public/cpp/prefs.h"
 #include "chromeos/services/network_config/public/mojom/cros_network_config.mojom.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/pref_registry/pref_registry_syncable.h"
@@ -281,25 +278,10 @@ void OSSettingsUI::InitOSWebUIHandlers(content::WebUIDataSource* html_source) {
       std::make_unique<chromeos::smb_dialog::SmbHandler>(profile,
                                                          base::DoNothing()));
 
-  if (!profile->IsGuestSession()) {
-    chromeos::android_sms::AndroidSmsService* android_sms_service =
-        chromeos::android_sms::AndroidSmsServiceFactory::GetForBrowserContext(
-            profile);
+  if (!profile->IsGuestSession() &&
+      chromeos::features::IsAmbientModeEnabled()) {
     web_ui()->AddMessageHandler(
-        std::make_unique<chromeos::settings::MultideviceHandler>(
-            profile->GetPrefs(),
-            chromeos::multidevice_setup::MultiDeviceSetupClientFactory::
-                GetForProfile(profile),
-            android_sms_service
-                ? android_sms_service->android_sms_pairing_state_tracker()
-                : nullptr,
-            android_sms_service ? android_sms_service->android_sms_app_manager()
-                                : nullptr));
-
-    if (chromeos::features::IsAmbientModeEnabled()) {
-      web_ui()->AddMessageHandler(
-          std::make_unique<chromeos::settings::AmbientModeHandler>());
-    }
+        std::make_unique<chromeos::settings::AmbientModeHandler>());
   }
 
   html_source->AddBoolean(
@@ -334,6 +316,9 @@ void OSSettingsUI::BindInterface(
 
 void OSSettingsUI::BindInterface(
     mojo::PendingReceiver<mojom::SearchHandler> receiver) {
+  if (!base::FeatureList::IsEnabled(::chromeos::features::kNewOsSettingsSearch))
+    return;
+
   SearchHandlerFactory::GetForProfile(Profile::FromWebUI(web_ui()))
       ->BindInterface(std::move(receiver));
 }

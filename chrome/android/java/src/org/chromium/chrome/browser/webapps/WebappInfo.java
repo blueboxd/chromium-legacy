@@ -14,7 +14,6 @@ import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.ShortcutSource;
 import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider;
 import org.chromium.chrome.browser.webapps.WebApkExtras.ShortcutItem;
-import org.chromium.chrome.browser.webapps.WebApkInfo.ShareTarget;
 
 import java.util.List;
 import java.util.Map;
@@ -187,7 +186,7 @@ public class WebappInfo {
 
     /** Returns data about the WebAPK's share intent handlers. */
     @NonNull
-    public ShareTarget shareTarget() {
+    public WebApkShareTarget shareTarget() {
         return mWebApkExtras.shareTarget;
     }
 

@@ -125,8 +125,6 @@ scoped_refptr<SharedBufferDispatcher> SharedBufferDispatcher::Deserialize(
     PlatformHandle* platform_handles,
     size_t num_platform_handles) {
   if (num_bytes != sizeof(SerializedState)) {
-    // TODO(https://crbug.com/1073859): Remove.
-    CHECK_EQ(num_bytes, sizeof(SerializedState));
     LOG(ERROR) << "Invalid serialized shared buffer dispatcher (bad size)";
     return nullptr;
   }
@@ -134,43 +132,29 @@ scoped_refptr<SharedBufferDispatcher> SharedBufferDispatcher::Deserialize(
   const SerializedState* serialized_state =
       static_cast<const SerializedState*>(bytes);
   if (!serialized_state->num_bytes) {
-    // TODO(https://crbug.com/1073859): Remove.
-    CHECK(serialized_state->num_bytes);
     LOG(ERROR)
         << "Invalid serialized shared buffer dispatcher (invalid num_bytes)";
     return nullptr;
   }
 
-  if (num_ports) {
-    // TODO(https://crbug.com/1073859): Remove.
-    CHECK(!num_ports);
+  if (num_ports)
     return nullptr;
-  }
 
   PlatformHandle handles[2];
 #if defined(OS_POSIX) && !defined(OS_ANDROID) && \
     (!defined(OS_MACOSX) || defined(OS_IOS))
   if (serialized_state->access_mode ==
       MOJO_PLATFORM_SHARED_MEMORY_REGION_ACCESS_MODE_WRITABLE) {
-    if (num_platform_handles != 2) {
-      // TODO(https://crbug.com/1073859): Remove.
-      CHECK_EQ(num_platform_handles, 2u);
+    if (num_platform_handles != 2)
       return nullptr;
-    }
     handles[1] = std::move(platform_handles[1]);
   } else {
-    if (num_platform_handles != 1) {
-      // TODO(https://crbug.com/1073859): Remove.
-      CHECK_EQ(num_platform_handles, 1u);
+    if (num_platform_handles != 1)
       return nullptr;
-    }
   }
 #else
-  if (num_platform_handles != 1) {
-    // TODO(https://crbug.com/1073859): Remove.
-    CHECK_EQ(num_platform_handles, 1u);
+  if (num_platform_handles != 1)
     return nullptr;
-  }
 #endif
   handles[0] = std::move(platform_handles[0]);
 
@@ -189,8 +173,6 @@ scoped_refptr<SharedBufferDispatcher> SharedBufferDispatcher::Deserialize(
       mode = base::subtle::PlatformSharedMemoryRegion::Mode::kUnsafe;
       break;
     default:
-      // TODO(https://crbug.com/1073859): Remove.
-      CHECK(false);
       LOG(ERROR) << "Invalid serialized shared buffer access mode.";
       return nullptr;
   }
@@ -200,8 +182,6 @@ scoped_refptr<SharedBufferDispatcher> SharedBufferDispatcher::Deserialize(
                                                         std::move(handles[1])),
       mode, static_cast<size_t>(serialized_state->num_bytes), guid);
   if (!region.IsValid()) {
-    // TODO(https://crbug.com/1073859): Remove.
-    CHECK(false) << "Failed to create shared memory region.";
     LOG(ERROR)
         << "Invalid serialized shared buffer dispatcher (invalid num_bytes?)";
     return nullptr;

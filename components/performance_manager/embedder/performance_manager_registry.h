@@ -7,7 +7,7 @@
 
 #include <memory>
 
-#include "services/service_manager/public/cpp/binder_map.h"
+#include "mojo/public/cpp/bindings/binder_map.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 
 namespace content {
@@ -82,8 +82,7 @@ class PerformanceManagerRegistry {
   // FrameNode in the graph. Typically wired up via
   // ContentBrowserClient::RegisterBrowserInterfaceBindersForFrame.
   virtual void ExposeInterfacesToRenderFrame(
-      service_manager::BinderMapWithContext<content::RenderFrameHost*>*
-          map) = 0;
+      mojo::BinderMapWithContext<content::RenderFrameHost*>* map) = 0;
 
   // Must be invoked prior to destroying the object. Schedules deletion of
   // PageNodes and ProcessNodes retained by this registry, even if the

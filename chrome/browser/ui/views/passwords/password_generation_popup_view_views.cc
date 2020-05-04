@@ -20,6 +20,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_palette.h"
+#include "ui/gfx/favicon_size.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/native_theme/native_theme.h"
@@ -104,8 +105,8 @@ void PasswordGenerationPopupViewViews::GeneratedPasswordBox::Init(
   if (controller->ShouldShowGoogleIcon()) {
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
     auto* icon_view = layout->AddView(std::make_unique<views::ImageView>());
-    icon_view->SetImage(
-        gfx::CreateVectorIcon(kGoogleGLogoIcon, gfx::kPlaceholderColor));
+    icon_view->SetImage(gfx::CreateVectorIcon(
+        kGoogleGLogoIcon, gfx::kFaviconSize, gfx::kPlaceholderColor));
     icon_view->set_can_process_events_within_subtree(false);
 #endif
   }
@@ -170,7 +171,7 @@ void PasswordGenerationPopupViewViews::GeneratedPasswordBox::BuildColumnSet(
                         1.0 /* resize_percent */, views::GridLayout::USE_PREF,
                         0, 0);
   if (should_show_google_icon) {
-    // TODO(crbug.com/1060131): Set the final dimensions for the icon.
+    // TODO(crbug.com/1060131): Set the final margins for the icon.
     column_set->AddPaddingColumn(0 /* resize_percent */,
                                  ChromeLayoutProvider::Get()->GetDistanceMetric(
                                      views::DISTANCE_RELATED_LABEL_HORIZONTAL));

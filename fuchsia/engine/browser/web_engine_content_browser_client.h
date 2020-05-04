@@ -16,7 +16,7 @@
 #include "content/public/browser/content_browser_client.h"
 #include "fuchsia/engine/browser/content_directory_loader_factory.h"
 #include "fuchsia/engine/browser/media_resource_provider_service.h"
-#include "services/service_manager/public/cpp/binder_map.h"
+#include "mojo/public/cpp/bindings/binder_map.h"
 
 class WebEngineBrowserMainParts;
 
@@ -38,8 +38,7 @@ class WebEngineContentBrowserClient : public content::ContentBrowserClient {
                            content::WebPreferences* web_prefs) final;
   void RegisterBrowserInterfaceBindersForFrame(
       content::RenderFrameHost* render_frame_host,
-      service_manager::BinderMapWithContext<content::RenderFrameHost*>* map)
-      final;
+      mojo::BinderMapWithContext<content::RenderFrameHost*>* map) final;
   void RegisterNonNetworkNavigationURLLoaderFactories(
       int frame_tree_node_id,
       NonNetworkURLLoaderFactoryMap* factories) final;

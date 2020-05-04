@@ -22,7 +22,6 @@ jumbo_source_set("blink") {
     "blink_event_util.h",
     "compositor_thread_event_queue.cc",
     "compositor_thread_event_queue.h",
-    "did_overscroll_params.cc",
     "did_overscroll_params.h",
     "elastic_overscroll_controller.cc",
     "elastic_overscroll_controller.h",

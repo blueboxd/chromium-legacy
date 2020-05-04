@@ -48,6 +48,10 @@ BASE_EXPORT char* StreamValToStr(const void* v,
                                  void (*stream_func)(std::ostream&,
                                                      const void*));
 
+#ifndef __has_builtin
+#define __has_builtin(x) 0  // Compatibility with non-clang compilers.
+#endif
+
 template <typename T>
 inline typename std::enable_if<
     base::internal::SupportsOstreamOperator<const T&>::value &&
@@ -61,7 +65,7 @@ CheckOpValueStr(const T& v) {
   // operator& might be overloaded, so do the std::addressof dance.
   // __builtin_addressof is preferred since it also handles Obj-C ARC pointers.
   // Some casting is still needed, because T might be volatile.
-#if defined(__has_builtin) && __has_builtin(__builtin_addressof)
+#if __has_builtin(__builtin_addressof)
   const void* vp = const_cast<const void*>(
       reinterpret_cast<const volatile void*>(__builtin_addressof(v)));
 #else

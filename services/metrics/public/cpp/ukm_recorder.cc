@@ -52,6 +52,18 @@ ukm::SourceId UkmRecorder::GetSourceIdForWebApkManifestUrl(
   return source_id;
 }
 
+// static
+ukm::SourceId UkmRecorder::GetSourceIdForDesktopWebAppStartUrl(
+    const GURL& start_url) {
+  ukm::SourceId source_id =
+      base::UkmSourceId::FromOtherId(GetNewSourceID(),
+                                     SourceIdType::DESKTOP_WEB_APP_ID)
+          .ToInt64();
+  ukm::UkmRecorder* ukm_recorder = ukm::UkmRecorder::Get();
+  ukm_recorder->UpdateSourceURL(source_id, start_url);
+  return source_id;
+}
+
 void UkmRecorder::RecordOtherURL(base::UkmSourceId source_id, const GURL& url) {
   UpdateSourceURL(source_id.ToInt64(), url);
 }

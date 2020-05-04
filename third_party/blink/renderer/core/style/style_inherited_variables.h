@@ -48,7 +48,7 @@ class CORE_EXPORT StyleInheritedVariables
   // Note that not all custom property names returned here necessarily have
   // valid values, due to cycles or references to invalid variables without
   // using a fallback.
-  HashSet<AtomicString> GetCustomPropertyNames() const;
+  void CollectNames(HashSet<AtomicString>&) const;
 
   const StyleVariables::DataMap& Data() const { return variables_.Data(); }
   const StyleVariables::ValueMap& Values() const { return variables_.Values(); }

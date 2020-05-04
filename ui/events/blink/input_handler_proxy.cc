@@ -22,7 +22,6 @@
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "cc/input/main_thread_scrolling_reason.h"
-#include "cc/input/scroll_input_type.h"
 #include "cc/metrics/event_metrics.h"
 #include "services/tracing/public/cpp/perfetto/flow_event_utils.h"
 #include "services/tracing/public/cpp/perfetto/macros.h"
@@ -40,6 +39,7 @@
 #include "ui/events/blink/momentum_scroll_jank_tracker.h"
 #include "ui/events/blink/scroll_predictor.h"
 #include "ui/events/blink/web_input_event_traits.h"
+#include "ui/events/types/scroll_input_type.h"
 #include "ui/gfx/geometry/point_conversions.h"
 #include "ui/latency/latency_info.h"
 
@@ -103,19 +103,19 @@ cc::ScrollState CreateScrollStateForInertialUpdate(
   return cc::ScrollState(scroll_state_data);
 }
 
-cc::ScrollInputType GestureScrollInputType(blink::WebGestureDevice device) {
+ui::ScrollInputType GestureScrollInputType(blink::WebGestureDevice device) {
   switch (device) {
     case blink::WebGestureDevice::kTouchpad:
-      return cc::ScrollInputType::kWheel;
+      return ui::ScrollInputType::kWheel;
     case blink::WebGestureDevice::kTouchscreen:
-      return cc::ScrollInputType::kTouchscreen;
+      return ui::ScrollInputType::kTouchscreen;
     case blink::WebGestureDevice::kSyntheticAutoscroll:
-      return cc::ScrollInputType::kAutoscroll;
+      return ui::ScrollInputType::kAutoscroll;
     case blink::WebGestureDevice::kScrollbar:
-      return cc::ScrollInputType::kScrollbar;
+      return ui::ScrollInputType::kScrollbar;
     case blink::WebGestureDevice::kUninitialized:
       NOTREACHED();
-      return cc::ScrollInputType::kMaxValue;
+      return ui::ScrollInputType::kMaxValue;
   }
 }
 

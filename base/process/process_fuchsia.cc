@@ -20,6 +20,59 @@
 
 namespace base {
 
+namespace {
+
+zx::process FindProcessInJobTree(const zx::job& job, ProcessId pid) {
+  zx::process process;
+  zx_status_t status = job.get_child(pid, ZX_RIGHT_SAME_RIGHTS, &process);
+
+  if (status == ZX_OK)
+    return process;
+
+  if (status == ZX_ERR_NOT_FOUND) {
+    std::vector<zx_koid_t> job_koids(32);
+    while (true) {
+      // Fetch the KOIDs of the job children of |job|.
+      size_t actual = 0u;
+      size_t available = 0u;
+      status = job.get_info(ZX_INFO_JOB_CHILDREN, job_koids.data(),
+                            job_koids.size() * sizeof(zx_koid_t), &actual,
+                            &available);
+
+      if (status != ZX_OK) {
+        ZX_DLOG(ERROR, status) << "zx_object_get_info(JOB_CHILDREN)";
+        return zx::process();
+      }
+
+      // If |job_koids| was too small then resize it and try again.
+      if (available > actual) {
+        job_koids.resize(available);
+        continue;
+      }
+
+      // Break out of the loop and iterate over |job_koids|, to find the PID.
+      job_koids.resize(actual);
+      break;
+    }
+
+    for (zx_koid_t job_koid : job_koids) {
+      zx::job child_job;
+      if (job.get_child(job_koid, ZX_RIGHT_SAME_RIGHTS, &child_job) != ZX_OK)
+        continue;
+      process = FindProcessInJobTree(child_job, pid);
+      if (process)
+        return process;
+    }
+
+    return zx::process();
+  }
+
+  ZX_DLOG(ERROR, status) << "zx_object_get_child";
+  return zx::process();
+}
+
+}  // namespace
+
 Process::Process(ProcessHandle handle)
     : process_(handle), is_current_process_(false) {
   CHECK_NE(handle, zx_process_self());
@@ -54,16 +107,7 @@ Process Process::Open(ProcessId pid) {
   if (pid == GetCurrentProcId())
     return Current();
 
-  // While a process with object id |pid| might exist, the job returned by
-  // zx::job::default_job() might not contain it, so this call can fail.
-  zx::process process;
-  zx_status_t status =
-      GetDefaultJob()->get_child(pid, ZX_RIGHT_SAME_RIGHTS, &process);
-  if (status != ZX_OK) {
-    ZX_DLOG(ERROR, status) << "zx_object_get_child";
-    return Process();
-  }
-  return Process(process.release());
+  return Process(FindProcessInJobTree(*GetDefaultJob(), pid).release());
 }
 
 // static

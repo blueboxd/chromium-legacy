@@ -79,8 +79,10 @@ def _CheckPolicyTemplatesSyntax(input_api, output_api):
 def _CheckPolicyTestCases(input_api, output_api, policies):
   # Read list of policies in chrome/test/data/policy/policy_test_cases.json.
   root = input_api.change.RepositoryRoot()
+  test_cases_depot_path = input_api.os_path.join(
+       'chrome', 'test', 'data', 'policy', 'policy_test_cases.json')
   policy_test_cases_file = input_api.os_path.join(
-      root, 'chrome', 'test', 'data', 'policy', 'policy_test_cases.json')
+      root, test_cases_depot_path)
   test_names = input_api.json.load(open(policy_test_cases_file)).keys()
   tested_policies = frozenset(name.partition('.')[0]
                               for name in test_names
@@ -101,6 +103,13 @@ def _CheckPolicyTestCases(input_api, output_api, policies):
     results.append(output_api.PresubmitError(error_missing % policy))
   for policy in extra:
     results.append(output_api.PresubmitError(error_extra % policy))
+
+  results.extend(
+      input_api.canned_checks.CheckChangeHasNoTabs(
+          input_api,
+          output_api,
+          source_file_filter=lambda x: x.LocalPath() == test_cases_depot_path))
+
   return results
 
 

@@ -197,8 +197,7 @@ public class WebApkShareTargetUtil {
         }
     }
 
-    protected static PostData computePostData(
-            WebApkInfo.ShareTarget shareTarget, ShareData shareData) {
+    protected static PostData computePostData(WebApkShareTarget shareTarget, ShareData shareData) {
         if (shareTarget == null || !shareTarget.isShareMethodPost() || shareData == null) {
             return null;
         }

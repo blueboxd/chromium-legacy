@@ -131,8 +131,7 @@ void ConnectToCameraAppHelper(
 }  // namespace
 
 void PopulateChromeFrameBindersForExtension(
-    service_manager::BinderMapWithContext<content::RenderFrameHost*>*
-        binder_map,
+    mojo::BinderMapWithContext<content::RenderFrameHost*>* binder_map,
     content::RenderFrameHost* render_frame_host,
     const Extension* extension) {
   DCHECK(extension);

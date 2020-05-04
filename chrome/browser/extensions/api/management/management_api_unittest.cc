@@ -38,6 +38,8 @@
 #include "extensions/common/permissions/permission_set.h"
 
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
+#include "base/test/metrics/histogram_tester.h"
+#include "chrome/browser/supervised_user/supervised_user_extensions_metrics_recorder.h"
 #include "chrome/browser/supervised_user/supervised_user_service.h"
 #include "chrome/browser/supervised_user/supervised_user_service_factory.h"
 #include "chrome/browser/supervised_user/supervised_user_test_util.h"
@@ -919,6 +921,8 @@ TEST_F(ManagementApiSupervisedUserTest, SetEnabled_AfterIncreasedPermissions) {
   // Preconditions.
   ASSERT_TRUE(profile()->IsChild());
 
+  base::HistogramTester histogram_tester;
+
   base::FilePath base_path = data_dir().AppendASCII("permissions_increase");
   base::FilePath pem_path = base_path.AppendASCII("permissions.pem");
 
@@ -932,9 +936,16 @@ TEST_F(ManagementApiSupervisedUserTest, SetEnabled_AfterIncreasedPermissions) {
   const std::string extension_id = extension->id();
 
   // Simulate parent approval for the extension installation.
-  GetSupervisedUserService()->AddOrUpdateExtensionApproval(*extension);
+  GetSupervisedUserService()->AddExtensionApproval(*extension);
   // The extension should be enabled now.
   EXPECT_TRUE(registry()->enabled_extensions().Contains(extension_id));
+
+  // Should see 1 kApprovalGranted UMA metric.
+  histogram_tester.ExpectUniqueSample("SupervisedUsers.Extensions2",
+                                      SupervisedUserExtensionsMetricsRecorder::
+                                          UmaExtensionState::kApprovalGranted,
+                                      1);
+  histogram_tester.ExpectTotalCount("SupervisedUsers.Extensions2", 1);
 
   ExtensionPrefs* prefs = ExtensionPrefs::Get(profile());
   std::unique_ptr<const PermissionSet> known_perms =
@@ -975,6 +986,14 @@ TEST_F(ManagementApiSupervisedUserTest, SetEnabled_AfterIncreasedPermissions) {
 
   // The parent approval dialog should have not appeared.
   EXPECT_EQ(0, supervised_user_delegate_->show_dialog_count_);
+
+  // Should see 1 kPermissionsIncreaseGranted UMA metric.
+  histogram_tester.ExpectBucketCount(
+      "SupervisedUsers.Extensions2",
+      SupervisedUserExtensionsMetricsRecorder::UmaExtensionState::
+          kPermissionsIncreaseGranted,
+      1);
+  histogram_tester.ExpectTotalCount("SupervisedUsers.Extensions2", 2);
 }
 
 // Tests that supervised users can't approve permission updates by themselves
@@ -983,6 +1002,8 @@ TEST_F(ManagementApiSupervisedUserTest,
        SetEnabled_CantApprovePermissionUpdatesToggleOff) {
   // Preconditions.
   ASSERT_TRUE(profile()->IsChild());
+
+  base::HistogramTester histogram_tester;
 
   base::FilePath base_path = data_dir().AppendASCII("permissions_increase");
   base::FilePath pem_path = base_path.AppendASCII("permissions.pem");
@@ -997,9 +1018,16 @@ TEST_F(ManagementApiSupervisedUserTest,
   const std::string extension_id = extension->id();
 
   // Simulate parent approval for the extension installation.
-  GetSupervisedUserService()->AddOrUpdateExtensionApproval(*extension);
+  GetSupervisedUserService()->AddExtensionApproval(*extension);
   // The extension should be enabled now.
   EXPECT_TRUE(registry()->enabled_extensions().Contains(extension_id));
+
+  // There should be 1 kApprovalGranted UMA metric.
+  histogram_tester.ExpectUniqueSample("SupervisedUsers.Extensions2",
+                                      SupervisedUserExtensionsMetricsRecorder::
+                                          UmaExtensionState::kApprovalGranted,
+                                      1);
+  histogram_tester.ExpectTotalCount("SupervisedUsers.Extensions2", 1);
 
   ExtensionPrefs* prefs = ExtensionPrefs::Get(profile());
   std::unique_ptr<const PermissionSet> known_perms =
@@ -1042,6 +1070,9 @@ TEST_F(ManagementApiSupervisedUserTest,
   // dialog should never appear when the "Permissions for sites, apps and
   // extensions" toggle is off.
   EXPECT_EQ(0, supervised_user_delegate_->show_dialog_count_);
+
+  // There should be no new UMA metrics.
+  histogram_tester.ExpectTotalCount("SupervisedUsers.Extensions2", 1);
 }
 
 // Tests that if an extension still requires parental consent, the supervised
@@ -1284,7 +1315,7 @@ TEST_F(ManagementApiSupervisedUserTestWithSetup, SetEnabled_PreviouslyAllowed) {
                               disable_reason::DISABLE_USER_ACTION);
 
   // Simulate previous parent approval.
-  GetSupervisedUserService()->AddOrUpdateExtensionApproval(*extension_);
+  GetSupervisedUserService()->AddExtensionApproval(*extension_);
 
   // Simulate a call to chrome.management.setEnabled().
   std::string error;

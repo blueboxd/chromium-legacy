@@ -12,9 +12,10 @@
 
 namespace cc {
 
-EventMetrics::EventMetrics(ui::EventType type,
-                           base::TimeTicks time_stamp,
-                           base::Optional<ScrollInputType> scroll_input_type)
+EventMetrics::EventMetrics(
+    ui::EventType type,
+    base::TimeTicks time_stamp,
+    base::Optional<ui::ScrollInputType> scroll_input_type)
     : type_(type),
       time_stamp_(time_stamp),
       scroll_input_type_(scroll_input_type) {}
@@ -83,13 +84,13 @@ const char* EventMetrics::GetScrollTypeName() const {
   DCHECK(scroll_input_type_) << "Event is not a scroll event";
 
   switch (*scroll_input_type_) {
-    case ScrollInputType::kTouchscreen:
+    case ui::ScrollInputType::kTouchscreen:
       return "Touchscreen";
-    case ScrollInputType::kWheel:
+    case ui::ScrollInputType::kWheel:
       return "Wheel";
-    case ScrollInputType::kAutoscroll:
+    case ui::ScrollInputType::kAutoscroll:
       return "Autoscroll";
-    case ScrollInputType::kScrollbar:
+    case ui::ScrollInputType::kScrollbar:
       return "Scrollbar";
   }
 }

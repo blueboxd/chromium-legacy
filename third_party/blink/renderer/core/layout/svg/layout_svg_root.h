@@ -161,6 +161,10 @@ class CORE_EXPORT LayoutSVGRoot final : public LayoutReplaced {
 
   PositionWithAffinity PositionForPoint(const PhysicalOffset&) const final;
 
+  // This is a special case for SVG documents with percentage dimensions which
+  // would normally not change under zoom. See: https://crbug.com/222786.
+  double LogicalSizeScaleFactorForPercentageLengths() const;
+
   LayoutObjectChildList children_;
   LayoutSize container_size_;
   FloatRect object_bounding_box_;

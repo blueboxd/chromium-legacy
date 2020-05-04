@@ -50,14 +50,12 @@ class MockUploader : public DomainReliabilityUploader {
   virtual bool discard_uploads() const;
 
   // DomainReliabilityUploader implementation:
-
   void UploadReport(const std::string& report_json,
                     int max_upload_depth,
                     const GURL& upload_url,
                     UploadCallback callback) override;
-
+  void Shutdown() override;
   void SetDiscardUploads(bool discard_uploads) override;
-
   int GetDiscardedUploadCount() const override;
 
  private:

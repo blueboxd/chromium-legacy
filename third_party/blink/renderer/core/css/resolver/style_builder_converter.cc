@@ -1443,6 +1443,17 @@ SVGPaint StyleBuilderConverter::ConvertSVGPaint(StyleResolverState& state,
   return paint;
 }
 
+TextDecorationThickness StyleBuilderConverter::ConvertTextDecorationThickness(
+    StyleResolverState& state,
+    const CSSValue& value) {
+  auto* identifier_value = DynamicTo<CSSIdentifierValue>(value);
+  if (identifier_value &&
+      identifier_value->GetValueID() == CSSValueID::kFromFont)
+    return TextDecorationThickness(identifier_value->GetValueID());
+
+  return TextDecorationThickness(ConvertLengthOrAuto(state, value));
+}
+
 TextEmphasisPosition StyleBuilderConverter::ConvertTextTextEmphasisPosition(
     StyleResolverState& state,
     const CSSValue& value) {

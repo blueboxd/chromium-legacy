@@ -4,11 +4,37 @@
 
 #include "components/query_tiles/internal/proto_conversion.h"
 
+#include "base/strings/string_number_conversions.h"
 #include "components/query_tiles/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace upboarding {
 namespace {
+
+constexpr char kTestLocale[] = "en";
+
+std::string BuildIdForSampleTile(size_t level, size_t pos) {
+  return "test_tile_id_" + base::NumberToString(level) + "_" +
+         base::NumberToString(pos);
+}
+
+void InitResponseProto(ResponseGroupProto* response,
+                       size_t num_level,
+                       size_t num_tiles_each_level) {
+  response->set_locale(kTestLocale);
+  for (size_t i = 0; i < num_level; i++) {
+    auto* new_top_level_tile = response->add_tiles();
+    new_top_level_tile->set_tile_id(BuildIdForSampleTile(i, 0));
+    new_top_level_tile->set_is_top_level(true);
+    for (size_t j = 0; j < num_tiles_each_level; j++) {
+      auto new_tile_id = BuildIdForSampleTile(i, j);
+      new_top_level_tile->add_sub_tile_ids(new_tile_id);
+      auto* new_tile = response->add_tiles();
+      new_tile->set_tile_id(new_tile_id);
+      new_tile->set_is_top_level(false);
+    }
+  }
+}
 
 void TestTileConversion(Tile& expected) {
   upboarding::query_tiles::proto::Tile proto;
@@ -32,16 +58,29 @@ void TestTileGroupConversion(TileGroup& expected) {
       << test::DebugString(&expected);
 }
 
-TEST(TileProtoConversionTest, ConvertTileGroudtrip) {
+TEST(TileProtoConversionTest, TileConversions) {
   Tile entry;
   test::ResetTestEntry(&entry);
   TestTileConversion(entry);
 }
 
-TEST(TileProtoConversionTest, ConvertTileGroupRoundtrip) {
+TEST(TileProtoConversionTest, TileGroupConversions) {
   TileGroup group;
   test::ResetTestGroup(&group);
   TestTileGroupConversion(group);
+}
+
+TEST(TileProtoConversionTest, TileGroupFromResponseConversions) {
+  ResponseGroupProto server_response;
+  InitResponseProto(&server_response, 2, 3);
+  TileGroup tile_group;
+  TileGroupFromResponse(server_response, &tile_group);
+  std::string server_response_str;
+  server_response.SerializeToString(&server_response_str);
+  EXPECT_EQ(tile_group.locale, "en") << std::endl
+                                     << server_response_str << std::endl
+                                     << test::DebugString(&tile_group);
+  // TODO(crbug.com/1077852): Verify group data by using iterator.
 }
 
 }  // namespace

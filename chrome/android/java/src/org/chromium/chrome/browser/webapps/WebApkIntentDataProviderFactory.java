@@ -33,7 +33,6 @@ import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.ShortcutSource;
 import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider;
 import org.chromium.chrome.browser.webapps.WebApkExtras.ShortcutItem;
-import org.chromium.chrome.browser.webapps.WebApkInfo.ShareTarget;
 import org.chromium.content_public.common.ScreenOrientationValues;
 import org.chromium.webapk.lib.common.WebApkCommonUtils;
 import org.chromium.webapk.lib.common.WebApkConstants;
@@ -311,9 +310,9 @@ public class WebApkIntentDataProviderFactory {
             }
         }
 
-        Pair<String, ShareTarget> shareTargetActivityNameAndData =
+        Pair<String, WebApkShareTarget> shareTargetActivityNameAndData =
                 extractFirstShareTarget(webApkPackageName);
-        ShareTarget shareTarget = shareTargetActivityNameAndData.second;
+        WebApkShareTarget shareTarget = shareTargetActivityNameAndData.second;
         if (shareDataActivityClassName != null
                 && !shareDataActivityClassName.equals(shareTargetActivityNameAndData.first)) {
             shareData = null;
@@ -376,7 +375,7 @@ public class WebApkIntentDataProviderFactory {
             long backgroundColor, int defaultBackgroundColor, boolean isPrimaryIconMaskable,
             boolean isSplashIconMaskable, String webApkPackageName, int shellApkVersion,
             String manifestUrl, String manifestStartUrl, @WebApkDistributor int distributor,
-            Map<String, String> iconUrlToMurmur2HashMap, ShareTarget shareTarget,
+            Map<String, String> iconUrlToMurmur2HashMap, WebApkShareTarget shareTarget,
             boolean forceNavigation, boolean isSplashProvidedByWebApk, ShareData shareData,
             List<ShortcutItem> shortcutItems, int webApkVersionCode) {
         if (manifestStartUrl == null || webApkPackageName == null) {
@@ -542,7 +541,8 @@ public class WebApkIntentDataProviderFactory {
      * the data about the handler.
      */
     @NonNull
-    private static Pair<String, ShareTarget> extractFirstShareTarget(String webApkPackageName) {
+    private static Pair<String, WebApkShareTarget> extractFirstShareTarget(
+            String webApkPackageName) {
         Intent shareIntent = new Intent();
         shareIntent.setAction(Intent.ACTION_SEND);
         shareIntent.setPackage(webApkPackageName);
@@ -582,7 +582,7 @@ public class WebApkIntentDataProviderFactory {
             boolean isShareEncTypeMultipart = shareEncType != null
                     && shareEncType.toLowerCase(Locale.ENGLISH).equals("multipart/form-data");
 
-            ShareTarget target = new ShareTarget(shareAction,
+            WebApkShareTarget target = new WebApkShareTarget(shareAction,
                     IntentUtils.safeGetString(
                             shareTargetMetaData, WebApkMetaDataKeys.SHARE_PARAM_TITLE),
                     IntentUtils.safeGetString(

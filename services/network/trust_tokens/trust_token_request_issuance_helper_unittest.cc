@@ -372,7 +372,7 @@ TEST_F(TrustTokenRequestIssuanceHelperTest, RejectsIfResponseOmitsHeader) {
   auto response_head = mojom::URLResponseHead::New();
   response_head->headers =
       net::HttpResponseHeaders::TryToCreate("HTTP/1.1 200 OK\r\n");
-  EXPECT_EQ(helper.Finalize(response_head.get()),
+  EXPECT_EQ(ExecuteFinalizeAndWaitForResult(&helper, response_head.get()),
             mojom::TrustTokenOperationStatus::kBadResponse);
 }
 
@@ -420,7 +420,7 @@ TEST_F(TrustTokenRequestIssuanceHelperTest, RejectsIfResponseIsUnusable) {
       kTrustTokensSecTrustTokenHeader,
       "response from issuer (this value will be ignored, since "
       "Cryptographer::ConfirmResponse is mocked out)");
-  EXPECT_EQ(helper.Finalize(response_head.get()),
+  EXPECT_EQ(ExecuteFinalizeAndWaitForResult(&helper, response_head.get()),
             mojom::TrustTokenOperationStatus::kBadResponse);
 
   // Verify that Finalize correctly stripped the response header.
@@ -471,7 +471,7 @@ TEST_F(TrustTokenRequestIssuanceHelperTest, Success) {
       kTrustTokensSecTrustTokenHeader,
       "response from issuer (this value will be ignored, since "
       "Cryptographer::ConfirmResponse is mocked out)");
-  EXPECT_EQ(helper.Finalize(response_head.get()),
+  EXPECT_EQ(ExecuteFinalizeAndWaitForResult(&helper, response_head.get()),
             mojom::TrustTokenOperationStatus::kOk);
 
   // Verify that Finalize correctly stripped the response header.
@@ -569,7 +569,7 @@ TEST_F(TrustTokenRequestIssuanceHelperTest, StoresObtainedTokens) {
       kTrustTokensSecTrustTokenHeader,
       "response from issuer (this value will be ignored, since "
       "Cryptographer::ConfirmResponse is mocked out)");
-  EXPECT_EQ(helper.Finalize(response_head.get()),
+  EXPECT_EQ(ExecuteFinalizeAndWaitForResult(&helper, response_head.get()),
             mojom::TrustTokenOperationStatus::kOk);
 
   // After the operation has successfully finished, the trust tokens parsed from

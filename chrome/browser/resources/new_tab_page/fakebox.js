@@ -40,6 +40,7 @@ class FakeboxElement extends PolymerElement {
   }
 
   constructor() {
+    performance.mark('fakebox-creation-start');
     super();
     /** @private {newTabPage.mojom.PageHandlerRemote} */
     this.pageHandler_ = BrowserProxy.getInstance().handler;
@@ -72,6 +73,12 @@ class FakeboxElement extends PolymerElement {
         assert(this.setFakeboxFocusedListenerId_));
     this.callbackRouter_.removeListener(
         assert(this.setFakeboxVisibleListenerId_));
+  }
+
+  /** @override */
+  ready() {
+    super.ready();
+    performance.measure('fakebox-creation', 'fakebox-creation-start');
   }
 
   /** @private */

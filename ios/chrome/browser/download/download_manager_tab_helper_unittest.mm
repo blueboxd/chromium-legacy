@@ -83,7 +83,6 @@ TEST_F(DownloadManagerTabHelperTest, DownloadRejectionViaDelegate) {
 
   auto task2 = std::make_unique<web::FakeDownloadTask>(GURL(kUrl), kMimeType);
   const web::FakeDownloadTask* task2_ptr = task2.get();
-  task2->SetTransitionType(ui::PAGE_TRANSITION_LINK);
   tab_helper()->Download(std::move(task2));
 
   ASSERT_TRUE(delegate_.state);
@@ -109,7 +108,6 @@ TEST_F(DownloadManagerTabHelperTest, DownloadReplacingViaDelegate) {
 
   auto task2 = std::make_unique<web::FakeDownloadTask>(GURL(kUrl), kMimeType);
   const web::FakeDownloadTask* task2_ptr = task2.get();
-  task2->SetTransitionType(ui::PAGE_TRANSITION_FROM_ADDRESS_BAR);
   tab_helper()->Download(std::move(task2));
 
   ASSERT_TRUE(delegate_.state);
@@ -207,7 +205,6 @@ TEST_F(DownloadManagerTabHelperTest, NetworkActivityIndicatorOnReplacement) {
   // Replace the download task.
   auto task2 = std::make_unique<web::FakeDownloadTask>(GURL(kUrl), kMimeType);
   const web::FakeDownloadTask* task2_ptr = task2.get();
-  task2->SetTransitionType(ui::PAGE_TRANSITION_LINK);
   tab_helper()->Download(std::move(task2));
 
   EXPECT_EQ(task2_ptr, delegate_.decidingPolicyForDownload);
@@ -290,7 +287,6 @@ TEST_F(DownloadManagerTabHelperTest,
 
   auto task2 = std::make_unique<web::FakeDownloadTask>(GURL(kUrl), kMimeType);
   const web::FakeDownloadTask* task2_ptr = task2.get();
-  task2->SetTransitionType(ui::PAGE_TRANSITION_LINK);
   tab_helper()->Download(std::move(task2));
 
   ASSERT_TRUE(delegate_.state);

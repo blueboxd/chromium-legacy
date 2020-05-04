@@ -1593,62 +1593,69 @@ TEST_F(WidgetCaptureTest, DisableCaptureWidgetFromMousePress) {
   EXPECT_FALSE(first->HasCapture());
 }
 
-// Tests some grab/ungrab events.
-// TODO(estade): can this be enabled now that this is an interactive ui test?
-TEST_F(WidgetCaptureTest, DISABLED_GrabUngrab) {
-  WidgetAutoclosePtr toplevel(CreateTopLevelPlatformWidget());
-  Widget* child1 = CreateChildNativeWidgetWithParent(toplevel.get());
-  Widget* child2 = CreateChildNativeWidgetWithParent(toplevel.get());
+// Tests some grab/ungrab events. Only one Widget can have capture at any given
+// time.
+TEST_F(WidgetCaptureTest, GrabUngrab) {
+  auto top_level = CreateTestWidget();
+  top_level->SetContentsView(new MouseView());
 
-  toplevel->SetBounds(gfx::Rect(0, 0, 500, 500));
+  Widget* child1 = new Widget;
+  Widget::InitParams params1 = CreateParams(Widget::InitParams::TYPE_CONTROL);
+  params1.parent = top_level->GetNativeView();
+  params1.bounds = gfx::Rect(10, 10, 100, 100);
+  child1->Init(std::move(params1));
+  child1->SetContentsView(new MouseView());
 
-  child1->SetBounds(gfx::Rect(10, 10, 300, 300));
-  View* view = new MouseView();
-  view->SetBounds(0, 0, 300, 300);
-  child1->GetRootView()->AddChildView(view);
+  Widget* child2 = new Widget;
+  Widget::InitParams params2 = CreateParams(Widget::InitParams::TYPE_CONTROL);
+  params2.parent = top_level->GetNativeView();
+  params2.bounds = gfx::Rect(110, 10, 100, 100);
+  child2->Init(std::move(params2));
+  child2->SetContentsView(new MouseView());
 
-  child2->SetBounds(gfx::Rect(200, 10, 200, 200));
-  view = new MouseView();
-  view->SetBounds(0, 0, 200, 200);
-  child2->GetRootView()->AddChildView(view);
-
-  toplevel->Show();
+  top_level->Show();
   RunPendingMessages();
 
-  // Click on child1
-  gfx::Point p1(45, 45);
-  ui::MouseEvent pressed(ui::ET_MOUSE_PRESSED, p1, p1, ui::EventTimeForNow(),
-                         ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON);
-  toplevel->OnMouseEvent(&pressed);
+  // Click on child1.
+  ui::test::EventGenerator generator(GetRootWindow(top_level.get()),
+                                     child1->GetNativeWindow());
+  generator.PressLeftButton();
 
-  EXPECT_TRUE(toplevel->HasCapture());
+  EXPECT_FALSE(top_level->HasCapture());
   EXPECT_TRUE(child1->HasCapture());
   EXPECT_FALSE(child2->HasCapture());
 
-  ui::MouseEvent released(ui::ET_MOUSE_RELEASED, p1, p1, ui::EventTimeForNow(),
-                          ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON);
-  toplevel->OnMouseEvent(&released);
-
-  EXPECT_FALSE(toplevel->HasCapture());
+  generator.ReleaseLeftButton();
+  EXPECT_FALSE(top_level->HasCapture());
   EXPECT_FALSE(child1->HasCapture());
   EXPECT_FALSE(child2->HasCapture());
 
-  RunPendingMessages();
+  // Click on child2.
+  generator.SetTargetWindow(child2->GetNativeWindow());
+  generator.set_current_screen_location(
+      generator.delegate()->CenterOfWindow(child2->GetNativeWindow()));
+  generator.PressLeftButton();
 
-  // Click on child2
-  gfx::Point p2(315, 45);
-  ui::MouseEvent pressed2(ui::ET_MOUSE_PRESSED, p2, p2, ui::EventTimeForNow(),
-                          ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON);
-  toplevel->OnMouseEvent(&pressed2);
-  EXPECT_TRUE(pressed2.handled());
-  EXPECT_TRUE(toplevel->HasCapture());
-  EXPECT_TRUE(child2->HasCapture());
+  EXPECT_FALSE(top_level->HasCapture());
   EXPECT_FALSE(child1->HasCapture());
+  EXPECT_TRUE(child2->HasCapture());
 
-  ui::MouseEvent released2(ui::ET_MOUSE_RELEASED, p2, p2, ui::EventTimeForNow(),
-                           ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON);
-  toplevel->OnMouseEvent(&released2);
-  EXPECT_FALSE(toplevel->HasCapture());
+  generator.ReleaseLeftButton();
+  EXPECT_FALSE(top_level->HasCapture());
+  EXPECT_FALSE(child1->HasCapture());
+  EXPECT_FALSE(child2->HasCapture());
+
+  // Click on top_level.
+  generator.SetTargetWindow(top_level->GetNativeWindow());
+  generator.set_current_screen_location(gfx::Point());
+  generator.PressLeftButton();
+
+  EXPECT_TRUE(top_level->HasCapture());
+  EXPECT_FALSE(child1->HasCapture());
+  EXPECT_FALSE(child2->HasCapture());
+
+  generator.ReleaseLeftButton();
+  EXPECT_FALSE(top_level->HasCapture());
   EXPECT_FALSE(child1->HasCapture());
   EXPECT_FALSE(child2->HasCapture());
 }

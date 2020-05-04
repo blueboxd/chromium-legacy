@@ -48,6 +48,10 @@ class TestStyleSheet {
 // and inherited status are all undefined.
 PropertyRegistration* CreatePropertyRegistration(const String& name);
 
+// Create a non-inherited PropertyRegistration with syntax <length>, and the
+// given value in pixels as the initial value.
+PropertyRegistration* CreateLengthRegistration(const String& name, int px);
+
 void RegisterProperty(Document& document,
                       const String& name,
                       const String& syntax,

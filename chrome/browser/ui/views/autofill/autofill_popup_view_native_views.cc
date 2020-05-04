@@ -32,6 +32,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/color_palette.h"
+#include "ui/gfx/favicon_size.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/paint_vector_icon.h"
@@ -71,9 +72,6 @@ constexpr int kAutofillPopupAdditionalDoubleRowHeight = 22;
 
 // Vertical spacing between labels in one row.
 constexpr int kAdjacentLabelsVerticalSpacing = 2;
-
-// Default sice for icons in the autofill popup.
-constexpr int kIconSize = 16;
 
 // Popup footer items that use a leading icon instead of a trailing one.
 constexpr autofill::PopupItemId kItemTypesUsingLeadingIcons[] = {
@@ -117,30 +115,32 @@ gfx::ImageSkia GetIconImageByName(const std::string& icon_str) {
   // For http warning message, get icon images from VectorIcon, which is the
   // same as security indicator icons in location bar.
   if (icon_str == "httpWarning") {
-    return gfx::CreateVectorIcon(omnibox::kHttpIcon, kIconSize,
+    return gfx::CreateVectorIcon(omnibox::kHttpIcon, gfx::kFaviconSize,
                                  gfx::kChromeIconGrey);
   }
   if (icon_str == "httpsInvalid") {
-    return gfx::CreateVectorIcon(omnibox::kNotSecureWarningIcon, kIconSize,
-                                 gfx::kGoogleRed700);
+    return gfx::CreateVectorIcon(omnibox::kNotSecureWarningIcon,
+                                 gfx::kFaviconSize, gfx::kGoogleRed700);
   }
   if (icon_str == "keyIcon") {
-    return gfx::CreateVectorIcon(kKeyIcon, kIconSize, gfx::kChromeIconGrey);
+    return gfx::CreateVectorIcon(kKeyIcon, gfx::kFaviconSize,
+                                 gfx::kChromeIconGrey);
   }
   if (icon_str == "globeIcon") {
-    return gfx::CreateVectorIcon(kGlobeIcon, kIconSize, gfx::kChromeIconGrey);
+    return gfx::CreateVectorIcon(kGlobeIcon, gfx::kFaviconSize,
+                                 gfx::kChromeIconGrey);
   }
   if (icon_str == "settingsIcon") {
-    return gfx::CreateVectorIcon(vector_icons::kSettingsIcon, kIconSize,
+    return gfx::CreateVectorIcon(vector_icons::kSettingsIcon, gfx::kFaviconSize,
                                  gfx::kChromeIconGrey);
   }
   if (icon_str == "empty") {
-    return gfx::CreateVectorIcon(omnibox::kHttpIcon, kIconSize,
+    return gfx::CreateVectorIcon(omnibox::kHttpIcon, gfx::kFaviconSize,
                                  gfx::kChromeIconGrey);
   }
   if (icon_str == "google") {
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
-    return gfx::CreateVectorIcon(kGoogleGLogoIcon, kIconSize,
+    return gfx::CreateVectorIcon(kGoogleGLogoIcon, gfx::kFaviconSize,
                                  gfx::kPlaceholderColor);
 #else
     return gfx::ImageSkia();

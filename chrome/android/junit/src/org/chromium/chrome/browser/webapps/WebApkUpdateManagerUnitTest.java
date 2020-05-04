@@ -373,9 +373,9 @@ public class WebApkUpdateManagerUnitTest {
         if (manifestData == null) return null;
 
         final String kPackageName = "org.random.webapk";
-        WebApkInfo.ShareTarget shareTarget = TextUtils.isEmpty(manifestData.shareTargetAction)
+        WebApkShareTarget shareTarget = TextUtils.isEmpty(manifestData.shareTargetAction)
                 ? null
-                : new WebApkInfo.ShareTarget(manifestData.shareTargetAction,
+                : new WebApkShareTarget(manifestData.shareTargetAction,
                         manifestData.shareTargetParamTitle, null,
                         manifestData.shareTargetMethod != null
                                 && manifestData.shareTargetMethod.equals(SHARE_TARGET_METHOD_POST),

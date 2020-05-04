@@ -5,6 +5,7 @@
 #ifndef UI_OZONE_PUBLIC_PLATFORM_SCREEN_H_
 #define UI_OZONE_PUBLIC_PLATFORM_SCREEN_H_
 
+#include <set>
 #include <string>
 
 #include "base/component_export.h"
@@ -59,6 +60,11 @@ class COMPONENT_EXPORT(OZONE_BASE) PlatformScreen {
 
   virtual gfx::AcceleratedWidget GetAcceleratedWidgetAtScreenPoint(
       const gfx::Point& point) const = 0;
+
+  // Returns top level accelerated widget at |point| ignoring |ignore|.
+  virtual gfx::AcceleratedWidget GetLocalProcessWidgetAtPoint(
+      const gfx::Point& point,
+      const std::set<gfx::AcceleratedWidget>& ignore) const;
 
   // Returns the |Display| nearest the specified point. |point| must be in DIPs.
   virtual display::Display GetDisplayNearestPoint(

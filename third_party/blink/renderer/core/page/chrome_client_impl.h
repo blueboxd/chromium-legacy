@@ -280,6 +280,8 @@ class CORE_EXPORT ChromeClientImpl final : public ChromeClient {
 
   void DocumentDetached(Document&) override;
 
+  double UserZoomFactor() const override;
+
  private:
   bool IsChromeClientImpl() const override { return true; }
 

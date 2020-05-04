@@ -661,9 +661,14 @@ bool BackgroundDownloader::OnStateTransferring() {
   // data and it is making progress.
   job_stuck_begin_time_ = base::TimeTicks::Now();
 
+  int64_t downloaded_bytes = -1;
+  int64_t total_bytes = -1;
+  GetJobByteCount(job_, &downloaded_bytes, &total_bytes);
+
   main_task_runner()->PostTask(
-      FROM_HERE, base::BindOnce(&BackgroundDownloader::OnDownloadProgress,
-                                base::Unretained(this)));
+      FROM_HERE,
+      base::BindOnce(&BackgroundDownloader::OnDownloadProgress,
+                     base::Unretained(this), downloaded_bytes, total_bytes));
   return false;
 }
 

@@ -204,6 +204,9 @@ class StyleBuilderConverter {
                                               const CSSValue&,
                                               bool for_visited_link = false);
   static SVGPaint ConvertSVGPaint(StyleResolverState&, const CSSValue&);
+  static TextDecorationThickness ConvertTextDecorationThickness(
+      StyleResolverState&,
+      const CSSValue&);
   static TextEmphasisPosition ConvertTextTextEmphasisPosition(
       StyleResolverState&,
       const CSSValue&);

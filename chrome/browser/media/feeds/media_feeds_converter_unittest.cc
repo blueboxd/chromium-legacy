@@ -9,6 +9,7 @@
 #include "chrome/browser/media/feeds/media_feeds_store.mojom-forward.h"
 #include "chrome/browser/media/feeds/media_feeds_store.mojom-shared.h"
 #include "chrome/browser/media/feeds/media_feeds_store.mojom.h"
+#include "chrome/browser/media/history/media_history_keyed_service.h"
 #include "components/schema_org/common/improved_metadata.mojom.h"
 #include "components/schema_org/extractor.h"
 #include "components/schema_org/schema_org_entity_names.h"
@@ -317,15 +318,14 @@ EntityPtr MediaFeedsConverterTest::AddItemToFeed(EntityPtr feed,
 base::Optional<std::vector<mojom::MediaFeedItemPtr>>
 MediaFeedsConverterTest::GetResults(
     const schema_org::improved::mojom::EntityPtr& schema_org_entity) {
-  std::vector<mojom::MediaImagePtr> images;
-  std::string name;
-  return GetMediaFeeds(std::move(schema_org_entity), &images, &name);
+  media_history::MediaHistoryKeyedService::MediaFeedFetchResult result;
+  if (!ConvertMediaFeed(std::move(schema_org_entity), &result))
+    return base::nullopt;
+
+  return std::move(result.items);
 }
 
 TEST_F(MediaFeedsConverterTest, SucceedsOnValidCompleteDataFeed) {
-  std::vector<mojom::MediaImagePtr> logos;
-  std::string display_name;
-
   EntityPtr entity = ValidMediaFeed();
 
   mojom::MediaImagePtr expected_image = mojom::MediaImage::New();
@@ -335,13 +335,13 @@ TEST_F(MediaFeedsConverterTest, SucceedsOnValidCompleteDataFeed) {
       mojom::ContentAttribute::kForDarkBackground,
       mojom::ContentAttribute::kHasTitle};
 
-  auto result = GetMediaFeeds(std::move(entity), &logos, &display_name);
+  media_history::MediaHistoryKeyedService::MediaFeedFetchResult result;
+  ConvertMediaFeed(std::move(entity), &result);
 
-  EXPECT_TRUE(result.has_value());
-  EXPECT_TRUE(result.value().empty());
-  EXPECT_EQ(1u, logos.size());
-  EXPECT_EQ(expected_image, logos[0]);
-  EXPECT_EQ(display_name, "Media Site");
+  EXPECT_TRUE(result.items.empty());
+  EXPECT_EQ(1u, result.logos.size());
+  EXPECT_EQ(expected_image, result.logos[0]);
+  EXPECT_EQ(result.display_name, "Media Site");
 }
 
 TEST_F(MediaFeedsConverterTest, SucceedsOnValidCompleteDataFeedWithItem) {

@@ -600,6 +600,7 @@ blink_core_tests("unit_tests") {
   sources = [
     "active_style_sheets_test.cc",
     "affected_by_pseudo_test.cc",
+    "computed_style_css_value_mapping_test.cc",
     "css_computed_style_declaration_test.cc",
     "css_font_face_source_test.cc",
     "css_gradient_value_test.cc",

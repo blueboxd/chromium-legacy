@@ -231,7 +231,8 @@ class ChromeBrowsingDataRemoverDelegate
     kFieldInfo = 33,
     kCompromisedCredentials = 34,
     kUserDataSnapshot = 35,
-    kMaxValue = kUserDataSnapshot,
+    kMediaFeeds = 36,
+    kMaxValue = kMediaFeeds,
   };
 
   // Called by CreateTaskCompletionClosure().

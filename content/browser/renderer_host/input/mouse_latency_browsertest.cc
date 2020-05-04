@@ -305,17 +305,9 @@ class MouseLatencyBrowserTest : public ContentBrowserTest {
 // MouseDown events in the case where no swap is generated.
 // Disabled on Android because we don't support synthetic mouse input on
 // Android (crbug.com/723618).
-// Disabled on Windows due to flakyness (https://crbug.com/800303).
-// Disabled on Linux due to flakyness (https://crbug.com/815363).
-#if defined(OS_ANDROID) || defined(OS_WIN) || defined(OS_LINUX)
-#define MAYBE_MouseDownAndUpRecordedWithoutSwap \
-  DISABLED_MouseDownAndUpRecordedWithoutSwap
-#else
-#define MAYBE_MouseDownAndUpRecordedWithoutSwap \
-  MouseDownAndUpRecordedWithoutSwap
-#endif
+// Disabled on due to flakiness (https://crbug.com/800303, https://crbug.com/815363).
 IN_PROC_BROWSER_TEST_F(MouseLatencyBrowserTest,
-                       MAYBE_MouseDownAndUpRecordedWithoutSwap) {
+                       DISABLED_MouseDownAndUpRecordedWithoutSwap) {
   LoadURL();
 
   auto filter = std::make_unique<InputMsgWatcher>(
@@ -358,17 +350,9 @@ IN_PROC_BROWSER_TEST_F(MouseLatencyBrowserTest,
 // events in the case where events are coalesced. (crbug.com/771165).
 // Disabled on Android because we don't support synthetic mouse input on Android
 // (crbug.com/723618).
-// http://crbug.com/801629 : Flaky on Linux and Windows, and Mac with
-// --enable-features=VizDisplayCompositor
-#if defined(OS_ANDROID) || defined(OS_WIN) || defined(OS_LINUX)
-#define MAYBE_CoalescedMouseMovesCorrectlyTerminated \
-  DISABLED_CoalescedMouseMovesCorrectlyTerminated
-#else
-#define MAYBE_CoalescedMouseMovesCorrectlyTerminated \
-  CoalescedMouseMovesCorrectlyTerminated
-#endif
+// http://crbug.com/801629 : Flaky on multiple platforms.
 IN_PROC_BROWSER_TEST_F(MouseLatencyBrowserTest,
-                       MAYBE_CoalescedMouseMovesCorrectlyTerminated) {
+                       DISABLED_CoalescedMouseMovesCorrectlyTerminated) {
   LoadURL();
 
   StartTracing();

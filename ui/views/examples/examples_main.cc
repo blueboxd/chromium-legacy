@@ -122,6 +122,14 @@ int main(int argc, char** argv) {
   CHECK(base::PathService::Get(ui::UI_TEST_PAK, &ui_test_pak_path));
   ui::ResourceBundle::InitSharedInstanceWithPakPath(ui_test_pak_path);
 
+  base::FilePath views_examples_resources_pak_path;
+  CHECK(base::PathService::Get(base::DIR_MODULE,
+                               &views_examples_resources_pak_path));
+  ui::ResourceBundle::GetSharedInstance().AddDataPackFromPath(
+      views_examples_resources_pak_path.AppendASCII(
+          "views_examples_resources.pak"),
+      ui::SCALE_FACTOR_100P);
+
   base::DiscardableMemoryAllocator::SetInstance(
       g_discardable_memory_allocator.Pointer());
 

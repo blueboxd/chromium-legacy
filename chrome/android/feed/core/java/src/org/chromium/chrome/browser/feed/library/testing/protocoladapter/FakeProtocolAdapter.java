@@ -34,8 +34,8 @@ public final class FakeProtocolAdapter implements ProtocolAdapter {
     }
 
     @Override
-    public Result<List<StreamDataOperation>> createOperations(List<DataOperation> dataOperations) {
-        return Result.success(new ArrayList<>());
+    public List<StreamDataOperation> createOperations(List<DataOperation> dataOperations) {
+        return new ArrayList<>();
     }
 
     @Override

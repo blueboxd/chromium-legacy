@@ -7,8 +7,6 @@ package org.chromium.chrome.browser.webapps;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import org.chromium.chrome.browser.webapps.WebApkInfo.ShareTarget;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -64,7 +62,7 @@ public class WebApkExtras {
      * {@link BrowserServicesIntentDataProvider#shareTarget()}
      */
     @Nullable
-    public final ShareTarget shareTarget;
+    public final WebApkShareTarget shareTarget;
 
     /**
      * Whether the WebAPK
@@ -117,9 +115,9 @@ public class WebApkExtras {
     public WebApkExtras(String webApkPackageName, @NonNull WebappIcon splashIcon,
             boolean isSplashIconMaskable, int shellApkVersion, String manifestUrl,
             String manifestStartUrl, @WebApkDistributor int distributor,
-            @NonNull Map<String, String> iconUrlToMurmur2HashMap, @Nullable ShareTarget shareTarget,
-            boolean isSplashProvidedByWebApk, @NonNull List<ShortcutItem> shortcutItems,
-            int webApkVersionCode) {
+            @NonNull Map<String, String> iconUrlToMurmur2HashMap,
+            @Nullable WebApkShareTarget shareTarget, boolean isSplashProvidedByWebApk,
+            @NonNull List<ShortcutItem> shortcutItems, int webApkVersionCode) {
         this.webApkPackageName = webApkPackageName;
         this.splashIcon = splashIcon;
         this.isSplashIconMaskable = isSplashIconMaskable;

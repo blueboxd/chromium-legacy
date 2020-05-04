@@ -16,6 +16,7 @@
 #include "chrome/browser/web_applications/components/web_app_prefs_utils.h"
 #include "chrome/browser/web_applications/components/web_app_ui_manager.h"
 #include "chrome/browser/web_applications/components/web_app_utils.h"
+#include "chrome/browser/web_applications/daily_metrics_helper.h"
 #include "chrome/browser/web_applications/extensions/bookmark_app_file_handler_manager.h"
 #include "chrome/browser/web_applications/extensions/bookmark_app_icon_manager.h"
 #include "chrome/browser/web_applications/extensions/bookmark_app_install_finalizer.h"
@@ -283,6 +284,7 @@ void WebAppProvider::RegisterProfilePrefs(
   SystemWebAppManager::RegisterProfilePrefs(registry);
   WebAppPrefsUtilsRegisterProfilePrefs(registry);
   RegisterInstallBounceMetricProfilePrefs(registry);
+  RegisterDailyWebAppMetricsProfilePrefs(registry);
 }
 
 }  // namespace web_app

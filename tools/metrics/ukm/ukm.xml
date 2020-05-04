@@ -11709,6 +11709,147 @@ be describing additional metrics about the same event.
   </metric>
 </event>
 
+<event name="WebApp.DailyInteraction">
+  <owner>glenrob@chromium.org</owner>
+  <owner>benwells@chromium.org</owner>
+  <summary>
+    Features of a web app recorded at most once per day if a user interacted
+    with the web app. Recorded for both installed and promotable (installable)
+    web apps unless noted otherwise on the metric.
+  </summary>
+  <metric name="BackgroundDuration">
+    <summary>
+      Records the total duration (seconds, bucketed) that the app was open in
+      the background in the last calendar day. Summed during the day and emitted
+      if the date changes. Recorded only for installed web apps that open with
+      standalone display mode.
+    </summary>
+    <aggregation>
+      <history>
+        <index fields="profile.country"/>
+        <index fields="profile.form_factor"/>
+        <index fields="profile.system_ram"/>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+  <metric name="DisplayMode" enum="WebAppDisplayMode">
+    <summary>
+      Effective display mode of the web app (may be set by a manifest and
+      manifest may be overridden by the user).
+    </summary>
+    <aggregation>
+      <history>
+        <index fields="profile.country"/>
+        <index fields="profile.form_factor"/>
+        <index fields="profile.system_ram"/>
+        <statistics>
+          <enumeration/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+  <metric name="ForegroundDuration">
+    <summary>
+      Records the total duration (seconds, bucketed) that the app was open in
+      the foreground in the last calendar day. Summed during the day and emitted
+      if the date changes. Recorded only for installed web apps that open with
+      standalone display mode.
+    </summary>
+    <aggregation>
+      <history>
+        <index fields="profile.country"/>
+        <index fields="profile.form_factor"/>
+        <index fields="profile.system_ram"/>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+  <metric name="Installed" enum="Boolean">
+    <summary>
+      Whether the web app is installed.
+    </summary>
+    <aggregation>
+      <history>
+        <index fields="profile.country"/>
+        <index fields="profile.form_factor"/>
+        <index fields="profile.system_ram"/>
+        <statistics>
+          <enumeration/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+  <metric name="InstallSource" enum="WebappInstallSource">
+    <summary>
+      Install source of the web app (omnibox, menu item, policy, etc).
+    </summary>
+    <aggregation>
+      <history>
+        <index fields="profile.country"/>
+        <index fields="profile.form_factor"/>
+        <index fields="profile.system_ram"/>
+        <statistics>
+          <enumeration/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+  <metric name="NumSessions">
+    <summary>
+      Records the total number of times the app was focused in the foreground in
+      the last calendar day. Recorded only for installed web apps that open with
+      standalone display mode.
+    </summary>
+    <aggregation>
+      <history>
+        <index fields="profile.country"/>
+        <index fields="profile.form_factor"/>
+        <index fields="profile.system_ram"/>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+  <metric name="Promotable" enum="Boolean">
+    <summary>
+      Whether the web app is currently considered 'promotable' (passes Chrome
+      checks to be considered an installable web app).
+    </summary>
+    <aggregation>
+      <history>
+        <index fields="profile.country"/>
+        <index fields="profile.form_factor"/>
+        <index fields="profile.system_ram"/>
+        <statistics>
+          <enumeration/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+  <metric name="Used" enum="Boolean">
+    <summary>
+      Records that the web app was used. Always true (or the event would not
+      have been emitted for this WebApp).
+    </summary>
+    <aggregation>
+      <history>
+        <index fields="profile.country"/>
+        <index fields="profile.form_factor"/>
+        <index fields="profile.system_ram"/>
+        <statistics>
+          <enumeration/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+</event>
+
 <event name="WebRTC.AddressHarvesting">
   <owner>hta@chromium.org</owner>
   <summary>

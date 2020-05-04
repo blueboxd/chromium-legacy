@@ -241,7 +241,7 @@ public class WebApkInfoTest {
         Assert.assertEquals(true, info.isIconAdaptive());
         Assert.assertEquals(null, info.splashIcon().bitmap());
 
-        WebApkInfo.ShareTarget shareTarget = info.shareTarget();
+        WebApkShareTarget shareTarget = info.shareTarget();
         Assert.assertNotNull(shareTarget);
         Assert.assertEquals("action0", shareTarget.getAction());
         Assert.assertTrue(shareTarget.isShareMethodPost());
@@ -592,7 +592,7 @@ public class WebApkInfoTest {
     }
 
     /**
-     * Tests that {@link WebApkInfo.ShareTarget#getFileNames()} returns an empty list when the
+     * Tests that {@link WebApkShareTarget#getFileNames()} returns an empty list when the
      * {@link shareParamNames} <meta-data> tag is not a JSON array.
      */
     @Test
@@ -613,7 +613,7 @@ public class WebApkInfoTest {
         Intent intent = WebApkTestHelper.createMinimalWebApkIntent(WEBAPK_PACKAGE_NAME, START_URL);
         WebappInfo info = WebApkInfo.create(intent);
 
-        WebApkInfo.ShareTarget shareTarget = info.shareTarget();
+        WebApkShareTarget shareTarget = info.shareTarget();
         Assert.assertNotNull(shareTarget);
         Assert.assertEquals(0, shareTarget.getFileNames().length);
     }

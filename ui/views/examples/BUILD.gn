@@ -4,6 +4,7 @@
 
 import("//build/config/jumbo.gni")
 import("//build/config/ui.gni")
+import("//tools/grit/grit_rule.gni")
 
 jumbo_component("views_examples_lib") {
   testonly = true
@@ -87,6 +88,8 @@ jumbo_component("views_examples_lib") {
   ]
 
   deps = [
+    ":views_examples_resources_grd",
+    ":views_examples_resources_pak",
     "//base",
     "//cc/paint",
     "//skia",
@@ -199,4 +202,20 @@ copy("copy_content_resources") {
   deps = [ "//content:content_resources" ]
   sources = [ "$root_gen_dir/content/content_resources.pak" ]
   outputs = [ "$root_out_dir/content_resources.pak" ]
+}
+
+grit("views_examples_resources_grd") {
+  testonly = true
+  source = "views_examples_resources.grd"
+  outputs = [
+    "grit/views_examples_resources.h",
+    "views_examples_resources.pak",
+  ]
+}
+
+copy("views_examples_resources_pak") {
+  testonly = true
+  sources = [ "$target_gen_dir/views_examples_resources.pak" ]
+  outputs = [ "$root_out_dir/views_examples_resources.pak" ]
+  public_deps = [ ":views_examples_resources_grd" ]
 }

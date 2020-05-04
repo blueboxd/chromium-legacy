@@ -29,6 +29,7 @@ class SystemHealthInfiniteScroll(system_health.MobileCommonSystemHealth):
     options.ExtendTraceCategoryFilter(['benchmark', 'cc', 'input'])
     options.SetTimelineBasedMetrics([
         'tbmv3:janky_time_per_scroll_processing_time',
+        'tbmv3:num_excessive_touch_moves_blocking_gesture_scroll_updates',
     ])
     return options
 

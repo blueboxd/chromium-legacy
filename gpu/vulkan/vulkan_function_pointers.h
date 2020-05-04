@@ -71,14 +71,17 @@ struct VulkanFunctionPointers {
   template <typename R, typename... Args>
   class VulkanFunction<R(VKAPI_PTR*)(Args...)> {
    public:
+    using Fn = R(VKAPI_PTR*)(Args...);
+
     explicit operator bool() { return !!fn_; }
 
     NO_SANITIZE("cfi-icall")
     R operator()(Args... args) { return fn_(args...); }
 
+    Fn get() const { return fn_; }
+
    private:
     friend VulkanFunctionPointers;
-    using Fn = R(VKAPI_PTR*)(Args...);
 
     Fn operator=(Fn fn) {
       fn_ = fn;
@@ -167,6 +170,7 @@ struct VulkanFunctionPointers {
   VulkanFunction<PFN_vkBindBufferMemory> vkBindBufferMemoryFn;
   VulkanFunction<PFN_vkBindImageMemory> vkBindImageMemoryFn;
   VulkanFunction<PFN_vkCmdBeginRenderPass> vkCmdBeginRenderPassFn;
+  VulkanFunction<PFN_vkCmdCopyBuffer> vkCmdCopyBufferFn;
   VulkanFunction<PFN_vkCmdCopyBufferToImage> vkCmdCopyBufferToImageFn;
   VulkanFunction<PFN_vkCmdEndRenderPass> vkCmdEndRenderPassFn;
   VulkanFunction<PFN_vkCmdExecuteCommands> vkCmdExecuteCommandsFn;
@@ -199,10 +203,13 @@ struct VulkanFunctionPointers {
   VulkanFunction<PFN_vkDestroySemaphore> vkDestroySemaphoreFn;
   VulkanFunction<PFN_vkDestroyShaderModule> vkDestroyShaderModuleFn;
   VulkanFunction<PFN_vkDeviceWaitIdle> vkDeviceWaitIdleFn;
+  VulkanFunction<PFN_vkFlushMappedMemoryRanges> vkFlushMappedMemoryRangesFn;
   VulkanFunction<PFN_vkEndCommandBuffer> vkEndCommandBufferFn;
   VulkanFunction<PFN_vkFreeCommandBuffers> vkFreeCommandBuffersFn;
   VulkanFunction<PFN_vkFreeDescriptorSets> vkFreeDescriptorSetsFn;
   VulkanFunction<PFN_vkFreeMemory> vkFreeMemoryFn;
+  VulkanFunction<PFN_vkInvalidateMappedMemoryRanges>
+      vkInvalidateMappedMemoryRangesFn;
   VulkanFunction<PFN_vkGetBufferMemoryRequirements>
       vkGetBufferMemoryRequirementsFn;
   VulkanFunction<PFN_vkGetDeviceQueue> vkGetDeviceQueueFn;
@@ -219,6 +226,8 @@ struct VulkanFunctionPointers {
   VulkanFunction<PFN_vkWaitForFences> vkWaitForFencesFn;
 
   VulkanFunction<PFN_vkGetDeviceQueue2> vkGetDeviceQueue2Fn;
+  VulkanFunction<PFN_vkGetBufferMemoryRequirements2>
+      vkGetBufferMemoryRequirements2Fn;
   VulkanFunction<PFN_vkGetImageMemoryRequirements2>
       vkGetImageMemoryRequirements2Fn;
 
@@ -377,6 +386,7 @@ struct VulkanFunctionPointers {
 #define vkBindImageMemory gpu::GetVulkanFunctionPointers()->vkBindImageMemoryFn
 #define vkCmdBeginRenderPass \
   gpu::GetVulkanFunctionPointers()->vkCmdBeginRenderPassFn
+#define vkCmdCopyBuffer gpu::GetVulkanFunctionPointers()->vkCmdCopyBufferFn
 #define vkCmdCopyBufferToImage \
   gpu::GetVulkanFunctionPointers()->vkCmdCopyBufferToImageFn
 #define vkCmdEndRenderPass \
@@ -426,6 +436,8 @@ struct VulkanFunctionPointers {
 #define vkDestroyShaderModule \
   gpu::GetVulkanFunctionPointers()->vkDestroyShaderModuleFn
 #define vkDeviceWaitIdle gpu::GetVulkanFunctionPointers()->vkDeviceWaitIdleFn
+#define vkFlushMappedMemoryRanges \
+  gpu::GetVulkanFunctionPointers()->vkFlushMappedMemoryRangesFn
 #define vkEndCommandBuffer \
   gpu::GetVulkanFunctionPointers()->vkEndCommandBufferFn
 #define vkFreeCommandBuffers \
@@ -433,6 +445,8 @@ struct VulkanFunctionPointers {
 #define vkFreeDescriptorSets \
   gpu::GetVulkanFunctionPointers()->vkFreeDescriptorSetsFn
 #define vkFreeMemory gpu::GetVulkanFunctionPointers()->vkFreeMemoryFn
+#define vkInvalidateMappedMemoryRanges \
+  gpu::GetVulkanFunctionPointers()->vkInvalidateMappedMemoryRangesFn
 #define vkGetBufferMemoryRequirements \
   gpu::GetVulkanFunctionPointers()->vkGetBufferMemoryRequirementsFn
 #define vkGetDeviceQueue gpu::GetVulkanFunctionPointers()->vkGetDeviceQueueFn
@@ -451,6 +465,8 @@ struct VulkanFunctionPointers {
 #define vkWaitForFences gpu::GetVulkanFunctionPointers()->vkWaitForFencesFn
 
 #define vkGetDeviceQueue2 gpu::GetVulkanFunctionPointers()->vkGetDeviceQueue2Fn
+#define vkGetBufferMemoryRequirements2 \
+  gpu::GetVulkanFunctionPointers()->vkGetBufferMemoryRequirements2Fn
 #define vkGetImageMemoryRequirements2 \
   gpu::GetVulkanFunctionPointers()->vkGetImageMemoryRequirements2Fn
 

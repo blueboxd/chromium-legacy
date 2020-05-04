@@ -659,13 +659,7 @@ void MediaHistoryStore::DiscoverMediaFeed(const GURL& url) {
 }
 
 void MediaHistoryStore::StoreMediaFeedFetchResult(
-    const int64_t feed_id,
-    std::vector<media_feeds::mojom::MediaFeedItemPtr> items,
-    const media_feeds::mojom::FetchResult result,
-    const bool was_fetched_from_cache,
-    const std::vector<media_feeds::mojom::MediaImagePtr>& logos,
-    const std::string& display_name,
-    const std::set<url::Origin>& associated_origins) {
+    MediaHistoryKeyedService::MediaFeedFetchResult result) {
   DCHECK(db_task_runner_->RunsTasksInCurrentSequence());
   if (!CanAccessDatabase())
     return;
@@ -679,11 +673,11 @@ void MediaHistoryStore::StoreMediaFeedFetchResult(
   }
 
   std::set<url::Origin> origins_set;
-  for (auto& origin : associated_origins)
+  for (auto& origin : result.associated_origins)
     origins_set.insert(origin);
 
   // Get the origin for the feed.
-  auto origin = feeds_table_->GetOrigin(feed_id);
+  auto origin = feeds_table_->GetOrigin(result.feed_id);
   if (!origin.has_value()) {
     DB()->RollbackTransaction();
     return;
@@ -691,7 +685,7 @@ void MediaHistoryStore::StoreMediaFeedFetchResult(
   origins_set.insert(*origin);
 
   // Remove all the items currently associated with this feed.
-  if (!feed_items_table_->DeleteItems(feed_id)) {
+  if (!feed_items_table_->DeleteItems(result.feed_id)) {
     DB()->RollbackTransaction();
     return;
   }
@@ -700,9 +694,9 @@ void MediaHistoryStore::StoreMediaFeedFetchResult(
   int item_content_types = 0;
   int item_safe_count = 0;
 
-  for (auto& item : items) {
+  for (auto& item : result.items) {
     // Save each item to the table.
-    if (!feed_items_table_->SaveItem(feed_id, item)) {
+    if (!feed_items_table_->SaveItem(result.feed_id, item)) {
       DB()->RollbackTransaction();
       return;
     }
@@ -726,22 +720,22 @@ void MediaHistoryStore::StoreMediaFeedFetchResult(
 
   // Update the metadata associated with this feed.
   if (!feeds_table_->UpdateFeedFromFetch(
-          feed_id, result, was_fetched_from_cache, items.size(),
-          item_play_next_count, item_content_types, logos, display_name,
-          item_safe_count)) {
+          result.feed_id, result.status, result.was_fetched_from_cache,
+          result.items.size(), item_play_next_count, item_content_types,
+          result.logos, result.display_name, item_safe_count)) {
     DB()->RollbackTransaction();
     return;
   }
 
   // Clear any old associated origins.
-  if (!feed_origins_table_->Clear(feed_id)) {
+  if (!feed_origins_table_->Clear(result.feed_id)) {
     DB()->RollbackTransaction();
     return;
   }
 
   // Store associated origins.
   for (auto& origin : origins_set) {
-    if (!feed_origins_table_->Add(origin, feed_id)) {
+    if (!feed_origins_table_->Add(origin, result.feed_id)) {
       DB()->RollbackTransaction();
       return;
     }
@@ -903,7 +897,7 @@ void MediaHistoryStore::ResetMediaFeed(const url::Origin& origin,
   if (!CanAccessDatabase())
     return;
 
-  if (!feeds_table_ || !feed_items_table_)
+  if (!feeds_table_ || !feed_items_table_ || !feed_origins_table_)
     return;
 
   if (!DB()->BeginTransaction()) {
@@ -914,27 +908,78 @@ void MediaHistoryStore::ResetMediaFeed(const url::Origin& origin,
   // Get all the feeds with |origin| as an associated origin.
   std::set<int64_t> feed_ids = feed_origins_table_->GetFeeds(origin);
 
-  for (auto& feed_id : feed_ids) {
-    // Remove all the items currently associated with this feed.
-    if (!feeds_table_->Reset(feed_id, reason)) {
-      DB()->RollbackTransaction();
-      return;
-    }
+  if (ResetMediaFeedInternal(feed_ids, reason)) {
+    DB()->CommitTransaction();
+  } else {
+    DB()->RollbackTransaction();
+  }
+}
 
-    // Remove all the items currently associated with this feed.
-    if (!feed_items_table_->DeleteItems(feed_id)) {
-      DB()->RollbackTransaction();
-      return;
-    }
+void MediaHistoryStore::ResetMediaFeedDueToCacheClearing(
+    const base::Time& start_time,
+    const base::Time& end_time,
+    MediaHistoryKeyedService::CacheClearingFilter filter) {
+  if (!CanAccessDatabase())
+    return;
 
-    // Clear any old associated origins.
-    if (!feed_origins_table_->Clear(feed_id)) {
-      DB()->RollbackTransaction();
-      return;
-    }
+  if (!feeds_table_)
+    return;
+
+  if (!DB()->BeginTransaction()) {
+    LOG(ERROR) << "Failed to begin the transaction.";
+    return;
   }
 
-  DB()->CommitTransaction();
+  const auto start_time_s = start_time.ToDeltaSinceWindowsEpoch().InSeconds();
+  const auto end_time_s = end_time.ToDeltaSinceWindowsEpoch().InSeconds();
+
+  sql::Statement statement(DB()->GetCachedStatement(
+      SQL_FROM_HERE,
+      "SELECT id, url FROM mediaFeed WHERE last_fetch_time_s >= ? AND "
+      "last_fetch_time_s <= ?"));
+  statement.BindInt64(0, start_time_s);
+  statement.BindInt64(1, end_time_s);
+
+  std::set<int64_t> feed_ids;
+  while (statement.Step()) {
+    GURL url(statement.ColumnString(1));
+
+    if (!filter.is_null() && !filter.Run(url))
+      continue;
+
+    feed_ids.insert(statement.ColumnInt64(0));
+  }
+
+  if (ResetMediaFeedInternal(feed_ids,
+                             media_feeds::mojom::ResetReason::kCache)) {
+    DB()->CommitTransaction();
+  } else {
+    DB()->RollbackTransaction();
+  }
+}
+
+bool MediaHistoryStore::ResetMediaFeedInternal(
+    const std::set<int64_t>& feed_ids,
+    media_feeds::mojom::ResetReason reason) {
+  DCHECK_LT(0, DB()->transaction_nesting());
+  if (!CanAccessDatabase())
+    return false;
+
+  for (auto& feed_id : feed_ids) {
+    // Remove all the items currently associated with this feed.
+    if (!feeds_table_->Reset(feed_id, reason))
+      return false;
+
+    // Remove all the items currently associated with this feed.
+    if (!feed_items_table_->DeleteItems(feed_id))
+      return false;
+
+    // Clear any old associated origins.
+    if (!feed_origins_table_->Clear(feed_id))
+      return false;
+  }
+
+  return true;
 }
 
 void MediaHistoryStore::DeleteMediaFeed(const int64_t feed_id) {

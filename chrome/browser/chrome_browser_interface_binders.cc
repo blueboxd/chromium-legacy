@@ -356,7 +356,7 @@ void BindCaptionContextHandler(
 #endif
 
 void PopulateChromeFrameBinders(
-    service_manager::BinderMapWithContext<content::RenderFrameHost*>* map) {
+    mojo::BinderMapWithContext<content::RenderFrameHost*>* map) {
   map->Add<image_annotation::mojom::Annotator>(
       base::BindRepeating(&BindImageAnnotator));
 
@@ -448,7 +448,7 @@ void PopulateChromeFrameBinders(
 }
 
 void PopulateChromeWebUIFrameBinders(
-    service_manager::BinderMapWithContext<content::RenderFrameHost*>* map) {
+    mojo::BinderMapWithContext<content::RenderFrameHost*>* map) {
   RegisterWebUIControllerInterfaceBinder<::mojom::BluetoothInternalsHandler,
                                          BluetoothInternalsUI>(map);
 

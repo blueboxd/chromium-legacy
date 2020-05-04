@@ -28,19 +28,23 @@ namespace safe_browsing {
 /*static*/
 void PromptForScanningModalDialog::ShowForWebContents(
     content::WebContents* web_contents,
+    const base::string16& filename,
     base::OnceClosure accept_callback,
     base::OnceClosure open_now_callback) {
   constrained_window::ShowWebModalDialogViews(
-      new PromptForScanningModalDialog(web_contents, std::move(accept_callback),
+      new PromptForScanningModalDialog(web_contents, filename,
+                                       std::move(accept_callback),
                                        std::move(open_now_callback)),
       web_contents);
 }
 
 PromptForScanningModalDialog::PromptForScanningModalDialog(
     content::WebContents* web_contents,
+    const base::string16& filename,
     base::OnceClosure accept_callback,
     base::OnceClosure open_now_callback)
     : web_contents_(web_contents),
+      filename_(filename),
       open_now_callback_(std::move(open_now_callback)) {
   DialogDelegate::SetButtonLabel(
       ui::DIALOG_BUTTON_OK,
@@ -70,7 +74,8 @@ PromptForScanningModalDialog::PromptForScanningModalDialog(
   std::vector<size_t> offsets;
   base::string16 message_text = base::ReplaceStringPlaceholders(
       base::ASCIIToUTF16("$1 $2"),
-      {l10n_util::GetStringUTF16(IDS_DEEP_SCANNING_INFO_DIALOG_MESSAGE),
+      {l10n_util::GetStringFUTF16(IDS_DEEP_SCANNING_INFO_DIALOG_MESSAGE,
+                                  filename_),
        l10n_util::GetStringUTF16(IDS_LEARN_MORE)},
       &offsets);
 

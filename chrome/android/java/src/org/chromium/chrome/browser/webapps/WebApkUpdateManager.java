@@ -25,7 +25,6 @@ import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.lifecycle.Destroyable;
 import org.chromium.chrome.browser.metrics.WebApkUma;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.webapps.WebApkInfo.ShareTarget;
 import org.chromium.components.background_task_scheduler.BackgroundTaskSchedulerFactory;
 import org.chromium.components.background_task_scheduler.TaskIds;
 import org.chromium.components.background_task_scheduler.TaskInfo;
@@ -377,7 +376,7 @@ public class WebApkUpdateManager implements WebApkUpdateDataFetcher.Observer, De
             return WebApkUpdateReason.ORIENTATION_DIFFERS;
         } else if (oldInfo.displayMode() != fetchedInfo.displayMode()) {
             return WebApkUpdateReason.DISPLAY_MODE_DIFFERS;
-        } else if (!ShareTarget.equals(oldInfo.shareTarget(), fetchedInfo.shareTarget())) {
+        } else if (!WebApkShareTarget.equals(oldInfo.shareTarget(), fetchedInfo.shareTarget())) {
             return WebApkUpdateReason.WEB_SHARE_TARGET_DIFFERS;
         } else if (oldInfo.isIconAdaptive() != fetchedInfo.isIconAdaptive()
                 && (!fetchedInfo.isIconAdaptive()
@@ -438,7 +437,7 @@ public class WebApkUpdateManager implements WebApkUpdateDataFetcher.Observer, De
         boolean shareTargetIsEncTypeMultipart = false;
         String[] shareTargetParamFileNames = new String[0];
         String[][] shareTargetParamAccepts = new String[0][];
-        ShareTarget shareTarget = info.shareTarget();
+        WebApkShareTarget shareTarget = info.shareTarget();
         if (shareTarget != null) {
             shareTargetAction = shareTarget.getAction();
             shareTargetParamTitle = shareTarget.getParamTitle();

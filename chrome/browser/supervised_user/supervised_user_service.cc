@@ -339,21 +339,18 @@ void SupervisedUserService::SetPrimaryPermissionCreatorForTest(
 }
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-void SupervisedUserService::AddOrUpdateExtensionApproval(
+void SupervisedUserService::AddExtensionApproval(
     const extensions::Extension& extension) {
   if (!active_)
     return;
-  auto it = approved_extensions_map_.find(extension.id());
-  bool has_key = it != approved_extensions_map_.end();
-  ApprovedExtensionChange change_type = has_key
-                                            ? ApprovedExtensionChange::kUpdate
-                                            : ApprovedExtensionChange::kNew;
-  if (change_type != ApprovedExtensionChange::kUpdate ||
-      it->second.CompareTo(extension.version())) {
-    // If the type is kUpdate, we don't need to do anything if there's no change
-    // in the approved version.
+  if (!base::Contains(approved_extensions_set_, extension.id())) {
     UpdateApprovedExtension(extension.id(), extension.VersionString(),
-                            change_type);
+                            ApprovedExtensionChange::kAdd);
+  } else if (ExtensionPrefs::Get(profile_)->DidExtensionEscalatePermissions(
+                 extension.id())) {
+    SupervisedUserExtensionsMetricsRecorder::RecordExtensionsUmaMetrics(
+        SupervisedUserExtensionsMetricsRecorder::UmaExtensionState::
+            kPermissionsIncreaseGranted);
   }
 }
 
@@ -361,15 +358,17 @@ void SupervisedUserService::RemoveExtensionApproval(
     const extensions::Extension& extension) {
   if (!active_)
     return;
-  UpdateApprovedExtension(extension.id(), extension.VersionString(),
-                          ApprovedExtensionChange::kRemove);
+  if (base::Contains(approved_extensions_set_, extension.id())) {
+    UpdateApprovedExtension(extension.id(), extension.VersionString(),
+                            ApprovedExtensionChange::kRemove);
+  }
 }
 
 void SupervisedUserService::UpdateApprovedExtensionForTesting(
     const std::string& extension_id,
-    const std::string& version,
     ApprovedExtensionChange type) {
-  UpdateApprovedExtension(extension_id, version, type);
+  base::Version dummy_version("0");
+  UpdateApprovedExtension(extension_id, dummy_version.GetString(), type);
 }
 
 bool SupervisedUserService::
@@ -439,8 +438,9 @@ void SupervisedUserService::SetActive(bool active) {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
     pref_change_registrar_.Add(
         prefs::kSupervisedUserApprovedExtensions,
-        base::BindRepeating(&SupervisedUserService::UpdateApprovedExtensions,
-                            base::Unretained(this)));
+        base::BindRepeating(
+            &SupervisedUserService::RefreshApprovedExtensionsFromPrefs,
+            base::Unretained(this)));
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
     pref_change_registrar_.Add(
         prefs::kSupervisedUserSafeSites,
@@ -469,7 +469,7 @@ void SupervisedUserService::SetActive(bool active) {
     UpdateManualURLs();
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-    UpdateApprovedExtensions();
+    RefreshApprovedExtensionsFromPrefs();
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
 #if !defined(OS_ANDROID)
@@ -790,11 +790,7 @@ SupervisedUserService::ExtensionState SupervisedUserService::GetExtensionState(
     return ExtensionState::BLOCKED;
   }
 
-  auto extension_it = approved_extensions_map_.find(extension.id());
-  // If the installed version is approved, then the extension is allowed,
-  // otherwise, it requires approval.
-  if (extension_it != approved_extensions_map_.end() &&
-      extension_it->second == extension.version()) {
+  if (base::Contains(approved_extensions_set_, extension.id())) {
     return ExtensionState::ALLOWED;
   }
   return ExtensionState::REQUIRE_APPROVAL;
@@ -849,25 +845,13 @@ bool SupervisedUserService::MustRemainDisabled(
   // at UserMayLoad.
   bool must_remain_disabled = state == ExtensionState::REQUIRE_APPROVAL;
 
-  if (must_remain_disabled) {
-    if (base::Contains(approved_extensions_map_, extension->id())) {
-      // The parent has approved this extension in the past, so the child can
-      // approve a new version (as long as
-      // kSupervisedUserExtensionsMayRequestPermissions is true, but that's
-      // enforced elsewhere).
-      // TODO(crbug/1072857): Get rid of all the version information from
-      // approved_extensions_map_. Just store a set of approved extension ids.
-      return false;
-    }
-    if (reason) {
-      // Otherwise, the parent has not approved this extension yet, so ask for
-      // parent approval.
-      *reason = extensions::disable_reason::DISABLE_CUSTODIAN_APPROVAL_REQUIRED;
-    }
-    if (error)
-      *error = GetExtensionsLockedMessage();
-  }
-  return must_remain_disabled;
+  if (!must_remain_disabled)
+    return false;
+  if (reason)
+    *reason = extensions::disable_reason::DISABLE_CUSTODIAN_APPROVAL_REQUIRED;
+  if (error)
+    *error = GetExtensionsLockedMessage();
+  return true;
 }
 
 void SupervisedUserService::OnExtensionInstalled(
@@ -875,27 +859,12 @@ void SupervisedUserService::OnExtensionInstalled(
     const extensions::Extension* extension,
     bool is_update) {
   // This callback method is responsible for updating extension state and
-  // approved_extensions_map_ upon extension updates.
+  // approved_extensions_set_ upon extension updates.
   if (!is_update)
     return;
 
-  ExtensionPrefs* extension_prefs = ExtensionPrefs::Get(profile_);
-  const std::string& id = extension->id();
-  const base::Version& version = extension->version();
-
-  // If an already approved extension is updated without requiring
-  // new permissions, we update the approved_version.
-  if (!extension_prefs->HasDisableReason(
-          id, extensions::disable_reason::DISABLE_PERMISSIONS_INCREASE) &&
-      approved_extensions_map_.count(id) > 0 &&
-      approved_extensions_map_[id] < version) {
-    UpdateApprovedExtension(id, version.GetString(),
-                            ApprovedExtensionChange::kUpdate);
-  } else {
-    // Upon extension update, the approved version may (or may not) match the
-    // installed one. Therefore, a change in extension state might be required.
-    ChangeExtensionStateIfNecessary(id);
-  }
+  // Upon extension update, a change in extension state might be required.
+  ChangeExtensionStateIfNecessary(extension->id());
 }
 
 void SupervisedUserService::OnExtensionUninstalled(
@@ -940,9 +909,6 @@ void SupervisedUserService::ChangeExtensionStateIfNecessary(
       extension_prefs->RemoveDisableReason(
           extension_id,
           extensions::disable_reason::DISABLE_CUSTODIAN_APPROVAL_REQUIRED);
-      extension_prefs->RemoveDisableReason(
-          extension_id,
-          extensions::disable_reason::DISABLE_PERMISSIONS_INCREASE);
       // If not disabled for other reasons, enable it.
       if (extension_prefs->GetDisableReasons(extension_id) ==
           extensions::disable_reason::DISABLE_NONE) {
@@ -952,6 +918,10 @@ void SupervisedUserService::ChangeExtensionStateIfNecessary(
   }
 }
 
+// TODO(crbug/1072857): We don't need the extension version information. It's
+// only included for backwards compatibility with previous versions of Chrome.
+// Remove the version information once a sufficient number of users have
+// migrated away from M83.
 void SupervisedUserService::UpdateApprovedExtension(
     const std::string& extension_id,
     const std::string& version,
@@ -962,43 +932,44 @@ void SupervisedUserService::UpdateApprovedExtension(
   base::DictionaryValue* approved_extensions = update.Get();
   DCHECK(approved_extensions)
       << "kSupervisedUserApprovedExtensions pref not found";
+  bool success = false;
   switch (type) {
-    case ApprovedExtensionChange::kNew:
-    case ApprovedExtensionChange::kUpdate:
+    case ApprovedExtensionChange::kAdd:
+      DCHECK(!approved_extensions->FindStringKey(extension_id));
       approved_extensions->SetStringKey(extension_id, std::move(version));
+      SupervisedUserExtensionsMetricsRecorder::RecordExtensionsUmaMetrics(
+          SupervisedUserExtensionsMetricsRecorder::UmaExtensionState::
+              kApprovalGranted);
       break;
     case ApprovedExtensionChange::kRemove:
-      approved_extensions->RemoveKey(extension_id);
+      success = approved_extensions->RemoveKey(extension_id);
+      DCHECK(success);
+      SupervisedUserExtensionsMetricsRecorder::RecordExtensionsUmaMetrics(
+          SupervisedUserExtensionsMetricsRecorder::UmaExtensionState::
+              kApprovalRemoved);
       break;
   }
-
-  SupervisedUserExtensionsMetricsRecorder::RecordExtensionsUmaMetrics(type);
 }
 
-void SupervisedUserService::UpdateApprovedExtensions() {
+void SupervisedUserService::RefreshApprovedExtensionsFromPrefs() {
   // Keep track of currently approved extensions. We need to disable them if
-  // they are not in the approved map anymore.
-  std::set<std::string> extensions_to_be_checked;
-  for (const auto& extension : approved_extensions_map_)
-    extensions_to_be_checked.insert(extension.first);
+  // they are not in the approved set anymore.
+  std::set<std::string> extensions_to_be_checked(
+      std::move(approved_extensions_set_));
 
-  // The purpose here is to re-populate the approved_extensions_map_, which is
+  // The purpose here is to re-populate the approved_extensions_set_, which is
   // used in GetExtensionState() to keep track of approved extensions.
-  approved_extensions_map_.clear();
+  approved_extensions_set_.clear();
 
+  // TODO(crbug/1072857): This dict is actually just a set. The extension
+  // version information stored in the values is unnecessary. It is only there
+  // for backwards compatibility. Remove the version information once sufficient
+  // users have migrated away from M83.
   const base::DictionaryValue* dict = profile_->GetPrefs()->GetDictionary(
       prefs::kSupervisedUserApprovedExtensions);
   for (auto it : dict->DictItems()) {
-    std::string version_str;
-    bool result = it.second.GetAsString(&version_str);
-    DCHECK(result);
-    base::Version version(version_str);
-    if (version.IsValid()) {
-      approved_extensions_map_[it.first] = version;
-      extensions_to_be_checked.insert(it.first);
-    } else {
-      LOG(WARNING) << "Invalid version number " << version_str;
-    }
+    approved_extensions_set_.insert(it.first);
+    extensions_to_be_checked.insert(it.first);
   }
 
   for (const auto& extension_id : extensions_to_be_checked) {

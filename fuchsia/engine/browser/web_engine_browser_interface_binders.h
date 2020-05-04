@@ -5,7 +5,7 @@
 #ifndef FUCHSIA_ENGINE_BROWSER_WEB_ENGINE_BROWSER_INTERFACE_BINDERS_H_
 #define FUCHSIA_ENGINE_BROWSER_WEB_ENGINE_BROWSER_INTERFACE_BINDERS_H_
 
-#include "services/service_manager/public/cpp/binder_map.h"
+#include "mojo/public/cpp/bindings/binder_map.h"
 
 namespace content {
 class RenderFrameHost;
@@ -18,7 +18,7 @@ class MediaResourceProviderService;
 // interfaces. This mechanism will replace interface registries and binders used
 // for handling InterfaceProvider's GetInterface() calls (see crbug.com/718652).
 void PopulateFuchsiaFrameBinders(
-    service_manager::BinderMapWithContext<content::RenderFrameHost*>* map,
+    mojo::BinderMapWithContext<content::RenderFrameHost*>* map,
     MediaResourceProviderService* media_resource_provider_service);
 
 #endif  // FUCHSIA_ENGINE_BROWSER_WEB_ENGINE_BROWSER_INTERFACE_BINDERS_H_

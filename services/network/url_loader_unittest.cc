@@ -4706,20 +4706,19 @@ enum class SyncOrAsync { kSync, kAsync };
 
 class MockTrustTokenRequestHelper : public TrustTokenRequestHelper {
  public:
-
-  // |begin_operation_synchrony| denotes whether to complete the |Begin|
-  // operation synchronously. (|Finalize| is always synchronous.)
+  // |operation_synchrony| denotes whether to complete the |Begin|
+  // and |Finalize| operations synchronously.
   //
   // |begin_done_flag|, if provided, will be set to true immediately before the
   // |Begin| operation returns.
   MockTrustTokenRequestHelper(
       base::Optional<mojom::TrustTokenOperationStatus> on_begin,
       base::Optional<mojom::TrustTokenOperationStatus> on_finalize,
-      SyncOrAsync begin_operation_synchrony,
+      SyncOrAsync operation_synchrony,
       bool* begin_done_flag = nullptr)
       : on_begin_(on_begin),
         on_finalize_(on_finalize),
-        begin_operation_synchrony_(begin_operation_synchrony),
+        operation_synchrony_(operation_synchrony),
         begin_done_flag_(begin_done_flag) {}
 
   ~MockTrustTokenRequestHelper() override {
@@ -4743,7 +4742,7 @@ class MockTrustTokenRequestHelper : public TrustTokenRequestHelper {
     mojom::TrustTokenOperationStatus result = *on_begin_;
     on_begin_.reset();
 
-    switch (begin_operation_synchrony_) {
+    switch (operation_synchrony_) {
       case SyncOrAsync::kSync: {
         OnDoneBeginning(base::BindOnce(std::move(done), result));
         return;
@@ -4759,14 +4758,26 @@ class MockTrustTokenRequestHelper : public TrustTokenRequestHelper {
     }
   }
 
-  mojom::TrustTokenOperationStatus Finalize(
-      mojom::URLResponseHead* response) override {
+  void Finalize(mojom::URLResponseHead* response,
+                base::OnceCallback<void(mojom::TrustTokenOperationStatus)> done)
+      override {
     DCHECK(on_finalize_.has_value());
 
     // Clear storage to crash if the method gets called a second time.
     mojom::TrustTokenOperationStatus result = *on_finalize_;
     on_finalize_.reset();
-    return result;
+
+    switch (operation_synchrony_) {
+      case SyncOrAsync::kSync: {
+        std::move(done).Run(result);
+        return;
+      }
+      case SyncOrAsync::kAsync: {
+        base::ThreadTaskRunnerHandle::Get()->PostTask(
+            FROM_HERE, base::BindOnce(std::move(done), result));
+        return;
+      }
+    }
   }
 
  private:
@@ -4784,7 +4795,7 @@ class MockTrustTokenRequestHelper : public TrustTokenRequestHelper {
   base::Optional<mojom::TrustTokenOperationStatus> on_begin_;
   base::Optional<mojom::TrustTokenOperationStatus> on_finalize_;
 
-  SyncOrAsync begin_operation_synchrony_;
+  SyncOrAsync operation_synchrony_;
 
   bool* begin_done_flag_;
 };

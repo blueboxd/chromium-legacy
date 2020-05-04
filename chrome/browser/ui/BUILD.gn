@@ -477,7 +477,7 @@ jumbo_static_library("ui") {
     "//components/keyed_service/core",
     "//components/language/core/browser",
     "//components/language/core/common",
-    "//components/lookalikes",
+    "//components/lookalikes/core",
     "//components/metrics_services_manager",
     "//components/navigation_metrics",
     "//components/net_log",
@@ -2546,7 +2546,6 @@ jumbo_static_library("ui") {
       "views/frame/native_browser_frame_factory_mac.mm",
       "views/tab_contents/chrome_web_contents_view_delegate_views_mac.h",
       "views/tab_contents/chrome_web_contents_view_delegate_views_mac.mm",
-      "views/tabs/window_finder_mac.mm",
       "web_contents_sizer.mm",
       "webui/help/version_updater_mac.h",
       "webui/help/version_updater_mac.mm",
@@ -2618,7 +2617,6 @@ jumbo_static_library("ui") {
       "views/status_icons/status_tray_state_changer_win.h",
       "views/status_icons/status_tray_win.cc",
       "views/status_icons/status_tray_win.h",
-      "views/tabs/window_finder_win.cc",
       "views/try_chrome_dialog_win/arrow_border.cc",
       "views/try_chrome_dialog_win/arrow_border.h",
       "views/try_chrome_dialog_win/button_layout.cc",
@@ -2779,18 +2777,6 @@ jumbo_static_library("ui") {
     ]
     if (use_aura) {
       deps += [ "//third_party/fontconfig" ]
-    }
-
-    # WindowFinder implementation selection is a bit tricky, so do all here
-    # to get it right and prevent ODR violations.
-    if (is_chromeos) {
-      sources += [ "views/tabs/window_finder_chromeos.cc" ]
-    } else if (use_x11) {
-      sources += [ "views/tabs/window_finder_x11.cc" ]
-      deps += [ "//ui/platform_window/x11" ]
-    } else {
-      assert(use_ozone)
-      sources += [ "views/tabs/window_finder_ozone.cc" ]
     }
   }
 
@@ -3455,6 +3441,7 @@ jumbo_static_library("ui") {
       "views/tabs/tab_style_views.h",
       "views/tabs/tab_width_constraints.cc",
       "views/tabs/tab_width_constraints.h",
+      "views/tabs/window_finder.cc",
       "views/tabs/window_finder.h",
       "views/task_manager_view.cc",
       "views/task_manager_view.h",

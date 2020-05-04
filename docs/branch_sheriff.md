@@ -56,13 +56,16 @@ Once you've done that, you'll be able to check out branches:
 ```
 
 To determine the appropriate branch number, you can either use
-[chromiumdash](#chromiumdash) or check [milestone.json][milestone-json] directly.
+[chromiumdash](#chromiumdash) or check [milestone.json][milestone-json]
+directly.
 
 ### Findit
+
 As FindIt is not available on branches, one way to try to find culprits is using
-`git bisect` locally and upload changes to a gerrit CL and run the needed trybots
-to check. This is especially useful when the errors are not reproducible on your
-local builds or you don't have the required hardware to build the failed tests.
+`git bisect` locally and upload changes to a gerrit CL and run the needed
+trybots to check. This is especially useful when the errors are not reproducible
+on your local builds or you don't have the required hardware to build the failed
+tests.
 
 ### Flaky tests
 
@@ -81,14 +84,21 @@ relevant release TPM as listed on [chromiumdash][chromiumdash-schedule].
 
 ### Sheriff-o-Matic
 
-Use the [branch SoM console][sheriff-o-matic] rather than the main chromium console.
+Use the [branch SoM console][sheriff-o-matic] rather than the main chromium
+console.
 
 ### Consoles
 
-Use the [beta][main-beta] and [stable][main-stable] branch consoles rather than the
-main console. A new console is created for each milestone. They are named
+Use the [beta][main-beta] and [stable][main-stable] branch consoles rather than
+the main console. A new console is created for each milestone. They are named
 "Chromium M## Console" and can be found under the
 [Chromium Project](https://ci.chromium.org/p/chromium).
+
+### Monorail issues (crbug)
+
+Refer and use the
+[Sheriff-Chrome-Release label](https://bugs.chromium.org/p/chromium/issues/list?q=label%3ASheriff-Chrome-Release)
+to find and tag issues that are of importance to Branch sheriffs.
 
 ### Chromiumdash
 

@@ -12,6 +12,7 @@
 
 namespace autofill {
 struct PasswordForm;
+struct PasswordFormFillData;
 }  // namespace autofill
 
 namespace password_manager {
@@ -46,6 +47,16 @@ LikelyFormFilling SendFillInformationToRenderer(
     const std::vector<const autofill::PasswordForm*>& federated_matches,
     const autofill::PasswordForm* preferred_match,
     PasswordFormMetricsRecorder* metrics_recorder);
+
+// Create a PasswordFormFillData structure in preparation for filling a form
+// identified by |form_on_page|, with credentials from |preferred_match| and
+// |matches|. |preferred_match| should equal to one of matches.
+// If |wait_for_username| is true then fill on account select will be used.
+autofill::PasswordFormFillData CreatePasswordFormFillData(
+    const autofill::PasswordForm& form_on_page,
+    const std::vector<const autofill::PasswordForm*>& matches,
+    const autofill::PasswordForm& preferred_match,
+    bool wait_for_username);
 
 }  // namespace password_manager
 

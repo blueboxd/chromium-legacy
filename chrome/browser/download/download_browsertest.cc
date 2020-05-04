@@ -2632,15 +2632,8 @@ class DownloadTestWithHistogramTester : public DownloadTest {
   std::unique_ptr<URLLoaderInterceptor> url_loader_interceptor_;
 };
 
-// Flaky on Linux and Windows. https://crbug.com/1028371
-#if defined(OS_LINUX) || defined(OS_WIN)
-#define MAYBE_SavePageNonHTMLViaGet DISABLED_SavePageNonHTMLViaGet
-#else
-#define MAYBE_SavePageNonHTMLViaGet SavePageNonHTMLViaGet
-#endif
-
 IN_PROC_BROWSER_TEST_F(DownloadTestWithHistogramTester,
-                       MAYBE_SavePageNonHTMLViaGet) {
+                       DISABLED_SavePageNonHTMLViaGet) {
   embedded_test_server()->ServeFilesFromDirectory(GetTestDataDirectory());
   ASSERT_TRUE(embedded_test_server()->Start());
   EnableFileChooser(true);

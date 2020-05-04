@@ -596,8 +596,9 @@ public class CustomTabToolbar extends ToolbarLayout implements View.OnLongClickL
         public void onNativeLibraryReady() {
             mSecurityButton.setOnClickListener(v -> {
                 Tab currentTab = getToolbarDataProvider().getTab();
+                if (currentTab == null) return;
                 WebContents webContents = currentTab.getWebContents();
-                if (currentTab == null || webContents == null) return;
+                if (webContents == null) return;
                 ChromeActivity activity =
                         (ChromeActivity) currentTab.getWindowAndroid().getActivity().get();
                 if (activity == null) return;

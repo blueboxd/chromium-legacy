@@ -14,6 +14,7 @@
 #include "components/autofill/core/common/password_form_fill_data.h"
 #include "components/autofill/ios/browser/autofill_util.h"
 #include "components/password_manager/core/browser/form_parsing/form_parser.h"
+#include "components/password_manager/core/browser/password_form_filling.h"
 #include "components/password_manager/ios/account_select_fill_data.h"
 #include "components/password_manager/ios/js_password_manager.h"
 #import "ios/web/public/js_messaging/web_frame.h"
@@ -359,8 +360,10 @@ constexpr char kCommandPrefix[] = "passwordForm";
 
       passwordForm->username_value = base::SysNSStringToUTF16(username);
       passwordForm->password_value = base::SysNSStringToUTF16(password);
-      PasswordFormFillData formData(*passwordForm, matches, *passwordForm,
-                                    false);
+      PasswordFormFillData formData =
+          password_manager::CreatePasswordFormFillData(
+              *passwordForm, matches, *passwordForm,
+              /*wait_for_username=*/false);
       [strongSelf fillPasswordForm:formData
                       withUsername:base::SysNSStringToUTF16(username)
                           password:base::SysNSStringToUTF16(password)

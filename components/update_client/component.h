@@ -255,10 +255,9 @@ class Component {
     // Called when progress is being made downloading a CRX. Can be called
     // multiple times due to how the CRX downloader switches between
     // different downloaders and fallback urls.
-    void DownloadProgress(const std::string& id);
+    void DownloadProgress(int64_t downloaded_bytes, int64_t total_bytes);
 
-    void DownloadComplete(const std::string& id,
-                          const CrxDownloader::Result& download_result);
+    void DownloadComplete(const CrxDownloader::Result& download_result);
 
     // Downloads updates for one CRX id only.
     std::unique_ptr<CrxDownloader> crx_downloader_;
@@ -278,10 +277,9 @@ class Component {
     // Called when progress is being made downloading a CRX. Can be called
     // multiple times due to how the CRX downloader switches between
     // different downloaders and fallback urls.
-    void DownloadProgress(const std::string& id);
+    void DownloadProgress(int64_t downloaded_bytes, int64_t total_bytes);
 
-    void DownloadComplete(const std::string& id,
-                          const CrxDownloader::Result& download_result);
+    void DownloadComplete(const CrxDownloader::Result& download_result);
 
     // Downloads updates for one CRX id only.
     std::unique_ptr<CrxDownloader> crx_downloader_;
@@ -432,6 +430,13 @@ class Component {
   int update_check_error_ = 0;
 
   base::FilePath crx_path_;
+
+  // The byte counts below are valid for the current url being fetched.
+  // |total_bytes| is equal to the size of the CRX file and |downloaded_bytes|
+  // represents how much has been downloaded up to that point. A value of -1
+  // means that the byte count is unknown.
+  int64_t downloaded_bytes_ = -1;
+  int64_t total_bytes_ = -1;
 
   // The error information for full and differential updates.
   // The |error_category| contains a hint about which module in the component

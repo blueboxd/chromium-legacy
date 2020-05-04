@@ -36,8 +36,6 @@ const char kPrinterMakeAndModel[] = "printer-make-and-model";
 const char kIppVersionsSupported[] = "ipp-versions-supported";
 const char kIppFeaturesSupported[] = "ipp-features-supported";
 const char kDocumentFormatSupported[] = "document-format-supported";
-const char kPwgRasterDocumentResolutionSupported[] =
-    "pwg-raster-document-resolution-supported";
 
 // job attributes
 const char kJobUri[] = "job-uri";
@@ -111,10 +109,10 @@ constexpr int kHttpConnectTimeoutMs = 1000;
 constexpr std::array<const char* const, 3> kPrinterAttributes{
     {kPrinterState, kPrinterStateReasons, kPrinterStateMessage}};
 
-constexpr std::array<const char* const, 8> kPrinterInfoAndStatus{
+constexpr std::array<const char* const, 7> kPrinterInfoAndStatus{
     {kPrinterMakeAndModel, kIppVersionsSupported, kIppFeaturesSupported,
-     kDocumentFormatSupported, kPwgRasterDocumentResolutionSupported,
-     kPrinterState, kPrinterStateReasons, kPrinterStateMessage}};
+     kDocumentFormatSupported, kPrinterState, kPrinterStateReasons,
+     kPrinterStateMessage}};
 
 // Converts an IPP attribute |attr| to the appropriate JobState enum.
 CupsJob::JobState ToJobState(ipp_attribute_t* attr) {
@@ -324,9 +322,6 @@ bool ParsePrinterInfo(ipp_t* response, PrinterInfo* printer_info) {
       printer_info->ipp_everywhere = base::Contains(features, kIppEverywhere);
     } else if (name == base::StringPiece(kDocumentFormatSupported)) {
       ParseCollection(attr, &printer_info->document_formats);
-    } else if (name ==
-               base::StringPiece(kPwgRasterDocumentResolutionSupported)) {
-      printer_info->supports_pwg_raster_resolution = ippGetCount(attr) > 0;
     }
   }
 

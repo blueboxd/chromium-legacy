@@ -24,12 +24,6 @@
 #include "mojo/public/cpp/bindings/struct_traits.h"  // nogncheck
 #endif
 
-namespace base {
-namespace trace_event {
-class ConvertableToTraceFormat;
-}
-}
-
 namespace ui {
 
 #if !defined(OS_IOS)
@@ -202,10 +196,6 @@ class LatencyInfo {
   void AddLatencyNumberWithTimestampImpl(LatencyComponentType component,
                                          base::TimeTicks time,
                                          const char* trace_name_str);
-
-  // Converts latencyinfo into format that can be dumped into trace buffer.
-  std::unique_ptr<base::trace_event::ConvertableToTraceFormat>
-  AsTraceableData();
 
   LatencyMap latency_components_;
 

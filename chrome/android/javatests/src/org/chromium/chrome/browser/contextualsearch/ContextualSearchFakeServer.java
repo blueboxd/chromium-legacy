@@ -333,7 +333,7 @@ class ContextualSearchFakeServer
             mDidStartResolution = false;
             mDidFinishResolution = false;
 
-            mManagerTest.clickNode(getNodeId());
+            mManagerTest.triggerResolve(getNodeId());
             mManagerTest.waitForSelectionToBe(getSearchTerm());
 
             if (mPolicy.shouldPreviousGestureResolve()) {

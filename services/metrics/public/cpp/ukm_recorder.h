@@ -32,6 +32,10 @@ namespace content {
 class PaymentAppProviderImpl;
 }  // namespace content
 
+namespace web_app {
+class DesktopWebAppUkmRecorder;
+}
+
 namespace ukm {
 
 class DelegatingUkmRecorder;
@@ -84,6 +88,10 @@ class METRICS_EXPORT UkmRecorder {
   // method should only be called by WebApkUkmRecorder class.
   static SourceId GetSourceIdForWebApkManifestUrl(const GURL& manifest_url);
 
+  // Gets new source ID for a desktop web app, using the start_url from the web
+  // app manifest. This method should only be called by DailyMetricsHelper.
+  static SourceId GetSourceIdForDesktopWebAppStartUrl(const GURL& start_url);
+
   // Gets new source Id for PAYMENT_APP_ID type and updates the source url to
   // the scope of the app. This method should only be called by
   // PaymentAppProviderImpl class when the payment app window is opened.
@@ -99,12 +107,14 @@ class METRICS_EXPORT UkmRecorder {
   friend PermissionUmaUtil;
   friend content::PaymentAppProviderImpl;
 
-  // WebApkUkmRecorder records metrics about installed Webapps. Instead of using
-  // the current main frame URL, we want to record the URL of the Webapp
-  // manifest which identifies the current app. Therefore, WebApkUkmRecorder
-  // needs to be a friend so that it can access the private
+  // WebApkUkmRecorder and DesktopWebAppUkmRecorder record metrics about
+  // installed web apps. Instead of using
+  // the current main frame URL, we want to record the URL which identifies the
+  // current app: the web app manifest url or start url, respectively.
+  // Therefore, they need to be friends so that they can access the private
   // GetSourceIdForWebApkManifestUrl() method.
   friend WebApkUkmRecorder;
+  friend web_app::DesktopWebAppUkmRecorder;
 
   // Associates the SourceId with a URL. Most UKM recording code should prefer
   // to use a shared SourceId that is already associated with a URL, rather

@@ -753,11 +753,11 @@ ChineseScriptClassifier::ChineseScriptClassifier() {
 
   // Create UnicodeSets for zh-Hans and zh-Hant for later reference.
   UErrorCode status = U_ZERO_ERROR;
-  hans_set_.reset(new icu::UnicodeSet(
-      icu::UnicodeString::fromUTF8(hans_codepoints), status));
+  hans_set_ = std::make_unique<icu::UnicodeSet>(
+      icu::UnicodeString::fromUTF8(hans_codepoints), status);
   DVLOG(1) << u_errorName(status);
-  hant_set_.reset(new icu::UnicodeSet(
-      icu::UnicodeString::fromUTF8(hant_codepoints), status));
+  hant_set_ = std::make_unique<icu::UnicodeSet>(
+      icu::UnicodeString::fromUTF8(hant_codepoints), status);
   DVLOG(1) << u_errorName(status);
 
   // Make these sets immutable. This keeps the class threadsafe and

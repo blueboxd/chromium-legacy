@@ -175,6 +175,7 @@ class MostVisitedElement extends PolymerElement {
   }
 
   constructor() {
+    performance.mark('most-visited-creation-start');
     super();
     /** @private {boolean} */
     this.adding_ = false;
@@ -205,10 +206,12 @@ class MostVisitedElement extends PolymerElement {
     this.isRtl_ = window.getComputedStyle(this)['direction'] === 'rtl';
     this.setMostVisitedInfoListenerId_ =
         this.callbackRouter_.setMostVisitedInfo.addListener(info => {
+          performance.measure('most-visited-mojo', 'most-visited-mojo-start');
           this.visible_ = info.visible;
           this.customLinksEnabled_ = info.customLinksEnabled;
           this.tiles_ = info.tiles.slice(0, 10);
         });
+    performance.mark('most-visited-mojo-start');
     this.pageHandler_.updateMostVisitedInfo();
     FocusOutlineManager.forDocument(document);
   }
@@ -245,6 +248,8 @@ class MostVisitedElement extends PolymerElement {
         this.onDocumentKeyDown_(/** @type {!KeyboardEvent} */ (e));
     this.ownerDocument.addEventListener(
         'keydown', this.boundOnDocumentKeyDown_);
+
+    performance.measure('most-visited-creation', 'most-visited-creation-start');
   }
 
   /** @private */
@@ -784,6 +789,7 @@ class MostVisitedElement extends PolymerElement {
 
   /** @private */
   onTilesRendered_() {
+    performance.measure('most-visited-rendered');
     this.pageHandler_.onMostVisitedTilesRendered(
         this.tiles_, BrowserProxy.getInstance().now());
   }

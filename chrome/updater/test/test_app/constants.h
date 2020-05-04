@@ -16,6 +16,21 @@ extern const char kRegisterToUpdaterSwitch[];
 // Initiates a foreground update through IPC.
 extern const char kForegroundUpdateSwitch[];
 
+// Update process state machine.
+enum class UpdateStatus {
+  INIT = 0,
+  CHECKING = 1,
+  NEED_PERMISSION_TO_UPDATE = 2,
+  UPDATING = 3,
+  NEARLY_UPDATED = 4,
+  UPDATED = 5,
+  FAILED = 6,
+  FAILED_OFFLINE = 7,
+  FAILED_CONNECTION_TYPE_DISALLOWED = 8,
+  DISABLED = 9,
+  DISABLED_BY_ADMIN = 10
+};
+
 }  // namespace updater
 
 #endif  // CHROME_UPDATER_TEST_TEST_APP_CONSTANTS_H_

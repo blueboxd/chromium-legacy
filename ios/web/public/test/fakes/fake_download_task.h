@@ -38,7 +38,6 @@ class FakeDownloadTask : public DownloadTask {
   std::string GetContentDisposition() const override;
   std::string GetOriginalMimeType() const override;
   std::string GetMimeType() const override;
-  ui::PageTransition GetTransitionType() const override;
   base::string16 GetSuggestedFilename() const override;
   bool HasPerformedBackgroundDownload() const override;
   void AddObserver(DownloadTaskObserver* observer) override;
@@ -54,7 +53,6 @@ class FakeDownloadTask : public DownloadTask {
   void SetPercentComplete(int percent_complete);
   void SetContentDisposition(const std::string& content_disposition);
   void SetMimeType(const std::string& mime_type);
-  void SetTransitionType(ui::PageTransition page_transition);
   void SetSuggestedFilename(const base::string16& suggested_file_name);
   void SetPerformedBackgroundDownload(bool flag);
 
@@ -76,7 +74,6 @@ class FakeDownloadTask : public DownloadTask {
   int percent_complete_ = -1;
   std::string original_mime_type_;
   std::string mime_type_;
-  ui::PageTransition page_transition_ = ui::PAGE_TRANSITION_LINK;
   base::string16 suggested_file_name_;
   bool has_performed_background_download_ = false;
   __strong NSString* identifier_ = nil;

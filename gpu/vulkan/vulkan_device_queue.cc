@@ -9,10 +9,13 @@
 #include <utility>
 #include <vector>
 
+#include "base/strings/stringprintf.h"
 #include "gpu/config/vulkan_info.h"
 #include "gpu/vulkan/vulkan_command_pool.h"
+#include "gpu/vulkan/vulkan_crash_keys.h"
 #include "gpu/vulkan/vulkan_fence_helper.h"
 #include "gpu/vulkan/vulkan_function_pointers.h"
+#include "gpu/vulkan/vulkan_util.h"
 
 namespace gpu {
 
@@ -129,8 +132,28 @@ bool VulkanDeviceQueue::Initialize(
     }
   }
 
-  uint32_t device_api_version = std::min(
-      info.used_api_version, vk_physical_device_properties_.apiVersion);
+  if (vk_physical_device_properties_.apiVersion < info.used_api_version) {
+    LOG(ERROR) << "Physical device doesn't support version."
+               << info.used_api_version;
+    return false;
+  }
+
+  crash_keys::vulkan_device_api_version.Set(
+      VkVersionToString(vk_physical_device_properties_.apiVersion));
+  crash_keys::vulkan_device_driver_version.Set(base::StringPrintf(
+      "0x%08x", vk_physical_device_properties_.driverVersion));
+  crash_keys::vulkan_device_vendor_id.Set(
+      base::StringPrintf("0x%04x", vk_physical_device_properties_.vendorID));
+  crash_keys::vulkan_device_id.Set(
+      base::StringPrintf("0x%04x", vk_physical_device_properties_.deviceID));
+  static const char* kDeviceTypeNames[] = {
+      "other", "integrated", "discrete", "virtual", "cpu",
+  };
+  uint32_t gpu_type = vk_physical_device_properties_.deviceType;
+  if (gpu_type >= base::size(kDeviceTypeNames))
+    gpu_type = 0;
+  crash_keys::vulkan_device_type.Set(kDeviceTypeNames[gpu_type]);
+  crash_keys::vulkan_device_name.Set(vk_physical_device_properties_.deviceName);
 
   // Disable all physical device features by default.
   enabled_device_features_2_ = {VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2};
@@ -186,7 +209,7 @@ bool VulkanDeviceQueue::Initialize(
                                           std::end(enabled_extensions));
 
   if (!gpu::GetVulkanFunctionPointers()->BindDeviceFunctionPointers(
-          owned_vk_device_, device_api_version, enabled_extensions_)) {
+          owned_vk_device_, info.used_api_version, enabled_extensions_)) {
     vkDestroyDevice(owned_vk_device_, nullptr);
     owned_vk_device_ = VK_NULL_HANDLE;
     return false;
@@ -205,6 +228,8 @@ bool VulkanDeviceQueue::Initialize(
     vkGetDeviceQueue(vk_device_, queue_index, 0, &vk_queue_);
   }
 
+  vma::CreateAllocator(vk_physical_device_, vk_device_, vk_instance_,
+                       &vma_allocator_);
   cleanup_helper_ = std::make_unique<VulkanFenceHelper>(this);
 
   allow_protected_memory_ = allow_protected_memory;
@@ -236,6 +261,11 @@ void VulkanDeviceQueue::Destroy() {
   if (cleanup_helper_) {
     cleanup_helper_->Destroy();
     cleanup_helper_.reset();
+  }
+
+  if (vma_allocator_ != VK_NULL_HANDLE) {
+    vma::DestroyAllocator(vma_allocator_);
+    vma_allocator_ = VK_NULL_HANDLE;
   }
 
   if (VK_NULL_HANDLE != owned_vk_device_) {

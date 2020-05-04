@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/core/timing/profiler_group.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/heap/member.h"
+#include "third_party/blink/renderer/platform/heap/thread_state.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 
@@ -24,24 +25,27 @@ class ScriptState;
 // isolate until stopped.
 class CORE_EXPORT Profiler final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
+  USING_PRE_FINALIZER(Profiler, DisposeAsync);
 
  public:
   Profiler(ProfilerGroup* profiler_group,
+           ScriptState* script_state,
            const String& profiler_id,
            int target_sample_rate,
            scoped_refptr<const SecurityOrigin> source_origin,
            base::TimeTicks time_origin)
       : profiler_group_(profiler_group),
+        script_state_(script_state),
         profiler_id_(profiler_id),
         target_sample_rate_(target_sample_rate),
         source_origin_(source_origin),
         time_origin_(time_origin) {}
 
-  ~Profiler() override;
+  ~Profiler() override = default;
 
   void Trace(Visitor* visitor) override;
 
-  void Dispose();
+  void DisposeAsync();
 
   String ProfilerId() const { return profiler_id_; }
   int TargetSampleRate() const { return target_sample_rate_; }
@@ -52,8 +56,11 @@ class CORE_EXPORT Profiler final : public ScriptWrappable {
   bool stopped() const { return !profiler_group_; }
   ScriptPromise stop(ScriptState*);
 
+  void RemovedFromProfilerGroup() { profiler_group_ = nullptr; }
+
  private:
   Member<ProfilerGroup> profiler_group_;
+  Member<ScriptState> script_state_;
   const String profiler_id_;
   const int target_sample_rate_;
   const scoped_refptr<const SecurityOrigin> source_origin_;

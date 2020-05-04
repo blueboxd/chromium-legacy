@@ -166,7 +166,7 @@ void MediaHistoryKeyedService::OnURLsDeleted(
   if (!deleted_origins.empty()) {
     store->db_task_runner_->PostTask(
         FROM_HERE, base::BindOnce(&MediaHistoryStore::DeleteAllOriginData,
-                                  store, origins));
+                                  store, deleted_origins));
   }
 
   // Build a set of all urls in |deleted_rows| that do not have their origin in
@@ -261,22 +261,23 @@ void MediaHistoryKeyedService::GetItemsForMediaFeedForDebug(
       std::move(callback));
 }
 
+MediaHistoryKeyedService::MediaFeedFetchResult::MediaFeedFetchResult() =
+    default;
+
+MediaHistoryKeyedService::MediaFeedFetchResult::~MediaFeedFetchResult() =
+    default;
+
+MediaHistoryKeyedService::MediaFeedFetchResult::MediaFeedFetchResult(
+    MediaFeedFetchResult&& t) = default;
+
 void MediaHistoryKeyedService::StoreMediaFeedFetchResult(
-    const int64_t feed_id,
-    std::vector<media_feeds::mojom::MediaFeedItemPtr> items,
-    const media_feeds::mojom::FetchResult result,
-    const bool was_fetched_from_cache,
-    std::vector<media_feeds::mojom::MediaImagePtr> logos,
-    const std::string& display_name,
-    const std::set<url::Origin>& associated_origins,
+    MediaFeedFetchResult result,
     base::OnceClosure callback) {
   if (auto* store = store_->GetForWrite()) {
     store->db_task_runner_->PostTaskAndReply(
         FROM_HERE,
         base::BindOnce(&MediaHistoryStore::StoreMediaFeedFetchResult, store,
-                       feed_id, std::move(items), result,
-                       was_fetched_from_cache, std::move(logos), display_name,
-                       associated_origins),
+                       std::move(result)),
         std::move(callback));
   }
 }
@@ -409,10 +410,26 @@ void MediaHistoryKeyedService::ResetMediaFeed(
     media_feeds::mojom::ResetReason reason) {
   CHECK_NE(media_feeds::mojom::ResetReason::kNone, reason);
 
-  if (auto* store = store_->GetForWrite()) {
+  if (auto* store = store_->GetForDelete()) {
     store->db_task_runner_->PostTask(
         FROM_HERE, base::BindOnce(&MediaHistoryStore::ResetMediaFeed, store,
                                   origin, reason));
+  }
+}
+
+void MediaHistoryKeyedService::ResetMediaFeedDueToCacheClearing(
+    const base::Time& start_time,
+    const base::Time& end_time,
+    CacheClearingFilter filter,
+    base::OnceClosure callback) {
+  if (auto* store = store_->GetForDelete()) {
+    store->db_task_runner_->PostTaskAndReply(
+        FROM_HERE,
+        base::BindOnce(&MediaHistoryStore::ResetMediaFeedDueToCacheClearing,
+                       store, start_time, end_time, std::move(filter)),
+        std::move(callback));
+  } else {
+    std::move(callback).Run();
   }
 }
 

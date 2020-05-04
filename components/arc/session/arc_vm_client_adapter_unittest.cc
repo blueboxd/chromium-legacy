@@ -16,6 +16,7 @@
 #include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop_current.h"
 #include "base/run_loop.h"
@@ -230,6 +231,10 @@ class ArcVmClientAdapterTest : public testing::Test,
                                public ArcClientAdapter::Observer {
  public:
   ArcVmClientAdapterTest() {
+    // Use the same VLOG() level as production. Note that session_manager sets
+    // "--vmodule=*arc/*=1" in src/platform2/login_manager/chrome_setup.cc.
+    logging::SetMinLogLevel(-1);
+
     // Create and set new fake clients every time to reset clients' status.
     chromeos::DBusThreadManager::GetSetterForTesting()->SetDebugDaemonClient(
         std::make_unique<TestDebugDaemonClient>());
@@ -271,7 +276,11 @@ class ArcVmClientAdapterTest : public testing::Test,
     boot_server_->Start();
     SetArcVmBootNotificationServerAddressForTesting(
         std::string(kArcVmBootNotificationServerAddress,
-                    sizeof(kArcVmBootNotificationServerAddress)));
+                    sizeof(kArcVmBootNotificationServerAddress)),
+        base::TimeDelta::FromMilliseconds(100) /* connect_timeout_limit */,
+        base::TimeDelta::FromMilliseconds(
+            20) /* connect_sleep_duration_initial */
+    );
   }
 
   void TearDown() override {
@@ -1047,7 +1056,6 @@ TEST_F(ArcVmClientAdapterTest, ChromeOsChannelStable) {
   base::SysInfo::SetChromeOSVersionInfoForTest(
       "CHROMEOS_RELEASE_TRACK=stable-channel", base::Time::Now());
 
-  base::CommandLine::ForCurrentProcess()->InitFromArgv({""});
   StartParams start_params(GetPopulatedStartParams());
   SetValidUserInfo();
   StartMiniArcWithParams(true, std::move(start_params));
@@ -1061,7 +1069,6 @@ TEST_F(ArcVmClientAdapterTest, ChromeOsChannelUnknown) {
   base::SysInfo::SetChromeOSVersionInfoForTest("CHROMEOS_RELEASE_TRACK=invalid",
                                                base::Time::Now());
 
-  base::CommandLine::ForCurrentProcess()->InitFromArgv({""});
   StartParams start_params(GetPopulatedStartParams());
   SetValidUserInfo();
   StartMiniArcWithParams(true, std::move(start_params));
@@ -1074,7 +1081,6 @@ TEST_F(ArcVmClientAdapterTest, ChromeOsChannelUnknown) {
 // Tests that the binary translation type is set to None when no library is
 // enabled by USE flags.
 TEST_F(ArcVmClientAdapterTest, BintaryTranslationTypeNone) {
-  base::CommandLine::ForCurrentProcess()->InitFromArgv({""});
   StartParams start_params(GetPopulatedStartParams());
   SetValidUserInfo();
   StartMiniArcWithParams(true, std::move(start_params));

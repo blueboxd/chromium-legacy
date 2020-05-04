@@ -21,7 +21,6 @@
 #include "remoting/host/chromoting_messages.h"
 #include "remoting/host/config_file_watcher.h"
 #include "remoting/host/desktop_session.h"
-#include "remoting/host/host_config.h"
 #include "remoting/host/host_event_logger.h"
 #include "remoting/host/host_exit_codes.h"
 #include "remoting/host/host_status_observer.h"
@@ -113,8 +112,6 @@ bool DaemonProcess::OnMessageReceived(const IPC::Message& message) {
                         StartProcessStatsReport)
     IPC_MESSAGE_HANDLER(ChromotingNetworkToAnyMsg_StopProcessStatsReport,
                         StopProcessStatsReport)
-    IPC_MESSAGE_HANDLER(ChromotingNetworkDaemonMsg_UpdateConfigRefreshToken,
-                        UpdateConfigRefreshToken)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -402,27 +399,6 @@ base::FilePath DaemonProcess::GetConfigPath() {
     config_path = default_config_dir.Append(kDefaultHostConfigFile);
   }
   return config_path;
-}
-
-void DaemonProcess::UpdateConfigRefreshToken(const std::string& token) {
-  io_task_runner_->PostTask(FROM_HERE,
-                            base::BindOnce(&UpdateConfigRefreshTokenOnIoThread,
-                                           GetConfigPath(), token));
-}
-
-void DaemonProcess::UpdateConfigRefreshTokenOnIoThread(
-    const base::FilePath& config_file,
-    const std::string& token) {
-  std::unique_ptr<base::DictionaryValue> config =
-      HostConfigFromJsonFile(config_file);
-  if (!config) {
-    LOG(ERROR) << "Failed to read config file for updating.";
-    return;
-  }
-  config->SetString(kOAuthRefreshTokenConfigPath, token);
-  if (!HostConfigToJsonFile(*config, config_file)) {
-    LOG(ERROR) << "Failed to write updated config file.";
-  }
 }
 
 }  // namespace remoting

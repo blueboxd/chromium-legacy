@@ -677,19 +677,19 @@ EventType WebEventTypeToEventType(WebInputEvent::Type type) {
   }
 }
 
-base::Optional<cc::ScrollInputType> GetScrollInputTypeForEvent(
+base::Optional<ui::ScrollInputType> GetScrollInputTypeForEvent(
     const WebInputEvent& event) {
   if (event.IsGestureScroll()) {
     const auto& gesture = static_cast<const WebGestureEvent&>(event);
     switch (gesture.SourceDevice()) {
       case WebGestureDevice::kTouchpad:
-        return cc::ScrollInputType::kWheel;
+        return ui::ScrollInputType::kWheel;
       case WebGestureDevice::kTouchscreen:
-        return cc::ScrollInputType::kTouchscreen;
+        return ui::ScrollInputType::kTouchscreen;
       case WebGestureDevice::kSyntheticAutoscroll:
-        return cc::ScrollInputType::kAutoscroll;
+        return ui::ScrollInputType::kAutoscroll;
       case WebGestureDevice::kScrollbar:
-        return cc::ScrollInputType::kScrollbar;
+        return ui::ScrollInputType::kScrollbar;
       case WebGestureDevice::kUninitialized:
         break;
     }

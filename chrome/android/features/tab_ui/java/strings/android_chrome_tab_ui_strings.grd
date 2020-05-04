@@ -295,6 +295,20 @@
        <message name="IDS_ACCESSIBILITY_TAB_MOVEMENT_DOWN" desc="This text button shows in the accessibility mode action menu. When user selects a tab, triggers action menu and clicks on this button, the current tab will switch position with the tab below it in the grid to achieve reordering.">
           Move tab down
       </message>
+
+      <!-- Strings for Conditional Tab Strip -->
+      <message name="IDS_UNDO_TAB_STRIP_CLOSURE_MESSAGE" desc="Message shown on the snack bar when the conditional tab strip is closed.">
+          Closed tab strip
+      </message>
+      <message name="IDS_TAB_STRIP_INFO_BAR_QUESTION" desc="This text is shown on the info bar when the user has dismissed the tab strip for multiple times. It is to ask whether users want the tab strip to hide permanently or they still want it to show sometime later.">
+          Don't show tab strip again?
+      </message>
+      <message name="IDS_TAB_STRIP_INFO_BAR_NO_RESHOW" desc="This text is shown on the info bar action button and serves as one answer to &quot;Don't show tab strip again?&quot;. When a user clicks this button, tab strip will never show again for this user.">
+          Don't show again
+      </message>
+      <message name="IDS_TAB_STRIP_INFO_BAR_RESHOW" desc="This text is shown on the info bar action button and serves as one answer to &quot;Don't show tab strip again?&quot;. When a user clicks this button, tab strip will keep showing for this user.">
+          Show later
+      </message>
     </messages>
   </release>
 </grit>

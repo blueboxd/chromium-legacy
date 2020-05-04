@@ -241,6 +241,8 @@ CrxUpdateItem Component::GetCrxUpdateItem() const {
   crx_update_item.last_check = last_check_;
   crx_update_item.next_version = next_version_;
   crx_update_item.next_fp = next_fp_;
+  crx_update_item.downloaded_bytes = downloaded_bytes_;
+  crx_update_item.total_bytes = total_bytes_;
   crx_update_item.error_category = error_category_;
   crx_update_item.error_code = error_code_;
   crx_update_item.extra_code1 = extra_code1_;
@@ -653,23 +655,25 @@ Component::StateDownloadingDiff::~StateDownloadingDiff() {
 void Component::StateDownloadingDiff::DoHandle() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  const auto& component = Component::State::component();
+  auto& component = Component::State::component();
   const auto& update_context = component.update_context_;
 
   DCHECK(component.crx_component());
+
+  component.downloaded_bytes_ = -1;
+  component.total_bytes_ = -1;
 
   crx_downloader_ = update_context.crx_downloader_factory(
       component.CanDoBackgroundDownload(),
       update_context.config->GetNetworkFetcherFactory());
 
-  const auto& id = component.id_;
   crx_downloader_->set_progress_callback(
       base::BindRepeating(&Component::StateDownloadingDiff::DownloadProgress,
-                          base::Unretained(this), id));
+                          base::Unretained(this)));
   crx_downloader_->StartDownload(
       component.crx_diffurls_, component.hashdiff_sha256_,
       base::BindOnce(&Component::StateDownloadingDiff::DownloadComplete,
-                     base::Unretained(this), id));
+                     base::Unretained(this)));
 
   component.NotifyObservers(Events::COMPONENT_UPDATE_DOWNLOADING);
 }
@@ -677,14 +681,20 @@ void Component::StateDownloadingDiff::DoHandle() {
 // Called when progress is being made downloading a CRX. Can be called multiple
 // times due to how the CRX downloader switches between different downloaders
 // and fallback urls.
-void Component::StateDownloadingDiff::DownloadProgress(const std::string& id) {
+void Component::StateDownloadingDiff::DownloadProgress(int64_t downloaded_bytes,
+                                                       int64_t total_bytes) {
   DCHECK(thread_checker_.CalledOnValidThread());
+  if (downloaded_bytes != -1 && total_bytes != -1)
+    DCHECK_LE(downloaded_bytes, total_bytes);
 
-  component().NotifyObservers(Events::COMPONENT_UPDATE_DOWNLOADING);
+  auto& component = Component::State::component();
+  component.downloaded_bytes_ = downloaded_bytes;
+  component.total_bytes_ = total_bytes;
+
+  component.NotifyObservers(Events::COMPONENT_UPDATE_DOWNLOADING);
 }
 
 void Component::StateDownloadingDiff::DownloadComplete(
-    const std::string& id,
     const CrxDownloader::Result& download_result) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
@@ -718,23 +728,24 @@ Component::StateDownloading::~StateDownloading() {
 void Component::StateDownloading::DoHandle() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  const auto& component = Component::State::component();
+  auto& component = Component::State::component();
   const auto& update_context = component.update_context_;
 
   DCHECK(component.crx_component());
+
+  component.downloaded_bytes_ = -1;
+  component.total_bytes_ = -1;
 
   crx_downloader_ = update_context.crx_downloader_factory(
       component.CanDoBackgroundDownload(),
       update_context.config->GetNetworkFetcherFactory());
 
-  const auto& id = component.id_;
-  crx_downloader_->set_progress_callback(
-      base::BindRepeating(&Component::StateDownloading::DownloadProgress,
-                          base::Unretained(this), id));
+  crx_downloader_->set_progress_callback(base::BindRepeating(
+      &Component::StateDownloading::DownloadProgress, base::Unretained(this)));
   crx_downloader_->StartDownload(
       component.crx_urls_, component.hash_sha256_,
       base::BindOnce(&Component::StateDownloading::DownloadComplete,
-                     base::Unretained(this), id));
+                     base::Unretained(this)));
 
   component.NotifyObservers(Events::COMPONENT_UPDATE_DOWNLOADING);
 }
@@ -742,14 +753,20 @@ void Component::StateDownloading::DoHandle() {
 // Called when progress is being made downloading a CRX. Can be called multiple
 // times due to how the CRX downloader switches between different downloaders
 // and fallback urls.
-void Component::StateDownloading::DownloadProgress(const std::string& id) {
+void Component::StateDownloading::DownloadProgress(int64_t downloaded_bytes,
+                                                   int64_t total_bytes) {
   DCHECK(thread_checker_.CalledOnValidThread());
+  if (downloaded_bytes != -1 && total_bytes != -1)
+    DCHECK_LE(downloaded_bytes, total_bytes);
 
-  component().NotifyObservers(Events::COMPONENT_UPDATE_DOWNLOADING);
+  auto& component = Component::State::component();
+  component.downloaded_bytes_ = downloaded_bytes;
+  component.total_bytes_ = total_bytes;
+
+  component.NotifyObservers(Events::COMPONENT_UPDATE_DOWNLOADING);
 }
 
 void Component::StateDownloading::DownloadComplete(
-    const std::string& id,
     const CrxDownloader::Result& download_result) {
   DCHECK(thread_checker_.CalledOnValidThread());
 

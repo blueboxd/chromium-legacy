@@ -48,6 +48,9 @@ class CORE_EXPORT HTMLFormControlElementWithState
   bool ShouldSaveAndRestoreFormControlState() const override;
 
   bool UserHasEditedTheField() const { return user_has_edited_the_field_; }
+  void SetUserHasEditedTheField(bool value) {
+    user_has_edited_the_field_ = value;
+  }
   // This is only used in tests, to fake the user's action
   void SetUserHasEditedTheFieldForTest() { user_has_edited_the_field_ = true; }
 

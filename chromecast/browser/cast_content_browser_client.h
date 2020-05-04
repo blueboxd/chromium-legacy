@@ -204,8 +204,7 @@ class CastContentBrowserClient
                                 mojo::GenericPendingReceiver receiver) override;
   void RegisterBrowserInterfaceBindersForFrame(
       content::RenderFrameHost* render_frame_host,
-      service_manager::BinderMapWithContext<content::RenderFrameHost*>* map)
-      override;
+      mojo::BinderMapWithContext<content::RenderFrameHost*>* map) override;
   mojo::Remote<::media::mojom::MediaService> RunSecondaryMediaService()
       override;
   void RunServiceInstance(

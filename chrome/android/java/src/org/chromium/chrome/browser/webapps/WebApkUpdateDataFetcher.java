@@ -134,9 +134,9 @@ public class WebApkUpdateDataFetcher extends EmptyTabObserver {
         }
 
         // When share action is empty, we use a default empty share target
-        WebApkInfo.ShareTarget shareTarget = null;
+        WebApkShareTarget shareTarget = null;
         if (!TextUtils.isEmpty(shareAction)) {
-            shareTarget = new WebApkInfo.ShareTarget(shareAction, shareParamsTitle, shareParamsText,
+            shareTarget = new WebApkShareTarget(shareAction, shareParamsTitle, shareParamsText,
                     isShareMethodPost, isShareEncTypeMultipart, shareParamsFileNames,
                     shareParamsAccepts);
         }

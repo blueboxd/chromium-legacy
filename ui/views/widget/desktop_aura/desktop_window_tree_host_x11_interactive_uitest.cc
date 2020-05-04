@@ -11,6 +11,7 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/ime/input_method.h"
+#include "ui/base/x/test/x11_property_change_waiter.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/events/event_handler.h"
 #include "ui/events/platform/x11/x11_event_source.h"
@@ -20,7 +21,6 @@
 #include "ui/gfx/x/x11_atom_cache.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/test/widget_test.h"
-#include "ui/views/test/x11_property_change_waiter.h"
 #include "ui/views/widget/desktop_aura/desktop_native_widget_aura.h"
 
 namespace views {
@@ -28,16 +28,17 @@ namespace views {
 namespace {
 
 // Blocks till |window| gets activated.
-class ActivationWaiter : public X11PropertyChangeWaiter {
+class ActivationWaiter : public ui::X11PropertyChangeWaiter {
  public:
   explicit ActivationWaiter(XID window)
-      : X11PropertyChangeWaiter(ui::GetX11RootWindow(), "_NET_ACTIVE_WINDOW"),
+      : ui::X11PropertyChangeWaiter(ui::GetX11RootWindow(),
+                                    "_NET_ACTIVE_WINDOW"),
         window_(window) {}
 
   ~ActivationWaiter() override = default;
 
  private:
-  // X11PropertyChangeWaiter:
+  // ui::X11PropertyChangeWaiter:
   bool ShouldKeepOnWaiting(XEvent* event) override {
     XID xid = 0;
     ui::GetXIDProperty(ui::GetX11RootWindow(), "_NET_ACTIVE_WINDOW", &xid);

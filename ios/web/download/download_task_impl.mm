@@ -179,7 +179,6 @@ DownloadTaskImpl::DownloadTaskImpl(WebState* web_state,
                                    const std::string& content_disposition,
                                    int64_t total_bytes,
                                    const std::string& mime_type,
-                                   ui::PageTransition page_transition,
                                    NSString* identifier,
                                    Delegate* delegate)
     : original_url_(original_url),
@@ -188,7 +187,6 @@ DownloadTaskImpl::DownloadTaskImpl(WebState* web_state,
       content_disposition_(content_disposition),
       original_mime_type_(mime_type),
       mime_type_(mime_type),
-      page_transition_(page_transition),
       identifier_([identifier copy]),
       web_state_(web_state),
       delegate_(delegate),
@@ -324,11 +322,6 @@ std::string DownloadTaskImpl::GetOriginalMimeType() const {
 std::string DownloadTaskImpl::GetMimeType() const {
   DCHECK_CURRENTLY_ON(web::WebThread::UI);
   return mime_type_;
-}
-
-ui::PageTransition DownloadTaskImpl::GetTransitionType() const {
-  DCHECK_CURRENTLY_ON(web::WebThread::UI);
-  return page_transition_;
 }
 
 base::string16 DownloadTaskImpl::GetSuggestedFilename() const {

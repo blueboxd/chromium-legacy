@@ -221,6 +221,7 @@
 /usrsctp/usrsctplib
 /v8-i18n
 /valgrind
+/vulkanmemoryallocator
 /wayland/src
 /wayland-protocols/src
 /wds/src

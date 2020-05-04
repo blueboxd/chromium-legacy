@@ -8471,6 +8471,8 @@ histogram as enum -->
   </int>
   <int value="33" label="kFieldInfo"/>
   <int value="34" label="kCompromisedCredentials"/>
+  <int value="35" label="kUserDataSnapshot"/>
+  <int value="36" label="kMediaFeeds"/>
 </enum>
 
 <enum name="ChromeChannelForHistogram">
@@ -37986,6 +37988,7 @@ from previous Chrome versions.
   <int value="-2061363134"
       label="AutofillSaveCreditCardUsesStrikeSystemV2:disabled"/>
   <int value="-2059771509" label="NTPTilesLowerResolutionFavicons:disabled"/>
+  <int value="-2059331227" label="DiceWebSigninInterception:disabled"/>
   <int value="-2058762785"
       label="AllowDownloadResumptionWithoutStrongValidators:disabled"/>
   <int value="-2058656447" label="ContextualSearchUrlActions:enabled"/>
@@ -38210,6 +38213,7 @@ from previous Chrome versions.
       label="enable-experimental-accessibility-switch-access-text"/>
   <int value="-1844754731" label="Mash:disabled"/>
   <int value="-1843677118" label="TwoPanesStartSurfaceAndroid:disabled"/>
+  <int value="-1842511843" label="DiceWebSigninInterception:enabled"/>
   <int value="-1840608422" label="AdvancedPpdAttributes:disabled"/>
   <int value="-1839874877" label="WebXROrientationSensorDevice:enabled"/>
   <int value="-1839496458" label="disable-file-manager-touch-mode"/>
@@ -43071,6 +43075,7 @@ Called by update_use_counter_css.py.-->
   <int value="660" label="ruby-position"/>
   <int value="661" label="text-underline-offset"/>
   <int value="662" label="content-visibility"/>
+  <int value="663" label="text-decoration-thickness"/>
 </enum>
 
 <enum name="MappedEditingCommands">
@@ -64291,12 +64296,24 @@ would be helpful to identify which type is being sent.
 </enum>
 
 <enum name="SupervisedUserExtension">
+  <obsolete>
+    Renamed to SupervisedUserExtension2.
+  </obsolete>
   <summary>
     Tracks the state of a supervised user trying to install an extension.
   </summary>
   <int value="0" label="New Extension Approval Granted"/>
   <int value="1" label="New Version Approval Granted"/>
   <int value="2" label="Removed"/>
+</enum>
+
+<enum name="SupervisedUserExtension2">
+  <summary>
+    Tracks the state of a supervised user trying to install an extension.
+  </summary>
+  <int value="0" label="Extension Approval Granted"/>
+  <int value="1" label="Permissions Increase Granted"/>
+  <int value="2" label="Extension Approval Removed"/>
 </enum>
 
 <enum name="SupervisedUserExtensionAllowlist">

@@ -95,6 +95,7 @@ class ServiceWorkerPaymentAppFinder {
   friend class PaymentRequestPaymentAppTest;
   friend class ServiceWorkerPaymentAppFinderBrowserTest;
   friend class PaymentRequestPlatformBrowserTestBase;
+  friend class PaymentMethodViewControllerTest;
 
   ServiceWorkerPaymentAppFinder();
   ~ServiceWorkerPaymentAppFinder();

@@ -301,9 +301,9 @@ std::string FindScriptPath() {
 // Execs the me2me script.
 // This function is called after forking and dropping privileges. It never
 // returns.
-void ExecMe2MeScript(base::EnvironmentMap environment,
-                     const struct passwd* pwinfo,
-                     const std::vector<std::string>& script_args) {
+[[noreturn]] void ExecMe2MeScript(base::EnvironmentMap environment,
+                                  const struct passwd* pwinfo,
+                                  const std::vector<std::string>& script_args) {
   std::string login_shell = pwinfo->pw_shell;
   if (login_shell.empty()) {
     // According to "man 5 passwd", if the shell field is empty, it defaults to
@@ -354,24 +354,25 @@ void ExecMe2MeScript(base::EnvironmentMap environment,
   execve(login_shell.c_str(), const_cast<char* const*>(arg_ptrs.data()),
          const_cast<char* const*>(env_ptrs.data()));
   PLOG(FATAL) << "Failed to exec login shell " << login_shell;
+  // The FATAL log should have terminated the program already, but this makes
+  // the compiler happy.
+  std::exit(EXIT_FAILURE);
 }
 
-// Relaunch the user session. When calling this function, the real UID must be
-// set to the target user, while the effective UID must be root. The provided
-// user must correspond with the current real UID.
-void Relaunch(const std::string& user,
+// Either |user| must be set when running as root, xor the real user ID must be
+// properly set when running as a user.
+void Relaunch(const base::Optional<std::string>& user,
               const std::vector<std::string>& script_args) {
-  CHECK(getuid() != 0);
-
-  // Real user ID has already been set to the target user, but the corresponding
-  // environment variables may not have been if the session was started by root
-  // (e.g., at boot).
-  PCHECK(setenv("USER", user.c_str(), true) == 0) << "setenv failed";
-  PCHECK(setenv("LOGNAME", user.c_str(), true) == 0) << "setenv failed";
+  CHECK(user.has_value() == (getuid() == 0));
 
   // Pass --foreground to continue using the same log file.
   std::vector<const char*> arg_ptrs = {gExecutablePath, kStartCommand,
-                                       kForegroundFlag, "--"};
+                                       kForegroundFlag};
+  if (user) {
+    arg_ptrs.push_back(kUserFlag);
+    arg_ptrs.push_back(user->c_str());
+  }
+  arg_ptrs.push_back("--");
   for (const std::string& arg : script_args) {
     arg_ptrs.push_back(arg.c_str());
   }
@@ -387,7 +388,9 @@ void Relaunch(const std::string& user,
 // will fail if the final user id does not match the one provided. If
 // script_args is not empty, the contained arguments will be passed on to the
 // me2me script.
-void ExecuteSession(std::string user,
+//
+// Returns: whether the session should be relaunched.
+bool ExecuteSession(std::string user,
                     bool chown_log,
                     base::Optional<uid_t> match_uid,
                     const std::vector<std::string>& script_args) {
@@ -519,9 +522,7 @@ void ExecuteSession(std::string user,
     }
     ignore_result(pam_handle.SetCredentials(PAM_DELETE_CRED));
 
-    if (relaunch) {
-      Relaunch(user, script_args);
-    }
+    return relaunch;
   }
 }
 
@@ -835,6 +836,37 @@ int main(int argc, char** argv) {
   bool chown_stdout = !foreground;
   base::Optional<uid_t> match_uid =
       real_uid != 0 ? base::make_optional(real_uid) : base::nullopt;
-  ExecuteSession(std::move(*user), chown_stdout, match_uid,
-                 std::move(script_args));
+
+  // Fork before opening PAM session so relaunches don't descend from the closed
+  // PAM session.
+  pid_t child_pid = fork();
+  PCHECK(child_pid >= 0) << "fork failed";
+  if (child_pid == 0) {
+    bool relaunch = ExecuteSession(std::move(*user), chown_stdout, match_uid,
+                                   std::move(script_args));
+    std::exit(relaunch ? kRelaunchExitCode : EXIT_SUCCESS);
+  } else {
+    // Close pipe write fd if it is open.
+    close(kMessageFd);
+    // waitpid will return if the child is ptraced, so loop until the process
+    // actually exits.
+    int status;
+    do {
+      pid_t wait_result = waitpid(child_pid, &status, 0);
+
+      // If we fail to wait on our child process, something has gone wrong and
+      // there's not much we can do. Note that this means if the user later logs
+      // out, the session won't restart.
+      PCHECK(wait_result >= 0) << "wait failed";
+    } while (!WIFEXITED(status) && !WIFSIGNALED(status));
+
+    if (WIFEXITED(status) && WEXITSTATUS(status) == kRelaunchExitCode) {
+      // If running as root, forward the username argument to the relaunched
+      // process. Otherwise, it should be inferred from the user id and
+      // environment.
+      Relaunch(real_uid == 0 ? user : base::nullopt, script_args);
+    }
+  }
+
+  return EXIT_SUCCESS;
 }

@@ -161,6 +161,9 @@ class DISPLAY_EXPORT ScreenWin : public Screen,
   gfx::Point GetCursorScreenPoint() override;
   bool IsWindowUnderCursor(gfx::NativeWindow window) override;
   gfx::NativeWindow GetWindowAtScreenPoint(const gfx::Point& point) override;
+  gfx::NativeWindow GetLocalProcessWindowAtPoint(
+      const gfx::Point& point,
+      const std::set<gfx::NativeWindow>& ignore) override;
   int GetNumDisplays() const override;
   const std::vector<Display>& GetAllDisplays() const override;
   Display GetDisplayNearestWindow(gfx::NativeWindow window) const override;

@@ -72,6 +72,7 @@ void SlotAssignment::DidRemoveSlot(HTMLSlotElement& slot) {
       ClearCandidateNodes(candidates);
       slot.ClearAssignedNodesCandidates();
       SetNeedsAssignmentRecalc();
+      slot.DidSlotChangeAfterRemovedFromShadowTree();
     }
     return;
   }

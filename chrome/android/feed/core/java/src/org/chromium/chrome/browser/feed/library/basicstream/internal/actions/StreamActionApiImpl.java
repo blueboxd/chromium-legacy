@@ -139,6 +139,13 @@ public class StreamActionApiImpl implements StreamActionApi {
     }
 
     @Override
+    public void handleBlockContent(
+            List<StreamDataOperation> dataOperations, ActionPayload payload) {
+        dismiss(dataOperations);
+        mActionManager.createAndUploadAction(mContentId, payload);
+    }
+
+    @Override
     public void dismiss(String contentId, List<StreamDataOperation> dataOperations,
             UndoAction undoAction, ActionPayload payload) {
         if (!undoAction.hasConfirmationLabel()) {

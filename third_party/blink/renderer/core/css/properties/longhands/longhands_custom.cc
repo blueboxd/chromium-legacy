@@ -6092,6 +6092,30 @@ const CSSValue* TextDecorationStyle::CSSValueFromComputedStyleInternal(
       style.TextDecorationStyle());
 }
 
+const CSSValue* TextDecorationThickness::ParseSingleValue(
+    CSSParserTokenRange& range,
+    const CSSParserContext& context,
+    const CSSParserLocalContext&) const {
+  DCHECK(RuntimeEnabledFeatures::UnderlineOffsetThicknessEnabled());
+  if (range.Peek().Id() == CSSValueID::kFromFont ||
+      range.Peek().Id() == CSSValueID::kAuto)
+    return css_property_parser_helpers::ConsumeIdent(range);
+  return css_property_parser_helpers::ConsumeLengthOrPercent(range, context,
+                                                             kValueRangeAll);
+}
+
+const CSSValue* TextDecorationThickness::CSSValueFromComputedStyleInternal(
+    const ComputedStyle& style,
+    const SVGComputedStyle&,
+    const LayoutObject*,
+    bool allow_visited_style) const {
+  if (style.GetTextDecorationThickness().IsFromFont())
+    return CSSIdentifierValue::Create(CSSValueID::kFromFont);
+
+  return ComputedStyleUtils::ZoomAdjustedPixelValueForLength(
+      style.GetTextDecorationThickness().Thickness(), style);
+}
+
 const CSSValue* TextIndent::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,

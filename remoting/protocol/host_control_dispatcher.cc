@@ -49,6 +49,13 @@ void HostControlDispatcher::SetVideoLayout(const VideoLayout& layout) {
   message_pipe()->Send(&message, {});
 }
 
+void HostControlDispatcher::SetTransportInfo(
+    const TransportInfo& transport_info) {
+  ControlMessage message;
+  message.mutable_transport_info()->CopyFrom(transport_info);
+  message_pipe()->Send(&message, {});
+}
+
 void HostControlDispatcher::InjectClipboardEvent(const ClipboardEvent& event) {
   ControlMessage message;
   message.mutable_clipboard_event()->CopyFrom(event);

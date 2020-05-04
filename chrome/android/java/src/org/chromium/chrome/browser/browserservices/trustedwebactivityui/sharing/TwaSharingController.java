@@ -23,8 +23,8 @@ import org.chromium.chrome.browser.customtabs.content.CustomTabActivityTabProvid
 import org.chromium.chrome.browser.dependency_injection.ActivityScope;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.webapps.WebApkExtras;
-import org.chromium.chrome.browser.webapps.WebApkInfo;
 import org.chromium.chrome.browser.webapps.WebApkPostShareTargetNavigator;
+import org.chromium.chrome.browser.webapps.WebApkShareTarget;
 
 import java.util.ArrayList;
 import java.util.Locale;
@@ -65,7 +65,7 @@ public class TwaSharingController {
             BrowserServicesIntentDataProvider intentDataProvider) {
         ShareData shareData = intentDataProvider.getShareData();
         WebApkExtras webApkExtras = intentDataProvider.getWebApkExtras();
-        WebApkInfo.ShareTarget shareTarget = (webApkExtras != null)
+        WebApkShareTarget shareTarget = (webApkExtras != null)
                 ? webApkExtras.shareTarget
                 : toShareTargetInternal(intentDataProvider.getShareTarget());
         if (shareTarget == null || shareData == null) {
@@ -94,10 +94,10 @@ public class TwaSharingController {
 
     /**
      * Converts to internal format.
-     * TODO(pshmakov): pull WebApkInfo.ShareTarget out of WebApkInfo and rename to
+     * TODO(pshmakov): pull WebApkShareTarget out of WebApkInfo and rename to
      * ShareTargetInternal. Also, replace WebApkInfo.ShareData with ShareData from TWA API.
      */
-    private WebApkInfo.ShareTarget toShareTargetInternal(@Nullable ShareTarget shareTarget) {
+    private WebApkShareTarget toShareTargetInternal(@Nullable ShareTarget shareTarget) {
         if (shareTarget == null) return null;
 
         ShareTarget.Params params = shareTarget.params;
@@ -118,11 +118,11 @@ public class TwaSharingController {
             filesArray[i] = file.name;
             acceptsArray[i] =  file.acceptedTypes.toArray(new String[file.acceptedTypes.size()]);
         }
-        return new WebApkInfo.ShareTarget(
+        return new WebApkShareTarget(
                 action, paramTitle, paramText, isPost, isMultipart, filesArray, acceptsArray);
     }
 
-    private boolean sendPost(ShareData shareData, WebApkInfo.ShareTarget target) {
+    private boolean sendPost(ShareData shareData, WebApkShareTarget target) {
         Tab tab = mTabProvider.getTab();
         if (tab == null) {
             assert false : "Null tab when sharing";
@@ -132,11 +132,10 @@ public class TwaSharingController {
                 target.getAction(), target, shareData, tab.getWebContents());
     }
 
-
     // Copy of HostBrowserLauncherParams#computeStartUrlForGETShareTarget().
     // Since the latter is in the WebAPK client code, we can't reuse it.
     private static String computeStartUrlForGETShareTarget(
-            ShareData data, WebApkInfo.ShareTarget target) {
+            ShareData data, WebApkShareTarget target) {
         // These can be null, they are checked downstream.
         ArrayList<Pair<String, String>> entryList = new ArrayList<>();
         entryList.add(new Pair<>(target.getParamTitle(), data.title));

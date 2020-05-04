@@ -108,9 +108,6 @@ class DownloadTask {
   // Effective MIME type of downloaded content.
   virtual std::string GetMimeType() const = 0;
 
-  // The page transition type associated with the download request.
-  virtual ui::PageTransition GetTransitionType() const = 0;
-
   // Suggested name for the downloaded file.
   virtual base::string16 GetSuggestedFilename() const = 0;
 

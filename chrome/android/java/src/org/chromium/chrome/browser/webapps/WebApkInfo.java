@@ -13,7 +13,6 @@ import androidx.browser.trusted.sharing.ShareData;
 import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider;
 import org.chromium.chrome.browser.webapps.WebApkExtras.ShortcutItem;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -21,77 +20,6 @@ import java.util.Map;
  * Stores info for WebAPK.
  */
 public class WebApkInfo extends WebappInfo {
-    /**
-     * Stores information about the WebAPK's share intent handlers.
-     * TODO(crbug.com/912954): add share target V2 parameters once the server supports them.
-     */
-    public static class ShareTarget {
-        private static final int ACTION_INDEX = 0;
-        private static final int PARAM_TITLE_INDEX = 1;
-        private static final int PARAM_TEXT_INDEX = 2;
-        private String[] mData;
-        private boolean mIsShareMethodPost;
-        private boolean mIsShareEncTypeMultipart;
-        private String[] mFileNames;
-        private String[][] mFileAccepts;
-
-        public ShareTarget(String action, String paramTitle, String paramText, boolean isMethodPost,
-                boolean isEncTypeMultipart, String[] fileNames, String[][] fileAccepts) {
-            mData = new String[3];
-            mData[ACTION_INDEX] = replaceNullWithEmpty(action);
-            mData[PARAM_TITLE_INDEX] = replaceNullWithEmpty(paramTitle);
-            mData[PARAM_TEXT_INDEX] = replaceNullWithEmpty(paramText);
-            mIsShareMethodPost = isMethodPost;
-            mIsShareEncTypeMultipart = isEncTypeMultipart;
-
-            mFileNames = fileNames != null ? fileNames : new String[0];
-            mFileAccepts = fileAccepts != null ? fileAccepts : new String[0][];
-        }
-
-        public static boolean equals(@Nullable ShareTarget s1, @Nullable ShareTarget s2) {
-            if (s1 == null) {
-                return (s2 == null);
-            }
-            if (s2 == null) {
-                return false;
-            }
-
-            return Arrays.equals(s1.mData, s2.mData)
-                    && s1.mIsShareMethodPost == s2.mIsShareMethodPost
-                    && s1.mIsShareEncTypeMultipart == s2.mIsShareEncTypeMultipart
-                    && Arrays.equals(s1.mFileNames, s2.mFileNames)
-                    && Arrays.deepEquals(s1.mFileAccepts, s2.mFileAccepts);
-        }
-
-        public String getAction() {
-            return mData[ACTION_INDEX];
-        }
-
-        public String getParamTitle() {
-            return mData[PARAM_TITLE_INDEX];
-        }
-
-        public String getParamText() {
-            return mData[PARAM_TEXT_INDEX];
-        }
-
-        public boolean isShareMethodPost() {
-            return mIsShareMethodPost;
-        }
-
-        public boolean isShareEncTypeMultipart() {
-            return mIsShareEncTypeMultipart;
-        }
-
-        public String[] getFileNames() {
-            return mFileNames;
-        }
-
-        public String[][] getFileAccepts() {
-            return mFileAccepts;
-        }
-    }
-
     /**
      * Constructs a WebApkInfo from the passed in Intent and <meta-data> in the WebAPK's Android
      * manifest.
@@ -163,7 +91,7 @@ public class WebApkInfo extends WebappInfo {
             int defaultBackgroundColor, boolean isPrimaryIconMaskable, boolean isSplashIconMaskable,
             String webApkPackageName, int shellApkVersion, String manifestUrl,
             String manifestStartUrl, @WebApkDistributor int distributor,
-            Map<String, String> iconUrlToMurmur2HashMap, ShareTarget shareTarget,
+            Map<String, String> iconUrlToMurmur2HashMap, WebApkShareTarget shareTarget,
             boolean forceNavigation, boolean isSplashProvidedByWebApk, ShareData shareData,
             List<ShortcutItem> shortcutItems, int webApkVersionCode) {
         return create(WebApkIntentDataProviderFactory.create(url, scope, primaryIcon, splashIcon,
@@ -176,11 +104,6 @@ public class WebApkInfo extends WebappInfo {
 
     private static WebappInfo create(@Nullable BrowserServicesIntentDataProvider provider) {
         return (provider != null) ? new WebApkInfo(provider) : null;
-    }
-
-    /** Returns the value if it is non-null. Returns an empty string otherwise. */
-    private static String replaceNullWithEmpty(String value) {
-        return (value == null) ? "" : value;
     }
 
     public WebApkInfo(@NonNull BrowserServicesIntentDataProvider provider) {

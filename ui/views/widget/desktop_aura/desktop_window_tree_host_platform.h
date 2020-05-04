@@ -30,6 +30,14 @@ class VIEWS_EXPORT DesktopWindowTreeHostPlatform
       DesktopNativeWidgetAura* desktop_native_widget_aura);
   ~DesktopWindowTreeHostPlatform() override;
 
+  // A way of converting a |widget| into the content_window()
+  // of the associated DesktopNativeWidgetAura.
+  static aura::Window* GetContentWindowForWidget(gfx::AcceleratedWidget widget);
+
+  // A way of converting a |widget| into this object.
+  static DesktopWindowTreeHostPlatform* GetHostForWidget(
+      gfx::AcceleratedWidget widget);
+
   // Accessor for DesktopNativeWidgetAura::content_window().
   aura::Window* GetContentWindow();
   const aura::Window* GetContentWindow() const;

@@ -313,17 +313,20 @@ void MediaFeedsService::OnFetchResponse(
     return;
   }
 
-  std::vector<media_feeds::mojom::MediaImagePtr> logos;
-  std::string display_name;
-  auto feed_items =
-      GetMediaFeeds(response, &logos, &display_name)
-          .value_or(std::vector<media_feeds::mojom::MediaFeedItemPtr>());
-  const bool has_items = !feed_items.empty();
+  media_history::MediaHistoryKeyedService::MediaFeedFetchResult result;
+  result.feed_id = feed_id;
+  result.status = GetFetchResult(status);
+  result.was_fetched_from_cache = was_fetched_via_cache;
+
+  if (result.status == media_feeds::mojom::FetchResult::kSuccess &&
+      !ConvertMediaFeed(response, &result)) {
+    result.status = media_feeds::mojom::FetchResult::kInvalidFeed;
+  }
+
+  const bool has_items = !result.items.empty();
 
   GetMediaHistoryService()->StoreMediaFeedFetchResult(
-      feed_id, std::move(feed_items), GetFetchResult(status),
-      was_fetched_via_cache, std::move(logos), display_name,
-      std::set<url::Origin>(),
+      std::move(result),
       base::BindOnce(&MediaFeedsService::OnCompleteFetch,
                      weak_factory_.GetWeakPtr(), feed_id, has_items));
 }

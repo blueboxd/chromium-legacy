@@ -260,10 +260,12 @@ IN_PROC_BROWSER_TEST_F(PointerLockBrowserTest,
 
   std::string set_mouse_move_event_listener =
       R"code(mouseMoveExecuted = new Promise(function (resolve, reject){
-              document.addEventListener('mousemove', function(e) {
+              mousemoveHandler = function(e){
                 x = e.x; y = e.y; mX = e.movementX; mY = e.movementY;
+                document.removeEventListener('mousemove', mousemoveHandler);
                 resolve();
-              });
+              };
+              document.addEventListener('mousemove', mousemoveHandler);
              });)code";
   std::string set_pointer_lock_promise =
       R"code(pointerLockPromise=new Promise(function (resolve, reject){
@@ -273,12 +275,14 @@ IN_PROC_BROWSER_TEST_F(PointerLockBrowserTest,
   std::string wait_for_pointer_lock_promise =
       "(async()=> {return await pointerLockPromise.then(()=>true, "
       "()=>false);})()";
-  // Add a mouse move event listener to the root frame.
-  EXPECT_TRUE(ExecJs(root,
-                     R"code(var x; var y; var mX; var mY;
+  std::string define_variables = R"code(var x; var y;
+       var mX; var mY;
        var mouseMoveExecuted;
        var pointerLockPromise;
-       )code"));
+       var mousemoveHandler;
+       )code";
+  // Add a mouse move event listener to the root frame.
+  EXPECT_TRUE(ExecJs(root, define_variables));
   EXPECT_TRUE(ExecJs(root, set_mouse_move_event_listener));
 
   // Send a mouse move to root frame before lock to set last mouse position.
@@ -296,8 +300,7 @@ IN_PROC_BROWSER_TEST_F(PointerLockBrowserTest,
   // wait for mouse move to fire mouse move event
   EXPECT_EQ(true, EvalJs(root,
                          "(async ()=> {return await "
-                         "mouseMoveExecuted.then(()=>true);})()"));
-
+                         "mouseMoveExecuted.then(()=>true);})();"));
   if (base::FeatureList::IsEnabled(features::kConsolidatedMovementXY))
     EXPECT_EQ("[6,7,0,0]", EvalJs(root, "JSON.stringify([x,y,mX,mY])"));
   else
@@ -306,14 +309,12 @@ IN_PROC_BROWSER_TEST_F(PointerLockBrowserTest,
   // Request a pointer lock on the root frame's body.
   // wait for requestPointerLock to finish by either firing
   // pointerlockchange or pointerlockerror
-  EXPECT_EQ(true, EvalJs(root, set_pointer_lock_promise +
+  EXPECT_EQ(true, ExecJs(root, set_pointer_lock_promise +
                                    "document.body.requestPointerLock();" +
                                    wait_for_pointer_lock_promise));
-
   // Root frame should have been granted pointer lock.
   EXPECT_EQ(true,
             EvalJs(root, "document.pointerLockElement === document.body"));
-
   EXPECT_TRUE(ExecJs(root, set_mouse_move_event_listener));
 
   mouse_event.SetPositionInWidget(10, 12);
@@ -324,7 +325,7 @@ IN_PROC_BROWSER_TEST_F(PointerLockBrowserTest,
 
   EXPECT_EQ(true, EvalJs(root,
                          "(async ()=> {return await "
-                         "mouseMoveExecuted.then(()=>true);})()"));
+                         "mouseMoveExecuted.then(()=>true);})();"));
   // Locked event has same coordinates as before locked.
   if (base::FeatureList::IsEnabled(features::kConsolidatedMovementXY))
     EXPECT_EQ("[6,7,4,5]", EvalJs(root, "JSON.stringify([x,y,mX,mY])"));
@@ -332,10 +333,12 @@ IN_PROC_BROWSER_TEST_F(PointerLockBrowserTest,
     EXPECT_EQ("[6,7,12,13]", EvalJs(root, "JSON.stringify([x,y,mX,mY])"));
 
   // Release pointer lock on root frame.
-  EXPECT_EQ(true, EvalJs(root, set_pointer_lock_promise +
+  EXPECT_EQ(true, ExecJs(root, set_pointer_lock_promise +
                                    "document.exitPointerLock();" +
                                    wait_for_pointer_lock_promise));
 
+  // define all all global variables on the child
+  EXPECT_TRUE(ExecJs(child, define_variables));
   // Request a pointer lock on the child frame's body.
   EXPECT_EQ(true, EvalJs(child, set_pointer_lock_promise +
                                     "document.body.requestPointerLock();" +
@@ -350,7 +353,6 @@ IN_PROC_BROWSER_TEST_F(PointerLockBrowserTest,
   gfx::PointF transformed_point;
   root_view->TransformPointToCoordSpaceForView(gfx::PointF(0, 0), child_view,
                                                &transformed_point);
-
   mouse_event.SetPositionInWidget(-transformed_point.x() + 14,
                                   -transformed_point.y() + 15);
   mouse_event.SetPositionInScreen(-transformed_point.x() + 14,
@@ -364,7 +366,6 @@ IN_PROC_BROWSER_TEST_F(PointerLockBrowserTest,
   EXPECT_EQ(true, EvalJs(child,
                          "(async ()=> {return await "
                          "mouseMoveExecuted.then(()=>true);})()"));
-
   // This is the first event to child render, so the coordinates is (0, 0)
   if (base::FeatureList::IsEnabled(features::kConsolidatedMovementXY))
     EXPECT_EQ("[0,0,0,0]", EvalJs(child, "JSON.stringify([x,y,mX,mY])"));

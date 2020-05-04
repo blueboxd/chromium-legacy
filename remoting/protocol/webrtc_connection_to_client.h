@@ -59,6 +59,7 @@ class WebrtcConnectionToClient : public ConnectionToClient,
   void OnWebrtcTransportConnecting() override;
   void OnWebrtcTransportConnected() override;
   void OnWebrtcTransportError(ErrorCode error) override;
+  void OnWebrtcTransportProtocolChanged() override;
   void OnWebrtcTransportIncomingDataChannel(
       const std::string& name,
       std::unique_ptr<MessagePipe> pipe) override;
@@ -72,6 +73,8 @@ class WebrtcConnectionToClient : public ConnectionToClient,
   void OnChannelClosed(ChannelDispatcherBase* channel_dispatcher) override;
 
  private:
+  bool allChannelsConnected();
+
   base::ThreadChecker thread_checker_;
 
   // Event handler for handling events sent from this object.

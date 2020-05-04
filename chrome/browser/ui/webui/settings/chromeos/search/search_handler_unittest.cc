@@ -6,6 +6,7 @@
 
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/chromeos/local_search_service/local_search_service.h"
 #include "chrome/browser/ui/webui/settings/chromeos/constants/routes.mojom.h"
 #include "chrome/browser/ui/webui/settings/chromeos/os_settings_manager.h"
@@ -14,6 +15,7 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/services/network_config/public/cpp/cros_network_config_test_helper.h"
 #include "content/public/test/browser_task_environment.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -29,6 +31,9 @@ class SearchHandlerTest : public testing::Test {
 
   // testing::Test:
   void SetUp() override {
+    scoped_feature_list_.InitAndEnableFeature(
+        chromeos::features::kNewOsSettingsSearch);
+
     ASSERT_TRUE(profile_manager_.SetUp());
 
     provider_ = std::make_unique<OsSettingsManager>(
@@ -36,7 +41,8 @@ class SearchHandlerTest : public testing::Test {
         &local_search_service_, /*multidevice_setup_client=*/nullptr,
         /*sync_service=*/nullptr, /*supervised_user_service=*/nullptr,
         /*kerberos_credentials_manager=*/nullptr,
-        /*arc_app_list_prefs=*/nullptr, /*identity_manager=*/nullptr);
+        /*arc_app_list_prefs=*/nullptr, /*identity_manager=*/nullptr,
+        /*android_sms_service=*/nullptr);
 
     handler_ = std::make_unique<SearchHandler>(provider_.get(),
                                                &local_search_service_);
@@ -48,6 +54,7 @@ class SearchHandlerTest : public testing::Test {
     base::RunLoop().RunUntilIdle();
   }
 
+  base::test::ScopedFeatureList scoped_feature_list_;
   content::BrowserTaskEnvironment task_environment_;
   TestingProfileManager profile_manager_;
   chromeos::network_config::CrosNetworkConfigTestHelper network_config_helper_;

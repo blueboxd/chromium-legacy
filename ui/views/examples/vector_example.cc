@@ -153,7 +153,7 @@ VectorExample::~VectorExample() = default;
 
 void VectorExample::CreateExampleView(View* container) {
   container->SetLayoutManager(std::make_unique<FillLayout>());
-  container->AddChildView(new VectorIconGallery());
+  container->AddChildView(std::make_unique<VectorIconGallery>());
 }
 
 }  // namespace examples

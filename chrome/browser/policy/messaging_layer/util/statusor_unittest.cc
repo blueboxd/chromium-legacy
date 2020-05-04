@@ -8,6 +8,11 @@
 #include <algorithm>
 #include <memory>
 
+#include "base/bind.h"
+#include "base/callback.h"
+#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_refptr.h"
+
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace reporting {
@@ -44,7 +49,7 @@ class CopyNoAssign {
 TEST(StatusOr, TestDefaultCtor) {
   StatusOr<int> thing;
   EXPECT_FALSE(thing.ok());
-  EXPECT_EQ(Status(error::UNKNOWN, ""), thing.status());
+  EXPECT_EQ(error::UNKNOWN, thing.status().code());
 }
 
 TEST(StatusOr, TestStatusCtor) {
@@ -137,7 +142,7 @@ TEST(StatusOr, TestValueConst) {
 TEST(StatusOr, TestPointerDefaultCtor) {
   StatusOr<int*> thing;
   EXPECT_FALSE(thing.ok());
-  EXPECT_EQ(Status(error::UNKNOWN, ""), thing.status());
+  EXPECT_EQ(error::UNKNOWN, thing.status().code());
 }
 
 TEST(StatusOr, TestPointerStatusCtor) {
@@ -235,13 +240,36 @@ TEST(StatusOr, TestPointerValueConst) {
   EXPECT_EQ(&kI, thing.ValueOrDie());
 }
 
-TEST(StatusOr, TestMoveValue) {
+TEST(StatusOr, TestMoveStatusOr) {
   const int kI = 0;
   StatusOr<std::unique_ptr<int>> thing(std::make_unique<int>(kI));
-  ASSERT_OK(thing.status());
-  std::unique_ptr<int> value = std::move(thing.ValueOrDie());
-  ASSERT_EQ(error::UNKNOWN, thing.status().code());
-  ASSERT_EQ(kI, *value);
+  EXPECT_OK(thing.status());
+  StatusOr<std::unique_ptr<int>> moved = std::move(thing);
+  EXPECT_EQ(error::UNKNOWN, thing.status().code());
+  EXPECT_TRUE(moved.ok());
+  EXPECT_EQ(kI, *moved.ValueOrDie());
+}
+
+TEST(StatusOr, TestBinding) {
+  class RefCountedValue : public base::RefCounted<RefCountedValue> {
+   public:
+    explicit RefCountedValue(StatusOr<int> value) : value_(value) {}
+    Status status() const { return value_.status(); }
+    int value() const { return value_.ValueOrDie(); }
+
+   private:
+    friend class base::RefCounted<RefCountedValue>;
+    ~RefCountedValue() = default;
+    const StatusOr<int> value_;
+  };
+  const int kI = 0;
+  base::OnceCallback<int(StatusOr<scoped_refptr<RefCountedValue>>)> callback =
+      base::BindOnce([](StatusOr<scoped_refptr<RefCountedValue>> val) {
+        return val.ValueOrDie()->value();
+      });
+  const int result =
+      std::move(callback).Run(base::MakeRefCounted<RefCountedValue>(kI));
+  EXPECT_EQ(kI, result);
 }
 
 }  // namespace

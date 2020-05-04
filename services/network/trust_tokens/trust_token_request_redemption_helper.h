@@ -169,8 +169,9 @@ class TrustTokenRequestRedemptionHelper : public TrustTokenRequestHelper {
   //
   // If both of these steps are successful, stores the tokens in |token_store_|
   // and returns kOk. Otherwise, returns kBadResponse.
-  mojom::TrustTokenOperationStatus Finalize(
-      mojom::URLResponseHead* response) override;
+  void Finalize(
+      mojom::URLResponseHead* response,
+      base::OnceCallback<void(mojom::TrustTokenOperationStatus)> done) override;
 
  private:
   // Continuation of |Begin| after asynchronous key commitment fetching

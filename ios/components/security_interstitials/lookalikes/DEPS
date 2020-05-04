@@ -1,5 +1,5 @@
 include_rules = [
-  "+components/lookalikes",
+  "+components/lookalikes/core",
   "+components/url_formatter",
   "+ios/net",
   "+net/base",

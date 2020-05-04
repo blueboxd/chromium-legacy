@@ -25,8 +25,8 @@
 #include "components/cdm/browser/media_drm_storage_impl.h"
 #include "content/public/browser/render_process_host.h"
 #include "media/mojo/buildflags.h"
+#include "mojo/public/cpp/bindings/binder_map.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
-#include "services/service_manager/public/cpp/binder_map.h"
 #include "url/origin.h"
 
 #if BUILDFLAG(ENABLE_CAST_RENDERER)
@@ -139,7 +139,7 @@ void CastContentBrowserClient::BindMediaServiceReceiver(
 
 void CastContentBrowserClient::RegisterBrowserInterfaceBindersForFrame(
     content::RenderFrameHost* render_frame_host,
-    service_manager::BinderMapWithContext<content::RenderFrameHost*>* map) {
+    mojo::BinderMapWithContext<content::RenderFrameHost*>* map) {
   PopulateCastFrameBinders(render_frame_host, map);
 }
 

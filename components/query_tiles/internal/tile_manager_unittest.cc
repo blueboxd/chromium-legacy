@@ -52,10 +52,12 @@ class TileManagerTest : public testing::Test {
 
   // Initial and load entries from store_, compare the |expected_status| to the
   // actual returned status.
-  void Init(base::RepeatingClosure closure, TileGroupStatus expected_status) {
+  void Init(TileGroupStatus expected_status) {
+    base::RunLoop loop;
     manager()->Init(base::BindOnce(&TileManagerTest::OnInitCompleted,
-                                   base::Unretained(this), std::move(closure),
+                                   base::Unretained(this), loop.QuitClosure(),
                                    expected_status));
+    loop.Run();
   }
 
   void OnInitCompleted(base::RepeatingClosure closure,
@@ -68,12 +70,13 @@ class TileManagerTest : public testing::Test {
   // Run SaveTiles call from manager_, compare the |expected_status| to the
   // actual returned status.
   void SaveTiles(std::vector<std::unique_ptr<Tile>> tiles,
-                 base::RepeatingClosure closure,
                  TileGroupStatus expected_status) {
+    base::RunLoop loop;
     manager()->SaveTiles(
         std::move(tiles),
         base::BindOnce(&TileManagerTest::OnTilesSaved, base::Unretained(this),
-                       std::move(closure), expected_status));
+                       loop.QuitClosure(), expected_status));
+    loop.Run();
   }
 
   void OnTilesSaved(base::RepeatingClosure closure,
@@ -85,10 +88,12 @@ class TileManagerTest : public testing::Test {
 
   // Run GetTiles call from manager_, compare the |expected| to the actual
   // returned tiles.
-  void GetTiles(base::RepeatingClosure closure, std::vector<Tile> expected) {
+  void GetTiles(std::vector<Tile> expected) {
+    base::RunLoop loop;
     manager()->GetTiles(base::BindOnce(
         &TileManagerTest::OnTilesReturned, base::Unretained(this),
-        std::move(closure), std::move(expected)));
+        loop.QuitClosure(), std::move(expected)));
+    loop.Run();
   }
 
   void OnTilesReturned(base::RepeatingClosure closure,
@@ -98,12 +103,12 @@ class TileManagerTest : public testing::Test {
     std::move(closure).Run();
   }
 
-  void GetSingleTile(base::RepeatingClosure closure,
-                     const std::string& id,
-                     Tile expected) {
+  void GetSingleTile(const std::string& id, Tile expected) {
+    base::RunLoop loop;
     manager()->GetTile(
         id, base::BindOnce(&TileManagerTest::OnGetTile, base::Unretained(this),
-                           std::move(closure), std::move(expected)));
+                           loop.QuitClosure(), std::move(expected)));
+    loop.Run();
   }
 
   void OnGetTile(base::RepeatingClosure closure,
@@ -137,10 +142,8 @@ TEST_F(TileManagerTest, InitAndLoadWithDbOperationFailed) {
         std::move(callback).Run(false, MockTileStore::KeysAndEntries());
       }));
 
-  base::RunLoop loop;
-  Init(loop.QuitClosure(), TileGroupStatus::kFailureDbOperation);
-  GetTiles(loop.QuitClosure(), std::vector<Tile>() /*expect an empty result*/);
-  loop.Run();
+  Init(TileGroupStatus::kFailureDbOperation);
+  GetTiles(std::vector<Tile>() /*expect an empty result*/);
 }
 
 TEST_F(TileManagerTest, InitWithEmptyDb) {
@@ -150,10 +153,8 @@ TEST_F(TileManagerTest, InitWithEmptyDb) {
         std::move(callback).Run(true, MockTileStore::KeysAndEntries());
       }));
 
-  base::RunLoop loop;
-  Init(loop.QuitClosure(), TileGroupStatus::kSuccess);
-  GetTiles(loop.QuitClosure(), std::vector<Tile>() /*expect an empty result*/);
-  loop.Run();
+  Init(TileGroupStatus::kSuccess);
+  GetTiles(std::vector<Tile>() /*expect an empty result*/);
 }
 
 TEST_F(TileManagerTest, InitAndLoadWithLocaleNotMatch) {
@@ -171,10 +172,8 @@ TEST_F(TileManagerTest, InitAndLoadWithLocaleNotMatch) {
 
   EXPECT_CALL(*tile_store(), Delete(_, _));
 
-  base::RunLoop loop;
-  Init(loop.QuitClosure(), TileGroupStatus::kInvalidGroup);
-  GetTiles(loop.QuitClosure(), std::vector<Tile>() /*expect an empty result*/);
-  loop.Run();
+  Init(TileGroupStatus::kInvalidGroup);
+  GetTiles(std::vector<Tile>() /*expect an empty result*/);
 }
 
 TEST_F(TileManagerTest, InitAndLoadWithExpiredGroup) {
@@ -193,10 +192,8 @@ TEST_F(TileManagerTest, InitAndLoadWithExpiredGroup) {
 
   EXPECT_CALL(*tile_store(), Delete(_, _));
 
-  base::RunLoop loop;
-  Init(loop.QuitClosure(), TileGroupStatus::kInvalidGroup);
-  GetTiles(loop.QuitClosure(), std::vector<Tile>() /*expect an empty result*/);
-  loop.Run();
+  Init(TileGroupStatus::kInvalidGroup);
+  GetTiles(std::vector<Tile>() /*expect an empty result*/);
 }
 
 TEST_F(TileManagerTest, InitAndLoadSuccess) {
@@ -219,11 +216,9 @@ TEST_F(TileManagerTest, InitAndLoadSuccess) {
 
   EXPECT_CALL(*tile_store(), Delete(_, _)).Times(0);
 
-  base::RunLoop loop;
-  Init(loop.QuitClosure(), TileGroupStatus::kSuccess);
-  GetTiles(loop.QuitClosure(), expected);
-  GetSingleTile(loop.QuitClosure(), "guid-1-1", expected[0]);
-  loop.Run();
+  Init(TileGroupStatus::kSuccess);
+  GetTiles(expected);
+  GetSingleTile("guid-1-1", expected[0]);
 }
 
 // Failed to init an empty db, and save tiles call failed because of db is
@@ -237,19 +232,15 @@ TEST_F(TileManagerTest, SaveTilesWhenUnintialized) {
   EXPECT_CALL(*tile_store(), Update(_, _, _)).Times(0);
   EXPECT_CALL(*tile_store(), Delete(_, _)).Times(0);
 
-  base::RunLoop loop;
-  Init(loop.QuitClosure(), TileGroupStatus::kFailureDbOperation);
+  Init(TileGroupStatus::kFailureDbOperation);
 
   auto tile_to_save = std::make_unique<Tile>();
   test::ResetTestEntry(tile_to_save.get());
   std::vector<std::unique_ptr<Tile>> tiles_to_save;
   tiles_to_save.emplace_back(std::move(tile_to_save));
 
-  SaveTiles(std::move(tiles_to_save), loop.QuitClosure(),
-            TileGroupStatus::kUninitialized);
-  GetTiles(loop.QuitClosure(), std::vector<Tile>() /*expect an empty result*/);
-
-  loop.Run();
+  SaveTiles(std::move(tiles_to_save), TileGroupStatus::kUninitialized);
+  GetTiles(std::vector<Tile>() /*expect an empty result*/);
 }
 
 // Init with empty db successfully, and save tiles failed because of db
@@ -267,19 +258,15 @@ TEST_F(TileManagerTest, SaveTilesFailed) {
       }));
   EXPECT_CALL(*tile_store(), Delete(_, _)).Times(0);
 
-  base::RunLoop loop;
-  Init(loop.QuitClosure(), TileGroupStatus::kSuccess);
+  Init(TileGroupStatus::kSuccess);
 
   auto tile_to_save = std::make_unique<Tile>();
   test::ResetTestEntry(tile_to_save.get());
   std::vector<std::unique_ptr<Tile>> tiles_to_save;
   tiles_to_save.emplace_back(std::move(tile_to_save));
 
-  SaveTiles(std::move(tiles_to_save), loop.QuitClosure(),
-            TileGroupStatus::kFailureDbOperation);
-  GetTiles(loop.QuitClosure(), std::vector<Tile>() /*expect an empty result*/);
-
-  loop.Run();
+  SaveTiles(std::move(tiles_to_save), TileGroupStatus::kFailureDbOperation);
+  GetTiles(std::vector<Tile>() /*expect an empty result*/);
 }
 
 // Init with empty db successfully, and save tiles successfully. GetTiles should
@@ -297,8 +284,7 @@ TEST_F(TileManagerTest, SaveTilesSuccess) {
       }));
   EXPECT_CALL(*tile_store(), Delete(_, _)).Times(0);
 
-  base::RunLoop loop;
-  Init(loop.QuitClosure(), TileGroupStatus::kSuccess);
+  Init(TileGroupStatus::kSuccess);
 
   auto tile_to_save = std::make_unique<Tile>();
   auto expected_tile = std::make_unique<Tile>();
@@ -309,10 +295,8 @@ TEST_F(TileManagerTest, SaveTilesSuccess) {
   std::vector<Tile> expected;
   expected.emplace_back(*expected_tile.get());
 
-  SaveTiles(std::move(tiles_to_save), loop.QuitClosure(),
-            TileGroupStatus::kSuccess);
-  GetTiles(loop.QuitClosure(), std::move(expected));
-  loop.Run();
+  SaveTiles(std::move(tiles_to_save), TileGroupStatus::kSuccess);
+  GetTiles(std::move(expected));
 }
 
 // Init with store successfully. The store originally has entries loaded into
@@ -342,8 +326,7 @@ TEST_F(TileManagerTest, SaveTilesAndReplaceOldGroupSuccess) {
 
   EXPECT_CALL(*tile_store(), Delete("group_guid", _));
 
-  base::RunLoop loop;
-  Init(loop.QuitClosure(), TileGroupStatus::kSuccess);
+  Init(TileGroupStatus::kSuccess);
 
   auto tile_to_save = std::make_unique<Tile>();
   test::ResetTestEntry(tile_to_save.get());
@@ -355,10 +338,8 @@ TEST_F(TileManagerTest, SaveTilesAndReplaceOldGroupSuccess) {
   std::vector<Tile> expected;
   expected.emplace_back(std::move(*expected_tile.get()));
 
-  SaveTiles(std::move(tiles_to_save), loop.QuitClosure(),
-            TileGroupStatus::kSuccess);
-  GetTiles(loop.QuitClosure(), std::move(expected));
-  loop.Run();
+  SaveTiles(std::move(tiles_to_save), TileGroupStatus::kSuccess);
+  GetTiles(std::move(expected));
 }
 
 }  // namespace

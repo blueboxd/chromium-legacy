@@ -322,4 +322,18 @@ TEST_F(MediaControlsDisplayCutoutDelegateTest, TouchEndShouldClearState) {
   EXPECT_EQ(mojom::ViewportFit::kAuto, CurrentViewportFit());
 }
 
+TEST_F(MediaControlsDisplayCutoutDelegateTest, DefaultExpand) {
+  ScopedMediaControlsUseCutOutByDefaultForTest scoped_default_expand(true);
+
+  SimulateEnterFullscreen();
+  EXPECT_EQ(mojom::ViewportFit::kCoverForcedByUserAgent, CurrentViewportFit());
+}
+
+TEST_F(MediaControlsDisplayCutoutDelegateTest, DefaultNotExpand) {
+  ScopedMediaControlsUseCutOutByDefaultForTest scoped_default_expand(false);
+
+  SimulateEnterFullscreen();
+  EXPECT_EQ(mojom::ViewportFit::kAuto, CurrentViewportFit());
+}
+
 }  // namespace blink

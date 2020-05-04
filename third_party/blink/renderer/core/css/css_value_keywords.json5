@@ -442,6 +442,7 @@
     "uppercase",
     "lowercase",
     //none
+    "math-auto",
     //
     // visibility
     //
@@ -623,9 +624,15 @@
     // auto
     // none
 
-    // text-underline-position
+    //
+    // text-decoration-thickness
+    //
     // auto
     "from-font",
+
+    // text-underline-position
+    // auto
+    // "from-font",
     // under
     // left
     // right

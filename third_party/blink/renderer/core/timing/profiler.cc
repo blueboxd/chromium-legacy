@@ -5,26 +5,24 @@
 #include "third_party/blink/renderer/core/timing/profiler.h"
 
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/timing/profiler_group.h"
 
 namespace blink {
 
-Profiler::~Profiler() {
-  Dispose();
-}
-
 void Profiler::Trace(Visitor* visitor) {
   visitor->Trace(profiler_group_);
+  visitor->Trace(script_state_);
   ScriptWrappable::Trace(visitor);
 }
 
-void Profiler::Dispose() {
+void Profiler::DisposeAsync() {
   if (profiler_group_) {
-    // It's safe to touch |profiler_group_| in Profiler's destructor as
+    // It's safe to touch |profiler_group_| in Profiler's pre-finalizer as
     // |profiler_group_| is guaranteed to outlive the Profiler, if set. This is
     // due to ProfilerGroup nulling out this field for all attached Profilers
     // prior to destruction.
-    profiler_group_->CancelProfiler(this);
+    profiler_group_->CancelProfilerAsync(script_state_, this);
     profiler_group_ = nullptr;
   }
 }

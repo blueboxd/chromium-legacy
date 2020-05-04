@@ -41,6 +41,15 @@ struct CrxUpdateItem {
   base::Version next_version;
   std::string next_fp;
 
+  // The byte counts below are valid for the current url being fetched.
+  // |total_bytes| is equal to the size of the CRX file and |downloaded_bytes|
+  // represents how much has been downloaded up to that point. Since the CRX
+  // downloader is attempting downloading from a set of URLs, and switching from
+  // URL to URL, the value of |downloaded_bytes| may not monotonically increase.
+  // A value of -1 means that the byte count is unknown.
+  int64_t downloaded_bytes = -1;
+  int64_t total_bytes = -1;
+
   ErrorCategory error_category = ErrorCategory::kNone;
   int error_code = 0;
   int extra_code1 = 0;

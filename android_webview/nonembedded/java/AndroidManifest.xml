@@ -32,7 +32,8 @@
             <meta-data android:name="com.android.webview.WebViewLibrary"
                        android:value="{{ webview_lib }}" />
 
-            <!-- WebView Developer UI Activities -->
+            <!-- WebView Developer UI Activities. If you change these Activities, please update
+                 android_webview/test/shell/AndroidManifest.xml as well. -->
             <!--suppress HardcodedText -->
             <activity android:name="org.chromium.android_webview.devui.MainActivity"
                       android:label="WebView DevTools"

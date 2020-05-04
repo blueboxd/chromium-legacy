@@ -41,7 +41,8 @@ TEST_F(StyleVariablesTest, GetNames) {
   vars.SetData("--x", css_test_helpers::CreateVariableData("foo"));
   vars.SetData("--y", css_test_helpers::CreateVariableData("bar"));
 
-  HashSet<AtomicString> names = vars.GetNames();
+  HashSet<AtomicString> names;
+  vars.CollectNames(names);
   EXPECT_EQ(2u, names.size());
   EXPECT_TRUE(names.Contains("--x"));
   EXPECT_TRUE(names.Contains("--y"));

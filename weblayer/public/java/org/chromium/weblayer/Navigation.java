@@ -152,4 +152,29 @@ public class Navigation extends IClientNavigation.Stub {
             throw new APICallException(e);
         }
     }
+
+    /**
+     * Sets the user-agent string that applies to the current navigation. This user-agent is not
+     * sticky, it applies to this navigation only (and any redirects or resources that are loaded).
+     * This method may only be called from {@link NavigationCallback.onNavigationStarted}.
+     *
+     * @param value The user-agent string. The value must not contain '\0', '\n' or '\r'. An empty
+     * string results in the default user-agent string.
+     *
+     * @throws IllegalArgumentException If supplied an invalid value.
+     * @throws IllegalStateException If not called during start.
+     *
+     * @since 84
+     */
+    public void setUserAgentString(@NonNull String value) {
+        ThreadCheck.ensureOnUiThread();
+        if (WebLayer.getSupportedMajorVersionInternal() < 84) {
+            throw new UnsupportedOperationException();
+        }
+        try {
+            mNavigationImpl.setUserAgentString(value);
+        } catch (RemoteException e) {
+            throw new APICallException(e);
+        }
+    }
 }

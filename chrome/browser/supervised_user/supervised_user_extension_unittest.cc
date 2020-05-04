@@ -225,13 +225,13 @@ TEST_F(SupervisedUserExtensionTest,
   const Extension* extension = InstallCRX(path, INSTALL_NEW);
   ASSERT_TRUE(extension);
 
-  supervised_user_service()->AddOrUpdateExtensionApproval(*extension);
+  supervised_user_service()->AddExtensionApproval(*extension);
 
-  histogram_tester.ExpectTotalCount("SupervisedUsers.Extensions", 0);
+  histogram_tester.ExpectTotalCount("SupervisedUsers.Extensions2", 0);
 
   supervised_user_service()->RemoveExtensionApproval(*extension);
 
-  histogram_tester.ExpectTotalCount("SupervisedUsers.Extensions", 0);
+  histogram_tester.ExpectTotalCount("SupervisedUsers.Extensions2", 0);
 }
 
 // Tests that simulating custodian approval for regular users doesn't cause any
@@ -251,7 +251,7 @@ TEST_F(SupervisedUserExtensionTest,
   CheckEnabled(id);
 
   // Simulate custodian approval and removal.
-  supervised_user_service()->AddOrUpdateExtensionApproval(*extension);
+  supervised_user_service()->AddExtensionApproval(*extension);
   supervised_user_service()->RemoveExtensionApproval(*extension);
   // The extension should still be enabled.
   CheckEnabled(id);
@@ -280,7 +280,7 @@ TEST_F(SupervisedUserExtensionTest, ExtensionsDisabledAfterGellerization) {
   CheckDisabledForCustodianApproval(id);
 
   // Grant parent approval.
-  supervised_user_service()->AddOrUpdateExtensionApproval(*extension);
+  supervised_user_service()->AddExtensionApproval(*extension);
 
   // The extension should be enabled now.
   CheckEnabled(id);
@@ -311,7 +311,7 @@ TEST_F(SupervisedUserExtensionTest,
   CheckDisabledForCustodianApproval(id);
 
   // Grant parent approval.
-  supervised_user_service()->AddOrUpdateExtensionApproval(*extension);
+  supervised_user_service()->AddExtensionApproval(*extension);
   // The extension is now enabled.
   CheckEnabled(id);
 
@@ -324,36 +324,35 @@ TEST_F(SupervisedUserExtensionTest,
 
 // Tests that supervised users may approve permission updates without parent
 // approval if kSupervisedUserExtensionsMayRequestPermissions is true.
-TEST_F(SupervisedUserExtensionTest, UpdateWithPermissionIncrease) {
+TEST_F(SupervisedUserExtensionTest, UpdateWithPermissionsIncrease) {
   InitSupervisedUserExtensionInstallFeatures(ExtensionInstallMode::kFull);
   InitServices(/*profile_is_supervised=*/true);
   SetSupervisedUserExtensionsMayRequestPermissionsPref(true);
 
   // Preconditions.
   base::HistogramTester histogram_tester;
-  histogram_tester.ExpectTotalCount("SupervisedUsers.Extensions", 0);
+  histogram_tester.ExpectTotalCount("SupervisedUsers.Extensions2", 0);
   base::UserActionTester user_action_tester;
   EXPECT_EQ(0, user_action_tester.GetActionCount(
-                   "SupervisedUsers_Extensions_NewExtensionApprovalGranted"));
+                   "SupervisedUsers_Extensions_ApprovalGranted"));
   EXPECT_EQ(0, user_action_tester.GetActionCount(
-                   "SupervisedUsers_Extensions_Removed"));
+                   "SupervisedUsers_Extensions_ApprovalRemoved"));
 
   std::string id = InstallPermissionsTestExtension();
   // Simulate parent approval.
   supervised_user_service()->UpdateApprovedExtensionForTesting(
-      id, "1", SupervisedUserService::ApprovedExtensionChange::kNew);
+      id, SupervisedUserService::ApprovedExtensionChange::kAdd);
   // The extension should be enabled.
   CheckEnabled(id);
 
   // Should see 1 kApprovalGranted metric count.
-  histogram_tester.ExpectUniqueSample(
-      "SupervisedUsers.Extensions",
-      SupervisedUserExtensionsMetricsRecorder::UmaExtensionState::
-          kNewExtensionApprovalGranted,
-      1);
-  histogram_tester.ExpectTotalCount("SupervisedUsers.Extensions", 1);
+  histogram_tester.ExpectUniqueSample("SupervisedUsers.Extensions2",
+                                      SupervisedUserExtensionsMetricsRecorder::
+                                          UmaExtensionState::kApprovalGranted,
+                                      1);
+  histogram_tester.ExpectTotalCount("SupervisedUsers.Extensions2", 1);
   EXPECT_EQ(1, user_action_tester.GetActionCount(
-                   "SupervisedUsers_Extensions_NewExtensionApprovalGranted"));
+                   "SupervisedUsers_Extensions_ApprovalGranted"));
 
   // Update to a new version with increased permissions.
   UpdatePermissionsTestExtension(id, "2", DISABLED);
@@ -369,15 +368,16 @@ TEST_F(SupervisedUserExtensionTest, UpdateWithPermissionIncrease) {
 
   // Remove extension approval.
   supervised_user_service()->UpdateApprovedExtensionForTesting(
-      id, "2", SupervisedUserService::ApprovedExtensionChange::kRemove);
+      id, SupervisedUserService::ApprovedExtensionChange::kRemove);
 
   // Should see 1 kApprovalRemoved metric count.
-  histogram_tester.ExpectBucketCount(
-      "SupervisedUsers.Extensions",
-      SupervisedUserExtensionsMetricsRecorder::UmaExtensionState::kRemoved, 1);
-  histogram_tester.ExpectTotalCount("SupervisedUsers.Extensions", 2);
+  histogram_tester.ExpectBucketCount("SupervisedUsers.Extensions2",
+                                     SupervisedUserExtensionsMetricsRecorder::
+                                         UmaExtensionState::kApprovalRemoved,
+                                     1);
+  histogram_tester.ExpectTotalCount("SupervisedUsers.Extensions2", 2);
   EXPECT_EQ(1, user_action_tester.GetActionCount(
-                   "SupervisedUsers_Extensions_Removed"));
+                   "SupervisedUsers_Extensions_ApprovalRemoved"));
 
   // The extension should be disabled now.
   CheckDisabledForCustodianApproval(id);
@@ -400,17 +400,16 @@ TEST_F(SupervisedUserExtensionTest,
   const Extension* extension1 = CheckDisabledForCustodianApproval(id);
   ASSERT_TRUE(extension1);
   // Simulate parent granting approval for the initial version.
-  supervised_user_service()->AddOrUpdateExtensionApproval(*extension1);
+  supervised_user_service()->AddExtensionApproval(*extension1);
   // The extension should be enabled now.
   CheckEnabled(id);
 
   // Should see 1 kApprovalGranted metric count.
-  histogram_tester.ExpectUniqueSample(
-      "SupervisedUsers.Extensions",
-      SupervisedUserExtensionsMetricsRecorder::UmaExtensionState::
-          kNewExtensionApprovalGranted,
-      1);
-  histogram_tester.ExpectTotalCount("SupervisedUsers.Extensions", 1);
+  histogram_tester.ExpectUniqueSample("SupervisedUsers.Extensions2",
+                                      SupervisedUserExtensionsMetricsRecorder::
+                                          UmaExtensionState::kApprovalGranted,
+                                      1);
+  histogram_tester.ExpectTotalCount("SupervisedUsers.Extensions2", 1);
 
   // Update to a new version with increased permissions.
   UpdatePermissionsTestExtension(id, "2", DISABLED);
@@ -425,7 +424,7 @@ TEST_F(SupervisedUserExtensionTest,
   service()->GrantPermissionsAndEnableExtension(extension2);
 
   // The extension is still disabled. What worked in the
-  // UpdateWithPermissionIncrease test no longer works here because the toggle
+  // UpdateWithPermissionsIncrease test no longer works here because the toggle
   // is off.
   CheckDisabledForPermissionsIncrease(id);
 
@@ -433,10 +432,11 @@ TEST_F(SupervisedUserExtensionTest,
   UninstallExtension(id);
 
   // Should see 1 kApprovalRemoved metric count.
-  histogram_tester.ExpectBucketCount(
-      "SupervisedUsers.Extensions",
-      SupervisedUserExtensionsMetricsRecorder::UmaExtensionState::kRemoved, 1);
-  histogram_tester.ExpectTotalCount("SupervisedUsers.Extensions", 2);
+  histogram_tester.ExpectBucketCount("SupervisedUsers.Extensions2",
+                                     SupervisedUserExtensionsMetricsRecorder::
+                                         UmaExtensionState::kApprovalRemoved,
+                                     1);
+  histogram_tester.ExpectTotalCount("SupervisedUsers.Extensions2", 2);
 }
 
 // Tests that if an approved extension is updated to a newer version that
@@ -449,7 +449,7 @@ TEST_F(SupervisedUserExtensionTest, UpdateWithoutPermissionIncrease) {
   // Save the id, as the extension object will be destroyed during updating.
   std::string id = InstallNoPermissionsTestExtension();
   supervised_user_service()->UpdateApprovedExtensionForTesting(
-      id, "1", SupervisedUserService::ApprovedExtensionChange::kNew);
+      id, SupervisedUserService::ApprovedExtensionChange::kAdd);
   // The extension should be enabled now.
   CheckEnabled(id);
 
@@ -501,39 +501,38 @@ TEST_F(SupervisedUserExtensionTest, DontTriggerMetricsIfAlreadyApproved) {
   CheckDisabledForCustodianApproval(extension->id());
 
   // Simulate parent approval for the extension installation.
-  supervised_user_service()->AddOrUpdateExtensionApproval(*extension);
+  supervised_user_service()->AddExtensionApproval(*extension);
   // The extension should be enabled now.
   CheckEnabled(extension->id());
 
   // Should see 1 kApprovalGranted metric count recorded.
-  histogram_tester.ExpectUniqueSample(
-      "SupervisedUsers.Extensions",
-      SupervisedUserExtensionsMetricsRecorder::UmaExtensionState::
-          kNewExtensionApprovalGranted,
-      1);
-  histogram_tester.ExpectTotalCount("SupervisedUsers.Extensions", 1);
+  histogram_tester.ExpectUniqueSample("SupervisedUsers.Extensions2",
+                                      SupervisedUserExtensionsMetricsRecorder::
+                                          UmaExtensionState::kApprovalGranted,
+                                      1);
+  histogram_tester.ExpectTotalCount("SupervisedUsers.Extensions2", 1);
 
   // Simulate the supervised user disabling and re-enabling the extension
   // without changing anything else.
-  supervised_user_service()->AddOrUpdateExtensionApproval(*extension);
+  supervised_user_service()->AddExtensionApproval(*extension);
 
   // Should not see another kApprovalGranted metric count recorded because it
   // was already approved. The previous step should be a no-op.
-  histogram_tester.ExpectBucketCount(
-      "SupervisedUsers.Extensions",
-      SupervisedUserExtensionsMetricsRecorder::UmaExtensionState::
-          kNewExtensionApprovalGranted,
-      1);
-  histogram_tester.ExpectTotalCount("SupervisedUsers.Extensions", 1);
+  histogram_tester.ExpectBucketCount("SupervisedUsers.Extensions2",
+                                     SupervisedUserExtensionsMetricsRecorder::
+                                         UmaExtensionState::kApprovalGranted,
+                                     1);
+  histogram_tester.ExpectTotalCount("SupervisedUsers.Extensions2", 1);
 
   // Now remove approval.
   supervised_user_service()->RemoveExtensionApproval(*extension);
 
   // There should be a kApprovalRemoved metric count.
-  histogram_tester.ExpectBucketCount(
-      "SupervisedUsers.Extensions",
-      SupervisedUserExtensionsMetricsRecorder::UmaExtensionState::kRemoved, 1);
-  histogram_tester.ExpectTotalCount("SupervisedUsers.Extensions", 2);
+  histogram_tester.ExpectBucketCount("SupervisedUsers.Extensions2",
+                                     SupervisedUserExtensionsMetricsRecorder::
+                                         UmaExtensionState::kApprovalRemoved,
+                                     1);
+  histogram_tester.ExpectTotalCount("SupervisedUsers.Extensions2", 2);
 }
 
 // Tests that if "Permissions for sites, apps and extensions" toggle is
@@ -580,7 +579,7 @@ TEST_F(SupervisedUserExtensionTest, ToggleOffDoesNotAffectAlreadyEnabled) {
 
   // Now approve the extension.
   supervised_user_service()->UpdateApprovedExtensionForTesting(
-      id, "1", SupervisedUserService::ApprovedExtensionChange::kNew);
+      id, SupervisedUserService::ApprovedExtensionChange::kAdd);
 
   // The extension should be enabled now.
   CheckEnabled(id);
@@ -600,7 +599,7 @@ TEST_F(SupervisedUserExtensionTest, ExtensionApprovalBeforeInstallation) {
   SetSupervisedUserExtensionsMayRequestPermissionsPref(true);
 
   supervised_user_service()->UpdateApprovedExtensionForTesting(
-      good_crx, "1", SupervisedUserService::ApprovedExtensionChange::kNew);
+      good_crx, SupervisedUserService::ApprovedExtensionChange::kAdd);
 
   // Now install an extension.
   base::FilePath path = data_dir().AppendASCII("good.crx");
@@ -610,9 +609,10 @@ TEST_F(SupervisedUserExtensionTest, ExtensionApprovalBeforeInstallation) {
   CheckEnabled(good_crx);
 }
 
-// Tests that parent approval can handle both disable reasons
-// custodian_approval_required and permissions_increase.
-TEST_F(SupervisedUserExtensionTest, ParentApprovalSufficient) {
+// Tests that parent approval is necessary but not sufficient to enable
+// extensions when both disable reasons custodian_approval_required and
+// permissions_increase are present.
+TEST_F(SupervisedUserExtensionTest, ParentApprovalNecessaryButNotSufficient) {
   InitSupervisedUserExtensionInstallFeatures(ExtensionInstallMode::kFull);
   InitServices(/*profile_is_supervised=*/true);
   SetSupervisedUserExtensionsMayRequestPermissionsPref(true);
@@ -634,7 +634,12 @@ TEST_F(SupervisedUserExtensionTest, ParentApprovalSufficient) {
 
   // Simulate parent approval.
   supervised_user_service()->UpdateApprovedExtensionForTesting(
-      id, "2", SupervisedUserService::ApprovedExtensionChange::kNew);
+      id, SupervisedUserService::ApprovedExtensionChange::kAdd);
+  // The extension is still disabled (not sufficient).
+  CheckDisabledForPermissionsIncrease(id);
+
+  // Now grant permissions and try to enable again.
+  service()->GrantPermissionsAndEnableExtension(extension);
   // The extension should be enabled.
   CheckEnabled(id);
 }

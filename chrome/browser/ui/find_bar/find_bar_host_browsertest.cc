@@ -419,7 +419,13 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, SpanSearchable) {
 }
 
 // Find in a very large page.
-IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, LargePage) {
+// TODO(crbug.com/1077855): Test is flaky on Mac debug builds.
+#if defined(OS_MACOSX) && !defined(NDEBUG)
+#define MAYBE_LargePage DISABLED_LargePage
+#else
+#define MAYBE_LargePage LargePage
+#endif
+IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, MAYBE_LargePage) {
   WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   ui_test_utils::NavigateToURL(browser(), GetURL("largepage.html"));

@@ -364,7 +364,7 @@ class ChildThreadImpl::IOThreadState
       return;
     }
 
-    if (interface_binders_.Bind(&receiver))
+    if (interface_binders_.TryBind(&receiver))
       return;
 
     main_thread_task_runner_->PostTask(

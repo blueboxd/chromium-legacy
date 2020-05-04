@@ -258,4 +258,73 @@ TEST_F(FormCacheBrowserTest, FreeDataOnElementRemoval) {
   EXPECT_EQ(0u, form_cache.initial_checked_state_.size());
 }
 
+// Test that the select element's user edited field state is set
+// to false after clearing the form.
+TEST_F(FormCacheBrowserTest, ClearFormSelectElementEditedStateReset) {
+  LoadHTML(R"(
+    <input type="text" name="text" id="text">
+    <select name="date" id="date">
+      <option value="first">first</option>
+      <option value="second" selected>second</option>
+      <option value="third">third</option>
+    </select>
+    <select name="month" id="month">
+      <option value="january">january</option>
+      <option value="february">february</option>
+      <option value="march" selected>march</option>
+    </select>
+  )");
+
+  FormCache form_cache(GetMainFrame());
+  std::vector<FormData> forms = form_cache.ExtractNewForms(nullptr);
+
+  ASSERT_EQ(1u, forms.size());
+  FormData values_to_fill = forms[0];
+  values_to_fill.fields[0].value = ASCIIToUTF16("test");
+  values_to_fill.fields[0].is_autofilled = true;
+  values_to_fill.fields[1].value = ASCIIToUTF16("first");
+  values_to_fill.fields[1].is_autofilled = true;
+  values_to_fill.fields[2].value = ASCIIToUTF16("january");
+  values_to_fill.fields[2].is_autofilled = true;
+
+  WebDocument doc = GetMainFrame()->GetDocument();
+  auto text = doc.GetElementById("text").To<WebInputElement>();
+  auto select_date = doc.GetElementById("date").To<WebSelectElement>();
+  auto select_month = doc.GetElementById("month").To<WebSelectElement>();
+
+  form_util::FillForm(values_to_fill, text);
+
+  EXPECT_EQ("test", text.Value().Ascii());
+  EXPECT_EQ("first", select_date.Value().Ascii());
+  EXPECT_EQ("january", select_month.Value().Ascii());
+
+  // Expect that the 'user has edited field' state is set
+  EXPECT_TRUE(select_date.UserHasEditedTheField());
+  EXPECT_TRUE(select_month.UserHasEditedTheField());
+
+  // Clear form
+  form_cache.ClearSectionWithElement(text);
+
+  // Expect that the state is now cleared
+  EXPECT_FALSE(select_date.UserHasEditedTheField());
+  EXPECT_FALSE(select_month.UserHasEditedTheField());
+
+  // Fill the form again, this time the select elements are being filled
+  // with different values just for additional check.
+  values_to_fill.fields[1].value = ASCIIToUTF16("third");
+  values_to_fill.fields[1].is_autofilled = true;
+  values_to_fill.fields[2].value = ASCIIToUTF16("february");
+  values_to_fill.fields[2].is_autofilled = true;
+  form_util::FillForm(values_to_fill, text);
+
+  // Ensure the form is filled correctly, including the select elements.
+  EXPECT_EQ("test", text.Value().Ascii());
+  EXPECT_EQ("third", select_date.Value().Ascii());
+  EXPECT_EQ("february", select_month.Value().Ascii());
+
+  // Expect that the state is set again
+  EXPECT_TRUE(select_date.UserHasEditedTheField());
+  EXPECT_TRUE(select_month.UserHasEditedTheField());
+}
+
 }  // namespace autofill

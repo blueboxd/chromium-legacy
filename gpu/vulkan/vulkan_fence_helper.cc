@@ -211,19 +211,19 @@ void VulkanFenceHelper::EnqueueImageCleanupForSubmittedWork(
 
 void VulkanFenceHelper::EnqueueBufferCleanupForSubmittedWork(
     VkBuffer buffer,
-    VkDeviceMemory memory) {
-  if (buffer == VK_NULL_HANDLE && memory == VK_NULL_HANDLE)
+    VmaAllocation allocation) {
+  if (buffer == VK_NULL_HANDLE && allocation == VK_NULL_HANDLE)
     return;
 
+  DCHECK(buffer != VK_NULL_HANDLE);
+  DCHECK(allocation != VK_NULL_HANDLE);
+
   EnqueueCleanupTaskForSubmittedWork(base::BindOnce(
-      [](VkBuffer buffer, VkDeviceMemory memory,
+      [](VkBuffer buffer, VmaAllocation allocation,
          VulkanDeviceQueue* device_queue, bool /* is_lost */) {
-        if (buffer != VK_NULL_HANDLE)
-          vkDestroyBuffer(device_queue->GetVulkanDevice(), buffer, nullptr);
-        if (memory != VK_NULL_HANDLE)
-          vkFreeMemory(device_queue->GetVulkanDevice(), memory, nullptr);
+        vma::DestroyBuffer(device_queue->vma_allocator(), buffer, allocation);
       },
-      buffer, memory));
+      buffer, allocation));
 }
 
 void VulkanFenceHelper::PerformImmediateCleanup() {

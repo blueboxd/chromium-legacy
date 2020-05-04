@@ -5,6 +5,7 @@
 #include "services/network/trust_tokens/test/trust_token_test_util.h"
 
 #include "base/test/bind_test_util.h"
+#include "base/test/task_environment.h"
 #include "services/network/public/mojom/trust_tokens.mojom-shared.h"
 
 namespace network {
@@ -21,7 +22,12 @@ std::unique_ptr<net::URLRequest> TestURLRequestMaker::MakeURLRequest(
 
 TrustTokenRequestHelperTest::TrustTokenRequestHelperTest(
     base::test::TaskEnvironment::TimeSource time_source)
-    : env_(time_source) {}
+    : env_(time_source,
+           // Since the various TrustTokenRequestHelper implementations might be
+           // posting tasks from within calls to Begin or Finalize, use
+           // execution mode ASYNC to ensure these tasks get run during
+           // RunLoop::Run calls.
+           base::test::TaskEnvironment::ThreadPoolExecutionMode::ASYNC) {}
 TrustTokenRequestHelperTest::~TrustTokenRequestHelperTest() = default;
 
 mojom::TrustTokenOperationStatus
@@ -36,6 +42,22 @@ TrustTokenRequestHelperTest::ExecuteBeginOperationAndWaitForResult(
                       status = returned_status;
                       run_loop.Quit();
                     }));
+  run_loop.Run();
+  return status;
+}
+
+mojom::TrustTokenOperationStatus
+TrustTokenRequestHelperTest::ExecuteFinalizeAndWaitForResult(
+    TrustTokenRequestHelper* helper,
+    mojom::URLResponseHead* response) {
+  base::RunLoop run_loop;
+  mojom::TrustTokenOperationStatus status;
+  helper->Finalize(response,
+                   base::BindLambdaForTesting(
+                       [&](mojom::TrustTokenOperationStatus returned_status) {
+                         status = returned_status;
+                         run_loop.Quit();
+                       }));
   run_loop.Run();
   return status;
 }
@@ -82,8 +104,9 @@ TrustTokenParametersAndSerialization::~TrustTokenParametersAndSerialization() =
 
 TrustTokenParametersAndSerialization::TrustTokenParametersAndSerialization(
     TrustTokenParametersAndSerialization&&) = default;
-TrustTokenParametersAndSerialization& TrustTokenParametersAndSerialization::
-operator=(TrustTokenParametersAndSerialization&&) = default;
+TrustTokenParametersAndSerialization&
+TrustTokenParametersAndSerialization::operator=(
+    TrustTokenParametersAndSerialization&&) = default;
 
 TrustTokenTestParameters::~TrustTokenTestParameters() = default;
 TrustTokenTestParameters::TrustTokenTestParameters(

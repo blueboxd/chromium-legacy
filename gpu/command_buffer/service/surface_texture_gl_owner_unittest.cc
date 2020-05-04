@@ -9,7 +9,6 @@
 #include <memory>
 
 #include "base/bind.h"
-#include "base/logging.h"
 #include "base/test/task_environment.h"
 #include "gpu/command_buffer/service/mock_abstract_texture.h"
 #include "testing/gmock/include/gmock/gmock.h"

@@ -1083,9 +1083,6 @@ void PDFiumEngine::OnMultipleClick(int click_count,
 
   selection_.push_back(PDFiumRange(pages_[page_index].get(), start_index,
                                    end_index - start_index));
-
-  if (handling_long_press_)
-    client_->NotifyTouchSelectionOccurred();
 }
 
 bool PDFiumEngine::OnLeftMouseDown(const pp::MouseInputEvent& event) {
@@ -2333,7 +2330,6 @@ void PDFiumEngine::SetGrayscale(bool grayscale) {
 }
 
 void PDFiumEngine::HandleLongPress(const pp::TouchInputEvent& event) {
-  base::AutoReset<bool> handling_long_press_guard(&handling_long_press_, true);
   pp::FloatPoint fp =
       event.GetTouchByIndex(PP_TOUCHLIST_TYPE_TARGETTOUCHES, 0).position();
   pp::Point point;

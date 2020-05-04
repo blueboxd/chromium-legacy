@@ -14,4 +14,15 @@ bool RectF::empty() const {
   return right <= left || bottom <= top;
 }
 
+bool RectF::operator==(const RectF& another) const {
+  return left == another.left && top == another.top && right == another.right &&
+         bottom == another.bottom;
+}
+
+std::ostream& operator<<(std::ostream& out, const RectF& rect) {
+  out << "[l: " << rect.left << ", t: " << rect.top << ", r: " << rect.right
+      << ", b: " << rect.bottom << "]";
+  return out;
+}
+
 }  // namespace autofill_assistant

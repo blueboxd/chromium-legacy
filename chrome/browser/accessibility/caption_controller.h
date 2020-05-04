@@ -11,6 +11,7 @@
 
 #include "chrome/browser/ui/browser_list_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "ui/native_theme/caption_style.h"
 
 class Browser;
 class Profile;
@@ -67,6 +68,7 @@ class CaptionController : public BrowserListObserver, public KeyedService {
   bool IsLiveCaptionEnabled();
   void UpdateSpeechRecognitionServiceEnabled();
   void UpdateUIEnabled();
+  void UpdateCaptionStyle();
 
   // Owns us via the KeyedService mechanism.
   Profile* profile_;
@@ -77,6 +79,8 @@ class CaptionController : public BrowserListObserver, public KeyedService {
   // to the browser.
   std::unordered_map<Browser*, std::unique_ptr<CaptionBubbleController>>
       caption_bubble_controllers_;
+
+  base::Optional<ui::CaptionStyle> caption_style_;
 
   bool enabled_ = false;
 };

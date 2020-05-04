@@ -557,7 +557,6 @@ void MockAndroidConnection::Receive(const std::string& data) {
   CHECK_EQ(3U, tokens.size());
   CHECK_EQ("GET", tokens[0]);
   CHECK_EQ("HTTP/1.1", tokens[2]);
-  CHECK_EQ("Host: 0.0.0.0:0", lines[1]);
 
   std::string path(tokens[1]);
   if (path == kJsonPath)

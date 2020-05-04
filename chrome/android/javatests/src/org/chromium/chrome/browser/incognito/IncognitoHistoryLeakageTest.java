@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.incognito;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import android.support.test.InstrumentationRegistry;
@@ -23,7 +24,6 @@ import org.chromium.base.test.params.ParameterProvider;
 import org.chromium.base.test.params.ParameterSet;
 import org.chromium.base.test.params.ParameterizedRunner;
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.customtabs.CustomTabActivityTestRule;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
@@ -40,6 +40,7 @@ import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.content_public.browser.NavigationEntry;
 import org.chromium.content_public.browser.NavigationHistory;
+import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.net.test.EmbeddedTestServer;
 
@@ -158,7 +159,6 @@ public class IncognitoHistoryLeakageTest {
     @Test
     @LargeTest
     @UseMethodParameter(AllTypesToAllTypes.class)
-    @DisabledTest(message = "Flaky crbug.com/1064273")
     public void testTabNavigationHistoryDoNotLeakBetweenActivities(
             String activityType1, String activityType2) throws TimeoutException {
         ActivityType activity1 = ActivityType.valueOf(activityType1);
@@ -169,8 +169,11 @@ public class IncognitoHistoryLeakageTest {
         Tab tab2 = activity2.launchUrl(
                 mChromeActivityTestRule, mCustomTabActivityTestRule, mTestPage2);
 
+        CriteriaHelper.pollUiThread(() -> { assertNotNull(tab1.getWebContents()); });
         NavigationHistory navigationHistory1 =
                 tab1.getWebContents().getNavigationController().getNavigationHistory();
+
+        CriteriaHelper.pollUiThread(() -> { assertNotNull(tab2.getWebContents()); });
         NavigationHistory navigationHistory2 =
                 tab2.getWebContents().getNavigationController().getNavigationHistory();
 

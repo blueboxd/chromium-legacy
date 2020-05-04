@@ -12,6 +12,7 @@
 #include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "content/browser/permissions/permission_controller_impl.h"
 #include "content/public/browser/permission_controller.h"
 #include "content/public/browser/permission_type.h"
@@ -205,7 +206,13 @@ TEST_F(IdleManagerTest, DISABLED_Idle) {
   }
 }
 
-TEST_F(IdleManagerTest, UnlockingScreen) {
+// TODO(crbug.com/1069706): Test is flaky on all platforms except Mac.
+#if defined(OS_MACOSX)
+#define MAYBE_UnlockingScreen UnlockingScreen
+#else
+#define MAYBE_UnlockingScreen DISABLED_UnlockingScreen
+#endif
+TEST_F(IdleManagerTest, MAYBE_UnlockingScreen) {
   SetPermissionStatus(url(), blink::mojom::PermissionStatus::GRANTED);
   mojo::Remote<blink::mojom::IdleManager> service_remote;
 

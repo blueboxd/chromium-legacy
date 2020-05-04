@@ -10,6 +10,7 @@ import "mojo/public/mojom/base/file_path.mojom";
 import "mojo/public/mojom/base/time.mojom";
 import "mojo/public/mojom/base/unguessable_token.mojom";
 import "services/network/public/mojom/cors.mojom";
+import "services/network/public/mojom/cookie_access_observer.mojom";
 import "services/network/public/mojom/chunked_data_pipe_getter.mojom";
 import "services/network/public/mojom/data_pipe_getter.mojom";
 import "services/network/public/mojom/fetch_api.mojom";
@@ -85,6 +86,11 @@ struct TrustedUrlRequestParams {
   // Always true for navigations except the one triggered from a document
   // without user gesture. Used to determine the `Sec-Fetch-User` header.
   bool has_user_activation;
+
+  // Observer which should be notified when this URLRequest reads or writes
+  // a cookie. If this is set to non-null, the observer passed to
+  // URLLoaderFactory will be ignored.
+  CookieAccessObserver? cookie_observer;
 };
 
 // Typemapped to network::ResourceRequest.

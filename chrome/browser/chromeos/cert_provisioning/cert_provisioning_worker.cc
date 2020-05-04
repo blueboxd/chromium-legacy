@@ -527,6 +527,16 @@ const CertProfile& CertProvisioningWorkerImpl::GetCertProfile() const {
   return cert_profile_;
 }
 
+const std::string& CertProvisioningWorkerImpl::GetPublicKey() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return public_key_;
+}
+
+CertProvisioningWorkerState CertProvisioningWorkerImpl::GetPreviousState()
+    const {
+  return prev_state_;
+}
+
 CertProvisioningWorkerState CertProvisioningWorkerImpl::GetState() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return state_;

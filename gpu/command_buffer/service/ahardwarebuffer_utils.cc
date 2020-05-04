@@ -6,7 +6,8 @@
 
 #include <android/hardware_buffer.h>
 
-#include "base/logging.h"
+#include "base/check.h"
+#include "base/notreached.h"
 
 namespace gpu {
 

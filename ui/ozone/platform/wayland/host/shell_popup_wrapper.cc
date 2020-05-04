@@ -46,16 +46,26 @@ gfx::Rect GetAnchorRect(MenuType menu_type,
         auto anchor_width =
             parent_window_bounds.width() -
             (parent_window_bounds.width() - menu_bounds.x()) * 2;
-        anchor_rect =
-            gfx::Rect(parent_window_bounds.width() - menu_bounds.x(),
-                      menu_bounds.y(), anchor_width, kAnchorDefaultHeight);
+        if (anchor_width <= 0) {
+          anchor_rect = gfx::Rect(menu_bounds.x(), menu_bounds.y(),
+                                  kAnchorDefaultWidth, kAnchorDefaultHeight);
+        } else {
+          anchor_rect =
+              gfx::Rect(parent_window_bounds.width() - menu_bounds.x(),
+                        menu_bounds.y(), anchor_width, kAnchorDefaultHeight);
+        }
       } else {
         DCHECK_LE(menu_bounds.x(), 0);
         auto position = menu_bounds.width() + menu_bounds.x();
         DCHECK(position > 0 && position < parent_window_bounds.width());
         auto anchor_width = parent_window_bounds.width() - position * 2;
-        anchor_rect = gfx::Rect(position, menu_bounds.y(), anchor_width,
-                                kAnchorDefaultHeight);
+        if (anchor_width <= 0) {
+          anchor_rect = gfx::Rect(position, menu_bounds.y(),
+                                  kAnchorDefaultWidth, kAnchorDefaultHeight);
+        } else {
+          anchor_rect = gfx::Rect(position, menu_bounds.y(), anchor_width,
+                                  kAnchorDefaultHeight);
+        }
       }
       break;
     case MenuType::TYPE_UNKNOWN:

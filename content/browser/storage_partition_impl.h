@@ -258,22 +258,6 @@ class CONTENT_EXPORT StoragePartitionImpl
                        const std::string& header_value,
                        int load_flags,
                        OnClearSiteDataCallback callback) override;
-  void OnCookiesChanged(
-      bool is_service_worker,
-      int32_t process_id,
-      int32_t routing_id,
-      const GURL& url,
-      const net::SiteForCookies& site_for_cookies,
-      const std::vector<net::CookieWithStatus>& cookie_list,
-      const base::Optional<std::string>& devtools_request_id) override;
-  void OnCookiesRead(
-      bool is_service_worker,
-      int32_t process_id,
-      int32_t routing_id,
-      const GURL& url,
-      const net::SiteForCookies& site_for_cookies,
-      const std::vector<net::CookieWithStatus>& cookie_list,
-      const base::Optional<std::string>& devtools_request_id) override;
 #if defined(OS_ANDROID)
   void OnGenerateHttpNegotiateAuthToken(
       const std::string& server_auth_token,
@@ -331,6 +315,21 @@ class CONTENT_EXPORT StoragePartitionImpl
   network::mojom::OriginPolicyManager*
   GetOriginPolicyManagerForBrowserProcess();
 
+  mojo::PendingRemote<network::mojom::CookieAccessObserver>
+  CreateCookieAccessObserver(bool is_service_worker,
+                             int32_t process_id,
+                             int32_t routing_id);
+
+  void OnCookiesAccessed(
+      CookieAccessDetails::Type access_type,
+      bool is_service_worker,
+      int32_t process_id,
+      int32_t routing_id,
+      const GURL& url,
+      const net::SiteForCookies& site_for_cookies,
+      const std::vector<net::CookieWithStatus>& cookie_list,
+      const base::Optional<std::string>& devtools_request_id);
+
   // Override the origin policy manager for testing use only.
   void SetOriginPolicyManagerForBrowserProcessForTesting(
       mojo::PendingRemote<network::mojom::OriginPolicyManager>
@@ -341,6 +340,7 @@ class CONTENT_EXPORT StoragePartitionImpl
   class DataDeletionHelper;
   class QuotaManagedDataDeletionHelper;
   class URLLoaderFactoryForBrowserProcess;
+  class CookieAccessObserver;
 
   friend class BackgroundSyncManagerTest;
   friend class BackgroundSyncServiceImplTestHarness;
@@ -549,6 +549,12 @@ class CONTENT_EXPORT StoragePartitionImpl
 
   // See comments for site_for_guest_service_worker().
   GURL site_for_guest_service_worker_;
+
+  // A set of connections to network service used to notify browser process
+  // about cookie reads and writes. Each connection corresponds to a different
+  // context (frame / navigation / service worker).
+  mojo::UniqueReceiverSet<network::mojom::CookieAccessObserver>
+      cookie_observers_;
 
   // Track number of running deletion. For test use only.
   int deletion_helpers_running_;

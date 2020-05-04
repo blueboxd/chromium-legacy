@@ -58,14 +58,10 @@ NSString* const kBookmarkActivityType = @"com.google.chrome.bookmarkActivity";
   return self;
 }
 
-+ (NSString*)activityIdentifier {
-  return kBookmarkActivityType;
-}
-
 #pragma mark - UIActivity
 
 - (NSString*)activityType {
-  return [BookmarkActivity activityIdentifier];
+  return kBookmarkActivityType;
 }
 
 - (NSString*)activityTitle {

@@ -4,7 +4,7 @@
 
 #include "gpu/command_buffer/service/mailbox_manager_dummy.h"
 
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "gpu/command_buffer/service/texture_base.h"
 
 namespace gpu {

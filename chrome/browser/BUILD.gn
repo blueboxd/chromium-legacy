@@ -98,6 +98,8 @@ jumbo_static_library("browser") {
     "accessibility/accessibility_state_utils.h",
     "accessibility/accessibility_ui.cc",
     "accessibility/accessibility_ui.h",
+    "accessibility/caption_util.cc",
+    "accessibility/caption_util.h",
     "after_startup_task_utils.cc",
     "after_startup_task_utils.h",
     "app_controller_mac.h",

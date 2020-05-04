@@ -63,6 +63,7 @@
 #include "content/browser/ssl_private_key_impl.h"
 #include "content/browser/web_contents/frame_tree_node_id_registry.h"
 #include "content/browser/web_contents/web_contents_impl.h"
+#include "content/common/navigation_params.mojom.h"
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -96,6 +97,7 @@
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/network/public/cpp/cross_thread_pending_shared_url_loader_factory.h"
 #include "services/network/public/cpp/features.h"
+#include "services/network/public/mojom/cookie_access_observer.mojom.h"
 #include "services/network/public/mojom/cookie_manager.mojom.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/public/mojom/trust_tokens.mojom.h"
@@ -1551,6 +1553,54 @@ StoragePartitionImpl::GetCookieManagerForBrowserProcess() {
   return cookie_manager_for_browser_process_.get();
 }
 
+class StoragePartitionImpl::CookieAccessObserver
+    : public network::mojom::CookieAccessObserver {
+ public:
+  CookieAccessObserver(StoragePartitionImpl* partition,
+                       bool is_service_worker,
+                       int process_id,
+                       int routing_id)
+      : partition_(partition),
+        is_service_worker_(is_service_worker),
+        process_id_(process_id),
+        routing_id_(routing_id) {}
+
+ private:
+  void Clone(mojo::PendingReceiver<network::mojom::CookieAccessObserver>
+                 observer) override {
+    partition_->cookie_observers_.Add(
+        std::make_unique<CookieAccessObserver>(partition_, is_service_worker_,
+                                               process_id_, routing_id_),
+        std::move(observer));
+  }
+
+  void OnCookiesAccessed(
+      network::mojom::CookieAccessDetailsPtr details) override {
+    partition_->OnCookiesAccessed(
+        details->type, is_service_worker_, process_id_, routing_id_,
+        details->url, details->site_for_cookies, details->cookie_list,
+        details->devtools_request_id);
+  }
+
+  // |partition_| owns this via mojo::UniqueReceiverSet (cookie_observers_).
+  StoragePartitionImpl* const partition_;
+  const bool is_service_worker_;
+  const int process_id_;
+  const int routing_id_;
+};
+
+mojo::PendingRemote<network::mojom::CookieAccessObserver>
+StoragePartitionImpl::CreateCookieAccessObserver(bool is_service_worker,
+                                                 int32_t process_id,
+                                                 int32_t routing_id) {
+  mojo::PendingRemote<network::mojom::CookieAccessObserver> remote;
+  cookie_observers_.Add(std::make_unique<CookieAccessObserver>(
+                            this, is_service_worker, process_id, routing_id),
+                        remote.InitWithNewPipeAndPassReceiver());
+
+  return remote;
+}
+
 void StoragePartitionImpl::CreateRestrictedCookieManager(
     network::mojom::RestrictedCookieManagerRole role,
     const url::Origin& origin,
@@ -1566,7 +1616,7 @@ void StoragePartitionImpl::CreateRestrictedCookieManager(
           is_service_worker, process_id, routing_id, &receiver)) {
     GetNetworkContext()->GetRestrictedCookieManager(
         std::move(receiver), role, origin, site_for_cookies, top_frame_origin,
-        is_service_worker, process_id, routing_id);
+        CreateCookieAccessObserver(is_service_worker, process_id, routing_id));
   }
 }
 
@@ -1955,7 +2005,8 @@ void StoragePartitionImpl::OnClearSiteData(int32_t process_id,
                                      load_flags, std::move(callback));
 }
 
-void StoragePartitionImpl::OnCookiesChanged(
+void StoragePartitionImpl::OnCookiesAccessed(
+    CookieAccessDetails::Type access_type,
     bool is_service_worker,
     int32_t process_id,
     int32_t routing_id,
@@ -1968,42 +2019,14 @@ void StoragePartitionImpl::OnCookiesChanged(
   if (is_service_worker) {
     RunOrPostTaskOnThread(
         FROM_HERE, ServiceWorkerContext::GetCoreThreadId(),
-        base::BindOnce(&OnServiceWorkerCookiesAccessedOnCoreThread,
-                       CookieAccessDetails::Type::kChange,
-                       service_worker_context_, url, site_for_cookies,
-                       cookie_list, devtools_request_id));
-  } else {
-    std::vector<GlobalFrameRoutingId> destination;
-    destination.emplace_back(process_id, routing_id);
-    ReportCookiesAccessedOnUI(CookieAccessDetails::Type::kChange, destination,
-                              url, site_for_cookies, cookie_list,
-                              devtools_request_id);
-  }
-}
-
-void StoragePartitionImpl::OnCookiesRead(
-    bool is_service_worker,
-    int32_t process_id,
-    int32_t routing_id,
-    const GURL& url,
-    const net::SiteForCookies& site_for_cookies,
-    const std::vector<net::CookieWithStatus>& cookie_list,
-    const base::Optional<std::string>& devtools_request_id) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK(initialized_);
-  if (is_service_worker) {
-    RunOrPostTaskOnThread(
-        FROM_HERE, ServiceWorkerContext::GetCoreThreadId(),
-        base::BindOnce(&OnServiceWorkerCookiesAccessedOnCoreThread,
-                       CookieAccessDetails::Type::kRead,
+        base::BindOnce(&OnServiceWorkerCookiesAccessedOnCoreThread, access_type,
                        service_worker_context_, url, site_for_cookies,
                        std::move(cookie_list), devtools_request_id));
   } else {
     std::vector<GlobalFrameRoutingId> destination;
     destination.emplace_back(process_id, routing_id);
-    ReportCookiesAccessedOnUI(CookieAccessDetails::Type::kRead, destination,
-                              url, site_for_cookies, cookie_list,
-                              devtools_request_id);
+    ReportCookiesAccessedOnUI(access_type, destination, url, site_for_cookies,
+                              cookie_list, devtools_request_id);
   }
 }
 

@@ -16,6 +16,7 @@
 #include "services/network/public/cpp/isolation_info_mojom_traits.h"
 #include "services/network/public/cpp/network_ipc_param_traits.h"
 #include "services/network/public/cpp/resource_request_body.h"
+#include "services/network/public/mojom/cookie_access_observer.mojom.h"
 #include "services/network/public/mojom/trust_tokens.mojom.h"
 #include "services/network/public/mojom/url_loader.mojom-shared.h"
 #include "url/mojom/origin_mojom_traits.h"
@@ -161,6 +162,8 @@ bool StructTraits<network::mojom::TrustedUrlRequestParamsDataView,
     return false;
   out->disable_secure_dns = data.disable_secure_dns();
   out->has_user_activation = data.has_user_activation();
+  out->cookie_observer = data.TakeCookieObserver<
+      mojo::PendingRemote<network::mojom::CookieAccessObserver>>();
   return true;
 }
 

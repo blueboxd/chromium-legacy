@@ -1278,11 +1278,6 @@ export class PDFViewer {
         this.isFormFieldFocused_ =
             /** @type {{ focused: boolean }} */ (data).focused;
         return;
-      case 'touchSelectionOccurred':
-        this.sendScriptingMessage_({
-          type: 'touchSelectionOccurred',
-        });
-        return;
     }
     assertNotReached('Unknown message type received: ' + data.type);
   }

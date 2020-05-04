@@ -877,14 +877,18 @@ void ExtractUnderlines(NSAttributedString* string,
 }
 
 - (BOOL)performKeyEquivalent:(NSEvent*)theEvent {
+  // TODO(bokan): Tracing added temporarily to diagnose crbug.com/1039833.
+  TRACE_EVENT0("browser", "RenderWidgetHostViewCocoa::performKeyEquivalent");
   // |performKeyEquivalent:| is sent to all views of a window, not only down the
   // responder chain (cf. "Handling Key Equivalents" in
   // http://developer.apple.com/mac/library/documentation/Cocoa/Conceptual/EventOverview/HandlingKeyEvents/HandlingKeyEvents.html
   // ). A |performKeyEquivalent:| may also bubble up from a dialog child window
   // to perform browser commands such as switching tabs. We only want to handle
   // key equivalents if we're first responder in the keyWindow.
-  if (![[self window] isKeyWindow] || [[self window] firstResponder] != self)
+  if (![[self window] isKeyWindow] || [[self window] firstResponder] != self) {
+    TRACE_EVENT_INSTANT0("browser", "NotKeyWindow", TRACE_EVENT_SCOPE_THREAD);
     return NO;
+  }
 
   // If the event is reserved by the system, then do not pass it to web content.
   if (EventIsReservedBySystem(theEvent))
@@ -922,7 +926,8 @@ void ExtractUnderlines(NSAttributedString* string,
 }
 
 - (void)keyEvent:(NSEvent*)theEvent wasKeyEquivalent:(BOOL)equiv {
-  TRACE_EVENT0("browser", "RenderWidgetHostViewCocoa::keyEvent");
+  TRACE_EVENT1("browser", "RenderWidgetHostViewCocoa::keyEvent", "WindowNum",
+               [[self window] windowNumber]);
   NSEventType eventType = [theEvent type];
   NSEventModifierFlags modifierFlags = [theEvent modifierFlags];
   int keyCode = [theEvent keyCode];

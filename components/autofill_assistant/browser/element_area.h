@@ -86,6 +86,8 @@ class ElementArea {
     ElementPosition();
     ElementPosition(const ElementPosition& orig);
     ~ElementPosition();
+
+    bool operator==(const ElementPosition& another) const;
   };
 
   // A rectangular area, defined by its elements.
@@ -103,6 +105,8 @@ class ElementArea {
 
     // Fills the given rectangle from the current state, if possible.
     void FillRect(RectF* rect, const RectF& visual_viewport) const;
+
+    bool operator==(const Rectangle& another) const;
   };
 
   // Forces an out-of-schedule update of the viewport and positions right away.
@@ -132,6 +136,11 @@ class ElementArea {
   // Visual viewport coordinates, in CSS pixels, relative to the layout
   // viewport.
   RectF visual_viewport_;
+
+  // Cached positions from the last time an update was sent, used to avoid
+  // sending updates when nothing has changed.
+  RectF last_visual_viewport_;
+  std::vector<Rectangle> last_rectangles_;
 
   // While running, regularly calls Update().
   base::RepeatingTimer timer_;

@@ -7,7 +7,8 @@
 #include <GLES2/gl2.h>
 #include <GLES2/gl2extchromium.h>
 
-#include "base/logging.h"
+#include "base/check.h"
+#include "base/notreached.h"
 #include "base/stl_util.h"
 #include "build/build_config.h"
 #include "gpu/command_buffer/common/capabilities.h"

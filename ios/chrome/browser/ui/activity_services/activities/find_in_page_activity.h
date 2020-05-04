@@ -13,9 +13,6 @@
 // Activity to trigger the find in page feature.
 @interface FindInPageActivity : UIActivity
 
-// Identifier for the activity.
-+ (NSString*)activityIdentifier;
-
 // Initializes the find in page activity with the given |data| and the
 // |handler|.
 - (instancetype)initWithData:(ShareToData*)data

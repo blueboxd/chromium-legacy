@@ -272,12 +272,121 @@ mojom("websocket_mojom") {
   ]
 }
 
+mojom("cookies_mojom") {
+  generate_java = true
+  sources = [
+    "cookie_access_observer.mojom",
+    "cookie_manager.mojom",
+    "restricted_cookie_manager.mojom",
+    "site_for_cookies.mojom",
+  ]
+
+  public_deps = [
+    "//components/content_settings/core/common:mojo_bindings",
+    "//mojo/public/mojom/base",
+    "//url/mojom:url_mojom_gurl",
+    "//url/mojom:url_mojom_origin",
+  ]
+
+  if (!is_ios) {
+    export_class_attribute_blink = "BLINK_PLATFORM_EXPORT"
+    export_define_blink = "BLINK_PLATFORM_IMPLEMENTATION=1"
+    export_header_blink = "third_party/blink/public/platform/web_common.h"
+  }
+
+  # Typemaps which apply to both Blink and non-Blink bindings.
+  shared_cpp_typemaps = [
+    {
+      types = [
+        {
+          mojom = "network.mojom.SiteForCookies"
+          cpp = "::net::SiteForCookies"
+        },
+      ]
+      traits_headers =
+          [ "//services/network/public/cpp/site_for_cookies_mojom_traits.h" ]
+      traits_public_deps = [
+        "//net",
+        "//services/network/public/cpp:cookies_mojom_support",
+      ]
+    },
+  ]
+
+  # Typemaps applied only to non-Blink bindings
+  cpp_typemaps = [
+    {
+      types = [
+        {
+          mojom = "network.mojom.CookiePriority"
+          cpp = "::net::CookiePriority"
+        },
+        {
+          mojom = "network.mojom.CookieSameSite"
+          cpp = "::net::CookieSameSite"
+        },
+        {
+          mojom = "network.mojom.CookieSameSiteContext"
+          cpp = "::net::CookieOptions::SameSiteCookieContext"
+        },
+        {
+          mojom = "network.mojom.CookieAccessSemantics"
+          cpp = "::net::CookieAccessSemantics"
+        },
+        {
+          mojom = "network.mojom.CookieOptions"
+          cpp = "::net::CookieOptions"
+        },
+        {
+          mojom = "network.mojom.CanonicalCookie"
+          cpp = "::net::CanonicalCookie"
+        },
+        {
+          mojom = "network.mojom.CookieInclusionStatusWarningReason"
+          cpp = "::net::CanonicalCookie::CookieInclusionStatus::WarningReason"
+        },
+        {
+          mojom = "network.mojom.CookieInclusionStatus"
+          cpp = "::net::CanonicalCookie::CookieInclusionStatus"
+          move_only = true
+        },
+        {
+          mojom = "network.mojom.CookieWithStatus"
+          cpp = "::net::CookieWithStatus"
+        },
+        {
+          mojom = "network.mojom.CookieAndLineWithStatus"
+          cpp = "::net::CookieAndLineWithStatus"
+        },
+        {
+          mojom = "network.mojom.CookieChangeCause"
+          cpp = "::net::CookieChangeCause"
+        },
+        {
+          mojom = "network.mojom.CookieChangeInfo"
+          cpp = "::net::CookieChangeInfo"
+        },
+        {
+          mojom = "network.mojom.CookieSourceScheme"
+          cpp = "::net::CookieSourceScheme"
+        },
+      ]
+      traits_headers =
+          [ "//services/network/public/cpp/cookie_manager_mojom_traits.h" ]
+      traits_sources =
+          [ "//services/network/public/cpp/cookie_manager_mojom_traits.cc" ]
+      traits_public_deps = [ "//net" ]
+    },
+  ]
+
+  cpp_typemaps += shared_cpp_typemaps
+  blink_cpp_typemaps = shared_cpp_typemaps
+}
+
 mojom("mojom") {
   generate_java = true
   sources = [
     "blocked_by_response_reason.mojom",
     "content_security_policy.mojom",
-    "cookie_manager.mojom",
     "cors.mojom",
     "cors_origin_pattern.mojom",
     "cross_origin_embedder_policy.mojom",
@@ -312,8 +421,6 @@ mojom("mojom") {
     "proxy_resolving_socket.mojom",
     "quic_transport.mojom",
     "referrer_policy.mojom",
-    "restricted_cookie_manager.mojom",
-    "site_for_cookies.mojom",
     "source_location.mojom",
     "ssl_config.mojom",
     "tcp_socket.mojom",
@@ -327,13 +434,13 @@ mojom("mojom") {
   ]
 
   public_deps = [
+    ":cookies_mojom",
     ":data_pipe_interfaces",
     ":mojom_ip_address",
     ":mojom_network_isolation_key",
     ":mutable_network_traffic_annotation_interface",
     ":trust_tokens_interface",
     ":websocket_mojom",
-    "//components/content_settings/core/common:mojo_bindings",
     "//mojo/public/mojom/base",
     "//services/proxy_resolver/public/mojom",
     "//url/mojom:url_mojom_gurl",
@@ -474,20 +581,6 @@ mojom("mojom") {
     {
       types = [
         {
-          mojom = "network.mojom.SiteForCookies"
-          cpp = "::net::SiteForCookies"
-        },
-      ]
-      traits_headers =
-          [ "//services/network/public/cpp/site_for_cookies_mojom_traits.h" ]
-      traits_public_deps = [
-        "//net",
-        "//services/network/public/cpp:cpp_base",
-      ]
-    },
-    {
-      types = [
-        {
           mojom = "network.mojom.P2PPacketInfo"
           cpp = "::network::P2PPacketInfo"
         },
@@ -522,68 +615,6 @@ mojom("mojom") {
 
   # Typemaps applied only to non-Blink bindings
   cpp_typemaps = [
-    {
-      types = [
-        {
-          mojom = "network.mojom.CookiePriority"
-          cpp = "::net::CookiePriority"
-        },
-        {
-          mojom = "network.mojom.CookieSameSite"
-          cpp = "::net::CookieSameSite"
-        },
-        {
-          mojom = "network.mojom.CookieSameSiteContext"
-          cpp = "::net::CookieOptions::SameSiteCookieContext"
-        },
-        {
-          mojom = "network.mojom.CookieAccessSemantics"
-          cpp = "::net::CookieAccessSemantics"
-        },
-        {
-          mojom = "network.mojom.CookieOptions"
-          cpp = "::net::CookieOptions"
-        },
-        {
-          mojom = "network.mojom.CanonicalCookie"
-          cpp = "::net::CanonicalCookie"
-        },
-        {
-          mojom = "network.mojom.CookieInclusionStatusWarningReason"
-          cpp = "::net::CanonicalCookie::CookieInclusionStatus::WarningReason"
-        },
-        {
-          mojom = "network.mojom.CookieInclusionStatus"
-          cpp = "::net::CanonicalCookie::CookieInclusionStatus"
-          move_only = true
-        },
-        {
-          mojom = "network.mojom.CookieWithStatus"
-          cpp = "::net::CookieWithStatus"
-        },
-        {
-          mojom = "network.mojom.CookieAndLineWithStatus"
-          cpp = "::net::CookieAndLineWithStatus"
-        },
-        {
-          mojom = "network.mojom.CookieChangeCause"
-          cpp = "::net::CookieChangeCause"
-        },
-        {
-          mojom = "network.mojom.CookieChangeInfo"
-          cpp = "::net::CookieChangeInfo"
-        },
-        {
-          mojom = "network.mojom.CookieSourceScheme"
-          cpp = "::net::CookieSourceScheme"
-        },
-      ]
-      traits_headers =
-          [ "//services/network/public/cpp/cookie_manager_mojom_traits.h" ]
-      traits_sources =
-          [ "//services/network/public/cpp/cookie_manager_mojom_traits.cc" ]
-      traits_public_deps = [ "//net" ]
-    },
     {
       types = [
         {

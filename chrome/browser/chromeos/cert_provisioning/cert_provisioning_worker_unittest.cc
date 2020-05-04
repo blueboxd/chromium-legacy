@@ -1112,6 +1112,49 @@ TEST_F(CertProvisioningWorkerTest, SerializationOnFailure) {
   worker->DoStep();
 }
 
+TEST_F(CertProvisioningWorkerTest, InformationalGetters) {
+  CertProfile cert_profile{kCertProfileId, kCertProfileVersion};
+
+  MockTpmChallengeKeySubtle* mock_tpm_challenge_key = PrepareTpmChallengeKey();
+  CertProvisioningWorkerImpl worker(CertScope::kUser, testing_profile_,
+                                    &testing_pref_service_, cert_profile,
+                                    &cloud_policy_client_, GetCallback());
+
+  {
+    testing::InSequence seq;
+
+    EXPECT_PREPARE_KEY_OK(*mock_tpm_challenge_key, StartPrepareKeyStep);
+
+    EXPECT_START_CSR_TRY_LATER(ClientCertProvisioningStartCsr,
+                               TimeDelta::FromSeconds(30).InMilliseconds());
+
+    worker.DoStep();
+    EXPECT_EQ(worker.GetState(),
+              CertProvisioningWorkerState::kKeypairGenerated);
+    EXPECT_EQ(worker.GetPreviousState(),
+              CertProvisioningWorkerState::kInitState);
+    EXPECT_EQ(worker.GetCertProfile(), cert_profile);
+    EXPECT_EQ(worker.GetPublicKey(), kPublicKey);
+  }
+
+  {
+    testing::InSequence seq;
+
+    EXPECT_START_CSR_CA_ERROR(ClientCertProvisioningStartCsr);
+
+    EXPECT_CALL(callback_observer_,
+                Callback(cert_profile, CertProvisioningWorkerState::kFailed))
+        .Times(1);
+
+    worker.DoStep();
+    EXPECT_EQ(worker.GetState(), CertProvisioningWorkerState::kFailed);
+    EXPECT_EQ(worker.GetPreviousState(),
+              CertProvisioningWorkerState::kKeypairGenerated);
+    EXPECT_EQ(worker.GetCertProfile(), cert_profile);
+    EXPECT_EQ(worker.GetPublicKey(), kPublicKey);
+  }
+}
+
 }  // namespace
 }  // namespace cert_provisioning
 }  // namespace chromeos

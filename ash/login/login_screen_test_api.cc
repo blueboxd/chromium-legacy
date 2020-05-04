@@ -182,6 +182,39 @@ bool LoginScreenTestApi::IsWarningBubbleShown() {
 }
 
 // static
+bool LoginScreenTestApi::IsDisplayPasswordButtonShown(
+    const AccountId& account_id) {
+  if (!FocusUser(account_id)) {
+    ADD_FAILURE() << "Could not focus on user " << account_id.Serialize();
+    return false;
+  }
+  LockScreen::TestApi lock_screen_test(LockScreen::Get());
+  LockContentsView::TestApi lock_contents_test(
+      lock_screen_test.contents_view());
+  LoginBigUserView* big_user_view = lock_contents_test.FindBigUser(account_id);
+  if (!big_user_view) {
+    ADD_FAILURE() << "Could not find user " << account_id.Serialize();
+    return false;
+  }
+  if (!big_user_view->IsAuthEnabled()) {
+    ADD_FAILURE() << "Auth is not enabled for user " << account_id.Serialize();
+    return false;
+  }
+  LoginAuthUserView::TestApi auth_test(big_user_view->auth_user());
+  if (!auth_test.HasAuthMethod(LoginAuthUserView::AUTH_PASSWORD)) {
+    ADD_FAILURE() << "Password auth is not enabled for user "
+                  << account_id.Serialize();
+    return false;
+  }
+  LoginPasswordView::TestApi password_test(auth_test.password_view());
+  bool display_password_button_visible =
+      auth_test.user_view()->current_user().show_display_password_button;
+  EXPECT_EQ(display_password_button_visible,
+            password_test.display_password_button()->GetVisible());
+  return display_password_button_visible;
+}
+
+// static
 bool LoginScreenTestApi::IsForcedOnlineSignin(const AccountId& account_id) {
   LockScreen::TestApi lock_screen_test(LockScreen::Get());
   LockContentsView::TestApi lock_contents_test(

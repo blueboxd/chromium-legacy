@@ -5,6 +5,7 @@
 #include "google_apis/gcm/base/socket_stream.h"
 
 #include <stddef.h>
+#include <cstring>
 
 #include "base/bind.h"
 #include "base/callback.h"

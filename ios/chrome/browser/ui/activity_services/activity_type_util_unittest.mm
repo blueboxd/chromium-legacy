@@ -37,8 +37,10 @@ TEST_F(ActivityTypeUtilTest, StringToTypeTest) {
                          activity_type_util::NATIVE_MAIL);
   StringToTypeTestHelper(@"com.apple.UIKit.activity.Mail.Qux",
                          activity_type_util::UNKNOWN);
-  StringToTypeTestHelper([PrintActivity activityIdentifier],
-                         activity_type_util::PRINT);
+
+  PrintActivity* printActivity = [[PrintActivity alloc] initWithData:nil
+                                                             handler:nil];
+  StringToTypeTestHelper(printActivity.activityType, activity_type_util::PRINT);
 }
 
 void TypeToMessageTestHelper(activity_type_util::ActivityType type,

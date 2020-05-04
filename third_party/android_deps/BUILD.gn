@@ -30,15 +30,6 @@ java_group("android_support_v7_appcompat_java") {
   ]
 }
 
-java_group("com_android_appcompat_v7_java_double_group") {
-  deps = [
-    ":androidx_appcompat_appcompat_java",
-    ":com_android_support_appcompat_v7_java__unpack_aar",
-  ]
-  input_jars_paths =
-      [ "${target_out_dir}/com_android_support_appcompat_v7_java/classes.jar" ]
-}
-
 # The dependencies below are used by chromecast internal.
 java_group("android_support_v7_preference_java") {
   deps = [ ":androidx_preference_preference_java" ]
@@ -994,6 +985,7 @@ android_aar_prebuilt("google_play_services_auth_java") {
 
   # Removing drawables from GMS .aars as they are unused bloat.
   strip_drawables = true
+  enable_jetify = true
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
@@ -1039,6 +1031,7 @@ android_aar_prebuilt("google_play_services_base_java") {
 
   # Removing drawables from GMS .aars as they are unused bloat.
   strip_drawables = true
+  enable_jetify = true
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
@@ -1054,6 +1047,7 @@ android_aar_prebuilt("google_play_services_basement_java") {
   # Removing drawables from GMS .aars as they are unused bloat.
   strip_drawables = true
   input_jars_paths = [ "$android_sdk/optional/org.apache.http.legacy.jar" ]
+  enable_jetify = true
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
@@ -1093,6 +1087,7 @@ android_aar_prebuilt("google_play_services_cast_framework_java") {
   # Removing all resources from cast framework as they are unused bloat.
   # Can only safely remove them when R8 will strip the path that accesses them.
   strip_resources = !is_java_debug
+  enable_jetify = true
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
@@ -1125,6 +1120,7 @@ android_aar_prebuilt("google_play_services_gcm_java") {
 
   # Removing drawables from GMS .aars as they are unused bloat.
   strip_drawables = true
+  enable_jetify = true
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
@@ -2079,6 +2075,7 @@ android_aar_prebuilt("google_play_services_stats_java") {
 
   # Removing drawables from GMS .aars as they are unused bloat.
   strip_drawables = true
+  enable_jetify = true
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.

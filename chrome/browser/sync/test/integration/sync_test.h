@@ -423,9 +423,6 @@ class SyncTest : public PlatformBrowserTest {
   // Locally available plain text file in which GAIA credentials are stored.
   base::FilePath password_file_;
 
-  // Helper class to whitelist the notification port.
-  std::unique_ptr<net::ScopedPortException> xmpp_port_;
-
   // Used to differentiate between single-client and two-client tests as well
   // as wher the in-process FakeServer is used.
   TestType test_type_;

@@ -520,7 +520,13 @@ IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, PendingDeletion) {
   ASSERT_TRUE(RunExtensionTest("webnavigation/pendingDeletion")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, Crash) {
+// Flaky fails on Win7 Tests (dbg)(1); https://crbug.com/974787.
+#if defined(OS_WIN) && !defined(NDEBUG)
+#define MAYBE_Crash DISABLED_Crash
+#else
+#define MAYBE_Crash Crash
+#endif
+IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, MAYBE_Crash) {
   content::ScopedAllowRendererCrashes scoped_allow_renderer_crashes;
   ASSERT_TRUE(StartEmbeddedTestServer());
 

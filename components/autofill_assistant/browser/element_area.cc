@@ -5,6 +5,7 @@
 #include "components/autofill_assistant/browser/element_area.h"
 
 #include <algorithm>
+#include <ostream>
 
 #include "base/bind.h"
 #include "base/logging.h"
@@ -15,6 +16,26 @@
 #include "components/autofill_assistant/browser/web/web_controller.h"
 
 namespace autofill_assistant {
+
+namespace {
+
+// Returns a debug representation of |rectangles|.
+std::string ToDebugString(const std::vector<RectF>& rectangles) {
+  if (rectangles.empty()) {
+    return std::string();
+  }
+
+  std::ostringstream stream;
+  std::string separator;
+  for (const auto& rect : rectangles) {
+    stream << separator << rect;
+    separator = ", ";
+  }
+
+  return stream.str();
+}
+
+}  // namespace
 
 ElementArea::ElementArea(ScriptExecutorDelegate* delegate)
     : delegate_(delegate) {
@@ -134,10 +155,19 @@ ElementArea::ElementPosition::ElementPosition() = default;
 ElementArea::ElementPosition::ElementPosition(const ElementPosition& orig) =
     default;
 ElementArea::ElementPosition::~ElementPosition() = default;
+bool ElementArea::ElementPosition::operator==(
+    const ElementPosition& another) const {
+  return selector == another.selector && rect == another.rect;
+}
 
 ElementArea::Rectangle::Rectangle() = default;
 ElementArea::Rectangle::Rectangle(const Rectangle& orig) = default;
 ElementArea::Rectangle::~Rectangle() = default;
+
+bool ElementArea::Rectangle::operator==(const Rectangle& another) const {
+  return full_width == another.full_width && restricted == another.restricted &&
+         positions == another.positions;
+}
 
 bool ElementArea::Rectangle::IsPending() const {
   for (const auto& position : positions) {
@@ -230,11 +260,32 @@ void ElementArea::ReportUpdate() {
     }
   }
 
+  if (visual_viewport_ == last_visual_viewport_ &&
+      rectangles_ == last_rectangles_) {
+    // The positions have not changed since the last update.
+    return;
+  }
+
   std::vector<RectF> touchable_area;
   std::vector<RectF> restricted_area;
   GetTouchableRectangles(&touchable_area);
   GetRestrictedRectangles(&restricted_area);
+  if (VLOG_IS_ON(3)) {
+    if (!(visual_viewport_ == last_visual_viewport_)) {
+      VLOG(3) << "New viewport: " << visual_viewport_;
+    }
+    if (!(rectangles_ == last_rectangles_)) {
+      if (!touchable_area.empty()) {
+        VLOG(3) << "New touchable rects: " << ToDebugString(touchable_area);
+      }
+      if (!restricted_area.empty()) {
+        VLOG(3) << "New restricted rects: " << ToDebugString(restricted_area);
+      }
+    }
+  }
 
+  last_visual_viewport_ = visual_viewport_;
+  last_rectangles_ = rectangles_;
   on_update_.Run(visual_viewport_, touchable_area, restricted_area);
 }
 

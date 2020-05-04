@@ -15,6 +15,7 @@
 #include "mojo/core/embedder/embedder.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/features.h"
 #include "net/cookies/canonical_cookie_test_helpers.h"
@@ -25,6 +26,7 @@
 #include "net/cookies/cookie_util.h"
 #include "net/cookies/test_cookie_access_delegate.h"
 #include "services/network/cookie_settings.h"
+#include "services/network/public/mojom/cookie_access_observer.mojom.h"
 #include "services/network/public/mojom/cookie_manager.mojom.h"
 #include "services/network/test/test_network_context_client.h"
 #include "testing/gmock/include/gmock/gmock-matchers.h"
@@ -33,10 +35,7 @@
 
 namespace network {
 
-const int kProcessId = 42;
-const int kRoutingId = 43;
-
-class RecordingNetworkContextClient : public network::TestNetworkContextClient {
+class RecordingCookieObserver : public network::mojom::CookieAccessObserver {
  public:
   struct CookieOp {
     bool get = false;
@@ -49,60 +48,40 @@ class RecordingNetworkContextClient : public network::TestNetworkContextClient {
     base::Optional<std::string> devtools_request_id;
   };
 
-  RecordingNetworkContextClient() = default;
-  ~RecordingNetworkContextClient() override = default;
+  RecordingCookieObserver() = default;
+  ~RecordingCookieObserver() override = default;
 
   const std::vector<CookieOp>& recorded_activity() const {
     return recorded_activity_;
   }
 
-  void OnCookiesChanged(
-      bool is_service_worker,
-      int32_t process_id,
-      int32_t routing_id,
-      const GURL& url,
-      const net::SiteForCookies& site_for_cookies,
-      const std::vector<net::CookieWithStatus>& cookie_list,
-      const base::Optional<std::string>& devtools_request_id) override {
-    EXPECT_EQ(false, is_service_worker);
-    EXPECT_EQ(kProcessId, process_id);
-    EXPECT_EQ(kRoutingId, routing_id);
-    for (const auto& cookie_and_status : cookie_list) {
-      CookieOp set;
-      set.url = url;
-      set.site_for_cookies = site_for_cookies.RepresentativeUrl();
-      set.cookie.push_back(cookie_and_status.cookie);
-      set.status = cookie_and_status.status;
-      set.devtools_request_id = devtools_request_id;
-      recorded_activity_.push_back(set);
+  mojo::PendingRemote<mojom::CookieAccessObserver> GetRemote() {
+    mojo::PendingRemote<mojom::CookieAccessObserver> remote;
+    receivers_.Add(this, remote.InitWithNewPipeAndPassReceiver());
+    return remote;
+  }
+
+  void OnCookiesAccessed(mojom::CookieAccessDetailsPtr details) override {
+    for (const auto& cookie_and_status : details->cookie_list) {
+      CookieOp op;
+      op.get = details->type == mojom::CookieAccessDetails::Type::kRead;
+      op.url = details->url;
+      op.site_for_cookies = details->site_for_cookies.RepresentativeUrl();
+      op.cookie.push_back(cookie_and_status.cookie);
+      op.status = cookie_and_status.status;
+      op.devtools_request_id = details->devtools_request_id;
+      recorded_activity_.push_back(op);
     }
   }
 
-  void OnCookiesRead(
-      bool is_service_worker,
-      int32_t process_id,
-      int32_t routing_id,
-      const GURL& url,
-      const net::SiteForCookies& site_for_cookies,
-      const std::vector<net::CookieWithStatus>& cookie_list,
-      const base::Optional<std::string>& devtools_request_id) override {
-    EXPECT_EQ(false, is_service_worker);
-    EXPECT_EQ(kProcessId, process_id);
-    EXPECT_EQ(kRoutingId, routing_id);
-    for (const auto& cookie_and_status : cookie_list) {
-      CookieOp get;
-      get.get = true;
-      get.url = url;
-      get.site_for_cookies = site_for_cookies.RepresentativeUrl();
-      get.cookie.push_back(cookie_and_status.cookie);
-      get.status = cookie_and_status.status;
-      get.devtools_request_id = devtools_request_id;
-      recorded_activity_.push_back(get);
-    }
+  void Clone(
+      mojo::PendingReceiver<mojom::CookieAccessObserver> observer) override {
+    receivers_.Add(this, std::move(observer));
   }
 
  private:
   std::vector<CookieOp> recorded_activity_;
+  mojo::ReceiverSet<mojom::CookieAccessObserver> receivers_;
 };
 
 // Synchronous proxies to a wrapped RestrictedCookieManager's methods.
@@ -182,10 +161,7 @@ class RestrictedCookieManagerTest
             url::Origin::Create(GURL("https://example.com")),
             net::SiteForCookies::FromUrl(GURL("https://example.com")),
             url::Origin::Create(GURL("https://example.com")),
-            &recording_client_,
-            false /* is_service_worker*/,
-            kProcessId,
-            kRoutingId)),
+            recording_client_.GetRemote())),
         receiver_(service_.get(),
                   service_remote_.BindNewPipeAndPassReceiver()) {
     sync_service_ =
@@ -267,8 +243,8 @@ class RestrictedCookieManagerTest
     received_bad_message_ = true;
   }
 
-  const std::vector<RecordingNetworkContextClient::CookieOp>&
-  recorded_activity() const {
+  const std::vector<RecordingCookieObserver::CookieOp>& recorded_activity()
+      const {
     return recording_client_.recorded_activity();
   }
 
@@ -276,7 +252,7 @@ class RestrictedCookieManagerTest
       base::test::SingleThreadTaskEnvironment::MainThreadType::IO};
   net::CookieMonster cookie_monster_;
   CookieSettings cookie_settings_;
-  RecordingNetworkContextClient recording_client_;
+  RecordingCookieObserver recording_client_;
   std::unique_ptr<RestrictedCookieManager> service_;
   mojo::Remote<mojom::RestrictedCookieManager> service_remote_;
   mojo::Receiver<mojom::RestrictedCookieManager> receiver_;

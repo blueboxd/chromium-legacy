@@ -13,9 +13,6 @@
 // Activity that triggers the printing service.
 @interface PrintActivity : UIActivity
 
-// Identifier for the print activity.
-+ (NSString*)activityIdentifier;
-
 // Initializes the print activity with the given |data| and the |handler|.
 - (instancetype)initWithData:(ShareToData*)data
                      handler:(id<BrowserCommands>)handler

@@ -7,7 +7,7 @@
 #include "base/base_paths.h"
 #include "base/bind_helpers.h"
 #include "base/files/file_path.h"
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "base/optional.h"
 #include "base/path_service.h"
 #include "gpu/vulkan/vulkan_function_pointers.h"

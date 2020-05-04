@@ -6,6 +6,7 @@
 
 #include "base/auto_reset.h"
 #include "base/logging.h"
+#include "base/trace_event/trace_event.h"
 #include "ui/base/cocoa/cocoa_base_utils.h"
 #import "ui/base/cocoa/user_interface_item_command_handler.h"
 
@@ -56,6 +57,9 @@
 // call, we rely on the fact that method calls to nil return nil, and that nil
 // == ui::PerformKeyEquivalentResult::kUnhandled;
 - (BOOL)performKeyEquivalent:(NSEvent*)event {
+  // TODO(bokan): Tracing added temporarily to diagnose crbug.com/1039833.
+  TRACE_EVENT2("ui", "CommandDispatcher::performKeyEquivalent", "window num",
+               [_owner windowNumber], "is keyWin", [NSApp keyWindow] == _owner);
   DCHECK_EQ(NSKeyDown, [event type]);
 
   // If the event is being redispatched, then this is the second time
@@ -69,10 +73,14 @@
   // We skip all steps before postPerformKeyEquivalent, since those were already
   // triggered on the first pass of the event.
   if ([self isEventBeingRedispatched:event]) {
+    // TODO(bokan): Tracing added temporarily to diagnose crbug.com/1039833.
+    TRACE_EVENT_INSTANT0("ui", "IsRedispatch", TRACE_EVENT_SCOPE_THREAD);
     ui::PerformKeyEquivalentResult result =
         [_delegate postPerformKeyEquivalent:event
                                      window:_owner
                                isRedispatch:YES];
+    TRACE_EVENT_INSTANT1("ui", "postPerformKeyEquivalent",
+                         TRACE_EVENT_SCOPE_THREAD, "result", result);
     if (result == ui::PerformKeyEquivalentResult::kHandled)
       return YES;
     if (result == ui::PerformKeyEquivalentResult::kPassToMainMenu)
@@ -145,6 +153,10 @@
 }
 
 - (BOOL)redispatchKeyEvent:(NSEvent*)event {
+  // TODO(bokan): Tracing added temporarily to diagnose crbug.com/1039833.
+  TRACE_EVENT2("ui", "CommandDispatcher::redispatchKeyEvent", "window num",
+               [_owner windowNumber], "event window num",
+               [[event window] windowNumber]);
   DCHECK(!_isRedispatchingKeyEvent);
   base::AutoReset<BOOL> resetter(&_isRedispatchingKeyEvent, YES);
 
@@ -172,6 +184,11 @@
 }
 
 - (BOOL)preSendEvent:(NSEvent*)event {
+  // TODO(bokan): Tracing added temporarily to diagnose crbug.com/1039833.
+  TRACE_EVENT2("ui", "CommandDispatcher::preSendEvent", "window num",
+               [_owner windowNumber], "event window num",
+               [[event window] windowNumber]);
+
   // AppKit does not call performKeyEquivalent: if the event only has the
   // NSEventModifierFlagOption modifier. However, Chrome wants to treat these
   // events just like keyEquivalents, since they can be consumed by extensions.

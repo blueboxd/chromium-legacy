@@ -1074,6 +1074,10 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kDeviceChromeVariations,
     variations::prefs::kDeviceVariationsRestrictionsByPolicy,
     base::Value::Type::INTEGER },
+  { key::kLoginDisplayPasswordButtonEnabled,
+    chromeos::prefs::kLoginDisplayPasswordButtonEnabled,
+    base::Value::Type::BOOLEAN },
+
 #else  // defined(OS_CHROMEOS)
   { key::kMetricsReportingEnabled,
     metrics::prefs::kMetricsReportingEnabled,

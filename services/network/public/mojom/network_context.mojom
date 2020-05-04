@@ -12,6 +12,7 @@ import "mojo/public/mojom/base/unguessable_token.mojom";
 import "mojo/public/mojom/base/values.mojom";
 import "services/network/public/mojom/address_list.mojom";
 import "services/network/public/mojom/parsed_headers.mojom";
+import "services/network/public/mojom/cookie_access_observer.mojom";
 import "services/network/public/mojom/cookie_manager.mojom";
 import "services/network/public/mojom/default_credentials.mojom";
 import "services/network/public/mojom/cors_origin_pattern.mojom";
@@ -633,6 +634,9 @@ struct URLLoaderFactoryParams {
 
   // Used to report CORP violations caused by COEP.
   CrossOriginEmbedderPolicyReporter? coep_reporter;
+
+  // Used to notify clients about cookie reads or writes.
+  CookieAccessObserver? cookie_observer;
 };
 
 // The |credentials| output parameter is given to URLRequest::SetAuth()
@@ -769,57 +773,6 @@ interface NetworkContextClient {
                   string header_value,
                   int32 load_flags) => ();
 
-  // Called when an attempt has been made to set cookies |cookie_list|, with the
-  // status field indicating whether the cookies as set, or blocked, and for
-  // what reason. Currently blocked cookies are included if they are blocked by
-  // user preference, or if they warrant a console deprecation warning.
-  //
-  // If the set attempt is due to a network transfer, |url| is the URL being
-  // loaded; if it's set by a script it's the URL of window or service worker
-  // script making the change.
-  //
-  // |is_service_worker| is true if the cookie is directly set by a service
-  // worker action via cookie store API; this doesn't include those
-  // set as a side effect of passed through fetches. In that case, there is
-  // no frame associated with the action, so it should be attributed by |url|.
-  //
-  // If |is_service_worker| is false, |process_id| and |routing_id| identify
-  // the relevant frame.
-  //
-  // |devtools_request_id| contains the DevTools request id of the request
-  // that triggered the cookie change, if the change was triggered by a request.
-  // May be set regardless of |is_service_worker|.
-  OnCookiesChanged(
-      bool is_service_worker, int32 process_id, int32 routing_id,
-      url.mojom.Url url, SiteForCookies site_for_cookies,
-      array<CookieWithStatus> cookie_list, string? devtools_request_id);
-
-  // Called when an attempt has been made to read the cookies in |cookie_list|,
-  // with the status indicating whether the cookies were actually used or
-  // blocked, and if so, gives the reason. Currently blocked cookies are
-  // included if they are blocked by user preference, or if they warrant a
-  // console deprecation warning.
-  //
-  // If the cookies are accessed by a network transfer, |url| is the URL being
-  // loaded; if they're read by a script, it's the URL of window or service
-  // worker script looking them up.
-  //
-  // |is_service_worker| is true if the cookie is directly read by a service
-  // worker action via cookie store API; this doesn't include those
-  // read as a side effect of passed through fetches. In that case, there is
-  // no frame associated with the action, so it should be attributed by |url|.
-  //
-  // If |is_service_worker| is false, |process_id| and |routing_id| identify
-  // the relevant frame.
-  //
-  // |devtools_request_id| contains the DevTools request id of the request
-  // that triggered the cookie change, if the read was triggered by a request.
-  // May be set regardless of |is_service_worker|.
-  OnCookiesRead(
-      bool is_service_worker, int32 process_id, int32 routing_id,
-      url.mojom.Url url, SiteForCookies site_for_cookies,
-      array<CookieWithStatus> cookie_list, string? devtools_request_id);
-
   // Called to generate an auth token for SPNEGO authentication on Android.
   [EnableIf=is_android]
   OnGenerateHttpNegotiateAuthToken(string server_auth_token, bool can_delegate,
@@ -874,8 +827,7 @@ interface NetworkContext {
       url.mojom.Origin origin,
       SiteForCookies site_for_cookies,
       url.mojom.Origin top_frame_origin,
-      bool is_service_worker,
-      int32 process_id, int32 routing_id);
+      pending_remote<CookieAccessObserver> cookie_observer);
 
   // Provides a HasTrustTokensAnswerer scoped to the given top-frame origin
   // (subsequent calls to its HasTrustTokens(issuer) method will attempt to

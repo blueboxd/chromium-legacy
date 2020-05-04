@@ -57,6 +57,14 @@ class CaptionBubbleControllerViewsTest : public InProcessBrowserTest {
     return controller_ ? controller_->caption_bubble_->title_ : nullptr;
   }
 
+  views::Label* GetErrorMessage() {
+    return controller_ ? controller_->caption_bubble_->error_message_ : nullptr;
+  }
+
+  views::ImageView* GetErrorIcon() {
+    return controller_ ? controller_->caption_bubble_->error_icon_ : nullptr;
+  }
+
   std::string GetLabelText() {
     return controller_ ? base::UTF16ToUTF8(GetLabel()->GetText()) : "";
   }
@@ -86,11 +94,6 @@ class CaptionBubbleControllerViewsTest : public InProcessBrowserTest {
         abs(bubble_bounds.CenterPoint().x() - anchor_bounds.CenterPoint().x()),
         2);
     EXPECT_EQ(bubble_bounds.bottom(), anchor_bounds.bottom() - 48);
-  }
-
-  bool IsBubbleErrorMessageVisible() {
-    return GetBubble() && GetBubble()->error_icon_->GetVisible() &&
-           GetBubble()->error_message_->GetVisible();
   }
 
  private:
@@ -151,7 +154,6 @@ IN_PROC_BROWSER_TEST_F(CaptionBubbleControllerViewsTest,
             GetLabel()->GetBoundsInScreen().y());
 
   GetController()->OnTranscription("Cats rock\nDogs too");
-
   EXPECT_FALSE(GetTitle()->GetVisible());
 }
 
@@ -283,24 +285,28 @@ IN_PROC_BROWSER_TEST_F(CaptionBubbleControllerViewsTest, ShowsAndHidesError) {
   GetController()->OnTranscription("Elephants' trunks average 6 feet long.");
   EXPECT_TRUE(GetTitle()->GetVisible());
   EXPECT_TRUE(GetLabel()->GetVisible());
-  EXPECT_FALSE(IsBubbleErrorMessageVisible());
+  EXPECT_FALSE(GetErrorMessage()->GetVisible());
+  EXPECT_FALSE(GetErrorIcon()->GetVisible());
 
   GetBubble()->SetHasError(true);
   EXPECT_FALSE(GetTitle()->GetVisible());
   EXPECT_FALSE(GetLabel()->GetVisible());
-  EXPECT_TRUE(IsBubbleErrorMessageVisible());
+  EXPECT_TRUE(GetErrorMessage()->GetVisible());
+  EXPECT_TRUE(GetErrorIcon()->GetVisible());
 
   // Setting text during an error shouldn't cause the error to disappear.
   GetController()->OnTranscription("Elephant tails average 4-5 feet long.");
   EXPECT_FALSE(GetTitle()->GetVisible());
   EXPECT_FALSE(GetLabel()->GetVisible());
-  EXPECT_TRUE(IsBubbleErrorMessageVisible());
+  EXPECT_TRUE(GetErrorMessage()->GetVisible());
+  EXPECT_TRUE(GetErrorIcon()->GetVisible());
 
   // Clear the error and everything should be visible again.
   GetBubble()->SetHasError(false);
   EXPECT_TRUE(GetTitle()->GetVisible());
   EXPECT_TRUE(GetLabel()->GetVisible());
-  EXPECT_FALSE(IsBubbleErrorMessageVisible());
+  EXPECT_FALSE(GetErrorMessage()->GetVisible());
+  EXPECT_FALSE(GetErrorIcon()->GetVisible());
 }
 
 IN_PROC_BROWSER_TEST_F(CaptionBubbleControllerViewsTest, CloseButtonCloses) {
@@ -361,6 +367,74 @@ IN_PROC_BROWSER_TEST_F(CaptionBubbleControllerViewsTest,
                                               false, false, false));
   EXPECT_EQ(bounds, GetCaptionWidget()->GetClientAreaBoundsInScreen());
 #endif
+}
+
+IN_PROC_BROWSER_TEST_F(CaptionBubbleControllerViewsTest,
+                       UpdateCaptionTextSize) {
+  int textSize = 16;
+  int lineHeight = 24;
+  int bubbleHeight = 48;
+
+  GetController()->UpdateCaptionStyle(base::nullopt);
+  GetController()->OnTranscription("Hamsters' teeth never stop growing");
+  EXPECT_EQ(textSize, GetLabel()->font_list().GetFontSize());
+  EXPECT_EQ(textSize, GetTitle()->font_list().GetFontSize());
+  EXPECT_EQ(lineHeight, GetLabel()->GetLineHeight());
+  EXPECT_EQ(lineHeight, GetTitle()->GetLineHeight());
+  EXPECT_GT(GetBubble()->GetPreferredSize().height(), bubbleHeight);
+
+  // Set the text size to 200%.
+  ui::CaptionStyle caption_style;
+  caption_style.text_size = "200%";
+  GetController()->UpdateCaptionStyle(caption_style);
+  EXPECT_EQ(textSize * 2, GetLabel()->font_list().GetFontSize());
+  EXPECT_EQ(textSize * 2, GetTitle()->font_list().GetFontSize());
+  EXPECT_EQ(lineHeight * 2, GetLabel()->GetLineHeight());
+  EXPECT_EQ(lineHeight * 2, GetTitle()->GetLineHeight());
+  EXPECT_GT(GetBubble()->GetPreferredSize().height(), bubbleHeight * 2);
+
+  // Set the text size to the empty string.
+  caption_style.text_size = "";
+  GetController()->UpdateCaptionStyle(caption_style);
+  EXPECT_EQ(textSize, GetLabel()->font_list().GetFontSize());
+  EXPECT_EQ(textSize, GetTitle()->font_list().GetFontSize());
+  EXPECT_EQ(lineHeight, GetLabel()->GetLineHeight());
+  EXPECT_EQ(lineHeight, GetTitle()->GetLineHeight());
+  EXPECT_GT(GetBubble()->GetPreferredSize().height(), bubbleHeight);
+
+  // Set the text size to 50% !important.
+  caption_style.text_size = "50% !important";
+  GetController()->UpdateCaptionStyle(caption_style);
+  EXPECT_EQ(textSize / 2, GetLabel()->font_list().GetFontSize());
+  EXPECT_EQ(textSize / 2, GetTitle()->font_list().GetFontSize());
+  EXPECT_EQ(lineHeight / 2, GetLabel()->GetLineHeight());
+  EXPECT_EQ(lineHeight / 2, GetTitle()->GetLineHeight());
+  EXPECT_GT(GetBubble()->GetPreferredSize().height(), bubbleHeight / 2);
+
+  // Set the text size to a bad string.
+  caption_style.text_size = "Ostriches can run up to 45mph";
+  GetController()->UpdateCaptionStyle(caption_style);
+  EXPECT_EQ(textSize, GetLabel()->font_list().GetFontSize());
+  EXPECT_EQ(textSize, GetTitle()->font_list().GetFontSize());
+  EXPECT_EQ(lineHeight, GetLabel()->GetLineHeight());
+  EXPECT_EQ(lineHeight, GetTitle()->GetLineHeight());
+  EXPECT_GT(GetBubble()->GetPreferredSize().height(), bubbleHeight);
+
+  // Set the caption style to nullopt.
+  GetController()->UpdateCaptionStyle(base::nullopt);
+  EXPECT_EQ(textSize, GetLabel()->font_list().GetFontSize());
+  EXPECT_EQ(textSize, GetTitle()->font_list().GetFontSize());
+  EXPECT_EQ(lineHeight, GetLabel()->GetLineHeight());
+  EXPECT_EQ(lineHeight, GetTitle()->GetLineHeight());
+  EXPECT_GT(GetBubble()->GetPreferredSize().height(), bubbleHeight);
+
+  // Set the error message.
+  caption_style.text_size = "50%";
+  GetController()->UpdateCaptionStyle(caption_style);
+  GetBubble()->SetHasError(true);
+  EXPECT_EQ(lineHeight / 2, GetErrorMessage()->GetLineHeight());
+  // The error icon height remains unchanged at 20.
+  EXPECT_GT(GetBubble()->GetPreferredSize().height(), lineHeight / 2 + 20);
 }
 
 }  // namespace captions

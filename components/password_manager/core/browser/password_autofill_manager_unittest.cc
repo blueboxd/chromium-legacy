@@ -646,8 +646,6 @@ TEST_F(PasswordAutofillManagerTest, FailedOptInAndGenerateUpdatesPopup) {
   InitializePasswordAutofillManager(&client, &autofill_client);
   client.SetAccountStorageOptIn(false);
   testing::Mock::VerifyAndClearExpectations(&autofill_client);
-  EXPECT_CALL(*client.GetPasswordFeatureManager(), SetAccountStorageOptIn)
-      .Times(0);
 
   // Accepting a suggestion should trigger a call to update the popup.
   // First the popup enters the waiting state.

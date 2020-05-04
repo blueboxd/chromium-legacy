@@ -58,7 +58,7 @@ const CGFloat kHeaderHeight = 70;
   self.tableView.tableHeaderView = self.searchController.searchBar;
   self.tableView.tableFooterView = [[UIView alloc] initWithFrame:CGRectZero];
 
-  self.navigationController.navigationBar.translucent = YES;
+  self.navigationController.navigationBar.translucent = NO;
   self.navigationController.navigationBar.barTintColor =
       [UIColor colorNamed:kBackgroundColor];
   self.navigationController.navigationBar.tintColor =

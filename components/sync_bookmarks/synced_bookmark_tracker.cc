@@ -30,7 +30,7 @@ namespace sync_bookmarks {
 
 const base::Feature kInvalidateBookmarkSyncMetadataIfMismatchingGuid{
     "InvalidateBookmarkSyncMetadataIfMismatchingGuid",
-    base::FEATURE_DISABLED_BY_DEFAULT};
+    base::FEATURE_ENABLED_BY_DEFAULT};
 
 extern const base::Feature kInvalidateBookmarkSyncMetadataIfClientTagDuplicates{
     "InvalidateBookmarkSyncMetadataIfClientTagDuplicates",

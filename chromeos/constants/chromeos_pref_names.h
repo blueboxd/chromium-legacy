@@ -30,6 +30,8 @@ COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const char kSamlPasswordExpirationTime[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const char kSamlPasswordChangeUrl[];
+COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
+extern const char kLoginDisplayPasswordButtonEnabled[];
 
 }  // namespace prefs
 }  // namespace chromeos

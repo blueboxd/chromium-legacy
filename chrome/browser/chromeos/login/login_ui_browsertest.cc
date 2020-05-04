@@ -4,7 +4,9 @@
 
 #include "ash/public/cpp/login_screen_test_api.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/login/lock/screen_locker_tester.h"
 #include "chrome/browser/chromeos/login/login_manager_test.h"
+#include "chrome/browser/chromeos/login/screens/user_selection_screen.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/test/device_state_mixin.h"
 #include "chrome/browser/chromeos/login/test/js_checker.h"
@@ -12,12 +14,17 @@
 #include "chrome/browser/chromeos/login/test/login_manager_mixin.h"
 #include "chrome/browser/chromeos/login/test/oobe_base_test.h"
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
+#include "chrome/browser/chromeos/login/test/scoped_policy_update.h"
+#include "chrome/browser/chromeos/login/test/user_policy_mixin.h"
+#include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/settings/scoped_testing_cros_settings.h"
 #include "chrome/browser/chromeos/settings/stub_cros_settings_provider.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/welcome_screen_handler.h"
 #include "chrome/common/pref_names.h"
+#include "chromeos/constants/chromeos_pref_names.h"
 #include "components/prefs/pref_service.h"
+#include "components/user_manager/known_user.h"
 
 namespace chromeos {
 
@@ -30,8 +37,8 @@ class InterruptedAutoStartEnrollmentTest : public OobeBaseTest,
   void SetUpLocalState() override {
     StartupUtils::MarkOobeCompleted();
     PrefService* prefs = g_browser_process->local_state();
-    prefs->SetBoolean(prefs::kDeviceEnrollmentAutoStart, true);
-    prefs->SetBoolean(prefs::kDeviceEnrollmentCanExit, false);
+    prefs->SetBoolean(::prefs::kDeviceEnrollmentAutoStart, true);
+    prefs->SetBoolean(::prefs::kDeviceEnrollmentCanExit, false);
   }
 };
 
@@ -150,6 +157,81 @@ IN_PROC_BROWSER_TEST_F(LoginUIEnrolledTest, UserReverseRemoval) {
 
   // Gaia dialog should be shown again as there are no users anymore.
   EXPECT_TRUE(ash::LoginScreenTestApi::IsOobeDialogVisible());
+}
+
+class DisplayPasswordButtonTest : public LoginManagerTest {
+ public:
+  DisplayPasswordButtonTest() : LoginManagerTest() {}
+
+  void SetDisplayPasswordButtonEnabledLoginAndLock(
+      bool display_password_button_enabled) {
+    // Sets the feature by user policy
+    {
+      std::unique_ptr<ScopedUserPolicyUpdate> scoped_user_policy_update =
+          user_policy_mixin_.RequestPolicyUpdate();
+      scoped_user_policy_update->policy_payload()
+          ->mutable_logindisplaypasswordbuttonenabled()
+          ->set_value(display_password_button_enabled);
+    }
+
+    chromeos::WizardController::SkipPostLoginScreensForTesting();
+
+    auto context = LoginManagerMixin::CreateDefaultUserContext(test_user_);
+    login_manager_mixin_.LoginAndWaitForActiveSession(context);
+
+    ScreenLockerTester screen_locker_tester;
+    screen_locker_tester.Lock();
+
+    EXPECT_TRUE(ash::LoginScreenTestApi::FocusUser(test_user_.account_id));
+  }
+
+  void SetUpInProcessBrowserTestFixture() override {
+    LoginManagerTest::SetUpInProcessBrowserTestFixture();
+    // Login as a managed user would save force-online-signin to true and
+    // invalidate the auth token into local state, which would prevent to focus
+    // during the second part of the test which happens in the login screen.
+    UserSelectionScreen::SetSkipForceOnlineSigninForTesting(true);
+  }
+
+ protected:
+  const LoginManagerMixin::TestUserInfo test_user_{
+      AccountId::FromUserEmailGaiaId("user@example.com", "1111")};
+  UserPolicyMixin user_policy_mixin_{&mixin_host_, test_user_.account_id};
+  LoginManagerMixin login_manager_mixin_{&mixin_host_};
+};
+
+// Check if the display password button feature is disabled on the lock screen
+// after login into a session and locking the screen.
+IN_PROC_BROWSER_TEST_F(DisplayPasswordButtonTest,
+                       PRE_LoginUIDisplayPasswordButtonDisabled) {
+  SetDisplayPasswordButtonEnabledLoginAndLock(false);
+  EXPECT_FALSE(ash::LoginScreenTestApi::IsDisplayPasswordButtonShown(
+      test_user_.account_id));
+}
+
+// Check if the display password button feature is disabled on the login screen.
+IN_PROC_BROWSER_TEST_F(DisplayPasswordButtonTest,
+                       LoginUIDisplayPasswordButtonDisabled) {
+  EXPECT_TRUE(ash::LoginScreenTestApi::FocusUser(test_user_.account_id));
+  EXPECT_FALSE(ash::LoginScreenTestApi::IsDisplayPasswordButtonShown(
+      test_user_.account_id));
+}
+
+// Check if the display password button feature is enabled on the lock screen
+// after login into a session and locking the screen.
+IN_PROC_BROWSER_TEST_F(DisplayPasswordButtonTest,
+                       PRE_LoginUIDisplayPasswordButtonEnabled) {
+  SetDisplayPasswordButtonEnabledLoginAndLock(true);
+  EXPECT_TRUE(ash::LoginScreenTestApi::IsDisplayPasswordButtonShown(
+      test_user_.account_id));
+}
+
+// Check if the display password button feature is enabled on the login screen.
+IN_PROC_BROWSER_TEST_F(DisplayPasswordButtonTest,
+                       LoginUIDisplayPasswordButtonEnabled) {
+  EXPECT_TRUE(ash::LoginScreenTestApi::FocusUser(test_user_.account_id));
+  EXPECT_TRUE(ash::LoginScreenTestApi::IsDisplayPasswordButtonShown(
+      test_user_.account_id));
 }
 
 }  // namespace chromeos

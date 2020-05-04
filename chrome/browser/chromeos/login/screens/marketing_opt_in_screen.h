@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_LOGIN_SCREENS_MARKETING_OPT_IN_SCREEN_H_
 
 #include <memory>
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -21,6 +22,8 @@ class MarketingOptInScreenView;
 // sign-in flow.
 class MarketingOptInScreen : public BaseScreen {
  public:
+  enum class Result { NEXT, NOT_APPLICABLE };
+
   // These values are persisted to logs. Entries should not be renumbered and
   // numeric values should never be reused. Must coincide with the enum
   // MarketingOptInScreenEvent
@@ -39,31 +42,36 @@ class MarketingOptInScreen : public BaseScreen {
     CA,
   };
 
-  static MarketingOptInScreen* Get(ScreenManager* manager);
+  static std::string GetResultString(Result result);
+
+  using ScreenExitCallback = base::RepeatingCallback<void(Result result)>;
 
   MarketingOptInScreen(MarketingOptInScreenView* view,
-                       const base::RepeatingClosure& exit_callback);
+                       const ScreenExitCallback& exit_callback);
   ~MarketingOptInScreen() override;
+
+  static MarketingOptInScreen* Get(ScreenManager* manager);
 
   // On "Get Started" button pressed.
   void OnGetStarted(bool chromebook_email_opt_in);
 
   void SetA11yButtonVisibilityForTest(bool shown);
 
-  void set_exit_callback_for_testing(
-      const base::RepeatingClosure& exit_callback) {
+  void set_exit_callback_for_testing(const ScreenExitCallback& exit_callback) {
     exit_callback_ = exit_callback;
+  }
+
+  const ScreenExitCallback& get_exit_callback_for_testing() {
+    return exit_callback_;
   }
 
  protected:
   // BaseScreen:
+  bool MaybeSkip() override;
   void ShowImpl() override;
   void HideImpl() override;
 
  private:
-  // Exits the screen.
-  void ExitScreen();
-
   void OnA11yShelfNavigationButtonPrefChanged();
 
   // Checks whether this user is managed.
@@ -71,10 +79,7 @@ class MarketingOptInScreen : public BaseScreen {
 
   MarketingOptInScreenView* const view_;
 
-  // Whether the screen is shown and exit callback has not been run.
-  bool active_ = false;
-
-  base::RepeatingClosure exit_callback_;
+  ScreenExitCallback exit_callback_;
 
   std::unique_ptr<PrefChangeRegistrar> active_user_pref_change_registrar_;
 

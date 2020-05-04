@@ -15,9 +15,6 @@ class GURL;
 // Initializes the copy activity with the given |URL| to be copied.
 - (instancetype)initWithURL:(const GURL&)URL;
 
-// Identifier for the copy activity.
-+ (NSString*)activityIdentifier;
-
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_ACTIVITY_SERVICES_ACTIVITIES_COPY_ACTIVITY_H_

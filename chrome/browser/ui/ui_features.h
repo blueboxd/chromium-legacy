@@ -27,6 +27,8 @@ extern const base::Feature kNewProfilePicker;
 
 extern const base::Feature kNewTabstripAnimation;
 
+extern const base::Feature kPermissionChip;
+
 extern const base::Feature kProminentDarkModeActiveTabTitle;
 
 extern const base::Feature kScrollableTabStrip;

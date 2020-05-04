@@ -20,7 +20,6 @@
 #include "base/i18n/character_encoding.h"
 #include "base/macros.h"
 #include "base/metrics/field_trial_params.h"
-#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/no_destructor.h"
 #include "base/path_service.h"
@@ -39,6 +38,7 @@
 #include "chrome/app/chrome_content_browser_overlay_manifest.h"
 #include "chrome/browser/accessibility/accessibility_labels_service.h"
 #include "chrome/browser/accessibility/accessibility_labels_service_factory.h"
+#include "chrome/browser/accessibility/caption_util.h"
 #include "chrome/browser/after_startup_task_utils.h"
 #include "chrome/browser/bluetooth/chrome_bluetooth_delegate.h"
 #include "chrome/browser/browser_about_handler.h"
@@ -168,7 +168,6 @@
 #include "chrome/common/logging_chrome.h"
 #include "chrome/common/pepper_permission_util.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/common/pref_names_util.h"
 #include "chrome/common/prerender_url_loader_throttle.h"
 #include "chrome/common/prerender_util.h"
 #include "chrome/common/profiler/stack_sampling_configuration.h"
@@ -347,10 +346,8 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_features.h"
-#include "ui/base/ui_base_switches.h"
 #include "ui/display/display.h"
 #include "ui/gfx/color_utils.h"
-#include "ui/native_theme/caption_style.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/resources/grit/ui_resources.h"
 #include "url/gurl.h"
@@ -3251,7 +3248,6 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
     }
   }
 
-  auto* native_theme = GetWebTheme();
 #if !defined(OS_ANDROID)
   if (IsAutoplayAllowedByPolicy(contents, prefs)) {
     // If autoplay is allowed by policy then force the no user gesture required
@@ -3270,6 +3266,7 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
             : content::AutoplayPolicy::kNoUserGestureRequired;
   }
 
+  auto* native_theme = GetWebTheme();
   switch (native_theme->GetPreferredColorScheme()) {
     case ui::NativeTheme::PreferredColorScheme::kDark:
       web_prefs->preferred_color_scheme = blink::PreferredColorScheme::kDark;
@@ -3302,33 +3299,9 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
       web_prefs->preferred_color_scheme = blink::PreferredColorScheme::kLight;
   }
 
-  // Apply native CaptionStyle parameters.
-  base::Optional<ui::CaptionStyle> style;
-
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          ::switches::kForceCaptionStyle)) {
-    style = ui::CaptionStyle::FromSpec(
-        base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-            switches::kForceCaptionStyle));
-  }
-
-  // Apply system caption style.
-  if (!style) {
-    style = native_theme->GetSystemCaptionStyle();
-
-    base::UmaHistogramBoolean(
-        "Accessibility.CaptionSettingsLoadedFromSystemSettings",
-        style.has_value());
-  }
-
-  // Apply caption style from preferences if system caption style is undefined.
-  if (!style) {
-    style = pref_names_util::GetCaptionStyleFromPrefs(prefs);
-
-    base::UmaHistogramBoolean("Accessibility.CaptionSettingsLoadedFromPrefs",
-                              style.has_value());
-  }
-
+  base::Optional<ui::CaptionStyle> style =
+      captions::GetCaptionStyleFromUserSettings(prefs,
+                                                true /* record_metrics */);
   if (style) {
     web_prefs->text_track_background_color = style->background_color;
     web_prefs->text_track_text_color = style->text_color;

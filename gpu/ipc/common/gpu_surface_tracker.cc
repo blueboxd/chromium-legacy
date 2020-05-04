@@ -4,7 +4,7 @@
 
 #include "gpu/ipc/common/gpu_surface_tracker.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "build/build_config.h"
 
 #if defined(OS_ANDROID)

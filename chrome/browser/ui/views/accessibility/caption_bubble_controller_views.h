@@ -38,6 +38,10 @@ class CaptionBubbleControllerViews : public CaptionBubbleController {
   // Called when the active tab changes.
   void OnActiveTabChanged(int index) override;
 
+  // Called when the caption style changes.
+  void UpdateCaptionStyle(
+      base::Optional<ui::CaptionStyle> caption_style) override;
+
  private:
   friend class CaptionBubbleControllerViewsTest;
   // A callback passed to the CaptionBubble which is called when the

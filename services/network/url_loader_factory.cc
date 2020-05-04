@@ -14,6 +14,7 @@
 #include "base/notreached.h"
 #include "base/optional.h"
 #include "mojo/public/cpp/bindings/message.h"
+#include "net/cookies/cookie_constants.h"
 #include "services/network/cookie_manager.h"
 #include "services/network/cookie_settings.h"
 #include "services/network/cors/cors_url_loader_factory.h"
@@ -72,7 +73,8 @@ URLLoaderFactory::URLLoaderFactory(
       resource_scheduler_client_(std::move(resource_scheduler_client)),
       header_client_(std::move(params_->header_client)),
       coep_reporter_(std::move(params_->coep_reporter)),
-      cors_url_loader_factory_(cors_url_loader_factory) {
+      cors_url_loader_factory_(cors_url_loader_factory),
+      cookie_observer_(std::move(params_->cookie_observer)) {
   DCHECK(context);
   DCHECK_NE(mojom::kInvalidProcessId, params_->process_id);
   DCHECK(!params_->factory_override);
@@ -238,6 +240,16 @@ void URLLoaderFactory::CreateLoaderAndStart(
             base::Unretained(context_->cookie_manager())));
   }
 
+  mojo::PendingRemote<mojom::CookieAccessObserver> cookie_observer;
+  if (url_request.trusted_params &&
+      url_request.trusted_params->cookie_observer) {
+    cookie_observer =
+        std::move(const_cast<mojo::PendingRemote<mojom::CookieAccessObserver>&>(
+            url_request.trusted_params->cookie_observer));
+  } else if (cookie_observer_) {
+    cookie_observer_->Clone(cookie_observer.InitWithNewPipeAndPassReceiver());
+  }
+
   auto loader = std::make_unique<URLLoader>(
       context_->url_request_context(), network_service_client,
       context_->client(),
@@ -250,7 +262,8 @@ void URLLoaderFactory::CreateLoaderAndStart(
       std::move(keepalive_statistics_recorder),
       std::move(network_usage_accumulator),
       header_client_.is_bound() ? header_client_.get() : nullptr,
-      context_->origin_policy_manager(), std::move(trust_token_factory));
+      context_->origin_policy_manager(), std::move(trust_token_factory),
+      std::move(cookie_observer));
 
   cors_url_loader_factory_->OnLoaderCreated(std::move(loader));
 }

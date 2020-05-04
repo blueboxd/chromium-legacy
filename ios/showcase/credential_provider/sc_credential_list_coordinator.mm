@@ -51,8 +51,23 @@ NSArray<id<Credential>>* suggestedPasswords = @[
   [[SCCredential alloc] initWithServiceName:@"domain.com"
                           serviceIdentifier:@"www.domain.com"
                                        user:@"janesmythe"],
+  [[SCCredential alloc] initWithServiceName:@"domain.com"
+                          serviceIdentifier:@"www.domain.com"
+                                       user:@"johnsmith"],
+  [[SCCredential alloc] initWithServiceName:@"domain.com"
+                          serviceIdentifier:@"www.domain.com"
+                                       user:@"janesmythe"],
 ];
 NSArray<id<Credential>>* allPasswords = @[
+  [[SCCredential alloc] initWithServiceName:@"domain1.com"
+                          serviceIdentifier:@"www.domain1.com"
+                                       user:@"jsmythe@fazebook.com"],
+  [[SCCredential alloc] initWithServiceName:@"domain2.com"
+                          serviceIdentifier:@"www.domain2.com"
+                                       user:@"jasmith@twitcher.com"],
+  [[SCCredential alloc] initWithServiceName:@"domain3.com"
+                          serviceIdentifier:@"www.domain3.com"
+                                       user:@"HughZername"],
   [[SCCredential alloc] initWithServiceName:@"domain1.com"
                           serviceIdentifier:@"www.domain1.com"
                                        user:@"jsmythe@fazebook.com"],

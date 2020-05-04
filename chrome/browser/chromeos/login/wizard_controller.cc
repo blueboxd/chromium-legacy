@@ -688,8 +688,7 @@ void WizardController::ShowFingerprintSetupScreen() {
 }
 
 void WizardController::ShowMarketingOptInScreen() {
-  MarketingOptInScreen* screen = MarketingOptInScreen::Get(screen_manager());
-  SetCurrentScreen(screen);
+  SetCurrentScreen(GetScreen(MarketingOptInScreenView::kScreenId));
 }
 
 void WizardController::ShowArcTermsOfServiceScreen() {
@@ -1184,8 +1183,11 @@ void WizardController::OnGestureNavigationScreenExit(
   ShowMarketingOptInScreen();
 }
 
-void WizardController::OnMarketingOptInScreenExit() {
-  OnScreenExit(MarketingOptInScreenView::kScreenId, kDefaultExitReason);
+void WizardController::OnMarketingOptInScreenExit(
+    MarketingOptInScreen::Result result) {
+  OnScreenExit(MarketingOptInScreenView::kScreenId,
+               MarketingOptInScreen::GetResultString(result));
+
   OnOobeFlowFinished();
 }
 

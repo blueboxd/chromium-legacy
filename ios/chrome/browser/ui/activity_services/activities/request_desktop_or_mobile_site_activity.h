@@ -14,9 +14,6 @@
 // Activity to request the Desktop or Mobile version of the page.
 @interface RequestDesktopOrMobileSiteActivity : UIActivity
 
-// Identifier for the activity.
-+ (NSString*)activityIdentifier;
-
 // Initializes an activity to change between Mobile versus Desktop user agent,
 // with the current |userAgent| and |handler| to execute the action.
 - (instancetype)initWithUserAgent:(web::UserAgentType)userAgent

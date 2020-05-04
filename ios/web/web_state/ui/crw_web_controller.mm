@@ -596,12 +596,6 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
          web::IsContentTypeHtml(self.webState->GetContentsMimeType());
 }
 
-// Returns YES if the current live view is a web view with an image MIME type.
-- (BOOL)contentIsImage {
-  return self.webView &&
-         web::IsContentTypeImage(self.webState->GetContentsMimeType());
-}
-
 - (GURL)currentURLWithTrustLevel:(web::URLVerificationTrustLevel*)trustLevel {
   DCHECK(trustLevel) << "Verification of the trustLevel state is mandatory";
 

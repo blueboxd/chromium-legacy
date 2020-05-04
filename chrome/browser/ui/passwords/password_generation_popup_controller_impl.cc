@@ -311,8 +311,14 @@ void PasswordGenerationPopupControllerImpl::SetSelected() {
 }
 
 bool PasswordGenerationPopupControllerImpl::ShouldShowGoogleIcon() const {
-  return password_sync_state_ == password_manager::SyncState::
-                                     ACCOUNT_PASSWORDS_ACTIVE_NORMAL_ENCRYPTION;
+  // If the user has just opted in to passwords account storage, it's possible
+  // the state still evaluates to NOT_SYNCING. The popup is not shown in any
+  // other situation where the state is NOT_SYNCING, so adding it to the check
+  // here is fine.
+  return password_sync_state_ ==
+             password_manager::SyncState::
+                 ACCOUNT_PASSWORDS_ACTIVE_NORMAL_ENCRYPTION ||
+         password_sync_state_ == password_manager::SyncState::NOT_SYNCING;
 }
 
 gfx::NativeView PasswordGenerationPopupControllerImpl::container_view() const {

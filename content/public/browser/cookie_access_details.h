@@ -7,12 +7,13 @@
 
 #include "content/common/content_export.h"
 #include "net/cookies/canonical_cookie.h"
+#include "services/network/public/mojom/cookie_access_observer.mojom.h"
 #include "url/gurl.h"
 
 namespace content {
 
 struct CONTENT_EXPORT CookieAccessDetails {
-  enum class Type { kRead, kChange };
+  using Type = network::mojom::CookieAccessDetails::Type;
 
   CookieAccessDetails();
   CookieAccessDetails(Type type,

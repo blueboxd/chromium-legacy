@@ -30,10 +30,6 @@ NSString* const kPrintActivityType = @"com.google.chrome.printActivity";
 
 @implementation PrintActivity
 
-+ (NSString*)activityIdentifier {
-  return kPrintActivityType;
-}
-
 - (instancetype)initWithData:(ShareToData*)data
                      handler:(id<BrowserCommands>)handler {
   if (self = [super init]) {
@@ -46,7 +42,7 @@ NSString* const kPrintActivityType = @"com.google.chrome.printActivity";
 #pragma mark - UIActivity
 
 - (NSString*)activityType {
-  return [PrintActivity activityIdentifier];
+  return kPrintActivityType;
 }
 
 - (NSString*)activityTitle {

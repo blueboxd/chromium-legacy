@@ -1613,10 +1613,6 @@ crbug.com/791529 virtual/cascade/external/wpt/css/css-variables/variable-transit
 crbug.com/791529 virtual/cascade/external/wpt/css/css-variables/variable-transitions-value-before-transition-property-variable.html [ Skip ]
 crbug.com/989123 virtual/cascade/external/wpt/css/css-typed-om/the-stylepropertymap/computed/get-auto-min-size.html [ Failure ]
 
-# Flaky tests:
-crbug.com/987224 virtual/cascade/external/wpt/css/css-typed-om/interfaces.html [ Pass Timeout ]
-crbug.com/987224 [ IOS ] virtual/cascade/external/wpt/css/css-paint-api/idlharness.html [ Pass Timeout ]
-
 # ====== Cascade failures until here ======
 
 
@@ -6258,8 +6254,6 @@ crbug.com/1044715 [ Linux ] external/wpt/pointerevents/pointerevent_touch-action
 crbug.com/1044715 [ Win ] external/wpt/pointerevents/pointerevent_touch-action-inherit_child-pan-x-child-pan-x_touch.html [ Pass Timeout ]
 crbug.com/1044715 [ Linux ] external/wpt/pointerevents/pointerevent_touch-action-inherit_child-pan-x-child-pan-x_touch.html [ Pass Timeout ]
 
-crbug.com/1041848 virtual/off-main-thread-css-paint/external/wpt/css/css-paint-api/idlharness.html [ Pass Timeout ]
-
 # Ref_Tests which fail when SkiaRenderer is enable, and which cannot be
 # rebaselined. TODO(jonross): triage these into any existing bugs or file more
 # specific bugs.
@@ -6399,8 +6393,6 @@ crbug.com/1046201 [ Mac ] fast/forms/calendar-picker/calendar-picker-appearance-
 crbug.com/1046201 [ Mac ] virtual/cascade/fast/forms/calendar-picker/calendar-picker-appearance-zoom125.html [ Pass Failure ]
 crbug.com/1046201 [ Win10 ] virtual/cascade/fast/forms/calendar-picker/calendar-picker-appearance-zoom125.html [ Pass Failure ]
 crbug.com/1046440 fast/loader/submit-form-while-parsing-2.html [ Pass Failure Timeout ]
-crbug.com/1041851 [ Mac ] external/wpt/bluetooth/idl/idlharness.tentative.https.window.html [ Pass Timeout ]
-crbug.com/1041851 [ Win10 ] external/wpt/bluetooth/idl/idlharness.tentative.https.window.html [ Pass Timeout ]
 
 # Sheriff 2020-01-29
 crbug.com/1041847 virtual/gpu/fast/canvas/color-space/canvas-colorManaged-convertToBlob-roundtrip.html [ Pass Timeout ]

@@ -27,16 +27,10 @@ using ::testing::IsEmpty;
 namespace autofill_assistant {
 
 // User-friendly RectF string representation for matchers.
-//
-// operator<< must not be in an anonymous namespace to be usable in all
-// matchers.
 std::string ToString(const RectF& rect) {
-  return base::StringPrintf("RectF(%2.2f, %2.2f, %2.2f, %2.2f)", rect.left,
-                            rect.top, rect.right, rect.bottom);
-}
-
-std::ostream& operator<<(std::ostream& out, const RectF& rectf) {
-  return out << ToString(rectf);
+  std::ostringstream stream;
+  stream << rect;
+  return stream.str();
 }
 
 namespace {
@@ -394,6 +388,11 @@ TEST_F(ElementAreaTest, ElementMovesWithTime) {
 
   // Updated area is reported
   EXPECT_THAT(reported_area_, ElementsAre(MatchingRectF(0, 50, 100, 75)));
+  EXPECT_THAT(on_update_call_count_, 2);
+
+  // No update if the element's position has not changed.
+  task_environment_.FastForwardBy(base::TimeDelta::FromMilliseconds(100));
+  EXPECT_THAT(on_update_call_count_, 2);
 }
 
 TEST_F(ElementAreaTest, RestrictedElement) {

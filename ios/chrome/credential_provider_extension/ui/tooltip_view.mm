@@ -79,8 +79,10 @@ static __weak TooltipView* _active;
   anchor = [_keyWindow convertPoint:anchor fromView:view];
 
   self.frame = CGRectMake(0.0, 0.0, width, kTooltipTailHeight + height);
-  self.center = CGPointMake(MAX(width / 2, anchor.x),
-                            anchor.y + kTooltipTailHeight + height / 2.0);
+  self.center = CGPointMake(
+      MIN(_keyWindow.frame.size.width - width / 2 - kTooltipHorizontalPadding,
+          MAX(kTooltipHorizontalPadding + width / 2, anchor.x)),
+      anchor.y + kTooltipTailHeight + height / 2.0);
   self.translatesAutoresizingMaskIntoConstraints = NO;
 
   CGRect tooltipRect = CGRectMake(0.0, kTooltipTailHeight, width, height);

@@ -37,10 +37,6 @@ NSString* const kReadingListActivityType =
 
 @synthesize dispatcher = _dispatcher;
 
-+ (NSString*)activityIdentifier {
-  return kReadingListActivityType;
-}
-
 - (instancetype)initWithURL:(const GURL&)activityURL
                       title:(NSString*)title
                  dispatcher:(id<BrowserCommands>)dispatcher {
@@ -55,7 +51,7 @@ NSString* const kReadingListActivityType =
 #pragma mark - UIActivity
 
 - (NSString*)activityType {
-  return [[self class] activityIdentifier];
+  return kReadingListActivityType;
 }
 
 - (NSString*)activityTitle {

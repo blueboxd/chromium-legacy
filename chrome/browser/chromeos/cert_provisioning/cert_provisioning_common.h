@@ -7,6 +7,8 @@
 
 #include <string>
 
+#include "base/optional.h"
+#include "base/values.h"
 #include "chromeos/dbus/constants/attestation_constants.h"
 #include "components/policy/proto/device_management_backend.pb.h"
 #include "net/cert/x509_certificate.h"
@@ -47,6 +49,12 @@ enum class CertProvisioningWorkerState {
 
 using CertProfileId = std::string;
 
+// Names of CertProfile fields in a base::Value representation. Must be in sync
+// with definitions of RequiredClientCertificateForDevice and
+// RequiredClientCertificateForUser policies in policy_templates.json file.
+const char kCertProfileIdKey[] = "cert_profile_id";
+const char kCertProfilePolicyVersionKey[] = "policy_version";
+
 struct CertProfile {
   CertProfileId profile_id;
   std::string policy_version;
@@ -56,6 +64,7 @@ struct CertProfile {
   // all functions that fail to compile because of it).
   static constexpr int kVersion = 2;
 
+  static base::Optional<CertProfile> MakeFromValue(const base::Value& value);
   bool operator==(const CertProfile& other) const;
   bool operator!=(const CertProfile& other) const;
 };

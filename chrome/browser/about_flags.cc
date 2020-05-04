@@ -5489,6 +5489,10 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(views::features::kTextfieldFocusOnTapUp)},
 #endif  // defined(TOOLKIT_VIEWS)
 
+    {"permission-chip", flag_descriptions::kPermissionChipName,
+     flag_descriptions::kPermissionChipDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(features::kPermissionChip)},
+
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
     // Histograms" in tools/metrics/histograms/README.md (run the

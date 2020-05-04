@@ -3821,9 +3821,12 @@ NSString* const kBrowserViewControllerSnackbarCategory =
       locationBarDidBecomeFirstResponder:self.browserState];
 
   [self.primaryToolbarCoordinator transitionToLocationBarFocusedState:YES];
+
+  self.keyCommandsProvider.canDismissModals = YES;
 }
 
 - (void)locationBarDidResignFirstResponder {
+  self.keyCommandsProvider.canDismissModals = NO;
   [self.sideSwipeController setEnabled:YES];
 
   if (self.isNTPActiveForCurrentWebState) {

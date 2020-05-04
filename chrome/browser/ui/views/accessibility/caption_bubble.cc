@@ -14,6 +14,7 @@
 #include "build/build_config.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/vector_icons/vector_icons.h"
+#include "third_party/re2/src/re2/re2.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/hit_test.h"
@@ -41,7 +42,7 @@
 namespace {
 // Formatting constants
 static constexpr int kLineHeightDip = 24;
-static constexpr int kMaxHeightDip = kLineHeightDip * 2;
+static constexpr int kNumLines = 2;
 static constexpr int kCornerRadiusDip = 8;
 static constexpr int kHorizontalMarginsDip = 6;
 static constexpr int kVerticalMarginsDip = 8;
@@ -99,6 +100,8 @@ class CaptionBubbleFrameView : public views::BubbleFrameView {
   }
 
   ~CaptionBubbleFrameView() override = default;
+  CaptionBubbleFrameView(const CaptionBubbleFrameView&) = delete;
+  CaptionBubbleFrameView& operator=(const CaptionBubbleFrameView&) = delete;
 
   void UpdateFocusRing(bool focused) {
     contents_focused_ = focused;
@@ -143,7 +146,6 @@ class CaptionBubbleFrameView : public views::BubbleFrameView {
   const char* GetClassName() const override { return "CaptionBubbleFrameView"; }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(CaptionBubbleFrameView);
   views::View* close_button_;
   std::unique_ptr<views::FocusRing> focus_ring_;
   bool contents_focused_ = false;
@@ -266,8 +268,6 @@ void CaptionBubble::Init() {
       views::FlexSpecification(views::MinimumFlexSizeRule::kPreferred,
                                views::MaximumFlexSizeRule::kPreferred,
                                /*adjust_height_for_width*/ true));
-  content_container->SetPreferredSize(
-      gfx::Size(kMaxWidthDip, kMaxHeightDip + kVerticalMarginsDip));
 
   views::BoxLayout* main_layout =
       SetLayoutManager(std::make_unique<views::BoxLayout>(
@@ -288,30 +288,18 @@ void CaptionBubble::Init() {
   label->SetEnabledColor(SK_ColorWHITE);
   label->SetBackgroundColor(SK_ColorTRANSPARENT);
   label->SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_LEFT);
-  label->SetLineHeight(kLineHeightDip);
   label->SetTooltipText(base::string16());
-
-  // TODO(crbug.com/1055150): Respect the user's font size and minimum font size
-  // settings rather than having a fixed font size.
-  const gfx::FontList font_list = gfx::FontList(
-      {kPrimaryFont, kSecondaryFont, kTertiaryFont},
-      gfx::Font::FontStyle::NORMAL, kFontSizePx, gfx::Font::Weight::NORMAL);
-  label->SetFontList(font_list);
 
   auto title = std::make_unique<views::Label>();
   title->SetEnabledColor(gfx::kGoogleGrey500);
   title->SetBackgroundColor(SK_ColorTRANSPARENT);
   title->SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_CENTER);
-  title->SetLineHeight(kLineHeightDip);
-  title->SetFontList(font_list);
   title->SetText(l10n_util::GetStringUTF16(IDS_LIVE_CAPTION_BUBBLE_TITLE));
 
   auto error_message = std::make_unique<views::Label>();
   error_message->SetEnabledColor(SK_ColorWHITE);
   error_message->SetBackgroundColor(SK_ColorTRANSPARENT);
   error_message->SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_CENTER);
-  error_message->SetLineHeight(kLineHeightDip);
-  error_message->SetFontList(font_list);
   error_message->SetText(
       l10n_util::GetStringUTF16(IDS_LIVE_CAPTION_BUBBLE_ERROR));
   error_message->SetVisible(false);
@@ -331,11 +319,6 @@ void CaptionBubble::Init() {
   close_button->SetFocusForPlatform();
   views::InstallCircleHighlightPathGenerator(close_button.get());
 
-  // TODO(crbug.com/1055150): On hover, show/hide the close button. At that
-  // time remove the height of close button size from SetPreferredSize.
-  SetPreferredSize(
-      gfx::Size(kMaxWidthDip, kMaxHeightDip + kCloseButtonMargin +
-                                  close_button->GetPreferredSize().height()));
   set_margins(gfx::Insets(kCloseButtonMargin));
 
   title_ = content_container->AddChildView(std::move(title));
@@ -345,7 +328,9 @@ void CaptionBubble::Init() {
   error_message_ = content_container->AddChildView(std::move(error_message));
 
   close_button_ = AddChildView(std::move(close_button));
-  AddChildView(content_container);
+  content_container_ = AddChildView(content_container);
+
+  UpdateTextSize();
 }
 
 bool CaptionBubble::ShouldShowCloseButton() const {
@@ -449,7 +434,54 @@ void CaptionBubble::SetHasError(bool has_error) {
 void CaptionBubble::UpdateTitleVisibility() {
   // Show the title if there is room for it and no error.
   title_->SetVisible(!has_error_ &&
-                     label_->GetPreferredSize().height() < kMaxHeightDip);
+                     label_->GetPreferredSize().height() <
+                         kLineHeightDip * kNumLines * GetTextScaleFactor());
+}
+
+void CaptionBubble::UpdateCaptionStyle(
+    base::Optional<ui::CaptionStyle> caption_style) {
+  caption_style_ = caption_style;
+  UpdateTextSize();
+  SizeToContents();
+}
+
+double CaptionBubble::GetTextScaleFactor() {
+  double textScaleFactor = 1;
+  if (caption_style_) {
+    // ui::CaptionStyle states that text_size is percentage as a CSS string. It
+    // can sometimes have !important which is why this is a partial match.
+    bool match = RE2::PartialMatch(caption_style_->text_size, "(\\d+)%",
+                                   &textScaleFactor);
+    textScaleFactor = match ? textScaleFactor / 100 : 1;
+  }
+  return textScaleFactor;
+}
+
+void CaptionBubble::UpdateTextSize() {
+  double textScaleFactor = GetTextScaleFactor();
+
+  const gfx::FontList font_list =
+      gfx::FontList({kPrimaryFont, kSecondaryFont, kTertiaryFont},
+                    gfx::Font::FontStyle::NORMAL, kFontSizePx * textScaleFactor,
+                    gfx::Font::Weight::NORMAL);
+  label_->SetFontList(font_list);
+  title_->SetFontList(font_list);
+  error_message_->SetFontList(font_list);
+
+  label_->SetLineHeight(kLineHeightDip * textScaleFactor);
+  title_->SetLineHeight(kLineHeightDip * textScaleFactor);
+  error_message_->SetLineHeight(kLineHeightDip * textScaleFactor);
+
+  int content_height =
+      has_error_ ? kLineHeightDip * textScaleFactor + kErrorImageSizeDip
+                 : kLineHeightDip * kNumLines * textScaleFactor;
+  content_container_->SetPreferredSize(
+      gfx::Size(kMaxWidthDip, content_height + kVerticalMarginsDip));
+  // TODO(crbug.com/1055150): On hover, show/hide the close button. At that
+  // time remove the height of close button size from SetPreferredSize.
+  SetPreferredSize(
+      gfx::Size(kMaxWidthDip, content_height + kCloseButtonMargin +
+                                  close_button_->GetPreferredSize().height()));
 }
 
 }  // namespace captions

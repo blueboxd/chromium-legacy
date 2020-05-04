@@ -21128,6 +21128,23 @@ If you enable or don't configure this policy, web page scrolling to specific tex
 
 If you disable this policy, web page scrolling to specific text fragments via URL will be disabled.''',
     },
+    {
+      'name': 'LoginDisplayPasswordButtonEnabled',
+      'owners': ['tellier@google.com', 'rsorokin@chromium.org', 'cros-oac@google.com'],
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome_os:84-'],
+      'features': {
+        'dynamic_refresh': False,
+        'per_profile': True,
+      },
+      'example_value': False,
+      'default_for_enterprise_users': False,
+      'id': 701,
+      'caption': '''Enable password displaying button on lock/start screen.''',
+      'tags': [],
+      'desc': '''This feature allows the password on the lock/start screen to be displayed by the user after clicking on a button.''',
+    },
   ],
 
   'messages': {
@@ -21982,6 +21999,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   ],
   'placeholders': [],
   'deleted_policy_ids': [412, 476, 546, 562, 569, 578],
-  'highest_id_currently_used': 700,
+  'highest_id_currently_used': 701,
   'highest_atomic_group_id_currently_used': 38
 }

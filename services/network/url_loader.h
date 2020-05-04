@@ -30,6 +30,7 @@
 #include "services/network/cross_origin_read_blocking.h"
 #include "services/network/keepalive_statistics_recorder.h"
 #include "services/network/public/cpp/initiator_lock_compatibility.h"
+#include "services/network/public/mojom/cookie_access_observer.mojom.h"
 #include "services/network/public/mojom/cross_origin_embedder_policy.mojom-forward.h"
 #include "services/network/public/mojom/fetch_api.mojom.h"
 #include "services/network/public/mojom/network_service.mojom.h"
@@ -114,7 +115,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
       mojom::TrustedURLLoaderHeaderClient* url_loader_header_client,
       mojom::OriginPolicyManager* origin_policy_manager,
       std::unique_ptr<TrustTokenRequestHelperFactory>
-          trust_token_helper_factory);
+          trust_token_helper_factory,
+      mojo::PendingRemote<mojom::CookieAccessObserver> cookie_observer);
   ~URLLoader() override;
 
   // mojom::URLLoader implementation:
@@ -480,6 +482,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
   // TODO(lukasza): https://crbug.com/920638: Remove
   // |isolated_world_origin_| once we gather enough UMA and Rappor data.
   const base::Optional<url::Origin> isolated_world_origin_;
+
+  // Observer listening to all cookie reads and writes made by this request.
+  mojo::Remote<mojom::CookieAccessObserver> cookie_observer_;
 
   base::WeakPtrFactory<URLLoader> weak_ptr_factory_{this};
 

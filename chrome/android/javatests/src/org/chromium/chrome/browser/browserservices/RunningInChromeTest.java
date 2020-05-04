@@ -25,6 +25,7 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.RuleChain;
+import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.ContextUtils;
@@ -32,14 +33,20 @@ import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.customtabs.CustomTabActivityTestRule;
+import org.chromium.chrome.browser.dependency_injection.ChromeActivityCommonsModule;
+import org.chromium.chrome.browser.dependency_injection.ModuleOverridesRule;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
+import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.ui.messages.snackbar.Snackbar;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.browser.Features;
+import org.chromium.components.browser_ui.notifications.MockNotificationManagerProxy;
+import org.chromium.components.browser_ui.notifications.NotificationManagerProxy;
 import org.chromium.components.embedder_support.util.Origin;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.net.test.EmbeddedTestServerRule;
@@ -57,14 +64,6 @@ import java.util.concurrent.TimeoutException;
 public class RunningInChromeTest {
     private static final String TAG = "RunningInChrome";
 
-    public CustomTabActivityTestRule mCustomTabActivityTestRule = new CustomTabActivityTestRule();
-    public EmbeddedTestServerRule mEmbeddedTestServerRule = new EmbeddedTestServerRule();
-
-    @Rule
-    public RuleChain mRuleChain = RuleChain.emptyRuleChain()
-            .around(mCustomTabActivityTestRule)
-            .around(mEmbeddedTestServerRule);
-
     private static final String TEST_PAGE = "/chrome/test/data/android/google.html";
     private static final String PACKAGE_NAME =
             ContextUtils.getApplicationContext().getPackageName();
@@ -72,8 +71,39 @@ public class RunningInChromeTest {
     private static final Set<Integer> TEST_SNACKBARS = new HashSet<>(Arrays.asList(
             Snackbar.UMA_TWA_PRIVACY_DISCLOSURE, Snackbar.UMA_TWA_PRIVACY_DISCLOSURE_V2));
 
+    private final CustomTabActivityTestRule mCustomTabActivityTestRule =
+            new CustomTabActivityTestRule();
+    private final EmbeddedTestServerRule mEmbeddedTestServerRule = new EmbeddedTestServerRule();
+    private final TestRule mModuleOverridesRule = new ModuleOverridesRule()
+            .setOverride(ChromeActivityCommonsModule.Factory.class,
+                    ChromeActivityCommonsModuleForTest::new);
+
+    @Rule
+    public RuleChain mRuleChain = RuleChain.emptyRuleChain()
+            .around(mCustomTabActivityTestRule)
+            .around(mEmbeddedTestServerRule)
+            .around(mModuleOverridesRule);
+
+    /**
+     * This class causes Dagger to provide our MockNotificationManagerProxy instead of the real one.
+     */
+    class ChromeActivityCommonsModuleForTest extends ChromeActivityCommonsModule {
+        public ChromeActivityCommonsModuleForTest(ChromeActivity<?> activity,
+                ActivityLifecycleDispatcher lifecycleDispatcher) {
+            super(activity, lifecycleDispatcher);
+        }
+
+        @Override
+        public NotificationManagerProxy provideNotificationManagerProxy() {
+            return mMockNotificationManager;
+        }
+    }
+
+
     private String mTestPage;
     private BrowserServicesStore mStore;
+    private final MockNotificationManagerProxy mMockNotificationManager =
+            new MockNotificationManagerProxy();
 
     @Before
     public void setUp() {
@@ -82,6 +112,8 @@ public class RunningInChromeTest {
 
         mEmbeddedTestServerRule.setServerUsesHttps(true); // TWAs only work with HTTPS.
         mTestPage = mEmbeddedTestServerRule.getServer().getURL(TEST_PAGE);
+
+        mMockNotificationManager.setNotificationsEnabled(false);
 
         mStore = new BrowserServicesStore(
                 ChromeApplication.getComponent().resolveSharedPreferencesManager());

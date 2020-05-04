@@ -42,6 +42,8 @@ void WakeUpBudgetPool::RecordTaskRunTime(TaskQueue* queue,
 
 bool WakeUpBudgetPool::CanRunTasksAt(base::TimeTicks moment,
                                      bool is_wake_up) const {
+  if (!is_enabled_)
+    return true;
   if (!last_wake_up_)
     return false;
   // |is_wake_up| flag means that we're in the beginning of the wake-up and
@@ -56,6 +58,8 @@ bool WakeUpBudgetPool::CanRunTasksAt(base::TimeTicks moment,
 base::Optional<base::TimeTicks> WakeUpBudgetPool::GetTimeTasksCanRunUntil(
     base::TimeTicks now,
     bool is_wake_up) const {
+  if (!is_enabled_)
+    return base::nullopt;
   if (!last_wake_up_)
     return base::TimeTicks();
   if (!CanRunTasksAt(now, is_wake_up))
@@ -80,6 +84,8 @@ base::TimeTicks SnapToNextTickStrict(base::TimeTicks moment,
 
 base::TimeTicks WakeUpBudgetPool::GetNextAllowedRunTime(
     base::TimeTicks desired_run_time) const {
+  if (!is_enabled_)
+    return desired_run_time;
   if (!last_wake_up_)
     return SnapToNextTickStrict(desired_run_time, wake_up_interval_);
   if (desired_run_time < last_wake_up_.value() + wake_up_duration_)

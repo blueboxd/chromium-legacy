@@ -228,14 +228,19 @@
     ]];
   }
 
+  if (self.canDismissModals) {
+    [keyCommands
+        addObject:[UIKeyCommand
+                      cr_keyCommandWithInput:UIKeyInputEscape
+                               modifierFlags:Cr_UIKeyModifierNone
+                                       title:nil
+                                      action:^{
+                                        [weakDispatcher dismissModalDialogs];
+                                      }]];
+  }
+
   // List the commands that don't appear in the HUD but are always present.
   [keyCommands addObjectsFromArray:@[
-    [UIKeyCommand cr_keyCommandWithInput:UIKeyInputEscape
-                           modifierFlags:Cr_UIKeyModifierNone
-                                   title:nil
-                                  action:^{
-                                    [weakDispatcher dismissModalDialogs];
-                                  }],
     [UIKeyCommand cr_keyCommandWithInput:@"n"
                            modifierFlags:UIKeyModifierCommand
                                    title:nil

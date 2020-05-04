@@ -119,19 +119,6 @@ constexpr int kDisabledAuthMessageRoundedCornerRadiusDp = 8;
 
 constexpr int kNonEmptyWidthDp = 1;
 
-// TODO(tellier): This should be removed in M84. See crbug.com/1062524
-const char kGmailDomain[] = "gmail.com";
-const char kGooglemailDomain[] = "googlemail.com";
-
-bool IsNotEnterpriseManagedEmail(const std::string& email) {
-  size_t separator_pos = email.find('@');
-  if (separator_pos != email.npos && separator_pos < email.length() - 1) {
-    std::string domain = base::ToLowerASCII(email.substr(separator_pos + 1));
-    return domain == kGmailDomain || domain == kGooglemailDomain;
-  }
-  return false;
-}
-
 // Returns an observer that will hide |view| when it fires. The observer will
 // delete itself after firing (by returning true). Make sure to call
 // |observer->SetActive()| after attaching it.
@@ -813,7 +800,7 @@ LoginAuthUserView::LoginAuthUserView(const LoginUserInfo& user,
   password_view->SetPaintToLayer();  // Needed for opacity animation.
   password_view->layer()->SetFillsBoundsOpaquely(false);
   password_view_->SetDisplayPasswordButtonVisible(
-      IsNotEnterpriseManagedEmail(user.basic_user_info.display_email));
+      user.show_display_password_button);
 
   auto pin_view = std::make_unique<LoginPinView>(
       LoginPinView::Style::kAlphanumeric,
@@ -1224,7 +1211,7 @@ void LoginAuthUserView::UpdateForUser(const LoginUserInfo& user) {
   if (user_changed) {
     password_view_->Reset();
     password_view_->SetDisplayPasswordButtonVisible(
-        IsNotEnterpriseManagedEmail(user.basic_user_info.display_email));
+        user.show_display_password_button);
   }
   online_sign_in_message_->SetText(
       l10n_util::GetStringUTF16(IDS_ASH_LOGIN_SIGN_IN_REQUIRED_MESSAGE));

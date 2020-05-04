@@ -25,6 +25,7 @@
 #include "net/cookies/cookie_store.h"
 #include "net/cookies/cookie_util.h"
 #include "services/network/cookie_settings.h"
+#include "services/network/public/mojom/cookie_access_observer.mojom.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "url/gurl.h"
@@ -178,20 +179,14 @@ RestrictedCookieManager::RestrictedCookieManager(
     const url::Origin& origin,
     const net::SiteForCookies& site_for_cookies,
     const url::Origin& top_frame_origin,
-    mojom::NetworkContextClient* network_context_client,
-    bool is_service_worker,
-    int32_t process_id,
-    int32_t frame_id)
+    mojo::PendingRemote<mojom::CookieAccessObserver> cookie_observer)
     : role_(role),
       cookie_store_(cookie_store),
       cookie_settings_(cookie_settings),
       origin_(origin),
       site_for_cookies_(site_for_cookies),
       top_frame_origin_(top_frame_origin),
-      network_context_client_(network_context_client),
-      is_service_worker_(is_service_worker),
-      process_id_(process_id),
-      frame_id_(frame_id) {
+      cookie_observer_(std::move(cookie_observer)) {
   DCHECK(cookie_store);
 }
 
@@ -293,10 +288,10 @@ void RestrictedCookieManager::CookieListToGetAllForUrlCallback(
     result_with_status.push_back({cookie, status});
   }
 
-  if (network_context_client_) {
-    network_context_client_->OnCookiesRead(is_service_worker_, process_id_,
-                                           frame_id_, url, site_for_cookies,
-                                           result_with_status, base::nullopt);
+  if (cookie_observer_) {
+    cookie_observer_->OnCookiesAccessed(mojom::CookieAccessDetails::New(
+        mojom::CookieAccessDetails::Type::kRead, url, site_for_cookies,
+        result_with_status, base::nullopt));
   }
 
   if (blocked) {
@@ -344,12 +339,12 @@ void RestrictedCookieManager::SetCanonicalCookie(
       domain_match);
 
   if (!status.IsInclude()) {
-    if (network_context_client_) {
+    if (cookie_observer_) {
       std::vector<net::CookieWithStatus> result_with_status = {
           {cookie, status}};
-      network_context_client_->OnCookiesChanged(
-          is_service_worker_, process_id_, frame_id_, url, site_for_cookies,
-          result_with_status, base::nullopt);
+      cookie_observer_->OnCookiesAccessed(mojom::CookieAccessDetails::New(
+          mojom::CookieAccessDetails::Type::kChange, url, site_for_cookies,
+          result_with_status, base::nullopt));
     }
     std::move(callback).Run(false);
     return;
@@ -396,12 +391,12 @@ void RestrictedCookieManager::SetCanonicalCookieResult(
   DCHECK(!status.HasExclusionReason(
       CookieInclusionStatus::EXCLUDE_USER_PREFERENCES));
 
-  if (network_context_client_) {
-    if (status.IsInclude() || status.ShouldWarn()) {
+  if (status.IsInclude() || status.ShouldWarn()) {
+    if (cookie_observer_) {
       notify.push_back({cookie, status});
-      network_context_client_->OnCookiesChanged(
-          is_service_worker_, process_id_, frame_id_, url, site_for_cookies,
-          std::move(notify), base::nullopt);
+      cookie_observer_->OnCookiesAccessed(mojom::CookieAccessDetails::New(
+          mojom::CookieAccessDetails::Type::kChange, url, site_for_cookies,
+          notify, base::nullopt));
     }
   }
   std::move(user_callback).Run(status.IsInclude());

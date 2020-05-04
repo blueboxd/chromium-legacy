@@ -8,6 +8,8 @@
 #include <memory>
 #include <string>
 
+#include "ui/native_theme/caption_style.h"
+
 class Browser;
 
 namespace captions {
@@ -35,6 +37,10 @@ class CaptionBubbleController {
 
   // Called when the active tab changes.
   virtual void OnActiveTabChanged(int index) {}
+
+  // Called when the caption style changes.
+  virtual void UpdateCaptionStyle(
+      base::Optional<ui::CaptionStyle> caption_style) {}
 };
 
 }  // namespace captions

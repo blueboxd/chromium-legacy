@@ -1610,6 +1610,11 @@ const char kPerMethodCanMakePaymentQuotaDescription[] =
     "Allow calling canMakePayment() for different payment methods, as long as "
     "method-specific parameters remain unchanged.";
 
+const char kPermissionChipName[] = "Permissions Chip Experiment";
+const char kPermissionChipDescription[] =
+    "Enables an experimental permission prompt that uses a chip in the location"
+    " bar.";
+
 const char kPointerLockOptionsName[] = "Enables pointer lock options";
 const char kPointerLockOptionsDescription[] =
     "Enables pointer lock unadjustedMovement. When unadjustedMovement is set "

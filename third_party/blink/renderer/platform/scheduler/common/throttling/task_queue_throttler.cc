@@ -328,19 +328,22 @@ void TaskQueueThrottler::UpdateQueueSchedulingLifecycleStateInternal(
     // Unblock queue if we can run tasks immediately.
     base::Optional<base::TimeTicks> unblock_until =
         GetTimeTasksCanRunUntil(queue, now, is_wake_up);
-    DCHECK(unblock_until);
-    if (unblock_until.value() > now) {
+    if (!unblock_until.has_value()) {
+      queue->RemoveFence();
+    } else if (unblock_until.value() > now) {
       queue->InsertFenceAt(unblock_until.value());
-    } else if (unblock_until.value() == now) {
-      queue->InsertFence(TaskQueue::InsertFencePosition::kNow);
     } else {
-      DCHECK_GE(unblock_until.value(), now);
+      DCHECK_EQ(unblock_until.value(), now);
+      queue->InsertFence(TaskQueue::InsertFencePosition::kNow);
     }
 
-    // Throttled time domain does not schedule wake-ups without explicitly
-    // being told so.
-    if (next_desired_run_time && next_desired_run_time.value() != now &&
-        next_desired_run_time.value() < unblock_until) {
+    // Throttled time domain does not schedule wake-ups without explicitly being
+    // told so. Schedule a wake up if there is a next desired run time in the
+    // future, and tasks can run at that time.
+    if (next_desired_run_time.has_value() &&
+        next_desired_run_time.value() != now &&
+        (!unblock_until.has_value() ||
+         next_desired_run_time.value() < unblock_until)) {
       time_domain_->SetNextTaskRunTime(next_desired_run_time.value());
     }
 

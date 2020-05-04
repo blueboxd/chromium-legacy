@@ -122,9 +122,8 @@ void ChromeExtensionCookies::IOData::CreateRestrictedCookieManager(
           network::mojom::RestrictedCookieManagerRole::SCRIPT,
           GetOrCreateCookieStore(), &network_cookie_settings_, origin,
           site_for_cookies, top_frame_origin,
-          /* null network_context_client disables logging, making later
-             arguments irrelevant */
-          nullptr, false, -1, -1),
+          /* null cookies_observer disables logging */
+          mojo::NullRemote()),
       std::move(receiver));
 }
 

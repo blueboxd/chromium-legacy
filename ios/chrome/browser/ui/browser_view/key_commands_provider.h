@@ -60,6 +60,10 @@
                     omniboxHandler:(id<OmniboxCommands>)omniboxHandler
                        editingText:(BOOL)editingText;
 
+// Set this flag to YES when the key shortcut bound to Escape key that dismisses
+// modals should be enabled.
+@property(nonatomic, assign) BOOL canDismissModals;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_BROWSER_VIEW_KEY_COMMANDS_PROVIDER_H_

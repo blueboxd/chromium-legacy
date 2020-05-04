@@ -13,9 +13,6 @@
 // Activity that sends the tab to another of the user's devices.
 @interface SendTabToSelfActivity : UIActivity
 
-// Identifier for the send tab to self activity.
-+ (NSString*)activityIdentifier;
-
 // Initializes the send tab to self activity with the given |data| and the
 // |handler| that is used to add the tab to the other device.
 - (instancetype)initWithData:(ShareToData*)data

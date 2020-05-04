@@ -23,10 +23,6 @@ NSString* const kCopyActivityType = @"com.google.chrome.copyActivity";
   GURL _URL;
 }
 
-+ (NSString*)activityIdentifier {
-  return kCopyActivityType;
-}
-
 #pragma mark - Public
 
 - (instancetype)initWithURL:(const GURL&)URL {
@@ -40,7 +36,7 @@ NSString* const kCopyActivityType = @"com.google.chrome.copyActivity";
 #pragma mark - UIActivity
 
 - (NSString*)activityType {
-  return [[self class] activityIdentifier];
+  return kCopyActivityType;
 }
 
 - (NSString*)activityTitle {

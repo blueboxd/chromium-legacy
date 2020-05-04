@@ -90,6 +90,7 @@
 #include "services/network/public/cpp/request_destination.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/public/cpp/wrapper_shared_url_loader_factory.h"
+#include "services/network/public/mojom/network_context.mojom-forward.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/loader/mime_sniffing_throttle.h"
@@ -193,7 +194,8 @@ const net::NetworkTrafficAnnotationTag kNavigationUrlLoaderTrafficAnnotation =
 
 std::unique_ptr<network::ResourceRequest> CreateResourceRequest(
     NavigationRequestInfo* request_info,
-    int frame_tree_node_id) {
+    int frame_tree_node_id,
+    StoragePartitionImpl* storage_partition) {
   // TODO(scottmg): Port over stuff from RDHI::BeginNavigationRequest() here.
   auto new_request = std::make_unique<network::ResourceRequest>();
 
@@ -205,6 +207,10 @@ std::unique_ptr<network::ResourceRequest> CreateResourceRequest(
       request_info->begin_params->force_ignore_site_for_cookies;
   new_request->trusted_params = network::ResourceRequest::TrustedParams();
   new_request->trusted_params->isolation_info = request_info->isolation_info;
+  new_request->trusted_params->cookie_observer =
+      storage_partition->CreateCookieAccessObserver(
+          /*is_service_worker=*/false, network::mojom::kBrowserProcessId,
+          frame_tree_node_id);
   new_request->is_main_frame = request_info->is_main_frame;
 
   net::RequestPriority net_priority = net::HIGHEST;
@@ -1341,14 +1347,14 @@ NavigationURLLoaderImpl::NavigationURLLoaderImpl(
   ServiceWorkerMainResourceHandleCore* service_worker_handle_core =
       service_worker_handle ? service_worker_handle->core() : nullptr;
 
-  std::unique_ptr<network::ResourceRequest> new_request =
-      CreateResourceRequest(request_info.get(), frame_tree_node_id);
-
   auto* partition = static_cast<StoragePartitionImpl*>(storage_partition);
   scoped_refptr<SignedExchangePrefetchMetricRecorder>
       signed_exchange_prefetch_metric_recorder =
           partition->GetPrefetchURLLoaderService()
               ->signed_exchange_prefetch_metric_recorder();
+
+  std::unique_ptr<network::ResourceRequest> new_request =
+      CreateResourceRequest(request_info.get(), frame_tree_node_id, partition);
 
   std::string accept_langs = GetContentClient()->browser()->GetAcceptLangs(
       partition->browser_context());

@@ -36,6 +36,7 @@ struct MenuCommand {
 };
 
 constexpr int kSpacingBetweenButtons = 2;
+constexpr int kEllipsesButtonTag = -1;
 
 }  // namespace
 
@@ -125,21 +126,18 @@ void TouchSelectionMenuViews::CreateButtons() {
     if (!client_->IsCommandIdEnabled(command.command_id))
       continue;
 
-    Button* button =
-        CreateButton(l10n_util::GetStringUTF16(command.message_id));
-    button->set_tag(command.command_id);
+    Button* button = CreateButton(l10n_util::GetStringUTF16(command.message_id),
+                                  command.command_id);
     AddChildView(button);
   }
 
-  // Finally, add ellipsis button.
-  LabelButton* ellipsis_button = CreateButton(base::ASCIIToUTF16("..."));
-  ellipsis_button->SetID(ButtonViewId::kEllipsisButton);
-  AddChildView(ellipsis_button);
+  // Finally, add ellipses button.
+  AddChildView(CreateButton(base::ASCIIToUTF16("..."), kEllipsesButtonTag));
   InvalidateLayout();
 }
 
-LabelButton* TouchSelectionMenuViews::CreateButton(
-    const base::string16& title) {
+LabelButton* TouchSelectionMenuViews::CreateButton(const base::string16& title,
+                                                   int tag) {
   base::string16 label =
       gfx::RemoveAcceleratorChar(title, '&', nullptr, nullptr);
   LabelButton* button = new LabelButton(this, label, style::CONTEXT_TOUCH_MENU);
@@ -147,6 +145,7 @@ LabelButton* TouchSelectionMenuViews::CreateButton(
   button->SetMinSize(kMenuButtonMinSize);
   button->SetFocusForPlatform();
   button->SetHorizontalAlignment(gfx::ALIGN_CENTER);
+  button->set_tag(tag);
   return button;
 }
 
@@ -181,7 +180,7 @@ void TouchSelectionMenuViews::WindowClosing() {
 void TouchSelectionMenuViews::ButtonPressed(Button* sender,
                                             const ui::Event& event) {
   CloseMenu();
-  if (sender->GetID() != ButtonViewId::kEllipsisButton)
+  if (sender->tag() != kEllipsesButtonTag)
     client_->ExecuteCommand(sender->tag(), event.flags());
   else
     client_->RunContextMenu();

@@ -15107,6 +15107,14 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
   <int value="7" label="Periodic Background Sync"/>
 </enum>
 
+<enum name="DevToolsIssuesPanelOpenedFrom">
+  <int value="0" label="Console Info Bar"/>
+  <int value="1" label="Learn More Link COEP"/>
+  <int value="2" label="Status Bar Issues Counter"/>
+  <int value="3" label="Hamburger Menu"/>
+  <int value="4" label="Adorner"/>
+</enum>
+
 <enum name="DevToolsKeyboardShortcutAction">
   <int value="0" label="Other shortcut"/>
   <int value="1" label="commandMenu.show"/>
@@ -20093,6 +20101,7 @@ Called by update_document_policy_enum.py.-->
   <int value="698" label="PluginVmUserId"/>
   <int value="699" label="OnSecurityEventEnterpriseConnector"/>
   <int value="700" label="AutoOpenFileTypes"/>
+  <int value="701" label="LoginDisplayPasswordButtonEnabled"/>
 </enum>
 
 <enum name="EnterprisePolicyDeviceIdValidity">
@@ -38115,6 +38124,7 @@ from previous Chrome versions.
   <int value="-1925117279" label="disable-quic-https"/>
   <int value="-1925106340" label="CameraSystemWebApp:disabled"/>
   <int value="-1921593903" label="ImeInputLogicHmm:disabled"/>
+  <int value="-1920912991" label="PermissionChip:disabled"/>
   <int value="-1919199528"
       label="AlwaysShowServerCardsInSyncTransport:disabled"/>
   <int value="-1916060206" label="enable-display-zoom-setting"/>
@@ -39594,6 +39604,7 @@ from previous Chrome versions.
   <int value="-250543540" label="DeferAllScript:enabled"/>
   <int value="-249415830" label="FilteringScrollPrediction:disabled"/>
   <int value="-248223420" label="AutofillKeyboardAccessory:disabled"/>
+  <int value="-245342115" label="PermissionChip:enabled"/>
   <int value="-241353344" label="MidiManagerWinrt:disabled"/>
   <int value="-240531943" label="ContextualSearchRankerQuery:disabled"/>
   <int value="-239616243" label="HighDynamicRange:enabled"/>

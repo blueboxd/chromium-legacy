@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "ui/native_theme/caption_style.h"
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
 #include "ui/views/controls/button/button.h"
 
@@ -32,8 +33,7 @@ class CaptionBubbleFrameView;
 class CaptionBubble : public views::BubbleDialogDelegateView,
                       public views::ButtonListener {
  public:
-  explicit CaptionBubble(views::View* anchor,
-                         base::OnceClosure destroyed_callback);
+  CaptionBubble(views::View* anchor, base::OnceClosure destroyed_callback);
   ~CaptionBubble() override;
   CaptionBubble(const CaptionBubble&) = delete;
   CaptionBubble& operator=(const CaptionBubble&) = delete;
@@ -43,6 +43,10 @@ class CaptionBubble : public views::BubbleDialogDelegateView,
 
   // Displays an error if |has_error|, otherwise displays the latest text.
   void SetHasError(bool has_error);
+
+  // Changes the caption style of the caption bubble. For now, this only sets
+  // the caption text size.
+  void UpdateCaptionStyle(base::Optional<ui::CaptionStyle> caption_style);
 
  protected:
   // views::BubbleDialogDelegateView:
@@ -66,6 +70,8 @@ class CaptionBubble : public views::BubbleDialogDelegateView,
   friend class CaptionBubbleControllerViewsTest;
 
   void UpdateTitleVisibility();
+  double GetTextScaleFactor();
+  void UpdateTextSize();
 
   // Unowned. Owned by views hierarchy.
   views::Label* label_;
@@ -74,8 +80,11 @@ class CaptionBubble : public views::BubbleDialogDelegateView,
   views::ImageView* error_icon_;
   views::ImageButton* close_button_;
   CaptionBubbleFrameView* frame_;
+  views::View* content_container_;
 
   bool has_error_ = false;
+
+  base::Optional<ui::CaptionStyle> caption_style_;
 
   base::ScopedClosureRunner destroyed_callback_;
 

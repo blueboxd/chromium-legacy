@@ -63,6 +63,12 @@ class MockCertProvisioningWorker : public CertProvisioningWorker {
   MOCK_METHOD(void, DoStep, (), (override));
   MOCK_METHOD(bool, IsWaiting, (), (const override));
   MOCK_METHOD(const CertProfile&, GetCertProfile, (), (const override));
+  MOCK_METHOD(const std::string&, GetPublicKey, (), (const override));
+  MOCK_METHOD(CertProvisioningWorkerState, GetState, (), (const override));
+  MOCK_METHOD(CertProvisioningWorkerState,
+              GetPreviousState,
+              (),
+              (const override));
 
   void SetExpectations(testing::Cardinality do_step_times,
                        bool is_waiting,

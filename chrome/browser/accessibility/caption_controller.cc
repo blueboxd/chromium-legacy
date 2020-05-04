@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/feature_list.h"
+#include "chrome/browser/accessibility/caption_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/component_updater/soda_component_installer.h"
 #include "chrome/browser/profiles/profile.h"
@@ -22,6 +23,19 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "media/base/media_switches.h"
+
+namespace {
+
+const char* const kCaptionStylePrefsToObserve[] = {
+    prefs::kAccessibilityCaptionsTextSize,
+    prefs::kAccessibilityCaptionsTextFont,
+    prefs::kAccessibilityCaptionsTextColor,
+    prefs::kAccessibilityCaptionsTextOpacity,
+    prefs::kAccessibilityCaptionsBackgroundColor,
+    prefs::kAccessibilityCaptionsTextShadow,
+    prefs::kAccessibilityCaptionsBackgroundOpacity};
+
+}  // namespace
 
 namespace captions {
 
@@ -100,12 +114,25 @@ void CaptionController::UpdateUIEnabled() {
 
     // Add observers to the BrowserList for new browser views being added.
     BrowserList::GetInstance()->AddObserver(this);
+
+    // Observe caption style prefs.
+    for (const char* const pref_name : kCaptionStylePrefsToObserve) {
+      pref_change_registrar_->Add(
+          pref_name, base::BindRepeating(&CaptionController::UpdateCaptionStyle,
+                                         base::Unretained(this)));
+    }
+    UpdateCaptionStyle();
   } else {
     // Destroy caption bubble controllers.
     caption_bubble_controllers_.clear();
 
     // Remove observers.
     BrowserList::GetInstance()->RemoveObserver(this);
+
+    // Remove prefs to observe.
+    for (const char* const pref_name : kCaptionStylePrefsToObserve) {
+      pref_change_registrar_->Remove(pref_name);
+    }
   }
 }
 
@@ -115,6 +142,7 @@ void CaptionController::OnBrowserAdded(Browser* browser) {
 
   caption_bubble_controllers_[browser] =
       CaptionBubbleController::Create(browser);
+  caption_bubble_controllers_[browser]->UpdateCaptionStyle(caption_style_);
 }
 
 void CaptionController::OnBrowserRemoved(Browser* browser) {
@@ -137,6 +165,18 @@ void CaptionController::DispatchTranscription(
   if (!caption_bubble_controllers_.count(browser))
     return;
   caption_bubble_controllers_[browser]->OnTranscription(transcription);
+}
+
+void CaptionController::UpdateCaptionStyle() {
+  PrefService* profile_prefs = profile_->GetPrefs();
+  // Metrics are recorded when passing the caption prefs to the browser, so do
+  // not duplicate them here.
+  caption_style_ = GetCaptionStyleFromUserSettings(profile_prefs,
+                                                   false /* record_metrics */);
+
+  for (const auto& item : caption_bubble_controllers_) {
+    caption_bubble_controllers_[item.first]->UpdateCaptionStyle(caption_style_);
+  }
 }
 
 }  // namespace captions

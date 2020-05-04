@@ -396,6 +396,7 @@ source_set("tests") {
     "//services/network/trust_tokens:tests",
     "//services/service_manager/public/cpp",
     "//services/service_manager/public/cpp/test:test_support",
+    "//testing/gmock",
     "//testing/gtest",
   ]
 

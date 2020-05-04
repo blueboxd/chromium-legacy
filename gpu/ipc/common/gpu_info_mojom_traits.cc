@@ -5,7 +5,7 @@
 #include "gpu/ipc/common/gpu_info_mojom_traits.h"
 #include "build/build_config.h"
 
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "mojo/public/cpp/base/time_mojom_traits.h"
 
 #if BUILDFLAG(ENABLE_VULKAN)

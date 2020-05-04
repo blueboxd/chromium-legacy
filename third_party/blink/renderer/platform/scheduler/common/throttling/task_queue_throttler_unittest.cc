@@ -1294,6 +1294,58 @@ TEST_P(TaskQueueThrottlerWithAutoAdvancingTimeTest,
                   base::TimeTicks() + base::TimeDelta::FromMilliseconds(3003)));
 }
 
+TEST_F(TaskQueueThrottlerTest, WakeUpBasedThrottling_EnableDisableThrottling) {
+  constexpr base::TimeDelta kDelay = base::TimeDelta::FromSeconds(10);
+  constexpr base::TimeDelta kTimeBetweenWakeUps =
+      base::TimeDelta::FromMinutes(1);
+  scheduler_->GetWakeUpBudgetPoolForTesting()->SetWakeUpRate(
+      1.0 / kTimeBetweenWakeUps.InSeconds());
+  scheduler_->GetWakeUpBudgetPoolForTesting()->SetWakeUpDuration(
+      base::TimeDelta::FromMilliseconds(1));
+  Vector<base::TimeTicks> run_times;
+
+  task_queue_throttler_->IncreaseThrottleRefCount(timer_queue_.get());
+
+  timer_task_runner_->PostDelayedTask(
+      FROM_HERE,
+      base::BindOnce(&RunChainedTask, MakeTaskDurations(10, base::TimeDelta()),
+                     timer_queue_, test_task_runner_, &run_times, kDelay),
+      kDelay);
+
+  // Throttling is enabled. Only 1 task runs per |kTimeBetweenWakeUps|.
+  test_task_runner_->FastForwardBy(kTimeBetweenWakeUps);
+
+  EXPECT_THAT(run_times, ElementsAre(base::TimeTicks() +
+                                     base::TimeDelta::FromSeconds(60)));
+  run_times.clear();
+
+  // Disable throttling. All tasks can run.
+  LazyNow lazy_now_1(test_task_runner_->GetMockTickClock());
+  scheduler_->GetWakeUpBudgetPoolForTesting()->DisableThrottling(&lazy_now_1);
+  test_task_runner_->FastForwardBy(5 * kDelay);
+
+  EXPECT_THAT(
+      run_times,
+      ElementsAre(base::TimeTicks() + base::TimeDelta::FromSeconds(70),
+                  base::TimeTicks() + base::TimeDelta::FromSeconds(80),
+                  base::TimeTicks() + base::TimeDelta::FromSeconds(90),
+                  base::TimeTicks() + base::TimeDelta::FromSeconds(100),
+                  base::TimeTicks() + base::TimeDelta::FromSeconds(110)));
+  run_times.clear();
+
+  // Throttling is enabled. Only 1 task runs per |kTimeBetweenWakeUps|.
+  LazyNow lazy_now_2(test_task_runner_->GetMockTickClock());
+  scheduler_->GetWakeUpBudgetPoolForTesting()->EnableThrottling(&lazy_now_2);
+  test_task_runner_->FastForwardUntilNoTasksRemain();
+
+  EXPECT_THAT(
+      run_times,
+      ElementsAre(base::TimeTicks() + base::TimeDelta::FromSeconds(120),
+                  base::TimeTicks() + base::TimeDelta::FromSeconds(180),
+                  base::TimeTicks() + base::TimeDelta::FromSeconds(240),
+                  base::TimeTicks() + base::TimeDelta::FromSeconds(300)));
+}
+
 TEST_F(TaskQueueThrottlerTest, WakeUpBasedThrottlingWithCPUBudgetThrottling) {
   scheduler_->GetWakeUpBudgetPoolForTesting()->SetWakeUpDuration(
       base::TimeDelta::FromMilliseconds(10));

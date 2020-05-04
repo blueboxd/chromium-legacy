@@ -9,6 +9,7 @@
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/site_instance_impl.h"
+#include "content/browser/storage_partition_impl.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
@@ -16,6 +17,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/common/web_preferences.h"
+#include "ipc/ipc_message.h"
 #include "net/base/isolation_info.h"
 #include "services/network/public/mojom/cross_origin_embedder_policy.mojom.h"
 #include "services/network/public/mojom/network_context.mojom.h"
@@ -47,7 +49,9 @@ network::mojom::URLLoaderFactoryParamsPtr CreateParams(
     mojo::PendingRemote<network::mojom::CrossOriginEmbedderPolicyReporter>
         coep_reporter,
     bool allow_universal_access_from_file_urls,
-    bool is_for_isolated_world) {
+    bool is_for_isolated_world,
+    bool is_for_service_worker,
+    int frame_routing_id) {
   DCHECK(process);
 
   // "chrome-guest://..." is never used as a main or isolated world origin.
@@ -90,6 +94,11 @@ network::mojom::URLLoaderFactoryParamsPtr CreateParams(
       process->GetBrowserContext(), origin, is_for_isolated_world,
       params.get());
 
+  params->cookie_observer =
+      static_cast<StoragePartitionImpl*>(process->GetStoragePartition())
+          ->CreateCookieAccessObserver(is_for_service_worker, process->GetID(),
+                                       frame_routing_id);
+
   return params;
 }
 
@@ -116,7 +125,9 @@ URLLoaderFactoryParamsHelper::CreateForFrame(
       frame->GetRenderViewHost()
           ->GetWebkitPreferences()
           .allow_universal_access_from_file_urls,
-      false);  // is_for_isolated_world
+      false,  // is_for_isolated_world
+      false,  // is_for_service_worker
+      frame->GetRoutingID());
 }
 
 // static
@@ -138,7 +149,9 @@ URLLoaderFactoryParamsHelper::CreateForIsolatedWorld(
                       frame->GetRenderViewHost()
                           ->GetWebkitPreferences()
                           .allow_universal_access_from_file_urls,
-                      true);  // is_for_isolated_world
+                      true,   // is_for_isolated_world
+                      false,  // is_for_service_worker
+                      frame->GetRoutingID());
 }
 
 network::mojom::URLLoaderFactoryParamsPtr
@@ -162,7 +175,9 @@ URLLoaderFactoryParamsHelper::CreateForPrefetch(
                       frame->GetRenderViewHost()
                           ->GetWebkitPreferences()
                           .allow_universal_access_from_file_urls,
-                      false);  // is_for_isolated_world
+                      false,  // is_for_isolated_world
+                      false,  // is_for_service_worker
+                      frame->GetRoutingID());
 }
 
 // static
@@ -182,8 +197,10 @@ URLLoaderFactoryParamsHelper::CreateForWorker(
                       isolation_info,
                       nullptr,  // client_security_state
                       std::move(coep_reporter),
-                      false,   // allow_universal_access_from_file_urls
-                      false);  // is_for_isolated_world
+                      false,  // allow_universal_access_from_file_urls
+                      false,  // is_for_isolated_world
+                      false,  // is_for_service_worker
+                      MSG_ROUTING_NONE);
 }
 
 // static
@@ -218,7 +235,9 @@ URLLoaderFactoryParamsHelper::CreateForRendererProcess(
       nullptr,             // client_security_state
       mojo::NullRemote(),  // coep_reporter
       false,               // allow_universal_access_from_file_urls
-      false);              // is_for_isolated_world
+      false,               // is_for_isolated_world
+      false,               // is_for_service_worker
+      MSG_ROUTING_NONE);
 }
 
 }  // namespace content

@@ -102,14 +102,18 @@ void RecordOptInAndOptOutRates(const bool user_opted_in,
 }  // namespace
 
 // static
-MarketingOptInScreen* MarketingOptInScreen::Get(ScreenManager* manager) {
-  return static_cast<MarketingOptInScreen*>(
-      manager->GetScreen(MarketingOptInScreenView::kScreenId));
+std::string MarketingOptInScreen::GetResultString(Result result) {
+  switch (result) {
+    case Result::NEXT:
+      return "Next";
+    case Result::NOT_APPLICABLE:
+      return BaseScreen::kNotApplicable;
+  }
 }
 
 MarketingOptInScreen::MarketingOptInScreen(
     MarketingOptInScreenView* view,
-    const base::RepeatingClosure& exit_callback)
+    const ScreenExitCallback& exit_callback)
     : BaseScreen(MarketingOptInScreenView::kScreenId,
                  OobeScreenPriority::DEFAULT),
       view_(view),
@@ -122,23 +126,29 @@ MarketingOptInScreen::~MarketingOptInScreen() {
   view_->Bind(nullptr);
 }
 
-void MarketingOptInScreen::ShowImpl() {
-  PrefService* prefs = ProfileManager::GetActiveUserProfile()->GetPrefs();
+// static
+MarketingOptInScreen* MarketingOptInScreen::Get(ScreenManager* manager) {
+  return static_cast<MarketingOptInScreen*>(
+      manager->GetScreen(MarketingOptInScreenView::kScreenId));
+}
 
-  // Skip the screen if:
-  //   1) the feature is disabled, or
-  //   2) it is a public session or non-regular ephemeral user login
+bool MarketingOptInScreen::MaybeSkip() {
   if (!base::FeatureList::IsEnabled(features::kOobeMarketingScreen) ||
       chrome_user_manager_util::IsPublicSessionOrEphemeralLogin()) {
-    exit_callback_.Run();
-    return;
+    exit_callback_.Run(Result::NOT_APPLICABLE);
+    return true;
   }
+
+  return false;
+}
+
+void MarketingOptInScreen::ShowImpl() {
+  PrefService* prefs = ProfileManager::GetActiveUserProfile()->GetPrefs();
 
   // Determine the country from the timezone
   country_ = GetCountryFromTimezone(g_browser_process->local_state()->GetString(
       prefs::kSigninScreenTimezone));
 
-  active_ = true;
   view_->Show();
 
   /* Hide the marketing opt-in option if:
@@ -179,12 +189,11 @@ void MarketingOptInScreen::ShowImpl() {
 }
 
 void MarketingOptInScreen::HideImpl() {
-  if (!active_)
+  if (is_hidden())
     return;
-
-  active_ = false;
   active_user_pref_change_registrar_.reset();
-  view_->Hide();
+  if (view_)
+    view_->Hide();
 }
 
 void MarketingOptInScreen::OnGetStarted(bool chromebook_email_opt_in) {
@@ -203,19 +212,11 @@ void MarketingOptInScreen::OnGetStarted(bool chromebook_email_opt_in) {
     }
   }
 
-  ExitScreen();
+  exit_callback_.Run(Result::NEXT);
 }
 
 void MarketingOptInScreen::SetA11yButtonVisibilityForTest(bool shown) {
   view_->UpdateA11ySettingsButtonVisibility(shown);
-}
-
-void MarketingOptInScreen::ExitScreen() {
-  if (!active_)
-    return;
-
-  active_ = false;
-  exit_callback_.Run();
 }
 
 void MarketingOptInScreen::OnA11yShelfNavigationButtonPrefChanged() {

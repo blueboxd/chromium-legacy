@@ -49,6 +49,7 @@
 #include "content/browser/renderer_host/render_widget_host_view_child_frame.h"
 #include "content/browser/screen_orientation/screen_orientation_provider.h"
 #include "content/browser/service_manager/service_manager_context.h"
+#include "content/browser/storage_partition_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/browser/web_contents/web_contents_view.h"
 #include "content/common/frame_messages.h"
@@ -1147,10 +1148,8 @@ void SimulateTapWithModifiersAt(WebContents* web_contents,
 }
 
 #if defined(USE_AURA)
-void SimulateTouchEventAt(WebContents* web_contents,
-                          ui::EventType event_type,
-                          const gfx::Point& point) {
-  ui::TouchEvent touch(event_type, point, base::TimeTicks(),
+void SimulateTouchPressAt(WebContents* web_contents, const gfx::Point& point) {
+  ui::TouchEvent touch(ui::ET_TOUCH_PRESSED, point, base::TimeTicks(),
                        ui::PointerDetails(ui::EventPointerType::kTouch, 0));
   static_cast<RenderWidgetHostViewAura*>(
       web_contents->GetRenderWidgetHostView())
@@ -3444,6 +3443,14 @@ int LoadBasicRequest(network::mojom::NetworkContext* network_context,
       network::mojom::URLLoaderFactoryParams::New();
   url_loader_factory_params->process_id = process_id;
   url_loader_factory_params->is_corb_enabled = false;
+  if (RenderFrameHostImpl* rfh =
+          RenderFrameHostImpl::FromID(process_id, render_frame_id)) {
+    url_loader_factory_params->cookie_observer =
+        static_cast<StoragePartitionImpl*>(
+            rfh->GetProcess()->GetStoragePartition())
+            ->CreateCookieAccessObserver(
+                /* is_service_worker=*/false, process_id, render_frame_id);
+  }
   url::Origin origin = url::Origin::Create(url);
   url_loader_factory_params->isolation_info =
       net::IsolationInfo::CreateForInternalRequest(origin);

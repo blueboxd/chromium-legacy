@@ -15,7 +15,8 @@
       TestRunner.addResult('request.url(): ' + request.url());
       TestRunner.addResult('request.failed: ' + request.failed);
 
-      const previewImage = createElementWithClass('img', 'image-network-icon-preview');
+      const previewImage = document.createElement('img');
+      previewImage.classList.add('image-network-icon-preview');
       request.populateImageSource(previewImage).then(() => {
         TestRunner.addResult('previewImage.src: ' + previewImage.src);
         TestRunner.completeTest();

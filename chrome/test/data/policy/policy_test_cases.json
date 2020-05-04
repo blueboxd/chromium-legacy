@@ -4866,6 +4866,18 @@
     "note": "This policy is used directly through the policy service instead of through a pref."
   },
 
+  "LoginDisplayPasswordButtonEnabled": {
+    "os": ["chromeos"],
+    "policy_pref_mapping_test": [
+      {
+        "policies": {
+          "LoginDisplayPasswordButtonEnabled": false
+        },
+        "prefs": { "login_display_password_button_enabled": {} }
+      }
+    ]
+  },
+
   "----- Chrome OS device policies ---------------------------------------": {},
 
   "DevicePolicyRefreshRate": {

@@ -7,7 +7,7 @@
 #include <memory>
 
 #include "base/bind.h"
-#include "base/logging.h"
+#include "base/check.h"
 #include "ui/gfx/gpu_fence.h"
 #include "ui/gl/gl_fence.h"
 

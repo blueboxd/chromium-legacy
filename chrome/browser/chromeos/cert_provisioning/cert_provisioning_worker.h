@@ -76,6 +76,13 @@ class CertProvisioningWorker {
   virtual bool IsWaiting() const = 0;
   // Returns CertProfile that this worker is working on.
   virtual const CertProfile& GetCertProfile() const = 0;
+  // Returns public key or an empty string if the key is not created yet.
+  virtual const std::string& GetPublicKey() const = 0;
+  // Returns current state.
+  virtual CertProvisioningWorkerState GetState() const = 0;
+  // Returns state that was before the current one. Especially helpful on failed
+  // workers.
+  virtual CertProvisioningWorkerState GetPreviousState() const = 0;
 };
 
 class CertProvisioningWorkerImpl : public CertProvisioningWorker {
@@ -92,9 +99,9 @@ class CertProvisioningWorkerImpl : public CertProvisioningWorker {
   void DoStep() override;
   bool IsWaiting() const override;
   const CertProfile& GetCertProfile() const override;
-
-  // For testing.
-  CertProvisioningWorkerState GetState() const;
+  const std::string& GetPublicKey() const override;
+  CertProvisioningWorkerState GetState() const override;
+  CertProvisioningWorkerState GetPreviousState() const override;
 
  private:
   friend class CertProvisioningSerializer;

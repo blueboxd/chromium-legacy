@@ -46,10 +46,6 @@ enum class SendTabToSelfClickResult {
 
 @implementation SendTabToSelfActivity
 
-+ (NSString*)activityIdentifier {
-  return kSendTabToSelfActivityType;
-}
-
 - (instancetype)initWithData:(ShareToData*)data
                      handler:(id<BrowserCommands>)handler {
   base::UmaHistogramEnumeration(kClickResultHistogramName,
@@ -64,7 +60,7 @@ enum class SendTabToSelfClickResult {
 #pragma mark - UIActivity
 
 - (NSString*)activityType {
-  return [[self class] activityIdentifier];
+  return kSendTabToSelfActivityType;
 }
 
 - (NSString*)activityTitle {

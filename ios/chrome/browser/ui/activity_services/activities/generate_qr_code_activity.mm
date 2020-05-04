@@ -31,10 +31,6 @@ NSString* const kGenerateQrCodeActivityType =
 
 @implementation GenerateQrCodeActivity
 
-+ (NSString*)activityIdentifier {
-  return kGenerateQrCodeActivityType;
-}
-
 - (instancetype)initWithURL:(const GURL&)activityURL
                       title:(NSString*)title
                     handler:(id<QRGenerationCommands>)handler {
@@ -49,7 +45,7 @@ NSString* const kGenerateQrCodeActivityType =
 #pragma mark - UIActivity
 
 - (NSString*)activityType {
-  return [[self class] activityIdentifier];
+  return kGenerateQrCodeActivityType;
 }
 
 - (NSString*)activityTitle {

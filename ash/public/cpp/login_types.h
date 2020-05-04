@@ -271,6 +271,10 @@ struct ASH_PUBLIC_EXPORT LoginUserInfo {
   // Show pin pad for password for this user or not.
   bool show_pin_pad_for_password = false;
 
+  // True if the display password button should be visible on the login/lock
+  // screen for this user.
+  bool show_display_password_button = true;
+
   // Contains the public account information if user type is PUBLIC_ACCOUNT.
   base::Optional<PublicAccountInfo> public_account_info;
 };

@@ -31,10 +31,6 @@ NSString* const kFindInPageActivityType =
 
 @implementation FindInPageActivity
 
-+ (NSString*)activityIdentifier {
-  return kFindInPageActivityType;
-}
-
 - (instancetype)initWithData:(ShareToData*)data
                      handler:(id<FindInPageCommands>)handler {
   self = [super init];
@@ -48,7 +44,7 @@ NSString* const kFindInPageActivityType =
 #pragma mark - UIActivity
 
 - (NSString*)activityType {
-  return [[self class] activityIdentifier];
+  return kFindInPageActivityType;
 }
 
 - (NSString*)activityTitle {

@@ -51,7 +51,11 @@ MockCertProvisioningWorkerFactory::ExpectDeserializeReturnMock(
 
 // ================ MockCertProvisioningWorker =================================
 
-MockCertProvisioningWorker::MockCertProvisioningWorker() = default;
+MockCertProvisioningWorker::MockCertProvisioningWorker() {
+  static const std::string default_public_key;
+  ON_CALL(*this, GetPublicKey).WillByDefault(ReturnRef(default_public_key));
+}
+
 MockCertProvisioningWorker::~MockCertProvisioningWorker() = default;
 
 void MockCertProvisioningWorker::SetExpectations(

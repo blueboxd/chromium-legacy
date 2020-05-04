@@ -101,7 +101,8 @@ class TestNavigationLoaderInterceptor : public NavigationLoaderInterceptor {
         0 /* keepalive_request_size */, resource_scheduler_client_,
         nullptr /* keepalive_statistics_recorder */,
         nullptr /* network_usage_accumulator */, nullptr /* header_client */,
-        nullptr /* origin_policy_manager */, nullptr /* trust_token_helper */);
+        nullptr /* origin_policy_manager */, nullptr /* trust_token_helper */,
+        mojo::NullRemote() /* cookie_observer */);
   }
 
   bool MaybeCreateLoaderForResponse(

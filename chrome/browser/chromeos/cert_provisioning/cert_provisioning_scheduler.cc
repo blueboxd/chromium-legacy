@@ -9,6 +9,8 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/optional.h"
+#include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/cert_provisioning/cert_provisioning_common.h"
@@ -27,8 +29,16 @@ namespace chromeos {
 namespace cert_provisioning {
 
 namespace {
-const char kCertProfileIdKey[] = "cert_profile_id";
-const char kPolicyVersionKey[] = "policy_version";
+
+template <typename Container, typename Value>
+void EraseKey(Container& container, const Value& value) {
+  auto iter = container.find(value);
+  if (iter == container.end()) {
+    return;
+  }
+
+  container.erase(iter);
+}
 
 const base::TimeDelta kInconsistentDataErrorRetryDelay =
     base::TimeDelta::FromSeconds(30);
@@ -155,6 +165,7 @@ CertProvisioningScheduler::CertProvisioningScheduler(
 }
 
 CertProvisioningScheduler::~CertProvisioningScheduler() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   network_state_handler_->RemoveObserver(this, FROM_HERE);
 }
 
@@ -260,14 +271,27 @@ void CertProvisioningScheduler::OnPrefsChange() {
   UpdateCerts();
 }
 
+void CertProvisioningScheduler::UpdateOneCert(
+    const std::string& cert_profile_id) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (!CheckInternetConnection()) {
+    return;
+  }
+
+  base::Optional<CertProfile> cert_profile = GetOneCertProfile(cert_profile_id);
+  if (!cert_profile) {
+    return;
+  }
+
+  ProcessProfile(cert_profile.value());
+}
+
 void CertProvisioningScheduler::UpdateCerts() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  if (!IsOnline()) {
-    is_waiting_for_online_ = true;
+  if (!CheckInternetConnection()) {
     return;
   }
-  is_waiting_for_online_ = false;
 
   if (certs_with_ids_getter_ && certs_with_ids_getter_->IsRunning()) {
     // Another UpdateCerts was started recently and still gethering info about
@@ -312,14 +336,16 @@ void CertProvisioningScheduler::OnGetCertsWithIdsDone(
   }
 }
 
-void CertProvisioningScheduler::ProcessProfile(const CertProfile& profile) {
+void CertProvisioningScheduler::ProcessProfile(
+    const CertProfile& cert_profile) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  CertProvisioningWorker* worker = FindWorker(profile.profile_id);
-  if (!worker ||
-      (worker->GetCertProfile().policy_version != profile.policy_version)) {
+  CertProvisioningWorker* worker = FindWorker(cert_profile.profile_id);
+  if (!worker || (worker->GetCertProfile().policy_version !=
+                  cert_profile.policy_version)) {
+    EraseKey(failed_cert_profiles_, cert_profile.profile_id);
     // Create new worker or replace an existing one.
-    CreateCertProvisioningWorker(profile);
+    CreateCertProvisioningWorker(cert_profile);
     return;
   }
 
@@ -352,6 +378,13 @@ void CertProvisioningScheduler::OnProfileFinished(
     CertProvisioningWorkerState state) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
+  auto worker_iter = workers_.find(profile.profile_id);
+  if (worker_iter == workers_.end()) {
+    NOTREACHED();
+    LOG(WARNING) << "Finished worker is not found";
+    return;
+  }
+
   switch (state) {
     case CertProvisioningWorkerState::kSucceed:
       VLOG(0) << "Successfully provisioned certificate for profile: "
@@ -365,17 +398,11 @@ void CertProvisioningScheduler::OnProfileFinished(
     default:
       LOG(ERROR) << "Failed to process certificate profile: "
                  << profile.profile_id;
-      failed_cert_profiles_.insert(profile.profile_id);
+      UpdateFailedCertProfiles(*(worker_iter->second));
       break;
   }
 
-  auto iter = workers_.find(profile.profile_id);
-  if (iter == workers_.end()) {
-    NOTREACHED();
-    LOG(WARNING) << "Finished worker is not found";
-    return;
-  }
-  workers_.erase(iter);
+  workers_.erase(worker_iter);
 }
 
 CertProvisioningWorker* CertProvisioningScheduler::FindWorker(
@@ -390,6 +417,28 @@ CertProvisioningWorker* CertProvisioningScheduler::FindWorker(
   return iter->second.get();
 }
 
+base::Optional<CertProfile> CertProvisioningScheduler::GetOneCertProfile(
+    const std::string& cert_profile_id) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  const base::Value* profile_list = pref_service_->Get(pref_name_);
+  if (!profile_list) {
+    LOG(WARNING) << "Preference is not found";
+    return {};
+  }
+
+  for (const base::Value& cur_profile : profile_list->GetList()) {
+    const std::string* id = cur_profile.FindStringKey(kCertProfileIdKey);
+    if (!id || (*id != cert_profile_id)) {
+      continue;
+    }
+
+    return CertProfile::MakeFromValue(cur_profile);
+  }
+
+  return base::nullopt;
+}
+
 std::vector<CertProfile> CertProvisioningScheduler::GetCertProfiles() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
@@ -401,40 +450,40 @@ std::vector<CertProfile> CertProvisioningScheduler::GetCertProfiles() {
 
   std::vector<CertProfile> result_profiles;
   for (const base::Value& cur_profile : profile_list->GetList()) {
-    const std::string* id = cur_profile.FindStringKey(kCertProfileIdKey);
-    const std::string* policy_version =
-        cur_profile.FindStringKey(kPolicyVersionKey);
-    if (!id || !policy_version) {
+    base::Optional<CertProfile> p = CertProfile::MakeFromValue(cur_profile);
+    if (!p) {
       LOG(WARNING) << "Failed to parse certificate profile";
       continue;
     }
 
-    result_profiles.emplace_back();
-    result_profiles.back().profile_id = *id;
-    result_profiles.back().policy_version = *policy_version;
+    result_profiles.emplace_back(std::move(p.value()));
   }
 
   return result_profiles;
 }
 
-size_t CertProvisioningScheduler::GetWorkerCount() const {
+const WorkerMap& CertProvisioningScheduler::GetWorkers() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return workers_.size();
+  return workers_;
 }
 
-const std::set<std::string>&
-CertProvisioningScheduler::GetFailedCertProfilesIds() const {
+const std::map<std::string, FailedWorkerInfo>&
+CertProvisioningScheduler::GetFailedCertProfileIds() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return failed_cert_profiles_;
 }
 
-bool CertProvisioningScheduler::IsOnline() const {
+bool CertProvisioningScheduler::CheckInternetConnection() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   const NetworkState* network = network_state_handler_->DefaultNetwork();
-  return network && network->IsOnline();
+  bool is_online = network && network->IsOnline();
+  is_waiting_for_online_ = !is_online;
+  return is_online;
 }
 
 void CertProvisioningScheduler::OnNetworkChange(
     const chromeos::NetworkState* network) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (is_waiting_for_online_ && network && network->IsOnline()) {
     UpdateCerts();
   }
@@ -442,12 +491,24 @@ void CertProvisioningScheduler::OnNetworkChange(
 
 void CertProvisioningScheduler::DefaultNetworkChanged(
     const chromeos::NetworkState* network) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   OnNetworkChange(network);
 }
 
 void CertProvisioningScheduler::NetworkConnectionStateChanged(
     const chromeos::NetworkState* network) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   OnNetworkChange(network);
+}
+
+void CertProvisioningScheduler::UpdateFailedCertProfiles(
+    const CertProvisioningWorker& worker) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  FailedWorkerInfo info;
+  info.state = worker.GetPreviousState();
+  info.public_key = worker.GetPublicKey();
+
+  failed_cert_profiles_[worker.GetCertProfile().profile_id] = std::move(info);
 }
 
 }  // namespace cert_provisioning

@@ -44,6 +44,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/components/proximity_auth/screenlock_bridge.h"
 #include "chromeos/components/proximity_auth/smart_lock_metrics_recorder.h"
+#include "chromeos/constants/chromeos_pref_names.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/dbus/cryptohome/cryptohome_client.h"
@@ -63,6 +64,8 @@
 namespace chromeos {
 
 namespace {
+
+bool g_skip_force_online_signin_for_testing = false;
 
 // User dictionary keys.
 const char kKeyUsername[] = "username";
@@ -450,8 +453,16 @@ void UserSelectionScreen::FillMultiProfileUserPrefs(
 }
 
 // static
+void UserSelectionScreen::SetSkipForceOnlineSigninForTesting(bool skip) {
+  g_skip_force_online_signin_for_testing = skip;
+}
+
+// static
 bool UserSelectionScreen::ShouldForceOnlineSignIn(
     const user_manager::User* user) {
+  if (g_skip_force_online_signin_for_testing)
+    return false;
+
   // Public sessions are always allowed to log in offline.
   // Supervised users are always allowed to log in offline.
   // For all other users, force online sign in if:
@@ -687,7 +698,7 @@ void UserSelectionScreen::HandleFocusPod(const AccountId& account_id) {
 
   bool use_24hour_clock = false;
   if (user_manager::known_user::GetBooleanPref(
-          account_id, prefs::kUse24HourClock, &use_24hour_clock)) {
+          account_id, ::prefs::kUse24HourClock, &use_24hour_clock)) {
     g_browser_process->platform_part()
         ->GetSystemClock()
         ->SetLastFocusedPodHourClockType(use_24hour_clock ? base::k24HourClock
@@ -918,6 +929,10 @@ UserSelectionScreen::UpdateAndReturnUserListForAsh() {
     chromeos::CrosSettings::Get()->GetBoolean(
         chromeos::kDeviceShowNumericKeyboardForPassword,
         &user_info.show_pin_pad_for_password);
+    user_manager::known_user::GetBooleanPref(
+        user->GetAccountId(),
+        chromeos::prefs::kLoginDisplayPasswordButtonEnabled,
+        &user_info.show_display_password_button);
 
     // Fill multi-profile data.
     if (!is_signin_to_add) {

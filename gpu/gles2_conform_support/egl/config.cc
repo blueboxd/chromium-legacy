@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "gpu/gles2_conform_support/egl/config.h"
-#include "base/logging.h"
+#include "base/check.h"
 
 namespace egl {
 

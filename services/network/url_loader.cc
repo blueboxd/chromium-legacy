@@ -56,6 +56,8 @@
 #include "services/network/public/cpp/origin_policy.h"
 #include "services/network/public/cpp/parsed_headers.h"
 #include "services/network/public/cpp/resource_request.h"
+#include "services/network/public/mojom/cookie_access_observer.mojom-forward.h"
+#include "services/network/public/mojom/cookie_access_observer.mojom.h"
 #include "services/network/public/mojom/origin_policy_manager.mojom.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
@@ -434,7 +436,8 @@ URLLoader::URLLoader(
     base::WeakPtr<NetworkUsageAccumulator> network_usage_accumulator,
     mojom::TrustedURLLoaderHeaderClient* url_loader_header_client,
     mojom::OriginPolicyManager* origin_policy_manager,
-    std::unique_ptr<TrustTokenRequestHelperFactory> trust_token_helper_factory)
+    std::unique_ptr<TrustTokenRequestHelperFactory> trust_token_helper_factory,
+    mojo::PendingRemote<mojom::CookieAccessObserver> cookie_observer)
     : url_request_context_(url_request_context),
       network_service_client_(network_service_client),
       network_context_client_(network_context_client),
@@ -472,7 +475,8 @@ URLLoader::URLLoader(
       fetch_window_id_(request.fetch_window_id),
       origin_policy_manager_(nullptr),
       trust_token_helper_factory_(std::move(trust_token_helper_factory)),
-      isolated_world_origin_(request.isolated_world_origin) {
+      isolated_world_origin_(request.isolated_world_origin),
+      cookie_observer_(std::move(cookie_observer)) {
   DCHECK(delete_callback_);
   DCHECK(factory_params_);
   if (url_loader_header_client &&
@@ -1672,7 +1676,7 @@ void URLLoader::SetRawRequestHeadersAndNotify(
         url_request_->maybe_sent_cookies(), std::move(header_array));
   }
 
-  if (network_context_client_) {
+  if (cookie_observer_) {
     net::CookieStatusList reported_cookies;
     for (const auto& cookie_and_status : url_request_->maybe_sent_cookies()) {
       if (ShouldNotifyAboutCookie(cookie_and_status.status)) {
@@ -1682,10 +1686,10 @@ void URLLoader::SetRawRequestHeadersAndNotify(
     }
 
     if (!reported_cookies.empty()) {
-      network_context_client_->OnCookiesRead(
-          /* is_service_worker = */ false, GetProcessId(), GetRenderFrameId(),
-          url_request_->url(), url_request_->site_for_cookies(),
-          reported_cookies, devtools_request_id());
+      cookie_observer_->OnCookiesAccessed(mojom::CookieAccessDetails::New(
+          mojom::CookieAccessDetails::Type::kRead, url_request_->url(),
+          url_request_->site_for_cookies(), reported_cookies,
+          devtools_request_id()));
     }
   }
 
@@ -1884,7 +1888,7 @@ void URLLoader::ReportFlaggedResponseCookies() {
         raw_response_headers);
   }
 
-  if (network_context_client_) {
+  if (cookie_observer_) {
     net::CookieStatusList reported_cookies;
     for (const auto& cookie_line_and_status :
          url_request_->maybe_stored_cookies()) {
@@ -1896,10 +1900,10 @@ void URLLoader::ReportFlaggedResponseCookies() {
     }
 
     if (!reported_cookies.empty()) {
-      network_context_client_->OnCookiesChanged(
-          /* is_service_worker = */ false, GetProcessId(), GetRenderFrameId(),
-          url_request_->url(), url_request_->site_for_cookies(),
-          reported_cookies, devtools_request_id());
+      cookie_observer_->OnCookiesAccessed(mojom::CookieAccessDetails::New(
+          mojom::CookieAccessDetails::Type::kChange, url_request_->url(),
+          url_request_->site_for_cookies(), reported_cookies,
+          devtools_request_id()));
     }
   }
 }

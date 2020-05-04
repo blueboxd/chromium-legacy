@@ -65,4 +65,9 @@ void CaptionBubbleControllerViews::OnActiveTabChanged(int index) {
   NOTIMPLEMENTED();
 }
 
+void CaptionBubbleControllerViews::UpdateCaptionStyle(
+    base::Optional<ui::CaptionStyle> caption_style) {
+  caption_bubble_->UpdateCaptionStyle(caption_style);
+}
+
 }  // namespace captions

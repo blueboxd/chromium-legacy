@@ -4,6 +4,15 @@
 
 package org.chromium.chrome.browser.browserservices.trustedwebactivityui;
 
+import static android.app.NotificationManager.IMPORTANCE_NONE;
+
+import static org.chromium.chrome.browser.notifications.channels.ChromeChannelDefinitions.ChannelId.TWA_DISCLOSURE_INITIAL;
+import static org.chromium.chrome.browser.notifications.channels.ChromeChannelDefinitions.ChannelId.TWA_DISCLOSURE_SUBSEQUENT;
+
+import android.annotation.TargetApi;
+import android.app.NotificationChannel;
+import android.os.Build;
+
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.view.DisclosureNotification;
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.view.DisclosureSnackbar;
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.view.DisclosureInfobar;
@@ -11,6 +20,7 @@ import org.chromium.chrome.browser.dependency_injection.ActivityScope;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.lifecycle.NativeInitObserver;
+import org.chromium.components.browser_ui.notifications.NotificationManagerProxy;
 
 import javax.inject.Inject;
 
@@ -29,16 +39,19 @@ public class DisclosureUiPicker implements NativeInitObserver {
     private final Lazy<DisclosureInfobar> mDisclosureInfobar;
     private final Lazy<DisclosureSnackbar> mDisclosureSnackbar;
     private final Lazy<DisclosureNotification> mDisclosureNotification;
+    private final NotificationManagerProxy mNotificationManager;
 
     @Inject
     public DisclosureUiPicker(
             Lazy<DisclosureInfobar> disclosureInfobar,
             Lazy<DisclosureSnackbar> disclosureSnackbar,
             Lazy<DisclosureNotification> disclosureNotification,
+            NotificationManagerProxy notificationManager,
             ActivityLifecycleDispatcher lifecycleDispatcher) {
         mDisclosureInfobar = disclosureInfobar;
         mDisclosureSnackbar = disclosureSnackbar;
         mDisclosureNotification = disclosureNotification;
+        mNotificationManager = notificationManager;
         lifecycleDispatcher.register(this);
     }
 
@@ -51,12 +64,32 @@ public class DisclosureUiPicker implements NativeInitObserver {
         // this logic into the constructor and let the Views call showIfNeeded() themselves in
         // their onFinishNativeInitialization.
 
-        if (ChromeFeatureList.isEnabled(ChromeFeatureList.TRUSTED_WEB_ACTIVITY_NEW_DISCLOSURE)) {
-            // TODO(https://crbug.com/1068106): Determine whether notifications (both in general and
-            // the two channels we care about) are enabled. If so call disclosureNotification.get().
-            mDisclosureSnackbar.get().showIfNeeded();
-        } else {
+        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.TRUSTED_WEB_ACTIVITY_NEW_DISCLOSURE)) {
             mDisclosureInfobar.get().showIfNeeded();
+        } else if (areNotificationsEnabled()) {
+            mDisclosureNotification.get().onStartWithNative();
+        } else {
+            mDisclosureSnackbar.get().showIfNeeded();
         }
+    }
+
+    private boolean areNotificationsEnabled() {
+        if (!mNotificationManager.areNotificationsEnabled()) return false;
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return true;
+
+        return isChannelEnabled(TWA_DISCLOSURE_INITIAL)
+                && isChannelEnabled(TWA_DISCLOSURE_SUBSEQUENT);
+    }
+
+    @TargetApi(Build.VERSION_CODES.O)
+    private boolean isChannelEnabled(String channelId) {
+        NotificationChannel channel = mNotificationManager.getNotificationChannel(channelId);
+
+        // If the Channel is null we've not created it yet. Since we know that Chrome notifications
+        // are not disabled in general, we know that once the channel is created it should be
+        // enabled.
+        if (channel == null) return true;
+
+        return channel.getImportance() != IMPORTANCE_NONE;
     }
 }

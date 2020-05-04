@@ -5,7 +5,6 @@
 #include <stdint.h>
 
 #include "base/format_macros.h"
-#include "base/logging.h"
 #include "base/strings/stringprintf.h"
 #include "gpu/config/gpu_test_expectations_parser.h"
 #include "testing/gtest/include/gtest/gtest.h"

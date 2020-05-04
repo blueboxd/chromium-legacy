@@ -195,7 +195,7 @@ TEST_F(CertProvisioningSchedulerTest, Success) {
 
   // The policy is empty, so no workers should be created yet.
   FastForwardBy(base::TimeDelta::FromSeconds(1));
-  EXPECT_EQ(scheduler.GetWorkerCount(), 0U);
+  EXPECT_EQ(scheduler.GetWorkers().size(), 0U);
 
   // One worker will be created on prefs update.
   const char kCertProfileId[] = "cert_profile_id_1";
@@ -216,15 +216,15 @@ TEST_F(CertProvisioningSchedulerTest, Success) {
            "renewal_period_seconds": 365000}])");
   pref_service_.Set(prefs::kRequiredClientCertificateForUser, config);
 
-  EXPECT_EQ(scheduler.GetWorkerCount(), 1U);
+  EXPECT_EQ(scheduler.GetWorkers().size(), 1U);
 
   // Emulate callback from the worker.
   scheduler.OnProfileFinished(cert_profile,
                               CertProvisioningWorkerState::kSucceed);
 
   // Finished worker should be deleted.
-  EXPECT_EQ(scheduler.GetWorkerCount(), 0U);
-  EXPECT_EQ(scheduler.GetFailedCertProfilesIds(), std::set<std::string>{});
+  EXPECT_EQ(scheduler.GetWorkers().size(), 0U);
+  EXPECT_TRUE(scheduler.GetFailedCertProfileIds().empty());
 
   certificate_helper_.AddCert();
 
@@ -255,7 +255,7 @@ TEST_F(CertProvisioningSchedulerTest, WorkerFailed) {
 
   // The policy is empty, so no workers should be created yet.
   FastForwardBy(base::TimeDelta::FromSeconds(1));
-  EXPECT_EQ(scheduler.GetWorkerCount(), 0U);
+  EXPECT_EQ(scheduler.GetWorkers().size(), 0U);
 
   // One worker will be created on prefs update.
   const char kCertProfileId[] = "cert_profile_id_1";
@@ -277,7 +277,7 @@ TEST_F(CertProvisioningSchedulerTest, WorkerFailed) {
   pref_service_.Set(prefs::kRequiredClientCertificateForUser, config);
 
   // Now 1 worker should be created.
-  EXPECT_EQ(scheduler.GetWorkerCount(), 1U);
+  EXPECT_EQ(scheduler.GetWorkers().size(), 1U);
 
   // Emulate callback from the worker.
   scheduler.OnProfileFinished(cert_profile,
@@ -285,9 +285,9 @@ TEST_F(CertProvisioningSchedulerTest, WorkerFailed) {
 
   // Failed worker should be deleted, failed profile ID is saved, no new
   // workers should be created.
-  EXPECT_EQ(scheduler.GetWorkerCount(), 0U);
-  EXPECT_EQ(scheduler.GetFailedCertProfilesIds(),
-            std::set<std::string>{kCertProfileId});
+  EXPECT_EQ(scheduler.GetWorkers().size(), 0U);
+  EXPECT_TRUE(
+      base::Contains(scheduler.GetFailedCertProfileIds(), kCertProfileId));
 
   certificate_helper_.AddCert();
 
@@ -332,19 +332,19 @@ TEST_F(CertProvisioningSchedulerTest, InitialAndDailyUpdates) {
   worker->SetExpectations(/*do_step_times=*/AtLeast(1), /*is_waiting=*/false,
                           cert_profile);
   FastForwardBy(base::TimeDelta::FromSeconds(1));
-  ASSERT_EQ(scheduler.GetWorkerCount(), 1U);
+  ASSERT_EQ(scheduler.GetWorkers().size(), 1U);
 
   // Emulate callback from the worker.
   CertProfile profile{kCertProfileId, kCertProfileVersion};
   scheduler.OnProfileFinished(profile, CertProvisioningWorkerState::kFailed);
 
-  ASSERT_EQ(scheduler.GetWorkerCount(), 0U);
-  EXPECT_EQ(scheduler.GetFailedCertProfilesIds(),
-            std::set<std::string>{kCertProfileId});
+  ASSERT_EQ(scheduler.GetWorkers().size(), 0U);
+  EXPECT_TRUE(
+      base::Contains(scheduler.GetFailedCertProfileIds(), kCertProfileId));
 
   // No workers should be created yet.
   FastForwardBy(base::TimeDelta::FromHours(20));
-  ASSERT_EQ(scheduler.GetWorkerCount(), 0U);
+  ASSERT_EQ(scheduler.GetWorkers().size(), 0U);
 
   // Now list of failed profiles should be cleared that will cause a new attempt
   // to provision certificate.
@@ -353,13 +353,13 @@ TEST_F(CertProvisioningSchedulerTest, InitialAndDailyUpdates) {
   worker2->SetExpectations(/*do_step_times=*/AtLeast(1), /*is_waiting=*/false,
                            cert_profile);
   FastForwardBy(base::TimeDelta::FromHours(5));
-  ASSERT_EQ(scheduler.GetWorkerCount(), 1U);
+  ASSERT_EQ(scheduler.GetWorkers().size(), 1U);
 
   // Emulate callback from the worker.
   scheduler.OnProfileFinished(profile, CertProvisioningWorkerState::kSucceed);
 
-  ASSERT_EQ(scheduler.GetWorkerCount(), 0U);
-  EXPECT_EQ(scheduler.GetFailedCertProfilesIds(), std::set<std::string>{});
+  ASSERT_EQ(scheduler.GetWorkers().size(), 0U);
+  EXPECT_TRUE(scheduler.GetFailedCertProfileIds().empty());
 }
 
 TEST_F(CertProvisioningSchedulerTest, MultipleWorkers) {
@@ -372,7 +372,7 @@ TEST_F(CertProvisioningSchedulerTest, MultipleWorkers) {
 
   // The policy is empty, so no workers should be created yet.
   FastForwardBy(base::TimeDelta::FromSeconds(1));
-  ASSERT_EQ(scheduler.GetWorkerCount(), 0U);
+  ASSERT_EQ(scheduler.GetWorkers().size(), 0U);
 
   // New workers will be created on prefs update.
   const char kCertProfileId0[] = "cert_profile_id_0";
@@ -424,7 +424,7 @@ TEST_F(CertProvisioningSchedulerTest, MultipleWorkers) {
   pref_service_.Set(prefs::kRequiredClientCertificateForUser, config);
 
   // Now one worker for each profile should be created.
-  ASSERT_EQ(scheduler.GetWorkerCount(), 3U);
+  ASSERT_EQ(scheduler.GetWorkers().size(), 3U);
 
   // worker0 successfully finished. Should be just deleted.
   scheduler.OnProfileFinished(cert_profile0,
@@ -438,9 +438,9 @@ TEST_F(CertProvisioningSchedulerTest, MultipleWorkers) {
   scheduler.OnProfileFinished(cert_profile2,
                               CertProvisioningWorkerState::kFailed);
 
-  EXPECT_EQ(scheduler.GetWorkerCount(), 1U);
-  EXPECT_EQ(scheduler.GetFailedCertProfilesIds(),
-            std::set<std::string>{kCertProfileId2});
+  EXPECT_EQ(scheduler.GetWorkers().size(), 1U);
+  EXPECT_TRUE(
+      base::Contains(scheduler.GetFailedCertProfileIds(), kCertProfileId2));
 
   certificate_helper_.AddCert();
 
@@ -456,9 +456,9 @@ TEST_F(CertProvisioningSchedulerTest, MultipleWorkers) {
   // Make scheduler check workers state.
   scheduler.UpdateCerts();
 
-  EXPECT_EQ(scheduler.GetWorkerCount(), 1U);
-  EXPECT_EQ(scheduler.GetFailedCertProfilesIds(),
-            std::set<std::string>{kCertProfileId2});
+  EXPECT_EQ(scheduler.GetWorkers().size(), 1U);
+  EXPECT_TRUE(
+      base::Contains(scheduler.GetFailedCertProfileIds(), kCertProfileId2));
 
   EXPECT_CALL(
       *platform_keys_service_,
@@ -472,7 +472,7 @@ TEST_F(CertProvisioningSchedulerTest, MultipleWorkers) {
   // Check one more time that scheduler doesn't create new workers for failed
   // certificate profiles (the factory will fail on an attempt to do so).
   scheduler.UpdateCerts();
-  EXPECT_EQ(scheduler.GetWorkerCount(), 1U);
+  EXPECT_EQ(scheduler.GetWorkers().size(), 1U);
 }
 
 TEST_F(CertProvisioningSchedulerTest, RemoveCertWithoutPolicy) {
@@ -557,7 +557,7 @@ TEST_F(CertProvisioningSchedulerTest, DeserializeWorkers) {
 
   // Now one worker should be created.
   FastForwardBy(base::TimeDelta::FromSeconds(1));
-  ASSERT_EQ(scheduler.GetWorkerCount(), 1U);
+  ASSERT_EQ(scheduler.GetWorkers().size(), 1U);
 }
 
 TEST_F(CertProvisioningSchedulerTest, InconsistentDataErrorHandling) {
@@ -575,7 +575,7 @@ TEST_F(CertProvisioningSchedulerTest, InconsistentDataErrorHandling) {
 
   // The policy is empty, so no workers should be created yet.
   FastForwardBy(base::TimeDelta::FromSeconds(1));
-  EXPECT_EQ(scheduler.GetWorkerCount(), 0U);
+  EXPECT_EQ(scheduler.GetWorkers().size(), 0U);
 
   CertProfile cert_profile_v1{kCertProfileId, kCertProfileVersion1};
   MockCertProvisioningWorker* worker =
@@ -593,7 +593,7 @@ TEST_F(CertProvisioningSchedulerTest, InconsistentDataErrorHandling) {
   pref_service_.Set(prefs::kRequiredClientCertificateForUser, config);
 
   // Now 1 worker should be created.
-  EXPECT_EQ(scheduler.GetWorkerCount(), 1U);
+  EXPECT_EQ(scheduler.GetWorkers().size(), 1U);
 
   // Emulate callback from the worker.
   scheduler.OnProfileFinished(
@@ -601,8 +601,8 @@ TEST_F(CertProvisioningSchedulerTest, InconsistentDataErrorHandling) {
 
   // Failed worker should be deleted, failed profile ID should not be saved, no
   // new workers should be created.
-  EXPECT_EQ(scheduler.GetWorkerCount(), 0U);
-  EXPECT_EQ(scheduler.GetFailedCertProfilesIds(), std::set<std::string>{});
+  EXPECT_EQ(scheduler.GetWorkers().size(), 0U);
+  EXPECT_TRUE(scheduler.GetFailedCertProfileIds().empty());
 
   // Add a new worker to the factory.
   worker = mock_factory_.ExpectCreateReturnMock(cert_scope, cert_profile_v1);
@@ -611,7 +611,7 @@ TEST_F(CertProvisioningSchedulerTest, InconsistentDataErrorHandling) {
 
   // After some delay a new worker should be created to try again.
   FastForwardBy(base::TimeDelta::FromSeconds(31));
-  EXPECT_EQ(scheduler.GetWorkerCount(), 1U);
+  EXPECT_EQ(scheduler.GetWorkers().size(), 1U);
 
   // Emulate callback from the worker.
   scheduler.OnProfileFinished(
@@ -619,8 +619,8 @@ TEST_F(CertProvisioningSchedulerTest, InconsistentDataErrorHandling) {
 
   // Failed worker should be deleted, failed profile ID should not be saved, no
   // new workers should be created.
-  EXPECT_EQ(scheduler.GetWorkerCount(), 0U);
-  EXPECT_EQ(scheduler.GetFailedCertProfilesIds(), std::set<std::string>{});
+  EXPECT_EQ(scheduler.GetWorkers().size(), 0U);
+  EXPECT_TRUE(scheduler.GetFailedCertProfileIds().empty());
 
   // Add a new worker to the factory.
   CertProfile cert_profile_v2{kCertProfileId, kCertProfileVersion2};
@@ -636,12 +636,12 @@ TEST_F(CertProvisioningSchedulerTest, InconsistentDataErrorHandling) {
            "key_algorithm":"rsa",
            "renewal_period_seconds": 365000}])");
   pref_service_.Set(prefs::kRequiredClientCertificateForUser, config);
-  EXPECT_EQ(scheduler.GetWorkerCount(), 1U);
+  EXPECT_EQ(scheduler.GetWorkers().size(), 1U);
 
   // If another update happens, workers with matching policy versions should not
   // be deleted.
   scheduler.UpdateCerts();
-  EXPECT_EQ(scheduler.GetWorkerCount(), 1U);
+  EXPECT_EQ(scheduler.GetWorkers().size(), 1U);
 
   // Add a new worker to the factory.
   CertProfile cert_profile_v3{kCertProfileId, kCertProfileVersion3};
@@ -658,7 +658,7 @@ TEST_F(CertProvisioningSchedulerTest, InconsistentDataErrorHandling) {
            "key_algorithm":"rsa",
            "renewal_period_seconds": 365000}])");
   pref_service_.Set(prefs::kRequiredClientCertificateForUser, config);
-  EXPECT_EQ(scheduler.GetWorkerCount(), 1U);
+  EXPECT_EQ(scheduler.GetWorkers().size(), 1U);
 }
 
 TEST_F(CertProvisioningSchedulerTest, RetryAfterNoInternetConnection) {
@@ -684,7 +684,7 @@ TEST_F(CertProvisioningSchedulerTest, RetryAfterNoInternetConnection) {
       network_state_test_helper_.network_state_handler());
 
   FastForwardBy(base::TimeDelta::FromHours(72));
-  ASSERT_EQ(scheduler.GetWorkerCount(), 0U);
+  ASSERT_EQ(scheduler.GetWorkers().size(), 0U);
 
   // Add a new worker to the factory.
   MockCertProvisioningWorker* worker =
@@ -694,7 +694,7 @@ TEST_F(CertProvisioningSchedulerTest, RetryAfterNoInternetConnection) {
 
   SetWifiNetworkState(shill::kStateOnline);
 
-  ASSERT_EQ(scheduler.GetWorkerCount(), 1U);
+  ASSERT_EQ(scheduler.GetWorkers().size(), 1U);
 }
 
 }  // namespace

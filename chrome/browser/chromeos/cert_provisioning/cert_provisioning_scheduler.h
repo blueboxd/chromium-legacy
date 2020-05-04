@@ -34,6 +34,14 @@ namespace cert_provisioning {
 
 class CertProvisioningWorker;
 
+using WorkerMap =
+    std::map<CertProfileId, std::unique_ptr<CertProvisioningWorker>>;
+
+struct FailedWorkerInfo {
+  CertProvisioningWorkerState state = CertProvisioningWorkerState::kInitState;
+  std::string public_key;
+};
+
 // This class is a part of certificate provisioning feature. It tracks updates
 // of |RequiredClientCertificateForUser|, |RequiredClientCertificateForDevice|
 // policies and creates one CertProvisioningWorker for every policy entry.
@@ -56,13 +64,14 @@ class CertProvisioningScheduler : public NetworkStateHandlerObserver {
   CertProvisioningScheduler& operator=(const CertProvisioningScheduler&) =
       delete;
 
+  void UpdateOneCert(const std::string& cert_profile_id);
   void UpdateCerts();
   void OnProfileFinished(const CertProfile& profile,
                          CertProvisioningWorkerState state);
 
-  // For testing.
-  size_t GetWorkerCount() const;
-  const std::set<std::string>& GetFailedCertProfilesIds() const;
+  const WorkerMap& GetWorkers() const;
+  const std::map<std::string, FailedWorkerInfo>& GetFailedCertProfileIds()
+      const;
 
  private:
   void ScheduleInitialUpdate();
@@ -88,16 +97,20 @@ class CertProvisioningScheduler : public NetworkStateHandlerObserver {
   // Continues an existing worker if it is in a waiting state.
   void ProcessProfile(const CertProfile& profile);
 
+  base::Optional<CertProfile> GetOneCertProfile(
+      const std::string& cert_profile_id);
   std::vector<CertProfile> GetCertProfiles();
 
   void CreateCertProvisioningWorker(CertProfile profile);
   CertProvisioningWorker* FindWorker(CertProfileId profile_id);
 
-  bool IsOnline() const;
+  bool CheckInternetConnection();
   void OnNetworkChange(const NetworkState* network);
   // NetworkStateHandlerObserver
   void DefaultNetworkChanged(const NetworkState* network) override;
   void NetworkConnectionStateChanged(const NetworkState* network) override;
+
+  void UpdateFailedCertProfiles(const CertProvisioningWorker& worker);
 
   CertScope cert_scope_ = CertScope::kUser;
   Profile* profile_ = nullptr;
@@ -107,10 +120,13 @@ class CertProvisioningScheduler : public NetworkStateHandlerObserver {
   NetworkStateHandler* network_state_handler_ = nullptr;
   platform_keys::PlatformKeysService* platform_keys_service_ = nullptr;
   PrefChangeRegistrar pref_change_registrar_;
-  std::map<CertProfileId, std::unique_ptr<CertProvisioningWorker>> workers_;
+  WorkerMap workers_;
   // Collection of cert profile ids that failed recently. They will not be
-  // retried until next |DailyUpdateCerts|.
-  std::set<std::string> failed_cert_profiles_;
+  // retried until next |DailyUpdateCerts|. FailedWorkerInfo contains some extra
+  // information about the failure. Profiles that failed with
+  // kInconsistentDataError will not be stored into this collection.
+  std::map<std::string /*cert_profile_id*/, FailedWorkerInfo>
+      failed_cert_profiles_;
   // Equals true if the last attempt to update certificates failed because there
   // was no internet connection.
   bool is_waiting_for_online_ = false;

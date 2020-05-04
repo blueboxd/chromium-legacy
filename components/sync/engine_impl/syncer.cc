@@ -7,7 +7,6 @@
 #include <memory>
 
 #include "base/auto_reset.h"
-#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/trace_event/trace_event.h"
 #include "components/sync/base/cancelation_signal.h"
@@ -47,13 +46,7 @@ bool Syncer::NormalSyncShare(ModelTypeSet request_types,
                              SyncCycle* cycle) {
   base::AutoReset<bool> is_syncing(&is_syncing_, true);
   HandleCycleBegin(cycle);
-  // TODO(crbug.com/657130): Sync integration tests depend on the precommit get
-  // updates because invalidations aren't working for them. Therefore, they pass
-  // the command line switch to enable this feature. Once sync integrations test
-  // support invalidation, this should be removed.
-  base::CommandLine* cl = base::CommandLine::ForCurrentProcess();
-  if (nudge_tracker->IsGetUpdatesRequired(request_types) ||
-      cl->HasSwitch(switches::kSyncEnableGetUpdatesBeforeCommit)) {
+  if (nudge_tracker->IsGetUpdatesRequired(request_types)) {
     VLOG(1) << "Downloading types " << ModelTypeSetToString(request_types);
     if (!DownloadAndApplyUpdates(&request_types, cycle,
                                  NormalGetUpdatesDelegate(*nudge_tracker))) {

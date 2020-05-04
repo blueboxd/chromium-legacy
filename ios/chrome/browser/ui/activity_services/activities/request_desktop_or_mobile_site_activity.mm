@@ -32,10 +32,6 @@ NSString* const kRequestDesktopOrMobileSiteActivityType =
 
 @implementation RequestDesktopOrMobileSiteActivity
 
-+ (NSString*)activityIdentifier {
-  return kRequestDesktopOrMobileSiteActivityType;
-}
-
 - (instancetype)initWithUserAgent:(web::UserAgentType)userAgent
                           handler:(id<BrowserCommands>)handler {
   self = [super init];
@@ -49,7 +45,7 @@ NSString* const kRequestDesktopOrMobileSiteActivityType =
 #pragma mark - UIActivity
 
 - (NSString*)activityType {
-  return [[self class] activityIdentifier];
+  return kRequestDesktopOrMobileSiteActivityType;
 }
 
 - (NSString*)activityTitle {

@@ -338,13 +338,6 @@ void SyncTest::AddTestSwitches(base::CommandLine* cl) {
 
   if (!cl->HasSwitch(switches::kSyncShortNudgeDelayForTest))
     cl->AppendSwitch(switches::kSyncShortNudgeDelayForTest);
-  // TODO(crbug.com/657130): This a temporary switch because sync integration
-  // tests depend on the precommit get updates because invalidations aren't
-  // working for them. Therefore, they pass the command line switch to enable
-  // this feature. Once sync integrations test support invalidation, this
-  // should be removed.
-  if (!cl->HasSwitch(switches::kSyncEnableGetUpdatesBeforeCommit))
-    cl->AppendSwitch(switches::kSyncEnableGetUpdatesBeforeCommit);
 
   // TODO(crbug.com/1060366): This is a temporary switch to allow having two
   // profiles syncing the same account. Having a profile outside of the user

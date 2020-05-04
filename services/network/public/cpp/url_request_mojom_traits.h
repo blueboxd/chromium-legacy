@@ -24,6 +24,7 @@
 #include "services/network/public/cpp/resource_request_body.h"
 #include "services/network/public/cpp/site_for_cookies_mojom_traits.h"
 #include "services/network/public/mojom/chunked_data_pipe_getter.mojom.h"
+#include "services/network/public/mojom/cookie_access_observer.mojom.h"
 #include "services/network/public/mojom/data_pipe_getter.mojom.h"
 #include "services/network/public/mojom/trust_tokens.mojom.h"
 #include "services/network/public/mojom/url_loader.mojom-shared.h"
@@ -64,6 +65,15 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE)
   static bool has_user_activation(
       const network::ResourceRequest::TrustedParams& trusted_params) {
     return trusted_params.has_user_activation;
+  }
+  static mojo::PendingRemote<network::mojom::CookieAccessObserver>
+  cookie_observer(
+      const network::ResourceRequest::TrustedParams& trusted_params) {
+    if (!trusted_params.cookie_observer)
+      return mojo::NullRemote();
+    return std::move(
+        const_cast<network::ResourceRequest::TrustedParams&>(trusted_params)
+            .cookie_observer);
   }
 
   static bool Read(network::mojom::TrustedUrlRequestParamsDataView data,

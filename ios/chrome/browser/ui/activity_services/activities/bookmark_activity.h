@@ -28,9 +28,6 @@ class PrefService;
                 prefService:(PrefService*)prefService;
 - (instancetype)init NS_UNAVAILABLE;
 
-// Identifier for the bookmark activity.
-+ (NSString*)activityIdentifier;
-
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_ACTIVITY_SERVICES_ACTIVITIES_BOOKMARK_ACTIVITY_H_

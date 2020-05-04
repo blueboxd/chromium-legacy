@@ -4,12 +4,44 @@
 
 #include "services/network/public/cpp/resource_request.h"
 
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "net/base/load_flags.h"
+#include "services/network/public/mojom/cookie_access_observer.mojom.h"
 
 namespace network {
 
+namespace {
+
+mojo::PendingRemote<mojom::CookieAccessObserver> Clone(
+    mojo::PendingRemote<mojom::CookieAccessObserver>* observer) {
+  if (!*observer)
+    return mojo::NullRemote();
+  mojo::Remote<mojom::CookieAccessObserver> remote(std::move(*observer));
+  mojo::PendingRemote<mojom::CookieAccessObserver> new_remote;
+  remote->Clone(new_remote.InitWithNewPipeAndPassReceiver());
+  *observer = remote.Unbind();
+  return new_remote;
+}
+
+}  // namespace
+
 ResourceRequest::TrustedParams::TrustedParams() = default;
 ResourceRequest::TrustedParams::~TrustedParams() = default;
+
+ResourceRequest::TrustedParams::TrustedParams(const TrustedParams& other) {
+  *this = other;
+}
+
+ResourceRequest::TrustedParams& ResourceRequest::TrustedParams::operator=(
+    const TrustedParams& other) {
+  isolation_info = other.isolation_info;
+  disable_secure_dns = other.disable_secure_dns;
+  has_user_activation = other.has_user_activation;
+  cookie_observer =
+      Clone(&const_cast<mojo::PendingRemote<mojom::CookieAccessObserver>&>(
+          other.cookie_observer));
+  return *this;
+}
 
 bool ResourceRequest::TrustedParams::EqualsForTesting(
     const TrustedParams& trusted_params) const {

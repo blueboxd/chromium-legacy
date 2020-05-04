@@ -123,6 +123,8 @@ class UserSelectionScreen
   std::vector<ash::LoginUserInfo> UpdateAndReturnUserListForAsh();
   void SetUsersLoaded(bool loaded);
 
+  static void SetSkipForceOnlineSigninForTesting(bool skip);
+
  protected:
   // BaseScreen:
   void ShowImpl() override;

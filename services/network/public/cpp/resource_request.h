@@ -12,6 +12,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/optional.h"
 #include "base/unguessable_token.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/isolation_info.h"
 #include "net/base/request_priority.h"
 #include "net/cookies/site_for_cookies.h"
@@ -19,6 +20,7 @@
 #include "net/url_request/url_request.h"
 #include "services/network/public/cpp/optional_trust_token_params.h"
 #include "services/network/public/cpp/resource_request_body.h"
+#include "services/network/public/mojom/cookie_access_observer.mojom.h"
 #include "services/network/public/mojom/cors.mojom-shared.h"
 #include "services/network/public/mojom/fetch_api.mojom-shared.h"
 #include "services/network/public/mojom/referrer_policy.mojom-shared.h"
@@ -41,12 +43,16 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE) ResourceRequest {
   struct COMPONENT_EXPORT(NETWORK_CPP_BASE) TrustedParams {
     TrustedParams();
     ~TrustedParams();
+    // TODO(altimin): Make this move-only to avoid cloning mojo interfaces.
+    TrustedParams(const TrustedParams& params);
+    TrustedParams& operator=(const TrustedParams& other);
 
     bool EqualsForTesting(const TrustedParams& trusted_params) const;
 
     net::IsolationInfo isolation_info;
     bool disable_secure_dns = false;
     bool has_user_activation = false;
+    mojo::PendingRemote<mojom::CookieAccessObserver> cookie_observer;
   };
 
   ResourceRequest();

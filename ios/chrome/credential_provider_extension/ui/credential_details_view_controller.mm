@@ -136,13 +136,13 @@ typedef NS_ENUM(NSInteger, RowIdentifier) {
     case RowIdentifier::RowIdentifierURL:
       [self showTootip:NSLocalizedString(
                            @"IDS_IOS_CREDENTIAL_PROVIDER_DETAILS_COPY", @"Copy")
-            atBottomOf:cell.textLabel
+            atBottomOf:cell
                 action:@selector(copyURL)];
       break;
     case RowIdentifier::RowIdentifierUsername:
       [self showTootip:NSLocalizedString(
                            @"IDS_IOS_CREDENTIAL_PROVIDER_DETAILS_COPY", @"Copy")
-            atBottomOf:cell.textLabel
+            atBottomOf:cell
                 action:@selector(copyUsername)];
       break;
     case RowIdentifier::RowIdentifierPassword:
@@ -150,14 +150,14 @@ typedef NS_ENUM(NSInteger, RowIdentifier) {
         [self
             showTootip:NSLocalizedString(
                            @"IDS_IOS_CREDENTIAL_PROVIDER_DETAILS_COPY", @"Copy")
-            atBottomOf:cell.textLabel
+            atBottomOf:cell
                 action:@selector(copyPassword)];
       } else {
         [self
             showTootip:NSLocalizedString(
                            @"IDS_IOS_CREDENTIAL_PROVIDER_DETAILS_SHOW_PASSWORD",
                            @"Show Password")
-            atBottomOf:cell.textLabel
+            atBottomOf:cell
                 action:@selector(showPassword)];
       }
       break;
@@ -371,12 +371,12 @@ typedef NS_ENUM(NSInteger, RowIdentifier) {
 }
 
 - (void)showTootip:(NSString*)message
-        atBottomOf:(UIView*)view
+        atBottomOf:(UITableViewCell*)cell
             action:(SEL)action {
   TooltipView* tooltip = [[TooltipView alloc] initWithKeyWindow:self.view
                                                          target:self
                                                          action:action];
-  [tooltip showMessage:message atBottomOf:view];
+  [tooltip showMessage:message atBottomOf:cell.detailTextLabel];
 }
 
 @end

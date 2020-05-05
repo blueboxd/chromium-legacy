@@ -126,7 +126,7 @@ TEST_F(SearchTest, ShouldAssignURLToInstantRenderer) {
   }
 }
 
-TEST_F(SearchTest, ShouldUseProcessPerSiteForInstantURL) {
+TEST_F(SearchTest, ShouldUseProcessPerSiteForInstantSiteURL) {
   const SearchTestCase kTestCases[] = {
       {"chrome-search://local-ntp", true, "Local NTP"},
       {"chrome-search://remote-ntp", true, "Remote NTP"},
@@ -145,8 +145,8 @@ TEST_F(SearchTest, ShouldUseProcessPerSiteForInstantURL) {
 
   for (size_t i = 0; i < base::size(kTestCases); ++i) {
     const SearchTestCase& test = kTestCases[i];
-    EXPECT_EQ(test.expected_result,
-              ShouldUseProcessPerSiteForInstantURL(GURL(test.url), profile()))
+    EXPECT_EQ(test.expected_result, ShouldUseProcessPerSiteForInstantSiteURL(
+                                        GURL(test.url), profile()))
         << test.url << " " << test.comment;
   }
 }

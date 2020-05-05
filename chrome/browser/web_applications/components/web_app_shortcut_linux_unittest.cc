@@ -68,18 +68,6 @@ class MockEnvironment : public base::Environment {
   DISALLOW_COPY_AND_ASSIGN(MockEnvironment);
 };
 
-bool WriteEmptyFile(const base::FilePath& path) {
-  return base::WriteFile(path, "", 0) == 0;
-}
-
-bool WriteString(const base::FilePath& path, const base::StringPiece& str) {
-  int bytes_written = base::WriteFile(path, str.data(), str.size());
-  if (bytes_written < 0)
-    return false;
-
-  return static_cast<size_t>(bytes_written) == str.size();
-}
-
 }  // namespace
 
 TEST(ShellIntegrationTest, GetExistingShortcutLocations) {
@@ -110,7 +98,7 @@ TEST(ShellIntegrationTest, GetExistingShortcutLocations) {
 
     MockEnvironment env;
     ASSERT_TRUE(base::CreateDirectory(desktop_path));
-    ASSERT_TRUE(WriteEmptyFile(desktop_path.Append(kTemplateFilename)));
+    ASSERT_TRUE(base::WriteFile(desktop_path.Append(kTemplateFilename), ""));
     ShortcutLocations result = GetExistingShortcutLocations(
         &env, kProfilePath, kExtensionId, desktop_path);
     EXPECT_TRUE(result.on_desktop);
@@ -128,7 +116,7 @@ TEST(ShellIntegrationTest, GetExistingShortcutLocations) {
     MockEnvironment env;
     env.Set("XDG_DATA_HOME", temp_dir.GetPath().value());
     ASSERT_TRUE(base::CreateDirectory(apps_path));
-    ASSERT_TRUE(WriteEmptyFile(apps_path.Append(kTemplateFilename)));
+    ASSERT_TRUE(base::WriteFile(apps_path.Append(kTemplateFilename), ""));
     ShortcutLocations result =
         GetExistingShortcutLocations(&env, kProfilePath, kExtensionId);
     EXPECT_FALSE(result.on_desktop);
@@ -147,8 +135,8 @@ TEST(ShellIntegrationTest, GetExistingShortcutLocations) {
     MockEnvironment env;
     env.Set("XDG_DATA_HOME", temp_dir.GetPath().value());
     ASSERT_TRUE(base::CreateDirectory(apps_path));
-    ASSERT_TRUE(WriteString(apps_path.Append(kTemplateFilename),
-                            kNoDisplayDesktopFile));
+    ASSERT_TRUE(base::WriteFile(apps_path.Append(kTemplateFilename),
+                                kNoDisplayDesktopFile));
     ShortcutLocations result =
         GetExistingShortcutLocations(&env, kProfilePath, kExtensionId);
     // Doesn't count as being in applications menu.
@@ -169,10 +157,10 @@ TEST(ShellIntegrationTest, GetExistingShortcutLocations) {
 
     MockEnvironment env;
     ASSERT_TRUE(base::CreateDirectory(desktop_path));
-    ASSERT_TRUE(WriteEmptyFile(desktop_path.Append(kTemplateFilename)));
+    ASSERT_TRUE(base::WriteFile(desktop_path.Append(kTemplateFilename), ""));
     env.Set("XDG_DATA_HOME", temp_dir2.GetPath().value());
     ASSERT_TRUE(base::CreateDirectory(apps_path));
-    ASSERT_TRUE(WriteEmptyFile(apps_path.Append(kTemplateFilename)));
+    ASSERT_TRUE(base::WriteFile(apps_path.Append(kTemplateFilename), ""));
     ShortcutLocations result = GetExistingShortcutLocations(
         &env, kProfilePath, kExtensionId, desktop_path);
     EXPECT_TRUE(result.on_desktop);

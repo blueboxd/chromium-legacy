@@ -19,8 +19,8 @@
 #include "components/feed/core/v2/feed_network.h"
 #include "components/feed/core/v2/feed_stream.h"
 #include "components/feed/core/v2/proto_util.h"
+#include "components/feed/core/v2/protocol_translator.h"
 #include "components/feed/core/v2/stream_model.h"
-#include "components/feed/core/v2/stream_model_update_request.h"
 
 namespace feed {
 namespace {
@@ -75,7 +75,6 @@ void LoadStreamTask::Run() {
 
   load_from_store_task_ = std::make_unique<LoadStreamFromStoreTask>(
       load_from_store_type, stream_->GetStore(), stream_->GetClock(),
-      stream_->GetUserClass(),
       base::BindOnce(&LoadStreamTask::LoadFromStoreComplete, GetWeakPtr()));
   load_from_store_task_->Execute(base::DoNothing());
 }
@@ -120,25 +119,29 @@ void LoadStreamTask::QueryRequestComplete(
     return;
   }
 
-  std::unique_ptr<StreamModelUpdateRequest> update_request =
+  RefreshResponseData response_data =
       stream_->GetWireResponseTranslator()->TranslateWireResponse(
           *result.response_body,
           StreamModelUpdateRequest::Source::kNetworkUpdate,
           stream_->GetClock()->Now());
-  if (!update_request) {
+  if (!response_data.model_update_request) {
     Done(LoadStreamStatus::kProtoTranslationFailed);
     return;
   }
 
   stream_->GetStore()->OverwriteStream(
-      std::make_unique<StreamModelUpdateRequest>(*update_request),
+      std::make_unique<StreamModelUpdateRequest>(
+          *response_data.model_update_request),
       base::DoNothing());
 
   if (load_type_ != LoadType::kBackgroundRefresh) {
     auto model = std::make_unique<StreamModel>();
-    model->Update(std::move(update_request));
+    model->Update(std::move(response_data.model_update_request));
     stream_->LoadModel(std::move(model));
   }
+
+  if (response_data.request_schedule)
+    stream_->SetRequestSchedule(*response_data.request_schedule);
 
   Done(LoadStreamStatus::kLoadedFromNetwork);
 }

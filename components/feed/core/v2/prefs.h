@@ -13,6 +13,7 @@
 class PrefService;
 
 namespace feed {
+struct RequestSchedule;
 namespace prefs {
 
 // Functions for accessing prefs.
@@ -30,6 +31,10 @@ void SetLastRequestTime(base::Time request_time, PrefService* pref_service);
 
 DebugStreamData GetDebugStreamData(PrefService* pref_service);
 void SetDebugStreamData(const DebugStreamData& data, PrefService* pref_service);
+
+void SetRequestSchedule(const RequestSchedule& schedule,
+                        PrefService* pref_service);
+RequestSchedule GetRequestSchedule(PrefService* pref_service);
 
 }  // namespace prefs
 }  // namespace feed

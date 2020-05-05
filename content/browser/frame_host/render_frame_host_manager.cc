@@ -1706,15 +1706,17 @@ RenderFrameHostManager::DetermineSiteInstanceForURL(
     // In this case, there is no current URL, so comparing against the site is
     // ok.  See additional comments below.)
     //
-    // Also, if the URL should use process-per-site mode and there is an
+    // Also, if the URL's site should use process-per-site mode and there is an
     // existing process for the site, we should use it.  We can call
     // GetRelatedSiteInstance() for this, which will eagerly set the site and
     // thus use the correct process.
     DCHECK_EQ(controller.GetBrowserContext(),
               current_instance_impl->GetBrowserContext());
+    const GURL dest_site_url = SiteInstanceImpl::GetSiteForURL(
+        current_instance_impl->GetIsolationContext(), dest_url);
     bool use_process_per_site =
         RenderProcessHost::ShouldUseProcessPerSite(
-            current_instance_impl->GetBrowserContext(), dest_url) &&
+            current_instance_impl->GetBrowserContext(), dest_site_url) &&
         RenderProcessHostImpl::GetSoleProcessHostForURL(
             current_instance_impl->GetIsolationContext(), dest_url);
     if (current_instance_impl->HasRelatedSiteInstance(dest_url) ||

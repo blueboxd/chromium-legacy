@@ -27,12 +27,13 @@
 #include "components/feed/core/proto/v2/ui.pb.h"
 #include "components/feed/core/proto/v2/wire/request.pb.h"
 #include "components/feed/core/shared_prefs/pref_names.h"
+#include "components/feed/core/v2/config.h"
 #include "components/feed/core/v2/feed_network.h"
 #include "components/feed/core/v2/metrics_reporter.h"
+#include "components/feed/core/v2/protocol_translator.h"
 #include "components/feed/core/v2/refresh_task_scheduler.h"
 #include "components/feed/core/v2/scheduling.h"
 #include "components/feed/core/v2/stream_model.h"
-#include "components/feed/core/v2/stream_model_update_request.h"
 #include "components/feed/core/v2/tasks/load_stream_from_store_task.h"
 #include "components/feed/core/v2/test/callback_receiver.h"
 #include "components/feed/core/v2/test/proto_printer.h"
@@ -52,7 +53,6 @@ std::unique_ptr<StreamModel> LoadModelFromStore(FeedStore* store) {
   };
   LoadStreamFromStoreTask load_task(
       LoadStreamFromStoreTask::LoadType::kFullLoad, store, /*clock=*/nullptr,
-      UserClass::kActiveSuggestionsConsumer,  // Has no effect.
       base::BindLambdaForTesting(complete));
   // We want to load the data no matter how stale.
   load_task.IgnoreStalenessForTesting();
@@ -209,24 +209,6 @@ class TestSurface : public FeedStream::SurfaceInterface {
   std::vector<std::string> described_updates_;
 };
 
-class TestUserClassifier : public UserClassifier {
- public:
-  TestUserClassifier(PrefService* pref_service, const base::Clock* clock)
-      : UserClassifier(pref_service, clock) {}
-  // UserClassifier.
-  UserClass GetUserClass() const override {
-    return overridden_user_class_.value_or(UserClassifier::GetUserClass());
-  }
-
-  // Test use.
-  void OverrideUserClass(UserClass user_class) {
-    overridden_user_class_ = user_class;
-  }
-
- private:
-  base::Optional<UserClass> overridden_user_class_;
-};
-
 class TestFeedNetwork : public FeedNetwork {
  public:
   // FeedNetwork implementation.
@@ -282,36 +264,48 @@ class TestFeedNetwork : public FeedNetwork {
 // injected.
 class TestWireResponseTranslator : public FeedStream::WireResponseTranslator {
  public:
-  std::unique_ptr<StreamModelUpdateRequest> TranslateWireResponse(
+  RefreshResponseData TranslateWireResponse(
       feedwire::Response response,
       StreamModelUpdateRequest::Source source,
       base::Time current_time) override {
     if (injected_response_) {
-      injected_response_->source = source;
-      return std::move(injected_response_);
+      if (injected_response_->model_update_request)
+        injected_response_->model_update_request->source = source;
+      RefreshResponseData result = std::move(*injected_response_);
+      injected_response_.reset();
+      return result;
     }
     return FeedStream::WireResponseTranslator::TranslateWireResponse(
         std::move(response), source, current_time);
   }
   void InjectResponse(std::unique_ptr<StreamModelUpdateRequest> response) {
-    injected_response_ = std::move(response);
+    injected_response_ = RefreshResponseData();
+    injected_response_->model_update_request = std::move(response);
+  }
+  void InjectResponse(RefreshResponseData response_data) {
+    injected_response_ = std::move(response_data);
   }
   bool InjectedResponseConsumed() const { return !injected_response_; }
 
  private:
-  std::unique_ptr<StreamModelUpdateRequest> injected_response_;
+  base::Optional<RefreshResponseData> injected_response_;
 };
 
 class FakeRefreshTaskScheduler : public RefreshTaskScheduler {
  public:
   // RefreshTaskScheduler implementation.
-  void EnsureScheduled(base::TimeDelta period) override {
-    scheduled_period = period;
+  void EnsureScheduled(base::Time run_time) override {
+    scheduled_run_time = run_time;
   }
   void Cancel() override { canceled = true; }
   void RefreshTaskComplete() override { refresh_task_complete = true; }
 
-  base::Optional<base::TimeDelta> scheduled_period;
+  void Clear() {
+    scheduled_run_time.reset();
+    canceled = false;
+    refresh_task_complete = false;
+  }
+  base::Optional<base::Time> scheduled_run_time;
   bool canceled = false;
   bool refresh_task_complete = false;
 };
@@ -369,12 +363,6 @@ class FeedStreamTest : public testing::Test, public FeedStream::Delegate {
         &refresh_scheduler_, &metrics_reporter_, this, &profile_prefs_,
         &network_, store_.get(), task_environment_.GetMockClock(),
         task_environment_.GetMockTickClock(), chrome_info);
-
-    // Set the user classifier.
-    auto user_classifier = std::make_unique<TestUserClassifier>(
-        &profile_prefs_, task_environment_.GetMockClock());
-    user_classifier_ = user_classifier.get();
-    stream_->SetUserClassifierForTesting(std::move(user_classifier));
 
     WaitForIdleTaskQueue();  // Wait for any initialization.
 
@@ -439,7 +427,6 @@ class FeedStreamTest : public testing::Test, public FeedStream::Delegate {
  protected:
   base::test::TaskEnvironment task_environment_{
       base::test::TaskEnvironment::TimeSource::MOCK_TIME};
-  TestUserClassifier* user_classifier_;
   TestMetricsReporter metrics_reporter_{task_environment_.GetMockTickClock()};
   TestingPrefServiceSimple profile_prefs_;
   TestFeedNetwork network_;
@@ -468,16 +455,12 @@ TEST_F(FeedStreamTest, SetArticlesListVisible) {
   EXPECT_TRUE(stream_->IsArticlesListVisible());
 }
 
-TEST_F(FeedStreamTest, RefreshIsScheduledOnInitialize) {
-  stream_->InitializeScheduling();
-  EXPECT_TRUE(refresh_scheduler_.scheduled_period);
-}
-
 TEST_F(FeedStreamTest, DoNotRefreshIfArticlesListIsHidden) {
   stream_->SetArticlesListVisible(false);
   stream_->InitializeScheduling();
-  stream_->ExecuteRefreshTask();
+  EXPECT_TRUE(refresh_scheduler_.canceled);
 
+  stream_->ExecuteRefreshTask();
   EXPECT_TRUE(refresh_scheduler_.refresh_task_complete);
   EXPECT_EQ(LoadStreamStatus::kLoadNotAllowedArticlesListHidden,
             metrics_reporter_.background_refresh_status);
@@ -704,15 +687,60 @@ TEST_F(FeedStreamTest, ForceRefreshForDebugging) {
             surface.DescribeUpdates());
 }
 
+TEST_F(FeedStreamTest, RefreshScheduleFlow) {
+  // Inject a typical network response, with a server-defined request schedule.
+  {
+    RequestSchedule schedule;
+    schedule.anchor_time = kTestTimeEpoch;
+    schedule.refresh_offsets = {base::TimeDelta::FromSeconds(12),
+                                base::TimeDelta::FromSeconds(48)};
+    RefreshResponseData response_data;
+    response_data.model_update_request = MakeTypicalInitialModelState();
+    response_data.request_schedule = schedule;
+
+    response_translator_.InjectResponse(std::move(response_data));
+  }
+  TestSurface surface(stream_.get());
+  WaitForIdleTaskQueue();
+
+  // Verify the first refresh was scheduled.
+  EXPECT_EQ(kTestTimeEpoch + base::TimeDelta::FromSeconds(12),
+            refresh_scheduler_.scheduled_run_time);
+
+  // Simulate executing the background task.
+  refresh_scheduler_.Clear();
+  task_environment_.AdvanceClock(base::TimeDelta::FromSeconds(12));
+  stream_->ExecuteRefreshTask();
+  WaitForIdleTaskQueue();
+
+  // Verify |RefreshTaskComplete()| was called and next refresh was scheduled.
+  EXPECT_TRUE(refresh_scheduler_.refresh_task_complete);
+  EXPECT_EQ(kTestTimeEpoch + base::TimeDelta::FromSeconds(48),
+            refresh_scheduler_.scheduled_run_time);
+
+  // Simulate executing the background task again.
+  refresh_scheduler_.Clear();
+  task_environment_.AdvanceClock(base::TimeDelta::FromSeconds(48 - 12));
+  stream_->ExecuteRefreshTask();
+  WaitForIdleTaskQueue();
+
+  // Verify |RefreshTaskComplete()| was called and next refresh was scheduled.
+  EXPECT_TRUE(refresh_scheduler_.refresh_task_complete);
+  ASSERT_TRUE(refresh_scheduler_.scheduled_run_time);
+  EXPECT_EQ(kTestTimeEpoch + base::TimeDelta::FromSeconds(48) +
+                GetFeedConfig().default_background_refresh_interval,
+            *refresh_scheduler_.scheduled_run_time);
+}
+
 TEST_F(FeedStreamTest, LoadFromNetworkBecauseStoreIsStale) {
   // Fill the store with stream data that is just barely stale, and verify we
   // fetch new data over the network.
-  user_classifier_->OverrideUserClass(UserClass::kActiveSuggestionsConsumer);
-  store_->OverwriteStream(MakeTypicalInitialModelState(
-                              /*first_cluster_id=*/0,
-                              kTestTimeEpoch - base::TimeDelta::FromHours(12) -
-                                  base::TimeDelta::FromMinutes(1)),
-                          base::DoNothing());
+  store_->OverwriteStream(
+      MakeTypicalInitialModelState(
+          /*first_cluster_id=*/0, kTestTimeEpoch -
+                                      GetFeedConfig().stale_content_threshold -
+                                      base::TimeDelta::FromMinutes(1)),
+      base::DoNothing());
 
   // Store is stale, so we should fallback to a network request.
   response_translator_.InjectResponse(MakeTypicalInitialModelState());
@@ -822,7 +850,6 @@ TEST_F(FeedStreamTest, ShouldMakeFeedQueryRequestConsumesQuota) {
 TEST_F(FeedStreamTest, LoadStreamFromStore) {
   // Fill the store with stream data that is just barely fresh, and verify it
   // loads.
-  user_classifier_->OverrideUserClass(UserClass::kActiveSuggestionsConsumer);
   store_->OverwriteStream(MakeTypicalInitialModelState(
                               /*first_cluster_id=*/0,
                               kTestTimeEpoch - base::TimeDelta::FromHours(12) +
@@ -928,29 +955,6 @@ TEST_F(FeedStreamTest, ReportSliceViewedIdentifiesCorrectIndex) {
   stream_->ReportSliceViewed(
       surface.initial_state->updated_slices(1).slice().slice_id());
   EXPECT_EQ(1, metrics_reporter_.slice_viewed_index);
-}
-
-TEST_F(FeedStreamTest, OpeningTheFeedChangesUserClassification) {
-  ASSERT_EQ(UserClass::kActiveSuggestionsViewer, stream_->GetUserClass());
-  for (int i = 0; i < 5; i++) {
-    TestSurface surface(stream_.get());
-    task_environment_.FastForwardBy(base::TimeDelta::FromHours(100));
-  }
-  ASSERT_EQ(UserClass::kRareSuggestionsViewer, stream_->GetUserClass());
-  for (int i = 0; i < 5; i++) {
-    TestSurface surface(stream_.get());
-    task_environment_.FastForwardBy(base::TimeDelta::FromHours(1));
-  }
-  EXPECT_EQ(UserClass::kActiveSuggestionsViewer, stream_->GetUserClass());
-}
-
-TEST_F(FeedStreamTest, UsingTheFeedChangesUserClassification) {
-  ASSERT_EQ(UserClass::kActiveSuggestionsViewer, stream_->GetUserClass());
-  for (int i = 0; i < 5; i++) {
-    task_environment_.FastForwardBy(base::TimeDelta::FromHours(1));
-    stream_->ReportOpenAction("slice-id");
-  }
-  EXPECT_EQ(UserClass::kActiveSuggestionsConsumer, stream_->GetUserClass());
 }
 
 TEST_F(FeedStreamTest, LoadMoreAppendsContent) {

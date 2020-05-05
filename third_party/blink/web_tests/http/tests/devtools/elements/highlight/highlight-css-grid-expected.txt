@@ -89,6 +89,7 @@ paddedGrid{
     "className": ".grid.padded.fixed",
     "nodeWidth": "175",
     "nodeHeight": "1130",
+    "showAccessibilityInfo": true,
     "isKeyboardFocusable": false,
     "accessibleName": "",
     "accessibleRole": "generic"
@@ -245,6 +246,7 @@ nestedGrid{
     "className": ".grid",
     "nodeWidth": "100",
     "nodeHeight": "1000",
+    "showAccessibilityInfo": true,
     "isKeyboardFocusable": false,
     "accessibleName": "",
     "accessibleRole": "generic"

@@ -420,6 +420,13 @@ void ContentBrowserClient::AllowCertificateError(
   std::move(callback).Run(CERTIFICATE_REQUEST_RESULT_TYPE_DENY);
 }
 
+bool ContentBrowserClient::ShouldDenyRequestOnCertificateError(
+    const GURL main_frame_url) {
+  // Generally we shouldn't deny all certificate errors, but individual
+  // subclasses may override this for special cases.
+  return false;
+}
+
 base::OnceClosure ContentBrowserClient::SelectClientCertificate(
     WebContents* web_contents,
     net::SSLCertRequestInfo* cert_request_info,

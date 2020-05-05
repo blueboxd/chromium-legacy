@@ -88,6 +88,7 @@ inspectedElement{
     "idValue": "inspectedElement",
     "nodeWidth": "250",
     "nodeHeight": "250",
+    "showAccessibilityInfo": true,
     "isKeyboardFocusable": false,
     "accessibleName": "",
     "accessibleRole": "generic"
@@ -181,6 +182,7 @@ inspectedElement with RGB format{
     "idValue": "inspectedElement",
     "nodeWidth": "250",
     "nodeHeight": "250",
+    "showAccessibilityInfo": true,
     "isKeyboardFocusable": false,
     "accessibleName": "",
     "accessibleRole": "generic"
@@ -274,6 +276,7 @@ inspectedElement with HSL format{
     "idValue": "inspectedElement",
     "nodeWidth": "250",
     "nodeHeight": "250",
+    "showAccessibilityInfo": true,
     "isKeyboardFocusable": false,
     "accessibleName": "",
     "accessibleRole": "generic"
@@ -366,7 +369,8 @@ First text node{
   "elementInfo": {
     "nodeWidth": "Width within 3px from 28? true",
     "nodeHeight": "Height within 3px from 25? false",
-    "tagName": "#text"
+    "tagName": "#text",
+    "showAccessibilityInfo": false
   }
 }
 
@@ -456,7 +460,8 @@ Second text node{
   "elementInfo": {
     "nodeWidth": "Width within 3px from 30? true",
     "nodeHeight": "Height within 3px from 24? true",
-    "tagName": "#text"
+    "tagName": "#text",
+    "showAccessibilityInfo": false
   }
 }
 

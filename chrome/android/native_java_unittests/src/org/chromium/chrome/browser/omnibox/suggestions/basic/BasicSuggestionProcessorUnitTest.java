@@ -260,10 +260,13 @@ public class BasicSuggestionProcessorUnitTest {
         final String typed = "Typed content";
         doReturn(typed).when(mUrlBarText).getTextWithoutAutocomplete();
         createSearchSuggestion(OmniboxSuggestionType.URL_WHAT_YOU_TYPED, typed, "");
-        Assert.assertFalse(mProcessor.canRefine(mSuggestion));
+        PropertyModel model = mProcessor.createModel();
+        mProcessor.populateModel(mSuggestion, model, 0);
+        Assert.assertNull(mModel.get(BaseSuggestionViewProperties.ACTION_CALLBACK));
 
         createUrlSuggestion(OmniboxSuggestionType.URL_WHAT_YOU_TYPED, typed, "", GURL.emptyGURL());
-        Assert.assertFalse(mProcessor.canRefine(mSuggestion));
+        mProcessor.populateModel(mSuggestion, model, 0);
+        Assert.assertNull(mModel.get(BaseSuggestionViewProperties.ACTION_CALLBACK));
     }
 
     @CalledByNativeJavaTest
@@ -272,11 +275,14 @@ public class BasicSuggestionProcessorUnitTest {
         final String refined = "Typed content";
         doReturn(typed).when(mUrlBarText).getTextWithoutAutocomplete();
         createSearchSuggestion(OmniboxSuggestionType.URL_WHAT_YOU_TYPED, refined, "");
-        Assert.assertTrue(mProcessor.canRefine(mSuggestion));
+        PropertyModel model = mProcessor.createModel();
+        mProcessor.populateModel(mSuggestion, model, 0);
+        Assert.assertNotNull(mModel.get(BaseSuggestionViewProperties.ACTION_CALLBACK));
 
         createUrlSuggestion(
                 OmniboxSuggestionType.URL_WHAT_YOU_TYPED, refined, "", GURL.emptyGURL());
-        Assert.assertTrue(mProcessor.canRefine(mSuggestion));
+        mProcessor.populateModel(mSuggestion, model, 0);
+        Assert.assertNotNull(mModel.get(BaseSuggestionViewProperties.ACTION_CALLBACK));
     }
 
     @CalledByNativeJavaTest

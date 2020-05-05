@@ -29,6 +29,7 @@ feed_request {
     reason: SCHEDULED_REFRESH
   }
   client_capability: BASE_UI
+  client_capability: REQUEST_SCHEDULE
   consistency_token {
   }
 }

@@ -312,7 +312,27 @@ class DesksTest : public AshTestBase,
   DISALLOW_COPY_AND_ASSIGN(DesksTest);
 };
 
-TEST_F(DesksTest, LongPressOverviewItemInClamshellModeWithOnlyOneVirtualDesk) {
+class DesksWithoutSplitViewTest : public AshTestBase {
+ public:
+  DesksWithoutSplitViewTest() = default;
+  DesksWithoutSplitViewTest(const DesksWithoutSplitViewTest&) = delete;
+  DesksWithoutSplitViewTest& operator=(const DesksWithoutSplitViewTest&) =
+      delete;
+  ~DesksWithoutSplitViewTest() override = default;
+
+  // AshTestBase:
+  void SetUp() override {
+    scoped_feature_list_.InitAndDisableFeature(
+        features::kDragToSnapInClamshellMode);
+    AshTestBase::SetUp();
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+TEST_F(DesksWithoutSplitViewTest,
+       LongPressOverviewItemInClamshellModeWithOnlyOneVirtualDesk) {
   std::unique_ptr<aura::Window> window(CreateTestWindow());
   OverviewController* overview_controller = Shell::Get()->overview_controller();
   ASSERT_TRUE(overview_controller->StartOverview());

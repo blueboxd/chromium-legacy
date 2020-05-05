@@ -18,8 +18,8 @@
 #include "components/feed/core/v2/feed_network.h"
 #include "components/feed/core/v2/feed_stream.h"
 #include "components/feed/core/v2/proto_util.h"
+#include "components/feed/core/v2/protocol_translator.h"
 #include "components/feed/core/v2/stream_model.h"
-#include "components/feed/core/v2/stream_model_update_request.h"
 
 namespace feed {
 
@@ -57,15 +57,19 @@ void LoadMoreTask::QueryRequestComplete(
   if (!result.response_body)
     return Done(LoadStreamStatus::kNoResponseBody);
 
-  std::unique_ptr<StreamModelUpdateRequest> update_request =
+  RefreshResponseData translated_response =
       stream_->GetWireResponseTranslator()->TranslateWireResponse(
           *result.response_body,
           StreamModelUpdateRequest::Source::kNetworkLoadMore,
           stream_->GetClock()->Now());
-  if (!update_request)
+
+  if (!translated_response.model_update_request)
     return Done(LoadStreamStatus::kProtoTranslationFailed);
 
-  model->Update(std::move(update_request));
+  model->Update(std::move(translated_response.model_update_request));
+
+  if (translated_response.request_schedule)
+    stream_->SetRequestSchedule(*translated_response.request_schedule);
 
   Done(LoadStreamStatus::kLoadedFromNetwork);
 }

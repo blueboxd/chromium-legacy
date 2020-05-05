@@ -149,14 +149,7 @@ struct WebBluetoothRemoteGATTCharacteristic {
   uint32 properties;
 };
 
-// On success, |options| contains the values used for the scan request. On
-// error, |result| will indicate the failure type.
-union RequestScanningStartResult {
-  WebBluetoothResult error_result;
-  WebBluetoothRequestLEScanOptions options;
-};
-
-struct WebBluetoothScanResult {
+struct WebBluetoothAdvertisingEvent {
   WebBluetoothDevice device;
   string? name;
   array<bluetooth.mojom.UUID> uuids;
@@ -298,9 +291,9 @@ interface WebBluetoothService {
 
   // Starts scanning for low energy devices.
   RequestScanningStart(
-    pending_associated_remote<WebBluetoothScanClient> client,
+    pending_associated_remote<WebBluetoothAdvertisementClient> client,
     WebBluetoothRequestLEScanOptions options) => (
-    RequestScanningStartResult result);
+    WebBluetoothResult result);
 };
 
 // Classes that implement this interface will be notified of device events.
@@ -316,9 +309,9 @@ interface WebBluetoothCharacteristicClient {
   RemoteCharacteristicValueChanged(array<uint8> value);
 };
 
-// Classes that implement this interface will be notified of scan
-// events.
-interface WebBluetoothScanClient {
-  // Called when we receive a notification for the characteristic.
-  ScanEvent(WebBluetoothScanResult result);
+// Classes that implement this interface will be notified of device
+// advertisement events.
+interface WebBluetoothAdvertisementClient {
+  // Called when we receive a device advertisement.
+  AdvertisingEvent(WebBluetoothAdvertisingEvent result);
 };

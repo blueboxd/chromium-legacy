@@ -14,6 +14,7 @@ import "components/feed/core/proto/v2/wire/payload_metadata.proto";
 import "components/feed/core/proto/v2/wire/render_data.proto";
 import "components/feed/core/proto/v2/wire/templates.proto";
 import "components/feed/core/proto/v2/wire/token.proto";
+import "components/feed/core/proto/v2/wire/request_schedule.proto";
 
 // An extensible operation to change the state of data on the client.
 message DataOperation {
@@ -51,5 +52,7 @@ message DataOperation {
 
     // A collection of templates.
     Templates templates = 4 [deprecated = true];
+
+    RequestSchedule request_schedule = 9;
   }
 }

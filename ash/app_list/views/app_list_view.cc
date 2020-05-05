@@ -2121,7 +2121,6 @@ void AppListView::UpdateChildViewsYPositionAndOpacity() {
   // Update the opacity of the background shield.
   SetBackgroundShieldColor();
 
-  search_box_view_->UpdateOpacity();
   app_list_main_view_->contents_view()->UpdateYPositionAndOpacity();
 }
 

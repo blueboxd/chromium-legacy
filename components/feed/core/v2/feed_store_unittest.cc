@@ -14,7 +14,7 @@
 #include "base/test/bind_test_util.h"
 #include "base/test/task_environment.h"
 #include "components/feed/core/proto/v2/wire/content_id.pb.h"
-#include "components/feed/core/v2/stream_model_update_request.h"
+#include "components/feed/core/v2/protocol_translator.h"
 #include "components/feed/core/v2/test/callback_receiver.h"
 #include "components/feed/core/v2/test/proto_printer.h"
 #include "components/feed/core/v2/test/stream_builder.h"

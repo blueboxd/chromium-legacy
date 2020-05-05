@@ -46,7 +46,6 @@ class LoadStreamFromStoreTask : public offline_pages::Task {
   LoadStreamFromStoreTask(LoadType load_type,
                           FeedStore* store,
                           const base::Clock* clock,
-                          UserClass user_class,
                           base::OnceCallback<void(Result)> callback);
   ~LoadStreamFromStoreTask() override;
   LoadStreamFromStoreTask(const LoadStreamFromStoreTask&) = delete;
@@ -69,7 +68,6 @@ class LoadStreamFromStoreTask : public offline_pages::Task {
   LoadType load_type_;
   FeedStore* store_;  // Unowned.
   const base::Clock* clock_;
-  UserClass user_class_;
   bool ignore_staleness_ = false;
   base::OnceCallback<void(Result)> result_callback_;
 

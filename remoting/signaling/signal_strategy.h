@@ -110,8 +110,13 @@ class SignalStrategy {
   // Remove a |listener| previously added with AddListener().
   virtual void RemoveListener(Listener* listener) = 0;
 
-  // Sends a raw XMPP stanza. Returns false if the stanza couldn't be send.
+  // Sends a raw XMPP stanza. Returns false if the stanza couldn't be sent.
   virtual bool SendStanza(std::unique_ptr<jingle_xmpp::XmlElement> stanza) = 0;
+
+  // Sends a ChromotingMessage. Returns false if the message couldn't be sent.
+  virtual bool SendMessage(const ftl::Id& destination_id,
+                           const std::string& destination_registration_id,
+                           const ftl::ChromotingMessage& message) = 0;
 
   // Returns new ID that should be used for the next outgoing IQ
   // request.

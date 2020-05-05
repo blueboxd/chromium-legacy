@@ -88,9 +88,6 @@ class APP_LIST_EXPORT SearchBoxView : public search_box::SearchBoxViewBase,
   // Returns background color for the given state.
   SkColor GetBackgroundColorForState(AppListState state) const;
 
-  // Updates the opacity of the searchbox.
-  void UpdateOpacity();
-
   // Shows Zero State suggestions.
   void ShowZeroStateSuggestions();
 

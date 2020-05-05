@@ -88,6 +88,7 @@ button{
     "idValue": "button",
     "nodeWidth": "43",
     "nodeHeight": "22",
+    "showAccessibilityInfo": true,
     "isKeyboardFocusable": true,
     "accessibleName": "click",
     "accessibleRole": "button"
@@ -181,6 +182,7 @@ input{
     "idValue": "input",
     "nodeWidth": "185",
     "nodeHeight": "22",
+    "showAccessibilityInfo": true,
     "isKeyboardFocusable": true,
     "accessibleName": "",
     "accessibleRole": "textbox"
@@ -274,6 +276,7 @@ div{
     "idValue": "div",
     "nodeWidth": "784",
     "nodeHeight": "20",
+    "showAccessibilityInfo": true,
     "isKeyboardFocusable": true,
     "accessibleName": "click",
     "accessibleRole": "button"

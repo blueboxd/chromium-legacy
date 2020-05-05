@@ -29,6 +29,7 @@
 #import "ios/chrome/browser/ui/settings/google_services/manage_sync_settings_coordinator.h"
 #import "ios/chrome/browser/ui/settings/sync/sync_encryption_passphrase_table_view_controller.h"
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
+#import "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -257,6 +258,14 @@ using signin_metrics::PromoAction;
                                browser:self.browser];
   self.manageSyncSettingsCoordinator.delegate = self;
   [self.manageSyncSettingsCoordinator start];
+}
+
+- (void)openManageGoogleAccount {
+  ios::GetChromeBrowserProvider()
+      ->GetChromeIdentityService()
+      ->PresentAccountDetailsController(
+          self.authService->GetAuthenticatedIdentity(),
+          self.googleServicesSettingsViewController, /*animated=*/YES);
 }
 
 - (void)openManageGoogleAccountWebPage {

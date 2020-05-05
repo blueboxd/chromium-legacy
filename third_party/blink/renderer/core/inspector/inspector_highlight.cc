@@ -309,6 +309,7 @@ std::unique_ptr<protocol::DictionaryValue> BuildElementInfo(Element* element) {
   element_info->setString("nodeWidth", String::Number(bounding_box->width()));
   element_info->setString("nodeHeight", String::Number(bounding_box->height()));
 
+  element_info->setBoolean("showAccessibilityInfo", true);
   element_info->setBoolean("isKeyboardFocusable",
                            element->IsKeyboardFocusable());
   element_info->setString("accessibleName", element->computedName());
@@ -327,6 +328,7 @@ std::unique_ptr<protocol::DictionaryValue> BuildTextNodeInfo(Text* text_node) {
   text_info->setString("nodeWidth", bounding_box.Width().ToString());
   text_info->setString("nodeHeight", bounding_box.Height().ToString());
   text_info->setString("tagName", "#text");
+  text_info->setBoolean("showAccessibilityInfo", false);
   return text_info;
 }
 

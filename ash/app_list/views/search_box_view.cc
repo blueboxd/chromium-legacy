@@ -67,11 +67,6 @@ constexpr SkColor kSearchBoxFocusRingColor = gfx::kGoogleBlue300;
 
 constexpr int kSearchBoxFocusRingCornerRadius = 28;
 
-// Range of the fraction of app list from collapsed to peeking that search box
-// should change opacity.
-constexpr float kOpacityStartFraction = 0.11f;
-constexpr float kOpacityEndFraction = 1.0f;
-
 // Minimum amount of characters required to enable autocomplete.
 constexpr int kMinimumLengthToAutocomplete = 2;
 
@@ -369,38 +364,6 @@ SkColor SearchBoxView::GetBackgroundColorForState(AppListState state) const {
   if (state == AppListState::kStateSearchResults)
     return AppListConfig::instance().card_background_color();
   return search_box::kSearchBoxBackgroundDefault;
-}
-
-void SearchBoxView::UpdateOpacity() {
-  // The opacity of searchbox is a function of the fractional displacement of
-  // the app list from collapsed(0) to peeking(1) state. When the fraction
-  // changes from |kOpacityStartFraction| to |kOpaticyEndFraction|, the opacity
-  // of searchbox changes from 0.f to 1.0f.
-  if (!contents_view_->GetPageView(contents_view_->GetActivePageIndex())
-           ->ShouldShowSearchBox()) {
-    return;
-  }
-  const int shelf_height = view_delegate_->GetShelfSize();
-  float fraction =
-      std::max<float>(
-          0, contents_view_->app_list_view()->GetCurrentAppListHeight() -
-                 shelf_height) /
-      (AppListConfig::instance().peeking_app_list_height() - shelf_height);
-
-  float opacity =
-      std::min(std::max((fraction - kOpacityStartFraction) /
-                            (kOpacityEndFraction - kOpacityStartFraction),
-                        0.f),
-               1.0f);
-
-  AppListView* app_list_view = contents_view_->app_list_view();
-  bool should_restore_opacity =
-      !app_list_view->is_in_drag() &&
-      (app_list_view->app_list_state() != AppListViewState::kClosed);
-  // Restores the opacity of searchbox if the gesture dragging ends.
-  this->layer()->SetOpacity(should_restore_opacity ? 1.0f : opacity);
-  contents_view_->search_results_page_view()->layer()->SetOpacity(
-      should_restore_opacity ? 1.0f : opacity);
 }
 
 void SearchBoxView::ShowZeroStateSuggestions() {

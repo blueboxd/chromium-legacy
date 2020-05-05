@@ -305,6 +305,17 @@ bool TruncateFile(FILE* file) {
   return true;
 }
 
+bool WriteFile(const FilePath& filename, span<const uint8_t> data) {
+  int size = checked_cast<int>(data.size());
+  return WriteFile(filename, reinterpret_cast<const char*>(data.data()),
+                   size) == size;
+}
+
+bool WriteFile(const FilePath& filename, StringPiece data) {
+  int size = checked_cast<int>(data.size());
+  return WriteFile(filename, data.data(), size) == size;
+}
+
 int GetUniquePathNumber(const FilePath& path) {
   DCHECK(!path.empty());
   if (!PathExists(path))

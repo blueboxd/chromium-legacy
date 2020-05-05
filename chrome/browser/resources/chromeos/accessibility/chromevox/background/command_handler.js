@@ -299,6 +299,15 @@ CommandHandler.onCommand = function(command) {
         case GestureGranularity.LINE:
           announce = Msgs.getMsg('line_granularity');
           break;
+        case GestureGranularity.HEADING:
+          announce = Msgs.getMsg('heading_granularity');
+          break;
+        case GestureGranularity.LINK:
+          announce = Msgs.getMsg('link_granularity');
+          break;
+        case GestureGranularity.FORM_FIELD_CONTROL:
+          announce = Msgs.getMsg('form_field_control_granularity');
+          break;
       }
       ChromeVox.tts.speak(announce, QueueMode.FLUSH);
     }
@@ -945,6 +954,15 @@ CommandHandler.onCommand = function(command) {
           break;
         case GestureGranularity.LINE:
           command = backwards ? 'previousLine' : 'nextLine';
+          break;
+        case GestureGranularity.HEADING:
+          command = backwards ? 'previousHeading' : 'nextHeading';
+          break;
+        case GestureGranularity.LINK:
+          command = backwards ? 'previousLink' : 'nextLink';
+          break;
+        case GestureGranularity.FORM_FIELD_CONTROL:
+          command = backwards ? 'previousFormField' : 'nextFormField';
           break;
       }
       CommandHandler.onCommand(command);

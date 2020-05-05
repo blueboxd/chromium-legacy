@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/feed/core/v2/stream_model_update_request.h"
+#include "components/feed/core/v2/protocol_translator.h"
 
 #include <sstream>
 #include <string>
@@ -54,12 +54,19 @@ TEST(StreamModelUpdateRequestTest, TranslateRealResponse) {
 
   feedwire::Response response = TestWireResponse();
 
-  std::unique_ptr<StreamModelUpdateRequest> translated = TranslateWireResponse(
+  RefreshResponseData translated = TranslateWireResponse(
       response, StreamModelUpdateRequest::Source::kNetworkUpdate, kCurrentTime);
 
-  ASSERT_TRUE(translated);
+  ASSERT_TRUE(translated.model_update_request);
+  ASSERT_TRUE(translated.request_schedule);
+  EXPECT_EQ(kCurrentTime, translated.request_schedule->anchor_time);
+  EXPECT_EQ(std::vector<base::TimeDelta>(
+                {base::TimeDelta::FromSeconds(86308) +
+                 base::TimeDelta::FromNanoseconds(822963644)}),
+            translated.request_schedule->refresh_offsets);
+
   std::stringstream ss;
-  ss << *translated;
+  ss << *translated.model_update_request;
 
   const std::string want = R"(source: 0
 stream_data: {
@@ -429,6 +436,13 @@ stream_structure: {
     content_domain: "root"
   }
   type: 4
+}
+stream_structure: {
+  operation: 2
+  content_id {
+    content_domain: "request_schedule"
+    id: 300842786
+  }
 }
 max_structure_sequence_number: 0
 )";

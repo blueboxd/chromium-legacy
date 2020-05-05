@@ -168,6 +168,15 @@ bool FakeSignalStrategy::SendStanza(std::unique_ptr<jingle_xmpp::XmlElement> sta
   return true;
 }
 
+bool FakeSignalStrategy::SendMessage(
+    const ftl::Id& destination_id,
+    const std::string& destination_registration_id,
+    const ftl::ChromotingMessage& message) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  NOTIMPLEMENTED();
+  return false;
+}
+
 std::string FakeSignalStrategy::GetNextId() {
   ++last_id_;
   return base::NumberToString(last_id_);

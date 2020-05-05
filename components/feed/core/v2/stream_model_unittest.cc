@@ -13,7 +13,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "components/feed/core/proto/v2/store.pb.h"
 #include "components/feed/core/proto/v2/wire/content_id.pb.h"
-#include "components/feed/core/v2/stream_model_update_request.h"
+#include "components/feed/core/v2/protocol_translator.h"
 #include "components/feed/core/v2/test/stream_builder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

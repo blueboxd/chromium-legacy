@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/feature_list.h"
+#include "base/metrics/histogram_functions.h"
 #include "chrome/browser/accessibility/caption_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/component_updater/soda_component_installer.h"
@@ -20,6 +21,7 @@
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/sync_preferences/pref_service_syncable.h"
+#include "content/public/browser/browser_accessibility_state.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "media/base/media_switches.h"
@@ -76,6 +78,11 @@ void CaptionController::Init() {
   enabled_ = IsLiveCaptionEnabled();
   if (enabled_)
     UpdateUIEnabled();
+
+  content::BrowserAccessibilityState::GetInstance()
+      ->AddUIThreadHistogramCallback(base::BindOnce(
+          &CaptionController::UpdateAccessibilityCaptionHistograms,
+          base::Unretained(this)));
 }
 
 void CaptionController::OnLiveCaptionEnabledChanged() {
@@ -134,6 +141,10 @@ void CaptionController::UpdateUIEnabled() {
       pref_change_registrar_->Remove(pref_name);
     }
   }
+}
+
+void CaptionController::UpdateAccessibilityCaptionHistograms() {
+  base::UmaHistogramBoolean("Accessibility.LiveCaptions", enabled_);
 }
 
 void CaptionController::OnBrowserAdded(Browser* browser) {

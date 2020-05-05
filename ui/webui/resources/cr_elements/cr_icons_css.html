@@ -73,7 +73,6 @@
       }
 
       .cr-icon {
-        @apply --cr-paper-icon-button-margin;
         -webkit-mask-image: var(--cr-icon-image);
         -webkit-mask-position: center;
         -webkit-mask-repeat: no-repeat;
@@ -81,6 +80,8 @@
         background-color: var(--google-grey-refresh-700);
         flex-shrink: 0;
         height: var(--cr-icon-ripple-size);
+        margin-inline-end: var(--cr-icon-ripple-margin);
+        margin-inline-start: var(--cr-icon-button-margin-start);
         user-select: none;
         width: var(--cr-icon-ripple-size);
       }

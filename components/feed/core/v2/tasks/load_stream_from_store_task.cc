@@ -11,8 +11,8 @@
 #include "components/feed/core/proto/v2/store.pb.h"
 #include "components/feed/core/v2/feed_store.h"
 #include "components/feed/core/v2/proto_util.h"
+#include "components/feed/core/v2/protocol_translator.h"
 #include "components/feed/core/v2/scheduling.h"
-#include "components/feed/core/v2/stream_model_update_request.h"
 #include "components/feed/core/v2/types.h"
 
 namespace feed {
@@ -27,12 +27,10 @@ LoadStreamFromStoreTask::LoadStreamFromStoreTask(
     LoadType load_type,
     FeedStore* store,
     const base::Clock* clock,
-    UserClass user_class,
     base::OnceCallback<void(Result)> callback)
     : load_type_(load_type),
       store_(store),
       clock_(clock),
-      user_class_(user_class),
       result_callback_(std::move(callback)),
       update_request_(std::make_unique<StreamModelUpdateRequest>()) {}
 
@@ -69,7 +67,7 @@ void LoadStreamFromStoreTask::LoadStreamDone(
     if (content_age < base::TimeDelta()) {
       Complete(LoadStreamStatus::kDataInStoreIsStaleTimestampInFuture);
       return;
-    } else if (ShouldWaitForNewContent(user_class_, true, content_age)) {
+    } else if (ShouldWaitForNewContent(true, content_age)) {
       Complete(LoadStreamStatus::kDataInStoreIsStale);
       return;
     }

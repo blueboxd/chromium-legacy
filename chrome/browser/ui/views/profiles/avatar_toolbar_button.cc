@@ -148,6 +148,18 @@ void AvatarToolbarButton::UpdateText() {
   SetInsets();
   SetTooltipText(GetAvatarTooltipText());
   SetHighlight(text, color);
+
+  // TODO(crbug.com/1078221): this is a hack because toolbar buttons don't
+  // correctly calculate their preferred size until they've been laid out once
+  // or twice, because they modify their own borders and insets in response to
+  // their size and have their own preferred size caching mechanic. These should
+  // both ideally be handled with a modern layout manager instead.
+  //
+  // In the meantime, to ensure that correct (or nearly correct) bounds are set,
+  // we will force a resize then invalidate layout to let the layout manager
+  // take over.
+  SizeToPreferredSize();
+  InvalidateLayout();
 }
 
 void AvatarToolbarButton::ShowAvatarHighlightAnimation() {

@@ -89,6 +89,7 @@ inspectedElement1{
     "className": ".inspected",
     "nodeWidth": "250",
     "nodeHeight": "250",
+    "showAccessibilityInfo": true,
     "isKeyboardFocusable": false,
     "accessibleName": "",
     "accessibleRole": "generic"
@@ -183,6 +184,7 @@ inspectedElement2{
     "className": ".inspected",
     "nodeWidth": "250",
     "nodeHeight": "250",
+    "showAccessibilityInfo": true,
     "isKeyboardFocusable": false,
     "accessibleName": "",
     "accessibleRole": "generic"

@@ -4,9 +4,12 @@
 
 package org.chromium.chrome.browser.omnibox.suggestions.base;
 
+import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.anyInt;
 import static org.mockito.Mockito.inOrder;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -19,6 +22,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -203,5 +207,39 @@ public class BaseSuggestionViewBinderUnitTest {
                 mResources.getDimensionPixelSize(R.dimen.omnibox_suggestion_compact_height);
         verify(mContentView).setPaddingRelative(0, expectedPadding, 0, expectedPadding);
         verify(mContentView).setMinimumHeight(expectedHeight);
+    }
+
+    @Test
+    public void actionCallback_installedWhenSet() {
+        ArgumentCaptor<View.OnClickListener> callback =
+                ArgumentCaptor.forClass(View.OnClickListener.class);
+        Runnable mockCallback = mock(Runnable.class);
+        mModel.set(BaseSuggestionViewProperties.ACTION_CALLBACK, mockCallback);
+        verify(mActionView, times(1)).setOnClickListener(callback.capture());
+        callback.getValue().onClick(null);
+        verify(mockCallback, times(1)).run();
+    }
+
+    @Test
+    public void actionCallback_subsequentUpdatesReplaceCallback() {
+        ArgumentCaptor<View.OnClickListener> callback =
+                ArgumentCaptor.forClass(View.OnClickListener.class);
+        Runnable mockCallback1 = mock(Runnable.class);
+        Runnable mockCallback2 = mock(Runnable.class);
+
+        mModel.set(BaseSuggestionViewProperties.ACTION_CALLBACK, mockCallback1);
+        mModel.set(BaseSuggestionViewProperties.ACTION_CALLBACK, mockCallback2);
+        verify(mActionView, times(2)).setOnClickListener(callback.capture());
+        callback.getValue().onClick(null);
+        verify(mockCallback1, never()).run();
+        verify(mockCallback2, times(1)).run();
+    }
+
+    @Test
+    public void actionCallback_clearedWhenUnset() {
+        mModel.set(BaseSuggestionViewProperties.ACTION_CALLBACK, () -> {});
+        verify(mActionView, times(1)).setOnClickListener(any(View.OnClickListener.class));
+        mModel.set(BaseSuggestionViewProperties.ACTION_CALLBACK, null);
+        verify(mActionView, times(1)).setOnClickListener(null);
     }
 }

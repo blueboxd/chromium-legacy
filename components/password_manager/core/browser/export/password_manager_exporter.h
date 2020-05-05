@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner.h"
+#include "base/strings/string_piece.h"
 #include "base/time/time.h"
 #include "components/password_manager/core/browser/ui/export_progress_status.h"
 
@@ -30,7 +31,7 @@ class PasswordManagerExporter {
       base::RepeatingCallback<void(password_manager::ExportProgressStatus,
                                    const std::string&)>;
   using WriteCallback =
-      base::RepeatingCallback<int(const base::FilePath&, const char*, int)>;
+      base::RepeatingCallback<bool(const base::FilePath&, base::StringPiece)>;
   using DeleteCallback =
       base::RepeatingCallback<bool(const base::FilePath&, bool)>;
   using SetPosixFilePermissionsCallback =
@@ -58,15 +59,13 @@ class PasswordManagerExporter {
   virtual ExportProgressStatus GetProgressStatus();
 
   // Replace the function which writes to the filesystem with a custom action.
-  // The return value is -1 on error, otherwise the number of bytes written.
   void SetWriteForTesting(WriteCallback write_callback);
 
   // Replace the function which writes to the filesystem with a custom action.
-  // The return value is true when deleting successfully.
   void SetDeleteForTesting(DeleteCallback delete_callback);
 
   // Replace the function which sets file permissions on Posix with a custom
-  // action. The return values is true when successful.
+  // action.
   void SetSetPosixFilePermissionsForTesting(
       SetPosixFilePermissionsCallback set_permissions_callback);
 

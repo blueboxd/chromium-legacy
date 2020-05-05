@@ -82,18 +82,6 @@ std::vector<std::string> FilePathsToStrings(
   return values;
 }
 
-bool WriteEmptyFile(const base::FilePath& path) {
-  return base::WriteFile(path, "", 0) == 0;
-}
-
-bool WriteString(const base::FilePath& path, const base::StringPiece& str) {
-  int bytes_written = base::WriteFile(path, str.data(), str.size());
-  if (bytes_written < 0)
-    return false;
-
-  return static_cast<size_t>(bytes_written) == str.size();
-}
-
 }  // namespace
 
 TEST(ShellIntegrationTest, GetDataWriteLocation) {
@@ -202,11 +190,11 @@ TEST(ShellIntegrationTest, GetExistingShortcutContents) {
     MockEnvironment env;
     env.Set("XDG_DATA_HOME", temp_dir.GetPath().value());
     // Create a file in a non-applications directory. This should be ignored.
-    ASSERT_TRUE(
-        WriteString(temp_dir.GetPath().Append(kTemplateFilename), kTestData2));
+    ASSERT_TRUE(base::WriteFile(temp_dir.GetPath().Append(kTemplateFilename),
+                                kTestData2));
     ASSERT_TRUE(
         base::CreateDirectory(temp_dir.GetPath().Append("applications")));
-    ASSERT_TRUE(WriteString(
+    ASSERT_TRUE(base::WriteFile(
         temp_dir.GetPath().Append("applications").Append(kTemplateFilename),
         kTestData1));
     std::string contents;
@@ -226,10 +214,10 @@ TEST(ShellIntegrationTest, GetExistingShortcutContents) {
                                            false /* create? */);
     ASSERT_TRUE(base::CreateDirectory(
         temp_dir.GetPath().Append(".local/share/applications")));
-    ASSERT_TRUE(WriteString(temp_dir.GetPath()
-                                .Append(".local/share/applications")
-                                .Append(kTemplateFilename),
-                            kTestData1));
+    ASSERT_TRUE(base::WriteFile(temp_dir.GetPath()
+                                    .Append(".local/share/applications")
+                                    .Append(kTemplateFilename),
+                                kTestData1));
     std::string contents;
     ASSERT_TRUE(
         GetExistingShortcutContents(&env, kTemplateFilepath, &contents));
@@ -245,7 +233,7 @@ TEST(ShellIntegrationTest, GetExistingShortcutContents) {
     env.Set("XDG_DATA_DIRS", temp_dir.GetPath().value());
     ASSERT_TRUE(
         base::CreateDirectory(temp_dir.GetPath().Append("applications")));
-    ASSERT_TRUE(WriteString(
+    ASSERT_TRUE(base::WriteFile(
         temp_dir.GetPath().Append("applications").Append(kTemplateFilename),
         kTestData2));
     std::string contents;
@@ -265,12 +253,12 @@ TEST(ShellIntegrationTest, GetExistingShortcutContents) {
     env.Set("XDG_DATA_DIRS",
             temp_dir1.GetPath().value() + ":" + temp_dir2.GetPath().value());
     // Create a file in a non-applications directory. This should be ignored.
-    ASSERT_TRUE(
-        WriteString(temp_dir1.GetPath().Append(kTemplateFilename), kTestData1));
+    ASSERT_TRUE(base::WriteFile(temp_dir1.GetPath().Append(kTemplateFilename),
+                                kTestData1));
     // Only create a findable desktop file in the second path.
     ASSERT_TRUE(
         base::CreateDirectory(temp_dir2.GetPath().Append("applications")));
-    ASSERT_TRUE(WriteString(
+    ASSERT_TRUE(base::WriteFile(
         temp_dir2.GetPath().Append("applications").Append(kTemplateFilename),
         kTestData2));
     std::string contents;
@@ -290,10 +278,11 @@ TEST(ShellIntegrationTest, GetExistingProfileShortcutFilenames) {
 
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
-  ASSERT_TRUE(WriteEmptyFile(temp_dir.GetPath().Append(kApp1Filename)));
-  ASSERT_TRUE(WriteEmptyFile(temp_dir.GetPath().Append(kApp2Filename)));
+  ASSERT_TRUE(base::WriteFile(temp_dir.GetPath().Append(kApp1Filename), ""));
+  ASSERT_TRUE(base::WriteFile(temp_dir.GetPath().Append(kApp2Filename), ""));
   // This file should not be returned in the results.
-  ASSERT_TRUE(WriteEmptyFile(temp_dir.GetPath().Append(kUnrelatedAppFilename)));
+  ASSERT_TRUE(
+      base::WriteFile(temp_dir.GetPath().Append(kUnrelatedAppFilename), ""));
   std::vector<base::FilePath> paths =
       GetExistingProfileShortcutFilenames(kProfilePath, temp_dir.GetPath());
   // Path order is arbitrary. Sort the output for consistency.

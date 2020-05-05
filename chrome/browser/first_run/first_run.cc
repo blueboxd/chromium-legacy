@@ -266,7 +266,7 @@ bool GetFirstRunSentinelFilePath(base::FilePath* path) {
 bool CreateSentinel() {
   base::FilePath first_run_sentinel;
   return GetFirstRunSentinelFilePath(&first_run_sentinel) &&
-      base::WriteFile(first_run_sentinel, "", 0) != -1;
+         base::WriteFile(first_run_sentinel, "");
 }
 
 // -- Platform-specific functions --

@@ -11,6 +11,7 @@
 #include "base/task/post_task.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/scoped_feature_list.h"
+#include "build/build_config.h"
 #include "chrome/browser/media/history/media_history_feed_associated_origins_table.h"
 #include "chrome/browser/media/history/media_history_feed_items_table.h"
 #include "chrome/browser/media/history/media_history_feeds_table.h"
@@ -504,8 +505,16 @@ IN_PROC_BROWSER_TEST_P(MediaHistoryBrowserTest,
             GetPlaybackSessionsSync(GetOTRMediaHistoryService(browser), 1));
 }
 
+// Flaky on Mac: https://crbug.com/1078463.
+#if defined(OS_MACOSX)
+#define MAYBE_RecordMediaSession_OnNavigate_Complete \
+  DISABLED_RecordMediaSession_OnNavigate_Complete
+#else
+#define MAYBE_RecordMediaSession_OnNavigate_Complete \
+  RecordMediaSession_OnNavigate_Complete
+#endif
 IN_PROC_BROWSER_TEST_P(MediaHistoryBrowserTest,
-                       RecordMediaSession_OnNavigate_Complete) {
+                       MAYBE_RecordMediaSession_OnNavigate_Complete) {
   auto* browser = CreateBrowserFromParam();
 
   EXPECT_TRUE(SetupPageAndStartPlaying(browser, GetTestURL()));

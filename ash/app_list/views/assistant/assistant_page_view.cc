@@ -200,17 +200,6 @@ base::Optional<int> AssistantPageView::GetSearchBoxTop(
   return base::nullopt;
 }
 
-gfx::Rect AssistantPageView::GetPageBoundsForState(
-    AppListState state,
-    const gfx::Rect& contents_bounds,
-    const gfx::Rect& search_box_bounds) const {
-  gfx::Rect bounds =
-      gfx::Rect(gfx::Point(contents_bounds.x(), search_box_bounds.y()),
-                GetPreferredSize());
-  bounds.Offset((contents_bounds.width() - bounds.width()) / 2, 0);
-  return bounds;
-}
-
 views::View* AssistantPageView::GetFirstFocusableView() {
   return GetFocusManager()->GetNextFocusableView(
       this, GetWidget(), /*reverse=*/false, /*dont_loop=*/false);
@@ -236,6 +225,23 @@ void AssistantPageView::AnimateYPosition(AppListViewState target_view_state,
 
   animator.Run(layer(), this);
   animator.Run(view_shadow_->shadow()->shadow_layer(), nullptr);
+}
+
+void AssistantPageView::UpdatePageOpacityForState(AppListState state,
+                                                  float search_box_opacity,
+                                                  bool restore_opacity) {
+  layer()->SetOpacity(search_box_opacity);
+}
+
+gfx::Rect AssistantPageView::GetPageBoundsForState(
+    AppListState state,
+    const gfx::Rect& contents_bounds,
+    const gfx::Rect& search_box_bounds) const {
+  gfx::Rect bounds =
+      gfx::Rect(gfx::Point(contents_bounds.x(), search_box_bounds.y()),
+                GetPreferredSize());
+  bounds.Offset((contents_bounds.width() - bounds.width()) / 2, 0);
+  return bounds;
 }
 
 void AssistantPageView::OnAssistantControllerDestroying() {

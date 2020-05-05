@@ -8,7 +8,7 @@
 #include <type_traits>
 #include "base/json/string_escape.h"
 #include "components/feed/core/proto/v2/wire/content_id.pb.h"
-#include "components/feed/core/v2/stream_model_update_request.h"
+#include "components/feed/core/v2/protocol_translator.h"
 
 namespace feed {
 namespace {}  // namespace

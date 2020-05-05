@@ -50,6 +50,13 @@ public final class BaseSuggestionViewBinder<T extends View>
             updateContentViewPadding(model, view.getDecoratedSuggestionView());
         } else if (BaseSuggestionViewProperties.ACTION_ICON == propertyKey) {
             updateActionIcon(model, view);
+        } else if (BaseSuggestionViewProperties.ACTION_CALLBACK == propertyKey) {
+            final Runnable callback = model.get(BaseSuggestionViewProperties.ACTION_CALLBACK);
+            if (callback != null) {
+                view.getActionImageView().setOnClickListener(v -> callback.run());
+            } else {
+                view.getActionImageView().setOnClickListener(null);
+            }
         } else if (BaseSuggestionViewProperties.DENSITY == propertyKey) {
             updateContentViewPadding(model, view.getDecoratedSuggestionView());
         } else if (SuggestionCommonProperties.LAYOUT_DIRECTION == propertyKey) {

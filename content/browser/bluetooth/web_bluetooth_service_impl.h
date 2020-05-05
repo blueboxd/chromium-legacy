@@ -115,13 +115,13 @@ class CONTENT_EXPORT WebBluetoothServiceImpl
 
   class ScanningClient {
    public:
-    ScanningClient(
-        mojo::AssociatedRemote<blink::mojom::WebBluetoothScanClient> client,
-        blink::mojom::WebBluetoothRequestLEScanOptionsPtr options,
-        RequestScanningStartCallback callback,
-        BluetoothDeviceScanningPromptController* prompt_controller);
+    ScanningClient(mojo::AssociatedRemote<
+                       blink::mojom::WebBluetoothAdvertisementClient> client,
+                   blink::mojom::WebBluetoothRequestLEScanOptionsPtr options,
+                   RequestScanningStartCallback callback,
+                   BluetoothDeviceScanningPromptController* prompt_controller);
     ~ScanningClient();
-    bool SendEvent(blink::mojom::WebBluetoothScanResultPtr result);
+    bool SendEvent(blink::mojom::WebBluetoothAdvertisingEventPtr result);
 
     void set_prompt_controller(
         BluetoothDeviceScanningPromptController* prompt_controller) {
@@ -151,7 +151,8 @@ class CONTENT_EXPORT WebBluetoothServiceImpl
 
     bool disconnected_ = false;
     bool allow_send_event_ = false;
-    mojo::AssociatedRemote<blink::mojom::WebBluetoothScanClient> client_;
+    mojo::AssociatedRemote<blink::mojom::WebBluetoothAdvertisementClient>
+        client_;
     blink::mojom::WebBluetoothRequestLEScanOptionsPtr options_;
     RequestScanningStartCallback callback_;
     BluetoothDeviceScanningPromptController* prompt_controller_;
@@ -246,8 +247,8 @@ class CONTENT_EXPORT WebBluetoothServiceImpl
       const std::vector<uint8_t>& value,
       RemoteDescriptorWriteValueCallback callback) override;
   void RequestScanningStart(
-      mojo::PendingAssociatedRemote<blink::mojom::WebBluetoothScanClient>
-          client,
+      mojo::PendingAssociatedRemote<
+          blink::mojom::WebBluetoothAdvertisementClient> client,
       blink::mojom::WebBluetoothRequestLEScanOptionsPtr options,
       RequestScanningStartCallback callback) override;
 
@@ -260,13 +261,15 @@ class CONTENT_EXPORT WebBluetoothServiceImpl
                       scoped_refptr<device::BluetoothAdapter> adapter);
 
   void RequestScanningStartImpl(
-      mojo::AssociatedRemote<blink::mojom::WebBluetoothScanClient> client,
+      mojo::AssociatedRemote<blink::mojom::WebBluetoothAdvertisementClient>
+          client,
       blink::mojom::WebBluetoothRequestLEScanOptionsPtr options,
       RequestScanningStartCallback callback,
       scoped_refptr<device::BluetoothAdapter> adapter);
 
   void OnStartDiscoverySession(
-      mojo::AssociatedRemote<blink::mojom::WebBluetoothScanClient> client,
+      mojo::AssociatedRemote<blink::mojom::WebBluetoothAdvertisementClient>
+          client,
       blink::mojom::WebBluetoothRequestLEScanOptionsPtr options,
       std::unique_ptr<device::BluetoothDiscoverySession> session);
 

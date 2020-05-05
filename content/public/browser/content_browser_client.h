@@ -323,10 +323,10 @@ class CONTENT_EXPORT ContentBrowserClient {
   // curve for scrolling.
   virtual bool ShouldUseMobileFlingCurve();
 
-  // Returns whether all instances of the specified effective URL should be
+  // Returns whether all instances of the specified site URL should be
   // rendered by the same process, rather than using process-per-site-instance.
   virtual bool ShouldUseProcessPerSite(BrowserContext* browser_context,
-                                       const GURL& effective_url);
+                                       const GURL& site_url);
 
   // Returns whether a spare RenderProcessHost should be used for navigating to
   // the specified site URL.
@@ -784,6 +784,10 @@ class CONTENT_EXPORT ContentBrowserClient {
       bool is_main_frame_request,
       bool strict_enforcement,
       base::OnceCallback<void(CertificateRequestResultType)> callback);
+
+  // Returns true if all requests with certificate errors should be blocked
+  // for a given |main_frame_url|, regardless of any other security settings.
+  virtual bool ShouldDenyRequestOnCertificateError(const GURL main_frame_url);
 
   // Selects a SSL client certificate and returns it to the |delegate|. Note:
   // |delegate| may be called synchronously or asynchronously.

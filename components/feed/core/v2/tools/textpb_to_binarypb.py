@@ -62,7 +62,7 @@ def text_to_binary():
 
   if FLAGS.output_format == 'base64':
     encoded = urllib.parse.quote(
-        base64.urlsafe_b64encode(encoded).decode('utf-8'))
+        base64.urlsafe_b64encode(encoded).decode('utf-8')).encode('utf-8')
 
   if FLAGS.output_file:
     with open(FLAGS.output_file, mode='wb') as file:

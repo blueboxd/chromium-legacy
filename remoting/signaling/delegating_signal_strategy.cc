@@ -5,6 +5,7 @@
 #include "remoting/signaling/delegating_signal_strategy.h"
 
 #include "base/bind.h"
+#include "base/logging.h"
 #include "base/rand_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
@@ -105,6 +106,15 @@ bool DelegatingSignalStrategy::SendStanza(
   delegate_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(send_iq_callback_, stanza->Str()));
   return true;
+}
+
+bool DelegatingSignalStrategy::SendMessage(
+    const ftl::Id& destination_id,
+    const std::string& destination_registration_id,
+    const ftl::ChromotingMessage& message) {
+  DCHECK(client_task_runner_->BelongsToCurrentThread());
+  NOTIMPLEMENTED();
+  return false;
 }
 
 std::string DelegatingSignalStrategy::GetNextId() {

@@ -1771,9 +1771,6 @@ TEST_F(LockContentsViewUnitTest, TapOnAuthUserFocusesPassword) {
     // Move focus off of |auth_target|'s password.
     ASSERT_TRUE(HasFocusInAnyChildView(password));
     GetEventGenerator()->PressKey(ui::KeyboardCode::VKEY_TAB, 0);
-    // Focus on the display password
-    EXPECT_TRUE(HasFocusInAnyChildView(password));
-    GetEventGenerator()->PressKey(ui::KeyboardCode::VKEY_TAB, 0);
     EXPECT_FALSE(HasFocusInAnyChildView(password));
 
     // Click the user view, verify the password was focused.

@@ -602,9 +602,7 @@ bool ParsePpdCapabilities(base::StringPiece printer_name,
   if (!base::CreateTemporaryFile(&ppd_file_path))
     return false;
 
-  int data_size = printer_capabilities.length();
-  if (data_size !=
-      base::WriteFile(ppd_file_path, printer_capabilities.data(), data_size)) {
+  if (!base::WriteFile(ppd_file_path, printer_capabilities)) {
     base::DeleteFile(ppd_file_path, false);
     return false;
   }

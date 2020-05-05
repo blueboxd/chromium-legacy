@@ -59,6 +59,9 @@ class FtlSignalStrategy::Core {
   void AddListener(Listener* listener);
   void RemoveListener(Listener* listener);
   bool SendStanza(std::unique_ptr<jingle_xmpp::XmlElement> stanza);
+  bool SendMessage(const ftl::Id& destination_id,
+                   const std::string& destination_registration_id,
+                   const ftl::ChromotingMessage& message);
   bool IsSignInError() const;
 
  private:
@@ -74,9 +77,9 @@ class FtlSignalStrategy::Core {
                          const std::string& sender_registration_id,
                          const ftl::ChromotingMessage& message);
 
-  void SendMessage(const SignalingAddress& receiver,
-                   const std::string& stanza_id,
-                   const std::string& message);
+  void SendMessageImpl(const SignalingAddress& receiver,
+                       const ftl::ChromotingMessage& message,
+                       MessagingClient::DoneCallback callback);
   void OnSendMessageResponse(const SignalingAddress& receiver,
                              const std::string& stanza_id,
                              const grpc::Status& status);
@@ -217,11 +220,37 @@ bool FtlSignalStrategy::Core::SendStanza(
   stanza->SetAttr(jingle_xmpp::QN_FROM, local_address_.id());
 
   std::string stanza_id = stanza->Attr(jingle_xmpp::QN_ID);
-  SendMessage(to, stanza_id, stanza->Str());
 
-  // Return false if the SendMessage() call above resulted in the SignalStrategy
-  // being disconnected.
+  ftl::ChromotingMessage crd_message;
+  crd_message.mutable_xmpp()->set_stanza(stanza->Str());
+  SendMessageImpl(to, crd_message,
+                  base::BindOnce(&Core::OnSendMessageResponse,
+                                 weak_factory_.GetWeakPtr(), to, stanza_id));
+
+  // Return false if the SendMessageImpl() call above resulted in the
+  // SignalStrategy being disconnected.
   return GetState() == CONNECTED;
+}
+
+bool FtlSignalStrategy::Core::SendMessage(
+    const ftl::Id& destination_id,
+    const std::string& destination_registration_id,
+    const ftl::ChromotingMessage& message) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  if (GetState() != CONNECTED) {
+    HOST_LOG << "Dropping message because FTL is not connected.";
+    return false;
+  }
+
+  SignalingAddress destination = SignalingAddress::CreateFtlSignalingAddress(
+      destination_id.id(), destination_registration_id);
+  SendMessageImpl(
+      destination, message,
+      base::BindOnce(&Core::OnSendMessageResponse, weak_factory_.GetWeakPtr(),
+                     destination, std::string()));
+
+  return true;
 }
 
 bool FtlSignalStrategy::Core::IsSignInError() const {
@@ -335,9 +364,10 @@ void FtlSignalStrategy::Core::OnMessageReceived(
   OnStanza(sender_address, std::move(stanza));
 }
 
-void FtlSignalStrategy::Core::SendMessage(const SignalingAddress& receiver,
-                                          const std::string& stanza_id,
-                                          const std::string& message) {
+void FtlSignalStrategy::Core::SendMessageImpl(
+    const SignalingAddress& receiver,
+    const ftl::ChromotingMessage& message,
+    MessagingClient::DoneCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   std::string receiver_username;
@@ -352,14 +382,11 @@ void FtlSignalStrategy::Core::SendMessage(const SignalingAddress& receiver,
   HOST_LOG << "Sending outgoing stanza:\n"
            << "Receiver: " << receiver_username << "\n"
            << "Receiver registration ID: " << receiver_registration_id << "\n"
-           << message
+           << message.xmpp().stanza()
            << "\n=========================================================";
-  ftl::ChromotingMessage crd_message;
-  crd_message.mutable_xmpp()->set_stanza(message);
-  messaging_client_->SendMessage(
-      receiver_username, receiver_registration_id, crd_message,
-      base::BindOnce(&Core::OnSendMessageResponse, weak_factory_.GetWeakPtr(),
-                     receiver, stanza_id));
+
+  messaging_client_->SendMessage(receiver_username, receiver_registration_id,
+                                 message, std::move(callback));
 }
 
 void FtlSignalStrategy::Core::OnSendMessageResponse(
@@ -376,10 +403,15 @@ void FtlSignalStrategy::Core::OnSendMessageResponse(
     return;
   }
 
-  // Fake an error message so that JingleSession will take it as
-  // PEER_IS_OFFLINE.
   LOG(ERROR) << "Failed to send message to peer. Error code: "
              << status.error_code() << ", message: " << status.error_message();
+
+  if (stanza_id.empty()) {
+    // If the message sent was not related to signaling, then exit early.
+    return;
+  }
+
+  // Fake an error message so JingleSession will take it as PEER_IS_OFFLINE.
   auto error_iq = std::make_unique<jingle_xmpp::XmlElement>(jingle_xmpp::QN_IQ);
   error_iq->SetAttr(jingle_xmpp::QN_TYPE, jingle_xmpp::STR_ERROR);
   error_iq->SetAttr(jingle_xmpp::QN_ID, stanza_id);
@@ -490,9 +522,18 @@ void FtlSignalStrategy::AddListener(Listener* listener) {
 void FtlSignalStrategy::RemoveListener(Listener* listener) {
   core_->RemoveListener(listener);
 }
+
 bool FtlSignalStrategy::SendStanza(
     std::unique_ptr<jingle_xmpp::XmlElement> stanza) {
   return core_->SendStanza(std::move(stanza));
+}
+
+bool FtlSignalStrategy::SendMessage(
+    const ftl::Id& destination_id,
+    const std::string& destination_registration_id,
+    const ftl::ChromotingMessage& message) {
+  return core_->SendMessage(destination_id, destination_registration_id,
+                            message);
 }
 
 std::string FtlSignalStrategy::GetNextId() {

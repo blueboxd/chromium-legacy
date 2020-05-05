@@ -438,12 +438,7 @@ TEST_F(ChromePasswordProtectionServiceTest,
 
   RequestOutcome reason;
   service_->ConfigService(false /*incognito*/, false /*SBER*/);
-// kPasswordProtectionForSavedPasswords is disabled by default on Android.
-#if defined(OS_ANDROID)
-  EXPECT_FALSE(service_->IsPingingEnabled(
-#else
   EXPECT_TRUE(service_->IsPingingEnabled(
-#endif
       LoginReputationClientRequest::PASSWORD_REUSE_EVENT, reused_password_type,
       &reason));
 
@@ -453,12 +448,7 @@ TEST_F(ChromePasswordProtectionServiceTest,
       &reason));
 
   service_->ConfigService(true /*incognito*/, false /*SBER*/);
-// kPasswordProtectionForSavedPasswords is disabled by default on Android.
-#if defined(OS_ANDROID)
-  EXPECT_FALSE(service_->IsPingingEnabled(
-#else
   EXPECT_TRUE(service_->IsPingingEnabled(
-#endif
       LoginReputationClientRequest::PASSWORD_REUSE_EVENT, reused_password_type,
       &reason));
 

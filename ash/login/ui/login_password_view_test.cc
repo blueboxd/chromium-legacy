@@ -75,6 +75,16 @@ TEST_F(LoginPasswordViewTest, DisplayPasswordButtonUpdatesUiState) {
   EXPECT_EQ(test_api.textfield()->GetTextInputType(),
             ui::TEXT_INPUT_TYPE_PASSWORD);
 
+  // Click the display password button. This should not work as long as the
+  // password textfield is empty.
+  generator->MoveMouseTo(
+      test_api.display_password_button()->GetBoundsInScreen().CenterPoint());
+  generator->ClickLeftButton();
+  EXPECT_FALSE(test_api.display_password_button()->toggled_for_testing());
+  EXPECT_EQ(test_api.textfield()->GetTextInputType(),
+            ui::TEXT_INPUT_TYPE_PASSWORD);
+
+  generator->PressKey(ui::KeyboardCode::VKEY_A, ui::EF_NONE);
   // Click the display password button. The password should be visible.
   generator->MoveMouseTo(
       test_api.display_password_button()->GetBoundsInScreen().CenterPoint());
@@ -251,6 +261,7 @@ TEST_F(LoginPasswordViewTest, PasswordHidesAfterTyping) {
   // Show the password.
   EXPECT_EQ(test_api.textfield()->GetTextInputType(),
             ui::TEXT_INPUT_TYPE_PASSWORD);
+  generator->PressKey(ui::KeyboardCode::VKEY_A, ui::EF_NONE);
   generator->MoveMouseTo(
       test_api.display_password_button()->GetBoundsInScreen().CenterPoint());
   generator->ClickLeftButton();
@@ -271,6 +282,39 @@ TEST_F(LoginPasswordViewTest, PasswordHidesAfterTyping) {
   test_api.textfield()->InsertText(base::ASCIIToUTF16("test"));
   EXPECT_EQ(test_api.textfield()->GetTextInputType(),
             ui::TEXT_INPUT_TYPE_PASSWORD);
+}
+
+// Checks that the display password button is disabled when the textfield is
+// empty and enabled when it is not.
+TEST_F(LoginPasswordViewTest,
+       DisplayPasswordButonIsEnabledIFFTextfieldIsNotEmpty) {
+  LoginPasswordView::TestApi test_api(view_);
+  ui::test::EventGenerator* generator = GetEventGenerator();
+
+  EXPECT_TRUE(is_password_field_empty_);
+  EXPECT_FALSE(test_api.display_password_button()->GetEnabled());
+
+  generator->PressKey(ui::KeyboardCode::VKEY_A, ui::EF_NONE);
+  EXPECT_FALSE(is_password_field_empty_);
+  EXPECT_TRUE(test_api.display_password_button()->GetEnabled());
+  generator->PressKey(ui::KeyboardCode::VKEY_BACK, ui::EF_NONE);
+  EXPECT_TRUE(is_password_field_empty_);
+  EXPECT_FALSE(test_api.display_password_button()->GetEnabled());
+
+  test_api.textfield()->InsertText(base::ASCIIToUTF16("test"));
+  EXPECT_FALSE(is_password_field_empty_);
+  EXPECT_TRUE(test_api.display_password_button()->GetEnabled());
+  view_->Clear();
+  EXPECT_TRUE(is_password_field_empty_);
+  EXPECT_FALSE(test_api.display_password_button()->GetEnabled());
+
+  generator->PressKey(ui::KeyboardCode::VKEY_A, ui::EF_NONE);
+  EXPECT_FALSE(is_password_field_empty_);
+  EXPECT_TRUE(test_api.display_password_button()->GetEnabled());
+  test_api.textfield()->SelectAll(false /* reversed */);
+  generator->PressKey(ui::KeyboardCode::VKEY_DELETE, ui::EF_NONE);
+  EXPECT_TRUE(is_password_field_empty_);
+  EXPECT_FALSE(test_api.display_password_button()->GetEnabled());
 }
 
 }  // namespace ash

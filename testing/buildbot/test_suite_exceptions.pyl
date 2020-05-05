@@ -1999,6 +1999,16 @@
       },
     },
   },
+  'storage_service_unsandboxed_interactive_ui_tests': {
+    'modifications': {
+      'linux-chromeos-chrome': {
+        # TODO(crbug.com/970649): Remove this filter.
+        'args': [
+          '--gtest_filter=-SadTabViewInteractiveUITest.ReloadMultipleSadTabs',
+        ],
+      },
+    }
+  },
   'storage_unittests': {
     'remove_from': [
       'Fuchsia ARM64',  # https://crbug.com/1077462

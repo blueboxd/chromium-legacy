@@ -59,11 +59,6 @@ public class ClipboardSuggestionProcessor extends BaseSuggestionViewProcessor {
     }
 
     @Override
-    protected boolean canRefine(OmniboxSuggestion suggestion) {
-        return false;
-    }
-
-    @Override
     public void populateModel(OmniboxSuggestion suggestion, PropertyModel model, int position) {
         super.populateModel(suggestion, model, position);
 

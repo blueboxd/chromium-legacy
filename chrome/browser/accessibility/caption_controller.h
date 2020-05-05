@@ -72,6 +72,8 @@ class CaptionController : public BrowserListObserver, public KeyedService {
   void UpdateUIEnabled();
   void UpdateCaptionStyle();
 
+  void UpdateAccessibilityCaptionHistograms();
+
   // Owns us via the KeyedService mechanism.
   Profile* profile_;
 

@@ -88,8 +88,17 @@ class APP_LIST_EXPORT AppsContainerView : public HorizontalPage {
   void AnimateYPosition(AppListViewState target_view_state,
                         const TransformAnimator& animator);
 
-  // Updates y position and opacity of the items in this view during dragging.
-  void UpdateYPositionAndOpacity(float progress, bool restore_opacity);
+  // Updates the opacity of the apps container elements for the current app list
+  // view position.
+  // |progress| - The current app list view drag progress.
+  // |restore_opacity| - Whether the opacity should be restored to the non-drag
+  //     state.
+  void UpdateOpacity(float progress, bool restore_opacity);
+
+  // Updates the y position of the apps container elements for the current app
+  // list view position.
+  // |progress| - The current app list view drag progress.
+  void UpdateYPosition(float progress);
 
   // Called when tablet mode starts and ends.
   void OnTabletModeChanged(bool started);

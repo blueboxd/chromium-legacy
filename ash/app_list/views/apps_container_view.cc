@@ -224,8 +224,7 @@ void AppsContainerView::AnimateYPosition(AppListViewState target_view_state,
   animator.Run(page_switcher_->layer(), page_switcher_);
 }
 
-void AppsContainerView::UpdateYPositionAndOpacity(float progress,
-                                                  bool restore_opacity) {
+void AppsContainerView::UpdateOpacity(float progress, bool restore_opacity) {
   apps_grid_view_->UpdateOpacity(restore_opacity);
 
   // Updates the opacity of page switcher buttons. The same rule as all apps in
@@ -255,7 +254,9 @@ void AppsContainerView::UpdateYPositionAndOpacity(float progress,
                1.0f);
   suggestion_chip_container_view_->layer()->SetOpacity(
       restore_opacity ? 1.0 : chips_opacity);
+}
 
+void AppsContainerView::UpdateYPosition(float progress) {
   suggestion_chip_container_view_->SetY(GetExpectedSuggestionChipY(progress));
 
   apps_grid_view_->SetY(suggestion_chip_container_view_->y() +
@@ -265,7 +266,7 @@ void AppsContainerView::UpdateYPositionAndOpacity(float progress,
 
   // If app list is in drag, reset transforms that might started animating in
   // AnimateYPosition().
-  if (app_list_view->is_in_drag()) {
+  if (contents_view_->app_list_view()->is_in_drag()) {
     suggestion_chip_container_view_->layer()->SetTransform(gfx::Transform());
     apps_grid_view_->layer()->SetTransform(gfx::Transform());
     page_switcher_->layer()->SetTransform(gfx::Transform());

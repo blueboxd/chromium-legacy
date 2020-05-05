@@ -45,8 +45,7 @@ class ChromeContentBrowserClientExtensionsPart
       bool is_main_frame,
       const GURL& candidate_url,
       const GURL& destination_url);
-  static bool ShouldUseProcessPerSite(Profile* profile,
-                                      const GURL& effective_url);
+  static bool ShouldUseProcessPerSite(Profile* profile, const GURL& site_url);
   static bool ShouldUseSpareRenderProcessHost(Profile* profile,
                                               const GURL& site_url);
   static bool DoesSiteRequireDedicatedProcess(

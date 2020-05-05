@@ -29,6 +29,16 @@ void OverrideWithFinch(Config* config) {
       base::GetFieldTrialParamByFeatureAsInt(
           kInterestFeedV2, "max_action_upload_requests_per_day",
           config->max_action_upload_requests_per_day);
+
+  config->stale_content_threshold =
+      base::TimeDelta::FromSecondsD(base::GetFieldTrialParamByFeatureAsDouble(
+          kInterestFeedV2, "stale_content_threshold_seconds",
+          config->stale_content_threshold.InSecondsF()));
+
+  config->default_background_refresh_interval =
+      base::TimeDelta::FromSecondsD(base::GetFieldTrialParamByFeatureAsDouble(
+          kInterestFeedV2, "default_background_refresh_interval_seconds",
+          config->stale_content_threshold.InSecondsF()));
 }
 
 }  // namespace

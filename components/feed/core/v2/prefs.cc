@@ -9,6 +9,7 @@
 #include "base/value_conversions.h"
 #include "base/values.h"
 #include "components/feed/core/common/pref_names.h"
+#include "components/feed/core/v2/scheduling.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 
@@ -52,6 +53,15 @@ DebugStreamData GetDebugStreamData(PrefService* pref_service) {
 void SetDebugStreamData(const DebugStreamData& data,
                         PrefService* pref_service) {
   pref_service->SetString(kDebugStreamData, SerializeDebugStreamData(data));
+}
+
+void SetRequestSchedule(const RequestSchedule& schedule,
+                        PrefService* pref_service) {
+  pref_service->Set(kRequestSchedule, RequestScheduleToValue(schedule));
+}
+
+RequestSchedule GetRequestSchedule(PrefService* pref_service) {
+  return RequestScheduleFromValue(*pref_service->Get(kRequestSchedule));
 }
 
 }  // namespace prefs

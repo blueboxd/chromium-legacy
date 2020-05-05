@@ -14,4 +14,11 @@ public interface SuggestionHost {
      * @return A delegate for the specified suggestion.
      */
     SuggestionViewDelegate createSuggestionViewDelegate(OmniboxSuggestion suggestion, int position);
+
+    /**
+     * Triggered when the user selects to refine one of the omnibox suggestions.
+     *
+     * @param suggestion Suggestion to use to refine Omnibox query.
+     */
+    void onRefineSuggestion(OmniboxSuggestion suggestion);
 }

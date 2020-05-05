@@ -10,16 +10,16 @@
 
 namespace feed {
 
-// Schedules a repeating background task for refreshing the Feed.
+// Schedules a background task for refreshing the Feed.
 // When the scheduled task executes, it calls FeedStream::ExecuteRefreshTask().
 class RefreshTaskScheduler {
  public:
   RefreshTaskScheduler() = default;
   virtual ~RefreshTaskScheduler() = default;
 
-  // Schedules the task if it is not yet scheduled, or if the scheduling
-  // period changes.
-  virtual void EnsureScheduled(base::TimeDelta period) = 0;
+  // Schedules the task to run at |run_time|. This overrides any previous calls
+  // to |EnsureScheduled|.
+  virtual void EnsureScheduled(base::Time run_time) = 0;
   // Cancel the task if it was previously scheduled.
   virtual void Cancel() = 0;
   // After FeedStream::ExecuteRefreshTask is called, the callee must call this

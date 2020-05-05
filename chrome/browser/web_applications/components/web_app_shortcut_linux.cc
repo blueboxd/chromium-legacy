@@ -110,10 +110,7 @@ std::string CreateShortcutIcon(const gfx::ImageFamily& icon_images,
       RecordCreateIcon(CreateShortcutIconResult::kFailToEncodeImageToPng);
       continue;
     }
-    int bytes_written = base::WriteFile(
-        temp_file_path, png_data->front_as<char>(), png_data->size());
-
-    if (bytes_written != static_cast<int>(png_data->size())) {
+    if (!base::WriteFile(temp_file_path, *png_data)) {
       RecordCreateIcon(CreateShortcutIconResult::kImageCorrupted);
       return std::string();
     }
@@ -207,23 +204,14 @@ bool CreateShortcutInApplicationsMenu(const base::FilePath& shortcut_filename,
   base::FilePath temp_directory_path;
   if (!directory_filename.empty()) {
     temp_directory_path = temp_dir.GetPath().Append(directory_filename);
-
-    int bytes_written =
-        base::WriteFile(temp_directory_path, directory_contents.data(),
-                        directory_contents.length());
-
-    if (bytes_written != static_cast<int>(directory_contents.length())) {
+    if (!base::WriteFile(temp_directory_path, directory_contents)) {
       RecordCreateShortcut(CreateShortcutResult::kCorruptDirectoryContents);
       return false;
     }
   }
 
   base::FilePath temp_file_path = temp_dir.GetPath().Append(shortcut_filename);
-
-  int bytes_written =
-      base::WriteFile(temp_file_path, contents.data(), contents.length());
-
-  if (bytes_written != static_cast<int>(contents.length())) {
+  if (!base::WriteFile(temp_file_path, contents)) {
     RecordCreateShortcut(
         CreateShortcutResult::kCorruptApplicationsMenuShortcut);
     return false;

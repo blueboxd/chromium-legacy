@@ -37,7 +37,7 @@ import java.util.List;
 /**
  * BaseAdapter for {@link RecyclerView}. It manages bookmarks to list there.
  */
-class ReorderBookmarkItemsAdapter extends DragReorderableListAdapter<BookmarkItem>
+class BookmarkItemsAdapter extends DragReorderableListAdapter<BookmarkItem>
         implements BookmarkUIObserver, ProfileSyncService.SyncStateChangedListener {
     /**
      * Specifies the view types that the bookmark delegate screen can contain.
@@ -95,7 +95,7 @@ class ReorderBookmarkItemsAdapter extends DragReorderableListAdapter<BookmarkIte
             }
 
             if (node.isFolder()) {
-                mDelegate.notifyStateChange(ReorderBookmarkItemsAdapter.this);
+                mDelegate.notifyStateChange(BookmarkItemsAdapter.this);
             } else {
                 int deletedPosition = getPositionForBookmark(node.getId());
                 if (deletedPosition >= 0) {
@@ -108,7 +108,7 @@ class ReorderBookmarkItemsAdapter extends DragReorderableListAdapter<BookmarkIte
         public void bookmarkModelChanged() {
             assert mDelegate != null;
             clearHighlight();
-            mDelegate.notifyStateChange(ReorderBookmarkItemsAdapter.this);
+            mDelegate.notifyStateChange(BookmarkItemsAdapter.this);
 
             if (mDelegate.getCurrentState() == BookmarkUIState.STATE_SEARCHING
                     && !TextUtils.equals(mSearchText, EMPTY_QUERY)) {
@@ -117,7 +117,7 @@ class ReorderBookmarkItemsAdapter extends DragReorderableListAdapter<BookmarkIte
         }
     };
 
-    ReorderBookmarkItemsAdapter(Context context) {
+    BookmarkItemsAdapter(Context context) {
         super(context);
         mProfileSyncService = ProfileSyncService.get();
         mProfileSyncService.addSyncStateChangedListener(this);

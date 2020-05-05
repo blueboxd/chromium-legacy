@@ -82,6 +82,9 @@ class FakeSignalStrategy : public SignalStrategy {
   void AddListener(Listener* listener) override;
   void RemoveListener(Listener* listener) override;
   bool SendStanza(std::unique_ptr<jingle_xmpp::XmlElement> stanza) override;
+  bool SendMessage(const ftl::Id& destination_id,
+                   const std::string& destination_registration_id,
+                   const ftl::ChromotingMessage& message) override;
   std::string GetNextId() override;
   bool IsSignInError() const override;
   const SignalingTracker& signaling_tracker() const override;

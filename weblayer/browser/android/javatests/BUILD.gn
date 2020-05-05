@@ -166,8 +166,11 @@ copy("weblayer_instrumentation_test_versions_apk") {
       [ "$root_build_dir/bin/run_weblayer_instrumentation_test_versions_apk" ]
 
   # Also explicitly list the output as data so it gets isolated on bots.
-  data =
-      [ "$root_build_dir/bin/run_weblayer_instrumentation_test_versions_apk" ]
+  data = [
+    "$root_build_dir/bin/run_weblayer_instrumentation_test_versions_apk",
+    "//third_party/catapult/third_party/typ/",
+    "//weblayer/browser/android/javatests/skew/expectations.txt",
+  ]
 
   deps = [ ":weblayer_instrumentation_test_apk" ]
 

@@ -18,10 +18,11 @@
 #include "components/feed/core/common/user_classifier.h"
 #include "components/feed/core/proto/v2/wire/response.pb.h"
 #include "components/feed/core/v2/enums.h"
+#include "components/feed/core/v2/protocol_translator.h"
 #include "components/feed/core/v2/public/feed_stream_api.h"
 #include "components/feed/core/v2/request_throttler.h"
+#include "components/feed/core/v2/scheduling.h"
 #include "components/feed/core/v2/stream_model.h"
-#include "components/feed/core/v2/stream_model_update_request.h"
 #include "components/feed/core/v2/tasks/load_more_task.h"
 #include "components/feed/core/v2/tasks/load_stream_task.h"
 #include "components/offline_pages/task/task_queue.h"
@@ -63,7 +64,7 @@ class FeedStream : public FeedStreamApi,
    public:
     WireResponseTranslator() = default;
     ~WireResponseTranslator() = default;
-    virtual std::unique_ptr<StreamModelUpdateRequest> TranslateWireResponse(
+    virtual RefreshResponseData TranslateWireResponse(
         feedwire::Response response,
         StreamModelUpdateRequest::Source source,
         base::Time current_time);
@@ -148,11 +149,10 @@ class FeedStream : public FeedStreamApi,
 
   void LoadModel(std::unique_ptr<StreamModel> model);
 
+  void SetRequestSchedule(RequestSchedule schedule);
+
   FeedNetwork* GetNetwork() { return feed_network_; }
   FeedStore* GetStore() { return store_; }
-
-  // Returns the computed UserClass for the active user.
-  UserClass GetUserClass();
 
   // Returns the time of the last content fetch.
   base::Time GetLastFetchTime();
@@ -197,8 +197,6 @@ class FeedStream : public FeedStreamApi,
     wire_response_translator_ = wire_response_translator;
   }
   void SetIdleCallbackForTesting(base::RepeatingClosure idle_callback);
-  void SetUserClassifierForTesting(
-      std::unique_ptr<UserClassifier> user_classifier);
 
  private:
   class ModelStoreChangeMonitor;
@@ -237,7 +235,6 @@ class FeedStream : public FeedStreamApi,
   std::unique_ptr<StreamModel> model_;
 
   // Mutable state.
-  std::unique_ptr<UserClassifier> user_classifier_;
   RequestThrottler request_throttler_;
   base::TimeTicks suppress_refreshes_until_;
   std::vector<base::OnceCallback<void(bool)>> load_more_complete_callbacks_;

@@ -329,10 +329,11 @@ bool ShouldAssignURLToInstantRenderer(const GURL& url, Profile* profile) {
   return is_ntp_related_url || url.SchemeIs(chrome::kChromeSearchScheme);
 }
 
-bool ShouldUseProcessPerSiteForInstantURL(const GURL& url, Profile* profile) {
-  return ShouldAssignURLToInstantRenderer(url, profile) &&
-         (url.host_piece() == chrome::kChromeSearchLocalNtpHost ||
-          url.host_piece() == chrome::kChromeSearchRemoteNtpHost);
+bool ShouldUseProcessPerSiteForInstantSiteURL(const GURL& site_url,
+                                              Profile* profile) {
+  return ShouldAssignURLToInstantRenderer(site_url, profile) &&
+         (site_url.host_piece() == chrome::kChromeSearchLocalNtpHost ||
+          site_url.host_piece() == chrome::kChromeSearchRemoteNtpHost);
 }
 
 GURL GetEffectiveURLForInstant(const GURL& url, Profile* profile) {

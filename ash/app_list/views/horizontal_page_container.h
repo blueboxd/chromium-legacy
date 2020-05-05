@@ -38,19 +38,23 @@ class APP_LIST_EXPORT HorizontalPageContainer : public AppListPage,
   void OnWillBeHidden() override;
   void OnAnimationStarted(AppListState from_state,
                           AppListState to_state) override;
-  gfx::Rect GetPageBoundsForState(
-      AppListState state,
-      const gfx::Rect& contents_bounds,
-      const gfx::Rect& search_box_bounds) const override;
-  void UpdateOpacityForState(AppListState state) override;
   views::View* GetFirstFocusableView() override;
   views::View* GetLastFocusableView() override;
-  bool ShouldShowSearchBox() const override;
   void AnimateOpacity(float current_progress,
                       AppListViewState target_view_state,
                       const OpacityAnimator& animator) override;
   void AnimateYPosition(AppListViewState target_view_state,
                         const TransformAnimator& animator) override;
+  void UpdatePageOpacityForState(AppListState state,
+                                 float search_box_opacity,
+                                 bool restore_opacity) override;
+  void UpdatePageBoundsForState(AppListState state,
+                                const gfx::Rect& contents_bounds,
+                                const gfx::Rect& search_box_bounds) override;
+  gfx::Rect GetPageBoundsForState(
+      AppListState state,
+      const gfx::Rect& contents_bounds,
+      const gfx::Rect& search_box_bounds) const override;
 
   AppsContainerView* apps_container_view() { return apps_container_view_; }
 
@@ -63,6 +67,8 @@ class APP_LIST_EXPORT HorizontalPageContainer : public AppListPage,
   void TransitionStarting() override;
   void TransitionChanged() override;
   void TransitionEnded() override;
+
+  void UpdateOpacityForState(AppListState state);
 
   // Adds a horizontal page to this view.
   int AddHorizontalPage(HorizontalPage* view);

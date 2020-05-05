@@ -756,7 +756,7 @@ public class BookmarkTest {
 
         // Starts as last bookmark (2nd index) and ends as 0th bookmark (promo header not included).
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            ((ReorderBookmarkItemsAdapter) mItemsContainer.getAdapter()).simulateDragForTests(3, 1);
+            ((BookmarkItemsAdapter) mItemsContainer.getAdapter()).simulateDragForTests(3, 1);
         });
 
         modelReorderHelper.waitForCallback(0, 1);
@@ -821,7 +821,7 @@ public class BookmarkTest {
 
         // Starts as 0th bookmark (not counting promo header) and ends as last (index 3).
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            ((ReorderBookmarkItemsAdapter) mItemsContainer.getAdapter()).simulateDragForTests(1, 4);
+            ((BookmarkItemsAdapter) mItemsContainer.getAdapter()).simulateDragForTests(1, 4);
         });
 
         modelReorderHelper.waitForCallback(0, 1);
@@ -882,7 +882,7 @@ public class BookmarkTest {
 
         // Starts as 0th bookmark (not counting promo header) and ends at the 1st index.
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            ((ReorderBookmarkItemsAdapter) mItemsContainer.getAdapter()).simulateDragForTests(1, 2);
+            ((BookmarkItemsAdapter) mItemsContainer.getAdapter()).simulateDragForTests(1, 2);
         });
 
         modelReorderHelper.waitForCallback(0, 1);
@@ -910,8 +910,7 @@ public class BookmarkTest {
         toggleSelectionAndEndAnimation(
                 testId, (BookmarkRow) mItemsContainer.findViewHolderForAdapterPosition(1).itemView);
 
-        ReorderBookmarkItemsAdapter adapter =
-                ((ReorderBookmarkItemsAdapter) mItemsContainer.getAdapter());
+        BookmarkItemsAdapter adapter = ((BookmarkItemsAdapter) mItemsContainer.getAdapter());
         Assert.assertFalse("Promo header should not be passively draggable",
                 adapter.isPassivelyDraggable(promo));
         Assert.assertFalse("Promo header should not be actively draggable",
@@ -930,8 +929,7 @@ public class BookmarkTest {
         toggleSelectionAndEndAnimation(
                 testId, (BookmarkRow) mItemsContainer.findViewHolderForAdapterPosition(1).itemView);
 
-        ReorderBookmarkItemsAdapter adapter =
-                ((ReorderBookmarkItemsAdapter) mItemsContainer.getAdapter());
+        BookmarkItemsAdapter adapter = ((BookmarkItemsAdapter) mItemsContainer.getAdapter());
         Assert.assertFalse("Partner bookmarks folder should not be passively draggable",
                 adapter.isPassivelyDraggable(partner));
         Assert.assertFalse("Partner bookmarks folder should not be actively draggable",
@@ -954,8 +952,7 @@ public class BookmarkTest {
         toggleSelectionAndEndAnimation(
                 aId, (BookmarkRow) mItemsContainer.findViewHolderForAdapterPosition(2).itemView);
 
-        ReorderBookmarkItemsAdapter adapter =
-                ((ReorderBookmarkItemsAdapter) mItemsContainer.getAdapter());
+        BookmarkItemsAdapter adapter = ((BookmarkItemsAdapter) mItemsContainer.getAdapter());
         Assert.assertTrue("Unselected rows should be passively draggable",
                 adapter.isPassivelyDraggable(test));
         Assert.assertFalse("Unselected rows should not be actively draggable",
@@ -1185,7 +1182,7 @@ public class BookmarkTest {
         AndroidSyncSettings.overrideForTests(syncDelegate, null);
         readPartnerBookmarks();
         openBookmarkManager();
-        ReorderBookmarkItemsAdapter adapter = getReorderAdapter();
+        BookmarkItemsAdapter adapter = getReorderAdapter();
 
         // Open the root folder.
         TestThreadUtils.runOnUiThreadBlocking(
@@ -1504,8 +1501,8 @@ public class BookmarkTest {
         BookmarkPromoHeader.forcePromoStateForTests(BookmarkPromoHeader.PromoState.PROMO_SYNC);
     }
 
-    private ReorderBookmarkItemsAdapter getReorderAdapter() {
-        return (ReorderBookmarkItemsAdapter) getAdapter();
+    private BookmarkItemsAdapter getReorderAdapter() {
+        return (BookmarkItemsAdapter) getAdapter();
     }
 
     private void enterSearch() throws Exception {

@@ -602,7 +602,7 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   // the current site), in which case we should ensure there is only one
   // RenderProcessHost per site for the entire browser context.
   static bool ShouldUseProcessPerSite(content::BrowserContext* browser_context,
-                                      const GURL& url);
+                                      const GURL& site_url);
 
   // Returns true if the caller should attempt to use an existing
   // RenderProcessHost rather than creating a new one.

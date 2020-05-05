@@ -89,6 +89,13 @@ class TemplateWriter(object):
         continue
       if '*' in self.platforms or supported_on['platform'] in self.platforms:
         return True
+
+    if self.IsFuturePolicySupported(policy):
+      if '*' in self.platforms and policy['future_on']:
+        return True
+      for future in policy['future_on']:
+        if future['platform'] in self.platforms:
+          return True
     return False
 
   def GetPolicyFeature(self, policy, feature_name, value=None):
@@ -134,6 +141,15 @@ class TemplateWriter(object):
       if (platform == supported_on['platform']
           and (not product or product in supported_on['product'])
           and self.IsVersionSupported(item, supported_on)):
+        return True
+    if self.IsFuturePolicySupported(item):
+      if (product and {
+          'platform': platform,
+          'product': product
+      } in item.get('future_on', [])):
+        return True
+      if (not product and filter(lambda f: f['platform'] == platform,
+                                 item.get('future_on', []))):
         return True
     return False
 

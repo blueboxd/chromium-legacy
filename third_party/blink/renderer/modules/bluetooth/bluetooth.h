@@ -26,7 +26,7 @@ class ScriptState;
 class Bluetooth final : public EventTargetWithInlineData,
                         public ExecutionContextLifecycleObserver,
                         public PageVisibilityObserver,
-                        public mojom::blink::WebBluetoothScanClient {
+                        public mojom::blink::WebBluetoothAdvertisementClient {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(Bluetooth);
 
@@ -47,8 +47,8 @@ class Bluetooth final : public EventTargetWithInlineData,
 
   mojom::blink::WebBluetoothService* Service() { return service_.get(); }
 
-  // WebBluetoothScanClient
-  void ScanEvent(mojom::blink::WebBluetoothScanResultPtr result) override;
+  // WebBluetoothAdvertisementClient
+  void AdvertisingEvent(mojom::blink::WebBluetoothAdvertisingEventPtr) override;
 
   // EventTarget
   const AtomicString& InterfaceName() const override;
@@ -80,9 +80,11 @@ class Bluetooth final : public EventTargetWithInlineData,
                              mojom::blink::WebBluetoothResult,
                              mojom::blink::WebBluetoothDevicePtr);
 
-  void RequestScanningCallback(ScriptPromiseResolver*,
-                               mojo::ReceiverId id,
-                               mojom::blink::RequestScanningStartResultPtr);
+  void RequestScanningCallback(
+      ScriptPromiseResolver*,
+      mojo::ReceiverId,
+      mojom::blink::WebBluetoothRequestLEScanOptionsPtr,
+      mojom::blink::WebBluetoothResult);
 
   void EnsureServiceConnection(ExecutionContext*);
 
@@ -91,7 +93,7 @@ class Bluetooth final : public EventTargetWithInlineData,
   // Bluetooth device inside a single global object.
   HeapHashMap<String, Member<BluetoothDevice>> device_instance_map_;
 
-  mojo::AssociatedReceiverSet<mojom::blink::WebBluetoothScanClient>
+  mojo::AssociatedReceiverSet<mojom::blink::WebBluetoothAdvertisementClient>
       client_receivers_;
 
   mojo::Remote<mojom::blink::WebBluetoothService> service_;

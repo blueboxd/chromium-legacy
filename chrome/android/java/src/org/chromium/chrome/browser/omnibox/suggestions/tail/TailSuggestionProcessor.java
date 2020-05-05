@@ -67,6 +67,7 @@ public class TailSuggestionProcessor extends BaseSuggestionViewProcessor {
                         .forDrawableRes(mContext, R.drawable.ic_suggestion_magnifier)
                         .setAllowTint(true)
                         .build());
+        setRefineAction(model, suggestion);
     }
 
     @Override

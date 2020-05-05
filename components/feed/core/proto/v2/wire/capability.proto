@@ -35,5 +35,6 @@ enum Capability {
   INLINE_VIDEO_AUTOPLAY = 18;
   // Enable the card menu.
   CARD_MENU = 19;
+  REQUEST_SCHEDULE = 20;
   reserved 2 to 4, 6 to 8, 12;
 }

@@ -516,4 +516,88 @@ TEST_F(FtlSignalStrategyTest, ReceiveStanza_DropMessageWithMalformedXmpp) {
   ASSERT_EQ(0u, received_messages_.size());
 }
 
+TEST_F(FtlSignalStrategyTest, SendMessage_Success) {
+  ExpectGetOAuthTokenSucceedsWithFakeCreds();
+  registration_manager_->ExpectSignInGaiaSucceeds();
+  signal_strategy_->Connect();
+  messaging_client_->AcceptReceivingMessages();
+
+  std::string message_payload("Woah dude!  It's a Chromoting message!!");
+  ftl::ChromotingMessage message;
+  message.mutable_xmpp()->set_stanza(message_payload);
+
+  EXPECT_CALL(*messaging_client_,
+              SendMessage(kFakeRemoteUsername, kFakeRemoteRegistrationId, _, _))
+      .WillOnce([message_payload](const std::string&, const std::string&,
+                                  const ftl::ChromotingMessage& message,
+                                  MessagingClient::DoneCallback on_done) {
+        ASSERT_EQ(message_payload, message.xmpp().stanza());
+        std::move(on_done).Run(grpc::Status::OK);
+      });
+
+  ftl::Id remote_user_id;
+  remote_user_id.set_type(ftl::IdType_Type_EMAIL);
+  remote_user_id.set_id(kFakeRemoteUsername);
+  signal_strategy_->SendMessage(remote_user_id, kFakeRemoteRegistrationId,
+                                message);
+}
+
+TEST_F(FtlSignalStrategyTest, SendMessage_AuthError) {
+  ExpectGetOAuthTokenSucceedsWithFakeCreds();
+  registration_manager_->ExpectSignInGaiaSucceeds();
+  signal_strategy_->Connect();
+  messaging_client_->AcceptReceivingMessages();
+
+  EXPECT_CALL(*token_getter_, InvalidateCache()).WillOnce(Return());
+  EXPECT_CALL(*messaging_client_,
+              SendMessage(kFakeRemoteUsername, kFakeRemoteRegistrationId, _, _))
+      .WillOnce([](const std::string&, const std::string&,
+                   const ftl::ChromotingMessage& message,
+                   MessagingClient::DoneCallback on_done) {
+        std::move(on_done).Run(
+            grpc::Status(grpc::StatusCode::UNAUTHENTICATED, "unauthenticated"));
+      });
+  ftl::Id remote_user_id;
+  remote_user_id.set_type(ftl::IdType_Type_EMAIL);
+  remote_user_id.set_id(kFakeRemoteUsername);
+  ftl::ChromotingMessage message;
+  signal_strategy_->SendMessage(remote_user_id, kFakeRemoteRegistrationId,
+                                message);
+
+  ASSERT_EQ(3u, state_history_.size());
+  ASSERT_EQ(SignalStrategy::State::CONNECTING, state_history_[0]);
+  ASSERT_EQ(SignalStrategy::State::CONNECTED, state_history_[1]);
+  ASSERT_EQ(SignalStrategy::State::DISCONNECTED, state_history_[2]);
+
+  ASSERT_EQ(SignalStrategy::State::DISCONNECTED, signal_strategy_->GetState());
+  ASSERT_EQ(SignalStrategy::Error::AUTHENTICATION_FAILED,
+            signal_strategy_->GetError());
+  ASSERT_FALSE(signal_strategy_->IsSignInError());
+}
+
+TEST_F(FtlSignalStrategyTest, SendMessage_NetworkError) {
+  ExpectGetOAuthTokenSucceedsWithFakeCreds();
+  registration_manager_->ExpectSignInGaiaSucceeds();
+  signal_strategy_->Connect();
+  messaging_client_->AcceptReceivingMessages();
+
+  EXPECT_CALL(*messaging_client_,
+              SendMessage(kFakeRemoteUsername, kFakeRemoteRegistrationId, _, _))
+      .WillOnce([](const std::string&, const std::string&,
+                   const ftl::ChromotingMessage& message,
+                   MessagingClient::DoneCallback on_done) {
+        std::move(on_done).Run(
+            grpc::Status(grpc::StatusCode::UNAVAILABLE, "unavailable"));
+      });
+
+  ftl::Id remote_user_id;
+  remote_user_id.set_type(ftl::IdType_Type_EMAIL);
+  remote_user_id.set_id(kFakeRemoteUsername);
+  ftl::ChromotingMessage message;
+  signal_strategy_->SendMessage(remote_user_id, kFakeRemoteRegistrationId,
+                                message);
+
+  ASSERT_EQ(0u, received_messages_.size());
+}
+
 }  // namespace remoting

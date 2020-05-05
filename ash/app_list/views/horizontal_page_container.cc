@@ -135,25 +135,13 @@ void HorizontalPageContainer::OnAnimationStarted(AppListState from_state,
   }
 }
 
-gfx::Rect HorizontalPageContainer::GetPageBoundsForState(
-    AppListState state,
-    const gfx::Rect& contents_bounds,
-    const gfx::Rect& search_box_bounds) const {
-  if (state == AppListState::kStateApps)
-    return contents_bounds;
-  if (!app_list_features::IsScalableAppListEnabled())
-    return GetBelowContentsOffscreenBounds(contents_bounds.size());
-
-  gfx::Rect bounds = contents_bounds;
-  bounds.Offset(0, kNonAppsStateVerticalOffset);
-  return bounds;
-}
-
 void HorizontalPageContainer::UpdateOpacityForState(AppListState state) {
   if (!app_list_features::IsScalableAppListEnabled())
     return;
-  layer()->SetOpacity(state == AppListState::kStateApps ? 1.0f
-                                                        : kNonAppsStateOpacity);
+  const float target_opacity =
+      state == AppListState::kStateApps ? 1.0f : kNonAppsStateOpacity;
+  if (layer()->GetTargetOpacity() != target_opacity)
+    layer()->SetOpacity(target_opacity);
 }
 
 views::View* HorizontalPageContainer::GetFirstFocusableView() {
@@ -162,10 +150,6 @@ views::View* HorizontalPageContainer::GetFirstFocusableView() {
 
 views::View* HorizontalPageContainer::GetLastFocusableView() {
   return GetSelectedPage()->GetLastFocusableView();
-}
-
-bool HorizontalPageContainer::ShouldShowSearchBox() const {
-  return GetSelectedPage()->ShouldShowSearchBox();
 }
 
 void HorizontalPageContainer::AnimateOpacity(float current_progress,
@@ -179,6 +163,45 @@ void HorizontalPageContainer::AnimateYPosition(
     AppListViewState target_view_state,
     const TransformAnimator& animator) {
   apps_container_view_->AnimateYPosition(target_view_state, animator);
+}
+
+void HorizontalPageContainer::UpdatePageOpacityForState(
+    AppListState state,
+    float search_box_opacity,
+    bool restore_opacity) {
+  UpdateOpacityForState(state);
+
+  const float progress =
+      contents_view()->app_list_view()->GetAppListTransitionProgress(
+          AppListView::kProgressFlagNone);
+  apps_container_view_->UpdateOpacity(progress, restore_opacity);
+}
+
+void HorizontalPageContainer::UpdatePageBoundsForState(
+    AppListState state,
+    const gfx::Rect& contents_bounds,
+    const gfx::Rect& search_box_bounds) {
+  AppListPage::UpdatePageBoundsForState(state, contents_bounds,
+                                        search_box_bounds);
+
+  const float progress =
+      contents_view()->app_list_view()->GetAppListTransitionProgress(
+          AppListView::kProgressFlagNone);
+  apps_container_view_->UpdateYPosition(progress);
+}
+
+gfx::Rect HorizontalPageContainer::GetPageBoundsForState(
+    AppListState state,
+    const gfx::Rect& contents_bounds,
+    const gfx::Rect& search_box_bounds) const {
+  if (state == AppListState::kStateApps)
+    return contents_bounds;
+  if (!app_list_features::IsScalableAppListEnabled())
+    return GetBelowContentsOffscreenBounds(contents_bounds.size());
+
+  gfx::Rect bounds = contents_bounds;
+  bounds.Offset(0, kNonAppsStateVerticalOffset);
+  return bounds;
 }
 
 void HorizontalPageContainer::OnTabletModeChanged(bool started) {
@@ -199,25 +222,6 @@ void HorizontalPageContainer::TransitionStarting() {
 
 void HorizontalPageContainer::TransitionChanged() {
   Layout();
-
-  // Transition the search box opacity.
-  const int current_page = pagination_model_.selected_page();
-  DCHECK(pagination_model_.is_valid_page(current_page));
-  const PaginationModel::Transition& transition =
-      pagination_model_.transition();
-  const bool is_valid = pagination_model_.is_valid_page(transition.target_page);
-  float search_box_opacity =
-      GetSelectedPage()->ShouldShowSearchBox() ? 1.0f : 0.0f;
-  if (is_valid) {
-    float target_search_box_opacity =
-        horizontal_pages_[transition.target_page]->ShouldShowSearchBox() ? 1.0f
-                                                                         : 0.0f;
-    search_box_opacity = gfx::Tween::FloatValueBetween(
-        transition.progress, search_box_opacity, target_search_box_opacity);
-  }
-  contents_view_->GetSearchBoxView()->layer()->SetOpacity(search_box_opacity);
-  contents_view_->search_results_page_view()->layer()->SetOpacity(
-      search_box_opacity);
 }
 
 void HorizontalPageContainer::TransitionEnded() {

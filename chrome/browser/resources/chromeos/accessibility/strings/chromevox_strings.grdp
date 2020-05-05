@@ -1492,6 +1492,15 @@
   <message desc="Describes columns within tables on the web." name="IDS_CHROMEVOX_ROLE_COLUMN_BRL">
     col
   </message>
+  <message desc="A message spoken when the user switches to the form field control granularity, which allows users to navigate the page one form field control at a time." name="IDS_CHROMEVOX_FORM_FIELD_CONTROL_GRANULARITY">
+    Form field control
+  </message>
+  <message desc="A message spoken when the user switches to the link granularity, which allows users to navigate the page one link at a time." name="IDS_CHROMEVOX_LINK_GRANULARITY">
+    Link
+  </message>
+  <message desc="A message spoken when the user switches to the heading granularity, which allows users to navigate the page one heading at a time." name="IDS_CHROMEVOX_HEADING_GRANULARITY">
+    Heading
+  </message>
   <message desc="A message spoken when the user switches to the line granularity, which allows users to navigate the page one line at a time." name="IDS_CHROMEVOX_LINE_GRANULARITY">
     Line
   </message>
@@ -2882,8 +2891,11 @@
   <message desc="Used to describe capital letters" name="IDS_CHROMEVOX_ANNOUNCE_CAPITAL_LETTER">
     Cap <ph name="letter">$1<ex>A</ex></ph>
   </message>
-  <message desc="The hint text and label for the search bar in the ChromeVox menus" name="IDS_CHROMEVOX_SEARCH_CHROMEVOX_MENUS">
+  <message desc="The placeholder text for the search bar in the ChromeVox menus" name="IDS_CHROMEVOX_SEARCH_CHROMEVOX_MENUS_PLACEHOLDER">
     Search the menus
+  </message>
+  <message desc="The aria-description text for the search bar in the ChromeVox menus" name="IDS_CHROMEVOX_SEARCH_CHROMEVOX_MENUS_DESCRIPTION">
+    Type to search the menus. Use the up and down arrows to cycle through results. Use the left and right arrows to adjust the text caret, and to move between menus.
   </message>
   <message desc="Title displayed in the panel for the search menu." name="IDS_CHROMEVOX_PANEL_SEARCH_MENU">
     Search

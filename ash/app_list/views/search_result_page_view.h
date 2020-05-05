@@ -55,7 +55,13 @@ class APP_LIST_EXPORT SearchResultPageView
   void OnShown() override;
   void AnimateYPosition(AppListViewState target_view_state,
                         const TransformAnimator& animator) override;
-
+  void UpdatePageOpacityForState(AppListState state,
+                                 float search_box_opacity,
+                                 bool restore_opacity) override;
+  gfx::Rect GetPageBoundsForState(
+      AppListState state,
+      const gfx::Rect& contents_bounds,
+      const gfx::Rect& search_box_bounds) const override;
   void OnAnimationStarted(AppListState from_state,
                           AppListState to_state) override;
   void OnAnimationUpdated(double progress,
@@ -64,10 +70,6 @@ class APP_LIST_EXPORT SearchResultPageView
   gfx::Size GetPreferredSearchBoxSize() const override;
   base::Optional<int> GetSearchBoxTop(
       AppListViewState view_state) const override;
-  gfx::Rect GetPageBoundsForState(
-      AppListState state,
-      const gfx::Rect& contents_bounds,
-      const gfx::Rect& search_box_bounds) const override;
   views::View* GetFirstFocusableView() override;
   views::View* GetLastFocusableView() override;
 

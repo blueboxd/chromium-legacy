@@ -7,6 +7,8 @@
 
 #include <memory>
 
+#include "remoting/proto/ftl/v1/chromoting_message.pb.h"
+#include "remoting/proto/ftl/v1/ftl_messages.pb.h"
 #include "remoting/signaling/iq_sender.h"
 #include "remoting/signaling/signal_strategy.h"
 #include "remoting/signaling/signaling_address.h"
@@ -33,6 +35,16 @@ class MockSignalStrategy : public SignalStrategy {
   MOCK_METHOD1(SendStanzaPtr, bool(jingle_xmpp::XmlElement* stanza));
   bool SendStanza(std::unique_ptr<jingle_xmpp::XmlElement> stanza) override {
     return SendStanzaPtr(stanza.release());
+  }
+
+  MOCK_METHOD3(SendMessagePtr,
+               bool(const ftl::Id& destination_id,
+                    const std::string& destination_registration_id,
+                    const ftl::ChromotingMessage& message));
+  bool SendMessage(const ftl::Id& destination_id,
+                   const std::string& destination_registration_id,
+                   const ftl::ChromotingMessage& message) override {
+    return SendMessagePtr(destination_id, destination_registration_id, message);
   }
 
   const SignalingAddress& GetLocalAddress() const override;

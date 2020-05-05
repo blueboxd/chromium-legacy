@@ -361,6 +361,7 @@ ios_framework_bundle("web_view") {
     ":web_view_sources",
     ":web_view_umbrella_header",
     "//ios/web/public/init",
+    "//testing/gtest:ios_coverage_utils",
   ]
   if (ios_web_view_include_cronet) {
     deps += [ "//components/cronet/ios:cronet_sources" ]

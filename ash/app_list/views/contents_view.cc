@@ -48,6 +48,25 @@ constexpr float kExpandArrowOpacityStartProgress = 0.61;
 constexpr float kExpandArrowOpacityEndProgress = 1;
 constexpr int kSearchBarMinWidth = 440;
 
+// Range of the fraction of app list from collapsed to peeking that search box
+// should change opacity.
+constexpr float kSearchBoxOpacityStartProgress = 0.11f;
+constexpr float kSearchBoxOpacityEndProgress = 1.0f;
+
+// Calculates opacity value for the current app list progress.
+// |progress| - The target app list view progress - a value in [0.0, 2.0]
+//              interval that describes the app list view position relative to
+//              peeking and fullscreen state.
+// |transition_start| - The app list view progress at which opacity equals 0.0.
+// |transition_end| - The app list view progress at which opacity equals 1.0.
+float GetOpacityForProgress(float progress,
+                            float transition_start,
+                            float transition_end) {
+  return base::ClampToRange(
+      (progress - transition_start) / (transition_end - transition_start), 0.0f,
+      1.0f);
+}
+
 bool ShouldShowDenseLayout(int height,
                            ash::AppListViewState target_view_state) {
   return (height < 600 &&
@@ -169,9 +188,6 @@ void ContentsView::ResetForShow() {
   // SetActiveState() since it checks the visibility of the pages.
   horizontal_page_container_->SetVisible(true);
   search_results_page_view_->SetVisible(false);
-  // SearchBoxView::UpdateOpacity() may change search result page opacity during
-  // drag - make sure that opacity value is reset to 1.0f.
-  search_results_page_view_->layer()->SetOpacity(1.0f);
   if (assistant_page_view_)
     assistant_page_view_->SetVisible(false);
   SetActiveState(AppListState::kStateApps, /*animate=*/false);
@@ -625,29 +641,17 @@ void ContentsView::Layout() {
   if (pagination_model_.has_transition())
     return;
 
-  // The bounds calculations will potentially be mid-transition (depending on
-  // the state of the PaginationModel).
-  int current_page = std::max(0, pagination_model_.selected_page());
-  AppListState current_state = GetStateForPageIndex(current_page);
-  const gfx::Rect search_box_bounds = GetSearchBoxBounds(current_state);
+  UpdateYPositionAndOpacity();
 
-  // Update app list pages.
-  for (AppListPage* page : app_list_pages_) {
-    page->UpdatePageBoundsForState(current_state, rect, search_box_bounds);
-    page->UpdateOpacityForState(current_state);
-  }
-
-  // Update the searchbox bounds.
-  auto* search_box = GetSearchBoxView();
-  // Convert search box bounds to the search box widget's coordinate system.
-  const gfx::Rect search_box_widget_bounds =
-      search_box->GetViewBoundsForSearchBoxContentsBounds(
-          ConvertRectToWidgetWithoutTransform(search_box_bounds));
-  search_box->GetWidget()->SetBounds(search_box_widget_bounds);
-  search_box->UpdateLayout(1.f, current_state, search_box_bounds.height(),
-                           current_state, search_box_bounds.height());
+  const AppListState current_state =
+      GetStateForPageIndex(pagination_model_.selected_page());
+  SearchBoxView* const search_box = GetSearchBoxView();
+  const int search_box_height = GetSearchBoxSize(current_state).height();
+  search_box->UpdateLayout(1.f, current_state, search_box_height, current_state,
+                           search_box_height);
   search_box->UpdateBackground(1.f, current_state, current_state);
-  // Reset the transform which can be set through animation.
+
+  // Reset the transform which can be set through animation
   search_box->GetWidget()->GetLayer()->SetTransform(gfx::Transform());
 }
 
@@ -725,15 +729,9 @@ void ContentsView::UpdateYPositionAndOpacity() {
   } else if (restore_opacity) {
     expand_arrow_view_->layer()->SetOpacity(1.0f);
   } else {
-    // Changes the opacity of expand arrow between 0 and 1 when app list
-    // transition progress changes between |kExpandArrowOpacityStartProgress|
-    // and |kExpandArrowOpacityEndProgress|.
     expand_arrow_view_->layer()->SetOpacity(
-        std::min(std::max((progress - kExpandArrowOpacityStartProgress) /
-                              (kExpandArrowOpacityEndProgress -
-                               kExpandArrowOpacityStartProgress),
-                          0.f),
-                 1.0f));
+        GetOpacityForProgress(progress, kExpandArrowOpacityStartProgress,
+                              kExpandArrowOpacityEndProgress));
   }
 
   expand_arrow_view_->SchedulePaint();
@@ -745,9 +743,18 @@ void ContentsView::UpdateYPositionAndOpacity() {
           ConvertRectToWidgetWithoutTransform(search_box_bounds));
   search_box->GetWidget()->SetBounds(search_rect);
 
+  const float search_box_opacity =
+      restore_opacity
+          ? 1.0f
+          : GetOpacityForProgress(progress, kSearchBoxOpacityStartProgress,
+                                  kSearchBoxOpacityEndProgress);
+  search_box->layer()->SetOpacity(search_box_opacity);
+
   for (AppListPage* page : app_list_pages_) {
     page->UpdatePageBoundsForState(current_state, GetContentsBounds(),
                                    search_box_bounds);
+    page->UpdatePageOpacityForState(current_state, search_box_opacity,
+                                    restore_opacity);
   }
 
   // If in drag, reset the transforms that might have been set in
@@ -755,22 +762,6 @@ void ContentsView::UpdateYPositionAndOpacity() {
   if (app_list_view_->is_in_drag()) {
     search_box->layer()->SetTransform(gfx::Transform());
     expand_arrow_view_->layer()->SetTransform(gfx::Transform());
-    for (AppListPage* page : app_list_pages_)
-      page->layer()->SetTransform(gfx::Transform());
-  }
-
-  if (app_list_features::IsScalableAppListEnabled() ||
-      current_state == AppListState::kStateApps) {
-    // Layout the apps container at the position where it would be with apps
-    // page active with the current app list height - use apps state app list
-    // progress to aciheve that.
-    const float apps_container_progress =
-        app_list_view_->is_in_drag()
-            ? app_list_view_->GetAppListTransitionProgress(
-                  AppListView::kProgressFlagNone)
-            : progress;
-    GetAppsContainerView()->UpdateYPositionAndOpacity(apps_container_progress,
-                                                      restore_opacity);
   }
 
   target_page_for_last_view_state_update_ = current_state;

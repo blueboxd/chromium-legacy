@@ -23,6 +23,7 @@
 #endif
 
 #include "base/base_export.h"
+#include "base/containers/span.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/files/scoped_file.h"
@@ -413,8 +414,18 @@ BASE_EXPORT int ReadFile(const FilePath& filename, char* data, int max_size);
 // Writes the given buffer into the file, overwriting any data that was
 // previously there.  Returns the number of bytes written, or -1 on error.
 // If file doesn't exist, it gets created with read/write permissions for all.
+// Note that the other variants of WriteFile() below may be easier to use.
 BASE_EXPORT int WriteFile(const FilePath& filename, const char* data,
                           int size);
+
+// Writes |data| into the file, overwriting any data that was previously there.
+// Returns true if and only if all of |data| was written. If the file does not
+// exist, it gets created with read/write permissions for all.
+BASE_EXPORT bool WriteFile(const FilePath& filename, span<const uint8_t> data);
+
+// Another WriteFile() variant that takes a StringPiece so callers don't have to
+// do manual conversions from a char span to a uint8_t span.
+BASE_EXPORT bool WriteFile(const FilePath& filename, StringPiece data);
 
 #if defined(OS_POSIX) || defined(OS_FUCHSIA)
 // Appends |data| to |fd|. Does not close |fd| when done.  Returns true iff

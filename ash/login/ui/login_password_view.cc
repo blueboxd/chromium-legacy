@@ -391,6 +391,8 @@ class LoginPasswordView::DisplayPasswordButton
     SetFocusBehavior(FocusBehavior::ALWAYS);
     SetInstallFocusRingOnFocus(true);
     focus_ring()->SetColor(ShelfConfig::Get()->shelf_focus_border_color());
+
+    SetEnabled(false);
   }
 
   DisplayPasswordButton(const DisplayPasswordButton&) = delete;

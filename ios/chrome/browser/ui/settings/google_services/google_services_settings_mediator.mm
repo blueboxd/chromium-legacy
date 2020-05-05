@@ -34,6 +34,7 @@
 #import "ios/chrome/browser/ui/settings/utils/pref_backed_boolean.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_cells_constants.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_image_item.h"
+#import "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/common/ui/colors/UIColor+cr_semantic_colors.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
@@ -820,7 +821,11 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
       [self.commandHandler openAccountSettings];
       break;
     case ManageGoogleAccountItemType:
-      [self.commandHandler openManageGoogleAccountWebPage];
+      if (base::FeatureList::IsEnabled(kEnableMyGoogle)) {
+        [self.commandHandler openManageGoogleAccount];
+      } else {
+        [self.commandHandler openManageGoogleAccountWebPage];
+      }
       break;
     case SignInItemType:
       [self.commandHandler showSignIn];

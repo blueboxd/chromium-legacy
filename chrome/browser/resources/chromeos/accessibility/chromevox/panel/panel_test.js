@@ -59,6 +59,15 @@ ChromeVoxPanelTest = class extends ChromeVoxNextE2ETest {
     }.bind(this);
   }
 
+  fireMockQuery(query) {
+    return function() {
+      const evt = {};
+      evt.target = {};
+      evt.target.value = query;
+      this.getPanel().onSearchBarQuery(evt);
+    }.bind(this);
+  }
+
   get linksDoc() {
     return `
       <p>start</p>
@@ -131,4 +140,28 @@ TEST_F('ChromeVoxPanelTest', 'FormControlsMenu', function() {
             .expectSpeech('Cancel Button', 'Menu item', /1 of/)
             .replay();
       });
+});
+
+TEST_F('ChromeVoxPanelTest', 'SearchMenu', function() {
+  const mockFeedback = this.createMockFeedback();
+  this.runWithLoadedTree(this.linksDoc, function(root) {
+    const openMenus = new PanelCommand(PanelCommandType.OPEN_MENUS);
+    mockFeedback.call(openMenus.send.bind(openMenus))
+        .expectSpeech(
+            'Search the menus', 'Search',
+            'Type to search the menus. Use the up and down arrows to cycle' +
+                ' through results. Use the left and right arrows to adjust' +
+                ' the text caret, and to move between menus.');
+    // Enter query into search box. ChromeVox should announce the first result.
+    mockFeedback.call(this.fireMockQuery('announce'))
+        .expectSpeech(/announce/i, 'Menu item', /1 of [0-9]+/);
+    // Using ArrowUp and ArrowDown should navigate through results.
+    mockFeedback.call(this.fireMockEvent('ArrowDown'))
+        .expectSpeech(/announce/i, 'Menu item', /2 of [0-9]+/);
+    mockFeedback.call(this.fireMockEvent('ArrowDown'))
+        .expectSpeech(/announce/i, 'Menu item', /3 of [0-9]+/);
+    mockFeedback.call(this.fireMockEvent('ArrowUp'))
+        .expectSpeech(/announce/i, 'Menu item', /2 of [0-9]+/);
+    mockFeedback.replay();
+  });
 });

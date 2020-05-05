@@ -2689,7 +2689,8 @@
       },
       {
         "args": [
-          "--enable-features=StorageServiceOutOfProcess"
+          "--enable-features=StorageServiceOutOfProcess",
+          "--gtest_filter=-SadTabViewInteractiveUITest.ReloadMultipleSadTabs"
         ],
         "merge": {
           "args": [],

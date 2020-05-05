@@ -86,13 +86,6 @@ public abstract class BaseSuggestionViewProcessor implements SuggestionProcessor
     }
 
     /**
-     * @return whether suggestion can be refined and a refine icon should be shown.
-     */
-    protected boolean canRefine(OmniboxSuggestion suggestion) {
-        return true;
-    }
-
-    /**
      * Specify SuggestionDrawableState for suggestion decoration.
      *
      * @param decoration SuggestionDrawableState object defining decoration for the suggestion.
@@ -105,10 +98,31 @@ public abstract class BaseSuggestionViewProcessor implements SuggestionProcessor
     /**
      * Specify SuggestionDrawableState for action button.
      *
-     * @param decoration SuggestionDrawableState object defining decoration for the action button.
+     * @param model Property model to update.
+     * @param drawable SuggestionDrawableState object defining decoration for the action button.
+     * @param callback Runnable to invoke when user presses the action icon.
      */
-    protected void setActionDrawableState(PropertyModel model, SuggestionDrawableState decoration) {
-        model.set(BaseSuggestionViewProperties.ACTION_ICON, decoration);
+    protected void setCustomAction(
+            PropertyModel model, SuggestionDrawableState drawable, Runnable callback) {
+        model.set(BaseSuggestionViewProperties.ACTION_ICON, drawable);
+        model.set(BaseSuggestionViewProperties.ACTION_CALLBACK, callback);
+    }
+
+    /**
+     * Specify data for Refine action.
+     *
+     * @param model Property model to update.
+     * @param refineText Text to update Omnibox with when Refine button is pressed.
+     * @param isSearchQuery Whether refineText is an URL or Search query.
+     */
+    protected void setRefineAction(PropertyModel model, OmniboxSuggestion suggestion) {
+        setCustomAction(model,
+                SuggestionDrawableState.Builder
+                        .forDrawableRes(mContext, R.drawable.btn_suggestion_refine)
+                        .setLarge(true)
+                        .setAllowTint(true)
+                        .build(),
+                () -> { mSuggestionHost.onRefineSuggestion(suggestion); });
     }
 
     @Override
@@ -118,17 +132,7 @@ public abstract class BaseSuggestionViewProcessor implements SuggestionProcessor
 
         model.set(BaseSuggestionViewProperties.SUGGESTION_DELEGATE, delegate);
         model.set(BaseSuggestionViewProperties.DENSITY, mDensity);
-
-        if (canRefine(suggestion)) {
-            setActionDrawableState(model,
-                    SuggestionDrawableState.Builder
-                            .forDrawableRes(mContext, R.drawable.btn_suggestion_refine)
-                            .setLarge(true)
-                            .setAllowTint(true)
-                            .build());
-        } else {
-            setActionDrawableState(model, null);
-        }
+        setCustomAction(model, null, null);
     }
 
     /**

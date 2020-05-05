@@ -88,6 +88,7 @@ big-grid{
     "idValue": "big-grid",
     "nodeWidth": "769",
     "nodeHeight": "995",
+    "showAccessibilityInfo": true,
     "isKeyboardFocusable": false,
     "accessibleName": "",
     "accessibleRole": "generic"

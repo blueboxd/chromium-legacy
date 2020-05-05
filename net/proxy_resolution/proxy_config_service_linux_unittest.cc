@@ -326,7 +326,7 @@ class SyncConfigGetter : public ProxyConfigService::Observer {
   // changes to |pac_url|. The way to use this function is:
   //
   //   SetExpectedPacUrl(..);
-  //   WriteFile(...)
+  //   EXPECT_TRUE(base::WriteFile(...))
   //   WaitUntilPacUrlMatchesExpectation();
   //
   // The expectation must be set *before* any file-level mutation is done,
@@ -1849,17 +1849,14 @@ TEST_F(ProxyConfigServiceLinuxTest, KDEHomePicker) {
   }
 }
 
-void WriteFile(const base::FilePath& path, base::StringPiece data) {
-  EXPECT_TRUE(base::WriteFile(path, data.data(), data.size()));
-}
-
 // Tests that the KDE proxy config service watches for file and directory
 // changes.
 TEST_F(ProxyConfigServiceLinuxTest, KDEFileChanged) {
   // Set up the initial .kde kioslaverc file.
-  WriteFile(kioslaverc_,
-            "[Proxy Settings]\nProxyType=2\n"
-            "Proxy Config Script=http://version1/wpad.dat\n");
+  EXPECT_TRUE(
+      base::WriteFile(kioslaverc_,
+                      "[Proxy Settings]\nProxyType=2\n"
+                      "Proxy Config Script=http://version1/wpad.dat\n"));
 
   // Initialize the config service using kioslaverc.
   std::unique_ptr<MockEnvironment> env(new MockEnvironment);
@@ -1885,9 +1882,10 @@ TEST_F(ProxyConfigServiceLinuxTest, KDEFileChanged) {
   // observed.
   base::ThreadPoolInstance::Get()->FlushForTesting();
 
-  WriteFile(kioslaverc_,
-            "[Proxy Settings]\nProxyType=2\n"
-            "Proxy Config Script=http://version2/wpad.dat\n");
+  EXPECT_TRUE(
+      base::WriteFile(kioslaverc_,
+                      "[Proxy Settings]\nProxyType=2\n"
+                      "Proxy Config Script=http://version2/wpad.dat\n"));
 
   // Wait for change to be noticed.
   sync_config_getter.WaitUntilPacUrlMatchesExpectation();
@@ -1901,9 +1899,10 @@ TEST_F(ProxyConfigServiceLinuxTest, KDEFileChanged) {
   sync_config_getter.SetExpectedPacUrl("http://version3/wpad.dat");
 
   // Create a new file, and rename it into place.
-  WriteFile(kioslaverc_.AddExtension("new"),
-            "[Proxy Settings]\nProxyType=2\n"
-            "Proxy Config Script=http://version3/wpad.dat\n");
+  EXPECT_TRUE(
+      base::WriteFile(kioslaverc_.AddExtension("new"),
+                      "[Proxy Settings]\nProxyType=2\n"
+                      "Proxy Config Script=http://version3/wpad.dat\n"));
   base::Move(kioslaverc_, kioslaverc_.AddExtension("old"));
   base::Move(kioslaverc_.AddExtension("new"), kioslaverc_);
 
@@ -1917,9 +1916,10 @@ TEST_F(ProxyConfigServiceLinuxTest, KDEFileChanged) {
   // change was observed (this final test probably isn't very useful).
   sync_config_getter.SetExpectedPacUrl("http://version4/wpad.dat");
 
-  WriteFile(kioslaverc_,
-            "[Proxy Settings]\nProxyType=2\n"
-            "Proxy Config Script=http://version4/wpad.dat\n");
+  EXPECT_TRUE(
+      base::WriteFile(kioslaverc_,
+                      "[Proxy Settings]\nProxyType=2\n"
+                      "Proxy Config Script=http://version4/wpad.dat\n"));
 
   // Wait for change to be noticed.
   sync_config_getter.WaitUntilPacUrlMatchesExpectation();

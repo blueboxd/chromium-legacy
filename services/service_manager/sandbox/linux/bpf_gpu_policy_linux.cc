@@ -64,6 +64,7 @@ ResultExpr GpuProcessPolicy::EvaluateSyscall(int sysno) const {
     // TODO(jln): restrict prctl.
     case __NR_prctl:
     case __NR_sysinfo:
+    case __NR_uname:  // https://crbug.com/1075934
       return Allow();
     case __NR_sched_getaffinity:
     case __NR_sched_setaffinity:

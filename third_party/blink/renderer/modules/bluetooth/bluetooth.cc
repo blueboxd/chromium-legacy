@@ -326,20 +326,20 @@ static void ConvertRequestLEScanOptions(
 void Bluetooth::RequestScanningCallback(
     ScriptPromiseResolver* resolver,
     mojo::ReceiverId id,
-    mojom::blink::RequestScanningStartResultPtr result) {
+    mojom::blink::WebBluetoothRequestLEScanOptionsPtr options,
+    mojom::blink::WebBluetoothResult result) {
   if (!resolver->GetExecutionContext() ||
       resolver->GetExecutionContext()->IsContextDestroyed()) {
     return;
   }
 
-  if (result->is_error_result()) {
-    resolver->Reject(
-        BluetoothError::CreateDOMException(result->get_error_result()));
+  if (result != mojom::blink::WebBluetoothResult::SUCCESS) {
+    resolver->Reject(BluetoothError::CreateDOMException(result));
     return;
   }
 
-  auto* scan = MakeGarbageCollected<BluetoothLEScan>(
-      id, this, std::move(result->get_options()));
+  auto* scan =
+      MakeGarbageCollected<BluetoothLEScan>(id, this, std::move(options));
   resolver->Resolve(scan);
 }
 
@@ -389,55 +389,59 @@ ScriptPromise Bluetooth::requestLEScan(ScriptState* script_state,
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
 
-  mojo::PendingAssociatedRemote<mojom::blink::WebBluetoothScanClient> client;
+  mojo::PendingAssociatedRemote<mojom::blink::WebBluetoothAdvertisementClient>
+      client;
   // See https://bit.ly/2S0zRAS for task types.
   mojo::ReceiverId id =
       client_receivers_.Add(this, client.InitWithNewEndpointAndPassReceiver(),
                             context->GetTaskRunner(TaskType::kMiscPlatformAPI));
 
+  auto scan_options_copy = scan_options->Clone();
   service_->RequestScanningStart(
       std::move(client), std::move(scan_options),
       WTF::Bind(&Bluetooth::RequestScanningCallback, WrapPersistent(this),
-                WrapPersistent(resolver), id));
+                WrapPersistent(resolver), id, std::move(scan_options_copy)));
 
   return promise;
 }
 
-void Bluetooth::ScanEvent(mojom::blink::WebBluetoothScanResultPtr result) {
+void Bluetooth::AdvertisingEvent(
+    mojom::blink::WebBluetoothAdvertisingEventPtr advertising_event) {
   ExecutionContext* context =
       ExecutionContextLifecycleObserver::GetExecutionContext();
   DCHECK(context);
 
-  BluetoothDevice* bluetooth_device =
-      GetBluetoothDeviceRepresentingDevice(std::move(result->device), context);
+  BluetoothDevice* bluetooth_device = GetBluetoothDeviceRepresentingDevice(
+      std::move(advertising_event->device), context);
 
   HeapVector<blink::StringOrUnsignedLong> uuids;
-  for (const String& uuid : result->uuids) {
+  for (const String& uuid : advertising_event->uuids) {
     StringOrUnsignedLong value;
     value.SetString(uuid);
     uuids.push_back(value);
   }
 
   auto* manufacturer_data = MakeGarbageCollected<BluetoothManufacturerDataMap>(
-      result->manufacturer_data);
-  auto* service_data =
-      MakeGarbageCollected<BluetoothServiceDataMap>(result->service_data);
+      advertising_event->manufacturer_data);
+  auto* service_data = MakeGarbageCollected<BluetoothServiceDataMap>(
+      advertising_event->service_data);
 
   base::Optional<int8_t> rssi;
-  if (result->rssi_is_set)
-    rssi = result->rssi;
+  if (advertising_event->rssi_is_set)
+    rssi = advertising_event->rssi;
 
   base::Optional<int8_t> tx_power;
-  if (result->tx_power_is_set)
-    tx_power = result->tx_power;
+  if (advertising_event->tx_power_is_set)
+    tx_power = advertising_event->tx_power;
 
   base::Optional<uint16_t> appearance;
-  if (result->appearance_is_set)
-    appearance = result->appearance;
+  if (advertising_event->appearance_is_set)
+    appearance = advertising_event->appearance;
 
   auto* event = MakeGarbageCollected<BluetoothAdvertisingEvent>(
-      event_type_names::kAdvertisementreceived, bluetooth_device, result->name,
-      uuids, appearance, tx_power, rssi, manufacturer_data, service_data);
+      event_type_names::kAdvertisementreceived, bluetooth_device,
+      advertising_event->name, uuids, appearance, tx_power, rssi,
+      manufacturer_data, service_data);
   DispatchEvent(*event);
 }
 

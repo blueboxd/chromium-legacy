@@ -45,6 +45,7 @@ proto_library("proto_v2") {
     "v2/wire/payload_metadata.proto",
     "v2/wire/render_data.proto",
     "v2/wire/request.proto",
+    "v2/wire/request_schedule.proto",
     "v2/wire/response.proto",
     "v2/wire/response_status_code.proto",
     "v2/wire/stream_structure.proto",

@@ -156,6 +156,7 @@ public class AnswerSuggestionProcessor extends BaseSuggestionViewProcessor {
                         .setLarge(true)
                         .build());
 
+        setRefineAction(model, suggestion);
         maybeFetchAnswerIcon(model, suggestion);
     }
 

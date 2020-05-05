@@ -80,15 +80,6 @@ public class BasicSuggestionProcessor extends BaseSuggestionViewProcessor {
                 SuggestionIcon.TOTAL_COUNT);
     }
 
-    /** Decide whether suggestion should receive a refine arrow. */
-    @Override
-    protected boolean canRefine(OmniboxSuggestion suggestion) {
-        final @OmniboxSuggestionType int suggestionType = suggestion.getType();
-
-        return !mUrlBarEditingTextProvider.getTextWithoutAutocomplete().trim().equalsIgnoreCase(
-                suggestion.getDisplayText());
-    }
-
     /**
      * Returns suggestion icon to be presented for specified omnibox suggestion.
      *
@@ -185,6 +176,11 @@ public class BasicSuggestionProcessor extends BaseSuggestionViewProcessor {
         fetchSuggestionFavicon(model, suggestion.getUrl(), mIconBridgeSupplier.get(), () -> {
             model.set(SuggestionViewProperties.SUGGESTION_ICON_TYPE, SuggestionIcon.FAVICON);
         });
+
+        if (!mUrlBarEditingTextProvider.getTextWithoutAutocomplete().trim().equalsIgnoreCase(
+                    suggestion.getDisplayText())) {
+            setRefineAction(model, suggestion);
+        }
     }
 
     /**

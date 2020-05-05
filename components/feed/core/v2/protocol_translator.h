@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_FEED_CORE_V2_STREAM_MODEL_UPDATE_REQUEST_H_
-#define COMPONENTS_FEED_CORE_V2_STREAM_MODEL_UPDATE_REQUEST_H_
+#ifndef COMPONENTS_FEED_CORE_V2_PROTOCOL_TRANSLATOR_H_
+#define COMPONENTS_FEED_CORE_V2_PROTOCOL_TRANSLATOR_H_
 
 #include <memory>
 #include <vector>
@@ -13,6 +13,7 @@
 #include "components/feed/core/proto/v2/store.pb.h"
 #include "components/feed/core/proto/v2/wire/data_operation.pb.h"
 #include "components/feed/core/proto/v2/wire/response.pb.h"
+#include "components/feed/core/v2/scheduling.h"
 
 namespace feed {
 
@@ -52,14 +53,27 @@ struct StreamModelUpdateRequest {
   int32_t max_structure_sequence_number = 0;
 };
 
+struct RefreshResponseData {
+  RefreshResponseData();
+  ~RefreshResponseData();
+  RefreshResponseData(RefreshResponseData&&);
+  RefreshResponseData& operator=(RefreshResponseData&&);
+
+  std::unique_ptr<StreamModelUpdateRequest> model_update_request;
+
+  // Server-defined request schedule, if provided.
+  base::Optional<RequestSchedule> request_schedule;
+};
+
 base::Optional<feedstore::DataOperation> TranslateDataOperation(
+    base::Time current_time,
     feedwire::DataOperation wire_operation);
 
-std::unique_ptr<StreamModelUpdateRequest> TranslateWireResponse(
+RefreshResponseData TranslateWireResponse(
     feedwire::Response response,
     StreamModelUpdateRequest::Source source,
     base::Time current_time);
 
 }  // namespace feed
 
-#endif  // COMPONENTS_FEED_CORE_V2_STREAM_MODEL_UPDATE_REQUEST_H_
+#endif  // COMPONENTS_FEED_CORE_V2_PROTOCOL_TRANSLATOR_H_

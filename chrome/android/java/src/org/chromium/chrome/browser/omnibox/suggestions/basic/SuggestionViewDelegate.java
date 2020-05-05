@@ -12,9 +12,6 @@ public interface SuggestionViewDelegate {
     /** Triggered when the user selects one of the omnibox suggestions to navigate to. */
     void onSelection();
 
-    /** Triggered when the user selects to refine one of the omnibox suggestions. */
-    void onRefineSuggestion();
-
     /** Triggered when the user long presses the omnibox suggestion. */
     void onLongPress();
 

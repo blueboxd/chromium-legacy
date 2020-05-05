@@ -55,6 +55,9 @@ class APP_LIST_EXPORT AssistantPageView : public AppListPage,
                           AppListState to_state) override;
   base::Optional<int> GetSearchBoxTop(
       AppListViewState view_state) const override;
+  void UpdatePageOpacityForState(AppListState state,
+                                 float search_box_opacity,
+                                 bool restore_opacity) override;
   gfx::Rect GetPageBoundsForState(
       AppListState state,
       const gfx::Rect& contents_bounds,

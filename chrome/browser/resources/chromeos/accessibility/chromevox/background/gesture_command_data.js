@@ -78,5 +78,8 @@ GestureGranularity = {
   CHARACTER: 0,
   WORD: 1,
   LINE: 2,
-  COUNT: 3
+  HEADING: 3,
+  LINK: 4,
+  FORM_FIELD_CONTROL: 5,
+  COUNT: 6
 };

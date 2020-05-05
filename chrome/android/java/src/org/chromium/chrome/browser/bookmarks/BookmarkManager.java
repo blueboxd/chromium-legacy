@@ -67,7 +67,7 @@ public class BookmarkManager
     private boolean mIsDialogUi;
     private boolean mIsDestroyed;
 
-    private ReorderBookmarkItemsAdapter mAdapter;
+    private BookmarkItemsAdapter mAdapter;
     private BookmarkDragStateDelegate mDragStateDelegate;
     private AdapterDataObserver mAdapterDataObserver;
 
@@ -190,7 +190,7 @@ public class BookmarkManager
         mSelectableListLayout.initializeEmptyView(
                 R.string.bookmarks_folder_empty, R.string.bookmark_no_result);
 
-        mAdapter = new ReorderBookmarkItemsAdapter(activity);
+        mAdapter = new BookmarkItemsAdapter(activity);
 
         mAdapterDataObserver = new AdapterDataObserver() {
             @Override
@@ -553,8 +553,8 @@ public class BookmarkManager
         mStateStack.pop();
 
         // Set the state back to the folder that was previously being viewed. Listeners, including
-        // the ReorderBookmarkItemsAdapter, will be notified of the change and the list of
-        // bookmarks will be updated.
+        // the BookmarkItemsAdapter, will be notified of the change and the list of bookmarks will
+        // be updated.
         setState(mStateStack.pop());
     }
 

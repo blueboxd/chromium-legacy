@@ -273,7 +273,8 @@ void ToolbarButton::SetLayoutInsets(const gfx::Insets& insets) {
 }
 
 void ToolbarButton::OnBoundsChanged(const gfx::Rect& previous_bounds) {
-  UpdateColorsAndInsets();
+  if (size() != previous_bounds.size())
+    UpdateColorsAndInsets();
   LabelButton::OnBoundsChanged(previous_bounds);
 }
 

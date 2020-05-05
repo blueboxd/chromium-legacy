@@ -479,6 +479,32 @@ void SearchResultPageView::AnimateYPosition(AppListViewState target_view_state,
   animator.Run(view_shadow_->shadow()->shadow_layer(), nullptr);
 }
 
+void SearchResultPageView::UpdatePageOpacityForState(AppListState state,
+                                                     float search_box_opacity,
+                                                     bool restore_opacity) {
+  layer()->SetOpacity(search_box_opacity);
+}
+
+gfx::Rect SearchResultPageView::GetPageBoundsForState(
+    AppListState state,
+    const gfx::Rect& contents_bounds,
+    const gfx::Rect& search_box_bounds) const {
+  if (state != AppListState::kStateSearchResults) {
+    // Hides this view behind the search box by using the same bounds.
+    return search_box_bounds;
+  }
+
+  gfx::Rect bounding_rect = contents_bounds;
+  bounding_rect.Inset(0, 0, 0, kSearchResultPageMinimumBottomMargin);
+
+  gfx::Rect preferred_bounds =
+      gfx::Rect(search_box_bounds.origin(),
+                gfx::Size(search_box_bounds.width(), kHeight));
+  preferred_bounds.Intersect(bounding_rect);
+
+  return preferred_bounds;
+}
+
 void SearchResultPageView::OnAnimationStarted(AppListState from_state,
                                               AppListState to_state) {
   if (from_state != AppListState::kStateSearchResults &&
@@ -564,26 +590,6 @@ base::Optional<int> SearchResultPageView::GetSearchBoxTop(
   // For other view states, return base::nullopt so the ContentsView
   // sets the default search box widget origin.
   return base::nullopt;
-}
-
-gfx::Rect SearchResultPageView::GetPageBoundsForState(
-    AppListState state,
-    const gfx::Rect& contents_bounds,
-    const gfx::Rect& search_box_bounds) const {
-  if (state != AppListState::kStateSearchResults) {
-    // Hides this view behind the search box by using the same bounds.
-    return search_box_bounds;
-  }
-
-  gfx::Rect bounding_rect = contents_bounds;
-  bounding_rect.Inset(0, 0, 0, kSearchResultPageMinimumBottomMargin);
-
-  gfx::Rect preferred_bounds =
-      gfx::Rect(search_box_bounds.origin(),
-                gfx::Size(search_box_bounds.width(), kHeight));
-  preferred_bounds.Intersect(bounding_rect);
-
-  return preferred_bounds;
 }
 
 views::View* SearchResultPageView::GetFirstFocusableView() {

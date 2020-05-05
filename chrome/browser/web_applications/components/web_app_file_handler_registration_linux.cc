@@ -104,10 +104,7 @@ bool DoRegisterMimeTypes(base::FilePath filename, std::string file_contents) {
   }
 
   base::FilePath temp_file_path(temp_dir.GetPath().Append(filename));
-
-  int bytes_written = base::WriteFile(temp_file_path, file_contents.data(),
-                                      file_contents.length());
-  if (bytes_written != static_cast<int>(file_contents.length())) {
+  if (!base::WriteFile(temp_file_path, file_contents)) {
     RecordRegistration(RegistrationResult::kFailToWriteMimetypeFile);
     return false;
   }

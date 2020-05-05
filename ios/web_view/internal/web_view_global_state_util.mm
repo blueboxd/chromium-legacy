@@ -10,6 +10,7 @@
 #include "ios/web/public/init/web_main.h"
 #import "ios/web_view/internal/web_view_web_client.h"
 #import "ios/web_view/internal/web_view_web_main_delegate.h"
+#import "testing/coverage_util_ios.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -24,6 +25,8 @@ void InitializeGlobalState() {
   static std::unique_ptr<web::WebMain> web_main;
   static dispatch_once_t once_token;
   dispatch_once(&once_token, ^{
+    // This is for generating coverage data for tests only.
+    coverage_util::ConfigureCoverageReportPath();
     web_client = std::make_unique<ios_web_view::WebViewWebClient>();
     web::SetWebClient(web_client.get());
 

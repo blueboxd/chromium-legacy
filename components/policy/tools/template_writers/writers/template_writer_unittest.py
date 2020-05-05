@@ -130,8 +130,12 @@ IGNORE_GROUPS_SORTED_POLICY_DEFS = [
 class TemplateWriterUnittests(unittest.TestCase):
   '''Unit tests for templater_writer.py.'''
 
-  def _IsPolicySupported(self, platform, version, policy):
-    tw = template_writer.TemplateWriter([platform], {'major_version': version})
+  def _IsPolicySupported(self,
+                         platform,
+                         version,
+                         policy,
+                         writer=template_writer.TemplateWriter):
+    tw = writer([platform], {'major_version': version})
     if platform != '*':
       self.assertEqual(
           tw.IsPolicySupported(policy),
@@ -153,6 +157,50 @@ class TemplateWriterUnittests(unittest.TestCase):
     self.assertFalse(tw.IsPolicySupported({'future': True}))
     self.assertFalse(tw.IsPolicySupported({'deprecated': True}))
     self.assertFalse(tw.IsPolicySupported({'features': {'cloud_only': True}}))
+
+  def testFuturePoliciesSupport(self):
+    class FutureWriter(template_writer.TemplateWriter):
+      def IsFuturePolicySupported(self, policy):
+        return True
+
+    expected_request_for_all_platforms = [[False, True, True],
+                                          [True, True, True]]
+    expected_request_for_all_win = [[False, False, True], [True, True, True]]
+    for i, writer in enumerate([template_writer.TemplateWriter, FutureWriter]):
+      for j, policy in enumerate([{
+          'supported_on': [],
+          'future_on': [{
+              'product': 'chrome',
+              'platform': 'win'
+          }, {
+              'product': 'chrome',
+              'platform': 'mac'
+          }]
+      }, {
+          'supported_on': [{
+              'product': 'chrome',
+              'platform': 'mac'
+          }],
+          'future_on': [{
+              'product': 'chrome',
+              'platform': 'win'
+          }]
+      }, {
+          'supported_on': [{
+              'product': 'chrome',
+              'platform': 'win'
+          }, {
+              'product': 'chrome',
+              'platform': 'mac'
+          }],
+          'future_on': []
+      }]):
+        self.assertEqual(expected_request_for_all_platforms[i][j],
+                         self._IsPolicySupported('*', None, policy, writer))
+        self.assertEqual(
+            expected_request_for_all_win[i][j],
+            self._IsPolicySupported('win', None, policy, writer),
+        )
 
   def testPoliciesIsSupportedOnCertainVersion(self):
     platform = 'win'

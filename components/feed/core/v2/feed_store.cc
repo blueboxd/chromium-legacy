@@ -17,7 +17,7 @@
 #include "base/strings/string_util.h"
 #include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
-#include "components/feed/core/v2/stream_model_update_request.h"
+#include "components/feed/core/v2/protocol_translator.h"
 #include "components/leveldb_proto/public/proto_database_provider.h"
 
 namespace feed {

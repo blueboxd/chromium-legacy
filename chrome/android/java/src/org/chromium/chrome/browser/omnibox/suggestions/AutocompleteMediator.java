@@ -74,7 +74,7 @@ import java.util.List;
  * Handles updating the model state for the currently visible omnibox suggestions.
  */
 class AutocompleteMediator implements OnSuggestionsReceivedListener, StartStopWithNativeObserver,
-                                      OmniboxSuggestionsDropdown.Observer {
+                                      OmniboxSuggestionsDropdown.Observer, SuggestionHost {
     /** A struct containing information about the suggestion and its view type. */
     private static class SuggestionViewInfo extends MVCListAdapter.ListItem {
         /** Processor managing the suggestion. */
@@ -86,9 +86,9 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, StartStopWi
         /** Whether this suggestion has been initialized. */
         private boolean mIsInitialized;
 
-        public SuggestionViewInfo(SuggestionProcessor suggestionProcessor,
-                OmniboxSuggestion omniboxSuggestion, PropertyModel propertyModel) {
-            super(suggestionProcessor.getViewTypeId(), propertyModel);
+        public SuggestionViewInfo(
+                SuggestionProcessor suggestionProcessor, OmniboxSuggestion omniboxSuggestion) {
+            super(suggestionProcessor.getViewTypeId(), suggestionProcessor.createModel());
             processor = suggestionProcessor;
             suggestion = omniboxSuggestion;
         }
@@ -224,19 +224,17 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, StartStopWi
         final Supplier<ImageFetcher> imageFetcherSupplier = createImageFetcherSupplier();
         final Supplier<LargeIconBridge> iconBridgeSupplier = createIconBridgeSupplier();
 
-        SuggestionHost host = this::createSuggestionViewDelegate;
-
         mEditUrlProcessor =
-                new EditUrlSuggestionProcessor(mContext, host, mDelegate, iconBridgeSupplier);
+                new EditUrlSuggestionProcessor(mContext, this, mDelegate, iconBridgeSupplier);
         registerSuggestionProcessor(new AnswerSuggestionProcessor(
-                mContext, host, mUrlBarEditingTextProvider, imageFetcherSupplier));
+                mContext, this, mUrlBarEditingTextProvider, imageFetcherSupplier));
         registerSuggestionProcessor(
-                new ClipboardSuggestionProcessor(mContext, host, iconBridgeSupplier));
+                new ClipboardSuggestionProcessor(mContext, this, iconBridgeSupplier));
         registerSuggestionProcessor(
-                new EntitySuggestionProcessor(mContext, host, imageFetcherSupplier));
-        registerSuggestionProcessor(new TailSuggestionProcessor(mContext, host));
+                new EntitySuggestionProcessor(mContext, this, imageFetcherSupplier));
+        registerSuggestionProcessor(new TailSuggestionProcessor(mContext, this));
         registerSuggestionProcessor(new BasicSuggestionProcessor(
-                mContext, host, mUrlBarEditingTextProvider, iconBridgeSupplier));
+                mContext, this, mUrlBarEditingTextProvider, iconBridgeSupplier));
     }
 
     /**
@@ -618,6 +616,7 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, StartStopWi
         return mAutocomplete.getCurrentNativeAutocompleteResult();
     }
 
+    @Override
     public SuggestionViewDelegate createSuggestionViewDelegate(
             OmniboxSuggestion suggestion, int position) {
         return new SuggestionViewDelegate() {
@@ -631,11 +630,6 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, StartStopWi
             @Override
             public void onSelection() {
                 AutocompleteMediator.this.onSelection(suggestion, position);
-            }
-
-            @Override
-            public void onRefineSuggestion() {
-                AutocompleteMediator.this.onRefineSuggestion(suggestion);
             }
 
             @Override
@@ -688,7 +682,8 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, StartStopWi
      * Triggered when the user selects to refine one of the omnibox suggestions.
      * @param suggestion The suggestion selected.
      */
-    private void onRefineSuggestion(OmniboxSuggestion suggestion) {
+    @Override
+    public void onRefineSuggestion(OmniboxSuggestion suggestion) {
         stopAutocomplete(false);
         boolean isSearchSuggestion = suggestion.isSearchSuggestion();
         String refineText = suggestion.getFillIntoEdit();
@@ -1030,7 +1025,7 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, StartStopWi
             final OmniboxSuggestion suggestion = newSuggestions.get(index);
             final SuggestionProcessor processor = getProcessorForSuggestion(suggestion, index == 0);
             final PropertyModel model = processor.createModel();
-            mAvailableSuggestions.add(new SuggestionViewInfo(processor, suggestion, model));
+            mAvailableSuggestions.add(new SuggestionViewInfo(processor, suggestion));
         }
 
         if (newGroupHeaders == null) {

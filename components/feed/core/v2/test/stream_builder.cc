@@ -8,7 +8,7 @@
 
 #include "base/strings/string_number_conversions.h"
 #include "components/feed/core/v2/proto_util.h"
-#include "components/feed/core/v2/stream_model_update_request.h"
+#include "components/feed/core/v2/protocol_translator.h"
 
 namespace feed {
 

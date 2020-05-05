@@ -65,12 +65,6 @@ using url::Origin;
 namespace content {
 namespace indexed_db_backing_store_unittest {
 
-// Write |content| to |file|. Returns true on success.
-bool WriteFile(const base::FilePath& file, base::StringPiece content) {
-  int write_size = base::WriteFile(file, content.data(), content.length());
-  return write_size >= 0 && write_size == static_cast<int>(content.length());
-}
-
 class TestableIndexedDBBackingStore : public IndexedDBBackingStore {
  public:
   TestableIndexedDBBackingStore(
@@ -1552,45 +1546,45 @@ TEST_F(IndexedDBBackingStoreTest, ReadCorruptionInfo) {
 
   // Empty file.
   std::string dummy_data;
-  ASSERT_TRUE(WriteFile(info_path, dummy_data));
+  ASSERT_TRUE(base::WriteFile(info_path, dummy_data));
   EXPECT_TRUE(indexed_db::ReadCorruptionInfo(path_base, origin).empty());
   EXPECT_FALSE(PathExists(info_path));
 
   // File size > 4 KB.
   dummy_data.resize(5000, 'c');
-  ASSERT_TRUE(WriteFile(info_path, dummy_data));
+  ASSERT_TRUE(base::WriteFile(info_path, dummy_data));
   EXPECT_TRUE(indexed_db::ReadCorruptionInfo(path_base, origin).empty());
   EXPECT_FALSE(PathExists(info_path));
 
   // Random string.
-  ASSERT_TRUE(WriteFile(info_path, "foo bar"));
+  ASSERT_TRUE(base::WriteFile(info_path, "foo bar"));
   EXPECT_TRUE(indexed_db::ReadCorruptionInfo(path_base, origin).empty());
   EXPECT_FALSE(PathExists(info_path));
 
   // Not a dictionary.
-  ASSERT_TRUE(WriteFile(info_path, "[]"));
+  ASSERT_TRUE(base::WriteFile(info_path, "[]"));
   EXPECT_TRUE(indexed_db::ReadCorruptionInfo(path_base, origin).empty());
   EXPECT_FALSE(PathExists(info_path));
 
   // Empty dictionary.
-  ASSERT_TRUE(WriteFile(info_path, "{}"));
+  ASSERT_TRUE(base::WriteFile(info_path, "{}"));
   EXPECT_TRUE(indexed_db::ReadCorruptionInfo(path_base, origin).empty());
   EXPECT_FALSE(PathExists(info_path));
 
   // Dictionary, no message key.
-  ASSERT_TRUE(WriteFile(info_path, "{\"foo\":\"bar\"}"));
+  ASSERT_TRUE(base::WriteFile(info_path, "{\"foo\":\"bar\"}"));
   EXPECT_TRUE(indexed_db::ReadCorruptionInfo(path_base, origin).empty());
   EXPECT_FALSE(PathExists(info_path));
 
   // Dictionary, message key.
-  ASSERT_TRUE(WriteFile(info_path, "{\"message\":\"bar\"}"));
+  ASSERT_TRUE(base::WriteFile(info_path, "{\"message\":\"bar\"}"));
   std::string message = indexed_db::ReadCorruptionInfo(path_base, origin);
   EXPECT_FALSE(message.empty());
   EXPECT_FALSE(PathExists(info_path));
   EXPECT_EQ("bar", message);
 
   // Dictionary, message key and more.
-  ASSERT_TRUE(WriteFile(info_path, "{\"message\":\"foo\",\"bar\":5}"));
+  ASSERT_TRUE(base::WriteFile(info_path, "{\"message\":\"foo\",\"bar\":5}"));
   message = indexed_db::ReadCorruptionInfo(path_base, origin);
   EXPECT_FALSE(message.empty());
   EXPECT_FALSE(PathExists(info_path));

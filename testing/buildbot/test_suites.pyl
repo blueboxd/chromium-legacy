@@ -3710,6 +3710,9 @@
           '.',
           '--implementation-outdir',
           '../../weblayer_instrumentation_test_M81/out/Release',
+          '--test-expectations',
+          '../../weblayer/browser/android/javatests/skew/expectations.txt',
+          '--impl-version=81',
         ],
         'swarming': {
           'cipd_packages': [
@@ -3730,6 +3733,9 @@
           '.',
           '--implementation-outdir',
           '../../weblayer_instrumentation_test_M83/out/Release',
+          '--test-expectations',
+          '../../weblayer/browser/android/javatests/skew/expectations.txt',
+          '--impl-version=83',
         ],
         'swarming': {
           'cipd_packages': [

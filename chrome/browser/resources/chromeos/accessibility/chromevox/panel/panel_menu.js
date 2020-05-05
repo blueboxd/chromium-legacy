@@ -468,9 +468,9 @@ PanelSearchMenu = class extends PanelMenu {
     this.searchBar.setAttribute('aria-controls', 'search-results');
     this.searchBar.setAttribute('aria-activedescendant', '');
     this.searchBar.setAttribute(
-        'placeholder', Msgs.getMsg('search_chromevox_menus'));
+        'placeholder', Msgs.getMsg('search_chromevox_menus_placeholder'));
     this.searchBar.setAttribute(
-        'aria-label', Msgs.getMsg('search_chromevox_menus'));
+        'aria-description', Msgs.getMsg('search_chromevox_menus_description'));
     this.searchBar.setAttribute('role', 'searchbox');
 
     // Add the search bar above the menu.

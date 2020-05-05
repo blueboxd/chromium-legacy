@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/feed/core/v2/stream_model_update_request.h"
+#include "components/feed/core/v2/protocol_translator.h"
 
 #include <utility>
 
@@ -12,6 +12,7 @@
 #include "components/feed/core/proto/v2/wire/feature.pb.h"
 #include "components/feed/core/proto/v2/wire/feed_response.pb.h"
 #include "components/feed/core/proto/v2/wire/payload_metadata.pb.h"
+#include "components/feed/core/proto/v2/wire/request_schedule.pb.h"
 #include "components/feed/core/proto/v2/wire/stream_structure.pb.h"
 #include "components/feed/core/proto/v2/wire/token.pb.h"
 #include "components/feed/core/v2/proto_util.h"
@@ -51,6 +52,30 @@ feedstore::StreamStructure::Type TranslateNodeType(
       return feedstore::StreamStructure::UNKNOWN_TYPE;
   }
 }
+
+base::TimeDelta TranslateDuration(const feedwire::Duration& v) {
+  return base::TimeDelta::FromSeconds(v.seconds()) +
+         base::TimeDelta::FromNanoseconds(v.nanos());
+}
+
+base::Optional<RequestSchedule> TranslateRequestSchedule(
+    base::Time now,
+    const feedwire::RequestSchedule& v) {
+  RequestSchedule schedule;
+  const feedwire::RequestSchedule_TimeBasedSchedule& time_schedule =
+      v.time_based_schedule();
+  for (const feedwire::Duration& duration :
+       time_schedule.refresh_time_from_response_time()) {
+    schedule.refresh_offsets.push_back(TranslateDuration(duration));
+  }
+  schedule.anchor_time = now;
+  return schedule;
+}
+
+// Fields that should be present at most once in the response.
+struct ConvertedGlobalData {
+  base::Optional<RequestSchedule> request_schedule;
+};
 
 struct ConvertedDataOperation {
   bool has_stream_structure = false;
@@ -99,7 +124,9 @@ base::Optional<feedstore::StreamSharedState> TranslateSharedState(
   return shared_state;
 }
 
-bool TranslatePayload(feedwire::DataOperation operation,
+bool TranslatePayload(base::Time now,
+                      feedwire::DataOperation operation,
+                      ConvertedGlobalData* global_data,
                       ConvertedDataOperation* result) {
   switch (operation.payload_case()) {
     case feedwire::DataOperation::kFeature: {
@@ -131,10 +158,13 @@ bool TranslatePayload(feedwire::DataOperation operation,
       result->shared_state = std::move(shared_state.value());
       result->has_shared_state = true;
     } break;
-    // Fall through
-    case feedwire::DataOperation::kInPlaceUpdateHandle:
-    case feedwire::DataOperation::kTemplates:
-    case feedwire::DataOperation::PAYLOAD_NOT_SET:
+    case feedwire::DataOperation::kRequestSchedule: {
+      if (global_data) {
+        global_data->request_schedule =
+            TranslateRequestSchedule(now, operation.request_schedule());
+      }
+    } break;
+
     default:
       return false;
   }
@@ -143,7 +173,9 @@ bool TranslatePayload(feedwire::DataOperation operation,
 }
 
 base::Optional<ConvertedDataOperation> TranslateDataOperationInternal(
-    feedwire::DataOperation operation) {
+    base::Time now,
+    feedwire::DataOperation operation,
+    ConvertedGlobalData* global_data) {
   feedstore::StreamStructure::Operation operation_type =
       TranslateOperationType(operation.operation());
 
@@ -162,7 +194,7 @@ base::Optional<ConvertedDataOperation> TranslateDataOperationInternal(
       result.stream_structure.set_allocated_content_id(
           operation.mutable_metadata()->release_content_id());
 
-      if (!TranslatePayload(std::move(operation), &result))
+      if (!TranslatePayload(now, std::move(operation), global_data, &result))
         return base::nullopt;
       break;
 
@@ -191,11 +223,22 @@ StreamModelUpdateRequest::StreamModelUpdateRequest(
 StreamModelUpdateRequest& StreamModelUpdateRequest::operator=(
     const StreamModelUpdateRequest&) = default;
 
+RefreshResponseData::RefreshResponseData() = default;
+RefreshResponseData::~RefreshResponseData() = default;
+RefreshResponseData::RefreshResponseData(RefreshResponseData&&) = default;
+RefreshResponseData& RefreshResponseData::operator=(RefreshResponseData&&) =
+    default;
+
 base::Optional<feedstore::DataOperation> TranslateDataOperation(
+    base::Time now,
     feedwire::DataOperation wire_operation) {
   feedstore::DataOperation store_operation;
+  // Note: This function is used when executing operations in response to
+  // actions embedded in the server protobuf. Some data in data operations
+  // aren't supported by this function, which is why we're passing in
+  // global_data=nullptr.
   base::Optional<ConvertedDataOperation> converted =
-      TranslateDataOperationInternal(std::move(wire_operation));
+      TranslateDataOperationInternal(now, std::move(wire_operation), nullptr);
   if (!converted)
     return base::nullopt;
 
@@ -207,23 +250,25 @@ base::Optional<feedstore::DataOperation> TranslateDataOperation(
   return store_operation;
 }
 
-std::unique_ptr<StreamModelUpdateRequest> TranslateWireResponse(
+RefreshResponseData TranslateWireResponse(
     feedwire::Response response,
     StreamModelUpdateRequest::Source source,
     base::Time current_time) {
   if (response.response_version() != feedwire::Response::FEED_RESPONSE)
-    return nullptr;
+    return {};
 
   auto result = std::make_unique<StreamModelUpdateRequest>();
   result->source = source;
 
+  ConvertedGlobalData global_data;
   feedwire::FeedResponse* feed_response = response.mutable_feed_response();
   for (auto& wire_data_operation : *feed_response->mutable_data_operation()) {
     if (!wire_data_operation.has_operation())
       continue;
 
     base::Optional<ConvertedDataOperation> operation =
-        TranslateDataOperationInternal(std::move(wire_data_operation));
+        TranslateDataOperationInternal(
+            current_time, std::move(wire_data_operation), &global_data);
     if (!operation)
       continue;
 
@@ -247,7 +292,11 @@ std::unique_ptr<StreamModelUpdateRequest> TranslateWireResponse(
   }
   feedstore::SetLastAddedTime(current_time, &result->stream_data);
 
-  return result;
+  RefreshResponseData response_data;
+  response_data.model_update_request = std::move(result);
+  response_data.request_schedule = std::move(global_data.request_schedule);
+
+  return response_data;
 }
 
 }  // namespace feed

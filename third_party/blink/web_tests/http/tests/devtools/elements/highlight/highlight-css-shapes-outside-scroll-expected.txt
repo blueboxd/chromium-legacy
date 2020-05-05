@@ -187,6 +187,7 @@ circle{
     "className": ".float.circle",
     "nodeWidth": "128",
     "nodeHeight": "128",
+    "showAccessibilityInfo": true,
     "isKeyboardFocusable": false,
     "accessibleName": "",
     "accessibleRole": "generic"
@@ -379,6 +380,7 @@ circle{
     "className": ".float.circle",
     "nodeWidth": "128",
     "nodeHeight": "128",
+    "showAccessibilityInfo": true,
     "isKeyboardFocusable": false,
     "accessibleName": "",
     "accessibleRole": "generic"

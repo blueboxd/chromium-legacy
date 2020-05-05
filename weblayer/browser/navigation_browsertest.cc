@@ -512,6 +512,40 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest,
                            net::HttpRequestHeaders::kUserAgent));
 }
 
+IN_PROC_BROWSER_TEST_F(NavigationBrowserTest,
+                       SetUserAgentStringRendererInitiated) {
+  net::test_server::ControllableHttpResponse response_1(embedded_test_server(),
+                                                        "", true);
+  net::test_server::ControllableHttpResponse response_2(embedded_test_server(),
+                                                        "", true);
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  OneShotNavigationObserver load_observer(shell());
+  NavigationObserverImpl observer(GetNavigationController());
+  shell()->LoadURL(embedded_test_server()->GetURL("/simple_page.html"));
+  response_1.WaitForRequest();
+  response_1.Send(net::HTTP_OK, "text/html", "<html>");
+  response_1.Done();
+  load_observer.WaitForNavigation();
+
+  const std::string custom_ua = "custom-ua";
+  observer.SetStartedCallback(
+      base::BindLambdaForTesting([&](Navigation* navigation) {
+        navigation->SetUserAgentString(custom_ua);
+      }));
+  const GURL target_url = embedded_test_server()->GetURL("/foo.html");
+  shell()->tab()->ExecuteScript(
+      base::ASCIIToUTF16("location.href='" + target_url.spec() + "';"), false,
+      base::DoNothing());
+  response_2.WaitForRequest();
+  // |custom_ua| should be present in the renderer initiated navigation.
+  ASSERT_TRUE(base::Contains(response_2.http_request()->headers,
+                             net::HttpRequestHeaders::kUserAgent));
+  const std::string new_ua = response_2.http_request()->headers.at(
+      net::HttpRequestHeaders::kUserAgent);
+  EXPECT_EQ(custom_ua, new_ua);
+}
+
 class NavigationBrowserTest2 : public NavigationBrowserTest {
  public:
   void SetUp() override {

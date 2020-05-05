@@ -21,10 +21,10 @@
 #include "components/feed/core/v2/feed_store.h"
 #include "components/feed/core/v2/metrics_reporter.h"
 #include "components/feed/core/v2/prefs.h"
+#include "components/feed/core/v2/protocol_translator.h"
 #include "components/feed/core/v2/refresh_task_scheduler.h"
 #include "components/feed/core/v2/scheduling.h"
 #include "components/feed/core/v2/stream_model.h"
-#include "components/feed/core/v2/stream_model_update_request.h"
 #include "components/feed/core/v2/surface_updater.h"
 #include "components/feed/core/v2/tasks/clear_all_task.h"
 #include "components/feed/core/v2/tasks/load_stream_task.h"
@@ -47,8 +47,7 @@ void PopulateDebugStreamData(const LoadStreamTask::Result& load_result,
 
 }  // namespace
 
-std::unique_ptr<StreamModelUpdateRequest>
-FeedStream::WireResponseTranslator::TranslateWireResponse(
+RefreshResponseData FeedStream::WireResponseTranslator::TranslateWireResponse(
     feedwire::Response response,
     StreamModelUpdateRequest::Source source,
     base::Time current_time) {
@@ -75,7 +74,6 @@ FeedStream::FeedStream(RefreshTaskScheduler* refresh_task_scheduler,
       tick_clock_(tick_clock),
       chrome_info_(chrome_info),
       task_queue_(this),
-      user_classifier_(std::make_unique<UserClassifier>(profile_prefs, clock)),
       request_throttler_(profile_prefs, clock) {
   static WireResponseTranslator default_translator;
   wire_response_translator_ = &default_translator;
@@ -92,9 +90,6 @@ void FeedStream::InitializeScheduling() {
     refresh_task_scheduler_->Cancel();
     return;
   }
-
-  refresh_task_scheduler_->EnsureScheduled(
-      GetUserClassTriggerThreshold(GetUserClass(), TriggerType::kFixedTimer));
 }
 
 FeedStream::~FeedStream() = default;
@@ -130,7 +125,6 @@ void FeedStream::InitialStreamLoadComplete(LoadStreamTask::Result result) {
 
 void FeedStream::AttachSurface(SurfaceInterface* surface) {
   metrics_reporter_->SurfaceOpened();
-  user_classifier_->OnEvent(UserClassifier::Event::kSuggestionsViewed);
   TriggerStreamLoad();
   surface_updater_->SurfaceAdded(surface);
 }
@@ -227,13 +221,7 @@ std::string FeedStream::DumpStateForDebugging() {
   if (model_) {
     ss << "model loaded, " << model_->GetContentList().size() << " contents\n";
   }
-  ss << "user class: "
-     << user_classifier_->GetUserClassDescriptionForDebugging() << '\n';
   return ss.str();
-}
-
-UserClass FeedStream::GetUserClass() {
-  return user_classifier_->GetUserClass();
 }
 
 base::Time FeedStream::GetLastFetchTime() {
@@ -264,11 +252,6 @@ void FeedStream::OnTaskQueueIsIdle() {
 void FeedStream::SetIdleCallbackForTesting(
     base::RepeatingClosure idle_callback) {
   idle_callback_ = idle_callback;
-}
-
-void FeedStream::SetUserClassifierForTesting(
-    std::unique_ptr<UserClassifier> user_classifier) {
-  user_classifier_ = std::move(user_classifier);
 }
 
 void FeedStream::OnStoreChange(StreamModel::StoreUpdate update) {
@@ -371,6 +354,10 @@ void FeedStream::OnEnterForeground() {
 }
 
 void FeedStream::ExecuteRefreshTask() {
+  // Schedule the next refresh attempt. If a new refresh schedule is returned
+  // through this refresh, it will be overwritten.
+  SetRequestSchedule(feed::prefs::GetRequestSchedule(profile_prefs_));
+
   LoadStreamStatus do_not_attempt_reason = ShouldAttemptLoad();
   if (do_not_attempt_reason != LoadStreamStatus::kNoStatus) {
     BackgroundRefreshComplete(LoadStreamTask::Result(do_not_attempt_reason));
@@ -401,6 +388,16 @@ void FeedStream::LoadModel(std::unique_ptr<StreamModel> model) {
   surface_updater_->SetModel(model_.get());
 }
 
+void FeedStream::SetRequestSchedule(RequestSchedule schedule) {
+  base::Time run_time = NextScheduledRequestTime(clock_->Now(), &schedule);
+  if (!run_time.is_null()) {
+    refresh_task_scheduler_->EnsureScheduled(run_time);
+  } else {
+    refresh_task_scheduler_->Cancel();
+  }
+  feed::prefs::SetRequestSchedule(schedule, profile_prefs_);
+}
+
 void FeedStream::UnloadModel() {
   // Note: This should only be called from a running Task, as some tasks assume
   // the model remains loaded.
@@ -411,19 +408,16 @@ void FeedStream::UnloadModel() {
 }
 
 void FeedStream::ReportOpenAction(const std::string& slice_id) {
-  user_classifier_->OnEvent(UserClassifier::Event::kSuggestionsUsed);
   int index = surface_updater_->GetSliceIndexFromSliceId(slice_id);
   if (index >= 0)
     metrics_reporter_->OpenAction(index);
 }
 void FeedStream::ReportOpenInNewTabAction(const std::string& slice_id) {
-  user_classifier_->OnEvent(UserClassifier::Event::kSuggestionsUsed);
   int index = surface_updater_->GetSliceIndexFromSliceId(slice_id);
   if (index >= 0)
     metrics_reporter_->OpenInNewTabAction(index);
 }
 void FeedStream::ReportOpenInNewIncognitoTabAction() {
-  user_classifier_->OnEvent(UserClassifier::Event::kSuggestionsUsed);
   metrics_reporter_->OpenInNewIncognitoTabAction();
 }
 void FeedStream::ReportSliceViewed(const std::string& slice_id) {

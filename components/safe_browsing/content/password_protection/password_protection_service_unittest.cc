@@ -1165,20 +1165,10 @@ TEST_P(PasswordProtectionServiceTest, VerifyShouldShowModalWarning) {
 
   reused_password_account_type.set_account_type(
       ReusedPasswordAccountType::SAVED_PASSWORD);
-// kPasswordProtectionForSignedInUsers is disabled by default on Android.
-#if defined(OS_ANDROID)
-  EXPECT_FALSE(password_protection_service_->ShouldShowModalWarning(
-#else
   EXPECT_TRUE(password_protection_service_->ShouldShowModalWarning(
-#endif
       LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
       reused_password_account_type, LoginReputationClientResponse::PHISHING));
-// kPasswordProtectionForSignedInUsers is disabled by default on Android.
-#if defined(OS_ANDROID)
-  EXPECT_FALSE(password_protection_service_->ShouldShowModalWarning(
-#else
   EXPECT_TRUE(password_protection_service_->ShouldShowModalWarning(
-#endif
       LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
       reused_password_account_type,
       LoginReputationClientResponse::LOW_REPUTATION));

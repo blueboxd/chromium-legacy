@@ -14,8 +14,11 @@
 
       cr-toolbar {
         min-height: 56px;
-        --cr-toolbar-left-spacer-width: var(--settings-menu-width);
         --cr-toolbar-center-basis: var(--settings-main-basis);
+      }
+
+      cr-toolbar:not([narrow]) {
+        --cr-toolbar-left-spacer-width: var(--settings-menu-width);
       }
 
       @media (prefers-color-scheme: light) {

@@ -85,7 +85,7 @@ class ExternalVkImageBacking final : public ClearTrackingSharedImageBacking {
         ->GetDeviceQueue()
         ->GetVulkanDevice();
   }
-  bool need_sychronization() const {
+  bool need_synchronization() const {
     if (usage() & SHARED_IMAGE_USAGE_WEBGPU) {
       return true;
     }

@@ -19,6 +19,7 @@ class CORE_EXPORT CSSTransition : public Animation {
   CSSTransition(ExecutionContext*,
                 AnimationTimeline*,
                 AnimationEffect*,
+                uint64_t transition_generation,
                 const PropertyHandle& transition_property);
 
   bool IsCSSTransition() const final { return true; }
@@ -26,6 +27,7 @@ class CORE_EXPORT CSSTransition : public Animation {
   void ClearOwningElement() final { owning_element_ = nullptr; }
   Element* OwningElement() const override { return owning_element_; }
 
+  uint64_t TransitionGeneration() const { return transition_generation_; }
   AtomicString transitionProperty() const;
   const CSSProperty& TransitionCSSProperty() const {
     return transition_property_.GetCSSProperty();
@@ -57,6 +59,7 @@ class CORE_EXPORT CSSTransition : public Animation {
   // to which the transition-property property was applied that generated the
   // animation.
   Member<Element> owning_element_;
+  uint64_t transition_generation_;
 };
 template <>
 struct DowncastTraits<CSSTransition> {

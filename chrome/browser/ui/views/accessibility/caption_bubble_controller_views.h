@@ -33,7 +33,8 @@ class CaptionBubbleControllerViews : public CaptionBubbleController {
       delete;
 
   // Called when a transcription is received from the service.
-  void OnTranscription(const std::string& transcription) override;
+  void OnTranscription(const chrome::mojom::TranscriptionResultPtr&
+                           transcription_result) override;
 
   // Called when the active tab changes.
   void OnActiveTabChanged(int index) override;
@@ -50,6 +51,8 @@ class CaptionBubbleControllerViews : public CaptionBubbleController {
 
   CaptionBubble* caption_bubble_;
   views::Widget* caption_widget_;
+
+  std::string final_text_;
 };
 
 }  // namespace captions

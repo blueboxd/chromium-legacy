@@ -323,6 +323,7 @@ crbug.com/1066634 external/wpt/css/css-images/image-orientation/image-orientatio
 # Fail due to lack of fuzzy matching on Linux, Win and Mac platforms for WPT. The pixels in the pre-rotated reference
 # images do not exactly match the exif rotated images, probably due to jpeg decoding/encoding issues. Maybe
 # adjusting the image size to a multiple of 8 would fix this (so all jpeg blocks are solid color).
+crbug.com/997202 external/wpt/2dcontext/drawing-images-to-the-canvas/image-orientation/drawImage-with-src-rect.tentative.html [ Failure ]
 crbug.com/997202 external/wpt/css/css-images/image-orientation/image-orientation-default.html [ Failure ]
 crbug.com/997202 external/wpt/css/css-images/image-orientation/image-orientation-from-image-composited-dynamic1.html [ Failure ]
 crbug.com/997202 external/wpt/css/css-images/image-orientation/image-orientation-from-image-composited.html [ Failure ]

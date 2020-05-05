@@ -88,6 +88,22 @@ IN_PROC_BROWSER_TEST_F(EventLatencyBrowserTest, KeyPressOnButton) {
       {"EventLatency.KeyPressed.BrowserToRendererCompositor", 1},
       {"EventLatency.KeyPressed.BeginImplFrameToSendBeginMainFrame", 1},
       {"EventLatency.KeyPressed.SendBeginMainFrameToCommit", 1},
+      {"EventLatency.KeyPressed.SendBeginMainFrameToCommit.HandleInputEvents",
+       1},
+      {"EventLatency.KeyPressed.SendBeginMainFrameToCommit.Animate", 1},
+      {"EventLatency.KeyPressed.SendBeginMainFrameToCommit.StyleUpdate", 1},
+      {"EventLatency.KeyPressed.SendBeginMainFrameToCommit.LayoutUpdate", 1},
+      {"EventLatency.KeyPressed.SendBeginMainFrameToCommit.Prepaint", 1},
+      {"EventLatency.KeyPressed.SendBeginMainFrameToCommit.Composite", 1},
+      {"EventLatency.KeyPressed.SendBeginMainFrameToCommit.Paint", 1},
+      {"EventLatency.KeyPressed.SendBeginMainFrameToCommit."
+       "ScrollingCoordinator",
+       1},
+      {"EventLatency.KeyPressed.SendBeginMainFrameToCommit.CompositeCommit", 1},
+      {"EventLatency.KeyPressed.SendBeginMainFrameToCommit.UpdateLayers", 1},
+      {"EventLatency.KeyPressed.SendBeginMainFrameToCommit."
+       "BeginMainSentToStarted",
+       1},
       {"EventLatency.KeyPressed.Commit", 1},
       {"EventLatency.KeyPressed.EndCommitToActivation", 1},
       {"EventLatency.KeyPressed.Activation", 1},
@@ -95,16 +111,71 @@ IN_PROC_BROWSER_TEST_F(EventLatencyBrowserTest, KeyPressOnButton) {
       {"EventLatency.KeyPressed."
        "SubmitCompositorFrameToPresentationCompositorFrame",
        1},
+      {"EventLatency.KeyPressed."
+       "SubmitCompositorFrameToPresentationCompositorFrame."
+       "SubmitToReceiveCompositorFrame",
+       1},
+      {"EventLatency.KeyPressed."
+       "SubmitCompositorFrameToPresentationCompositorFrame."
+       "ReceivedCompositorFrameToStartDraw",
+       1},
+      {"EventLatency.KeyPressed."
+       "SubmitCompositorFrameToPresentationCompositorFrame."
+       "StartDrawToSwapStart",
+       1},
+      {"EventLatency.KeyPressed."
+       "SubmitCompositorFrameToPresentationCompositorFrame.SwapStartToSwapEnd",
+       1},
+      {"EventLatency.KeyPressed."
+       "SubmitCompositorFrameToPresentationCompositorFrame."
+       "SwapEndToPresentationCompositorFrame",
+       1},
       {"EventLatency.KeyPressed.TotalLatency", 1},
       {"EventLatency.KeyReleased.BrowserToRendererCompositor", 1},
       {"EventLatency.KeyReleased.BeginImplFrameToSendBeginMainFrame", 1},
       {"EventLatency.KeyReleased.SendBeginMainFrameToCommit", 1},
+      {"EventLatency.KeyReleased.SendBeginMainFrameToCommit.HandleInputEvents",
+       1},
+      {"EventLatency.KeyReleased.SendBeginMainFrameToCommit.Animate", 1},
+      {"EventLatency.KeyReleased.SendBeginMainFrameToCommit.StyleUpdate", 1},
+      {"EventLatency.KeyReleased.SendBeginMainFrameToCommit.LayoutUpdate", 1},
+      {"EventLatency.KeyReleased.SendBeginMainFrameToCommit.Prepaint", 1},
+      {"EventLatency.KeyReleased.SendBeginMainFrameToCommit.Composite", 1},
+      {"EventLatency.KeyReleased.SendBeginMainFrameToCommit.Paint", 1},
+      {"EventLatency.KeyReleased.SendBeginMainFrameToCommit."
+       "ScrollingCoordinator",
+       1},
+      {"EventLatency.KeyReleased.SendBeginMainFrameToCommit.CompositeCommit",
+       1},
+      {"EventLatency.KeyReleased.SendBeginMainFrameToCommit.UpdateLayers", 1},
+      {"EventLatency.KeyReleased.SendBeginMainFrameToCommit."
+       "BeginMainSentToStarted",
+       1},
       {"EventLatency.KeyReleased.Commit", 1},
       {"EventLatency.KeyReleased.EndCommitToActivation", 1},
       {"EventLatency.KeyReleased.Activation", 1},
       {"EventLatency.KeyReleased.EndActivateToSubmitCompositorFrame", 1},
       {"EventLatency.KeyReleased."
        "SubmitCompositorFrameToPresentationCompositorFrame",
+       1},
+      {"EventLatency.KeyReleased."
+       "SubmitCompositorFrameToPresentationCompositorFrame."
+       "SubmitToReceiveCompositorFrame",
+       1},
+      {"EventLatency.KeyReleased."
+       "SubmitCompositorFrameToPresentationCompositorFrame."
+       "ReceivedCompositorFrameToStartDraw",
+       1},
+      {"EventLatency.KeyReleased."
+       "SubmitCompositorFrameToPresentationCompositorFrame."
+       "StartDrawToSwapStart",
+       1},
+      {"EventLatency.KeyReleased."
+       "SubmitCompositorFrameToPresentationCompositorFrame.SwapStartToSwapEnd",
+       1},
+      {"EventLatency.KeyReleased."
+       "SubmitCompositorFrameToPresentationCompositorFrame."
+       "SwapEndToPresentationCompositorFrame",
        1},
       {"EventLatency.KeyReleased.TotalLatency", 1},
   };
@@ -140,6 +211,22 @@ IN_PROC_BROWSER_TEST_F(EventLatencyBrowserTest, KeyPressOnButtonWithAnimation) {
       {"EventLatency.KeyPressed.BrowserToRendererCompositor", 1},
       {"EventLatency.KeyPressed.BeginImplFrameToSendBeginMainFrame", 1},
       {"EventLatency.KeyPressed.SendBeginMainFrameToCommit", 1},
+      {"EventLatency.KeyPressed.SendBeginMainFrameToCommit.HandleInputEvents",
+       1},
+      {"EventLatency.KeyPressed.SendBeginMainFrameToCommit.Animate", 1},
+      {"EventLatency.KeyPressed.SendBeginMainFrameToCommit.StyleUpdate", 1},
+      {"EventLatency.KeyPressed.SendBeginMainFrameToCommit.LayoutUpdate", 1},
+      {"EventLatency.KeyPressed.SendBeginMainFrameToCommit.Prepaint", 1},
+      {"EventLatency.KeyPressed.SendBeginMainFrameToCommit.Composite", 1},
+      {"EventLatency.KeyPressed.SendBeginMainFrameToCommit.Paint", 1},
+      {"EventLatency.KeyPressed.SendBeginMainFrameToCommit."
+       "ScrollingCoordinator",
+       1},
+      {"EventLatency.KeyPressed.SendBeginMainFrameToCommit.CompositeCommit", 1},
+      {"EventLatency.KeyPressed.SendBeginMainFrameToCommit.UpdateLayers", 1},
+      {"EventLatency.KeyPressed.SendBeginMainFrameToCommit."
+       "BeginMainSentToStarted",
+       1},
       {"EventLatency.KeyPressed.Commit", 1},
       {"EventLatency.KeyPressed.EndCommitToActivation", 1},
       {"EventLatency.KeyPressed.Activation", 1},
@@ -148,15 +235,70 @@ IN_PROC_BROWSER_TEST_F(EventLatencyBrowserTest, KeyPressOnButtonWithAnimation) {
        "SubmitCompositorFrameToPresentationCompositorFrame",
        1},
       {"EventLatency.KeyPressed.TotalLatency", 1},
+      {"EventLatency.KeyPressed."
+       "SubmitCompositorFrameToPresentationCompositorFrame."
+       "SubmitToReceiveCompositorFrame",
+       1},
+      {"EventLatency.KeyPressed."
+       "SubmitCompositorFrameToPresentationCompositorFrame."
+       "ReceivedCompositorFrameToStartDraw",
+       1},
+      {"EventLatency.KeyPressed."
+       "SubmitCompositorFrameToPresentationCompositorFrame."
+       "StartDrawToSwapStart",
+       1},
+      {"EventLatency.KeyPressed."
+       "SubmitCompositorFrameToPresentationCompositorFrame.SwapStartToSwapEnd",
+       1},
+      {"EventLatency.KeyPressed."
+       "SubmitCompositorFrameToPresentationCompositorFrame."
+       "SwapEndToPresentationCompositorFrame",
+       1},
       {"EventLatency.KeyReleased.BrowserToRendererCompositor", 1},
       {"EventLatency.KeyReleased.BeginImplFrameToSendBeginMainFrame", 1},
       {"EventLatency.KeyReleased.SendBeginMainFrameToCommit", 1},
+      {"EventLatency.KeyReleased.SendBeginMainFrameToCommit.HandleInputEvents",
+       1},
+      {"EventLatency.KeyReleased.SendBeginMainFrameToCommit.Animate", 1},
+      {"EventLatency.KeyReleased.SendBeginMainFrameToCommit.StyleUpdate", 1},
+      {"EventLatency.KeyReleased.SendBeginMainFrameToCommit.LayoutUpdate", 1},
+      {"EventLatency.KeyReleased.SendBeginMainFrameToCommit.Prepaint", 1},
+      {"EventLatency.KeyReleased.SendBeginMainFrameToCommit.Composite", 1},
+      {"EventLatency.KeyReleased.SendBeginMainFrameToCommit.Paint", 1},
+      {"EventLatency.KeyReleased.SendBeginMainFrameToCommit."
+       "ScrollingCoordinator",
+       1},
+      {"EventLatency.KeyReleased.SendBeginMainFrameToCommit.CompositeCommit",
+       1},
+      {"EventLatency.KeyReleased.SendBeginMainFrameToCommit.UpdateLayers", 1},
+      {"EventLatency.KeyReleased.SendBeginMainFrameToCommit."
+       "BeginMainSentToStarted",
+       1},
       {"EventLatency.KeyReleased.Commit", 1},
       {"EventLatency.KeyReleased.EndCommitToActivation", 1},
       {"EventLatency.KeyReleased.Activation", 1},
       {"EventLatency.KeyReleased.EndActivateToSubmitCompositorFrame", 1},
       {"EventLatency.KeyReleased."
        "SubmitCompositorFrameToPresentationCompositorFrame",
+       1},
+      {"EventLatency.KeyReleased."
+       "SubmitCompositorFrameToPresentationCompositorFrame."
+       "SubmitToReceiveCompositorFrame",
+       1},
+      {"EventLatency.KeyReleased."
+       "SubmitCompositorFrameToPresentationCompositorFrame."
+       "ReceivedCompositorFrameToStartDraw",
+       1},
+      {"EventLatency.KeyReleased."
+       "SubmitCompositorFrameToPresentationCompositorFrame."
+       "StartDrawToSwapStart",
+       1},
+      {"EventLatency.KeyReleased."
+       "SubmitCompositorFrameToPresentationCompositorFrame.SwapStartToSwapEnd",
+       1},
+      {"EventLatency.KeyReleased."
+       "SubmitCompositorFrameToPresentationCompositorFrame."
+       "SwapEndToPresentationCompositorFrame",
        1},
       {"EventLatency.KeyReleased.TotalLatency", 1},
   };
@@ -198,12 +340,47 @@ IN_PROC_BROWSER_TEST_F(EventLatencyBrowserTest,
       {"EventLatency.KeyPressed.BrowserToRendererCompositor", 2},
       {"EventLatency.KeyPressed.BeginImplFrameToSendBeginMainFrame", 2},
       {"EventLatency.KeyPressed.SendBeginMainFrameToCommit", 2},
+      {"EventLatency.KeyPressed.SendBeginMainFrameToCommit.HandleInputEvents",
+       2},
+      {"EventLatency.KeyPressed.SendBeginMainFrameToCommit.Animate", 2},
+      {"EventLatency.KeyPressed.SendBeginMainFrameToCommit.StyleUpdate", 2},
+      {"EventLatency.KeyPressed.SendBeginMainFrameToCommit.LayoutUpdate", 2},
+      {"EventLatency.KeyPressed.SendBeginMainFrameToCommit.Prepaint", 2},
+      {"EventLatency.KeyPressed.SendBeginMainFrameToCommit.Composite", 2},
+      {"EventLatency.KeyPressed.SendBeginMainFrameToCommit.Paint", 2},
+      {"EventLatency.KeyPressed.SendBeginMainFrameToCommit."
+       "ScrollingCoordinator",
+       2},
+      {"EventLatency.KeyPressed.SendBeginMainFrameToCommit.CompositeCommit", 2},
+      {"EventLatency.KeyPressed.SendBeginMainFrameToCommit.UpdateLayers", 2},
+      {"EventLatency.KeyPressed.SendBeginMainFrameToCommit."
+       "BeginMainSentToStarted",
+       2},
       {"EventLatency.KeyPressed.Commit", 2},
       {"EventLatency.KeyPressed.EndCommitToActivation", 2},
       {"EventLatency.KeyPressed.Activation", 2},
       {"EventLatency.KeyPressed.EndActivateToSubmitCompositorFrame", 2},
       {"EventLatency.KeyPressed."
        "SubmitCompositorFrameToPresentationCompositorFrame",
+       2},
+      {"EventLatency.KeyPressed."
+       "SubmitCompositorFrameToPresentationCompositorFrame."
+       "SubmitToReceiveCompositorFrame",
+       2},
+      {"EventLatency.KeyPressed."
+       "SubmitCompositorFrameToPresentationCompositorFrame."
+       "ReceivedCompositorFrameToStartDraw",
+       2},
+      {"EventLatency.KeyPressed."
+       "SubmitCompositorFrameToPresentationCompositorFrame."
+       "StartDrawToSwapStart",
+       2},
+      {"EventLatency.KeyPressed."
+       "SubmitCompositorFrameToPresentationCompositorFrame.SwapStartToSwapEnd",
+       2},
+      {"EventLatency.KeyPressed."
+       "SubmitCompositorFrameToPresentationCompositorFrame."
+       "SwapEndToPresentationCompositorFrame",
        2},
       {"EventLatency.KeyPressed.TotalLatency", 2},
   };

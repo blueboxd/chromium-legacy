@@ -476,6 +476,13 @@ TEST_F(ChromePasswordProtectionServiceTest,
         LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
         reused_password_type, &reason));
   }
+
+  service_->ConfigService(false /*incognito*/, false /*SBER*/);
+  reused_password_type.set_account_type(ReusedPasswordAccountType::UNKNOWN);
+  EXPECT_FALSE(service_->IsPingingEnabled(
+      LoginReputationClientRequest::PASSWORD_REUSE_EVENT, reused_password_type,
+      &reason));
+  EXPECT_EQ(RequestOutcome::DISABLED_DUE_TO_USER_POPULATION, reason);
 }
 
 TEST_F(ChromePasswordProtectionServiceTest,

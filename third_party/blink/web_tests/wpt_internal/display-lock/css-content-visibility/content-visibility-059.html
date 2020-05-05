@@ -1,34 +1,58 @@
 <!doctype HTML>
-<html>
+
+<html class="reftest-wait">
 <meta charset="utf8">
-<title>Display Locking: focus on styled element</title>
-<link rel="author" title="Rakina Zata Amni" href="mailto:rakina@chromium.org">
+<title>CSS Content Visibility: hidden + scrollIntoView</title>
+<link rel="author" title="Vladimir Levin" href="mailto:vmpstr@chromium.org">
 <link rel="help" href="https://github.com/WICG/display-locking">
-<meta name="assert" content="focus does not target display-none but hidden elements">
+<link rel="match" href="content-visibility-059-ref.html">
+<meta name="assert" content="scrollIntoView scrolls to element under hidden, not just container">
+<meta name="assert" content="scrollIntoView does not start painting hidden content">
+<script src="/common/reftest-wait.js"></script>
 
-<script src="/resources/testharness.js"></script>
-<script src="/resources/testharnessreport.js"></script>
+<style>
+.spacer {
+  height: 1000px;
+  background: lightgreen;
+}
+#container {
+  width: 150px;
+  height: 150px;
+  background: lightblue;
+}
+#target {
+  position: relative;
+  top: 75px;
 
-<div id="container" style="content-visibility: auto">
-  <div id="focusable1" tabIndex="0">
-    focusable thing
-  </div>
-  <div id="displayNoneParent">
-    <div id="focusable2" tabIndex="0">
-      focusable thing
-    </div>
-  </div>
+  width: 50px;
+  height: 50px;
+  background: red;
+}
+.hidden {
+  content-visibility: hidden;
+}
+</style>
+
+<div>top of the page</div>
+<div class=spacer></div>
+<div id=container class=hidden>
+  <div id=target></div>
 </div>
+<div class=spacer></div>
+<div>bottom of the page</div>
 
 <script>
-test(() => {
-  focusable1.style.display = "none";
-  focusable1.focus();
-  assert_not_equals(document.activeElement, focusable1);
+function runTest() {
+  document.getElementById("target").scrollIntoView();
+  requestAnimationFrame(takeScreenshot);
+}
 
-  displayNoneParent.style.display = "none";
-  focusable2.focus();
-  assert_not_equals(document.activeElement, focusable2);
-}, "Trying to focus on an element in a hidden subtree with display none will not work");
+window.onload = requestAnimationFrame(() => {
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      runTest();
+    });
+  });
+});
 </script>
 </html>

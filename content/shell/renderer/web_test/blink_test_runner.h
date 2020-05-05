@@ -20,7 +20,6 @@
 #include "content/public/common/page_state.h"
 #include "content/shell/common/web_test/web_test.mojom.h"
 #include "content/shell/common/web_test/web_test_bluetooth_fake_adapter_setter.mojom.h"
-#include "content/shell/renderer/web_test/test_preferences.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/platform/web_string.h"
@@ -38,7 +37,7 @@ class DictionaryValue;
 namespace content {
 class AppBannerService;
 class WebViewTestProxy;
-struct TestPreferences;
+struct WebPreferences;
 
 // An instance of this class is attached to each RenderView in each renderer
 // process during a web test. It handles IPCs (forwarded from
@@ -64,9 +63,6 @@ class BlinkTestRunner {
   // Convert the provided relative path into an absolute path.
   blink::WebString GetAbsoluteWebStringFromUTF8Path(const std::string& path);
 
-  // Manages the settings to used for web tests.
-  TestPreferences* Preferences();
-  void ApplyPreferences();
   void SetPopupBlockingEnabled(bool block_popups);
 
   // Controls WebSQL databases.
@@ -186,6 +182,9 @@ class BlinkTestRunner {
   // only in devtools JS tests.
   void FocusDevtoolsSecondaryWindow();
 
+  // Pass the overridden WebPreferences to the browser.
+  void OverridePreferences(const WebPreferences& prefs);
+
   // Message handlers forwarded by WebTestRenderFrameObserver.
   void OnSetTestConfiguration(mojom::WebTestRunTestConfigurationPtr params);
   void OnReplicateTestConfiguration(
@@ -226,8 +225,6 @@ class BlinkTestRunner {
   mojo::AssociatedRemote<mojom::WebTestClient> web_test_client_remote_;
 
   WebViewTestProxy* const web_view_test_proxy_;
-
-  TestPreferences prefs_;
 
   mojom::WebTestRunTestConfigurationPtr test_config_;
 

@@ -44,8 +44,6 @@ GPU_EXPORT extern const base::Feature kMetal;
 
 GPU_EXPORT extern const base::Feature kSharedImageManager;
 
-GPU_EXPORT extern const base::Feature kUseDCOverlaysForSoftwareProtectedVideo;
-
 GPU_EXPORT extern const base::Feature kVaapiJpegImageDecodeAcceleration;
 
 GPU_EXPORT extern const base::Feature kVaapiWebPImageDecodeAcceleration;

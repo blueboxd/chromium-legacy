@@ -1721,6 +1721,9 @@
         "test_id_prefix": "ninja://chrome/test:telemetry_gpu_unittests/"
       },
       {
+        "args": [
+          "--extra-browser-args=--enable-crashpad"
+        ],
         "isolate_name": "telemetry_perf_unittests",
         "merge": {
           "args": [],
@@ -5689,6 +5692,9 @@
         "test_id_prefix": "ninja://chrome/test:telemetry_gpu_unittests/"
       },
       {
+        "args": [
+          "--extra-browser-args=--enable-crashpad"
+        ],
         "isolate_name": "telemetry_perf_unittests",
         "merge": {
           "args": [],
@@ -44336,6 +44342,7 @@
       },
       {
         "args": [
+          "--extra-browser-args=--enable-crashpad",
           "--xvfb",
           "--jobs=1"
         ],
@@ -46380,6 +46387,9 @@
         "test_id_prefix": "ninja://chrome/test:telemetry_gpu_unittests/"
       },
       {
+        "args": [
+          "--extra-browser-args=--enable-crashpad"
+        ],
         "isolate_coverage_data": true,
         "isolate_name": "telemetry_perf_unittests",
         "merge": {
@@ -49963,6 +49973,9 @@
         "test_id_prefix": "ninja://chrome/test:telemetry_gpu_unittests/"
       },
       {
+        "args": [
+          "--extra-browser-args=--enable-crashpad"
+        ],
         "isolate_name": "telemetry_perf_unittests",
         "merge": {
           "args": [],

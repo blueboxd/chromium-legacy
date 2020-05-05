@@ -9,6 +9,7 @@
 
 #include "base/memory/memory_pressure_listener.h"
 #include "components/performance_manager/public/graph/graph.h"
+#include "components/performance_manager/public/graph/node_data_describer.h"
 #include "components/performance_manager/public/graph/page_node.h"
 #include "url/gurl.h"
 
@@ -28,6 +29,7 @@ namespace policies {
 // is responsible for assigning priorities and controlling the load of
 // background tab loading at all times.
 class BackgroundTabLoadingPolicy : public GraphOwned,
+                                   public NodeDataDescriberDefaultImpl,
                                    public PageNode::ObserverDefaultImpl {
  public:
   BackgroundTabLoadingPolicy();
@@ -80,6 +82,10 @@ class BackgroundTabLoadingPolicy : public GraphOwned,
 
   // Comparator used to sort PageNodeToLoadData.
   struct ScoredTabComparator;
+
+  // NodeDataDescriber implementation:
+  base::Value DescribePageNodeData(const PageNode* node) const override;
+  base::Value DescribeSystemNodeData(const SystemNode* node) const override;
 
   // Determines whether or not the given PageNode should be loaded. If this
   // returns false, then the policy no longer attempts to load |page_node| and

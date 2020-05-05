@@ -47,10 +47,13 @@ FontFallbackList::FontFallbackList(FontSelector* font_selector)
       generation_(FontCache::GetFontCache()->Generation()),
       has_loading_fallback_(false),
       can_shape_word_by_word_(false),
-      can_shape_word_by_word_computed_(false) {}
+      can_shape_word_by_word_computed_(false),
+      is_invalid_(false) {}
 
-void FontFallbackList::Invalidate() {
+void FontFallbackList::RevalidateDeprecated() {
   DCHECK(RuntimeEnabledFeatures::CSSReducedFontLoadingInvalidationsEnabled());
+  DCHECK(!RuntimeEnabledFeatures::
+             CSSReducedFontLoadingLayoutInvalidationsEnabled());
   ReleaseFontData();
   font_list_.clear();
   cached_primary_simple_font_data_ = nullptr;
@@ -284,6 +287,14 @@ bool FontFallbackList::CanShapeWordByWord(
 }
 
 bool FontFallbackList::IsValid() const {
+  if (RuntimeEnabledFeatures::
+          CSSReducedFontLoadingLayoutInvalidationsEnabled()) {
+    return !is_invalid_;
+  }
+
+  // The flag can be set only when the feature above is enabled.
+  DCHECK(!is_invalid_);
+
   if (!font_selector_)
     return font_selector_version_ == 0;
 

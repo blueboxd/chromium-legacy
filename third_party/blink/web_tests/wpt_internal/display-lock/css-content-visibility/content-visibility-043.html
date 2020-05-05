@@ -1,11 +1,13 @@
 <!doctype HTML>
 <html class="reftest-wait">
 <meta charset="utf8">
-<title>Content Visibility: pseudo elements</title>
-<link rel="author" title="Rakina Zata Amni" href="mailto:rakina@chromium.org">
+<title>Content Visibility: scroll child into view, and adopt to a document</title>
+<link rel="author" title="Vladimir Levin" href="mailto:vmpstr@chromium.org">
 <link rel="help" href="https://github.com/WICG/display-locking">
 <link rel="match" href="container-ref.html">
-<meta name="assert" content="subtree-visiblity hidden doesn't paint ::before or ::after">
+<meta name="assert" content="scrollIntoView on a hidden subtree is a no-op">
+<meta name="assert" content="adopting an element in a hidden subtree works (no asserts / crashes)">
+
 <script src="/common/reftest-wait.js"></script>
 
 <style>
@@ -14,29 +16,25 @@
   height: 150px;
   background: lightblue;
 }
-#container::before {
-  content: "a";
-  color: blue;
-}
-.hasAfter::after {
-  content: "b";
-  color: green;
-}
 .hidden {
   content-visibility: hidden;
 }
 </style>
-<div id="log"></div>
-<div id="container" style="display:none;"></div>
+<div id=container class=hidden>
+  Text.
+  <div id=child></div>
+</div>
 
 <script>
-async function runTest() {
-  container.classList.add("hasAfter");
-  container.classList.add("hidden");
-  container.style = "";
+function moveChild() {
+  child.scrollIntoView();
+  document.implementation.createDocument( "", null).adoptNode(child);
   requestAnimationFrame(takeScreenshot);
 }
 
-window.onload = runTest;
+async function runTest() {
+  requestAnimationFrame(moveChild);
+}
+
+window.onload = requestAnimationFrame(runTest);
 </script>
-</html>

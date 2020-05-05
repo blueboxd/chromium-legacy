@@ -54,6 +54,7 @@ void NavigateParams::FillNavigateParamsFromOpenURLParams(
   DCHECK(params.Valid());
 #endif
 
+  this->initiator_routing_id = params.initiator_routing_id;
   this->initiator_origin = params.initiator_origin;
   this->referrer = params.referrer;
   this->reload_type = params.reload_type;

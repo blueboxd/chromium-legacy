@@ -69,6 +69,9 @@ struct GlobalFrameRoutingId {
   bool operator!=(const GlobalFrameRoutingId& other) const {
     return !(*this == other);
   }
+  explicit operator bool() const {
+    return frame_routing_id != MSG_ROUTING_NONE;
+  }
 };
 
 struct GlobalFrameRoutingIdHasher {

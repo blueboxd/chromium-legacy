@@ -40,16 +40,20 @@ void CaptionBubbleControllerViews::OnCaptionBubbleDestroyed() {
 }
 
 void CaptionBubbleControllerViews::OnTranscription(
-    const std::string& transcription) {
+    const chrome::mojom::TranscriptionResultPtr& transcription_result) {
   if (!caption_bubble_ || !caption_widget_)
     return;
 
-  caption_bubble_->SetText(transcription);
+  std::string partial_text = transcription_result->transcription;
+  caption_bubble_->SetText(final_text_ + partial_text);
+  if (transcription_result->is_final)
+    final_text_ += partial_text;
+  // TODO(1055150): Truncate final_text_ when it gets very long.
 
   // If the captions bubble contains text, show the bubble. Otherwise, hide it.
   if (!caption_widget_->IsClosed()) {
     bool is_visible = caption_widget_->IsVisible();
-    bool is_empty = transcription.empty();
+    bool is_empty = final_text_.empty() && partial_text.empty();
     if (is_visible && is_empty) {
       caption_widget_->Hide();
     } else if (!is_visible && !is_empty) {

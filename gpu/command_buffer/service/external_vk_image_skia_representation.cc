@@ -144,7 +144,7 @@ sk_sp<SkPromiseImageTexture> ExternalVkImageSkiaRepresentation::BeginAccess(
     begin_semaphores->back().initVulkan(semaphore);
   }
 
-  if (backing_impl()->need_sychronization()) {
+  if (backing_impl()->need_synchronization()) {
     // Create an |end_access_semaphore_| which will be signalled by the caller.
     end_access_semaphore_ =
         vk_implementation()->CreateExternalSemaphore(backing_impl()->device());
@@ -160,7 +160,7 @@ void ExternalVkImageSkiaRepresentation::EndAccess(bool readonly) {
   DCHECK_NE(access_mode_, kNone);
 
   SemaphoreHandle handle;
-  if (backing_impl()->need_sychronization()) {
+  if (backing_impl()->need_synchronization()) {
     DCHECK(end_access_semaphore_ != VK_NULL_HANDLE);
 
     handle = vk_implementation()->GetSemaphoreHandle(vk_device(),

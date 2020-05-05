@@ -45,6 +45,7 @@
 #include "cc/tiles/tile_manager.h"
 #include "cc/trees/animated_paint_worklet_tracker.h"
 #include "cc/trees/de_jelly_state.h"
+#include "cc/trees/frame_rate_estimator.h"
 #include "cc/trees/layer_tree_frame_sink_client.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_mutator.h"
@@ -321,6 +322,7 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
   bool ScrollLayerTo(ElementId element_id,
                      const gfx::ScrollOffset& offset) override;
   bool ScrollingShouldSwitchtoMainThread() override;
+  void NotifyInputEvent() override;
 
   // BrowserControlsOffsetManagerClient implementation.
   float TopControlsHeight() const override;
@@ -1370,6 +1372,8 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
   EventsMetricsManager events_metrics_manager_;
 
   std::unique_ptr<LCDTextMetricsReporter> lcd_text_metrics_reporter_;
+
+  FrameRateEstimator frame_rate_estimator_;
 
   // Must be the last member to ensure this is destroyed first in the
   // destruction order and invalidates all weak pointers.

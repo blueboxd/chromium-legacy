@@ -121,9 +121,8 @@ void ClipboardHostImpl::ReadAvailableTypes(
     ui::ClipboardBuffer clipboard_buffer,
     ReadAvailableTypesCallback callback) {
   std::vector<base::string16> types;
-  bool contains_filenames;
-  clipboard_->ReadAvailableTypes(clipboard_buffer, &types, &contains_filenames);
-  std::move(callback).Run(types, contains_filenames);
+  clipboard_->ReadAvailableTypes(clipboard_buffer, &types);
+  std::move(callback).Run(types);
 }
 
 void ClipboardHostImpl::IsFormatAvailable(blink::mojom::ClipboardFormat format,

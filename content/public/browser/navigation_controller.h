@@ -128,8 +128,16 @@ class NavigationController {
     // The url to load. This field is required.
     GURL url;
 
+    // The routing id of the initiator of the navigation if the
+    // navigation was initiated through trusted, non-web-influenced UI (e.g. via
+    // omnibox, the bookmarks bar, local NTP, etc.). This frame is not
+    // guaranteed to exist at any point during navigation. This can be an
+    // invalid id if the navigation was not associated with a frame, or if the
+    // initiating frame did not exist by the time navigation started.
+    GlobalFrameRoutingId initiator_routing_id;
+
     // The origin of the initiator of the navigation or base::nullopt if the
-    // navigation was initiated through through trusted, non-web-influenced UI
+    // navigation was initiated through trusted, non-web-influenced UI
     // (e.g. via omnibox, the bookmarks bar, local NTP, etc.).
     //
     // All renderer-initiated navigations must have a non-null

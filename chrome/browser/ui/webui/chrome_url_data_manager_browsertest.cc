@@ -290,3 +290,10 @@ IN_PROC_BROWSER_TEST_F(
     NoTrustedTypesViolationInPasswordManagerInternals) {
   CheckTrustedTypesViolation("chrome://password-manager-internals");
 }
+
+// Verify that there's no Trusted Types violation in chrome://media-internals
+IN_PROC_BROWSER_TEST_F(
+    ChromeURLDataManagerTestWithWebUIReportOnlyTrustedTypesEnabled,
+    NoTrustedTypesViolationInMediaInternals) {
+  CheckTrustedTypesViolation("chrome://media-internals");
+}

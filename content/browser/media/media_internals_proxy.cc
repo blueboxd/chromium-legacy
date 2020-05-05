@@ -22,18 +22,18 @@ MediaInternalsProxy::~MediaInternalsProxy() {}
 
 void MediaInternalsProxy::Attach(MediaInternalsMessageHandler* handler) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(!update_callback_);
 
-  handler_ = handler;
   update_callback_ =
-      base::BindRepeating(&MediaInternalsProxy::UpdateUIOnUIThread, this);
+      base::BindRepeating(&MediaInternalsProxy::UpdateUIOnUIThread, handler);
   MediaInternals::GetInstance()->AddUpdateCallback(update_callback_);
 }
 
 void MediaInternalsProxy::Detach() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  handler_ = nullptr;
   MediaInternals::GetInstance()->RemoveUpdateCallback(update_callback_);
+  update_callback_.Reset();
 }
 
 void MediaInternalsProxy::GetEverything() {
@@ -58,11 +58,12 @@ void MediaInternalsProxy::GetEverythingOnIOThread() {
   MediaInternals::GetInstance()->SendVideoCaptureDeviceCapabilities();
 }
 
-void MediaInternalsProxy::UpdateUIOnUIThread(const base::string16& update) {
+// static
+void MediaInternalsProxy::UpdateUIOnUIThread(
+    MediaInternalsMessageHandler* handler,
+    const base::string16& update) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  // Don't forward updates to a destructed UI.
-  if (handler_)
-    handler_->OnUpdate(update);
+  handler->OnUpdate(update);
 }
 
 }  // namespace content

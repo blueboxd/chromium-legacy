@@ -2,6 +2,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+# It's reasonable for unittests to be messing with protected members.
+# pylint: disable=protected-access
+
 import json
 import os
 import shutil
@@ -244,8 +247,8 @@ class GpuIntegrationTestUnittest(unittest.TestCase):
   def testIntegrationTestWithBrowserCrashUponStart(self):
     self._RunIntegrationTest(
         'browser_crash_after_start_integration_unittest', [],
-        [('unittest_data.integration_tests.BrowserCrashAfterStartTest.restart')
-         ], [], [])
+        ['unittest_data.integration_tests.BrowserCrashAfterStartTest.restart'],
+        [], [])
     self.assertEquals(self._test_state['num_browser_crashes'], 2)
     self.assertEquals(self._test_state['num_browser_starts'], 3)
 
@@ -341,8 +344,8 @@ class GpuIntegrationTestUnittest(unittest.TestCase):
     with mock.patch.object(
         gpu_integration_test.serially_executed_browser_test_case.\
             SeriallyExecutedBrowserTestCase,
-            'StartBrowser',
-            side_effect=SetBrowserAndRaiseTestException) as mock_start_browser:
+        'StartBrowser',
+        side_effect=SetBrowserAndRaiseTestException) as mock_start_browser:
       with mock.patch.object(gpu_integration_test.GpuIntegrationTest,
                              'StopBrowser') as mock_stop_browser:
         with self.assertRaises(TestException):

@@ -543,9 +543,16 @@
       status: "experimental",
     },
     {
-      // Perform partial style and layout invalidation on web font loading.
+      // Perform partial style invalidation on web font loading.
       // See https://crbug.com/441925 and https://bit.ly/35JjPmq for details.
       name: "CSSReducedFontLoadingInvalidations",
+      status: "test",
+      implied_by: ["CSSReducedFontLoadingLayoutInvalidations"],
+    },
+    {
+      // Perform partial layout invalidation on web font loading.
+      // See https://crbug.com/441925 and https://bit.ly/35JjPmq for details.
+      name: "CSSReducedFontLoadingLayoutInvalidations",
       status: "test",
     },
     {

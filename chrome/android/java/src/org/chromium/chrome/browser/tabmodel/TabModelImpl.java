@@ -107,11 +107,15 @@ public class TabModelImpl extends TabModelJniBridge {
 
     @Override
     public void destroy() {
-        // When reparenting tabs, only commit that tab closures and keep the rest of the tabs alive.
-        if (!mModelDelegate.isReparentingInProgress()) {
-            for (Tab tab : mTabs) {
-                if (tab.isInitialized()) tab.destroy();
+        for (Tab tab : mTabs) {
+            // When reparenting tabs, we skip destoying tabs that we're intentionally keeping in
+            // memory.
+            if (mModelDelegate.isReparentingInProgress()
+                    && AsyncTabParamsManager.hasParamsForTabId(tab.getId())) {
+                continue;
             }
+
+            if (tab.isInitialized()) tab.destroy();
         }
 
         mRewoundList.destroy();

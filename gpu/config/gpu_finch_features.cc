@@ -85,12 +85,6 @@ const base::Feature kMetal{"Metal", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kSharedImageManager{"SharedImageManager",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
 
-// For Windows only. Use overlay swapchain to present software protected videos
-// for all GPUs
-const base::Feature kUseDCOverlaysForSoftwareProtectedVideo{
-    "UseDCOverlaysForSoftwareProtectedVideo",
-    base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Controls the decode acceleration of JPEG images (as opposed to camera
 // captures) in Chrome OS using the VA-API.
 // TODO(andrescj): remove or enable by default in Chrome OS once

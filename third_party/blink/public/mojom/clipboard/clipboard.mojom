@@ -39,7 +39,7 @@ interface ClipboardHost {
   // Reads sanitized platform-neutral types.
   [Sync]
   ReadAvailableTypes(ClipboardBuffer buffer) =>
-      (array<mojo_base.mojom.String16> types, bool result);
+      (array<mojo_base.mojom.String16> types);
 
   [Sync]
   ReadText(ClipboardBuffer buffer) => (mojo_base.mojom.BigString16 result);

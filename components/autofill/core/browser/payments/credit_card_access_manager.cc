@@ -605,9 +605,18 @@ void CreditCardAccessManager::OnCVCAuthenticationComplete(
 #endif
 }
 
+#if defined(OS_ANDROID)
 bool CreditCardAccessManager::ShouldOfferFidoAuth() const {
-  return unmask_details_.offer_fido_opt_in;
+  // If the user opted-in through the settings page, do not show checkbox.
+  return unmask_details_.offer_fido_opt_in &&
+         opt_in_intention_ != UserOptInIntention::kIntentToOptIn;
 }
+
+bool CreditCardAccessManager::UserOptedInToFidoFromSettingsPageOnMobile()
+    const {
+  return opt_in_intention_ == UserOptInIntention::kIntentToOptIn;
+}
+#endif
 
 #if !defined(OS_IOS)
 void CreditCardAccessManager::OnFIDOAuthenticationComplete(

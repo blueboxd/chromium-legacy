@@ -5,6 +5,7 @@
 #include "components/autofill/core/browser/payments/credit_card_cvc_authenticator.h"
 
 #include "base/strings/string16.h"
+#include "build/build_config.h"
 #include "components/autofill/core/browser/autofill_client.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill/core/browser/payments/full_card_request.h"
@@ -70,9 +71,16 @@ void CreditCardCVCAuthenticator::OnUnmaskVerificationResult(
   client_->OnUnmaskVerificationResult(result);
 }
 
+#if defined(OS_ANDROID)
 bool CreditCardCVCAuthenticator::ShouldOfferFidoAuth() const {
   return requester_ && requester_->ShouldOfferFidoAuth();
 }
+
+bool CreditCardCVCAuthenticator::UserOptedInToFidoFromSettingsPageOnMobile()
+    const {
+  return requester_ && requester_->UserOptedInToFidoFromSettingsPageOnMobile();
+}
+#endif
 
 payments::FullCardRequest* CreditCardCVCAuthenticator::GetFullCardRequest() {
   // TODO(crbug.com/951669): iOS and Android clients should use

@@ -310,8 +310,8 @@ class CloudPolicyClientTest : public testing::Test {
             &url_loader_factory_);
     client_ = std::make_unique<CloudPolicyClient>(
         kMachineID, kMachineModel, kBrandCode, kEthernetMacAddress,
-        kDockMacAddress, kManufactureDate, &service_,
-        shared_url_loader_factory_, &fake_signing_service_,
+        kDockMacAddress, kManufactureDate, &fake_signing_service_, &service_,
+        shared_url_loader_factory_,
         base::BindRepeating(
             &MockDeviceDMTokenCallbackObserver::OnDeviceDMTokenRequested,
             base::Unretained(&device_dmtoken_callback_observer_)));

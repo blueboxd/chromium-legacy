@@ -19,7 +19,6 @@ import org.chromium.base.Log;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
-import org.chromium.components.browser_ui.notifications.NotificationBuilder;
 import org.chromium.components.browser_ui.notifications.NotificationManagerProxy;
 import org.chromium.components.browser_ui.notifications.NotificationManagerProxyImpl;
 import org.chromium.components.browser_ui.notifications.NotificationMetadata;
@@ -345,8 +344,8 @@ public final class DownloadImpl extends IDownload.Stub {
                 ? WebLayerNotificationChannels.ChannelId.COMPLETED_DOWNLOADS
                 : WebLayerNotificationChannels.ChannelId.ACTIVE_DOWNLOADS;
 
-        NotificationBuilder builder =
-                new NotificationBuilder(context, channelId, channelsInitializer,
+        WebLayerNotificationBuilder builder =
+                new WebLayerNotificationBuilder(context, channelId, channelsInitializer,
                         new NotificationMetadata(0, NOTIFICATION_TAG, mNotificationId));
         builder.setOngoing(true)
                 .setDeleteIntent(deletePendingIntent)

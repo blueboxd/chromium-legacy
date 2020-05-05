@@ -646,6 +646,7 @@ TEST(CTAPResponseTest, TestSerializeGetInfoResponse) {
 
 TEST(CTAPResponseTest, TestSerializeMakeCredentialResponse) {
   constexpr uint8_t kCoseEncodedPublicKey[] = {
+      // clang-format off
       // map(3)
       0xa3,
       //   "x"
@@ -664,6 +665,7 @@ TEST(CTAPResponseTest, TestSerializeMakeCredentialResponse) {
       0x63, 0x61, 0x6c, 0x67,
       //   "ES256"
       0x65, 0x45, 0x53, 0x32, 0x35, 0x36,
+      // clang-format on
   };
 
   const auto application_parameter =

@@ -190,6 +190,8 @@ BubbleDialogDelegateView::BubbleDialogDelegateView(View* anchor_view,
                                                    BubbleBorder::Arrow arrow,
                                                    BubbleBorder::Shadow shadow)
     : shadow_(shadow) {
+  WidgetDelegate::SetShowCloseButton(false);
+
   SetArrow(arrow);
   LayoutProvider* provider = LayoutProvider::Get();
   // An individual bubble should override these margins if its layout differs
@@ -209,10 +211,6 @@ BubbleDialogDelegateView::~BubbleDialogDelegateView() {
 
 BubbleDialogDelegateView* BubbleDialogDelegateView::AsBubbleDialogDelegate() {
   return this;
-}
-
-bool BubbleDialogDelegateView::ShouldShowCloseButton() const {
-  return false;
 }
 
 NonClientFrameView* BubbleDialogDelegateView::CreateNonClientFrameView(

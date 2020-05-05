@@ -130,6 +130,7 @@ bool ProofSourceChromium::GetProofInner(
 }
 
 void ProofSourceChromium::GetProof(const quic::QuicSocketAddress& server_addr,
+                                   const quic::QuicSocketAddress& client_addr,
                                    const std::string& hostname,
                                    const std::string& server_config,
                                    quic::QuicTransportVersion quic_version,
@@ -149,12 +150,14 @@ void ProofSourceChromium::GetProof(const quic::QuicSocketAddress& server_addr,
 
 quic::QuicReferenceCountedPointer<quic::ProofSource::Chain>
 ProofSourceChromium::GetCertChain(const quic::QuicSocketAddress& server_address,
+                                  const quic::QuicSocketAddress& client_address,
                                   const std::string& hostname) {
   return chain_;
 }
 
 void ProofSourceChromium::ComputeTlsSignature(
     const quic::QuicSocketAddress& server_address,
+    const quic::QuicSocketAddress& client_address,
     const std::string& hostname,
     uint16_t signature_algorithm,
     quiche::QuicheStringPiece in,

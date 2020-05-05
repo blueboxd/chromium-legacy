@@ -7,6 +7,8 @@
 #include "build/build_config.h"
 #include "third_party/blink/renderer/platform/fonts/font_cache.h"
 #include "third_party/blink/renderer/platform/fonts/font_description.h"
+#include "third_party/blink/renderer/platform/fonts/font_fallback_list.h"
+#include "third_party/blink/renderer/platform/fonts/font_fallback_map.h"
 #include "third_party/blink/renderer/platform/fonts/generic_font_family_settings.h"
 
 namespace blink {
@@ -45,6 +47,14 @@ AtomicString FontSelector::FamilyNameFromSettings(
     return settings.Standard(script);
 #endif
   return g_empty_atom;
+}
+
+FontSelector::FontSelector()
+    : font_fallback_map_(MakeGarbageCollected<FontFallbackMap>(this)) {}
+
+void FontSelector::Trace(Visitor* visitor) {
+  visitor->Trace(font_fallback_map_);
+  FontCacheClient::Trace(visitor);
 }
 
 }  // namespace blink

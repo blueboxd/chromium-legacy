@@ -9,6 +9,7 @@ import("//chrome/common/features.gni")
 import("//chrome/test/base/js2gtest.gni")
 import("//testing/test.gni")
 import("//third_party/closure_compiler/compile_js.gni")
+import("//third_party/closure_compiler/js_unit_tests.gni")
 
 assert(is_chromeos || is_chromecast)
 
@@ -23,6 +24,7 @@ run_jsbundler("accessibility_common_copied_files") {
   mode = "copy"
   dest_dir = accessibility_common_out_dir
   sources = [
+    "array_util.js",
     "automation_predicate.js",
     "automation_util.js",
     "closure_shim.js",
@@ -42,6 +44,10 @@ js_library("tree_walker") {
     "$externs_path/automation.js",
     "$externs_path/chrome_extensions.js",
   ]
+}
+
+js_library("array_util") {
+  sources = [ "array_util.js" ]
 }
 
 js_library("automation_predicate") {
@@ -100,6 +106,7 @@ source_set("browser_tests") {
 js2gtest("accessibility_tests") {
   test_type = "extension"
   sources = [
+    "array_util_test.js",
     "automation_util_test.js",
     "tree_walker_test.js",
   ]
@@ -109,6 +116,7 @@ js2gtest("accessibility_tests") {
     "../chromevox/testing/chromevox_e2e_test_base.js",
     "../chromevox/testing/chromevox_next_e2e_test_base.js",
     "../chromevox/testing/mock_feedback.js",
+    "array_util.js",
   ]
 
   if (is_chromeos) {

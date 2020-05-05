@@ -2,13 +2,17 @@ This is a testharness.js-based test.
 PASS Commits styles
 PASS Commits styles for an animation that has been removed
 PASS Commits shorthand styles
-FAIL Commits logical properties assert_equals: expected "20px" but got "10px"
+PASS Commits logical properties
+FAIL Commits logical properties as physical properties assert_equals: expected "20px" but got "10px"
 PASS Commits values calculated mid-interval
 PASS Commits variable references as their computed values
 PASS Commits custom variables
 PASS Commits em units as pixel values
+PASS Commits relative line-height
 PASS Commits transforms
-FAIL Commits computed transform assert_equals: expected "translate(20px, 20px)" but got "matrix(1, 0, 0, 1, 20, 20)"
+PASS Commits transforms as a transform list
+PASS Commits matrix-interpolated relative transforms
+PASS Commits "none" transform
 PASS Commits the intermediate value of an animation in the middle of stack
 PASS Commit composites on top of the underlying value
 PASS Triggers mutation observers when updating style

@@ -87,6 +87,11 @@ public final class WebLayerImpl extends IWebLayer.Stub {
     public static final String PREF_LAST_VERSION_CODE =
             "org.chromium.weblayer.last_version_code_used";
 
+    // The required package ID for WebLayer when loaded as a shared library, hardcoded in the
+    // resources. If this value changes make sure to change _SHARED_LIBRARY_HARDCODED_ID in
+    // compile_resources.py.
+    private static final int REQUIRED_PACKAGE_IDENTIFIER = 12;
+
     private final ProfileManager mProfileManager = new ProfileManager();
 
     private boolean mInited;
@@ -205,15 +210,9 @@ public final class WebLayerImpl extends IWebLayer.Stub {
         }
 
         BuildInfo.setBrowserPackageInfo(packageInfo);
-        int resourcesPackageId = getPackageId(appContext, packageInfo.packageName);
-        if (resourcesPackageId < 0x7f && resourcesPackageId != 2) {
-            throw new AndroidRuntimeException(
-                    "WebLayer can't be used with another shared library. Loaded packages: "
-                    + getLoadedPackageNames(appContext));
-        }
         // TODO: The call to onResourcesLoaded() can be slow, we may need to parallelize this with
         // other expensive startup tasks.
-        R.onResourcesLoaded(resourcesPackageId);
+        R.onResourcesLoaded(forceCorrectPackageId(remoteContext));
         SelectionPopupController.setMustUseWebContentsContext();
 
         ResourceBundle.setAvailablePakLocales(new String[] {}, ProductConfig.UNCOMPRESSED_LOCALES);
@@ -366,6 +365,33 @@ public final class WebLayerImpl extends IWebLayer.Stub {
     }
 
     /**
+     * Converts the given id into a resource ID that can be shown in system UI, such as
+     * notifications.
+     */
+    public static int getResourceIdForSystemUi(int id) {
+        if (isAndroidResource(id)) {
+            return id;
+        }
+
+        Context context = ContextUtils.getApplicationContext();
+        // String may be missing translations, since they are loaded at a different package ID
+        // by default in standalone WebView.
+        assert !context.getResources().getResourceTypeName(id).equals("string");
+        id &= 0x00ffffff;
+        id |= (0x01000000
+                * getPackageId(context, WebViewFactory.getLoadedPackageInfo().packageName));
+        return id;
+    }
+
+    /** Returns whether this ID is from the android system package. */
+    public static boolean isAndroidResource(int id) {
+        return ContextUtils.getApplicationContext()
+                .getResources()
+                .getResourcePackageName(id)
+                .equals("android");
+    }
+
+    /**
      * Performs the minimal initialization needed for a context. This is used for example in
      * CrashReporterControllerImpl, so it can be used before full WebLayer initialization.
      */
@@ -385,6 +411,41 @@ public final class WebLayerImpl extends IWebLayer.Stub {
         ContextUtils.initApplicationContext(appContext);
         PathUtils.setPrivateDataDirectorySuffix(PRIVATE_DIRECTORY_SUFFIX, PRIVATE_DIRECTORY_SUFFIX);
         return appContext;
+    }
+
+    /** Forces the correct package ID or dies with a runtime exception. */
+    private static int forceCorrectPackageId(Context remoteContext) {
+        int packageId = getPackageId(remoteContext, remoteContext.getPackageName());
+        // This is using app_as_shared_lib, no change needed.
+        if (packageId >= 0x7f) {
+            return packageId;
+        }
+
+        if (packageId > REQUIRED_PACKAGE_IDENTIFIER) {
+            throw new AndroidRuntimeException(
+                    "WebLayer can't be used with other shared libraries. Loaded packages: "
+                    + getLoadedPackageNames(remoteContext));
+        }
+
+        forceAddAssetPaths(remoteContext, packageId);
+
+        return REQUIRED_PACKAGE_IDENTIFIER;
+    }
+
+    /** Forces adding entries to the package identifiers array until we hit the required ID. */
+    private static void forceAddAssetPaths(Context remoteContext, int packageId) {
+        try {
+            Method addAssetPath = AssetManager.class.getMethod("addAssetPath", String.class);
+            String path = remoteContext.getApplicationInfo().sourceDir;
+            // Add enough paths to make sure we reach the required ID.
+            for (int i = packageId; i < REQUIRED_PACKAGE_IDENTIFIER; i++) {
+                // Change the path to ensure the asset path is re-added and grabs a new package ID.
+                path = "/." + path;
+                addAssetPath.invoke(remoteContext.getAssets(), path);
+            }
+        } catch (ReflectiveOperationException e) {
+            throw new AndroidRuntimeException(e);
+        }
     }
 
     /**
@@ -432,7 +493,9 @@ public final class WebLayerImpl extends IWebLayer.Stub {
                 if (key == 1) {
                     continue;
                 }
-                packageNames.add(name + ":" + key);
+
+                // Make sure this doesn't look like a URL so it doesn't get removed from crashes.
+                packageNames.add(name.replace(".", "_") + " -> " + key);
             }
             return TextUtils.join(",", packageNames);
         } catch (ReflectiveOperationException e) {

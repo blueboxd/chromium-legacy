@@ -2630,9 +2630,8 @@ bool RenderViewContextMenu::IsPasteEnabled() const {
     return false;
 
   std::vector<base::string16> types;
-  bool ignore;
   ui::Clipboard::GetForCurrentThread()->ReadAvailableTypes(
-      ui::ClipboardBuffer::kCopyPaste, &types, &ignore);
+      ui::ClipboardBuffer::kCopyPaste, &types);
   return !types.empty();
 }
 

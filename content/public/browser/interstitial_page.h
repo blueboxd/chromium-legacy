@@ -15,7 +15,6 @@ class Size;
 
 namespace content {
 
-class InterstitialPageDelegate;
 class RenderFrameHost;
 class WebContents;
 
@@ -42,11 +41,9 @@ class InterstitialPage {
   // ownership of |delegate|.
   //
   // Reloading the interstitial page will result in a new navigation to |url|.
-  CONTENT_EXPORT static InterstitialPage* Create(
-      WebContents* web_contents,
-      bool new_navigation,
-      const GURL& url,
-      InterstitialPageDelegate* delegate);
+  CONTENT_EXPORT static InterstitialPage* Create(WebContents* web_contents,
+                                                 bool new_navigation,
+                                                 const GURL& url);
 
   // Returns the InterstitialPage, if any, associated with the specified
   // |web_contents|. Note: This returns a value from the time the interstitial
@@ -98,7 +95,6 @@ class InterstitialPage {
   // frame. May return nullptr if the interstitial is already hidden.
   virtual RenderFrameHost* GetMainFrame() = 0;
 
-  virtual InterstitialPageDelegate* GetDelegateForTesting() = 0;
   virtual void DontCreateViewForTesting() = 0;
 };
 

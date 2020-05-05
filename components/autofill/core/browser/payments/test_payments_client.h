@@ -35,6 +35,11 @@ class TestPaymentsClient : public payments::PaymentsClient {
                               PaymentsClient::UnmaskDetails&)> callback,
       const std::string& app_locale) override;
 
+  void UnmaskCard(
+      const UnmaskRequestDetails& unmask_request_,
+      base::OnceCallback<void(AutofillClient::PaymentsRpcResult,
+                              UnmaskResponseDetails&)> callback) override;
+
   void GetUploadDetails(
       const std::vector<AutofillProfile>& addresses,
       const int detected_values,
@@ -82,6 +87,9 @@ class TestPaymentsClient : public payments::PaymentsClient {
   payments::PaymentsClient::UnmaskDetails* unmask_details() {
     return &unmask_details_;
   }
+  const payments::PaymentsClient::UnmaskRequestDetails* unmask_request() {
+    return unmask_request_;
+  }
   int detected_values_in_upload_details() const { return detected_values_; }
   const std::vector<AutofillProfile>& addresses_in_upload_details() const {
     return upload_details_addresses_;
@@ -105,6 +113,8 @@ class TestPaymentsClient : public payments::PaymentsClient {
   // useful to control whether or not GetUnmaskDetails() is responded to.
   bool should_return_unmask_details_ = true;
   payments::PaymentsClient::UnmaskDetails unmask_details_;
+  const payments::PaymentsClient::UnmaskRequestDetails* unmask_request_ =
+      nullptr;
   std::vector<std::pair<int, int>> supported_card_bin_ranges_;
   std::vector<AutofillProfile> upload_details_addresses_;
   std::vector<AutofillProfile> upload_card_addresses_;

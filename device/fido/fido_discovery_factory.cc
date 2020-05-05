@@ -4,8 +4,8 @@
 
 #include "device/fido/fido_discovery_factory.h"
 
+#include "base/logging.h"
 #include "base/notreached.h"
-#include "device/fido/ble/fido_ble_discovery.h"
 #include "device/fido/cable/fido_cable_discovery.h"
 #include "device/fido/features.h"
 #include "device/fido/fido_discovery_base.h"
@@ -57,7 +57,7 @@ std::unique_ptr<FidoDiscoveryBase> FidoDiscoveryFactory::Create(
     case FidoTransportProtocol::kUsbHumanInterfaceDevice:
       return CreateUsbFidoDiscovery();
     case FidoTransportProtocol::kBluetoothLowEnergy:
-      return std::make_unique<FidoBleDiscovery>();
+      return nullptr;
     case FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy:
       if (request_state_.cable_data_.has_value() ||
           request_state_.qr_generator_key_.has_value()) {

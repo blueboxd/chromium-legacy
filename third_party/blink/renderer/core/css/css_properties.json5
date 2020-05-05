@@ -110,6 +110,16 @@
       valid_type: "bool",
     },
 
+    // - semi_independent_variable
+    // This property affects to the {Inherited, NonInherited}Variable data fields so that we
+    // can assume that the custom properties might not depend on any other property. We can
+    // handle these properties so that they are excluded from the shared Inherited/NohInherited
+    // logic, like the Equal and inheritance functions.
+    semi_independent_variable: {
+      default: false,
+      valid_type: "bool",
+    },
+
     // - affected_by_all
     // The affected_by_all flag indicates whether a change to the CSS property
     // "all" affects this property.

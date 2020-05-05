@@ -131,6 +131,9 @@ bool AsyncLayerTreeFrameSink::BindToClient(LayerTreeFrameSinkClient* client) {
   if (wants_animate_only_begin_frames_)
     compositor_frame_sink_->SetWantsAnimateOnlyBeginFrames();
 
+  compositor_frame_sink_ptr_->InitializeCompositorFrameSinkType(
+      viz::mojom::CompositorFrameSinkType::kLayerTree);
+
   return true;
 }
 

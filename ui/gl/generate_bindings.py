@@ -2895,6 +2895,9 @@ FUNCTION_SETS = [
       'GLES2/gl2chromium.h',
       'GLES2/gl2extchromium.h'
     ], [
+      "GL_ARB_texture_swizzle",
+      "GL_EXT_texture_swizzle",
+      "GL_EXT_texture_format_BGRA8888",
       "GL_EXT_unpack_subimage",
     ]
   ],

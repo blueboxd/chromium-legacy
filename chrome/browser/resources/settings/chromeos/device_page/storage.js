@@ -59,6 +59,13 @@ cr.define('settings', function() {
         }
       },
 
+      allowDlcSubpage_: {
+        type: Boolean,
+        value: () => loadTimeData.getBoolean('allowDlcSubpage') &&
+            !loadTimeData.getBoolean('isGuest'),
+        readOnly: true,
+      },
+
       /** @private {settings.StorageSizeStat} */
       sizeStat_: Object,
     },
@@ -105,6 +112,7 @@ cr.define('settings', function() {
       this.addFocusConfig_(r.ACCOUNTS, '#otherUsersSize');
       this.addFocusConfig_(
           r.EXTERNAL_STORAGE_PREFERENCES, '#externalStoragePreferences');
+      this.addFocusConfig_(r.DOWNLOADED_CONTENT, '#downloadedContent');
     },
 
     /**
@@ -184,6 +192,15 @@ cr.define('settings', function() {
     onExternalStoragePreferencesTap_() {
       settings.Router.getInstance().navigateTo(
           settings.routes.EXTERNAL_STORAGE_PREFERENCES);
+    },
+
+    /**
+     * Handler for clicking the "Manage downloaded content" item.
+     * @private
+     */
+    onDownloadedContentClick_() {
+      settings.Router.getInstance().navigateTo(
+          settings.routes.DOWNLOADED_CONTENT);
     },
 
     /**

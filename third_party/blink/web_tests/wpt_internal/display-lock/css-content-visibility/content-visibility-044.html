@@ -1,37 +1,32 @@
 <!doctype HTML>
-<html class="reftest-wait">
+<html>
 <meta charset="utf8">
-<title>Content Visibility: pseudo elements</title>
-<link rel="author" title="Rakina Zata Amni" href="mailto:rakina@chromium.org">
+<title>Content Visibility: slot moved after container is hidden</title>
+<link rel="author" title="Vladimir Levin" href="mailto:vmpstr@chromium.org">
 <link rel="help" href="https://github.com/WICG/display-locking">
-<link rel="match" href="content-visibility-044-ref.html">
-<meta name="assert" content="content-visibility elements paints ::before and ::after when hidden is removed">
+<meta name="assert" content="ensure that hidden slotted element can be updated">
 
-<script src="/common/reftest-wait.js"></script>
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
 
-<style>
-#container::before {
-  content: "a";
-  color: blue;
-}
-.hasAfter::after {
-  content: "b";
-  color: green;
-}
-.hidden {
-  content-visibility: hidden;
-}
-</style>
-<div id="container" class=hidden style="display:none;"></div>
-
+<div id=host>
+<input id=slotted>
 <script>
-async function runTest() {
-  container.classList.add("hasAfter");
-  container.classList.remove("hidden");
-  container.style = "";
-  requestAnimationFrame(takeScreenshot);
-}
 
-window.onload = runTest;
+async_test((t) => {
+  let container = document.createElement("div");
+  container.innerHTML = "<slot></slot>";
+  let shadowRoot = host.attachShadow({ mode: "open" });
+  shadowRoot.innerHTML = "<style>.hidden { content-visibility: hidden }</style>";
+  shadowRoot.appendChild(container);
+
+  t.step(async () => {
+    container.classList.add("hidden");
+    requestAnimationFrame(() => {
+      assert_equals(slotted.offsetTop, 0);
+      container.innerHTML = "<div style='height: 20px;'></div><slot></slot>";
+      t.done();
+    });
+  });
+});
 </script>
-</html>

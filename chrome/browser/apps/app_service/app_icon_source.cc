@@ -11,6 +11,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/apps/app_service/dip_px_util.h"
@@ -51,6 +52,14 @@ void RunCallback(content::URLDataSource::GotDataCallback callback,
 AppIconSource::AppIconSource(Profile* profile) : profile_(profile) {}
 
 AppIconSource::~AppIconSource() = default;
+
+// static
+GURL AppIconSource::GetIconURL(const std::string& app_id, int icon_size) {
+  GURL icon_url(base::StringPrintf("%s%s/%d", chrome::kChromeUIAppIconURL,
+                                   app_id.c_str(), icon_size));
+  CHECK(icon_url.is_valid());
+  return icon_url;
+}
 
 std::string AppIconSource::GetSource() {
   return chrome::kChromeUIAppIconHost;

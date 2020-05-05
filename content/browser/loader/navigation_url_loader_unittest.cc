@@ -22,6 +22,7 @@
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/test/test_navigation_url_loader_delegate.h"
+#include "ipc/ipc_message.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/cert/cert_status_flags.h"
@@ -57,6 +58,7 @@ class NavigationURLLoaderTest : public testing::Test {
       NavigationURLLoaderDelegate* delegate) {
     mojom::BeginNavigationParamsPtr begin_params =
         mojom::BeginNavigationParams::New(
+            MSG_ROUTING_NONE /* initiator_routing_id */,
             std::string() /* headers */, net::LOAD_NORMAL,
             false /* skip_service_worker */,
             blink::mojom::RequestContextType::LOCATION,

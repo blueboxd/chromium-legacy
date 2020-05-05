@@ -35,7 +35,8 @@ class CaptionHostImpl : public chrome::mojom::CaptionHost {
       mojo::PendingReceiver<chrome::mojom::CaptionHost> receiver);
 
   // chrome::mojom::CaptionHost:
-  void OnTranscription(const std::string& transcription) override;
+  void OnTranscription(
+      chrome::mojom::TranscriptionResultPtr transcription_result) override;
 
  private:
   content::RenderFrameHost* frame_host_;

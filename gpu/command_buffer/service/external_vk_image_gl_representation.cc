@@ -7,7 +7,6 @@
 #include <utility>
 #include <vector>
 
-#include "base/posix/eintr_wrapper.h"
 #include "build/build_config.h"
 #include "gpu/vulkan/vulkan_function_pointers.h"
 #include "gpu/vulkan/vulkan_implementation.h"
@@ -81,14 +80,7 @@ bool ExternalVkImageGLRepresentationShared::BeginAccess(GLenum mode) {
          mode == GL_SHARED_IMAGE_ACCESS_MODE_READWRITE_CHROMIUM);
   const bool readonly = (mode == GL_SHARED_IMAGE_ACCESS_MODE_READ_CHROMIUM);
 
-  if (!readonly && backing_impl()->format() == viz::ResourceFormat::BGRA_8888) {
-    NOTIMPLEMENTED()
-        << "BeginAccess write on a BGRA_8888 backing is not supported.";
-    return false;
-  }
-
   std::vector<SemaphoreHandle> handles;
-
   if (!backing_impl()->BeginAccess(readonly, &handles, true /* is_gl */))
     return false;
 
@@ -127,7 +119,7 @@ void ExternalVkImageGLRepresentationShared::EndAccess() {
   VkSemaphore semaphore = VK_NULL_HANDLE;
   SemaphoreHandle semaphore_handle;
   GLuint gl_semaphore = 0;
-  if (backing_impl()->need_sychronization()) {
+  if (backing_impl()->need_synchronization()) {
     semaphore =
         vk_implementation()->CreateExternalSemaphore(backing_impl()->device());
     if (semaphore == VK_NULL_HANDLE) {
@@ -166,7 +158,7 @@ void ExternalVkImageGLRepresentationShared::EndAccess() {
   auto result = backing_impl()->backend_texture().getVkImageInfo(&info);
   DCHECK(result);
   GLenum dst_layout = ToGLImageLayout(info.fImageLayout);
-  if (backing_impl()->need_sychronization()) {
+  if (backing_impl()->need_synchronization()) {
     api()->glSignalSemaphoreEXTFn(gl_semaphore, 0, nullptr, 1,
                                   &texture_service_id_, &dst_layout);
     api()->glDeleteSemaphoresEXTFn(1, &gl_semaphore);

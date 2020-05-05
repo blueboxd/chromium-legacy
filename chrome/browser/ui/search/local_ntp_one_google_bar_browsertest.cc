@@ -36,6 +36,8 @@ class FakeOneGoogleBarLoader : public OneGoogleBarLoader {
 
   GURL GetLoadURLForTesting() const override { return GURL(); }
 
+  bool SetOgdebValue(const std::string& value) override { return false; }
+
   void set_one_google_bar_data(
       const base::Optional<OneGoogleBarData>& one_google_bar_data) {
     one_google_bar_data_ = one_google_bar_data;

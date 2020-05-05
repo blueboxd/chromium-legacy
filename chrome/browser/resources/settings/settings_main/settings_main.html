@@ -1,4 +1,4 @@
-    <style include="cr-hidden-style settings-shared">
+    <style include="cr-shared-style cr-hidden-style settings-shared">
       #overscroll {
         margin-top: 64px;
       }
@@ -42,7 +42,9 @@
       <managed-footnote></managed-footnote>
     </template>
     <template is="dom-if" if="[[showPages_.settings]]">
-      <settings-basic-page prefs="{{prefs}}"
+      <settings-basic-page
+          class="cr-centered-card-container"
+          prefs="{{prefs}}"
           page-visibility="[[pageVisibility]]"
           on-showing-section="onShowingSection_"
           on-subpage-expand="onShowingSubpage_"
@@ -53,6 +55,7 @@
     </template>
     <template is="dom-if" if="[[showPages_.about]]">
       <settings-about-page role="main"
+          class="cr-centered-card-container"
           in-search-mode="[[inSearchMode_]]"
           on-subpage-expand="onShowingSubpage_"
           on-showing-main-page="onShowingMainPage_"

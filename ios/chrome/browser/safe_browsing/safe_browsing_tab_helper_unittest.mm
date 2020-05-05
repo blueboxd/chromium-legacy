@@ -195,6 +195,21 @@ TEST_P(SafeBrowsingTabHelperTest, RepeatedRequestsGetDistinctResponse) {
             response_decision2.GetDisplayError());
 }
 
+// Tests the case of a request and response with URLs that have an unsupported
+// scheme.
+TEST_P(SafeBrowsingTabHelperTest, RequestAndResponseWithUnsupportedScheme) {
+  GURL request_url("blob:http://chromium.test/123");
+  EXPECT_TRUE(ShouldAllowRequestUrl(request_url).ShouldAllowNavigation());
+
+  if (SafeBrowsingDecisionArrivesBeforeResponse())
+    base::RunLoop().RunUntilIdle();
+
+  GURL response_url("blob:http://chromium.test/456");
+  web::WebStatePolicyDecider::PolicyDecision response_decision =
+      ShouldAllowResponseUrl(response_url);
+  EXPECT_TRUE(response_decision.ShouldAllowNavigation());
+}
+
 INSTANTIATE_TEST_SUITE_P(
     /* No InstantiationName */,
     SafeBrowsingTabHelperTest,

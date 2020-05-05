@@ -61,7 +61,9 @@
       <managed-footnote show-device-info></managed-footnote>
     </template>
     <template is="dom-if" if="[[showPages_.settings]]">
-      <os-settings-page prefs="{{prefs}}"
+      <os-settings-page
+          class="cr-centered-card-container"
+          prefs="{{prefs}}"
           page-visibility="[[pageVisibility]]"
           show-android-apps="[[showAndroidApps]]"
           show-crostini="[[showCrostini]]"
@@ -77,6 +79,7 @@
     </template>
     <template is="dom-if" if="[[showPages_.about]]">
       <os-settings-about-page role="main"
+          class="cr-centered-card-container"
           in-search-mode="[[inSearchMode_]]"
           on-subpage-expand="onShowingSubpage_"
           on-showing-main-page="onShowingMainPage_"

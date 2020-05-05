@@ -242,7 +242,7 @@ class CanvasResourceProviderSharedImage : public CanvasResourceProvider {
     if (IsGpuContextLost())
       return nullptr;
 
-    return CanvasResourceSharedImage::Create(
+    return CanvasResourceRasterSharedImage::Create(
         Size(), ContextProviderWrapper(), CreateWeakPtr(), FilterQuality(),
         ColorParams(), IsOriginTopLeft(), is_accelerated_,
         shared_image_usage_flags_);
@@ -345,19 +345,16 @@ class CanvasResourceProviderSharedImage : public CanvasResourceProvider {
       EnsureWriteAccess();
       if (surface_) {
         // Take read access to the outgoing resource for the skia copy below.
-        if (!old_resource_shared_image->has_read_access()) {
-          RasterInterface()->BeginSharedImageAccessDirectCHROMIUM(
-              old_resource_shared_image->GetTextureIdForReadAccess(),
-              GL_SHARED_IMAGE_ACCESS_MODE_READ_CHROMIUM);
+        if (!old_resource_shared_image->HasReadAccess()) {
+          old_resource_shared_image->BeginReadAccess();
         }
         UMA_HISTOGRAM_BOOLEAN("Blink.Canvas.ContentChangeMode",
                               mode_ == SkSurface::kRetain_ContentChangeMode);
         surface_->replaceBackendTexture(CreateGrTextureForResource(),
                                         GetGrSurfaceOrigin(), mode_);
         mode_ = SkSurface::kRetain_ContentChangeMode;
-        if (!old_resource_shared_image->has_read_access()) {
-          RasterInterface()->EndSharedImageAccessDirectCHROMIUM(
-              old_resource_shared_image->GetTextureIdForReadAccess());
+        if (!old_resource_shared_image->HasReadAccess()) {
+          old_resource_shared_image->EndReadAccess();
         }
       }
     }
@@ -420,7 +417,7 @@ class CanvasResourceProviderSharedImage : public CanvasResourceProvider {
       return false;
 
     // If the resource was lost, we can not use it for writes again.
-    if (resource()->is_lost())
+    if (resource()->IsLost())
       return true;
 
     // We have the only ref to the resource which implies there are no active
@@ -460,12 +457,7 @@ class CanvasResourceProviderSharedImage : public CanvasResourceProvider {
   GrBackendTexture CreateGrTextureForResource() const {
     DCHECK(is_accelerated_);
 
-    GrGLTextureInfo texture_info = {};
-    texture_info.fID = resource()->GetTextureIdForWriteAccess();
-    texture_info.fTarget = resource()->TextureTarget();
-    texture_info.fFormat = ColorParams().GLSizedInternalFormat();
-    return GrBackendTexture(Size().Width(), Size().Height(), GrMipMapped::kNo,
-                            texture_info);
+    return resource()->CreateGrTexture();
   }
 
   void FlushGrContext() {
@@ -498,9 +490,7 @@ class CanvasResourceProviderSharedImage : public CanvasResourceProvider {
       return;
 
     if (is_accelerated_) {
-      auto texture_id = resource()->GetTextureIdForWriteAccess();
-      RasterInterface()->BeginSharedImageAccessDirectCHROMIUM(
-          texture_id, GL_SHARED_IMAGE_ACCESS_MODE_READWRITE_CHROMIUM);
+      resource()->BeginWriteAccess();
     }
 
     // For the non-accelerated path, we don't need a texture for writes since
@@ -524,8 +514,7 @@ class CanvasResourceProviderSharedImage : public CanvasResourceProvider {
       mode_ = SkSurface::kRetain_ContentChangeMode;
       // Issue any skia work using this resource before releasing write access.
       FlushGrContext();
-      auto texture_id = resource()->GetTextureIdForWriteAccess();
-      RasterInterface()->EndSharedImageAccessDirectCHROMIUM(texture_id);
+      resource()->EndWriteAccess();
     } else {
       if (DoCopyOnWrite())
         resource_ = NewOrRecycledResource();

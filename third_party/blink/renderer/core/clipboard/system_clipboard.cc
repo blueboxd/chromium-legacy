@@ -84,8 +84,7 @@ Vector<String> SystemClipboard::ReadAvailableTypes() {
   if (!IsValidBufferType(buffer_))
     return {};
   Vector<String> types;
-  bool contains_filenames;  // Unused argument.
-  clipboard_->ReadAvailableTypes(buffer_, &types, &contains_filenames);
+  clipboard_->ReadAvailableTypes(buffer_, &types);
   return types;
 }
 

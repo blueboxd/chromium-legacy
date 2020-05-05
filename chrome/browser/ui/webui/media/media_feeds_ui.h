@@ -35,7 +35,6 @@ class MediaFeedsUI : public ui::MojoWebUIController,
   void GetItemsForMediaFeed(int64_t feed_id,
                             GetItemsForMediaFeedCallback callback) override;
   void FetchMediaFeed(int64_t feed_id,
-                      const GURL& url,
                       FetchMediaFeedCallback callback) override;
 
  private:

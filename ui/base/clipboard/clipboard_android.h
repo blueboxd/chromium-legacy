@@ -63,8 +63,7 @@ class ClipboardAndroid : public Clipboard {
                          ClipboardBuffer buffer) const override;
   void Clear(ClipboardBuffer buffer) override;
   void ReadAvailableTypes(ClipboardBuffer buffer,
-                          std::vector<base::string16>* types,
-                          bool* contains_filenames) const override;
+                          std::vector<base::string16>* types) const override;
   std::vector<base::string16> ReadAvailablePlatformSpecificFormatNames(
       ClipboardBuffer buffer) const override;
   void ReadText(ClipboardBuffer buffer, base::string16* result) const override;

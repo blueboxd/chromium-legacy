@@ -276,6 +276,7 @@ def _create_property_field(property_):
         property_name=property_['name'].original,
         inherited=property_['inherited'],
         independent=property_['independent'],
+        semi_independent_variable=property_['semi_independent_variable'],
         type_name=property_['type_name'],
         wrapper_pointer_name=property_['wrapper_pointer_name'],
         field_template=property_['field_template'],

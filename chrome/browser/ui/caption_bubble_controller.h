@@ -8,6 +8,7 @@
 #include <memory>
 #include <string>
 
+#include "chrome/common/caption.mojom.h"
 #include "ui/native_theme/caption_style.h"
 
 class Browser;
@@ -33,7 +34,8 @@ class CaptionBubbleController {
   static std::unique_ptr<CaptionBubbleController> Create(Browser* browser);
 
   // Called when a transcription is received from the service.
-  virtual void OnTranscription(const std::string& transcription) {}
+  virtual void OnTranscription(
+      const chrome::mojom::TranscriptionResultPtr& transcription_result) {}
 
   // Called when the active tab changes.
   virtual void OnActiveTabChanged(int index) {}

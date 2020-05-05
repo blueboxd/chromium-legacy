@@ -30,10 +30,10 @@ const base::FilePath::CharType kDatabaseName[] =
     FILE_PATH_LITERAL("Conversions");
 
 std::string SerializeOrigin(const url::Origin& origin) {
-  // TODO(johnidel): Conversion API is only designed to be used for secure
+  // Conversion API is only designed to be used for secure
   // contexts (targets and reporting endpoints). We should have filtered out bad
-  // origins at a higher layer. When impression origin is properly available,
-  // this can be enforced via DCHECK.
+  // origins at a higher layer.
+  DCHECK(!origin.opaque());
   return origin.Serialize();
 }
 

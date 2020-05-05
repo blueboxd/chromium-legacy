@@ -2,11 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/**
- * This class handles navigation amongst the elements onscreen.
- */
+/** This class handles navigation amongst the elements onscreen. */
 class NavigationManager {
-
   /**
    * @param {!chrome.automation.AutomationNode} desktop
    * @private
@@ -21,8 +18,8 @@ class NavigationManager {
     /** @private {!SAChildNode} */
     this.node_ = this.group_.firstChild;
 
-    /** @private {!Array<!SARootNode>} */
-    this.groupStack_ = [];
+    /** @private {!FocusHistory} */
+    this.history_ = new FocusHistory();
 
     /** @private {!FocusRingManager} */
     this.focusRingManager_ = new FocusRingManager();
@@ -51,7 +48,7 @@ class NavigationManager {
 
     const newGroup = navigator.node_.asRootNode();
     if (newGroup) {
-      navigator.groupStack_.push(navigator.group_);
+      navigator.history_.save(new FocusData(navigator.group_, navigator.node_));
       navigator.setGroup_(newGroup);
     }
   }
@@ -85,22 +82,20 @@ class NavigationManager {
 
   static exitKeyboard() {
     const navigator = NavigationManager.instance;
-    let foundKeyboard = navigator.group_ instanceof KeyboardRootNode;
-    for (const group of navigator.groupStack_) {
-      foundKeyboard |= group instanceof KeyboardRootNode;
-    }
+    const isKeyboard = (data) => data.group instanceof KeyboardRootNode;
     // If we are not in the keyboard, do nothing.
-    if (!foundKeyboard) {
+    if (!(navigator.group_ instanceof KeyboardRootNode) &&
+        !navigator.history_.containsDataMatchingPredicate(isKeyboard)) {
       return;
     }
 
-    while (navigator.groupStack_.length > 0) {
+    while (navigator.history_.peek() !== null) {
       if (navigator.group_ instanceof KeyboardRootNode) {
+        navigator.exitGroup_();
         break;
       }
       navigator.exitGroup_();
     }
-    navigator.exitGroup_();
 
     NavigationManager.moveToValidNode();
   }
@@ -202,18 +197,7 @@ class NavigationManager {
       return;
     }
 
-    let group = navigator.groupStack_.pop();
-    while (group) {
-      if (group.isValidGroup()) {
-        navigator.setGroup_(group);
-        return;
-      }
-      group = navigator.groupStack_.pop();
-    }
-
-    // If there is no valid node in the group stack, go to the desktop.
-    navigator.setGroup_(DesktopNode.build(navigator.desktop_));
-    navigator.groupStack_ = [];
+    navigator.restoreFromHistory_();
   }
 
   /**
@@ -313,55 +297,13 @@ class NavigationManager {
   // =============== Private Methods ==============
 
   /**
-   * Create a stack of the groups the specified node is in, and set
-   *      |this.group_| to the most proximal group.
-   *  @param {!chrome.automation.AutomationNode} node
-   *  @private
-   */
-  buildGroupStack_(node) {
-    // Create a list of ancestors.
-    const ancestorList = [];
-    while (node.parent) {
-      ancestorList.push(node.parent);
-      node = node.parent;
-    }
-
-    this.groupStack_ = [];
-    let group = DesktopNode.build(this.desktop_);
-    while (ancestorList.length > 0) {
-      const ancestor = ancestorList.pop();
-      if (ancestor.role === chrome.automation.RoleType.DESKTOP) {
-        continue;
-      }
-
-      if (SwitchAccessPredicate.isGroup(ancestor, group)) {
-        this.groupStack_.push(group);
-        group = RootNodeWrapper.buildTree(ancestor);
-      }
-    }
-    this.setGroup_(group, false /* shouldSetNode */);
-  }
-
-  /**
    * Exits the current group.
    * @private
    */
   exitGroup_() {
-    if (this.groupStack_.length === 0) {
-      return;
-    }
-
     this.group_.onExit();
-
-    let group = this.groupStack_.pop();
-    // Find a group that is still valid.
-    while (!group.isValidGroup() && this.groupStack_.length) {
-      group = this.groupStack_.pop();
-    }
-
-    this.setGroup_(group);
+    this.restoreFromHistory_();
   }
-
 
   /** @private */
   init_() {
@@ -394,7 +336,7 @@ class NavigationManager {
   jumpTo_(group) {
     MenuManager.exit();
 
-    this.groupStack_.push(this.group_);
+    this.history_.save(new FocusData(this.group_, this.node_));
     this.setGroup_(group);
   }
 
@@ -408,19 +350,26 @@ class NavigationManager {
    * @private
    */
   moveTo_(automationNode) {
-    this.buildGroupStack_(automationNode);
-    let node = this.group_.firstChild;
-    for (const child of this.group_.children) {
-      if (child.isEquivalentTo(automationNode)) {
-        node = child;
-      }
-    }
-    if (node.equals(this.node_)) {
-      return;
-    }
-
     MenuManager.exit();
-    this.setNode_(node);
+    this.history_.buildFromAutomationNode(automationNode);
+    if (!this.history_.peek().focus.isEquivalentTo(automationNode)) {
+    }
+    this.restoreFromHistory_();
+  }
+
+  /**
+   * Restores the most proximal state from the history.
+   * @private
+   */
+  restoreFromHistory_() {
+    const data = this.history_.retrieve();
+    // retrieve() guarantees that the group is valid, but not the focus.
+    if (data.focus.isValidAndVisible()) {
+      this.setGroup_(data.group, false /* shouldSetNode */);
+      this.setNode_(data.focus);
+    } else {
+      this.setGroup_(data.group, true /* shouldSetNode */);
+    }
   }
 
   /**

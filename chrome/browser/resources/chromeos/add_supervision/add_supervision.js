@@ -10,6 +10,7 @@ const ALLOWED_HOSTS = [
   'google.com',
   'gstatic.com',
   'googleapis.com',
+  'google-analytics.com',
   // FIFE avatar images (lh3-lh6). See http://go/fife-domains
   'lh3.googleusercontent.com',
   'lh4.googleusercontent.com',

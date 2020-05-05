@@ -309,6 +309,10 @@ class CC_EXPORT InputHandler {
   // it wasn't aborted).
   virtual void ScrollEndForSnapFling(bool did_finish) = 0;
 
+  // Notifies when any input event is received, irrespective of whether it is
+  // being handled by the InputHandler or not.
+  virtual void NotifyInputEvent() = 0;
+
  protected:
   InputHandler() = default;
   virtual ~InputHandler() = default;

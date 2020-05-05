@@ -75,6 +75,10 @@ void OneGoogleBarService::SetLanguageCodeForTesting(
   language_code_ = language_code;
 }
 
+bool OneGoogleBarService::SetOgdebValue(const std::string& value) {
+  return loader_->SetOgdebValue(value);
+}
+
 void OneGoogleBarService::SigninStatusChanged() {
   // If we have cached data, clear it and notify observers.
   if (one_google_bar_data_.has_value()) {

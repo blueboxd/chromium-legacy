@@ -207,10 +207,6 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoRequestHandlerBase
                                             bool is_peripheral_role_supported);
   void OnBluetoothAdapterPowerChanged(bool is_powered_on);
   void PowerOnBluetoothAdapter();
-  void InitiatePairingWithDevice(std::string authenticator_id,
-                                 base::Optional<std::string> pin_code,
-                                 base::OnceClosure success_callback,
-                                 base::OnceClosure error_callback);
 
   base::WeakPtr<FidoRequestHandlerBase> GetWeakPtr();
 

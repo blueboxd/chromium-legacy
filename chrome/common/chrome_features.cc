@@ -795,7 +795,7 @@ const base::Feature kWriteBasicSystemProfileToPersistentHistogramsFile{
 // Requires |kPerAppTimeLimits| to be enabled.
 #if defined(OS_CHROMEOS)
 const base::Feature kWebTimeLimits{"WebTimeLimits",
-                                   base::FEATURE_ENABLED_BY_DEFAULT};
+                                   base::FEATURE_DISABLED_BY_DEFAULT};
 #endif  // defined(OS_CHROMEOS)
 
 }  // namespace features

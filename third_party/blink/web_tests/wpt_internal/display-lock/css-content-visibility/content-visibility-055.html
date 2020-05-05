@@ -1,39 +1,42 @@
 <!doctype HTML>
-<html>
+<html class="reftest-wait">
 <meta charset="utf8">
-<title>Content Visibility: focus on new element</title>
-<link rel="author" title="Rakina Zata Amni" href="mailto:rakina@chromium.org">
+<title>Content Visibility: anchor links prevented</title>
+<link rel="author" title="Vladimir Levin" href="mailto:vmpstr@chromium.org">
 <link rel="help" href="https://github.com/WICG/display-locking">
-<meta name="assert" content="focus can target content-visibility: auto subtrees created while hidden">
+<link rel="match" href="spacer-and-container-scrolled-ref.html">
+<meta name="assert" content="anchor link scroll is not prevented when the target is hidden">
 
-<script src="/resources/testharness.js"></script>
-<script src="/resources/testharnessreport.js"></script>
+<script src="/common/reftest-wait.js"></script>
 
 <style>
-.auto {
-  content-visibility: auto;
-}
 .spacer {
+  width: 150px;
   height: 3000px;
+  background: lightblue;
+}
+#container {
+  width: 150px;
+  height: 150px;
+  background: lightgreen;
+  content-visibility: hidden;
+}
+#target {
+  width: 100px;
+  height: 100px;
+  background: green;
 }
 </style>
 
-<div class=spacer></div>
-<div id=container class=auto></div>
+<div class="spacer"></div>
+<div id="container"><div id="target"></div></div>
 
 <script>
-async_test((t) => {
-  function runTest() {
-    const focusable = document.createElement("div");
-    focusable.tabIndex = 0;
-    container.appendChild(focusable);
-    focusable.focus();
-    requestAnimationFrame(() => {
-      t.step(() => assert_greater_than(document.scrollingElement.scrollTop, 500));
-      t.done();
-    });
-  }
-  onload = requestAnimationFrame(() => requestAnimationFrame(runTest));
-}, "Using tabindex to focus an newly constructed element in an auto subtree focuses element");
+function runTest() {
+  location.href += "#target";
+  requestAnimationFrame(takeScreenshot);
+}
+
+window.onload = () => { requestAnimationFrame(runTest); };
 </script>
 </html>

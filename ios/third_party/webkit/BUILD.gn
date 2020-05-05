@@ -151,6 +151,19 @@ if (_build_custom_webkit) {
       rebase_path(sources[0], root_build_dir),
       "--clusterfuzz_script",
       rebase_path(sources[1], root_build_dir),
+
+      # The arguments below allow building with Xcode 10.3 on macOS 10.15
+      "MACOSX_DEPLOYMENT_TARGET=10.14",
+      "WK_MACOS_1014_1015=_MACOS_BEFORE_1015",
+      "WK_MACOS_1014_1015_=_MACOS_BEFORE_1015",
+      "WK_MACOS_1015=_MACOS_BEFORE_1015",
+      "WK_MACOS_1015_1016=_MACOS_BEFORE_1015",
+      "WK_MACOS_BEFORE_1015=YES",
+      "TARGET_MAC_OS_X_VERSION_MAJOR=101400",
+      "MAC_OS_X_VERSION_ACTUAL=101406",
+      "MAC_OS_X_VERSION_MAJOR=101400",
+      "MAC_OS_X_VERSION_MINOR=1406",
+      "MAC_OS_X_PRODUCT_BUILD_VERSION=18G84",
     ]
 
     public_deps = [ ":compile_webkit_mac_minibrowser" ]

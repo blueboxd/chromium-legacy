@@ -112,10 +112,7 @@ void WKWebViewConfigurationProvider::ResetWithWebViewConfiguration(
         setWebsiteDataStore:[WKWebsiteDataStore nonPersistentDataStore]];
   }
 
-  if (base::FeatureList::IsEnabled(
-          web::features::kIgnoresViewportScaleLimits)) {
-    [configuration_ setIgnoresViewportScaleLimits:YES];
-  }
+  [configuration_ setIgnoresViewportScaleLimits:YES];
 
   if (@available(iOS 13, *)) {
     @try {

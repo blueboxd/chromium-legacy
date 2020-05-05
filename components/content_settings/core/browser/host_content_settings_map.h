@@ -149,7 +149,10 @@ class HostContentSettingsMap : public content_settings::Observer,
   // For a given content type, returns all patterns with a non-default setting,
   // mapped to their actual settings, in the precedence order of the rules.
   // |settings| must be a non-NULL outparam. |session_model| can be
-  // specified to limit the type of setting results returned.
+  // specified to limit the type of setting results returned. Any entries in
+  // |settings| are guaranteed to be unexpired at the time they are retrieved
+  // from their respective providers. If |settings| are not used immediately the
+  // validity of each entry should be checked using IsExpired().
   //
   // This may be called on any thread.
   void GetSettingsForOneType(ContentSettingsType content_type,

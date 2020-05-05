@@ -59,11 +59,10 @@ class MediaFeedsService : public KeyedService {
   // Stores a callback to be called once we have completed all inflight checks.
   void SetSafeSearchCompletionCallbackForTest(base::OnceClosure callback);
 
-  // Fetches a media feed with the given ID and URL and then store it in the
+  // Fetches a media feed with the given ID and then store it in the
   // feeds table in media history. Runs the given callback after storing. The
   // fetch will be skipped if another fetch is currently ongoing.
   void FetchMediaFeed(int64_t feed_id,
-                      const GURL& url,
                       base::OnceClosure callback);
 
  private:
@@ -83,7 +82,14 @@ class MediaFeedsService : public KeyedService {
 
   bool IsSafeSearchCheckingEnabled() const;
 
+  void OnGotFetchDetails(
+      const int64_t feed_id,
+      base::Optional<
+          media_history::MediaHistoryKeyedService::MediaFeedFetchDetails>
+          details);
+
   void OnFetchResponse(int64_t feed_id,
+                       base::Optional<base::UnguessableToken> reset_token,
                        const schema_org::improved::mojom::EntityPtr& response,
                        MediaFeedsFetcher::Status status,
                        bool was_fetched_via_cache);

@@ -166,11 +166,15 @@ class CORE_EXPORT ComputedStyleUtils {
       FloatSize box_size = FloatSize(0, 0));
   // Serialize a transform list.
   static CSSValue* ValueForTransformList(const TransformOperations&,
-                                         float zoom);
+                                         float zoom,
+                                         FloatSize box_size = FloatSize(0, 0));
   static FloatRect ReferenceBoxForTransform(
       const LayoutObject&,
       UsePixelSnappedBox = kUsePixelSnappedBox);
-  static CSSValue* ComputedTransformList(const ComputedStyle&);
+  // The LayoutObject parameter is only used for converting unreperesentable
+  // relative transforms into matrix() values, with a default box size of 0x0.
+  static CSSValue* ComputedTransformList(const ComputedStyle&,
+                                         const LayoutObject* = nullptr);
   static CSSValue* ResolvedTransform(const LayoutObject*, const ComputedStyle&);
   static CSSValue* CreateTransitionPropertyValue(
       const CSSTransitionData::TransitionProperty&);
@@ -248,8 +252,12 @@ class CORE_EXPORT ComputedStyleUtils {
   // no layout object (display: none, etc). In those cases, this calls
   // CSSValueFromComputedStyle(layout_object=nullptr), with the exceptions
   // (transform and line-height currently) having their own logic here.
+  //
+  // The LayoutObject parameter is only used for converting unreperesentable
+  // relative transforms into matrix() values, with a default box size of 0x0.
   static const CSSValue* ComputedPropertyValue(const CSSProperty&,
-                                               const ComputedStyle&);
+                                               const ComputedStyle&,
+                                               const LayoutObject* = nullptr);
 };
 
 }  // namespace blink

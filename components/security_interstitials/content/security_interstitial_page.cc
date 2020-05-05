@@ -14,7 +14,6 @@
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
 #include "components/security_interstitials/content/security_interstitial_controller_client.h"
 #include "components/security_interstitials/core/common_string_util.h"
-#include "content/public/browser/interstitial_page.h"
 #include "content/public/browser/page_navigator.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -29,7 +28,6 @@ SecurityInterstitialPage::SecurityInterstitialPage(
     std::unique_ptr<SecurityInterstitialControllerClient> controller)
     : web_contents_(web_contents),
       request_url_(request_url),
-      interstitial_page_(nullptr),
       create_view_(true),
       on_show_extended_reporting_pref_exists_(false),
       on_show_extended_reporting_pref_value_(false),
@@ -42,16 +40,9 @@ SecurityInterstitialPage::SecurityInterstitialPage(
         controller_->GetPrefService());
   }
   SetUpMetrics();
-
-  // Creating interstitial_page_ without showing it leaks memory, so don't
-  // create it here.
 }
 
 SecurityInterstitialPage::~SecurityInterstitialPage() {
-}
-
-content::InterstitialPage* SecurityInterstitialPage::interstitial_page() const {
-  return interstitial_page_;
 }
 
 content::WebContents* SecurityInterstitialPage::web_contents() const {
@@ -70,6 +61,12 @@ bool SecurityInterstitialPage::ShouldDisplayURL() const {
   return true;
 }
 
+SecurityInterstitialPage::TypeID SecurityInterstitialPage::GetTypeForTesting() {
+  // TODO(crbug.com/1077074): Once all subclasses define a TypeID this method
+  // can become pure virtual.
+  return nullptr;
+}
+
 std::string SecurityInterstitialPage::GetHTMLContents() {
   base::DictionaryValue load_time_data;
   PopulateInterstitialStrings(&load_time_data);
@@ -81,18 +78,6 @@ std::string SecurityInterstitialPage::GetHTMLContents() {
 
   webui::AppendWebUiCssTextDefaults(&html);
   return webui::GetI18nTemplateHtml(html, &load_time_data);
-}
-
-void SecurityInterstitialPage::Show() {
-  DCHECK(!interstitial_page_);
-  interstitial_page_ = content::InterstitialPage::Create(
-      web_contents_, ShouldCreateNewNavigation(), request_url_, this);
-  if (!create_view_)
-    interstitial_page_->DontCreateViewForTesting();
-
-  interstitial_page_->Show();
-
-  controller_->set_interstitial_page(interstitial_page_);
 }
 
 SecurityInterstitialControllerClient* SecurityInterstitialPage::controller()

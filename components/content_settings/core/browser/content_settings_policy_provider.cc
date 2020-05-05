@@ -451,12 +451,12 @@ void PolicyProvider::ReadManagedContentSettings(bool overwrite) {
 // Since the PolicyProvider is a read only content settings provider, all
 // methodes of the ProviderInterface that set or delete any settings do nothing.
 bool PolicyProvider::SetWebsiteSetting(
-    const ContentSettingsPattern& /*primary_pattern*/,
-    const ContentSettingsPattern& /*secondary_pattern*/,
-    ContentSettingsType /*content_type*/,
-    const ResourceIdentifier& /*resource_identifier*/,
-    std::unique_ptr<base::Value>&& /*value*/,
-    const ContentSettingConstraints& /*constraint*/) {
+    const ContentSettingsPattern& primary_pattern,
+    const ContentSettingsPattern& secondary_pattern,
+    ContentSettingsType content_type,
+    const ResourceIdentifier& resource_identifier,
+    std::unique_ptr<base::Value>&& value,
+    const ContentSettingConstraints& constraints) {
   return false;
 }
 

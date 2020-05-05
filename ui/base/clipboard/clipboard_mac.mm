@@ -93,10 +93,12 @@ void ClipboardMac::Clear(ClipboardBuffer buffer) {
   [pb declareTypes:@[] owner:nil];
 }
 
-void ClipboardMac::ReadAvailableTypes(ClipboardBuffer buffer,
-                                      std::vector<base::string16>* types,
-                                      bool* contains_filenames) const {
+void ClipboardMac::ReadAvailableTypes(
+    ClipboardBuffer buffer,
+    std::vector<base::string16>* types) const {
   DCHECK(CalledOnValidThread());
+  DCHECK(types);
+
   types->clear();
   if (IsFormatAvailable(ClipboardFormatType::GetPlainTextType(), buffer))
     types->push_back(base::UTF8ToUTF16(kMimeTypeText));
@@ -108,7 +110,6 @@ void ClipboardMac::ReadAvailableTypes(ClipboardBuffer buffer,
   NSPasteboard* pb = GetPasteboard();
   if (pb && [NSImage canInitWithPasteboard:pb])
     types->push_back(base::UTF8ToUTF16(kMimeTypePNG));
-  *contains_filenames = false;
 
   if ([[pb types] containsObject:kWebCustomDataPboardType]) {
     NSData* data = [pb dataForType:kWebCustomDataPboardType];

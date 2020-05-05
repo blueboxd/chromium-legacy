@@ -122,6 +122,7 @@ class MockInputHandler : public cc::InputHandler {
                     cc::ScrollBeginThreadState state));
   MOCK_METHOD1(RecordScrollEnd, void(ui::ScrollInputType type));
   MOCK_METHOD0(ScrollingShouldSwitchtoMainThread, bool());
+  void NotifyInputEvent() override {}
 
   std::unique_ptr<cc::SwapPromiseMonitor> CreateLatencyInfoSwapPromiseMonitor(
       ui::LatencyInfo* latency) override {

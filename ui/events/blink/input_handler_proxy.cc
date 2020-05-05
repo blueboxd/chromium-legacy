@@ -236,6 +236,8 @@ void InputHandlerProxy::HandleInputEventWithLatencyInfo(
     EventDispositionCallback callback) {
   DCHECK(input_handler_);
 
+  input_handler_->NotifyInputEvent();
+
   TRACE_EVENT("input,benchmark", "LatencyInfo.Flow",
               [&latency_info](perfetto::EventContext ctx) {
                 ChromeLatencyInfo* info =

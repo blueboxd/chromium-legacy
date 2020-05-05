@@ -185,10 +185,16 @@ class MediaHistoryStore : public base::RefCountedThreadSafe<MediaHistoryStore> {
 
   void DeleteMediaFeed(const int64_t feed_id);
 
+  base::Optional<MediaHistoryKeyedService::MediaFeedFetchDetails>
+  GetMediaFeedFetchDetails(const int64_t feed_id);
+
  private:
   friend class base::RefCountedThreadSafe<MediaHistoryStore>;
 
   ~MediaHistoryStore();
+
+  void StoreMediaFeedFetchResultInternal(
+      MediaHistoryKeyedService::MediaFeedFetchResult result);
 
   bool CanAccessDatabase() const;
   bool IsCancelled() const;

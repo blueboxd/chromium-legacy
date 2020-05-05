@@ -219,7 +219,8 @@ DOMException* CredentialManagerErrorToDOMException(
       return MakeGarbageCollected<DOMException>(
           DOMExceptionCode::kNotAllowedError,
           "The operation either timed out or was not allowed. See: "
-          "https://w3c.github.io/webauthn/#sec-assertion-privacy.");
+          "https://www.w3.org/TR/webauthn-2/"
+          "#sctn-privacy-considerations-client.");
     case CredentialManagerError::INVALID_DOMAIN:
       return MakeGarbageCollected<DOMException>(
           DOMExceptionCode::kSecurityError, "This is an invalid domain.");

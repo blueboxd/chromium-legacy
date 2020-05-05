@@ -138,9 +138,9 @@ CloudPolicyClient::CloudPolicyClient(
     const std::string& ethernet_mac_address,
     const std::string& dock_mac_address,
     const std::string& manufacture_date,
+    SigningService* signing_service,
     DeviceManagementService* service,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-    SigningService* signing_service,
     DeviceDMTokenCallback device_dm_token_callback)
     : machine_id_(machine_id),
       machine_model_(machine_model),
@@ -148,8 +148,16 @@ CloudPolicyClient::CloudPolicyClient(
       ethernet_mac_address_(ethernet_mac_address),
       dock_mac_address_(dock_mac_address),
       manufacture_date_(manufacture_date),
-      service_(service),  // Can be null for unit tests.
       signing_service_(signing_service),
+      service_(service),  // Can be null for unit tests.
+      device_dm_token_callback_(device_dm_token_callback),
+      url_loader_factory_(url_loader_factory) {}
+
+CloudPolicyClient::CloudPolicyClient(
+    DeviceManagementService* service,
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+    DeviceDMTokenCallback device_dm_token_callback)
+    : service_(service),  // Can be null for unit tests.
       device_dm_token_callback_(device_dm_token_callback),
       url_loader_factory_(url_loader_factory) {}
 

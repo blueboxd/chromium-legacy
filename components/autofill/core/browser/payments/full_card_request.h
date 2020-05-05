@@ -12,6 +12,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "components/autofill/core/browser/autofill_client.h"
 #include "components/autofill/core/browser/payments/card_unmask_delegate.h"
 #include "components/autofill/core/browser/payments/payments_client.h"
@@ -53,13 +54,21 @@ class FullCardRequest final : public CardUnmaskDelegate {
     virtual void OnUnmaskVerificationResult(
         AutofillClient::PaymentsRpcResult result) = 0;
 
+#if defined(OS_ANDROID)
     // Returns whether or not the user, while on the CVC prompt, should be
     // offered to switch to FIDO authentication for card unmasking. This will
     // always be false for Desktop since FIDO authentication is offered as a
     // separate prompt after the CVC prompt. On Android, however, this may be
     // offered through a checkbox on the CVC prompt. This feature does not yet
     // exist on iOS.
-    virtual bool ShouldOfferFidoAuth() const;
+    virtual bool ShouldOfferFidoAuth() const = 0;
+
+    // This returns true only on Android when the user previously opted-in for
+    // FIDO authentication through the settings page and this is the first card
+    // downstream since. In this case, the opt-in checkbox is not shown and the
+    // opt-in request is sent.
+    virtual bool UserOptedInToFidoFromSettingsPageOnMobile() const = 0;
+#endif
   };
 
   // The parameters should outlive the FullCardRequest.

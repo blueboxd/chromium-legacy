@@ -52,6 +52,12 @@ class ChromeSpeechRecognitionClient
   // The temporary audio bus used to convert the raw audio to the appropriate
   // format.
   std::unique_ptr<media::AudioBus> temp_audio_bus_;
+
+  // The previous transcription received from the service. This is used for a
+  // temporary heuristic to determine whether a transcription is partil or
+  // final, and will be removed once the service itself sends partial or final
+  // information.
+  std::string previous_transcription;
 };
 
 #endif  // CHROME_RENDERER_MEDIA_CHROME_SPEECH_RECOGNITION_CLIENT_H_

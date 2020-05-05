@@ -307,7 +307,7 @@ bool NotificationChannelsProviderAndroid::SetWebsiteSetting(
     ContentSettingsType content_type,
     const content_settings::ResourceIdentifier& resource_identifier,
     std::unique_ptr<base::Value>&& value,
-    const content_settings::ContentSettingConstraints& /*constraints*/) {
+    const content_settings::ContentSettingConstraints& constraints) {
   if (content_type != ContentSettingsType::NOTIFICATIONS ||
       !platform_supports_channels_) {
     return false;

@@ -54,9 +54,10 @@ void TestClipboard::Clear(ClipboardBuffer buffer) {
   GetStore(buffer).Clear();
 }
 
-void TestClipboard::ReadAvailableTypes(ClipboardBuffer buffer,
-                                       std::vector<base::string16>* types,
-                                       bool* contains_filenames) const {
+void TestClipboard::ReadAvailableTypes(
+    ClipboardBuffer buffer,
+    std::vector<base::string16>* types) const {
+  DCHECK(types);
   types->clear();
 
   if (IsFormatAvailable(ClipboardFormatType::GetPlainTextType(), buffer))
@@ -68,8 +69,6 @@ void TestClipboard::ReadAvailableTypes(ClipboardBuffer buffer,
     types->push_back(base::UTF8ToUTF16(kMimeTypeRTF));
   if (IsFormatAvailable(ClipboardFormatType::GetBitmapType(), buffer))
     types->push_back(base::UTF8ToUTF16(kMimeTypePNG));
-
-  *contains_filenames = false;
 }
 
 std::vector<base::string16>

@@ -157,6 +157,7 @@ class CONTENT_EXPORT NavigationRequest
       mojom::CommonNavigationParamsPtr common_params,
       mojom::CommitNavigationParamsPtr commit_params,
       bool browser_initiated,
+      const GlobalFrameRoutingId& initiator_routing_id,
       const std::string& extra_headers,
       FrameNavigationEntry* frame_entry,
       NavigationEntryImpl* entry,
@@ -270,6 +271,7 @@ class CONTENT_EXPORT NavigationRequest
   const net::ProxyServer& GetProxyServer() override;
   const std::string& GetHrefTranslate() override;
   const base::Optional<Impression>& GetImpression() override;
+  const GlobalFrameRoutingId& GetInitiatorRoutingId() override;
   const base::Optional<url::Origin>& GetInitiatorOrigin() override;
   bool IsSameProcess() override;
   int GetNavigationEntryOffset() override;
@@ -1211,6 +1213,13 @@ class CONTENT_EXPORT NavigationRequest
 
   // This is used to store the current_frame_host id at request creation time.
   GlobalFrameRoutingId previous_render_frame_host_id_;
+
+  // Routing id of the frame host that initiated the navigation, derived from
+  // |begin_params()->initiator_routing_id|. This is best effort: it is only
+  // defined for some renderer-initiated navigations (e.g., not drag and drop).
+  // The frame with the corresponding routing ID may have been deleted before
+  // the navigation begins.
+  GlobalFrameRoutingId initiator_routing_id_;
 
   // This tracks a connection between the current pending entry and this
   // request, such that the pending entry can be discarded if no requests are

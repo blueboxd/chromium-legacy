@@ -20,9 +20,9 @@
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom.h"
 
-// Set the default number of "automatic" implicit storage access grants per 3p
-// origin that can be granted. This can be overridden via experimentation to
-// allow for field trials to validate the default setting.
+// Set the default number of "automatic" implicit storage access grants per
+// third party origin that can be granted. This can be overridden via
+// experimentation to allow for field trials to validate the default setting.
 constexpr int kDefaultImplicitGrantLimit = 5;
 
 namespace {

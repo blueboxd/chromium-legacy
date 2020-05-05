@@ -31,6 +31,13 @@
 
 // Tests that a tab can be opened.
 - (void)testOpenTab {
+// TODO(crbug.com/1078140): Test fails on iOS 13+ iPad devices.
+#if !TARGET_IPHONE_SIMULATOR
+  if ([ChromeEarlGrey isIPadIdiom] && IsRunningOnIOS13OrLater()) {
+    EARL_GREY_TEST_DISABLED(@"This test fails on iOS 13+ iPad device.");
+  }
+#endif
+
   // Open tools menu.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::ToolsMenuButton()]
       performAction:grey_tap()];
@@ -59,6 +66,13 @@
 
 // Tests that helpers from chrome_actions.h are available for use in tests.
 - (void)testToggleSettingsSwitch {
+// TODO(crbug.com/1078140): Test fails on iOS 13+ iPad devices.
+#if !TARGET_IPHONE_SIMULATOR
+  if ([ChromeEarlGrey isIPadIdiom] && IsRunningOnIOS13OrLater()) {
+    EARL_GREY_TEST_DISABLED(@"This test fails on iOS 13+ iPad device.");
+  }
+#endif
+
   [[EarlGrey selectElementWithMatcher:chrome_test_util::ToolsMenuButton()]
       performAction:grey_tap()];
   [[EarlGrey selectElementWithMatcher:chrome_test_util::SettingsMenuButton()]
@@ -158,6 +172,13 @@
 
 // Tests waitForSufficientlyVisibleElementWithMatcher in chrome_earl_grey.h
 - (void)testWaitForSufficientlyVisibleElementWithMatcher {
+// TODO(crbug.com/1078140): Test fails on iOS 13+ iPad devices.
+#if !TARGET_IPHONE_SIMULATOR
+  if ([ChromeEarlGrey isIPadIdiom] && IsRunningOnIOS13OrLater()) {
+    EARL_GREY_TEST_DISABLED(@"This test fails on iOS 13+ iPad device.");
+  }
+#endif
+
   [[EarlGrey selectElementWithMatcher:chrome_test_util::FakeOmnibox()]
       performAction:grey_tap()];
   [ChromeEarlGrey

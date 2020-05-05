@@ -51,12 +51,12 @@ class SafeBrowsingBlockingPage : public BaseBlockingPage {
   typedef security_interstitials::BaseSafeBrowsingErrorUI
       BaseSafeBrowsingErrorUI;
   // Interstitial type, used in tests.
-  static const content::InterstitialPageDelegate::TypeID kTypeForTesting;
+  static const security_interstitials::SecurityInterstitialPage::TypeID
+      kTypeForTesting;
 
   ~SafeBrowsingBlockingPage() override;
 
-  // Creates a blocking page. Use ShowBlockingPage if you don't need to access
-  // the blocking page directly. |should_trigger_reporting| controls whether a
+  // Creates a blocking page. |should_trigger_reporting| controls whether a
   // safe browsing extended reporting report will be created for this blocking
   // page.
   static SafeBrowsingBlockingPage* CreateBlockingPage(
@@ -66,23 +66,15 @@ class SafeBrowsingBlockingPage : public BaseBlockingPage {
       const UnsafeResource& unsafe_resource,
       bool should_trigger_reporting);
 
-  // Shows a blocking page warning the user about phishing/malware for a
-  // specific resource.
-  // You can call this method several times, if an interstitial is already
-  // showing, the new one will be queued and displayed if the user decides
-  // to proceed on the currently showing interstitial.
-  static void ShowBlockingPage(BaseUIManager* ui_manager,
-                               const UnsafeResource& resource);
-
   // Makes the passed |factory| the factory used to instantiate
   // SafeBrowsingBlockingPage objects. Useful for tests.
   static void RegisterFactory(SafeBrowsingBlockingPageFactory* factory) {
     factory_ = factory;
   }
 
-  // InterstitialPageDelegate method:
-  void OverrideRendererPrefs(blink::mojom::RendererPreferences* prefs) override;
-  content::InterstitialPageDelegate::TypeID GetTypeForTesting() override;
+  // SecurityInterstitialPage method:
+  security_interstitials::SecurityInterstitialPage::TypeID GetTypeForTesting()
+      override;
 
  protected:
   friend class SafeBrowsingBlockingPageFactoryImpl;
@@ -110,7 +102,7 @@ class SafeBrowsingBlockingPage : public BaseBlockingPage {
 
   void UpdateReportingPref();  // Used for the transition from old to new pref.
 
-  // Don't instantiate this class directly, use ShowBlockingPage instead.
+  // Don't instantiate this class directly, use CreateBlockingPage instead.
   SafeBrowsingBlockingPage(
       BaseUIManager* ui_manager,
       content::WebContents* web_contents,
@@ -119,10 +111,6 @@ class SafeBrowsingBlockingPage : public BaseBlockingPage {
       const BaseSafeBrowsingErrorUI::SBErrorDisplayOptions& display_options,
       bool should_trigger_reporting,
       network::SharedURLLoaderFactory* url_loader_for_testing = nullptr);
-
-  // Called after the user clicks OnProceed(). If the page has malicious
-  // subresources, then we show another interstitial.
-  void HandleSubresourcesAfterProceed() override;
 
   // Called when an interstitial is closed, either due to a click through or a
   // navigation elsewhere.

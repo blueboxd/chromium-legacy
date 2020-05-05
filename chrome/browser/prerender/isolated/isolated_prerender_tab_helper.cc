@@ -93,10 +93,15 @@ void InformPLMOfLikelyPrefetching(content::WebContents* web_contents) {
 IsolatedPrerenderTabHelper::PrefetchMetrics::PrefetchMetrics() = default;
 IsolatedPrerenderTabHelper::PrefetchMetrics::~PrefetchMetrics() = default;
 
+IsolatedPrerenderTabHelper::AfterSRPMetrics::AfterSRPMetrics() = default;
+IsolatedPrerenderTabHelper::AfterSRPMetrics::AfterSRPMetrics(
+    const AfterSRPMetrics& other) = default;
+IsolatedPrerenderTabHelper::AfterSRPMetrics::~AfterSRPMetrics() = default;
+
 IsolatedPrerenderTabHelper::CurrentPageLoad::CurrentPageLoad(
     content::NavigationHandle* handle)
     : navigation_start_(handle ? handle->NavigationStart() : base::TimeTicks()),
-      metrics_(
+      srp_metrics_(
           base::MakeRefCounted<IsolatedPrerenderTabHelper::PrefetchMetrics>()) {
 }
 IsolatedPrerenderTabHelper::CurrentPageLoad::~CurrentPageLoad() = default;
@@ -140,6 +145,14 @@ void IsolatedPrerenderTabHelper::RemoveObserverForTesting(Observer* observer) {
   observer_list_.RemoveObserver(observer);
 }
 
+base::Optional<IsolatedPrerenderTabHelper::AfterSRPMetrics>
+IsolatedPrerenderTabHelper::after_srp_metrics() const {
+  if (page_->after_srp_metrics_) {
+    return *(page_->after_srp_metrics_);
+  }
+  return base::nullopt;
+}
+
 void IsolatedPrerenderTabHelper::DidStartNavigation(
     content::NavigationHandle* navigation_handle) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -147,22 +160,19 @@ void IsolatedPrerenderTabHelper::DidStartNavigation(
     return;
   }
 
-  // Reset the prefetch usage here instead of with |page_| since this will be
-  // set before commit.
-  prefetch_usage_ = base::nullopt;
-
   // User is navigating, don't bother prefetching further.
   page_->url_loader_.reset();
 
-  if (page_->metrics_->prefetch_attempted_count_ > 0) {
+  if (page_->srp_metrics_->prefetch_attempted_count_ > 0) {
     UMA_HISTOGRAM_COUNTS_100(
         "IsolatedPrerender.Prefetch.Mainframe.TotalRedirects",
-        page_->metrics_->prefetch_total_redirect_count_);
+        page_->srp_metrics_->prefetch_total_redirect_count_);
   }
 }
 
-void IsolatedPrerenderTabHelper::OnPrefetchUsage(PrefetchUsage usage) {
-  prefetch_usage_ = usage;
+void IsolatedPrerenderTabHelper::OnPrefetchStatusUpdate(const GURL& url,
+                                                        PrefetchStatus usage) {
+  page_->prefetch_status_by_url_[url] = usage;
 }
 
 void IsolatedPrerenderTabHelper::DidFinishNavigation(
@@ -177,9 +187,28 @@ void IsolatedPrerenderTabHelper::DidFinishNavigation(
 
   DCHECK(!PrefetchingActive());
 
+  GURL url = navigation_handle->GetURL();
+
+  // If the previous page load was a Google SRP, the AfterSRPMetrics class needs
+  // to be created now from the SRP's |page_| and then set on the new one when
+  // we create it at the end of this method.
+  std::unique_ptr<AfterSRPMetrics> after_srp = nullptr;
+  if (page_->srp_metrics_->predicted_urls_count_ > 0) {
+    after_srp = std::make_unique<AfterSRPMetrics>();
+    after_srp->url_ = url;
+
+    auto status_iter = page_->prefetch_status_by_url_.find(url);
+    if (status_iter != page_->prefetch_status_by_url_.end()) {
+      after_srp->prefetch_status_ = status_iter->second;
+    } else {
+      after_srp->prefetch_status_ = PrefetchStatus::kNavigatedToLinkNotOnSRP;
+    }
+  }
+
   // |page_| is reset on commit so that any available cached prefetches that
   // result from a redirect get used.
   page_ = std::make_unique<CurrentPageLoad>(navigation_handle);
+  page_->after_srp_metrics_ = std::move(after_srp);
 }
 
 void IsolatedPrerenderTabHelper::OnVisibilityChanged(
@@ -220,10 +249,10 @@ void IsolatedPrerenderTabHelper::Prefetch() {
 
   page_->url_loader_.reset();
 
-  if (!page_->metrics_->navigation_to_prefetch_start_.has_value()) {
-    page_->metrics_->navigation_to_prefetch_start_ =
+  if (!page_->srp_metrics_->navigation_to_prefetch_start_.has_value()) {
+    page_->srp_metrics_->navigation_to_prefetch_start_ =
         base::TimeTicks::Now() - page_->navigation_start_;
-    DCHECK_GT(page_->metrics_->navigation_to_prefetch_start_.value(),
+    DCHECK_GT(page_->srp_metrics_->navigation_to_prefetch_start_.value(),
               base::TimeDelta());
   }
 
@@ -236,7 +265,7 @@ void IsolatedPrerenderTabHelper::Prefetch() {
   }
 
   if (IsolatedPrerenderMaximumNumberOfPrefetches().has_value() &&
-      page_->metrics_->prefetch_attempted_count_ >=
+      page_->srp_metrics_->prefetch_attempted_count_ >=
           IsolatedPrerenderMaximumNumberOfPrefetches().value()) {
     return;
   }
@@ -247,10 +276,13 @@ void IsolatedPrerenderTabHelper::Prefetch() {
     return;
   }
 
-  page_->metrics_->prefetch_attempted_count_++;
+  page_->srp_metrics_->prefetch_attempted_count_++;
 
   GURL url = page_->urls_to_prefetch_[0];
   page_->urls_to_prefetch_.erase(page_->urls_to_prefetch_.begin());
+
+  // The status is updated to be successful or failed when it finishes.
+  OnPrefetchStatusUpdate(url, PrefetchStatus::kPrefetchNotFinishedInTime);
 
   net::IsolationInfo isolation_info =
       net::IsolationInfo::CreateOpaqueAndNonTransient();
@@ -312,7 +344,7 @@ void IsolatedPrerenderTabHelper::OnPrefetchRedirect(
     std::vector<std::string>* removed_headers) {
   DCHECK(PrefetchingActive());
 
-  page_->metrics_->prefetch_total_redirect_count_++;
+  page_->srp_metrics_->prefetch_total_redirect_count_++;
 
   // Run the new URL through all the eligibility checks. In the mean time,
   // continue on with other Prefetches.
@@ -331,6 +363,10 @@ void IsolatedPrerenderTabHelper::OnPrefetchComplete(
 
   base::UmaHistogramSparse("IsolatedPrerender.Prefetch.Mainframe.NetError",
                            std::abs(page_->url_loader_->NetError()));
+
+  if (page_->url_loader_->NetError() != net::OK) {
+    OnPrefetchStatusUpdate(url, PrefetchStatus::kPrefetchFailedNetError);
+  }
 
   if (page_->url_loader_->NetError() == net::OK && body &&
       page_->url_loader_->ResponseInfo()) {
@@ -387,6 +423,7 @@ void IsolatedPrerenderTabHelper::HandlePrefetchResponse(
                            response_code);
 
   if (response_code < 200 || response_code >= 300) {
+    OnPrefetchStatusUpdate(url, PrefetchStatus::kPrefetchFailedNon2XX);
     for (auto& observer : observer_list_) {
       observer.OnPrefetchCompletedWithError(url, response_code);
     }
@@ -394,13 +431,17 @@ void IsolatedPrerenderTabHelper::HandlePrefetchResponse(
   }
 
   if (head->mime_type != "text/html") {
+    OnPrefetchStatusUpdate(url, PrefetchStatus::kPrefetchFailedNotHTML);
     return;
   }
+
   std::unique_ptr<PrefetchedMainframeResponseContainer> response =
       std::make_unique<PrefetchedMainframeResponseContainer>(
           isolation_info, std::move(head), std::move(body));
   page_->prefetched_responses_.emplace(url, std::move(response));
-  page_->metrics_->prefetch_successful_count_++;
+  page_->srp_metrics_->prefetch_successful_count_++;
+
+  OnPrefetchStatusUpdate(url, PrefetchStatus::kPrefetchSuccessful);
 
   for (auto& observer : observer_list_) {
     observer.OnPrefetchCompletedSuccessfully(url);
@@ -456,7 +497,7 @@ void IsolatedPrerenderTabHelper::OnPredictionUpdated(
   // start tracking metrics.
   InformPLMOfLikelyPrefetching(web_contents());
 
-  page_->metrics_->predicted_urls_count_ +=
+  page_->srp_metrics_->predicted_urls_count_ +=
       prediction.value().sorted_predicted_urls().size();
 
   // It is possible, since it is not stipulated by the API contract, that the
@@ -483,14 +524,20 @@ bool IsolatedPrerenderTabHelper::CheckAndMaybePrefetchURL(const GURL& url) {
                                       profile_->GetPrefs()));
 
   if (google_util::IsGoogleAssociatedDomainUrl(url)) {
+    OnPrefetchStatusUpdate(url,
+                           PrefetchStatus::kPrefetchNotEligibleGoogleDomain);
     return false;
   }
 
   if (url.HostIsIPAddress()) {
+    OnPrefetchStatusUpdate(url,
+                           PrefetchStatus::kPrefetchNotEligibleHostIsIPAddress);
     return false;
   }
 
   if (!url.SchemeIs(url::kHttpsScheme)) {
+    OnPrefetchStatusUpdate(
+        url, PrefetchStatus::kPrefetchNotEligibleSchemeIsNotHttps);
     return false;
   }
 
@@ -503,6 +550,8 @@ bool IsolatedPrerenderTabHelper::CheckAndMaybePrefetchURL(const GURL& url) {
   if (default_storage_partition !=
       content::BrowserContext::GetStoragePartitionForSite(
           profile_, url, /*can_create=*/false)) {
+    OnPrefetchStatusUpdate(
+        url, PrefetchStatus::kPrefetchNotEligibleNonDefaultStoragePartition);
     return false;
   }
 
@@ -516,6 +565,8 @@ bool IsolatedPrerenderTabHelper::CheckAndMaybePrefetchURL(const GURL& url) {
       isolated_prerender_service->service_workers_observer()
           ->IsServiceWorkerRegisteredForOrigin(url::Origin::Create(url));
   if (!site_has_service_worker.has_value() || site_has_service_worker.value()) {
+    OnPrefetchStatusUpdate(
+        url, PrefetchStatus::kPrefetchNotEligibleUserHasServiceWorker);
     return false;
   }
 
@@ -533,12 +584,16 @@ void IsolatedPrerenderTabHelper::OnGotCookieList(
     const net::CookieStatusList& excluded_cookies) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  if (!cookie_with_status_list.empty())
+  if (!cookie_with_status_list.empty()) {
+    OnPrefetchStatusUpdate(url,
+                           PrefetchStatus::kPrefetchNotEligibleUserHasCookies);
     return;
+  }
 
   // TODO(robertogden): Consider adding redirect URLs to the front of the list.
   page_->urls_to_prefetch_.push_back(url);
-  page_->metrics_->prefetch_eligible_count_++;
+  page_->srp_metrics_->prefetch_eligible_count_++;
+  OnPrefetchStatusUpdate(url, PrefetchStatus::kPrefetchNotStarted);
 
   // The queried url may not have been part of this page's prediction if it was
   // a redirect (common) or if the cookie query finished after
@@ -550,8 +605,8 @@ void IsolatedPrerenderTabHelper::OnGotCookieList(
         page_->original_prediction_ordering_.find(url)->second;
     // Check that we won't go above the allowable size.
     if (original_prediction_index <
-        sizeof(page_->metrics_->ordered_eligible_pages_bitmask_) * 8) {
-      page_->metrics_->ordered_eligible_pages_bitmask_ |=
+        sizeof(page_->srp_metrics_->ordered_eligible_pages_bitmask_) * 8) {
+      page_->srp_metrics_->ordered_eligible_pages_bitmask_ |=
           1 << original_prediction_index;
     }
   }

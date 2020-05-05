@@ -120,9 +120,8 @@ TEST_F(ArcClipboardBridgeTest, SetClipContent_PlainText) {
   clipboard_bridge_->SetClipContent(std::move(clip_data));
 
   std::vector<base::string16> mime_types;
-  bool contains_files;
   GetClipboard()->ReadAvailableTypes(ui::ClipboardBuffer::kCopyPaste,
-                                     &mime_types, &contains_files);
+                                     &mime_types);
   ASSERT_EQ(1u, mime_types.size());
   EXPECT_EQ(ui::kMimeTypeText, base::UTF16ToUTF8(mime_types[0]));
 
@@ -137,9 +136,8 @@ TEST_F(ArcClipboardBridgeTest, SetClipContent_Html) {
   clipboard_bridge_->SetClipContent(std::move(clip_data));
 
   std::vector<base::string16> mime_types;
-  bool contains_files;
   GetClipboard()->ReadAvailableTypes(ui::ClipboardBuffer::kCopyPaste,
-                                     &mime_types, &contains_files);
+                                     &mime_types);
   ASSERT_EQ(1u, mime_types.size());
   EXPECT_EQ(ui::kMimeTypeHTML, base::UTF16ToUTF8(mime_types[0]));
 

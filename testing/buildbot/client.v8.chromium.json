@@ -538,7 +538,8 @@
       },
       {
         "args": [
-          "--xvfb"
+          "--xvfb",
+          "--extra-browser-args=--enable-crashpad"
         ],
         "isolate_name": "telemetry_perf_unittests",
         "merge": {

@@ -9,7 +9,7 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "chrome/android/chrome_jni_headers/InstalledAppProviderImpl_jni.h"
-#include "chrome/browser/android/digital_asset_links/digital_asset_links_handler.h"
+#include "chrome/browser/installable/digital_asset_links/digital_asset_links_handler.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_android.h"
 #include "content/public/browser/browser_context.h"

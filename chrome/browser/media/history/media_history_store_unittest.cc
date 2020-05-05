@@ -26,6 +26,7 @@
 #include "chrome/browser/media/history/media_history_playback_table.h"
 #include "chrome/browser/media/history/media_history_session_images_table.h"
 #include "chrome/browser/media/history/media_history_session_table.h"
+#include "chrome/browser/media/history/media_history_test_utils.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/history/core/browser/history_database_params.h"
 #include "components/history/core/browser/history_service.h"
@@ -221,19 +222,20 @@ class MediaHistoryStoreUnitTest
   }
 
   media_history::MediaHistoryKeyedService::MediaFeedFetchResult ResultWithItems(
-      int64_t feed_id,
+      const int64_t feed_id,
       std::vector<media_feeds::mojom::MediaFeedItemPtr> items,
       media_feeds::mojom::FetchResult fetch_result) {
     media_history::MediaHistoryKeyedService::MediaFeedFetchResult result;
     result.feed_id = feed_id;
     result.items = std::move(items);
     result.status = fetch_result;
+    result.reset_token = test::GetResetTokenSync(service(), feed_id);
     return result;
   }
 
   media_history::MediaHistoryKeyedService::MediaFeedFetchResult
   SuccessfulResultWithItems(
-      int64_t feed_id,
+      const int64_t feed_id,
       std::vector<media_feeds::mojom::MediaFeedItemPtr> items) {
     return ResultWithItems(feed_id, std::move(items),
                            media_feeds::mojom::FetchResult::kSuccess);
@@ -849,6 +851,27 @@ class MediaHistoryStoreFeedsTest : public MediaHistoryStoreUnitTest {
       origins.insert(url::Origin::Create(*feed_url_to_add));
 
     return origins;
+  }
+
+  base::Optional<media_history::MediaHistoryKeyedService::MediaFeedFetchDetails>
+  GetFetchDetailsSync(const int64_t feed_id) {
+    base::RunLoop run_loop;
+    base::Optional<
+        media_history::MediaHistoryKeyedService::MediaFeedFetchDetails>
+        out;
+
+    service()->GetMediaFeedFetchDetails(
+        feed_id,
+        base::BindLambdaForTesting(
+            [&](base::Optional<
+                media_history::MediaHistoryKeyedService::MediaFeedFetchDetails>
+                    details) {
+              out = std::move(details);
+              run_loop.Quit();
+            }));
+
+    run_loop.Run();
+    return out;
   }
 
  private:
@@ -2160,7 +2183,7 @@ TEST_P(MediaHistoryStoreFeedsTest, ResetMediaFeed) {
       EXPECT_TRUE(feeds[0]->last_display_time.has_value());
       EXPECT_EQ(media_feeds::mojom::ResetReason::kCookies,
                 feeds[0]->reset_reason);
-      EXPECT_TRUE(feeds[0]->associated_origins.empty());
+      EXPECT_EQ(ToSet(feed_url_a), ToSet(feeds[0]->associated_origins));
 
       EXPECT_EQ(feed_id_b, feeds[1]->id);
       EXPECT_EQ(ToSet(feed_url_b), ToSet(feeds[1]->associated_origins));
@@ -2386,8 +2409,10 @@ TEST_P(MediaHistoryStoreFeedsTest, ResetMediaFeedDueToCacheClearing) {
         EXPECT_TRUE(feed->display_name.empty());
         EXPECT_TRUE(feed->last_display_time.has_value());
         EXPECT_EQ(media_feeds::mojom::ResetReason::kCache, feed->reset_reason);
-        EXPECT_TRUE(feed->associated_origins.empty());
       }
+
+      EXPECT_EQ(ToSet(feed_url_a), ToSet(feeds[0]->associated_origins));
+      EXPECT_EQ(ToSet(feed_url_b), ToSet(feeds[1]->associated_origins));
 
       EXPECT_TRUE(items_a.empty());
       EXPECT_TRUE(items_b.empty());
@@ -2437,7 +2462,7 @@ TEST_P(MediaHistoryStoreFeedsTest, ResetMediaFeedDueToCacheClearing) {
                 ToSet(feeds[0]->associated_origins));
 
       EXPECT_EQ(feed_id_b, feeds[1]->id);
-      EXPECT_TRUE(feeds[1]->associated_origins.empty());
+      EXPECT_EQ(ToSet(feed_url_b), ToSet(feeds[1]->associated_origins));
 
       EXPECT_EQ(GetExpectedItems(), items_a);
       EXPECT_TRUE(items_b.empty());
@@ -2486,7 +2511,7 @@ TEST_P(MediaHistoryStoreFeedsTest, ResetMediaFeedDueToCacheClearing) {
                 ToSet(feeds[0]->associated_origins));
 
       EXPECT_EQ(feed_id_b, feeds[1]->id);
-      EXPECT_TRUE(feeds[1]->associated_origins.empty());
+      EXPECT_EQ(ToSet(feed_url_b), ToSet(feeds[1]->associated_origins));
 
       EXPECT_EQ(GetExpectedItems(), items_a);
       EXPECT_TRUE(items_b.empty());
@@ -2567,6 +2592,89 @@ TEST_P(MediaHistoryStoreFeedsTest, DeleteMediaFeed) {
     // The OTR service should have the same data.
     EXPECT_EQ(stats, GetStatsSync(otr_service()));
     EXPECT_EQ(feeds, GetMediaFeedsSync(otr_service()));
+  }
+}
+
+TEST_P(MediaHistoryStoreFeedsTest, GetMediaFeedFetchDetails) {
+  const GURL feed_url("https://www.google.com/feed");
+
+  service()->DiscoverMediaFeed(feed_url);
+  WaitForDB();
+
+  // If we are read only we should use -1 as a placeholder feed id because the
+  // feed will not have been stored. This is so we can run the rest of the test
+  // to ensure a no-op.
+  const int feed_id = IsReadOnly() ? -1 : GetMediaFeedsSync(service())[0]->id;
+
+  {
+    auto details = GetFetchDetailsSync(feed_id);
+
+    if (IsReadOnly()) {
+      EXPECT_FALSE(details.has_value());
+    } else {
+      EXPECT_FALSE(details->reset_token.has_value());
+      EXPECT_EQ(feed_url, details->url);
+      EXPECT_EQ(media_feeds::mojom::FetchResult::kNone,
+                details->last_fetch_result);
+    }
+  }
+
+  service()->StoreMediaFeedFetchResult(
+      SuccessfulResultWithItems(feed_id, GetExpectedItems()),
+      base::DoNothing());
+  WaitForDB();
+
+  {
+    auto details = GetFetchDetailsSync(feed_id);
+
+    if (IsReadOnly()) {
+      EXPECT_FALSE(details.has_value());
+    } else {
+      EXPECT_FALSE(details->reset_token.has_value());
+      EXPECT_EQ(feed_url, details->url);
+      EXPECT_EQ(media_feeds::mojom::FetchResult::kSuccess,
+                details->last_fetch_result);
+    }
+  }
+
+  service()->ResetMediaFeed(url::Origin::Create(feed_url),
+                            media_feeds::mojom::ResetReason::kCookies);
+  WaitForDB();
+
+  base::Optional<base::UnguessableToken> token;
+  {
+    // The feed should have been reset and the token should have been generated.
+    auto details = GetFetchDetailsSync(feed_id);
+
+    if (IsReadOnly()) {
+      EXPECT_FALSE(details.has_value());
+    } else {
+      EXPECT_TRUE(details->reset_token.has_value());
+      EXPECT_EQ(feed_url, details->url);
+      EXPECT_EQ(media_feeds::mojom::FetchResult::kNone,
+                details->last_fetch_result);
+
+      token = details->reset_token;
+    }
+  }
+
+  service()->ResetMediaFeed(url::Origin::Create(feed_url),
+                            media_feeds::mojom::ResetReason::kVisit);
+  WaitForDB();
+
+  {
+    // A new token should have been generated.
+    auto details = GetFetchDetailsSync(feed_id);
+
+    if (IsReadOnly()) {
+      EXPECT_FALSE(details.has_value());
+    } else {
+      EXPECT_TRUE(details->reset_token.has_value());
+      EXPECT_NE(token, details->reset_token);
+      EXPECT_EQ(feed_url, details->url);
+      EXPECT_EQ(media_feeds::mojom::FetchResult::kNone,
+                details->last_fetch_result);
+    }
   }
 }
 

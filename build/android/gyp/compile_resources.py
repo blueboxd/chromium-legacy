@@ -69,8 +69,9 @@ _PNG_WEBP_EXCLUSION_PATTERN = re.compile('|'.join([
 ]))
 
 # The package ID hardcoded for shared libraries. See
-# _HardcodeSharedLibraryDynamicAttributes() for more details.
-_SHARED_LIBRARY_HARDCODED_ID = 2
+# _HardcodeSharedLibraryDynamicAttributes() for more details. If this value
+# changes make sure to change REQUIRED_PACKAGE_IDENTIFIER in WebLayerImpl.java.
+_SHARED_LIBRARY_HARDCODED_ID = 12
 
 
 def _ParseArgs(args):
@@ -749,10 +750,58 @@ def _ProcessProtoXmlNode(xml_node):
     _ProcessProtoXmlNode(child)
 
 
-def _HardcodeSharedLibraryDynamicAttributes(zip_path):
-  """Hardcodes the package IDs of dynamic attributes to 0x02.
+def _SplitLocaleResourceType(_type, allowed_resource_names):
+  """Splits locale specific resources out of |_type| and returns them.
 
-  This is a workaround for b/147674078, which affects Android versions pre-N.
+  Any locale specific resources will be removed from |_type|, and a new
+  Resources_pb2.Type value will be returned which contains those resources.
+
+  Args:
+    _type: A Resources_pb2.Type value
+    allowed_resource_names: Names of locale resources that should be kept in the
+        main type.
+  """
+  locale_entries = []
+  for entry in _type.entry:
+    if entry.name in allowed_resource_names:
+      continue
+
+    # First collect all resources values with a locale set.
+    config_values_with_locale = []
+    for config_value in entry.config_value:
+      if config_value.config.locale:
+        config_values_with_locale.append(config_value)
+
+    if config_values_with_locale:
+      # Remove the locale resources from the original entry
+      for value in config_values_with_locale:
+        entry.config_value.remove(value)
+
+      # Add locale resources to a new Entry, and save for later.
+      locale_entry = Resources_pb2.Entry()
+      locale_entry.CopyFrom(entry)
+      del locale_entry.config_value[:]
+      locale_entry.config_value.extend(config_values_with_locale)
+      locale_entries.append(locale_entry)
+
+  if not locale_entries:
+    return None
+
+  # Copy the original type and replace the entries with |locale_entries|.
+  locale_type = Resources_pb2.Type()
+  locale_type.CopyFrom(_type)
+  del locale_type.entry[:]
+  locale_type.entry.extend(locale_entries)
+  return locale_type
+
+
+def _HardcodeSharedLibraryDynamicAttributes(zip_path, options):
+  """Hardcodes the package IDs of dynamic attributes and locale resources.
+
+  Hardcoding dynamic attribute package IDs is a workaround for b/147674078,
+  which affects Android versions pre-N. Hardcoding locale resource package IDs
+  is a workaround for b/155437035, which affects resources built with
+  --shared-lib on all Android versions
 
   Args:
     zip_path: Path to proto APK file.
@@ -765,11 +814,36 @@ def _HardcodeSharedLibraryDynamicAttributes(zip_path):
     with open(os.path.join(tmp_dir, 'resources.pb')) as f:
       table.ParseFromString(f.read())
 
+    # A separate top level package will be added to the resources, which
+    # contains only locale specific resources. The package ID of the locale
+    # resources is hardcoded to _SHARED_LIBRARY_HARDCODED_ID. This causes
+    # resources in locale splits to all get assigned
+    # _SHARED_LIBRARY_HARDCODED_ID as their package ID, which prevents a bug in
+    # shared library bundles where each split APK gets a separate dynamic ID,
+    # and cannot be accessed by the main APK.
+    translations_package = Resources_pb2.Package()
+    translations_package.package_id.id = _SHARED_LIBRARY_HARDCODED_ID
+    translations_package.package_name = table.package[
+        0].package_name + '_translations'
+
+    # These resources are allowed in the base resources, since they are needed
+    # by WebView.
+    allowed_resource_names = set()
+    if options.shared_resources_allowlist:
+      allowed_resource_names = set(
+          resource_utils.GetRTxtStringResourceNames(
+              options.shared_resources_allowlist))
     for package in table.package:
       for _type in package.type:
         for entry in _type.entry:
           for config_value in entry.config_value:
             _ProcessProtoValue(config_value.value)
+
+        locale_type = _SplitLocaleResourceType(_type, allowed_resource_names)
+        if locale_type:
+          translations_package.type.add().CopyFrom(locale_type)
+
+    table.package.add().CopyFrom(translations_package)
 
     with open(os.path.join(tmp_dir, 'resources.pb'), 'w') as f:
       f.write(table.SerializeToString())
@@ -1015,7 +1089,7 @@ def _PackageApk(options, build):
   # affect WebView usage, since WebView does not used dynamic attributes.
   if options.shared_resources:
     logging.debug('Hardcoding dynamic attributes')
-    _HardcodeSharedLibraryDynamicAttributes(build.proto_path)
+    _HardcodeSharedLibraryDynamicAttributes(build.proto_path, options)
     build_utils.CheckOutput([
         options.aapt2_path, 'convert', '--output-format', 'binary', '-o',
         build.arsc_path, build.proto_path

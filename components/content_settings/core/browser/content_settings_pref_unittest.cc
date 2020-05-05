@@ -9,6 +9,7 @@
 
 #include "base/bind_helpers.h"
 #include "base/stl_util.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/test/gtest_util.h"
 #include "base/values.h"
 #include "components/content_settings/core/browser/content_settings_utils.h"
@@ -37,7 +38,7 @@ constexpr char kTestPatternNonCanonicalBeta[] = "https://bet%61.com,*";
 
 constexpr char kTestContentSettingPrefName[] = "content_settings.test";
 
-constexpr char kexpirationKey[] = "expiration";
+constexpr char kExpirationKey[] = "expiration";
 constexpr char kLastModifiedKey[] = "last_modified";
 constexpr char kSettingKey[] = "setting";
 constexpr char kTagKey[] = "tag";
@@ -102,7 +103,7 @@ base::Value CreateDummyContentSettingValue(base::StringPiece tag,
   base::Value pref_value(base::Value::Type::DICTIONARY);
   pref_value.SetKey(kLastModifiedKey, base::Value("13189876543210000"));
   pref_value.SetKey(kSettingKey, std::move(setting));
-  pref_value.SetKey(kexpirationKey, expired ? base::Value("13189876543210001")
+  pref_value.SetKey(kExpirationKey, expired ? base::Value("13189876543210001")
                                             : base::Value("0"));
   return pref_value;
 }
@@ -344,6 +345,46 @@ TEST(ContentSettingsPref, ExpirationWhileReadingFromPrefs) {
 
   EXPECT_THAT(patterns_to_tags_in_prefs,
               testing::UnorderedElementsAreArray(kExpectedPatternsToTags));
+}
+
+// Ensure that any previously set last_modified values using
+// base::Time::ToInternalValue can be read correctly.
+TEST(ContentSettingsPref, LegacyLastModifiedLoad) {
+  constexpr char kPatternPair[] = "http://example.com,*";
+
+  auto original_pref_value = std::make_unique<base::DictionaryValue>();
+  const base::Time last_modified =
+      base::Time::FromInternalValue(13189876543210000);
+
+  // Create a single entry using our old internal value for last_modified.
+  base::Value pref_value(base::Value::Type::DICTIONARY);
+  pref_value.SetKey(
+      kLastModifiedKey,
+      base::Value(base::NumberToString(last_modified.ToInternalValue())));
+  pref_value.SetKey(kSettingKey, base::Value(CONTENT_SETTING_BLOCK));
+  pref_value.SetKey(kExpirationKey, base::Value("0"));
+
+  original_pref_value->SetKey(kPatternPair, std::move(pref_value));
+
+  TestingPrefServiceSimple prefs;
+  prefs.registry()->RegisterDictionaryPref(kTestContentSettingPrefName);
+  prefs.SetUserPref(kTestContentSettingPrefName,
+                    std::move(original_pref_value));
+
+  PrefChangeRegistrar registrar;
+  registrar.Init(&prefs);
+  ContentSettingsPref content_settings_pref(
+      ContentSettingsType::STORAGE_ACCESS, &prefs, &registrar,
+      kTestContentSettingPrefName, false, base::DoNothing());
+
+  // Ensure that after reading from our JSON/old value the last_modified time is
+  // still parsed correctly.
+  base::Time retrieved_last_modified =
+      content_settings_pref.GetWebsiteSettingLastModified(
+          ContentSettingsPattern::FromString("http://example.com"),
+          ContentSettingsPattern::Wildcard(),
+          /*resource_identifier=*/std::string());
+  EXPECT_EQ(last_modified, retrieved_last_modified);
 }
 
 }  // namespace content_settings

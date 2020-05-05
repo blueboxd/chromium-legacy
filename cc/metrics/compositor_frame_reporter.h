@@ -186,30 +186,32 @@ class CC_EXPORT CompositorFrameReporter {
  private:
   void TerminateReporter();
   void EndCurrentStage(base::TimeTicks end_time);
+
   void ReportCompositorLatencyHistograms() const;
   void ReportStageHistogramWithBreakdown(
       const StageData& stage,
       FrameSequenceTrackerType frame_sequence_tracker_type =
           FrameSequenceTrackerType::kMaxType) const;
-  void ReportBlinkBreakdowns(
-      const base::TimeTicks start_time,
+  void ReportCompositorLatencyBlinkBreakdowns(
       FrameSequenceTrackerType frame_sequence_tracker_type) const;
-
-  // Report histogram and trace event stage for one Viz breakdown
-  void ReportVizBreakdownStage(
-      VizBreakdown stage,
-      const base::TimeTicks start_time,
-      const base::TimeTicks end_time,
-      FrameSequenceTrackerType frame_sequence_tracker_type) const;
-
-  void ReportVizBreakdowns(
-      const base::TimeTicks start_time,
+  void ReportCompositorLatencyVizBreakdowns(
       FrameSequenceTrackerType frame_sequence_tracker_type) const;
   void ReportCompositorLatencyHistogram(
       FrameSequenceTrackerType intraction_type,
       const int stage_type_index,
       base::TimeDelta time_delta) const;
+
   void ReportEventLatencyHistograms() const;
+  void ReportEventLatencyBlinkBreakdowns(
+      int histogram_base_index,
+      const std::string& histogram_base_name) const;
+  void ReportEventLatencyVizBreakdowns(
+      int histogram_base_index,
+      const std::string& histogram_base_name) const;
+  void ReportEventLatencyHistogram(int histogram_base_index,
+                                   const std::string& histogram_base_name,
+                                   int stage_type_index,
+                                   base::TimeDelta latency) const;
 
   // Generate a trace event corresponding to a Viz breakdown under
   // SubmitCompositorFrameToPresentationCompositorFrame stage in
@@ -228,6 +230,9 @@ class CC_EXPORT CompositorFrameReporter {
     return report_types_.test(static_cast<size_t>(report_type));
   }
 
+  void PopulateBlinkBreakdownList();
+  void PopulateVizBreakdownList();
+
   // This method is only used for DCheck
   base::TimeDelta SumOfStageHistory() const;
 
@@ -236,8 +241,16 @@ class CC_EXPORT CompositorFrameReporter {
   const bool should_report_metrics_;
 
   StageData current_stage_;
+
   BeginMainFrameMetrics blink_breakdown_;
+  base::TimeTicks blink_start_time_;
+  base::TimeDelta
+      blink_breakdown_list_[static_cast<int>(BlinkBreakdown::kBreakdownCount)];
+
   viz::FrameTimingDetails viz_breakdown_;
+  base::TimeTicks viz_start_time_;
+  base::Optional<base::TimeDelta>
+      viz_breakdown_list_[static_cast<int>(VizBreakdown::kBreakdownCount)];
 
   // Stage data is recorded here. On destruction these stages will be reported
   // to UMA if the termination status is |kPresentedFrame|. Reported data will

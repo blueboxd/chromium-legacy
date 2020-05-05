@@ -99,36 +99,46 @@ void FrameRateDecider::UpdatePreferredFrameIntervalIfNeeded() {
 
   // If lowering the refresh rate is supported by the platform then we do this
   // in all cases where the content drawing onscreen animates at a fixed rate.
-  // This allows the platform to refresh the screen at a lower rate which is
-  // power efficient.
+  // This includes surfaces backed by videos or media streams (since the frame
+  // rate provided by LayerTree is an estimate, it is not considered a fixed
+  // frame source). This allows the platform to refresh the screen at a lower
+  // rate which is power efficient.
   //
-  // But if we're using a synthetic begin frame source, then there is no benefit
-  // in ticking at a lower rate unless there are multiple frame sinks animating
-  // at a fixed rate. Ticking at a lower rate in this case ensures that updates
-  // from the frame sinks are aligned to the same vsync, allowing the compositor
-  // to draw at a lower rate.
-  if (using_synthetic_bfs_) {
-    int num_of_frame_sinks_with_fixed_interval = 0;
-    for (const auto& frame_sink_id : frame_sinks_drawn_in_previous_frame_) {
-      auto type = mojom::CompositorFrameSinkType::kUnspecified;
-      auto interval = client_->GetPreferredFrameIntervalForFrameSinkId(
-          frame_sink_id, &type);
+  // However if we're using a synthetic begin frame source, then the
+  // optimization is restricted to cases with multiple media streams. This is
+  // because using this for all video cases results in dropped frame regressions
+  // which need to be investigated (see crbug.com/976583).
+  int num_of_frame_sinks_with_fixed_interval = 0;
+  for (const auto& frame_sink_id : frame_sinks_drawn_in_previous_frame_) {
+    auto type = mojom::CompositorFrameSinkType::kUnspecified;
+    auto interval =
+        client_->GetPreferredFrameIntervalForFrameSinkId(frame_sink_id, &type);
 
-      if (type == mojom::CompositorFrameSinkType::kMediaStream &&
-          interval != BeginFrameArgs::MinInterval()) {
+    switch (type) {
+      case mojom::CompositorFrameSinkType::kUnspecified:
+        DCHECK_EQ(interval, BeginFrameArgs::MinInterval());
+        continue;
+      case mojom::CompositorFrameSinkType::kVideo:
+        if (!using_synthetic_bfs_)
+          num_of_frame_sinks_with_fixed_interval++;
+        break;
+      case mojom::CompositorFrameSinkType::kMediaStream:
         num_of_frame_sinks_with_fixed_interval++;
-      }
+        break;
+      case mojom::CompositorFrameSinkType::kLayerTree:
+        continue;
     }
+  }
 
-    if (num_of_frame_sinks_with_fixed_interval < 2) {
-      TRACE_EVENT_INSTANT0(
-          "viz",
-          "FrameRateDecider::UpdatePreferredFrameIntervalIfNeeded - not enough "
-          "frame sinks to toggle",
-          TRACE_EVENT_SCOPE_THREAD);
-      SetPreferredInterval(UnspecifiedFrameInterval());
-      return;
-    }
+  const int min_frame_sinks_to_toggle = using_synthetic_bfs_ ? 2 : 1;
+  if (num_of_frame_sinks_with_fixed_interval < min_frame_sinks_to_toggle) {
+    TRACE_EVENT_INSTANT0(
+        "viz",
+        "FrameRateDecider::UpdatePreferredFrameIntervalIfNeeded - not enough "
+        "frame sinks to toggle",
+        TRACE_EVENT_SCOPE_THREAD);
+    SetPreferredInterval(UnspecifiedFrameInterval());
+    return;
   }
 
   // The code below picks the optimal frame interval for the display based on

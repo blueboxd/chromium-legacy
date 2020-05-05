@@ -6,7 +6,6 @@ package org.chromium.components.webrtc;
 
 import android.app.PendingIntent;
 import android.content.Context;
-import android.graphics.drawable.Icon;
 import android.os.Build;
 
 import androidx.annotation.IntDef;
@@ -40,27 +39,16 @@ public class MediaCaptureNotificationUtil {
      * @param isIncognito whether the notification is for an off-the-record context.
      * @param contentIntent the intent to be sent when the notification is clicked.
      * @param stopIntent if non-null, a stop button that triggers this intent will be added.
-     * @param resPackageName if non-null, the name of the package that contains the drawable.
      */
     public static ChromeNotification createNotification(ChromeNotificationBuilder builder,
             @MediaType int mediaType, String url, @Nullable String appName, boolean isIncognito,
-            @Nullable PendingIntentProvider contentIntent, @Nullable PendingIntent stopIntent,
-            @Nullable String resPackageName) {
+            @Nullable PendingIntentProvider contentIntent, @Nullable PendingIntent stopIntent) {
         Context appContext = ContextUtils.getApplicationContext();
-        builder.setAutoCancel(false).setOngoing(true).setLocalOnly(true).setContentIntent(
-                contentIntent);
-
-        if (resPackageName != null) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                builder.setSmallIcon(
-                        Icon.createWithResource(resPackageName, getNotificationIconId(mediaType)));
-            } else {
-                // Some fallback is required, or the notification won't appear.
-                builder.setSmallIcon(android.R.drawable.radiobutton_on_background);
-            }
-        } else {
-            builder.setSmallIcon(getNotificationIconId(mediaType));
-        }
+        builder.setAutoCancel(false)
+                .setOngoing(true)
+                .setLocalOnly(true)
+                .setContentIntent(contentIntent)
+                .setSmallIcon(getNotificationIconId(mediaType));
 
         if (stopIntent != null) {
             builder.setPriorityBeforeO(NotificationCompat.PRIORITY_HIGH);

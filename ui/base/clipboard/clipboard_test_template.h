@@ -81,9 +81,8 @@ class ClipboardTest : public PlatformTest {
   Clipboard& clipboard() { return *clipboard_; }
 
   std::vector<base::string16> GetAvailableTypes(ClipboardBuffer buffer) {
-    bool contains_filenames;
     std::vector<base::string16> types;
-    clipboard().ReadAvailableTypes(buffer, &types, &contains_filenames);
+    clipboard().ReadAvailableTypes(buffer, &types);
     return types;
   }
 

@@ -1,45 +1,37 @@
 <!doctype HTML>
 <html class="reftest-wait">
 <meta charset="utf8">
-<title>Display Locking: absolute positioned in flex, which is in a hidden div.</title>
-<link rel="author" title="Vladimir Levin" href="mailto:vmpstr@chromium.org">
+<title>Content Visibility: pseudo elements</title>
+<link rel="author" title="Rakina Zata Amni" href="mailto:rakina@chromium.org">
 <link rel="help" href="https://github.com/WICG/display-locking">
-<link rel="match" href="container-ref.html">
-<meta name="assert" content="content-visibility hidden flex and abspos descendants don't paint">
+<link rel="match" href="content-visibility-042-ref.html">
+<meta name="assert" content="content-visibility elements paints ::before and ::after when hidden is removed">
 
 <script src="/common/reftest-wait.js"></script>
-<script src="resources/utils.js"></script>
 
 <style>
-#container {
-  width: 150px;
-  height: 150px;
-  background: lightblue;
-  position: relative;
+#container::before {
+  content: "a";
+  color: blue;
 }
-div > div {
-  width: 100px;
-  height: 100px;
-  background: red;
+.hasAfter::after {
+  content: "b";
+  color: green;
 }
 .hidden {
   content-visibility: hidden;
 }
-.flex { display: flex; }
-.abspos { position: absolute; }
 </style>
-
-<div id=container>
-  <div class=flex>
-    <div class=abspos></div>
-  </div>
-</div>
+<div id="container" class=hidden style="display:none;"></div>
 
 <script>
 async function runTest() {
-  document.getElementById("container").classList.add("hidden");
+  container.classList.add("hasAfter");
+  container.classList.remove("hidden");
+  container.style = "";
   requestAnimationFrame(takeScreenshot);
 }
 
-window.onload = requestAnimationFrame(() => requestAnimationFrame(runTest));
+window.onload = runTest;
 </script>
+</html>

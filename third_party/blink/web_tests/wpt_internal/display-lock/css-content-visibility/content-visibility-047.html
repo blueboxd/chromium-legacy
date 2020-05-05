@@ -1,52 +1,50 @@
 <!doctype HTML>
-<html class="reftest-wait">
 <meta charset="utf8">
-<title>Content Visibility: auto subtree becomes hidden in the viewport</title>
+<title>Content Visibility: tab order navigation ignores hidden subtrees</title>
 <link rel="author" title="Vladimir Levin" href="mailto:vmpstr@chromium.org">
 <link rel="help" href="https://github.com/WICG/display-locking">
-<link rel="match" href="container-ref.html">
-<meta name="assert" content="hidden subtree because auto and so stops painting">
-<script src="/common/reftest-wait.js"></script>
+<link rel="match" href="activated-removes-size-containment-ref.html">
+<meta name="assert" content="tab order navigation ignores hidden subtrees.">
+
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
+<script src="/resources/testdriver.js"></script>
+<script src="/resources/testdriver-actions.js"></script>
+<script src="/resources/testdriver-vendor.js"></script>
 
 <style>
-#container {
-  width: 150px;
-  height: 150px;
-  background: lightblue;
+.hidden {
+  content-visibility: hidden;
 }
-#child {
-  width: 50px;
-  height: 50px;
-  background: lightgreen;
-}
-.auto { content-visibility: auto; }
-.hidden { content-visibility: hidden; }
-
 </style>
 
-<div id=container class=auto>
-  Text.
-  <div id=child></div>
+<input id=one type=text></input>
+<div class=hidden>
+  <input id=two type=text></input>
+  <input id=three type=text></input>
+  <input id=four type=text></input>
 </div>
+<input id=five type=text></input>
 
 <script>
-
-function runTest() {
-  document.getElementById("container").classList.remove("auto");
-  document.getElementById("container").classList.add("hidden");
-
-  requestAnimationFrame(takeScreenshot);
-}
-
-window.onload = requestAnimationFrame(() => {
-  requestAnimationFrame(() => {
-    requestAnimationFrame(() => {
-      runTest();
+async_test((t) => {
+  const tab = "\t";
+  async function step1() {
+    await test_driver.send_keys(document.body, tab);
+    t.step(() => {
+      assert_equals(document.activeElement, document.getElementById("one"));
     });
-  });
-});
+    requestAnimationFrame(step2);
+  }
 
+  async function step2() {
+    await test_driver.send_keys(document.body, tab);
+    t.step(() => {
+      assert_equals(document.activeElement, document.getElementById("five"));
+    });
+    t.done();
+  }
+
+  window.onload = () => { requestAnimationFrame(step1); };
+}, "Tab order navigation skips hidden subtrees");
 </script>
-</html>
-
-

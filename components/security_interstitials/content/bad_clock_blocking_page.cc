@@ -10,11 +10,10 @@
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
 #include "components/security_interstitials/content/cert_report_helper.h"
 #include "components/security_interstitials/content/security_interstitial_controller_client.h"
+#include "components/security_interstitials/content/security_interstitial_page.h"
 #include "components/security_interstitials/content/ssl_cert_reporter.h"
 #include "components/security_interstitials/core/bad_clock_ui.h"
 #include "components/security_interstitials/core/metrics_helper.h"
-#include "content/public/browser/interstitial_page.h"
-#include "content/public/browser/interstitial_page_delegate.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_process_host.h"
@@ -23,13 +22,13 @@
 #include "content/public/browser/web_contents.h"
 #include "net/base/net_errors.h"
 
-using content::InterstitialPageDelegate;
 using content::NavigationController;
 using content::NavigationEntry;
 
 // static
-const InterstitialPageDelegate::TypeID BadClockBlockingPage::kTypeForTesting =
-    &BadClockBlockingPage::kTypeForTesting;
+const security_interstitials::SecurityInterstitialPage::TypeID
+    BadClockBlockingPage::kTypeForTesting =
+        &BadClockBlockingPage::kTypeForTesting;
 
 // Note that we always create a navigation entry with SSL errors.
 // No error happening loading a sub-resource triggers an interstitial so far.
@@ -68,7 +67,8 @@ bool BadClockBlockingPage::ShouldCreateNewNavigation() const {
   return true;
 }
 
-InterstitialPageDelegate::TypeID BadClockBlockingPage::GetTypeForTesting() {
+security_interstitials::SecurityInterstitialPage::TypeID
+BadClockBlockingPage::GetTypeForTesting() {
   return BadClockBlockingPage::kTypeForTesting;
 }
 
@@ -76,10 +76,6 @@ void BadClockBlockingPage::PopulateInterstitialStrings(
     base::DictionaryValue* load_time_data) {
   bad_clock_ui_->PopulateStringsForHTML(load_time_data);
   cert_report_helper()->PopulateExtendedReportingOption(load_time_data);
-}
-
-void BadClockBlockingPage::OverrideEntry(NavigationEntry* entry) {
-  entry->GetSSL() = content::SSLStatus(ssl_info_);
 }
 
 // This handles the commands sent from the interstitial JavaScript.

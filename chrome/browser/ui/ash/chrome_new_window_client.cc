@@ -113,6 +113,8 @@ constexpr std::pair<arc::mojom::ChromePage, const char*> kOSSettingsMapping[] =
       chromeos::settings::mojom::kPrintingDetailsSubpagePath},
      {ChromePage::DATETIME, chromeos::settings::mojom::kDateAndTimeSectionPath},
      {ChromePage::DISPLAY, chromeos::settings::mojom::kDisplaySubpagePath},
+     {ChromePage::DOWNLOADEDCONTENT,
+      chromeos::settings::mojom::kDlcSubpagePath},
      {ChromePage::ETHERNET,
       chromeos::settings::mojom::kEthernetDetailsSubpagePath},
      {ChromePage::EXTERNALSTORAGE,

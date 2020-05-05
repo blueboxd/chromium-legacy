@@ -226,10 +226,6 @@ extern const char kFullscreenSmoothScrollingDescription[];
 extern const char kFullscreenControllerBrowserScopedName[];
 extern const char kFullscreenControllerBrowserScopedDescription[];
 
-// Title and description for the flag to ignore viewport scale limits.
-extern const char kIgnoresViewportScaleLimitsName[];
-extern const char kIgnoresViewportScaleLimitsDescription[];
-
 // Title and description for the flag to present the new UI Reboot on Infobars
 // using OverlayPresenter.
 extern const char kInfobarOverlayUIName[];

@@ -240,6 +240,22 @@ class CreditCardAccessManagerTest : public testing::Test {
     return credit_card_access_manager_->GetOrCreateCVCAuthenticator();
   }
 
+  void MockUserResponseForCvcAuth(std::string cvc, bool enable_fido) {
+    payments::FullCardRequest* full_card_request =
+        GetCVCAuthenticator()->full_card_request_.get();
+    if (!full_card_request)
+      return;
+
+    // Mock user response.
+    payments::FullCardRequest::UserProvidedUnmaskDetails details;
+    details.cvc = base::ASCIIToUTF16(cvc);
+#if defined(OS_ANDROID)
+    details.enable_fido_auth = enable_fido;
+#endif
+    full_card_request->OnUnmaskPromptAccepted(details);
+    full_card_request->OnDidGetUnmaskRiskData(/*risk_data=*/"");
+  }
+
   // Returns true if full card request was sent from CVC auth.
   bool GetRealPanForCVCAuth(AutofillClient::PaymentsRpcResult result,
                             const std::string& real_pan,
@@ -251,10 +267,7 @@ class CreditCardAccessManagerTest : public testing::Test {
     if (!full_card_request)
       return false;
 
-    // Mock user response.
-    payments::FullCardRequest::UserProvidedUnmaskDetails details;
-    details.cvc = base::ASCIIToUTF16(kTestCvc);
-    full_card_request->OnUnmaskPromptAccepted(details);
+    MockUserResponseForCvcAuth(kTestCvc, follow_with_fido_auth);
 
     payments::PaymentsClient::UnmaskResponseDetails response;
 #if !defined(OS_IOS)
@@ -1299,6 +1312,34 @@ TEST_F(CreditCardAccessManagerTest, FIDOOptIn_CheckboxDeclined) {
   EXPECT_EQ(CreditCardFIDOAuthenticator::Flow::NONE_FLOW,
             GetFIDOAuthenticator()->current_flow());
   EXPECT_FALSE(GetFIDOAuthenticator()->IsUserOptedIn());
+}
+
+// Ensures that opting-in through settings page on Android successfully sends an
+// opt-in request the next time the user downstreams a card.
+TEST_F(CreditCardAccessManagerTest, FIDOSettingsPageOptInSuccess_Android) {
+  CreateServerCard(kTestGUID, kTestNumber);
+  CreditCard* card = credit_card_access_manager_->GetCreditCard(kTestGUID);
+  GetFIDOAuthenticator()->SetUserVerifiable(true);
+
+  // Setting the local opt-in state as true and implying that Payments servers
+  // has the opt-in state to false - this shows the user opted-in through the
+  // settings page.
+  SetUserOptedIn(true);
+  payments_client_->AllowFidoRegistration(true);
+  payments_client_->ShouldReturnUnmaskDetailsImmediately(true);
+
+  credit_card_access_manager_->PrepareToFetchCreditCard();
+  credit_card_access_manager_->FetchCreditCard(card, accessor_->GetWeakPtr());
+  InvokeUnmaskDetailsTimeout();
+  WaitForCallbacks();
+
+  MockUserResponseForCvcAuth(kTestCvc, /*enable_fido=*/false);
+
+  // Although the checkbox was hidden and |enable_fido_auth| was set to false in
+  // the user request, because of the previous opt-in intention, the client must
+  // request to opt-in.
+  EXPECT_TRUE(
+      payments_client_->unmask_request()->user_response.enable_fido_auth);
 }
 
 #else  // defined(OS_ANDROID)

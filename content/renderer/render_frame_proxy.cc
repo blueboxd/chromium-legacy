@@ -33,6 +33,7 @@
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/render_view_impl.h"
 #include "content/renderer/render_widget.h"
+#include "ipc/ipc_message.h"
 #include "ipc/ipc_message_macros.h"
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "printing/buildflags/buildflags.h"
@@ -635,6 +636,7 @@ void RenderFrameProxy::ForwardPostMessage(
 
 void RenderFrameProxy::Navigate(
     const blink::WebURLRequest& request,
+    blink::WebLocalFrame* initiator_frame,
     bool should_replace_current_entry,
     bool is_opener_navigation,
     bool initiator_frame_has_download_sandbox_flag,
@@ -658,6 +660,12 @@ void RenderFrameProxy::Navigate(
   params.user_gesture = request.HasUserGesture();
   params.triggering_event_info = blink::TriggeringEventInfo::kUnknown;
   params.blob_url_token = blob_url_token.release();
+
+  RenderFrameImpl* initiator_render_frame =
+      RenderFrameImpl::FromWebFrame(initiator_frame);
+  params.initiator_routing_id = initiator_render_frame
+                                    ? initiator_render_frame->GetRoutingID()
+                                    : MSG_ROUTING_NONE;
 
   if (impression)
     params.impression = ConvertWebImpressionToImpression(*impression);

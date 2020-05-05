@@ -155,7 +155,7 @@ void CaptionController::OnBrowserRemoved(Browser* browser) {
 
 void CaptionController::DispatchTranscription(
     content::RenderFrameHost* frame_host,
-    const std::string& transcription) {
+    const chrome::mojom::TranscriptionResultPtr& transcription_result) {
   auto* web_contents = content::WebContents::FromRenderFrameHost(frame_host);
   if (!web_contents)
     return;
@@ -164,7 +164,7 @@ void CaptionController::DispatchTranscription(
     return;
   if (!caption_bubble_controllers_.count(browser))
     return;
-  caption_bubble_controllers_[browser]->OnTranscription(transcription);
+  caption_bubble_controllers_[browser]->OnTranscription(transcription_result);
 }
 
 void CaptionController::UpdateCaptionStyle() {

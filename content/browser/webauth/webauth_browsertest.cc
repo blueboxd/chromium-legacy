@@ -82,7 +82,8 @@ constexpr char kPublicKeyErrorMessage[] =
 
 constexpr char kNotAllowedErrorMessage[] =
     "webauth: NotAllowedError: The operation either timed out or was not "
-    "allowed. See: https://w3c.github.io/webauthn/#sec-assertion-privacy.";
+    "allowed. See: "
+    "https://www.w3.org/TR/webauthn-2/#sctn-privacy-considerations-client.";
 
 #if defined(OS_WIN)
 constexpr char kInvalidStateErrorMessage[] =

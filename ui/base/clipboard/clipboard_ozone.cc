@@ -343,10 +343,11 @@ void ClipboardOzone::Clear(ClipboardBuffer buffer) {
   async_clipboard_ozone_->Clear(buffer);
 }
 
-void ClipboardOzone::ReadAvailableTypes(ClipboardBuffer buffer,
-                                        std::vector<base::string16>* types,
-                                        bool* contains_filenames) const {
+void ClipboardOzone::ReadAvailableTypes(
+    ClipboardBuffer buffer,
+    std::vector<base::string16>* types) const {
   DCHECK(CalledOnValidThread());
+  DCHECK(types);
 
   types->clear();
 

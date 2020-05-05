@@ -49,9 +49,10 @@ void IsolatedPrerenderURLLoaderInterceptor::MaybeCreateLoader(
 
   DCHECK(!loader_callback_);
   loader_callback_ = std::move(callback);
+  url_ = tentative_resource_request.url;
 
   std::unique_ptr<PrefetchedMainframeResponseContainer> prefetch =
-      GetPrefetchedResponse(tentative_resource_request.url);
+      GetPrefetchedResponse(url_);
   if (!prefetch) {
     DoNotInterceptNavigation();
     return;
@@ -59,14 +60,15 @@ void IsolatedPrerenderURLLoaderInterceptor::MaybeCreateLoader(
 
   if (base::FeatureList::IsEnabled(
           features::kIsolatePrerendersMustProbeOrigin)) {
-    StartProbe(tentative_resource_request.url.GetOrigin(),
+    StartProbe(url_.GetOrigin(),
                base::BindOnce(&IsolatedPrerenderURLLoaderInterceptor::
                                   InterceptPrefetchedNavigation,
                               base::Unretained(this),
                               tentative_resource_request, std::move(prefetch)));
     return;
   }
-  NotifyPrefetchUsage(IsolatedPrerenderTabHelper::PrefetchUsage::kPrefetchUsed);
+  NotifyPrefetchStatusUpdate(
+      IsolatedPrerenderTabHelper::PrefetchStatus::kPrefetchUsedNoProbe);
   InterceptPrefetchedNavigation(tentative_resource_request,
                                 std::move(prefetch));
 }
@@ -90,13 +92,13 @@ void IsolatedPrerenderURLLoaderInterceptor::OnProbeComplete(
     base::OnceClosure on_success_callback,
     bool success) {
   if (success) {
-    NotifyPrefetchUsage(
-        IsolatedPrerenderTabHelper::PrefetchUsage::kPrefetchUsedProbeSuccess);
+    NotifyPrefetchStatusUpdate(
+        IsolatedPrerenderTabHelper::PrefetchStatus::kPrefetchUsedProbeSuccess);
     std::move(on_success_callback).Run();
     return;
   }
-  NotifyPrefetchUsage(
-      IsolatedPrerenderTabHelper::PrefetchUsage::kPrefetchNotUsedProbeFailed);
+  NotifyPrefetchStatusUpdate(
+      IsolatedPrerenderTabHelper::PrefetchStatus::kPrefetchNotUsedProbeFailed);
   DoNotInterceptNavigation();
 }
 
@@ -188,8 +190,8 @@ IsolatedPrerenderURLLoaderInterceptor::GetPrefetchedResponse(const GURL& url) {
   return tab_helper->TakePrefetchResponse(url);
 }
 
-void IsolatedPrerenderURLLoaderInterceptor::NotifyPrefetchUsage(
-    IsolatedPrerenderTabHelper::PrefetchUsage usage) const {
+void IsolatedPrerenderURLLoaderInterceptor::NotifyPrefetchStatusUpdate(
+    IsolatedPrerenderTabHelper::PrefetchStatus status) const {
   content::WebContents* web_contents =
       content::WebContents::FromFrameTreeNodeId(frame_tree_node_id_);
   if (!web_contents) {
@@ -201,5 +203,6 @@ void IsolatedPrerenderURLLoaderInterceptor::NotifyPrefetchUsage(
   if (!tab_helper)
     return;
 
-  tab_helper->OnPrefetchUsage(usage);
+  DCHECK(url_.is_valid());
+  tab_helper->OnPrefetchStatusUpdate(url_, status);
 }

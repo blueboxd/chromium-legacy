@@ -109,6 +109,9 @@ class MockNavigationHandle : public NavigationHandle {
   const base::Optional<Impression>& GetImpression() override {
     return impression_;
   }
+  const GlobalFrameRoutingId& GetInitiatorRoutingId() override {
+    return initiator_routing_id_;
+  }
   const base::Optional<url::Origin>& GetInitiatorOrigin() override {
     return initiator_origin_;
   }
@@ -166,6 +169,10 @@ class MockNavigationHandle : public NavigationHandle {
   void set_impression(const Impression& impression) {
     impression_ = impression;
   }
+  void set_initiator_routing_id(
+      const GlobalFrameRoutingId& initiator_routing_id) {
+    initiator_routing_id_ = initiator_routing_id;
+  }
   void set_initiator_origin(const url::Origin& initiator_origin) {
     initiator_origin_ = initiator_origin;
   }
@@ -197,6 +204,7 @@ class MockNavigationHandle : public NavigationHandle {
   ReloadType reload_type_ = content::ReloadType::NONE;
   std::string href_translate_;
   base::Optional<Impression> impression_;
+  GlobalFrameRoutingId initiator_routing_id_;
 };
 
 }  // namespace content

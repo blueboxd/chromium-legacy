@@ -935,11 +935,15 @@ class PixelTestPages(object):
   # Pages that should be run with experimental canvas features.
   @staticmethod
   def ExperimentalCanvasFeaturesPages(base_name):
-    browser_args = ['--enable-experimental-web-platform-features'
-                    ]  # for lowLatency
-    accelerated_args = ['--disable-software-compositing-fallback']
+    browser_args = [
+        '--enable-experimental-web-platform-features',  # For lowLatency.
+    ]
+    accelerated_args = [
+        '--disable-software-compositing-fallback',
+    ]
     unaccelerated_args = [
-        '--disable-accelerated-2d-canvas', '--disable-gpu-compositing'
+        '--disable-accelerated-2d-canvas',
+        '--disable-gpu-compositing',
     ]
 
     return [

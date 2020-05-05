@@ -62,7 +62,8 @@ public class TabSuggestionMessageServiceUnitTest {
 
     private static final int CLOSE_SUGGESTION_ACTION_BUTTON_RESOURCE_ID =
             org.chromium.chrome.tab_ui.R.string.tab_suggestion_close_tab_action_button;
-
+    private static final int GROUP_SUGGESTION_ACTION_BUTTON_RESOURCE_ID =
+            org.chromium.chrome.tab_ui.R.string.tab_selection_editor_group;
 
     private Tab mTab1;
     private Tab mTab2;
@@ -123,6 +124,7 @@ public class TabSuggestionMessageServiceUnitTest {
                 mContext, mTabModelSelector, mTabSelectionEditorController);
     }
 
+    // Tests for Close suggestions.
     @Test
     public void testReviewHandler_closeSuggestion() {
         prepareTabSuggestions(Arrays.asList(mTab1, mTab2), TabSuggestion.TabSuggestionAction.CLOSE);
@@ -187,6 +189,55 @@ public class TabSuggestionMessageServiceUnitTest {
                 mTabSuggestionFeedbackCallbackArgumentCaptor.getValue();
         assertEquals(bestSuggestion, capturedFeedback.tabSuggestion);
         assertEquals(DISMISSED, capturedFeedback.tabSuggestionResponse);
+    }
+
+    // Tests for grouping suggestion
+    @Test
+    public void testReviewHandler_groupSuggestion() {
+        prepareTabSuggestions(Arrays.asList(mTab1, mTab2), TabSuggestion.TabSuggestionAction.GROUP);
+        String groupSuggestionActionButtonText = "group";
+        int expectedEnablingThreshold =
+                TabSuggestionMessageService.GROUP_SUGGESTION_ACTION_ENABLING_THRESHOLD;
+        doReturn(groupSuggestionActionButtonText)
+                .when(mContext)
+                .getString(eq(GROUP_SUGGESTION_ACTION_BUTTON_RESOURCE_ID));
+
+        mMessageService.review();
+        verify(mTabSelectionEditorController)
+                .configureToolbar(eq(groupSuggestionActionButtonText), any(),
+                        eq(expectedEnablingThreshold), any());
+        verify(mTabSelectionEditorController).show(eq(Arrays.asList(mTab1, mTab2, mTab3)), eq(2));
+
+        prepareTabSuggestions(Arrays.asList(mTab1, mTab3), TabSuggestion.TabSuggestionAction.GROUP);
+        mMessageService.review();
+        verify(mTabSelectionEditorController).show(eq(Arrays.asList(mTab1, mTab3, mTab2)), eq(2));
+    }
+
+    @Test
+    public void testGroupingSuggestionActionHandler() {
+        List<Tab> suggestedTabs = Arrays.asList(mTab1, mTab2);
+        List<Integer> suggestedTabIds = Arrays.asList(TAB1_ID, TAB2_ID);
+        List<TabSuggestion> tabSuggestions =
+                prepareTabSuggestions(suggestedTabs, TabSuggestion.TabSuggestionAction.GROUP);
+        TabSuggestion bestSuggestion = tabSuggestions.get(0);
+
+        assertEquals(3, mTabModelSelector.getCurrentModel().getCount());
+
+        TabSelectionEditorActionProvider actionProvider =
+                mMessageService.getActionProvider(bestSuggestion);
+        actionProvider.processSelectedTabs(suggestedTabs, mTabModelSelector);
+
+        verify(mTabSuggestionFeedbackCallback)
+                .onResult(mTabSuggestionFeedbackCallbackArgumentCaptor.capture());
+        verify(mTabGroupModelFilter)
+                .mergeListOfTabsToGroup(eq(suggestedTabs), any(), eq(false), eq(true));
+
+        TabSuggestionFeedback capturedFeedback =
+                mTabSuggestionFeedbackCallbackArgumentCaptor.getValue();
+        assertEquals(bestSuggestion, capturedFeedback.tabSuggestion);
+        assertEquals(ACCEPTED, capturedFeedback.tabSuggestionResponse);
+        assertEquals(suggestedTabIds, capturedFeedback.selectedTabIds);
+        assertEquals(3, capturedFeedback.totalTabCount);
     }
 
     @Test

@@ -39,7 +39,6 @@ class WebDialogView : public views::WebDialogView,
   // views::WebDialogView
   bool ShouldShowCloseButton() const override;
   bool TakeFocus(content::WebContents* source, bool reverse) override;
-  bool ShouldCenterWindowTitleText() const override;
 
   // ash::SystemTrayFocusObserver
   void OnFocusLeavingSystemTray(bool reverse) override;

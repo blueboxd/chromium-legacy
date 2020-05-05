@@ -549,14 +549,11 @@ void ClipboardX11::Clear(ClipboardBuffer buffer) {
   x11_details_->Clear(buffer);
 }
 
-void ClipboardX11::ReadAvailableTypes(ClipboardBuffer buffer,
-                                      std::vector<base::string16>* types,
-                                      bool* contains_filenames) const {
+void ClipboardX11::ReadAvailableTypes(
+    ClipboardBuffer buffer,
+    std::vector<base::string16>* types) const {
   DCHECK(CalledOnValidThread());
-  if (!types || !contains_filenames) {
-    NOTREACHED();
-    return;
-  }
+  DCHECK(types);
 
   TargetList target_list = x11_details_->WaitAndGetTargetsList(buffer);
 
@@ -570,7 +567,6 @@ void ClipboardX11::ReadAvailableTypes(ClipboardBuffer buffer,
     types->push_back(base::UTF8ToUTF16(kMimeTypeRTF));
   if (target_list.ContainsFormat(ClipboardFormatType::GetBitmapType()))
     types->push_back(base::UTF8ToUTF16(kMimeTypePNG));
-  *contains_filenames = false;
 
   SelectionData data(x11_details_->RequestAndWaitForTypes(
       buffer, x11_details_->GetAtomsForFormat(

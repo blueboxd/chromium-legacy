@@ -347,6 +347,12 @@ class CONTENT_EXPORT NavigationHandle {
   // lifetime of the navigation.
   virtual const base::Optional<Impression>& GetImpression() = 0;
 
+  // Returns the routing id associated with the frame that initiated the
+  // navigation. This can contain a null routing id if the navigation was not
+  // associated with a frame, or may return a valid routing id to a frame that
+  // no longer exists because it was deleted before the navigation began.
+  virtual const GlobalFrameRoutingId& GetInitiatorRoutingId() = 0;
+
   // Returns, if available, the origin of the document that has initiated the
   // navigation for this NavigationHandle.
   virtual const base::Optional<url::Origin>& GetInitiatorOrigin() = 0;

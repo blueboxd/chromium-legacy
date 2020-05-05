@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/containers/flat_map.h"
 #include "base/gtest_prod_util.h"
 #include "content/browser/conversions/conversion_manager.h"
 #include "content/common/content_export.h"
@@ -54,10 +55,26 @@ class CONTENT_EXPORT ConversionHost : public WebContentsObserver,
   void RegisterConversion(blink::mojom::ConversionPtr conversion) override;
 
   // WebContentsObserver:
+  void DidStartNavigation(NavigationHandle* navigation_handle) override;
   void DidFinishNavigation(NavigationHandle* navigation_handle) override;
 
   // Sets the target frame on |receiver_|.
   void SetCurrentTargetFrameForTesting(RenderFrameHost* render_frame_host);
+
+  // Map which stores the top-frame origin an impression occurred on for all
+  // navigations with an associated impression, keyed by navigation ID.
+  // Initiator origins are stored at navigation start time to have the best
+  // chance of catching the initiating frame before it has a chance to go away.
+  // Storing the origins at navigation start also prevents cases where a frame
+  // initiates a navigation for itself, causing the frame to be correct but not
+  // representing the frame state at the time the navigation was initiated. They
+  // are stored until DidFinishNavigation, when they can be matched up with an
+  // impression.
+  //
+  // A flat_map is used as the number of ongoing impression navigations is
+  // expected to be very small in a given WebContents.
+  using NavigationImpressionOriginMap = base::flat_map<int64_t, url::Origin>;
+  NavigationImpressionOriginMap navigation_impression_origins_;
 
   // Gives access to a ConversionManager implementation to forward impressions
   // and conversion registrations to.

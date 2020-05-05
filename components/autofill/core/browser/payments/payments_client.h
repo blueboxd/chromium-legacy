@@ -262,9 +262,10 @@ class PaymentsClient {
       const std::string& app_locale);
 
   // The user has attempted to unmask a card with the given cvc.
-  void UnmaskCard(const UnmaskRequestDetails& request_details,
-                  base::OnceCallback<void(AutofillClient::PaymentsRpcResult,
-                                          UnmaskResponseDetails&)> callback);
+  virtual void UnmaskCard(
+      const UnmaskRequestDetails& request_details,
+      base::OnceCallback<void(AutofillClient::PaymentsRpcResult,
+                              UnmaskResponseDetails&)> callback);
 
   // Opts-in or opts-out the user to use FIDO authentication for card unmasking
   // on this device.

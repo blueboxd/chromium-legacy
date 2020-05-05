@@ -527,6 +527,134 @@ TEST(ComputedStyleTest, CustomPropertiesEqual_Data) {
   EXPECT_FALSE(style1->CustomPropertiesEqual(properties, *style2));
 }
 
+TEST(ComputedStyleTest, CustomPropertiesInheritance_FastPath) {
+  auto dummy = std::make_unique<DummyPageHolder>(IntSize(0, 0));
+  css_test_helpers::RegisterProperty(dummy->GetDocument(), "--x", "<length>",
+                                     "0px", true);
+
+  scoped_refptr<ComputedStyle> old_style = ComputedStyle::Create();
+  scoped_refptr<ComputedStyle> new_style = ComputedStyle::Create();
+
+  using UnitType = CSSPrimitiveValue::UnitType;
+
+  const auto* value1 = CSSNumericLiteralValue::Create(1.0, UnitType::kPixels);
+  const auto* value2 = CSSNumericLiteralValue::Create(2.0, UnitType::kPixels);
+
+  EXPECT_FALSE(old_style->HasVariableDeclaration());
+  EXPECT_FALSE(old_style->HasVariableReference());
+  EXPECT_FALSE(new_style->HasVariableReference());
+  EXPECT_FALSE(new_style->HasVariableDeclaration());
+
+  // Removed variable
+  old_style->SetVariableValue("--x", value1, true);
+  EXPECT_EQ(ComputedStyle::Difference::kIndependentInherited,
+            ComputedStyle::ComputeDifference(old_style.get(), new_style.get()));
+
+  old_style = ComputedStyle::Create();
+  new_style = ComputedStyle::Create();
+
+  // Added a new variable
+  new_style->SetVariableValue("--x", value2, true);
+  EXPECT_EQ(ComputedStyle::Difference::kIndependentInherited,
+            ComputedStyle::ComputeDifference(old_style.get(), new_style.get()));
+
+  // Change value of variable
+  old_style->SetVariableValue("--x", value1, true);
+  new_style->SetVariableValue("--x", value2, true);
+  new_style->SetHasVariableReference();
+  EXPECT_FALSE(new_style->HasVariableDeclaration());
+  EXPECT_TRUE(new_style->HasVariableReference());
+  EXPECT_EQ(ComputedStyle::Difference::kIndependentInherited,
+            ComputedStyle::ComputeDifference(old_style.get(), new_style.get()));
+
+  old_style = ComputedStyle::Create();
+  new_style = ComputedStyle::Create();
+
+  // New styles with variable declaration don't force style recalc
+  old_style->SetVariableValue("--x", value1, true);
+  new_style->SetVariableValue("--x", value2, true);
+  new_style->SetHasVariableDeclaration();
+  EXPECT_TRUE(new_style->HasVariableDeclaration());
+  EXPECT_FALSE(new_style->HasVariableReference());
+  EXPECT_EQ(ComputedStyle::Difference::kIndependentInherited,
+            ComputedStyle::ComputeDifference(old_style.get(), new_style.get()));
+
+  old_style = ComputedStyle::Create();
+  new_style = ComputedStyle::Create();
+
+  // New styles with variable reference don't force style recalc
+  old_style->SetVariableValue("--x", value1, true);
+  new_style->SetVariableValue("--x", value2, true);
+  new_style->SetHasVariableDeclaration();
+  new_style->SetHasVariableReference();
+  EXPECT_TRUE(new_style->HasVariableDeclaration());
+  EXPECT_TRUE(new_style->HasVariableReference());
+  EXPECT_EQ(ComputedStyle::Difference::kIndependentInherited,
+            ComputedStyle::ComputeDifference(old_style.get(), new_style.get()));
+}
+
+TEST(ComputedStyleTest, CustomPropertiesInheritance_StyleRecalc) {
+  auto dummy = std::make_unique<DummyPageHolder>(IntSize(0, 0));
+  css_test_helpers::RegisterProperty(dummy->GetDocument(), "--x", "<length>",
+                                     "0px", true);
+
+  scoped_refptr<ComputedStyle> old_style = ComputedStyle::Create();
+  scoped_refptr<ComputedStyle> new_style = ComputedStyle::Create();
+
+  using UnitType = CSSPrimitiveValue::UnitType;
+
+  const auto* value1 = CSSNumericLiteralValue::Create(1.0, UnitType::kPixels);
+  const auto* value2 = CSSNumericLiteralValue::Create(2.0, UnitType::kPixels);
+
+  EXPECT_FALSE(old_style->HasVariableDeclaration());
+  EXPECT_FALSE(old_style->HasVariableReference());
+  EXPECT_FALSE(new_style->HasVariableReference());
+  EXPECT_FALSE(new_style->HasVariableDeclaration());
+
+  // Removed variable value
+  // Old styles with variable reference force style recalc
+  old_style->SetHasVariableReference();
+  old_style->SetVariableValue("--x", value2, true);
+  EXPECT_TRUE(old_style->HasVariableReference());
+  EXPECT_EQ(ComputedStyle::Difference::kInherited,
+            ComputedStyle::ComputeDifference(old_style.get(), new_style.get()));
+
+  old_style = ComputedStyle::Create();
+  new_style = ComputedStyle::Create();
+
+  // New variable value
+  // Old styles with variable declaration force style recalc
+  old_style->SetHasVariableDeclaration();
+  new_style->SetVariableValue("--x", value2, true);
+  EXPECT_TRUE(old_style->HasVariableDeclaration());
+  EXPECT_EQ(ComputedStyle::Difference::kInherited,
+            ComputedStyle::ComputeDifference(old_style.get(), new_style.get()));
+
+  old_style = ComputedStyle::Create();
+  new_style = ComputedStyle::Create();
+
+  // Change variable value
+  // Old styles with variable declaration force style recalc
+  old_style->SetVariableValue("--x", value1, true);
+  new_style->SetVariableValue("--x", value2, true);
+  old_style->SetHasVariableDeclaration();
+  EXPECT_TRUE(old_style->HasVariableDeclaration());
+  EXPECT_EQ(ComputedStyle::Difference::kInherited,
+            ComputedStyle::ComputeDifference(old_style.get(), new_style.get()));
+
+  old_style = ComputedStyle::Create();
+  new_style = ComputedStyle::Create();
+
+  // Change variable value
+  // Old styles with variable reference force style recalc
+  old_style->SetVariableValue("--x", value1, true);
+  new_style->SetVariableValue("--x", value2, true);
+  old_style->SetHasVariableReference();
+  EXPECT_TRUE(old_style->HasVariableReference());
+  EXPECT_EQ(ComputedStyle::Difference::kInherited,
+            ComputedStyle::ComputeDifference(old_style.get(), new_style.get()));
+}
+
 TEST(ComputedStyleTest, ApplyColorSchemeLightOnDark) {
   ScopedCSSColorSchemeForTest scoped_property_enabled(true);
   ScopedCSSColorSchemeUARenderingForTest scoped_ua_enabled(true);

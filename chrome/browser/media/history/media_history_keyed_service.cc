@@ -443,4 +443,27 @@ void MediaHistoryKeyedService::DeleteMediaFeed(const int64_t feed_id,
   }
 }
 
+MediaHistoryKeyedService::MediaFeedFetchDetails::MediaFeedFetchDetails() =
+    default;
+
+MediaHistoryKeyedService::MediaFeedFetchDetails::~MediaFeedFetchDetails() =
+    default;
+
+MediaHistoryKeyedService::MediaFeedFetchDetails::MediaFeedFetchDetails(
+    MediaFeedFetchDetails&& t) = default;
+
+MediaHistoryKeyedService::MediaFeedFetchDetails&
+MediaHistoryKeyedService::MediaFeedFetchDetails::operator=(
+    const MediaHistoryKeyedService::MediaFeedFetchDetails&) = default;
+
+void MediaHistoryKeyedService::GetMediaFeedFetchDetails(
+    const int64_t feed_id,
+    GetMediaFeedFetchDetailsCallback callback) {
+  base::PostTaskAndReplyWithResult(
+      store_->GetForRead()->db_task_runner_.get(), FROM_HERE,
+      base::BindOnce(&MediaHistoryStore::GetMediaFeedFetchDetails,
+                     store_->GetForRead(), feed_id),
+      std::move(callback));
+}
+
 }  // namespace media_history

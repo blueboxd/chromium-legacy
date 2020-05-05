@@ -7,6 +7,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/unguessable_token.h"
 #include "base/updateable_sequenced_task_runner.h"
 #include "chrome/browser/media/feeds/media_feeds.pb.h"
 #include "chrome/browser/media/feeds/media_feeds_utils.h"
@@ -21,6 +22,11 @@ namespace {
 
 // The maximum number of logos to allow.
 const int kMaxLogoCount = 5;
+
+base::UnguessableToken ProtoToUnguessableToken(
+    const media_feeds::FeedResetToken& proto) {
+  return base::UnguessableToken::Deserialize(proto.high(), proto.low());
+}
 
 }  // namespace
 
@@ -58,6 +64,7 @@ sql::InitStatus MediaHistoryFeedsTable::CreateTableIfNonExistent() {
                          "display_name TEXT, "
                          "last_display_time_s INTEGER, "
                          "reset_reason INTEGER DEFAULT 0, "
+                         "reset_token BLOB, "
                          "CONSTRAINT fk_origin "
                          "FOREIGN KEY (origin_id) "
                          "REFERENCES origin(id) "
@@ -370,8 +377,8 @@ bool MediaHistoryFeedsTable::UpdateFeedFromFetch(
         "UPDATE mediaFeed SET last_fetch_time_s = ?, last_fetch_result = ?, "
         "fetch_failed_count = ?, last_fetch_item_count = ?, "
         "last_fetch_play_next_count = ?, last_fetch_content_types = ?, "
-        "logo = ?, display_name = ?, last_fetch_safe_item_count = ?, "
-        "reset_reason = ? WHERE id = ?"));
+        "logo = ?, display_name = ?, last_fetch_safe_item_count = ? "
+        "WHERE id = ?"));
   } else {
     statement.Assign(DB()->GetCachedStatement(
         SQL_FROM_HERE,
@@ -379,7 +386,7 @@ bool MediaHistoryFeedsTable::UpdateFeedFromFetch(
         "fetch_failed_count = ?, last_fetch_item_count = ?, "
         "last_fetch_play_next_count = ?, last_fetch_content_types = ?, "
         "logo = ?, display_name = ?, last_fetch_safe_item_count = ?, "
-        "reset_reason = ?, last_fetch_time_not_cache_hit_s = ? WHERE "
+        "last_fetch_time_not_cache_hit_s = ? WHERE "
         "id = ?"));
   }
 
@@ -400,15 +407,13 @@ bool MediaHistoryFeedsTable::UpdateFeedFromFetch(
 
   statement.BindString(7, display_name);
   statement.BindInt64(8, item_safe_count);
-  statement.BindInt64(9,
-                      static_cast<int>(media_feeds::mojom::ResetReason::kNone));
 
   if (was_fetched_from_cache) {
-    statement.BindInt64(10, feed_id);
+    statement.BindInt64(9, feed_id);
   } else {
     statement.BindInt64(
-        10, base::Time::Now().ToDeltaSinceWindowsEpoch().InSeconds());
-    statement.BindInt64(11, feed_id);
+        9, base::Time::Now().ToDeltaSinceWindowsEpoch().InSeconds());
+    statement.BindInt64(10, feed_id);
   }
 
   return statement.Run() && DB()->GetLastChangeCount() == 1;
@@ -460,11 +465,57 @@ bool MediaHistoryFeedsTable::Reset(
       "fetch_failed_count = 0, last_fetch_time_not_cache_hit_s = NULL, "
       "last_fetch_item_count = 0, last_fetch_safe_item_count = 0, "
       "last_fetch_play_next_count = 0, last_fetch_content_types = 0, "
-      "logo = NULL, display_name = NULL, reset_reason = ? "
+      "logo = NULL, display_name = NULL, reset_reason = ?, reset_token = ? "
       "WHERE id = ?"));
+
   statement.BindInt64(0, static_cast<int>(reason));
-  statement.BindInt64(1, feed_id);
+
+  // Store a new feed reset token to invalidate any fetches.
+  auto token = base::UnguessableToken::Create();
+  media_feeds::FeedResetToken proto_token;
+  proto_token.set_high(token.GetHighForSerialization());
+  proto_token.set_low(token.GetLowForSerialization());
+  BindProto(statement, 1, proto_token);
+
+  statement.BindInt64(2, feed_id);
+
   return statement.Run() && DB()->GetLastChangeCount() == 1;
+}
+
+base::Optional<MediaHistoryKeyedService::MediaFeedFetchDetails>
+MediaHistoryFeedsTable::GetFetchDetails(const int64_t feed_id) {
+  if (!CanAccessDatabase())
+    return base::nullopt;
+
+  sql::Statement statement(
+      DB()->GetCachedStatement(SQL_FROM_HERE,
+                               "SELECT url, last_fetch_result, reset_token "
+                               "FROM mediaFeed WHERE id = ?"));
+  statement.BindInt64(0, feed_id);
+
+  while (statement.Step()) {
+    MediaHistoryKeyedService::MediaFeedFetchDetails details;
+    details.url = GURL(statement.ColumnString(0));
+
+    if (!details.url.is_valid())
+      return base::nullopt;
+
+    details.last_fetch_result =
+        static_cast<media_feeds::mojom::FetchResult>(statement.ColumnInt64(1));
+    if (!IsKnownEnumValue(details.last_fetch_result))
+      return base::nullopt;
+
+    if (statement.GetColumnType(2) == sql::ColumnType::kBlob) {
+      media_feeds::FeedResetToken token;
+      if (!GetProto(statement, 2, token))
+        return base::nullopt;
+      details.reset_token = ProtoToUnguessableToken(token);
+    }
+
+    return details;
+  }
+
+  return base::nullopt;
 }
 
 bool MediaHistoryFeedsTable::Delete(const int64_t feed_id) {
@@ -494,6 +545,15 @@ base::Optional<url::Origin> MediaHistoryFeedsTable::GetOrigin(
   }
 
   return base::nullopt;
+}
+
+bool MediaHistoryFeedsTable::ClearResetReason(const int64_t feed_id) {
+  sql::Statement statement(DB()->GetCachedStatement(
+      SQL_FROM_HERE, "UPDATE mediaFeed SET reset_reason = ? WHERE id = ?"));
+  statement.BindInt64(0,
+                      static_cast<int>(media_feeds::mojom::ResetReason::kNone));
+  statement.BindInt64(1, feed_id);
+  return statement.Run() && DB()->GetLastChangeCount() == 1;
 }
 
 }  // namespace media_history

@@ -87,6 +87,10 @@ SafeBrowsingServiceImpl::CreateUrlChecker(
       resource_type, url_checker_delegate_, web_state->CreateDefaultGetter());
 }
 
+bool SafeBrowsingServiceImpl::CanCheckUrl(const GURL& url) const {
+  return safe_browsing_db_manager_->CanCheckUrl(url);
+}
+
 void SafeBrowsingServiceImpl::SetUpURLLoaderFactory(
     mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver) {
   DCHECK_CURRENTLY_ON(web::WebThread::UI);

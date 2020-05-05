@@ -441,12 +441,13 @@ void RenderFrameProxyHost::OnOpenURL(
   // TODO(clamy): The transition should probably be changed for POST navigations
   // to PAGE_TRANSITION_FORM_SUBMIT. See https://crbug.com/829827.
   frame_tree_node_->navigator()->NavigateFromFrameProxy(
-      current_rfh, validated_url, params.initiator_origin, site_instance_.get(),
-      params.referrer, ui::PAGE_TRANSITION_LINK,
-      params.should_replace_current_entry, download_policy,
-      params.post_body ? "POST" : "GET", params.post_body, params.extra_headers,
-      std::move(blob_url_loader_factory), params.user_gesture,
-      params.impression);
+      current_rfh, validated_url,
+      GlobalFrameRoutingId(GetProcess()->GetID(), params.initiator_routing_id),
+      params.initiator_origin, site_instance_.get(), params.referrer,
+      ui::PAGE_TRANSITION_LINK, params.should_replace_current_entry,
+      download_policy, params.post_body ? "POST" : "GET", params.post_body,
+      params.extra_headers, std::move(blob_url_loader_factory),
+      params.user_gesture, params.impression);
 }
 
 void RenderFrameProxyHost::CheckCompleted() {

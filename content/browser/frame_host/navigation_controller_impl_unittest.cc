@@ -4832,9 +4832,10 @@ TEST_F(NavigationControllerTest, NoURLRewriteForSubframes) {
   FrameTreeNode* subframe_node =
       main_test_rfh()->frame_tree_node()->child_at(0);
   controller_impl().NavigateFromFrameProxy(
-      subframe_node->current_frame_host(), kSrcDoc, url::Origin::Create(kUrl2),
-      true /* is_renderer_initiated */, main_test_rfh()->GetSiteInstance(),
-      Referrer(), ui::PAGE_TRANSITION_LINK,
+      subframe_node->current_frame_host(), kSrcDoc,
+      GlobalFrameRoutingId() /* initiator_routing_id */,
+      url::Origin::Create(kUrl2), true /* is_renderer_initiated */,
+      main_test_rfh()->GetSiteInstance(), Referrer(), ui::PAGE_TRANSITION_LINK,
       false /* should_replace_current_entry */, NavigationDownloadPolicy(),
       "GET", nullptr, "", nullptr, base::nullopt);
 
@@ -4868,10 +4869,12 @@ TEST_F(NavigationControllerTest,
   // replacement.
   const bool should_replace_current_entry = true;
   other_controller.NavigateFromFrameProxy(
-      frame, other_contents_url, url::Origin::Create(main_url),
-      true /* is_renderer_initiated */, main_test_rfh()->GetSiteInstance(),
-      Referrer(), ui::PAGE_TRANSITION_LINK, should_replace_current_entry,
-      NavigationDownloadPolicy(), "GET", nullptr, "", nullptr, base::nullopt);
+      frame, other_contents_url,
+      GlobalFrameRoutingId() /* initiator_routing_id */,
+      url::Origin::Create(main_url), true /* is_renderer_initiated */,
+      main_test_rfh()->GetSiteInstance(), Referrer(), ui::PAGE_TRANSITION_LINK,
+      should_replace_current_entry, NavigationDownloadPolicy(), "GET", nullptr,
+      "", nullptr, base::nullopt);
   NavigationRequest* request = node->navigation_request();
   ASSERT_TRUE(request);
 

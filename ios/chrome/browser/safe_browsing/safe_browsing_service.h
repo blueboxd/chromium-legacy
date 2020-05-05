@@ -6,6 +6,7 @@
 #define IOS_CHROME_BROWSER_SAFE_BROWSING_SAFE_BROWSING_SERVICE_H_
 
 #include "base/memory/ref_counted.h"
+#include "url/gurl.h"
 
 class PrefService;
 
@@ -45,6 +46,9 @@ class SafeBrowsingService
   virtual std::unique_ptr<safe_browsing::SafeBrowsingUrlCheckerImpl>
   CreateUrlChecker(safe_browsing::ResourceType resource_type,
                    web::WebState* web_state) = 0;
+
+  // Returns true if |url| has a scheme that is handled by Safe Browsing.
+  virtual bool CanCheckUrl(const GURL& url) const = 0;
 
  protected:
   SafeBrowsingService() = default;

@@ -7,15 +7,18 @@
 #include <utility>
 
 #include "base/strings/utf_string_conversions.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/menu/menu_model_adapter.h"
 #include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/controls/scroll_view.h"
 #include "ui/views/controls/tree/tree_view.h"
 #include "ui/views/controls/tree/tree_view_drawing_provider.h"
+#include "ui/views/examples/grit/views_examples_resources.h"
 #include "ui/views/layout/grid_layout.h"
 
-using base::ASCIIToUTF16;
+using l10n_util::GetStringUTF16;
+using l10n_util::GetStringUTF8;
 
 namespace {
 
@@ -27,7 +30,7 @@ class ExampleTreeViewDrawingProvider : public views::TreeViewDrawingProvider {
   base::string16 GetAuxiliaryTextForNode(views::TreeView* tree_view,
                                          ui::TreeModelNode* node) override {
     if (tree_view->GetSelectedNode() == node)
-      return base::UTF8ToUTF16("Selected");
+      return GetStringUTF16(IDS_TREE_VIEW_SELECTED_LABEL);
     return views::TreeViewDrawingProvider::GetAuxiliaryTextForNode(tree_view,
                                                                    node);
   }
@@ -44,8 +47,10 @@ namespace views {
 namespace examples {
 
 TreeViewExample::TreeViewExample()
-    : ExampleBase("Tree View"),
-      model_(std::make_unique<NodeType>(ASCIIToUTF16("root"), 1)) {}
+    : ExampleBase(GetStringUTF8(IDS_TREE_VIEW_SELECT_LABEL).c_str()),
+      model_(std::make_unique<NodeType>(
+          GetStringUTF16(IDS_TREE_VIEW_ROOT_NODE_LABEL),
+          1)) {}
 
 TreeViewExample::~TreeViewExample() {
   // Remove the model from the view.
@@ -56,15 +61,29 @@ TreeViewExample::~TreeViewExample() {
 void TreeViewExample::CreateExampleView(View* container) {
   // Add some sample data.
   NodeType* colors_node = model_.GetRoot()->Add(
-      std::make_unique<NodeType>(ASCIIToUTF16("colors"), 1), 0);
-  colors_node->Add(std::make_unique<NodeType>(ASCIIToUTF16("red"), 1), 0);
-  colors_node->Add(std::make_unique<NodeType>(ASCIIToUTF16("green"), 1), 1);
-  colors_node->Add(std::make_unique<NodeType>(ASCIIToUTF16("blue"), 1), 2);
+      std::make_unique<NodeType>(GetStringUTF16(IDS_TREE_VIEW_COLOR_NODE_LABEL),
+                                 1),
+      0);
+  colors_node->Add(std::make_unique<NodeType>(
+                       GetStringUTF16(IDS_TREE_VIEW_COLOR_RED_LABEL), 1),
+                   0);
+  colors_node->Add(std::make_unique<NodeType>(
+                       GetStringUTF16(IDS_TREE_VIEW_COLOR_GREEN_LABEL), 1),
+                   1);
+  colors_node->Add(std::make_unique<NodeType>(
+                       GetStringUTF16(IDS_TREE_VIEW_COLOR_BLUE_LABEL), 1),
+                   2);
 
   NodeType* sheep_node = model_.GetRoot()->Add(
-      std::make_unique<NodeType>(ASCIIToUTF16("sheep"), 1), 0);
-  sheep_node->Add(std::make_unique<NodeType>(ASCIIToUTF16("Sheep 1"), 1), 0);
-  sheep_node->Add(std::make_unique<NodeType>(ASCIIToUTF16("Sheep 2"), 1), 1);
+      std::make_unique<NodeType>(GetStringUTF16(IDS_TREE_VIEW_SHEEP_NODE_LABEL),
+                                 1),
+      0);
+  sheep_node->Add(
+      std::make_unique<NodeType>(GetStringUTF16(IDS_TREE_VIEW_SHEEP1_LABEL), 1),
+      0);
+  sheep_node->Add(
+      std::make_unique<NodeType>(GetStringUTF16(IDS_TREE_VIEW_SHEEP2_LABEL), 1),
+      1);
 
   auto tree_view = std::make_unique<TreeView>();
   tree_view->set_context_menu_controller(this);
@@ -73,14 +92,16 @@ void TreeViewExample::CreateExampleView(View* container) {
   tree_view->SetController(this);
   tree_view->SetDrawingProvider(
       std::make_unique<ExampleTreeViewDrawingProvider>());
-  auto add = std::make_unique<LabelButton>(this, ASCIIToUTF16("Add"));
+  auto add = std::make_unique<LabelButton>(
+      this, GetStringUTF16(IDS_TREE_VIEW_ADD_BUTTON_LABEL));
   add->SetFocusForPlatform();
   add->set_request_focus_on_press(true);
-  auto remove = std::make_unique<LabelButton>(this, ASCIIToUTF16("Remove"));
+  auto remove = std::make_unique<LabelButton>(
+      this, GetStringUTF16(IDS_TREE_VIEW_REMOVE_BUTTON_LABEL));
   remove->SetFocusForPlatform();
   remove->set_request_focus_on_press(true);
-  auto change_title =
-      std::make_unique<LabelButton>(this, ASCIIToUTF16("Change Title"));
+  auto change_title = std::make_unique<LabelButton>(
+      this, GetStringUTF16(IDS_TREE_VIEW_CHANGE_TITLE_LABEL));
   change_title->SetFocusForPlatform();
   change_title->set_request_focus_on_press(true);
 
@@ -136,7 +157,8 @@ void TreeViewExample::ButtonPressed(Button* sender, const ui::Event& event) {
   } else if (sender == change_title_) {
     DCHECK(selected_node);
     model_.SetTitle(selected_node,
-                    selected_node->GetTitle() + ASCIIToUTF16("new"));
+                    selected_node->GetTitle() +
+                        GetStringUTF16(IDS_TREE_VIEW_NEW_NODE_LABEL));
   }
 }
 
@@ -160,9 +182,12 @@ void TreeViewExample::ShowContextMenuForViewImpl(
     const gfx::Point& point,
     ui::MenuSourceType source_type) {
   context_menu_model_ = std::make_unique<ui::SimpleMenuModel>(this);
-  context_menu_model_->AddItem(ID_EDIT, ASCIIToUTF16("Edit"));
-  context_menu_model_->AddItem(ID_REMOVE, ASCIIToUTF16("Remove"));
-  context_menu_model_->AddItem(ID_ADD, ASCIIToUTF16("Add"));
+  context_menu_model_->AddItem(ID_EDIT,
+                               GetStringUTF16(IDS_TREE_VIEW_EDIT_BUTTON_LABEL));
+  context_menu_model_->AddItem(
+      ID_REMOVE, GetStringUTF16(IDS_TREE_VIEW_REMOVE_BUTTON_LABEL));
+  context_menu_model_->AddItem(ID_ADD,
+                               GetStringUTF16(IDS_TREE_VIEW_ADD_BUTTON_LABEL));
   context_menu_runner_ =
       std::make_unique<MenuRunner>(context_menu_model_.get(), 0);
   context_menu_runner_->RunMenuAt(source->GetWidget(), nullptr,

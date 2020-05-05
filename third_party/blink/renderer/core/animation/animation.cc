@@ -167,6 +167,17 @@ Element* OriginatingElement(Element* owning_element) {
   return owning_element;
 }
 
+AtomicString GetCSSTransitionCSSPropertyName(const Animation* animation) {
+  CSSPropertyID property_id =
+      To<CSSTransition>(animation)->TransitionCSSProperty().PropertyID();
+  if (property_id == CSSPropertyID::kVariable ||
+      property_id == CSSPropertyID::kInvalid)
+    return AtomicString();
+  return To<CSSTransition>(animation)
+      ->TransitionCSSProperty()
+      .GetCSSPropertyName()
+      .ToAtomicString();
+}
 }  // namespace
 
 Animation* Animation::Create(AnimationEffect* effect,
@@ -533,6 +544,20 @@ bool Animation::HasLowerCompositeOrdering(
       // animation-name property of the (common) owning element.
       return To<CSSAnimation>(animation1)->AnimationIndex() <
              To<CSSAnimation>(animation2)->AnimationIndex();
+    } else {
+      // First compare the transition generation of two transitions, then
+      // compare them by the property name.
+      if (To<CSSTransition>(animation1)->TransitionGeneration() !=
+          To<CSSTransition>(animation2)->TransitionGeneration()) {
+        return To<CSSTransition>(animation1)->TransitionGeneration() <
+               To<CSSTransition>(animation2)->TransitionGeneration();
+      }
+      AtomicString css_property_name1 =
+          GetCSSTransitionCSSPropertyName(animation1);
+      AtomicString css_property_name2 =
+          GetCSSTransitionCSSPropertyName(animation2);
+      if (css_property_name1 && css_property_name2)
+        return css_property_name1.Utf8() < css_property_name2.Utf8();
     }
     return animation1->SequenceNumber() < animation2->SequenceNumber();
   }

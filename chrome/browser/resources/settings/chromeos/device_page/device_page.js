@@ -81,6 +81,10 @@ Polymer({
               settings.routes.EXTERNAL_STORAGE_PREFERENCES.path,
               '#externalStoragePreferencesRow');
         }
+        if (settings.routes.DOWNLOADED_CONTENT) {
+          map.set(
+              settings.routes.DOWNLOADED_CONTENT.path, '#downloadedContentRow');
+        }
         if (settings.routes.POWER) {
           map.set(settings.routes.POWER.path, '#powerRow');
         }
@@ -94,6 +98,13 @@ Polymer({
       value() {
         return loadTimeData.getBoolean('androidEnabled');
       },
+    },
+
+    /** @private */
+    allowDlcSubpage_: {
+      type: Boolean,
+      value: () => loadTimeData.getBoolean('allowDlcSubpage'),
+      readOnly: true,
     },
   },
 

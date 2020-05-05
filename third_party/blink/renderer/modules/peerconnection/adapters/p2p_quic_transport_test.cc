@@ -388,6 +388,7 @@ class ProofSourceStub : public quic::ProofSource {
 
   // ProofSource override.
   void GetProof(const quic::QuicSocketAddress& server_addr,
+                const quic::QuicSocketAddress& client_addr,
                 const std::string& hostname,
                 const std::string& server_config,
                 quic::QuicTransportVersion transport_version,
@@ -396,12 +397,13 @@ class ProofSourceStub : public quic::ProofSource {
     quic::QuicCryptoProof proof;
     proof.signature = "Test signature";
     proof.leaf_cert_scts = "Test timestamp";
-    callback->Run(true, GetCertChain(server_addr, hostname), proof,
+    callback->Run(true, GetCertChain(server_addr, client_addr, hostname), proof,
                   nullptr /* details */);
   }
 
   quic::QuicReferenceCountedPointer<Chain> GetCertChain(
       const quic::QuicSocketAddress& server_address,
+      const quic::QuicSocketAddress& client_address,
       const std::string& hostname) override {
     WebVector<std::string> certs;
     certs.emplace_back("Test cert");
@@ -410,6 +412,7 @@ class ProofSourceStub : public quic::ProofSource {
   }
   void ComputeTlsSignature(
       const quic::QuicSocketAddress& server_address,
+      const quic::QuicSocketAddress& client_address,
       const std::string& hostname,
       uint16_t signature_algorithm,
       quiche::QuicheStringPiece in,

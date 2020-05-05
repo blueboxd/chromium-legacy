@@ -346,13 +346,11 @@ void AppTimeController::TimeLimitsPolicyUpdated(const std::string& pref_name) {
   }
   std::map<AppId, AppLimit> app_limits = policy::AppLimitsFromDict(*policy);
 
-  // If web time limit feature is not enabled, then remove chrome or android
-  // chrome's time limit from here.
-  if (!WebTimeLimitEnforcer::IsEnabled()) {
-    if (base::Contains(app_limits, GetChromeAppId()))
-      app_limits.erase(GetChromeAppId());
-    if (base::Contains(app_limits, GetAndroidChromeAppId()))
-      app_limits.erase(GetAndroidChromeAppId());
+  // If web time limit feature is not enabled, then remove chrome's time limit
+  // from here.
+  if (!WebTimeLimitEnforcer::IsEnabled() &&
+      base::Contains(app_limits, GetChromeAppId())) {
+    app_limits.erase(GetChromeAppId());
   }
 
   bool updated = app_registry_->UpdateAppLimits(app_limits);

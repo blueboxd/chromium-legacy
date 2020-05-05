@@ -91,6 +91,7 @@ android_library("java") {
     "org/chromium/weblayer_private/WebLayerExceptionFilter.java",
     "org/chromium/weblayer_private/WebLayerFactoryImpl.java",
     "org/chromium/weblayer_private/WebLayerImpl.java",
+    "org/chromium/weblayer_private/WebLayerNotificationBuilder.java",
     "org/chromium/weblayer_private/WebLayerNotificationChannels.java",
     "org/chromium/weblayer_private/WebLayerTabModalPresenter.java",
     "org/chromium/weblayer_private/WebViewCompatibilityHelperImpl.java",

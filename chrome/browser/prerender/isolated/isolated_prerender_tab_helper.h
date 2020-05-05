@@ -59,6 +59,68 @@ class IsolatedPrerenderTabHelper
     virtual void OnPrefetchCompletedWithError(const GURL& url, int code) {}
   };
 
+  // The various states that a prefetch can go through or terminate with. Used
+  // in UKM logging so don't remove or reorder values.
+  enum class PrefetchStatus {
+    // The interceptor used a prefetch.
+    kPrefetchUsedNoProbe = 0,
+
+    // The interceptor used a prefetch after successfully probing the origin.
+    kPrefetchUsedProbeSuccess = 1,
+
+    // The interceptor was not able to use an available prefetch because the
+    // origin probe failed.
+    kPrefetchNotUsedProbeFailed = 2,
+
+    // The url was eligible to be prefetched, but the network request was never
+    // made.
+    kPrefetchNotStarted = 3,
+
+    // The url was not eligible to be prefetched because it is a Google-owned
+    // domain.
+    kPrefetchNotEligibleGoogleDomain = 4,
+
+    // The url was not eligible to be prefetched because the user had cookies
+    // for that origin.
+    kPrefetchNotEligibleUserHasCookies = 5,
+
+    // The url was not eligible to be prefetched because there was a registered
+    // service worker for that origin.
+    kPrefetchNotEligibleUserHasServiceWorker = 6,
+
+    // The url was not eligible to be prefetched because its scheme was not
+    // https://.
+    kPrefetchNotEligibleSchemeIsNotHttps = 7,
+
+    // The url was not eligible to be prefetched because its host was an IP
+    // address.
+    kPrefetchNotEligibleHostIsIPAddress = 8,
+
+    // The url was not eligible to be prefetched because it uses a non-default
+    // storage partition.
+    kPrefetchNotEligibleNonDefaultStoragePartition = 9,
+
+    // The network request was cancelled before it finished. This happens when
+    // there is a new navigation.
+    kPrefetchNotFinishedInTime = 10,
+
+    // The prefetch failed because of a net error.
+    kPrefetchFailedNetError = 11,
+
+    // The prefetch failed with a non-2XX HTTP response code.
+    kPrefetchFailedNon2XX = 12,
+
+    // The prefetch's Content-Type header was not html.
+    kPrefetchFailedNotHTML = 13,
+
+    // The prefetch finished successfully but was never used.
+    kPrefetchSuccessful = 14,
+
+    // The navigation off of the Google SRP was to a url that was not on the
+    // SRP.
+    kNavigatedToLinkNotOnSRP = 15,
+  };
+
   // Container for several metrics which pertain to prefetching actions
   // on a Google SRP. RefCounted to allow TabHelper's friend classes to monitor
   // metrics without needing a callback for every event.
@@ -79,7 +141,9 @@ class IsolatedPrerenderTabHelper
     int64_t ordered_eligible_pages_bitmask_ = 0;
 
     // The number of SRP links that were predicted. Only set on Google SRP pages
-    // for eligible users.
+    // for eligible users. This should be used as the source of truth for
+    // determining if the previous page was a Google SRP that could have had
+    // prefetching actions.
     size_t predicted_urls_count_ = 0;
 
     // The number of SRP links that were eligible to be prefetched.
@@ -103,25 +167,26 @@ class IsolatedPrerenderTabHelper
     ~PrefetchMetrics();
   };
 
-  const PrefetchMetrics& metrics() const { return *(page_->metrics_); }
+  // Records metrics on the page load after a Google SRP for eligible users.
+  class AfterSRPMetrics {
+   public:
+    AfterSRPMetrics();
+    AfterSRPMetrics(const AfterSRPMetrics& other);
+    ~AfterSRPMetrics();
 
-  // What actions the URL Interveptor class may take if it attempts to intercept
-  // a page load.
-  enum class PrefetchUsage {
-    // The interceptor used a prefetch.
-    kPrefetchUsed = 0,
+    // The url of the page following the Google SRP.
+    GURL url_;
 
-    // The interceptor used a prefetch after successfully probing the origin.
-    kPrefetchUsedProbeSuccess = 1,
-
-    // The interceptor was not able to use an available prefetch because the
-    // origin probe failed.
-    kPrefetchNotUsedProbeFailed = 2,
+    // The status of a prefetch done on the SRP that may have been used here.
+    base::Optional<PrefetchStatus> prefetch_status_;
   };
 
-  base::Optional<PrefetchUsage> prefetch_usage() const {
-    return prefetch_usage_;
-  }
+  const PrefetchMetrics& srp_metrics() const { return *(page_->srp_metrics_); }
+
+  // Returns nullopt unless the previous page load was a Google SRP where |this|
+  // got parsed SRP links from NavigationPredictor.
+  base::Optional<IsolatedPrerenderTabHelper::AfterSRPMetrics>
+  after_srp_metrics() const;
 
   void CallHandlePrefetchResponseForTesting(
       const GURL& url,
@@ -140,9 +205,8 @@ class IsolatedPrerenderTabHelper
   std::unique_ptr<PrefetchedMainframeResponseContainer> TakePrefetchResponse(
       const GURL& url);
 
-  // Used by the URL Loader Interceptor to notify this class of a usage of a
-  // prefetch.
-  void OnPrefetchUsage(PrefetchUsage usage);
+  // Updates |prefetch_status_by_url_|.
+  void OnPrefetchStatusUpdate(const GURL& url, PrefetchStatus usage);
 
   void AddObserverForTesting(Observer* observer);
   void RemoveObserverForTesting(Observer* observer);
@@ -167,7 +231,14 @@ class IsolatedPrerenderTabHelper
     const base::TimeTicks navigation_start_;
 
     // The metrics pertaining to prefetching actions on a Google SRP page.
-    scoped_refptr<PrefetchMetrics> metrics_;
+    scoped_refptr<PrefetchMetrics> srp_metrics_;
+
+    // The metrics pertaining to how the prefetch is used after the Google SRP.
+    // Only set for pages after a Google SRP.
+    std::unique_ptr<AfterSRPMetrics> after_srp_metrics_;
+
+    // The status of each prefetch.
+    std::map<GURL, PrefetchStatus> prefetch_status_by_url_;
 
     // A map of all predicted URLs to their original placement in the ordered
     // prediction.
@@ -240,9 +311,6 @@ class IsolatedPrerenderTabHelper
 
   // Owns all members which need to be reset on a new page load.
   std::unique_ptr<CurrentPageLoad> page_;
-
-  // Set if the current page load was loaded from a previous prefetched page.
-  base::Optional<PrefetchUsage> prefetch_usage_;
 
   base::ObserverList<Observer>::Unchecked observer_list_;
 

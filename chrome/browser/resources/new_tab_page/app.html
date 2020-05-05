@@ -226,7 +226,7 @@
         --ntp-logo-color: [[rgbaOrInherit_(logoColor_)]];">
   <dom-if if="[[showIframedOneGoogleBar_]]">
     <template>
-      <ntp-untrusted-iframe id="oneGoogleBar" path="one-google-bar"
+      <ntp-untrusted-iframe id="oneGoogleBar" path="[[oneGoogleBarIframePath_]]"
           hidden$="[[!oneGoogleBarLoaded_]]">
       </ntp-untrusted-iframe>
     </template>

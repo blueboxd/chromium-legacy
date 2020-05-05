@@ -117,7 +117,6 @@ void MediaFeedsService::SetSafeSearchCompletionCallbackForTest(
 }
 
 void MediaFeedsService::FetchMediaFeed(int64_t feed_id,
-                                       const GURL& url,
                                        base::OnceClosure callback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
@@ -133,12 +132,9 @@ void MediaFeedsService::FetchMediaFeed(int64_t feed_id,
                                          GetURLLoaderFactoryForFetcher()),
                                      std::move(callback)));
 
-  fetches_.at(feed_id).fetcher->FetchFeed(
-      url,
-      // Use of unretained is safe because the callback is owned
-      // by fetcher_, which will not outlive this.
-      base::BindOnce(&MediaFeedsService::OnFetchResponse,
-                     base::Unretained(this), feed_id));
+  GetMediaHistoryService()->GetMediaFeedFetchDetails(
+      feed_id, base::BindOnce(&MediaFeedsService::OnGotFetchDetails,
+                              weak_factory_.GetWeakPtr(), feed_id));
 }
 
 media_history::MediaHistoryKeyedService*
@@ -299,8 +295,30 @@ MediaFeedsService::InflightSafeSearchCheck::InflightSafeSearchCheck(
 MediaFeedsService::InflightSafeSearchCheck::~InflightSafeSearchCheck() =
     default;
 
+void MediaFeedsService::OnGotFetchDetails(
+    const int64_t feed_id,
+    base::Optional<
+        media_history::MediaHistoryKeyedService::MediaFeedFetchDetails>
+        details) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK(base::Contains(fetches_, feed_id));
+
+  if (!details.has_value()) {
+    OnCompleteFetch(feed_id, false);
+    return;
+  }
+
+  fetches_.at(feed_id).fetcher->FetchFeed(
+      details->url,
+      // Use of unretained is safe because the callback is owned
+      // by fetcher_, which will not outlive this.
+      base::BindOnce(&MediaFeedsService::OnFetchResponse,
+                     base::Unretained(this), feed_id, details->reset_token));
+}
+
 void MediaFeedsService::OnFetchResponse(
     int64_t feed_id,
+    base::Optional<base::UnguessableToken> reset_token,
     const schema_org::improved::mojom::EntityPtr& response,
     MediaFeedsFetcher::Status status,
     bool was_fetched_via_cache) {
@@ -317,6 +335,7 @@ void MediaFeedsService::OnFetchResponse(
   result.feed_id = feed_id;
   result.status = GetFetchResult(status);
   result.was_fetched_from_cache = was_fetched_via_cache;
+  result.reset_token = reset_token;
 
   if (result.status == media_feeds::mojom::FetchResult::kSuccess &&
       !ConvertMediaFeed(response, &result)) {

@@ -12,13 +12,11 @@ import android.os.RemoteException;
 import android.util.AndroidRuntimeException;
 import android.webkit.ValueCallback;
 
-import org.chromium.base.BuildInfo;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.components.browser_ui.notifications.ChromeNotification;
-import org.chromium.components.browser_ui.notifications.NotificationBuilder;
 import org.chromium.components.browser_ui.notifications.NotificationManagerProxy;
 import org.chromium.components.browser_ui.notifications.NotificationManagerProxyImpl;
 import org.chromium.components.browser_ui.notifications.NotificationMetadata;
@@ -225,12 +223,12 @@ public class MediaStreamManager {
 
         // TODO(crbug/1076098): don't hard-code incognito to false.
         ChromeNotification notification = MediaCaptureNotificationUtil.createNotification(
-                new NotificationBuilder(appContext, WebLayerNotificationChannels.ChannelId.MEDIA,
-                        channelsInitializer,
+                new WebLayerNotificationBuilder(appContext,
+                        WebLayerNotificationChannels.ChannelId.MEDIA, channelsInitializer,
                         new NotificationMetadata(0, AV_STREAM_TAG, mNotificationId)),
                 mediaType, mTab.getWebContents().getVisibleUrl().getSpec(),
                 WebLayerImpl.getClientApplicationName(), false /*isIncognito*/, contentIntent,
-                null /*stopIntent*/, BuildInfo.getInstance().packageName);
+                null /*stopIntent*/);
         notificationManagerProxy.notify(notification);
 
         updateActiveNotifications(true);

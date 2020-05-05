@@ -47,7 +47,7 @@ void MockClipboardHost::ReadAvailableTypes(
     CHECK(!base::Contains(types, it.key));
     types.push_back(it.key);
   }
-  std::move(callback).Run(types, false);
+  std::move(callback).Run(types);
 }
 
 void MockClipboardHost::IsFormatAvailable(

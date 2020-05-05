@@ -294,6 +294,14 @@ GURL OneGoogleBarLoaderImpl::GetLoadURLForTesting() const {
   return GetApiUrl();
 }
 
+bool OneGoogleBarLoaderImpl::SetOgdebValue(const std::string& value) {
+  if (ogdeb_value_ == value) {
+    return false;
+  }
+  ogdeb_value_ = value;
+  return true;
+}
+
 GURL OneGoogleBarLoaderImpl::GetApiUrl() const {
   GURL api_url;
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -311,6 +319,10 @@ GURL OneGoogleBarLoaderImpl::GetApiUrl() const {
 
   // Add the "hl=" parameter.
   api_url = net::AppendQueryParameter(api_url, "hl", application_locale_);
+
+  if (!ogdeb_value_.empty()) {
+    api_url = net::AppendQueryParameter(api_url, "ogdeb", ogdeb_value_);
+  }
 
   // Add the "async=" parameter. We can't use net::AppendQueryParameter for
   // this because we need the ":" to remain unescaped.

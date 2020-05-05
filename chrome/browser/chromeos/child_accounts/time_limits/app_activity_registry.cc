@@ -481,14 +481,6 @@ bool AppActivityRegistry::UpdateAppLimits(
     if (base::Contains(app_limits, app_id))
       new_limit = app_limits.at(app_id);
 
-    // If chrome is installed, update chrome's and web apps' time limit.
-    // In Family Link app Chrome on Chrome OS is combined together with Android
-    // Chrome. Therefore, use Android Chrome's time limit.
-    if (app_id == GetChromeAppId() &&
-        base::Contains(app_limits, GetAndroidChromeAppId())) {
-      new_limit = app_limits.at(GetAndroidChromeAppId());
-    }
-
     policy_updated |= SetAppLimit(app_id, new_limit);
 
     if (new_limit && new_limit->last_updated() > latest_update)

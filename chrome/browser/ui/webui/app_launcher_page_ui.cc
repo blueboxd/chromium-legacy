@@ -147,8 +147,8 @@ std::string AppLauncherPageUI::HTMLSource::GetContentSecurityPolicyStyleSrc() {
 }
 
 std::string AppLauncherPageUI::HTMLSource::GetContentSecurityPolicyImgSrc() {
-  return "img-src chrome://extension-icon chrome://theme chrome://resources "
-      "data:;";
+  return "img-src chrome://extension-icon chrome://app-icon chrome://theme "
+         "chrome://resources data:;";
 }
 
 AppLauncherPageUI::HTMLSource::~HTMLSource() = default;

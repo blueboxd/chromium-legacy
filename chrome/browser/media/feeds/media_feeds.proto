@@ -174,3 +174,9 @@ message Image {
 message ImageSet {
   repeated Image image = 1;
 }
+
+// The //base/unguessable_token.h converted to a protobuf.
+message FeedResetToken {
+  uint64 high = 1;
+  uint64 low = 2;
+}

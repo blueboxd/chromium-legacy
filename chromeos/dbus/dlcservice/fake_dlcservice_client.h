@@ -13,10 +13,7 @@
 
 namespace chromeos {
 
-// A fake implementation of DlcserviceClient. The user of this class can
-// use set_update_engine_client_status() to set a fake last Status and
-// GetLastStatus() returns the fake with no modification. Other methods do
-// nothing.
+// A fake implementation of DlcserviceClient.
 class COMPONENT_EXPORT(DLCSERVICE_CLIENT) FakeDlcserviceClient
     : public DlcserviceClient {
  public:
@@ -27,18 +24,25 @@ class COMPONENT_EXPORT(DLCSERVICE_CLIENT) FakeDlcserviceClient
   void Install(const dlcservice::DlcModuleList& dlc_module_list,
                InstallCallback callback,
                ProgressCallback progress_callback) override;
+  // Uninstalling disables the DLC.
   void Uninstall(const std::string& dlc_id,
                  UninstallCallback callback) override;
+  // Purging removes the DLC entirely from disk.
   void Purge(const std::string& dlc_id, PurgeCallback callback) override;
   void GetInstalled(GetInstalledCallback callback) override;
   void OnInstallStatusForTest(dbus::Signal* signal) override;
 
   // Setters:
+  // TODO(hsuregan/kimjae): Convert setters and at tests that use them to
+  // underscore style instead of camel case.
   void SetInstallError(const std::string& err) { install_err_ = err; }
   void SetUninstallError(const std::string& err) { uninstall_err_ = err; }
   void SetPurgeError(const std::string& err) { purge_err_ = err; }
   void SetGetInstalledError(const std::string& err) {
     get_installed_err_ = err;
+  }
+  void set_installed_dlcs(const dlcservice::DlcModuleList& dlc_module_list) {
+    dlc_module_list_ = dlc_module_list;
   }
 
  private:
@@ -46,6 +50,7 @@ class COMPONENT_EXPORT(DLCSERVICE_CLIENT) FakeDlcserviceClient
   std::string uninstall_err_ = dlcservice::kErrorNone;
   std::string purge_err_ = dlcservice::kErrorNone;
   std::string get_installed_err_ = dlcservice::kErrorNone;
+  dlcservice::DlcModuleList dlc_module_list_;
 };
 
 }  // namespace chromeos

@@ -2,11 +2,11 @@
 
 <html class="reftest-wait">
 <meta charset="utf8">
-<title>CSS Content Visibility: auto + scrollIntoView on display:none</title>
+<title>CSS Content Visibility: hidden + focus</title>
 <link rel="author" title="Vladimir Levin" href="mailto:vmpstr@chromium.org">
 <link rel="help" href="https://github.com/WICG/display-locking">
 <link rel="match" href="spacer-and-container-ref.html">
-<meta name="assert" content="scrollIntoView ignores display:none element in an auto subtree">
+<meta name="assert" content="focus ignores element in a hidden subtree">
 <script src="/common/reftest-wait.js"></script>
 
 <style>
@@ -21,8 +21,6 @@
   background: lightblue;
 }
 #target {
-  display: none;
-
   position: relative;
   top: 75px;
 
@@ -30,19 +28,19 @@
   height: 50px;
   background: red;
 }
-.auto {
-  content-visibility: auto;
+.hidden {
+  content-visibility: hidden;
 }
 </style>
 
 <div class=spacer></div>
-<div id=container class=auto>
-  <div id=target></div>
+<div id=container class=hidden>
+  <div id=target tabindex=0></div>
 </div>
 
 <script>
 function runTest() {
-  document.getElementById("target").scrollIntoView();
+  document.getElementById("target").focus();
   requestAnimationFrame(takeScreenshot);
 }
 

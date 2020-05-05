@@ -553,14 +553,14 @@ void HeadsUpDisplayLayerImpl::UpdateHudContents() {
       FrameRateCounter* fps_counter = layer_tree_impl()->frame_rate_counter();
       fps_graph_.value = fps_counter->GetAverageFPS();
       fps_counter->GetMinAndMaxFPS(&fps_graph_.min, &fps_graph_.max);
-      current_throughput = layer_tree_impl()->current_universal_throughput();
-      if (current_throughput.has_value()) {
+      current_throughput_ = layer_tree_impl()->current_universal_throughput();
+      if (current_throughput_.has_value()) {
         if (!max_throughput.has_value() ||
-            current_throughput.value() > max_throughput.value())
-          max_throughput = current_throughput;
+            current_throughput_.value() > max_throughput.value())
+          max_throughput = current_throughput_;
         if (!min_throughput.has_value() ||
-            current_throughput.value() < min_throughput.value())
-          min_throughput = current_throughput;
+            current_throughput_.value() < min_throughput.value())
+          min_throughput = current_throughput_;
       }
     }
 
@@ -737,8 +737,8 @@ SkRect HeadsUpDisplayLayerImpl::DrawFPSDisplay(
   int current_top = histogram_bounds.bottom() + kPadding;
   const std::string throughput_title("Throughput");
   const std::string throughput_value_text =
-      current_throughput.has_value()
-          ? base::StringPrintf("%d %%", current_throughput.value())
+      current_throughput_.has_value()
+          ? base::StringPrintf("%d %%", current_throughput_.value())
           : base::StringPrintf("n/a");
 
   VLOG(1) << throughput_value_text;

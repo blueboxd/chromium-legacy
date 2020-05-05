@@ -4,7 +4,9 @@
 <link rel="import" href="chrome://resources/html/cr.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/cr_elements/md_select_css.html">
+<link rel="import" href="chrome://resources/cr_elements/shared_style_css.html">
 <link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout-classes.html">
 <link rel="import" href="../../controls/settings_toggle_button.html">
 <link rel="import" href="../../router.html">
 <link rel="import" href="../../settings_shared_css.html">
@@ -12,30 +14,15 @@
 
 <dom-module id="settings-power">
   <template>
-    <style include="settings-shared md-select">
+    <style include="iron-flex cr-shared-style settings-shared md-select">
       .indented {
-        align-self: stretch;
         margin-inline-start: var(--cr-section-indent-padding);
-        padding: 0;
-      }
-
-      #powerIdleLabel {
-        align-self: stretch;
-        padding-top: var(--cr-section-padding);
-      }
-
-      .subsection {
-        @apply --cr-section;
-        flex-direction: column;
-      }
-
-      .subsection.first {
-        border-top: none;
+        padding-inline-start: 0;
       }
     </style>
-    <div id="powerSourceRow" class="settings-box first two-line"
+    <div id="powerSourceRow" class="cr-row first"
         hidden$="[[!batteryStatus_.present]]">
-      <div class="start" id="powerSourceLabelDiv">
+      <div class="flex cr-padded-text" id="powerSourceLabelDiv">
         <div>[[powerSourceLabel_]]</div>
         <div class="secondary">[[batteryStatus_.statusText]]</div>
       </div>
@@ -58,54 +45,56 @@
       </div>
     </div>
 
-    <div class$="subsection [[getFirst_(batteryStatus_.present)]]">
-      <div id="powerIdleLabel" aria-hidden="true">$i18n{powerIdleLabel}</div>
-      <div class="settings-box indented first">
-        <div class="start" aria-hidden="true">
-          $i18n{powerIdleWhileChargingLabel}
+    <div id="powerIdleLabel"
+        class$="cr-row [[getFirst_(batteryStatus_.present)]]"
+        aria-label="true">
+      $i18n{powerIdleLabel}
+    </div>
+    <div class="cr-row indented first">
+      <div class="flex" aria-hidden="true">
+        $i18n{powerIdleWhileChargingLabel}
+      </div>
+      <template is="dom-if" if="[[acIdleManaged_]]" restamp>
+        <cr-policy-indicator id="acIdleManagedIndicator"
+            indicator-type="devicePolicy"
+            icon-aria-label="$i18n{powerIdleWhileChargingAriaLabel}">
+        </cr-policy-indicator>
+      </template>
+      <select id="acIdleSelect" class="md-select"
+          on-change="onAcIdleSelectChange_"
+          disabled="[[shouldAcIdleSelectBeDisabled_]]"
+          aria-label="$i18n{powerIdleWhileChargingAriaLabel}">
+        <template is="dom-repeat" items="[[acIdleOptions_]]">
+          <option value="[[item.value]]" selected="[[item.selected]]">
+            [[item.name]]
+          </option>
+        </template>
+      </select>
+    </div>
+
+    <template is="dom-if" if="[[batteryStatus_.present]]" restamp>
+      <div id="batteryIdleSettingBox" class="cr-row indented">
+        <div class="flex" aria-hidden="true">
+          $i18n{powerIdleWhileOnBatteryLabel}
         </div>
-        <template is="dom-if" if="[[acIdleManaged_]]" restamp>
-          <cr-policy-indicator id="acIdleManagedIndicator"
+        <template is="dom-if" if="[[batteryIdleManaged_]]" restamp>
+          <cr-policy-indicator id="batteryIdleManagedIndicator"
               indicator-type="devicePolicy"
-              icon-aria-label="$i18n{powerIdleWhileChargingAriaLabel}">
+              icon-aria-label="$i18n{powerIdleWhileOnBatteryAriaLabel}">
           </cr-policy-indicator>
         </template>
-        <select id="acIdleSelect" class="md-select"
-            on-change="onAcIdleSelectChange_"
-            disabled="[[shouldAcIdleSelectBeDisabled_]]"
-            aria-label="$i18n{powerIdleWhileChargingAriaLabel}">
-          <template is="dom-repeat" items="[[acIdleOptions_]]">
+        <select id="batteryIdleSelect" class="md-select"
+            on-change="onBatteryIdleSelectChange_"
+            disabled="[[shouldBatteryIdleSelectBeDisabled_]]"
+            aria-label="$i18n{powerIdleWhileOnBatteryAriaLabel}">
+          <template is="dom-repeat" items="[[batteryIdleOptions_]]">
             <option value="[[item.value]]" selected="[[item.selected]]">
               [[item.name]]
             </option>
           </template>
         </select>
       </div>
-
-      <template is="dom-if" if="[[batteryStatus_.present]]" restamp>
-        <div id="batteryIdleSettingBox" class="settings-box indented">
-          <div class="start" aria-hidden="true">
-            $i18n{powerIdleWhileOnBatteryLabel}
-          </div>
-          <template is="dom-if" if="[[batteryIdleManaged_]]" restamp>
-            <cr-policy-indicator id="batteryIdleManagedIndicator"
-                indicator-type="devicePolicy"
-                icon-aria-label="$i18n{powerIdleWhileOnBatteryAriaLabel}">
-            </cr-policy-indicator>
-          </template>
-          <select id="batteryIdleSelect" class="md-select"
-              on-change="onBatteryIdleSelectChange_"
-              disabled="[[shouldBatteryIdleSelectBeDisabled_]]"
-              aria-label="$i18n{powerIdleWhileOnBatteryAriaLabel}">
-            <template is="dom-repeat" items="[[batteryIdleOptions_]]">
-              <option value="[[item.value]]" selected="[[item.selected]]">
-                [[item.name]]
-              </option>
-            </template>
-          </select>
-        </div>
-      </template>
-    </div>
+    </template>
 
     <settings-toggle-button hidden$="[[!hasLid_]]" id="lidClosedToggle"
       pref="[[lidClosedPref_]]" label="[[lidClosedLabel_]]"

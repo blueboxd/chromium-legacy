@@ -29,6 +29,7 @@
 #include "third_party/blink/renderer/platform/fonts/character_range.h"
 #include "third_party/blink/renderer/platform/fonts/font_cache.h"
 #include "third_party/blink/renderer/platform/fonts/font_fallback_list.h"
+#include "third_party/blink/renderer/platform/fonts/font_fallback_map.h"
 #include "third_party/blink/renderer/platform/fonts/ng_text_fragment_paint_info.h"
 #include "third_party/blink/renderer/platform/fonts/shaping/caching_word_shaper.h"
 #include "third_party/blink/renderer/platform/fonts/shaping/shape_result_bloberizer.h"
@@ -48,6 +49,27 @@
 
 namespace blink {
 
+namespace {
+
+FontFallbackMap& GetFontFallbackMap(FontSelector* font_selector) {
+  if (font_selector)
+    return font_selector->GetFontFallbackMap();
+  return FontCache::GetFontCache()->GetFontFallbackMap();
+}
+
+scoped_refptr<FontFallbackList> GetOrCreateFontFallbackList(
+    const FontDescription& font_description,
+    FontSelector* font_selector) {
+  if (!RuntimeEnabledFeatures::
+          CSSReducedFontLoadingLayoutInvalidationsEnabled()) {
+    return FontFallbackList::Create(font_selector);
+  }
+
+  return GetFontFallbackMap(font_selector).Get(font_description);
+}
+
+}  // namespace
+
 Font::Font() = default;
 
 Font::Font(const FontDescription& fd) : font_description_(fd) {}
@@ -55,14 +77,70 @@ Font::Font(const FontDescription& fd) : font_description_(fd) {}
 Font::Font(const FontDescription& font_description, FontSelector* font_selector)
     : font_description_(font_description),
       font_fallback_list_(
-          font_selector ? FontFallbackList::Create(font_selector) : nullptr) {}
+          font_selector
+              ? GetOrCreateFontFallbackList(font_description, font_selector)
+              : nullptr) {}
 
 Font::Font(const Font& other) = default;
 
 Font& Font::operator=(const Font& other) {
+  if (this == &other || *this == other)
+    return *this;
+  ReleaseFontFallbackListRef();
   font_description_ = other.font_description_;
   font_fallback_list_ = other.font_fallback_list_;
   return *this;
+}
+
+Font::~Font() {
+  ReleaseFontFallbackListRef();
+}
+
+// Ensures that FontFallbackMap only keeps FontFallbackLists that are still in
+// use by at least one Font object. If the last Font releases its reference, we
+// should clear the entry from FontFallbackMap.
+// Note that we must not persist a FontFallbackList reference outside Font.
+void Font::ReleaseFontFallbackListRef() const {
+  if (!RuntimeEnabledFeatures::
+          CSSReducedFontLoadingLayoutInvalidationsEnabled() ||
+      !font_fallback_list_ || !font_fallback_list_->IsValid()) {
+    font_fallback_list_.reset();
+    return;
+  }
+
+  FontFallbackList& list_ref = *font_fallback_list_;
+  // Failing this CHECK causes use-after-free below.
+  CHECK(!list_ref.HasOneRef());
+  font_fallback_list_.reset();
+  if (list_ref.HasOneRef())
+    GetFontFallbackMap(list_ref.GetFontSelector()).Remove(font_description_);
+}
+
+void Font::RevalidateFontFallbackList() const {
+  if (!RuntimeEnabledFeatures::CSSReducedFontLoadingInvalidationsEnabled()) {
+    // This should be a not-reached, but some test code reaches it. Since this
+    // is a deprecated code path, we don't intend to fix it.
+    return;
+  }
+
+  if (!RuntimeEnabledFeatures::
+          CSSReducedFontLoadingLayoutInvalidationsEnabled()) {
+    font_fallback_list_->RevalidateDeprecated();
+    return;
+  }
+
+  font_fallback_list_ =
+      GetFontFallbackMap(GetFontSelector()).Get(font_description_);
+}
+
+FontFallbackList* Font::EnsureFontFallbackList() const {
+  if (!font_fallback_list_) {
+    font_fallback_list_ =
+        GetOrCreateFontFallbackList(font_description_, nullptr);
+  }
+  if (!font_fallback_list_->IsValid())
+    RevalidateFontFallbackList();
+  return font_fallback_list_.get();
 }
 
 namespace {
@@ -80,6 +158,17 @@ bool FontFallbackListVersionEqual(const FontFallbackList* first,
 }  // namespace
 
 bool Font::operator==(const Font& other) const {
+  if (RuntimeEnabledFeatures::
+          CSSReducedFontLoadingLayoutInvalidationsEnabled()) {
+    // When the feature is enabled, two Font objects with the same
+    // FontDescription and FontSelector should always hold reference to the same
+    // FontFallbackList object, unless invalidated.
+    if (font_fallback_list_ && font_fallback_list_->IsValid() &&
+        other.font_fallback_list_ && other.font_fallback_list_->IsValid()) {
+      return font_fallback_list_ == other.font_fallback_list_;
+    }
+  }
+
   FontSelector* first =
       font_fallback_list_ ? font_fallback_list_->GetFontSelector() : nullptr;
   FontSelector* second = other.font_fallback_list_

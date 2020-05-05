@@ -9,5 +9,12 @@ module chrome.mojom;
 interface CaptionHost {
   // Called when the speech recognition client receives a transcription from the
   // speech service.
-  OnTranscription(string transcription);
+  OnTranscription(TranscriptionResult transcription_result);
+};
+
+// A transcription result created by the speech recognition client in the
+// renderer and passed to the browser.
+struct TranscriptionResult {
+  string transcription;
+  bool is_final;
 };

@@ -333,11 +333,11 @@ std::unique_ptr<CloudPolicyClient> DeviceCloudPolicyInitializer::CreateClient(
   return std::make_unique<CloudPolicyClient>(
       statistics_provider_->GetEnterpriseMachineID(), machine_model, brand_code,
       ethernet_mac_address, dock_mac_address, manufacture_date,
-      device_management_service,
+      signing_service_.get(), device_management_service,
       system_url_loader_factory_for_testing_
           ? system_url_loader_factory_for_testing_
           : g_browser_process->shared_url_loader_factory(),
-      signing_service_.get(), CloudPolicyClient::DeviceDMTokenCallback());
+      CloudPolicyClient::DeviceDMTokenCallback());
 }
 
 void DeviceCloudPolicyInitializer::TryToCreateClient() {

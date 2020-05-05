@@ -81,11 +81,11 @@ void DynamicsCompressorHandler::Process(uint32_t frames_to_process) {
   AudioBus* output_bus = Output(0).Bus();
   DCHECK(output_bus);
 
-  float threshold = threshold_->Value();
-  float knee = knee_->Value();
-  float ratio = ratio_->Value();
-  float attack = attack_->Value();
-  float release = release_->Value();
+  float threshold = threshold_->FinalValue();
+  float knee = knee_->FinalValue();
+  float ratio = ratio_->FinalValue();
+  float attack = attack_->FinalValue();
+  float release = release_->FinalValue();
 
   dynamics_compressor_->SetParameterValue(DynamicsCompressor::kParamThreshold,
                                           threshold);

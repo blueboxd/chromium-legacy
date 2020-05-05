@@ -34,6 +34,7 @@ class RemoteFrameClientImpl final : public RemoteFrameClient {
 
   // RemoteFrameClient overrides:
   void Navigate(const ResourceRequest&,
+                blink::WebLocalFrame* initiator_frame,
                 bool should_replace_current_entry,
                 bool is_opener_navigation,
                 bool prevent_sandboxed_download,

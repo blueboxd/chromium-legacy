@@ -264,10 +264,6 @@ const char kFullscreenControllerBrowserScopedDescription[] =
     "When enabled, FullscreenController will be stored and retrieved using the "
     "Browser.";
 
-const char kIgnoresViewportScaleLimitsName[] = "Ignore Viewport Scale Limits";
-const char kIgnoresViewportScaleLimitsDescription[] =
-    "When enabled the page can always be scaled, regardless of author intent.";
-
 const char kInfobarOverlayUIName[] = "Use OverlayPresenter for infobars";
 const char kInfobarOverlayUIDescription[] =
     "When enabled alongside the Infobar UI Reboot, infobars will be presented "

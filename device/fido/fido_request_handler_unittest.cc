@@ -280,7 +280,6 @@ class FidoRequestHandlerTest : public ::testing::Test {
 
   void ForgeNextHidDiscovery() {
     discovery_ = fake_discovery_factory_.ForgeNextHidDiscovery();
-    ble_discovery_ = fake_discovery_factory_.ForgeNextBleDiscovery();
   }
 
   std::unique_ptr<FakeFidoRequestHandler> CreateFakeHandler() {
@@ -288,14 +287,12 @@ class FidoRequestHandlerTest : public ::testing::Test {
     auto handler = std::make_unique<FakeFidoRequestHandler>(
         &fake_discovery_factory_,
         base::flat_set<FidoTransportProtocol>(
-            {FidoTransportProtocol::kUsbHumanInterfaceDevice,
-             FidoTransportProtocol::kBluetoothLowEnergy}),
+            {FidoTransportProtocol::kUsbHumanInterfaceDevice}),
         cb_.callback());
     return handler;
   }
 
   test::FakeFidoDiscovery* discovery() const { return discovery_; }
-  test::FakeFidoDiscovery* ble_discovery() const { return ble_discovery_; }
   scoped_refptr<::testing::NiceMock<MockBluetoothAdapter>> adapter() {
     return mock_adapter_;
   }
@@ -307,7 +304,6 @@ class FidoRequestHandlerTest : public ::testing::Test {
   test::FakeFidoDiscoveryFactory fake_discovery_factory_;
   scoped_refptr<::testing::NiceMock<MockBluetoothAdapter>> mock_adapter_;
   test::FakeFidoDiscovery* discovery_;
-  test::FakeFidoDiscovery* ble_discovery_;
   FakeHandlerCallbackReceiver cb_;
 };
 
@@ -595,48 +591,16 @@ TEST_F(FidoRequestHandlerTest, InternalTransportDisallowedIfMarkedUnavailable) {
   observer.WaitForAndExpectAvailableTransportsAre({});
 }
 
-TEST_F(FidoRequestHandlerTest, BleTransportAllowedIfBluetoothAdapterPresent) {
-  EXPECT_CALL(*adapter(), IsPresent()).WillOnce(::testing::Return(true));
-
-  TestObserver observer;
-  auto request_handler = CreateFakeHandler();
-  ble_discovery()->WaitForCallToStartAndSimulateSuccess();
-  discovery()->WaitForCallToStartAndSimulateSuccess();
-  request_handler->set_observer(&observer);
-
-  observer.WaitForAndExpectAvailableTransportsAre(
-      {FidoTransportProtocol::kUsbHumanInterfaceDevice,
-       FidoTransportProtocol::kBluetoothLowEnergy});
-}
-
-TEST_F(FidoRequestHandlerTest,
-       BleTransportDisallowedBluetoothAdapterNotPresent) {
-  EXPECT_CALL(*adapter(), IsPresent()).WillOnce(::testing::Return(false));
-
-  TestObserver observer;
-  auto request_handler = CreateFakeHandler();
-  ble_discovery()->WaitForCallToStartAndSimulateSuccess();
-  discovery()->WaitForCallToStartAndSimulateSuccess();
-  request_handler->set_observer(&observer);
-
-  observer.WaitForAndExpectAvailableTransportsAre(
-      {FidoTransportProtocol::kUsbHumanInterfaceDevice});
-}
-
 TEST_F(FidoRequestHandlerTest,
        TransportAvailabilityNotificationOnObserverSetLate) {
-  EXPECT_CALL(*adapter(), IsPresent()).WillOnce(::testing::Return(true));
-
   TestObserver observer;
   auto request_handler = CreateFakeHandler();
-  ble_discovery()->WaitForCallToStartAndSimulateSuccess();
   discovery()->WaitForCallToStartAndSimulateSuccess();
   task_environment_.FastForwardUntilNoTasksRemain();
 
   request_handler->set_observer(&observer);
   observer.WaitForAndExpectAvailableTransportsAre(
-      {FidoTransportProtocol::kUsbHumanInterfaceDevice,
-       FidoTransportProtocol::kBluetoothLowEnergy});
+      {FidoTransportProtocol::kUsbHumanInterfaceDevice});
 }
 
 #if defined(OS_WIN)

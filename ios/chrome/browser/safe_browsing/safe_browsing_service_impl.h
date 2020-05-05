@@ -42,6 +42,7 @@ class SafeBrowsingServiceImpl : public SafeBrowsingService {
   std::unique_ptr<safe_browsing::SafeBrowsingUrlCheckerImpl> CreateUrlChecker(
       safe_browsing::ResourceType resource_type,
       web::WebState* web_state) override;
+  bool CanCheckUrl(const GURL& url) const override;
 
  private:
   // A helper class for enabling/disabling Safe Browsing and maintaining state

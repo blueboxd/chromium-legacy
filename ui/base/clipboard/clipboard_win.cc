@@ -258,13 +258,10 @@ void ClipboardWin::Clear(ClipboardBuffer buffer) {
   ::EmptyClipboard();
 }
 
-void ClipboardWin::ReadAvailableTypes(ClipboardBuffer buffer,
-                                      std::vector<base::string16>* types,
-                                      bool* contains_filenames) const {
-  if (!types || !contains_filenames) {
-    NOTREACHED();
-    return;
-  }
+void ClipboardWin::ReadAvailableTypes(
+    ClipboardBuffer buffer,
+    std::vector<base::string16>* types) const {
+  DCHECK(types);
 
   types->clear();
   if (::IsClipboardFormatAvailable(
@@ -278,7 +275,6 @@ void ClipboardWin::ReadAvailableTypes(ClipboardBuffer buffer,
     types->push_back(base::UTF8ToUTF16(kMimeTypeRTF));
   if (::IsClipboardFormatAvailable(CF_DIB))
     types->push_back(base::UTF8ToUTF16(kMimeTypePNG));
-  *contains_filenames = false;
 
   // Acquire the clipboard to read WebCustomDataType types.
   ScopedClipboard clipboard;

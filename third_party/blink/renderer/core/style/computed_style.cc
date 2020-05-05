@@ -102,7 +102,7 @@ struct SameSizeAsComputedStyleBase {
   }
 
  private:
-  void* data_refs[7];
+  void* data_refs[8];
   unsigned bitfields[5];
 };
 
@@ -291,8 +291,16 @@ ComputedStyle::ComputeDifferenceIgnoringInheritedFirstLineStyle(
   if (!non_inherited_equal && old_style.HasExplicitlyInheritedProperties()) {
     return Difference::kInherited;
   }
-  if (!old_style.IndependentInheritedEqual(new_style))
+  bool variables_independent = RuntimeEnabledFeatures::CSSCascadeEnabled() &&
+                               !old_style.HasVariableReference() &&
+                               !old_style.HasVariableDeclaration();
+  bool inherited_variables_equal = old_style.InheritedVariablesEqual(new_style);
+  if (!inherited_variables_equal && !variables_independent)
+    return Difference::kInherited;
+  if (!old_style.IndependentInheritedEqual(new_style) ||
+      !inherited_variables_equal) {
     return Difference::kIndependentInherited;
+  }
   if (non_inherited_equal) {
     DCHECK(old_style == new_style);
     if (PseudoElementStylesEqual(old_style, new_style))
@@ -312,6 +320,8 @@ ComputedStyle::ComputeDifferenceIgnoringInheritedFirstLineStyle(
 void ComputedStyle::PropagateIndependentInheritedProperties(
     const ComputedStyle& parent_style) {
   ComputedStyleBase::PropagateIndependentInheritedProperties(parent_style);
+  if (!HasVariableReference() && !HasVariableDeclaration())
+    InheritCustomPropertiesFrom(parent_style);
 }
 
 StyleSelfAlignmentData ResolvedSelfAlignment(

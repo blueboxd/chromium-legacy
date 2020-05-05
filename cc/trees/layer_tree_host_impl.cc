@@ -353,7 +353,8 @@ LayerTreeHostImpl::LayerTreeHostImpl(
       frame_trackers_(settings.single_thread_proxy_scheduler,
                       compositor_frame_reporting_controller_.get()),
       scroll_gesture_did_end_(false),
-      lcd_text_metrics_reporter_(LCDTextMetricsReporter::CreateIfNeeded(this)) {
+      lcd_text_metrics_reporter_(LCDTextMetricsReporter::CreateIfNeeded(this)),
+      frame_rate_estimator_(GetTaskRunner()) {
   DCHECK(mutator_host_);
   mutator_host_->SetMutatorHostClient(this);
   mutator_events_ = mutator_host_->CreateEvents();
@@ -1075,6 +1076,10 @@ bool LayerTreeHostImpl::ScrollingShouldSwitchtoMainThread() {
   return false;
 }
 
+void LayerTreeHostImpl::NotifyInputEvent() {
+  frame_rate_estimator_.NotifyInputEvent();
+}
+
 void LayerTreeHostImpl::QueueSwapPromiseForMainThreadScrollUpdate(
     std::unique_ptr<SwapPromise> swap_promise) {
   swap_promises_for_main_thread_scroll_update_.push_back(
@@ -1299,6 +1304,7 @@ DrawResult LayerTreeHostImpl::CalculateRenderPasses(FrameData* frame) {
   bool have_copy_request =
       active_tree()->property_trees()->effect_tree.HasCopyRequests();
   bool have_missing_animated_tiles = false;
+  int num_of_layers_with_videos = 0;
 
   // Advance our de-jelly state. This is a no-op if de-jelly is not active.
   de_jelly_state_.AdvanceFrame(active_tree_.get());
@@ -1338,8 +1344,10 @@ DrawResult LayerTreeHostImpl::CalculateRenderPasses(FrameData* frame) {
         DCHECK_EQ(active_tree_.get(), layer->layer_tree_impl());
 
         frame->will_draw_layers.push_back(layer);
-        if (layer->may_contain_video())
+        if (layer->may_contain_video()) {
+          num_of_layers_with_videos++;
           frame->may_contain_video = true;
+        }
 
         layer->AppendQuads(target_render_pass, &append_quads_data);
         if (settings_.allow_de_jelly_effect) {
@@ -1403,6 +1411,11 @@ DrawResult LayerTreeHostImpl::CalculateRenderPasses(FrameData* frame) {
     if (RequiresHighResToDraw())
       draw_result = DRAW_ABORTED_MISSING_HIGH_RES_CONTENT;
   }
+
+  // Only enable frame rate estimation if it would help lower the composition
+  // rate for videos.
+  const bool enable_frame_rate_estimation = num_of_layers_with_videos > 1;
+  frame_rate_estimator_.SetFrameEstimationEnabled(enable_frame_rate_estimation);
 
   // When doing a resourceless software draw, we don't have control over the
   // surface the compositor draws to, so even though the frame may not be
@@ -2459,6 +2472,10 @@ viz::CompositorFrame LayerTreeHostImpl::GenerateCompositorFrame(
       CurrentBeginFrameArgs().frame_time,
       frame->deadline_in_frames.value_or(0u), CurrentBeginFrameArgs().interval,
       frame->use_default_lower_bound_deadline);
+
+  frame_rate_estimator_.WillDraw(CurrentBeginFrameArgs().frame_time);
+  metadata.preferred_frame_interval =
+      frame_rate_estimator_.GetPreferredInterval();
 
   metadata.activation_dependencies = std::move(frame->activation_dependencies);
   active_tree()->FinishSwapPromises(&metadata);

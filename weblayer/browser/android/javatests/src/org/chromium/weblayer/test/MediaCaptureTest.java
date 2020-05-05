@@ -10,6 +10,7 @@ import android.app.NotificationManager;
 import android.content.Context;
 import android.os.Build;
 import android.service.notification.StatusBarNotification;
+import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
 import android.webkit.ValueCallback;
 
@@ -238,6 +239,8 @@ public final class MediaCaptureTest {
             if (statusBarNotification.getTag().equals("org.chromium.weblayer.webrtc.avstream")) {
                 Assert.assertNull(notification);
                 notification = statusBarNotification.getNotification();
+                Assert.assertNotNull(notification.getSmallIcon().loadDrawable(
+                        InstrumentationRegistry.getContext()));
             }
         }
         return notification;

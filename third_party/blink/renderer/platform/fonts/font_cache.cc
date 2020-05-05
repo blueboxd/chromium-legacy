@@ -44,6 +44,7 @@
 #include "third_party/blink/renderer/platform/fonts/font_cache_key.h"
 #include "third_party/blink/renderer/platform/fonts/font_data_cache.h"
 #include "third_party/blink/renderer/platform/fonts/font_description.h"
+#include "third_party/blink/renderer/platform/fonts/font_fallback_map.h"
 #include "third_party/blink/renderer/platform/fonts/font_global_context.h"
 #include "third_party/blink/renderer/platform/fonts/font_platform_data.h"
 #include "third_party/blink/renderer/platform/fonts/font_smoothing_mode.h"
@@ -93,6 +94,7 @@ FontCache* FontCache::GetFontCache() {
 FontCache::FontCache()
     : purge_prevent_count_(0),
       font_manager_(sk_ref_sp(static_font_manager_)),
+      font_fallback_map_(MakeGarbageCollected<FontFallbackMap>(nullptr)),
       font_size_limit_(std::nextafter(
           (static_cast<float>(std::numeric_limits<unsigned>::max()) - 2.f) /
               static_cast<float>(blink::FontCacheKey::PrecisionMultiplier()),
@@ -109,6 +111,7 @@ FontCache::FontCache()
   }
   DCHECK(font_manager_.get());
 #endif
+  AddClient(font_fallback_map_);
 }
 
 #if !defined(OS_MACOSX)

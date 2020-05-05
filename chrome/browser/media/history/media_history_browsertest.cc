@@ -20,6 +20,7 @@
 #include "chrome/browser/media/history/media_history_origin_table.h"
 #include "chrome/browser/media/history/media_history_session_images_table.h"
 #include "chrome/browser/media/history/media_history_session_table.h"
+#include "chrome/browser/media/history/media_history_test_utils.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -287,13 +288,15 @@ class MediaHistoryBrowserTest : public InProcessBrowserTest,
   }
 
   media_history::MediaHistoryKeyedService::MediaFeedFetchResult FetchResult(
-      int64_t feed_id) {
+      MediaHistoryKeyedService* service,
+      const int64_t feed_id) {
     media_history::MediaHistoryKeyedService::MediaFeedFetchResult result;
     result.feed_id = feed_id;
     result.items = GetExpectedItems();
     result.status = media_feeds::mojom::FetchResult::kSuccess;
     result.associated_origins = GetExpectedAssociatedOrigins();
     result.display_name = "Test";
+    result.reset_token = test::GetResetTokenSync(service, feed_id);
     return result;
   }
 
@@ -1086,7 +1089,8 @@ IN_PROC_BROWSER_TEST_P(MediaHistoryBrowserTest,
   WaitForDB(service);
 
   // Store the feed data.
-  service->StoreMediaFeedFetchResult(FetchResult(1), base::DoNothing());
+  service->StoreMediaFeedFetchResult(FetchResult(service, 1),
+                                     base::DoNothing());
   WaitForDB(service);
 
   {
@@ -1133,7 +1137,7 @@ IN_PROC_BROWSER_TEST_P(MediaHistoryBrowserTest,
       EXPECT_EQ(1, stats->table_row_counts[MediaHistoryFeedsTable::kTableName]);
       EXPECT_EQ(
           0, stats->table_row_counts[MediaHistoryFeedItemsTable::kTableName]);
-      EXPECT_EQ(0, stats->table_row_counts
+      EXPECT_EQ(1, stats->table_row_counts
                        [MediaHistoryFeedAssociatedOriginsTable::kTableName]);
     }
   }
@@ -1151,7 +1155,8 @@ IN_PROC_BROWSER_TEST_P(MediaHistoryBrowserTest,
   WaitForDB(service);
 
   // Store the feed data.
-  service->StoreMediaFeedFetchResult(FetchResult(1), base::DoNothing());
+  service->StoreMediaFeedFetchResult(FetchResult(service, 1),
+                                     base::DoNothing());
   WaitForDB(service);
 
   {
@@ -1239,7 +1244,7 @@ IN_PROC_BROWSER_TEST_P(MediaHistoryBrowserTest,
       EXPECT_EQ(1, stats->table_row_counts[MediaHistoryFeedsTable::kTableName]);
       EXPECT_EQ(
           0, stats->table_row_counts[MediaHistoryFeedItemsTable::kTableName]);
-      EXPECT_EQ(0, stats->table_row_counts
+      EXPECT_EQ(1, stats->table_row_counts
                        [MediaHistoryFeedAssociatedOriginsTable::kTableName]);
     }
   }

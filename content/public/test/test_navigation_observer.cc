@@ -243,6 +243,7 @@ void TestNavigationObserver::OnDidFinishNavigation(
 
   last_navigation_url_ = navigation_handle->GetURL();
   last_navigation_initiator_origin_ = request->common_params().initiator_origin;
+  last_initiator_routing_id_ = navigation_handle->GetInitiatorRoutingId();
   last_navigation_succeeded_ = !navigation_handle->IsErrorPage();
   last_net_error_code_ = navigation_handle->GetNetErrorCode();
   last_navigation_type_ = request->navigation_type();

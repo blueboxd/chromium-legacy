@@ -16,6 +16,11 @@ class CORE_EXPORT AnimationUtils {
   STATIC_ONLY(AnimationUtils);
 
  public:
+  static const CSSValue* KeyframeValueFromComputedStyle(const PropertyHandle&,
+                                                        const ComputedStyle&,
+                                                        const Document&,
+                                                        const LayoutObject*);
+
   // Resolves the value of each property in properties, based on the underlying
   // value including any animation effects included in the interpolations map.
   // A callback is triggered for each property with the resolved value.

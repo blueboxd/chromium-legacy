@@ -52,7 +52,7 @@ class MediaFeedsTableDelegate {
       td.appendChild(fetchFeed);
 
       fetchFeed.addEventListener('click', () => {
-        store.fetchMediaFeed(dataRow.id, dataRow.url).then(response => {
+        store.fetchMediaFeed(dataRow.id).then(response => {
           updateFeedsTable();
           showFeedContents(dataRow);
         });

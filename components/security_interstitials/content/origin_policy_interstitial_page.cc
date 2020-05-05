@@ -105,9 +105,9 @@ void OriginPolicyInterstitialPage::CommandReceived(const std::string& command) {
   // TODO(carlosil): After non-committed insterstitials have been removed this
   //                 should be cleaned up to use enum values (or somesuch).
   if (command == "0") {
-    OnDontProceed();
+    DontProceed();
   } else if (command == "1") {
-    OnProceed();
+    Proceed();
   } else if (command == "2") {
     // "Advanced" button, which shows extra text. This is handled within
     // the page.
@@ -116,13 +116,13 @@ void OriginPolicyInterstitialPage::CommandReceived(const std::string& command) {
   }
 }
 
-void OriginPolicyInterstitialPage::OnProceed() {
+void OriginPolicyInterstitialPage::Proceed() {
   content::OriginPolicyAddExceptionFor(web_contents()->GetBrowserContext(),
                                        request_url());
   web_contents()->GetController().Reload(content::ReloadType::NORMAL, true);
 }
 
-void OriginPolicyInterstitialPage::OnDontProceed() {
+void OriginPolicyInterstitialPage::DontProceed() {
   // "Go Back" / "Don't Proceed" button should be disabled if we can't go back.
   DCHECK(web_contents()->GetController().CanGoBack());
   web_contents()->GetController().GoBack();

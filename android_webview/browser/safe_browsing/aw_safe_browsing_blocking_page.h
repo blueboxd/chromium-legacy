@@ -27,9 +27,6 @@ class AwSafeBrowsingBlockingPage : public safe_browsing::BaseBlockingPage {
  public:
   typedef security_interstitials::UnsafeResource UnsafeResource;
 
-  static void ShowBlockingPage(AwSafeBrowsingUIManager* ui_manager,
-                               const UnsafeResource& unsafe_resource);
-
   static AwSafeBrowsingBlockingPage* CreateBlockingPage(
       AwSafeBrowsingUIManager* ui_manager,
       content::WebContents* web_contents,

@@ -148,8 +148,9 @@ class ProofVerifierChromiumTest : public ::testing::Test {
                       GetTestCertsDirectory().AppendASCII("quic-leaf-cert.key"),
                       base::FilePath());
     std::string signature;
-    source.GetProof(quic::QuicSocketAddress(), kTestHostname, kTestConfig,
-                    quic::QUIC_VERSION_43, kTestChloHash,
+    source.GetProof(quic::QuicSocketAddress(), quic::QuicSocketAddress(),
+                    kTestHostname, kTestConfig, quic::QUIC_VERSION_43,
+                    kTestChloHash,
                     std::make_unique<SignatureSaver>(&signature));
     return signature;
   }

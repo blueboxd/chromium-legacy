@@ -15,13 +15,12 @@
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
 #include "components/security_interstitials/content/cert_report_helper.h"
 #include "components/security_interstitials/content/security_interstitial_controller_client.h"
+#include "components/security_interstitials/content/security_interstitial_page.h"
 #include "components/security_interstitials/content/ssl_cert_reporter.h"
 #include "components/security_interstitials/core/controller_client.h"
 #include "components/security_interstitials/core/metrics_helper.h"
 #include "components/security_interstitials/core/ssl_error_options_mask.h"
 #include "components/security_interstitials/core/ssl_error_ui.h"
-#include "content/public/browser/interstitial_page.h"
-#include "content/public/browser/interstitial_page_delegate.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/ssl_status.h"
@@ -30,20 +29,19 @@
 #include "third_party/blink/public/mojom/renderer_preferences.mojom.h"
 
 using base::TimeTicks;
-using content::InterstitialPage;
-using content::InterstitialPageDelegate;
 using content::NavigationEntry;
 using security_interstitials::SSLErrorUI;
 
 // static
-const InterstitialPageDelegate::TypeID SSLBlockingPage::kTypeForTesting =
-    &SSLBlockingPage::kTypeForTesting;
+const security_interstitials::SecurityInterstitialPage::TypeID
+    SSLBlockingPage::kTypeForTesting = &SSLBlockingPage::kTypeForTesting;
 
 bool SSLBlockingPage::ShouldCreateNewNavigation() const {
   return true;
 }
 
-InterstitialPageDelegate::TypeID SSLBlockingPage::GetTypeForTesting() {
+security_interstitials::SecurityInterstitialPage::TypeID
+SSLBlockingPage::GetTypeForTesting() {
   return SSLBlockingPage::kTypeForTesting;
 }
 
@@ -89,10 +87,6 @@ SSLBlockingPage::SSLBlockingPage(
                                                  controller())) {
   // Creating an interstitial without showing (e.g. from chrome://interstitials)
   // it leaks memory, so don't create it here.
-}
-
-void SSLBlockingPage::OverrideEntry(NavigationEntry* entry) {
-  entry->GetSSL() = content::SSLStatus(ssl_info_);
 }
 
 // This handles the commands sent from the interstitial JavaScript.

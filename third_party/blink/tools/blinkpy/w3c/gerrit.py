@@ -29,9 +29,10 @@ class GerritAPI(object):
         self.user = user
         self.token = token
 
-    def get(self, path, raw=False):
+    def get(self, path, raw=False, return_none_on_404=False):
         url = URL_BASE + path
-        raw_data = self.host.web.get_binary(url)
+        raw_data = self.host.web.get_binary(
+            url, return_none_on_404=return_none_on_404)
         if raw:
             return raw_data
 
@@ -69,7 +70,7 @@ class GerritAPI(object):
         path = '/changes/chromium%2Fsrc~master~{}?{}'.format(
             change_id, query_options)
         try:
-            cl_data = self.get(path)
+            cl_data = self.get(path, return_none_on_404=True)
         except NetworkTimeout:
             raise GerritError('Timed out querying CL using Change-Id')
 

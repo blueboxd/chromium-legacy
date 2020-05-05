@@ -3166,7 +3166,8 @@ scoped_refptr<ComputedStyle> Element::PropagateInheritedProperties() {
   const ComputedStyle* parent_style = ParentComputedStyle();
   DCHECK(parent_style);
   const ComputedStyle* style = GetComputedStyle();
-  if (!style || style->Animations() || style->Transitions())
+  if (!style || style->Animations() || style->Transitions() ||
+      style->HasVariableReference() || style->HasVariableDeclaration())
     return nullptr;
   scoped_refptr<ComputedStyle> new_style = ComputedStyle::Clone(*style);
   new_style->PropagateIndependentInheritedProperties(*parent_style);

@@ -583,6 +583,8 @@ const CSSValue* StyleCascade::ResolveCustomProperty(
   if (HasFontSizeDependency(To<CustomProperty>(property), data.get()))
     resolver.DetectCycle(GetCSSPropertyFontSize());
 
+  state_.Style()->SetHasVariableDeclaration();
+
   if (resolver.InCycle())
     return CSSInvalidVariableValue::Create();
 
@@ -885,6 +887,7 @@ void StyleCascade::MarkIsReferenced(const CustomProperty& property) {
 void StyleCascade::MarkHasVariableReference(const CSSProperty& property) {
   if (!property.IsInherited())
     state_.Style()->SetHasVariableReferenceFromNonInheritedProperty();
+  state_.Style()->SetHasVariableReference();
 }
 
 const Document& StyleCascade::GetDocument() const {

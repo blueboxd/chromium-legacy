@@ -69,18 +69,12 @@ gfx::RectF ClippedQuadRectangle(const DrawQuad* quad) {
 DCLayerResult ValidateYUVQuad(
     const YUVVideoDrawQuad* quad,
     const std::vector<gfx::Rect>& backdrop_filter_rects,
-    bool has_hw_overlay_support,
+    bool has_overlay_support,
     int current_frame_processed_overlay_count,
     DisplayResourceProvider* resource_provider) {
-  // To support software protected video on machines without hardware overlay
-  // capability. Don't do dc layer overlay if no hardware support.
-  gfx::ProtectedVideoType protected_video_type = quad->protected_video_type;
-  bool allow_video_overlay =
-      has_hw_overlay_support ||
-      (protected_video_type == gfx::ProtectedVideoType::kSoftwareProtected &&
-       base::FeatureList::IsEnabled(
-           features::kUseDCOverlaysForSoftwareProtectedVideo));
-  if (!allow_video_overlay)
+  // Note: Do not override this value based on base::Feature values. It is the
+  // result after the GPU blacklist has been consulted.
+  if (!has_overlay_support)
     return DC_LAYER_FAILED_UNSUPPORTED_QUAD;
 
   // Check that resources are overlay compatible first so that subsequent
@@ -91,29 +85,30 @@ DCLayerResult ValidateYUVQuad(
   }
 
   // Hardware protected video must use Direct Composition Overlay
-  if (protected_video_type != gfx::ProtectedVideoType::kHardwareProtected) {
-    if (quad->shared_quad_state->blend_mode != SkBlendMode::kSrcOver)
-      return DC_LAYER_FAILED_QUAD_BLEND_MODE;
+  if (quad->protected_video_type == gfx::ProtectedVideoType::kHardwareProtected)
+    return DC_LAYER_SUCCESS;
 
-    bool is_axis_aligned = quad->shared_quad_state->quad_to_target_transform
-                               .Preserves2dAxisAlignment();
-    if (!is_axis_aligned && !base::FeatureList::IsEnabled(
-                                features::kDirectCompositionComplexOverlays)) {
-      return DC_LAYER_FAILED_COMPLEX_TRANSFORM;
-    }
+  if (quad->shared_quad_state->blend_mode != SkBlendMode::kSrcOver)
+    return DC_LAYER_FAILED_QUAD_BLEND_MODE;
 
-    if (current_frame_processed_overlay_count > 0)
-      return DC_LAYER_FAILED_TOO_MANY_OVERLAYS;
+  bool is_axis_aligned = quad->shared_quad_state->quad_to_target_transform
+                             .Preserves2dAxisAlignment();
+  if (!is_axis_aligned && !base::FeatureList::IsEnabled(
+                              features::kDirectCompositionComplexOverlays)) {
+    return DC_LAYER_FAILED_COMPLEX_TRANSFORM;
+  }
 
-    // Rounded corner on overlays are not supported.
-    if (!quad->shared_quad_state->rounded_corner_bounds.IsEmpty())
-      return DC_LAYER_FAILED_ROUNDED_CORNERS;
+  if (current_frame_processed_overlay_count > 0)
+    return DC_LAYER_FAILED_TOO_MANY_OVERLAYS;
 
-    auto quad_target_rect = gfx::ToEnclosingRect(ClippedQuadRectangle(quad));
-    for (const auto& filter_target_rect : backdrop_filter_rects) {
-      if (filter_target_rect.Intersects(quad_target_rect))
-        return DC_LAYER_FAILED_BACKDROP_FILTERS;
-    }
+  // Rounded corner on overlays are not supported.
+  if (!quad->shared_quad_state->rounded_corner_bounds.IsEmpty())
+    return DC_LAYER_FAILED_ROUNDED_CORNERS;
+
+  auto quad_target_rect = gfx::ToEnclosingRect(ClippedQuadRectangle(quad));
+  for (const auto& filter_target_rect : backdrop_filter_rects) {
+    if (filter_target_rect.Intersects(quad_target_rect))
+      return DC_LAYER_FAILED_BACKDROP_FILTERS;
   }
 
   return DC_LAYER_SUCCESS;
@@ -348,7 +343,7 @@ DCLayerOverlayProcessor::DCLayerOverlayProcessor(
 }
 
 DCLayerOverlayProcessor::DCLayerOverlayProcessor()
-    : has_hw_overlay_support_(true), show_debug_borders_(false) {}
+    : has_overlay_support_(true), show_debug_borders_(false) {}
 
 DCLayerOverlayProcessor::~DCLayerOverlayProcessor() {
   ui::GpuSwitchingManager::GetInstance()->RemoveObserver(this);
@@ -357,7 +352,7 @@ DCLayerOverlayProcessor::~DCLayerOverlayProcessor() {
 // Called on the Viz Compositor thread
 void DCLayerOverlayProcessor::UpdateHasHwOverlaySupport() {
   DCHECK(viz_task_runner_->BelongsToCurrentThread());
-  has_hw_overlay_support_ = gl::AreOverlaysSupportedWin();
+  has_overlay_support_ = gl::AreOverlaysSupportedWin();
 }
 
 // Not on the Viz Compositor thread
@@ -581,7 +576,7 @@ void DCLayerOverlayProcessor::ProcessRenderPass(
         result = ValidateYUVQuad(
             YUVVideoDrawQuad::MaterialCast(*it),
             render_pass_data_[render_pass->id].backdrop_filter_rects,
-            has_hw_overlay_support_, current_frame_processed_overlay_count_,
+            has_overlay_support_, current_frame_processed_overlay_count_,
             resource_provider);
         break;
       case DrawQuad::Material::kTextureContent:

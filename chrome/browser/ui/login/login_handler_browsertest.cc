@@ -32,7 +32,6 @@
 #include "components/prefs/pref_service.h"
 #include "components/security_interstitials/content/security_interstitial_tab_helper.h"
 #include "components/security_interstitials/content/ssl_blocking_page.h"
-#include "content/public/browser/interstitial_page.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/storage_partition.h"
@@ -1705,63 +1704,6 @@ IN_PROC_BROWSER_TEST_P(LoginPromptBrowserTest,
   LoginHandler* handler = *observer.handlers().begin();
   handler->CancelAuth();
   EXPECT_EQ("www.b.com", contents->GetVisibleURL().host());
-}
-
-// Test the scenario where proceeding through a different type of interstitial
-// that ends up with an auth URL works fine. This can happen if a URL that
-// triggers the auth dialog can also trigger an SSL interstitial (or any other
-// type of interstitial).
-IN_PROC_BROWSER_TEST_P(
-    LoginPromptBrowserTest,
-    DISABLED_LoginInterstitialShouldReplaceExistingInterstitial) {
-  net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
-  https_server.SetSSLConfig(net::EmbeddedTestServer::CERT_EXPIRED);
-  ASSERT_TRUE(https_server.Start());
-
-  content::WebContents* contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
-  NavigationController* controller = &contents->GetController();
-  LoginPromptBrowserTestObserver observer;
-
-  observer.Register(content::Source<NavigationController>(controller));
-
-  // Load a page which triggers an SSL interstitial. Proceeding through it
-  // should show the login page with the blank interstitial.
-  {
-    GURL test_page = https_server.GetURL(kAuthBasicPage);
-    ASSERT_EQ("127.0.0.1", test_page.host());
-
-    WindowedAuthNeededObserver auth_needed_waiter(controller);
-    browser()->OpenURL(OpenURLParams(test_page, Referrer(),
-                                     WindowOpenDisposition::CURRENT_TAB,
-                                     ui::PAGE_TRANSITION_TYPED, false));
-    ASSERT_EQ("127.0.0.1", contents->GetURL().host());
-    content::WaitForInterstitialAttach(contents);
-
-    EXPECT_EQ(SSLBlockingPage::kTypeForTesting, contents->GetInterstitialPage()
-                                                    ->GetDelegateForTesting()
-                                                    ->GetTypeForTesting());
-    // An overrideable SSL interstitial is now being displayed. Proceed through
-    // the interstitial to see the login prompt.
-    contents->GetInterstitialPage()->Proceed();
-    auth_needed_waiter.Wait();
-    ASSERT_EQ(1u, observer.handlers().size());
-    content::WaitForInterstitialAttach(contents);
-
-    // The omnibox should show the correct origin while the login prompt is
-    // being displayed.
-    EXPECT_EQ("127.0.0.1", contents->GetVisibleURL().host());
-
-    // Cancelling the login prompt should detach the interstitial while keeping
-    // the correct origin.
-    LoginHandler* handler = *observer.handlers().begin();
-    content::RunTaskAndWaitForInterstitialDetach(
-        contents,
-        base::BindOnce(&LoginHandler::CancelAuth, base::Unretained(handler)));
-
-    EXPECT_EQ("127.0.0.1", contents->GetVisibleURL().host());
-    EXPECT_FALSE(contents->ShowingInterstitialPage());
-  }
 }
 
 // Test the scenario where an auth interstitial should replace a different type

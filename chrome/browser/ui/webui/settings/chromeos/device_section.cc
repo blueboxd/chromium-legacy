@@ -14,6 +14,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/webui/settings/chromeos/device_display_handler.h"
+#include "chrome/browser/ui/webui/settings/chromeos/device_dlc_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/device_keyboard_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/device_pointer_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/device_power_handler.h"
@@ -588,7 +589,10 @@ void AddDeviceStorageStrings(content::WebUIDataSource* html_source,
        IDS_SETTINGS_STORAGE_EXTERNAL_STORAGE_EMPTY_LIST_HEADER},
       {"storageExternalStorageListHeader",
        IDS_SETTINGS_STORAGE_EXTERNAL_STORAGE_LIST_HEADER},
-      {"storageOverviewAriaLabel", IDS_SETTINGS_STORAGE_OVERVIEW_ARIA_LABEL}};
+      {"storageManageDownloadedContentRowTitle",
+       IDS_SETTINGS_STORAGE_MANAGE_DOWNLOADED_CONTENT_ROW_TITLE},
+      {"storageOverviewAriaLabel", IDS_SETTINGS_STORAGE_OVERVIEW_ARIA_LABEL},
+  };
   AddLocalizedStringsBulk(html_source, kStorageStrings);
 
   html_source->AddBoolean("androidEnabled", is_external_storage_page_available);
@@ -598,6 +602,16 @@ void AddDeviceStorageStrings(content::WebUIDataSource* html_source,
       l10n_util::GetStringFUTF16(
           IDS_SETTINGS_STORAGE_ANDROID_APPS_ACCESS_EXTERNAL_DRIVES_NOTE,
           base::ASCIIToUTF16(chrome::kArcExternalStorageLearnMoreURL)));
+}
+
+void AddDeviceDlcSubpageStrings(content::WebUIDataSource* html_source) {
+  static constexpr webui::LocalizedString kDlcSubpageStrings[] = {
+      // TODO(crbug/1070712): Add other DLC subpage strings needed.
+      {"dlcSubpageTitle", IDS_SETTINGS_DLC_SUBPAGE_TITLE},
+  };
+  AddLocalizedStringsBulk(html_source, kDlcSubpageStrings);
+
+  html_source->AddBoolean("allowDlcSubpage", features::ShouldShowDlcSettings());
 }
 
 void AddDevicePowerStrings(content::WebUIDataSource* html_source) {
@@ -712,12 +726,18 @@ void DeviceSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
   AddDeviceStorageStrings(
       html_source, features::ShouldShowExternalStorageSettings(profile()));
   AddDevicePowerStrings(html_source);
+  AddDeviceDlcSubpageStrings(html_source);
 }
 
 void DeviceSection::AddHandlers(content::WebUI* web_ui) {
   if (ash::features::IsDisplayIdentificationEnabled()) {
     web_ui->AddMessageHandler(
         std::make_unique<chromeos::settings::DisplayHandler>());
+  }
+
+  if (features::ShouldShowDlcSettings()) {
+    web_ui->AddMessageHandler(
+        std::make_unique<chromeos::settings::DlcHandler>());
   }
 
   web_ui->AddMessageHandler(

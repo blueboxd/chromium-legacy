@@ -5,6 +5,7 @@
 #include "components/autofill/core/browser/payments/test_authentication_requester.h"
 
 #include "base/strings/string16.h"
+#include "build/build_config.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
 
 namespace autofill {
@@ -27,9 +28,16 @@ void TestAuthenticationRequester::OnCVCAuthenticationComplete(
   }
 }
 
+#if defined(OS_ANDROID)
 bool TestAuthenticationRequester::ShouldOfferFidoAuth() const {
   return false;
 }
+
+bool TestAuthenticationRequester::UserOptedInToFidoFromSettingsPageOnMobile()
+    const {
+  return false;
+}
+#endif
 
 #if !defined(OS_IOS)
 void TestAuthenticationRequester::OnFIDOAuthenticationComplete(

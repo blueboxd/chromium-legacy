@@ -122,6 +122,9 @@ class MediaHistoryKeyedService : public KeyedService,
     // Origins associated with the feed that are linked to the login state of
     // the feed.
     std::set<url::Origin> associated_origins;
+
+    // The reset token for the feed.
+    base::Optional<base::UnguessableToken> reset_token;
   };
   // Replaces the media items in |result.feed_id|. This will delete any old feed
   // items and store the new ones in |result.items|. This will also update the
@@ -233,6 +236,22 @@ class MediaHistoryKeyedService : public KeyedService,
 
   // Deletes the Media Feed and runs the callback.
   void DeleteMediaFeed(const int64_t feed_id, base::OnceClosure callback);
+
+  // Gets the details needed to fetch a Media Feed.
+  struct MediaFeedFetchDetails {
+    MediaFeedFetchDetails();
+    ~MediaFeedFetchDetails();
+    MediaFeedFetchDetails(MediaFeedFetchDetails&& t);
+    MediaFeedFetchDetails& operator=(const MediaFeedFetchDetails&);
+
+    GURL url;
+    media_feeds::mojom::FetchResult last_fetch_result;
+    base::Optional<base::UnguessableToken> reset_token;
+  };
+  using GetMediaFeedFetchDetailsCallback =
+      base::OnceCallback<void(base::Optional<MediaFeedFetchDetails>)>;
+  void GetMediaFeedFetchDetails(const int64_t feed_id,
+                                GetMediaFeedFetchDetailsCallback callback);
 
  private:
   class StoreHolder;

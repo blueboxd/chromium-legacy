@@ -81,6 +81,7 @@ class NavigationSimulatorImpl : public NavigationSimulator,
   void Wait() override;
   bool IsDeferred() override;
 
+  void SetInitiatorFrame(RenderFrameHost* initiator_frame_host) override;
   void SetTransition(ui::PageTransition transition) override;
   void SetHasUserGesture(bool has_user_gesture) override;
   void SetReloadType(ReloadType reload_type) override;
@@ -292,6 +293,7 @@ class NavigationSimulatorImpl : public NavigationSimulator,
   TestRenderFrameHost::LoadingScenario loading_scenario_ =
       TestRenderFrameHost::LoadingScenario::kOther;
   blink::mojom::ReferrerPtr referrer_;
+  RenderFrameHost* initiator_frame_host_ = nullptr;
   ui::PageTransition transition_;
   ReloadType reload_type_ = ReloadType::NONE;
   int session_history_offset_ = 0;

@@ -230,7 +230,6 @@ IN_PROC_BROWSER_TEST_F(MediaFeedsBrowserTest, DiscoverAndFetch) {
 
   base::RunLoop run_loop;
   GetMediaFeedsService()->FetchMediaFeed(discovered_feeds[0]->id,
-                                         discovered_feeds[0]->url,
                                          run_loop.QuitClosure());
   run_loop.Run();
   WaitForDB();
@@ -259,7 +258,7 @@ IN_PROC_BROWSER_TEST_F(MediaFeedsBrowserTest, ResetMediaFeed_OnNavigation) {
 
     // Fetch the feed.
     base::RunLoop run_loop;
-    GetMediaFeedsService()->FetchMediaFeed(feeds[0]->id, feeds[0]->url,
+    GetMediaFeedsService()->FetchMediaFeed(feeds[0]->id,
                                            run_loop.QuitClosure());
     run_loop.Run();
     WaitForDB();
@@ -318,7 +317,7 @@ IN_PROC_BROWSER_TEST_F(MediaFeedsBrowserTest,
 
     // Fetch the feed.
     base::RunLoop run_loop;
-    GetMediaFeedsService()->FetchMediaFeed(feeds[0]->id, feeds[0]->url,
+    GetMediaFeedsService()->FetchMediaFeed(feeds[0]->id,
                                            run_loop.QuitClosure());
     run_loop.Run();
     WaitForDB();
@@ -349,7 +348,7 @@ IN_PROC_BROWSER_TEST_F(MediaFeedsBrowserTest,
 
     // Fetch the feed.
     base::RunLoop run_loop;
-    GetMediaFeedsService()->FetchMediaFeed(feeds[0]->id, feeds[0]->url,
+    GetMediaFeedsService()->FetchMediaFeed(feeds[0]->id,
                                            run_loop.QuitClosure());
     run_loop.Run();
     WaitForDB();

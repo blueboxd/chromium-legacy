@@ -145,7 +145,7 @@ class VIZ_SERVICE_EXPORT DCLayerOverlayProcessor
                                   RenderPass* root_render_pass,
                                   gfx::Rect* damage_rect);
 
-  bool has_hw_overlay_support_;
+  bool has_overlay_support_;
   const bool show_debug_borders_;
 
   gfx::Rect previous_frame_underlay_rect_;

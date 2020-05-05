@@ -789,11 +789,8 @@ void SafeBrowsingPrivateEventRouter::InitRealtimeReportingClientCallback(
   device_management_service->ScheduleInitialization(0);
 
   private_client_ = std::make_unique<policy::CloudPolicyClient>(
-      /*machine_id=*/std::string(), /*machine_model=*/std::string(),
-      /*brand_code=*/std::string(), /*ethernet_mac_address=*/std::string(),
-      /*dock_mac_address=*/std::string(), /*manufacture_date=*/std::string(),
       device_management_service, g_browser_process->shared_url_loader_factory(),
-      nullptr, policy::CloudPolicyClient::DeviceDMTokenCallback());
+      policy::CloudPolicyClient::DeviceDMTokenCallback());
   client = private_client_.get();
 
   if (!client->is_registered()) {

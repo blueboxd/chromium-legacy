@@ -606,15 +606,11 @@ void ChromeBrowserCloudManagementController::CreateReportSchedulerAsync(
 
 void ChromeBrowserCloudManagementController::CreateReportScheduler() {
   cloud_policy_client_ = std::make_unique<policy::CloudPolicyClient>(
-      std::string() /* machine_id */, std::string() /* machine_model */,
-      std::string() /* brand_code */, std::string() /* ethernet_mac_address */,
-      std::string() /* dock_mac_address */,
-      std::string() /* manufacture_date */,
       g_browser_process->browser_policy_connector()
           ->device_management_service(),
       g_browser_process->system_network_context_manager()
           ->GetSharedURLLoaderFactory(),
-      nullptr, CloudPolicyClient::DeviceDMTokenCallback());
+      CloudPolicyClient::DeviceDMTokenCallback());
   cloud_policy_client_->AddObserver(this);
   auto generator = std::make_unique<enterprise_reporting::ReportGenerator>();
   report_scheduler_ = std::make_unique<enterprise_reporting::ReportScheduler>(

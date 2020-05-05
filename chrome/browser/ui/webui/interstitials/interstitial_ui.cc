@@ -32,11 +32,11 @@
 #include "components/security_interstitials/content/legacy_tls_blocking_page.h"
 #include "components/security_interstitials/content/mitm_software_blocking_page.h"
 #include "components/security_interstitials/content/origin_policy_ui.h"
+#include "components/security_interstitials/content/security_interstitial_page.h"
 #include "components/security_interstitials/content/unsafe_resource_util.h"
 #include "components/security_interstitials/core/ssl_error_options_mask.h"
 #include "components/security_interstitials/core/ssl_error_ui.h"
 #include "components/security_interstitials/core/unsafe_resource.h"
-#include "content/public/browser/interstitial_page_delegate.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/url_data_source.h"
@@ -478,7 +478,8 @@ void InterstitialHTMLSource::StartDataRequest(
     // the tab is closing. Nothing to do in this case.
     return;
   }
-  std::unique_ptr<content::InterstitialPageDelegate> interstitial_delegate;
+  std::unique_ptr<security_interstitials::SecurityInterstitialPage>
+      interstitial_delegate;
   std::string html;
   // Using this form of the path so we can do exact matching, while ignoring the
   // query (everything after the ? character).

@@ -1,61 +1,107 @@
 <!doctype HTML>
 <html>
 <meta charset="utf8">
-<title>Display Locking: style on hidden element & child</title>
-<link rel="author" title="Rakina Zata Amni" href="mailto:rakina@chromium.org">
+<title>Content Visibility: measure layout</title>
+<link rel="author" title="Vladimir Levin" href="mailto:vmpstr@chromium.org">
 <link rel="help" href="https://github.com/WICG/display-locking">
-<meta name="assert" content="style is available for content-visibility hidden elements">
+<meta name="assert" content="content-visibility hidden element layout is correct">
+<meta name="assert" content="content-visibility hidden element's subtree layout is correct">
 
 <style>
+#container {
+  background: lightgreen;
+  contain: layout;
+}
 .hidden {
   content-visibility: hidden;
 }
+#sizer {
+  width: 100px;
+  height: 100px;
+}
+.child {
+  width: 20px;
+  height: 20%;
+  background: cyan;
+}
+#spacer {
+  width: 150px;
+  height: 150px;
+  background: green;
+}
 </style>
-<div id="container" class=hidden>
-  <div id="child">
-    <div id="grandchild"></div>
-  </div>
-</div>
+
+<div id="parent"></div>
+<div id="spacer"></div>
 
 <script src="/resources/testharness.js"></script>
 <script src="/resources/testharnessreport.js"></script>
 
 <script>
 async_test((t) => {
+  function createChild(id) {
+    const child = document.createElement("div");
+    child.classList = "child";
+    child.id = id;
+    return child;
+  }
+
+  function measureForced() {
+    t.step(() => {
+      // Ensure children are laid out; this forces a layout if it wasn't done.
+      assert_equals(document.getElementById("0").offsetTop, 0, "0 forced");
+      assert_equals(document.getElementById("1").offsetTop, 20, "1 forced");
+      assert_equals(document.getElementById("2").offsetTop, 40, "2 forced");
+      // Both parent should be 0 height, since it's hidden. Both parent and spacers
+      // should have 8 offsetTop.
+      assert_equals(document.getElementById("parent").offsetTop, 8, "parent forced");
+      assert_equals(document.getElementById("spacer").offsetTop, 8, "spacer forced");
+    });
+  }
+
+  function measureWhenVisible() {
+    t.step(() => {
+      // Ensure children are still laid out.
+      assert_equals(document.getElementById("0").offsetTop, 0, "0 when visible");
+      assert_equals(document.getElementById("1").offsetTop, 20, "1 when visible");
+      assert_equals(document.getElementById("2").offsetTop, 40, "2 when visible");
+      // Now the parent should encompass a container, so spacer is pushed down.
+      assert_equals(document.getElementById("parent").offsetTop, 8, "parent when visible");
+      assert_equals(document.getElementById("spacer").offsetTop, 108, "spacer when visible");
+    });
+  }
+
+  function construct(container) {
+    const sizer = document.createElement("div");
+    sizer.id = "sizer";
+    container.appendChild(sizer);
+    sizer.appendChild(createChild("0"));
+    sizer.appendChild(createChild("1"));
+    sizer.appendChild(createChild("2"));
+  }
+
   async function runTest() {
-    let container = document.getElementById("container");
-    container.style = "color: blue;";
-    t.step(() => assert_equals(getComputedStyle(container).color, "rgb(0, 0, 255)", "container color changed to blue"));
-    t.step(() => assert_equals(getComputedStyle(child).color, "rgb(0, 0, 255)", "child inherits blue color"));
-    t.step(() => assert_equals(getComputedStyle(grandchild).color, "rgb(0, 0, 255)", "grandchild inherits blue color"));
+    const container = document.createElement("div");
+    container.id = "container";
 
-    child.style = "color: green;";
-    t.step(() => assert_equals(getComputedStyle(container).color, "rgb(0, 0, 255)", "container color is still blue"));
-    t.step(() => assert_equals(getComputedStyle(child).color, "rgb(0, 128, 0)", "child color changed to green"));
-    t.step(() => assert_equals(getComputedStyle(grandchild).color, "rgb(0, 128, 0)", "grandchild inherits green color"));
-
-    child.style = "";
-
-    // Commit container, lock child.
-    container.classList.remove("hidden");
-    child.classList.add("hidden");
+    document.getElementById("parent").appendChild(container);
+    container.classList.add("hidden");
     requestAnimationFrame(() => {
-      // Update style outside of the hidden subtree.
-      container.style = "color: red;";
-      container.offsetTop;
+      construct(container);
+      measureForced();
 
-      // Inheritance works as usual through hidden boundaries.
-      t.step(() => assert_equals(getComputedStyle(grandchild).color, "rgb(255, 0, 0)", "grandchild inherits red color"));
-      t.step(() => assert_equals(getComputedStyle(child).color, "rgb(255, 0, 0)", "child inherits red color"));
-      t.step(() => assert_equals(getComputedStyle(container).color, "rgb(255, 0, 0)", "container color changed to red"));
-
-      t.done();
+      container.classList.remove("hidden");
+      requestAnimationFrame(() => requestAnimationFrame(() => {
+        measureWhenVisible();
+        t.done();
+      }));
     });
   }
 
   window.onload = function() {
     requestAnimationFrame(() => requestAnimationFrame(runTest));
   };
-}, "getComputedStyle gets up-to-date style");
+}, "Measure Forced Layout");
 </script>
 
+</html>

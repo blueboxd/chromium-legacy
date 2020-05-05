@@ -2657,11 +2657,6 @@
     "expiry_milestone": -1
   },
   {
-    "name": "ignores-viewport-scale-limits",
-    "owners": [ "eugenebut" ],
-    "expiry_milestone": 80
-  },
-  {
     "name": "improved-cookie-controls",
     "owners": [ "dullweber", "huanzhong" ],
     "expiry_milestone": 86

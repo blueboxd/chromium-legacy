@@ -6,6 +6,7 @@
 
 #include "third_party/blink/renderer/bindings/core/v8/v8_object_builder.h"
 #include "third_party/blink/renderer/core/animation/animation_input_helpers.h"
+#include "third_party/blink/renderer/core/animation/animation_utils.h"
 #include "third_party/blink/renderer/core/animation/compositor_animations.h"
 #include "third_party/blink/renderer/core/animation/css_interpolation_environment.h"
 #include "third_party/blink/renderer/core/animation/css_interpolation_types_map.h"
@@ -51,10 +52,9 @@ void TransitionKeyframe::AddKeyframePropertiesToV8Object(
                           value_->GetNonInterpolableValue(), environment);
 
   const ComputedStyle* style = state.Style();
-  CSSPropertyRef ref(property_.GetCSSPropertyName(), document);
   String property_value =
-      ref.GetProperty()
-          .CSSValueFromComputedStyle(*style, element->GetLayoutObject(), false)
+      AnimationUtils::KeyframeValueFromComputedStyle(
+          property_, *style, document, element->GetLayoutObject())
           ->CssText();
 
   String property_name =

@@ -415,9 +415,10 @@ class RenderFrameHostManagerTest
     std::unique_ptr<NavigationRequest> navigation_request =
         NavigationRequest::CreateBrowserInitiated(
             frame_tree_node, std::move(common_params), std::move(commit_params),
-            !entry->is_renderer_initiated(), entry->extra_headers(),
-            frame_entry, entry, request_body, nullptr /* navigation_ui_data */,
-            base::nullopt /* impression */);
+            !entry->is_renderer_initiated(),
+            GlobalFrameRoutingId() /* initiator_routing_id */,
+            entry->extra_headers(), frame_entry, entry, request_body,
+            nullptr /* navigation_ui_data */, base::nullopt /* impression */);
 
     // Simulates request creation that triggers the 1st internal call to
     // GetFrameHostForNavigation.
@@ -2872,8 +2873,10 @@ TEST_P(RenderFrameHostManagerTest, NavigateFromDeadRendererToWebUI) {
   std::unique_ptr<NavigationRequest> navigation_request =
       NavigationRequest::CreateBrowserInitiated(
           frame_tree_node, std::move(common_params), std::move(commit_params),
-          !entry.is_renderer_initiated(), entry.extra_headers(), frame_entry,
-          &entry, nullptr /* request_body */, nullptr /* navigation_ui_data */,
+          !entry.is_renderer_initiated(),
+          GlobalFrameRoutingId() /* initiator_routing_id */,
+          entry.extra_headers(), frame_entry, &entry,
+          nullptr /* request_body */, nullptr /* navigation_ui_data */,
           base::nullopt /* impression */);
   manager->DidCreateNavigationRequest(navigation_request.get());
 

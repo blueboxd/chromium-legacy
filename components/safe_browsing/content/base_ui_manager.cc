@@ -304,11 +304,6 @@ void BaseUIManager::EnsureWhitelistCreated(WebContents* web_contents) {
 
 void BaseUIManager::CreateAndSendHitReport(const UnsafeResource& resource) {}
 
-void BaseUIManager::ShowBlockingPageForResource(
-    const UnsafeResource& resource) {
-  BaseBlockingPage::ShowBlockingPage(this, resource);
-}
-
 BaseBlockingPage* BaseUIManager::CreateBlockingPageForSubresource(
     content::WebContents* contents,
     const GURL& blocked_url,

@@ -2874,7 +2874,7 @@ TEST_F(AuthenticatorImplRequestDelegateTest,
 
   auto discovery_factory =
       std::make_unique<device::test::FakeFidoDiscoveryFactory>();
-  auto* fake_ble_discovery = discovery_factory->ForgeNextBleDiscovery();
+  auto* fake_hid_discovery = discovery_factory->ForgeNextHidDiscovery();
   AuthenticatorEnvironmentImpl::GetInstance()
       ->ReplaceDefaultDiscoveryFactoryForTesting(std::move(discovery_factory));
 
@@ -2891,33 +2891,33 @@ TEST_F(AuthenticatorImplRequestDelegateTest,
   auto authenticator = ConstructFakeAuthenticatorWithTimer(
       std::move(mock_delegate), task_runner);
 
-  auto mock_ble_device = device::MockFidoDevice::MakeCtap();
-  mock_ble_device->StubGetId();
-  mock_ble_device->SetDeviceTransport(
-      device::FidoTransportProtocol::kBluetoothLowEnergy);
-  const auto device_id = mock_ble_device->GetId();
+  auto mock_usb_device = device::MockFidoDevice::MakeCtap();
+  mock_usb_device->StubGetId();
+  mock_usb_device->SetDeviceTransport(
+      device::FidoTransportProtocol::kUsbHumanInterfaceDevice);
+  const auto device_id = mock_usb_device->GetId();
 
   EXPECT_CALL(*mock_delegate_ptr, OnTransportAvailabilityEnumerated(_));
   EXPECT_CALL(*mock_delegate_ptr, EmbedderControlsAuthenticatorDispatch(_))
       .WillOnce(testing::Return(true));
 
-  base::RunLoop ble_device_found_done;
+  base::RunLoop usb_device_found_done;
   EXPECT_CALL(*mock_delegate_ptr, FidoAuthenticatorAdded(_))
       .WillOnce(testing::InvokeWithoutArgs(
-          [&ble_device_found_done]() { ble_device_found_done.Quit(); }));
+          [&usb_device_found_done]() { usb_device_found_done.Quit(); }));
 
-  base::RunLoop ble_device_lost_done;
+  base::RunLoop usb_device_lost_done;
   EXPECT_CALL(*mock_delegate_ptr, FidoAuthenticatorRemoved(_))
       .WillOnce(testing::InvokeWithoutArgs(
-          [&ble_device_lost_done]() { ble_device_lost_done.Quit(); }));
+          [&usb_device_lost_done]() { usb_device_lost_done.Quit(); }));
 
   authenticator->GetAssertion(std::move(options), callback_receiver.callback());
-  fake_ble_discovery->WaitForCallToStartAndSimulateSuccess();
-  fake_ble_discovery->AddDevice(std::move(mock_ble_device));
-  ble_device_found_done.Run();
+  fake_hid_discovery->WaitForCallToStartAndSimulateSuccess();
+  fake_hid_discovery->AddDevice(std::move(mock_usb_device));
+  usb_device_found_done.Run();
 
-  fake_ble_discovery->RemoveDevice(device_id);
-  ble_device_lost_done.Run();
+  fake_hid_discovery->RemoveDevice(device_id);
+  usb_device_lost_done.Run();
   base::RunLoop().RunUntilIdle();
 }
 

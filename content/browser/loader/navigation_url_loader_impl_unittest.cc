@@ -33,6 +33,7 @@
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/test/test_navigation_url_loader_delegate.h"
+#include "ipc/ipc_message.h"
 #include "net/base/load_flags.h"
 #include "net/base/mock_network_change_notifier.h"
 #include "net/proxy_resolution/configured_proxy_resolution_service.h"
@@ -171,7 +172,8 @@ class NavigationURLLoaderImplTest : public testing::Test {
       bool upgrade_if_insecure = false) {
     mojom::BeginNavigationParamsPtr begin_params =
         mojom::BeginNavigationParams::New(
-            headers, net::LOAD_NORMAL, false /* skip_service_worker */,
+            MSG_ROUTING_NONE /* initiator_routing_id */, headers,
+            net::LOAD_NORMAL, false /* skip_service_worker */,
             blink::mojom::RequestContextType::LOCATION,
             network::mojom::RequestDestination::kDocument,
             blink::WebMixedContentContextType::kBlockable,

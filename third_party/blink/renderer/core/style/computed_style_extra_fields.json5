@@ -176,6 +176,20 @@
       custom_copy: true,
       custom_compare: true,
     },
+    // A property references a variable that needs to be resolved
+    {
+      name: "HasVariableReference",
+      field_template: "monotonic_flag",
+      default_value: "false",
+      custom_compare: true,
+    },
+    // A property which value consists of a custom property declaration.
+    {
+      name: "HasVariableDeclaration",
+      field_template: "monotonic_flag",
+      default_value: "false",
+      custom_compare: true,
+    },
     // Explicitly inherits a non-inherited property
     {
       name: "HasExplicitlyInheritedProperties",
@@ -561,12 +575,13 @@
     {
       name: "InheritedVariables",
       inherited: true,
+      semi_independent_variable: true,
       field_template: "external",
       type_name: "StyleInheritedVariables",
       include_paths: ["third_party/blink/renderer/core/style/style_inherited_variables.h"],
       default_value: "nullptr",
       wrapper_pointer_name: "scoped_refptr",
-      field_group: "*",
+      field_group: "InheritedVariables",
       computed_style_custom_functions: ["getter", "setter"],
     },
     {

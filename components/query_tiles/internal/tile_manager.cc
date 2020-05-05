@@ -12,6 +12,7 @@
 #include "base/task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "components/query_tiles/internal/tile_iterator.h"
 #include "components/query_tiles/internal/tile_manager.h"
 
 namespace upboarding {
@@ -67,32 +68,17 @@ class TileManagerImpl : public TileManager {
         FROM_HERE, base::BindOnce(std::move(callback), std::move(tiles)));
   }
 
-  Tile* FindTile(const std::string& tile_id, Tile* root) {
-    if (tile_id == root->id)
-      return root;
-
-    for (auto& child : root->sub_tiles) {
-      if (child->id == tile_id)
-        return child.get();
-    }
-
-    Tile* result = nullptr;
-    for (auto& child : root->sub_tiles) {
-      result = FindTile(tile_id, child.get());
-      if (result)
-        return result;
-    }
-
-    return nullptr;
-  }
-
   void GetTile(const std::string& tile_id, TileCallback callback) override {
-    Tile* result = nullptr;
+    const Tile* result = nullptr;
     if (tile_group_ && ValidateGroup(tile_group_.get())) {
-      for (const auto& tile : tile_group_->tiles) {
-        result = FindTile(tile_id, tile.get());
-        if (result)
+      TileIterator it(*tile_group_, TileIterator::kAllTiles);
+      while (it.HasNext()) {
+        const auto* tile = it.Next();
+        DCHECK(tile);
+        if (tile->id == tile_id) {
+          result = tile;
           break;
+        }
       }
     }
 

@@ -16,11 +16,6 @@ AppId GetChromeAppId() {
   return AppId(apps::mojom::AppType::kExtension, extension_misc::kChromeAppId);
 }
 
-AppId GetAndroidChromeAppId() {
-  return chromeos::app_time::AppId(apps::mojom::AppType::kArc,
-                                   "com.android.chrome");
-}
-
 bool IsWebAppOrExtension(const AppId& app_id) {
   return app_id.app_type() == apps::mojom::AppType::kWeb ||
          app_id.app_type() == apps::mojom::AppType::kExtension;

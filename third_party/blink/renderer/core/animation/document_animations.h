@@ -47,6 +47,10 @@ class CORE_EXPORT DocumentAnimations final
   DocumentAnimations(Document*);
   ~DocumentAnimations() = default;
 
+  uint64_t TransitionGeneration() const {
+    return current_transition_generation_;
+  }
+  void IncrementTrasitionGeneration() { current_transition_generation_++; }
   void AddTimeline(AnimationTimeline&);
   void UpdateAnimationTimingForAnimationFrame();
   bool NeedsAnimationTimingUpdate();
@@ -62,6 +66,7 @@ class CORE_EXPORT DocumentAnimations final
       const PaintArtifactCompositor* paint_artifact_compositor);
 
   HeapVector<Member<Animation>> getAnimations(const TreeScope&);
+  uint64_t current_transition_generation_;
   void Trace(Visitor*);
 
  private:

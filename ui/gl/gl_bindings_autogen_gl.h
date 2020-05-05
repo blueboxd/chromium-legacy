@@ -1952,6 +1952,7 @@ struct ExtensionsGL {
   bool b_GL_ARB_sync;
   bool b_GL_ARB_texture_multisample;
   bool b_GL_ARB_texture_storage;
+  bool b_GL_ARB_texture_swizzle;
   bool b_GL_ARB_timer_query;
   bool b_GL_ARB_transform_feedback2;
   bool b_GL_ARB_vertex_array_object;
@@ -1987,7 +1988,9 @@ struct ExtensionsGL {
   bool b_GL_EXT_shader_image_load_store;
   bool b_GL_EXT_texture_buffer;
   bool b_GL_EXT_texture_buffer_object;
+  bool b_GL_EXT_texture_format_BGRA8888;
   bool b_GL_EXT_texture_storage;
+  bool b_GL_EXT_texture_swizzle;
   bool b_GL_EXT_timer_query;
   bool b_GL_EXT_transform_feedback;
   bool b_GL_EXT_unpack_subimage;

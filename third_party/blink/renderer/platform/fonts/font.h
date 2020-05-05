@@ -241,21 +241,13 @@ class PLATFORM_EXPORT Font {
   }
 
  private:
-  FontFallbackList* EnsureFontFallbackList() const {
-    if (!font_fallback_list_)
-      font_fallback_list_ = FontFallbackList::Create(nullptr);
-    if (RuntimeEnabledFeatures::CSSReducedFontLoadingInvalidationsEnabled()) {
-      if (!font_fallback_list_->IsValid())
-        font_fallback_list_->Invalidate();
-    }
-    return font_fallback_list_.get();
-  }
+  FontFallbackList* EnsureFontFallbackList() const;
+  void RevalidateFontFallbackList() const;
+  void ReleaseFontFallbackListRef() const;
 
   FontDescription font_description_;
   mutable scoped_refptr<FontFallbackList> font_fallback_list_;
 };
-
-inline Font::~Font() = default;
 
 inline const SimpleFontData* Font::PrimaryFont() const {
   return EnsureFontFallbackList()->PrimarySimpleFontData(font_description_);

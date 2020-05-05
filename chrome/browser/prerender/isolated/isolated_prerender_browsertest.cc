@@ -708,8 +708,8 @@ IN_PROC_BROWSER_TEST_F(IsolatedPrerenderBrowserTest,
   // done and processed.
   run_loop.Run();
 
-  EXPECT_EQ(tab_helper->metrics().prefetch_attempted_count_, 1U);
-  EXPECT_EQ(tab_helper->metrics().prefetch_successful_count_, 1U);
+  EXPECT_EQ(tab_helper->srp_metrics().prefetch_attempted_count_, 1U);
+  EXPECT_EQ(tab_helper->srp_metrics().prefetch_successful_count_, 1U);
 
   size_t starting_origin_request_count = OriginServerRequestCount();
 
@@ -830,6 +830,10 @@ IN_PROC_BROWSER_TEST_F(ProbingEnabledIsolatedPrerenderBrowserTest,
   SetDataSaverEnabled(true);
   GURL url = GetOriginServerURL("/simple.html");
 
+  // Make a single non-eligible prediction to enable UKM recording.
+  GURL doc_url("https://www.google.com/search?q=test");
+  MakeNavigationPrediction(doc_url, {GURL("http://not-eligible.com/")});
+
   AddSuccessfulPrefetch(url);
 
   ui_test_utils::NavigateToURL(browser(), url);
@@ -859,6 +863,10 @@ IN_PROC_BROWSER_TEST_F(ProbingEnabledIsolatedPrerenderBrowserTest,
   SetDataSaverEnabled(true);
   GURL url = GetOriginServerURLWithBadProbe("/simple.html");
 
+  // Make a single non-eligible prediction to enable UKM recording.
+  GURL doc_url("https://www.google.com/search?q=test");
+  MakeNavigationPrediction(doc_url, {GURL("http://not-eligible.com/")});
+
   AddSuccessfulPrefetch(url);
 
   ui_test_utils::NavigateToURL(browser(), url);
@@ -884,6 +892,10 @@ IN_PROC_BROWSER_TEST_F(ProbingDisabledIsolatedPrerenderBrowserTest,
   SetDataSaverEnabled(true);
   // Use the bad probe url to ensure the probe is not being used.
   GURL url = GetOriginServerURLWithBadProbe("/simple.html");
+
+  // Make a single non-eligible prediction to enable UKM recording.
+  GURL doc_url("https://www.google.com/search?q=test");
+  MakeNavigationPrediction(doc_url, {GURL("http://not-eligible.com/")});
 
   AddSuccessfulPrefetch(url);
 

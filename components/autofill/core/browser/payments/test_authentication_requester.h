@@ -39,7 +39,10 @@ class TestAuthenticationRequester
   void OnCVCAuthenticationComplete(
       const CreditCardCVCAuthenticator::CVCAuthenticationResponse& response)
       override;
+#if defined(OS_ANDROID)
   bool ShouldOfferFidoAuth() const override;
+  bool UserOptedInToFidoFromSettingsPageOnMobile() const override;
+#endif
 
 #if !defined(OS_IOS)
   // CreditCardFIDOAuthenticator::Requester:

@@ -10,6 +10,7 @@
 #include <unordered_map>
 
 #include "chrome/browser/ui/browser_list_observer.h"
+#include "chrome/common/caption.mojom.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "ui/native_theme/caption_style.h"
 
@@ -54,8 +55,9 @@ class CaptionController : public BrowserListObserver, public KeyedService {
 
   // Routes a transcription to the CaptionBubbleController that belongs to the
   // appropriate browser.
-  void DispatchTranscription(content::RenderFrameHost* frame_host,
-                             const std::string& transcription);
+  void DispatchTranscription(
+      content::RenderFrameHost* frame_host,
+      const chrome::mojom::TranscriptionResultPtr& transcription_result);
 
  private:
   friend class CaptionControllerFactory;

@@ -1,79 +1,42 @@
 <!doctype HTML>
-<html>
+<html class="reftest-wait">
 <meta charset="utf8">
-<title>Display Locking: measure forced SVG text</title>
-<link rel="author" title="Vladimir Levin" href="mailto:vmpstr@chromium.org">
+<title>Content Visibility: pseudo elements</title>
+<link rel="author" title="Rakina Zata Amni" href="mailto:rakina@chromium.org">
 <link rel="help" href="https://github.com/WICG/display-locking">
-<meta name="assert" content="content-visibility hidden svg descendant has correct layout">
+<link rel="match" href="container-ref.html">
+<meta name="assert" content="subtree-visiblity hidden doesn't paint ::before or ::after">
+<script src="/common/reftest-wait.js"></script>
 
 <style>
 #container {
-  width: 100px;
-  height: 100px;
-  background: lightgreen;
+  width: 150px;
+  height: 150px;
+  background: lightblue;
+}
+#container::before {
+  content: "a";
+  color: blue;
+}
+.hasAfter::after {
+  content: "b";
+  color: green;
 }
 .hidden {
   content-visibility: hidden;
 }
 </style>
-
-<div id="parent"></div>
-
-<script src="/resources/testharness.js"></script>
-<script src="/resources/testharnessreport.js"></script>
+<div id="log"></div>
+<div id="container" style="display:none;"></div>
 
 <script>
-async_test((t) => {
-  let length;
-  function measureForced() {
-    t.step(() => {
-      length = document.getElementById("text").getComputedTextLength();
-      assert_not_equals(length, 0, "forced");
+async function runTest() {
+  container.classList.add("hasAfter");
+  container.classList.add("hidden");
+  container.style = "";
+  requestAnimationFrame(takeScreenshot);
+}
 
-    });
-  }
-
-  function measureWhenVisible() {
-    t.step(() => {
-      const visible_length = document.getElementById("text").getComputedTextLength();
-      assert_not_equals(visible_length, 0, "when visible");
-      assert_equals(visible_length, length, "when visible");
-    });
-  }
-
-  function construct(container) {
-    container.innerHTML = `
-      <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-        <style>
-          .t { font: 10px sans-serif; }
-        </style>
-        <text id="text" x="10" y="10" class="t">This is text</text>
-      </svg>
-    `;
-  }
-
-  async function runTest() {
-    const container = document.createElement("div");
-    container.id = "container";
-
-    document.getElementById("parent").appendChild(container);
-    container.classList.add("hidden");
-    requestAnimationFrame(() => {
-      construct(container);
-      measureForced();
-
-      container.classList.remove("hidden");
-      requestAnimationFrame(() => {
-        measureWhenVisible();
-        t.done();
-      });
-    });
-  }
-
-  window.onload = function() {
-    requestAnimationFrame(() => requestAnimationFrame(runTest));
-  };
-}, "Measure Forced SVG Text");
+window.onload = runTest;
 </script>
-
 </html>

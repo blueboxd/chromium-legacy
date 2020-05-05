@@ -64,19 +64,27 @@ void LaunchApp(Profile* profile, std::string app_id) {
   profile->GetPrefs()->SetBoolean(prefs::kFirstRunTutorialShown, true);
 }
 
-// Getting started module is shown to  unmanaged regular and child accounts.
-bool ShouldShowGetStarted(Profile* profile,
-                          user_manager::UserManager* user_manager) {
-  if (profile->GetProfilePolicyConnector()->IsManaged())
-    return false;
-
+// Returns true if this user type is probably a human who wants to configure
+// their device through the help app. Other user types are robots, guests or
+// public accounts.
+bool IsRegularUserOrSupervisedChild(user_manager::UserManager* user_manager) {
   switch (user_manager->GetActiveUser()->GetType()) {
     case user_manager::USER_TYPE_REGULAR:
+    case user_manager::USER_TYPE_SUPERVISED:
     case user_manager::USER_TYPE_CHILD:
       return true;
     default:
       return false;
   }
+}
+
+// Getting started module is shown to  unmanaged regular, supervised and child
+// accounts.
+bool ShouldShowGetStarted(Profile* profile,
+                          user_manager::UserManager* user_manager) {
+  if (profile->GetProfilePolicyConnector()->IsManaged())
+    return false;
+  return IsRegularUserOrSupervisedChild(user_manager);
 }
 
 // Object of this class waits for system web apps to load. Then it launches the
@@ -136,8 +144,7 @@ bool ShouldLaunchHelpApp(Profile* profile) {
   profile->GetPrefs()->SetBoolean(prefs::kHelpAppTabletModeDuringOobe,
                                   ash::TabletMode::Get()->InTabletMode());
 
-  if (user_manager->GetActiveUser()->GetType() !=
-      user_manager::USER_TYPE_REGULAR)
+  if (!IsRegularUserOrSupervisedChild(user_manager))
     return false;
 
   if (chromeos::switches::ShouldSkipOobePostLogin())

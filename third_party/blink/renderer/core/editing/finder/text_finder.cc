@@ -106,11 +106,15 @@ static void ScrollToVisible(Range* match) {
 
   if (RuntimeEnabledFeatures::InvisibleDOMEnabled() ||
       RuntimeEnabledFeatures::CSSContentVisibilityEnabled()) {
-    if (InvisibleDOM::ActivateRangeIfNeeded(range) ||
-        DisplayLockUtilities::ActivateFindInPageMatchRangeIfNeeded(range)) {
-      first_node.GetDocument().UpdateStyleAndLayout(
-          DocumentUpdateReason::kFindInPage);
-    }
+    // TODO(vmpstr): Rework this, since it is only used for bookkeeping.
+    InvisibleDOM::ActivateRangeIfNeeded(range);
+    DisplayLockUtilities::ActivateFindInPageMatchRangeIfNeeded(range);
+
+    // We need to update the style and layout since the event dispatched may
+    // have modified it, and we need up-to-date layout to ScrollRectToVisible
+    // below.
+    first_node.GetDocument().UpdateStyleAndLayoutForNode(
+        &first_node, DocumentUpdateReason::kFindInPage);
   }
   Settings* settings = first_node.GetDocument().GetSettings();
   bool smooth_find_enabled =

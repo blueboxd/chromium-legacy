@@ -666,6 +666,7 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateBrowserInitiated(
     mojom::CommonNavigationParamsPtr common_params,
     mojom::CommitNavigationParamsPtr commit_params,
     bool browser_initiated,
+    const GlobalFrameRoutingId& initiator_routing_id,
     const std::string& extra_headers,
     FrameNavigationEntry* frame_entry,
     NavigationEntryImpl* entry,
@@ -677,6 +678,7 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateBrowserInitiated(
   bool is_form_submission = !!post_body;
 
   auto navigation_params = mojom::BeginNavigationParams::New(
+      initiator_routing_id.frame_routing_id /* initiator_routing_id */,
       extra_headers, net::LOAD_NORMAL, false /* skip_service_worker */,
       blink::mojom::RequestContextType::LOCATION,
       network::mojom::RequestDestination::kDocument,
@@ -719,6 +721,8 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateBrowserInitiated(
     navigation_request->blob_url_loader_factory_ =
         frame_entry->blob_url_loader_factory();
   }
+
+  navigation_request->initiator_routing_id_ = initiator_routing_id;
 
   if (navigation_request->common_params().url.SchemeIsBlob() &&
       !navigation_request->blob_url_loader_factory_) {
@@ -815,6 +819,14 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateRendererInitiated(
       std::move(prefetched_signed_exchange_cache);
   navigation_request->web_bundle_handle_tracker_ =
       std::move(web_bundle_handle_tracker);
+
+  // CreateRendererInitiated() should only be triggered when the navigation is
+  // initiated by a frame in the same process.
+  // TODO(https://crbug.com/1074464): Find a way to DCHECK that the routing ID
+  // is from the current RFH.
+  navigation_request->initiator_routing_id_ = GlobalFrameRoutingId(
+      frame_tree_node->current_frame_host()->GetProcess()->GetID(),
+      navigation_request->begin_params()->initiator_routing_id);
   return navigation_request;
 }
 
@@ -4104,6 +4116,10 @@ const std::string& NavigationRequest::GetHrefTranslate() {
 
 const base::Optional<Impression>& NavigationRequest::GetImpression() {
   return begin_params()->impression;
+}
+
+const GlobalFrameRoutingId& NavigationRequest::GetInitiatorRoutingId() {
+  return initiator_routing_id_;
 }
 
 const base::Optional<url::Origin>& NavigationRequest::GetInitiatorOrigin() {

@@ -437,12 +437,15 @@ void NewTabPageHandler::ChooseLocalCustomBackground(
 }
 
 void NewTabPageHandler::GetOneGoogleBarParts(
+    const std::string& ogdeb_value,
     GetOneGoogleBarPartsCallback callback) {
   if (!one_google_bar_service_) {
     return;
   }
   one_google_bar_parts_callbacks_.push_back(std::move(callback));
-  if (one_google_bar_service_->one_google_bar_data().has_value()) {
+  bool wait_for_refresh = one_google_bar_service_->SetOgdebValue(ogdeb_value);
+  if (one_google_bar_service_->one_google_bar_data().has_value() &&
+      !wait_for_refresh) {
     OnOneGoogleBarDataUpdated();
   }
   one_google_bar_service_->Refresh();

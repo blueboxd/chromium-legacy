@@ -474,7 +474,9 @@
           # By default, CrOS VMs' ssh servers listen on local port 9222.
           '--remote=127.0.0.1',
           '--remote-ssh-port=9222',
-          '--xvfb'
+          '--xvfb',
+          # TODO(crbug.com/1077284): Remove this once Crashpad is the default.
+          '--extra-browser-args=--enable-crashpad',
         ],
         'swarming': {
           'idempotent': False,  # https://crbug.com/549140
@@ -503,6 +505,8 @@
           # The magic hostname that resolves to a CrOS device in the test lab.
           '--remote=variable_chromeos_device_hostname',
           '--xvfb',
+          # TODO(crbug.com/1077284): Remove this once Crashpad is the default.
+          '--extra-browser-args=--enable-crashpad',
         ],
         'swarming': {
           'idempotent': False,  # https://crbug.com/549140
@@ -1036,6 +1040,8 @@
       'telemetry_perf_unittests': {
         'args': [
           '--xvfb',
+          # TODO(crbug.com/1077284): Remove this once Crashpad is the default.
+          '--extra-browser-args=--enable-crashpad',
         ],
         'swarming': {
           'idempotent': False,  # https://crbug.com/549140
@@ -3649,6 +3655,10 @@
 
     'telemetry_perf_unittests_isolated_scripts': {
       'telemetry_perf_unittests': {
+        'args': [
+          # TODO(crbug.com/1077284): Remove this once Crashpad is the default.
+          '--extra-browser-args=--enable-crashpad',
+        ],
         'swarming': {
           'idempotent': False,  # https://crbug.com/549140
           'shards': 12,

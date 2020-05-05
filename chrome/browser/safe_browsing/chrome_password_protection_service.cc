@@ -1433,15 +1433,15 @@ bool ChromePasswordProtectionService::IsPingingEnabled(
     return false;
   }
   bool extended_reporting_enabled = IsExtendedReporting();
+  if (!extended_reporting_enabled) {
+    *reason = RequestOutcome::DISABLED_DUE_TO_USER_POPULATION;
+  }
   if (trigger_type == LoginReputationClientRequest::PASSWORD_REUSE_EVENT) {
     if (password_type.account_type() ==
         ReusedPasswordAccountType::SAVED_PASSWORD) {
-      bool enabled = extended_reporting_enabled ||
-                     base::FeatureList::IsEnabled(
-                         safe_browsing::kPasswordProtectionForSavedPasswords);
-      if (!enabled)
-        *reason = RequestOutcome::DISABLED_DUE_TO_USER_POPULATION;
-      return enabled;
+      return extended_reporting_enabled ||
+             base::FeatureList::IsEnabled(
+                 safe_browsing::kPasswordProtectionForSavedPasswords);
     }
 
     PasswordProtectionTrigger trigger_level =
@@ -1472,11 +1472,7 @@ bool ChromePasswordProtectionService::IsPingingEnabled(
     *reason = RequestOutcome::DISABLED_DUE_TO_INCOGNITO;
     return false;
   }
-  if (!extended_reporting_enabled) {
-    *reason = RequestOutcome::DISABLED_DUE_TO_USER_POPULATION;
-    return false;
-  }
-  return true;
+  return extended_reporting_enabled;
 }
 
 bool ChromePasswordProtectionService::IsHistorySyncEnabled() {

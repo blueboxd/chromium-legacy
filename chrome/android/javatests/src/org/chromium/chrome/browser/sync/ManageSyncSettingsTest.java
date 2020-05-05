@@ -468,7 +468,6 @@ public class ManageSyncSettingsTest {
     @LargeTest
     @Feature({"Sync", "RenderTest"})
     @Features.EnableFeatures(ChromeFeatureList.MOBILE_IDENTITY_CONSISTENCY)
-    @FlakyTest(message = "https://crbug.com/1066541")
     public void testAdvancedSyncFlowTopView() throws Exception {
         mSyncTestRule.setUpTestAccountAndSignIn();
         SyncTestUtil.waitForSyncActive();
@@ -481,7 +480,6 @@ public class ManageSyncSettingsTest {
     @LargeTest
     @Feature({"Sync", "RenderTest"})
     @Features.EnableFeatures(ChromeFeatureList.MOBILE_IDENTITY_CONSISTENCY)
-    @FlakyTest(message = "https://crbug.com/1066541")
     public void testAdvancedSyncFlowBottomView() throws Exception {
         mSyncTestRule.setUpTestAccountAndSignIn();
         SyncTestUtil.waitForSyncActive();

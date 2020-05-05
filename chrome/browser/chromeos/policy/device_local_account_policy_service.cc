@@ -79,12 +79,7 @@ std::unique_ptr<CloudPolicyClient> CreateClient(
 
   std::unique_ptr<CloudPolicyClient> client =
       std::make_unique<CloudPolicyClient>(
-          std::string() /* machine_id */, std::string() /* machine_model */,
-          std::string() /* brand_code */,
-          std::string() /* ethernet_mac_address */,
-          std::string() /* dock_mac_address */,
-          std::string() /* manufacture_date */, device_management_service,
-          system_url_loader_factory, nullptr /* signing_service */,
+          device_management_service, system_url_loader_factory,
           base::BindRepeating(&GetDeviceDMToken, device_settings_service));
   std::vector<std::string> user_affiliation_ids(
       policy_data->user_affiliation_ids().begin(),

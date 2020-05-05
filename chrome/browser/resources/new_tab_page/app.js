@@ -66,8 +66,26 @@ class AppElement extends PolymerElement {
       /** @private */
       iframeOneGoogleBarEnabled_: {
         type: Boolean,
-        value: () => loadTimeData.getBoolean('iframeOneGoogleBarEnabled'),
+        value: () => {
+          const params = new URLSearchParams(window.location.search);
+          if (params.has('ogbinline')) {
+            return false;
+          }
+          return loadTimeData.getBoolean('iframeOneGoogleBarEnabled') ||
+              params.has('ogbiframe');
+        },
         reflectToAttribute: true,
+      },
+
+      /** @private */
+      oneGoogleBarIframePath_: {
+        type: String,
+        value: () => {
+          const fromSearch = new URLSearchParams(window.location.search);
+          const params = new URLSearchParams();
+          params.set('ogdebencoded', btoa(fromSearch.get('ogdeb') || ''));
+          return `one-google-bar?${params}`;
+        },
       },
 
       /** @private */
@@ -267,7 +285,8 @@ class AppElement extends PolymerElement {
     }
 
     const {parts} =
-        await BrowserProxy.getInstance().handler.getOneGoogleBarParts();
+        await BrowserProxy.getInstance().handler.getOneGoogleBarParts(
+            (new URLSearchParams(window.location.search)).get('ogdeb') || '');
     if (!parts) {
       return;
     }

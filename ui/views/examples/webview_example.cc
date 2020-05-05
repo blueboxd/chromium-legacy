@@ -8,14 +8,16 @@
 
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/web_contents.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/views/controls/webview/webview.h"
+#include "ui/views/examples/grit/views_examples_resources.h"
 #include "ui/views/layout/fill_layout.h"
 
 namespace views {
 namespace examples {
 
 WebViewExample::WebViewExample(content::BrowserContext* browser_context)
-    : ExampleBase("WebView"),
+    : ExampleBase(l10n_util::GetStringUTF8(IDS_WEBVIEW_SELECT_LABEL).c_str()),
       webview_(nullptr),
       browser_context_(browser_context) {}
 

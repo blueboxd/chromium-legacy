@@ -19,8 +19,8 @@ void FakeDlcserviceClient::Install(
     ProgressCallback progress_callback) {
   VLOG(1) << "Requesting to install DLC(s).";
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(std::move(callback), install_err_,
-                                dlcservice::DlcModuleList()));
+      FROM_HERE,
+      base::BindOnce(std::move(callback), install_err_, dlc_module_list_));
 }
 
 void FakeDlcserviceClient::Uninstall(const std::string& dlc_id,
@@ -41,7 +41,7 @@ void FakeDlcserviceClient::GetInstalled(GetInstalledCallback callback) {
   VLOG(1) << "Requesting to get installed DLC(s).";
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(std::move(callback), get_installed_err_,
-                                dlcservice::DlcModuleList()));
+                                dlc_module_list_));
 }
 
 void FakeDlcserviceClient::OnInstallStatusForTest(dbus::Signal* signal) {

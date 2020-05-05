@@ -29,7 +29,8 @@ CaptionHostImpl::CaptionHostImpl(content::RenderFrameHost* frame_host)
 
 CaptionHostImpl::~CaptionHostImpl() = default;
 
-void CaptionHostImpl::OnTranscription(const std::string& transcription) {
+void CaptionHostImpl::OnTranscription(
+    chrome::mojom::TranscriptionResultPtr transcription_result) {
   if (!frame_host_)
     return;
   auto* web_contents = content::WebContents::FromRenderFrameHost(frame_host_);
@@ -39,8 +40,9 @@ void CaptionHostImpl::OnTranscription(const std::string& transcription) {
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
   if (!profile)
     return;
+
   CaptionControllerFactory::GetForProfile(profile)->DispatchTranscription(
-      frame_host_, transcription);
+      frame_host_, transcription_result);
 }
 
 }  // namespace captions

@@ -26,6 +26,7 @@
 #include "chrome/browser/media/history/media_history_playback_table.h"
 #include "chrome/browser/media/history/media_history_session_images_table.h"
 #include "chrome/browser/media/history/media_history_session_table.h"
+#include "chrome/browser/media/history/media_history_test_utils.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/history/core/browser/history_database_params.h"
@@ -233,13 +234,14 @@ class MediaHistoryKeyedServiceTest
   }
 
   media_history::MediaHistoryKeyedService::MediaFeedFetchResult FetchResult(
-      int64_t feed_id) {
+      const int64_t feed_id) {
     media_history::MediaHistoryKeyedService::MediaFeedFetchResult result;
     result.feed_id = feed_id;
     result.items = GetExpectedItems();
     result.status = media_feeds::mojom::FetchResult::kSuccess;
     result.associated_origins = GetExpectedAssociatedOrigins();
     result.display_name = "Test";
+    result.reset_token = test::GetResetTokenSync(service(), feed_id);
     return result;
   }
 

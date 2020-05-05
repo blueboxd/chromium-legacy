@@ -32,9 +32,10 @@ void HeadlessClipboard::Clear(ui::ClipboardBuffer buffer) {
   GetStore(buffer).Clear();
 }
 
-void HeadlessClipboard::ReadAvailableTypes(ui::ClipboardBuffer buffer,
-                                           std::vector<base::string16>* types,
-                                           bool* contains_filenames) const {
+void HeadlessClipboard::ReadAvailableTypes(
+    ui::ClipboardBuffer buffer,
+    std::vector<base::string16>* types) const {
+  DCHECK(types);
   types->clear();
 
   if (IsFormatAvailable(ui::ClipboardFormatType::GetPlainTextType(), buffer))
@@ -46,8 +47,6 @@ void HeadlessClipboard::ReadAvailableTypes(ui::ClipboardBuffer buffer,
     types->push_back(base::UTF8ToUTF16(ui::kMimeTypeRTF));
   if (IsFormatAvailable(ui::ClipboardFormatType::GetBitmapType(), buffer))
     types->push_back(base::UTF8ToUTF16(ui::kMimeTypePNG));
-
-  *contains_filenames = false;
 }
 
 std::vector<base::string16>

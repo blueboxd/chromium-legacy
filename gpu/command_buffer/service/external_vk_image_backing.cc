@@ -7,9 +7,6 @@
 #include <utility>
 #include <vector>
 
-#include "base/memory/ptr_util.h"
-#include "base/memory/unsafe_shared_memory_region.h"
-#include "base/posix/eintr_wrapper.h"
 #include "base/stl_util.h"
 #include "base/system/sys_info.h"
 #include "build/build_config.h"
@@ -29,6 +26,8 @@
 #include "ui/gfx/buffer_format_util.h"
 #include "ui/gl/buildflags.h"
 #include "ui/gl/gl_context.h"
+#include "ui/gl/gl_version_info.h"
+#include "ui/gl/scoped_binders.h"
 
 #if defined(OS_LINUX) && BUILDFLAG(USE_DAWN)
 #include "gpu/command_buffer/service/external_vk_image_dawn_representation.h"
@@ -101,6 +100,23 @@ class ScopedPixelStore {
   GLint old_value_;
 
   DISALLOW_COPY_AND_ASSIGN(ScopedPixelStore);
+};
+
+class ScopedDedicatedMemoryObject {
+ public:
+  explicit ScopedDedicatedMemoryObject(gl::GLApi* api) : api_(api) {
+    api_->glCreateMemoryObjectsEXTFn(1, &id_);
+    int dedicated = GL_TRUE;
+    api_->glMemoryObjectParameterivEXTFn(id_, GL_DEDICATED_MEMORY_OBJECT_EXT,
+                                         &dedicated);
+  }
+  ~ScopedDedicatedMemoryObject() { api_->glDeleteMemoryObjectsEXTFn(1, &id_); }
+
+  GLuint id() const { return id_; }
+
+ private:
+  gl::GLApi* const api_;
+  GLuint id_;
 };
 
 }  // namespace
@@ -364,7 +380,7 @@ bool ExternalVkImageBacking::BeginAccess(
   if (use_separate_gl_texture())
     return true;
 
-  DCHECK(need_sychronization());
+  DCHECK(need_synchronization());
 
   auto command_buffer = command_pool_->CreatePrimaryCommandBuffer();
   {
@@ -516,21 +532,15 @@ GLuint ExternalVkImageBacking::ProduceGLTextureInternal() {
   GrVkImageInfo image_info;
   bool result = backend_texture_.getVkImageInfo(&image_info);
   DCHECK(result);
-
   gl::GLApi* api = gl::g_current_gl_context;
-  GLuint memory_object = 0;
+  base::Optional<ScopedDedicatedMemoryObject> memory_object;
   if (!use_separate_gl_texture()) {
 #if defined(OS_LINUX) || defined(OS_ANDROID)
     auto memory_fd = image_->GetMemoryFd();
-    if (!memory_fd.is_valid()) {
+    if (!memory_fd.is_valid())
       return 0;
-    }
-
-    api->glCreateMemoryObjectsEXTFn(1, &memory_object);
-    int dedicated = GL_TRUE;
-    api->glMemoryObjectParameterivEXTFn(
-        memory_object, GL_DEDICATED_MEMORY_OBJECT_EXT, &dedicated);
-    api->glImportMemoryFdEXTFn(memory_object, image_info.fAlloc.fSize,
+    memory_object.emplace(api);
+    api->glImportMemoryFdEXTFn(memory_object->id(), image_info.fAlloc.fSize,
                                GL_HANDLE_TYPE_OPAQUE_FD_EXT,
                                memory_fd.release());
 #elif defined(OS_WIN)
@@ -538,59 +548,64 @@ GLuint ExternalVkImageBacking::ProduceGLTextureInternal() {
     if (!memory_handle.IsValid()) {
       return 0;
     }
-
-    api->glCreateMemoryObjectsEXTFn(1, &memory_object);
-    int dedicated = GL_TRUE;
-    api->glMemoryObjectParameterivEXTFn(
-        memory_object, GL_DEDICATED_MEMORY_OBJECT_EXT, &dedicated);
-    api->glImportMemoryWin32HandleEXTFn(memory_object, image_info.fAlloc.fSize,
-                                        GL_HANDLE_TYPE_OPAQUE_WIN32_EXT,
-                                        memory_handle.Take());
+    memory_object.emplace(api);
+    api->glImportMemoryWin32HandleEXTFn(
+        memory_object->id(), image_info.fAlloc.fSize,
+        GL_HANDLE_TYPE_OPAQUE_WIN32_EXT, memory_handle.Take());
 #elif defined(OS_FUCHSIA)
     zx::vmo vmo = image_->GetMemoryZirconHandle();
     if (!vmo)
       return 0;
-
-    api->glCreateMemoryObjectsEXTFn(1, &memory_object);
-    // ANGLE doesn't implement glMemoryObjectParameterivEXTFn yet. Avoid
-    // calling it on Fuchsia until its implemented.
-    // TODO(spang): Implement glMemoryObjectParameterivEXTFn in ANGLE.
+    memory_object.emplace(api);
     api->glImportMemoryZirconHandleANGLEFn(
-        memory_object, image_info.fAlloc.fSize, GL_HANDLE_TYPE_ZIRCON_VMO_ANGLE,
-        vmo.release());
+        memory_object->id(), image_info.fAlloc.fSize,
+        GL_HANDLE_TYPE_ZIRCON_VMO_ANGLE, vmo.release());
 #else
 #error Unsupported OS
 #endif
   }
 
   GLuint internal_format = viz::TextureStorageFormat(format());
-  GLint old_texture_binding = 0;
-  api->glGetIntegervFn(GL_TEXTURE_BINDING_2D, &old_texture_binding);
+  bool is_bgra8 = (internal_format == GL_BGRA8_EXT);
+  if (is_bgra8) {
+    const auto& ext = gl::g_current_gl_driver->ext;
+    if (!ext.b_GL_EXT_texture_format_BGRA8888) {
+      bool support_swizzle = ext.b_GL_ARB_texture_swizzle ||
+                             ext.b_GL_EXT_texture_swizzle ||
+                             gl::g_current_gl_version->IsAtLeastGL(3, 3) ||
+                             gl::g_current_gl_version->IsAtLeastGLES(3, 0);
+      if (!support_swizzle) {
+        LOG(ERROR) << "BGRA_88888 is not supported.";
+        return 0;
+      }
+      internal_format = GL_RGBA8;
+    }
+  }
+
   GLuint texture_service_id = 0;
   api->glGenTexturesFn(1, &texture_service_id);
-  api->glBindTextureFn(GL_TEXTURE_2D, texture_service_id);
+  gl::ScopedTextureBinder scoped_texture_binder(GL_TEXTURE_2D,
+                                                texture_service_id);
   api->glTexParameteriFn(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
   api->glTexParameteriFn(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
   api->glTexParameteriFn(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
   api->glTexParameteriFn(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
   if (use_separate_gl_texture()) {
+    DCHECK(!memory_object);
     api->glTexStorage2DEXTFn(GL_TEXTURE_2D, 1, internal_format, size().width(),
                              size().height());
   } else {
     DCHECK(memory_object);
-    bool is_brga8 = (internal_format == GL_BGRA8_EXT);
-    if (is_brga8)
-      internal_format = GL_RGBA8;
     api->glTexStorageMem2DEXTFn(GL_TEXTURE_2D, 1, internal_format,
-                                size().width(), size().height(), memory_object,
-                                0);
-    api->glDeleteMemoryObjectsEXTFn(1, &memory_object);
-    if (is_brga8) {
-      api->glTexParameteriFn(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_B, GL_RED);
-      api->glTexParameteriFn(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_R, GL_BLUE);
-    }
+                                size().width(), size().height(),
+                                memory_object->id(), 0);
   }
-  api->glBindTextureFn(GL_TEXTURE_2D, old_texture_binding);
+
+  if (is_bgra8 && internal_format == GL_RGBA8) {
+    api->glTexParameteriFn(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_B, GL_RED);
+    api->glTexParameteriFn(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_R, GL_BLUE);
+  }
+
   return texture_service_id;
 }
 
@@ -796,7 +811,7 @@ bool ExternalVkImageBacking::WritePixels(size_t data_size,
                                       size().width(), size().height());
   }
 
-  if (!need_sychronization()) {
+  if (!need_synchronization()) {
     DCHECK(handles.empty());
     command_buffer->Submit(0, nullptr, 0, nullptr);
     EndAccessInternal(false /* readonly */, SemaphoreHandle());
@@ -1008,7 +1023,7 @@ void ExternalVkImageBacking::EndAccessInternal(
     is_write_in_progress_ = false;
   }
 
-  if (need_sychronization()) {
+  if (need_synchronization()) {
     DCHECK(semaphore_handle.is_valid());
     if (readonly) {
       read_semaphore_handles_.push_back(std::move(semaphore_handle));

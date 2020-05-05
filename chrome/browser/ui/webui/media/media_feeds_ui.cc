@@ -66,9 +66,8 @@ void MediaFeedsUI::GetItemsForMediaFeed(int64_t feed_id,
 }
 
 void MediaFeedsUI::FetchMediaFeed(int64_t feed_id,
-                                  const GURL& url,
                                   FetchMediaFeedCallback callback) {
-  GetMediaFeedsService()->FetchMediaFeed(feed_id, url, std::move(callback));
+  GetMediaFeedsService()->FetchMediaFeed(feed_id, std::move(callback));
 }
 
 media_history::MediaHistoryKeyedService*

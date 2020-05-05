@@ -30,13 +30,11 @@
 #include "components/security_interstitials/core/controller_client.h"
 #include "components/security_interstitials/core/unsafe_resource.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/interstitial_page.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 
 using content::BrowserThread;
-using content::InterstitialPage;
 using content::WebContents;
 using security_interstitials::BaseSafeBrowsingErrorUI;
 using security_interstitials::SecurityInterstitialControllerClient;
@@ -104,7 +102,7 @@ static base::LazyInstance<SafeBrowsingBlockingPageFactoryImpl>::DestructorAtExit
     g_safe_browsing_blocking_page_factory_impl = LAZY_INSTANCE_INITIALIZER;
 
 // static
-const content::InterstitialPageDelegate::TypeID
+const security_interstitials::SecurityInterstitialPage::TypeID
     SafeBrowsingBlockingPage::kTypeForTesting =
         &SafeBrowsingBlockingPage::kTypeForTesting;
 
@@ -160,37 +158,7 @@ SafeBrowsingBlockingPage::SafeBrowsingBlockingPage(
 SafeBrowsingBlockingPage::~SafeBrowsingBlockingPage() {
 }
 
-void SafeBrowsingBlockingPage::OverrideRendererPrefs(
-    blink::mojom::RendererPreferences* prefs) {
-  Profile* profile = Profile::FromBrowserContext(
-      web_contents()->GetBrowserContext());
-  renderer_preferences_util::UpdateFromSystemSettings(prefs, profile);
-}
-
-void SafeBrowsingBlockingPage::HandleSubresourcesAfterProceed() {
-  // Check to see if some new notifications of unsafe resources have been
-  // received while we were showing the interstitial.
-  UnsafeResourceMap* unsafe_resource_map = GetUnsafeResourcesMap();
-  auto iter = unsafe_resource_map->find(web_contents());
-  if (iter != unsafe_resource_map->end() && !iter->second.empty()) {
-    // All queued unsafe resources should be for the same page:
-    UnsafeResourceList unsafe_resources = iter->second;
-    content::NavigationEntry* entry =
-        GetNavigationEntryForResource(unsafe_resources[0]);
-    // Build an interstitial for all the unsafe resources notifications.
-    // Don't show it now as showing an interstitial while an interstitial is
-    // already showing would cause DontProceed() to be invoked.
-    SafeBrowsingBlockingPage* blocking_page = factory_->CreateSafeBrowsingPage(
-        ui_manager(), web_contents(), entry ? entry->GetURL() : GURL(),
-        unsafe_resources, /*should_trigger_reporting=*/true);
-    unsafe_resource_map->erase(iter);
-
-    // Now that this interstitial is gone, we can show the new one.
-    blocking_page->Show();
-  }
-}
-
-content::InterstitialPageDelegate::TypeID
+security_interstitials::SecurityInterstitialPage::TypeID
 SafeBrowsingBlockingPage::GetTypeForTesting() {
   return SafeBrowsingBlockingPage::kTypeForTesting;
 }
@@ -202,9 +170,7 @@ void SafeBrowsingBlockingPage::OnInterstitialClosing() {
                                          threat_details_proceed_delay())
                                    : base::TimeDelta()),
                       proceeded(), controller()->metrics_helper()->NumVisits());
-  if (proceeded()) {
-    HandleSubresourcesAfterProceed();
-  } else {
+  if (!proceeded()) {
     OnDontProceedDone();
   }
   BaseBlockingPage::OnInterstitialClosing();
@@ -254,36 +220,6 @@ SafeBrowsingBlockingPage* SafeBrowsingBlockingPage::CreateBlockingPage(
   return factory_->CreateSafeBrowsingPage(ui_manager, web_contents,
                                           main_frame_url, resources,
                                           should_trigger_reporting);
-}
-
-// static
-void SafeBrowsingBlockingPage::ShowBlockingPage(
-    BaseUIManager* ui_manager,
-    const UnsafeResource& unsafe_resource) {
-  DVLOG(1) << __func__ << " " << unsafe_resource.url.spec();
-  WebContents* web_contents = unsafe_resource.web_contents_getter.Run();
-
-  if (InterstitialPage::GetInterstitialPage(web_contents) &&
-      unsafe_resource.is_subresource) {
-    // This is an interstitial for a page's resource, let's queue it.
-    UnsafeResourceMap* unsafe_resource_map = GetUnsafeResourcesMap();
-    (*unsafe_resource_map)[web_contents].push_back(unsafe_resource);
-  } else {
-    // There is no interstitial currently showing in that tab, or we are about
-    // to display a new one for the main frame. If there is already an
-    // interstitial, showing the new one will automatically hide the old one.
-    content::NavigationEntry* entry =
-        GetNavigationEntryForResource(unsafe_resource);
-    GURL main_fram_url = entry ? entry->GetURL() : GURL();
-    SafeBrowsingBlockingPage* blocking_page = CreateBlockingPage(
-        ui_manager, web_contents, main_fram_url, unsafe_resource,
-        /*should_trigger_reporting=*/true);
-    blocking_page->Show();
-    MaybeTriggerSecurityInterstitialShownEvent(
-        web_contents, main_fram_url,
-        GetThreatTypeStringForInterstitial(unsafe_resource.threat_type),
-        /*net_error_code=*/0);
-  }
 }
 
 // static

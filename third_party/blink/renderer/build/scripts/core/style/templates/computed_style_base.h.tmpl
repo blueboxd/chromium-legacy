@@ -86,6 +86,7 @@ class ComputedStyleBase {
             |selectattr("is_property")
             |selectattr("is_inherited")
             |selectattr("is_independent")
+            |rejectattr("is_semi_independent_variable")
             |list
           )|indent(8)}}
     );
@@ -97,6 +98,19 @@ class ComputedStyleBase {
             |selectattr("is_property")
             |selectattr("is_inherited")
             |rejectattr("is_independent")
+            |rejectattr("is_semi_independent_variable")
+            |list
+          )|indent(8)}}
+    );
+  }
+
+  inline bool InheritedVariablesEqual(const ComputedStyleBase& o) const {
+    return (
+        {{fieldwise_compare(computed_style, computed_style.all_fields
+            |selectattr("is_property")
+            |selectattr("is_inherited")
+            |rejectattr("is_independent")
+            |selectattr("is_semi_independent_variable")
             |list
           )|indent(8)}}
     );
@@ -129,6 +143,9 @@ class ComputedStyleBase {
 
   void InheritFrom(const ComputedStyleBase& other,
                                       IsAtShadowBoundary isAtShadowBoundary);
+  void InheritCustomPropertiesFrom(const ComputedStyleBase& other) {
+    inherited_variables_data_ = other.inherited_variables_data_;
+  }
 
   void CopyNonInheritedFromCached(
       const ComputedStyleBase& other);

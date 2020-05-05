@@ -381,16 +381,12 @@ void ClipboardAndroid::Clear(ClipboardBuffer buffer) {
   g_map.Get().Clear();
 }
 
-void ClipboardAndroid::ReadAvailableTypes(ClipboardBuffer buffer,
-                                          std::vector<base::string16>* types,
-                                          bool* contains_filenames) const {
+void ClipboardAndroid::ReadAvailableTypes(
+    ClipboardBuffer buffer,
+    std::vector<base::string16>* types) const {
   DCHECK(CalledOnValidThread());
   DCHECK_EQ(buffer, ClipboardBuffer::kCopyPaste);
-
-  if (!types || !contains_filenames) {
-    NOTREACHED();
-    return;
-  }
+  DCHECK(types);
 
   types->clear();
 
@@ -407,7 +403,6 @@ void ClipboardAndroid::ReadAvailableTypes(ClipboardBuffer buffer,
     types->push_back(base::UTF8ToUTF16(kMimeTypeRTF));
   if (IsFormatAvailable(ClipboardFormatType::GetBitmapType(), buffer))
     types->push_back(base::UTF8ToUTF16(kMimeTypePNG));
-  *contains_filenames = false;
 }
 
 std::vector<base::string16>

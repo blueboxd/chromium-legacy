@@ -232,8 +232,14 @@ void Portal::Navigate(const GURL& url,
   // Fix this so that we can enforce this as an invariant.
   constexpr bool should_replace_entry = true;
 
+  // TODO(https://crbug.com/1074422): It is possible for a portal to be
+  // navigated by a frame other than the owning frame. Find a way to route the
+  // correct initiator of the portal navigation to this call.
   portal_root->navigator()->NavigateFromFrameProxy(
-      portal_frame, url, owner_render_frame_host_->GetLastCommittedOrigin(),
+      portal_frame, url,
+      GlobalFrameRoutingId(owner_render_frame_host_->GetProcess()->GetID(),
+                           owner_render_frame_host_->GetRoutingID()),
+      owner_render_frame_host_->GetLastCommittedOrigin(),
       owner_render_frame_host_->GetSiteInstance(),
       mojo::ConvertTo<Referrer>(referrer), ui::PAGE_TRANSITION_LINK,
       should_replace_entry, download_policy, "GET", nullptr, "", nullptr, false,

@@ -33,7 +33,8 @@ class NET_EXPORT_PRIVATE ProofSourceChromium : public quic::ProofSource {
                   const base::FilePath& sct_path);
 
   // quic::ProofSource interface
-  void GetProof(const quic::QuicSocketAddress& server_ip,
+  void GetProof(const quic::QuicSocketAddress& server_address,
+                const quic::QuicSocketAddress& client_address,
                 const std::string& hostname,
                 const std::string& server_config,
                 quic::QuicTransportVersion quic_version,
@@ -42,10 +43,12 @@ class NET_EXPORT_PRIVATE ProofSourceChromium : public quic::ProofSource {
 
   quic::QuicReferenceCountedPointer<Chain> GetCertChain(
       const quic::QuicSocketAddress& server_address,
+      const quic::QuicSocketAddress& client_address,
       const std::string& hostname) override;
 
   void ComputeTlsSignature(
       const quic::QuicSocketAddress& server_address,
+      const quic::QuicSocketAddress& client_address,
       const std::string& hostname,
       uint16_t signature_algorithm,
       quiche::QuicheStringPiece in,

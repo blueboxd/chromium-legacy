@@ -1,11 +1,10 @@
-<style include="print-management-shared">
+<style include="cr-shared-style print-management-shared">
   html {
     background-color: var(--cros-default-bg-color);
   }
 
   .main-container {
-    @apply --cr-centered-card-container;
-    max-width: 960px;
+    --cr-centered-card-max-width: 960px;
   }
 
   #columnHeaders {
@@ -31,7 +30,7 @@
   }
 </style>
 
-<div class="main-container">
+<div class="main-container cr-centered-card-container">
   <div id="headerContainer">
     <h1>[[i18n('printJobTitle')]]</h1>
     <!-- TODO(crbug/1075701): Add an icon to this button when it becomes

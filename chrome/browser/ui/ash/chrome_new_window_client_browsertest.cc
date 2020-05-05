@@ -370,6 +370,9 @@ void TestAllOSSettingPages(const GURL& base_url) {
       base_url.Resolve(
           chromeos::settings::mojom::kCrostiniBackupAndRestoreSubpagePath));
   TestOpenChromePage(
+      ChromePage::DOWNLOADEDCONTENT,
+      base_url.Resolve(chromeos::settings::mojom::kDlcSubpagePath));
+  TestOpenChromePage(
       ChromePage::EXTERNALSTORAGE,
       base_url.Resolve(chromeos::settings::mojom::kExternalStorageSubpagePath));
   TestOpenChromePage(

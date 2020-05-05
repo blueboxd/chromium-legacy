@@ -59,7 +59,11 @@ public final class ResourceLoadingTest {
     }
 
     private int getIdentifier(String name) {
-        return mRemoteContext.getResources().getIdentifier(
+        int id = mRemoteContext.getResources().getIdentifier(
                 name, null, mRemoteContext.getPackageName());
+        // Force the returned ID to use our magic package ID.
+        id &= 0x00ffffff;
+        id |= 0x0c000000;
+        return id;
     }
 }

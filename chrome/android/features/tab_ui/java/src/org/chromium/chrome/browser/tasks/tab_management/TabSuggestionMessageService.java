@@ -32,6 +32,7 @@ import java.util.Set;
  */
 public class TabSuggestionMessageService extends MessageService implements TabSuggestionsObserver {
     static final int CLOSE_SUGGESTION_ACTION_ENABLING_THRESHOLD = 1;
+    static final int GROUP_SUGGESTION_ACTION_ENABLING_THRESHOLD = 2;
     private static boolean sSuggestionAvailableForTesting;
 
     /**
@@ -107,6 +108,8 @@ public class TabSuggestionMessageService extends MessageService implements TabSu
         switch (tabSuggestion.getAction()) {
             case TabSuggestion.TabSuggestionAction.CLOSE:
                 return mContext.getString(R.string.tab_suggestion_close_tab_action_button);
+            case TabSuggestion.TabSuggestionAction.GROUP:
+                return mContext.getString(R.string.tab_selection_editor_group);
             default:
                 assert false;
         }
@@ -117,6 +120,8 @@ public class TabSuggestionMessageService extends MessageService implements TabSu
         switch (tabSuggestion.getAction()) {
             case TabSuggestion.TabSuggestionAction.CLOSE:
                 return CLOSE_SUGGESTION_ACTION_ENABLING_THRESHOLD;
+            case TabSuggestion.TabSuggestionAction.GROUP:
+                return GROUP_SUGGESTION_ACTION_ENABLING_THRESHOLD;
             default:
                 assert false;
         }
@@ -125,29 +130,32 @@ public class TabSuggestionMessageService extends MessageService implements TabSu
 
     @VisibleForTesting
     TabSelectionEditorActionProvider getActionProvider(TabSuggestion tabSuggestion) {
+        int action;
         switch (tabSuggestion.getAction()) {
             case TabSuggestion.TabSuggestionAction.CLOSE:
-                return new TabSelectionEditorActionProvider(mTabSelectionEditorController,
-                        TabSelectionEditorActionProvider.TabSelectionEditorAction.CLOSE) {
-                    @Override
-                    void processSelectedTabs(
-                            List<Tab> selectedTabs, TabModelSelector tabModelSelector) {
-                        int totalTabCountBeforeProcess =
-                                tabModelSelector.getCurrentModel().getCount();
-                        List<Integer> selectedTabIds = new ArrayList<>();
-                        for (int i = 0; i < selectedTabs.size(); i++) {
-                            selectedTabIds.add(selectedTabs.get(i).getId());
-                        }
-                        accepted(selectedTabIds, totalTabCountBeforeProcess);
-
-                        super.processSelectedTabs(selectedTabs, tabModelSelector);
-                    }
-                };
+                action = TabSelectionEditorActionProvider.TabSelectionEditorAction.CLOSE;
+                break;
+            case TabSuggestion.TabSuggestionAction.GROUP:
+                action = TabSelectionEditorActionProvider.TabSelectionEditorAction.GROUP;
+                break;
             default:
                 assert false;
+                return null;
         }
 
-        return null;
+        return new TabSelectionEditorActionProvider(mTabSelectionEditorController, action) {
+            @Override
+            void processSelectedTabs(List<Tab> selectedTabs, TabModelSelector tabModelSelector) {
+                int totalTabCountBeforeProcess = tabModelSelector.getCurrentModel().getCount();
+                List<Integer> selectedTabIds = new ArrayList<>();
+                for (int i = 0; i < selectedTabs.size(); i++) {
+                    selectedTabIds.add(selectedTabs.get(i).getId());
+                }
+                accepted(selectedTabIds, totalTabCountBeforeProcess);
+
+                super.processSelectedTabs(selectedTabs, tabModelSelector);
+            }
+        };
     }
 
     @VisibleForTesting

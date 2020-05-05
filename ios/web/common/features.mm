@@ -11,9 +11,6 @@
 namespace web {
 namespace features {
 
-const base::Feature kIgnoresViewportScaleLimits{
-    "IgnoresViewportScaleLimits", base::FEATURE_ENABLED_BY_DEFAULT};
-
 const base::Feature kCrashOnUnexpectedURLChange{
     "CrashOnUnexpectedURLChange", base::FEATURE_ENABLED_BY_DEFAULT};
 

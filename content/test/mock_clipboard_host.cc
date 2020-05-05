@@ -47,7 +47,7 @@ void MockClipboardHost::ReadAvailableTypes(
     CHECK(!base::Contains(types, it.first));
     types.push_back(it.first);
   }
-  std::move(callback).Run(types, false);
+  std::move(callback).Run(types);
 }
 
 void MockClipboardHost::IsFormatAvailable(blink::mojom::ClipboardFormat format,

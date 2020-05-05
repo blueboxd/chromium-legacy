@@ -120,6 +120,9 @@ SafeBrowsingTabHelper::PolicyDecider::ShouldAllowRequest(
     const web::WebStatePolicyDecider::RequestInfo& request_info) {
   SafeBrowsingService* safe_browsing_service =
       GetApplicationContext()->GetSafeBrowsingService();
+  GURL request_url = net::GURLWithNSURL(request.URL);
+  if (!safe_browsing_service->CanCheckUrl(request_url))
+    return web::WebStatePolicyDecider::PolicyDecision::Allow();
 
   safe_browsing::ResourceType resource_type =
       request_info.target_frame_is_main
@@ -128,7 +131,6 @@ SafeBrowsingTabHelper::PolicyDecider::ShouldAllowRequest(
   std::unique_ptr<safe_browsing::SafeBrowsingUrlCheckerImpl> url_checker =
       safe_browsing_service->CreateUrlChecker(resource_type, web_state());
 
-  GURL request_url = net::GURLWithNSURL(request.URL);
   std::string method = base::SysNSStringToUTF8([request HTTPMethod]);
 
   base::OnceCallback<void(web::WebStatePolicyDecider::PolicyDecision)>
@@ -162,13 +164,15 @@ void SafeBrowsingTabHelper::PolicyDecider::ShouldAllowResponse(
     bool for_main_frame,
     base::OnceCallback<void(web::WebStatePolicyDecider::PolicyDecision)>
         callback) {
-  if (!for_main_frame) {
+  SafeBrowsingService* safe_browsing_service =
+      GetApplicationContext()->GetSafeBrowsingService();
+  GURL response_url = net::GURLWithNSURL(response.URL);
+  if (!for_main_frame || !safe_browsing_service->CanCheckUrl(response_url)) {
     std::move(callback).Run(
         web::WebStatePolicyDecider::PolicyDecision::Allow());
     return;
   }
 
-  GURL response_url = net::GURLWithNSURL(response.URL);
   while (pending_main_frame_queries_.front().url != response_url) {
     // Since |pending_main_frame_queries_| maintains the same order as calls
     // to ShouldAllowRequest(), all URLs that appear in this list before

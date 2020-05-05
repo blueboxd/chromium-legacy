@@ -1,32 +1,33 @@
 <!doctype HTML>
-
-<html class="reftest-wait">
+<html>
 <meta charset="utf8">
-<title>CSS Content Visibility: hidden + focus</title>
+<title>Content Visibility: nested forced layouts</title>
 <link rel="author" title="Vladimir Levin" href="mailto:vmpstr@chromium.org">
 <link rel="help" href="https://github.com/WICG/display-locking">
-<link rel="match" href="spacer-and-container-ref.html">
-<meta name="assert" content="focus ignores element in a hidden subtree">
-<script src="/common/reftest-wait.js"></script>
+<meta name="assert" content="nested content-visibility items are all processed when layout is forced">
+
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
 
 <style>
+body, html {
+  padding: 0;
+  margin: 0;
+}
 .spacer {
-  width: 150px;
   height: 3000px;
-  background: lightblue;
 }
-#container {
-  width: 150px;
-  height: 150px;
-  background: lightblue;
-}
-#target {
-  position: relative;
-  top: 75px;
+.target {
+  width: 12px;
+  height: 34px;
 
-  width: 50px;
-  height: 50px;
-  background: red;
+  position: relative;
+  left: 5px;
+  top: 7px;
+}
+
+.auto {
+  content-visibility: auto;
 }
 .hidden {
   content-visibility: hidden;
@@ -34,22 +35,52 @@
 </style>
 
 <div class=spacer></div>
-<div id=container class=hidden>
-  <div id=target tabindex=0></div>
+<div class=auto>
+  <div class=auto>
+    <div class=target id=one></div>
+  </div>
+</div>
+
+<div class=auto>
+  <div class=hidden>
+    <div class=target id=two></div>
+  </div>
+</div>
+
+<div class=hidden>
+  <div class=auto>
+    <div class=target id=three></div>
+  </div>
+</div>
+
+<div class=hidden>
+  <div class=hidden>
+    <div class=target id=four></div>
+  </div>
+</div>
+
+<div class=hidden>
+  <div class=hidden>
+    <div class=hidden>
+      <div class=hidden>
+        <div class=hidden>
+          <div class=target id=five></div>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
 
 <script>
-function runTest() {
-  document.getElementById("target").focus();
-  requestAnimationFrame(takeScreenshot);
+const ids = ["one", "two", "three", "four", "five"];
+for (let i = 0; i < ids.length; ++i) {
+  test(() => {
+    const r = document.getElementById(ids[i]).getBoundingClientRect();
+    assert_equals(r.x, 5, "x");
+    assert_equals(r.y, 3007, "y");
+    assert_equals(r.width, 12, "width");
+    assert_equals(r.height, 34, "y");
+  }, `${ids[i]}.getBoundingClientRect(): `);
 }
-
-window.onload = requestAnimationFrame(() => {
-  requestAnimationFrame(() => {
-    requestAnimationFrame(() => {
-      runTest();
-    });
-  });
-});
 </script>
 </html>

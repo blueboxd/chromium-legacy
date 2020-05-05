@@ -265,8 +265,10 @@ interface PageHandler {
   GetDoodle() => (Doodle? doodle);
   // Choose custom background from local file system.
   ChooseLocalCustomBackground() => (bool success);
-  // Get the OneGoogleBarParts to be inlined in the NTP.
-  GetOneGoogleBarParts() => (OneGoogleBarParts? parts);
+  // Get the OneGoogleBarParts to be inlined in the NTP. Forwards the
+  // "ogdeb" query parameter to the endpoint that serves the OneGoogleBar
+  // parts with |ogdeb_value|.
+  GetOneGoogleBarParts(string ogdeb_value) => (OneGoogleBarParts? parts);
 
   // ======= METRICS =======
   // Logs that |tiles| were displayed / updated at |time|. The first instance of

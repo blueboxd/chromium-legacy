@@ -26,15 +26,8 @@ MockCloudPolicyClient::MockCloudPolicyClient(DeviceManagementService* service)
 MockCloudPolicyClient::MockCloudPolicyClient(
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     DeviceManagementService* service)
-    : CloudPolicyClient(std::string() /* machine_id */,
-                        std::string() /* machine_model */,
-                        std::string() /* brand_code */,
-                        std::string() /* ethernet_mac_address */,
-                        std::string() /* dock_mac_address */,
-                        std::string() /* manufacture_date */,
-                        service,
+    : CloudPolicyClient(service,
                         std::move(url_loader_factory),
-                        nullptr /* signing_service */,
                         CloudPolicyClient::DeviceDMTokenCallback()) {}
 
 MockCloudPolicyClient::~MockCloudPolicyClient() {}

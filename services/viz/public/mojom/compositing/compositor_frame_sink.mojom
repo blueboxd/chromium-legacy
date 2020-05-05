@@ -20,6 +20,7 @@ enum CompositorFrameSinkType {
   kUnspecified,
   kVideo,
   kMediaStream,
+  kLayerTree,
 };
 
 // A CompositorFrameSink is an interface for receiving CompositorFrame

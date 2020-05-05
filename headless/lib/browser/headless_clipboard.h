@@ -29,8 +29,7 @@ class HeadlessClipboard : public ui::Clipboard {
                          ui::ClipboardBuffer buffer) const override;
   void Clear(ui::ClipboardBuffer buffer) override;
   void ReadAvailableTypes(ui::ClipboardBuffer buffer,
-                          std::vector<base::string16>* types,
-                          bool* contains_filenames) const override;
+                          std::vector<base::string16>* types) const override;
   std::vector<base::string16> ReadAvailablePlatformSpecificFormatNames(
       ui::ClipboardBuffer buffer) const override;
   void ReadText(ui::ClipboardBuffer buffer,

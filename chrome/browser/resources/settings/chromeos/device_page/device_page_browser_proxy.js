@@ -86,6 +86,13 @@ cr.define('settings', function() {
    */
   let ExternalStorage;
 
+  /**
+   * @typedef {{
+   *   dlcId: string,
+   * }}
+   */
+  let DlcMetadata;
+
   /** @interface */
   class DevicePageBrowserProxy {
     /** Initializes the mouse and touchpad handler. */
@@ -181,6 +188,11 @@ cr.define('settings', function() {
      * @param {string} id Display id of selected display.
      */
     highlightDisplay(id) {}
+
+    /**
+     * @return {!Promise<!Array<!settings.DlcMetadata>>} A list of DLC metadata.
+     */
+    getDlcList() {}
   }
 
   /**
@@ -276,6 +288,11 @@ cr.define('settings', function() {
     highlightDisplay(id) {
       chrome.send('highlightDisplay', [id]);
     }
+
+    /** @override */
+    getDlcList() {
+      return cr.sendWithPromise('getDlcList');
+    }
   }
 
   cr.addSingletonGetter(DevicePageBrowserProxyImpl);
@@ -292,5 +309,6 @@ cr.define('settings', function() {
     NoteAppLockScreenSupport,
     PowerManagementSettings,
     PowerSource,
+    DlcMetadata,
   };
 });

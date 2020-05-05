@@ -75,7 +75,7 @@ class GpuIntegrationTest(
     """
     if not browser_args:
       browser_args = []
-    cls._finder_options = cls._original_finder_options.Copy()
+    cls._finder_options = cls.GetOriginalFinderOptions().Copy()
     browser_options = cls._finder_options.browser_options
 
     # If requested, disable uploading of failure logs to cloud storage.
@@ -157,7 +157,7 @@ class GpuIntegrationTest(
     # by a bad combination of command-line arguments. So reset to the original
     # options in attempt to successfully launch a browser.
     if cls.browser is None:
-      cls.SetBrowserOptions(cls._original_finder_options)
+      cls.SetBrowserOptions(cls.GetOriginalFinderOptions())
       cls.StartBrowser()
     else:
       cls.StopBrowser()
@@ -447,17 +447,13 @@ class GpuIntegrationTest(
     # If additional options have been set via '--extra-browser-args' check for
     # those which map to expectation tags. The '_browser_backend' attribute may
     # not exist in unit tests.
-    if (hasattr(browser, '_browser_backend')
-        and browser._browser_backend.browser_options.extra_browser_args):
-      skia_renderer = gpu_helper.GetSkiaRenderer(\
-          browser._browser_backend.browser_options.extra_browser_args)
-      tags.extend([skia_renderer])
-      use_gl = gpu_helper.GetGL(\
-          browser._browser_backend.browser_options.extra_browser_args)
-      tags.extend([use_gl])
-      use_vulkan = gpu_helper.GetVulkan(\
-          browser._browser_backend.browser_options.extra_browser_args)
-      tags.extend([use_vulkan])
+    if hasattr(browser, 'startup_args'):
+      skia_renderer = gpu_helper.GetSkiaRenderer(browser.startup_args)
+      tags.append(skia_renderer)
+      use_gl = gpu_helper.GetGL(browser.startup_args)
+      tags.append(use_gl)
+      use_vulkan = gpu_helper.GetVulkan(browser.startup_args)
+      tags.append(use_vulkan)
     return tags
 
   @classmethod
@@ -478,6 +474,12 @@ class GpuIntegrationTest(
       logging.exception("Failure during browser startup")
       cls._RestartBrowser('failure in setup')
       raise
+
+  # @property doesn't work on class methods without messing with __metaclass__,
+  # so just use an explicit getter for simplicity.
+  @classmethod
+  def GetOriginalFinderOptions(cls):
+    return cls._original_finder_options
 
   def setUp(self):
     self._EnsureTabIsAvailable()

@@ -59,11 +59,14 @@ class IsolatedPrerenderURLLoaderInterceptor
   void OnProbeComplete(base::OnceClosure on_success_callback, bool success);
 
   // Notifies the Tab Helper about the usage of a prefetched resource.
-  void NotifyPrefetchUsage(
-      IsolatedPrerenderTabHelper::PrefetchUsage usage) const;
+  void NotifyPrefetchStatusUpdate(
+      IsolatedPrerenderTabHelper::PrefetchStatus usage) const;
 
   // Used to get the current WebContents.
   const int frame_tree_node_id_;
+
+  // The url that |MaybeCreateLoader| is called with.
+  GURL url_;
 
   // Probes the origin to establish that it is reachable before
   // attempting to reuse a cached prefetch.

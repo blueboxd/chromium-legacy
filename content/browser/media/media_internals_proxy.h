@@ -42,9 +42,9 @@ class MediaInternalsProxy
   void GetEverythingOnIOThread();
 
   // Callback for MediaInternals to update. Must be called on UI thread.
-  void UpdateUIOnUIThread(const base::string16& update);
+  static void UpdateUIOnUIThread(MediaInternalsMessageHandler* handler,
+                                 const base::string16& update);
 
-  MediaInternalsMessageHandler* handler_;
   MediaInternals::UpdateCallback update_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaInternalsProxy);

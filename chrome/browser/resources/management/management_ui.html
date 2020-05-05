@@ -22,11 +22,6 @@
         overflow: overlay;
       }
 
-      .sections-container {
-        @apply --cr-centered-card-container;
-        height: 100%;
-      }
-
       .card {
         background-color: var(--cr-card-background-color);
         box-shadow: var(--cr-card-shadow);
@@ -169,7 +164,7 @@
         search-prompt="$i18n{searchPrompt}">
     </cr-toolbar>
     <main id="mainContent">
-      <div class="sections-container">
+      <div class="cr-centered-card-container">
         <div class="card">
           <section hidden="[[!managed_]]" class="page-subtitle">
             <cr-icon-button class="icon-arrow-back" id="closeButton"

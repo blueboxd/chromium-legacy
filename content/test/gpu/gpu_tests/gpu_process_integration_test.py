@@ -172,7 +172,7 @@ class GpuProcessIntegrationTest(gpu_integration_test.GpuIntegrationTest):
   # This can only be called from one of the tests, i.e., after the
   # browser's been brought up once.
   def _RunningOnAndroid(self):
-    options = self.__class__._original_finder_options.browser_options
+    options = self.GetOriginalFinderOptions().browser_options
     return options.browser_type.startswith('android')
 
   def _SupportsSwiftShader(self):

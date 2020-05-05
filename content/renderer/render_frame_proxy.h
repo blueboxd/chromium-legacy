@@ -183,6 +183,7 @@ class CONTENT_EXPORT RenderFrameProxy : public IPC::Listener,
                           blink::WebDOMMessageEvent event) override;
   void Navigate(
       const blink::WebURLRequest& request,
+      blink::WebLocalFrame* initiator_frame,
       bool should_replace_current_entry,
       bool is_opener_navigation,
       bool initiator_frame_has_download_sandbox_flag,

@@ -41,6 +41,7 @@
 #include "third_party/blink/renderer/core/animation/css/css_animation.h"
 #include "third_party/blink/renderer/core/animation/css/css_transition.h"
 #include "third_party/blink/renderer/core/animation/css_interpolation_types_map.h"
+#include "third_party/blink/renderer/core/animation/document_animations.h"
 #include "third_party/blink/renderer/core/animation/document_timeline.h"
 #include "third_party/blink/renderer/core/animation/element_animations.h"
 #include "third_party/blink/renderer/core/animation/inert_effect.h"
@@ -875,7 +876,9 @@ void CSSAnimations::MaybeApplyPendingUpdate(Element* element) {
         KeyframeEffect::kTransitionPriority, event_delegate);
     auto* animation = MakeGarbageCollected<CSSTransition>(
         element->GetExecutionContext(), &(element->GetDocument().Timeline()),
-        transition_effect, property);
+        transition_effect,
+        element->GetDocument().GetDocumentAnimations().TransitionGeneration(),
+        property);
 
     animation->play();
 
@@ -1494,6 +1497,13 @@ void CSSAnimations::TransitionEventDelegate::OnEventCondition(
     Timing::Phase current_phase) {
   if (current_phase == previous_phase_)
     return;
+  // Our implement of transition_generation is slightly different from the spec
+  // We increment the transition_generation per transition event instead of per
+  // style change event. A state transition would trigger one or more events.
+  // Thus, the spec version increments more than is necessary to ensure a change
+  // in transition generation. Spec defines style-change-event:
+  // https://drafts.csswg.org/css-transitions-1/#style-change-event
+  GetDocument().GetDocumentAnimations().IncrementTrasitionGeneration();
 
   if (GetDocument().HasListenerType(Document::kTransitionRunListener)) {
     if (previous_phase_ == Timing::kPhaseNone) {

@@ -12,6 +12,7 @@
 #include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill/core/browser/payments/payments_client.h"
@@ -54,7 +55,10 @@ class MockUIDelegate : public FullCardRequest::UIDelegate,
                     base::WeakPtr<CardUnmaskDelegate>));
   MOCK_METHOD1(OnUnmaskVerificationResult,
                void(AutofillClient::PaymentsRpcResult));
+#if defined(OS_ANDROID)
   MOCK_CONST_METHOD0(ShouldOfferFidoAuth, bool());
+  MOCK_CONST_METHOD0(UserOptedInToFidoFromSettingsPageOnMobile, bool());
+#endif
 };
 
 // The personal data manager.

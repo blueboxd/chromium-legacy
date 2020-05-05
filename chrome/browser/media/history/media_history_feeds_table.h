@@ -85,6 +85,13 @@ class MediaHistoryFeedsTable : public MediaHistoryTableBase {
 
   // Returns the origin of the feed.
   base::Optional<url::Origin> GetOrigin(const int64_t feed_id);
+
+  // Returns the fetch details for the feed.
+  base::Optional<MediaHistoryKeyedService::MediaFeedFetchDetails>
+  GetFetchDetails(const int64_t feed_id);
+
+  // Clears the reset reason for a feed and returns a boolean if it was saved.
+  bool ClearResetReason(const int64_t feed_id);
 };
 
 }  // namespace media_history

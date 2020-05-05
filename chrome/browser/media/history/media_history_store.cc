@@ -667,6 +667,32 @@ void MediaHistoryStore::StoreMediaFeedFetchResult(
   if (!feeds_table_ || !feed_items_table_ || !feed_origins_table_)
     return;
 
+  auto fetch_details = feeds_table_->GetFetchDetails(result.feed_id);
+  if (!fetch_details)
+    return;
+
+  // If the reset token does not match then we should store a fetch failure.
+  if (fetch_details->reset_token != result.reset_token) {
+    MediaHistoryKeyedService::MediaFeedFetchResult new_result;
+    new_result.feed_id = result.feed_id;
+    new_result.status =
+        media_feeds::mojom::FetchResult::kFailedDueToResetWhileInflight;
+    StoreMediaFeedFetchResultInternal(std::move(new_result));
+    return;
+  }
+
+  StoreMediaFeedFetchResultInternal(std::move(result));
+}
+
+void MediaHistoryStore::StoreMediaFeedFetchResultInternal(
+    MediaHistoryKeyedService::MediaFeedFetchResult result) {
+  DCHECK(db_task_runner_->RunsTasksInCurrentSequence());
+  if (!CanAccessDatabase())
+    return;
+
+  if (!feeds_table_ || !feed_items_table_ || !feed_origins_table_)
+    return;
+
   if (!DB()->BeginTransaction()) {
     LOG(ERROR) << "Failed to begin the transaction.";
     return;
@@ -736,6 +762,14 @@ void MediaHistoryStore::StoreMediaFeedFetchResult(
   // Store associated origins.
   for (auto& origin : origins_set) {
     if (!feed_origins_table_->Add(origin, result.feed_id)) {
+      DB()->RollbackTransaction();
+      return;
+    }
+  }
+
+  if (result.status !=
+      media_feeds::mojom::FetchResult::kFailedDueToResetWhileInflight) {
+    if (!feeds_table_->ClearResetReason(result.feed_id)) {
       DB()->RollbackTransaction();
       return;
     }
@@ -977,6 +1011,15 @@ bool MediaHistoryStore::ResetMediaFeedInternal(
     // Clear any old associated origins.
     if (!feed_origins_table_->Clear(feed_id))
       return false;
+
+    auto feed_origin = feeds_table_->GetOrigin(feed_id);
+    if (!feed_origin)
+      return false;
+
+    // Add the origin of the feed back so we will update the reset tokens if
+    // we are reset again before the next fetch.
+    if (!feed_origins_table_->Add(*feed_origin, feed_id))
+      return false;
   }
 
   return true;
@@ -1000,6 +1043,15 @@ void MediaHistoryStore::DeleteMediaFeed(const int64_t feed_id) {
   }
 
   DB()->CommitTransaction();
+}
+
+base::Optional<MediaHistoryKeyedService::MediaFeedFetchDetails>
+MediaHistoryStore::GetMediaFeedFetchDetails(const int64_t feed_id) {
+  DCHECK(db_task_runner_->RunsTasksInCurrentSequence());
+  if (!CanAccessDatabase() || !feeds_table_)
+    return base::nullopt;
+
+  return feeds_table_->GetFetchDetails(feed_id);
 }
 
 }  // namespace media_history

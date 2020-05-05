@@ -9,7 +9,6 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/macros.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace base {
@@ -17,26 +16,35 @@ namespace {
 
 class Listener {
  public:
-  Listener() : total_(0), scaler_(1) {}
-  explicit Listener(int scaler) : total_(0), scaler_(scaler) {}
-  void IncrementTotal() { total_++; }
+  Listener() = default;
+  explicit Listener(int scaler) : scaler_(scaler) {}
+  Listener(const Listener&) = delete;
+  Listener& operator=(const Listener&) = delete;
+  ~Listener() = default;
+
+  void IncrementTotal() { ++total_; }
+
   void IncrementByMultipleOfScaler(int x) { total_ += x * scaler_; }
 
   int total() const { return total_; }
 
  private:
-  int total_;
-  int scaler_;
-  DISALLOW_COPY_AND_ASSIGN(Listener);
+  int total_ = 0;
+  int scaler_ = 1;
 };
 
 class Remover {
  public:
-  Remover() : total_(0) {}
+  Remover() = default;
+  Remover(const Remover&) = delete;
+  Remover& operator=(const Remover&) = delete;
+  ~Remover() = default;
+
   void IncrementTotalAndRemove() {
-    total_++;
+    ++total_;
     removal_subscription_.reset();
   }
+
   void SetSubscriptionToRemove(
       std::unique_ptr<CallbackList<void(void)>::Subscription> sub) {
     removal_subscription_ = std::move(sub);
@@ -45,18 +53,17 @@ class Remover {
   int total() const { return total_; }
 
  private:
-  int total_;
+  int total_ = 0;
   std::unique_ptr<CallbackList<void(void)>::Subscription> removal_subscription_;
-  DISALLOW_COPY_AND_ASSIGN(Remover);
 };
 
 class Adder {
  public:
-  explicit Adder(CallbackList<void(void)>* cb_reg)
-      : added_(false),
-        total_(0),
-        cb_reg_(cb_reg) {
-  }
+  explicit Adder(CallbackList<void(void)>* cb_reg) : cb_reg_(cb_reg) {}
+  Adder(const Adder&) = delete;
+  Adder& operator=(const Adder&) = delete;
+  ~Adder() = default;
+
   void AddCallback() {
     if (!added_) {
       added_ = true;
@@ -64,23 +71,25 @@ class Adder {
           cb_reg_->Add(BindRepeating(&Adder::IncrementTotal, Unretained(this)));
     }
   }
-  void IncrementTotal() { total_++; }
+
+  void IncrementTotal() { ++total_; }
 
   bool added() const { return added_; }
-
   int total() const { return total_; }
 
  private:
-  bool added_;
-  int total_;
+  bool added_ = false;
+  int total_ = 0;
   CallbackList<void(void)>* cb_reg_;
   std::unique_ptr<CallbackList<void(void)>::Subscription> subscription_;
-  DISALLOW_COPY_AND_ASSIGN(Adder);
 };
 
 class Summer {
  public:
-  Summer() : value_(0) {}
+  Summer() = default;
+  Summer(const Summer&) = delete;
+  Summer& operator=(const Summer&) = delete;
+  ~Summer() = default;
 
   void AddOneParam(int a) { value_ = a; }
   void AddTwoParam(int a, int b) { value_ = a + b; }
@@ -96,21 +105,22 @@ class Summer {
   int value() const { return value_; }
 
  private:
-  int value_;
-  DISALLOW_COPY_AND_ASSIGN(Summer);
+  int value_ = 0;
 };
 
 class Counter {
  public:
-  Counter() : value_(0) {}
+  Counter() = default;
+  Counter(const Counter&) = delete;
+  Counter& operator=(const Counter&) = delete;
+  ~Counter() = default;
 
-  void Increment() { value_++; }
+  void Increment() { ++value_; }
 
   int value() const { return value_; }
 
  private:
-  int value_;
-  DISALLOW_COPY_AND_ASSIGN(Counter);
+  int value_ = 0;
 };
 
 // Sanity check that we can instantiate a CallbackList for each arity.
@@ -194,24 +204,19 @@ TEST(CallbackListTest, BasicTest) {
   EXPECT_EQ(2, a.total());
   EXPECT_EQ(1, b.total());
   EXPECT_EQ(1, c.total());
-
-  a_subscription.reset();
-  b_subscription.reset();
-  c_subscription.reset();
 }
 
 // Sanity check that callbacks with details added to the list will be run, with
 // the correct details, and those removed from the list will not be run.
 TEST(CallbackListTest, BasicTestWithParams) {
-  CallbackList<void(int)> cb_reg;
+  using CallbackListType = CallbackList<void(int)>;
+  CallbackListType cb_reg;
   Listener a(1), b(-1), c(1);
 
-  std::unique_ptr<CallbackList<void(int)>::Subscription> a_subscription =
-      cb_reg.Add(BindRepeating(&Listener::IncrementByMultipleOfScaler,
-                               Unretained(&a)));
-  std::unique_ptr<CallbackList<void(int)>::Subscription> b_subscription =
-      cb_reg.Add(BindRepeating(&Listener::IncrementByMultipleOfScaler,
-                               Unretained(&b)));
+  std::unique_ptr<CallbackListType::Subscription> a_subscription = cb_reg.Add(
+      BindRepeating(&Listener::IncrementByMultipleOfScaler, Unretained(&a)));
+  std::unique_ptr<CallbackListType::Subscription> b_subscription = cb_reg.Add(
+      BindRepeating(&Listener::IncrementByMultipleOfScaler, Unretained(&b)));
 
   EXPECT_TRUE(a_subscription.get());
   EXPECT_TRUE(b_subscription.get());
@@ -223,19 +228,14 @@ TEST(CallbackListTest, BasicTestWithParams) {
 
   b_subscription.reset();
 
-  std::unique_ptr<CallbackList<void(int)>::Subscription> c_subscription =
-      cb_reg.Add(BindRepeating(&Listener::IncrementByMultipleOfScaler,
-                               Unretained(&c)));
+  std::unique_ptr<CallbackListType::Subscription> c_subscription = cb_reg.Add(
+      BindRepeating(&Listener::IncrementByMultipleOfScaler, Unretained(&c)));
 
   cb_reg.Notify(10);
 
   EXPECT_EQ(20, a.total());
   EXPECT_EQ(-10, b.total());
   EXPECT_EQ(10, c.total());
-
-  a_subscription.reset();
-  b_subscription.reset();
-  c_subscription.reset();
 }
 
 // Test the a callback can remove itself or a different callback from the list
@@ -310,7 +310,7 @@ TEST(CallbackListTest, EmptyList) {
   cb_reg.Notify();
 }
 
-TEST(CallbackList, RemovalCallback) {
+TEST(CallbackListTest, RemovalCallback) {
   Counter remove_count;
   CallbackList<void(void)> cb_reg;
   cb_reg.set_removal_callback(
@@ -342,7 +342,7 @@ TEST(CallbackList, RemovalCallback) {
   EXPECT_TRUE(cb_reg.empty());
 }
 
-TEST(CallbackList, AbandonSubscriptions) {
+TEST(CallbackListTest, AbandonSubscriptions) {
   Listener listener;
   std::unique_ptr<CallbackList<void(void)>::Subscription> subscription;
   {
@@ -354,8 +354,9 @@ TEST(CallbackList, AbandonSubscriptions) {
     // Exiting this scope and running the cb_reg destructor shouldn't fail.
   }
   EXPECT_EQ(1, listener.total());
-  // The subscription from the destroyed callback list should be cancelled now.
-  EXPECT_TRUE(subscription->IsCancelled());
+
+  // Destroying the subscription after the list should not cause any problems.
+  subscription.reset();
 }
 
 }  // namespace

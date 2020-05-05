@@ -908,7 +908,6 @@ test("content_browsertests") {
     "../browser/frame_host/blocked_scheme_navigation_browsertest.cc",
     "../browser/frame_host/embedding_token_browsertest.cc",
     "../browser/frame_host/frame_tree_browsertest.cc",
-    "../browser/frame_host/interstitial_page_impl_browsertest.cc",
     "../browser/frame_host/navigation_controller_impl_browsertest.cc",
     "../browser/frame_host/navigation_request_browsertest.cc",
     "../browser/frame_host/render_document_host_browsertest.cc",

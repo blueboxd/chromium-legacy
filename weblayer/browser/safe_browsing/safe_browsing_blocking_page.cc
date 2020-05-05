@@ -12,7 +12,7 @@
 namespace weblayer {
 
 // static
-const content::InterstitialPageDelegate::TypeID
+const security_interstitials::SecurityInterstitialPage::TypeID
     SafeBrowsingBlockingPage::kTypeForTesting =
         &SafeBrowsingBlockingPage::kTypeForTesting;
 
@@ -50,7 +50,7 @@ SafeBrowsingBlockingPage* SafeBrowsingBlockingPage::CreateBlockingPage(
       BaseBlockingPage::CreateDefaultDisplayOptions(unsafe_resources));
 }
 
-content::InterstitialPageDelegate::TypeID
+security_interstitials::SecurityInterstitialPage::TypeID
 SafeBrowsingBlockingPage::GetTypeForTesting() {
   return SafeBrowsingBlockingPage::kTypeForTesting;
 }

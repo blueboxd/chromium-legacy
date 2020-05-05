@@ -10,6 +10,7 @@ const EXAMPLE_URL_1 = 'https://example.com/feed.json';
 
 GEN('#include "base/run_loop.h"');
 GEN('#include "chrome/browser/media/history/media_history_keyed_service.h"');
+GEN('#include "chrome/browser/media/history/media_history_test_utils.h"');
 GEN('#include "chrome/browser/ui/browser.h"');
 GEN('#include "media/base/media_switches.h"');
 
@@ -138,6 +139,8 @@ MediaFeedsWebUIBrowserTest.prototype = {
     GEN('  url::Origin::Create(GURL("https://www.google1.com")),');
     GEN('  url::Origin::Create(GURL("https://www.google2.com"))');
     GEN('};');
+    GEN('result.reset_token = ');
+    GEN('  media_history::test::GetResetTokenSync(service, 1);');
     GEN('service->StoreMediaFeedFetchResult(std::move(result),');
     GEN('  base::DoNothing());');
     GEN('service->UpdateMediaFeedDisplayTime(1);');

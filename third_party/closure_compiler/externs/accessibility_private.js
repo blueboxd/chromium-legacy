@@ -82,16 +82,30 @@ chrome.accessibilityPrivate.SwitchAccessBubble = {
  * @enum {string}
  */
 chrome.accessibilityPrivate.SwitchAccessMenuAction = {
+  COPY: 'copy',
+  CUT: 'cut',
   DECREMENT: 'decrement',
   DICTATION: 'dictation',
+  END_TEXT_SELECTION: 'endTextSelection',
   INCREMENT: 'increment',
+  JUMP_TO_BEGINNING_OF_TEXT: 'jumpToBeginningOfText',
+  JUMP_TO_END_OF_TEXT: 'jumpToEndOfText',
   KEYBOARD: 'keyboard',
+  MOVE_BACKWARD_ONE_CHAR_OF_TEXT: 'moveBackwardOneCharOfText',
+  MOVE_BACKWARD_ONE_WORD_OF_TEXT: 'moveBackwardOneWordOfText',
+  MOVE_CURSOR: 'moveCursor',
+  MOVE_DOWN_ONE_LINE_OF_TEXT: 'moveDownOneLineOfText',
+  MOVE_FORWARD_ONE_CHAR_OF_TEXT: 'moveForwardOneCharOfText',
+  MOVE_FORWARD_ONE_WORD_OF_TEXT: 'moveForwardOneWordOfText',
+  MOVE_UP_ONE_LINE_OF_TEXT: 'moveUpOneLineOfText',
+  PASTE: 'paste',
   SCROLL_DOWN: 'scrollDown',
   SCROLL_LEFT: 'scrollLeft',
   SCROLL_RIGHT: 'scrollRight',
   SCROLL_UP: 'scrollUp',
   SELECT: 'select',
   SETTINGS: 'settings',
+  START_TEXT_SELECTION: 'startTextSelection',
 };
 
 /**

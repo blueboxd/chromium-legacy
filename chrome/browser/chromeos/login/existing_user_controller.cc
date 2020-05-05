@@ -1264,11 +1264,7 @@ void ExistingUserController::OnOldEncryptionDetected(
               ->GetURLLoaderFactoryForBrowserProcess();
 
   auto cloud_policy_client = std::make_unique<policy::CloudPolicyClient>(
-      std::string() /* machine_id */, std::string() /* machine_model */,
-      std::string() /* brand_code */, std::string() /* ethernet_mac_address */,
-      std::string() /* dock_mac_address */,
-      std::string() /* manufacture_date */, device_management_service,
-      sigin_profile_url_loader_factory, nullptr /* signing_service */,
+      device_management_service, sigin_profile_url_loader_factory,
       chromeos::GetDeviceDMTokenForUserPolicyGetter(
           user_context.GetAccountId()));
   pre_signin_policy_fetcher_ = std::make_unique<policy::PreSigninPolicyFetcher>(

@@ -1,39 +1,52 @@
 <!doctype HTML>
-<html>
+<html class="reftest-wait">
 <meta charset="utf8">
-<title>Content Visibility: focus on display none element</title>
-<link rel="author" title="Rakina Zata Amni" href="mailto:rakina@chromium.org">
+<title>Content Visibility: hidden subtree becomes auto in the viewport</title>
+<link rel="author" title="Vladimir Levin" href="mailto:vmpstr@chromium.org">
 <link rel="help" href="https://github.com/WICG/display-locking">
-<meta name="assert" content="tab navigation skips display none elements in an auto subtree">
-
-<script src="/resources/testharness.js"></script>
-<script src="/resources/testharnessreport.js"></script>
+<link rel="match" href="container-with-child-ref.html">
+<meta name="assert" content="hidden subtree because auto and then paints">
+<script src="/common/reftest-wait.js"></script>
 
 <style>
-.spacer {
-  height: 3000px;
+#container {
+  width: 150px;
+  height: 150px;
+  background: lightblue;
 }
-.auto {
-  content-visibility: auto;
+#child {
+  width: 50px;
+  height: 50px;
+  background: lightgreen;
 }
+.auto { content-visibility: auto; }
+.hidden { content-visibility: hidden; }
+
 </style>
 
-<div class=spacer></div>
-<div id="container" style="content-visibility: auto">
-  <div id="focusableA" tabindex="0">a</div>
-  <div id="focusableB" tabindex="0">b</div>
+<div id=container class=hidden>
+  Text.
+  <div id=child></div>
 </div>
 
 <script>
-test(() => {
-  focusableA.style = "display: none;";
-  eventSender.keyDown("Tab", []);
-  assert_equals(document.activeElement, focusableB);
-  eventSender.keyDown("Tab", []);
-  assert_equals(document.activeElement, focusableB);
-  focusableA.style = "display: block;";
-  eventSender.keyDown("Tab", []);
-  assert_equals(document.activeElement, focusableA);
-}, "Trying to focus on an element in a locked subtree that's not visible will skip that element");
+
+function runTest() {
+  document.getElementById("container").classList.remove("hidden");
+  document.getElementById("container").classList.add("auto");
+
+  requestAnimationFrame(takeScreenshot);
+}
+
+window.onload = requestAnimationFrame(() => {
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      runTest();
+    });
+  });
+});
+
 </script>
 </html>
+
+

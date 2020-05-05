@@ -71,3 +71,8 @@ FakeSafeBrowsingService::CreateUrlChecker(
     web::WebState* web_state) {
   return std::make_unique<FakeSafeBrowsingUrlCheckerImpl>(resource_type);
 }
+
+bool FakeSafeBrowsingService::CanCheckUrl(const GURL& url) const {
+  return url.SchemeIsHTTPOrHTTPS() || url.SchemeIs(url::kFtpScheme) ||
+         url.SchemeIsWSOrWSS();
+}

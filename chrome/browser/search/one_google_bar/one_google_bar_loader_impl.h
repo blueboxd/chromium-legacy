@@ -34,6 +34,8 @@ class OneGoogleBarLoaderImpl : public OneGoogleBarLoader {
 
   GURL GetLoadURLForTesting() const override;
 
+  bool SetOgdebValue(const std::string& value) override;
+
  private:
   class AuthenticatedURLLoader;
 
@@ -52,6 +54,7 @@ class OneGoogleBarLoaderImpl : public OneGoogleBarLoader {
 
   std::vector<OneGoogleCallback> callbacks_;
   std::unique_ptr<AuthenticatedURLLoader> pending_request_;
+  std::string ogdeb_value_;
 
   base::WeakPtrFactory<OneGoogleBarLoaderImpl> weak_ptr_factory_{this};
 

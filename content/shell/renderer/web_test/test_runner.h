@@ -43,6 +43,7 @@ class WebView;
 
 namespace content {
 class RenderView;
+struct TestPreferences;
 }
 
 namespace gin {
@@ -284,6 +285,12 @@ class TestRunner {
   void QueueNonLoadingScript(const std::string& script);
   void QueueLoad(const std::string& url, const std::string& target);
 
+  // Called from the TestRunnerBindings to inform that the test has modified
+  // the TestPreferences. This will update the WebkitPreferences in the renderer
+  // and the browser.
+  void OnTestPreferencesChanged(const TestPreferences& test_prefs,
+                                RenderFrame* frame);
+
   // Causes navigation actions just printout the intended navigation instead
   // of taking you to the page. This is used for cases like mailto, where you
   // don't actually want to open the mail program.
@@ -325,21 +332,10 @@ class TestRunner {
   void SetMockScreenOrientation(const std::string& orientation);
   void DisableMockScreenOrientation();
 
-  ///////////////////////////////////////////////////////////////////////////
-  // Methods modifying WebPreferences.
-
-  // Set the WebPreference that controls webkit's popup blocking.
   void SetPopupBlockingEnabled(bool block_popups);
-
-  void SetJavaScriptCanAccessClipboard(bool can_access);
-  void SetAllowFileAccessFromFileURLs(bool allow);
-  void OverridePreference(gin::Arguments* arguments);
 
   // Modify accept_languages in blink::mojom::RendererPreferences.
   void SetAcceptLanguages(const std::string& accept_languages);
-
-  // Enable or disable plugins.
-  void SetPluginsEnabled(bool enabled);
 
   ///////////////////////////////////////////////////////////////////////////
   // Methods that modify the state of TestRunner

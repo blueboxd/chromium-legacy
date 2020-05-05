@@ -78,9 +78,10 @@ class ProcessMemoryDump;
 
 namespace blink {
 
-class FontFaceCreationParams;
-class FontGlobalContext;
 class FontDescription;
+class FontFaceCreationParams;
+class FontFallbackMap;
+class FontGlobalContext;
 class SimpleFontData;
 
 enum class AlternateFontName {
@@ -269,6 +270,8 @@ class PLATFORM_EXPORT FontCache {
   void DumpFontPlatformDataCache(base::trace_event::ProcessMemoryDump*);
   void DumpShapeResultCache(base::trace_event::ProcessMemoryDump*);
 
+  FontFallbackMap& GetFontFallbackMap() { return *font_fallback_map_; }
+
   ~FontCache() = default;
 
  private:
@@ -379,6 +382,8 @@ class PLATFORM_EXPORT FontCache {
   // TODO(https://crbug.com/1061625): Move to the browser process for better
   // resource utilization.
   FontEnumerationCache font_enumeration_cache_;
+
+  Persistent<FontFallbackMap> font_fallback_map_;
 
   void PurgePlatformFontDataCache();
   void PurgeFallbackListShaperCache();

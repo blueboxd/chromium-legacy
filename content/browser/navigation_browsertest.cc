@@ -314,6 +314,7 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest, BrowserInitiatedNavigations) {
     EXPECT_EQ(url, observer.last_navigation_url());
     EXPECT_TRUE(observer.last_navigation_succeeded());
     EXPECT_FALSE(observer.last_initiator_origin().has_value());
+    EXPECT_FALSE(observer.last_initiator_routing_id());
   }
 
   RenderFrameHost* initial_rfh =
@@ -330,6 +331,7 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest, BrowserInitiatedNavigations) {
     EXPECT_EQ(url, observer.last_navigation_url());
     EXPECT_TRUE(observer.last_navigation_succeeded());
     EXPECT_FALSE(observer.last_initiator_origin().has_value());
+    EXPECT_FALSE(observer.last_initiator_routing_id());
   }
 
   // The RenderFrameHost should not have changed.
@@ -346,6 +348,7 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest, BrowserInitiatedNavigations) {
     EXPECT_EQ(url, observer.last_navigation_url());
     EXPECT_TRUE(observer.last_navigation_succeeded());
     EXPECT_FALSE(observer.last_initiator_origin().has_value());
+    EXPECT_FALSE(observer.last_initiator_routing_id());
   }
 
   // The RenderFrameHost should have changed.
@@ -366,6 +369,7 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest,
     EXPECT_EQ(url, observer.last_navigation_url());
     EXPECT_TRUE(observer.last_navigation_succeeded());
     EXPECT_FALSE(observer.last_initiator_origin().has_value());
+    EXPECT_FALSE(observer.last_initiator_routing_id());
   }
 
   RenderFrameHost* initial_rfh =
@@ -386,8 +390,13 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest,
     EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
     EXPECT_EQ(url, observer.last_navigation_url());
     EXPECT_TRUE(observer.last_navigation_succeeded());
-    EXPECT_EQ(shell()->web_contents()->GetMainFrame()->GetLastCommittedOrigin(),
+
+    RenderFrameHost* main_rfh = shell()->web_contents()->GetMainFrame();
+    EXPECT_EQ(main_rfh->GetLastCommittedOrigin(),
               observer.last_initiator_origin());
+    EXPECT_EQ(GlobalFrameRoutingId(main_rfh->GetProcess()->GetID(),
+                                   main_rfh->GetRoutingID()),
+              observer.last_initiator_routing_id());
   }
 
   // The RenderFrameHost should not have changed.
@@ -415,6 +424,8 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest,
           ->root()
           ->current_frame_host();
   url::Origin initial_origin = initial_rfh->GetLastCommittedOrigin();
+  GlobalFrameRoutingId initiator_routing_id(initial_rfh->GetProcess()->GetID(),
+                                            initial_rfh->GetRoutingID());
 
   // Simulate clicking on a cross-site link.
   {
@@ -436,6 +447,7 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest,
     EXPECT_EQ(url, observer.last_navigation_url());
     EXPECT_TRUE(observer.last_navigation_succeeded());
     EXPECT_EQ(initial_origin, observer.last_initiator_origin().value());
+    EXPECT_EQ(initiator_routing_id, observer.last_initiator_routing_id());
   }
 
   // The RenderFrameHost should not have changed unless site-per-process is
@@ -977,6 +989,177 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest,
       monitor.GetRequestInfo(url);
   ASSERT_TRUE(request.has_value());
   EXPECT_EQ(starting_page_origin, request->request_initiator);
+}
+
+IN_PROC_BROWSER_TEST_F(NavigationBrowserTest,
+                       RendererInitiatedCrossSiteNewWindowInitator) {
+  GURL url(embedded_test_server()->GetURL("/simple_links.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+
+  RenderFrameHost* initial_rfh =
+      static_cast<WebContentsImpl*>(shell()->web_contents())
+          ->GetFrameTree()
+          ->root()
+          ->current_frame_host();
+  GlobalFrameRoutingId initiator_routing_id(initial_rfh->GetProcess()->GetID(),
+                                            initial_rfh->GetRoutingID());
+
+  // Simulate clicking on a cross-site link.
+  {
+    const char kReplacePortNumber[] =
+        "window.domAutomationController.send(setPortNumber(%d));";
+    uint16_t port_number = embedded_test_server()->port();
+    GURL url = embedded_test_server()->GetURL("foo.com", "/title2.html");
+    bool success = false;
+    EXPECT_TRUE(ExecuteScriptAndExtractBool(
+        shell(), base::StringPrintf(kReplacePortNumber, port_number),
+        &success));
+    success = false;
+
+    ShellAddedObserver new_shell_observer;
+    EXPECT_TRUE(ExecuteScriptAndExtractBool(
+        shell(),
+        "window.domAutomationController.send(clickCrossSiteNewWindowLink());",
+        &success));
+    EXPECT_TRUE(success);
+
+    TestNavigationObserver observer(
+        new_shell_observer.GetShell()->web_contents());
+    observer.Wait();
+    EXPECT_EQ(url, observer.last_navigation_url());
+    EXPECT_TRUE(observer.last_navigation_succeeded());
+    EXPECT_EQ(initiator_routing_id, observer.last_initiator_routing_id());
+  }
+}
+
+IN_PROC_BROWSER_TEST_F(NavigationBrowserTest,
+                       RendererInitiatedWithSubframeInitator) {
+  GURL url(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(a())"));
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+
+  GURL subframe_url =
+      embedded_test_server()->GetURL("a.com", "/simple_links.html");
+  FrameTreeNode* main_frame =
+      static_cast<WebContentsImpl*>(shell()->web_contents())
+          ->GetFrameTree()
+          ->root();
+  NavigateFrameToURL(main_frame->child_at(0), subframe_url);
+
+  RenderFrameHostImpl* subframe_rfh =
+      main_frame->child_at(0)->current_frame_host();
+  GlobalFrameRoutingId initiator_routing_id(subframe_rfh->GetProcess()->GetID(),
+                                            subframe_rfh->GetRoutingID());
+
+  // Simulate clicking on a cross-site link.
+  {
+    const char kReplacePortNumber[] =
+        "window.domAutomationController.send(setPortNumber(%d));";
+    uint16_t port_number = embedded_test_server()->port();
+    GURL url = embedded_test_server()->GetURL("foo.com", "/title2.html");
+    bool success = false;
+    EXPECT_TRUE(ExecuteScriptAndExtractBool(
+        subframe_rfh, base::StringPrintf(kReplacePortNumber, port_number),
+        &success));
+    success = false;
+
+    ShellAddedObserver new_shell_observer;
+    EXPECT_TRUE(ExecuteScriptAndExtractBool(
+        subframe_rfh,
+        "window.domAutomationController.send(clickCrossSiteNewWindowLink());",
+        &success));
+    EXPECT_TRUE(success);
+
+    TestNavigationObserver observer(
+        new_shell_observer.GetShell()->web_contents());
+    observer.Wait();
+    EXPECT_EQ(url, observer.last_navigation_url());
+    EXPECT_TRUE(observer.last_navigation_succeeded());
+    EXPECT_EQ(initiator_routing_id, observer.last_initiator_routing_id());
+  }
+}
+
+IN_PROC_BROWSER_TEST_F(NavigationBrowserTest,
+                       InitiatorFrameStateConsistentAtDidStartNavigation) {
+  GURL form_page_url(embedded_test_server()->GetURL(
+      "a.com", "/form_that_posts_to_echoall.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), form_page_url));
+
+  // Give the form an action that will navigate to a slow page.
+  GURL form_action_url(embedded_test_server()->GetURL("b.com", "/slow?100"));
+  EXPECT_TRUE(
+      ExecJs(shell(), JsReplace("document.getElementById('form').action = $1",
+                                form_action_url)));
+
+  // Open a new window that can be targeted by the form submission.
+  WebContents* form_contents = shell()->web_contents();
+  ShellAddedObserver new_shell_observer;
+  EXPECT_TRUE(ExecJs(shell(), "window.open('about:blank', 'target_frame');"));
+  WebContents* popup_contents = new_shell_observer.GetShell()->web_contents();
+
+  EXPECT_TRUE(
+      ExecJs(form_contents,
+             "document.getElementById('form').target = 'target_frame';"));
+
+  TestNavigationManager popup_manager(popup_contents, form_action_url);
+  TestNavigationManager form_manager(
+      form_contents, embedded_test_server()->GetURL("a.com", "/title2.html"));
+
+  // Submit the form and navigate the form's page.
+  EXPECT_TRUE(ExecJs(form_contents, "window.location.href = 'title2.html'"));
+  EXPECT_TRUE(
+      ExecJs(form_contents, "document.getElementById('form').submit();"));
+
+  // The form page's navigation should start prior to the form navigation.
+  EXPECT_TRUE(form_manager.WaitForRequestStart());
+  EXPECT_FALSE(popup_manager.GetNavigationHandle());
+
+  // When the navigation starts for the popup, ensure that the original page has
+  // not finished navigating. If this was not the case, we could not make any
+  // statements on the validity of initiator state during a navigation.
+  // Navigation handles are only available prior to DidFinishNavigation().
+  EXPECT_TRUE(popup_manager.WaitForRequestStart());
+  EXPECT_TRUE(form_manager.GetNavigationHandle());
+}
+
+IN_PROC_BROWSER_TEST_F(NavigationBrowserTest,
+                       RendererInitiatedMiddleClickInitator) {
+  GURL url(embedded_test_server()->GetURL("/simple_links.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+
+  RenderFrameHost* initial_rfh =
+      static_cast<WebContentsImpl*>(shell()->web_contents())
+          ->GetFrameTree()
+          ->root()
+          ->current_frame_host();
+  GlobalFrameRoutingId initiator_routing_id(initial_rfh->GetProcess()->GetID(),
+                                            initial_rfh->GetRoutingID());
+
+  // Simulate middle-clicking on a cross-site link.
+  {
+    const char kReplacePortNumber[] =
+        "window.domAutomationController.send(setPortNumber(%d));";
+    uint16_t port_number = embedded_test_server()->port();
+    GURL url = embedded_test_server()->GetURL("foo.com", "/title2.html");
+    bool success = false;
+    EXPECT_TRUE(ExecuteScriptAndExtractBool(
+        shell(), base::StringPrintf(kReplacePortNumber, port_number),
+        &success));
+    success = false;
+
+    ShellAddedObserver new_shell_observer;
+    EXPECT_EQ(true, EvalJs(shell(), R"(
+      target = document.getElementById('cross_site_link');
+      var evt = new MouseEvent("click", {"button": 1 /* middle_button */});
+      target.dispatchEvent(evt);)"));
+
+    TestNavigationObserver observer(
+        new_shell_observer.GetShell()->web_contents());
+    observer.Wait();
+    EXPECT_EQ(url, observer.last_navigation_url());
+    EXPECT_TRUE(observer.last_navigation_succeeded());
+    EXPECT_EQ(initiator_routing_id, observer.last_initiator_routing_id());
+  }
 }
 
 // Data URLs can have a reference fragment like any other URLs. This test makes

@@ -343,6 +343,8 @@ void DriverGL::InitializeDynamicBindings(const GLVersionInfo* ver,
       gfx::HasExtension(extensions, "GL_ARB_texture_multisample");
   ext.b_GL_ARB_texture_storage =
       gfx::HasExtension(extensions, "GL_ARB_texture_storage");
+  ext.b_GL_ARB_texture_swizzle =
+      gfx::HasExtension(extensions, "GL_ARB_texture_swizzle");
   ext.b_GL_ARB_timer_query =
       gfx::HasExtension(extensions, "GL_ARB_timer_query");
   ext.b_GL_ARB_transform_feedback2 =
@@ -411,8 +413,12 @@ void DriverGL::InitializeDynamicBindings(const GLVersionInfo* ver,
       gfx::HasExtension(extensions, "GL_EXT_texture_buffer");
   ext.b_GL_EXT_texture_buffer_object =
       gfx::HasExtension(extensions, "GL_EXT_texture_buffer_object");
+  ext.b_GL_EXT_texture_format_BGRA8888 =
+      gfx::HasExtension(extensions, "GL_EXT_texture_format_BGRA8888");
   ext.b_GL_EXT_texture_storage =
       gfx::HasExtension(extensions, "GL_EXT_texture_storage");
+  ext.b_GL_EXT_texture_swizzle =
+      gfx::HasExtension(extensions, "GL_EXT_texture_swizzle");
   ext.b_GL_EXT_timer_query =
       gfx::HasExtension(extensions, "GL_EXT_timer_query");
   ext.b_GL_EXT_transform_feedback =

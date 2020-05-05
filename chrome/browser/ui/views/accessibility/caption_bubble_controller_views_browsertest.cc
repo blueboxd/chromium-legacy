@@ -12,6 +12,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/views/accessibility/caption_bubble.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/common/caption.mojom.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -96,25 +97,35 @@ class CaptionBubbleControllerViewsTest : public InProcessBrowserTest {
     EXPECT_EQ(bubble_bounds.bottom(), anchor_bounds.bottom() - 48);
   }
 
+  void OnPartialTranscription(std::string text) {
+    GetController()->OnTranscription(
+        chrome::mojom::TranscriptionResult::New(text, false));
+  }
+
+  void OnFinalTranscription(std::string text) {
+    GetController()->OnTranscription(
+        chrome::mojom::TranscriptionResult::New(text, true));
+  }
+
  private:
   std::unique_ptr<CaptionBubbleControllerViews> controller_;
 };
 
 IN_PROC_BROWSER_TEST_F(CaptionBubbleControllerViewsTest, ShowsCaptionInBubble) {
-  GetController()->OnTranscription("Taylor");
+  OnPartialTranscription("Taylor");
   EXPECT_TRUE(GetCaptionWidget()->IsVisible());
   EXPECT_EQ("Taylor", GetLabelText());
-  GetController()->OnTranscription(
+  OnPartialTranscription(
       "Taylor Alison Swift (born December 13, "
       "1989)");
   EXPECT_EQ("Taylor Alison Swift (born December 13, 1989)", GetLabelText());
 
   // Hides the bubble when set to the empty string.
-  GetController()->OnTranscription("");
+  OnPartialTranscription("");
   EXPECT_FALSE(GetCaptionWidget()->IsVisible());
 
   // Shows it again when the caption is no longer empty.
-  GetController()->OnTranscription(
+  OnPartialTranscription(
       "Taylor Alison Swift (born December 13, "
       "1989) is an American singer-songwriter.");
   EXPECT_TRUE(GetCaptionWidget()->IsVisible());
@@ -128,13 +139,13 @@ IN_PROC_BROWSER_TEST_F(CaptionBubbleControllerViewsTest, LaysOutCaptionLabel) {
   // A short caption is bottom-aligned with the bubble. The bubble bounds
   // are inset by 4 dip of margin, add another 2 dip of margin for the label's
   // container bounds to get 6 dip (spec).
-  GetController()->OnTranscription("Cats rock");
+  OnPartialTranscription("Cats rock");
   EXPECT_EQ(GetLabel()->GetBoundsInScreen().bottom() + 2,
             GetBubble()->GetBoundsInScreen().bottom());
 
   // Ensure overflow by using a very long caption, should still be aligned
   // with the bottom of the bubble.
-  GetController()->OnTranscription(
+  OnPartialTranscription(
       "Taylor Alison Swift (born December 13, 1989) is an American "
       "singer-songwriter. She is known for narrative songs about her personal "
       "life, which have received widespread media coverage. At age 14, Swift "
@@ -148,12 +159,12 @@ IN_PROC_BROWSER_TEST_F(CaptionBubbleControllerViewsTest,
                        CaptionTitleShownAtFirst) {
   // With one line of text, the title is visible and positioned between the
   // top of the bubble and top of the label.
-  GetController()->OnTranscription("Cats rock");
+  OnPartialTranscription("Cats rock");
   EXPECT_TRUE(GetTitle()->GetVisible());
   EXPECT_EQ(GetTitle()->GetBoundsInScreen().bottom(),
             GetLabel()->GetBoundsInScreen().y());
 
-  GetController()->OnTranscription("Cats rock\nDogs too");
+  OnPartialTranscription("Cats rock\nDogs too");
   EXPECT_FALSE(GetTitle()->GetVisible());
 }
 
@@ -162,7 +173,7 @@ IN_PROC_BROWSER_TEST_F(CaptionBubbleControllerViewsTest, BubblePositioning) {
       BrowserView::GetBrowserViewForBrowser(browser())->GetContentsView();
 
   browser()->window()->SetBounds(gfx::Rect(10, 10, 800, 600));
-  GetController()->OnTranscription("Mantis shrimp have 12-16 photoreceptors");
+  OnPartialTranscription("Mantis shrimp have 12-16 photoreceptors");
   ExpectInBottomCenter(contents_view->GetBoundsInScreen(),
                        GetCaptionWidget()->GetClientAreaBoundsInScreen());
   EXPECT_EQ(GetBubble()->GetBoundsInScreen().width(), 548);
@@ -282,7 +293,7 @@ IN_PROC_BROWSER_TEST_F(CaptionBubbleControllerViewsTest, BubblePositioning) {
 }
 
 IN_PROC_BROWSER_TEST_F(CaptionBubbleControllerViewsTest, ShowsAndHidesError) {
-  GetController()->OnTranscription("Elephants' trunks average 6 feet long.");
+  OnPartialTranscription("Elephants' trunks average 6 feet long.");
   EXPECT_TRUE(GetTitle()->GetVisible());
   EXPECT_TRUE(GetLabel()->GetVisible());
   EXPECT_FALSE(GetErrorMessage()->GetVisible());
@@ -295,7 +306,7 @@ IN_PROC_BROWSER_TEST_F(CaptionBubbleControllerViewsTest, ShowsAndHidesError) {
   EXPECT_TRUE(GetErrorIcon()->GetVisible());
 
   // Setting text during an error shouldn't cause the error to disappear.
-  GetController()->OnTranscription("Elephant tails average 4-5 feet long.");
+  OnPartialTranscription("Elephant tails average 4-5 feet long.");
   EXPECT_FALSE(GetTitle()->GetVisible());
   EXPECT_FALSE(GetLabel()->GetVisible());
   EXPECT_TRUE(GetErrorMessage()->GetVisible());
@@ -310,7 +321,7 @@ IN_PROC_BROWSER_TEST_F(CaptionBubbleControllerViewsTest, ShowsAndHidesError) {
 }
 
 IN_PROC_BROWSER_TEST_F(CaptionBubbleControllerViewsTest, CloseButtonCloses) {
-  GetController()->OnTranscription("Elephants have 3-4 toenails per foot");
+  OnPartialTranscription("Elephants have 3-4 toenails per foot");
   EXPECT_TRUE(GetCaptionWidget());
   ClickCloseButton();
   EXPECT_FALSE(GetCaptionWidget());
@@ -318,7 +329,7 @@ IN_PROC_BROWSER_TEST_F(CaptionBubbleControllerViewsTest, CloseButtonCloses) {
 
 IN_PROC_BROWSER_TEST_F(CaptionBubbleControllerViewsTest,
                        MovesWithArrowsWhenFocused) {
-  GetController()->OnTranscription("Nearly all ants are female.");
+  OnPartialTranscription("Nearly all ants are female.");
   // Not focused initially.
   EXPECT_FALSE(GetBubble()->HasFocus());
 
@@ -376,7 +387,7 @@ IN_PROC_BROWSER_TEST_F(CaptionBubbleControllerViewsTest,
   int bubbleHeight = 48;
 
   GetController()->UpdateCaptionStyle(base::nullopt);
-  GetController()->OnTranscription("Hamsters' teeth never stop growing");
+  OnPartialTranscription("Hamsters' teeth never stop growing");
   EXPECT_EQ(textSize, GetLabel()->font_list().GetFontSize());
   EXPECT_EQ(textSize, GetTitle()->font_list().GetFontSize());
   EXPECT_EQ(lineHeight, GetLabel()->GetLineHeight());
@@ -435,6 +446,24 @@ IN_PROC_BROWSER_TEST_F(CaptionBubbleControllerViewsTest,
   EXPECT_EQ(lineHeight / 2, GetErrorMessage()->GetLineHeight());
   // The error icon height remains unchanged at 20.
   EXPECT_GT(GetBubble()->GetPreferredSize().height(), lineHeight / 2 + 20);
+}
+
+IN_PROC_BROWSER_TEST_F(CaptionBubbleControllerViewsTest,
+                       PartialAndFinalTranscriptions) {
+  OnPartialTranscription("No");
+  EXPECT_EQ("No", GetLabelText());
+  OnPartialTranscription("No human");
+  EXPECT_EQ("No human", GetLabelText());
+  OnFinalTranscription("No human has ever seen");
+  EXPECT_EQ("No human has ever seen", GetLabelText());
+  OnFinalTranscription(" a living");
+  EXPECT_EQ("No human has ever seen a living", GetLabelText());
+  OnPartialTranscription(" giant");
+  EXPECT_EQ("No human has ever seen a living giant", GetLabelText());
+  OnPartialTranscription("");
+  EXPECT_EQ("No human has ever seen a living", GetLabelText());
+  OnPartialTranscription(" giant squid");
+  EXPECT_EQ("No human has ever seen a living giant squid", GetLabelText());
 }
 
 }  // namespace captions

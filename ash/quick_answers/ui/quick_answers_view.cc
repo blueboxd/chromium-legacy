@@ -16,6 +16,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/background.h"
+#include "ui/views/controls/button/button_controller.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/image_view.h"
@@ -122,10 +123,10 @@ class QuickAnswersViewHandler : public ui::EventHandler {
  public:
   explicit QuickAnswersViewHandler(QuickAnswersView* quick_answers_view)
       : quick_answers_view_(quick_answers_view) {
-    // QuickAnswersView is a companion view of a menu. Menu host widget
-    // sets mouse capture to receive all mouse events. Hence a pre-target
-    // handler is needed to process mouse events for QuickAnswersView.
-    Shell::Get()->AddPreTargetHandler(this);
+    // QuickAnswersView is a companion view of a menu. Menu host widget sets
+    // mouse capture as well as a pre-target handler, so we need to register one
+    // here as well to intercept events for QuickAnswersView.
+    Shell::Get()->AddPreTargetHandler(this, ui::EventTarget::Priority::kSystem);
   }
 
   ~QuickAnswersViewHandler() override {
@@ -157,11 +158,24 @@ class QuickAnswersViewHandler : public ui::EventHandler {
       views::View::ConvertPointFromScreen(quick_answers_view_, &location);
       to_dispatch->set_location(location);
       ui::Event::DispatcherApi(to_dispatch).set_target(quick_answers_view_);
+
+      // Convert touch-event to gesture before dispatching since views do not
+      // process touch-events.
+      std::unique_ptr<ui::GestureEvent> gesture_event;
+      if (to_dispatch->type() == ui::ET_TOUCH_PRESSED) {
+        gesture_event = std::make_unique<ui::GestureEvent>(
+            to_dispatch->x(), to_dispatch->y(), ui::EF_NONE,
+            base::TimeTicks::Now(),
+            ui::GestureEventDetails(ui::ET_GESTURE_TAP));
+        to_dispatch = gesture_event.get();
+      }
+
       DoDispatchEvent(quick_answers_view_, to_dispatch);
 
-      // Prevent the currently shown context-menu from receiving click events
-      // (which are outside its bounds) and thus getting dismissed.
-      if (event->type() == ui::EventType::ET_MOUSE_PRESSED)
+      // Clicks outside menu-bounds (including those inside QuickAnswersView)
+      // can dismiss the menu. Some click-events, like those meant for the
+      // retry-button, should not be propagated to the menu to prevent so.
+      if (quick_answers_view_->preempt_last_click_event())
         event->StopPropagation();
     }
 
@@ -176,6 +190,14 @@ class QuickAnswersViewHandler : public ui::EventHandler {
   // Returns true if event was consumed by |view| or its children.
   bool DoDispatchEvent(views::View* view, ui::LocatedEvent* event) {
     DCHECK(view && event);
+
+    // Out-of-bounds `ET_MOUSE_MOVED` events are allowed to sift through to
+    // clear any set hover-state.
+    // TODO (siabhijeet): Two-phased dispatching via widget should fix this.
+    if (!view->HitTestPoint(event->location()) &&
+        event->type() != ui::ET_MOUSE_MOVED) {
+      return false;
+    }
 
     // Post-order dispatch the event on child views in reverse Z-order.
     auto children = view->GetChildrenInZOrder();
@@ -195,15 +217,9 @@ class QuickAnswersViewHandler : public ui::EventHandler {
       if (DoDispatchEvent(child, to_dispatch.get()->AsLocatedEvent()))
         return true;
     }
-    view->OnEvent(event);
 
-    // The deepest button explicitly consumes the events to avoid simultaneous
-    // firing of any enclosing buttons, since the |event| may not always be set
-    // as handled (like for `ET_MOUSE_RELEASED`).
-    // TODO (siabhijeet): Avoid housing a button inside another altogether.
-    bool button_pressed =
-        views::Button::AsButton(view) && view->HitTestPoint(event->location());
-    return (event->handled() || button_pressed);
+    view->OnEvent(event);
+    return event->handled();
   }
 
   QuickAnswersView* const quick_answers_view_;
@@ -222,6 +238,10 @@ QuickAnswersView::QuickAnswersView(const gfx::Rect& anchor_view_bounds,
           std::make_unique<QuickAnswersViewHandler>(this)) {
   InitLayout();
   InitWidget();
+
+  // This is because waiting for mouse-release to fire buttons would be too
+  // late, since mouse-press dismisses the menu.
+  SetButtonNotifyActionToOnPress(this);
 
   // Allow tooltips to be shown despite menu-controller owning capture.
   GetWidget()->SetNativeWindowProperty(
@@ -258,18 +278,26 @@ void QuickAnswersView::StateChanged(views::Button::ButtonState old_state) {
 
 void QuickAnswersView::ButtonPressed(views::Button* sender,
                                      const ui::Event& event) {
+  preempt_last_click_event_ = false;
   if (sender == dogfood_button_) {
     controller_->OnDogfoodButtonPressed();
     return;
   }
   if (sender == retry_label_) {
     controller_->OnRetryLabelPressed();
+    preempt_last_click_event_ = true;
     return;
   }
   if (sender == this) {
     SendQuickAnswersQuery();
     return;
   }
+}
+
+void QuickAnswersView::SetButtonNotifyActionToOnPress(views::Button* button) {
+  DCHECK(button);
+  button->button_controller()->set_notify_action(
+      views::ButtonController::NotifyAction::kOnPress);
 }
 
 void QuickAnswersView::SendQuickAnswersQuery() {
@@ -314,6 +342,7 @@ void QuickAnswersView::ShowRetryView() {
       description_container->AddChildView(std::make_unique<views::LabelButton>(
           /*listener=*/this, base::UTF8ToUTF16(kDefaultRetryStr)));
   retry_label_->SetEnabledTextColors(gfx::kGoogleBlue600);
+  SetButtonNotifyActionToOnPress(retry_label_);
 }
 
 void QuickAnswersView::AddAssistantIcon() {
@@ -340,6 +369,7 @@ void QuickAnswersView::AddDogfoodButton() {
   dogfood_button->SetTooltipText(l10n_util::GetStringUTF16(
       IDS_ASH_QUICK_ANSWERS_DOGFOOD_BUTTON_TOOLTIP_TEXT));
   dogfood_button_ = dogfood_view->AddChildView(std::move(dogfood_button));
+  SetButtonNotifyActionToOnPress(dogfood_button_);
 }
 
 void QuickAnswersView::InitLayout() {

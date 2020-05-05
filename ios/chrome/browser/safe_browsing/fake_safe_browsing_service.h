@@ -29,6 +29,7 @@ class FakeSafeBrowsingService : public SafeBrowsingService {
   std::unique_ptr<safe_browsing::SafeBrowsingUrlCheckerImpl> CreateUrlChecker(
       safe_browsing::ResourceType resource_type,
       web::WebState* web_state) override;
+  bool CanCheckUrl(const GURL& url) const override;
 
  protected:
   ~FakeSafeBrowsingService() override;

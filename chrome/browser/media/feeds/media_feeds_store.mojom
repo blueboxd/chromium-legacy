@@ -90,6 +90,9 @@ enum FetchResult {
 
   // The feed failed to fetch because the feed data was invalid.
   kInvalidFeed = 4,
+
+  // The feed was reset while the feed was being fetched.
+  kFailedDueToResetWhileInflight = 5,
 };
 
 // The reason why a feed has been reset. This enum is committed to storage so
@@ -398,8 +401,7 @@ interface MediaFeedsStore {
   GetItemsForMediaFeed(int64 feed_id) => (array<MediaFeedItem> items);
 
   // Fetch the details of a previously-discovered media feed and store them in
-  // media history. The feed ID and URL both come from the media history store.
-  // The feed ID is the unique ID for the feed and the URL is the location where
-  // the feed was discovered.
-  FetchMediaFeed(int64 feed_id, url.mojom.Url url) => ();
+  // media history. The feed ID is the unique ID for the feed from the Media
+  // History store.
+  FetchMediaFeed(int64 feed_id) => ();
 };

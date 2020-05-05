@@ -298,6 +298,7 @@ class TestRunnerBindings : public gin::Wrappable<TestRunnerBindings> {
   TestRunnerForSpecificView* const view_runner_;
   RenderFrame* const frame_;
   SpellCheckClient* const spell_check_;
+  TestPreferences prefs_;
 
   DISALLOW_COPY_AND_ASSIGN(TestRunnerBindings);
 };
@@ -974,18 +975,76 @@ void TestRunnerBindings::SetPopupBlockingEnabled(bool block_popups) {
 }
 
 void TestRunnerBindings::SetJavaScriptCanAccessClipboard(bool can_access) {
-  if (runner_)
-    runner_->SetJavaScriptCanAccessClipboard(can_access);
+  // WebPreferences aren't propagated between frame tree fragments, so only
+  // allow this in the main frame.
+  CHECK(frame_->IsMainFrame());
+
+  prefs_.java_script_can_access_clipboard = can_access;
+  runner_->OnTestPreferencesChanged(prefs_, frame_);
 }
 
 void TestRunnerBindings::SetAllowFileAccessFromFileURLs(bool allow) {
-  if (runner_)
-    runner_->SetAllowFileAccessFromFileURLs(allow);
+  // WebPreferences aren't propagated between frame tree fragments, so only
+  // allow this in the main frame.
+  CHECK(frame_->IsMainFrame());
+
+  prefs_.allow_file_access_from_file_urls = allow;
+  runner_->OnTestPreferencesChanged(prefs_, frame_);
 }
 
 void TestRunnerBindings::OverridePreference(gin::Arguments* args) {
-  if (runner_)
-    runner_->OverridePreference(args);
+  if (args->Length() != 2) {
+    args->ThrowTypeError("overridePreference expects 2 arguments");
+    return;
+  }
+
+  std::string key;
+  if (!args->GetNext(&key)) {
+    args->ThrowError();
+    return;
+  }
+
+  if (key == "WebKitDefaultFontSize") {
+    ConvertAndSet(args, &prefs_.default_font_size);
+  } else if (key == "WebKitMinimumFontSize") {
+    ConvertAndSet(args, &prefs_.minimum_font_size);
+  } else if (key == "WebKitDefaultTextEncodingName") {
+    ConvertAndSet(args, &prefs_.default_text_encoding_name);
+  } else if (key == "WebKitJavaScriptEnabled") {
+    ConvertAndSet(args, &prefs_.java_script_enabled);
+  } else if (key == "WebKitSupportsMultipleWindows") {
+    ConvertAndSet(args, &prefs_.supports_multiple_windows);
+  } else if (key == "WebKitDisplayImagesKey") {
+    ConvertAndSet(args, &prefs_.loads_images_automatically);
+  } else if (key == "WebKitPluginsEnabled") {
+    ConvertAndSet(args, &prefs_.plugins_enabled);
+  } else if (key == "WebKitTabToLinksPreferenceKey") {
+    ConvertAndSet(args, &prefs_.tabs_to_links);
+  } else if (key == "WebKitCSSGridLayoutEnabled") {
+    ConvertAndSet(args, &prefs_.experimental_css_grid_layout_enabled);
+  } else if (key == "WebKitHyperlinkAuditingEnabled") {
+    ConvertAndSet(args, &prefs_.hyperlink_auditing_enabled);
+  } else if (key == "WebKitEnableCaretBrowsing") {
+    ConvertAndSet(args, &prefs_.caret_browsing_enabled);
+  } else if (key == "WebKitAllowRunningInsecureContent") {
+    ConvertAndSet(args, &prefs_.allow_running_of_insecure_content);
+  } else if (key == "WebKitDisableReadingFromCanvas") {
+    ConvertAndSet(args, &prefs_.disable_reading_from_canvas);
+  } else if (key == "WebKitStrictMixedContentChecking") {
+    ConvertAndSet(args, &prefs_.strict_mixed_content_checking);
+  } else if (key == "WebKitStrictPowerfulFeatureRestrictions") {
+    ConvertAndSet(args, &prefs_.strict_powerful_feature_restrictions);
+  } else if (key == "WebKitShouldRespectImageOrientation") {
+    ConvertAndSet(args, &prefs_.should_respect_image_orientation);
+  } else if (key == "WebKitWebSecurityEnabled") {
+    ConvertAndSet(args, &prefs_.web_security_enabled);
+  } else if (key == "WebKitSpatialNavigationEnabled") {
+    ConvertAndSet(args, &prefs_.spatial_navigation_enabled);
+  } else {
+    args->ThrowTypeError("Invalid name for preference: " + key);
+  }
+
+  runner_->OnTestPreferencesChanged(prefs_, frame_);
 }
 
 void TestRunnerBindings::SetAcceptLanguages(
@@ -997,8 +1056,12 @@ void TestRunnerBindings::SetAcceptLanguages(
 }
 
 void TestRunnerBindings::SetPluginsEnabled(bool enabled) {
-  if (runner_)
-    runner_->SetPluginsEnabled(enabled);
+  // WebPreferences aren't propagated between frame tree fragments, so only
+  // allow this in the main frame.
+  CHECK(frame_->IsMainFrame());
+
+  prefs_.plugins_enabled = enabled;
+  runner_->OnTestPreferencesChanged(prefs_, frame_);
 }
 
 void TestRunnerBindings::DumpEditingCallbacks() {
@@ -2063,6 +2126,20 @@ void TestRunner::QueueLoad(const std::string& url, const std::string& target) {
   work_queue_.AddWork(new WorkItemLoad(full_url, target));
 }
 
+void TestRunner::OnTestPreferencesChanged(const TestPreferences& test_prefs,
+                                          RenderFrame* frame) {
+  RenderView* render_view = frame->GetRenderView();
+  WebPreferences web_prefs = render_view->GetWebkitPreferences();
+
+  // Turns the TestPreferences into WebPreferences.
+  ExportWebTestSpecificPreferences(test_prefs, &web_prefs);
+
+  render_view->SetWebkitPreferences(web_prefs);
+
+  auto* view_proxy = static_cast<WebViewTestProxy*>(render_view);
+  view_proxy->blink_test_runner()->OverridePreferences(web_prefs);
+}
+
 void TestRunner::SetCustomPolicyDelegate(gin::Arguments* args) {
   bool value;
   args->GetNext(&value);
@@ -2177,72 +2254,6 @@ void TestRunner::SetPopupBlockingEnabled(bool block_popups) {
   blink_test_runner_->SetPopupBlockingEnabled(block_popups);
 }
 
-void TestRunner::SetJavaScriptCanAccessClipboard(bool can_access) {
-  blink_test_runner_->Preferences()->java_script_can_access_clipboard =
-      can_access;
-  blink_test_runner_->ApplyPreferences();
-}
-
-void TestRunner::SetAllowFileAccessFromFileURLs(bool allow) {
-  blink_test_runner_->Preferences()->allow_file_access_from_file_urls = allow;
-  blink_test_runner_->ApplyPreferences();
-}
-
-void TestRunner::OverridePreference(gin::Arguments* args) {
-  if (args->Length() != 2) {
-    args->ThrowTypeError("overridePreference expects 2 arguments");
-    return;
-  }
-
-  std::string key;
-  if (!args->GetNext(&key)) {
-    args->ThrowError();
-    return;
-  }
-
-  TestPreferences* prefs = blink_test_runner_->Preferences();
-  if (key == "WebKitDefaultFontSize") {
-    ConvertAndSet(args, &prefs->default_font_size);
-  } else if (key == "WebKitMinimumFontSize") {
-    ConvertAndSet(args, &prefs->minimum_font_size);
-  } else if (key == "WebKitDefaultTextEncodingName") {
-    ConvertAndSet(args, &prefs->default_text_encoding_name);
-  } else if (key == "WebKitJavaScriptEnabled") {
-    ConvertAndSet(args, &prefs->java_script_enabled);
-  } else if (key == "WebKitSupportsMultipleWindows") {
-    ConvertAndSet(args, &prefs->supports_multiple_windows);
-  } else if (key == "WebKitDisplayImagesKey") {
-    ConvertAndSet(args, &prefs->loads_images_automatically);
-  } else if (key == "WebKitPluginsEnabled") {
-    ConvertAndSet(args, &prefs->plugins_enabled);
-  } else if (key == "WebKitTabToLinksPreferenceKey") {
-    ConvertAndSet(args, &prefs->tabs_to_links);
-  } else if (key == "WebKitCSSGridLayoutEnabled") {
-    ConvertAndSet(args, &prefs->experimental_css_grid_layout_enabled);
-  } else if (key == "WebKitHyperlinkAuditingEnabled") {
-    ConvertAndSet(args, &prefs->hyperlink_auditing_enabled);
-  } else if (key == "WebKitEnableCaretBrowsing") {
-    ConvertAndSet(args, &prefs->caret_browsing_enabled);
-  } else if (key == "WebKitAllowRunningInsecureContent") {
-    ConvertAndSet(args, &prefs->allow_running_of_insecure_content);
-  } else if (key == "WebKitDisableReadingFromCanvas") {
-    ConvertAndSet(args, &prefs->disable_reading_from_canvas);
-  } else if (key == "WebKitStrictMixedContentChecking") {
-    ConvertAndSet(args, &prefs->strict_mixed_content_checking);
-  } else if (key == "WebKitStrictPowerfulFeatureRestrictions") {
-    ConvertAndSet(args, &prefs->strict_powerful_feature_restrictions);
-  } else if (key == "WebKitShouldRespectImageOrientation") {
-    ConvertAndSet(args, &prefs->should_respect_image_orientation);
-  } else if (key == "WebKitWebSecurityEnabled") {
-    ConvertAndSet(args, &prefs->web_security_enabled);
-  } else if (key == "WebKitSpatialNavigationEnabled") {
-    ConvertAndSet(args, &prefs->spatial_navigation_enabled);
-  } else {
-    args->ThrowTypeError("Invalid name for preference: " + key);
-  }
-  blink_test_runner_->ApplyPreferences();
-}
-
 std::string TestRunner::GetAcceptLanguages() const {
   return web_test_runtime_flags_.accept_languages();
 }
@@ -2256,11 +2267,6 @@ void TestRunner::SetAcceptLanguages(const std::string& accept_languages) {
 
   for (WebViewTestProxy* window : test_interfaces_->GetWindowList())
     window->GetWebView()->AcceptLanguagesChanged();
-}
-
-void TestRunner::SetPluginsEnabled(bool enabled) {
-  blink_test_runner_->Preferences()->plugins_enabled = enabled;
-  blink_test_runner_->ApplyPreferences();
 }
 
 void TestRunner::DumpEditingCallbacks() {

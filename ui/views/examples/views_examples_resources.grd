@@ -9,6 +9,141 @@
   </outputs>
   <release seq="1" allow_pseudo="false">
     <messages fallback_to_english="true">
+      <!-- textfield example -->
+      <message translateable="false" name="IDS_TEXTFIELD_SELECT_LABEL">
+        Textfield
+      </message>
+      <message translateable="false" name="IDS_TEXTFIELD_PASSWORD_PLACEHOLDER">
+        password
+      </message>
+      <message translateable="false" name="IDS_TEXTFIELD_DISABLED_PLACEHOLDER">
+        disabled
+      </message>
+      <message translateable="false" name="IDS_TEXTFFIELD_READ_ONLY_PLACEHOLDER">
+        read only
+      </message>
+      <message translateable="false" name="IDS_TEXTFIELD_NAME_LABEL">
+        Name:
+      </message>
+      <message translateable="false" name="IDS_TEXTFIELD_PASSWORD_LABEL">
+        Password:
+      </message>
+      <message translateable="false" name="IDS_TEXTFIELD_DISABLED_LABEL">
+        Disabled:
+      </message>
+      <message translateable="false" name="IDS_TEXTFIELD_READ_ONLY_LABEL">
+        Read Only:
+      </message>
+      <message translateable="false" name="IDS_TEXTFIELD_INVALID_LABEL">
+        Invalid:
+      </message>
+      <message translateable="false" name="IDS_TEXTFIELD_RTL_LABEL">
+        RTL:
+      </message>
+      <message translateable="false" name="IDS_TEXTFIELD_SHOW_PASSWORD_LABEL">
+        Show password
+      </message>
+      <message translateable="false" name="IDS_TEXTFIELD_BACKGROUND_LABEL">
+        Set non-default background
+      </message>
+      <message translateable="false" name="IDS_TEXTFIELD_CLEAR_LABEL">
+        Clear All
+      </message>
+      <message translateable="false" name="IDS_TEXTFIELD_APPEND_LABEL">
+        Append
+      </message>
+      <message translateable="false" name="IDS_TEXTFIELD_SET_LABEL">
+        Set
+      </message>
+      <message translateable="false" name="IDS_TEXTFIELD_SET_STYLE_LABEL">
+        Set Styles
+      </message>
+      <message translateable="false" name="IDS_TEXTFIELD_APPEND_UPDATE_TEXT">
+        [append]
+      </message>
+      <message translateable="false" name="IDS_TEXTFIELD_SET_UPDATE_TEXT">
+        [set]
+      </message>
+
+      <!-- throbber example -->
+      <message translateable="false" name="IDS_THROBBER_SELECT_LABEL">
+        Throbber
+      </message>
+
+      <!-- toggle button example -->
+      <message translateable="false" name="IDS_TOGGLE_BUTTON_SELECT_LABEL">
+        Toggle Button
+      </message>
+
+      <!-- tree view example -->
+      <message translateable="false" name="IDS_TREE_VIEW_SELECTED_LABEL">
+        Selected
+      </message>
+      <message translateable="false" name="IDS_TREE_VIEW_SELECT_LABEL">
+        Tree View
+      </message>
+      <message translateable="false" name="IDS_TREE_VIEW_ROOT_NODE_LABEL">
+        root
+      </message>
+      <message translateable="false" name="IDS_TREE_VIEW_COLOR_NODE_LABEL">
+        colors
+      </message>
+      <message translateable="false" name="IDS_TREE_VIEW_COLOR_RED_LABEL">
+        red
+      </message>
+      <message translateable="false" name="IDS_TREE_VIEW_COLOR_GREEN_LABEL">
+        green
+      </message>
+      <message translateable="false" name="IDS_TREE_VIEW_COLOR_BLUE_LABEL">
+        blue
+      </message>
+      <message translateable="false" name="IDS_TREE_VIEW_SHEEP_NODE_LABEL">
+        sheep
+      </message>
+      <message translateable="false" name="IDS_TREE_VIEW_SHEEP1_LABEL">
+        Sheep 1
+      </message>
+      <message translateable="false" name="IDS_TREE_VIEW_SHEEP2_LABEL">
+        Sheep 2
+      </message>
+      <message translateable="false" name="IDS_TREE_VIEW_ADD_BUTTON_LABEL">
+        Add
+      </message>
+      <message translateable="false" name="IDS_TREE_VIEW_REMOVE_BUTTON_LABEL">
+        Remove
+      </message>
+      <message translateable="false" name="IDS_TREE_VIEW_CHANGE_TITLE_LABEL">
+        Change Title
+      </message>
+      <message translateable="false" name="IDS_TREE_VIEW_NEW_NODE_LABEL">
+        new
+      </message>
+      <message translateable="false" name="IDS_TREE_VIEW_EDIT_BUTTON_LABEL">
+        Edit
+      </message>
+
+      <!-- vector example -->
+      <message translateable="false" name="IDS_VECTOR_FILE_SELECT_LABEL">
+        Enter a file to read
+      </message>
+      <message translateable="false" name="IDS_VECTOR_RENDER_LABEL">
+        Render
+      </message>
+      <message translateable="false" name="IDS_VECTOR_DIP_SIZE_DESC_LABEL">
+        Size in dip
+      </message>
+      <message translateable="false" name="IDS_VECTOR_COLOR_DESC_LABEL">
+        Color (AARRGGBB)
+      </message>
+      <message translateable="false" name="IDS_VECTOR_SELECT_LABEL">
+        Vector Icon
+      </message>
+
+      <!-- webview example -->
+      <message translateable="false" name="IDS_WEBVIEW_SELECT_LABEL">
+        WebView
+      </message>
+
       <!-- widget example -->
       <message translateable="false" name="IDS_WIDGET_EXTRA_BUTTON">
         Extra button!

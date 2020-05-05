@@ -93,9 +93,7 @@ void FidoRequestHandlerBase::InitDiscoveries(
 
   bool has_ble = false;
   if (base::Contains(transport_availability_info_.available_transports,
-                     FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy) ||
-      base::Contains(transport_availability_info_.available_transports,
-                     FidoTransportProtocol::kBluetoothLowEnergy)) {
+                     FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy)) {
     has_ble = true;
     base::SequencedTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
@@ -201,8 +199,6 @@ void FidoRequestHandlerBase::OnBluetoothAdapterEnumerated(
     bool is_peripheral_role_supported) {
   if (!is_present) {
     transport_availability_info_.available_transports.erase(
-        FidoTransportProtocol::kBluetoothLowEnergy);
-    transport_availability_info_.available_transports.erase(
         FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy);
   }
 
@@ -224,19 +220,6 @@ void FidoRequestHandlerBase::PowerOnBluetoothAdapter() {
     return;
 
   bluetooth_adapter_manager_->SetAdapterPower(true /* set_power_on */);
-}
-
-void FidoRequestHandlerBase::InitiatePairingWithDevice(
-    std::string authenticator_id,
-    base::Optional<std::string> pin_code,
-    base::OnceClosure success_callback,
-    base::OnceClosure error_callback) {
-  if (!bluetooth_adapter_manager_)
-    return;
-
-  bluetooth_adapter_manager_->InitiatePairing(
-      std::move(authenticator_id), std::move(pin_code),
-      std::move(success_callback), std::move(error_callback));
 }
 
 base::WeakPtr<FidoRequestHandlerBase> FidoRequestHandlerBase::GetWeakPtr() {

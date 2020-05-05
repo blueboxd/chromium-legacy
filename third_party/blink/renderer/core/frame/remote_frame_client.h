@@ -25,12 +25,14 @@ class LocalFrame;
 class MessageEvent;
 class ResourceRequest;
 class SecurityOrigin;
+class WebLocalFrame;
 
 class RemoteFrameClient : public FrameClient {
  public:
   ~RemoteFrameClient() override = default;
 
   virtual void Navigate(const ResourceRequest&,
+                        blink::WebLocalFrame* initiator_frame,
                         bool should_replace_current_entry,
                         bool is_opener_navigation,
                         bool initiator_frame_has_download_sandbox_flag,

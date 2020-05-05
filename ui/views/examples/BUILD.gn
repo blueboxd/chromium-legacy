@@ -164,6 +164,8 @@ jumbo_component("views_examples_with_content_lib") {
 
   deps = [
     ":views_examples_lib",
+    ":views_examples_resources_grd",
+    ":views_examples_resources_pak",
     "//base",
     "//content",
     "//skia",

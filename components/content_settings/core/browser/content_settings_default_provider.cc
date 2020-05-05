@@ -215,7 +215,7 @@ bool DefaultProvider::SetWebsiteSetting(
     ContentSettingsType content_type,
     const ResourceIdentifier& resource_identifier,
     std::unique_ptr<base::Value>&& in_value,
-    const ContentSettingConstraints& /*constraints*/) {
+    const ContentSettingConstraints& constraints) {
   DCHECK(CalledOnValidThread());
   DCHECK(prefs_);
 

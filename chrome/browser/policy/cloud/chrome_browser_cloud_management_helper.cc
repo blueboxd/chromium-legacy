@@ -61,12 +61,7 @@ void ChromeBrowserCloudManagementRegistrar::
   // reset.
   std::unique_ptr<CloudPolicyClient> policy_client =
       std::make_unique<CloudPolicyClient>(
-          std::string() /* machine_id */, std::string() /* machine_model */,
-          std::string() /* brand_code */,
-          std::string() /* ethernet_mac_address */,
-          std::string() /* dock_mac_address */,
-          std::string() /* manufacture_date */, device_management_service_,
-          url_loader_factory_, nullptr,
+          device_management_service_, url_loader_factory_,
           CloudPolicyClient::DeviceDMTokenCallback());
 
   // Fire off the registration process. Callback keeps the CloudPolicyClient
@@ -104,12 +99,7 @@ MachineLevelUserCloudPolicyFetcher::MachineLevelUserCloudPolicyFetcher(
       url_loader_factory_(url_loader_factory) {
   std::unique_ptr<CloudPolicyClient> client =
       std::make_unique<CloudPolicyClient>(
-          std::string() /* machine_id */, std::string() /* machine_model */,
-          std::string() /* brand_code */,
-          std::string() /* ethernet_mac_address */,
-          std::string() /* dock_mac_address */,
-          std::string() /* manufacture_date */, device_management_service_,
-          url_loader_factory, nullptr,
+          device_management_service_, url_loader_factory,
           CloudPolicyClient::DeviceDMTokenCallback());
   InitializeManager(std::move(client));
 }

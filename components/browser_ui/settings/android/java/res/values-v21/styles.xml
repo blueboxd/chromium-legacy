@@ -19,6 +19,7 @@
         <item name="android:paddingStart">16dp</item>
     </style>
 
+    <!-- TODO(crbug.com/1077340): Verify if these text styles are up to date with UX. -->
     <style name="PreferenceTitle">
         <item name="android:ellipsize">end</item>
         <item name="android:singleLine">true</item>

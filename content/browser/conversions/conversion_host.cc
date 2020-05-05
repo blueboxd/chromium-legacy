@@ -12,6 +12,9 @@
 #include "content/browser/conversions/conversion_manager_impl.h"
 #include "content/browser/conversions/conversion_page_metrics.h"
 #include "content/browser/conversions/conversion_policy.h"
+#include "content/browser/frame_host/frame_tree.h"
+#include "content/browser/frame_host/frame_tree_node.h"
+#include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/navigation_handle.h"
@@ -46,6 +49,29 @@ class ConversionManagerProviderImpl : public ConversionManager::Provider {
   }
 };
 
+// Abstraction that wraps an iterator to a map. When this goes out of the scope,
+// the underlying iterator is erased from the map. This is useful for control
+// flows where map cleanup needs to occur regardless of additional early exit
+// logic.
+template <typename Map>
+class ScopedMapDeleter {
+ public:
+  ScopedMapDeleter(Map* map, const typename Map::key_type& key)
+      : map_(map), it_(map_->find(key)) {}
+  ~ScopedMapDeleter() {
+    if (*this)
+      map_->erase(it_);
+  }
+
+  typename Map::iterator* get() { return &it_; }
+
+  explicit operator bool() const { return it_ != map_->end(); }
+
+ private:
+  Map* map_;
+  typename Map::iterator it_;
+};
+
 }  // namespace
 
 // static
@@ -70,13 +96,54 @@ ConversionHost::ConversionHost(
   // that the kConversionMeasurement feature is enabled.
 }
 
-ConversionHost::~ConversionHost() = default;
+ConversionHost::~ConversionHost() {
+  DCHECK_EQ(0u, navigation_impression_origins_.size());
+}
+
+void ConversionHost::DidStartNavigation(NavigationHandle* navigation_handle) {
+  // Navigations with an impression set should only occur in the main frame.
+  if (!navigation_handle->GetImpression() ||
+      !navigation_handle->IsInMainFrame() ||
+      !conversion_manager_provider_->GetManager(web_contents())) {
+    return;
+  }
+
+  RenderFrameHostImpl* initiator_frame_host =
+      RenderFrameHostImpl::FromID(navigation_handle->GetInitiatorRoutingId());
+
+  // The initiator frame host may be deleted by this point. In that case, ignore
+  // this navigation and drop the impression associated with it.
+  // TODO(https://crbug.com/1056907): Record metrics on how often impressions
+  // are dropped because the initiator is destroyed.
+  if (!initiator_frame_host)
+    return;
+
+  // Look up the initiator root's origin which will be used as the impression
+  // origin. This works because we won't update the origin for the initiator RFH
+  // until we receive confirmation from the renderer that it has committed.
+  // Since frame mutation is all serialized on the Blink main thread, we get an
+  // implicit ordering: a navigation with an impression attached won't be
+  // processed after a navigation commit in the initiator RFH, so reading the
+  // origin off is safe at the start of the navigation.
+  const url::Origin& initiator_root_frame_origin =
+      initiator_frame_host->frame_tree_node()
+          ->frame_tree()
+          ->root()
+          ->current_origin();
+  navigation_impression_origins_.emplace(navigation_handle->GetNavigationId(),
+                                         initiator_root_frame_origin);
+}
 
 void ConversionHost::DidFinishNavigation(NavigationHandle* navigation_handle) {
   ConversionManager* conversion_manager =
       conversion_manager_provider_->GetManager(web_contents());
-  if (!conversion_manager)
+  if (!conversion_manager) {
+    DCHECK(navigation_impression_origins_.empty());
     return;
+  }
+
+  ScopedMapDeleter<NavigationImpressionOriginMap> it(
+      &navigation_impression_origins_, navigation_handle->GetNavigationId());
 
   // If an impression is not associated with a main frame navigation, ignore it.
   // If the navigation did not commit, committed to a Chrome error page, or was
@@ -84,35 +151,36 @@ void ConversionHost::DidFinishNavigation(NavigationHandle* navigation_handle) {
   // same-document navigations but can be the result of a bad renderer.
   if (!navigation_handle->IsInMainFrame() ||
       !navigation_handle->HasCommitted() || navigation_handle->IsErrorPage() ||
-      navigation_handle->IsSameDocument())
+      navigation_handle->IsSameDocument()) {
     return;
+  }
 
   conversion_page_metrics_ = std::make_unique<ConversionPageMetrics>();
 
-  // Get the impression data off the navigation.
-  if (!navigation_handle->GetImpression())
+  // If we were not able to access the impression origin, ignore the navigation.
+  if (!it)
     return;
+  url::Origin impression_origin = std::move((*it.get())->second);
+  DCHECK(navigation_handle->GetImpression());
   const Impression& impression = *(navigation_handle->GetImpression());
 
   // If the impression's conversion destination does not match the final top
   // frame origin of this new navigation ignore it.
   if (impression.conversion_destination !=
-      navigation_handle->GetRenderFrameHost()->GetLastCommittedOrigin())
+      navigation_handle->GetRenderFrameHost()->GetLastCommittedOrigin()) {
     return;
+  }
 
-  // TODO(johnidel): When impression_origin is available, we should default to
-  // it instead of conversion destination. We also need to verify that
-  // impression actually occurred on a secure site.
-  //
   // Convert |impression| into a StorableImpression that can be forwarded to
   // storage. If a reporting origin was not provided, default to the conversion
   // destination for reporting.
   const url::Origin& reporting_origin = !impression.reporting_origin
-                                            ? impression.conversion_destination
+                                            ? impression_origin
                                             : *impression.reporting_origin;
 
   // Conversion measurement is only allowed in secure contexts.
-  if (!network::IsOriginPotentiallyTrustworthy(reporting_origin) ||
+  if (!network::IsOriginPotentiallyTrustworthy(impression_origin) ||
+      !network::IsOriginPotentiallyTrustworthy(reporting_origin) ||
       !network::IsOriginPotentiallyTrustworthy(
           impression.conversion_destination)) {
     // TODO (1049654): This should log a console error when it occurs.
@@ -121,13 +189,10 @@ void ConversionHost::DidFinishNavigation(NavigationHandle* navigation_handle) {
 
   base::Time impression_time = base::Time::Now();
   const ConversionPolicy& policy = conversion_manager->GetConversionPolicy();
-
-  // TODO(https://crbug.com/1061645): The impression origin should be provided
-  // by looking up the navigation initiator frame's top frame origin.
   StorableImpression storable_impression(
       policy.GetSanitizedImpressionData(impression.impression_data),
-      url::Origin() /* impression_origin */, impression.conversion_destination,
-      reporting_origin, impression_time,
+      impression_origin, impression.conversion_destination, reporting_origin,
+      impression_time,
       policy.GetExpiryTimeForImpression(impression.expiry, impression_time),
       /*impression_id=*/base::nullopt);
 

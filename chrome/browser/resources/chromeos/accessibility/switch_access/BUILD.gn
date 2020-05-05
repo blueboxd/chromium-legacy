@@ -30,6 +30,7 @@ run_jsbundler("switch_access_copied_files") {
     "commands.js",
     "event_helper.js",
     "focus_ring_manager.js",
+    "history.js",
     "icons/back.svg",
     "icons/copy.svg",
     "icons/cut.svg",
@@ -138,6 +139,7 @@ js_type_check("closure_compile") {
     ":event_helper",
     ":focus_ring_manager",
     ":group_node",
+    ":history",
     ":keyboard_node",
     ":menu_manager",
     ":menu_panel",
@@ -231,6 +233,16 @@ js_library("group_node") {
     "$externs_path/accessibility_private.js",
     "$externs_path/automation.js",
   ]
+}
+
+js_library("history") {
+  deps = [
+    ":desktop_node",
+    ":node_wrapper",
+    ":switch_access_node",
+    ":switch_access_predicate",
+  ]
+  externs_list = [ "$externs_path/automation.js" ]
 }
 
 js_library("keyboard_node") {

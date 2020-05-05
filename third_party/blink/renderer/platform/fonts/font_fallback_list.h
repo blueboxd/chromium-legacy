@@ -39,6 +39,9 @@ class FontDescription;
 
 const int kCAllFamiliesScanned = -1;
 
+// FontFallbackList caches FontData from FontSelector and FontCache. If font
+// updates occur (e.g., @font-face rule changes, web font is loaded, etc.),
+// the cached data becomes stale and hence, invalid.
 class PLATFORM_EXPORT FontFallbackList : public RefCounted<FontFallbackList> {
   USING_FAST_MALLOC(FontFallbackList);
 
@@ -48,8 +51,25 @@ class PLATFORM_EXPORT FontFallbackList : public RefCounted<FontFallbackList> {
   }
 
   ~FontFallbackList() { ReleaseFontData(); }
+
+  // Returns whether the cached data is valid. We can use a FontFallbackList
+  // only when it's valid.
   bool IsValid() const;
-  void Invalidate();
+
+  // Called when font updates (see class comment) have made the cached data
+  // invalid. Once marked, a Font object cannot reuse |this|, but have to work
+  // on a new instance obtained from FontFallbackMap.
+  void MarkInvalid() {
+    DCHECK(RuntimeEnabledFeatures::
+               CSSReducedFontLoadingLayoutInvalidationsEnabled());
+    is_invalid_ = true;
+  }
+
+  // Clears all the stale data, and reset the state for replenishment. Note that
+  // this is a deprecated function, and will be removed after we launch feature
+  // CSSReducedFontLoadingLayoutInvalidations. With the feature, we'll never
+  // revalidate a FontFallbackList, but create a new FontFallbackList instead.
+  void RevalidateDeprecated();
 
   bool LoadingCustomFonts() const;
   bool ShouldSkipDrawing() const;
@@ -110,6 +130,8 @@ class PLATFORM_EXPORT FontFallbackList : public RefCounted<FontFallbackList> {
   bool has_loading_fallback_ : 1;
   bool can_shape_word_by_word_ : 1;
   bool can_shape_word_by_word_computed_ : 1;
+  bool is_invalid_ : 1;
+
   base::WeakPtr<ShapeCache> shape_cache_;
 
   DISALLOW_COPY_AND_ASSIGN(FontFallbackList);

@@ -3257,6 +3257,7 @@ source_set("unit_tests") {
     "../ui/webui/chromeos/login/signin_userlist_unittest.cc",
     "../ui/webui/settings/chromeos/accessibility_handler_unittest.cc",
     "../ui/webui/settings/chromeos/calculator/size_calculator_test_api.h",
+    "../ui/webui/settings/chromeos/device_dlc_handler_unittest.cc",
     "../ui/webui/settings/chromeos/device_keyboard_handler_unittest.cc",
     "../ui/webui/settings/chromeos/device_storage_handler_unittest.cc",
     "../ui/webui/settings/chromeos/internet_handler_unittest.cc",

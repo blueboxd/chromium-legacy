@@ -376,3 +376,8 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_bbr2_ignore_inflight_lo, false)
 
 // If true, returns min_rtt in rtt_stats_ if it is available.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_bbr_use_available_min_rtt, true)
+
+// If true, notify handshakers when connection closes.
+QUIC_FLAG(bool,
+          FLAGS_quic_reloadable_flag_quic_notify_handshaker_on_connection_close,
+          false)

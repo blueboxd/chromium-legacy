@@ -24,6 +24,7 @@
 #include "content/test/test_navigation_url_loader.h"
 #include "content/test/test_render_frame_host.h"
 #include "content/test/test_web_contents.h"
+#include "ipc/ipc_message.h"
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "net/base/load_flags.h"
@@ -816,6 +817,21 @@ void NavigationSimulatorImpl::CommitSameDocument() {
   CHECK_EQ(1, num_did_finish_navigation_called_);
 }
 
+void NavigationSimulatorImpl::SetInitiatorFrame(
+    RenderFrameHost* initiator_frame_host) {
+  // Browser-initiated navigations are not associated with an initiator frame.
+  CHECK(!browser_initiated_);
+  CHECK(initiator_frame_host);
+
+  // TODO(https://crbug.com/1072790): Support cross-process initiators here by
+  // using NavigationRequest::CreateBrowserInitiated() (like
+  // RenderFrameProxyHost does) for the navigation.
+  CHECK_EQ(render_frame_host_->GetProcess(), initiator_frame_host->GetProcess())
+      << "The initiator frame must belong to the same process as the frame you "
+         "are navigating";
+  initiator_frame_host_ = initiator_frame_host;
+}
+
 void NavigationSimulatorImpl::SetTransition(ui::PageTransition transition) {
   if (frame_tree_node_ && !frame_tree_node_->IsMainFrame()) {
     // Subframe case. The subframe page transition is only set at commit time in
@@ -1124,6 +1140,8 @@ bool NavigationSimulatorImpl::SimulateBrowserInitiatedStart() {
 bool NavigationSimulatorImpl::SimulateRendererInitiatedStart() {
   mojom::BeginNavigationParamsPtr begin_params =
       mojom::BeginNavigationParams::New(
+          initiator_frame_host_ ? initiator_frame_host_->GetRoutingID()
+                                : MSG_ROUTING_NONE /* initiator_routing_id */,
           std::string() /* headers */, net::LOAD_NORMAL,
           false /* skip_service_worker */,
           blink::mojom::RequestContextType::HYPERLINK,

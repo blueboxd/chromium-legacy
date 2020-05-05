@@ -186,7 +186,7 @@ public class MediaCaptureNotificationService extends Service {
                 : null;
         ChromeNotification notification = MediaCaptureNotificationUtil.createNotification(builder,
                 mediaType, url, appContext.getString(R.string.app_name), isIncognito, contentIntent,
-                stopIntent, null /*resPackageName*/);
+                stopIntent);
 
         mNotificationManager.notify(notification);
         mNotifications.put(notificationId, mediaType);

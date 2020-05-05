@@ -4,6 +4,8 @@
 
 #include "chrome/browser/performance_manager/policies/background_tab_loading_policy.h"
 
+#include "base/numerics/safe_conversions.h"
+#include "base/stl_util.h"
 #include "base/system/sys_info.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/time.h"
@@ -12,6 +14,7 @@
 #include "components/performance_manager/graph/page_node_impl.h"
 #include "components/performance_manager/public/decorators/tab_properties_decorator.h"
 #include "components/performance_manager/public/graph/frame_node.h"
+#include "components/performance_manager/public/graph/node_data_describer_registry.h"
 #include "components/performance_manager/public/graph/policies/background_tab_loading_policy.h"
 #include "components/performance_manager/public/performance_manager.h"
 #include "content/public/common/url_constants.h"
@@ -24,6 +27,8 @@ namespace {
 
 // Pointer to the instance of itself.
 BackgroundTabLoadingPolicy* g_background_tab_loading_policy = nullptr;
+
+const char kDescriberName[] = "BackgroundTabLoadingPolicy";
 
 }  // namespace
 
@@ -83,9 +88,12 @@ BackgroundTabLoadingPolicy::~BackgroundTabLoadingPolicy() {
 
 void BackgroundTabLoadingPolicy::OnPassedToGraph(Graph* graph) {
   graph->AddPageNodeObserver(this);
+  graph->GetNodeDataDescriberRegistry()->RegisterDescriber(this,
+                                                           kDescriberName);
 }
 
 void BackgroundTabLoadingPolicy::OnTakenFromGraph(Graph* graph) {
+  graph->GetNodeDataDescriberRegistry()->UnregisterDescriber(this);
   graph->RemovePageNodeObserver(this);
 }
 
@@ -173,6 +181,31 @@ struct BackgroundTabLoadingPolicy::ScoredTabComparator {
     return tab0->score > tab1->score;
   }
 };
+
+base::Value BackgroundTabLoadingPolicy::DescribePageNodeData(
+    const PageNode* node) const {
+  base::Value dict(base::Value::Type::DICTIONARY);
+  if (base::Contains(page_nodes_load_initiated_, node)) {
+    // Transient state between InitiateLoad() and OnIsLoadingChanged(),
+    // shouldn't be sticking around for long.
+    dict.SetBoolKey("page_load_initiated", true);
+  }
+  if (base::Contains(page_nodes_loading_, node)) {
+    dict.SetBoolKey("page_loading", true);
+  }
+  return !dict.DictEmpty() ? std::move(dict) : base::Value();
+}
+
+base::Value BackgroundTabLoadingPolicy::DescribeSystemNodeData(
+    const SystemNode* node) const {
+  base::Value dict(base::Value::Type::DICTIONARY);
+  dict.SetIntKey("max_simultaneous_tab_loads",
+                 base::saturated_cast<int>(max_simultaneous_tab_loads_));
+  dict.SetIntKey("tab_loads_started",
+                 base::saturated_cast<int>(tab_loads_started_));
+  dict.SetIntKey("tabs_scored", base::saturated_cast<int>(tabs_scored_));
+  return dict;
+}
 
 bool BackgroundTabLoadingPolicy::ShouldLoad(const PageNode* page_node) {
   if (tab_loads_started_ < kMinTabsToLoad)

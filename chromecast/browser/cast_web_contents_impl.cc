@@ -999,7 +999,7 @@ void CastWebContentsImpl::DisableDebugging() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!enabled_for_dev_ || !web_contents_)
     return;
-  LOG(INFO) << "Disabling dev console for " << web_contents_->GetVisibleURL();
+  LOG(INFO) << "Disabling dev console for CastWebContentsImpl";
   remote_debugging_server_->DisableWebContentsForDebugging(web_contents_);
 }
 

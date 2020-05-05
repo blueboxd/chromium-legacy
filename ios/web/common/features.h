@@ -10,9 +10,6 @@
 namespace web {
 namespace features {
 
-// Used to always allow scaling of the web page, regardless of author intent.
-extern const base::Feature kIgnoresViewportScaleLimits;
-
 // Used to crash the browser if unexpected URL change is detected.
 // https://crbug.com/841105.
 extern const base::Feature kCrashOnUnexpectedURLChange;

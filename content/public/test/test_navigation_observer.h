@@ -88,6 +88,10 @@ class TestNavigationObserver {
     return last_navigation_initiator_origin_;
   }
 
+  const GlobalFrameRoutingId& last_initiator_routing_id() const {
+    return last_initiator_routing_id_;
+  }
+
   // Returns the net::Error origin of the last finished navigation (that matched
   // URL / net error filters, if set).
   net::Error last_net_error_code() const { return last_net_error_code_; }
@@ -188,6 +192,9 @@ class TestNavigationObserver {
 
   // The initiator origin of the last navigation.
   base::Optional<url::Origin> last_navigation_initiator_origin_;
+
+  // The routing id of the initiator frame for the last observed navigation.
+  GlobalFrameRoutingId last_initiator_routing_id_;
 
   // The net error code of the last navigation.
   net::Error last_net_error_code_;

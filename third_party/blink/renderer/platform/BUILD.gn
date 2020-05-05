@@ -585,6 +585,8 @@ jumbo_component("platform") {
     "fonts/font_fallback_iterator.h",
     "fonts/font_fallback_list.cc",
     "fonts/font_fallback_list.h",
+    "fonts/font_fallback_map.cc",
+    "fonts/font_fallback_map.h",
     "fonts/font_fallback_priority.cc",
     "fonts/font_fallback_priority.h",
     "fonts/font_family.cc",

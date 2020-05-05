@@ -7,6 +7,7 @@
 #include <string>
 #include <utility>
 
+#include "base/base64.h"
 #include "base/files/file_util.h"
 #include "base/i18n/rtl.h"
 #include "base/memory/ref_counted_memory.h"
@@ -23,6 +24,7 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/new_tab_page_resources.h"
 #include "content/public/common/url_constants.h"
+#include "net/base/url_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/template_expressions.h"
 
@@ -92,8 +94,13 @@ void UntrustedSource::StartDataRequest(
   const std::string path = url.has_path() ? url.path().substr(1) : "";
   GURL url_param = GURL(url.query());
   if (path == "one-google-bar" && one_google_bar_service_) {
+    std::string ogdeb_value;
+    net::GetValueForKeyInQuery(url, "ogdebencoded", &ogdeb_value);
+    base::Base64Decode(ogdeb_value, &ogdeb_value);
+    bool wait_for_refresh = one_google_bar_service_->SetOgdebValue(ogdeb_value);
     one_google_bar_callbacks_.push_back(std::move(callback));
-    if (one_google_bar_service_->one_google_bar_data().has_value()) {
+    if (one_google_bar_service_->one_google_bar_data().has_value() &&
+        !wait_for_refresh) {
       OnOneGoogleBarDataUpdated();
     }
     one_google_bar_service_->Refresh();

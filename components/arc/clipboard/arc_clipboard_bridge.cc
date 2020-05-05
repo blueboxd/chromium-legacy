@@ -83,9 +83,7 @@ mojom::ClipDataPtr GetClipData(const ui::Clipboard* clipboard) {
   DCHECK(clipboard);
 
   std::vector<base::string16> mime_types;
-  bool contains_files;
-  clipboard->ReadAvailableTypes(ui::ClipboardBuffer::kCopyPaste, &mime_types,
-                                &contains_files);
+  clipboard->ReadAvailableTypes(ui::ClipboardBuffer::kCopyPaste, &mime_types);
 
   mojom::ClipDataPtr clip_data(mojom::ClipData::New());
 

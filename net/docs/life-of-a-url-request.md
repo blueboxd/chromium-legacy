@@ -1,10 +1,13 @@
 # Life of a URLRequest
 
-This document is intended as an overview of the core layers of the network
-stack and the network service, their basic responsibilities, and how they fit
-together, without going into too much detail. This doc assumes the network
-service is enabled, though the network service is not yet enabled by default
-on any platform.
+This document gives an overview of the browser's lower-layers for networking.
+
+Networking in the browser ranges from high level Javascript APIs like
+`fetch()`, all the way down to writing encrypted bytes on a socket.
+
+This document assumes that requests for URLs are mediated through the browser's
+[Network Service](../../services/network/README.md), and focuses on all the
+layers below the Network Service, including key points of integration.
 
 It's particularly targeted at people new to the Chrome network stack, but
 should also be useful for team members who may be experts at some parts of the

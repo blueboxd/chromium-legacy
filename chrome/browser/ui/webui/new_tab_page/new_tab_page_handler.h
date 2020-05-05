@@ -94,7 +94,8 @@ class NewTabPageHandler : public new_tab_page::mojom::PageHandler,
   void GetDoodle(GetDoodleCallback callback) override;
   void ChooseLocalCustomBackground(
       ChooseLocalCustomBackgroundCallback callback) override;
-  void GetOneGoogleBarParts(GetOneGoogleBarPartsCallback callback) override;
+  void GetOneGoogleBarParts(const std::string& ogdeb_value,
+                            GetOneGoogleBarPartsCallback callback) override;
   void OnMostVisitedTilesRendered(
       std::vector<new_tab_page::mojom::MostVisitedTilePtr> tiles,
       double time) override;

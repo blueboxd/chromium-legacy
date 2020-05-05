@@ -462,12 +462,15 @@ void ContentSettingsPref::UpdatePref(
           resource_dictionary->SetWithoutPathExpansion(resource_identifier,
                                                        value->CreateDeepCopy());
           // Update timestamp for whole resource dictionary.
-          settings_dictionary->SetKey(kLastModifiedPath,
-                                      base::Value(base::NumberToString(
-                                          last_modified.ToInternalValue())));
           settings_dictionary->SetKey(
-              kExpirationPath, base::Value(base::NumberToString(
-                                   constraints.expiration.ToInternalValue())));
+              kLastModifiedPath,
+              base::Value(base::NumberToString(
+                  last_modified.ToDeltaSinceWindowsEpoch().InMicroseconds())));
+          settings_dictionary->SetKey(
+              kExpirationPath,
+              base::Value(base::NumberToString(
+                  constraints.expiration.ToDeltaSinceWindowsEpoch()
+                      .InMicroseconds())));
           settings_dictionary->SetKey(
               kSessionModelPath,
               base::Value(static_cast<int>(constraints.session_model)));
@@ -486,12 +489,15 @@ void ContentSettingsPref::UpdatePref(
         } else {
           settings_dictionary->SetWithoutPathExpansion(kSettingPath,
                                                        value->CreateDeepCopy());
-          settings_dictionary->SetKey(kLastModifiedPath,
-                                      base::Value(base::NumberToString(
-                                          last_modified.ToInternalValue())));
           settings_dictionary->SetKey(
-              kExpirationPath, base::Value(base::NumberToString(
-                                   constraints.expiration.ToInternalValue())));
+              kLastModifiedPath,
+              base::Value(base::NumberToString(
+                  last_modified.ToDeltaSinceWindowsEpoch().InMicroseconds())));
+          settings_dictionary->SetKey(
+              kExpirationPath,
+              base::Value(base::NumberToString(
+                  constraints.expiration.ToDeltaSinceWindowsEpoch()
+                      .InMicroseconds())));
           settings_dictionary->SetKey(
               kSessionModelPath,
               base::Value(static_cast<int>(constraints.session_model)));

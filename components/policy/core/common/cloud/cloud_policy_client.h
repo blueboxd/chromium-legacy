@@ -158,10 +158,17 @@ class POLICY_EXPORT CloudPolicyClient {
       const std::string& ethernet_mac_address,
       const std::string& dock_mac_address,
       const std::string& manufacture_date,
+      SigningService* signing_service,
       DeviceManagementService* service,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-      SigningService* signing_service,
       DeviceDMTokenCallback device_dm_token_callback);
+  // A simpler constructor for those that do not need any of the identification
+  // strings of the full constructor or the signing service.
+  CloudPolicyClient(
+      DeviceManagementService* service,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+      DeviceDMTokenCallback device_dm_token_callback);
+
   virtual ~CloudPolicyClient();
 
   // Sets the DMToken, thereby establishing a registration with the server. A
@@ -644,11 +651,11 @@ class POLICY_EXPORT CloudPolicyClient {
   // The invalidation version used for the most recent fetch operation.
   int64_t fetched_invalidation_version_ = 0;
 
-  // Used for issuing requests to the cloud.
-  DeviceManagementService* service_ = nullptr;
-
   // Used for signing requests.
   SigningService* signing_service_ = nullptr;
+
+  // Used for issuing requests to the cloud.
+  DeviceManagementService* service_ = nullptr;
 
   // Only one outstanding policy fetch is allowed, so this is tracked in
   // its own member variable.

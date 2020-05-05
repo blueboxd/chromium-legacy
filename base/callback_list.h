@@ -5,15 +5,19 @@
 #ifndef BASE_CALLBACK_LIST_H_
 #define BASE_CALLBACK_LIST_H_
 
+#include <algorithm>
 #include <list>
 #include <memory>
+#include <utility>
 
+#include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/callback_helpers.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/stl_util.h"
 
 // OVERVIEW:
 //
@@ -56,198 +60,152 @@
 //       MyWidget::Get()->RegisterCallback(
 //           base::BindRepeating(&MyWidgetListener::OnFoo, this));
 // };
+//
+// UNSUPPORTED:
+//
+// * Calling Notify() reentrantly during callback notification.
+// * Destroying the CallbackList during callback notification.
+//
+// Both of these are possible to support, but not currently necessary.
 
 namespace base {
 
 namespace internal {
 
-template <typename CallbackType>
+template <typename T>
 class CallbackListBase {
  public:
+  using CallbackType = T;
+  static_assert(IsBaseCallback<CallbackType>::value, "");
+
   // A cancellation handle for callers who register callbacks. Subscription
   // destruction cancels the associated callback and is legal any time,
   // including after the destruction of the CallbackList that vends it.
   class Subscription {
    public:
-    explicit Subscription(base::OnceClosure subscription_destroyed)
-        : subscription_destroyed_(std::move(subscription_destroyed)) {}
+    explicit Subscription(base::OnceClosure destruction_closure)
+        : destruction_closure_(std::move(destruction_closure)) {}
 
-    ~Subscription() { std::move(subscription_destroyed_).Run(); }
+    Subscription(const Subscription&) = delete;
+    Subscription& operator=(const Subscription&) = delete;
 
-    // Returns true if the CallbackList associated with this subscription has
-    // been deleted, which means that the associated callback will no longer be
-    // invoked.
-    bool IsCancelled() const { return subscription_destroyed_.IsCancelled(); }
+    ~Subscription() { std::move(destruction_closure_).Run(); }
 
    private:
     // Run when |this| is destroyed to notify the CallbackList the associated
     // callback should be canceled. Since this is bound using a WeakPtr to the
     // CallbackList, it will automatically no-op if the CallbackList no longer
     // exists.
-    base::OnceClosure subscription_destroyed_;
-
-    DISALLOW_COPY_AND_ASSIGN(Subscription);
+    base::OnceClosure destruction_closure_;
   };
+
+  CallbackListBase() = default;
+  CallbackListBase(const CallbackListBase&) = delete;
+  CallbackListBase& operator=(const CallbackListBase&) = delete;
+
+  ~CallbackListBase() {
+    // Destroying the list during iteration is unsupported and will cause a UAF.
+    CHECK(!iterating_);
+  }
 
   // Registers |cb| for future notifications. Returns a Subscription that can be
   // used to cancel |cb|.
   std::unique_ptr<Subscription> Add(const CallbackType& cb) WARN_UNUSED_RESULT {
     DCHECK(!cb.is_null());
-    return std::make_unique<Subscription>(
-        base::BindOnce(&CallbackListBase::OnSubscriptionDestroyed,
-                       weak_ptr_factory_.GetWeakPtr(),
-                       callbacks_.insert(callbacks_.end(), cb)));
+    return std::make_unique<Subscription>(base::BindOnce(
+        &CallbackListBase::CancelCallback, weak_ptr_factory_.GetWeakPtr(),
+        callbacks_.insert(callbacks_.end(), cb)));
   }
 
   // Registers |removal_callback| to be run after elements are removed from the
   // list of registered callbacks.
-  void set_removal_callback(const RepeatingClosure& callback) {
-    removal_callback_ = callback;
+  void set_removal_callback(const RepeatingClosure& removal_callback) {
+    removal_callback_ = removal_callback;
   }
 
   // Returns whether the list of registered callbacks is empty. This may not be
   // called while Notify() is traversing the list (since the results could be
   // inaccurate).
-  bool empty() {
-    DCHECK_EQ(0u, active_iterator_count_);
+  bool empty() const {
+    DCHECK(!iterating_);
     return callbacks_.empty();
   }
-
- protected:
-  // An iterator class that can be used to access the list of callbacks.
-  class Iterator {
-   public:
-    explicit Iterator(CallbackListBase<CallbackType>* list)
-        : list_(list),
-          list_iter_(list_->callbacks_.begin()) {
-      ++list_->active_iterator_count_;
-    }
-
-    Iterator(const Iterator& iter)
-        : list_(iter.list_),
-          list_iter_(iter.list_iter_) {
-      ++list_->active_iterator_count_;
-    }
-
-    ~Iterator() {
-      if (list_ && --list_->active_iterator_count_ == 0) {
-        // Any null callbacks remaining in the list were canceled due to
-        // Subscription destruction during iteration, and can safely be erased
-        // now.
-        list_->Compact();
-      }
-    }
-
-    CallbackType* GetNext() {
-      // Skip any callbacks that are canceled during iteration.
-      while ((list_iter_ != list_->callbacks_.end()) && list_iter_->is_null())
-        ++list_iter_;
-
-      CallbackType* cb = nullptr;
-      if (list_iter_ != list_->callbacks_.end()) {
-        cb = &(*list_iter_);
-        ++list_iter_;
-      }
-      return cb;
-    }
-
-   private:
-    CallbackListBase<CallbackType>* list_;
-    typename std::list<CallbackType>::iterator list_iter_;
-  };
-
-  CallbackListBase() = default;
-
-  ~CallbackListBase() { DCHECK_EQ(0u, active_iterator_count_); }
-
-  // Returns an instance of a CallbackListBase::Iterator which can be used
-  // to run callbacks.
-  Iterator GetIterator() {
-    return Iterator(this);
-  }
-
-  // Compact the list: remove any entries which were nulled out during
-  // iteration.
-  void Compact() {
-    auto it = callbacks_.begin();
-    bool updated = false;
-    while (it != callbacks_.end()) {
-      if ((*it).is_null()) {
-        updated = true;
-        it = callbacks_.erase(it);
-      } else {
-        ++it;
-      }
-    }
-
-    // Run |removal_callback_| if any callbacks were canceled. Note that we
-    // cannot simply compare list sizes before and after iterating, since
-    // notification may result in Add()ing new callbacks as well as canceling
-    // them.
-    if (updated && !removal_callback_.is_null())
-      removal_callback_.Run();  // May delete |this|!
-  }
-
- private:
-  // Cancels the callback pointed to by |iter|, which is guaranteed to be valid.
-  void OnSubscriptionDestroyed(
-      const typename std::list<CallbackType>::iterator& iter) {
-    if (active_iterator_count_) {
-      // Calling erase() here is unsafe, since the loop in Notify() may be
-      // referencing this same iterator, e.g. if adjacent callbacks'
-      // Subscriptions are both destroyed when the first one is Run().  Just
-      // reset the callback and let Notify() clean it up at the end.
-      iter->Reset();
-    } else {
-      callbacks_.erase(iter);
-      if (removal_callback_)
-        removal_callback_.Run();  // May delete |this|!
-    }
-  }
-
-  // Holds non-null callbacks, which will be called during Notify().
-  std::list<CallbackType> callbacks_;
-
-  // Incremented while Notify() is traversing |callbacks_|.  Used primarily to
-  // avoid invalidating iterators that may be in use.
-  size_t active_iterator_count_ = 0;
-
-  // Called after elements are removed from |callbacks_|.
-  RepeatingClosure removal_callback_;
-
-  WeakPtrFactory<CallbackListBase> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(CallbackListBase);
-};
-
-}  // namespace internal
-
-template <typename Sig> class CallbackList;
-
-template <typename... Args>
-class CallbackList<void(Args...)>
-    : public internal::CallbackListBase<RepeatingCallback<void(Args...)>> {
- public:
-  using CallbackType = RepeatingCallback<void(Args...)>;
-
-  CallbackList() = default;
 
   // Calls all registered callbacks that are not canceled beforehand. If any
   // callbacks are unregistered, notifies any registered removal callback at the
   // end.
   template <typename... RunArgs>
   void Notify(RunArgs&&... args) {
-    auto it = this->GetIterator();
-    CallbackType* cb;
-    while ((cb = it.GetNext()) != nullptr) {
-      // Run the current callback, which may cancel it or any other callbacks.
-      cb->Run(args...);
+    // Calling Notify() reentrantly is currently unsupported.
+    DCHECK(!iterating_);
+
+    if (empty())
+      return;  // Nothing to do.
+
+    // Canceled callbacks should be removed from the list whenever notification
+    // isn't in progress, so right now all callbacks should be valid.
+    const auto callback_valid = [](const auto& cb) { return !cb.is_null(); };
+    DCHECK(std::all_of(callbacks_.cbegin(), callbacks_.cend(), callback_valid));
+
+    {
+      AutoReset<bool> iterating(&iterating_, true);
+      // Skip any callbacks that are canceled during iteration.
+      for (auto it = callbacks_.begin(); it != callbacks_.end();
+           it = std::find_if(it, callbacks_.end(), callback_valid)) {
+        // Run the current callback, which may cancel it or any other callbacks.
+        DCHECK(!it->is_null());
+        (it++)->Run(args...);
+      }
     }
+
+    // Any null callbacks remaining in the list were canceled due to
+    // Subscription destruction during iteration, and can safely be erased now.
+    const size_t erased_callbacks =
+        EraseIf(callbacks_, [](const auto& cb) { return cb.is_null(); });
+
+    // Run |removal_callback_| if any callbacks were canceled. Note that we
+    // cannot simply compare list sizes before and after iterating, since
+    // notification may result in Add()ing new callbacks as well as canceling
+    // them.
+    if (removal_callback_ && erased_callbacks)
+      removal_callback_.Run();  // May delete |this|!
   }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(CallbackList);
+  using Callbacks = std::list<CallbackType>;
+
+  // Cancels the callback pointed to by |it|, which is guaranteed to be valid.
+  void CancelCallback(const typename Callbacks::iterator& it) {
+    if (iterating_) {
+      // Calling erase() here is unsafe, since the loop in Notify() may be
+      // referencing this same iterator, e.g. if adjacent callbacks'
+      // Subscriptions are both destroyed when the first one is Run().  Just
+      // reset the callback and let Notify() clean it up at the end.
+      it->Reset();
+    } else {
+      callbacks_.erase(it);
+      if (removal_callback_)
+        removal_callback_.Run();  // May delete |this|!
+    }
+  }
+
+  // Holds non-null callbacks, which will be called during Notify().
+  Callbacks callbacks_;
+
+  // Set while Notify() is traversing |callbacks_|.  Used primarily to avoid
+  // invalidating iterators that may be in use.
+  bool iterating_ = false;
+
+  // Called after elements are removed from |callbacks_|.
+  RepeatingClosure removal_callback_;
+
+  WeakPtrFactory<CallbackListBase> weak_ptr_factory_{this};
 };
+
+}  // namespace internal
+
+template <typename Signature>
+using CallbackList = internal::CallbackListBase<RepeatingCallback<Signature>>;
 
 }  // namespace base
 

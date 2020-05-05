@@ -138,14 +138,7 @@ WebString BlinkTestRunner::GetAbsoluteWebStringFromUTF8Path(
   return blink::FilePathToWebString(path);
 }
 
-TestPreferences* BlinkTestRunner::Preferences() {
-  return &prefs_;
-}
-
-void BlinkTestRunner::ApplyPreferences() {
-  WebPreferences prefs = web_view_test_proxy_->GetWebkitPreferences();
-  ExportWebTestSpecificPreferences(prefs_, &prefs);
-  web_view_test_proxy_->SetWebkitPreferences(prefs);
+void BlinkTestRunner::OverridePreferences(const WebPreferences& prefs) {
   GetWebTestControlHostRemote()->OverridePreferences(prefs);
 }
 
@@ -596,7 +589,6 @@ void BlinkTestRunner::OnResetRendererAfterWebTest() {
   // BlinkTestMsg_Reset should always be sent to the *current* view.
   DCHECK(web_view_test_proxy_->GetMainRenderFrame());
 
-  prefs_.Reset();
   TestInterfaces* interfaces = web_view_test_proxy_->test_interfaces();
   interfaces->ResetAll();
 

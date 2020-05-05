@@ -1911,13 +1911,14 @@ CSSFunctionValue* ComputedStyleUtils::ValueForTransformOperation(
 
 CSSValue* ComputedStyleUtils::ValueForTransformList(
     const TransformOperations& transform_list,
-    float zoom) {
+    float zoom,
+    FloatSize box_size) {
   if (!transform_list.Operations().size())
     return CSSIdentifierValue::Create(CSSValueID::kNone);
 
   CSSValueList* components = CSSValueList::CreateSpaceSeparated();
   for (const auto& operation : transform_list.Operations()) {
-    CSSValue* op_value = ValueForTransformOperation(*operation, zoom);
+    CSSValue* op_value = ValueForTransformOperation(*operation, zoom, box_size);
     components->Append(*op_value);
   }
   return components;
@@ -1938,8 +1939,14 @@ FloatRect ComputedStyleUtils::ReferenceBoxForTransform(
 }
 
 CSSValue* ComputedStyleUtils::ComputedTransformList(
-    const ComputedStyle& style) {
-  return ValueForTransformList(style.Transform(), style.EffectiveZoom());
+    const ComputedStyle& style,
+    const LayoutObject* layout_object) {
+  FloatSize box_size(0, 0);
+  if (layout_object)
+    box_size = ReferenceBoxForTransform(*layout_object).Size();
+
+  return ValueForTransformList(style.Transform(), style.EffectiveZoom(),
+                               box_size);
 }
 
 CSSValue* ComputedStyleUtils::ResolvedTransform(
@@ -2731,7 +2738,8 @@ ComputedStyleUtils::CrossThreadStyleValueFromCSSStyleValue(
 
 const CSSValue* ComputedStyleUtils::ComputedPropertyValue(
     const CSSProperty& property,
-    const ComputedStyle& style) {
+    const ComputedStyle& style,
+    const LayoutObject* layout_object) {
   switch (property.PropertyID()) {
     // Computed value is usually relative so that multiple fonts in child
     // elements work properly, but resolved value is always a pixel length.
@@ -2740,7 +2748,7 @@ const CSSValue* ComputedStyleUtils::ComputedPropertyValue(
 
     // Returns a transform list instead of converting to a (resolved) matrix.
     case CSSPropertyID::kTransform:
-      return ComputedStyleUtils::ComputedTransformList(style);
+      return ComputedStyleUtils::ComputedTransformList(style, layout_object);
 
     // For all other properties, the resolved value is either always the same
     // as the computed value (most properties), or the same as the computed

@@ -5121,6 +5121,7 @@
       },
       {
         "args": [
+          "--extra-browser-args=--enable-crashpad",
           "--avd-config=../../tools/android/avd/proto/generic_android23.textpb"
         ],
         "isolate_name": "telemetry_perf_unittests",

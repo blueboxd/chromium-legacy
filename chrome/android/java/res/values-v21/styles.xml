@@ -16,22 +16,6 @@
     </style>
     <style name="Base.Theme.Chromium" parent="Base.V21.Theme.Chromium" />
 
-    <!-- Settings -->
-    <style name="Base.V21.Theme.Chromium.Settings" parent="Base.Theme.Chromium.Settings">
-        <item name="alertDialogTheme">@style/Theme.Chromium.AlertDialog</item>
-    </style>
-
-    <style name="Theme.Chromium.Settings" parent="Base.V21.Theme.Chromium.Settings" />
-
-    <style name="SettingsFragment">
-        <item name="android:divider">?android:attr/listDivider</item>
-    </style>
-
-    <style name="SettingsFragmentList">
-        <item name="android:paddingStart">0dp</item>
-        <item name="android:paddingEnd">0dp</item>
-    </style>
-
     <!-- Web Notifications -->
     <style name="WebNotificationTitle"
         parent="@android:style/TextAppearance.Material.Notification.Title"/>

@@ -180,6 +180,8 @@ class Field(object):
         if not self.is_inherited_flag:
             self.is_inherited = kwargs.pop('inherited')
             self.is_independent = kwargs.pop('independent')
+            self.is_semi_independent_variable = kwargs.pop(
+                'semi_independent_variable')
             assert self.is_inherited or not self.is_independent, \
                 'Only inherited fields can be independent'
 

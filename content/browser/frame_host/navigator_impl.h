@@ -73,6 +73,7 @@ class CONTENT_EXPORT NavigatorImpl : public Navigator {
   void RequestOpenURL(
       RenderFrameHostImpl* render_frame_host,
       const GURL& url,
+      const GlobalFrameRoutingId& initiator_routing_id,
       const base::Optional<url::Origin>& initiator_origin,
       const scoped_refptr<network::ResourceRequestBody>& post_body,
       const std::string& extra_headers,
@@ -87,6 +88,7 @@ class CONTENT_EXPORT NavigatorImpl : public Navigator {
   void NavigateFromFrameProxy(
       RenderFrameHostImpl* render_frame_host,
       const GURL& url,
+      const GlobalFrameRoutingId& initiator_routing_id,
       const url::Origin& initiator_origin,
       SiteInstance* source_site_instance,
       const Referrer& referrer,

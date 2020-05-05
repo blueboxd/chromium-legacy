@@ -143,6 +143,9 @@ void RemoteFrame::Navigate(FrameLoadRequest& frame_request,
     frame_load_type = WebFrameLoadType::kReplaceCurrentItem;
   }
 
+  WebLocalFrame* initiator_frame =
+      frame ? frame->Client()->GetWebFrame() : nullptr;
+
   bool is_opener_navigation = false;
   bool initiator_frame_has_download_sandbox_flag = false;
   bool initiator_frame_is_ad = false;
@@ -161,7 +164,7 @@ void RemoteFrame::Navigate(FrameLoadRequest& frame_request,
     }
   }
 
-  Client()->Navigate(frame_request.GetResourceRequest(),
+  Client()->Navigate(frame_request.GetResourceRequest(), initiator_frame,
                      frame_load_type == WebFrameLoadType::kReplaceCurrentItem,
                      is_opener_navigation,
                      initiator_frame_has_download_sandbox_flag,

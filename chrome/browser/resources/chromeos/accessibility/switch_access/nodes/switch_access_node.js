@@ -283,6 +283,21 @@ class SARootNode {
   }
 
   /**
+   * Looks for and returns the specified node within this node's children.
+   * If no equivalent node is found, returns null.
+   * @param {?AutomationNode|!SAChildNode|!SARootNode} node
+   * @return {?SAChildNode}
+   */
+  findChild(node) {
+    for (const child of this.children_) {
+      if (child.isEquivalentTo(node)) {
+        return child;
+      }
+    }
+    return null;
+  }
+
+  /**
    * @param {?chrome.automation.AutomationNode|!SARootNode|!SAChildNode} node
    * @return {boolean}
    */

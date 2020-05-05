@@ -9,6 +9,9 @@ declare_args() {
   #     1 : Used during the PGI (instrumentation) phase.
   #     2 : Used during the PGO (optimization) phase.
   chrome_pgo_phase = 0
+  if (is_official_build && is_mac) {
+    chrome_pgo_phase = 2
+  }
 
   # When using chrome_pgo_phase = 2, read profile data from this path.
   pgo_data_path = ""

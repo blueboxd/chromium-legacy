@@ -37,6 +37,7 @@
 #include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/loader/frame_loader.h"
 #include "third_party/blink/renderer/platform/fonts/font_cache.h"
+#include "third_party/blink/renderer/platform/fonts/font_fallback_map.h"
 #include "third_party/blink/renderer/platform/fonts/font_matching_metrics.h"
 #include "third_party/blink/renderer/platform/fonts/font_selector_client.h"
 #include "third_party/blink/renderer/platform/fonts/simple_font_data.h"
@@ -57,6 +58,7 @@ CSSFontSelector::CSSFontSelector(Document* document)
   FontCache::GetFontCache()->AddClient(this);
   FontFaceSetDocument::From(*document)->AddFontFacesToFontFaceCache(
       &font_face_cache_);
+  RegisterForInvalidationCallbacks(&GetFontFallbackMap());
 }
 
 CSSFontSelector::~CSSFontSelector() = default;

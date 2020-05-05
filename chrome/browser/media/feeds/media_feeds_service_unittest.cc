@@ -14,6 +14,7 @@
 #include "chrome/browser/media/feeds/media_feeds_service_factory.h"
 #include "chrome/browser/media/feeds/media_feeds_store.mojom-shared.h"
 #include "chrome/browser/media/history/media_history_keyed_service.h"
+#include "chrome/browser/media/history/media_history_test_utils.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
@@ -81,12 +82,15 @@ class MediaFeedsServiceTest : public ChromeRenderViewHostTestHarness {
 
   media_history::MediaHistoryKeyedService::MediaFeedFetchResult
   SuccessfulResultWithItems(
-      std::vector<media_feeds::mojom::MediaFeedItemPtr> items) {
+      std::vector<media_feeds::mojom::MediaFeedItemPtr> items,
+      const int64_t feed_id) {
     media_history::MediaHistoryKeyedService::MediaFeedFetchResult result;
-    result.feed_id = 1;
+    result.feed_id = feed_id;
     result.items = std::move(items);
     result.status = media_feeds::mojom::FetchResult::kSuccess;
     result.display_name = "test";
+    result.reset_token = media_history::test::GetResetTokenSync(
+        GetMediaHistoryService(), feed_id);
     return result;
   }
 
@@ -258,7 +262,8 @@ TEST_F(MediaFeedsServiceTest, FetchFeed_Success) {
 
   // Fetch the Media Feed.
   base::RunLoop run_loop;
-  GetMediaFeedsService()->FetchMediaFeed(1, feed_url, run_loop.QuitClosure());
+  GetMediaFeedsService()->FetchMediaFeed(1, run_loop.QuitClosure());
+  WaitForDB();
   ASSERT_TRUE(RespondToPendingFeedFetch(feed_url));
   run_loop.Run();
 
@@ -279,7 +284,8 @@ TEST_F(MediaFeedsServiceTest, FetchFeed_SuccessFromCache) {
 
   // Fetch the Media Feed.
   base::RunLoop run_loop;
-  GetMediaFeedsService()->FetchMediaFeed(1, feed_url, run_loop.QuitClosure());
+  GetMediaFeedsService()->FetchMediaFeed(1, run_loop.QuitClosure());
+  WaitForDB();
   ASSERT_TRUE(RespondToPendingFeedFetch(feed_url, true));
   run_loop.Run();
 
@@ -303,7 +309,8 @@ TEST_F(MediaFeedsServiceTest, FetchFeed_BackendError) {
 
   // Fetch the Media Feed.
   base::RunLoop run_loop;
-  GetMediaFeedsService()->FetchMediaFeed(1, feed_url, run_loop.QuitClosure());
+  GetMediaFeedsService()->FetchMediaFeed(1, run_loop.QuitClosure());
+  WaitForDB();
   ASSERT_TRUE(RespondToPendingFeedFetchWithStatus(
       feed_url, net::HTTP_INTERNAL_SERVER_ERROR));
   run_loop.Run();
@@ -327,7 +334,8 @@ TEST_F(MediaFeedsServiceTest, FetchFeed_NotFoundError) {
 
   // Fetch the Media Feed.
   base::RunLoop run_loop;
-  GetMediaFeedsService()->FetchMediaFeed(1, feed_url, run_loop.QuitClosure());
+  GetMediaFeedsService()->FetchMediaFeed(1, run_loop.QuitClosure());
+  WaitForDB();
   ASSERT_TRUE(RespondToPendingFeedFetchWithStatus(feed_url, net::HTTP_OK));
   run_loop.Run();
 
@@ -351,7 +359,7 @@ TEST_F(MediaFeedsServiceTest, SafeSearch_AllSafe) {
 
   // Store some media feed items.
   GetMediaHistoryService()->StoreMediaFeedFetchResult(
-      SuccessfulResultWithItems(GetExpectedItems()), base::DoNothing());
+      SuccessfulResultWithItems(GetExpectedItems(), 1), base::DoNothing());
   WaitForDB();
 
   base::RunLoop run_loop;
@@ -404,7 +412,7 @@ TEST_F(MediaFeedsServiceTest, SafeSearch_AllUnsafe) {
 
   // Store some media feed items.
   GetMediaHistoryService()->StoreMediaFeedFetchResult(
-      SuccessfulResultWithItems(GetExpectedItems()), base::DoNothing());
+      SuccessfulResultWithItems(GetExpectedItems(), 1), base::DoNothing());
   WaitForDB();
 
   base::RunLoop run_loop;
@@ -457,7 +465,7 @@ TEST_F(MediaFeedsServiceTest, SafeSearch_Failed_Request) {
 
   // Store some media feed items.
   GetMediaHistoryService()->StoreMediaFeedFetchResult(
-      SuccessfulResultWithItems(GetExpectedItems()), base::DoNothing());
+      SuccessfulResultWithItems(GetExpectedItems(), 1), base::DoNothing());
   WaitForDB();
 
   base::RunLoop run_loop;
@@ -507,7 +515,7 @@ TEST_F(MediaFeedsServiceTest, SafeSearch_Failed_Pref) {
 
   // Store some media feed items.
   GetMediaHistoryService()->StoreMediaFeedFetchResult(
-      SuccessfulResultWithItems(GetExpectedItems()), base::DoNothing());
+      SuccessfulResultWithItems(GetExpectedItems(), 1), base::DoNothing());
   WaitForDB();
 
   base::RunLoop run_loop;
@@ -557,7 +565,7 @@ TEST_F(MediaFeedsServiceTest, SafeSearch_CheckTwice_Inflight) {
 
   // Store some media feed items.
   GetMediaHistoryService()->StoreMediaFeedFetchResult(
-      SuccessfulResultWithItems(GetExpectedItems()), base::DoNothing());
+      SuccessfulResultWithItems(GetExpectedItems(), 1), base::DoNothing());
   WaitForDB();
 
   base::RunLoop run_loop;
@@ -602,7 +610,7 @@ TEST_F(MediaFeedsServiceTest, SafeSearch_CheckTwice_Committed) {
 
   // Store some media feed items.
   GetMediaHistoryService()->StoreMediaFeedFetchResult(
-      SuccessfulResultWithItems(GetExpectedItems()), base::DoNothing());
+      SuccessfulResultWithItems(GetExpectedItems(), 1), base::DoNothing());
   WaitForDB();
 
   auto pending_items_a = GetPendingSafeSearchCheckMediaFeedItemsSync();
@@ -655,7 +663,7 @@ TEST_F(MediaFeedsServiceTest, SafeSearch_Mixed_SafeUnsafe) {
   std::vector<media_feeds::mojom::MediaFeedItemPtr> items;
   items.push_back(GetSingleExpectedItem());
   GetMediaHistoryService()->StoreMediaFeedFetchResult(
-      SuccessfulResultWithItems(std::move(items)), base::DoNothing());
+      SuccessfulResultWithItems(std::move(items), 1), base::DoNothing());
   WaitForDB();
 
   {
@@ -701,7 +709,7 @@ TEST_F(MediaFeedsServiceTest, SafeSearch_Mixed_SafeUncertain) {
   std::vector<media_feeds::mojom::MediaFeedItemPtr> items;
   items.push_back(GetSingleExpectedItem());
   GetMediaHistoryService()->StoreMediaFeedFetchResult(
-      SuccessfulResultWithItems(std::move(items)), base::DoNothing());
+      SuccessfulResultWithItems(std::move(items), 1), base::DoNothing());
   WaitForDB();
 
   {
@@ -747,7 +755,7 @@ TEST_F(MediaFeedsServiceTest, SafeSearch_Mixed_UnsafeUncertain) {
   std::vector<media_feeds::mojom::MediaFeedItemPtr> items;
   items.push_back(GetSingleExpectedItem());
   GetMediaHistoryService()->StoreMediaFeedFetchResult(
-      SuccessfulResultWithItems(std::move(items)), base::DoNothing());
+      SuccessfulResultWithItems(std::move(items), 1), base::DoNothing());
   WaitForDB();
 
   {
@@ -795,7 +803,7 @@ TEST_F(MediaFeedsServiceTest, SafeSearch_Failed_Feature) {
 
   // Store some media feed items.
   GetMediaHistoryService()->StoreMediaFeedFetchResult(
-      SuccessfulResultWithItems(GetExpectedItems()), base::DoNothing());
+      SuccessfulResultWithItems(GetExpectedItems(), 1), base::DoNothing());
   WaitForDB();
 
   base::RunLoop run_loop;
@@ -851,7 +859,8 @@ TEST_F(MediaFeedsServiceTest, FetcherShouldTriggerSafeSearch) {
   {
     // Fetch the Media Feed.
     base::RunLoop run_loop;
-    GetMediaFeedsService()->FetchMediaFeed(1, feed_url, run_loop.QuitClosure());
+    GetMediaFeedsService()->FetchMediaFeed(1, run_loop.QuitClosure());
+    WaitForDB();
     ASSERT_TRUE(RespondToPendingFeedFetch(feed_url));
     run_loop.Run();
   }
@@ -887,7 +896,7 @@ TEST_F(MediaFeedsServiceTest, FetcherShouldDeleteFeedIfGone) {
 
   // Store some media feed items.
   GetMediaHistoryService()->StoreMediaFeedFetchResult(
-      SuccessfulResultWithItems(GetExpectedItems()), base::DoNothing());
+      SuccessfulResultWithItems(GetExpectedItems(), 1), base::DoNothing());
   WaitForDB();
 
   base::RunLoop run_loop;
@@ -926,7 +935,7 @@ TEST_F(MediaFeedsServiceTest, FetcherShouldDeleteFeedIfGone) {
 
   // Store some new media feed items.
   GetMediaHistoryService()->StoreMediaFeedFetchResult(
-      SuccessfulResultWithItems(GetExpectedItems()), base::DoNothing());
+      SuccessfulResultWithItems(GetExpectedItems(), 1), base::DoNothing());
   WaitForDB();
 
   {
@@ -948,16 +957,85 @@ TEST_F(MediaFeedsServiceTest, FetcherShouldSupportMultipleFetchesForSameFeed) {
 
   // Fetch the same feed twice.
   base::RunLoop run_loop;
-  GetMediaFeedsService()->FetchMediaFeed(1, feed_url, run_loop.QuitClosure());
+  GetMediaFeedsService()->FetchMediaFeed(1, run_loop.QuitClosure());
+  WaitForDB();
 
   base::RunLoop run_loop_alt;
-  GetMediaFeedsService()->FetchMediaFeed(1, feed_url,
-                                         run_loop_alt.QuitClosure());
+  GetMediaFeedsService()->FetchMediaFeed(1, run_loop_alt.QuitClosure());
+  WaitForDB();
 
   // Respond and make sure both run loop quit closures were called.
   ASSERT_TRUE(RespondToPendingFeedFetch(feed_url));
   run_loop.Run();
   run_loop_alt.Run();
+}
+
+TEST_F(MediaFeedsServiceTest, FetcherShouldHandleReset) {
+  const GURL feed_url("https://www.google.com/feed");
+
+  SetSafeSearchEnabled(true);
+  safe_search_checker()->SetUpValidResponse(/* is_porn= */ false);
+
+  // Store a Media Feed.
+  GetMediaHistoryService()->DiscoverMediaFeed(feed_url);
+  WaitForDB();
+
+  // Store some media feed items.
+  GetMediaHistoryService()->StoreMediaFeedFetchResult(
+      SuccessfulResultWithItems(GetExpectedItems(), 1), base::DoNothing());
+  WaitForDB();
+
+  {
+    // Check the feed and items are stored correctly.
+    auto feeds = GetMediaFeedsSync();
+    ASSERT_EQ(1u, feeds.size());
+    EXPECT_EQ(media_feeds::mojom::ResetReason::kNone, feeds[0]->reset_reason);
+    EXPECT_EQ(media_feeds::mojom::FetchResult::kSuccess,
+              feeds[0]->last_fetch_result);
+
+    auto items = GetItemsForMediaFeedSync(1);
+    EXPECT_EQ(GetExpectedItems(), items);
+  }
+
+  // Start fetching the feed but do not resolve the request.
+  base::RunLoop run_loop;
+  GetMediaFeedsService()->FetchMediaFeed(1, run_loop.QuitClosure());
+  WaitForDB();
+
+  // Reset the feed.
+  GetMediaHistoryService()->ResetMediaFeed(
+      url::Origin::Create(feed_url), media_feeds::mojom::ResetReason::kVisit);
+  WaitForDB();
+
+  {
+    // Check the feed was reset.
+    auto feeds = GetMediaFeedsSync();
+    ASSERT_EQ(1u, feeds.size());
+    EXPECT_EQ(media_feeds::mojom::ResetReason::kVisit, feeds[0]->reset_reason);
+    EXPECT_EQ(media_feeds::mojom::FetchResult::kNone,
+              feeds[0]->last_fetch_result);
+
+    auto items = GetItemsForMediaFeedSync(1);
+    EXPECT_TRUE(items.empty());
+  }
+
+  // Respond to the pending fetch.
+  ASSERT_TRUE(RespondToPendingFeedFetch(feed_url));
+  run_loop.Run();
+  WaitForDB();
+
+  {
+    // The feed should have still been reset since the fetch was started with
+    // outdated information.
+    auto feeds = GetMediaFeedsSync();
+    ASSERT_EQ(1u, feeds.size());
+    EXPECT_EQ(media_feeds::mojom::ResetReason::kVisit, feeds[0]->reset_reason);
+    EXPECT_EQ(media_feeds::mojom::FetchResult::kFailedDueToResetWhileInflight,
+              feeds[0]->last_fetch_result);
+
+    auto items = GetItemsForMediaFeedSync(1);
+    EXPECT_TRUE(items.empty());
+  }
 }
 
 }  // namespace media_feeds

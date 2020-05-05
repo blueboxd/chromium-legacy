@@ -15,6 +15,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/border.h"
@@ -23,9 +24,13 @@
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/controls/textfield/textfield_controller.h"
+#include "ui/views/examples/grit/views_examples_resources.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/view.h"
+
+using l10n_util::GetStringUTF16;
+using l10n_util::GetStringUTF8;
 
 namespace views {
 namespace examples {
@@ -59,20 +64,22 @@ class VectorIconGallery : public View,
 
     auto file_chooser = std::make_unique<Textfield>();
     file_chooser->SetPlaceholderText(
-        base::ASCIIToUTF16("Enter a file to read"));
+        GetStringUTF16(IDS_VECTOR_FILE_SELECT_LABEL));
     auto file_container = std::make_unique<View>();
     BoxLayout* file_box =
         file_container->SetLayoutManager(std::make_unique<BoxLayout>(
             BoxLayout::Orientation::kHorizontal, gfx::Insets(10), 10));
     file_chooser_ = file_container->AddChildView(std::move(file_chooser));
     file_go_button_ = file_container->AddChildView(
-        MdTextButton::Create(this, base::ASCIIToUTF16("Render")));
+        MdTextButton::Create(this, GetStringUTF16(IDS_VECTOR_RENDER_LABEL)));
     file_box->SetFlexForView(file_chooser_, 1);
     AddChildView(std::move(file_container));
 
-    size_input_->SetPlaceholderText(base::ASCIIToUTF16("Size in dip"));
+    size_input_->SetPlaceholderText(
+        GetStringUTF16(IDS_VECTOR_DIP_SIZE_DESC_LABEL));
     size_input_->set_controller(this);
-    color_input_->SetPlaceholderText(base::ASCIIToUTF16("Color (AARRGGBB)"));
+    color_input_->SetPlaceholderText(
+        GetStringUTF16(IDS_VECTOR_COLOR_DESC_LABEL));
     color_input_->set_controller(this);
   }
 
@@ -147,7 +154,8 @@ class VectorIconGallery : public View,
 
 }  // namespace
 
-VectorExample::VectorExample() : ExampleBase("Vector Icon") {}
+VectorExample::VectorExample()
+    : ExampleBase(GetStringUTF8(IDS_VECTOR_SELECT_LABEL).c_str()) {}
 
 VectorExample::~VectorExample() = default;
 

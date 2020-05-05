@@ -39,11 +39,13 @@ class ExecutionContext;
 class FontData;
 class FontDescription;
 class FontFaceCache;
+class FontFallbackMap;
 class FontSelectorClient;
 class GenericFontFamilySettings;
 
 class PLATFORM_EXPORT FontSelector : public FontCacheClient {
  public:
+  FontSelector();
   ~FontSelector() override = default;
   virtual scoped_refptr<FontData> GetFontData(const FontDescription&,
                                        const AtomicString& family_name) = 0;
@@ -93,11 +95,18 @@ class PLATFORM_EXPORT FontSelector : public FontCacheClient {
       const FontDescription&,
       const AtomicString& passed_family) = 0;
 
+  FontFallbackMap& GetFontFallbackMap() { return *font_fallback_map_; }
+
+  void Trace(Visitor* visitor) override;
+
  protected:
   static AtomicString FamilyNameFromSettings(
       const GenericFontFamilySettings&,
       const FontDescription&,
       const AtomicString& generic_family_name);
+
+ private:
+  Member<FontFallbackMap> font_fallback_map_;
 };
 
 }  // namespace blink

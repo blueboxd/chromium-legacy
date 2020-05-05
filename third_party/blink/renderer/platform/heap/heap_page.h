@@ -1377,8 +1377,13 @@ NO_SANITIZE_ADDRESS inline HeapObjectHeader::HeapObjectHeader(
   DCHECK_LT(gc_info_index, GCInfoTable::kMaxIndex);
   DCHECK_LT(size, kNonLargeObjectPageSizeMax);
   DCHECK_EQ(0u, size & kAllocationMask);
-  encoded_high_ =
-      static_cast<uint16_t>(gc_info_index << kHeaderGCInfoIndexShift);
+  // Relaxed memory order is enough as in construction is created/synchronized
+  // as follows:
+  // - Page allocator gets zeroed page and uses page initialization fence.
+  // - Sweeper zeroes memory and synchronizes via global lock.
+  internal::AsUnsanitizedAtomic(&encoded_high_)
+      ->store(static_cast<uint16_t>(gc_info_index << kHeaderGCInfoIndexShift),
+              std::memory_order_relaxed);
   encoded_low_ = internal::EncodeSize(size);
   DCHECK(IsInConstruction());
 }

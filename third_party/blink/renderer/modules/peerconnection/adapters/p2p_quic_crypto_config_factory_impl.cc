@@ -75,6 +75,7 @@ class DummyProofSource : public quic::ProofSource {
 
   // ProofSource override.
   void GetProof(const quic::QuicSocketAddress& server_addr,
+                const quic::QuicSocketAddress& client_addr,
                 const std::string& hostname,
                 const std::string& server_config,
                 quic::QuicTransportVersion transport_version,
@@ -83,12 +84,13 @@ class DummyProofSource : public quic::ProofSource {
     quic::QuicCryptoProof proof;
     proof.signature = "Dummy signature";
     proof.leaf_cert_scts = "Dummy timestamp";
-    callback->Run(true, GetCertChain(server_addr, hostname), proof,
+    callback->Run(true, GetCertChain(server_addr, client_addr, hostname), proof,
                   nullptr /* details */);
   }
 
   quic::QuicReferenceCountedPointer<Chain> GetCertChain(
       const quic::QuicSocketAddress& server_address,
+      const quic::QuicSocketAddress& client_address,
       const std::string& hostname) override {
     std::vector<std::string> certs;
     certs.push_back("Dummy cert");
@@ -97,6 +99,7 @@ class DummyProofSource : public quic::ProofSource {
   }
   void ComputeTlsSignature(
       const quic::QuicSocketAddress& server_address,
+      const quic::QuicSocketAddress& client_address,
       const std::string& hostname,
       uint16_t signature_algorithm,
       quiche::QuicheStringPiece in,

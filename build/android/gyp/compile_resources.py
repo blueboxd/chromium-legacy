@@ -274,6 +274,11 @@ def _ParseArgs(args):
       help='Path to file produced by aapt2 that maps original resource paths '
       'to shortened resource paths inside the apk or module.')
 
+  input_opts.add_argument(
+      '--is-bundle-module',
+      action='store_true',
+      help='Whether resources are being generated for a bundle module.')
+
   options = parser.parse_args(args)
 
   resource_utils.HandleCommonOptions(options)
@@ -814,36 +819,41 @@ def _HardcodeSharedLibraryDynamicAttributes(zip_path, options):
     with open(os.path.join(tmp_dir, 'resources.pb')) as f:
       table.ParseFromString(f.read())
 
-    # A separate top level package will be added to the resources, which
-    # contains only locale specific resources. The package ID of the locale
-    # resources is hardcoded to _SHARED_LIBRARY_HARDCODED_ID. This causes
-    # resources in locale splits to all get assigned
-    # _SHARED_LIBRARY_HARDCODED_ID as their package ID, which prevents a bug in
-    # shared library bundles where each split APK gets a separate dynamic ID,
-    # and cannot be accessed by the main APK.
-    translations_package = Resources_pb2.Package()
-    translations_package.package_id.id = _SHARED_LIBRARY_HARDCODED_ID
-    translations_package.package_name = table.package[
-        0].package_name + '_translations'
+    translations_package = None
+    if options.is_bundle_module:
+      # A separate top level package will be added to the resources, which
+      # contains only locale specific resources. The package ID of the locale
+      # resources is hardcoded to _SHARED_LIBRARY_HARDCODED_ID. This causes
+      # resources in locale splits to all get assigned
+      # _SHARED_LIBRARY_HARDCODED_ID as their package ID, which prevents a bug
+      # in shared library bundles where each split APK gets a separate dynamic
+      # ID, and cannot be accessed by the main APK.
+      translations_package = Resources_pb2.Package()
+      translations_package.package_id.id = _SHARED_LIBRARY_HARDCODED_ID
+      translations_package.package_name = table.package[
+          0].package_name + '_translations'
 
-    # These resources are allowed in the base resources, since they are needed
-    # by WebView.
-    allowed_resource_names = set()
-    if options.shared_resources_allowlist:
-      allowed_resource_names = set(
-          resource_utils.GetRTxtStringResourceNames(
-              options.shared_resources_allowlist))
+      # These resources are allowed in the base resources, since they are needed
+      # by WebView.
+      allowed_resource_names = set()
+      if options.shared_resources_allowlist:
+        allowed_resource_names = set(
+            resource_utils.GetRTxtStringResourceNames(
+                options.shared_resources_allowlist))
+
     for package in table.package:
       for _type in package.type:
         for entry in _type.entry:
           for config_value in entry.config_value:
             _ProcessProtoValue(config_value.value)
 
-        locale_type = _SplitLocaleResourceType(_type, allowed_resource_names)
-        if locale_type:
-          translations_package.type.add().CopyFrom(locale_type)
+        if translations_package is not None:
+          locale_type = _SplitLocaleResourceType(_type, allowed_resource_names)
+          if locale_type:
+            translations_package.type.add().CopyFrom(locale_type)
 
-    table.package.add().CopyFrom(translations_package)
+    if translations_package is not None:
+      table.package.add().CopyFrom(translations_package)
 
     with open(os.path.join(tmp_dir, 'resources.pb'), 'w') as f:
       f.write(table.SerializeToString())

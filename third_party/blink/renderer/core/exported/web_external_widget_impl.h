@@ -42,6 +42,8 @@ class WebExternalWidgetImpl : public WebExternalWidget,
   WebInputEventResult HandleInputEvent(
       const WebCoalescedInputEvent& coalesced_event) override;
   WebInputEventResult DispatchBufferedTouchEvents() override;
+  scheduler::WebRenderWidgetSchedulingState* RendererWidgetSchedulingState()
+      override;
 
   // WebExternalWidget overrides:
   void SetRootLayer(scoped_refptr<cc::Layer>) override;

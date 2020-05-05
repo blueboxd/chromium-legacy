@@ -24,11 +24,13 @@
 #include "content/browser/devtools/protocol/devtools_download_manager_delegate.h"
 #include "content/browser/devtools/protocol/devtools_protocol_test_support.h"
 #include "content/browser/download/download_manager_impl.h"
+#include "content/browser/frame_host/interstitial_page_impl.h"
 #include "content/browser/frame_host/navigator.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_manager.h"
+#include "content/public/browser/interstitial_page_delegate.h"
 #include "content/public/browser/javascript_dialog_manager.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
@@ -172,6 +174,12 @@ class SitePerProcessDevToolsProtocolTest : public DevToolsProtocolTest {
     DevToolsProtocolTest::SetUpCommandLine(command_line);
     IsolateAllSitesForTesting(command_line);
   }
+};
+
+class TestInterstitialDelegate : public InterstitialPageDelegate {
+ private:
+  // InterstitialPageDelegate:
+  std::string GetHTMLContents() override { return "<p>Interstitial</p>"; }
 };
 
 class SyntheticKeyEventTest : public DevToolsProtocolTest {
@@ -1724,6 +1732,23 @@ IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, TargetDiscovery) {
   EXPECT_TRUE(params->GetString("targetId", &temp));
   EXPECT_EQ(attached_id, temp);
   EXPECT_TRUE(notifications_.empty());
+}
+
+// Tests that an interstitialShown event is sent when an interstitial is showing
+// on attach.
+IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, InterstitialShownOnAttach) {
+  TestInterstitialDelegate* delegate = new TestInterstitialDelegate;
+  WebContentsImpl* web_contents =
+      static_cast<WebContentsImpl*>(shell()->web_contents());
+  GURL interstitial_url("https://example.test");
+  InterstitialPageImpl* interstitial = new InterstitialPageImpl(
+      web_contents, static_cast<RenderWidgetHostDelegate*>(web_contents), true,
+      interstitial_url, delegate);
+  interstitial->Show();
+  WaitForInterstitialAttach(web_contents);
+  Attach();
+  SendCommand("Page.enable", nullptr, false);
+  WaitForNotification("Page.interstitialShown", true);
 }
 
 IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, SetAndGetCookies) {

@@ -573,13 +573,13 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         # no known flaky tests in the default test_expectations, we add additional expectations.
         host = MockHost()
         host.filesystem.write_text_file(
-            '/tmp/overrides.txt',
+            '/tmp/additional.txt',
             '# results: [ Failure Pass ]\npasses/image.html [ Failure Pass ]\n'
         )
 
         batches = get_test_batches([
-            '--skip-failing-tests', '--additional-expectations',
-            '/tmp/overrides.txt'
+            '--skip-failing-tests',
+            '--additional-expectation=/tmp/additional.txt',
         ],
                                    host=host)
         has_passes_text = False
@@ -602,14 +602,15 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         host = MockHost()
         port = host.port_factory.get('test-win-win7')
         host.filesystem.write_text_file(
-            '/tmp/overrides.txt',
+            '/tmp/additional.txt',
             '# results: [ Timeout ]\nfailures/expected/text.html [ Timeout ]')
         self.assertTrue(
             logging_run([
-                '--order', 'natural', 'failures/expected/text.html',
-                '--num-retries', '1', '--additional-driver-flag',
-                '--composite-after-paint', '--additional-expectations',
-                '/tmp/overrides.txt'
+                '--order=natural',
+                '--num-retries=1',
+                '--additional-driver-flag=--composite-after-paint',
+                '--additional-expectations=/tmp/additional.txt',
+                'failures/expected/text.html',
             ],
                         tests_included=True,
                         host=host))
@@ -627,15 +628,16 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         flag_exp_path = host.filesystem.join(
             port.web_tests_dir(), 'FlagExpectations', 'composite-after-paint')
         host.filesystem.write_text_file(
-            '/tmp/overrides.txt',
+            '/tmp/additional.txt',
             '# results: [ Timeout ]\nfailures/expected/text.html [ Timeout ]')
         host.filesystem.write_text_file(flag_exp_path, '')
         self.assertTrue(
             logging_run([
-                '--order', 'natural', 'failures/expected/text.html',
-                '--num-retries', '1', '--additional-driver-flag',
-                '--composite-after-paint', '--additional-expectations',
-                '/tmp/overrides.txt'
+                '--order=natural',
+                '--num-retries=1',
+                '--additional-driver-flag=--composite-after-paint',
+                '--additional-expectations=/tmp/additional.txt',
+                'failures/expected/text.html',
             ],
                         tests_included=True,
                         host=host))
@@ -647,34 +649,79 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         self.assertNotIn('flag_expectations', test_results)
         self.assertNotIn('base_expectations', test_results)
 
-    def test_slow_flag_expectations_in_json_results(self):
+    def test_pass_flag_expectations_in_json_results(self):
         host = MockHost()
         port = host.port_factory.get('test-win-win7')
         flag_exp_path = host.filesystem.join(
             port.web_tests_dir(), 'FlagExpectations', 'composite-after-paint')
         host.filesystem.write_text_file(
-            '/tmp/overrides.txt',
+            '/tmp/additional.txt',
             '# results: [ Timeout ]\nfailures/expected/text.html [ Timeout ]')
         host.filesystem.write_text_file(
             flag_exp_path,
-            '# results: [ Slow ]\nfailures/expected/text.html [ Slow ]')
+            '# results: [ Slow Pass ]\nfailures/expected/text.html [ Pass ]\n')
         self.assertTrue(
             logging_run([
-                '--order', 'natural', 'failures/expected/text.html',
-                '--num-retries', '1', '--additional-driver-flag',
-                '--composite-after-paint', '--additional-expectations',
-                '/tmp/overrides.txt'
+                '--order=natural',
+                '--num-retries=1',
+                '--additional-driver-flag=--composite-after-paint',
+                '--additional-expectations=/tmp/additional.txt',
+                'failures/expected/text.html',
             ],
                         tests_included=True,
                         host=host))
         results = json.loads(
             host.filesystem.read_text_file(
                 '/tmp/layout-test-results/full_results.json'))
-        test_results = results['tests']['failures']['expected']['text.html']
         self.assertEqual(results['flag_name'], '/composite-after-paint')
+
+        test_results = results['tests']['failures']['expected']['text.html']
+        self.assertEqual(test_results['expected'], 'PASS')
         self.assertEqual(test_results['flag_expectations'], ['PASS'])
         self.assertEqual(test_results['base_expectations'],
                          ['FAIL', 'TIMEOUT'])
+
+    def test_slow_flag_expectations_in_json_results(self):
+        host = MockHost()
+        port = host.port_factory.get('test-win-win7')
+        flag_exp_path = host.filesystem.join(port.web_tests_dir(),
+                                             'FlagExpectations',
+                                             'composite-after-paint')
+        host.filesystem.write_text_file(
+            '/tmp/additional.txt', '# results: [ Timeout Crash ]\n'
+            'failures/expected/text.html [ Timeout ]\n'
+            'failures/expected/image.html [ Crash ]')
+        host.filesystem.write_text_file(
+            flag_exp_path, '# results: [ Slow Pass ]\n'
+            'failures/expected/text.html [ Slow ]\n'
+            'failures/expected/image.html [ Pass Slow ]')
+        self.assertTrue(
+            logging_run([
+                '--order=natural',
+                '--num-retries=1',
+                '--additional-driver-flag=--composite-after-paint',
+                '--additional-expectations=/tmp/additional.txt',
+                'failures/expected/text.html',
+                'failures/expected/image.html',
+            ],
+                        tests_included=True,
+                        host=host))
+        results = json.loads(
+            host.filesystem.read_text_file(
+                '/tmp/layout-test-results/full_results.json'))
+        self.assertEqual(results['flag_name'], '/composite-after-paint')
+
+        text_results = results['tests']['failures']['expected']['text.html']
+        # A single [ Slow ] just indicates the test is slow, but doesn't create
+        # an explicit [ Pass ] expectation.
+        self.assertNotIn('flag_expectations', text_results)
+        self.assertNotIn('base_expectations', text_results)
+        self.assertEqual(text_results['expected'], 'FAIL TIMEOUT')
+
+        image_results = results['tests']['failures']['expected']['image.html']
+        self.assertEqual(image_results['expected'], 'PASS')
+        self.assertEqual(image_results['flag_expectations'], ['PASS'])
+        self.assertEqual(image_results['base_expectations'], ['FAIL', 'CRASH'])
 
     def test_flag_and_base_expectations_in_json_results(self):
         host = MockHost()
@@ -682,7 +729,7 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         flag_exp_path = host.filesystem.join(
             port.web_tests_dir(), 'FlagExpectations', 'composite-after-paint')
         host.filesystem.write_text_file(
-            '/tmp/overrides.txt',
+            '/tmp/additional.txt',
             '# results: [ Timeout ]\nfailures/expected/text.html [ Timeout ]')
         host.filesystem.write_text_file(
             flag_exp_path,
@@ -690,10 +737,11 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         )
         self.assertTrue(
             logging_run([
-                '--order', 'natural', 'failures/expected/text.html',
-                '--num-retries', '1', '--additional-driver-flag',
-                '--composite-after-paint', '--additional-expectations',
-                '/tmp/overrides.txt'
+                '--order=natural',
+                '--num-retries=1',
+                '--additional-driver-flag=--composite-after-paint',
+                '--additional-expectations=/tmp/additional.txt',
+                'failures/expected/text.html',
             ],
                         tests_included=True,
                         host=host))
@@ -702,6 +750,7 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
                 '/tmp/layout-test-results/full_results.json'))
         test_results = results['tests']['failures']['expected']['text.html']
         self.assertEqual(results['flag_name'], '/composite-after-paint')
+        self.assertEqual(test_results['expected'], 'FAIL CRASH')
         self.assertEqual(test_results['flag_expectations'], ['FAIL', 'CRASH'])
         self.assertEqual(test_results['base_expectations'],
                          ['FAIL', 'TIMEOUT'])
@@ -716,8 +765,10 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
             '# results: [ Failure ]\npasses/args.html [ Failure ]')
         self.assertTrue(
             logging_run([
-                '--order', 'natural', 'passes/args.html', '--num-retries', '1',
-                '--additional-driver-flag', '--composite-after-paint'
+                '--order=natural',
+                '--num-retries=1',
+                '--additional-driver-flag=--composite-after-paint',
+                'passes/args.html',
             ],
                         tests_included=True,
                         host=host))
@@ -726,6 +777,7 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
                 '/tmp/layout-test-results/full_results.json'))
         test_results = results['tests']['passes']['args.html']
         self.assertEqual(results['flag_name'], '/composite-after-paint')
+        self.assertEqual(test_results['expected'], 'FAIL')
         self.assertEqual(test_results['flag_expectations'], ['FAIL'])
         self.assertEqual(test_results['base_expectations'], ['PASS'])
 
@@ -2088,12 +2140,12 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
     def test_additional_expectations(self):
         host = MockHost()
         host.filesystem.write_text_file(
-            '/tmp/overrides.txt',
+            '/tmp/additional.txt',
             '# results: [ Failure ]\nfailures/unexpected/mismatch.html [ Failure ]\n'
         )
         self.assertTrue(
             passing_run([
-                '--additional-expectations', '/tmp/overrides.txt',
+                '--additional-expectations=/tmp/additional.txt',
                 'failures/unexpected/mismatch.html'
             ],
                         tests_included=True,

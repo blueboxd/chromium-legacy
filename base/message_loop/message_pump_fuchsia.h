@@ -53,6 +53,8 @@ class BASE_EXPORT MessagePumpFuchsia : public MessagePump,
 
     virtual bool WaitBegin();
 
+    bool is_active() const { return async_wait_t::handler != nullptr; }
+
     static void HandleSignal(async_dispatcher_t* async,
                              async_wait_t* wait,
                              zx_status_t status,
@@ -105,7 +107,8 @@ class BASE_EXPORT MessagePumpFuchsia : public MessagePump,
     int fd_ = -1;
     uint32_t desired_events_ = 0;
 
-    // Set by WatchFileDescriptor to hold a reference to the descriptor's mxio.
+    // Set by WatchFileDescriptor() to hold a reference to the descriptor's
+    // fdio.
     fdio_t* io_ = nullptr;
 
     DISALLOW_COPY_AND_ASSIGN(FdWatchController);

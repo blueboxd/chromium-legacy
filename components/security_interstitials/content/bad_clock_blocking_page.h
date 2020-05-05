@@ -30,8 +30,7 @@ class BadClockUI;
 class BadClockBlockingPage : public SSLBlockingPageBase {
  public:
   // Interstitial type, used in tests.
-  static const security_interstitials::SecurityInterstitialPage::TypeID
-      kTypeForTesting;
+  static const InterstitialPageDelegate::TypeID kTypeForTesting;
 
   // If the blocking page isn't shown, the caller is responsible for cleaning
   // up the blocking page. Otherwise, the interstitial takes ownership when
@@ -50,13 +49,15 @@ class BadClockBlockingPage : public SSLBlockingPageBase {
 
   ~BadClockBlockingPage() override;
 
-  // SecurityInterstitialPage method:
-  security_interstitials::SecurityInterstitialPage::TypeID GetTypeForTesting()
-      override;
+  // InterstitialPageDelegate method:
+  InterstitialPageDelegate::TypeID GetTypeForTesting() override;
 
  protected:
-  // SecurityInterstitialPage implementation:
+  // InterstitialPageDelegate implementation:
   void CommandReceived(const std::string& command) override;
+  void OverrideEntry(content::NavigationEntry* entry) override;
+
+  // SecurityInterstitialPage implementation:
   bool ShouldCreateNewNavigation() const override;
   void PopulateInterstitialStrings(
       base::DictionaryValue* load_time_data) override;

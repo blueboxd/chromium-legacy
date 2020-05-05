@@ -31,6 +31,8 @@ CertVerifier::Config::~Config() = default;
 CertVerifier::Config& CertVerifier::Config::operator=(const Config&) = default;
 CertVerifier::Config& CertVerifier::Config::operator=(Config&&) = default;
 
+CertVerifier::RequestParams::RequestParams() = default;
+
 CertVerifier::RequestParams::RequestParams(
     scoped_refptr<X509Certificate> certificate,
     const std::string& hostname,

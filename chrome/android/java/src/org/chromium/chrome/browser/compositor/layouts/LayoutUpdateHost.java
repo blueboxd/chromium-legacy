@@ -21,6 +21,15 @@ public interface LayoutUpdateHost {
     void requestUpdate();
 
     /**
+     * Requests a next update to refresh the transforms and changing properties. The update occurs
+     * once a frame. This is requesting a new frame to be updated and rendered (no need to call
+     * {@link LayoutRenderHost#requestRender()}).
+     * @param onUpdateEffective Callback that will be called when there is a buffer swap for the
+     *                          updated frame.
+     */
+    default void requestUpdate(Runnable onUpdateEffective) {}
+
+    /**
      * Tells its host {@link android.view.View} that the hide will be an animation away.
      * This is to be called from a {@link Layout}.
      * @param nextTabId          The id of the next tab.

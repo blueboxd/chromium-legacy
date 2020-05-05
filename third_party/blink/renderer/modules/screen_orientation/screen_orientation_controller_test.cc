@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/modules/screen_orientation/screen_orientation_controller_impl.h"
+#include "third_party/blink/renderer/modules/screen_orientation/screen_orientation_controller.h"
 
 #include <memory>
 
@@ -49,11 +49,10 @@ class MockLockOrientationCallback : public blink::WebLockOrientationCallback {
   LockOrientationResultHolder* results_;
 };
 
-class ScreenOrientationControllerImplTest : public PageTestBase {
+class ScreenOrientationControllerTest : public PageTestBase {
  protected:
   void SetUp() override {
     PageTestBase::SetUp(IntSize());
-    ScreenOrientationControllerImpl::ProvideTo(GetFrame());
     mojo::AssociatedRemote<device::mojom::blink::ScreenOrientation>
         screen_orientation;
     ignore_result(
@@ -67,8 +66,8 @@ class ScreenOrientationControllerImplTest : public PageTestBase {
         mojo::AssociatedRemote<device::mojom::blink::ScreenOrientation>());
   }
 
-  ScreenOrientationControllerImpl* Controller() {
-    return ScreenOrientationControllerImpl::From(GetFrame());
+  ScreenOrientationController* Controller() {
+    return ScreenOrientationController::From(*GetFrame().DomWindow());
   }
 
   void LockOrientation(
@@ -88,7 +87,7 @@ class ScreenOrientationControllerImplTest : public PageTestBase {
 
 // Test that calling lockOrientation() followed by unlockOrientation() cancel
 // the lockOrientation().
-TEST_F(ScreenOrientationControllerImplTest, CancelPending_Unlocking) {
+TEST_F(ScreenOrientationControllerTest, CancelPending_Unlocking) {
   MockLockOrientationCallback::LockOrientationResultHolder callback_results;
 
   LockOrientation(
@@ -102,7 +101,7 @@ TEST_F(ScreenOrientationControllerImplTest, CancelPending_Unlocking) {
 }
 
 // Test that calling lockOrientation() twice cancel the first lockOrientation().
-TEST_F(ScreenOrientationControllerImplTest, CancelPending_DoubleLock) {
+TEST_F(ScreenOrientationControllerTest, CancelPending_DoubleLock) {
   MockLockOrientationCallback::LockOrientationResultHolder callback_results;
   // We create the object to prevent leaks but never actually use it.
   MockLockOrientationCallback::LockOrientationResultHolder callback_results2;
@@ -122,7 +121,7 @@ TEST_F(ScreenOrientationControllerImplTest, CancelPending_DoubleLock) {
 
 // Test that when a LockError message is received, the request is set as failed
 // with the correct values.
-TEST_F(ScreenOrientationControllerImplTest, LockRequest_Error) {
+TEST_F(ScreenOrientationControllerTest, LockRequest_Error) {
   HashMap<LockResult, blink::WebLockOrientationError, WTF::IntHash<LockResult>>
       errors;
   errors.insert(LockResult::SCREEN_ORIENTATION_LOCK_RESULT_ERROR_NOT_AVAILABLE,
@@ -147,7 +146,7 @@ TEST_F(ScreenOrientationControllerImplTest, LockRequest_Error) {
 
 // Test that when a LockSuccess message is received, the request is set as
 // succeeded.
-TEST_F(ScreenOrientationControllerImplTest, LockRequest_Success) {
+TEST_F(ScreenOrientationControllerTest, LockRequest_Success) {
   MockLockOrientationCallback::LockOrientationResultHolder callback_results;
   LockOrientation(
       blink::kWebScreenOrientationLockPortraitPrimary,
@@ -166,7 +165,7 @@ TEST_F(ScreenOrientationControllerImplTest, LockRequest_Success) {
 // - request1 is rejected;
 // - request1 success response is received.
 // Expected: request1 is still rejected, request2 has not been set as succeeded.
-TEST_F(ScreenOrientationControllerImplTest, RaceScenario) {
+TEST_F(ScreenOrientationControllerTest, RaceScenario) {
   MockLockOrientationCallback::LockOrientationResultHolder callback_results1;
   MockLockOrientationCallback::LockOrientationResultHolder callback_results2;
 

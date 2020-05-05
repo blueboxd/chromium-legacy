@@ -49,6 +49,7 @@ class MODULES_EXPORT ModulesInitializer : public CoreInitializer {
       const SessionStorageNamespaceId& clone_to_namespace) override;
 
   void DidChangeManifest(LocalFrame&) override;
+  void NotifyOrientationChanged(LocalFrame&) override;
 };
 
 }  // namespace blink

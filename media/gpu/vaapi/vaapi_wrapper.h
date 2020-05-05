@@ -97,7 +97,9 @@ class MEDIA_GPU_EXPORT VaapiWrapper
  public:
   enum CodecMode {
     kDecode,
-    kEncode,
+    kEncode,  // Encode with Constant Bitrate algorithm.
+    kEncodeConstantQuantizationParameter,  // Encode with Constant Quantization
+                                           // Parameter algorithm.
     kVideoProcess,
     kCodecModeMax,
   };
@@ -426,8 +428,8 @@ class MEDIA_GPU_EXPORT VaapiWrapper
   // Attempt to set render mode to "render to texture.". Failure is non-fatal.
   void TryToSetVADisplayAttributeToLocalGPU();
 
-  // Check low-power encode support for the given profile
-  bool IsLowPowerEncSupported(VAProfile va_profile) const;
+  // Check low-power encode support for |profile| and |mode|.
+  bool IsLowPowerEncSupported(VAProfile va_profile, CodecMode mode) const;
 
   const CodecMode mode_;
 

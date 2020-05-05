@@ -119,7 +119,14 @@ source_set("geolocation") {
     libs = [
       "CoreWLAN.framework",
       "Foundation.framework",
+      "CoreLocation.framework",
     ]
+    sources += [
+      "core_location_provider.h",
+      "core_location_provider.mm",
+    ]
+
+    deps += [ "//services/device/public/cpp:device_features" ]
   }
 
   if (is_win) {

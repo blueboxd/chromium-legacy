@@ -70,7 +70,7 @@
 #include "third_party/blink/renderer/modules/push_messaging/push_messaging_client.h"
 #include "third_party/blink/renderer/modules/remoteplayback/html_media_element_remote_playback.h"
 #include "third_party/blink/renderer/modules/remoteplayback/remote_playback.h"
-#include "third_party/blink/renderer/modules/screen_orientation/screen_orientation_controller_impl.h"
+#include "third_party/blink/renderer/modules/screen_orientation/screen_orientation_controller.h"
 #include "third_party/blink/renderer/modules/service_worker/navigator_service_worker.h"
 #include "third_party/blink/renderer/modules/storage/dom_window_storage_controller.h"
 #include "third_party/blink/renderer/modules/storage/inspector_dom_storage_agent.h"
@@ -182,8 +182,6 @@ void ModulesInitializer::InitLocalFrame(LocalFrame& frame) const {
 
 void ModulesInitializer::InstallSupplements(LocalFrame& frame) const {
   DCHECK(WebLocalFrameImpl::FromFrame(&frame)->Client());
-
-  ScreenOrientationControllerImpl::ProvideTo(frame);
   InspectorAccessibilityAgent::ProvideTo(&frame);
   ImageDownloaderImpl::ProvideTo(frame);
   MediaInspectorContextImpl::ProvideToLocalFrame(frame);
@@ -301,6 +299,11 @@ void ModulesInitializer::CloneSessionStorage(
 
 void ModulesInitializer::DidChangeManifest(LocalFrame& frame) {
   ManifestManager::From(*frame.DomWindow())->DidChangeManifest();
+}
+
+void ModulesInitializer::NotifyOrientationChanged(LocalFrame& frame) {
+  ScreenOrientationController::From(*frame.DomWindow())
+      ->NotifyOrientationChanged();
 }
 
 void ModulesInitializer::RegisterInterfaces(mojo::BinderMap& binders) {

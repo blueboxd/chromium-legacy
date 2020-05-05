@@ -60,20 +60,31 @@ namespace {
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
 // How long an instance of the CDM service is allowed to sit idle before we
 // disconnect and effectively kill it.
-constexpr base::TimeDelta kCdmServiceIdleTimeout =
-    base::TimeDelta::FromSeconds(5);
+constexpr auto kCdmServiceIdleTimeout = base::TimeDelta::FromSeconds(5);
 
-// Gets an instance of the CDM service for the CDM identified by |guid|.
-// Instances are started lazily as needed.
-media::mojom::CdmService& GetCdmServiceForGuid(const base::Token& guid) {
-  // NOTE: Sequence-local storage is used to limit the lifetime of these Remote
+auto& GetCdmServiceSlot() {
+  // NOTE: Sequence-local storage is used to limit the lifetime of the Remote
   // objects to that of the UI-thread sequence. This ensures the Remotes are
   // destroyed when the task environment is torn down and reinitialized, e.g.,
   // between unit tests.
   static base::NoDestructor<base::SequenceLocalStorageSlot<
       std::map<base::Token, mojo::Remote<media::mojom::CdmService>>>>
       slot;
-  auto& remotes = slot->GetOrCreateValue();
+  return *slot;
+}
+
+// Remove the CDM service instance for the CDM identified by |guid|.
+void RemoveCdmServiceForGuid(const base::Token& guid) {
+  auto* remotes = GetCdmServiceSlot().GetValuePointer();
+  DCHECK(remotes);
+  DCHECK(remotes->count(guid));
+  remotes->erase(guid);
+}
+
+// Gets an instance of the CDM service for the CDM identified by |guid|.
+// Instances are started lazily as needed.
+media::mojom::CdmService& GetCdmServiceForGuid(const base::Token& guid) {
+  auto& remotes = GetCdmServiceSlot().GetOrCreateValue();
   auto& remote = remotes[guid];
   if (!remote) {
     ServiceProcessHost::Launch(
@@ -82,8 +93,10 @@ media::mojom::CdmService& GetCdmServiceForGuid(const base::Token& guid) {
             .WithDisplayName("Content Decryption Module Service")
             .WithSandboxType(service_manager::SandboxType::kCdm)
             .Pass());
-    remote.reset_on_disconnect();
-    remote.reset_on_idle_timeout(kCdmServiceIdleTimeout);
+    remote.set_disconnect_handler(
+        base::BindOnce(&RemoveCdmServiceForGuid, guid));
+    remote.set_idle_handler(kCdmServiceIdleTimeout,
+                            base::BindRepeating(RemoveCdmServiceForGuid, guid));
   }
 
   return *remote.get();

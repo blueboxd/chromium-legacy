@@ -196,6 +196,8 @@ jumbo_source_set("browser_sources") {
     "installability_error.cc",
     "installability_error.h",
     "interstitial_page.h",
+    "interstitial_page_delegate.cc",
+    "interstitial_page_delegate.h",
     "invalidate_type.h",
     "javascript_dialog_manager.cc",
     "javascript_dialog_manager.h",

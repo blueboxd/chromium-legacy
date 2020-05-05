@@ -45,7 +45,6 @@ class APP_LIST_EXPORT SearchResultPageView
   bool IsFirstResultHighlighted() const;
 
   // Overridden from views::View:
-  bool OnKeyPressed(const ui::KeyEvent& event) override;
   const char* GetClassName() const override;
   gfx::Size CalculatePreferredSize() const override;
   void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
@@ -75,8 +74,6 @@ class APP_LIST_EXPORT SearchResultPageView
   // Overridden from SearchResultContainerView::Delegate:
   void OnSearchResultContainerResultsChanging() override;
   void OnSearchResultContainerResultsChanged() override;
-  void OnSearchResultContainerResultFocused(
-      SearchResultBaseView* focused_result_view) override;
 
   // Overridden from SearchBoxModelObserver:
   void HintTextChanged() override;

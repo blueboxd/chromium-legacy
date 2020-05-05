@@ -1667,12 +1667,6 @@ void ThreadState::MarkPhaseVisitRoots() {
     VisitDOMWrappers(visitor);
   }
 
-  // For unified garbage collections any active ScriptWrappable objects are
-  // considered as roots.
-  if (IsUnifiedGCMarkingInProgress()) {
-    ActiveScriptWrappableBase::TraceActiveScriptWrappables(isolate_, visitor);
-  }
-
   if (current_gc_data_.stack_state == BlinkGC::kHeapPointersOnStack) {
     ThreadHeapStatsCollector::Scope stack_stats_scope(
         Heap().stats_collector(), ThreadHeapStatsCollector::kVisitStackRoots);

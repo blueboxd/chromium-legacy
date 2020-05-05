@@ -908,13 +908,6 @@ TEST_F(AppListViewFocusTest, TabFocusTraversalInHalfState) {
 
   std::vector<views::View*> forward_view_list;
 
-  // Traversal using the ResultSelectionController stays within the results, as
-  // such, this should be removed with the flag.
-  if (!app_list_features::IsSearchBoxSelectionEnabled()) {
-    forward_view_list.push_back(search_box_view()->search_box());
-    forward_view_list.push_back(search_box_view()->close_button());
-  }
-
   const std::vector<SearchResultTileItemView*>& tile_views =
       contents_view()
           ->search_result_tile_item_list_view_for_test()
@@ -931,39 +924,27 @@ TEST_F(AppListViewFocusTest, TabFocusTraversalInHalfState) {
 
   // The selected view will always be a result when using
   // |result_selection_controller|
-  if (app_list_features::IsSearchBoxSelectionEnabled())
-    forward_view_list.push_back(nullptr);
-  else
-    forward_view_list.push_back(search_box_view()->search_box());
+  forward_view_list.push_back(nullptr);
 
   std::vector<views::View*> backward_view_list = forward_view_list;
   std::reverse(backward_view_list.begin(), backward_view_list.end());
 
-  if (app_list_features::IsSearchBoxSelectionEnabled()) {
-    // Test traversal triggered by tab.
-    EXPECT_TRUE(search_box_view()->search_box()->HasFocus());
-    TestSelectionTraversal(forward_view_list, ui::VKEY_TAB, false);
-    EXPECT_TRUE(search_box_view()->close_button()->HasFocus());
+  // Test traversal triggered by tab.
+  EXPECT_TRUE(search_box_view()->search_box()->HasFocus());
+  TestSelectionTraversal(forward_view_list, ui::VKEY_TAB, false);
+  EXPECT_TRUE(search_box_view()->close_button()->HasFocus());
 
-    // Focus cycles from the close button to the first result.
-    TestSelectionTraversal({nullptr, forward_view_list[0]}, ui::VKEY_TAB,
-                           false);
-    EXPECT_TRUE(search_box_view()->search_box()->HasFocus());
+  // Focus cycles from the close button to the first result.
+  TestSelectionTraversal({nullptr, forward_view_list[0]}, ui::VKEY_TAB, false);
+  EXPECT_TRUE(search_box_view()->search_box()->HasFocus());
 
-    // The shift+tab key should move focus back to the close button.
-    TestSelectionTraversal({forward_view_list[0], nullptr}, ui::VKEY_TAB, true);
-    EXPECT_TRUE(search_box_view()->close_button()->HasFocus());
+  // The shift+tab key should move focus back to the close button.
+  TestSelectionTraversal({forward_view_list[0], nullptr}, ui::VKEY_TAB, true);
+  EXPECT_TRUE(search_box_view()->close_button()->HasFocus());
 
-    // Test traversal triggered by shift+tab.
-    TestSelectionTraversal(backward_view_list, ui::VKEY_TAB, true);
-    EXPECT_TRUE(search_box_view()->search_box()->HasFocus());
-  } else {
-    // Test traversal triggered by tab.
-    TestFocusTraversal(forward_view_list, ui::VKEY_TAB, false);
-
-    // Test traversal triggered by shift+tab.
-    TestFocusTraversal(backward_view_list, ui::VKEY_TAB, true);
-  }
+  // Test traversal triggered by shift+tab.
+  TestSelectionTraversal(backward_view_list, ui::VKEY_TAB, true);
+  EXPECT_TRUE(search_box_view()->search_box()->HasFocus());
 }
 
 // Tests return key with search box close button focused (with app list view in
@@ -990,14 +971,8 @@ TEST_F(AppListViewFocusTest, CloseButtonClearsSearchOnEnter) {
   views::View* first_result_view = tile_views[0];
 
   // Shift+Tab to focus close button.
-  if (app_list_features::IsSearchBoxSelectionEnabled()) {
-    TestSelectionTraversal({first_result_view, nullptr}, ui::VKEY_TAB, true);
-    EXPECT_TRUE(search_box_view()->close_button()->HasFocus());
-  } else {
-    TestFocusTraversal(
-        {search_box_view()->search_box(), search_box_view()->close_button()},
-        ui::VKEY_TAB, false);
-  }
+  TestSelectionTraversal({first_result_view, nullptr}, ui::VKEY_TAB, true);
+  EXPECT_TRUE(search_box_view()->close_button()->HasFocus());
 
   // Enter - it should clear the search box.
   SimulateKeyPress(ui::VKEY_RETURN, false /*shift_down*/);
@@ -1046,57 +1021,22 @@ TEST_P(AppListViewFocusTest, LeftRightFocusTraversalInHalfState) {
       contents_view()
           ->search_result_tile_item_list_view_for_test()
           ->tile_views_for_test();
-
-  if (app_list_features::IsSearchBoxSelectionEnabled())
-    forward_view_list.push_back(tile_views[0]);
-  else
-    forward_view_list.push_back(search_box_view()->search_box());
+  forward_view_list.push_back(tile_views[0]);
 
   for (int i = 1; i < kTileResults; ++i)
     forward_view_list.push_back(tile_views[i]);
 
-  if (app_list_features::IsSearchBoxSelectionEnabled())
-    forward_view_list.push_back(tile_views[0]);
-  else
-    forward_view_list.push_back(search_box_view()->search_box());
+  forward_view_list.push_back(tile_views[0]);
 
-  if (app_list_features::IsSearchBoxSelectionEnabled()) {
-    TestSelectionTraversal(forward_view_list,
-                           is_rtl_ ? ui::VKEY_LEFT : ui::VKEY_RIGHT, false);
-  } else {
-    TestFocusTraversal(forward_view_list,
-                       is_rtl_ ? ui::VKEY_LEFT : ui::VKEY_RIGHT, false);
-  }
+  TestSelectionTraversal(forward_view_list,
+                         is_rtl_ ? ui::VKEY_LEFT : ui::VKEY_RIGHT, false);
 
   std::vector<views::View*> backward_view_list = forward_view_list;
 
-  if (!app_list_features::IsSearchBoxSelectionEnabled()) {
-    // Backwards traversal won't skip any items, as the first view won't be
-    // highlighted.
-    backward_view_list.insert(backward_view_list.begin() + 1, tile_views[0]);
-
-    // The intuitive focus is where the highlight is, on the first result.
-    // Because of this, the 'x' is effectively behind us and should only be
-    // traversed in the backwards list. The view in front of us it the second
-    // result, so that is what we should jump to next.
-    backward_view_list.insert(backward_view_list.begin() + 1,
-                              search_box_view()->close_button());
-  }
   std::reverse(backward_view_list.begin(), backward_view_list.end());
 
-  if (!app_list_features::IsSearchBoxSelectionEnabled()) {
-    // The text in the box will be highlighted, the first press should deselect.
-    backward_view_list.insert(backward_view_list.begin(),
-                              search_box_view()->search_box());
-  }
-
-  if (app_list_features::IsSearchBoxSelectionEnabled()) {
-    TestSelectionTraversal(backward_view_list,
-                           is_rtl_ ? ui::VKEY_RIGHT : ui::VKEY_LEFT, false);
-  } else {
-    TestFocusTraversal(backward_view_list,
-                       is_rtl_ ? ui::VKEY_RIGHT : ui::VKEY_LEFT, false);
-  }
+  TestSelectionTraversal(backward_view_list,
+                         is_rtl_ ? ui::VKEY_RIGHT : ui::VKEY_LEFT, false);
 }
 
 // Tests the linear focus traversal in FULLSCREEN_ALL_APPS state within folder.
@@ -1208,23 +1148,11 @@ TEST_F(AppListViewFocusTest, VerticalFocusTraversalInHalfState) {
 
   std::vector<views::View*> forward_view_list;
 
-  // Removed with the flag. Search box will no longer be part of traversal
-  // within results.
-  if (!app_list_features::IsSearchBoxSelectionEnabled())
-    forward_view_list.push_back(search_box_view()->search_box());
-
   const std::vector<SearchResultTileItemView*>& tile_views =
       contents_view()
           ->search_result_tile_item_list_view_for_test()
           ->tile_views_for_test();
-  // We skip the first view when coming from the search box. This is because
-  // the first view is initially highlighted, and would already be activated
-  // upon pressing enter. Hence, we skip adding the tile view to the expected
-  // view list. This comment should be removed with the flag, the line should
-  // remain.
-  if (app_list_features::IsSearchBoxSelectionEnabled())
-    forward_view_list.push_back(tile_views[0]);
-
+  forward_view_list.push_back(tile_views[0]);
   forward_view_list.push_back(contents_view()
                                   ->search_result_answer_card_view_for_test()
                                   ->GetAnswerCardResultViewForTest());
@@ -1233,39 +1161,24 @@ TEST_F(AppListViewFocusTest, VerticalFocusTraversalInHalfState) {
   for (int i = 0; i < kListResults; ++i)
     forward_view_list.push_back(list_view->GetResultViewAt(i));
 
-  if (!app_list_features::IsSearchBoxSelectionEnabled()) {
-    forward_view_list.push_back(search_box_view()->search_box());
-  } else {
-    contents_view()
-        ->search_results_page_view()
-        ->result_selection_controller()
-        ->ResetSelection(nullptr, false);
-  }
+  contents_view()
+      ->search_results_page_view()
+      ->result_selection_controller()
+      ->ResetSelection(nullptr, false);
 
-  if (app_list_features::IsSearchBoxSelectionEnabled()) {
-    // Test traversal triggered by down.
-    TestSelectionTraversal(forward_view_list, ui::VKEY_DOWN, false);
-  } else {
-    TestFocusTraversal(forward_view_list, ui::VKEY_DOWN, false);
-  }
+  // Test traversal triggered by down.
+  TestSelectionTraversal(forward_view_list, ui::VKEY_DOWN, false);
+
   std::vector<views::View*> backward_view_list;
-  if (!app_list_features::IsSearchBoxSelectionEnabled())
-    backward_view_list.push_back(search_box_view()->search_box());
   for (int i = kListResults - 1; i >= 0; --i)
     backward_view_list.push_back(list_view->GetResultViewAt(i));
   backward_view_list.push_back(contents_view()
                                    ->search_result_answer_card_view_for_test()
                                    ->GetAnswerCardResultViewForTest());
   backward_view_list.push_back(tile_views[kTileResults - 1]);
-  if (!app_list_features::IsSearchBoxSelectionEnabled())
-    backward_view_list.push_back(search_box_view()->search_box());
 
-  if (app_list_features::IsSearchBoxSelectionEnabled()) {
-    // Test traversal triggered by up.
-    TestSelectionTraversal(backward_view_list, ui::VKEY_UP, false);
-  } else {
-    TestFocusTraversal(backward_view_list, ui::VKEY_UP, false);
-  }
+  // Test traversal triggered by up.
+  TestSelectionTraversal(backward_view_list, ui::VKEY_UP, false);
 }
 
 // Tests the vertical focus traversal in FULLSCREEN_ALL_APPS state in the first
@@ -1458,26 +1371,6 @@ TEST_F(AppListViewFocusTest, RedirectFocusToSearchBox) {
   EXPECT_FALSE(search_box_view()->search_box()->HasSelection());
 }
 
-// Tests that the search box textfield has no selection when the focus moves
-// away from the SearchBoxView.
-TEST_F(AppListViewFocusTest, SearchBoxTextfieldHasNoSelectionWhenFocusLeaves) {
-  // This test should be removed with the flag, as this behavior is no longer
-  // desired.
-  if (app_list_features::IsSearchBoxSelectionEnabled())
-    return;
-
-  Show();
-
-  search_box_view()->search_box()->InsertText(base::UTF8ToUTF16("test"));
-  EXPECT_EQ(search_box_view()->search_box()->GetText(),
-            base::UTF8ToUTF16("test"));
-
-  // Move selection away from the searchbox.
-  SimulateKeyPress(ui::VKEY_TAB, false);
-
-  EXPECT_FALSE(search_box_view()->search_box()->HasSelection());
-}
-
 // Tests that focus changes update the search box text.
 TEST_F(AppListViewFocusTest, SearchBoxTextUpdatesOnResultFocus) {
   Show();
@@ -1490,87 +1383,21 @@ TEST_F(AppListViewFocusTest, SearchBoxTextUpdatesOnResultFocus) {
   AddSearchResultWithTitleAndScore("TestResult2", 2);
   AddSearchResultWithTitleAndScore("TestResult3", 1);
 
-  // With SearchBoxSelection, focus starts on result one.
-  // This should be removed with the flag.
-  if (!app_list_features::IsSearchBoxSelectionEnabled()) {
-    // Change focus to the first result
-    SimulateKeyPress(ui::VKEY_TAB, false);
-    SimulateKeyPress(ui::VKEY_TAB, false);
-
-    EXPECT_EQ(search_box->GetText(), base::UTF8ToUTF16("TestResult1"));
-  }
   // Change focus to the next result
   SimulateKeyPress(ui::VKEY_TAB, false);
 
   EXPECT_EQ(search_box->GetText(), base::UTF8ToUTF16("TestResult2"));
 
-  // This should remain after the flag is removed.
-  if (app_list_features::IsSearchBoxSelectionEnabled()) {
-    SimulateKeyPress(ui::VKEY_TAB, true);
+  SimulateKeyPress(ui::VKEY_TAB, true);
 
-    EXPECT_EQ(search_box->GetText(), base::UTF8ToUTF16("TestResult1"));
+  EXPECT_EQ(search_box->GetText(), base::UTF8ToUTF16("TestResult1"));
 
-    SimulateKeyPress(ui::VKEY_TAB, false);
-  }
+  SimulateKeyPress(ui::VKEY_TAB, false);
 
   // Change focus to the final result
   SimulateKeyPress(ui::VKEY_TAB, false);
 
   EXPECT_EQ(search_box->GetText(), base::UTF8ToUTF16("TestResult3"));
-}
-
-// Tests that the search box selects the whole query when focus moves to the
-// SearchBoxTextfield.
-TEST_F(AppListViewFocusTest, SearchBoxSelectionCoversWholeQueryOnFocus) {
-  // This test should be removed with the flag, as this feature is no longer
-  // desired.
-  if (app_list_features::IsSearchBoxSelectionEnabled())
-    return;
-
-  Show();
-  search_box_view()->search_box()->InsertText(base::ASCIIToUTF16("test"));
-  EXPECT_EQ(app_list_view()->app_list_state(), ash::AppListViewState::kHalf);
-  constexpr int kListResults = 1;
-  SetUpSearchResults(0, kListResults, false);
-  EXPECT_EQ(search_box_view()->search_box(), focused_view());
-  EXPECT_EQ(base::UTF8ToUTF16("test"),
-            search_box_view()->search_box()->GetText());
-
-  // Hit Tab to move focus away from the searchbox.
-  SimulateKeyPress(ui::VKEY_TAB, false);
-  EXPECT_FALSE(search_box_view()->search_box()->HasSelection());
-
-  // Hit Shift+Tab to move focus back to the searchbox.
-  SimulateKeyPress(ui::VKEY_TAB, true);
-  EXPECT_EQ(gfx::Range(0, 4),
-            search_box_view()->search_box()->GetSelectedRange());
-
-  // Hit Shift+Tab to move focus away from the searchbox.
-  SimulateKeyPress(ui::VKEY_TAB, true);
-  EXPECT_FALSE(search_box_view()->search_box()->HasSelection());
-
-  // Hit Tab to move focus back to the searchbox.
-  SimulateKeyPress(ui::VKEY_TAB, false);
-  EXPECT_EQ(gfx::Range(0, 4),
-            search_box_view()->search_box()->GetSelectedRange());
-
-  // Hit Up to move focus away from the searchbox.
-  SimulateKeyPress(ui::VKEY_UP, false);
-  EXPECT_FALSE(search_box_view()->search_box()->HasSelection());
-
-  // Hit Down to move focus back to the searchbox.
-  SimulateKeyPress(ui::VKEY_DOWN, false);
-  EXPECT_EQ(gfx::Range(0, 4),
-            search_box_view()->search_box()->GetSelectedRange());
-
-  // Hit Down to move focus away from the searchbox.
-  SimulateKeyPress(ui::VKEY_DOWN, false);
-  EXPECT_FALSE(search_box_view()->search_box()->HasSelection());
-
-  // Hit Up to move focus back to the searchbox.
-  SimulateKeyPress(ui::VKEY_UP, false);
-  EXPECT_EQ(gfx::Range(0, 4),
-            search_box_view()->search_box()->GetSelectedRange());
 }
 
 // Tests that ctrl-A selects all text in the searchbox when the SearchBoxView is
@@ -1638,20 +1465,17 @@ TEST_F(AppListViewFocusTest, FirstResultSelectedAfterSearchResultsUpdated) {
             contents_view()->search_results_page_view()->first_result_view());
   EXPECT_TRUE(tile_views[0]->selected());
 
-  // This section should remain after flag is removed.
-  if (app_list_features::IsSearchBoxSelectionEnabled()) {
-    ResultSelectionController* selection_controller =
-        contents_view()
-            ->search_results_page_view()
-            ->result_selection_controller();
+  ResultSelectionController* selection_controller =
+      contents_view()
+          ->search_results_page_view()
+          ->result_selection_controller();
 
-    // Ensures the |ResultSelectionController| selects the correct result
-    EXPECT_EQ(selection_controller->selected_result(), tile_views[0]);
+  // Ensures the |ResultSelectionController| selects the correct result
+  EXPECT_EQ(selection_controller->selected_result(), tile_views[0]);
 
-    // Ensure current highlighted result loses highlight on transition
-    SimulateKeyPress(ui::VKEY_TAB, false);
-    EXPECT_FALSE(tile_views[0]->selected());
-  }
+  // Ensure current highlighted result loses highlight on transition
+  SimulateKeyPress(ui::VKEY_TAB, false);
+  EXPECT_FALSE(tile_views[0]->selected());
 
   // Populate only answer card.
   SetUpSearchResults(0, 0, true);
@@ -1664,78 +1488,11 @@ TEST_F(AppListViewFocusTest, FirstResultSelectedAfterSearchResultsUpdated) {
             contents_view()->search_results_page_view()->first_result_view());
   EXPECT_TRUE(answer_container->selected());
 
-  // SearchBoxSelection keeps selection within existing results. Tabbing from
-  // within a single result has no effect.
-  // This section should be removed with the flag.
-  if (!app_list_features::IsSearchBoxSelectionEnabled()) {
-    // Moving focus to views other than search box textfield removes the first
-    // result's highlight.
-    SimulateKeyPress(ui::VKEY_TAB, false);
-    EXPECT_EQ(search_box_view()->close_button(), focused_view());
-    EXPECT_EQ(answer_container,
-              contents_view()->search_results_page_view()->first_result_view());
-    EXPECT_FALSE(answer_container->selected());
-    SimulateKeyPress(ui::VKEY_TAB, true);
-  }
-
   // Clear up all search results.
   SetUpSearchResults(0, 0, false);
   EXPECT_EQ(search_box_view()->search_box(), focused_view());
   EXPECT_EQ(nullptr,
             contents_view()->search_results_page_view()->first_result_view());
-}
-
-// Tests that the first search result's view is not selected after search
-// results are updated when the focus is on one of the search results (This
-// happens when the user quickly hits Tab key after typing query and before
-// search results are updated for the new query).
-TEST_F(AppListViewFocusTest, FirstResultNotSelectedAfterQuicklyHittingTab) {
-  // This is a purposeful regression. The existing fix for this is not viable,
-  // but the trigger requires sub-100ms timing. As such, the investment in
-  // preventing this regression is not worth holding off a release.
-  if (app_list_features::IsSearchBoxSelectionEnabled())
-    return;
-
-  Show();
-
-  // Type something in search box to transition to HALF state and populate
-  // fake list results.
-  search_box_view()->search_box()->InsertText(base::ASCIIToUTF16("test1"));
-  const int kListResults = 2;
-  SetUpSearchResults(0, kListResults, false);
-  SearchResultListView* list_view =
-      contents_view()->search_result_list_view_for_test();
-  SearchResultBaseView* first_result_view =
-      contents_view()->search_results_page_view()->first_result_view();
-  EXPECT_EQ(search_box_view()->search_box(), focused_view());
-  EXPECT_EQ(list_view->GetResultViewAt(0), first_result_view);
-  EXPECT_TRUE(first_result_view->selected());
-
-  // Type something else.
-  search_box_view()->search_box()->InsertText(base::ASCIIToUTF16("test2"));
-  EXPECT_EQ(search_box_view()->search_box(), focused_view());
-
-  // Simulate hitting Tab key to move focus to the close button, then to the
-  // first result before search results are updated.
-  SimulateKeyPress(ui::VKEY_TAB, false);
-  EXPECT_EQ(search_box_view()->close_button(), focused_view());
-  SimulateKeyPress(ui::VKEY_TAB, false);
-  EXPECT_EQ(list_view->GetResultViewAt(0), focused_view());
-  EXPECT_TRUE(first_result_view->selected());
-
-  // Update search results, both list and tile results are populated.
-  const int kTileResults = 3;
-  SetUpSearchResults(kTileResults, kListResults, false);
-  const std::vector<SearchResultTileItemView*>& tile_views =
-      contents_view()
-          ->search_result_tile_item_list_view_for_test()
-          ->tile_views_for_test();
-  first_result_view =
-      contents_view()->search_results_page_view()->first_result_view();
-  EXPECT_EQ(list_view->GetResultViewAt(0), focused_view());
-  EXPECT_EQ(tile_views[0], first_result_view);
-  EXPECT_FALSE(first_result_view->HasFocus());
-  EXPECT_TRUE(list_view->GetResultViewAt(0)->selected());
 }
 
 // Tests hitting Enter key when focus is on search box.

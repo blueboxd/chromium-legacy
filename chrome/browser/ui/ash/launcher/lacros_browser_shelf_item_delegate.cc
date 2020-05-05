@@ -5,7 +5,8 @@
 #include "chrome/browser/ui/ash/launcher/lacros_browser_shelf_item_delegate.h"
 
 #include "ash/public/cpp/shelf_types.h"
-#include "chromeos/dbus/upstart/upstart_client.h"
+#include "chrome/browser/chromeos/lacros/lacros_loader.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "extensions/common/constants.h"
 
 LacrosBrowserShelfItemDelegate::LacrosBrowserShelfItemDelegate()
@@ -20,7 +21,7 @@ void LacrosBrowserShelfItemDelegate::ItemSelected(
     ItemSelectedCallback callback) {
   // TODO(lacros): Handle window activation, window minimize, and spawning a
   // menu with a list of browser windows.
-  chromeos::UpstartClient::Get()->StartLacrosChrome({"NEW_WINDOW=1"});
+  LacrosLoader::Get()->Start();
   std::move(callback).Run(ash::SHELF_ACTION_NEW_WINDOW_CREATED, {});
 }
 

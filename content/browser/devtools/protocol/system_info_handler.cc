@@ -46,11 +46,9 @@ std::unique_ptr<SystemInfo::Size> GfxSizeToSystemInfoSize(
       .Build();
 }
 // Give the GPU process a few seconds to provide GPU info.
-// Linux Debug builds need more time -- see Issue 796437.
+// Linux Debug builds need more time -- see Issue 796437 and 1046598.
 // Windows builds need more time -- see Issue 873112 and 1004472.
-#if (defined(OS_LINUX) && !defined(NDEBUG))
-const int kGPUInfoWatchdogTimeoutMs = 20000;
-#elif defined(OS_WIN)
+#if (defined(OS_LINUX) && !defined(NDEBUG)) || defined(OS_WIN)
 const int kGPUInfoWatchdogTimeoutMs = 30000;
 #else
 const int kGPUInfoWatchdogTimeoutMs = 5000;
@@ -322,16 +320,8 @@ class SystemInfoHandlerGpuObserver : public content::GpuDataManagerObserver {
 
   void ObserverWatchdogCallback() {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
-#if defined(OS_CHROMEOS)
-    // TODO(zmo): CHECK everywhere once https://crbug.com/796386 is fixed.
-    gpu::GpuFeatureInfo gpu_feature_info =
-        gpu::ComputeGpuFeatureInfoWithHardwareAccelerationDisabled();
-    GpuDataManagerImpl::GetInstance()->UpdateGpuFeatureInfo(gpu_feature_info,
-                                                            base::nullopt);
-    UnregisterAndSendResponse();
-#else
-    CHECK(false) << "Gathering system GPU info took more than 5 seconds.";
-#endif
+    CHECK(false) << "Gathering system GPU info took more than "
+                 << (kGPUInfoWatchdogTimeoutMs / 1000) << " seconds.";
   }
 
   void UnregisterAndSendResponse() {

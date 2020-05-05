@@ -87,6 +87,29 @@ AwSafeBrowsingBlockingPage::AwSafeBrowsingBlockingPage(
   }
 }
 
+// static
+void AwSafeBrowsingBlockingPage::ShowBlockingPage(
+    AwSafeBrowsingUIManager* ui_manager,
+    const UnsafeResource& unsafe_resource) {
+  DVLOG(1) << __func__ << " " << unsafe_resource.url.spec();
+  WebContents* web_contents = unsafe_resource.web_contents_getter.Run();
+
+  if (InterstitialPage::GetInterstitialPage(web_contents) &&
+      unsafe_resource.is_subresource) {
+    // This is an interstitial for a page's resource, let's queue it.
+    UnsafeResourceMap* unsafe_resource_map = GetUnsafeResourcesMap();
+    (*unsafe_resource_map)[web_contents].push_back(unsafe_resource);
+  } else {
+    // There is no interstitial currently showing, or we are about to display a
+    // new one for the main frame. If there is already an interstitial, showing
+    // the new one will automatically hide the old one.
+    AwSafeBrowsingBlockingPage* blocking_page = CreateBlockingPage(
+        ui_manager, unsafe_resource.web_contents_getter.Run(), GURL(),
+        unsafe_resource, nullptr);
+    blocking_page->Show();
+  }
+}
+
 AwSafeBrowsingBlockingPage* AwSafeBrowsingBlockingPage::CreateBlockingPage(
     AwSafeBrowsingUIManager* ui_manager,
     content::WebContents* web_contents,

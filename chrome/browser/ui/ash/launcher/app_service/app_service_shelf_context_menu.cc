@@ -216,10 +216,10 @@ bool AppServiceShelfContextMenu::IsCommandIdChecked(int command_id) const {
                 item().id.app_id)) {
           return command_id == ash::LAUNCH_TYPE_TABBED_WINDOW;
         }
-        web_app::DisplayMode effective_display_mode =
-            provider->registrar().GetAppEffectiveDisplayMode(item().id.app_id);
-        return effective_display_mode != web_app::DisplayMode::kUndefined &&
-               effective_display_mode ==
+        web_app::DisplayMode user_display_mode =
+            provider->registrar().GetAppUserDisplayMode(item().id.app_id);
+        return user_display_mode != web_app::DisplayMode::kUndefined &&
+               user_display_mode ==
                    ConvertLaunchTypeCommandToDisplayMode(command_id);
       }
       return ShelfContextMenu::IsCommandIdChecked(command_id);

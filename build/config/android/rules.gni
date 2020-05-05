@@ -2530,6 +2530,7 @@ if (enable_java_templates) {
       }
 
       if (_is_bundle_module) {
+        is_bundle_module = true
         proto_output = _proto_resources_path
         if (_optimize_resources) {
           optimized_proto_output = _optimized_proto_resources_path

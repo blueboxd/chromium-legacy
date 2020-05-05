@@ -389,6 +389,8 @@ jumbo_component("platform") {
     "audio/vector_math_scalar.h",
     "bindings/active_script_wrappable_base.cc",
     "bindings/active_script_wrappable_base.h",
+    "bindings/active_script_wrappable_manager.cc",
+    "bindings/active_script_wrappable_manager.h",
     "bindings/binding_security_for_platform.cc",
     "bindings/binding_security_for_platform.h",
     "bindings/blink_isolate/blink_isolate.cc",

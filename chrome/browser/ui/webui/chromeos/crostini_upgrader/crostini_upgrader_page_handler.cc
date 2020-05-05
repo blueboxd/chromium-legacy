@@ -105,7 +105,9 @@ void CrostiniUpgraderPageHandler::Close() {
   if (launch_callback_) {
     Launch();
   }
-  std::move(close_dialog_callback_).Run();
+  if (close_dialog_callback_) {
+    std::move(close_dialog_callback_).Run();
+  }
 }
 
 void CrostiniUpgraderPageHandler::OnUpgradeProgress(

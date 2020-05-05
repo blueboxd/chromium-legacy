@@ -425,14 +425,6 @@ RenderWidget::RenderWidget(int32_t widget_routing_id,
   DCHECK(RenderThread::IsMainThread());
   DCHECK(compositor_deps_);
 
-  // In tests there may not be a RenderThreadImpl.
-  if (RenderThreadImpl::current()) {
-    render_widget_scheduling_state_ = RenderThreadImpl::current()
-                                          ->GetWebMainThreadScheduler()
-                                          ->NewRenderWidgetSchedulingState();
-    render_widget_scheduling_state_->SetHidden(is_hidden_);
-  }
-
   if (routing_id_ != MSG_ROUTING_NONE)
     g_routing_id_widget_map.Get().emplace(routing_id_, this);
 }
@@ -521,6 +513,9 @@ void RenderWidget::Initialize(ShowCallback show_callback,
   RenderThread::Get()->AddRoute(routing_id_, this);
 
   webwidget_ = web_widget;
+  if (auto* scheduler_state = GetWebWidget()->RendererWidgetSchedulingState())
+    scheduler_state->SetHidden(is_hidden());
+
   InitCompositing(screen_info);
 
   // If the widget is hidden, delay starting the compositor until the user
@@ -2320,8 +2315,8 @@ void RenderWidget::SetHidden(bool hidden) {
   // throttled acks are released in case frame production ceases.
   is_hidden_ = hidden;
 
-  if (render_widget_scheduling_state_)
-    render_widget_scheduling_state_->SetHidden(hidden);
+  if (auto* scheduler_state = GetWebWidget()->RendererWidgetSchedulingState())
+    scheduler_state->SetHidden(hidden);
 
   // If the renderer was hidden, resolve any pending synthetic gestures so they
   // aren't blocked waiting for a compositor frame to be generated.
@@ -3039,8 +3034,8 @@ void RenderWidget::SetHasPointerRawUpdateEventHandlers(bool has_handlers) {
 }
 
 void RenderWidget::SetHasTouchEventHandlers(bool has_handlers) {
-  if (render_widget_scheduling_state_)
-    render_widget_scheduling_state_->SetHasTouchHandler(has_handlers);
+  if (auto* scheduler_state = GetWebWidget()->RendererWidgetSchedulingState())
+    scheduler_state->SetHasTouchHandler(has_handlers);
 }
 
 void RenderWidget::SetNeedsLowLatencyInput(bool needs_low_latency) {

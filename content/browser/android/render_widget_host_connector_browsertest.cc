@@ -4,6 +4,8 @@
 
 #include "content/browser/android/render_widget_host_connector_browsertest.h"
 
+#include "content/browser/frame_host/interstitial_page_impl.h"
+#include "content/public/browser/interstitial_page_delegate.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/test/content_browser_test_utils_internal.h"
@@ -12,6 +14,16 @@
 #include "url/gurl.h"
 
 namespace content {
+
+namespace {
+
+class TestInterstitialDelegate : public InterstitialPageDelegate {
+ private:
+  // InterstitialPageDelegate implementation.
+  std::string GetHTMLContents() override { return "<p>Interstitial</p>"; }
+};
+
+}  // namespace
 
 RenderWidgetHostConnectorTest::RenderWidgetHostConnectorTest() {}
 
@@ -57,6 +69,54 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostConnectorTest,
   EXPECT_TRUE(NavigateToURL(shell(), https_url));
   RenderWidgetHostViewAndroid* new_rwhva = render_widget_host_view_android();
   EXPECT_EQ(new_rwhva, connector->GetRWHVAForTesting());
+}
+
+IN_PROC_BROWSER_TEST_F(RenderWidgetHostConnectorTest,
+                       RestoreMainRWHVAAfterInterstitial) {
+  EXPECT_TRUE(
+      NavigateToURL(shell(), embedded_test_server()->GetURL("/title1.html")));
+
+  RenderWidgetHostViewAndroid* main_rwhva = render_widget_host_view_android();
+  RenderWidgetHostConnector* connector = render_widget_host_connector();
+  EXPECT_EQ(main_rwhva, connector->GetRWHVAForTesting());
+
+  // Show an interstitial and then hide. Then interstitial RWHVA should be
+  // updated accordingly, and the old main RWHVA reference should be restored.
+  WebContentsImpl* contents = web_contents();
+  GURL interstitial_url("http://interstitial");
+  InterstitialPageImpl* interstitial = new InterstitialPageImpl(
+      contents, static_cast<RenderWidgetHostDelegate*>(contents), true,
+      interstitial_url, new TestInterstitialDelegate);
+  interstitial->Show();
+  WaitForInterstitialAttach(contents);
+  EXPECT_NE(main_rwhva, connector->GetRWHVAForTesting());
+
+  interstitial->Hide();
+  EXPECT_EQ(main_rwhva, connector->GetRWHVAForTesting());
+}
+
+IN_PROC_BROWSER_TEST_F(RenderWidgetHostConnectorTest,
+                       MainPageDestroyedWhileInBackground) {
+  EXPECT_TRUE(
+      NavigateToURL(shell(), embedded_test_server()->GetURL("/title1.html")));
+
+  RenderWidgetHostViewAndroid* main_rwhva = render_widget_host_view_android();
+  RenderWidgetHostConnector* connector = render_widget_host_connector();
+  EXPECT_EQ(main_rwhva, connector->GetRWHVAForTesting());
+
+  // Show an interstitial and destroy the main page in the background.
+  WebContentsImpl* contents = web_contents();
+  GURL interstitial_url("http://interstitial");
+  InterstitialPageImpl* interstitial = new InterstitialPageImpl(
+      contents, static_cast<RenderWidgetHostDelegate*>(contents), true,
+      interstitial_url, new TestInterstitialDelegate);
+  interstitial->Show();
+  WaitForInterstitialAttach(contents);
+  main_rwhva->Destroy();
+
+  // Ensure active RWHVA set to null even when the main one is destroyed first.
+  interstitial->Hide();
+  EXPECT_EQ(nullptr, connector->GetRWHVAForTesting());
 }
 
 IN_PROC_BROWSER_TEST_F(RenderWidgetHostConnectorTest, DestroyEarly) {

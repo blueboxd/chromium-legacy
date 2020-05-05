@@ -166,6 +166,10 @@ class WebStateImpl : public WebState,
   void CommitPreviewingViewController(
       UIViewController* previewing_view_controller);
 
+  // Returns the UIView used to contain the WebView for sizing purposes. Can be
+  // nil.
+  UIView* GetWebViewContainer();
+
   // WebFramesManagerDelegate.
   void OnWebFrameAvailable(web::WebFrame* frame) override;
   void OnWebFrameUnavailable(web::WebFrame* frame) override;

@@ -1087,8 +1087,8 @@ class Port(object):
         """Checks whether the given test is skipped for this port.
 
         Returns True if the test is skipped because the port runs smoke tests
-        only or because the test is marked as WontFix, but *not* if the test
-        is only marked as Skip indicating a temporary skip.
+        only or because the test is marked as Skip in NeverFixTest (otherwise
+        the test is only marked as Skip indicating a temporary skip).
         """
         return self.skipped_due_to_smoke_tests(
             test) or self.skipped_in_never_fix_tests(test)
@@ -1122,10 +1122,10 @@ class Port(object):
         return self._filesystem.join(self.web_tests_dir(), 'SmokeTests')
 
     def skipped_in_never_fix_tests(self, test):
-        """Checks if the test is marked as WontFix for this port.
+        """Checks if the test is marked as Skip in NeverFixTests for this port.
 
-        In general, WontFix expectations are allowed in NeverFixTests but
-        not in other files, and only WontFix lines are allowed in NeverFixTests.
+        Skip in NeverFixTests indicate we will never fix the failure and
+        permanently skip the test. Only Skip lines are allowed in NeverFixTests.
         Some lines in NeverFixTests are platform-specific.
 
         Note: this will not work with skipped directories. See also the same

@@ -59,11 +59,42 @@ js_type_check("closure_compile") {
                     "js_module_root=./gen/chrome/test/data/webui/",
                   ]
   deps = [
+    ":about_page_tests",
     ":search_page_test",
+    ":test_about_page_browser_proxy",
+    ":test_lifetime_browser_proxy.m",
     ":test_search_engines_browser_proxy.m",
 
     # TODO(crbug.com/1000989): Add targets for more files here.
   ]
+}
+
+js_library("about_page_tests") {
+  deps = [
+    ":test_about_page_browser_proxy",
+    ":test_lifetime_browser_proxy.m",
+    "..:chai_assert",
+    "//chrome/browser/resources/settings:settings",
+  ]
+  externs_list = [ "$externs_path/mocha-2.5.js" ]
+}
+
+js_library("test_about_page_browser_proxy") {
+  deps = [
+    "..:test_browser_proxy.m",
+    "//chrome/browser/resources/settings:settings",
+    "//ui/webui/resources/js:cr.m",
+  ]
+  extra_deps = [ ":modulize" ]
+}
+
+js_library("test_lifetime_browser_proxy.m") {
+  sources = [ "$root_gen_dir/chrome/test/data/webui/settings/test_lifetime_browser_proxy.m.js" ]
+  deps = [
+    "..:test_browser_proxy.m",
+    "//chrome/browser/resources/settings:settings",
+  ]
+  extra_deps = [ ":modulize" ]
 }
 
 js_library("test_search_engines_browser_proxy.m") {

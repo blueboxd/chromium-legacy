@@ -162,13 +162,15 @@ bool PlatformSharedMemoryRegion::CheckPlatformHandlePermissionsCorrespondToMode(
   zx_info_handle_basic_t basic = {};
   zx_status_t status = handle->get_info(ZX_INFO_HANDLE_BASIC, &basic,
                                         sizeof(basic), nullptr, nullptr);
-  if (status != ZX_OK) {
+  ZX_CHECK(status == ZX_OK, status) << "zx_object_get_info";
+
+  if (basic.type != ZX_OBJ_TYPE_VMO) {
     // TODO(crbug.com/838365): convert to DLOG when bug fixed.
-    ZX_LOG(ERROR, status) << "zx_object_get_info";
+    LOG(ERROR) << "Received zircon handle is not a VMO";
     return false;
   }
 
-  bool is_read_only = (basic.rights & kNoWriteOrExec) == basic.rights;
+  bool is_read_only = (basic.rights & (ZX_RIGHT_WRITE | ZX_RIGHT_EXECUTE)) == 0;
   bool expected_read_only = mode == Mode::kReadOnly;
 
   if (is_read_only != expected_read_only) {

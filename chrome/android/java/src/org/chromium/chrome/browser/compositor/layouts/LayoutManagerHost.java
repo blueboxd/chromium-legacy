@@ -28,6 +28,15 @@ public interface LayoutManagerHost {
     void requestRender();
 
     /**
+     * Requests a refresh of the visuals.
+     * @param onUpdateEffective Callback that will be called when there is a buffer swap for the
+     *                          requested update. The rendered frame for this request won't be
+     *                          visible until a buffer swap occurs. Note that there is no guarantee
+     *                          the updated buffer is the one currently being displayed for pre-Q.
+     */
+    default void requestRender(Runnable onUpdateEffective) {}
+
+    /**
      * @return The Android context of the host view.
      */
     Context getContext();

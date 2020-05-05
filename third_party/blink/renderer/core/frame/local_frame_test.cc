@@ -61,6 +61,8 @@ class TestTextInputHostWaiter : public mojom::blink::TextInputHost {
       std::move(callback_).Run();
   }
 
+  void GotFirstRectForRange(const gfx::Rect& rect) override {}
+
   void BindTextInputHostReceiver(
       mojo::ScopedMessagePipeHandle message_pipe_handle) {
     receiver_.Bind(mojo::PendingReceiver<mojom::blink::TextInputHost>(

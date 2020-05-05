@@ -185,6 +185,15 @@ void FakeConciergeClient::StopVm(
     const vm_tools::concierge::StopVmRequest& request,
     DBusMethodCallback<vm_tools::concierge::StopVmResponse> callback) {
   stop_vm_called_ = true;
+  if (notify_vm_stopped_on_stop_vm_) {
+    vm_tools::concierge::VmStoppedSignal signal;
+    signal.set_name(request.name());
+    signal.set_owner_id(request.owner_id());
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::BindOnce(&FakeConciergeClient::NotifyVmStopped,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(signal)));
+  }
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(std::move(callback), stop_vm_response_));
 }
@@ -295,6 +304,12 @@ void FakeConciergeClient::NotifyVmStarted(
     const vm_tools::concierge::VmStartedSignal& signal) {
   for (auto& observer : vm_observer_list_)
     observer.OnVmStarted(signal);
+}
+
+void FakeConciergeClient::NotifyVmStopped(
+    const vm_tools::concierge::VmStoppedSignal& signal) {
+  for (auto& observer : vm_observer_list_)
+    observer.OnVmStopped(signal);
 }
 
 bool FakeConciergeClient::HasVmObservers() const {

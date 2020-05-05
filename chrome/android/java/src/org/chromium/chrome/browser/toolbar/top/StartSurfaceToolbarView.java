@@ -188,6 +188,13 @@ class StartSurfaceToolbarView extends RelativeLayout {
     }
 
     /**
+     * @param isAtLeft Whether the identity disc is at left.
+     */
+    void setIdentityDiscAtLeft(boolean isAtLeft) {
+        ((LayoutParams) mIdentityDiscButton.getLayoutParams()).removeRule(RelativeLayout.START_OF);
+    }
+
+    /**
      * @param isVisible Whether the identity disc is visible.
      */
     void setIdentityDiscVisibility(boolean isVisible) {

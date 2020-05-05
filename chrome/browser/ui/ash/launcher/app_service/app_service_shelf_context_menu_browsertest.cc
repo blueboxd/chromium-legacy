@@ -45,16 +45,51 @@ class AppServiceShelfContextMenuWebAppBrowserTest
     InProcessBrowserTest::SetUp();
   }
 
+  struct MenuSection {
+    std::unique_ptr<ui::SimpleMenuModel> menu_model;
+    ui::MenuModel* sub_model = nullptr;
+    int command_index = -1;
+  };
+
+  base::Optional<MenuSection> GetContextMenuSectionForAppCommand(
+      const web_app::AppId& app_id,
+      int command_id) {
+    MenuSection result;
+    ash::ShelfModel* shelf_model = ash::ShelfModel::Get();
+    shelf_model->PinAppWithID(app_id);
+    ash::ShelfItemDelegate* delegate =
+        shelf_model->GetShelfItemDelegate(ash::ShelfID(app_id));
+    base::RunLoop run_loop;
+    delegate->GetContextMenu(
+        display::Display::GetDefaultDisplay().id(),
+        base::BindLambdaForTesting(
+            [&run_loop, &result](std::unique_ptr<ui::SimpleMenuModel> model) {
+              result.menu_model = std::move(model);
+              run_loop.Quit();
+            }));
+    run_loop.Run();
+
+    result.sub_model = result.menu_model.get();
+    result.command_index = -1;
+    if (!ui::MenuModel::GetModelAndIndexForCommandId(
+            command_id, &result.sub_model, &result.command_index)) {
+      return base::nullopt;
+    }
+
+    return result;
+  }
+
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 IN_PROC_BROWSER_TEST_P(AppServiceShelfContextMenuWebAppBrowserTest,
-                       SetOpenInTabbedWindow) {
+                       WindowCommandCheckedForMinimalUi) {
   Profile* profile = browser()->profile();
 
   auto web_application_info = std::make_unique<WebApplicationInfo>();
   web_application_info->app_url = GURL("https://example.org");
+  web_application_info->display_mode = blink::mojom::DisplayMode::kMinimalUi;
   web_app::AppId app_id =
       web_app::InstallWebApp(profile, std::move(web_application_info));
 
@@ -62,29 +97,36 @@ IN_PROC_BROWSER_TEST_P(AppServiceShelfContextMenuWebAppBrowserTest,
   apps::AppServiceProxyFactory::GetForProfile(profile)
       ->FlushMojoCallsForTesting();
 
-  // Open app shelf icon context menu.
-  ash::ShelfModel* shelf_model = ash::ShelfModel::Get();
-  shelf_model->PinAppWithID(app_id);
-  ash::ShelfItemDelegate* delegate =
-      shelf_model->GetShelfItemDelegate(ash::ShelfID(app_id));
-  base::RunLoop run_loop;
-  std::unique_ptr<ui::SimpleMenuModel> menu_model;
-  delegate->GetContextMenu(
-      display::Display::GetDefaultDisplay().id(),
-      base::BindLambdaForTesting(
-          [&run_loop, &menu_model](std::unique_ptr<ui::SimpleMenuModel> model) {
-            menu_model = std::move(model);
-            run_loop.Quit();
-          }));
-  run_loop.Run();
+  // Open in window should be checked after activating it.
+  base::Optional<MenuSection> menu_section =
+      GetContextMenuSectionForAppCommand(app_id, ash::LAUNCH_TYPE_WINDOW);
+  ASSERT_TRUE(menu_section);
+  menu_section->sub_model->ActivatedAt(menu_section->command_index);
+  EXPECT_TRUE(
+      menu_section->sub_model->IsItemCheckedAt(menu_section->command_index));
+}
+
+IN_PROC_BROWSER_TEST_P(AppServiceShelfContextMenuWebAppBrowserTest,
+                       SetOpenInTabbedWindow) {
+  Profile* profile = browser()->profile();
+
+  auto web_application_info = std::make_unique<WebApplicationInfo>();
+  web_application_info->app_url = GURL("https://example.org");
+  web_application_info->display_mode = blink::mojom::DisplayMode::kMinimalUi;
+  web_app::AppId app_id =
+      web_app::InstallWebApp(profile, std::move(web_application_info));
+
+  // Wait for app service to see the newly installed app.
+  apps::AppServiceProxyFactory::GetForProfile(profile)
+      ->FlushMojoCallsForTesting();
 
   // Set app to open in tabbed window.
-  ui::MenuModel* sub_model = menu_model.get();
-  int command_index = -1;
-  ASSERT_TRUE(ui::MenuModel::GetModelAndIndexForCommandId(
-      ash::LAUNCH_TYPE_TABBED_WINDOW, &sub_model, &command_index));
-  sub_model->ActivatedAt(command_index);
+  base::Optional<MenuSection> menu_section = GetContextMenuSectionForAppCommand(
+      app_id, ash::LAUNCH_TYPE_TABBED_WINDOW);
+  ASSERT_TRUE(menu_section);
+  menu_section->sub_model->ActivatedAt(menu_section->command_index);
 
+  // App window should have tab strip.
   Browser* app_browser = web_app::LaunchWebAppBrowser(profile, app_id);
   EXPECT_TRUE(app_browser->app_controller()->has_tab_strip());
 }

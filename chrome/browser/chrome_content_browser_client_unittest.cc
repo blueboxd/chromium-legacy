@@ -66,6 +66,13 @@
 #include "components/captive_portal/content/captive_portal_tab_helper.h"
 #endif
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/policy/system_features_disable_list_policy_handler.h"
+#include "chrome/test/base/scoped_testing_local_state.h"
+#include "chrome/test/base/testing_browser_process.h"
+#include "components/policy/core/common/policy_pref_names.h"
+#endif  // defined(OS_CHROMEOS)
+
 using content::BrowsingDataFilterBuilder;
 using testing::_;
 using ChromeContentBrowserClientTest = testing::Test;
@@ -613,6 +620,60 @@ TEST(ChromeContentBrowserClientTest, UserAgentMetadata) {
   EXPECT_EQ(metadata.architecture, content::BuildCpuInfo());
   EXPECT_EQ(metadata.model, content::BuildModelInfo());
 }
+
+#if defined(OS_CHROMEOS)
+class ChromeContentSettingsRedirectTest
+    : public ChromeContentBrowserClientTest {
+ public:
+  ChromeContentSettingsRedirectTest()
+      : testing_local_state_(TestingBrowserProcess::GetGlobal()) {}
+
+ protected:
+  content::BrowserTaskEnvironment task_environment_;
+  ScopedTestingLocalState testing_local_state_;
+  TestingProfile profile_;
+};
+
+TEST_F(ChromeContentSettingsRedirectTest, RedirectOSSettingsURL) {
+  TestChromeContentBrowserClient test_content_browser_client;
+  const GURL os_settings_url(chrome::kChromeUIOSSettingsURL);
+  GURL dest_url = os_settings_url;
+  test_content_browser_client.HandleWebUI(&dest_url, &profile_);
+  EXPECT_EQ(os_settings_url, dest_url);
+
+  base::Value list(base::Value::Type::LIST);
+  list.Append(policy::SystemFeature::OS_SETTINGS);
+  testing_local_state_.Get()->Set(
+      policy::policy_prefs::kSystemFeaturesDisableList, std::move(list));
+
+  dest_url = os_settings_url;
+  test_content_browser_client.HandleWebUI(&dest_url, &profile_);
+  EXPECT_EQ(GURL(chrome::kChromeUIAppDisabledURL), dest_url);
+
+  GURL os_settings_pwa_url =
+      GURL(chrome::kChromeUIOSSettingsURL).Resolve("pwa.html");
+  dest_url = os_settings_pwa_url;
+  test_content_browser_client.HandleWebUI(&dest_url, &profile_);
+  EXPECT_EQ(os_settings_pwa_url, dest_url);
+}
+
+TEST_F(ChromeContentSettingsRedirectTest, RedirectSettingsURL) {
+  TestChromeContentBrowserClient test_content_browser_client;
+  const GURL settings_url(chrome::kChromeUISettingsURL);
+  GURL dest_url = settings_url;
+  test_content_browser_client.HandleWebUI(&dest_url, &profile_);
+  EXPECT_EQ(settings_url, dest_url);
+
+  base::Value list(base::Value::Type::LIST);
+  list.Append(policy::SystemFeature::BROWSER_SETTINGS);
+  testing_local_state_.Get()->Set(
+      policy::policy_prefs::kSystemFeaturesDisableList, std::move(list));
+
+  dest_url = settings_url;
+  test_content_browser_client.HandleWebUI(&dest_url, &profile_);
+  EXPECT_EQ(GURL(chrome::kChromeUIAppDisabledURL), dest_url);
+}
+#endif  // defined(OS_CHROMEOS)
 
 class CaptivePortalCheckProcessHost : public content::MockRenderProcessHost {
  public:

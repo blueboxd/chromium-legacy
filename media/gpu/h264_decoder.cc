@@ -437,7 +437,7 @@ void H264Decoder::ConstructReferencePicListsB(
   std::sort(ref_pic_list_b1_.begin(), iter, POCAscCompare());
 
   // Now add [3] and sort by ascending long_term_pic_num
-  dpb_.GetShortTermRefPicsAppending(&ref_pic_list_b1_);
+  dpb_.GetLongTermRefPicsAppending(&ref_pic_list_b1_);
   std::sort(ref_pic_list_b1_.begin() + num_short_refs, ref_pic_list_b1_.end(),
             LongTermPicNumAscCompare());
 

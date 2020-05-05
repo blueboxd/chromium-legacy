@@ -89,8 +89,8 @@ class SearchResultTileItemListViewTest
 
     // Sets up the views.
     textfield_ = std::make_unique<views::Textfield>();
-    view_ = std::make_unique<SearchResultTileItemListView>(
-        nullptr, textfield_.get(), &view_delegate_);
+    view_ = std::make_unique<SearchResultTileItemListView>(textfield_.get(),
+                                                           &view_delegate_);
     widget_->SetBounds(gfx::Rect(0, 0, 300, 200));
     widget_->GetContentsView()->AddChildView(view_.get());
     widget_->Show();
@@ -231,11 +231,6 @@ class SearchResultTileItemListViewTest
   }
 
   size_t GetResultCount() const { return view_->num_results(); }
-
-  bool KeyPress(ui::KeyboardCode key_code) {
-    ui::KeyEvent event(ui::ET_KEY_PRESSED, key_code, ui::EF_NONE);
-    return view_->OnKeyPressed(event);
-  }
 
  private:
   test::AppListTestViewDelegate view_delegate_;

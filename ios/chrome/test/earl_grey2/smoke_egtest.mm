@@ -5,6 +5,7 @@
 #import <TestLib/EarlGreyImpl/EarlGrey.h>
 #import <UIKit/UIKit.h>
 
+#include "base/ios/ios_util.h"
 #include "ios/chrome/browser/pref_names.h"
 #import "ios/chrome/browser/ui/ui_feature_flags.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -33,7 +34,7 @@
 - (void)testOpenTab {
 // TODO(crbug.com/1078140): Test fails on iOS 13+ iPad devices.
 #if !TARGET_IPHONE_SIMULATOR
-  if ([ChromeEarlGrey isIPadIdiom] && IsRunningOnIOS13OrLater()) {
+  if ([ChromeEarlGrey isIPadIdiom] && base::ios::IsRunningOnIOS13OrLater()) {
     EARL_GREY_TEST_DISABLED(@"This test fails on iOS 13+ iPad device.");
   }
 #endif
@@ -68,7 +69,7 @@
 - (void)testToggleSettingsSwitch {
 // TODO(crbug.com/1078140): Test fails on iOS 13+ iPad devices.
 #if !TARGET_IPHONE_SIMULATOR
-  if ([ChromeEarlGrey isIPadIdiom] && IsRunningOnIOS13OrLater()) {
+  if ([ChromeEarlGrey isIPadIdiom] && base::ios::IsRunningOnIOS13OrLater()) {
     EARL_GREY_TEST_DISABLED(@"This test fails on iOS 13+ iPad device.");
   }
 #endif
@@ -174,7 +175,7 @@
 - (void)testWaitForSufficientlyVisibleElementWithMatcher {
 // TODO(crbug.com/1078140): Test fails on iOS 13+ iPad devices.
 #if !TARGET_IPHONE_SIMULATOR
-  if ([ChromeEarlGrey isIPadIdiom] && IsRunningOnIOS13OrLater()) {
+  if ([ChromeEarlGrey isIPadIdiom] && base::ios::IsRunningOnIOS13OrLater()) {
     EARL_GREY_TEST_DISABLED(@"This test fails on iOS 13+ iPad device.");
   }
 #endif

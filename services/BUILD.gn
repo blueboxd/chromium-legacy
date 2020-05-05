@@ -21,6 +21,7 @@ test("services_unittests") {
   # If your service does not run on iOS, its tests should go in the !iOS
   # section below. If you are unsure, contact blundell@chromium.org.
   deps = [
+    "//services/cert_verifier:tests",
     "//services/cert_verifier/cert_net_url_loader:tests",
     "//services/content:tests",
     "//services/metrics/public/cpp:tests",

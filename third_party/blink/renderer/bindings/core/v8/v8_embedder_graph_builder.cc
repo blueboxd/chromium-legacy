@@ -7,7 +7,9 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_gc_controller.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_node.h"
 #include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/platform/bindings/active_script_wrappable_manager.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/bindings/v8_per_isolate_data.h"
 #include "third_party/blink/renderer/platform/bindings/wrapper_type_info.h"
 #include "third_party/blink/renderer/platform/heap/unified_heap_controller.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
@@ -722,7 +724,9 @@ void V8EmbedderGraphBuilder::VisitPendingActivities() {
           new EmbedderRootNode("Pending activities"))));
   EnsureRootState(root);
   ParentScope parent(this, root);
-  ActiveScriptWrappableBase::TraceActiveScriptWrappables(isolate_, this);
+  V8PerIsolateData::From(isolate_)
+      ->GetActiveScriptWrappableManager()
+      ->IterateActiveScriptWrappables(this);
 }
 
 void V8EmbedderGraphBuilder::VisitBlinkRoots() {

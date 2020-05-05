@@ -1288,6 +1288,11 @@
     "expiry_milestone": 85
   },
   {
+    "name": "enable-core-location-implementation",
+    "owners": [ "jameshollyer@google.com" ],
+    "expiry_milestone": 86
+  },
+  {
     "name": "enable-credit-card-assist",
     "owners": [ "ftirelo", "gogerald" ],
     "expiry_milestone": 76
@@ -1639,11 +1644,6 @@
     "expiry_milestone": 83
   },
   {
-    "name": "enable-intent-picker",
-    "owners": [ "chromeos-apps-foundation-team@google.com" ],
-    "expiry_milestone": 80
-  },
-  {
     "name": "enable-javascript-harmony",
     "owners": [ "adamk", "hablich" ],
     // This flag is used by web developers to test upcoming javascript features.
@@ -1717,6 +1717,11 @@
     "name": "enable-media-session-service",
     "owners": [ "beccahughes", "media-dev" ],
     "expiry_milestone": 82
+  },
+  {
+    "name": "enable-mygoogle",
+    "owners": [ "fernandex", "chrome-ios-signin@google.com" ],
+    "expiry_milestone": 87
   },
   {
     "name": "enable-nacl",
@@ -1953,11 +1958,6 @@
     "expiry_milestone": -1
   },
   {
-    "name": "enable-search-box-selection",
-    "owners": [ "ginko", "newcomer" ],
-    "expiry_milestone": 78
-  },
-  {
     "name": "enable-send-tab-to-self",
     "owners": [ "//components/send_tab_to_self/OWNERS" ],
     "expiry_milestone": 77
@@ -2087,11 +2087,6 @@
   {
     "name": "enable-sync-uss-nigori",
     "owners": [ "mmoskvitin@google.com", "//components/sync/OWNERS" ],
-    "expiry_milestone": 83
-  },
-  {
-    "name": "enable-sync-uss-passwords",
-    "owners": [ "mamir", "//components/sync/OWNERS" ],
     "expiry_milestone": 83
   },
   {

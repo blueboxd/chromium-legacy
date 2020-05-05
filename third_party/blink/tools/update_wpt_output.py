@@ -14,8 +14,10 @@ from blinkpy.web_tests.models.test_expectations import TestExpectations
 
 def main(args):
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--additional-expectations", action="append",
-                        help="Paths to additional expectations files for WPT.")
+    parser.add_argument(
+        "--additional-expectations",
+        action="append",
+        help="Paths to additional expectations files for WPT.")
     known_args, rest_args = parser.parse_known_args(args)
 
     host = Host()
@@ -23,6 +25,7 @@ def main(args):
     expectations = TestExpectations(port)
     output_updater = WPTOutputUpdater(expectations)
     sys.exit(output_updater.run(rest_args))
+
 
 if __name__ == '__main__':
     main(sys.argv[1:])

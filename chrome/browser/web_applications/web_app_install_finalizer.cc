@@ -460,7 +460,9 @@ void WebAppInstallFinalizer::OnDatabaseCommitCompleted(
     return;
   }
 
-  registrar().NotifyWebAppInstalled(app_id);
+  if (is_new_install)
+    registrar().NotifyWebAppInstalled(app_id);
+
   std::move(callback).Run(
       app_id, is_new_install ? InstallResultCode::kSuccessNewInstall
                              : InstallResultCode::kSuccessAlreadyInstalled);

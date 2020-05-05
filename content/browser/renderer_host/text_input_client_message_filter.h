@@ -14,7 +14,6 @@
 
 namespace gfx {
 class Point;
-class Rect;
 }
 
 namespace content {
@@ -40,7 +39,6 @@ class CONTENT_EXPORT TextInputClientMessageFilter
   void OnGotStringAtPoint(
       const mac::AttributedStringCoder::EncodedString& encoded_string,
       const gfx::Point& point);
-  void OnGotFirstRectForRange(const gfx::Rect& rect);
   void OnGotStringFromRange(
       const mac::AttributedStringCoder::EncodedString& string,
       const gfx::Point& point);

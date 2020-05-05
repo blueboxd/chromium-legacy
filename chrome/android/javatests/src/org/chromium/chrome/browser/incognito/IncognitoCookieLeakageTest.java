@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.incognito;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 import android.os.Build;
 import android.support.test.InstrumentationRegistry;
@@ -36,6 +37,7 @@ import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4RunnerDelegate;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
+import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.JavaScriptUtils;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.net.test.EmbeddedTestServer;
@@ -85,11 +87,13 @@ public class IncognitoCookieLeakageTest {
     }
 
     private void setCookies(Tab tab) throws TimeoutException {
+        CriteriaHelper.pollUiThread(() -> { assertNotNull(tab.getWebContents()); });
         JavaScriptUtils.executeJavaScriptAndWaitForResult(tab.getWebContents(), "setCookie()");
         assertCookies(tab, "\"Foo=Bar\"");
     }
 
     private void assertCookies(Tab tab, String expected) throws TimeoutException {
+        CriteriaHelper.pollUiThread(() -> { assertNotNull(tab.getWebContents()); });
         String actual = JavaScriptUtils.executeJavaScriptAndWaitForResult(
                 tab.getWebContents(), "getCookie()");
         if (actual.equalsIgnoreCase("null")) actual = "\"\"";

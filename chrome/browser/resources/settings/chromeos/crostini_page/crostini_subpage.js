@@ -12,9 +12,8 @@
  * @enum {string}
  */
 const ConfirmationState = {
-  NONE: 'none',
+  NOT_CONFIRMED: 'notConfirmed',
   CONFIRMED: 'confirmed',
-  CANCELED: 'canceled',
 };
 
 Polymer({
@@ -106,18 +105,6 @@ Polymer({
       value: false,
     },
 
-    /** @private */
-    isDiskUserChosenSize_: {
-      type: Boolean,
-      value: false,
-    },
-
-    /** @private {!ConfirmationState} */
-    diskResizeConfirmationState_: {
-      type: String,
-      value: ConfirmationState.NONE,
-    },
-
     /**
      * Whether the toggle to share the mic with Crostini should be shown.
      * @private {boolean}
@@ -173,6 +160,13 @@ Polymer({
 
   /** settings.RouteOriginBehavior override */
   route_: settings.routes.CROSTINI_DETAILS,
+
+
+  /** @private {boolean} */
+  isDiskUserChosenSize_: false,
+
+  /** @private {!ConfirmationState} */
+  diskResizeConfirmationState_: ConfirmationState.NOT_CONFIRMED,
 
   observers: [
     'onCrostiniEnabledChanged_(prefs.crostini.enabled.value)',
@@ -241,7 +235,7 @@ Polymer({
     // TODO(davidmunro): No magic 'termina' string.
     const vmName = 'termina';
     settings.CrostiniBrowserProxyImpl.getInstance()
-        .getCrostiniDiskInfo(vmName, /*fullInfo = */ false)
+        .getCrostiniDiskInfo(vmName, /*requestFullInfo=*/ false)
         .then(
             diskInfo => {
               if (diskInfo.succeeded) {
@@ -266,17 +260,18 @@ Polymer({
   /** @private */
   onDiskResizeDialogClose_() {
     this.showDiskResizeDialog_ = false;
+    this.diskResizeConfirmationState_ = ConfirmationState.NOT_CONFIRMED;
     // DiskInfo could have changed.
     this.loadDiskInfo_();
   },
 
   /** @private */
   onDiskResizeConfirmationDialogClose_() {
-    this.showDiskResizeConfirmationDialog_ = false;
     // The on_cancel is followed by on_close, so check cancel didn't happen
     // first.
-    if (this.diskResizeConfirmationState_ !== ConfirmationState.CANCELED) {
+    if (this.showDiskResizeConfirmationDialog_) {
       this.diskResizeConfirmationState_ = ConfirmationState.CONFIRMED;
+      this.showDiskResizeConfirmationDialog_ = false;
       this.showDiskResizeDialog_ = true;
     }
   },
@@ -284,7 +279,6 @@ Polymer({
   /** @private */
   onDiskResizeConfirmationDialogCancel_() {
     this.showDiskResizeConfirmationDialog_ = false;
-    this.diskResizeConfirmationState_ = ConfirmationState.CANCELED;
   },
 
   /**

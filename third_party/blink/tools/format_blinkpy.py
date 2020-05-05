@@ -7,5 +7,4 @@ import sys
 
 from blinkpy.formatter.main import main
 
-
 sys.exit(main())

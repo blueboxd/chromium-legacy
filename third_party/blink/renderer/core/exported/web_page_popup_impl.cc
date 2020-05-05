@@ -34,6 +34,7 @@
 #include "cc/animation/animation_host.h"
 #include "cc/layers/picture_layer.h"
 #include "cc/trees/ukm_manager.h"
+#include "third_party/blink/public/platform/scheduler/web_render_widget_scheduling_state.h"
 #include "third_party/blink/public/platform/web_float_rect.h"
 #include "third_party/blink/public/web/web_view_client.h"
 #include "third_party/blink/renderer/core/accessibility/ax_object_cache_base.h"
@@ -335,6 +336,11 @@ cc::LayerTreeHost* WebPagePopupImpl::InitializeCompositing(
   widget_base_->InitializeCompositing(task_graph_runner, settings,
                                       std::move(ukm_recorder_factory));
   return widget_base_->LayerTreeHost();
+}
+
+scheduler::WebRenderWidgetSchedulingState*
+WebPagePopupImpl::RendererWidgetSchedulingState() {
+  return widget_base_->RendererWidgetSchedulingState();
 }
 
 void WebPagePopupImpl::SetCompositorVisible(bool visible) {

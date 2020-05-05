@@ -107,11 +107,14 @@ class FakeFileSystemFileHandle extends FakeFileSystemHandle {
   /**
    * @param {!string=} name
    * @param {!string=} type
+   * @param {!Blob} blob
    */
-  constructor(name = 'fake_file.png', type = '') {
+  constructor(name = 'fake_file.png', type = '', blob = new Blob()) {
     super(name);
-    /** @type {?FakeWritableFileStream} */
-    this.lastWritable;
+    this.lastWritable = new FakeWritableFileStream();
+
+    this.lastWritable.data = blob;
+
     /** @type {!string} */
     this.type = type;
   }
@@ -131,13 +134,7 @@ class FakeFileSystemFileHandle extends FakeFileSystemHandle {
 
   /** @return {!File} */
   getFileSync() {
-    // TODO(b/152832337): Use a real image file and set mime type to be
-    // 'image/png'. In tests, the src_internal app struggles to reliably load
-    // empty images because a size of 0 can't be decoded but also can't reliably
-    // load real images due to b/152832025. Mitigate this for now by now by not
-    // providing a mime type so the image doesn't get loaded in tests but we can
-    // still test the IPC mechanisms.
-    return new File([], this.name, {type: this.type});
+    return new File([this.lastWritable.data], this.name, {type: this.type});
   }
 }
 
@@ -213,20 +210,27 @@ class FakeFileSystemDirectoryHandle extends FakeFileSystemHandle {
 
 /**
  * Structure to define a test file.
- * @typedef{{name: (string|undefined), type: (string|undefined)}}
+ * @typedef{{
+ *   name: (string|undefined),
+ *   type: (string|undefined),
+ *   arrayBuffer: (function(): (Promise<ArrayBuffer>)|undefined)
+ * }}
  */
 let FileDesc;
 
 /**
  * Creates a mock directory with the provided files in it.
  * @param {!Array<!FileDesc>=} files
- * @return {FakeFileSystemDirectoryHandle}
+ * @return {Promise<FakeFileSystemDirectoryHandle>}
  */
-function createMockTestDirectory(files = [{}]) {
+async function createMockTestDirectory(files = [{}]) {
   const directory = new FakeFileSystemDirectoryHandle();
   for (const /** FileDesc */ file of files) {
+    const fileBlob = file.arrayBuffer !== undefined ?
+        new Blob([await file.arrayBuffer()]) :
+        new Blob();
     directory.addFileHandleForTest(
-        new FakeFileSystemFileHandle(file.name, file.type));
+        new FakeFileSystemFileHandle(file.name, file.type, fileBlob));
   }
   return directory;
 }

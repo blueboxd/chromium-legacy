@@ -90,6 +90,10 @@ class WebStateDelegate {
       WebState* source,
       UIViewController* previewing_view_controller);
 
+  // Returns the UIView used to contain the WebView for sizing purposes. Can be
+  // nil.
+  virtual UIView* GetWebViewContainer(WebState* source);
+
   // Called when iOS13+ context menu is triggered and now it is required to
   // provide a UIContextMenuConfiguration to |completion_handler| to generate
   // the context menu.

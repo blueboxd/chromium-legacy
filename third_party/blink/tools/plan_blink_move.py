@@ -7,8 +7,9 @@ import os
 import re
 import sys
 
-sys.path.append(os.path.join(os.path.dirname(__file__),
-                             '..', 'renderer', 'build', 'scripts'))
+sys.path.append(
+    os.path.join(
+        os.path.dirname(__file__), '..', 'renderer', 'build', 'scripts'))
 from blinkbuild.name_style_converter import NameStyleConverter
 from blinkpy.common.system.filesystem import FileSystem
 
@@ -25,8 +26,11 @@ def relative_dest(fs, filename):
     elif filename.startswith('common') or filename.startswith('public'):
         dest = filename
     else:
-        raise ValueError('|filename| must start with "common", "public", or "Source": %s' % filename)
-    if filename.endswith(('.h', '.cpp', '.mm', '.idl', '.typemap', '.proto', 'Settings.json5')):
+        raise ValueError(
+            '|filename| must start with "common", "public", or "Source": %s' %
+            filename)
+    if filename.endswith(('.h', '.cpp', '.mm', '.idl', '.typemap', '.proto',
+                          'Settings.json5')):
         dirname, basename = fs.split(dest)
         basename, ext = fs.splitext(basename)
         # Skip some inspector-related files. #includes for these files are

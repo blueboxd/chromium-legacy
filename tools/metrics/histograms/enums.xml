@@ -38649,6 +38649,7 @@ from previous Chrome versions.
   <int value="-1344375439" label="ServiceWorkerPaymentApps:disabled"/>
   <int value="-1343259222" label="RegionalLocalesAsDisplayUI:disabled"/>
   <int value="-1342961844" label="InlineUpdateFlow:disabled"/>
+  <int value="-1342829138" label="kMacCoreLocationImplementation:enabled"/>
   <int value="-1342039126" label="AshNewSystemMenu:enabled"/>
   <int value="-1341685799" label="AutofillAssistantDirectActions:enabled"/>
   <int value="-1341092934" label="enable-accelerated-overflow-scroll"/>
@@ -40110,7 +40111,6 @@ from previous Chrome versions.
       label="DesktopPWAsLocalUpdatingThrottlePersistence:enabled"/>
   <int value="348854923" label="v8-cache-strategies-for-cache-storage"/>
   <int value="350399958" label="ModuleScriptsImportMetaUrl:disabled"/>
-  <int value="350616049" label="IntentPicker:disabled"/>
   <int value="350635266" label="TabGroupsContinuationAndroid:enabled"/>
   <int value="351005753" label="enable-experimental-accessibility-autoclick"/>
   <int value="352191859" label="disabled-new-style-notification"/>
@@ -40566,6 +40566,7 @@ from previous Chrome versions.
   <int value="885971656" label="EnablePlayStoreAppSearch:enabled"/>
   <int value="886907524" label="autoplay-policy"/>
   <int value="887011602" label="enable-spelling-auto-correct"/>
+  <int value="890322192" label="kMacCoreLocationImplementation:disabled"/>
   <int value="892899792" label="MaterialDesignIncognitoNTP:disabled"/>
   <int value="898311758" label="ReaderMode:disabled"/>
   <int value="900614020" label="ContentSuggestionsShowSummary:disabled"/>
@@ -41578,7 +41579,6 @@ from previous Chrome versions.
   <int value="2043141918" label="DnsOverHttps:enabled"/>
   <int value="2043321329" label="OfflinePagesPrefetchingUI:disabled"/>
   <int value="2047695652" label="DelegateOverscrollSwipes:enabled"/>
-  <int value="2047981703" label="IntentPicker:enabled"/>
   <int value="2049432745" label="VaapiWebPImageDecodeAcceleration:enabled"/>
   <int value="2050985807" label="AllowPopupsDuringPageUnload:enabled"/>
   <int value="2051403297" label="ShowBluetoothDeviceBattery:disabled"/>

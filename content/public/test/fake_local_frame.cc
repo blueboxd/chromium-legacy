@@ -88,6 +88,7 @@ void FakeLocalFrame::OnScreensChange() {}
 
 #if defined(OS_MACOSX)
 void FakeLocalFrame::GetCharacterIndexAtPoint(const gfx::Point& point) {}
+void FakeLocalFrame::GetFirstRectForRange(const gfx::Range& range) {}
 #endif
 
 void FakeLocalFrame::BindFrameHostReceiver(

@@ -71,11 +71,9 @@ bool IsPlayStoreApp(SearchResult* result) {
 }  // namespace
 
 SearchResultTileItemListView::SearchResultTileItemListView(
-    SearchResultPageView* search_result_page_view,
     views::Textfield* search_box,
     AppListViewDelegate* view_delegate)
     : SearchResultContainerView(view_delegate),
-      search_result_page_view_(search_result_page_view),
       search_box_(search_box),
       is_play_store_app_search_enabled_(
           app_list_features::IsPlayStoreAppSearchEnabled()),
@@ -104,8 +102,7 @@ SearchResultTileItemListView::SearchResultTileItemListView(
 
     SearchResultTileItemView* tile_item =
         AddChildView(std::make_unique<SearchResultTileItemView>(
-            view_delegate, nullptr /* pagination model */,
-            false /* show_in_apps_page */));
+            view_delegate, false /* show_in_apps_page */));
     tile_item->set_index_in_container(i);
     tile_item->SetParentBackgroundColor(
         AppListConfig::instance().card_background_color());
@@ -374,41 +371,6 @@ void SearchResultTileItemListView::OnPlayStoreImpressionTimer() {
 void SearchResultTileItemListView::CleanUpOnViewHide() {
   playstore_impression_timer_.Stop();
   recent_playstore_query_.clear();
-}
-
-bool SearchResultTileItemListView::OnKeyPressed(const ui::KeyEvent& event) {
-  // Let the FocusManager handle Left/Right keys.
-  if (!IsUnhandledUpDownKeyEvent(event))
-    return false;
-
-  views::View* next_focusable_view = nullptr;
-
-  // Since search result tile item views have horizontal layout, hitting
-  // up/down when one of them is focused moves focus to the previous/next
-  // search result container.
-  if (event.key_code() == ui::VKEY_UP) {
-    next_focusable_view = GetFocusManager()->GetNextFocusableView(
-        tile_views_.front(), GetWidget(), true, false);
-    if (!search_result_page_view_->Contains(next_focusable_view)) {
-      // Focus should be moved to search box when it is moved outside search
-      // result page view.
-      search_box_->RequestFocus();
-      return true;
-    }
-  } else {
-    DCHECK_EQ(event.key_code(), ui::VKEY_DOWN);
-    next_focusable_view = GetFocusManager()->GetNextFocusableView(
-        tile_views_.back(), GetWidget(), false, false);
-  }
-
-  if (next_focusable_view) {
-    next_focusable_view->RequestFocus();
-    return true;
-  }
-
-  // Return false to let FocusManager to handle default focus move by key
-  // events.
-  return false;
 }
 
 const char* SearchResultTileItemListView::GetClassName() const {

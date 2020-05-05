@@ -238,6 +238,7 @@ jumbo_component("network_service") {
     "//net:extras",
     "//services/network/public/cpp",
     "//services/network/public/cpp/cert_verifier:cert_verifier_creation",
+    "//services/network/public/cpp/cert_verifier:mojo_cert_verifier",
     "//services/network/public/mojom",
     "//services/network/public/proto",
     "//services/network/trust_tokens",

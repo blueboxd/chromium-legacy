@@ -160,12 +160,6 @@ class APP_LIST_EXPORT SearchBoxView : public search_box::SearchBoxViewBase,
   // Clear highlight range.
   void ResetHighlightRange();
 
-  // Key event handler used when SearchBoxSelection feature is disabled. This
-  // should be removed when the app_list_features::IsSearchBoxSelectionEnabled()
-  // flag is removed.
-  bool HandleKeyEventForDisabledSearchBoxSelection(
-      const ui::KeyEvent& key_event);
-
   base::string16 current_query_;
 
   // The range of highlighted text for autocomplete.

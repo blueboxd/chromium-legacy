@@ -2929,6 +2929,7 @@
     'linux_ozone_wayland_and_x11_gtests': {
       'accessibility_unittests': {},
       'aura_unittests': {},
+      'compositor_unittests': {},
       'content_browsertests': {
         'swarming': {
           'shards': 2

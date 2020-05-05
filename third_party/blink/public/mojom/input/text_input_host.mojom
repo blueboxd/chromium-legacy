@@ -4,6 +4,8 @@
 
 module blink.mojom;
 
+import "ui/gfx/geometry/mojom/geometry.mojom";
+
 // Implemented in Browser, this interface defines methods that will be invoked
 // from the render process for the reply to TextInputClientMac.
 //
@@ -11,7 +13,17 @@ module blink.mojom;
 // stricter threading requirements. Also read the comment at the implementation
 // (i.e. TextInputHostImpl).
 interface TextInputHost {
-  // Reply for QueryGetCharacterIndexAtPoint from LocalFrame.
+  // Reply for GetCharacterIndexAtPoint from LocalFrame.
+  // When GetCharacterIndexAtPoint is called in Browser, BrowserThread::UI is
+  // blocked at TextInputClientMac to support the reply synchronously with
+  // a timeout on Mac. So, it needs a separate message,
+  // GotCharacterIndexAtPoint, that runs on BrowserThread::IO and unblocks
+  // BrowserThread::UI.
   // [EnableIf=is_mac]
   GotCharacterIndexAtPoint(uint32 index);
+
+  // Reply for GetFirstRectForRange from LocalFrame. It works in the same
+  // manner as GetCharacterIndexAtPoint.
+  // [EnableIf=is_mac]
+  GotFirstRectForRange(gfx.mojom.Rect rect);
 };

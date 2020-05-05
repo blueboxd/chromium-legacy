@@ -386,6 +386,7 @@ mojom("mojom") {
   generate_java = true
   sources = [
     "blocked_by_response_reason.mojom",
+    "cert_verifier_service.mojom",
     "content_security_policy.mojom",
     "cors.mojom",
     "cors_origin_pattern.mojom",
@@ -791,6 +792,24 @@ mojom("mojom") {
       ]
       traits_headers = [ "//services/network/public/cpp/proxy_config_with_annotation_mojom_traits.h" ]
       traits_public_deps = [ "//net" ]
+    },
+    {
+      types = [
+        {
+          mojom = "cert_verifier.mojom.RequestParams"
+          cpp = "::net::CertVerifier::RequestParams"
+        },
+        {
+          mojom = "cert_verifier.mojom.CertVerifierConfig"
+          cpp = "::net::CertVerifier::Config"
+        },
+      ]
+      traits_headers = [ "//services/network/public/cpp/cert_verifier/cert_verifier_mojom_traits.h" ]
+      traits_sources = [ "//services/network/public/cpp/cert_verifier/cert_verifier_mojom_traits.cc" ]
+      traits_public_deps = [
+        "//mojo/public/cpp/base",
+        "//net",
+      ]
     },
   ]
   cpp_typemaps += shared_cpp_typemaps

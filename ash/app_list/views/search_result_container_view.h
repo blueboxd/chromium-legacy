@@ -38,10 +38,6 @@ class APP_LIST_EXPORT SearchResultContainerView : public views::View,
 
     // Called whenever results in the container change, i.e. during |Update()|.
     virtual void OnSearchResultContainerResultsChanged() = 0;
-
-    // Called whenever a result within the container gains focus.
-    virtual void OnSearchResultContainerResultFocused(
-        SearchResultBaseView* focused_result_view) = 0;
   };
   explicit SearchResultContainerView(AppListViewDelegate* view_delegate);
   ~SearchResultContainerView() override;
@@ -83,9 +79,6 @@ class APP_LIST_EXPORT SearchResultContainerView : public views::View,
 
   // Overridden from views::View:
   const char* GetClassName() const override;
-
-  // Overridden from views::ViewObserver:
-  void OnViewFocused(View* observed_view) override;
 
   // Functions to allow derivative classes to add/remove observed result views.
   void AddObservedResultView(SearchResultBaseView* result_view);

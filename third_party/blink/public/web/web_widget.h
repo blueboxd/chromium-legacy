@@ -61,6 +61,10 @@ class LayerTreeSettings;
 namespace blink {
 class WebCoalescedInputEvent;
 
+namespace scheduler {
+class WebRenderWidgetSchedulingState;
+}
+
 class WebWidget {
  public:
   // Initialize compositing. This will create a LayerTreeHost but will not
@@ -162,6 +166,10 @@ class WebWidget {
 
   // Called by client to request showing the context menu.
   virtual void ShowContextMenu(WebMenuSourceType) {}
+
+  // Accessor to the WebWidget scheduing state.
+  virtual scheduler::WebRenderWidgetSchedulingState*
+  RendererWidgetSchedulingState() = 0;
 
   // When the WebWidget is part of a frame tree, returns the active url for
   // main frame of that tree, if the main frame is local in that tree. When

@@ -146,19 +146,21 @@ uint32_t TextInputClientMac::GetCharacterIndexAtPoint(RenderWidgetHost* rwh,
 
 gfx::Rect TextInputClientMac::GetFirstRectForRange(RenderWidgetHost* rwh,
                                                    const gfx::Range& range) {
-  RenderWidgetHostImpl* rwhi = RenderWidgetHostImpl::From(rwh);
-  if (!SendMessageToRenderWidget(
-          rwhi, new TextInputClientMsg_FirstRectForCharacterRange(
-                    rwhi->GetRoutingID(), range))) {
+  if (IsFullScreenRenderWidget(rwh))
     return gfx::Rect();
-  }
+
+  RenderFrameHostImpl* rfhi = GetFocusedRenderFrameHostImpl(rwh);
+  if (!rfhi)
+    return gfx::Rect();
+
+  rfhi->GetAssociatedLocalFrame()->GetFirstRectForRange(range);
 
   base::TimeTicks start = base::TimeTicks::Now();
 
   BeforeRequest();
 
   // http://crbug.com/121917
-  base::ScopedAllowBaseSyncPrimitives allow_wait;
+  base::ScopedAllowBaseSyncPrimitivesOutsideBlockingScope allow_wait;
   condition_.TimedWait(base::TimeDelta::FromMilliseconds(kWaitTimeout));
   AfterRequest();
 

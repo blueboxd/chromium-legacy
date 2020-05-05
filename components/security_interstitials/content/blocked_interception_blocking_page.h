@@ -14,8 +14,7 @@
 class BlockedInterceptionBlockingPage : public SSLBlockingPageBase {
  public:
   // Interstitial type, used in tests.
-  static const security_interstitials::SecurityInterstitialPage::TypeID
-      kTypeForTesting;
+  static const InterstitialPageDelegate::TypeID kTypeForTesting;
 
   BlockedInterceptionBlockingPage(
       content::WebContents* web_contents,
@@ -28,13 +27,15 @@ class BlockedInterceptionBlockingPage : public SSLBlockingPageBase {
           controller_client);
   ~BlockedInterceptionBlockingPage() override;
 
-  // SecurityInterstitialPage method:
-  security_interstitials::SecurityInterstitialPage::TypeID GetTypeForTesting()
-      override;
+  // InterstitialPageDelegate method:
+  InterstitialPageDelegate::TypeID GetTypeForTesting() override;
 
  protected:
-  // SecurityInterstitialPage implementation:
+  // InterstitialPageDelegate implementation:
   void CommandReceived(const std::string& command) override;
+  void OverrideEntry(content::NavigationEntry* entry) override;
+
+  // SecurityInterstitialPage implementation:
   bool ShouldCreateNewNavigation() const override;
   void PopulateInterstitialStrings(
       base::DictionaryValue* load_time_data) override;

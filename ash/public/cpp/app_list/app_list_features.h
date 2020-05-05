@@ -67,8 +67,6 @@ ASH_PUBLIC_EXPORT extern const base::Feature kEnableAppGridGhost;
 // Enables hashed recording of a app list launches.
 ASH_PUBLIC_EXPORT extern const base::Feature kEnableAppListLaunchRecording;
 
-ASH_PUBLIC_EXPORT extern const base::Feature kEnableSearchBoxSelection;
-
 // Enables using the aggregated Ml model to rank suggested apps.
 ASH_PUBLIC_EXPORT extern const base::Feature kEnableAggregatedMlAppRanking;
 
@@ -110,7 +108,6 @@ bool ASH_PUBLIC_EXPORT IsSuggestedFilesEnabled();
 bool ASH_PUBLIC_EXPORT IsAssistantSearchEnabled();
 bool ASH_PUBLIC_EXPORT IsAppGridGhostEnabled();
 bool ASH_PUBLIC_EXPORT IsAppListLaunchRecordingEnabled();
-bool ASH_PUBLIC_EXPORT IsSearchBoxSelectionEnabled();
 bool ASH_PUBLIC_EXPORT IsAggregatedMlAppRankingEnabled();
 bool ASH_PUBLIC_EXPORT IsScalableAppListEnabled();
 bool ASH_PUBLIC_EXPORT IsFuzzyAppSearchEnabled();

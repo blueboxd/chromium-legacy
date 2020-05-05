@@ -47,3 +47,6 @@ const base::Feature kQRCodeGeneration{"QRCodeGeneration",
 const base::Feature kPointerSupport{"PointerSupport",
                                     base::FEATURE_ENABLED_BY_DEFAULT};
 #endif  // defined(__IPHONE_13_4)
+
+const base::Feature kEnableMyGoogle{"EnableMyGoogle",
+                                    base::FEATURE_DISABLED_BY_DEFAULT};

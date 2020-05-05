@@ -18,5 +18,9 @@ const base::Feature kWinrtSensorsImplementation{
 // LocationProvider instead of the NetworkLocationProvider on Windows.
 const base::Feature kWinrtGeolocationImplementation{
     "WinrtGeolocationImplementation", base::FEATURE_DISABLED_BY_DEFAULT};
+// Enables usage of the CoreLocation API for LocationProvider instead of
+// NetworkLocationProvider for macOS.
+const base::Feature kMacCoreLocationImplementation{
+    "kMacCoreLocationImplementation", base::FEATURE_DISABLED_BY_DEFAULT};
 
 }  // namespace features

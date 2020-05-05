@@ -139,6 +139,8 @@ class CORE_EXPORT WebPagePopupImpl final : public WebPagePopup,
       cc::TaskGraphRunner* task_graph_runner,
       const cc::LayerTreeSettings& settings,
       std::unique_ptr<cc::UkmRecorderFactory> ukm_recorder_factory) override;
+  scheduler::WebRenderWidgetSchedulingState* RendererWidgetSchedulingState()
+      override;
 
   // PageWidgetEventHandler functions
   WebInputEventResult HandleCharEvent(const WebKeyboardEvent&) override;

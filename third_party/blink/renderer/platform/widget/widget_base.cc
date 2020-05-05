@@ -11,6 +11,7 @@
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/scheduler/web_render_widget_scheduling_state.h"
 #include "third_party/blink/public/platform/scheduler/web_thread_scheduler.h"
 #include "third_party/blink/public/platform/web_screen_info.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
@@ -39,7 +40,13 @@ WidgetBase::WidgetBase(
     CrossVariantMojoAssociatedReceiver<mojom::WidgetInterfaceBase> widget)
     : client_(client),
       widget_host_(std::move(widget_host)),
-      receiver_(this, std::move(widget)) {}
+      receiver_(this, std::move(widget)) {
+  if (auto* main_thread_scheduler =
+          scheduler::WebThreadScheduler::MainThreadScheduler()) {
+    render_widget_scheduling_state_ =
+        main_thread_scheduler->NewRenderWidgetSchedulingState();
+  }
+}
 
 WidgetBase::~WidgetBase() {
   // Ensure Shutdown was called.
@@ -93,6 +100,11 @@ cc::LayerTreeHost* WidgetBase::LayerTreeHost() const {
 
 cc::AnimationHost* WidgetBase::AnimationHost() const {
   return layer_tree_view_->animation_host();
+}
+
+scheduler::WebRenderWidgetSchedulingState*
+WidgetBase::RendererWidgetSchedulingState() const {
+  return render_widget_scheduling_state_.get();
 }
 
 void WidgetBase::ApplyViewportChanges(

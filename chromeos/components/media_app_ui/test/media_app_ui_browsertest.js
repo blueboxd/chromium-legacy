@@ -199,7 +199,7 @@ TEST_F('MediaAppUIBrowserTest', 'OverwriteOriginalIPC', async () => {
   await loadFile(await createTestImageFile(), handle);
 
   // Write should not be called initially.
-  assertEquals(undefined, handle.lastWritable);
+  assertEquals(0, handle.lastWritable.data.size);
 
   const message = {overwriteLastFile: 'Foo'};
   const testResponse = await guestMessagePipe.sendMessage('test', message);
@@ -213,7 +213,7 @@ TEST_F('MediaAppUIBrowserTest', 'OverwriteOriginalIPC', async () => {
 // Tests the IPC behind the implementation of ReceivedFile.deleteOriginalFile()
 // in the untrusted context.
 TEST_F('MediaAppUIBrowserTest', 'DeleteOriginalIPC', async () => {
-  const directory = createMockTestDirectory();
+  const directory = await createMockTestDirectory();
   // Simulate steps taken to load a file via a launch event.
   const firstFile = directory.files[0];
   await loadFile(await createTestImageFile(), firstFile);
@@ -276,10 +276,11 @@ TEST_F('MediaAppUIBrowserTest', 'NavigateIPC', async () => {
 // Tests the IPC behind the implementation of ReceivedFile.renameOriginalFile()
 // in the untrusted context.
 TEST_F('MediaAppUIBrowserTest', 'RenameOriginalIPC', async () => {
-  const directory = createMockTestDirectory();
+  const firstFile = await createTestImageFile();
+  const directory = await createMockTestDirectory([firstFile]);
   // Simulate steps taken to load a file via a launch event.
-  const firstFile = directory.files[0];
-  await loadFile(await createTestImageFile(), firstFile);
+  const firstFileHandle = directory.files[0];
+  await loadFile(firstFile, firstFileHandle);
   // Set `currentDirectoryHandle` in launch.js.
   currentDirectoryHandle = directory;
   let testResponse;
@@ -294,10 +295,15 @@ TEST_F('MediaAppUIBrowserTest', 'RenameOriginalIPC', async () => {
   assertEquals(
       testResponse.testQueryResult, 'renameOriginalFile resolved success');
   // The original file that was renamed got deleted.
-  assertEquals(firstFile, directory.lastDeleted);
+  assertEquals(firstFileHandle, directory.lastDeleted);
   // There is still one file which is the renamed version of the original file.
   assertEquals(directory.files.length, 1);
   assertEquals(directory.files[0].name, 'new_file_name.png');
+  // Check the new file written has the correct data.
+  const newHandle = directory.files[0];
+  const newFile = await newHandle.getFile();
+  assertEquals(newFile.size, firstFile.size);
+  assertEquals(await newFile.text(), await firstFile.text());
 
   // Test renaming when a file with the new name already exists.
   const messageRenameExists = {renameLastFile: 'new_file_name.png'};
@@ -353,7 +359,7 @@ TEST_F('MediaAppUIBrowserTest', 'RelatedFiles', async () => {
     {name: 'html', type: 'text/html'},
     {name: 'matroska.emkv'},
   ];
-  const directory = createMockTestDirectory(testFiles);
+  const directory = await createMockTestDirectory(testFiles);
   const [mkv, jpg, txt, gif, webm, other, ext, html] = directory.getFilesSync();
   const imageAndVideoFiles = [mkv, jpg, gif, webm];
 

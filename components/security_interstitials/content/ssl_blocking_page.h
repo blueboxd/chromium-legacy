@@ -40,14 +40,12 @@ const char kSymantecSupportUrl[] =
 class SSLBlockingPage : public SSLBlockingPageBase {
  public:
   // Interstitial type, used in tests.
-  static const security_interstitials::SecurityInterstitialPage::TypeID
-      kTypeForTesting;
+  static const InterstitialPageDelegate::TypeID kTypeForTesting;
 
   ~SSLBlockingPage() override;
 
   // InterstitialPageDelegate method:
-  security_interstitials::SecurityInterstitialPage::TypeID GetTypeForTesting()
-      override;
+  InterstitialPageDelegate::TypeID GetTypeForTesting() override;
 
   // Returns true if |options_mask| refers to a soft-overridable SSL error.
   static bool IsOverridable(int options_mask);
@@ -67,8 +65,11 @@ class SSLBlockingPage : public SSLBlockingPageBase {
           controller_client);
 
  protected:
-  // SecurityInterstitialPage implementation:
+  // InterstitialPageDelegate implementation.
   void CommandReceived(const std::string& command) override;
+  void OverrideEntry(content::NavigationEntry* entry) override;
+
+  // SecurityInterstitialPage implementation:
   bool ShouldCreateNewNavigation() const override;
   void PopulateInterstitialStrings(
       base::DictionaryValue* load_time_data) override;

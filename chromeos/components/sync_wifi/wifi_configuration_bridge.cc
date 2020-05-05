@@ -14,8 +14,10 @@
 #include "base/strings/stringprintf.h"
 #include "base/time/clock.h"
 #include "base/time/time.h"
+#include "chromeos/components/sync_wifi/local_network_collector.h"
 #include "chromeos/components/sync_wifi/network_identifier.h"
 #include "chromeos/components/sync_wifi/network_type_conversions.h"
+#include "chromeos/components/sync_wifi/synced_network_metrics_logger.h"
 #include "chromeos/components/sync_wifi/synced_network_updater.h"
 #include "chromeos/network/network_configuration_handler.h"
 #include "chromeos/network/network_event_log.h"
@@ -48,12 +50,14 @@ WifiConfigurationBridge::WifiConfigurationBridge(
     SyncedNetworkUpdater* synced_network_updater,
     LocalNetworkCollector* local_network_collector,
     NetworkConfigurationHandler* network_configuration_handler,
+    SyncedNetworkMetricsLogger* metrics_recorder,
     std::unique_ptr<syncer::ModelTypeChangeProcessor> change_processor,
     syncer::OnceModelTypeStoreFactory create_store_callback)
     : ModelTypeSyncBridge(std::move(change_processor)),
       synced_network_updater_(synced_network_updater),
       local_network_collector_(local_network_collector),
       network_configuration_handler_(network_configuration_handler),
+      metrics_recorder_(metrics_recorder),
       network_metadata_store_(nullptr) {
   std::move(create_store_callback)
       .Run(syncer::WIFI_CONFIGURATIONS,
@@ -175,6 +179,7 @@ void WifiConfigurationBridge::OnGetAllSyncableNetworksResult(
   // Mark the changes as processed.
   batch->TakeMetadataChangesFrom(std::move(metadata_change_list));
   Commit(std::move(batch));
+  metrics_recorder_->RecordTotalCount(entries_.size());
 }
 
 base::Optional<syncer::ModelError> WifiConfigurationBridge::ApplySyncChanges(
@@ -212,6 +217,7 @@ base::Optional<syncer::ModelError> WifiConfigurationBridge::ApplySyncChanges(
 
   batch->TakeMetadataChangesFrom(std::move(metadata_change_list));
   Commit(std::move(batch));
+  metrics_recorder_->RecordTotalCount(entries_.size());
 
   return base::nullopt;
 }
@@ -281,6 +287,7 @@ void WifiConfigurationBridge::OnReadAllData(
     entries_[record.id] = std::move(data);
   }
 
+  metrics_recorder_->RecordTotalCount(entries_.size());
   store_->ReadAllMetadata(
       base::BindOnce(&WifiConfigurationBridge::OnReadAllMetadata,
                      weak_ptr_factory_.GetWeakPtr()));
@@ -383,6 +390,7 @@ void WifiConfigurationBridge::SaveNetworkToSync(
   NET_LOG(EVENT) << "Saved network "
                  << NetworkId(NetworkStateFromNetworkIdentifier(id))
                  << "to sync.";
+  metrics_recorder_->RecordTotalCount(entries_.size());
 }
 
 void WifiConfigurationBridge::OnBeforeConfigurationRemoved(

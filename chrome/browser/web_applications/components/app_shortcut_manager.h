@@ -24,7 +24,6 @@ class Profile;
 
 namespace web_app {
 
-class AppShortcutObserver;
 struct ShortcutInfo;
 
 // This class manages creation/update/deletion of OS shortcuts for web
@@ -43,9 +42,6 @@ class AppShortcutManager : public AppRegistrarObserver {
 
   void Start();
   void Shutdown();
-
-  void AddObserver(AppShortcutObserver* observer);
-  void RemoveObserver(AppShortcutObserver* observer);
 
   // AppRegistrarObserver:
   void OnWebAppInstalled(const AppId& app_id) override;
@@ -97,8 +93,6 @@ class AppShortcutManager : public AppRegistrarObserver {
 
   ScopedObserver<AppRegistrar, AppRegistrarObserver> app_registrar_observer_{
       this};
-
-  base::ObserverList<AppShortcutObserver, /*check_empty=*/true> observers_;
 
   bool suppress_shortcuts_for_testing_ = false;
 

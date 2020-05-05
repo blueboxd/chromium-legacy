@@ -79,6 +79,9 @@
 - (void)webState:(web::WebState*)webState
     commitPreviewingViewController:(UIViewController*)previewingViewController;
 
+// Called to know the size of the view containing the WebView.
+- (UIView*)webViewContainerForWebState:(web::WebState*)webState;
+
 // Called when iOS13+ context menu is triggered and now it is required to
 // provide a UIContextMenuConfiguration to |completion_handler| to generate the
 // context menu.
@@ -140,6 +143,7 @@ class WebStateDelegateBridge : public web::WebStateDelegate {
   void CommitPreviewingViewController(
       WebState* source,
       UIViewController* previewing_view_controller) override;
+  UIView* GetWebViewContainer(WebState* source) override;
   void ContextMenuConfiguration(
       WebState* source,
       const GURL& link_url,

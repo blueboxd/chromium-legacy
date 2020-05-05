@@ -236,6 +236,8 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
   DCHECK(!self.accountItem);
   self.accountItem =
       [[TableViewAccountItem alloc] initWithType:IdentityItemType];
+  self.accountItem.accessibilityIdentifier =
+      kAccountListItemAccessibilityIdentifier;
   if (self.mode == GoogleServicesSettingsModeAdvancedSigninSettings) {
     self.accountItem.mode = TableViewAccountModeNonTappable;
   } else {

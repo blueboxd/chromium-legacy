@@ -475,7 +475,7 @@ id<GREYMatcher> OpenInNewIncognitoTabButton() {
 - (void)testSwipeDownDismissWhileSearching {
 // TODO(crbug.com/1078165): Test fails on iOS 13+ iPad devices.
 #if !TARGET_IPHONE_SIMULATOR
-  if ([ChromeEarlGrey isIPadIdiom] && IsRunningOnIOS13OrLater()) {
+  if ([ChromeEarlGrey isIPadIdiom] && base::ios::IsRunningOnIOS13OrLater()) {
     EARL_GREY_TEST_DISABLED(@"This test fails on iOS 13+ iPad device.");
   }
 #endif

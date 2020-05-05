@@ -58,6 +58,16 @@
         android:visibility="gone"
         tools:ignore="ContentDescription"/>
 
+    <org.chromium.chrome.browser.toolbar.TabSwitcherButtonView
+        android:id="@+id/start_tab_switcher_button"
+        android:layout_toStartOf="@+id/menu_anchor"
+        style="@style/SplitToolbarButton"
+        app:menuMaxWidth="@dimen/tab_switcher_menu_width"
+        android:visibility="gone"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:contentDescription="@string/accessibility_toolbar_btn_tabswitcher_toggle_default"
+        app:menuVerticalOverlapAnchor="false" />
+
     <FrameLayout
       android:id="@+id/menu_anchor"
       android:layout_width="wrap_content"

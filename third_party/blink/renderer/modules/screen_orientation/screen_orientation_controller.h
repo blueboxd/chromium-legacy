@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_SCREEN_ORIENTATION_SCREEN_ORIENTATION_CONTROLLER_IMPL_H_
-#define THIRD_PARTY_BLINK_RENDERER_MODULES_SCREEN_ORIENTATION_SCREEN_ORIENTATION_CONTROLLER_IMPL_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_SCREEN_ORIENTATION_SCREEN_ORIENTATION_CONTROLLER_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_SCREEN_ORIENTATION_SCREEN_ORIENTATION_CONTROLLER_H_
 
 #include <memory>
 
@@ -13,7 +13,6 @@
 #include "third_party/blink/public/common/screen_orientation/web_screen_orientation_lock_type.h"
 #include "third_party/blink/public/common/screen_orientation/web_screen_orientation_type.h"
 #include "third_party/blink/renderer/core/dom/document.h"
-#include "third_party/blink/renderer/core/frame/screen_orientation_controller.h"
 #include "third_party/blink/renderer/core/page/page_visibility_observer.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/modules/screen_orientation/web_lock_orientation_callback.h"
@@ -24,27 +23,27 @@ class ScreenOrientation;
 
 using device::mojom::blink::ScreenOrientationLockResult;
 
-class MODULES_EXPORT ScreenOrientationControllerImpl final
-    : public ScreenOrientationController,
+class MODULES_EXPORT ScreenOrientationController final
+    : public GarbageCollected<ScreenOrientationController>,
       public ExecutionContextLifecycleObserver,
-      public PageVisibilityObserver {
-  USING_GARBAGE_COLLECTED_MIXIN(ScreenOrientationControllerImpl);
+      public PageVisibilityObserver,
+      public Supplement<LocalDOMWindow> {
+  USING_GARBAGE_COLLECTED_MIXIN(ScreenOrientationController);
 
  public:
-  explicit ScreenOrientationControllerImpl(LocalFrame&);
-  ~ScreenOrientationControllerImpl() override;
+  explicit ScreenOrientationController(LocalDOMWindow&);
+  ~ScreenOrientationController();
 
   void SetOrientation(ScreenOrientation*);
-  void NotifyOrientationChanged() override;
+  void NotifyOrientationChanged();
 
-  // Implementation of ScreenOrientationController.
   void lock(WebScreenOrientationLockType,
-            std::unique_ptr<WebLockOrientationCallback>) override;
-  void unlock() override;
-  bool MaybeHasActiveLock() const override;
+            std::unique_ptr<WebLockOrientationCallback>);
+  void unlock();
+  bool MaybeHasActiveLock() const;
 
-  static void ProvideTo(LocalFrame&);
-  static ScreenOrientationControllerImpl* From(LocalFrame&);
+  static const char kSupplementName[];
+  static ScreenOrientationController* From(LocalDOMWindow&);
 
   void SetScreenOrientationAssociatedRemoteForTests(
       mojo::AssociatedRemote<device::mojom::blink::ScreenOrientation>);
@@ -53,7 +52,7 @@ class MODULES_EXPORT ScreenOrientationControllerImpl final
 
  private:
   friend class MediaControlsOrientationLockAndRotateToFullscreenDelegateTest;
-  friend class ScreenOrientationControllerImplTest;
+  friend class ScreenOrientationControllerTest;
 
   static WebScreenOrientationType ComputeOrientation(const IntRect&, uint16_t);
 
@@ -79,9 +78,9 @@ class MODULES_EXPORT ScreenOrientationControllerImpl final
   std::unique_ptr<WebLockOrientationCallback> pending_callback_;
   int request_id_ = 0;
 
-  DISALLOW_COPY_AND_ASSIGN(ScreenOrientationControllerImpl);
+  DISALLOW_COPY_AND_ASSIGN(ScreenOrientationController);
 };
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_SCREEN_ORIENTATION_SCREEN_ORIENTATION_CONTROLLER_IMPL_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_SCREEN_ORIENTATION_SCREEN_ORIENTATION_CONTROLLER_H_

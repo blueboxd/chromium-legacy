@@ -247,8 +247,12 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeConciergeClient
           resize_disk_image_response) {
     resize_disk_image_response_ = resize_disk_image_response;
   }
+  void set_notify_vm_stopped_on_stop_vm(bool notify) {
+    notify_vm_stopped_on_stop_vm_ = notify;
+  }
 
   void NotifyVmStarted(const vm_tools::concierge::VmStartedSignal& signal);
+  void NotifyVmStopped(const vm_tools::concierge::VmStoppedSignal& signal);
   bool HasVmObservers() const;
 
  protected:
@@ -286,6 +290,8 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeConciergeClient
   bool is_vm_stopped_signal_connected_ = true;
   bool is_container_startup_failed_signal_connected_ = true;
   bool is_disk_image_progress_signal_connected_ = true;
+
+  bool notify_vm_stopped_on_stop_vm_ = false;
 
   bool wait_for_service_to_be_available_response_ = true;
   base::Optional<vm_tools::concierge::CreateDiskImageResponse>

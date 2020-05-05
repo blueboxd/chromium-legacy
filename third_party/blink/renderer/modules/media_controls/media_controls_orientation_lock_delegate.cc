@@ -14,12 +14,12 @@
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/screen.h"
-#include "third_party/blink/renderer/core/frame/screen_orientation_controller.h"
 #include "third_party/blink/renderer/core/html/media/html_video_element.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/modules/device_orientation/device_orientation_data.h"
 #include "third_party/blink/renderer/modules/device_orientation/device_orientation_event.h"
 #include "third_party/blink/renderer/modules/screen_orientation/screen_orientation.h"
+#include "third_party/blink/renderer/modules/screen_orientation/screen_orientation_controller.h"
 #include "third_party/blink/renderer/modules/screen_orientation/screen_screen_orientation.h"
 #include "third_party/blink/renderer/modules/screen_orientation/web_lock_orientation_callback.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
@@ -112,11 +112,11 @@ void MediaControlsOrientationLockDelegate::MaybeLockOrientation() {
 
   state_ = State::kMaybeLockedFullscreen;
 
-  if (!GetDocument().GetFrame())
+  if (!GetDocument().domWindow())
     return;
 
   auto* controller =
-      ScreenOrientationController::From(*GetDocument().GetFrame());
+      ScreenOrientationController::From(*GetDocument().domWindow());
   if (controller->MaybeHasActiveLock())
     return;
 
@@ -136,8 +136,8 @@ void MediaControlsOrientationLockDelegate::ChangeLockToAnyOrientation() {
   locked_orientation_ = kWebScreenOrientationLockAny;
 
   // The document could have been detached from the frame.
-  if (LocalFrame* frame = GetDocument().GetFrame()) {
-    ScreenOrientationController::From(*frame)->lock(
+  if (LocalDOMWindow* window = GetDocument().domWindow()) {
+    ScreenOrientationController::From(*window)->lock(
         locked_orientation_,
         std::make_unique<DummyScreenOrientationCallback>());
   }
@@ -152,12 +152,10 @@ void MediaControlsOrientationLockDelegate::MaybeUnlockOrientation() {
     return;
 
   monitor_.reset();  // Cancel any GotIsAutoRotateEnabledByUser Mojo callback.
-  if (LocalDOMWindow* dom_window = GetDocument().domWindow()) {
-    dom_window->removeEventListener(event_type_names::kDeviceorientation, this,
-                                    false);
-  }
-
-  ScreenOrientationController::From(*GetDocument().GetFrame())->unlock();
+  LocalDOMWindow* dom_window = GetDocument().domWindow();
+  dom_window->removeEventListener(event_type_names::kDeviceorientation, this,
+                                  false);
+  ScreenOrientationController::From(*dom_window)->unlock();
   locked_orientation_ = kWebScreenOrientationLockDefault /* unlocked */;
 
   lock_to_any_task_.Cancel();

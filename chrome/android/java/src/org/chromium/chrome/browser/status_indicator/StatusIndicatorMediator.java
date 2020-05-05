@@ -17,6 +17,7 @@ import androidx.annotation.ColorInt;
 import androidx.annotation.NonNull;
 import androidx.annotation.VisibleForTesting;
 
+import org.chromium.base.Callback;
 import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.components.browser_ui.widget.animation.Interpolators;
@@ -37,7 +38,7 @@ class StatusIndicatorMediator
     private Supplier<Integer> mStatusBarWithoutIndicatorColorSupplier;
     private Runnable mOnCompositorShowAnimationEnd;
     private Supplier<Boolean> mCanAnimateNativeBrowserControls;
-    private Runnable mInvalidateCompositorView;
+    private Callback<Runnable> mInvalidateCompositorView;
 
     private int mIndicatorHeight;
     private int mJavaLayoutHeight;
@@ -55,11 +56,12 @@ class StatusIndicatorMediator
      *                                        browser controls can be animated. This will be false
      *                                        where we can't have a reliable cc::BCOM instance, e.g.
      *                                        tab switcher.
-     * @param invalidateCompositorView Runnable to invalidate the compositor texture.
+     * @param invalidateCompositorView Callback to invalidate the compositor texture.
      */
     StatusIndicatorMediator(PropertyModel model, ChromeFullscreenManager fullscreenManager,
             Supplier<Integer> statusBarWithoutIndicatorColorSupplier,
-            Supplier<Boolean> canAnimateNativeBrowserControls, Runnable invalidateCompositorView) {
+            Supplier<Boolean> canAnimateNativeBrowserControls,
+            Callback<Runnable> invalidateCompositorView) {
         mModel = model;
         mFullscreenManager = fullscreenManager;
         mStatusBarWithoutIndicatorColorSupplier = statusBarWithoutIndicatorColorSupplier;
@@ -83,6 +85,7 @@ class StatusIndicatorMediator
         // Wait for first valid height while showing indicator.
         if (mIsHiding || mJavaLayoutHeight != 0 || v.getHeight() <= 0) return;
 
+        mInvalidateCompositorView.onResult(null);
         mJavaLayoutHeight = v.getHeight();
         updateVisibility(false);
     }
@@ -131,7 +134,6 @@ class StatusIndicatorMediator
             mModel.set(StatusIndicatorProperties.ICON_TINT, iconTint);
             mModel.set(StatusIndicatorProperties.ANDROID_VIEW_VISIBILITY, View.INVISIBLE);
             mOnCompositorShowAnimationEnd = () -> animateTextFadeIn();
-            mInvalidateCompositorView.run();
         };
 
         final int statusBarColor = mStatusBarWithoutIndicatorColorSupplier.get();
@@ -301,8 +303,7 @@ class StatusIndicatorMediator
         animatorSet.addListener(new AnimatorListenerAdapter() {
             @Override
             public void onAnimationEnd(Animator animation) {
-                mInvalidateCompositorView.run();
-                updateVisibility(true);
+                mInvalidateCompositorView.onResult(() -> updateVisibility(true));
             }
         });
         animatorSet.start();

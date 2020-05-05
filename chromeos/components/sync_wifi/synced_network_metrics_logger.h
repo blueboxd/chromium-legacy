@@ -35,6 +35,8 @@ const char kApplyFailureReasonHistogram[] =
 const char kApplyResultHistogram[] =
     "Network.Wifi.Synced.UpdateOperation.Result";
 
+const char kTotalCountHistogram[] = "Network.Wifi.Synced.TotalCount";
+
 // These values are persisted to logs. Entries should not be renumbered and
 // numeric values should never be reused.
 enum class ConnectionFailureReason {
@@ -107,6 +109,7 @@ class SyncedNetworkMetricsLogger : public NetworkConnectionObserver,
   void RecordApplyNetworkFailureReason(ApplyNetworkFailureReason error_enum,
                                        const std::string& error_string);
   void RecordApplyNetworkSuccess();
+  void RecordTotalCount(int count);
 
  private:
   static ConnectionFailureReason ConnectionFailureReasonToEnum(

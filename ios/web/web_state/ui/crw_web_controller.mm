@@ -1316,11 +1316,18 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
       [[CRWWebControllerContainerView alloc] initWithDelegate:self];
 
   // This will be resized later, but matching the final frame will minimize
-  // re-rendering. Use the screen size because the application's key window
-  // may still be nil.
-  _containerView.frame = UIApplication.sharedApplication.keyWindow
-                             ? UIApplication.sharedApplication.keyWindow.bounds
-                             : UIScreen.mainScreen.bounds;
+  // re-rendering.
+  UIView* browserContainer = self.webStateImpl->GetWebViewContainer();
+  if (browserContainer) {
+    _containerView.frame = browserContainer.bounds;
+  } else {
+    // Use the screen size because the application's key window and the
+    // container may still be nil.
+    _containerView.frame =
+        UIApplication.sharedApplication.keyWindow
+            ? UIApplication.sharedApplication.keyWindow.bounds
+            : UIScreen.mainScreen.bounds;
+  }
 
   DCHECK(!CGRectIsEmpty(_containerView.frame));
 

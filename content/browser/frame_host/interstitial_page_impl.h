@@ -60,7 +60,8 @@ class CONTENT_EXPORT InterstitialPageImpl : public InterstitialPage,
   InterstitialPageImpl(WebContents* web_contents,
                        RenderWidgetHostDelegate* render_widget_host_delegate,
                        bool new_navigation,
-                       const GURL& url);
+                       const GURL& url,
+                       InterstitialPageDelegate* delegate);
   ~InterstitialPageImpl() override;
 
   // InterstitialPage implementation:
@@ -70,6 +71,7 @@ class CONTENT_EXPORT InterstitialPageImpl : public InterstitialPage,
   void Proceed() override;
   WebContents* GetWebContents() override;
   RenderFrameHostImpl* GetMainFrame() override;
+  InterstitialPageDelegate* GetDelegateForTesting() override;
   void DontCreateViewForTesting() override;
   void SetSize(const gfx::Size& size) override;
   void Focus() override;
@@ -321,6 +323,8 @@ class CONTENT_EXPORT InterstitialPageImpl : public InterstitialPage,
   // interstitial is shown until the moment the interstitial goes away or the
   // user chooses to proceed.
   bool pause_throbber_;
+
+  std::unique_ptr<InterstitialPageDelegate> delegate_;
 
   scoped_refptr<SessionStorageNamespace> session_storage_namespace_;
 

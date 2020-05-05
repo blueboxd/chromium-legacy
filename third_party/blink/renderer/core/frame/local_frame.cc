@@ -159,6 +159,11 @@
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 #include "ui/gfx/geometry/point.h"
 
+#if defined(OS_MACOSX)
+#include "third_party/blink/renderer/core/editing/ephemeral_range.h"
+#include "ui/gfx/range/range.h"
+#endif
+
 namespace blink {
 
 namespace {
@@ -175,6 +180,14 @@ inline float ParentTextZoomFactor(LocalFrame* frame) {
   auto* parent_local_frame = DynamicTo<LocalFrame>(frame->Tree().Parent());
   return parent_local_frame ? parent_local_frame->TextZoomFactor() : 1;
 }
+
+#if defined(OS_MACOSX)
+uint32_t GetCurrentCursorPositionInFrame(LocalFrame* local_frame) {
+  blink::WebRange range =
+      WebLocalFrameImpl::FromFrame(local_frame)->SelectionRange();
+  return range.IsNull() ? 0U : static_cast<uint32_t>(range.StartOffset());
+}
+#endif
 
 // Convert a data url to a message pipe handle that corresponds to a remote
 // blob, so that it can be passed across processes.
@@ -2141,6 +2154,27 @@ void LocalFrame::GetCharacterIndexAtPoint(const gfx::Point& point) {
   uint32_t index =
       Selection().CharacterIndexForPoint(result.RoundedPointInInnerNodeFrame());
   GetTextInputHost().GotCharacterIndexAtPoint(index);
+}
+
+void LocalFrame::GetFirstRectForRange(const gfx::Range& range) {
+  gfx::Rect rect;
+  WebLocalFrameClient* client = WebLocalFrameImpl::FromFrame(this)->Client();
+  if (!client)
+    return;
+
+  if (!client->GetCaretBoundsFromFocusedPlugin(rect)) {
+    blink::WebRect web_rect;
+    // When request range is invalid we will try to obtain it from current
+    // frame selection. The fallback value will be 0.
+    uint32_t start =
+        range.IsValid() ? range.start() : GetCurrentCursorPositionInFrame(this);
+
+    WebLocalFrameImpl::FromFrame(this)->FirstRectForCharacterRange(
+        start, range.length(), web_rect);
+    rect.SetRect(web_rect.x, web_rect.y, web_rect.width, web_rect.height);
+  }
+
+  GetTextInputHost().GotFirstRectForRange(rect);
 }
 #endif
 

@@ -20,7 +20,7 @@
 
 namespace performance_manager {
 
-class FrameNodeImpl;
+class FrameNodeImplDescriber;
 class PageNodeImpl;
 class ProcessNodeImpl;
 class WorkerNodeImpl;
@@ -132,6 +132,7 @@ class FrameNodeImpl
   }
 
  private:
+  friend class FrameNodeImplDescriber;
   friend class FramePriorityAccess;
   friend class PageNodeImpl;
   friend class ProcessNodeImpl;

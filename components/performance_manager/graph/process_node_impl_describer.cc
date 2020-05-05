@@ -41,15 +41,17 @@ base::Value GetProcessValueDict(const base::Process& process) {
     ret.SetBoolKey("is_current", true);
   }
 
-#if !defined(OS_ANDROID)
-  ret.SetStringKey("creation_time", base::TimeFormatTimeOfDayWithMilliseconds(
-                                        process.CreationTime()));
-#endif
-
 #if defined(OS_CHROMEOS)
   if (process.GetPidInNamespace() != base::kNullProcessId) {
     ret.SetIntKey("pid_in_namespace", process.GetPidInNamespace());
   }
+#endif
+
+#if defined(OS_WIN)
+  // Creation time is always available on Windows, even for dead processes.
+  // On other platforms it is available only for valid processes (see below).
+  ret.SetStringKey("creation_time", base::TimeFormatTimeOfDayWithMilliseconds(
+                                        process.CreationTime()));
 #endif
 
   if (process.IsValid()) {
@@ -57,6 +59,10 @@ base::Value GetProcessValueDict(const base::Process& process) {
     ret.SetIntKey("os_priority", process.GetPriority());
 #if !defined(OS_MACOSX)
     ret.SetBoolKey("is_backgrounded", process.IsProcessBackgrounded());
+#endif
+#if !defined(OS_ANDROID) && !defined(OS_WIN)
+    ret.SetStringKey("creation_time", base::TimeFormatTimeOfDayWithMilliseconds(
+                                          process.CreationTime()));
 #endif
 #if defined(OS_WIN)
     // Most processes are running, so only show the outliers.

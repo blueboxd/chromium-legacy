@@ -44,6 +44,7 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
+#include "content/public/browser/interstitial_page_delegate.h"
 #include "content/public/browser/invalidate_type.h"
 #include "content/public/browser/keyboard_event_processing_result.h"
 #include "content/public/browser/notification_service.h"
@@ -127,12 +128,13 @@ static void InitInterstitialPageMap() {
 
 InterstitialPage* InterstitialPage::Create(WebContents* web_contents,
                                            bool new_navigation,
-                                           const GURL& url) {
+                                           const GURL& url,
+                                           InterstitialPageDelegate* delegate) {
   return new InterstitialPageImpl(
       web_contents,
       static_cast<RenderWidgetHostDelegate*>(
           static_cast<WebContentsImpl*>(web_contents)),
-      new_navigation, url);
+      new_navigation, url, delegate);
 }
 
 InterstitialPage* InterstitialPage::GetInterstitialPage(
@@ -158,7 +160,8 @@ InterstitialPageImpl::InterstitialPageImpl(
     WebContents* web_contents,
     RenderWidgetHostDelegate* render_widget_host_delegate,
     bool new_navigation,
-    const GURL& url)
+    const GURL& url,
+    InterstitialPageDelegate* delegate)
     : underlying_content_observer_(web_contents, this),
       web_contents_(web_contents),
       controller_(static_cast<NavigationControllerImpl*>(
@@ -189,7 +192,8 @@ InterstitialPageImpl::InterstitialPageImpl(
       resource_dispatcher_host_notified_(false),
       rvh_delegate_view_(new InterstitialPageRVHDelegateView(this)),
       create_view_(true),
-      pause_throbber_(false) {
+      pause_throbber_(false),
+      delegate_(delegate) {
   InitInterstitialPageMap();
 }
 
@@ -248,6 +252,9 @@ void InterstitialPageImpl::Show() {
     entry->SetVirtualURL(url_);
     entry->set_page_type(PAGE_TYPE_INTERSTITIAL);
 
+    // Give delegates a chance to set some states on the navigation entry.
+    delegate_->OverrideEntry(entry.get());
+
     controller_->SetTransientEntry(std::move(entry));
 
     static_cast<WebContentsImpl*>(web_contents_)
@@ -258,7 +265,8 @@ void InterstitialPageImpl::Show() {
   render_view_host_ = CreateRenderViewHost();
   CreateWebContentsView();
 
-  GURL data_url = GURL("data:text/html;charset=utf-8,");
+  GURL data_url = GURL("data:text/html;charset=utf-8," +
+                       net::EscapePath(delegate_->GetHTMLContents()));
   frame_tree_->root()->current_frame_host()->NavigateToInterstitialURL(
       data_url);
   frame_tree_->root()->current_frame_host()->UpdateAccessibilityMode();
@@ -571,6 +579,7 @@ bool InterstitialPageImpl::
 
 blink::mojom::RendererPreferences InterstitialPageImpl::GetRendererPrefs(
     BrowserContext* browser_context) const {
+  delegate_->OverrideRendererPrefs(&renderer_preferences_);
   return renderer_preferences_;
 }
 
@@ -686,8 +695,11 @@ void InterstitialPageImpl::Proceed() {
   // navigation is committed.
   if (!new_navigation_) {
     Hide();
+    delegate_->OnProceed();
     return;
   }
+
+  delegate_->OnProceed();
 }
 
 void InterstitialPageImpl::DontProceed() {
@@ -719,6 +731,7 @@ void InterstitialPageImpl::DontProceed() {
   }
 
   Hide();
+  delegate_->OnDontProceed();
 }
 
 void InterstitialPageImpl::CancelForNavigation() {
@@ -770,6 +783,10 @@ RenderFrameHostImpl* InterstitialPageImpl::GetMainFrame() {
   if (!render_view_host_)
     return nullptr;
   return static_cast<RenderFrameHostImpl*>(render_view_host_->GetMainFrame());
+}
+
+InterstitialPageDelegate* InterstitialPageImpl::GetDelegateForTesting() {
+  return delegate_.get();
 }
 
 void InterstitialPageImpl::DontCreateViewForTesting() {
@@ -932,6 +949,7 @@ void InterstitialPageImpl::OnDomOperationResponse(
 
   if (!enabled())
     return;
+  delegate_->CommandReceived(json_string);
 }
 
 InterstitialPageImpl::InterstitialPageRVHDelegateView::

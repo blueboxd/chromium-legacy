@@ -586,9 +586,6 @@ void SearchBoxView::ClearSearchAndDeactivateSearchBox() {
 
 bool SearchBoxView::HandleKeyEvent(views::Textfield* sender,
                                    const ui::KeyEvent& key_event) {
-  if (!app_list_features::IsSearchBoxSelectionEnabled())
-    return HandleKeyEventForDisabledSearchBoxSelection(key_event);
-
   if (key_event.type() == ui::ET_KEY_RELEASED)
     return false;
 
@@ -819,93 +816,6 @@ void SearchBoxView::SetupAssistantButton() {
       l10n_util::GetStringUTF16(IDS_APP_LIST_START_ASSISTANT));
   assistant->SetAccessibleName(assistant_button_label);
   assistant->SetTooltipText(assistant_button_label);
-}
-
-bool SearchBoxView::HandleKeyEventForDisabledSearchBoxSelection(
-    const ui::KeyEvent& key_event) {
-  if (key_event.type() == ui::ET_KEY_PRESSED &&
-      key_event.key_code() == ui::VKEY_RETURN) {
-    if (is_search_box_active()) {
-      // Hitting Enter when focus is on search box opens the first result.
-      ui::KeyEvent event(key_event);
-      views::View* first_result_view =
-          contents_view_->search_results_page_view()->first_result_view();
-      if (first_result_view)
-        first_result_view->OnKeyEvent(&event);
-    } else {
-      SetSearchBoxActive(true, key_event.type());
-    }
-    return true;
-  }
-
-  // Events occurring over an inactive search box are handled elsewhere, with
-  // the exception of left/right arrow key events
-  if (!is_search_box_active()) {
-    if (IsUnhandledLeftRightKeyEvent(key_event))
-      return ProcessLeftRightKeyTraversalForTextfield(search_box(), key_event);
-    else
-      return false;
-  }
-
-  // Record the |last_key_pressed_| for autocomplete.
-  if (!search_box()->GetText().empty() && ShouldProcessAutocomplete())
-    last_key_pressed_ = key_event.key_code();
-
-  // Only arrow key or tab events intended for traversal within search results
-  // should be handled from here.
-  if (!IsUnhandledArrowKeyEvent(key_event))
-    return false;
-
-  SearchResultPageView* search_page =
-      contents_view_->search_results_page_view();
-
-  // Define forward/backward keys for traversal based on RTL settings
-  ui::KeyboardCode forward =
-      base::i18n::IsRTL() ? ui::VKEY_LEFT : ui::VKEY_RIGHT;
-  ui::KeyboardCode backward =
-      base::i18n::IsRTL() ? ui::VKEY_RIGHT : ui::VKEY_LEFT;
-
-  if (key_event.key_code() == backward ||
-      (key_event.key_code() == forward && !search_page->IsFirstResultTile())) {
-    return ProcessLeftRightKeyTraversalForTextfield(search_box(), key_event);
-  }
-
-  // Right arrow key should not be handled if the cursor is within text.
-  if (key_event.key_code() == forward &&
-      !LeftRightKeyEventShouldExitText(search_box(), key_event)) {
-    return false;
-  }
-
-  views::View* result_view = nullptr;
-
-  // The up arrow will loop focus to the last result.
-  // The down and right arrows will be treated the same, moving focus along to
-  // the 'next' result. If a result is highlighted, we treat that result as
-  // though it already had focus.
-  if (key_event.key_code() == ui::VKEY_UP) {
-    result_view = search_page->GetLastFocusableView();
-  } else if (search_page->IsFirstResultHighlighted()) {
-    result_view = search_page->GetFirstFocusableView();
-
-    // Give the parent container a chance to handle the event. This lets the
-    // down arrow escape the tile result container.
-    if (!result_view->parent()->OnKeyPressed(key_event)) {
-      // If the parent container doesn't handle |key_event|, get the next
-      // focusable view.
-      result_view = result_view->GetFocusManager()->GetNextFocusableView(
-          result_view, result_view->GetWidget(), false, false);
-    } else {
-      // Return early if the parent container handled the event.
-      return true;
-    }
-  } else {
-    result_view = search_page->GetFirstFocusableView();
-  }
-
-  if (result_view)
-    result_view->RequestFocus();
-
-  return true;
 }
 
 }  // namespace ash

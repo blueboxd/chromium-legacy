@@ -28,27 +28,57 @@ class ToolTip {
    * @param {GraphNode} node
    */
   constructor(div, node) {
-    /** @private {GraphNode} */
-    this.node_ = node;
+    /** @type {boolean} */
+    this.floating = true;
+
+    /** @type {number} */
+    this.x = node.x;
+
+    /** @type {number} */
+    this.y = node.y - 28;
+
+    /** @type {GraphNode} */
+    this.node = node;
 
     /** @private {d3.selection} */
     this.div_ = d3.select(div)
                     .append('div')
                     .attr('class', 'tooltip')
                     .style('opacity', 0)
-                    .style('left', `${node.x}px`)
-                    .style('top', `${node.y - 28}px`);
+                    .style('left', `${this.x}px`)
+                    .style('top', `${this.y}px`);
     this.div_.append('table').append('tbody');
     this.div_.transition().duration(200).style('opacity', .9);
 
     /** @private {string} */
     this.description_json_ = '';
+    // Set up a drag behavior for this object's div.
+    const drag = d3.drag().subject(() => this);
+    drag.on('start', this.onDragStart_.bind(this));
+    drag.on('drag', this.onDrag_.bind(this));
+    this.div_.call(drag);
+
     this.onDescription(JSON.stringify({}));
   }
 
   nodeMoved() {
-    const node = this.node_;
-    this.div_.style('left', `${node.x}px`).style('top', `${node.y - 28}px`);
+    if (!this.floating) {
+      return;
+    }
+
+    const node = this.node;
+    this.x = node.x;
+    this.y = node.y - 28;
+    this.div_.style('left', `${this.x}px`).style('top', `${this.y}px`);
+  }
+
+  /**
+   * @return {!Array<number>} The [x, y] center of the ToolTip's div
+   * element.
+   */
+  getCenter() {
+    const rect = this.div_.node().getBoundingClientRect();
+    return [rect.x + rect.width / 2, rect.y + rect.height / 2];
   }
 
   goAway() {
@@ -64,6 +94,71 @@ class ToolTip {
       return;
     }
 
+    /**
+     * Helper for recursively flattening an Object.
+     *
+     * @param {!Set} visited The set of visited objects, excluding
+     *          {@code object}.
+     * @param {!Object<?,?>} flattened The flattened object being built.
+     * @param {string} path The current flattened path.
+     * @param {!Object<?,?>} object The nested dict to be flattened.
+     */
+    function flattenObjectRec(visited, flattened, path, object) {
+      if (typeof object !== 'object' || visited.has(object)) {
+        return;
+      }
+      visited.add(object);
+      for (const [key, value] of Object.entries(object)) {
+        const fullPath = path ? `${path}.${key}` : key;
+        // Recurse on non-null objects.
+        if (!!value && typeof value === 'object') {
+          flattenObjectRec(
+              visited, flattened, fullPath,
+              /** @type {!Object<?,?>} */ (value));
+        } else {
+          // Everything else is considered a leaf value.
+          flattened[fullPath] = value;
+        }
+      }
+    }
+
+    /**
+     * Recursively flattens an Object of key/value pairs. Nested objects will be
+     * flattened to paths with a . separator between each key. If there are
+     * circular dependencies, they will not be expanded.
+     *
+     * For example, converting:
+     *
+     * {
+     *   'foo': 'hello',
+     *   'bar': 1,
+     *   'baz': {
+     *     'x': 43.5,
+     *     'y': 'fox'
+     *     'z': [1, 2]
+     *   },
+     *   'self': (reference to self)
+     * }
+     *
+     * will yield:
+     *
+     * {
+     *   'foo': 'hello',
+     *   'bar': 1,
+     *   'baz.x': 43.5,
+     *   'baz.y': 'fox',
+     *   'baz.z.0': '1',
+     *   'baz.y.1': '2'
+     * }
+     * @param {!Object<?,?>} object The object to be flattened.
+     * @return {!Object<?,?>} the flattened object.
+     */
+    function flattenObject(object) {
+      const flattened = {};
+      flattenObjectRec(new Set(), flattened, '', object);
+      return flattened;
+    }
+
     // The JSON is a dictionary of data describer name to their data. Assuming a
     // convention that describers emit a dictionary from string->string, this is
     // flattened to an array. Each top-level dictionary entry is flattened to a
@@ -74,7 +169,15 @@ class ToolTip {
         /** @type {!Object<?,?>} */ (JSON.parse(description_json));
     const flattenedDescription = [];
     for (const [title, value] of Object.entries(description)) {
-      flattenedDescription.push([title, null], ...Object.entries(value));
+      flattenedDescription.push([title, null]);
+      const flattenedValue = flattenObject(value);
+      for (const [propName, propValue] of Object.entries(flattenedValue)) {
+        let strValue = String(propValue);
+        if (strValue.length > 50) {
+          strValue = `${strValue.substring(0, 47)}...`;
+        }
+        flattenedDescription.push([propName, strValue]);
+      }
     }
     if (flattenedDescription.length === 0) {
       flattenedDescription.push(['No Data', null]);
@@ -91,6 +194,20 @@ class ToolTip {
     });
     tr = tr.attr('class', d => d[1] === null ? 'heading' : 'value');
     tr.selectAll('td').data(d => d).text(d => d === null ? '' : d);
+  }
+
+  /** @private */
+  onDragStart_() {
+    this.floating = false;
+  }
+
+  /** @private */
+  onDrag_() {
+    this.x = d3.event.x;
+    this.y = d3.event.y;
+    this.div_.style('left', `${this.x}px`).style('top', `${this.y}px`);
+
+    graph.updateToolTipLinks();
   }
 }
 
@@ -113,9 +230,9 @@ class GraphNode {
      * @type {number|undefined}
      */
     this.index;
-    /** @type {number|undefined} */
+    /** @type {number} */
     this.x;
-    /** @type {number|undefined} */
+    /** @type {number} */
     this.y;
     /** @type {number|undefined} */
     this.vx;
@@ -393,6 +510,12 @@ class Graph {
     this.simulation_ = null;
 
     /**
+     * A selection for the top-level <g> node that contains all tooltip links.
+     * @private {d3.selection}
+     */
+    this.toolTipLinkGroup_ = null;
+
+    /**
      * A selection for the top-level <g> node that contains all separators.
      * @private {d3.selection}
      */
@@ -463,8 +586,9 @@ class Graph {
     this.simulation_ = simulation;
 
     // Create the <g> elements that host nodes and links.
-    // The link group is created first so that all links end up behind nodes.
+    // The link groups are created first so that all links end up behind nodes.
     const svg = d3.select(this.svg_);
+    this.toolTipLinkGroup_ = svg.append('g').attr('class', 'toolTipLinks');
     this.linkGroup_ = svg.append('g').attr('class', 'links');
     this.nodeGroup_ = svg.append('g').attr('class', 'nodes');
     this.separatorGroup_ = svg.append('g').attr('class', 'separators');
@@ -542,6 +666,42 @@ class Graph {
     // Remove any links, and then the node itself.
     this.removeNodeLinks_(node);
     this.nodes_.delete(nodeId);
+  }
+
+  /** Updates floating tooltip positions as well as links to pinned tooltips */
+  updateToolTipLinks() {
+    const pinnedTooltips = [];
+    for (const node of this.nodes_.values()) {
+      const tooltip = node.tooltip;
+
+      if (tooltip) {
+        if (tooltip.floating) {
+          tooltip.nodeMoved();
+        } else {
+          pinnedTooltips.push(tooltip);
+        }
+      }
+    }
+
+    function setLineEndpoints(d) {
+      const line = d3.select(this);
+      const center = d.getCenter();
+      line.attr('x1', d => center[0])
+          .attr('y1', d => center[1])
+          .attr('x2', d => d.node.x)
+          .attr('y2', d => d.node.y);
+    }
+
+    const toolTipLinks =
+        this.toolTipLinkGroup_.selectAll('line').data(pinnedTooltips);
+    toolTipLinks.enter()
+        .append('line')
+        .attr('stroke', 'LightGray')
+        .attr('stroke-dasharray', '1')
+        .attr('stroke-opacity', '0.8')
+        .each(setLineEndpoints);
+    toolTipLinks.each(setLineEndpoints);
+    toolTipLinks.exit().remove();
   }
 
   /**
@@ -766,17 +926,13 @@ class Graph {
     const nodes = this.nodeGroup_.selectAll('g');
     nodes.attr('transform', d => `translate(${d.x},${d.y})`);
 
-    for (const node of this.nodes_.values()) {
-      if (node.tooltip) {
-        node.tooltip.nodeMoved();
-      }
-    }
-
     const lines = this.linkGroup_.selectAll('line');
     lines.attr('x1', d => d.source.x)
         .attr('y1', d => d.source.y)
         .attr('x2', d => d.target.x)
         .attr('y2', d => d.target.y);
+
+    this.updateToolTipLinks();
   }
 
   /**
@@ -955,7 +1111,7 @@ class Graph {
     this.restartSimulation_();
   }
 }
-
+/* @type {?Graph} */
 let graph = null;
 function onLoad() {
   graph =

@@ -1644,9 +1644,9 @@ void XRSession::UpdateCanvasDimensions(Element* element) {
   DCHECK(element);
 
   double devicePixelRatio = 1.0;
-  LocalFrame* frame = xr_->GetFrame();
-  if (frame) {
-    devicePixelRatio = frame->DevicePixelRatio();
+  LocalDOMWindow* window = To<LocalDOMWindow>(xr_->GetExecutionContext());
+  if (window) {
+    devicePixelRatio = window->GetFrame()->DevicePixelRatio();
   }
 
   update_views_next_frame_ = true;
@@ -1656,7 +1656,7 @@ void XRSession::UpdateCanvasDimensions(Element* element) {
 
   // TODO(crbug.com/836948): handle square canvases.
   // TODO(crbug.com/840346): we should not need to use ScreenOrientation here.
-  ScreenOrientation* orientation = ScreenOrientation::Create(frame);
+  ScreenOrientation* orientation = ScreenOrientation::Create(window);
 
   if (orientation) {
     output_angle = orientation->angle();

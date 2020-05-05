@@ -26,7 +26,6 @@
 # THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
 """Runs a WebSocket server for WebSocket tests.
 
 Some tests require both an HTTP server and WebSocket server. You can start
@@ -46,4 +45,8 @@ from blinkpy.web_tests.servers import cli_wrapper
 from blinkpy.web_tests.servers import pywebsocket
 
 option, args = cli_wrapper.parse_python_server_options()
-cli_wrapper.main(pywebsocket.PyWebSocket, argv=args, description=__doc__, python_executable=option.python_executable)
+cli_wrapper.main(
+    pywebsocket.PyWebSocket,
+    argv=args,
+    description=__doc__,
+    python_executable=option.python_executable)

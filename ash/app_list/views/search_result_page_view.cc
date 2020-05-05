@@ -242,37 +242,6 @@ bool SearchResultPageView::IsFirstResultHighlighted() const {
   return first_result_view_->selected();
 }
 
-bool SearchResultPageView::OnKeyPressed(const ui::KeyEvent& event) {
-  // Let the FocusManager handle Left/Right keys.
-  if (!IsUnhandledUpDownKeyEvent(event))
-    return false;
-
-  views::View* next_focusable_view = nullptr;
-  if (event.key_code() == ui::VKEY_UP) {
-    next_focusable_view = GetFocusManager()->GetNextFocusableView(
-        GetFocusManager()->GetFocusedView(), GetWidget(), true, false);
-  } else {
-    DCHECK_EQ(event.key_code(), ui::VKEY_DOWN);
-    next_focusable_view = GetFocusManager()->GetNextFocusableView(
-        GetFocusManager()->GetFocusedView(), GetWidget(), false, false);
-  }
-
-  if (next_focusable_view && !Contains(next_focusable_view)) {
-    // Hitting up key when focus is on first search result or hitting down
-    // key when focus is on last search result should move focus onto search
-    // box and select all text.
-    views::Textfield* search_box =
-        AppListPage::contents_view()->GetSearchBoxView()->search_box();
-    search_box->RequestFocus();
-    search_box->SelectAll(false);
-    return true;
-  }
-
-  // Return false to let FocusManager to handle default focus move by key
-  // events.
-  return false;
-}
-
 const char* SearchResultPageView::GetClassName() const {
   return "SearchResultPageView";
 }
@@ -423,8 +392,7 @@ void SearchResultPageView::NotifySelectedResultChanged() {
 void SearchResultPageView::OnSearchResultContainerResultsChanging() {
   // Block any result selection changes while result updates are in flight.
   // The selection will be reset once the results are all updated.
-  if (app_list_features::IsSearchBoxSelectionEnabled())
-    result_selection_controller_->set_block_selection_changes(true);
+  result_selection_controller_->set_block_selection_changes(true);
 
   notify_a11y_results_changed_timer_.Stop();
   SetIgnoreResultChangesForA11y(true);
@@ -448,60 +416,17 @@ void SearchResultPageView::OnSearchResultContainerResultsChanged() {
 
   ScheduleResultsChangedA11yNotification();
 
-  if (!app_list_features::IsSearchBoxSelectionEnabled()) {
-    views::View* focused_view = GetFocusManager()->GetFocusedView();
-
-    // Clear the first search result view's background highlight.
-    if (first_result_view_ && first_result_view_ != focused_view)
-      first_result_view_->SetSelected(false, base::nullopt);
-  }
-
   first_result_view_ = result_container_views_[0]->GetFirstResultView();
-
-  if (!app_list_features::IsSearchBoxSelectionEnabled()) {
-    views::View* focused_view = GetFocusManager()->GetFocusedView();
-    // If one of the search result is focused, do not highlight the first search
-    // result.
-    if (Contains(focused_view))
-      return;
-  }
 
   // Update SearchBoxView search box autocomplete as necessary based on new
   // first result view.
   AppListPage::contents_view()->GetSearchBoxView()->ProcessAutocomplete();
 
-  if (app_list_features::IsSearchBoxSelectionEnabled()) {
-    // Reset selection to first when things change. The first result is set as
-    // as the default result.
-    result_selection_controller_->set_block_selection_changes(false);
-    result_selection_controller_->ResetSelection(nullptr /*key_event*/,
-                                                 true /* default_selection */);
-  } else {
-    // Highlight the first result after search results are updated. Note that
-    // the focus is not set on the first result to prevent frequent focus switch
-    // between the search box and the first result when the user is typing
-    // query.
-    first_result_view_->SetSelected(true, base::nullopt);
-  }
-}
-
-void SearchResultPageView::OnSearchResultContainerResultFocused(
-    SearchResultBaseView* focused_result_view) {
-  if (!focused_result_view->result())
-    return;
-
-  if (app_list_features::IsSearchBoxSelectionEnabled())
-    return;
-
-  views::Textfield* search_box =
-      AppListPage::contents_view()->GetSearchBoxView()->search_box();
-  if (focused_result_view->result()->result_type() ==
-          AppListSearchResultType::kOmnibox &&
-      !focused_result_view->result()->is_omnibox_search()) {
-    search_box->SetText(focused_result_view->result()->details());
-  } else {
-    search_box->SetText(focused_result_view->result()->title());
-  }
+  // Reset selection to first when things change. The first result is set as
+  // as the default result.
+  result_selection_controller_->set_block_selection_changes(false);
+  result_selection_controller_->ResetSelection(nullptr /*key_event*/,
+                                               true /* default_selection */);
 }
 
 void SearchResultPageView::HintTextChanged() {}

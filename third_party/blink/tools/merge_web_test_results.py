@@ -8,5 +8,4 @@ import sys
 
 from blinkpy.web_tests.merge_results import main
 
-
 main(sys.argv[1:])

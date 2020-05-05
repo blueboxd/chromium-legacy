@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.status_indicator;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -23,6 +24,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import org.chromium.base.Callback;
 import org.chromium.base.supplier.Supplier;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
@@ -50,7 +52,7 @@ public class StatusIndicatorMediatorTest {
     Supplier<Boolean> mCanAnimateNativeBrowserControls;
 
     @Mock
-    Runnable mInvalidateCompositorView;
+    Callback<Runnable> mInvalidateCompositorView;
 
     private PropertyModel mModel;
     private StatusIndicatorMediator mMediator;
@@ -59,7 +61,7 @@ public class StatusIndicatorMediatorTest {
     public void setUp() {
         MockitoAnnotations.initMocks(this);
         when(mCanAnimateNativeBrowserControls.get()).thenReturn(true);
-        doNothing().when(mInvalidateCompositorView).run();
+        doNothing().when(mInvalidateCompositorView).onResult(any(Runnable.class));
         mModel = new PropertyModel.Builder(StatusIndicatorProperties.ALL_KEYS)
                          .with(StatusIndicatorProperties.ANDROID_VIEW_VISIBILITY, View.GONE)
                          .with(StatusIndicatorProperties.COMPOSITED_VIEW_VISIBLE, false)

@@ -287,6 +287,14 @@ ChromeSecurityBlockingPageFactory::CreateBlockedInterceptionBlockingPage(
 // static
 void ChromeSecurityBlockingPageFactory::DoChromeSpecificSetup(
     SSLBlockingPageBase* page) {
+  page->set_renderer_pref_callback(
+      base::BindRepeating([](content::WebContents* web_contents,
+                             blink::mojom::RendererPreferences* prefs) {
+        Profile* profile =
+            Profile::FromBrowserContext(web_contents->GetBrowserContext());
+        renderer_preferences_util::UpdateFromSystemSettings(prefs, profile);
+      }));
+
   page->cert_report_helper()->set_client_details_callback(
       base::BindRepeating([](CertificateErrorReport* report) {
         report->AddChromeChannel(chrome::GetChannel());

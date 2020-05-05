@@ -254,6 +254,11 @@ bool CreateWebURLRequest(PP_Instance instance,
   }
 
   dest->SetRequestContext(blink::mojom::RequestContextType::PLUGIN);
+  // TODO(lyf): We don't currently distinguish between plugin content loaded
+  // via `<embed>` or `<object>` as https://github.com/whatwg/fetch/pull/948
+  // asks us to do. See `content::PepperURLLoaderHost::InternalOnHostMsgOpen`
+  // for details.
+  dest->SetRequestDestination(network::mojom::RequestDestination::kEmbed);
 
   return true;
 }

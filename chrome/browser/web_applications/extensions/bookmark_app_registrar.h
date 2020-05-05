@@ -49,6 +49,9 @@ class BookmarkAppRegistrar : public web_app::AppRegistrar,
   BookmarkAppRegistrar* AsBookmarkAppRegistrar() override;
 
   // ExtensionRegistryObserver:
+  // OnExtensionInstalled is not handled here.
+  // AppRegistrar::NotifyWebAppInstalled is triggered by
+  // BookmarkAppInstallFinalizer::OnExtensionInstalled().
   void OnExtensionUninstalled(content::BrowserContext* browser_context,
                               const Extension* extension,
                               UninstallReason reason) override;

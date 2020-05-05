@@ -623,6 +623,7 @@ void AppListItemView::PaintButtonContents(gfx::Canvas* canvas) {
   // TODO(ginko) focus and selection should be unified.
   if ((apps_grid_view_->IsSelectedView(this) || HasFocus()) &&
       (delegate_->KeyboardTraversalEngaged() ||
+       waiting_for_context_menu_options_ ||
        (context_menu_ && context_menu_->IsShowingMenu()))) {
     cc::PaintFlags flags;
     flags.setAntiAlias(true);

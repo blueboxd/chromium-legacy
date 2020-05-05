@@ -245,7 +245,6 @@ class BASE_EXPORT JSONParser {
   FRIEND_TEST_ALL_PREFIXES(JSONParserTest, ConsumeString);
   FRIEND_TEST_ALL_PREFIXES(JSONParserTest, ConsumeLiterals);
   FRIEND_TEST_ALL_PREFIXES(JSONParserTest, ConsumeNumbers);
-  FRIEND_TEST_ALL_PREFIXES(JSONParserTest, LineColumnCounting);
   FRIEND_TEST_ALL_PREFIXES(JSONParserTest, ErrorMessages);
 
   DISALLOW_COPY_AND_ASSIGN(JSONParser);

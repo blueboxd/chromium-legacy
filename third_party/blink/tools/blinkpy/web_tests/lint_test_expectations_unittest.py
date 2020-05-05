@@ -218,8 +218,7 @@ class LintTest(LoggingTestCase):
         all_logs = ''.join(self.logMessages())
         self.assertIn('conflict', all_logs)
 
-    def test_lint_globs(
-            self):
+    def test_lint_globs(self):
         options = optparse.Values({
             'additional_expectations': [],
             'platform': 'test',

@@ -53,4 +53,7 @@ extern const base::Feature kQRCodeGeneration;
 extern const base::Feature kPointerSupport;
 #endif  // defined(__IPHONE_13_4)
 
+// Feature flag to enable MyGoogle account management UI in iOS Settings.
+extern const base::Feature kEnableMyGoogle;
+
 #endif  // IOS_CHROME_BROWSER_UI_UI_FEATURE_FLAGS_H_

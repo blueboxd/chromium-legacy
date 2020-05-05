@@ -498,14 +498,18 @@ export function getEntries() {
 /**
  * Returns an URL for a picture.
  * @param {!FileEntry} entry File entry.
+ * @param {number} limit Size limit. The file would be truncated if it's larger
+ *     than limit.
  * @return {!Promise<string>} Promise for the result.
  */
-export function pictureURL(entry) {
+export function pictureURL(entry, limit) {
   return new Promise((resolve) => {
-    if (externalDir) {
-      entry.file((file) => resolve(URL.createObjectURL(file)));
-    } else {
-      resolve(entry.toURL());
-    }
+    entry.file((file) => {
+      if (file.size > limit) {
+        file = file.slice(0, limit);
+      }
+      const url = URL.createObjectURL(file);
+      resolve(url);
+    });
   });
 }

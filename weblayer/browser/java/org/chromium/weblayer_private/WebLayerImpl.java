@@ -10,6 +10,7 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.res.AssetManager;
+import android.content.res.Resources;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -374,9 +375,12 @@ public final class WebLayerImpl extends IWebLayer.Stub {
         }
 
         Context context = ContextUtils.getApplicationContext();
-        // String may be missing translations, since they are loaded at a different package ID
-        // by default in standalone WebView.
-        assert !context.getResources().getResourceTypeName(id).equals("string");
+        try {
+            // String may be missing translations, since they are loaded at a different package ID
+            // by default in standalone WebView.
+            assert !context.getResources().getResourceTypeName(id).equals("string");
+        } catch (Resources.NotFoundException e) {
+        }
         id &= 0x00ffffff;
         id |= (0x01000000
                 * getPackageId(context, WebViewFactory.getLoadedPackageInfo().packageName));
@@ -385,10 +389,14 @@ public final class WebLayerImpl extends IWebLayer.Stub {
 
     /** Returns whether this ID is from the android system package. */
     public static boolean isAndroidResource(int id) {
-        return ContextUtils.getApplicationContext()
-                .getResources()
-                .getResourcePackageName(id)
-                .equals("android");
+        try {
+            return ContextUtils.getApplicationContext()
+                    .getResources()
+                    .getResourcePackageName(id)
+                    .equals("android");
+        } catch (Resources.NotFoundException e) {
+            return false;
+        }
     }
 
     /**

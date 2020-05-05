@@ -145,6 +145,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_gc_controller.h"
 #include "third_party/blink/renderer/core/clipboard/clipboard_utilities.h"
+#include "third_party/blink/renderer/core/core_initializer.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/icon_url.h"
 #include "third_party/blink/renderer/core/dom/node.h"
@@ -187,7 +188,6 @@
 #include "third_party/blink/renderer/core/frame/pausable_script_executor.h"
 #include "third_party/blink/renderer/core/frame/remote_frame.h"
 #include "third_party/blink/renderer/core/frame/remote_frame_owner.h"
-#include "third_party/blink/renderer/core/frame/screen_orientation_controller.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/frame/smart_clip.h"
 #include "third_party/blink/renderer/core/frame/visual_viewport.h"
@@ -2213,8 +2213,7 @@ void WebLocalFrameImpl::SendOrientationChangeEvent() {
     return;
 
   // Screen Orientation API
-  if (ScreenOrientationController::From(*GetFrame()))
-    ScreenOrientationController::From(*GetFrame())->NotifyOrientationChanged();
+  CoreInitializer::GetInstance().NotifyOrientationChanged(*GetFrame());
 
   // Legacy window.orientation API
   if (RuntimeEnabledFeatures::OrientationEventEnabled() &&

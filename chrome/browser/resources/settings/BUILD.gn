@@ -207,6 +207,8 @@ js_type_check("closure_compile_local_module") {
 
 js_library("settings") {
   deps = [
+    ":lifetime_browser_proxy.m",
+    "about_page:about_page_browser_proxy.m",
     "search_engines_page:search_engines_browser_proxy.m",
     "settings_ui:settings_ui",
   ]

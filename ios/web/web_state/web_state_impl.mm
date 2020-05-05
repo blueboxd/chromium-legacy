@@ -513,6 +513,13 @@ void WebStateImpl::CommitPreviewingViewController(
   }
 }
 
+UIView* WebStateImpl::GetWebViewContainer() {
+  if (delegate_) {
+    return delegate_->GetWebViewContainer(this);
+  }
+  return nil;
+}
+
 #pragma mark - RequestTracker management
 
 void WebStateImpl::DidChangeVisibleSecurityState() {

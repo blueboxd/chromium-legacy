@@ -124,6 +124,7 @@ class CORE_EXPORT CoreInitializer {
       const SessionStorageNamespaceId& clone_to_namespace) = 0;
 
   virtual void DidChangeManifest(LocalFrame&) = 0;
+  virtual void NotifyOrientationChanged(LocalFrame&) = 0;
 
  protected:
   // CoreInitializer is only instantiated by subclass ModulesInitializer.

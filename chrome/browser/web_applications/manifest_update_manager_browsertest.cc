@@ -25,6 +25,7 @@
 #include "chrome/browser/web_applications/components/web_app_provider_base.h"
 #include "chrome/browser/web_applications/system_web_app_manager.h"
 #include "chrome/browser/web_applications/test/test_system_web_app_installation.h"
+#include "chrome/browser/web_applications/test/web_app_install_observer.h"
 #include "chrome/browser/web_applications/test/web_app_test.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -530,6 +531,14 @@ IN_PROC_BROWSER_TEST_P(ManifestUpdateManagerBrowserTest,
   OverrideManifest(kManifestTemplate, {kInstallableIconList, "blue"});
   AppId app_id = InstallWebApp();
   EXPECT_EQ(GetProvider().registrar().GetAppThemeColor(app_id), SK_ColorBLUE);
+
+  // Check that OnWebAppInstalled and OnWebAppUninstalled are not called
+  // if in-place web app update happens.
+  WebAppInstallObserver install_observer(&GetProvider().registrar());
+  install_observer.SetWebAppInstalledDelegate(
+      base::BindLambdaForTesting([](const AppId& app_id) { NOTREACHED(); }));
+  install_observer.SetWebAppUninstalledDelegate(
+      base::BindLambdaForTesting([](const AppId& app_id) { NOTREACHED(); }));
 
   OverrideManifest(kManifestTemplate, {kInstallableIconList, "red"});
   EXPECT_EQ(GetResultAfterPageLoad(GetAppURL(), &app_id),

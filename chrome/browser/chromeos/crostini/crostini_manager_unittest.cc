@@ -13,11 +13,13 @@
 #include "base/files/file_util.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/chromeos/crostini/ansible/ansible_management_test_helper.h"
 #include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
 #include "chrome/browser/chromeos/crostini/crostini_test_util.h"
+#include "chrome/browser/chromeos/crostini/crostini_types.mojom-shared.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/chromeos/crostini/fake_crostini_features.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
@@ -93,6 +95,13 @@ void ExpectCrostiniExportResult(base::OnceClosure closure,
 
 class CrostiniManagerTest : public testing::Test {
  public:
+  void SendVmStoppedSignal() {
+    vm_tools::concierge::VmStoppedSignal signal;
+    signal.set_name(kVmName);
+    signal.set_owner_id("test");
+    crostini_manager_->OnVmStopped(signal);
+  }
+
   void CreateDiskImageFailureCallback(
       base::OnceClosure closure,
       bool success,
@@ -157,6 +166,7 @@ class CrostiniManagerTest : public testing::Test {
         chromeos::DBusThreadManager::Get()->GetCiceroneClient());
     fake_concierge_client_ = static_cast<chromeos::FakeConciergeClient*>(
         chromeos::DBusThreadManager::Get()->GetConciergeClient());
+    fake_concierge_client_->set_notify_vm_stopped_on_stop_vm(true);
     fake_anomaly_detector_client_ =
         static_cast<chromeos::FakeAnomalyDetectorClient*>(
             chromeos::DBusThreadManager::Get()->GetAnomalyDetectorClient());
@@ -681,7 +691,9 @@ class CrostiniManagerRestartTest : public CrostiniManagerTest,
   }
 
   // CrostiniManager::RestartObserver
-  void OnStageStarted(mojom::InstallerState stage) override {}
+  void OnStageStarted(mojom::InstallerState stage) override {
+    on_stage_started_.Run(stage);
+  }
 
   void OnComponentLoaded(CrostiniResult result) override {
     if (abort_on_component_loaded_) {
@@ -816,9 +828,41 @@ class CrostiniManagerRestartTest : public CrostiniManagerTest,
   int remove_crostini_callback_count_ = 0;
   chromeos::disks::MockDiskMountManager* disk_mount_manager_mock_;
   base::HistogramTester histogram_tester_{};
+
+  base::RepeatingCallback<void(mojom::InstallerState)> on_stage_started_ =
+      base::DoNothing();
 };
 
 TEST_F(CrostiniManagerRestartTest, RestartSuccess) {
+  restart_id_ = crostini_manager()->RestartCrostini(
+      kVmName, kContainerName,
+      base::BindOnce(&CrostiniManagerRestartTest::RestartCrostiniCallback,
+                     base::Unretained(this), run_loop()->QuitClosure()),
+      this);
+  run_loop()->Run();
+  EXPECT_TRUE(fake_concierge_client_->create_disk_image_called());
+  EXPECT_TRUE(fake_concierge_client_->start_termina_vm_called());
+  // Mount only performed for termina/penguin.
+  EXPECT_FALSE(fake_concierge_client_->get_container_ssh_keys_called());
+  EXPECT_EQ(1, restart_crostini_callback_count_);
+
+  base::Optional<ContainerInfo> container_info =
+      crostini_manager()->GetContainerInfo(kVmName, kContainerName);
+  EXPECT_EQ(container_info.value().username,
+            DefaultContainerUserNameForProfile(profile()));
+  ExpectRestarterUmaCount(1);
+}
+
+TEST_F(CrostiniManagerRestartTest, RestartDelayAndSuccessWhenVmStopping) {
+  crostini_manager()->AddStoppingVmForTesting(kVmName);
+  on_stage_started_ =
+      base::BindLambdaForTesting([this](mojom::InstallerState state) {
+        if (state == mojom::InstallerState::kStart) {
+          // This tells the restarter that the vm has stopped, and it should
+          // resume the restarting process.
+          SendVmStoppedSignal();
+        }
+      });
   restart_id_ = crostini_manager()->RestartCrostini(
       kVmName, kContainerName,
       base::BindOnce(&CrostiniManagerRestartTest::RestartCrostiniCallback,

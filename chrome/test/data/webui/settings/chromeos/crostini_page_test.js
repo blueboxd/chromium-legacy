@@ -686,34 +686,56 @@ suite('CrostiniPageTests', function() {
       });
 
       test('DiskResizeConfirmationDialogShownAndAccepted', async function() {
+        await crostiniBrowserProxy.resolvePromise(
+            'getCrostiniDiskInfo', sparseDiskData);
         await clickShowDiskResize(false);
         // Dismiss confirmation.
-        const confirmationDialog =
+        let confirmationDialog =
             subpage.$$('settings-crostini-disk-resize-confirmation-dialog');
         assertTrue(isVisible(confirmationDialog.$$('#continue')));
         assertTrue(isVisible(confirmationDialog.$$('#cancel')));
         confirmationDialog.$$('#continue').click();
+        await test_util.eventToPromise('close', confirmationDialog);
+        assertFalse(isVisible(confirmationDialog));
 
-        await crostiniBrowserProxy.resolvePromise(
-            'getCrostiniDiskInfo', sparseDiskData);
         dialog = subpage.$$('settings-crostini-disk-resize-dialog');
-        // TODO(nverne): Find out how to wait long enough for the dialog to
-        // show.
+        assertTrue(!!dialog);
+        assertTrue(isVisible(dialog.$$('#resize')));
+        assertTrue(isVisible(dialog.$$('#cancel')));
+
+        // Cancel main resize dialog.
+        dialog.$$('#cancel').click();
+        await test_util.eventToPromise('close', dialog);
+        assertFalse(isVisible(dialog));
+
+        // On another click, confirmation dialog should be shown again.
+        await clickShowDiskResize(false);
+        confirmationDialog =
+            subpage.$$('settings-crostini-disk-resize-confirmation-dialog');
+        assertTrue(isVisible(confirmationDialog.$$('#continue')));
+        confirmationDialog.$$('#continue').click();
+        await test_util.eventToPromise('close', confirmationDialog);
+
+        // Main dialog should show again.
+        dialog = subpage.$$('settings-crostini-disk-resize-dialog');
+        assertTrue(!!dialog);
+        assertTrue(isVisible(dialog.$$('#resize')));
+        assertTrue(isVisible(dialog.$$('#cancel')));
       });
 
       test('DiskResizeConfirmationDialogShownAndCanceled', async function() {
         await crostiniBrowserProxy.resolvePromise(
             'getCrostiniDiskInfo', sparseDiskData);
         await clickShowDiskResize(false);
+
         const confirmationDialog =
             subpage.$$('settings-crostini-disk-resize-confirmation-dialog');
         assertTrue(isVisible(confirmationDialog.$$('#continue')));
         assertTrue(isVisible(confirmationDialog.$$('#cancel')));
         confirmationDialog.$$('#cancel').click();
-        await flushAsync();
+        await test_util.eventToPromise('close', confirmationDialog);
 
-        dialog = subpage.$$('settings-crostini-disk-resize-dialog');
-        assertFalse(!!dialog);
+        assertFalse(!!subpage.$$('settings-crostini-disk-resize-dialog'));
       });
     });
   });

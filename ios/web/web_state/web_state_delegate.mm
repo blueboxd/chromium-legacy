@@ -70,6 +70,10 @@ void WebStateDelegate::CommitPreviewingViewController(
     WebState* source,
     UIViewController* previewing_view_controller) {}
 
+UIView* WebStateDelegate::GetWebViewContainer(WebState* source) {
+  return nil;
+}
+
 void WebStateDelegate::Attach(WebState* source) {
   DCHECK(attached_states_.find(source) == attached_states_.end());
   attached_states_.insert(source);

@@ -257,6 +257,10 @@ _CONFIG = [
             'gfx::Transform',
             'gfx::Vector2d',
             'gfx::Vector2dF',
+
+            # Range type.
+            'gfx::Range',
+
             # Wrapper of SkRegion used in Chromium.
             'cc::Region',
 

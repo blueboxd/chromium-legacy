@@ -412,6 +412,7 @@ void AppBrowserController::OnTabStripModelChanged(
     // WebContents should be null when the last tab is closed.
     DCHECK_EQ(web_contents() == nullptr, tab_strip_model->empty());
   }
+  UpdateCustomTabBarVisibility(/*animate=*/false);
 }
 
 CustomThemeSupplier* AppBrowserController::GetThemeSupplier() const {

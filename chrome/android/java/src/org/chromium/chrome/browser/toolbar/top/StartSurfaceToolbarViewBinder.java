@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.toolbar.top;
 import static org.chromium.chrome.browser.toolbar.top.StartSurfaceToolbarProperties.ACCESSIBILITY_ENABLED;
 import static org.chromium.chrome.browser.toolbar.top.StartSurfaceToolbarProperties.APP_MENU_BUTTON_HELPER;
 import static org.chromium.chrome.browser.toolbar.top.StartSurfaceToolbarProperties.BUTTONS_CLICKABLE;
+import static org.chromium.chrome.browser.toolbar.top.StartSurfaceToolbarProperties.IDENTITY_DISC_AT_LEFT;
 import static org.chromium.chrome.browser.toolbar.top.StartSurfaceToolbarProperties.IDENTITY_DISC_CLICK_HANDLER;
 import static org.chromium.chrome.browser.toolbar.top.StartSurfaceToolbarProperties.IDENTITY_DISC_DESCRIPTION;
 import static org.chromium.chrome.browser.toolbar.top.StartSurfaceToolbarProperties.IDENTITY_DISC_IMAGE;
@@ -37,6 +38,8 @@ class StartSurfaceToolbarViewBinder {
             view.setButtonClickableState(model.get(BUTTONS_CLICKABLE));
         } else if (propertyKey == INCOGNITO_SWITCHER_VISIBLE) {
             view.setIncognitoSwitcherVisibility(model.get(INCOGNITO_SWITCHER_VISIBLE));
+        } else if (propertyKey == IDENTITY_DISC_AT_LEFT) {
+            view.setIdentityDiscAtLeft(model.get(IDENTITY_DISC_AT_LEFT));
         } else if (propertyKey == IDENTITY_DISC_CLICK_HANDLER) {
             view.setIdentityDiscClickHandler(model.get(IDENTITY_DISC_CLICK_HANDLER));
         } else if (propertyKey == IDENTITY_DISC_DESCRIPTION) {

@@ -21,14 +21,12 @@ class Textfield;
 namespace ash {
 
 class AppListViewDelegate;
-class SearchResultPageView;
 
 // Displays a list of SearchResultTileItemView.
 class APP_LIST_EXPORT SearchResultTileItemListView
     : public SearchResultContainerView {
  public:
-  SearchResultTileItemListView(SearchResultPageView* search_result_page_view,
-                               views::Textfield* search_box,
+  SearchResultTileItemListView(views::Textfield* search_box,
                                AppListViewDelegate* view_delegate);
   ~SearchResultTileItemListView() override;
 
@@ -39,7 +37,6 @@ class APP_LIST_EXPORT SearchResultTileItemListView
   SearchResultBaseView* GetFirstResultView() override;
 
   // Overridden from views::View:
-  bool OnKeyPressed(const ui::KeyEvent& event) override;
   const char* GetClassName() const override;
   void Layout() override;
 
@@ -73,7 +70,6 @@ class APP_LIST_EXPORT SearchResultTileItemListView
   std::vector<views::Separator*> separator_views_;
 
   // Owned by the views hierarchy.
-  SearchResultPageView* const search_result_page_view_ = nullptr;
   views::Textfield* search_box_ = nullptr;
   views::BoxLayout* layout_ = nullptr;
 

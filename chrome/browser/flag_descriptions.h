@@ -387,6 +387,9 @@ extern const char kEnableTLS13EarlyDataDescription[];
 extern const char kPostQuantumCECPQ2Name[];
 extern const char kPostQuantumCECPQ2Description[];
 
+extern const char kMacCoreLocationImplementationName[];
+extern const char kMacCoreLocationImplementationDescription[];
+
 extern const char kWinrtGeolocationImplementationName[];
 extern const char kWinrtGeolocationImplementationDescription[];
 
@@ -1644,9 +1647,6 @@ extern const char
 extern const char kHappinessTrackingSurveysForDesktopMigrationName[];
 extern const char kHappinessTrackingSurveysForDesktopMigrationDescription[];
 
-extern const char kIntentPickerName[];
-extern const char kIntentPickerDescription[];
-
 extern const char kKernelnextVMsName[];
 extern const char kKernelnextVMsDescription[];
 
@@ -1940,9 +1940,6 @@ extern const char kEnableAppDataSearchDescription[];
 
 extern const char kEnableAppGridGhostName[];
 extern const char kEnableAppGridGhostDescription[];
-
-extern const char kEnableSearchBoxSelectionName[];
-extern const char kEnableSearchBoxSelectionDescription[];
 
 extern const char kEnableAppListSearchAutocompleteName[];
 extern const char kEnableAppListSearchAutocompleteDescription[];

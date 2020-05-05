@@ -47,7 +47,9 @@ class ModelConfigLoaderImpl : public ModelConfigLoader {
       bool is_testing);
 
   // Reads params from the disk and then calls InitFromParams.
-  void Init();
+  // Uses |model_params_path| if it's not empty. Otherwise uses predefined
+  // paths.
+  void Init(const base::FilePath& model_params_path);
 
   // Overrides loaded model configs from experiment flags. It will call
   // OnInitializationComplete after completion.
@@ -59,7 +61,6 @@ class ModelConfigLoaderImpl : public ModelConfigLoader {
   // attempted to read from the disk and override with experiment flags.
   void OnInitializationComplete();
 
-  base::FilePath model_params_path_;
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
   bool is_testing_ = false;
 

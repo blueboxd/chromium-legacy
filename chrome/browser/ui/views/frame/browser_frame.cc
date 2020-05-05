@@ -219,9 +219,14 @@ const ui::NativeTheme* BrowserFrame::GetNativeTheme() const {
 void BrowserFrame::OnNativeWidgetWorkspaceChanged() {
   chrome::SaveWindowWorkspace(browser_view_->browser(), GetWorkspace());
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+  // If the window was sent to a different workspace, prioritize it if
+  // it was sent to the current workspace and deprioritize it
+  // otherwise.  This is done by MoveBrowsersInWorkspaceToFront()
+  // which reorders the browsers such that the ones in the current
+  // workspace appear before ones in other workspaces.
   auto workspace = display::Screen::GetScreen()->GetCurrentWorkspace();
-  BrowserList::MoveBrowsersInWorkspaceToFront(workspace.empty() ? GetWorkspace()
-                                                                : workspace);
+  if (!workspace.empty())
+    BrowserList::MoveBrowsersInWorkspaceToFront(workspace);
 #endif
   Widget::OnNativeWidgetWorkspaceChanged();
 }

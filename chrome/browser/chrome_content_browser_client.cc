@@ -366,6 +366,7 @@
 #elif defined(OS_CHROMEOS)
 #include "ash/public/cpp/tablet_mode.h"
 #include "chrome/app/chrome_crash_reporter_client.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/arc/fileapi/arc_content_file_system_backend_delegate.h"
 #include "chrome/browser/chromeos/arc/fileapi/arc_documents_provider_backend_delegate.h"
 #include "chrome/browser/chromeos/chrome_browser_main_chromeos.h"
@@ -382,6 +383,7 @@
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/policy_cert_service_factory.h"
+#include "chrome/browser/chromeos/policy/system_features_disable_list_policy_handler.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/smb_client/fileapi/smbfs_file_system_backend_delegate.h"
 #include "chrome/browser/chromeos/system/input_device_settings.h"
@@ -392,6 +394,8 @@
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "components/crash/core/app/breakpad_linux.h"
+#include "components/policy/core/common/policy_pref_names.h"
+#include "components/prefs/pref_service.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
 #include "services/service_manager/public/mojom/interface_provider_spec.mojom.h"
@@ -3818,20 +3822,18 @@ ChromeContentBrowserClient::CreateThrottlesForNavigation(
 #endif
 
 #if !defined(OS_ANDROID)
-  if (base::FeatureList::IsEnabled(features::kIntentPicker)) {
-    auto url_to_apps_throttle =
+  auto url_to_apps_throttle =
 #if defined(OS_CHROMEOS)
-        base::FeatureList::IsEnabled(features::kAppServiceIntentHandling)
-            ? apps::CommonAppsNavigationThrottle::MaybeCreate(handle)
-            : chromeos::ChromeOsAppsNavigationThrottle::MaybeCreate(handle);
+      base::FeatureList::IsEnabled(features::kAppServiceIntentHandling)
+          ? apps::CommonAppsNavigationThrottle::MaybeCreate(handle)
+          : chromeos::ChromeOsAppsNavigationThrottle::MaybeCreate(handle);
 #elif defined(OS_MACOSX)
-        apps::MacAppsNavigationThrottle::MaybeCreate(handle);
+      apps::MacAppsNavigationThrottle::MaybeCreate(handle);
 #else
-        apps::AppsNavigationThrottle::MaybeCreate(handle);
+      apps::AppsNavigationThrottle::MaybeCreate(handle);
 #endif
-    if (url_to_apps_throttle)
-      throttles.push_back(std::move(url_to_apps_throttle));
-  }
+  if (url_to_apps_throttle)
+    throttles.push_back(std::move(url_to_apps_throttle));
 #endif
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -4330,6 +4332,42 @@ class FileURLLoaderFactory : public network::mojom::URLLoaderFactory {
   DISALLOW_COPY_AND_ASSIGN(FileURLLoaderFactory);
 };
 
+#if defined(OS_CHROMEOS)
+bool IsSystemFeatureDisabled(policy::SystemFeature system_feature) {
+  PrefService* const local_state = g_browser_process->local_state();
+  if (!local_state)  // Sometimes it's not available in tests.
+    return false;
+
+  const base::ListValue* disabled_system_features_pref =
+      local_state->GetList(policy::policy_prefs::kSystemFeaturesDisableList);
+  if (!disabled_system_features_pref)
+    return false;
+
+  const auto disabled_system_features =
+      disabled_system_features_pref->GetList();
+  return base::Contains(disabled_system_features, base::Value(system_feature));
+}
+
+bool IsSystemFeatureURLDisabled(const GURL& url) {
+  if (!url.SchemeIs(content::kChromeUIScheme))
+    return false;
+
+  // chrome://os-settings/pwa.html shouldn't be replaced to let the settings app
+  // installation complete successfully.
+  if (url.DomainIs(chrome::kChromeUIOSSettingsHost) &&
+      url.path() != "/pwa.html" &&
+      IsSystemFeatureDisabled(policy::SystemFeature::OS_SETTINGS)) {
+    return true;
+  }
+
+  if (url.DomainIs(chrome::kChromeUISettingsHost) &&
+      IsSystemFeatureDisabled(policy::SystemFeature::BROWSER_SETTINGS)) {
+    return true;
+  }
+
+  return false;
+}
+#endif
 }  // namespace
 
 void ChromeContentBrowserClient::
@@ -4799,6 +4837,12 @@ bool ChromeContentBrowserClient::HandleWebUI(
       *url = GURL(chrome::kChromeUINewTabURL);
     }
   }
+
+  if (IsSystemFeatureURLDisabled(*url)) {
+    *url = ReplaceURLHostAndPath(*url, chrome::kChromeUIAppDisabledHost, "");
+    return true;
+  }
+
 #endif
 
   return true;

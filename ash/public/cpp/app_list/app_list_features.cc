@@ -46,8 +46,6 @@ const base::Feature kEnableAppGridGhost{"EnableAppGridGhost",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kEnableAppListLaunchRecording{
     "EnableAppListLaunchRecording", base::FEATURE_DISABLED_BY_DEFAULT};
-const base::Feature kEnableSearchBoxSelection{"EnableSearchBoxSelection",
-                                              base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kEnableAggregatedMlAppRanking{
     "EnableAggregatedMlAppRanking", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kLauncherSettingsSearch{"LauncherSettingsSearch",
@@ -121,10 +119,6 @@ bool IsAssistantSearchEnabled() {
 
 bool IsAppGridGhostEnabled() {
   return base::FeatureList::IsEnabled(kEnableAppGridGhost);
-}
-
-bool IsSearchBoxSelectionEnabled() {
-  return base::FeatureList::IsEnabled(kEnableSearchBoxSelection);
 }
 
 bool IsAggregatedMlAppRankingEnabled() {

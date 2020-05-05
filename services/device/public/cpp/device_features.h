@@ -19,6 +19,8 @@ DEVICE_FEATURES_EXPORT extern const base::Feature kGenericSensorExtraClasses;
 DEVICE_FEATURES_EXPORT extern const base::Feature kWinrtSensorsImplementation;
 DEVICE_FEATURES_EXPORT extern const base::Feature
     kWinrtGeolocationImplementation;
+DEVICE_FEATURES_EXPORT extern const base::Feature
+    kMacCoreLocationImplementation;
 
 }  // namespace features
 

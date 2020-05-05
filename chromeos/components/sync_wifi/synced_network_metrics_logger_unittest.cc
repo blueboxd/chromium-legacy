@@ -14,6 +14,7 @@
 #include "chromeos/network/network_metadata_store.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/network_state_test_helper.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 #include "third_party/cros_system_api/dbus/shill/dbus-constants.h"
@@ -222,6 +223,16 @@ TEST_F(SyncedNetworkMetricsLoggerTest, RecordApplyNetworkSuccess) {
   base::RunLoop().RunUntilIdle();
 
   histogram_tester.ExpectBucketCount(kApplyResultHistogram, true, 1);
+}
+
+TEST_F(SyncedNetworkMetricsLoggerTest, RecordTotalCount) {
+  base::HistogramTester histogram_tester;
+  synced_network_metrics_logger()->RecordTotalCount(10);
+  base::RunLoop().RunUntilIdle();
+
+  // histogram_tester.ExpectTotalCount(kTotalCountHistogram, 1);
+  EXPECT_THAT(histogram_tester.GetAllSamples(kTotalCountHistogram),
+              testing::ElementsAre(base::Bucket(/*min=*/10, /*count=*/1)));
 }
 
 }  // namespace sync_wifi

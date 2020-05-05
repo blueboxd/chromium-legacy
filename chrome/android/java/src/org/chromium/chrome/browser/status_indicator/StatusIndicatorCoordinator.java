@@ -12,6 +12,7 @@ import android.view.ViewStub;
 import androidx.annotation.ColorInt;
 import androidx.annotation.NonNull;
 
+import org.chromium.base.Callback;
 import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
@@ -63,7 +64,7 @@ public class StatusIndicatorCoordinator {
     public StatusIndicatorCoordinator(Activity activity, ResourceManager resourceManager,
             ChromeFullscreenManager fullscreenManager,
             Supplier<Integer> statusBarColorWithoutStatusIndicatorSupplier,
-            Supplier<Boolean> canAnimateNativeBrowserControls, Runnable requestRender) {
+            Supplier<Boolean> canAnimateNativeBrowserControls, Callback<Runnable> requestRender) {
         // TODO(crbug.com/1005843): Create this view lazily if/when we need it. This is a task for
         // when we have the public API figured out. First, we should avoid inflating the view here
         // in case it's never used.
@@ -78,9 +79,9 @@ public class StatusIndicatorCoordinator {
         PropertyModelChangeProcessor.create(model,
                 new StatusIndicatorViewBinder.ViewHolder(root, mSceneLayer),
                 StatusIndicatorViewBinder::bind);
-        Runnable invalidateCompositorView = () -> {
+        Callback<Runnable> invalidateCompositorView = callback -> {
             root.getResourceAdapter().invalidate(null);
-            requestRender.run();
+            requestRender.onResult(callback);
         };
 
         mMediator = new StatusIndicatorMediator(model, fullscreenManager,

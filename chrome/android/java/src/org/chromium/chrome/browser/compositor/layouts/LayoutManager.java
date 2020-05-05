@@ -746,7 +746,13 @@ public class LayoutManager implements LayoutUpdateHost, LayoutProvider,
 
     @Override
     public void requestUpdate() {
-        if (!mUpdateRequested) mHost.requestRender();
+        requestUpdate(null);
+    }
+
+    @Override
+    public void requestUpdate(Runnable onUpdateEffective) {
+        if (mUpdateRequested && onUpdateEffective == null) return;
+        mHost.requestRender(onUpdateEffective);
         mUpdateRequested = true;
     }
 

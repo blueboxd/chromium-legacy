@@ -6,16 +6,20 @@
 import {isChromeOS, isMac, webUIListenerCallback} from 'chrome://resources/js/cr.m.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-import {AboutPageBrowserProxyImpl, LifetimeBrowserProxyImpl, Route, Router, UpdateStatus} from 'chrome://settings/settings.js';
-import {TestAboutPageBrowserProxy} from 'chrome://test/settings/test_about_page_browser_proxy.js';
-import {TestLifetimeBrowserProxy} from 'chrome://test/settings/test_lifetime_browser_proxy.m.js';
+import {AboutPageBrowserProxyImpl, LifetimeBrowserProxyImpl, PromoteUpdaterStatus, Route, Router, UpdateStatus} from 'chrome://settings/settings.js';
+
+import {assertEquals, assertFalse, assertNotEquals, assertTrue} from '../chai_assert.js';
+
+import {TestAboutPageBrowserProxy} from './test_about_page_browser_proxy.js';
+import {TestLifetimeBrowserProxy} from './test_lifetime_browser_proxy.m.js';
 
 // clang-format on
 
 function setupRouter() {
   const routes = {
-    BASIC: new Route('/'),
     ABOUT: new Route('/help'),
+    ADVANCED: new Route('/advanced'),
+    BASIC: new Route('/'),
   };
   Router.resetInstanceForTesting(new Router(routes));
   return routes;
@@ -24,9 +28,9 @@ function setupRouter() {
 /**
  * @param {!UpdateStatus} status
  * @param {{
- *   progress: number|undefined,
- *   message: string|undefined
- * }} opt_options
+ *   progress: (number|undefined),
+ *   message: (string|undefined)
+ * }=} opt_options
  */
 function fireStatusChanged(status, opt_options) {
   const options = opt_options || {};
@@ -38,14 +42,16 @@ function fireStatusChanged(status, opt_options) {
 }
 
 suite('AboutPageTest_AllBuilds', function() {
+  /** @type {?SettingsAboutPageElement} */
   let page = null;
 
-  /** @type {?settings.TestAboutPageBrowserProxy} */
+  /** @type {?TestAboutPageBrowserProxy} */
   let aboutBrowserProxy = null;
 
   /** @type {?TestLifetimeBrowserProxy} */
   let lifetimeBrowserProxy = null;
 
+  /** @type {string} */
   const SPINNER_ICON = 'chrome://resources/images/throbber_small.svg';
 
   let testRoutes = null;
@@ -74,8 +80,9 @@ suite('AboutPageTest_AllBuilds', function() {
   function initNewPage() {
     aboutBrowserProxy.reset();
     lifetimeBrowserProxy.reset();
-    PolymerTest.clearBody();
-    page = document.createElement('settings-about-page');
+    document.body.innerHTML = '';
+    page = /** @type {!SettingsAboutPageElement} */ (
+        document.createElement('settings-about-page'));
     Router.getInstance().navigateTo(testRoutes.ABOUT);
     document.body.appendChild(page);
     return isChromeOS ? Promise.resolve() :
@@ -164,27 +171,27 @@ suite('AboutPageTest_AllBuilds', function() {
       await initNewPage();
       const icon = page.$$('iron-icon');
       assertTrue(!!icon);
-      assertTrue(!!page.$.updateStatusMessage);
-      assertTrue(!!page.$.deprecationWarning);
-      assertFalse(page.$.deprecationWarning.hidden);
+      assertTrue(!!page.$$('#updateStatusMessage'));
+      assertTrue(!!page.$$('#deprecationWarning'));
+      assertFalse(page.$$('#deprecationWarning').hidden);
 
       fireStatusChanged(UpdateStatus.CHECKING);
       assertEquals(SPINNER_ICON, icon.src);
       assertEquals(null, icon.getAttribute('icon'));
-      assertFalse(page.$.deprecationWarning.hidden);
-      assertFalse(page.$.updateStatusMessage.hidden);
+      assertFalse(page.$$('#deprecationWarning').hidden);
+      assertFalse(page.$$('#updateStatusMessage').hidden);
 
       fireStatusChanged(UpdateStatus.UPDATING);
       assertEquals(SPINNER_ICON, icon.src);
       assertEquals(null, icon.getAttribute('icon'));
-      assertFalse(page.$.deprecationWarning.hidden);
-      assertFalse(page.$.updateStatusMessage.hidden);
+      assertFalse(page.$$('#deprecationWarning').hidden);
+      assertFalse(page.$$('#updateStatusMessage').hidden);
 
       fireStatusChanged(UpdateStatus.NEARLY_UPDATED);
       assertEquals(null, icon.src);
       assertEquals('settings:check-circle', icon.icon);
-      assertFalse(page.$.deprecationWarning.hidden);
-      assertFalse(page.$.updateStatusMessage.hidden);
+      assertFalse(page.$$('#deprecationWarning').hidden);
+      assertFalse(page.$$('#updateStatusMessage').hidden);
     });
 
     /**
@@ -199,40 +206,40 @@ suite('AboutPageTest_AllBuilds', function() {
       await initNewPage();
       const icon = page.$$('iron-icon');
       assertTrue(!!icon);
-      assertTrue(!!page.$.deprecationWarning);
-      assertTrue(!!page.$.updateStatusMessage);
+      assertTrue(!!page.$$('#deprecationWarning'));
+      assertTrue(!!page.$$('#updateStatusMessage'));
 
-      assertFalse(page.$.deprecationWarning.hidden);
-      assertFalse(page.$.deprecationWarning.hidden);
+      assertFalse(page.$$('#deprecationWarning').hidden);
+      assertFalse(page.$$('#deprecationWarning').hidden);
 
       fireStatusChanged(UpdateStatus.CHECKING);
       assertEquals(null, icon.src);
       assertEquals('cr:error', icon.icon);
-      assertFalse(page.$.deprecationWarning.hidden);
-      assertTrue(page.$.updateStatusMessage.hidden);
+      assertFalse(page.$$('#deprecationWarning').hidden);
+      assertTrue(page.$$('#updateStatusMessage').hidden);
 
       fireStatusChanged(UpdateStatus.FAILED);
       assertEquals(null, icon.src);
       assertEquals('cr:error', icon.icon);
-      assertFalse(page.$.deprecationWarning.hidden);
-      assertTrue(page.$.updateStatusMessage.hidden);
+      assertFalse(page.$$('#deprecationWarning').hidden);
+      assertTrue(page.$$('#updateStatusMessage').hidden);
 
       fireStatusChanged(UpdateStatus.UPDATED);
       assertEquals(null, icon.src);
       assertEquals('cr:error', icon.icon);
-      assertFalse(page.$.deprecationWarning.hidden);
-      assertTrue(page.$.updateStatusMessage.hidden);
+      assertFalse(page.$$('#deprecationWarning').hidden);
+      assertTrue(page.$$('#updateStatusMessage').hidden);
     });
 
     test('Relaunch', function() {
-      let relaunch = page.$.relaunch;
+      let relaunch = page.$$('#relaunch');
       assertTrue(!!relaunch);
       assertTrue(relaunch.hidden);
 
       fireStatusChanged(UpdateStatus.NEARLY_UPDATED);
       assertFalse(relaunch.hidden);
 
-      relaunch = page.$.relaunch;
+      relaunch = page.$$('#relaunch');
       assertTrue(!!relaunch);
       relaunch.click();
       return lifetimeBrowserProxy.whenCalled('relaunch');
@@ -243,7 +250,7 @@ suite('AboutPageTest_AllBuilds', function() {
      * 'update-status-changed' events.
      */
     test('ButtonsUpdate', function() {
-      const relaunch = page.$.relaunch;
+      const relaunch = page.$$('#relaunch');
       assertTrue(!!relaunch);
 
       fireStatusChanged(UpdateStatus.CHECKING);
@@ -270,8 +277,8 @@ suite('AboutPageTest_AllBuilds', function() {
   }
 
   test('GetHelp', function() {
-    assertTrue(!!page.$.help);
-    page.$.help.click();
+    assertTrue(!!page.$$('#help'));
+    page.$$('#help').click();
     return aboutBrowserProxy.whenCalled('openHelpPage');
   });
 });
@@ -285,14 +292,14 @@ suite('AboutPageTest_OfficialBuilds', function() {
     testRoutes = setupRouter();
     browserProxy = new TestAboutPageBrowserProxy();
     AboutPageBrowserProxyImpl.instance_ = browserProxy;
-    PolymerTest.clearBody();
+    document.body.innerHTML = '';
     page = document.createElement('settings-about-page');
     document.body.appendChild(page);
   });
 
   test('ReportAnIssue', function() {
-    assertTrue(!!page.$.reportIssue);
-    page.$.reportIssue.click();
+    assertTrue(!!page.$$('#reportIssue'));
+    page.$$('#reportIssue').click();
     return browserProxy.whenCalled('openFeedbackDialog');
   });
 

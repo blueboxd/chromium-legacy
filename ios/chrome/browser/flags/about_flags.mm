@@ -628,6 +628,9 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kAutofillEnableGoogleIssuedCardDescription,
      flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(autofill::features::kAutofillEnableGoogleIssuedCard)},
+    {"enable-mygoogle", flag_descriptions::kEnableMyGoogleName,
+     flag_descriptions::kEnableMyGoogleDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(kEnableMyGoogle)},
 };
 
 bool SkipConditionalFeatureEntry(const flags_ui::FeatureEntry& entry) {

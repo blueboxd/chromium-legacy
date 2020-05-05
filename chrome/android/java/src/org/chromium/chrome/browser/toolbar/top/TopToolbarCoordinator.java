@@ -155,6 +155,9 @@ public class TopToolbarCoordinator implements Toolbar {
             mStartSurfaceToolbarCoordinator.setOnNewTabClickHandler(newTabClickHandler);
             mStartSurfaceToolbarCoordinator.setTabModelSelector(tabModelSelector);
             mStartSurfaceToolbarCoordinator.setOverviewModeBehavior(overviewModeBehavior);
+            mStartSurfaceToolbarCoordinator.setTabSwitcherListener(tabSwitcherClickHandler);
+            mStartSurfaceToolbarCoordinator.setOnTabSwitcherLongClickHandler(
+                    tabSwitcherLongClickHandler);
             mStartSurfaceToolbarCoordinator.onNativeLibraryReady();
         }
 
@@ -484,6 +487,9 @@ public class TopToolbarCoordinator implements Toolbar {
         if (mTabSwitcherModeCoordinatorPhone != null) {
             mTabSwitcherModeCoordinatorPhone.setTabCountProvider(tabCountProvider);
         }
+        if (mStartSurfaceToolbarCoordinator != null) {
+            mStartSurfaceToolbarCoordinator.setTabCountProvider(tabCountProvider);
+        }
     }
 
     /**
@@ -506,6 +512,9 @@ public class TopToolbarCoordinator implements Toolbar {
             menuButtonWrapper.setThemeColorProvider(provider);
         }
         mToolbarLayout.setThemeColorProvider(provider);
+        if (mStartSurfaceToolbarCoordinator != null) {
+            mStartSurfaceToolbarCoordinator.setThemeColorProvider(provider);
+        }
     }
 
     /**

@@ -457,7 +457,6 @@ class BASE_EXPORT ScopedAllowBaseSyncPrimitives {
   friend class ::NativeBackendKWallet;            // http://crbug.com/125331
   friend class ::chromeos::system::
       StatisticsProviderImpl;                      // http://crbug.com/125385
-  friend class content::TextInputClientMac;        // http://crbug.com/121917
   friend class blink::VideoFrameResourceProvider;  // http://crbug.com/878070
 
   ScopedAllowBaseSyncPrimitives() EMPTY_BODY_IF_DCHECK_IS_OFF;

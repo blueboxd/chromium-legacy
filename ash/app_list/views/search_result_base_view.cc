@@ -40,20 +40,16 @@ void SearchResultBaseView::SetSelected(bool selected,
 
   selected_ = selected;
 
-  if (app_list_features::IsSearchBoxSelectionEnabled()) {
-    if (selected) {
-      SelectInitialResultAction(reverse_tab_order.value_or(false));
-    } else {
-      ClearSelectedResultAction();
-    }
+  if (selected) {
+    SelectInitialResultAction(reverse_tab_order.value_or(false));
+  } else {
+    ClearSelectedResultAction();
   }
 
   SchedulePaint();
 }
 
 bool SearchResultBaseView::SelectNextResultAction(bool reverse_tab_order) {
-  DCHECK(app_list_features::IsSearchBoxSelectionEnabled());
-
   if (!selected() || !actions_view_)
     return false;
 
@@ -114,8 +110,6 @@ void SearchResultBaseView::ClearResult() {
 }
 
 void SearchResultBaseView::SelectInitialResultAction(bool reverse_tab_order) {
-  DCHECK(app_list_features::IsSearchBoxSelectionEnabled());
-
   if (actions_view_ && actions_view_->SelectInitialAction(reverse_tab_order))
     return;
 
@@ -123,8 +117,6 @@ void SearchResultBaseView::SelectInitialResultAction(bool reverse_tab_order) {
 }
 
 void SearchResultBaseView::ClearSelectedResultAction() {
-  DCHECK(app_list_features::IsSearchBoxSelectionEnabled());
-
   if (actions_view_)
     actions_view_->ClearSelectedAction();
 }

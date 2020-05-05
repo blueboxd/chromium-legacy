@@ -142,6 +142,12 @@ void UntrustedSource::StartDataRequest(
     std::move(callback).Run(base::RefCountedString::TakeString(&html));
     return;
   }
+  if (path == "background_image.js") {
+    ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
+    std::move(callback).Run(bundle.LoadDataResourceBytes(
+        IDR_NEW_TAB_PAGE_UNTRUSTED_BACKGROUND_IMAGE_JS));
+    return;
+  }
   if (path == "background.jpg") {
     base::ThreadPool::PostTaskAndReplyWithResult(
         FROM_HERE, {base::TaskPriority::USER_VISIBLE, base::MayBlock()},
@@ -187,8 +193,8 @@ bool UntrustedSource::ShouldServiceRequest(
   const std::string path = url.path().substr(1);
   return path == "one-google-bar" || path == "one_google_bar.js" ||
          path == "promo" || path == "promo.js" || path == "image" ||
-         path == "background_image" || path == "iframe" ||
-         path == "background.jpg";
+         path == "background_image" || path == "background_image.js" ||
+         path == "iframe" || path == "background.jpg";
 }
 
 void UntrustedSource::OnOneGoogleBarDataUpdated() {

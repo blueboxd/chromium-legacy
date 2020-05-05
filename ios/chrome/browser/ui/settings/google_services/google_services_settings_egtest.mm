@@ -28,6 +28,8 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(GoogleServicesSettingsAppInterface);
 #endif  // defined(CHROME_EARL_GREY_2)
 
 using l10n_util::GetNSString;
+using chrome_test_util::AddAccountButton;
+using chrome_test_util::ButtonWithAccessibilityLabelId;
 using chrome_test_util::GoogleServicesSettingsButton;
 using chrome_test_util::SettingsDoneButton;
 
@@ -129,6 +131,30 @@ using chrome_test_util::SettingsDoneButton;
   // Verify the sync is not confirmed yet.
   [self assertCellWithTitleID:IDS_IOS_SYNC_SETUP_NOT_CONFIRMED_TITLE
                  detailTextID:IDS_IOS_SYNC_SETTINGS_NOT_CONFIRMED_DESCRIPTION];
+}
+
+// Opens the SSO add account view, from the Google services settings.
+// See: crbug.com/1076843
+- (void)testOpenSSOAddAccount {
+  // Signin.
+  FakeChromeIdentity* fakeIdentity = [SigninEarlGreyUtils fakeIdentity1];
+  [SigninEarlGreyUI signinWithFakeIdentity:fakeIdentity];
+  // Open "Google Services" settings.
+  [self openGoogleServicesSettings];
+  // Open account list view.
+  [[EarlGrey
+      selectElementWithMatcher:grey_accessibilityID(
+                                   kAccountListItemAccessibilityIdentifier)]
+      performAction:grey_tap()];
+  // Open sso add account view.
+  [[EarlGrey selectElementWithMatcher:AddAccountButton()]
+      performAction:grey_tap()];
+  // Close it.
+  [[EarlGrey selectElementWithMatcher:
+                 ButtonWithAccessibilityLabelId(
+                     IDS_IOS_ACCOUNT_CONSISTENCY_SETUP_SKIP_BUTTON)]
+      performAction:grey_tap()];
+  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
 }
 
 #pragma mark - Helpers

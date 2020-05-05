@@ -26,7 +26,7 @@
 #include "third_party/blink/renderer/modules/device_orientation/device_orientation_controller.h"
 #include "third_party/blink/renderer/modules/device_orientation/device_orientation_data.h"
 #include "third_party/blink/renderer/modules/media_controls/media_controls_impl.h"
-#include "third_party/blink/renderer/modules/screen_orientation/screen_orientation_controller_impl.h"
+#include "third_party/blink/renderer/modules/screen_orientation/screen_orientation_controller.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/testing/empty_web_media_player.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
@@ -54,12 +54,11 @@ class MockChromeClient : public EmptyChromeClient {
   // ChromeClient overrides:
   void InstallSupplements(LocalFrame& frame) override {
     EmptyChromeClient::InstallSupplements(frame);
-    ScreenOrientationControllerImpl::ProvideTo(frame);
     mojo::AssociatedRemote<device::mojom::blink::ScreenOrientation>
         screen_orientation;
     ignore_result(
         screen_orientation.BindNewEndpointAndPassDedicatedReceiverForTesting());
-    ScreenOrientationControllerImpl::From(frame)
+    ScreenOrientationController::From(*frame.DomWindow())
         ->SetScreenOrientationAssociatedRemoteForTests(
             std::move(screen_orientation));
   }

@@ -563,6 +563,7 @@ class CrostiniManager : public KeyedService,
   // Returns null if VM is not running.
   base::Optional<VmInfo> GetVmInfo(std::string vm_name);
   void AddRunningVmForTesting(std::string vm_name);
+  void AddStoppingVmForTesting(std::string vm_name);
 
   void SetContainerSshfsMounted(std::string vm_name,
                                 std::string container_name,

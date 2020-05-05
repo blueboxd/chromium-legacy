@@ -29,6 +29,10 @@ namespace blink {
 class LayerTreeView;
 class WidgetBaseClient;
 
+namespace scheduler {
+class WebRenderWidgetSchedulingState;
+}
+
 // This class is the foundational class for all widgets that blink creates.
 // (WebPagePopupImpl, WebFrameWidgetBase) will contain an instance of this
 // class. For simplicity purposes this class will be a member of those classes.
@@ -96,6 +100,8 @@ class PLATFORM_EXPORT WidgetBase : public mojom::blink::Widget,
 
   cc::AnimationHost* AnimationHost() const;
   cc::LayerTreeHost* LayerTreeHost() const;
+  scheduler::WebRenderWidgetSchedulingState* RendererWidgetSchedulingState()
+      const;
 
   // Returns if we should gather begin main frame metrics. If there is no
   // compositor thread this returns false.
@@ -106,6 +112,8 @@ class PLATFORM_EXPORT WidgetBase : public mojom::blink::Widget,
   WidgetBaseClient* client_;
   mojo::AssociatedRemote<mojom::blink::WidgetHost> widget_host_;
   mojo::AssociatedReceiver<mojom::blink::Widget> receiver_;
+  std::unique_ptr<scheduler::WebRenderWidgetSchedulingState>
+      render_widget_scheduling_state_;
   bool first_update_visual_state_after_hidden_ = false;
   base::TimeTicks was_shown_time_ = base::TimeTicks::Now();
 };

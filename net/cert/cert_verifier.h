@@ -115,6 +115,7 @@ class NET_EXPORT CertVerifier {
   // RFC6962 section 3.3.1. It may be ignored by the CertVerifier.
   class NET_EXPORT RequestParams {
    public:
+    RequestParams();
     RequestParams(scoped_refptr<X509Certificate> certificate,
                   const std::string& hostname,
                   int flags,

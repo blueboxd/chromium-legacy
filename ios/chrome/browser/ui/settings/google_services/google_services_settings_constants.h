@@ -13,4 +13,7 @@ extern NSString* const kGoogleServicesSettingsViewIdentifier;
 // Accessibility identifier for Manage Sync cell.
 extern NSString* const kManageSyncCellAccessibilityIdentifier;
 
+// Accessibility identifier for the account list cell.
+extern NSString* const kAccountListItemAccessibilityIdentifier;
+
 #endif  // IOS_CHROME_BROWSER_UI_SETTINGS_GOOGLE_SERVICES_GOOGLE_SERVICES_SETTINGS_CONSTANTS_H_

@@ -11,6 +11,7 @@ import static android.support.test.espresso.matcher.ViewMatchers.withId;
 import static android.support.test.espresso.matcher.ViewMatchers.withText;
 
 import static org.hamcrest.core.StringContains.containsString;
+import static org.junit.Assert.assertNotNull;
 
 import android.support.test.InstrumentationRegistry;
 import android.support.test.espresso.Espresso;
@@ -44,6 +45,7 @@ import org.chromium.chrome.test.ChromeJUnit4RunnerDelegate;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.chrome.test.util.browser.LocationSettingsTestUtil;
+import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.JavaScriptUtils;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.device.geolocation.LocationProviderOverrider;
@@ -100,6 +102,7 @@ public class IncognitoPermissionLeakageTest {
     }
 
     private void requestLocationPermission(Tab tab) throws TimeoutException {
+        CriteriaHelper.pollUiThread(() -> { assertNotNull(tab.getWebContents()); });
         JavaScriptUtils.executeJavaScriptAndWaitForResult(
                 tab.getWebContents(), "initiate_getCurrentPosition()");
     }

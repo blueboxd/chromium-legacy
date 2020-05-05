@@ -235,11 +235,6 @@ bool SearchResultView::OnKeyPressed(const ui::KeyEvent& event) {
                                           false /* by_button_press */);
       }
       return true;
-    case ui::VKEY_UP:
-    case ui::VKEY_DOWN:
-      return !actions_view()->children().empty() &&
-             list_view_->HandleVerticalFocusMovement(
-                 this, event.key_code() == ui::VKEY_UP);
     case ui::VKEY_DELETE:
     case ui::VKEY_BROWSER_BACK:
       // Allows alt+(back or delete) to trigger the 'remove result' dialog.
@@ -307,17 +302,6 @@ void SearchResultView::PaintButtonContents(gfx::Canvas* canvas) {
     title_text_->SetDisplayRect(centered_title_rect);
     title_text_->Draw(canvas);
   }
-}
-
-void SearchResultView::OnFocus() {
-  ScrollRectToVisible(GetLocalBounds());
-  SetSelected(true, base::nullopt);
-  actions_view()->UpdateButtonsOnStateChanged();
-}
-
-void SearchResultView::OnBlur() {
-  SetSelected(false, base::nullopt);
-  actions_view()->UpdateButtonsOnStateChanged();
 }
 
 void SearchResultView::OnMouseEntered(const ui::MouseEvent& event) {

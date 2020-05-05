@@ -14,8 +14,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
-#include "chromeos/components/sync_wifi/local_network_collector.h"
-#include "chromeos/components/sync_wifi/synced_network_updater.h"
+#include "chromeos/components/sync_wifi/network_identifier.h"
 #include "chromeos/network/network_configuration_observer.h"
 #include "chromeos/network/network_metadata_observer.h"
 #include "components/sync/base/model_type.h"
@@ -33,6 +32,10 @@ class NetworkMetadataStore;
 
 namespace sync_wifi {
 
+class LocalNetworkCollector;
+class SyncedNetworkMetricsLogger;
+class SyncedNetworkUpdater;
+
 // Receives updates to network configurations from the Chrome sync back end and
 // from the system network stack and keeps both lists in sync.
 class WifiConfigurationBridge : public syncer::ModelTypeSyncBridge,
@@ -43,6 +46,7 @@ class WifiConfigurationBridge : public syncer::ModelTypeSyncBridge,
       SyncedNetworkUpdater* synced_network_updater,
       LocalNetworkCollector* local_network_collector,
       NetworkConfigurationHandler* network_configuration_handler,
+      SyncedNetworkMetricsLogger* metrics_recorder,
       std::unique_ptr<syncer::ModelTypeChangeProcessor> change_processor,
       syncer::OnceModelTypeStoreFactory create_store_callback);
   ~WifiConfigurationBridge() override;
@@ -120,6 +124,7 @@ class WifiConfigurationBridge : public syncer::ModelTypeSyncBridge,
   SyncedNetworkUpdater* synced_network_updater_;
   LocalNetworkCollector* local_network_collector_;
   NetworkConfigurationHandler* network_configuration_handler_;
+  SyncedNetworkMetricsLogger* metrics_recorder_;
   base::WeakPtr<NetworkMetadataStore> network_metadata_store_;
 
   base::WeakPtrFactory<WifiConfigurationBridge> weak_ptr_factory_{this};

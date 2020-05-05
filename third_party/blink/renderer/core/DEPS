@@ -101,6 +101,7 @@ include_rules = [
     "+ui/display/mojom/display.mojom-blink.h",
     "+ui/gfx/mac/cocoa_scrollbar_painter.h",
     "+ui/gfx/geometry",
+    "+ui/gfx/range/range.h",
     "+ui/gfx/skia_util.h",
     "-web",
     # We do not want any new dependencies into core/exported until we resolve

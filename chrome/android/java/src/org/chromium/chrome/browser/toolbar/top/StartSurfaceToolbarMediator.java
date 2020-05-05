@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.toolbar.top;
 import static org.chromium.chrome.browser.toolbar.top.StartSurfaceToolbarProperties.ACCESSIBILITY_ENABLED;
 import static org.chromium.chrome.browser.toolbar.top.StartSurfaceToolbarProperties.APP_MENU_BUTTON_HELPER;
 import static org.chromium.chrome.browser.toolbar.top.StartSurfaceToolbarProperties.BUTTONS_CLICKABLE;
+import static org.chromium.chrome.browser.toolbar.top.StartSurfaceToolbarProperties.IDENTITY_DISC_AT_LEFT;
 import static org.chromium.chrome.browser.toolbar.top.StartSurfaceToolbarProperties.IDENTITY_DISC_CLICK_HANDLER;
 import static org.chromium.chrome.browser.toolbar.top.StartSurfaceToolbarProperties.IDENTITY_DISC_DESCRIPTION;
 import static org.chromium.chrome.browser.toolbar.top.StartSurfaceToolbarProperties.IDENTITY_DISC_IMAGE;
@@ -50,6 +51,7 @@ class StartSurfaceToolbarMediator {
     private final IdentityDiscController mIdentityDiscController;
     private final Callback<IPHCommandBuilder> mShowIPHCallback;
     private final boolean mHideIncognitoSwitchWhenNoTabs;
+    private final boolean mShowNewTabAndIdentityDiscAtLeft;
 
     private TabModelSelector mTabModelSelector;
     private TemplateUrlServiceObserver mTemplateUrlObserver;
@@ -61,13 +63,15 @@ class StartSurfaceToolbarMediator {
     private boolean mIsGoogleSearchEngine;
 
     StartSurfaceToolbarMediator(PropertyModel model, IdentityDiscController identityDiscController,
-            Callback<IPHCommandBuilder> showIPHCallback, boolean hideIncognitoSwitchWhenNoTabs) {
+            Callback<IPHCommandBuilder> showIPHCallback, boolean hideIncognitoSwitchWhenNoTabs,
+            boolean showNewTabAndIdentityDiscAtLeft) {
         mPropertyModel = model;
         mOverviewModeState = OverviewModeState.NOT_SHOWN;
         mIdentityDiscController = identityDiscController;
         mIdentityDiscController.addObserver(this::identityDiscStateChanged);
         mShowIPHCallback = showIPHCallback;
         mHideIncognitoSwitchWhenNoTabs = hideIncognitoSwitchWhenNoTabs;
+        mShowNewTabAndIdentityDiscAtLeft = showNewTabAndIdentityDiscAtLeft;
     }
 
     void onNativeLibraryReady() {
@@ -175,8 +179,12 @@ class StartSurfaceToolbarMediator {
                     if (mHideIncognitoSwitchWhenNoTabs) {
                         mPropertyModel.set(INCOGNITO_SWITCHER_VISIBLE, hasIncognitoTabs());
                     }
-                    if (mOverviewModeState == OverviewModeState.SHOWN_TABSWITCHER_OMNIBOX_ONLY) {
+                    if (mOverviewModeState == OverviewModeState.SHOWN_TABSWITCHER_OMNIBOX_ONLY
+                            || mShowNewTabAndIdentityDiscAtLeft) {
                         mPropertyModel.set(NEW_TAB_BUTTON_AT_LEFT, true);
+                    }
+                    if (mShowNewTabAndIdentityDiscAtLeft) {
+                        mPropertyModel.set(IDENTITY_DISC_AT_LEFT, true);
                     }
                 }
                 @Override

@@ -8,7 +8,6 @@ import sys
 from blinkpy.common import host
 from blinkpy.w3c.wpt_expectations_updater import WPTExpectationsUpdater
 
-
 if __name__ == "__main__":
     updater = WPTExpectationsUpdater(host.Host())
     sys.exit(updater.run(sys.argv[1:]))

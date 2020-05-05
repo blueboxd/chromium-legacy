@@ -3,7 +3,8 @@
 // found in the LICENSE file.
 
 // #import {isChromeOS} from 'chrome://resources/js/cr.m.js';
-// #import {TestBrowserProxy} from 'chrome://test/test_browser_proxy.m.js';
+// #import {TestBrowserProxy} from '../test_browser_proxy.m.js';
+// #import {LifetimeBrowserProxy} from 'chrome://settings/settings.js';
 
 cr.define('settings', function() {
   /**

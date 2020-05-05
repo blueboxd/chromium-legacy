@@ -216,6 +216,8 @@ extern const char kChromeUIArcOverviewTracingHost[];
 extern const char kChromeUIArcOverviewTracingURL[];
 extern const char kChromeUIAssistantOptInHost[];
 extern const char kChromeUIAssistantOptInURL[];
+extern const char kChromeUIAppDisabledHost[];
+extern const char kChromeUIAppDisabledURL[];
 extern const char kChromeUIBluetoothPairingHost[];
 extern const char kChromeUIBluetoothPairingURL[];
 extern const char kChromeUICellularSetupHost[];

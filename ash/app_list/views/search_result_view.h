@@ -75,8 +75,6 @@ class APP_LIST_EXPORT SearchResultView
   void Layout() override;
   bool OnKeyPressed(const ui::KeyEvent& event) override;
   void PaintButtonContents(gfx::Canvas* canvas) override;
-  void OnFocus() override;
-  void OnBlur() override;
   void OnMouseEntered(const ui::MouseEvent& event) override;
   void OnMouseExited(const ui::MouseEvent& event) override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;

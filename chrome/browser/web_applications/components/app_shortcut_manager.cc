@@ -10,7 +10,6 @@
 #include "base/feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/web_applications/components/app_shortcut_observer.h"
 #include "chrome/common/chrome_features.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -40,10 +39,7 @@ void OnShortcutsInfoRetrievedRegisterShortcutsMenuWithOs(
 
 AppShortcutManager::AppShortcutManager(Profile* profile) : profile_(profile) {}
 
-AppShortcutManager::~AppShortcutManager() {
-  for (auto& observer : observers_)
-    observer.OnShortcutManagerDestroyed();
-}
+AppShortcutManager::~AppShortcutManager() = default;
 
 void AppShortcutManager::SetSubsystems(AppRegistrar* registrar) {
   registrar_ = registrar;
@@ -70,14 +66,6 @@ void AppShortcutManager::Start() {
 
 void AppShortcutManager::Shutdown() {
   app_registrar_observer_.RemoveAll();
-}
-
-void AppShortcutManager::AddObserver(AppShortcutObserver* observer) {
-  observers_.AddObserver(observer);
-}
-
-void AppShortcutManager::RemoveObserver(AppShortcutObserver* observer) {
-  observers_.RemoveObserver(observer);
 }
 
 void AppShortcutManager::OnWebAppInstalled(const AppId& app_id) {
@@ -152,10 +140,6 @@ void AppShortcutManager::OnShortcutsCreated(const AppId& app_id,
                                             CreateShortcutsCallback callback,
                                             bool success) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  if (success) {
-    for (auto& observer : observers_)
-      observer.OnShortcutsCreated(app_id);
-  }
   std::move(callback).Run(success);
 }
 

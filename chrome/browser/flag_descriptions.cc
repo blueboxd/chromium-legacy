@@ -639,6 +639,11 @@ const char kPostQuantumCECPQ2Description[] =
     "This option enables a post-quantum (i.e. resistent to quantum computers) "
     "key exchange algorithm in TLS (CECPQ2).";
 
+const char kMacCoreLocationImplementationName[] =
+    "Core Location Implementation";
+const char kMacCoreLocationImplementationDescription[] =
+    "Enables usage of the Core Location APIs on macOS for geolocation";
+
 const char kWinrtGeolocationImplementationName[] =
     "WinRT Geolocation Implementation";
 const char kWinrtGeolocationImplementationDescription[] =
@@ -2854,11 +2859,6 @@ const char kHappinessTrackingSurveysForDesktopMigrationName[] =
 const char kHappinessTrackingSurveysForDesktopMigrationDescription[] =
     "Enable the latest version of Happiness Tracking Surveys.";
 
-const char kIntentPickerName[] = "Intent picker";
-const char kIntentPickerDescription[] =
-    "When going to a site that has URL managable by a PWA, show the intent"
-    "picker to allow user to open the URL in the app.";
-
 const char kKernelnextVMsName[] = "Enable VMs on experimental kernels.";
 const char kKernelnextVMsDescription[] =
     "Enables VM support on devices running experimental kernel versions.";
@@ -3348,11 +3348,6 @@ const char kEnableAppReinstallZeroStateDescription[] =
 const char kEnableAppGridGhostName[] = "App Grid Ghosting";
 const char kEnableAppGridGhostDescription[] =
     "Enables ghosting during an item drag in launcher.";
-
-const char kEnableSearchBoxSelectionName[] = "Search Box Selection";
-const char kEnableSearchBoxSelectionDescription[] =
-    "Enables the ResultSelectionController in the Search Box. This alters "
-    "perceived focus traversal.";
 
 const char kEnableAppListSearchAutocompleteName[] =
     "App List Search Autocomplete";

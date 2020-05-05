@@ -15,6 +15,7 @@
 #include "components/translate/core/browser/translate_prefs.h"
 #include "components/translate/core/common/translate_constants.h"
 #include "components/variations/variations_associated_data.h"
+#include "net/base/url_util.h"
 #include "third_party/icu/source/i18n/unicode/coll.h"
 #include "third_party/metrics_proto/translate_event.pb.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -24,6 +25,7 @@ namespace {
 const char kDeclineTranslate[] = "Translate.DeclineTranslate";
 const char kRevertTranslation[] = "Translate.RevertTranslation";
 const char kPerformTranslate[] = "Translate.Translate";
+const char kPerformTranslateAmpCacheUrl[] = "Translate.Translate.AMPCacheURL";
 const char kNeverTranslateLang[] = "Translate.NeverTranslateLang";
 const char kNeverTranslateSite[] = "Translate.NeverTranslateSite";
 const char kAlwaysTranslateLang[] = "Translate.AlwaysTranslateLang";
@@ -45,6 +47,19 @@ std::unique_ptr<icu::Collator> CreateCollator(const std::string& locale) {
     return nullptr;
   collator->setStrength(icu::Collator::PRIMARY);
   return collator;
+}
+
+// Returns whether |url| fits pattern of an AMP cache url.
+// Note this is a copy of logic in amp_page_load_metrics_observer.cc
+// TODO(crbug.com/1064974) Factor out into shared utility.
+bool IsLikelyAmpCacheUrl(const GURL& url) {
+  // Our heuristic to identify AMP cache URLs is to check for the presence of
+  // the amp_js_v query param.
+  for (net::QueryIterator it(url); !it.IsAtEnd(); it.Advance()) {
+    if (it.GetKey() == "amp_js_v")
+      return true;
+  }
+  return false;
 }
 
 }  // namespace
@@ -223,6 +238,8 @@ void TranslateUIDelegate::Translate() {
     translate_manager_->TranslatePage(GetOriginalLanguageCode(),
                                       GetTargetLanguageCode(), false);
     UMA_HISTOGRAM_BOOLEAN(kPerformTranslate, true);
+    if (IsLikelyAmpCacheUrl(translate_driver_->GetLastCommittedURL()))
+      UMA_HISTOGRAM_BOOLEAN(kPerformTranslateAmpCacheUrl, true);
   }
 }
 

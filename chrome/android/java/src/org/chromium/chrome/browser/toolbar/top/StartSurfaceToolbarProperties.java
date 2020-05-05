@@ -51,6 +51,10 @@ class StartSurfaceToolbarProperties {
     public static final PropertyModel.WritableBooleanPropertyKey BUTTONS_CLICKABLE =
             new PropertyModel.WritableBooleanPropertyKey();
 
+    /** When set to true, move identity disc to the left of the toolbar. Can only set to true. */
+    public static final PropertyModel.WritableBooleanPropertyKey IDENTITY_DISC_AT_LEFT =
+            new PropertyModel.WritableBooleanPropertyKey();
+
     /**
      * This is a hacky workaround for {@link IncognitoSwitchProperties#IS_VISIBLE}.
      * TODO(crbug.com/1042997): control the visibility through IncognitoSwitchCoordinator.
@@ -64,10 +68,11 @@ class StartSurfaceToolbarProperties {
     public static final PropertyModel.WritableBooleanPropertyKey NEW_TAB_BUTTON_AT_LEFT =
             new PropertyModel.WritableBooleanPropertyKey();
 
-    public static final PropertyKey[] ALL_KEYS = new PropertyKey[] {APP_MENU_BUTTON_HELPER,
-            NEW_TAB_CLICK_HANDLER, IS_VISIBLE, LOGO_IS_VISIBLE, IS_INCOGNITO,
-            INCOGNITO_STATE_PROVIDER, ACCESSIBILITY_ENABLED, MENU_IS_VISIBLE,
-            NEW_TAB_BUTTON_IS_VISIBLE, BUTTONS_CLICKABLE, INCOGNITO_SWITCHER_VISIBLE,
-            NEW_TAB_BUTTON_AT_LEFT, IDENTITY_DISC_IS_VISIBLE, IDENTITY_DISC_CLICK_HANDLER,
-            IDENTITY_DISC_IMAGE, IDENTITY_DISC_DESCRIPTION, IN_START_SURFACE_MODE};
+    public static final PropertyKey[] ALL_KEYS =
+            new PropertyKey[] {APP_MENU_BUTTON_HELPER, NEW_TAB_CLICK_HANDLER, IS_VISIBLE,
+                    LOGO_IS_VISIBLE, IS_INCOGNITO, INCOGNITO_STATE_PROVIDER, ACCESSIBILITY_ENABLED,
+                    MENU_IS_VISIBLE, NEW_TAB_BUTTON_IS_VISIBLE, BUTTONS_CLICKABLE,
+                    IDENTITY_DISC_AT_LEFT, INCOGNITO_SWITCHER_VISIBLE, NEW_TAB_BUTTON_AT_LEFT,
+                    IDENTITY_DISC_IS_VISIBLE, IDENTITY_DISC_CLICK_HANDLER, IDENTITY_DISC_IMAGE,
+                    IDENTITY_DISC_DESCRIPTION, IN_START_SURFACE_MODE};
 }

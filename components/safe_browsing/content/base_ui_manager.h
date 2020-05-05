@@ -147,6 +147,10 @@ class BaseUIManager
   // implement the reporting logic themselves if needed.
   virtual void CreateAndSendHitReport(const UnsafeResource& resource);
 
+  // Calls BaseBlockingPage::ShowBlockingPage(). Override this if using a
+  // different blocking page.
+  virtual void ShowBlockingPageForResource(const UnsafeResource& resource);
+
  private:
   friend class base::RefCountedThreadSafe<BaseUIManager>;
 

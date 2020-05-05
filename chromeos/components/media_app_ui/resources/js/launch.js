@@ -56,7 +56,7 @@ guestMessagePipe.registerHandler(Message.OVERWRITE_FILE, async (message) => {
     throw new Error('File not current.');
   }
 
-  await saveToFile(currentlyWritableFile.handle, overwrite.blob);
+  await saveBlobToFile(currentlyWritableFile.handle, overwrite.blob);
 });
 
 guestMessagePipe.registerHandler(Message.DELETE_FILE, async (message) => {
@@ -86,10 +86,12 @@ guestMessagePipe.registerHandler(Message.RENAME_FILE, async (message) => {
   const originalFile = await currentlyWritableFile.handle.getFile();
   const renamedFileHandle = await currentDirectoryHandle.getFile(
       renameMsg.newFilename, {create: true});
-
   // Copy file data over to the new file.
+  const writer = await renamedFileHandle.createWritable();
   // TODO(b/153021155): Use originalFile.stream().
-  await saveToFile(renamedFileHandle, await originalFile.arrayBuffer());
+  await writer.write(await originalFile.arrayBuffer());
+  await writer.truncate(originalFile.size);
+  await writer.close();
 
   // Remove the old file since the new file has all the data & the new name.
   // Note even though removing an entry that doesn't exist is considered
@@ -145,17 +147,17 @@ guestMessagePipe.registerHandler(Message.SAVE_COPY, async (message) => {
     return 'attemptedCurrentlyWritableFileOverwrite';
   }
 
-  await saveToFile(handle, blob);
+  await saveBlobToFile(handle, blob);
 });
 
 /**
- * Saves the provided blob or arrayBuffer to the provided fileHandle. Assumes
- * the handle is writable.
+ * Saves the provided blob the provided fileHandle. Assumes the handle is
+ * writable.
  * @param {!FileSystemFileHandle} handle
- * @param {!Blob|!ArrayBuffer} data
+ * @param {!Blob} data
  * @return {!Promise<undefined>}
  */
-async function saveToFile(handle, data) {
+async function saveBlobToFile(handle, data) {
   const writer = await handle.createWritable();
   await writer.write(data);
   await writer.truncate(data.size);

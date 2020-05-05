@@ -132,7 +132,7 @@ struct VectorInitializer<false, T, Allocator> {
   STATIC_ONLY(VectorInitializer);
   static void Initialize(T* begin, T* end) {
     for (T* cur = begin; cur != end; ++cur)
-      new (NotNull, cur) T;
+      ConstructTraits<T, VectorTraits<T>, Allocator>::Construct(cur);
   }
 };
 

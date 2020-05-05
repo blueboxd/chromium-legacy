@@ -29,6 +29,16 @@ namespace auto_screen_brightness {
 
 namespace {
 
+// Model params are usually written to this path, unless it is a unibuild.
+constexpr char kDefaultModelParamsPath[] =
+    "/usr/share/chromeos-assets/autobrightness/model_params.json";
+
+// Model params for unibuild devices will be written to device-specific
+// directories. We need to read the relevant directory from the following system
+// file path.
+constexpr char kSystemPath[] =
+    "/run/chromeos-config/v1/power/autobrightness/config-file/system-path";
+
 // Reads string content from |model_params_path| if it exists.
 // This should run in another thread to be non-blocking to the main thread (if
 // |is_testing| is false).
@@ -36,13 +46,40 @@ std::string LoadModelParamsFromDisk(const base::FilePath& model_params_path,
                                     bool is_testing) {
   DCHECK(is_testing ||
          !content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  if (!base::PathExists(model_params_path))
-    return std::string();
 
-  std::string content;
-  if (!base::ReadFileToString(model_params_path, &content)) {
+  base::FilePath used_model_params_path = model_params_path;
+  if (used_model_params_path.empty()) {
+    // Only override supplied path if it is empty.
+    const base::FilePath default_path = base::FilePath(kDefaultModelParamsPath);
+    if (base::PathExists(default_path)) {
+      // If default path exists, use it.
+      used_model_params_path = default_path;
+    } else {
+      // If default path doesn't exist, try to get the path from the system
+      // file.
+      const base::FilePath system_path = base::FilePath(kSystemPath);
+      if (base::PathExists(system_path)) {
+        std::string dest_path_value;
+        if (base::ReadFileToString(system_path, &dest_path_value)) {
+          used_model_params_path = base::FilePath(dest_path_value);
+        }
+      }
+    }
+  }
+
+  if (used_model_params_path.empty() ||
+      !base::PathExists(used_model_params_path)) {
+    VLOG(1) << "ABLoader model params path does not exist";
     return std::string();
   }
+
+  std::string content;
+  if (!base::ReadFileToString(used_model_params_path, &content)) {
+    VLOG(1) << "ABLoader cannot load params from " << used_model_params_path;
+    return std::string();
+  }
+  VLOG(1) << "ABLoader successfully loaded params from "
+          << used_model_params_path;
   return content;
 }
 
@@ -91,8 +128,7 @@ struct ModelConfigFromJson {
 
 ModelConfigLoaderImpl::ModelConfigLoaderImpl()
     : ModelConfigLoaderImpl(
-          base::FilePath(
-              "/usr/share/chromeos-assets/autobrightness/model_params.json"),
+          base::FilePath(),
           base::ThreadPool::CreateSequencedTaskRunner(
               {base::TaskPriority::USER_VISIBLE, base::MayBlock(),
                base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN}),
@@ -131,18 +167,16 @@ ModelConfigLoaderImpl::ModelConfigLoaderImpl(
     const base::FilePath& model_params_path,
     scoped_refptr<base::SequencedTaskRunner> blocking_task_runner,
     bool is_testing)
-    : model_params_path_(model_params_path),
-      blocking_task_runner_(blocking_task_runner),
-      is_testing_(is_testing) {
-  Init();
+    : blocking_task_runner_(blocking_task_runner), is_testing_(is_testing) {
+  Init(model_params_path);
 }
 
-void ModelConfigLoaderImpl::Init() {
+void ModelConfigLoaderImpl::Init(const base::FilePath& model_params_path) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   base::PostTaskAndReplyWithResult(
       blocking_task_runner_.get(), FROM_HERE,
-      base::BindOnce(&LoadModelParamsFromDisk, model_params_path_, is_testing_),
+      base::BindOnce(&LoadModelParamsFromDisk, model_params_path, is_testing_),
       base::BindOnce(&ModelConfigLoaderImpl::OnModelParamsLoadedFromDisk,
                      weak_ptr_factory_.GetWeakPtr()));
 }

@@ -17,10 +17,10 @@ namespace blink {
 
 class ExceptionState;
 class ExecutionContext;
-class LocalFrame;
+class LocalDOMWindow;
 class ScriptPromise;
 class ScriptState;
-class ScreenOrientationControllerImpl;
+class ScreenOrientationController;
 
 class ScreenOrientation final : public EventTargetWithInlineData,
                                 public ExecutionContextClient {
@@ -28,9 +28,9 @@ class ScreenOrientation final : public EventTargetWithInlineData,
   USING_GARBAGE_COLLECTED_MIXIN(ScreenOrientation);
 
  public:
-  static ScreenOrientation* Create(LocalFrame*);
+  static ScreenOrientation* Create(LocalDOMWindow*);
 
-  explicit ScreenOrientation(LocalFrame*);
+  explicit ScreenOrientation(LocalDOMWindow*);
   ~ScreenOrientation() override;
 
   // EventTarget implementation.
@@ -56,7 +56,7 @@ class ScreenOrientation final : public EventTargetWithInlineData,
   void Trace(Visitor*) override;
 
  private:
-  ScreenOrientationControllerImpl* Controller();
+  ScreenOrientationController* Controller();
 
   WebScreenOrientationType type_;
   uint16_t angle_;

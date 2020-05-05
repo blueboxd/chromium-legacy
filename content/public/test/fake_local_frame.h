@@ -67,6 +67,7 @@ class FakeLocalFrame : public blink::mojom::LocalFrame {
   void OnScreensChange() override;
 #if defined(OS_MACOSX)
   void GetCharacterIndexAtPoint(const gfx::Point& point) override;
+  void GetFirstRectForRange(const gfx::Range& range) override;
 #endif
 
  private:

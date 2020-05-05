@@ -482,6 +482,8 @@ public class CompositorView
         if (swappedCurrentSize) {
             runDrawFinishedCallbacks();
         }
+
+        mRenderHost.didSwapBuffers(swappedCurrentSize);
     }
 
     @CalledByNative

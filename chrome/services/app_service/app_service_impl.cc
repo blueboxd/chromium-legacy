@@ -88,7 +88,6 @@ std::string ReadDataBlocking(const base::FilePath& preferred_apps_file) {
   if (read_success) {
     LogPreferredAppFileIOAction(PreferredAppsFileIOAction::kReadSuccess);
   } else {
-    DVLOG(0) << "Fail to read file from " << preferred_apps_file;
     LogPreferredAppFileIOAction(PreferredAppsFileIOAction::kReadFailed);
   }
   return preferred_apps_string;

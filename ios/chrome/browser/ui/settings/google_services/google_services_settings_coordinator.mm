@@ -244,6 +244,9 @@ using signin_metrics::PromoAction;
   AccountsTableViewController* controller =
       [[AccountsTableViewController alloc] initWithBrowser:self.browser
                                  closeSettingsOnAddAccount:NO];
+  controller.dispatcher = static_cast<
+      id<ApplicationCommands, BrowserCommands, BrowsingDataCommands>>(
+      self.browser->GetCommandDispatcher());
   [self.baseNavigationController pushViewController:controller animated:YES];
 }
 

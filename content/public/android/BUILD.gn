@@ -487,6 +487,7 @@ android_library("content_javatests") {
     "javatests/src/org/chromium/content/browser/EncodeHtmlDataUriTest.java",
     "javatests/src/org/chromium/content/browser/GestureDetectorResetTest.java",
     "javatests/src/org/chromium/content/browser/ImportantFileWriterAndroidTest.java",
+    "javatests/src/org/chromium/content/browser/InterstitialPageTest.java",
     "javatests/src/org/chromium/content/browser/JavaBridgeActivityTestRule.java",
     "javatests/src/org/chromium/content/browser/JavaBridgeArrayCoercionTest.java",
     "javatests/src/org/chromium/content/browser/JavaBridgeArrayTest.java",

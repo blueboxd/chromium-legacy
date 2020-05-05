@@ -81,10 +81,7 @@ public class InterceptNavigationDelegateClientImpl implements InterceptNavigatio
 
     @Override
     public AuthenticatorNavigationInterceptor createAuthenticatorNavigationInterceptor() {
-        // NOTE: This will be transitioned back to calling
-        // AppHooks#createAuthenticatorNavigationInterceptor() once the latter has been transitioned
-        // to talk in terms of the //components-level interface.
-        return AppHooks.get().createAuthenticatorNavigationInterceptorV2(mTab);
+        return AppHooks.get().createAuthenticatorNavigationInterceptor(mTab);
     }
 
     @Override

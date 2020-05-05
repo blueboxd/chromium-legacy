@@ -76,6 +76,12 @@ namespace gfx {
 class Point;
 }
 
+#if defined(OS_MACOSX)
+namespace gfx {
+class Range;
+}
+#endif
+
 namespace blink {
 
 class AdTracker;
@@ -560,6 +566,7 @@ class CORE_EXPORT LocalFrame final : public Frame,
   void ZoomToFindInPageRect(const gfx::Rect& rect_in_root_frame) override;
 #if defined(OS_MACOSX)
   void GetCharacterIndexAtPoint(const gfx::Point& point) final;
+  void GetFirstRectForRange(const gfx::Range& range) final;
 #endif
 
   SystemClipboard* GetSystemClipboard();

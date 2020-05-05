@@ -12,6 +12,7 @@ import("//build/util/process_version.gni")
 import("//build/util/version.gni")
 import("//components/nacl/features.gni")
 import("//third_party/widevine/cdm/widevine.gni")
+import("//ui/gl/features.gni")
 
 if (bundle_widevine_cdm) {
   import("//media/cdm/library_cdm/cdm_paths.gni")
@@ -57,7 +58,33 @@ if (bundle_widevine_cdm) {
       [ "$root_out_dir/$widevine_cdm_path/libwidevinecdm.so" ]
 }
 
+if (use_egl) {
+  packaging_files_shlibs += [
+    "$root_out_dir/libEGL.so",
+    "$root_out_dir/libGLESv2.so",
+  ]
+}
+
+if (enable_swiftshader) {
+  packaging_files_shlibs += [
+    "$root_out_dir/swiftshader_libEGL.so",
+    "$root_out_dir/swiftshader_libGLESv2.so",
+  ]
+}
+
 packaging_files_binaries = packaging_files_executables + packaging_files_shlibs
+
+copy("swiftshader_libs") {
+  sources = [
+    "$root_out_dir/swiftshader/libEGL.so",
+    "$root_out_dir/swiftshader/libGLESv2.so",
+  ]
+  outputs = [ "$root_out_dir/swiftshader_{{source_file_part}}" ]
+  public_deps = [
+    "//third_party/swiftshader/src/OpenGL/libEGL:swiftshader_libEGL",
+    "//third_party/swiftshader/src/OpenGL/libGLESv2:swiftshader_libGLESv2",
+  ]
+}
 
 # TODO(mmoss) Any convenient way to get all the relevant build files?
 # (e.g. all locales, resources, etc.)
@@ -164,37 +191,8 @@ action("strip_chrome_binary") {
   ]
 }
 
-# This target builds all "normal" Linux installers.
-#
-# The bot setup is to build stable, unstable, and beta packages for the current
-# build. Then a later step picks up the package corresponding to what the
-# current build is supposed to be. This is wasteful since one build will only
-# be one of these.
-#
-# TODO it would be much nicer to have a build variable so the bot can tell us
-# what the current build should be, so we only have to make one .deb/.rpm pair.
-#
-#
-# TO BUILD LINUX INSTALLER PACKAGES
-#
-# Use the following GN args:
-#
-#   is_component_build = false
-#
-# and the "chrome/installer/linux" target.
-#
-# The packages list the exact versions of each library used. The versions used
-# on the bots are likely different than those on your workstation, so you'll
-# get a stream of errors like:
-#   < libasound2 (>= 1.0.23)
-#   ---
-#   > libasound2 (>= 1.0.16)
-#
-# To avoid these warnings for testing purposes, do:
-#
-#   export IGNORE_DEPS_CHANGES=1
-#
-# before you build.
+# This target builds all "normal" Linux installers.  You must set
+# is_component_build=false before building this target.
 group("linux") {
   deps = [
     ":beta",
@@ -347,6 +345,15 @@ group("installer_deps") {
   }
   if (bundle_widevine_cdm) {
     public_deps += [ "//third_party/widevine/cdm" ]
+  }
+  if (use_egl) {
+    public_deps += [
+      "//third_party/angle:libEGL",
+      "//third_party/angle:libGLESv2",
+    ]
+  }
+  if (enable_swiftshader) {
+    public_deps += [ ":swiftshader_libs" ]
   }
   if (!is_chromeos) {
     public_deps += [ ":rpm_packaging_files" ]

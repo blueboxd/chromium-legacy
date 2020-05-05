@@ -227,6 +227,10 @@ const char kEnableClipboardProviderImageSuggestionsName[] =
 const char kEnableClipboardProviderImageSuggestionsDescription[] =
     "Enable suggesting a search for the image copied to the clipboard";
 
+const char kEnableMyGoogleName[] = "Enable MyGoogle UI";
+const char kEnableMyGoogleDescription[] =
+    "Enable MyGoogle account management UI in iOS Settings";
+
 const char kEnablePersistentDownloadsName[] = "Enable persistent downloads";
 const char kEnablePersistentDownloadsDescription[] =
     "Enables the new, experimental implementation of persistent downloads";

@@ -135,14 +135,14 @@ class TestList(object):
 #
 # These numbers may need to be updated whenever we add or delete tests. This includes virtual tests.
 #
-TOTAL_TESTS = 154
+TOTAL_TESTS = 171
 TOTAL_WONTFIX = 3
-TOTAL_SKIPS = 20 + TOTAL_WONTFIX
+TOTAL_SKIPS = 23 + TOTAL_WONTFIX
 TOTAL_CRASHES = 78
 
-UNEXPECTED_PASSES = 1
+UNEXPECTED_PASSES = 2
 UNEXPECTED_NON_VIRTUAL_FAILURES = 34
-UNEXPECTED_FAILURES = 67
+UNEXPECTED_FAILURES = 68
 
 
 def unit_test_list():
@@ -478,6 +478,9 @@ virtual/skipped/failures/expected* [ Skip ]
 failures/expected/keyboard.html [ Skip ]
 failures/expected/exception.html [ Skip ]
 failures/expected/device_failure.html [ Skip ]
+virtual/virtual_failures/failures/expected/keyboard.html [ Skip ]
+virtual/virtual_failures/failures/expected/exception.html [ Skip ]
+virtual/virtual_failures/failures/expected/device_failure.html [ Skip ]
 """)
 
     # FIXME: This test was only being ignored because of missing a leading '/'.
@@ -715,30 +718,25 @@ class TestPort(Port):
 
     def virtual_test_suites(self):
         return [
-            VirtualTestSuite(
-                prefix='virtual_passes',
-                bases=['passes', 'passes_two'],
-                args=['--virtual-arg']),
-            VirtualTestSuite(
-                prefix='skipped',
-                bases=['failures/expected'],
-                args=['--virtual-arg-skipped']),
+            VirtualTestSuite(prefix='virtual_passes',
+                             bases=['passes', 'passes_two'],
+                             args=['--virtual-arg']),
+            VirtualTestSuite(prefix='skipped',
+                             bases=['failures/expected'],
+                             args=['--virtual-arg-skipped']),
             VirtualTestSuite(
                 prefix='virtual_failures',
-                bases=['failures/unexpected'],
+                bases=['failures/expected', 'failures/unexpected'],
                 args=['--virtual-arg-failures']),
-            VirtualTestSuite(
-                prefix='virtual_wpt',
-                bases=['external/wpt'],
-                args=['--virtual-arg-wpt']),
-            VirtualTestSuite(
-                prefix='virtual_wpt_dom',
-                bases=['external/wpt/dom', 'wpt_internal/dom'],
-                args=['--virtual-arg-wpt-dom']),
-            VirtualTestSuite(
-                prefix='virtual_empty_bases',
-                bases=[],
-                args=['--virtual-arg-empty-bases']),
+            VirtualTestSuite(prefix='virtual_wpt',
+                             bases=['external/wpt'],
+                             args=['--virtual-arg-wpt']),
+            VirtualTestSuite(prefix='virtual_wpt_dom',
+                             bases=['external/wpt/dom', 'wpt_internal/dom'],
+                             args=['--virtual-arg-wpt-dom']),
+            VirtualTestSuite(prefix='virtual_empty_bases',
+                             bases=[],
+                             args=['--virtual-arg-empty-bases']),
         ]
 
 

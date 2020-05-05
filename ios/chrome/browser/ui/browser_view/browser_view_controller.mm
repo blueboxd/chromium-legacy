@@ -3219,6 +3219,10 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   return NO;
 }
 
+- (UIView*)webViewContainerForWebState:(web::WebState*)webState {
+  return self.contentArea;
+}
+
 #pragma mark - CRWWebStateDelegate helpers
 
 // Evaluates Javascript asynchronously using the current page context.

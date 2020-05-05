@@ -312,7 +312,7 @@ class SummarizedResultsTest(unittest.TestCase):
             flaky=False,
             extra_skipped_tests=['passes/text.html'])
         self.assertEquals(summary['tests']['passes']['text.html']['expected'],
-                          'SKIP')
+                          'SKIP PASS')
 
     def test_summarized_results_wontfix(self):
         self.port._options.builder_name = 'dummy builder'

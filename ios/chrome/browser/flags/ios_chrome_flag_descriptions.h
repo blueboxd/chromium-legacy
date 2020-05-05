@@ -193,6 +193,10 @@ extern const char
 extern const char kEnableClipboardProviderImageSuggestionsName[];
 extern const char kEnableClipboardProviderImageSuggestionsDescription[];
 
+// Title and description for the flag to enable MyGoogle account management
+// UI in iOS Settings.
+extern const char kEnableMyGoogleName[];
+extern const char kEnableMyGoogleDescription[];
 
 // Title and description for the flag to enable persistent downloads.
 extern const char kEnablePersistentDownloadsName[];

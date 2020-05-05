@@ -1421,6 +1421,12 @@ const FeatureEntry::FeatureParam kStartSurfaceAndroid_SingleSurfaceSingleTab[] =
      {"show_last_active_tab_only", "true"},
      {"hide_switch_when_no_incognito_tabs", "true"}};
 
+const FeatureEntry::FeatureParam
+    kStartSurfaceAndroid_SingleSurfaceSingleTabStack[] = {
+        {"start_surface_variation", "single"},
+        {"show_last_active_tab_only", "true"},
+        {"show_stack_tab_switcher", "true"}};
+
 const FeatureEntry::FeatureParam kStartSurfaceAndroid_TwoPanesSurface[] = {
     {"start_surface_variation", "twopanes"}};
 
@@ -1441,6 +1447,9 @@ const FeatureEntry::FeatureVariation kStartSurfaceAndroidVariations[] = {
      base::size(kStartSurfaceAndroid_SingleSurfaceWithoutMvTiles), nullptr},
     {"Single Surface Single Tab", kStartSurfaceAndroid_SingleSurfaceSingleTab,
      base::size(kStartSurfaceAndroid_SingleSurfaceSingleTab), nullptr},
+    {"Single Surface Single Tab + Tabs Stack",
+     kStartSurfaceAndroid_SingleSurfaceSingleTabStack,
+     base::size(kStartSurfaceAndroid_SingleSurfaceSingleTabStack), nullptr},
     {"Two Panes Surface", kStartSurfaceAndroid_TwoPanesSurface,
      base::size(kStartSurfaceAndroid_TwoPanesSurface), nullptr},
     {"Tasks Only", kStartSurfaceAndroid_TasksOnly,
@@ -3979,11 +3988,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-app-grid-ghost", flag_descriptions::kEnableAppGridGhostName,
      flag_descriptions::kEnableAppGridGhostDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(app_list_features::kEnableAppGridGhost)},
-
-    {"enable-search-box-selection",
-     flag_descriptions::kEnableSearchBoxSelectionName,
-     flag_descriptions::kEnableSearchBoxSelectionDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(app_list_features::kEnableSearchBoxSelection)},
 #endif  // OS_CHROMEOS
 
     {"enable-accessibility-expose-aria-annotations",
@@ -4517,12 +4521,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"file-handling-api", flag_descriptions::kFileHandlingAPIName,
      flag_descriptions::kFileHandlingAPIDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(blink::features::kFileHandlingAPI)},
-
-#if !defined(OS_ANDROID)
-    {"enable-intent-picker", flag_descriptions::kIntentPickerName,
-     flag_descriptions::kIntentPickerDescription, kOsMac | kOsWin | kOsLinux,
-     FEATURE_VALUE_TYPE(features::kIntentPicker)},
-#endif  // !defined(OS_ANDROID)
 
 #if defined(TOOLKIT_VIEWS)
     {"installable-ink-drop", flag_descriptions::kInstallableInkDropName,
@@ -5134,6 +5132,13 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kWinrtGeolocationImplementationName,
      flag_descriptions::kWinrtGeolocationImplementationDescription, kOsWin,
      FEATURE_VALUE_TYPE(features::kWinrtGeolocationImplementation)},
+#endif
+
+#if defined(OS_MACOSX)
+    {"enable-core-location-implementation",
+     flag_descriptions::kMacCoreLocationImplementationName,
+     flag_descriptions::kMacCoreLocationImplementationDescription, kOsMac,
+     FEATURE_VALUE_TYPE(features::kMacCoreLocationImplementation)},
 #endif
 
 #if defined(OS_CHROMEOS)

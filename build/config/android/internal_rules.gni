@@ -2481,6 +2481,10 @@ if (enable_java_templates) {
       _args += [ "--manifest-package=${invoker.manifest_package}" ]
     }
 
+    if (defined(invoker.is_bundle_module) && invoker.is_bundle_module) {
+      _args += [ "--is-bundle-module" ]
+    }
+
     if (defined(invoker.verify_manifest_target_name)) {
       _expectations_target =
           "${invoker.verify_manifest_target_name}_manifest_expectations"

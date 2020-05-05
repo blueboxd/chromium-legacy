@@ -3316,7 +3316,9 @@ MULTIPROCESS_TEST_MAIN(ChildMain) {
                               PIPE_WAIT, 1, 0, 0, 0, NULL);
   EXPECT_NE(ph, INVALID_HANDLE_VALUE);
   EXPECT_TRUE(SetEvent(sync_event.Get()));
+  ::SetLastError(0);
   EXPECT_TRUE(ConnectNamedPipe(ph, NULL));
+  EXPECT_EQ(::GetLastError(), 0U);
 
   DWORD written;
   EXPECT_TRUE(::WriteFile(ph, kTestData, strlen(kTestData), &written, NULL));

@@ -252,7 +252,7 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
             final Intent intent, final String referrerUrl, final String fallbackUrl) {
         String primaryUrl = intent.getDataString();
         boolean isUrlLoadedInTheSameTab =
-                loadUrlFromIntent(referrerUrl, primaryUrl, fallbackUrl, mTab, false, true);
+                loadUrlFromIntent(referrerUrl, primaryUrl, fallbackUrl, false, true);
         return (isUrlLoadedInTheSameTab) ? OverrideUrlLoadingResult.OVERRIDE_WITH_CLOBBERING_TAB
                                          : OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT;
     }
@@ -282,7 +282,7 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
                                     // no longer exists, so catch the exception and assume Chrome
                                     // can handle it.
                                     loadUrlFromIntent(referrerUrl, fallbackUrl,
-                                            intent.getDataString(), mTab, needsToCloseTab, true);
+                                            intent.getDataString(), needsToCloseTab, true);
                                 }
                             }
                         })
@@ -291,13 +291,13 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
                                 loadUrlFromIntent(referrerUrl, fallbackUrl, intent.getDataString(),
-                                        mTab, needsToCloseTab, true);
+                                        needsToCloseTab, true);
                             }
                         })
                 .setOnCancelListener(new OnCancelListener() {
                     @Override
                     public void onCancel(DialogInterface dialog) {
-                        loadUrlFromIntent(referrerUrl, fallbackUrl, intent.getDataString(), mTab,
+                        loadUrlFromIntent(referrerUrl, fallbackUrl, intent.getDataString(),
                                 needsToCloseTab, true);
                     }
                 })
@@ -313,8 +313,8 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
             public void onRequestPermissionsResult(String[] permissions, int[] grantResults) {
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED
                         && hasValidTab()) {
-                    loadUrlFromIntent(referrerUrl, intent.getDataString(), null, mTab,
-                            needsToCloseTab, mTab.isIncognito());
+                    loadUrlFromIntent(referrerUrl, intent.getDataString(), null, needsToCloseTab,
+                            mTab.isIncognito());
                 } else {
                     // TODO(tedchoc): Show an indication to the user that the navigation failed
                     //                instead of silently dropping it on the floor.
@@ -342,17 +342,17 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
         startActivity(intent, false);
     }
 
-    private void loadUrlInTab(Tab tab, final String url, final String referrerUrl) {
+    private void loadUrlWithReferrer(final String url, final String referrerUrl) {
         LoadUrlParams loadUrlParams = new LoadUrlParams(url, PageTransition.AUTO_TOPLEVEL);
         if (!TextUtils.isEmpty(referrerUrl)) {
             Referrer referrer = new Referrer(referrerUrl, ReferrerPolicy.ALWAYS);
             loadUrlParams.setReferrer(referrer);
         }
-        tab.loadUrl(loadUrlParams);
+        mTab.loadUrl(loadUrlParams);
     }
 
-    private boolean canLoadUrlInTab(Tab tab) {
-        return !(tab == null || tab.isClosing() || !tab.isInitialized());
+    private boolean canLoadUrlInCurrentTab() {
+        return !(mTab == null || mTab.isClosing() || !mTab.isInitialized());
     }
 
     /**
@@ -362,21 +362,20 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
      * Handling is determined as follows:
      *
      * If the url scheme is not supported we do nothing.
-     * If the url can be loaded in the |tab| then we load the url there.
-     * If the url can't be loaded in the |tab| then we launch a new tab and load it there.
+     * If the url can be loaded in the current tab then we load the url there.
+     * If the url can't be loaded in the current tab then we launch a new tab and load it there.
      *
      * @param referrerUrl The string containing the original url from where the intent was referred.
      * @param primaryUrl The primary url to load.
      * @param alternateUrl The fallback url to use if the primary url is null or invalid.
-     * @param tab The current tab from where the navigation took place.
      * @param launchIncognito Whether the url should be loaded in an incognito tab.
-     * @return true if the url is loaded in the |tab|.
+     * @return true if the url is loaded in the current tab.
      */
     private boolean loadUrlFromIntent(String referrerUrl, String primaryUrl, String alternateUrl,
-            Tab tab, boolean needsToCloseTab, boolean launchIncognito) {
-        // If we cannot load the URL in the provided tab, or we have an explicit request to close
-        // the tab,  we need to open a new tab.
-        boolean loadInNewTab = !canLoadUrlInTab(tab) || needsToCloseTab;
+            boolean needsToCloseTab, boolean launchIncognito) {
+        // If we cannot load the URL in the current tab, or we have an explicit request to close
+        // the tab, we need to open a new tab.
+        boolean loadInNewTab = !canLoadUrlInCurrentTab() || needsToCloseTab;
 
         boolean isPrimaryUrlValid =
                 (primaryUrl != null) ? UrlUtilities.isAcceptedScheme(primaryUrl) : false;
@@ -394,7 +393,7 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
             return false;
         }
 
-        loadUrlInTab(tab, url, referrerUrl);
+        loadUrlWithReferrer(url, referrerUrl);
         return true;
     }
 

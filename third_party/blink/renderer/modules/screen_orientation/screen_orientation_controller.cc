@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/modules/screen_orientation/screen_orientation_controller_impl.h"
+#include "third_party/blink/renderer/modules/screen_orientation/screen_orientation_controller.h"
 
 #include <memory>
 #include <utility>
@@ -21,33 +21,35 @@
 
 namespace blink {
 
-ScreenOrientationControllerImpl::~ScreenOrientationControllerImpl() = default;
+ScreenOrientationController::~ScreenOrientationController() = default;
 
-void ScreenOrientationControllerImpl::ProvideTo(LocalFrame& frame) {
-  ScreenOrientationController::ProvideTo(
-      frame, MakeGarbageCollected<ScreenOrientationControllerImpl>(frame));
+const char ScreenOrientationController::kSupplementName[] =
+    "ScreenOrientationController";
+
+ScreenOrientationController* ScreenOrientationController::From(
+    LocalDOMWindow& window) {
+  auto* controller =
+      Supplement<LocalDOMWindow>::From<ScreenOrientationController>(window);
+  if (!controller) {
+    controller = MakeGarbageCollected<ScreenOrientationController>(window);
+    Supplement<LocalDOMWindow>::ProvideTo(window, controller);
+  }
+  return controller;
 }
 
-ScreenOrientationControllerImpl* ScreenOrientationControllerImpl::From(
-    LocalFrame& frame) {
-  return static_cast<ScreenOrientationControllerImpl*>(
-      ScreenOrientationController::From(frame));
-}
-
-ScreenOrientationControllerImpl::ScreenOrientationControllerImpl(
-    LocalFrame& frame)
-    : ScreenOrientationController(frame),
-      ExecutionContextLifecycleObserver(frame.DomWindow()),
-      PageVisibilityObserver(frame.GetPage()) {
+ScreenOrientationController::ScreenOrientationController(LocalDOMWindow& window)
+    : ExecutionContextLifecycleObserver(&window),
+      PageVisibilityObserver(window.GetFrame()->GetPage()),
+      Supplement<LocalDOMWindow>(window) {
   AssociatedInterfaceProvider* provider =
-      frame.GetRemoteNavigationAssociatedInterfaces();
+      window.GetFrame()->GetRemoteNavigationAssociatedInterfaces();
   if (provider)
     provider->GetInterface(&screen_orientation_service_);
 }
 
 // Compute the screen orientation using the orientation angle and the screen
 // width / height.
-WebScreenOrientationType ScreenOrientationControllerImpl::ComputeOrientation(
+WebScreenOrientationType ScreenOrientationController::ComputeOrientation(
     const IntRect& rect,
     uint16_t rotation) {
   // Bypass orientation detection in web tests to get consistent results.
@@ -83,7 +85,7 @@ WebScreenOrientationType ScreenOrientationControllerImpl::ComputeOrientation(
   }
 }
 
-void ScreenOrientationControllerImpl::UpdateOrientation() {
+void ScreenOrientationController::UpdateOrientation() {
   DCHECK(orientation_);
   DCHECK(GetPage());
   ChromeClient& chrome_client = GetPage()->GetChromeClient();
@@ -102,19 +104,19 @@ void ScreenOrientationControllerImpl::UpdateOrientation() {
   orientation_->SetAngle(screen_info.orientation_angle);
 }
 
-bool ScreenOrientationControllerImpl::IsActive() const {
+bool ScreenOrientationController::IsActive() const {
   return orientation_ && screen_orientation_service_;
 }
 
-bool ScreenOrientationControllerImpl::IsVisible() const {
+bool ScreenOrientationController::IsVisible() const {
   return GetPage() && GetPage()->IsPageVisible();
 }
 
-bool ScreenOrientationControllerImpl::IsActiveAndVisible() const {
+bool ScreenOrientationController::IsActiveAndVisible() const {
   return IsActive() && IsVisible();
 }
 
-void ScreenOrientationControllerImpl::PageVisibilityChanged() {
+void ScreenOrientationController::PageVisibilityChanged() {
   if (!IsActiveAndVisible())
     return;
 
@@ -135,7 +137,7 @@ void ScreenOrientationControllerImpl::PageVisibilityChanged() {
     NotifyOrientationChanged();
 }
 
-void ScreenOrientationControllerImpl::NotifyOrientationChanged() {
+void ScreenOrientationController::NotifyOrientationChanged() {
   if (!IsVisible() || !GetFrame())
     return;
 
@@ -167,23 +169,21 @@ void ScreenOrientationControllerImpl::NotifyOrientationChanged() {
                        WrapPersistent(orientation_.Get())));
   }
 
-  // ... and child frames, if they have a ScreenOrientationControllerImpl.
+  // ... and child frames.
   for (LocalFrame* child_frame : child_frames) {
-    if (ScreenOrientationControllerImpl* controller =
-            ScreenOrientationControllerImpl::From(*child_frame)) {
-      controller->NotifyOrientationChanged();
-    }
+    ScreenOrientationController::From(*child_frame->DomWindow())
+        ->NotifyOrientationChanged();
   }
 }
 
-void ScreenOrientationControllerImpl::SetOrientation(
+void ScreenOrientationController::SetOrientation(
     ScreenOrientation* orientation) {
   orientation_ = orientation;
   if (orientation_)
     UpdateOrientation();
 }
 
-void ScreenOrientationControllerImpl::lock(
+void ScreenOrientationController::lock(
     WebScreenOrientationLockType orientation,
     std::unique_ptr<WebLockOrientationCallback> callback) {
   // When detached, the |screen_orientation_service_| is no longer valid.
@@ -194,13 +194,13 @@ void ScreenOrientationControllerImpl::lock(
   pending_callback_ = std::move(callback);
   screen_orientation_service_->LockOrientation(
       orientation,
-      WTF::Bind(&ScreenOrientationControllerImpl::OnLockOrientationResult,
+      WTF::Bind(&ScreenOrientationController::OnLockOrientationResult,
                 WrapWeakPersistent(this), ++request_id_));
 
   active_lock_ = true;
 }
 
-void ScreenOrientationControllerImpl::unlock() {
+void ScreenOrientationController::unlock() {
   // When detached, the |screen_orientation_service_| is no longer valid.
   if (!screen_orientation_service_)
     return;
@@ -210,30 +210,28 @@ void ScreenOrientationControllerImpl::unlock() {
   active_lock_ = false;
 }
 
-bool ScreenOrientationControllerImpl::MaybeHasActiveLock() const {
+bool ScreenOrientationController::MaybeHasActiveLock() const {
   return active_lock_;
 }
 
-void ScreenOrientationControllerImpl::ContextDestroyed() {
+void ScreenOrientationController::ContextDestroyed() {
   screen_orientation_service_.reset();
   active_lock_ = false;
 }
 
-void ScreenOrientationControllerImpl::Trace(Visitor* visitor) {
+void ScreenOrientationController::Trace(Visitor* visitor) {
   visitor->Trace(orientation_);
   ExecutionContextLifecycleObserver::Trace(visitor);
   PageVisibilityObserver::Trace(visitor);
-  Supplement<LocalFrame>::Trace(visitor);
+  Supplement<LocalDOMWindow>::Trace(visitor);
 }
 
-void ScreenOrientationControllerImpl::
-    SetScreenOrientationAssociatedRemoteForTests(
-        mojo::AssociatedRemote<device::mojom::blink::ScreenOrientation>
-            remote) {
+void ScreenOrientationController::SetScreenOrientationAssociatedRemoteForTests(
+    mojo::AssociatedRemote<device::mojom::blink::ScreenOrientation> remote) {
   screen_orientation_service_ = std::move(remote);
 }
 
-void ScreenOrientationControllerImpl::OnLockOrientationResult(
+void ScreenOrientationController::OnLockOrientationResult(
     int request_id,
     ScreenOrientationLockResult result) {
   if (!pending_callback_ || request_id != request_id_)
@@ -263,7 +261,7 @@ void ScreenOrientationControllerImpl::OnLockOrientationResult(
   pending_callback_.reset();
 }
 
-void ScreenOrientationControllerImpl::CancelPendingLocks() {
+void ScreenOrientationController::CancelPendingLocks() {
   if (!pending_callback_)
     return;
 
@@ -271,7 +269,7 @@ void ScreenOrientationControllerImpl::CancelPendingLocks() {
   pending_callback_.reset();
 }
 
-int ScreenOrientationControllerImpl::GetRequestIdForTests() {
+int ScreenOrientationController::GetRequestIdForTests() {
   return pending_callback_ ? request_id_ : -1;
 }
 

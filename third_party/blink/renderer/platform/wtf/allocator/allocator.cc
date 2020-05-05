@@ -27,7 +27,7 @@ void AtomicReadMemcpy(void* to, const void* from, size_t bytes) {
   DCHECK_EQ(0u, reinterpret_cast<size_t>(from) & (sizeof(size_t) - 1));
   size_t* sizet_to = reinterpret_cast<size_t*>(to);
   const size_t* sizet_from = reinterpret_cast<const size_t*>(from);
-  for (; bytes > sizeof(size_t);
+  for (; bytes >= sizeof(size_t);
        bytes -= sizeof(size_t), ++sizet_to, ++sizet_from) {
     *sizet_to = AsAtomicPtr(sizet_from)->load(std::memory_order_relaxed);
   }
@@ -45,7 +45,7 @@ void AtomicWriteMemcpy(void* to, const void* from, size_t bytes) {
   DCHECK_EQ(0u, reinterpret_cast<size_t>(from) & (sizeof(size_t) - 1));
   size_t* sizet_to = reinterpret_cast<size_t*>(to);
   const size_t* sizet_from = reinterpret_cast<const size_t*>(from);
-  for (; bytes > sizeof(size_t);
+  for (; bytes >= sizeof(size_t);
        bytes -= sizeof(size_t), ++sizet_to, ++sizet_from) {
     AsAtomicPtr(sizet_to)->store(*sizet_from, std::memory_order_relaxed);
   }
@@ -61,7 +61,7 @@ void AtomicMemzero(void* buf, size_t bytes) {
   // Check alignment of |buf|
   DCHECK_EQ(0u, reinterpret_cast<size_t>(buf) & (sizeof(size_t) - 1));
   size_t* sizet_buf = reinterpret_cast<size_t*>(buf);
-  for (; bytes > sizeof(size_t); bytes -= sizeof(size_t), ++sizet_buf) {
+  for (; bytes >= sizeof(size_t); bytes -= sizeof(size_t), ++sizet_buf) {
     AsAtomicPtr(sizet_buf)->store(0, std::memory_order_relaxed);
   }
   uint8_t* uint8t_buf = reinterpret_cast<uint8_t*>(sizet_buf);

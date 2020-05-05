@@ -83,12 +83,17 @@ UnifiedSliderButton::UnifiedSliderButton(views::ButtonListener* listener,
   if (accessible_name_id)
     SetTooltipText(l10n_util::GetStringUTF16(accessible_name_id));
 
-  TrayPopupUtils::ConfigureTrayPopupButton(this);
-
   SetVectorIcon(icon);
   SetBorder(views::CreateEmptyBorder(kUnifiedCircularButtonFocusPadding));
-  views::InstallCircleHighlightPathGenerator(this);
+
+  // Focus ring is around the whole view's bounds, but the ink drop should be
+  // the same size as the content.
+  TrayPopupUtils::ConfigureTrayPopupButton(this);
   focus_ring()->SetColor(UnifiedSystemTrayView::GetFocusRingColor());
+  focus_ring()->SetPathGenerator(
+      std::make_unique<views::CircleHighlightPathGenerator>(gfx::Insets()));
+  views::InstallCircleHighlightPathGenerator(
+      this, kUnifiedCircularButtonFocusPadding);
 }
 
 UnifiedSliderButton::~UnifiedSliderButton() = default;

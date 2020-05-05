@@ -25,10 +25,6 @@
 // corresponding reply message.
 ////////////////////////////////////////////////////////////////////////////////
 
-// Tells the renderer to send back the rectangle for a given character range.
-IPC_MESSAGE_ROUTED1(TextInputClientMsg_FirstRectForCharacterRange,
-                    gfx::Range)
-
 // Tells the renderer to send back the text fragment in a given range.
 IPC_MESSAGE_ROUTED1(TextInputClientMsg_StringForRange,
                     gfx::Range)
@@ -42,10 +38,6 @@ IPC_MESSAGE_ROUTED1(TextInputClientMsg_StringAtPoint, gfx::Point)
 // Renderer -> Browser Replies /////////////////////////////////////////////////
 // These messages are sent in reply to the above messages.
 ////////////////////////////////////////////////////////////////////////////////
-
-// Reply message for TextInputClientMsg_FirstRectForCharacterRange.
-IPC_MESSAGE_ROUTED1(TextInputClientReplyMsg_GotFirstRectForRange,
-                    gfx::Rect /* frame rectangle */)
 
 #if defined(OS_MACOSX)
 // Reply message for TextInputClientMsg_StringForRange.

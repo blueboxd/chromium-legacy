@@ -13,6 +13,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 import static org.chromium.chrome.browser.toolbar.top.StartSurfaceToolbarProperties.BUTTONS_CLICKABLE;
+import static org.chromium.chrome.browser.toolbar.top.StartSurfaceToolbarProperties.IDENTITY_DISC_AT_LEFT;
 import static org.chromium.chrome.browser.toolbar.top.StartSurfaceToolbarProperties.IDENTITY_DISC_CLICK_HANDLER;
 import static org.chromium.chrome.browser.toolbar.top.StartSurfaceToolbarProperties.IDENTITY_DISC_DESCRIPTION;
 import static org.chromium.chrome.browser.toolbar.top.StartSurfaceToolbarProperties.IDENTITY_DISC_IMAGE;
@@ -568,11 +569,129 @@ public class StartSurfaceToolbarMediatorUnitTest {
         assertEquals(mPropertyModel.get(IDENTITY_DISC_IS_VISIBLE), false);
     }
 
+    @Test
+    public void testShowAndHideHomePageWithNewTabAndIdentityDiscAtLeft() {
+        createMediator(false, true);
+        mMediator.setTabModelSelector(mTabModelSelector);
+        doReturn(0).when(mIncognitoTabModel).getCount();
+
+        doReturn(false).when(mTemplateUrlService).isDefaultSearchEngineGoogle();
+        mMediator.onNativeLibraryReady();
+        verify(mTemplateUrlService).addObserver(mTemplateUrlServiceObserver.capture());
+        assertEquals(mPropertyModel.get(LOGO_IS_VISIBLE), false);
+        assertEquals(mPropertyModel.get(IDENTITY_DISC_IS_VISIBLE), false);
+        assertEquals(mPropertyModel.get(IDENTITY_DISC_AT_LEFT), false);
+        assertEquals(mPropertyModel.get(INCOGNITO_SWITCHER_VISIBLE), false);
+        assertEquals(mPropertyModel.get(NEW_TAB_BUTTON_AT_LEFT), false);
+        assertEquals(mPropertyModel.get(IN_START_SURFACE_MODE), false);
+        assertEquals(mPropertyModel.get(IS_VISIBLE), true);
+
+        mMediator.setStartSurfaceMode(true);
+        assertEquals(mPropertyModel.get(LOGO_IS_VISIBLE), false);
+        assertEquals(mPropertyModel.get(IDENTITY_DISC_IS_VISIBLE), false);
+        assertEquals(mPropertyModel.get(IDENTITY_DISC_AT_LEFT), false);
+        assertEquals(mPropertyModel.get(INCOGNITO_SWITCHER_VISIBLE), false);
+        assertEquals(mPropertyModel.get(NEW_TAB_BUTTON_AT_LEFT), false);
+        assertEquals(mPropertyModel.get(IN_START_SURFACE_MODE), true);
+        assertEquals(mPropertyModel.get(IS_VISIBLE), true);
+
+        mOverviewModeObserverCaptor.getValue().onOverviewModeStartedShowing(false);
+        mOverviewModeObserverCaptor.getValue().onOverviewModeFinishedShowing();
+        mOverviewModeObserverCaptor.getValue().onOverviewModeStateChanged(
+                OverviewModeState.SHOWN_HOMEPAGE, true);
+        assertEquals(mPropertyModel.get(LOGO_IS_VISIBLE), false);
+        assertEquals(mPropertyModel.get(IDENTITY_DISC_IS_VISIBLE), false);
+        assertEquals(mPropertyModel.get(IDENTITY_DISC_AT_LEFT), true);
+        assertEquals(mPropertyModel.get(INCOGNITO_SWITCHER_VISIBLE), false);
+        assertEquals(mPropertyModel.get(NEW_TAB_BUTTON_AT_LEFT), true);
+        assertEquals(mPropertyModel.get(IN_START_SURFACE_MODE), true);
+        assertEquals(mPropertyModel.get(IS_VISIBLE), true);
+
+        mOverviewModeObserverCaptor.getValue().onOverviewModeStartedHiding(true, false);
+        mOverviewModeObserverCaptor.getValue().onOverviewModeFinishedHiding();
+        doReturn(1).when(mIncognitoTabModel).getCount();
+
+        mOverviewModeObserverCaptor.getValue().onOverviewModeStartedShowing(false);
+        mOverviewModeObserverCaptor.getValue().onOverviewModeFinishedShowing();
+        mOverviewModeObserverCaptor.getValue().onOverviewModeStateChanged(
+                OverviewModeState.SHOWN_HOMEPAGE, true);
+        assertEquals(mPropertyModel.get(LOGO_IS_VISIBLE), false);
+        assertEquals(mPropertyModel.get(IDENTITY_DISC_IS_VISIBLE), false);
+        assertEquals(mPropertyModel.get(IDENTITY_DISC_AT_LEFT), true);
+        assertEquals(mPropertyModel.get(INCOGNITO_SWITCHER_VISIBLE), false);
+        assertEquals(mPropertyModel.get(NEW_TAB_BUTTON_AT_LEFT), true);
+        assertEquals(mPropertyModel.get(IN_START_SURFACE_MODE), true);
+        assertEquals(mPropertyModel.get(IS_VISIBLE), true);
+    }
+
+    @Test
+    public void testShowAndHideTabSwitcherWithNewTabAndIdentityDiscAtLeft() {
+        createMediator(false, true);
+        mMediator.setTabModelSelector(mTabModelSelector);
+        doReturn(0).when(mIncognitoTabModel).getCount();
+        mMediator.onNativeLibraryReady();
+        verify(mTemplateUrlService).addObserver(mTemplateUrlServiceObserver.capture());
+
+        assertEquals(mPropertyModel.get(LOGO_IS_VISIBLE), false);
+        assertEquals(mPropertyModel.get(IDENTITY_DISC_IS_VISIBLE), false);
+        assertEquals(mPropertyModel.get(IDENTITY_DISC_AT_LEFT), false);
+        assertEquals(mPropertyModel.get(INCOGNITO_SWITCHER_VISIBLE), false);
+        assertEquals(mPropertyModel.get(NEW_TAB_BUTTON_AT_LEFT), false);
+        assertEquals(mPropertyModel.get(IS_VISIBLE), true);
+        assertEquals(mPropertyModel.get(IN_START_SURFACE_MODE), false);
+
+        mMediator.setStartSurfaceMode(true);
+        assertEquals(mPropertyModel.get(LOGO_IS_VISIBLE), false);
+        assertEquals(mPropertyModel.get(IDENTITY_DISC_IS_VISIBLE), false);
+        assertEquals(mPropertyModel.get(IDENTITY_DISC_AT_LEFT), false);
+        assertEquals(mPropertyModel.get(INCOGNITO_SWITCHER_VISIBLE), false);
+        assertEquals(mPropertyModel.get(NEW_TAB_BUTTON_AT_LEFT), false);
+        assertEquals(mPropertyModel.get(IS_VISIBLE), true);
+        assertEquals(mPropertyModel.get(IN_START_SURFACE_MODE), true);
+
+        mOverviewModeObserverCaptor.getValue().onOverviewModeStartedShowing(false);
+        mOverviewModeObserverCaptor.getValue().onOverviewModeFinishedShowing();
+        mOverviewModeObserverCaptor.getValue().onOverviewModeStateChanged(
+                OverviewModeState.SHOWN_TABSWITCHER, true);
+        assertEquals(mPropertyModel.get(LOGO_IS_VISIBLE), false);
+        assertEquals(mPropertyModel.get(IDENTITY_DISC_IS_VISIBLE), false);
+        assertEquals(mPropertyModel.get(IDENTITY_DISC_AT_LEFT), true);
+        assertEquals(mPropertyModel.get(INCOGNITO_SWITCHER_VISIBLE), false);
+        assertEquals(mPropertyModel.get(NEW_TAB_BUTTON_AT_LEFT), true);
+        assertEquals(mPropertyModel.get(IS_VISIBLE), true);
+
+        mMediator.updateIdentityDisc(mButtonData);
+        assertEquals(mPropertyModel.get(IDENTITY_DISC_IS_VISIBLE), false);
+
+        mOverviewModeObserverCaptor.getValue().onOverviewModeStartedHiding(true, false);
+        mOverviewModeObserverCaptor.getValue().onOverviewModeFinishedHiding();
+        doReturn(1).when(mIncognitoTabModel).getCount();
+
+        mOverviewModeObserverCaptor.getValue().onOverviewModeStartedShowing(false);
+        mOverviewModeObserverCaptor.getValue().onOverviewModeFinishedShowing();
+        mOverviewModeObserverCaptor.getValue().onOverviewModeStateChanged(
+                OverviewModeState.SHOWN_TABSWITCHER, true);
+        assertEquals(mPropertyModel.get(LOGO_IS_VISIBLE), false);
+        assertEquals(mPropertyModel.get(IDENTITY_DISC_IS_VISIBLE), false);
+        assertEquals(mPropertyModel.get(IDENTITY_DISC_AT_LEFT), true);
+        assertEquals(mPropertyModel.get(INCOGNITO_SWITCHER_VISIBLE), false);
+        assertEquals(mPropertyModel.get(NEW_TAB_BUTTON_AT_LEFT), true);
+        assertEquals(mPropertyModel.get(IS_VISIBLE), true);
+    }
+
     private void createMediator(boolean hideIncognitoSwitchWhenNoTabs) {
+        createMediator(hideIncognitoSwitchWhenNoTabs, false);
+    }
+
+    private void createMediator(
+            boolean hideIncognitoSwitchWhenNoTabs, boolean showNewTabAndIdentityDiscAtLeft) {
         mMediator = new StartSurfaceToolbarMediator(mPropertyModel, mIdentityDiscController,
-                mMockCallback, hideIncognitoSwitchWhenNoTabs);
+                mMockCallback, hideIncognitoSwitchWhenNoTabs, showNewTabAndIdentityDiscAtLeft);
         mMediator.setOverviewModeBehavior(mOverviewModeBehavior);
         verify(mOverviewModeBehavior)
                 .addOverviewModeObserver(mOverviewModeObserverCaptor.capture());
+        if (showNewTabAndIdentityDiscAtLeft) {
+            mPropertyModel.set(INCOGNITO_SWITCHER_VISIBLE, false);
+        }
     }
 }

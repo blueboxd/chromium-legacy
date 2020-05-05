@@ -290,8 +290,7 @@ class TestExpectations(object):
         test_expectations.parse_tagged_list(content)
         self._expectations.append(test_expectations)
 
-    @staticmethod
-    def _get_expectations(expectations, test):
+    def _get_expectations(self, expectations, test, fallback_for_test=None):
         results = set()
         reasons = set()
         is_slow_test = False
@@ -303,8 +302,7 @@ class TestExpectations(object):
             # file and there are expected results in the second file, then the JSON
             # results will show an expected per test field with PASS and whatever the
             # expected results in the second file are.
-            if not (len(expected_results.results) == 1
-                    and ResultType.Pass in expected_results.results):
+            if not expected_results.is_default_pass:
                 results.update(expected_results.results)
             is_slow_test |= expected_results.is_slow_test
             reasons.update(expected_results.reason.split())
@@ -312,28 +310,55 @@ class TestExpectations(object):
             # can just concatenate here and still have comments from different
             # files be separated by newlines.
             trailing_comments += expected_results.trailing_comments
+
         # If the results set is empty then the Expectation constructor
         # will set the expected result to Pass.
-        return typ_types.Expectation(
-            test=test,
-            results=results,
-            is_slow_test=is_slow_test,
-            reason=' '.join(reasons),
-            trailing_comments=trailing_comments)
+        return typ_types.Expectation(test=fallback_for_test or test,
+                                     results=results,
+                                     is_slow_test=is_slow_test,
+                                     reason=' '.join(reasons),
+                                     trailing_comments=trailing_comments)
 
     def get_expectations_from_file(self, path, test_name):
         idx = self._expectations_dict.keys().index(path)
         return copy.deepcopy(
             self._expectations[idx].individual_exps.get(test_name) or [])
 
-    def get_expectations(self, test):
-        return self._get_expectations(self._expectations, test)
+    @staticmethod
+    def _override_or_fallback_expectations(override, fallback):
+        if override.is_default_pass:
+            fallback.is_slow_test |= override.is_slow_test
+            return fallback
+        override.is_slow_test |= fallback.is_slow_test
+        return override
+
+    def get_expectations(self, test, fallback_for_test=None):
+        expectations = self._override_or_fallback_expectations(
+            self._get_expectations(self._flag_expectations, test,
+                                   fallback_for_test),
+            self._get_expectations(self._expectations, test,
+                                   fallback_for_test))
+        base_test = self.port.lookup_virtual_test_base(test)
+        if base_test:
+            base_expectations = self.get_expectations(base_test, test)
+            if ResultType.Skip in base_expectations.results:
+                # TODO(crbug.com/1072015#c9): Temporarily remove Skip from the
+                # inherited expectations to avoid unexpected Skip.
+                base_expectations = typ_types.Expectation(
+                    test=base_expectations.test,
+                    results=base_expectations.results - set([ResultType.Skip]),
+                    is_slow_test=base_expectations.is_slow_test,
+                    reason=base_expectations.reason,
+                    trailing_comments=base_expectations.trailing_comments)
+            return self._override_or_fallback_expectations(
+                expectations, base_expectations)
+        return expectations
 
     def get_flag_expectations(self, test):
         exp = self._get_expectations(self._flag_expectations, test)
-        if exp.is_slow_test or exp.results != set([ResultType.Pass]):
-            return exp
-        return None
+        if exp.is_default_pass:
+            return None
+        return exp
 
     def get_base_expectations(self, test):
         return self._get_expectations(self._base_expectations, test)

@@ -17,6 +17,7 @@ class AssistantClientImpl;
 class AssistantStateClient;
 class ChromeKeyboardControllerClient;
 class ImageDownloaderImpl;
+class LacrosLoader;
 class SpokenFeedbackEventRewriterDelegate;
 
 namespace lock_screen_apps {
@@ -177,6 +178,7 @@ class ChromeBrowserMainPartsChromeos : public ChromeBrowserMainPartsLinux {
 
   std::unique_ptr<crostini::CrostiniUnsupportedActionNotifier>
       crostini_unsupported_action_notifier_;
+  std::unique_ptr<LacrosLoader> lacros_loader_;
 
   std::unique_ptr<chromeos::system::DarkResumeController>
       dark_resume_controller_;

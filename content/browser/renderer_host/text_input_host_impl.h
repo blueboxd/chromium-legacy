@@ -24,6 +24,7 @@ class CONTENT_EXPORT TextInputHostImpl : public blink::mojom::TextInputHost {
 
   // blink::mojom::TextInputHost implementation.
   void GotCharacterIndexAtPoint(uint32_t index) override;
+  void GotFirstRectForRange(const gfx::Rect& rect) override;
 
  private:
   SEQUENCE_CHECKER(sequence_checker_);

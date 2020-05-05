@@ -669,6 +669,12 @@ class BLINK_EXPORT WebLocalFrameClient {
 
   // Transfers user activation state from |source_frame| to the current frame.
   virtual void TransferUserActivationFrom(WebLocalFrame* source_frame) {}
+
+  // Returns true if it has a focused plugin. |rect| is an output parameter to
+  // get a caret bounds from the focused plugin.
+  virtual bool GetCaretBoundsFromFocusedPlugin(gfx::Rect& rect) {
+    return false;
+  }
 };
 
 }  // namespace blink

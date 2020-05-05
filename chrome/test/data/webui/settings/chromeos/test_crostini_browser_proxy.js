@@ -150,8 +150,8 @@ class TestCrostiniBrowserProxy extends TestBrowserProxy {
   }
 
   /** @override */
-  getCrostiniDiskInfo(vmName, fullInfo) {
-    this.methodCalled('getCrostiniDiskInfo', vmName, fullInfo);
+  getCrostiniDiskInfo(vmName, requestFullInfo) {
+    this.methodCalled('getCrostiniDiskInfo', vmName, requestFullInfo);
     return this.getNewPromiseFor('getCrostiniDiskInfo');
   }
 

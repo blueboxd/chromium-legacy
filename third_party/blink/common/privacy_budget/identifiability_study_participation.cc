@@ -6,7 +6,7 @@
 
 namespace blink {
 
-bool IsUserInStudy() {
+bool IsUserInIdentifiabilityStudy() {
   // TODO(crbug.com/973801): Implement.
   return false;
 }

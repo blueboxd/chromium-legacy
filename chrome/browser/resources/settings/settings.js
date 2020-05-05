@@ -4,7 +4,7 @@
 
 import './settings_ui/settings_ui.js';
 
-export {AboutPageBrowserProxy, AboutPageBrowserProxyImpl, UpdateStatus} from './about_page/about_page_browser_proxy.m.js';
+export {AboutPageBrowserProxy, AboutPageBrowserProxyImpl, PromoteUpdaterStatus, UpdateStatus} from './about_page/about_page_browser_proxy.m.js';
 export {AppearanceBrowserProxy, AppearanceBrowserProxyImpl} from './appearance_page/appearance_browser_proxy.js';
 export {PasswordManagerImpl, PasswordManagerProxy} from './autofill_page/password_manager_proxy.js';
 // <if expr="not chromeos">
@@ -12,7 +12,7 @@ export {DefaultBrowserBrowserProxyImpl} from './default_browser_page/default_bro
 // </if>
 export {ExtensionControlBrowserProxyImpl} from './extension_control_browser_proxy.m.js';
 export {HatsBrowserProxyImpl} from './hats_browser_proxy.js';
-export {LifetimeBrowserProxyImpl} from './lifetime_browser_proxy.m.js';
+export {LifetimeBrowserProxy, LifetimeBrowserProxyImpl} from './lifetime_browser_proxy.m.js';
 export {MetricsBrowserProxyImpl, PrivacyElementInteractions, SafetyCheckInteractions} from './metrics_browser_proxy.js';
 export {OnStartupBrowserProxy, OnStartupBrowserProxyImpl} from './on_startup_page/on_startup_browser_proxy.js';
 export {EDIT_STARTUP_URL_EVENT} from './on_startup_page/startup_url_entry.js';

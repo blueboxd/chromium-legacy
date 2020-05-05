@@ -155,13 +155,9 @@ class CrostiniManager::CrostiniRestarter
         options_(std::move(options)),
         completed_callback_(std::move(callback)),
         restart_id_(next_restart_id_++) {
-    crostini_manager_->AddVmShutdownObserver(this);
   }
 
   void Restart() {
-    StartStage(mojom::InstallerState::kStart);
-    is_initial_install_ =
-        crostini_manager_->GetCrostiniDialogStatus(DialogType::INSTALLER);
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     if (!CrostiniFeatures::Get()->IsUIAllowed(profile_)) {
       LOG(ERROR) << "Crostini UI not allowed for profile "
@@ -169,24 +165,23 @@ class CrostiniManager::CrostiniRestarter
       std::move(completed_callback_).Run(CrostiniResult::NOT_ALLOWED);
       return;
     }
+
+    crostini_manager_->AddVmShutdownObserver(this);
+
+    StartStage(mojom::InstallerState::kStart);
+    is_initial_install_ =
+        crostini_manager_->GetCrostiniDialogStatus(DialogType::INSTALLER);
     if (ReturnEarlyIfAborted()) {
       return;
     }
-    is_running_ = true;
-    // Skip to the end immediately if testing.
-    if (crostini_manager_->skip_restart_for_testing()) {
-      base::PostTask(
-          FROM_HERE, {content::BrowserThread::UI},
-          base::BindOnce(&CrostiniRestarter::StartLxdContainerFinished,
-                         weak_ptr_factory_.GetWeakPtr(),
-                         CrostiniResult::SUCCESS));
-      return;
-    }
 
-    StartStage(mojom::InstallerState::kInstallImageLoader);
-    crostini_manager_->InstallTerminaComponent(
-        base::BindOnce(&CrostiniRestarter::LoadComponentFinished,
-                       weak_ptr_factory_.GetWeakPtr()));
+    auto vm_info = crostini_manager_->GetVmInfo(vm_name_);
+    // If vm is stopping, we wait until OnVmShutdown() to kick it off.
+    if (vm_info && vm_info->state == VmState::STOPPING) {
+      LOG(WARNING) << "Delay restart due to vm stopping";
+    } else {
+      ContinueRestart();
+    }
   }
 
   void AddObserver(CrostiniManager::RestartObserver* observer) {
@@ -208,8 +203,18 @@ class CrostiniManager::CrostiniRestarter
       return;
     }
     if (vm_name == vm_name_) {
-      LOG(WARNING) << "Unexpected VM shutdown during restart for " << vm_name;
-      FinishRestart(CrostiniResult::RESTART_FAILED_VM_STOPPED);
+      if (is_running_) {
+        LOG(WARNING) << "Unexpected VM shutdown during restart for " << vm_name;
+        FinishRestart(CrostiniResult::RESTART_FAILED_VM_STOPPED);
+      } else {
+        // We can only get here if Restart() was called to register the shutdown
+        // observer, and since is_running_ is false, we are waiting for this
+        // shutdown to actually kick off the process.
+        VLOG(1) << "resume restart on vm shutdown";
+        base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                       base::BindOnce(&CrostiniRestarter::ContinueRestart,
+                                      weak_ptr_factory_.GetWeakPtr()));
+      }
     }
   }
 
@@ -273,6 +278,24 @@ class CrostiniManager::CrostiniRestarter
   }
 
  private:
+  void ContinueRestart() {
+    is_running_ = true;
+    // Skip to the end immediately if testing.
+    if (crostini_manager_->skip_restart_for_testing()) {
+      base::PostTask(
+          FROM_HERE, {content::BrowserThread::UI},
+          base::BindOnce(&CrostiniRestarter::StartLxdContainerFinished,
+                         weak_ptr_factory_.GetWeakPtr(),
+                         CrostiniResult::SUCCESS));
+      return;
+    }
+
+    StartStage(mojom::InstallerState::kInstallImageLoader);
+    crostini_manager_->InstallTerminaComponent(
+        base::BindOnce(&CrostiniRestarter::LoadComponentFinished,
+                       weak_ptr_factory_.GetWeakPtr()));
+  }
+
   void StartStage(mojom::InstallerState stage) {
     for (auto& observer : observer_list_) {
       observer.OnStageStarted(stage);
@@ -652,6 +675,10 @@ base::Optional<VmInfo> CrostiniManager::GetVmInfo(std::string vm_name) {
 
 void CrostiniManager::AddRunningVmForTesting(std::string vm_name) {
   running_vms_[std::move(vm_name)] = VmInfo{VmState::STARTED};
+}
+
+void CrostiniManager::AddStoppingVmForTesting(std::string vm_name) {
+  running_vms_[std::move(vm_name)] = VmInfo{VmState::STOPPING};
 }
 
 LinuxPackageInfo::LinuxPackageInfo() = default;
@@ -2478,7 +2505,6 @@ void CrostiniManager::OnStopVm(
     }
   }
 
-  OnVmStoppedCleanup(vm_name);
   std::move(callback).Run(CrostiniResult::SUCCESS);
 }
 

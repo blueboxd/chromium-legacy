@@ -13,3 +13,6 @@ NSString* const kGoogleServicesSettingsViewIdentifier =
 
 NSString* const kManageSyncCellAccessibilityIdentifier =
     @"ManageSyncCellAccessibilityIdentifier";
+
+NSString* const kAccountListItemAccessibilityIdentifier =
+    @"AccountListItemAccessibilityIdentifier";

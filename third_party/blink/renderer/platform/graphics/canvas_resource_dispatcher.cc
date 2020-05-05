@@ -230,7 +230,8 @@ bool CanvasResourceDispatcher::PrepareFrame(
   const gfx::Rect bounds(size_.Width(), size_.Height());
   constexpr int kRenderPassId = 1;
   constexpr bool is_clipped = false;
-  std::unique_ptr<viz::RenderPass> pass = viz::RenderPass::Create();
+  auto pass = viz::RenderPass::Create(/*shared_quad_state_list_size=*/1u,
+                                      /*quad_list_size=*/1u);
   pass->SetNew(kRenderPassId, bounds,
                gfx::Rect(damage_rect.x(), damage_rect.y(), damage_rect.width(),
                          damage_rect.height()),

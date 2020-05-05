@@ -165,7 +165,11 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
   // code path leaving it uninitialized.
   web::UserAgentType userAgentType;
   if (item) {
-    userAgentType = item->GetUserAgentType(webView);
+    UIView* containerView = self.webStateImpl->GetWebViewContainer();
+    if (!containerView) {
+      containerView = self.webStateImpl->GetView();
+    }
+    userAgentType = item->GetUserAgentType(containerView);
   } else {
       // It is possible that there isn't a last committed item, for example if a
       // new tab is being opened via JavaScript.

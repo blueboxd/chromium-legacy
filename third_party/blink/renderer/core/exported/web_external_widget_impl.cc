@@ -6,6 +6,7 @@
 
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/ukm_manager.h"
+#include "third_party/blink/public/platform/scheduler/web_render_widget_scheduling_state.h"
 #include "third_party/blink/renderer/platform/widget/widget_base.h"
 
 namespace blink {
@@ -85,6 +86,11 @@ WebInputEventResult WebExternalWidgetImpl::HandleInputEvent(
 
 WebInputEventResult WebExternalWidgetImpl::DispatchBufferedTouchEvents() {
   return client_->DispatchBufferedTouchEvents();
+}
+
+scheduler::WebRenderWidgetSchedulingState*
+WebExternalWidgetImpl::RendererWidgetSchedulingState() {
+  return widget_base_->RendererWidgetSchedulingState();
 }
 
 void WebExternalWidgetImpl::SetRootLayer(scoped_refptr<cc::Layer> layer) {

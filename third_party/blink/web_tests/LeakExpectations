@@ -21,7 +21,6 @@ crbug.com/410974 virtual/scroll_customization/fast/scroll-behavior/scroll-custom
 crbug.com/410974 virtual/scroll_customization/fast/scroll-behavior/scroll-customization/scrollstate-distribute-to-scroll-chain-descendant.html [ Failure ]
 
 crbug.com/786995 virtual/threaded/http/tests/devtools/tracing/timeline-style/timeline-style-recalc-all-invalidator-types.js [ Failure Pass ]
-crbug.com/859640 http/tests/devtools/tracing/timeline-style/timeline-style-recalc-all-invalidator-types.js [ Failure Pass ]
 
 # Requests with keepalive specified will be kept alive even when the frame is
 # detached, which means leaks reported by the leak detector are by design.
@@ -49,7 +48,6 @@ crbug.com/809609 [ Linux ] editing/inserting/insert_div_with_style.html [ Pass F
 # Sheriff 2018-04-23
 # -----------------------------------------------------------------
 crbug.com/836278 [ Linux ] external/wpt/html/canvas/offscreen/convert-to-blob/offscreencanvas.convert.to.blob.html [ Pass Failure ]
-crbug.com/836278 [ Linux ] virtual/threaded/external/wpt/html/canvas/offscreen/convert-to-blob/offscreencanvas.convert.to.blob.html [ Pass Failure ]
 
 # Moved from TestExpectations (Sheriff 2018-05-31)
 crbug.com/848354 [ Linux ] plugins/fullscreen-plugins-dont-reload.html [ Pass Failure ]
@@ -60,15 +58,10 @@ crbug.com/862029 [ Linux ] http/tests/devtools/tracing/timeline-misc/timeline-wi
 
 # Sheriff 2018-08-17
 crbug.com/847114 [ Linux ] http/tests/devtools/tracing/decode-resize.js [ Pass Failure ]
-crbug.com/847114 [ Linux ] virtual/threaded/http/tests/devtools/tracing/decode-resize.js [ Pass Failure ]
 
 # Sheriff 2018-08-29
 crbug.com/878724 [ Linux ] editing/selection/modify_extend/extend_by_character.html [ Pass Failure ]
 crbug.com/878724 [ Linux ] editing/selection/modify_move/move_right_word_09_ltr_multi_line.html [ Pass Failure ]
-crbug.com/878727 [ Linux ] virtual/threaded/http/tests/devtools/tracing/timeline-misc/timeline-flame-chart-automatically-size-window.js [ Pass Failure ]
-
-# Sheriff 2018-10-25
-crbug.com/862029 [ Linux ] virtual/threaded/http/tests/devtools/tracing/timeline-misc/timeline-window-filter.js [ Pass Failure ]
 
 crbug.com/733494 [ Linux ] media/autoplay/document-user-activation.html [ Pass Failure ]
 
@@ -119,7 +112,6 @@ crbug.com/1038388 [ Linux ] http/tests/devtools/tracing/timeline-time/timeline-t
 
 # Sheriff 2020-04-03
 crbug.com/1067650 [ Linux ] http/tests/devtools/tracing/timeline-misc/timeline-load-event.js [ Pass Failure ]
-crbug.com/1067650 [ Linux ] virtual/threaded/http/tests/devtools/tracing/timeline-misc/timeline-load-event.js [ Pass Failure ]
 
 # Sheriff 2020-04-06
 crbug.com/1068175 [ Linux ] external/wpt/referrer-policy/gen/worker-classic.http-rp/no-referrer/worker-module.http.html [ Pass Timeout ]
@@ -135,41 +127,23 @@ crbug.com/1068175 [ Linux ] external/wpt/referrer-policy/gen/worker-module.http-
 crbug.com/1068175 [ Linux ] external/wpt/referrer-policy/gen/worker-module.http-rp/strict-origin-when-cross-origin/worker-module.http.html [ Pass Timeout ]
 crbug.com/1068175 [ Linux ] external/wpt/referrer-policy/gen/worker-module.http-rp/strict-origin/worker-module.http.html [ Pass Timeout ]
 crbug.com/1068175 [ Linux ] virtual/omt-worker-fetch/external/wpt/referrer-policy/gen/worker-classic.http-rp/no-referrer-when-downgrade/worker-classic.http.html [ Pass Timeout ]
-crbug.com/1068175 [ Linux ] virtual/omt-worker-fetch/external/wpt/referrer-policy/gen/worker-classic.http-rp/no-referrer/worker-module.http.html [ Pass Timeout ]
 crbug.com/1068175 [ Linux ] virtual/omt-worker-fetch/external/wpt/referrer-policy/gen/worker-classic.http-rp/origin-when-cross-origin/worker-classic.http.html [ Pass Timeout ]
 crbug.com/1068175 [ Linux ] virtual/omt-worker-fetch/external/wpt/referrer-policy/gen/worker-classic.http-rp/origin-when-cross-origin/worker-module.http.html [ Pass Timeout ]
-crbug.com/1068175 [ Linux ] virtual/omt-worker-fetch/external/wpt/referrer-policy/gen/worker-classic.http-rp/origin/worker-classic.http.html [ Pass Timeout ]
 crbug.com/1068175 [ Linux ] virtual/omt-worker-fetch/external/wpt/referrer-policy/gen/worker-classic.http-rp/same-origin/worker-classic.http.html [ Pass Timeout ]
 crbug.com/1068175 [ Linux ] virtual/omt-worker-fetch/external/wpt/referrer-policy/gen/worker-classic.http-rp/same-origin/worker-module.http.html [ Pass Timeout ]
 crbug.com/1068175 [ Linux ] virtual/omt-worker-fetch/external/wpt/referrer-policy/gen/worker-classic.http-rp/strict-origin-when-cross-origin/worker-classic.http.html [ Pass Timeout ]
 crbug.com/1068175 [ Linux ] virtual/omt-worker-fetch/external/wpt/referrer-policy/gen/worker-classic.http-rp/strict-origin-when-cross-origin/worker-module.http.html [ Pass Timeout ]
-crbug.com/1068175 [ Linux ] virtual/omt-worker-fetch/external/wpt/referrer-policy/gen/worker-classic.http-rp/strict-origin/worker-module.http.html [ Pass Timeout ]
-crbug.com/1068175 [ Linux ] virtual/omt-worker-fetch/external/wpt/referrer-policy/gen/worker-classic.http-rp/unsafe-url/worker-module.http.html [ Pass Timeout ]
-crbug.com/1068175 [ Linux ] virtual/omt-worker-fetch/external/wpt/referrer-policy/gen/worker-classic.http-rp/unset/worker-module.http.html [ Pass Timeout ]
 crbug.com/1068175 [ Linux ] virtual/omt-worker-fetch/external/wpt/referrer-policy/gen/worker-module.http-rp/no-referrer-when-downgrade/worker-classic.http.html [ Pass Timeout ]
-crbug.com/1068175 [ Linux ] virtual/omt-worker-fetch/external/wpt/referrer-policy/gen/worker-module.http-rp/no-referrer-when-downgrade/worker-module.http.html [ Pass Timeout ]
-crbug.com/1068175 [ Linux ] virtual/omt-worker-fetch/external/wpt/referrer-policy/gen/worker-module.http-rp/no-referrer/worker-classic.http.html [ Pass Timeout ]
-crbug.com/1068175 [ Linux ] virtual/omt-worker-fetch/external/wpt/referrer-policy/gen/worker-module.http-rp/no-referrer/worker-module.http.html [ Pass Timeout ]
 crbug.com/1068175 [ Linux ] virtual/omt-worker-fetch/external/wpt/referrer-policy/gen/worker-module.http-rp/origin-when-cross-origin/worker-classic.http.html [ Pass Timeout ]
 crbug.com/1068175 [ Linux ] virtual/omt-worker-fetch/external/wpt/referrer-policy/gen/worker-module.http-rp/origin/worker-classic.http.html [ Pass Timeout ]
-crbug.com/1068175 [ Linux ] virtual/omt-worker-fetch/external/wpt/referrer-policy/gen/worker-module.http-rp/origin/worker-module.http.html [ Pass Timeout ]
-crbug.com/1068175 [ Linux ] virtual/omt-worker-fetch/external/wpt/referrer-policy/gen/worker-module.http-rp/same-origin/worker-classic.http.html [ Pass Timeout ]
-crbug.com/1068175 [ Linux ] virtual/omt-worker-fetch/external/wpt/referrer-policy/gen/worker-module.http-rp/same-origin/worker-module.http.html [ Pass Timeout ]
 crbug.com/1068175 [ Linux ] virtual/omt-worker-fetch/external/wpt/referrer-policy/gen/worker-module.http-rp/strict-origin-when-cross-origin/worker-classic.http.html [ Pass Timeout ]
-crbug.com/1068175 [ Linux ] virtual/omt-worker-fetch/external/wpt/referrer-policy/gen/worker-module.http-rp/strict-origin-when-cross-origin/worker-module.http.html [ Pass Timeout ]
 crbug.com/1068175 [ Linux ] virtual/omt-worker-fetch/external/wpt/referrer-policy/gen/worker-module.http-rp/unsafe-url/worker-classic.http.html [ Pass Timeout ]
-crbug.com/1068175 [ Linux ] virtual/omt-worker-fetch/external/wpt/referrer-policy/gen/worker-module.http-rp/unsafe-url/worker-module.http.html [ Pass Timeout ]
 crbug.com/1068175 [ Linux ] virtual/omt-worker-fetch/external/wpt/referrer-policy/gen/worker-module.http-rp/unset/worker-classic.http.html [ Pass Timeout ]
 
 # Sheriff 2020-04-20
-crbug.com/1071849 [ Linux ] virtual/site-isolated-code-cache/http/tests/devtools/isolated-code-cache/same-origin-module-test.js [ Pass Failure ]
 crbug.com/1071849 [ Linux ] http/tests/devtools/isolated-code-cache/same-origin-module-test.js [ Pass Failure ]
 
-# Sheriff 2020-04-22
-crbug.com/1071849 [ Linux ] virtual/not-split-http-cache-not-site-per-process/http/tests/devtools/isolated-code-cache/same-origin-module-test.js [ Pass Failure ]
-
 # Sheriff 2020-04-23
-crbug.com/1068175 [ Linux ] virtual/omt-worker-fetch/external/wpt/referrer-policy/gen/worker-module.http-rp/strict-origin/worker-module.http.html [ Pass Timeout ]
 crbug.com/1068175 [ Linux ] virtual/omt-worker-fetch/external/wpt/referrer-policy/gen/worker-classic.http-rp/unsafe-url/worker-classic.http.html [ Pass Timeout ]
 crbug.com/1068175 [ Linux ] external/wpt/referrer-policy/gen/worker-module.http-rp/same-origin/worker-classic.http.html [ Pass Timeout ]
 crbug.com/1068175 [ Linux ] external/wpt/referrer-policy/gen/worker-module.http-rp/origin/worker-module.http.html [ Pass Timeout ]

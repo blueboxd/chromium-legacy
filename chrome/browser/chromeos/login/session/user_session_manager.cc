@@ -44,7 +44,6 @@
 #include "chrome/browser/chromeos/boot_times_recorder.h"
 #include "chrome/browser/chromeos/child_accounts/child_policy_observer.h"
 #include "chrome/browser/chromeos/first_run/first_run.h"
-#include "chrome/browser/chromeos/first_run/goodies_displayer.h"
 #include "chrome/browser/chromeos/logging.h"
 #include "chrome/browser/chromeos/login/auth/chrome_cryptohome_authenticator.h"
 #include "chrome/browser/chromeos/login/chrome_restart_request.h"
@@ -422,7 +421,6 @@ void UserSessionManager::OverrideHomedir() {
 void UserSessionManager::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterStringPref(prefs::kRLZBrand, std::string());
   registry->RegisterBooleanPref(prefs::kRLZDisabled, false);
-  registry->RegisterBooleanPref(prefs::kCanShowOobeGoodiesPage, true);
 }
 
 // static
@@ -1668,9 +1666,6 @@ void UserSessionManager::InitializeBrowser(Profile* profile) {
   // Only allow Quirks downloads after login is finished.
   quirks::QuirksManager::Get()->OnLoginCompleted();
 
-  // If needed, create browser observer to display first run OOBE Goodies page.
-  first_run::GoodiesDisplayer::Init();
-
   if (chromeos::features::IsSplitSyncConsentEnabled() &&
       ProfileSyncServiceFactory::IsSyncAllowed(profile)) {
     turn_sync_on_helper_ = std::make_unique<TurnSyncOnHelper>(profile);
@@ -2266,7 +2261,6 @@ void UserSessionManager::Shutdown() {
   turn_sync_on_helper_.reset();
   token_handle_fetcher_.reset();
   token_handle_util_.reset();
-  first_run::GoodiesDisplayer::Delete();
   always_on_vpn_manager_.reset();
   u2f_notification_.reset();
   release_notes_notification_.reset();

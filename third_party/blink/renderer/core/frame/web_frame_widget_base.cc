@@ -14,6 +14,7 @@
 #include "cc/trees/swap_promise.h"
 #include "cc/trees/ukm_manager.h"
 #include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/scheduler/web_render_widget_scheduling_state.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/public/web/web_widget_client.h"
 #include "third_party/blink/renderer/core/dom/element.h"
@@ -898,6 +899,11 @@ void WebFrameWidgetBase::NotifySwapAndPresentationTime(
               ->GetTaskRunnerProvider()
               ->MainThreadTaskRunner(),
           this));
+}
+
+scheduler::WebRenderWidgetSchedulingState*
+WebFrameWidgetBase::RendererWidgetSchedulingState() {
+  return widget_base_->RendererWidgetSchedulingState();
 }
 
 }  // namespace blink

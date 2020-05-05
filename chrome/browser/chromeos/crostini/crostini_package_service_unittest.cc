@@ -25,6 +25,7 @@
 #include "chromeos/dbus/cros_disks_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_cicerone_client.h"
+#include "chromeos/dbus/fake_concierge_client.h"
 #include "chromeos/dbus/fake_seneschal_client.h"
 #include "chromeos/dbus/vm_applications/apps.pb.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -44,6 +45,7 @@ namespace {
 using ::chromeos::DBusMethodCallback;
 using ::chromeos::DBusThreadManager;
 using ::chromeos::FakeCiceroneClient;
+using ::chromeos::FakeConciergeClient;
 using ::chromeos::FakeSeneschalClient;
 using ::testing::_;
 using ::testing::Invoke;
@@ -167,6 +169,9 @@ class CrostiniPackageServiceTest : public testing::Test {
     fake_seneschal_client_ = static_cast<FakeSeneschalClient*>(
         DBusThreadManager::Get()->GetSeneschalClient());
     ASSERT_TRUE(fake_seneschal_client_);
+    static_cast<FakeConciergeClient*>(
+        DBusThreadManager::Get()->GetConciergeClient())
+        ->set_notify_vm_stopped_on_stop_vm(true);
 
     task_environment_ = std::make_unique<content::BrowserTaskEnvironment>(
         base::test::TaskEnvironment::MainThreadType::UI,

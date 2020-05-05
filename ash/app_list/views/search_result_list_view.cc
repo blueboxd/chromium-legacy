@@ -372,41 +372,6 @@ void SearchResultListView::OnSearchResultInstalled(SearchResultView* view) {
     main_view_->OnResultInstalled(view->result());
 }
 
-bool SearchResultListView::HandleVerticalFocusMovement(SearchResultView* view,
-                                                       bool arrow_up) {
-  int view_index = -1;
-  for (int i = 0; i < num_results(); ++i) {
-    if (view == GetResultViewAt(i)) {
-      view_index = i;
-      break;
-    }
-  }
-
-  if (view_index == -1) {
-    // Not found in the result list.
-    NOTREACHED();
-    return false;
-  }
-
-  if (arrow_up) {  // VKEY_UP
-    if (view_index > 0) {
-      // Move to the previous result if the current one is not the first result.
-      GetResultViewAt(view_index - 1)->RequestFocus();
-      return true;
-    }
-  } else {  // VKEY_DOWN
-    // Move down to the next result if the currernt one is not the last result;
-    // otherwise, move focus to search box.
-    if (view_index == num_results() - 1)
-      main_view_->search_box_view()->search_box()->RequestFocus();
-    else
-      GetResultViewAt(view_index + 1)->RequestFocus();
-    return true;
-  }
-
-  return false;
-}
-
 void SearchResultListView::VisibilityChanged(View* starting_from,
                                              bool is_visible) {
   SearchResultContainerView::VisibilityChanged(starting_from, is_visible);

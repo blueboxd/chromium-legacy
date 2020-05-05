@@ -44,7 +44,9 @@
 #include "third_party/blink/renderer/core/dom/node.h"
 #include "third_party/blink/renderer/core/html/imports/html_imports_controller.h"
 #include "third_party/blink/renderer/core/inspector/inspector_trace_events.h"
+#include "third_party/blink/renderer/platform/bindings/active_script_wrappable_manager.h"
 #include "third_party/blink/renderer/platform/bindings/script_forbidden_scope.h"
+#include "third_party/blink/renderer/platform/bindings/v8_per_isolate_data.h"
 #include "third_party/blink/renderer/platform/bindings/wrapper_type_info.h"
 #include "third_party/blink/renderer/platform/heap/heap_stats_collector.h"
 #include "third_party/blink/renderer/platform/heap/unified_heap_controller.h"
@@ -104,6 +106,26 @@ void V8GCController::GcPrologue(v8::Isolate* isolate,
   if (BlameContext* blame_context =
           Platform::Current()->GetTopLevelBlameContext())
     blame_context->Enter();
+
+  v8::HandleScope scope(isolate);
+  switch (type) {
+    case v8::kGCTypeIncrementalMarking:
+      // Recomputing ASWs is opportunistic during incremental marking as they
+      // only need to be recomputing during the atomic pause for corectness.
+      V8PerIsolateData::From(isolate)
+          ->GetActiveScriptWrappableManager()
+          ->RecomputeActiveScriptWrappables(
+              ActiveScriptWrappableManager::RecomputeMode::kOpportunistic);
+      break;
+    case v8::kGCTypeMarkSweepCompact:
+      V8PerIsolateData::From(isolate)
+          ->GetActiveScriptWrappableManager()
+          ->RecomputeActiveScriptWrappables(
+              ActiveScriptWrappableManager::RecomputeMode::kRequired);
+      break;
+    default:
+      break;
+  }
 }
 
 void V8GCController::GcEpilogue(v8::Isolate* isolate,

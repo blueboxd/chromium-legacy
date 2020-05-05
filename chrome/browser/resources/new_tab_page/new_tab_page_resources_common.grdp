@@ -61,6 +61,8 @@
       file="untrusted/image.html" type="BINDATA" compress="gzip" />
   <include name="IDR_NEW_TAB_PAGE_UNTRUSTED_BACKGROUND_IMAGE_HTML"
       file="untrusted/background_image.html" type="BINDATA" compress="gzip" />
+  <include name="IDR_NEW_TAB_PAGE_UNTRUSTED_BACKGROUND_IMAGE_JS"
+      file="untrusted/background_image.js" type="BINDATA" compress="gzip" />
   <include name="IDR_NEW_TAB_PAGE_UNTRUSTED_IFRAME_HTML"
       file="untrusted/iframe.html" type="BINDATA" compress="gzip" />
 </grit-part>

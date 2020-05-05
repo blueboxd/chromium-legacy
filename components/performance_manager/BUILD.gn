@@ -26,6 +26,8 @@ static_library("performance_manager") {
     "graph/frame_node.cc",
     "graph/frame_node_impl.cc",
     "graph/frame_node_impl.h",
+    "graph/frame_node_impl_describer.cc",
+    "graph/frame_node_impl_describer.h",
     "graph/graph.cc",
     "graph/graph_impl.cc",
     "graph/graph_impl.h",

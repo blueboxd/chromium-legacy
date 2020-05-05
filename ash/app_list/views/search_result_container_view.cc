@@ -59,13 +59,6 @@ const char* SearchResultContainerView::GetClassName() const {
   return "SearchResultContainerView";
 }
 
-void SearchResultContainerView::OnViewFocused(View* observed_view) {
-  if (delegate_) {
-    delegate_->OnSearchResultContainerResultFocused(
-        static_cast<SearchResultBaseView*>(observed_view));
-  }
-}
-
 void SearchResultContainerView::AddObservedResultView(
     SearchResultBaseView* result_view) {
   result_view_observer_.Add(result_view);

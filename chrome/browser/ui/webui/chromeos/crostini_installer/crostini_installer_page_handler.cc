@@ -65,7 +65,9 @@ void CrostiniInstallerPageHandler::CancelBeforeStart() {
 }
 
 void CrostiniInstallerPageHandler::Close() {
-  std::move(close_dialog_callback_).Run();
+  if (close_dialog_callback_) {
+    std::move(close_dialog_callback_).Run();
+  }
 }
 
 void CrostiniInstallerPageHandler::OnProgressUpdate(

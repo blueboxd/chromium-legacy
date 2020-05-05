@@ -146,6 +146,8 @@ class CORE_EXPORT WebFrameWidgetBase
   void NotifySwapAndPresentationTime(
       WebReportTimeCallback swap_callback,
       WebReportTimeCallback presentation_callback) override;
+  scheduler::WebRenderWidgetSchedulingState* RendererWidgetSchedulingState()
+      override;
 
   // Called when a drag-n-drop operation should begin.
   void StartDragging(network::mojom::ReferrerPolicy,

@@ -404,6 +404,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
                callback:^(BOOL success) {
                  [weakSelf handleDidAddAccount:success];
                }];
+  DCHECK(self.dispatcher);
   [self.dispatcher showSignin:command baseViewController:self];
 }
 

@@ -4,6 +4,22 @@
 
 import("//net/features.gni")
 
+# This target provides a net::CertVerifier that transparently proxies cert
+# verification requests over a Mojo connection to the actual service, which is
+# implemented in terms of concrete implementations of net::CertVerifier.
+source_set("mojo_cert_verifier") {
+  sources = [
+    "mojo_cert_verifier.cc",
+    "mojo_cert_verifier.h",
+  ]
+
+  deps = [
+    "//base",
+    "//net",
+    "//services/network/public/mojom",
+  ]
+}
+
 source_set("cert_verifier_creation") {
   sources = [
     "cert_verifier_creation.cc",
@@ -29,18 +45,28 @@ source_set("cert_verifier_creation") {
     "//net",
     "//services/network/public/mojom",
   ]
+
+  public_deps = [ "//services/network/public/mojom" ]
 }
 
-source_set("cert_verifier_creation_tests") {
+source_set("cert_verifier_tests") {
   testonly = true
   sources = []
 
   deps = [
     ":cert_verifier_creation",
+    ":mojo_cert_verifier",
     "//base",
+    "//base/test:test_support",
+    "//mojo/public/cpp/test_support:test_utils",
     "//net",
     "//net:test_support",
     "//testing/gtest",
+  ]
+
+  sources += [
+    "cert_verifier_mojom_traits_unittest.cc",
+    "mojo_cert_verifier_unittest.cc",
   ]
 
   if (trial_comparison_cert_verifier_supported) {

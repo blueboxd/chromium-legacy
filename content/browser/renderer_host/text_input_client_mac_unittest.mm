@@ -49,6 +49,11 @@ class TextInputClientLocalFrame : public content::FakeLocalFrame,
       std::move(completion_callback_).Run();
   }
 
+  void GetFirstRectForRange(const gfx::Range& range) override {
+    if (completion_callback_)
+      std::move(completion_callback_).Run();
+  }
+
   void SetCallback(base::OnceClosure callback) {
     completion_callback_ = std::move(callback);
   }
@@ -193,27 +198,24 @@ TEST_F(TextInputClientMacTest, NotFoundCharacterIndex) {
 TEST_F(TextInputClientMacTest, GetRectForRange) {
   ScopedTestingThread thread(this);
   const gfx::Rect kSuccessValue(42, 43, 44, 45);
-  size_t current_count = ipc_sink().message_count();
 
   PostTask(FROM_HERE,
            base::BindOnce(&TextInputClientMac::SetFirstRectAndSignal,
                           base::Unretained(service()), kSuccessValue));
+  base::RunLoop run_loop;
+  local_frame()->SetCallback(run_loop.QuitClosure());
   gfx::Rect rect =
       service()->GetFirstRectForRange(widget(), gfx::Range(NSMakeRange(0, 32)));
-
-  EXPECT_EQ(1U, ipc_sink().message_count() - current_count);
-  EXPECT_TRUE(ipc_sink().GetUniqueMessageMatching(
-      TextInputClientMsg_FirstRectForCharacterRange::ID));
+  run_loop.Run();
   EXPECT_EQ(kSuccessValue, rect);
 }
 
 TEST_F(TextInputClientMacTest, TimeoutRectForRange) {
-  size_t current_count = ipc_sink().message_count();
+  base::RunLoop run_loop;
+  local_frame()->SetCallback(run_loop.QuitClosure());
   gfx::Rect rect =
       service()->GetFirstRectForRange(widget(), gfx::Range(NSMakeRange(0, 32)));
-  EXPECT_EQ(1U, ipc_sink().message_count() - current_count);
-  EXPECT_TRUE(ipc_sink().GetUniqueMessageMatching(
-      TextInputClientMsg_FirstRectForCharacterRange::ID));
+  run_loop.Run();
   EXPECT_EQ(gfx::Rect(), rect);
 }
 

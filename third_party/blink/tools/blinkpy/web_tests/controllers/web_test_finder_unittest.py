@@ -19,7 +19,6 @@ import mock
 
 
 class WebTestFinderTests(unittest.TestCase):
-
     def test_skip_tests_expectations(self):
         """Tests that tests are skipped based on to expectations and options."""
         host = MockHost()

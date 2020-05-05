@@ -22,7 +22,6 @@ class Label;
 namespace ash {
 
 class AppListViewDelegate;
-class PaginationModel;
 class SearchResult;
 
 // A tile view that displays a search result. It hosts view for search result
@@ -32,7 +31,6 @@ class APP_LIST_EXPORT SearchResultTileItemView
       public views::ContextMenuController {
  public:
   SearchResultTileItemView(AppListViewDelegate* view_delegate,
-                           PaginationModel* pagination_model,
                            bool show_in_apps_page);
   ~SearchResultTileItemView() override;
 
@@ -59,8 +57,6 @@ class APP_LIST_EXPORT SearchResultTileItemView
   // Overridden from views::Button:
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   bool OnKeyPressed(const ui::KeyEvent& event) override;
-  void OnFocus() override;
-  void OnBlur() override;
   void StateChanged(ButtonState old_state) override;
   void PaintButtonContents(gfx::Canvas* canvas) override;
 
@@ -112,7 +108,6 @@ class APP_LIST_EXPORT SearchResultTileItemView
   base::string16 GetTooltipText(const gfx::Point& p) const override;
 
   AppListViewDelegate* const view_delegate_;           // Owned by AppListView.
-  PaginationModel* const pagination_model_;            // Owned by AppsGridView.
 
   views::ImageView* icon_ = nullptr;         // Owned by views hierarchy.
   views::ImageView* badge_ = nullptr;        // Owned by views hierarchy.

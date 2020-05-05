@@ -214,12 +214,15 @@ bool ExecuteScriptHelper(RenderFrameHost* render_frame_host,
   if (!result)
     return true;
 
-  base::JSONReader reader(base::JSON_ALLOW_TRAILING_COMMAS);
-  *result = reader.ReadToValueDeprecated(json);
-  if (!*result) {
-    DLOG(ERROR) << reader.GetErrorMessage();
+  base::JSONReader::ValueWithError parsed_json =
+      base::JSONReader::ReadAndReturnValueWithError(
+          json, base::JSON_ALLOW_TRAILING_COMMAS);
+  if (!parsed_json.value) {
+    *result = nullptr;
+    DLOG(ERROR) << parsed_json.error_message;
     return false;
   }
+  *result = base::Value::ToUniquePtrValue(std::move(*parsed_json.value));
 
   return true;
 }

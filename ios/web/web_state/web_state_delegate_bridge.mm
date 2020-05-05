@@ -132,6 +132,13 @@ void WebStateDelegateBridge::CommitPreviewingViewController(
   }
 }
 
+UIView* WebStateDelegateBridge::GetWebViewContainer(WebState* source) {
+  if ([delegate_ respondsToSelector:@selector(webViewContainerForWebState:)]) {
+    return [delegate_ webViewContainerForWebState:source];
+  }
+  return nil;
+}
+
 void WebStateDelegateBridge::ContextMenuConfiguration(
     WebState* source,
     const GURL& link_url,

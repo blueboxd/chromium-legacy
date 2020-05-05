@@ -100,8 +100,8 @@ class PLATFORM_EXPORT RTCVideoDecoderAdapter : public webrtc::VideoDecoder {
   bool InitializeSync(const media::VideoDecoderConfig& config);
   void InitializeOnMediaThread(const media::VideoDecoderConfig& config,
                                InitCB init_cb);
-  void OnInitializeDone(base::OnceCallback<void(bool)> cb,
-                        media::Status status);
+  static void OnInitializeDone(base::OnceCallback<void(bool)> cb,
+                               media::Status status);
   void DecodeOnMediaThread();
   void OnDecodeDone(media::DecodeStatus status);
   void OnOutput(scoped_refptr<media::VideoFrame> frame);

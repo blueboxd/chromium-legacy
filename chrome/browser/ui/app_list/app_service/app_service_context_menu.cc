@@ -177,10 +177,10 @@ bool AppServiceContextMenu::IsCommandIdChecked(int command_id) const {
           return command_id == ash::USE_LAUNCH_TYPE_TABBED_WINDOW;
         }
 
-        web_app::DisplayMode effective_display_mode =
-            provider->registrar().GetAppEffectiveDisplayMode(app_id());
-        return effective_display_mode != web_app::DisplayMode::kUndefined &&
-               effective_display_mode ==
+        web_app::DisplayMode user_display_mode =
+            provider->registrar().GetAppUserDisplayMode(app_id());
+        return user_display_mode != web_app::DisplayMode::kUndefined &&
+               user_display_mode ==
                    ConvertUseLaunchTypeCommandToDisplayMode(command_id);
       }
       return AppContextMenu::IsCommandIdChecked(command_id);

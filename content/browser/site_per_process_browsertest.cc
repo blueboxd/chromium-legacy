@@ -54,6 +54,7 @@
 #include "content/browser/frame_host/cross_process_frame_connector.h"
 #include "content/browser/frame_host/frame_navigation_entry.h"
 #include "content/browser/frame_host/frame_tree.h"
+#include "content/browser/frame_host/interstitial_page_impl.h"
 #include "content/browser/frame_host/navigation_controller_impl.h"
 #include "content/browser/frame_host/navigation_entry_impl.h"
 #include "content/browser/frame_host/navigator.h"
@@ -85,6 +86,7 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/context_menu_params.h"
+#include "content/public/browser/interstitial_page_delegate.h"
 #include "content/public/browser/javascript_dialog_manager.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/notification_observer.h"
@@ -447,6 +449,12 @@ class RenderWidgetHostVisibilityObserver : public RenderWidgetHostObserver {
   RenderWidgetHost* render_widget_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostVisibilityObserver);
+};
+
+class TestInterstitialDelegate : public InterstitialPageDelegate {
+ private:
+  // InterstitialPageDelegate:
+  std::string GetHTMLContents() override { return "<p>Interstitial</p>"; }
 };
 
 bool ConvertJSONToPoint(const std::string& str, gfx::PointF* point) {
@@ -4941,6 +4949,40 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, SubframePostMessage) {
   EXPECT_EQ(1, GetReceivedMessages(root->child_at(0)));
   EXPECT_EQ(2, GetReceivedMessages(root->child_at(1)));
   EXPECT_EQ(1, GetReceivedMessages(root));
+}
+
+// Check that renderer initiated navigations which commit a new RenderFrameHost
+// do not crash if the original RenderFrameHost was being covered by an
+// interstitial. See crbug.com/607964.
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+                       NavigateOpenerWithInterstitial) {
+  EXPECT_TRUE(NavigateToURL(
+      shell(), embedded_test_server()->GetURL("a.com", "/title1.html")));
+
+  // Open a popup and navigate it to bar.com.
+  ShellAddedObserver new_shell_observer;
+  EXPECT_TRUE(ExecuteScript(web_contents(), "window.open('about:blank');"));
+  Shell* popup = new_shell_observer.GetShell();
+  EXPECT_TRUE(NavigateToURLFromRenderer(
+      popup,
+      embedded_test_server()->GetURL("bar.com", "/navigate_opener.html")));
+
+  // Show an interstitial in the opener.
+  TestInterstitialDelegate* delegate = new TestInterstitialDelegate;
+  WebContentsImpl* opener_contents =
+      static_cast<WebContentsImpl*>(web_contents());
+  GURL interstitial_url("http://interstitial");
+  InterstitialPageImpl* interstitial = new InterstitialPageImpl(
+      opener_contents, static_cast<RenderWidgetHostDelegate*>(opener_contents),
+      true, interstitial_url, delegate);
+  interstitial->Show();
+  WaitForInterstitialAttach(opener_contents);
+
+  // Now, navigate the opener cross-process using the popup while it still has
+  // an interstitial. This should not crash.
+  TestNavigationObserver navigation_observer(opener_contents);
+  EXPECT_TRUE(ExecuteScript(popup, "navigateOpener();"));
+  navigation_observer.Wait();
 }
 
 // Check that postMessage can be sent from a subframe on a cross-process opener
@@ -10479,6 +10521,24 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, TestChildProcessImportance) {
   EXPECT_NE(old_root_process_id, new_root_process_id);
   EXPECT_EQ(ChildProcessImportance::IMPORTANT,
             root->current_frame_host()->GetProcess()->GetEffectiveImportance());
+
+  // Check interstitial maintains importance.
+  TestInterstitialDelegate* delegate = new TestInterstitialDelegate;
+  WebContentsImpl* contents_impl =
+      static_cast<WebContentsImpl*>(web_contents());
+  GURL interstitial_url("http://interstitial");
+  InterstitialPageImpl* interstitial = new InterstitialPageImpl(
+      contents_impl, contents_impl, true, interstitial_url, delegate);
+  interstitial->Show();
+  WaitForInterstitialAttach(contents_impl);
+  RenderProcessHost* interstitial_process =
+      interstitial->GetMainFrame()->GetProcess();
+  EXPECT_EQ(ChildProcessImportance::IMPORTANT,
+            interstitial_process->GetEffectiveImportance());
+
+  web_contents()->SetMainFrameImportance(ChildProcessImportance::MODERATE);
+  EXPECT_EQ(ChildProcessImportance::MODERATE,
+            interstitial_process->GetEffectiveImportance());
 }
 
 // Tests for Android TouchSelectionEditing.

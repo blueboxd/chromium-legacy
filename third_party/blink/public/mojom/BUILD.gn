@@ -231,6 +231,10 @@ mojom("mojom_platform") {
     "//url/mojom:url_mojom_origin",
   ]
 
+  if (is_mac) {
+    public_deps += [ "//ui/gfx/range/mojom" ]
+  }
+
   # iOS doesn't use and must not depend on //media
   if (!is_ios) {
     public_deps += [

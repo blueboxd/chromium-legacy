@@ -429,12 +429,6 @@ const base::Feature kInstallableAmbientBadgeInfoBar{
     "InstallableAmbientBadgeInfoBar", base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
 
-#if !defined(OS_ANDROID)
-// Enables or disables intent picker.
-const base::Feature kIntentPicker{"IntentPicker",
-                                  base::FEATURE_ENABLED_BY_DEFAULT};
-#endif  // !defined(OS_ANDROID)
-
 #if defined(OS_CHROMEOS)
 const base::Feature kKernelnextVMs{"KernelnextVMs",
                                    base::FEATURE_DISABLED_BY_DEFAULT};

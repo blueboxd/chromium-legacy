@@ -2179,10 +2179,6 @@ const char kOobeScreenPending[] = "OobeScreenPending";
 const char kOobeMarketingOptInScreenFinished[] =
     "OobeMarketingOptInScreenFinished";
 
-// A boolean pref for whether the Goodies promotion webpage has been displayed,
-// or otherwise disqualified for auto-display, on this device.
-const char kCanShowOobeGoodiesPage[] = "CanShowOobeGoodiesPage";
-
 // A boolean pref of the device registered flag (second part after first login).
 const char kDeviceRegistered[] = "DeviceRegistered";
 

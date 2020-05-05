@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.incognito;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.LargeTest;
@@ -20,7 +21,6 @@ import org.chromium.base.test.params.ParameterAnnotations.UseMethodParameter;
 import org.chromium.base.test.params.ParameterAnnotations.UseRunnerDelegate;
 import org.chromium.base.test.params.ParameterizedRunner;
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.customtabs.CustomTabActivityTestRule;
 import org.chromium.chrome.browser.customtabs.CustomTabIncognitoManager;
@@ -33,6 +33,7 @@ import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4RunnerDelegate;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
+import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.JavaScriptUtils;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.net.test.EmbeddedTestServer;
@@ -95,6 +96,7 @@ public class IncognitoStorageLeakageTest {
 
         Tab tab1 = activity1.launchUrl(
                 mChromeActivityTestRule, mCustomTabActivityTestRule, mSiteDataTestPage);
+        CriteriaHelper.pollUiThread(() -> { assertNotNull(tab1.getWebContents()); });
 
         // Sets the session storage in tab1
         assertEquals("true",
@@ -108,6 +110,7 @@ public class IncognitoStorageLeakageTest {
 
         Tab tab2 = activity2.launchUrl(
                 mChromeActivityTestRule, mCustomTabActivityTestRule, mSiteDataTestPage);
+        CriteriaHelper.pollUiThread(() -> { assertNotNull(tab2.getWebContents()); });
 
         // Checks the session storage in tab2. Session storage set in tab1 should not be accessible.
         // The session storage is per tab basis.
@@ -119,7 +122,6 @@ public class IncognitoStorageLeakageTest {
     @Test
     @LargeTest
     @UseMethodParameter(TestParams.AllTypesToAllTypes.class)
-    @DisabledTest(message = "Flaky; https://crbug.com/1076758")
     public void testStorageDoesNotLeakFromActivityToActivity(
             String activityType1, String activityType2) throws TimeoutException {
         ActivityType activity1 = ActivityType.valueOf(activityType1);
@@ -146,6 +148,7 @@ public class IncognitoStorageLeakageTest {
                 expected = "true";
             }
 
+            CriteriaHelper.pollUiThread(() -> { assertNotNull(tab1.getWebContents()); });
             // Set the storage in tab1
             assertEquals("true",
                     JavaScriptUtils.runJavascriptWithAsyncResult(
@@ -156,6 +159,7 @@ public class IncognitoStorageLeakageTest {
                     JavaScriptUtils.runJavascriptWithAsyncResult(
                             tab1.getWebContents(), "has" + type + "()"));
 
+            CriteriaHelper.pollUiThread(() -> { assertNotNull(tab2.getWebContents()); });
             // Access the storage from tab2
             assertEquals(expected,
                     JavaScriptUtils.runJavascriptWithAsyncResult(

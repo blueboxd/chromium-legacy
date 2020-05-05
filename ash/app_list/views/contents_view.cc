@@ -117,8 +117,7 @@ void ContentsView::Init(AppListModel* model) {
       AddChildView(std::make_unique<ExpandArrowView>(this, app_list_view_));
 
   search_result_tile_item_list_view_ = new SearchResultTileItemListView(
-      search_results_page_view_, GetSearchBoxView()->search_box(),
-      view_delegate);
+      GetSearchBoxView()->search_box(), view_delegate);
   search_results_page_view_->AddSearchResultContainerView(
       search_result_tile_item_list_view_);
 

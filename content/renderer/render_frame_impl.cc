@@ -6689,6 +6689,16 @@ void RenderFrameImpl::TransferUserActivationFrom(
   }
 }
 
+bool RenderFrameImpl::GetCaretBoundsFromFocusedPlugin(gfx::Rect& rect) {
+#if BUILDFLAG(ENABLE_PLUGINS)
+  if (focused_pepper_plugin_) {
+    rect = focused_pepper_plugin_->GetCaretBounds();
+    return true;
+  }
+#endif
+  return false;
+}
+
 void RenderFrameImpl::AddMessageToConsoleImpl(
     blink::mojom::ConsoleMessageLevel level,
     const std::string& message,

@@ -2,7 +2,6 @@
 # Copyright 2015 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-
 """Runs an instance of wptserve to allow manual testing of web-platform-tests.
 
 The main HTTP server is run on 8001, while the main HTTPS server is run on 8444.

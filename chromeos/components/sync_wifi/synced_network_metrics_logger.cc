@@ -222,6 +222,10 @@ void SyncedNetworkMetricsLogger::RecordApplyNetworkFailureReason(
   base::UmaHistogramEnumeration(kApplyFailureReasonHistogram, reason);
 }
 
+void SyncedNetworkMetricsLogger::RecordTotalCount(int count) {
+  base::UmaHistogramCounts1000(kTotalCountHistogram, count);
+}
+
 }  // namespace sync_wifi
 
 }  // namespace chromeos

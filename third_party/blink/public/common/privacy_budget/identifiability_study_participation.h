@@ -13,7 +13,7 @@ namespace blink {
 // This method can be used to avoid computation that is only needed for the
 // study, such as complex digest calculation on canvas operations; for UKM
 // reporting, filtering should happen automatically.
-bool IsUserInStudy();
+bool IsUserInIdentifiabilityStudy();
 
 }  // namespace blink
 

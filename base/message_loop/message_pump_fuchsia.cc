@@ -60,8 +60,7 @@ bool MessagePumpFuchsia::ZxHandleWatchController::StopWatchingZxHandle() {
   if (!weak_pump_)
     return true;
 
-  // |handler| is set when waiting for a signal.
-  if (!handler)
+  if (!is_active())
     return true;
 
   async_wait_t::handler = nullptr;
@@ -150,7 +149,7 @@ MessagePumpFuchsia::FdWatchController::~FdWatchController() {
 }
 
 bool MessagePumpFuchsia::FdWatchController::WaitBegin() {
-  // Refresh the |handle_| and |desired_signals_| from the mxio for the fd.
+  // Refresh the |handle_| and |desired_signals_| from the fdio for the fd.
   // Some types of fdio map read/write events to different signals depending on
   // their current state, so we must do this every time we begin to wait.
   fdio_unsafe_wait_begin(io_, desired_events_, &object, &trigger);
@@ -229,8 +228,10 @@ bool MessagePumpFuchsia::WatchZxHandle(zx_handle_t handle,
   DCHECK_NE(0u, signals);
   DCHECK(controller);
   DCHECK(delegate);
-  DCHECK(handle == ZX_HANDLE_INVALID ||
-         controller->async_wait_t::object == ZX_HANDLE_INVALID ||
+
+  // If the watch controller is active then WatchZxHandle() can be called only
+  // for the same handle.
+  DCHECK(handle == ZX_HANDLE_INVALID || !controller->is_active() ||
          handle == controller->async_wait_t::object);
 
   if (!controller->StopWatchingZxHandle())

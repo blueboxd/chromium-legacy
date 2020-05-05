@@ -10,6 +10,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #import "content/app_shim_remote_cocoa/render_widget_host_view_cocoa.h"
+#include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/content_browser_test.h"
@@ -115,6 +116,12 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewMacTest,
                        GetFirstRectForCharacterRangeUncached) {
   GURL url("data:text/html,Hello");
   EXPECT_TRUE(NavigateToURL(shell(), url));
+
+  auto* web_contents_impl =
+      static_cast<WebContentsImpl*>(shell()->web_contents());
+  auto* root = web_contents_impl->GetFrameTree()->root();
+  web_contents_impl->GetFrameTree()->SetFocusedFrame(
+      root, root->current_frame_host()->GetSiteInstance());
 
   RenderWidgetHostView* rwhv =
       shell()->web_contents()->GetMainFrame()->GetView();

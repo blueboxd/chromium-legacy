@@ -1477,10 +1477,10 @@ class PortTest(LoggingTestCase):
             'failures/unexpected/text.html',
             port.lookup_virtual_test_base(
                 'virtual/virtual_failures/failures/unexpected/text.html'))
-        # 'failures/expected' is not a specified base of virtual/virtual_failures
+        # 'passes' is not a specified base of virtual/virtual_failures
         self.assertIsNone(
             port.lookup_virtual_test_base(
-                'virtual/virtual_failures/failures/expected/image.html'))
+                'virtual/virtual_failures/passes/text.html'))
 
         # Partial match of base with multiple levels.
         self.assertEqual(

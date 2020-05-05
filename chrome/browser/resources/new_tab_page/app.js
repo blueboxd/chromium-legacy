@@ -214,6 +214,7 @@ class AppElement extends PolymerElement {
     super.connectedCallback();
     this.setThemeListenerId_ =
         this.callbackRouter_.setTheme.addListener(theme => {
+          performance.measure('theme-set');
           this.theme_ = theme;
         });
     this.eventTracker_.add(window, 'message', ({data}) => {
@@ -227,6 +228,8 @@ class AppElement extends PolymerElement {
           this.handlePromoMessage_(data);
         } else if (data.frameType === 'one-google-bar') {
           this.handleOneGoogleBarMessage_(data);
+        } else if (data.frameType === 'background-image') {
+          this.handleBackgroundImageMessage_(data);
         }
       }
     });
@@ -506,6 +509,7 @@ class AppElement extends PolymerElement {
         path = '';
     }
     if (path && this.$.backgroundImage.path !== path) {
+      performance.mark('background-image-load-start');
       this.$.backgroundImage.path = path;
     }
   }
@@ -569,6 +573,19 @@ class AppElement extends PolymerElement {
       $$(this, '#oneGoogleBar').style.zIndex = '1000';
     } else if (data.messageType === 'deactivate') {
       $$(this, '#oneGoogleBar').style.zIndex = '0';
+    }
+  }
+
+  /**
+   * @param {!Object} data
+   * @private
+   */
+  handleBackgroundImageMessage_(data) {
+    if (data.src === this.theme_.backgroundImageUrl.url &&
+        data.messageType === 'loaded') {
+      performance.measure(
+          'background-image-load', 'background-image-load-start');
+      performance.measure('background-image-loaded');
     }
   }
 

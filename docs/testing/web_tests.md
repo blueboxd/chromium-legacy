@@ -225,7 +225,9 @@ There are two ways to run web tests with additional command-line arguments:
 
   It will also look for flag-specific expectations in
   `web_tests/FlagExpectations/blocking-repaint`, if this file exists. The
-  suppressions in this file override the main TestExpectations file.
+  suppressions in this file override the main TestExpectations files.
+  However, `[ Slow ]` in either flag-specific expectations or base expectations
+  is always merged into the used expectations.
 
   It will also look for baselines in `web_tests/flag-specific/blocking-repaint`.
   The baselines in this directory override the fallback baselines.
@@ -278,11 +280,13 @@ There are two ways to run web tests with additional command-line arguments:
   These virtual tests exist in addition to the original `compositing/...` and
   `fast/repaint/...` tests. They can have their own expectations in
   `web_tests/TestExpectations`, and their own baselines. The test harness will
-  use the non-virtual baselines as a fallback. However, the non-virtual
-  expectations are not inherited: if `fast/repaint/foo.html` is marked
-  `[ Fail ]`, the test harness still expects
-  `virtual/blocking_repaint/fast/repaint/foo.html` to pass. If you expect the
-  virtual test to also fail, it needs its own suppression.
+  use the non-virtual expectations and baselines as a fallback. If a virtual
+  test has its own expectations, they will override all non-virtual
+  expectations. otherwise the non-virtual expectations will be used. However,
+  `[ Slow ]` in either virtual or non-virtual expectations is always merged
+  into the used expectations. If a virtual test is expected to pass while the
+  non-virtual test is expected to fail, you need to add an explicit `[ Pass ]`
+  entry for the virtual test.
 
   This will also let any real tests under `web_tests/virtual/blocking_repaint`
   directory run with the `--blocking-repaint` flag.

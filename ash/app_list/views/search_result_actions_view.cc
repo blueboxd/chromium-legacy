@@ -25,7 +25,6 @@
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/button/md_text_button.h"
 #include "ui/views/controls/highlight_path_generator.h"
-#include "ui/views/focus/focus_manager.h"
 #include "ui/views/layout/box_layout.h"
 
 namespace ash {
@@ -46,10 +45,6 @@ class SearchResultImageButton : public views::ImageButton {
   SearchResultImageButton(SearchResultActionsView* parent,
                           const SearchResult::Action& action);
   ~SearchResultImageButton() override {}
-
-  // views::View:
-  void OnFocus() override;
-  void OnBlur() override;
 
   // ui::EventHandler:
   void OnGestureEvent(ui::GestureEvent* event) override;
@@ -109,18 +104,6 @@ SearchResultImageButton::SearchResultImageButton(
   views::InstallCircleHighlightPathGenerator(this);
 }
 
-void SearchResultImageButton::OnFocus() {
-  parent_->ActionButtonStateChanged();
-  SchedulePaint();
-  if (GetVisible())
-    NotifyAccessibilityEvent(ax::mojom::Event::kFocus, true);
-}
-
-void SearchResultImageButton::OnBlur() {
-  parent_->ActionButtonStateChanged();
-  SchedulePaint();
-}
-
 void SearchResultImageButton::OnGestureEvent(ui::GestureEvent* event) {
   switch (event->type()) {
     case ui::ET_GESTURE_LONG_PRESS:
@@ -174,10 +157,8 @@ SearchResultImageButton::CreateInkDropHighlight() const {
 void SearchResultImageButton::UpdateOnStateChanged() {
   // Show button if the associated result row is hovered or selected, or one
   // of the action buttons is selected.
-  if (visible_on_hover_) {
-    SetVisible(parent_->IsSearchResultHoveredOrSelected() ||
-               parent()->Contains(GetFocusManager()->GetFocusedView()));
-  }
+  if (visible_on_hover_)
+    SetVisible(parent_->IsSearchResultHoveredOrSelected());
 }
 
 void SearchResultImageButton::OnPaintBackground(gfx::Canvas* canvas) {

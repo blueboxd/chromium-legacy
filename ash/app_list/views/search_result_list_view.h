@@ -41,9 +41,6 @@ class APP_LIST_EXPORT SearchResultListView : public SearchResultContainerView {
 
   void OnSearchResultInstalled(SearchResultView* view);
 
-  // Handles vertical focus movement triggered by VKEY_UP/VKEY_DOWN.
-  bool HandleVerticalFocusMovement(SearchResultView* view, bool arrow_up);
-
   // Overridden from views::View:
   gfx::Size CalculatePreferredSize() const override;
   const char* GetClassName() const override;

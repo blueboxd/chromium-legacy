@@ -5,7 +5,6 @@
 #ifndef CHROME_BROWSER_CHROMEOS_CHILD_ACCOUNTS_TIME_LIMITS_WEB_TIME_ACTIVITY_PROVIDER_H_
 #define CHROME_BROWSER_CHROMEOS_CHILD_ACCOUNTS_TIME_LIMITS_WEB_TIME_ACTIVITY_PROVIDER_H_
 
-#include <map>
 #include <set>
 
 #include "base/observer_list.h"
@@ -22,10 +21,6 @@ class Window;
 namespace base {
 class Time;
 }  // namespace base
-
-namespace content {
-class WebContents;
-}  // namespace content
 
 class Browser;
 
@@ -96,8 +91,8 @@ class WebTimeActivityProvider : public WebTimeNavigationObserver::EventListener,
   // The set of navigation observers |this| instance is listening to.
   std::set<WebTimeNavigationObserver*> navigation_observers_;
 
-  // A map between active browser instances and their selected WebContents.
-  std::map<const Browser*, content::WebContents*> browser_activity_;
+  // A set of active browser instances.
+  std::set<const Browser*> active_browsers_;
 
   // The default chrome app activity state.
   ChromeAppActivityState chrome_app_activity_state_ =

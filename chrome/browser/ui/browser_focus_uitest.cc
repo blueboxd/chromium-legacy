@@ -37,6 +37,8 @@
 #include "components/omnibox/browser/omnibox_edit_controller.h"
 #include "components/omnibox/browser/omnibox_edit_model.h"
 #include "components/omnibox/browser/omnibox_view.h"
+#include "content/public/browser/interstitial_page.h"
+#include "content/public/browser/interstitial_page_delegate.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_frame_host.h"
@@ -170,6 +172,45 @@ class BrowserFocusTest : public InProcessBrowserTest {
       }
     }
   }
+};
+
+// A test interstitial page with typical HTML contents.
+class TestInterstitialPage : public content::InterstitialPageDelegate {
+ public:
+  explicit TestInterstitialPage(WebContents* tab) {
+    base::ScopedAllowBlockingForTesting allow_blocking;
+    base::FilePath file_path;
+    bool success = base::PathService::Get(chrome::DIR_TEST_DATA, &file_path);
+    EXPECT_TRUE(success);
+    file_path = file_path.AppendASCII("focus/typical_page.html");
+    success = base::ReadFileToString(file_path, &html_contents_);
+    EXPECT_TRUE(success);
+    interstitial_page_ = content::InterstitialPage::Create(
+        tab, true, GURL("http://interstitial.com"), this);
+
+    // Show the interstitial and delay return until it has attached.
+    interstitial_page_->Show();
+    content::WaitForInterstitialAttach(tab);
+
+    EXPECT_TRUE(tab->ShowingInterstitialPage());
+  }
+
+  std::string GetHTMLContents() override { return html_contents_; }
+
+  RenderViewHost* render_view_host() {
+    return interstitial_page_->GetMainFrame()->GetRenderViewHost();
+  }
+
+  void DontProceed() { interstitial_page_->DontProceed(); }
+
+  bool HasFocus() {
+    return render_view_host()->GetWidget()->GetView()->HasFocus();
+  }
+
+ private:
+  std::string html_contents_;
+  content::InterstitialPage* interstitial_page_;  // Owns this.
+  DISALLOW_COPY_AND_ASSIGN(TestInterstitialPage);
 };
 
 // Flaky on Mac (http://crbug.com/67301).
@@ -408,6 +449,47 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, MAYBE_FocusTraversal) {
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
   EXPECT_NO_FATAL_FAILURE(TestFocusTraversal(tab->GetRenderViewHost(), false));
   EXPECT_NO_FATAL_FAILURE(TestFocusTraversal(tab->GetRenderViewHost(), true));
+}
+
+// Test forward and reverse focus traversal while an interstitial is showing.
+// Disabled, see http://crbug.com/60973
+IN_PROC_BROWSER_TEST_F(BrowserFocusTest,
+                       DISABLED_FocusTraversalOnInterstitial) {
+  ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
+  const GURL url = embedded_test_server()->GetURL(kSimplePage);
+  ui_test_utils::NavigateToURL(browser(), url);
+  EXPECT_TRUE(IsViewFocused(VIEW_ID_TAB_CONTAINER));
+
+  // Create and show a test interstitial page.
+  TestInterstitialPage* interstitial_page = new TestInterstitialPage(
+      browser()->tab_strip_model()->GetActiveWebContents());
+  content::RenderViewHost* host = interstitial_page->render_view_host();
+
+  EXPECT_TRUE(IsViewFocused(VIEW_ID_TAB_CONTAINER));
+  chrome::FocusLocationBar(browser());
+  EXPECT_NO_FATAL_FAILURE(TestFocusTraversal(host, false));
+  EXPECT_NO_FATAL_FAILURE(TestFocusTraversal(host, true));
+}
+
+// Test the transfer of focus when an interstitial is shown and hidden.
+IN_PROC_BROWSER_TEST_F(BrowserFocusTest, InterstitialFocus) {
+  ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
+  const GURL url = embedded_test_server()->GetURL(kSimplePage);
+  ui_test_utils::NavigateToURL(browser(), url);
+  WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
+  EXPECT_TRUE(IsViewFocused(VIEW_ID_TAB_CONTAINER));
+  EXPECT_TRUE(tab->GetRenderViewHost()->GetWidget()->GetView()->HasFocus());
+
+  // Create and show a test interstitial page; it should gain focus.
+  TestInterstitialPage* interstitial_page = new TestInterstitialPage(tab);
+  EXPECT_TRUE(IsViewFocused(VIEW_ID_TAB_CONTAINER));
+  EXPECT_TRUE(interstitial_page->HasFocus());
+
+  // Hide the interstitial; the original page should gain focus.
+  interstitial_page->DontProceed();
+  content::RunAllPendingInMessageLoop();
+  EXPECT_TRUE(IsViewFocused(VIEW_ID_TAB_CONTAINER));
+  EXPECT_TRUE(tab->GetRenderViewHost()->GetWidget()->GetView()->HasFocus());
 }
 
 // Test that find-in-page UI can request focus, even when it is already open.

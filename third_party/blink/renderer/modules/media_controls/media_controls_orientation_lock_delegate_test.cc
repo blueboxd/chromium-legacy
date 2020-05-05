@@ -16,7 +16,6 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/frame_view.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
-#include "third_party/blink/renderer/core/frame/screen_orientation_controller.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/fullscreen/fullscreen.h"
 #include "third_party/blink/renderer/core/html/media/html_audio_element.h"
@@ -27,7 +26,7 @@
 #include "third_party/blink/renderer/modules/device_orientation/device_orientation_controller.h"
 #include "third_party/blink/renderer/modules/device_orientation/device_orientation_data.h"
 #include "third_party/blink/renderer/modules/media_controls/media_controls_impl.h"
-#include "third_party/blink/renderer/modules/screen_orientation/screen_orientation_controller_impl.h"
+#include "third_party/blink/renderer/modules/screen_orientation/screen_orientation_controller.h"
 #include "third_party/blink/renderer/modules/screen_orientation/web_lock_orientation_callback.h"
 #include "third_party/blink/renderer/platform/geometry/int_rect.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
@@ -108,12 +107,11 @@ class MockChromeClientForOrientationLockDelegate final
   // ChromeClient overrides:
   void InstallSupplements(LocalFrame& frame) override {
     EmptyChromeClient::InstallSupplements(frame);
-    ScreenOrientationControllerImpl::ProvideTo(frame);
     mojo::AssociatedRemote<device::mojom::blink::ScreenOrientation>
         screen_orientation;
     ScreenOrientationClient().BindPendingReceiver(
         screen_orientation.BindNewEndpointAndPassDedicatedReceiverForTesting());
-    ScreenOrientationControllerImpl::From(frame)
+    ScreenOrientationController::From(*frame.DomWindow())
         ->SetScreenOrientationAssociatedRemoteForTests(
             std::move(screen_orientation));
   }
@@ -217,7 +215,7 @@ class MediaControlsOrientationLockDelegateTest
 
   void SimulateOrientationLock() {
     ScreenOrientationController* controller =
-        ScreenOrientationController::From(*GetDocument().GetFrame());
+        ScreenOrientationController::From(*GetDocument().domWindow());
     controller->lock(kWebScreenOrientationLockLandscape,
                      std::make_unique<DummyScreenOrientationCallback>());
     EXPECT_TRUE(controller->MaybeHasActiveLock());
@@ -298,7 +296,7 @@ class MediaControlsOrientationLockAndRotateToFullscreenDelegateTest
   enum DeviceNaturalOrientation { kNaturalIsPortrait, kNaturalIsLandscape };
 
   void SetUp() override {
-    // Unset this to fix ScreenOrientationControllerImpl::ComputeOrientation.
+    // Unset this to fix ScreenOrientationController::ComputeOrientation.
     // TODO(mlamouri): Refactor to avoid this (crbug.com/726817).
     was_running_web_test_ = WebTestSupport::IsRunningWebTest();
     WebTestSupport::SetIsRunningWebTest(false);
@@ -369,7 +367,7 @@ class MediaControlsOrientationLockAndRotateToFullscreenDelegateTest
     screen_info.orientation_angle = screen_orientation_angle;
     screen_info.rect = ScreenRectFromAngle(screen_orientation_angle);
     ASSERT_TRUE(screen_info.orientation_type ==
-                ScreenOrientationControllerImpl::ComputeOrientation(
+                ScreenOrientationController::ComputeOrientation(
                     screen_info.rect, screen_info.orientation_angle));
 
     testing::Mock::VerifyAndClearExpectations(&ChromeClient());
@@ -378,7 +376,7 @@ class MediaControlsOrientationLockAndRotateToFullscreenDelegateTest
         .WillRepeatedly(Return(screen_info));
 
     // Screen Orientation API
-    ScreenOrientationController::From(*GetDocument().GetFrame())
+    ScreenOrientationController::From(*GetDocument().domWindow())
         ->NotifyOrientationChanged();
 
     // Legacy window.orientation API

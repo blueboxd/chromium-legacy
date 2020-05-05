@@ -12,6 +12,7 @@
 #include "components/security_interstitials/core/common_string_util.h"
 #include "components/security_interstitials/core/metrics_helper.h"
 #include "components/strings/grit/components_strings.h"
+#include "content/public/browser/interstitial_page_delegate.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
 #include "net/base/net_errors.h"
@@ -22,7 +23,7 @@
 using security_interstitials::MetricsHelper;
 
 // static
-const security_interstitials::SecurityInterstitialPage::TypeID
+const content::InterstitialPageDelegate::TypeID
     LookalikeUrlBlockingPage::kTypeForTesting =
         &LookalikeUrlBlockingPage::kTypeForTesting;
 
@@ -71,7 +72,7 @@ void LookalikeUrlBlockingPage::RecordUkmEvent(
       .Record(ukm_recorder);
 }
 
-security_interstitials::SecurityInterstitialPage::TypeID
+content::InterstitialPageDelegate::TypeID
 LookalikeUrlBlockingPage::GetTypeForTesting() {
   return LookalikeUrlBlockingPage::kTypeForTesting;
 }

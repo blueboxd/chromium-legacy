@@ -113,9 +113,8 @@ void LocationArbitrator::RegisterProviders() {
     return;
   }
 
-  if (url_loader_factory_) {
+  if (url_loader_factory_)
     RegisterProvider(NewNetworkLocationProvider(url_loader_factory_, api_key_));
-  }
 }
 
 void LocationArbitrator::OnLocationUpdate(
@@ -157,7 +156,7 @@ LocationArbitrator::NewNetworkLocationProvider(
 
 std::unique_ptr<LocationProvider>
 LocationArbitrator::NewSystemLocationProvider() {
-#if defined(OS_MACOSX) || defined(OS_LINUX) || defined(OS_FUCHSIA)
+#if defined(OS_LINUX) || defined(OS_FUCHSIA)
   return nullptr;
 #else
   return device::NewSystemLocationProvider();

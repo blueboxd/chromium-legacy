@@ -389,7 +389,7 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
 
  private:
   // FontSelectorClient implementation.
-  void FontsNeedUpdate(FontSelector*) override;
+  void FontsNeedUpdate(FontSelector*, FontInvalidationReason) override;
 
   void LoadVisionDeficiencyFilter();
 

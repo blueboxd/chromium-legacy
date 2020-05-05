@@ -35,6 +35,7 @@
 <translation id="1938124657309484470">Giá trị phải là <ph name="MAXIMUM_DATE_OR_TIME" /> hoặc sớm hơn.</translation>
 <translation id="1946271899482435442">Hiển thị bộ chọn ngày</translation>
 <translation id="1993104285338243655">Đã chuyển sang chế độ phản chiếu</translation>
+<translation id="2031987842108996681">Kênh đỏ</translation>
 <translation id="2060505056492490888">'<ph name="DOT" />' bị sử dụng sai vị trí trong '<ph name="INVALIDDOMAIN" />'.</translation>
 <translation id="2148716181193084225">Hôm nay</translation>
 <translation id="2158401438286456825">danh sách trang</translation>
@@ -45,6 +46,7 @@
 <translation id="2291999235780842123">hộp kiểm</translation>
 <translation id="2311842470354187719">ngắt trang</translation>
 <translation id="2335594187091864976">bộ chọn ngày và giờ</translation>
+<translation id="2393030564806080191">Giá trị màu thập lục phân</translation>
 <translation id="245932805758469625">số giây còn lại của video</translation>
 <translation id="248395913932153421">Ngày</translation>
 <translation id="2507943997699731163">Vui lòng điền vào trường này.</translation>
@@ -52,6 +54,7 @@
 <translation id="2561842179657104141">hiển thị các kiểm soát phương tiện khác</translation>
 <translation id="2572483411312390101">phát</translation>
 <translation id="2613802280814924224">Vui lòng nhập giá trị hợp lệ. Giá trị hợp lệ gần nhất là <ph name="VALID_VALUE" />.</translation>
+<translation id="2634240155926812724">Kênh xanh lục</translation>
 <translation id="2653659639078652383">Gửi</translation>
 <translation id="2657045182931379222">đối tượng đồ họa</translation>
 <translation id="2674318244760992338">chân trang</translation>
@@ -127,6 +130,7 @@
 <translation id="5034860022980953847">chỉ báo tiến trình</translation>
 <translation id="5090250355906949916">thanh trượt thời gian trên video</translation>
 <translation id="5093189678851173835">lời đề từ</translation>
+<translation id="509897012892853729">Kênh xanh lam</translation>
 <translation id="5117590920725113268">Hiển thị tháng tiếp theo</translation>
 <translation id="512758898067543763">tiêu đề hàng</translation>
 <translation id="5143125788380636750">lời kết</translation>
@@ -164,6 +168,7 @@
 <translation id="6166809985690652833">lời bạt</translation>
 <translation id="6209276755895393898">Có vẻ như là: <ph name="DESCRIPTION" /></translation>
 <translation id="6213469881011901533">bảng thuật ngữ</translation>
+<translation id="6281588256137006900">Độ sáng</translation>
 <translation id="6281763101136022427">url</translation>
 <translation id="6310801910862476708">Thoát chế độ hình trong hình</translation>
 <translation id="6398862346408813489">Hiển thị bảng lựa chọn tháng</translation>
@@ -184,6 +189,7 @@
 <translation id="6790428901817661496">Phát</translation>
 <translation id="6820355525329141109">Không thể tải plugin.</translation>
 <translation id="6820615603175220800">tham chiếu danh mục</translation>
+<translation id="6831465880655513317">Vòng tròn màu có thanh trượt hai chiều để chọn độ bão hòa và độ sáng</translation>
 <translation id="6843725295806269523">tắt tiếng</translation>
 <translation id="6885760532393684712">thư mục</translation>
 <translation id="689129560213475294">lời ghi cuối sách</translation>
@@ -201,6 +207,7 @@
 <translation id="7263440858009898357">Vui lòng chọn một mục trong danh sách.</translation>
 <translation id="727747134524199931">tiêu đề cột</translation>
 <translation id="7320576522385648310">lưu vào bộ đệm</translation>
+<translation id="7341556277900466204">Vòng tròn màu</translation>
 <translation id="7353453495576941748">ghi nhận tác giả</translation>
 <translation id="7364796246159120393">Chọn tệp</translation>
 <translation id="739024184232394898">Khác...</translation>
@@ -221,6 +228,7 @@
 <translation id="775297008183122718">Mục nhập không hợp lệ</translation>
 <translation id="7789962463072032349">tạm dừng</translation>
 <translation id="7802800022689234070">tam giác hiển thị</translation>
+<translation id="7852167693871241274">Thanh trượt màu sắc</translation>
 <translation id="7888071071722539607">Vui lòng bao gồm '<ph name="ATSIGN" />' trong địa chỉ email. '<ph name="INVALIDADDRESS" />' bị thiếu '<ph name="ATSIGN" />'.</translation>
 <translation id="7891486169920085145">bộ chia</translation>
 <translation id="795667975304826397">Không có tệp nào được chọn</translation>
@@ -263,6 +271,7 @@
 <translation id="8875657656876809964">Lỗi phát lại video</translation>
 <translation id="8889402386540077796">Màu sắc</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> KB</translation>
+<translation id="894736920926684893">Trình chuyển đổi định dạng</translation>
 <translation id="8987927404178983737">Tháng</translation>
 <translation id="901493112792887934">thời gian hiện tại bằng giây</translation>
 <translation id="901834265349196618">email</translation>

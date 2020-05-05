@@ -270,10 +270,14 @@ IPC_ENUM_TRAITS_MAX_VALUE(gfx::FontRenderParams::Hinting,
 IPC_ENUM_TRAITS_MAX_VALUE(gfx::FontRenderParams::SubpixelRendering,
                           gfx::FontRenderParams::SUBPIXEL_RENDERING_MAX)
 
-IPC_STRUCT_TRAITS_BEGIN(blink::UserAgentMetadata)
+IPC_STRUCT_TRAITS_BEGIN(blink::UserAgentBrandVersion)
   IPC_STRUCT_TRAITS_MEMBER(brand)
-  IPC_STRUCT_TRAITS_MEMBER(full_version)
   IPC_STRUCT_TRAITS_MEMBER(major_version)
+IPC_STRUCT_TRAITS_END()
+
+IPC_STRUCT_TRAITS_BEGIN(blink::UserAgentMetadata)
+  IPC_STRUCT_TRAITS_MEMBER(brand_version_list)
+  IPC_STRUCT_TRAITS_MEMBER(full_version)
   IPC_STRUCT_TRAITS_MEMBER(platform)
   IPC_STRUCT_TRAITS_MEMBER(platform_version)
   IPC_STRUCT_TRAITS_MEMBER(architecture)

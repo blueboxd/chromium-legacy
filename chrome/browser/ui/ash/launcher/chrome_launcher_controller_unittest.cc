@@ -96,6 +96,7 @@
 #include "chrome/test/base/test_browser_window_aura.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "components/account_id/account_id.h"
 #include "components/arc/arc_prefs.h"
@@ -106,6 +107,7 @@
 #include "components/exo/shell_surface_util.h"
 #include "components/keep_alive_registry/scoped_keep_alive.h"
 #include "components/prefs/pref_notifier_impl.h"
+#include "components/sync/base/model_type.h"
 #include "components/sync/model/fake_sync_change_processor.h"
 #include "components/sync/model/sync_error_factory_mock.h"
 #include "components/sync/protocol/sync.pb.h"
@@ -532,19 +534,27 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
     app_list_syncable_service_->StopSyncing(syncer::APP_LIST);
   }
 
+  // static
+  syncer::ModelType GetPreferencesModelType() {
+    // SplitSettingsSync makes shelf prefs into OS prefs.
+    return chromeos::features::IsSplitSettingsSyncEnabled()
+               ? syncer::OS_PREFERENCES
+               : syncer::PREFERENCES;
+  }
+
   sync_preferences::PrefModelAssociator* GetPrefSyncService() {
     sync_preferences::PrefServiceSyncable* pref_sync =
         profile()->GetTestingPrefService();
     sync_preferences::PrefModelAssociator* pref_sync_service =
         reinterpret_cast<sync_preferences::PrefModelAssociator*>(
-            pref_sync->GetSyncableService(syncer::PREFERENCES));
+            pref_sync->GetSyncableService(GetPreferencesModelType()));
     return pref_sync_service;
   }
 
   void StartPrefSyncService(const syncer::SyncDataList& init_sync_list) {
     base::Optional<syncer::ModelError> error =
         GetPrefSyncService()->MergeDataAndStartSyncing(
-            syncer::PREFERENCES, init_sync_list,
+            GetPreferencesModelType(), init_sync_list,
             std::make_unique<syncer::FakeSyncChangeProcessor>(),
             std::make_unique<syncer::SyncErrorFactoryMock>());
     EXPECT_FALSE(error.has_value());

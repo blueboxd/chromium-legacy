@@ -11,8 +11,7 @@ NavigatorUAData* NavigatorUA::userAgentData() {
       MakeGarbageCollected<NavigatorUAData>(GetUAExecutionContext());
 
   UserAgentMetadata metadata = GetUserAgentMetadata();
-  ua_data->AddBrand(String::FromUTF8(metadata.brand),
-                    String::FromUTF8(metadata.major_version));
+  ua_data->SetBrandVersionList(metadata.brand_version_list);
   ua_data->SetMobile(metadata.mobile);
   ua_data->SetPlatform(String::FromUTF8(metadata.platform),
                        String::FromUTF8(metadata.platform_version));

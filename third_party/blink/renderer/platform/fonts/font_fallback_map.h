@@ -34,12 +34,13 @@ class PLATFORM_EXPORT FontFallbackMap : public FontCacheClient,
 
  private:
   // FontSelectorClient
-  void FontsNeedUpdate(FontSelector*) override;
+  void FontsNeedUpdate(FontSelector*, FontInvalidationReason) override;
 
   // FontCacheClient
   void FontCacheInvalidated() override;
 
   void InvalidateAll();
+  void InvalidateForLoadingFallback();
 
   Member<FontSelector> font_selector_;
   HashMap<FontDescription, scoped_refptr<FontFallbackList>>

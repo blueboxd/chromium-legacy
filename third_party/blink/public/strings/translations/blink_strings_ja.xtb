@@ -35,6 +35,7 @@
 <translation id="1938124657309484470"><ph name="MAXIMUM_DATE_OR_TIME" /> 以前の値を指定する必要があります。</translation>
 <translation id="1946271899482435442">日付選択ツールを表示</translation>
 <translation id="1993104285338243655">ミラーリングに切り替わりました</translation>
+<translation id="2031987842108996681">赤チャネル</translation>
 <translation id="2060505056492490888">「<ph name="INVALIDDOMAIN" />」内の「<ph name="DOT" />」の位置が間違っています。</translation>
 <translation id="2148716181193084225">今日</translation>
 <translation id="2158401438286456825">ページリスト</translation>
@@ -45,6 +46,7 @@
 <translation id="2291999235780842123">チェックボックス</translation>
 <translation id="2311842470354187719">改ページ</translation>
 <translation id="2335594187091864976">日時選択ツール</translation>
+<translation id="2393030564806080191">16 進数色コード</translation>
 <translation id="245932805758469625">残りの再生時間（秒）</translation>
 <translation id="248395913932153421">日</translation>
 <translation id="2507943997699731163">このフィールドを入力してください。</translation>
@@ -52,6 +54,7 @@
 <translation id="2561842179657104141">その他のメディア コントロールを表示</translation>
 <translation id="2572483411312390101">再生</translation>
 <translation id="2613802280814924224">有効な値を入力してください。有効な値として最も近いのは <ph name="VALID_VALUE" /> です。</translation>
+<translation id="2634240155926812724">緑チャネル</translation>
 <translation id="2653659639078652383">送信</translation>
 <translation id="2657045182931379222">図形オブジェクト</translation>
 <translation id="2674318244760992338">フッター</translation>
@@ -127,6 +130,7 @@
 <translation id="5034860022980953847">プログレスバー</translation>
 <translation id="5090250355906949916">動画シークバー</translation>
 <translation id="5093189678851173835">題辞</translation>
+<translation id="509897012892853729">青チャネル</translation>
 <translation id="5117590920725113268">次の月を表示</translation>
 <translation id="512758898067543763">行見出し</translation>
 <translation id="5143125788380636750">エピローグ</translation>
@@ -164,6 +168,7 @@
 <translation id="6166809985690652833">後書き</translation>
 <translation id="6209276755895393898"><ph name="DESCRIPTION" /> の画像のようです</translation>
 <translation id="6213469881011901533">用語集</translation>
+<translation id="6281588256137006900">明度</translation>
 <translation id="6281763101136022427">URL</translation>
 <translation id="6310801910862476708">ピクチャー イン ピクチャーを終了</translation>
 <translation id="6398862346408813489">月選択パネルを表示</translation>
@@ -184,6 +189,7 @@
 <translation id="6790428901817661496">再生</translation>
 <translation id="6820355525329141109">プラグインを読み込むことができませんでした。</translation>
 <translation id="6820615603175220800">文献参照</translation>
+<translation id="6831465880655513317">彩度や明度を選択できる 2 次元スライダー付きの色選択ツールです</translation>
 <translation id="6843725295806269523">ミュート</translation>
 <translation id="6885760532393684712">ディレクトリ</translation>
 <translation id="689129560213475294">奥付</translation>
@@ -201,6 +207,7 @@
 <translation id="7263440858009898357">リスト内の項目を選択してください。</translation>
 <translation id="727747134524199931">列見出し</translation>
 <translation id="7320576522385648310">バッファリング</translation>
+<translation id="7341556277900466204">色選択ツール</translation>
 <translation id="7353453495576941748">クレジット</translation>
 <translation id="7364796246159120393">ファイルを選択</translation>
 <translation id="739024184232394898">その他...</translation>
@@ -221,6 +228,7 @@
 <translation id="775297008183122718">入力した値が無効です</translation>
 <translation id="7789962463072032349">一時停止</translation>
 <translation id="7802800022689234070">三角形の展開ボタン</translation>
+<translation id="7852167693871241274">色相スライダー</translation>
 <translation id="7888071071722539607">メール アドレスに「<ph name="ATSIGN" />」を挿入してください。「<ph name="INVALIDADDRESS" />」内に「<ph name="ATSIGN" />」がありません。</translation>
 <translation id="7891486169920085145">分割バー</translation>
 <translation id="795667975304826397">選択されていません</translation>
@@ -263,6 +271,7 @@
 <translation id="8875657656876809964">動画再生エラー</translation>
 <translation id="8889402386540077796">色調</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> KB</translation>
+<translation id="894736920926684893">形式の切り替え</translation>
 <translation id="8987927404178983737">月</translation>
 <translation id="901493112792887934">現在の時間（秒単位）</translation>
 <translation id="901834265349196618">メール</translation>

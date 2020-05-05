@@ -140,6 +140,7 @@
 <translation id="2700493154570097719">Гараа тохируулах</translation>
 <translation id="2704781753052663061">Бусад Wi-Fi сүлжээнд нэгдэх</translation>
 <translation id="2705001408393684014">Микрофоныг унтраах/асаах. <ph name="STATE_TEXT" /></translation>
+<translation id="2706462751667573066">Дээш</translation>
 <translation id="2718395828230677721">Шөнийн гэрэл</translation>
 <translation id="2727977024730340865">Бага энергитэй цэнэглэгч залгасан байна. Тэжээлийг цэнэглэхгүй байж болох юм.</translation>
 <translation id="2792498699870441125">Alt+ Хайлт</translation>
@@ -173,6 +174,7 @@
 <translation id="3077734595579995578">Шилжүүлэх</translation>
 <translation id="3081696990447829002">Цэсийг дэлгэх</translation>
 <translation id="3087734570205094154">Доод</translation>
+<translation id="309749186376891736">Курсорыг зөөх</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (Bluetooth)</translation>
 <translation id="3126069444801937830">Шинэчлэлт хийхээр дахин эхлүүлэх</translation>
 <translation id="3139942575505304791">Дэлгэц 1</translation>
@@ -243,6 +245,7 @@
 <translation id="3899995891769452915">Дуугаар оруулах</translation>
 <translation id="3900355044994618856">Таны харилцан үйлдэл <ph name="SESSION_TIME_REMAINING" />-н дараа дуусна</translation>
 <translation id="3901991538546252627"><ph name="NAME" />-д холбогдож байна</translation>
+<translation id="3943857333388298514">Хуулан буулгах</translation>
 <translation id="394485226368336402">Аудио тохиргоо</translation>
 <translation id="3962859241508114581">Өмнөх бичлэг</translation>
 <translation id="3965097803111112935">Унтраалттай</translation>
@@ -295,7 +298,6 @@
 <translation id="4565377596337484307">Нууц үгийг нуух</translation>
 <translation id="4570957409596482333">Ярихаар сонгох товчлуур</translation>
 <translation id="4585337515783392668">Үл мэдэгдэх хүлээн авагч руу дамжуулахаа зогсоох</translation>
-<translation id="4588090240171750605">Баруун тийш гүйлгэх</translation>
 <translation id="4628757576491864469">Төхөөрөмжүүд</translation>
 <translation id="4659419629803378708">ChromeVox-г идэвхжүүлсэн</translation>
 <translation id="4665114317261903604">Бүү саад бол горимыг унтраах/асаах. <ph name="STATE_TEXT" /></translation>
@@ -337,6 +339,7 @@
 <translation id="5250225880026334010">Унтраалттай</translation>
 <translation id="5260676007519551770">Дэлгэц 4</translation>
 <translation id="5283198616748585639">1 минут нэмэх</translation>
+<translation id="528468243742722775">Төгсгөл</translation>
 <translation id="5286194356314741248">Скан хийж байна</translation>
 <translation id="5302048478445481009">Хэл</translation>
 <translation id="5313326810920013265">Bluetooth тохиргоо</translation>
@@ -407,6 +410,7 @@
 <translation id="615957422585914272">Дэлгэц дээрх гарыг харуулах</translation>
 <translation id="6164005077879661055">Хэрэв энэ хяналттай хэрэглэгчийг устгавал түүнтэй холбоотой бүх файлууд болон суурин өгөгдлүүд бүрмөсөн устах болно. Энэ хяналттай хэрэглэгчийн орж байсан вэб сайтууд болон тохиргоонуудыг <ph name="MANAGEMENT_URL" /> дэх менежер харах боломжтой байна.</translation>
 <translation id="6165508094623778733">Нэмэлт мэдээлэл авах</translation>
+<translation id="622484624075952240">Бууруулсан жагсаалт</translation>
 <translation id="6236290670123303279">Тохиргоог удирдах</translation>
 <translation id="6237231532760393653">1X</translation>
 <translation id="6254629735336163724">Хэвтээ чиглэлээр түгжсэн</translation>
@@ -417,7 +421,6 @@
 <translation id="6288235558961782912"><ph name="USER_EMAIL_ADDRESS" />-г эцэг эхийн зөвшөөрөлтэйгөөр дараа дахин нэмэх боломжтой.</translation>
 <translation id="6297287540776456956">Бүс сонгохын тулд мэдрэгч үзэг ашиглах</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> -ийг  <ph name="ROTATION" /> руу эргүүлсэн</translation>
-<translation id="6364916375976753737">Зүүн тийш гүйлгэх</translation>
 <translation id="6376931439017688372">Bluetooth асаалттай байна</translation>
 <translation id="6381109794406942707">Төхөөрөмжийн түгжээг тайлахын тулд ПИН-ээ оруулна уу.</translation>
 <translation id="639644700271529076">CAPS LOCK идэвхгүй байна</translation>
@@ -468,6 +471,7 @@
 <translation id="6820676911989879663">Завсарлага аваарай!</translation>
 <translation id="6857811139397017780"><ph name="NETWORKSERVICE" />-ийг идэвхжүүл</translation>
 <translation id="6878400149835617132">Товчлол унтраалттай байна</translation>
+<translation id="6896758677409633944">Хуулах</translation>
 <translation id="6910714959251846841">Тус шинэчлэлт нь таны төхөөрөмжийг үйлдвэрийн тохиргоонд буцааж оруулахыг шаарддаг. Хамгийн сүүлийн үеийн <ph name="SYSTEM_APP_NAME" /> шинэчлэлтийн талаар нэмэлт мэдээлэл авна уу.</translation>
 <translation id="6919251195245069855">Таны ухаалаг картыг таньж чадсангүй. Дахин оролдоно уу.</translation>
 <translation id="6945221475159498467">Сонгох</translation>
@@ -523,6 +527,7 @@
 <translation id="7654687942625752712">Хэлсэн саналыг идэвхгүй болгохын тулд дууны түвшингийн хоёр товчлуурыг дараад хүлээнэ үү.</translation>
 <translation id="7705524343798198388">VPN</translation>
 <translation id="7723389094756330927">{NUM_NOTIFICATIONS,plural, =1{1 мэдэгдэл}other{# мэдэгдэл}}</translation>
+<translation id="7724603315864178912">Хайчлах</translation>
 <translation id="7749443890790263709">Дэлгэцийн тоо хамгийн дээд хэмжээнд хүрлээ.</translation>
 <translation id="776344839111254542">Шинэчлэлтийн дэлгэрэнгүйг харахын тулд товшино уу</translation>
 <translation id="7780159184141939021">Дэлгэцийг эргүүлсэн</translation>
@@ -563,7 +568,6 @@
 <translation id="8142699993796781067">Хувийн сүлжээ</translation>
 <translation id="8152092012181020186">Хаахын тулд Ctrl + W дээр дарна уу.</translation>
 <translation id="8155007568264258537"><ph name="FEATURE_NAME" /> Энэ тохиргоог таны администратор удирддаг.</translation>
-<translation id="815598010540052116">Доош нь гүйлгэж харах</translation>
 <translation id="8167567890448493835"><ph name="LOCALE_NAME" />-г ашиглаж байна</translation>
 <translation id="8190698733819146287">Хэл болон оролтыг гүйцэтгэх...</translation>
 <translation id="8192202700944119416">Мэдэгдлийг нуусан.</translation>
@@ -575,7 +579,6 @@
 <translation id="8261506727792406068">Устгах</translation>
 <translation id="8297006494302853456">Сул</translation>
 <translation id="8308637677604853869">Өмнөх цэс</translation>
-<translation id="8331626408530291785">Дээш гүйлгэх</translation>
 <translation id="8341451174107936385"><ph name="UNLOCK_MORE_FEATURES" />  <ph name="GET_STARTED" /></translation>
 <translation id="8351131234907093545">Тэмдэглэл үүсгэх</translation>
 <translation id="8375916635258623388">Энэ <ph name="DEVICE_NAME" /> болон таны утас автоматаар холбогдоно</translation>

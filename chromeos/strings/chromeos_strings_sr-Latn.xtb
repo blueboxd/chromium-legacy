@@ -17,8 +17,10 @@
 <translation id="2805756323405976993">Aplikacije</translation>
 <translation id="2872961005593481000">Isključi</translation>
 <translation id="3008341117444806826">OSVEŽI</translation>
+<translation id="3369013195428705271">Želite li stvarno da obrišete celu istoriju štampanja? Zadaci štampanja koji su u toku se ne brišu.</translation>
 <translation id="3515615323037921860">Zadaci štampanja</translation>
 <translation id="3749289110408117711">Naziv datoteke</translation>
+<translation id="38114475217616659">Obriši svu istoriju</translation>
 <translation id="3820172043799983114">Nevažeći PIN.</translation>
 <translation id="3838338534323494292">Nova lozinka</translation>
 <translation id="4003259559679196451"><ph name="ENROLLMENT_DOMAIN" /> upravlja ovim uređajem i ima pristup svim aktivnostima korisnika, uključujući posećene veb-stranice, lozinke i imejlove.</translation>
@@ -42,6 +44,8 @@ Probajte da dodirnete mikrofon da biste me pitali nešto.</translation>
 <translation id="6058625436358447366">Da biste završili, unesite staru i novu lozinku</translation>
 <translation id="6106186594183574873">Da biste završili, unesite staru lozinku</translation>
 <translation id="6146993107019042706">Da biste završili, unesite novu lozinku</translation>
+<translation id="6643016212128521049">Obriši</translation>
+<translation id="7162487448488904999">Galerija</translation>
 <translation id="7658239707568436148">Otkaži</translation>
 <translation id="7690294790491645610">Potvrdite novu lozinku</translation>
 <translation id="7805768142964895445">Status</translation>

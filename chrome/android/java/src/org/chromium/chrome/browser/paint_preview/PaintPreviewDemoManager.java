@@ -79,6 +79,7 @@ public class PaintPreviewDemoManager implements TabViewProvider {
 
         TabViewManager.get(mTab).removeTabViewProvider(this);
         mPaintPreviewDemoService.cleanUpForTabId(mTab.getId());
+        mPlayerManager.destroy();
         mPlayerManager = null;
     }
 

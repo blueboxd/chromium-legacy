@@ -217,7 +217,9 @@ PersonalDataManagerAndroid::CreateJavaCreditCardFromNative(
       ResourceMapper::MapToJavaDrawableId(
           payment_request_data.icon_resource_id),
       ConvertUTF8ToJavaString(env, card.billing_address_id()),
-      ConvertUTF8ToJavaString(env, card.server_id()));
+      ConvertUTF8ToJavaString(env, card.server_id()),
+      ConvertUTF16ToJavaString(env,
+                               card.CardIdentifierStringForAutofillDisplay()));
 }
 
 // static
@@ -573,6 +575,21 @@ void PersonalDataManagerAndroid::AddServerCreditCardForTest(
   std::unique_ptr<CreditCard> card = std::make_unique<CreditCard>();
   PopulateNativeCreditCardFromJava(jcard, env, card.get());
   card->set_record_type(CreditCard::MASKED_SERVER_CARD);
+  personal_data_manager_->AddServerCreditCardForTest(std::move(card));
+  personal_data_manager_->NotifyPersonalDataObserver();
+}
+
+void PersonalDataManagerAndroid::AddServerCreditCardForTestWithAdditionalFields(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& unused_obj,
+    const base::android::JavaParamRef<jobject>& jcard,
+    const base::android::JavaParamRef<jstring>& jnickname,
+    jint jcard_issuer) {
+  std::unique_ptr<CreditCard> card = std::make_unique<CreditCard>();
+  PopulateNativeCreditCardFromJava(jcard, env, card.get());
+  card->set_record_type(CreditCard::MASKED_SERVER_CARD);
+  card->SetNickname(ConvertJavaStringToUTF16(jnickname));
+  card->set_card_issuer(static_cast<CreditCard::Issuer>(jcard_issuer));
   personal_data_manager_->AddServerCreditCardForTest(std::move(card));
   personal_data_manager_->NotifyPersonalDataObserver();
 }

@@ -274,9 +274,7 @@ void MdTextButton::UpdateColors() {
   }
 
   if (state() == STATE_PRESSED) {
-    SkColor shade =
-        theme->GetSystemColor(ui::NativeTheme::kColorId_ButtonPressedShade);
-    bg_color = color_utils::GetResultingPaintColor(shade, bg_color);
+    bg_color = theme->GetSystemButtonPressedColor(bg_color);
   }
 
   SkColor stroke_color;

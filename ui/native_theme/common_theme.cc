@@ -250,8 +250,6 @@ SkColor GetDefaultColor(NativeTheme::ColorId color_id,
       return gfx::kGoogleBlue600;
     case NativeTheme::kColorId_TextOnProminentButtonColor:
       return SK_ColorWHITE;
-    case NativeTheme::kColorId_ButtonPressedShade:
-      return SK_ColorTRANSPARENT;
     case NativeTheme::kColorId_ButtonUncheckedColor:
       return gfx::kGoogleGrey700;
     case NativeTheme::kColorId_ButtonDisabledColor: {

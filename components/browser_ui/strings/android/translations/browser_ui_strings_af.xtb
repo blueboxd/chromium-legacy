@@ -48,6 +48,7 @@
 <translation id="2440823041667407902">Liggingtoegang</translation>
 <translation id="2482878487686419369">Kennisgewings</translation>
 <translation id="2490684707762498678">Bestuur deur <ph name="APP_NAME" /></translation>
+<translation id="2498359688066513246">Hulp en terugvoer</translation>
 <translation id="2501278716633472235">Gaan terug</translation>
 <translation id="2537296579376733324">Alle webkoekies, net op hierdie werf</translation>
 <translation id="2569468611847789653">{COOKIE_COUNT,plural, =1{1 webkoekie word geblokkeer}other{# webkoekies word geblokkeer}}</translation>
@@ -89,6 +90,7 @@
 <translation id="4165986682804962316">Werfinstellings</translation>
 <translation id="4226663524361240545">Kennisgewings kan die toestel laat vibreer</translation>
 <translation id="4259722352634471385">Navigasie is geblokkeer: <ph name="URL" /></translation>
+<translation id="4275663329226226506">Media</translation>
 <translation id="4278390842282768270">Toegelaat</translation>
 <translation id="4433925000917964731">Ligte bladsy deur Google verskaf</translation>
 <translation id="4434045419905280838">Opspringers en herleidings</translation>
@@ -99,6 +101,7 @@
 <translation id="4645575059429386691">Deur jou ouer bestuur</translation>
 <translation id="4670064810192446073">Virtuele realiteit</translation>
 <translation id="4751476147751820511">Beweging- of ligsensors</translation>
+<translation id="4759238208242260848">Aflaaie</translation>
 <translation id="4883854917563148705">Bestuurde instellings kan nie teruggestel word nie</translation>
 <translation id="4887024562049524730">Vra voordat werwe toegelaat word om jou virtuelerealiteittoestel en -data te gebruik (aanbeveel)</translation>
 <translation id="4962975101802056554">Herroep alle toestemmings vir toestel</translation>
@@ -136,6 +139,7 @@
 <translation id="5939518447894949180">Stel terug</translation>
 <translation id="6040143037577758943">Maak toe</translation>
 <translation id="6042308850641462728">Meer</translation>
+<translation id="6064125863973209585">Voltooide aflaaie</translation>
 <translation id="6165508094623778733">Kom meer te wete</translation>
 <translation id="6181444274883918285">Voeg werfuitsondering by</translation>
 <translation id="6192792657125177640">Uitsonderings</translation>
@@ -207,6 +211,7 @@
 <translation id="8380167699614421159">Hierdie werf wys indringerige of misleidende advertensies</translation>
 <translation id="8394832520002899662">Tik om na werf terug te keer</translation>
 <translation id="8447861592752582886">Herroep toesteltoestemming</translation>
+<translation id="8463851957836045671">Werf is vinnig</translation>
 <translation id="851751545965956758">Keer dat werwe aan toestelle koppel</translation>
 <translation id="857943718398505171">Toegelaat (aanbeveel)</translation>
 <translation id="8609465669617005112">Skuif op</translation>
@@ -220,6 +225,7 @@
 <translation id="8847988622838149491">USB</translation>
 <translation id="885701979325669005">Berging</translation>
 <translation id="8926666909099850184">NFC is af vir hierdie toestel. Skakel dit aan in <ph name="BEGIN_LINK" />Android-instellings<ph name="END_LINK" />.</translation>
+<translation id="8929372349074745002">Hierdie werf maak vinnig oop en reageer vinnig vir die meeste mense</translation>
 <translation id="8941729603749328384">www.voorbeeld.com</translation>
 <translation id="8958424370300090006">Blokkeer webkoekies vir 'n spesifieke werf.</translation>
 <translation id="8959122750345127698">Navigasie is onbereikbaar: <ph name="URL" /></translation>

@@ -44,7 +44,9 @@ void FontFallbackMap::InvalidateAll() {
   fallback_list_for_description_.clear();
 }
 
-void FontFallbackMap::FontsNeedUpdate(FontSelector*) {
+void FontFallbackMap::FontsNeedUpdate(FontSelector*,
+                                      FontInvalidationReason reason) {
+  // TODO(xiaochengh): Perform partial invalidation based on |reason|.
   InvalidateAll();
 }
 

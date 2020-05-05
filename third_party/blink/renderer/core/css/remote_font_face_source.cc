@@ -228,7 +228,8 @@ void RemoteFontFaceSource::NotifyFinished(Resource* resource) {
     UpdatePeriod();
 
   if (face_->FontLoaded(this)) {
-    font_selector_->FontFaceInvalidated();
+    font_selector_->FontFaceInvalidated(
+        FontInvalidationReason::kGeneralInvalidation);
 
     const scoped_refptr<FontCustomPlatformData> customFontData =
         font->GetCustomFontData();
@@ -275,8 +276,10 @@ bool RemoteFontFaceSource::UpdatePeriod() {
   if (IsLoading() && period_ != new_period &&
       (period_ == kBlockPeriod || new_period == kBlockPeriod)) {
     PruneTable();
-    if (face_->FallbackVisibilityChanged(this))
-      font_selector_->FontFaceInvalidated();
+    if (face_->FallbackVisibilityChanged(this)) {
+      font_selector_->FontFaceInvalidated(
+          FontInvalidationReason::kGeneralInvalidation);
+    }
     histograms_.RecordFallbackTime();
   }
   period_ = new_period;

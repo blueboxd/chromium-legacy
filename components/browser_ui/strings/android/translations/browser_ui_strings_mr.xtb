@@ -3,6 +3,7 @@
 <translationbundle lang="mr">
 <translation id="1006017844123154345">ऑनलाइन उघडा</translation>
 <translation id="1044891598689252897">साइट सामान्यपणे काम करतील</translation>
+<translation id="1124090076051167250">हे साइट किंवा तुमच्या होम स्क्रीनवरील अ‍ॅप्सनी स्टोअर केलेला <ph name="DATASIZE" /> डेटा आणि कुकी साफ करेल.</translation>
 <translation id="1124772482545689468">वापरकर्ता</translation>
 <translation id="1178581264944972037">विराम द्या</translation>
 <translation id="1181037720776840403">काढून टाका</translation>
@@ -47,6 +48,7 @@
 <translation id="2440823041667407902">स्थान ॲक्सेस</translation>
 <translation id="2482878487686419369">सूचना</translation>
 <translation id="2490684707762498678"><ph name="APP_NAME" /> द्वारे व्यवस्थापित केले आहे</translation>
+<translation id="2498359688066513246">मदत आणि अभिप्राय</translation>
 <translation id="2501278716633472235">परत जा</translation>
 <translation id="2537296579376733324">सर्व कुकी, फक्त या साइटवर</translation>
 <translation id="2569468611847789653">{COOKIE_COUNT,plural, =1{एक कुकी ब्लॉक केली}other{# कुकी ब्लॉक केल्या}}</translation>
@@ -88,6 +90,7 @@
 <translation id="4165986682804962316">साइट सेटिंग्ज</translation>
 <translation id="4226663524361240545">सूचनांमुळे डिव्हाइसचे कंपन होऊ शकते</translation>
 <translation id="4259722352634471385">नेव्हिगेशन अवरोधित केले आहे: <ph name="URL" /></translation>
+<translation id="4275663329226226506">माध्यम</translation>
 <translation id="4278390842282768270">अनुमत</translation>
 <translation id="4433925000917964731">Google द्वारे पुरवलेले लाइट पेज</translation>
 <translation id="4434045419905280838">पॉप-अप आणि रीडिरेक्ट</translation>
@@ -98,6 +101,7 @@
 <translation id="4645575059429386691">आपल्या पालकांद्वारे व्यवस्थापित करण्यात आले</translation>
 <translation id="4670064810192446073">आभासी वास्तविकता</translation>
 <translation id="4751476147751820511">मोशन किंवा प्रकाश सेन्सर</translation>
+<translation id="4759238208242260848">डाउनलोड</translation>
 <translation id="4883854917563148705">व्यवस्थापित केलेल्या सेटिंग्ज रीसेट करता येत नाहीत</translation>
 <translation id="4887024562049524730">साइटना तुमचे आभासी वास्तविकता डिव्हाइस आणि डेटा वापरू देण्यापूर्वी विचारा (शिफारस केलेले)</translation>
 <translation id="4962975101802056554">डिव्हाइससाठीच्या सर्व परवानग्या रद्द करा</translation>
@@ -127,6 +131,7 @@
 <translation id="5677928146339483299">अवरोधित</translation>
 <translation id="5689516760719285838">स्थान</translation>
 <translation id="5710871682236653961">तुम्ही NFC डिव्हाइसवर टॅप करता तेव्हा साइटना माहिती पाठवण्याची आणि मिळवण्याची अनुमती देण्यापूर्वी परवानगीची विनंती करा (शिफारस केलेले)</translation>
+<translation id="5719847187258001597">हे <ph name="ORIGIN" /> किंवा त्याच्या अ‍ॅप्सनी तुमच्या होम स्क्रीनवर स्टोअर केलेला सर्व डेटा आणि कुकी साफ करेल.</translation>
 <translation id="5804241973901381774">परवानग्या</translation>
 <translation id="5860033963881614850">बंद</translation>
 <translation id="5916664084637901428">चालू</translation>
@@ -134,6 +139,7 @@
 <translation id="5939518447894949180">रीसेट करा</translation>
 <translation id="6040143037577758943">बंद करा</translation>
 <translation id="6042308850641462728">अधिक</translation>
+<translation id="6064125863973209585">डाउनलोड पूर्ण झाले</translation>
 <translation id="6165508094623778733">अधिक जाणून घ्या</translation>
 <translation id="6181444274883918285">साइट एक्सेप्शन जोडा</translation>
 <translation id="6192792657125177640">अपवाद</translation>
@@ -205,6 +211,7 @@
 <translation id="8380167699614421159">ही साइट अनाहूत किंवा दिशाभूल करणाऱ्या जाहिराती दाखवते</translation>
 <translation id="8394832520002899662">साइटवर परत जाण्यासाठी टॅप करा</translation>
 <translation id="8447861592752582886">डिव्हाइस परवानगी रद्द करा</translation>
+<translation id="8463851957836045671">साइट जलद आहे</translation>
 <translation id="851751545965956758">डिव्हाइसेसशी कनेक्ट करण्यापासून साइटना ब्लॉक करा</translation>
 <translation id="857943718398505171">अनुमती दिली (शिफारस केलेले)</translation>
 <translation id="8609465669617005112">वर हलवा</translation>
@@ -218,6 +225,7 @@
 <translation id="8847988622838149491">USB</translation>
 <translation id="885701979325669005">स्टोरेज</translation>
 <translation id="8926666909099850184">या डिव्हाइससाठी NFC बंद केले आहे. ते <ph name="BEGIN_LINK" />Android सेटिंग्जमध्ये<ph name="END_LINK" /> सुरू करा.</translation>
+<translation id="8929372349074745002">बहुतेक लोकांसाठी ही साइट झटपटपणे उघडते आणि प्रतिसाद देते</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8958424370300090006">विशिष्ट साइटसाठी कुकी ब्लॉक करा.</translation>
 <translation id="8959122750345127698">नेव्हिगेशन आवाक्याबाहेर आहे: <ph name="URL" /></translation>

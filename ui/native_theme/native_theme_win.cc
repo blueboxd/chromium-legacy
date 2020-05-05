@@ -651,7 +651,6 @@ base::Optional<SkColor> NativeThemeWin::GetPlatformHighContrastColor(
     case kColorId_HighlightedMenuItemBackgroundColor:
     case kColorId_TextfieldDefaultBackground:
     case kColorId_TextfieldReadOnlyBackground:
-    case kColorId_ButtonPressedShade:
       return system_colors_[SystemThemeColor::kButtonFace];
 
     // Button Text Foreground

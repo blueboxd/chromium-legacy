@@ -90,6 +90,7 @@
 <translation id="1947424002851288782">Þýskt lyklaborð</translation>
 <translation id="1972984168337863910">Stækka svæði með ábendingum fyrir skrár</translation>
 <translation id="1984603991036629094">Armenskt hljóðritunarlyklaborð</translation>
+<translation id="1995337122023280937">Fara í staðsetningu skráar</translation>
 <translation id="2001796770603320721">Stjórna á Drive</translation>
 <translation id="2009067268969781306">Þegar drif er forsniðið eyðast öll gögn af því. Ekki er hægt að afturkalla þessa aðgerð.</translation>
 <translation id="2028997212275086731">RAR-skráasafn</translation>
@@ -141,6 +142,7 @@
 <translation id="2638942478653899953">Ekki náðist í Google Drive. <ph name="BEGIN_LINK" />Skráðu þig út<ph name="END_LINK" /> og svo aftur inn.</translation>
 <translation id="2649120831653069427">Regnbogafiskur</translation>
 <translation id="2661146741306740526">16x9</translation>
+<translation id="2664412712123763093">Staðsetning skráar</translation>
 <translation id="2672394958563893062">Villa kom upp. Smelltu til að byrja aftur frá byrjun.</translation>
 <translation id="2676946222714718093">Spilast í</translation>
 <translation id="2735698359135166290">Staðlað rúmenskt lyklaborð</translation>
@@ -327,6 +329,7 @@
 <translation id="4880520557730313061">Sjálfvirk lagfæring</translation>
 <translation id="4881695831933465202">Opna</translation>
 <translation id="4886021172213954916">Tamil-lyklaborð (ritvél)</translation>
+<translation id="4892969127351273348">Ekki tókst að opna með <ph name="APP_NAME" /></translation>
 <translation id="4905417359854579806">Tilbúið að afrita <ph name="FILE_COUNT" /></translation>
 <translation id="4924638091161556692">Lagfærð</translation>
 <translation id="4935975195727477204">Blóm</translation>
@@ -348,6 +351,7 @@
 <translation id="5081517858322016911"><ph name="TOTAL_FILE_SIZE" /> af skrám verður eytt</translation>
 <translation id="509429900233858213">Villa kom upp.</translation>
 <translation id="5098629044894065541">Hebreskt</translation>
+<translation id="5112685521274804841">Skrár í þessari möppu eru skrifvarðar. Sumar aðgerðir eru ekki studdar.</translation>
 <translation id="5123433949759960244">Körfubolti</translation>
 <translation id="5129662217315786329">Pólskt</translation>
 <translation id="5144820558584035333">Hangul 3 sett (390)</translation>
@@ -697,6 +701,7 @@
 <translation id="9034924485347205037">Linux-skrár</translation>
 <translation id="9035012421917565900">Ekki er hægt að færa atriðin aftur í „<ph name="DESTINATION_NAME" />“, þannig að þú verður ófær um að afturkalla þessa aðgerð.</translation>
 <translation id="9038620279323455325">Skrá með heitið „<ph name="FILE_NAME" />“ er þegar til staðar. Veldu annað heiti.</translation>
+<translation id="9062992083244091966">Til að opna skrár með <ph name="APP_NAME" /> forritum skaltu fyrst færa þær í möppu fyrir skrár sem deilt er með <ph name="APP_NAME" />.</translation>
 <translation id="9064939804718829769">Flytur...</translation>
 <translation id="9065203028668620118">Breyta</translation>
 <translation id="9099674669267916096">Síðufjöldi</translation>

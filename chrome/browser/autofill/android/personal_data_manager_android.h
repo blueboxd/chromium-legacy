@@ -188,6 +188,15 @@ class PersonalDataManagerAndroid : public PersonalDataManagerObserver {
       const base::android::JavaParamRef<jobject>& unused_obj,
       const base::android::JavaParamRef<jobject>& jcard);
 
+  // Adds a server credit card and sets the additional fields, for example,
+  // card_issuer, nickname. Used only in tests.
+  void AddServerCreditCardForTestWithAdditionalFields(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& unused_obj,
+      const base::android::JavaParamRef<jobject>& jcard,
+      const base::android::JavaParamRef<jstring>& jnickname,
+      jint jcard_issuer);
+
   // Removes the profile or credit card represented by |jguid|.
   void RemoveByGUID(JNIEnv* env,
                     const base::android::JavaParamRef<jobject>& unused_obj,

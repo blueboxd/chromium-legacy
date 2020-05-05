@@ -41,13 +41,14 @@
 <translation id="2148716181193084225">اليوم</translation>
 <translation id="2182457891543959921">طلب الإذن قبل السماح لموقع إلكتروني بإنشاء خريطة ثلاثية الأبعاد للبيئة المحيطة بك أو تتبُّع موضع الكاميرا (مقترَح)</translation>
 <translation id="2212565012507486665">السماح بملفات تعريف الارتباط</translation>
-<translation id="2289270750774289114">طلب الإذن عند محاولة موقع ويب العثور على أجهزة البلوتوث المجاورة (إجراء موصَى به)</translation>
+<translation id="2289270750774289114">طلب الإذن عند محاولة موقع إلكتروني العثور على أجهزة البلوتوث المجاورة (إجراء موصَى به)</translation>
 <translation id="2359808026110333948">متابعة</translation>
 <translation id="2402980924095424747"><ph name="MEGABYTES" /> ميغابايت</translation>
 <translation id="2434158240863470628">اكتمل التنزيل <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
 <translation id="2440823041667407902">تحديد الموقع الجغرافي</translation>
 <translation id="2482878487686419369">الإشعارات</translation>
 <translation id="2490684707762498678">تتم إدارتها من خلال <ph name="APP_NAME" /></translation>
+<translation id="2498359688066513246">المساعدة والتعليقات</translation>
 <translation id="2501278716633472235">الرجوع</translation>
 <translation id="2537296579376733324">جميع ملفات تعريف الارتباط، في هذا الموقع الإلكتروني فقط</translation>
 <translation id="2569468611847789653">{COOKIE_COUNT,plural, =1{تم حظر ملف تعريف ارتباط واحد.}zero{تم حظر # ملف تعريف ارتباط.}two{تم حظر ملفَّي تعريف ارتباط.}few{تم حظر # ملفات تعريف ارتباط.}many{تم حظر # ملف تعريف ارتباط.}other{تم حظر # ملف تعريف ارتباط.}}</translation>
@@ -89,16 +90,18 @@
 <translation id="4165986682804962316">إعدادات المواقع الإلكترونية</translation>
 <translation id="4226663524361240545">يمكن أن تؤدي الإشعارات إلى اهتزاز الجهاز</translation>
 <translation id="4259722352634471385">التنقل محظور: <ph name="URL" /></translation>
+<translation id="4275663329226226506">الوسائط</translation>
 <translation id="4278390842282768270">منح الإذن</translation>
 <translation id="4433925000917964731">‏نسخة خفيفة تقدِّمها Google</translation>
 <translation id="4434045419905280838">النوافذ المنبثقة وإعادة التوجيه</translation>
 <translation id="445467742685312942">السماح لمواقع الويب بتشغيل المحتوى المَحمي</translation>
-<translation id="4468959413250150279">كتم صوت موقع ويب معين.</translation>
+<translation id="4468959413250150279">كتم صوت موقع إلكتروني معين.</translation>
 <translation id="4479647676395637221">السؤال أولاً قبل السماح لمواقع الويب باستخدام الكاميرا (موصى به)</translation>
 <translation id="4570913071927164677">التفاصيل</translation>
 <translation id="4645575059429386691">يديره والداك</translation>
 <translation id="4670064810192446073">الواقع الافتراضي</translation>
 <translation id="4751476147751820511">أجهزة استشعار الإضاءة أو الحركة</translation>
+<translation id="4759238208242260848">الملفات التي تم تنزيلها</translation>
 <translation id="4883854917563148705">يتعذّر إعادة ضبط الإعدادات التي تمت إدارتها</translation>
 <translation id="4887024562049524730">طلب الإذن قبل السماح للمواقع الإلكترونية باستخدام جهاز الواقع الافتراضي وبياناته (إعداد مقترَح)</translation>
 <translation id="4962975101802056554">إبطال جميع الأذونات للجهاز</translation>
@@ -112,7 +115,7 @@
 <translation id="5300589172476337783">عرض</translation>
 <translation id="5301954838959518834">حسنًا</translation>
 <translation id="5307446750509046227">محو مساحة تخزين المواقع</translation>
-<translation id="5313967007315987356">إضافة موقع ويب</translation>
+<translation id="5313967007315987356">إضافة موقع إلكتروني</translation>
 <translation id="5317780077021120954">حفظ</translation>
 <translation id="5335288049665977812">‏السماح لمواقع الويب بتشغيل JavaScript (موصى به)</translation>
 <translation id="534295439873310000">‏أجهزة NFC</translation>
@@ -136,8 +139,9 @@
 <translation id="5939518447894949180">إعادة الضبط</translation>
 <translation id="6040143037577758943">إغلاق</translation>
 <translation id="6042308850641462728">المزيد</translation>
+<translation id="6064125863973209585">عمليات التنزيل المكتمِلة</translation>
 <translation id="6165508094623778733">مزيد من المعلومات</translation>
-<translation id="6181444274883918285">إضافة موقع ويب إلى قائمة الاستثناءات</translation>
+<translation id="6181444274883918285">إضافة موقع إلكتروني إلى قائمة الاستثناءات</translation>
 <translation id="6192792657125177640">الاستثناءات</translation>
 <translation id="6194112207524046168">‏للسماح لمتصفِّح Chrome بالوصول إلى الكاميرا، يُرجى أيضًا تفعيل الكاميرا في <ph name="BEGIN_LINK" />إعدادات Android<ph name="END_LINK" />.</translation>
 <translation id="6196640612572343990">حظر ملفات تعريف الارتباط للجهات الخارجية</translation>
@@ -207,6 +211,7 @@
 <translation id="8380167699614421159">يعرض هذا الموقع الإلكتروني إعلانات مضلِّلة أو غير مرغوب فيها</translation>
 <translation id="8394832520002899662">يُرجى النقر للرجوع إلى الموقع الإلكتروني.</translation>
 <translation id="8447861592752582886">إبطال إذن الجهاز</translation>
+<translation id="8463851957836045671">الموقع الإلكتروني سريع</translation>
 <translation id="851751545965956758">حظر مواقع الويب من الاتصال بأجهزة</translation>
 <translation id="857943718398505171">مسموح بها (موصى بها)</translation>
 <translation id="8609465669617005112">الانتقال إلى الأعلى</translation>
@@ -220,6 +225,7 @@
 <translation id="8847988622838149491">USB</translation>
 <translation id="885701979325669005">التخزين</translation>
 <translation id="8926666909099850184">‏تقنية NFC غير مفعّلة على هذا الجهاز. فعّلها في<ph name="BEGIN_LINK" />إعدادات Android<ph name="END_LINK" />.</translation>
+<translation id="8929372349074745002">يفتح هذا الموقع الإلكتروني ويستجيب بشكل سريع لدى معظم الأشخاص.</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8958424370300090006">حظر ملفات تعريف الارتباط لموقع إلكتروني مُحدَّد.</translation>
 <translation id="8959122750345127698">التنقل غير قابل للوصول: <ph name="URL" /></translation>

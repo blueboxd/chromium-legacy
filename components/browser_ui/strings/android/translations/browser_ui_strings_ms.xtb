@@ -48,6 +48,7 @@
 <translation id="2440823041667407902">Akses lokasi</translation>
 <translation id="2482878487686419369">Pemberitahuan</translation>
 <translation id="2490684707762498678">Diurus oleh <ph name="APP_NAME" /></translation>
+<translation id="2498359688066513246">Bantuan &amp; maklum balas</translation>
 <translation id="2501278716633472235">Kembali</translation>
 <translation id="2537296579376733324">Semua kuki, pada tapak ini sahaja</translation>
 <translation id="2569468611847789653">{COOKIE_COUNT,plural, =1{1 kuki disekat}other{# kuki disekat}}</translation>
@@ -89,6 +90,7 @@
 <translation id="4165986682804962316">Tetapan tapak</translation>
 <translation id="4226663524361240545">Pemberitahuan boleh menggetarkan peranti</translation>
 <translation id="4259722352634471385">Navigasi disekat: <ph name="URL" /></translation>
+<translation id="4275663329226226506">Media</translation>
 <translation id="4278390842282768270">Dibenarkan</translation>
 <translation id="4433925000917964731">Halaman Lite disediakan oleh Google</translation>
 <translation id="4434045419905280838">Tetingkap timbul dan ubah hala</translation>
@@ -99,6 +101,7 @@
 <translation id="4645575059429386691">Diurus oleh ibu bapa anda</translation>
 <translation id="4670064810192446073">Realiti maya</translation>
 <translation id="4751476147751820511">Penderia gerakan atau cahaya</translation>
+<translation id="4759238208242260848">Muat turun</translation>
 <translation id="4883854917563148705">Tetapan yang diurus tidak dapat ditetapkan semula</translation>
 <translation id="4887024562049524730">Tanya sebelum membenarkan tapak menggunakan peranti dan data realiti maya anda (disyorkan)</translation>
 <translation id="4962975101802056554">Batalkan semua kebenaran untuk peranti</translation>
@@ -136,6 +139,7 @@
 <translation id="5939518447894949180">Tetapkan semula</translation>
 <translation id="6040143037577758943">Tutup</translation>
 <translation id="6042308850641462728">Lagi</translation>
+<translation id="6064125863973209585">Muat turun yang telah selesai</translation>
 <translation id="6165508094623778733">Ketahui lebih lanjut</translation>
 <translation id="6181444274883918285">Tambah pengecualian tapak</translation>
 <translation id="6192792657125177640">Pengecualian</translation>
@@ -207,6 +211,7 @@
 <translation id="8380167699614421159">Tapak ini menyiarkan iklan yang mengganggu atau mengelirukan</translation>
 <translation id="8394832520002899662">Ketik untuk kembali ke tapak</translation>
 <translation id="8447861592752582886">Batalkan kebenaran peranti</translation>
+<translation id="8463851957836045671">Tapak laju</translation>
 <translation id="851751545965956758">Sekat tapak daripada menyambung ke peranti</translation>
 <translation id="857943718398505171">Dibenarkan (disyorkan)</translation>
 <translation id="8609465669617005112">Alihkan ke atas</translation>
@@ -220,6 +225,7 @@
 <translation id="8847988622838149491">USB</translation>
 <translation id="885701979325669005">Storan</translation>
 <translation id="8926666909099850184">NFC dimatikan untuk peranti ini. Hidupkan dalam <ph name="BEGIN_LINK" />Tetapan Android<ph name="END_LINK" />.</translation>
+<translation id="8929372349074745002">Tapak ini dibuka dan memberikan respons dengan pantas untuk kebanyakan orang</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8958424370300090006">Sekat kuki untuk tapak tertentu.</translation>
 <translation id="8959122750345127698">Tidak dapat mencapai navigasi: <ph name="URL" /></translation>

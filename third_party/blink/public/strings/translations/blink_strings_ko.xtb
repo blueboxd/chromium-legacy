@@ -35,6 +35,7 @@
 <translation id="1938124657309484470">값은 <ph name="MAXIMUM_DATE_OR_TIME" /> 이전이어야 합니다.</translation>
 <translation id="1946271899482435442">날짜 선택도구 표시</translation>
 <translation id="1993104285338243655">미러링으로 전환됨</translation>
+<translation id="2031987842108996681">빨간색 채널</translation>
 <translation id="2060505056492490888">'<ph name="INVALIDDOMAIN" />'에서 '<ph name="DOT" />'의 위치가 잘못되었습니다.</translation>
 <translation id="2148716181193084225">오늘</translation>
 <translation id="2158401438286456825">페이지 목록</translation>
@@ -45,6 +46,7 @@
 <translation id="2291999235780842123">체크박스</translation>
 <translation id="2311842470354187719">페이지 나누기</translation>
 <translation id="2335594187091864976">날짜 및 시간 선택기</translation>
+<translation id="2393030564806080191">16진수 색상 값</translation>
 <translation id="245932805758469625">동영상 남은 시간</translation>
 <translation id="248395913932153421">일</translation>
 <translation id="2507943997699731163">이 입력란을 작성하세요.</translation>
@@ -52,6 +54,7 @@
 <translation id="2561842179657104141">미디어 컨트롤 더보기</translation>
 <translation id="2572483411312390101">재생</translation>
 <translation id="2613802280814924224">유효한 값을 입력해 주세요. 가장 근접한 유효 값은 <ph name="VALID_VALUE" />입니다.</translation>
+<translation id="2634240155926812724">초록색 채널</translation>
 <translation id="2653659639078652383">제출</translation>
 <translation id="2657045182931379222">그래픽 객체</translation>
 <translation id="2674318244760992338">바닥글</translation>
@@ -127,6 +130,7 @@
 <translation id="5034860022980953847">진행률 표시기</translation>
 <translation id="5090250355906949916">동영상 시간 스크러버</translation>
 <translation id="5093189678851173835">제명</translation>
+<translation id="509897012892853729">파란색 채널</translation>
 <translation id="5117590920725113268">다음 달 표시</translation>
 <translation id="512758898067543763">행 헤더</translation>
 <translation id="5143125788380636750">에필로그</translation>
@@ -164,6 +168,7 @@
 <translation id="6166809985690652833">후기</translation>
 <translation id="6209276755895393898"><ph name="DESCRIPTION" /> 같습니다</translation>
 <translation id="6213469881011901533">용어설명</translation>
+<translation id="6281588256137006900">명암</translation>
 <translation id="6281763101136022427">URL</translation>
 <translation id="6310801910862476708">PIP 모드 종료</translation>
 <translation id="6398862346408813489">월 선택 패널 표시</translation>
@@ -184,6 +189,7 @@
 <translation id="6790428901817661496">재생</translation>
 <translation id="6820355525329141109">플러그인을 로드할 수 없습니다.</translation>
 <translation id="6820615603175220800">참고문헌 참조</translation>
+<translation id="6831465880655513317">2차원 슬라이더가 포함된 채도 및 명암 선택용 색상환입니다.</translation>
 <translation id="6843725295806269523">음소거</translation>
 <translation id="6885760532393684712">디렉터리</translation>
 <translation id="689129560213475294">출판사 이름</translation>
@@ -201,6 +207,7 @@
 <translation id="7263440858009898357">목록에서 항목을 선택하세요.</translation>
 <translation id="727747134524199931">열 헤더</translation>
 <translation id="7320576522385648310">버퍼링</translation>
+<translation id="7341556277900466204">색상환</translation>
 <translation id="7353453495576941748">크레딧</translation>
 <translation id="7364796246159120393">파일 선택</translation>
 <translation id="739024184232394898">다른 주...</translation>
@@ -221,6 +228,7 @@
 <translation id="775297008183122718">입력값이 잘못되었습니다.</translation>
 <translation id="7789962463072032349">일시중지</translation>
 <translation id="7802800022689234070">펼치기/접기 삼각형</translation>
+<translation id="7852167693871241274">색조 슬라이더</translation>
 <translation id="7888071071722539607">이메일 주소에 '<ph name="ATSIGN" />'를 포함해 주세요. '<ph name="INVALIDADDRESS" />'에 '<ph name="ATSIGN" />'가 없습니다.</translation>
 <translation id="7891486169920085145">분할선</translation>
 <translation id="795667975304826397">선택된 파일 없음</translation>
@@ -263,6 +271,7 @@
 <translation id="8875657656876809964">동영상 재생 오류</translation>
 <translation id="8889402386540077796">색조</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" />KB</translation>
+<translation id="894736920926684893">형식 전환 버튼</translation>
 <translation id="8987927404178983737">월</translation>
 <translation id="901493112792887934">현재 시간(초)</translation>
 <translation id="901834265349196618">이메일</translation>

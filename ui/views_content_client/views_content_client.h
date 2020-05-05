@@ -69,11 +69,18 @@ class VIEWS_CONTENT_CLIENT_EXPORT ViewsContentClient {
     on_pre_main_message_loop_run_callback_ = std::move(callback);
   }
 
+  void set_on_resources_loaded_callback(base::OnceClosure callback) {
+    on_resources_loaded_callback_ = std::move(callback);
+  }
+
   // Calls the OnPreMainMessageLoopRun callback. |browser_context| is the
   // current browser context. |window_context| is a candidate root window that
   // may be null.
   void OnPreMainMessageLoopRun(content::BrowserContext* browser_context,
                                gfx::NativeWindow window_context);
+
+  // Calls a callback to signal resources have been loaded.
+  void OnResourcesLoaded();
 
   // Called by ViewsContentClientMainParts to supply the quit-closure to use
   // to exit RunMain().
@@ -91,6 +98,7 @@ class VIEWS_CONTENT_CLIENT_EXPORT ViewsContentClient {
   const char** argv_;
 #endif
   OnPreMainMessageLoopRunCallback on_pre_main_message_loop_run_callback_;
+  base::OnceClosure on_resources_loaded_callback_;
   base::OnceClosure quit_closure_;
 
   DISALLOW_COPY_AND_ASSIGN(ViewsContentClient);

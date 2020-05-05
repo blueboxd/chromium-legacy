@@ -167,11 +167,6 @@
 
 #if defined(OS_MACOSX)
 #define MACOSX_COLOR_IDS \
-  /* TODO(https://crug.com/1071669): Paired with the comment above for */ \
-  /* kColorButtonPressedBackground, work out how to */ \
-  /* remove this or fit it into the color pipeline structures. */ \
-  E(kColorButtonPressedBackgroundShade, \
-    NativeTheme::kColorId_ButtonPressedShade) \
   E(kColorTableBackgroundAlternate, \
     NativeTheme::kColorId_TableBackgroundAlternate)
 #endif

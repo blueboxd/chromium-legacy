@@ -370,20 +370,34 @@ public class PersonalDataManager {
         private int mIssuerIconDrawableId;
         private String mBillingAddressId;
         private String mServerId;
+        // The label set for the card. This could be one of Card Network + LastFour, Nickname +
+        // LastFour or a Google specific string for Google-issued cards. This is used for displaying
+        // the card in PaymentMethods in Settings.
+        private String mCardLabel;
 
         @CalledByNative("CreditCard")
         public static CreditCard create(String guid, String origin, boolean isLocal,
-                boolean isCached, String name, String number, String obfuscatedNumber, String month,
-                String year, String basicCardIssuerNetwork, int iconId, String billingAddressId,
-                String serverId) {
-            return new CreditCard(guid, origin, isLocal, isCached, name, number, obfuscatedNumber,
-                    month, year, basicCardIssuerNetwork, iconId, billingAddressId, serverId);
+                boolean isCached, String name, String number, String mObfuscatedNumber,
+                String month, String year, String basicCardIssuerNetwork, int iconId,
+                String billingAddressId, String serverId, String cardLabel) {
+            return new CreditCard(guid, origin, isLocal, isCached, name, number, mObfuscatedNumber,
+                    month, year, basicCardIssuerNetwork, iconId, billingAddressId, serverId,
+                    cardLabel);
         }
 
         public CreditCard(String guid, String origin, boolean isLocal, boolean isCached,
                 String name, String number, String obfuscatedNumber, String month, String year,
                 String basicCardIssuerNetwork, int issuerIconDrawableId, String billingAddressId,
                 String serverId) {
+            this(guid, origin, isLocal, isCached, name, number, obfuscatedNumber, month, year,
+                    basicCardIssuerNetwork, issuerIconDrawableId, billingAddressId, serverId,
+                    /* cardLabel= */ obfuscatedNumber);
+        }
+
+        public CreditCard(String guid, String origin, boolean isLocal, boolean isCached,
+                String name, String number, String obfuscatedNumber, String month, String year,
+                String basicCardIssuerNetwork, int issuerIconDrawableId, String billingAddressId,
+                String serverId, String cardLabel) {
             mGUID = guid;
             mOrigin = origin;
             mIsLocal = isLocal;
@@ -397,6 +411,7 @@ public class PersonalDataManager {
             mIssuerIconDrawableId = issuerIconDrawableId;
             mBillingAddressId = billingAddressId;
             mServerId = serverId;
+            mCardLabel = cardLabel;
         }
 
         public CreditCard() {
@@ -484,6 +499,10 @@ public class PersonalDataManager {
             return mServerId;
         }
 
+        public String getCardLabel() {
+            return mCardLabel;
+        }
+
         @VisibleForTesting
         public void setGUID(String guid) {
             mGUID = guid;
@@ -525,6 +544,10 @@ public class PersonalDataManager {
 
         public void setBillingAddressId(String id) {
             mBillingAddressId = id;
+        }
+
+        public void setCardLabel(String cardLabel) {
+            mCardLabel = cardLabel;
         }
 
         public boolean hasValidCreditCardExpirationDate() {
@@ -757,6 +780,15 @@ public class PersonalDataManager {
         assert !card.getIsLocal();
         PersonalDataManagerJni.get().addServerCreditCardForTest(
                 mPersonalDataManagerAndroid, PersonalDataManager.this, card);
+    }
+
+    @VisibleForTesting
+    public void addServerCreditCardForTestWithAdditionalFields(
+            CreditCard card, String nickname, int cardIssuer) {
+        ThreadUtils.assertOnUiThread();
+        assert !card.getIsLocal();
+        PersonalDataManagerJni.get().addServerCreditCardForTestWithAdditionalFields(
+                mPersonalDataManagerAndroid, PersonalDataManager.this, card, nickname, cardIssuer);
     }
 
     public void deleteCreditCard(String guid) {
@@ -1099,6 +1131,8 @@ public class PersonalDataManager {
                 PersonalDataManager caller, String cardNumber, boolean emptyIfInvalid);
         void addServerCreditCardForTest(
                 long nativePersonalDataManagerAndroid, PersonalDataManager caller, CreditCard card);
+        void addServerCreditCardForTestWithAdditionalFields(long nativePersonalDataManagerAndroid,
+                PersonalDataManager caller, CreditCard card, String nickname, int cardIssuer);
         void removeByGUID(
                 long nativePersonalDataManagerAndroid, PersonalDataManager caller, String guid);
         void recordAndLogProfileUse(

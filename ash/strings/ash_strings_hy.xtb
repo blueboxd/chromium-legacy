@@ -140,6 +140,7 @@
 <translation id="2700493154570097719">Ընտրեք ստեղնաշարը</translation>
 <translation id="2704781753052663061">Միացեք այլ Wi-Fi ցանցերի</translation>
 <translation id="2705001408393684014">Միացնել/անջատել խոսափողը։ <ph name="STATE_TEXT" /></translation>
+<translation id="2706462751667573066">Up</translation>
 <translation id="2718395828230677721">Գիշերային ռեժիմ</translation>
 <translation id="2727977024730340865">Միացված է թույլ լիցքավորիչի: Մարտկոցի լիցքավորումը կարող է հուսալի չլինել:</translation>
 <translation id="2792498699870441125">Alt+Search</translation>
@@ -173,6 +174,7 @@
 <translation id="3077734595579995578">shift</translation>
 <translation id="3081696990447829002">Ծավալել ընտրացանկը</translation>
 <translation id="3087734570205094154">Ներքև</translation>
+<translation id="309749186376891736">Նշորդի տեղափոխում</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (Bluetooth)</translation>
 <translation id="3126069444801937830">Թարմացնելու համար վերագործարկեք</translation>
 <translation id="3139942575505304791">Աշխատասեղան 1</translation>
@@ -242,6 +244,7 @@
 <translation id="3899995891769452915">Ձայնային ներածում</translation>
 <translation id="3900355044994618856">Ձեր աշխատաշրջանը կավարտվի <ph name="SESSION_TIME_REMAINING" />-ից</translation>
 <translation id="3901991538546252627">Միացում <ph name="NAME" />-ին</translation>
+<translation id="3943857333388298514">Տեղադրել</translation>
 <translation id="394485226368336402">Ձայնի կարգավորումներ</translation>
 <translation id="3962859241508114581">Նախորդ կատարումը</translation>
 <translation id="3965097803111112935">Անջատված է</translation>
@@ -294,7 +297,6 @@
 <translation id="4565377596337484307">Թաքցնել գաղտնաբառը</translation>
 <translation id="4570957409596482333">«Ընտրեք և լսեք» կոճակ</translation>
 <translation id="4585337515783392668">Դադարեցնել հեռարձակումը անհայտ սարքին</translation>
-<translation id="4588090240171750605">Ոլորել դեպի աջ</translation>
 <translation id="4628757576491864469">Սարքեր</translation>
 <translation id="4659419629803378708">ChromeVox-ը միացված է</translation>
 <translation id="4665114317261903604">Միացնել/անջատել «Չանհանգստացնել» ռեժիմը։ <ph name="STATE_TEXT" /></translation>
@@ -336,6 +338,7 @@
 <translation id="5250225880026334010">Անջատված է</translation>
 <translation id="5260676007519551770">Աշխատասեղան 4</translation>
 <translation id="5283198616748585639">Ավելացնել 1 րոպե</translation>
+<translation id="528468243742722775">Վերջ</translation>
 <translation id="5286194356314741248">Որոնում</translation>
 <translation id="5302048478445481009">Լեզու</translation>
 <translation id="5313326810920013265">Bluetooth-ի կարգավորումներ</translation>
@@ -406,6 +409,7 @@
 <translation id="615957422585914272">Ցույց տալ էկրանի ստեղնաշարը</translation>
 <translation id="6164005077879661055">Վերահսկվող օգտատիրոջ հետ կապված բոլոր ֆայլերը և տեղային տվյալներն ընդմիշտ կջնջվեն, եթե հեռացնեք այս պրոֆիլը, սակայն կառավարիչը կկարողանա տեսնել վերահսկվող օգտատիրոջ այցելած վեբկայքերը և կարգավորումները <ph name="MANAGEMENT_URL" />-ում:</translation>
 <translation id="6165508094623778733">Իմանալ ավելին</translation>
+<translation id="622484624075952240">Վար</translation>
 <translation id="6236290670123303279">Կառավարել կարգավորումները</translation>
 <translation id="6237231532760393653">1X</translation>
 <translation id="6254629735336163724">Միայն հորիզոնական</translation>
@@ -416,7 +420,6 @@
 <translation id="6288235558961782912">Ծնողների թույլտվությամբ <ph name="USER_EMAIL_ADDRESS" /> օգտատիրոջը հնարավոր կլինի նորից ավելացնել ավելի ուշ:</translation>
 <translation id="6297287540776456956">Հատվածն ընտրեք ստիլուսի միջոցով</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" />՝ պտտված է <ph name="ROTATION" /></translation>
-<translation id="6364916375976753737">Ոլորել ձախ</translation>
 <translation id="6376931439017688372">Bluetooth-ը միացված է</translation>
 <translation id="6381109794406942707">Սարքն ապակողպելու համար մուտքագրեք ձեր PIN կոդը։</translation>
 <translation id="639644700271529076">CAPS LOCK-ն անջատված է</translation>
@@ -467,6 +470,7 @@
 <translation id="6820676911989879663">Ընդմիջեք</translation>
 <translation id="6857811139397017780">Ակտիվացնել <ph name="NETWORKSERVICE" /> ցանցը</translation>
 <translation id="6878400149835617132">Դյուրանցումն անջատված է</translation>
+<translation id="6896758677409633944">Պատճենել</translation>
 <translation id="6910714959251846841">Այս թարմացումը տեղադրելու համար անհրաժեշտ է վերակայել սարքի կարգավորումները գործարանային տարբերակով։ Իմանալ ավելին <ph name="SYSTEM_APP_NAME" /> հավելվածի վերջին թարմացման մասին։</translation>
 <translation id="6919251195245069855">Չհաջողվեց ճանաչել ձեր խելացի քարտը: Նորից փորձեք։</translation>
 <translation id="6945221475159498467">Ընտրել</translation>
@@ -522,6 +526,7 @@
 <translation id="7654687942625752712">Ձայնային ուղեկցումն անջատելու համար սեղմեք և պահեք ձայնի երկու կոճակները հինգ վայրկյան:</translation>
 <translation id="7705524343798198388">VPN</translation>
 <translation id="7723389094756330927">{NUM_NOTIFICATIONS,plural, =1{1 ծանուցում}one{# ծանուցում}other{# ծանուցում}}</translation>
+<translation id="7724603315864178912">Կտրել</translation>
 <translation id="7749443890790263709">Աշխատասեղանների առավելագույն թույլատրելի քանակը լրացել է:</translation>
 <translation id="776344839111254542">Հպեք՝ թարմացման մանրամասները դիտելու համար</translation>
 <translation id="7780159184141939021">Էկրանի պտտում</translation>
@@ -562,7 +567,6 @@
 <translation id="8142699993796781067">Մասնավոր ցանց</translation>
 <translation id="8152092012181020186">Փակելու համար սեղմեք Ctrl+W։</translation>
 <translation id="8155007568264258537"><ph name="FEATURE_NAME" /> Այս կարգավորումը կառավարվում է ձեր ադմինիստրատորի կողմից։</translation>
-<translation id="815598010540052116">Ոլորել ներքև</translation>
 <translation id="8167567890448493835">Օգտագործվում է՝ <ph name="LOCALE_NAME" /></translation>
 <translation id="8190698733819146287">Լեզուների և ներածման կարգավորում…</translation>
 <translation id="8192202700944119416">Ծանուցումները թաքցված են:</translation>
@@ -574,7 +578,6 @@
 <translation id="8261506727792406068">Ջնջել</translation>
 <translation id="8297006494302853456">Թույլ</translation>
 <translation id="8308637677604853869">Նախորդ ցանկը</translation>
-<translation id="8331626408530291785">Ոլորել վեր</translation>
 <translation id="8341451174107936385"><ph name="UNLOCK_MORE_FEATURES" />  <ph name="GET_STARTED" /></translation>
 <translation id="8351131234907093545">Գրառման ստեղծում</translation>
 <translation id="8375916635258623388">Այս <ph name="DEVICE_NAME" /> սարքը և ձեր հեռախոսը ավտոմատ կկապվեն</translation>

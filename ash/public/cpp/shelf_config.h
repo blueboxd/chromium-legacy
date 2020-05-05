@@ -47,7 +47,7 @@ class ASH_EXPORT ShelfConfig : public TabletModeObserver,
 
   // TabletModeObserver:
   void OnTabletModeStarting() override;
-  void OnTabletModeEnded() override;
+  void OnTabletModeEnding() override;
 
   // DisplayObserver:
   void OnDisplayMetricsChanged(const display::Display& display,
@@ -225,7 +225,9 @@ class ASH_EXPORT ShelfConfig : public TabletModeObserver,
   // Updates |is_dense_|, |is_app_list_visible_|, and |shelf_controls_shown_|
   // and notifies all observers of the update if the state changes.
   // |new_is_app_list_visible| - The new app list visibility state.
-  void UpdateConfig(bool new_is_app_list_visible);
+  // |tablet_mode_changed| should be set to true if this config is being updated
+  // as a result of a change in tablet mode state.
+  void UpdateConfig(bool new_is_app_list_visible, bool tablet_mode_changed);
 
   // Gets the current shelf size.
   // |ignore_in_app_state| - Whether the returned shelf size should be
@@ -235,7 +237,7 @@ class ASH_EXPORT ShelfConfig : public TabletModeObserver,
   // Updates shelf config - called when the accessibility state changes.
   void UpdateConfigForAccessibilityState();
 
-  // Whether shelf config was calculated for tablet mode.
+  // True if device is currently in tablet mode.
   bool in_tablet_mode_;
 
   // Whether shelf is currently standard or dense.

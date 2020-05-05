@@ -48,6 +48,7 @@
 <translation id="2440823041667407902">Πρόσβαση τοποθεσίας</translation>
 <translation id="2482878487686419369">Ειδοποιήσεις</translation>
 <translation id="2490684707762498678">Διαχειριζόμενες από την εφαρμογή <ph name="APP_NAME" /></translation>
+<translation id="2498359688066513246">Βοήθεια και σχόλια</translation>
 <translation id="2501278716633472235">Επιστροφή</translation>
 <translation id="2537296579376733324">Όλα τα cookie, μόνο σε αυτόν τον ιστότοπο</translation>
 <translation id="2569468611847789653">{COOKIE_COUNT,plural, =1{Αποκλείστηκε ένα cookie}other{Αποκλείστηκαν # cookie}}</translation>
@@ -89,6 +90,7 @@
 <translation id="4165986682804962316">Ρυθμίσεις ιστότοπου</translation>
 <translation id="4226663524361240545">Κατά τη λήψη ειδοποιήσεων ενδέχεται να δονείται η συσκευή</translation>
 <translation id="4259722352634471385">Αποκλείστηκε η μετάβαση στη διεύθυνση: <ph name="URL" /></translation>
+<translation id="4275663329226226506">Μέσα</translation>
 <translation id="4278390842282768270">Επιτρέπεται</translation>
 <translation id="4433925000917964731">Σελίδα Lite που παρέχεται από την Google</translation>
 <translation id="4434045419905280838">Αναδυόμενα παράθυρα και ανακατευθύνσεις</translation>
@@ -99,6 +101,7 @@
 <translation id="4645575059429386691">Διαχειρίζεται από τους γονείς σου</translation>
 <translation id="4670064810192446073">Εικονική πραγματικότητα</translation>
 <translation id="4751476147751820511">Αισθητήρες κίνησης ή φωτός</translation>
+<translation id="4759238208242260848">Λήψεις</translation>
 <translation id="4883854917563148705">Δεν είναι δυνατή η επαναφορά των υπό διαχείριση ρυθμίσεων</translation>
 <translation id="4887024562049524730">Να γίνεται ερώτηση προτού επιτραπεί στους ιστοτόπους να χρησιμοποιήσουν τη συσκευή και τα δεδομένα εικονικής πραγματικότητας (συνιστάται).</translation>
 <translation id="4962975101802056554">Ανάκληση όλων των αδειών για τη συσκευή</translation>
@@ -136,6 +139,7 @@
 <translation id="5939518447894949180">Επαναφορά</translation>
 <translation id="6040143037577758943">Κλείσιμο</translation>
 <translation id="6042308850641462728">Περισσότερα</translation>
+<translation id="6064125863973209585">Ολοκληρωμένες λήψεις</translation>
 <translation id="6165508094623778733">Μάθετε περισσότερα</translation>
 <translation id="6181444274883918285">Προσθήκη εξαίρεσης ιστότοπου</translation>
 <translation id="6192792657125177640">Εξαιρέσεις</translation>
@@ -207,6 +211,7 @@
 <translation id="8380167699614421159">Αυτός ο ιστότοπος εμφανίζει παρεμβατικές ή παραπλανητικές διαφημίσεις</translation>
 <translation id="8394832520002899662">Πατήστε για επιστροφή στον ιστότοπο</translation>
 <translation id="8447861592752582886">Ανάκληση άδειας συσκευής</translation>
+<translation id="8463851957836045671">Ο ιστότοπος είναι γρήγορος</translation>
 <translation id="851751545965956758">Αποκλεισμός ιστοτόπων από τη σύνδεση σε συσκευές</translation>
 <translation id="857943718398505171">Επιτρέπεται (συνιστάται)</translation>
 <translation id="8609465669617005112">Μετακίνηση προς τα επάνω</translation>
@@ -220,6 +225,7 @@
 <translation id="8847988622838149491">USB</translation>
 <translation id="885701979325669005">Αποθήκευση</translation>
 <translation id="8926666909099850184">Το NFC είναι ανενεργό για αυτήν τη συσκευή. Ενεργοποιήστε το στις <ph name="BEGIN_LINK" />Ρυθμίσεις Android<ph name="END_LINK" />.</translation>
+<translation id="8929372349074745002">Αυτός ο ιστότοπος ανοίγει και αποκρίνεται γρήγορα για τους περισσότερους χρήστες.</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8958424370300090006">Αποκλεισμός cookie για έναν συγκεκριμένο ιστοτόπο.</translation>
 <translation id="8959122750345127698">Δεν είναι δυνατή η μετάβαση στη διεύθυνση: <ph name="URL" /></translation>

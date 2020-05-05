@@ -90,6 +90,7 @@
 <translation id="1947424002851288782">Duitse sleutelbord</translation>
 <translation id="1972984168337863910">Vou lêersterugvoerpanele uit</translation>
 <translation id="1984603991036629094">Armeense fonetiese sleutelbord</translation>
+<translation id="1995337122023280937">Gaan na lêerligging toe</translation>
 <translation id="2001796770603320721">Bestuur in Drive</translation>
 <translation id="2009067268969781306">Alle data wat op 'n skyf geberg is, sal uitgevee word wanneer dit geformateer word. Hierdie handeling kan nie ontdoen word nie.</translation>
 <translation id="2028997212275086731">RAR-argief</translation>
@@ -141,6 +142,7 @@
 <translation id="2638942478653899953">Google Drive kon nie bereik word nie. <ph name="BEGIN_LINK" />Meld asseblief af<ph name="END_LINK" /> en meld dan weer aan.</translation>
 <translation id="2649120831653069427">Reënboogvis</translation>
 <translation id="2661146741306740526">16x9</translation>
+<translation id="2664412712123763093">Lêerligging</translation>
 <translation id="2672394958563893062">'n Fout het voorgekom. Klik om van die begin af te herbegin.</translation>
 <translation id="2676946222714718093">Speel tans op</translation>
 <translation id="2735698359135166290">Roemeense standaardsleutelbord</translation>
@@ -327,6 +329,7 @@
 <translation id="4880520557730313061">Outoherstel</translation>
 <translation id="4881695831933465202">Maak oop</translation>
 <translation id="4886021172213954916">Tamil-sleutelbord (tikmasjien)</translation>
+<translation id="4892969127351273348">Kan nie met <ph name="APP_NAME" /> oopmaak nie</translation>
 <translation id="4905417359854579806">Gereed om <ph name="FILE_COUNT" /> te rugsteun</translation>
 <translation id="4924638091161556692">Reggestel</translation>
 <translation id="4935975195727477204">Botterblom</translation>
@@ -348,6 +351,7 @@
 <translation id="5081517858322016911"><ph name="TOTAL_FILE_SIZE" /> se lêers sal uitgevee word</translation>
 <translation id="509429900233858213">'n Fout het voorgekom.</translation>
 <translation id="5098629044894065541">Hebreeus</translation>
+<translation id="5112685521274804841">Lêers in hierdie vouers is leesalleen. Sommige aktiwiteite word nie gesteun nie.</translation>
 <translation id="5123433949759960244">Basketbal</translation>
 <translation id="5129662217315786329">Pools</translation>
 <translation id="5144820558584035333">Hangul 3 Stel (390)</translation>
@@ -697,6 +701,7 @@
 <translation id="9034924485347205037">Linux-lêers</translation>
 <translation id="9035012421917565900">Die items kan nie na "<ph name="DESTINATION_NAME" />" toe teruggeskuif word nie en daarom sal jy nie hierdie handeling kan ontdoen nie.</translation>
 <translation id="9038620279323455325">'n Lêer met die naam "<ph name="FILE_NAME" />" bestaan reeds. Kies asseblief 'n ander naam.</translation>
+<translation id="9062992083244091966">Om lêers met <ph name="APP_NAME" /> oop te maak, moet jy hulle eers na <ph name="APP_NAME" /> se vouer met gedeelde lêers toe skuif.</translation>
 <translation id="9064939804718829769">Dra tans oor …</translation>
 <translation id="9065203028668620118">Wysig</translation>
 <translation id="9099674669267916096">Aantal bladsye</translation>

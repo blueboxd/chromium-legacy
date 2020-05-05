@@ -1116,9 +1116,16 @@ std::string GetUserAgent() {
 
 blink::UserAgentMetadata GetUserAgentMetadata() {
   blink::UserAgentMetadata metadata;
-  metadata.brand = version_info::GetProductName();
+
+  std::string major_version = version_info::GetMajorVersionNumber();
+
+  metadata.brand_version_list.push_back({"Chromium", major_version});
+#if !BUILDFLAG(CHROMIUM_BRANDING)
+  metadata.brand_version_list.push_back(
+      {version_info::GetProductName(), major_version});
+#endif
+
   metadata.full_version = version_info::GetVersionNumber();
-  metadata.major_version = version_info::GetMajorVersionNumber();
   metadata.platform = version_info::GetOSType();
   metadata.platform_version =
       content::GetOSVersion(content::IncludeAndroidBuildNumber::Exclude,

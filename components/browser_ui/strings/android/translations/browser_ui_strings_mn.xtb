@@ -3,6 +3,7 @@
 <translationbundle lang="mn">
 <translation id="1006017844123154345">Онлайнаар нээх</translation>
 <translation id="1044891598689252897">Сайтууд хэвийн ажиллана</translation>
+<translation id="1124090076051167250">Энэ нь сайт эсвэл таны Үндсэн нүүрэн дээрх аппуудаас хадгалсан <ph name="DATASIZE" /> өгөгдөл болон күүкиг арилгана.</translation>
 <translation id="1124772482545689468">Хэрэглэгч</translation>
 <translation id="1178581264944972037">Түр зогсоох</translation>
 <translation id="1181037720776840403">Хасах</translation>
@@ -47,6 +48,7 @@
 <translation id="2440823041667407902">Байршилд нэвтрэх</translation>
 <translation id="2482878487686419369">Мэдэгдэл</translation>
 <translation id="2490684707762498678"><ph name="APP_NAME" />-с удирддаг</translation>
+<translation id="2498359688066513246">Тусламж болон санал хүсэлт</translation>
 <translation id="2501278716633472235">Буцаах</translation>
 <translation id="2537296579376733324">Бүх күүки, зөвхөн энэ сайт дээр</translation>
 <translation id="2569468611847789653">{COOKIE_COUNT,plural, =1{1 күүкиг блоклосон}other{# күүкиг блоклосон}}</translation>
@@ -88,6 +90,7 @@
 <translation id="4165986682804962316">Сайтын тохиргоо</translation>
 <translation id="4226663524361240545">Мэдэгдэл ирэхэд төхөөрөмж чичрэнэ</translation>
 <translation id="4259722352634471385">Навигацыг хориглосон байна: <ph name="URL" /></translation>
+<translation id="4275663329226226506">Медиа</translation>
 <translation id="4278390842282768270">Зөвшөөрөгдсөн</translation>
 <translation id="4433925000917964731">Google-с өгч буй энгийн хуудас</translation>
 <translation id="4434045419905280838">Попап болон дахин чиглүүлэлт</translation>
@@ -98,6 +101,7 @@
 <translation id="4645575059429386691">Эцэг, эх нь хариуцаж байна</translation>
 <translation id="4670064810192446073">Виртуал бодит байдал</translation>
 <translation id="4751476147751820511">Хөдөлгөөн эсвэл гэрэл мэдрэгч</translation>
+<translation id="4759238208242260848">Татацууд:</translation>
 <translation id="4883854917563148705">Хяналттай тохиргоог шинэчлэх боломжгүй</translation>
 <translation id="4887024562049524730">Сайтуудад таны виртуал бодит байдлын төхөөрөмж болон өгөгдлийг ашиглахыг зөвшөөрөхийн өмнө асуух (санал болгосон)</translation>
 <translation id="4962975101802056554">Төхөөрөмжийн бүх зөвшөөрлийг цуцлах</translation>
@@ -127,6 +131,7 @@
 <translation id="5677928146339483299">Хаагдсан</translation>
 <translation id="5689516760719285838">Байршил</translation>
 <translation id="5710871682236653961">Таныг NFC төхөөрөмж дээр товших үед мэдээлэл илгээх болон хүлээн авахыг сайтуудад зөвшөөрөхийн өмнө асуух (зөвлөсөн)</translation>
+<translation id="5719847187258001597">Энэ нь <ph name="ORIGIN" /> эсвэл таны Үндсэн нүүрэн дээрх үүний аппаас хадгалсан бүх өгөгдөл болон күүкиг арилгана.</translation>
 <translation id="5804241973901381774">Зөвшөөрлүүд</translation>
 <translation id="5860033963881614850">Идэвхгүй байна</translation>
 <translation id="5916664084637901428">Асаах</translation>
@@ -134,6 +139,7 @@
 <translation id="5939518447894949180">Дахин сэргээх</translation>
 <translation id="6040143037577758943">Хаах</translation>
 <translation id="6042308850641462728">Илүү их</translation>
+<translation id="6064125863973209585">Татаж дууссан файл</translation>
 <translation id="6165508094623778733">Нэмэлт мэдээлэл авах</translation>
 <translation id="6181444274883918285">Сайтын онцгой тохиолдол нэмэх</translation>
 <translation id="6192792657125177640">Гажих нөхцлүүд</translation>
@@ -205,6 +211,7 @@
 <translation id="8380167699614421159">Энэ сайт төвөгтэй эсвэл хуурамч зар харуулдаг</translation>
 <translation id="8394832520002899662">Сайт руу буцахын тулд товшино уу</translation>
 <translation id="8447861592752582886">Төхөөрөмжийн зөвшөөрлийг хүчингүй болгох</translation>
+<translation id="8463851957836045671">Сайт хурдан</translation>
 <translation id="851751545965956758">Сайтуудыг төхөөрөмжүүдэд холбогдохыг нь блоклох</translation>
 <translation id="857943718398505171">Зөвшөөрөгдсөн (санал болгосон)</translation>
 <translation id="8609465669617005112">Дээш зөөх</translation>
@@ -218,6 +225,7 @@
 <translation id="8847988622838149491">USB</translation>
 <translation id="885701979325669005">Хадгалалт</translation>
 <translation id="8926666909099850184">Энэ төхөөрөмж дээр NFC унтраалттай байна. Үүнийг <ph name="BEGIN_LINK" />Android-н тохиргоо<ph name="END_LINK" /> хэсэгт асаана уу.</translation>
+<translation id="8929372349074745002">Энэ сайт ихэнх хүнд хурдан нээгдэж, хариулдаг</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8958424370300090006">Күүкиг тодорхой сайтад хориглоно уу.</translation>
 <translation id="8959122750345127698">Навигацтай холбогдох боломжгүй байна: <ph name="URL" /></translation>

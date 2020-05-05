@@ -16,6 +16,7 @@
 #include "ui/base/ui_base_switches.h"
 #include "ui/color/mac/scoped_current_nsappearance.h"
 #include "ui/gfx/color_palette.h"
+#include "ui/gfx/color_utils.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/native_theme/common_theme.h"
@@ -209,11 +210,6 @@ base::Optional<SkColor> NativeThemeMac::GetOSColor(
     case kColorId_MenuBorderColor:
       return SkColorSetA(SK_ColorBLACK, 0x60);
 
-    // Mac has a different "pressed button" styling because it doesn't use
-    // ripples.
-    case kColorId_ButtonPressedShade:
-      return SkColorSetA(SK_ColorBLACK, 0x10);
-
     // There's a system setting General > Highlight color which sets the
     // background color for text selections. We honor that setting.
     // TODO(ellyjones): Listen for NSSystemColorsDidChangeNotification somewhere
@@ -239,6 +235,15 @@ base::Optional<SkColor> NativeThemeMac::GetOSColor(
     default:
       return base::nullopt;
   }
+}
+
+SkColor NativeThemeMac::GetSystemButtonPressedColor(SkColor base_color) const {
+  // TODO crbug.com/1003612: This should probably be replaced with a color
+  // transform.
+  // Mac has a different "pressed button" styling because it doesn't use
+  // ripples.
+  return color_utils::GetResultingPaintColor(SkColorSetA(SK_ColorBLACK, 0x10),
+                                             base_color);
 }
 
 void NativeThemeMac::PaintMenuPopupBackground(

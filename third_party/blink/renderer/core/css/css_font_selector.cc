@@ -74,24 +74,25 @@ void CSSFontSelector::UnregisterForInvalidationCallbacks(
   clients_.erase(client);
 }
 
-void CSSFontSelector::DispatchInvalidationCallbacks() {
+void CSSFontSelector::DispatchInvalidationCallbacks(
+    FontInvalidationReason reason) {
   font_face_cache_.IncrementVersion();
 
   HeapVector<Member<FontSelectorClient>> clients;
   CopyToVector(clients_, clients);
   for (auto& client : clients) {
     if (client) {
-      client->FontsNeedUpdate(this);
+      client->FontsNeedUpdate(this, reason);
     }
   }
 }
 
-void CSSFontSelector::FontFaceInvalidated() {
-  DispatchInvalidationCallbacks();
+void CSSFontSelector::FontFaceInvalidated(FontInvalidationReason reason) {
+  DispatchInvalidationCallbacks(reason);
 }
 
 void CSSFontSelector::FontCacheInvalidated() {
-  DispatchInvalidationCallbacks();
+  DispatchInvalidationCallbacks(FontInvalidationReason::kGeneralInvalidation);
 }
 
 scoped_refptr<FontData> CSSFontSelector::GetFontData(

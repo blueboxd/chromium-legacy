@@ -3,7 +3,7 @@
 <translationbundle lang="mk">
 <translation id="1006017844123154345">Отвори онлајн</translation>
 <translation id="1044891598689252897">Сајтовите ќе работат нормално</translation>
-<translation id="1124090076051167250">Ове ќе избрише <ph name="DATASIZE" /> податоци и колачиња што се складирале од сајтови или апликации на почетниот екран.</translation>
+<translation id="1124090076051167250">Овa ќе ги избрише податоците и колачињата (<ph name="DATASIZE" />) складирани од сајтови или апликации на почетниот екран.</translation>
 <translation id="1124772482545689468">Корисник</translation>
 <translation id="1178581264944972037">Пауза</translation>
 <translation id="1181037720776840403">Отстрани</translation>
@@ -48,6 +48,7 @@
 <translation id="2440823041667407902">Пристап до локација</translation>
 <translation id="2482878487686419369">Известувања</translation>
 <translation id="2490684707762498678">Управувани од <ph name="APP_NAME" /></translation>
+<translation id="2498359688066513246">Помош и повратни информации</translation>
 <translation id="2501278716633472235">Врати се</translation>
 <translation id="2537296579376733324">Сите колачиња, само на овој сајт</translation>
 <translation id="2569468611847789653">{COOKIE_COUNT,plural, =1{1 колаче е блокирано}one{# колаче е блокирано}other{# колачиња се блокирани}}</translation>
@@ -89,6 +90,7 @@
 <translation id="4165986682804962316">Поставки на локација</translation>
 <translation id="4226663524361240545">Известувањата може да предизвикаат вибрации на уредот</translation>
 <translation id="4259722352634471385">Навигацијата е блокирана: <ph name="URL" /></translation>
+<translation id="4275663329226226506">Медиуми</translation>
 <translation id="4278390842282768270">Дозволено</translation>
 <translation id="4433925000917964731">Lite-страница овозможена од Google</translation>
 <translation id="4434045419905280838">Скокачки прозорци/пренасочувања</translation>
@@ -99,6 +101,7 @@
 <translation id="4645575059429386691">Управувано од вашиот родител</translation>
 <translation id="4670064810192446073">Виртуелна реалност</translation>
 <translation id="4751476147751820511">Сензори за движење или светлина</translation>
+<translation id="4759238208242260848">Преземања</translation>
 <translation id="4883854917563148705">Управуваните поставки не може да се ресетираат</translation>
 <translation id="4887024562049524730">Прашувај пред да им дозволиш на сајтовите да ги користат уредот и податоците за виртуелна реалност (препорачано)</translation>
 <translation id="4962975101802056554">Повлечи ги сите дозволи за уредот</translation>
@@ -128,7 +131,7 @@
 <translation id="5677928146339483299">Блокирано</translation>
 <translation id="5689516760719285838">Локација</translation>
 <translation id="5710871682236653961">Прашај пред да дозволиш сајтовите да испраќаат и примаат информации при допир на NFC-уреди (се препорачува)</translation>
-<translation id="5719847187258001597">Ова ќе ги избрише сите податоци и колачиња складирани од <ph name="ORIGIN" /> или неговата апликација на почетниот екран.</translation>
+<translation id="5719847187258001597">Ова ќе ги избрише сите податоци и колачиња складирани од сајтот <ph name="ORIGIN" /> или од неговата апликација на почетниот екран.</translation>
 <translation id="5804241973901381774">Дозволи</translation>
 <translation id="5860033963881614850">Исклучено</translation>
 <translation id="5916664084637901428">Вклучено</translation>
@@ -136,6 +139,7 @@
 <translation id="5939518447894949180">Ресетирај</translation>
 <translation id="6040143037577758943">Затвори</translation>
 <translation id="6042308850641462728">Повеќе</translation>
+<translation id="6064125863973209585">Преземањата завршија</translation>
 <translation id="6165508094623778733">Дознајте повеќе</translation>
 <translation id="6181444274883918285">Додај исклучок за сајт</translation>
 <translation id="6192792657125177640">Исклучоци</translation>
@@ -207,6 +211,7 @@
 <translation id="8380167699614421159">Сајтов прикажува нападни или лажни реклами</translation>
 <translation id="8394832520002899662">Допрете за да се вратите на сајтот</translation>
 <translation id="8447861592752582886">Отповикај ја дозволата за пристап до уредот</translation>
+<translation id="8463851957836045671">Сајтот е брз</translation>
 <translation id="851751545965956758">Блокирај ги сајтовите од поврзување со уреди</translation>
 <translation id="857943718398505171">Дозволено (препорачано)</translation>
 <translation id="8609465669617005112">Премести нагоре</translation>
@@ -220,6 +225,7 @@
 <translation id="8847988622838149491">USB</translation>
 <translation id="885701979325669005">Склад</translation>
 <translation id="8926666909099850184">NFC е исклучена за уредов. Вклучете ја во <ph name="BEGIN_LINK" />„Поставки за Android“<ph name="END_LINK" />.</translation>
+<translation id="8929372349074745002">Сајтов се отвора и реагира брзо за повеќето луѓе</translation>
 <translation id="8941729603749328384">www.primer.com</translation>
 <translation id="8958424370300090006">Блокирајте колачиња за одреден сајт.</translation>
 <translation id="8959122750345127698">Навигацијата е недостапна: <ph name="URL" /></translation>

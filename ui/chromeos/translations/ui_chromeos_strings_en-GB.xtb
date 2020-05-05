@@ -90,6 +90,7 @@
 <translation id="1947424002851288782">German keyboard</translation>
 <translation id="1972984168337863910">Expand files feedback panels</translation>
 <translation id="1984603991036629094">Armenian Phonetic keyboard</translation>
+<translation id="1995337122023280937">Go to file location</translation>
 <translation id="2001796770603320721">Manage in Drive</translation>
 <translation id="2009067268969781306">Formatting a drive will delete all data stored on it. This action cannot be undone.</translation>
 <translation id="2028997212275086731">RAR archive</translation>
@@ -141,6 +142,7 @@
 <translation id="2638942478653899953">Google Drive could not be reached. Please <ph name="BEGIN_LINK" />log out<ph name="END_LINK" /> and log back in.</translation>
 <translation id="2649120831653069427">Rainbowfish</translation>
 <translation id="2661146741306740526">16 x 9</translation>
+<translation id="2664412712123763093">File location</translation>
 <translation id="2672394958563893062">An error occurred. Click to restart from the beginning.</translation>
 <translation id="2676946222714718093">Playing on</translation>
 <translation id="2735698359135166290">Romanian standard keyboard</translation>
@@ -327,6 +329,7 @@
 <translation id="4880520557730313061">Auto-fix</translation>
 <translation id="4881695831933465202">Open</translation>
 <translation id="4886021172213954916">Tamil keyboard (Typewriter)</translation>
+<translation id="4892969127351273348">Unable to open with <ph name="APP_NAME" /></translation>
 <translation id="4905417359854579806">Ready to backup <ph name="FILE_COUNT" /></translation>
 <translation id="4924638091161556692">Fixed</translation>
 <translation id="4935975195727477204">Gazania Flower</translation>
@@ -348,6 +351,7 @@
 <translation id="5081517858322016911"><ph name="TOTAL_FILE_SIZE" /> of files will be deleted</translation>
 <translation id="509429900233858213">An error occurred.</translation>
 <translation id="5098629044894065541">Hebrew</translation>
+<translation id="5112685521274804841">Files in this folder are read only. Some activities are not supported.</translation>
 <translation id="5123433949759960244">Basketball</translation>
 <translation id="5129662217315786329">Polish</translation>
 <translation id="5144820558584035333">Hangul 3 Set (390)</translation>
@@ -698,6 +702,7 @@
 <translation id="9034924485347205037">Linux files</translation>
 <translation id="9035012421917565900">The items cannot be moved back into '<ph name="DESTINATION_NAME" />', so you won't be able to undo this action.</translation>
 <translation id="9038620279323455325">The file named '<ph name="FILE_NAME" />' already exists. Please choose a different name.</translation>
+<translation id="9062992083244091966">To open files with <ph name="APP_NAME" /> apps, first move them to <ph name="APP_NAME" /> shared files folder.</translation>
 <translation id="9064939804718829769">Transferring...</translation>
 <translation id="9065203028668620118">Edit</translation>
 <translation id="9099674669267916096">Page count</translation>

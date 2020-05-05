@@ -35,6 +35,7 @@
 <translation id="1938124657309484470">ମୂଲ୍ୟ <ph name="MAXIMUM_DATE_OR_TIME" /> ହେବା ଦରକାର ବା ଏହା ପୂର୍ବର ହେବା ଦରକାର।</translation>
 <translation id="1946271899482435442">ତାରିଖ ପିକର୍ ଦେଖାନ୍ତୁ</translation>
 <translation id="1993104285338243655">ପ୍ରତିଫଳନକୁ ସ୍ବିଚ୍ କରାଯାଇଛି</translation>
+<translation id="2031987842108996681">ଲାଲ୍ ଚ୍ୟାନେଲ୍</translation>
 <translation id="2060505056492490888">'<ph name="INVALIDDOMAIN" />'ରେ ଏକ ଭୁଲ ସ୍ଥାନରେ '<ph name="DOT" />' ବ୍ୟବହୃତ ହୋଇଛି</translation>
 <translation id="2148716181193084225">ଆଜି</translation>
 <translation id="2158401438286456825">ପୃଷ୍ଠା ତାଲିକା</translation>
@@ -45,6 +46,7 @@
 <translation id="2291999235780842123">ଚେକ୍‌ବକ୍ସ</translation>
 <translation id="2311842470354187719">ପେଜ୍ ବ୍ରେକ୍</translation>
 <translation id="2335594187091864976">ତାରିଖ ଓ ସମୟ ପିକର୍</translation>
+<translation id="2393030564806080191">ହେକ୍ସାଡେସିମାଲ୍ ରଙ୍ଗର ମୂଲ୍ୟ</translation>
 <translation id="245932805758469625">ସେକେଣ୍ଡର ଭିଡିଓ ବାକି ରହିଛି</translation>
 <translation id="248395913932153421">ଦିନ</translation>
 <translation id="2507943997699731163">ଦୟାକରି ଏହି କ୍ଷେତ୍ର ପୂରଣ କରନ୍ତୁ।</translation>
@@ -52,6 +54,7 @@
 <translation id="2561842179657104141">ଅଧିକ ମିଡିଆ ନିୟନ୍ତ୍ରଣଗୁଡ଼ିକ ଦେଖାନ୍ତୁ</translation>
 <translation id="2572483411312390101">ଚଲାନ୍ତୁ</translation>
 <translation id="2613802280814924224">ଦୟାକରି ଏକ ବୈଧ ମୂଲ୍ୟ ଲେଖନ୍ତୁ। ନିକଟତମ ବୈଧ ମୂଲ୍ୟ <ph name="VALID_VALUE" /> ଅଟେ।</translation>
+<translation id="2634240155926812724">ସବୁଜ ଚ୍ୟାନେଲ୍</translation>
 <translation id="2653659639078652383">ଉପସ୍ଥାପନ</translation>
 <translation id="2657045182931379222">ଗ୍ରାଫିକ୍ସ ଅବଜେକ୍ଟ</translation>
 <translation id="2674318244760992338">ଫୁଟର୍</translation>
@@ -127,6 +130,7 @@
 <translation id="5034860022980953847">ପ୍ରଗତି ସୂଚକ</translation>
 <translation id="5090250355906949916">ଭିଡିଓ ସମୟ ସ୍କ୍ରବର</translation>
 <translation id="5093189678851173835">ଖୋଦିତ ଲେଖା</translation>
+<translation id="509897012892853729">ନୀଳ ଚ୍ୟାନେଲ୍</translation>
 <translation id="5117590920725113268">ପରବର୍ତ୍ତୀ ମାସ ଦେଖାନ୍ତୁ</translation>
 <translation id="512758898067543763">ଧାଡ଼ି ଶୀର୍ଷକ</translation>
 <translation id="5143125788380636750">ଉପସଂହାର</translation>
@@ -164,6 +168,7 @@
 <translation id="6166809985690652833">ଉପସଂହାର</translation>
 <translation id="6209276755895393898">ଏପରି ମନେ ହେଉଛି: <ph name="DESCRIPTION" /></translation>
 <translation id="6213469881011901533">ଶଦ୍ଦକୋଷ</translation>
+<translation id="6281588256137006900">ହାଲୁକା ରଙ୍ଗ</translation>
 <translation id="6281763101136022427">url</translation>
 <translation id="6310801910862476708">ପିକଚର୍-ଇନ୍-ପିକଚର୍‌ରୁ ବାହାରି ଯାଆନ୍ତୁ</translation>
 <translation id="6398862346408813489">ମାସ ଚୟନ ପ୍ୟାନେଲ୍ ଦେଖାନ୍ତୁ</translation>
@@ -184,6 +189,7 @@
 <translation id="6790428901817661496">ଚଲାନ୍ତୁ</translation>
 <translation id="6820355525329141109">ପ୍ଲଗ୍‍ଇନ୍ ଲୋଡ୍ କରାଯାଇପାରିଲା ନାହିଁ।</translation>
 <translation id="6820615603175220800">ଗ୍ରନ୍ଥସୂଚୀର ସନ୍ଦର୍ଭ</translation>
+<translation id="6831465880655513317">ସାଚୁରେସନ୍ ଏବଂ ହାଲୁକା ରଙ୍ଗ ଚୟନ କରିବା ପାଇଁ ଟୁ-ଡାଇମେନସନାଲ୍ ସ୍ଲାଇଡର୍ ସହିତ କଲର୍ ୱେଲ୍</translation>
 <translation id="6843725295806269523">ମ୍ୟୁଟ୍ କରନ୍ତୁ</translation>
 <translation id="6885760532393684712">ଡିରେକ୍ଟୋରୀ</translation>
 <translation id="689129560213475294">colophon</translation>
@@ -201,6 +207,7 @@
 <translation id="7263440858009898357">ଦୟାକରି ତାଲିକାରେ ଏକ ଆଇଟମ୍ ଚୟନ କରନ୍ତୁ।</translation>
 <translation id="727747134524199931">ସ୍ତମ୍ଭର ଶୀର୍ଷକ</translation>
 <translation id="7320576522385648310">ବଫ୍‌ରିଂ ହେଉଛି</translation>
+<translation id="7341556277900466204">କଲର୍ ୱେଲ୍</translation>
 <translation id="7353453495576941748">କ୍ରେଡିଟ୍</translation>
 <translation id="7364796246159120393">ଫାଇଲ୍ ମନୋନୟନ କରନ୍ତୁ</translation>
 <translation id="739024184232394898">ଅନ୍ୟ...</translation>
@@ -221,6 +228,7 @@
 <translation id="775297008183122718">ଅବୈଧ ଏଣ୍ଟ୍ରି</translation>
 <translation id="7789962463072032349">ବିରତ କରନ୍ତୁ</translation>
 <translation id="7802800022689234070">ପ୍ରକାଶ ତ୍ରିଭୁଜ</translation>
+<translation id="7852167693871241274">ହ୍ୟୁ ସ୍ଲାଇଡର୍</translation>
 <translation id="7888071071722539607">ଦୟାକରି ଇମେଲ୍ ଠିକଣାରେ ଏକ '<ph name="ATSIGN" />' ଅନ୍ତର୍ଭୁକ୍ତ କରନ୍ତୁ। '<ph name="INVALIDADDRESS" />' ରେ '<ph name="ATSIGN" />'ମିଳୁନାହିଁ।</translation>
 <translation id="7891486169920085145">ସ୍ପ୍ଲିଟର୍</translation>
 <translation id="795667975304826397">କୌଣସି ଫାଇଲ୍ ଚୟନ କରାଯାଇ ନାହିଁ</translation>
@@ -263,6 +271,7 @@
 <translation id="8875657656876809964">ଭିଡିଓ ପ୍ଲେବ୍ୟାକ୍ ତ୍ରୁଟି</translation>
 <translation id="8889402386540077796">ରଙ୍ଗ</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> KB</translation>
+<translation id="894736920926684893">ଫର୍ମାଟ ଟୋଗଲର୍</translation>
 <translation id="8987927404178983737">ମାସ</translation>
 <translation id="901493112792887934">ସେକେଣ୍ଡରେ ବର୍ତ୍ତମାନର ସମୟ</translation>
 <translation id="901834265349196618">ଇମେଲ୍</translation>

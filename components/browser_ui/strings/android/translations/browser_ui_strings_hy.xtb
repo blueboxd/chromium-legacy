@@ -48,6 +48,7 @@
 <translation id="2440823041667407902">Իմ տեղակայումը</translation>
 <translation id="2482878487686419369">Ծանուցումներ</translation>
 <translation id="2490684707762498678">Կառավարվում է <ph name="APP_NAME" /> հավելվածի կողմից</translation>
+<translation id="2498359688066513246">Օգնություն և հետադարձ կապ</translation>
 <translation id="2501278716633472235">Վերադառնալ</translation>
 <translation id="2537296579376733324">Բոլոր քուքիները, միայն այս կայքում</translation>
 <translation id="2569468611847789653">{COOKIE_COUNT,plural, =1{Արգելափակվել է 1 քուքի ֆայլ}one{Արգելափակվել է # քուքի ֆայլ}other{Արգելափակվել է # քուքի ֆայլ}}</translation>
@@ -89,6 +90,7 @@
 <translation id="4165986682804962316">Կայքի կարգավորումներ</translation>
 <translation id="4226663524361240545">Ծանուցումների ժամանակ սարքը կթրթռա</translation>
 <translation id="4259722352634471385">Նավարկումն արգելափակված է՝ <ph name="URL" /></translation>
+<translation id="4275663329226226506">Տեսախցիկ և խոսափող</translation>
 <translation id="4278390842282768270">Թույլատրված է</translation>
 <translation id="4433925000917964731">Էջի Lite տարբերակը տրամադրվել է Google-ի կողմից</translation>
 <translation id="4434045419905280838">Ելնող պատուհաններ և վերահղում</translation>
@@ -99,6 +101,7 @@
 <translation id="4645575059429386691">Կառավարվում է ձեր ծնողի կողմից</translation>
 <translation id="4670064810192446073">Վիրտուալ իրականություն</translation>
 <translation id="4751476147751820511">Շարժման և լուսավորության տվիչներ</translation>
+<translation id="4759238208242260848">Ներբեռնումներ</translation>
 <translation id="4883854917563148705">Կառավարվող կարգավորումները հնարավոր չէ վերակայել</translation>
 <translation id="4887024562049524730">Կայքերի համար թույլտվություն խնդրել՝ օգտագործելու վիրտուալ իրականության ձեր սարքերն ու տվյալները (խորհուրդ է տրվում)</translation>
 <translation id="4962975101802056554">Չեղարկել սարքի բոլոր թույլտվությունները</translation>
@@ -136,6 +139,7 @@
 <translation id="5939518447894949180">Վերակայել</translation>
 <translation id="6040143037577758943">Փակել</translation>
 <translation id="6042308850641462728">Ավելին</translation>
+<translation id="6064125863973209585">Կատարված ներբեռնումներ</translation>
 <translation id="6165508094623778733">Իմանալ ավելին</translation>
 <translation id="6181444274883918285">Ավելացնել բացառություն</translation>
 <translation id="6192792657125177640">Բացառություններ</translation>
@@ -207,6 +211,7 @@
 <translation id="8380167699614421159">Այս կայքը հոգնեցնող կամ մոլորեցնող գովազդ է ցուցադրում։</translation>
 <translation id="8394832520002899662">Հպեք՝ կայք վերադառնալու համար</translation>
 <translation id="8447861592752582886">Արգելել սարքի օգտագործումը</translation>
+<translation id="8463851957836045671">Կայքը բեռնվում է արագ</translation>
 <translation id="851751545965956758">Արգելել կայքերին միանալ սարքերին</translation>
 <translation id="857943718398505171">Թույլատրված է (հանձնարարելի)</translation>
 <translation id="8609465669617005112">Տեղափոխել վեր</translation>
@@ -220,6 +225,7 @@
 <translation id="8847988622838149491">USB</translation>
 <translation id="885701979325669005">Պահեստ</translation>
 <translation id="8926666909099850184">Սարքի NFC-ն անջատված է։ Միացրեք այն <ph name="BEGIN_LINK" />Android-ի կարգավորումներում<ph name="END_LINK" />։</translation>
+<translation id="8929372349074745002">Այս կայքը հիմնականում բեռնվում և արձագանքում է արագ</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8958424370300090006">Արգելափակել քուքիները կոնկրետ կայքի համար:</translation>
 <translation id="8959122750345127698">Նավարկումն անհասանելի է՝ <ph name="URL" /></translation>

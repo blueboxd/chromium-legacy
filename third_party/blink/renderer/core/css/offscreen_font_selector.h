@@ -55,7 +55,7 @@ class CORE_EXPORT OffscreenFontSelector : public FontSelector {
   }
 
   void FontCacheInvalidated() override;
-  void FontFaceInvalidated() override;
+  void FontFaceInvalidated(FontInvalidationReason) override;
 
   void UpdateGenericFontFamilySettings(const GenericFontFamilySettings&);
 

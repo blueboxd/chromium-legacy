@@ -3,6 +3,7 @@
 <translationbundle lang="ml">
 <translation id="1006017844123154345">ഓൺലൈനായി തുറക്കുക</translation>
 <translation id="1044891598689252897">സൈറ്റുകൾ സാധാരണ രീതിയിൽ പ്രവർത്തിക്കും</translation>
+<translation id="1124090076051167250">ഇത് നിങ്ങളുടെ ഹോം സ്ക്രീനിൽ സൈറ്റുകളോ ആപ്പുകളോ സംഭരിച്ച <ph name="DATASIZE" /> ഡാറ്റയും കുക്കികളും മായ്‌ക്കും.</translation>
 <translation id="1124772482545689468">ഉപയോക്താവ്</translation>
 <translation id="1178581264944972037">അല്പംനിര്‍ത്തൂ</translation>
 <translation id="1181037720776840403">നീക്കംചെയ്യൂ</translation>
@@ -47,6 +48,7 @@
 <translation id="2440823041667407902">ലൊക്കേഷൻ ആക്‌സസ്</translation>
 <translation id="2482878487686419369">വിജ്ഞാപനങ്ങള്‍‌</translation>
 <translation id="2490684707762498678"><ph name="APP_NAME" /> ആണ് മാനേജ് ചെയ്യുന്നത്</translation>
+<translation id="2498359688066513246">സഹായവും ഫീഡ്ബാക്കും</translation>
 <translation id="2501278716633472235">പിന്നോട്ട് പോകുക</translation>
 <translation id="2537296579376733324">എല്ലാ കുക്കികളും, ഈ സൈറ്റിൽ മാത്രം</translation>
 <translation id="2569468611847789653">{COOKIE_COUNT,plural, =1{1 കുക്കി ബ്ലോക്ക് ചെയ്തു}other{# കുക്കികൾ ബ്ലോക്ക് ചെയ്തു}}</translation>
@@ -88,6 +90,7 @@
 <translation id="4165986682804962316">സൈറ്റ് ക്രമീകരണങ്ങൾ</translation>
 <translation id="4226663524361240545">അറിയിപ്പുകൾ ലഭിക്കുമ്പോൾ ഉപകരണം വൈബ്രേറ്റ് ചെയ്‌തേക്കാം</translation>
 <translation id="4259722352634471385">നാവിഗേഷൻ തടഞ്ഞിരിക്കുന്നു: <ph name="URL" /></translation>
+<translation id="4275663329226226506">മീഡിയ</translation>
 <translation id="4278390842282768270">അനുവദനീയം</translation>
 <translation id="4433925000917964731">Google നല്‍കുന്ന ലൈറ്റ് പേജ്</translation>
 <translation id="4434045419905280838">പോപ്-അപ്പുകളും റീഡയറക്‌റ്റുകളും</translation>
@@ -98,6 +101,7 @@
 <translation id="4645575059429386691">നിങ്ങളുടെ രക്ഷിതാവ് നിയന്ത്രിക്കുന്നു</translation>
 <translation id="4670064810192446073">വെർച്വൽ റിയാലിറ്റി</translation>
 <translation id="4751476147751820511">ചലന അല്ലെങ്കിൽ വെളിച്ച സെൻസറുകൾ</translation>
+<translation id="4759238208242260848">ഡൌണ്‍ലോഡുകള്‍</translation>
 <translation id="4883854917563148705">മാനേജ് ചെയ്യുന്ന ക്രമീകരണം പുനഃസജ്ജീകരിക്കാനാവില്ല</translation>
 <translation id="4887024562049524730">നിങ്ങളുടെ വെർച്വൽ റിയാലിറ്റി ഉപകരണവും ഡാറ്റയും ഉപയോഗിക്കാൻ സൈറ്റുകളെ അനുവദിക്കുന്നതിന് മുമ്പ് ചോദിക്കുക (ശുപാർശ ചെയ്യുന്നത്)</translation>
 <translation id="4962975101802056554">ഉപകരണത്തിനുള്ള എല്ലാ അനുമതികളും അസാധുവാക്കുക</translation>
@@ -127,6 +131,7 @@
 <translation id="5677928146339483299">തടഞ്ഞു</translation>
 <translation id="5689516760719285838">ലൊക്കേഷൻ</translation>
 <translation id="5710871682236653961">നിങ്ങൾ NFC ഉപകരണങ്ങളിൽ ടാപ്പ് ചെയ്യുമ്പോൾ വിവരങ്ങൾ അയയ്‌ക്കാനും സ്വീകരിക്കാനും സൈറ്റുകളെ അനുവദിക്കുന്നതിന് മുമ്പ് ചോദിക്കുക (ശുപാർശ ചെയ്യുന്നത്)</translation>
+<translation id="5719847187258001597">ഇത് <ph name="ORIGIN" /> അല്ലെങ്കിൽ അതിന്റെ ആപ്പ് നിങ്ങളുടെ ഹോം സ്ക്രീനിൽ സംഭരിച്ച എല്ലാ ഡാറ്റയും കുക്കികളും മായ്ക്കും.</translation>
 <translation id="5804241973901381774">അനുമതികൾ</translation>
 <translation id="5860033963881614850">ഓഫാക്കുക</translation>
 <translation id="5916664084637901428">ഓൺ ചെയ്യുക</translation>
@@ -134,6 +139,7 @@
 <translation id="5939518447894949180">റീസെറ്റ് ചെയ്യുക</translation>
 <translation id="6040143037577758943">അടയ്ക്കുക</translation>
 <translation id="6042308850641462728">കൂടുതൽ</translation>
+<translation id="6064125863973209585">പൂർത്തിയാക്കിയ ഡൗൺലോഡുകൾ</translation>
 <translation id="6165508094623778733">കൂടുതലറിയുക</translation>
 <translation id="6181444274883918285">സൈറ്റിനെ ഒഴിവാക്കൽ ലിസ്‌റ്റിൽ ചേർക്കുക</translation>
 <translation id="6192792657125177640">അപവാദങ്ങള്‍</translation>
@@ -205,6 +211,7 @@
 <translation id="8380167699614421159">ഈ സൈറ്റ്, അനാവശ്യമോ തെറ്റിദ്ധരിപ്പിക്കുന്നതോ ആയ പരസ്യങ്ങള്‍ കാണിക്കുന്നു</translation>
 <translation id="8394832520002899662">സൈറ്റിലേക്ക് മടങ്ങാൻ ടാപ്പ് ചെയ്യുക</translation>
 <translation id="8447861592752582886">ഉപകരണ അനുമതി റദ്ദാക്കുക</translation>
+<translation id="8463851957836045671">വളരെ വേഗതയുള്ള സൈറ്റ്</translation>
 <translation id="851751545965956758">ഉപകരണങ്ങളിലേക്ക് കണക്‌റ്റ് ചെയ്യുന്നതിൽ നിന്ന് സൈറ്റുകളെ ബ്ലോക്ക് ചെയ്യുക</translation>
 <translation id="857943718398505171">അനുവദിച്ചിരിക്കുന്നു (ശുപാർശചെയ്‌തത്)</translation>
 <translation id="8609465669617005112">മുകളിലേക്ക് നീക്കുക</translation>
@@ -218,6 +225,7 @@
 <translation id="8847988622838149491">USB</translation>
 <translation id="885701979325669005">സംഭരണം</translation>
 <translation id="8926666909099850184">ഈ ഉപകരണത്തിനുള്ള NFC ഓഫാണ്. ഇത് <ph name="BEGIN_LINK" />Android ക്രമീകരണത്തിൽ<ph name="END_LINK" /> ഓണാക്കുക.</translation>
+<translation id="8929372349074745002">കൂടുതൽ ആളുകൾക്കും ഈ സൈറ്റ് വേഗത്തിൽ തുറക്കുകയും പ്രതികരിക്കുകയും ചെയ്യുന്നു</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8958424370300090006">ഒരു പ്രത്യേക സൈറ്റിനായി കുക്കികൾ ബ്ലോക്ക് ചെയ്യുക.</translation>
 <translation id="8959122750345127698">നാവിഗേഷൻ ലഭ്യമല്ല: <ph name="URL" /></translation>

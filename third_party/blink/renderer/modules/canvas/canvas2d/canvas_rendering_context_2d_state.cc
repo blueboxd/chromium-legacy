@@ -120,8 +120,8 @@ CanvasRenderingContext2DState::CanvasRenderingContext2DState(
 
 CanvasRenderingContext2DState::~CanvasRenderingContext2DState() = default;
 
-void CanvasRenderingContext2DState::FontsNeedUpdate(
-    FontSelector* font_selector) {
+void CanvasRenderingContext2DState::FontsNeedUpdate(FontSelector* font_selector,
+                                                    FontInvalidationReason) {
   DCHECK_EQ(font_selector, font_.GetFontSelector());
   DCHECK(realized_font_);
 
@@ -266,8 +266,11 @@ void CanvasRenderingContext2DState::SetFont(
 
 const Font& CanvasRenderingContext2DState::GetFont() {
   DCHECK(realized_font_);
-  if (!font_.IsFallbackValid())
-    FontsNeedUpdate(font_.GetFontSelector());
+  if (!font_.IsFallbackValid()) {
+    // TODO(xiaochengh): This might have become unnecessary. Investigate.
+    FontsNeedUpdate(font_.GetFontSelector(),
+                    FontInvalidationReason::kGeneralInvalidation);
+  }
   return font_;
 }
 

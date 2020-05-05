@@ -168,7 +168,7 @@
 <translation id="6166809985690652833">pogovor</translation>
 <translation id="6209276755895393898">Izgleda da je ovo: <ph name="DESCRIPTION" /></translation>
 <translation id="6213469881011901533">rečnik termina</translation>
-<translation id="6281588256137006900">Osvetljenost</translation>
+<translation id="6281588256137006900">Svetlina</translation>
 <translation id="6281763101136022427">URL</translation>
 <translation id="6310801910862476708">Izađi iz režima slike u slici</translation>
 <translation id="6398862346408813489">Prikaži tablu za izbor meseca</translation>
@@ -189,7 +189,7 @@
 <translation id="6790428901817661496">Pusti</translation>
 <translation id="6820355525329141109">Učitavanje dodatne komponente nije uspelo.</translation>
 <translation id="6820615603175220800">referenca bibliografije</translation>
-<translation id="6831465880655513317">Bojite dobro pomoću dvodimenzionalnog klizača za izbor zasićenosti boja i osvetljenosti</translation>
+<translation id="6831465880655513317">Skup boja sa dvodimenzionalnim klizačem za izbor zasićenosti i svetline boje</translation>
 <translation id="6843725295806269523">isključi zvuk</translation>
 <translation id="6885760532393684712">katalog</translation>
 <translation id="689129560213475294">znak izdavača</translation>
@@ -207,7 +207,7 @@
 <translation id="7263440858009898357">Izaberite stavku sa liste.</translation>
 <translation id="727747134524199931">zaglavlje kolone</translation>
 <translation id="7320576522385648310">baferovanje</translation>
-<translation id="7341556277900466204">Bojite dobro</translation>
+<translation id="7341556277900466204">Skup boja</translation>
 <translation id="7353453495576941748">zasluga</translation>
 <translation id="7364796246159120393">Odaberi datoteku</translation>
 <translation id="739024184232394898">Drugo...</translation>
@@ -271,7 +271,7 @@
 <translation id="8875657656876809964">Greška pri puštanju video snimka</translation>
 <translation id="8889402386540077796">Nijansa</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> KB</translation>
-<translation id="894736920926684893">Formatiraj prekidač</translation>
+<translation id="894736920926684893">Meni za formatiranje</translation>
 <translation id="8987927404178983737">Mesec</translation>
 <translation id="901493112792887934">aktuelno vreme u sekundama</translation>
 <translation id="901834265349196618">imejl</translation>

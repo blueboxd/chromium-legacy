@@ -115,9 +115,9 @@ std::string GetShellLanguage() {
 blink::UserAgentMetadata GetShellUserAgentMetadata() {
   blink::UserAgentMetadata metadata;
 
-  metadata.brand = "content_shell";
+  metadata.brand_version_list.emplace_back("content_shell",
+                                           CONTENT_SHELL_MAJOR_VERSION);
   metadata.full_version = CONTENT_SHELL_VERSION;
-  metadata.major_version = CONTENT_SHELL_MAJOR_VERSION;
   metadata.platform = BuildOSCpuInfo(IncludeAndroidBuildNumber::Exclude,
                                      IncludeAndroidModel::Exclude);
   metadata.architecture = BuildCpuInfo();

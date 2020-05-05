@@ -226,8 +226,6 @@ base::Optional<SkColor> SkColorFromColorId(
       return GetFgColor("GtkButton#button.text-button GtkLabel");
     case ui::NativeTheme::kColorId_ButtonDisabledColor:
       return GetFgColor("GtkButton#button.text-button:disabled GtkLabel");
-    case ui::NativeTheme::kColorId_ButtonPressedShade:
-      return SK_ColorTRANSPARENT;
     // TODO(thomasanderson): Add this once this CL lands:
     // https://chromium-review.googlesource.com/c/chromium/src/+/2053144
     // case ui::NativeTheme::kColorId_ButtonHoverColor:

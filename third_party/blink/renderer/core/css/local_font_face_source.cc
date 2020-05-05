@@ -118,7 +118,8 @@ void LocalFontFaceSource::NotifyFontUniqueNameLookupReady() {
   PruneTable();
 
   if (face_->FontLoaded(this)) {
-    font_selector_->FontFaceInvalidated();
+    font_selector_->FontFaceInvalidated(
+        FontInvalidationReason::kGeneralInvalidation);
   }
 }
 

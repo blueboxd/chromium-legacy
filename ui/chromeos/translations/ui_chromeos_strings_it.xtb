@@ -90,6 +90,7 @@
 <translation id="1947424002851288782">Tastiera tedesca</translation>
 <translation id="1972984168337863910">Espandi i riquadri di feedback dei file</translation>
 <translation id="1984603991036629094">Tastiera fonetica Armeno</translation>
+<translation id="1995337122023280937">Vai a posizione file</translation>
 <translation id="2001796770603320721">Gestisci in Drive</translation>
 <translation id="2009067268969781306">Se formatti un'unità vengono eliminati tutti i dati in essa memorizzati. L'azione non può essere annullata.</translation>
 <translation id="2028997212275086731">Archivio RAR</translation>
@@ -141,6 +142,7 @@
 <translation id="2638942478653899953">Impossibile raggiungere Google Drive. <ph name="BEGIN_LINK" />Esci<ph name="END_LINK" /> e accedi di nuovo.</translation>
 <translation id="2649120831653069427">Pesce arcobaleno</translation>
 <translation id="2661146741306740526">16 x 9</translation>
+<translation id="2664412712123763093">Posizione file</translation>
 <translation id="2672394958563893062">Si è verificato un errore. Fai clic per ricominciare dall'inizio.</translation>
 <translation id="2676946222714718093">In riproduzione su:</translation>
 <translation id="2735698359135166290">Tastiera Rumeno standard</translation>
@@ -327,6 +329,7 @@
 <translation id="4880520557730313061">Correzione automatica</translation>
 <translation id="4881695831933465202">Apri</translation>
 <translation id="4886021172213954916">Tastiera Tamil (macchina da scrivere)</translation>
+<translation id="4892969127351273348">Impossibile aprire con <ph name="APP_NAME" /></translation>
 <translation id="4905417359854579806">Pronto per il backup di <ph name="FILE_COUNT" /></translation>
 <translation id="4924638091161556692">Corretta</translation>
 <translation id="4935975195727477204">Gazania</translation>
@@ -348,6 +351,7 @@
 <translation id="5081517858322016911">Verranno eliminati <ph name="TOTAL_FILE_SIZE" /> di file</translation>
 <translation id="509429900233858213">Si è verificato un errore.</translation>
 <translation id="5098629044894065541">Ebraico</translation>
+<translation id="5112685521274804841">I file in questa cartella sono di sola lettura. Alcune attività non sono supportate.</translation>
 <translation id="5123433949759960244">Basket</translation>
 <translation id="5129662217315786329">Polacco</translation>
 <translation id="5144820558584035333">Hangul 3 Set (390)</translation>
@@ -697,6 +701,7 @@
 <translation id="9034924485347205037">File Linux</translation>
 <translation id="9035012421917565900">Non è possibile spostare di nuovo gli elementi in "<ph name="DESTINATION_NAME" />", quindi non potrai annullare questa azione.</translation>
 <translation id="9038620279323455325">Esiste già un file chiamato "<ph name="FILE_NAME" />". Scegli un altro nome.</translation>
+<translation id="9062992083244091966">Per aprire file con le app <ph name="APP_NAME" />, devi prima spostarli nella cartella dei file condivisi dell'app <ph name="APP_NAME" />.</translation>
 <translation id="9064939804718829769">Trasferimento in corso...</translation>
 <translation id="9065203028668620118">Modifica</translation>
 <translation id="9099674669267916096">Numero di pagine</translation>

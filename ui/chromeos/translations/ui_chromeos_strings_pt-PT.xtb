@@ -90,6 +90,7 @@
 <translation id="1947424002851288782">Teclado alemão</translation>
 <translation id="1972984168337863910">Expandir painéis de comentários dos ficheiros</translation>
 <translation id="1984603991036629094">Teclado fonético em arménio</translation>
+<translation id="1995337122023280937">Aceder à localização do ficheiro</translation>
 <translation id="2001796770603320721">Gerir no Drive</translation>
 <translation id="2009067268969781306">Ao formatar uma unidade, todos os dados aí armazenados são eliminados. Não é possível anular esta ação.</translation>
 <translation id="2028997212275086731">Arquivo RAR</translation>
@@ -141,6 +142,7 @@
 <translation id="2638942478653899953">Não foi possível aceder ao Google Drive. <ph name="BEGIN_LINK" />Termine a sessão<ph name="END_LINK" /> e inicie a sessão novamente.</translation>
 <translation id="2649120831653069427">Peixe arco-íris</translation>
 <translation id="2661146741306740526">16 x 9</translation>
+<translation id="2664412712123763093">Localização do ficheiro</translation>
 <translation id="2672394958563893062">Ocorreu um erro. Clique para começar do início.</translation>
 <translation id="2676946222714718093">A reproduzir em</translation>
 <translation id="2735698359135166290">Teclado padrão romeno</translation>
@@ -327,6 +329,7 @@
 <translation id="4880520557730313061">Correção automática</translation>
 <translation id="4881695831933465202">Abrir</translation>
 <translation id="4886021172213954916">Teclado tâmil (máquina de escrever)</translation>
+<translation id="4892969127351273348">Não é possível abrir com a aplicação <ph name="APP_NAME" /></translation>
 <translation id="4905417359854579806">Pronto para fazer uma cópia de segurança de <ph name="FILE_COUNT" />.</translation>
 <translation id="4924638091161556692">Corrigida</translation>
 <translation id="4935975195727477204">Flor</translation>
@@ -348,6 +351,7 @@
 <translation id="5081517858322016911"><ph name="TOTAL_FILE_SIZE" /> de ficheiros serão eliminados</translation>
 <translation id="509429900233858213">Ocorreu um erro.</translation>
 <translation id="5098629044894065541">Hebraico</translation>
+<translation id="5112685521274804841">Os ficheiros nestas pastas são só de leitura. Algumas atividades não são suportadas.</translation>
 <translation id="5123433949759960244">Bola de basquetebol</translation>
 <translation id="5129662217315786329">Polaco</translation>
 <translation id="5144820558584035333">Hangul 3 Set (390)</translation>
@@ -698,6 +702,7 @@
 <translation id="9034924485347205037">Ficheiros Linux</translation>
 <translation id="9035012421917565900">Não é possível mover os itens novamente para "<ph name="DESTINATION_NAME" />", pelo que não pode anular esta ação.</translation>
 <translation id="9038620279323455325">O ficheiro com o nome "<ph name="FILE_NAME" />" já existe. Escolha um nome diferente.</translation>
+<translation id="9062992083244091966">Para abrir ficheiros com as apps <ph name="APP_NAME" />, mova-os primeiro para a pasta de ficheiros partilhados da app <ph name="APP_NAME" />.</translation>
 <translation id="9064939804718829769">A transferir...</translation>
 <translation id="9065203028668620118">Editar</translation>
 <translation id="9099674669267916096">Contagem de páginas</translation>

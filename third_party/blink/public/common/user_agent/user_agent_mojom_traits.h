@@ -16,18 +16,33 @@
 namespace mojo {
 
 template <>
-struct BLINK_COMMON_EXPORT StructTraits<blink::mojom::UserAgentMetadataDataView,
-                                        ::blink::UserAgentMetadata> {
-  static const std::string& brand(const ::blink::UserAgentMetadata& data) {
+struct BLINK_COMMON_EXPORT
+    StructTraits<blink::mojom::UserAgentBrandVersionDataView,
+                 ::blink::UserAgentBrandVersion> {
+  static const std::string& brand(const ::blink::UserAgentBrandVersion& data) {
     return data.brand;
   }
+
+  static const std::string& major_version(
+      const ::blink::UserAgentBrandVersion& data) {
+    return data.major_version;
+  }
+
+  static bool Read(blink::mojom::UserAgentBrandVersionDataView data,
+                   ::blink::UserAgentBrandVersion* out);
+};
+
+template <>
+struct BLINK_COMMON_EXPORT StructTraits<blink::mojom::UserAgentMetadataDataView,
+                                        ::blink::UserAgentMetadata> {
+  static const blink::UserAgentBrandList& brand_version_list(
+      const ::blink::UserAgentMetadata& data) {
+    return data.brand_version_list;
+  }
+
   static const std::string& full_version(
       const ::blink::UserAgentMetadata& data) {
     return data.full_version;
-  }
-  static const std::string& major_version(
-      const ::blink::UserAgentMetadata& data) {
-    return data.major_version;
   }
   static const std::string& platform(const ::blink::UserAgentMetadata& data) {
     return data.platform;

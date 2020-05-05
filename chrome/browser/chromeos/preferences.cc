@@ -94,8 +94,17 @@ const char* const kLanguageRemapPrefs[] = {
 // kResolveTimezoneByGeolocationMethod.
 // Default preference value will become another default value.
 // TODO(alemate): https://crbug.com/783367 Remove outdated prefs.
-void TryMigrateToResolveTimezoneByGeolocationMethod(PrefService* prefs) {
+void TryMigrateToResolveTimezoneByGeolocationMethod(
+    sync_preferences::PrefServiceSyncable* prefs) {
   if (prefs->GetBoolean(::prefs::kResolveTimezoneByGeolocationMigratedToMethod))
+    return;
+
+  // Timezone resolution method is a non-priority pref. Wait to migrate until
+  // that type of pref has synced.
+  bool is_syncing = chromeos::features::IsSplitSettingsSyncEnabled()
+                        ? prefs->AreOsPrefsSyncing()
+                        : prefs->IsSyncing();
+  if (!is_syncing)
     return;
 
   prefs->SetBoolean(::prefs::kResolveTimezoneByGeolocationMigratedToMethod,
@@ -987,20 +996,20 @@ void Preferences::ApplyPreferences(ApplyReason reason,
 
 void Preferences::OnIsSyncingChanged() {
   DVLOG(1) << "OnIsSyncingChanged";
-
-  // By this moment, |prefs| are already synchronized.
   TryMigrateToResolveTimezoneByGeolocationMethod(prefs_);
-
   ForceNaturalScrollDefault();
 }
 
 // TODO(anasalazar): Finish moving this to ash::TouchDevicesController.
 void Preferences::ForceNaturalScrollDefault() {
   DVLOG(1) << "ForceNaturalScrollDefault";
+  // Natural scroll is a priority pref.
+  bool is_syncing = chromeos::features::IsSplitSettingsSyncEnabled()
+                        ? prefs_->AreOsPriorityPrefsSyncing()
+                        : prefs_->IsPrioritySyncing();
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kNaturalScrollDefault) &&
-      prefs_->IsSyncing() &&
-      !prefs_->GetUserPrefValue(ash::prefs::kNaturalScroll)) {
+      is_syncing && !prefs_->GetUserPrefValue(ash::prefs::kNaturalScroll)) {
     DVLOG(1) << "Natural scroll forced to true";
     natural_scroll_.SetValue(true);
     UMA_HISTOGRAM_BOOLEAN("Touchpad.NaturalScroll.Forced", true);

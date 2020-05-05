@@ -990,8 +990,7 @@ IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest, UserAgentVersion) {
   // the major version, and not contain the full version.
   SetClientHintExpectationsOnMainFrame(false);
   ui_test_utils::NavigateToURL(browser(), gurl);
-  std::string expected_ua =
-      "\"" + ua.brand + "\"; v=\"" + ua.major_version + "\"";
+  std::string expected_ua = ua.SerializeBrandVersionList();
   EXPECT_EQ(main_frame_ua_observed(), expected_ua);
   EXPECT_TRUE(main_frame_ua_full_version_observed().empty());
 
@@ -1012,8 +1011,7 @@ IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest, UAHintsTabletMode) {
   // First request: only minimal hints, no tablet override.
   SetClientHintExpectationsOnMainFrame(false);
   ui_test_utils::NavigateToURL(browser(), gurl);
-  std::string expected_ua =
-      "\"" + ua.brand + "\"; v=\"" + ua.major_version + "\"";
+  std::string expected_ua = ua.SerializeBrandVersionList();
   EXPECT_EQ(main_frame_ua_observed(), expected_ua);
   EXPECT_EQ(main_frame_ua_full_version_observed(), "");
   EXPECT_EQ(main_frame_ua_mobile_observed(), "?0");
@@ -1071,15 +1069,15 @@ IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest, UserAgentOverrideClientHints) {
   ua_override.ua_string_override = "foobar";
   ua_override.ua_metadata_override.emplace();
   ua_override.ua_metadata_override->mobile = true;
-  ua_override.ua_metadata_override->brand = "Foobarnator";
-  ua_override.ua_metadata_override->major_version = "3.14";
+  ua_override.ua_metadata_override->brand_version_list.emplace_back(
+      "Foobarnator", "3.14");
   web_contents->SetUserAgentOverride(ua_override, false);
   ui_test_utils::NavigateToURL(browser(), kUrl);
   EXPECT_TRUE(ExecuteScriptAndExtractString(
       web_contents,
       "window.domAutomationController.send(document.body.textContent);",
       &header_value));
-  EXPECT_EQ("foobar\n\"Foobarnator\"; v=\"3.14\"\n?1", header_value);
+  EXPECT_EQ("foobar\n\"Foobarnator\";v=\"3.14\"\n?1", header_value);
 }
 
 void ClientHintsBrowserTest::TestProfilesIndependent(Browser* browser_a,
@@ -1092,8 +1090,7 @@ void ClientHintsBrowserTest::TestProfilesIndependent(Browser* browser_a,
   // end with the major version, and not contain the full version.
   SetClientHintExpectationsOnMainFrame(false);
   ui_test_utils::NavigateToURL(browser_a, gurl);
-  std::string expected_ua =
-      "\"" + ua.brand + "\"; v=\"" + ua.major_version + "\"";
+  std::string expected_ua = ua.SerializeBrandVersionList();
   EXPECT_EQ(main_frame_ua_observed(), expected_ua);
   EXPECT_TRUE(main_frame_ua_full_version_observed().empty());
 

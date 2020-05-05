@@ -204,7 +204,7 @@ bool IsSafeToApplyDefaultPinLayout(Profile* profile) {
   if (chromeos::features::IsSplitSettingsSyncEnabled()) {
     if (settings->GetSelectedOsTypes().Has(
             UserSelectableOsType::kOsPreferences) &&
-        !PrefServiceSyncableFromProfile(profile)->IsSyncing()) {
+        !PrefServiceSyncableFromProfile(profile)->AreOsPrefsSyncing()) {
       return false;
     }
   } else {

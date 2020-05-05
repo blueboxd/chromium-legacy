@@ -3,6 +3,7 @@
 <translationbundle lang="km">
 <translation id="1006017844123154345">បើកលើអ៊ីនធឺណិត</translation>
 <translation id="1044891598689252897">គេហទំព័រនឹងដំណើរការធម្មតា</translation>
+<translation id="1124090076051167250">សកម្មភាពនេះនឹង​សម្អាតទិន្នន័យ និងខូគីទំហំ <ph name="DATASIZE" /> ដែលគេហទំព័រ ឬកម្មវិធី​បានរក្សាទុក​នៅលើ​អេក្រង់ដើម​របស់អ្នក។</translation>
 <translation id="1124772482545689468">អ្នកប្រើ</translation>
 <translation id="1178581264944972037">ផ្អាក</translation>
 <translation id="1181037720776840403">ដកចេញ</translation>
@@ -47,6 +48,7 @@
 <translation id="2440823041667407902">ទីតាំងការចូលប្រើ</translation>
 <translation id="2482878487686419369">ការជូនដំណឹង</translation>
 <translation id="2490684707762498678">ស្ថិតក្រោម​ការគ្រប់គ្រង​របស់ <ph name="APP_NAME" /></translation>
+<translation id="2498359688066513246">ជំនួយ &amp; មតិ</translation>
 <translation id="2501278716633472235">ត្រលប់ក្រោយ</translation>
 <translation id="2537296579376733324">ខូគីទាំងអស់ នៅលើគេហទំព័រនេះតែប៉ុណ្ណោះ</translation>
 <translation id="2569468611847789653">{COOKIE_COUNT,plural, =1{បាន​ទប់ស្កាត់​ខូគី 1}other{បាន​ទប់ស្កាត់​ខូគី #}}</translation>
@@ -88,6 +90,7 @@
 <translation id="4165986682804962316">ការកំណត់គេហទំព័រ</translation>
 <translation id="4226663524361240545">ការជូនដំណឹងអាចនឹងធ្វើឲ្យឧបករណ៍ញ័រ</translation>
 <translation id="4259722352634471385">ការរុករកត្រូវបានរារាំង៖ <ph name="URL" /></translation>
+<translation id="4275663329226226506">កំសាន្ត</translation>
 <translation id="4278390842282768270">បានអនុញ្ញាត</translation>
 <translation id="4433925000917964731">ទំព័រស្រាល​ដែល​ផ្ដល់​ដោយ Google</translation>
 <translation id="4434045419905280838">ផ្ទាំងផុស​ និង​ការ​បញ្ជូន​បន្ត</translation>
@@ -98,6 +101,7 @@
 <translation id="4645575059429386691">គ្រប់គ្រងដោយឪពុកម្តាយរបស់អ្នក</translation>
 <translation id="4670064810192446073">VR</translation>
 <translation id="4751476147751820511">ឧបករណ៍​ចាប់​សញ្ញាពន្លឺ ឬ​ចលនា</translation>
+<translation id="4759238208242260848">ទាញយក</translation>
 <translation id="4883854917563148705">មិនអាច​កំណត់​ការកំណត់​ដែលស្ថិតក្រោម​ការគ្រប់គ្រង​ឡើងវិញ​បានទេ</translation>
 <translation id="4887024562049524730">សួរ​មុនពេល​អនុញ្ញាតឱ្យ​គេហទំព័រ​ប្រើទិន្នន័យ និង​ឧបករណ៍ VR របស់អ្នក (បានណែនាំ)</translation>
 <translation id="4962975101802056554">ដក​ការអនុញ្ញាត​ទាំងអស់​សម្រាប់​ឧបករណ៍</translation>
@@ -127,6 +131,7 @@
 <translation id="5677928146339483299">បានរារាំង</translation>
 <translation id="5689516760719285838">ទីតាំង</translation>
 <translation id="5710871682236653961">សួរ​មុនពេល​អនុញ្ញាតឱ្យ​គេហទំព័រផ្ញើ និងទទួល​ព័ត៌មាន នៅពេល​អ្នកចុច​ឧបករណ៍ NFC (បានណែនាំ)</translation>
+<translation id="5719847187258001597">សកម្មភាពនេះនឹង​សម្អាត​ទិន្នន័យ និងខូគីទាំងអស់​ដែល <ph name="ORIGIN" /> ឬកម្មវិធីរបស់ខ្លួនបានរក្សាទុក នៅលើ​អេក្រង់ដើម​របស់អ្នក។</translation>
 <translation id="5804241973901381774">ការអនុញ្ញាត</translation>
 <translation id="5860033963881614850">បិទ</translation>
 <translation id="5916664084637901428">បើក</translation>
@@ -134,6 +139,7 @@
 <translation id="5939518447894949180">កំណត់ឡើងវិញ</translation>
 <translation id="6040143037577758943">បិទ</translation>
 <translation id="6042308850641462728">ច្រើនទៀត</translation>
+<translation id="6064125863973209585">​ការទាញយកដែលបាន​បញ្ចប់</translation>
 <translation id="6165508094623778733">ស្វែងយល់​បន្ថែម</translation>
 <translation id="6181444274883918285">បន្ថែមការលើកលែងចំពោះគេហទំព័រ</translation>
 <translation id="6192792657125177640">ការលើកលែង</translation>
@@ -205,6 +211,7 @@
 <translation id="8380167699614421159">គេហទំព័រ​នេះបង្ហាញ​ការផ្សាយពាណិជ្ជកម្ម​ដែលនាំឱ្យយល់ច្រឡំ ឬរំខាន</translation>
 <translation id="8394832520002899662">ចុចដើម្បីត្រឡប់ទៅគេហទំព័រវិញ</translation>
 <translation id="8447861592752582886">ដកហូតសិទ្ធិអនុញ្ញាតឧបករណ៍</translation>
+<translation id="8463851957836045671">គេហទំព័រ​ដំណើរការ​លឿន</translation>
 <translation id="851751545965956758">ទប់​ស្កាត់​ទំព័រ​មិន​ឱ្យ​ភ្ជាប់​ជាមួយ​ឧបករណ៍</translation>
 <translation id="857943718398505171">បានអនុញ្ញាត (បានណែនាំ)</translation>
 <translation id="8609465669617005112">រំកិលទៅលើ</translation>
@@ -218,6 +225,7 @@
 <translation id="8847988622838149491">USB</translation>
 <translation id="885701979325669005">ឧបករណ៍ផ្ទុកទិន្នន័យ</translation>
 <translation id="8926666909099850184">NFC ត្រូវ​បាន​បិទសម្រាប់​ឧបករណ៍​នេះ។ បើក NFC នៅក្នុង<ph name="BEGIN_LINK" />ការកំណត់ Android<ph name="END_LINK" />។</translation>
+<translation id="8929372349074745002">គេហទំព័រនេះ​បើក និងឆ្លើយតបយ៉ាងរហ័ស​សម្រាប់​មនុស្សភាគច្រើន</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8958424370300090006">ទប់ស្កាត់​ខូគីសម្រាប់​គេហទំព័រ​ជាក់លាក់។</translation>
 <translation id="8959122750345127698">ការុករកមិនអាចភ្ជាប់បានទេ៖ <ph name="URL" /></translation>

@@ -35,6 +35,7 @@
 <translation id="1938124657309484470">मूल्य <ph name="MAXIMUM_DATE_OR_TIME" /> वा अधिल्लो हुनै पर्छ।</translation>
 <translation id="1946271899482435442">मिति चयनकर्ता देखाउनुहोस्</translation>
 <translation id="1993104285338243655">प्रतिविम्ब गर्ने सुविधामा बदल्ने कार्य गरियो</translation>
+<translation id="2031987842108996681">रातो च्यानल</translation>
 <translation id="2060505056492490888">'<ph name="INVALIDDOMAIN" />' मा '<ph name="DOT" />' एक गलत स्थानको रूपमा प्रयोग गरिन्छ।</translation>
 <translation id="2148716181193084225">आज</translation>
 <translation id="2158401438286456825">पृष्ठ सूची</translation>
@@ -45,6 +46,7 @@
 <translation id="2291999235780842123">जाँच बाकस</translation>
 <translation id="2311842470354187719">पृष्ठ विच्छेद</translation>
 <translation id="2335594187091864976">मिति र समय टिप्ने</translation>
+<translation id="2393030564806080191">रङको हेक्साडेसिमल मान</translation>
 <translation id="245932805758469625">भिडियोको बाँकी सेकेन्डको अवधि</translation>
 <translation id="248395913932153421">दिन</translation>
 <translation id="2507943997699731163">कृपया यस क्षेत्रमा भर्नुहोस्।</translation>
@@ -52,6 +54,7 @@
 <translation id="2561842179657104141">थप मिडिया नियन्त्रणहरू देखाउनुहोस्</translation>
 <translation id="2572483411312390101">प्ले गर्नुहोस्</translation>
 <translation id="2613802280814924224">कृपया एक वैध परिमाण प्रविष्टि गर्नुहोस्। सबैभन्दा नजिकको वैध परिमाण <ph name="VALID_VALUE" /> हो।</translation>
+<translation id="2634240155926812724">हरियो च्यानल</translation>
 <translation id="2653659639078652383">पेश गर्नुहोस्</translation>
 <translation id="2657045182931379222">चित्रात्मक वस्तु</translation>
 <translation id="2674318244760992338">फुटर</translation>
@@ -127,6 +130,7 @@
 <translation id="5034860022980953847">प्रगति सूचक</translation>
 <translation id="5090250355906949916">भिडियो टाइमलाइनसम्बन्धी स्क्रबर</translation>
 <translation id="5093189678851173835">शिलालेख</translation>
+<translation id="509897012892853729">निलो च्यानल</translation>
 <translation id="5117590920725113268">अर्को महिना देखाउनुहोस्</translation>
 <translation id="512758898067543763">तेर्सो पंक्ति हेडर</translation>
 <translation id="5143125788380636750">उपसंहार</translation>
@@ -164,6 +168,7 @@
 <translation id="6166809985690652833">उपसंहार</translation>
 <translation id="6209276755895393898">निम्न व्यक्ति हुनुहुन्छ जस्तो छ: <ph name="DESCRIPTION" /></translation>
 <translation id="6213469881011901533">शब्दावली</translation>
+<translation id="6281588256137006900">फिक्कापन</translation>
 <translation id="6281763101136022427">URL</translation>
 <translation id="6310801910862476708">Picture-in-Picture बाट बाहिरिनुहोस्‌</translation>
 <translation id="6398862346408813489">महिना चयन प्यानल देखाउनुहोस्</translation>
@@ -184,6 +189,7 @@
 <translation id="6790428901817661496">प्ले गर्नुहोस्</translation>
 <translation id="6820355525329141109">प्लगइन लोड गर्न सकेन।</translation>
 <translation id="6820615603175220800">ग्रन्थसूचीको सन्दर्भ</translation>
+<translation id="6831465880655513317">रङको गाढापन वा फिक्कापन चयन गर्न प्रयोग गर्न सकिने द्विआयामिक स्लाइडर भएको कलर वेल</translation>
 <translation id="6843725295806269523">मौन</translation>
 <translation id="6885760532393684712">निर्देशिका</translation>
 <translation id="689129560213475294">कोलोफन</translation>
@@ -201,6 +207,7 @@
 <translation id="7263440858009898357">कृपया सूचीमा एक वस्तु चयन गर्नुहोस्।</translation>
 <translation id="727747134524199931">ठाडो पंक्ति हेडर</translation>
 <translation id="7320576522385648310">बफर गर्दै</translation>
+<translation id="7341556277900466204">कलर वेल</translation>
 <translation id="7353453495576941748">श्रेय</translation>
 <translation id="7364796246159120393">फाइल छान्नुहोस्</translation>
 <translation id="739024184232394898">अन्य...</translation>
@@ -221,6 +228,7 @@
 <translation id="775297008183122718">अमान्य प्रविष्टि</translation>
 <translation id="7789962463072032349">पज गर्नुहोस्</translation>
 <translation id="7802800022689234070">डिस्क्लोजर त्रिकोण</translation>
+<translation id="7852167693871241274">ह्यु स्लाइडर</translation>
 <translation id="7888071071722539607">कृपया इमेल ठेगानामा एक '<ph name="ATSIGN" />' समावेश गर्नुहोस्। <ph name="INVALIDADDRESS" />' ले एक '<ph name="ATSIGN" />' हराइरहेको छ।</translation>
 <translation id="7891486169920085145">स्प्लिटर</translation>
 <translation id="795667975304826397">कुनैपनि फाइल छानिएको छैन</translation>
@@ -263,6 +271,7 @@
 <translation id="8875657656876809964">भिडियो प्लेब्याकसम्बन्धी त्रुटि</translation>
 <translation id="8889402386540077796">ह्यु</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> केबी</translation>
+<translation id="894736920926684893">ढाँचा टगल गर्ने बटन</translation>
 <translation id="8987927404178983737">महिना</translation>
 <translation id="901493112792887934">सेकेन्डमा हालको समय</translation>
 <translation id="901834265349196618">इमेल</translation>

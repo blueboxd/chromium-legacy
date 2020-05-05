@@ -17,8 +17,10 @@
 <translation id="2805756323405976993">Apps</translation>
 <translation id="2872961005593481000">Sluk</translation>
 <translation id="3008341117444806826">OPDATER</translation>
+<translation id="3369013195428705271">Er du sikker på, at du vil rydde hele udskriftshistorikken? Dine igangværende udskriftsjobs ryddes ikke.</translation>
 <translation id="3515615323037921860">Udskriftsjob</translation>
 <translation id="3749289110408117711">Filnavn</translation>
+<translation id="38114475217616659">Ryd hele historikken</translation>
 <translation id="3820172043799983114">Ugyldig pinkode.</translation>
 <translation id="3838338534323494292">Ny adgangskode</translation>
 <translation id="4003259559679196451"><ph name="ENROLLMENT_DOMAIN" /> administrerer denne enhed og har adgang til al brugeraktivitet, bl.a. besøgte websider, adgangskoder og mails.</translation>
@@ -41,6 +43,8 @@
 <translation id="6058625436358447366">Angiv din gamle og nye adgangskode for at afslutte</translation>
 <translation id="6106186594183574873">Angiv din gamle adgangskode for at afslutte</translation>
 <translation id="6146993107019042706">Angiv din nye adgangskode for at afslutte</translation>
+<translation id="6643016212128521049">Ryd</translation>
+<translation id="7162487448488904999">Galleri</translation>
 <translation id="7658239707568436148">Annuller</translation>
 <translation id="7690294790491645610">Bekræft den nye adgangskode</translation>
 <translation id="7805768142964895445">Status</translation>

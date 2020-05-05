@@ -168,7 +168,6 @@ bool IsPortraitOrientation(OrientationLockType type) {
 }
 
 OrientationLockType GetCurrentScreenOrientation() {
-  DCHECK(Shell::Get()->tablet_mode_controller()->InTabletMode());
   // ScreenOrientationController might be nullptr during shutdown.
   // TODO(xdai|sammiequon): See if we can reorder so that users of the function
   // |SplitViewController::Get| get shutdown before screen orientation

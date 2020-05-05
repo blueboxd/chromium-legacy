@@ -71,6 +71,14 @@ class PrefServiceSyncable : public PrefService {
   // priority preferences.
   bool IsPrioritySyncing();
 
+#if defined(OS_CHROMEOS)
+  // As above, but for OS preferences.
+  bool AreOsPrefsSyncing();
+
+  // As above, but for OS priority preferences.
+  bool AreOsPriorityPrefsSyncing();
+#endif
+
   void AddObserver(PrefServiceSyncableObserver* observer);
   void RemoveObserver(PrefServiceSyncableObserver* observer);
 
@@ -91,7 +99,7 @@ class PrefServiceSyncable : public PrefService {
 
   void AddRegisteredSyncablePreference(const std::string& path, uint32_t flags);
 
-  // Invoked internally when the IsSyncing() state changes.
+  // Invoked internally when the syncing state changes for a type of pref.
   void OnIsSyncingChanged();
 
   // Process a local preference change. This can trigger new SyncChanges being

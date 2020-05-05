@@ -90,6 +90,7 @@
 <translation id="1947424002851288782">Tysk tastatur</translation>
 <translation id="1972984168337863910">Vis tilbakemeldingspaneler på filer</translation>
 <translation id="1984603991036629094">Fonetisk tastatur – armensk</translation>
+<translation id="1995337122023280937">Gå til filplassering</translation>
 <translation id="2001796770603320721">Administrer i Disk</translation>
 <translation id="2009067268969781306">Diskformatering sletter alle data som er lagret på disken. Denne handlingen kan ikke angres.</translation>
 <translation id="2028997212275086731">RAR-arkiv</translation>
@@ -141,6 +142,7 @@
 <translation id="2638942478653899953">Google Disk kan ikke nås. <ph name="BEGIN_LINK" />Logg av<ph name="END_LINK" /> og på igjen.</translation>
 <translation id="2649120831653069427">Regnbuefisk</translation>
 <translation id="2661146741306740526">16 x 9</translation>
+<translation id="2664412712123763093">Filplassering</translation>
 <translation id="2672394958563893062">Det oppsto en feil. Klikk for å starte på nytt fra begynnelsen.</translation>
 <translation id="2676946222714718093">Spilles av på</translation>
 <translation id="2735698359135166290">Rumensk standardtastatur</translation>
@@ -327,6 +329,7 @@
 <translation id="4880520557730313061">Autokorrigering</translation>
 <translation id="4881695831933465202">Åpne</translation>
 <translation id="4886021172213954916">Tamilsk tastatur (skrivemaskin)</translation>
+<translation id="4892969127351273348">Kan ikke åpnes med <ph name="APP_NAME" /></translation>
 <translation id="4905417359854579806">Klar til å sikkerhetskopiere <ph name="FILE_COUNT" /></translation>
 <translation id="4924638091161556692">Fikset</translation>
 <translation id="4935975195727477204">Gazania-blomst</translation>
@@ -348,6 +351,7 @@
 <translation id="5081517858322016911"><ph name="TOTAL_FILE_SIZE" /> med filer blir slettet</translation>
 <translation id="509429900233858213">Det oppsto en feil.</translation>
 <translation id="5098629044894065541">Hebraisk</translation>
+<translation id="5112685521274804841">Filene i disse mappene er skrivebeskyttede. Noen aktiviteter støttes ikke.</translation>
 <translation id="5123433949759960244">Basketball</translation>
 <translation id="5129662217315786329">Polsk</translation>
 <translation id="5144820558584035333">Hangul 3-sett (390)</translation>
@@ -698,6 +702,7 @@
 <translation id="9034924485347205037">Linux-filer</translation>
 <translation id="9035012421917565900">Disse elementene kan ikke flyttes tilbake til «<ph name="DESTINATION_NAME" />», så du kan ikke angre denne handlingen.</translation>
 <translation id="9038620279323455325">Filnavnet «<ph name="FILE_NAME" />» finnes allerede. Velg et annet navn.</translation>
+<translation id="9062992083244091966">For å åpne filer med <ph name="APP_NAME" />-apper må du flytte dem til mappen for delte filer for <ph name="APP_NAME" />.</translation>
 <translation id="9064939804718829769">Overfører ...</translation>
 <translation id="9065203028668620118">Endre</translation>
 <translation id="9099674669267916096">Antall sider</translation>

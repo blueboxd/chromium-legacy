@@ -90,6 +90,7 @@
 <translation id="1947424002851288782">ဂျာမန် ကီးဘုတ်</translation>
 <translation id="1972984168337863910">ဖိုင်တုံ့ပြန်မှု အကန့်များ ချဲ့ပြရန်</translation>
 <translation id="1984603991036629094">အားမေနီးယား Phonetic ကီးဘုတ်</translation>
+<translation id="1995337122023280937">ဖိုင်တည်နေရာသို့ သွားရန်</translation>
 <translation id="2001796770603320721">Drive တွင် စီမံပါ</translation>
 <translation id="2009067268969781306">ဒရိုက်ဗ်တစ်ခုကို ဖော်မက်ချခြင်းသည် ၎င်းပေါ်ရှိ ဒေတာများအားလုံးကို ဖျက်လိုက်ပါမည်။ ဤလုပ်ဆောင်ချက်ကို ပြန်ပြင်၍ မရပါ။</translation>
 <translation id="2028997212275086731">RAR စနစ်ဖြင့် ချုံ့ထားသော ဖိုင်မှတ်တမ်း</translation>
@@ -141,6 +142,7 @@
 <translation id="2638942478653899953">Google Drive အားမချိတ်ဆက် နိုင်ပါ။ ကျေးဇူးပြု၍ <ph name="BEGIN_LINK" />ထွက်<ph name="END_LINK" /> ကာ ပြန်ဝင်ပါ။</translation>
 <translation id="2649120831653069427">သက်တန့်ငါး</translation>
 <translation id="2661146741306740526">၁၆x၉</translation>
+<translation id="2664412712123763093">ဖိုင်တည်နေရာ</translation>
 <translation id="2672394958563893062">အမှား ကြုံခဲ့သည်။ အစမှ ပြန်လည်စတင်ရန် ကလစ်ပါ။</translation>
 <translation id="2676946222714718093">ဖွင့်ပြနေသည်က</translation>
 <translation id="2735698359135166290">ရူမေနီးယား ပုံမှန် ကီးဘုတ်</translation>
@@ -327,6 +329,7 @@
 <translation id="4880520557730313061">အော်တို-ညှိပေး</translation>
 <translation id="4881695831933465202">ဖွင့်</translation>
 <translation id="4886021172213954916">တမီးလ် ကီးဘုတ် (လက်နှိပ်စက်)</translation>
+<translation id="4892969127351273348"><ph name="APP_NAME" /> ဖြင့် ဖွင့်၍မရပါ</translation>
 <translation id="4905417359854579806"><ph name="FILE_COUNT" /> ကို မိတ္ထူပွားရန် အသင့်ဖြစ်ပါပြီ</translation>
 <translation id="4924638091161556692">ဖြေရှင်းပြီး</translation>
 <translation id="4935975195727477204">ဂါဇာနီယာပန်း</translation>
@@ -348,6 +351,7 @@
 <translation id="5081517858322016911">ဖိုင် <ph name="TOTAL_FILE_SIZE" /> ကို ဖျက်လိုက်ပါမည်</translation>
 <translation id="509429900233858213">အမှား တစ်ခု ကြုံခဲ့ရသည်။</translation>
 <translation id="5098629044894065541">ဟီဘရူး</translation>
+<translation id="5112685521274804841">ဤဖိုင်တွဲအတွင်းရှိ ဖိုင်များက ဖတ်ရန်သီးသန့် ဖြစ်သည်။ လုပ်ဆောင်ချက်အချို့ကို မပံ့ပိုးပါ။</translation>
 <translation id="5123433949759960244">ဘတ်စကက်ဘော</translation>
 <translation id="5129662217315786329">ပိုလန်</translation>
 <translation id="5144820558584035333">ဟံဂူလ် ၃ စုံ (၃၉၀)</translation>
@@ -697,6 +701,7 @@
 <translation id="9034924485347205037">Linux ဖိုင်များ</translation>
 <translation id="9035012421917565900">၎င်းတို့ကို '<ph name="DESTINATION_NAME" />' သို့ ပြန်ရွှေ့၍မရသည့်အတွက် ဤလုပ်ဆောင်ချက်ကို တစ်ဆင့်နောက်ပြန်၍ ရမည်မဟုတ်ပါ။</translation>
 <translation id="9038620279323455325">"<ph name="FILE_NAME" />" အမည်ဖြင့်ဖိုင် ရှိပြီးဖြစ်သည်။ အခြားအမည်ရွေးပါ။</translation>
+<translation id="9062992083244091966">ဖိုင်များကို <ph name="APP_NAME" /> အက်ပ်များဖြင့် ဖွင့်ရန် ၎င်းတို့ကို <ph name="APP_NAME" /> ဖိုင်မျှဝေမှု ဖိုင်တွဲသို့ ဦးစွာရွှေ့ပါ။</translation>
 <translation id="9064939804718829769">လွှဲပြောင်းနေ...</translation>
 <translation id="9065203028668620118">ပြင်ဆင်ရန်</translation>
 <translation id="9099674669267916096">စာမျက်နှာအရေအတွက်</translation>

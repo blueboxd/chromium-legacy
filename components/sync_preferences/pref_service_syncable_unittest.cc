@@ -918,14 +918,19 @@ class PrefServiceSyncableChromeOsTest : public testing::Test {
         /*async=*/false);
   }
 
+  void InitSyncForType(ModelType type,
+                       syncer::SyncChangeList* output = nullptr) {
+    syncer::SyncDataList empty_data;
+    base::Optional<syncer::ModelError> error =
+        prefs_->GetSyncableService(type)->MergeDataAndStartSyncing(
+            type, empty_data, std::make_unique<TestSyncProcessorStub>(output),
+            std::make_unique<syncer::SyncErrorFactoryMock>());
+    EXPECT_FALSE(error.has_value());
+  }
+
   void InitSyncForAllTypes(syncer::SyncChangeList* output = nullptr) {
     for (ModelType type : kAllPreferenceModelTypes) {
-      syncer::SyncDataList empty_data;
-      base::Optional<syncer::ModelError> error =
-          prefs_->GetSyncableService(type)->MergeDataAndStartSyncing(
-              type, empty_data, std::make_unique<TestSyncProcessorStub>(output),
-              std::make_unique<syncer::SyncErrorFactoryMock>());
-      EXPECT_FALSE(error.has_value());
+      InitSyncForType(type, output);
     }
   }
 
@@ -992,11 +997,41 @@ TEST_F(PrefServiceSyncableChromeOsTest, IsPrefRegistered_SplitEnabled) {
 TEST_F(PrefServiceSyncableChromeOsTest, IsSyncing) {
   feature_list_.InitAndEnableFeature(chromeos::features::kSplitSettingsSync);
   CreatePrefService();
+  InitSyncForType(syncer::PREFERENCES);
+  EXPECT_TRUE(prefs_->IsSyncing());
+  EXPECT_FALSE(prefs_->IsPrioritySyncing());
+  EXPECT_FALSE(prefs_->AreOsPrefsSyncing());
+  EXPECT_FALSE(prefs_->AreOsPriorityPrefsSyncing());
+}
+
+TEST_F(PrefServiceSyncableChromeOsTest, IsPrioritySyncing) {
+  feature_list_.InitAndEnableFeature(chromeos::features::kSplitSettingsSync);
+  CreatePrefService();
+  InitSyncForType(syncer::PRIORITY_PREFERENCES);
+  EXPECT_FALSE(prefs_->IsSyncing());
+  EXPECT_TRUE(prefs_->IsPrioritySyncing());
+  EXPECT_FALSE(prefs_->AreOsPrefsSyncing());
+  EXPECT_FALSE(prefs_->AreOsPriorityPrefsSyncing());
+}
+
+TEST_F(PrefServiceSyncableChromeOsTest, AreOsPrefsSyncing) {
+  feature_list_.InitAndEnableFeature(chromeos::features::kSplitSettingsSync);
+  CreatePrefService();
+  InitSyncForType(syncer::OS_PREFERENCES);
   EXPECT_FALSE(prefs_->IsSyncing());
   EXPECT_FALSE(prefs_->IsPrioritySyncing());
-  InitSyncForAllTypes();
-  EXPECT_TRUE(prefs_->IsSyncing());
-  EXPECT_TRUE(prefs_->IsPrioritySyncing());
+  EXPECT_TRUE(prefs_->AreOsPrefsSyncing());
+  EXPECT_FALSE(prefs_->AreOsPriorityPrefsSyncing());
+}
+
+TEST_F(PrefServiceSyncableChromeOsTest, AreOsPriorityPrefsSyncing) {
+  feature_list_.InitAndEnableFeature(chromeos::features::kSplitSettingsSync);
+  CreatePrefService();
+  InitSyncForType(syncer::OS_PRIORITY_PREFERENCES);
+  EXPECT_FALSE(prefs_->IsSyncing());
+  EXPECT_FALSE(prefs_->IsPrioritySyncing());
+  EXPECT_FALSE(prefs_->AreOsPrefsSyncing());
+  EXPECT_TRUE(prefs_->AreOsPriorityPrefsSyncing());
 }
 
 TEST_F(PrefServiceSyncableChromeOsTest, IsPrefSynced_OsPref) {

@@ -90,6 +90,7 @@
 <translation id="1947424002851288782">nemecká klávesnica</translation>
 <translation id="1972984168337863910">Rozbaliť panely so spätnou väzbou týkajúcou sa súborov</translation>
 <translation id="1984603991036629094">Arménska fonetická klávesnica</translation>
+<translation id="1995337122023280937">Prejsť na umiestnenie súboru</translation>
 <translation id="2001796770603320721">Spravovať na Disku</translation>
 <translation id="2009067268969781306">Formátovaním kľúča odstránite všetky dáta, ktoré sú v ňom uložené. Túto akciu nie je možné vrátiť späť.</translation>
 <translation id="2028997212275086731">Archív vo formáte RAR</translation>
@@ -141,6 +142,7 @@
 <translation id="2638942478653899953">Disk Google je nedostupný. <ph name="BEGIN_LINK" />Odhláste sa<ph name="END_LINK" /> a znova sa prihláste.</translation>
 <translation id="2649120831653069427">Dúhovka</translation>
 <translation id="2661146741306740526">16x9</translation>
+<translation id="2664412712123763093">Umiestnenie súboru</translation>
 <translation id="2672394958563893062">Vyskytla sa chyba. Kliknutím spustíte prehrávanie od začiatku.</translation>
 <translation id="2676946222714718093">Prehráva sa na zariadení</translation>
 <translation id="2735698359135166290">Rumunská štandardná klávesnica</translation>
@@ -327,6 +329,7 @@
 <translation id="4880520557730313061">Automatická oprava</translation>
 <translation id="4881695831933465202">Otvoriť</translation>
 <translation id="4886021172213954916">Tamilská klávesnica (písací stroj)</translation>
+<translation id="4892969127351273348">Nedá sa otvoriť pomocou aplikácie <ph name="APP_NAME" /></translation>
 <translation id="4905417359854579806">Môžete začať zálohovať (počet: <ph name="FILE_COUNT" />)</translation>
 <translation id="4924638091161556692">Pevné</translation>
 <translation id="4935975195727477204">Kvet gazánie</translation>
@@ -348,6 +351,7 @@
 <translation id="5081517858322016911">Počet odstraňovaných súborov: <ph name="TOTAL_FILE_SIZE" /></translation>
 <translation id="509429900233858213">Vyskytla sa chyba.</translation>
 <translation id="5098629044894065541">Hebrejčina</translation>
+<translation id="5112685521274804841">Súbory v tomto priečinku sú iba na čítanie. Niektoré aktivity nie sú podporované.</translation>
 <translation id="5123433949759960244">Basketbal</translation>
 <translation id="5129662217315786329">Poľština</translation>
 <translation id="5144820558584035333">Hangul 3 Set (390)</translation>
@@ -698,6 +702,7 @@ s ostatnými, a to všetko na jednom mieste.<ph name="MARKUP_9" /></translatio
 <translation id="9034924485347205037">Súbory systému Linux</translation>
 <translation id="9035012421917565900">Položky sa nedajú presunúť späť do cieľa <ph name="DESTINATION_NAME" />, takže túto akciu nebude možné vrátiť späť.</translation>
 <translation id="9038620279323455325">Súbor s názvom <ph name="FILE_NAME" /> už existuje. Vyberte iný názov.</translation>
+<translation id="9062992083244091966">Ak chcete otvárať súbory pomocou aplikácie <ph name="APP_NAME" />, najprv ich presuňte do priečinka zdieľaných súborov v aplikácii <ph name="APP_NAME" />.</translation>
 <translation id="9064939804718829769">Prevádza sa...</translation>
 <translation id="9065203028668620118">Upraviť</translation>
 <translation id="9099674669267916096">Počet strán</translation>

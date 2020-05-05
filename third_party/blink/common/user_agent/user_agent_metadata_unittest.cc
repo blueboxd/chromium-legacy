@@ -18,9 +18,8 @@ TEST(UserAgentMetaDataTest, Boundary) {
 
 TEST(UserAgentMetaDataTest, Basic) {
   blink::UserAgentMetadata to_encode;
-  to_encode.brand = "a";
+  to_encode.brand_version_list.emplace_back("a", "3");
   to_encode.full_version = "3.14";
-  to_encode.major_version = "3";
   to_encode.platform = "TR-DOS";
   to_encode.platform_version = "5.03";
   to_encode.architecture = "Z80";

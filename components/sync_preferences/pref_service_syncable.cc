@@ -126,24 +126,22 @@ PrefServiceSyncable::CreateIncognitoPrefService(
 }
 
 bool PrefServiceSyncable::IsSyncing() {
-  if (pref_sync_associator_.models_associated())
-    return true;
-#if defined(OS_CHROMEOS)
-  if (os_pref_sync_associator_.models_associated())
-    return true;
-#endif
-  return false;
+  return pref_sync_associator_.models_associated();
 }
 
 bool PrefServiceSyncable::IsPrioritySyncing() {
-  if (priority_pref_sync_associator_.models_associated())
-    return true;
-#if defined(OS_CHROMEOS)
-  if (os_priority_pref_sync_associator_.models_associated())
-    return true;
-#endif
-  return false;
+  return priority_pref_sync_associator_.models_associated();
 }
+
+#if defined(OS_CHROMEOS)
+bool PrefServiceSyncable::AreOsPrefsSyncing() {
+  return os_pref_sync_associator_.models_associated();
+}
+
+bool PrefServiceSyncable::AreOsPriorityPrefsSyncing() {
+  return os_priority_pref_sync_associator_.models_associated();
+}
+#endif  // defined(OS_CHROMEOS)
 
 void PrefServiceSyncable::AddObserver(PrefServiceSyncableObserver* observer) {
   observer_list_.AddObserver(observer);

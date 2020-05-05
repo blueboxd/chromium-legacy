@@ -90,6 +90,7 @@
 <translation id="1947424002851288782">Немецкая раскладка</translation>
 <translation id="1972984168337863910">Развернуть панель с информацией о файлах</translation>
 <translation id="1984603991036629094">Армянская фонетическая раскладка клавиатуры</translation>
+<translation id="1995337122023280937">Перейти к местоположению файла</translation>
 <translation id="2001796770603320721">Открыть на Google Диске</translation>
 <translation id="2009067268969781306">При форматировании диска все хранящиеся на нем данные будут удалены. Это действие нельзя отменить.</translation>
 <translation id="2028997212275086731">Архив RAR</translation>
@@ -141,6 +142,7 @@
 <translation id="2638942478653899953">Не удается подключиться к Google Диску. Попробуйте <ph name="BEGIN_LINK" />выйти<ph name="END_LINK" /> и снова зайти в систему.</translation>
 <translation id="2649120831653069427">Рыбка</translation>
 <translation id="2661146741306740526">16x9</translation>
+<translation id="2664412712123763093">Местоположение файла</translation>
 <translation id="2672394958563893062">Произошла ошибка. Нажмите, чтобы воспроизвести сначала.</translation>
 <translation id="2676946222714718093">Устройство:</translation>
 <translation id="2735698359135166290">Cтандартная румынская клавиатура</translation>
@@ -327,6 +329,7 @@
 <translation id="4880520557730313061">Автокоррекция</translation>
 <translation id="4881695831933465202">Открыть</translation>
 <translation id="4886021172213954916">Тамильская раскладка ("Печатная машинка")</translation>
+<translation id="4892969127351273348">Не удалось открыть файл с помощью приложения "<ph name="APP_NAME" />"</translation>
 <translation id="4905417359854579806">Файлы (<ph name="FILE_COUNT" />) готовы к сохранению</translation>
 <translation id="4924638091161556692">Исправлено</translation>
 <translation id="4935975195727477204">Гацания</translation>
@@ -348,6 +351,7 @@
 <translation id="5081517858322016911">Будут удалены файлы общим объемом <ph name="TOTAL_FILE_SIZE" /></translation>
 <translation id="509429900233858213">Произошла ошибка.</translation>
 <translation id="5098629044894065541">Иврит</translation>
+<translation id="5112685521274804841">Файлы в этой папке доступны только для чтения. Некоторые действия не поддерживаются.</translation>
 <translation id="5123433949759960244">Баскетбол</translation>
 <translation id="5129662217315786329">Польский</translation>
 <translation id="5144820558584035333">Корейская раскладка (Sebeolsik 390)</translation>
@@ -698,6 +702,7 @@
 <translation id="9034924485347205037">Файлы Linux</translation>
 <translation id="9035012421917565900">Объекты нельзя переместить обратно на общий диск "<ph name="DESTINATION_NAME" />", поэтому вы не сможете отменить это действие.</translation>
 <translation id="9038620279323455325">Файл "<ph name="FILE_NAME" />" уже существует. Выберите другое название.</translation>
+<translation id="9062992083244091966">Чтобы с помощью приложений <ph name="APP_NAME" /> можно было открывать файлы, эти объекты нужно сначала перенести в папку <ph name="APP_NAME" /> с общими файлами.</translation>
 <translation id="9064939804718829769">Обработка…</translation>
 <translation id="9065203028668620118">Изменить</translation>
 <translation id="9099674669267916096">Количество страниц</translation>

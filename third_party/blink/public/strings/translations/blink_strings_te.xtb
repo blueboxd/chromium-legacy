@@ -35,6 +35,7 @@
 <translation id="1938124657309484470">విలువ తప్పనిసరిగా <ph name="MAXIMUM_DATE_OR_TIME" /> లేదా అంతకంటే మునుపటిది అయి ఉండాలి.</translation>
 <translation id="1946271899482435442">తేదీ ఎంపికను చూపుతుంది</translation>
 <translation id="1993104285338243655">మిర్రరింగ్‌కు మార్చబడింది</translation>
+<translation id="2031987842108996681">రెడ్ ఛానెల్</translation>
 <translation id="2060505056492490888">'<ph name="INVALIDDOMAIN" />'లో '<ph name="DOT" />' తప్పు స్థానంలో ఉపయోగించబడింది.</translation>
 <translation id="2148716181193084225">ఈ రోజు</translation>
 <translation id="2158401438286456825">పేజీ జాబితా</translation>
@@ -45,6 +46,7 @@
 <translation id="2291999235780842123">చెక్‌బాక్స్</translation>
 <translation id="2311842470354187719">పేజీ విభజన</translation>
 <translation id="2335594187091864976">తేదీ మరియు సమయం ఎంపిక</translation>
+<translation id="2393030564806080191">హెక్సాడెసిమల్ రంగు విలువ</translation>
 <translation id="245932805758469625">వీడియోలో మిగిలి ఉన్న సెకన్లు</translation>
 <translation id="248395913932153421">రోజు</translation>
 <translation id="2507943997699731163">దయచేసి ఈ ఫీల్డ్‌ను పూర్తి చేయండి.</translation>
@@ -52,6 +54,7 @@
 <translation id="2561842179657104141">మరిన్ని మీడియా నియంత్రణలను చూపు</translation>
 <translation id="2572483411312390101">ప్లే చేయి</translation>
 <translation id="2613802280814924224">దయచేసి చెల్లుబాటు అయ్యే విలువను నమోదు చేయండి. <ph name="VALID_VALUE" /> అనేది సమీప చెల్లుబాటు విలువ.</translation>
+<translation id="2634240155926812724">గ్రీన్ ఛానెల్</translation>
 <translation id="2653659639078652383">సమర్పించు</translation>
 <translation id="2657045182931379222">గ్రాఫిక్స్ ఆబ్జెక్ట్</translation>
 <translation id="2674318244760992338">ఫుటర్</translation>
@@ -127,6 +130,7 @@
 <translation id="5034860022980953847">ప్రోగ్రెస్ సూచిక</translation>
 <translation id="5090250355906949916">వీడియో సమయ స్క్రబ్బర్</translation>
 <translation id="5093189678851173835">పరిచయ వాక్యం</translation>
+<translation id="509897012892853729">బ్లూ ఛానెల్</translation>
 <translation id="5117590920725113268">తరువాత నెలను చూపుతుంది</translation>
 <translation id="512758898067543763">అడ్డు వరుస శీర్షిక</translation>
 <translation id="5143125788380636750">ఉపసంహారం</translation>
@@ -164,6 +168,7 @@
 <translation id="6166809985690652833">చివరిమాట</translation>
 <translation id="6209276755895393898">వీరిలా కనిపిస్తున్నారు: <ph name="DESCRIPTION" /></translation>
 <translation id="6213469881011901533">పదకోశం</translation>
+<translation id="6281588256137006900">కాంట్రాస్ట్</translation>
 <translation id="6281763101136022427">url</translation>
 <translation id="6310801910862476708">చిత్రంలో చిత్రం మోడ్ నుండి నిష్క్రమించు</translation>
 <translation id="6398862346408813489">నెల ఎంపిక ప్యానెల్‌ను చూపుతుంది</translation>
@@ -184,6 +189,7 @@
 <translation id="6790428901817661496">ప్లే చేయి</translation>
 <translation id="6820355525329141109">ప్లగ్ఇన్‌‌ను లోడ్ చేయడం సాధ్యపడలేదు.</translation>
 <translation id="6820615603175220800">వివరణపట్టి సూచన</translation>
+<translation id="6831465880655513317">శాచురేషన్, కాంట్రాస్ట్‌ను ఎంచుకోవడానికి రంగు వృత్తాన్ని 2-డైమెన్షనల్ స్లయిడర్‌తో ఉపయోగించండి</translation>
 <translation id="6843725295806269523">మ్యూట్ చేయి</translation>
 <translation id="6885760532393684712">డైరెక్టరీ</translation>
 <translation id="689129560213475294">ఆఖరిమాట</translation>
@@ -201,6 +207,7 @@
 <translation id="7263440858009898357">దయచేసి జాబితాలోని ఒక అంశాన్ని ఎంచుకోండి.</translation>
 <translation id="727747134524199931">నిలువు వరుస శీర్షిక</translation>
 <translation id="7320576522385648310">బఫర్ చేయడం</translation>
+<translation id="7341556277900466204">రంగు వృత్తం</translation>
 <translation id="7353453495576941748">సహకారి</translation>
 <translation id="7364796246159120393">ఫైల్‌ను ఎంచుకోండి</translation>
 <translation id="739024184232394898">ఇతర...</translation>
@@ -221,6 +228,7 @@
 <translation id="775297008183122718">నమోదు చెల్లదు</translation>
 <translation id="7789962463072032349">నిలిపివేయి</translation>
 <translation id="7802800022689234070">కంటెంట్‌ను విస్తరింపజేసే లేదా కుదించే త్రిభుజం</translation>
+<translation id="7852167693871241274">రంగు స్లయిడర్</translation>
 <translation id="7888071071722539607">దయచేసి ఇమెయిల్ చిరునామాలో '<ph name="ATSIGN" />'ని చేర్చండి. '<ph name="INVALIDADDRESS" />'లో '<ph name="ATSIGN" />' లేదు.</translation>
 <translation id="7891486169920085145">విభజన</translation>
 <translation id="795667975304826397">ఫైల్ ఏదీ ఎంచుకోలేదు</translation>
@@ -263,6 +271,7 @@
 <translation id="8875657656876809964">వీడియో ప్లేబ్యాక్ ఎర్రర్</translation>
 <translation id="8889402386540077796">వర్ణం</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> KB</translation>
+<translation id="894736920926684893">టోగుల్ బటన్‌ను ఫార్మాట్ చేయండి</translation>
 <translation id="8987927404178983737">నెల</translation>
 <translation id="901493112792887934">సెకన్లలో ప్రస్తుత సమయం</translation>
 <translation id="901834265349196618">ఇమెయిల్</translation>

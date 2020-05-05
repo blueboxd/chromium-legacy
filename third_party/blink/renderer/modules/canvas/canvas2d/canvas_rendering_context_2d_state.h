@@ -46,7 +46,7 @@ class CanvasRenderingContext2DState final
   };
 
   // FontSelectorClient implementation
-  void FontsNeedUpdate(FontSelector*) override;
+  void FontsNeedUpdate(FontSelector*, FontInvalidationReason) override;
 
   bool HasUnrealizedSaves() const { return unrealized_save_count_; }
   void Save() { ++unrealized_save_count_; }

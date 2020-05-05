@@ -28,6 +28,7 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/renderer/platform/fonts/font_cache_client.h"
+#include "third_party/blink/renderer/platform/fonts/font_invalidation_reason.h"
 #include "third_party/blink/renderer/platform/fonts/segmented_font_data.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
@@ -85,7 +86,7 @@ class PLATFORM_EXPORT FontSelector : public FontCacheClient {
   virtual void RegisterForInvalidationCallbacks(FontSelectorClient*) = 0;
   virtual void UnregisterForInvalidationCallbacks(FontSelectorClient*) = 0;
 
-  virtual void FontFaceInvalidated() {}
+  virtual void FontFaceInvalidated(FontInvalidationReason) {}
 
   virtual ExecutionContext* GetExecutionContext() const = 0;
 

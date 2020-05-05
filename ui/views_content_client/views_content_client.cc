@@ -48,4 +48,9 @@ void ViewsContentClient::OnPreMainMessageLoopRun(
       .Run(browser_context, window_context);
 }
 
+void ViewsContentClient::OnResourcesLoaded() {
+  if (on_resources_loaded_callback_)
+    std::move(on_resources_loaded_callback_).Run();
+}
+
 }  // namespace ui

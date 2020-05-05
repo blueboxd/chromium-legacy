@@ -26,6 +26,7 @@
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "net/base/url_util.h"
+#include "net/http/structured_headers.h"
 #include "net/nqe/effective_connection_type.h"
 #include "net/nqe/network_quality_estimator_params.h"
 #include "services/network/public/cpp/client_hints.h"
@@ -374,16 +375,11 @@ void AddUAHeader(net::HttpRequestHeaders* headers,
   SetHeaderToString(headers, type, value);
 }
 
-std::string AddQuotes(const std::string& str) {
-  return base::StringPrintf("\"%s\"", str.c_str());
-}
-
-std::string AddBrandVersionQuotes(const std::string& brand,
-                                  const std::string& version) {
-  if (version.empty())
-    return AddQuotes(brand);
-
-  return base::StringPrintf("\"%s\"; v=\"%s\"", brand.c_str(), version.c_str());
+// Use structured headers to escape and quote headers
+std::string SerializeHeaderString(std::string str) {
+  return net::structured_headers::SerializeItem(
+             net::structured_headers::Item(str))
+      .value_or(std::string());
 }
 
 bool IsFeaturePolicyForClientHintsEnabled() {
@@ -492,9 +488,8 @@ void UpdateNavigationRequestClientUaHeadersImpl(
     // (intentionally) different than other client hints.
     //
     // https://wicg.github.io/client-hints-infrastructure/#abstract-opdef-append-client-hints-to-request
-    AddUAHeader(
-        headers, network::mojom::WebClientHintsType::kUA,
-        AddBrandVersionQuotes(ua_metadata->brand, ua_metadata->major_version));
+    AddUAHeader(headers, network::mojom::WebClientHintsType::kUA,
+                ua_metadata->SerializeBrandVersionList());
     // The `Sec-CH-UA-Mobile client hint was also deemed "low entropy" and can
     // safely be sent with every request.
     AddUAHeader(headers, network::mojom::WebClientHintsType::kUAMobile,
@@ -506,21 +501,21 @@ void UpdateNavigationRequestClientUaHeadersImpl(
             data, network::mojom::WebClientHintsType::kUAFullVersion,
             blink::mojom::FeaturePolicyFeature::kClientHintUAFullVersion)) {
       AddUAHeader(headers, network::mojom::WebClientHintsType::kUAFullVersion,
-                  AddQuotes(ua_metadata->full_version));
+                  SerializeHeaderString(ua_metadata->full_version));
     }
 
     if (ShouldAddClientHint(
             data, network::mojom::WebClientHintsType::kUAArch,
             blink::mojom::FeaturePolicyFeature::kClientHintUAArch)) {
       AddUAHeader(headers, network::mojom::WebClientHintsType::kUAArch,
-                  AddQuotes(ua_metadata->architecture));
+                  SerializeHeaderString(ua_metadata->architecture));
     }
 
     if (ShouldAddClientHint(
             data, network::mojom::WebClientHintsType::kUAPlatform,
             blink::mojom::FeaturePolicyFeature::kClientHintUAPlatform)) {
       AddUAHeader(headers, network::mojom::WebClientHintsType::kUAPlatform,
-                  AddQuotes(ua_metadata->platform));
+                  SerializeHeaderString(ua_metadata->platform));
     }
 
     if (ShouldAddClientHint(
@@ -528,14 +523,14 @@ void UpdateNavigationRequestClientUaHeadersImpl(
             blink::mojom::FeaturePolicyFeature::kClientHintUAPlatform)) {
       AddUAHeader(headers,
                   network::mojom::WebClientHintsType::kUAPlatformVersion,
-                  AddQuotes(ua_metadata->platform_version));
+                  SerializeHeaderString(ua_metadata->platform_version));
     }
 
     if (ShouldAddClientHint(
             data, network::mojom::WebClientHintsType::kUAModel,
             blink::mojom::FeaturePolicyFeature::kClientHintUAModel)) {
       AddUAHeader(headers, network::mojom::WebClientHintsType::kUAModel,
-                  AddQuotes(ua_metadata->model));
+                  SerializeHeaderString(ua_metadata->model));
     }
   } else if (call_type == ClientUaHeaderCallType::kAfterCreated) {
     RemoveClientHintHeader(network::mojom::WebClientHintsType::kUA, headers);

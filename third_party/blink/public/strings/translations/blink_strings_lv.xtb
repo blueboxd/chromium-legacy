@@ -35,6 +35,7 @@
 <translation id="1938124657309484470">Vērtībai ir jābūt “<ph name="MAXIMUM_DATE_OR_TIME" />” vai agrākam datumam vai laikam.</translation>
 <translation id="1946271899482435442">Rādīt datumu atlasītāju</translation>
 <translation id="1993104285338243655">Mainīts uz spoguļošanu</translation>
+<translation id="2031987842108996681">Sarkanais kanāls</translation>
 <translation id="2060505056492490888">Punkts (<ph name="DOT" />) atrodas nepareizā vietā (<ph name="INVALIDDOMAIN" />).</translation>
 <translation id="2148716181193084225">Šodien</translation>
 <translation id="2158401438286456825">lapu saraksts</translation>
@@ -45,6 +46,7 @@
 <translation id="2291999235780842123">izvēles rūtiņa</translation>
 <translation id="2311842470354187719">lappuses pārtraukums</translation>
 <translation id="2335594187091864976">datuma un laika atlasītājs</translation>
+<translation id="2393030564806080191">Heksadecimāla krāsas vērtība</translation>
 <translation id="245932805758469625">atlikušais video laiks sekundēs</translation>
 <translation id="248395913932153421">Diena</translation>
 <translation id="2507943997699731163">Aizpildiet šo lauku.</translation>
@@ -52,6 +54,7 @@
 <translation id="2561842179657104141">rādīt citas multivides vadīklas</translation>
 <translation id="2572483411312390101">atskaņot</translation>
 <translation id="2613802280814924224">Lūdzu, ievadiet derīgu vērtību. Tuvākā derīgā vērtība ir <ph name="VALID_VALUE" />.</translation>
+<translation id="2634240155926812724">Zaļais kanāls</translation>
 <translation id="2653659639078652383">Iesniegt</translation>
 <translation id="2657045182931379222">grafiskais objekts</translation>
 <translation id="2674318244760992338">kājene</translation>
@@ -127,6 +130,7 @@
 <translation id="5034860022980953847">norises indikators</translation>
 <translation id="5090250355906949916">video laika skalas slīdnis</translation>
 <translation id="5093189678851173835">epigrāfs</translation>
+<translation id="509897012892853729">Zilais kanāls</translation>
 <translation id="5117590920725113268">Rādīt nākamo mēnesi</translation>
 <translation id="512758898067543763">rindas virsraksts</translation>
 <translation id="5143125788380636750">epilogs</translation>
@@ -164,6 +168,7 @@
 <translation id="6166809985690652833">pēcvārds</translation>
 <translation id="6209276755895393898">Šķiet, ka tas ir: <ph name="DESCRIPTION" /></translation>
 <translation id="6213469881011901533">glosārijs</translation>
+<translation id="6281588256137006900">Gaišums</translation>
 <translation id="6281763101136022427">URL</translation>
 <translation id="6310801910862476708">Aizvērt režīmu “Attēls attēlā”</translation>
 <translation id="6398862346408813489">Rādīt mēneša atlases paneli</translation>
@@ -184,6 +189,7 @@
 <translation id="6790428901817661496">Atskaņot</translation>
 <translation id="6820355525329141109">Nevarēja ielādēt spraudni.</translation>
 <translation id="6820615603175220800">bibliogrāfiskā atsauce</translation>
+<translation id="6831465880655513317">Krāsu palete ar divu dimensiju slīdni piesātinājuma un gaišuma iestatīšanai</translation>
 <translation id="6843725295806269523">izslēgt skaņu</translation>
 <translation id="6885760532393684712">katalogs</translation>
 <translation id="689129560213475294">izdošanas ziņas</translation>
@@ -201,6 +207,7 @@
 <translation id="7263440858009898357">Atlasiet vienumu sarakstā.</translation>
 <translation id="727747134524199931">slejas virsraksts</translation>
 <translation id="7320576522385648310">notiek ievietošana buferī</translation>
+<translation id="7341556277900466204">Krāsu palete</translation>
 <translation id="7353453495576941748">pateicība</translation>
 <translation id="7364796246159120393">Izvēlēties failu</translation>
 <translation id="739024184232394898">Cits...</translation>
@@ -221,6 +228,7 @@
 <translation id="775297008183122718">Nederīgs ieraksts</translation>
 <translation id="7789962463072032349">pauzēt</translation>
 <translation id="7802800022689234070">satura atklāšanas trijstūris</translation>
+<translation id="7852167693871241274">Toņa slīdnis</translation>
 <translation id="7888071071722539607">E-pasta adresē ietveriet zīmi <ph name="ATSIGN" />. Adresē “<ph name="INVALIDADDRESS" />” trūkst zīmes <ph name="ATSIGN" />.</translation>
 <translation id="7891486169920085145">sadalītājs</translation>
 <translation id="795667975304826397">Nav izvēlēts neviens fails</translation>
@@ -263,6 +271,7 @@
 <translation id="8875657656876809964">Videoklipa atskaņošanas kļūda</translation>
 <translation id="8889402386540077796">Nokrāsa</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> KB</translation>
+<translation id="894736920926684893">Formāta pārslēdzējs</translation>
 <translation id="8987927404178983737">Mēnesis</translation>
 <translation id="901493112792887934">pašreizējais laiks sekundēs</translation>
 <translation id="901834265349196618">e-pasts</translation>

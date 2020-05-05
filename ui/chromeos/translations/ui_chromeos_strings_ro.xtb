@@ -90,6 +90,7 @@
 <translation id="1947424002851288782">Tastatură germană</translation>
 <translation id="1972984168337863910">Extinde panourile cu feedback privind fișierele</translation>
 <translation id="1984603991036629094">Tastatură fonetică armeană</translation>
+<translation id="1995337122023280937">Accesează locația fișierului</translation>
 <translation id="2001796770603320721">Gestionează în Drive</translation>
 <translation id="2009067268969781306">Formatarea unității va șterge toate datele stocate pe unitate. Această acțiune nu poate fi anulată.</translation>
 <translation id="2028997212275086731">Arhivă RAR</translation>
@@ -141,6 +142,7 @@
 <translation id="2638942478653899953">Google Drive nu a putut fi accesat. <ph name="BEGIN_LINK" />Deconectați-vă<ph name="END_LINK" /> și conectați-vă din nou.</translation>
 <translation id="2649120831653069427">Pește</translation>
 <translation id="2661146741306740526">16x9</translation>
+<translation id="2664412712123763093">Locația fișierului</translation>
 <translation id="2672394958563893062">A apărut o eroare. Dați clic pentru a relua de la început.</translation>
 <translation id="2676946222714718093">Se redă pe</translation>
 <translation id="2735698359135166290">Tastatură română standard</translation>
@@ -327,6 +329,7 @@
 <translation id="4880520557730313061">Remediere automată</translation>
 <translation id="4881695831933465202">Deschide</translation>
 <translation id="4886021172213954916">Tastatură tamilă (Mașină de scris)</translation>
+<translation id="4892969127351273348">Nu se poate deschide cu <ph name="APP_NAME" /></translation>
 <translation id="4905417359854579806">Gata de backup pentru <ph name="FILE_COUNT" /></translation>
 <translation id="4924638091161556692">Remediată</translation>
 <translation id="4935975195727477204">Floare</translation>
@@ -348,6 +351,7 @@
 <translation id="5081517858322016911"><ph name="TOTAL_FILE_SIZE" /> fișiere vor fi șterse</translation>
 <translation id="509429900233858213">A apărut o eroare.</translation>
 <translation id="5098629044894065541">Ebraică</translation>
+<translation id="5112685521274804841">Fișierele din aceste dosare sunt numai în citire. Unele activități nu sunt acceptate.</translation>
 <translation id="5123433949759960244">Baschet</translation>
 <translation id="5129662217315786329">Poloneză</translation>
 <translation id="5144820558584035333">Hangul setul 3 (390)</translation>
@@ -698,6 +702,7 @@
 <translation id="9034924485347205037">Fișiere Linux</translation>
 <translation id="9035012421917565900">Articolele nu pot fi mutate înapoi în „<ph name="DESTINATION_NAME" />”, prin urmare, nu vei putea să anulezi această acțiune.</translation>
 <translation id="9038620279323455325">Fișierul cu numele „<ph name="FILE_NAME" />” există deja. Alege un alt nume.</translation>
+<translation id="9062992083244091966">Pentru a deschide fișiere cu ajutorul aplicațiilor <ph name="APP_NAME" />, mai întâi mută-le în dosarul cu fișiere la care ai permis accesul din <ph name="APP_NAME" />.</translation>
 <translation id="9064939804718829769">Se transferă...</translation>
 <translation id="9065203028668620118">Editează</translation>
 <translation id="9099674669267916096">Numărul de pagini</translation>

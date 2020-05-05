@@ -2,9 +2,11 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="zh-HK">
 <translation id="1028699632127661925">正在傳送至 <ph name="DEVICE_NAME" />…</translation>
+<translation id="103269572468856066">要一併清除這些網站和應用程式的資料嗎？</translation>
 <translation id="1036348656032585052">停用</translation>
 <translation id="1036727731225946849">正在新增「<ph name="WEBAPK_NAME" />」…</translation>
 <translation id="1041308826830691739">來自網站</translation>
+<translation id="1045899828449635435">要一併清除這些網站的資料嗎？</translation>
 <translation id="1049743911850919806">無痕模式</translation>
 <translation id="10614374240317010">永不儲存</translation>
 <translation id="1067922213147265141">其他 Google 服務</translation>
@@ -179,7 +181,6 @@
 <translation id="2494974097748878569">Chrome 的「Google 助理」</translation>
 <translation id="2496180316473517155">瀏覽記錄</translation>
 <translation id="2497852260688568942">您的管理員已停用同步功能</translation>
-<translation id="2498359688066513246">說明和意見反映</translation>
 <translation id="2513403576141822879">如需更多與私隱權、安全性和資料收集相關的設定，請參閱<ph name="BEGIN_LINK" />同步處理和 Google 服務<ph name="END_LINK" /></translation>
 <translation id="2517472476991765520">掃瞄</translation>
 <translation id="2518590038762162553">「精簡模式」可加快 Chrome 載入網頁的速度，並節省高達 60% 數據用量。Chrome 會將您的網絡流量傳送給 Google，以優化您瀏覽的網頁。<ph name="BEGIN_LINK" />瞭解詳情<ph name="END_LINK" /></translation>
@@ -383,7 +384,6 @@
 <translation id="4250229828105606438">螢幕擷圖</translation>
 <translation id="4256782883801055595">開放原始碼授權</translation>
 <translation id="4269820728363426813">複製連結網址</translation>
-<translation id="4275663329226226506">媒體</translation>
 <translation id="4278390842282768270">已允許</translation>
 <translation id="429312253194641664">網站正在播放媒體</translation>
 <translation id="4298388696830689168">已連結的網站</translation>
@@ -503,7 +503,6 @@
 <translation id="5199929503336119739">工作設定檔</translation>
 <translation id="5210286577605176222">跳至上一個分頁</translation>
 <translation id="5210365745912300556">關閉分頁</translation>
-<translation id="5224771365102442243">包含影片</translation>
 <translation id="5230560987958996918"><ph name="SITE" /> 要求掃瞄附近的藍牙裝置，並已找到以下裝置：</translation>
 <translation id="5233638681132016545">新分頁</translation>
 <translation id="526421993248218238">無法載入此網頁</translation>
@@ -607,7 +606,6 @@
 <translation id="6042308850641462728">更多選項</translation>
 <translation id="604996488070107836">發生不明錯誤，因此無法下載 <ph name="FILE_NAME" />。</translation>
 <translation id="605721222689873409">YY</translation>
-<translation id="6064125863973209585">下載完成</translation>
 <translation id="60923314841986378">尚餘 <ph name="HOURS" /> 小時</translation>
 <translation id="6108923351542677676">設定中…</translation>
 <translation id="6111020039983847643">數據用量</translation>
@@ -658,6 +656,7 @@
 <translation id="6461962085415701688">無法開啟檔案</translation>
 <translation id="6464977750820128603">您可查看在 Chrome 上瀏覽的網站，並為這些網站設定計時器。\n\nGoogle 會收到這些設有計時器的網站相關資料，以及您的瀏覽時間長度。這些資料可協助我們改善「健康數碼生活」。</translation>
 <translation id="6475951671322991020">下載影片</translation>
+<translation id="6477928892249167417">這些網站似乎對您很重要：</translation>
 <translation id="6482749332252372425">儲存空間不足，因此無法下載 <ph name="FILE_NAME" />。</translation>
 <translation id="6496823230996795692">首次使用 <ph name="APP_NAME" /> 時，請連線至互聯網。</translation>
 <translation id="6508722015517270189">重新啟動 Chrome</translation>
@@ -710,7 +709,6 @@
 <translation id="688738109438487280">將現有資料新增至 <ph name="TO_ACCOUNT" />。</translation>
 <translation id="6891726759199484455">解鎖即可複製您的密碼</translation>
 <translation id="6896758677409633944">複製</translation>
-<translation id="6914783257214138813">任何能查看匯出檔案的使用者都可看到您的密碼。</translation>
 <translation id="6942665639005891494">用「設定」選單選項，隨時更改預設嘅下載位置</translation>
 <translation id="6945221475159498467">選取</translation>
 <translation id="6963766334940102469">刪除書籤</translation>
@@ -731,6 +729,7 @@
 <translation id="7077143737582773186">SD 卡</translation>
 <translation id="7121362699166175603">清除記錄和網址列中的自動完成資料。您的 Google 帳戶在 <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> 上可能有其他形式的瀏覽記錄。</translation>
 <translation id="7138678301420049075">其他</translation>
+<translation id="7146622961999026732">這些網站和應用程式似乎對您很重要：</translation>
 <translation id="7149158118503947153">從 <ph name="DOMAIN_NAME" /> <ph name="BEGIN_LINK" />載入原始網頁<ph name="END_LINK" /></translation>
 <translation id="7149893636342594995">最近 24 小時</translation>
 <translation id="7173114856073700355">開啟設定</translation>

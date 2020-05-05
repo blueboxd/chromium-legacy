@@ -90,6 +90,7 @@
 <translation id="1947424002851288782">Jezik tastature: nemački</translation>
 <translation id="1972984168337863910">Proširi okna za povratne informacije o datotekama</translation>
 <translation id="1984603991036629094">Jermenska fonetska tastatura</translation>
+<translation id="1995337122023280937">Idi na lokaciju datoteke</translation>
 <translation id="2001796770603320721">Upravljajte na Disku</translation>
 <translation id="2009067268969781306">Formatiranjem diska izbrisaće se svi podaci sačuvani na njemu. Ova radnja ne može da se opozove.</translation>
 <translation id="2028997212275086731">RAR arhiva</translation>
@@ -141,6 +142,7 @@
 <translation id="2638942478653899953">Nije moguće uspostaviti vezu sa Google diskom. <ph name="BEGIN_LINK" />Odjavite se<ph name="END_LINK" />, pa se ponovo prijavite.</translation>
 <translation id="2649120831653069427">Riba</translation>
 <translation id="2661146741306740526">16×9</translation>
+<translation id="2664412712123763093">Lokacija datoteke</translation>
 <translation id="2672394958563893062">Došlo je do greške. Kliknite da biste krenuli iz početka.</translation>
 <translation id="2676946222714718093">Pušteno na</translation>
 <translation id="2735698359135166290">Standardna tastatura za rumunski</translation>
@@ -327,6 +329,7 @@
 <translation id="4880520557730313061">Automatski ispravi</translation>
 <translation id="4881695831933465202">Otvori</translation>
 <translation id="4886021172213954916">Tamilska tastatura (pisaća mašina)</translation>
+<translation id="4892969127351273348">Otvaranje pomoću aplikacije <ph name="APP_NAME" /> nije uspelo</translation>
 <translation id="4905417359854579806">Sve je spremno za pravljenje rezervnih kopija (<ph name="FILE_COUNT" />)</translation>
 <translation id="4924638091161556692">Fiksirana</translation>
 <translation id="4935975195727477204">Cvet gazanije</translation>
@@ -348,6 +351,7 @@
 <translation id="5081517858322016911"><ph name="TOTAL_FILE_SIZE" /> datoteka će se izbrisati</translation>
 <translation id="509429900233858213">Došlo je do greške.</translation>
 <translation id="5098629044894065541">hebrejski</translation>
+<translation id="5112685521274804841">Datoteke u ovim direktorijumima su samo za čitanje. Neke aktivnosti nisu podržane.</translation>
 <translation id="5123433949759960244">Košarkaška lopta</translation>
 <translation id="5129662217315786329">poljski</translation>
 <translation id="5144820558584035333">Hangul, 3 reda (390)</translation>
@@ -698,6 +702,7 @@
 <translation id="9034924485347205037">Linux datoteke</translation>
 <translation id="9035012421917565900">Stavke ne mogu da se vrate u „<ph name="DESTINATION_NAME" />“, pa nećete moći da opozovete ovu radnju.</translation>
 <translation id="9038620279323455325">Datoteka „<ph name="FILE_NAME" />“ već postoji. Odaberite drugi naziv.</translation>
+<translation id="9062992083244091966">Da biste otvarali datoteke pomoću aplikacije <ph name="APP_NAME" />, prvo ih premestite u direktorijum sa deljenim datotekama aplikacije <ph name="APP_NAME" />.</translation>
 <translation id="9064939804718829769">Prenos...</translation>
 <translation id="9065203028668620118">Izmeni</translation>
 <translation id="9099674669267916096">Broj stranica</translation>

@@ -90,6 +90,7 @@
 <translation id="1947424002851288782">Vokiška klaviatūra</translation>
 <translation id="1972984168337863910">Išskleisti failų atsiliepimų skydelius</translation>
 <translation id="1984603991036629094">Armėniška fonetinė klaviatūra</translation>
+<translation id="1995337122023280937">Eiti į failo vietą</translation>
 <translation id="2001796770603320721">Tvarkyti Diske</translation>
 <translation id="2009067268969781306">Formatuojant atmintuką bus ištrinti visi jame saugomi duomenys. Šio veiksmo anuliuoti negalima.</translation>
 <translation id="2028997212275086731">RAR archyvas</translation>
@@ -141,6 +142,7 @@
 <translation id="2638942478653899953">Nepavyko pasiekti „Google“ disko. <ph name="BEGIN_LINK" />Atsijunkite<ph name="END_LINK" /> ir vėl prisijunkite.</translation>
 <translation id="2649120831653069427">Vaivorykštinė žuvis</translation>
 <translation id="2661146741306740526">16 x 9</translation>
+<translation id="2664412712123763093">Failo vieta</translation>
 <translation id="2672394958563893062">Įvyko klaida. Spustelėkite, kad paleistumėte iš naujo nuo pradžios.</translation>
 <translation id="2676946222714718093">Leidžiama</translation>
 <translation id="2735698359135166290">Rumunų k. standartinė klaviatūra</translation>
@@ -327,6 +329,7 @@
 <translation id="4880520557730313061">Automatinis pataisymas</translation>
 <translation id="4881695831933465202">Atidaryti</translation>
 <translation id="4886021172213954916">Tamiliška klaviatūra (rašomosios mašinėlės išdėstymas)</translation>
+<translation id="4892969127351273348">Nepavyko atidaryti naudojant „<ph name="APP_NAME" />“</translation>
 <translation id="4905417359854579806">Paruošta kurti atsargines kopijas: <ph name="FILE_COUNT" /></translation>
 <translation id="4924638091161556692">Pataisyta</translation>
 <translation id="4935975195727477204">Gėlė</translation>
@@ -348,6 +351,7 @@
 <translation id="5081517858322016911">Bus ištrinta <ph name="TOTAL_FILE_SIZE" /> failų</translation>
 <translation id="509429900233858213">Įvyko klaida.</translation>
 <translation id="5098629044894065541">Hebrajų</translation>
+<translation id="5112685521274804841">Failai šiuose aplankuose tik skaitomi. Tam tikra veikla nepalaikoma.</translation>
 <translation id="5123433949759960244">Krepšinis</translation>
 <translation id="5129662217315786329">Lenkų</translation>
 <translation id="5144820558584035333">Hangul 3 rinkinys (390)</translation>
@@ -698,6 +702,7 @@
 <translation id="9034924485347205037">„Linux“ failai</translation>
 <translation id="9035012421917565900">Elementų negalima perkelti atgal į „<ph name="DESTINATION_NAME" />“, todėl negalėsite anuliuoti šio veiksmo.</translation>
 <translation id="9038620279323455325">Failas pavadinimu „<ph name="FILE_NAME" />“ jau yra. Pasirinkite kitą pavadinimą.</translation>
+<translation id="9062992083244091966">Jei norite atidaryti failus naudodami programą „<ph name="APP_NAME" />“, pirmiausia perkelkite juos į programos „<ph name="APP_NAME" />“ bendrinamų failų aplanką.</translation>
 <translation id="9064939804718829769">Perkeliama...</translation>
 <translation id="9065203028668620118">Redaguoti</translation>
 <translation id="9099674669267916096">Puslapių skaičius</translation>

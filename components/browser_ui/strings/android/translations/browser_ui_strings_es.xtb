@@ -48,6 +48,7 @@
 <translation id="2440823041667407902">Acceso a la ubicación</translation>
 <translation id="2482878487686419369">Notificaciones</translation>
 <translation id="2490684707762498678">Gestionadas por <ph name="APP_NAME" /></translation>
+<translation id="2498359688066513246">Ayuda y sugerencias</translation>
 <translation id="2501278716633472235">Volver</translation>
 <translation id="2537296579376733324">Todas las cookies, solo en este sitio web</translation>
 <translation id="2569468611847789653">{COOKIE_COUNT,plural, =1{1 cookie bloqueada}other{# cookies bloqueadas}}</translation>
@@ -89,6 +90,7 @@
 <translation id="4165986682804962316">Configuración del sitio web</translation>
 <translation id="4226663524361240545">Es posible que las notificaciones hagan que el dispositivo vibre</translation>
 <translation id="4259722352634471385">Se ha bloqueado la navegación: <ph name="URL" /></translation>
+<translation id="4275663329226226506">Multimedia</translation>
 <translation id="4278390842282768270">Permitido</translation>
 <translation id="4433925000917964731">Página básica ofrecida por Google</translation>
 <translation id="4434045419905280838">Ventanas emergentes y redirecciones</translation>
@@ -99,6 +101,7 @@
 <translation id="4645575059429386691">Administrado por uno de tus padres</translation>
 <translation id="4670064810192446073">Realidad virtual</translation>
 <translation id="4751476147751820511">Sensores de luz o movimiento</translation>
+<translation id="4759238208242260848">Descargas</translation>
 <translation id="4883854917563148705">No se pueden restablecer los ajustes gestionados</translation>
 <translation id="4887024562049524730">Preguntar antes de permitir que los sitios web usen tu dispositivo y tus datos de realidad virtual (recomendado)</translation>
 <translation id="4962975101802056554">Revocar todos los permisos de este dispositivo</translation>
@@ -136,6 +139,7 @@
 <translation id="5939518447894949180">Restablecer</translation>
 <translation id="6040143037577758943">Cerrar</translation>
 <translation id="6042308850641462728">Más</translation>
+<translation id="6064125863973209585">Descargas completadas</translation>
 <translation id="6165508094623778733">Más información</translation>
 <translation id="6181444274883918285">Añadir excepción de sitio web</translation>
 <translation id="6192792657125177640">Excepciones</translation>
@@ -207,6 +211,7 @@
 <translation id="8380167699614421159">El sitio web muestra anuncios invasivos o engañosos</translation>
 <translation id="8394832520002899662">Toca para volver al sitio web</translation>
 <translation id="8447861592752582886">Revocar permiso de dispositivo</translation>
+<translation id="8463851957836045671">El sitio web es rápido</translation>
 <translation id="851751545965956758">No permitir que los sitios web se conecten a dispositivos</translation>
 <translation id="857943718398505171">Permitido (recomendado)</translation>
 <translation id="8609465669617005112">Subir</translation>
@@ -220,6 +225,7 @@
 <translation id="8847988622838149491">USB</translation>
 <translation id="885701979325669005">Almacenamiento</translation>
 <translation id="8926666909099850184">La tecnología NFC está desactivada en este dispositivo. Actívala en los <ph name="BEGIN_LINK" />ajustes de Android<ph name="END_LINK" />.</translation>
+<translation id="8929372349074745002">Este sitio web se abre y responde con rapidez en la mayoría de los casos</translation>
 <translation id="8941729603749328384">www.ejemplo.com</translation>
 <translation id="8958424370300090006">Bloquear las cookies de un sitio web específico.</translation>
 <translation id="8959122750345127698">No se puede realizar la navegación: <ph name="URL" /></translation>

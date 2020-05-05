@@ -20,6 +20,7 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.task.PostTask;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
+import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.ScalableTimeout;
 import org.chromium.base.test.util.UrlUtils;
@@ -63,6 +64,17 @@ public class PaintPreviewPlayerTest extends DummyUiActivityTestCase {
         public void onLinkClicked(GURL url) {
             mUrl = url;
         }
+    }
+
+    @Override
+    public void tearDownTest() throws Exception {
+        super.tearDownTest();
+        CallbackHelper destroyed = new CallbackHelper();
+        PostTask.postTask(UiThreadTaskTraits.DEFAULT, () -> {
+            mPlayerManager.destroy();
+            destroyed.notifyCalled();
+        });
+        destroyed.waitForFirst();
     }
 
     /**
@@ -171,6 +183,8 @@ public class PaintPreviewPlayerTest extends DummyUiActivityTestCase {
                 "Player view is not added to the host view.", TIMEOUT_MS,
                 CriteriaHelper.DEFAULT_POLLING_INTERVAL);
     }
+
+    private void destroyPlayerManager() {}
 
     private void assertLinkUrl(View view, int x, int y, String expectedUrl) {
         mLinkClickHandler.mUrl = null;

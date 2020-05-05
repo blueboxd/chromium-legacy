@@ -476,6 +476,16 @@ if (use_fuzzing_engine) {
   }
 }
 
+fuzzer_test("net_dns_host_cache_fuzzer") {
+  sources = [ "host_cache_fuzzer.cc" ]
+  deps = [
+    "//base",
+    "//net",
+    "//net:net_fuzzer_test_support",
+  ]
+  dict = "//testing/libfuzzer/fuzzers/dicts/json.dict"
+}
+
 fuzzer_test("net_dns_hosts_parse_fuzzer") {
   sources = [ "dns_hosts_parse_fuzzer.cc" ]
   deps = [

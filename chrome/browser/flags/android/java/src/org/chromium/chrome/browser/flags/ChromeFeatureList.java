@@ -196,6 +196,10 @@ public abstract class ChromeFeatureList {
     public static final String AUTOFILL_CREDIT_CARD_AUTHENTICATION =
             "AutofillCreditCardAuthentication";
     public static final String AUTOFILL_ENABLE_COMPANY_NAME = "AutofillEnableCompanyName";
+    public static final String AUTOFILL_ENABLE_GOOGLE_ISSUED_CARD =
+            "AutofillEnableGoogleIssuedCard";
+    public static final String AUTOFILL_ENABLE_SURFACING_SERVER_CARD_NICKNAME =
+            "AutofillEnableSurfacingServerCardNickname";
     public static final String ADJUST_WEBAPK_INSTALLATION_SPACE = "AdjustWebApkInstallationSpace";
     public static final String ANDROID_BLOCK_INTENT_NON_SAFELISTED_HEADERS =
             "AndroidBlockIntentNonSafelistedHeaders";

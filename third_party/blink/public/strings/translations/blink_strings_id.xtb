@@ -35,6 +35,7 @@
 <translation id="1938124657309484470">Tanggal harus <ph name="MAXIMUM_DATE_OR_TIME" /> atau lebih awal.</translation>
 <translation id="1946271899482435442">Tampilkan alat pilih tanggal</translation>
 <translation id="1993104285338243655">Dialihkan ke pencerminan</translation>
+<translation id="2031987842108996681">Saluran merah</translation>
 <translation id="2060505056492490888">'<ph name="DOT" />' digunakan pada posisi yang salah di '<ph name="INVALIDDOMAIN" />'.</translation>
 <translation id="2148716181193084225">Hari ini</translation>
 <translation id="2158401438286456825">daftar halaman</translation>
@@ -45,6 +46,7 @@
 <translation id="2291999235780842123">kotak centang</translation>
 <translation id="2311842470354187719">batas halaman</translation>
 <translation id="2335594187091864976">pemilih tanggal dan waktu</translation>
+<translation id="2393030564806080191">Nilai warna heksadesimal</translation>
 <translation id="245932805758469625">sisa durasi video dalam detik</translation>
 <translation id="248395913932153421">Hari</translation>
 <translation id="2507943997699731163">Harap isi bidang ini.</translation>
@@ -52,6 +54,7 @@
 <translation id="2561842179657104141">tampilkan kontrol media lainnya</translation>
 <translation id="2572483411312390101">main</translation>
 <translation id="2613802280814924224">Masukkan nilai yang valid. Nilai valid terdekatnya adalah <ph name="VALID_VALUE" />.</translation>
+<translation id="2634240155926812724">Saluran hijau</translation>
 <translation id="2653659639078652383">Kirim</translation>
 <translation id="2657045182931379222">objek grafis</translation>
 <translation id="2674318244760992338">footer</translation>
@@ -127,6 +130,7 @@
 <translation id="5034860022980953847">indikator kemajuan</translation>
 <translation id="5090250355906949916">pengatur waktu video</translation>
 <translation id="5093189678851173835">epigraf</translation>
+<translation id="509897012892853729">Saluran biru</translation>
 <translation id="5117590920725113268">Tampilkan bulan berikutnya</translation>
 <translation id="512758898067543763">judul baris</translation>
 <translation id="5143125788380636750">epilog</translation>
@@ -164,6 +168,7 @@
 <translation id="6166809985690652833">penutup</translation>
 <translation id="6209276755895393898">Muncul sebagai: <ph name="DESCRIPTION" /></translation>
 <translation id="6213469881011901533">glosarium</translation>
+<translation id="6281588256137006900">Cahaya</translation>
 <translation id="6281763101136022427">url</translation>
 <translation id="6310801910862476708">Keluar dari Mode Picture-in-Picture</translation>
 <translation id="6398862346408813489">Tampilkan panel pilihan bulan</translation>
@@ -184,6 +189,7 @@
 <translation id="6790428901817661496">Putar</translation>
 <translation id="6820355525329141109">Tidak dapat memuat plugin.</translation>
 <translation id="6820615603175220800">referensi bibliografi</translation>
+<translation id="6831465880655513317">Palet warna dengan penggeser dua dimensi untuk memilih saturasi dan cahaya</translation>
 <translation id="6843725295806269523">bisukan</translation>
 <translation id="6885760532393684712">direktori</translation>
 <translation id="689129560213475294">kolofon</translation>
@@ -201,6 +207,7 @@
 <translation id="7263440858009898357">Pilih item pada daftar.</translation>
 <translation id="727747134524199931">judul kolom</translation>
 <translation id="7320576522385648310">buffering</translation>
+<translation id="7341556277900466204">Palet warna</translation>
 <translation id="7353453495576941748">daftar penghargaan</translation>
 <translation id="7364796246159120393">Pilih File</translation>
 <translation id="739024184232394898">Lainnya...</translation>
@@ -221,6 +228,7 @@
 <translation id="775297008183122718">Entri tidak valid</translation>
 <translation id="7789962463072032349">jeda</translation>
 <translation id="7802800022689234070">segitiga pengungkapan</translation>
+<translation id="7852167693871241274">Penggeser hue</translation>
 <translation id="7888071071722539607">Sertakan '<ph name="ATSIGN" />' pada alamat email. '<ph name="INVALIDADDRESS" />' tidak memiliki '<ph name="ATSIGN" />'.</translation>
 <translation id="7891486169920085145">pemisah</translation>
 <translation id="795667975304826397">Tidak ada file yang dipilih</translation>
@@ -263,6 +271,7 @@
 <translation id="8875657656876809964">Error pemutaran video</translation>
 <translation id="8889402386540077796">Rona</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> KB</translation>
+<translation id="894736920926684893">Pengubah format</translation>
 <translation id="8987927404178983737">Bulan</translation>
 <translation id="901493112792887934">waktu saat ini dalam detik</translation>
 <translation id="901834265349196618">email</translation>

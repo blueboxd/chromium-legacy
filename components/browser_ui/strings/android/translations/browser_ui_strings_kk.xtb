@@ -3,6 +3,7 @@
 <translationbundle lang="kk">
 <translation id="1006017844123154345">Онлайн режимде ашу</translation>
 <translation id="1044891598689252897">Сайттар қалыпты күйде жұмыс істейді.</translation>
+<translation id="1124090076051167250">Негізгі экрандағы сайттар мен қолданбаларда сақталған <ph name="DATASIZE" /> деректер мен cookie файлдары өшіріледі.</translation>
 <translation id="1124772482545689468">Пайдаланушы</translation>
 <translation id="1178581264944972037">Кідірту</translation>
 <translation id="1181037720776840403">Өшіру</translation>
@@ -47,6 +48,7 @@
 <translation id="2440823041667407902">Орналасқан жерін көру</translation>
 <translation id="2482878487686419369">Хабарламалар</translation>
 <translation id="2490684707762498678"><ph name="APP_NAME" /> басқарады</translation>
+<translation id="2498359688066513246">Анықтама және пікір</translation>
 <translation id="2501278716633472235">Артқа қайту</translation>
 <translation id="2537296579376733324">Барлық cookie файлдары осы сайтта ғана бар.</translation>
 <translation id="2569468611847789653">{COOKIE_COUNT,plural, =1{1 cookie файлы бөгелді.}other{# cookie файлы бөгелді.}}</translation>
@@ -88,6 +90,7 @@
 <translation id="4165986682804962316">Сайт параметрлері</translation>
 <translation id="4226663524361240545">Хабарландыру келіп түскенде, құрылғы дірілдейді</translation>
 <translation id="4259722352634471385">Навигация тыйылған: <ph name="URL" /></translation>
+<translation id="4275663329226226506">Мультимедиа</translation>
 <translation id="4278390842282768270">Рұқсат етілген</translation>
 <translation id="4433925000917964731">Google бетті Lite нұсқасында ұсынды</translation>
 <translation id="4434045419905280838">Қалқымалы терезе және бағыттау</translation>
@@ -98,6 +101,7 @@
 <translation id="4645575059429386691">Ата-ана басқарады</translation>
 <translation id="4670064810192446073">Виртуалды шындық</translation>
 <translation id="4751476147751820511">Қозғалыс не жарық датчиктері</translation>
+<translation id="4759238208242260848">Жүктеп алынғандар</translation>
 <translation id="4883854917563148705">Басқарылатын параметрлер бастапқы күйге қайтарылмайды.</translation>
 <translation id="4887024562049524730">Cайттарға виртуалды шындық құрылғыңызды немесе деректерді пайдалануға рұқсат беру алдында сұрау (ұсынылады)</translation>
 <translation id="4962975101802056554">Құрылғыға арналған барлық рұқсаттардың күші жойылсын.</translation>
@@ -127,6 +131,7 @@
 <translation id="5677928146339483299">Тыйым салынған</translation>
 <translation id="5689516760719285838">Орналасу</translation>
 <translation id="5710871682236653961">NFC функциясы бар құрылғыларды түрткенде, сайттар үшін ақпарат алмасу рұқсатын сұрау (ұсынылады).</translation>
+<translation id="5719847187258001597">Негізгі экрандағы <ph name="ORIGIN" /> сайты мен қолданбада сақталған барлық деректер мен cookie файлдары өшіріледі.</translation>
 <translation id="5804241973901381774">Рұқсаттар</translation>
 <translation id="5860033963881614850">Өшірулі</translation>
 <translation id="5916664084637901428">Қосу</translation>
@@ -134,6 +139,7 @@
 <translation id="5939518447894949180">Қалпына келтіру</translation>
 <translation id="6040143037577758943">Жабу</translation>
 <translation id="6042308850641462728">Жаю</translation>
+<translation id="6064125863973209585">Жүктеп алынғандар</translation>
 <translation id="6165508094623778733">Толығырақ</translation>
 <translation id="6181444274883918285">Сайтты ерекшеліктер тізіміне қосу</translation>
 <translation id="6192792657125177640">Ерекше жағдайлар</translation>
@@ -205,6 +211,7 @@
 <translation id="8380167699614421159">Бұл сайтта мазалайтын немесе жалған ақпаратты жарнамалар көрсетіледі</translation>
 <translation id="8394832520002899662">Сайтқа оралу үшін түртіңіз.</translation>
 <translation id="8447861592752582886">Құрылғыға кіру рұқсатының күшін жою</translation>
+<translation id="8463851957836045671">Бұл сайт жылдам.</translation>
 <translation id="851751545965956758">Сайттардың құрылғыға жалғануына тыйым салу</translation>
 <translation id="857943718398505171">Рұқсат етілген (ең дұрысы)</translation>
 <translation id="8609465669617005112">Жоғары қарай жылжыту</translation>
@@ -218,6 +225,7 @@
 <translation id="8847988622838149491">USB</translation>
 <translation id="885701979325669005">Сақтау</translation>
 <translation id="8926666909099850184">Бұл құрылғыда NFC функциясы өшірілген. Оны <ph name="BEGIN_LINK" />Android параметрлерінен<ph name="END_LINK" /> қосыңыз.</translation>
+<translation id="8929372349074745002">Сайт көптеген адамдар үшін жылдам ашылып, жұмыс істейді.</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8958424370300090006">Белгілі бір сайт үшін cookie файлдарына тыйым салыңыз.</translation>
 <translation id="8959122750345127698"><ph name="URL" /> мекенжайына өту мүмкін емес</translation>

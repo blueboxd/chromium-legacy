@@ -35,6 +35,7 @@
 <translation id="1938124657309484470">Dəyər <ph name="MAXIMUM_DATE_OR_TIME" /> və ya daha öncə olmalıdır.</translation>
 <translation id="1946271899482435442">Tarix seçicisini göstərin</translation>
 <translation id="1993104285338243655">Kopyalamağa keçildi</translation>
+<translation id="2031987842108996681">Qırmızı kanal</translation>
 <translation id="2060505056492490888">'<ph name="DOT" />' '<ph name="INVALIDDOMAIN" />' daxilində yanlış pozisiya işlətdi.</translation>
 <translation id="2148716181193084225">Bu gün</translation>
 <translation id="2158401438286456825">səhifə siyahısı</translation>
@@ -45,6 +46,7 @@
 <translation id="2291999235780842123">Qeyd xanası</translation>
 <translation id="2311842470354187719">səhifə sonu</translation>
 <translation id="2335594187091864976">tarix və saat seçici</translation>
+<translation id="2393030564806080191">Altırəqəmli rəng dəyəri</translation>
 <translation id="245932805758469625">videonun göstərilməmiş saniyələrinin sayı</translation>
 <translation id="248395913932153421">Gün</translation>
 <translation id="2507943997699731163">Lütfən, bu sahəni doldurun.</translation>
@@ -52,6 +54,7 @@
 <translation id="2561842179657104141">daha çox media kontrolları göstərin</translation>
 <translation id="2572483411312390101">oxudun</translation>
 <translation id="2613802280814924224">Düzgün dəyər daxil edin. Ən yaxın düzgün dəyər: <ph name="VALID_VALUE" />.</translation>
+<translation id="2634240155926812724">Yaşıl kanal</translation>
 <translation id="2653659639078652383">Təqdim edin</translation>
 <translation id="2657045182931379222">qrafik obyekti</translation>
 <translation id="2674318244760992338">alt sərlövhə</translation>
@@ -127,6 +130,7 @@
 <translation id="5034860022980953847">proqres göstərici</translation>
 <translation id="5090250355906949916">video vaxt tənzimləyicisi</translation>
 <translation id="5093189678851173835">epiqraf</translation>
+<translation id="509897012892853729">Mavi kanal</translation>
 <translation id="5117590920725113268">Gələn ayı göstərin</translation>
 <translation id="512758898067543763">sətir başlığı</translation>
 <translation id="5143125788380636750">epiloq</translation>
@@ -164,6 +168,7 @@
 <translation id="6166809985690652833">son söz</translation>
 <translation id="6209276755895393898">Ola bilər: <ph name="DESCRIPTION" /></translation>
 <translation id="6213469881011901533">lüğət</translation>
+<translation id="6281588256137006900">Açıqlıq</translation>
 <translation id="6281763101136022427">url</translation>
 <translation id="6310801910862476708">Şəkil içində Şəkil düyməsindən çıxın</translation>
 <translation id="6398862346408813489">Ay seçimi panelini göstərin</translation>
@@ -184,6 +189,7 @@
 <translation id="6790428901817661496">Oxudun</translation>
 <translation id="6820355525329141109">Plaqin yüklənə bilmədi.</translation>
 <translation id="6820615603175220800">biblioqrafiya istinadı</translation>
+<translation id="6831465880655513317">Dolğunluq və açıqlığı seçmək üçün iki-ölçülü slayder ilə rəng bölməsi</translation>
 <translation id="6843725295806269523">səssiz</translation>
 <translation id="6885760532393684712">kataloq</translation>
 <translation id="689129560213475294">kolofon</translation>
@@ -201,6 +207,7 @@
 <translation id="7263440858009898357">Lütfən, siyahıdan bir element seçin.</translation>
 <translation id="727747134524199931">sütun başlığı</translation>
 <translation id="7320576522385648310">buferizasiya</translation>
+<translation id="7341556277900466204">Rəng bölməsi</translation>
 <translation id="7353453495576941748">kredit</translation>
 <translation id="7364796246159120393">Fayl seçin</translation>
 <translation id="739024184232394898">Digər...</translation>
@@ -221,6 +228,7 @@
 <translation id="775297008183122718">Yanlış giriş</translation>
 <translation id="7789962463072032349">durdurun</translation>
 <translation id="7802800022689234070">açılma üçbucaq</translation>
+<translation id="7852167693871241274">Çalar slayderi</translation>
 <translation id="7888071071722539607">E-poçt ünvanına '<ph name="ATSIGN" />' daxil edin. '<ph name="INVALIDADDRESS" />' çatışmayan '<ph name="ATSIGN" />' vardır.</translation>
 <translation id="7891486169920085145">ayırıcı</translation>
 <translation id="795667975304826397">Heç bir fayl seçilməyib</translation>
@@ -263,6 +271,7 @@
 <translation id="8875657656876809964">Video oxutma xətası</translation>
 <translation id="8889402386540077796">Rəng çaları</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> KB</translation>
+<translation id="894736920926684893">Format dəyişdirici</translation>
 <translation id="8987927404178983737">Ay</translation>
 <translation id="901493112792887934">saniyə ilə cari vaxt</translation>
 <translation id="901834265349196618">e-poçt</translation>

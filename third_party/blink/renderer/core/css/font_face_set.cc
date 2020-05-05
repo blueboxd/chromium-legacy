@@ -58,7 +58,8 @@ FontFaceSet* FontFaceSet::addForBinding(ScriptState*,
   font_selector->GetFontFaceCache()->AddFontFace(font_face, false);
   if (font_face->LoadStatus() == FontFace::kLoading)
     AddToLoadingFonts(font_face);
-  font_selector->FontFaceInvalidated();
+  font_selector->FontFaceInvalidated(
+      FontInvalidationReason::kGeneralInvalidation);
   return this;
 }
 
@@ -73,7 +74,8 @@ void FontFaceSet::clearForBinding(ScriptState*, ExceptionState&) {
       RemoveFromLoadingFonts(font_face);
   }
   non_css_connected_faces_.clear();
-  font_selector->FontFaceInvalidated();
+  font_selector->FontFaceInvalidated(
+      FontInvalidationReason::kGeneralInvalidation);
 }
 
 bool FontFaceSet::deleteForBinding(ScriptState*,
@@ -90,7 +92,8 @@ bool FontFaceSet::deleteForBinding(ScriptState*,
     font_selector->GetFontFaceCache()->RemoveFontFace(font_face, false);
     if (font_face->LoadStatus() == FontFace::kLoading)
       RemoveFromLoadingFonts(font_face);
-    font_selector->FontFaceInvalidated();
+    font_selector->FontFaceInvalidated(
+        FontInvalidationReason::kGeneralInvalidation);
     return true;
   }
   return false;

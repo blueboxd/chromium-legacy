@@ -14,20 +14,38 @@ namespace blink {
 
 // Note: if changing this, see also
 // content/public/common/common_param_traits_macros.h
-struct BLINK_COMMON_EXPORT UserAgentMetadata {
+struct BLINK_COMMON_EXPORT UserAgentBrandVersion {
+  UserAgentBrandVersion() = default;
+  UserAgentBrandVersion(const std::string& ua_brand,
+                        const std::string& ua_major_version);
+
+  bool operator==(const UserAgentBrandVersion& a) const;
+
   std::string brand;
-  std::string full_version;
   std::string major_version;
-  std::string platform;
-  std::string platform_version;
-  std::string architecture;
-  std::string model;
-  bool mobile = false;
+};
+
+using UserAgentBrandList = std::vector<UserAgentBrandVersion>;
+
+// Note: if changing this, see also
+// content/public/common/common_param_traits_macros.h
+struct BLINK_COMMON_EXPORT UserAgentMetadata {
+  // Turning the brand list into a structured header comes up often enough and
+  // is just non-trivial enough that it's better to be in one place.
+  const std::string SerializeBrandVersionList();
 
   static base::Optional<UserAgentMetadata> Demarshal(
       const base::Optional<std::string>& encoded);
   static base::Optional<std::string> Marshal(
       const base::Optional<UserAgentMetadata>& ua_metadata);
+  UserAgentBrandList brand_version_list;
+
+  std::string full_version;
+  std::string platform;
+  std::string platform_version;
+  std::string architecture;
+  std::string model;
+  bool mobile = false;
 };
 
 // Used when customizing the sent User-Agent and Sec-CH-UA-* for

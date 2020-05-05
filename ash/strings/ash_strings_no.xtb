@@ -140,6 +140,7 @@
 <translation id="2700493154570097719">Velg tastatur</translation>
 <translation id="2704781753052663061">Koble til andre Wi-Fi-nettverk</translation>
 <translation id="2705001408393684014">Slå av/på mikrofonen. <ph name="STATE_TEXT" /></translation>
+<translation id="2706462751667573066">Opp</translation>
 <translation id="2718395828230677721">Nattlys</translation>
 <translation id="2727977024730340865">Tilkoblet laveffektslader. Batteriladingen kan være upålitelig.</translation>
 <translation id="2792498699870441125">Alt + Søk</translation>
@@ -173,6 +174,7 @@
 <translation id="3077734595579995578">shift</translation>
 <translation id="3081696990447829002">Vis menyen</translation>
 <translation id="3087734570205094154">Bunn</translation>
+<translation id="309749186376891736">Flytt markøren</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (Bluetooth)</translation>
 <translation id="3126069444801937830">Start på nytt for å oppdatere</translation>
 <translation id="3139942575505304791">Skrivebord 1</translation>
@@ -242,6 +244,7 @@
 <translation id="3899995891769452915">Taleinndata</translation>
 <translation id="3900355044994618856">Økten din avsluttes om <ph name="SESSION_TIME_REMAINING" /></translation>
 <translation id="3901991538546252627">Kobler til <ph name="NAME" /></translation>
+<translation id="3943857333388298514">Lim inn</translation>
 <translation id="394485226368336402">Lydinnstillinger</translation>
 <translation id="3962859241508114581">Forrige spor</translation>
 <translation id="3965097803111112935">Av</translation>
@@ -294,7 +297,6 @@
 <translation id="4565377596337484307">Skjul passord</translation>
 <translation id="4570957409596482333">Tekstopplesingsknapp</translation>
 <translation id="4585337515783392668">Stopp casting på en ukjent mottaker</translation>
-<translation id="4588090240171750605">Rull mot høyre</translation>
 <translation id="4628757576491864469">Enheter</translation>
 <translation id="4659419629803378708">ChromeVox er slått på</translation>
 <translation id="4665114317261903604">Slå av/på Ikke forstyrr. <ph name="STATE_TEXT" /></translation>
@@ -336,6 +338,7 @@
 <translation id="5250225880026334010">Av</translation>
 <translation id="5260676007519551770">Skrivebord 4</translation>
 <translation id="5283198616748585639">Legg til 1 min</translation>
+<translation id="528468243742722775">Avslutt</translation>
 <translation id="5286194356314741248">Skanning</translation>
 <translation id="5302048478445481009">Språk</translation>
 <translation id="5313326810920013265">Bluetooth-innstillinger</translation>
@@ -406,6 +409,7 @@
 <translation id="615957422585914272">Vis skjermtastaturet</translation>
 <translation id="6164005077879661055">Alle filer og lokale data tilknyttet den administrerte brukeren slettes permanent når den administrerte brukeren fjernes. Besøkte nettsteder og innstillinger for denne administrerte brukeren kan fortsatt ses av administratoren på <ph name="MANAGEMENT_URL" />.</translation>
 <translation id="6165508094623778733">Finn ut mer</translation>
+<translation id="622484624075952240">Ned</translation>
 <translation id="6236290670123303279">Administrer innstillinger</translation>
 <translation id="6237231532760393653">1X</translation>
 <translation id="6254629735336163724">Låst til horisontal</translation>
@@ -416,7 +420,6 @@
 <translation id="6288235558961782912"><ph name="USER_EMAIL_ADDRESS" /> kan legges til på nytt senere med tillatelse fra en forelder.</translation>
 <translation id="6297287540776456956">Bruk pekepennen til å velge et område</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> ble rotert til <ph name="ROTATION" /></translation>
-<translation id="6364916375976753737">Rull mot venstre</translation>
 <translation id="6376931439017688372">Bluetooth er på</translation>
 <translation id="6381109794406942707">For å låse opp enheten, skriv inn PIN-koden.</translation>
 <translation id="639644700271529076">CAPS LOCK er av</translation>
@@ -467,6 +470,7 @@
 <translation id="6820676911989879663">Ta en pause!</translation>
 <translation id="6857811139397017780">Aktiver <ph name="NETWORKSERVICE" /></translation>
 <translation id="6878400149835617132">Snarveien er avslått</translation>
+<translation id="6896758677409633944">Kopiér</translation>
 <translation id="6910714959251846841">Denne oppdateringen krever en powerwash av enheten din. Finn ut mer om den nyeste <ph name="SYSTEM_APP_NAME" />-oppdateringen.</translation>
 <translation id="6919251195245069855">Smartkortet ditt ble ikke gjenkjent. Prøv på nytt.</translation>
 <translation id="6945221475159498467">Velg</translation>
@@ -522,6 +526,7 @@
 <translation id="7654687942625752712">Trykk og hold på begge volumknappene i fem sekunder for å slå av taletilbakemelding.</translation>
 <translation id="7705524343798198388">VPN</translation>
 <translation id="7723389094756330927">{NUM_NOTIFICATIONS,plural, =1{1 varsel}other{# varsler}}</translation>
+<translation id="7724603315864178912">Klipp ut</translation>
 <translation id="7749443890790263709">Maksimalt antall skrivebord er nådd.</translation>
 <translation id="776344839111254542">Klikk for å se oppdateringsdetaljene</translation>
 <translation id="7780159184141939021">Rotér skjermen</translation>
@@ -562,7 +567,6 @@
 <translation id="8142699993796781067">Privat nettverk</translation>
 <translation id="8152092012181020186">Trykk på Ctrl + W for å lukke.</translation>
 <translation id="8155007568264258537"><ph name="FEATURE_NAME" /> Denne innstillingen administreres av administratoren.</translation>
-<translation id="815598010540052116">Rull ned</translation>
 <translation id="8167567890448493835">Bruker <ph name="LOCALE_NAME" /></translation>
 <translation id="8190698733819146287">Tilpass språk og inndata</translation>
 <translation id="8192202700944119416">Varsler er skjult.</translation>
@@ -574,7 +578,6 @@
 <translation id="8261506727792406068">Slett</translation>
 <translation id="8297006494302853456">Svak</translation>
 <translation id="8308637677604853869">Forrige meny</translation>
-<translation id="8331626408530291785">Rull opp</translation>
 <translation id="8341451174107936385"><ph name="UNLOCK_MORE_FEATURES" /><ph name="GET_STARTED" /></translation>
 <translation id="8351131234907093545">Opprett et notat</translation>
 <translation id="8375916635258623388"><ph name="DEVICE_NAME" /> og telefonen din kobles sammen automatisk</translation>

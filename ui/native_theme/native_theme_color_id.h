@@ -27,7 +27,6 @@
   OP(kColorId_ButtonHoverColor),                                               \
   OP(kColorId_ButtonInkDropFillColor),                                         \
   OP(kColorId_ButtonInkDropShadowColor),                                       \
-  OP(kColorId_ButtonPressedShade),                                             \
   OP(kColorId_ButtonUncheckedColor),                                           \
   OP(kColorId_ProminentButtonColor),                                           \
   OP(kColorId_ProminentButtonDisabledColor),                                   \

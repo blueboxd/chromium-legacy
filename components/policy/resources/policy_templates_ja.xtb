@@ -268,6 +268,7 @@
       セーフ ブラウジングについて詳しくは、https://developers.google.com/safe-browsing をご覧ください。</translation>
 <translation id="1413936351612032792">Linux アプリの使用に関する情報を報告します</translation>
 <translation id="142346659686073702">外部のユーザーに Crostini の使用を許可する</translation>
+<translation id="1425551776320718592">このデバイスのユーザーによる ADB サイドローディングの使用を禁止しますが、Powerwash の強制的な実行は行いません。これによりデバイスのセキュリティに問題が生じる可能性があります</translation>
 <translation id="1426170570389588560">印刷ジョブのメタデータを保存する期間（日数）を設定する</translation>
 <translation id="1426410128494586442">はい</translation>
 <translation id="1427655258943162134">プロキシ サーバーのアドレスまたは URL</translation>
@@ -363,6 +364,7 @@
           このポリシーが無効に設定されているか未設定の場合、Kerberos アカウント設定は無効になります。このとき、Kerberos アカウントは追加できず、Kerberos 認証は使用できません。既存の Kerberos アカウントと保存したパスワードもすべて削除されます。</translation>
 <translation id="1561424797596341174">リモート アクセス ホストの Debug ビルドでのポリシー オーバーライド</translation>
 <translation id="1561967320164410511">U2F と個人認証用拡張機能</translation>
+<translation id="1575015449587326319">OnFileDownloaded Chrome Enterprise コネクタの設定ポリシー</translation>
 <translation id="1583248206450240930">デフォルトで <ph name="PRODUCT_FRAME_NAME" /> を使用する</translation>
 <translation id="1588240398285670601">ブラウザの設定</translation>
 <translation id="1599424828227887013">Android デバイスで指定の発行元に対してサイト分離を有効にする</translation>
@@ -853,6 +855,19 @@
 
       不適切な形式のテンプレートは無視されます。</translation>
 <translation id="2345547870894930157">DNS-over-HTTPS を有効にする（安全でないフォールバックなし）</translation>
+<translation id="2353442107789326507"><ph name="ON_FILE_ATTACHED_ENTERPRISE_CONNECTOR" /> Enterprise コネクタに適用する Chrome Enterprise コネクタ サービス設定のリストで、Chrome にファイルが添付されている場合に呼び出されます。
+
+      <ph name="ENTERPRISE_CONNECTOR_URL_LIST_FIELD" />、<ph name="ENTERPRISE_CONNECTOR_TAGS_FIELD" />、<ph name="ENTERPRISE_CONNECTOR_ENABLE_FIELD" />、<ph name="ENTERPRISE_CONNECTOR_DISABLE_FIELD" /> のフィールドは、特定のページに添付されているファイルをコネクタで分析のため送信すべきかどうかと、そのファイルの分析リクエストにどのタグを含めるかを判別する際に使用されます。「有効」パターンに該当するタグは、ページの URL がそのタグに関連付けられているパターンと一致し、同じタグの「無効」パターンとは一致しない場合に分析リクエストに含められます。分析は、リクエストにタグが少なくとも 1 つ含まれる場合に行われます。
+
+      <ph name="ENTERPRISE_CONNECTOR_SERVICE_PROVIDER_FIELD" /> では、この設定が対応している分析サービス プロバイダを指定します。
+
+      <ph name="ENTERPRISE_CONNECTOR_BLOCK_UNTIL_VERDICT_FIELD" /> を 1 に設定した場合、Chrome では分析サービスからの応答を待ってから、ページにファイルへのアクセスを許可します。その他の整数値を設定した場合、Chrome ではページにファイルへのアクセスをただちに許可します。
+
+      <ph name="ENTERPRISE_CONNECTOR_BLOCK_PASSWORD_PROTECTED_FIELD" /> では、パスワードで保護されているファイルをブロックするか許可するかを指定します。
+
+      <ph name="ENTERPRISE_CONNECTOR_BLOCK_LARGE_FILES_FIELD" /> では、分析可能なサイズより大きいファイル（50 MB 以上）をブロックするか許可するかを指定します。
+
+      このポリシーは Google 管理コンソールからのみ設定できます。</translation>
 <translation id="2386362615870139244">ウェイクアップ画面のロックを許可する</translation>
 <translation id="2406820201690307634">画像表示を許可しないサイトを指定する URL パターンのリストを設定できます。
 
@@ -916,6 +931,13 @@
       このポリシーが未設定の場合、または True に設定され、デバイスのローカル アカウントがゼロ遅延の自動ログイン用に設定されている場合、<ph name="PRODUCT_OS_NAME" /> では自動ログインを回避してログイン画面を表示するキーボード ショートカットの Ctrl+Alt+S を有効にします。
 
       このポリシーが False に設定されている場合、ゼロ遅延の自動ログイン（設定されている場合）を回避することはできません。</translation>
+<translation id="2449669951136028258">ダウンロード後に自動的に開くファイル形式のリストです。ファイル形式のリストは、先頭の区切り記号を含めずに指定してください。たとえば「.txt」の場合は「txt」と指定します。
+
+      なお、自動的に開くよう指定した形式のファイルも、セーフ ブラウジングが有効な場合はチェックされ、安全でないと判断された場合は開かれません。
+
+      このポリシーを未設定のままにした場合は、自動的に開くようユーザーが指定しているファイル形式のみが、ダウンロード後に自動的に開かれます。
+
+      このポリシーは、<ph name="MS_AD_NAME" /> ドメインに追加した Windows インスタンス、またはデバイスの管理対象として登録した Windows 10 Pro あるいは Enterprise インスタンスでのみ使用できます。</translation>
 <translation id="2454228136871844693">安定性を重視します。</translation>
 <translation id="2463034609187171371">TLS の DHE 暗号スイートを有効にする</translation>
 <translation id="2463365186486772703">アプリケーションの言語/地域</translation>
@@ -1398,6 +1420,7 @@
 
       このポリシーを設定しない場合、または変数の解決後の名前が有効なホスト名ではない場合、DHCP リクエストにホスト名は設定されません。 </translation>
 <translation id="3053265701996417839">Microsoft Windows 7</translation>
+<translation id="3066446511111537292">このデバイスの関連ユーザーに ADB サイドローディングの使用を許可します</translation>
 <translation id="3069958900488014740"><ph name="PRODUCT_NAME" /> で WPAD（ウェブプロキシ自動検出）の最適化を無効にできます。
 
       このポリシーを false に設定すると、WPAD の最適化は無効になり、DNS ベースの WPAD サーバーに対する <ph name="PRODUCT_NAME" /> の待機間隔が長くなります。このポリシーを未設定または有効にすると、WPAD の最適化は有効になります。
@@ -1447,6 +1470,7 @@
 <translation id="3152425128389603870">統合デスクトップを使用可能にし、デフォルトで有効にする</translation>
 <translation id="3159375329008977062">ユーザーは UI から Crostini コンテナを書き出しおよび読み込みできます</translation>
 <translation id="3165808775394012744">これらのポリシーは、削除しやすいようにこのフォルダにまとめられています。</translation>
+<translation id="3166210414652928099">信頼できない提供元の Android アプリの使用をユーザーに許可する</translation>
 <translation id="316778957754360075">この設定は <ph name="PRODUCT_NAME" /> バージョン 29 で廃止されました。組織でホストする拡張機能/アプリのコレクションを設定するには、CRX パッケージをホストするサイトを ExtensionInstallSources の中で指定し、パッケージへの直接ダウンロード リンクをウェブページに置くことをおすすめします。そのウェブページのランチャーは、ExtensionInstallForcelist ポリシーを使用して作成できます。</translation>
 <translation id="3168968618972302728">Kerberos 認証に関連するポリシーです。</translation>
 <translation id="3171369832001535378">デバイスのネットワーク ホスト名テンプレート</translation>
@@ -1665,6 +1689,11 @@ False に設定した場合、<ph name="PRODUCT_NAME" /> はネイティブ通�
           この設定が無効な場合、ユーザーは新しいパスワードを保存できませんが、以前保存したパスワードは引き続き使用できます。
 
           このポリシーが有効または無効の場合、ユーザーは <ph name="PRODUCT_NAME" /> でこの設定を変更したりオーバーライドしたりすることはできません。このポリシーが未設定の場合、パスワードは保存されます（ただし、ユーザーはパスワードの保存をオフにできます）。</translation>
+<translation id="3492834335089638487">このポリシーでは、デバイスにおける信頼できない提供元（Google Play ストア以外の提供元）の Android アプリの使用を管理します。
+
+      このポリシーの値を設定しない場合は、この機能を許可しないものと見なされます。
+
+      この機能を使用できるかどうかは、対応するユーザー ポリシーの設定にもよります。</translation>
 <translation id="3496296378755072552">パスワード マネージャー</translation>
 <translation id="3500732098526756068">パスワード保護の警告を表示するトリガーを制御できます。パスワード保護の警告は、不審なサイトでユーザーが保護されたパスワードを再使用したときに表示されます。
 
@@ -2417,6 +2446,7 @@ False に設定した場合、<ph name="PRODUCT_NAME" /> はネイティブ通�
 
       有効な URL パターンについて詳しくは、https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns をご覧ください。</translation>
 <translation id="4617338332148204752"><ph name="PRODUCT_FRAME_NAME" /> でのメタ タグ チェックをスキップする</translation>
+<translation id="462134014569484584">このポリシーでは、このデバイスの <ph name="PLUGIN_VM_NAME" /> のライセンスキーを指定します。</translation>
 <translation id="4625915093043961294">拡張機能インストールのホワイトリストを設定する</translation>
 <translation id="4632343302005518762">リストで指定したコンテンツ タイプの処理を <ph name="PRODUCT_FRAME_NAME" /> に対して許可する</translation>
 <translation id="4632566332417930481">企業ポリシーによってインストールされた拡張機能でのデベロッパー ツールの使用を禁止し、その他の状況におけるデベロッパー ツールの使用を許可する</translation>
@@ -2730,6 +2760,12 @@ False に設定した場合、<ph name="PRODUCT_NAME" /> はネイティブ通�
           この設定を有効にした場合、<ph name="PRODUCT_NAME" /> では、コマンドラインで指定されたプロキシ関連の設定がすべて無視されます。
 
           このポリシーが未設定の場合、ユーザーは自分でプロキシ設定を選択できます。</translation>
+<translation id="5177260184597743704">OnSecurityEvent Chrome Enterprise コネクタの設定ポリシー</translation>
+<translation id="5179734767316042713"><ph name="ON_SECURITY_EVENT_ENTERPRISE_CONNECTOR" /> Enterprise コネクタに適用する Chrome Enterprise コネクタ サービス設定のリストで、Chrome でセキュリティ イベントが発生した場合に呼び出されます。たとえば、Enterprise コネクタの分析により安全でないと判定された場合や、パスワードの再使用、安全でないページへの移動、その他セキュリティに関わるユーザー操作が検出された場合などです。
+
+      <ph name="ENTERPRISE_CONNECTOR_SERVICE_PROVIDER_FIELD" /> では、この設定が対応しているレポート サービス プロバイダを指定します。
+
+      このポリシーは Google 管理コンソールからのみ設定できます。</translation>
 <translation id="5182055907976889880"><ph name="PRODUCT_OS_NAME" /> で Google ドライブを設定します</translation>
 <translation id="5182483318861266793">シェルフを画面の右側に配置する</translation>
 <translation id="5183383917553127163">ブラックリストの対象外となる拡張機能を指定できます。ブラックリストの値が「*」の場合、すべての拡張機能がブラックリストに登録されており、ユーザーはホワイトリストにリストされている拡張機能しかインストールできません。デフォルトでは、すべての拡張機能はホワイトリストに登録されていますが、ポリシーによってすべての拡張機能をブラックリストに登録している場合、ホワイトリストを使ってそのポリシーをオーバーライドできます。</translation>
@@ -2888,6 +2924,7 @@ False に設定した場合、<ph name="PRODUCT_NAME" /> はネイティブ通�
 <translation id="5369937289900051171">カラー印刷のみ</translation>
 <translation id="5370279767682621504">デフォルト以外のポートで HTTP/0.9 サポートを有効にする</translation>
 <translation id="5377606826822211923">信頼できない提供元の Android アプリの使用をユーザー単位で管理する</translation>
+<translation id="537786648513450280">信頼できない提供元の Android アプリの使用をデバイス単位で管理する</translation>
 <translation id="5378985487213287085">ウェブサイトに対してデスクトップ通知の表示を許可するかどうかを設定できます。デスクトップ通知の表示は、デフォルトで許可または禁止することができます。また、ウェブサイトでデスクトップ通知が表示される前にユーザーが毎回確認することもできます。このポリシーが未設定の場合、「AskNotifications」が使用され、ユーザーはこの設定を変更できます。</translation>
 <translation id="5380329473151894945">ログイン画面で「大きいカーソル」ユーザー補助機能のデフォルト状態を設定します。
 
@@ -3165,9 +3202,11 @@ False に設定した場合、<ph name="PRODUCT_NAME" /> はネイティブ通�
 
           複数の拡張機能 ID をカンマで区切って指定している 75 より前のバージョンについてはサポートされておらず、スキップされます。ポリシーのその他の部分については、引き続き適用されます。</translation>
 <translation id="5645779841392247734">これらのサイトの Cookie を許可する</translation>
+<translation id="5646234199535103501">OnBulkDataEntry Chrome Enterprise コネクタの設定ポリシー</translation>
 <translation id="5656177735561364047">共有クリップボード機能を有効にする</translation>
 <translation id="5666457529647159548">インストール済みクライアント証明書の管理をユーザーに許可する。</translation>
 <translation id="5676740747107495269">ログイン画面の通知領域（システムトレイ）メニューにユーザー補助オプションを表示する</translation>
+<translation id="5679540979548648200">このデバイスのユーザーによる ADB サイドローディングの使用を禁止し、以前にサイドローディングが有効になっていた場合はデバイスの Powerwash を強制的に実行します</translation>
 <translation id="5689430183304951538">デフォルトの印刷ページサイズ</translation>
 <translation id="5693469654327063861">データ移行を許可する</translation>
 <translation id="5694594914843889579">このポリシーを true に設定すると、ファイル ブラウザでは外部ストレージを利用できなくなります。
@@ -3286,6 +3325,7 @@ False に設定した場合、<ph name="PRODUCT_NAME" /> はネイティブ通�
       <ph name="PRODUCT_NAME" /> の起動中にこのポリシーを変更した場合、変更内容は新しく開かれたタブにのみ適用されます。このため、一部のタブで以前の動作が継続される場合があります。
 
       有効な URL パターンについて詳しくは、https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns をご覧ください。</translation>
+<translation id="585270638818921943">信頼できない提供元の Android アプリの使用をユーザーに許可しない</translation>
 <translation id="5855010364142818361">このポリシーでは、Internet Explorer から Chrome に渡すコマンドライン パラメータを管理します。
 
       Internet Explorer 用の「従来のブラウザのサポート」アドインがインストールされていない場合、このポリシーは無視されます。
@@ -3713,6 +3753,15 @@ False に設定した場合、<ph name="PRODUCT_NAME" /> はネイティブ通�
 <translation id="6553143066970470539">画面の明るさの割合（%）</translation>
 <translation id="6559057113164934677">カメラやマイクへのアクセスをどのサイトにも許可しない</translation>
 <translation id="6561396069801924653">システム トレイ メニューにユーザー補助オプションを表示</translation>
+<translation id="6561900678873266853"><ph name="ON_BULK_DATA_ENTRY_ENTERPRISE_CONNECTOR" /> Enterprise コネクタに適用する Chrome Enterprise コネクタ サービス設定のリストで、Chrome でクリップボードからデータが入力された場合、またはウェブ コンテンツがドラッグ＆ドロップされた場合に呼び出されます。
+
+      <ph name="ENTERPRISE_CONNECTOR_URL_LIST_FIELD" />、<ph name="ENTERPRISE_CONNECTOR_TAGS_FIELD" />、<ph name="ENTERPRISE_CONNECTOR_ENABLE_FIELD" />、<ph name="ENTERPRISE_CONNECTOR_DISABLE_FIELD" /> のフィールドは、特定のページに入力されたデータをコネクタで分析のため送信すべきかどうかと、そのデータの分析リクエストにどのタグを含めるかを判別する際に使用されます。「有効」パターンに該当するタグは、ページの URL がそのタグに関連付けられているパターンと一致し、同じタグの「無効」パターンとは一致しない場合に分析リクエストに含められます。分析は、リクエストにタグが少なくとも 1 つ含まれる場合に行われます。
+
+      <ph name="ENTERPRISE_CONNECTOR_SERVICE_PROVIDER_FIELD" /> では、この設定が対応している分析サービス プロバイダを指定します。
+
+      <ph name="ENTERPRISE_CONNECTOR_BLOCK_UNTIL_VERDICT_FIELD" /> を 1 に設定した場合、Chrome では分析サービスからの応答を待ってから、ページにデータへのアクセスを許可します。その他の整数値を設定した場合、Chrome ではページにデータへのアクセスをただちに許可します。
+
+      このポリシーは Google 管理コンソールからのみ設定できます。</translation>
 <translation id="6563458316362153786">802.11r 高速切り替えを有効にする</translation>
 <translation id="6568977718979857253">このポリシーはサポートを終了しました。Flash プラグインを使用できるかどうかを管理するには <ph name="DEFAULT_PLUGINS_SETTING_POLICY_NAME" /> を使用してください。また、PDF ファイルを開く際に組み込みの PDF ビューアを使用するかどうかを管理するには <ph name="ALWAYS_OPEN_PDF_EXTERNALLY_POLICY_NAME" /> を使用してください。
 
@@ -3727,6 +3776,9 @@ False に設定した場合、<ph name="PRODUCT_NAME" /> はネイティブ通�
       このポリシーを設定しない場合、ユーザーはシステムにインストールされたどのプラグインも使用できます（互換性のないハードコードされたプラグイン、古いプラグイン、危険なプラグインは除く）。</translation>
 <translation id="6571871508154591774">カメラ、ブラウザの設定、OS の設定機能を無効にする</translation>
 <translation id="6573305661369899995">URL に関する制限の外部ソースを設定</translation>
+<translation id="6574770600243153999">このデバイスで PluginVm を実行できるようにします。
+
+      このポリシーが false に設定されているか未設定の場合、デバイスで <ph name="PLUGIN_VM_NAME" /> は有効になりません。このポリシーが true に設定されている場合、デバイスでは <ph name="PLUGIN_VM_NAME" /> が有効になります（ただし他の設定でも許可されている必要があります）。<ph name="PLUGIN_VM_NAME" /> を実行するには、<ph name="PLUGIN_VM_ALLOWED_POLICY_NAME" /> を true に設定し、<ph name="PLUGIN_VM_LICENSE_KEY_POLICY_NAME" />、<ph name="PLUGIN_VM_USER_ID_POLICY_NAME" />、<ph name="PLUGIN_VM_IMAGE_POLICY_NAME" /> のいずれかを設定する必要があります。</translation>
 <translation id="6583851521569686409">プリンタのリストを設定します。
 
       管理者はこのポリシーを使ってユーザーのプリンタ設定を
@@ -4332,6 +4384,7 @@ False に設定した場合、<ph name="PRODUCT_NAME" /> はネイティブ通�
       ユーザーのデバイスが管理対象の場合、この機能を使用できるかどうかは、対応するデバイス ポリシーの設定にもよります。
 
       ユーザーのデバイスが管理対象でない場合、この機能を使用できるかどうかは、ユーザーがデバイスの所有者かどうかにもよります。</translation>
+<translation id="7570291542739287032">クラウドのみ</translation>
 <translation id="757395965347379751">この設定が有効になっていると、SHA-1 署名証明書が検証され、ローカルにインストールされた CA 証明書に関連付けされている限り、<ph name="PRODUCT_NAME" /> は SHA-1 署名証明書を許可します。
 
       ただし、このポリシーは SHA-1 署名を許可するオペレーティング システムの証明書検証スタックにより異なります。OS のアップデートにより SHA-1 署名証明書を処理する OS が変更になると、このポリシーは効力を失います。さらに、このポリシーは一時的な措置として企業に SHA-1 から移行するための猶予期間を与えることを目的としています。このポリシーは 2019 年 1 月 1 日をめどに削除される予定です。
@@ -4452,6 +4505,7 @@ False に設定した場合、<ph name="PRODUCT_NAME" /> はネイティブ通�
 <translation id="7713608076604149344">ダウンロードの制限</translation>
 <translation id="7715711044277116530">プレゼンテーション モードで画面を暗くするまでの時間に掛ける倍率</translation>
 <translation id="7717938661004793600"><ph name="PRODUCT_OS_NAME" /> のユーザー補助機能を設定します。</translation>
+<translation id="7721944091689270995"><ph name="PLUGIN_VM_NAME" /> ユーザー ID</translation>
 <translation id="7724652568947700864">このポリシーを設定した場合、指定したすべてのデータタイプが Google Sync とローミング プロファイルの同期から除外されます。これにより、ローミング プロファイルのサイズを抑えたり、Google Sync サーバーにアップロードされるデータのタイプを制限したりできます。
 
       現在、このポリシーで指定できるデータタイプは次のとおりです。"bookmarks"、"preferences"、"passwords"、"autofill"、"themes"、"typedUrls"、"extensions"、"apps"、"tabs"、"wifiConfiguration"データタイプの名前では大文字と小文字が区別されます。</translation>
@@ -4643,6 +4697,19 @@ False に設定した場合、<ph name="PRODUCT_NAME" /> はネイティブ通�
 
       <ph name="SYNC_DISABLED_POLICY_NAME" /> ポリシーが設定されている場合は、すべてのデータ同期が無効になります。この設定は、<ph name="ROAMING_PROFILE_SUPPORT_ENABLED_POLICY_NAME" /> ポリシーの設定よりも優先されます。</translation>
 <translation id="802147957407376460">画面を 0 度回転（回転なし）</translation>
+<translation id="8027265928215448940"><ph name="ON_FILE_DOWNLOADED_ENTERPRISE_CONNECTOR" /> Enterprise コネクタに適用する Chrome Enterprise コネクタ サービス設定のリストで、Chrome でファイルがダウンロードされた場合に呼び出されます。
+
+      <ph name="ENTERPRISE_CONNECTOR_URL_LIST_FIELD" />、<ph name="ENTERPRISE_CONNECTOR_TAGS_FIELD" />、<ph name="ENTERPRISE_CONNECTOR_ENABLE_FIELD" />、<ph name="ENTERPRISE_CONNECTOR_DISABLE_FIELD" /> のフィールドは、特定のページからダウンロードされたファイルを分析のためコネクタが送信すべきかどうかと、そのファイルの分析リクエストにどのタグを含めるかをコネクタで判別する際に使用されます。「有効」パターンに該当するタグは、ページの URL がそのタグに関連付けられているパターンと一致し、同じタグの「無効」パターンとは一致しない場合に分析リクエストに含められます。分析は、リクエストにタグが少なくとも 1 つ含まれる場合に行われます。
+
+      <ph name="ENTERPRISE_CONNECTOR_SERVICE_PROVIDER_FIELD" /> では、この設定が対応している分析サービス プロバイダを指定します。
+
+      <ph name="ENTERPRISE_CONNECTOR_BLOCK_UNTIL_VERDICT_FIELD" /> を 1 に設定した場合、Chrome では分析サービスからの応答を待ってから、ダウンロードされたファイルへのユーザーのアクセスを許可します。その他の整数値を設定した場合、Chrome ではユーザーにファイルへのアクセスを直ちに許可します。
+
+      <ph name="ENTERPRISE_CONNECTOR_BLOCK_PASSWORD_PROTECTED_FIELD" /> では、パスワードで保護されているファイルをブロックするか許可するかを指定します。
+
+      <ph name="ENTERPRISE_CONNECTOR_BLOCK_LARGE_FILES_FIELD" /> では、分析可能なサイズより大きいファイル（50 MB 以上）をブロックするか許可するかを指定します。
+
+      このポリシーは Google 管理コンソールからのみ設定できます。</translation>
 <translation id="8033913082323846868">このポリシーは M70 でサポート終了となりました。代わりに AutofillAddressEnabled と AutofillCreditCardEnabled を使用してください。
 
       <ph name="PRODUCT_NAME" /> の自動入力機能を有効にし、ユーザーが以前に保存した情報（住所やクレジット カード情報など）を使用してウェブフォームに自動入力できるようにします。
@@ -4650,6 +4717,7 @@ False に設定した場合、<ph name="PRODUCT_NAME" /> はネイティブ通�
       この設定を無効にした場合、ユーザーは自動入力を利用できません。
 
       この設定を有効にするか値を設定しない場合、ユーザーは自動入力を利用できます。ユーザーは自動入力プロフィールを設定して、自身の判断で自動入力をオンまたはオフにすることができます。</translation>
+<translation id="8042971420829376618">このポリシーでは、このデバイスの <ph name="PLUGIN_VM_NAME" /> のユーザー ID を指定します。</translation>
 <translation id="8044493735196713914">デバイス起動モードを報告する</translation>
 <translation id="8050080920415773384">ネイティブ印刷</translation>
 <translation id="8053580360728293758">デフォルトのカラー印刷モードをオーバーライドします。このモードを使用できない場合、このポリシーは無視されます。</translation>
@@ -5410,6 +5478,7 @@ False に設定した場合、<ph name="PRODUCT_NAME" /> はネイティブ通�
 <translation id="922540222991413931">拡張機能、アプリ、ユーザー スクリプトのインストール ソースを設定する</translation>
 <translation id="924557436754151212">初回実行時にデフォルトのブラウザから保存したパスワードをインポートする</translation>
 <translation id="930930237275114205"><ph name="PRODUCT_FRAME_NAME" /> のユーザー データ ディレクトリを設定する</translation>
+<translation id="940706688964479124">ダウンロード後に自動的に開くファイル形式のリスト</translation>
 <translation id="943865157632139008"><ph name="PRODUCT_FRAME_NAME" /> がインストールされている場合、デフォルトの HTML レンダラを設定できます。
       デフォルト設定では、ホスト ブラウザがレンダリングを実行しますが、必要に応じてこの設定をオーバーライドして <ph name="PRODUCT_FRAME_NAME" /> にデフォルトで HTML ページのレンダリングを実行させることもできます。</translation>
 <translation id="944817693306670849">ディスク キャッシュ サイズを設定します</translation>

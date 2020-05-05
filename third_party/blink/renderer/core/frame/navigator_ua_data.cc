@@ -19,11 +19,20 @@ NavigatorUAData::NavigatorUAData(ExecutionContext* context)
   empty_brand_set_.push_back(dict);
 }
 
-void NavigatorUAData::AddBrand(const String& brand, const String& version) {
+void NavigatorUAData::AddBrandVersion(const String& brand,
+                                      const String& version) {
   NavigatorUABrandVersion* dict = NavigatorUABrandVersion::Create();
   dict->setBrand(brand);
   dict->setVersion(version);
   brand_set_.push_back(dict);
+}
+
+void NavigatorUAData::SetBrandVersionList(
+    const UserAgentBrandList& brand_version_list) {
+  for (const auto& brand_version : brand_version_list) {
+    AddBrandVersion(String::FromUTF8(brand_version.brand),
+                    String::FromUTF8(brand_version.major_version));
+  }
 }
 
 void NavigatorUAData::SetMobile(bool mobile) {

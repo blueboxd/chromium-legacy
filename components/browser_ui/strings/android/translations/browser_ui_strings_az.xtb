@@ -3,6 +3,7 @@
 <translationbundle lang="az">
 <translation id="1006017844123154345">Onlayn açın</translation>
 <translation id="1044891598689252897">Saytlar normal qaydada işləyəcək</translation>
+<translation id="1124090076051167250">Bununla Əsas ekranda saytlar və ya tətbiqlər tərəfindən saxlanılan <ph name="DATASIZE" /> data və kuki silinəcək.</translation>
 <translation id="1124772482545689468">İstifadəçi</translation>
 <translation id="1178581264944972037">Durdurun</translation>
 <translation id="1181037720776840403">Silin</translation>
@@ -47,6 +48,7 @@
 <translation id="2440823041667407902">Məkan girişi</translation>
 <translation id="2482878487686419369">Bildirişlər</translation>
 <translation id="2490684707762498678"><ph name="APP_NAME" /> tərəfindən idarə edilir</translation>
+<translation id="2498359688066513246">Yardım və geri əlaqə</translation>
 <translation id="2501278716633472235">Geri qayıdın</translation>
 <translation id="2537296579376733324">Ancaq bu saytda, bütün kukilər</translation>
 <translation id="2569468611847789653">{COOKIE_COUNT,plural, =1{1 kuki bloklanıb}other{# kuki bloklanıb}}</translation>
@@ -88,6 +90,7 @@
 <translation id="4165986682804962316">Sayt ayarları</translation>
 <translation id="4226663524361240545">Bildirişlər cihazı titrədə bilər</translation>
 <translation id="4259722352634471385">Naviqasiya bloklandı: <ph name="URL" /></translation>
+<translation id="4275663329226226506">Media</translation>
 <translation id="4278390842282768270">İcazə verilib</translation>
 <translation id="4433925000917964731">Google'un dəstəklədiyi lite səhifəsi</translation>
 <translation id="4434045419905280838">Popap və yönləndirmələr</translation>
@@ -98,6 +101,7 @@
 <translation id="4645575059429386691">Valideyniniz tərəfindən idarə olunur</translation>
 <translation id="4670064810192446073">Virtual reallıq</translation>
 <translation id="4751476147751820511">Hərəkət və ışıq sensorları</translation>
+<translation id="4759238208242260848">Endirmələr</translation>
 <translation id="4883854917563148705">İdarə edilən ayarlar sıfırlana bilməz</translation>
 <translation id="4887024562049524730">Saytlar virtual reallıq cihazınız və datanızı istifadə etməzdən əvvəl icazə istəsin (tövsiyə edilir)</translation>
 <translation id="4962975101802056554">Cihaz üçün bütün icazələri ləğv edin</translation>
@@ -127,6 +131,7 @@
 <translation id="5677928146339483299">Bloklananlar</translation>
 <translation id="5689516760719285838">Məkan</translation>
 <translation id="5710871682236653961">NFC cihazlarına toxunduqda saytların məlumat göndərməsi və almasına icazə verməzdən əvvəl soruşulsun (tövsiyə edilir)</translation>
+<translation id="5719847187258001597">Bununla Əsas ekranda <ph name="ORIGIN" /> və ya onun tətbiqi tərəfindən saxlanılan bütün data və kukilər silinəcək.</translation>
 <translation id="5804241973901381774">İcazələr</translation>
 <translation id="5860033963881614850">Deaktiv</translation>
 <translation id="5916664084637901428">Aktiv</translation>
@@ -134,6 +139,7 @@
 <translation id="5939518447894949180">Sıfırlayın</translation>
 <translation id="6040143037577758943">Qapat</translation>
 <translation id="6042308850641462728">Daha çox</translation>
+<translation id="6064125863973209585">Tamamlanmış endirmələr</translation>
 <translation id="6165508094623778733">Ətraflı öyrənin</translation>
 <translation id="6181444274883918285">Sayt istisnası əlavə edin</translation>
 <translation id="6192792657125177640">İstisnalar</translation>
@@ -205,6 +211,7 @@
 <translation id="8380167699614421159">Bu sayt inadçı və ya aldadıcı reklamlar göstərir</translation>
 <translation id="8394832520002899662">Sayta qayıtmaq üçün toxunun</translation>
 <translation id="8447861592752582886">Cihaz icazəsini ləğv edin</translation>
+<translation id="8463851957836045671">Sayt sürətlidir</translation>
 <translation id="851751545965956758">Saytların cihazlara qoşulmasını blok edin</translation>
 <translation id="857943718398505171">İcazə verilib (tövsiyə olunur)</translation>
 <translation id="8609465669617005112">Yuxarı köçürün</translation>
@@ -218,6 +225,7 @@
 <translation id="8847988622838149491">USB</translation>
 <translation id="885701979325669005">Yaddaş</translation>
 <translation id="8926666909099850184">NFC bu cihazda deaktivdir. <ph name="BEGIN_LINK" />Android Ayarlarında<ph name="END_LINK" /> onu aktiv edin.</translation>
+<translation id="8929372349074745002">Bu sayt əksər insanlar üçün sürətli açılır və işləyir</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8958424370300090006">Xüsusi sayt üçün kukiləri blok edin.</translation>
 <translation id="8959122750345127698">Naviqasiya əlçatmazdır: <ph name="URL" /></translation>

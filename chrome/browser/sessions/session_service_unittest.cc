@@ -872,9 +872,8 @@ TEST_F(SessionServiceTest, PersistUserAgentOverrides) {
       "AppleWebKit/535.19 (KHTML, like Gecko) Chrome/18.0.1025.45 "
       "Safari/535.19";
   blink::UserAgentMetadata client_hints_override;
-  client_hints_override.brand = "Chrome";
+  client_hints_override.brand_version_list.emplace_back("Chrome", "18");
   client_hints_override.full_version = "18.0.1025.45";
-  client_hints_override.major_version = "18";
   client_hints_override.platform = "Linux";
   client_hints_override.architecture = "x86_64";
 

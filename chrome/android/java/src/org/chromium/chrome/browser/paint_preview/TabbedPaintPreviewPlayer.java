@@ -57,6 +57,7 @@ public class TabbedPaintPreviewPlayer {
         if (mTab == null || mPlayerManager == null) return;
 
         mTab.getContentView().removeView(mPlayerManager.getView());
+        mPlayerManager.destroy();
         mPlayerManager = null;
         mTab = null;
     }

@@ -4,7 +4,7 @@
 <translation id="1003088604756913841">Шилтемени жаңы <ph name="APP" /> терезесинде ачуу</translation>
 <translation id="1004218526896219317">Сайтка кирүү мүмкүнчүлүгү</translation>
 <translation id="1005274289863221750">Микрофон менен камераңызды колдонуңуз</translation>
-<translation id="1005333234656240382">ADB аркылуу мүчүлүштүктөрдү оңдоо иштетилсинби?</translation>
+<translation id="1005333234656240382">ADB аркылуу мүчүлүштүктөрдү аныктоо иштетилсинби?</translation>
 <translation id="1006873397406093306">Бул кеңейтүү сайттын дайындарын окуп, өзгөртө алат. Кеңейтүү кайсы сайттарга кире аларын көзөмөлдөй албайсыз.</translation>
 <translation id="1007408791287232274">Түзмөктөр жүктөлгөн жок.</translation>
 <translation id="1008186147501209563">Кыстармаларды экспорттоо</translation>
@@ -83,6 +83,7 @@
 <translation id="1114102982691049955"><ph name="PRINTER_MANUFACTURER" /> <ph name="PRINTER_MODEL" /> (USB)</translation>
 <translation id="1114202307280046356">Алмаз</translation>
 <translation id="1114335938027186412">Компьютериңизде Ишенимдүү платформа модулунун (ИПМ) коопсуздук түзмөгү камтылган. Ал Chrome OS'теги көптөгөн олуттуу коопсуздук мүмкүнчүлүктөрүн аткаруу үчүн колдонулат. Көбүрөөк билүү үчүн Chromebook Жардам борборуна өтүңүз: https://support.google.com/chromebook/?p=tpm</translation>
+<translation id="1114525161406758033">Капкагы жабык болгондо уйку режимине өтсүн</translation>
 <translation id="1116639326869298217">Өздүгүңүз ырасталган жок</translation>
 <translation id="1116694919640316211">Программа жөнүндө</translation>
 <translation id="1116779635164066733">Бул жөндөөнү "<ph name="NAME" />" кеңейтүүсү иштеткен.</translation>
@@ -367,6 +368,7 @@
 <translation id="1486096554574027028">Сырсөздөрдү издөө</translation>
 <translation id="1487335504823219454">Күйүк – ыңгайлаштырылган жөндөөлөр</translation>
 <translation id="1489664337021920575">Башка параметрди тандоо</translation>
+<translation id="1491985563764252632">Ата-энең кеңейтүүлөрдүн уруксаттарын өчүрүп койду.</translation>
 <translation id="1493892686965953381"><ph name="LOAD_STATE_PARAMETER" /> күтүүдө…</translation>
 <translation id="1495486559005647033">Мүмкүн болгон башка <ph name="NUM_PRINTERS" /> түзмөк.</translation>
 <translation id="1495677929897281669">Өтмөккө кайтуу</translation>
@@ -1281,6 +1283,7 @@ Family Link колдонмосун түзмөгүңүзгө орнотуп, бу
 <translation id="2683638487103917598">Папка ылганды</translation>
 <translation id="2684004000387153598">Улантуу үчүн "Макул" дегенге тийиңиз да, "Адам кошуу" баскычын чыкылдатып, электрондук почта дарегиңиз үчүн жаңы профиль түзүп алыңыз.</translation>
 <translation id="2687403674020088961">Бардык cookie файлдарды бөгөттөө (сунушталбайт)</translation>
+<translation id="2687407218262674387">Google'дун тейлөө шарттары</translation>
 <translation id="2688196195245426394">Түзмөктү серверге каттоо учурундагы ката: <ph name="CLIENT_ERROR" />.</translation>
 <translation id="2690024944919328218">Тил параметрлери көрсөтүлсүн</translation>
 <translation id="2691385045260836588">Үлгү</translation>
@@ -1325,7 +1328,7 @@ Family Link колдонмосун түзмөгүңүзгө орнотуп, бу
 <translation id="2735712963799620190">Графиги</translation>
 <translation id="2737363922397526254">Жыйнап коюу…</translation>
 <translation id="2738771556149464852">Кийин эмес</translation>
-<translation id="2739191690716947896">Мүчүлүштүктөрдү оңдоо</translation>
+<translation id="2739191690716947896">Мүчүлүштүктөрдү аныктоо</translation>
 <translation id="2739240477418971307">Атайын мүмкүнчүлүктөр жөндөөлөрүн өзгөртүңүз</translation>
 <translation id="274029851662193272">Ныгырылган</translation>
 <translation id="2741713322780029189">Калыбына келтирүү терминалын ачуу</translation>
@@ -1488,6 +1491,7 @@ Family Link колдонмосун түзмөгүңүзгө орнотуп, бу
 <translation id="2942581856830209953">Бул баракты ыңгайлаштыруу</translation>
 <translation id="2944060181911631861">Колдонуу жана мүчүлүштүктөрдү аныктоо дайындарын жөнөтүү. Google'га мүчүлүштүктөрдү аныктоо жана түзмөк менен колдонмолорду пайдалануу дайындарын автоматтык түрдө жөнөтүп, Android'де иштөө тажрыйбаңызды жакшыртууга жардам бериңиз. Бул маалымат тутум менен колдонмонун кыйла туруктуу иштешин камсыз кылууга жана башка нерселерди жакшыртууга көмөктөшөт. Айрым дайын-даректердин Google'дун өнөктөштөрүнө, мисалы, Android'ди иштеп чыгуучуларга да кереги тийиши мүмкүн. Эгер кошумча Колдонмолор жана Интернеттеги аракеттериңиздин таржымалынын жөндөөлөрү күйгүзүлгөн болсо, бул дайындар Google аккаунтуңузга сакталышы мүмкүн. <ph name="BEGIN_LINK1" />Кеңири маалымат<ph name="END_LINK1" /></translation>
 <translation id="2946119680249604491">Туташуу кошуу</translation>
+<translation id="2946640296642327832">Bluetooth иштетүү</translation>
 <translation id="2947605845283690091">Веб серепчи тез болушу керек. Бир аз убакыт бөлүп, <ph name="BEGIN_LINK" />кеңейтүүлөрдү текшериңиз<ph name="END_LINK" />.</translation>
 <translation id="2948300991547862301"><ph name="PAGE_TITLE" /> өтүңүз</translation>
 <translation id="29488703364906173">Атайын заманбап желеге арналып жасалган ыкчам, жөнөкөй жана коопсуз желе серепчиси.</translation>
@@ -1785,6 +1789,7 @@ Family Link колдонмосун түзмөгүңүзгө орнотуп, бу
 <translation id="3365598184818502391">Же Ctrl, же Alt колдонулсун</translation>
 <translation id="3367047597842238025"><ph name="DEVICE_TYPE" /> түзмөгүңүздүн таң каларлык мүмкүнчүлүктөрүн пайдалануу үчүн аны өзүңүз каалагандай жөндөп алыңыз.</translation>
 <translation id="3368922792935385530">Туташты</translation>
+<translation id="3369067987974711168">Бул оюкчага тиешелүү башка аракеттерди көрүү</translation>
 <translation id="3369624026883419694">Хост чечилүүдө…</translation>
 <translation id="3371140690572404006">USB-C түзмөгү (оң жактагы маңдайкы оюкча)</translation>
 <translation id="337286756654493126">Колдонмодо ачылган куржундарды окуу</translation>
@@ -2311,6 +2316,7 @@ Family Link колдонмосун түзмөгүңүзгө орнотуп, бу
 <translation id="4015163439792426608">Кеңейтүүлөрүңүз барбы? <ph name="BEGIN_LINK" />Кеңейтүүлөрдү башкарыңыз<ph name="END_LINK" />.</translation>
 <translation id="4020327272915390518">Параметрлер менюсу</translation>
 <translation id="4021279097213088397">–</translation>
+<translation id="402184264550408568">(TCP)</translation>
 <translation id="4022426551683927403">Сөздүккө &amp;кошуу</translation>
 <translation id="4023146161712577481">Түзмөктүн конфигурациясы аныкталууда.</translation>
 <translation id="4025039777635956441">Тандалган сайттын үнүн басуу</translation>
@@ -2694,6 +2700,7 @@ Family Link колдонмосун түзмөгүңүзгө орнотуп, бу
 <translation id="4573515936045019911">Linux'тун жаңы версиясын жүктөп алуу үчүн Интернет байланышы керек. Интернетке туташып, кайталап көрүңүз.</translation>
 <translation id="457386861538956877">Дагы…</translation>
 <translation id="4574741712540401491">•  <ph name="LIST_ITEM_TEXT" /></translation>
+<translation id="4576541033847873020">Bluetooth түзмөгүн жупташтыруу</translation>
 <translation id="4579581181964204535"><ph name="HOST_NAME" /> тышкы экранга чыгарылбай жатат.</translation>
 <translation id="4581774856936278355">Linux'ту калыбына келтирүүдө ката кетти</translation>
 <translation id="4582563038311694664">Бардык жөндөөлөрдү кайра коюу</translation>
@@ -2824,6 +2831,7 @@ Family Link колдонмосун түзмөгүңүзгө орнотуп, бу
 <translation id="4780321648949301421">Бетти төмөнкүдөй сактоо…</translation>
 <translation id="4785719467058219317">Бул вебсайтта катталбаган коопсуздук ачкычын колдонуп жатасыз</translation>
 <translation id="4788092183367008521">Тармактык туташууңузду текшерип, дагы бир жолу аракет кылыңыз.</translation>
+<translation id="4791037424585594169">(UDP)</translation>
 <translation id="4792711294155034829">Маселе жөнүндө &amp;кабар берүү…</translation>
 <translation id="4794810983896241342">Жаңыртууларды <ph name="BEGIN_LINK" />администраторуңуз<ph name="END_LINK" /> башкарат</translation>
 <translation id="479536056609751218">Веб-баракча, HTML гана</translation>
@@ -2883,6 +2891,7 @@ Family Link колдонмосун түзмөгүңүзгө орнотуп, бу
 <translation id="4871308555310586478">Chrome Желе Дүкөнүнөн эмес.</translation>
 <translation id="4871322859485617074">PIN коддо жараксыз символдор бар</translation>
 <translation id="4871370605780490696">Кыстарма кошуу</translation>
+<translation id="4871568871368204250">Шайкештирүүнү өчүрүү</translation>
 <translation id="4871719318659334896">Топту жабуу</translation>
 <translation id="4873312501243535625">Медиа файл текшергич</translation>
 <translation id="4876273079589074638">Бул бузулууну изилдеп, аны оңдоо үчүн биздин инженерлерге жардам бериңиз. Эгер мүмкүн болсо, кадамдарды так тизмелеп бериңиз. Бардык маалымат маанилүү!</translation>
@@ -2980,7 +2989,6 @@ Family Link колдонмосун түзмөгүңүзгө орнотуп, бу
 <translation id="4997086284911172121">Интернет жок.</translation>
 <translation id="4997384734315285248">Plugin VM'ди чыгарып салуу</translation>
 <translation id="4998430619171209993">Күйүк</translation>
-<translation id="4998873842614926205">Өзгөрүүлөрдү ырастаңыз</translation>
 <translation id="5000922062037820727">Бөгөттөлгөн (сунушталат)</translation>
 <translation id="5005498671520578047">Сырсөздү көчүрүү</translation>
 <translation id="5007392906805964215">Карап көрүү</translation>
@@ -3108,6 +3116,7 @@ Family Link колдонмосун түзмөгүңүзгө орнотуп, бу
 <translation id="5185359571430619712">Кеңейтүүлөрдү карап чыгуу</translation>
 <translation id="5185386675596372454">"<ph name="EXTENSION_NAME" />" эң акыркы версиясына көбүрөөк уруксат талап кылынгандыктан, ал иштен чыгарылды.</translation>
 <translation id="5187826826541650604"><ph name="KEY_NAME" /> (<ph name="DEVICE" />)</translation>
+<translation id="5190926251776387065">Оюкчаны иштетүү</translation>
 <translation id="51918995459521422"><ph name="ORIGIN" /> бир нече файлды жүктөп алганы жатат</translation>
 <translation id="5192062846343383368">Көзөмөлдөө жөндөөлөрүн көрүү үчүн Family Link колдонмосун ачыңыз</translation>
 <translation id="5193988420012215838">Алмашуу буферине көчүрүлдү</translation>
@@ -3117,8 +3126,8 @@ Family Link колдонмосун түзмөгүңүзгө орнотуп, бу
 <translation id="5204967432542742771">Сырсөз киргизүү</translation>
 <translation id="5206215183583316675">"<ph name="CERTIFICATE_NAME" />" жок кылынсынбы?</translation>
 <translation id="520621735928254154">Тастыктаманы импорттоодогу ката</translation>
-<translation id="5209307736170827035">Балаңыздын Класстагы маалыматы корголот. <ph name="LINK_BEGIN" />Кеңири маалымат<ph name="LINK_END" /></translation>
 <translation id="5209320130288484488">Түзмөктөр табылган жок</translation>
+<translation id="5210365745912300556">Өтмөктү жабуу</translation>
 <translation id="5213481667492808996">"<ph name="NAME" />" дайындарды өткөрүү кызматын колдонуп баштасаңыз болот</translation>
 <translation id="5213891612754844763">Прокси жөндөөлөрүн көрсөтүү</translation>
 <translation id="5215502535566372932">Өлкөнү тандоо</translation>
@@ -3128,6 +3137,7 @@ Family Link колдонмосун түзмөгүңүзгө орнотуп, бу
 <translation id="52232769093306234">Таңгакталбай калды.</translation>
 <translation id="5225324770654022472">Колдонмолордун кыска жолун көрсөтүү</translation>
 <translation id="5227679487546032910">Демейки көгүш жашыл аватар</translation>
+<translation id="5228579091201413441">Шайкештирүүнү иштетүү</translation>
 <translation id="5229189185761556138">Киргизүү ыкмаларын башкаруу</translation>
 <translation id="5230516054153933099">Терезе</translation>
 <translation id="5233019165164992427">NaCl мүчүлүштүктөрдү оңдоо порту</translation>
@@ -3137,6 +3147,7 @@ Family Link колдонмосун түзмөгүңүзгө орнотуп, бу
 <translation id="5234764350956374838">Этибарга албоо</translation>
 <translation id="5235050375939235066">Колдонмону чыгарып салуу керекпи?</translation>
 <translation id="523505283826916779">Атайын мүмкүнчүлүктөрдү жөндөө</translation>
+<translation id="5235565664420173924">Better Together</translation>
 <translation id="5235750401727657667">Жаңы өтмөк ачылганда, учурдагы барактын ордуна ал көрүнсүн</translation>
 <translation id="5238278114306905396">"<ph name="EXTENSION_NAME" />" колдонмосу автоматтык түрдө өчүрүлдү.</translation>
 <translation id="5239730228370806996">Бул көчүрүлгөн маалымат уюмуңуздун коопсуздук саясаттарын бузуп жатат. Баары бир улантасызбы?</translation>
@@ -3487,7 +3498,6 @@ Family Link колдонмосун түзмөгүңүзгө орнотуп, бу
 <translation id="5691511426247308406">Үй-бүлөлүк</translation>
 <translation id="5691772641933328258">Манжа изи таанылган жок</translation>
 <translation id="5692183275898619210">Басылып чыгарылды</translation>
-<translation id="5692875591060376599">Тандалган файл белгисиз жана кооптуу болушу мүмкүн. Google'дун Өркүндөтүлгөн коргоо программасына текшерүү үчүн жөнөтүлсүнбү?</translation>
 <translation id="569425414730375234">Учурдагы жашыруун режимдеги сеанс: <ph name="RECENT_PERMISSIONS_CHANGE_SENTENCE_START" /></translation>
 <translation id="5696143504434933566">"<ph name="EXTENSION_NAME" />" адепсиздиги тууралуу кабарлоо</translation>
 <translation id="5696177755977520104">Chrome OS жөндөөлөрүн шайкештирүү</translation>
@@ -3601,7 +3611,7 @@ Family Link колдонмосун түзмөгүңүзгө орнотуп, бу
 <translation id="5852137567692933493">Өчүрүп күйгүзүү жана жууп салуу</translation>
 <translation id="5854912040170951372">Кесим</translation>
 <translation id="5855643921295613558">0,6 секунд</translation>
-<translation id="5856721540245522153">Мүчүлүштүктөрдү оңдоо өзгөчөлүктөрүн иштетүү</translation>
+<translation id="5856721540245522153">Мүчүлүштүктөрдү аныктоо өзгөчөлүктөрүн иштетүү</translation>
 <translation id="5857090052475505287">Жаңы папка</translation>
 <translation id="5857171483910641802">Ыкчам баскычтар сиз көп кирген вебсайттардын негизинде сунушталат</translation>
 <translation id="5858490737742085133">Терминал</translation>
@@ -3610,7 +3620,7 @@ Family Link колдонмосун түзмөгүңүзгө орнотуп, бу
 <translation id="5860491529813859533">Күйгүзүү</translation>
 <translation id="5860494867054883682">Түзмөгүңүз <ph name="CHANNEL_NAME" /> каналына которулууда (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="5862109781435984885">Текчеде стилус куралдары көрсөтүлсүн</translation>
-<translation id="5863445608433396414">Мүчүлүштүктөрдү оңдоо өзгөчөлүктөрүн иштетүү</translation>
+<translation id="5863445608433396414">Мүчүлүштүктөрдү аныктоо өзгөчөлүктөрүн иштетүү</translation>
 <translation id="5864195618110239517">Тарифтелген Интернет байланышты колдонуу</translation>
 <translation id="5864471791310927901">DHCP каралбай калды</translation>
 <translation id="5864754048328252126">Кубатталып жатканда эч кандай аракет аткарылбасын</translation>
@@ -3695,6 +3705,7 @@ Family Link колдонмосун түзмөгүңүзгө орнотуп, бу
 <translation id="5972666587303800813">Кызмат жок</translation>
 <translation id="5972708806901999743">Тизменин башына жылдыруу</translation>
 <translation id="5972826969634861500"><ph name="PRODUCT_NAME" /> иштетип баштоо</translation>
+<translation id="5973041996755340290">"<ph name="CLIENT_NAME" />" бул серепчидеги мүчүлүштүктөрдү оңдоп баштады</translation>
 <translation id="5973605538625120605">PIN кодду өзгөртүү</translation>
 <translation id="5975792506968920132">Батарея кубатынын пайызы</translation>
 <translation id="5976160379964388480">Башкалар</translation>
@@ -3775,6 +3786,7 @@ Family Link колдонмосун түзмөгүңүзгө орнотуп, бу
 <translation id="6076491747490570887">Салкын боз</translation>
 <translation id="6077131872140550515">Жактырган тармактардан алып салуу</translation>
 <translation id="6077189836672154517"><ph name="DEVICE_TYPE" /> түзмөгү боюнча кеңештер жана жаңылыктар</translation>
+<translation id="6078045608615316905">Бул сүрөттүн QR кодун түзүү</translation>
 <translation id="6078323886959318429">Кыска жол кошуу</translation>
 <translation id="6078752646384677957">Микрофонуңузду жана аудионун үн деңгээлдерин текшериңиз.</translation>
 <translation id="6078769373519310690">"<ph name="CHROME_EXTENSION_NAME" />" HID түзмөгүнө туташканы жатат</translation>
@@ -3834,6 +3846,7 @@ Family Link колдонмосун түзмөгүңүзгө орнотуп, бу
 <translation id="6150961653851236686">Барактар ушул тилге которулат</translation>
 <translation id="6151323131516309312"><ph name="SITE_NAME" /> издөө үчүн <ph name="SEARCH_KEY" /> басыңыз</translation>
 <translation id="6151771661215463137">Файл "Жүктөлүп алынгандар" папкасында мурунтан эле бар.</translation>
+<translation id="6154240335466762404">Бардык оюкчаларды өчүрүү</translation>
 <translation id="615436196126345398">Протокол</translation>
 <translation id="6154697846084421647">Учурда кирген</translation>
 <translation id="6155141482566063812">Фондогу өтмөк экраныңызды бөлүшүүдө</translation>
@@ -3849,7 +3862,7 @@ Family Link колдонмосун түзмөгүңүзгө орнотуп, бу
 <translation id="6169040057125497443">Микрофонуңузду текшериңиз.</translation>
 <translation id="6169666352732958425">Иш тактасы тышкы экранга чыгарылбай жатат.</translation>
 <translation id="6170470584681422115">Сэндвич</translation>
-<translation id="6170498031581934115">ADB аркылуу мүчүлүштүктөрдү оңдоо иштетилген жок. Жөндөөлөргө өтүп, кайталап көрүңүз.</translation>
+<translation id="6170498031581934115">ADB аркылуу мүчүлүштүктөрдү аныктоо иштетилген жок. Жөндөөлөргө өтүп, кайталап көрүңүз.</translation>
 <translation id="6173623053897475761">PIN кодуңузду кайра териңиз</translation>
 <translation id="6175314957787328458">Microsoft Domain GUID</translation>
 <translation id="6176043333338857209">Коопсуздук ачкычы менен байланышуу үчүн Bluetooth убактылуу күйгүзүлөт</translation>
@@ -3914,6 +3927,7 @@ Family Link колдонмосун түзмөгүңүзгө орнотуп, бу
 <translation id="6263082573641595914">Microsoft CA версиясы</translation>
 <translation id="6263284346895336537">Коркунучтуу эмес</translation>
 <translation id="6264365405983206840">&amp;Баарын тандоо</translation>
+<translation id="6265687851677020761">Оюкчаны өчүрүү</translation>
 <translation id="6267166720438879315">Бул жерде <ph name="HOST_NAME" /> аныктыгыңызды текшерүү үчүн тастыктама тандаңыз</translation>
 <translation id="6267547857941397424"><ph name="NETWORK_COUNT" /> ичинен <ph name="NETWORK_INDEX" />-тармак, <ph name="PHONE_NAME" />, Сигналдын күчү <ph name="SIGNAL_STRENGTH" />%, Телефондун батареясы <ph name="BATTERY_STATUS" />%, Туташуу</translation>
 <translation id="6268252012308737255"><ph name="APP" /> менен ачуу</translation>
@@ -4212,6 +4226,7 @@ Family Link колдонмосун түзмөгүңүзгө орнотуп, бу
 <translation id="668599234725812620">Google Play'ди ачуу</translation>
 <translation id="6686490380836145850">Өтмөктөрдү оңго карай жабуу</translation>
 <translation id="6686817083349815241">Сырсөзүңүздү сактаңыз</translation>
+<translation id="6688285987813868112">Бул сүрөттүн QR кодун түзүү</translation>
 <translation id="6690659332373509948">Файлды талдоо мүмкүн болбой жатат: <ph name="FILE_NAME" /></translation>
 <translation id="6690751852586194791">Бул түзмөккө кошула турган көзөмөлдөнгөн колдонуучу тандаңыз.</translation>
 <translation id="6691331417640343772">Шайкештирилген дайындарды Google куралдар тактасынан башкарыңыз</translation>
@@ -4232,6 +4247,7 @@ Family Link колдонмосун түзмөгүңүзгө орнотуп, бу
 <translation id="6709357832553498500"><ph name="EXTENSIONNAME" /> менен туташуу</translation>
 <translation id="6710213216561001401">Мурунку</translation>
 <translation id="6715803357256707211">Linux колдонмосун орнотуу учурунда ката кетти. Чоо-жайын билгиңиз келсе, билдирмени чыкылдатыңыз.</translation>
+<translation id="671928215901716392">Кулпу экраны</translation>
 <translation id="6721678857435001674">Коопсуздук ачкычынын өндүрүүчүсүн жана үлгүсүн көрүү</translation>
 <translation id="6721972322305477112">&amp;Файл</translation>
 <translation id="672213144943476270">Конок катары серептөөдөн мурун, профилиңиздин кулпусун ачыңыз.</translation>
@@ -4369,6 +4385,7 @@ Family Link колдонмосун түзмөгүңүзгө орнотуп, бу
 <translation id="6902066522699286937">Үндү алдын ала угуп көрүү</translation>
 <translation id="6902336033320348843">Бөлүм колдоого алынбайт: <ph name="ERROR_LINE" /></translation>
 <translation id="6902837902700739466">Түзмөктү доменге кошуу</translation>
+<translation id="6903907808598579934">Шайкештирүүнү күйгүзүү</translation>
 <translation id="6904344821472985372">Файлды колдонуу мүмкүнчүлүгүн жоюу</translation>
 <translation id="6904655473976120856">Чыгуу үчүн Колдонмо баскычын басыңыз</translation>
 <translation id="6910211073230771657">Жок кылынды</translation>
@@ -4378,6 +4395,7 @@ Family Link колдонмосун түзмөгүңүзгө орнотуп, бу
 <translation id="6914783257214138813">Сырсөздөрүңүз экспорттолгон сырсөздөр файлын көргөн адамдардын баарына көрүнөт.</translation>
 <translation id="6915804003454593391">Колдонуучу:</translation>
 <translation id="6916590542764765824">Кеңейтүүлөрдү башкаруу</translation>
+<translation id="6920262510368602827">Бул барактын QR кодун түзүү</translation>
 <translation id="6920989436227028121">Кадимки өтмөк катары ачуу</translation>
 <translation id="6921104647315081813">Аракеттерди тазалоо</translation>
 <translation id="692114467174262153"><ph name="ALTERNATIVE_BROWSER_NAME" /> ачылган жок</translation>
@@ -4578,6 +4596,7 @@ Family Link колдонмосун түзмөгүңүзгө орнотуп, бу
 <translation id="7175353351958621980">Төмөнкүдөн жүктөлдү:</translation>
 <translation id="7180611975245234373">Жаңылоо</translation>
 <translation id="7180865173735832675">Өзгөчөлөштүрүү</translation>
+<translation id="7182791023900310535">Сырсөздү жылдыруу</translation>
 <translation id="7186088072322679094">Куралдар тилкесинде калтыруу</translation>
 <translation id="7187428571767585875">Өчүрүлө же өзгөртүлө турган реестрдеги жазуулар:</translation>
 <translation id="7189234443051076392">Түзмөгүңүздө бош орун бар экенин текшериңиз</translation>
@@ -4868,7 +4887,6 @@ Family Link колдонмосун түзмөгүңүзгө орнотуп, бу
 <translation id="7581462281756524039">Тазалоо куралы</translation>
 <translation id="7582582252461552277">Бул тармакты жактыруу</translation>
 <translation id="7583948862126372804">Саны</translation>
-<translation id="7584578941316704630">Ачуудан мурда текшерилсинби?</translation>
 <translation id="7586498138629385861">Chrome колдонмолору ачылып турганда Chrome иштей берет.</translation>
 <translation id="7589461650300748890">Ушундай болмок. Абайлаңыз.</translation>
 <translation id="7593653750169415785">Автоматтык түрдө бөгөттөлдү, анткени сиз билдирмелерди бир нече жолу четке кактыңыз</translation>
@@ -4933,6 +4951,7 @@ Family Link колдонмосун түзмөгүңүзгө орнотуп, бу
 <translation id="767127784612208024">Баштапкы абалга келтирүүнү ырастоо үчүн, басып коюңуз</translation>
 <translation id="767147716926917172">Мүчүлүштүктөрдү аныктоо жана колдонуу статистикасын Google'га автоматтык түрдө жөнөтөт</translation>
 <translation id="7672520070349703697"><ph name="HUNG_IFRAME_URL" />, <ph name="PAGE_TITLE" /> баракчасында.</translation>
+<translation id="7674416868315480713">Linux'тан оюкчаларды багыттоону токтотуу</translation>
 <translation id="7676867886086876795">Текстти каалаган талаага үн менен жазуу үчүн үнүңүздүн үлгүсүн Google'га жөнөтөсүз.</translation>
 <translation id="7678280409648629969">Жашыруун режимден чыккандан кийин, кирүү дайындары Chrome'до сакталат. Бул Touch ID'ни ушул вебсайтта кийин кайра колдонууга мүмкүнчүлүк берет.</translation>
 <translation id="7681095912841365527">Сайт bluetooth'ду колдоно алат</translation>
@@ -5054,7 +5073,7 @@ Family Link колдонмосун түзмөгүңүзгө орнотуп, бу
 <translation id="782590969421016895">Учурдагы беттерди колдонуу</translation>
 <translation id="7826254698725248775">Түзмөктүн идентификаторлору дал келбей калууда.</translation>
 <translation id="7826346148677309647">Play Store'го өтүп, дагы башка колдонмолорду таап алсаңыз болот.</translation>
-<translation id="7826790948326204519"><ph name="BEGIN_H3" />Мүчүлүштүктөрдү оңдоо функциялары<ph name="END_H3" />
+<translation id="7826790948326204519"><ph name="BEGIN_H3" />Мүчүлүштүктөрдү аныктоо функциялары<ph name="END_H3" />
     <ph name="BR" />
     Түзмөгүңүзгө колдонуучуга ыңгайлаштырылган кодду орнотуп, сыноо үчүн Chrome OS түзмөгүңүздөн мүчүлүштүктөрдү оңдоо функцияларын иштетсеңиз болот. Ал төмөнкүлөргө жол ачат:<ph name="BR" />
     <ph name="BEGIN_LIST" />
@@ -5064,14 +5083,14 @@ Family Link колдонмосун түзмөгүңүзгө орнотуп, бу
       <ph name="LIST_ITEM" />Түзмөккө кол менен SSH орнотуу үчүн, иштеп чыгуучулар жана тутум үчүн башкы колдонуучунун сырсөзүн өзгөртүңүз.
     <ph name="END_LIST" />
     <ph name="BR" />
-    Иштетилгенден кийин, мүчүлүштүктөрдү оңдоо функциясы дайындар ишканага караштуу түзмөктөн жуулганда же тазаланганда да иштеген бойдон кала берет. Мүчүлүштүктөрдү оңдоо функцияларын толук өчүрүү үчүн, тутумду калыбына келтирүү процессин аткарыңыз (https://support.google.com/chromebook/answer/1080595).
+    Иштетилгенден кийин, мүчүлүштүктөрдү оңдоо функциясы дайындар ишканага караштуу түзмөктөн жуулганда же тазаланганда да иштеген бойдон кала берет. Мүчүлүштүктөрдү аныктоо функцияларын толук өчүрүү үчүн, тутумду калыбына келтирүү процессин аткарыңыз (https://support.google.com/chromebook/answer/1080595).
     <ph name="BR" />
     <ph name="BR" />
-    Мүчүлүштүктөрдү оңдоо функциялары боюнча көбүрөөк маалымат үчүн төмөнкүнү караңыз:<ph name="BR" />
+    Мүчүлүштүктөрдү аныктоо функциялары боюнча көбүрөөк маалымат үчүн төмөнкүнү караңыз:<ph name="BR" />
     http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-features
     <ph name="BR" />
     <ph name="BR" />
-    <ph name="BEGIN_BOLD" />Эскертүү:<ph name="END_BOLD" /> Мүчүлүштүктөрдү оңдоо учурунда тутум кайра өчүрүлүп-күйгүзүлөт.</translation>
+    <ph name="BEGIN_BOLD" />Эскертүү:<ph name="END_BOLD" /> Мүчүлүштүктөрдү аныктоо учурунда тутум кайра өчүрүлүп-күйгүзүлөт.</translation>
 <translation id="7828731929332799387">Бул аракет үчүнчү тараптын булактарындагы бардык cookie файлдарын жана сайттын дайындарын өчүрөт. Улантасызбы?</translation>
 <translation id="7829877209233347340">Мектеп аккаунтун кошууга уруксат берүү үчүн ата-энеңден аккаунтуна кирүүнү суран</translation>
 <translation id="7830594666202422257">Linux'ка туташтыруу</translation>
@@ -5103,6 +5122,7 @@ Family Link колдонмосун түзмөгүңүзгө орнотуп, бу
 <translation id="7859938049767853383"><ph name="FILE_NAME" /> булутта текшерүү үчүн өтө чоң, андыктан аны ачуу бөгөттөлгөн.</translation>
 <translation id="786073089922909430">Кызмат: <ph name="ARC_PROCESS_NAME" /></translation>
 <translation id="7861215335140947162">&amp;Жүктөлүп алынгандар</translation>
+<translation id="7864539943188674973">Bluetooth'ду өчүрүп коюу</translation>
 <translation id="786957569166715433"><ph name="DEVICE_NAME" /> жупташты</translation>
 <translation id="7870730066603611552">Сеанс башталгандан кийин шайкештирүү параметрлерин карап чыгуу</translation>
 <translation id="7870790288828963061">Жаңыраак версиядагы Kiosk колдонмолору табылган жок. Жаңыртыла турган эч нерсе жок. USB түзмөгүн сууруп салыңыз.</translation>
@@ -5268,7 +5288,7 @@ Family Link колдонмосун түзмөгүңүзгө орнотуп, бу
 <translation id="8076492880354921740">Өтмөктөр</translation>
 <translation id="8076835018653442223">Түзмөгүңүздөгү файлдарды пайдалануу мүмкүнчүлүгүн администраторуңуз өчүрүп койгон</translation>
 <translation id="808089508890593134">Google</translation>
-<translation id="8081989000209387414">ADB аркылуу мүчүлүштүктөрдү оңдоо өчүрүлсүнбү?</translation>
+<translation id="8081989000209387414">ADB аркылуу мүчүлүштүктөрдү аныктоо өчүрүлсүнбү?</translation>
 <translation id="8082106343289440791">"<ph name="DEVICE_NAME" />" менен жупташтырылсынбы?</translation>
 <translation id="8082390128630131497">ADB аркылуу мүчүлүштүктөрдү оңдоону өчүрүү менен, <ph name="DEVICE_TYPE" /> түзмөгү баштапкы абалга келтирилет. Колдонуучунун бардык аккаунттары жана жергиликтүү дайындар тазаланат.</translation>
 <translation id="8084114998886531721">Сакталган сырсөз</translation>
@@ -5492,6 +5512,7 @@ Family Link колдонмосун түзмөгүңүзгө орнотуп, бу
 <translation id="8382913212082956454">&amp;Электрондук почта дарегин көчүрүү</translation>
 <translation id="8386091599636877289">Саясат табылган жок.</translation>
 <translation id="8386903983509584791">Текшерүү аяктады</translation>
+<translation id="8389416080014625855">Бул барактын QR кодун түзүү</translation>
 <translation id="8389492867173948260">Бул кеңейтүүгө каралган вебсайттардагы бардык дайындарды окууга жана өзгөртүүгө уруксат бериңиз:</translation>
 <translation id="8390449457866780408">Сервер жеткиликсиз.</translation>
 <translation id="8391218455464584335">Винилдик пластинка</translation>

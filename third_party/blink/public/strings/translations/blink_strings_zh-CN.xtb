@@ -35,6 +35,7 @@
 <translation id="1938124657309484470">指定的值不得晚于<ph name="MAXIMUM_DATE_OR_TIME" />。</translation>
 <translation id="1946271899482435442">显示日期选择器</translation>
 <translation id="1993104285338243655">已切换到镜像</translation>
+<translation id="2031987842108996681">红色通道</translation>
 <translation id="2060505056492490888">“<ph name="INVALIDDOMAIN" />”中“<ph name="DOT" />”的位置不正确。</translation>
 <translation id="2148716181193084225">今天</translation>
 <translation id="2158401438286456825">页面列表</translation>
@@ -45,6 +46,7 @@
 <translation id="2291999235780842123">复选框</translation>
 <translation id="2311842470354187719">分页符</translation>
 <translation id="2335594187091864976">日期和时间选择器</translation>
+<translation id="2393030564806080191">十六进制颜色值</translation>
 <translation id="245932805758469625">视频剩余时间（以秒为单位）</translation>
 <translation id="248395913932153421">日</translation>
 <translation id="2507943997699731163">请填写此字段。</translation>
@@ -52,6 +54,7 @@
 <translation id="2561842179657104141">显示更多媒体控件</translation>
 <translation id="2572483411312390101">播放</translation>
 <translation id="2613802280814924224">请输入有效值。最接近的有效值为<ph name="VALID_VALUE" />。</translation>
+<translation id="2634240155926812724">绿色通道</translation>
 <translation id="2653659639078652383">提交</translation>
 <translation id="2657045182931379222">图形对象</translation>
 <translation id="2674318244760992338">页脚</translation>
@@ -127,6 +130,7 @@
 <translation id="5034860022980953847">进度指示器</translation>
 <translation id="5090250355906949916">视频时间进度条</translation>
 <translation id="5093189678851173835">题词</translation>
+<translation id="509897012892853729">蓝色通道</translation>
 <translation id="5117590920725113268">显示下一个月</translation>
 <translation id="512758898067543763">行标题</translation>
 <translation id="5143125788380636750">结语</translation>
@@ -164,6 +168,7 @@
 <translation id="6166809985690652833">后记</translation>
 <translation id="6209276755895393898">似乎是：<ph name="DESCRIPTION" /></translation>
 <translation id="6213469881011901533">词汇表</translation>
+<translation id="6281588256137006900">亮度</translation>
 <translation id="6281763101136022427">网址</translation>
 <translation id="6310801910862476708">退出“画中画”模式</translation>
 <translation id="6398862346408813489">显示月份选择面板</translation>
@@ -184,6 +189,7 @@
 <translation id="6790428901817661496">播放</translation>
 <translation id="6820355525329141109">无法加载插件。</translation>
 <translation id="6820615603175220800">参考书目</translation>
+<translation id="6831465880655513317">色井带有二维滑块，用于选择饱和度和亮度</translation>
 <translation id="6843725295806269523">静音</translation>
 <translation id="6885760532393684712">目录</translation>
 <translation id="689129560213475294">版权页</translation>
@@ -201,6 +207,7 @@
 <translation id="7263440858009898357">请在列表中选择一项。</translation>
 <translation id="727747134524199931">列标题</translation>
 <translation id="7320576522385648310">正在缓冲</translation>
+<translation id="7341556277900466204">色井</translation>
 <translation id="7353453495576941748">感谢</translation>
 <translation id="7364796246159120393">选择文件</translation>
 <translation id="739024184232394898">其他...</translation>
@@ -221,6 +228,7 @@
 <translation id="775297008183122718">输入内容无效</translation>
 <translation id="7789962463072032349">暂停</translation>
 <translation id="7802800022689234070">开合三角标记</translation>
+<translation id="7852167693871241274">色调滑块</translation>
 <translation id="7888071071722539607">请在电子邮件地址中包括“<ph name="ATSIGN" />”。“<ph name="INVALIDADDRESS" />”中缺少“<ph name="ATSIGN" />”。</translation>
 <translation id="7891486169920085145">分离器</translation>
 <translation id="795667975304826397">未选择任何文件</translation>
@@ -263,6 +271,7 @@
 <translation id="8875657656876809964">视频播放出错</translation>
 <translation id="8889402386540077796">色调</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> KB</translation>
+<translation id="894736920926684893">格式切换器</translation>
 <translation id="8987927404178983737">月</translation>
 <translation id="901493112792887934">目前时间（以秒为单位）</translation>
 <translation id="901834265349196618">电子邮件</translation>

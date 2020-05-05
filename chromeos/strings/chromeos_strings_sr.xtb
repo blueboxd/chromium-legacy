@@ -17,8 +17,10 @@
 <translation id="2805756323405976993">Апликације</translation>
 <translation id="2872961005593481000">Искључи</translation>
 <translation id="3008341117444806826">ОСВЕЖИ</translation>
+<translation id="3369013195428705271">Желите ли стварно да обришете целу историју штампања? Задаци штампања који су у току се не бришу.</translation>
 <translation id="3515615323037921860">Задаци штампања</translation>
 <translation id="3749289110408117711">Назив датотеке</translation>
+<translation id="38114475217616659">Обриши сву историју</translation>
 <translation id="3820172043799983114">Неважећи PIN.</translation>
 <translation id="3838338534323494292">Нова лозинка</translation>
 <translation id="4003259559679196451"><ph name="ENROLLMENT_DOMAIN" /> управља овим уређајем и има приступ свим активностима корисника, укључујући посећене веб-странице, лозинке и имејлове.</translation>
@@ -42,6 +44,8 @@
 <translation id="6058625436358447366">Да бисте завршили, унесите стару и нову лозинку</translation>
 <translation id="6106186594183574873">Да бисте завршили, унесите стару лозинку</translation>
 <translation id="6146993107019042706">Да бисте завршили, унесите нову лозинку</translation>
+<translation id="6643016212128521049">Обриши</translation>
+<translation id="7162487448488904999">Галерија</translation>
 <translation id="7658239707568436148">Откажи</translation>
 <translation id="7690294790491645610">Потврдите нову лозинку</translation>
 <translation id="7805768142964895445">Статус</translation>

@@ -90,6 +90,7 @@
 <translation id="1947424002851288782">የጀርመንኛ ቁልፍ ሰሌዳ</translation>
 <translation id="1972984168337863910">የፋይሎች ግብረመልስ ፓነሎችን ዘርጋ</translation>
 <translation id="1984603991036629094">የአርሜኒያ ፎነቲክ ቁልፍ ሰሌዳ</translation>
+<translation id="1995337122023280937">ወደ የፋይል ቦታ ሂድ</translation>
 <translation id="2001796770603320721">በDrive ውስጥ ያስተዳድሩ</translation>
 <translation id="2009067268969781306">አንጻፊን መቅረጽ በላዩ ላይ ያለን ሁሉንም ውሂብ ይሰርዛል። ይህ እርምጃ ሊቀለበስ አይችልም።</translation>
 <translation id="2028997212275086731">RAR ማህደር</translation>
@@ -141,6 +142,7 @@
 <translation id="2638942478653899953">Google Drive ሊደረስበት አልተቻለም። እባክዎ <ph name="BEGIN_LINK" />ዘግተው ይውጡ<ph name="END_LINK" />ና ተመልሰው ይግቡ።</translation>
 <translation id="2649120831653069427">የቀስተዳመና አሳ</translation>
 <translation id="2661146741306740526">16x9</translation>
+<translation id="2664412712123763093">የፋይል ቦታ</translation>
 <translation id="2672394958563893062">አንድ ስህተት ተከስቷል። ከመጀመሪያው ጀምሮ ዳግም ለማስጀመር ጠቅ ያድርጉ።</translation>
 <translation id="2676946222714718093">እየተጫወተ ያለው በ፦</translation>
 <translation id="2735698359135166290">የሮማኒያኛ መደበኛ የቁልፍ ሰሌዳ</translation>
@@ -327,6 +329,7 @@
 <translation id="4880520557730313061">በራስ-ጠግን</translation>
 <translation id="4881695831933465202">ክፈት</translation>
 <translation id="4886021172213954916">የታሚል ቁልፍ ሰሌዳ (መተየቢያ)</translation>
+<translation id="4892969127351273348">በ<ph name="APP_NAME" /> መክፈት አልተቻለም</translation>
 <translation id="4905417359854579806">የ<ph name="FILE_COUNT" />ን ምትኬ ለማስቀመጥ ዝግጁ</translation>
 <translation id="4924638091161556692">ተጠግኗል</translation>
 <translation id="4935975195727477204">የጋንዛኒያ አበባ</translation>
@@ -348,6 +351,7 @@
 <translation id="5081517858322016911"><ph name="TOTAL_FILE_SIZE" /> ከፋይሎች ይሰረዛል</translation>
 <translation id="509429900233858213">ስህተት አጋጥሟል።</translation>
 <translation id="5098629044894065541">ዕብራስጥ</translation>
+<translation id="5112685521274804841">በዚህ አቃፊዎች ውስጥ ያሉ ፋይሎች ተነባቢ ብቻ ናቸው። አንዳንድ እንቅስቃሴዎች አይደገፉም።</translation>
 <translation id="5123433949759960244">ቅርጫት ኳስ</translation>
 <translation id="5129662217315786329">ፖሊሽ</translation>
 <translation id="5144820558584035333">ሃንጉል 3 ስብስብ (390)</translation>
@@ -697,6 +701,7 @@
 <translation id="9034924485347205037">የLinux ፋይሎች</translation>
 <translation id="9035012421917565900">ንጥሎቹ ተመልሰው ወደ «<ph name="DESTINATION_NAME" />» ሊወሰዱ አይችሉም፤ ስለዚህ ይህን ድርጊት መቀልበስ አይችሉም።</translation>
 <translation id="9038620279323455325">«<ph name="FILE_NAME" />» የሚባለው ፋይል አስቀድሞ አለ። እባክዎ የተለየ ስም ይምረጡ።</translation>
+<translation id="9062992083244091966">ፋይሎችን በ<ph name="APP_NAME" /> መተግበሪያዎች ለመክፈት መጀመሪያ ወደ የ<ph name="APP_NAME" /> የተጋሩ ፋይሎች አቃፊ ይውሰዷቸው።</translation>
 <translation id="9064939804718829769">በማስተላለፍ ላይ...</translation>
 <translation id="9065203028668620118">አርትዕ</translation>
 <translation id="9099674669267916096">የገጽ ብዛት</translation>

@@ -48,6 +48,7 @@
 <translation id="2440823041667407902">Acceso á localización</translation>
 <translation id="2482878487686419369">Notificacións</translation>
 <translation id="2490684707762498678">Xestionadas por <ph name="APP_NAME" /></translation>
+<translation id="2498359688066513246">Axuda e comentarios</translation>
 <translation id="2501278716633472235">Ir atrás</translation>
 <translation id="2537296579376733324">Todas as cookies, só neste sitio</translation>
 <translation id="2569468611847789653">{COOKIE_COUNT,plural, =1{Bloqueouse 1 cookie}other{Bloqueáronse # cookies}}</translation>
@@ -89,6 +90,7 @@
 <translation id="4165986682804962316">Configuración do sitio</translation>
 <translation id="4226663524361240545">O dispositivo pode vibrar ao recibir notificacións</translation>
 <translation id="4259722352634471385">A navegación está bloqueada: <ph name="URL" /></translation>
+<translation id="4275663329226226506">Multimedia</translation>
 <translation id="4278390842282768270">Permitida</translation>
 <translation id="4433925000917964731">Páxina en modo básico ofrecida por Google.</translation>
 <translation id="4434045419905280838">Ventás emerxentes e redireccións</translation>
@@ -99,6 +101,7 @@
 <translation id="4645575059429386691">Xestionado por teus pais</translation>
 <translation id="4670064810192446073">Realidade virtual</translation>
 <translation id="4751476147751820511">Sensores de movemento ou de luz</translation>
+<translation id="4759238208242260848">Descargas</translation>
 <translation id="4883854917563148705">Non se pode restablecer a configuración xestionada</translation>
 <translation id="4887024562049524730">Pregunta antes de permitir que os sitios utilicen os teus datos e dispositivos de realidade virtual (recomendado)</translation>
 <translation id="4962975101802056554">Revogar todos os permisos do dispositivo</translation>
@@ -128,7 +131,7 @@
 <translation id="5677928146339483299">Bloqueada</translation>
 <translation id="5689516760719285838">Localización</translation>
 <translation id="5710871682236653961">Pregunta antes de permitir que os sitios envíen e reciban información cando toques dispositivos con NFC (recomendado)</translation>
-<translation id="5719847187258001597">Ao realizar esta acción, borraranse os datos e as cookies que almacenase <ph name="ORIGIN" /> ou a súa aplicación da túa pantalla de inicio.</translation>
+<translation id="5719847187258001597">Ao realizar esta acción, borraranse os datos e as cookies que almacenase <ph name="ORIGIN" /> ou a súa aplicación instalada na pantalla de inicio.</translation>
 <translation id="5804241973901381774">Permisos</translation>
 <translation id="5860033963881614850">Non</translation>
 <translation id="5916664084637901428">Si</translation>
@@ -136,6 +139,7 @@
 <translation id="5939518447894949180">Restablecer</translation>
 <translation id="6040143037577758943">Pechar</translation>
 <translation id="6042308850641462728">Máis</translation>
+<translation id="6064125863973209585">Descargas completadas</translation>
 <translation id="6165508094623778733">Máis información</translation>
 <translation id="6181444274883918285">Engadir excepción do sitio</translation>
 <translation id="6192792657125177640">Excepcións</translation>
@@ -207,6 +211,7 @@
 <translation id="8380167699614421159">Este sitio mostra anuncios intrusivos ou enganosos</translation>
 <translation id="8394832520002899662">Toca para volver ao sitio</translation>
 <translation id="8447861592752582886">Revoga o permiso do dispositivo</translation>
+<translation id="8463851957836045671">O sitio é rápido</translation>
 <translation id="851751545965956758">Non permitir que os sitios se conecten aos dispositivos</translation>
 <translation id="857943718398505171">Permitido (recomendado)</translation>
 <translation id="8609465669617005112">Mover cara arriba</translation>
@@ -220,6 +225,7 @@
 <translation id="8847988622838149491">USB</translation>
 <translation id="885701979325669005">Almacenamento</translation>
 <translation id="8926666909099850184">A NFC está desactivada para este dispositivo. Actívaa en <ph name="BEGIN_LINK" />Configuración de Android<ph name="END_LINK" />.</translation>
+<translation id="8929372349074745002">Este sitio ábrese e responde rápido para a maioría dos usuarios</translation>
 <translation id="8941729603749328384">www.exemplo.com</translation>
 <translation id="8958424370300090006">Bloquea cookies para un sitio específico.</translation>
 <translation id="8959122750345127698">A navegación é inaccesible: <ph name="URL" /></translation>

@@ -52,8 +52,9 @@ void AmbientBackendModel::ShowNextImage() {
 void AmbientBackendModel::AddNextImage(const gfx::ImageSkia& image) {
   images_.emplace_back(image);
 
-  // Update the first image.
-  if (images_.size() == 1)
+  // Update the first two images. The second image is used for photo transition
+  // animation.
+  if (images_.size() <= 2)
     NotifyImagesChanged();
 }
 

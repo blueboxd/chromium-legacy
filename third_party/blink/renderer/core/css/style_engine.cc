@@ -924,7 +924,7 @@ void StyleEngine::MarkFontsNeedUpdate() {
   GetDocument().ScheduleLayoutTreeUpdateIfNeeded();
 }
 
-void StyleEngine::FontsNeedUpdate(FontSelector*) {
+void StyleEngine::FontsNeedUpdate(FontSelector*, FontInvalidationReason) {
   if (!GetDocument().IsActive())
     return;
 
@@ -1596,8 +1596,10 @@ void StyleEngine::ApplyUserRuleSetChanges(
     ScopedStyleResolver::KeyframesRulesAdded(GetDocument());
   }
 
-  if ((changed_rule_flags & kFontFaceRules) || has_rebuilt_font_face_cache)
-    GetFontSelector()->FontFaceInvalidated();
+  if ((changed_rule_flags & kFontFaceRules) || has_rebuilt_font_face_cache) {
+    GetFontSelector()->FontFaceInvalidated(
+        FontInvalidationReason::kGeneralInvalidation);
+  }
 
   InvalidateForRuleSetChanges(GetDocument(), changed_rule_sets,
                               changed_rule_flags, kInvalidateAllScopes);
@@ -1673,8 +1675,10 @@ void StyleEngine::ApplyRuleSetChanges(
   }
 
   if (tree_scope.RootNode().IsDocumentNode()) {
-    if ((changed_rule_flags & kFontFaceRules) || has_rebuilt_font_face_cache)
-      GetFontSelector()->FontFaceInvalidated();
+    if ((changed_rule_flags & kFontFaceRules) || has_rebuilt_font_face_cache) {
+      GetFontSelector()->FontFaceInvalidated(
+          FontInvalidationReason::kGeneralInvalidation);
+    }
   }
 
   InvalidateForRuleSetChanges(tree_scope, changed_rule_sets, changed_rule_flags,

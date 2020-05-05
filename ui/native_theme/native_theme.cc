@@ -44,10 +44,6 @@ NativeThemeColorIdToColorIdMap() {
         {NTCID::kColorId_ButtonDisabledColor,
           kColorButtonDisabledForeground},
         {NTCID::kColorId_ButtonEnabledColor, kColorButtonForeground},
-#if defined(OS_MACOSX)
-        {NTCID::kColorId_ButtonPressedShade,
-          kColorButtonPressedBackgroundShade},
-#endif
         {NTCID::kColorId_ProminentButtonColor,
           kColorButtonProminentBackground},
         {NTCID::kColorId_ProminentButtonDisabledColor,
@@ -199,6 +195,10 @@ SkColor NativeTheme::GetSystemColor(ColorId color_id,
   }
   ReportHistogramBooleanUsesColorProvider(false);
   return GetAuraColor(color_id, this, color_scheme);
+}
+
+SkColor NativeTheme::GetSystemButtonPressedColor(SkColor base_color) const {
+  return base_color;
 }
 
 float NativeTheme::GetBorderRadiusForPart(Part part,

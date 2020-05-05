@@ -35,6 +35,7 @@
 <translation id="1938124657309484470">ಮೌಲ್ಯವು <ph name="MAXIMUM_DATE_OR_TIME" /> ಅಥವಾ ಹಿಂದಿನದ್ದಾಗಿರಬೇಕು.</translation>
 <translation id="1946271899482435442">ದಿನಾಂಕದ ಆಯ್ಕೆಯನ್ನು ತೋರಿಸಿ</translation>
 <translation id="1993104285338243655">ಪ್ರತಿಬಿಂಬಿಸುವಿಕೆಗೆ ಬದಲಾಯಿಸಲಾಗಿದೆ</translation>
+<translation id="2031987842108996681">ಕೆಂಪು ಚಾನಲ್</translation>
 <translation id="2060505056492490888">'<ph name="DOT" />' ಅನ್ನು '<ph name="INVALIDDOMAIN" />' ನಲ್ಲಿ ತಪ್ಪಾದ ಸ್ಥಾನದಲ್ಲಿ ಬಳಸಲಾಗಿದೆ.</translation>
 <translation id="2148716181193084225">ಇಂದು</translation>
 <translation id="2158401438286456825">ಪುಟ ಪಟ್ಟಿ</translation>
@@ -45,6 +46,7 @@
 <translation id="2291999235780842123">ಚೆಕ್‌ಬಾಕ್ಸ್</translation>
 <translation id="2311842470354187719">ಪುಟ ವಿಭಜನೆ</translation>
 <translation id="2335594187091864976">ದಿನಾಂಕ ಮತ್ತು ಸಮಯ ಪಿಕರ್</translation>
+<translation id="2393030564806080191">ಹೆಕ್ಸಾಡೆಸಿಮಲ್‌‌ ಬಣ್ಣದ ಮೌಲ್ಯ</translation>
 <translation id="245932805758469625">ಇಷ್ಟು ಸೆಕೆಂಡಿನ ವೀಡಿಯೊ ಬಾಕಿ ಉಳಿದಿದೆ</translation>
 <translation id="248395913932153421">ದಿನ</translation>
 <translation id="2507943997699731163">ದಯವಿಟ್ಟು ಈ ಕ್ಷೇತ್ರವನ್ನು ಭರ್ತಿ ಮಾಡಿ.</translation>
@@ -52,6 +54,7 @@
 <translation id="2561842179657104141">ಇನ್ನಷ್ಟು ಮಾಧ್ಯಮ ನಿಯಂತ್ರಣಗಳನ್ನು ತೋರಿಸು</translation>
 <translation id="2572483411312390101">ಪ್ಲೇ ಮಾಡಿ</translation>
 <translation id="2613802280814924224">ಮಾನ್ಯ ಮೌಲ್ಯವನ್ನು ನಮೂದಿಸಿ. ಹತ್ತಿರದ ಮಾನ್ಯ ಮೌಲ್ಯವು <ph name="VALID_VALUE" /> ಆಗಿದೆ.</translation>
+<translation id="2634240155926812724">ಹಸಿರು ಚಾನಲ್</translation>
 <translation id="2653659639078652383">ಸಲ್ಲಿಸು</translation>
 <translation id="2657045182931379222">ಗ್ರಾಫಿಕ್ಸ್ ವಸ್ತು</translation>
 <translation id="2674318244760992338">ಅಡಿಟಿಪ್ಪಣಿ</translation>
@@ -127,6 +130,7 @@
 <translation id="5034860022980953847">ಪ್ರಗತಿ ಸೂಚಕ</translation>
 <translation id="5090250355906949916">ವೀಡಿಯೊ ಸಮಯದ ಸ್ಕ್ರಬ್ಬರ್</translation>
 <translation id="5093189678851173835">ಶಿಲಾಶಾಸನ</translation>
+<translation id="509897012892853729">ನೀಲಿ ಚಾನಲ್</translation>
 <translation id="5117590920725113268">ಮುಂದಿನ ತಿಂಗಳು ತೋರಿಸಿ</translation>
 <translation id="512758898067543763">ಸಾಲಿನ ಶಿರೋನಾಮೆ</translation>
 <translation id="5143125788380636750">ಹಿನ್ನುಡಿ</translation>
@@ -164,6 +168,7 @@
 <translation id="6166809985690652833">ನಂತರದ</translation>
 <translation id="6209276755895393898">ಹೀಗೆ ಕಾಣಿಸುತ್ತಿದೆ: <ph name="DESCRIPTION" /></translation>
 <translation id="6213469881011901533">ಪದಕೋಶ</translation>
+<translation id="6281588256137006900">ಲೈಟ್‌ನೆಸ್</translation>
 <translation id="6281763101136022427">url</translation>
 <translation id="6310801910862476708">ಚಿತ್ರದಲ್ಲಿನ ಚಿತ್ರದಿಂದ ನಿರ್ಗಮಿಸಿ</translation>
 <translation id="6398862346408813489">ತಿಂಗಳ ಆಯ್ಕೆ ಪ್ಯಾನಲ್ ತೋರಿಸಿ</translation>
@@ -184,6 +189,7 @@
 <translation id="6790428901817661496">ಪ್ಲೇ ಮಾಡು</translation>
 <translation id="6820355525329141109">ಪ್ಲಗ್-ಇನ್ ಲೋಡ್ ಮಾಡಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ.</translation>
 <translation id="6820615603175220800">ಗ್ರಂಥಸೂಚಿ ಉಲ್ಲೇಖ</translation>
+<translation id="6831465880655513317">ಸ್ಯಾಚುರೇಶನ್ ಮತ್ತು ಲೈಟ್‌ನೆಸ್ ಅನ್ನು ಆಯ್ಕೆಮಾಡುವುದಕ್ಕಾಗಿ ಟೂ-ಡೈಮೆನ್ಶನಲ್ ಸ್ಲೈಡರ್ ಹೊಂದಿರುವ ಕಲರ್ ವೆಲ್</translation>
 <translation id="6843725295806269523">ಮ್ಯೂಟ್</translation>
 <translation id="6885760532393684712">ಡೈರೆಕ್ಟರಿ</translation>
 <translation id="689129560213475294">ಕೊಲೊಫೋನ್</translation>
@@ -201,6 +207,7 @@
 <translation id="7263440858009898357">ಪಟ್ಟಿಯಲ್ಲಿನ ಐಟಂ ಅನ್ನು ದಯವಿಟ್ಟು ಆಯ್ಕೆ ಮಾಡಿ.</translation>
 <translation id="727747134524199931">ಕಾಲಮ್ ಶಿರೋನಾಮೆ</translation>
 <translation id="7320576522385648310">ಬಫರ್ ಆಗುತ್ತಿದೆ</translation>
+<translation id="7341556277900466204">ಕಲರ್ ವೆಲ್</translation>
 <translation id="7353453495576941748">ಗೌರವ</translation>
 <translation id="7364796246159120393">ಫೈಲ್ ಆಯ್ಕೆ ಮಾಡಿ</translation>
 <translation id="739024184232394898">ಇತರೆ...</translation>
@@ -221,6 +228,7 @@
 <translation id="775297008183122718">ಅಮಾನ್ಯ ನಮೂದು</translation>
 <translation id="7789962463072032349">ವಿರಾಮ</translation>
 <translation id="7802800022689234070">ತ್ರಿಕೋನ ಪ್ರಕಟಣೆ</translation>
+<translation id="7852167693871241274">ಹ್ಯೂ ಸ್ಲೈಡರ್</translation>
 <translation id="7888071071722539607">ಇಮೇಲ್ ವಿಳಾಸದಲ್ಲಿ ಒಂದು '<ph name="ATSIGN" />' ಅನ್ನು ಸೇರಿಸಿ. '<ph name="ATSIGN" />' ನಲ್ಲಿ '<ph name="INVALIDADDRESS" />' ಕಾಣೆಯಾಗಿದೆ.</translation>
 <translation id="7891486169920085145">ಛೇದಕ</translation>
 <translation id="795667975304826397">ಯಾವುದೇ ಫೈಲ್ ಆಯ್ಕೆ ಮಾಡಿಲ್ಲ</translation>
@@ -263,6 +271,7 @@
 <translation id="8875657656876809964">ವೀಡಿಯೊ ಪ್ಲೇಬ್ಯಾಕ್ ದೋಷ</translation>
 <translation id="8889402386540077796">ವರ್ಣ</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> KB</translation>
+<translation id="894736920926684893">ಫಾರ್ಮ್ಯಾಟ್ ಟಾಗ್ಲರ್</translation>
 <translation id="8987927404178983737">ತಿಂಗಳು</translation>
 <translation id="901493112792887934">ಸೆಕೆಂಡ್‌ಗಳಲ್ಲಿ ಪ್ರಸ್ತುತ ಸಮಯ</translation>
 <translation id="901834265349196618">ಇಮೇಲ್</translation>

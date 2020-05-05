@@ -90,6 +90,7 @@
 <translation id="1947424002851288782">Duits toetsenbord</translation>
 <translation id="1972984168337863910">Feedbackvensters voor bestanden uitvouwen</translation>
 <translation id="1984603991036629094">Armeens fonetisch toetsenbord</translation>
+<translation id="1995337122023280937">Naar bestandslocatie</translation>
 <translation id="2001796770603320721">Beheren in Drive</translation>
 <translation id="2009067268969781306">Tijdens het formatteren van een schijf worden alle opgeslagen gegevens verwijderd. Deze actie kan niet ongedaan worden gemaakt.</translation>
 <translation id="2028997212275086731">RAR-archief</translation>
@@ -141,6 +142,7 @@
 <translation id="2638942478653899953">Google Drive kan niet worden bereikt. <ph name="BEGIN_LINK" />Log uit<ph name="END_LINK" /> en log weer in.</translation>
 <translation id="2649120831653069427">Regenboogvis</translation>
 <translation id="2661146741306740526">16x9</translation>
+<translation id="2664412712123763093">Bestandslocatie</translation>
 <translation id="2672394958563893062">Er is een fout opgetreden. Klik om opnieuw te starten vanaf het begin.</translation>
 <translation id="2676946222714718093">Wordt afgespeeld op</translation>
 <translation id="2735698359135166290">Standaardtoetsenbord voor Roemeens</translation>
@@ -327,6 +329,7 @@
 <translation id="4880520557730313061">Automatisch bewerken</translation>
 <translation id="4881695831933465202">Openen</translation>
 <translation id="4886021172213954916">Tamil toetsenbord (Typewriter)</translation>
+<translation id="4892969127351273348">Kan niet openen met <ph name="APP_NAME" /></translation>
 <translation id="4905417359854579806">Klaar om back-up van <ph name="FILE_COUNT" /> te maken</translation>
 <translation id="4924638091161556692">Bewerkt</translation>
 <translation id="4935975195727477204">Bloem</translation>
@@ -348,6 +351,7 @@
 <translation id="5081517858322016911"><ph name="TOTAL_FILE_SIZE" /> van alle bestanden wordt verwijderd</translation>
 <translation id="509429900233858213">Er is een fout opgetreden.</translation>
 <translation id="5098629044894065541">Hebreeuws</translation>
+<translation id="5112685521274804841">Bestanden in deze mappen zijn alleen-lezen. Sommige activiteiten worden niet ondersteund.</translation>
 <translation id="5123433949759960244">Basketbal</translation>
 <translation id="5129662217315786329">Pools</translation>
 <translation id="5144820558584035333">Hangul 3 Set (390)</translation>
@@ -699,6 +703,7 @@
 <translation id="9034924485347205037">Linux-bestanden</translation>
 <translation id="9035012421917565900">De items kunnen niet worden teruggezet naar '<ph name="DESTINATION_NAME" />', dus je kunt deze actie niet ongedaan maken.</translation>
 <translation id="9038620279323455325">Er bestaat al een bestand met de naam '<ph name="FILE_NAME" />'. Kies een andere naam.</translation>
+<translation id="9062992083244091966">Als je bestanden wilt openen met <ph name="APP_NAME" />-apps, moet je ze eerst verplaatsen naar de map met gedeelde bestanden voor <ph name="APP_NAME" />.</translation>
 <translation id="9064939804718829769">Overdragen...</translation>
 <translation id="9065203028668620118">Bewerken</translation>
 <translation id="9099674669267916096">Aantal pagina's</translation>

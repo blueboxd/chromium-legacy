@@ -3,6 +3,7 @@
 <translationbundle lang="as">
 <translation id="1006017844123154345">অনলাইনত খোলক</translation>
 <translation id="1044891598689252897">ছাইটসমূহে স্বাভাৱিকভাৱে কাম কৰিব</translation>
+<translation id="1124090076051167250">এইটোৱে আপোনাৰ গৃহ স্ক্রীনত ছাইট অথবা এপ্‌সমূহে ষ্ট’ৰ কৰা <ph name="DATASIZE" /> ডেটা আৰু কুকি মচিব।</translation>
 <translation id="1124772482545689468">ব্যৱহাৰকাৰী</translation>
 <translation id="1178581264944972037">পজ কৰক</translation>
 <translation id="1181037720776840403">আঁতৰাওক</translation>
@@ -47,6 +48,7 @@
 <translation id="2440823041667407902">অৱস্থানৰ এক্সেছ</translation>
 <translation id="2482878487686419369">জাননী</translation>
 <translation id="2490684707762498678"><ph name="APP_NAME" />এ পৰিচালনা কৰে</translation>
+<translation id="2498359688066513246">সহায় আৰু মতামত</translation>
 <translation id="2501278716633472235">উভতি যাওক</translation>
 <translation id="2537296579376733324">সকলোবোৰ কুকি, কেৱল এইটো ছাইটত থকা</translation>
 <translation id="2569468611847789653">{COOKIE_COUNT,plural, =1{১ টা কুকি অৱৰোধ কৰা হৈছে}one{# টা কুকি অৱৰোধ কৰা হৈছে}other{# টা কুকি অৱৰোধ কৰা হৈছে}}</translation>
@@ -88,6 +90,7 @@
 <translation id="4165986682804962316">ছাইটৰ ছেটিংসমূহ</translation>
 <translation id="4226663524361240545">জাননীয়ে ডিভাইচটো কম্পন কৰিব পাৰে</translation>
 <translation id="4259722352634471385">নেভিগে’শ্বন অৱৰোধ কৰা আছে: <ph name="URL" /></translation>
+<translation id="4275663329226226506">মিডিয়া</translation>
 <translation id="4278390842282768270">অনুমতি দিয়া হৈছে</translation>
 <translation id="4433925000917964731">Googleএ প্ৰদান কৰা লাইট পৃষ্ঠা</translation>
 <translation id="4434045419905280838">পপ-আপ আৰু পুনৰ নির্দেশ</translation>
@@ -98,6 +101,7 @@
 <translation id="4645575059429386691">আপোনাৰ অভিভাৱকৰ দ্বাৰা পৰিচালিত</translation>
 <translation id="4670064810192446073">ভাৰ্চুৱেল ৰিয়েলিটি</translation>
 <translation id="4751476147751820511">গতি বা পোহৰ ধৰা পেলাব পৰা ছেন্সৰ</translation>
+<translation id="4759238208242260848">ডাউনল'ডসমূহ</translation>
 <translation id="4883854917563148705">পৰিচালিত ছেটিংসমূহ ৰিছেট কৰিব নোৱাৰি</translation>
 <translation id="4887024562049524730">ছাইটসমূহক আপোনাৰ ভাৰ্চুৱেল ৰিয়েলিটি ডিভাইচ আৰু ডেটা এক্সেছ কৰিবলৈ অনুমতি দিয়াৰ পূর্বে সোধক (চুপাৰিছ কৰা)</translation>
 <translation id="4962975101802056554">ডিভাইচৰ বাবে সকলো অনুমতি প্ৰত্যাহাৰ কৰক</translation>
@@ -127,6 +131,7 @@
 <translation id="5677928146339483299">অৱৰোধিত</translation>
 <translation id="5689516760719285838">অৱস্থান</translation>
 <translation id="5710871682236653961">আপুনি NFC ডিভাইচসমূহত টিপিলে ছাইটসমূহক তথ্য পঠিওৱা আৰু লাভ কৰাৰ অনুমতি দিয়াৰ আগতে সোধক (চুপাৰিছ কৰা হয়)</translation>
+<translation id="5719847187258001597">এইটোৱে আপোনাৰ গৃহ স্ক্রীনত <ph name="ORIGIN" />এ অথবা ইয়াৰ এপ্‌টোৱে ষ্ট’ৰ কৰা সকলো ডেটা আৰু কুকি মচিব।</translation>
 <translation id="5804241973901381774">অনুমতি</translation>
 <translation id="5860033963881614850">অফ আছে</translation>
 <translation id="5916664084637901428">অন আছে</translation>
@@ -134,6 +139,7 @@
 <translation id="5939518447894949180">ৰিছেট কৰক</translation>
 <translation id="6040143037577758943">বন্ধ কৰক</translation>
 <translation id="6042308850641462728">অধিক</translation>
+<translation id="6064125863973209585">সম্পূৰ্ণ হোৱা ডাউনল’ডসমূহ</translation>
 <translation id="6165508094623778733">অধিক জানক</translation>
 <translation id="6181444274883918285">ব্যতিক্ৰম ছাইট যোগ কৰক</translation>
 <translation id="6192792657125177640">ব্যতিক্রমসমূহ</translation>
@@ -205,6 +211,7 @@
 <translation id="8380167699614421159">এই ছাইটটোৱে বিনা অনুমতিত বা কোনো বিভ্ৰান্তিকৰ বিজ্ঞাপন দেখুৱায়</translation>
 <translation id="8394832520002899662">এই ছাইটটোলৈ উভতি যাবলৈ টিপক</translation>
 <translation id="8447861592752582886">ডিভাইচৰ অনুমতি প্ৰত্যাহাৰ কৰক</translation>
+<translation id="8463851957836045671">ছাইটটো দ্ৰুত</translation>
 <translation id="851751545965956758">ডিভাইচৰ সৈতে সংযোগ কৰাৰ পৰা ছাইটসমূহক অৱৰোধ কৰক</translation>
 <translation id="857943718398505171">অনুমোদিত (চুপাৰিছ কৰা)</translation>
 <translation id="8609465669617005112">ওপৰলৈ নিয়ক</translation>
@@ -218,6 +225,7 @@
 <translation id="8847988622838149491">USB</translation>
 <translation id="885701979325669005">ষ্ট’ৰেজ</translation>
 <translation id="8926666909099850184">এই ডিভাইচটোৰ বাবে NFC অফ কৰা আছে। ইয়াক <ph name="BEGIN_LINK" />Android ছেটিংসমূহ<ph name="END_LINK" />লৈ গৈ অন কৰক।</translation>
+<translation id="8929372349074745002">সৰহভাগ লোকৰ বাবে এই ছাইটটো খোল খায় তথা সেইটোৱে দ্ৰুতভাৱে সঁহাৰি দিয়ে</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8958424370300090006">কোনো বিশেষ ছাইটৰ বাবে কুকিসমূহ অৱৰোধ কৰক।</translation>
 <translation id="8959122750345127698">ইয়ালৈ নেভিগেশ্বন পাব পৰা অৱস্থাত নাই: <ph name="URL" /></translation>

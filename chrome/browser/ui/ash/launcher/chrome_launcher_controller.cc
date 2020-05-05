@@ -1078,11 +1078,17 @@ void ChromeLauncherController::OnSyncModelUpdated() {
 }
 
 void ChromeLauncherController::OnIsSyncingChanged() {
+  // TODO(jamescook): Should this move below the is_syncing check?
   UpdateAppLaunchersFromSync();
 
-  // Initialize the local prefs if this is the first time sync has occurred.
-  if (!PrefServiceSyncableFromProfile(profile())->IsSyncing())
+  // Wait until the initial sync happens.
+  auto* pref_service = PrefServiceSyncableFromProfile(profile());
+  bool is_syncing = chromeos::features::IsSplitSettingsSyncEnabled()
+                        ? pref_service->AreOsPrefsSyncing()
+                        : pref_service->IsSyncing();
+  if (!is_syncing)
     return;
+  // Initialize the local prefs if this is the first time sync has occurred.
   InitLocalPref(profile()->GetPrefs(), ash::prefs::kShelfAlignmentLocal,
                 ash::prefs::kShelfAlignment);
   InitLocalPref(profile()->GetPrefs(), ash::prefs::kShelfAutoHideBehaviorLocal,

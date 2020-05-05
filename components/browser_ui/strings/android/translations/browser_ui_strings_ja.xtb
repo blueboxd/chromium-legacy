@@ -3,6 +3,7 @@
 <translationbundle lang="ja">
 <translation id="1006017844123154345">オンライン版を開く</translation>
 <translation id="1044891598689252897">サイトは通常どおり動作します</translation>
+<translation id="1124090076051167250">サイトまたはホーム画面のアプリにより保存された <ph name="DATASIZE" /> のデータおよび Cookie が削除されます。</translation>
 <translation id="1124772482545689468">ユーザー</translation>
 <translation id="1178581264944972037">一時停止</translation>
 <translation id="1181037720776840403">削除</translation>
@@ -47,6 +48,7 @@
 <translation id="2440823041667407902">位置情報へのアクセス</translation>
 <translation id="2482878487686419369">通知</translation>
 <translation id="2490684707762498678"><ph name="APP_NAME" /> で管理</translation>
+<translation id="2498359688066513246">ヘルプとフィードバック</translation>
 <translation id="2501278716633472235">戻る</translation>
 <translation id="2537296579376733324">すべての Cookie（このサイトのみ）</translation>
 <translation id="2569468611847789653">{COOKIE_COUNT,plural, =1{1 個の Cookie がブロックされました}other{# 個の Cookie がブロックされました}}</translation>
@@ -88,6 +90,7 @@
 <translation id="4165986682804962316">サイトの設定</translation>
 <translation id="4226663524361240545">通知を受け取るとデバイスが振動します</translation>
 <translation id="4259722352634471385"><ph name="URL" /> へのアクセスがブロックされました</translation>
+<translation id="4275663329226226506">メディア</translation>
 <translation id="4278390842282768270">許可</translation>
 <translation id="4433925000917964731">Google から提供されている軽量版のページ</translation>
 <translation id="4434045419905280838">ポップアップとリダイレクト</translation>
@@ -98,6 +101,7 @@
 <translation id="4645575059429386691">保護者により管理されています</translation>
 <translation id="4670064810192446073">バーチャル リアリティ（VR）</translation>
 <translation id="4751476147751820511">モーション センサーまたは光センサー</translation>
+<translation id="4759238208242260848">ダウンロード</translation>
 <translation id="4883854917563148705">管理者による設定はリセットできません</translation>
 <translation id="4887024562049524730">サイトにバーチャル リアリティ デバイスとデータの使用を許可する前に確認する（推奨）</translation>
 <translation id="4962975101802056554">デバイスのすべての権限を取り消します</translation>
@@ -115,6 +119,7 @@
 <translation id="5317780077021120954">保存</translation>
 <translation id="5335288049665977812">サイトに JavaScript の実行を許可する（推奨）</translation>
 <translation id="534295439873310000">NFC デバイス</translation>
+<translation id="5354152178998424783">サイトにより保存された <ph name="DATASIZE" /> のデータと Cookie が削除されます。</translation>
 <translation id="5391532827096253100">このサイトへの接続は保護されていません。サイト情報</translation>
 <translation id="5494752089476963479">煩わしい広告や誤解を招く広告が表示されるサイトで広告をブロックする</translation>
 <translation id="5505264765875738116">通知を送信するかどうかの確認をサイトに許可しない</translation>
@@ -126,6 +131,7 @@
 <translation id="5677928146339483299">ブロック中</translation>
 <translation id="5689516760719285838">位置情報</translation>
 <translation id="5710871682236653961">NFC デバイスをタップしたとき、情報の送受信をサイトに許可するかどうかを確認する（推奨）</translation>
+<translation id="5719847187258001597"><ph name="ORIGIN" /> またはホーム画面の同アプリにより保存されたすべてのデータおよび Cookie が削除されます。</translation>
 <translation id="5804241973901381774">権限</translation>
 <translation id="5860033963881614850">オフ</translation>
 <translation id="5916664084637901428">オン</translation>
@@ -133,6 +139,7 @@
 <translation id="5939518447894949180">リセット</translation>
 <translation id="6040143037577758943">閉じる</translation>
 <translation id="6042308850641462728">もっと見る</translation>
+<translation id="6064125863973209585">完了したダウンロード</translation>
 <translation id="6165508094623778733">詳細</translation>
 <translation id="6181444274883918285">サイトの例外を追加</translation>
 <translation id="6192792657125177640">例外</translation>
@@ -186,6 +193,7 @@
 <translation id="7817023149356982970">このサイトからログアウトします。</translation>
 <translation id="7828557259026017104">Cookie は、アクセスしたサイトによって作成されるファイルです。サイトではこのファイルを使用して各ユーザーが行なった設定が記憶されます。2 つ目の「サードパーティの Cookie」は、他のサイト、つまり現在ウェブページに表示されているコンテンツの一部（広告、画像など）を所有しているサイトによって作成されます。</translation>
 <translation id="7846076177841592234">選択解除</translation>
+<translation id="7846621471902887024">すべてのサイトからログアウトします。</translation>
 <translation id="7882806643839505685">特定のサイトに対して音声の再生を許可します。</translation>
 <translation id="7993619969781047893">一部のサイトで機能を使用できなくなる可能性があります</translation>
 <translation id="7999064672810608036">すべてのローカルデータ（Cookie を含む）を削除して、このウェブサイトに指定したすべての権限をリセットしてもよろしいですか？</translation>
@@ -203,6 +211,7 @@
 <translation id="8380167699614421159">このサイトでは煩わしい広告や誤解を招く広告が表示されます</translation>
 <translation id="8394832520002899662">タップしてサイトに戻る</translation>
 <translation id="8447861592752582886">デバイスの許可を取り消します</translation>
+<translation id="8463851957836045671">サイトは高速です</translation>
 <translation id="851751545965956758">サイトからデバイスへの接続をブロックする</translation>
 <translation id="857943718398505171">許可（推奨）</translation>
 <translation id="8609465669617005112">上に移動</translation>
@@ -216,6 +225,7 @@
 <translation id="8847988622838149491">USB</translation>
 <translation id="885701979325669005">ストレージ</translation>
 <translation id="8926666909099850184">このデバイスでは NFC がオフになっています。<ph name="BEGIN_LINK" />Android の設定<ph name="END_LINK" />でオンにしてください。</translation>
+<translation id="8929372349074745002">このサイトは、ほとんどの環境ですばやく表示され応答しています</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8958424370300090006">特定のサイトの Cookie をブロックします。</translation>
 <translation id="8959122750345127698"><ph name="URL" /> にアクセスできません</translation>

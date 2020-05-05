@@ -193,11 +193,13 @@ float FilterGroup::MixAndFilter(
 
   // Mix InputQueues
   mixed_->ZeroFramesPartial(0, input_frames_per_write_);
+  bool filled_some = false;
   for (MixerInput* input : active_inputs_) {
     ::media::AudioBus* temp = temp_buffer_.get();
     int filled =
         input->FillAudioData(input_frames_per_write_, rendering_delay, temp);
     if (filled > 0) {
+      filled_some = true;
       for (int c = 0; c < num_channels_; ++c) {
         input->VolumeScaleAccumulate(temp->channel(c), filled,
                                      mixed_->channel(c));
@@ -206,6 +208,10 @@ float FilterGroup::MixAndFilter(
       volume = std::max(volume, input->InstantaneousVolume());
       content_type = std::max(content_type, input->content_type());
     }
+  }
+  if (!filled_some && volume == 0.0f &&
+      !post_processing_pipeline_->IsRinging()) {
+    return 0.0f;  // Output will be silence, no need to process.
   }
 
   mixed_->ToInterleaved<::media::FloatSampleTypeTraitsNoClip<float>>(

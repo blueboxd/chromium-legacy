@@ -35,6 +35,7 @@
 <translation id="1938124657309484470">મૂલ્ય <ph name="MAXIMUM_DATE_OR_TIME" /> અથવા પહેલાંનું હોવું આવશ્યક છે.</translation>
 <translation id="1946271899482435442">તારીખ પીકર બતાવો</translation>
 <translation id="1993104285338243655">મીરરીંગ પર સ્વિચ કર્યુંં</translation>
+<translation id="2031987842108996681">રેડ ચૅનલ</translation>
 <translation id="2060505056492490888">'<ph name="DOT" />' નો ઉપયોગ '<ph name="INVALIDDOMAIN" />' માં ખોટી જગ્યાએ થયો છે.</translation>
 <translation id="2148716181193084225">આજે</translation>
 <translation id="2158401438286456825">પેજ સૂચિ</translation>
@@ -45,6 +46,7 @@
 <translation id="2291999235780842123">ચેકબોક્સ</translation>
 <translation id="2311842470354187719">પેજ વિભાજન</translation>
 <translation id="2335594187091864976">તારીખ અને સમય પીકર</translation>
+<translation id="2393030564806080191">રંગનું હેક્ઝાડેસિમલ મૂલ્ય</translation>
 <translation id="245932805758469625">વીડિયોની બાકી સેકન્ડ</translation>
 <translation id="248395913932153421">દિવસ</translation>
 <translation id="2507943997699731163">કૃપા કરીને આ ફીલ્ડ ભરો.</translation>
@@ -52,6 +54,7 @@
 <translation id="2561842179657104141">વધુ મીડિયા નિયંત્રણો બતાવો</translation>
 <translation id="2572483411312390101">ચલાવો</translation>
 <translation id="2613802280814924224">કૃપા કરીને એક માન્ય મૂલ્ય દાખલ કરો. નિકટતમ માન્ય મૂલ્ય <ph name="VALID_VALUE" /> છે.</translation>
+<translation id="2634240155926812724">ગ્રીન ચૅનલ</translation>
 <translation id="2653659639078652383">સબમિટ કરો</translation>
 <translation id="2657045182931379222">ગ્રાફિક્સ ઑબ્જેક્ટ</translation>
 <translation id="2674318244760992338">ફૂટર</translation>
@@ -127,6 +130,7 @@
 <translation id="5034860022980953847">પ્રગતિ સૂચક</translation>
 <translation id="5090250355906949916">વીડિયો ટાઇમ સ્ક્રબર</translation>
 <translation id="5093189678851173835">શિલાલેખ</translation>
+<translation id="509897012892853729">બ્લૂ ચૅનલ</translation>
 <translation id="5117590920725113268">આગલો મહિનો દર્શાવો</translation>
 <translation id="512758898067543763">પંક્તિ હેડર</translation>
 <translation id="5143125788380636750">ઉપસંહાર</translation>
@@ -164,6 +168,7 @@
 <translation id="6166809985690652833">સમાપન ભાષણ</translation>
 <translation id="6209276755895393898">આના જેવું જણાય છે: <ph name="DESCRIPTION" /></translation>
 <translation id="6213469881011901533">શબ્દાવલી</translation>
+<translation id="6281588256137006900">ઝાંખપ</translation>
 <translation id="6281763101136022427">url</translation>
 <translation id="6310801910862476708">ચિત્ર-માં-ચિત્રમાંથી બહાર નીકળો</translation>
 <translation id="6398862346408813489">મહિના પસંદગી પેનલ દર્શાવો</translation>
@@ -184,6 +189,7 @@
 <translation id="6790428901817661496">ચલાવો</translation>
 <translation id="6820355525329141109">પ્લગિન લોડ કરી શક્યાં નથી.</translation>
 <translation id="6820615603175220800">ગ્રંથસૂચિનો સંદર્ભ</translation>
+<translation id="6831465880655513317">રંગને ઘાટો કે ફીકો કરવાનું અને ઝાંખપ પસંદ કરવા માટે દ્વિ-પરિમાણ્વિય સ્લાઇડરવાળું કલર વેલ</translation>
 <translation id="6843725295806269523">બંધ કરો</translation>
 <translation id="6885760532393684712">ડિરેક્ટરી</translation>
 <translation id="689129560213475294">પ્રકાશકની માહિતી</translation>
@@ -201,6 +207,7 @@
 <translation id="7263440858009898357">કૃપા કરીને સૂચિમાંથી એક આઇટમ પસંદ કરો.</translation>
 <translation id="727747134524199931">કૉલમ હેડર</translation>
 <translation id="7320576522385648310">બફર થઈ રહ્યું છે</translation>
+<translation id="7341556277900466204">કલર વેલ</translation>
 <translation id="7353453495576941748">ક્રેડિટ</translation>
 <translation id="7364796246159120393">ફાઇલ પસંદ કરો</translation>
 <translation id="739024184232394898">અન્ય...</translation>
@@ -221,6 +228,7 @@
 <translation id="775297008183122718">અમાન્ય એન્ટ્રી</translation>
 <translation id="7789962463072032349">થોભો</translation>
 <translation id="7802800022689234070">પ્રકટીકરણ ત્રિકોણ</translation>
+<translation id="7852167693871241274">રંગ છટાનું સ્લાઇડર</translation>
 <translation id="7888071071722539607">કૃપા કરીને ઇમેઇલ સરનામાંમાં '<ph name="ATSIGN" />' શામેલ કરો. '<ph name="INVALIDADDRESS" />'માં '<ph name="ATSIGN" />' ખૂટે છે.</translation>
 <translation id="7891486169920085145">વિભાજનકર્તા</translation>
 <translation id="795667975304826397">કોઈ ફાઇલ પસંદ કરેલી નથી</translation>
@@ -263,6 +271,7 @@
 <translation id="8875657656876809964">વીડિયો પ્લેબૅક ભૂલ</translation>
 <translation id="8889402386540077796">હ્યુ</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> KB</translation>
+<translation id="894736920926684893">ટૉગલર ફૉર્મેટ કરો</translation>
 <translation id="8987927404178983737">મહિનો</translation>
 <translation id="901493112792887934">સેકન્ડ્સમાં વર્તમાન સમય</translation>
 <translation id="901834265349196618">ઇમેઇલ</translation>

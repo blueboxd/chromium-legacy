@@ -3,6 +3,7 @@
 <translationbundle lang="be">
 <translation id="1006017844123154345">Адкрыць у інтэрнэце</translation>
 <translation id="1044891598689252897">Сайты будуць працаваць нармальна</translation>
+<translation id="1124090076051167250">Будуць выдалены файлы cookie і даныя (<ph name="DATASIZE" />), захаваныя сайтамі або размешчанымі на галоўным экране праграмамі.</translation>
 <translation id="1124772482545689468">Карыстальнік</translation>
 <translation id="1178581264944972037">Прыпыніць</translation>
 <translation id="1181037720776840403">Выдаліць</translation>
@@ -47,6 +48,7 @@
 <translation id="2440823041667407902">Доступ да даных геалакацыі</translation>
 <translation id="2482878487686419369">Апавяшчэнні</translation>
 <translation id="2490684707762498678">Пад кіраваннем праграмы "<ph name="APP_NAME" />"</translation>
+<translation id="2498359688066513246">Даведка і водгукі</translation>
 <translation id="2501278716633472235">Назад</translation>
 <translation id="2537296579376733324">Усе файлы cookie, толькі на гэтым сайце</translation>
 <translation id="2569468611847789653">{COOKIE_COUNT,plural, =1{1 файл cookie заблакіраваны}one{# файл cookie заблакіраваны}few{# файлы cookie заблакіраваны}many{# файлаў cookie заблакіраваны}other{# файла cookie заблакіраваны}}</translation>
@@ -88,6 +90,7 @@
 <translation id="4165986682804962316">Налады сайта</translation>
 <translation id="4226663524361240545">Апавяшчэнні могуць уключаць вібрацыю прылады</translation>
 <translation id="4259722352634471385">Пераход па наступным адрасе заблакіраваны: <ph name="URL" /></translation>
+<translation id="4275663329226226506">Мультымедыя</translation>
 <translation id="4278390842282768270">Дазволена</translation>
 <translation id="4433925000917964731">Старонка, спрошчаная алгарытмамі Google</translation>
 <translation id="4434045419905280838">Усплыв. вокны і перанакіраванні</translation>
@@ -98,6 +101,7 @@
 <translation id="4645575059429386691">Пад кіраваннем вашых бацькоў</translation>
 <translation id="4670064810192446073">Віртуальная рэальнасць</translation>
 <translation id="4751476147751820511">Датчыкі руху або святла</translation>
+<translation id="4759238208242260848">Спампоўкі</translation>
 <translation id="4883854917563148705">Налады, якія знаходзяцца пад кіраваннем, скінуць нельга</translation>
 <translation id="4887024562049524730">Пытацца, перш чым дазваляць сайтам выкарыстоўваць даныя і прылады віртуальнай рэальнасці (рэкамендуецца)</translation>
 <translation id="4962975101802056554">Адклікаць усе дазволы для прылады</translation>
@@ -127,6 +131,7 @@
 <translation id="5677928146339483299">Заблакіравана</translation>
 <translation id="5689516760719285838">Месцазнаходжанне</translation>
 <translation id="5710871682236653961">Пытацца, перш чым дазволіць сайтам адпраўляць і атрымліваць інфармацыю, калі вы націсканнем выбіраеце прылады NFC (рэкамендуецца)</translation>
+<translation id="5719847187258001597">Будуць выдалены ўсе файлы cookie і даныя, захаваныя сайтам <ph name="ORIGIN" /> і яго праграмай, размешчанай на галоўным экране.</translation>
 <translation id="5804241973901381774">Дазволы</translation>
 <translation id="5860033963881614850">Выключана</translation>
 <translation id="5916664084637901428">Уключана</translation>
@@ -134,6 +139,7 @@
 <translation id="5939518447894949180">Скінуць</translation>
 <translation id="6040143037577758943">Закрыць</translation>
 <translation id="6042308850641462728">Яшчэ</translation>
+<translation id="6064125863973209585">Завершаныя спампоўкі</translation>
 <translation id="6165508094623778733">Даведацца больш</translation>
 <translation id="6181444274883918285">Дадаць выключэнне з сайтаў</translation>
 <translation id="6192792657125177640">Выключэнні</translation>
@@ -205,6 +211,7 @@
 <translation id="8380167699614421159">Гэты сайт паказвае назойлівую рэкламу або рэкламу, якая ўводзіць у зман</translation>
 <translation id="8394832520002899662">Каб вярнуцца на сайт, націсніце тут</translation>
 <translation id="8447861592752582886">Адклікаць дазвол на доступ да прылады</translation>
+<translation id="8463851957836045671">Сайт хуткі</translation>
 <translation id="851751545965956758">Блакіраваць сайтам падключэнне да прылад</translation>
 <translation id="857943718398505171">Дазволена (рэкамендуецца)</translation>
 <translation id="8609465669617005112">Перамясціць уверх</translation>
@@ -218,6 +225,7 @@
 <translation id="8847988622838149491">USB</translation>
 <translation id="885701979325669005">Сховішча</translation>
 <translation id="8926666909099850184">Функцыя NFC выключана на гэтай прыладзе. Уключыце яе ў <ph name="BEGIN_LINK" />Наладах Android<ph name="END_LINK" />.</translation>
+<translation id="8929372349074745002">У большасці карыстальнікаў гэты сайт адкрываецца і працуе хутка</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8958424370300090006">Блакіраваць файлы cookie для пэўнага сайта.</translation>
 <translation id="8959122750345127698">Пераход па наступным адрасе недаступны: <ph name="URL" /></translation>

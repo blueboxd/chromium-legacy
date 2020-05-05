@@ -140,6 +140,7 @@
 <translation id="2700493154570097719">Klaviaturanı ayarlayın</translation>
 <translation id="2704781753052663061">Digər Wi-Fi şəbəkələrinə qoşulun</translation>
 <translation id="2705001408393684014">Mikrofonu dəyişdirin. <ph name="STATE_TEXT" /></translation>
+<translation id="2706462751667573066">Yuxarı</translation>
 <translation id="2718395828230677721">Gecə İşığı</translation>
 <translation id="2727977024730340865">Zəif şarjerə qoşulub. Ola bilər ki, enerji dolmasın.</translation>
 <translation id="2792498699870441125">Alt+Axtarış</translation>
@@ -173,6 +174,7 @@
 <translation id="3077734595579995578">shift</translation>
 <translation id="3081696990447829002">Menyunu genişləndirin</translation>
 <translation id="3087734570205094154">Alt</translation>
+<translation id="309749186376891736">Kursoru hərəkət etdirin</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (Bluetooth)</translation>
 <translation id="3126069444801937830">Güncəlləşmək üçün yenidən başladın</translation>
 <translation id="3139942575505304791">Masa 1</translation>
@@ -242,6 +244,7 @@
 <translation id="3899995891769452915">Səs daxiletməsi</translation>
 <translation id="3900355044994618856">Sessiyanız <ph name="SESSION_TIME_REMAINING" /> ərzində bitəcək</translation>
 <translation id="3901991538546252627"><ph name="NAME" /> qoşulur</translation>
+<translation id="3943857333388298514">Yapışdırın.</translation>
 <translation id="394485226368336402">Audio ayarlar</translation>
 <translation id="3962859241508114581">Əvvəlki trek</translation>
 <translation id="3965097803111112935">Deaktiv</translation>
@@ -294,7 +297,6 @@
 <translation id="4565377596337484307">Parolu gizlədin</translation>
 <translation id="4570957409596482333">Səsləndirmək üçün Seçim düyməsi</translation>
 <translation id="4585337515783392668">Naməlum alıcının yayımını dayandırın</translation>
-<translation id="4588090240171750605">Sağa Sürüşdürün</translation>
 <translation id="4628757576491864469">Cihazlar</translation>
 <translation id="4659419629803378708">ChromeVox aktiv edildi</translation>
 <translation id="4665114317261903604">"Narahat etməyin" rejiminə keçin. <ph name="STATE_TEXT" /></translation>
@@ -336,6 +338,7 @@
 <translation id="5250225880026334010">Deaktiv</translation>
 <translation id="5260676007519551770">Masa 4</translation>
 <translation id="5283198616748585639">1 dəqiqə əlavə edin</translation>
+<translation id="528468243742722775">Son</translation>
 <translation id="5286194356314741248">Skan edilir</translation>
 <translation id="5302048478445481009">Dil</translation>
 <translation id="5313326810920013265">Bluetooth ayarları</translation>
@@ -406,6 +409,7 @@
 <translation id="615957422585914272">Ekrandakı klaviaturanı göstərin</translation>
 <translation id="6164005077879661055">Nəzarət olunan istifadəçi silinən kimi onunla əlaqədar bütün fayl və data həmişəlik silinəcək. Bu nəzarət olunan istifadəçinin daxil olduğu veb sayt və ayarlar <ph name="MANAGEMENT_URL" /> üzrə menecer tərəfindən yenə də görünəcək.</translation>
 <translation id="6165508094623778733">Ətraflı öyrənin</translation>
+<translation id="622484624075952240">Aşağı</translation>
 <translation id="6236290670123303279">Ayarları idarə edin</translation>
 <translation id="6237231532760393653">1X</translation>
 <translation id="6254629735336163724">Horizontal formada kilidləndi</translation>
@@ -416,7 +420,6 @@
 <translation id="6288235558961782912"><ph name="USER_EMAIL_ADDRESS" /> daha sonra valideynin icazəsi ilə yenidən əlavə edilə bilər.</translation>
 <translation id="6297287540776456956">Bölgə seçmək üçün fırçadan istifadə edin</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> <ph name="ROTATION" /> tərəfə fırladıldı</translation>
-<translation id="6364916375976753737">Sola Sürüşdürün</translation>
 <translation id="6376931439017688372">Bluetooth aktivdir</translation>
 <translation id="6381109794406942707">Cihazı kiliddən çıxarmaq üçün PIN'nizi daxil edin.</translation>
 <translation id="639644700271529076">LOCK off CAPS</translation>
@@ -467,6 +470,7 @@
 <translation id="6820676911989879663">Fasilə verin!</translation>
 <translation id="6857811139397017780"><ph name="NETWORKSERVICE" /> xidmətini aktivləşdirin</translation>
 <translation id="6878400149835617132">Qısayol deaktiv edildi</translation>
+<translation id="6896758677409633944">Kopyalayın</translation>
 <translation id="6910714959251846841">Bu güncəlləmə cihazın sıfırlanmasını tələb edir. Ən son <ph name="SYSTEM_APP_NAME" /> güncəlləməsi haqqında ətraflı məlumat əldə edin.</translation>
 <translation id="6919251195245069855">Smart kartınız tanınmadı. Yenidən sınayın.</translation>
 <translation id="6945221475159498467">Seçin</translation>
@@ -522,6 +526,7 @@
 <translation id="7654687942625752712">Səsləndirilmiş rəyi deaktiv etmək üçün hər iki səs düyməsinə beş saniyə basıb saxlayın.</translation>
 <translation id="7705524343798198388">VPN</translation>
 <translation id="7723389094756330927">{NUM_NOTIFICATIONS,plural, =1{1 bildiriş}other{# bildiriş}}</translation>
+<translation id="7724603315864178912">Kəsin</translation>
 <translation id="7749443890790263709">Maksimum masa sayına çatmısınız.</translation>
 <translation id="776344839111254542">Güncəlləmə detallarını görmək üçün klikləyin</translation>
 <translation id="7780159184141939021">Ekranı fırladın</translation>
@@ -562,7 +567,6 @@
 <translation id="8142699993796781067">Şəxsi şəbəkə</translation>
 <translation id="8152092012181020186">Bağlamaq üçün Ctrl + W düymələrinə basın.</translation>
 <translation id="8155007568264258537"><ph name="FEATURE_NAME" /> Bu ayar inzibatçınız tərəfindən idarə olunur.</translation>
-<translation id="815598010540052116">Aşağı Sürüşdürün</translation>
 <translation id="8167567890448493835"><ph name="LOCALE_NAME" /> istifadə edilir</translation>
 <translation id="8190698733819146287">Dilləri və daxiletməni dəyişdirin...</translation>
 <translation id="8192202700944119416">Bildirişlər gizlədildi.</translation>
@@ -574,7 +578,6 @@
 <translation id="8261506727792406068">Silin</translation>
 <translation id="8297006494302853456">Zəif</translation>
 <translation id="8308637677604853869">Öncəki menyu</translation>
-<translation id="8331626408530291785">Yuxarı Sürüşdürün</translation>
 <translation id="8341451174107936385"><ph name="UNLOCK_MORE_FEATURES" />  <ph name="GET_STARTED" /></translation>
 <translation id="8351131234907093545">Qeyd yaradın</translation>
 <translation id="8375916635258623388">Bu <ph name="DEVICE_NAME" /> və telefon avtomatik qoşulacaq</translation>

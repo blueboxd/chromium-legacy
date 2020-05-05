@@ -437,6 +437,10 @@ class NATIVE_THEME_EXPORT NativeTheme {
       bool is_high_contrast,
       const base::flat_map<SystemThemeColor, uint32_t>& colors);
 
+  // On certain platforms, currently only Mac, there is a unique visual for
+  // pressed states.
+  virtual SkColor GetSystemButtonPressedColor(SkColor base_color) const;
+
  protected:
   explicit NativeTheme(bool should_only_use_dark_colors);
   virtual ~NativeTheme();

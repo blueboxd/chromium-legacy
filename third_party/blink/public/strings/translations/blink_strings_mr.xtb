@@ -35,6 +35,7 @@
 <translation id="1938124657309484470">मूल्य <ph name="MAXIMUM_DATE_OR_TIME" /> किंवा आधीचे असणे आवश्यक आहे.</translation>
 <translation id="1946271899482435442">तारीख निवडक दाखवा</translation>
 <translation id="1993104285338243655">मिररिंगवर स्विच केले</translation>
+<translation id="2031987842108996681">लाल चॅनेल</translation>
 <translation id="2060505056492490888">'<ph name="DOT" />' '<ph name="INVALIDDOMAIN" />' मध्ये चुकीच्या स्थितीवर वापरले आहे.</translation>
 <translation id="2148716181193084225">आज</translation>
 <translation id="2158401438286456825">पेज सूची</translation>
@@ -45,6 +46,7 @@
 <translation id="2291999235780842123">चेकबॉक्‍स</translation>
 <translation id="2311842470354187719">पेज ब्रेक</translation>
 <translation id="2335594187091864976">तारीख आणि वेळ निवडक</translation>
+<translation id="2393030564806080191">रंगाचे हेक्साडेसिमल मूल्य</translation>
 <translation id="245932805758469625">व्हिडिओच्या शिल्लक सेकंदांची संख्या</translation>
 <translation id="248395913932153421">दिवस</translation>
 <translation id="2507943997699731163">कृपया हे फील्ड भरा.</translation>
@@ -52,6 +54,7 @@
 <translation id="2561842179657104141">आणखी मीडिया नियंत्रणे दर्शवा</translation>
 <translation id="2572483411312390101">प्ले करा</translation>
 <translation id="2613802280814924224">कृपया एक वैध मूल्य एंटर करा. जवळील वैध मूल्य <ph name="VALID_VALUE" /> आहे.</translation>
+<translation id="2634240155926812724">हिरवे चॅनेल</translation>
 <translation id="2653659639078652383">सबमिट करा</translation>
 <translation id="2657045182931379222">ग्राफिक्स ऑब्जेक्ट</translation>
 <translation id="2674318244760992338">अधोलेख</translation>
@@ -127,6 +130,7 @@
 <translation id="5034860022980953847">प्रगती सूचक</translation>
 <translation id="5090250355906949916">व्हिडिओ वेळ स्क्रबर</translation>
 <translation id="5093189678851173835">बोधवाक्य</translation>
+<translation id="509897012892853729">निळे चॅनेल</translation>
 <translation id="5117590920725113268">पुढील महिना दर्शवा</translation>
 <translation id="512758898067543763">पंक्ती शीर्षलेख</translation>
 <translation id="5143125788380636750">उपसंहार</translation>
@@ -164,6 +168,7 @@
 <translation id="6166809985690652833">अंतिम शब्द</translation>
 <translation id="6209276755895393898">असे असल्याचे दिसत आहे: <ph name="DESCRIPTION" /></translation>
 <translation id="6213469881011901533">शब्दावली</translation>
+<translation id="6281588256137006900">फिकटपणा</translation>
 <translation id="6281763101136022427">url</translation>
 <translation id="6310801910862476708">चित्रात-चित्र मधून बाहेर पडा</translation>
 <translation id="6398862346408813489">महिना निवड पॅनेल दाखवा</translation>
@@ -184,6 +189,7 @@
 <translation id="6790428901817661496">प्ले करा</translation>
 <translation id="6820355525329141109">प्लग-इन लोड करणे शक्य झाले नाही.</translation>
 <translation id="6820615603175220800">ग्रंथसूची संदर्भ</translation>
+<translation id="6831465880655513317">सॅच्युरेशन आणि फिकटपणा निवडण्यासाठी द्विमितीय स्लायडरसह असलेले कलर वेल</translation>
 <translation id="6843725295806269523">म्यूट करा</translation>
 <translation id="6885760532393684712">डिरेक्टरी</translation>
 <translation id="689129560213475294">बोधचिन्ह</translation>
@@ -201,6 +207,7 @@
 <translation id="7263440858009898357">कृपया सूचीमधील आयटम निवडा.</translation>
 <translation id="727747134524199931">स्तंभ शीर्षलेख</translation>
 <translation id="7320576522385648310">बफर होत आहे</translation>
+<translation id="7341556277900466204">कलर वेल</translation>
 <translation id="7353453495576941748">श्रेय</translation>
 <translation id="7364796246159120393">फाइल निवडा</translation>
 <translation id="739024184232394898">अन्य...</translation>
@@ -221,6 +228,7 @@
 <translation id="775297008183122718">अवैध प्रविष्टी</translation>
 <translation id="7789962463072032349">विराम द्या</translation>
 <translation id="7802800022689234070">त्रिकोण प्रकटन</translation>
+<translation id="7852167693871241274">ह्यू स्लायडर</translation>
 <translation id="7888071071722539607">कृपया ईमेल पत्त्यामध्ये '<ph name="ATSIGN" />' समाविष्ट करा. '<ph name="INVALIDADDRESS" />' '<ph name="ATSIGN" />' गमावत आहे.</translation>
 <translation id="7891486169920085145">विभाजक</translation>
 <translation id="795667975304826397">कोणतीही फाइल निवडलेली नाही</translation>
@@ -263,6 +271,7 @@
 <translation id="8875657656876809964">व्हिडिओ प्लेबॅक एरर</translation>
 <translation id="8889402386540077796">रंगछटा</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> KB</translation>
+<translation id="894736920926684893">फॉरमॅट टॉगलर</translation>
 <translation id="8987927404178983737">महिना</translation>
 <translation id="901493112792887934">वर्तमान वेळ सेकंदांमध्ये</translation>
 <translation id="901834265349196618">ईमेल</translation>

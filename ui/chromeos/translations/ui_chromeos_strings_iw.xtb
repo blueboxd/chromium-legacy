@@ -90,6 +90,7 @@
 <translation id="1947424002851288782">מקלדת גרמנית</translation>
 <translation id="1972984168337863910">הרחבת חלוניות המשוב של קבצים</translation>
 <translation id="1984603991036629094">מקלדת פונטית ארמנית</translation>
+<translation id="1995337122023280937">מעבר אל מיקום הקובץ</translation>
 <translation id="2001796770603320721">‏ניהול ב-Drive</translation>
 <translation id="2009067268969781306">פירמוט של התקן אחסון מוחק את כל הנתונים שמאוחסנים בו. לא ניתן לבטל את הפעולה הזו.</translation>
 <translation id="2028997212275086731">‏ארכיון RAR</translation>
@@ -141,6 +142,7 @@
 <translation id="2638942478653899953">‏לא ניתן היה להגיע אל Google Drive‏. <ph name="BEGIN_LINK" />צא<ph name="END_LINK" /> ואז התחבר שוב.</translation>
 <translation id="2649120831653069427">דג</translation>
 <translation id="2661146741306740526">16x9</translation>
+<translation id="2664412712123763093">מיקום הקובץ</translation>
 <translation id="2672394958563893062">אירעה שגיאה. לחץ כדי להתחיל מחדש.</translation>
 <translation id="2676946222714718093">מופעל ב-</translation>
 <translation id="2735698359135166290">מקלדת רומנית רגילה</translation>
@@ -327,6 +329,7 @@
 <translation id="4880520557730313061">תיקון אוטומטי</translation>
 <translation id="4881695831933465202">פתיחה</translation>
 <translation id="4886021172213954916">‏מקלדת טמילית (Typewriter)</translation>
+<translation id="4892969127351273348">לא ניתן לפתוח באמצעות <ph name="APP_NAME" /></translation>
 <translation id="4905417359854579806">מוכן לגבות <ph name="FILE_COUNT" /></translation>
 <translation id="4924638091161556692">קבוע</translation>
 <translation id="4935975195727477204">פרח גזניה</translation>
@@ -348,6 +351,7 @@
 <translation id="5081517858322016911">קבצים בנפח כולל של <ph name="TOTAL_FILE_SIZE" /> יימחקו</translation>
 <translation id="509429900233858213">אירעה שגיאה.</translation>
 <translation id="5098629044894065541">עברית</translation>
+<translation id="5112685521274804841">הקבצים בתיקייה הזו הם לקריאה בלבד. לא ניתן לבצע פעולות מסוימות.</translation>
 <translation id="5123433949759960244">כדורסל</translation>
 <translation id="5129662217315786329">פולנית</translation>
 <translation id="5144820558584035333">Hangul 3 Set (390)‎</translation>
@@ -699,6 +703,7 @@
 <translation id="9034924485347205037">‏קובצי Linux</translation>
 <translation id="9035012421917565900">לא ניתן להחזיר את הפריטים אל '<ph name="DESTINATION_NAME" />', ולא ניתן לבטל את הפעולה.</translation>
 <translation id="9038620279323455325">הקובץ שנקרא "<ph name="FILE_NAME" />" כבר קיים. יש לבחור שם אחר.</translation>
+<translation id="9062992083244091966">כדי לפתוח קבצים עם אפליקציות <ph name="APP_NAME" /> קודם צריך להעביר אותם אל תיקיית הקבצים המשותפים של <ph name="APP_NAME" />.</translation>
 <translation id="9064939804718829769">מעביר...</translation>
 <translation id="9065203028668620118">עריכה</translation>
 <translation id="9099674669267916096">מספר עמודים</translation>

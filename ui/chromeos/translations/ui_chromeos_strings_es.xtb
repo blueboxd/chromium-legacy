@@ -90,6 +90,7 @@
 <translation id="1947424002851288782">Teclado alemán</translation>
 <translation id="1972984168337863910">Ampliar paneles de comentarios de archivos</translation>
 <translation id="1984603991036629094">Teclado fonético armenio</translation>
+<translation id="1995337122023280937">Ir a la ubicación del archivo</translation>
 <translation id="2001796770603320721">Administrar en Drive</translation>
 <translation id="2009067268969781306">Al formatear una unidad, se eliminarán todos los datos almacenados. Esta acción no se puede deshacer.</translation>
 <translation id="2028997212275086731">Archivo RAR</translation>
@@ -141,6 +142,7 @@
 <translation id="2638942478653899953">No se ha podido acceder a Google Drive. <ph name="BEGIN_LINK" />Cierra la sesión<ph name="END_LINK" /> y vuelve a iniciarla.</translation>
 <translation id="2649120831653069427">Pez arcoíris</translation>
 <translation id="2661146741306740526">16x9</translation>
+<translation id="2664412712123763093">Ubicación del archivo</translation>
 <translation id="2672394958563893062">Se ha producido un error. Haz clic para reiniciar la reproducción desde el principio.</translation>
 <translation id="2676946222714718093">Reproduciendo en</translation>
 <translation id="2735698359135166290">Teclado rumano estándar</translation>
@@ -327,6 +329,7 @@
 <translation id="4880520557730313061">Ajuste automático</translation>
 <translation id="4881695831933465202">Abrir</translation>
 <translation id="4886021172213954916">Teclado tamil (máquina de escribir)</translation>
+<translation id="4892969127351273348">No se puede abrir con <ph name="APP_NAME" /></translation>
 <translation id="4905417359854579806">Ya puedes crear la copia de seguridad de <ph name="FILE_COUNT" /></translation>
 <translation id="4924638091161556692">Fija</translation>
 <translation id="4935975195727477204">Gazania</translation>
@@ -348,6 +351,7 @@
 <translation id="5081517858322016911">Se eliminarán <ph name="TOTAL_FILE_SIZE" /> de archivos</translation>
 <translation id="509429900233858213">Se ha producido un error.</translation>
 <translation id="5098629044894065541">Hebreo</translation>
+<translation id="5112685521274804841">Los archivos de esta carpeta son de solo lectura. Algunas actividades no son compatibles.</translation>
 <translation id="5123433949759960244">Balón de baloncesto</translation>
 <translation id="5129662217315786329">Polaco</translation>
 <translation id="5144820558584035333">Hangul de triple alternancia (390)</translation>
@@ -698,6 +702,7 @@
 <translation id="9034924485347205037">Archivos de Linux</translation>
 <translation id="9035012421917565900">Estos elementos no se pueden volver a mover a "<ph name="DESTINATION_NAME" />", por lo que no podrás deshacer esta acción.</translation>
 <translation id="9038620279323455325">Ya existe el archivo "<ph name="FILE_NAME" />". Elige otro nombre.</translation>
+<translation id="9062992083244091966">Para abrir archivos con la aplicación <ph name="APP_NAME" />, primero debes moverlos a la carpeta de archivos compartidos de <ph name="APP_NAME" />.</translation>
 <translation id="9064939804718829769">Transfiriendo...</translation>
 <translation id="9065203028668620118">Editar</translation>
 <translation id="9099674669267916096">Número de páginas</translation>

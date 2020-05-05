@@ -48,6 +48,7 @@
 <translation id="2440823041667407902">Aðgangur að staðsetningu</translation>
 <translation id="2482878487686419369">Tilkynningar</translation>
 <translation id="2490684707762498678">Stýrt af <ph name="APP_NAME" /></translation>
+<translation id="2498359688066513246">Hjálp og ábendingar</translation>
 <translation id="2501278716633472235">Fara til baka</translation>
 <translation id="2537296579376733324">Öll fótspor, aðeins á þessu vefsvæði</translation>
 <translation id="2569468611847789653">{COOKIE_COUNT,plural, =1{Lokað á eitt fótspor}one{Lokað á # fótspor}other{Lokað á # fótspor}}</translation>
@@ -89,6 +90,7 @@
 <translation id="4165986682804962316">Svæðisstillingar</translation>
 <translation id="4226663524361240545">Tilkynningar gætu látið tækið titra</translation>
 <translation id="4259722352634471385">Lokað er fyrir skoðun: <ph name="URL" /></translation>
+<translation id="4275663329226226506">Margmiðlun</translation>
 <translation id="4278390842282768270">Leyft</translation>
 <translation id="4433925000917964731">Léttútgáfa síðu frá Google</translation>
 <translation id="4434045419905280838">Sprettigluggar og framsendingar</translation>
@@ -99,6 +101,7 @@
 <translation id="4645575059429386691">Stjórnað af foreldri þínu</translation>
 <translation id="4670064810192446073">Sýndarveruleiki</translation>
 <translation id="4751476147751820511">Hreyfi- eða birtuskynjarar</translation>
+<translation id="4759238208242260848">Niðurhal</translation>
 <translation id="4883854917563148705">Ekki er hægt að endurstilla stýrðar stillingar</translation>
 <translation id="4887024562049524730">Spyrja áður en vefsvæði nota sýndarveruleikatæki og -gögn (ráðlagt)</translation>
 <translation id="4962975101802056554">Afturkalla allar heimildir fyrir þetta tæki</translation>
@@ -136,6 +139,7 @@
 <translation id="5939518447894949180">Endurstilla</translation>
 <translation id="6040143037577758943">Loka</translation>
 <translation id="6042308850641462728">Meira</translation>
+<translation id="6064125863973209585">Niðurhali lokið</translation>
 <translation id="6165508094623778733">Frekari upplýsingar</translation>
 <translation id="6181444274883918285">Bæta við undantekningu</translation>
 <translation id="6192792657125177640">Undantekningar</translation>
@@ -207,6 +211,7 @@
 <translation id="8380167699614421159">Þetta vefsvæði sýnir ágengar eða villandi auglýsingar</translation>
 <translation id="8394832520002899662">Ýttu til að fara aftur á vefsvæðið</translation>
 <translation id="8447861592752582886">Afturkalla tækjaheimild</translation>
+<translation id="8463851957836045671">Vefsvæðið er hratt</translation>
 <translation id="851751545965956758">Ekki leyfa vefsvæðum að tengjast tækjum</translation>
 <translation id="857943718398505171">Leyft (ráðlagt)</translation>
 <translation id="8609465669617005112">Færa upp</translation>
@@ -220,6 +225,7 @@
 <translation id="8847988622838149491">USB</translation>
 <translation id="885701979325669005">Geymslurými</translation>
 <translation id="8926666909099850184">Slökkt er á NFC fyrir þetta tæki. Kveiktu á því í <ph name="BEGIN_LINK" />stillingum Android<ph name="END_LINK" />.</translation>
+<translation id="8929372349074745002">Þetta vefsvæði opnast fljótt og svarar hratt fyrir flesta notendur</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8958424370300090006">Lokaðu á fótspor fyrir tiltekið vefsvæði.</translation>
 <translation id="8959122750345127698">Ekki næst samband: <ph name="URL" /></translation>

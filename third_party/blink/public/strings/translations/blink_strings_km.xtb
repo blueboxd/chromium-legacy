@@ -35,6 +35,7 @@
 <translation id="1938124657309484470">តម្លៃត្រូវតែ <ph name="MAXIMUM_DATE_OR_TIME" /> ឬមុននេះ។</translation>
 <translation id="1946271899482435442">បង្ហាញ​ឧបករណ៍​ជ្រើស​រើសកាល​បរិច្ឆេទ​</translation>
 <translation id="1993104285338243655">បាន​ប្តូរ​ទៅការបញ្ចាំង</translation>
+<translation id="2031987842108996681">បណ្ដាញ​ក្រហម</translation>
 <translation id="2060505056492490888">'<ph name="DOT" />' ត្រូវបានប្រើនៅក្នុងទីតាំងខុសនៅក្នុង '<ph name="INVALIDDOMAIN" />'។</translation>
 <translation id="2148716181193084225">ថ្ងៃនេះ</translation>
 <translation id="2158401438286456825">បញ្ជី​ទំព័រ</translation>
@@ -45,6 +46,7 @@
 <translation id="2291999235780842123">ប្រអប់ធីក</translation>
 <translation id="2311842470354187719">បំបែក​ទំព័រ</translation>
 <translation id="2335594187091864976">កម្មវិធីជ្រើសកាលបរិច្ឆេទ និងម៉ោង</translation>
+<translation id="2393030564806080191">តម្លៃពណ៌​គោលដប់ប្រាំមួយ</translation>
 <translation id="245932805758469625">ចំនួន​វិនាទី​នៅ​សល់​សម្រាប់​ការចាក់​វីដេអូ</translation>
 <translation id="248395913932153421">ថ្ងៃ</translation>
 <translation id="2507943997699731163">សូមបំពេញប្រអប់នេះ។</translation>
@@ -52,6 +54,7 @@
 <translation id="2561842179657104141">បង្ហាញការគ្រប់គ្រងមេឌៀជាច្រើនទៀត</translation>
 <translation id="2572483411312390101">លេង</translation>
 <translation id="2613802280814924224">សូមបញ្ចូលតម្លៃដែលមានសុពលភាព។ តម្លៃដែលមានសុពលភាពក្បែរបំផុតគឺ <ph name="VALID_VALUE" />។</translation>
+<translation id="2634240155926812724">បណ្ដាញ​បៃតង</translation>
 <translation id="2653659639078652383">ដាក់ស្នើ</translation>
 <translation id="2657045182931379222">វត្ថុ​ក្រាហ្វិក</translation>
 <translation id="2674318244760992338">ផ្នែកខាងក្រោម</translation>
@@ -127,6 +130,7 @@
 <translation id="5034860022980953847">សញ្ញាបង្ហាញពីដំណើរការ</translation>
 <translation id="5090250355906949916">របារ​រំកិល​ពេលវេលា​វីដេអូ</translation>
 <translation id="5093189678851173835">សម្រង់​ខ្លីៗ</translation>
+<translation id="509897012892853729">បណ្ដាញ​ខៀវ</translation>
 <translation id="5117590920725113268">បង្ហាញខែបន្ទាប់</translation>
 <translation id="512758898067543763">ផ្នែកក្បាលជួរដេក</translation>
 <translation id="5143125788380636750">អវសាន​កថា</translation>
@@ -164,6 +168,7 @@
 <translation id="6166809985690652833">សេចក្ដី​បញ្ចប់</translation>
 <translation id="6209276755895393898">ហាក់ដូចជា៖ <ph name="DESCRIPTION" /></translation>
 <translation id="6213469881011901533">សទ្ទានុក្រម</translation>
+<translation id="6281588256137006900">ភាពភ្លឺ</translation>
 <translation id="6281763101136022427">url</translation>
 <translation id="6310801910862476708">ចាកចេញ​ពីមុខងារ​រូបក្នុងរូប</translation>
 <translation id="6398862346408813489">បង្ហាញបន្ទះជ្រើសរើសខែ</translation>
@@ -184,6 +189,7 @@
 <translation id="6790428901817661496">លេង</translation>
 <translation id="6820355525329141109">មិនអាចដំណើរការកម្មវិធីជំនួយទេ។</translation>
 <translation id="6820615603175220800">ឯកសារ​យោងនៃ​គន្ថនិទ្ទេស</translation>
+<translation id="6831465880655513317">ជម្រើសពណ៌​ដែលមាន​របាររំកិល​ពីរវិមាត្រ សម្រាប់​ជ្រើសរើស​ភាពឆ្អែត និង​ភាពភ្លឺ</translation>
 <translation id="6843725295806269523">បិទសម្លេង</translation>
 <translation id="6885760532393684712">ថត</translation>
 <translation id="689129560213475294">ឈ្មោះ​ក្រុមហ៊ុន​បោះពុម្ព​ផ្សាយ</translation>
@@ -201,6 +207,7 @@
 <translation id="7263440858009898357">សូមជ្រើសរើសធាតុនៅក្នុងបញ្ជី។</translation>
 <translation id="727747134524199931">ផ្នែកក្បាលជួរឈរ</translation>
 <translation id="7320576522385648310">កំពុងផ្ទុកបណ្ដោះអាសន្ន</translation>
+<translation id="7341556277900466204">ជម្រើស​ពណ៌</translation>
 <translation id="7353453495576941748">ការថ្លែងអំណរគុណ</translation>
 <translation id="7364796246159120393">ជ្រើសរើសឯកសារ</translation>
 <translation id="739024184232394898">ផ្សេងទៀត...</translation>
@@ -221,6 +228,7 @@
 <translation id="775297008183122718">ធាតុគ្មានសុពលភាព</translation>
 <translation id="7789962463072032349">ផ្អាក</translation>
 <translation id="7802800022689234070">ត្រីកោណបង្ហាញ</translation>
+<translation id="7852167693871241274">របាររំកិល​ពណ៌</translation>
 <translation id="7888071071722539607">សូមបញ្ចូល '<ph name="ATSIGN" />' នៅក្នុងអាសយដ្ឋានអ៊ីម៉ែល។ '<ph name="INVALIDADDRESS" />' បាត់បង់ '<ph name="ATSIGN" />'។</translation>
 <translation id="7891486169920085145">អង្គបំបែក</translation>
 <translation id="795667975304826397">មិនមានឯកសារត្រូវបានជ្រើសរើសទេ</translation>
@@ -263,6 +271,7 @@
 <translation id="8875657656876809964">មាន​បញ្ហា​ក្នុង​ការ​ចាក់​​វីដេអូ​</translation>
 <translation id="8889402386540077796">ពណ៌</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> KB</translation>
+<translation id="894736920926684893">ប៊ូតុងជ្រើសរើសទម្រង់ពណ៌</translation>
 <translation id="8987927404178983737">ខែ</translation>
 <translation id="901493112792887934">ពេលវេលាបច្ចុប្បន្នជាវិនាទី</translation>
 <translation id="901834265349196618">អ៊ីម៉ែល</translation>

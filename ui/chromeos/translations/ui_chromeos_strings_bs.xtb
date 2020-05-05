@@ -90,6 +90,7 @@
 <translation id="1947424002851288782">Njemačka tastatura</translation>
 <translation id="1972984168337863910">Proširivanje ploča za povratne informacije o fajlovima</translation>
 <translation id="1984603991036629094">Armenska fonetička tastatura</translation>
+<translation id="1995337122023280937">Posjeti lokaciju fajla</translation>
 <translation id="2001796770603320721">Upravljajte na Disku</translation>
 <translation id="2009067268969781306">Formatiranjem diska ćete izbrisati sve podatke koji su na njemu pohranjeni. Ova radnja se ne može poništiti.</translation>
 <translation id="2028997212275086731">RAR arhiva</translation>
@@ -141,6 +142,7 @@
 <translation id="2638942478653899953">Pristupanje Google Disku nije uspjelo. <ph name="BEGIN_LINK" />Odjavite se<ph name="END_LINK" /> te se ponovo prijavite.</translation>
 <translation id="2649120831653069427">Dugina riba</translation>
 <translation id="2661146741306740526">16 x 9</translation>
+<translation id="2664412712123763093">Lokacija fajla</translation>
 <translation id="2672394958563893062">Došlo je do greške. Kliknite da ponovo pokrenete od početka.</translation>
 <translation id="2676946222714718093">Reproducira se na</translation>
 <translation id="2735698359135166290">Rumunska standardna tastatura</translation>
@@ -327,6 +329,7 @@
 <translation id="4880520557730313061">Automatsko rješenje</translation>
 <translation id="4881695831933465202">Otvori</translation>
 <translation id="4886021172213954916">Tamilska tastatura (pisaća mašina)</translation>
+<translation id="4892969127351273348">Nije moguće otvoriti s aplikacijom <ph name="APP_NAME" /></translation>
 <translation id="4905417359854579806">Broj fajlova spremnih za izradu sigurnosne kopije: <ph name="FILE_COUNT" /></translation>
 <translation id="4924638091161556692">Fiksni razmjer</translation>
 <translation id="4935975195727477204">Cvijet gazanije</translation>
@@ -348,6 +351,7 @@
 <translation id="5081517858322016911">Broj fajlova koji će se izbrisati: <ph name="TOTAL_FILE_SIZE" /></translation>
 <translation id="509429900233858213">Došlo je do greške.</translation>
 <translation id="5098629044894065541">Hebrejska</translation>
+<translation id="5112685521274804841">Fajlovi u ovim folderima su samo za čitanje. Neke aktivnosti nisu podržane.</translation>
 <translation id="5123433949759960244">Košarka</translation>
 <translation id="5129662217315786329">Poljska</translation>
 <translation id="5144820558584035333">Hangul 3 Set (390)</translation>
@@ -698,6 +702,7 @@
 <translation id="9034924485347205037">Linux fajlovi</translation>
 <translation id="9035012421917565900">Stavke se ne mogu premjestiti nazad u "<ph name="DESTINATION_NAME" />", tako da nećete moći opozvati ovu radnju.</translation>
 <translation id="9038620279323455325">Fajl s nazivom "<ph name="FILE_NAME" />" već postoji. Odaberite drugi naziv fajla.</translation>
+<translation id="9062992083244091966">Da otvorite fajlove pomoću aplikacija <ph name="APP_NAME" />, najprije ih premjestite u folder dijeljenih fajlova aplikacije <ph name="APP_NAME" />.</translation>
 <translation id="9064939804718829769">Prenošenje...</translation>
 <translation id="9065203028668620118">Uredi</translation>
 <translation id="9099674669267916096">Broj stranica</translation>

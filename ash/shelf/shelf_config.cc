@@ -135,7 +135,6 @@ ShelfConfig::ShelfConfig()
   accessibility_observer_ = std::make_unique<ShelfAccessibilityObserver>(
       base::BindRepeating(&ShelfConfig::UpdateConfigForAccessibilityState,
                           base::Unretained(this)));
-  UpdateConfig(is_app_list_visible_);
 }
 
 ShelfConfig::~ShelfConfig() = default;
@@ -154,25 +153,29 @@ void ShelfConfig::RemoveObserver(Observer* observer) {
 }
 
 void ShelfConfig::Init() {
-  if (!chromeos::switches::ShouldShowShelfHotseat())
-    return;
+  Shell* const shell = Shell::Get();
 
-  Shell* shell = Shell::Get();
+  if (chromeos::switches::ShouldShowShelfHotseat()) {
+    shell->app_list_controller()->AddObserver(this);
+    display::Screen::GetScreen()->AddObserver(this);
+    shell->system_tray_model()->virtual_keyboard()->AddObserver(this);
+  }
+
   shell->tablet_mode_controller()->AddObserver(this);
-  shell->app_list_controller()->AddObserver(this);
-  display::Screen::GetScreen()->AddObserver(this);
-  shell->system_tray_model()->virtual_keyboard()->AddObserver(this);
+  in_tablet_mode_ = shell->IsInTabletMode();
+  UpdateConfig(is_app_list_visible_, /*tablet_mode_changed=*/false);
 }
 
 void ShelfConfig::Shutdown() {
+  Shell* const shell = Shell::Get();
+  shell->tablet_mode_controller()->RemoveObserver(this);
+
   if (!chromeos::switches::ShouldShowShelfHotseat())
     return;
 
-  Shell* shell = Shell::Get();
+  shell->system_tray_model()->virtual_keyboard()->RemoveObserver(this);
   display::Screen::GetScreen()->RemoveObserver(this);
   shell->app_list_controller()->RemoveObserver(this);
-  shell->tablet_mode_controller()->RemoveObserver(this);
-  shell->system_tray_model()->virtual_keyboard()->RemoveObserver(this);
 }
 
 void ShelfConfig::OnTabletModeStarting() {
@@ -181,20 +184,36 @@ void ShelfConfig::OnTabletModeStarting() {
   // transition animation. Otherwise, updating the shelf bounds during the
   // animation will lead to work-area bounds changes which lead to many
   // re-layouts, hurting the animation's smoothness. https://crbug.com/1044316.
-  UpdateConfig(is_app_list_visible_);
+  DCHECK(!in_tablet_mode_);
+  in_tablet_mode_ = true;
+
+  if (!chromeos::switches::ShouldShowShelfHotseat())
+    return;
+
+  UpdateConfig(is_app_list_visible_, /*tablet_mode_changed=*/true);
 }
 
-void ShelfConfig::OnTabletModeEnded() {
-  UpdateConfig(is_app_list_visible_);
+void ShelfConfig::OnTabletModeEnding() {
+  // Many events can lead to UpdateConfig being called as a result of
+  // OnTabletModeEnded(), therefore we need to listen to the "ending" stage
+  // rather than the "ended", so |in_tablet_mode_| gets updated correctly, and
+  // the shelf bounds are stabilized early so as not to have multiple
+  // unnecessary work-area bounds changes.
+  in_tablet_mode_ = false;
+
+  if (!chromeos::switches::ShouldShowShelfHotseat())
+    return;
+
+  UpdateConfig(is_app_list_visible_, /*tablet_mode_changed=*/true);
 }
 
 void ShelfConfig::OnDisplayMetricsChanged(const display::Display& display,
                                           uint32_t changed_metrics) {
-  UpdateConfig(is_app_list_visible_);
+  UpdateConfig(is_app_list_visible_, /*tablet_mode_changed=*/false);
 }
 
 void ShelfConfig::OnVirtualKeyboardVisibilityChanged() {
-  UpdateConfig(is_app_list_visible_);
+  UpdateConfig(is_app_list_visible_, /*tablet_mode_changed=*/false);
 }
 
 void ShelfConfig::OnAppListVisibilityWillChange(bool shown,
@@ -203,7 +222,8 @@ void ShelfConfig::OnAppListVisibilityWillChange(bool shown,
   // would lead to a lot of extraneous relayout work.
   DCHECK_NE(is_app_list_visible_, shown);
 
-  UpdateConfig(shown /*app_list_visible*/);
+  UpdateConfig(/*new_is_app_list_visible=*/shown,
+               /*tablet_mode_changed=*/false);
 }
 
 bool ShelfConfig::ShelfControlsForcedShownForAccessibility() const {
@@ -228,8 +248,7 @@ int ShelfConfig::system_shelf_size() const {
 }
 
 int ShelfConfig::hotseat_size() const {
-  if (!chromeos::switches::ShouldShowShelfHotseat() ||
-      !Shell::Get()->IsInTabletMode()) {
+  if (!chromeos::switches::ShouldShowShelfHotseat() || !in_tablet_mode_) {
     return shelf_size();
   }
   return is_dense_ ? 48 : 56;
@@ -263,7 +282,7 @@ int ShelfConfig::control_size() const {
   if (!chromeos::switches::ShouldShowShelfHotseat())
     return 40;
 
-  if (!Shell::Get()->IsInTabletMode())
+  if (!in_tablet_mode_)
     return 36;
 
   return is_dense_ ? 36 : 40;
@@ -271,14 +290,14 @@ int ShelfConfig::control_size() const {
 
 int ShelfConfig::control_border_radius() const {
   return (chromeos::switches::ShouldShowShelfHotseat() && is_in_app() &&
-          Shell::Get()->IsInTabletMode())
+          in_tablet_mode_)
              ? control_size() / 2 - in_app_control_button_height_inset_
              : control_size() / 2;
 }
 
 int ShelfConfig::control_button_edge_spacing(bool is_primary_axis_edge) const {
   if (is_primary_axis_edge)
-    return Shell::Get()->IsInTabletMode() ? 8 : 6;
+    return in_tablet_mode_ ? 8 : 6;
 
   return (shelf_size() - control_size()) / 2;
 }
@@ -313,25 +332,25 @@ float ShelfConfig::drag_hide_ratio_threshold() const {
   return kDragHideRatioThreshold;
 }
 
-void ShelfConfig::UpdateConfig(bool new_is_app_list_visible) {
+void ShelfConfig::UpdateConfig(bool new_is_app_list_visible,
+                               bool tablet_mode_changed) {
   const gfx::Rect screen_size =
       display::Screen::GetScreen()->GetPrimaryDisplay().bounds();
 
-  const bool in_tablet_mode = Shell::Get()->IsInTabletMode();
   const bool new_is_dense =
       chromeos::switches::ShouldShowShelfHotseat() &&
-      (!in_tablet_mode ||
+      (!in_tablet_mode_ ||
        (screen_size.width() <= kDenseShelfScreenSizeThreshold ||
         screen_size.height() <= kDenseShelfScreenSizeThreshold));
 
   const bool can_hide_shelf_controls =
-      in_tablet_mode && features::IsHideShelfControlsInTabletModeEnabled();
+      in_tablet_mode_ && features::IsHideShelfControlsInTabletModeEnabled();
   const bool new_shelf_controls_shown =
       !can_hide_shelf_controls || ShelfControlsForcedShownForAccessibility();
   // Record reason to show shelf control buttons only if tablet mode changes, or
   // if the buttons visibility state changes
   if (can_hide_shelf_controls && new_shelf_controls_shown &&
-      (!in_tablet_mode_ || !shelf_controls_shown_)) {
+      (tablet_mode_changed || !shelf_controls_shown_)) {
     RecordReasonForShowingShelfControls();
   }
 
@@ -343,8 +362,6 @@ void ShelfConfig::UpdateConfig(bool new_is_app_list_visible) {
       Shell::Get()->system_tray_model()
           ? Shell::Get()->system_tray_model()->virtual_keyboard()->visible()
           : false;
-
-  in_tablet_mode_ = in_tablet_mode;
 
   if (is_dense_ == new_is_dense &&
       shelf_controls_shown_ == new_shelf_controls_shown &&
@@ -367,7 +384,7 @@ int ShelfConfig::GetShelfSize(bool ignore_in_app_state) const {
     return 56;
 
   // In clamshell mode, the shelf always has the same size.
-  if (!Shell::Get()->IsInTabletMode())
+  if (!in_tablet_mode_)
     return 48;
 
   if (!ignore_in_app_state && is_in_app())
@@ -380,8 +397,7 @@ SkColor ShelfConfig::GetShelfControlButtonColor() const {
   const session_manager::SessionState session_state =
       Shell::Get()->session_controller()->GetSessionState();
 
-  if (chromeos::switches::ShouldShowShelfHotseat() &&
-      Shell::Get()->IsInTabletMode() &&
+  if (chromeos::switches::ShouldShowShelfHotseat() && in_tablet_mode_ &&
       session_state == session_manager::SessionState::ACTIVE) {
     return is_in_app() ? SK_ColorTRANSPARENT : GetDefaultShelfColor();
   } else if (session_state == session_manager::SessionState::OOBE) {
@@ -428,10 +444,10 @@ SkColor ShelfConfig::GetDefaultShelfColor() const {
 
   AshColorProvider::BaseLayerType layer_type;
   if (!chromeos::switches::ShouldShowShelfHotseat()) {
-    layer_type = Shell::Get()->IsInTabletMode()
+    layer_type = in_tablet_mode_
                      ? AshColorProvider::BaseLayerType::kTransparent60
                      : AshColorProvider::BaseLayerType::kTransparent80;
-  } else if (Shell::Get()->IsInTabletMode()) {
+  } else if (in_tablet_mode_) {
     layer_type = is_in_app() ? AshColorProvider::BaseLayerType::kTransparent90
                              : AshColorProvider::BaseLayerType::kTransparent60;
   } else {
@@ -446,8 +462,8 @@ SkColor ShelfConfig::GetDefaultShelfColor() const {
 
 int ShelfConfig::GetShelfControlButtonBlurRadius() const {
   if (features::IsBackgroundBlurEnabled() &&
-      chromeos::switches::ShouldShowShelfHotseat() &&
-      Shell::Get()->IsInTabletMode() && !is_in_app()) {
+      chromeos::switches::ShouldShowShelfHotseat() && in_tablet_mode_ &&
+      !is_in_app()) {
     return shelf_blur_radius_;
   }
   return 0;
@@ -483,7 +499,7 @@ gfx::Size ShelfConfig::DragHandleSize() const {
 }
 
 void ShelfConfig::UpdateConfigForAccessibilityState() {
-  UpdateConfig(is_app_list_visible_);
+  UpdateConfig(is_app_list_visible_, /*tablet_mode_changed=*/false);
 }
 
 void ShelfConfig::OnShelfConfigUpdated() {

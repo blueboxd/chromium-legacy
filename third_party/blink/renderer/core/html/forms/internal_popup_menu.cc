@@ -68,7 +68,7 @@ class PopupMenuCSSFontSelector : public CSSFontSelector,
   void Trace(Visitor*) override;
 
  private:
-  void FontsNeedUpdate(FontSelector*) override;
+  void FontsNeedUpdate(FontSelector*, FontInvalidationReason) override;
 
   Member<CSSFontSelector> owner_font_selector_;
 };
@@ -88,8 +88,9 @@ scoped_refptr<FontData> PopupMenuCSSFontSelector::GetFontData(
   return owner_font_selector_->GetFontData(description, name);
 }
 
-void PopupMenuCSSFontSelector::FontsNeedUpdate(FontSelector* font_selector) {
-  DispatchInvalidationCallbacks();
+void PopupMenuCSSFontSelector::FontsNeedUpdate(FontSelector* font_selector,
+                                               FontInvalidationReason reason) {
+  DispatchInvalidationCallbacks(reason);
 }
 
 void PopupMenuCSSFontSelector::Trace(Visitor* visitor) {

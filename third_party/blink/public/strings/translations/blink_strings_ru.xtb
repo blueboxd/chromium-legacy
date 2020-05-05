@@ -35,7 +35,7 @@
 <translation id="1938124657309484470">Максимальное значение должно быть <ph name="MAXIMUM_DATE_OR_TIME" />.</translation>
 <translation id="1946271899482435442">Показать окно выбора даты</translation>
 <translation id="1993104285338243655">Включено дублирование экрана</translation>
-<translation id="2031987842108996681">Канал красного цвета</translation>
+<translation id="2031987842108996681">Красный канал</translation>
 <translation id="2060505056492490888">Недопустимое положение символа "<ph name="DOT" />" в адресе "<ph name="INVALIDDOMAIN" />".</translation>
 <translation id="2148716181193084225">Сегодня</translation>
 <translation id="2158401438286456825">список страниц</translation>
@@ -54,7 +54,7 @@
 <translation id="2561842179657104141">ещё элементы управления</translation>
 <translation id="2572483411312390101">воспроизведение</translation>
 <translation id="2613802280814924224">Введите допустимое значение. Ближайшее допустимое значение: <ph name="VALID_VALUE" />.</translation>
-<translation id="2634240155926812724">Канал зеленого цвета</translation>
+<translation id="2634240155926812724">Зеленый канал</translation>
 <translation id="2653659639078652383">Отправить</translation>
 <translation id="2657045182931379222">графический объект</translation>
 <translation id="2674318244760992338">нижний колонтитул</translation>
@@ -130,7 +130,7 @@
 <translation id="5034860022980953847">индикатор хода выполнения</translation>
 <translation id="5090250355906949916">полоса воспроизведения видео</translation>
 <translation id="5093189678851173835">эпиграф</translation>
-<translation id="509897012892853729">Канал синего цвета</translation>
+<translation id="509897012892853729">Синий канал</translation>
 <translation id="5117590920725113268">Показать следующий месяц</translation>
 <translation id="512758898067543763">заголовок строки</translation>
 <translation id="5143125788380636750">эпилог</translation>

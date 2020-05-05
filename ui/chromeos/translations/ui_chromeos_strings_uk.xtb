@@ -90,6 +90,7 @@
 <translation id="1947424002851288782">Німецька розкладка</translation>
 <translation id="1972984168337863910">Розгортаються панелі відгуків про файли</translation>
 <translation id="1984603991036629094">Вірменська клавіатура (фонетична)</translation>
+<translation id="1995337122023280937">Відкрити місце розташування файлу</translation>
 <translation id="2001796770603320721">Керувати на Диску</translation>
 <translation id="2009067268969781306">Якщо відформатувати диск, усі збережені на ньому дані буде видалено. Цю дію не можна відмінити.</translation>
 <translation id="2028997212275086731">Архів у форматі RAR</translation>
@@ -141,6 +142,7 @@
 <translation id="2638942478653899953">Диск Google недоступний. <ph name="BEGIN_LINK" />Вийдіть<ph name="END_LINK" /> і ввійдіть знову.</translation>
 <translation id="2649120831653069427">Золота рибка</translation>
 <translation id="2661146741306740526">16x9</translation>
+<translation id="2664412712123763093">Місце розташування файлу</translation>
 <translation id="2672394958563893062">Сталася помилка. Натисніть, щоб знову запустити з початку.</translation>
 <translation id="2676946222714718093">Відтворюється на пристрої</translation>
 <translation id="2735698359135166290">Стандартна румунська клавіатура</translation>
@@ -327,6 +329,7 @@
 <translation id="4880520557730313061">Автовиправлення</translation>
 <translation id="4881695831933465202">Відкрити</translation>
 <translation id="4886021172213954916">Тамільська клавіатура (друкарська машинка)</translation>
+<translation id="4892969127351273348">Не вдається відкрити за допомогою додатка <ph name="APP_NAME" /></translation>
 <translation id="4905417359854579806">Готово до резервного копіювання: <ph name="FILE_COUNT" /></translation>
 <translation id="4924638091161556692">Виправлено</translation>
 <translation id="4935975195727477204">Квітка</translation>
@@ -348,6 +351,7 @@
 <translation id="5081517858322016911">Буде видалено файли загальним обсягом <ph name="TOTAL_FILE_SIZE" /></translation>
 <translation id="509429900233858213">Сталася помилка.</translation>
 <translation id="5098629044894065541">Іврит</translation>
+<translation id="5112685521274804841">Файли в цій папці можна лише переглядати. Деякі дії не підтримуються.</translation>
 <translation id="5123433949759960244">Баскетбол</translation>
 <translation id="5129662217315786329">Польська</translation>
 <translation id="5144820558584035333">Клавіатура хангул із 3 наборами клавіш (390)</translation>
@@ -698,6 +702,7 @@
 <translation id="9034924485347205037">Файли Linux</translation>
 <translation id="9035012421917565900">Елементи не можна перенести назад у розташування "<ph name="DESTINATION_NAME" />", тож ви не зможете відмінити цю дію.</translation>
 <translation id="9038620279323455325">Файл із назвою "<ph name="FILE_NAME" />" уже існує. Виберіть іншу назву.</translation>
+<translation id="9062992083244091966">Щоб відкривати файли через додатки <ph name="APP_NAME" />, спершу перемістіть їх у папку зі спільними файлами додатка <ph name="APP_NAME" />.</translation>
 <translation id="9064939804718829769">Передавання даних…</translation>
 <translation id="9065203028668620118">Редагувати</translation>
 <translation id="9099674669267916096">Кількість сторінок</translation>

@@ -70,7 +70,7 @@ class CORE_EXPORT CSSFontSelector : public FontSelector {
   bool IsPlatformFamilyMatchAvailable(const FontDescription&,
                                       const AtomicString& family) override;
 
-  void FontFaceInvalidated() override;
+  void FontFaceInvalidated(FontInvalidationReason) override;
 
   // FontCacheClient implementation
   void FontCacheInvalidated() override;
@@ -91,7 +91,7 @@ class CORE_EXPORT CSSFontSelector : public FontSelector {
   void Trace(Visitor*) override;
 
  protected:
-  void DispatchInvalidationCallbacks();
+  void DispatchInvalidationCallbacks(FontInvalidationReason);
 
  private:
   // TODO(Oilpan): Ideally this should just be a traced Member but that will

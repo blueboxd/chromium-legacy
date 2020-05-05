@@ -1585,8 +1585,8 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, PersistAndRestoreUserAgentOverride) {
   blink::UserAgentOverride ua_override;
   ua_override.ua_string_override = "override";
   ua_override.ua_metadata_override.emplace();
-  ua_override.ua_metadata_override->brand = "Overrider";
-  ua_override.ua_metadata_override->major_version = "0";
+  ua_override.ua_metadata_override->brand_version_list.emplace_back("Overrider",
+                                                                    "0");
   browser()->tab_strip_model()->GetWebContentsAt(0)->SetUserAgentOverride(
       ua_override, false);
 

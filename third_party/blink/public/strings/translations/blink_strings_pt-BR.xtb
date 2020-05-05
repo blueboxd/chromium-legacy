@@ -46,7 +46,7 @@
 <translation id="2291999235780842123">caixa de seleção</translation>
 <translation id="2311842470354187719">quebra de página</translation>
 <translation id="2335594187091864976">seletor de data e hora</translation>
-<translation id="2393030564806080191">Valor hexadecimal de cor</translation>
+<translation id="2393030564806080191">Valor hexadecimal da cor</translation>
 <translation id="245932805758469625">segundos restantes do vídeo</translation>
 <translation id="248395913932153421">Dia</translation>
 <translation id="2507943997699731163">Preencha este campo.</translation>
@@ -168,7 +168,7 @@
 <translation id="6166809985690652833">posfácio</translation>
 <translation id="6209276755895393898">Parece ser: <ph name="DESCRIPTION" /></translation>
 <translation id="6213469881011901533">glossário</translation>
-<translation id="6281588256137006900">Iluminação</translation>
+<translation id="6281588256137006900">Luminosidade</translation>
 <translation id="6281763101136022427">url</translation>
 <translation id="6310801910862476708">Sair de picture-in-picture</translation>
 <translation id="6398862346408813489">Mostrar painel de seleção de mês</translation>
@@ -189,7 +189,7 @@
 <translation id="6790428901817661496">Reproduzir</translation>
 <translation id="6820355525329141109">Não foi possível carregar o plug-in.</translation>
 <translation id="6820615603175220800">referência bibliográfica</translation>
-<translation id="6831465880655513317">Círculo cromático com controle deslizante bidimensional para seleção de saturação e iluminação</translation>
+<translation id="6831465880655513317">Caixa de cores com controle deslizante bidimensional para seleção de saturação e luminosidade</translation>
 <translation id="6843725295806269523">sem som</translation>
 <translation id="6885760532393684712">diretório</translation>
 <translation id="689129560213475294">colofão</translation>
@@ -207,7 +207,7 @@
 <translation id="7263440858009898357">Selecione um item da lista.</translation>
 <translation id="727747134524199931">cabeçalho da coluna</translation>
 <translation id="7320576522385648310">armazenando em buffer</translation>
-<translation id="7341556277900466204">Círculo cromático</translation>
+<translation id="7341556277900466204">Caixa de cores</translation>
 <translation id="7353453495576941748">crédito</translation>
 <translation id="7364796246159120393">Escolher arquivo</translation>
 <translation id="739024184232394898">Outras...</translation>

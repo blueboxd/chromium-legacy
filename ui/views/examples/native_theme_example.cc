@@ -82,7 +82,6 @@ std::unique_ptr<View> CreateAllColorsView() {
   InsertColorRow(layout, COLOR_LABEL_ARGS(kColorId_UnfocusedBorderColor));
   InsertColorRow(layout, COLOR_LABEL_ARGS(kColorId_ButtonEnabledColor));
   InsertColorRow(layout, COLOR_LABEL_ARGS(kColorId_ButtonDisabledColor));
-  InsertColorRow(layout, COLOR_LABEL_ARGS(kColorId_ButtonPressedShade));
   InsertColorRow(layout, COLOR_LABEL_ARGS(kColorId_ButtonUncheckedColor));
   InsertColorRow(layout, COLOR_LABEL_ARGS(kColorId_ProminentButtonColor));
   InsertColorRow(layout,

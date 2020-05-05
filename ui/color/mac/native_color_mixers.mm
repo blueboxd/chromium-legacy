@@ -32,8 +32,6 @@ void AddNativeUiColorMixer(ColorProvider* provider, bool dark_window) {
   mixer.AddSet(
       {kColorSetNative,
        {
-           {kColorButtonPressedBackgroundShade,
-            SkColorSetA(SK_ColorBLACK, 0x10)},
            {kColorFocusableBorderFocused,
             SkColorSetA(skia::NSSystemColorToSkColor(
                             [NSColor keyboardFocusIndicatorColor]),

@@ -35,6 +35,7 @@
 <translation id="1938124657309484470">Час павінен быць указаны не пазнейшы, чым <ph name="MAXIMUM_DATE_OR_TIME" />.</translation>
 <translation id="1946271899482435442">Паказаць сродак выбару даты</translation>
 <translation id="1993104285338243655">Пераключана на адлюстраванне</translation>
+<translation id="2031987842108996681">Чырвоны канал</translation>
 <translation id="2060505056492490888">Сімвал "<ph name="DOT" />" у адрасе "<ph name="INVALIDDOMAIN" />" размешчаны няправільна.</translation>
 <translation id="2148716181193084225">Сёння</translation>
 <translation id="2158401438286456825">спіс старонак</translation>
@@ -45,6 +46,7 @@
 <translation id="2291999235780842123">поле для птушкі</translation>
 <translation id="2311842470354187719">разрыў старонкі</translation>
 <translation id="2335594187091864976">выбар даты і часу</translation>
+<translation id="2393030564806080191">Шаснаццатковае значэнне колеру</translation>
 <translation id="245932805758469625">колькі секунд відэа засталося</translation>
 <translation id="248395913932153421">Дзень</translation>
 <translation id="2507943997699731163">Запоўніце гэта поле.</translation>
@@ -52,6 +54,7 @@
 <translation id="2561842179657104141">паказаць больш элементаў кіравання мультымедыя</translation>
 <translation id="2572483411312390101">прайграць</translation>
 <translation id="2613802280814924224">Увядзіце дапушчальнае значэнне. Найбліжэйшае дапушчальнае значэнне: <ph name="VALID_VALUE" />.</translation>
+<translation id="2634240155926812724">Зялёны канал</translation>
 <translation id="2653659639078652383">Адправіць</translation>
 <translation id="2657045182931379222">графічны аб'ект</translation>
 <translation id="2674318244760992338">ніжні калонтытул</translation>
@@ -127,6 +130,7 @@
 <translation id="5034860022980953847">індыкатар стану</translation>
 <translation id="5090250355906949916">паўзунок часу відэафайла</translation>
 <translation id="5093189678851173835">эпіграф</translation>
+<translation id="509897012892853729">Сіні канал</translation>
 <translation id="5117590920725113268">Паказаць наступны месяц</translation>
 <translation id="512758898067543763">загаловак радка</translation>
 <translation id="5143125788380636750">эпілог</translation>
@@ -164,6 +168,7 @@
 <translation id="6166809985690652833">пасляслоўе</translation>
 <translation id="6209276755895393898">Здаецца, гэта наступнае: <ph name="DESCRIPTION" /></translation>
 <translation id="6213469881011901533">гласарый</translation>
+<translation id="6281588256137006900">Светласць</translation>
 <translation id="6281763101136022427">url-адрасы</translation>
 <translation id="6310801910862476708">Выйсці з рэжыму "Відарыс у відарысе"</translation>
 <translation id="6398862346408813489">Паказаць панэль выбару месяца</translation>
@@ -184,6 +189,7 @@
 <translation id="6790428901817661496">Прайграць</translation>
 <translation id="6820355525329141109">Не ўдалося загрузіць убудову.</translation>
 <translation id="6820615603175220800">спасылка на бібліяграфію</translation>
+<translation id="6831465880655513317">Палітра выбару колераў з двухмерным паўзунком для выбару насычанасці і светласці</translation>
 <translation id="6843725295806269523">выключыць гук</translation>
 <translation id="6885760532393684712">каталог</translation>
 <translation id="689129560213475294">калафон</translation>
@@ -201,6 +207,7 @@
 <translation id="7263440858009898357">Выберыце пункт са спіса</translation>
 <translation id="727747134524199931">загаловак слупка</translation>
 <translation id="7320576522385648310">буферызацыя</translation>
+<translation id="7341556277900466204">Палітра выбару колераў</translation>
 <translation id="7353453495576941748">падзяка</translation>
 <translation id="7364796246159120393">Выбраць файл</translation>
 <translation id="739024184232394898">Іншыя...</translation>
@@ -221,6 +228,7 @@
 <translation id="775297008183122718">Несапраўдны запіс</translation>
 <translation id="7789962463072032349">прыпыніць</translation>
 <translation id="7802800022689234070">трохвугольнік разгортвання</translation>
+<translation id="7852167693871241274">Паўзунок адцення</translation>
 <translation id="7888071071722539607">У адрасе электроннай пошты павінен быць сімвал "<ph name="ATSIGN" />". У "<ph name="INVALIDADDRESS" />" няма "<ph name="ATSIGN" />".</translation>
 <translation id="7891486169920085145">раздзяляльнік</translation>
 <translation id="795667975304826397">Файл не выбраны</translation>
@@ -263,6 +271,7 @@
 <translation id="8875657656876809964">Памылка прайгравання відэа</translation>
 <translation id="8889402386540077796">Адценне</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> КБ</translation>
+<translation id="894736920926684893">Інструмент пераключэння фармату</translation>
 <translation id="8987927404178983737">Месяц</translation>
 <translation id="901493112792887934">колькі секунд прайшло</translation>
 <translation id="901834265349196618">электронная пошта</translation>

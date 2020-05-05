@@ -48,6 +48,7 @@
 <translation id="2440823041667407902">Приступ локацији</translation>
 <translation id="2482878487686419369">Обавештења</translation>
 <translation id="2490684707762498678">Управља <ph name="APP_NAME" /></translation>
+<translation id="2498359688066513246">Помоћ и повратне информације</translation>
 <translation id="2501278716633472235">Назад</translation>
 <translation id="2537296579376733324">Сви колачићи, само на овом сајту</translation>
 <translation id="2569468611847789653">{COOKIE_COUNT,plural, =1{1 колачић је блокиран}one{# колачић је блокиран}few{# колачића су блокирана}other{# колачића је блокирано}}</translation>
@@ -89,6 +90,7 @@
 <translation id="4165986682804962316">Подешавања сајта</translation>
 <translation id="4226663524361240545">Уређај ће вибрирати када примате обавештења</translation>
 <translation id="4259722352634471385">Навигација је блокирана: <ph name="URL" /></translation>
+<translation id="4275663329226226506">Медији</translation>
 <translation id="4278390842282768270">Дозвољено</translation>
 <translation id="4433925000917964731">Поједностављену страницу пружа Google</translation>
 <translation id="4434045419905280838">Искачући прозори и преусмеравања</translation>
@@ -99,6 +101,7 @@
 <translation id="4645575059429386691">Овим управља твој родитељ</translation>
 <translation id="4670064810192446073">Виртуелна реалност</translation>
 <translation id="4751476147751820511">Сензори за покрет или светло</translation>
+<translation id="4759238208242260848">Преузимања</translation>
 <translation id="4883854917563148705">Подешавања којима се управља не могу да се ресетују</translation>
 <translation id="4887024562049524730">Пре него што дозволите сајтовима да користе уређај и податке виртуелне реалности приказује се упит (препоручено)</translation>
 <translation id="4962975101802056554">Опозовите све дозволе за уређај</translation>
@@ -136,6 +139,7 @@
 <translation id="5939518447894949180">Ресетуј</translation>
 <translation id="6040143037577758943">Затвори</translation>
 <translation id="6042308850641462728">Још</translation>
+<translation id="6064125863973209585">Довршена преузимања</translation>
 <translation id="6165508094623778733">Сазнајте више</translation>
 <translation id="6181444274883918285">Додај изузетак за сајтове</translation>
 <translation id="6192792657125177640">Изузеци</translation>
@@ -207,6 +211,7 @@
 <translation id="8380167699614421159">Овај сајт приказује огласе који ометају активности или обмањујуће огласе</translation>
 <translation id="8394832520002899662">Додирните да бисте се вратили на сајт</translation>
 <translation id="8447861592752582886">Опозови дозволу за уређај</translation>
+<translation id="8463851957836045671">Сајт је брз</translation>
 <translation id="851751545965956758">Онемогући сајтовима да се повезују са уређајима</translation>
 <translation id="857943718398505171">Дозвољено (препоручено)</translation>
 <translation id="8609465669617005112">Премести нагоре</translation>
@@ -220,6 +225,7 @@
 <translation id="8847988622838149491">USB</translation>
 <translation id="885701979325669005">Меморијски простор</translation>
 <translation id="8926666909099850184">NFC је искључен за овај уређај. Укључите га у <ph name="BEGIN_LINK" />Android подешавањима<ph name="END_LINK" />.</translation>
+<translation id="8929372349074745002">Овај сајт се брзо отвара и брзо реагује за већину људи</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8958424370300090006">Блокирајте колачиће за одређени сајт.</translation>
 <translation id="8959122750345127698">Навигација је недоступна: <ph name="URL" /></translation>

@@ -35,7 +35,7 @@
 <translation id="1938124657309484470">يجب أن تكون القيمة <ph name="MAXIMUM_DATE_OR_TIME" /> أو قبل ذلك.</translation>
 <translation id="1946271899482435442">عرض منتقي التاريخ</translation>
 <translation id="1993104285338243655">تم التبديل إلى النسخ المطابق.</translation>
-<translation id="2031987842108996681">قناة حمراء</translation>
+<translation id="2031987842108996681">درجات اللون الأحمر</translation>
 <translation id="2060505056492490888">تم استخدام "<ph name="DOT" />" في موضع خاطئ في "<ph name="INVALIDDOMAIN" />".</translation>
 <translation id="2148716181193084225">اليوم</translation>
 <translation id="2158401438286456825">قائمة صفحات</translation>
@@ -54,7 +54,7 @@
 <translation id="2561842179657104141">عرض المزيد من عناصر التحكم في الوسائط</translation>
 <translation id="2572483411312390101">تشغيل</translation>
 <translation id="2613802280814924224">يُرجى إدخال قيمة صالحة. علمًا بأن أقرب قيمة صالحة هي <ph name="VALID_VALUE" />.</translation>
-<translation id="2634240155926812724">قناة خضراء</translation>
+<translation id="2634240155926812724">درجات اللون الأخضر</translation>
 <translation id="2653659639078652383">إرسال</translation>
 <translation id="2657045182931379222">كائن رسومي</translation>
 <translation id="2674318244760992338">تذييل</translation>
@@ -130,7 +130,7 @@
 <translation id="5034860022980953847">مؤشر التقدم</translation>
 <translation id="5090250355906949916">شريط تمرير وقت الفيديو</translation>
 <translation id="5093189678851173835">عبارة مقتبسة</translation>
-<translation id="509897012892853729">قناة زرقاء</translation>
+<translation id="509897012892853729">درجات اللون الأزرق</translation>
 <translation id="5117590920725113268">عرض الشهر التالي</translation>
 <translation id="512758898067543763">عنوان الصف</translation>
 <translation id="5143125788380636750">تتِّمة</translation>
@@ -190,7 +190,7 @@
 <translation id="6790428901817661496">التشغيل</translation>
 <translation id="6820355525329141109">تعذر تحميل المكوّن الإضافي.</translation>
 <translation id="6820615603175220800">مرجع قائمة مراجع</translation>
-<translation id="6831465880655513317">يمكنك التلوين بشكلٍ جيد من خلال شريط تمرير ثنائي الأبعاد لاختيار تشبُّع اللون والإضاءة.</translation>
+<translation id="6831465880655513317">يمكنك استخدام مجموعة خيارات الألوان المتاحة من خلال شريط تمرير ثنائي الأبعاد لاختيار تشبُّع اللون والإضاءة.</translation>
 <translation id="6843725295806269523">كتم الصوت</translation>
 <translation id="6885760532393684712">الدليل</translation>
 <translation id="689129560213475294">إشارة ناشر</translation>
@@ -208,7 +208,7 @@
 <translation id="7263440858009898357">يُرجى اختيار عنصر من القائمة.</translation>
 <translation id="727747134524199931">عنوان العمود</translation>
 <translation id="7320576522385648310">التخزين مؤقتًا</translation>
-<translation id="7341556277900466204">التلوين بشكلٍ جيد</translation>
+<translation id="7341556277900466204">استخدام مجموعة خيارات الألوان المتاحة</translation>
 <translation id="7353453495576941748">إسهام</translation>
 <translation id="7364796246159120393">اختيار ملفّ</translation>
 <translation id="739024184232394898">آخر...</translation>

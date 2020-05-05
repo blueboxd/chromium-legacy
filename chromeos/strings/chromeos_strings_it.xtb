@@ -17,8 +17,10 @@
 <translation id="2805756323405976993">App</translation>
 <translation id="2872961005593481000">Spegni</translation>
 <translation id="3008341117444806826">AGGIORNA</translation>
+<translation id="3369013195428705271">Vuoi cancellare l'intera cronologia di stampa? I processi di stampa in corso non verranno cancellati.</translation>
 <translation id="3515615323037921860">Processi di stampa</translation>
 <translation id="3749289110408117711">Nome file</translation>
+<translation id="38114475217616659">Cancella tutta la cronologia</translation>
 <translation id="3820172043799983114">PIN non valido.</translation>
 <translation id="3838338534323494292">Nuova password</translation>
 <translation id="4003259559679196451"><ph name="ENROLLMENT_DOMAIN" /> gestisce questo dispositivo e ha accesso a tutta l'attività utente, tra cui le pagine web visitate, le password e le email.</translation>
@@ -42,6 +44,8 @@ Prova a toccare il microfono per chiedermi qualcosa.</translation>
 <translation id="6058625436358447366">Per terminare, inserisci la password vecchia e quella nuova</translation>
 <translation id="6106186594183574873">Per terminare, inserisci la vecchia password</translation>
 <translation id="6146993107019042706">Per terminare, inserisci la nuova password</translation>
+<translation id="6643016212128521049">Cancella</translation>
+<translation id="7162487448488904999">Galleria</translation>
 <translation id="7658239707568436148">Annulla</translation>
 <translation id="7690294790491645610">Conferma nuova password</translation>
 <translation id="7805768142964895445">Stato</translation>

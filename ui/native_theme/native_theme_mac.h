@@ -40,6 +40,9 @@ class NATIVE_THEME_EXPORT NativeThemeMac : public NativeThemeBase {
   SkColor GetSystemColor(ColorId color_id,
                          ColorScheme color_scheme) const override;
 
+  // Overridden from NativeTheme:
+  SkColor GetSystemButtonPressedColor(SkColor base_color) const override;
+
   // Overridden from NativeThemeBase:
   void PaintMenuPopupBackground(
       cc::PaintCanvas* canvas,

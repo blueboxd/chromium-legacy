@@ -3,6 +3,7 @@
 <translationbundle lang="te">
 <translation id="1006017844123154345">ఆన్‌లైన్‌లో తెరువు</translation>
 <translation id="1044891598689252897">సైట్‌లు సాధారణ రీతిలో పని చేస్తాయి</translation>
+<translation id="1124090076051167250">ఇది మీ హోమ్ స్క్రీన్‌పై ఉన్న, సైట్‌లు లేదా యాప్‌ల ద్వారా స్టోర్ చేయబడిన <ph name="DATASIZE" /> డేటా, కుక్కీలను క్లియర్ చేస్తుంది.</translation>
 <translation id="1124772482545689468">వినియోగదారు</translation>
 <translation id="1178581264944972037">పాజ్ చేయి</translation>
 <translation id="1181037720776840403">తీసివేయి</translation>
@@ -47,6 +48,7 @@
 <translation id="2440823041667407902">స్థాన యాక్సెస్</translation>
 <translation id="2482878487686419369">ప్రకటనలు</translation>
 <translation id="2490684707762498678"><ph name="APP_NAME" /> ద్వారా నిర్వహించబడుతున్నాయి</translation>
+<translation id="2498359688066513246">సహాయం &amp; అభిప్రాయం</translation>
 <translation id="2501278716633472235">వెనుకకు వెళ్ళు</translation>
 <translation id="2537296579376733324">అన్ని కుక్కీలు, కేవలం ఈ సైట్‌లో మాత్రమే</translation>
 <translation id="2569468611847789653">{COOKIE_COUNT,plural, =1{1 కుక్కీ బ్లాక్ చేయబడింది}other{# కుక్కీలు బ్లాక్ చేయబడ్డాయి}}</translation>
@@ -88,6 +90,7 @@
 <translation id="4165986682804962316">సైట్ సెట్టింగ్‌లు</translation>
 <translation id="4226663524361240545">నోటిఫికేషన్‌లు పరికరాన్ని వైబ్రేట్ చేయవచ్చు</translation>
 <translation id="4259722352634471385">నావిగేషన్ బ్లాక్ చేయబడింది: <ph name="URL" /></translation>
+<translation id="4275663329226226506">మీడియా</translation>
 <translation id="4278390842282768270">అనుమతించబడింది</translation>
 <translation id="4433925000917964731">Google అందించిన లైట్ పేజీ</translation>
 <translation id="4434045419905280838">పాప్-అప్‌లు మరియు మళ్లింపులు</translation>
@@ -98,6 +101,7 @@
 <translation id="4645575059429386691">మీ తల్లి/తండ్రి ద్వారా నిర్వహించబడుతోంది</translation>
 <translation id="4670064810192446073">వర్చువల్ రియాలిటీ</translation>
 <translation id="4751476147751820511">కదలిక లేదా కాంతి సెన్సార్‌లు</translation>
+<translation id="4759238208242260848">డౌన్‌లోడ్‌లు</translation>
 <translation id="4883854917563148705">నిర్వహిత సెట్టింగ్‌లు రీసెట్ చేయబడవు</translation>
 <translation id="4887024562049524730">మీ వర్చువల్ రియాలిటీ పరికరాన్ని, డేటాను ఉపయోగించడానికి సైట్‌లను అనుమతించే ముందు అడుగుతుంది (సిఫార్సు చేయబడింది)</translation>
 <translation id="4962975101802056554">పరికరానికి అన్ని అనుమతులను ఉపసంహరించు</translation>
@@ -127,6 +131,7 @@
 <translation id="5677928146339483299">బ్లాక్ చేయబడింది</translation>
 <translation id="5689516760719285838">స్థానం</translation>
 <translation id="5710871682236653961">మీరు NFC పరికరాలను నొక్కినప్పుడు, సైట్‌లు సమాచారాన్ని పంపడానికి, అలాగే స్వీకరించడానికి ముందు అనుమతి కోసం అడుగుతాయి (సిఫార్సు చేయబడింది)</translation>
+<translation id="5719847187258001597">ఇది మీ హోమ్ స్క్రీన్‌లో <ph name="ORIGIN" /> లేదా దాని యాప్ ద్వారా స్టోర్ చేయబడిన మొత్తం డేటా, కుక్కీలను క్లియర్ చేస్తుంది.</translation>
 <translation id="5804241973901381774">అనుమతులు</translation>
 <translation id="5860033963881614850">ఆఫ్ అయ్యింది</translation>
 <translation id="5916664084637901428">ఆన్ చేయి</translation>
@@ -134,6 +139,7 @@
 <translation id="5939518447894949180">రీసెట్ చేయి</translation>
 <translation id="6040143037577758943">మూసివేయి</translation>
 <translation id="6042308850641462728">మరింత</translation>
+<translation id="6064125863973209585">పూర్తయిన డౌన్‌లోడ్‌లు</translation>
 <translation id="6165508094623778733">మరింత తెలుసుకోండి</translation>
 <translation id="6181444274883918285">సైట్ మినహాయింపును జోడించు</translation>
 <translation id="6192792657125177640">మినహాయింపులు</translation>
@@ -205,6 +211,7 @@
 <translation id="8380167699614421159">ఈ సైట్ అనుచితమైన లేదా తప్పుదారి పట్టించే ప్రకటనలను చూపుతుంది</translation>
 <translation id="8394832520002899662">సైట్‌కు తిరిగి వెళ్లడానికి ట్యాప్ చేయండి</translation>
 <translation id="8447861592752582886">పరికర అనుమతిని ఉపసంహరిస్తుంది</translation>
+<translation id="8463851957836045671">సైట్ వేగంగా లోడ్ అవుతుంది</translation>
 <translation id="851751545965956758">పరికరాలకు కనెక్ట్ కాకుండా సైట్‌లను బ్లాక్ చేస్తుంది</translation>
 <translation id="857943718398505171">అనుమతించబడింది (సిఫార్సు చేయబడింది)</translation>
 <translation id="8609465669617005112">పైకి తరలించు</translation>
@@ -218,6 +225,7 @@
 <translation id="8847988622838149491">USB</translation>
 <translation id="885701979325669005">నిల్వ</translation>
 <translation id="8926666909099850184">ఈ పరికరంలో NFC ఆఫ్ చేయబడింది. <ph name="BEGIN_LINK" />Android సెట్టింగ్‌ల<ph name="END_LINK" />లో దాన్ని ఆన్ చేయండి.</translation>
+<translation id="8929372349074745002">చాలా మందికి ఈ సైట్ వేగంగా తెరుచుకుంటుంది, అలాగే వేగంగా స్పందిస్తుంది</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8958424370300090006">ఏదైనా ఒక నిర్దిష్ట సైట్‌లో కుక్కీలను బ్లాక్ చేయండి.</translation>
 <translation id="8959122750345127698">దీనికి నావిగేట్ చేయడం సాధ్యపడదు: <ph name="URL" /></translation>

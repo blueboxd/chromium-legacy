@@ -3,6 +3,7 @@
 <translationbundle lang="zh-CN">
 <translation id="1006017844123154345">在线打开</translation>
 <translation id="1044891598689252897">网站将能够正常运行</translation>
+<translation id="1124090076051167250">此操作会清除网站或其在主屏幕中安装的应用所存储的 <ph name="DATASIZE" /> 数据和 Cookie。</translation>
 <translation id="1124772482545689468">用户</translation>
 <translation id="1178581264944972037">暂停</translation>
 <translation id="1181037720776840403">删除</translation>
@@ -47,6 +48,7 @@
 <translation id="2440823041667407902">位置信息使用权</translation>
 <translation id="2482878487686419369">通知</translation>
 <translation id="2490684707762498678">由 <ph name="APP_NAME" /> 管理</translation>
+<translation id="2498359688066513246">帮助和反馈</translation>
 <translation id="2501278716633472235">返回</translation>
 <translation id="2537296579376733324">所有 Cookie，仅限在此网站上</translation>
 <translation id="2569468611847789653">{COOKIE_COUNT,plural, =1{已拦截 1 个 Cookie}other{已拦截 # 个 Cookie}}</translation>
@@ -88,6 +90,7 @@
 <translation id="4165986682804962316">网站设置</translation>
 <translation id="4226663524361240545">收到通知时设备会振动</translation>
 <translation id="4259722352634471385">已屏蔽 <ph name="URL" /></translation>
+<translation id="4275663329226226506">媒体</translation>
 <translation id="4278390842282768270">允许</translation>
 <translation id="4433925000917964731">由 Google 提供的精简版网页</translation>
 <translation id="4434045419905280838">弹出式窗口和重定向</translation>
@@ -98,6 +101,7 @@
 <translation id="4645575059429386691">由您父母管理</translation>
 <translation id="4670064810192446073">虚拟实境</translation>
 <translation id="4751476147751820511">动态传感器或光传感器</translation>
+<translation id="4759238208242260848">下载内容</translation>
 <translation id="4883854917563148705">无法重置托管设置</translation>
 <translation id="4887024562049524730">网站需在使用您的虚拟实境设备和数据之前获得您的许可（推荐）</translation>
 <translation id="4962975101802056554">撤消设备的所有权限</translation>
@@ -127,6 +131,7 @@
 <translation id="5677928146339483299">已禁止</translation>
 <translation id="5689516760719285838">位置信息</translation>
 <translation id="5710871682236653961">（推荐）网站需先询问并获得您的许可，才能在您触碰 NFC 设备时发送和接收信息</translation>
+<translation id="5719847187258001597">此操作会清除 <ph name="ORIGIN" /> 或其在主屏幕中安装的应用所存储的全部数据和 Cookie。</translation>
 <translation id="5804241973901381774">权限</translation>
 <translation id="5860033963881614850">关闭</translation>
 <translation id="5916664084637901428">启用</translation>
@@ -134,6 +139,7 @@
 <translation id="5939518447894949180">重置</translation>
 <translation id="6040143037577758943">关闭</translation>
 <translation id="6042308850641462728">更多</translation>
+<translation id="6064125863973209585">下载已完成</translation>
 <translation id="6165508094623778733">了解详情</translation>
 <translation id="6181444274883918285">添加例外网站</translation>
 <translation id="6192792657125177640">例外</translation>
@@ -205,6 +211,7 @@
 <translation id="8380167699614421159">此网站会展示侵扰性或误导性广告</translation>
 <translation id="8394832520002899662">点按即可返回到网站</translation>
 <translation id="8447861592752582886">撤消设备权限</translation>
+<translation id="8463851957836045671">网站加载速度很快</translation>
 <translation id="851751545965956758">禁止网站连接到设备</translation>
 <translation id="857943718398505171">允许（推荐）</translation>
 <translation id="8609465669617005112">上移</translation>
@@ -218,6 +225,7 @@
 <translation id="8847988622838149491">USB</translation>
 <translation id="885701979325669005">存储数据</translation>
 <translation id="8926666909099850184">此设备的 NFC 功能处于关闭状态。请在 <ph name="BEGIN_LINK" />Android 设置<ph name="END_LINK" />中开启此功能。</translation>
+<translation id="8929372349074745002">对于大多数人而言，此网站能快速打开和响应</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8958424370300090006">阻止特定网站使用 Cookie。</translation>
 <translation id="8959122750345127698">无法访问 <ph name="URL" /></translation>

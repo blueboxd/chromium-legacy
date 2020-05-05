@@ -90,6 +90,7 @@
 <translation id="1947424002851288782">германска тастатура</translation>
 <translation id="1972984168337863910">Проширете ги таблите со повратни информации за датотеките</translation>
 <translation id="1984603991036629094">ерменска фонетска тастатура</translation>
+<translation id="1995337122023280937">Оди на локацијата на датотеката</translation>
 <translation id="2001796770603320721">Управување во Drive</translation>
 <translation id="2009067268969781306">Форматирањето на USB-дискот ќе ги избрише сите податоци складирани во него. Дејството не може да се врати.</translation>
 <translation id="2028997212275086731">РАР-архива</translation>
@@ -141,6 +142,7 @@
 <translation id="2638942478653899953">Не можеше да се добие Google Диск. <ph name="BEGIN_LINK" />Одјавете се<ph name="END_LINK" /> и повторно најавете се.</translation>
 <translation id="2649120831653069427">Риба виножито</translation>
 <translation id="2661146741306740526">16 x 9</translation>
+<translation id="2664412712123763093">Локација на датотеката</translation>
 <translation id="2672394958563893062">Настана грешка. Кликнете за да се рестартира отпочеток.</translation>
 <translation id="2676946222714718093">Се репродуцира на</translation>
 <translation id="2735698359135166290">Романска стандардна тастатура</translation>
@@ -327,6 +329,7 @@
 <translation id="4880520557730313061">Автоматска поправка</translation>
 <translation id="4881695831933465202">Отвори</translation>
 <translation id="4886021172213954916">тамилска тастатура (машина за пишување)</translation>
+<translation id="4892969127351273348">Не може да се отвори со <ph name="APP_NAME" /></translation>
 <translation id="4905417359854579806">Направете бекап на <ph name="FILE_COUNT" /></translation>
 <translation id="4924638091161556692">Поправено</translation>
 <translation id="4935975195727477204">Цвет од газанија</translation>
@@ -348,6 +351,7 @@
 <translation id="5081517858322016911"><ph name="TOTAL_FILE_SIZE" /> датотеки ќе се избришат</translation>
 <translation id="509429900233858213">Настана грешка.</translation>
 <translation id="5098629044894065541">хебрејски</translation>
+<translation id="5112685521274804841">Датотеките во папкава се само за читање. Некои активности не се поддржани.</translation>
 <translation id="5123433949759960244">Баскет</translation>
 <translation id="5129662217315786329">полски</translation>
 <translation id="5144820558584035333">хангул, 3-делна (390)</translation>
@@ -697,6 +701,7 @@
 <translation id="9034924485347205037">Датотеки на Linux</translation>
 <translation id="9035012421917565900">Ставките не може да се преместат назад во „<ph name="DESTINATION_NAME" />“, па нема да може да го вратите дејствово.</translation>
 <translation id="9038620279323455325">Веќе постои датотека со име „<ph name="FILE_NAME" />“. Одберете друго име.</translation>
+<translation id="9062992083244091966">За да отворате датотеки со апликации на <ph name="APP_NAME" />, прво преместете ги во папката за споделени датотеки на <ph name="APP_NAME" />.</translation>
 <translation id="9064939804718829769">Се префрлува…</translation>
 <translation id="9065203028668620118">Измени</translation>
 <translation id="9099674669267916096">Број на страници</translation>

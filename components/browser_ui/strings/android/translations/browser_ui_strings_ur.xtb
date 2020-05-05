@@ -3,6 +3,7 @@
 <translationbundle lang="ur">
 <translation id="1006017844123154345">آن لائن کھولیں</translation>
 <translation id="1044891598689252897">سائٹس حسب معمول کام کریں گی</translation>
+<translation id="1124090076051167250">اس سے آپ کی ہوم اسکرین پر موجود سائٹس یا ایپس کے ذریعے اسٹور کردہ <ph name="DATASIZE" /> ڈیٹا اور کوکیز صاف ہو جائیں گی۔</translation>
 <translation id="1124772482545689468">صارف</translation>
 <translation id="1178581264944972037">موقوف کریں</translation>
 <translation id="1181037720776840403">ہٹائیں</translation>
@@ -47,6 +48,7 @@
 <translation id="2440823041667407902">مقام تک رسائی</translation>
 <translation id="2482878487686419369">اطلاعات</translation>
 <translation id="2490684707762498678"><ph name="APP_NAME" /> کے زیر انتظام</translation>
+<translation id="2498359688066513246">مدد اور تاثرات</translation>
 <translation id="2501278716633472235">پیچھے جائیں</translation>
 <translation id="2537296579376733324">تمام کوکیز، صرف اس سائٹ پر</translation>
 <translation id="2569468611847789653">{COOKIE_COUNT,plural, =1{1 کوکی مسدود ہو گئی}other{# کوکیز مسدود ہو گئیں}}</translation>
@@ -88,6 +90,7 @@
 <translation id="4165986682804962316">سائٹ کی ترتیبات</translation>
 <translation id="4226663524361240545">اطلاعات آلہ کو وائبریٹ کر سکتی ہیں</translation>
 <translation id="4259722352634471385">نیویگیشن مسدود ہے: <ph name="URL" /></translation>
+<translation id="4275663329226226506">میڈیا</translation>
 <translation id="4278390842282768270">اجازت یافتہ</translation>
 <translation id="4433925000917964731">‏Google کی طرف سے فراہم کردہ لائٹ صفحہ</translation>
 <translation id="4434045419905280838">پوپ اپس اور ری ڈائریکٹس</translation>
@@ -98,6 +101,7 @@
 <translation id="4645575059429386691">آپ کے والدین کے زیر انتظام</translation>
 <translation id="4670064810192446073">ورچوئل رئیلٹی</translation>
 <translation id="4751476147751820511">موشن یا لائٹ سینسرز</translation>
+<translation id="4759238208242260848">ڈاؤن لوڈز</translation>
 <translation id="4883854917563148705">نظم کردہ ترتیبات کو دوبارہ سیٹ نہیں کیا جا سکتا</translation>
 <translation id="4887024562049524730">سائٹس کو اپنا ورچوئل ریئلٹی آلہ اور ڈیٹا استعمال کرنے کی اجازت دینے سے پہلے پوچھیں (تجویز کردہ)</translation>
 <translation id="4962975101802056554">آلہ کے لیے سبھی اجازتوں کو کالعدم کریں</translation>
@@ -127,6 +131,7 @@
 <translation id="5677928146339483299">مسدود کردہ</translation>
 <translation id="5689516760719285838">مقام</translation>
 <translation id="5710871682236653961">‏NFC آلات پر تھپتھپاتے وقت سائٹس کو معلومات بھیجنے اور وصول کرنے کی اجازت دینے سے پہلے پوچھیں (تجویز کردہ)</translation>
+<translation id="5719847187258001597">اس سے <ph name="ORIGIN" /> یا اس ایپ کے ذریعے آپ کی ہوم اسکرین پر اسٹور کردہ سبھی ڈیٹا اور کوکیز صاف ہو جائیں گی۔</translation>
 <translation id="5804241973901381774">اجازتیں</translation>
 <translation id="5860033963881614850">آف</translation>
 <translation id="5916664084637901428">آن</translation>
@@ -134,6 +139,7 @@
 <translation id="5939518447894949180">دوبارہ ترتیب دیں</translation>
 <translation id="6040143037577758943">بند کریں</translation>
 <translation id="6042308850641462728">مزید</translation>
+<translation id="6064125863973209585">مکمل کردہ ڈاؤن لوڈز</translation>
 <translation id="6165508094623778733">مزید جانیں</translation>
 <translation id="6181444274883918285">سائٹ کا استثناء شامل کریں</translation>
 <translation id="6192792657125177640">استثناء</translation>
@@ -205,6 +211,7 @@
 <translation id="8380167699614421159">یہ سائٹ دخل انداز یا گمراہ کن اشتہارات دکھاتی ہے</translation>
 <translation id="8394832520002899662">سائٹ پر واپس جانے کے لیے تھپتھپائیں</translation>
 <translation id="8447861592752582886">آلہ کی اجازت کالعدم کریں</translation>
+<translation id="8463851957836045671">سائٹ تیز ہے</translation>
 <translation id="851751545965956758">سائٹس کو آلات سے منسلک ہونے سے مسدود کریں</translation>
 <translation id="857943718398505171">اجازت یافتہ (تجویز کردہ)</translation>
 <translation id="8609465669617005112">اوپر منتقل کریں</translation>
@@ -218,6 +225,7 @@
 <translation id="8847988622838149491">USB</translation>
 <translation id="885701979325669005">اسٹوریج</translation>
 <translation id="8926666909099850184">‏اس آلہ کے لیے NFC آف ہے۔ اسے <ph name="BEGIN_LINK" />Android ترتیبات<ph name="END_LINK" /> میں آن کریں۔</translation>
+<translation id="8929372349074745002">یہ سائٹ زیادہ تر لوگوں کے لئے فوری طور پر کھلتی اور جواب دیتی ہے</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8958424370300090006">کسی مخصوص سائٹ کے لیے کوکیز مسدود کریں۔</translation>
 <translation id="8959122750345127698">نیویگیشن ناقابل رسائی ہے: <ph name="URL" /></translation>

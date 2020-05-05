@@ -3,6 +3,7 @@
 <translationbundle lang="ko">
 <translation id="1006017844123154345">온라인 열기</translation>
 <translation id="1044891598689252897">사이트가 정상적으로 작동합니다.</translation>
+<translation id="1124090076051167250">이렇게 하면 사이트 또는 홈 화면의 앱에서 저장한 <ph name="DATASIZE" />의 데이터 및 쿠키가 삭제됩니다.</translation>
 <translation id="1124772482545689468">사용자</translation>
 <translation id="1178581264944972037">일시중지</translation>
 <translation id="1181037720776840403">삭제</translation>
@@ -47,6 +48,7 @@
 <translation id="2440823041667407902">위치 정보 액세스</translation>
 <translation id="2482878487686419369">알림</translation>
 <translation id="2490684707762498678"><ph name="APP_NAME" />에서 관리함</translation>
+<translation id="2498359688066513246">고객센터</translation>
 <translation id="2501278716633472235">뒤로 이동</translation>
 <translation id="2537296579376733324">모든 쿠키, 이 사이트에서만</translation>
 <translation id="2569468611847789653">{COOKIE_COUNT,plural, =1{쿠키 1개 차단됨}other{쿠키 #개 차단됨}}</translation>
@@ -88,6 +90,7 @@
 <translation id="4165986682804962316">사이트 설정</translation>
 <translation id="4226663524361240545">알림이 있으면 진동이 울릴 수도 있습니다.</translation>
 <translation id="4259722352634471385">탐색이 차단됨: <ph name="URL" /></translation>
+<translation id="4275663329226226506">미디어</translation>
 <translation id="4278390842282768270">허용</translation>
 <translation id="4433925000917964731">Google에서 제공하는 라이트 페이지</translation>
 <translation id="4434045419905280838">팝업 및 리디렉션</translation>
@@ -98,6 +101,7 @@
 <translation id="4645575059429386691">부모님이 관리합니다.</translation>
 <translation id="4670064810192446073">가상 현실</translation>
 <translation id="4751476147751820511">모션 또는 조도 센서</translation>
+<translation id="4759238208242260848">다운로드</translation>
 <translation id="4883854917563148705">관리 설정은 재설정할 수 없습니다.</translation>
 <translation id="4887024562049524730">사이트에서 내 가상 현실 기기 및 데이터를 사용하도록 허용하기 전에 확인(권장)</translation>
 <translation id="4962975101802056554">기기에서 모든 권한을 취소합니다.</translation>
@@ -127,6 +131,7 @@
 <translation id="5677928146339483299">차단</translation>
 <translation id="5689516760719285838">위치</translation>
 <translation id="5710871682236653961">NFC 기기를 탭하면 사이트가 정보를 주고받도록 허용할지 확인(권장)</translation>
+<translation id="5719847187258001597">이렇게 하면 <ph name="ORIGIN" /> 또는 홈 화면의 앱에 저장한 데이터 및 쿠키가 모두 삭제됩니다.</translation>
 <translation id="5804241973901381774">권한</translation>
 <translation id="5860033963881614850">사용 안함</translation>
 <translation id="5916664084637901428">사용</translation>
@@ -134,6 +139,7 @@
 <translation id="5939518447894949180">초기화</translation>
 <translation id="6040143037577758943">닫기</translation>
 <translation id="6042308850641462728">더보기</translation>
+<translation id="6064125863973209585">다운로드 완료</translation>
 <translation id="6165508094623778733">자세히 알아보기</translation>
 <translation id="6181444274883918285">사이트 예외 추가</translation>
 <translation id="6192792657125177640">예외</translation>
@@ -205,6 +211,7 @@
 <translation id="8380167699614421159">이 사이트에서는 방해가 되거나 사용자를 현혹하는 광고를 표시합니다.</translation>
 <translation id="8394832520002899662">탭하여 사이트로 돌아가기</translation>
 <translation id="8447861592752582886">기기 액세스 권한 취소</translation>
+<translation id="8463851957836045671">사이트 속도 빠름</translation>
 <translation id="851751545965956758">사이트에서 기기에 연결하지 못하도록 차단</translation>
 <translation id="857943718398505171">허용(권장)</translation>
 <translation id="8609465669617005112">위로 이동</translation>
@@ -218,6 +225,7 @@
 <translation id="8847988622838149491">USB</translation>
 <translation id="885701979325669005">저장소</translation>
 <translation id="8926666909099850184">기기에서 NFC가 사용 중지되어 있습니다. <ph name="BEGIN_LINK" />Android 설정<ph name="END_LINK" />에서 NFC를 사용 설정하세요.</translation>
+<translation id="8929372349074745002">이 사이트는 대부분의 사용자를 대상으로 빠르게 열리고 응답합니다.</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8958424370300090006">특정 사이트의 쿠키를 차단합니다.</translation>
 <translation id="8959122750345127698">탐색할 수 없음: <ph name="URL" /></translation>

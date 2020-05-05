@@ -249,7 +249,27 @@ int MixerInput::FillBuffer(int num_frames,
     // resampler_->BufferedFrames() gives incorrect values in the read callback,
     // so track the number of buffered frames ourselves.
     resampler_buffered_frames_ = resampler_->BufferedFrames();
+    filled_for_resampler_ = 0;
+    tried_to_fill_resampler_ = false;
     resampler_->Resample(num_frames, dest);
+    // If the source is not providing any audio anymore, we want to stop filling
+    // frames so we can reduce processing overhead. However, since the resampler
+    // fill size doesn't necessarily match the mixer's request size at all, we
+    // need to be careful. The resampler could have a lot of data buffered
+    // internally, so we only count cases where the resampler needed more data
+    // from the source but none was available. Then, to make sure all data is
+    // flushed out of the resampler, we require that to happen twice before we
+    // stop filling audio.
+    if (tried_to_fill_resampler_) {
+      if (filled_for_resampler_ == 0) {
+        resampled_silence_count_ = std::min(resampled_silence_count_ + 1, 2);
+      } else {
+        resampled_silence_count_ = 0;
+      }
+    }
+    if (resampled_silence_count_ > 1) {
+      return 0;
+    }
     return num_frames;
   } else {
     return source_->FillAudioPlaybackFrames(num_frames, rendering_delay, dest);
@@ -267,7 +287,9 @@ void MixerInput::ResamplerReadCallback(int frame_delay,
   delay.delay_microseconds += resampler_delay;
 
   const int needed_frames = output->frames();
+  tried_to_fill_resampler_ = true;
   int filled = source_->FillAudioPlaybackFrames(needed_frames, delay, output);
+  filled_for_resampler_ += filled;
   if (filled < needed_frames) {
     output->ZeroFramesPartial(filled, needed_frames - filled);
   }

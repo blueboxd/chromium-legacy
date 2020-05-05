@@ -35,6 +35,7 @@
 <translation id="1938124657309484470">Vertė turi būti <ph name="MAXIMUM_DATE_OR_TIME" /> ar ankstesnė data.</translation>
 <translation id="1946271899482435442">Rodyti datos rinkiklį</translation>
 <translation id="1993104285338243655">Perjungta į ekrano vaizdo bendrinimą</translation>
+<translation id="2031987842108996681">Raudonasis kanalas</translation>
 <translation id="2060505056492490888">„<ph name="DOT" />“ naudojamas netinkamoje „<ph name="INVALIDDOMAIN" />“ vietoje.</translation>
 <translation id="2148716181193084225">Šiandien</translation>
 <translation id="2158401438286456825">puslapių sąrašas</translation>
@@ -45,6 +46,7 @@
 <translation id="2291999235780842123">žymimasis laukelis</translation>
 <translation id="2311842470354187719">puslapio lūžis</translation>
 <translation id="2335594187091864976">datos ir laiko rinkiklis</translation>
+<translation id="2393030564806080191">Šešioliktainė spalvos vertė</translation>
 <translation id="245932805758469625">likusių vaizdo įrašo sekundžių skaičius</translation>
 <translation id="248395913932153421">Diena</translation>
 <translation id="2507943997699731163">Užpildykite šį lauką.</translation>
@@ -52,6 +54,7 @@
 <translation id="2561842179657104141">rodyti daugiau medijos valdiklių</translation>
 <translation id="2572483411312390101">paleisti</translation>
 <translation id="2613802280814924224">Įveskite tinkamą vertę. Artimiausia tinkama vertė yra <ph name="VALID_VALUE" />.</translation>
+<translation id="2634240155926812724">Žaliasis kanalas</translation>
 <translation id="2653659639078652383">Pateikti</translation>
 <translation id="2657045182931379222">grafikos objektas</translation>
 <translation id="2674318244760992338">poraštė</translation>
@@ -127,6 +130,7 @@
 <translation id="5034860022980953847">eigos indikatorius</translation>
 <translation id="5090250355906949916">vaizdo įrašo laiko valdiklis</translation>
 <translation id="5093189678851173835">epigrafas</translation>
+<translation id="509897012892853729">Mėlynasis kanalas</translation>
 <translation id="5117590920725113268">Rodyti kitą mėnesį</translation>
 <translation id="512758898067543763">eilutės antraštė</translation>
 <translation id="5143125788380636750">epilogas</translation>
@@ -164,6 +168,7 @@
 <translation id="6166809985690652833">baigiamasis žodis</translation>
 <translation id="6209276755895393898">Tai tikriausiai yra: <ph name="DESCRIPTION" /></translation>
 <translation id="6213469881011901533">aiškinamasis terminų žodynas</translation>
+<translation id="6281588256137006900">Šviesumas</translation>
 <translation id="6281763101136022427">url</translation>
 <translation id="6310801910862476708">Išeiti iš vaizdo vaizde</translation>
 <translation id="6398862346408813489">Rodyti mėnesio pasirinkimo skydelį</translation>
@@ -184,6 +189,7 @@
 <translation id="6790428901817661496">Žaisti</translation>
 <translation id="6820355525329141109">Nepavyko įkelti papildinio.</translation>
 <translation id="6820615603175220800">bibliografijos nuoroda</translation>
+<translation id="6831465880655513317">Spalvų ratas su dviejų dimensijų šliaužikliu, kuriuo galima pasirinkti spalvų sodrumą ir šviesumą</translation>
 <translation id="6843725295806269523">nutildyti</translation>
 <translation id="6885760532393684712">katalogas</translation>
 <translation id="689129560213475294">informacija apie leidimą</translation>
@@ -201,6 +207,7 @@
 <translation id="7263440858009898357">Pasirinkite sąraše pateiktą elementą.</translation>
 <translation id="727747134524199931">stulpelio antraštė</translation>
 <translation id="7320576522385648310">rašoma į buferį</translation>
+<translation id="7341556277900466204">Spalvų ratas</translation>
 <translation id="7353453495576941748">padėka</translation>
 <translation id="7364796246159120393">Pasirinkti failą</translation>
 <translation id="739024184232394898">Kita...</translation>
@@ -221,6 +228,7 @@
 <translation id="775297008183122718">Neteisingas įrašas</translation>
 <translation id="7789962463072032349">pristabdyti</translation>
 <translation id="7802800022689234070">paskelbimo trikampis</translation>
+<translation id="7852167693871241274">Atspalvio šliaužiklis</translation>
 <translation id="7888071071722539607">Į el. pašto adresą įtraukite „<ph name="ATSIGN" />“. „<ph name="INVALIDADDRESS" />“ trūksta „<ph name="ATSIGN" />“.</translation>
 <translation id="7891486169920085145">skaidiklis</translation>
 <translation id="795667975304826397">Nepasirinktas joks failas</translation>
@@ -263,6 +271,7 @@
 <translation id="8875657656876809964">Vaizdo įrašo atkūrimo klaida</translation>
 <translation id="8889402386540077796">Spalva</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> KB</translation>
+<translation id="894736920926684893">Formato perjungiklis</translation>
 <translation id="8987927404178983737">Mėnuo</translation>
 <translation id="901493112792887934">dabartinis laikas sekundėmis</translation>
 <translation id="901834265349196618">El. paštas</translation>

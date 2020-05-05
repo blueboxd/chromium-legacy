@@ -211,6 +211,7 @@
 <translation id="3495304270784461826"><ph name="COUNT" /> 件のエラーがあります。</translation>
 <translation id="3519867315646775981">文字変換（shalom ← שלום）</translation>
 <translation id="3522708245912499433">ポルトガル語</translation>
+<translation id="3524311639100184459">注: これらのファイルは一時的なもので、ディスクの空き容量を増やすために自動的に削除されることがあります。<ph name="BEGIN_LINK" />詳細<ph name="END_LINK" /></translation>
 <translation id="3527085408025491307">フォルダ</translation>
 <translation id="3549797760399244642">drive.google.com にアクセスします...</translation>
 <translation id="357479282490346887">リトアニア語</translation>
@@ -326,6 +327,7 @@
 <translation id="4880520557730313061">自動修正</translation>
 <translation id="4881695831933465202">開く</translation>
 <translation id="4886021172213954916">タミル語キーボード（タイプライター）</translation>
+<translation id="4892969127351273348">「<ph name="APP_NAME" />」で開くことができません</translation>
 <translation id="4905417359854579806"><ph name="FILE_COUNT" />をバックアップできます</translation>
 <translation id="4924638091161556692">修正済み</translation>
 <translation id="4935975195727477204">花</translation>
@@ -500,6 +502,7 @@
 <translation id="6806699711453372963">Linux との共有を管理</translation>
 <translation id="6808193438228982088">キツネ</translation>
 <translation id="6820687829547641339">gzip で圧縮された tar アーカイブ</translation>
+<translation id="6823166707458800069">このフォルダに保存されているすべてのファイルが自動的にオンラインにバックアップされます。</translation>
 <translation id="6825883775269213504">ロシア語</translation>
 <translation id="6827236167376090743">この動画は繰り返し再生されます。</translation>
 <translation id="6847101934483209767"><ph name="ENTRY_NAME" /> を選択範囲から削除しました。</translation>

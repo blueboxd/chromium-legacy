@@ -48,6 +48,7 @@
 <translation id="2440823041667407902">位置資料存取權</translation>
 <translation id="2482878487686419369">通知</translation>
 <translation id="2490684707762498678">由 <ph name="APP_NAME" /> 管理</translation>
+<translation id="2498359688066513246">說明和意見反映</translation>
 <translation id="2501278716633472235">返回</translation>
 <translation id="2537296579376733324">所有 Cookies，僅限此網站</translation>
 <translation id="2569468611847789653">{COOKIE_COUNT,plural, =1{已封鎖 1 個 Cookie}other{已封鎖 # 個 Cookie}}</translation>
@@ -89,6 +90,7 @@
 <translation id="4165986682804962316">網站設定</translation>
 <translation id="4226663524361240545">裝置會在收到通知時震動</translation>
 <translation id="4259722352634471385">瀏覽網址被封鎖：<ph name="URL" /></translation>
+<translation id="4275663329226226506">媒體</translation>
 <translation id="4278390842282768270">已允許</translation>
 <translation id="4433925000917964731">此簡易版網頁由 Google 提供</translation>
 <translation id="4434045419905280838">彈出式視窗和重新導向</translation>
@@ -99,6 +101,7 @@
 <translation id="4645575059429386691">由您的家長管理</translation>
 <translation id="4670064810192446073">虛擬實境</translation>
 <translation id="4751476147751820511">動態或光線感應器</translation>
+<translation id="4759238208242260848">下載</translation>
 <translation id="4883854917563148705">無法重設受管理的設定</translation>
 <translation id="4887024562049524730">在允許網站使用您的虛擬實境裝置和資料前先詢問您 (建議)</translation>
 <translation id="4962975101802056554">撤銷裝置所有的權限</translation>
@@ -136,6 +139,7 @@
 <translation id="5939518447894949180">重設</translation>
 <translation id="6040143037577758943">關閉</translation>
 <translation id="6042308850641462728">更多選項</translation>
+<translation id="6064125863973209585">下載完成</translation>
 <translation id="6165508094623778733">瞭解更多資料</translation>
 <translation id="6181444274883918285">新增例外網站</translation>
 <translation id="6192792657125177640">例外</translation>
@@ -207,6 +211,7 @@
 <translation id="8380167699614421159">此網站顯示滋擾性或誤導廣告</translation>
 <translation id="8394832520002899662">輕按即可返回網站</translation>
 <translation id="8447861592752582886">撤消裝置權限</translation>
+<translation id="8463851957836045671">網站快速</translation>
 <translation id="851751545965956758">禁止網站連接裝置</translation>
 <translation id="857943718398505171">允許 (建議)</translation>
 <translation id="8609465669617005112">上移</translation>
@@ -220,6 +225,7 @@
 <translation id="8847988622838149491">USB</translation>
 <translation id="885701979325669005">儲存設備</translation>
 <translation id="8926666909099850184">此裝置的 NFC 已關閉，請在「<ph name="BEGIN_LINK" />Android 設定<ph name="END_LINK" />」中開啟。</translation>
+<translation id="8929372349074745002">對大部分人來說，此網站能快速開啟並作出回應</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8958424370300090006">禁止特定網站存取 Cookie。</translation>
 <translation id="8959122750345127698">無法存取瀏覽網址：<ph name="URL" /></translation>

@@ -35,6 +35,7 @@
 <translation id="1938124657309484470">Dapat <ph name="MAXIMUM_DATE_OR_TIME" /> o mas nauna ang value.</translation>
 <translation id="1946271899482435442">Ipakita ang picker ng petsa</translation>
 <translation id="1993104285338243655">Lumipat sa pag-mirror</translation>
+<translation id="2031987842108996681">Pulang channel</translation>
 <translation id="2060505056492490888">Ginamit ang '<ph name="DOT" />' sa maling posisyon sa '<ph name="INVALIDDOMAIN" />.'</translation>
 <translation id="2148716181193084225">Ngayon</translation>
 <translation id="2158401438286456825">listahan ng page</translation>
@@ -45,6 +46,7 @@
 <translation id="2291999235780842123">checkbox</translation>
 <translation id="2311842470354187719">page break</translation>
 <translation id="2335594187091864976">picker ng petsa at oras</translation>
+<translation id="2393030564806080191">Hexadecimal na value ng kulay</translation>
 <translation id="245932805758469625">bilang ng mga segundong natitira sa video</translation>
 <translation id="248395913932153421">Araw</translation>
 <translation id="2507943997699731163">Pakipunan ang field na ito.</translation>
@@ -52,6 +54,7 @@
 <translation id="2561842179657104141">magpakita ng higit pang kontrol sa media</translation>
 <translation id="2572483411312390101">i-play</translation>
 <translation id="2613802280814924224">Mangyaring maglagay ng isang wastong value. Ang pinakamalapit na wastong value ay <ph name="VALID_VALUE" />.</translation>
+<translation id="2634240155926812724">Berdeng channel</translation>
 <translation id="2653659639078652383">Isumite</translation>
 <translation id="2657045182931379222">object ng graphics</translation>
 <translation id="2674318244760992338">footer</translation>
@@ -127,6 +130,7 @@
 <translation id="5034860022980953847">indicator ng pag-usad</translation>
 <translation id="5090250355906949916">scrubber ng tagal ng video</translation>
 <translation id="5093189678851173835">epigraph</translation>
+<translation id="509897012892853729">Asul na channel</translation>
 <translation id="5117590920725113268">Ipakita ang susunod na buwan</translation>
 <translation id="512758898067543763">header ng row</translation>
 <translation id="5143125788380636750">epilogue</translation>
@@ -164,6 +168,7 @@
 <translation id="6166809985690652833">afterword</translation>
 <translation id="6209276755895393898">Mukhang: <ph name="DESCRIPTION" /></translation>
 <translation id="6213469881011901533">glosaryo</translation>
+<translation id="6281588256137006900">Lightness</translation>
 <translation id="6281763101136022427">url</translation>
 <translation id="6310801910862476708">Lumabas sa Picture-in-Picture</translation>
 <translation id="6398862346408813489">Ipakita ang panel ng pagpipilian ng buwan</translation>
@@ -184,6 +189,7 @@
 <translation id="6790428901817661496">I-play</translation>
 <translation id="6820355525329141109">Hindi ma-load ang plugin.</translation>
 <translation id="6820615603175220800">sanggunian sa bibliograpiya</translation>
+<translation id="6831465880655513317">Color well na may two-dimensional na slider para sa pagpili ng saturation at lightess</translation>
 <translation id="6843725295806269523">i-mute</translation>
 <translation id="6885760532393684712">direktoryo</translation>
 <translation id="689129560213475294">colophon</translation>
@@ -201,6 +207,7 @@
 <translation id="7263440858009898357">Mangyaring pumili ng item sa listahan.</translation>
 <translation id="727747134524199931">header ng column</translation>
 <translation id="7320576522385648310">nagba-buffer</translation>
+<translation id="7341556277900466204">Color well</translation>
 <translation id="7353453495576941748">credit</translation>
 <translation id="7364796246159120393">Pumili ng File</translation>
 <translation id="739024184232394898">Iba pa...</translation>
@@ -221,6 +228,7 @@
 <translation id="775297008183122718">Di-wastong entry</translation>
 <translation id="7789962463072032349">i-pause</translation>
 <translation id="7802800022689234070">disclosure triangle</translation>
+<translation id="7852167693871241274">Slider ng hue</translation>
 <translation id="7888071071722539607">Mangyaring magsama ng '<ph name="ATSIGN" />' sa email address. Kulang ng '<ph name="ATSIGN" />' ang '<ph name="INVALIDADDRESS" />.'</translation>
 <translation id="7891486169920085145">splitter</translation>
 <translation id="795667975304826397">Walang napiling file</translation>
@@ -263,6 +271,7 @@
 <translation id="8875657656876809964">Error sa pag-playback ng video</translation>
 <translation id="8889402386540077796">Hue</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> KB</translation>
+<translation id="894736920926684893">Toggler ng format</translation>
 <translation id="8987927404178983737">Buwan</translation>
 <translation id="901493112792887934">kasalukuyang oras ayon sa segundo</translation>
 <translation id="901834265349196618">email</translation>

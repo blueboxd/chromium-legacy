@@ -196,6 +196,9 @@ class MixerInput {
 
   RenderingDelay mixer_rendering_delay_;
   double resampler_buffered_frames_;
+  int filled_for_resampler_;
+  bool tried_to_fill_resampler_;
+  int resampled_silence_count_ = 0;
   std::unique_ptr<::media::MultiChannelResampler> resampler_;
 
   std::vector<AudioOutputRedirectorInput*> audio_output_redirectors_;

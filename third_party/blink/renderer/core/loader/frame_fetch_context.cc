@@ -37,6 +37,7 @@
 #include "base/optional.h"
 #include "build/build_config.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
+#include "net/http/structured_headers.h"
 #include "services/network/public/mojom/web_client_hints_types.mojom-blink.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/common/client_hints/client_hints.h"
@@ -187,33 +188,15 @@ mojom::FetchCacheMode DetermineFrameCacheMode(Frame* frame) {
 }
 
 // Simple function to add quotes to make headers strings.
-const AtomicString AddBrandVersionQuotes(const std::string& brand,
-                                         const std::string& version) {
-  if (brand.empty())
-    return AtomicString("");
-
-  StringBuilder quoted_string;
-  quoted_string.Append("\"");
-  quoted_string.Append(brand.data());
-  quoted_string.Append("\"");
-  if (!version.empty()) {
-    quoted_string.Append(";v=\"");
-    quoted_string.Append(version.data());
-    quoted_string.Append("\"");
+const AtomicString SerializeHeaderString(std::string str) {
+  std::string output;
+  if (!str.empty()) {
+    output = net::structured_headers::SerializeItem(
+                 net::structured_headers::Item(str))
+                 .value_or(std::string());
   }
-  return quoted_string.ToAtomicString();
-}
 
-// Simple function to add quotes to make headers strings.
-const AtomicString AddQuotes(std::string str) {
-  if (str.empty())
-    return AtomicString("");
-
-  StringBuilder quoted_string;
-  quoted_string.Append("\"");
-  quoted_string.Append(str.data());
-  quoted_string.Append("\"");
-  return quoted_string.ToAtomicString();
+  return AtomicString(output.c_str());
 }
 
 }  // namespace
@@ -510,7 +493,7 @@ void FrameFetchContext::AddClientHintsIfNecessary(
     request.SetHttpHeaderField(
         blink::kClientHintsHeaderMapping[static_cast<size_t>(
             network::mojom::blink::WebClientHintsType::kUA)],
-        AddBrandVersionQuotes(ua->brand, ua->major_version));
+        ua->SerializeBrandVersionList().c_str());
 
     // We also send Sec-CH-UA-Mobile to all hints. It is a one-bit header
     // identifying if the browser has opted for a "mobile" experience
@@ -671,7 +654,7 @@ void FrameFetchContext::AddClientHintsIfNecessary(
     request.SetHttpHeaderField(
         blink::kClientHintsHeaderMapping[static_cast<size_t>(
             network::mojom::blink::WebClientHintsType::kUAArch)],
-        AddQuotes(ua->architecture));
+        SerializeHeaderString(ua->architecture));
   }
 
   if (ua.has_value() &&
@@ -683,7 +666,7 @@ void FrameFetchContext::AddClientHintsIfNecessary(
     request.SetHttpHeaderField(
         blink::kClientHintsHeaderMapping[static_cast<size_t>(
             network::mojom::blink::WebClientHintsType::kUAPlatform)],
-        AddQuotes(ua->platform));
+        SerializeHeaderString(ua->platform));
   }
 
   if (ua.has_value() &&
@@ -695,7 +678,7 @@ void FrameFetchContext::AddClientHintsIfNecessary(
     request.SetHttpHeaderField(
         blink::kClientHintsHeaderMapping[static_cast<size_t>(
             network::mojom::blink::WebClientHintsType::kUAPlatformVersion)],
-        AddQuotes(ua->platform_version));
+        SerializeHeaderString(ua->platform_version));
   }
 
   if (ua.has_value() &&
@@ -707,7 +690,7 @@ void FrameFetchContext::AddClientHintsIfNecessary(
     request.SetHttpHeaderField(
         blink::kClientHintsHeaderMapping[static_cast<size_t>(
             network::mojom::blink::WebClientHintsType::kUAModel)],
-        AddQuotes(ua->model));
+        SerializeHeaderString(ua->model));
   }
 
   if (ua.has_value() &&
@@ -719,7 +702,7 @@ void FrameFetchContext::AddClientHintsIfNecessary(
     request.SetHttpHeaderField(
         blink::kClientHintsHeaderMapping[static_cast<size_t>(
             network::mojom::blink::WebClientHintsType::kUAFullVersion)],
-        AddQuotes(ua->full_version));
+        SerializeHeaderString(ua->full_version));
   }
 }
 

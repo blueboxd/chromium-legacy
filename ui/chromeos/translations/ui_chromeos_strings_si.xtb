@@ -90,6 +90,7 @@
 <translation id="1947424002851288782">ජර්මානු යතුරු පුවරුව</translation>
 <translation id="1972984168337863910">ගොනු ප්‍රතිපෝෂණ පැනල් දිග හරින්න</translation>
 <translation id="1984603991036629094">ආර්මේනියානු ශබ්දිම යතුරු පුවරුව</translation>
+<translation id="1995337122023280937">ගොනු ස්ථානයට යන්න</translation>
 <translation id="2001796770603320721">Drive හි කළමනාකරණය කරන්න</translation>
 <translation id="2009067268969781306">ධාවකයක් ආකෘති කිරීම එහි ගබඩා කර ඇති සියලුම දත්ත මකා දමයි. මෙම ක්‍රියාව අස් කළ නොහැක.</translation>
 <translation id="2028997212275086731">RAR සංරක්ශණය</translation>
@@ -141,6 +142,7 @@
 <translation id="2638942478653899953">Google Drive වෙත ප්‍රවේශ විය නොහැක. <ph name="BEGIN_LINK" />ප්‍රවිෂ්ටයෙන් පිට වී<ph name="END_LINK" /> නැවතත් ප්‍රවිෂ්ට වන්න.</translation>
 <translation id="2649120831653069427">Rainbowfish</translation>
 <translation id="2661146741306740526">16x9</translation>
+<translation id="2664412712123763093">ගොනු ස්ථානය</translation>
 <translation id="2672394958563893062">දෝෂයක් සිදු විය. ආරම්භයේ සිට නැවත ආරම්භ කිරීමට ක්ලික් කරන්න.</translation>
 <translation id="2676946222714718093">වාදනය වෙමින්</translation>
 <translation id="2735698359135166290">රුමේනියානු සම්මත යතුරු පුවරුව</translation>
@@ -327,6 +329,7 @@
 <translation id="4880520557730313061">ස්වයං-සැකසුම්</translation>
 <translation id="4881695831933465202">විවෘත කරන්න</translation>
 <translation id="4886021172213954916">දෙමළ යතුරු පුවරුව (යතුරු ලියනය)</translation>
+<translation id="4892969127351273348"><ph name="APP_NAME" /> මඟින් විවෘත කළ නොහැක</translation>
 <translation id="4905417359854579806"><ph name="FILE_COUNT" /> උපස්ථ කිරීමට සූදානම්</translation>
 <translation id="4924638091161556692">සවි කරන ලදි</translation>
 <translation id="4935975195727477204">ගැන්සානියා මල</translation>
@@ -348,6 +351,7 @@
 <translation id="5081517858322016911">ගොනුවලින් <ph name="TOTAL_FILE_SIZE" /> ක් මකනු ලැබේ</translation>
 <translation id="509429900233858213">දෝශයක් ඇතිවිය.</translation>
 <translation id="5098629044894065541">හීබෲ</translation>
+<translation id="5112685521274804841">මෙම ෆෝල්ඩරය තුළ ඇති ගොනු කියවීමට පමණයි. සමහර ක්‍රියාකාරකම්වලට සහය නොදැක්වේ.</translation>
 <translation id="5123433949759960244">පැසිපන්දු</translation>
 <translation id="5129662217315786329">පෝලන්ත</translation>
 <translation id="5144820558584035333">හැන්ගුල් කට්ටල 3 (390)</translation>
@@ -697,6 +701,7 @@
 <translation id="9034924485347205037">Linux ගොනු</translation>
 <translation id="9035012421917565900">අයිතම නැවත '<ph name="DESTINATION_NAME" />' වෙත ගෙන යාමට නොහැකිය, එබැවින් ඔබට මෙම ක්‍රියාව පසුගමනය කළ නොහැකි වනු ඇත.</translation>
 <translation id="9038620279323455325">"<ph name="FILE_NAME" />" නමැති ගොනුව දැනටමත් පවතියි . වෙනත් නමක් තෝරන්න.</translation>
+<translation id="9062992083244091966"><ph name="APP_NAME" /> මඟින් ගොනු විවෘත කිරීමට, පළමුව ඒවා <ph name="APP_NAME" /> බෙදාගත් ගොනු ෆෝල්ඩරයට ගෙන යන්න.</translation>
 <translation id="9064939804718829769">මාරු කෙරෙමින්...</translation>
 <translation id="9065203028668620118">සංස්කරණය කරන්න</translation>
 <translation id="9099674669267916096">පිටු ගණන</translation>

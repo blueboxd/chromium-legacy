@@ -303,7 +303,11 @@ class StatusIndicatorMediator
         animatorSet.addListener(new AnimatorListenerAdapter() {
             @Override
             public void onAnimationEnd(Animator animation) {
-                mInvalidateCompositorView.onResult(() -> updateVisibility(true));
+                if (mCanAnimateNativeBrowserControls.get()) {
+                    mInvalidateCompositorView.onResult(() -> updateVisibility(true));
+                } else {
+                    updateVisibility(true);
+                }
             }
         });
         animatorSet.start();

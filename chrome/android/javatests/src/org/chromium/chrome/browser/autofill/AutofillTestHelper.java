@@ -113,6 +113,17 @@ public class AutofillTestHelper {
         mOnPersonalDataChangedHelper.waitForCallback(callCount);
     }
 
+    public void addServerCreditCard(final CreditCard card, String nickname, int cardIssuer)
+            throws TimeoutException {
+        int callCount = mOnPersonalDataChangedHelper.getCallCount();
+        TestThreadUtils.runOnUiThreadBlocking(
+                ()
+                        -> PersonalDataManager.getInstance()
+                                   .addServerCreditCardForTestWithAdditionalFields(
+                                           card, nickname, cardIssuer));
+        mOnPersonalDataChangedHelper.waitForCallback(callCount);
+    }
+
     void deleteCreditCard(final String guid) throws TimeoutException {
         int callCount = mOnPersonalDataChangedHelper.getCallCount();
         TestThreadUtils.runOnUiThreadBlocking(

@@ -90,6 +90,7 @@
 <translation id="1947424002851288782">Teclat alemany</translation>
 <translation id="1972984168337863910">Desplega els taulers amb informació dels fitxers</translation>
 <translation id="1984603991036629094">Teclat fonètic armeni</translation>
+<translation id="1995337122023280937">Ves a la ubicació del fitxer</translation>
 <translation id="2001796770603320721">Gestiona a Drive</translation>
 <translation id="2009067268969781306">En formatar una unitat, se'n suprimeixen totes les dades que s'hi hagin emmagatzemat. Aquesta acció no es pot desfer.</translation>
 <translation id="2028997212275086731">Arxiu RAR</translation>
@@ -141,6 +142,7 @@
 <translation id="2638942478653899953">No s'ha pogut accedir a Google Drive. <ph name="BEGIN_LINK" />Tanqueu la sessió<ph name="END_LINK" /> i torneu-la a iniciar.</translation>
 <translation id="2649120831653069427">Peix arc iris</translation>
 <translation id="2661146741306740526">16 x 9</translation>
+<translation id="2664412712123763093">Ubicació del fitxer</translation>
 <translation id="2672394958563893062">S'ha produït un error. Feu clic per reiniciar des del principi.</translation>
 <translation id="2676946222714718093">En reproducció</translation>
 <translation id="2735698359135166290">Teclat estàndard romanès</translation>
@@ -327,6 +329,7 @@
 <translation id="4880520557730313061">Correcció automàtica</translation>
 <translation id="4881695831933465202">Obre</translation>
 <translation id="4886021172213954916">Teclat tàmil (màquina d'escriure)</translation>
+<translation id="4892969127351273348">No es pot obrir amb <ph name="APP_NAME" /></translation>
 <translation id="4905417359854579806">A punt per afegir <ph name="FILE_COUNT" /> a la còpia de seguretat</translation>
 <translation id="4924638091161556692">Corregida</translation>
 <translation id="4935975195727477204">Flor de gazània</translation>
@@ -348,6 +351,7 @@
 <translation id="5081517858322016911">Se suprimiran <ph name="TOTAL_FILE_SIZE" /> de fitxers</translation>
 <translation id="509429900233858213">S'ha produït un error.</translation>
 <translation id="5098629044894065541">Hebreu</translation>
+<translation id="5112685521274804841">Els fitxers d'aquesta carpeta són només de lectura. Algunes activitats no s'admeten.</translation>
 <translation id="5123433949759960244">Pilota de bàsquet</translation>
 <translation id="5129662217315786329">Polonès</translation>
 <translation id="5144820558584035333">Configuració 3 de hangul (390)</translation>
@@ -698,6 +702,7 @@
 <translation id="9034924485347205037">Fitxers de Linux</translation>
 <translation id="9035012421917565900">Com que els elements no es poden retornar a <ph name="DESTINATION_NAME" />, aquesta acció no es pot desfer.</translation>
 <translation id="9038620279323455325">Ja hi ha un fitxer anomenat "<ph name="FILE_NAME" />". Tria un altre nom.</translation>
+<translation id="9062992083244091966">Per obrir fitxers amb l'aplicació <ph name="APP_NAME" />, primer mou-los a la carpeta de fitxers compartits que correspon a <ph name="APP_NAME" />.</translation>
 <translation id="9064939804718829769">S'està transferint...</translation>
 <translation id="9065203028668620118">Edita</translation>
 <translation id="9099674669267916096">Nombre de pàgines</translation>

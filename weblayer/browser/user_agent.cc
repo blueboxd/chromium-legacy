@@ -32,9 +32,16 @@ std::string GetUserAgent() {
 
 blink::UserAgentMetadata GetUserAgentMetadata() {
   blink::UserAgentMetadata metadata;
-  metadata.brand = version_info::GetProductName();
+
+  std::string major_version = version_info::GetMajorVersionNumber();
+  metadata.brand_version_list.push_back({"Chromium", major_version});
+
+  // The CHROMIUM_BRANDING build flag is not available in //weblayer so we're
+  // going to assume it's a derivative.
+  metadata.brand_version_list.push_back(
+      {version_info::GetProductName(), major_version});
+
   metadata.full_version = version_info::GetVersionNumber();
-  metadata.major_version = version_info::GetMajorVersionNumber();
   metadata.platform = version_info::GetOSType();
   metadata.architecture = content::BuildCpuInfo();
   metadata.model = content::BuildModelInfo();

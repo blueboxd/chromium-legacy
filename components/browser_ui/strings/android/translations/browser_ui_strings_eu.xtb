@@ -48,6 +48,7 @@
 <translation id="2440823041667407902">Kokapenerako sarbidea</translation>
 <translation id="2482878487686419369">Jakinarazpenak</translation>
 <translation id="2490684707762498678">Kudeatzailea: <ph name="APP_NAME" /></translation>
+<translation id="2498359688066513246">Laguntza eta iritziak</translation>
 <translation id="2501278716633472235">Egin atzera</translation>
 <translation id="2537296579376733324">Cookie guztiak, baina webgune honetan soilik</translation>
 <translation id="2569468611847789653">{COOKIE_COUNT,plural, =1{1 cookie blokeatuta}other{# cookie blokeatuta}}</translation>
@@ -89,6 +90,7 @@
 <translation id="4165986682804962316">Webgunearen ezarpenak</translation>
 <translation id="4226663524361240545">Gailua dardararaz dezakete jakinarazpenek</translation>
 <translation id="4259722352634471385"><ph name="URL" /> orrira joateko aukera blokeatuta dago</translation>
+<translation id="4275663329226226506">Multimedia-edukia</translation>
 <translation id="4278390842282768270">Baimenduta</translation>
 <translation id="4433925000917964731">Google-k eskainitako oinarrizko orria</translation>
 <translation id="4434045419905280838">Leiho gainerak. / Birbideratzeak</translation>
@@ -99,6 +101,7 @@
 <translation id="4645575059429386691">Gurasoek kudeatuta</translation>
 <translation id="4670064810192446073">Errealitate birtuala</translation>
 <translation id="4751476147751820511">Mugimenduaren eta argiaren sentsoreak</translation>
+<translation id="4759238208242260848">Deskargak</translation>
 <translation id="4883854917563148705">Kudeatutako ezarpenak ezin dira berrezarri</translation>
 <translation id="4887024562049524730">Eskatu zure baimena webguneren batek errealitate birtualeko gailuak eta datuak erabili nahi dituenean (gomendatua)</translation>
 <translation id="4962975101802056554">Baliogabetu gailuaren baimen guztiak</translation>
@@ -128,7 +131,7 @@
 <translation id="5677928146339483299">Blokeatuta</translation>
 <translation id="5689516760719285838">Kokapena</translation>
 <translation id="5710871682236653961">NFC darabilten gailuak ukitzean, eskatu baimena webguneei informazioa bidali eta jasotzeko (gomendatua)</translation>
-<translation id="5719847187258001597"><ph name="ORIGIN" /> webguneak edo hasierako pantailan duzun haren aplikazioak gorde dituen datu eta cookie guztiak garbituko dira.</translation>
+<translation id="5719847187258001597"><ph name="ORIGIN" /> webguneak edo hari dagokion hasierako pantailako aplikazioak gorde dituen datu eta cookie guztiak garbituko dira.</translation>
 <translation id="5804241973901381774">Baimenak</translation>
 <translation id="5860033963881614850">Desaktibatuta</translation>
 <translation id="5916664084637901428">Aktibatuta</translation>
@@ -136,6 +139,7 @@
 <translation id="5939518447894949180">Berrezarri</translation>
 <translation id="6040143037577758943">Itxi</translation>
 <translation id="6042308850641462728">Gehiago</translation>
+<translation id="6064125863973209585">Osatutako deskargak</translation>
 <translation id="6165508094623778733">Lortu informazio gehiago</translation>
 <translation id="6181444274883918285">Gehitu webgune bat salbuespen gisa</translation>
 <translation id="6192792657125177640">Salbuespenak</translation>
@@ -207,6 +211,7 @@
 <translation id="8380167699614421159">Webgune honek iragarki oztopatzaile edo iruzurrezkoak erakusten ditu</translation>
 <translation id="8394832520002899662">Sakatu hau webgunera itzultzeko</translation>
 <translation id="8447861592752582886">Kendu gailua atzitzeko baimena</translation>
+<translation id="8463851957836045671">Webgunea bizkorra da</translation>
 <translation id="851751545965956758">Ez utzi webguneei gailuekin konektatzen</translation>
 <translation id="857943718398505171">Baimenduta (gomendatua)</translation>
 <translation id="8609465669617005112">Eraman gora</translation>
@@ -220,6 +225,7 @@
 <translation id="8847988622838149491">USB</translation>
 <translation id="885701979325669005">Biltegia</translation>
 <translation id="8926666909099850184">NFC aukera desaktibatuta dago gailu honetan. Aktiba ezazu <ph name="BEGIN_LINK" />Android-en ezarpenetan<ph name="END_LINK" />.</translation>
+<translation id="8929372349074745002">Webgune hau bizkor irekitzen da eta bizkor erantzuten die gehienei</translation>
 <translation id="8941729603749328384">www.adibidea.com</translation>
 <translation id="8958424370300090006">Blokeatu webgune jakin bateko cookieak.</translation>
 <translation id="8959122750345127698">Ezin da joan <ph name="URL" /> orrira</translation>

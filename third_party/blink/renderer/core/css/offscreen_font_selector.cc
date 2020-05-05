@@ -103,7 +103,7 @@ void OffscreenFontSelector::FontCacheInvalidated() {
   font_face_cache_.IncrementVersion();
 }
 
-void OffscreenFontSelector::FontFaceInvalidated() {
+void OffscreenFontSelector::FontFaceInvalidated(FontInvalidationReason) {
   FontCacheInvalidated();
 }
 

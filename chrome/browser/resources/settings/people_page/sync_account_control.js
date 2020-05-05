@@ -373,8 +373,8 @@ cr.define('settings', function() {
     /** @private */
     onErrorButtonTap_() {
       const router = settings.Router.getInstance();
-      const routes = /** @type {{ SIGN_OUT: !settings.Route }} */(
-          router.getRoutes());
+      const routes =
+          /** @type {{ SIGN_OUT: !settings.Route }} */ (router.getRoutes());
       switch (this.syncStatus.statusAction) {
         case settings.StatusAction.REAUTHENTICATE:
           this.syncBrowserProxy_.startSignIn();
@@ -438,9 +438,9 @@ cr.define('settings', function() {
     onTurnOffButtonTap_() {
       /* This will route to people_page's disconnect dialog. */
       const router = settings.Router.getInstance();
-      router.navigateTo(/** @type {{ SIGN_OUT: !settings.Route }} */ (
-          router.getRoutes())
-          .SIGN_OUT);
+      router.navigateTo(
+          /** @type {{ SIGN_OUT: !settings.Route }} */ (router.getRoutes())
+              .SIGN_OUT);
     },
 
     /** @private */

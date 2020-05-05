@@ -361,6 +361,18 @@ TestPasswordStore::GetAllCompromisedCredentialsImpl() {
                                              compromised_credentials_.end());
 }
 
+std::vector<CompromisedCredentials>
+TestPasswordStore::GetMatchingCompromisedCredentialsImpl(
+    const std::string& signon_realm) {
+  std::vector<CompromisedCredentials> result;
+  std::copy_if(compromised_credentials_.begin(), compromised_credentials_.end(),
+               std::back_inserter(result),
+               [&signon_realm](const CompromisedCredentials& credential) {
+                 return credential.signon_realm == signon_realm;
+               });
+  return result;
+}
+
 bool TestPasswordStore::RemoveCompromisedCredentialsByUrlAndTimeImpl(
     const base::RepeatingCallback<bool(const GURL&)>& url_filter,
     base::Time remove_begin,

@@ -52,8 +52,14 @@ class OmniboxPopupModel {
   // The sentinel value for Selection::line which means no line is selected.
   static const size_t kNoMatch;
 
-  // See |Selection::state| below for details.
+  // See |Selection::state| below for details. The enum values are not
+  // persisted, and can be freely changed.
   enum LineState {
+    // This means the Header above this row is highlighted, and the
+    // header collapse/expand button is focused.
+    HEADER_BUTTON_FOCUSED,
+
+    // NORMAL means the row is focused, and Enter key navigates to the match.
     NORMAL,
 
     // KEYWORD state means actually in keyword mode, as distinct from the

@@ -145,10 +145,6 @@ void aom_convolve_copy_c(const uint8_t* src,
                          ptrdiff_t src_stride,
                          uint8_t* dst,
                          ptrdiff_t dst_stride,
-                         const int16_t* filter_x,
-                         int filter_x_stride,
-                         const int16_t* filter_y,
-                         int filter_y_stride,
                          int w,
                          int h);
 #define aom_convolve_copy aom_convolve_copy_c
@@ -6113,17 +6109,12 @@ void aom_highbd_convolve8_vert_c(const uint8_t* src,
                                  int bd);
 #define aom_highbd_convolve8_vert aom_highbd_convolve8_vert_c
 
-void aom_highbd_convolve_copy_c(const uint8_t* src,
+void aom_highbd_convolve_copy_c(const uint16_t* src,
                                 ptrdiff_t src_stride,
-                                uint8_t* dst,
+                                uint16_t* dst,
                                 ptrdiff_t dst_stride,
-                                const int16_t* filter_x,
-                                int filter_x_stride,
-                                const int16_t* filter_y,
-                                int filter_y_stride,
                                 int w,
-                                int h,
-                                int bd);
+                                int h);
 #define aom_highbd_convolve_copy aom_highbd_convolve_copy_c
 
 void aom_highbd_dc_128_predictor_16x16_c(uint16_t* dst,

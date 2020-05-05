@@ -210,15 +210,15 @@ class NavigationManager {
         navigator.node_, navigator.group_);
   }
 
-  // =============== Instance Methods ==============
-
   /**
    * Returns the desktop automation node object.
    * @return {!chrome.automation.AutomationNode}
    */
-  get desktopNode() {
-    return this.desktop_;
+  static get desktopNode() {
+    return NavigationManager.instance.desktop_;
   }
+
+  // =============== Instance Methods ==============
 
   /**
    * Selects the current node.

@@ -6,9 +6,9 @@
 
 #include "base/bind.h"
 #include "base/files/file_path.h"
-#include "base/logging.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
+#include "base/notreached.h"
 #include "base/run_loop.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "chrome/browser/ui/browser.h"

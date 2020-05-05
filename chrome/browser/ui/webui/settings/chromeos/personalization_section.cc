@@ -8,12 +8,16 @@
 #include "base/bind.h"
 #include "base/no_destructor.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/webui/settings/chromeos/ambient_mode_handler.h"
+#include "chrome/browser/ui/webui/settings/chromeos/change_picture_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/os_settings_features_util.h"
+#include "chrome/browser/ui/webui/settings/chromeos/wallpaper_handler.h"
 #include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "components/prefs/pref_service.h"
+#include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/webui/web_ui_util.h"
@@ -24,28 +28,79 @@ namespace {
 
 const std::vector<SearchConcept>& GetPersonalizationSearchConcepts() {
   static const base::NoDestructor<std::vector<SearchConcept>> tags({
-      // TODO(khorimoto): Add "Personalization" search concepts.
+      {IDS_OS_SETTINGS_TAG_PERSONALIZATION,
+       mojom::kPersonalizationSectionPath,
+       mojom::SearchResultIcon::kPaintbrush,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSection,
+       {.section = mojom::Section::kPersonalization},
+       {IDS_OS_SETTINGS_TAG_PERSONALIZATION_ALT1,
+        IDS_OS_SETTINGS_TAG_PERSONALIZATION_ALT2, SearchConcept::kAltTagEnd}},
+      {IDS_OS_SETTINGS_TAG_CHANGE_WALLPAPER,
+       mojom::kPersonalizationSectionPath,
+       mojom::SearchResultIcon::kWallpaper,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSetting,
+       {.setting = mojom::Setting::kOpenWallpaper},
+       {IDS_OS_SETTINGS_TAG_CHANGE_WALLPAPER_ALT1,
+        IDS_OS_SETTINGS_TAG_CHANGE_WALLPAPER_ALT2, SearchConcept::kAltTagEnd}},
+      {IDS_OS_SETTINGS_TAG_CHANGE_DEVICE_ACCOUNT_IMAGE,
+       mojom::kChangePictureSubpagePath,
+       mojom::SearchResultIcon::kAvatar,
+       mojom::SearchResultDefaultRank::kLow,
+       mojom::SearchResultType::kSubpage,
+       {.subpage = mojom::Subpage::kChangePicture},
+       {IDS_OS_SETTINGS_TAG_CHANGE_DEVICE_ACCOUNT_IMAGE_ALT1,
+        IDS_OS_SETTINGS_TAG_CHANGE_DEVICE_ACCOUNT_IMAGE_ALT2,
+        IDS_OS_SETTINGS_TAG_CHANGE_DEVICE_ACCOUNT_IMAGE_ALT3,
+        IDS_OS_SETTINGS_TAG_CHANGE_DEVICE_ACCOUNT_IMAGE_ALT4,
+        SearchConcept::kAltTagEnd}},
   });
   return *tags;
 }
 
 const std::vector<SearchConcept>& GetAmbientModeSearchConcepts() {
   static const base::NoDestructor<std::vector<SearchConcept>> tags({
-      // TODO(khorimoto): Add "Ambient mode" search concepts.
+      {IDS_OS_SETTINGS_TAG_AMBIENT_MODE,
+       mojom::kAmbientModeSubpagePath,
+       mojom::SearchResultIcon::kWallpaper,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSubpage,
+       {.subpage = mojom::Subpage::kAmbientMode}},
   });
   return *tags;
 }
 
 const std::vector<SearchConcept>& GetAmbientModeOnSearchConcepts() {
   static const base::NoDestructor<std::vector<SearchConcept>> tags({
-      // TODO(khorimoto): Add "Ambient mode on" search concepts.
+      {IDS_OS_SETTINGS_TAG_AMBIENT_MODE_CHOOSE_SOURCE,
+       mojom::kAmbientModeSubpagePath,
+       mojom::SearchResultIcon::kWallpaper,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSetting,
+       {.setting = mojom::Setting::kAmbientModeSource}},
+      {IDS_OS_SETTINGS_TAG_AMBIENT_MODE_TURN_OFF,
+       mojom::kAmbientModeSubpagePath,
+       mojom::SearchResultIcon::kWallpaper,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSetting,
+       {.setting = mojom::Setting::kAmbientModeOnOff},
+       {IDS_OS_SETTINGS_TAG_AMBIENT_MODE_TURN_OFF_ALT1,
+        SearchConcept::kAltTagEnd}},
   });
   return *tags;
 }
 
 const std::vector<SearchConcept>& GetAmbientModeOffSearchConcepts() {
   static const base::NoDestructor<std::vector<SearchConcept>> tags({
-      // TODO(khorimoto): Add "Ambient mode off" search concepts.
+      {IDS_OS_SETTINGS_TAG_AMBIENT_MODE_TURN_ON,
+       mojom::kAmbientModeSubpagePath,
+       mojom::SearchResultIcon::kWallpaper,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSetting,
+       {.setting = mojom::Setting::kAmbientModeOnOff},
+       {IDS_OS_SETTINGS_TAG_AMBIENT_MODE_TURN_ON_ALT1,
+        SearchConcept::kAltTagEnd}},
   });
   return *tags;
 }
@@ -125,6 +180,19 @@ void PersonalizationSection::AddLoadTimeData(
       "changePictureVideoModeEnabled",
       base::FeatureList::IsEnabled(::features::kChangePictureVideoMode));
   html_source->AddBoolean("isAmbientModeEnabled", IsAmbientModeAllowed());
+}
+
+void PersonalizationSection::AddHandlers(content::WebUI* web_ui) {
+  web_ui->AddMessageHandler(
+      std::make_unique<chromeos::settings::WallpaperHandler>());
+  web_ui->AddMessageHandler(
+      std::make_unique<chromeos::settings::ChangePictureHandler>());
+
+  if (!profile()->IsGuestSession() &&
+      chromeos::features::IsAmbientModeEnabled()) {
+    web_ui->AddMessageHandler(
+        std::make_unique<chromeos::settings::AmbientModeHandler>());
+  }
 }
 
 void PersonalizationSection::OnAmbientModeEnabledStateChanged() {

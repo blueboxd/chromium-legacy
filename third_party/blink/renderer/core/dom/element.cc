@@ -133,7 +133,6 @@
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/intersection_observer/element_intersection_observer_data.h"
 #include "third_party/blink/renderer/core/intersection_observer/intersection_observer_controller.h"
-#include "third_party/blink/renderer/core/invisible_dom/activate_invisible_event.h"
 #include "third_party/blink/renderer/core/layout/adjust_for_absolute_zoom.h"
 #include "third_party/blink/renderer/core/layout/layout_text_fragment.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
@@ -624,12 +623,6 @@ bool Element::IsFocusableStyle() const {
                EVisibility::kVisible;
   }
 
-  if (IsInsideInvisibleSubtree()) {
-    const ComputedStyle* style =
-        const_cast<Element*>(this)->EnsureComputedStyle();
-    return style->Visibility() == EVisibility::kVisible &&
-           style->Display() != EDisplay::kNone;
-  }
   // FIXME: Even if we are not visible, we might have a child that is visible.
   // Hyatt wants to fix that some day with a "has visible content" flag or the
   // like.
@@ -2062,98 +2055,6 @@ AccessibleNode* Element::accessibleNode() {
   return rare_data.EnsureAccessibleNode(this);
 }
 
-InvisibleState Element::Invisible() const {
-  const AtomicString& value = FastGetAttribute(html_names::kInvisibleAttr);
-  if (value.IsNull())
-    return InvisibleState::kMissing;
-  if (EqualIgnoringASCIICase(value, "static"))
-    return InvisibleState::kStatic;
-  return InvisibleState::kInvisible;
-}
-
-bool Element::HasInvisibleAttribute() const {
-  return Invisible() != InvisibleState::kMissing;
-}
-
-void Element::DispatchActivateInvisibleEventIfNeeded() {
-  if (!RuntimeEnabledFeatures::InvisibleDOMEnabled())
-    return;
-  // Traverse all inclusive flat-tree ancestor and send activateinvisible
-  // on the ones that have the invisible attribute. Default event handler
-  // will remove invisible attribute of all invisible element if the event is
-  // not canceled, making this element and all ancestors visible again.
-  // We're saving them and the retargeted activated element as DOM structure
-  // may change due to event handlers.
-  HeapVector<Member<Element>> invisible_ancestors;
-  HeapVector<Member<Element>> activated_elements;
-  for (Node& ancestor : FlatTreeTraversal::InclusiveAncestorsOf(*this)) {
-    auto* ancestor_element = DynamicTo<Element>(ancestor);
-    if (ancestor_element &&
-        ancestor_element->Invisible() != InvisibleState::kMissing) {
-      invisible_ancestors.push_back(ancestor_element);
-      activated_elements.push_back(ancestor.GetTreeScope().Retarget(*this));
-    }
-  }
-  auto* activated_element_iterator = activated_elements.begin();
-  for (Element* ancestor : invisible_ancestors) {
-    DCHECK(activated_element_iterator != activated_elements.end());
-    ancestor->DispatchEvent(*MakeGarbageCollected<ActivateInvisibleEvent>(
-        *activated_element_iterator));
-    ++activated_element_iterator;
-  }
-}
-
-bool Element::IsInsideInvisibleStaticSubtree() const {
-  if (!RuntimeEnabledFeatures::InvisibleDOMEnabled())
-    return false;
-  for (Node& ancestor : FlatTreeTraversal::InclusiveAncestorsOf(*this)) {
-    auto* ancestor_element = DynamicTo<Element>(ancestor);
-    if (ancestor_element &&
-        ancestor_element->Invisible() == InvisibleState::kStatic)
-      return true;
-  }
-  return false;
-}
-
-bool Element::IsInsideInvisibleSubtree() const {
-  if (!RuntimeEnabledFeatures::InvisibleDOMEnabled() ||
-      !CanParticipateInFlatTree())
-    return false;
-  for (Node& ancestor : FlatTreeTraversal::InclusiveAncestorsOf(*this)) {
-    auto* ancestor_element = DynamicTo<Element>(ancestor);
-    if (ancestor_element &&
-        ancestor_element->Invisible() != InvisibleState::kMissing)
-      return true;
-  }
-  return false;
-}
-
-void Element::InvisibleAttributeChanged(const AtomicString& old_value,
-                                        const AtomicString& new_value) {
-  if (old_value.IsNull() != new_value.IsNull()) {
-    SetNeedsStyleRecalc(kLocalStyleChange,
-                        StyleChangeReasonForTracing::Create(
-                            style_change_reason::kInvisibleChange));
-  }
-  if (EqualIgnoringASCIICase(old_value, "static") &&
-      !IsInsideInvisibleStaticSubtree()) {
-    // This element and its descendants are not in an invisible="static" tree
-    // anymore.
-    CustomElement::Registry(*this)->upgrade(this);
-  }
-}
-
-void Element::DefaultEventHandler(Event& event) {
-  if (RuntimeEnabledFeatures::InvisibleDOMEnabled() &&
-      event.type() == event_type_names::kActivateinvisible &&
-      event.target() == this) {
-    removeAttribute(html_names::kInvisibleAttr);
-    event.SetDefaultHandled();
-    return;
-  }
-  ContainerNode::DefaultEventHandler(event);
-}
-
 bool Element::toggleAttribute(const AtomicString& qualified_name,
                               ExceptionState& exception_state) {
   // https://dom.spec.whatwg.org/#dom-element-toggleattribute
@@ -2477,10 +2378,6 @@ void Element::AttributeChanged(const AttributeModificationParams& params) {
       GetElementData()->SetPresentationAttributeStyleIsDirty(true);
       SetNeedsStyleRecalc(kLocalStyleChange,
                           StyleChangeReasonForTracing::FromAttribute(name));
-    } else if (RuntimeEnabledFeatures::InvisibleDOMEnabled() &&
-               name == html_names::kInvisibleAttr &&
-               params.old_value != params.new_value) {
-      InvisibleAttributeChanged(params.old_value, params.new_value);
     }
   }
 
@@ -3002,8 +2899,7 @@ void Element::DetachLayoutTree(bool performing_reattach) {
   GetDocument().GetStyleEngine().ClearNeedsWhitespaceReattachmentFor(this);
 }
 
-scoped_refptr<ComputedStyle> Element::StyleForLayoutObject(
-    bool calc_invisible) {
+scoped_refptr<ComputedStyle> Element::StyleForLayoutObject() {
   DCHECK(GetDocument().InStyleRecalc());
 
   // FIXME: Instead of clearing updates that may have been added from calls to
@@ -3011,14 +2907,6 @@ scoped_refptr<ComputedStyle> Element::StyleForLayoutObject(
   // not inside RecalcStyle.
   if (ElementAnimations* element_animations = GetElementAnimations())
     element_animations->CssAnimations().ClearPendingUpdate();
-
-  if (RuntimeEnabledFeatures::InvisibleDOMEnabled() &&
-      FastHasAttribute(html_names::kInvisibleAttr) && !calc_invisible) {
-    auto style =
-        GetDocument().GetStyleResolver()->InitialStyleForElement(GetDocument());
-    style->SetDisplay(EDisplay::kNone);
-    return style;
-  }
 
   scoped_refptr<ComputedStyle> style = HasCustomStyleCallbacks()
                                            ? CustomStyleForLayoutObject()
@@ -3222,11 +3110,6 @@ StyleRecalcChange Element::RecalcOwnStyle(const StyleRecalcChange change) {
 
   StyleRecalcChange child_change = change.ForChildren();
 
-  // If we are on the find-in-page root, we need to calculate style for
-  // invisible nodes in this subtree.
-  if (!child_change.CalcInvisible() && this == GetDocument().FindInPageRoot())
-    child_change = child_change.ForceCalcInvisible();
-
   if (ParentComputedStyle()) {
     if (old_style && change.IndependentInherit()) {
       // When propagating inherited changes, we don't need to do a full style
@@ -3235,7 +3118,7 @@ StyleRecalcChange Element::RecalcOwnStyle(const StyleRecalcChange change) {
       new_style = PropagateInheritedProperties();
     }
     if (!new_style)
-      new_style = StyleForLayoutObject(child_change.CalcInvisible());
+      new_style = StyleForLayoutObject();
     if (new_style && !ShouldStoreComputedStyle(*new_style))
       new_style = nullptr;
   }
@@ -4271,18 +4154,6 @@ void Element::focus(const FocusParams& params) {
   ActivateDisplayLockIfNeeded(params.type == mojom::blink::FocusType::kNone
                                   ? DisplayLockActivationReason::kScriptFocus
                                   : DisplayLockActivationReason::kUserFocus);
-  DispatchActivateInvisibleEventIfNeeded();
-  if (IsInsideInvisibleSubtree()) {
-    // The element stays invisible because the default event action is
-    // prevented.If this is navigating to the next focusable element,
-    // we need to find a replacement and focus on it instead.
-    Element* found =
-        GetDocument().GetPage()->GetFocusController().FindFocusableElementAfter(
-            *this, params.type);
-    if (found)
-      found->focus(params);
-    return;
-  }
 
   if (!GetDocument().GetPage()->GetFocusController().SetFocusedElement(
           this, GetDocument().GetFrame(), params))

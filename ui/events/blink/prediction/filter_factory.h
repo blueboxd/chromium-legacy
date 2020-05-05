@@ -16,8 +16,6 @@ class FilterFactoryTest;
 }  // namespace test
 
 namespace input_prediction {
-extern const char kFilterNameEmpty[];
-extern const char kFilterNameOneEuro[];
 
 enum class FilterType {
   kEmpty,

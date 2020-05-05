@@ -4,6 +4,7 @@
 
 #include "ui/accessibility/ax_table_info.h"
 
+#include "base/strings/string_util.h"
 #include "ui/accessibility/ax_constants.mojom.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node.h"
@@ -514,6 +515,32 @@ void AXTableInfo::ClearExtraMacNodes() {
       observer.OnNodeDeleted(tree_, deleted_id);
   }
   extra_mac_nodes.clear();
+}
+
+std::string AXTableInfo::ToString() const {
+  // First, scan through to get the length of the largest id.
+  int padding = 0;
+  for (size_t r = 0; r < row_count; r++) {
+    for (size_t c = 0; c < col_count; c++) {
+      // Extract the length of the id for padding purposes.
+      padding = std::max(padding, static_cast<int>(log10(cell_ids[r][c])));
+    }
+  }
+
+  std::string result;
+  for (size_t r = 0; r < row_count; r++) {
+    result += "|";
+    for (size_t c = 0; c < col_count; c++) {
+      int cell_id = cell_ids[r][c];
+      result += base::NumberToString(cell_id);
+      int cell_padding = padding;
+      if (cell_id != 0)
+        cell_padding = padding - static_cast<int>(log10(cell_id));
+      result += std::string(cell_padding, ' ') + '|';
+    }
+    result += "\n";
+  }
+  return result;
 }
 
 AXTableInfo::AXTableInfo(AXTree* tree, AXNode* table_node)

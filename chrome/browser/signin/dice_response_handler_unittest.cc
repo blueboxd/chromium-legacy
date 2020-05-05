@@ -82,6 +82,13 @@ class DiceResponseHandlerTest : public testing::Test,
                                 public AccountReconcilor::Observer {
  public:
   // Called after the refresh token was fetched and added in the token service.
+  void HandleTokenExchangeSuccess(CoreAccountId account_id,
+                                  bool is_new_account) {
+    token_exchange_account_id_ = account_id;
+    token_exchange_is_new_account_ = is_new_account;
+  }
+
+  // Called after the refresh token was fetched and added in the token service.
   void EnableSync(const CoreAccountId& account_id) {
     enable_sync_account_id_ = account_id;
   }
@@ -108,9 +115,7 @@ class DiceResponseHandlerTest : public testing::Test,
             identity_test_env_.identity_manager()),
         about_signin_internals_(identity_test_env_.identity_manager(),
                                 &signin_error_controller_,
-                                signin::AccountConsistencyMethod::kDice),
-        reconcilor_blocked_count_(0),
-        reconcilor_unblocked_count_(0) {
+                                signin::AccountConsistencyMethod::kDice) {
     EXPECT_TRUE(temp_dir_.CreateUniqueTempDir());
     AboutSigninInternals::RegisterPrefs(pref_service_.registry());
     auto account_reconcilor_delegate =
@@ -183,8 +188,10 @@ class DiceResponseHandlerTest : public testing::Test,
   AboutSigninInternals about_signin_internals_;
   std::unique_ptr<AccountReconcilor> account_reconcilor_;
   std::unique_ptr<DiceResponseHandler> dice_response_handler_;
-  int reconcilor_blocked_count_;
-  int reconcilor_unblocked_count_;
+  int reconcilor_blocked_count_ = 0;
+  int reconcilor_unblocked_count_ = 0;
+  CoreAccountId token_exchange_account_id_;
+  bool token_exchange_is_new_account_ = false;
   CoreAccountId enable_sync_account_id_;
   GoogleServiceAuthError auth_error_;
   std::string auth_error_email_;
@@ -196,6 +203,12 @@ class TestProcessDiceHeaderDelegate : public ProcessDiceHeaderDelegate {
       : owner_(owner) {}
 
   ~TestProcessDiceHeaderDelegate() override = default;
+
+  // Called after the refresh token was fetched and added in the token service.
+  void HandleTokenExchangeSuccess(CoreAccountId account_id,
+                                  bool is_new_account) override {
+    owner_->HandleTokenExchangeSuccess(account_id, is_new_account);
+  }
 
   // Called after the refresh token was fetched and added in the token service.
   void EnableSync(const CoreAccountId& account_id) override {
@@ -234,6 +247,9 @@ TEST_F(DiceResponseHandlerTest, Signin) {
   EXPECT_TRUE(identity_manager()->HasAccountWithRefreshToken(account_id));
   EXPECT_TRUE(auth_error_email_.empty());
   EXPECT_EQ(GoogleServiceAuthError::NONE, auth_error_.state());
+  // Check HandleTokenExchangeSuccess parameters.
+  EXPECT_EQ(token_exchange_account_id_, account_id);
+  EXPECT_TRUE(token_exchange_is_new_account_);
   // Check that the reconcilor was blocked and unblocked exactly once.
   EXPECT_EQ(1, reconcilor_blocked_count_);
   EXPECT_EQ(1, reconcilor_unblocked_count_);
@@ -244,6 +260,42 @@ TEST_F(DiceResponseHandlerTest, Signin) {
               account_id)
           .value()
           .is_under_advanced_protection);
+}
+
+// Checks that a SIGNIN action triggers a token exchange request when the
+// account is in authentication error.
+TEST_F(DiceResponseHandlerTest, Reauth) {
+  DiceResponseParams dice_params = MakeDiceParams(DiceAction::SIGNIN);
+  AccountInfo account_info = identity_test_env_.MakePrimaryAccountAvailable(
+      dice_params.signin_info->account_info.email);
+  dice_params.signin_info->account_info.gaia_id = account_info.gaia;
+  CoreAccountId account_id = account_info.account_id;
+  identity_test_env_.UpdatePersistentErrorOfRefreshTokenForAccount(
+      account_id,
+      GoogleServiceAuthError(GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS));
+  EXPECT_TRUE(identity_manager()->HasAccountWithRefreshToken(account_id));
+  EXPECT_TRUE(
+      identity_manager()->HasAccountWithRefreshTokenInPersistentErrorState(
+          account_id));
+  dice_response_handler_->ProcessDiceHeader(
+      dice_params, std::make_unique<TestProcessDiceHeaderDelegate>(this));
+  // Check that a GaiaAuthFetcher has been created.
+  GaiaAuthConsumer* consumer = signin_client_.GetAndClearConsumer();
+  ASSERT_THAT(consumer, testing::NotNull());
+  EXPECT_EQ(1, reconcilor_blocked_count_);
+  EXPECT_EQ(0, reconcilor_unblocked_count_);
+  // Simulate GaiaAuthFetcher success.
+  consumer->OnClientOAuthSuccess(GaiaAuthConsumer::ClientOAuthResult(
+      "refresh_token", "access_token", 10, false /* is_child_account */,
+      true /* is_advanced_protection*/));
+  // Check that the token has been inserted in the token service.
+  EXPECT_TRUE(identity_manager()->HasAccountWithRefreshToken(account_id));
+  EXPECT_FALSE(
+      identity_manager()->HasAccountWithRefreshTokenInPersistentErrorState(
+          account_id));
+  // Check HandleTokenExchangeSuccess parameters.
+  EXPECT_EQ(token_exchange_account_id_, account_id);
+  EXPECT_FALSE(token_exchange_is_new_account_);
 }
 
 // Checks that a GaiaAuthFetcher failure is handled correctly.
@@ -380,6 +432,9 @@ TEST_F(DiceResponseHandlerTest, SigninEnableSyncAfterRefreshTokenFetched) {
       false /* is_advanced_protection*/));
   // Check that the token has been inserted in the token service.
   EXPECT_TRUE(identity_manager()->HasAccountWithRefreshToken(account_id));
+  // Check HandleTokenExchangeSuccess parameters.
+  EXPECT_EQ(token_exchange_account_id_, account_id);
+  EXPECT_TRUE(token_exchange_is_new_account_);
   // Check that delegate was not called to enable sync.
   EXPECT_TRUE(enable_sync_account_id_.empty());
 
@@ -419,6 +474,9 @@ TEST_F(DiceResponseHandlerTest, SigninEnableSyncBeforeRefreshTokenFetched) {
       false /* is_advanced_protection*/));
   // Check that the token has been inserted in the token service.
   EXPECT_TRUE(identity_manager()->HasAccountWithRefreshToken(account_id));
+  // Check HandleTokenExchangeSuccess parameters.
+  EXPECT_EQ(token_exchange_account_id_, account_id);
+  EXPECT_TRUE(token_exchange_is_new_account_);
   // Check that delegate was called to enable sync.
   EXPECT_EQ(account_id, enable_sync_account_id_);
 }

@@ -475,13 +475,15 @@ TEST_F(RasterFormatTest, ConvertYUVMailboxesToRGBINTERNALImmediate) {
   };
   cmds::ConvertYUVMailboxesToRGBINTERNALImmediate& cmd =
       *GetBufferAs<cmds::ConvertYUVMailboxesToRGBINTERNALImmediate>();
-  void* next_cmd = cmd.Set(&cmd, static_cast<GLenum>(11), data);
+  void* next_cmd =
+      cmd.Set(&cmd, static_cast<GLenum>(11), static_cast<GLboolean>(12), data);
   EXPECT_EQ(static_cast<uint32_t>(
                 cmds::ConvertYUVMailboxesToRGBINTERNALImmediate::kCmdId),
             cmd.header.command);
   EXPECT_EQ(sizeof(cmd) + RoundSizeToMultipleOfEntries(sizeof(data)),
             cmd.header.size * 4u);
   EXPECT_EQ(static_cast<GLenum>(11), cmd.planes_yuv_color_space);
+  EXPECT_EQ(static_cast<GLboolean>(12), cmd.is_nv12);
   CheckBytesWrittenMatchesExpectedSize(
       next_cmd, sizeof(cmd) + RoundSizeToMultipleOfEntries(sizeof(data)));
 }

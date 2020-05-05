@@ -3,7 +3,8 @@
 // found in the LICENSE file.
 
 #include "ui/events/blink/prediction/empty_predictor.h"
-#include "ui/events/blink/prediction/predictor_factory.h"
+
+#include "third_party/blink/public/common/features.h"
 
 namespace ui {
 
@@ -14,7 +15,7 @@ EmptyPredictor::EmptyPredictor() {
 EmptyPredictor::~EmptyPredictor() = default;
 
 const char* EmptyPredictor::GetName() const {
-  return input_prediction::kScrollPredictorNameEmpty;
+  return blink::features::kScrollPredictorNameEmpty;
 }
 
 void EmptyPredictor::Reset() {

@@ -120,7 +120,7 @@ void GrandfatheredEasyUnlockHostDisabler::DisableEasyUnlockHostIfNecessary() {
     return;
 
   PA_LOG(VERBOSE) << "Attempting to disable kSmartLockHost on device "
-                  << host_to_disable->GetTruncatedDeviceIdForLogs();
+                  << host_to_disable->GetInstanceIdDeviceIdForLogs();
   if (features::ShouldUseV1DeviceSync()) {
     // Even if the host has a non-trivial Instance ID, we still invoke the v1
     // DeviceSync RPC to set the feature state. This ensures that GmsCore will
@@ -157,10 +157,10 @@ void GrandfatheredEasyUnlockHostDisabler::OnDisableEasyUnlockHostResult(
 
   if (success) {
     PA_LOG(VERBOSE) << "Successfully disabled kSmartLockHost on device "
-                    << device.GetTruncatedDeviceIdForLogs();
+                    << device.GetInstanceIdDeviceIdForLogs();
   } else {
     PA_LOG(WARNING) << "Failed to disable kSmartLockHost on device "
-                    << device.GetTruncatedDeviceIdForLogs()
+                    << device.GetInstanceIdDeviceIdForLogs()
                     << ", Error code: " << result_code;
   }
 

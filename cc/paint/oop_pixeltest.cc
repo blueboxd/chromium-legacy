@@ -1674,6 +1674,17 @@ void UploadPixels(gpu::gles2::GLES2Interface* gl,
   gl->BindTexture(GL_TEXTURE_2D, 0);
   gl->DeleteTextures(1, &texture);
 }
+
+GrBackendTexture MakeBackendTexture(gpu::gles2::GLES2Interface* gl,
+                                    const gpu::Mailbox& mailbox,
+                                    gfx::Size size,
+                                    GLenum type) {
+  GrGLTextureInfo tex_info = {
+      GL_TEXTURE_2D, gl->CreateAndTexStorage2DSharedImageCHROMIUM(mailbox.name),
+      type};
+  return GrBackendTexture(size.width(), size.height(), GrMipMapped::kNo,
+                          tex_info);
+}
 }  // namespace
 
 TEST_F(OopPixelTest, ConvertYUVToRGB) {
@@ -1718,30 +1729,13 @@ TEST_F(OopPixelTest, ConvertYUVToRGB) {
   SkBitmap actual_bitmap = ReadbackMailbox(gl, dest_mailbox, options);
 
   // Create the expected result using SkImage::MakeFromYUVTextures
-  GrGLTextureInfo backend_info[3];
-  backend_info[0] = {
-      GL_TEXTURE_2D,
-      gl->CreateAndTexStorage2DSharedImageCHROMIUM(y_mailbox.name),
-      GL_LUMINANCE8_EXT};
-  backend_info[1] = {
-      GL_TEXTURE_2D,
-      gl->CreateAndTexStorage2DSharedImageCHROMIUM(u_mailbox.name),
-      GL_LUMINANCE8_EXT};
-  backend_info[2] = {
-      GL_TEXTURE_2D,
-      gl->CreateAndTexStorage2DSharedImageCHROMIUM(v_mailbox.name),
-      GL_LUMINANCE8_EXT};
-
   GrBackendTexture backend_textures[3];
-  backend_textures[0] = GrBackendTexture(options.resource_size.width(),
-                                         options.resource_size.height(),
-                                         GrMipMapped::kNo, backend_info[0]);
-  backend_textures[1] = GrBackendTexture(uv_options.resource_size.width(),
-                                         uv_options.resource_size.height(),
-                                         GrMipMapped::kNo, backend_info[1]);
-  backend_textures[2] = GrBackendTexture(uv_options.resource_size.width(),
-                                         uv_options.resource_size.height(),
-                                         GrMipMapped::kNo, backend_info[2]);
+  backend_textures[0] = MakeBackendTexture(gl, y_mailbox, options.resource_size,
+                                           GL_LUMINANCE8_EXT);
+  backend_textures[1] = MakeBackendTexture(
+      gl, u_mailbox, uv_options.resource_size, GL_LUMINANCE8_EXT);
+  backend_textures[2] = MakeBackendTexture(
+      gl, v_mailbox, uv_options.resource_size, GL_LUMINANCE8_EXT);
 
   SkYUVAIndex yuva_indices[4];
   yuva_indices[SkYUVAIndex::kY_Index] = {0, SkColorChannel::kR};
@@ -1761,8 +1755,10 @@ TEST_F(OopPixelTest, ConvertYUVToRGB) {
   expected_image->readPixels(expected_bitmap.pixmap(), 0, 0);
   ExpectEquals(actual_bitmap, expected_bitmap);
 
-  for (auto& backend : backend_info) {
-    gl->DeleteTextures(1, &backend.fID);
+  for (auto& backend : backend_textures) {
+    GrGLTextureInfo info;
+    if (backend.getGLTextureInfo(&info))
+      gl->DeleteTextures(1, &info.fID);
   }
 
   gpu::SyncToken sync_token;
@@ -1772,6 +1768,86 @@ TEST_F(OopPixelTest, ConvertYUVToRGB) {
   sii->DestroySharedImage(sync_token, u_mailbox);
   sii->DestroySharedImage(sync_token, v_mailbox);
 }
+
+// A workaround on Android that forces the use of GLES 2.0 instead of 3.0
+// prevents the use of the GL_RG textures required for NV12 format. This
+// test will be reactiviated on Android once the workaround is removed.
+#ifndef OS_ANDROID
+TEST_F(OopPixelTest, ConvertNV12ToRGB) {
+  RasterOptions options(gfx::Size(16, 16));
+  RasterOptions uv_options(gfx::Size(options.resource_size.width() / 2,
+                                     options.resource_size.height() / 2));
+  auto* ri = raster_context_provider_->RasterInterface();
+  auto* sii = raster_context_provider_->SharedImageInterface();
+
+  gpu::Mailbox dest_mailbox = CreateMailboxSharedImage(
+      ri, sii, options, viz::ResourceFormat::RGBA_8888);
+  gpu::Mailbox y_mailbox = CreateMailboxSharedImage(
+      ri, sii, options, viz::ResourceFormat::LUMINANCE_8);
+  gpu::Mailbox uv_mailbox =
+      CreateMailboxSharedImage(ri, sii, uv_options, viz::ResourceFormat::RG_88);
+
+  size_t y_pixels_size = options.resource_size.GetArea();
+  size_t uv_pixels_size = uv_options.resource_size.GetArea() * 2;
+  auto y_pix = std::make_unique<uint8_t[]>(y_pixels_size);
+  auto uv_pix = std::make_unique<uint8_t[]>(uv_pixels_size);
+
+  memset(y_pix.get(), 0x1d, y_pixels_size);
+  for (size_t i = 0; i < uv_pixels_size; i += 2) {
+    uv_pix[i] = 0xff;
+    uv_pix[i + 1] = 0x6d;
+  }
+
+  gpu::gles2::GLES2Interface* gl = gles2_context_provider_->ContextGL();
+  UploadPixels(gl, y_mailbox, options.resource_size, GL_LUMINANCE,
+               GL_UNSIGNED_BYTE, y_pix.get());
+  UploadPixels(gl, uv_mailbox, uv_options.resource_size, GL_RG,
+               GL_UNSIGNED_BYTE, uv_pix.get());
+  gl->OrderingBarrierCHROMIUM();
+
+  ri->ConvertNV12MailboxesToRGB(dest_mailbox, kJPEG_SkYUVColorSpace, y_mailbox,
+                                uv_mailbox);
+  ri->OrderingBarrierCHROMIUM();
+  SkBitmap actual_bitmap = ReadbackMailbox(gl, dest_mailbox, options);
+
+  // Create the expected result using SkImage::MakeFromYUVTextures
+  GrBackendTexture backend_textures[2];
+  backend_textures[0] = MakeBackendTexture(gl, y_mailbox, options.resource_size,
+                                           GL_LUMINANCE8_EXT);
+  backend_textures[1] =
+      MakeBackendTexture(gl, uv_mailbox, uv_options.resource_size, GL_RG8);
+
+  SkYUVAIndex yuva_indices[4];
+  yuva_indices[SkYUVAIndex::kY_Index] = {0, SkColorChannel::kR};
+  yuva_indices[SkYUVAIndex::kU_Index] = {1, SkColorChannel::kR};
+  yuva_indices[SkYUVAIndex::kV_Index] = {1, SkColorChannel::kG};
+  yuva_indices[SkYUVAIndex::kA_Index] = {-1, SkColorChannel::kA};
+
+  auto expected_image = SkImage::MakeFromYUVATextures(
+      gles2_context_provider_->GrContext(), kJPEG_SkYUVColorSpace,
+      backend_textures, yuva_indices,
+      {options.resource_size.width(), options.resource_size.height()},
+      kTopLeft_GrSurfaceOrigin, nullptr);
+
+  SkBitmap expected_bitmap;
+  expected_bitmap.allocN32Pixels(options.resource_size.width(),
+                                 options.resource_size.height());
+  expected_image->readPixels(expected_bitmap.pixmap(), 0, 0);
+  ExpectEquals(actual_bitmap, expected_bitmap);
+
+  for (auto& backend : backend_textures) {
+    GrGLTextureInfo info;
+    if (backend.getGLTextureInfo(&info))
+      gl->DeleteTextures(1, &info.fID);
+  }
+
+  gpu::SyncToken sync_token;
+  gl->GenUnverifiedSyncTokenCHROMIUM(sync_token.GetData());
+  sii->DestroySharedImage(sync_token, dest_mailbox);
+  sii->DestroySharedImage(sync_token, y_mailbox);
+  sii->DestroySharedImage(sync_token, uv_mailbox);
+}
+#endif  // OS_ANDROID
 
 class OopPathPixelTest : public OopPixelTest,
                          public ::testing::WithParamInterface<bool> {

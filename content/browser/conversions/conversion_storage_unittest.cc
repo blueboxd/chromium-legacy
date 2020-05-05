@@ -130,6 +130,27 @@ class ConversionStorageTest : public testing::Test {
   std::unique_ptr<ConversionStorage> storage_;
 };
 
+TEST_F(ConversionStorageTest, ImpressionStoredAndRetrieved_ValuesIdentical) {
+  auto impression = ImpressionBuilder(clock()->Now()).Build();
+  storage()->StoreImpression(impression);
+  std::vector<StorableImpression> stored_impressions =
+      storage()->GetActiveImpressions();
+  EXPECT_EQ(1u, stored_impressions.size());
+
+  // Verify that each field was stored as expected.
+  EXPECT_EQ(impression.impression_data(),
+            stored_impressions[0].impression_data());
+  EXPECT_EQ(impression.impression_origin(),
+            stored_impressions[0].impression_origin());
+  EXPECT_EQ(impression.conversion_origin(),
+            stored_impressions[0].conversion_origin());
+  EXPECT_EQ(impression.reporting_origin(),
+            stored_impressions[0].reporting_origin());
+  EXPECT_EQ(impression.impression_time(),
+            stored_impressions[0].impression_time());
+  EXPECT_EQ(impression.expiry_time(), stored_impressions[0].expiry_time());
+}
+
 TEST_F(ConversionStorageTest,
        GetWithNoMatchingImpressions_NoImpressionsReturned) {
   EXPECT_EQ(

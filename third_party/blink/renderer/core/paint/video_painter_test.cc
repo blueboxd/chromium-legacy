@@ -168,8 +168,8 @@ TEST_P(VideoPaintPreviewTest, URLIsRecordedWhenPaintingPreview) {
   GetLocalMainFrame().CapturePaintPreview(WebRect(bounds()), canvas);
 
   ASSERT_EQ(1lu, tracker.GetLinks().size());
-  EXPECT_EQ("http://test.com/", tracker.GetLinks()[0].url);
-  EXPECT_EQ(gfx::Rect(300, 300), tracker.GetLinks()[0].rect);
+  EXPECT_EQ("http://test.com/", tracker.GetLinks()[0]->url);
+  EXPECT_EQ(gfx::Rect(300, 300), tracker.GetLinks()[0]->rect);
 }
 
 }  // namespace

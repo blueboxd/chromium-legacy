@@ -1495,6 +1495,69 @@ TEST_F(PasswordStoreTest, GetAllCompromisedCredentials) {
   store->ShutdownOnUIThread();
 }
 
+// Test GetMatchingCompromisedCredentials when affiliation service isn't
+// available.
+TEST_F(PasswordStoreTest, GetMatchingCompromisedWithoutAffiliations) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(password_manager::features::kPasswordCheck);
+  scoped_refptr<PasswordStoreDefault> store = CreatePasswordStore();
+  store->Init(nullptr);
+
+  CompromisedCredentials credentials1 = {
+      kTestWebRealm1, base::ASCIIToUTF16("username_value"),
+      base::Time::FromTimeT(1), CompromiseType::kLeaked};
+  CompromisedCredentials credentials2 = {
+      kTestWebRealm2, base::ASCIIToUTF16("username_value"),
+      base::Time::FromTimeT(2), CompromiseType::kLeaked};
+  for (const auto& credentials : {credentials1, credentials2})
+    store->AddCompromisedCredentials(credentials);
+
+  MockCompromisedCredentialsConsumer consumer;
+  EXPECT_CALL(consumer,
+              OnGetCompromisedCredentials(UnorderedElementsAre(credentials1)));
+  store->GetMatchingCompromisedCredentials(kTestWebRealm1, &consumer);
+  WaitForPasswordStore();
+
+  store->ShutdownOnUIThread();
+}
+
+// Test GetMatchingCompromisedCredentials with some matching Android
+// credentials.
+TEST_F(PasswordStoreTest, GetMatchingCompromisedWithAffiliations) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(password_manager::features::kPasswordCheck);
+  scoped_refptr<PasswordStoreDefault> store = CreatePasswordStore();
+  store->Init(nullptr);
+
+  CompromisedCredentials credentials1 = {
+      kTestWebRealm1, base::ASCIIToUTF16("username_value"),
+      base::Time::FromTimeT(1), CompromiseType::kLeaked};
+  CompromisedCredentials credentials2 = {
+      kTestAndroidRealm1, base::ASCIIToUTF16("username_value_1"),
+      base::Time::FromTimeT(2), CompromiseType::kPhished};
+  CompromisedCredentials credentials3 = {
+      kTestWebRealm2, base::ASCIIToUTF16("username_value_2"),
+      base::Time::FromTimeT(3), CompromiseType::kLeaked};
+  for (const auto& credentials : {credentials1, credentials2, credentials3})
+    store->AddCompromisedCredentials(credentials);
+
+  PasswordStore::FormDigest observed_form = {
+      PasswordForm::Scheme::kHtml, kTestWebRealm1, GURL(kTestWebRealm1)};
+  std::vector<std::string> affiliated_android_realms = {kTestAndroidRealm1};
+  auto mock_helper = std::make_unique<MockAffiliatedMatchHelper>();
+  mock_helper->ExpectCallToGetAffiliatedAndroidRealms(
+      observed_form, affiliated_android_realms);
+  store->SetAffiliatedMatchHelper(std::move(mock_helper));
+
+  MockCompromisedCredentialsConsumer consumer;
+  EXPECT_CALL(consumer, OnGetCompromisedCredentials(
+                            UnorderedElementsAre(credentials1, credentials2)));
+  store->GetMatchingCompromisedCredentials(kTestWebRealm1, &consumer);
+  WaitForPasswordStore();
+
+  store->ShutdownOnUIThread();
+}
+
 TEST_F(PasswordStoreTest, RemovePhishedCredentialsByCompromiseType) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(password_manager::features::kPasswordCheck);
@@ -1528,6 +1591,7 @@ TEST_F(PasswordStoreTest, RemovePhishedCredentialsByCompromiseType) {
               OnGetCompromisedCredentials(ElementsAre(leaked_credentials)));
   store->GetAllCompromisedCredentials(&consumer);
   WaitForPasswordStore();
+
   store->ShutdownOnUIThread();
 }
 

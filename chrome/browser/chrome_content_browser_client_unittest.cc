@@ -192,9 +192,8 @@ void CheckUserAgentStringOrdering(bool mobile_device) {
   ASSERT_GE(3u, pieces.size());
   ASSERT_EQ("Linux", pieces[0]);
   std::string model;
-  if (pieces.size() > 2) {
+  if (pieces.size() > 2)
     model = pieces[2];
-  }
 
   pieces = base::SplitStringUsingSubstr(pieces[1], " ", base::KEEP_WHITESPACE,
                                         base::SPLIT_WANT_ALL);
@@ -208,11 +207,10 @@ void CheckUserAgentStringOrdering(bool mobile_device) {
   }
 
   if (!model.empty()) {
-    if (base::SysInfo::GetAndroidBuildCodename() == "REL") {
+    if (base::SysInfo::GetAndroidBuildCodename() == "REL")
       ASSERT_EQ(base::SysInfo::HardwareModelName(), model);
-    } else {
+    else
       ASSERT_EQ("", model);
-    }
   }
 #elif defined(OS_FUCHSIA)
   // X11; Fuchsia

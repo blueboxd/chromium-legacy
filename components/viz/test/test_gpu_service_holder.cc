@@ -34,6 +34,10 @@
 #include "gpu/vulkan/vulkan_implementation.h"
 #endif
 
+#if defined(USE_OZONE)
+#include "ui/ozone/public/ozone_platform.h"
+#endif
+
 namespace viz {
 
 namespace {
@@ -141,7 +145,21 @@ void TestGpuServiceHolder::DoNotResetOnTestExit() {
 TestGpuServiceHolder::TestGpuServiceHolder(
     const gpu::GpuPreferences& gpu_preferences)
     : gpu_thread_("GPUMainThread"), io_thread_("GPUIOThread") {
-  CHECK(gpu_thread_.Start());
+  base::Thread::Options gpu_thread_options;
+#if defined(USE_OZONE)
+  base::MessagePumpType message_pump_type_for_gpu =
+      ui::OzonePlatform::GetInstance()
+          ->GetPlatformProperties()
+          .message_pump_type_for_gpu;
+  // X11 platform uses UI thread for GPU main, but 2 UI threads is
+  // causing crashes in linux-ozone-rel.
+  // TODO(crbug.com/1078392): Investigate and fix.
+  if (message_pump_type_for_gpu != base::MessagePumpType::UI) {
+    gpu_thread_options.message_pump_type = message_pump_type_for_gpu;
+  }
+#endif
+
+  CHECK(gpu_thread_.StartWithOptions(gpu_thread_options));
   CHECK(io_thread_.Start());
 
   base::WaitableEvent completion;

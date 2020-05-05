@@ -123,12 +123,9 @@ IntSize ImageElementBase::BitmapSourceSize() const {
 
 ScriptPromise ImageElementBase::CreateImageBitmap(
     ScriptState* script_state,
-    EventTarget& event_target,
     base::Optional<IntRect> crop_rect,
     const ImageBitmapOptions* options,
     ExceptionState& exception_state) {
-  DCHECK(event_target.ToLocalDOMWindow());
-
   ImageResourceContent* image_content = CachedImage();
   if (!image_content) {
     exception_state.ThrowDOMException(
@@ -148,15 +145,10 @@ ScriptPromise ImageElementBase::CreateImageBitmap(
           "specified.");
       return ScriptPromise();
     }
-    return ImageBitmap::CreateAsync(this, crop_rect,
-                                    event_target.ToLocalDOMWindow()->document(),
-                                    script_state, options);
+    return ImageBitmap::CreateAsync(this, crop_rect, script_state, options);
   }
   return ImageBitmapSource::FulfillImageBitmap(
-      script_state,
-      MakeGarbageCollected<ImageBitmap>(
-          this, crop_rect, event_target.ToLocalDOMWindow()->document(),
-          options),
+      script_state, MakeGarbageCollected<ImageBitmap>(this, crop_rect, options),
       exception_state);
 }
 

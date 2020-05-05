@@ -4,7 +4,7 @@
 
 #import "chrome/browser/ui/cocoa/color_chooser_mac.h"
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "chrome/browser/ui/color_chooser.h"
 #include "components/remote_cocoa/app_shim/color_panel_bridge.h"
 #include "components/remote_cocoa/browser/application_host.h"

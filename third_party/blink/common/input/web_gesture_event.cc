@@ -96,6 +96,24 @@ void WebGestureEvent::Coalesce(const WebInputEvent& event) {
   }
 }
 
+base::Optional<ui::ScrollInputType> WebGestureEvent::GetScrollInputType()
+    const {
+  if (!IsGestureScroll())
+    return base::nullopt;
+  switch (SourceDevice()) {
+    case WebGestureDevice::kTouchpad:
+      return ui::ScrollInputType::kWheel;
+    case WebGestureDevice::kTouchscreen:
+      return ui::ScrollInputType::kTouchscreen;
+    case WebGestureDevice::kSyntheticAutoscroll:
+      return ui::ScrollInputType::kAutoscroll;
+    case WebGestureDevice::kScrollbar:
+      return ui::ScrollInputType::kScrollbar;
+    case WebGestureDevice::kUninitialized:
+      return base::nullopt;
+  }
+}
+
 float WebGestureEvent::DeltaXInRootFrame() const {
   float delta_x = (type_ == WebInputEvent::Type::kGestureScrollBegin)
                       ? data.scroll_begin.delta_x_hint
@@ -329,6 +347,40 @@ WebGestureEvent::CoalesceScrollAndPinch(
   pinch_event.data.pinch_update.scale = combined_scale;
 
   return std::make_pair(scroll_event, pinch_event);
+}
+
+std::unique_ptr<blink::WebGestureEvent>
+WebGestureEvent::GenerateInjectedScrollGesture(
+    WebInputEvent::Type type,
+    base::TimeTicks timestamp,
+    WebGestureDevice device,
+    gfx::PointF position_in_widget,
+    gfx::Vector2dF scroll_delta,
+    ui::ScrollGranularity granularity) {
+  std::unique_ptr<WebGestureEvent> generated_gesture_event =
+      std::make_unique<WebGestureEvent>(type, WebInputEvent::kNoModifiers,
+                                        timestamp, device);
+  DCHECK(generated_gesture_event->IsGestureScroll());
+
+  if (type == WebInputEvent::Type::kGestureScrollBegin) {
+    // Gesture events expect the scroll delta to be flipped. Gesture events'
+    // scroll deltas are interpreted as the finger's delta in relation to the
+    // screen (which is the reverse of the scrolling direction).
+    generated_gesture_event->data.scroll_begin.delta_x_hint = -scroll_delta.x();
+    generated_gesture_event->data.scroll_begin.delta_y_hint = -scroll_delta.y();
+    generated_gesture_event->data.scroll_begin.inertial_phase =
+        WebGestureEvent::InertialPhaseState::kNonMomentum;
+    generated_gesture_event->data.scroll_begin.delta_hint_units = granularity;
+  } else if (type == WebInputEvent::Type::kGestureScrollUpdate) {
+    generated_gesture_event->data.scroll_update.delta_x = -scroll_delta.x();
+    generated_gesture_event->data.scroll_update.delta_y = -scroll_delta.y();
+    generated_gesture_event->data.scroll_update.inertial_phase =
+        WebGestureEvent::InertialPhaseState::kNonMomentum;
+    generated_gesture_event->data.scroll_update.delta_units = granularity;
+  }
+
+  generated_gesture_event->SetPositionInWidget(position_in_widget);
+  return generated_gesture_event;
 }
 
 }  // namespace blink

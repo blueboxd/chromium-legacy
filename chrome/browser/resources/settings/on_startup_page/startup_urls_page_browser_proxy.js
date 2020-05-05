@@ -16,69 +16,69 @@ import {addSingletonGetter, sendWithPromise} from 'chrome://resources/js/cr.m.js
  */
 export let StartupPageInfo;
 
-  /** @interface */
-  export class StartupUrlsPageBrowserProxy {
-    loadStartupPages() {}
-    useCurrentPages() {}
-
-    /**
-     * @param {string} url
-     * @return {!Promise<boolean>} Whether the URL is valid.
-     */
-    validateStartupPage(url) {}
-
-    /**
-     * @param {string} url
-     * @return {!Promise<boolean>} Whether the URL was actually added, or
-     *     ignored because it was invalid.
-     */
-    addStartupPage(url) {}
-
-    /**
-     * @param {number} modelIndex
-     * @param {string} url
-     * @return {!Promise<boolean>} Whether the URL was actually edited, or
-     *     ignored because it was invalid.
-     */
-    editStartupPage(modelIndex, url) {}
-
-    /** @param {number} index */
-    removeStartupPage(index) {}
-  }
+/** @interface */
+export class StartupUrlsPageBrowserProxy {
+  loadStartupPages() {}
+  useCurrentPages() {}
 
   /**
-   * @implements {StartupUrlsPageBrowserProxy}
+   * @param {string} url
+   * @return {!Promise<boolean>} Whether the URL is valid.
    */
-  export class StartupUrlsPageBrowserProxyImpl {
-    /** @override */
-    loadStartupPages() {
-      chrome.send('onStartupPrefsPageLoad');
-    }
+  validateStartupPage(url) {}
 
-    /** @override */
-    useCurrentPages() {
-      chrome.send('setStartupPagesToCurrentPages');
-    }
+  /**
+   * @param {string} url
+   * @return {!Promise<boolean>} Whether the URL was actually added, or
+   *     ignored because it was invalid.
+   */
+  addStartupPage(url) {}
 
-    /** @override */
-    validateStartupPage(url) {
-      return sendWithPromise('validateStartupPage', url);
-    }
+  /**
+   * @param {number} modelIndex
+   * @param {string} url
+   * @return {!Promise<boolean>} Whether the URL was actually edited, or
+   *     ignored because it was invalid.
+   */
+  editStartupPage(modelIndex, url) {}
 
-    /** @override */
-    addStartupPage(url) {
-      return sendWithPromise('addStartupPage', url);
-    }
+  /** @param {number} index */
+  removeStartupPage(index) {}
+}
 
-    /** @override */
-    editStartupPage(modelIndex, url) {
-      return sendWithPromise('editStartupPage', modelIndex, url);
-    }
-
-    /** @override */
-    removeStartupPage(index) {
-      chrome.send('removeStartupPage', [index]);
-    }
+/**
+ * @implements {StartupUrlsPageBrowserProxy}
+ */
+export class StartupUrlsPageBrowserProxyImpl {
+  /** @override */
+  loadStartupPages() {
+    chrome.send('onStartupPrefsPageLoad');
   }
 
-  addSingletonGetter(StartupUrlsPageBrowserProxyImpl);
+  /** @override */
+  useCurrentPages() {
+    chrome.send('setStartupPagesToCurrentPages');
+  }
+
+  /** @override */
+  validateStartupPage(url) {
+    return sendWithPromise('validateStartupPage', url);
+  }
+
+  /** @override */
+  addStartupPage(url) {
+    return sendWithPromise('addStartupPage', url);
+  }
+
+  /** @override */
+  editStartupPage(modelIndex, url) {
+    return sendWithPromise('editStartupPage', modelIndex, url);
+  }
+
+  /** @override */
+  removeStartupPage(index) {
+    chrome.send('removeStartupPage', [index]);
+  }
+}
+
+addSingletonGetter(StartupUrlsPageBrowserProxyImpl);

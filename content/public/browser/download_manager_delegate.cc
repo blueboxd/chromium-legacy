@@ -26,6 +26,11 @@ bool DownloadManagerDelegate::ShouldOpenFileBasedOnExtension(
   return false;
 }
 
+bool DownloadManagerDelegate::ShouldOpenFileByPolicyBasedOnExtension(
+    const base::FilePath& path) {
+  return false;
+}
+
 bool DownloadManagerDelegate::ShouldCompleteDownload(
     download::DownloadItem* item,
     base::OnceClosure callback) {

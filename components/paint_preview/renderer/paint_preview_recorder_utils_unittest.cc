@@ -157,11 +157,11 @@ TEST(PaintPreviewRecorderUtilsTest, TestBuildResponse) {
 
   EXPECT_EQ(response->embedding_token, embedding_token);
   EXPECT_EQ(response->links.size(), 2U);
-  EXPECT_EQ(response->links.size(), tracker.GetLinks().size());
-  for (size_t i = 0; i < response->links.size(); ++i) {
-    EXPECT_THAT(response->links[i]->url, tracker.GetLinks()[i].url);
-    EXPECT_THAT(response->links[i]->rect, tracker.GetLinks()[i].rect);
-  }
+  EXPECT_THAT(response->links[0]->url, GURL("www.google.com"));
+  EXPECT_THAT(response->links[0]->rect, gfx::Rect(1, 2, 3, 4));
+  EXPECT_THAT(response->links[1]->url, GURL("www.chromium.org"));
+  EXPECT_THAT(response->links[1]->rect, gfx::Rect(10, 20, 10, 20));
+
   auto* content_map = tracker.GetPictureSerializationContext();
   for (const auto& id_pair : response->content_id_to_embedding_token) {
     auto it = content_map->find(id_pair.first);

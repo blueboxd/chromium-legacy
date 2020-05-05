@@ -900,10 +900,6 @@
       status: "stable",
     },
     {
-      name: "InvisibleDOM",
-      status: "experimental",
-    },
-    {
       // Launched by default. TODO(mythria): cleanup virtual tests and
       // other hooks in blink.
       name: "IsolatedCodeCache",

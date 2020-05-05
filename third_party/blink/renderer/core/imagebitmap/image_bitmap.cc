@@ -582,7 +582,6 @@ sk_sp<SkImage> ImageBitmap::GetSkImageFromDecoder(
 
 ImageBitmap::ImageBitmap(ImageElementBase* image,
                          base::Optional<IntRect> crop_rect,
-                         Document* document,
                          const ImageBitmapOptions* options) {
   scoped_refptr<Image> input = image->CachedImage()->GetImage();
   DCHECK(!input->IsTextureBacked());
@@ -653,7 +652,6 @@ ImageBitmap::ImageBitmap(ImageElementBase* image,
 
 ImageBitmap::ImageBitmap(HTMLVideoElement* video,
                          base::Optional<IntRect> crop_rect,
-                         Document* document,
                          const ImageBitmapOptions* options) {
   ParsedOptions parsed_options =
       ParseOptions(options, crop_rect, video->BitmapSourceSize());
@@ -979,7 +977,6 @@ void ImageBitmap::RasterizeImageOnBackgroundThread(
 
 ScriptPromise ImageBitmap::CreateAsync(ImageElementBase* image,
                                        base::Optional<IntRect> crop_rect,
-                                       Document* document,
                                        ScriptState* script_state,
                                        const ImageBitmapOptions* options) {
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
@@ -1098,7 +1095,6 @@ IntSize ImageBitmap::Size() const {
 }
 
 ScriptPromise ImageBitmap::CreateImageBitmap(ScriptState* script_state,
-                                             EventTarget& event_target,
                                              base::Optional<IntRect> crop_rect,
                                              const ImageBitmapOptions* options,
                                              ExceptionState& exception_state) {

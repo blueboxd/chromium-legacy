@@ -51,6 +51,14 @@ public class BottomControlsTest {
         final String url = UrlUtils.encodeHtmlDataUri("<body><p style='height:5000px'>");
         InstrumentationActivity activity = mActivityTestRule.launchShellWithUrl(url);
 
+        // Poll until the top view becomes visible.
+        CriteriaHelper.pollUiThread(Criteria.equals(
+                View.VISIBLE, () -> activity.getTopContentsContainer().getVisibility()));
+
+        // Ask for the page height. While the height isn't needed, the call to the renderer helps
+        // ensure the renderer's height has updated based on the top-control.
+        getVisiblePageHeight();
+
         View bottomView = TestThreadUtils.runOnUiThreadBlocking(() -> {
             TextView view = new TextView(activity);
             view.setText("BOTTOM");
@@ -61,6 +69,11 @@ public class BottomControlsTest {
         // Poll until the bottom view becomes visible.
         CriteriaHelper.pollUiThread(
                 Criteria.equals(View.VISIBLE, () -> bottomView.getVisibility()));
+
+        // Ask for the page height. While the height isn't needed, the call to the renderer helps
+        // ensure the renderer's height has updated based on the top-control.
+        getVisiblePageHeight();
+
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             // Scrolling code ends up using the max height.
             mMaxControlsHeight = Math.max(

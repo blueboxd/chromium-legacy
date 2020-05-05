@@ -316,8 +316,8 @@ bool DownloadItemModel::ShouldRemoveFromShelfWhenComplete() const {
 
       // If the download is a trusted extension, temporary, or will be opened
       // automatically, then it should be removed from the shelf on completion.
-      // TODO(asanka): The logic for deciding opening behavior should be in a
-      //               central location. http://crbug.com/167702
+      // TODO(crbug.com/1077929): The logic for deciding opening behavior should
+      //                          be in a central location.
       return (download_crx_util::IsTrustedExtensionDownload(profile(),
                                                             *download_) ||
               download_->IsTemporary() || download_->GetOpenWhenComplete() ||
@@ -456,6 +456,10 @@ download::DownloadDangerType DownloadItemModel::GetDangerType() const {
 
 bool DownloadItemModel::GetOpenWhenComplete() const {
   return download_->GetOpenWhenComplete();
+}
+
+bool DownloadItemModel::IsOpenWhenCompleteByPolicy() const {
+  return download_->ShouldOpenFileByPolicyBasedOnExtension();
 }
 
 bool DownloadItemModel::TimeRemaining(base::TimeDelta* remaining) const {

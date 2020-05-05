@@ -90,6 +90,9 @@ class MockPasswordStore : public PasswordStore {
                     RemoveCompromisedCredentialsReason));
   MOCK_METHOD0(GetAllCompromisedCredentialsImpl,
                std::vector<CompromisedCredentials>());
+  MOCK_METHOD1(
+      GetMatchingCompromisedCredentialsImpl,
+      std::vector<CompromisedCredentials>(const std::string& signon_realm));
   MOCK_METHOD3(RemoveCompromisedCredentialsByUrlAndTimeImpl,
                bool(const base::RepeatingCallback<bool(const GURL&)>&,
                     base::Time,

@@ -143,11 +143,11 @@ class ServiceWorkerContainer::DomContentLoadedListener final
   void Invoke(ExecutionContext* execution_context, Event* event) override {
     DCHECK_EQ(event->type(), "DOMContentLoaded");
 
-    Document& document = *To<LocalDOMWindow>(execution_context)->document();
-    DCHECK(HasFiredDomContentLoaded(document));
+    LocalDOMWindow& window = *To<LocalDOMWindow>(execution_context);
+    DCHECK(HasFiredDomContentLoaded(*window.document()));
 
     auto* container =
-        Supplement<Document>::From<ServiceWorkerContainer>(document);
+        Supplement<LocalDOMWindow>::From<ServiceWorkerContainer>(window);
     if (!container) {
       // There is no container for some reason, which means there's no message
       // queue to start. Just abort.
@@ -160,20 +160,17 @@ class ServiceWorkerContainer::DomContentLoadedListener final
 
 const char ServiceWorkerContainer::kSupplementName[] = "ServiceWorkerContainer";
 
-ServiceWorkerContainer* ServiceWorkerContainer::From(Document* document) {
-  if (!document)
-    return nullptr;
-
+ServiceWorkerContainer* ServiceWorkerContainer::From(LocalDOMWindow& window) {
   ServiceWorkerContainer* container =
-      Supplement<Document>::From<ServiceWorkerContainer>(document);
+      Supplement<LocalDOMWindow>::From<ServiceWorkerContainer>(window);
   if (!container) {
     // TODO(leonhsl): Figure out whether it's really necessary to create an
-    // instance when there's no frame or frame client for |document|.
-    container = MakeGarbageCollected<ServiceWorkerContainer>(document);
-    Supplement<Document>::ProvideTo(*document, container);
-    if (document->GetFrame() && document->GetFrame()->Client()) {
+    // instance when there's no frame or frame client for |window|.
+    container = MakeGarbageCollected<ServiceWorkerContainer>(window);
+    Supplement<LocalDOMWindow>::ProvideTo(window, container);
+    if (window.GetFrame() && window.GetFrame()->Client()) {
       std::unique_ptr<WebServiceWorkerProvider> provider =
-          document->GetFrame()->Client()->CreateServiceWorkerProvider();
+          window.GetFrame()->Client()->CreateServiceWorkerProvider();
       if (provider) {
         provider->SetClient(container);
         container->provider_ = std::move(provider);
@@ -184,10 +181,10 @@ ServiceWorkerContainer* ServiceWorkerContainer::From(Document* document) {
 }
 
 ServiceWorkerContainer* ServiceWorkerContainer::CreateForTesting(
-    Document* document,
+    LocalDOMWindow& window,
     std::unique_ptr<WebServiceWorkerProvider> provider) {
   ServiceWorkerContainer* container =
-      MakeGarbageCollected<ServiceWorkerContainer>(document);
+      MakeGarbageCollected<ServiceWorkerContainer>(window);
   container->provider_ = std::move(provider);
   return container;
 }
@@ -211,7 +208,7 @@ void ServiceWorkerContainer::Trace(Visitor* visitor) {
   visitor->Trace(service_worker_registration_objects_);
   visitor->Trace(service_worker_objects_);
   EventTargetWithInlineData::Trace(visitor);
-  Supplement<Document>::Trace(visitor);
+  Supplement<LocalDOMWindow>::Trace(visitor);
   ExecutionContextLifecycleObserver::Trace(visitor);
 }
 
@@ -606,9 +603,9 @@ ServiceWorker* ServiceWorkerContainer::GetOrCreateServiceWorker(
   return worker;
 }
 
-ServiceWorkerContainer::ServiceWorkerContainer(Document* document)
-    : Supplement<Document>(*document),
-      ExecutionContextLifecycleObserver(document->GetExecutionContext()) {}
+ServiceWorkerContainer::ServiceWorkerContainer(LocalDOMWindow& window)
+    : Supplement<LocalDOMWindow>(window),
+      ExecutionContextLifecycleObserver(&window) {}
 
 ServiceWorkerContainer::ReadyProperty*
 ServiceWorkerContainer::CreateReadyProperty() {
@@ -680,7 +677,7 @@ void ServiceWorkerContainer::OnGetRegistrationForReady(
       !ready_->GetExecutionContext()->IsContextDestroyed()) {
     ready_->Resolve(
         ServiceWorkerContainer::From(
-            To<LocalDOMWindow>(ready_->GetExecutionContext())->document())
+            *To<LocalDOMWindow>(ready_->GetExecutionContext()))
             ->GetOrCreateServiceWorkerRegistration(std::move(info)));
   }
 }

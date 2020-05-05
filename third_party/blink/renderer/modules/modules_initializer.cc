@@ -29,6 +29,7 @@
 #include "third_party/blink/renderer/core/html/media/html_media_element.h"
 #include "third_party/blink/renderer/core/inspector/devtools_session.h"
 #include "third_party/blink/renderer/core/inspector/inspector_media_context_impl.h"
+#include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/offscreencanvas/offscreen_canvas.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
@@ -228,7 +229,13 @@ void ModulesInitializer::OnClearWindowObjectInMainWorld(
   DeviceOrientationController::From(window);
   DeviceOrientationAbsoluteController::From(window);
   NavigatorGamepad::From(*window.navigator());
-  NavigatorServiceWorker::From(document);
+
+  // TODO(nhiroki): Figure out why ServiceWorkerContainer needs to be eagerly
+  // initialized.
+  auto& frame_loader = document.GetFrame()->Loader();
+  if (!frame_loader.StateMachine()->IsDisplayingInitialEmptyDocument())
+    NavigatorServiceWorker::From(window);
+
   DOMWindowStorageController::From(document);
   if (RuntimeEnabledFeatures::WebXREnabled(document.GetExecutionContext()))
     NavigatorXR::From(document);

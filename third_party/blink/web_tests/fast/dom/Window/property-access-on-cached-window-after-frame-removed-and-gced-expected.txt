@@ -35,7 +35,6 @@ PASS childWindow.navigator.userAgent is ''
 PASS childWindow.navigator.vendor is window.navigator.vendor
 PASS childWindow.navigator.vendorSub is ''
 PASS childWindow.onabort is null
-PASS childWindow.onactivateinvisible is null
 PASS childWindow.onafterprint is null
 PASS childWindow.onanimationend is null
 PASS childWindow.onanimationiteration is null

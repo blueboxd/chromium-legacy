@@ -40,8 +40,8 @@ public class BookmarkFolderRow extends BookmarkRow {
     }
 
     @Override
-    BookmarkItem setBookmarkId(BookmarkId bookmarkId) {
-        BookmarkItem item = super.setBookmarkId(bookmarkId);
+    BookmarkItem setBookmarkId(BookmarkId bookmarkId, @Location int location) {
+        BookmarkItem item = super.setBookmarkId(bookmarkId, location);
         mTitleView.setText(item.getTitle());
         int childCount = mDelegate.getModel().getTotalBookmarkCount(bookmarkId);
         mDescriptionView.setText((childCount > 0)

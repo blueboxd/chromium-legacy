@@ -18,24 +18,11 @@ class FakeSupervisedUserManager : public SupervisedUserManager {
   ~FakeSupervisedUserManager() override;
 
   bool HasSupervisedUsers(const std::string& manager_id) const override;
-  const user_manager::User* CreateUserRecord(
-      const std::string& manager_id,
-      const std::string& local_user_id,
-      const std::string& sync_user_id,
-      const base::string16& display_name) override;
-  std::string GenerateUserId() override;
-  const user_manager::User* FindByDisplayName(
-      const base::string16& display_name) const override;
-  const user_manager::User* FindBySyncId(
-      const std::string& sync_id) const override;
   std::string GetUserSyncId(const std::string& user_id) const override;
   base::string16 GetManagerDisplayName(
       const std::string& user_id) const override;
   std::string GetManagerUserId(const std::string& user_id) const override;
   std::string GetManagerDisplayEmail(const std::string& user_id) const override;
-  void StartCreationTransaction(const base::string16& display_name) override {}
-  void SetCreationTransactionUserId(const std::string& user_id) override {}
-  void CommitCreationTransaction() override {}
   SupervisedUserAuthentication* GetAuthentication() override;
   void GetPasswordInformation(const std::string& user_id,
                               base::DictionaryValue* result) override {}

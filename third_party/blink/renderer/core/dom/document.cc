@@ -6074,12 +6074,6 @@ String Document::lastModified() const {
                         exploded.minute, exploded.second);
 }
 
-void Document::SetFindInPageRoot(Element* find_in_page_root) {
-  DCHECK(RuntimeEnabledFeatures::InvisibleDOMEnabled());
-  DCHECK(!find_in_page_root || !find_in_page_root_);
-  find_in_page_root_ = find_in_page_root;
-}
-
 scoped_refptr<const SecurityOrigin> Document::TopFrameOrigin() const {
   if (!GetFrame())
     return scoped_refptr<const SecurityOrigin>();
@@ -8262,7 +8256,6 @@ void Document::Trace(Visitor* visitor) {
   visitor->Trace(navigation_initiator_);
   visitor->Trace(lazy_load_image_observer_);
   visitor->Trace(isolated_world_csp_map_);
-  visitor->Trace(find_in_page_root_);
   visitor->Trace(computed_node_mapping_);
   visitor->Trace(mime_handler_view_before_unload_event_listener_);
   visitor->Trace(cookie_jar_);

@@ -428,8 +428,6 @@ void BookmarkBridge::GetChildIDs(JNIEnv* env,
                                   const JavaParamRef<jobject>& obj,
                                   jlong id,
                                   jint type,
-                                  jboolean get_folders,
-                                  jboolean get_bookmarks,
                                   const JavaParamRef<jobject>& j_result_obj) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(IsLoaded());
@@ -440,15 +438,14 @@ void BookmarkBridge::GetChildIDs(JNIEnv* env,
 
   // Get the folder contents
   for (const auto& child : parent->children()) {
-    if (IsFolderAvailable(child.get()) && IsReachable(child.get()) &&
-        (child->is_folder() ? get_folders : get_bookmarks)) {
+    if (IsFolderAvailable(child.get()) && IsReachable(child.get())) {
       Java_BookmarkBridge_addToBookmarkIdList(env, j_result_obj, child->id(),
                                               GetBookmarkType(child.get()));
     }
   }
 
   // Partner bookmark root node is under mobile node.
-  if (parent == bookmark_model_->mobile_node() && get_folders &&
+  if (parent == bookmark_model_->mobile_node() &&
       partner_bookmarks_shim_->HasPartnerBookmarks() &&
       IsReachable(partner_bookmarks_shim_->GetPartnerBookmarksRoot())) {
     Java_BookmarkBridge_addToBookmarkIdList(

@@ -4,7 +4,7 @@
 
 #import "chrome/browser/notifications/stub_notification_center_mac.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/mac/scoped_nsobject.h"
 #include "chrome/browser/ui/cocoa/notifications/notification_constants_mac.h"
 

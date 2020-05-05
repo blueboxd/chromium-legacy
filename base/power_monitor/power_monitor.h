@@ -52,6 +52,12 @@ class BASE_EXPORT PowerMonitor {
   // PowerMonitor has been initialized.
   static bool IsOnBatteryPower();
 
+  // Is the computer currently in suspend mode. Safe to call on any thread. Safe
+  // to call even if the PowerMonitor hasn't been initialized. When called
+  // before initialisation, the process is assumed to not be suspended no matter
+  // what is the real power state.
+  static bool IsProcessSuspended();
+
   // Uninitializes the PowerMonitor. Should be called at the end of any unit
   // test that mocks out the PowerMonitor, to avoid affecting subsequent tests.
   // There must be no live PowerObservers when invoked. Safe to call even if the

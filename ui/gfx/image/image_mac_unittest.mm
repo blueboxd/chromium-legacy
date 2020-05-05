@@ -5,7 +5,6 @@
 #include <Cocoa/Cocoa.h>
 #include <stddef.h>
 
-#include "base/logging.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
 #include "testing/gtest/include/gtest/gtest.h"

@@ -197,7 +197,13 @@ const base::Feature kOmniboxSearchEngineLogo{"OmniboxSearchEngineLogo",
 
 // Feature used to allow users to remove suggestions from clipboard.
 const base::Feature kOmniboxRemoveSuggestionsFromClipboard{
-    "OmniboxRemoveSuggestionsFromClipboard", base::FEATURE_DISABLED_BY_DEFAULT};
+  "OmniboxRemoveSuggestionsFromClipboard",
+#if defined(OS_ANDROID)
+      base::FEATURE_ENABLED_BY_DEFAULT
+#else
+      base::FEATURE_DISABLED_BY_DEFAULT
+#endif
+};
 
 // Feature to debounce drive requests from the document provider.
 const base::Feature kDebounceDocumentProvider{

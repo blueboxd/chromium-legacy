@@ -534,6 +534,7 @@ void WorkspaceWindowResizer::CompleteDrag() {
   if (window_state()->GetStateType() != details().initial_state_type)
     return;
 
+  // Update window state if the window has been snapped.
   if (snap_type_ != SnapType::kNone) {
     if (!window_state()->HasRestoreBounds()) {
       gfx::Rect initial_bounds = details().initial_bounds_in_parent;
@@ -542,26 +543,50 @@ void WorkspaceWindowResizer::CompleteDrag() {
           details().restore_bounds.IsEmpty() ? initial_bounds
                                              : details().restore_bounds);
     }
+
     // TODO(oshima): Add event source type to WMEvent and move
     // metrics recording inside WindowState::OnWMEvent.
-    const WMEvent event(snap_type_ == SnapType::kLeft ? WM_EVENT_SNAP_LEFT
-                                                      : WM_EVENT_SNAP_RIGHT);
+    WMEventType type;
+    switch (snap_type_) {
+      case SnapType::kLeft:
+        type = WM_EVENT_SNAP_LEFT;
+        base::RecordAction(base::UserMetricsAction("WindowDrag_MaximizeLeft"));
+        break;
+      case SnapType::kRight:
+        type = WM_EVENT_SNAP_RIGHT;
+        base::RecordAction(base::UserMetricsAction("WindowDrag_MaximizeRight"));
+        break;
+      case SnapType::kMaximize:
+        type = WM_EVENT_MAXIMIZE;
+        base::RecordAction(base::UserMetricsAction("WindowDrag_Maximize"));
+        // This can happen when a user drags a maximized window from the
+        // caption, and then later tries to maximize it by snapping. Since the
+        // window is still maximized, telling window state to maximize will be a
+        // no-op, so reset the bounds manually here.
+        if (window_state()->IsMaximized()) {
+          aura::Window* window = window_state()->window();
+          window->SetBounds(
+              screen_util::GetMaximizedWindowBoundsInParent(window));
+        }
+        break;
+      default:
+        NOTREACHED();
+        type = WM_EVENT_MAXIMIZE;
+        break;
+    };
+
+    const WMEvent event(type);
     window_state()->OnWMEvent(&event);
 
-    if (snap_type_ == SnapType::kLeft)
-      base::RecordAction(base::UserMetricsAction("WindowDrag_MaximizeLeft"));
-    else
-      base::RecordAction(base::UserMetricsAction("WindowDrag_MaximizeRight"));
-
-    // If the window has been snapped we are done here.
+    // If the window has been snapped or maximized we are done here.
     return;
   }
 
-  if (window_state()->IsSnapped()) {
     // Keep the window snapped if the user resizes the window such that the
     // window has valid bounds for a snapped window. Always unsnap the window
     // if the user dragged the window via the caption area because doing this
     // is slightly less confusing.
+  if (window_state()->IsSnapped()) {
     if (details().window_component == HTCAPTION ||
         !AreBoundsValidSnappedBounds(window_state()->GetStateType(),
                                      GetTarget()->bounds())) {
@@ -571,16 +596,23 @@ void WorkspaceWindowResizer::CompleteDrag() {
       window_state()->SaveCurrentBoundsForRestore();
       window_state()->Restore();
     }
-  } else if (window_state()->IsMaximized()) {
+    return;
+  }
+
+  // Maximized to normal. State doesn't change during a drag so restore the
+  // window here.
+  if (window_state()->IsMaximized()) {
     DCHECK_EQ(HTCAPTION, details().window_component);
     window_state()->SaveCurrentBoundsForRestore();
     window_state()->Restore();
-  } else {
-    // The window was not snapped and is not snapped. This is a user
-    // resize/drag and so the current bounds should be maintained, clearing
-    // any prior restore bounds.
-    window_state()->ClearRestoreBounds();
+    return;
   }
+
+  DCHECK(window_state()->IsNormalStateType());
+  // The window was normal and stays normal. This is a user
+  // resize/drag and so the current bounds should be maintained, clearing
+  // any prior restore bounds.
+  window_state()->ClearRestoreBounds();
 }
 
 void WorkspaceWindowResizer::RevertDrag() {
@@ -1121,6 +1153,9 @@ void WorkspaceWindowResizer::UpdateSnapPhantomWindow(
       phantom_bounds =
           GetDefaultRightSnappedWindowBounds(display.work_area(), GetTarget());
       break;
+    case SnapType::kMaximize:
+      phantom_bounds = display.work_area();
+      break;
     case SnapType::kNone:
       NOTREACHED();
       break;
@@ -1161,11 +1196,6 @@ void WorkspaceWindowResizer::RestackWindows() {
 WorkspaceWindowResizer::SnapType WorkspaceWindowResizer::GetSnapType(
     const display::Display& display,
     const gfx::PointF& location_in_screen) const {
-  // If the window can't be snapped, then it will be kNone no matter where we
-  // are located.
-  if (!window_state()->CanSnap())
-    return SnapType::kNone;
-
   gfx::Rect area = display.work_area();
   // Add tolerance for snapping near each display edge that is the same as the
   // corresponding work area edge. For example, assuming the shelf is the only
@@ -1179,6 +1209,8 @@ WorkspaceWindowResizer::SnapType WorkspaceWindowResizer::GetSnapType(
     insets.set_left(kScreenEdgeInsetForSnapping);
   if (area.right() == display.bounds().right())
     insets.set_right(kScreenEdgeInsetForSnapping);
+  if (area.y() == display.bounds().y())
+    insets.set_top(kScreenEdgeInsetForSnapping);
   area.Inset(insets);
 
   SnapType snap_type = SnapType::kNone;
@@ -1186,7 +1218,26 @@ WorkspaceWindowResizer::SnapType WorkspaceWindowResizer::GetSnapType(
     snap_type = SnapType::kLeft;
   } else if (location_in_screen.x() >= area.right() - 1) {
     snap_type = SnapType::kRight;
+  } else if (location_in_screen.y() <= area.y() &&
+             location_in_screen.y() >= display.bounds().y()) {
+    snap_type = SnapType::kMaximize;
   }
+
+  // Change |snap_type| to none if the requested snap type is not compatible
+  // with the window.
+  switch (snap_type) {
+    case SnapType::kLeft:
+    case SnapType::kRight:
+      if (!window_state()->CanSnap())
+        snap_type = SnapType::kNone;
+      break;
+    case SnapType::kMaximize:
+      if (!window_state()->CanMaximize())
+        snap_type = SnapType::kNone;
+      break;
+    case SnapType::kNone:
+      break;
+  };
   return snap_type;
 }
 

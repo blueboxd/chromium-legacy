@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/callback.h"
+#include "base/task/thread_pool.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_request.h"
@@ -24,6 +25,38 @@
 #include "url/url_constants.h"
 
 namespace network {
+
+using Cryptographer = TrustTokenRequestIssuanceHelper::Cryptographer;
+
+struct TrustTokenRequestIssuanceHelper::CryptographerAndBlindedTokens {
+  std::unique_ptr<Cryptographer> cryptographer;
+  base::Optional<std::string> blinded_tokens;
+};
+
+struct TrustTokenRequestIssuanceHelper::CryptographerAndUnblindedTokens {
+  std::unique_ptr<Cryptographer> cryptographer;
+  std::unique_ptr<Cryptographer::UnblindedTokens> unblinded_tokens;
+};
+
+namespace {
+
+TrustTokenRequestIssuanceHelper::CryptographerAndBlindedTokens
+BeginIssuanceOnPostedSequence(std::unique_ptr<Cryptographer> cryptographer,
+                              int batch_size) {
+  base::Optional<std::string> blinded_tokens =
+      cryptographer->BeginIssuance(batch_size);
+  return {std::move(cryptographer), std::move(blinded_tokens)};
+}
+
+TrustTokenRequestIssuanceHelper::CryptographerAndUnblindedTokens
+ConfirmIssuanceOnPostedSequence(std::unique_ptr<Cryptographer> cryptographer,
+                                std::string response_header) {
+  std::unique_ptr<Cryptographer::UnblindedTokens> unblinded_tokens =
+      cryptographer->ConfirmIssuance(response_header);
+  return {std::move(cryptographer), std::move(unblinded_tokens)};
+}
+
+}  // namespace
 
 TrustTokenRequestIssuanceHelper::TrustTokenRequestIssuanceHelper(
     SuitableTrustTokenOrigin top_level_origin,
@@ -110,8 +143,25 @@ void TrustTokenRequestIssuanceHelper::OnGotKeyCommitment(
                                   kMaximumTrustTokenIssuanceBatchSize)
                        : kDefaultTrustTokenIssuanceBatchSize;
 
-  base::Optional<std::string> maybe_blinded_tokens =
-      cryptographer_->BeginIssuance(batch_size);
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE,
+      base::BindOnce(&BeginIssuanceOnPostedSequence, std::move(cryptographer_),
+                     batch_size),
+      base::BindOnce(
+          &TrustTokenRequestIssuanceHelper::OnDelegateBeginIssuanceCallComplete,
+          weak_ptr_factory_.GetWeakPtr(), request, std::move(done)));
+  // Logic continues... in the continuation
+  // OnDelegateBeginIssuanceCallComplete; don't add more code here. In
+  // particular, |cryptographer_| is empty at this point.
+}
+
+void TrustTokenRequestIssuanceHelper::OnDelegateBeginIssuanceCallComplete(
+    net::URLRequest* request,
+    base::OnceCallback<void(mojom::TrustTokenOperationStatus)> done,
+    CryptographerAndBlindedTokens cryptographer_and_blinded_tokens) {
+  cryptographer_ = std::move(cryptographer_and_blinded_tokens.cryptographer);
+  base::Optional<std::string>& maybe_blinded_tokens =
+      cryptographer_and_blinded_tokens.blinded_tokens;  // Convenience alias
 
   if (!maybe_blinded_tokens) {
     std::move(done).Run(mojom::TrustTokenOperationStatus::kInternalError);
@@ -152,8 +202,21 @@ void TrustTokenRequestIssuanceHelper::Finalize(
 
   response->headers->RemoveHeader(kTrustTokensSecTrustTokenHeader);
 
-  std::unique_ptr<Cryptographer::UnblindedTokens> maybe_tokens =
-      cryptographer_->ConfirmIssuance(header_value);
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE,
+      base::BindOnce(&ConfirmIssuanceOnPostedSequence,
+                     std::move(cryptographer_), std::move(header_value)),
+      base::BindOnce(&TrustTokenRequestIssuanceHelper::
+                         OnDelegateConfirmIssuanceCallComplete,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(done)));
+}
+
+void TrustTokenRequestIssuanceHelper::OnDelegateConfirmIssuanceCallComplete(
+    base::OnceCallback<void(mojom::TrustTokenOperationStatus)> done,
+    CryptographerAndUnblindedTokens cryptographer_and_unblinded_tokens) {
+  cryptographer_ = std::move(cryptographer_and_unblinded_tokens.cryptographer);
+  std::unique_ptr<Cryptographer::UnblindedTokens>& maybe_tokens =
+      cryptographer_and_unblinded_tokens.unblinded_tokens;  // Convenience alias
 
   if (!maybe_tokens) {
     // The response was rejected by the underlying cryptographic library as

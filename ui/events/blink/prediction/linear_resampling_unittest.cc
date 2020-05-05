@@ -5,8 +5,8 @@
 #include "ui/events/blink/prediction/linear_resampling.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/features.h"
 #include "ui/events/blink/prediction/input_predictor_unittest_helpers.h"
-#include "ui/events/blink/prediction/predictor_factory.h"
 
 namespace ui {
 namespace test {
@@ -26,7 +26,7 @@ class LinearResamplingTest : public InputPredictorTest {
 // equation order
 TEST_F(LinearResamplingTest, GetName) {
   EXPECT_EQ(predictor_->GetName(),
-            input_prediction::kScrollPredictorNameLinearResampling);
+            blink::features::kScrollPredictorNameLinearResampling);
 }
 
 // Test that the number of events required to compute a prediction is correct

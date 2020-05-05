@@ -11,12 +11,14 @@
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/checkbox.h"
 #include "ui/views/controls/button/md_text_button.h"
 #include "ui/views/controls/combobox/combobox.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/examples/example_combobox_model.h"
+#include "ui/views/examples/grit/views_examples_resources.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/view_class_properties.h"
@@ -237,8 +239,8 @@ void LayoutExampleBase::CreateExampleView(View* container) {
 
   int vertical_pos = kLayoutExampleVerticalSpacing;
   int horizontal_pos = kLayoutExampleLeftPadding;
-  auto add_button =
-      MdTextButton::CreateSecondaryUiButton(this, base::ASCIIToUTF16("Add"));
+  auto add_button = MdTextButton::CreateSecondaryUiButton(
+      this, l10n_util::GetStringUTF16(IDS_LAYOUT_BASE_ADD_LABEL));
   add_button->SetPosition(gfx::Point(horizontal_pos, vertical_pos));
   add_button->SizeToPreferredSize();
   add_button_ = control_panel_->AddChildView(std::move(add_button));

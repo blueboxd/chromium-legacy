@@ -1377,10 +1377,10 @@ TEST_P(DesksTest, DragWindowToNonMiniViewPoints) {
   EXPECT_EQ(target_bounds_before_drag, overview_item->target_bounds());
   EXPECT_TRUE(DoesActiveDeskContainWindow(window.get()));
 
-  // Drag it and drop it on the bottom right corner of the display. Also,
+  // Drag it and drop it on the center of the bottom of the display. Also,
   // nothing should happen.
   DragItemToPoint(overview_item,
-                  window->GetRootWindow()->GetBoundsInScreen().bottom_right(),
+                  window->GetRootWindow()->GetBoundsInScreen().bottom_center(),
                   GetEventGenerator(),
                   /*by_touch_gestures=*/GetParam());
   EXPECT_TRUE(overview_controller->InOverviewSession());

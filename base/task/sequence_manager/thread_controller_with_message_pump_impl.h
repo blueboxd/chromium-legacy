@@ -187,6 +187,11 @@ class BASE_EXPORT ThreadControllerWithMessagePumpImpl
 };
 
 }  // namespace internal
+
+// Initialize ThreadController features. Called after FeatureList is available
+// when the process is still single-threaded.
+BASE_EXPORT void PostFieldTrialInitialization();
+
 }  // namespace sequence_manager
 }  // namespace base
 

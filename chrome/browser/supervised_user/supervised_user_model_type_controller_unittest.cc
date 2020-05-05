@@ -8,6 +8,7 @@
 #include "chrome/browser/supervised_user/supervised_user_constants.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/sync/base/model_type.h"
+#include "components/sync/base/sync_mode.h"
 #include "components/sync/driver/data_type_controller.h"
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -61,5 +62,6 @@ TEST_F(SupervisedUserSyncModelTypeControllerTest, HasTransportModeDelegate) {
       /*dump_stack=*/base::DoNothing(),
       /*store_factory=*/base::DoNothing(),
       /*syncable_service=*/nullptr);
-  EXPECT_TRUE(controller.GetDelegateForTransportModeForTest());
+  EXPECT_TRUE(
+      controller.GetDelegateForTesting(syncer::SyncMode::kTransportOnly));
 }

@@ -550,7 +550,6 @@ ImageData* ImageData::CropRect(const IntRect& crop_rect, bool flip_y) {
 }
 
 ScriptPromise ImageData::CreateImageBitmap(ScriptState* script_state,
-                                           EventTarget& event_target,
                                            base::Optional<IntRect> crop_rect,
                                            const ImageBitmapOptions* options,
                                            ExceptionState& exception_state) {

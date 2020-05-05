@@ -535,5 +535,38 @@ const base::Feature kThrottleInstallingServiceWorker{
 const base::FeatureParam<int> kInstallingServiceWorkerOutstandingThrottledLimit{
     &kThrottleInstallingServiceWorker, "limit", 5};
 
+const base::Feature kResamplingScrollEvents{"ResamplingScrollEvents",
+                                            base::FEATURE_ENABLED_BY_DEFAULT};
+
+const char kScrollPredictorNameLsq[] = "lsq";
+const char kScrollPredictorNameKalman[] = "kalman";
+const char kScrollPredictorNameLinearFirst[] = "linear_first";
+const char kScrollPredictorNameLinearSecond[] = "linear_second";
+const char kScrollPredictorNameLinearResampling[] = "linear_resampling";
+const char kScrollPredictorNameEmpty[] = "empty";
+
+const base::Feature kFilteringScrollPrediction{
+    "FilteringScrollPrediction", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const char kFilterNameEmpty[] = "empty_filter";
+const char kFilterNameOneEuro[] = "one_euro_filter";
+
+const base::Feature kKalmanHeuristics{"KalmanHeuristics",
+                                      base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kKalmanDirectionCutOff{"KalmanDirectionCutOff",
+                                           base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kSkipTouchEventFilter{"SkipTouchEventFilter",
+                                          base::FEATURE_ENABLED_BY_DEFAULT};
+const char kSkipTouchEventFilterTypeParamName[] = "type";
+const char kSkipTouchEventFilterTypeParamValueDiscrete[] = "discrete";
+const char kSkipTouchEventFilterTypeParamValueAll[] = "all";
+const char kSkipTouchEventFilterFilteringProcessParamName[] =
+    "skip_filtering_process";
+const char kSkipTouchEventFilterFilteringProcessParamValueBrowser[] = "browser";
+const char kSkipTouchEventFilterFilteringProcessParamValueBrowserAndRenderer[] =
+    "browser_and_renderer";
+
 }  // namespace features
 }  // namespace blink

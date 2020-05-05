@@ -10,10 +10,10 @@
 #include <memory>
 #include <vector>
 
+#include "base/component_export.h"
 #include "base/containers/circular_deque.h"
 #include "base/logging.h"
 #include "base/optional.h"
-#include "gpu/vulkan/vulkan_export.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/swap_result.h"
@@ -24,9 +24,9 @@ class VulkanCommandBuffer;
 class VulkanCommandPool;
 class VulkanDeviceQueue;
 
-class VULKAN_EXPORT VulkanSwapChain {
+class COMPONENT_EXPORT(VULKAN) VulkanSwapChain {
  public:
-  class VULKAN_EXPORT ScopedWrite {
+  class COMPONENT_EXPORT(VULKAN) ScopedWrite {
    public:
     explicit ScopedWrite(VulkanSwapChain* swap_chain);
     ~ScopedWrite();

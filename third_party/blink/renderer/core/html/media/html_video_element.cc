@@ -645,11 +645,9 @@ IntSize HTMLVideoElement::BitmapSourceSize() const {
 
 ScriptPromise HTMLVideoElement::CreateImageBitmap(
     ScriptState* script_state,
-    EventTarget& event_target,
     base::Optional<IntRect> crop_rect,
     const ImageBitmapOptions* options,
     ExceptionState& exception_state) {
-  DCHECK(event_target.ToLocalDOMWindow());
   if (getNetworkState() == HTMLMediaElement::kNetworkEmpty) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kInvalidStateError,
@@ -664,10 +662,7 @@ ScriptPromise HTMLVideoElement::CreateImageBitmap(
   }
 
   return ImageBitmapSource::FulfillImageBitmap(
-      script_state,
-      MakeGarbageCollected<ImageBitmap>(
-          this, crop_rect, event_target.ToLocalDOMWindow()->document(),
-          options),
+      script_state, MakeGarbageCollected<ImageBitmap>(this, crop_rect, options),
       exception_state);
 }
 

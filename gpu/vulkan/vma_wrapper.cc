@@ -4,13 +4,7 @@
 
 #include "gpu/vulkan/vma_wrapper.h"
 
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wunused-variable"
-#pragma clang diagnostic ignored "-Wimplicit-fallthrough"
-#pragma clang diagnostic ignored "-Wnullability-completeness"
-#pragma clang diagnostic ignored "-Wunused-private-field"
 #include <vk_mem_alloc.h>
-#pragma clang diagnostic pop
 
 #include "build/build_config.h"
 #include "gpu/vulkan/vulkan_function_pointers.h"

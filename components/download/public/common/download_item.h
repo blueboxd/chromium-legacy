@@ -483,6 +483,9 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadItem : public base::SupportsUserData {
   // Tests if a file type should be opened automatically.
   virtual bool ShouldOpenFileBasedOnExtension() = 0;
 
+  // Tests if a file type should be opened automatically by policy.
+  virtual bool ShouldOpenFileByPolicyBasedOnExtension() = 0;
+
   // Returns true if the download will be auto-opened when complete.
   virtual bool GetOpenWhenComplete() const = 0;
 

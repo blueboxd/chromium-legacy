@@ -5,7 +5,8 @@
 #include "ui/shell_dialogs/select_file_dialog_mac.h"
 
 #include "base/bind.h"
-#include "base/logging.h"
+#include "base/check.h"
+#include "base/notreached.h"
 #include "base/threading/thread_restrictions.h"
 #include "components/remote_cocoa/app_shim/select_file_dialog_bridge.h"
 #include "components/remote_cocoa/browser/window.h"

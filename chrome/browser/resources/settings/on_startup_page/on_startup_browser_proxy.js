@@ -9,20 +9,20 @@ import {addSingletonGetter, sendWithPromise} from 'chrome://resources/js/cr.m.js
 /** @typedef {{id: string, name: string, canBeDisabled: boolean}} */
 export let NtpExtension;
 
-  /** @interface */
-  export class OnStartupBrowserProxy {
-    /** @return {!Promise<?NtpExtension>} */
-    getNtpExtension() {}
-  }
+/** @interface */
+export class OnStartupBrowserProxy {
+  /** @return {!Promise<?NtpExtension>} */
+  getNtpExtension() {}
+}
 
-  /**
-   * @implements {OnStartupBrowserProxy}
-   */
-  export class OnStartupBrowserProxyImpl {
-    /** @override */
-    getNtpExtension() {
-      return sendWithPromise('getNtpExtension');
-    }
+/**
+ * @implements {OnStartupBrowserProxy}
+ */
+export class OnStartupBrowserProxyImpl {
+  /** @override */
+  getNtpExtension() {
+    return sendWithPromise('getNtpExtension');
   }
+}
 
-  addSingletonGetter(OnStartupBrowserProxyImpl);
+addSingletonGetter(OnStartupBrowserProxyImpl);

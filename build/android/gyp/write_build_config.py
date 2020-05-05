@@ -386,6 +386,12 @@ or instrumentation libraries.
 * `native['secondary_abi_loadable_modules']`
 Secondary ABI version of loadable_modules
 
+* `native['library_always_compress']`
+A list of library files that we always compress.
+
+* `native['library_renames']`
+A list of library files that we prepend "crazy." to their file names.
+
 * `assets`
 A list of assets stored compressed in the APK. Each entry has the format
 `<source-path>:<destination-path>`, where `<source-path>` is relative to
@@ -929,6 +935,14 @@ def main(argv):
   parser.add_option('--uncompress-shared-libraries', default=False,
                     action='store_true',
                     help='Whether to store native libraries uncompressed')
+  parser.add_option(
+      '--library-always-compress',
+      help='The list of library files that we always compress.')
+  parser.add_option(
+      '--library-renames',
+      default=[],
+      help='The list of library files that we prepend crazy. to their names.')
+
   # apk options
   parser.add_option('--apk-path', help='Path to the target\'s apk output.')
   parser.add_option('--incremental-apk-path',
@@ -1048,11 +1062,19 @@ def main(argv):
   is_apk_or_module_target = options.type in ('android_apk',
       'android_app_bundle_module')
 
-  if options.uncompress_shared_libraries:
-    if not is_apk_or_module_target:
+  if not is_apk_or_module_target:
+    if options.uncompress_shared_libraries:
       raise Exception('--uncompressed-shared-libraries can only be used '
                       'with --type=android_apk or '
                       '--type=android_app_bundle_module')
+    if options.library_always_compress:
+      raise Exception(
+          '--library-always-compress can only be used with --type=android_apk '
+          'or --type=android_app_bundle_module')
+    if options.library_renames:
+      raise Exception(
+          '--library-renames can only be used with --type=android_apk or '
+          '--type=android_app_bundle_module')
 
   if options.jar_path and options.supports_android and not options.dex_path:
     raise Exception('java_library that supports Android requires a dex path.')
@@ -1730,6 +1752,10 @@ def main(argv):
         java_libraries_list,
         'uncompress_shared_libraries':
         options.uncompress_shared_libraries,
+        'library_always_compress':
+        options.library_always_compress,
+        'library_renames':
+        options.library_renames,
         'loadable_modules':
         loadable_modules,
         'secondary_abi_loadable_modules':

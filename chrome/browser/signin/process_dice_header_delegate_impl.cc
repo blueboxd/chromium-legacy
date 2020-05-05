@@ -8,6 +8,8 @@
 
 #include "base/callback.h"
 #include "base/logging.h"
+#include "chrome/browser/signin/dice_web_signin_interceptor.h"
+#include "chrome/browser/signin/dice_web_signin_interceptor_factory.h"
 #include "chrome/common/url_constants.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "content/public/browser/navigation_controller.h"
@@ -28,12 +30,14 @@ void RedirectToNtp(content::WebContents* contents) {
 ProcessDiceHeaderDelegateImpl::ProcessDiceHeaderDelegateImpl(
     content::WebContents* web_contents,
     signin::IdentityManager* identity_manager,
+    DiceWebSigninInterceptor* interceptor,
     bool is_sync_signin_tab,
     EnableSyncCallback enable_sync_callback,
     ShowSigninErrorCallback show_signin_error_callback,
     const GURL& redirect_url)
     : content::WebContentsObserver(web_contents),
       identity_manager_(identity_manager),
+      dice_web_signin_interceptor_(interceptor),
       enable_sync_callback_(std::move(enable_sync_callback)),
       show_signin_error_callback_(std::move(show_signin_error_callback)),
       is_sync_signin_tab_(is_sync_signin_tab),
@@ -57,6 +61,13 @@ bool ProcessDiceHeaderDelegateImpl::ShouldEnableSync() {
   }
 
   return true;
+}
+
+void ProcessDiceHeaderDelegateImpl::HandleTokenExchangeSuccess(
+    CoreAccountId account_id,
+    bool is_new_account) {
+  dice_web_signin_interceptor_->MaybeInterceptWebSignin(
+      web_contents(), account_id, is_new_account);
 }
 
 void ProcessDiceHeaderDelegateImpl::EnableSync(

@@ -194,5 +194,47 @@ TEST_F(ShowGenericUiActionTest, OutputModelNotSubsetOfInputModel) {
   Run();
 }
 
+TEST_F(ShowGenericUiActionTest, ClientOnlyValuesDoNotLeaveDevice) {
+  auto* input_value_a =
+      proto_.mutable_generic_user_interface()->mutable_model()->add_values();
+  input_value_a->set_identifier("regular_value");
+  *input_value_a->mutable_value() = SimpleValue(std::string("regular"));
+  auto* input_value_b =
+      proto_.mutable_generic_user_interface()->mutable_model()->add_values();
+  input_value_b->set_identifier("sensitive_value");
+  *input_value_b->mutable_value() = SimpleValue(std::string("secret"));
+  input_value_b->mutable_value()->set_is_client_side_only(true);
+
+  proto_.add_output_model_identifiers("regular_value");
+  proto_.add_output_model_identifiers("sensitive_value");
+
+  ON_CALL(mock_action_delegate_, OnSetGenericUi(_, _))
+      .WillByDefault(Invoke(
+          [this](
+              std::unique_ptr<GenericUserInterfaceProto> generic_ui,
+              base::OnceCallback<void(bool, ProcessedActionStatusProto,
+                                      const UserModel*)>& end_action_callback) {
+            std::move(end_action_callback)
+                .Run(true, ACTION_APPLIED, &user_model_);
+          }));
+
+  EXPECT_CALL(
+      callback_,
+      Run(Pointee(AllOf(
+          Property(&ProcessedActionProto::status, ACTION_APPLIED),
+          Property(
+              &ProcessedActionProto::show_generic_ui_result,
+              Property(&ShowGenericUiProto::Result::model,
+                       Property(&ModelProto::values,
+                                UnorderedElementsAre(
+                                    SimpleModelValue(
+                                        "regular_value",
+                                        SimpleValue(std::string("regular"))),
+                                    SimpleModelValue("sensitive_value",
+                                                     ValueProto())))))))));
+
+  Run();
+}
+
 }  // namespace
 }  // namespace autofill_assistant

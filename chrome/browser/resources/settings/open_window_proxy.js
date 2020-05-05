@@ -9,22 +9,21 @@
 
 import {addSingletonGetter} from 'chrome://resources/js/cr.m.js';
 
-  /** @interface */
-  class OpenWindowProxy {
-    /**
-     * Opens the specified URL in a new tab.
-     * @param {string} url
-     */
-    openURL(url) {}
+/** @interface */
+class OpenWindowProxy {
+  /**
+   * Opens the specified URL in a new tab.
+   * @param {string} url
+   */
+  openURL(url) {}
+}
+
+/** @implements {OpenWindowProxy} */
+export class OpenWindowProxyImpl {
+  /** @override */
+  openURL(url) {
+    window.open(url);
   }
+}
 
-  /** @implements {OpenWindowProxy} */
-  export class OpenWindowProxyImpl {
-    /** @override */
-    openURL(url) {
-      window.open(url);
-    }
-  }
-
-  addSingletonGetter(OpenWindowProxyImpl);
-
+addSingletonGetter(OpenWindowProxyImpl);

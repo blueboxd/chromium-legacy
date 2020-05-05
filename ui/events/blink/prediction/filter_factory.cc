@@ -6,18 +6,12 @@
 #include "base/metrics/field_trial.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/strings/string_number_conversions.h"
+#include "third_party/blink/public/common/features.h"
 #include "ui/events/blink/prediction/empty_filter.h"
 #include "ui/events/blink/prediction/one_euro_filter.h"
 #include "ui/events/blink/prediction/predictor_factory.h"
 
 namespace ui {
-
-namespace input_prediction {
-
-const char kFilterNameEmpty[] = "empty_filter";
-const char kFilterNameOneEuro[] = "one_euro_filter";
-
-}  // namespace input_prediction
 
 namespace {
 using input_prediction::FilterType;
@@ -58,7 +52,7 @@ void FilterFactory::LoadFilterParams(
 
 FilterType FilterFactory::GetFilterTypeFromName(
     const std::string& filter_name) {
-  if (filter_name == input_prediction::kFilterNameOneEuro)
+  if (filter_name == blink::features::kFilterNameOneEuro)
     return FilterType::kOneEuro;
   else
     return FilterType::kEmpty;

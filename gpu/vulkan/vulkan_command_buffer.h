@@ -7,9 +7,9 @@
 
 #include <vulkan/vulkan.h>
 
+#include "base/component_export.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "gpu/vulkan/vulkan_export.h"
 #include "gpu/vulkan/vulkan_fence_helper.h"
 
 namespace gpu {
@@ -17,7 +17,7 @@ namespace gpu {
 class VulkanCommandPool;
 class VulkanDeviceQueue;
 
-class VULKAN_EXPORT VulkanCommandBuffer {
+class COMPONENT_EXPORT(VULKAN) VulkanCommandBuffer {
  public:
   VulkanCommandBuffer(VulkanDeviceQueue* device_queue,
                       VulkanCommandPool* command_pool,
@@ -96,7 +96,7 @@ class VULKAN_EXPORT VulkanCommandBuffer {
   DISALLOW_COPY_AND_ASSIGN(VulkanCommandBuffer);
 };
 
-class VULKAN_EXPORT CommandBufferRecorderBase {
+class COMPONENT_EXPORT(VULKAN) CommandBufferRecorderBase {
  public:
   VkCommandBuffer handle() const { return handle_; }
 
@@ -127,7 +127,7 @@ class VULKAN_EXPORT CommandBufferRecorderBase {
   VkCommandBuffer handle_;
 };
 
-class VULKAN_EXPORT ScopedMultiUseCommandBufferRecorder
+class COMPONENT_EXPORT(VULKAN) ScopedMultiUseCommandBufferRecorder
     : public CommandBufferRecorderBase {
  public:
   ScopedMultiUseCommandBufferRecorder(VulkanCommandBuffer& command_buffer);
@@ -137,7 +137,7 @@ class VULKAN_EXPORT ScopedMultiUseCommandBufferRecorder
   DISALLOW_COPY_AND_ASSIGN(ScopedMultiUseCommandBufferRecorder);
 };
 
-class VULKAN_EXPORT ScopedSingleUseCommandBufferRecorder
+class COMPONENT_EXPORT(VULKAN) ScopedSingleUseCommandBufferRecorder
     : public CommandBufferRecorderBase {
  public:
   ScopedSingleUseCommandBufferRecorder(VulkanCommandBuffer& command_buffer);

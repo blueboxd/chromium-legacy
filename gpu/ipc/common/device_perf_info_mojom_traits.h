@@ -5,9 +5,10 @@
 #ifndef GPU_IPC_COMMON_DEVICE_PERF_INFO_MOJOM_TRAITS_H_
 #define GPU_IPC_COMMON_DEVICE_PERF_INFO_MOJOM_TRAITS_H_
 
-#include "gpu/ipc/common/device_perf_info.mojom.h"
+#include "gpu/ipc/common/device_perf_info.mojom-shared.h"
 
 #include "build/build_config.h"
+#include "gpu/config/device_perf_info.h"
 
 namespace mojo {
 

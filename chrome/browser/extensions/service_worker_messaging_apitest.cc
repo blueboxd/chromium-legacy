@@ -150,9 +150,8 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerMessagingTest, TabToWorker) {
 // Tests that a message port disconnects if the extension SW is forcefully
 // stopped.
 // Regression test for https://crbug.com/1033783.
-// Disabled due to flake: https://crbug.com/1069550
 IN_PROC_BROWSER_TEST_F(ServiceWorkerMessagingTest,
-                       DISABLED_TabToWorker_StopWorkerDisconnects) {
+                       TabToWorker_StopWorkerDisconnects) {
   ASSERT_TRUE(StartEmbeddedTestServer());
 
   TestExtensionDir test_dir;

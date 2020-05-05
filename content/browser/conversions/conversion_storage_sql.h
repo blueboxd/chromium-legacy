@@ -43,6 +43,7 @@ class CONTENT_EXPORT ConversionStorageSql : public ConversionStorage {
       const StorableConversion& conversion) override;
   std::vector<ConversionReport> GetConversionsToReport(
       base::Time expiry_time) override;
+  std::vector<StorableImpression> GetActiveImpressions() override;
   int DeleteExpiredImpressions() override;
   bool DeleteConversion(int64_t conversion_id) override;
   void ClearData(

@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <bitset>
-
 #include "third_party/blink/public/common/input/web_touch_event.h"
+
+#include <bitset>
 
 namespace blink {
 

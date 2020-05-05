@@ -8,6 +8,7 @@
 #include "components/schema_org/extractor.h"
 #include "components/schema_org/schema_org_entity_names.h"
 #include "components/schema_org/validator.h"
+#include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_status_code.h"
@@ -23,7 +24,9 @@ MediaFeedsFetcher::MediaFeedsFetcher(
 
 MediaFeedsFetcher::~MediaFeedsFetcher() = default;
 
-void MediaFeedsFetcher::FetchFeed(const GURL& url, MediaFeedCallback callback) {
+void MediaFeedsFetcher::FetchFeed(const GURL& url,
+                                  const bool bypass_cache,
+                                  MediaFeedCallback callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   net::NetworkTrafficAnnotationTag traffic_annotation =
@@ -70,6 +73,9 @@ void MediaFeedsFetcher::FetchFeed(const GURL& url, MediaFeedCallback callback) {
   resource_request->trusted_params->isolation_info = net::IsolationInfo::Create(
       net::IsolationInfo::RedirectMode::kUpdateNothing, origin, origin,
       net::SiteForCookies::FromOrigin(origin));
+
+  if (bypass_cache)
+    resource_request->load_flags |= net::LOAD_BYPASS_CACHE;
 
   DCHECK(!pending_request_);
   pending_request_ = network::SimpleURLLoader::Create(

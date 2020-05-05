@@ -122,8 +122,8 @@ class PassthroughTouchEventQueueTest : public testing::Test,
   void SetUpForSkipFilterTesting(const std::string& events_to_always_forward) {
     base::test::ScopedFeatureList feature_list;
     feature_list.InitAndEnableFeatureWithParameters(
-        features::kSkipTouchEventFilter,
-        {{features::kSkipTouchEventFilterTypeParamName,
+        blink::features::kSkipTouchEventFilter,
+        {{blink::features::kSkipTouchEventFilterTypeParamName,
           events_to_always_forward}});
     ResetQueueWithConfig(PassthroughTouchEventQueue::Config());
   }
@@ -1945,7 +1945,7 @@ TEST_F(PassthroughTouchEventQueueTest,
 TEST_F(PassthroughTouchEventQueueTest,
        TouchStartUnfilteredWithForwardDiscrete) {
   SetUpForSkipFilterTesting(
-      features::kSkipTouchEventFilterTypeParamValueDiscrete);
+      blink::features::kSkipTouchEventFilterTypeParamValueDiscrete);
 
   OnHasTouchEventHandlers(false);
   SyntheticWebTouchEvent event;
@@ -1957,7 +1957,7 @@ TEST_F(PassthroughTouchEventQueueTest,
 
 TEST_F(PassthroughTouchEventQueueTest, TouchMoveFilteredWithForwardDiscrete) {
   SetUpForSkipFilterTesting(
-      features::kSkipTouchEventFilterTypeParamValueDiscrete);
+      blink::features::kSkipTouchEventFilterTypeParamValueDiscrete);
 
   OnHasTouchEventHandlers(false);
   // Start the touch sequence.
@@ -1973,7 +1973,8 @@ TEST_F(PassthroughTouchEventQueueTest, TouchMoveFilteredWithForwardDiscrete) {
 }
 
 TEST_F(PassthroughTouchEventQueueTest, TouchStartUnfilteredWithForwardAll) {
-  SetUpForSkipFilterTesting(features::kSkipTouchEventFilterTypeParamValueAll);
+  SetUpForSkipFilterTesting(
+      blink::features::kSkipTouchEventFilterTypeParamValueAll);
 
   OnHasTouchEventHandlers(false);
   SyntheticWebTouchEvent event;
@@ -1984,7 +1985,8 @@ TEST_F(PassthroughTouchEventQueueTest, TouchStartUnfilteredWithForwardAll) {
 }
 
 TEST_F(PassthroughTouchEventQueueTest, TouchMoveUnfilteredWithForwardAll) {
-  SetUpForSkipFilterTesting(features::kSkipTouchEventFilterTypeParamValueAll);
+  SetUpForSkipFilterTesting(
+      blink::features::kSkipTouchEventFilterTypeParamValueAll);
 
   OnHasTouchEventHandlers(false);
   // Start the touch sequence.

@@ -557,7 +557,7 @@ CHAR-LIMIT guidelines:
         Export passwords stored with Chrome
       </message>
       <message name="IDS_SETTINGS_PASSWORDS_EXPORT_DESCRIPTION" desc="Text shown to the user who initiated exporting passwords, as a warning before any passwords have been exported.">
-        Your passwords will be visible to anyone who can see the exported file.
+        Your passwords will be exported and downloaded as a text file. They will be visible to anyone and any app with access to the destination folder.
       </message>
       <message name="IDS_SETTINGS_PASSWORDS_PREPARING_EXPORT" desc="Text shown to the user above a progress bar, informing the user that passwords are being prepared for export.">
         Preparing passwords…
@@ -2318,6 +2318,9 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
       </message>
       <message name="IDS_NTP_FEED_MENU_IPH" desc="Text of the tooltip for the feed control.">
         Control your stories here
+      </message>
+      <message name="IDS_ACCESSIBILITY_NTP_FEED_MENU_BUTTON" desc="Content description for the feed header menu button. Please use the branded term for Discover, as listed under Product Names in the Google Glossary Manager.">
+        Options for Discover
       </message>
 
       <!-- Explore sites strings -->

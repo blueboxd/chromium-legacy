@@ -116,11 +116,14 @@ class ContentSettingsAgentImpl
 
   // Allow passing both WebURL and GURL here, so that we can early return
   // without allocating a new backing string if only the default rule matches.
-  template <typename URL>
   ContentSetting GetContentSettingFromRules(
       const ContentSettingsForOneType& rules,
       const blink::WebFrame* frame,
-      const URL& secondary_url);
+      const GURL& secondary_url);
+  ContentSetting GetContentSettingFromRules(
+      const ContentSettingsForOneType& rules,
+      const blink::WebFrame* frame,
+      const blink::WebURL& secondary_url);
 
  protected:
   // Allow this to be overridden by tests.

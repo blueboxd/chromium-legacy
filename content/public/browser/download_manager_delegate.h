@@ -106,6 +106,10 @@ class CONTENT_EXPORT DownloadManagerDelegate {
   // Tests if a file type should be opened automatically.
   virtual bool ShouldOpenFileBasedOnExtension(const base::FilePath& path);
 
+  // Tests if a file type should be opened automatically by policy.
+  virtual bool ShouldOpenFileByPolicyBasedOnExtension(
+      const base::FilePath& path);
+
   // Allows the delegate to delay completion of the download.  This function
   // will either return true (in which case the download may complete)
   // or will call the callback passed when the download is ready for

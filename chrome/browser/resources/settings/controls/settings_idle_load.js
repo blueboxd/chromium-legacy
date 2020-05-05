@@ -78,12 +78,14 @@ Polymer({
       return this.loading_;
     }
 
+    // clang-format off
     // Polymer 2 codepath
     /* #ignore */ const requestLazyModuleFn = () => {
       /* #ignore */ return new Promise((resolve, reject) => {
         /* #ignore */ this.importHref(this.url, resolve, reject, true);
       /* #ignore */ });
     /* #ignore */ };
+    // clang-format on
 
     // Polymer 3 codepath, do not delete next line comment.
     // #polymer3 const requestLazyModuleFn = ensureLazyLoaded;

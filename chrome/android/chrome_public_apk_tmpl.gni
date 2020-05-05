@@ -139,7 +139,9 @@ template("chrome_public_common_apk_or_module_tmpl") {
   }
 
   target(_target_type, target_name) {
-    forward_variables_from(invoker, "*")
+    # TODO(crbug.com/1076896): remove "disable_library_rename" after
+    # chrome_public_apk is removed
+    forward_variables_from(invoker, "*", [ "disable_library_rename" ])
     if (defined(shared_resources_whitelist_target)) {
       shared_resources_allowlist_target = shared_resources_whitelist_target
       shared_resources_allowlist_locales = shared_resources_whitelist_locales
@@ -230,6 +232,23 @@ template("chrome_public_common_apk_or_module_tmpl") {
         loadable_modules = []
       }
       loadable_modules += [ "$root_out_dir/libchrome_crashpad_handler.so" ]
+      library_always_compress = [
+        "libchrome_crashpad_handler.so",
+        "libchromium_android_linker.so",
+      ]
+
+      # TODO(crbug.com/1076896): remove disable_library_rename check after
+      # chrome_public_apk is removed.
+      if (!(defined(invoker.disable_library_rename) &&
+            invoker.disable_library_rename) &&
+          (_is_modern || android_64bit_target_cpu)) {
+        # This adds the "crazy." prefix to avoid the file being extracted upon
+        # install.
+        library_renames = [
+          "libchrome.so",
+          "libchromefortest.so",
+        ]
+      }
     }
 
     if (_enable_multidex) {

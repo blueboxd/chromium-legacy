@@ -3732,12 +3732,15 @@ TEST_P(DimShelfLayoutManagerTest, FloatingShelfDimAlpha) {
 
   EXPECT_EQ(GetWidgetOpacity(GetPrimaryShelf()->shelf_widget()),
             kExpectedDefaultShelfOpacity);
+  EXPECT_EQ(GetWidgetOpacity(GetPrimaryShelf()->hotseat_widget()),
+            kExpectedDefaultShelfOpacity);
   EXPECT_EQ(GetWidgetOpacity(GetPrimaryShelf()->navigation_widget()),
             dim_shelf_enabled ? kExpectedFloatingShelfDimOpacity
                               : kExpectedDefaultShelfOpacity);
-  EXPECT_EQ(GetWidgetOpacity(GetPrimaryShelf()->hotseat_widget()),
-            dim_shelf_enabled ? kExpectedFloatingShelfDimOpacity
-                              : kExpectedDefaultShelfOpacity);
+  EXPECT_EQ(
+      GetPrimaryShelf()->hotseat_widget()->GetShelfView()->layer()->opacity(),
+      dim_shelf_enabled ? kExpectedFloatingShelfDimOpacity
+                        : kExpectedDefaultShelfOpacity);
   EXPECT_EQ(
       GetWidgetOpacity(GetPrimaryShelf()->shelf_widget()->status_area_widget()),
       dim_shelf_enabled ? kExpectedFloatingShelfDimOpacity
@@ -3802,9 +3805,10 @@ INSTANTIATE_TEST_SUITE_P(All,
                          HotseatDimShelfLayoutManagerTest,
                          testing::Bool());
 
-// Tests that hotseat is not dimmed but other components are dimmed when
-// kShelfHotseat switch is on.
-TEST_P(HotseatDimShelfLayoutManagerTest, TabletModeShelfDimAlpha) {
+// Tests that navigation and status area widgets are dimmed. Verifies the shelf
+// view is not dimmed when the hotseat is in the kExtended state. Verifies that
+// the shelf background/hotseat widget are not dimmed.
+TEST_P(HotseatDimShelfLayoutManagerTest, InAppShelfDimAlpha) {
   ASSERT_TRUE(AutoDimEventHandlerInitialized());
   TabletModeControllerTestApi().EnterTabletMode();
   views::Widget* widget = CreateTestWidget();
@@ -3818,6 +3822,8 @@ TEST_P(HotseatDimShelfLayoutManagerTest, TabletModeShelfDimAlpha) {
   if (shelf_hotseat_enabled) {
     EXPECT_EQ(HotseatState::kHidden, GetShelfLayoutManager()->hotseat_state());
     SwipeUpOnShelf();
+    EXPECT_EQ(HotseatState::kExtended,
+              GetShelfLayoutManager()->hotseat_state());
   } else {
     EXPECT_EQ(HotseatState::kShownClamshell,
               GetShelfLayoutManager()->hotseat_state());
@@ -3827,11 +3833,49 @@ TEST_P(HotseatDimShelfLayoutManagerTest, TabletModeShelfDimAlpha) {
 
   EXPECT_EQ(GetWidgetOpacity(GetPrimaryShelf()->shelf_widget()),
             kExpectedDefaultShelfOpacity);
+  EXPECT_EQ(GetWidgetOpacity(GetPrimaryShelf()->hotseat_widget()),
+            kExpectedDefaultShelfOpacity);
+  EXPECT_EQ(
+      GetPrimaryShelf()->hotseat_widget()->GetShelfView()->layer()->opacity(),
+      shelf_hotseat_enabled ? kExpectedDefaultShelfOpacity
+                            : kExpectedFloatingShelfDimOpacity);
   EXPECT_EQ(GetWidgetOpacity(GetPrimaryShelf()->navigation_widget()),
             kExpectedFloatingShelfDimOpacity);
+  EXPECT_EQ(
+      GetWidgetOpacity(GetPrimaryShelf()->shelf_widget()->status_area_widget()),
+      kExpectedFloatingShelfDimOpacity);
+}
+
+// Tests that shelf view, navigation widget, and status area widget are
+// dimmed but the shelf background and hotseat are not.
+TEST_P(HotseatDimShelfLayoutManagerTest, TabletModeHomeShelfDimAlpha) {
+  ASSERT_TRUE(AutoDimEventHandlerInitialized());
+  TabletModeControllerTestApi().EnterTabletMode();
+  ASSERT_FALSE(ShelfDimmed());
+
+  const bool shelf_hotseat_enabled = GetParam();
+  EXPECT_EQ(shelf_hotseat_enabled,
+            chromeos::switches::ShouldShowShelfHotseat());
+
+  if (shelf_hotseat_enabled) {
+    EXPECT_EQ(HotseatState::kShownHomeLauncher,
+              GetShelfLayoutManager()->hotseat_state());
+  } else {
+    EXPECT_EQ(HotseatState::kShownClamshell,
+              GetShelfLayoutManager()->hotseat_state());
+  }
+
+  TriggerDimShelf();
+
+  EXPECT_EQ(GetWidgetOpacity(GetPrimaryShelf()->shelf_widget()),
+            kExpectedDefaultShelfOpacity);
   EXPECT_EQ(GetWidgetOpacity(GetPrimaryShelf()->hotseat_widget()),
-            shelf_hotseat_enabled ? kExpectedDefaultShelfOpacity
-                                  : kExpectedFloatingShelfDimOpacity);
+            kExpectedDefaultShelfOpacity);
+  EXPECT_EQ(
+      GetPrimaryShelf()->hotseat_widget()->GetShelfView()->layer()->opacity(),
+      kExpectedFloatingShelfDimOpacity);
+  EXPECT_EQ(GetWidgetOpacity(GetPrimaryShelf()->navigation_widget()),
+            kExpectedFloatingShelfDimOpacity);
   EXPECT_EQ(
       GetWidgetOpacity(GetPrimaryShelf()->shelf_widget()->status_area_widget()),
       kExpectedFloatingShelfDimOpacity);

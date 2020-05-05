@@ -1067,6 +1067,10 @@ bool DownloadItemImpl::ShouldOpenFileBasedOnExtension() {
   return delegate_->ShouldOpenFileBasedOnExtension(GetTargetFilePath());
 }
 
+bool DownloadItemImpl::ShouldOpenFileByPolicyBasedOnExtension() {
+  return delegate_->ShouldOpenFileByPolicyBasedOnExtension(GetTargetFilePath());
+}
+
 bool DownloadItemImpl::GetOpenWhenComplete() const {
   return open_when_complete_;
 }

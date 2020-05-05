@@ -573,11 +573,7 @@ bool LayoutTheme::IsReadOnlyControl(const Node* node) {
 bool LayoutTheme::IsHovered(const Node* node) {
   if (!node)
     return false;
-  const auto* element = DynamicTo<SpinButtonElement>(node);
-  if (!element)
-    return node->IsHovered();
-  return element->IsHovered() &&
-         element->GetUpDownState() != SpinButtonElement::kIndeterminate;
+  return node->IsHovered();
 }
 
 bool LayoutTheme::IsSpinUpButtonPartHovered(const Node* node) {

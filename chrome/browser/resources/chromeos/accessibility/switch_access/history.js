@@ -43,7 +43,7 @@ class FocusHistory {
     }
 
     this.dataStack_ = [];
-    let group = DesktopNode.build(NavigationManager.instance.desktopNode);
+    let group = DesktopNode.build(NavigationManager.desktopNode);
     while (ancestorStack.length > 0) {
       const candidate = ancestorStack.pop();
       if (candidate.role === chrome.automation.RoleType.DESKTOP ||
@@ -98,7 +98,7 @@ class FocusHistory {
     }
 
     // If we don't have any valid history entries, fallback to the desktop node.
-    const desktop = new DesktopNode(NavigationManager.instance.desktopNode);
+    const desktop = new DesktopNode(NavigationManager.desktopNode);
     return new FocusData(desktop, desktop.firstChild);
   }
 

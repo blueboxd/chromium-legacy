@@ -2308,6 +2308,64 @@ TEST_F(WebSchedulingTaskQueueTest, DynamicTaskPriorityOrder) {
               testing::ElementsAre("V1", "V2", "B1", "B2", "U1", "U2"));
 }
 
+namespace {
+void RecordRunTime(std::vector<base::TimeTicks>* run_times) {
+  run_times->push_back(base::TimeTicks::Now());
+}
+}  // namespace
+
+// Verified that tasks posted with TaskType::kJavascriptTimer run at the
+// expected time when throttled.
+TEST_F(FrameSchedulerImplTest, ThrottledJSTimerTasksRunTime) {
+  // Snap the time to a multiple of 1 second. Otherwise, the exact run time
+  // of throttled tasks after hidding the page will vary.
+  const base::TimeTicks start_time = base::TimeTicks::Now();
+  const base::TimeTicks aligned_start_time = start_time.SnappedToNextTick(
+      base::TimeTicks(), base::TimeDelta::FromSeconds(1));
+  if (aligned_start_time != start_time)
+    task_environment_.FastForwardBy(aligned_start_time - start_time);
+  const base::TimeTicks start = base::TimeTicks::Now();
+
+  // Hide the page to start throttling JS Timers.
+  page_scheduler_->SetPageVisible(false);
+
+  const scoped_refptr<base::SingleThreadTaskRunner> task_runner =
+      frame_scheduler_->GetTaskRunner(TaskType::kJavascriptTimer);
+  std::vector<base::TimeTicks> run_times;
+
+  // Post tasks.
+  task_runner->PostTask(FROM_HERE, base::BindOnce(&RecordRunTime, &run_times));
+  task_runner->PostDelayedTask(FROM_HERE,
+                               base::BindOnce(&RecordRunTime, &run_times),
+                               base::TimeDelta::FromMilliseconds(1000));
+  task_runner->PostDelayedTask(FROM_HERE,
+                               base::BindOnce(&RecordRunTime, &run_times),
+                               base::TimeDelta::FromMilliseconds(1002));
+  task_runner->PostDelayedTask(FROM_HERE,
+                               base::BindOnce(&RecordRunTime, &run_times),
+                               base::TimeDelta::FromMilliseconds(1004));
+  task_runner->PostDelayedTask(FROM_HERE,
+                               base::BindOnce(&RecordRunTime, &run_times),
+                               base::TimeDelta::FromMilliseconds(2500));
+  task_runner->PostDelayedTask(FROM_HERE,
+                               base::BindOnce(&RecordRunTime, &run_times),
+                               base::TimeDelta::FromMilliseconds(6000));
+
+  // Make posted tasks run.
+  task_environment_.FastForwardBy(base::TimeDelta::FromHours(1));
+
+  // The effective delay of a throttled task is >= the requested delay, and is
+  // within [N * 1000, N * 1000 + 3] ms, where N is an integer. This is because
+  // the wake up rate is 1 per second, and the duration of each wake up is 3 ms.
+  EXPECT_THAT(run_times, testing::ElementsAre(
+                             start + base::TimeDelta::FromMilliseconds(0),
+                             start + base::TimeDelta::FromMilliseconds(1000),
+                             start + base::TimeDelta::FromMilliseconds(1002),
+                             start + base::TimeDelta::FromMilliseconds(2000),
+                             start + base::TimeDelta::FromMilliseconds(3000),
+                             start + base::TimeDelta::FromMilliseconds(6000)));
+}
+
 }  // namespace frame_scheduler_impl_unittest
 }  // namespace scheduler
 }  // namespace blink

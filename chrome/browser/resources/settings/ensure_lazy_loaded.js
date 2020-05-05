@@ -13,20 +13,15 @@ export function ensureLazyLoaded() {
     document.body.appendChild(script);
 
     lazyLoadPromise = Promise.all([
-      'settings-appearance-page',
-      'settings-autofill-section',
-      'settings-password-check',
-      'passwords-section',
-      'settings-payments-section',
-      'settings-clear-browsing-data-dialog',
+      'settings-appearance-page', 'settings-autofill-section',
+      'settings-password-check', 'passwords-section',
+      'settings-payments-section', 'settings-clear-browsing-data-dialog',
       'settings-search-engines-page',
       // <if expr="use_nss_certs">
       'certificate-manager',
       // </if>
-      'settings-a11y-page',
-      'settings-downloads-page',
-      'settings-languages-page',
-      'settings-printing-page',
+      'settings-a11y-page', 'settings-downloads-page',
+      'settings-languages-page', 'settings-printing-page',
       'settings-reset-page',
       // <if expr="not chromeos">
       'settings-system-page',

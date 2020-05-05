@@ -71,6 +71,13 @@ class ConversionStorage {
   virtual std::vector<ConversionReport> GetConversionsToReport(
       base::Time max_report_time) = 0;
 
+  // Returns all active impressions in storage. Active impressions are all
+  // impressions that can still convert. Impressions that: are past expiry,
+  // reached the conversion limit, or was marked inactive due to having
+  // converted and then superceded by a matching impression should not be
+  // returned.
+  virtual std::vector<StorableImpression> GetActiveImpressions() = 0;
+
   // Deletes all impressions that have expired and have no pending conversion
   // reports. Returns the number of impressions that were deleted.
   virtual int DeleteExpiredImpressions() = 0;

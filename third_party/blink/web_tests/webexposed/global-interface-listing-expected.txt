@@ -144,10 +144,6 @@ interface AccessibleNodeList
     method item
     method remove
     setter length
-interface ActivateInvisibleEvent : Event
-    attribute @@toStringTag
-    getter activatedElement
-    method constructor
 interface AmbientLightSensor : Sensor
     attribute @@toStringTag
     getter illuminance
@@ -1612,7 +1608,6 @@ interface Document : Node
     getter linkColor
     getter links
     getter onabort
-    getter onactivateinvisible
     getter onanimationend
     getter onanimationiteration
     getter onanimationstart
@@ -1814,7 +1809,6 @@ interface Document : Node
     setter fullscreenEnabled
     setter linkColor
     setter onabort
-    setter onactivateinvisible
     setter onanimationend
     setter onanimationiteration
     setter onanimationstart
@@ -2061,7 +2055,6 @@ interface Element : Node
     getter firstElementChild
     getter id
     getter innerHTML
-    getter invisible
     getter lastElementChild
     getter localName
     getter namespaceURI
@@ -2193,7 +2186,6 @@ interface Element : Node
     setter elementTiming
     setter id
     setter innerHTML
-    setter invisible
     setter onbeforecopy
     setter onbeforecut
     setter onbeforepaste
@@ -2998,7 +2990,6 @@ interface HTMLElement : Element
     getter offsetTop
     getter offsetWidth
     getter onabort
-    getter onactivateinvisible
     getter onanimationend
     getter onanimationiteration
     getter onanimationstart
@@ -3115,7 +3106,6 @@ interface HTMLElement : Element
     setter lang
     setter nonce
     setter onabort
-    setter onactivateinvisible
     setter onanimationend
     setter onanimationiteration
     setter onanimationstart
@@ -4819,7 +4809,6 @@ interface MathMLElement : Element
     getter dataset
     getter nonce
     getter onabort
-    getter onactivateinvisible
     getter onanimationend
     getter onanimationiteration
     getter onanimationstart
@@ -4919,7 +4908,6 @@ interface MathMLElement : Element
     setter autofocus
     setter nonce
     setter onabort
-    setter onactivateinvisible
     setter onanimationend
     setter onanimationiteration
     setter onanimationstart
@@ -6930,7 +6918,6 @@ interface SVGElement : Element
     getter dataset
     getter nonce
     getter onabort
-    getter onactivateinvisible
     getter onanimationend
     getter onanimationiteration
     getter onanimationstart
@@ -7032,7 +7019,6 @@ interface SVGElement : Element
     setter autofocus
     setter nonce
     setter onabort
-    setter onactivateinvisible
     setter onanimationend
     setter onanimationiteration
     setter onanimationstart
@@ -11767,7 +11753,6 @@ interface webkitURL
     getter navigator
     getter offscreenBuffering
     getter onabort
-    getter onactivateinvisible
     getter onafterprint
     getter onanimationend
     getter onanimationiteration
@@ -11970,7 +11955,6 @@ interface webkitURL
     setter name
     setter offscreenBuffering
     setter onabort
-    setter onactivateinvisible
     setter onafterprint
     setter onanimationend
     setter onanimationiteration

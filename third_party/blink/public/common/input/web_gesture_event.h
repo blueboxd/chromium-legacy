@@ -198,6 +198,7 @@ class BLINK_COMMON_EXPORT WebGestureEvent : public WebInputEvent {
   std::unique_ptr<WebInputEvent> Clone() const override;
   bool CanCoalesce(const WebInputEvent& event) const override;
   void Coalesce(const WebInputEvent& event) override;
+  base::Optional<ui::ScrollInputType> GetScrollInputType() const override;
 
   void SetPositionInWidget(const gfx::PointF& point) {
     position_in_widget_ = point;
@@ -327,6 +328,17 @@ class BLINK_COMMON_EXPORT WebGestureEvent : public WebInputEvent {
   // can be logically coalesced.
   static bool IsCompatibleScrollorPinch(const WebGestureEvent& new_event,
                                         const WebGestureEvent& event_in_queue);
+
+  // Generate a scroll gesture event (begin, update, or end), based on the
+  // parameters passed in. Populates the data field of the created
+  // WebGestureEvent based on the type.
+  static std::unique_ptr<blink::WebGestureEvent> GenerateInjectedScrollGesture(
+      WebInputEvent::Type type,
+      base::TimeTicks timestamp,
+      WebGestureDevice device,
+      gfx::PointF position_in_widget,
+      gfx::Vector2dF scroll_delta,
+      ui::ScrollGranularity granularity);
 };
 
 }  // namespace blink

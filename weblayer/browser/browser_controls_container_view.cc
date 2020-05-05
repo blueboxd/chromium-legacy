@@ -24,10 +24,12 @@ namespace weblayer {
 
 BrowserControlsContainerView::BrowserControlsContainerView(
     const JavaParamRef<jobject>& java_browser_controls_container_view,
-    ContentViewRenderView* content_view_render_view)
+    ContentViewRenderView* content_view_render_view,
+    bool is_top)
     : java_browser_controls_container_view_(
           java_browser_controls_container_view),
-      content_view_render_view_(content_view_render_view) {
+      content_view_render_view_(content_view_render_view),
+      is_top_(is_top) {
   DCHECK(content_view_render_view_);
 }
 
@@ -35,6 +37,16 @@ BrowserControlsContainerView::~BrowserControlsContainerView() = default;
 
 int BrowserControlsContainerView::GetControlsHeight() {
   return controls_layer_ ? controls_layer_->bounds().height() : 0;
+}
+
+int BrowserControlsContainerView::GetContentHeightDelta() {
+  if (!controls_layer_ || !web_contents())
+    return 0;
+
+  if (is_top_)
+    return web_contents()->GetNativeView()->GetLayer()->position().y();
+
+  return content_view_render_view_->height() - controls_layer_->position().y();
 }
 
 void BrowserControlsContainerView::CreateControlsLayer(
@@ -64,6 +76,7 @@ void BrowserControlsContainerView::DeleteControlsLayer(JNIEnv* env) {
 void BrowserControlsContainerView::SetTopControlsOffset(JNIEnv* env,
                                                         int controls_offset_y,
                                                         int content_offset_y) {
+  DCHECK(is_top_);
   // |controls_layer_| may not be created if the controls view has 0 height.
   if (controls_layer_)
     controls_layer_->SetPosition(gfx::PointF(0, controls_offset_y));
@@ -76,6 +89,7 @@ void BrowserControlsContainerView::SetTopControlsOffset(JNIEnv* env,
 void BrowserControlsContainerView::SetBottomControlsOffset(
     JNIEnv* env,
     int controls_offset_y) {
+  DCHECK(!is_top_);
   // |controls_layer_| may not be created if the controls view has 0 height.
   if (controls_layer_) {
     controls_layer_->SetPosition(
@@ -123,11 +137,12 @@ static jlong
 JNI_BrowserControlsContainerView_CreateBrowserControlsContainerView(
     JNIEnv* env,
     const JavaParamRef<jobject>& java_browser_controls_container_view,
-    jlong native_content_view_render_view) {
-  return reinterpret_cast<jlong>(
-      new BrowserControlsContainerView(java_browser_controls_container_view,
-                                       reinterpret_cast<ContentViewRenderView*>(
-                                           native_content_view_render_view)));
+    jlong native_content_view_render_view,
+    jboolean is_top) {
+  return reinterpret_cast<jlong>(new BrowserControlsContainerView(
+      java_browser_controls_container_view,
+      reinterpret_cast<ContentViewRenderView*>(native_content_view_render_view),
+      is_top));
 }
 
 }  // namespace weblayer

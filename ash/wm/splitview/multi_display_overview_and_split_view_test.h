@@ -12,9 +12,8 @@
 
 namespace ash {
 
-// Test with a parameter that determines whether to enable the
-// |ash::features::kMultiDisplayOverviewAndSplitView| feature flag, to ensure
-// that old overview and split view functionality still works.
+// Test with a parameter that determines whether to enable or disable the
+// |ash::features::kMultiDisplayOverviewAndSplitView| feature flag.
 class ASH_EXPORT MultiDisplayOverviewAndSplitViewTest
     : public AshTestBase,
       public testing::WithParamInterface<bool> {

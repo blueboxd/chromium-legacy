@@ -312,7 +312,6 @@ core_idl_files =
                     "inspector/inspector_overlay_host.idl",
                     "intersection_observer/intersection_observer.idl",
                     "intersection_observer/intersection_observer_entry.idl",
-                    "invisible_dom/activate_invisible_event.idl",
                     "layout/ng/custom/intrinsic_sizes.idl",
                     "layout/ng/custom/layout_constraints.idl",
                     "layout/ng/custom/layout_edges.idl",

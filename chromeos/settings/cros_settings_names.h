@@ -110,6 +110,7 @@ extern const char kReportDeviceCrashReportInfo[];
 COMPONENT_EXPORT(CHROMEOS_SETTINGS) extern const char kReportOsUpdateStatus[];
 COMPONENT_EXPORT(CHROMEOS_SETTINGS) extern const char kReportRunningKioskApp[];
 COMPONENT_EXPORT(CHROMEOS_SETTINGS) extern const char kReportUploadFrequency[];
+COMPONENT_EXPORT(CHROMEOS_SETTINGS) extern const char kReportDeviceAppInfo[];
 
 COMPONENT_EXPORT(CHROMEOS_SETTINGS) extern const char kHeartbeatEnabled[];
 COMPONENT_EXPORT(CHROMEOS_SETTINGS) extern const char kHeartbeatFrequency[];

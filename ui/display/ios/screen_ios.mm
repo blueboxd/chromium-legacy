@@ -4,7 +4,8 @@
 
 #import <UIKit/UIKit.h>
 
-#include "base/logging.h"
+#include "base/check.h"
+#include "base/notreached.h"
 #include "ui/display/display.h"
 #include "ui/display/screen_base.h"
 

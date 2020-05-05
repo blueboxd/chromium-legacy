@@ -61,6 +61,8 @@ class DownloadShelfContextMenu : public ui::SimpleMenuModel::Delegate,
   ui::SimpleMenuModel* GetDeepScanningMenuModel(bool is_download);
   ui::SimpleMenuModel* GetMixedContentDownloadMenuModel();
 
+  void AddAutoOpenToMenu(ui::SimpleMenuModel* model);
+
   // We show slightly different menus if the download is in progress vs. if the
   // download has finished.
   std::unique_ptr<ui::SimpleMenuModel> in_progress_download_menu_model_;

@@ -24,6 +24,7 @@ android_resources("weblayer_shell_resources") {
     "shell_apk/res/layout/shell_browser_controls.xml",
     "shell_apk/res/menu/app_menu.xml",
     "shell_apk/res/values/strings.xml",
+    "shell_apk/res/values/styles.xml",
   ]
   custom_package = "org.chromium.weblayer.shell"
 }
@@ -35,6 +36,7 @@ android_library("weblayer_shell_java") {
     ":weblayer_shell_resources",
     "//base:base_java",
     "//third_party/android_deps:android_support_v4_java",
+    "//third_party/android_deps:android_support_v7_appcompat_java",
     "//weblayer/public/java",
   ]
   sources = [

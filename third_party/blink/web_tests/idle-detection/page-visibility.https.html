@@ -28,7 +28,7 @@ promise_test(async t => {
     });
 
 
-  let detector = new IdleDetector({threshold: 60});
+  let detector = new IdleDetector({threshold: 60000});
   let watcher = new EventWatcher(t, detector, ["change"]);
   let initial_state = watcher.wait_for("change");
 

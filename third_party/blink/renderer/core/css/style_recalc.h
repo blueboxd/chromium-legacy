@@ -38,27 +38,23 @@ class StyleRecalcChange {
   StyleRecalcChange(Propagate propagate) : propagate_(propagate) {}
 
   StyleRecalcChange ForChildren() const {
-    return {RecalcDescendants() ? kRecalcDescendants : kNo, reattach_,
-            calc_invisible_};
+    return {RecalcDescendants() ? kRecalcDescendants : kNo, reattach_};
   }
   StyleRecalcChange ForPseudoElement() const {
     if (propagate_ == kUpdatePseudoElements)
-      return {kRecalcChildren, reattach_, calc_invisible_};
+      return {kRecalcChildren, reattach_};
     return *this;
   }
   StyleRecalcChange EnsureAtLeast(Propagate propagate) const {
     if (propagate > propagate_)
-      return {propagate, reattach_, calc_invisible_};
-    return {propagate_, reattach_, calc_invisible_};
+      return {propagate, reattach_};
+    return {propagate_, reattach_};
   }
   StyleRecalcChange ForceRecalcDescendants() const {
-    return {kRecalcDescendants, reattach_, calc_invisible_};
+    return {kRecalcDescendants, reattach_};
   }
   StyleRecalcChange ForceReattachLayoutTree() const {
-    return {propagate_, true, calc_invisible_};
-  }
-  StyleRecalcChange ForceCalcInvisible() const {
-    return {propagate_, reattach_, true};
+    return {propagate_, true};
   }
 
   bool ReattachLayoutTree() const { return reattach_; }
@@ -71,20 +67,15 @@ class StyleRecalcChange {
   bool TraversePseudoElements(const Node&) const;
   bool ShouldRecalcStyleFor(const Node&) const;
   bool ShouldUpdatePseudoElement(const PseudoElement&) const;
-  bool CalcInvisible() const { return calc_invisible_; }
 
  private:
-  StyleRecalcChange(Propagate propagate, bool reattach, bool calc_invisible)
-      : propagate_(propagate),
-        reattach_(reattach),
-        calc_invisible_(calc_invisible) {}
+  StyleRecalcChange(Propagate propagate, bool reattach)
+      : propagate_(propagate), reattach_(reattach) {}
 
   // To what extent do we need to update style for children.
   Propagate propagate_ = kNo;
   // Need to reattach layout tree if true.
   bool reattach_ = false;
-  // Forcing ComputedStyle for find-in-page for invisible DOM.
-  bool calc_invisible_ = false;
 };
 
 }  // namespace blink

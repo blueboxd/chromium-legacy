@@ -82,6 +82,23 @@ typedef void (*cfl_predict_lbd_fn)(const int16_t* src,
 extern "C" {
 #endif
 
+void aom_quantize_b_helper_c(const tran_low_t* coeff_ptr,
+                             intptr_t n_coeffs,
+                             const int16_t* zbin_ptr,
+                             const int16_t* round_ptr,
+                             const int16_t* quant_ptr,
+                             const int16_t* quant_shift_ptr,
+                             tran_low_t* qcoeff_ptr,
+                             tran_low_t* dqcoeff_ptr,
+                             const int16_t* dequant_ptr,
+                             uint16_t* eob_ptr,
+                             const int16_t* scan,
+                             const int16_t* iscan,
+                             const qm_val_t* qm_ptr,
+                             const qm_val_t* iqm_ptr,
+                             const int log_scale);
+#define aom_quantize_b_helper aom_quantize_b_helper_c
+
 void av1_apply_selfguided_restoration_c(const uint8_t* dat,
                                         int width,
                                         int height,
@@ -127,7 +144,46 @@ RTCD_EXTERN void (*av1_apply_selfguided_restoration)(const uint8_t* dat,
                                                      int bit_depth,
                                                      int highbd);
 
-void av1_apply_temporal_filter_planewise_c(
+void av1_apply_temporal_filter_c(const struct yv12_buffer_config* ref_frame,
+                                 const struct macroblockd* mbd,
+                                 const BLOCK_SIZE block_size,
+                                 const int mb_row,
+                                 const int mb_col,
+                                 const int num_planes,
+                                 const double* noise_levels,
+                                 const int* subblock_mses,
+                                 const int q_factor,
+                                 const int filter_strength,
+                                 const uint8_t* pred,
+                                 uint32_t* accum,
+                                 uint16_t* count);
+void av1_apply_temporal_filter_sse2(const struct yv12_buffer_config* ref_frame,
+                                    const struct macroblockd* mbd,
+                                    const BLOCK_SIZE block_size,
+                                    const int mb_row,
+                                    const int mb_col,
+                                    const int num_planes,
+                                    const double* noise_levels,
+                                    const int* subblock_mses,
+                                    const int q_factor,
+                                    const int filter_strength,
+                                    const uint8_t* pred,
+                                    uint32_t* accum,
+                                    uint16_t* count);
+void av1_apply_temporal_filter_avx2(const struct yv12_buffer_config* ref_frame,
+                                    const struct macroblockd* mbd,
+                                    const BLOCK_SIZE block_size,
+                                    const int mb_row,
+                                    const int mb_col,
+                                    const int num_planes,
+                                    const double* noise_levels,
+                                    const int* subblock_mses,
+                                    const int q_factor,
+                                    const int filter_strength,
+                                    const uint8_t* pred,
+                                    uint32_t* accum,
+                                    uint16_t* count);
+RTCD_EXTERN void (*av1_apply_temporal_filter)(
     const struct yv12_buffer_config* ref_frame,
     const struct macroblockd* mbd,
     const BLOCK_SIZE block_size,
@@ -135,78 +191,9 @@ void av1_apply_temporal_filter_planewise_c(
     const int mb_col,
     const int num_planes,
     const double* noise_levels,
-    const uint8_t* pred,
-    uint32_t* accum,
-    uint16_t* count);
-void av1_apply_temporal_filter_planewise_sse2(
-    const struct yv12_buffer_config* ref_frame,
-    const struct macroblockd* mbd,
-    const BLOCK_SIZE block_size,
-    const int mb_row,
-    const int mb_col,
-    const int num_planes,
-    const double* noise_levels,
-    const uint8_t* pred,
-    uint32_t* accum,
-    uint16_t* count);
-void av1_apply_temporal_filter_planewise_avx2(
-    const struct yv12_buffer_config* ref_frame,
-    const struct macroblockd* mbd,
-    const BLOCK_SIZE block_size,
-    const int mb_row,
-    const int mb_col,
-    const int num_planes,
-    const double* noise_levels,
-    const uint8_t* pred,
-    uint32_t* accum,
-    uint16_t* count);
-RTCD_EXTERN void (*av1_apply_temporal_filter_planewise)(
-    const struct yv12_buffer_config* ref_frame,
-    const struct macroblockd* mbd,
-    const BLOCK_SIZE block_size,
-    const int mb_row,
-    const int mb_col,
-    const int num_planes,
-    const double* noise_levels,
-    const uint8_t* pred,
-    uint32_t* accum,
-    uint16_t* count);
-
-void av1_apply_temporal_filter_yuv_c(const struct yv12_buffer_config* ref_frame,
-                                     const struct macroblockd* mbd,
-                                     const BLOCK_SIZE block_size,
-                                     const int mb_row,
-                                     const int mb_col,
-                                     const int num_planes,
-                                     const int strength,
-                                     const int use_subblock,
-                                     const int* subblock_filter_weights,
-                                     const uint8_t* pred,
-                                     uint32_t* accum,
-                                     uint16_t* count);
-void av1_apply_temporal_filter_yuv_sse4_1(
-    const struct yv12_buffer_config* ref_frame,
-    const struct macroblockd* mbd,
-    const BLOCK_SIZE block_size,
-    const int mb_row,
-    const int mb_col,
-    const int num_planes,
-    const int strength,
-    const int use_subblock,
-    const int* subblock_filter_weights,
-    const uint8_t* pred,
-    uint32_t* accum,
-    uint16_t* count);
-RTCD_EXTERN void (*av1_apply_temporal_filter_yuv)(
-    const struct yv12_buffer_config* ref_frame,
-    const struct macroblockd* mbd,
-    const BLOCK_SIZE block_size,
-    const int mb_row,
-    const int mb_col,
-    const int num_planes,
-    const int strength,
-    const int use_subblock,
-    const int* subblock_filter_weights,
+    const int* subblock_mses,
+    const int q_factor,
+    const int filter_strength,
     const uint8_t* pred,
     uint32_t* accum,
     uint16_t* count);
@@ -599,52 +586,6 @@ RTCD_EXTERN void (*av1_compute_stats_highbd)(int wiener_win,
                                              int64_t* H,
                                              aom_bit_depth_t bit_depth);
 
-void av1_convolve_2d_copy_sr_c(const uint8_t* src,
-                               int src_stride,
-                               uint8_t* dst,
-                               int dst_stride,
-                               int w,
-                               int h,
-                               const InterpFilterParams* filter_params_x,
-                               const InterpFilterParams* filter_params_y,
-                               const int subpel_x_qn,
-                               const int subpel_y_qn,
-                               ConvolveParams* conv_params);
-void av1_convolve_2d_copy_sr_sse2(const uint8_t* src,
-                                  int src_stride,
-                                  uint8_t* dst,
-                                  int dst_stride,
-                                  int w,
-                                  int h,
-                                  const InterpFilterParams* filter_params_x,
-                                  const InterpFilterParams* filter_params_y,
-                                  const int subpel_x_qn,
-                                  const int subpel_y_qn,
-                                  ConvolveParams* conv_params);
-void av1_convolve_2d_copy_sr_avx2(const uint8_t* src,
-                                  int src_stride,
-                                  uint8_t* dst,
-                                  int dst_stride,
-                                  int w,
-                                  int h,
-                                  const InterpFilterParams* filter_params_x,
-                                  const InterpFilterParams* filter_params_y,
-                                  const int subpel_x_qn,
-                                  const int subpel_y_qn,
-                                  ConvolveParams* conv_params);
-RTCD_EXTERN void (*av1_convolve_2d_copy_sr)(
-    const uint8_t* src,
-    int src_stride,
-    uint8_t* dst,
-    int dst_stride,
-    int w,
-    int h,
-    const InterpFilterParams* filter_params_x,
-    const InterpFilterParams* filter_params_y,
-    const int subpel_x_qn,
-    const int subpel_y_qn,
-    ConvolveParams* conv_params);
-
 void av1_convolve_2d_scale_c(const uint8_t* src,
                              int src_stride,
                              uint8_t* dst,
@@ -767,9 +708,7 @@ void av1_convolve_x_sr_c(const uint8_t* src,
                          int w,
                          int h,
                          const InterpFilterParams* filter_params_x,
-                         const InterpFilterParams* filter_params_y,
                          const int subpel_x_qn,
-                         const int subpel_y_qn,
                          ConvolveParams* conv_params);
 void av1_convolve_x_sr_sse2(const uint8_t* src,
                             int src_stride,
@@ -778,9 +717,7 @@ void av1_convolve_x_sr_sse2(const uint8_t* src,
                             int w,
                             int h,
                             const InterpFilterParams* filter_params_x,
-                            const InterpFilterParams* filter_params_y,
                             const int subpel_x_qn,
-                            const int subpel_y_qn,
                             ConvolveParams* conv_params);
 void av1_convolve_x_sr_avx2(const uint8_t* src,
                             int src_stride,
@@ -789,9 +726,7 @@ void av1_convolve_x_sr_avx2(const uint8_t* src,
                             int w,
                             int h,
                             const InterpFilterParams* filter_params_x,
-                            const InterpFilterParams* filter_params_y,
                             const int subpel_x_qn,
-                            const int subpel_y_qn,
                             ConvolveParams* conv_params);
 RTCD_EXTERN void (*av1_convolve_x_sr)(const uint8_t* src,
                                       int src_stride,
@@ -800,9 +735,7 @@ RTCD_EXTERN void (*av1_convolve_x_sr)(const uint8_t* src,
                                       int w,
                                       int h,
                                       const InterpFilterParams* filter_params_x,
-                                      const InterpFilterParams* filter_params_y,
                                       const int subpel_x_qn,
-                                      const int subpel_y_qn,
                                       ConvolveParams* conv_params);
 
 void av1_convolve_y_sr_c(const uint8_t* src,
@@ -811,44 +744,32 @@ void av1_convolve_y_sr_c(const uint8_t* src,
                          int dst_stride,
                          int w,
                          int h,
-                         const InterpFilterParams* filter_params_x,
                          const InterpFilterParams* filter_params_y,
-                         const int subpel_x_qn,
-                         const int subpel_y_qn,
-                         ConvolveParams* conv_params);
+                         const int subpel_y_qn);
 void av1_convolve_y_sr_sse2(const uint8_t* src,
                             int src_stride,
                             uint8_t* dst,
                             int dst_stride,
                             int w,
                             int h,
-                            const InterpFilterParams* filter_params_x,
                             const InterpFilterParams* filter_params_y,
-                            const int subpel_x_qn,
-                            const int subpel_y_qn,
-                            ConvolveParams* conv_params);
+                            const int subpel_y_qn);
 void av1_convolve_y_sr_avx2(const uint8_t* src,
                             int src_stride,
                             uint8_t* dst,
                             int dst_stride,
                             int w,
                             int h,
-                            const InterpFilterParams* filter_params_x,
                             const InterpFilterParams* filter_params_y,
-                            const int subpel_x_qn,
-                            const int subpel_y_qn,
-                            ConvolveParams* conv_params);
+                            const int subpel_y_qn);
 RTCD_EXTERN void (*av1_convolve_y_sr)(const uint8_t* src,
                                       int src_stride,
                                       uint8_t* dst,
                                       int dst_stride,
                                       int w,
                                       int h,
-                                      const InterpFilterParams* filter_params_x,
                                       const InterpFilterParams* filter_params_y,
-                                      const int subpel_x_qn,
-                                      const int subpel_y_qn,
-                                      ConvolveParams* conv_params);
+                                      const int subpel_y_qn);
 
 void av1_dist_wtd_convolve_2d_c(const uint8_t* src,
                                 int src_stride,
@@ -913,47 +834,28 @@ void av1_dist_wtd_convolve_2d_copy_c(const uint8_t* src,
                                      int dst_stride,
                                      int w,
                                      int h,
-                                     const InterpFilterParams* filter_params_x,
-                                     const InterpFilterParams* filter_params_y,
-                                     const int subpel_x_qn,
-                                     const int subpel_y_qn,
                                      ConvolveParams* conv_params);
-void av1_dist_wtd_convolve_2d_copy_sse2(
-    const uint8_t* src,
-    int src_stride,
-    uint8_t* dst,
-    int dst_stride,
-    int w,
-    int h,
-    const InterpFilterParams* filter_params_x,
-    const InterpFilterParams* filter_params_y,
-    const int subpel_x_qn,
-    const int subpel_y_qn,
-    ConvolveParams* conv_params);
-void av1_dist_wtd_convolve_2d_copy_avx2(
-    const uint8_t* src,
-    int src_stride,
-    uint8_t* dst,
-    int dst_stride,
-    int w,
-    int h,
-    const InterpFilterParams* filter_params_x,
-    const InterpFilterParams* filter_params_y,
-    const int subpel_x_qn,
-    const int subpel_y_qn,
-    ConvolveParams* conv_params);
-RTCD_EXTERN void (*av1_dist_wtd_convolve_2d_copy)(
-    const uint8_t* src,
-    int src_stride,
-    uint8_t* dst,
-    int dst_stride,
-    int w,
-    int h,
-    const InterpFilterParams* filter_params_x,
-    const InterpFilterParams* filter_params_y,
-    const int subpel_x_qn,
-    const int subpel_y_qn,
-    ConvolveParams* conv_params);
+void av1_dist_wtd_convolve_2d_copy_sse2(const uint8_t* src,
+                                        int src_stride,
+                                        uint8_t* dst,
+                                        int dst_stride,
+                                        int w,
+                                        int h,
+                                        ConvolveParams* conv_params);
+void av1_dist_wtd_convolve_2d_copy_avx2(const uint8_t* src,
+                                        int src_stride,
+                                        uint8_t* dst,
+                                        int dst_stride,
+                                        int w,
+                                        int h,
+                                        ConvolveParams* conv_params);
+RTCD_EXTERN void (*av1_dist_wtd_convolve_2d_copy)(const uint8_t* src,
+                                                  int src_stride,
+                                                  uint8_t* dst,
+                                                  int dst_stride,
+                                                  int w,
+                                                  int h,
+                                                  ConvolveParams* conv_params);
 
 void av1_dist_wtd_convolve_x_c(const uint8_t* src,
                                int src_stride,
@@ -962,9 +864,7 @@ void av1_dist_wtd_convolve_x_c(const uint8_t* src,
                                int w,
                                int h,
                                const InterpFilterParams* filter_params_x,
-                               const InterpFilterParams* filter_params_y,
                                const int subpel_x_qn,
-                               const int subpel_y_qn,
                                ConvolveParams* conv_params);
 void av1_dist_wtd_convolve_x_sse2(const uint8_t* src,
                                   int src_stride,
@@ -973,9 +873,7 @@ void av1_dist_wtd_convolve_x_sse2(const uint8_t* src,
                                   int w,
                                   int h,
                                   const InterpFilterParams* filter_params_x,
-                                  const InterpFilterParams* filter_params_y,
                                   const int subpel_x_qn,
-                                  const int subpel_y_qn,
                                   ConvolveParams* conv_params);
 void av1_dist_wtd_convolve_x_avx2(const uint8_t* src,
                                   int src_stride,
@@ -984,9 +882,7 @@ void av1_dist_wtd_convolve_x_avx2(const uint8_t* src,
                                   int w,
                                   int h,
                                   const InterpFilterParams* filter_params_x,
-                                  const InterpFilterParams* filter_params_y,
                                   const int subpel_x_qn,
-                                  const int subpel_y_qn,
                                   ConvolveParams* conv_params);
 RTCD_EXTERN void (*av1_dist_wtd_convolve_x)(
     const uint8_t* src,
@@ -996,9 +892,7 @@ RTCD_EXTERN void (*av1_dist_wtd_convolve_x)(
     int w,
     int h,
     const InterpFilterParams* filter_params_x,
-    const InterpFilterParams* filter_params_y,
     const int subpel_x_qn,
-    const int subpel_y_qn,
     ConvolveParams* conv_params);
 
 void av1_dist_wtd_convolve_y_c(const uint8_t* src,
@@ -1007,9 +901,7 @@ void av1_dist_wtd_convolve_y_c(const uint8_t* src,
                                int dst_stride,
                                int w,
                                int h,
-                               const InterpFilterParams* filter_params_x,
                                const InterpFilterParams* filter_params_y,
-                               const int subpel_x_qn,
                                const int subpel_y_qn,
                                ConvolveParams* conv_params);
 void av1_dist_wtd_convolve_y_sse2(const uint8_t* src,
@@ -1018,9 +910,7 @@ void av1_dist_wtd_convolve_y_sse2(const uint8_t* src,
                                   int dst_stride,
                                   int w,
                                   int h,
-                                  const InterpFilterParams* filter_params_x,
                                   const InterpFilterParams* filter_params_y,
-                                  const int subpel_x_qn,
                                   const int subpel_y_qn,
                                   ConvolveParams* conv_params);
 void av1_dist_wtd_convolve_y_avx2(const uint8_t* src,
@@ -1029,9 +919,7 @@ void av1_dist_wtd_convolve_y_avx2(const uint8_t* src,
                                   int dst_stride,
                                   int w,
                                   int h,
-                                  const InterpFilterParams* filter_params_x,
                                   const InterpFilterParams* filter_params_y,
-                                  const int subpel_x_qn,
                                   const int subpel_y_qn,
                                   ConvolveParams* conv_params);
 RTCD_EXTERN void (*av1_dist_wtd_convolve_y)(
@@ -1041,9 +929,7 @@ RTCD_EXTERN void (*av1_dist_wtd_convolve_y)(
     int dst_stride,
     int w,
     int h,
-    const InterpFilterParams* filter_params_x,
     const InterpFilterParams* filter_params_y,
-    const int subpel_x_qn,
     const int subpel_y_qn,
     ConvolveParams* conv_params);
 
@@ -1162,17 +1048,6 @@ RTCD_EXTERN void (*av1_filter_intra_predictor)(uint8_t* dst,
                                                const uint8_t* above,
                                                const uint8_t* left,
                                                int mode);
-
-int av1_full_range_search_c(const struct macroblock* x,
-                            const struct search_site_config* cfg,
-                            MV* ref_mv,
-                            MV* best_mv,
-                            int search_param,
-                            int sad_per_bit,
-                            int* num00,
-                            const struct aom_variance_vtable* fn_ptr,
-                            const MV* center_mv);
-#define av1_full_range_search av1_full_range_search_c
 
 void av1_fwd_txfm2d_16x16_c(const int16_t* input,
                             int32_t* output,
@@ -1653,58 +1528,6 @@ void av1_highbd_convolve8_vert_sse2(const uint8_t* src,
                                     int bps);
 #define av1_highbd_convolve8_vert av1_highbd_convolve8_vert_sse2
 
-void av1_highbd_convolve_2d_copy_sr_c(const uint16_t* src,
-                                      int src_stride,
-                                      uint16_t* dst,
-                                      int dst_stride,
-                                      int w,
-                                      int h,
-                                      const InterpFilterParams* filter_params_x,
-                                      const InterpFilterParams* filter_params_y,
-                                      const int subpel_x_qn,
-                                      const int subpel_y_qn,
-                                      ConvolveParams* conv_params,
-                                      int bd);
-void av1_highbd_convolve_2d_copy_sr_sse2(
-    const uint16_t* src,
-    int src_stride,
-    uint16_t* dst,
-    int dst_stride,
-    int w,
-    int h,
-    const InterpFilterParams* filter_params_x,
-    const InterpFilterParams* filter_params_y,
-    const int subpel_x_qn,
-    const int subpel_y_qn,
-    ConvolveParams* conv_params,
-    int bd);
-void av1_highbd_convolve_2d_copy_sr_avx2(
-    const uint16_t* src,
-    int src_stride,
-    uint16_t* dst,
-    int dst_stride,
-    int w,
-    int h,
-    const InterpFilterParams* filter_params_x,
-    const InterpFilterParams* filter_params_y,
-    const int subpel_x_qn,
-    const int subpel_y_qn,
-    ConvolveParams* conv_params,
-    int bd);
-RTCD_EXTERN void (*av1_highbd_convolve_2d_copy_sr)(
-    const uint16_t* src,
-    int src_stride,
-    uint16_t* dst,
-    int dst_stride,
-    int w,
-    int h,
-    const InterpFilterParams* filter_params_x,
-    const InterpFilterParams* filter_params_y,
-    const int subpel_x_qn,
-    const int subpel_y_qn,
-    ConvolveParams* conv_params,
-    int bd);
-
 void av1_highbd_convolve_2d_scale_c(const uint16_t* src,
                                     int src_stride,
                                     uint16_t* dst,
@@ -1864,9 +1687,7 @@ void av1_highbd_convolve_x_sr_c(const uint16_t* src,
                                 int w,
                                 int h,
                                 const InterpFilterParams* filter_params_x,
-                                const InterpFilterParams* filter_params_y,
                                 const int subpel_x_qn,
-                                const int subpel_y_qn,
                                 ConvolveParams* conv_params,
                                 int bd);
 void av1_highbd_convolve_x_sr_ssse3(const uint16_t* src,
@@ -1876,9 +1697,7 @@ void av1_highbd_convolve_x_sr_ssse3(const uint16_t* src,
                                     int w,
                                     int h,
                                     const InterpFilterParams* filter_params_x,
-                                    const InterpFilterParams* filter_params_y,
                                     const int subpel_x_qn,
-                                    const int subpel_y_qn,
                                     ConvolveParams* conv_params,
                                     int bd);
 void av1_highbd_convolve_x_sr_avx2(const uint16_t* src,
@@ -1888,9 +1707,7 @@ void av1_highbd_convolve_x_sr_avx2(const uint16_t* src,
                                    int w,
                                    int h,
                                    const InterpFilterParams* filter_params_x,
-                                   const InterpFilterParams* filter_params_y,
                                    const int subpel_x_qn,
-                                   const int subpel_y_qn,
                                    ConvolveParams* conv_params,
                                    int bd);
 RTCD_EXTERN void (*av1_highbd_convolve_x_sr)(
@@ -1901,9 +1718,7 @@ RTCD_EXTERN void (*av1_highbd_convolve_x_sr)(
     int w,
     int h,
     const InterpFilterParams* filter_params_x,
-    const InterpFilterParams* filter_params_y,
     const int subpel_x_qn,
-    const int subpel_y_qn,
     ConvolveParams* conv_params,
     int bd);
 
@@ -1913,11 +1728,8 @@ void av1_highbd_convolve_y_sr_c(const uint16_t* src,
                                 int dst_stride,
                                 int w,
                                 int h,
-                                const InterpFilterParams* filter_params_x,
                                 const InterpFilterParams* filter_params_y,
-                                const int subpel_x_qn,
                                 const int subpel_y_qn,
-                                ConvolveParams* conv_params,
                                 int bd);
 void av1_highbd_convolve_y_sr_ssse3(const uint16_t* src,
                                     int src_stride,
@@ -1925,11 +1737,8 @@ void av1_highbd_convolve_y_sr_ssse3(const uint16_t* src,
                                     int dst_stride,
                                     int w,
                                     int h,
-                                    const InterpFilterParams* filter_params_x,
                                     const InterpFilterParams* filter_params_y,
-                                    const int subpel_x_qn,
                                     const int subpel_y_qn,
-                                    ConvolveParams* conv_params,
                                     int bd);
 void av1_highbd_convolve_y_sr_avx2(const uint16_t* src,
                                    int src_stride,
@@ -1937,11 +1746,8 @@ void av1_highbd_convolve_y_sr_avx2(const uint16_t* src,
                                    int dst_stride,
                                    int w,
                                    int h,
-                                   const InterpFilterParams* filter_params_x,
                                    const InterpFilterParams* filter_params_y,
-                                   const int subpel_x_qn,
                                    const int subpel_y_qn,
-                                   ConvolveParams* conv_params,
                                    int bd);
 RTCD_EXTERN void (*av1_highbd_convolve_y_sr)(
     const uint16_t* src,
@@ -1950,11 +1756,8 @@ RTCD_EXTERN void (*av1_highbd_convolve_y_sr)(
     int dst_stride,
     int w,
     int h,
-    const InterpFilterParams* filter_params_x,
     const InterpFilterParams* filter_params_y,
-    const int subpel_x_qn,
     const int subpel_y_qn,
-    ConvolveParams* conv_params,
     int bd);
 
 void av1_highbd_dist_wtd_convolve_2d_c(
@@ -2010,45 +1813,30 @@ RTCD_EXTERN void (*av1_highbd_dist_wtd_convolve_2d)(
     ConvolveParams* conv_params,
     int bd);
 
-void av1_highbd_dist_wtd_convolve_2d_copy_c(
-    const uint16_t* src,
-    int src_stride,
-    uint16_t* dst,
-    int dst_stride,
-    int w,
-    int h,
-    const InterpFilterParams* filter_params_x,
-    const InterpFilterParams* filter_params_y,
-    const int subpel_x_qn,
-    const int subpel_y_qn,
-    ConvolveParams* conv_params,
-    int bd);
-void av1_highbd_dist_wtd_convolve_2d_copy_sse4_1(
-    const uint16_t* src,
-    int src_stride,
-    uint16_t* dst,
-    int dst_stride,
-    int w,
-    int h,
-    const InterpFilterParams* filter_params_x,
-    const InterpFilterParams* filter_params_y,
-    const int subpel_x_qn,
-    const int subpel_y_qn,
-    ConvolveParams* conv_params,
-    int bd);
-void av1_highbd_dist_wtd_convolve_2d_copy_avx2(
-    const uint16_t* src,
-    int src_stride,
-    uint16_t* dst,
-    int dst_stride,
-    int w,
-    int h,
-    const InterpFilterParams* filter_params_x,
-    const InterpFilterParams* filter_params_y,
-    const int subpel_x_qn,
-    const int subpel_y_qn,
-    ConvolveParams* conv_params,
-    int bd);
+void av1_highbd_dist_wtd_convolve_2d_copy_c(const uint16_t* src,
+                                            int src_stride,
+                                            uint16_t* dst,
+                                            int dst_stride,
+                                            int w,
+                                            int h,
+                                            ConvolveParams* conv_params,
+                                            int bd);
+void av1_highbd_dist_wtd_convolve_2d_copy_sse4_1(const uint16_t* src,
+                                                 int src_stride,
+                                                 uint16_t* dst,
+                                                 int dst_stride,
+                                                 int w,
+                                                 int h,
+                                                 ConvolveParams* conv_params,
+                                                 int bd);
+void av1_highbd_dist_wtd_convolve_2d_copy_avx2(const uint16_t* src,
+                                               int src_stride,
+                                               uint16_t* dst,
+                                               int dst_stride,
+                                               int w,
+                                               int h,
+                                               ConvolveParams* conv_params,
+                                               int bd);
 RTCD_EXTERN void (*av1_highbd_dist_wtd_convolve_2d_copy)(
     const uint16_t* src,
     int src_stride,
@@ -2056,10 +1844,6 @@ RTCD_EXTERN void (*av1_highbd_dist_wtd_convolve_2d_copy)(
     int dst_stride,
     int w,
     int h,
-    const InterpFilterParams* filter_params_x,
-    const InterpFilterParams* filter_params_y,
-    const int subpel_x_qn,
-    const int subpel_y_qn,
     ConvolveParams* conv_params,
     int bd);
 
@@ -2070,9 +1854,7 @@ void av1_highbd_dist_wtd_convolve_x_c(const uint16_t* src,
                                       int w,
                                       int h,
                                       const InterpFilterParams* filter_params_x,
-                                      const InterpFilterParams* filter_params_y,
                                       const int subpel_x_qn,
-                                      const int subpel_y_qn,
                                       ConvolveParams* conv_params,
                                       int bd);
 void av1_highbd_dist_wtd_convolve_x_sse4_1(
@@ -2083,9 +1865,7 @@ void av1_highbd_dist_wtd_convolve_x_sse4_1(
     int w,
     int h,
     const InterpFilterParams* filter_params_x,
-    const InterpFilterParams* filter_params_y,
     const int subpel_x_qn,
-    const int subpel_y_qn,
     ConvolveParams* conv_params,
     int bd);
 void av1_highbd_dist_wtd_convolve_x_avx2(
@@ -2096,9 +1876,7 @@ void av1_highbd_dist_wtd_convolve_x_avx2(
     int w,
     int h,
     const InterpFilterParams* filter_params_x,
-    const InterpFilterParams* filter_params_y,
     const int subpel_x_qn,
-    const int subpel_y_qn,
     ConvolveParams* conv_params,
     int bd);
 RTCD_EXTERN void (*av1_highbd_dist_wtd_convolve_x)(
@@ -2109,9 +1887,7 @@ RTCD_EXTERN void (*av1_highbd_dist_wtd_convolve_x)(
     int w,
     int h,
     const InterpFilterParams* filter_params_x,
-    const InterpFilterParams* filter_params_y,
     const int subpel_x_qn,
-    const int subpel_y_qn,
     ConvolveParams* conv_params,
     int bd);
 
@@ -2121,9 +1897,7 @@ void av1_highbd_dist_wtd_convolve_y_c(const uint16_t* src,
                                       int dst_stride,
                                       int w,
                                       int h,
-                                      const InterpFilterParams* filter_params_x,
                                       const InterpFilterParams* filter_params_y,
-                                      const int subpel_x_qn,
                                       const int subpel_y_qn,
                                       ConvolveParams* conv_params,
                                       int bd);
@@ -2134,9 +1908,7 @@ void av1_highbd_dist_wtd_convolve_y_sse4_1(
     int dst_stride,
     int w,
     int h,
-    const InterpFilterParams* filter_params_x,
     const InterpFilterParams* filter_params_y,
-    const int subpel_x_qn,
     const int subpel_y_qn,
     ConvolveParams* conv_params,
     int bd);
@@ -2147,9 +1919,7 @@ void av1_highbd_dist_wtd_convolve_y_avx2(
     int dst_stride,
     int w,
     int h,
-    const InterpFilterParams* filter_params_x,
     const InterpFilterParams* filter_params_y,
-    const int subpel_x_qn,
     const int subpel_y_qn,
     ConvolveParams* conv_params,
     int bd);
@@ -2160,9 +1930,7 @@ RTCD_EXTERN void (*av1_highbd_dist_wtd_convolve_y)(
     int dst_stride,
     int w,
     int h,
-    const InterpFilterParams* filter_params_x,
     const InterpFilterParams* filter_params_y,
-    const int subpel_x_qn,
     const int subpel_y_qn,
     ConvolveParams* conv_params,
     int bd);
@@ -2209,28 +1977,7 @@ void av1_highbd_dr_prediction_z2_c(uint16_t* dst,
                                    int dx,
                                    int dy,
                                    int bd);
-void av1_highbd_dr_prediction_z2_avx2(uint16_t* dst,
-                                      ptrdiff_t stride,
-                                      int bw,
-                                      int bh,
-                                      const uint16_t* above,
-                                      const uint16_t* left,
-                                      int upsample_above,
-                                      int upsample_left,
-                                      int dx,
-                                      int dy,
-                                      int bd);
-RTCD_EXTERN void (*av1_highbd_dr_prediction_z2)(uint16_t* dst,
-                                                ptrdiff_t stride,
-                                                int bw,
-                                                int bh,
-                                                const uint16_t* above,
-                                                const uint16_t* left,
-                                                int upsample_above,
-                                                int upsample_left,
-                                                int dx,
-                                                int dy,
-                                                int bd);
+#define av1_highbd_dr_prediction_z2 av1_highbd_dr_prediction_z2_c
 
 void av1_highbd_dr_prediction_z3_c(uint16_t* dst,
                                    ptrdiff_t stride,
@@ -3476,14 +3223,9 @@ static void setup_rtcd_internal(void) {
     av1_apply_selfguided_restoration = av1_apply_selfguided_restoration_sse4_1;
   if (flags & HAS_AVX2)
     av1_apply_selfguided_restoration = av1_apply_selfguided_restoration_avx2;
-  av1_apply_temporal_filter_planewise =
-      av1_apply_temporal_filter_planewise_sse2;
+  av1_apply_temporal_filter = av1_apply_temporal_filter_sse2;
   if (flags & HAS_AVX2)
-    av1_apply_temporal_filter_planewise =
-        av1_apply_temporal_filter_planewise_avx2;
-  av1_apply_temporal_filter_yuv = av1_apply_temporal_filter_yuv_c;
-  if (flags & HAS_SSE4_1)
-    av1_apply_temporal_filter_yuv = av1_apply_temporal_filter_yuv_sse4_1;
+    av1_apply_temporal_filter = av1_apply_temporal_filter_avx2;
   av1_block_error = av1_block_error_sse2;
   if (flags & HAS_AVX2)
     av1_block_error = av1_block_error_avx2;
@@ -3531,9 +3273,6 @@ static void setup_rtcd_internal(void) {
     av1_compute_stats_highbd = av1_compute_stats_highbd_sse4_1;
   if (flags & HAS_AVX2)
     av1_compute_stats_highbd = av1_compute_stats_highbd_avx2;
-  av1_convolve_2d_copy_sr = av1_convolve_2d_copy_sr_sse2;
-  if (flags & HAS_AVX2)
-    av1_convolve_2d_copy_sr = av1_convolve_2d_copy_sr_avx2;
   av1_convolve_2d_scale = av1_convolve_2d_scale_c;
   if (flags & HAS_SSE4_1)
     av1_convolve_2d_scale = av1_convolve_2d_scale_sse4_1;
@@ -3661,9 +3400,6 @@ static void setup_rtcd_internal(void) {
   av1_highbd_block_error = av1_highbd_block_error_sse2;
   if (flags & HAS_AVX2)
     av1_highbd_block_error = av1_highbd_block_error_avx2;
-  av1_highbd_convolve_2d_copy_sr = av1_highbd_convolve_2d_copy_sr_sse2;
-  if (flags & HAS_AVX2)
-    av1_highbd_convolve_2d_copy_sr = av1_highbd_convolve_2d_copy_sr_avx2;
   av1_highbd_convolve_2d_scale = av1_highbd_convolve_2d_scale_c;
   if (flags & HAS_SSE4_1)
     av1_highbd_convolve_2d_scale = av1_highbd_convolve_2d_scale_sse4_1;
@@ -3710,9 +3446,6 @@ static void setup_rtcd_internal(void) {
   av1_highbd_dr_prediction_z1 = av1_highbd_dr_prediction_z1_c;
   if (flags & HAS_AVX2)
     av1_highbd_dr_prediction_z1 = av1_highbd_dr_prediction_z1_avx2;
-  av1_highbd_dr_prediction_z2 = av1_highbd_dr_prediction_z2_c;
-  if (flags & HAS_AVX2)
-    av1_highbd_dr_prediction_z2 = av1_highbd_dr_prediction_z2_avx2;
   av1_highbd_dr_prediction_z3 = av1_highbd_dr_prediction_z3_c;
   if (flags & HAS_AVX2)
     av1_highbd_dr_prediction_z3 = av1_highbd_dr_prediction_z3_avx2;

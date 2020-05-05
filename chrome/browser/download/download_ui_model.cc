@@ -483,6 +483,10 @@ bool DownloadUIModel::GetOpenWhenComplete() const {
   return false;
 }
 
+bool DownloadUIModel::IsOpenWhenCompleteByPolicy() const {
+  return false;
+}
+
 bool DownloadUIModel::TimeRemaining(base::TimeDelta* remaining) const {
   return false;
 }

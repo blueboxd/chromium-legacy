@@ -51,9 +51,11 @@ import org.chromium.ui.base.WindowAndroid;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Implementation of {@link WebContentsAccessibility} interface.
@@ -165,8 +167,9 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
     // this to update a node quickly rather than building from one scratch each time.
     private SparseArray<AccessibilityNodeInfo> mNodeInfoCache = new SparseArray<>();
 
-    // Default delay for throttling of successive AccessibilityEvents in milliseconds.
-    private static final int ACCESSIBILITY_EVENT_DEFAULT_DELAY = 100;
+    // Delay times for throttling of successive AccessibilityEvents in milliseconds.
+    private static final int ACCESSIBILITY_EVENT_DELAY_DEFAULT = 100;
+    private static final int ACCESSIBILITY_EVENT_DELAY_HOVER = 50;
 
     // This handles the dispatching of accessibility events. It acts as an intermediary where we can
     // apply throttling rules, delay event construction, etc.
@@ -213,9 +216,15 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
         // Define our delays on a per event type basis.
         Map<Integer, Integer> eventThrottleDelays = new HashMap<Integer, Integer>();
         eventThrottleDelays.put(
-                AccessibilityEvent.TYPE_VIEW_SCROLLED, ACCESSIBILITY_EVENT_DEFAULT_DELAY);
+                AccessibilityEvent.TYPE_VIEW_SCROLLED, ACCESSIBILITY_EVENT_DELAY_DEFAULT);
         eventThrottleDelays.put(
-                AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED, ACCESSIBILITY_EVENT_DEFAULT_DELAY);
+                AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED, ACCESSIBILITY_EVENT_DELAY_DEFAULT);
+        eventThrottleDelays.put(
+                AccessibilityEvent.TYPE_VIEW_HOVER_ENTER, ACCESSIBILITY_EVENT_DELAY_HOVER);
+
+        // Define events to throttle without regard for |virtualViewId|.
+        Set<Integer> viewIndependentEvents = new HashSet<Integer>();
+        viewIndependentEvents.add(AccessibilityEvent.TYPE_VIEW_HOVER_ENTER);
 
         mEventDispatcher =
                 new AccessibilityEventDispatcher(new AccessibilityEventDispatcher.Client() {
@@ -236,9 +245,21 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
                         if (event == null) return false;
 
                         mView.requestSendAccessibilityEvent(mView, event);
+
+                        // Always send the ENTER and then the EXIT event, to match a standard
+                        // Android View.
+                        if (eventType == AccessibilityEvent.TYPE_VIEW_HOVER_ENTER) {
+                            AccessibilityEvent exitEvent = buildAccessibilityEvent(
+                                    mLastHoverId, AccessibilityEvent.TYPE_VIEW_HOVER_EXIT);
+                            if (exitEvent != null) {
+                                mView.requestSendAccessibilityEvent(mView, exitEvent);
+                                mLastHoverId = virtualViewId;
+                            }
+                        }
+
                         return true;
                     }
-                }, eventThrottleDelays);
+                }, eventThrottleDelays, viewIndependentEvents);
 
         // Native is initialized lazily, when node provider is actually requested.
     }
@@ -783,10 +804,8 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
 
         if (action == MotionEvent.ACTION_HOVER_EXIT) {
             mIsHovering = false;
-            if (mLastHoverId != View.NO_ID) {
-                sendAccessibilityEvent(mLastHoverId, AccessibilityEvent.TYPE_VIEW_HOVER_EXIT);
-                mLastHoverId = View.NO_ID;
-            }
+            mLastHoverId = View.NO_ID;
+
             if (mPendingScrollToMakeNodeVisible) {
                 WebContentsAccessibilityImplJni.get().scrollToMakeNodeVisible(
                         mNativeObj, WebContentsAccessibilityImpl.this, mAccessibilityFocusId);
@@ -1288,12 +1307,7 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
         if (mLastHoverId == id) return;
         if (!mIsHovering) return;
 
-        // Always send the ENTER and then the EXIT event, to match a standard Android View.
         sendAccessibilityEvent(id, AccessibilityEvent.TYPE_VIEW_HOVER_ENTER);
-        if (mLastHoverId != View.NO_ID) {
-            sendAccessibilityEvent(mLastHoverId, AccessibilityEvent.TYPE_VIEW_HOVER_EXIT);
-        }
-        mLastHoverId = id;
     }
 
     @CalledByNative

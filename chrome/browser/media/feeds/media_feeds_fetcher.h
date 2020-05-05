@@ -36,7 +36,9 @@ class MediaFeedsFetcher {
       scoped_refptr<::network::SharedURLLoaderFactory> url_loader_factory);
   ~MediaFeedsFetcher();
 
-  void FetchFeed(const GURL& url, MediaFeedCallback callback);
+  void FetchFeed(const GURL& url,
+                 const bool bypass_cache,
+                 MediaFeedCallback callback);
 
  private:
   // Called when fetch request completes. Parses the received media feed

@@ -1060,10 +1060,25 @@ static void GatherSecurityPolicyViolationEventData(
   if (!source_location)
     source_location = delegate->GetSourceLocation();
   if (source_location && source_location->LineNumber()) {
-    KURL source = KURL(source_location->Url());
-    init->setSourceFile(StripURLForUseInReport(delegate->GetSecurityOrigin(),
-                                               source, redirect_status,
-                                               effective_type));
+    KURL source_url = KURL(source_location->Url());
+    // The source file might be a script loaded from a redirect. Web browser
+    // usually tries to hide post-redirect information. The script might be
+    // cross-origin with the document, but also with other scripts. As a result,
+    // everything is cleared no matter the |source_url| origin.
+    // See https://crbug.com/1074317
+    //
+    // Note: The username, password and ref are stripped later below by
+    // StripURLForUseInReport(..)
+    source_url.SetQuery(String());
+
+    // TODO(arthursonzogni): |redirect_status| refers to the redirect status of
+    // the |blocked_url|. This is unrelated to |source_url|. Why using it in
+    // this case? This is obviously wrong:
+    String source_file =
+        StripURLForUseInReport(delegate->GetSecurityOrigin(), source_url,
+                               redirect_status, effective_type);
+
+    init->setSourceFile(source_file);
     init->setLineNumber(source_location->LineNumber());
     init->setColumnNumber(source_location->ColumnNumber());
   } else {

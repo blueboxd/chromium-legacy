@@ -1499,6 +1499,16 @@ void AutomationInternalCustomBindings::AddRoutes() {
         }
       });
   RouteNodeIDFunction(
+      "GetTableColumnCount",
+      [](v8::Isolate* isolate, v8::ReturnValue<v8::Value> result,
+         AutomationAXTreeWrapper* tree_wrapper,
+         ui::AXNode* node) { result.Set(*node->GetTableColCount()); });
+  RouteNodeIDFunction(
+      "GetTableRowCount",
+      [](v8::Isolate* isolate, v8::ReturnValue<v8::Value> result,
+         AutomationAXTreeWrapper* tree_wrapper,
+         ui::AXNode* node) { result.Set(*node->GetTableRowCount()); });
+  RouteNodeIDFunction(
       "GetTableCellColumnHeaders",
       [](v8::Isolate* isolate, v8::ReturnValue<v8::Value> result,
          AutomationAXTreeWrapper* tree_wrapper, ui::AXNode* node) {

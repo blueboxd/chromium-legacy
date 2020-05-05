@@ -12,19 +12,13 @@ namespace base {
 class ListValue;
 }
 
-namespace content {
-class WebUI;
-}
-
-class Profile;
-
 namespace chromeos {
 namespace settings {
 
 // Chrome "Personalization" settings page UI handler.
 class WallpaperHandler : public ::settings::SettingsPageUIHandler {
  public:
-  explicit WallpaperHandler(content::WebUI* webui);
+  WallpaperHandler();
   ~WallpaperHandler() override;
 
   // SettingsPageUIHandler implementation.
@@ -44,8 +38,6 @@ class WallpaperHandler : public ::settings::SettingsPageUIHandler {
 
   // Helper function to resolve the Javascript callback.
   void ResolveCallback(const base::Value& callback_id, bool result);
-
-  Profile* const profile_;
 
   DISALLOW_COPY_AND_ASSIGN(WallpaperHandler);
 };

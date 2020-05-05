@@ -395,6 +395,8 @@ bool UtilityProcessHost::StartProcess() {
 
     cmd_line->AppendSwitchASCII(switches::kProcessType,
                                 switches::kUtilityProcess);
+    // Specify the type of utility process for debugging/profiling purposes.
+    cmd_line->AppendSwitchASCII(switches::kUtilitySubType, metrics_name_);
     BrowserChildProcessHostImpl::CopyFeatureAndFieldTrialFlags(cmd_line.get());
     BrowserChildProcessHostImpl::CopyTraceStartupFlags(cmd_line.get());
     std::string locale = GetContentClient()->browser()->GetApplicationLocale();

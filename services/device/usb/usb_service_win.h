@@ -44,13 +44,13 @@ class UsbServiceWin final : public DeviceMonitorWin::Observer,
   void CreateDeviceObject(
       const base::string16& device_path,
       const base::string16& hub_path,
-      const base::flat_map<int, base::string16>& function_paths,
+      const base::flat_map<int, UsbDeviceWin::FunctionInfo>& functions,
       uint32_t bus_number,
       uint32_t port_number,
       const base::string16& driver_name);
-  void UpdateFunctionPath(const base::string16& device_path,
-                          int interface_number,
-                          const base::string16& function_path);
+  void UpdateFunction(const base::string16& device_path,
+                      int interface_number,
+                      const UsbDeviceWin::FunctionInfo& function_info);
 
   void DeviceReady(scoped_refptr<UsbDeviceWin> device, bool success);
 

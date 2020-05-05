@@ -19,11 +19,9 @@ import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.bookmarks.BookmarkBridge.BookmarkItem;
-import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.test.ChromeBrowserTestRule;
 import org.chromium.chrome.test.util.BookmarkTestUtil;
-import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.components.bookmarks.BookmarkId;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
@@ -233,7 +231,6 @@ public class BookmarkBridgeTest {
     @SmallTest
     @UiThreadTest
     @Feature({"Bookmark"})
-    @Features.EnableFeatures(ChromeFeatureList.REORDER_BOOKMARKS)
     public void testReorderBookmarks() {
         mBookmarkBridge.addFolder(mMobileNode, 0, "a"); // ID 5
         mBookmarkBridge.addFolder(mMobileNode, 0, "b"); // ID 6
@@ -242,14 +239,14 @@ public class BookmarkBridgeTest {
 
         long[] startingIdsArray = new long[] {8, 7, 6, 5, 0};
         Assert.assertArrayEquals(
-                startingIdsArray, getIdArray(mBookmarkBridge.getChildIDs(mMobileNode, true, true)));
+                startingIdsArray, getIdArray(mBookmarkBridge.getChildIDs(mMobileNode)));
 
         long[] reorderedIdsArray = new long[] {7, 6, 8, 5};
         mBookmarkBridge.reorderBookmarks(mMobileNode, reorderedIdsArray);
 
         long[] endingIdsArray = new long[] {7, 6, 8, 5, 0};
         Assert.assertArrayEquals(
-                endingIdsArray, getIdArray(mBookmarkBridge.getChildIDs(mMobileNode, true, true)));
+                endingIdsArray, getIdArray(mBookmarkBridge.getChildIDs(mMobileNode)));
     }
 
     /**

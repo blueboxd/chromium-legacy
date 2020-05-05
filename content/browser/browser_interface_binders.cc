@@ -13,6 +13,8 @@
 #include "content/browser/bad_message.h"
 #include "content/browser/browser_main_loop.h"
 #include "content/browser/content_index/content_index_service_impl.h"
+#include "content/browser/conversions/conversion_internals.mojom.h"
+#include "content/browser/conversions/conversion_internals_ui.h"
 #include "content/browser/cookie_store/cookie_store_context.h"
 #include "content/browser/eye_dropper_chooser_impl.h"
 #include "content/browser/feature_observer.h"
@@ -226,6 +228,33 @@ void BindColorChooserFactoryForFrame(
   auto* web_contents =
       static_cast<WebContentsImpl*>(WebContents::FromRenderFrameHost(host));
   web_contents->OnColorChooserFactoryReceiver(std::move(receiver));
+}
+
+void BindConversionInternalsHandler(
+    content::RenderFrameHost* host,
+    mojo::PendingReceiver<::mojom::ConversionInternalsHandler> receiver) {
+  auto* contents = WebContents::FromRenderFrameHost(host);
+  DCHECK_EQ(contents->GetLastCommittedURL().host_piece(),
+            kChromeUIConversionInternalsHost);
+  DCHECK(contents->GetLastCommittedURL().SchemeIs(kChromeUIScheme));
+
+  content::WebUI* web_ui = contents->GetWebUI();
+
+  // Performs a safe downcast to the concrete ConversionInternalsUI subclass.
+  ConversionInternalsUI* conversion_internals_ui =
+      web_ui ? web_ui->GetController()->GetAs<ConversionInternalsUI>()
+             : nullptr;
+
+  // This is expected to be called only for main frames and for the right WebUI
+  // pages matching the same WebUI associated to the RenderFrameHost.
+  if (host->GetParent() || !conversion_internals_ui) {
+    ReceivedBadMessage(
+        host->GetProcess(),
+        bad_message::BadMessageReason::RFH_INVALID_WEB_UI_CONTROLLER);
+    return;
+  }
+
+  conversion_internals_ui->BindInterface(std::move(receiver));
 }
 
 void BindProcessInternalsHandler(
@@ -719,6 +748,8 @@ void PopulateBinderMapWithContext(
   map->Add<device::mojom::VRService>(
       base::BindRepeating(&EmptyBinderForFrame<device::mojom::VRService>));
 #endif
+  map->Add<::mojom::ConversionInternalsHandler>(
+      base::BindRepeating(&BindConversionInternalsHandler));
   map->Add<::mojom::ProcessInternalsHandler>(
       base::BindRepeating(&BindProcessInternalsHandler));
 #if defined(OS_ANDROID)

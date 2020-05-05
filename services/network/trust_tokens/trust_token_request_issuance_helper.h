@@ -166,6 +166,11 @@ class TrustTokenRequestIssuanceHelper : public TrustTokenRequestHelper {
       mojom::URLResponseHead* response,
       base::OnceCallback<void(mojom::TrustTokenOperationStatus)> done) override;
 
+  // These internal structs are in the public namespace so that
+  // anonymous-namespace functions in the .cc file can construct them.
+  struct CryptographerAndBlindedTokens;
+  struct CryptographerAndUnblindedTokens;
+
  private:
   // Continuation of |Begin| after asynchronous key commitment fetching
   // concludes.
@@ -178,6 +183,24 @@ class TrustTokenRequestIssuanceHelper : public TrustTokenRequestHelper {
       base::OnceCallback<void(mojom::TrustTokenOperationStatus)> done,
       mojom::TrustTokenKeyCommitmentResultPtr commitment_result);
 
+  // Continuation of |Begin| after a call to the cryptography delegate to
+  // execute the bulk of the outbound half of the issuance operation. Receives
+  // ownership of the cryptographer back from the asynchronous callback and
+  // should store the cryptographer back in |cryptographer_| to reuse during
+  // |Finalize|.
+  void OnDelegateBeginIssuanceCallComplete(
+      net::URLRequest* request,
+      base::OnceCallback<void(mojom::TrustTokenOperationStatus)> done,
+      CryptographerAndBlindedTokens cryptographer_and_blinded_tokens);
+
+  // Continuation of |Finalize| after a call to the cryptography delegate to
+  // execute the bulk of the inbound half of the issuance operation.
+  // Receives ownership of the cryptographer back from the asynchronous
+  // callback.
+  void OnDelegateConfirmIssuanceCallComplete(
+      base::OnceCallback<void(mojom::TrustTokenOperationStatus)> done,
+      CryptographerAndUnblindedTokens cryptographer_and_unblinded_tokens);
+
   // |issuer_| needs to be a nullable type because it is initialized in |Begin|,
   // but, once initialized, it will never be empty over the course of the
   // operation's execution.
@@ -185,7 +208,11 @@ class TrustTokenRequestIssuanceHelper : public TrustTokenRequestHelper {
   const SuitableTrustTokenOrigin top_level_origin_;
   TrustTokenStore* const token_store_;
   const TrustTokenKeyCommitmentGetter* const key_commitment_getter_;
-  const std::unique_ptr<Cryptographer> cryptographer_;
+  // Relinquishes ownership during posted tasks for the potentially
+  // computationally intensive cryptographic operations
+  // (Cryptographer::BeginIssuance, Cryptographer::ConfirmIssuance); repopulated
+  // when regaining ownership upon receiving each operation's results.
+  std::unique_ptr<Cryptographer> cryptographer_;
   base::WeakPtrFactory<TrustTokenRequestIssuanceHelper> weak_ptr_factory_{this};
 };
 }  // namespace network

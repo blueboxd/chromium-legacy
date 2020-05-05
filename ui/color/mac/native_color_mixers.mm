@@ -5,7 +5,6 @@
 #include "ui/color/color_mixers.h"
 
 #import <Cocoa/Cocoa.h>
-#include "base/logging.h"
 #import "skia/ext/skia_utils_mac.h"
 #include "ui/color/color_mixer.h"
 #include "ui/color/color_provider.h"

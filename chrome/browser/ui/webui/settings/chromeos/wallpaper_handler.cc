@@ -5,15 +5,13 @@
 #include "chrome/browser/ui/webui/settings/chromeos/wallpaper_handler.h"
 
 #include "base/bind.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/ash/wallpaper_controller_client.h"
 #include "content/public/browser/web_ui.h"
 
 namespace chromeos {
 namespace settings {
 
-WallpaperHandler::WallpaperHandler(content::WebUI* webui)
-    : profile_(Profile::FromWebUI(webui)) {}
+WallpaperHandler::WallpaperHandler() = default;
 
 WallpaperHandler::~WallpaperHandler() = default;
 

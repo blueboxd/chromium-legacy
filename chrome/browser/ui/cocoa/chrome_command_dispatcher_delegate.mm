@@ -4,7 +4,7 @@
 
 #import "chrome/browser/ui/cocoa/chrome_command_dispatcher_delegate.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "chrome/browser/global_keyboard_shortcuts_mac.h"
 #include "components/remote_cocoa/app_shim/native_widget_ns_window_bridge.h"
 #include "components/remote_cocoa/common/native_widget_ns_window_host.mojom.h"

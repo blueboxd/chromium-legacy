@@ -8,8 +8,8 @@
 #include <vulkan/vulkan.h>
 
 #include "base/callback.h"
+#include "base/component_export.h"
 #include "gpu/vulkan/vulkan_device_queue.h"
-#include "gpu/vulkan/vulkan_export.h"
 #include "gpu/vulkan/vulkan_swap_chain.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/native_widget_types.h"
@@ -21,7 +21,7 @@ namespace gpu {
 class VulkanDeviceQueue;
 class VulkanSwapChain;
 
-class VULKAN_EXPORT VulkanSurface {
+class COMPONENT_EXPORT(VULKAN) VulkanSurface {
  public:
   // Minimum bit depth of surface.
   enum Format {

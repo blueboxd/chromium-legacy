@@ -174,7 +174,7 @@ template ContentSetting ContentSettingsAgentImpl::GetContentSettingFromRules<>(
     const GURL&);
 
 template <typename URL>
-ContentSetting ContentSettingsAgentImpl::GetContentSettingFromRules(
+ContentSetting GetContentSettingFromRulesImpl(
     const ContentSettingsForOneType& rules,
     const WebFrame* frame,
     const URL& secondary_url) {
@@ -195,6 +195,20 @@ ContentSetting ContentSettingsAgentImpl::GetContentSettingFromRules(
   }
   NOTREACHED();
   return CONTENT_SETTING_DEFAULT;
+}
+
+ContentSetting ContentSettingsAgentImpl::GetContentSettingFromRules(
+    const ContentSettingsForOneType& rules,
+    const WebFrame* frame,
+    const GURL& secondary_url) {
+  return GetContentSettingFromRulesImpl(rules, frame, secondary_url);
+}
+
+ContentSetting ContentSettingsAgentImpl::GetContentSettingFromRules(
+    const ContentSettingsForOneType& rules,
+    const WebFrame* frame,
+    const blink::WebURL& secondary_url) {
+  return GetContentSettingFromRulesImpl(rules, frame, secondary_url);
 }
 
 void ContentSettingsAgentImpl::BindContentSettingsManager(

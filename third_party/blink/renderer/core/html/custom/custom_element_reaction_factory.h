@@ -22,8 +22,7 @@ class CustomElementReactionFactory {
 
  public:
   static CustomElementReaction& CreateUpgrade(
-      CustomElementDefinition& definition,
-      bool upgrade_invisible_elements);
+      CustomElementDefinition& definition);
   static CustomElementReaction& CreateConnected(
       CustomElementDefinition& definition);
   static CustomElementReaction& CreateDisconnected(

@@ -379,9 +379,8 @@ void RenderWidgetInputHandler::HandleInputEvent(
       nullptr);
   auto scoped_event_metrics_monitor =
       widget_->layer_tree_host()->GetScopedEventMetricsMonitor(
-          {ui::WebEventTypeToEventType(input_event.GetType()),
-           input_event.TimeStamp(),
-           ui::GetScrollInputTypeForEvent(input_event)});
+          {input_event.GetTypeAsUiEventType(), input_event.TimeStamp(),
+           input_event.GetScrollInputType()});
 
   bool prevent_default = false;
   bool show_virtual_keyboard_for_mouse = false;
@@ -610,7 +609,7 @@ void RenderWidgetInputHandler::InjectGestureScrollEvent(
   } else {
     base::TimeTicks now = base::TimeTicks::Now();
     std::unique_ptr<WebGestureEvent> gesture_event =
-        ui::GenerateInjectedScrollGesture(
+        WebGestureEvent::GenerateInjectedScrollGesture(
             injected_type, now, device, gfx::PointF(0, 0), delta, granularity);
     if (injected_type == WebInputEvent::Type::kGestureScrollBegin) {
       gesture_event->data.scroll_begin.scrollable_area_element_id =
@@ -685,7 +684,7 @@ void RenderWidgetInputHandler::HandleInjectedScrollGestures(
     }
 
     std::unique_ptr<WebGestureEvent> gesture_event =
-        ui::GenerateInjectedScrollGesture(
+        WebGestureEvent::GenerateInjectedScrollGesture(
             params.type, input_event.TimeStamp(), params.device, position,
             params.scroll_delta, params.granularity);
     if (params.type == WebInputEvent::Type::kGestureScrollBegin) {
@@ -702,9 +701,9 @@ void RenderWidgetInputHandler::HandleInjectedScrollGestures(
           widget_->layer_tree_host()->GetSwapPromiseManager(), nullptr);
       auto scoped_event_metrics_monitor =
           widget_->layer_tree_host()->GetScopedEventMetricsMonitor(
-              {ui::WebEventTypeToEventType(gesture_event->GetType()),
+              {gesture_event->GetTypeAsUiEventType(),
                gesture_event->TimeStamp(),
-               ui::GetScrollInputTypeForEvent(*gesture_event)});
+               gesture_event->GetScrollInputType()});
       widget_->GetWebWidget()->HandleInputEvent(
           blink::WebCoalescedInputEvent(*gesture_event));
     }

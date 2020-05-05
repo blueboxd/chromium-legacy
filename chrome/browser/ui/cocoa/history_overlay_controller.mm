@@ -4,7 +4,7 @@
 
 #import "chrome/browser/ui/cocoa/history_overlay_controller.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "chrome/grit/theme_resources.h"
 #include "ui/base/resource/resource_bundle.h"

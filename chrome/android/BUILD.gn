@@ -1728,6 +1728,11 @@ template("chrome_public_apk_or_module_tmpl") {
                              "is_modern",
                              "target_type",
                              "enable_multidex",
+
+                             # TODO(crbug.com/1076896): remove
+                             # "disable_library_rename" when we remove chrome
+                             # public apk.
+                             "disable_library_rename",
                            ])
     deps = _chrome_public_shared_deps
     if (_is_bundle_module) {
@@ -1763,6 +1768,9 @@ chrome_public_apk_or_module_tmpl("chrome_public_apk") {
   target_type = "android_apk"
   apk_name = "ChromePublic"
   enable_multidex = is_java_debug
+  if (android_64bit_target_cpu) {
+    disable_library_rename = true
+  }
 }
 
 android_resource_sizes_test("resource_sizes_chrome_public_apk") {

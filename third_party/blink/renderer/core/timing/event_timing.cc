@@ -93,7 +93,6 @@ std::unique_ptr<EventTiming> EventTiming::Create(LocalDOMWindow* window,
 
   base::TimeTicks processing_start = Now();
   if (should_log_event) {
-    auto* window = To<LocalDOMWindow>(performance->GetExecutionContext());
     InteractiveDetector* interactive_detector =
         InteractiveDetector::From(*window->document());
     if (interactive_detector) {

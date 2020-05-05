@@ -172,11 +172,7 @@ HangWatcher* HangWatcher::GetInstance() {
 
 // static
 void HangWatcher::RecordHang() {
-  // Prevent tail call optimization from omitting this function's address on the
-  // stack. It's necessary for it to be there for crash analysis.
-  const int line_number = __LINE__;
   base::debug::DumpWithoutCrashing();
-  base::debug::Alias(&line_number);
 }
 
 ScopedClosureRunner HangWatcher::RegisterThread() {

@@ -37,7 +37,7 @@ class ProcessDiceHeaderDelegateImplTest
       bool is_sync_signin_tab) {
     return std::make_unique<ProcessDiceHeaderDelegateImpl>(
         web_contents(), identity_test_environment_.identity_manager(),
-        is_sync_signin_tab,
+        /*interceptor=*/nullptr, is_sync_signin_tab,
         base::BindOnce(&ProcessDiceHeaderDelegateImplTest::StartSyncCallback,
                        base::Unretained(this)),
         base::BindOnce(

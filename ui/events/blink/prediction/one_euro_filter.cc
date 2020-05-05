@@ -3,7 +3,8 @@
 // found in the LICENSE file.
 
 #include "ui/events/blink/prediction/one_euro_filter.h"
-#include "ui/events/blink/prediction/filter_factory.h"
+
+#include "third_party/blink/public/common/features.h"
 
 namespace ui {
 
@@ -35,7 +36,7 @@ bool OneEuroFilter::Filter(const base::TimeTicks& timestamp,
 }
 
 const char* OneEuroFilter::GetName() const {
-  return input_prediction::kFilterNameOneEuro;
+  return blink::features::kFilterNameOneEuro;
 }
 
 InputFilter* OneEuroFilter::Clone() {

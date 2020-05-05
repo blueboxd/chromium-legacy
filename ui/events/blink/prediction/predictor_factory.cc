@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "ui/events/blink/prediction/predictor_factory.h"
-#include "ui/events/blink/blink_features.h"
+#include "third_party/blink/public/common/features.h"
 #include "ui/events/blink/prediction/empty_predictor.h"
 #include "ui/events/blink/prediction/kalman_predictor.h"
 #include "ui/events/blink/prediction/least_squares_predictor.h"
@@ -11,17 +11,6 @@
 #include "ui/events/blink/prediction/linear_resampling.h"
 
 namespace ui {
-
-namespace input_prediction {
-
-const char kScrollPredictorNameLsq[] = "lsq";
-const char kScrollPredictorNameKalman[] = "kalman";
-const char kScrollPredictorNameLinearFirst[] = "linear_first";
-const char kScrollPredictorNameLinearSecond[] = "linear_second";
-const char kScrollPredictorNameLinearResampling[] = "linear_resampling";
-const char kScrollPredictorNameEmpty[] = "empty";
-
-}  // namespace input_prediction
 
 namespace {
 using input_prediction::PredictorType;
@@ -32,15 +21,15 @@ unsigned int PredictorFactory::predictor_options_ = UINT_MAX;
 
 PredictorType PredictorFactory::GetPredictorTypeFromName(
     const std::string& predictor_name) {
-  if (predictor_name == input_prediction::kScrollPredictorNameLinearResampling)
+  if (predictor_name == blink::features::kScrollPredictorNameLinearResampling)
     return PredictorType::kScrollPredictorTypeLinearResampling;
-  else if (predictor_name == input_prediction::kScrollPredictorNameLsq)
+  else if (predictor_name == blink::features::kScrollPredictorNameLsq)
     return PredictorType::kScrollPredictorTypeLsq;
-  else if (predictor_name == input_prediction::kScrollPredictorNameKalman)
+  else if (predictor_name == blink::features::kScrollPredictorNameKalman)
     return PredictorType::kScrollPredictorTypeKalman;
-  else if (predictor_name == input_prediction::kScrollPredictorNameLinearFirst)
+  else if (predictor_name == blink::features::kScrollPredictorNameLinearFirst)
     return PredictorType::kScrollPredictorTypeLinearFirst;
-  else if (predictor_name == input_prediction::kScrollPredictorNameLinearSecond)
+  else if (predictor_name == blink::features::kScrollPredictorNameLinearSecond)
     return PredictorType::kScrollPredictorTypeLinearSecond;
   else
     return PredictorType::kScrollPredictorTypeEmpty;
@@ -67,10 +56,10 @@ std::unique_ptr<InputPredictor> PredictorFactory::GetPredictor(
 unsigned int PredictorFactory::GetKalmanPredictorOptions() {
   if (predictor_options_ == UINT_MAX) {
     predictor_options_ =
-        (base::FeatureList::IsEnabled(features::kKalmanHeuristics)
+        (base::FeatureList::IsEnabled(blink::features::kKalmanHeuristics)
              ? KalmanPredictor::PredictionOptions::kHeuristicsEnabled
              : 0) |
-        (base::FeatureList::IsEnabled(features::kKalmanDirectionCutOff)
+        (base::FeatureList::IsEnabled(blink::features::kKalmanDirectionCutOff)
              ? KalmanPredictor::PredictionOptions::kDirectionCutOffEnabled
              : 0);
   }

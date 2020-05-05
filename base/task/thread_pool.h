@@ -126,8 +126,8 @@ class BASE_EXPORT ThreadPool {
       const Location& from_here,
       CallbackType<TaskReturnType()> task,
       CallbackType<void(ReplyArgType)> reply) {
-    return ThreadPool::PostTaskAndReplyWithResult(from_here, std::move(task),
-                                                  std::move(reply));
+    return ThreadPool::PostTaskAndReplyWithResult(
+        from_here, {}, std::move(task), std::move(reply));
   }
 
   // Posts |task| with specific |traits|. Returns false if the task definitely

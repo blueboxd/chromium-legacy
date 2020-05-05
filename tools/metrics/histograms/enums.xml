@@ -20104,6 +20104,7 @@ Called by update_document_policy_enum.py.-->
   <int value="699" label="OnSecurityEventEnterpriseConnector"/>
   <int value="700" label="AutoOpenFileTypes"/>
   <int value="701" label="LoginDisplayPasswordButtonEnabled"/>
+  <int value="702" label="ReportDeviceAppInfo"/>
 </enum>
 
 <enum name="EnterprisePolicyDeviceIdValidity">
@@ -27174,6 +27175,7 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3272" label="V8InvalidatedTypedArraySpeciesLookupChainProtector"/>
   <int value="3273" label="ClientHintsUAPlatformVersion"/>
   <int value="3274" label="IFrameCSPAttribute"/>
+  <int value="3275" label="NavigatorCookieEnabled"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">

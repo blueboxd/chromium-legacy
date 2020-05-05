@@ -504,6 +504,7 @@ TEST_F(ToplevelWindowEventHandlerTest, DontGotWiderThanScreen) {
 
 // Verifies that touch-gestures drag the window correctly.
 TEST_F(ToplevelWindowEventHandlerTest, GestureDrag) {
+  UpdateDisplay("800x600");
   std::unique_ptr<aura::Window> target(CreateTestWindowInShellWithDelegate(
       new TestWindowDelegate(HTCAPTION), 0, gfx::Rect(0, 0, 100, 100)));
   WindowState* window_state = WindowState::Get(target.get());
@@ -516,10 +517,8 @@ TEST_F(ToplevelWindowEventHandlerTest, GestureDrag) {
                           aura::client::kResizeBehaviorCanMaximize |
                           aura::client::kResizeBehaviorCanMinimize);
 
-  gfx::Point end = location;
-
   // Snap right;
-  end.Offset(100, 0);
+  gfx::Point end(790, 0);
   generator.GestureScrollSequence(location, end,
                                   base::TimeDelta::FromMilliseconds(5), 10);
   base::RunLoop().RunUntilIdle();

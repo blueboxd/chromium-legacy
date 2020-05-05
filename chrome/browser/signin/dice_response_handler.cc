@@ -356,6 +356,9 @@ void DiceResponseHandler::OnTokenExchangeSuccess(
   const std::string& gaia_id = token_fetcher->gaia_id();
   VLOG(1) << "[Dice] OAuth success for email " << email;
   bool should_enable_sync = token_fetcher->should_enable_sync();
+  bool is_new_account =
+      !identity_manager_
+           ->FindExtendedAccountInfoForAccountWithRefreshTokenByGaiaId(gaia_id);
   auto* accounts_mutator = identity_manager_->GetAccountsMutator();
   CoreAccountId account_id = accounts_mutator->AddOrUpdateAccount(
       gaia_id, email, refresh_token, is_under_advanced_protection,
@@ -363,6 +366,8 @@ void DiceResponseHandler::OnTokenExchangeSuccess(
           kDiceResponseHandler_Signin);
   about_signin_internals_->OnRefreshTokenReceived(
       base::StringPrintf("Successful (%s)", account_id.ToString().c_str()));
+  token_fetcher->delegate()->HandleTokenExchangeSuccess(account_id,
+                                                        is_new_account);
   if (should_enable_sync)
     token_fetcher->delegate()->EnableSync(account_id);
 

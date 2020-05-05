@@ -34,6 +34,7 @@ include_rules = [
   "+ui/events",
   "+ui/gl",
   "+ui/latency",
+  "+ui/ozone/public",
 ]
 
 specific_include_rules = {

@@ -13,11 +13,23 @@
 #include "content/browser/conversions/conversion_reporter_impl.h"
 #include "content/browser/conversions/conversion_storage_delegate_impl.h"
 #include "content/browser/conversions/conversion_storage_sql.h"
+#include "content/browser/storage_partition_impl.h"
+#include "content/public/browser/browser_context.h"
+#include "content/public/browser/storage_partition.h"
+#include "content/public/browser/web_contents.h"
 
 namespace content {
 
 const constexpr base::TimeDelta kConversionManagerQueueReportsInterval =
     base::TimeDelta::FromMinutes(30);
+
+ConversionManager* ConversionManagerProviderImpl::GetManager(
+    WebContents* web_contents) const {
+  return static_cast<StoragePartitionImpl*>(
+             BrowserContext::GetDefaultStoragePartition(
+                 web_contents->GetBrowserContext()))
+      ->GetConversionManager();
+}
 
 // static
 std::unique_ptr<ConversionManagerImpl> ConversionManagerImpl::CreateForTesting(
@@ -105,6 +117,29 @@ void ConversionManagerImpl::HandleSentReport(int64_t conversion_id) {
       FROM_HERE,
       base::BindOnce(base::IgnoreResult(&ConversionStorage::DeleteConversion),
                      base::Unretained(storage_.get()), conversion_id));
+}
+
+void ConversionManagerImpl::GetActiveImpressionsForWebUI(
+    base::OnceCallback<void(std::vector<StorableImpression>)> callback) {
+  // Unretained is safe because any task to delete |storage_| will be posted
+  // after this one because |storage_| uses base::OnTaskRunnerDeleter.
+  base::PostTaskAndReplyWithResult(
+      storage_task_runner_.get(), FROM_HERE,
+      base::BindOnce(&ConversionStorage::GetActiveImpressions,
+                     base::Unretained(storage_.get())),
+      std::move(callback));
+}
+
+void ConversionManagerImpl::GetReportsForWebUI(
+    base::OnceCallback<void(std::vector<ConversionReport>)> callback,
+    base::Time max_report_time) {
+  // Unretained is safe because any task to delete |storage_| will be posted
+  // after this one because |storage_| uses base::OnTaskRunnerDeleter.
+  base::PostTaskAndReplyWithResult(
+      storage_task_runner_.get(), FROM_HERE,
+      base::BindOnce(&ConversionStorage::GetConversionsToReport,
+                     base::Unretained(storage_.get()), max_report_time),
+      std::move(callback));
 }
 
 const ConversionPolicy& ConversionManagerImpl::GetConversionPolicy() const {

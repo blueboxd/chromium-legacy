@@ -40,6 +40,7 @@ class MockDownloadItemImpl : public DownloadItemImpl {
   MOCK_METHOD0(CanShowInFolder, bool());
   MOCK_METHOD0(CanOpenDownload, bool());
   MOCK_METHOD0(ShouldOpenFileBasedOnExtension, bool());
+  MOCK_METHOD0(ShouldOpenFileByPolicyBasedOnExtension, bool());
   MOCK_METHOD0(OpenDownload, void());
   MOCK_METHOD0(ShowDownloadInShell, void());
   MOCK_METHOD0(ValidateDangerousDownload, void());

@@ -34,22 +34,45 @@ class PassThroughStorageDelegate : public ConversionStorage::Delegate {
   int GetMaxConversionsPerImpression() const override;
 };
 
+// Test manager provider which can be used to inject a fake ConversionManager.
+class TestManagerProvider : public ConversionManager::Provider {
+ public:
+  explicit TestManagerProvider(ConversionManager* manager)
+      : manager_(manager) {}
+  ~TestManagerProvider() override = default;
+
+  ConversionManager* GetManager(WebContents* web_contents) const override;
+
+ private:
+  ConversionManager* manager_ = nullptr;
+};
+
 // Test ConversionManager which can be injected into tests to monitor calls to a
 // ConversionManager instance.
 class TestConversionManager : public ConversionManager {
  public:
-  TestConversionManager() = default;
-  ~TestConversionManager() override = default;
+  TestConversionManager();
+  ~TestConversionManager() override;
 
   // ConversionManager:
   void HandleImpression(const StorableImpression& impression) override;
   void HandleConversion(const StorableConversion& conversion) override;
   void HandleSentReport(int64_t conversion_id) override;
+  void GetActiveImpressionsForWebUI(
+      base::OnceCallback<void(std::vector<StorableImpression>)> callback)
+      override;
+  void GetReportsForWebUI(
+      base::OnceCallback<void(std::vector<ConversionReport>)> callback,
+      base::Time max_report_time) override;
   const ConversionPolicy& GetConversionPolicy() const override;
   void ClearData(base::Time delete_begin,
                  base::Time delete_end,
                  base::RepeatingCallback<bool(const url::Origin&)> filter,
                  base::OnceClosure done) override;
+
+  void SetActiveImpressionsForWebUI(
+      std::vector<StorableImpression> impressions);
+  void SetReportsForWebUI(std::vector<ConversionReport> reports);
 
   // Resets all counters on this.
   void Reset();
@@ -64,6 +87,9 @@ class TestConversionManager : public ConversionManager {
   size_t num_impressions_ = 0;
   size_t num_conversions_ = 0;
   int64_t last_sent_report_id_ = 0L;
+
+  std::vector<StorableImpression> impressions_;
+  std::vector<ConversionReport> reports_;
 };
 
 // Helper class to construct a StorableImpression for tests using default data.
@@ -98,6 +124,9 @@ class ImpressionBuilder {
 // Returns a StorableConversion with default data which matches the default
 // impressions created by ImpressionBuilder.
 StorableConversion DefaultConversion();
+
+testing::AssertionResult ImpressionsEqual(const StorableImpression& expected,
+                                          const StorableImpression& actual);
 
 testing::AssertionResult ReportsEqual(
     const std::vector<ConversionReport>& expected,

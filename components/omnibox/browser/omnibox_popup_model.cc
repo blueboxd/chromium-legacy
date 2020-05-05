@@ -133,6 +133,8 @@ OmniboxPopupModel::LineState OmniboxPopupModel::GetNextLineState(
     case kForward:
       switch (state) {
         case NO_STATE:
+          return HEADER_BUTTON_FOCUSED;
+        case HEADER_BUTTON_FOCUSED:
           return NORMAL;
         case NORMAL:
           return button_row ? FOCUSED_BUTTON_KEYWORD : KEYWORD;
@@ -154,8 +156,10 @@ OmniboxPopupModel::LineState OmniboxPopupModel::GetNextLineState(
       switch (state) {
         case NO_STATE:
           return button_row ? FOCUSED_BUTTON_PEDAL : BUTTON_FOCUSED;
-        case NORMAL:
+        case HEADER_BUTTON_FOCUSED:
           return NO_STATE;
+        case NORMAL:
+          return HEADER_BUTTON_FOCUSED;
         case KEYWORD:
           return NORMAL;
         case BUTTON_FOCUSED:
@@ -413,9 +417,16 @@ OmniboxPopupModel::Selection OmniboxPopupModel::GetNextSelection(
           ? (direction == kForward ? (size - 1) : 0)
           : ((next.line + (direction == kForward ? 1 : (size - 1))) % size);
   next.line = line;
-  LineState next_state = GetNextAvailableLineState(
-      Selection(line, NO_STATE), (step != kStateOrLine) ? kForward : direction,
-      skip_keyword);
+
+  // The new line state is always NORMAL for whole line transitions, except for
+  // a kStateOrLine that transitions between different lines.
+  LineState next_state = NORMAL;
+  DCHECK_NE(kStateOrNothing, step);  // Already handled in previous block.
+  if (step == kStateOrLine) {
+    next_state = GetNextAvailableLineState(Selection(line, NO_STATE), direction,
+                                           skip_keyword);
+  }
+
   if (!OmniboxFieldTrial::IsSuggestionButtonRowEnabled() &&
       (step == kStateOrLine) && direction != kForward &&
       next_state == KEYWORD) {
@@ -462,6 +473,17 @@ bool OmniboxPopupModel::IsSelectionAvailable(Selection selection) const {
   switch (selection.state) {
     case NO_STATE:
       return false;
+    case HEADER_BUTTON_FOCUSED: {
+      // For the first match, if it a suggestion_group_id, then it has a header.
+      if (selection.line == 0)
+        return match.suggestion_group_id.has_value();
+
+      // Otherwise, we only show headers that are distinct from the previous
+      // match's header.
+      const auto& previous_match = result().match_at(selection.line - 1);
+      return match.suggestion_group_id.has_value() &&
+             match.suggestion_group_id != previous_match.suggestion_group_id;
+    }
     case NORMAL:
       return true;
     case KEYWORD:

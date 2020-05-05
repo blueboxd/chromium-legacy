@@ -5,8 +5,10 @@
 #include "base/task/sequence_manager/thread_controller_with_message_pump_impl.h"
 
 #include "base/auto_reset.h"
+#include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_pump.h"
+#include "base/power_monitor/power_monitor.h"
 #include "base/threading/hang_watcher.h"
 #include "base/time/tick_clock.h"
 #include "base/trace_event/trace_event.h"
@@ -22,6 +24,12 @@ namespace base {
 namespace sequence_manager {
 namespace internal {
 namespace {
+
+// Activate the power management events that affect the tasks scheduling.
+const Feature kUsePowerMonitorWithThreadController{
+    "UsePowerMonitorWithThreadController", FEATURE_DISABLED_BY_DEFAULT};
+
+bool g_use_power_monitor_with_thread_controller = false;
 
 // Returns |next_run_time| capped at 1 day from |lazy_now|. This is used to
 // mitigate https://crbug.com/850450 where some platforms are unhappy with
@@ -360,15 +368,25 @@ bool ThreadControllerWithMessagePumpImpl::DoIdleWork() {
 
   work_id_provider_->IncrementWorkId();
 #if defined(OS_WIN)
-  bool need_high_res_mode =
-      main_thread_only().task_source->HasPendingHighResolutionTasks();
-  if (main_thread_only().in_high_res_mode != need_high_res_mode) {
-    // On Windows we activate the high resolution timer so that the wait
-    // _if_ triggered by the timer happens with good resolution. If we don't
-    // do this the default resolution is 15ms which might not be acceptable
-    // for some tasks.
-    main_thread_only().in_high_res_mode = need_high_res_mode;
-    Time::ActivateHighResolutionTimer(need_high_res_mode);
+  if (!g_use_power_monitor_with_thread_controller ||
+      !base::PowerMonitor::IsProcessSuspended()) {
+    // Avoid calling Time::ActivateHighResolutionTimer() between
+    // suspend/resume as the system hangs if we do (crbug.com/1074028).
+    // OnResume() will generate a task on this thread per the
+    // ThreadControllerPowerMonitor observer and DoIdleWork() will thus get
+    // another chance to set the right high-resolution-timer-state before
+    // going to sleep after resume.
+
+    const bool need_high_res_mode =
+        main_thread_only().task_source->HasPendingHighResolutionTasks();
+    if (main_thread_only().in_high_res_mode != need_high_res_mode) {
+      // On Windows we activate the high resolution timer so that the wait
+      // _if_ triggered by the timer happens with good resolution. If we don't
+      // do this the default resolution is 15ms which might not be acceptable
+      // for some tasks.
+      main_thread_only().in_high_res_mode = need_high_res_mode;
+      Time::ActivateHighResolutionTimer(need_high_res_mode);
+    }
   }
 #endif  // defined(OS_WIN)
 
@@ -514,5 +532,11 @@ bool ThreadControllerWithMessagePumpImpl::ShouldQuitRunLoopWhenIdle() {
 }
 
 }  // namespace internal
+
+void PostFieldTrialInitialization() {
+  internal::g_use_power_monitor_with_thread_controller =
+      FeatureList::IsEnabled(internal::kUsePowerMonitorWithThreadController);
+}
+
 }  // namespace sequence_manager
 }  // namespace base

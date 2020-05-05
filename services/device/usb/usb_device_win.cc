@@ -24,17 +24,16 @@ namespace {
 const uint16_t kUsbVersion2_1 = 0x0210;
 }  // namespace
 
-UsbDeviceWin::UsbDeviceWin(
-    const base::string16& device_path,
-    const base::string16& hub_path,
-    const base::flat_map<int, base::string16>& function_paths,
-    uint32_t bus_number,
-    uint32_t port_number,
-    const base::string16& driver_name)
+UsbDeviceWin::UsbDeviceWin(const base::string16& device_path,
+                           const base::string16& hub_path,
+                           const base::flat_map<int, FunctionInfo>& functions,
+                           uint32_t bus_number,
+                           uint32_t port_number,
+                           const base::string16& driver_name)
     : UsbDevice(bus_number, port_number),
       device_path_(device_path),
       hub_path_(hub_path),
-      function_paths_(function_paths),
+      functions_(functions),
       driver_name_(driver_name) {}
 
 UsbDeviceWin::~UsbDeviceWin() {}
@@ -75,15 +74,15 @@ void UsbDeviceWin::ReadDescriptors(base::OnceCallback<void(bool)> callback) {
                                     std::move(callback), device_handle));
 }
 
-void UsbDeviceWin::UpdateFunctionPath(int interface_number,
-                                      const base::string16& function_path) {
-  function_paths_.insert({interface_number, function_path});
+void UsbDeviceWin::UpdateFunction(int interface_number,
+                                  const FunctionInfo& function_info) {
+  functions_.insert({interface_number, function_info});
 
   for (UsbDeviceHandle* handle : handles()) {
     // This is safe because only this class only adds instance of
     // UsbDeviceHandleWin to handles().
-    static_cast<UsbDeviceHandleWin*>(handle)->UpdateFunctionPath(
-        interface_number, function_path);
+    static_cast<UsbDeviceHandleWin*>(handle)->UpdateFunction(
+        interface_number, function_info.driver, function_info.path);
   }
 }
 

@@ -289,6 +289,7 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadItemImpl
   bool CanShowInFolder() override;
   bool CanOpenDownload() override;
   bool ShouldOpenFileBasedOnExtension() override;
+  bool ShouldOpenFileByPolicyBasedOnExtension() override;
   bool GetOpenWhenComplete() const override;
   bool GetAutoOpened() override;
   bool GetOpened() const override;

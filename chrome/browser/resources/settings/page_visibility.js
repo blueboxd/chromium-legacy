@@ -41,87 +41,86 @@ export let AppearancePageVisibility;
  */
 export let PrivacyPageVisibility;
 
-  /**
-   * Dictionary defining page visibility.
-   * @type {!PageVisibility}
-   */
-  export let pageVisibility;
+/**
+ * Dictionary defining page visibility.
+ * @type {!PageVisibility}
+ */
+export let pageVisibility;
 
-  if (loadTimeData.getBoolean('isGuest')) {
-    // "if not chromeos" and "if chromeos" in two completely separate blocks
-    // to work around closure compiler.
-    // <if expr="not chromeos">
-    pageVisibility = {
-      autofill: false,
-      people: false,
-      privacy: false,
-      onStartup: false,
-      reset: false,
-      safetyCheck: false,
-      appearance: false,
-      defaultBrowser: false,
-      advancedSettings: false,
-      extensions: false,
-      printing: false,
-      languages: false,
-    };
-    // </if>
-    // <if expr="chromeos">
-    pageVisibility = {
-      autofill: false,
-      people: false,
-      onStartup: false,
-      reset: false,
-      safetyCheck: false,
-      appearance: {
-        setTheme: false,
-        homeButton: false,
-        bookmarksBar: false,
-        pageZoom: false,
-      },
-      advancedSettings: true,
-      privacy: {
-        searchPrediction: false,
-        networkPrediction: false,
-      },
-      downloads: true,
-      a11y: true,
-      extensions: false,
-      printing: true,
-      languages: true,
-    };
-    // </if>
-  } else {
-    // All pages are visible when not in chromeos. Since polymer only notifies
-    // after a property is set.
-    // <if expr="chromeos">
-    pageVisibility = {
-      autofill: true,
-      people: true,
-      onStartup: true,
-      reset: true,
-      safetyCheck: true,
-      appearance: {
-        setTheme: true,
-        homeButton: true,
-        bookmarksBar: true,
-        pageZoom: true,
-      },
-      advancedSettings: true,
-      privacy: {
-        searchPrediction: true,
-        networkPrediction: true,
-      },
-      downloads: true,
-      a11y: true,
-      extensions: true,
-      printing: true,
-      languages: true,
-    };
-    // </if>
-  }
+if (loadTimeData.getBoolean('isGuest')) {
+  // "if not chromeos" and "if chromeos" in two completely separate blocks
+  // to work around closure compiler.
+  // <if expr="not chromeos">
+  pageVisibility = {
+    autofill: false,
+    people: false,
+    privacy: false,
+    onStartup: false,
+    reset: false,
+    safetyCheck: false,
+    appearance: false,
+    defaultBrowser: false,
+    advancedSettings: false,
+    extensions: false,
+    printing: false,
+    languages: false,
+  };
+  // </if>
+  // <if expr="chromeos">
+  pageVisibility = {
+    autofill: false,
+    people: false,
+    onStartup: false,
+    reset: false,
+    safetyCheck: false,
+    appearance: {
+      setTheme: false,
+      homeButton: false,
+      bookmarksBar: false,
+      pageZoom: false,
+    },
+    advancedSettings: true,
+    privacy: {
+      searchPrediction: false,
+      networkPrediction: false,
+    },
+    downloads: true,
+    a11y: true,
+    extensions: false,
+    printing: true,
+    languages: true,
+  };
+  // </if>
+} else {
+  // All pages are visible when not in chromeos. Since polymer only notifies
+  // after a property is set.
+  // <if expr="chromeos">
+  pageVisibility = {
+    autofill: true,
+    people: true,
+    onStartup: true,
+    reset: true,
+    safetyCheck: true,
+    appearance: {
+      setTheme: true,
+      homeButton: true,
+      bookmarksBar: true,
+      pageZoom: true,
+    },
+    advancedSettings: true,
+    privacy: {
+      searchPrediction: true,
+      networkPrediction: true,
+    },
+    downloads: true,
+    a11y: true,
+    extensions: true,
+    printing: true,
+    languages: true,
+  };
+  // </if>
+}
 
-  export function setPageVisibilityForTesting(testVisibility) {
-    pageVisibility = testVisibility;
-  }
-
+export function setPageVisibilityForTesting(testVisibility) {
+  pageVisibility = testVisibility;
+}

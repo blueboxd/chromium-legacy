@@ -145,10 +145,22 @@ std::vector<CompromisedCredentials> CompromisedCredentialsTable::GetRows(
 
   sql::Statement s(db_->GetCachedStatement(
       SQL_FROM_HERE,
-      "SELECT url, username, create_time, compromise_type FROM "
-      "compromised_credentials WHERE url = ? AND username = ? "));
+      "SELECT * FROM compromised_credentials WHERE url = ? AND username = ? "));
   s.BindString(0, signon_realm);
   s.BindString16(1, username);
+  return StatementToCompromisedCredentials(&s);
+}
+
+std::vector<CompromisedCredentials> CompromisedCredentialsTable::GetRows(
+    const std::string& signon_realm) const {
+  if (!db_ || signon_realm.empty())
+    return std::vector<CompromisedCredentials>{};
+
+  DCHECK(db_->DoesTableExist(kCompromisedCredentialsTableName));
+
+  sql::Statement s(db_->GetCachedStatement(
+      SQL_FROM_HERE, "SELECT * FROM compromised_credentials WHERE url = ? "));
+  s.BindString(0, signon_realm);
   return StatementToCompromisedCredentials(&s);
 }
 

@@ -524,12 +524,10 @@ class PDFiumEngine : public PDFEngine,
   // Sets whether or not left mouse button is currently being held down.
   void SetMouseLeftButtonDown(bool is_mouse_left_button_down);
 
-  // Given coordinates on |page| has a form of |form_type| which is known to be
-  // a form text area, check if it is an editable form text area.
-  bool IsPointInEditableFormTextArea(FPDF_PAGE page,
-                                     double page_x,
-                                     double page_y,
-                                     int form_type);
+  // Given an annotation which is a form of |form_type| which is known to be a
+  // form text area, check if it is an editable form text area.
+  bool IsAnnotationAnEditableFormTextArea(FPDF_ANNOTATION annot,
+                                          int form_type) const;
 
   bool PageIndexInBounds(int index) const;
   bool IsPageCharacterIndexInBounds(
@@ -580,6 +578,8 @@ class PDFiumEngine : public PDFEngine,
   // Given |rect| in document coordinates, scroll the |rect| into view if not
   // already in view.
   void ScrollIntoView(const pp::Rect& rect);
+
+  void OnFocusedAnnotationUpdated(FPDF_ANNOTATION annot);
 
   // Fetches and populates the fields of |doc_metadata_|. To be called after the
   // document is loaded.

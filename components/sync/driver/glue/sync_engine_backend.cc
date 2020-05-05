@@ -19,7 +19,6 @@
 #include "components/sync/base/invalidation_adapter.h"
 #include "components/sync/base/sync_base_switches.h"
 #include "components/sync/driver/configure_context.h"
-#include "components/sync/driver/directory_data_type_controller.h"
 #include "components/sync/driver/model_type_controller.h"
 #include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/engine/cycle/commit_counters.h"
@@ -39,6 +38,7 @@
 #include "components/sync/nigori/nigori_sync_bridge_impl.h"
 #include "components/sync/syncable/directory.h"
 #include "components/sync/syncable/nigori_handler_proxy.h"
+#include "components/sync/syncable/syncable_read_transaction.h"
 #include "components/sync/syncable/user_share.h"
 
 // Helper macros to log with the syncer thread name; useful when there
@@ -70,6 +70,13 @@ bool ShouldEnableUSSNigori() {
 // Checks if there is at least one experiment for USS is disabled.
 bool ShouldClearDirectoryOnEmptyBirthday() {
   return !base::FeatureList::IsEnabled(switches::kSyncUSSNigori);
+}
+
+std::unique_ptr<base::ListValue> GetNigoriNodeFromDirectory(
+    syncable::Directory* directory) {
+  DCHECK(directory);
+  syncable::ReadTransaction trans(FROM_HERE, directory);
+  return directory->GetNodeDetailsForType(&trans, NIGORI);
 }
 
 }  // namespace
@@ -680,10 +687,10 @@ void SyncEngineBackend::GetNigoriNodeForDebugging(AllNodesCallback callback) {
     nigori_controller_->GetAllNodes(std::move(callback));
   } else {
     // Directory implementation of Nigori.
+    // TODO(crbug.com/1010397): Delete old codepath.
     DCHECK(user_share_.directory);
     std::move(callback).Run(
-        NIGORI, DirectoryDataTypeController::GetAllNodesForTypeFromDirectory(
-                    NIGORI, user_share_.directory.get()));
+        NIGORI, GetNigoriNodeFromDirectory(user_share_.directory.get()));
   }
 }
 

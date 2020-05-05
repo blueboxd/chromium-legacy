@@ -192,6 +192,61 @@ public class MultiWindowUtils implements ActivityStateListener {
     }
 
     /**
+     * Determines the name of an activity from its {@link AppTask}.
+     * @param task The AppTask to get the name of.
+     */
+    public static String getActivityNameFromTask(AppTask task) {
+        if (task.getTaskInfo() == null || task.getTaskInfo().baseActivity == null) return "";
+
+        String baseActivity = task.getTaskInfo().baseActivity.getClassName();
+        // Contrary to the documentation task.getTaskInfo().baseActivity for the .LauncherMain
+        // activity alias is the alias itself, and not the implementation. Filed b/66729258;
+        // for now translate the alias manually.
+        if (TextUtils.equals(baseActivity, ChromeTabbedActivity.MAIN_LAUNCHER_ACTIVITY_NAME)) {
+            baseActivity = ChromeTabbedActivity.class.getName();
+        }
+        return baseActivity;
+    }
+
+    /**
+     * Determines if multiple instances of Chrome are running.
+     * @param context The current Context, used to retrieve the ActivityManager system service.
+     * @return True if multiple instances of Chrome are running.
+     */
+    public boolean areMultipleChromeInstancesRunning(Context context) {
+        // Exit early if multi-window isn't supported.
+        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.M) return false;
+
+        // Check if both tasks are running.
+        boolean tabbedTaskRunning = false;
+        boolean tabbed2TaskRunning = false;
+        for (Activity activity : ApplicationStatus.getRunningActivities()) {
+            if (activity.getClass().equals(ChromeTabbedActivity.class)) {
+                tabbedTaskRunning = true;
+            } else if (activity.getClass().equals(ChromeTabbedActivity2.class)) {
+                tabbed2TaskRunning = true;
+            }
+        }
+        if (tabbedTaskRunning && tabbed2TaskRunning) return true;
+
+        // If a task isn't running check if it is in recents since another instance could be
+        // recovered from there.
+        ActivityManager activityManager =
+                (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
+        List<AppTask> appTasks = activityManager.getAppTasks();
+        for (AppTask task : appTasks) {
+            String baseActivity = getActivityNameFromTask(task);
+
+            if (TextUtils.equals(baseActivity, ChromeTabbedActivity.class.getName())) {
+                tabbedTaskRunning = true;
+            } else if (TextUtils.equals(baseActivity, ChromeTabbedActivity2.class.getName())) {
+                tabbed2TaskRunning = true;
+            }
+        }
+        return tabbedTaskRunning && tabbed2TaskRunning;
+    }
+
+    /**
      * Determines the correct ChromeTabbedActivity class to use for an incoming intent.
      * @param intent The incoming intent that is starting ChromeTabbedActivity.
      * @param context The current Context, used to retrieve the ActivityManager system service.
@@ -284,12 +339,7 @@ public class MultiWindowUtils implements ActivityStateListener {
                 context.getSystemService(Context.ACTIVITY_SERVICE);
         List<AppTask> appTasks = activityManager.getAppTasks();
         for (AppTask task : appTasks) {
-            if (task.getTaskInfo() == null || task.getTaskInfo().baseActivity == null) continue;
-            String baseActivity = task.getTaskInfo().baseActivity.getClassName();
-
-            if (TextUtils.equals(baseActivity, ChromeTabbedActivity.MAIN_LAUNCHER_ACTIVITY_NAME)) {
-                baseActivity = ChromeTabbedActivity.class.getName();
-            }
+            String baseActivity = getActivityNameFromTask(task);
 
             if (TextUtils.equals(baseActivity, className)) return true;
         }

@@ -14,10 +14,12 @@
 #include "base/strings/stringprintf.h"
 
 #include "base/strings/utf_string_conversions.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/scroll_view.h"
+#include "ui/views/examples/grit/views_examples_resources.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/layout/grid_layout.h"
 
@@ -169,7 +171,8 @@ std::unique_ptr<View> CreateAllColorsView() {
 
 }  // namespace
 
-NativeThemeExample::NativeThemeExample() : ExampleBase("Native Theme Colors") {}
+NativeThemeExample::NativeThemeExample()
+    : ExampleBase(l10n_util::GetStringUTF8(IDS_THEME_SELECT_LABEL).c_str()) {}
 
 NativeThemeExample::~NativeThemeExample() = default;
 

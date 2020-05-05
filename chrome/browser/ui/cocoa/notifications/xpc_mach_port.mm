@@ -4,7 +4,7 @@
 
 #import "chrome/browser/ui/cocoa/notifications/xpc_mach_port.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/mac/scoped_nsobject.h"
 
 @class OS_xpc_mach_send;

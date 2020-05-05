@@ -83,6 +83,12 @@ class RASTER_EXPORT RasterImplementationGLES : public RasterInterface {
                                 const gpu::Mailbox& u_plane_mailbox,
                                 const gpu::Mailbox& v_plane_mailbox) override;
 
+  void ConvertNV12MailboxesToRGB(
+      const gpu::Mailbox& dest_mailbox,
+      SkYUVColorSpace planes_yuv_color_space,
+      const gpu::Mailbox& y_plane_mailbox,
+      const gpu::Mailbox& uv_planes_mailbox) override;
+
   // OOP-Raster
   void BeginRasterCHROMIUM(GLuint sk_color,
                            GLuint msaa_sample_count,

@@ -1976,6 +1976,44 @@ TEST_F(WorkspaceWindowResizerTest, DraggingThresholdForSnappedAndMaximized) {
   EXPECT_TRUE(window_state->IsNormalStateType());
 }
 
+// Tests dragging a window and snapping it to maximized state.
+TEST_F(WorkspaceWindowResizerTest, DragToSnapMaximize) {
+  UpdateDisplay("800x648");
+  const gfx::Rect restore_bounds(30, 30, 300, 300);
+  window_->SetBounds(restore_bounds);
+  window_->SetProperty(aura::client::kResizeBehaviorKey,
+                       aura::client::kResizeBehaviorCanResize |
+                           aura::client::kResizeBehaviorCanMaximize);
+
+  // Drag to a top region of the display and release. The window should be
+  // maximized.
+  std::unique_ptr<WindowResizer> resizer(
+      CreateResizerForTest(window_.get(), gfx::Point(), HTCAPTION));
+  resizer->Drag(gfx::PointF(400.f, 400.f), 0);
+  resizer->Drag(gfx::PointF(400.f, 2.f), 0);
+  resizer->CompleteDrag();
+  auto* window_state = WindowState::Get(window_.get());
+  ASSERT_TRUE(window_state->IsMaximized());
+
+  // Tests that dragging a maximized window and snapping it back to maximized
+  // state works as expected.
+  resizer.reset();
+  resizer.reset(CreateResizerForTest(window_.get(), gfx::Point(), HTCAPTION));
+
+  // First drag to "unmaximize". The window is still maximized at this point,
+  // but the bounds have shrunk to make it look restored.
+  resizer->Drag(gfx::PointF(200.f, 200.f), 0);
+  EXPECT_TRUE(window_state->IsMaximized());
+  EXPECT_EQ(gfx::Size(300, 300), window_->bounds().size());
+
+  // End the drag in the snap to maximize region. The window should be maximized
+  // and sized to fit the whole work area.
+  resizer->Drag(gfx::PointF(200.f, 2.f), 0);
+  resizer->CompleteDrag();
+  EXPECT_TRUE(window_state->IsMaximized());
+  EXPECT_EQ(gfx::Rect(800, 600), window_->bounds());
+}
+
 using MultiDisplayWorkspaceWindowResizerTest = AshTestBase;
 
 // Makes sure that window drag magnetism still works when a window is dragged

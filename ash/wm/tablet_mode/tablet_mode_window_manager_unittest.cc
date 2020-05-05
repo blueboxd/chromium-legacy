@@ -1598,9 +1598,31 @@ TEST_P(TabletModeWindowManagerTest, DontMaximizeTransientChild) {
   EXPECT_EQ(rect.size(), child->bounds().size());
 }
 
+class TabletModeWindowManagerWithoutClamshellSplitViewTest
+    : public TabletModeWindowManagerTest {
+ public:
+  TabletModeWindowManagerWithoutClamshellSplitViewTest() = default;
+  TabletModeWindowManagerWithoutClamshellSplitViewTest(
+      const TabletModeWindowManagerWithoutClamshellSplitViewTest&) = delete;
+  TabletModeWindowManagerWithoutClamshellSplitViewTest& operator=(
+      const TabletModeWindowManagerWithoutClamshellSplitViewTest&) = delete;
+  ~TabletModeWindowManagerWithoutClamshellSplitViewTest() override = default;
+
+  // AshTestBase:
+  void SetUp() override {
+    scoped_feature_list_.InitAndDisableFeature(
+        features::kDragToSnapInClamshellMode);
+    TabletModeWindowManagerTest::SetUp();
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
 // Test clamshell mode <-> tablet mode transition if clamshell splitscreen is
 // not enabled.
-TEST_P(TabletModeWindowManagerTest, ClamshellTabletTransitionTest) {
+TEST_P(TabletModeWindowManagerWithoutClamshellSplitViewTest,
+       ClamshellTabletTransitionTest) {
   gfx::Rect rect(10, 10, 200, 50);
   std::unique_ptr<aura::Window> window(
       CreateWindow(aura::client::WINDOW_TYPE_NORMAL, rect));
@@ -1905,6 +1927,9 @@ TEST_P(TabletModeWindowManagerWithClamshellSplitViewTest,
 }
 
 INSTANTIATE_TEST_SUITE_P(All, TabletModeWindowManagerTest, testing::Bool());
+INSTANTIATE_TEST_SUITE_P(All,
+                         TabletModeWindowManagerWithoutClamshellSplitViewTest,
+                         testing::Bool());
 INSTANTIATE_TEST_SUITE_P(All,
                          TabletModeWindowManagerWithClamshellSplitViewTest,
                          testing::Bool());

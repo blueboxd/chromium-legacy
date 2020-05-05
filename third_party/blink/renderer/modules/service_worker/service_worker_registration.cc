@@ -132,7 +132,7 @@ ServiceWorkerRegistration* ServiceWorkerRegistration::Take(
     ScriptPromiseResolver* resolver,
     WebServiceWorkerRegistrationObjectInfo info) {
   return ServiceWorkerContainer::From(
-             To<LocalDOMWindow>(resolver->GetExecutionContext())->document())
+             *To<LocalDOMWindow>(resolver->GetExecutionContext()))
       ->GetOrCreateServiceWorkerRegistration(std::move(info));
 }
 

@@ -284,11 +284,13 @@ int GetInterfaceNumber(const base::string16& instance_id) {
   return interface_number;
 }
 
-base::string16 GetWinUsbDevicePath(const base::string16& instance_id) {
+UsbDeviceWin::FunctionInfo GetFunctionInfo(const base::string16& instance_id) {
+  UsbDeviceWin::FunctionInfo info;
+
   ScopedDevInfo dev_info(SetupDiCreateDeviceInfoList(nullptr, nullptr));
   if (!dev_info.is_valid()) {
     USB_PLOG(ERROR) << "SetupDiCreateDeviceInfoList";
-    return base::string16();
+    return info;
   }
 
   SP_DEVINFO_DATA dev_info_data = {};
@@ -296,17 +298,17 @@ base::string16 GetWinUsbDevicePath(const base::string16& instance_id) {
   if (!SetupDiOpenDeviceInfo(dev_info.get(), instance_id.c_str(), nullptr, 0,
                              &dev_info_data)) {
     USB_PLOG(ERROR) << "SetupDiOpenDeviceInfo";
-    return base::string16();
+    return info;
   }
 
-  base::string16 service_name = GetServiceName(dev_info.get(), &dev_info_data);
-  if (service_name.empty()) {
+  info.driver = GetServiceName(dev_info.get(), &dev_info_data);
+  if (info.driver.empty()) {
     USB_PLOG(ERROR) << "Could not get child device's service name";
-    return base::string16();
+    return info;
   }
 
-  if (!base::EqualsCaseInsensitiveASCII(service_name, L"winusb"))
-    return base::string16();
+  if (!base::EqualsCaseInsensitiveASCII(info.driver, L"winusb"))
+    return info;
 
   // There is no standard device interface GUID for USB functions and so we
   // must discover the set of GUIDs that have been set in the registry by
@@ -316,7 +318,7 @@ base::string16 GetWinUsbDevicePath(const base::string16& instance_id) {
                                   DICS_FLAG_GLOBAL, 0, DIREG_DEV, KEY_READ);
   if (key == INVALID_HANDLE_VALUE) {
     USB_PLOG(ERROR) << "Could not open device registry key";
-    return base::string16();
+    return info;
   }
   base::win::RegKey scoped_key(key);
 
@@ -326,7 +328,7 @@ base::string16 GetWinUsbDevicePath(const base::string16& instance_id) {
   if (result != ERROR_SUCCESS) {
     USB_LOG(ERROR) << "Could not read device interface GUIDs: "
                    << logging::SystemErrorCodeToString(result);
-    return base::string16();
+    return info;
   }
 
   for (const auto& guid_string : device_interface_guids) {
@@ -337,12 +339,12 @@ base::string16 GetWinUsbDevicePath(const base::string16& instance_id) {
       continue;
     }
 
-    base::string16 device_path = GetDevicePath(instance_id, guid);
-    if (!device_path.empty())
-      return device_path;
+    info.path = GetDevicePath(instance_id, guid);
+    if (!info.path.empty())
+      return info;
   }
 
-  return base::string16();
+  return info;
 }
 
 }  // namespace
@@ -427,7 +429,7 @@ class UsbServiceWin::BlockingTaskRunnerHelper {
       return;
     }
 
-    std::vector<std::pair<int, base::string16>> function_paths;
+    std::vector<std::pair<int, UsbDeviceWin::FunctionInfo>> functions;
     if (base::EqualsCaseInsensitiveASCII(service_name, L"usbccgp")) {
       // For composite devices Windows loads the usbccgp driver, which creates
       // child device nodes for each of the device functions. It is these device
@@ -436,14 +438,17 @@ class UsbServiceWin::BlockingTaskRunnerHelper {
       for (const base::string16& instance_id : child_instance_ids) {
         int interface_number = GetInterfaceNumber(instance_id);
         if (interface_number != -1) {
-          function_paths.emplace_back(interface_number,
-                                      GetWinUsbDevicePath(instance_id));
+          functions.emplace_back(interface_number,
+                                 GetFunctionInfo(instance_id));
         }
       }
     } else if (base::EqualsCaseInsensitiveASCII(service_name, L"winusb")) {
       // A non-composite device has a single device node for all interfaces as
       // it only has a single function.
-      function_paths.emplace_back(0, device_path);
+      UsbDeviceWin::FunctionInfo info;
+      info.driver = service_name;
+      info.path = device_path;
+      functions.emplace_back(/*interface_number=*/0, info);
     }
 
     base::string16& hub_path = hub_paths_[parent_instance_id];
@@ -456,8 +461,8 @@ class UsbServiceWin::BlockingTaskRunnerHelper {
     service_task_runner_->PostTask(
         FROM_HERE, base::BindOnce(&UsbServiceWin::CreateDeviceObject, service_,
                                   std::move(device_path), std::move(hub_path),
-                                  std::move(function_paths), bus_number,
-                                  port_number, std::move(service_name)));
+                                  std::move(functions), bus_number, port_number,
+                                  std::move(service_name)));
   }
 
   void EnumeratePotentialFunction(
@@ -475,9 +480,6 @@ class UsbServiceWin::BlockingTaskRunnerHelper {
       return;
     }
 
-    if (!base::EqualsCaseInsensitiveASCII(service_name, L"winusb"))
-      return;
-
     int interface_number = GetInterfaceNumber(instance_id);
     if (interface_number == -1)
       return;
@@ -487,10 +489,14 @@ class UsbServiceWin::BlockingTaskRunnerHelper {
     if (parent_path.empty())
       return;
 
+    UsbDeviceWin::FunctionInfo info;
+    info.driver = service_name;
+    info.path = device_path;
+
     service_task_runner_->PostTask(
-        FROM_HERE, base::BindOnce(&UsbServiceWin::UpdateFunctionPath, service_,
-                                  std::move(parent_path), interface_number,
-                                  std::move(device_path)));
+        FROM_HERE,
+        base::BindOnce(&UsbServiceWin::UpdateFunction, service_,
+                       std::move(parent_path), interface_number, info));
   }
 
  private:
@@ -575,7 +581,7 @@ void UsbServiceWin::HelperStarted() {
 void UsbServiceWin::CreateDeviceObject(
     const base::string16& device_path,
     const base::string16& hub_path,
-    const base::flat_map<int, base::string16>& function_paths,
+    const base::flat_map<int, UsbDeviceWin::FunctionInfo>& functions,
     uint32_t bus_number,
     uint32_t port_number,
     const base::string16& driver_name) {
@@ -585,17 +591,17 @@ void UsbServiceWin::CreateDeviceObject(
   if (!enumeration_ready())
     ++first_enumeration_countdown_;
 
-  auto device =
-      base::MakeRefCounted<UsbDeviceWin>(device_path, hub_path, function_paths,
-                                         bus_number, port_number, driver_name);
+  auto device = base::MakeRefCounted<UsbDeviceWin>(
+      device_path, hub_path, functions, bus_number, port_number, driver_name);
   devices_by_path_[device->device_path()] = device;
   device->ReadDescriptors(base::BindOnce(&UsbServiceWin::DeviceReady,
                                          weak_factory_.GetWeakPtr(), device));
 }
 
-void UsbServiceWin::UpdateFunctionPath(const base::string16& device_path,
-                                       int interface_number,
-                                       const base::string16& function_path) {
+void UsbServiceWin::UpdateFunction(
+    const base::string16& device_path,
+    int interface_number,
+    const UsbDeviceWin::FunctionInfo& function_info) {
   auto it = devices_by_path_.find(device_path);
   if (it == devices_by_path_.end())
     return;
@@ -603,8 +609,9 @@ void UsbServiceWin::UpdateFunctionPath(const base::string16& device_path,
 
   USB_LOG(EVENT) << "USB device function updated: guid=" << device->guid()
                  << ", interface_number=" << interface_number << ", path=\""
-                 << device_path << "\"";
-  device->UpdateFunctionPath(interface_number, function_path);
+                 << function_info.path << "\", driver=\""
+                 << function_info.driver << "\"";
+  device->UpdateFunction(interface_number, function_info);
 }
 
 void UsbServiceWin::DeviceReady(scoped_refptr<UsbDeviceWin> device,

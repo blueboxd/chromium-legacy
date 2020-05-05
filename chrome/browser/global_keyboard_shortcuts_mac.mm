@@ -7,7 +7,7 @@
 #import <AppKit/AppKit.h>
 #include <Carbon/Carbon.h>
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/mac/foundation_util.h"
 #include "base/no_destructor.h"
 #include "base/stl_util.h"

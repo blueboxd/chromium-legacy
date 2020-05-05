@@ -66,8 +66,7 @@ Polymer({
   _template: html`{__html_template__}`,
 
   behaviors: [
-    MainPageBehavior,
-    RouteObserverBehavior,
+    MainPageBehavior, RouteObserverBehavior,
     // <if expr="chromeos">
     PrefsBehavior,
     // </if>

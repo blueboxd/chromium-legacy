@@ -93,11 +93,7 @@ base::string16 GetUsernameFromSuggestion(const base::string16& suggestion) {
 // Returns a string representing the icon of either the account store or the
 // local password store.
 std::string CreateStoreIcon(bool for_account_store) {
-  return for_account_store &&
-                 base::FeatureList::IsEnabled(
-                     password_manager::features::kEnablePasswordsAccountStorage)
-             ? "google"
-             : std::string();
+  return for_account_store ? "google" : std::string();
 }
 
 // If |field_suggestion| matches |field_content|, creates a Suggestion out of it
@@ -222,7 +218,7 @@ autofill::Suggestion CreateEntryToOptInToAccountStorageThenFill() {
       l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_OPT_INTO_ACCOUNT_STORE));
   suggestion.frontend_id =
       autofill::POPUP_ITEM_ID_PASSWORD_ACCOUNT_STORAGE_OPT_IN;
-  suggestion.icon = CreateStoreIcon(/*uses_account_store=*/true);
+  suggestion.icon = "google";
   return suggestion;
 }
 
@@ -232,7 +228,7 @@ autofill::Suggestion CreateEntryToOptInToAccountStorageThenGenerate() {
       IDS_PASSWORD_MANAGER_OPT_INTO_ACCOUNT_STORED_GENERATION));
   suggestion.frontend_id =
       autofill::POPUP_ITEM_ID_PASSWORD_ACCOUNT_STORAGE_OPT_IN_AND_GENERATE;
-  suggestion.icon = CreateStoreIcon(/*uses_account_store=*/true);
+  suggestion.icon = "google";
   return suggestion;
 }
 
@@ -242,7 +238,7 @@ autofill::Suggestion CreateEntryToReSignin() {
       l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_RE_SIGNIN_ACCOUNT_STORE));
   suggestion.frontend_id =
       autofill::POPUP_ITEM_ID_PASSWORD_ACCOUNT_STORAGE_RE_SIGNIN;
-  suggestion.icon = CreateStoreIcon(/*uses_account_store=*/true);
+  suggestion.icon = "google";
   return suggestion;
 }
 

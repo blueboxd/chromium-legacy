@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "ui/events/blink/prediction/linear_predictor.h"
+#include "third_party/blink/public/common/features.h"
 #include "ui/events/blink/prediction/predictor_factory.h"
 
 #include <algorithm>
@@ -17,8 +18,8 @@ LinearPredictor::~LinearPredictor() {}
 
 const char* LinearPredictor::GetName() const {
   return equation_order_ == EquationOrder::kFirstOrder
-             ? input_prediction::kScrollPredictorNameLinearFirst
-             : input_prediction::kScrollPredictorNameLinearSecond;
+             ? blink::features::kScrollPredictorNameLinearFirst
+             : blink::features::kScrollPredictorNameLinearSecond;
 }
 
 void LinearPredictor::Reset() {

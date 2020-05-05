@@ -295,6 +295,37 @@ std::vector<ConversionReport> ConversionStorageSql::GetConversionsToReport(
   return conversions;
 }
 
+std::vector<StorableImpression> ConversionStorageSql::GetActiveImpressions() {
+  const char kGetImpressionsSql[] =
+      "SELECT impression_data, impression_origin, conversion_origin, "
+      "reporting_origin, impression_time, expiry_time, impression_id "
+      "FROM impressions WHERE active = 1 AND expiry_time > ?";
+  sql::Statement statement(
+      db_.GetCachedStatement(SQL_FROM_HERE, kGetImpressionsSql));
+  statement.BindInt64(0, SerializeTime(clock_->Now()));
+
+  std::vector<StorableImpression> impressions;
+  while (statement.Step()) {
+    std::string impression_data = statement.ColumnString(0);
+    url::Origin impression_origin =
+        DeserializeOrigin(statement.ColumnString(1));
+    url::Origin conversion_origin =
+        DeserializeOrigin(statement.ColumnString(2));
+    url::Origin reporting_origin = DeserializeOrigin(statement.ColumnString(3));
+    base::Time impression_time = DeserializeTime(statement.ColumnInt64(4));
+    base::Time expiry_time = DeserializeTime(statement.ColumnInt64(5));
+    int64_t impression_id = statement.ColumnInt64(6);
+
+    StorableImpression impression(impression_data, impression_origin,
+                                  conversion_origin, reporting_origin,
+                                  impression_time, expiry_time, impression_id);
+    impressions.push_back(std::move(impression));
+  }
+  if (!statement.Succeeded())
+    return {};
+  return impressions;
+}
+
 int ConversionStorageSql::DeleteExpiredImpressions() {
   // Delete all impressions that have no associated conversions and are past
   // their expiry time. Optimized by |kImpressionExpiryIndexSql|.

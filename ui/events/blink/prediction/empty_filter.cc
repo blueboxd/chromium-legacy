@@ -3,7 +3,8 @@
 // found in the LICENSE file.
 
 #include "ui/events/blink/prediction/empty_filter.h"
-#include "ui/events/blink/prediction/filter_factory.h"
+
+#include "third_party/blink/public/common/features.h"
 
 namespace ui {
 
@@ -16,7 +17,7 @@ bool EmptyFilter::Filter(const base::TimeTicks& timestamp,
 }
 
 const char* EmptyFilter::GetName() const {
-  return input_prediction::kFilterNameEmpty;
+  return blink::features::kFilterNameEmpty;
 }
 
 InputFilter* EmptyFilter::Clone() {

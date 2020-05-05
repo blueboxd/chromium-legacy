@@ -108,11 +108,10 @@ void HostStatusProviderImpl::CheckForUpdatedStatusAndNotifyIfChanged() {
                   << "changed. New status: "
                   << current_status_and_device.host_status() << ", Old status: "
                   << current_status_and_device_.host_status()
-                  << ", Host device "
-                  << "ID: "
+                  << ", Host device: "
                   << (current_status_and_device.host_device()
                           ? current_status_and_device.host_device()
-                                ->GetTruncatedDeviceIdForLogs()
+                                ->GetInstanceIdDeviceIdForLogs()
                           : "[no host]");
 
   current_status_and_device_ = current_status_and_device;

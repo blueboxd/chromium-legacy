@@ -83,11 +83,15 @@ class UsbDeviceHandleWin : public UsbDeviceHandle {
 
   ~UsbDeviceHandleWin() override;
 
-  void UpdateFunctionPath(int interface_number,
-                          const base::string16& function_path);
+  void UpdateFunction(int interface_number,
+                      const base::string16& function_driver,
+                      const base::string16& function_path);
 
  private:
+  struct Interface;
   class Request;
+
+  using OpenInterfaceCallback = base::OnceCallback<void(Interface*)>;
 
   struct Interface {
     Interface();
@@ -101,12 +105,16 @@ class UsbDeviceHandleWin : public UsbDeviceHandle {
     uint8_t first_interface;
 
     // In a composite device each function has its own driver and path to open.
+    base::string16 function_driver;
     base::string16 function_path;
     base::win::ScopedHandle function_handle;
 
     ScopedWinUsbHandle handle;
     bool claimed = false;
     uint8_t alternate_setting = 0;
+
+    // Closures to execute when |function_path| has been populated.
+    std::vector<OpenInterfaceCallback> ready_callbacks;
 
     DISALLOW_COPY_AND_ASSIGN(Interface);
   };
@@ -116,18 +124,33 @@ class UsbDeviceHandleWin : public UsbDeviceHandle {
     mojom::UsbTransferType type;
   };
 
-  bool OpenInterfaceHandle(Interface* interface);
+  void OpenInterfaceHandle(Interface* interface,
+                           OpenInterfaceCallback callback);
+  void OnFunctionAvailable(OpenInterfaceCallback callback,
+                           Interface* interface);
+  void OnFirstInterfaceOpened(int interface_number,
+                              OpenInterfaceCallback callback,
+                              Interface* first_interface);
+  void OnInterfaceClaimed(ResultCallback callback, Interface* interface);
   void RegisterEndpoints(const CombinedInterfaceInfo& interface);
   void UnregisterEndpoints(const CombinedInterfaceInfo& interface);
-  Interface* GetInterfaceForControlTransfer(
+  void OpenInterfaceForControlTransfer(
       mojom::UsbControlTransferRecipient recipient,
-      uint16_t index);
-  void SetInterfaceAlternateSettingBlocking(uint8_t interface_number,
-                                            uint8_t alternate_setting,
-                                            const ResultCallback& callback);
-  void SetInterfaceAlternateSettingComplete(uint8_t interface_number,
-                                            uint8_t alternate_setting,
-                                            const ResultCallback& callback);
+      uint16_t index,
+      OpenInterfaceCallback callback);
+  void OnFunctionAvailableForEp0(OpenInterfaceCallback callback,
+                                 Interface* interface);
+  void OnInterfaceOpenedForControlTransfer(
+      mojom::UsbTransferDirection direction,
+      mojom::UsbControlTransferType request_type,
+      mojom::UsbControlTransferRecipient recipient,
+      uint8_t request,
+      uint16_t value,
+      uint16_t index,
+      scoped_refptr<base::RefCountedBytes> buffer,
+      unsigned int timeout,
+      TransferCallback callback,
+      Interface* interface);
   Request* MakeRequest(Interface* interface);
   std::unique_ptr<Request> UnlinkRequest(Request* request);
   void GotNodeConnectionInformation(TransferCallback callback,
@@ -151,6 +174,7 @@ class UsbDeviceHandleWin : public UsbDeviceHandle {
   void ReportIsochronousError(const std::vector<uint32_t>& packet_lengths,
                               IsochronousTransferCallback callback,
                               mojom::UsbTransferStatus status);
+  bool AllFunctionsEnumerated() const;
 
   SEQUENCE_CHECKER(sequence_checker_);
 
@@ -165,6 +189,9 @@ class UsbDeviceHandleWin : public UsbDeviceHandle {
   std::map<uint8_t, Interface> interfaces_;
   std::map<uint8_t, Endpoint> endpoints_;
   std::map<Request*, std::unique_ptr<Request>> requests_;
+
+  // Control transfers which are waiting for a function handle to be ready.
+  std::vector<OpenInterfaceCallback> ep0_ready_callbacks_;
 
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;

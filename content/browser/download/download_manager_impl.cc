@@ -456,6 +456,14 @@ bool DownloadManagerImpl::ShouldOpenFileBasedOnExtension(
   return delegate_->ShouldOpenFileBasedOnExtension(path);
 }
 
+bool DownloadManagerImpl::ShouldOpenFileByPolicyBasedOnExtension(
+    const base::FilePath& path) {
+  if (!delegate_)
+    return false;
+
+  return delegate_->ShouldOpenFileByPolicyBasedOnExtension(path);
+}
+
 bool DownloadManagerImpl::ShouldOpenDownload(
     download::DownloadItemImpl* item,
     ShouldOpenDownloadCallback callback) {

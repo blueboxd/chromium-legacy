@@ -139,6 +139,27 @@ TEST(DownloadPrefsTest, AutoOpenSetByPolicy) {
   DownloadPrefs prefs(&profile);
 
   EXPECT_TRUE(prefs.IsAutoOpenEnabledBasedOnExtension(kBasicFilePath));
+  EXPECT_TRUE(prefs.IsAutoOpenByPolicyBasedOnExtension(kBasicFilePath));
+}
+
+TEST(DownloadPrefsTest, IsAutoOpenByPolicy) {
+  const base::FilePath kFilePathType1(
+      FILE_PATH_LITERAL("/good/basic-path.txt"));
+  const base::FilePath kFilePathType2(
+      FILE_PATH_LITERAL("/good/basic-path.exe"));
+
+  content::BrowserTaskEnvironment task_environment_;
+  TestingProfile profile;
+  ListPrefUpdate update(profile.GetPrefs(),
+                        prefs::kDownloadExtensionsToOpenByPolicy);
+  update->AppendString("exe");
+  DownloadPrefs prefs(&profile);
+  EXPECT_TRUE(prefs.EnableAutoOpenByUserBasedOnExtension(kFilePathType1));
+
+  EXPECT_TRUE(prefs.IsAutoOpenEnabledBasedOnExtension(kFilePathType1));
+  EXPECT_TRUE(prefs.IsAutoOpenEnabledBasedOnExtension(kFilePathType2));
+  EXPECT_FALSE(prefs.IsAutoOpenByPolicyBasedOnExtension(kFilePathType1));
+  EXPECT_TRUE(prefs.IsAutoOpenByPolicyBasedOnExtension(kFilePathType2));
 }
 
 TEST(DownloadPrefsTest, AutoOpenSetByPolicyDangerousType) {
@@ -156,6 +177,7 @@ TEST(DownloadPrefsTest, AutoOpenSetByPolicyDangerousType) {
   // still be set by policy.
   EXPECT_FALSE(prefs.EnableAutoOpenByUserBasedOnExtension(kDangerousFilePath));
   EXPECT_TRUE(prefs.IsAutoOpenEnabledBasedOnExtension(kDangerousFilePath));
+  EXPECT_TRUE(prefs.IsAutoOpenByPolicyBasedOnExtension(kDangerousFilePath));
 }
 
 TEST(DownloadPrefsTest, AutoOpenSetByPolicyDynamicUpdates) {

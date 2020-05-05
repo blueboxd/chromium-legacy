@@ -10,23 +10,6 @@
 
 namespace features {
 
-// Enables resampling GestureScroll events on compositor thread.
-COMPONENT_EXPORT(BLINK_FEATURES)
-extern const base::Feature kResamplingScrollEvents;
-
-// Enables filtering of predicted scroll events on compositor thread.
-COMPONENT_EXPORT(BLINK_FEATURES)
-extern const base::Feature kFilteringScrollPrediction;
-
-// Enables changing the influence of acceleration based on change of direction.
-COMPONENT_EXPORT(BLINK_FEATURES)
-extern const base::Feature kKalmanHeuristics;
-
-// Enables discarding the prediction if the predicted direction is opposite from
-// the current direction.
-COMPONENT_EXPORT(BLINK_FEATURES)
-extern const base::Feature kKalmanDirectionCutOff;
-
 // This feature allows native ET_MOUSE_EXIT events to be passed
 // through to blink as mouse leave events. Traditionally these events were
 // converted to mouse move events due to a number of inconsistencies on
@@ -39,29 +22,6 @@ extern const base::Feature kSendMouseLeaveEvents;
 COMPONENT_EXPORT(BLINK_FEATURES)
 extern const base::Feature kDontSendKeyEventsToJavascript;
 
-// Skips the browser touch event filter, ensuring that events that reach the
-// queue and would otherwise be filtered out will instead be passed onto the
-// renderer compositor process as long as the page hasn't timed out. If
-// skip_filtering_process is browser_and_renderer, also skip the renderer cc
-// touch event filter, ensuring that events will be passed onto the renderer
-// main thread. Which event types will be always forwarded is controlled by the
-// "type" FeatureParam,
-// which can be either "discrete" (default) or "all".
-COMPONENT_EXPORT(BLINK_FEATURES)
-extern const base::Feature kSkipTouchEventFilter;
-COMPONENT_EXPORT(BLINK_FEATURES)
-extern const char kSkipTouchEventFilterTypeParamName[];
-COMPONENT_EXPORT(BLINK_FEATURES)
-extern const char kSkipTouchEventFilterTypeParamValueDiscrete[];
-COMPONENT_EXPORT(BLINK_FEATURES)
-extern const char kSkipTouchEventFilterTypeParamValueAll[];
-COMPONENT_EXPORT(BLINK_FEATURES)
-extern const char kSkipTouchEventFilterFilteringProcessParamName[];
-COMPONENT_EXPORT(BLINK_FEATURES)
-extern const char kSkipTouchEventFilterFilteringProcessParamValueBrowser[];
-COMPONENT_EXPORT(BLINK_FEATURES)
-extern const char
-    kSkipTouchEventFilterFilteringProcessParamValueBrowserAndRenderer[];
 }
 
 #endif  // UI_EVENTS_BLINK_BLINK_FEATURES_H_

@@ -271,6 +271,187 @@ mojom("interfaces") {
   cpp_typemaps = shared_cpp_typemaps
   blink_cpp_typemaps = shared_cpp_typemaps
 
+  cpp_typemaps += [
+    {
+      types = [
+        {
+          mojom = "gpu.mojom.Capabilities"
+          cpp = "::gpu::Capabilities"
+        },
+      ]
+      traits_headers = [ "gpu_command_buffer_traits.h" ]
+      traits_public_deps = [ ":command_buffer_traits" ]
+    },
+    {
+      types = [
+        {
+          mojom = "gpu.mojom.ContextResult"
+          cpp = "::gpu::ContextResult"
+        },
+      ]
+      traits_headers = [ "context_result_mojom_traits.h" ]
+      traits_public_deps = [ "//gpu/command_buffer/common" ]
+    },
+    {
+      types = [
+        {
+          mojom = "gpu.mojom.IntelGpuGeneration"
+          cpp = "::gpu::IntelGpuGeneration"
+        },
+        {
+          mojom = "gpu.mojom.D3D_FEATURE_LEVEL"
+          cpp = "::D3D_FEATURE_LEVEL"
+        },
+        {
+          mojom = "gpu.mojom.DevicePerfInfo"
+          cpp = "::gpu::DevicePerfInfo"
+        },
+      ]
+      traits_sources = [ "device_perf_info_mojom_traits.cc" ]
+      traits_headers = [ "device_perf_info_mojom_traits.h" ]
+    },
+    {
+      types = [
+        {
+          mojom = "gpu.mojom.DxDiagNode"
+          cpp = "::gpu::DxDiagNode"
+        },
+      ]
+      traits_sources = [ "dx_diag_node_mojom_traits.cc" ]
+      traits_headers = [ "dx_diag_node_mojom_traits.h" ]
+    },
+    {
+      types = [
+        {
+          mojom = "gpu.mojom.GpuExtraInfo"
+          cpp = "::gpu::GpuExtraInfo"
+        },
+        {
+          mojom = "gpu.mojom.ANGLEFeature"
+          cpp = "::gpu::ANGLEFeature"
+        },
+      ]
+      traits_sources = [ "gpu_extra_info_mojom_traits.cc" ]
+      traits_headers = [ "gpu_extra_info_mojom_traits.h" ]
+      traits_public_deps = [
+        "//gpu/config",
+        "//ui/gfx/geometry/mojom",
+      ]
+    },
+    {
+      types = [
+        {
+          mojom = "gpu.mojom.GpuFeatureStatus"
+          cpp = "::gpu::GpuFeatureStatus"
+        },
+        {
+          mojom = "gpu.mojom.GpuFeatureInfo"
+          cpp = "::gpu::GpuFeatureInfo"
+        },
+      ]
+      traits_sources = [ "gpu_feature_info_mojom_traits.cc" ]
+      traits_headers = [ "gpu_feature_info_mojom_traits.h" ]
+      traits_public_deps = [
+        "//gpu/config",
+        "//ui/gfx/geometry/mojom",
+      ]
+    },
+    {
+      types = [
+        {
+          mojom = "gpu.mojom.CollectInfoResult"
+          cpp = "::gpu::CollectInfoResult"
+        },
+        {
+          mojom = "gpu.mojom.Dx12VulkanVersionInfo"
+          cpp = "::gpu::Dx12VulkanVersionInfo"
+        },
+        {
+          mojom = "gpu.mojom.OverlayInfo"
+          cpp = "::gpu::OverlayInfo"
+        },
+        {
+          mojom = "gpu.mojom.GpuDevice"
+          cpp = "::gpu::GPUInfo::GPUDevice"
+        },
+        {
+          mojom = "gpu.mojom.GpuInfo"
+          cpp = "::gpu::GPUInfo"
+        },
+        {
+          mojom = "gpu.mojom.VideoCodecProfile"
+          cpp = "::gpu::VideoCodecProfile"
+        },
+        {
+          mojom = "gpu.mojom.VideoDecodeAcceleratorSupportedProfile"
+          cpp = "::gpu::VideoDecodeAcceleratorSupportedProfile"
+        },
+        {
+          mojom = "gpu.mojom.VideoDecodeAcceleratorCapabilities"
+          cpp = "::gpu::VideoDecodeAcceleratorCapabilities"
+        },
+        {
+          mojom = "gpu.mojom.VideoEncodeAcceleratorSupportedProfile"
+          cpp = "::gpu::VideoEncodeAcceleratorSupportedProfile"
+        },
+        {
+          mojom = "gpu.mojom.ImageDecodeAcceleratorSupportedProfile"
+          cpp = "::gpu::ImageDecodeAcceleratorSupportedProfile"
+        },
+      ]
+      traits_sources = [ "gpu_info_mojom_traits.cc" ]
+      traits_headers = [ "gpu_info_mojom_traits.h" ]
+      traits_public_deps = [
+        "//gpu/config",
+        "//ui/gfx/geometry/mojom",
+      ]
+    },
+    {
+      types = [
+        {
+          mojom = "gpu.mojom.GpuPeakMemoryAllocationSource"
+          cpp = "::gpu::GpuPeakMemoryAllocationSource"
+        },
+      ]
+      traits_headers = [ "gpu_peak_memory_mojom_traits.h" ]
+      traits_public_deps = [ ":common" ]
+    },
+    {
+      types = [
+        {
+          mojom = "gpu.mojom.VideoMemoryProcessStats"
+          cpp = "::gpu::VideoMemoryUsageStats::ProcessStats"
+        },
+        {
+          mojom = "gpu.mojom.VideoMemoryUsageStats"
+          cpp = "::gpu::VideoMemoryUsageStats"
+        },
+      ]
+      traits_headers = [ "memory_stats_mojom_traits.h" ]
+    },
+    {
+      types = [
+        {
+          mojom = "gpu.mojom.SurfaceHandle"
+          cpp = "::gpu::SurfaceHandle"
+          copyable_pass_by_value = true
+        },
+      ]
+      traits_headers = [ "surface_handle_mojom_traits.h" ]
+      traits_public_deps = [ "//ui/gfx:native_widget_types" ]
+    },
+    {
+      types = [
+        {
+          mojom = "gpu.mojom.VulkanYCbCrInfo"
+          cpp = "::gpu::VulkanYCbCrInfo"
+          copyable_pass_by_value = true
+        },
+      ]
+      traits_headers = [ "vulkan_ycbcr_info_mojom_traits.h" ]
+    },
+  ]
+
   export_class_attribute_blink = "BLINK_PLATFORM_EXPORT"
   export_define_blink = "BLINK_PLATFORM_IMPLEMENTATION=1"
   export_header_blink = "third_party/blink/public/platform/web_common.h"
@@ -289,6 +470,25 @@ mojom("gpu_preferences_interface") {
   if (use_ozone) {
     enabled_features += [ "use_ozone" ]
   }
+
+  cpp_typemaps = [
+    {
+      types = [
+        {
+          mojom = "gpu.mojom.GpuPreferences"
+          cpp = "::gpu::GpuPreferences"
+        },
+      ]
+      traits_headers = [ "gpu_preferences_mojom_traits.h" ]
+      traits_public_deps = [ "//media:media_buildflags" ]
+      traits_deps = [
+        # We depend on gpu_preferences but since it also depends on its own
+        # mojo bindings, that is handled with an |allowed_circular_includes|
+        # in //gpu/config:gpu_preferences.
+        # "//gpu/config:gpu_preferences",
+      ]
+    },
+  ]
 }
 
 mojom("vulkan_interface") {
@@ -309,6 +509,30 @@ mojom("vulkan_interface") {
   public_deps = [ "//mojo/public/mojom/base" ]
 
   js_generate_struct_deserializers = true
+
+  # This imports the |generated_vulkan_type_mappings| definition used below.
+  import("//gpu/ipc/common/generated_vulkan_type_mappings.gni")
+  cpp_typemaps = [
+    {
+      types = [
+        {
+          mojom = "gpu.mojom.VulkanPhysicalDeviceInfo"
+          cpp = "::gpu::VulkanPhysicalDeviceInfo"
+        },
+        {
+          mojom = "gpu.mojom.VulkanInfo"
+          cpp = "::gpu::VulkanInfo"
+        },
+      ]
+      traits_headers = [ "vulkan_info_mojom_traits.h" ]
+    },
+    {
+      types = generated_vulkan_type_mappings
+      traits_sources = [ "vulkan_types_mojom_traits.cc" ]
+      traits_headers = [ "vulkan_types_mojom_traits.h" ]
+      traits_public_deps = [ ":vulkan_types_mojom_traits" ]
+    },
+  ]
 }
 
 mojom("test_interfaces") {

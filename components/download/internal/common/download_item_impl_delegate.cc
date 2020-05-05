@@ -61,6 +61,11 @@ bool DownloadItemImplDelegate::ShouldOpenFileBasedOnExtension(
   return false;
 }
 
+bool DownloadItemImplDelegate::ShouldOpenFileByPolicyBasedOnExtension(
+    const base::FilePath& path) {
+  return false;
+}
+
 void DownloadItemImplDelegate::CheckForFileRemoval(
     DownloadItemImpl* download_item) {}
 

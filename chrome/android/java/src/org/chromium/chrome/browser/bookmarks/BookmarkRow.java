@@ -20,7 +20,6 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.bookmarks.BookmarkBridge.BookmarkItem;
-import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.components.bookmarks.BookmarkId;
 import org.chromium.components.browser_ui.widget.listmenu.BasicListMenu;
 import org.chromium.components.browser_ui.widget.listmenu.ListMenu;
@@ -44,8 +43,6 @@ abstract class BookmarkRow extends SelectableItemView<BookmarkId> implements Boo
     protected BookmarkDelegate mDelegate;
     protected BookmarkId mBookmarkId;
     private boolean mIsAttachedToWindow;
-    private final boolean mReorderBookmarksEnabled;
-    private final boolean mShowInFolderEnabled;
     private PopupMenuShownListener mPopupListener;
     @Location
     private int mLocation;
@@ -64,27 +61,6 @@ abstract class BookmarkRow extends SelectableItemView<BookmarkId> implements Boo
      */
     public BookmarkRow(Context context, AttributeSet attrs) {
         super(context, attrs);
-        mReorderBookmarksEnabled = ChromeFeatureList.isEnabled(ChromeFeatureList.REORDER_BOOKMARKS);
-        mShowInFolderEnabled = mReorderBookmarksEnabled
-                && ChromeFeatureList.isEnabled(ChromeFeatureList.BOOKMARKS_SHOW_IN_FOLDER);
-    }
-
-    /**
-     * Updates this row for the given {@link BookmarkId}.
-     *
-     * @return The {@link BookmarkItem} corresponding the given {@link BookmarkId}.
-     */
-    // TODO(crbug.com/160194): Clean up these 2 functions after bookmark reordering launches.
-    BookmarkItem setBookmarkId(BookmarkId bookmarkId) {
-        mBookmarkId = bookmarkId;
-        BookmarkItem bookmarkItem = mDelegate.getModel().getBookmarkById(bookmarkId);
-        mMoreIcon.dismiss();
-        mMoreIcon.setContentDescriptionContext(bookmarkItem.getTitle());
-        setChecked(isItemSelected());
-        updateVisualState();
-
-        super.setItem(bookmarkId);
-        return bookmarkItem;
     }
 
     /**
@@ -97,7 +73,15 @@ abstract class BookmarkRow extends SelectableItemView<BookmarkId> implements Boo
      */
     BookmarkItem setBookmarkId(BookmarkId bookmarkId, @Location int location) {
         mLocation = location;
-        return setBookmarkId(bookmarkId);
+        mBookmarkId = bookmarkId;
+        BookmarkItem bookmarkItem = mDelegate.getModel().getBookmarkById(bookmarkId);
+        mMoreIcon.dismiss();
+        mMoreIcon.setContentDescriptionContext(bookmarkItem.getTitle());
+        setChecked(isItemSelected());
+        updateVisualState();
+
+        super.setItem(bookmarkId);
+        return bookmarkItem;
     }
 
     private void updateVisualState() {
@@ -121,7 +105,7 @@ abstract class BookmarkRow extends SelectableItemView<BookmarkId> implements Boo
         mDragHandle.setVisibility(GONE);
         mMoreIcon.setVisibility(GONE);
 
-        if (mReorderBookmarksEnabled && mDelegate.getDragStateDelegate().getDragActive()) {
+        if (mDelegate.getDragStateDelegate().getDragActive()) {
             mDragHandle.setVisibility(bookmarkItem.isMovable() ? VISIBLE : GONE);
             mDragHandle.setEnabled(isItemSelected());
         } else {
@@ -166,22 +150,20 @@ abstract class BookmarkRow extends SelectableItemView<BookmarkId> implements Boo
         listItems.add(buildMenuListItem(R.string.bookmark_item_edit, 0, 0));
         listItems.add(buildMenuListItem(R.string.bookmark_item_move, 0, 0, canMove));
         listItems.add(buildMenuListItem(R.string.bookmark_item_delete, 0, 0));
-        if (mReorderBookmarksEnabled) {
-            if (mDelegate.getCurrentState() == BookmarkUIState.STATE_SEARCHING) {
-                if (mShowInFolderEnabled) {
-                    listItems.add(buildMenuListItem(R.string.bookmark_show_in_folder, 0, 0));
-                }
-            } else if (mDelegate.getCurrentState() == BookmarkUIState.STATE_FOLDER
-                    && mLocation != Location.SOLO && canMove) {
-                // Only add move up / move down buttons if there is more than 1 item
-                if (mLocation != Location.TOP) {
-                    listItems.add(buildMenuListItem(R.string.menu_item_move_up, 0, 0));
-                }
-                if (mLocation != Location.BOTTOM) {
-                    listItems.add(buildMenuListItem(R.string.menu_item_move_down, 0, 0));
-                }
+
+        if (mDelegate.getCurrentState() == BookmarkUIState.STATE_SEARCHING) {
+            listItems.add(buildMenuListItem(R.string.bookmark_show_in_folder, 0, 0));
+        } else if (mDelegate.getCurrentState() == BookmarkUIState.STATE_FOLDER
+                && mLocation != Location.SOLO && canMove) {
+            // Only add move up / move down buttons if there is more than 1 item
+            if (mLocation != Location.TOP) {
+                listItems.add(buildMenuListItem(R.string.menu_item_move_up, 0, 0));
+            }
+            if (mLocation != Location.BOTTOM) {
+                listItems.add(buildMenuListItem(R.string.menu_item_move_down, 0, 0));
             }
         }
+
         return listItems;
     }
 
@@ -294,10 +276,7 @@ abstract class BookmarkRow extends SelectableItemView<BookmarkId> implements Boo
     }
 
     private boolean isDragActive() {
-        if (mReorderBookmarksEnabled) {
-            return mDelegate.getDragStateDelegate().getDragActive();
-        }
-        return false;
+        return mDelegate.getDragStateDelegate().getDragActive();
     }
 
     @Override

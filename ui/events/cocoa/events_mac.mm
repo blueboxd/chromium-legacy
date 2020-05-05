@@ -7,8 +7,9 @@
 #include <Cocoa/Cocoa.h>
 #include <stdint.h>
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #import "base/mac/mac_util.h"
+#include "base/notreached.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "ui/events/base_event_utils.h"

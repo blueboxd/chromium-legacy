@@ -473,6 +473,11 @@ bool FakeDownloadItem::ShouldOpenFileBasedOnExtension() {
   return true;
 }
 
+bool FakeDownloadItem::ShouldOpenFileByPolicyBasedOnExtension() {
+  NOTREACHED();
+  return true;
+}
+
 bool FakeDownloadItem::GetOpenWhenComplete() const {
   NOTREACHED();
   return false;

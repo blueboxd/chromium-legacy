@@ -64,13 +64,6 @@ std::unique_ptr<blink::WebInputEvent> TranslateAndScaleWebInputEvent(
 
 blink::WebInputEvent::Type ToWebMouseEventType(MotionEvent::Action action);
 
-EventType WebEventTypeToEventType(blink::WebInputEvent::Type type);
-
-// Returns the scroll input type if |event| is a scroll event; otherwise,
-// returns base::nullopt.
-base::Optional<ui::ScrollInputType> GetScrollInputTypeForEvent(
-    const blink::WebInputEvent& event);
-
 void SetWebPointerPropertiesFromMotionEventData(
     blink::WebPointerProperties& webPointerProperties,
     int pointer_id,
@@ -105,17 +98,6 @@ inline const blink::WebGestureEvent& ToWebGestureEvent(
 
 blink::WebGestureEvent ScrollBeginFromScrollUpdate(
     const blink::WebGestureEvent& scroll_update);
-
-// Generate a scroll gesture event (begin, update, or end), based on the
-// parameters passed in. Populates the data field of the created
-// WebGestureEvent based on the type.
-std::unique_ptr<blink::WebGestureEvent> GenerateInjectedScrollGesture(
-    blink::WebInputEvent::Type type,
-    base::TimeTicks timestamp,
-    blink::WebGestureDevice device,
-    gfx::PointF position_in_widget,
-    gfx::Vector2dF scroll_delta,
-    ScrollGranularity granularity);
 
 // Returns the position in the widget if it exists for the passed in event type
 gfx::PointF PositionInWidgetFromInputEvent(const blink::WebInputEvent& event);

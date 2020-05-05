@@ -7,12 +7,12 @@
 
 #include <vulkan/vulkan.h>
 
+#include "base/component_export.h"
 #include "base/files/scoped_file.h"
 #include "base/optional.h"
 #include "base/util/type_safety/pass_key.h"
 #include "build/build_config.h"
 #include "gpu/ipc/common/vulkan_ycbcr_info.h"
-#include "gpu/vulkan/vulkan_export.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 
@@ -28,7 +28,7 @@ namespace gpu {
 
 class VulkanDeviceQueue;
 
-class VULKAN_EXPORT VulkanImage {
+class COMPONENT_EXPORT(VULKAN) VulkanImage {
  public:
   explicit VulkanImage(util::PassKey<VulkanImage> pass_key);
   ~VulkanImage();

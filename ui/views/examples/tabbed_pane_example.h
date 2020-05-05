@@ -38,7 +38,7 @@ class VIEWS_EXAMPLES_EXPORT TabbedPaneExample : public ExampleBase,
   // Print the status of the tab in the status area.
   void PrintCurrentStatus();
 
-  void AddButton(const std::string& label);
+  void AddButton(const base::string16& label);
 
   // The tabbed pane to be tested.
   TabbedPane* tabbed_pane_;

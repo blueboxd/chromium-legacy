@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/ui/tab_grid/grid/grid_view_controller.h"
 
+#include "base/feature_list.h"
 #include "base/ios/block_types.h"
 #include "base/logging.h"
 #import "base/mac/foundation_util.h"
@@ -18,6 +19,7 @@
 #import "ios/chrome/browser/ui/tab_grid/grid/grid_item.h"
 #import "ios/chrome/browser/ui/tab_grid/grid/grid_layout.h"
 #import "ios/chrome/browser/ui/tab_grid/transitions/grid_transition_layout.h"
+#include "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/common/ui/util/constraints_ui_util.h"
 
@@ -32,6 +34,11 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
   return [NSIndexPath indexPathForItem:index inSection:0];
 }
 }  // namespace
+
+#if defined(__IPHONE_13_4)
+@interface GridViewController (Pointer) <UIPointerInteractionDelegate>
+@end
+#endif  // defined(__IPHONE_13_4)
 
 @interface GridViewController ()<GridCellDelegate,
                                  UICollectionViewDataSource,
@@ -70,6 +77,14 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
 @property(nonatomic, strong) UICollectionViewLayout* reorderingLayout;
 // YES if, when reordering is enabled, the order of the cells has changed.
 @property(nonatomic, assign) BOOL hasChangedOrder;
+#if defined(__IPHONE_13_4)
+// Cells for which pointer interactions have been added. Pointer interactions
+// should only be added to displayed cells (not transition cells). This is only
+// expected to get as large as the number of reusable cells in memory.
+@property(nonatomic, strong)
+    NSHashTable<UICollectionViewCell*>* pointerInteractionCells API_AVAILABLE(
+        ios(13.4));
+#endif  // defined(__IPHONE_13_4)
 @end
 
 @implementation GridViewController
@@ -123,6 +138,15 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
   // behavior. Multiple selection will not actually be possible since
   // |-collectionView:shouldSelectItemAtIndexPath:| returns NO.
   collectionView.allowsMultipleSelection = YES;
+
+#if defined(__IPHONE_13_4)
+  if (@available(iOS 13.4, *)) {
+    if (base::FeatureList::IsEnabled(kPointerSupport)) {
+      self.pointerInteractionCells =
+          [NSHashTable<UICollectionViewCell*> weakObjectsHashTable];
+    }
+  }
+#endif  // defined(__IPHONE_13_4)
 }
 
 - (void)viewWillAppear:(BOOL)animated {
@@ -286,6 +310,20 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
 
   GridItem* item = self.items[itemIndex];
   [self configureCell:cell withItem:item];
+
+#if defined(__IPHONE_13_4)
+  if (@available(iOS 13.4, *)) {
+    if (base::FeatureList::IsEnabled(kPointerSupport)) {
+      if (![self.pointerInteractionCells containsObject:cell]) {
+        [cell addInteraction:[[UIPointerInteraction alloc]
+                                 initWithDelegate:self]];
+        // |self.pointerInteractionCells| is only expected to get as large as
+        // the number of reusable cells in memory.
+        [self.pointerInteractionCells addObject:cell];
+      }
+    }
+  }
+#endif  // defined(__IPHONE_13_4)
   return cell;
 }
 
@@ -330,6 +368,26 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
   // Tapping on the current selected cell should not deselect it.
   return NO;
 }
+
+#if defined(__IPHONE_13_4)
+#pragma mark UIPointerInteractionDelegate
+
+- (UIPointerRegion*)pointerInteraction:(UIPointerInteraction*)interaction
+                      regionForRequest:(UIPointerRegionRequest*)request
+                         defaultRegion:(UIPointerRegion*)defaultRegion
+    API_AVAILABLE(ios(13.4)) {
+  return defaultRegion;
+}
+
+- (UIPointerStyle*)pointerInteraction:(UIPointerInteraction*)interaction
+                       styleForRegion:(UIPointerRegion*)region
+    API_AVAILABLE(ios(13.4)) {
+  UIPointerLiftEffect* effect = [UIPointerLiftEffect
+      effectWithPreview:[[UITargetedPreview alloc]
+                            initWithView:interaction.view]];
+  return [UIPointerStyle styleWithEffect:effect shape:nil];
+}
+#endif  // defined(__IPHONE_13_4)
 
 #pragma mark - UIScrollViewDelegate
 

@@ -24,6 +24,7 @@
 #include "components/schema_org/schema_org_entity_names.h"
 #include "components/schema_org/schema_org_enums.h"
 #include "components/schema_org/schema_org_property_names.h"
+#include "url/url_constants.h"
 
 namespace media_feeds {
 
@@ -37,6 +38,7 @@ static int constexpr kMaxRatings = 5;
 static int constexpr kMaxGenres = 3;
 static int constexpr kMaxInteractionStatistics = 3;
 static int constexpr kMaxImages = 5;
+static int constexpr kMaxAssociatedOrigins = 5;
 
 // Gets the property of entity with corresponding name. May be null if not found
 // or if the property has no values.
@@ -379,6 +381,56 @@ bool ValidateProvider(
 
   result->display_name = name->values->string_values[0];
   result->logos = std::move(maybe_images.value());
+
+  return true;
+}
+
+// Gets the associated origin URLs and places a duplicate-free set in the result
+// struct.
+bool GetAssociatedOriginURLs(
+    const Property& property,
+    media_history::MediaHistoryKeyedService::MediaFeedFetchResult* result) {
+  if (property.values->url_values.empty())
+    return false;
+
+  for (const auto& url : property.values->url_values) {
+    // Exceeded the maximum allowed number of associated origins.
+    if (result->associated_origins.size() == kMaxAssociatedOrigins)
+      break;
+
+    if (!url.SchemeIs(url::kHttpsScheme))
+      continue;
+
+    result->associated_origins.insert(url::Origin::Create(url));
+  }
+
+  return true;
+}
+
+// Gets the associated origins information and validates against the spec.
+bool GetAssociatedOrigins(
+    const Property& property,
+    media_history::MediaHistoryKeyedService::MediaFeedFetchResult* result) {
+  if (property.values->entity_values.empty())
+    return false;
+
+  auto& entity = property.values->entity_values[0];
+  if (!entity || entity->type != schema_org::entity::kPropertyValue)
+    return false;
+
+  if (!ValidateProperty(entity.get(), schema_org::property::kName,
+                        base::BindOnce([](const Property& name) {
+                          return !name.values->string_values.empty() &&
+                                 name.values->string_values[0] ==
+                                     "associatedOrigin";
+                        }))) {
+    return false;
+  }
+
+  if (!ConvertProperty(entity.get(), result, schema_org::property::kValue,
+                       false, base::BindOnce(&GetAssociatedOriginURLs))) {
+    return false;
+  }
 
   return true;
 }
@@ -1117,6 +1169,12 @@ bool ConvertMediaFeed(
   auto* provider = GetProperty(entity.get(), schema_org::property::kProvider);
   if (!ValidateProvider(*provider, result))
     return false;
+
+  if (!ConvertProperty(entity.get(), result,
+                       schema_org::property::kAdditionalProperty, false,
+                       base::BindOnce(&GetAssociatedOrigins))) {
+    return false;
+  }
 
   auto data_feed_items = std::find_if(
       entity->properties.begin(), entity->properties.end(),

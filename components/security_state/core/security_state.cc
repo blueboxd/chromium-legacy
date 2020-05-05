@@ -11,6 +11,7 @@
 #include "base/metrics/field_trial.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
+#include "build/build_config.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/security_state/core/features.h"
 #include "components/security_state/core/security_state_pref_names.h"
@@ -179,15 +180,19 @@ SecurityLevel GetSecurityLevel(
     if (!visible_security_state.is_error_page &&
         !network::IsUrlPotentiallyTrustworthy(url) &&
         (url.IsStandard() || url.SchemeIs(url::kBlobScheme))) {
-      // Display ReaderMode pages as neutral even if the original URL was
-      // secure, because Chrome has modified the content so we don't want to
-      // present it as the actual content that the server sent. Distilled pages
-      // should not contain forms, payment handlers, or other JS from the
-      // original URL, so they won't be affected by a downgraded security level.
-      // Reader Mode is only run on SECURE pages.
+#if !defined(OS_ANDROID)
+      // On Desktop, Reader Mode pages have their own visible security state in
+      // the omnibox. Display ReaderMode pages as neutral even if the original
+      // URL was secure, because Chrome has modified the content so we don't
+      // want to present it as the actual content that the server sent.
+      // Distilled pages should not contain forms, payment handlers, or other JS
+      // from the original URL, so they won't be affected by a downgraded
+      // security level. On Desktop, Reader Mode is only run on SECURE pages and
+      // and does not load mixed content or bad certificate subresources.
       if (visible_security_state.is_reader_mode) {
         return NONE;
       }
+#endif  // !defined(OS_ANDROID)
       return GetSecurityLevelForNonSecureFieldTrial(
           visible_security_state.is_error_page,
           visible_security_state.insecure_input_events);

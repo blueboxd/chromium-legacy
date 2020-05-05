@@ -4,7 +4,7 @@
 
 #import "chrome/browser/ui/cocoa/notifications/notification_response_builder_mac.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "chrome/browser/ui/cocoa/notifications/notification_constants_mac.h"
 
 @implementation NotificationResponseBuilder

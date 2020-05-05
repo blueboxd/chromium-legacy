@@ -12,6 +12,7 @@
 
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/events/event.h"
 #include "ui/gfx/render_text.h"
 #include "ui/views/background.h"
@@ -19,10 +20,12 @@
 #include "ui/views/controls/button/checkbox.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/textfield/textfield.h"
+#include "ui/views/examples/grit/views_examples_resources.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/view.h"
 
-using base::ASCIIToUTF16;
+using l10n_util::GetStringUTF16;
+using l10n_util::GetStringUTF8;
 
 namespace views {
 namespace examples {
@@ -123,7 +126,8 @@ class MultilineExample::RenderTextView : public View {
   DISALLOW_COPY_AND_ASSIGN(RenderTextView);
 };
 
-MultilineExample::MultilineExample() : ExampleBase("Multiline RenderText") {}
+MultilineExample::MultilineExample()
+    : ExampleBase(GetStringUTF8(IDS_MULTILINE_SELECT_LABEL).c_str()) {}
 
 MultilineExample::~MultilineExample() = default;
 
@@ -142,12 +146,12 @@ void MultilineExample::CreateExampleView(View* container) {
   label->SetBorder(CreateSolidBorder(2, SK_ColorCYAN));
 
   auto label_checkbox =
-      std::make_unique<Checkbox>(ASCIIToUTF16("views::Label:"), this);
+      std::make_unique<Checkbox>(GetStringUTF16(IDS_MULTILINE_LABEL), this);
   label_checkbox->SetChecked(true);
   label_checkbox->set_request_focus_on_press(false);
 
-  auto elision_checkbox =
-      std::make_unique<Checkbox>(ASCIIToUTF16("elide text?"), this);
+  auto elision_checkbox = std::make_unique<Checkbox>(
+      GetStringUTF16(IDS_MULTILINE_ELIDE_LABEL), this);
   elision_checkbox->SetChecked(false);
   elision_checkbox->set_request_focus_on_press(false);
 
@@ -165,7 +169,8 @@ void MultilineExample::CreateExampleView(View* container) {
                         GridLayout::FIXED, 0, 0);
 
   layout->StartRow(0, 0);
-  layout->AddView(std::make_unique<Label>(ASCIIToUTF16("gfx::RenderText:")));
+  layout->AddView(
+      std::make_unique<Label>(GetStringUTF16(IDS_MULTILINE_RENDER_TEXT_LABEL)));
   render_text_view_ = layout->AddView(std::move(render_text_view));
 
   layout->StartRow(0, 0);
@@ -176,7 +181,8 @@ void MultilineExample::CreateExampleView(View* container) {
   elision_checkbox_ = layout->AddView(std::move(elision_checkbox));
 
   layout->StartRow(0, 0);
-  layout->AddView(std::make_unique<Label>(ASCIIToUTF16("Sample Text:")));
+  layout->AddView(
+      std::make_unique<Label>(GetStringUTF16(IDS_MULTILINE_SAMPLE_TEXT_LABEL)));
   textfield_ = layout->AddView(std::move(textfield));
 }
 

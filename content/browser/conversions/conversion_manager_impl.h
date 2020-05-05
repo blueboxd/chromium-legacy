@@ -32,6 +32,20 @@ extern CONTENT_EXPORT const base::TimeDelta
 class ConversionStorage;
 class StoragePartition;
 
+// Provides access to the manager owned by the default StoragePartition.
+class ConversionManagerProviderImpl : public ConversionManager::Provider {
+ public:
+  ConversionManagerProviderImpl() = default;
+  ConversionManagerProviderImpl(const ConversionManagerProviderImpl& other) =
+      delete;
+  ConversionManagerProviderImpl& operator=(
+      const ConversionManagerProviderImpl& other) = delete;
+  ~ConversionManagerProviderImpl() override = default;
+
+  // ConversionManagerProvider:
+  ConversionManager* GetManager(WebContents* web_contents) const override;
+};
+
 // UI thread class that manages the lifetime of the underlying conversion
 // storage. Owned by the storage partition.
 class CONTENT_EXPORT ConversionManagerImpl : public ConversionManager {
@@ -68,6 +82,12 @@ class CONTENT_EXPORT ConversionManagerImpl : public ConversionManager {
   void HandleImpression(const StorableImpression& impression) override;
   void HandleConversion(const StorableConversion& conversion) override;
   void HandleSentReport(int64_t conversion_id) override;
+  void GetActiveImpressionsForWebUI(
+      base::OnceCallback<void(std::vector<StorableImpression>)> callback)
+      override;
+  void GetReportsForWebUI(
+      base::OnceCallback<void(std::vector<ConversionReport>)> callback,
+      base::Time max_report_time) override;
   const ConversionPolicy& GetConversionPolicy() const override;
   void ClearData(base::Time delete_begin,
                  base::Time delete_end,

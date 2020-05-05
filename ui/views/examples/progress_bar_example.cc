@@ -10,15 +10,21 @@
 
 #include "base/numerics/ranges.h"
 #include "base/strings/utf_string_conversions.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/views/controls/button/md_text_button.h"
 #include "ui/views/controls/progress_bar.h"
+#include "ui/views/examples/grit/views_examples_resources.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/view.h"
+
+using l10n_util::GetStringUTF16;
+using l10n_util::GetStringUTF8;
 
 namespace views {
 namespace examples {
 
-ProgressBarExample::ProgressBarExample() : ExampleBase("Progress Bar") {}
+ProgressBarExample::ProgressBarExample()
+    : ExampleBase(GetStringUTF8(IDS_PROGRESS_SELECT_LABEL).c_str()) {}
 
 ProgressBarExample::~ProgressBarExample() = default;
 
@@ -45,14 +51,14 @@ void ProgressBarExample::CreateExampleView(View* container) {
 
   layout->StartRowWithPadding(0, 0, 0, 10);
   layout->AddView(
-      std::make_unique<Label>(base::ASCIIToUTF16("Infinite loader:")));
+      std::make_unique<Label>(GetStringUTF16(IDS_PROGRESS_LOADER_LABEL)));
   auto infinite_bar = std::make_unique<ProgressBar>();
   infinite_bar->SetValue(-1);
   layout->AddView(std::move(infinite_bar));
 
   layout->StartRowWithPadding(0, 0, 0, 10);
-  layout->AddView(std::make_unique<Label>(
-      base::ASCIIToUTF16("Infinite loader (very short):")));
+  layout->AddView(
+      std::make_unique<Label>(GetStringUTF16(IDS_PROGRESS_LOADER_SHORT_LABEL)));
   auto shorter_bar = std::make_unique<ProgressBar>(2);
   shorter_bar->SetValue(-1);
   layout->AddView(std::move(shorter_bar));

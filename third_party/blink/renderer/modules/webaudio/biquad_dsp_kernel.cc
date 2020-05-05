@@ -56,7 +56,8 @@ void BiquadDSPKernel::UpdateCoefficientsIfNecessary(int frames_to_process) {
     SECURITY_CHECK(static_cast<unsigned>(frames_to_process) <=
                    audio_utilities::kRenderQuantumFrames);
 
-    if (GetBiquadProcessor()->HasSampleAccurateValues()) {
+    if (GetBiquadProcessor()->HasSampleAccurateValues() &&
+        GetBiquadProcessor()->IsAudioRate()) {
       GetBiquadProcessor()->Parameter1().CalculateSampleAccurateValues(
           cutoff_frequency, frames_to_process);
       GetBiquadProcessor()->Parameter2().CalculateSampleAccurateValues(
@@ -79,10 +80,10 @@ void BiquadDSPKernel::UpdateCoefficientsIfNecessary(int frames_to_process) {
       UpdateCoefficients(isConstant ? 1 : frames_to_process, cutoff_frequency,
                          q, gain, detune);
     } else {
-      cutoff_frequency[0] = GetBiquadProcessor()->Parameter1().Value();
-      q[0] = GetBiquadProcessor()->Parameter2().Value();
-      gain[0] = GetBiquadProcessor()->Parameter3().Value();
-      detune[0] = GetBiquadProcessor()->Parameter4().Value();
+      cutoff_frequency[0] = GetBiquadProcessor()->Parameter1().FinalValue();
+      q[0] = GetBiquadProcessor()->Parameter2().FinalValue();
+      gain[0] = GetBiquadProcessor()->Parameter3().FinalValue();
+      detune[0] = GetBiquadProcessor()->Parameter4().FinalValue();
       UpdateCoefficients(1, cutoff_frequency, q, gain, detune);
     }
   }

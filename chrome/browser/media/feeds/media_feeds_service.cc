@@ -310,6 +310,9 @@ void MediaFeedsService::OnGotFetchDetails(
 
   fetches_.at(feed_id).fetcher->FetchFeed(
       details->url,
+      // If the last fetch result was not successful then we should make sure
+      // we don't get the bad result from the cache.
+      details->last_fetch_result != media_feeds::mojom::FetchResult::kSuccess,
       // Use of unretained is safe because the callback is owned
       // by fetcher_, which will not outlive this.
       base::BindOnce(&MediaFeedsService::OnFetchResponse,

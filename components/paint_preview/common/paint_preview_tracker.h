@@ -73,14 +73,17 @@ class PaintPreviewTracker {
   TypefaceUsageMap* GetTypefaceUsageMap() { return &typeface_glyph_usage_; }
 
   // Expose links for serialization to a PaintPreviewFrameProto.
-  const std::vector<mojom::LinkData>& GetLinks() const { return links_; }
+  const std::vector<mojom::LinkDataPtr>& GetLinks() { return links_; }
+
+  // Moves |links_| to out. Invalidates existing entries in |links_|.
+  void MoveLinks(std::vector<mojom::LinkDataPtr>* out);
 
  private:
   const base::UnguessableToken guid_;
   const base::Optional<base::UnguessableToken> embedding_token_;
   const bool is_main_frame_;
 
-  std::vector<mojom::LinkData> links_;
+  std::vector<mojom::LinkDataPtr> links_;
   PictureSerializationContext content_id_to_embedding_token_;
   TypefaceUsageMap typeface_glyph_usage_;
   base::flat_map<uint32_t, sk_sp<SkPicture>> subframe_pics_;

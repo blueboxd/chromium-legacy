@@ -293,6 +293,8 @@ void PDFiumFormFiller::Form_OnFocusChange(FPDF_FORMFILLINFO* param,
       engine->layout_.options().default_page_orientation());
 
   engine->ScrollIntoView(screen_rect);
+
+  engine->OnFocusedAnnotationUpdated(annot);
 }
 
 // static

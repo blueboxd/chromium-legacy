@@ -19,8 +19,6 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
-#include "content/public/browser/storage_partition.h"
-#include "content/public/browser/web_contents.h"
 #include "mojo/public/cpp/bindings/message.h"
 #include "services/network/public/cpp/is_potentially_trustworthy.h"
 #include "third_party/blink/public/mojom/devtools/console_message.mojom.h"
@@ -29,25 +27,6 @@
 namespace content {
 
 namespace {
-
-// Provides access to the manager owned by the default storage partition.
-class ConversionManagerProviderImpl : public ConversionManager::Provider {
- public:
-  ConversionManagerProviderImpl() = default;
-  ConversionManagerProviderImpl(const ConversionManagerProviderImpl& other) =
-      delete;
-  ConversionManagerProviderImpl& operator=(
-      const ConversionManagerProviderImpl& other) = delete;
-  ~ConversionManagerProviderImpl() override = default;
-
-  // ConversionManagerProvider:
-  ConversionManager* GetManager(WebContents* web_contents) const override {
-    return static_cast<StoragePartitionImpl*>(
-               BrowserContext::GetDefaultStoragePartition(
-                   web_contents->GetBrowserContext()))
-        ->GetConversionManager();
-  }
-};
 
 // Abstraction that wraps an iterator to a map. When this goes out of the scope,
 // the underlying iterator is erased from the map. This is useful for control

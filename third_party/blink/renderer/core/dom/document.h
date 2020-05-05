@@ -1061,10 +1061,6 @@ class CORE_EXPORT Document : public ContainerNode,
   }
   String lastModified() const;
 
-  Element* FindInPageRoot() const { return find_in_page_root_.Get(); }
-
-  void SetFindInPageRoot(Element* find_in_page_root);
-
   // The cookieURL is used to query the cookie database for this document's
   // cookies. For example, if the cookie URL is http://example.com, we'll
   // use the non-Secure cookies for example.com when computing
@@ -1883,11 +1879,6 @@ class CORE_EXPORT Document : public ContainerNode,
   Member<HttpRefreshScheduler> http_refresh_scheduler_;
 
   bool well_formed_;
-
-  // When doing find-in-page and we need to calculate style & layout tree for
-  // invisible nodes, this variable will be set with the invisible root for
-  // the currently processed block in find-in-page.
-  WeakMember<Element> find_in_page_root_;
 
   // Document URLs.
   KURL url_;  // Document.URL: The URL from which this document was retrieved.

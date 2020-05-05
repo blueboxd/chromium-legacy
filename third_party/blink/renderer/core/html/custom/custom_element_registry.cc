@@ -355,10 +355,8 @@ void CustomElementRegistry::upgrade(Node* root) {
   CollectUpgradeCandidateInNode(*root, candidates);
 
   // 2. For each candidate of candidates, try to upgrade candidate.
-  for (auto& candidate : candidates) {
-    CustomElement::TryToUpgrade(*candidate,
-                                true /* upgrade_invisible_elements */);
-  }
+  for (auto& candidate : candidates)
+    CustomElement::TryToUpgrade(*candidate);
 }
 
 }  // namespace blink

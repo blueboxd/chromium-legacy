@@ -29,6 +29,11 @@ mojom::PaintPreviewStatus FinishRecording(
     base::File skp_file,
     size_t max_capture_size,
     mojom::PaintPreviewCaptureResponse* response) {
+  DCHECK(response);
+  DCHECK(tracker);
+  if (!response || !tracker)
+    return mojom::PaintPreviewStatus::kCaptureFailed;
+
   ParseGlyphs(recording.get(), tracker);
   size_t serialized_size = 0;
   if (!SerializeAsSkPicture(recording, tracker, bounds, std::move(skp_file),

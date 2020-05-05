@@ -109,7 +109,7 @@ class CONTENT_EXPORT ContentMainDelegate {
   // Allows the embedder to perform initialization once field trials/FeatureList
   // initialization has completed if ShouldCreateFeatureList() returns true.
   // Otherwise, the embedder is responsible for calling this method once feature
-  // list initialization is complete.
+  // list initialization is complete. Called in every process.
   virtual void PostFieldTrialInitialization() {}
 
   // Allows the embedder to perform its own initialization after early content

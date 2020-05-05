@@ -37,6 +37,8 @@ const char kReadFromDisk[] = "SafeBrowsing.V4ReadFromDisk";
 const char kApplyUpdate[] = ".ApplyUpdate";
 const char kDecodeAdditions[] = ".DecodeAdditions";
 const char kDecodeRemovals[] = ".DecodeRemovals";
+const char kAdditionsHashesCount[] = ".AdditionsHashesCount";
+const char kRemovalsHashesCount[] = ".RemovalsHashesCount";
 // Part 3: Represent the unit of value being measured and logged.
 const char kResult[] = ".Result";
 // Part 4 (optional): Represent the name of the list for which the metric is
@@ -52,6 +54,11 @@ const uint32_t kFileVersion = 9;
 // Set a common sense limit on the store file size we try to read.
 // The maximum store file size, as of today, is about 6MB.
 constexpr size_t kMaxStoreSizeBytes = 50 * 1000 * 1000;
+
+// The maximum size of additions hashes in a single update response.
+const int32_t ADDITIONS_HASHES_COUNT_MAX = 10000;
+// The maximum size of removals hashes in a single update response.
+const int32_t REMOVALS_HASHES_COUNT_MAX = 10000;
 
 void RecordEnumWithAndWithoutSuffix(const std::string& metric,
                                     int32_t value,
@@ -96,6 +103,17 @@ void RecordBooleanWithAndWithoutSuffix(const std::string& metric,
   }
 }
 
+void RecordCountWithAndWithoutSuffix(const std::string& metric,
+                                     int32_t value,
+                                     int32_t maximum,
+                                     const base::FilePath& file_path) {
+  base::UmaHistogramCustomCounts(metric, value, /*min=*/1, maximum,
+                                 /*buckets=*/50);
+  std::string suffix = GetUmaSuffixForStore(file_path);
+  base::UmaHistogramCustomCounts(metric + suffix, value, /*min=*/1, maximum,
+                                 /*buckets=*/50);
+}
+
 void RecordApplyUpdateResult(const std::string& base_metric,
                              ApplyUpdateResult result,
                              const base::FilePath& file_path) {
@@ -115,6 +133,20 @@ void RecordDecodeRemovalsResult(const std::string& base_metric,
                                 const base::FilePath& file_path) {
   RecordEnumWithAndWithoutSuffix(base_metric + kDecodeRemovals, result,
                                  DECODE_RESULT_MAX, file_path);
+}
+
+void RecordAdditionsHashesCount(const std::string& base_metric,
+                                int32_t count,
+                                const base::FilePath& file_path) {
+  RecordCountWithAndWithoutSuffix(base_metric + kAdditionsHashesCount, count,
+                                  ADDITIONS_HASHES_COUNT_MAX, file_path);
+}
+
+void RecordRemovalsHashesCount(const std::string& base_metric,
+                               int32_t count,
+                               const base::FilePath& file_path) {
+  RecordCountWithAndWithoutSuffix(base_metric + kRemovalsHashesCount, count,
+                                  REMOVALS_HASHES_COUNT_MAX, file_path);
 }
 
 void RecordStoreReadResult(StoreReadResult result) {
@@ -278,6 +310,9 @@ ApplyUpdateResult V4Store::ProcessUpdate(
       return UNEXPECTED_COMPRESSION_TYPE_REMOVALS_FAILURE;
     }
   }
+  if (raw_removals) {
+    RecordRemovalsHashesCount(metric, raw_removals->size(), store_path_);
+  }
 
   HashPrefixMap hash_prefix_map;
   ApplyUpdateResult apply_update_result = UpdateHashPrefixMapFromAdditions(
@@ -388,6 +423,7 @@ ApplyUpdateResult V4Store::UpdateHashPrefixMapFromAdditions(
       } else {
         char* raw_hashes_start = reinterpret_cast<char*>(raw_hashes.data());
         size_t raw_hashes_size = sizeof(uint32_t) * raw_hashes.size();
+        RecordAdditionsHashesCount(metric, raw_hashes_size, store_path_);
 
         // Rice-Golomb encoding is used to send compressed compressed 4-byte
         // hash prefixes. Hash prefixes longer than 4 bytes will not be

@@ -7,4 +7,12 @@ include_rules = [
   "+components/minidump_uploader",
   "+components/page_info/android/java",
   "+services/device/public/java/src/org/chromium/device/geolocation",
+
+  # WebLayerNotificationBuilder should be used for all notifications.
+  "-components/browser_ui/notifications/android/java/src/org/chromium/components/browser_ui/notifications/NotificationBuilder.java",
 ]
+specific_include_rules = {
+  "WebLayerNotificationBuilder.java": [
+    "+components/browser_ui/notifications/android/java/src/org/chromium/components/browser_ui/notifications/NotificationBuilder.java",
+  ]
+}

@@ -4,9 +4,11 @@
 
 #include "ui/native_theme/native_theme_features.h"
 
+#include "build/build_config.h"
+
 namespace features {
 
-#if defined(OS_ANDROID) || defined(OS_CHROMEOS)
+#if defined(OS_ANDROID) || defined(OS_CHROMEOS) || defined(OS_FUCHSIA)
 constexpr base::FeatureState kOverlayScrollbarFeatureState =
     base::FEATURE_ENABLED_BY_DEFAULT;
 #else

@@ -120,7 +120,7 @@ class BrowserControlsContainerView extends FrameLayout {
         mContentViewRenderView = contentViewRenderView;
         mNativeBrowserControlsContainerView =
                 BrowserControlsContainerViewJni.get().createBrowserControlsContainerView(
-                        this, contentViewRenderView.getNativeHandle());
+                        this, contentViewRenderView.getNativeHandle(), isTop);
         mListener = listener;
     }
 
@@ -397,7 +397,7 @@ class BrowserControlsContainerView extends FrameLayout {
     @NativeMethods
     interface Natives {
         long createBrowserControlsContainerView(
-                BrowserControlsContainerView view, long nativeContentViewRenderView);
+                BrowserControlsContainerView view, long nativeContentViewRenderView, boolean isTop);
         void deleteBrowserControlsContainerView(long nativeBrowserControlsContainerView);
         void createControlsLayer(long nativeBrowserControlsContainerView, int id);
         void deleteControlsLayer(long nativeBrowserControlsContainerView);

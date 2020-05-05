@@ -520,20 +520,15 @@ def GenerateTypemapFile(typemap_file):
 # gpu/ipc/common/generate_vulkan_types.py
 # DO NOT EDIT!
 
-mojom = "//gpu/ipc/common/vulkan_types.mojom"
-public_headers = [ "//gpu/ipc/common/vulkan_types.h" ]
-traits_headers = [ "//gpu/ipc/common/vulkan_types_mojom_traits.h" ]
-sources = [
-  "//gpu/ipc/common/vulkan_types_mojom_traits.cc",
-]
-public_deps = [
-  "//gpu/ipc/common:vulkan_types",
-]
-type_mappings = [
-""")
+generated_vulkan_type_mappings = [""")
   for t in _generated_types:
-    typemap_file.write("  \"gpu.mojom.%s=::%s\",\n" % (t, t))
-  typemap_file.write("]\n")
+    typemap_file.write(
+"""
+  {
+    mojom = "gpu.mojom.%s"
+    cpp = "::%s"
+  },""" % (t, t))
+  typemap_file.write("\n]\n")
 
 
 def main(argv):
@@ -586,7 +581,7 @@ def main(argv):
   traits_source_file.close()
   ClangFormat(traits_source_file.name)
 
-  typemap_file_name = "vulkan_types.typemap"
+  typemap_file_name = "generated_vulkan_type_mappings.gni"
   typemap_file = open(
       os.path.join(output_dir, typemap_file_name), 'wb')
   GenerateTypemapFile(typemap_file)

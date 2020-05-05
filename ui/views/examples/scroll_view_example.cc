@@ -11,17 +11,20 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "cc/paint/paint_flags.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/skia_paint_util.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/button/radio_button.h"
+#include "ui/views/examples/grit/views_examples_resources.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/view.h"
 
-using base::ASCIIToUTF16;
+using l10n_util::GetStringUTF16;
+using l10n_util::GetStringUTF8;
 
 namespace views {
 namespace examples {
@@ -42,8 +45,10 @@ class ScrollViewExample::ScrollableView : public View {
           views::BoxLayout::Orientation::kVertical));
       container->AddChildView(std::move(view));
     };
-    add_child(std::make_unique<LabelButton>(nullptr, ASCIIToUTF16("Button")));
-    add_child(std::make_unique<RadioButton>(ASCIIToUTF16("Radio Button"), 0));
+    add_child(std::make_unique<LabelButton>(
+        nullptr, GetStringUTF16(IDS_SCROLL_VIEW_BUTTON_LABEL)));
+    add_child(std::make_unique<RadioButton>(
+        GetStringUTF16(IDS_SCROLL_VIEW_RADIO_BUTTON_LABEL), 0));
     layout_manager->SetDefaultFlex(1);
   }
 
@@ -67,7 +72,8 @@ class ScrollViewExample::ScrollableView : public View {
   DISALLOW_COPY_AND_ASSIGN(ScrollableView);
 };
 
-ScrollViewExample::ScrollViewExample() : ExampleBase("Scroll View") {}
+ScrollViewExample::ScrollViewExample()
+    : ExampleBase(GetStringUTF8(IDS_SCROLL_VIEW_SELECT_LABEL).c_str()) {}
 
 ScrollViewExample::~ScrollViewExample() = default;
 
@@ -94,16 +100,16 @@ void ScrollViewExample::CreateExampleView(View* container) {
                           GridLayout::USE_PREF, 0, 0);
   }
   layout->StartRow(0, 1);
-  wide_ = layout->AddView(
-      std::make_unique<LabelButton>(this, ASCIIToUTF16("Wide")));
-  tall_ = layout->AddView(
-      std::make_unique<LabelButton>(this, ASCIIToUTF16("Tall")));
-  big_square_ = layout->AddView(
-      std::make_unique<LabelButton>(this, ASCIIToUTF16("Big Square")));
-  small_square_ = layout->AddView(
-      std::make_unique<LabelButton>(this, ASCIIToUTF16("Small Square")));
-  scroll_to_ = layout->AddView(
-      std::make_unique<LabelButton>(this, ASCIIToUTF16("Scroll to")));
+  wide_ = layout->AddView(std::make_unique<LabelButton>(
+      this, GetStringUTF16(IDS_SCROLL_VIEW_WIDE_LABEL)));
+  tall_ = layout->AddView(std::make_unique<LabelButton>(
+      this, GetStringUTF16(IDS_SCROLL_VIEW_TALL_LABEL)));
+  big_square_ = layout->AddView(std::make_unique<LabelButton>(
+      this, GetStringUTF16(IDS_SCROLL_VIEW_BIG_SQUARE_LABEL)));
+  small_square_ = layout->AddView(std::make_unique<LabelButton>(
+      this, GetStringUTF16(IDS_SCROLL_VIEW_SMALL_SQUARE_LABEL)));
+  scroll_to_ = layout->AddView(std::make_unique<LabelButton>(
+      this, GetStringUTF16(IDS_SCROLL_VIEW_SCROLL_TO_LABEL)));
 }
 
 void ScrollViewExample::ButtonPressed(Button* sender, const ui::Event& event) {

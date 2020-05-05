@@ -5,8 +5,8 @@
 #import "base/ios/crb_protocol_observers.h"
 
 #include "base/ios/weak_nsobject.h"
-#include "base/logging.h"
 #include "base/mac/scoped_nsobject.h"
+#include "base/notreached.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
 #include "testing/platform_test.h"

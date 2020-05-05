@@ -29,6 +29,9 @@ message ValueProto {
     UserActionList user_actions = 4;
     DateList dates = 5;
   }
+  // If set to true, this value will not be sent to the backend. This flag is
+  // mostly used internally, to prevent certain values from leaving the device.
+  optional bool is_client_side_only = 6;
 }
 
 message ValueReferenceProto {

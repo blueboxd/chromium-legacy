@@ -132,12 +132,6 @@ enum class NamedItemType {
   kNameOrIdWithName,
 };
 
-enum class InvisibleState {
-  kMissing,
-  kStatic,
-  kInvisible,
-};
-
 struct FocusParams {
   STACK_ALLOCATED();
 
@@ -355,15 +349,6 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
 
   AccessibleNode* ExistingAccessibleNode() const;
   AccessibleNode* accessibleNode();
-
-  InvisibleState Invisible() const;
-  bool HasInvisibleAttribute() const;
-
-  void DispatchActivateInvisibleEventIfNeeded();
-  bool IsInsideInvisibleSubtree() const;
-  bool IsInsideInvisibleStaticSubtree() const;
-
-  void DefaultEventHandler(Event&) override;
 
   void DidMoveToNewDocument(Document&) override;
 
@@ -862,8 +847,7 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   bool IsSpellCheckingEnabled() const;
 
   // FIXME: public for LayoutTreeBuilder, we shouldn't expose this though.
-  scoped_refptr<ComputedStyle> StyleForLayoutObject(
-      bool calc_invisible = false);
+  scoped_refptr<ComputedStyle> StyleForLayoutObject();
 
   bool HasID() const;
   bool HasClass() const;
@@ -1043,9 +1027,6 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
 
   void InlineStyleChanged();
   void SetInlineStyleFromString(const AtomicString&);
-
-  void InvisibleAttributeChanged(const AtomicString& old_value,
-                                 const AtomicString& new_value);
 
   // If the only inherited changes in the parent element are independent,
   // these changes can be directly propagated to this element (the child).

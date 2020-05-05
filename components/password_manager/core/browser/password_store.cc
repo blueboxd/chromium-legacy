@@ -407,6 +407,24 @@ void PasswordStore::GetAllCompromisedCredentials(
       base::BindOnce(&PasswordStore::GetAllCompromisedCredentialsImpl, this));
 }
 
+void PasswordStore::GetMatchingCompromisedCredentials(
+    const std::string& signon_realm,
+    CompromisedCredentialsConsumer* consumer) {
+  if (affiliated_match_helper_) {
+    FormDigest form(PasswordForm::Scheme::kHtml, signon_realm,
+                    GURL(signon_realm));
+    affiliated_match_helper_->GetAffiliatedAndroidRealms(
+        form,
+        base::BindOnce(&PasswordStore::ScheduleGetCompromisedWithAffiliations,
+                       this, consumer->GetWeakPtr(), signon_realm));
+  } else {
+    PostCompromisedCredentialsTaskAndReplyToConsumerWithResult(
+        consumer,
+        base::BindOnce(&PasswordStore::GetMatchingCompromisedCredentialsImpl,
+                       this, signon_realm));
+  }
+}
+
 void PasswordStore::RemoveCompromisedCredentialsByUrlAndTime(
     base::RepeatingCallback<bool(const GURL&)> url_filter,
     base::Time remove_begin,
@@ -1096,6 +1114,23 @@ PasswordStore::GetLoginsWithAffiliationsImpl(
   return results;
 }
 
+std::vector<CompromisedCredentials>
+PasswordStore::GetCompromisedWithAffiliationsImpl(
+    const std::string& signon_realm,
+    const std::vector<std::string>& additional_android_realms) {
+  DCHECK(background_task_runner_->RunsTasksInCurrentSequence());
+  std::vector<CompromisedCredentials> results(
+      GetMatchingCompromisedCredentialsImpl(signon_realm));
+  for (const std::string& realm : additional_android_realms) {
+    std::vector<CompromisedCredentials> more_results(
+        GetMatchingCompromisedCredentialsImpl(realm));
+    results.insert(results.end(), std::make_move_iterator(more_results.begin()),
+                   std::make_move_iterator(more_results.end()));
+  }
+
+  return results;
+}
+
 void PasswordStore::InjectAffiliationAndBrandingInformation(
     LoginsReply callback,
     LoginsResult forms) {
@@ -1118,6 +1153,18 @@ void PasswordStore::ScheduleGetFilteredLoginsWithAffiliations(
         base::BindOnce(&PasswordStore::GetLoginsWithAffiliationsImpl, this,
                        form, additional_android_realms),
         base::BindOnce(FilterLogins, cutoff));
+  }
+}
+
+void PasswordStore::ScheduleGetCompromisedWithAffiliations(
+    base::WeakPtr<CompromisedCredentialsConsumer> consumer,
+    const std::string& signon_realm,
+    const std::vector<std::string>& additional_android_realms) {
+  if (consumer) {
+    PostCompromisedCredentialsTaskAndReplyToConsumerWithResult(
+        consumer.get(),
+        base::BindOnce(&PasswordStore::GetCompromisedWithAffiliationsImpl, this,
+                       signon_realm, additional_android_realms));
   }
 }
 

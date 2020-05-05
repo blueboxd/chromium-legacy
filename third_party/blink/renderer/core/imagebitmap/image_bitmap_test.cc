@@ -121,26 +121,22 @@ TEST_F(ImageBitmapTest, ImageResourceConsistency) {
   base::Optional<IntRect> crop_rect =
       IntRect(0, 0, image_->width(), image_->height());
   auto* image_bitmap_no_crop = MakeGarbageCollected<ImageBitmap>(
-      image_element, crop_rect, &(image_element->GetDocument()),
-      default_options);
+      image_element, crop_rect, default_options);
   ASSERT_TRUE(image_bitmap_no_crop);
   crop_rect = IntRect(image_->width() / 2, image_->height() / 2,
                       image_->width() / 2, image_->height() / 2);
   auto* image_bitmap_interior_crop = MakeGarbageCollected<ImageBitmap>(
-      image_element, crop_rect, &(image_element->GetDocument()),
-      default_options);
+      image_element, crop_rect, default_options);
   ASSERT_TRUE(image_bitmap_interior_crop);
   crop_rect = IntRect(-image_->width() / 2, -image_->height() / 2,
                       image_->width(), image_->height());
   auto* image_bitmap_exterior_crop = MakeGarbageCollected<ImageBitmap>(
-      image_element, crop_rect, &(image_element->GetDocument()),
-      default_options);
+      image_element, crop_rect, default_options);
   ASSERT_TRUE(image_bitmap_exterior_crop);
   crop_rect = IntRect(-image_->width(), -image_->height(), image_->width(),
                       image_->height());
   auto* image_bitmap_outside_crop = MakeGarbageCollected<ImageBitmap>(
-      image_element, crop_rect, &(image_element->GetDocument()),
-      default_options);
+      image_element, crop_rect, default_options);
   ASSERT_TRUE(image_bitmap_outside_crop);
 
   ASSERT_EQ(image_bitmap_no_crop->BitmapImage()
@@ -192,8 +188,8 @@ TEST_F(ImageBitmapTest, ImageBitmapSourceChanged) {
   const ImageBitmapOptions* default_options = ImageBitmapOptions::Create();
   base::Optional<IntRect> crop_rect =
       IntRect(0, 0, image_->width(), image_->height());
-  auto* image_bitmap = MakeGarbageCollected<ImageBitmap>(
-      image, crop_rect, &(image->GetDocument()), default_options);
+  auto* image_bitmap =
+      MakeGarbageCollected<ImageBitmap>(image, crop_rect, default_options);
   ASSERT_TRUE(image_bitmap);
   ASSERT_EQ(
       image_bitmap->BitmapImage()->PaintImageForCurrentFrame().GetSkImage(),
@@ -345,8 +341,8 @@ TEST_F(ImageBitmapTest, ImageBitmapColorSpaceConversionHTMLImageElement) {
     options->setColorSpaceConversion(
         ColorCorrectionTestUtils::ColorSpaceConversionToString(
             static_cast<ColorSpaceConversion>(conversion_iterator)));
-    auto* image_bitmap = MakeGarbageCollected<ImageBitmap>(
-        image_element, crop_rect, &(image_element->GetDocument()), options);
+    auto* image_bitmap =
+        MakeGarbageCollected<ImageBitmap>(image_element, crop_rect, options);
     ASSERT_TRUE(image_bitmap);
     sk_sp<SkImage> converted_image =
         image_bitmap->BitmapImage()->PaintImageForCurrentFrame().GetSkImage();

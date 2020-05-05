@@ -8,7 +8,7 @@
 
 #import <Carbon/Carbon.h>
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/mac/mac_logging.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/memory/scoped_policy.h"

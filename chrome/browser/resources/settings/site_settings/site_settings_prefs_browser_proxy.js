@@ -8,9 +8,10 @@
  */
 
 // clang-format off
-import {addSingletonGetter, sendWithPromise} from 'chrome://resources/js/cr.m.js';
-import {ChooserType,ContentSetting,ContentSettingsTypes,SiteSettingSource} from './constants.js';
 import {CrPolicyIndicatorType} from 'chrome://resources/cr_elements/policy/cr_policy_indicator_behavior.m.js';
+import {addSingletonGetter, sendWithPromise} from 'chrome://resources/js/cr.m.js';
+
+import {ChooserType,ContentSetting,ContentSettingsTypes,SiteSettingSource} from './constants.js';
 // clang-format on
 
 /**
@@ -168,452 +169,450 @@ let ProtocolHandlerEntry;
  */
 export let ZoomLevelEntry;
 
-  /** @interface */
-  export class SiteSettingsPrefsBrowserProxy {
-    /**
-     * Sets the default value for a site settings category.
-     * @param {string} contentType The name of the category to change.
-     * @param {string} defaultValue The name of the value to set as default.
-     */
-    setDefaultValueForContentType(contentType, defaultValue) {}
-
-    /**
-     * Gets the default value for a site settings category.
-     * @param {!ContentSettingsTypes} contentType The name of the
-     *   category to query.
-     * @return {!Promise<!DefaultContentSetting>}
-     */
-    getDefaultValueForContentType(contentType) {}
-
-    /**
-     * Gets a list of sites, grouped by eTLD+1, affected by any of the content
-     * settings specified by |contentTypes|.
-     * @param {!Array<!ContentSettingsTypes>} contentTypes A list of
-     *     the content types to retrieve sites for.
-     * @return {!Promise<!Array<!SiteGroup>>}
-     */
-    getAllSites(contentTypes) {}
-
-    /**
-     * Get whether each of the cookie controls are managed or not, and what
-     * the source of that management is.
-     * @return {!Promise<!CookieControlsManagedState>}
-     */
-    getCookieControlsManagedState() {}
-
-    /**
-     * Get the string which describes the current effective cookie setting.
-     * @return {!Promise<string>}
-     */
-    getCookieSettingDescription() {}
-
-    /**
-     * Gets most recently changed permissions grouped by host and limited to
-     * numSources different origin/profile (inconigto/regular) pairings.
-     * This includes permissions adjusted by embargo, but excludes any set
-     * via policy.
-     * @param {!Array<!ContentSettingsTypes>} contentTypes A list of
-     *     the content types to retrieve sites with recently changed settings.
-     * @param {!number} numSources Maximum number of different sources to return
-     * @return {!Promise<!Array<!RecentSitePermissions>>}
-     */
-    getRecentSitePermissions(contentTypes, numSources) {}
-
-    /**
-     * Gets the chooser exceptions for a particular chooser type.
-     * @param {ChooserType} chooserType The chooser type to grab
-     *     exceptions from.
-     * @return {!Promise<!Array<!RawChooserException>>}
-     */
-    getChooserExceptionList(chooserType) {}
-
-    /**
-     * Converts a given number of bytes into a human-readable format, with data
-     * units.
-     * @param {number} numBytes The number of bytes to convert.
-     * @return {!Promise<string>}
-     */
-    getFormattedBytes(numBytes) {}
-
-    /**
-     * Gets the exceptions (site list) for a particular category.
-     * @param {string} contentType The name of the category to query.
-     * @return {!Promise<!Array<!RawSiteException>>}
-     */
-    getExceptionList(contentType) {}
-
-    /**
-     * Gets a list of category permissions for a given origin. Note that this
-     * may be different to the results retrieved by getExceptionList(), since it
-     * combines different sources of data to get a permission's value.
-     * @param {string} origin The origin to look up permissions for.
-     * @param {!Array<!ContentSettingsTypes>} contentTypes A list of
-     *     categories to retrieve the ContentSetting for.
-     * @return {!Promise<!NodeList<!RawSiteException>>}
-     */
-    getOriginPermissions(origin, contentTypes) {}
-
-    /**
-     * Resets the permissions for a list of categories for a given origin. This
-     * does not support incognito settings or patterns.
-     * @param {string} origin The origin to reset permissions for.
-     * @param {!Array<!ContentSettingsTypes>} contentTypes A list of
-     *     categories to set the permission for. Typically this would be a
-     *     single category, but sometimes it is useful to clear any permissions
-     *     set for all categories.
-     * @param {!ContentSetting} blanketSetting The setting to set all
-     *     permissions listed in |contentTypes| to.
-     */
-    setOriginPermissions(origin, contentTypes, blanketSetting) {}
-
-    /**
-     * Clears the flag that's set when the user has changed the Flash permission
-     * for this particular origin.
-     * @param {string} origin The origin to clear the Flash preference for.
-     */
-    clearFlashPref(origin) {}
-
-    /**
-     * Resets the category permission for a given origin (expressed as primary
-     * and secondary patterns). Only use this if intending to remove an
-     * exception - use setOriginPermissions() for origin-scoped settings.
-     * @param {string} primaryPattern The origin to change (primary pattern).
-     * @param {string} secondaryPattern The embedding origin to change
-     *     (secondary pattern).
-     * @param {string} contentType The name of the category to reset.
-     * @param {boolean} incognito Whether this applies only to a current
-     *     incognito session exception.
-     */
-    resetCategoryPermissionForPattern(
-        primaryPattern, secondaryPattern, contentType, incognito) {}
-
-    /**
-     * Removes a particular chooser object permission by origin and embedding
-     * origin.
-     * @param {ChooserType} chooserType The chooser exception type
-     * @param {string} origin The origin to look up the permission for.
-     * @param {string} embeddingOrigin the embedding origin to look up.
-     * @param {!Object} exception The exception to revoke permission for.
-     */
-    resetChooserExceptionForSite(
-        chooserType, origin, embeddingOrigin, exception) {}
-
-    /**
-     * Sets the category permission for a given origin (expressed as primary and
-     * secondary patterns). Only use this if intending to set an exception - use
-     * setOriginPermissions() for origin-scoped settings.
-     * @param {string} primaryPattern The origin to change (primary pattern).
-     * @param {string} secondaryPattern The embedding origin to change
-     *     (secondary pattern).
-     * @param {string} contentType The name of the category to change.
-     * @param {string} value The value to change the permission to.
-     * @param {boolean} incognito Whether this rule applies only to the current
-     *     incognito session.
-     */
-    setCategoryPermissionForPattern(
-        primaryPattern, secondaryPattern, contentType, value, incognito) {}
-
-    /**
-     * Checks whether an origin is valid.
-     * @param {string} origin The origin to check.
-     * @return {!Promise<boolean>} True if the origin is valid.
-     */
-    isOriginValid(origin) {}
-
-    /**
-     * Checks whether a setting is valid.
-     * @param {string} pattern The pattern to check.
-     * @param {ContentSettingsTypes} category What kind of setting,
-     *     e.g. Location, Camera, Cookies, etc.
-     * @return {!Promise<IsValid>} Contains whether or not the pattern is
-     *     valid for the type, and if it is invalid, the reason why.
-     */
-    isPatternValidForType(pattern, category) {}
-
-    /**
-     * Gets the list of default capture devices for a given type of media. List
-     * is returned through a JS call to updateDevicesMenu.
-     * @param {string} type The type to look up.
-     */
-    getDefaultCaptureDevices(type) {}
-
-    /**
-     * Sets a default devices for a given type of media.
-     * @param {string} type The type of media to configure.
-     * @param {string} defaultValue The id of the media device to set.
-     */
-    setDefaultCaptureDevice(type, defaultValue) {}
-
-    /**
-     * observes _all_ of the the protocol handler state, which includes a list
-     * that is returned through JS calls to 'setProtocolHandlers' along with
-     * other state sent with the messages 'setIgnoredProtocolHandler' and
-     * 'setHandlersEnabled'.
-     */
-    observeProtocolHandlers() {}
-
-    /**
-     * Observes one aspect of the protocol handler so that updates to the
-     * enabled/disabled state are sent. A 'setHandlersEnabled' will be sent
-     * from C++ immediately after receiving this observe request and updates
-     * may follow via additional 'setHandlersEnabled' messages.
-     *
-     * If |observeProtocolHandlers| is called, there's no need to call this
-     * observe as well.
-     */
-    observeProtocolHandlersEnabledState() {}
-
-    /**
-     * Enables or disables the ability for sites to ask to become the default
-     * protocol handlers.
-     * @param {boolean} enabled Whether sites can ask to become default.
-     */
-    setProtocolHandlerDefault(enabled) {}
-
-    /**
-     * Sets a certain url as default for a given protocol handler.
-     * @param {string} protocol The protocol to set a default for.
-     * @param {string} url The url to use as the default.
-     */
-    setProtocolDefault(protocol, url) {}
-
-    /**
-     * Deletes a certain protocol handler by url.
-     * @param {string} protocol The protocol to delete the url from.
-     * @param {string} url The url to delete.
-     */
-    removeProtocolHandler(protocol, url) {}
-
-    /**
-     * Fetches the incognito status of the current profile (whether an incognito
-     * profile exists). Returns the results via onIncognitoStatusChanged.
-     */
-    updateIncognitoStatus() {}
-
-    /**
-     * Fetches the currently defined zoom levels for sites. Returns the results
-     * via onZoomLevelsChanged.
-     */
-    fetchZoomLevels() {}
-
-    /**
-     * Removes a zoom levels for a given host.
-     * @param {string} host The host to remove zoom levels for.
-     */
-    removeZoomLevel(host) {}
-
-    // <if expr="chromeos">
-    /**
-     * Links to com.android.settings.Settings$ManageDomainUrlsActivity on ARC
-     * side, this is to manage app preferences.
-     */
-    showAndroidManageAppLinks() {}
-    // </if>
-
-    /**
-     * Fetches the current block autoplay state. Returns the results via
-     * onBlockAutoplayStatusChanged.
-     */
-    fetchBlockAutoplayStatus() {}
-
-    /**
-     * Clears all the web storage data and cookies for a given etld+1.
-     * @param {string} etldPlus1 The etld+1 to clear data from.
-     */
-    clearEtldPlus1DataAndCookies(etldPlus1) {}
-
-    /**
-     * Clears all the web storage data and cookies for a given origin.
-     * @param {string} origin The origin to clear data from.
-     */
-    clearOriginDataAndCookies(origin) {}
-
-    /**
-     * Record All Sites Page action for metrics.
-     *  @param {number} action number.
-     */
-    recordAction(action) {}
-  }
+/** @interface */
+export class SiteSettingsPrefsBrowserProxy {
+  /**
+   * Sets the default value for a site settings category.
+   * @param {string} contentType The name of the category to change.
+   * @param {string} defaultValue The name of the value to set as default.
+   */
+  setDefaultValueForContentType(contentType, defaultValue) {}
 
   /**
-   * @implements {SiteSettingsPrefsBrowserProxy}
+   * Gets the default value for a site settings category.
+   * @param {!ContentSettingsTypes} contentType The name of the
+   *   category to query.
+   * @return {!Promise<!DefaultContentSetting>}
    */
-  export class SiteSettingsPrefsBrowserProxyImpl {
-    /** @override */
-    setDefaultValueForContentType(contentType, defaultValue) {
-      chrome.send('setDefaultValueForContentType', [contentType, defaultValue]);
-    }
+  getDefaultValueForContentType(contentType) {}
 
-    /** @override */
-    getDefaultValueForContentType(contentType) {
-      return sendWithPromise('getDefaultValueForContentType', contentType);
-    }
+  /**
+   * Gets a list of sites, grouped by eTLD+1, affected by any of the content
+   * settings specified by |contentTypes|.
+   * @param {!Array<!ContentSettingsTypes>} contentTypes A list of
+   *     the content types to retrieve sites for.
+   * @return {!Promise<!Array<!SiteGroup>>}
+   */
+  getAllSites(contentTypes) {}
 
-    /** @override */
-    getAllSites(contentTypes) {
-      return sendWithPromise('getAllSites', contentTypes);
-    }
+  /**
+   * Get whether each of the cookie controls are managed or not, and what
+   * the source of that management is.
+   * @return {!Promise<!CookieControlsManagedState>}
+   */
+  getCookieControlsManagedState() {}
 
-    /** @override */
-    getCookieControlsManagedState() {
-      return sendWithPromise('getCookieControlsManagedState');
-    }
+  /**
+   * Get the string which describes the current effective cookie setting.
+   * @return {!Promise<string>}
+   */
+  getCookieSettingDescription() {}
 
-    /** @override */
-    getCookieSettingDescription() {
-      return sendWithPromise('getCookieSettingDescription');
-    }
+  /**
+   * Gets most recently changed permissions grouped by host and limited to
+   * numSources different origin/profile (inconigto/regular) pairings.
+   * This includes permissions adjusted by embargo, but excludes any set
+   * via policy.
+   * @param {!Array<!ContentSettingsTypes>} contentTypes A list of
+   *     the content types to retrieve sites with recently changed settings.
+   * @param {!number} numSources Maximum number of different sources to return
+   * @return {!Promise<!Array<!RecentSitePermissions>>}
+   */
+  getRecentSitePermissions(contentTypes, numSources) {}
 
-    /** @override */
-    getRecentSitePermissions(contentTypes, numSources) {
-      return sendWithPromise(
-          'getRecentSitePermissions', contentTypes, numSources);
-    }
+  /**
+   * Gets the chooser exceptions for a particular chooser type.
+   * @param {ChooserType} chooserType The chooser type to grab
+   *     exceptions from.
+   * @return {!Promise<!Array<!RawChooserException>>}
+   */
+  getChooserExceptionList(chooserType) {}
 
-    /** @override */
-    getChooserExceptionList(chooserType) {
-      return sendWithPromise('getChooserExceptionList', chooserType);
-    }
+  /**
+   * Converts a given number of bytes into a human-readable format, with data
+   * units.
+   * @param {number} numBytes The number of bytes to convert.
+   * @return {!Promise<string>}
+   */
+  getFormattedBytes(numBytes) {}
 
-    /** @override */
-    getFormattedBytes(numBytes) {
-      return sendWithPromise('getFormattedBytes', numBytes);
-    }
+  /**
+   * Gets the exceptions (site list) for a particular category.
+   * @param {string} contentType The name of the category to query.
+   * @return {!Promise<!Array<!RawSiteException>>}
+   */
+  getExceptionList(contentType) {}
 
-    /** @override */
-    getExceptionList(contentType) {
-      return sendWithPromise('getExceptionList', contentType);
-    }
+  /**
+   * Gets a list of category permissions for a given origin. Note that this
+   * may be different to the results retrieved by getExceptionList(), since it
+   * combines different sources of data to get a permission's value.
+   * @param {string} origin The origin to look up permissions for.
+   * @param {!Array<!ContentSettingsTypes>} contentTypes A list of
+   *     categories to retrieve the ContentSetting for.
+   * @return {!Promise<!NodeList<!RawSiteException>>}
+   */
+  getOriginPermissions(origin, contentTypes) {}
 
-    /** @override */
-    getOriginPermissions(origin, contentTypes) {
-      return sendWithPromise('getOriginPermissions', origin, contentTypes);
-    }
+  /**
+   * Resets the permissions for a list of categories for a given origin. This
+   * does not support incognito settings or patterns.
+   * @param {string} origin The origin to reset permissions for.
+   * @param {!Array<!ContentSettingsTypes>} contentTypes A list of
+   *     categories to set the permission for. Typically this would be a
+   *     single category, but sometimes it is useful to clear any permissions
+   *     set for all categories.
+   * @param {!ContentSetting} blanketSetting The setting to set all
+   *     permissions listed in |contentTypes| to.
+   */
+  setOriginPermissions(origin, contentTypes, blanketSetting) {}
 
-    /** @override */
-    setOriginPermissions(origin, contentTypes, blanketSetting) {
-      chrome.send(
-          'setOriginPermissions', [origin, contentTypes, blanketSetting]);
-    }
+  /**
+   * Clears the flag that's set when the user has changed the Flash permission
+   * for this particular origin.
+   * @param {string} origin The origin to clear the Flash preference for.
+   */
+  clearFlashPref(origin) {}
 
-    /** @override */
-    clearFlashPref(origin) {
-      chrome.send('clearFlashPref', [origin]);
-    }
+  /**
+   * Resets the category permission for a given origin (expressed as primary
+   * and secondary patterns). Only use this if intending to remove an
+   * exception - use setOriginPermissions() for origin-scoped settings.
+   * @param {string} primaryPattern The origin to change (primary pattern).
+   * @param {string} secondaryPattern The embedding origin to change
+   *     (secondary pattern).
+   * @param {string} contentType The name of the category to reset.
+   * @param {boolean} incognito Whether this applies only to a current
+   *     incognito session exception.
+   */
+  resetCategoryPermissionForPattern(
+      primaryPattern, secondaryPattern, contentType, incognito) {}
 
-    /** @override */
-    resetCategoryPermissionForPattern(
-        primaryPattern, secondaryPattern, contentType, incognito) {
-      chrome.send(
-          'resetCategoryPermissionForPattern',
-          [primaryPattern, secondaryPattern, contentType, incognito]);
-    }
+  /**
+   * Removes a particular chooser object permission by origin and embedding
+   * origin.
+   * @param {ChooserType} chooserType The chooser exception type
+   * @param {string} origin The origin to look up the permission for.
+   * @param {string} embeddingOrigin the embedding origin to look up.
+   * @param {!Object} exception The exception to revoke permission for.
+   */
+  resetChooserExceptionForSite(
+      chooserType, origin, embeddingOrigin, exception) {}
 
-    /** @override */
-    resetChooserExceptionForSite(
-        chooserType, origin, embeddingOrigin, exception) {
-      chrome.send(
-          'resetChooserExceptionForSite',
-          [chooserType, origin, embeddingOrigin, exception]);
-    }
+  /**
+   * Sets the category permission for a given origin (expressed as primary and
+   * secondary patterns). Only use this if intending to set an exception - use
+   * setOriginPermissions() for origin-scoped settings.
+   * @param {string} primaryPattern The origin to change (primary pattern).
+   * @param {string} secondaryPattern The embedding origin to change
+   *     (secondary pattern).
+   * @param {string} contentType The name of the category to change.
+   * @param {string} value The value to change the permission to.
+   * @param {boolean} incognito Whether this rule applies only to the current
+   *     incognito session.
+   */
+  setCategoryPermissionForPattern(
+      primaryPattern, secondaryPattern, contentType, value, incognito) {}
 
-    /** @override */
-    setCategoryPermissionForPattern(
-        primaryPattern, secondaryPattern, contentType, value, incognito) {
-      chrome.send(
-          'setCategoryPermissionForPattern',
-          [primaryPattern, secondaryPattern, contentType, value, incognito]);
-    }
+  /**
+   * Checks whether an origin is valid.
+   * @param {string} origin The origin to check.
+   * @return {!Promise<boolean>} True if the origin is valid.
+   */
+  isOriginValid(origin) {}
 
-    /** @override */
-    isOriginValid(origin) {
-      return sendWithPromise('isOriginValid', origin);
-    }
+  /**
+   * Checks whether a setting is valid.
+   * @param {string} pattern The pattern to check.
+   * @param {ContentSettingsTypes} category What kind of setting,
+   *     e.g. Location, Camera, Cookies, etc.
+   * @return {!Promise<IsValid>} Contains whether or not the pattern is
+   *     valid for the type, and if it is invalid, the reason why.
+   */
+  isPatternValidForType(pattern, category) {}
 
-    /** @override */
-    isPatternValidForType(pattern, category) {
-      return sendWithPromise('isPatternValidForType', pattern, category);
-    }
+  /**
+   * Gets the list of default capture devices for a given type of media. List
+   * is returned through a JS call to updateDevicesMenu.
+   * @param {string} type The type to look up.
+   */
+  getDefaultCaptureDevices(type) {}
 
-    /** @override */
-    getDefaultCaptureDevices(type) {
-      chrome.send('getDefaultCaptureDevices', [type]);
-    }
+  /**
+   * Sets a default devices for a given type of media.
+   * @param {string} type The type of media to configure.
+   * @param {string} defaultValue The id of the media device to set.
+   */
+  setDefaultCaptureDevice(type, defaultValue) {}
 
-    /** @override */
-    setDefaultCaptureDevice(type, defaultValue) {
-      chrome.send('setDefaultCaptureDevice', [type, defaultValue]);
-    }
+  /**
+   * observes _all_ of the the protocol handler state, which includes a list
+   * that is returned through JS calls to 'setProtocolHandlers' along with
+   * other state sent with the messages 'setIgnoredProtocolHandler' and
+   * 'setHandlersEnabled'.
+   */
+  observeProtocolHandlers() {}
 
-    /** @override */
-    observeProtocolHandlers() {
-      chrome.send('observeProtocolHandlers');
-    }
+  /**
+   * Observes one aspect of the protocol handler so that updates to the
+   * enabled/disabled state are sent. A 'setHandlersEnabled' will be sent
+   * from C++ immediately after receiving this observe request and updates
+   * may follow via additional 'setHandlersEnabled' messages.
+   *
+   * If |observeProtocolHandlers| is called, there's no need to call this
+   * observe as well.
+   */
+  observeProtocolHandlersEnabledState() {}
 
-    /** @override */
-    observeProtocolHandlersEnabledState() {
-      chrome.send('observeProtocolHandlersEnabledState');
-    }
+  /**
+   * Enables or disables the ability for sites to ask to become the default
+   * protocol handlers.
+   * @param {boolean} enabled Whether sites can ask to become default.
+   */
+  setProtocolHandlerDefault(enabled) {}
 
-    /** @override */
-    setProtocolHandlerDefault(enabled) {
-      chrome.send('setHandlersEnabled', [enabled]);
-    }
+  /**
+   * Sets a certain url as default for a given protocol handler.
+   * @param {string} protocol The protocol to set a default for.
+   * @param {string} url The url to use as the default.
+   */
+  setProtocolDefault(protocol, url) {}
 
-    /** @override */
-    setProtocolDefault(protocol, url) {
-      chrome.send('setDefault', [protocol, url]);
-    }
+  /**
+   * Deletes a certain protocol handler by url.
+   * @param {string} protocol The protocol to delete the url from.
+   * @param {string} url The url to delete.
+   */
+  removeProtocolHandler(protocol, url) {}
 
-    /** @override */
-    removeProtocolHandler(protocol, url) {
-      chrome.send('removeHandler', [protocol, url]);
-    }
+  /**
+   * Fetches the incognito status of the current profile (whether an incognito
+   * profile exists). Returns the results via onIncognitoStatusChanged.
+   */
+  updateIncognitoStatus() {}
 
-    /** @override */
-    updateIncognitoStatus() {
-      chrome.send('updateIncognitoStatus');
-    }
+  /**
+   * Fetches the currently defined zoom levels for sites. Returns the results
+   * via onZoomLevelsChanged.
+   */
+  fetchZoomLevels() {}
 
-    /** @override */
-    fetchZoomLevels() {
-      chrome.send('fetchZoomLevels');
-    }
+  /**
+   * Removes a zoom levels for a given host.
+   * @param {string} host The host to remove zoom levels for.
+   */
+  removeZoomLevel(host) {}
 
-    /** @override */
-    removeZoomLevel(host) {
-      chrome.send('removeZoomLevel', [host]);
-    }
+  // <if expr="chromeos">
+  /**
+   * Links to com.android.settings.Settings$ManageDomainUrlsActivity on ARC
+   * side, this is to manage app preferences.
+   */
+  showAndroidManageAppLinks() {}
+  // </if>
 
-    // <if expr="chromeos">
-    /** @override */
-    showAndroidManageAppLinks() {
-      chrome.send('showAndroidManageAppLinks');
-    }
-    // </if>
+  /**
+   * Fetches the current block autoplay state. Returns the results via
+   * onBlockAutoplayStatusChanged.
+   */
+  fetchBlockAutoplayStatus() {}
 
-    /** @override */
-    fetchBlockAutoplayStatus() {
-      chrome.send('fetchBlockAutoplayStatus');
-    }
+  /**
+   * Clears all the web storage data and cookies for a given etld+1.
+   * @param {string} etldPlus1 The etld+1 to clear data from.
+   */
+  clearEtldPlus1DataAndCookies(etldPlus1) {}
 
-    /** @override */
-    clearEtldPlus1DataAndCookies(etldPlus1) {
-      chrome.send('clearEtldPlus1DataAndCookies', [etldPlus1]);
-    }
+  /**
+   * Clears all the web storage data and cookies for a given origin.
+   * @param {string} origin The origin to clear data from.
+   */
+  clearOriginDataAndCookies(origin) {}
 
-    /** @override */
-    clearOriginDataAndCookies(origin) {
-      chrome.send('clearUsage', [origin]);
-    }
+  /**
+   * Record All Sites Page action for metrics.
+   *  @param {number} action number.
+   */
+  recordAction(action) {}
+}
 
-    /** @override */
-    recordAction(action) {
-      chrome.send('recordAction', [action]);
-    }
+/**
+ * @implements {SiteSettingsPrefsBrowserProxy}
+ */
+export class SiteSettingsPrefsBrowserProxyImpl {
+  /** @override */
+  setDefaultValueForContentType(contentType, defaultValue) {
+    chrome.send('setDefaultValueForContentType', [contentType, defaultValue]);
   }
 
-  // The singleton instance_ is replaced with a test version of this wrapper
-  // during testing.
-  addSingletonGetter(SiteSettingsPrefsBrowserProxyImpl);
+  /** @override */
+  getDefaultValueForContentType(contentType) {
+    return sendWithPromise('getDefaultValueForContentType', contentType);
+  }
 
+  /** @override */
+  getAllSites(contentTypes) {
+    return sendWithPromise('getAllSites', contentTypes);
+  }
+
+  /** @override */
+  getCookieControlsManagedState() {
+    return sendWithPromise('getCookieControlsManagedState');
+  }
+
+  /** @override */
+  getCookieSettingDescription() {
+    return sendWithPromise('getCookieSettingDescription');
+  }
+
+  /** @override */
+  getRecentSitePermissions(contentTypes, numSources) {
+    return sendWithPromise(
+        'getRecentSitePermissions', contentTypes, numSources);
+  }
+
+  /** @override */
+  getChooserExceptionList(chooserType) {
+    return sendWithPromise('getChooserExceptionList', chooserType);
+  }
+
+  /** @override */
+  getFormattedBytes(numBytes) {
+    return sendWithPromise('getFormattedBytes', numBytes);
+  }
+
+  /** @override */
+  getExceptionList(contentType) {
+    return sendWithPromise('getExceptionList', contentType);
+  }
+
+  /** @override */
+  getOriginPermissions(origin, contentTypes) {
+    return sendWithPromise('getOriginPermissions', origin, contentTypes);
+  }
+
+  /** @override */
+  setOriginPermissions(origin, contentTypes, blanketSetting) {
+    chrome.send('setOriginPermissions', [origin, contentTypes, blanketSetting]);
+  }
+
+  /** @override */
+  clearFlashPref(origin) {
+    chrome.send('clearFlashPref', [origin]);
+  }
+
+  /** @override */
+  resetCategoryPermissionForPattern(
+      primaryPattern, secondaryPattern, contentType, incognito) {
+    chrome.send(
+        'resetCategoryPermissionForPattern',
+        [primaryPattern, secondaryPattern, contentType, incognito]);
+  }
+
+  /** @override */
+  resetChooserExceptionForSite(
+      chooserType, origin, embeddingOrigin, exception) {
+    chrome.send(
+        'resetChooserExceptionForSite',
+        [chooserType, origin, embeddingOrigin, exception]);
+  }
+
+  /** @override */
+  setCategoryPermissionForPattern(
+      primaryPattern, secondaryPattern, contentType, value, incognito) {
+    chrome.send(
+        'setCategoryPermissionForPattern',
+        [primaryPattern, secondaryPattern, contentType, value, incognito]);
+  }
+
+  /** @override */
+  isOriginValid(origin) {
+    return sendWithPromise('isOriginValid', origin);
+  }
+
+  /** @override */
+  isPatternValidForType(pattern, category) {
+    return sendWithPromise('isPatternValidForType', pattern, category);
+  }
+
+  /** @override */
+  getDefaultCaptureDevices(type) {
+    chrome.send('getDefaultCaptureDevices', [type]);
+  }
+
+  /** @override */
+  setDefaultCaptureDevice(type, defaultValue) {
+    chrome.send('setDefaultCaptureDevice', [type, defaultValue]);
+  }
+
+  /** @override */
+  observeProtocolHandlers() {
+    chrome.send('observeProtocolHandlers');
+  }
+
+  /** @override */
+  observeProtocolHandlersEnabledState() {
+    chrome.send('observeProtocolHandlersEnabledState');
+  }
+
+  /** @override */
+  setProtocolHandlerDefault(enabled) {
+    chrome.send('setHandlersEnabled', [enabled]);
+  }
+
+  /** @override */
+  setProtocolDefault(protocol, url) {
+    chrome.send('setDefault', [protocol, url]);
+  }
+
+  /** @override */
+  removeProtocolHandler(protocol, url) {
+    chrome.send('removeHandler', [protocol, url]);
+  }
+
+  /** @override */
+  updateIncognitoStatus() {
+    chrome.send('updateIncognitoStatus');
+  }
+
+  /** @override */
+  fetchZoomLevels() {
+    chrome.send('fetchZoomLevels');
+  }
+
+  /** @override */
+  removeZoomLevel(host) {
+    chrome.send('removeZoomLevel', [host]);
+  }
+
+  // <if expr="chromeos">
+  /** @override */
+  showAndroidManageAppLinks() {
+    chrome.send('showAndroidManageAppLinks');
+  }
+  // </if>
+
+  /** @override */
+  fetchBlockAutoplayStatus() {
+    chrome.send('fetchBlockAutoplayStatus');
+  }
+
+  /** @override */
+  clearEtldPlus1DataAndCookies(etldPlus1) {
+    chrome.send('clearEtldPlus1DataAndCookies', [etldPlus1]);
+  }
+
+  /** @override */
+  clearOriginDataAndCookies(origin) {
+    chrome.send('clearUsage', [origin]);
+  }
+
+  /** @override */
+  recordAction(action) {
+    chrome.send('recordAction', [action]);
+  }
+}
+
+// The singleton instance_ is replaced with a test version of this wrapper
+// during testing.
+addSingletonGetter(SiteSettingsPrefsBrowserProxyImpl);

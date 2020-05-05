@@ -55,11 +55,14 @@ class CompromisedCredentialsTableTest : public testing::Test {
     EXPECT_THAT(db()->GetAllRows(), ElementsAre(test_data()));
     EXPECT_THAT(db()->GetRows(test_data().signon_realm, test_data().username),
                 ElementsAre(test_data()));
+    EXPECT_THAT(db()->GetRows(test_data().signon_realm),
+                ElementsAre(test_data()));
     EXPECT_TRUE(db()->RemoveRow(test_data().signon_realm, test_data().username,
                                 RemoveCompromisedCredentialsReason::kRemove));
     EXPECT_THAT(db()->GetAllRows(), IsEmpty());
     EXPECT_THAT(db()->GetRows(test_data().signon_realm, test_data().username),
                 IsEmpty());
+    EXPECT_THAT(db()->GetRows(test_data().signon_realm), IsEmpty());
   }
 
   CompromisedCredentials& test_data() { return test_data_; }
@@ -121,6 +124,10 @@ TEST_F(CompromisedCredentialsTableTest, SameSignonRealmDifferentUsername) {
   EXPECT_TRUE(db()->AddRow(compromised_credentials2));
   EXPECT_THAT(db()->GetAllRows(),
               ElementsAre(compromised_credentials1, compromised_credentials2));
+  EXPECT_THAT(db()->GetRows(test_data().signon_realm),
+              ElementsAre(compromised_credentials1, compromised_credentials2));
+  EXPECT_THAT(db()->GetRows(test_data().signon_realm, test_data().username),
+              ElementsAre(compromised_credentials1));
 }
 
 TEST_F(CompromisedCredentialsTableTest, SameUsernameDifferentSignonRealm) {
@@ -132,6 +139,10 @@ TEST_F(CompromisedCredentialsTableTest, SameUsernameDifferentSignonRealm) {
   EXPECT_TRUE(db()->AddRow(compromised_credentials2));
   EXPECT_THAT(db()->GetAllRows(),
               ElementsAre(compromised_credentials1, compromised_credentials2));
+  EXPECT_THAT(db()->GetRows(test_data().signon_realm),
+              ElementsAre(compromised_credentials1));
+  EXPECT_THAT(db()->GetRows(test_data().signon_realm, test_data().username),
+              ElementsAre(compromised_credentials1));
 }
 
 TEST_F(CompromisedCredentialsTableTest,
@@ -156,17 +167,9 @@ TEST_F(CompromisedCredentialsTableTest,
   EXPECT_TRUE(db()->AddRow(compromised_credentials2));
   EXPECT_THAT(db()->GetAllRows(),
               ElementsAre(compromised_credentials1, compromised_credentials2));
-}
-
-TEST_F(CompromisedCredentialsTableTest,
-       SameUsernameAndSignonRealmAndDifferentCompromiseType) {
-  CompromisedCredentials compromised_credentials1 = test_data();
-  CompromisedCredentials compromised_credentials2 = test_data();
-  compromised_credentials2.compromise_type = CompromiseType::kPhished;
-
-  EXPECT_TRUE(db()->AddRow(compromised_credentials1));
-  EXPECT_TRUE(db()->AddRow(compromised_credentials2));
-  EXPECT_THAT(db()->GetAllRows(),
+  EXPECT_THAT(db()->GetRows(test_data().signon_realm),
+              ElementsAre(compromised_credentials1, compromised_credentials2));
+  EXPECT_THAT(db()->GetRows(test_data().signon_realm, test_data().username),
               ElementsAre(compromised_credentials1, compromised_credentials2));
 }
 

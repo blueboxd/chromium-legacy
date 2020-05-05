@@ -257,6 +257,15 @@ PasswordStoreDefault::GetAllCompromisedCredentialsImpl() {
                    : std::vector<CompromisedCredentials>();
 }
 
+std::vector<CompromisedCredentials>
+PasswordStoreDefault::GetMatchingCompromisedCredentialsImpl(
+    const std::string& signon_realm) {
+  DCHECK(background_task_runner()->RunsTasksInCurrentSequence());
+  return login_db_
+             ? login_db_->compromised_credentials_table().GetRows(signon_realm)
+             : std::vector<CompromisedCredentials>();
+}
+
 bool PasswordStoreDefault::RemoveCompromisedCredentialsByUrlAndTimeImpl(
     const base::RepeatingCallback<bool(const GURL&)>& url_filter,
     base::Time remove_begin,

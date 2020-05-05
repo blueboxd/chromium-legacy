@@ -102,6 +102,7 @@ class DeviceSettingsProviderTest : public DeviceSettingsTestBase {
     proto->set_report_power_status(enable_reporting);
     proto->set_report_storage_status(enable_reporting);
     proto->set_report_board_status(enable_reporting);
+    proto->set_report_app_info(enable_reporting);
     proto->set_device_status_frequency(frequency);
     BuildAndInstallDevicePolicy();
   }
@@ -177,6 +178,7 @@ class DeviceSettingsProviderTest : public DeviceSettingsTestBase {
         kReportDeviceSessionStatus,
         kReportDeviceGraphicsStatus,
         kReportDeviceCrashReportInfo,
+        kReportDeviceAppInfo,
         kReportOsUpdateStatus,
         kReportRunningKioskApp,
     };

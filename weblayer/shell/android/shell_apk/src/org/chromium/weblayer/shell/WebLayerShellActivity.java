@@ -261,7 +261,11 @@ public class WebLayerShellActivity extends FragmentActivity {
         };
         mBrowser.registerTabListCallback(mTabListCallback);
         View nonEditUrlView = mBrowser.getUrlBarController().createUrlBarView(
-                UrlBarOptions.builder().setTextSizeSP(DEFAULT_TEXT_SIZE).build());
+                UrlBarOptions.builder()
+                        .setTextSizeSP(DEFAULT_TEXT_SIZE)
+                        .setTextColor(android.R.color.black)
+                        .setIconColor(android.R.color.black)
+                        .build());
         nonEditUrlView.setOnClickListener(
                 v -> { mUrlViewContainer.setDisplayedChild(EDITABLE_URL_TEXT_VIEW); });
         mUrlViewContainer.removeViewAt(NONEDITABLE_URL_TEXT_VIEW);

@@ -21,7 +21,6 @@
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
-#include "components/user_manager/user_names.h"
 #include "components/user_manager/user_type.h"
 #include "content/public/browser/browser_thread.h"
 #include "google_apis/gaia/gaia_auth_util.h"
@@ -48,14 +47,9 @@ const char kSupervisedUserManagerDisplayEmails[] =
 // not logged in yet.
 const char kSupervisedUsersFirstRun[] = "LocallyManagedUsersFirstRun";
 
-// A pref of the next id for supervised users generation.
-const char kSupervisedUsersNextId[] = "LocallyManagedUsersNextId";
-
-// A pref of the next id for supervised users generation.
 const char kSupervisedUserCreationTransactionDisplayName[] =
     "LocallyManagedUserCreationTransactionDisplayName";
 
-// A pref of the next id for supervised users generation.
 const char kSupervisedUserCreationTransactionUserId[] =
     "LocallyManagedUserCreationTransactionUserId";
 
@@ -95,9 +89,9 @@ const char kPasswordUpdateFile[] = "password.update";
 const int kMinPasswordRevision = 1;
 
 // static
-void SupervisedUserManager::RegisterPrefs(PrefRegistrySimple* registry) {
+void SupervisedUserManager::RegisterLocalStatePrefs(
+    PrefRegistrySimple* registry) {
   registry->RegisterListPref(kSupervisedUsersFirstRun);
-  registry->RegisterIntegerPref(kSupervisedUsersNextId, 0);
   registry->RegisterStringPref(kSupervisedUserCreationTransactionDisplayName,
                                "");
   registry->RegisterStringPref(kSupervisedUserCreationTransactionUserId, "");
@@ -126,28 +120,6 @@ SupervisedUserManagerImpl::SupervisedUserManagerImpl(
 
 SupervisedUserManagerImpl::~SupervisedUserManagerImpl() {}
 
-std::string SupervisedUserManagerImpl::GenerateUserId() {
-  int counter =
-      g_browser_process->local_state()->GetInteger(kSupervisedUsersNextId);
-  std::string id;
-  bool user_exists;
-  do {
-    id = base::StringPrintf("%d@%s", counter,
-                            user_manager::kSupervisedUserDomain);
-    counter++;
-    user_exists = (nullptr != owner_->FindUser(AccountId::FromUserEmail(id)));
-    DCHECK(!user_exists);
-    if (user_exists) {
-      LOG(ERROR) << "Supervised user with id " << id << " already exists.";
-    }
-  } while (user_exists);
-
-  g_browser_process->local_state()->SetInteger(kSupervisedUsersNextId, counter);
-
-  g_browser_process->local_state()->CommitPendingWrite();
-  return id;
-}
-
 bool SupervisedUserManagerImpl::HasSupervisedUsers(
     const std::string& manager_id) const {
   const user_manager::UserList& users = owner_->GetUsers();
@@ -159,54 +131,6 @@ bool SupervisedUserManagerImpl::HasSupervisedUsers(
     }
   }
   return false;
-}
-
-const user_manager::User* SupervisedUserManagerImpl::CreateUserRecord(
-    const std::string& manager_id,
-    const std::string& local_user_id,
-    const std::string& sync_user_id,
-    const base::string16& display_name) {
-  const user_manager::User* user = FindByDisplayName(display_name);
-  DCHECK(!user);
-  if (user)
-    return user;
-  const user_manager::User* manager =
-      owner_->FindUser(AccountId::FromUserEmail(manager_id));
-  CHECK(manager);
-
-  PrefService* local_state = g_browser_process->local_state();
-
-  user_manager::User* new_user = user_manager::User::CreateSupervisedUser(
-      AccountId::FromUserEmail(local_user_id));
-
-  owner_->AddUserRecord(new_user);
-
-  ListPrefUpdate prefs_new_users_update(local_state, kSupervisedUsersFirstRun);
-  DictionaryPrefUpdate sync_id_update(local_state, kSupervisedUserSyncId);
-  DictionaryPrefUpdate manager_update(local_state, kSupervisedUserManagers);
-  DictionaryPrefUpdate manager_name_update(local_state,
-                                           kSupervisedUserManagerNames);
-  DictionaryPrefUpdate manager_email_update(
-      local_state, kSupervisedUserManagerDisplayEmails);
-
-  prefs_new_users_update->Insert(0,
-                                 std::make_unique<base::Value>(local_user_id));
-
-  sync_id_update->SetWithoutPathExpansion(
-      local_user_id, std::make_unique<base::Value>(sync_user_id));
-  manager_update->SetWithoutPathExpansion(
-      local_user_id,
-      std::make_unique<base::Value>(manager->GetAccountId().GetUserEmail()));
-  manager_name_update->SetWithoutPathExpansion(
-      local_user_id, std::make_unique<base::Value>(manager->GetDisplayName()));
-  manager_email_update->SetWithoutPathExpansion(
-      local_user_id, std::make_unique<base::Value>(manager->display_email()));
-
-  owner_->SaveUserDisplayName(AccountId::FromUserEmail(local_user_id),
-                              display_name);
-
-  g_browser_process->local_state()->CommitPendingWrite();
-  return new_user;
 }
 
 std::string SupervisedUserManagerImpl::GetUserSyncId(
@@ -335,57 +259,6 @@ void SupervisedUserManagerImpl::SetUserBooleanValue(const std::string& user_id,
   PrefService* local_state = g_browser_process->local_state();
   DictionaryPrefUpdate update(local_state, key);
   update->SetKey(user_id, base::Value(value));
-}
-
-const user_manager::User* SupervisedUserManagerImpl::FindByDisplayName(
-    const base::string16& display_name) const {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  const user_manager::UserList& users = owner_->GetUsers();
-  for (user_manager::UserList::const_iterator it = users.begin();
-       it != users.end(); ++it) {
-    if (((*it)->GetType() == user_manager::USER_TYPE_SUPERVISED) &&
-        ((*it)->display_name() == display_name)) {
-      return *it;
-    }
-  }
-  return NULL;
-}
-
-const user_manager::User* SupervisedUserManagerImpl::FindBySyncId(
-    const std::string& sync_id) const {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  const user_manager::UserList& users = owner_->GetUsers();
-  for (user_manager::UserList::const_iterator it = users.begin();
-       it != users.end(); ++it) {
-    if (((*it)->GetType() == user_manager::USER_TYPE_SUPERVISED) &&
-        (GetUserSyncId((*it)->GetAccountId().GetUserEmail()) == sync_id)) {
-      return *it;
-    }
-  }
-  return NULL;
-}
-
-void SupervisedUserManagerImpl::StartCreationTransaction(
-    const base::string16& display_name) {
-  g_browser_process->local_state()->SetString(
-      kSupervisedUserCreationTransactionDisplayName,
-      base::UTF16ToASCII(display_name));
-  g_browser_process->local_state()->CommitPendingWrite();
-}
-
-void SupervisedUserManagerImpl::SetCreationTransactionUserId(
-    const std::string& email) {
-  g_browser_process->local_state()->SetString(
-      kSupervisedUserCreationTransactionUserId, email);
-  g_browser_process->local_state()->CommitPendingWrite();
-}
-
-void SupervisedUserManagerImpl::CommitCreationTransaction() {
-  g_browser_process->local_state()->ClearPref(
-      kSupervisedUserCreationTransactionDisplayName);
-  g_browser_process->local_state()->ClearPref(
-      kSupervisedUserCreationTransactionUserId);
-  g_browser_process->local_state()->CommitPendingWrite();
 }
 
 bool SupervisedUserManagerImpl::HasFailedUserCreationTransaction() {

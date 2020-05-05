@@ -113,6 +113,7 @@ jumbo_source_set("common") {
     "permissions/permission_utils.cc",
     "privacy_budget/identifiability_metric_builder.cc",
     "privacy_budget/identifiability_metrics.cc",
+    "privacy_budget/identifiability_study_participation.cc",
     "scheduler/web_scheduler_tracked_feature.cc",
     "service_worker/service_worker_status_code.cc",
     "service_worker/service_worker_type_converters.cc",
@@ -138,6 +139,7 @@ jumbo_source_set("common") {
     "//net",
     "//services/metrics/public/cpp:metrics_cpp",
     "//services/metrics/public/cpp:ukm_builders",
+    "//services/metrics/public/mojom:mojom",
     "//services/network/public/cpp:cpp",
   ]
 
@@ -204,7 +206,6 @@ jumbo_source_set("common_unittests_sources") {
     "origin_trials/trial_token_validator_unittest.cc",
     "privacy_budget/identifiability_metric_builder_unittest.cc",
     "privacy_budget/identifiability_metrics_unittest.cc",
-    "privacy_budget/identifiability_study_participation.cc",
     "privacy_budget/identifiable_surface_unittest.cc",
     "test/run_all_unittests.cc",
     "user_agent/user_agent_metadata_unittest.cc",

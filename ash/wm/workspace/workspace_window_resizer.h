@@ -54,7 +54,7 @@ class ASH_EXPORT WorkspaceWindowResizer : public WindowResizer {
   friend class WorkspaceWindowResizerTest;
 
   // Possible states the window can end up in after a drag is complete.
-  enum class SnapType { kLeft, kRight, kNone };
+  enum class SnapType { kLeft, kRight, kMaximize, kNone };
 
   WorkspaceWindowResizer(WindowState* window_state,
                          const std::vector<aura::Window*>& attached_windows);

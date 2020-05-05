@@ -1150,7 +1150,7 @@
   {
     "name": "enable-autofill-account-wallet-storage",
     "owners": [ "treib", "jsaul@google.com", "butter-team@google.com" ],
-    "expiry_milestone": 83
+    "expiry_milestone": 88
   },
   {
     "name": "enable-autofill-cache-server-card-info",
@@ -1209,11 +1209,6 @@
     "name": "enable-background-blur",
     "owners": [ "newcomer" ],
     "expiry_milestone": 86
-  },
-  {
-    "name": "enable-bookmark-reorder",
-    "owners": ["jhimawan@google.com", "twellington" ],
-    "expiry_milestone": 82
   },
   {
     "name": "enable-breakpad-upload-no-delay",
@@ -3198,11 +3193,6 @@
   {
     "name": "omnibox-preserve-default-match-against-async-update",
     "owners": [ "tommycli", "chrome-omnibox-team@google.com" ],
-    "expiry_milestone": 85
-  },
-  {
-    "name": "omnibox-remove-suggestions-from-clipboard",
-    "owners": [ "gangwu" ],
     "expiry_milestone": 85
   },
   {

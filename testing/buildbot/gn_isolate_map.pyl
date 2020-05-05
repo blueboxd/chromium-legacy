@@ -1733,6 +1733,10 @@
     "label": "//chrome/test:usage_time_limit_unittests",
     "type": "console_test_launcher",
   },
+  "vaapi_unittest": {
+    "label": "//media/gpu/vaapi:vaapi_unittest",
+    "type": "console_test_launcher",
+  },
   "views_perftests": {
     "args": [
       "--xvfb",

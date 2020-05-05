@@ -383,16 +383,13 @@ Polymer({
 
   /** @private */
   shouldShowInstalledApps_() {
-    if(!this.installedAppsFlagEnabled_) {
+    if (!this.installedAppsFlagEnabled_) {
       return false;
     }
     const haveInstalledApps = this.installedApps_.length > 0;
-    chrome.send(
-       'metricsHandler:recordBooleanHistogram',
-        [
-          'History.ClearBrowsingData.InstalledAppsDialogShown',
-          haveInstalledApps
-        ]);
+    chrome.send('metricsHandler:recordBooleanHistogram', [
+      'History.ClearBrowsingData.InstalledAppsDialogShown', haveInstalledApps
+    ]);
     return haveInstalledApps;
   },
 
@@ -405,8 +402,8 @@ Polymer({
       return;
     }
 
-    const uncheckedAppCount = this.installedApps_.filter(app => !app.isChecked)
-        .length;
+    const uncheckedAppCount =
+        this.installedApps_.filter(app => !app.isChecked).length;
     chrome.metricsPrivate.recordBoolean(
         'History.ClearBrowsingData.InstalledAppExcluded', !!uncheckedAppCount);
     chrome.metricsPrivate.recordCount(
@@ -454,10 +451,10 @@ Polymer({
    * @private
    */
   closeDialogs_() {
-    if(this.$.clearBrowsingDataDialog.open) {
+    if (this.$.clearBrowsingDataDialog.open) {
       this.$.clearBrowsingDataDialog.close();
     }
-    if(this.$.installedAppsDialog.open) {
+    if (this.$.installedAppsDialog.open) {
       this.$.installedAppsDialog.close();
     }
   },
@@ -565,8 +562,7 @@ Polymer({
   onClearBrowsingDataClick_: async function() {
     await this.getInstalledApps_();
     if (this.shouldShowInstalledApps_()) {
-      replaceDialog(
-          this.$.clearBrowsingDataDialog, this.$.installedAppsDialog);
+      replaceDialog(this.$.clearBrowsingDataDialog, this.$.installedAppsDialog);
     } else {
       await this.clearBrowsingData_();
     }
@@ -574,8 +570,7 @@ Polymer({
 
   /** @private */
   hideInstalledApps_() {
-    replaceDialog(
-        this.$.installedAppsDialog, this.$.clearBrowsingDataDialog);
+    replaceDialog(this.$.installedAppsDialog, this.$.clearBrowsingDataDialog);
   },
 
   /**

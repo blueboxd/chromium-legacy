@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/time/time.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-blink.h"
@@ -28,23 +29,23 @@ using mojom::blink::IdleManagerError;
 const char kFeaturePolicyBlocked[] =
     "Access to the feature \"idle-detection\" is disallowed by feature policy.";
 
-const uint32_t kDefaultThresholdSeconds = 60;
-const int32_t kMinThresholdSeconds = 60;
+constexpr base::TimeDelta kDefaultThreshold = base::TimeDelta::FromSeconds(60);
+constexpr base::TimeDelta kMinimumThreshold = base::TimeDelta::FromSeconds(60);
 
 }  // namespace
 
 IdleDetector* IdleDetector::Create(ScriptState* script_state,
                                    const IdleOptions* options,
                                    ExceptionState& exception_state) {
-  int32_t threshold_seconds =
-      options->hasThreshold() ? options->threshold() : kDefaultThresholdSeconds;
+  base::TimeDelta threshold =
+      options->hasThreshold()
+          ? base::TimeDelta::FromMilliseconds(options->threshold())
+          : kDefaultThreshold;
 
-  if (threshold_seconds < kMinThresholdSeconds) {
+  if (threshold < kMinimumThreshold) {
     exception_state.ThrowTypeError("Minimum threshold is 60 seconds.");
     return nullptr;
   }
-
-  base::TimeDelta threshold = base::TimeDelta::FromSeconds(threshold_seconds);
 
   auto* detector = MakeGarbageCollected<IdleDetector>(
       ExecutionContext::From(script_state), threshold);

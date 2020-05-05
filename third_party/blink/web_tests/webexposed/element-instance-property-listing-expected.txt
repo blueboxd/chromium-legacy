@@ -143,7 +143,6 @@ namespace http://www.w3.org/1999/xhtml
     property insertAdjacentHTML
     property insertAdjacentText
     property insertBefore
-    property invisible
     property isConnected
     property isContentEditable
     property isDefaultNamespace
@@ -170,7 +169,6 @@ namespace http://www.w3.org/1999/xhtml
     property offsetTop
     property offsetWidth
     property onabort
-    property onactivateinvisible
     property onanimationend
     property onanimationiteration
     property onanimationstart
@@ -1342,7 +1340,6 @@ namespace http://www.w3.org/2000/svg
     property insertAdjacentHTML
     property insertAdjacentText
     property insertBefore
-    property invisible
     property isConnected
     property isDefaultNamespace
     property isEqualNode
@@ -1362,7 +1359,6 @@ namespace http://www.w3.org/2000/svg
     property nonce
     property normalize
     property onabort
-    property onactivateinvisible
     property onanimationend
     property onanimationiteration
     property onanimationstart

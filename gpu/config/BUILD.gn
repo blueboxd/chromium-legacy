@@ -92,6 +92,7 @@ if (enable_vulkan) {
     configs += [ "//gpu:gpu_implementation" ]
 
     deps = [ "//gpu/ipc/common:vulkan_interface" ]
+    public_deps = [ "//ui/gfx" ]
 
     all_dependent_configs = [ "//third_party/vulkan:vulkan_config" ]
 

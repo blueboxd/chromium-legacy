@@ -23,6 +23,8 @@ namespace signin {
 class IdentityManager;
 }
 
+class DiceWebSigninInterceptor;
+
 class ProcessDiceHeaderDelegateImpl : public ProcessDiceHeaderDelegate,
                                       public content::WebContentsObserver {
  public:
@@ -42,6 +44,7 @@ class ProcessDiceHeaderDelegateImpl : public ProcessDiceHeaderDelegate,
   ProcessDiceHeaderDelegateImpl(
       content::WebContents* web_contents,
       signin::IdentityManager* identity_manager,
+      DiceWebSigninInterceptor* interceptor,
       bool is_sync_signin_tab,
       EnableSyncCallback enable_sync_callback,
       ShowSigninErrorCallback show_signin_error_callback,
@@ -49,6 +52,8 @@ class ProcessDiceHeaderDelegateImpl : public ProcessDiceHeaderDelegate,
   ~ProcessDiceHeaderDelegateImpl() override;
 
   // ProcessDiceHeaderDelegate:
+  void HandleTokenExchangeSuccess(CoreAccountId account_id,
+                                  bool is_new_account) override;
   void EnableSync(const CoreAccountId& account_id) override;
   void HandleTokenExchangeFailure(const std::string& email,
                                   const GoogleServiceAuthError& error) override;
@@ -58,6 +63,7 @@ class ProcessDiceHeaderDelegateImpl : public ProcessDiceHeaderDelegate,
   bool ShouldEnableSync();
 
   signin::IdentityManager* identity_manager_;
+  DiceWebSigninInterceptor* dice_web_signin_interceptor_;
   EnableSyncCallback enable_sync_callback_;
   ShowSigninErrorCallback show_signin_error_callback_;
   bool is_sync_signin_tab_;

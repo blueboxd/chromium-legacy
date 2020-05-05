@@ -107,6 +107,11 @@ class BLINK_COMMON_EXPORT IdentifiabilityMetricBuilder
   IdentifiabilityMetricBuilder& Set(IdentifiableSurface::Type surface_type,
                                     int64_t input,
                                     int64_t result);
+
+  // Shadow the underlying Record() implementation until the upstream pipeline
+  // is ready for identifiability metrics.
+  // TODO(crbug.com/973801): Remove once the pipeline is ready.
+  void Record(ukm::UkmRecorder* recorder);
 };
 
 }  // namespace blink

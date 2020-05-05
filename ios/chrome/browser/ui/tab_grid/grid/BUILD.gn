@@ -39,6 +39,7 @@ source_set("grid_ui") {
     "//base",
     "//ios/chrome/app/strings",
     "//ios/chrome/browser",
+    "//ios/chrome/browser/ui:feature_flags",
     "//ios/chrome/browser/ui/elements",
     "//ios/chrome/browser/ui/tab_grid/transitions",
     "//ios/chrome/browser/ui/util",

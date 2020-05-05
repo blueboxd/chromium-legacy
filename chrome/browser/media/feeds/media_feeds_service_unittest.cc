@@ -22,6 +22,7 @@
 #include "components/safe_search_api/stub_url_checker.h"
 #include "components/safe_search_api/url_checker.h"
 #include "media/base/media_switches.h"
+#include "net/base/load_flags.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "services/network/test/test_utils.h"
@@ -92,6 +93,10 @@ class MediaFeedsServiceTest : public ChromeRenderViewHostTestHarness {
     result.reset_token = media_history::test::GetResetTokenSync(
         GetMediaHistoryService(), feed_id);
     return result;
+  }
+
+  bool GetCurrentRequestHasBypassCacheFlag() {
+    return GetCurrentRequest().load_flags & net::LOAD_BYPASS_CACHE;
   }
 
   media_history::MediaHistoryKeyedService::PendingSafeSearchCheckList
@@ -239,6 +244,10 @@ class MediaFeedsServiceTest : public ChromeRenderViewHostTestHarness {
   }
 
  private:
+  const ::network::ResourceRequest& GetCurrentRequest() {
+    return url_loader_factory_.pending_requests()->front().request;
+  }
+
   base::test::ScopedFeatureList features_;
 
   network::TestURLLoaderFactory url_loader_factory_;
@@ -1002,6 +1011,9 @@ TEST_F(MediaFeedsServiceTest, FetcherShouldHandleReset) {
   GetMediaFeedsService()->FetchMediaFeed(1, run_loop.QuitClosure());
   WaitForDB();
 
+  // The last request was successful so we can hit the cache.
+  EXPECT_FALSE(GetCurrentRequestHasBypassCacheFlag());
+
   // Reset the feed.
   GetMediaHistoryService()->ResetMediaFeed(
       url::Origin::Create(feed_url), media_feeds::mojom::ResetReason::kVisit);
@@ -1035,6 +1047,31 @@ TEST_F(MediaFeedsServiceTest, FetcherShouldHandleReset) {
 
     auto items = GetItemsForMediaFeedSync(1);
     EXPECT_TRUE(items.empty());
+  }
+
+  // Start fetching the feed but do not resolve the request.
+  base::RunLoop run_loop_alt;
+  GetMediaFeedsService()->FetchMediaFeed(1, run_loop_alt.QuitClosure());
+  WaitForDB();
+
+  // The last request failed so we should not hit the cache.
+  EXPECT_TRUE(GetCurrentRequestHasBypassCacheFlag());
+
+  // Respond to the pending fetch.
+  ASSERT_TRUE(RespondToPendingFeedFetch(feed_url));
+  run_loop_alt.Run();
+  WaitForDB();
+
+  {
+    // The feed should have been successfully stored.
+    auto feeds = GetMediaFeedsSync();
+    ASSERT_EQ(1u, feeds.size());
+    EXPECT_EQ(media_feeds::mojom::ResetReason::kNone, feeds[0]->reset_reason);
+    EXPECT_EQ(media_feeds::mojom::FetchResult::kSuccess,
+              feeds[0]->last_fetch_result);
+
+    auto items = GetItemsForMediaFeedSync(1);
+    EXPECT_FALSE(items.empty());
   }
 }
 

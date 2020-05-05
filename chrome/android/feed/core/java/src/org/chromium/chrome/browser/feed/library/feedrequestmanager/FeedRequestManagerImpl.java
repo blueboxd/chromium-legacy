@@ -240,7 +240,8 @@ public final class FeedRequestManagerImpl implements FeedRequestManager {
                 if (!requestBuilder.hasPageToken()) {
                     mScheduler.onRequestError(input.getResponseCode());
                 }
-                consumer.accept(Result.failure());
+                mMainThreadRunner.execute(
+                        "FeedRequestManagerImpl consumer", () -> consumer.accept(Result.failure()));
                 return;
             }
             handleResponseBytes(input.getResponseBody(), consumer);
@@ -260,7 +261,8 @@ public final class FeedRequestManagerImpl implements FeedRequestManager {
                         mExtensionRegistry.getExtensionRegistry());
             } catch (IOException e) {
                 Logger.e(TAG, e, "Response parse failed");
-                consumer.accept(Result.failure());
+                mMainThreadRunner.execute(
+                        "FeedRequestManagerImpl consumer", () -> consumer.accept(Result.failure()));
                 return;
             }
             mMainThreadRunner.execute("FeedRequestManagerImpl consumer",

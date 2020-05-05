@@ -116,6 +116,7 @@ class MockDownloadItem : public DownloadItem {
   MOCK_METHOD0(CanShowInFolder, bool());
   MOCK_METHOD0(CanOpenDownload, bool());
   MOCK_METHOD0(ShouldOpenFileBasedOnExtension, bool());
+  MOCK_METHOD0(ShouldOpenFileByPolicyBasedOnExtension, bool());
   MOCK_CONST_METHOD0(GetOpenWhenComplete, bool());
   MOCK_METHOD0(GetAutoOpened, bool());
   MOCK_CONST_METHOD0(GetOpened, bool());

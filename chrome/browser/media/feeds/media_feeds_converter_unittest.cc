@@ -18,6 +18,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 namespace media_feeds {
 
@@ -58,6 +59,7 @@ class MediaFeedsConverterTest : public testing::Test {
   EntityPtr ValidMediaFeedItem();
   EntityPtr ValidMediaImage();
   EntityPtr WithContentAttributes(EntityPtr image);
+  EntityPtr WithAssociatedOrigins(EntityPtr feed);
   mojom::MediaFeedItemPtr ExpectedFeedItem();
   mojom::MediaImagePtr ExpectedMediaImage();
   EntityPtr AddItemToFeed(EntityPtr feed, EntityPtr item);
@@ -273,6 +275,21 @@ EntityPtr MediaFeedsConverterTest::WithContentAttributes(EntityPtr image) {
   return image;
 }
 
+EntityPtr MediaFeedsConverterTest::WithAssociatedOrigins(EntityPtr feed) {
+  auto origins = extractor_.Extract(
+      R"END(
+      {
+        "@type": "PropertyValue",
+        "name": "associatedOrigin",
+        "value": ["https://www.github.com", "https://www.github.com",
+                  "https://www.github1.com", "https://www.github2.com" ]
+      }
+    )END");
+  feed->properties.push_back(CreateEntityProperty(
+      schema_org::property::kAdditionalProperty, std::move(origins)));
+  return feed;
+}
+
 mojom::MediaFeedItemPtr MediaFeedsConverterTest::ExpectedFeedItem() {
   mojom::MediaFeedItemPtr expected_item = mojom::MediaFeedItem::New();
   expected_item->type = mojom::MediaFeedItemType::kMovie;
@@ -342,6 +359,18 @@ TEST_F(MediaFeedsConverterTest, SucceedsOnValidCompleteDataFeed) {
   EXPECT_EQ(1u, result.logos.size());
   EXPECT_EQ(expected_image, result.logos[0]);
   EXPECT_EQ(result.display_name, "Media Site");
+}
+
+TEST_F(MediaFeedsConverterTest, SucceedsOnValidFeedWithAssociatedOrigins) {
+  media_history::MediaHistoryKeyedService::MediaFeedFetchResult result;
+  ConvertMediaFeed(WithAssociatedOrigins(ValidMediaFeed()), &result);
+
+  std::set<::url::Origin> expected_origins;
+  expected_origins.insert(url::Origin::Create(GURL("https://www.github.com")));
+  expected_origins.insert(url::Origin::Create(GURL("https://www.github1.com")));
+  expected_origins.insert(url::Origin::Create(GURL("https://www.github2.com")));
+
+  EXPECT_EQ(expected_origins, result.associated_origins);
 }
 
 TEST_F(MediaFeedsConverterTest, SucceedsOnValidCompleteDataFeedWithItem) {

@@ -404,6 +404,14 @@ template("write_build_config") {
       args += [ "--uncompress-shared-libraries" ]
     }
 
+    if (defined(invoker.library_always_compress)) {
+      args += [ "--library-always-compress=${invoker.library_always_compress}" ]
+    }
+
+    if (defined(invoker.library_renames)) {
+      args += [ "--library-renames=${invoker.library_renames}" ]
+    }
+
     if (defined(invoker.apk_path)) {
       # TODO(tiborg): Remove APK path from build config and use
       # install_artifacts from metadata instead.
@@ -2726,6 +2734,13 @@ if (enable_java_templates) {
         invoker.uncompress_shared_libraries) {
       _args += [ "--uncompress-shared-libraries=True" ]
     }
+    if (defined(invoker.library_always_compress)) {
+      _args +=
+          [ "--library-always-compress=${invoker.library_always_compress}" ]
+    }
+    if (defined(invoker.library_renames)) {
+      _args += [ "--library-renames=${invoker.library_renames}" ]
+    }
     if (defined(invoker.dex_path)) {
       _inputs += [ invoker.dex_path ]
       _args += [
@@ -3493,6 +3508,8 @@ if (enable_java_templates) {
               "shared_libraries_runtime_deps_file",
               "static_library_dependent_targets",
               "uncompress_shared_libraries",
+              "library_always_compress",
+              "library_renames",
             ])
       }
       if (type == "android_apk") {
@@ -3940,6 +3957,8 @@ template("create_android_app_bundle_module") {
     "--min-sdk-version=${invoker.min_sdk_version}",
     "--uncompress-shared-libraries=@FileArg(" +
         "$_rebased_build_config:native:uncompress_shared_libraries)",
+    "--library-always-compress=@FileArg($_rebased_build_config:native:library_always_compress)",
+    "--library-renames=@FileArg($_rebased_build_config:native:library_renames)",
   ]
   if (defined(android_app_secondary_abi)) {
     _rebased_secondary_abi_native_libraries_config =

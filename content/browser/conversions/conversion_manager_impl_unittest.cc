@@ -10,6 +10,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/callback_forward.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/run_loop.h"
@@ -17,7 +18,10 @@
 #include "base/test/bind_test_util.h"
 #include "base/time/clock.h"
 #include "base/time/time.h"
+#include "content/browser/conversions/conversion_report.h"
 #include "content/browser/conversions/conversion_test_utils.h"
+#include "content/browser/conversions/storable_conversion.h"
+#include "content/browser/conversions/storable_impression.h"
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -114,6 +118,70 @@ class ConversionManagerImplTest : public testing::Test {
   std::unique_ptr<ConversionManagerImpl> conversion_manager_;
   TestConversionReporter* test_reporter_ = nullptr;
 };
+
+TEST_F(ConversionManagerImplTest, ImpressionRegistered_ReturnedToWebUI) {
+  auto impression = ImpressionBuilder(clock().Now())
+                        .SetExpiry(kImpressionExpiry)
+                        .SetData("100")
+                        .Build();
+  conversion_manager_->HandleImpression(impression);
+
+  base::RunLoop run_loop;
+  auto get_impressions_callback = base::BindLambdaForTesting(
+      [&](std::vector<StorableImpression> impressions) {
+        EXPECT_EQ(1u, impressions.size());
+        EXPECT_TRUE(ImpressionsEqual(impression, impressions.back()));
+        run_loop.Quit();
+      });
+  conversion_manager_->GetActiveImpressionsForWebUI(
+      std::move(get_impressions_callback));
+  run_loop.Run();
+}
+
+TEST_F(ConversionManagerImplTest, ExpiredImpression_NotReturnedToWebUI) {
+  conversion_manager_->HandleImpression(ImpressionBuilder(clock().Now())
+                                            .SetExpiry(kImpressionExpiry)
+                                            .SetData("100")
+                                            .Build());
+  task_environment_.FastForwardBy(2 * kImpressionExpiry);
+
+  base::RunLoop run_loop;
+  auto get_impressions_callback = base::BindLambdaForTesting(
+      [&](std::vector<StorableImpression> impressions) {
+        EXPECT_TRUE(impressions.empty());
+        run_loop.Quit();
+      });
+  conversion_manager_->GetActiveImpressionsForWebUI(
+      std::move(get_impressions_callback));
+  run_loop.Run();
+}
+
+TEST_F(ConversionManagerImplTest, ImpressionConverted_ReportReturnedToWebUI) {
+  auto impression = ImpressionBuilder(clock().Now())
+                        .SetExpiry(kImpressionExpiry)
+                        .SetData("100")
+                        .Build();
+  conversion_manager_->HandleImpression(impression);
+
+  auto conversion = DefaultConversion();
+  conversion_manager_->HandleConversion(conversion);
+
+  ConversionReport expected_report(impression, conversion.conversion_data(),
+                                   clock().Now() + kFirstReportingWindow,
+                                   base::nullopt /* conversion_id */);
+  expected_report.attribution_credit = 100;
+
+  base::RunLoop run_loop;
+  auto reports_callback =
+      base::BindLambdaForTesting([&](std::vector<ConversionReport> reports) {
+        EXPECT_EQ(1u, reports.size());
+        EXPECT_TRUE(ReportsEqual({expected_report}, reports));
+        run_loop.Quit();
+      });
+  conversion_manager_->GetReportsForWebUI(std::move(reports_callback),
+                                          base::Time::Max());
+  run_loop.Run();
+}
 
 TEST_F(ConversionManagerImplTest, ImpressionConverted_ReportQueued) {
   conversion_manager_->HandleImpression(

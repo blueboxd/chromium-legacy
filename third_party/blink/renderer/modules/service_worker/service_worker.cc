@@ -166,7 +166,7 @@ ServiceWorker* ServiceWorker::From(ExecutionContext* context,
     return scope->GetOrCreateServiceWorker(std::move(info));
   }
 
-  return ServiceWorkerContainer::From(To<LocalDOMWindow>(context)->document())
+  return ServiceWorkerContainer::From(*To<LocalDOMWindow>(context))
       ->GetOrCreateServiceWorker(std::move(info));
 }
 

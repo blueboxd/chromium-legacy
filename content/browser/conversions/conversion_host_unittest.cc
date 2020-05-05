@@ -40,20 +40,6 @@ Impression CreateValidImpression() {
 
 }  // namespace
 
-class TestManagerProvider : public ConversionManager::Provider {
- public:
-  explicit TestManagerProvider(ConversionManager* manager)
-      : manager_(manager) {}
-  ~TestManagerProvider() override = default;
-
-  ConversionManager* GetManager(WebContents* web_contents) const override {
-    return manager_;
-  }
-
- private:
-  ConversionManager* manager_ = nullptr;
-};
-
 class ConversionHostTest : public RenderViewHostTestHarness {
  public:
   ConversionHostTest() = default;

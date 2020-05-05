@@ -66,7 +66,7 @@ class CompositedScrollingBrowserTest : public ContentBrowserTest {
   CompositedScrollingBrowserTest() {
     // Disable scroll resampling because this is checking scroll distance.
     scoped_feature_list_.InitAndDisableFeature(
-        features::kResamplingScrollEvents);
+        blink::features::kResamplingScrollEvents);
   }
 
   ~CompositedScrollingBrowserTest() override = default;

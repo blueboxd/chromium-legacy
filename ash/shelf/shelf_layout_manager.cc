@@ -35,6 +35,7 @@
 #include "ash/shelf/shelf_layout_manager_observer.h"
 #include "ash/shelf/shelf_metrics.h"
 #include "ash/shelf/shelf_navigation_widget.h"
+#include "ash/shelf/shelf_view.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/system/locale/locale_update_controller_impl.h"
@@ -140,16 +141,15 @@ void SetupAnimator(ui::ScopedLayerAnimationSettings* animation_setter,
   }
 }
 
-void AnimateOpacity(views::Widget* widget,
+void AnimateOpacity(ui::Layer* layer,
                     float target_opacity,
                     base::TimeDelta animation_duration,
                     gfx::Tween::Type type,
                     ui::AnimationMetricsReporter* animation_metrics_reporter) {
-  ui::ScopedLayerAnimationSettings animation_setter(
-      GetLayer(widget)->GetAnimator());
+  ui::ScopedLayerAnimationSettings animation_setter(layer->GetAnimator());
   SetupAnimator(&animation_setter, animation_duration, type,
                 animation_metrics_reporter);
-  GetLayer(widget)->SetOpacity(target_opacity);
+  layer->SetOpacity(target_opacity);
 }
 
 // Returns true if the window is in the app list window container.
@@ -1494,16 +1494,16 @@ void ShelfLayoutManager::SetDimmed(bool dimmed) {
   const gfx::Tween::Type dim_animation_tween =
       ShelfConfig::Get()->DimAnimationTween();
 
-  AnimateOpacity(shelf_->navigation_widget(), target_opacity_,
+  AnimateOpacity(GetLayer(shelf_->navigation_widget()), target_opacity_,
                  dim_animation_duration, dim_animation_tween,
                  shelf_->GetNavigationWidgetAnimationMetricsReporter());
 
-  AnimateOpacity(shelf_->hotseat_widget(),
+  AnimateOpacity(shelf_->hotseat_widget()->GetShelfView()->layer(),
                  shelf_->hotseat_widget()->CalculateOpacity(),
                  dim_animation_duration, dim_animation_tween,
                  /*animation_metrics_reporter=*/nullptr);
 
-  AnimateOpacity(shelf_->status_area_widget(), target_opacity_,
+  AnimateOpacity(GetLayer(shelf_->status_area_widget()), target_opacity_,
                  dim_animation_duration, dim_animation_tween,
                  /*animation_metrics_reporter=*/nullptr);
 

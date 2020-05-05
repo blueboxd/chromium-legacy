@@ -117,6 +117,7 @@ class GL_EXPORT GLSurfaceEGL : public GLSurface {
   static bool IsAndroidNativeFenceSyncSupported();
   static bool IsPixelFormatFloatSupported();
   static bool IsANGLEFeatureControlSupported();
+  static bool IsANGLEPowerPreferenceSupported();
 
  protected:
   ~GLSurfaceEGL() override;

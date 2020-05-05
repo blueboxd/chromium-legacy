@@ -26,6 +26,7 @@
 #include "cc/metrics/event_metrics.h"
 #include "services/tracing/public/cpp/perfetto/flow_event_utils.h"
 #include "services/tracing/public/cpp/perfetto/macros.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/input/web_input_event.h"
 #include "third_party/blink/public/common/input/web_input_event_attribution.h"
 #include "third_party/blink/public/common/input/web_mouse_wheel_event.h"
@@ -200,23 +201,23 @@ InputHandlerProxy::InputHandlerProxy(cc::InputHandler* input_handler,
   }
   compositor_event_queue_ = std::make_unique<CompositorThreadEventQueue>();
   scroll_predictor_ =
-      base::FeatureList::IsEnabled(features::kResamplingScrollEvents)
+      base::FeatureList::IsEnabled(blink::features::kResamplingScrollEvents)
           ? std::make_unique<ScrollPredictor>()
           : nullptr;
 
-  if (base::FeatureList::IsEnabled(features::kSkipTouchEventFilter) &&
+  if (base::FeatureList::IsEnabled(blink::features::kSkipTouchEventFilter) &&
       GetFieldTrialParamValueByFeature(
-          features::kSkipTouchEventFilter,
-          features::kSkipTouchEventFilterFilteringProcessParamName) ==
-          features::
+          blink::features::kSkipTouchEventFilter,
+          blink::features::kSkipTouchEventFilterFilteringProcessParamName) ==
+          blink::features::
               kSkipTouchEventFilterFilteringProcessParamValueBrowserAndRenderer) {
     // Skipping filtering for touch events on renderer process is enabled.
     // Always skip filtering discrete events.
     skip_touch_filter_discrete_ = true;
     if (GetFieldTrialParamValueByFeature(
-            features::kSkipTouchEventFilter,
-            features::kSkipTouchEventFilterTypeParamName) ==
-        features::kSkipTouchEventFilterTypeParamValueAll) {
+            blink::features::kSkipTouchEventFilter,
+            blink::features::kSkipTouchEventFilterTypeParamName) ==
+        blink::features::kSkipTouchEventFilterTypeParamValueAll) {
       // The experiment config also specifies to skip touchmove events.
       skip_touch_filter_all_ = true;
     }
@@ -339,9 +340,9 @@ void InputHandlerProxy::DispatchSingleInputEvent(
           &monitored_latency_info);
   auto scoped_event_metrics_monitor =
       input_handler_->GetScopedEventMetricsMonitor(
-          {WebEventTypeToEventType(event_with_callback->event().GetType()),
+          {event_with_callback->event().GetTypeAsUiEventType(),
            event_with_callback->event().TimeStamp(),
-           GetScrollInputTypeForEvent(event_with_callback->event())});
+           event_with_callback->event().GetScrollInputType()});
 
   current_overscroll_params_.reset();
 
@@ -417,7 +418,7 @@ void InputHandlerProxy::InjectScrollbarGestureScroll(
                               pointer_result.scroll_offset.y());
 
   std::unique_ptr<WebGestureEvent> synthetic_gesture_event =
-      GenerateInjectedScrollGesture(
+      WebGestureEvent::GenerateInjectedScrollGesture(
           type, original_timestamp, blink::WebGestureDevice::kScrollbar,
           position_in_widget, scroll_delta, pointer_result.scroll_units);
 

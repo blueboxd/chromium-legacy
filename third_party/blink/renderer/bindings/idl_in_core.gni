@@ -435,7 +435,6 @@ static_idl_files_in_core = get_path_info(
           "//third_party/blink/renderer/core/intersection_observer/intersection_observer.idl",
           "//third_party/blink/renderer/core/intersection_observer/intersection_observer_entry.idl",
           "//third_party/blink/renderer/core/intersection_observer/intersection_observer_init.idl",
-          "//third_party/blink/renderer/core/invisible_dom/activate_invisible_event.idl",
           "//third_party/blink/renderer/core/layout/ng/custom/css_layout_worklet.idl",
           "//third_party/blink/renderer/core/layout/ng/custom/custom_layout_constraints_options.idl",
           "//third_party/blink/renderer/core/layout/ng/custom/fragment_result_options.idl",

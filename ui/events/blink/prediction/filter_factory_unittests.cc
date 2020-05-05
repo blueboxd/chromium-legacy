@@ -4,7 +4,7 @@
 
 #include "base/test/scoped_feature_list.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/events/blink/blink_features.h"
+#include "third_party/blink/public/common/features.h"
 #include "ui/events/blink/prediction/filter_factory.h"
 #include "ui/events/blink/prediction/one_euro_filter.h"
 
@@ -20,7 +20,7 @@ using input_prediction::PredictorType;
 class FilterFactoryTest : public testing::Test {
  public:
   FilterFactoryTest() {
-    CreateNewFactory(features::kFilteringScrollPrediction,
+    CreateNewFactory(blink::features::kFilteringScrollPrediction,
                      PredictorType::kScrollPredictorTypeKalman,
                      FilterType::kEmpty);
   }
@@ -57,10 +57,10 @@ class FilterFactoryTest : public testing::Test {
 // Check if the FilterType returned is correct
 TEST_F(FilterFactoryTest, TestGetFilterType) {
   EXPECT_EQ(input_prediction::FilterType::kEmpty,
-            GetFilterTypeFromName(input_prediction::kFilterNameEmpty));
+            GetFilterTypeFromName(blink::features::kFilterNameEmpty));
 
   EXPECT_EQ(input_prediction::FilterType::kOneEuro,
-            GetFilterTypeFromName(input_prediction::kFilterNameOneEuro));
+            GetFilterTypeFromName(blink::features::kFilterNameOneEuro));
 
   // Default type Empty
   EXPECT_EQ(input_prediction::FilterType::kEmpty, GetFilterTypeFromName(""));
@@ -68,13 +68,13 @@ TEST_F(FilterFactoryTest, TestGetFilterType) {
 
 TEST_F(FilterFactoryTest, TestCreateFilter) {
   EXPECT_STREQ(
-      input_prediction::kFilterNameEmpty,
+      blink::features::kFilterNameEmpty,
       CreateFilter(input_prediction::FilterType::kEmpty,
                    input_prediction::PredictorType::kScrollPredictorTypeEmpty)
           ->GetName());
 
   EXPECT_STREQ(
-      input_prediction::kFilterNameOneEuro,
+      blink::features::kFilterNameOneEuro,
       CreateFilter(input_prediction::FilterType::kOneEuro,
                    input_prediction::PredictorType::kScrollPredictorTypeEmpty)
           ->GetName());
@@ -100,10 +100,10 @@ TEST_F(FilterFactoryTest, TestOneEuroParams) {
   field_trial_params[OneEuroFilter::kParamBeta] = "42";
   scoped_feature_list.Reset();
   scoped_feature_list.InitAndEnableFeatureWithParameters(
-      features::kFilteringScrollPrediction, field_trial_params);
+      blink::features::kFilteringScrollPrediction, field_trial_params);
 
   // Create a new factory to load fieldtrials params values
-  CreateNewFactory(features::kFilteringScrollPrediction,
+  CreateNewFactory(blink::features::kFilteringScrollPrediction,
                    PredictorType::kScrollPredictorTypeKalman,
                    FilterType::kOneEuro);
 
@@ -124,11 +124,11 @@ TEST_F(FilterFactoryTest, TestOneEuroParams) {
 
 TEST_F(FilterFactoryTest, TestGetFilter) {
   EXPECT_STREQ(
-      input_prediction::kFilterNameEmpty,
+      blink::features::kFilterNameEmpty,
       CreateFilter(FilterType::kEmpty, PredictorType::kScrollPredictorTypeEmpty)
           ->GetName());
 
-  EXPECT_STREQ(input_prediction::kFilterNameOneEuro,
+  EXPECT_STREQ(blink::features::kFilterNameOneEuro,
                CreateFilter(FilterType::kOneEuro,
                             PredictorType::kScrollPredictorTypeEmpty)
                    ->GetName());

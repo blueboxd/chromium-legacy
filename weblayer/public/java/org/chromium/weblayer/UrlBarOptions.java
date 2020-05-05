@@ -6,6 +6,7 @@ package org.chromium.weblayer;
 
 import android.os.Bundle;
 
+import androidx.annotation.ColorRes;
 import androidx.annotation.NonNull;
 
 import org.chromium.weblayer_private.interfaces.UrlBarOptionsKeys;
@@ -53,6 +54,28 @@ public final class UrlBarOptions {
         @NonNull
         public Builder showPageInfoWhenTextIsClicked() {
             mOptions.putBoolean(UrlBarOptionsKeys.SHOW_PAGE_INFO_WHEN_URL_TEXT_CLICKED, true);
+            return this;
+        }
+
+        /**
+         * Sets the color of the URL bar text.
+         *
+         * @param textColor The color for the Url bar text.
+         */
+        @NonNull
+        public Builder setTextColor(@ColorRes int textColor) {
+            mOptions.putInt(UrlBarOptionsKeys.URL_TEXT_COLOR, textColor);
+            return this;
+        }
+
+        /**
+         * Sets the color of the URL bar security status icon.
+         *
+         * @param iconColor The color for the Url bar icon.
+         */
+        @NonNull
+        public Builder setIconColor(@ColorRes int iconColor) {
+            mOptions.putInt(UrlBarOptionsKeys.URL_ICON_COLOR, iconColor);
             return this;
         }
 

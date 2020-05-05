@@ -351,23 +351,26 @@ void aom_convolve_copy_c(const uint8_t* src,
                          ptrdiff_t src_stride,
                          uint8_t* dst,
                          ptrdiff_t dst_stride,
-                         const int16_t* filter_x,
-                         int filter_x_stride,
-                         const int16_t* filter_y,
-                         int filter_y_stride,
                          int w,
                          int h);
 void aom_convolve_copy_sse2(const uint8_t* src,
                             ptrdiff_t src_stride,
                             uint8_t* dst,
                             ptrdiff_t dst_stride,
-                            const int16_t* filter_x,
-                            int filter_x_stride,
-                            const int16_t* filter_y,
-                            int filter_y_stride,
                             int w,
                             int h);
-#define aom_convolve_copy aom_convolve_copy_sse2
+void aom_convolve_copy_avx2(const uint8_t* src,
+                            ptrdiff_t src_stride,
+                            uint8_t* dst,
+                            ptrdiff_t dst_stride,
+                            int w,
+                            int h);
+RTCD_EXTERN void (*aom_convolve_copy)(const uint8_t* src,
+                                      ptrdiff_t src_stride,
+                                      uint8_t* dst,
+                                      ptrdiff_t dst_stride,
+                                      int w,
+                                      int h);
 
 void aom_dc_128_predictor_16x16_c(uint8_t* dst,
                                   ptrdiff_t y_stride,
@@ -11110,50 +11113,30 @@ RTCD_EXTERN void (*aom_highbd_convolve8_vert)(const uint8_t* src,
                                               int h,
                                               int bd);
 
-void aom_highbd_convolve_copy_c(const uint8_t* src,
+void aom_highbd_convolve_copy_c(const uint16_t* src,
                                 ptrdiff_t src_stride,
-                                uint8_t* dst,
+                                uint16_t* dst,
                                 ptrdiff_t dst_stride,
-                                const int16_t* filter_x,
-                                int filter_x_stride,
-                                const int16_t* filter_y,
-                                int filter_y_stride,
                                 int w,
-                                int h,
-                                int bd);
-void aom_highbd_convolve_copy_sse2(const uint8_t* src,
+                                int h);
+void aom_highbd_convolve_copy_sse2(const uint16_t* src,
                                    ptrdiff_t src_stride,
-                                   uint8_t* dst,
+                                   uint16_t* dst,
                                    ptrdiff_t dst_stride,
-                                   const int16_t* filter_x,
-                                   int filter_x_stride,
-                                   const int16_t* filter_y,
-                                   int filter_y_stride,
                                    int w,
-                                   int h,
-                                   int bd);
-void aom_highbd_convolve_copy_avx2(const uint8_t* src,
+                                   int h);
+void aom_highbd_convolve_copy_avx2(const uint16_t* src,
                                    ptrdiff_t src_stride,
-                                   uint8_t* dst,
+                                   uint16_t* dst,
                                    ptrdiff_t dst_stride,
-                                   const int16_t* filter_x,
-                                   int filter_x_stride,
-                                   const int16_t* filter_y,
-                                   int filter_y_stride,
                                    int w,
-                                   int h,
-                                   int bd);
-RTCD_EXTERN void (*aom_highbd_convolve_copy)(const uint8_t* src,
+                                   int h);
+RTCD_EXTERN void (*aom_highbd_convolve_copy)(const uint16_t* src,
                                              ptrdiff_t src_stride,
-                                             uint8_t* dst,
+                                             uint16_t* dst,
                                              ptrdiff_t dst_stride,
-                                             const int16_t* filter_x,
-                                             int filter_x_stride,
-                                             const int16_t* filter_y,
-                                             int filter_y_stride,
                                              int w,
-                                             int h,
-                                             int bd);
+                                             int h);
 
 void aom_highbd_dc_128_predictor_16x16_c(uint16_t* dst,
                                          ptrdiff_t y_stride,
@@ -20807,7 +20790,30 @@ void aom_quantize_b_sse2(const tran_low_t* coeff_ptr,
                          uint16_t* eob_ptr,
                          const int16_t* scan,
                          const int16_t* iscan);
-#define aom_quantize_b aom_quantize_b_sse2
+void aom_quantize_b_avx(const tran_low_t* coeff_ptr,
+                        intptr_t n_coeffs,
+                        const int16_t* zbin_ptr,
+                        const int16_t* round_ptr,
+                        const int16_t* quant_ptr,
+                        const int16_t* quant_shift_ptr,
+                        tran_low_t* qcoeff_ptr,
+                        tran_low_t* dqcoeff_ptr,
+                        const int16_t* dequant_ptr,
+                        uint16_t* eob_ptr,
+                        const int16_t* scan,
+                        const int16_t* iscan);
+RTCD_EXTERN void (*aom_quantize_b)(const tran_low_t* coeff_ptr,
+                                   intptr_t n_coeffs,
+                                   const int16_t* zbin_ptr,
+                                   const int16_t* round_ptr,
+                                   const int16_t* quant_ptr,
+                                   const int16_t* quant_shift_ptr,
+                                   tran_low_t* qcoeff_ptr,
+                                   tran_low_t* dqcoeff_ptr,
+                                   const int16_t* dequant_ptr,
+                                   uint16_t* eob_ptr,
+                                   const int16_t* scan,
+                                   const int16_t* iscan);
 
 void aom_quantize_b_32x32_c(const tran_low_t* coeff_ptr,
                             intptr_t n_coeffs,
@@ -20821,7 +20827,30 @@ void aom_quantize_b_32x32_c(const tran_low_t* coeff_ptr,
                             uint16_t* eob_ptr,
                             const int16_t* scan,
                             const int16_t* iscan);
-#define aom_quantize_b_32x32 aom_quantize_b_32x32_c
+void aom_quantize_b_32x32_avx(const tran_low_t* coeff_ptr,
+                              intptr_t n_coeffs,
+                              const int16_t* zbin_ptr,
+                              const int16_t* round_ptr,
+                              const int16_t* quant_ptr,
+                              const int16_t* quant_shift_ptr,
+                              tran_low_t* qcoeff_ptr,
+                              tran_low_t* dqcoeff_ptr,
+                              const int16_t* dequant_ptr,
+                              uint16_t* eob_ptr,
+                              const int16_t* scan,
+                              const int16_t* iscan);
+RTCD_EXTERN void (*aom_quantize_b_32x32)(const tran_low_t* coeff_ptr,
+                                         intptr_t n_coeffs,
+                                         const int16_t* zbin_ptr,
+                                         const int16_t* round_ptr,
+                                         const int16_t* quant_ptr,
+                                         const int16_t* quant_shift_ptr,
+                                         tran_low_t* qcoeff_ptr,
+                                         tran_low_t* dqcoeff_ptr,
+                                         const int16_t* dequant_ptr,
+                                         uint16_t* eob_ptr,
+                                         const int16_t* scan,
+                                         const int16_t* iscan);
 
 void aom_quantize_b_32x32_adaptive_c(const tran_low_t* coeff_ptr,
                                      intptr_t n_coeffs,
@@ -25458,6 +25487,9 @@ static void setup_rtcd_internal(void) {
     aom_convolve8_vert = aom_convolve8_vert_ssse3;
   if (flags & HAS_AVX2)
     aom_convolve8_vert = aom_convolve8_vert_avx2;
+  aom_convolve_copy = aom_convolve_copy_sse2;
+  if (flags & HAS_AVX2)
+    aom_convolve_copy = aom_convolve_copy_avx2;
   aom_dc_128_predictor_32x16 = aom_dc_128_predictor_32x16_sse2;
   if (flags & HAS_AVX2)
     aom_dc_128_predictor_32x16 = aom_dc_128_predictor_32x16_avx2;
@@ -27407,6 +27439,12 @@ static void setup_rtcd_internal(void) {
   aom_paeth_predictor_8x8 = aom_paeth_predictor_8x8_c;
   if (flags & HAS_SSSE3)
     aom_paeth_predictor_8x8 = aom_paeth_predictor_8x8_ssse3;
+  aom_quantize_b = aom_quantize_b_sse2;
+  if (flags & HAS_AVX)
+    aom_quantize_b = aom_quantize_b_avx;
+  aom_quantize_b_32x32 = aom_quantize_b_32x32_c;
+  if (flags & HAS_AVX)
+    aom_quantize_b_32x32 = aom_quantize_b_32x32_avx;
   aom_quantize_b_64x64 = aom_quantize_b_64x64_c;
   if (flags & HAS_SSSE3)
     aom_quantize_b_64x64 = aom_quantize_b_64x64_ssse3;

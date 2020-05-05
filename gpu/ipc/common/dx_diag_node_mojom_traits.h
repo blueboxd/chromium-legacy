@@ -5,7 +5,9 @@
 #ifndef GPU_IPC_COMMON_DX_DIAG_NODE_MOJOM_TRAITS_H_
 #define GPU_IPC_COMMON_DX_DIAG_NODE_MOJOM_TRAITS_H_
 
-#include "gpu/ipc/common/dx_diag_node.mojom.h"
+#include "gpu/ipc/common/dx_diag_node.mojom-shared.h"
+
+#include "gpu/config/dx_diag_node.h"
 
 namespace mojo {
 

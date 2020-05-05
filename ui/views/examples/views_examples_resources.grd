@@ -9,6 +9,194 @@
   </outputs>
   <release seq="1" allow_pseudo="false">
     <messages fallback_to_english="true">
+      <!-- layout base example -->
+      <message translateable="false" name="IDS_LAYOUT_BASE_ADD_LABEL">
+        Add
+      </message>
+
+      <!-- link example -->
+      <message translateable="false" name="IDS_LINK_SELECT_LABEL">
+        Link
+      </message>
+      <message translateable="false" name="IDS_LINK_CLICK_PROMPT_LABEL">
+        Click me!
+      </message>
+      <message translateable="false" name="IDS_LINK_CLICK_CONFIRMED_LABEL">
+        Link clicked
+      </message>
+
+      <!-- menu example -->
+      <message translateable="false" name="IDS_MENU_DO_SOMETHING_LABEL">
+        Do Something
+      </message>
+      <message translateable="false" name="IDS_MENU_ASCII_LABEL">
+        ASCII
+      </message>
+      <message translateable="false" name="IDS_MENU_UTF8_LABEL">
+        UTF-8
+      </message>
+      <message translateable="false" name="IDS_MENU_UTF16_LABEL">
+        UTF-16
+      </message>
+      <message translateable="false" name="IDS_MENU_APPLE_LABEL">
+        Apple
+      </message>
+      <message translateable="false" name="IDS_MENU_ORANGE_LABEL">
+        Orange
+      </message>
+      <message translateable="false" name="IDS_MENU_KIWI_LABEL">
+        Kiwi
+      </message>
+      <message translateable="false" name="IDS_MENU_GO_HOME_LABEL">
+        Go Home
+      </message>
+      <message translateable="false" name="IDS_MENU_DO_SOMETHING_2_LABEL">
+        Do Something 2
+      </message>
+      <message translateable="false" name="IDS_MENU_SUBMENU_LABEL">
+        Submenu
+      </message>
+      <message translateable="false" name="IDS_MENU_SELECT_LABEL">
+        Menu
+      </message>
+      <message translateable="false" name="IDS_MENU_BUTTON_LABEL">
+        Open a menu
+      </message>
+
+      <!-- message box example -->
+      <message translateable="false" name="IDS_MESSAGE_SELECT_LABEL">
+        Message Box View
+      </message>
+      <message translateable="false" name="IDS_MESSAGE_INTRO_LABEL">
+        Hello, world!
+      </message>
+      <message translateable="false" name="IDS_MESSAGE_CHECK_BOX_LABEL">
+        Check Box
+      </message>
+      <message translateable="false" name="IDS_MESSAGE_STATUS_LABEL">
+        Show Status
+      </message>
+      <message translateable="false" name="IDS_MESSAGE_TOGGLE_LABEL">
+        Toggle Checkbox
+      </message>
+      <message translateable="false" name="IDS_MESSAGE_ON_LABEL">
+        on
+      </message>
+      <message translateable="false" name="IDS_MESSAGE_OFF_LABEL">
+        off
+      </message>
+      <message translateable="false" name="IDS_MESSAGE_CHECK_SELECTED_LABEL">
+        Check Box Selected
+      </message>
+      <message translateable="false" name="IDS_MESSAGE_CHECK_NOT_SELECTED_LABEL">
+        Check Box Not Selected
+      </message>
+
+      <!-- multiline example -->
+      <message translateable="false" name="IDS_MULTILINE_SELECT_LABEL">
+        Multiline RenderText
+      </message>
+      <message translateable="false" name="IDS_MULTILINE_LABEL">
+        views::Label:
+      </message>
+      <message translateable="false" name="IDS_MULTILINE_ELIDE_LABEL">
+        elide text?
+      </message>
+      <message translateable="false" name="IDS_MULTILINE_RENDER_TEXT_LABEL">
+        gfx::RenderText:
+      </message>
+      <message translateable="false" name="IDS_MULTILINE_SAMPLE_TEXT_LABEL">
+        Sample Text:
+      </message>
+
+      <!-- native theme example -->
+      <message translateable="false" name="IDS_THEME_SELECT_LABEL">
+        Native Theme Colors
+      </message>
+
+      <!-- progress example -->
+      <message translateable="false" name="IDS_PROGRESS_SELECT_LABEL">
+        Progress Bar
+      </message>
+      <message translateable="false" name="IDS_PROGRESS_LOADER_LABEL">
+        Infinite Loader:
+      </message>
+      <message translateable="false" name="IDS_PROGRESS_LOADER_SHORT_LABEL">
+        Infinite loader (very short):
+      </message>
+
+      <!-- radio button example -->
+      <message translateable="false" name="IDS_RADIO_BUTTON_SELECT_LABEL">
+        Radio Button
+      </message>
+      <message translateable="false" name="IDS_RADIO_BUTTON_SELECT_BUTTON_LABEL">
+        Select
+      </message>
+      <message translateable="false" name="IDS_RADIO_BUTTON_STATUS_LABEL">
+        Show Status
+      </message>
+
+
+      <!-- scroll view example -->
+      <message translateable="false" name="IDS_SCROLL_VIEW_BUTTON_LABEL">
+        Button
+      </message>
+      <message translateable="false" name="IDS_SCROLL_VIEW_RADIO_BUTTON_LABEL">
+        Radio Button
+      </message>
+      <message translateable="false" name="IDS_SCROLL_VIEW_SELECT_LABEL">
+        Scroll View
+      </message>
+      <message translateable="false" name="IDS_SCROLL_VIEW_WIDE_LABEL">
+        Wide
+      </message>
+      <message translateable="false" name="IDS_SCROLL_VIEW_TALL_LABEL">
+        Tall
+      </message>
+      <message translateable="false" name="IDS_SCROLL_VIEW_BIG_SQUARE_LABEL">
+        Big Square
+      </message>
+      <message translateable="false" name="IDS_SCROLL_VIEW_SMALL_SQUARE_LABEL">
+        Small Square
+      </message>
+      <message translateable="false" name="IDS_SCROLL_VIEW_SCROLL_TO_LABEL">
+        Scroll to
+      </message>
+
+      <!-- slider example -->
+      <message translateable="false" name="IDS_SLIDER_SELECT_LABEL">
+        Slider
+      </message>
+
+      <!-- tabbed pane example -->
+      <message translateable="false" name="IDS_TABBED_PANE_SELECT_LABEL">
+        Tabbed Pane
+      </message>
+      <message translateable="false" name="IDS_TABBED_PANE_ADD_LABEL">
+        Add
+      </message>
+      <message translateable="false" name="IDS_TABBED_PANE_ADD_1_LABEL">
+        Add At 1
+      </message>
+      <message translateable="false" name="IDS_TABBED_PANE_SELECT_1_LABEL">
+        Select At 1
+      </message>
+      <message translateable="false" name="IDS_TABBED_PANE_TAB_1_LABEL">
+        Tab 1
+      </message>
+      <message translateable="false" name="IDS_TABBED_PANE_TAB_2_LABEL">
+        Tab 2
+      </message>
+      <message translateable="false" name="IDS_TABBED_PANE_TAB_3_LABEL">
+        Tab 3
+      </message>
+      <message translateable="false" name="IDS_TABBED_PANE_ADDED_LABEL">
+        Added
+      </message>
+      <message translateable="false" name="IDS_TABBED_PANE_ADDED_1_LABEL">
+        Added at 1
+      </message>
+
       <!-- textfield example -->
       <message translateable="false" name="IDS_TEXTFIELD_SELECT_LABEL">
         Textfield

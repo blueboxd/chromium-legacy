@@ -1463,6 +1463,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   // check for |self.browserState| before calling the presenting the bubbles.
   if (self.browserState) {
     [self.helpHandler showHelpBubbleIfEligible];
+    [self.helpHandler showLongPressHelpBubbleIfEligible];
   }
 }
 
@@ -1470,19 +1471,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   [super viewWillAppear:animated];
 
   self.visible = YES;
-
-  if (self.transitionCoordinator.animated) {
-    // The transition coordinator is animated only when presented from the
-    // TabGrid (when presented at the app start up, it is not animated). In that
-    // case, display the Long Press InProductHelp if needed.
-    auto completion =
-        ^(id<UIViewControllerTransitionCoordinatorContext> context) {
-          [self.helpHandler showLongPressHelpBubbleIfEligible];
-        };
-
-    [self.transitionCoordinator animateAlongsideTransition:nil
-                                                completion:completion];
-  }
 
   // If the controller is suspended, or has been paged out due to low memory,
   // updating the view will be handled when it's displayed again.
@@ -4291,7 +4279,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
     }
     if (completion)
       completion();
-    [self.helpHandler showLongPressHelpBubbleIfEligible];
 
     if (self.foregroundTabWasAddedCompletionBlock) {
       self.foregroundTabWasAddedCompletionBlock();

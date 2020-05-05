@@ -33,6 +33,15 @@ int PassThroughStorageDelegate::GetMaxConversionsPerImpression() const {
   return INT_MAX;
 }
 
+ConversionManager* TestManagerProvider::GetManager(
+    WebContents* web_contents) const {
+  return manager_;
+}
+
+TestConversionManager::TestConversionManager() = default;
+
+TestConversionManager::~TestConversionManager() = default;
+
 void TestConversionManager::HandleImpression(
     const StorableImpression& impression) {
   num_impressions_++;
@@ -47,6 +56,17 @@ void TestConversionManager::HandleSentReport(int64_t conversion_id) {
   last_sent_report_id_ = conversion_id;
 }
 
+void TestConversionManager::GetActiveImpressionsForWebUI(
+    base::OnceCallback<void(std::vector<StorableImpression>)> callback) {
+  std::move(callback).Run(impressions_);
+}
+
+void TestConversionManager::GetReportsForWebUI(
+    base::OnceCallback<void(std::vector<ConversionReport>)> callback,
+    base::Time max_report_time) {
+  std::move(callback).Run(reports_);
+}
+
 const ConversionPolicy& TestConversionManager::GetConversionPolicy() const {
   return policy_;
 }
@@ -56,6 +76,16 @@ void TestConversionManager::ClearData(
     base::Time delete_end,
     base::RepeatingCallback<bool(const url::Origin&)> filter,
     base::OnceClosure done) {}
+
+void TestConversionManager::SetActiveImpressionsForWebUI(
+    std::vector<StorableImpression> impressions) {
+  impressions_ = std::move(impressions);
+}
+
+void TestConversionManager::SetReportsForWebUI(
+    std::vector<ConversionReport> reports) {
+  reports_ = std::move(reports);
+}
 
 void TestConversionManager::Reset() {
   num_impressions_ = 0u;
@@ -118,6 +148,23 @@ StorableConversion DefaultConversion() {
           GURL(kDefaultConversionOrigin)) /* conversion_origin */,
       url::Origin::Create(GURL(kDefaultReportOrigin)) /* reporting_origin */);
   return conversion;
+}
+
+// Custom comparator for StorableImpressions that does not take impression id's
+// into account.
+testing::AssertionResult ImpressionsEqual(const StorableImpression& expected,
+                                          const StorableImpression& actual) {
+  const auto tie = [](const StorableImpression& impression) {
+    return std::make_tuple(
+        impression.impression_data(), impression.impression_origin(),
+        impression.conversion_origin(), impression.reporting_origin(),
+        impression.impression_time(), impression.expiry_time());
+  };
+
+  if (tie(expected) != tie(actual)) {
+    return testing::AssertionFailure();
+  }
+  return testing::AssertionSuccess();
 }
 
 // Custom comparator for comparing two vectors of conversion reports. Does not

@@ -127,22 +127,20 @@ static inline ImageBitmapSource* ToImageBitmapSourceInternal(
 
 ScriptPromise ImageBitmapFactories::CreateImageBitmapFromBlob(
     ScriptState* script_state,
-    EventTarget& event_target,
     ImageBitmapSource* bitmap_source,
     base::Optional<IntRect> crop_rect,
     const ImageBitmapOptions* options) {
-  Blob* blob = static_cast<Blob*>(bitmap_source);
+  DCHECK(script_state->ContextIsValid());
+  ImageBitmapFactories& factory = From(*ExecutionContext::From(script_state));
   ImageBitmapLoader* loader = ImageBitmapFactories::ImageBitmapLoader::Create(
-      From(event_target), crop_rect, options, script_state);
-  ScriptPromise promise = loader->Promise();
-  From(event_target).AddLoader(loader);
-  loader->LoadBlobAsync(blob);
-  return promise;
+      factory, crop_rect, options, script_state);
+  factory.AddLoader(loader);
+  loader->LoadBlobAsync(static_cast<Blob*>(bitmap_source));
+  return loader->Promise();
 }
 
 ScriptPromise ImageBitmapFactories::CreateImageBitmap(
     ScriptState* script_state,
-    EventTarget& event_target,
     const ImageBitmapSourceUnion& bitmap_source,
     const ImageBitmapOptions* options,
     ExceptionState& exception_state) {
@@ -152,13 +150,12 @@ ScriptPromise ImageBitmapFactories::CreateImageBitmap(
       ToImageBitmapSourceInternal(bitmap_source, options, false);
   if (!bitmap_source_internal)
     return ScriptPromise();
-  return CreateImageBitmap(script_state, event_target, bitmap_source_internal,
+  return CreateImageBitmap(script_state, bitmap_source_internal,
                            base::Optional<IntRect>(), options, exception_state);
 }
 
 ScriptPromise ImageBitmapFactories::CreateImageBitmap(
     ScriptState* script_state,
-    EventTarget& event_target,
     const ImageBitmapSourceUnion& bitmap_source,
     int sx,
     int sy,
@@ -173,13 +170,12 @@ ScriptPromise ImageBitmapFactories::CreateImageBitmap(
   if (!bitmap_source_internal)
     return ScriptPromise();
   base::Optional<IntRect> crop_rect = IntRect(sx, sy, sw, sh);
-  return CreateImageBitmap(script_state, event_target, bitmap_source_internal,
-                           crop_rect, options, exception_state);
+  return CreateImageBitmap(script_state, bitmap_source_internal, crop_rect,
+                           options, exception_state);
 }
 
 ScriptPromise ImageBitmapFactories::CreateImageBitmap(
     ScriptState* script_state,
-    EventTarget& event_target,
     ImageBitmapSource* bitmap_source,
     base::Optional<IntRect> crop_rect,
     const ImageBitmapOptions* options,
@@ -191,8 +187,8 @@ ScriptPromise ImageBitmapFactories::CreateImageBitmap(
   }
 
   if (bitmap_source->IsBlob()) {
-    return CreateImageBitmapFromBlob(script_state, event_target, bitmap_source,
-                                     crop_rect, options);
+    return CreateImageBitmapFromBlob(script_state, bitmap_source, crop_rect,
+                                     options);
   }
 
   if (bitmap_source->BitmapSourceSize().Width() == 0 ||
@@ -205,27 +201,18 @@ ScriptPromise ImageBitmapFactories::CreateImageBitmap(
     return ScriptPromise();
   }
 
-  return bitmap_source->CreateImageBitmap(script_state, event_target, crop_rect,
-                                          options, exception_state);
+  return bitmap_source->CreateImageBitmap(script_state, crop_rect, options,
+                                          exception_state);
 }
 
 const char ImageBitmapFactories::kSupplementName[] = "ImageBitmapFactories";
 
-ImageBitmapFactories& ImageBitmapFactories::From(EventTarget& event_target) {
-  if (LocalDOMWindow* window = event_target.ToLocalDOMWindow())
-    return FromInternal(*window);
-
-  return ImageBitmapFactories::FromInternal(
-      *To<WorkerGlobalScope>(event_target.GetExecutionContext()));
-}
-
-template <class GlobalObject>
-ImageBitmapFactories& ImageBitmapFactories::FromInternal(GlobalObject& object) {
+ImageBitmapFactories& ImageBitmapFactories::From(ExecutionContext& context) {
   ImageBitmapFactories* supplement =
-      Supplement<GlobalObject>::template From<ImageBitmapFactories>(object);
+      Supplement<ExecutionContext>::From<ImageBitmapFactories>(context);
   if (!supplement) {
     supplement = MakeGarbageCollected<ImageBitmapFactories>();
-    Supplement<GlobalObject>::ProvideTo(object, supplement);
+    Supplement<ExecutionContext>::ProvideTo(context, supplement);
   }
   return *supplement;
 }
@@ -241,8 +228,7 @@ void ImageBitmapFactories::DidFinishLoading(ImageBitmapLoader* loader) {
 
 void ImageBitmapFactories::Trace(Visitor* visitor) {
   visitor->Trace(pending_loaders_);
-  Supplement<LocalDOMWindow>::Trace(visitor);
-  Supplement<WorkerGlobalScope>::Trace(visitor);
+  Supplement<ExecutionContext>::Trace(visitor);
 }
 
 ImageBitmapFactories::ImageBitmapLoader::ImageBitmapLoader(

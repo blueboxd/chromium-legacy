@@ -14,9 +14,9 @@
 #include <vulkan/vulkan.h>
 
 #include "base/compiler_specific.h"
+#include "base/component_export.h"
 #include "base/native_library.h"
 #include "build/build_config.h"
-#include "gpu/vulkan/vulkan_export.h"
 #include "ui/gfx/extension_set.h"
 
 #if defined(OS_ANDROID)
@@ -44,25 +44,26 @@ namespace gpu {
 
 struct VulkanFunctionPointers;
 
-VULKAN_EXPORT VulkanFunctionPointers* GetVulkanFunctionPointers();
+COMPONENT_EXPORT(VULKAN) VulkanFunctionPointers* GetVulkanFunctionPointers();
 
 struct VulkanFunctionPointers {
   VulkanFunctionPointers();
   ~VulkanFunctionPointers();
 
-  VULKAN_EXPORT bool BindUnassociatedFunctionPointers();
+  COMPONENT_EXPORT(VULKAN) bool BindUnassociatedFunctionPointers();
 
   // These functions assume that vkGetInstanceProcAddr has been populated.
-  VULKAN_EXPORT bool BindInstanceFunctionPointers(
+  COMPONENT_EXPORT(VULKAN)
+  bool BindInstanceFunctionPointers(
       VkInstance vk_instance,
       uint32_t api_version,
       const gfx::ExtensionSet& enabled_extensions);
 
   // These functions assume that vkGetDeviceProcAddr has been populated.
-  VULKAN_EXPORT bool BindDeviceFunctionPointers(
-      VkDevice vk_device,
-      uint32_t api_version,
-      const gfx::ExtensionSet& enabled_extensions);
+  COMPONENT_EXPORT(VULKAN)
+  bool BindDeviceFunctionPointers(VkDevice vk_device,
+                                  uint32_t api_version,
+                                  const gfx::ExtensionSet& enabled_extensions);
 
   base::NativeLibrary vulkan_loader_library = nullptr;
 

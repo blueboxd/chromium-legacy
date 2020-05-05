@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.webapps;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.Window;
 
 import androidx.annotation.Nullable;
 
@@ -21,6 +22,8 @@ import org.chromium.chrome.browser.customtabs.content.CustomTabActivityTabProvid
 import org.chromium.chrome.browser.customtabs.content.TabCreationMode;
 import org.chromium.chrome.browser.customtabs.content.TabObserverRegistrar;
 import org.chromium.chrome.browser.dependency_injection.ActivityScope;
+import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
+import org.chromium.chrome.browser.lifecycle.InflationObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabCreationState;
 import org.chromium.chrome.browser.tabmodel.TabModel;
@@ -36,7 +39,8 @@ import dagger.Lazy;
  * Shortcut/WebAPK implementation of {@link BrowserServicesActivityTabController}.
  */
 @ActivityScope
-public class WebappActivityTabController implements BrowserServicesActivityTabController {
+public class WebappActivityTabController
+        implements InflationObserver, BrowserServicesActivityTabController {
     private final Lazy<CustomTabDelegateFactory> mTabDelegateFactory;
     private final ChromeActivity<?> mActivity;
     private final TabObserverRegistrar mTabObserverRegistrar;
@@ -57,6 +61,7 @@ public class WebappActivityTabController implements BrowserServicesActivityTabCo
     public WebappActivityTabController(ChromeActivity<?> activity,
             Lazy<CustomTabDelegateFactory> tabDelegateFactory,
             ActivityTabProvider activityTabProvider, TabObserverRegistrar tabObserverRegistrar,
+            ActivityLifecycleDispatcher lifecycleDispatcher,
             CustomTabTabPersistencePolicy persistencePolicy, CustomTabActivityTabFactory tabFactory,
             WebContentsFactory webContentsFactory, CustomTabActivityTabProvider tabProvider) {
         mTabDelegateFactory = tabDelegateFactory;
@@ -67,6 +72,8 @@ public class WebappActivityTabController implements BrowserServicesActivityTabCo
         mActivityTabProvider = activityTabProvider;
         mWebContentsFactory = webContentsFactory;
         mTabProvider = tabProvider;
+
+        lifecycleDispatcher.register(this);
     }
 
     @Override
@@ -95,6 +102,15 @@ public class WebappActivityTabController implements BrowserServicesActivityTabCo
     public TabModelSelector getTabModelSelector() {
         return mTabFactory.getTabModelSelector();
     }
+
+    @Override
+    public void onPreInflationStartup() {
+        // This must be requested before adding content.
+        mActivity.supportRequestWindowFeature(Window.FEATURE_ACTION_MODE_OVERLAY);
+    }
+
+    @Override
+    public void onPostInflationStartup() {}
 
     public void initializeState() {
         TabModelSelectorImpl tabModelSelector = mTabFactory.getTabModelSelector();

@@ -5,9 +5,10 @@
 #import "chrome/browser/ui/cocoa/applescript/tab_applescript.h"
 
 #include "base/bind.h"
+#include "base/check.h"
 #include "base/files/file_path.h"
-#include "base/logging.h"
 #import "base/mac/scoped_nsobject.h"
+#include "base/notreached.h"
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/browser/printing/print_view_manager.h"
 #include "chrome/browser/profiles/profile.h"

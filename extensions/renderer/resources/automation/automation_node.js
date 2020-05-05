@@ -479,6 +479,20 @@ var GetTableCellAriaColumnIndex = natives.GetTableCellAriaColumnIndex;
 var GetTableCellAriaRowIndex = natives.GetTableCellAriaRowIndex;
 
 /**
+ * @param {string} axTreeID The id of the accessibility tree.
+ * @param {number} nodeID The id of a node.
+ * @return {number} column count for this cell's table. 0 if not in a table.
+ */
+var GetTableColumnCount = natives.GetTableColumnCount;
+
+/**
+ * @param {string} axTreeID The id of the accessibility tree.
+ * @param {number} nodeID The id of a node.
+ * @return {number} Row count for this cell's table. 0 if not in a table.
+ */
+var GetTableRowCount = natives.GetTableRowCount;
+
+/**
  * @param {string} axTreeId The id of the accessibility tree.
  * @param {number} nodeID The id of a node.
  * @return {string} Detected language for this node.
@@ -801,6 +815,14 @@ AutomationNodeImpl.prototype = {
 
   get tableCellAriaRowIndex() {
     return GetTableCellAriaRowIndex(this.treeID, this.id);
+  },
+
+  get tableColumnCount() {
+    return GetTableColumnCount(this.treeID, this.id);
+  },
+
+  get tableRowCount() {
+    return GetTableRowCount(this.treeID, this.id);
   },
 
   get nonInlineTextWordStarts() {
@@ -1279,12 +1301,8 @@ var intAttributes = [
     'setSize',
     'tableCellColumnSpan',
     'tableCellRowSpan',
-    'tableColumnCount',
     'ariaColumnCount',
-    'tableColumnIndex',
-    'tableRowCount',
     'ariaRowCount',
-    'tableRowIndex',
     'textSelEnd',
     'textSelStart'];
 
@@ -1853,6 +1871,8 @@ utils.expose(AutomationNode, AutomationNodeImpl, {
         'tableCellColumnIndex',
         'tableCellRowHeaders',
         'tableCellRowIndex',
+        'tableColumnCount',
+        'tableRowCount',
         'unclippedLocation',
         'underline',
       ]),

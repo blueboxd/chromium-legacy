@@ -92,6 +92,10 @@ class DownloadPrefs {
   // |path.Extension()|.
   bool IsAutoOpenEnabledBasedOnExtension(const base::FilePath& path) const;
 
+  // Returns true if |path| should be opened automatically based on
+  // |path.Extension()|.
+  bool IsAutoOpenByPolicyBasedOnExtension(const base::FilePath& path) const;
+
   // Enables automatically opening all downloads with the same file type as
   // |file_name|. Returns true on success. The call may fail if |file_name|
   // either doesn't have an extension (hence the file type cannot be

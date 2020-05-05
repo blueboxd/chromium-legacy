@@ -63,12 +63,18 @@ void BiquadProcessor::CheckForDirtyCoefficients() {
   filter_coefficients_dirty_ = false;
   has_sample_accurate_values_ = false;
 
-  if (parameter1_->HasSampleAccurateValues() ||
-      parameter2_->HasSampleAccurateValues() ||
-      parameter3_->HasSampleAccurateValues() ||
-      parameter4_->HasSampleAccurateValues()) {
+  if (parameter1_->HasSampleAccurateValuesTimeline() ||
+      parameter2_->HasSampleAccurateValuesTimeline() ||
+      parameter3_->HasSampleAccurateValuesTimeline() ||
+      parameter4_->HasSampleAccurateValuesTimeline()) {
+    // Coefficients are dirty if any of them has automations or if there are
+    // connections to the AudioParam.
     filter_coefficients_dirty_ = true;
     has_sample_accurate_values_ = true;
+    // If any parameter is a-rate, then the filter must do a-rate processing for
+    // everything.
+    is_audio_rate_ = parameter1_->IsAudioRate() || parameter2_->IsAudioRate() ||
+                     parameter3_->IsAudioRate() || parameter4_->IsAudioRate();
   } else {
     if (has_just_reset_) {
       // Snap to exact values first time after reset, then smooth for subsequent

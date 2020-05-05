@@ -106,7 +106,6 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kAndroidPayIntegrationV1,
     &kAndroidPayIntegrationV2,
     &kAndroidSearchEngineChoiceNotification,
-    &kBookmarksShowInFolder,
     &kCastDeviceFilter,
     &kCloseTabSuggestions,
     &kCCTBackgroundTab,
@@ -173,7 +172,6 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kProbabilisticCryptidRenderer,
     &kReachedCodeProfiler,
     &kReaderModeInCCT,
-    &kReorderBookmarks,
     &kRelatedSearches,
     &kRevampedContextMenu,
     &kScrollToExpandPaymentHandler,
@@ -307,9 +305,6 @@ const base::Feature kAndroidSearchEngineChoiceNotification{
 
 const base::Feature kBackgroundTaskComponentUpdate{
     "BackgroundTaskComponentUpdate", base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kBookmarksShowInFolder{"BookmarksShowInFolder",
-                                           base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kConditionalTabStripAndroid{
     "ConditionalTabStripAndroid", base::FEATURE_DISABLED_BY_DEFAULT};
@@ -520,9 +515,6 @@ const base::Feature kReachedCodeProfiler{"ReachedCodeProfiler",
 
 const base::Feature kReaderModeInCCT{"ReaderModeInCCT",
                                      base::FEATURE_ENABLED_BY_DEFAULT};
-
-const base::Feature kReorderBookmarks{"ReorderBookmarks",
-                                      base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kRelatedSearches{"RelatedSearches",
                                      base::FEATURE_DISABLED_BY_DEFAULT};

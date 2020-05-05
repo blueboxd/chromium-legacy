@@ -3,9 +3,10 @@
 // found in the LICENSE file.
 
 #include "ui/events/blink/prediction/linear_predictor.h"
+
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/features.h"
 #include "ui/events/blink/prediction/input_predictor_unittest_helpers.h"
-#include "ui/events/blink/prediction/predictor_factory.h"
 
 namespace ui {
 namespace test {
@@ -38,14 +39,14 @@ class LinearPredictorSecondOrderTest : public InputPredictorTest {
 // equation order
 TEST_F(LinearPredictorFirstOrderTest, GetName) {
   EXPECT_EQ(predictor_->GetName(),
-            input_prediction::kScrollPredictorNameLinearFirst);
+            blink::features::kScrollPredictorNameLinearFirst);
 }
 
 // Test if the output name of the predictor is taking account of the
 // equation order
 TEST_F(LinearPredictorSecondOrderTest, GetName) {
   EXPECT_EQ(predictor_->GetName(),
-            input_prediction::kScrollPredictorNameLinearSecond);
+            blink::features::kScrollPredictorNameLinearSecond);
 }
 
 // Test that the number of events required to compute a prediction is correct

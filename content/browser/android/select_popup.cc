@@ -67,6 +67,10 @@ void SelectPopup::ShowMenu(
   if (j_obj.is_null())
     return;
 
+  // Hide the popup menu if the mojo connection is still open.
+  if (popup_client_)
+    HideMenu();
+
   // For multi-select list popups we find the list of previous selections by
   // iterating through the items. But for single selection popups we take the
   // given |selected_item| as is.

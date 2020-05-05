@@ -18,7 +18,7 @@ def CommonChecks(input_api, output_api):
   generated_files = input_api.AffectedFiles(
       file_filter=lambda x: os.path.basename(x.LocalPath()) in [
           'vulkan_types.mojom', 'vulkan_types_mojom_traits.h',
-          'vulkan_types_mojom_traits.cc', 'vulkan_types.typemap'
+          'vulkan_types_mojom_traits.cc', 'generated_vulkan_type_mappings.gni'
       ])
 
 

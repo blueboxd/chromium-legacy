@@ -10,11 +10,11 @@
 #include <memory>
 #include <vector>
 
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "base/optional.h"
 #include "build/build_config.h"
 #include "gpu/vulkan/semaphore_handle.h"
-#include "gpu/vulkan/vulkan_export.h"
 #include "ui/gfx/buffer_types.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/gpu_memory_buffer.h"
@@ -47,7 +47,7 @@ class SysmemBufferCollection {
 // Base class which provides functions for creating vulkan objects for different
 // platforms that use platform-specific extensions (e.g. for creation of
 // VkSurfaceKHR objects). It also provides helper/utility functions.
-class VULKAN_EXPORT VulkanImplementation {
+class COMPONENT_EXPORT(VULKAN) VulkanImplementation {
  public:
   VulkanImplementation(bool use_swiftshader = false,
                        bool allow_protected_memory = false,
@@ -147,7 +147,7 @@ class VULKAN_EXPORT VulkanImplementation {
   DISALLOW_COPY_AND_ASSIGN(VulkanImplementation);
 };
 
-VULKAN_EXPORT
+COMPONENT_EXPORT(VULKAN)
 std::unique_ptr<VulkanDeviceQueue> CreateVulkanDeviceQueue(
     VulkanImplementation* vulkan_implementation,
     uint32_t option);

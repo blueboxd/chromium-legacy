@@ -98,6 +98,8 @@ class AX_EXPORT AXTableInfo {
   base::Optional<int> aria_row_count = 0;
   base::Optional<int> aria_col_count = 0;
 
+  std::string ToString() const;
+
  private:
   AXTableInfo(AXTree* tree, AXNode* table_node);
 

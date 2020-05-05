@@ -65,7 +65,9 @@ void ShowGenericUiAction::EndAction(bool view_inflation_successful,
     for (size_t i = 0; i < values->size(); ++i) {
       auto* output_value = output_model->add_values();
       output_value->set_identifier(output_model_identifiers.at(i));
-      *output_value->mutable_value() = values->at(i);
+      if (!values->at(i).is_client_side_only()) {
+        *output_value->mutable_value() = values->at(i);
+      }
     }
   }
 

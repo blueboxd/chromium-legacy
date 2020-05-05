@@ -116,7 +116,7 @@ class CORE_EXPORT CustomElement {
       const FileOrUSVStringOrFormData& value,
       const String& mode);
 
-  static void TryToUpgrade(Element&, bool upgrade_invisible_elements = false);
+  static void TryToUpgrade(Element&);
 
   static void AddEmbedderCustomElementNameForTesting(const AtomicString& name,
                                                      ExceptionState&);

@@ -291,7 +291,7 @@ void ChromeUserManagerImpl::RegisterPrefs(PrefRegistrySimple* registry) {
                                std::string());
   registry->RegisterListPref(prefs::kReportingUsers);
 
-  SupervisedUserManager::RegisterPrefs(registry);
+  SupervisedUserManager::RegisterLocalStatePrefs(registry);
   SessionLengthLimiter::RegisterPrefs(registry);
   enterprise_user_session_metrics::RegisterPrefs(registry);
 }

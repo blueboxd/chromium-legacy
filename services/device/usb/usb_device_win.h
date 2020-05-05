@@ -22,9 +22,14 @@ struct WebUsbPlatformCapabilityDescriptor;
 
 class UsbDeviceWin : public UsbDevice {
  public:
+  struct FunctionInfo {
+    base::string16 driver;
+    base::string16 path;
+  };
+
   UsbDeviceWin(const base::string16& device_path,
                const base::string16& hub_path,
-               const base::flat_map<int, base::string16>& child_device_paths,
+               const base::flat_map<int, FunctionInfo>& functions,
                uint32_t bus_number,
                uint32_t port_number,
                const base::string16& driver_name);
@@ -39,8 +44,8 @@ class UsbDeviceWin : public UsbDevice {
   ~UsbDeviceWin() override;
 
   const base::string16& device_path() const { return device_path_; }
-  const base::flat_map<int, base::string16>& function_paths() const {
-    return function_paths_;
+  const base::flat_map<int, FunctionInfo>& functions() const {
+    return functions_;
   }
   const base::string16& driver_name() const { return driver_name_; }
 
@@ -48,8 +53,7 @@ class UsbDeviceWin : public UsbDevice {
   // and string descriptors.
   void ReadDescriptors(base::OnceCallback<void(bool)> callback);
 
-  void UpdateFunctionPath(int interface_number,
-                          const base::string16& function_path);
+  void UpdateFunction(int interface_number, const FunctionInfo& function_info);
 
  private:
   void OnReadDescriptors(base::OnceCallback<void(bool)> callback,
@@ -80,7 +84,7 @@ class UsbDeviceWin : public UsbDevice {
 
   const base::string16 device_path_;
   const base::string16 hub_path_;
-  base::flat_map<int, base::string16> function_paths_;
+  base::flat_map<int, FunctionInfo> functions_;
   const base::string16 driver_name_;
 
   DISALLOW_COPY_AND_ASSIGN(UsbDeviceWin);

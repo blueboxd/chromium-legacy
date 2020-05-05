@@ -16,6 +16,7 @@
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/frame/viewport_data.h"
 #include "third_party/blink/renderer/core/fullscreen/fullscreen.h"
 #include "third_party/blink/renderer/core/fullscreen/scoped_allow_fullscreen.h"
 #include "third_party/blink/renderer/core/html/html_element.h"
@@ -581,6 +582,7 @@ void XRSystem::OverlayFullscreenEventManager::Invoke(
 
   if (event->type() == event_type_names::kFullscreenchange) {
     // Succeeded, proceed with session creation.
+    element->GetDocument().GetViewportData().SetExpandIntoDisplayCutout(true);
     element->GetDocument().SetIsXrOverlay(true, element);
     xr_->OnRequestSessionReturned(query_, std::move(result_));
   }
@@ -656,7 +658,11 @@ void XRSystem::OverlayFullscreenExitObserver::Invoke(
       event_type_names::kFullscreenchange, this, true);
 
   if (event->type() == event_type_names::kFullscreenchange) {
-    // Succeeded, proceed with session shutdown.
+    // Succeeded, proceed with session shutdown. Expanding into the fullscreen
+    // cutout is only valid for fullscreen mode which we just exited (cf.
+    // MediaControlsDisplayCutoutDelegate::DidExitFullscreen), so we can
+    // unconditionally turn this off here.
+    element_->GetDocument().GetViewportData().SetExpandIntoDisplayCutout(false);
     xr_->ExitPresent(std::move(on_exited_));
   }
 }

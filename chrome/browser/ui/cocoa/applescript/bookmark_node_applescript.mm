@@ -4,7 +4,7 @@
 
 #import "chrome/browser/ui/cocoa/applescript/bookmark_node_applescript.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #import "base/mac/foundation_util.h"
 #import "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"

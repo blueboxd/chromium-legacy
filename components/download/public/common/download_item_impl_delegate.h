@@ -66,6 +66,10 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadItemImplDelegate {
   // Tests if a file type should be opened automatically.
   virtual bool ShouldOpenFileBasedOnExtension(const base::FilePath& path);
 
+  // Tests if a file type should be opened automatically by policy.
+  virtual bool ShouldOpenFileByPolicyBasedOnExtension(
+      const base::FilePath& path);
+
   // Checks whether a downloaded file still exists and updates the
   // file's state if the file is already removed.
   // The check may or may not result in a later asynchronous call

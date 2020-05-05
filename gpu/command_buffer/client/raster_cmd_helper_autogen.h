@@ -228,6 +228,7 @@ void WritePixelsINTERNALImmediate(GLint x_offset,
 }
 
 void ConvertYUVMailboxesToRGBINTERNALImmediate(GLenum planes_yuv_color_space,
+                                               GLboolean is_nv12,
                                                const GLbyte* mailboxes) {
   const uint32_t size =
       raster::cmds::ConvertYUVMailboxesToRGBINTERNALImmediate::ComputeSize();
@@ -235,7 +236,7 @@ void ConvertYUVMailboxesToRGBINTERNALImmediate(GLenum planes_yuv_color_space,
       GetImmediateCmdSpaceTotalSize<
           raster::cmds::ConvertYUVMailboxesToRGBINTERNALImmediate>(size);
   if (c) {
-    c->Init(planes_yuv_color_space, mailboxes);
+    c->Init(planes_yuv_color_space, is_nv12, mailboxes);
   }
 }
 

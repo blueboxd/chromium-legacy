@@ -11,22 +11,22 @@
 import {addSingletonGetter} from 'chrome://resources/js/cr.m.js';
 // clang-format on
 
-  /** @interface */
-  class PrintingBrowserProxy {
-    /**
-     * Open the native print system dialog.
-     */
-    openSystemPrintDialog() {}
-  }
-
+/** @interface */
+class PrintingBrowserProxy {
   /**
-   * @implements {PrintingBrowserProxy}
+   * Open the native print system dialog.
    */
-  export class PrintingBrowserProxyImpl {
-    /** @override */
-    openSystemPrintDialog() {
-      chrome.send('openSystemPrintDialog');
-    }
-  }
+  openSystemPrintDialog() {}
+}
 
-  addSingletonGetter(PrintingBrowserProxyImpl);
+/**
+ * @implements {PrintingBrowserProxy}
+ */
+export class PrintingBrowserProxyImpl {
+  /** @override */
+  openSystemPrintDialog() {
+    chrome.send('openSystemPrintDialog');
+  }
+}
+
+addSingletonGetter(PrintingBrowserProxyImpl);

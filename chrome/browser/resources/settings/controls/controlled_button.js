@@ -26,10 +26,7 @@ Polymer({
     },
 
     /** @private */
-    actionClass_: {
-      type: String,
-      value: ''
-    },
+    actionClass_: {type: String, value: ''},
 
     /** @private */
     enforced_: {

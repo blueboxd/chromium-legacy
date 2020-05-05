@@ -52,8 +52,9 @@ void AddOneTask(size_t* count) {
 
 void RunTenTimesTask(size_t* count, scoped_refptr<TaskQueue> timer_queue) {
   if (++(*count) < 10) {
-    timer_queue->task_runner()->PostTask(
-        FROM_HERE, base::BindOnce(&RunTenTimesTask, count, timer_queue));
+    timer_queue->task_runner()->PostDelayedTask(
+        FROM_HERE, base::BindOnce(&RunTenTimesTask, count, timer_queue),
+        base::TimeDelta::FromMilliseconds(1));
   }
 }
 
@@ -95,25 +96,26 @@ class TaskQueueThrottlerTest : public testing::Test {
 
   void ExpectThrottled(scoped_refptr<TaskQueue> timer_queue) {
     size_t count = 0;
-    timer_queue->task_runner()->PostTask(
-        FROM_HERE, base::BindOnce(&RunTenTimesTask, &count, timer_queue));
+    timer_queue->task_runner()->PostDelayedTask(
+        FROM_HERE, base::BindOnce(&RunTenTimesTask, &count, timer_queue),
+        base::TimeDelta::FromMilliseconds(1));
 
-    test_task_runner_->FastForwardBy(base::TimeDelta::FromSeconds(1));
-    EXPECT_LE(count, 1u);
+    test_task_runner_->FastForwardBy(base::TimeDelta::FromMilliseconds(11));
+    EXPECT_EQ(count, 0u);
 
     // Make sure the rest of the tasks run or we risk a UAF on |count|.
-    test_task_runner_->FastForwardBy(base::TimeDelta::FromSeconds(10));
-    EXPECT_EQ(10u, count);
+    test_task_runner_->FastForwardUntilNoTasksRemain();
+    EXPECT_EQ(count, 10u);
   }
 
   void ExpectUnthrottled(scoped_refptr<TaskQueue> timer_queue) {
     size_t count = 0;
-    timer_queue->task_runner()->PostTask(
-        FROM_HERE, base::BindOnce(&RunTenTimesTask, &count, timer_queue));
+    timer_queue->task_runner()->PostDelayedTask(
+        FROM_HERE, base::BindOnce(&RunTenTimesTask, &count, timer_queue),
+        base::TimeDelta::FromMilliseconds(1));
 
-    test_task_runner_->FastForwardBy(base::TimeDelta::FromSeconds(1));
-    EXPECT_EQ(10u, count);
-    test_task_runner_->FastForwardUntilNoTasksRemain();
+    test_task_runner_->FastForwardBy(base::TimeDelta::FromMilliseconds(11));
+    EXPECT_EQ(count, 10u);
   }
 
   bool IsQueueBlocked(TaskQueue* task_queue) {
@@ -1122,6 +1124,11 @@ TEST_P(TaskQueueThrottlerWithAutoAdvancingTimeTest,
 
   EXPECT_THAT(run_times, ElementsAre(base::TimeTicks() +
                                      base::TimeDelta::FromMilliseconds(1000)));
+
+  // Advance time passed the 1-second aligned wake up. The next task will run on
+  // the next 1-second aligned wake up.
+  test_task_runner_->AdvanceMockTickClock(
+      base::TimeDelta::FromMilliseconds(10));
 
   voter->SetVoteToEnable(true);
   test_task_runner_->FastForwardUntilNoTasksRemain();

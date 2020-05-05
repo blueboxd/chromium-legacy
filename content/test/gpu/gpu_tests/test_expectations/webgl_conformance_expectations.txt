@@ -336,9 +336,14 @@ crbug.com/angleproject/3767 [ mac passthrough amd ] conformance/rendering/render
 # Mac Pro (AMD) / Passthrough command decoder
 crbug.com/992231 [ mac passthrough amd-0x679e ] conformance/context/context-size-change.html [ Failure ]
 
+# Mac / Passthrough command decoder / NVIDIA
+crbug.com/982294 [ mac passthrough nvidia ] conformance/renderbuffers/framebuffer-object-attachment.html [ Failure ]
+crbug.com/982294 [ mac passthrough nvidia ] conformance/textures/misc/tex-input-validation.html [ Failure ]
+crbug.com/982294 [ mac passthrough nvidia ] conformance/textures/misc/texture-corner-case-videos.html [ Failure ]
+
 # Mac ASAN flakes
 crbug.com/1059760 [ mac asan ] conformance/textures/image_bitmap_from_video/* [ RetryOnFailure ]
-crbug.com/1059760 [ mac asan ] conformance/textures/misc/texture-corner-case-videos.html [ RetryOnFailure ]
+crbug.com/1059760 [ mac no-passthrough asan ] conformance/textures/misc/texture-corner-case-videos.html [ RetryOnFailure ]
 crbug.com/1059760 [ mac asan ] conformance/textures/video/* [ RetryOnFailure ]
 
 ####################

@@ -25,7 +25,6 @@ class CORE_EXPORT ImageBitmapSource {
  public:
   virtual IntSize BitmapSourceSize() const { return IntSize(); }
   virtual ScriptPromise CreateImageBitmap(ScriptState*,
-                                          EventTarget&,
                                           base::Optional<IntRect>,
                                           const ImageBitmapOptions*,
                                           ExceptionState&);

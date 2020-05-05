@@ -8,15 +8,15 @@
 #include <vulkan/vulkan.h>
 #include <memory>
 
+#include "base/component_export.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "gpu/config/vulkan_info.h"
-#include "gpu/vulkan/vulkan_export.h"
 #include "ui/gfx/extension_set.h"
 
 namespace gpu {
 
-class VULKAN_EXPORT VulkanInstance {
+class COMPONENT_EXPORT(VULKAN) VulkanInstance {
  public:
   VulkanInstance();
 

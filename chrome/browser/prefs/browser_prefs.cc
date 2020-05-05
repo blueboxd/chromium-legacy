@@ -536,6 +536,11 @@ const char kPreviewsLPRProbeCache[] = "Availability.Prober.cache.Litepages";
 const char kPreviewsLPROriginProbeCache[] =
     "Availability.Prober.cache.LitepagesOriginCheck";
 
+#if defined(OS_CHROMEOS)
+// Deprecated 4/2020
+const char kSupervisedUsersNextId[] = "LocallyManagedUsersNextId";
+#endif  // defined(OS_CHROMEOS)
+
 // Register local state used only for migration (clearing or moving to a new
 // key).
 void RegisterLocalStatePrefsForMigration(PrefRegistrySimple* registry) {
@@ -549,6 +554,10 @@ void RegisterLocalStatePrefsForMigration(PrefRegistrySimple* registry) {
 #if defined(OS_WIN)
   registry->RegisterBooleanPref(kHasSeenWin10PromoPage, false);
 #endif
+
+#if defined(OS_CHROMEOS)
+  registry->RegisterIntegerPref(kSupervisedUsersNextId, 0);
+#endif  // defined(OS_CHROMEOS)
 }
 
 // Register prefs used only for migration (clearing or moving to a new key).
@@ -1129,6 +1138,11 @@ void MigrateObsoleteLocalStatePrefs(PrefService* local_state) {
   local_state->ClearPref(kInvalidatorSavedInvalidations);
   local_state->ClearPref(kInvalidatorInvalidationState);
   local_state->ClearPref(kInvalidatorClientId);
+
+#if defined(OS_CHROMEOS)
+  // Added 4/2020.
+  local_state->ClearPref(kSupervisedUsersNextId);
+#endif  // defined(OS_CHROMEOS)
 }
 
 // This method should be periodically pruned of year+ old migrations.

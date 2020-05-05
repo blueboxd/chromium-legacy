@@ -7,60 +7,58 @@
  * the settings page.
  */
 
-import {Polymer, html} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-
 import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.m.js';
 import 'chrome://resources/cr_elements/shared_vars_css.m.js';
-import {I18nBehavior} from 'chrome://resources/js/i18n_behavior.m.js';
 import '../i18n_setup.js';
 import '../settings_shared_css.m.js';
 import './passwords_shared_css.js';
 
-  /** @typedef {chrome.autofillPrivate.CreditCardEntry} */
-  export let CreditCardEntry;
+import {I18nBehavior} from 'chrome://resources/js/i18n_behavior.m.js';
+import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-  Polymer({
-    is: 'settings-credit-card-list-entry',
+/** @typedef {chrome.autofillPrivate.CreditCardEntry} */
+export let CreditCardEntry;
 
-    _template: html`{__html_template__}`,
+Polymer({
+  is: 'settings-credit-card-list-entry',
 
-    behaviors: [
-      I18nBehavior,
-    ],
+  _template: html`{__html_template__}`,
 
-    properties: {
-      /**
-       * A saved credit card.
-       * @type {!CreditCardEntry}
-       */
-      creditCard: Object,
-    },
+  behaviors: [
+    I18nBehavior,
+  ],
 
+  properties: {
     /**
-     * Opens the credit card action menu.
-     * @private
+     * A saved credit card.
+     * @type {!CreditCardEntry}
      */
-    onDotsMenuClick_() {
-      this.fire('dots-card-menu-click', {
-        creditCard: this.creditCard,
-        anchorElement: this.$$('#creditCardMenu'),
-      });
-    },
+    creditCard: Object,
+  },
 
-    /** @private */
-    onRemoteEditClick_() {
-      this.fire('remote-card-menu-click');
-    },
+  /**
+   * Opens the credit card action menu.
+   * @private
+   */
+  onDotsMenuClick_() {
+    this.fire('dots-card-menu-click', {
+      creditCard: this.creditCard,
+      anchorElement: this.$$('#creditCardMenu'),
+    });
+  },
 
-    /**
-     * The 3-dot menu should not be shown if the card is entirely remote.
-     * @return {boolean}
-     * @private
-     */
-    showDots_() {
-      return !!(
-          this.creditCard.metadata.isLocal ||
-          this.creditCard.metadata.isCached);
-    },
-  });
+  /** @private */
+  onRemoteEditClick_() {
+    this.fire('remote-card-menu-click');
+  },
 
+  /**
+   * The 3-dot menu should not be shown if the card is entirely remote.
+   * @return {boolean}
+   * @private
+   */
+  showDots_() {
+    return !!(
+        this.creditCard.metadata.isLocal || this.creditCard.metadata.isCached);
+  },
+});

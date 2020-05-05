@@ -6,7 +6,6 @@
 #include <stddef.h>
 #import <UIKit/UIKit.h>
 
-#include "base/logging.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/stl_util.h"
 #include "testing/gtest/include/gtest/gtest.h"

@@ -47,121 +47,120 @@ let LocalDataList;
  */
 let EtldPlus1CookieNumber;
 
-  /** @interface */
-  export class LocalDataBrowserProxy {
-    /**
-     * @param {string} filter Search filter (use "" for none).
-     * @return {!Promise<!LocalDataList>}
-     */
-    getDisplayList(filter) {}
-
-    /**
-     * Removes all local data (local storage, cookies, etc.).
-     * Note: on-tree-item-removed will not be sent.
-     * @return {!Promise} To signal completion.
-     */
-    removeAll() {}
-
-    /**
-     * Remove items that pass the current filter. Completion signaled by
-     * on-tree-item-removed.
-     */
-    removeShownItems() {}
-
-    /**
-     * Remove a specific list item. Completion signaled by on-tree-item-removed.
-     * @param {string} id Which element to delete.
-     */
-    removeItem(id) {}
-
-    /**
-     * Gets the cookie details for a particular site.
-     * @param {string} site The name of the site.
-     * @return {!Promise<!CookieList>}
-     */
-    getCookieDetails(site) {}
-
-    /**
-     * Gets the plural string for a given number of cookies.
-     * @param {number} numCookies The number of cookies.
-     * @return {!Promise<string>}
-     */
-    getNumCookiesString(numCookies) {}
-
-    /**
-     * Reloads all local data.
-     * TODO(dschuyler): rename function to reload().
-     * @return {!Promise} To signal completion.
-     */
-    reloadCookies() {}
-
-    /**
-     * TODO(dschuyler): merge with removeItem().
-     * Removes a given cookie.
-     * @param {string} path The path to the parent cookie.
-     */
-    removeCookie(path) {}
-
-    /**
-     * Removes all SameSite=None cookies, as well as storage available in
-     * third-party contexts.
-     * Note: on-tree-item-removed will not be sent.
-     * @return {!Promise} To signal completion.
-     */
-    removeAllThirdPartyCookies() {}
-  }
+/** @interface */
+export class LocalDataBrowserProxy {
+  /**
+   * @param {string} filter Search filter (use "" for none).
+   * @return {!Promise<!LocalDataList>}
+   */
+  getDisplayList(filter) {}
 
   /**
-   * @implements {LocalDataBrowserProxy}
+   * Removes all local data (local storage, cookies, etc.).
+   * Note: on-tree-item-removed will not be sent.
+   * @return {!Promise} To signal completion.
    */
-  export class LocalDataBrowserProxyImpl {
-    /** @override */
-    getDisplayList(filter) {
-      return sendWithPromise('localData.getDisplayList', filter);
-    }
+  removeAll() {}
 
-    /** @override */
-    removeAll() {
-      return sendWithPromise('localData.removeAll');
-    }
+  /**
+   * Remove items that pass the current filter. Completion signaled by
+   * on-tree-item-removed.
+   */
+  removeShownItems() {}
 
-    /** @override */
-    removeShownItems() {
-      chrome.send('localData.removeShownItems');
-    }
+  /**
+   * Remove a specific list item. Completion signaled by on-tree-item-removed.
+   * @param {string} id Which element to delete.
+   */
+  removeItem(id) {}
 
-    /** @override */
-    removeItem(id) {
-      chrome.send('localData.removeItem', [id]);
-    }
+  /**
+   * Gets the cookie details for a particular site.
+   * @param {string} site The name of the site.
+   * @return {!Promise<!CookieList>}
+   */
+  getCookieDetails(site) {}
 
-    /** @override */
-    getCookieDetails(site) {
-      return sendWithPromise('localData.getCookieDetails', site);
-    }
+  /**
+   * Gets the plural string for a given number of cookies.
+   * @param {number} numCookies The number of cookies.
+   * @return {!Promise<string>}
+   */
+  getNumCookiesString(numCookies) {}
 
-    /** @override */
-    getNumCookiesString(numCookies) {
-      return sendWithPromise('localData.getNumCookiesString', numCookies);
-    }
+  /**
+   * Reloads all local data.
+   * TODO(dschuyler): rename function to reload().
+   * @return {!Promise} To signal completion.
+   */
+  reloadCookies() {}
 
-    /** @override */
-    reloadCookies() {
-      return sendWithPromise('localData.reload');
-    }
+  /**
+   * TODO(dschuyler): merge with removeItem().
+   * Removes a given cookie.
+   * @param {string} path The path to the parent cookie.
+   */
+  removeCookie(path) {}
 
-    /** @override */
-    removeCookie(path) {
-      chrome.send('localData.removeCookie', [path]);
-    }
+  /**
+   * Removes all SameSite=None cookies, as well as storage available in
+   * third-party contexts.
+   * Note: on-tree-item-removed will not be sent.
+   * @return {!Promise} To signal completion.
+   */
+  removeAllThirdPartyCookies() {}
+}
 
-    /** @override */
-    removeAllThirdPartyCookies() {
-      return sendWithPromise('localData.removeThirdPartyCookies');
-    }
+/**
+ * @implements {LocalDataBrowserProxy}
+ */
+export class LocalDataBrowserProxyImpl {
+  /** @override */
+  getDisplayList(filter) {
+    return sendWithPromise('localData.getDisplayList', filter);
   }
 
-  // The singleton instance_ is replaced with a test version of this wrapper
-  // during testing.
-  addSingletonGetter(LocalDataBrowserProxyImpl);
+  /** @override */
+  removeAll() {
+    return sendWithPromise('localData.removeAll');
+  }
 
+  /** @override */
+  removeShownItems() {
+    chrome.send('localData.removeShownItems');
+  }
+
+  /** @override */
+  removeItem(id) {
+    chrome.send('localData.removeItem', [id]);
+  }
+
+  /** @override */
+  getCookieDetails(site) {
+    return sendWithPromise('localData.getCookieDetails', site);
+  }
+
+  /** @override */
+  getNumCookiesString(numCookies) {
+    return sendWithPromise('localData.getNumCookiesString', numCookies);
+  }
+
+  /** @override */
+  reloadCookies() {
+    return sendWithPromise('localData.reload');
+  }
+
+  /** @override */
+  removeCookie(path) {
+    chrome.send('localData.removeCookie', [path]);
+  }
+
+  /** @override */
+  removeAllThirdPartyCookies() {
+    return sendWithPromise('localData.removeThirdPartyCookies');
+  }
+}
+
+// The singleton instance_ is replaced with a test version of this wrapper
+// during testing.
+addSingletonGetter(LocalDataBrowserProxyImpl);

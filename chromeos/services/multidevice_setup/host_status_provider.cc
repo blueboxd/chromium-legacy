@@ -21,8 +21,8 @@ HostStatusProvider::HostStatusWithDevice::HostStatusWithDevice(
       PA_LOG(ERROR) << "HostStatusWithDevice::HostStatusWithDevice(): Tried to "
                     << "construct a HostStatusWithDevice with a status "
                     << "indicating no device, but a device was provided. "
-                    << "Status: " << host_status_ << ", Device ID: "
-                    << host_device_->GetTruncatedDeviceIdForLogs();
+                    << "Status: " << host_status_ << ", IDs: "
+                    << host_device_->GetInstanceIdDeviceIdForLogs();
       NOTREACHED();
     }
   } else if (!host_device_) {

@@ -4,9 +4,9 @@
 
 #import "chrome/browser/ui/cocoa/applescript/browsercrapplication+applescript.h"
 
-#include "base/logging.h"
 #import "base/mac/foundation_util.h"
 #import "base/mac/scoped_nsobject.h"
+#include "base/notreached.h"
 #import "chrome/browser/app_controller_mac.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/profiles/profile.h"

@@ -140,7 +140,6 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/bookmarks/BookmarkFolderRow.java",
   "java/src/org/chromium/chrome/browser/bookmarks/BookmarkFolderSelectActivity.java",
   "java/src/org/chromium/chrome/browser/bookmarks/BookmarkItemRow.java",
-  "java/src/org/chromium/chrome/browser/bookmarks/BookmarkItemsAdapter.java",
   "java/src/org/chromium/chrome/browser/bookmarks/BookmarkManager.java",
   "java/src/org/chromium/chrome/browser/bookmarks/BookmarkModel.java",
   "java/src/org/chromium/chrome/browser/bookmarks/BookmarkPage.java",

@@ -106,11 +106,16 @@ AppWindowLauncherItemController::GetAppMenuItems(int event_flags) {
   base::string16 app_title = LauncherControllerHelper::GetAppTitle(
       ChromeLauncherController::instance()->profile(), app_id());
   for (const auto* it : windows()) {
-    // TODO(khmel): resolve correct icon here.
     aura::Window* window = it->GetNativeWindow();
     auto title = (window && !window->GetTitle().empty()) ? window->GetTitle()
                                                          : app_title;
-    items.push_back({title, gfx::ImageSkia()});
+    gfx::ImageSkia image;
+    const gfx::ImageSkia* app_icon = nullptr;
+    if (window)
+      app_icon = window->GetProperty(aura::client::kAppIconKey);
+    if (app_icon && !app_icon->isNull())
+      image = *app_icon;
+    items.push_back({title, image});
   }
   return items;
 }

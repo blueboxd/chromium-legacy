@@ -187,7 +187,6 @@ component("core") {
     "//third_party/blink/renderer/core/input",
     "//third_party/blink/renderer/core/inspector",
     "//third_party/blink/renderer/core/intersection_observer",
-    "//third_party/blink/renderer/core/invisible_dom",
     "//third_party/blink/renderer/core/layout",
     "//third_party/blink/renderer/core/layout/svg:svg_layout",
     "//third_party/blink/renderer/core/loader",
@@ -359,7 +358,6 @@ generate_event_interfaces("core_event_interfaces") {
     "html/forms/form_data_event.idl",
     "html/forms/submit_event.idl",
     "html/track/track_event.idl",
-    "invisible_dom/activate_invisible_event.idl",
     "mojo/test/mojo_interface_request_event.idl",
   ]
 

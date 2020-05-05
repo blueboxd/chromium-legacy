@@ -260,9 +260,9 @@ void ModelTypeController::RecordMemoryUsageAndCountsHistograms() {
   delegate_->RecordMemoryUsageAndCountsHistograms();
 }
 
-ModelTypeControllerDelegate*
-ModelTypeController::GetDelegateForTransportModeForTest() {
-  auto it = delegate_map_.find(SyncMode::kTransportOnly);
+ModelTypeControllerDelegate* ModelTypeController::GetDelegateForTesting(
+    SyncMode sync_mode) {
+  auto it = delegate_map_.find(sync_mode);
   return it != delegate_map_.end() ? it->second.get() : nullptr;
 }
 

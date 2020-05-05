@@ -9,15 +9,15 @@
 
 #include <memory>
 
+#include "base/component_export.h"
 #include "base/macros.h"
-#include "gpu/vulkan/vulkan_export.h"
 
 namespace gpu {
 
 class VulkanCommandBuffer;
 class VulkanDeviceQueue;
 
-class VULKAN_EXPORT VulkanCommandPool {
+class COMPONENT_EXPORT(VULKAN) VulkanCommandPool {
  public:
   explicit VulkanCommandPool(VulkanDeviceQueue* device_queue);
   ~VulkanCommandPool();

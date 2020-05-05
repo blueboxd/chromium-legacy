@@ -177,7 +177,7 @@ Polymer({
    * @private
    */
   getRoleDescription_() {
-    return loadTimeData.getStringF('settingsSliderRoleDescription',
-      this.labelMin, this.labelMax);
+    return loadTimeData.getStringF(
+        'settingsSliderRoleDescription', this.labelMin, this.labelMax);
   },
 });

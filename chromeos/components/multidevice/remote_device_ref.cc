@@ -45,6 +45,16 @@ std::string RemoteDeviceRef::GetTruncatedDeviceIdForLogs() const {
   return RemoteDeviceRef::TruncateDeviceIdForLogs(GetDeviceId());
 }
 
+std::string RemoteDeviceRef::GetInstanceIdDeviceIdForLogs() const {
+  std::stringstream ss;
+  ss << "{Instance ID: " << (instance_id().empty() ? "[empty]" : instance_id())
+     << ", Device ID: "
+     << (GetTruncatedDeviceIdForLogs().empty() ? "[empty]"
+                                               : GetTruncatedDeviceIdForLogs())
+     << "}";
+  return ss.str();
+}
+
 bool RemoteDeviceRef::operator==(const RemoteDeviceRef& other) const {
   return *remote_device_ == *other.remote_device_;
 }

@@ -10,6 +10,8 @@
 #include "chrome/browser/chromeos/assistant/assistant_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chromeos/assistant_optin/assistant_optin_utils.h"
+#include "chrome/browser/ui/webui/settings/chromeos/google_assistant_handler.h"
+#include "chrome/browser/ui/webui/settings/search_engines_handler.h"
 #include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
@@ -27,28 +29,84 @@ namespace {
 
 const std::vector<SearchConcept>& GetSearchPageSearchConcepts() {
   static const base::NoDestructor<std::vector<SearchConcept>> tags({
-      // TODO(khorimoto): Add "Search" search concepts.
+      {IDS_OS_SETTINGS_TAG_PREFERRED_SEARCH_ENGINE,
+       mojom::kSearchAndAssistantSectionPath,
+       mojom::SearchResultIcon::kMagnifyingGlass,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSetting,
+       {.setting = mojom::Setting::kPreferredSearchEngine}},
   });
   return *tags;
 }
 
 const std::vector<SearchConcept>& GetAssistantSearchConcepts() {
   static const base::NoDestructor<std::vector<SearchConcept>> tags({
-      // TODO(khorimoto): Add "Assistant" search concepts.
+      {IDS_OS_SETTINGS_TAG_ASSISTANT,
+       mojom::kAssistantSubpagePath,
+       mojom::SearchResultIcon::kAssistant,
+       mojom::SearchResultDefaultRank::kHigh,
+       mojom::SearchResultType::kSubpage,
+       {.subpage = mojom::Subpage::kAssistant}},
+      {IDS_OS_SETTINGS_TAG_ASSISTANT_QUICK_ANSWERS,
+       mojom::kAssistantSubpagePath,
+       mojom::SearchResultIcon::kAssistant,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSetting,
+       {.setting = mojom::Setting::kAssistantQuickAnswers}},
+      {IDS_OS_SETTINGS_TAG_ASSISTANT_PREFERRED_INPUT,
+       mojom::kAssistantSubpagePath,
+       mojom::SearchResultIcon::kAssistant,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSetting,
+       {.setting = mojom::Setting::kAssistantVoiceInput}},
+      {IDS_OS_SETTINGS_TAG_ASSISTANT_OK_GOOGLE,
+       mojom::kAssistantSubpagePath,
+       mojom::SearchResultIcon::kAssistant,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSetting,
+       {.setting = mojom::Setting::kAssistantOkGoogle},
+       {IDS_OS_SETTINGS_TAG_ASSISTANT_OK_GOOGLE_ALT1,
+        IDS_OS_SETTINGS_TAG_ASSISTANT_OK_GOOGLE_ALT2,
+        SearchConcept::kAltTagEnd}},
+      {IDS_OS_SETTINGS_TAG_ASSISTANT_NOTIFICATIONS,
+       mojom::kAssistantSubpagePath,
+       mojom::SearchResultIcon::kAssistant,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSetting,
+       {.setting = mojom::Setting::kAssistantNotifications}},
+      {IDS_OS_SETTINGS_TAG_ASSISTANT_RELATED_INFO,
+       mojom::kAssistantSubpagePath,
+       mojom::SearchResultIcon::kAssistant,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSetting,
+       {.setting = mojom::Setting::kAssistantRelatedInfo}},
   });
   return *tags;
 }
 
 const std::vector<SearchConcept>& GetAssistantOnSearchConcepts() {
   static const base::NoDestructor<std::vector<SearchConcept>> tags({
-      // TODO(khorimoto): Add "Assistant on" search concepts.
+      {IDS_OS_SETTINGS_TAG_ASSISTANT_TURN_OFF,
+       mojom::kAssistantSubpagePath,
+       mojom::SearchResultIcon::kAssistant,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSetting,
+       {.setting = mojom::Setting::kAssistantOnOff},
+       {IDS_OS_SETTINGS_TAG_ASSISTANT_TURN_OFF_ALT1,
+        SearchConcept::kAltTagEnd}},
   });
   return *tags;
 }
 
 const std::vector<SearchConcept>& GetAssistantOffSearchConcepts() {
   static const base::NoDestructor<std::vector<SearchConcept>> tags({
-      // TODO(khorimoto): Add "Assistant off" search concepts.
+      {IDS_OS_SETTINGS_TAG_ASSISTANT_TURN_ON,
+       mojom::kAssistantSubpagePath,
+       mojom::SearchResultIcon::kAssistant,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSetting,
+       {.setting = mojom::Setting::kAssistantOnOff},
+       {IDS_OS_SETTINGS_TAG_ASSISTANT_TURN_ON_ALT1, SearchConcept::kAltTagEnd}},
   });
   return *tags;
 }
@@ -176,6 +234,13 @@ void SearchSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
       ui::SubstituteChromeOSDeviceType(IDS_OS_SETTINGS_SEARCH_ENGINE_TOOLTIP));
 
   AddGoogleAssistantStrings(html_source);
+}
+
+void SearchSection::AddHandlers(content::WebUI* web_ui) {
+  web_ui->AddMessageHandler(
+      std::make_unique<::settings::SearchEnginesHandler>(profile()));
+  web_ui->AddMessageHandler(
+      std::make_unique<chromeos::settings::GoogleAssistantHandler>());
 }
 
 void SearchSection::OnAssistantConsentStatusChanged(int consent_status) {

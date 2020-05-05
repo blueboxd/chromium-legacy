@@ -115,7 +115,7 @@ class BackButtonNode extends SAChildNode {
     }
 
     const treeWalker = new AutomationTreeWalker(
-        NavigationManager.instance.desktopNode, constants.Dir.FORWARD,
+        NavigationManager.desktopNode, constants.Dir.FORWARD,
         {visit: (node) => node.htmlAttributes.id === SAConstants.BACK_ID});
     BackButtonNode.automationNode_ = treeWalker.next().node;
     return BackButtonNode.automationNode_;

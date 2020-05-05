@@ -102,8 +102,6 @@ class BookmarkBridge : public bookmarks::BaseBookmarkModelObserver,
                    const base::android::JavaParamRef<jobject>& obj,
                    jlong id,
                    jint type,
-                   jboolean get_folders,
-                   jboolean get_bookmarks,
                    const base::android::JavaParamRef<jobject>& j_result_obj);
 
   jint GetChildCount(JNIEnv* env,

@@ -9,7 +9,7 @@
 #include <string>
 
 #include "base/base_paths.h"
-#include "base/logging.h"
+#include "base/check_op.h"
 #import "base/mac/foundation_util.h"
 #include "base/memory/free_deleter.h"
 #include "base/path_service.h"

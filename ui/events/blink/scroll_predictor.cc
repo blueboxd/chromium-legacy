@@ -8,6 +8,7 @@
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/trace_event/trace_event.h"
+#include "third_party/blink/public/common/features.h"
 #include "ui/events/blink/prediction/predictor_factory.h"
 
 using blink::WebInputEvent;
@@ -18,28 +19,29 @@ namespace ui {
 ScrollPredictor::ScrollPredictor() {
   // Get the predictor from feature flags
   std::string predictor_name = GetFieldTrialParamValueByFeature(
-      features::kResamplingScrollEvents, "predictor");
+      blink::features::kResamplingScrollEvents, "predictor");
 
   if (predictor_name.empty())
-    predictor_name = ui::input_prediction::kScrollPredictorNameLinearResampling;
+    predictor_name = blink::features::kScrollPredictorNameLinearResampling;
 
   input_prediction::PredictorType predictor_type =
       ui::PredictorFactory::GetPredictorTypeFromName(predictor_name);
   predictor_ = ui::PredictorFactory::GetPredictor(predictor_type);
 
   filtering_enabled_ =
-      base::FeatureList::IsEnabled(features::kFilteringScrollPrediction);
+      base::FeatureList::IsEnabled(blink::features::kFilteringScrollPrediction);
 
   if (filtering_enabled_) {
     // Get the filter from feature flags
     std::string filter_name = GetFieldTrialParamValueByFeature(
-        features::kFilteringScrollPrediction, "filter");
+        blink::features::kFilteringScrollPrediction, "filter");
 
     input_prediction::FilterType filter_type =
         filter_factory_->GetFilterTypeFromName(filter_name);
 
     filter_factory_ = std::make_unique<FilterFactory>(
-        features::kFilteringScrollPrediction, predictor_type, filter_type);
+        blink::features::kFilteringScrollPrediction, predictor_type,
+        filter_type);
 
     filter_ = filter_factory_->CreateFilter(filter_type, predictor_type);
   }

@@ -217,17 +217,17 @@ void WindowOrWorkerGlobalScope::clearInterval(EventTarget& event_target,
 
 ScriptPromise WindowOrWorkerGlobalScope::createImageBitmap(
     ScriptState* script_state,
-    EventTarget& event_target,
+    EventTarget&,
     const ImageBitmapSourceUnion& bitmap_source,
     const ImageBitmapOptions* options,
     ExceptionState& exception_state) {
-  return ImageBitmapFactories::CreateImageBitmap(
-      script_state, event_target, bitmap_source, options, exception_state);
+  return ImageBitmapFactories::CreateImageBitmap(script_state, bitmap_source,
+                                                 options, exception_state);
 }
 
 ScriptPromise WindowOrWorkerGlobalScope::createImageBitmap(
     ScriptState* script_state,
-    EventTarget& event_target,
+    EventTarget&,
     const ImageBitmapSourceUnion& bitmap_source,
     int sx,
     int sy,
@@ -235,9 +235,8 @@ ScriptPromise WindowOrWorkerGlobalScope::createImageBitmap(
     int sh,
     const ImageBitmapOptions* options,
     ExceptionState& exception_state) {
-  return ImageBitmapFactories::CreateImageBitmap(script_state, event_target,
-                                                 bitmap_source, sx, sy, sw, sh,
-                                                 options, exception_state);
+  return ImageBitmapFactories::CreateImageBitmap(
+      script_state, bitmap_source, sx, sy, sw, sh, options, exception_state);
 }
 
 }  // namespace blink

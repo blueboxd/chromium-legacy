@@ -15,6 +15,7 @@
 #include "base/time/time.h"
 #include "content/browser/renderer_host/event_with_latency_info.h"
 #include "content/common/content_export.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/input/input_event_result.mojom-shared.h"
 #include "ui/events/blink/blink_features.h"
 
@@ -65,8 +66,8 @@ class CONTENT_EXPORT PassthroughTouchEventQueue {
           mobile_touch_ack_timeout_delay(
               base::TimeDelta::FromMilliseconds(1000)),
           touch_ack_timeout_supported(false),
-          skip_touch_filter(
-              base::FeatureList::IsEnabled(features::kSkipTouchEventFilter)),
+          skip_touch_filter(base::FeatureList::IsEnabled(
+              blink::features::kSkipTouchEventFilter)),
           events_to_always_forward(kSkipTouchEventFilterType.Get()) {}
 
     // Touch ack timeout delay for desktop sites. If zero, timeout behavior

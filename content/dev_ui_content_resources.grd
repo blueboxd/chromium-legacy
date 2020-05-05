@@ -18,6 +18,10 @@ files that belong there instead.
       <include name="IDR_APPCACHE_INTERNALS_HTML" file="browser/resources/appcache/appcache_internals.html" flattenhtml="true" allowexternalscript="true" compress="gzip" type="BINDATA" />
       <include name="IDR_APPCACHE_INTERNALS_JS" file="browser/resources/appcache/appcache_internals.js" flattenhtml="false" compress="gzip" type="BINDATA" />
       <include name="IDR_APPCACHE_INTERNALS_CSS" file="browser/resources/appcache/appcache_internals.css" flattenhtml="true" compress="gzip" type="BINDATA" />
+      <include name="IDR_CONVERSION_INTERNALS_HTML" file="browser/resources/conversions/conversion_internals.html" flattenhtml="true" allowexternalscript="true" compress="gzip" type="BINDATA" />
+      <include name="IDR_CONVERSION_INTERNALS_JS" file="browser/resources/conversions/conversion_internals.js" flattenhtml="true" allowexternalscript="true" compress="gzip" type="BINDATA" />
+      <include name="IDR_CONVERSION_INTERNALS_CSS" file="browser/resources/conversions/conversion_internals.css" flattenhtml="true" allowexternalscript="true" compress="gzip" type="BINDATA" />
+      <include name="IDR_CONVERSION_INTERNALS_MOJOM_JS" file="${root_gen_dir}/content/browser/conversions/conversion_internals.mojom-lite.js" use_base_dir="false" type="BINDATA" compress="gzip" />
       <include name="IDR_GPU_INTERNALS_HTML" file="browser/resources/gpu/gpu_internals.html" flattenhtml="true" allowexternalscript="true" compress="gzip" type="BINDATA" />
       <include name="IDR_GPU_INTERNALS_JS" file="browser/resources/gpu/gpu_internals.js" flattenhtml="true" compress="gzip" type="BINDATA" />
       <include name="IDR_INDEXED_DB_INTERNALS_HTML" file="browser/resources/indexed_db/indexeddb_internals.html" flattenhtml="true" allowexternalscript="true" compress="gzip" type="BINDATA" />

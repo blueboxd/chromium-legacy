@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "third_party/blink/public/common/features.h"
 #include "ui/events/blink/prediction/predictor_factory.h"
 
 namespace ui {
@@ -43,7 +44,7 @@ LinearResampling::LinearResampling() {}
 LinearResampling::~LinearResampling() {}
 
 const char* LinearResampling::GetName() const {
-  return input_prediction::kScrollPredictorNameLinearResampling;
+  return blink::features::kScrollPredictorNameLinearResampling;
 }
 
 void LinearResampling::Reset() {

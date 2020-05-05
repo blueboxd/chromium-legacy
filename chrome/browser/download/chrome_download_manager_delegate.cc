@@ -442,13 +442,28 @@ bool ChromeDownloadManagerDelegate::ShouldOpenFileBasedOnExtension(
   if (path.Extension().empty())
     return false;
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-  // TODO(asanka): This determination is done based on |path|, while
+  // TODO(crbug.com/1077929): This determination is done based on |path|, while
   // ShouldOpenDownload() detects extension downloads based on the
-  // characteristics of the download. Reconcile this. http://crbug.com/167702
+  // characteristics of the download. Reconcile this.
   if (path.MatchesExtension(extensions::kExtensionFileExtension))
     return false;
 #endif
   return download_prefs_->IsAutoOpenEnabledBasedOnExtension(path);
+}
+
+bool ChromeDownloadManagerDelegate::ShouldOpenFileByPolicyBasedOnExtension(
+    const base::FilePath& path) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  if (path.Extension().empty())
+    return false;
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+  // TODO(crbug.com/1077929): This determination is done based on |path|, while
+  // ShouldOpenDownload() detects extension downloads based on the
+  // characteristics of the download. Reconcile this.
+  if (path.MatchesExtension(extensions::kExtensionFileExtension))
+    return false;
+#endif
+  return download_prefs_->IsAutoOpenByPolicyBasedOnExtension(path);
 }
 
 // static

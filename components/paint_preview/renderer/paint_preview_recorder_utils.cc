@@ -63,12 +63,17 @@ bool SerializeAsSkPicture(sk_sp<const cc::PaintRecord> record,
 void BuildResponse(PaintPreviewTracker* tracker,
                    mojom::PaintPreviewCaptureResponse* response) {
   response->embedding_token = tracker->EmbeddingToken();
-  for (const auto& id_pair : *(tracker->GetPictureSerializationContext())) {
-    response->content_id_to_embedding_token.insert(
-        {id_pair.first, id_pair.second});
+
+  PictureSerializationContext* picture_context =
+      tracker->GetPictureSerializationContext();
+  if (picture_context) {
+    for (const auto& id_pair : *picture_context) {
+      response->content_id_to_embedding_token.insert(
+          {id_pair.first, id_pair.second});
+    }
   }
-  for (const auto& link : tracker->GetLinks())
-    response->links.push_back(link.Clone());
+
+  tracker->MoveLinks(&response->links);
 }
 
 }  // namespace paint_preview

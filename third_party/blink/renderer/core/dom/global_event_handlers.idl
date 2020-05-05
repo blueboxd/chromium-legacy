@@ -33,7 +33,6 @@
     LegacyTreatAsPartialInterface
 ] interface mixin GlobalEventHandlers {
     attribute EventHandler onabort;
-    [RuntimeEnabled=InvisibleDOM] attribute EventHandler onactivateinvisible;
     attribute EventHandler onblur;
     attribute EventHandler oncancel;
     attribute EventHandler oncanplay;

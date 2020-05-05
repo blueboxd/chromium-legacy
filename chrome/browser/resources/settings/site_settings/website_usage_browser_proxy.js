@@ -6,27 +6,26 @@
 import {addSingletonGetter} from 'chrome://resources/js/cr.m.js';
 // clang-format on
 
-  /** @interface */
-  export class WebsiteUsageBrowserProxy {
-    /** @param {string} host */
-    fetchUsageTotal(host) {}
+/** @interface */
+export class WebsiteUsageBrowserProxy {
+  /** @param {string} host */
+  fetchUsageTotal(host) {}
 
-    /** @param {string} origin */
-    clearUsage(origin) {}
+  /** @param {string} origin */
+  clearUsage(origin) {}
+}
+
+/** @implements {WebsiteUsageBrowserProxy} */
+export class WebsiteUsageBrowserProxyImpl {
+  /** @override */
+  fetchUsageTotal(host) {
+    chrome.send('fetchUsageTotal', [host]);
   }
 
-  /** @implements {WebsiteUsageBrowserProxy} */
-  export class WebsiteUsageBrowserProxyImpl {
-    /** @override */
-    fetchUsageTotal(host) {
-      chrome.send('fetchUsageTotal', [host]);
-    }
-
-    /** @override */
-    clearUsage(origin) {
-      chrome.send('clearUsage', [origin]);
-    }
+  /** @override */
+  clearUsage(origin) {
+    chrome.send('clearUsage', [origin]);
   }
+}
 
-  addSingletonGetter(WebsiteUsageBrowserProxyImpl);
-
+addSingletonGetter(WebsiteUsageBrowserProxyImpl);

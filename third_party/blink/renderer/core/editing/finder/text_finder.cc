@@ -56,7 +56,6 @@
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
-#include "third_party/blink/renderer/core/invisible_dom/invisible_dom.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/layout/text_autosizer.h"
@@ -75,11 +74,9 @@ void TextFinder::FindMatch::Trace(Visitor* visitor) {
 
 static void ScrollToVisible(Range* match) {
   const Node& first_node = *match->FirstNode();
-  if (RuntimeEnabledFeatures::InvisibleDOMEnabled() ||
-      RuntimeEnabledFeatures::CSSContentVisibilityEnabled()) {
+  if (RuntimeEnabledFeatures::CSSContentVisibilityEnabled()) {
     const EphemeralRangeInFlatTree range(match);
     // TODO(vmpstr): Rework this, since it is only used for bookkeeping.
-    InvisibleDOM::ActivateRangeIfNeeded(range);
     DisplayLockUtilities::ActivateFindInPageMatchRangeIfNeeded(range);
 
     // We need to update the style and layout since the event dispatched may

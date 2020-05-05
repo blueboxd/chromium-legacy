@@ -9,8 +9,9 @@
 #include <algorithm>
 #include <vector>
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/mac/scoped_nsobject.h"
+#include "base/notreached.h"
 #include "base/stl_util.h"
 
 @interface CRBProtocolObservers () {

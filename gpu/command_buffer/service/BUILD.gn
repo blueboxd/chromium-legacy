@@ -430,7 +430,7 @@ target(link_target_type, "gles2_sources") {
     if (enable_vulkan) {
       deps += [
         "//gpu/ipc/common:android_image_reader_utils",
-        "//gpu/vulkan:vulkan",
+        "//gpu/vulkan",
       ]
     }
   }

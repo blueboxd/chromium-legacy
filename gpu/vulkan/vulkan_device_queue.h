@@ -10,11 +10,11 @@
 #include <memory>
 
 #include "base/callback.h"
+#include "base/component_export.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "build/build_config.h"
 #include "gpu/vulkan/vma_wrapper.h"
-#include "gpu/vulkan/vulkan_export.h"
 #include "ui/gfx/extension_set.h"
 
 namespace gpu {
@@ -23,7 +23,7 @@ class VulkanCommandPool;
 class VulkanFenceHelper;
 class VulkanInfo;
 
-class VULKAN_EXPORT VulkanDeviceQueue {
+class COMPONENT_EXPORT(VULKAN) VulkanDeviceQueue {
  public:
   enum DeviceQueueOption {
     GRAPHICS_QUEUE_FLAG = 0x01,

@@ -91,7 +91,7 @@ crbug.com/735483 conformance2/rendering/texture-switch-performance.html [ Skip ]
 # declare any OS.
 crbug.com/979444 [ chromeos ] conformance/textures/misc/texture-corner-case-videos.html [ RetryOnFailure ]
 crbug.com/979444 [ linux ] conformance/textures/misc/texture-corner-case-videos.html [ RetryOnFailure ]
-crbug.com/979444 [ mac no-asan ] conformance/textures/misc/texture-corner-case-videos.html [ RetryOnFailure ]
+crbug.com/979444 [ mac no-asan no-passthrough ] conformance/textures/misc/texture-corner-case-videos.html [ RetryOnFailure ]
 crbug.com/979444 [ win ] conformance/textures/misc/texture-corner-case-videos.html [ RetryOnFailure ]
 crbug.com/979444 [ android no-angle ] conformance/textures/misc/texture-corner-case-videos.html [ RetryOnFailure ]
 
@@ -552,6 +552,15 @@ crbug.com/982294 [ mac passthrough ] deqp/functional/gles3/transformfeedback/ran
 crbug.com/982294 [ mac passthrough ] deqp/functional/gles3/transformfeedback/random_interleaved_points.html [ Failure ]
 crbug.com/982294 [ mac passthrough ] deqp/functional/gles3/transformfeedback/random_interleaved_triangles.html [ Failure ]
 
+# Mac Passthrough / AMD
+crbug.com/982294 [ mac passthrough amd ] conformance2/rendering/instanced-arrays.html [ Failure ]
+crbug.com/982294 [ mac passthrough amd ] conformance2/rendering/vertex-id.html [ Failure ]
+
+# Mac Passthrough / NVIDIA
+crbug.com/982294 [ mac passthrough nvidia ] conformance/renderbuffers/framebuffer-object-attachment.html [ Failure ]
+crbug.com/982294 [ mac passthrough nvidia ] conformance/textures/misc/tex-input-validation.html [ Failure ]
+crbug.com/982294 [ mac passthrough nvidia ] conformance/textures/misc/texture-corner-case-videos.html [ Failure ]
+
 # Mac Passthrough / Intel
 crbug.com/982294 [ mac passthrough intel ] conformance/rendering/negative-one-index.html [ Failure ]
 crbug.com/982294 [ mac passthrough intel ] conformance/textures/misc/gl-teximage.html [ Failure ]
@@ -577,7 +586,7 @@ crbug.com/982294 [ mac passthrough intel ] deqp/functional/gles3/transformfeedba
 
 # Mac ASAN flakes
 crbug.com/1059760 [ mac asan ] conformance/textures/image_bitmap_from_video/* [ RetryOnFailure ]
-crbug.com/1059760 [ mac asan ] conformance/textures/misc/texture-corner-case-videos.html [ RetryOnFailure ]
+crbug.com/1059760 [ mac asan no-passthrough ] conformance/textures/misc/texture-corner-case-videos.html [ RetryOnFailure ]
 crbug.com/1059760 [ mac asan ] conformance/textures/video/* [ RetryOnFailure ]
 crbug.com/1059760 [ mac asan ] conformance2/textures/image_bitmap_from_video/* [ RetryOnFailure ]
 crbug.com/1059760 [ mac asan ] conformance2/textures/misc/tex-image-with-bad-args-from-dom-elements.html [ RetryOnFailure ]

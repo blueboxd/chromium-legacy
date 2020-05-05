@@ -14,27 +14,17 @@ namespace blink {
 
 class CustomElementUpgradeReaction final : public CustomElementReaction {
  public:
-  CustomElementUpgradeReaction(CustomElementDefinition& definition,
-                               bool upgrade_invisible_elements)
-      : CustomElementReaction(definition),
-        upgrade_invisible_elements_(upgrade_invisible_elements) {}
+  explicit CustomElementUpgradeReaction(CustomElementDefinition& definition)
+      : CustomElementReaction(definition) {}
 
  private:
   void Invoke(Element& element) override {
     // Don't call Upgrade() if it's already upgraded. Multiple upgrade reactions
     // could be enqueued because the state changes in step 10 of upgrades.
     // https://html.spec.whatwg.org/C/#upgrades
-    if (element.GetCustomElementState() == CustomElementState::kUndefined) {
-      // Don't upgrade elements inside an invisible-static tree, unless it was
-      // triggered by CustomElementRegistry::upgrade.
-      if (!RuntimeEnabledFeatures::InvisibleDOMEnabled() ||
-          !element.IsInsideInvisibleStaticSubtree() ||
-          upgrade_invisible_elements_)
-        definition_->Upgrade(element);
-    }
+    if (element.GetCustomElementState() == CustomElementState::kUndefined)
+      definition_->Upgrade(element);
   }
-
-  bool upgrade_invisible_elements_;
 
   DISALLOW_COPY_AND_ASSIGN(CustomElementUpgradeReaction);
 };
@@ -235,10 +225,8 @@ class CustomElementFormStateRestoreCallbackReaction final
 // ----------------------------------------------------------------
 
 CustomElementReaction& CustomElementReactionFactory::CreateUpgrade(
-    CustomElementDefinition& definition,
-    bool upgrade_invisible_elements) {
-  return *MakeGarbageCollected<CustomElementUpgradeReaction>(
-      definition, upgrade_invisible_elements);
+    CustomElementDefinition& definition) {
+  return *MakeGarbageCollected<CustomElementUpgradeReaction>(definition);
 }
 
 CustomElementReaction& CustomElementReactionFactory::CreateConnected(

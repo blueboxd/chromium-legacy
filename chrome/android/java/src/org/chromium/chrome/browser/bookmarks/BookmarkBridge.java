@@ -522,17 +522,14 @@ public class BookmarkBridge {
     /**
      * Reads sub-folder IDs, sub-bookmark IDs, or both of the given folder.
      *
-     * @param getFolders   Whether sub-folders should be returned.
-     * @param getBookmarks Whether sub-bookmarks should be returned.
      * @return Child IDs of the given folder, with the specified type.
      */
-    public List<BookmarkId> getChildIDs(BookmarkId id, boolean getFolders, boolean getBookmarks) {
+    public List<BookmarkId> getChildIDs(BookmarkId id) {
         ThreadUtils.assertOnUiThread();
-        // TODO(crbug.com/160194): Remove boolean parameters after bookmark reordering launches.
         assert mIsNativeBookmarkModelLoaded;
         List<BookmarkId> result = new ArrayList<BookmarkId>();
-        BookmarkBridgeJni.get().getChildIDs(mNativeBookmarkBridge, BookmarkBridge.this, id.getId(),
-                id.getType(), getFolders, getBookmarks, result);
+        BookmarkBridgeJni.get().getChildIDs(
+                mNativeBookmarkBridge, BookmarkBridge.this, id.getId(), id.getType(), result);
         return result;
     }
 
@@ -1007,7 +1004,7 @@ public class BookmarkBridge {
         BookmarkId getPartnerFolderId(long nativeBookmarkBridge, BookmarkBridge caller);
         int getChildCount(long nativeBookmarkBridge, BookmarkBridge caller, long id, int type);
         void getChildIDs(long nativeBookmarkBridge, BookmarkBridge caller, long id, int type,
-                boolean getFolders, boolean getBookmarks, List<BookmarkId> bookmarksList);
+                List<BookmarkId> bookmarksList);
         BookmarkId getChildAt(
                 long nativeBookmarkBridge, BookmarkBridge caller, long id, int type, int index);
         int getTotalBookmarkCount(

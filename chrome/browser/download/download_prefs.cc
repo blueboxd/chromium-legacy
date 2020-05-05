@@ -403,6 +403,17 @@ bool DownloadPrefs::IsAutoOpenEnabledBasedOnExtension(
          auto_open_by_policy_.find(extension) != auto_open_by_policy_.end();
 }
 
+bool DownloadPrefs::IsAutoOpenByPolicyBasedOnExtension(
+    const base::FilePath& path) const {
+  base::FilePath::StringType extension = path.Extension();
+  if (extension.empty())
+    return false;
+  DCHECK(extension[0] == base::FilePath::kExtensionSeparator);
+  extension.erase(0, 1);
+
+  return auto_open_by_policy_.find(extension) != auto_open_by_policy_.end();
+}
+
 bool DownloadPrefs::EnableAutoOpenByUserBasedOnExtension(
     const base::FilePath& file_name) {
   base::FilePath::StringType extension = file_name.Extension();

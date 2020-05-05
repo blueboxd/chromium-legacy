@@ -75,6 +75,12 @@ class RemoteDeviceRef {
   // ID is not guaranteed to be unique, so it should only be used for log.
   std::string GetTruncatedDeviceIdForLogs() const;
 
+  // Returns the pair of IDs used with RemoteDevices: Instance ID and device ID.
+  // If either ID is missing, this string will make note of that. If a device ID
+  // exists, the truncated version will be presented. This function should only
+  // be used for logging.
+  std::string GetInstanceIdDeviceIdForLogs() const;
+
   bool operator==(const RemoteDeviceRef& other) const;
   bool operator!=(const RemoteDeviceRef& other) const;
   bool operator<(const RemoteDeviceRef& other) const;

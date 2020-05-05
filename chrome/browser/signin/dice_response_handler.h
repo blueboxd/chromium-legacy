@@ -36,6 +36,14 @@ class ProcessDiceHeaderDelegate {
  public:
   virtual ~ProcessDiceHeaderDelegate() = default;
 
+  // Called when a token was successfully exchanged.
+  // Called after the account was seeded in the account tracker service and
+  // after the refresh token was fetched and updated in the token service.
+  // |is_new_account| is true if the account was added to Chrome (it is not a
+  // re-auth).
+  virtual void HandleTokenExchangeSuccess(CoreAccountId account_id,
+                                          bool is_new_account) = 0;
+
   // Asks the delegate to enable sync for the |account_id|.
   // Called after the account was seeded in the account tracker service and
   // after the refresh token was fetched and updated in the token service.

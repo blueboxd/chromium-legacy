@@ -583,8 +583,7 @@ Polymer({
     const passphraseInput =
         /** @type {!CrInputElement} */ (this.$$('#existingPassphraseInput'));
     const router = settings.Router.getInstance();
-    if (passphraseInput &&
-        router.getCurrentRoute() === getSyncRoutes().SYNC) {
+    if (passphraseInput && router.getCurrentRoute() === getSyncRoutes().SYNC) {
       passphraseInput.focus();
     }
   },

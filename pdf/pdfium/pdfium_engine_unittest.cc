@@ -255,6 +255,14 @@ class PDFiumEngineTabbingTest : public PDFiumTestBase {
     return engine->last_focused_annot_index_;
   }
 
+  bool IsInFormTextArea(PDFiumEngine* engine) {
+    return engine->in_form_text_area_;
+  }
+
+  size_t GetSelectionSize(PDFiumEngine* engine) {
+    return engine->selection_.size();
+  }
+
  protected:
   base::test::TaskEnvironment task_environment_{
       base::test::TaskEnvironment::TimeSource::MOCK_TIME};
@@ -572,6 +580,88 @@ TEST_F(PDFiumEngineTabbingTest, RestoringAnnotFocusTest) {
   EXPECT_EQ(PDFiumEngine::FocusElementType::kPage,
             GetFocusedElementType(engine.get()));
   EXPECT_EQ(1, GetLastFocusedPage(engine.get()));
+}
+
+TEST_F(PDFiumEngineTabbingTest, VerifyFormFieldStatesOnTabbing) {
+  /*
+   * Document structure
+   * Document
+   * ++ Page 1
+   * ++++ Annotation (Text Field)
+   * ++++ Annotation (Radio Button)
+   */
+  TestClient client;
+  std::unique_ptr<PDFiumEngine> engine =
+      InitializeEngine(&client, FILE_PATH_LITERAL("annots.pdf"));
+  ASSERT_TRUE(engine);
+  ASSERT_EQ(1, engine->GetNumberOfPages());
+
+  ASSERT_TRUE(HandleTabEvent(engine.get(), 0));
+  EXPECT_EQ(PDFiumEngine::FocusElementType::kDocument,
+            GetFocusedElementType(engine.get()));
+
+  // Bring focus to the text field.
+  ASSERT_TRUE(HandleTabEvent(engine.get(), 0));
+  EXPECT_EQ(PDFiumEngine::FocusElementType::kPage,
+            GetFocusedElementType(engine.get()));
+  EXPECT_EQ(0, GetLastFocusedPage(engine.get()));
+  EXPECT_TRUE(IsInFormTextArea(engine.get()));
+  EXPECT_TRUE(engine->CanEditText());
+
+  // Bring focus to the button.
+  ASSERT_TRUE(HandleTabEvent(engine.get(), 0));
+  EXPECT_EQ(PDFiumEngine::FocusElementType::kPage,
+            GetFocusedElementType(engine.get()));
+  EXPECT_EQ(0, GetLastFocusedPage(engine.get()));
+  EXPECT_FALSE(IsInFormTextArea(engine.get()));
+  EXPECT_FALSE(engine->CanEditText());
+}
+
+TEST_F(PDFiumEngineTabbingTest, ClearSelectionOnFocusInFormTextArea) {
+  TestClient client;
+  std::unique_ptr<PDFiumEngine> engine =
+      InitializeEngine(&client, FILE_PATH_LITERAL("form_text_fields.pdf"));
+  ASSERT_TRUE(engine);
+  ASSERT_EQ(1, engine->GetNumberOfPages());
+
+  EXPECT_EQ(PDFiumEngine::FocusElementType::kNone,
+            GetFocusedElementType(engine.get()));
+  EXPECT_EQ(-1, GetLastFocusedPage(engine.get()));
+
+  // Select all text.
+  engine->SelectAll();
+  EXPECT_EQ(1u, GetSelectionSize(engine.get()));
+
+  // Tab to bring focus to a form text area annotation.
+  ASSERT_TRUE(HandleTabEvent(engine.get(), 0));
+  ASSERT_TRUE(HandleTabEvent(engine.get(), 0));
+  EXPECT_EQ(PDFiumEngine::FocusElementType::kPage,
+            GetFocusedElementType(engine.get()));
+  EXPECT_EQ(0, GetLastFocusedPage(engine.get()));
+  EXPECT_EQ(0u, GetSelectionSize(engine.get()));
+}
+
+TEST_F(PDFiumEngineTabbingTest, RetainSelectionOnFocusNotInFormTextArea) {
+  TestClient client;
+  std::unique_ptr<PDFiumEngine> engine =
+      InitializeEngine(&client, FILE_PATH_LITERAL("annots.pdf"));
+  ASSERT_TRUE(engine);
+  ASSERT_EQ(1, engine->GetNumberOfPages());
+
+  EXPECT_EQ(PDFiumEngine::FocusElementType::kNone,
+            GetFocusedElementType(engine.get()));
+  EXPECT_EQ(-1, GetLastFocusedPage(engine.get()));
+
+  // Select all text.
+  engine->SelectAll();
+  EXPECT_EQ(1u, GetSelectionSize(engine.get()));
+
+  // Tab to bring focus to a non form text area annotation (Button).
+  ASSERT_TRUE(HandleTabEvent(engine.get(), PP_INPUTEVENT_MODIFIER_SHIFTKEY));
+  EXPECT_EQ(PDFiumEngine::FocusElementType::kPage,
+            GetFocusedElementType(engine.get()));
+  EXPECT_EQ(0, GetLastFocusedPage(engine.get()));
+  EXPECT_EQ(1u, GetSelectionSize(engine.get()));
 }
 
 }  // namespace chrome_pdf

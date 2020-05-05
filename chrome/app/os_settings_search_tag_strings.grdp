@@ -387,8 +387,98 @@
   </message>
 
   <!-- Personalization section. -->
+  <message name="IDS_OS_SETTINGS_TAG_PERSONALIZATION" desc="Text for search result item which, when clicked, navigates the user to personalization settings. Alternate phrase for: 'Customization', 'Personal'">
+    Personalization
+  </message>
+  <message name="IDS_OS_SETTINGS_TAG_PERSONALIZATION_ALT1" desc="Text for search result item which, when clicked, navigates the user to personalization settings. Alternate phrase for: 'Personalization settings', 'Personal'">
+    Customization
+  </message>
+  <message name="IDS_OS_SETTINGS_TAG_PERSONALIZATION_ALT2" desc="Text for search result item which, when clicked, navigates the user to personalization settings. Alternate phrase for: 'Personalization settings', 'Customization'">
+    Personal
+  </message>
+  <message name="IDS_OS_SETTINGS_TAG_CHANGE_DEVICE_ACCOUNT_IMAGE" desc="Text for search result item which, when clicked, navigates the user to the settings page page where they can change their device account image (visible on log-in screen). Alternate phrase for: 'Sign-in image', 'Login image', 'Profile picture', 'Profile image'">
+    Change device account image
+  </message>
+  <message name="IDS_OS_SETTINGS_TAG_CHANGE_DEVICE_ACCOUNT_IMAGE_ALT1" desc="Text for search result item which, when clicked, navigates the user to the settings page page where they can change their device account image (visible on log-in screen). Alternate phrase for: 'Change device account image', 'Login image', 'Profile picture', 'Profile image'">
+    Sign-in image
+  </message>
+  <message name="IDS_OS_SETTINGS_TAG_CHANGE_DEVICE_ACCOUNT_IMAGE_ALT2" desc="Text for search result item which, when clicked, navigates the user to the settings page page where they can change their device account image (visible on log-in screen). Alternate phrase for: 'Change device account image', 'Sign-in image', 'Profile picture', 'Profile image'">
+    Login image
+  </message>
+  <message name="IDS_OS_SETTINGS_TAG_CHANGE_DEVICE_ACCOUNT_IMAGE_ALT3" desc="Text for search result item which, when clicked, navigates the user to the settings page page where they can change their device account image (visible on log-in screen). Alternate phrase for: 'Change device account image', 'Sign-in image', 'Login image', 'Profile image'">
+    Profile picture
+  </message>
+  <message name="IDS_OS_SETTINGS_TAG_CHANGE_DEVICE_ACCOUNT_IMAGE_ALT4" desc="Text for search result item which, when clicked, navigates the user to the settings page page where they can change their device account image (visible on log-in screen). Alternate phrase for: 'Change device account image', 'Sign-in image', 'Login image', 'Profile picture'">
+    Profile image
+  </message>
+  <message name="IDS_OS_SETTINGS_TAG_CHANGE_WALLPAPER" desc="Text for search result item which, when clicked, navigates the user to wallpaper settings. Alternate phrase for: 'Background', 'Desktop'">
+    Change wallpaper
+  </message>
+  <message name="IDS_OS_SETTINGS_TAG_CHANGE_WALLPAPER_ALT1" desc="Text for search result item which, when clicked, navigates the user to wallpaper settings. Alternate phrase for: 'Change wallpaper', 'Desktop'">
+    Background
+  </message>
+  <message name="IDS_OS_SETTINGS_TAG_CHANGE_WALLPAPER_ALT2" desc="Text for search result item which, when clicked, navigates the user to wallpaper settings. Alternate phrase for: 'Change wallpaper', 'Background'">
+    Desktop
+  </message>
+  <message name="IDS_OS_SETTINGS_TAG_AMBIENT_MODE" desc="Text for search result item which, when clicked, navigates the user to ambient mode settings, which allow the user to set backgrounds to be displayed when the device is idle.">
+    Ambient mode
+  </message>
+  <message name="IDS_OS_SETTINGS_TAG_AMBIENT_MODE_TURN_OFF" desc="Text for search result item which, when clicked, navigates the user to ambient mode settings, with a toggle to enable/disable the feature. Alternate phrase for: 'Disable ambient mode'">
+    Turn off Ambient mode
+  </message>
+  <message name="IDS_OS_SETTINGS_TAG_AMBIENT_MODE_TURN_OFF_ALT1" desc="Text for search result item which, when clicked, navigates the user to ambient mode settings, with a toggle to enable/disable the feature. Alternate phrase for: 'Turn off Ambient mode'">
+    Disable ambient mode
+  </message>
+  <message name="IDS_OS_SETTINGS_TAG_AMBIENT_MODE_CHOOSE_SOURCE" desc="Text for search result item which, when clicked, navigates the user to ambient mode settings, with buttons to choose a source (e.g., photos from Google Photos or an art gallery).">
+    Choose ambient mode source
+  </message>
+  <message name="IDS_OS_SETTINGS_TAG_AMBIENT_MODE_TURN_ON" desc="Text for search result item which, when clicked, navigates the user to ambient mode settings, with a toggle to enable/disable the feature. Alternate phrase for: 'Enable Ambient mode'">
+    Turn on Ambient mode
+  </message>
+  <message name="IDS_OS_SETTINGS_TAG_AMBIENT_MODE_TURN_ON_ALT1" desc="Text for search result item which, when clicked, navigates the user to ambient mode settings, with a toggle to enable/disable the feature. Alternate phrase for: 'Turn on Ambient mode'">
+    Enable Ambient mode
+  </message>
 
   <!-- Search and Assistant section. -->
+  <message name="IDS_OS_SETTINGS_TAG_PREFERRED_SEARCH_ENGINE" desc="Text for search result item which, when clicked, navigates the user to search settings, with an option to set the user's preferred search engine.">
+    Preferred search engine
+  </message>
+  <message name="IDS_OS_SETTINGS_TAG_ASSISTANT" desc="Text for search result item which, when clicked, navigates the user to Google Assistant settings.">
+    Google Assistant
+  </message>
+  <message name="IDS_OS_SETTINGS_TAG_ASSISTANT_RELATED_INFO" desc="Text for search result item which, when clicked, navigates the user to Google Assistant settings, with a toggle to enable/disable letting Assistant show info related to what's on the screen.">
+    Google Assistant related information
+  </message>
+  <message name="IDS_OS_SETTINGS_TAG_ASSISTANT_QUICK_ANSWERS" desc="Text for search result item which, when clicked, navigates the user to Google Assistant settings, with a toggle to enable/disable letting Assistant show related info when the user right-clicks.">
+    Google Assistant quick answers
+  </message>
+  <message name="IDS_OS_SETTINGS_TAG_ASSISTANT_OK_GOOGLE" desc="Text for search result item which, when clicked, navigates the user to Google Assistant settings, with a toggle to enable/disable letting users summon the Assistant by saying 'Ok Google' out loud. Alternate phrase for: 'Okay Google', 'Hey Google'">
+    Google Assistant &quot;Ok Google&quot;
+  </message>
+  <message name="IDS_OS_SETTINGS_TAG_ASSISTANT_OK_GOOGLE_ALT1" desc="Text for search result item which, when clicked, navigates the user to Google Assistant settings, with a toggle to enable/disable letting users summon the Assistant by saying 'Ok Google' out loud. Alternate phrase for: 'Google Assistant 'Ok Google'', 'Hey Google'">
+    Okay Google
+  </message>
+  <message name="IDS_OS_SETTINGS_TAG_ASSISTANT_OK_GOOGLE_ALT2" desc="Text for search result item which, when clicked, navigates the user to Google Assistant settings, with a toggle to enable/disable letting users summon the Assistant by saying 'Ok Google' out loud. Alternate phrase for: 'Google Assistant 'Ok Google'', 'Okay Google'">
+    Hey Google
+  </message>
+  <message name="IDS_OS_SETTINGS_TAG_ASSISTANT_NOTIFICATIONS" desc="Text for search result item which, when clicked, navigates the user to Google Assistant settings, with a toggle to enable/disable Assistant notifications.">
+    Google Assistant Notifications
+  </message>
+  <message name="IDS_OS_SETTINGS_TAG_ASSISTANT_PREFERRED_INPUT" desc="Text for search result item which, when clicked, navigates the user to Google Assistant settings, with a toggle to enable/disable having the preferred input be voice instead of keyboard.">
+    Google Assistant voice input
+  </message>
+  <message name="IDS_OS_SETTINGS_TAG_ASSISTANT_TURN_OFF" desc="Text for search result item which, when clicked, navigates the user to Google Assistant settings, with an option to turn functionality off. Alternate phrase for: 'Disable Google Assistant'">
+    Turn off Google Assistant
+  </message>
+  <message name="IDS_OS_SETTINGS_TAG_ASSISTANT_TURN_OFF_ALT1" desc="Text for search result item which, when clicked, navigates the user to Google Assistant settings, with an option to turn functionality off. Alternate phrase for: 'Turn off Google Assistant'">
+    Disable Google Assistant
+  </message>
+  <message name="IDS_OS_SETTINGS_TAG_ASSISTANT_TURN_ON" desc="Text for search result item which, when clicked, navigates the user to Google Assistant settings, with an option to turn functionality on. Alternate phrase for: 'Enable Google Assistant'">
+    Turn on Google Assistant
+  </message>
+  <message name="IDS_OS_SETTINGS_TAG_ASSISTANT_TURN_ON_ALT1" desc="Text for search result item which, when clicked, navigates the user to Google Assistant settings, with an option to turn functionality on. Alternate phrase for: 'Turn on Google Assistant'">
+    Enable Google Assistant
+  </message>
 
   <!-- Apps section. -->
 

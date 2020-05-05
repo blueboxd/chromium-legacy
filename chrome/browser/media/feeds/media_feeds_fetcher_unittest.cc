@@ -134,7 +134,42 @@ TEST_F(MediaFeedsFetcherTest, SucceedsOnBasicFetch) {
   schema_org::improved::mojom::EntityPtr out;
 
   fetcher()->FetchFeed(
-      GURL("https://www.google.com"),
+      GURL("https://www.google.com"), false,
+      base::BindLambdaForTesting(
+          [&](const schema_org::improved::mojom::EntityPtr& response,
+              MediaFeedsFetcher::Status status, bool was_fetched_via_cache) {
+            EXPECT_EQ(status, MediaFeedsFetcher::Status::kOk);
+            EXPECT_FALSE(was_fetched_via_cache);
+            out = response.Clone();
+          }));
+
+  WaitForRequest();
+  ASSERT_TRUE(RespondToFetch(
+      "{\"@type\":\"CompleteDataFeed\",\"name\":\"Media Site\"}"));
+
+  EXPECT_EQ(out, expected);
+}
+
+TEST_F(MediaFeedsFetcherTest, SucceedsOnBasicFetch_ForceCache) {
+  GURL site_with_cookies(kTestUrl);
+  ASSERT_TRUE(SetCookie(profile(), site_with_cookies, "testing"));
+
+  base::MockCallback<MediaFeedsFetcher::MediaFeedCallback> callback;
+
+  schema_org::improved::mojom::EntityPtr expected =
+      schema_org::improved::mojom::Entity::New();
+  expected->type = schema_org::entity::kCompleteDataFeed;
+  schema_org::improved::mojom::PropertyPtr property =
+      schema_org::improved::mojom::Property::New();
+  property->name = "name";
+  property->values = schema_org::improved::mojom::Values::New();
+  property->values->string_values.push_back("Media Site");
+  expected->properties.push_back(std::move(property));
+
+  schema_org::improved::mojom::EntityPtr out;
+
+  fetcher()->FetchFeed(
+      GURL("https://www.google.com"), true,
       base::BindLambdaForTesting(
           [&](const schema_org::improved::mojom::EntityPtr& response,
               MediaFeedsFetcher::Status status, bool was_fetched_via_cache) {
@@ -154,7 +189,7 @@ TEST_F(MediaFeedsFetcherTest, SucceedsFetchFromCache) {
   base::MockCallback<MediaFeedsFetcher::MediaFeedCallback> callback;
 
   fetcher()->FetchFeed(
-      GURL("https://www.google.com"),
+      GURL("https://www.google.com"), false,
       base::BindLambdaForTesting(
           [&](const schema_org::improved::mojom::EntityPtr& response,
               MediaFeedsFetcher::Status status, bool was_fetched_via_cache) {
@@ -173,7 +208,7 @@ TEST_F(MediaFeedsFetcherTest, ReturnsFailedResponseCode) {
   base::MockCallback<MediaFeedsFetcher::MediaFeedCallback> callback;
 
   fetcher()->FetchFeed(
-      GURL("https://www.google.com"),
+      GURL("https://www.google.com"), false,
       base::BindLambdaForTesting(
           [&](const schema_org::improved::mojom::EntityPtr& response,
               MediaFeedsFetcher::Status status, bool was_fetched_via_cache) {
@@ -190,7 +225,7 @@ TEST_F(MediaFeedsFetcherTest, ReturnsGone) {
   base::MockCallback<MediaFeedsFetcher::MediaFeedCallback> callback;
 
   fetcher()->FetchFeed(
-      GURL("https://www.google.com"),
+      GURL("https://www.google.com"), false,
       base::BindLambdaForTesting(
           [&](const schema_org::improved::mojom::EntityPtr& response,
               MediaFeedsFetcher::Status status, bool was_fetched_via_cache) {
@@ -207,7 +242,7 @@ TEST_F(MediaFeedsFetcherTest, ReturnsNetError) {
   base::MockCallback<MediaFeedsFetcher::MediaFeedCallback> callback;
 
   fetcher()->FetchFeed(
-      GURL("https://www.google.com"),
+      GURL("https://www.google.com"), false,
       base::BindLambdaForTesting(
           [&](const schema_org::improved::mojom::EntityPtr& response,
               MediaFeedsFetcher::Status status, bool was_fetched_via_cache) {
@@ -224,7 +259,7 @@ TEST_F(MediaFeedsFetcherTest, ReturnsErrFileNotFoundForEmptyFeedData) {
   base::MockCallback<MediaFeedsFetcher::MediaFeedCallback> callback;
 
   fetcher()->FetchFeed(
-      GURL("https://www.google.com"),
+      GURL("https://www.google.com"), false,
       base::BindLambdaForTesting(
           [&](const schema_org::improved::mojom::EntityPtr& response,
               MediaFeedsFetcher::Status status, bool was_fetched_via_cache) {
@@ -241,7 +276,7 @@ TEST_F(MediaFeedsFetcherTest, ReturnsErrFailedForBadEntityData) {
   base::MockCallback<MediaFeedsFetcher::MediaFeedCallback> callback;
 
   fetcher()->FetchFeed(
-      GURL("https://www.google.com"),
+      GURL("https://www.google.com"), false,
       base::BindLambdaForTesting(
           [&](const schema_org::improved::mojom::EntityPtr& response,
               MediaFeedsFetcher::Status status, bool was_fetched_via_cache) {

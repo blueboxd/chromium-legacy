@@ -10,7 +10,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     tools:ignore="LabelFor,ContentDescription"
     android:background="#FFc9c9c9"
-    android:layout_width="match_parent">
+    android:layout_width="match_parent"
+    style="@style/ShellTheme">
 
     <ViewSwitcher
         android:id="@+id/url_view_container"

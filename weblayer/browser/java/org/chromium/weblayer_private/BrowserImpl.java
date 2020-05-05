@@ -269,6 +269,10 @@ public class BrowserImpl extends IBrowser.Stub {
         return mDarkThemeEnabled;
     }
 
+    Context getEmbedderActivityContext() {
+        return mEmbedderActivityContext;
+    }
+
     @CalledByNative
     private void onTabAdded(TabImpl tab) {
         tab.attachToBrowser(this);

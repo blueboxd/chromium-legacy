@@ -8,6 +8,7 @@
 #include "base/bind_helpers.h"
 #include "base/test/scoped_feature_list.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/features.h"
 #include "ui/events/blink/blink_event_util.h"
 #include "ui/events/blink/blink_features.h"
 #include "ui/events/blink/prediction/empty_filter.h"
@@ -424,46 +425,48 @@ TEST_F(ScrollPredictorTest, ScrollPredictorNotChangeScrollDirection) {
 TEST_F(ScrollPredictorTest, ScrollPredictorTypeSelection) {
   // Use LinearResampling predictor by default.
   scroll_predictor_ = std::make_unique<ScrollPredictor>();
-  VerifyPredictorType(input_prediction::kScrollPredictorNameLinearResampling);
+  VerifyPredictorType(blink::features::kScrollPredictorNameLinearResampling);
 
   // When resampling is enabled, predictor type is set from
   // kResamplingScrollEvents.
   ConfigurePredictorFieldTrialAndInitialize(
-      features::kResamplingScrollEvents,
-      input_prediction::kScrollPredictorNameEmpty);
-  VerifyPredictorType(input_prediction::kScrollPredictorNameEmpty);
+      blink::features::kResamplingScrollEvents,
+      blink::features::kScrollPredictorNameEmpty);
+  VerifyPredictorType(blink::features::kScrollPredictorNameEmpty);
 
   ConfigurePredictorFieldTrialAndInitialize(
-      features::kResamplingScrollEvents,
-      input_prediction::kScrollPredictorNameLsq);
-  VerifyPredictorType(input_prediction::kScrollPredictorNameLsq);
+      blink::features::kResamplingScrollEvents,
+      blink::features::kScrollPredictorNameLsq);
+  VerifyPredictorType(blink::features::kScrollPredictorNameLsq);
 
   ConfigurePredictorFieldTrialAndInitialize(
-      features::kResamplingScrollEvents,
-      input_prediction::kScrollPredictorNameKalman);
-  VerifyPredictorType(input_prediction::kScrollPredictorNameKalman);
+      blink::features::kResamplingScrollEvents,
+      blink::features::kScrollPredictorNameKalman);
+  VerifyPredictorType(blink::features::kScrollPredictorNameKalman);
 
   ConfigurePredictorFieldTrialAndInitialize(
-      features::kResamplingScrollEvents,
-      input_prediction::kScrollPredictorNameLinearFirst);
-  VerifyPredictorType(input_prediction::kScrollPredictorNameLinearFirst);
+      blink::features::kResamplingScrollEvents,
+      blink::features::kScrollPredictorNameLinearFirst);
+  VerifyPredictorType(blink::features::kScrollPredictorNameLinearFirst);
 }
 
 // Check the right filter is selected
 TEST_F(ScrollPredictorTest, DefaultFilter) {
-  ConfigureFilterFieldTrialAndInitialize(features::kFilteringScrollPrediction,
-                                         "");
-  VerifyFilterType(input_prediction::kFilterNameEmpty);
+  ConfigureFilterFieldTrialAndInitialize(
+      blink::features::kFilteringScrollPrediction, "");
+  VerifyFilterType(blink::features::kFilterNameEmpty);
   EXPECT_TRUE(isFilteringEnabled());
 
-  ConfigureFilterFieldTrialAndInitialize(features::kFilteringScrollPrediction,
-                                         input_prediction::kFilterNameEmpty);
-  VerifyFilterType(input_prediction::kFilterNameEmpty);
+  ConfigureFilterFieldTrialAndInitialize(
+      blink::features::kFilteringScrollPrediction,
+      blink::features::kFilterNameEmpty);
+  VerifyFilterType(blink::features::kFilterNameEmpty);
   EXPECT_TRUE(isFilteringEnabled());
 
-  ConfigureFilterFieldTrialAndInitialize(features::kFilteringScrollPrediction,
-                                         input_prediction::kFilterNameOneEuro);
-  VerifyFilterType(input_prediction::kFilterNameOneEuro);
+  ConfigureFilterFieldTrialAndInitialize(
+      blink::features::kFilteringScrollPrediction,
+      blink::features::kFilterNameOneEuro);
+  VerifyFilterType(blink::features::kFilterNameOneEuro);
   EXPECT_TRUE(isFilteringEnabled());
 }
 
@@ -473,8 +476,8 @@ TEST_F(ScrollPredictorTest, DefaultFilter) {
 // expect the same results.
 TEST_F(ScrollPredictorTest, FilteringPrediction) {
   ConfigurePredictorFieldTrialAndInitialize(
-      features::kResamplingScrollEvents,
-      input_prediction::kScrollPredictorNameKalman);
+      blink::features::kResamplingScrollEvents,
+      blink::features::kScrollPredictorNameKalman);
 
   std::vector<double> accumulated_deltas;
   WebScopedInputEvent gesture_update;
@@ -491,9 +494,10 @@ TEST_F(ScrollPredictorTest, FilteringPrediction) {
 
   // Now we enable filtering and compare the deltas
   ConfigurePredictorAndFilterFieldTrialAndInitialize(
-      features::kResamplingScrollEvents,
-      input_prediction::kScrollPredictorNameKalman,
-      features::kFilteringScrollPrediction, input_prediction::kFilterNameEmpty);
+      blink::features::kResamplingScrollEvents,
+      blink::features::kScrollPredictorNameKalman,
+      blink::features::kFilteringScrollPrediction,
+      blink::features::kFilterNameEmpty);
   scroll_predictor_ = std::make_unique<ScrollPredictor>();
 
   for (int i = 0; i < 100; i++) {

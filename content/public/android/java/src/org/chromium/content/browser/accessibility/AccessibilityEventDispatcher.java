@@ -7,6 +7,7 @@ package org.chromium.content.browser.accessibility;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * This class works as an intermediary between {@link WebContentsAccessibilityImpl} and the OS to
@@ -17,6 +18,11 @@ public class AccessibilityEventDispatcher {
     // Maps an AccessibilityEvent type to a throttle delay in milliseconds. This is populated once
     // in the constructor.
     private Map<Integer, Integer> mEventThrottleDelays;
+
+    // Set of AccessibilityEvent types to throttle wholesale, rather than on a per |virtualViewId|
+    // basis. Delays are still set independently in the |mEventThrottleDelays| map. This is
+    // populated once in the constructor.
+    private Set<Integer> mViewIndependentEventsToThrottle;
 
     // For events being throttled (see: |mEventsToThrottle|), this array will map the eventType
     // to the last time (long in milliseconds) such an event has been sent.
@@ -66,9 +72,11 @@ public class AccessibilityEventDispatcher {
     /**
      *  Create an AccessibilityEventDispatcher and define the delays for event types.
      */
-    public AccessibilityEventDispatcher(Client mClient, Map<Integer, Integer> eventThrottleDelays) {
+    public AccessibilityEventDispatcher(Client mClient, Map<Integer, Integer> eventThrottleDelays,
+            Set<Integer> viewIndependentEventsToThrottle) {
         this.mClient = mClient;
         this.mEventThrottleDelays = eventThrottleDelays;
+        this.mViewIndependentEventsToThrottle = viewIndependentEventsToThrottle;
     }
 
     /**
@@ -138,6 +146,12 @@ public class AccessibilityEventDispatcher {
      * @return uuid             The uuid (universal unique id) for this pairing.
      */
     private long uuid(int virtualViewId, int eventType) {
+        // For some event types, we will disregard the |virtualViewId| and throttle the events
+        // entirely by |eventType|.
+        if (mViewIndependentEventsToThrottle.contains(eventType)) {
+            return eventType;
+        }
+
         return ((long) virtualViewId << 32) | ((long) eventType);
     }
 }

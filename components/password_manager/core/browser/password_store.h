@@ -284,6 +284,12 @@ class PasswordStore : protected PasswordStoreSync,
   // completion. The request will be cancelled if the consumer is destroyed.
   void GetAllCompromisedCredentials(CompromisedCredentialsConsumer* consumer);
 
+  // Returns all the compromised records for a given site. This list also
+  // includes Android affiliated credentials.
+  void GetMatchingCompromisedCredentials(
+      const std::string& signon_realm,
+      CompromisedCredentialsConsumer* consumer);
+
   // Removes all compromised credentials in the given date range. If
   // |url_filter| is not null, only compromised credentials for matching urls
   // are removed. If |completion| is not null, it will be posted to the
@@ -539,6 +545,8 @@ class PasswordStore : protected PasswordStoreSync,
       RemoveCompromisedCredentialsReason reason) = 0;
   virtual std::vector<CompromisedCredentials>
   GetAllCompromisedCredentialsImpl() = 0;
+  virtual std::vector<CompromisedCredentials>
+  GetMatchingCompromisedCredentialsImpl(const std::string& signon_realm) = 0;
   virtual bool RemoveCompromisedCredentialsByUrlAndTimeImpl(
       const base::RepeatingCallback<bool(const GURL&)>& url_filter,
       base::Time remove_begin,
@@ -749,6 +757,12 @@ class PasswordStore : protected PasswordStoreSync,
       const FormDigest& form,
       const std::vector<std::string>& additional_android_realms);
 
+  // Extended version of GetMatchingCompromisedCredentialsImpl that also returns
+  // credentials stored for the specified affiliated Android applications.
+  std::vector<CompromisedCredentials> GetCompromisedWithAffiliationsImpl(
+      const std::string& signon_realm,
+      const std::vector<std::string>& additional_android_realms);
+
   // Retrieves and fills in affiliation and branding information for Android
   // credentials in |forms| and invokes |callback| with the result. Called on
   // the main sequence.
@@ -762,6 +776,13 @@ class PasswordStore : protected PasswordStoreSync,
       base::WeakPtr<PasswordStoreConsumer> consumer,
       const PasswordStore::FormDigest& form,
       base::Time cutoff,
+      const std::vector<std::string>& additional_android_realms);
+
+  // Schedules GetCompromisedWithAffiliationsImpl() to be run on the background
+  // sequence.
+  void ScheduleGetCompromisedWithAffiliations(
+      base::WeakPtr<CompromisedCredentialsConsumer> consumer,
+      const std::string& signon_realm,
       const std::vector<std::string>& additional_android_realms);
 
   // Retrieves the currently stored form, if any, with the same primary key as

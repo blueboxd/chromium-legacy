@@ -130,6 +130,14 @@ def _ParseArgs(args):
       action="store_true",
       help='When passed, fails the build on libraries and assets expectation '
       'mismatches.')
+  parser.add_argument(
+      '--library-always-compress',
+      action='append',
+      help='The list of library files that we always compress.')
+  parser.add_argument(
+      '--library-renames',
+      action='append',
+      help='The list of library files that we prepend crazy. to their names.')
   options = parser.parse_args(args)
   options.assets = build_utils.ParseGnList(options.assets)
   options.uncompressed_assets = build_utils.ParseGnList(
@@ -142,6 +150,9 @@ def _ParseArgs(args):
   options.native_libs = build_utils.ParseGnList(options.native_libs)
   options.secondary_native_libs = build_utils.ParseGnList(
       options.secondary_native_libs)
+  options.library_always_compress = build_utils.ParseGnList(
+      options.library_always_compress)
+  options.library_renames = build_utils.ParseGnList(options.library_renames)
 
   # --apksigner-jar, --zipalign-path, --key-xxx arguments are
   # required when building an APK, but not a bundle module.
@@ -270,7 +281,8 @@ def _AddFiles(apk, details):
           alignment=alignment)
 
 
-def _GetNativeLibrariesToAdd(native_libs, android_abi, uncompress, fast_align):
+def _GetNativeLibrariesToAdd(native_libs, android_abi, uncompress, fast_align,
+                             lib_always_compress, lib_renames):
   """Returns the list of file_detail tuples for native libraries in the apk.
 
   Returns: A list of (src_path, apk_path, compress, alignment) tuple
@@ -278,23 +290,14 @@ def _GetNativeLibrariesToAdd(native_libs, android_abi, uncompress, fast_align):
   """
   libraries_to_add = []
 
-  has_crazy_linker = any(
-      'android_linker' in os.path.basename(p) for p in native_libs)
-  has_monochrome = any('monochrome' in os.path.basename(p) for p in native_libs)
 
   for path in native_libs:
     basename = os.path.basename(path)
-    compress = True
-    if uncompress and os.path.splitext(basename)[1] == '.so':
-      # Trichrome
-      if has_crazy_linker and has_monochrome:
-        compress = False
-      elif ('android_linker' not in basename
-            and (not has_crazy_linker or 'clang_rt' not in basename)
-            and (not has_crazy_linker or 'crashpad_handler' not in basename)):
-        compress = False
-        if has_crazy_linker and not has_monochrome:
-          basename = 'crazy.' + basename
+    compress = not uncompress or any(lib_name in basename
+                                     for lib_name in lib_always_compress)
+    rename = any(lib_name in basename for lib_name in lib_renames)
+    if rename:
+      basename = 'crazy.' + basename
 
     lib_android_abi = android_abi
     if path.startswith('android_clang_arm64_hwasan/'):
@@ -445,14 +448,15 @@ def main(args):
   expectation_asset_details = _GetAssetDetails(
       assets, uncompressed_assets, fast_align, allow_reads=False)
 
-  libs_to_add = _GetNativeLibrariesToAdd(native_libs, options.android_abi,
-                                         options.uncompress_shared_libraries,
-                                         fast_align)
+  libs_to_add = _GetNativeLibrariesToAdd(
+      native_libs, options.android_abi, options.uncompress_shared_libraries,
+      fast_align, options.library_always_compress, options.library_renames)
   if options.secondary_android_abi:
     libs_to_add.extend(
         _GetNativeLibrariesToAdd(
             secondary_native_libs, options.secondary_android_abi,
-            options.uncompress_shared_libraries, fast_align))
+            options.uncompress_shared_libraries, fast_align,
+            options.library_always_compress, options.library_renames))
 
   if options.expected_native_libs_and_assets:
     _VerifyNativeLibsAndAssets(

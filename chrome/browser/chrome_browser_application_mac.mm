@@ -4,8 +4,8 @@
 
 #import "chrome/browser/chrome_browser_application_mac.h"
 
+#include "base/check.h"
 #include "base/command_line.h"
-#include "base/logging.h"
 #include "base/mac/call_with_eh_frame.h"
 #include "base/observer_list.h"
 #include "base/strings/stringprintf.h"

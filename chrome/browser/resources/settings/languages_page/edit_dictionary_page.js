@@ -7,21 +7,23 @@
  * the "dictionary" of custom words used for spell check.
  */
 
-import {Polymer, html, flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-
 import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
 import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.m.js';
 import 'chrome://resources/cr_elements/cr_input/cr_input.m.js';
 import 'chrome://resources/cr_elements/icons.m.js';
 import 'chrome://resources/polymer/v3_0/iron-a11y-keys/iron-a11y-keys.js';
 import 'chrome://resources/polymer/v3_0/iron-list/iron-list.js';
-import {GlobalScrollTargetBehavior} from '../global_scroll_target_behavior.m.js';
-import {loadTimeData} from '../i18n_setup.js';
 import '../prefs/prefs.m.js';
-import {PrefsBehavior} from '../prefs/prefs_behavior.m.js';
-import {routes} from '../route.js';
 import '../settings_shared_css.m.js';
 import '../settings_vars_css.m.js';
+
+import {flush, html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
+import {GlobalScrollTargetBehavior} from '../global_scroll_target_behavior.m.js';
+import {loadTimeData} from '../i18n_setup.js';
+import {PrefsBehavior} from '../prefs/prefs_behavior.m.js';
+import {routes} from '../route.js';
+
 import {LanguagesBrowserProxyImpl} from './languages_browser_proxy.m.js';
 
 // Max valid word size defined in

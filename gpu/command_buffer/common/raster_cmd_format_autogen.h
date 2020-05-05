@@ -1001,26 +1001,32 @@ struct ConvertYUVMailboxesToRGBINTERNALImmediate {
 
   void SetHeader() { header.SetCmdByTotalSize<ValueType>(ComputeSize()); }
 
-  void Init(GLenum _planes_yuv_color_space, const GLbyte* _mailboxes) {
+  void Init(GLenum _planes_yuv_color_space,
+            GLboolean _is_nv12,
+            const GLbyte* _mailboxes) {
     SetHeader();
     planes_yuv_color_space = _planes_yuv_color_space;
+    is_nv12 = _is_nv12;
     memcpy(ImmediateDataAddress(this), _mailboxes, ComputeDataSize());
   }
 
   void* Set(void* cmd,
             GLenum _planes_yuv_color_space,
+            GLboolean _is_nv12,
             const GLbyte* _mailboxes) {
-    static_cast<ValueType*>(cmd)->Init(_planes_yuv_color_space, _mailboxes);
+    static_cast<ValueType*>(cmd)->Init(_planes_yuv_color_space, _is_nv12,
+                                       _mailboxes);
     const uint32_t size = ComputeSize();
     return NextImmediateCmdAddressTotalSize<ValueType>(cmd, size);
   }
 
   gpu::CommandHeader header;
   uint32_t planes_yuv_color_space;
+  uint32_t is_nv12;
 };
 
-static_assert(sizeof(ConvertYUVMailboxesToRGBINTERNALImmediate) == 8,
-              "size of ConvertYUVMailboxesToRGBINTERNALImmediate should be 8");
+static_assert(sizeof(ConvertYUVMailboxesToRGBINTERNALImmediate) == 12,
+              "size of ConvertYUVMailboxesToRGBINTERNALImmediate should be 12");
 static_assert(
     offsetof(ConvertYUVMailboxesToRGBINTERNALImmediate, header) == 0,
     "offset of ConvertYUVMailboxesToRGBINTERNALImmediate header should be 0");
@@ -1028,6 +1034,9 @@ static_assert(offsetof(ConvertYUVMailboxesToRGBINTERNALImmediate,
                        planes_yuv_color_space) == 4,
               "offset of ConvertYUVMailboxesToRGBINTERNALImmediate "
               "planes_yuv_color_space should be 4");
+static_assert(
+    offsetof(ConvertYUVMailboxesToRGBINTERNALImmediate, is_nv12) == 8,
+    "offset of ConvertYUVMailboxesToRGBINTERNALImmediate is_nv12 should be 8");
 
 struct TraceBeginCHROMIUM {
   typedef TraceBeginCHROMIUM ValueType;

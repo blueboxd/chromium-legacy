@@ -15,6 +15,7 @@ import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.RetryOnFailure;
 
 import java.util.HashMap;
+import java.util.HashSet;
 
 /**
  * Test suite to ensure that |AccessibilityEventDispatcher| behaves appropriately.
@@ -56,7 +57,7 @@ public class AccessibilityEventDispatcherTest {
                 mEventDispatched = true;
                 return true;
             }
-        }, mEventDelays);
+        }, mEventDelays, new HashSet<Integer>());
 
         mRunnablePosted = false;
         mRunnableRemoved = false;

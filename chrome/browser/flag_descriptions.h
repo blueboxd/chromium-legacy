@@ -808,9 +808,6 @@ extern const char kOmniboxOnFocusSuggestionsDescription[];
 extern const char kOmniboxOnFocusSuggestionsContextualWebName[];
 extern const char kOmniboxOnFocusSuggestionsContextualWebDescription[];
 
-extern const char kOmniboxRemoveSuggestionsFromClipboardName[];
-extern const char kOmniboxRemoveSuggestionsFromClipboardDescription[];
-
 extern const char kOmniboxShortBookmarkSuggestionsName[];
 extern const char kOmniboxShortBookmarkSuggestionsDescription[];
 
@@ -989,9 +986,6 @@ extern const char kReducedReferrerGranularityDescription[];
 
 extern const char kRewriteLevelDBOnDeletionName[];
 extern const char kRewriteLevelDBOnDeletionDescription[];
-
-extern const char kReorderBookmarksName[];
-extern const char kReorderBookmarksDescription[];
 
 extern const char kRequestUnbufferedDispatchName[];
 extern const char kRequestUnbufferedDispatchDescription[];

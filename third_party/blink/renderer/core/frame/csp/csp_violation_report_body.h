@@ -16,11 +16,11 @@ class CORE_EXPORT CSPViolationReportBody : public LocationReportBody {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  CSPViolationReportBody(const SecurityPolicyViolationEventInit& violation_data)
-      : LocationReportBody(
-            SourceLocation::Capture(violation_data.sourceFile(),
-                                    violation_data.lineNumber(),
-                                    violation_data.columnNumber())),
+  explicit CSPViolationReportBody(
+      const SecurityPolicyViolationEventInit& violation_data)
+      : LocationReportBody(violation_data.sourceFile(),
+                           violation_data.lineNumber(),
+                           violation_data.columnNumber()),
         document_url_(violation_data.documentURI()),
         referrer_(violation_data.referrer()),
         blocked_url_(violation_data.blockedURI()),

@@ -11,7 +11,6 @@ import android.text.TextUtils;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.accessibility.AccessibilityManager;
-import android.widget.TextView;
 
 import androidx.annotation.VisibleForTesting;
 import androidx.recyclerview.widget.RecyclerView;
@@ -23,7 +22,6 @@ import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.bookmarks.BookmarkBridge.BookmarkItem;
 import org.chromium.chrome.browser.bookmarks.BookmarkBridge.BookmarkModelObserver;
-import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.partnerbookmarks.PartnerBookmarksReader;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.ui.favicon.LargeIconBridge;
@@ -60,7 +58,6 @@ public class BookmarkManager
     private BasicNativePage mNativePage;
     private SelectableListLayout<BookmarkId> mSelectableListLayout;
     private RecyclerView mRecyclerView;
-    private TextView mEmptyView;
     private BookmarkActionBar mToolbar;
     private SelectionDelegate<BookmarkId> mSelectionDelegate;
     private final Stack<BookmarkUIState> mStateStack = new Stack<>();
@@ -70,28 +67,9 @@ public class BookmarkManager
     private boolean mIsDialogUi;
     private boolean mIsDestroyed;
 
-    // TODO(crbug.com/160194): Clean up after bookmark reordering launches.
-    private ItemsAdapter mAdapter;
+    private ReorderBookmarkItemsAdapter mAdapter;
     private BookmarkDragStateDelegate mDragStateDelegate;
     private AdapterDataObserver mAdapterDataObserver;
-
-    /**
-     * An adapter responsible for managing bookmark items.
-     */
-    interface ItemsAdapter {
-        void refresh();
-        void notifyDataSetChanged();
-        void onBookmarkDelegateInitialized(BookmarkDelegate bookmarkDelegate);
-        void search(String query);
-        void registerAdapterDataObserver(AdapterDataObserver observer);
-        void unregisterAdapterDataObserver(AdapterDataObserver observer);
-
-        void moveUpOne(BookmarkId bookmarkId);
-        void moveDownOne(BookmarkId bookmarkId);
-
-        void highlightBookmark(BookmarkId bookmarkId);
-        int getPositionForBookmark(BookmarkId bookmarkId);
-    }
 
     private final BookmarkModelObserver mBookmarkModelObserver = new BookmarkModelObserver() {
         @Override
@@ -188,8 +166,6 @@ public class BookmarkManager
     public BookmarkManager(Activity activity, boolean isDialogUi, SnackbarManager snackbarManager) {
         mActivity = activity;
         mIsDialogUi = isDialogUi;
-        boolean reorderBookmarksEnabled =
-                ChromeFeatureList.isEnabled(ChromeFeatureList.REORDER_BOOKMARKS);
 
         mSelectionDelegate = new SelectionDelegate<BookmarkId>() {
             @Override
@@ -202,9 +178,7 @@ public class BookmarkManager
             }
         };
 
-        if (reorderBookmarksEnabled) {
-            mDragStateDelegate = new BookmarkDragStateDelegate();
-        }
+        mDragStateDelegate = new BookmarkDragStateDelegate();
 
         mBookmarkModel = new BookmarkModel();
         mMainView = (ViewGroup) mActivity.getLayoutInflater().inflate(R.layout.bookmark_main, null);
@@ -213,14 +187,11 @@ public class BookmarkManager
         SelectableListLayout<BookmarkId> selectableList =
                 mMainView.findViewById(R.id.selectable_list);
         mSelectableListLayout = selectableList;
-        mEmptyView = mSelectableListLayout.initializeEmptyView(
+        mSelectableListLayout.initializeEmptyView(
                 R.string.bookmarks_folder_empty, R.string.bookmark_no_result);
 
-        if (reorderBookmarksEnabled) {
-            mAdapter = new ReorderBookmarkItemsAdapter(activity);
-        } else {
-            mAdapter = new BookmarkItemsAdapter(activity);
-        }
+        mAdapter = new ReorderBookmarkItemsAdapter(activity);
+
         mAdapterDataObserver = new AdapterDataObserver() {
             @Override
             public void onItemRangeRemoved(int positionStart, int itemCount) {
@@ -249,15 +220,10 @@ public class BookmarkManager
         initializeToLoadingState();
         if (!sPreventLoadingForTesting) {
             Runnable modelLoadedRunnable = () -> {
-                if (reorderBookmarksEnabled) {
-                    mDragStateDelegate.onBookmarkDelegateInitialized(BookmarkManager.this);
-                }
+                mDragStateDelegate.onBookmarkDelegateInitialized(BookmarkManager.this);
                 mAdapter.onBookmarkDelegateInitialized(BookmarkManager.this);
                 mToolbar.onBookmarkDelegateInitialized(BookmarkManager.this);
-
-                if (reorderBookmarksEnabled) {
-                    ((ReorderBookmarkItemsAdapter) mAdapter).addDragListener(mToolbar);
-                }
+                mAdapter.addDragListener(mToolbar);
 
                 if (!TextUtils.isEmpty(mInitialUrl)) {
                     setState(BookmarkUIState.createStateFromUrl(mInitialUrl, mBookmarkModel));
@@ -587,8 +553,8 @@ public class BookmarkManager
         mStateStack.pop();
 
         // Set the state back to the folder that was previously being viewed. Listeners, including
-        // the BookmarkItemsAdapter, will be notified of the change and the list of bookmarks will
-        // be updated.
+        // the ReorderBookmarkItemsAdapter, will be notified of the change and the list of
+        // bookmarks will be updated.
         setState(mStateStack.pop());
     }
 

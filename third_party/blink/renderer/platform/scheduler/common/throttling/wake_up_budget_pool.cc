@@ -67,31 +67,19 @@ base::TimeTicks WakeUpBudgetPool::GetTimeTasksCanRunUntil(
   return last_wake_up_.value() + wake_up_duration_;
 }
 
-namespace {
-
-// Wrapper around base::TimeTicks::SnappedToNextTick which ensures that
-// the returned point is strictly in the future.
-base::TimeTicks SnapToNextTickStrict(base::TimeTicks moment,
-                                     base::TimeDelta interval) {
-  base::TimeTicks snapped =
-      moment.SnappedToNextTick(base::TimeTicks(), interval);
-  if (snapped == moment)
-    return moment + interval;
-  return snapped;
-}
-
-}  // namespace
-
 base::TimeTicks WakeUpBudgetPool::GetNextAllowedRunTime(
     base::TimeTicks desired_run_time) const {
   if (!is_enabled_)
     return desired_run_time;
-  if (!last_wake_up_)
-    return SnapToNextTickStrict(desired_run_time, wake_up_interval_);
+  if (!last_wake_up_) {
+    return desired_run_time.SnappedToNextTick(base::TimeTicks(),
+                                              wake_up_interval_);
+  }
   if (desired_run_time < last_wake_up_.value() + wake_up_duration_)
     return desired_run_time;
-  return SnapToNextTickStrict(std::max(desired_run_time, last_wake_up_.value()),
-                              wake_up_interval_);
+  DCHECK_GE(desired_run_time, last_wake_up_.value());
+  return desired_run_time.SnappedToNextTick(base::TimeTicks(),
+                                            wake_up_interval_);
 }
 
 void WakeUpBudgetPool::OnQueueNextWakeUpChanged(

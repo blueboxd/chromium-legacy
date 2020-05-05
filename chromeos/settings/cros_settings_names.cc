@@ -181,6 +181,10 @@ const char kReportRunningKioskApp[] =
 const char kReportUploadFrequency[] =
     "cros.device_status.report_upload_frequency";
 
+// A boolean pref that indicates whether user app information and activity times
+// should be recorded and reported along with device policy requests.
+const char kReportDeviceAppInfo[] = "cros.device_status.report_device_app_info";
+
 // Determines whether heartbeats should be sent to the policy service via
 // the GCM channel.
 const char kHeartbeatEnabled[] = "cros.device_status.heartbeat_enabled";

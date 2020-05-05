@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "gpu/config/gpu_preferences.h"
-#include "gpu/ipc/common/gpu_preferences.mojom.h"
+#include "gpu/ipc/common/gpu_preferences.mojom-shared.h"
 #include "ui/gfx/mojom/buffer_types_mojom_traits.h"
 
 #if defined(USE_OZONE)

@@ -66,6 +66,7 @@ class DownloadItemModel : public DownloadUIModel,
   bool IsPaused() const override;
   download::DownloadDangerType GetDangerType() const override;
   bool GetOpenWhenComplete() const override;
+  bool IsOpenWhenCompleteByPolicy() const override;
   bool TimeRemaining(base::TimeDelta* remaining) const override;
   bool GetOpened() const override;
   void SetOpened(bool opened) override;

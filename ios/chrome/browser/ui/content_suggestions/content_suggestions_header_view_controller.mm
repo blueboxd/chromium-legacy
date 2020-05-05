@@ -25,6 +25,7 @@
 #import "ios/chrome/browser/ui/ntp/new_tab_page_header_constants.h"
 #import "ios/chrome/browser/ui/toolbar/public/fakebox_focuser.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_utils.h"
+#include "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/ui/util/named_guide.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
@@ -38,6 +39,12 @@
 #endif
 
 using base::UserMetricsAction;
+
+#if defined(__IPHONE_13_4)
+@interface ContentSuggestionsHeaderViewController (Pointer) <
+    UIPointerInteractionDelegate>
+@end
+#endif  // defined(__IPHONE_13_4)
 
 @interface ContentSuggestionsHeaderViewController () <
     UserAccountImageUpdateDelegate>
@@ -287,6 +294,15 @@ using base::UserMetricsAction;
   [self.fakeOmnibox addSubview:self.accessibilityButton];
   self.accessibilityButton.translatesAutoresizingMaskIntoConstraints = NO;
   AddSameConstraints(self.fakeOmnibox, self.accessibilityButton);
+
+#if defined(__IPHONE_13_4)
+  if (@available(iOS 13.4, *)) {
+    if (base::FeatureList::IsEnabled(kPointerSupport)) {
+      [self.fakeOmnibox
+          addInteraction:[[UIPointerInteraction alloc] initWithDelegate:self]];
+    }
+  }
+#endif  // defined(__IPHONE_13_4)
 
   [self.headerView addViewsToSearchField:self.fakeOmnibox];
 
@@ -575,5 +591,37 @@ using base::UserMetricsAction;
   self.identityDiscButton.imageView.layer.cornerRadius = image.size.width / 2;
   self.identityDiscButton.imageView.layer.masksToBounds = YES;
 }
+
+#if defined(__IPHONE_13_4)
+#pragma mark UIPointerInteractionDelegate
+
+- (UIPointerRegion*)pointerInteraction:(UIPointerInteraction*)interaction
+                      regionForRequest:(UIPointerRegionRequest*)request
+                         defaultRegion:(UIPointerRegion*)defaultRegion
+    API_AVAILABLE(ios(13.4)) {
+  return defaultRegion;
+}
+
+- (UIPointerStyle*)pointerInteraction:(UIPointerInteraction*)interaction
+                       styleForRegion:(UIPointerRegion*)region
+    API_AVAILABLE(ios(13.4)) {
+  UIBezierPath* path = [UIBezierPath
+      bezierPathWithRoundedRect:interaction.view.bounds
+                   cornerRadius:interaction.view.bounds.size.height];
+  UIPreviewParameters* parameters = [[UIPreviewParameters alloc] init];
+  parameters.visiblePath = path;
+  UITargetedPreview* preview =
+      [[UITargetedPreview alloc] initWithView:interaction.view
+                                   parameters:parameters];
+  UIPointerHoverEffect* effect =
+      [UIPointerHoverEffect effectWithPreview:preview];
+  effect.prefersScaledContent = NO;
+  effect.prefersShadow = NO;
+  UIPointerShape* shape = [UIPointerShape
+      beamWithPreferredLength:interaction.view.bounds.size.height / 2
+                         axis:UIAxisVertical];
+  return [UIPointerStyle styleWithEffect:effect shape:shape];
+}
+#endif  // defined(__IPHONE_13_4)
 
 @end

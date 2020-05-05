@@ -23,4 +23,9 @@ IdentifiabilityMetricBuilder& IdentifiabilityMetricBuilder::Set(
   return *this;
 }
 
+void IdentifiabilityMetricBuilder::Record(ukm::UkmRecorder* recorder) {
+  // Consume the entry, but don't pass it downstream.
+  (void)TakeEntry();
+}
+
 }  // namespace blink

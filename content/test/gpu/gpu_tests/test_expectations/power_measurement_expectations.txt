@@ -1,9 +1,16 @@
 # tags: [ win10 ]
-# tags: [ intel intel-0x5912]
-# results: [ RetryOnFailure ]
+# tags: [ intel intel-0x5912 ]
+# results: [ RetryOnFailure Skip ]
 
- # These tests are flaky on Win10 FYI x64 (Exp) Release (Intel HD 630) bots
-crbug.com/941163 [ win10 intel-0x5912 ] Video_720_MP4 [ RetryOnFailure ]
-crbug.com/941163 [ win10 intel-0x5912 ] Video_720_MP4_Underlay [ RetryOnFailure ]
-crbug.com/941163 [ win10 intel-0x5912 ] Video_720_MP4_Fullscreen [ RetryOnFailure ]
-crbug.com/941163 [ win10 intel-0x5912 ] Video_720_MP4_Underlay_Fullscreen [ RetryOnFailure ]
+# These tests fail consistently on Win10 FYI x64 Exp Release (Intel HD 630).
+crbug.com/1074402 [ win10 intel-0x5912 ] Basic [ Skip ]
+crbug.com/1074402 [ win10 intel-0x5912 ] Video_720_MP4 [ Skip ]
+crbug.com/1074402 [ win10 intel-0x5912 ] Video_720_MP4_Underlay [ Skip ]
+crbug.com/1074402 [ win10 intel-0x5912 ] Video_720_MP4_Fullscreen [ Skip ]
+crbug.com/1074402 [ win10 intel-0x5912 ] Video_720_MP4_Underlay_Fullscreen [ Skip ]
+# These tests were previously flaky, due to crbug.com/941163, so when the above
+# consistent failures are fixed, these expectations may need to be restored.
+#crbug.com/941163 [ win10 intel-0x5912 ] Video_720_MP4 [ RetryOnFailure ]
+#crbug.com/941163 [ win10 intel-0x5912 ] Video_720_MP4_Underlay [ RetryOnFailure ]
+#crbug.com/941163 [ win10 intel-0x5912 ] Video_720_MP4_Fullscreen [ RetryOnFailure ]
+#crbug.com/941163 [ win10 intel-0x5912 ] Video_720_MP4_Underlay_Fullscreen [ RetryOnFailure ]

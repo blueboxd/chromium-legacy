@@ -108,7 +108,7 @@ void SyntheticGestureTargetAura::DispatchWebGestureEventToPlatform(
     const ui::LatencyInfo& latency_info) {
   DCHECK(blink::WebInputEvent::IsPinchGestureEventType(web_gesture.GetType()) ||
          blink::WebInputEvent::IsFlingGestureEventType(web_gesture.GetType()));
-  ui::EventType event_type = ui::WebEventTypeToEventType(web_gesture.GetType());
+  ui::EventType event_type = web_gesture.GetTypeAsUiEventType();
   int flags = ui::WebEventModifiersToEventFlags(web_gesture.GetModifiers());
   aura::Window* window = GetWindow();
 
@@ -144,8 +144,7 @@ void SyntheticGestureTargetAura::DispatchWebGestureEventToPlatform(
 void SyntheticGestureTargetAura::DispatchWebMouseEventToPlatform(
     const blink::WebMouseEvent& web_mouse_event,
     const ui::LatencyInfo& latency_info) {
-  ui::EventType event_type =
-      ui::WebEventTypeToEventType(web_mouse_event.GetType());
+  ui::EventType event_type = web_mouse_event.GetTypeAsUiEventType();
   int flags = ui::WebEventModifiersToEventFlags(web_mouse_event.GetModifiers());
   ui::PointerDetails pointer_details(
       ui::WebPointerTypeToEventPointerType(web_mouse_event.pointer_type));

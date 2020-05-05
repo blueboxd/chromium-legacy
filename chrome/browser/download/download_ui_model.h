@@ -229,6 +229,9 @@ class DownloadUIModel {
   // Returns true if the download will be auto-opened when complete.
   virtual bool GetOpenWhenComplete() const;
 
+  // Returns true if the download will be auto-opened when complete by policy.
+  virtual bool IsOpenWhenCompleteByPolicy() const;
+
   // Simple calculation of the amount of time remaining to completion. Fills
   // |*remaining| with the amount of time remaining if successful. Fails and
   // returns false if we do not have the number of bytes or the download speed,

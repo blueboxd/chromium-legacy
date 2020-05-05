@@ -39,7 +39,6 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_property.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_registration_options.h"
-#include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
@@ -55,10 +54,11 @@ namespace blink {
 
 class ExecutionContext;
 class ExceptionState;
+class LocalDOMWindow;
 
 class MODULES_EXPORT ServiceWorkerContainer final
     : public EventTargetWithInlineData,
-      public Supplement<Document>,
+      public Supplement<LocalDOMWindow>,
       public ExecutionContextLifecycleObserver,
       public WebServiceWorkerProviderClient {
   DEFINE_WRAPPERTYPEINFO();
@@ -70,13 +70,13 @@ class MODULES_EXPORT ServiceWorkerContainer final
 
   static const char kSupplementName[];
 
-  static ServiceWorkerContainer* From(Document*);
+  static ServiceWorkerContainer* From(LocalDOMWindow&);
 
   static ServiceWorkerContainer* CreateForTesting(
-      Document*,
+      LocalDOMWindow&,
       std::unique_ptr<WebServiceWorkerProvider>);
 
-  explicit ServiceWorkerContainer(Document*);
+  explicit ServiceWorkerContainer(LocalDOMWindow&);
   ~ServiceWorkerContainer() override;
 
   void Trace(Visitor*) override;

@@ -3,9 +3,10 @@
 // found in the LICENSE file.
 
 #include "ui/events/blink/prediction/least_squares_predictor.h"
-#include "ui/events/blink/prediction/predictor_factory.h"
 
 #include <algorithm>
+
+#include "third_party/blink/public/common/features.h"
 
 namespace ui {
 
@@ -42,7 +43,7 @@ LeastSquaresPredictor::LeastSquaresPredictor() {}
 LeastSquaresPredictor::~LeastSquaresPredictor() {}
 
 const char* LeastSquaresPredictor::GetName() const {
-  return input_prediction::kScrollPredictorNameLsq;
+  return blink::features::kScrollPredictorNameLsq;
 }
 
 void LeastSquaresPredictor::Reset() {

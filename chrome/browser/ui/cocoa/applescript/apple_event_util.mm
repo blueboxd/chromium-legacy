@@ -7,7 +7,8 @@
 #import <Carbon/Carbon.h>
 #include <stddef.h>
 
-#include "base/logging.h"
+#include "base/check.h"
+#include "base/notreached.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"

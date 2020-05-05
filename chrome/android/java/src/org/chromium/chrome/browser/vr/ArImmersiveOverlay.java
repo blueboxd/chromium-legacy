@@ -10,6 +10,7 @@ import android.content.DialogInterface;
 import android.content.pm.ActivityInfo;
 import android.graphics.PixelFormat;
 import android.graphics.Point;
+import android.os.Build;
 import android.view.Display;
 import android.view.Gravity;
 import android.view.MotionEvent;
@@ -17,6 +18,7 @@ import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 
 import androidx.annotation.NonNull;
 
@@ -94,6 +96,16 @@ public class ArImmersiveOverlay
             mDialog = new Dialog(mActivity, android.R.style.Theme_NoTitleBar_Fullscreen);
             mDialog.getWindow().setBackgroundDrawable(null);
             mDialog.getWindow().takeSurface(ArImmersiveOverlay.this);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                // Use maximum fullscreen, ignoring a notch if present. This code path is used
+                // for non-DOM-Overlay mode where the browser compositor view isn't visible.
+                // In DOM Overlay mode (SurfaceUiCompositor), Blink configures this separately
+                // via ViewportData::SetExpandIntoDisplayCutout.
+                mDialog.getWindow().setFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
+                        WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
+                mDialog.getWindow().getAttributes().layoutInDisplayCutoutMode =
+                        WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES;
+            }
             View view = mDialog.getWindow().getDecorView();
             view.setSystemUiVisibility(VISIBILITY_FLAGS_IMMERSIVE);
             view.setOnTouchListener(ArImmersiveOverlay.this);

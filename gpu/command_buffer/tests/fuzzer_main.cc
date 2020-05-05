@@ -59,7 +59,8 @@ const uint32_t kTransferBufferSize = 16384;
 const uint32_t kSmallTransferBufferSize = 16;
 const uint32_t kTinyTransferBufferSize = 3;
 
-#if !defined(GPU_FUZZER_USE_ANGLE) && !defined(GPU_FUZZER_USE_SWIFTSHADER)
+#if !defined(GPU_FUZZER_USE_ANGLE) && !defined(GPU_FUZZER_USE_SWIFTSHADER) && \
+    !defined(GPU_FUZZER_USE_SWANGLE)
 #define GPU_FUZZER_USE_STUB
 #endif
 
@@ -319,8 +320,13 @@ class CommandBufferSetup {
 #if defined(GPU_FUZZER_USE_ANGLE)
     command_line->AppendSwitchASCII(switches::kUseGL,
                                     gl::kGLImplementationANGLEName);
+#if defined(GPU_FUZZER_USE_SWANGLE)
+    command_line->AppendSwitchASCII(switches::kUseANGLE,
+                                    gl::kANGLEImplementationSwiftShaderName);
+#else
     command_line->AppendSwitchASCII(switches::kUseANGLE,
                                     gl::kANGLEImplementationNullName);
+#endif
 
     CHECK(gl::init::InitializeStaticGLBindingsImplementation(
         gl::kGLImplementationEGLANGLE, false));

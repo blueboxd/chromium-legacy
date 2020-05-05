@@ -21,7 +21,6 @@ import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.bookmarks.BookmarkBridge.BookmarkItem;
 import org.chromium.chrome.browser.bookmarks.BookmarkBridge.BookmarkModelObserver;
-import org.chromium.chrome.browser.bookmarks.BookmarkManager.ItemsAdapter;
 import org.chromium.chrome.browser.bookmarks.BookmarkRow.Location;
 import org.chromium.chrome.browser.signin.PersonalizedSigninPromoView;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
@@ -39,7 +38,7 @@ import java.util.List;
  * BaseAdapter for {@link RecyclerView}. It manages bookmarks to list there.
  */
 class ReorderBookmarkItemsAdapter extends DragReorderableListAdapter<BookmarkItem>
-        implements BookmarkUIObserver, ProfileSyncService.SyncStateChangedListener, ItemsAdapter {
+        implements BookmarkUIObserver, ProfileSyncService.SyncStateChangedListener {
     /**
      * Specifies the view types that the bookmark delegate screen can contain.
      */
@@ -127,8 +126,7 @@ class ReorderBookmarkItemsAdapter extends DragReorderableListAdapter<BookmarkIte
     /**
      * @return The position of the given bookmark in adapter. Will return -1 if not found.
      */
-    @Override
-    public int getPositionForBookmark(BookmarkId bookmark) {
+    int getPositionForBookmark(BookmarkId bookmark) {
         assert bookmark != null;
         int position = -1;
         for (int i = 0; i < getItemCount(); i++) {
@@ -245,8 +243,7 @@ class ReorderBookmarkItemsAdapter extends DragReorderableListAdapter<BookmarkIte
      *
      * @param delegate A {@link BookmarkDelegate} instance to handle all backend interaction.
      */
-    @Override
-    public void onBookmarkDelegateInitialized(BookmarkDelegate delegate) {
+    void onBookmarkDelegateInitialized(BookmarkDelegate delegate) {
         mDelegate = delegate;
         mDelegate.addUIObserver(this);
         mDelegate.getModel().addObserver(mBookmarkModelObserver);
@@ -297,7 +294,7 @@ class ReorderBookmarkItemsAdapter extends DragReorderableListAdapter<BookmarkIte
         if (topLevelFoldersShowing()) {
             setBookmarks(mTopLevelFolders);
         } else {
-            setBookmarks(mDelegate.getModel().getChildIDs(folder, true, true));
+            setBookmarks(mDelegate.getModel().getChildIDs(folder));
         }
     }
 
@@ -320,13 +317,9 @@ class ReorderBookmarkItemsAdapter extends DragReorderableListAdapter<BookmarkIte
     /**
      * Refresh the list of bookmarks within the currently visible folder.
      */
-    @Override
-    public void refresh() {
-        // TODO(crbug.com/160194): Clean up after bookmark reordering launches.
+    void refresh() {
         // Tell the RecyclerView to update its elements.
-        if (mElements != null) {
-            notifyDataSetChanged();
-        }
+        if (mElements != null) notifyDataSetChanged();
     }
 
     /**
@@ -334,24 +327,27 @@ class ReorderBookmarkItemsAdapter extends DragReorderableListAdapter<BookmarkIte
      *
      * @param query The query text to search for.
      */
-    @Override
-    public void search(String query) {
-        mSearchText = query.toString().trim();
+    void search(String query) {
+        mSearchText = query.trim();
         List<BookmarkId> result =
                 mDelegate.getModel().searchBookmarks(mSearchText, MAXIMUM_NUMBER_OF_SEARCH_RESULTS);
         setBookmarks(result);
     }
 
-    @Override
-    public void moveUpOne(BookmarkId bookmarkId) {
+    /**
+     * See {@link BookmarkDelegate#moveUpOne(BookmarkId)}.
+     */
+    void moveUpOne(BookmarkId bookmarkId) {
         int pos = getPositionForBookmark(bookmarkId);
         mElements.remove(pos);
         mElements.add(pos - 1, mDelegate.getModel().getBookmarkById(bookmarkId));
         setOrder(mElements);
     }
 
-    @Override
-    public void moveDownOne(BookmarkId bookmarkId) {
+    /**
+     * See {@link BookmarkDelegate#moveDownOne(BookmarkId)}.
+     */
+    void moveDownOne(BookmarkId bookmarkId) {
         int pos = getPositionForBookmark(bookmarkId);
         mElements.remove(pos);
         mElements.add(pos + 1, mDelegate.getModel().getBookmarkById(bookmarkId));
@@ -561,8 +557,7 @@ class ReorderBookmarkItemsAdapter extends DragReorderableListAdapter<BookmarkIte
      *
      * @param bookmarkId The BookmarkId of the bookmark of interest
      */
-    @Override
-    public void highlightBookmark(BookmarkId bookmarkId) {
+    void highlightBookmark(BookmarkId bookmarkId) {
         assert mHighlightedBookmark == null : "There should not already be a highlighted bookmark!";
 
         mRecyclerView.scrollToPosition(getPositionForBookmark(bookmarkId));

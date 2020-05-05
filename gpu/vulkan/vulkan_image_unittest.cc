@@ -5,6 +5,7 @@
 #include "gpu/vulkan/vulkan_image.h"
 
 #include "build/build_config.h"
+#include "gpu/config/gpu_info_collector.h"
 #include "gpu/ipc/service/gpu_memory_buffer_factory.h"
 #include "gpu/vulkan/tests/basic_vulkan_test.h"
 #include "gpu/vulkan/vulkan_device_queue.h"
@@ -52,6 +53,21 @@ TEST_F(VulkanImageTest, Create) {
 }
 
 TEST_F(VulkanImageTest, CreateWithExternalMemory) {
+  {
+    GPUInfo gpu_info;
+    CHECK(CollectBasicGraphicsInfo(&gpu_info));
+
+    // TODO(crbug.com/1069516): Fails on Intel driver >= 26.20.100.7158; this is
+    // seen on Win10 FYI x64 Exp Release (Intel HD 630), with 26.20.100.7870.
+    if (gpu_info.gpu.driver_version == "26.20.100.7870") {
+      // Can't be sure primary GPU is being used, so check it's the only one
+      // (aside from the Microsoft software renderer).
+      CHECK(gpu_info.secondary_gpus.size() == 1);
+      // Skip test.
+      return;
+    }
+  }
+
   constexpr gfx::Size size(100, 100);
   constexpr VkImageUsageFlags usage =
       VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT |

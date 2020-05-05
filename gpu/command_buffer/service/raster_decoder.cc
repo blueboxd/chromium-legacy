@@ -484,6 +484,7 @@ class RasterDecoderImpl final : public RasterDecoder,
                              GLuint shm_size,
                              const volatile GLbyte* mailbox);
   void DoConvertYUVMailboxesToRGBINTERNAL(GLenum yuv_color_space,
+                                          GLboolean is_nv12,
                                           const volatile GLbyte* mailboxes);
 
   void DoLoseContextCHROMIUM(GLenum current, GLenum other) { NOTIMPLEMENTED(); }
@@ -2369,7 +2370,25 @@ void RasterDecoderImpl::DoWritePixelsINTERNAL(GLint x_offset,
 }
 
 namespace {
-struct YUVConversionMailboxIndex {
+// Helper class for mailbox index iteration that handles NV12 images which have
+// no separate V plane mailbox.
+class YUVConversionMailboxIndex {
+ public:
+  explicit YUVConversionMailboxIndex(bool is_nv12)
+      : is_nv12_(is_nv12), cur_index_(kYIndex) {}
+  ~YUVConversionMailboxIndex() = default;
+
+  YUVConversionMailboxIndex& operator++() {
+    cur_index_++;
+    if (cur_index_ == kVIndex && is_nv12_)
+      cur_index_++;
+    return *this;
+  }
+
+  size_t operator()() { return cur_index_; }
+
+  void reset() { cur_index_ = kYIndex; }
+
   enum Index : size_t {
     kYIndex = 0,
     kUIndex = 1,
@@ -2377,35 +2396,37 @@ struct YUVConversionMailboxIndex {
     kDestIndex = 3,
   };
 
+  std::string ToString() {
+    switch (cur_index_) {
+      case YUVConversionMailboxIndex::kYIndex:
+        return "Y Plane";
+      case YUVConversionMailboxIndex::kUIndex:
+        return is_nv12_ ? "UV Plane" : "U Plane";
+      case YUVConversionMailboxIndex::kVIndex:
+        DCHECK(!is_nv12_);
+        return "V Plane";
+      case YUVConversionMailboxIndex::kDestIndex:
+        return "Destination";
+      default:
+        return "Invalid mailbox index";
+    }
+  }
+
   static constexpr size_t kNumInputMailboxes =
       YUVConversionMailboxIndex::kVIndex + 1;
   static constexpr size_t kTotalMailboxes =
       YUVConversionMailboxIndex::kDestIndex + 1;
-};
 
-std::string MailboxIndexToString(YUVConversionMailboxIndex::Index idx) {
-  switch (idx) {
-    case YUVConversionMailboxIndex::kYIndex:
-      return "Y Plane";
-    case YUVConversionMailboxIndex::kUIndex:
-      return "U Plane";
-    case YUVConversionMailboxIndex::kVIndex:
-      return "V Plane";
-    case YUVConversionMailboxIndex::kDestIndex:
-      return "Destination";
-    default:
-      return "Invalid mailbox index";
-  }
-}
-std::string MailboxIndexToString(size_t idx) {
-  return MailboxIndexToString(
-      static_cast<YUVConversionMailboxIndex::Index>(idx));
-}
+ private:
+  bool is_nv12_;
+  size_t cur_index_;
+};
 
 }  // namespace
 
 void RasterDecoderImpl::DoConvertYUVMailboxesToRGBINTERNAL(
     GLenum planes_yuv_color_space,
+    GLboolean is_nv12,
     const volatile GLbyte* mailboxes_in) {
   if (planes_yuv_color_space > kLastEnum_SkYUVColorSpace) {
     LOCAL_SET_GL_ERROR(
@@ -2416,27 +2437,31 @@ void RasterDecoderImpl::DoConvertYUVMailboxesToRGBINTERNAL(
   SkYUVColorSpace src_color_space =
       static_cast<SkYUVColorSpace>(planes_yuv_color_space);
 
+  YUVConversionMailboxIndex idx(is_nv12);
+
   // Mailboxes are sent over in the order y_plane, u_plane, v_plane, destination
   std::array<gpu::Mailbox, YUVConversionMailboxIndex::kTotalMailboxes>
       mailboxes;
-  for (size_t i = 0; i < mailboxes.size(); ++i) {
-    mailboxes[i] = Mailbox::FromVolatile(
-        reinterpret_cast<const volatile Mailbox*>(mailboxes_in)[i]);
-    DLOG_IF(ERROR, !mailboxes[i].Verify()) << "ConvertYUVMailboxesToRGB was "
-                                              "passed an invalid mailbox.";
+  for (idx.reset(); idx() < mailboxes.size(); ++idx) {
+    mailboxes[idx()] = Mailbox::FromVolatile(
+        reinterpret_cast<const volatile Mailbox*>(mailboxes_in)[idx()]);
+    DLOG_IF(ERROR, !mailboxes[idx()].Verify())
+        << "ConvertYUVMailboxesToRGB was "
+           "passed an invalid mailbox: "
+        << idx.ToString();
   }
 
   std::array<std::unique_ptr<SharedImageRepresentationSkia>,
              YUVConversionMailboxIndex::kTotalMailboxes>
       images;
-  for (size_t i = 0; i < images.size(); i++) {
-    images[i] = shared_image_representation_factory_.ProduceSkia(
-        mailboxes[i], shared_context_state_);
-    if (!images[i]) {
-      LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glConvertYUVMailboxesToRGB",
-                         ("Attempting to operate on unknown mailbox:" +
-                          MailboxIndexToString(i))
-                             .c_str());
+  for (idx.reset(); idx() < images.size(); ++idx) {
+    images[idx()] = shared_image_representation_factory_.ProduceSkia(
+        mailboxes[idx()], shared_context_state_);
+    if (!images[idx()]) {
+      LOCAL_SET_GL_ERROR(
+          GL_INVALID_OPERATION, "glConvertYUVMailboxesToRGB",
+          ("Attempting to operate on unknown mailbox:" + idx.ToString())
+              .c_str());
       return;
     }
   }
@@ -2459,15 +2484,15 @@ void RasterDecoderImpl::DoConvertYUVMailboxesToRGBINTERNAL(
   std::array<std::unique_ptr<SharedImageRepresentationSkia::ScopedReadAccess>,
              YUVConversionMailboxIndex::kNumInputMailboxes>
       source_scoped_access;
-  for (size_t i = 0; i < source_scoped_access.size(); ++i) {
-    source_scoped_access[i] =
-        images[i]->BeginScopedReadAccess(&begin_semaphores, &end_semaphores);
+  for (idx.reset(); idx() < source_scoped_access.size(); ++idx) {
+    source_scoped_access[idx()] = images[idx()]->BeginScopedReadAccess(
+        &begin_semaphores, &end_semaphores);
 
-    if (!source_scoped_access[i]) {
-      LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glConvertYUVMailboxesToRGB",
-                         ("Couldn't access shared image for mailbox:" +
-                          MailboxIndexToString(i))
-                             .c_str());
+    if (!source_scoped_access[idx()]) {
+      LOCAL_SET_GL_ERROR(
+          GL_INVALID_OPERATION, "glConvertYUVMailboxesToRGB",
+          ("Couldn't access shared image for mailbox:" + idx.ToString())
+              .c_str());
       source_access_valid = false;
       break;
     }
@@ -2484,9 +2509,10 @@ void RasterDecoderImpl::DoConvertYUVMailboxesToRGBINTERNAL(
   if (source_access_valid) {
     std::array<GrBackendTexture, YUVConversionMailboxIndex::kNumInputMailboxes>
         yuva_textures;
-    for (size_t i = 0; i < yuva_textures.size(); ++i) {
-      yuva_textures[i] =
-          source_scoped_access[i]->promise_image_texture()->backendTexture();
+    for (idx.reset(); idx() < yuva_textures.size(); ++idx) {
+      yuva_textures[idx()] = source_scoped_access[idx()]
+                                 ->promise_image_texture()
+                                 ->backendTexture();
     }
 
     SkISize dest_size =
@@ -2495,7 +2521,10 @@ void RasterDecoderImpl::DoConvertYUVMailboxesToRGBINTERNAL(
     std::array<SkYUVAIndex, SkYUVAIndex::kIndexCount> yuva_indices;
     yuva_indices[SkYUVAIndex::kY_Index] = {0, SkColorChannel::kR};
     yuva_indices[SkYUVAIndex::kU_Index] = {1, SkColorChannel::kR};
-    yuva_indices[SkYUVAIndex::kV_Index] = {2, SkColorChannel::kR};
+    if (is_nv12)
+      yuva_indices[SkYUVAIndex::kV_Index] = {1, SkColorChannel::kG};
+    else
+      yuva_indices[SkYUVAIndex::kV_Index] = {2, SkColorChannel::kR};
     yuva_indices[SkYUVAIndex::kA_Index] = {-1, SkColorChannel::kA};
 
     auto result_image = SkImage::MakeFromYUVATextures(

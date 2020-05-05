@@ -27,7 +27,6 @@ import org.chromium.url.Origin;
 
 import java.nio.ByteBuffer;
 import java.util.LinkedList;
-import java.util.Optional;
 import java.util.Queue;
 
 /**
@@ -50,7 +49,7 @@ public class AuthenticatorImpl extends HandlerResponseCallback implements Authen
      * process.
      */
     private Origin mOrigin;
-    private Optional<Long> mNativeInternalAuthenticatorAndroid = Optional.empty();
+    private Long mNativeInternalAuthenticatorAndroid;
 
     private org.chromium.mojo.bindings.Callbacks
             .Callback2<Integer, MakeCredentialAuthenticatorResponse> mMakeCredentialCallback;
@@ -78,7 +77,7 @@ public class AuthenticatorImpl extends HandlerResponseCallback implements Authen
     private AuthenticatorImpl(
             long nativeInternalAuthenticatorAndroid, RenderFrameHost renderFrameHost) {
         this(renderFrameHost);
-        mNativeInternalAuthenticatorAndroid = Optional.of(nativeInternalAuthenticatorAndroid);
+        mNativeInternalAuthenticatorAndroid = nativeInternalAuthenticatorAndroid;
     }
 
     @CalledByNative
@@ -124,11 +123,10 @@ public class AuthenticatorImpl extends HandlerResponseCallback implements Authen
      */
     @CalledByNative
     public void makeCredentialBridge(ByteBuffer optionsByteBuffer) {
-        assert mNativeInternalAuthenticatorAndroid.isPresent();
         makeCredential(PublicKeyCredentialCreationOptions.deserialize(optionsByteBuffer),
                 (status, response)
                         -> AuthenticatorImplJni.get().invokeMakeCredentialResponse(
-                                mNativeInternalAuthenticatorAndroid.get(), status.intValue(),
+                                mNativeInternalAuthenticatorAndroid, status.intValue(),
                                 response.serialize()));
     }
 
@@ -159,11 +157,10 @@ public class AuthenticatorImpl extends HandlerResponseCallback implements Authen
      */
     @CalledByNative
     public void getAssertionBridge(ByteBuffer optionsByteBuffer) {
-        assert mNativeInternalAuthenticatorAndroid.isPresent();
         getAssertion(PublicKeyCredentialRequestOptions.deserialize(optionsByteBuffer),
                 (status, response)
                         -> AuthenticatorImplJni.get().invokeGetAssertionResponse(
-                                mNativeInternalAuthenticatorAndroid.get(), status.intValue(),
+                                mNativeInternalAuthenticatorAndroid, status.intValue(),
                                 response.serialize()));
     }
 
@@ -202,12 +199,11 @@ public class AuthenticatorImpl extends HandlerResponseCallback implements Authen
      */
     @CalledByNative
     public void isUserVerifyingPlatformAuthenticatorAvailableBridge() {
-        assert mNativeInternalAuthenticatorAndroid.isPresent();
         isUserVerifyingPlatformAuthenticatorAvailable(
                 (isUVPAA)
                         -> AuthenticatorImplJni.get()
                                    .invokeIsUserVerifyingPlatformAuthenticatorAvailableResponse(
-                                           mNativeInternalAuthenticatorAndroid.get(), isUVPAA));
+                                           mNativeInternalAuthenticatorAndroid, isUVPAA));
     }
 
     @CalledByNative
@@ -257,7 +253,7 @@ public class AuthenticatorImpl extends HandlerResponseCallback implements Authen
         mIsOperationPending = false;
         mMakeCredentialCallback = null;
         mGetAssertionCallback = null;
-        mNativeInternalAuthenticatorAndroid = Optional.empty();
+        mNativeInternalAuthenticatorAndroid = null;
     }
 
     @Override

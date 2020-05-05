@@ -28,7 +28,6 @@ class CORE_EXPORT ImageElementBase : public CanvasImageSource,
 
   IntSize BitmapSourceSize() const override;
   ScriptPromise CreateImageBitmap(ScriptState*,
-                                  EventTarget&,
                                   base::Optional<IntRect>,
                                   const ImageBitmapOptions*,
                                   ExceptionState&) override;

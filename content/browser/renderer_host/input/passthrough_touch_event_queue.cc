@@ -45,9 +45,9 @@ bool HasPointChanged(const WebTouchPoint& point_1,
 // static
 const base::FeatureParam<std::string>
     PassthroughTouchEventQueue::kSkipTouchEventFilterType{
-        &features::kSkipTouchEventFilter,
-        features::kSkipTouchEventFilterTypeParamName,
-        features::kSkipTouchEventFilterTypeParamValueDiscrete};
+        &blink::features::kSkipTouchEventFilter,
+        blink::features::kSkipTouchEventFilterTypeParamName,
+        blink::features::kSkipTouchEventFilterTypeParamValueDiscrete};
 
 PassthroughTouchEventQueue::TouchEventWithLatencyInfoAndAckState::
     TouchEventWithLatencyInfoAndAckState(const TouchEventWithLatencyInfo& event)
@@ -334,7 +334,7 @@ bool PassthroughTouchEventQueue::ShouldFilterForEvent(
   // If the experiment is enabled and all events are forwarded, always skip
   // filtering.
   if (events_to_always_forward_ ==
-      features::kSkipTouchEventFilterTypeParamValueAll)
+      blink::features::kSkipTouchEventFilterTypeParamValueAll)
     return false;
   // If the experiment is enabled and only discrete events are forwarded,
   // always run filtering for touchmove events only.

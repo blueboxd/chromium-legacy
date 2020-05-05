@@ -187,26 +187,26 @@ std::vector<autofill::Suggestion> CreateTestSuggestions(
     bool has_re_signin) {
   std::vector<Suggestion> suggestions;
   suggestions.push_back(
-      Suggestion(/*label=*/"User1", /*value=*/"PW1", /*icon=*/"",
+      Suggestion(/*value=*/"User1", /*label=*/"PW1", /*icon=*/"",
                  /*fronend_id=*/autofill::POPUP_ITEM_ID_PASSWORD_ENTRY));
   suggestions.push_back(Suggestion(
-      /*label=*/"Show all pwds", /*value=*/"", /*icon=*/"",
+      /*value=*/"Show all pwds", /*label=*/"", /*icon=*/"",
       /*fronend_id=*/autofill::POPUP_ITEM_ID_ALL_SAVED_PASSWORDS_ENTRY));
   if (has_opt_in_and_fill) {
     suggestions.push_back(Suggestion(
-        /*label=*/"Unlock passwords and fill", /*value=*/"", /*icon=*/"",
+        /*value=*/"Unlock passwords and fill", /*label=*/"", /*icon=*/"",
         /*fronend_id=*/
         autofill::POPUP_ITEM_ID_PASSWORD_ACCOUNT_STORAGE_OPT_IN));
   }
   if (has_opt_in_and_generate) {
     suggestions.push_back(Suggestion(
-        /*label=*/"Unlock passwords and generate", /*value=*/"", /*icon=*/"",
+        /*value=*/"Unlock passwords and generate", /*label=*/"", /*icon=*/"",
         /*fronend_id=*/
         autofill::POPUP_ITEM_ID_PASSWORD_ACCOUNT_STORAGE_OPT_IN_AND_GENERATE));
   }
   if (has_re_signin) {
     suggestions.push_back(Suggestion(
-        /*label=*/"Sign in to access passwords", /*value=*/"", /*icon=*/"",
+        /*value=*/"Sign in to access passwords", /*label=*/"", /*icon=*/"",
         /*fronend_id=*/
         autofill::POPUP_ITEM_ID_PASSWORD_ACCOUNT_STORAGE_RE_SIGNIN));
   }

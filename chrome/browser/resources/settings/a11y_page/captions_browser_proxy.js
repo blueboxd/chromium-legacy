@@ -11,23 +11,22 @@
 import {addSingletonGetter} from 'chrome://resources/js/cr.m.js';
 // clang-format on
 
-  /** @interface */
-  export class CaptionsBrowserProxy {
-    /**
-     * Open the native captions system dialog.
-     */
-    openSystemCaptionsDialog() {}
-  }
-
+/** @interface */
+export class CaptionsBrowserProxy {
   /**
-   * @implements {CaptionsBrowserProxy}
+   * Open the native captions system dialog.
    */
-  export class CaptionsBrowserProxyImpl {
-    /** @override */
-    openSystemCaptionsDialog() {
-      chrome.send('openSystemCaptionsDialog');
-    }
+  openSystemCaptionsDialog() {}
+}
+
+/**
+ * @implements {CaptionsBrowserProxy}
+ */
+export class CaptionsBrowserProxyImpl {
+  /** @override */
+  openSystemCaptionsDialog() {
+    chrome.send('openSystemCaptionsDialog');
   }
+}
 
-  addSingletonGetter(CaptionsBrowserProxyImpl);
-
+addSingletonGetter(CaptionsBrowserProxyImpl);

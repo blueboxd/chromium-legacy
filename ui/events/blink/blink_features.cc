@@ -6,32 +6,10 @@
 
 namespace features {
 
-const base::Feature kResamplingScrollEvents{"ResamplingScrollEvents",
-                                            base::FEATURE_ENABLED_BY_DEFAULT};
-
-const base::Feature kFilteringScrollPrediction{
-    "FilteringScrollPrediction", base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kKalmanHeuristics{"KalmanHeuristics",
-                                      base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kKalmanDirectionCutOff{"KalmanDirectionCutOff",
-                                           base::FEATURE_DISABLED_BY_DEFAULT};
-
 const base::Feature kSendMouseLeaveEvents{"SendMouseLeaveEvents",
                                           base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kDontSendKeyEventsToJavascript{
     "DontSendKeyEventsToJavascript", base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kSkipTouchEventFilter{"SkipTouchEventFilter",
-                                          base::FEATURE_ENABLED_BY_DEFAULT};
-const char kSkipTouchEventFilterTypeParamName[] = "type";
-const char kSkipTouchEventFilterTypeParamValueDiscrete[] = "discrete";
-const char kSkipTouchEventFilterTypeParamValueAll[] = "all";
-const char kSkipTouchEventFilterFilteringProcessParamName[] =
-    "skip_filtering_process";
-const char kSkipTouchEventFilterFilteringProcessParamValueBrowser[] = "browser";
-const char kSkipTouchEventFilterFilteringProcessParamValueBrowserAndRenderer[] =
-    "browser_and_renderer";
 }  // namespace features

@@ -9,15 +9,18 @@
 
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/menu_button.h"
 #include "ui/views/controls/menu/menu_runner.h"
+#include "ui/views/examples/grit/views_examples_resources.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 
-using base::ASCIIToUTF16;
+using l10n_util::GetStringUTF16;
+using l10n_util::GetStringUTF8;
 
 namespace views {
 namespace examples {
@@ -77,23 +80,25 @@ class ExampleMenuButton : public MenuButton, public ButtonListener {
 // ExampleMenuModel ---------------------------------------------------------
 
 ExampleMenuModel::ExampleMenuModel() : ui::SimpleMenuModel(this) {
-  AddItem(COMMAND_DO_SOMETHING, ASCIIToUTF16("Do Something"));
+  AddItem(COMMAND_DO_SOMETHING, GetStringUTF16(IDS_MENU_DO_SOMETHING_LABEL));
   AddSeparator(ui::NORMAL_SEPARATOR);
-  AddRadioItem(COMMAND_SELECT_ASCII, ASCIIToUTF16("ASCII"),
+  AddRadioItem(COMMAND_SELECT_ASCII, GetStringUTF16(IDS_MENU_ASCII_LABEL),
                GROUP_MAKE_DECISION);
-  AddRadioItem(COMMAND_SELECT_UTF8, ASCIIToUTF16("UTF-8"), GROUP_MAKE_DECISION);
-  AddRadioItem(COMMAND_SELECT_UTF16, ASCIIToUTF16("UTF-16"),
+  AddRadioItem(COMMAND_SELECT_UTF8, GetStringUTF16(IDS_MENU_UTF8_LABEL),
+               GROUP_MAKE_DECISION);
+  AddRadioItem(COMMAND_SELECT_UTF16, GetStringUTF16(IDS_MENU_UTF16_LABEL),
                GROUP_MAKE_DECISION);
   AddSeparator(ui::NORMAL_SEPARATOR);
-  AddCheckItem(COMMAND_CHECK_APPLE, ASCIIToUTF16("Apple"));
-  AddCheckItem(COMMAND_CHECK_ORANGE, ASCIIToUTF16("Orange"));
-  AddCheckItem(COMMAND_CHECK_KIWI, ASCIIToUTF16("Kiwi"));
+  AddCheckItem(COMMAND_CHECK_APPLE, GetStringUTF16(IDS_MENU_APPLE_LABEL));
+  AddCheckItem(COMMAND_CHECK_ORANGE, GetStringUTF16(IDS_MENU_ORANGE_LABEL));
+  AddCheckItem(COMMAND_CHECK_KIWI, GetStringUTF16(IDS_MENU_KIWI_LABEL));
   AddSeparator(ui::NORMAL_SEPARATOR);
-  AddItem(COMMAND_GO_HOME, ASCIIToUTF16("Go Home"));
+  AddItem(COMMAND_GO_HOME, GetStringUTF16(IDS_MENU_GO_HOME_LABEL));
 
   submenu_ = std::make_unique<ui::SimpleMenuModel>(this);
-  submenu_->AddItem(COMMAND_DO_SOMETHING, ASCIIToUTF16("Do Something 2"));
-  AddSubMenu(0, ASCIIToUTF16("Submenu"), submenu_.get());
+  submenu_->AddItem(COMMAND_DO_SOMETHING,
+                    GetStringUTF16(IDS_MENU_DO_SOMETHING_2_LABEL));
+  AddSubMenu(0, GetStringUTF16(IDS_MENU_SUBMENU_LABEL), submenu_.get());
 }
 
 bool ExampleMenuModel::IsCommandIdChecked(int command_id) const {
@@ -189,15 +194,16 @@ ui::SimpleMenuModel* ExampleMenuButton::GetMenuModel() {
 
 }  // namespace
 
-MenuExample::MenuExample() : ExampleBase("Menu") {}
+MenuExample::MenuExample()
+    : ExampleBase(GetStringUTF8(IDS_MENU_SELECT_LABEL).c_str()) {}
 
 MenuExample::~MenuExample() = default;
 
 void MenuExample::CreateExampleView(View* container) {
   // We add a button to open a menu.
   container->SetLayoutManager(std::make_unique<FillLayout>());
-  container->AddChildView(
-      std::make_unique<ExampleMenuButton>(ASCIIToUTF16("Open a menu")));
+  container->AddChildView(std::make_unique<ExampleMenuButton>(
+      GetStringUTF16(IDS_MENU_BUTTON_LABEL)));
 }
 
 }  // namespace examples

@@ -770,6 +770,13 @@ void LoginDatabase::InitPasswordRecoveryUtil(
 void LoginDatabase::ReportMetrics(const std::string& sync_username,
                                   bool custom_passphrase_sync_enabled,
                                   BulkCheckDone bulk_check_done) {
+  // TODO(crbug.com/1063852): For now, don't record any metrics for the account
+  // store, so as to not break the existing profile store metrics. Ultimately,
+  // many of these metrics should be recorded for both stores, but split into
+  // separate histograms.
+  if (is_account_store_.value())
+    return;
+
   TRACE_EVENT0("passwords", "LoginDatabase::ReportMetrics");
   sql::Statement s(db_.GetCachedStatement(
       SQL_FROM_HERE,

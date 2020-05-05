@@ -30,11 +30,15 @@ class BrowserControlsContainerView : public content::WebContentsObserver {
  public:
   BrowserControlsContainerView(const base::android::JavaParamRef<jobject>&
                                    java_browser_controls_container_view,
-                               ContentViewRenderView* content_view_render_view);
+                               ContentViewRenderView* content_view_render_view,
+                               bool is_top);
   ~BrowserControlsContainerView() override;
 
   // Height needed to display the control.
   int GetControlsHeight();
+
+  // Returns the amount of vertical space to take away from the contents.
+  int GetContentHeightDelta();
 
   // Creates |controls_layer_|.
   void CreateControlsLayer(JNIEnv* env,
@@ -72,6 +76,7 @@ class BrowserControlsContainerView : public content::WebContentsObserver {
   base::android::ScopedJavaGlobalRef<jobject>
       java_browser_controls_container_view_;
   ContentViewRenderView* content_view_render_view_;
+  const bool is_top_;
   int controls_resource_id_ = -1;
 
   // Layer containing showing the image for the controls. This is a sibling of

@@ -18,41 +18,40 @@ import {addSingletonGetter, sendWithPromise} from 'chrome://resources/js/cr.m.js
  */
 export let AndroidAppsInfo;
 
+/**
+ * An object containing messages for web permissisions origin
+ * and the messages multidevice feature state.
+ *
+ * @typedef {{origin: string,
+ *            enabled: boolean}}
+ */
+export let AndroidSmsInfo;
+
+/** @interface */
+class AndroidInfoBrowserProxy {
   /**
-   * An object containing messages for web permissisions origin
-   * and the messages multidevice feature state.
-   *
-   * @typedef {{origin: string,
-   *            enabled: boolean}}
+   * Returns android messages info with messages feature state
+   * and messages for web permissions origin.
+   * @return {!Promise<!AndroidSmsInfo>} Android SMS Info
    */
-  export let AndroidSmsInfo;
+  getAndroidSmsInfo() {}
 
-  /** @interface */
-  class AndroidInfoBrowserProxy {
-    /**
-     * Returns android messages info with messages feature state
-     * and messages for web permissions origin.
-     * @return {!Promise<!AndroidSmsInfo>} Android SMS Info
-     */
-    getAndroidSmsInfo() {}
+  requestAndroidAppsInfo() {}
+}
 
-    requestAndroidAppsInfo() {}
+/**
+ * @implements {AndroidInfoBrowserProxy}
+ */
+export class AndroidInfoBrowserProxyImpl {
+  /** @override */
+  getAndroidSmsInfo() {
+    return sendWithPromise('getAndroidSmsInfo');
   }
 
-  /**
-   * @implements {AndroidInfoBrowserProxy}
-   */
-  export class AndroidInfoBrowserProxyImpl {
-    /** @override */
-    getAndroidSmsInfo() {
-      return sendWithPromise('getAndroidSmsInfo');
-    }
-
-    /** @override */
-    requestAndroidAppsInfo() {
-      chrome.send('requestAndroidAppsInfo');
-    }
+  /** @override */
+  requestAndroidAppsInfo() {
+    chrome.send('requestAndroidAppsInfo');
   }
+}
 
-  addSingletonGetter(AndroidInfoBrowserProxyImpl);
-
+addSingletonGetter(AndroidInfoBrowserProxyImpl);

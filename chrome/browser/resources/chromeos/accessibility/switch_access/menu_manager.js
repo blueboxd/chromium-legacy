@@ -290,7 +290,7 @@ class MenuManager {
    */
   findMenuPanelNode_() {
     const treeWalker = new AutomationTreeWalker(
-        NavigationManager.instance.desktopNode, constants.Dir.FORWARD,
+        NavigationManager.desktopNode, constants.Dir.FORWARD,
         SwitchAccessPredicate.switchAccessMenuPanelDiscoveryRestrictions());
     const node = treeWalker.next().node;
     if (!node) {

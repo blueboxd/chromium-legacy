@@ -996,17 +996,6 @@ void BlinkAXTreeSource::SerializeNode(WebAXObject src,
 
     const bool is_table_like_role = ui::IsTableLike(dst->role);
     if (is_table_like_role) {
-      // TODO(accessibility): these should be computed by ui::AXTableInfo and
-      // removed here.
-      int column_count = src.ColumnCount();
-      int row_count = src.RowCount();
-      if (column_count > 0 && row_count > 0) {
-        dst->AddIntAttribute(ax::mojom::IntAttribute::kTableColumnCount,
-                             column_count);
-        dst->AddIntAttribute(ax::mojom::IntAttribute::kTableRowCount,
-                             row_count);
-      }
-
       int aria_colcount = src.AriaColumnCount();
       if (aria_colcount) {
         dst->AddIntAttribute(ax::mojom::IntAttribute::kAriaColumnCount,

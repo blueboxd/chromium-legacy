@@ -8,7 +8,7 @@
 #include <cmath>
 
 #include "base/numerics/math_constants.h"
-#include "ui/events/blink/prediction/predictor_factory.h"
+#include "third_party/blink/public/common/features.h"
 
 namespace {
 
@@ -34,7 +34,7 @@ KalmanPredictor::KalmanPredictor(unsigned int prediction_options)
 KalmanPredictor::~KalmanPredictor() = default;
 
 const char* KalmanPredictor::GetName() const {
-  return input_prediction::kScrollPredictorNameKalman;
+  return blink::features::kScrollPredictorNameKalman;
 }
 
 void KalmanPredictor::Reset() {

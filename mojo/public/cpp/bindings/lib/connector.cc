@@ -561,9 +561,8 @@ void Connector::ScheduleDispatchOfPendingMessagesOrWaitForMore(
 }
 
 void Connector::ReadAllAvailableMessages() {
-  if (paused_) {
+  if (paused_ || error_)
     return;
-  }
 
   base::WeakPtr<Connector> weak_self = weak_self_;
 

@@ -195,7 +195,7 @@ class KeyboardRootNode extends RootNodeWrapper {
    */
   static get keyboardObject_() {
     if (!this.object_ || !this.object_.role) {
-      this.object_ = NavigationManager.instance.desktopNode.find(
+      this.object_ = NavigationManager.desktopNode.find(
           {role: chrome.automation.RoleType.KEYBOARD});
     }
     return this.object_;

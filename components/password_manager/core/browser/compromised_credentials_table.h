@@ -99,6 +99,10 @@ class CompromisedCredentialsTable {
       const std::string& signon_realm,
       const base::string16& username) const;
 
+  // Gets all the rows in the database for |signon_realm|.
+  std::vector<CompromisedCredentials> GetRows(
+      const std::string& signon_realm) const;
+
   // Removes all compromised credentials created between |remove_begin|
   // inclusive and |remove_end| exclusive. If |url_filter| is not null, only
   // compromised credentials for matching signon_realms are removed. Returns

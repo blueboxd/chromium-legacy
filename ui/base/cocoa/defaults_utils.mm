@@ -4,7 +4,6 @@
 
 #include <AppKit/AppKit.h>
 
-#include "base/logging.h"
 #include "ui/base/cocoa/defaults_utils.h"
 
 namespace ui {

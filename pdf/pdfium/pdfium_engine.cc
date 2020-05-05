@@ -1114,19 +1114,9 @@ bool PDFiumEngine::OnLeftMouseDown(const pp::MouseInputEvent& event) {
     double page_y;
     DeviceToPage(page_index, point, &page_x, &page_y);
 
-    bool is_form_text_area = IsFormTextArea(area, form_type);
-    FPDF_PAGE page = pages_[page_index]->GetPage();
-    bool is_editable_form_text_area =
-        is_form_text_area &&
-        IsPointInEditableFormTextArea(page, page_x, page_y, form_type);
-
-    if (event.GetClickCount() == 1) {
-      FORM_OnLButtonDown(form(), page, event.GetModifiers(), page_x, page_y);
-    } else if (event.GetClickCount() == 2) {
-      FORM_OnLButtonDoubleClick(form(), page, event.GetModifiers(), page_x,
-                                page_y);
-    }
     if (form_type != FPDF_FORMFIELD_UNKNOWN) {
+      // FORM_OnLButton*() will trigger a callback to
+      // OnFocusedAnnotationUpdated() which will call SetInFormTextArea().
       // Destroy SelectionChangeInvalidator object before SetInFormTextArea()
       // changes plugin's focus to be in form text area. This way, regular text
       // selection can be cleared when a user clicks into a form text area
@@ -1134,11 +1124,18 @@ bool PDFiumEngine::OnLeftMouseDown(const pp::MouseInputEvent& event) {
       // ~SelectionChangeInvalidator() still goes to the Mimehandler
       // (not the Renderer).
       selection_invalidator.reset();
-
-      SetInFormTextArea(is_form_text_area);
-      editable_form_text_area_ = is_editable_form_text_area;
-      return true;  // Return now before we get into the selection code.
     }
+
+    FPDF_PAGE page = pages_[page_index]->GetPage();
+
+    if (event.GetClickCount() == 1) {
+      FORM_OnLButtonDown(form(), page, event.GetModifiers(), page_x, page_y);
+    } else if (event.GetClickCount() == 2) {
+      FORM_OnLButtonDoubleClick(form(), page, event.GetModifiers(), page_x,
+                                page_y);
+    }
+    if (form_type != FPDF_FORMFIELD_UNKNOWN)
+      return true;  // Return now before we get into the selection code.
   }
   SetInFormTextArea(false);
 
@@ -1197,7 +1194,6 @@ bool PDFiumEngine::OnRightMouseDown(const pp::MouseInputEvent& event) {
   DCHECK_GE(form_type, FPDF_FORMFIELD_UNKNOWN);
 
   bool is_form_text_area = IsFormTextArea(area, form_type);
-  bool is_editable_form_text_area = false;
 
   double page_x = -1;
   double page_y = -1;
@@ -1207,8 +1203,6 @@ bool PDFiumEngine::OnRightMouseDown(const pp::MouseInputEvent& event) {
 
     DeviceToPage(page_index, point, &page_x, &page_y);
     page = pages_[page_index]->GetPage();
-    is_editable_form_text_area =
-        IsPointInEditableFormTextArea(page, page_x, page_y, form_type);
   }
 
   // Handle the case when focus starts inside a form text area.
@@ -1226,13 +1220,6 @@ bool PDFiumEngine::OnRightMouseDown(const pp::MouseInputEvent& event) {
   // Handle the case when focus starts outside a form text area and transitions
   // into a form text area.
   if (is_form_text_area) {
-    {
-      SelectionChangeInvalidator selection_invalidator(this);
-      selection_.clear();
-    }
-
-    SetInFormTextArea(true);
-    editable_form_text_area_ = is_editable_form_text_area;
     FORM_OnFocus(form(), page, 0, page_x, page_y);
     return true;
   }
@@ -3593,23 +3580,19 @@ void PDFiumEngine::SetMouseLeftButtonDown(bool is_mouse_left_button_down) {
   mouse_left_button_down_ = is_mouse_left_button_down;
 }
 
-bool PDFiumEngine::IsPointInEditableFormTextArea(FPDF_PAGE page,
-                                                 double page_x,
-                                                 double page_y,
-                                                 int form_type) {
+bool PDFiumEngine::IsAnnotationAnEditableFormTextArea(FPDF_ANNOTATION annot,
+                                                      int form_type) const {
 #if defined(PDF_ENABLE_XFA)
-  if (IS_XFA_FORMFIELD(form_type))
+  if (IS_XFA_FORMFIELD(form_type)) {
     return form_type == FPDF_FORMFIELD_XFA_TEXTFIELD ||
            form_type == FPDF_FORMFIELD_XFA_COMBOBOX;
+  }
 #endif  // defined(PDF_ENABLE_XFA)
 
-  const FS_POINTF point = {page_x, page_y};
-  ScopedFPDFAnnotation annot(
-      FPDFAnnot_GetFormFieldAtPoint(form(), page, &point));
   if (!annot)
     return false;
 
-  int flags = FPDFAnnot_GetFormFieldFlags(form(), annot.get());
+  int flags = FPDFAnnot_GetFormFieldFlags(form(), annot);
   return CheckIfEditableFormTextArea(flags, form_type);
 }
 
@@ -3694,6 +3677,23 @@ void PDFiumEngine::ScrollIntoView(const pp::Rect& rect) {
     // centre.
     client_->ScrollToX(rect.x() * current_zoom_ - plugin_size_.width() / 2);
   }
+}
+
+void PDFiumEngine::OnFocusedAnnotationUpdated(FPDF_ANNOTATION annot) {
+  int form_type = FPDFAnnot_GetFormFieldType(form(), annot);
+  if (form_type <= FPDF_FORMFIELD_UNKNOWN) {
+    SetInFormTextArea(false);
+    return;
+  }
+  bool is_form_text_area =
+      PDFiumPage::FormTypeToArea(form_type) == PDFiumPage::FORM_TEXT_AREA;
+  if (is_form_text_area) {
+    SelectionChangeInvalidator selection_invalidator(this);
+    selection_.clear();
+  }
+  SetInFormTextArea(is_form_text_area);
+  editable_form_text_area_ =
+      is_form_text_area && IsAnnotationAnEditableFormTextArea(annot, form_type);
 }
 
 void PDFiumEngine::SetCaretPosition(const pp::Point& position) {

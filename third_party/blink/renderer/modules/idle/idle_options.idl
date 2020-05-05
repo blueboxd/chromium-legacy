@@ -5,5 +5,5 @@
 // https://github.com/samuelgoto/idle-detection
 
 dictionary IdleOptions {
-  unsigned long threshold = 60; /* seconds */
+  [EnforceRange] unsigned long threshold = 60000; /* milliseconds */
 };

@@ -1078,4 +1078,102 @@ TEST_F(AXTableInfoTest, ExtraMacNodesChanges) {
   }
 }
 
+TEST_F(AXTableInfoTest, RowColumnSpanChanges) {
+  // Simple 2 col x 1 row table
+  AXTreeUpdate update;
+  update.root_id = 1;
+  update.nodes.resize(4);
+  MakeTable(&update.nodes[0], 1, 0, 0);
+  update.nodes[0].child_ids = {2};
+  MakeRow(&update.nodes[1], 2, 0);
+  update.nodes[1].child_ids = {3, 10};
+  MakeCell(&update.nodes[2], 3, 0, 0);
+  MakeCell(&update.nodes[3], 10, 0, 1);
+  AXTree tree(update);
+
+  AXTableInfo* table_info = GetTableInfo(&tree, tree.root());
+  ASSERT_TRUE(table_info);
+
+  EXPECT_EQ(1u, table_info->row_count);
+  EXPECT_EQ(2u, table_info->col_count);
+
+  EXPECT_EQ("|3 |10|\n", table_info->ToString());
+
+  // Add a row to the table.
+  update.nodes.resize(6);
+  update.nodes[0].child_ids = {2, 4};
+  MakeRow(&update.nodes[4], 4, 0);
+  update.nodes[4].child_ids = {5};
+  MakeCell(&update.nodes[5], 5, -1, -1);
+
+  tree.Unserialize(update);
+
+  table_info = GetTableInfo(&tree, tree.root());
+  ASSERT_TRUE(table_info);
+  EXPECT_EQ(2u, table_info->row_count);
+  EXPECT_EQ(2u, table_info->col_count);
+  EXPECT_EQ(
+      "|3 |10|\n"
+      "|5 |0 |\n",
+      table_info->ToString());
+
+  // Add a row to the middle of the table, with a span. Intentionally omit other
+  // rows from the update.
+  update.nodes.resize(3);
+  update.nodes[0].child_ids = {2, 6, 4};
+  MakeRow(&update.nodes[1], 6, 0);
+  update.nodes[1].child_ids = {7};
+  MakeCell(&update.nodes[2], 7, -1, -1, 1, 2);
+
+  tree.Unserialize(update);
+
+  table_info = GetTableInfo(&tree, tree.root());
+  ASSERT_TRUE(table_info);
+  EXPECT_EQ(3u, table_info->row_count);
+  EXPECT_EQ(2u, table_info->col_count);
+  EXPECT_EQ(
+      "|3 |10|\n"
+      "|7 |7 |\n"
+      "|5 |0 |\n",
+      table_info->ToString());
+
+  // Add a row to the end of the table, with a span. Intentionally omit other
+  // rows from the update.
+  update.nodes.resize(3);
+  update.nodes[0].child_ids = {2, 6, 4, 8};
+  MakeRow(&update.nodes[1], 8, 0);
+  update.nodes[1].child_ids = {9};
+  MakeCell(&update.nodes[2], 9, -1, -1, 2, 3);
+
+  tree.Unserialize(update);
+
+  table_info = GetTableInfo(&tree, tree.root());
+  ASSERT_TRUE(table_info);
+  EXPECT_EQ(5u, table_info->row_count);
+  EXPECT_EQ(3u, table_info->col_count);
+  EXPECT_EQ(
+      "|3 |10|0 |\n"
+      "|7 |7 |0 |\n"
+      "|5 |0 |0 |\n"
+      "|9 |9 |9 |\n"
+      "|9 |9 |9 |\n",
+      table_info->ToString());
+
+  // Finally, delete a few rows.
+  update.nodes.resize(1);
+  update.nodes[0].child_ids = {6, 8};
+
+  tree.Unserialize(update);
+
+  table_info = GetTableInfo(&tree, tree.root());
+  ASSERT_TRUE(table_info);
+  EXPECT_EQ(3u, table_info->row_count);
+  EXPECT_EQ(3u, table_info->col_count);
+  EXPECT_EQ(
+      "|7|7|0|\n"
+      "|9|9|9|\n"
+      "|9|9|9|\n",
+      table_info->ToString());
+}
+
 }  // namespace ui

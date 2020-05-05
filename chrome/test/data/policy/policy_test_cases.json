@@ -4968,6 +4968,8 @@
 
   "ReportDeviceBacklightInfo": {},
 
+  "ReportDeviceAppInfo": {},
+
   "ReportUploadFrequency": {},
 
   "DeviceAllowNewUsers": {},

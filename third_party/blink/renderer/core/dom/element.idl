@@ -143,8 +143,6 @@ callback ScrollStateCallback = void (ScrollState scrollState);
     // Accessibility Object Model
     [RuntimeEnabled=AccessibilityObjectModel] readonly attribute AccessibleNode? accessibleNode;
 
-    [RuntimeEnabled=InvisibleDOM, CEReactions, CustomElementCallbacks, Reflect, ReflectOnly=("static","invisible"), ReflectEmpty="invisible", ReflectInvalid="invisible"] attribute DOMString invisible;
-
     // Event handler attributes
     attribute EventHandler onbeforecopy;
     attribute EventHandler onbeforecut;

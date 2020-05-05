@@ -569,9 +569,10 @@ TabImpl::ScreenShotErrors TabImpl::PrepareForCaptureScreenShot(
   if (src_rect->IsEmpty())
     return ScreenShotErrors::kEmptyViewport;
 
-  cc::Layer* layer = web_contents_->GetNativeView()->GetLayer();
-  float offset_y = layer ? layer->position().y() : 0.f;
-  int reduced_height = std::round(src_rect->height() - offset_y);
+  const int reduced_height =
+      src_rect->height() -
+      top_controls_container_view_->GetContentHeightDelta() -
+      bottom_controls_container_view_->GetContentHeightDelta();
   if (reduced_height <= 0)
     return ScreenShotErrors::kHiddenByControls;
   src_rect->set_height(reduced_height);

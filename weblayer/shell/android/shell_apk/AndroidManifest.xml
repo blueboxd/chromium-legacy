@@ -12,7 +12,7 @@
     <application android:label="WebLayer shell">
         <activity android:name="WebLayerShellActivity"
                   android:launchMode="singleTask"
-                  android:theme="@android:style/Theme.Holo.Light.NoActionBar"
+                  android:theme="@style/ShellTheme"
                   android:windowSoftInputMode="adjustResize">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -28,6 +28,15 @@
             </intent-filter>
         </activity>
         <activity android:name="InstrumentationActivity">
+            <!-- Add these intent filters so tests can resolve these intents. -->
+            <intent-filter>
+                <action android:name="android.provider.MediaStore.RECORD_SOUND" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.media.action.IMAGE_CAPTURE" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
         </activity>
         <activity android:name="TelemetryActivity"
                   android:theme="@android:style/Theme.Holo.Light.NoActionBar">

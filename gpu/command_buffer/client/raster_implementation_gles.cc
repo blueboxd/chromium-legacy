@@ -195,6 +195,14 @@ void RasterImplementationGLES::ConvertYUVMailboxesToRGB(
   NOTREACHED();
 }
 
+void RasterImplementationGLES::ConvertNV12MailboxesToRGB(
+    const gpu::Mailbox& dest_mailbox,
+    SkYUVColorSpace planes_yuv_color_space,
+    const gpu::Mailbox& y_plane_mailbox,
+    const gpu::Mailbox& uv_planes_mailbox) {
+  NOTREACHED();
+}
+
 void RasterImplementationGLES::BeginRasterCHROMIUM(
     GLuint sk_color,
     GLuint msaa_sample_count,

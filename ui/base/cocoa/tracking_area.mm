@@ -4,7 +4,7 @@
 
 #import "ui/base/cocoa/tracking_area.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 
 // NSTrackingArea does not retain its |owner| so CrTrackingArea wraps the real
 // owner in this proxy, which can stop forwarding messages to the owner when

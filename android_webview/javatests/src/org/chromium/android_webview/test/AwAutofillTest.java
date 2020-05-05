@@ -1275,7 +1275,6 @@ public class AwAutofillTest {
     }
 
     @Test
-    @FlakyTest(message = "https://crbug.com/1074279")
     @SmallTest
     @Feature({"AndroidWebView"})
     @DisableIf.Build(sdk_is_less_than = Build.VERSION_CODES.P,

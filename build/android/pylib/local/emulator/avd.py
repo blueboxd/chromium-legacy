@@ -316,15 +316,20 @@ class AvdConfig(object):
             'create',
             '-pkg-def',
             package_def_path,
+            '-tag',
+            'emulator_version:%s' % self._config.emulator_package.version,
+            '-tag',
+            'system_image_version:%s' %
+            self._config.system_image_package.version,
         ]
         if cipd_json_output:
           cipd_create_cmd.extend([
               '-json-output',
               cipd_json_output,
           ])
-        if dry_run:
-          logging.info('Dry run. CIPD package creation skipped')
-        else:
+        logging.info('running %r%s', cipd_create_cmd,
+                     ' (dry_run)' if dry_run else '')
+        if not dry_run:
           try:
             for line in cmd_helper.IterCmdOutputLines(cipd_create_cmd):
               logging.info('    %s', line)

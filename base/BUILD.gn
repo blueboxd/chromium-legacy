@@ -2749,6 +2749,7 @@ test("base_unittests") {
     "task/thread_pool/tracked_ref_unittest.cc",
     "task/thread_pool/worker_thread_stack_unittest.cc",
     "task/thread_pool/worker_thread_unittest.cc",
+    "task/thread_pool_unittest.cc",
     "task_runner_unittest.cc",
     "task_runner_util_unittest.cc",
     "template_util_unittest.cc",

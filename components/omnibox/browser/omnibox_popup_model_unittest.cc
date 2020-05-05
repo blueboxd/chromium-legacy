@@ -159,18 +159,20 @@ TEST_F(OmniboxPopupModelTest, PopupPositionChanging) {
 
 TEST_F(OmniboxPopupModelTest, PopupStepSelection) {
   ACMatches matches;
-  for (size_t i = 0; i < 3; ++i) {
+  for (size_t i = 0; i < 4; ++i) {
     AutocompleteMatch match(nullptr, 1000, false,
                             AutocompleteMatchType::URL_WHAT_YOU_TYPED);
     match.keyword = base::ASCIIToUTF16("match");
     match.allowed_to_be_default_match = true;
     matches.push_back(match);
   }
-  // Give the last match an associated keyword for irregular state stepping.
-  matches.back().associated_keyword =
-      std::make_unique<AutocompleteMatch>(matches.back());
-  // Make the middle match deletable to verify we can step to that.
+  // Make match index 1 deletable to verify we can step to that.
   matches[1].deletable = true;
+  // Make match index 2 have an associated keyword for irregular state stepping.
+  matches[2].associated_keyword =
+      std::make_unique<AutocompleteMatch>(matches.back());
+  // Make match index 3 have a suggestion_group_id to test header behavior.
+  matches[3].suggestion_group_id = 7;
 
   auto* result = &model()->autocomplete_controller()->result_;
   AutocompleteInput input(base::UTF8ToUTF16("match"),
@@ -182,13 +184,13 @@ TEST_F(OmniboxPopupModelTest, PopupStepSelection) {
   EXPECT_EQ(0u, model()->popup_model()->selected_line());
 
   // Step by lines forward.
-  for (size_t n : {1, 2, 0}) {
+  for (size_t n : {1, 2, 3, 0}) {
     popup_model()->StepSelection(OmniboxPopupModel::kForward,
                                  OmniboxPopupModel::kWholeLine);
     EXPECT_EQ(n, model()->popup_model()->selected_line());
   }
   // Step by lines backward.
-  for (size_t n : {2, 1, 0}) {
+  for (size_t n : {3, 2, 1, 0}) {
     popup_model()->StepSelection(OmniboxPopupModel::kBackward,
                                  OmniboxPopupModel::kWholeLine);
     EXPECT_EQ(n, model()->popup_model()->selected_line());
@@ -200,6 +202,9 @@ TEST_F(OmniboxPopupModelTest, PopupStepSelection) {
            OmniboxPopupModel::Selection(1, OmniboxPopupModel::BUTTON_FOCUSED),
            OmniboxPopupModel::Selection(2, OmniboxPopupModel::NORMAL),
            OmniboxPopupModel::Selection(2, OmniboxPopupModel::KEYWORD),
+           OmniboxPopupModel::Selection(
+               3, OmniboxPopupModel::HEADER_BUTTON_FOCUSED),
+           OmniboxPopupModel::Selection(3, OmniboxPopupModel::NORMAL),
            OmniboxPopupModel::Selection(0, OmniboxPopupModel::NORMAL),
        }) {
     popup_model()->StepSelection(OmniboxPopupModel::kForward,
@@ -210,11 +215,17 @@ TEST_F(OmniboxPopupModelTest, PopupStepSelection) {
   // Note the lack of KEYWORD. This is by design. Stepping forward
   // should land on KEYWORD, but stepping backward should not.
   for (auto selection : {
+           OmniboxPopupModel::Selection(3, OmniboxPopupModel::NORMAL),
+           OmniboxPopupModel::Selection(
+               3, OmniboxPopupModel::HEADER_BUTTON_FOCUSED),
            OmniboxPopupModel::Selection(2, OmniboxPopupModel::NORMAL),
            // Focused button is the Suggestion Removal button.
            OmniboxPopupModel::Selection(1, OmniboxPopupModel::BUTTON_FOCUSED),
            OmniboxPopupModel::Selection(1, OmniboxPopupModel::NORMAL),
            OmniboxPopupModel::Selection(0, OmniboxPopupModel::NORMAL),
+           OmniboxPopupModel::Selection(3, OmniboxPopupModel::NORMAL),
+           OmniboxPopupModel::Selection(
+               3, OmniboxPopupModel::HEADER_BUTTON_FOCUSED),
            OmniboxPopupModel::Selection(2, OmniboxPopupModel::NORMAL),
        }) {
     popup_model()->StepSelection(OmniboxPopupModel::kBackward,
@@ -241,7 +252,7 @@ TEST_F(OmniboxPopupModelTest, PopupStepSelection) {
             model()->popup_model()->selection());
   popup_model()->StepSelection(OmniboxPopupModel::kForward,
                                OmniboxPopupModel::kAllLines);
-  EXPECT_EQ(OmniboxPopupModel::Selection(2, OmniboxPopupModel::NORMAL),
+  EXPECT_EQ(OmniboxPopupModel::Selection(3, OmniboxPopupModel::NORMAL),
             model()->popup_model()->selection());
 }
 

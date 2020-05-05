@@ -871,7 +871,7 @@ deps = {
   },
 
   'src/third_party/depot_tools':
-    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + 'ae7f4c51114152e95cf1e9b6d2f0a4936fb7c5d6',
+    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + 'db639b7027818ca1d8b56c956cfee2bdbdb250a3',
 
   'src/third_party/devtools-frontend/src':
     Var('chromium_git') + '/devtools/devtools-frontend' + '@' + Var('devtools_frontend_revision'),
@@ -1412,8 +1412,8 @@ deps = {
   'src/third_party/usrsctp/usrsctplib':
     Var('chromium_git') + '/external/github.com/sctplab/usrsctp' + '@' + 'a8c51df76caae94254b1e59999405f739467490e',
 
-  'src/third_party/vulkanmemoryallocator':
-    Var('chromium_git') + '/external/github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator.git' + '@' + '7425dc136ffa08842ece43f71a57fe768046259b',
+  'src/third_party/vulkan_memory_allocator':
+    Var('chromium_git') + '/external/github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator.git' + '@' + 'dac952eb0a27736571bf10ac42fbfcc59192f310',
 
   # Display server protocol for Linux.
   'src/third_party/wayland/src': {

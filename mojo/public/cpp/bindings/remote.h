@@ -166,8 +166,8 @@ class Remote {
         base::BindOnce(&Remote::reset, base::Unretained(this)));
   }
 
-  // Sets a Closure to be invoked if the receiving endpoint reports itself as
-  // idle and there are no in-flight messages it has yet to acknowledge, and
+  // Sets a Closure to be invoked any time the receiving endpoint reports itself
+  // as idle and there are no in-flight messages it has yet to acknowledge, and
   // this state occurs continuously for a duration of at least |timeout|. The
   // first time this is called, it must be called BEFORE sending any interface
   // messages to the receiver. It may be called any number of times after that
@@ -182,12 +182,14 @@ class Remote {
   //
   //   - There are no messages sent on this Remote that have not already been
   //     dispatched by the receiver.
+  //   - There are no interfaces which were bound directly or transitively
+  //     through this Remote and are still connected.
   //   - The receiver has explicitly notified us that it considers itself to be
   //     "idle."
   //   - The receiver has not dispatched any additional messages since sending
-  //     this idle notification
+  //     this idle notification.
   //   - The Remote does not have any outstanding reply callbacks that haven't
-  //     been called yet
+  //     been called yet.
   //   - All of the above has been true continuously for a duration of at least
   //     |timeout|.
   //

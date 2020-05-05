@@ -53,5 +53,5 @@ component("skia") {
     "//skia",
   ]
 
-  deps = [ "//gpu/vulkan:vulkanmemoryallocator" ]
+  deps = [ "//third_party/vulkan_memory_allocator" ]
 }

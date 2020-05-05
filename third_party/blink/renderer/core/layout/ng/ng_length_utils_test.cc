@@ -111,15 +111,16 @@ class NGLengthUtilsTestWithNode : public NGLayoutTest {
 
   LayoutUnit ComputeBlockSizeForFragment(
       NGConstraintSpace constraint_space = ConstructConstraintSpace(200, 300),
-      LayoutUnit content_size = LayoutUnit()) {
+      LayoutUnit content_size = LayoutUnit(),
+      base::Optional<LayoutUnit> inline_size = base::nullopt) {
     LayoutBox* body = ToLayoutBox(GetDocument().body()->GetLayoutObject());
     body->SetStyle(style_);
     body->SetIntrinsicLogicalWidthsDirty();
 
     NGBoxStrut border_padding = ComputeBordersForTest(*style_) +
                                 ComputePadding(constraint_space, *style_);
-    return ::blink::ComputeBlockSizeForFragment(constraint_space, *style_,
-                                                border_padding, content_size);
+    return ::blink::ComputeBlockSizeForFragment(
+        constraint_space, *style_, border_padding, content_size, inline_size);
   }
 
   scoped_refptr<ComputedStyle> style_;
@@ -380,6 +381,27 @@ TEST_F(NGLengthUtilsTestWithNode, testComputeBlockSizeForFragment) {
   // ...and the same goes for fill-available with a large padding.
   style_->SetLogicalHeight(Length::FillAvailable());
   EXPECT_EQ(LayoutUnit(400), ComputeBlockSizeForFragment());
+
+  // Now check aspect-ratio.
+  style_ = ComputedStyle::Create();
+  style_->SetLogicalWidth(Length::Fixed(100));
+  style_->SetAspectRatio(IntSize(2, 1));
+  EXPECT_EQ(LayoutUnit(50),
+            ComputeBlockSizeForFragment(ConstructConstraintSpace(200, 300),
+                                        LayoutUnit(), LayoutUnit(100)));
+
+  // Default box-sizing
+  style_->SetPaddingRight(Length::Fixed(10));
+  style_->SetPaddingBottom(Length::Fixed(20));
+  // Should be (100 - 10) / 2 + 20 = 65.
+  EXPECT_EQ(LayoutUnit(65),
+            ComputeBlockSizeForFragment(ConstructConstraintSpace(200, 300),
+                                        LayoutUnit(20), LayoutUnit(100)));
+  // With box-sizing: border-box, should be 50.
+  style_->SetBoxSizing(EBoxSizing::kBorderBox);
+  EXPECT_EQ(LayoutUnit(50),
+            ComputeBlockSizeForFragment(ConstructConstraintSpace(200, 300),
+                                        LayoutUnit(20), LayoutUnit(100)));
 
   // TODO(layout-ng): test {min,max}-content on max-height.
 }

@@ -6,7 +6,6 @@ import("//build/buildflag_header.gni")
 import("//build/config/dcheck_always_on.gni")
 import("//build/config/ui.gni")
 import("//testing/test.gni")
-import("//third_party/vulkanmemoryallocator/vulkan_memory_allocator.gni")
 import("//ui/ozone/ozone.gni")
 import("features.gni")
 
@@ -31,10 +30,6 @@ if (enable_vulkan) {
     if (is_win) {
       defines = [ "VK_USE_PLATFORM_WIN32_KHR" ]
     }
-  }
-
-  vulkan_memory_allocator("vulkanmemoryallocator") {
-    vulkan_memory_allocator_dir = "//third_party/vulkanmemoryallocator"
   }
 
   source_set("vulkan_function_pointers") {
@@ -82,8 +77,8 @@ if (enable_vulkan) {
 
     deps = [
       ":vulkan_function_pointers",
-      ":vulkanmemoryallocator",
       "//base",
+      "//third_party/vulkan_memory_allocator",
     ]
   }
 

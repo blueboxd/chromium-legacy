@@ -128,7 +128,8 @@ scoped_refptr<const NGLayoutResult> NGMathRowLayoutAlgorithm::Layout() {
 
   auto block_size = ComputeBlockSizeForFragment(
       ConstraintSpace(), Style(), border_padding_,
-      max_row_size.block_size + border_scrollbar_padding_.BlockSum());
+      max_row_size.block_size + border_scrollbar_padding_.BlockSum(),
+      border_box_size.inline_size);
   container_builder_.SetBlockSize(block_size);
 
   NGOutOfFlowLayoutPart(

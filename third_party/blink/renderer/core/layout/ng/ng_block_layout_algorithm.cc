@@ -788,7 +788,8 @@ scoped_refptr<const NGLayoutResult> NGBlockLayoutAlgorithm::FinishLayout(
 
   // Recompute the block-axis size now that we know our content size.
   border_box_size.block_size = ComputeBlockSizeForFragment(
-      ConstraintSpace(), Style(), border_padding_, intrinsic_block_size_);
+      ConstraintSpace(), Style(), border_padding_, intrinsic_block_size_,
+      border_box_size.inline_size);
   container_builder_.SetBlockSize(border_box_size.block_size);
 
   // If our BFC block-offset is still unknown, we check:
@@ -2121,7 +2122,8 @@ bool NGBlockLayoutAlgorithm::FinalizeForFragmentation() {
   } else {
     block_size = ComputeBlockSizeForFragment(
         ConstraintSpace(), Style(), border_padding_,
-        consumed_block_size + intrinsic_block_size_);
+        consumed_block_size + intrinsic_block_size_,
+        container_builder_.InitialBorderBoxSize().inline_size);
 
     block_size -= consumed_block_size;
     DCHECK_GE(block_size, LayoutUnit())

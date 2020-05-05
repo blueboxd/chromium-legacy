@@ -274,7 +274,8 @@ scoped_refptr<const NGLayoutResult> NGMathFractionLayoutAlgorithm::Layout() {
   denominator.StoreMargins(ConstraintSpace(), denominator_margins);
 
   LayoutUnit block_size = ComputeBlockSizeForFragment(
-      ConstraintSpace(), Style(), border_scrollbar_padding_, total_block_size);
+      ConstraintSpace(), Style(), border_scrollbar_padding_, total_block_size,
+      border_box_size.inline_size);
 
   container_builder_.SetIntrinsicBlockSize(total_block_size);
   container_builder_.SetBlockSize(block_size);

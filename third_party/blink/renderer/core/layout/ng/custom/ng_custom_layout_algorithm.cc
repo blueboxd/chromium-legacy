@@ -164,7 +164,8 @@ scoped_refptr<const NGLayoutResult> NGCustomLayoutAlgorithm::Layout() {
       border_padding_.BlockSum(),
       LayoutUnit::FromDoubleRound(fragment_result_options->autoBlockSize()));
   LayoutUnit block_size = ComputeBlockSizeForFragment(
-      ConstraintSpace(), Style(), border_padding_, auto_block_size);
+      ConstraintSpace(), Style(), border_padding_, auto_block_size,
+      container_builder_.InitialBorderBoxSize().inline_size);
 
   if (fragment_result_options->hasBaseline()) {
     LayoutUnit baseline =

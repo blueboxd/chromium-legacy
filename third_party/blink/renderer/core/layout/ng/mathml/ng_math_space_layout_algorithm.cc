@@ -23,7 +23,8 @@ scoped_refptr<const NGLayoutResult> NGMathSpaceLayoutAlgorithm::Layout() {
   DCHECK(!BreakToken());
 
   LayoutUnit block_size = ComputeBlockSizeForFragment(
-      ConstraintSpace(), Style(), border_padding_, border_padding_.BlockSum());
+      ConstraintSpace(), Style(), border_padding_, border_padding_.BlockSum(),
+      container_builder_.InitialBorderBoxSize().inline_size);
 
   container_builder_.SetIntrinsicBlockSize(border_padding_.BlockSum());
   container_builder_.SetBlockSize(block_size);

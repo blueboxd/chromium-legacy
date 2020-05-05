@@ -75,7 +75,8 @@ NGSimplifiedLayoutAlgorithm::NGSimplifiedLayoutAlgorithm(
   container_builder_.SetBlockSize(ComputeBlockSizeForFragment(
       ConstraintSpace(), Style(),
       container_builder_.Borders() + container_builder_.Padding(),
-      result.IntrinsicBlockSize()));
+      result.IntrinsicBlockSize(),
+      container_builder_.InitialBorderBoxSize().inline_size));
 
   child_available_inline_size_ =
       ShrinkAvailableSize(container_builder_.InitialBorderBoxSize(),

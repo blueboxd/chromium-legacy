@@ -66,7 +66,8 @@ scoped_refptr<const NGLayoutResult> NGPageLayoutAlgorithm::Layout() {
 
   // Recompute the block-axis size now that we know our content size.
   border_box_size.block_size = ComputeBlockSizeForFragment(
-      ConstraintSpace(), Style(), border_padding_, intrinsic_block_size);
+      ConstraintSpace(), Style(), border_padding_, intrinsic_block_size,
+      border_box_size.inline_size);
   container_builder_.SetBlockSize(border_box_size.block_size);
 
   NGOutOfFlowLayoutPart(

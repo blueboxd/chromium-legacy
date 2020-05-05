@@ -288,6 +288,13 @@ MinMaxSizes ComputeMinAndMaxContentContribution(
     NGLayoutInputNode child,
     const MinMaxSizesInput&);
 
+// Tries to compute the inline size of a node from its block size and
+// aspect ratio. If there is no aspect ratio or the block size is indefinite,
+// returns kIndefiniteSize.
+LayoutUnit ComputeInlineSizeFromAspectRatio(const NGConstraintSpace&,
+                                            const ComputedStyle&,
+                                            const NGBoxStrut& border_padding);
+
 // Returns inline size of the node's border box by resolving the computed value
 // in style.logicalWidth (Length) to a layout unit, adding border and padding,
 // then constraining the result by the resolved min logical width and max
@@ -301,11 +308,14 @@ CORE_EXPORT LayoutUnit ComputeInlineSizeForFragment(
     const MinMaxSizes* override_min_max_sizes_for_test = nullptr);
 
 // Same as ComputeInlineSizeForFragment, but uses height instead of width.
+// |inline_size| is necessary to compute the block size when an aspect ratio
+// is in use.
 CORE_EXPORT LayoutUnit
 ComputeBlockSizeForFragment(const NGConstraintSpace&,
                             const ComputedStyle&,
                             const NGBoxStrut& border_padding,
-                            LayoutUnit content_size);
+                            LayoutUnit content_size,
+                            base::Optional<LayoutUnit> inline_size);
 
 // Intrinsic size for replaced elements is computed as:
 // - |out_replaced_size| intrinsic size of the element. It might have no value.

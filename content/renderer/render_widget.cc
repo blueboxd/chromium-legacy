@@ -3033,11 +3033,6 @@ void RenderWidget::SetHasPointerRawUpdateEventHandlers(bool has_handlers) {
   input_event_queue_->HasPointerRawUpdateEventHandlers(has_handlers);
 }
 
-void RenderWidget::SetHasTouchEventHandlers(bool has_handlers) {
-  if (auto* scheduler_state = GetWebWidget()->RendererWidgetSchedulingState())
-    scheduler_state->SetHasTouchHandler(has_handlers);
-}
-
 void RenderWidget::SetNeedsLowLatencyInput(bool needs_low_latency) {
   input_event_queue_->SetNeedsLowLatency(needs_low_latency);
 }

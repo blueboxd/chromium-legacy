@@ -68,8 +68,10 @@ class TrustTokenRequestIssuanceHelper : public TrustTokenRequestHelper {
     // keys.)
     //
     // Returns true on success and false if the key is malformed or if an
-    // internal error occurred in the underlying cryptographic library. Ignores
-    // duplicates.
+    // internal error occurred in the underlying cryptographic library. Does not
+    // forbid adding duplicates; however, duplicates might contribute to an
+    // overall limit on the number of permitted keys, so the caller may wish to
+    // ensure this is called at most once per distinct key.
     virtual bool AddKey(base::StringPiece key) = 0;
 
     // On success, returns a base64-encoded string representing |num_tokens|

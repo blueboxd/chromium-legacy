@@ -362,7 +362,7 @@ TEST_F(PasswordsPrivateDelegateImplTest,
       .WillByDefault(Return(true));
 
   EXPECT_CALL(*client, TriggerReauthForPrimaryAccount).Times(0);
-  EXPECT_CALL(*feature_manager, SetAccountStorageOptIn(false));
+  EXPECT_CALL(*feature_manager, OptOutOfAccountStorageAndClearSettings);
 
   PasswordsPrivateDelegateImpl delegate(&profile_);
   delegate.SetAccountStorageOptIn(false, web_contents.get());

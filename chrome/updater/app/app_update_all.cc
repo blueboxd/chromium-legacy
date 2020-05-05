@@ -45,11 +45,10 @@ void AppUpdateAll::FirstTaskRun() {
   update_service_->UpdateAll(
       base::BindRepeating([](UpdateService::UpdateState) {}),
       base::BindOnce(
-          [](base::OnceCallback<void(int)> quit, update_client::Error error) {
-            const int err = static_cast<int>(error);
-            VLOG(0) << "UpdateAll complete: error = " << err << "(0x"
-                    << std::hex << err << ").";
-            std::move(quit).Run(static_cast<int>(error));
+          [](base::OnceCallback<void(int)> quit, UpdateService::Result result) {
+            const int exit_code = static_cast<int>(result);
+            VLOG(0) << "UpdateAll complete: exit_code = " << exit_code;
+            std::move(quit).Run(exit_code);
           },
           base::BindOnce(&AppUpdateAll::Shutdown, this)));
 }

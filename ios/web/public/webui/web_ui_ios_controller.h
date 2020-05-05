@@ -5,6 +5,8 @@
 #ifndef IOS_WEB_PUBLIC_WEBUI_WEB_UI_IOS_CONTROLLER_H_
 #define IOS_WEB_PUBLIC_WEBUI_WEB_UI_IOS_CONTROLLER_H_
 
+#include <string>
+
 #include "base/strings/string16.h"
 
 class GURL;
@@ -21,7 +23,8 @@ class WebUIIOS;
 // manages the data source and message handlers.
 class WebUIIOSController {
  public:
-  explicit WebUIIOSController(WebUIIOS* web_ui) : web_ui_(web_ui) {}
+  explicit WebUIIOSController(WebUIIOS* web_ui, const std::string& host)
+      : web_ui_(web_ui), host_(host) {}
   virtual ~WebUIIOSController() {}
 
   // Allows the controller to override handling all messages from the page.
@@ -32,8 +35,12 @@ class WebUIIOSController {
 
   WebUIIOS* web_ui() const { return web_ui_; }
 
+  // Gets the host associated with this WebUIIOSController.
+  std::string GetHost() const { return host_; }
+
  private:
   WebUIIOS* web_ui_;
+  std::string host_;
 };
 
 }  // namespace web

@@ -580,9 +580,7 @@ TEST_F(IntersectionObserverTest, TrackedRootBookkeeping) {
   // only thing keeping the observer alive.
   test::RunPendingTasks();
   observer_delegate->Clear();
-  V8GCController::CollectAllGarbageForTesting(
-      v8::Isolate::GetCurrent(),
-      v8::EmbedderHeapTracer::EmbedderStackState::kEmpty);
+  ThreadState::Current()->CollectAllGarbageForTesting();
   EXPECT_FALSE(root_data->IsEmpty());
   EXPECT_FALSE(target_data->IsEmpty());
   EXPECT_EQ(controller.GetTrackedObserverCountForTesting(), 1u);
@@ -598,9 +596,7 @@ TEST_F(IntersectionObserverTest, TrackedRootBookkeeping) {
   // queued, so flush it out.
   test::RunPendingTasks();
   observer_delegate->Clear();
-  V8GCController::CollectAllGarbageForTesting(
-      v8::Isolate::GetCurrent(),
-      v8::EmbedderHeapTracer::EmbedderStackState::kEmpty);
+  ThreadState::Current()->CollectAllGarbageForTesting();
   Compositor().BeginFrame();
   EXPECT_EQ(controller.GetTrackedObserverCountForTesting(), 0u);
   EXPECT_EQ(controller.GetTrackedObservationCountForTesting(), 0u);
@@ -608,9 +604,7 @@ TEST_F(IntersectionObserverTest, TrackedRootBookkeeping) {
   // Removing the last reference to the observer should allow it to be dropeed
   // from the root's ElementIntersectionObserverData.
   observer = nullptr;
-  V8GCController::CollectAllGarbageForTesting(
-      v8::Isolate::GetCurrent(),
-      v8::EmbedderHeapTracer::EmbedderStackState::kEmpty);
+  ThreadState::Current()->CollectAllGarbageForTesting();
   EXPECT_TRUE(root_data->IsEmpty());
 
   target = GetDocument().getElementById("target2");
@@ -631,9 +625,7 @@ TEST_F(IntersectionObserverTest, TrackedRootBookkeeping) {
   // Removing the target from the tree is not enough to disconnect the
   // observation.
   EXPECT_FALSE(target_data->IsEmpty());
-  V8GCController::CollectAllGarbageForTesting(
-      v8::Isolate::GetCurrent(),
-      v8::EmbedderHeapTracer::EmbedderStackState::kEmpty);
+  ThreadState::Current()->CollectAllGarbageForTesting();
   EXPECT_TRUE(target_data->IsEmpty());
   EXPECT_EQ(controller.GetTrackedObserverCountForTesting(), 0u);
   EXPECT_EQ(controller.GetTrackedObservationCountForTesting(), 0u);

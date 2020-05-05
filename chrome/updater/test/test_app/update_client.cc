@@ -4,6 +4,8 @@
 
 #include "chrome/updater/test/test_app/update_client.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/sequenced_task_runner.h"
@@ -14,7 +16,6 @@
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "chrome/updater/test/test_app/test_app_version.h"
 #include "chrome/updater/util.h"
-#include "components/update_client/update_client_errors.h"
 
 namespace updater {
 
@@ -48,25 +49,25 @@ void UpdateClient::CheckForUpdate(StatusCallback callback) {
   }
 }
 
-void UpdateClient::HandleStatusUpdate(UpdateService::UpdateState state) {
+void UpdateClient::HandleStatusUpdate(UpdateService::UpdateState update_state) {
   UpdateStatus status = UpdateStatus::INIT;
-  switch (state) {
-    case UpdateService::UpdateState::kNotStarted:
+  switch (update_state.state) {
+    case UpdateService::UpdateState::State::kNotStarted:
       status = UpdateStatus::INIT;
       break;
-    case UpdateService::UpdateState::kCheckingForUpdates:
+    case UpdateService::UpdateState::State::kCheckingForUpdates:
       status = UpdateStatus::CHECKING;
       break;
-    case UpdateService::UpdateState::kDownloading:
+    case UpdateService::UpdateState::State::kDownloading:
       status = UpdateStatus::CHECKING;
       break;
-    case UpdateService::UpdateState::kInstalling:
+    case UpdateService::UpdateState::State::kInstalling:
       status = UpdateStatus::UPDATING;
       break;
-    case UpdateService::UpdateState::kUpdated:
+    case UpdateService::UpdateState::State::kUpdated:
       status = UpdateStatus::NEARLY_UPDATED;
       break;
-    case UpdateService::UpdateState::kNoUpdate:
+    case UpdateService::UpdateState::State::kNoUpdate:
       status = UpdateStatus::UPDATED;
       break;
     default:
@@ -79,7 +80,7 @@ void UpdateClient::HandleStatusUpdate(UpdateService::UpdateState state) {
 }
 
 void UpdateClient::RegistrationCompleted(UpdateService::Result result) {
-  if (result != update_client::Error::NONE) {
+  if (result != UpdateService::Result::kSuccess) {
     LOG(ERROR) << "Updater registration error: "
                << base::NumberToString(static_cast<int>(result));
   }
@@ -90,7 +91,7 @@ void UpdateClient::RegistrationCompleted(UpdateService::Result result) {
 }
 
 void UpdateClient::UpdateCompleted(UpdateService::Result result) {
-  if (result == update_client::Error::NONE) {
+  if (result == UpdateService::Result::kSuccess) {
     callback_task_runner_->PostTask(
         FROM_HERE, base::BindOnce(callback_, UpdateStatus::NEARLY_UPDATED, 0,
                                   false, std::string(), 0, base::string16()));

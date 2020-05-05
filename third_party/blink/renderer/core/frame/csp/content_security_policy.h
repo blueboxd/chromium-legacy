@@ -391,6 +391,7 @@ class CORE_EXPORT ContentSecurityPolicy final
   void ReportValueForEmptyDirective(const String& directive_name,
                                     const String& value);
   void ReportNonsecureTrustedTypes();
+  void ReportMixedContentReportURI(const String& endpoint);
 
   // If a frame is passed in, the report will be sent using it as a context. If
   // no frame is passed in, the report will be sent via this object's

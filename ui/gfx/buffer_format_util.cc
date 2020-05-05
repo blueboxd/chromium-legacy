@@ -4,7 +4,8 @@
 
 #include "ui/gfx/buffer_format_util.h"
 
-#include "base/logging.h"
+#include "base/check_op.h"
+#include "base/notreached.h"
 #include "base/numerics/safe_math.h"
 #include "base/stl_util.h"
 

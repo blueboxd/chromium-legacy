@@ -193,6 +193,13 @@ cr.define('settings', function() {
      * @return {!Promise<!Array<!settings.DlcMetadata>>} A list of DLC metadata.
      */
     getDlcList() {}
+
+    /**
+     * Purges the DLC with the provided |dlcId| from the device.
+     * @param {string} dlcId The ID of the DLC to purge from the device.
+     * @return {!Promise<boolean>} Whether purging of DLC was successful.
+     */
+    purgeDlc(dlcId) {}
   }
 
   /**
@@ -292,6 +299,11 @@ cr.define('settings', function() {
     /** @override */
     getDlcList() {
       return cr.sendWithPromise('getDlcList');
+    }
+
+    /** @override */
+    purgeDlc(dlcId) {
+      return cr.sendWithPromise('purgeDlc', dlcId);
     }
   }
 

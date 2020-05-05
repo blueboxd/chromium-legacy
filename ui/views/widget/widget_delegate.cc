@@ -4,7 +4,7 @@
 
 #include "ui/views/widget/widget_delegate.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/display/display.h"

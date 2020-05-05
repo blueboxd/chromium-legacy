@@ -37,22 +37,28 @@
 namespace blink {
 
 namespace {
-inline bool IsWithinEpsilon(double a, double b) {
-  // Permit 2-bits of quantization error. Threshold based on experimentation
-  // with accuracy of fmod.
-  return std::abs(a - b) <= 2.0 * std::numeric_limits<double>::epsilon();
-}
-
-inline bool LessThanOrEqualToWithinEpsilon(double a, double b) {
-  return a <= b || IsWithinEpsilon(a, b);
-}
 
 inline bool EndsOnIterationBoundary(double iteration_count,
                                     double iteration_start) {
   DCHECK(std::isfinite(iteration_count));
   return !fmod(iteration_count + iteration_start, 1);
 }
+
 }  // namespace
+
+static inline double TimingCalculationEpsilon() {
+  // Permit 2-bits of quantization error. Threshold based on experimentation
+  // with accuracy of fmod.
+  return 2.0 * std::numeric_limits<double>::epsilon();
+}
+
+static inline bool IsWithinAnimationTimeEpsilon(double a, double b) {
+  return std::abs(a - b) <= TimingCalculationEpsilon();
+}
+
+inline bool LessThanOrEqualToWithinEpsilon(double a, double b) {
+  return a <= b + TimingCalculationEpsilon();
+}
 
 static inline double MultiplyZeroAlwaysGivesZero(double x, double y) {
   DCHECK(!Timing::IsNull(x));
@@ -148,7 +154,7 @@ static inline base::Optional<double> CalculateOverallProgress(
 
   // 2. Calculate an initial value for overall progress.
   double overall_progress = 0;
-  if (IsWithinEpsilon(iteration_duration, 0)) {
+  if (IsWithinAnimationTimeEpsilon(iteration_duration, 0)) {
     if (phase != Timing::kPhaseBefore)
       overall_progress = iteration_count;
   } else {
@@ -192,10 +198,11 @@ static inline base::Optional<double> CalculateSimpleIterationProgress(
   //   * the active time is equal to the active duration, and
   //   * the iteration count is not equal to zero.
   // let the simple iteration progress be 1.0.
-  if (IsWithinEpsilon(simple_iteration_progress, 0.0) &&
+  if (IsWithinAnimationTimeEpsilon(simple_iteration_progress, 0.0) &&
       (phase == Timing::kPhaseActive || phase == Timing::kPhaseAfter) &&
-      IsWithinEpsilon(active_time->InSecondsF(), active_duration) &&
-      !IsWithinEpsilon(iteration_count, 0.0)) {
+      IsWithinAnimationTimeEpsilon(active_time->InSecondsF(),
+                                   active_duration) &&
+      !IsWithinAnimationTimeEpsilon(iteration_count, 0.0)) {
     simple_iteration_progress = 1.0;
   }
 
@@ -242,11 +249,11 @@ static inline bool IsCurrentDirectionForwards(
     base::Optional<double> current_iteration,
     Timing::PlaybackDirection direction) {
   const bool current_iteration_is_even =
-      !current_iteration
-          ? false
-          : (std::isinf(current_iteration.value())
-                 ? true
-                 : IsWithinEpsilon(fmod(current_iteration.value(), 2), 0));
+      !current_iteration ? false
+                         : (std::isinf(current_iteration.value())
+                                ? true
+                                : IsWithinAnimationTimeEpsilon(
+                                      fmod(current_iteration.value(), 2), 0));
 
   switch (direction) {
     case Timing::PlaybackDirection::NORMAL:
@@ -304,10 +311,10 @@ static inline base::Optional<double> CalculateTransformedProgress(
   // (crbug.com/949373)
   if (phase == Timing::kPhaseAfter) {
     if (is_current_direction_forward &&
-        IsWithinEpsilon(directed_progress.value(), 1)) {
+        IsWithinAnimationTimeEpsilon(directed_progress.value(), 1)) {
       directed_progress = 1;
     } else if (!is_current_direction_forward &&
-               IsWithinEpsilon(directed_progress.value(), 0)) {
+               IsWithinAnimationTimeEpsilon(directed_progress.value(), 0)) {
       directed_progress = 0;
     }
   }

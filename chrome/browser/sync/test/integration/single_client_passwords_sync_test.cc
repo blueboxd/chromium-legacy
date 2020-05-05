@@ -22,7 +22,7 @@
 
 namespace {
 
-using password_manager::features_util::SetAccountStorageOptIn;
+using password_manager::features_util::OptInToAccountStorage;
 using passwords_helper::AddLogin;
 using passwords_helper::CreateTestPasswordForm;
 using passwords_helper::GetPasswordCount;
@@ -308,7 +308,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientPasswordsWithAccountStorageSyncTest,
 
   // Let the user opt in to the passwords account storage, and wait for it to
   // become active.
-  SetAccountStorageOptIn(GetProfile(0)->GetPrefs(), GetSyncService(0), true);
+  OptInToAccountStorage(GetProfile(0)->GetPrefs(), GetSyncService(0));
   PasswordSyncActiveChecker(GetSyncService(0)).Wait();
   ASSERT_TRUE(GetSyncService(0)->GetActiveDataTypes().Has(syncer::PASSWORDS));
 
@@ -341,7 +341,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientPasswordsWithAccountStorageSyncTest,
 
   // Let the user opt in to the passwords account storage, and wait for it to
   // become active.
-  SetAccountStorageOptIn(GetProfile(0)->GetPrefs(), GetSyncService(0), true);
+  OptInToAccountStorage(GetProfile(0)->GetPrefs(), GetSyncService(0));
   PasswordSyncActiveChecker(GetSyncService(0)).Wait();
   ASSERT_TRUE(GetSyncService(0)->GetActiveDataTypes().Has(syncer::PASSWORDS));
 
@@ -407,7 +407,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientPasswordsWithAccountStorageSyncTest,
 
   // Let the user opt in to the passwords account storage, and wait for it to
   // become active.
-  SetAccountStorageOptIn(GetProfile(0)->GetPrefs(), GetSyncService(0), true);
+  OptInToAccountStorage(GetProfile(0)->GetPrefs(), GetSyncService(0));
   PasswordSyncActiveChecker(GetSyncService(0)).Wait();
 
   // Make sure the password showed up in the account store.
@@ -446,7 +446,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientPasswordsWithAccountStorageSyncTest,
 
   // Let the user opt in to the passwords account storage, and wait for it to
   // become active.
-  SetAccountStorageOptIn(GetProfile(0)->GetPrefs(), GetSyncService(0), true);
+  OptInToAccountStorage(GetProfile(0)->GetPrefs(), GetSyncService(0));
   PasswordSyncActiveChecker(GetSyncService(0)).Wait();
 
   // Make sure the password showed up in the account store.
@@ -499,7 +499,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientPasswordsWithAccountStorageSyncTest,
 
   // Let the user opt in to the passwords account storage, and wait for it to
   // become active.
-  SetAccountStorageOptIn(GetProfile(0)->GetPrefs(), GetSyncService(0), true);
+  OptInToAccountStorage(GetProfile(0)->GetPrefs(), GetSyncService(0));
   PasswordSyncActiveChecker(GetSyncService(0)).Wait();
 
   // Make sure the password showed up in the account store.

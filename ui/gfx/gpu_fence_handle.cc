@@ -4,7 +4,7 @@
 
 #include "ui/gfx/gpu_fence_handle.h"
 
-#include "base/logging.h"
+#include "base/notreached.h"
 
 #if defined(OS_POSIX)
 #include <unistd.h>

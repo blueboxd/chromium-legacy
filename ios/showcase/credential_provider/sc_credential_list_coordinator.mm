@@ -124,6 +124,9 @@ NSArray<id<Credential>>* allPasswords = @[
   [self.viewController presentSuggestedPasswords:suggested allPasswords:all];
 }
 
+- (void)userSelectedCredential:(id<Credential>)credential {
+}
+
 - (void)showDetailsForCredential:(id<Credential>)credential {
   CredentialDetailsViewController* detailsViewController =
       [[CredentialDetailsViewController alloc] init];

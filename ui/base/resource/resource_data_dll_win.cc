@@ -6,7 +6,7 @@
 
 #include <stddef.h>
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/win/resource_util.h"
 

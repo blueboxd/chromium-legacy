@@ -4,8 +4,6 @@
 
 #include "ios/chrome/browser/ui/webui/ukm_internals_ui.h"
 
-#include <string>
-
 #include "base/bind.h"
 #include "base/memory/ref_counted_memory.h"
 #include "components/metrics_services_manager/metrics_services_manager.h"
@@ -74,8 +72,8 @@ void UkmMessageHandler::HandleRequestUkmData(const base::ListValue* args) {
 
 // Changes to this class should be in sync with its non-iOS equivalent
 // chrome/browser/ui/webui/ukm/ukm_internals_ui.cc
-UkmInternalsUI::UkmInternalsUI(web::WebUIIOS* web_ui)
-    : web::WebUIIOSController(web_ui) {
+UkmInternalsUI::UkmInternalsUI(web::WebUIIOS* web_ui, const std::string& host)
+    : web::WebUIIOSController(web_ui, host) {
   ukm::UkmService* ukm_service =
       GetApplicationContext()->GetMetricsServicesManager()->GetUkmService();
   web_ui->AddMessageHandler(std::make_unique<UkmMessageHandler>(ukm_service));

@@ -232,6 +232,7 @@ class BrowserControlsContainerView extends FrameLayout {
         mContentViewRenderView.getResourceManager().getDynamicResourceLoader().unregisterResource(
                 getResourceId());
         mView = null;
+        mLastWidth = mLastHeight = 0;
     }
 
     public View getView() {

@@ -6,7 +6,7 @@
 
 #include <utility>
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "content/public/browser/web_contents.h"
 #include "third_party/blink/public/common/input/web_gesture_event.h"
 

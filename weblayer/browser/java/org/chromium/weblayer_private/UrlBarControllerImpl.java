@@ -21,18 +21,19 @@ import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.components.omnibox.SecurityButtonAnimationDelegate;
 import org.chromium.components.omnibox.SecurityStatusIcon;
+import org.chromium.components.page_info.PageInfoController;
+import org.chromium.components.page_info.PageInfoControllerDelegate;
 import org.chromium.weblayer_private.interfaces.IObjectWrapper;
 import org.chromium.weblayer_private.interfaces.IUrlBarController;
 import org.chromium.weblayer_private.interfaces.ObjectWrapper;
 import org.chromium.weblayer_private.interfaces.StrictModeWorkaround;
+import org.chromium.weblayer_private.interfaces.UrlBarOptionsKeys;
 
 /**
  *  Implementation of {@link IUrlBarController}.
  */
 @JNINamespace("weblayer")
 public class UrlBarControllerImpl extends IUrlBarController.Stub {
-    // To be kept in sync with the constants in UrlBarOptions.java
-    public static final String URL_TEXT_SIZE = "UrlTextSize";
     public static final float DEFAULT_TEXT_SIZE = 10.0F;
     public static final float MINIMUM_TEXT_SIZE = 5.0F;
 
@@ -76,13 +77,16 @@ public class UrlBarControllerImpl extends IUrlBarController.Stub {
     protected class UrlBarView
             extends LinearLayout implements BrowserImpl.VisibleSecurityStateObserver {
         private float mTextSize;
+        private boolean mShowPageInfoWhenUrlTextClicked;
         private TextView mUrlTextView;
         private ImageButton mSecurityButton;
         private final SecurityButtonAnimationDelegate mSecurityButtonAnimationDelegate;
 
         public UrlBarView(@NonNull Context context, Bundle options) {
             super(context);
-            mTextSize = options.getFloat(URL_TEXT_SIZE, DEFAULT_TEXT_SIZE);
+            mTextSize = options.getFloat(UrlBarOptionsKeys.URL_TEXT_SIZE, DEFAULT_TEXT_SIZE);
+            mShowPageInfoWhenUrlTextClicked = options.getBoolean(
+                    UrlBarOptionsKeys.SHOW_PAGE_INFO_WHEN_URL_TEXT_CLICKED, /*default= */ false);
             View.inflate(getContext(), R.layout.weblayer_url_bar, this);
             setOrientation(LinearLayout.HORIZONTAL);
             setBackgroundColor(Color.TRANSPARENT);
@@ -130,7 +134,26 @@ public class UrlBarControllerImpl extends IUrlBarController.Stub {
                             UrlBarControllerImplJni.get().getConnectionSecurityLevel(
                                     mNativeUrlBarController))));
 
-            // TODO(crbug.com/1025607): Set a click listener to show Page Info UI.
+            mSecurityButton.setOnClickListener(v -> { showPageInfoUi(); });
+            if (mShowPageInfoWhenUrlTextClicked) {
+                mUrlTextView.setOnClickListener(v -> { showPageInfoUi(); });
+            }
+        }
+
+        private void showPageInfoUi() {
+            mSecurityButton.setOnClickListener(view -> {
+                PageInfoController.show(mBrowserImpl.getWindowAndroid().getActivity().get(),
+                        mBrowserImpl.getActiveTab().getWebContents(),
+                        /* contentPublisher= */ null, PageInfoController.OpenedFromSource.TOOLBAR,
+                        new PageInfoControllerDelegate(
+                                ((FragmentWindowAndroid) mBrowserImpl.getWindowAndroid())
+                                        .getModalDialogManager(),
+                                new AutocompleteSchemeClassifierImpl(),
+                                /** vrHandler= */ null,
+                                /** isSiteSettingsAvailable= */ false,
+                                /** useDarkColors= */ !mBrowserImpl.getDarkThemeEnabled(),
+                                /** cookieControlsShown= */ false));
+            });
         }
 
         @DrawableRes

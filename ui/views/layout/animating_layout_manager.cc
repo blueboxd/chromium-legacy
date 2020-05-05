@@ -207,10 +207,10 @@ void AnimatingLayoutManager::AnimationDelegate::AnimationEnded(
 AnimatingLayoutManager::AnimatingLayoutManager() = default;
 AnimatingLayoutManager::~AnimatingLayoutManager() = default;
 
-AnimatingLayoutManager& AnimatingLayoutManager::SetShouldAnimateBounds(
-    bool should_animate_bounds) {
-  if (should_animate_bounds_ != should_animate_bounds) {
-    should_animate_bounds_ = should_animate_bounds;
+AnimatingLayoutManager& AnimatingLayoutManager::SetBoundsAnimationMode(
+    BoundsAnimationMode bounds_animation_mode) {
+  if (bounds_animation_mode_ != bounds_animation_mode) {
+    bounds_animation_mode_ = bounds_animation_mode;
     ResetLayout();
   }
   return *this;
@@ -329,9 +329,21 @@ gfx::Size AnimatingLayoutManager::GetPreferredSize(const View* host) const {
   if (!target_layout_manager())
     return gfx::Size();
 
-  return should_animate_bounds_
-             ? current_layout_.host_size
-             : target_layout_manager()->GetPreferredSize(host);
+  switch (bounds_animation_mode_) {
+    case BoundsAnimationMode::kUseHostBounds:
+      return target_layout_manager()->GetPreferredSize(host);
+    case BoundsAnimationMode::kAnimateMainAxis: {
+      // Animating only main axis, so cross axis is preferred size.
+      gfx::Size result = current_layout_.host_size;
+      SetCrossAxis(
+          &result, orientation(),
+          GetCrossAxis(orientation(),
+                       target_layout_manager()->GetPreferredSize(host)));
+      return result;
+    }
+    case BoundsAnimationMode::kAnimateBothAxes:
+      return current_layout_.host_size;
+  }
 }
 
 gfx::Size AnimatingLayoutManager::GetMinimumSize(const View* host) const {
@@ -340,8 +352,20 @@ gfx::Size AnimatingLayoutManager::GetMinimumSize(const View* host) const {
   // TODO(dfried): consider cases where the minimum size might not be just the
   // minimum size of the embedded layout.
   gfx::Size minimum_size = target_layout_manager()->GetMinimumSize(host);
-  if (should_animate_bounds_)
-    minimum_size.SetToMin(current_layout_.host_size);
+  switch (bounds_animation_mode_) {
+    case BoundsAnimationMode::kUseHostBounds:
+      // No modification required.
+      break;
+    case BoundsAnimationMode::kAnimateMainAxis:
+      SetMainAxis(
+          &minimum_size, orientation(),
+          std::min(GetMainAxis(orientation(), minimum_size),
+                   GetMainAxis(orientation(), current_layout_.host_size)));
+      break;
+    case BoundsAnimationMode::kAnimateBothAxes:
+      minimum_size.SetToMin(current_layout_.host_size);
+      break;
+  }
   return minimum_size;
 }
 
@@ -351,9 +375,12 @@ int AnimatingLayoutManager::GetPreferredHeightForWidth(const View* host,
     return 0;
 
   // TODO(dfried): revisit this computation.
-  return should_animate_bounds_
-             ? current_layout_.host_size.height()
-             : target_layout_manager()->GetPreferredHeightForWidth(host, width);
+  if (bounds_animation_mode_ == BoundsAnimationMode::kAnimateBothAxes ||
+      (bounds_animation_mode_ == BoundsAnimationMode::kAnimateMainAxis &&
+       orientation() == LayoutOrientation::kVertical)) {
+    return current_layout_.host_size.height();
+  }
+  return target_layout_manager()->GetPreferredHeightForWidth(host, width);
 }
 
 std::vector<View*> AnimatingLayoutManager::GetChildViewsInPaintOrder(
@@ -445,31 +472,48 @@ void AnimatingLayoutManager::LayoutImpl() {
   // than an invalidation. This should reset the layout (but see the note in
   // RecalculateTarget() below).
   const gfx::Size host_size = host_view()->size();
-  if (should_animate_bounds_) {
-    // Reset the layout immediately if the current or target layout exceeds the
-    // host size or the available space.
+
+  if (bounds_animation_mode_ == BoundsAnimationMode::kUseHostBounds) {
+    if (!cached_layout_size() || host_size != *cached_layout_size()) {
+      // Host size changed, so reset the layout.
+      ResetLayoutToTargetSize();
+    }
+
+  } else {
     const SizeBounds available_size = GetAvailableHostSize();
-    const base::Optional<int> bounds_main =
-        GetMainAxis(orientation(), available_size);
-    const int host_main = GetMainAxis(orientation(), host_size);
-    const int current_main =
-        GetMainAxis(orientation(), current_layout_.host_size);
-    if (current_main > host_main ||
-        (bounds_main && current_main > *bounds_main)) {
+
+    if (bounds_animation_mode_ == BoundsAnimationMode::kAnimateMainAxis &&
+        (!cached_layout_size() ||
+         GetCrossAxis(orientation(), host_size) !=
+             GetCrossAxis(orientation(), *cached_layout_size()))) {
+      // If we're fixed to the cross-axis size of the host and that size
+      // changes, we need to reset the layout.
       last_available_host_size_ = available_size;
       ResetLayoutToSize(host_size);
-    } else if (available_size != last_available_host_size_) {
-      // May need to re-trigger animation if our bounds were relaxed; let us
-      // expand into the new available space.
-      RecalculateTarget();
+    } else {
+      // Either both axes are animating or only the main axis is animating or
+      // the cross axis hasn't changed (because otherwise the previous condition
+      // would have executed instead).
+      const base::Optional<int> bounds_main =
+          GetMainAxis(orientation(), available_size);
+      const int host_main = GetMainAxis(orientation(), host_size);
+      const int current_main =
+          GetMainAxis(orientation(), current_layout_.host_size);
+      if (current_main > host_main ||
+          (bounds_main && current_main > *bounds_main)) {
+        // Reset the layout immediately if the current or target layout exceeds
+        // the host size or the available space.
+        last_available_host_size_ = available_size;
+        ResetLayoutToSize(host_size);
+      } else if (available_size != last_available_host_size_) {
+        // May need to re-trigger animation if our bounds were relaxed; let us
+        // expand into the new available space.
+        RecalculateTarget();
+      }
     }
 
     // Verify that the last available size has been updated.
     DCHECK_EQ(available_size, last_available_host_size_);
-
-  } else if (!cached_layout_size() || host_size != *cached_layout_size()) {
-    // Host size changed, so reset the layout.
-    ResetLayoutToTargetSize();
   }
 
   ApplyLayout(current_layout_);
@@ -529,7 +573,8 @@ bool AnimatingLayoutManager::RecalculateTarget() {
   // space as adjacent child views appear/disappear. This will be useful in
   // animating tab titles, which currently slide over when the favicon
   // disappears.
-  if (!should_animate_bounds_ && *cached_layout_size() != target_size) {
+  if (bounds_animation_mode_ == BoundsAnimationMode::kUseHostBounds &&
+      *cached_layout_size() != target_size) {
     ResetLayoutToSize(target_size);
     return true;
   }
@@ -982,25 +1027,39 @@ ChildLayout AnimatingLayoutManager::CalculateSlideFade(
 
 // Returns the space in which to calculate the target layout.
 gfx::Size AnimatingLayoutManager::GetAvailableTargetLayoutSize() {
-  if (!should_animate_bounds_)
+  if (bounds_animation_mode_ == BoundsAnimationMode::kUseHostBounds)
     return host_view()->size();
 
   const SizeBounds bounds = GetAvailableHostSize();
   last_available_host_size_ = bounds;
   const gfx::Size preferred_size =
       target_layout_manager()->GetPreferredSize(host_view());
-  if (!bounds.width() || *bounds.width() > preferred_size.width()) {
-    return gfx::Size(preferred_size.width(),
-                     bounds.height()
-                         ? std::min(preferred_size.height(), *bounds.height())
-                         : preferred_size.height());
+
+  int width = preferred_size.width();
+
+  if (orientation() == LayoutOrientation::kVertical &&
+      bounds_animation_mode_ == BoundsAnimationMode::kAnimateMainAxis) {
+    width = host_view()->width();
+  } else if (bounds.width()) {
+    width = std::min(width, *bounds.width());
   }
 
-  const int height = target_layout_manager()->GetPreferredHeightForWidth(
-      host_view(), *bounds.width());
-  return gfx::Size(*bounds.width(), bounds.height()
-                                        ? std::min(height, *bounds.height())
-                                        : height);
+  int height;
+
+  if (orientation() == LayoutOrientation::kHorizontal &&
+      bounds_animation_mode_ == BoundsAnimationMode::kAnimateMainAxis) {
+    height = host_view()->height();
+  } else {
+    height = width < preferred_size.width()
+                 ? target_layout_manager()->GetPreferredHeightForWidth(
+                       host_view(), width)
+                 : preferred_size.height();
+    if (bounds.height()) {
+      height = std::min(height, *bounds.height());
+    }
+  }
+
+  return gfx::Size(width, height);
 }
 
 // static

@@ -58,6 +58,7 @@
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_local_account.h"
 #include "chrome/browser/chromeos/policy/device_local_account_policy_service.h"
+#include "chrome/browser/chromeos/policy/minimum_version_policy_handler.h"
 #include "chrome/browser/chromeos/policy/powerwash_requirements_checker.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
@@ -238,6 +239,14 @@ bool CanShowDebuggingFeatures() {
          base::CommandLine::ForCurrentProcess()->HasSwitch(
              chromeos::switches::kLoginManager) &&
          !session_manager::SessionManager::Get()->IsSessionStarted();
+}
+
+bool IsUpdateRequiredDeadlineReached() {
+  policy::MinimumVersionPolicyHandler* policy_handler =
+      g_browser_process->platform_part()
+          ->browser_policy_connector_chromeos()
+          ->GetMinimumVersionPolicyHandler();
+  return policy_handler && policy_handler->DeadlineReached();
 }
 
 void RecordPasswordChangeFlow(LoginPasswordChangeFlow flow) {
@@ -1572,6 +1581,7 @@ void ExistingUserController::ConfigureAutoLogin() {
   VLOG(2) << "Autologin account in prefs: " << auto_login_account_id;
   const std::vector<policy::DeviceLocalAccount> device_local_accounts =
       policy::GetDeviceLocalAccounts(cros_settings_);
+  const bool show_update_required_screen = IsUpdateRequiredDeadlineReached();
 
   public_session_auto_login_account_id_ = EmptyAccountId();
   for (std::vector<policy::DeviceLocalAccount>::const_iterator it =
@@ -1611,8 +1621,14 @@ void ExistingUserController::ConfigureAutoLogin() {
     auto_login_delay_ = 0;
   }
 
-  if (public_session_auto_login_account_id_.is_valid() ||
-      arc_kiosk_auto_login_account_id_.is_valid()) {
+  if (arc_kiosk_auto_login_account_id_.is_valid()) {
+    // Kiosks are not interrupted by update required screen.
+    StartAutoLoginTimer();
+  } else if (show_update_required_screen) {
+    // Update required screen overrides public session auto login.
+    StopAutoLoginTimer();
+    ShowUpdateRequiredScreen();
+  } else if (public_session_auto_login_account_id_.is_valid()) {
     StartAutoLoginTimer();
   } else {
     StopAutoLoginTimer();

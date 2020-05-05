@@ -55,10 +55,9 @@ class PLATFORM_EXPORT BudgetPool {
   virtual bool CanRunTasksAt(base::TimeTicks moment, bool is_wake_up) const = 0;
 
   // Returns a point in time until which tasks are allowed to run.
-  // base::nullopt means that there are no known limits.
-  virtual base::Optional<base::TimeTicks> GetTimeTasksCanRunUntil(
-      base::TimeTicks now,
-      bool is_wake_up) const = 0;
+  // base::TimeTicks::Max() means that there are no known limits.
+  virtual base::TimeTicks GetTimeTasksCanRunUntil(base::TimeTicks now,
+                                                  bool is_wake_up) const = 0;
 
   // Notifies budget pool that queue has work with desired run time.
   virtual void OnQueueNextWakeUpChanged(

@@ -4,7 +4,7 @@
 
 #include "ui/compositor/animation_metrics_recorder.h"
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "ui/compositor/animation_metrics_reporter.h"
 
 namespace ui {

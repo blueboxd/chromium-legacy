@@ -6,7 +6,7 @@
 
 #include <math.h>
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "ui/gfx/geometry/point3_f.h"
 #include "ui/gfx/geometry/safe_integer_conversions.h"
 #include "ui/gfx/geometry/vector2d_f.h"

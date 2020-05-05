@@ -4,7 +4,7 @@
 
 #include "ui/base/idle/idle.h"
 
-#include "base/logging.h"
+#include "base/notreached.h"
 
 namespace ui {
 

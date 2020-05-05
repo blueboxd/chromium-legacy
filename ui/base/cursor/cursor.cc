@@ -4,7 +4,7 @@
 
 #include "ui/base/cursor/cursor.h"
 
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "ui/gfx/skia_util.h"
 
 namespace ui {

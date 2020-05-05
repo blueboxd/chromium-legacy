@@ -11,6 +11,7 @@
 #import "ios/chrome/common/credential_provider/constants.h"
 #import "ios/chrome/common/ui/confirmation_alert/confirmation_alert_action_handler.h"
 #import "ios/chrome/credential_provider_extension/password_util.h"
+#import "ios/chrome/credential_provider_extension/reauthentication_handler.h"
 #import "ios/chrome/credential_provider_extension/ui/consent_coordinator.h"
 #import "ios/chrome/credential_provider_extension/ui/credential_details_consumer.h"
 #import "ios/chrome/credential_provider_extension/ui/credential_details_view_controller.h"
@@ -130,6 +131,21 @@
                                   completion:nil];
 }
 
+- (void)userSelectedCredential:(id<Credential>)credential {
+  [self reauthenticateIfNeededWithCompletionHandler:^(
+            ReauthenticationResult result) {
+    if (result != ReauthenticationResult::kFailure) {
+      NSString* password =
+          PasswordWithKeychainIdentifier(credential.keychainIdentifier);
+      ASPasswordCredential* ASCredential =
+          [ASPasswordCredential credentialWithUser:credential.user
+                                          password:password];
+      [self.context completeRequestWithSelectedCredential:ASCredential
+                                        completionHandler:nil];
+    }
+  }];
+}
+
 - (void)showDetailsForCredential:(id<Credential>)credential {
   CredentialDetailsViewController* detailsViewController =
       [[CredentialDetailsViewController alloc] init];
@@ -151,9 +167,14 @@
 
 - (void)unlockPasswordForCredential:(id<Credential>)credential
                   completionHandler:(void (^)(NSString*))completionHandler {
-  NSString* password =
-      PasswordWithKeychainIdentifier(credential.keychainIdentifier);
-  completionHandler(password);
+  [self reauthenticateIfNeededWithCompletionHandler:^(
+            ReauthenticationResult result) {
+    if (result != ReauthenticationResult::kFailure) {
+      NSString* password =
+          PasswordWithKeychainIdentifier(credential.keychainIdentifier);
+      completionHandler(password);
+    }
+  }];
 }
 
 #pragma mark - ConfirmationAlertActionHandler
@@ -174,6 +195,16 @@
 
 - (void)confirmationAlertLearnMoreAction {
   // No-op.
+}
+
+#pragma mark - Private
+
+// Asks user for hardware reauthentication if needed.
+- (void)reauthenticateIfNeededWithCompletionHandler:
+    (void (^)(ReauthenticationResult))completionHandler {
+  [self.reauthenticationHandler
+      verifyUserWithCompletionHandler:completionHandler
+      presentReminderOnViewController:self.viewController];
 }
 
 @end

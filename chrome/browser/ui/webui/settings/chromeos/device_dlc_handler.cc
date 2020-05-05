@@ -32,6 +32,10 @@ void DlcHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "getDlcList", base::BindRepeating(&DlcHandler::HandleGetDlcList,
                                         weak_ptr_factory_.GetWeakPtr()));
+
+  web_ui()->RegisterMessageCallback(
+      "purgeDlc", base::BindRepeating(&DlcHandler::HandlePurgeDlc,
+                                      weak_ptr_factory_.GetWeakPtr()));
 }
 
 void DlcHandler::OnJavascriptDisallowed() {
@@ -50,6 +54,20 @@ void DlcHandler::HandleGetDlcList(const base::ListValue* args) {
                      weak_ptr_factory_.GetWeakPtr(), callback_id->Clone()));
 }
 
+void DlcHandler::HandlePurgeDlc(const base::ListValue* args) {
+  AllowJavascript();
+  CHECK_EQ(2U, args->GetSize());
+  const base::Value* callback_id;
+  CHECK(args->Get(0, &callback_id));
+  std::string dlcId;
+  CHECK(args->GetString(1, &dlcId));
+
+  DlcserviceClient::Get()->Purge(
+      dlcId,
+      base::BindOnce(&DlcHandler::PurgeDlcCallback,
+                     weak_ptr_factory_.GetWeakPtr(), callback_id->Clone()));
+}
+
 void DlcHandler::GetDlcListCallback(
     const base::Value& callback_id,
     const std::string& err,
@@ -60,6 +78,12 @@ void DlcHandler::GetDlcListCallback(
     return;
   }
   ResolveJavascriptCallback(callback_id, base::ListValue());
+}
+
+void DlcHandler::PurgeDlcCallback(const base::Value& callback_id,
+                                  const std::string& err) {
+  ResolveJavascriptCallback(callback_id,
+                            base::Value(err == dlcservice::kErrorNone));
 }
 
 }  // namespace settings

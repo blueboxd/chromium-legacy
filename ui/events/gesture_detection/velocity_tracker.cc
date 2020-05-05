@@ -8,7 +8,8 @@
 
 #include <cmath>
 
-#include "base/logging.h"
+#include "base/check_op.h"
+#include "base/notreached.h"
 #include "ui/events/gesture_detection/motion_event.h"
 
 using base::TimeDelta;

@@ -7,8 +7,8 @@
 #include <algorithm>
 
 #include "base/bind.h"
+#include "base/check_op.h"
 #include "base/feature_list.h"
-#include "base/logging.h"
 #include "base/macros.h"
 #include "base/numerics/ranges.h"
 #include "build/build_config.h"

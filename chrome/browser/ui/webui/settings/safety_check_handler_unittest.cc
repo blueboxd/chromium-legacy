@@ -1071,7 +1071,7 @@ TEST_F(SafetyCheckHandlerTest, CheckParentRanDisplayString) {
 }
 
 TEST_F(SafetyCheckHandlerTest, CheckSafetyCheckStartedWebUiEvents) {
-  safety_check_->PerformSafetyCheck();
+  safety_check_->SendSafetyCheckStartedWebUiUpdates();
 
   // Check that all initial updates ("running" states) are sent.
   const base::DictionaryValue* event_parent =

@@ -4,7 +4,7 @@
 
 #include "ui/base/x/x11_pointer_grab.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/events/devices/x11/device_data_manager_x11.h"
 #include "ui/gfx/x/x11.h"

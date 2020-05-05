@@ -48,6 +48,7 @@
 #include "third_party/blink/renderer/platform/bindings/runtime_call_stats.h"
 #include "third_party/blink/renderer/platform/bindings/script_forbidden_scope.h"
 #include "third_party/blink/renderer/platform/bindings/v8_per_isolate_data.h"
+#include "third_party/blink/renderer/platform/heap/blink_gc.h"
 #include "third_party/blink/renderer/platform/heap/blink_gc_memory_dump_provider.h"
 #include "third_party/blink/renderer/platform/heap/cancelable_task_scheduler.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -700,7 +701,9 @@ void ThreadState::RunScheduledGC(BlinkGC::StackState stack_state) {
 
   switch (GetGCState()) {
     case kForcedGCForTestingScheduled:
+      forced_scheduled_gc_for_testing_ = true;
       CollectAllGarbageForTesting();
+      forced_scheduled_gc_for_testing_ = false;
       break;
     default:
       break;
@@ -980,6 +983,7 @@ void UpdateHistograms(const ThreadHeapStatsCollector::Event& event) {
     COUNT_BY_GC_REASON(IncrementalV8FollowupGC)
     COUNT_BY_GC_REASON(UnifiedHeapGC)
     COUNT_BY_GC_REASON(UnifiedHeapForMemoryReductionGC)
+    COUNT_BY_GC_REASON(UnifiedHeapForcedForTestingGC)
 
 #undef COUNT_BY_GC_REASON
   }
@@ -1357,6 +1361,7 @@ void ThreadState::CollectGarbage(BlinkGC::CollectionType collection_type,
     COUNT_BY_GC_REASON(IncrementalV8FollowupGC)
     COUNT_BY_GC_REASON(UnifiedHeapGC)
     COUNT_BY_GC_REASON(UnifiedHeapForMemoryReductionGC)
+    COUNT_BY_GC_REASON(UnifiedHeapForcedForTestingGC)
   }
 #undef COUNT_BY_GC_REASON
 
@@ -1749,9 +1754,19 @@ void ThreadState::CollectAllGarbageForTesting(BlinkGC::StackState stack_state) {
   // We need to run multiple GCs to collect a chain of persistent handles.
   size_t previous_live_objects = 0;
   for (int i = 0; i < 5; ++i) {
-    CollectGarbage(BlinkGC::CollectionType::kMajor, stack_state,
-                   BlinkGC::kAtomicMarking, BlinkGC::kEagerSweeping,
-                   BlinkGC::GCReason::kForcedGCForTesting);
+    if (isolate_) {
+      forced_unified_heap_gc_for_testing_ = true;
+      unified_heap_forced_gc_params_.reason =
+          BlinkGC::GCReason::kUnifiedHeapForcedForTestingGC;
+      unified_heap_controller()->GarbageCollectionForTesting(
+          stack_state == BlinkGC::kNoHeapPointersOnStack
+              ? v8::EmbedderHeapTracer::EmbedderStackState::kEmpty
+              : v8::EmbedderHeapTracer::kUnknown);
+    } else {
+      CollectGarbage(BlinkGC::CollectionType::kMajor, stack_state,
+                     BlinkGC::kAtomicMarking, BlinkGC::kEagerSweeping,
+                     BlinkGC::GCReason::kForcedGCForTesting);
+    }
     const size_t live_objects =
         Heap().stats_collector()->previous().marked_bytes;
     if (live_objects == previous_live_objects)

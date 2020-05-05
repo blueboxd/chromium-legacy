@@ -6,7 +6,7 @@
 
 #include <memory>
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "ui/views/view.h"
 #include "ui/views/view_tracker.h"
 

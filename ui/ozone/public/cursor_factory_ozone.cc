@@ -4,7 +4,8 @@
 
 #include "ui/ozone/public/cursor_factory_ozone.h"
 
-#include "base/logging.h"
+#include "base/check_op.h"
+#include "base/notreached.h"
 
 namespace ui {
 

@@ -7,7 +7,7 @@
 #include "base/test/icu_test_util.h"
 #include "base/test/mock_callback.h"
 #include "components/autofill_assistant/browser/fake_script_executor_delegate.h"
-#include "components/autofill_assistant/browser/interactions.pb.h"
+#include "components/autofill_assistant/browser/generic_ui.pb.h"
 #include "components/autofill_assistant/browser/user_model.h"
 #include "testing/gmock/include/gmock/gmock.h"
 

@@ -8,7 +8,6 @@
 #include <cmath>
 #include <vector>
 
-#include "base/logging.h"
 #include "base/numerics/ranges.h"
 
 namespace gfx {

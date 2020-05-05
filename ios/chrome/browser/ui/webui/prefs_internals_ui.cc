@@ -62,8 +62,9 @@ class PrefsInternalsSource : public web::URLDataSourceIOS {
 
 }  // namespace
 
-PrefsInternalsUI::PrefsInternalsUI(web::WebUIIOS* web_ui)
-    : web::WebUIIOSController(web_ui) {
+PrefsInternalsUI::PrefsInternalsUI(web::WebUIIOS* web_ui,
+                                   const std::string& host)
+    : web::WebUIIOSController(web_ui, host) {
   ChromeBrowserState* browser_state = ChromeBrowserState::FromWebUIIOS(web_ui);
   web::URLDataSourceIOS::Add(browser_state,
                              new PrefsInternalsSource(browser_state));

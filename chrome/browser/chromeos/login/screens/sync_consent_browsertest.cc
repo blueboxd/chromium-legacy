@@ -150,13 +150,12 @@ class SyncConsentTest : public OobeBaseTest {
   }
 
   void SwitchLanguage(const std::string& language) {
-    const char get_num_reloads[] = "Oobe.getInstance().reloadContentNumEvents_";
-    const int prev_reloads = test::OobeJS().GetInt(get_num_reloads);
-    test::OobeJS().Evaluate("$('connect').applySelectedLanguage_('" + language +
-                            "');");
-    const std::string condition =
-        base::StringPrintf("%s > %d", get_num_reloads, prev_reloads);
-    test::OobeJS().CreateWaiter(condition)->Wait();
+    WelcomeScreen* welcome_screen = WelcomeScreen::Get(
+        WizardController::default_controller()->screen_manager());
+    test::LanguageReloadObserver observer(welcome_screen);
+    test::OobeJS().SelectElementInPath(language,
+                                       {"connect", "languageSelect", "select"});
+    observer.Wait();
   }
 
   void WaitForScreenShown() {
@@ -347,16 +346,10 @@ class SyncConsentTestWithParams
   DISALLOW_COPY_AND_ASSIGN(SyncConsentTestWithParams);
 };
 
-// Consistently timing out on linux  http://crbug.com/1025213
-#if defined(OS_LINUX)
-#define MAYBE_SyncConsentTestWithLocale DISABLED_SyncConsentTestWithLocale
-#else
-#define MAYBE_SyncConsentTestWithLocale SyncConsentTestWithLocale
-#endif
-IN_PROC_BROWSER_TEST_P(SyncConsentTestWithParams,
-                       MAYBE_SyncConsentTestWithLocale) {
+IN_PROC_BROWSER_TEST_P(SyncConsentTestWithParams, SyncConsentTestWithLocale) {
   LOG(INFO) << "SyncConsentTestWithParams() started with param='" << GetParam()
             << "'";
+  auto autoreset = SyncConsentScreen::ForceBrandedBuildForTesting(true);
   EXPECT_EQ(g_browser_process->GetApplicationLocale(), "en-US");
   SwitchLanguage(GetParam());
   LoginToSyncConsentScreen();

@@ -4,8 +4,9 @@
 
 #include "ui/events/event_dispatcher.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/macros.h"
+#include "base/notreached.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/event.h"
 #include "ui/events/event_dispatcher.h"

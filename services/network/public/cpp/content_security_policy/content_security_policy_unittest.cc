@@ -8,6 +8,7 @@
 #include "base/stl_util.h"
 #include "net/http/http_response_headers.h"
 #include "services/network/public/cpp/content_security_policy/csp_context.h"
+#include "services/network/public/cpp/web_sandbox_flags.h"
 #include "services/network/public/mojom/content_security_policy.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -784,4 +785,19 @@ TEST(ContentSecurityPolicy, NavigateToChecks) {
                                  SourceLocation(), test.is_form_submission));
   }
 }
+
+TEST(ContentSecurityPolicy, ParseSandbox) {
+  scoped_refptr<net::HttpResponseHeaders> headers(
+      new net::HttpResponseHeaders("HTTP/1.1 200 OK"));
+  headers->SetHeader("Content-Security-Policy",
+                     "sandbox allow-downloads allow-scripts");
+  std::vector<mojom::ContentSecurityPolicyPtr> policies;
+  AddContentSecurityPolicyFromHeaders(*headers, GURL("https://example.com/"),
+                                      &policies);
+  EXPECT_EQ(policies[0]->sandbox,
+            mojom::WebSandboxFlags::kDownloads |
+                mojom::WebSandboxFlags::kScripts |
+                mojom::WebSandboxFlags::kAutomaticFeatures);
+}
+
 }  // namespace network

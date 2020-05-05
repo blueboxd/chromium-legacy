@@ -9,9 +9,7 @@
 namespace blink {
 namespace {
 
-class NamedPagesMapperTest : public testing::Test {};
-
-TEST_F(NamedPagesMapperTest, Test) {
+TEST(NamedPagesMapperTest, Test) {
   NamedPagesMapper mapper;
   EXPECT_EQ(mapper.LastPageName(), AtomicString());
   EXPECT_EQ(mapper.NamedPageAtIndex(0), AtomicString());
@@ -85,14 +83,42 @@ TEST_F(NamedPagesMapperTest, Test) {
   EXPECT_EQ(mapper.NamedPageAtIndex(7), "foo");
   EXPECT_EQ(mapper.NamedPageAtIndex(6), AtomicString());
   EXPECT_EQ(mapper.NamedPageAtIndex(100), "lol");
+
+  mapper.AddNamedPage("page2", 2);
+  EXPECT_EQ(mapper.LastPageName(), "page2");
+  EXPECT_EQ(mapper.NamedPageAtIndex(0), AtomicString());
+  EXPECT_EQ(mapper.NamedPageAtIndex(1), AtomicString());
+  EXPECT_EQ(mapper.NamedPageAtIndex(2), "page2");
+  EXPECT_EQ(mapper.NamedPageAtIndex(100), "page2");
+
+  mapper.AddNamedPage("page1", 1);
+  EXPECT_EQ(mapper.LastPageName(), "page1");
+  EXPECT_EQ(mapper.NamedPageAtIndex(0), AtomicString());
+  EXPECT_EQ(mapper.NamedPageAtIndex(1), "page1");
+  EXPECT_EQ(mapper.NamedPageAtIndex(2), "page1");
+  EXPECT_EQ(mapper.NamedPageAtIndex(100), "page1");
 }
 
-TEST_F(NamedPagesMapperTest, FirstPageIsNamed) {
+TEST(NamedPagesMapperTest, FirstPageIsNamed) {
   NamedPagesMapper mapper;
   mapper.AddNamedPage("named", 0);
   EXPECT_EQ(mapper.LastPageName(), "named");
   EXPECT_EQ(mapper.NamedPageAtIndex(0), "named");
   EXPECT_EQ(mapper.NamedPageAtIndex(100), "named");
+
+  mapper.AddNamedPage("overwrite", 0);
+  EXPECT_EQ(mapper.NamedPageAtIndex(0), "overwrite");
+  EXPECT_EQ(mapper.NamedPageAtIndex(100), "overwrite");
+
+  mapper.AddNamedPage("foo", 1);
+  EXPECT_EQ(mapper.NamedPageAtIndex(0), "overwrite");
+  EXPECT_EQ(mapper.NamedPageAtIndex(1), "foo");
+  EXPECT_EQ(mapper.NamedPageAtIndex(100), "foo");
+
+  mapper.AddNamedPage("xxx", 0);
+  EXPECT_EQ(mapper.NamedPageAtIndex(0), "xxx");
+  EXPECT_EQ(mapper.NamedPageAtIndex(1), "xxx");
+  EXPECT_EQ(mapper.NamedPageAtIndex(100), "xxx");
 }
 
 }  // anonymous namespace

@@ -438,7 +438,7 @@ TEST_F(ContentCaptureTest, TaskHistogramReporter) {
   // This performs gc for all DocumentSession, flushes the existing
   // SentContentCount and give a clean baseline for histograms.
   // We are not sure if it always work, maybe still be the source of flaky.
-  V8GCController::CollectAllGarbageForTesting(v8::Isolate::GetCurrent());
+  ThreadState::Current()->CollectAllGarbageForTesting();
   base::HistogramTester histograms;
 
   // The task stops before captures content.
@@ -515,7 +515,7 @@ TEST_F(ContentCaptureTest, TaskHistogramReporter) {
       ContentCaptureTaskHistogramReporter::kSentContentCount, 0u);
 
   GetContentCaptureTask()->ClearDocumentSessionsForTesting();
-  V8GCController::CollectAllGarbageForTesting(v8::Isolate::GetCurrent());
+  ThreadState::Current()->CollectAllGarbageForTesting();
   histograms.ExpectTotalCount(
       ContentCaptureTaskHistogramReporter::kCaptureContentTime, 2u);
   histograms.ExpectTotalCount(

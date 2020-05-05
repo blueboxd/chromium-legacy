@@ -6,7 +6,8 @@
 
 #include "base/android/build_info.h"
 #include "base/bind.h"
-#include "base/logging.h"
+#include "base/check_op.h"
+#include "base/notreached.h"
 #include "cc/layers/solid_color_layer.h"
 #include "cc/layers/surface_layer.h"
 #include "cc/trees/layer_tree_host.h"

@@ -59,6 +59,16 @@ void AssistantGenericUiDelegate::OnTextLinkClicked(
       {EventProto::kOnTextLinkClicked, base::NumberToString(jlink)});
 }
 
+void AssistantGenericUiDelegate::OnGenericPopupDismissed(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& jcaller,
+    const base::android::JavaParamRef<jstring>& jpopup_identifier) {
+  ui_controller_->OnViewEvent(
+      {EventProto::kOnPopupDismissed,
+       ui_controller_android_utils::SafeConvertJavaStringToNative(
+           env, jpopup_identifier)});
+}
+
 base::android::ScopedJavaGlobalRef<jobject>
 AssistantGenericUiDelegate::GetJavaObject() {
   return java_assistant_generic_ui_delegate_;

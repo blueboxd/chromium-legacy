@@ -30,7 +30,8 @@ const char* const kClientHintsNameMapping[] = {"device-memory",
                                                "ua-platform",
                                                "ua-model",
                                                "ua-mobile",
-                                               "ua-full-version"};
+                                               "ua-full-version",
+                                               "ua-platform-version"};
 
 const size_t kClientHintsMappingsCount = base::size(kClientHintsNameMapping);
 

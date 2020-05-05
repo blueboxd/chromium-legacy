@@ -11,7 +11,7 @@
 #include <string>
 #include <utility>
 
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "base/stl_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/ime/composition_text.h"

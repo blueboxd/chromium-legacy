@@ -4,7 +4,7 @@
 
 #include "ui/gfx/utf16_indexing.h"
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/third_party/icu/icu_utf.h"
 
 namespace gfx {

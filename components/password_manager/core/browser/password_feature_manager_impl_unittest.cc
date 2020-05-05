@@ -48,7 +48,7 @@ TEST_F(PasswordFeatureManagerImplTest,
   sync_service_.SetDisableReasons({});
   sync_service_.SetTransportState(syncer::SyncService::TransportState::ACTIVE);
 
-  password_feature_manager_.SetAccountStorageOptIn(true);
+  password_feature_manager_.OptInToAccountStorage();
 
   ASSERT_EQ(
       password_manager_util::GetPasswordSyncState(&sync_service_),

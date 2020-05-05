@@ -10,7 +10,6 @@
 #include "base/bind.h"
 #include "base/cancelable_callback.h"
 #include "base/location.h"
-#include "base/logging.h"
 #include "base/no_destructor.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/lock.h"

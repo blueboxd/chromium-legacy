@@ -8,7 +8,8 @@
 
 #include "base/android/jni_string.h"
 #include "base/bits.h"
-#include "base/logging.h"
+#include "base/check_op.h"
+#include "base/notreached.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/gfx_jni_headers/BitmapHelper_jni.h"
 

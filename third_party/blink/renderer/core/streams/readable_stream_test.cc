@@ -433,8 +433,7 @@ TEST_F(ReadableStreamTest, GarbageCollectJavaScriptUnderlyingSource) {
     weak_underlying_source.SetWeak();
   }
 
-  V8GCController::CollectAllGarbageForTesting(
-      isolate, v8::EmbedderHeapTracer::EmbedderStackState::kEmpty);
+  ThreadState::Current()->CollectAllGarbageForTesting();
 
   EXPECT_TRUE(weak_underlying_source.IsEmpty());
 }
@@ -463,8 +462,7 @@ TEST_F(ReadableStreamTest, GarbageCollectCPlusPlusUnderlyingSource) {
   // Allow Promises to resolve.
   v8::MicrotasksScope::PerformCheckpoint(isolate);
 
-  V8GCController::CollectAllGarbageForTesting(
-      isolate, v8::EmbedderHeapTracer::EmbedderStackState::kEmpty);
+  ThreadState::Current()->CollectAllGarbageForTesting();
 
   EXPECT_FALSE(weak_underlying_source);
 }

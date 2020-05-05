@@ -128,11 +128,7 @@ class ScriptPromisePropertyTestBase {
     }
   }
 
-  void Gc() {
-    V8GCController::CollectAllGarbageForTesting(
-        v8::Isolate::GetCurrent(),
-        v8::EmbedderHeapTracer::EmbedderStackState::kEmpty);
-  }
+  void Gc() { ThreadState::Current()->CollectAllGarbageForTesting(); }
 
   v8::Local<v8::Function> NotReached(ScriptState* script_state) {
     return NotReached::CreateFunction(script_state);

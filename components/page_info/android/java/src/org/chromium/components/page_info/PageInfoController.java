@@ -71,6 +71,7 @@ public class PageInfoController implements ModalDialogProperties.Controller,
         int VR = 3;
     }
 
+    private Context mContext;
     private final WindowAndroid mWindowAndroid;
     private final WebContents mWebContents;
     private final PageInfoControllerDelegate mDelegate;
@@ -113,7 +114,6 @@ public class PageInfoController implements ModalDialogProperties.Controller,
     /**
      * Creates the PageInfoController, but does not display it. Also initializes the corresponding
      * C++ object and saves a pointer to it.
-     * @param activity                 Activity which is used for showing a popup.
      * @param webContents              The WebContents showing the page that the PageInfo is about.
      * @param securityLevel            The security level of the page being shown.
      * @param publisher                The name of the content publisher, if any.
@@ -121,8 +121,8 @@ public class PageInfoController implements ModalDialogProperties.Controller,
      *                                 embedder-specific info.
      */
     @VisibleForTesting(otherwise = VisibleForTesting.PROTECTED)
-    public PageInfoController(Activity activity, WebContents webContents, int securityLevel,
-            String publisher, PageInfoControllerDelegate delegate) {
+    public PageInfoController(WebContents webContents, int securityLevel, String publisher,
+            PageInfoControllerDelegate delegate) {
         mWebContents = webContents;
         mSecurityLevel = securityLevel;
         mDelegate = delegate;
@@ -135,6 +135,7 @@ public class PageInfoController implements ModalDialogProperties.Controller,
         PageInfoViewParams viewParams = new PageInfoViewParams();
 
         mWindowAndroid = webContents.getTopLevelNativeWindow();
+        mContext = mWindowAndroid.getContext().get();
         mContentPublisher = publisher;
 
         viewParams.urlTitleClickCallback = () -> {
@@ -175,13 +176,13 @@ public class PageInfoController implements ModalDialogProperties.Controller,
                             displayUrlBuilder.toString(), autocompleteSchemeClassifier);
             if (emphasizeResponse.schemeLength > 0) {
                 displayUrlBuilder.setSpan(
-                        new TextAppearanceSpan(activity, R.style.TextAppearance_RobotoMediumStyle),
+                        new TextAppearanceSpan(mContext, R.style.TextAppearance_RobotoMediumStyle),
                         0, emphasizeResponse.schemeLength, Spannable.SPAN_EXCLUSIVE_INCLUSIVE);
             }
         }
 
         final boolean useDarkColors = delegate.useDarkColors();
-        OmniboxUrlEmphasizer.emphasizeUrl(displayUrlBuilder, activity.getResources(),
+        OmniboxUrlEmphasizer.emphasizeUrl(displayUrlBuilder, mContext.getResources(),
                 autocompleteSchemeClassifier, mSecurityLevel, mIsInternalPage, useDarkColors,
                 /*emphasizeScheme=*/true);
         viewParams.url = displayUrlBuilder;
@@ -211,7 +212,7 @@ public class PageInfoController implements ModalDialogProperties.Controller,
             final Intent instantAppIntent = mDelegate.getInstantAppIntentForUrl(mFullUrl);
             viewParams.instantAppButtonClickCallback = () -> {
                 try {
-                    activity.startActivity(instantAppIntent);
+                    mWindowAndroid.getActivity().get().startActivity(instantAppIntent);
                     RecordUserAction.record("Android.InstantApps.LaunchedFromWebsiteSettingsPopup");
                 } catch (ActivityNotFoundException e) {
                     mView.disableInstantAppButton();
@@ -222,8 +223,8 @@ public class PageInfoController implements ModalDialogProperties.Controller,
             viewParams.instantAppButtonShown = false;
         }
 
-        mView = new PageInfoView(activity, viewParams);
-        if (isSheet(activity)) mView.setBackgroundColor(Color.WHITE);
+        mView = new PageInfoView(mContext, viewParams);
+        if (isSheet(mContext)) mView.setBackgroundColor(Color.WHITE);
         // TODO(crbug.com/1040091): Remove when cookie controls are launched.
         boolean showTitle = viewParams.cookieControlsShown;
         mDelegate.createPermissionParamsListBuilder(
@@ -267,8 +268,8 @@ public class PageInfoController implements ModalDialogProperties.Controller,
             }
         };
 
-        mDialog = new PageInfoDialog(activity, mView,
-                webContents.getViewAndroidDelegate().getContainerView(), isSheet(activity),
+        mDialog = new PageInfoDialog(mContext, mView,
+                webContents.getViewAndroidDelegate().getContainerView(), isSheet(mContext),
                 delegate.getModalDialogManager(), this);
         mDialog.show();
     }
@@ -312,11 +313,10 @@ public class PageInfoController implements ModalDialogProperties.Controller,
 
         // Display the appropriate connection message.
         SpannableStringBuilder messageBuilder = new SpannableStringBuilder();
-        Context context = mWindowAndroid.getActivity().get();
-        assert context != null;
+        assert mContext != null;
         if (mContentPublisher != null) {
             messageBuilder.append(
-                    context.getString(R.string.page_info_domain_hidden, mContentPublisher));
+                    mContext.getString(R.string.page_info_domain_hidden, mContentPublisher));
         } else if (mDelegate.isShowingPreview() && mDelegate.isPreviewPageInsecure()) {
             connectionInfoParams.summary = summary;
         } else if (mDelegate.getOfflinePageConnectionMessage() != null) {
@@ -331,10 +331,10 @@ public class PageInfoController implements ModalDialogProperties.Controller,
         if (isConnectionDetailsLinkVisible()) {
             messageBuilder.append(" ");
             SpannableString detailsText =
-                    new SpannableString(context.getString(R.string.details_link));
+                    new SpannableString(mContext.getString(R.string.details_link));
             final ForegroundColorSpan blueSpan =
                     new ForegroundColorSpan(ApiCompatibilityUtils.getColor(
-                            context.getResources(), R.color.default_text_color_link));
+                            mContext.getResources(), R.color.default_text_color_link));
             detailsText.setSpan(
                     blueSpan, 0, detailsText.length(), Spannable.SPAN_INCLUSIVE_EXCLUSIVE);
             messageBuilder.append(detailsText);
@@ -350,7 +350,7 @@ public class PageInfoController implements ModalDialogProperties.Controller,
                 runAfterDismiss(() -> {
                     if (!mWebContents.isDestroyed()) {
                         recordAction(PageInfoAction.PAGE_INFO_SECURITY_DETAILS_OPENED);
-                        ConnectionInfoPopup.show(context, mWebContents,
+                        ConnectionInfoPopup.show(mContext, mWebContents,
                                 mDelegate.getModalDialogManager(), mDelegate.getVrHandler());
                     }
                 });
@@ -362,17 +362,15 @@ public class PageInfoController implements ModalDialogProperties.Controller,
     @Override
     public void onSystemSettingsActivityRequired(Intent intentOverride) {
         runAfterDismiss(() -> {
-            Context context = mWindowAndroid.getContext().get();
-            assert context != null;
             Intent settingsIntent;
             if (intentOverride != null) {
                 settingsIntent = intentOverride;
             } else {
                 settingsIntent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
-                settingsIntent.setData(Uri.parse("package:" + context.getPackageName()));
+                settingsIntent.setData(Uri.parse("package:" + mContext.getPackageName()));
             }
             settingsIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            context.startActivity(settingsIntent);
+            mContext.startActivity(settingsIntent);
         });
     }
 
@@ -397,6 +395,7 @@ public class PageInfoController implements ModalDialogProperties.Controller,
         mWebContentsObserver.destroy();
         PageInfoControllerJni.get().destroy(mNativePageInfoController, PageInfoController.this);
         mNativePageInfoController = 0;
+        mContext = null;
     }
 
     private void recordAction(int action) {
@@ -408,7 +407,7 @@ public class PageInfoController implements ModalDialogProperties.Controller,
 
     private boolean isSheet(Context context) {
         return !DeviceFormFactor.isNonMultiDisplayContextOnTablet(context)
-                && !mDelegate.getVrHandler().isInVr();
+                && (mDelegate.getVrHandler() == null || !mDelegate.getVrHandler().isInVr());
     }
 
     @VisibleForTesting
@@ -446,9 +445,9 @@ public class PageInfoController implements ModalDialogProperties.Controller,
             assert false : "Invalid source passed";
         }
 
-        sLastPageInfoControllerForTesting = new WeakReference<>(new PageInfoController(activity,
-                webContents, SecurityStateModel.getSecurityLevelForWebContents(webContents),
-                contentPublisher, delegate));
+        sLastPageInfoControllerForTesting = new WeakReference<>(new PageInfoController(webContents,
+                SecurityStateModel.getSecurityLevelForWebContents(webContents), contentPublisher,
+                delegate));
     }
 
     @VisibleForTesting(otherwise = VisibleForTesting.PACKAGE_PRIVATE)

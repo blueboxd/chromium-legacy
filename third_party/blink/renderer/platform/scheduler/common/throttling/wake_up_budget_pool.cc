@@ -55,11 +55,11 @@ bool WakeUpBudgetPool::CanRunTasksAt(base::TimeTicks moment,
   return moment < last_wake_up_.value() + wake_up_duration_;
 }
 
-base::Optional<base::TimeTicks> WakeUpBudgetPool::GetTimeTasksCanRunUntil(
+base::TimeTicks WakeUpBudgetPool::GetTimeTasksCanRunUntil(
     base::TimeTicks now,
     bool is_wake_up) const {
   if (!is_enabled_)
-    return base::nullopt;
+    return base::TimeTicks::Max();
   if (!last_wake_up_)
     return base::TimeTicks();
   if (!CanRunTasksAt(now, is_wake_up))

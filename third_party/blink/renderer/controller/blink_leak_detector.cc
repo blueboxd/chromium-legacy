@@ -82,9 +82,7 @@ void BlinkLeakDetector::TimerFiredGC(TimerBase*) {
   // clean-up tasks to the next event loop. E.g. the third GC is necessary for
   // cleaning up Document after the worker object has been reclaimed.
 
-  V8GCController::CollectAllGarbageForTesting(
-      V8PerIsolateData::MainThreadIsolate(),
-      v8::EmbedderHeapTracer::EmbedderStackState::kEmpty);
+  ThreadState::Current()->CollectAllGarbageForTesting();
   CoreInitializer::GetInstance()
       .CollectAllGarbageForAnimationAndPaintWorkletForTesting();
   // Note: Oilpan precise GC is scheduled at the end of the event loop.

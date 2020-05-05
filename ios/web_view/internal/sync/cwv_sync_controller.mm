@@ -184,9 +184,8 @@ __weak id<CWVSyncControllerDataSource> gSyncDataSource;
                                                      /*opted_in=*/true);
   password_manager::features_util::SetDefaultPasswordStore(
       _prefService, _syncService, autofill::PasswordForm::Store::kAccountStore);
-  password_manager::features_util::SetAccountStorageOptIn(_prefService,
-                                                          _syncService,
-                                                          /*opt_in=*/true);
+  password_manager::features_util::OptInToAccountStorage(_prefService,
+                                                         _syncService);
 }
 
 - (void)stopSyncAndClearIdentity {

@@ -88,7 +88,12 @@ class SafetyCheckHandler
   SafetyCheckHandler();
   ~SafetyCheckHandler() override;
 
-  // Triggers all four of the browser safety checks.
+  // Triggers WebUI updates about safety check now running.
+  // Note: since the checks deal with sensitive user information, this method
+  // should only be called as a result of an explicit user action.
+  void SendSafetyCheckStartedWebUiUpdates();
+
+  // Triggers all safety check child checks.
   // Note: since the checks deal with sensitive user information, this method
   // should only be called as a result of an explicit user action.
   void PerformSafetyCheck();

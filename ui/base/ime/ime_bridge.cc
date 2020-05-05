@@ -6,7 +6,6 @@
 
 #include <map>
 
-#include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "base/observer_list.h"

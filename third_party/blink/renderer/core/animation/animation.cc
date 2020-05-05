@@ -47,6 +47,7 @@
 #include "third_party/blink/renderer/core/animation/pending_animations.h"
 #include "third_party/blink/renderer/core/animation/scroll_timeline.h"
 #include "third_party/blink/renderer/core/animation/scroll_timeline_util.h"
+#include "third_party/blink/renderer/core/animation/timing_calculations.h"
 #include "third_party/blink/renderer/core/css/properties/css_property_ref.h"
 #include "third_party/blink/renderer/core/css/resolver/style_resolver.h"
 #include "third_party/blink/renderer/core/css/style_change_reason.h"
@@ -755,8 +756,15 @@ void Animation::setStartTime(base::Optional<double> start_time_ms,
 
   // 5. Set animation’s start time to new start time.
   base::Optional<double> new_start_time;
-  if (start_time_ms)
+  if (start_time_ms) {
     new_start_time = MillisecondsToSeconds(start_time_ms.value());
+    // Snap to timeline time if within floating point tolerance to ensure
+    // deterministic behavior in phase transitions.
+    if (timeline_time && IsWithinAnimationTimeEpsilon(timeline_time.value(),
+                                                      new_start_time.value())) {
+      new_start_time = timeline_time.value();
+    }
+  }
   start_time_ = new_start_time;
 
   // 6. Update animation’s hold time based on the first matching condition from

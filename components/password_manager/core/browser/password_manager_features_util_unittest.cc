@@ -184,7 +184,7 @@ TEST(PasswordFeatureManagerUtil, AccountStoragePerAccountSettings) {
             autofill::PasswordForm::Store::kAccountStore);
 
   // Opt in!
-  SetAccountStorageOptIn(&pref_service, &sync_service, true);
+  OptInToAccountStorage(&pref_service, &sync_service);
   EXPECT_TRUE(IsOptedInForAccountStorage(&pref_service, &sync_service));
   EXPECT_FALSE(ShouldShowAccountStorageOptIn(&pref_service, &sync_service));
   // ...and change the default store to the profile one.
@@ -287,7 +287,7 @@ TEST(PasswordFeatureManagerUtil, SyncDisablesAccountStorage) {
             autofill::PasswordForm::Store::kAccountStore);
 
   // Opt in.
-  SetAccountStorageOptIn(&pref_service, &sync_service, true);
+  OptInToAccountStorage(&pref_service, &sync_service);
   ASSERT_TRUE(IsOptedInForAccountStorage(&pref_service, &sync_service));
   ASSERT_FALSE(ShouldShowAccountStorageOptIn(&pref_service, &sync_service));
   ASSERT_TRUE(ShouldShowPasswordStorePicker(&pref_service, &sync_service));
@@ -305,6 +305,43 @@ TEST(PasswordFeatureManagerUtil, SyncDisablesAccountStorage) {
   EXPECT_FALSE(ShouldShowPasswordStorePicker(&pref_service, &sync_service));
   EXPECT_EQ(GetDefaultPasswordStore(&pref_service, &sync_service),
             autofill::PasswordForm::Store::kProfileStore);
+}
+
+TEST(PasswordFeatureManagerUtil, OptOutClearsStorePreference) {
+  base::test::ScopedFeatureList features;
+  features.InitAndEnableFeature(features::kEnablePasswordsAccountStorage);
+
+  TestingPrefServiceSimple pref_service;
+  pref_service.registry()->RegisterDictionaryPref(
+      prefs::kAccountStoragePerAccountSettings);
+
+  CoreAccountInfo account;
+  account.email = "name@account.com";
+  account.gaia = "name";
+  account.account_id = CoreAccountId::FromGaiaId(account.gaia);
+
+  // The SyncService is running in transport mode.
+  syncer::TestSyncService sync_service;
+  sync_service.SetIsAuthenticatedAccountPrimary(false);
+  sync_service.SetAuthenticatedAccountInfo(account);
+  ASSERT_EQ(sync_service.GetTransportState(),
+            syncer::SyncService::TransportState::ACTIVE);
+  ASSERT_FALSE(sync_service.IsSyncFeatureEnabled());
+
+  // Opt in and set default store to profile.
+  OptInToAccountStorage(&pref_service, &sync_service);
+  ASSERT_TRUE(IsOptedInForAccountStorage(&pref_service, &sync_service));
+  SetDefaultPasswordStore(&pref_service, &sync_service,
+                          autofill::PasswordForm::Store::kProfileStore);
+
+  // Opt out.
+  OptOutOfAccountStorageAndClearSettings(&pref_service, &sync_service);
+
+  // The default store pref should have been erased, so GetDefaultPasswordStore
+  // should return kAccountStore again.
+  EXPECT_EQ(GetDefaultPasswordStore(&pref_service, &sync_service),
+            autofill::PasswordForm::Store::kAccountStore);
+  EXPECT_FALSE(IsOptedInForAccountStorage(&pref_service, &sync_service));
 }
 
 }  // namespace features_util

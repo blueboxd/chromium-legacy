@@ -20,9 +20,7 @@ ReportingSettings::~ReportingSettings() = default;
 const char* ConnectorPref(AnalysisConnector connector) {
   switch (connector) {
     case AnalysisConnector::BULK_DATA_ENTRY:
-      // TODO(crbug/1067631): Return the corresponding prefs for these analysis
-      // connectors once they exist.
-      return nullptr;
+      return kOnBulkDataEntryPref;
     case AnalysisConnector::FILE_DOWNLOADED:
       return kOnFileDownloadedPref;
     case AnalysisConnector::FILE_ATTACHED:

@@ -75,12 +75,8 @@ void HistogramsMessageHandler::HandleRequestHistograms(
   for (base::HistogramBase* histogram :
        base::StatisticsRecorder::Sort(base::StatisticsRecorder::WithName(
            base::StatisticsRecorder::GetHistograms(), query))) {
-    // TODO(crbug.com/809820): Return the histogram object as a DictionaryValue
-    // for better UI that is built client side.
-    std::string ascii_output;
-    histogram->WriteHTMLGraph(&ascii_output);
-    ascii_output += "<br><hr><br>";
-    histograms_list.Append(std::move(ascii_output));
+    base::DictionaryValue histogram_dict = histogram->ToGraphDict();
+    histograms_list.Append(std::move(histogram_dict));
   }
 
   ResolveJavascriptCallback(base::Value(callback_id),

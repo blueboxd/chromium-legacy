@@ -156,8 +156,8 @@ void GcmInternalsUIMessageHandler::RegisterMessages() {
 
 }  // namespace
 
-GCMInternalsUI::GCMInternalsUI(web::WebUIIOS* web_ui)
-    : web::WebUIIOSController(web_ui) {
+GCMInternalsUI::GCMInternalsUI(web::WebUIIOS* web_ui, const std::string& host)
+    : web::WebUIIOSController(web_ui, host) {
   // Set up the chrome://gcm-internals source.
   web::WebUIIOSDataSource* html_source =
       web::WebUIIOSDataSource::Create(kChromeUIGCMInternalsHost);

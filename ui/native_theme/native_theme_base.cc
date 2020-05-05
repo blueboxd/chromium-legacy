@@ -7,8 +7,9 @@
 #include <limits>
 #include <memory>
 
+#include "base/check.h"
 #include "base/command_line.h"
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "base/numerics/ranges.h"
 #include "build/build_config.h"
 #include "cc/paint/paint_flags.h"

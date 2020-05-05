@@ -9,7 +9,7 @@
 
 #include "base/android/jni_android.h"
 #include "base/android/scoped_java_ref.h"
-#include "components/autofill_assistant/browser/interactions.pb.h"
+#include "components/autofill_assistant/browser/generic_ui.pb.h"
 
 namespace autofill_assistant {
 namespace android_events {

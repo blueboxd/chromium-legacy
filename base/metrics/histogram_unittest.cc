@@ -28,6 +28,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/test/gtest_util.h"
 #include "base/time/time.h"
+#include "base/values.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -916,22 +917,24 @@ TEST_P(HistogramTest, WriteAscii) {
   EXPECT_THAT(output, testing::MatchesRegex(kOutputFormatRe));
 }
 
-TEST_P(HistogramTest, WriteHTMLGraph) {
+TEST_P(HistogramTest, ToGraphDict) {
   HistogramBase* histogram =
       LinearHistogram::FactoryGet("HTMLOut", /*minimum=*/1, /*maximum=*/10,
                                   /*bucket_count=*/5, HistogramBase::kNoFlags);
   histogram->AddCount(/*sample=*/4, /*value=*/5);
 
-  std::string output;
-  histogram->WriteHTMLGraph(&output);
+  base::DictionaryValue output = histogram->ToGraphDict();
+  std::string* header = output.FindStringKey("header");
+  std::string* body = output.FindStringKey("body");
 
-  const char kOutputFormatRe[] =
-      R"(<PRE><h4>Histogram: HTMLOut recorded 5 samples, mean = 4\.0.*<\/h4>)"
-      R"(0  \.\.\. <br>)"
-      R"(4  -+O \(5 = 100\.0%\) \{0\.0%\}<br>)"
-      R"(7  \.\.\. <br><\/PRE>)";
+  const char kOutputHeaderFormatRe[] =
+      R"(Histogram: HTMLOut recorded 5 samples, mean = 4\.0.*)";
+  const char kOutputBodyFormatRe[] = R"(0  \.\.\. \n)"
+                                     R"(4  -+O \(5 = 100\.0%\) \{0\.0%\}\n)"
+                                     R"(7  \.\.\. \n)";
 
-  EXPECT_THAT(output, testing::MatchesRegex(kOutputFormatRe));
+  EXPECT_THAT(*header, testing::MatchesRegex(kOutputHeaderFormatRe));
+  EXPECT_THAT(*body, testing::MatchesRegex(kOutputBodyFormatRe));
 }
 
 }  // namespace base

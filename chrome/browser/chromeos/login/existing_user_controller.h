@@ -146,6 +146,11 @@ class ExistingUserController : public LoginDisplay::Delegate,
   // destroyed).
   bool password_changed() const;
 
+  // Returns true if auto launch is scheduled and the timer is running.
+  bool IsAutoLoginTimerRunningForTesting() const {
+    return auto_login_timer_ && auto_login_timer_->IsRunning();
+  }
+
  private:
   friend class ExistingUserControllerTest;
   friend class ExistingUserControllerAutoLoginTest;

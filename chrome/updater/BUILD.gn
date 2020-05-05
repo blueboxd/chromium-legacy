@@ -54,6 +54,7 @@ if (is_win || is_mac) {
       "registration_data.h",
       "unzipper.cc",
       "unzipper.h",
+      "update_service.cc",
       "update_service.h",
       "util.cc",
       "util.h",

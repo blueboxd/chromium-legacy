@@ -69,6 +69,7 @@ struct ReportingSettings {
   std::vector<GURL> reporting_urls;
 };
 
+// Returns the pref path corresponding to an analysis connector.
 const char* ConnectorPref(AnalysisConnector connector);
 
 }  // namespace enterprise_connectors

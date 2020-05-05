@@ -5,12 +5,14 @@
 #ifndef IOS_CHROME_BROWSER_UI_WEBUI_OMAHA_UI_H_
 #define IOS_CHROME_BROWSER_UI_WEBUI_OMAHA_UI_H_
 
+#include <string>
+
 #include "base/macros.h"
 #include "ios/web/public/webui/web_ui_ios_controller.h"
 
 class OmahaUI : public web::WebUIIOSController {
  public:
-  explicit OmahaUI(web::WebUIIOS* web_ui);
+  explicit OmahaUI(web::WebUIIOS* web_ui, const std::string& host);
   ~OmahaUI() override;
 
  private:

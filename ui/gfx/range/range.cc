@@ -8,7 +8,6 @@
 
 #include <algorithm>
 
-#include "base/logging.h"
 #include "base/strings/stringprintf.h"
 
 namespace gfx {

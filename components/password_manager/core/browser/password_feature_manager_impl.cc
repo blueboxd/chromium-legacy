@@ -46,8 +46,13 @@ bool PasswordFeatureManagerImpl::ShouldShowAccountStorageReSignin() const {
                                                          sync_service_);
 }
 
-void PasswordFeatureManagerImpl::SetAccountStorageOptIn(bool opt_in) {
-  features_util::SetAccountStorageOptIn(pref_service_, sync_service_, opt_in);
+void PasswordFeatureManagerImpl::OptInToAccountStorage() {
+  features_util::OptInToAccountStorage(pref_service_, sync_service_);
+}
+
+void PasswordFeatureManagerImpl::OptOutOfAccountStorageAndClearSettings() {
+  features_util::OptOutOfAccountStorageAndClearSettings(pref_service_,
+                                                        sync_service_);
 }
 
 void PasswordFeatureManagerImpl::SetDefaultPasswordStore(

@@ -4,7 +4,7 @@
 
 #include "ui/base/ime/win/mock_tsf_bridge.h"
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "ui/base/ime/text_input_client.h"
 
 namespace ui {

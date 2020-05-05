@@ -107,7 +107,8 @@ class PLATFORM_EXPORT BlinkGC final {
     kIncrementalV8FollowupGC = 9,
     kUnifiedHeapGC = 10,
     kUnifiedHeapForMemoryReductionGC = 11,
-    kMaxValue = kUnifiedHeapForMemoryReductionGC,
+    kUnifiedHeapForcedForTestingGC = 12,
+    kMaxValue = kUnifiedHeapForcedForTestingGC,
   };
 
 #define DeclareArenaIndex(name) k##name##ArenaIndex,

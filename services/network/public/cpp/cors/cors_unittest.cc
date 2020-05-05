@@ -391,6 +391,8 @@ TEST_F(CorsTest, SafelistedSecCHLang) {
 TEST_F(CorsTest, SafelistedSecCHUA) {
   EXPECT_TRUE(IsCorsSafelistedHeader("Sec-CH-UA", "\"User Agent!\""));
   EXPECT_TRUE(IsCorsSafelistedHeader("Sec-CH-UA-Platform", "\"Platform!\""));
+  EXPECT_TRUE(IsCorsSafelistedHeader("Sec-CH-UA-Platform-Version",
+                                     "\"Platform-Version!\""));
   EXPECT_TRUE(IsCorsSafelistedHeader("Sec-CH-UA-Arch", "\"Architecture!\""));
   EXPECT_TRUE(IsCorsSafelistedHeader("Sec-CH-UA-Model", "\"Model!\""));
 

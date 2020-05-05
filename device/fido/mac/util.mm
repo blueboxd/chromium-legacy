@@ -17,10 +17,10 @@
 #include "base/mac/scoped_nsobject.h"
 #include "base/strings/string_number_conversions.h"
 #include "components/cbor/writer.h"
-#include "device/fido/ec_public_key.h"
 #include "device/fido/fido_constants.h"
 #include "device/fido/fido_parsing_utils.h"
 #include "device/fido/mac/keychain.h"
+#include "device/fido/p256_public_key.h"
 
 namespace device {
 namespace fido {
@@ -39,9 +39,9 @@ constexpr std::array<uint8_t, 16> kAaguid = {0xad, 0xce, 0x00, 0x02, 0x35, 0xbc,
                                              0xf1, 0xf0, 0x55, 0x03};
 
 // SecKeyRefToECPublicKey converts a SecKeyRef for a public key into an
-// equivalent |ECPublicKey| instance. It returns |nullptr| if the key cannot be
-// converted.
-std::unique_ptr<ECPublicKey> SecKeyRefToECPublicKey(SecKeyRef public_key_ref)
+// equivalent |P256PublicKey| instance. It returns |nullptr| if the key cannot
+// be converted.
+std::unique_ptr<P256PublicKey> SecKeyRefToECPublicKey(SecKeyRef public_key_ref)
     API_AVAILABLE(macosx(10.12.2)) {
   CHECK(public_key_ref);
   ScopedCFTypeRef<CFErrorRef> err;
@@ -53,8 +53,8 @@ std::unique_ptr<ECPublicKey> SecKeyRefToECPublicKey(SecKeyRef public_key_ref)
   }
   base::span<const uint8_t> key_data =
       base::make_span(CFDataGetBytePtr(data_ref), CFDataGetLength(data_ref));
-  auto key =
-      ECPublicKey::ParseX962Uncompressed(fido_parsing_utils::kEs256, key_data);
+  auto key = P256PublicKey::ParseX962Uncompressed(fido_parsing_utils::kEs256,
+                                                  key_data);
   if (!key) {
     LOG(ERROR) << "Unexpected public key format: "
                << base::HexEncode(key_data.data(), key_data.size());
@@ -87,7 +87,7 @@ std::array<uint8_t, 4> GetTimestampSignatureCounter() {
 COMPONENT_EXPORT(DEVICE_FIDO)
 base::Optional<AttestedCredentialData> MakeAttestedCredentialData(
     std::vector<uint8_t> credential_id,
-    std::unique_ptr<ECPublicKey> public_key) {
+    std::unique_ptr<P256PublicKey> public_key) {
   if (credential_id.empty() || credential_id.size() > 255) {
     LOG(ERROR) << "invalid credential id: "
                << base::HexEncode(credential_id.data(), credential_id.size());

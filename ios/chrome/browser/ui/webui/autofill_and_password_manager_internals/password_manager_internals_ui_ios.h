@@ -11,7 +11,8 @@
 // The implementation for the chrome://password-manager-internals page.
 class PasswordManagerInternalsUIIOS : public web::WebUIIOSController {
  public:
-  explicit PasswordManagerInternalsUIIOS(web::WebUIIOS* web_ui);
+  explicit PasswordManagerInternalsUIIOS(web::WebUIIOS* web_ui,
+                                         const std::string& host);
   ~PasswordManagerInternalsUIIOS() override;
 
  private:

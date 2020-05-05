@@ -9,8 +9,8 @@
 #include <memory>
 #include <string>
 
+#include "base/check_op.h"
 #include "base/i18n/number_formatting.h"
-#include "base/logging.h"
 #include "base/macros.h"
 #include "cc/paint/paint_flags.h"
 #include "third_party/skia/include/core/SkPath.h"

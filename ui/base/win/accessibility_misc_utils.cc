@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 #include "ui/base/win/accessibility_misc_utils.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "ui/base/win/atl_module.h"
 
 namespace base {

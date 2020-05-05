@@ -4,7 +4,7 @@
 
 #include "ui/gfx/win/text_analysis_source.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 
 namespace gfx {
 namespace win {

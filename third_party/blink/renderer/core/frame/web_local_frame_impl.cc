@@ -834,7 +834,7 @@ void WebLocalFrameImpl::CollectGarbageForTesting() {
     return;
   if (!GetFrame()->GetSettings()->GetScriptEnabled())
     return;
-  V8GCController::CollectAllGarbageForTesting(v8::Isolate::GetCurrent());
+  ThreadState::Current()->CollectAllGarbageForTesting();
 }
 
 v8::Local<v8::Value> WebLocalFrameImpl::ExecuteScriptAndReturnValue(

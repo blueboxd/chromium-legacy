@@ -7,9 +7,10 @@
 
 #include "ui/base/webui/jstemplate_builder.h"
 
+#include "base/check.h"
 #include "base/json/json_file_value_serializer.h"
 #include "base/json/json_string_value_serializer.h"
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "base/strings/string_util.h"
 #include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"

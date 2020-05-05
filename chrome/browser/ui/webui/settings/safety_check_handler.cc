@@ -84,7 +84,7 @@ SafetyCheckHandler::SafetyCheckHandler() = default;
 
 SafetyCheckHandler::~SafetyCheckHandler() = default;
 
-void SafetyCheckHandler::PerformSafetyCheck() {
+void SafetyCheckHandler::SendSafetyCheckStartedWebUiUpdates() {
   AllowJavascript();
 
   // Reset status of parent and children, which might have been set from a
@@ -113,8 +113,9 @@ void SafetyCheckHandler::PerformSafetyCheck() {
       kExtensionsEvent, static_cast<int>(extensions_status_),
       GetStringForExtensions(extensions_status_, Blocklisted(0),
                              ReenabledUser(0), ReenabledAdmin(0)));
+}
 
-  // Run safety check.
+void SafetyCheckHandler::PerformSafetyCheck() {
   // Checks common to desktop, Android, and iOS are handled by
   // safety_check::SafetyCheck.
   safety_check_.reset(new safety_check::SafetyCheck(this));
@@ -166,7 +167,16 @@ SafetyCheckHandler::SafetyCheckHandler(
       extension_service_(extension_service) {}
 
 void SafetyCheckHandler::HandlePerformSafetyCheck(const base::ListValue* args) {
-  PerformSafetyCheck();
+  SendSafetyCheckStartedWebUiUpdates();
+
+  // Run safety check after a delay. This ensures that the "running" state is
+  // visible to users for each safety check child, even if a child would
+  // otherwise complete in an instant.
+  base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE,
+      base::BindOnce(&SafetyCheckHandler::PerformSafetyCheck,
+                     weak_ptr_factory_.GetWeakPtr()),
+      base::TimeDelta::FromSeconds(1));
 }
 
 void SafetyCheckHandler::HandleGetParentRanDisplayString(

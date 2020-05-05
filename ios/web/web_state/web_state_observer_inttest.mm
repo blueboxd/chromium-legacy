@@ -1705,8 +1705,13 @@ TEST_F(WebStateObserverTest, ReloadPostNavigation) {
   NavigationContext* context = nullptr;
   int32_t nav_id = 0;
   EXPECT_CALL(observer_, DidStartLoading(web_state()));
-  // ShouldAllowRequest() not called because repost is caught before calling
-  // policy decider.
+
+  WebStatePolicyDecider::RequestInfo form_reload_request_info(
+      ui::PageTransition::PAGE_TRANSITION_RELOAD,
+      /*target_main_frame=*/true, /*has_user_gesture=*/false);
+  EXPECT_CALL(*decider_,
+              ShouldAllowRequest(_, RequestInfoMatch(form_reload_request_info)))
+      .WillOnce(Return(WebStatePolicyDecider::PolicyDecision::Allow()));
 
   EXPECT_CALL(observer_, DidStartNavigation(web_state(), _))
       .WillOnce(VerifyPostStartedContext(

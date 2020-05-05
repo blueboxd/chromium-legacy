@@ -1198,6 +1198,12 @@ TEST_F(CSPDirectiveListTest, ReportEndpointsProperlyParsed) {
        ContentSecurityPolicySource::kHTTP,
        {"https://example.com", "https://example2.com"},
        false},
+      {"script-src 'self'; report-uri https://example.com "
+       "http://example2.com /relative/path",
+       // Mixed Content report-uri endpoint is ignored.
+       ContentSecurityPolicySource::kHTTP,
+       {"https://example.com", "/relative/path"},
+       false},
       {"script-src 'self'; report-uri https://example.com",
        ContentSecurityPolicySource::kMeta,
        {},

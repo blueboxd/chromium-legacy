@@ -17,8 +17,8 @@
 #include "base/containers/span.h"
 #include "device/fido/attested_credential_data.h"
 #include "device/fido/authenticator_data.h"
-#include "device/fido/ec_public_key.h"
 #include "device/fido/fido_constants.h"
+#include "device/fido/p256_public_key.h"
 
 namespace device {
 namespace fido {
@@ -30,7 +30,7 @@ namespace mac {
 COMPONENT_EXPORT(DEVICE_FIDO)
 base::Optional<AttestedCredentialData> MakeAttestedCredentialData(
     std::vector<uint8_t> credential_id,
-    std::unique_ptr<ECPublicKey> public_key);
+    std::unique_ptr<P256PublicKey> public_key);
 
 // MakeAuthenticatorData returns an AuthenticatorData instance for the Touch ID
 // authenticator with the given Relying Party ID and AttestedCredentialData,
@@ -50,9 +50,9 @@ base::Optional<std::vector<uint8_t>> GenerateSignature(
     SecKeyRef private_key) API_AVAILABLE(macosx(10.12.2));
 
 // SecKeyRefToECPublicKey converts a SecKeyRef for a public key into an
-// equivalent |ECPublicKey| instance. It returns |nullptr| if the key cannot be
-// converted.
-std::unique_ptr<ECPublicKey> SecKeyRefToECPublicKey(SecKeyRef public_key_ref)
+// equivalent |P256PublicKey| instance. It returns |nullptr| if the key cannot
+// be converted.
+std::unique_ptr<P256PublicKey> SecKeyRefToECPublicKey(SecKeyRef public_key_ref)
     API_AVAILABLE(macosx(10.12.2));
 
 }  // namespace mac

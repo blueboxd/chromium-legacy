@@ -7,7 +7,8 @@
 #include <stddef.h>
 
 #include "base/auto_reset.h"
-#include "base/logging.h"
+#include "base/check_op.h"
+#include "base/notreached.h"
 #include "ui/events/gesture_event_details.h"
 
 namespace ui {

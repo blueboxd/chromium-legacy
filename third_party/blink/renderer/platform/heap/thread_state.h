@@ -284,10 +284,10 @@ class PLATFORM_EXPORT ThreadState final {
   bool IsUnifiedHeapGC() const {
     return current_gc_data_.reason == BlinkGC::GCReason::kUnifiedHeapGC ||
            current_gc_data_.reason ==
-               BlinkGC::GCReason::kUnifiedHeapForMemoryReductionGC;
+               BlinkGC::GCReason::kUnifiedHeapForMemoryReductionGC ||
+           current_gc_data_.reason ==
+               BlinkGC::GCReason::kUnifiedHeapForcedForTestingGC;
   }
-
-  void EnableCompactionForNextGCForTesting();
 
   bool FinishIncrementalMarkingIfRunning(BlinkGC::CollectionType,
                                          BlinkGC::StackState,
@@ -383,11 +383,22 @@ class PLATFORM_EXPORT ThreadState final {
                                 BlinkGC::GCReason);
 
   // Forced garbage collection for testing:
-  // - Performs stand-alone garbage collections.
+  // - Performs unified heap garbage collections if ThreadState is attached to a
+  //   v8::Isolate using ThreadState::AttachToIsolate.
+  // - Otherwise, performs stand-alone garbage collections.
   // - Collects garbage as long as live memory decreases (capped at 5).
   void CollectAllGarbageForTesting(
       BlinkGC::StackState stack_state =
           BlinkGC::StackState::kNoHeapPointersOnStack);
+
+  // Enables compaction for next garbage collection.
+  void EnableCompactionForNextGCForTesting();
+
+  bool RequiresForcedGCForTesting() const {
+    return current_gc_data_.stack_state ==
+               BlinkGC::StackState::kHeapPointersOnStack &&
+           !forced_scheduled_gc_for_testing_;
+  }
 
  private:
   class IncrementalMarkingScheduler;
@@ -593,6 +604,8 @@ class PLATFORM_EXPORT ThreadState final {
   bool heap_pointers_on_stack_forced_ = false;
   bool incremental_marking_ = false;
   bool should_optimize_for_load_time_ = false;
+  bool forced_unified_heap_gc_for_testing_ = false;
+  bool forced_scheduled_gc_for_testing_ = false;
   size_t no_allocation_count_ = 0;
   size_t gc_forbidden_count_ = 0;
   size_t static_persistent_registration_disabled_count_ = 0;
@@ -601,6 +614,9 @@ class PLATFORM_EXPORT ThreadState final {
   GCPhase gc_phase_ = GCPhase::kNone;
   BlinkGC::GCReason reason_for_scheduled_gc_ =
       BlinkGC::GCReason::kForcedGCForTesting;
+  struct {
+    BlinkGC::GCReason reason;
+  } unified_heap_forced_gc_params_;
 
   using PreFinalizerCallback = bool (*)(const LivenessBroker&, void*);
   using PreFinalizer = std::pair<void*, PreFinalizerCallback>;

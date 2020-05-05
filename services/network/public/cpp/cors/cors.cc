@@ -456,6 +456,7 @@ bool IsCorsSafelistedHeader(
       "sec-ch-ua-model",
       "sec-ch-ua-mobile",
       "sec-ch-ua-full-version",
+      "sec-ch-ua-platform-version",
   };
   if (std::find(std::begin(safe_names), std::end(safe_names), lower_name) ==
       std::end(safe_names))

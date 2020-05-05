@@ -220,6 +220,7 @@ crbug.com/853977 [ Linux ] virtual/streaming-preload/http/tests/fetch/chromium/c
 crbug.com/853977 [ Linux ] virtual/streaming-preload/http/tests/fetch/chromium/release-handle-crash.html [ Slow ]
 
 crbug.com/864887 [ Mac ] fast/scroll-snap/snaps-after-scrollbar-scrolling.html [ Slow ]
+crbug.com/864887 [ Mac ] virtual/threaded/fast/scroll-snap/snaps-after-scrollbar-scrolling.html [ Slow ]
 
 crbug.com/865262 [ Mac ] media/controls/text-track-menu-pointer-selection.html [ Slow ]
 

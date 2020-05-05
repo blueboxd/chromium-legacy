@@ -90,6 +90,6 @@ void AccountStorageAuthHelper::OnOptInReauthCompleted(
 
   bool succeeded = result == signin::ReauthResult::kSuccess;
   if (succeeded)
-    password_feature_manager_->SetAccountStorageOptIn(true);
+    password_feature_manager_->OptInToAccountStorage();
   std::move(reauth_callback).Run(ReauthSucceeded(succeeded));
 }

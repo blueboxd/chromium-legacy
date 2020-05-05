@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# This file has been generated with testing/libfuzzer/dictionary_generator.py
+# This block has been generated with testing/libfuzzer/dictionary_generator.py
 # using url_parse_fuzzer binary and RFC 3986.
 "DNS"
 "text"
@@ -401,3 +401,5 @@
 "H.,"
 "\"MIME"
 
+# This comes from https://crbug.com/1075515.
+"FilEsysteM:htTp:E=/."

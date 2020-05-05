@@ -41,7 +41,7 @@ class App : public base::RefCountedThreadSafe<App> {
 
   // Triggers program shutdown. Must be called on the main sequence. The program
   // will exit with the specified code.
-  void Shutdown(int exitCode);
+  void Shutdown(int exit_code);
 
  private:
   // Allows initialization of the thread pool for specific environments, in

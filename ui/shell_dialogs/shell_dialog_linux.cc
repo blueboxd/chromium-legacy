@@ -4,7 +4,7 @@
 
 #include "ui/shell_dialogs/shell_dialog_linux.h"
 
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "ui/shell_dialogs/select_file_policy.h"
 
 namespace {

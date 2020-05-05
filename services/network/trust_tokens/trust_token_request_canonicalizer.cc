@@ -32,7 +32,7 @@ TrustTokenRequestCanonicalizer::Canonicalize(
   cbor::Value::MapValue canonicalized_request;
 
   // Here and below, the lines beginning with numbers are a reproduction of the
-  // normative pseudocode form the design doc.
+  // normative pseudocode from the design doc.
   // 1. If sign-request-data is 'include', add 'url': <request_url> to the
   // structure.
   // 1a. The key and value are both of CBOR type “text string”.

@@ -111,9 +111,8 @@ TEST_F(WebViewPasswordManagerClientTest, PromptIfAllConditionsPass) {
   CoreAccountInfo account_info;
   account_info.gaia = "1337";
   sync_service_.SetAuthenticatedAccountInfo(account_info);
-  password_manager::features_util::SetAccountStorageOptIn(&pref_service_,
-                                                          &sync_service_,
-                                                          /*opt_in=*/true);
+  password_manager::features_util::OptInToAccountStorage(&pref_service_,
+                                                         &sync_service_);
 
   EXPECT_TRUE(password_manager_client_->PromptUserToSaveOrUpdatePassword(
       std::move(password_manager_for_ui), /*update_password=*/false));

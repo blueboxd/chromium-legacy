@@ -4,7 +4,8 @@
 
 #include <stdint.h>
 
-#include "base/logging.h"
+#include "base/check.h"
+#include "base/notreached.h"
 #include "base/time/time.h"
 #include "base/win/windowsx_shim.h"
 #include "ui/events/event_constants.h"

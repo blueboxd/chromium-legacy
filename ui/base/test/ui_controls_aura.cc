@@ -5,7 +5,7 @@
 #include "ui/base/test/ui_controls_aura.h"
 
 #include "base/callback.h"
-#include "base/logging.h"
+#include "base/check.h"
 
 namespace ui_controls {
 namespace {

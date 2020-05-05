@@ -6,8 +6,8 @@
 
 #include <gtk-primary-selection-client-protocol.h>
 
+#include "base/check.h"
 #include "base/files/file_util.h"
-#include "base/logging.h"
 #include "ui/base/clipboard/clipboard_constants.h"
 #include "ui/ozone/platform/wayland/host/wayland_connection.h"
 

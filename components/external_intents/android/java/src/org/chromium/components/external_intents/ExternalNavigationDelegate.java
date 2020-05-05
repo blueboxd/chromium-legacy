@@ -157,7 +157,29 @@ public interface ExternalNavigationDelegate {
     /**
      * @return Whether this delegate has a valid tab available.
      */
-    public boolean hasValidTab();
+    boolean hasValidTab();
+
+    /**
+     * @return whether this delegate supports creation of new tabs. If this method returns false,
+     * all URLs loaded by ExternalNavigationHandler will be loaded in the current tab and
+     * loadUrlInNewTab() will never be invoked.
+     */
+    boolean supportsCreatingNewTabs();
+
+    /**
+     * Loads |url| in a new tab.
+     * @param url The URL to load.
+     * @param launchIncognito whether the new tab should be incognito.
+     */
+    void loadUrlInNewTab(final String url, final boolean launchIncognito);
+
+    /**
+     * @return whether it's possible to load a URL in the current tab.
+     */
+    boolean canLoadUrlInCurrentTab();
+
+    /* Invoked when the tab associated with this delegate should be closed. */
+    void closeTab();
 
     /**
      * @param intent The intent to launch.

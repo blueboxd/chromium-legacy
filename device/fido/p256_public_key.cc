@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "device/fido/ec_public_key.h"
+#include "device/fido/p256_public_key.h"
 
 #include <utility>
 
@@ -23,7 +23,8 @@ constexpr size_t kFieldElementLength = 32;
 }  // namespace
 
 // static
-std::unique_ptr<ECPublicKey> ECPublicKey::ExtractFromU2fRegistrationResponse(
+std::unique_ptr<P256PublicKey>
+P256PublicKey::ExtractFromU2fRegistrationResponse(
     std::string algorithm,
     base::span<const uint8_t> u2f_data) {
   return ParseX962Uncompressed(
@@ -32,7 +33,7 @@ std::unique_ptr<ECPublicKey> ECPublicKey::ExtractFromU2fRegistrationResponse(
 }
 
 // static
-std::unique_ptr<ECPublicKey> ECPublicKey::ParseX962Uncompressed(
+std::unique_ptr<P256PublicKey> P256PublicKey::ParseX962Uncompressed(
     std::string algorithm,
     base::span<const uint8_t> input) {
   if (input.empty() || input[0] != kUncompressedKey)
@@ -48,13 +49,13 @@ std::unique_ptr<ECPublicKey> ECPublicKey::ParseX962Uncompressed(
   if (y.empty())
     return nullptr;
 
-  return std::make_unique<ECPublicKey>(std::move(algorithm), std::move(x),
-                                       std::move(y));
+  return std::make_unique<P256PublicKey>(std::move(algorithm), std::move(x),
+                                         std::move(y));
 }
 
-ECPublicKey::ECPublicKey(std::string algorithm,
-                         std::vector<uint8_t> x,
-                         std::vector<uint8_t> y)
+P256PublicKey::P256PublicKey(std::string algorithm,
+                             std::vector<uint8_t> x,
+                             std::vector<uint8_t> y)
     : PublicKey(std::move(algorithm)),
       x_coordinate_(std::move(x)),
       y_coordinate_(std::move(y)) {
@@ -62,9 +63,9 @@ ECPublicKey::ECPublicKey(std::string algorithm,
   DCHECK_EQ(y_coordinate_.size(), kFieldElementLength);
 }
 
-ECPublicKey::~ECPublicKey() = default;
+P256PublicKey::~P256PublicKey() = default;
 
-std::vector<uint8_t> ECPublicKey::EncodeAsCOSEKey() const {
+std::vector<uint8_t> P256PublicKey::EncodeAsCOSEKey() const {
   cbor::Value::MapValue map;
   map[cbor::Value(1)] = cbor::Value(2);
   map[cbor::Value(3)] = cbor::Value(-7);

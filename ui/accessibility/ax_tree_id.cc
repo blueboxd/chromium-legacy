@@ -7,8 +7,9 @@
 #include <algorithm>
 #include <iostream>
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/no_destructor.h"
+#include "base/notreached.h"
 #include "base/value_conversions.h"
 #include "base/values.h"
 #include "ui/accessibility/ax_enums.mojom.h"

@@ -74,9 +74,8 @@ class PLATFORM_EXPORT CPUTimeBudgetPool : public BudgetPool {
                          base::TimeTicks start_time,
                          base::TimeTicks end_time) final;
   bool CanRunTasksAt(base::TimeTicks moment, bool is_wake_up) const final;
-  base::Optional<base::TimeTicks> GetTimeTasksCanRunUntil(
-      base::TimeTicks now,
-      bool is_wake_up) const final;
+  base::TimeTicks GetTimeTasksCanRunUntil(base::TimeTicks now,
+                                          bool is_wake_up) const final;
   base::TimeTicks GetNextAllowedRunTime(
       base::TimeTicks desired_run_time) const final;
   void OnQueueNextWakeUpChanged(base::sequence_manager::TaskQueue* queue,

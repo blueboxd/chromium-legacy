@@ -94,12 +94,11 @@ class BASE_EXPORT StatisticsRecorder {
   static const BucketRanges* RegisterOrDeleteDuplicateRanges(
       const BucketRanges* ranges);
 
-  // Methods for appending histogram data to a string.  Only histograms which
+  // A method for appending histogram data to a string. Only histograms which
   // have |query| as a substring are written to |output| (an empty string will
   // process all registered histograms).
   //
-  // These methods are thread safe.
-  static void WriteHTMLGraph(const std::string& query, std::string* output);
+  // This method is thread safe.
   static void WriteGraph(const std::string& query, std::string* output);
 
   // Returns the histograms with |verbosity_level| as the serialization

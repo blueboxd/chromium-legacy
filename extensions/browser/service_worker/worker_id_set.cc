@@ -43,7 +43,8 @@ bool WorkerIdSet::Remove(const WorkerId& worker_id) {
   return workers_.erase(worker_id) > 0;
 }
 
-void WorkerIdSet::RemoveAllForExtension(const ExtensionId& extension_id) {
+std::vector<WorkerId> WorkerIdSet::GetAllForExtension(
+    const ExtensionId& extension_id) const {
   // Construct a key that is guaranteed to be smaller than any key given a
   // |render_process_id|. This facilitates the usage of lower_bound to achieve
   // lg(n) runtime.
@@ -52,13 +53,13 @@ void WorkerIdSet::RemoveAllForExtension(const ExtensionId& extension_id) {
   auto begin_range = workers_.lower_bound(lowest_id);
   if (begin_range == workers_.end() ||
       begin_range->extension_id != extension_id) {
-    return;  // No entries.
+    return {};  // No entries.
   }
 
   auto end_range = std::next(begin_range);
   while (end_range != workers_.end() && end_range->extension_id == extension_id)
     ++end_range;
-  workers_.erase(begin_range, end_range);
+  return std::vector<WorkerId>(begin_range, end_range);
 }
 
 bool WorkerIdSet::Contains(const WorkerId& worker_id) const {
@@ -68,7 +69,7 @@ bool WorkerIdSet::Contains(const WorkerId& worker_id) const {
 std::vector<WorkerId> WorkerIdSet::GetAllForExtension(
     const ExtensionId& extension_id,
     int render_process_id) const {
-  // See RemoveAllForExtension() notes for |id| construction.
+  // See other GetAllForExtension's notes for |id| construction.
   WorkerId id{extension_id, render_process_id, kSmallestVersionId,
               kSmallestThreadId};
 

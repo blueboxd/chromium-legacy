@@ -178,5 +178,22 @@ void ExitScreenSyncConsent() {
 #endif
 }
 
+LanguageReloadObserver::LanguageReloadObserver(WelcomeScreen* welcome_screen)
+    : welcome_screen_(welcome_screen) {
+  welcome_screen_->AddObserver(this);
+}
+
+void LanguageReloadObserver::OnLanguageListReloaded() {
+  run_loop_.Quit();
+}
+
+void LanguageReloadObserver::Wait() {
+  run_loop_.Run();
+}
+
+LanguageReloadObserver::~LanguageReloadObserver() {
+  welcome_screen_->RemoveObserver(this);
+}
+
 }  // namespace test
 }  // namespace chromeos

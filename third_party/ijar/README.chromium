@@ -1,6 +1,6 @@
 Name: ijar
-URL: https://github.com/bazelbuild/bazel/tree/1.1.0
-Version: 1.1.0
+URL: https://github.com/bazelbuild/bazel
+Version: b786db0994a4c4c65e3f93a4f6fa268780caff9c
 License: Apache 2.0
 License File: NOT_SHIPPED
 Security Critical: No

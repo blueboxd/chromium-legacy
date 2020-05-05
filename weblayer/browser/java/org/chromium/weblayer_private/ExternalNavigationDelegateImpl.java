@@ -11,7 +11,6 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.os.StrictMode;
-import android.text.TextUtils;
 
 import androidx.annotation.VisibleForTesting;
 
@@ -24,9 +23,6 @@ import org.chromium.components.external_intents.ExternalNavigationHandler.Overri
 import org.chromium.components.external_intents.ExternalNavigationParams;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.WebContents;
-import org.chromium.content_public.common.Referrer;
-import org.chromium.network.mojom.ReferrerPolicy;
-import org.chromium.ui.base.PageTransition;
 import org.chromium.ui.base.PermissionCallback;
 import org.chromium.ui.base.WindowAndroid;
 
@@ -193,14 +189,9 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
             public void onRequestPermissionsResult(String[] permissions, int[] grantResults) {
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED
                         && hasValidTab()) {
-                    String url = intent.getDataString();
-                    LoadUrlParams loadUrlParams =
-                            new LoadUrlParams(url, PageTransition.AUTO_TOPLEVEL);
-                    if (!TextUtils.isEmpty(referrerUrl)) {
-                        Referrer referrer = new Referrer(referrerUrl, ReferrerPolicy.ALWAYS);
-                        loadUrlParams.setReferrer(referrer);
-                    }
-                    mTab.loadUrl(loadUrlParams);
+                    ExternalNavigationHandler.loadUrlFromIntent(referrerUrl, intent.getDataString(),
+                            null, ExternalNavigationDelegateImpl.this, needsToCloseTab,
+                            mTab.getProfile().isIncognito());
                 } else {
                     // TODO(tedchoc): Show an indication to the user that the navigation failed
                     //                instead of silently dropping it on the floor.
@@ -230,7 +221,30 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
     @Override
     public void maybeSetWindowId(Intent intent) {}
 
-    private void closeTab() {
+    @Override
+    public boolean supportsCreatingNewTabs() {
+        // In WebLayer all URLs that ExternalNavigationHandler loads internally are loaded within
+        // the current tab; this flow is sufficient for WebLayer from a UX POV, and there is no
+        // reason to add the complexity of a flow to create new tabs here. In particular, in Chrome
+        // that new tab creation is done by launching an activity targeted at the Chrome package.
+        // This would not work for WebLayer as the embedder does not in general handle incoming
+        // browsing intents.
+        return false;
+    }
+
+    @Override
+    public void loadUrlInNewTab(final String url, final boolean launchIncognito) {
+        // Should never be invoked based on the implementation of supportsCreatingNewTabs().
+        assert false;
+    }
+
+    @Override
+    public boolean canLoadUrlInCurrentTab() {
+        return true;
+    }
+
+    @Override
+    public void closeTab() {
         InterceptNavigationDelegateClientImpl.closeTab(mTab);
     }
 

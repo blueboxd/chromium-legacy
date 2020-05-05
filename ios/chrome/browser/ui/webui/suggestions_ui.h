@@ -5,6 +5,8 @@
 #ifndef IOS_CHROME_BROWSER_UI_WEBUI_SUGGESTIONS_UI_H_
 #define IOS_CHROME_BROWSER_UI_WEBUI_SUGGESTIONS_UI_H_
 
+#include <string>
+
 #include "base/macros.h"
 #include "ios/web/public/webui/web_ui_ios_controller.h"
 
@@ -18,7 +20,7 @@ namespace suggestions {
 // SuggestionsService data.
 class SuggestionsUI : public web::WebUIIOSController {
  public:
-  explicit SuggestionsUI(web::WebUIIOS* web_ui);
+  explicit SuggestionsUI(web::WebUIIOS* web_ui, const std::string& host);
   ~SuggestionsUI() override;
 
  private:

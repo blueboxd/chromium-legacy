@@ -6,9 +6,9 @@
 
 #include <utility>
 
+#include "base/check.h"
 #include "base/command_line.h"
 #include "base/containers/flat_set.h"
-#include "base/logging.h"
 #include "base/macros.h"
 #include "base/no_destructor.h"
 #include "base/scoped_observer.h"

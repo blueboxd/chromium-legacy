@@ -4,7 +4,7 @@
 
 #include "ui/gfx/overlay_transform_utils.h"
 
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 
 namespace gfx {

@@ -5984,7 +5984,6 @@
       },
       {
         "args": [
-          "--extra-browser-args=--enable-crashpad",
           "--xvfb",
           "--jobs=1"
         ],
@@ -7822,7 +7821,6 @@
       },
       {
         "args": [
-          "--extra-browser-args=--enable-crashpad",
           "--xvfb",
           "--jobs=1"
         ],
@@ -9819,7 +9817,6 @@
       },
       {
         "args": [
-          "--extra-browser-args=--enable-crashpad",
           "--xvfb",
           "--jobs=1"
         ],

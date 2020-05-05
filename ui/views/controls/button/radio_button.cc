@@ -4,7 +4,7 @@
 
 #include "ui/views/controls/button/radio_button.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/resource/resource_bundle.h"

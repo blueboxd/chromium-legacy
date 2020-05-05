@@ -211,12 +211,6 @@ cr.define('cr.ui.login', function() {
     userCount_: 0,
 
     /**
-     * Number of reloadContent() calls since start for testing.
-     * @type {number}
-     */
-    reloadContentNumEvents_: 0,
-
-    /**
      * Stored OOBE configuration for newly registered screens.
      * @type {!OobeTypes.OobeConfiguration}
      */
@@ -809,7 +803,6 @@ cr.define('cr.ui.login', function() {
       var currentScreenId = this.screens_[this.currentStep_];
       var currentScreen = $(currentScreenId);
       this.updateScreenSize(currentScreen);
-      ++this.reloadContentNumEvents_;
     },
 
     /**

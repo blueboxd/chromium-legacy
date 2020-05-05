@@ -4,7 +4,8 @@
 
 #include "ui/views/win/pen_event_processor.h"
 
-#include "base/logging.h"
+#include "base/check.h"
+#include "base/notreached.h"
 #include "base/time/time.h"
 #include "ui/events/event_utils.h"
 

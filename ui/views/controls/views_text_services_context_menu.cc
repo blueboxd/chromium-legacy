@@ -6,7 +6,7 @@
 
 #include <memory>
 
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "ui/views/controls/views_text_services_context_menu_base.h"
 
 namespace views {

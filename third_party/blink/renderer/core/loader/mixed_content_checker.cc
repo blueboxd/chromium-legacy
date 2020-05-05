@@ -289,8 +289,14 @@ static bool IsInsecureUrl(const KURL& url) {
 // static
 bool MixedContentChecker::IsMixedContent(const SecurityOrigin* security_origin,
                                          const KURL& url) {
+  return IsMixedContent(security_origin->Protocol(), url);
+}
+
+// static
+bool MixedContentChecker::IsMixedContent(const String& origin_protocol,
+                                         const KURL& url) {
   if (!SchemeRegistry::ShouldTreatURLSchemeAsRestrictingMixedContent(
-          security_origin->Protocol()))
+          origin_protocol))
     return false;
 
   return IsInsecureUrl(url);

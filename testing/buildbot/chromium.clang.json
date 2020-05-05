@@ -23469,9 +23469,6 @@
         "test_id_prefix": "ninja://chrome/test:telemetry_gpu_unittests/"
       },
       {
-        "args": [
-          "--extra-browser-args=--enable-crashpad"
-        ],
         "isolate_name": "telemetry_perf_unittests",
         "merge": {
           "args": [],
@@ -25811,9 +25808,6 @@
         "test_id_prefix": "ninja://chrome/test:telemetry_gpu_unittests/"
       },
       {
-        "args": [
-          "--extra-browser-args=--enable-crashpad"
-        ],
         "isolate_name": "telemetry_perf_unittests",
         "merge": {
           "args": [],

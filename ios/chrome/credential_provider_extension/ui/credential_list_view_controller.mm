@@ -169,6 +169,12 @@ const CGFloat kHeaderHeight = 70;
   return kHeaderHeight;
 }
 
+- (void)tableView:(UITableView*)tableView
+    didSelectRowAtIndexPath:(NSIndexPath*)indexPath {
+  id<Credential> credential = [self credentialForIndexPath:indexPath];
+  [self.delegate userSelectedCredential:credential];
+}
+
 #pragma mark - UISearchResultsUpdating
 
 - (void)updateSearchResultsForSearchController:

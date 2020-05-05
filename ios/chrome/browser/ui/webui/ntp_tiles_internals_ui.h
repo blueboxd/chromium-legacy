@@ -13,7 +13,7 @@
 // The WebUI handler for chrome://ntp-tiles-internals.
 class NTPTilesInternalsUI : public web::WebUIIOSController {
  public:
-  explicit NTPTilesInternalsUI(web::WebUIIOS* web_ui);
+  explicit NTPTilesInternalsUI(web::WebUIIOS* web_ui, const std::string& host);
   ~NTPTilesInternalsUI() override;
 
  private:

@@ -4,7 +4,6 @@
 
 #include "ui/base/ime/chromeos/mock_component_extension_ime_manager_delegate.h"
 
-#include "base/logging.h"
 #include "ui/base/ime/chromeos/component_extension_ime_manager.h"
 #include "ui/base/ime/chromeos/extension_ime_util.h"
 

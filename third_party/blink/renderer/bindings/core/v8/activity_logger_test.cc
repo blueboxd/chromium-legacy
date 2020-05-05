@@ -87,7 +87,7 @@ class ActivityLoggerTest : public testing::Test {
 
   ~ActivityLoggerTest() override {
     WebCache::Clear();
-    V8GCController::CollectAllGarbageForTesting(v8::Isolate::GetCurrent());
+    ThreadState::Current()->CollectAllGarbageForTesting();
   }
 
   void ExecuteScriptInMainWorld(const String& script) const {

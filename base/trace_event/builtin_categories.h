@@ -73,7 +73,6 @@
   X("drmcursor")                                                         \
   X("dwrite")                                                            \
   X("DXVA Decoding")                                                     \
-  X("EarlyJava")                                                         \
   X("evdev")                                                             \
   X("event")                                                             \
   X("exo")                                                               \

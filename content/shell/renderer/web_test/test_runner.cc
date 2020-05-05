@@ -23,6 +23,7 @@
 #include "content/public/common/use_zoom_for_dsf_policy.h"
 #include "content/shell/common/web_test/web_test_constants.h"
 #include "content/shell/common/web_test/web_test_string_util.h"
+#include "content/shell/renderer/web_test/app_banner_service.h"
 #include "content/shell/renderer/web_test/blink_test_helpers.h"
 #include "content/shell/renderer/web_test/blink_test_runner.h"
 #include "content/shell/renderer/web_test/layout_dump.h"
@@ -42,6 +43,7 @@
 #include "gin/object_template_builder.h"
 #include "gin/wrappable.h"
 #include "services/network/public/mojom/cors.mojom.h"
+#include "third_party/blink/public/mojom/app_banner/app_banner.mojom.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "third_party/blink/public/platform/web_data.h"
 #include "third_party/blink/public/platform/web_url_response.h"
@@ -299,6 +301,7 @@ class TestRunnerBindings : public gin::Wrappable<TestRunnerBindings> {
   RenderFrame* const frame_;
   SpellCheckClient* const spell_check_;
   TestPreferences prefs_;
+  std::unique_ptr<AppBannerService> app_banner_service_;
 
   DISALLOW_COPY_AND_ASSIGN(TestRunnerBindings);
 };
@@ -424,6 +427,7 @@ gin::ObjectTemplateBuilder TestRunnerBindings::GetObjectTemplateBuilder(
                  &TestRunnerBindings::DisableMockScreenOrientation)
       .SetMethod("setDisallowedSubresourcePathSuffixes",
                  &TestRunnerBindings::SetDisallowedSubresourcePathSuffixes)
+      // Causes the beforeinstallprompt event to be sent to the renderer.
       .SetMethod("dispatchBeforeInstallPromptEvent",
                  &TestRunnerBindings::DispatchBeforeInstallPromptEvent)
       .SetMethod("dumpAsMarkup", &TestRunnerBindings::DumpAsMarkup)
@@ -1464,19 +1468,55 @@ void TestRunnerBindings::SetPermission(const std::string& name,
                                 GURL(embedding_origin));
 }
 
+static void DispatchBeforeInstallPromptCallback(
+    base::WeakPtr<TestRunner> test_runner,
+    TestRunnerForSpecificView* view_runner,
+    RenderFrame* frame,
+    v8::UniquePersistent<v8::Function> blink_callback,
+    bool cancelled) {
+  if (!test_runner)
+    return;
+
+  v8::Isolate* isolate = blink::MainThreadIsolate();
+  v8::HandleScope handle_scope(isolate);
+
+  v8::Local<v8::Context> context =
+      frame->GetWebFrame()->MainWorldScriptContext();
+  if (context.IsEmpty())
+    return;
+
+  v8::Context::Scope context_scope(context);
+  v8::Local<v8::Value> arg;
+  arg = v8::Boolean::New(isolate, cancelled);
+
+  view_runner->PostV8CallbackWithArgs(std::move(blink_callback), 1, &arg);
+}
+
 void TestRunnerBindings::DispatchBeforeInstallPromptEvent(
     const std::vector<std::string>& event_platforms,
     v8::Local<v8::Function> callback) {
-  return view_runner_->DispatchBeforeInstallPromptEvent(event_platforms,
-                                                        callback);
+  app_banner_service_ = std::make_unique<AppBannerService>();
+  frame_->BindLocalInterface(blink::mojom::AppBannerController::Name_,
+                             app_banner_service_->controller()
+                                 .BindNewPipeAndPassReceiver()
+                                 .PassPipe());
+
+  auto blink_callback = v8::UniquePersistent<v8::Function>(
+      blink::MainThreadIsolate(), std::move(callback));
+  auto reply_callback =
+      base::BindOnce(&DispatchBeforeInstallPromptCallback, runner_,
+                     view_runner_, frame_, std::move(blink_callback));
+
+  app_banner_service_->SendBannerPromptRequest(event_platforms,
+                                               std::move(reply_callback));
 }
 
 void TestRunnerBindings::ResolveBeforeInstallPromptPromise(
     const std::string& platform) {
-  if (!runner_)
-    return;
-
-  runner_->ResolveBeforeInstallPromptPromise(platform);
+  if (app_banner_service_) {
+    app_banner_service_->ResolvePromise(platform);
+    app_banner_service_.reset();
+  }
 }
 
 void TestRunnerBindings::RunIdleTasks(v8::Local<v8::Function> callback) {
@@ -2545,11 +2585,6 @@ void TestRunner::SetPermission(const std::string& name,
                                const GURL& origin,
                                const GURL& embedding_origin) {
   blink_test_runner_->SetPermission(name, value, origin, embedding_origin);
-}
-
-void TestRunner::ResolveBeforeInstallPromptPromise(
-    const std::string& platform) {
-  blink_test_runner_->ResolveBeforeInstallPromptPromise(platform);
 }
 
 void TestRunner::SetPOSIXLocale(const std::string& locale) {

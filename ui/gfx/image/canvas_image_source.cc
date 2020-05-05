@@ -4,7 +4,7 @@
 
 #include "ui/gfx/image/canvas_image_source.h"
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "cc/paint/display_item_list.h"
 #include "cc/paint/record_paint_canvas.h"
 #include "ui/gfx/canvas.h"

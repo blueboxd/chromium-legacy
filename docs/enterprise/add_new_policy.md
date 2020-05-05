@@ -37,9 +37,13 @@ Usually you need a policy when
         sure you get the version and feature flags (such as dynamic_refresh and
         supported_on) right.
     -   Here are the most used attributes. Please note that, all attributes
-        below other than `supported_on` do not change the code behavior.
+        below other than `supported_on` and `default_for_enterprise_users` do
+        not change the code behavior.
         -   `supported_on`: It controls the platform and Chrome milestone the
             policy supports.
+        -   `default_for_enterprise_users`: Its value is applied as a mandatory
+            policy for managed users on Chrome OS unless a different setting is
+            explicitly set.
         -   `dynamic_refresh`: It tells the admin whether the policy value can
             be changed and take effect without re-launching Chrome.
         -   `per_profile`: It tells the admin whether different policy values
@@ -275,6 +279,14 @@ everything listed below.
   will be updated automatically.
 * [Policy documentation](https://cloud.google.com/docs/chrome-enterprise/policies/)
   will be updated automatically.
+
+## Targeting features at commercial users
+
+The recommended method to target commercial users is to create a policy to
+control the behavior of a feature. You can for example create a feature only
+for consumer users by setting `default_for_enterprise_users` to false; however,
+it should only be used when the default enterprise behavior should be different
+than regular consumer behavior.
 
 ------
 

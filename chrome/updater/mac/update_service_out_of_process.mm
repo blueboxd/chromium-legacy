@@ -170,12 +170,12 @@ void UpdateServiceOutOfProcess::UpdateAll(StateChangeCallback state_update,
                                           Callback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  __block base::OnceCallback<void(update_client::Error)> block_callback =
+  __block base::OnceCallback<void(UpdateService::Result)> block_callback =
       std::move(callback);
   auto reply = ^(int error) {
     callback_runner_->PostTask(
         FROM_HERE, base::BindOnce(std::move(block_callback),
-                                  static_cast<update_client::Error>(error)));
+                                  static_cast<UpdateService::Result>(error)));
   };
 
   base::scoped_nsprotocol<id<CRUUpdateStateObserving>> stateObserver(
@@ -191,12 +191,12 @@ void UpdateServiceOutOfProcess::Update(const std::string& app_id,
                                        Callback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  __block base::OnceCallback<void(update_client::Error)> block_callback =
+  __block base::OnceCallback<void(UpdateService::Result)> block_callback =
       std::move(callback);
   auto reply = ^(int error) {
     callback_runner_->PostTask(
         FROM_HERE, base::BindOnce(std::move(block_callback),
-                                  static_cast<update_client::Error>(error)));
+                                  static_cast<UpdateService::Result>(error)));
   };
 
   base::scoped_nsobject<CRUPriorityWrapper> priorityWrapper(

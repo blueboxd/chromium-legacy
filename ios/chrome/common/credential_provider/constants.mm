@@ -5,6 +5,7 @@
 #import "ios/chrome/common/credential_provider/constants.h"
 
 #include "base/logging.h"
+#include "ios/chrome/common/app_group/app_group_constants.h"
 #include "ios/chrome/common/ios_app_bundle_id_prefix_buildflags.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -19,17 +20,12 @@ NSString* const kArchivableStorageFilename = @"credential_store";
 // Credential Provider dedicated shared folder name.
 NSString* const kCredentialProviderContainer = @"credential_provider";
 
-// Returns the app group for the current build.
-NSString* ApplicationGroup() {
-  return [NSString stringWithFormat:@"group.%s.chrome",
-                                    BUILDFLAG(IOS_APP_BUNDLE_ID_PREFIX), nil];
-}
-
 }  // namespace
 
 NSURL* CredentialProviderSharedArchivableStoreURL() {
   NSURL* groupURL = [[NSFileManager defaultManager]
-      containerURLForSecurityApplicationGroupIdentifier:ApplicationGroup()];
+      containerURLForSecurityApplicationGroupIdentifier:app_group::
+                                                            ApplicationGroup()];
   DCHECK(groupURL) << "This should never be nil. Maybe check the entitlements.";
   NSURL* credentialProviderURL =
       [groupURL URLByAppendingPathComponent:kCredentialProviderContainer];

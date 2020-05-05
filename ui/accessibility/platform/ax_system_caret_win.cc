@@ -6,7 +6,8 @@
 
 #include <windows.h>
 
-#include "base/logging.h"
+#include "base/check.h"
+#include "base/notreached.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/platform/ax_platform_node_win.h"
 #include "ui/display/win/screen_win.h"

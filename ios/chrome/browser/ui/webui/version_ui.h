@@ -13,7 +13,7 @@
 // The WebUI handler for chrome://version.
 class VersionUI : public web::WebUIIOSController {
  public:
-  explicit VersionUI(web::WebUIIOS* web_ui);
+  explicit VersionUI(web::WebUIIOS* web_ui, const std::string& host);
   ~VersionUI() override;
 
  private:

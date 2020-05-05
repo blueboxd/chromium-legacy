@@ -516,8 +516,7 @@ TEST_F(QuicTransportTest, GarbageCollection) {
 
   // Pretend the stack is empty. This will avoid accidentally treating any
   // copies of the |quic_transport| pointer as references.
-  V8GCController::CollectAllGarbageForTesting(
-      scope.GetIsolate(), v8::EmbedderHeapTracer::EmbedderStackState::kEmpty);
+  ThreadState::Current()->CollectAllGarbageForTesting();
 
   EXPECT_TRUE(quic_transport);
 
@@ -525,8 +524,7 @@ TEST_F(QuicTransportTest, GarbageCollection) {
 
   test::RunPendingTasks();
 
-  V8GCController::CollectAllGarbageForTesting(
-      scope.GetIsolate(), v8::EmbedderHeapTracer::EmbedderStackState::kEmpty);
+  ThreadState::Current()->CollectAllGarbageForTesting();
 
   EXPECT_FALSE(quic_transport);
 }
@@ -550,8 +548,7 @@ TEST_F(QuicTransportTest, GarbageCollectMojoConnectionError) {
 
   test::RunPendingTasks();
 
-  V8GCController::CollectAllGarbageForTesting(
-      scope.GetIsolate(), v8::EmbedderHeapTracer::EmbedderStackState::kEmpty);
+  ThreadState::Current()->CollectAllGarbageForTesting();
 
   EXPECT_FALSE(quic_transport);
   EXPECT_TRUE(closed_tester.IsRejected());
@@ -831,8 +828,7 @@ TEST_F(QuicTransportTest, SendStreamGarbageCollection) {
     send_stream = CreateSendStreamSuccessfully(scope, quic_transport);
   }
 
-  V8GCController::CollectAllGarbageForTesting(
-      scope.GetIsolate(), v8::EmbedderHeapTracer::EmbedderStackState::kEmpty);
+  ThreadState::Current()->CollectAllGarbageForTesting();
 
   EXPECT_TRUE(quic_transport);
   EXPECT_TRUE(send_stream);
@@ -841,8 +837,7 @@ TEST_F(QuicTransportTest, SendStreamGarbageCollection) {
 
   test::RunPendingTasks();
 
-  V8GCController::CollectAllGarbageForTesting(
-      scope.GetIsolate(), v8::EmbedderHeapTracer::EmbedderStackState::kEmpty);
+  ThreadState::Current()->CollectAllGarbageForTesting();
 
   EXPECT_FALSE(quic_transport);
   EXPECT_FALSE(send_stream);
@@ -868,8 +863,7 @@ TEST_F(QuicTransportTest, SendStreamGarbageCollectionLocalClose) {
 
   // Pretend the stack is empty. This will avoid accidentally treating any
   // copies of the |send_stream| pointer as references.
-  V8GCController::CollectAllGarbageForTesting(
-      scope.GetIsolate(), v8::EmbedderHeapTracer::EmbedderStackState::kEmpty);
+  ThreadState::Current()->CollectAllGarbageForTesting();
 
   ASSERT_TRUE(send_stream);
 
@@ -881,8 +875,7 @@ TEST_F(QuicTransportTest, SendStreamGarbageCollectionLocalClose) {
   tester.WaitUntilSettled();
   EXPECT_TRUE(tester.IsFulfilled());
 
-  V8GCController::CollectAllGarbageForTesting(
-      scope.GetIsolate(), v8::EmbedderHeapTracer::EmbedderStackState::kEmpty);
+  ThreadState::Current()->CollectAllGarbageForTesting();
 
   EXPECT_FALSE(send_stream);
 }
@@ -900,8 +893,7 @@ TEST_F(QuicTransportTest, SendStreamGarbageCollectionRemoteClose) {
     send_stream = CreateSendStreamSuccessfully(scope, quic_transport);
   }
 
-  V8GCController::CollectAllGarbageForTesting(
-      scope.GetIsolate(), v8::EmbedderHeapTracer::EmbedderStackState::kEmpty);
+  ThreadState::Current()->CollectAllGarbageForTesting();
 
   ASSERT_TRUE(send_stream);
 
@@ -910,8 +902,7 @@ TEST_F(QuicTransportTest, SendStreamGarbageCollectionRemoteClose) {
 
   test::RunPendingTasks();
 
-  V8GCController::CollectAllGarbageForTesting(
-      scope.GetIsolate(), v8::EmbedderHeapTracer::EmbedderStackState::kEmpty);
+  ThreadState::Current()->CollectAllGarbageForTesting();
 
   EXPECT_FALSE(send_stream);
 }
@@ -939,8 +930,7 @@ TEST_F(QuicTransportTest, ReceiveStreamGarbageCollectionCancel) {
 
   // Pretend the stack is empty. This will avoid accidentally treating any
   // copies of the |receive_stream| pointer as references.
-  V8GCController::CollectAllGarbageForTesting(
-      scope.GetIsolate(), v8::EmbedderHeapTracer::EmbedderStackState::kEmpty);
+  ThreadState::Current()->CollectAllGarbageForTesting();
 
   ASSERT_TRUE(receive_stream);
 
@@ -959,8 +949,7 @@ TEST_F(QuicTransportTest, ReceiveStreamGarbageCollectionCancel) {
   tester.WaitUntilSettled();
   EXPECT_TRUE(tester.IsFulfilled());
 
-  V8GCController::CollectAllGarbageForTesting(
-      scope.GetIsolate(), v8::EmbedderHeapTracer::EmbedderStackState::kEmpty);
+  ThreadState::Current()->CollectAllGarbageForTesting();
 
   EXPECT_FALSE(receive_stream);
 }
@@ -980,8 +969,7 @@ TEST_F(QuicTransportTest, ReceiveStreamGarbageCollectionRemoteClose) {
     receive_stream = ReadReceiveStream(scope, quic_transport);
   }
 
-  V8GCController::CollectAllGarbageForTesting(
-      scope.GetIsolate(), v8::EmbedderHeapTracer::EmbedderStackState::kEmpty);
+  ThreadState::Current()->CollectAllGarbageForTesting();
 
   ASSERT_TRUE(receive_stream);
 
@@ -990,8 +978,7 @@ TEST_F(QuicTransportTest, ReceiveStreamGarbageCollectionRemoteClose) {
 
   test::RunPendingTasks();
 
-  V8GCController::CollectAllGarbageForTesting(
-      scope.GetIsolate(), v8::EmbedderHeapTracer::EmbedderStackState::kEmpty);
+  ThreadState::Current()->CollectAllGarbageForTesting();
 
   ASSERT_TRUE(receive_stream);
 
@@ -999,8 +986,7 @@ TEST_F(QuicTransportTest, ReceiveStreamGarbageCollectionRemoteClose) {
 
   test::RunPendingTasks();
 
-  V8GCController::CollectAllGarbageForTesting(
-      scope.GetIsolate(), v8::EmbedderHeapTracer::EmbedderStackState::kEmpty);
+  ThreadState::Current()->CollectAllGarbageForTesting();
 
   EXPECT_FALSE(receive_stream);
 }
@@ -1025,8 +1011,7 @@ TEST_F(QuicTransportTest, ReceiveStreamGarbageCollectionRemoteCloseReverse) {
     receive_stream = ReadReceiveStream(scope, quic_transport);
   }
 
-  V8GCController::CollectAllGarbageForTesting(
-      scope.GetIsolate(), v8::EmbedderHeapTracer::EmbedderStackState::kEmpty);
+  ThreadState::Current()->CollectAllGarbageForTesting();
 
   ASSERT_TRUE(receive_stream);
 
@@ -1034,8 +1019,7 @@ TEST_F(QuicTransportTest, ReceiveStreamGarbageCollectionRemoteCloseReverse) {
 
   test::RunPendingTasks();
 
-  V8GCController::CollectAllGarbageForTesting(
-      scope.GetIsolate(), v8::EmbedderHeapTracer::EmbedderStackState::kEmpty);
+  ThreadState::Current()->CollectAllGarbageForTesting();
 
   ASSERT_TRUE(receive_stream);
 
@@ -1043,8 +1027,7 @@ TEST_F(QuicTransportTest, ReceiveStreamGarbageCollectionRemoteCloseReverse) {
 
   test::RunPendingTasks();
 
-  V8GCController::CollectAllGarbageForTesting(
-      scope.GetIsolate(), v8::EmbedderHeapTracer::EmbedderStackState::kEmpty);
+  ThreadState::Current()->CollectAllGarbageForTesting();
 
   EXPECT_FALSE(receive_stream);
 }

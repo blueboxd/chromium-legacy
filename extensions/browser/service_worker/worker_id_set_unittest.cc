@@ -153,7 +153,18 @@ TEST_F(WorkerIdSetTest, RemoveAllForExtension) {
   size_t expected_entries_removed = 0u;
   auto test_removal = [&](const std::string& extension_id_to_remove,
                           size_t expected_removal_count) {
-    worker_id_set->RemoveAllForExtension(extension_id_to_remove);
+    std::vector<WorkerId> worker_ids_to_remove =
+        worker_id_set->GetAllForExtension(extension_id_to_remove);
+    for (const auto& worker_id : worker_ids_to_remove) {
+      if (!worker_id_set->Remove(worker_id)) {
+        return ::testing::AssertionFailure()
+               << "WorkerId not found to Remove: "
+               << "{" << worker_id.extension_id
+               << ", rph = " << worker_id.render_process_id
+               << ", version_id = " << worker_id.version_id
+               << ", thread = " << worker_id.thread_id << "}";
+      }
+    }
     expected_entries_removed += expected_removal_count;
 
     const size_t num_expected_entries =

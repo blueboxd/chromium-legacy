@@ -11,6 +11,7 @@
 #include "ui/gfx/font_render_params.h"
 #include "ui/gfx/geometry/dip_util.h"
 #include "ui/ozone/platform/x11/x11_window_ozone.h"
+#include "ui/platform_window/x11/x11_topmost_window_finder.h"
 #include "ui/platform_window/x11/x11_window_manager.h"
 
 namespace ui {
@@ -29,65 +30,6 @@ float GetDeviceScaleFactor() {
 
 gfx::Point PixelToDIPPoint(const gfx::Point& pixel_point) {
   return gfx::ConvertPointToDIP(GetDeviceScaleFactor(), pixel_point);
-}
-
-// ui::EnumerateTopLevelWindows API is used here to retrieve the x11 window
-// stack, so that windows are checked in descending z-order, covering window
-// overlapping cases gracefully.
-// TODO(nickdiego): Consider refactoring ui::EnumerateTopLevelWindows to use
-// lambda/callback instead of Delegate interface.
-class LocalProcessWindowFinder : public EnumerateWindowsDelegate {
- public:
-  LocalProcessWindowFinder() = default;
-  ~LocalProcessWindowFinder() override = default;
-
-  X11Window* FindWindowAt(const gfx::Point& screen_point_in_pixels);
-
- private:
-  // ui::EnumerateWindowsDelegate
-  bool ShouldStopIterating(XID xid) override;
-
-  // Returns true if |window| is visible and contains the
-  // |screen_point_in_pixels_| within its bounds, even if custom shape is used.
-  bool MatchWindow(X11Window* window) const;
-
-  X11Window* window_found_ = nullptr;
-  gfx::Point screen_point_in_pixels_;
-};
-
-X11Window* LocalProcessWindowFinder::FindWindowAt(
-    const gfx::Point& screen_point_in_pixels) {
-  screen_point_in_pixels_ = screen_point_in_pixels;
-  ui::EnumerateTopLevelWindows(this);
-  return window_found_;
-}
-
-bool LocalProcessWindowFinder::ShouldStopIterating(XID xid) {
-  X11Window* window = X11WindowManager::GetInstance()->GetWindow(xid);
-  if (!window || !MatchWindow(window))
-    return false;
-
-  window_found_ = window;
-  return true;
-}
-
-bool LocalProcessWindowFinder::MatchWindow(X11Window* window) const {
-  DCHECK(window);
-
-  if (!window->IsVisible())
-    return false;
-
-  gfx::Rect window_bounds = window->GetOutterBounds();
-  if (!window_bounds.Contains(screen_point_in_pixels_))
-    return false;
-
-  ::Region shape = window->shape();
-  if (!shape)
-    return true;
-
-  gfx::Point window_point(screen_point_in_pixels_);
-  window_point.Offset(-window_bounds.origin().x(), -window_bounds.origin().y());
-  return XPointInRegion(shape, window_point.x(), window_point.y()) == x11::True;
 }
 
 }  // namespace
@@ -143,16 +85,15 @@ gfx::Point X11ScreenOzone::GetCursorScreenPoint() const {
 
 gfx::AcceleratedWidget X11ScreenOzone::GetAcceleratedWidgetAtScreenPoint(
     const gfx::Point& point) const {
-  LocalProcessWindowFinder finder;
-  X11Window* window = finder.FindWindowAt(point);
-  return window ? window->GetWidget() : gfx::kNullAcceleratedWidget;
+  X11TopmostWindowFinder finder;
+  return finder.FindWindowAt(point);
 }
 
 gfx::AcceleratedWidget X11ScreenOzone::GetLocalProcessWidgetAtPoint(
     const gfx::Point& point,
     const std::set<gfx::AcceleratedWidget>& ignore) const {
-  NOTIMPLEMENTED_LOG_ONCE();
-  return gfx::kNullAcceleratedWidget;
+  X11TopmostWindowFinder finder;
+  return finder.FindLocalProcessWindowAt(point, ignore);
 }
 
 display::Display X11ScreenOzone::GetDisplayNearestPoint(

@@ -173,9 +173,6 @@ class WebWidgetClient {
   // Called to update if pointerrawupdate events should be sent.
   virtual void SetHasPointerRawUpdateEventHandlers(bool) {}
 
-  // Called to update if touch events should be sent.
-  virtual void SetHasTouchEventHandlers(bool) {}
-
   // Called to update whether low latency input mode is enabled or not.
   virtual void SetNeedsLowLatencyInput(bool) {}
 

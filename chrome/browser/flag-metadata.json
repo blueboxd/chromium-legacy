@@ -311,7 +311,7 @@
   {
     "name": "autofill-keyboard-accessory-view",
     "owners": [ "fhorschig@chromium.org" ],
-    "expiry_milestone": 83
+    "expiry_milestone": 87
   },
   {
     "name": "autofill-no-local-save-on-unmask-success",
@@ -376,12 +376,12 @@
   {
     "name": "autofill-use-improved-label-disambiguation",
     "owners": [ "fhorschig" ],
-    "expiry_milestone": 83
+    "expiry_milestone": 87
   },
   {
     "name": "autofill-use-mobile-label-disambiguation",
     "owners": [ "fhorschig" ],
-    "expiry_milestone": 83
+    "expiry_milestone": 87
   },
   {
     "name": "avatar-toolbar-button",
@@ -637,8 +637,8 @@
   },
   {
     "name": "cross-origin-opener-policy",
-    "owners": [ "clamy" ],
-    "expiry_milestone": 84
+    "owners": [ "ahemery", "clamy", "pmeuleman" ],
+    "expiry_milestone": 85
   },
   {
     "name": "crostini-disk-resizing",
@@ -1193,7 +1193,7 @@
   {
     "name": "enable-autofill-manual-fallback",
     "owners": [ "fhorschig@chromium.org" ],
-    "expiry_milestone": 83
+    "expiry_milestone": 87
   },
   {
     "name": "enable-autofill-refresh-style",
@@ -2052,7 +2052,7 @@
   {
     "name": "enable-suggestions-with-substring-match",
     "owners": [ "fhorschig" ],
-    "expiry_milestone": 83
+    "expiry_milestone": 87
   },
   {
     "name": "enable-surfacecontrol",
@@ -3385,7 +3385,7 @@
   {
     "name": "password-editing-android",
     "owners": [ "fhorschig" ],
-    "expiry_milestone": 83
+    "expiry_milestone": 87
   },
   {
     "name": "password-manager-onboarding-android",
@@ -4220,8 +4220,8 @@
   },
   {
     "name": "username-first-flow",
-    "owners": [ "dvadym" ],
-    "expiry_milestone": 84
+    "owners": [ "jdoerrie" ],
+    "expiry_milestone": 88
   },
   {
     "name": "wallet-service-use-sandbox",

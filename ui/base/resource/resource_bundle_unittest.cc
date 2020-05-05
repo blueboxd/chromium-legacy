@@ -10,10 +10,10 @@
 
 #include "base/base_paths.h"
 #include "base/big_endian.h"
+#include "base/check_op.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/logging.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"

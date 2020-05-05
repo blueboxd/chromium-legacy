@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "base/auto_reset.h"
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "ui/views/view.h"
 
 namespace views {

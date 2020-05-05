@@ -10,6 +10,7 @@
 #include "components/version_info/version_info.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/test/service_worker_test_helpers.h"
+#include "extensions/browser/service_worker/service_worker_test_utils.h"
 #include "extensions/common/scoped_worker_based_extensions_channel.h"
 #include "extensions/test/extension_test_message_listener.h"
 #include "extensions/test/result_catcher.h"
@@ -17,6 +18,52 @@
 #include "net/dns/mock_host_resolver.h"
 
 namespace extensions {
+
+namespace {
+
+base::FilePath WriteExtensionWithMessagePortToDir(TestExtensionDir* test_dir) {
+  test_dir->WriteManifest(R"(
+      {
+        "name": "Content script disconnect on worker stop test",
+        "description": "Tests worker shutdown behavior for messaging",
+        "version": "0.1",
+        "manifest_version": 2,
+        "background": {"scripts": ["background.js"]},
+        "content_scripts": [{
+          "matches": ["*://example.com:*/*"],
+          "js": ["content_script.js"]
+        }]
+      })");
+  test_dir->WriteFile(FILE_PATH_LITERAL("background.js"), R"(
+      chrome.runtime.onConnect.addListener(port => {
+        console.log('background: runtime.onConnect');
+        port.onMessage.addListener(msg => {
+          if (msg == 'foo') {
+            chrome.test.notifyPass();
+          } else
+            chrome.test.notifyFail('FAILED');
+        });
+      });)");
+  test_dir->WriteFile(FILE_PATH_LITERAL("content_script.js"), R"(
+    var port = chrome.runtime.connect({name:"bar"});
+    port.postMessage('foo');)");
+  return test_dir->UnpackedPath();
+}
+
+base::FilePath WriteServiceWorkerExtensionToDir(TestExtensionDir* test_dir) {
+  test_dir->WriteManifest(R"(
+      {
+        "name": "Test Extension",
+        "manifest_version": 2,
+        "version": "1.0",
+        "background": {"service_worker": "service_worker_background.js"}
+      })");
+  test_dir->WriteFile(FILE_PATH_LITERAL("service_worker_background.js"),
+                      R"(chrome.test.sendMessage('worker_running');)");
+  return test_dir->UnpackedPath();
+}
+
+}  // namespace
 
 class ServiceWorkerMessagingTest : public ExtensionApiTest {
  public:
@@ -259,6 +306,64 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerMessagingTest, ConnectExternalToWorker) {
   ASSERT_TRUE(
       RunExtensionTest("service_worker/messaging/connect_external/initiator"))
       << message_;
+}
+
+// Tests that an extension's message port isn't affected by an unrelated
+// extension's service worker.
+//
+// This test opens a message port in an extension (message_port_extension) and
+// then loads another extension that is service worker based. This test ensures
+// that stopping the service worker based extension doesn't DCHECK in
+// message_port_extension's message port.
+//
+// Regression test for https://crbug.com/1075751.
+IN_PROC_BROWSER_TEST_F(ServiceWorkerMessagingTest,
+                       UnrelatedPortsArentAffectedByServiceWorker) {
+  ASSERT_TRUE(StartEmbeddedTestServer());
+  // Step 1/2: Load an extension that creates an ExtensionMessagePort from a
+  // content script and connects to its background script.
+  TestExtensionDir message_port_extension_dir;
+  ResultCatcher content_script_connected_catcher;
+  const Extension* message_port_extension = LoadExtension(
+      WriteExtensionWithMessagePortToDir(&message_port_extension_dir));
+  ASSERT_TRUE(message_port_extension);
+
+  // Load the content script for |message_port_extension|, and wait for the
+  // content script to connect to its background's port.
+  GURL url =
+      embedded_test_server()->GetURL("example.com", "/extensions/body1.html");
+  ui_test_utils::NavigateToURL(browser(), url);
+  EXPECT_TRUE(content_script_connected_catcher.GetNextResult())
+      << content_script_connected_catcher.message();
+
+  // Step 2/2: Load an extension with service worker background, verify that
+  // stopping the service worker doesn't cause message port in
+  // |message_port_extension| to crash.
+  ExtensionTestMessageListener worker_running_listener("worker_running", false);
+  content::ServiceWorkerContext* service_worker_context =
+      content::BrowserContext::GetDefaultStoragePartition(browser()->profile())
+          ->GetServiceWorkerContext();
+  service_worker_test_utils::TestRegistrationObserver registration_observer(
+      service_worker_context);
+
+  TestExtensionDir worker_extension_dir;
+  const Extension* service_worker_extension =
+      LoadExtension(WriteServiceWorkerExtensionToDir(&worker_extension_dir));
+  const ExtensionId worker_extension_id = service_worker_extension->id();
+  ASSERT_TRUE(service_worker_extension);
+
+  // Wait for the extension service worker to settle before moving to next step.
+  EXPECT_TRUE(worker_running_listener.WaitUntilSatisfied());
+  registration_observer.WaitForRegistrationStored();
+
+  {
+    // Stop the worker, and ensure its completion.
+    service_worker_test_utils::UnregisterWorkerObserver
+        unregister_worker_observer(ProcessManager::Get(profile()),
+                                   worker_extension_id);
+    StopServiceWorker(*service_worker_extension);
+    unregister_worker_observer.WaitForUnregister();
+  }
 }
 
 }  // namespace extensions

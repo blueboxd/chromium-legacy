@@ -4,7 +4,7 @@
 
 #include "ui/events/gesture_detection/motion_event.h"
 
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "ui/events/gesture_detection/motion_event_generic.h"
 
 namespace ui {

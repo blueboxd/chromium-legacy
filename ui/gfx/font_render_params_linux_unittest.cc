@@ -6,10 +6,11 @@
 
 #include <fontconfig/fontconfig.h>
 
+#include "base/check_op.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/logging.h"
 #include "base/macros.h"
+#include "base/notreached.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/fontconfig_util_linux.h"
 #include "build/build_config.h"

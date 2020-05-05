@@ -411,7 +411,8 @@ void ExtensionMessagePort::RegisterWorker(const WorkerId& worker_id) {
 }
 
 void ExtensionMessagePort::UnregisterWorker(const WorkerId& worker_id) {
-  DCHECK_EQ(extension_id_, worker_id.extension_id);
+  if (extension_id_ != worker_id.extension_id)
+    return;
   if (service_workers_.erase(worker_id) == 0)
     return;
 

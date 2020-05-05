@@ -7,7 +7,7 @@
 #include <gdk/gdkx.h>
 #include <gtk/gtk.h>
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "ui/events/platform/x11/x11_event_source.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/x/x11.h"

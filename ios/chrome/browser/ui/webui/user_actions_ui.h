@@ -5,13 +5,15 @@
 #ifndef IOS_CHROME_BROWSER_UI_WEBUI_USER_ACTIONS_UI_H_
 #define IOS_CHROME_BROWSER_UI_WEBUI_USER_ACTIONS_UI_H_
 
+#include <string>
+
 #include "base/macros.h"
 #include "ios/web/public/webui/web_ui_ios_controller.h"
 
 // The UI for chrome://user-actions/
 class UserActionsUI : public web::WebUIIOSController {
  public:
-  explicit UserActionsUI(web::WebUIIOS* contents);
+  explicit UserActionsUI(web::WebUIIOS* web_ui, const std::string& host);
   ~UserActionsUI() override;
 
  private:

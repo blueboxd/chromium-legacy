@@ -173,6 +173,7 @@ void MinimumVersionPolicyHandler::HandleUpdateNotRequired() {
 void MinimumVersionPolicyHandler::Reset() {
   state_.reset();
   requirements_met_ = true;
+  deadline_reached = false;
 }
 
 void MinimumVersionPolicyHandler::FetchEolInfo() {
@@ -212,6 +213,7 @@ void MinimumVersionPolicyHandler::HandleUpdateRequired(
 }
 
 void MinimumVersionPolicyHandler::OnDeadlineReached() {
+  deadline_reached = true;
   if (delegate_->IsLoginSessionState() && !delegate_->IsLoginInProgress()) {
     // Show update required screen over the login screen.
     delegate_->ShowUpdateRequiredScreen();

@@ -7,7 +7,8 @@
 #include <algorithm>
 
 #include "base/bind.h"
-#include "base/logging.h"
+#include "base/check_op.h"
+#include "base/notreached.h"
 #include "base/trace_event/trace_event.h"
 #include "ui/gfx/animation/tween.h"
 #include "ui/gfx/geometry/point_f.h"

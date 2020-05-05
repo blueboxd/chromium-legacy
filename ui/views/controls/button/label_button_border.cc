@@ -6,7 +6,6 @@
 
 #include <utility>
 
-#include "base/logging.h"
 #include "cc/paint/paint_flags.h"
 #include "ui/gfx/animation/animation.h"
 #include "ui/gfx/canvas.h"

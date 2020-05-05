@@ -65,7 +65,7 @@ TEST(PasswordAccountStorageSettingsWatcherTest, NotifiesOnChanges) {
     EXPECT_EQ(feature_manager.GetDefaultPasswordStore(),
               autofill::PasswordForm::Store::kAccountStore);
   });
-  feature_manager.SetAccountStorageOptIn(true);
+  feature_manager.OptInToAccountStorage();
 
   // Switch to saving to the profile store. The watcher should run the callback.
   EXPECT_CALL(change_callback, Run()).WillOnce([&]() {

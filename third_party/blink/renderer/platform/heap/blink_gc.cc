@@ -25,6 +25,8 @@ const char* BlinkGC::ToString(BlinkGC::GCReason reason) {
       return "UnifiedHeapGC";
     case BlinkGC::GCReason::kUnifiedHeapForMemoryReductionGC:
       return "UnifiedHeapForMemoryReductionGC";
+    case BlinkGC::GCReason::kUnifiedHeapForcedForTestingGC:
+      return "UnifiedHeapForcedForTestingGC";
   }
   IMMEDIATE_CRASH();
 }

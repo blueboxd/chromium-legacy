@@ -10,9 +10,9 @@
 #include <limits>
 #include <map>
 
+#include "base/check_op.h"
 #include "base/containers/mru_cache.h"
 #include "base/lazy_instance.h"
-#include "base/logging.h"
 #include "base/macros.h"
 #include "base/no_destructor.h"
 #include "build/build_config.h"

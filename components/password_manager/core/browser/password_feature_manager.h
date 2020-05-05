@@ -34,9 +34,14 @@ class PasswordFeatureManager {
   // previously opted into using the account store but is signed-out now.
   virtual bool ShouldShowAccountStorageReSignin() const = 0;
 
-  // Sets or clears the opt-in to using account storage for passwords for the
-  // current signed-in user (unconsented primary account).
-  virtual void SetAccountStorageOptIn(bool opt_in) = 0;
+  // Sets opt-in to using account storage for passwords for the current
+  // signed-in user (unconsented primary account).
+  virtual void OptInToAccountStorage() = 0;
+
+  // Clears the opt-in to using account storage for passwords for the
+  // current signed-in user (unconsented primary account), as well as all other
+  // associated settings (e.g. default store choice).
+  virtual void OptOutOfAccountStorageAndClearSettings() = 0;
 
   // Whether it makes sense to ask the user about the store when saving a
   // password (i.e. profile or account store). This is true if the user has

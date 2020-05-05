@@ -15,8 +15,8 @@
 #error "This file requires ARC support."
 #endif
 
-UserActionsUI::UserActionsUI(web::WebUIIOS* web_ui)
-    : web::WebUIIOSController(web_ui) {
+UserActionsUI::UserActionsUI(web::WebUIIOS* web_ui, const std::string& host)
+    : web::WebUIIOSController(web_ui, host) {
   web_ui->AddMessageHandler(std::make_unique<UserActionsHandler>());
 
   // Set up the chrome://user-actions/ source.

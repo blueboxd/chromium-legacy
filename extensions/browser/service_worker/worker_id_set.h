@@ -23,8 +23,9 @@ class WorkerIdSet {
 
   void Add(const WorkerId& worker_id);
   bool Remove(const WorkerId& worker_id);
-  void RemoveAllForExtension(const ExtensionId& extension_id);
   bool Contains(const WorkerId& worker_id) const;
+  std::vector<WorkerId> GetAllForExtension(
+      const ExtensionId& extension_id) const;
   std::vector<WorkerId> GetAllForExtension(const ExtensionId& extension_id,
                                            int render_process_id) const;
 

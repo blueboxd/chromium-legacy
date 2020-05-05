@@ -4,7 +4,8 @@
 
 #include "ui/gfx/bidi_line_iterator.h"
 
-#include "base/logging.h"
+#include "base/check.h"
+#include "base/notreached.h"
 
 namespace ui {
 namespace gfx {

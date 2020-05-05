@@ -88,6 +88,25 @@ class DlcHandlerTest : public testing::Test {
     EXPECT_EQ("handlerFunctionName", call_data.arg1()->GetString());
     return call_data.arg3()->GetList().size();
   }
+
+  bool CallPurgeDlcAndReturnSuccess() {
+    size_t call_data_count_before_call = test_web_ui()->call_data().size();
+
+    base::ListValue args;
+    args.AppendString("handlerFunctionName");
+    args.AppendString("dlcId");
+    test_web_ui()->HandleReceivedMessage("purgeDlc", &args);
+    task_environment_.RunUntilIdle();
+
+    EXPECT_EQ(call_data_count_before_call + 1u,
+              test_web_ui()->call_data().size());
+
+    const content::TestWebUI::CallData& call_data =
+        CallDataAtIndex(call_data_count_before_call);
+    EXPECT_EQ("cr.webUIResponse", call_data.function_name());
+    EXPECT_EQ("handlerFunctionName", call_data.arg1()->GetString());
+    return call_data.arg3()->GetBool();
+  }
 };
 
 TEST_F(DlcHandlerTest, GetDlcList) {
@@ -107,6 +126,23 @@ TEST_F(DlcHandlerTest, GetDlcList) {
 
   fake_dlcservice_client_->SetGetInstalledError(dlcservice::kErrorNone);
   EXPECT_EQ(CallGetDlcListAndReturnSize(), 2u);
+}
+
+TEST_F(DlcHandlerTest, PurgeDlc) {
+  fake_dlcservice_client_->SetPurgeError(dlcservice::kErrorInternal);
+  EXPECT_FALSE(CallPurgeDlcAndReturnSuccess());
+
+  fake_dlcservice_client_->SetPurgeError(dlcservice::kErrorNeedReboot);
+  EXPECT_FALSE(CallPurgeDlcAndReturnSuccess());
+
+  fake_dlcservice_client_->SetPurgeError(dlcservice::kErrorInvalidDlc);
+  EXPECT_FALSE(CallPurgeDlcAndReturnSuccess());
+
+  fake_dlcservice_client_->SetPurgeError(dlcservice::kErrorAllocation);
+  EXPECT_FALSE(CallPurgeDlcAndReturnSuccess());
+
+  fake_dlcservice_client_->SetPurgeError(dlcservice::kErrorNone);
+  EXPECT_TRUE(CallPurgeDlcAndReturnSuccess());
 }
 
 }  // namespace

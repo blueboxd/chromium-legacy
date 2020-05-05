@@ -13,7 +13,7 @@
 #include "chrome/browser/android/autofill_assistant/generic_ui_controller_android.h"
 #include "chrome/browser/android/autofill_assistant/generic_ui_interactions_android.h"
 #include "components/autofill_assistant/browser/basic_interactions.h"
-#include "components/autofill_assistant/browser/interactions.pb.h"
+#include "components/autofill_assistant/browser/generic_ui.pb.h"
 #include "components/autofill_assistant/browser/ui_delegate.h"
 #include "components/autofill_assistant/browser/user_model.h"
 #include "components/autofill_assistant/browser/value_util.h"
@@ -60,6 +60,14 @@ base::Optional<EventHandler::EventKey> CreateEventKeyFromProto(
       return base::Optional<EventHandler::EventKey>(
           {proto.kind_case(),
            base::NumberToString(proto.on_text_link_clicked().text_link())});
+    case EventProto::kOnPopupDismissed:
+      if (proto.on_popup_dismissed().popup_identifier().empty()) {
+        VLOG(1)
+            << "Invalid OnPopupDismissedProto: no popup_identifier specified";
+        return base::nullopt;
+      }
+      return base::Optional<EventHandler::EventKey>(
+          {proto.kind_case(), proto.on_popup_dismissed().popup_identifier()});
     case EventProto::KIND_NOT_SET:
       VLOG(1) << "Error creating event: kind not set";
       return base::nullopt;
@@ -296,10 +304,56 @@ InteractionHandlerAndroid::CreateInteractionCallbackFromProto(
       return base::Optional<InteractionCallback>(base::BindRepeating(
           &android_interactions::SetViewEnabled, user_model_->GetWeakPtr(),
           proto.set_view_enabled(), views_));
+    case CallbackProto::kShowGenericPopup:
+      if (proto.show_generic_popup().popup_identifier().empty()) {
+        VLOG(1) << "Error creating ShowGenericPopup interaction: "
+                   "popup_identifier not set";
+        return base::nullopt;
+      }
+      return base::Optional<InteractionCallback>(base::BindRepeating(
+          &InteractionHandlerAndroid::CreateAndShowGenericPopup, GetWeakPtr(),
+          proto.show_generic_popup()));
     case CallbackProto::KIND_NOT_SET:
       VLOG(1) << "Error creating interaction: kind not set";
       return base::nullopt;
   }
+}
+
+void InteractionHandlerAndroid::DeleteNestedUi(const std::string& identifier) {
+  auto it = nested_ui_controllers_.find(identifier);
+  if (it != nested_ui_controllers_.end()) {
+    nested_ui_controllers_.erase(it);
+  }
+}
+
+const GenericUiControllerAndroid* InteractionHandlerAndroid::CreateNestedUi(
+    const GenericUserInterfaceProto& proto,
+    const std::string& identifier) {
+  auto nested_ui = GenericUiControllerAndroid::CreateFromProto(
+      proto, jcontext_, jdelegate_, event_handler_, user_model_,
+      basic_interactions_);
+  const auto* nested_ui_ptr = nested_ui.get();
+  if (nested_ui) {
+    DCHECK(nested_ui_controllers_.find(identifier) ==
+           nested_ui_controllers_.end());
+    nested_ui_controllers_.emplace(identifier, std::move(nested_ui));
+  }
+  return nested_ui_ptr;
+}
+
+void InteractionHandlerAndroid::CreateAndShowGenericPopup(
+    const ShowGenericUiPopupProto& proto) {
+  auto* nested_ui =
+      CreateNestedUi(proto.generic_ui(), proto.popup_identifier());
+  if (!nested_ui) {
+    DVLOG(2) << "Error showing popup: error creating generic UI";
+    return;
+  }
+  AddInteraction({EventProto::kOnPopupDismissed, proto.popup_identifier()},
+                 base::BindRepeating(&InteractionHandlerAndroid::DeleteNestedUi,
+                                     GetWeakPtr(), proto.popup_identifier()));
+  android_interactions::ShowGenericPopup(proto, nested_ui->GetRootView(),
+                                         jcontext_, jdelegate_);
 }
 
 }  // namespace autofill_assistant

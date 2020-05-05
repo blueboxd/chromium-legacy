@@ -29,6 +29,7 @@ const char* const kClientHintsHeaderMapping[] = {
     "sec-ch-ua-model",
     "sec-ch-ua-mobile",
     "sec-ch-ua-full-version",
+    "sec-ch-ua-platform-version",
 };
 
 const size_t kClientHintsMappingsCount = base::size(kClientHintsHeaderMapping);
@@ -79,6 +80,7 @@ base::Optional<std::vector<network::mojom::WebClientHintsType>> FilterAcceptCH(
       case network::mojom::WebClientHintsType::kUA:
       case network::mojom::WebClientHintsType::kUAArch:
       case network::mojom::WebClientHintsType::kUAPlatform:
+      case network::mojom::WebClientHintsType::kUAPlatformVersion:
       case network::mojom::WebClientHintsType::kUAModel:
       case network::mojom::WebClientHintsType::kUAMobile:
       case network::mojom::WebClientHintsType::kUAFullVersion:

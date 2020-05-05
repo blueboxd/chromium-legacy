@@ -739,16 +739,8 @@ struct VectorTraits<blink::Member<T>> : VectorTraitsBase<blink::Member<T>> {
   static const bool kCanClearUnusedSlotsWithMemset = true;
   static const bool kCanCopyWithMemcpy = true;
   static const bool kCanMoveWithMemcpy = true;
-};
 
-template <typename T>
-struct VectorTraits<blink::WeakMember<T>>
-    : VectorTraitsBase<blink::WeakMember<T>> {
-  STATIC_ONLY(VectorTraits);
-  static const bool kNeedsDestruction = false;
-  static const bool kCanInitializeWithMemset = true;
-  static const bool kCanClearUnusedSlotsWithMemset = true;
-  static const bool kCanMoveWithMemcpy = true;
+  static constexpr bool kCanTraceConcurrently = true;
 };
 
 template <typename T>

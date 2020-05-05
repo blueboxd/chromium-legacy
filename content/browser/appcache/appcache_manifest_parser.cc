@@ -225,10 +225,9 @@ bool IsUrlWithinScope(const GURL& url, const GURL& scope) {
 //
 // The manifest parser accumulates metrics data in an instance of this class by
 // calling the Record*() methods. When the manifest is successfully parsed, the
-// accumulated metrics are logged by calling RecordParseSuccess() or
-// RecordParseWithInvalidManifestUrl(). Metrics for manifests that don't parse
-// in the success case are discarded.  Failure metrics are used to log
-// early-exit conditions like invalid manifest URLs.
+// accumulated metrics are logged by calling RecordParseSuccess(). Metrics for
+// manifests that don't parse in the success case are discarded. Failure metrics
+// are used to log early-exit conditions like invalid manifest URLs.
 class ParseMetricsRecorder {
  public:
   ParseMetricsRecorder() = default;
@@ -253,22 +252,6 @@ class ParseMetricsRecorder {
     has_intercept_entry_ = true;
   }
 
-  // Manifest URL is valid and parsing the manifest can proceed.
-  void RecordValidManifestUrl() {
-#if DCHECK_IS_ON()
-    DCHECK(!finalized_) << "Metrics already recorded";
-#endif  // DCHECK_IS_ON()
-    has_valid_manifest_url_ = true;
-  }
-
-  // Manifest URL is invalid and parsing the manifest must early-exit.
-  void RecordInvalidManifestUrl() {
-#if DCHECK_IS_ON()
-    DCHECK(!finalized_) << "Metrics already recorded";
-#endif  // DCHECK_IS_ON()
-    has_valid_manifest_url_ = false;
-  }
-
   // Called after the parser has successfully consumed the entire manifest.
   //
   // Must be called exactly once. No other Record*() method may be called after
@@ -286,22 +269,6 @@ class ParseMetricsRecorder {
     base::UmaHistogramEnumeration(
         "appcache.Manifest.InterceptUsage",
         has_intercept_entry_ ? InterceptUsage::kExact : InterceptUsage::kNone);
-    base::UmaHistogramBoolean("appcache.Manifest.ValidManifestURL",
-                              has_valid_manifest_url_);
-  }
-
-  // Called if the parser has early exited due to an invalid manifest URL.
-  //
-  // Must be called exactly once. No other Record*() method may be called after
-  // this method is called.
-  void RecordParseWithInvalidManifestUrl() {
-#if DCHECK_IS_ON()
-    DCHECK(!finalized_) << "Metrics already recorded";
-    finalized_ = true;
-#endif  // DCHECK_IS_ON()
-
-    base::UmaHistogramBoolean("appcache.Manifest.ValidManifestURL",
-                              has_valid_manifest_url_);
   }
 
  private:
@@ -323,11 +290,9 @@ class ParseMetricsRecorder {
   bool has_chrome_header_ = false;
   bool used_dangerous_mode_ = false;
   bool has_intercept_entry_ = false;
-  bool has_valid_manifest_url_ = false;
 
 #if DCHECK_IS_ON()
-  // True after RecordParseSuccess() or RecordParseWithInvalidManifestUrl() was
-  // called.
+  // True after RecordParseSuccess() was called.
   bool finalized_ = false;
 #endif  // DCHECK_IS_ON()
 };
@@ -405,11 +370,7 @@ bool ParseManifest(const GURL& manifest_url,
     return false;
 
   if (!manifest_url.is_valid()) {
-    parse_metrics.RecordInvalidManifestUrl();
-    parse_metrics.RecordParseWithInvalidManifestUrl();
     return false;
-  } else {
-    parse_metrics.RecordValidManifestUrl();
   }
 
   if (!AppCache::CheckValidManifestScope(manifest_url, manifest_scope))

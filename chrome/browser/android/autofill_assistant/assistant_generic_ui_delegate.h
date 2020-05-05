@@ -35,6 +35,12 @@ class AssistantGenericUiDelegate {
                          const base::android::JavaParamRef<jobject>& jcaller,
                          jint jlink);
 
+  // A generic popup was dismissed.
+  void OnGenericPopupDismissed(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& jcaller,
+      const base::android::JavaParamRef<jstring>& jpopup_identifier);
+
   base::android::ScopedJavaGlobalRef<jobject> GetJavaObject();
 
  private:

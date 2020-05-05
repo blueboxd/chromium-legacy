@@ -6,7 +6,8 @@
 
 #include <algorithm>
 
-#include "base/logging.h"
+#include "base/check.h"
+#include "base/notreached.h"
 #include "ui/events/event.h"
 #include "ui/gfx/geometry/point_conversions.h"
 

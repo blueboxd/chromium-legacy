@@ -51,18 +51,6 @@ class CORE_EXPORT V8GCController {
   static void GcPrologue(v8::Isolate*, v8::GCType, v8::GCCallbackFlags);
   static void GcEpilogue(v8::Isolate*, v8::GCType, v8::GCCallbackFlags);
 
-  // Collects V8 and Blink objects in multiple garbage collection passes. Also
-  // triggers follow up garbage collections in Oilpan to collect chains of
-  // persistent handles.
-  //
-  // Usage: Testing that objects do indeed get collected. Note that this may
-  // depend on the EmbedderStackState, i.e., Blink may keep objects alive that
-  // are reachabe from the stack if necessary.
-  static void CollectAllGarbageForTesting(
-      v8::Isolate*,
-      v8::EmbedderHeapTracer::EmbedderStackState stack_state =
-          v8::EmbedderHeapTracer::EmbedderStackState::kUnknown);
-
   // Called when Oilpan traces references from V8 wrappers to DOM wrappables.
   static void TraceDOMWrappers(v8::Isolate*, Visitor*);
 

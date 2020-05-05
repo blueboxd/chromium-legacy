@@ -4,7 +4,7 @@
 
 #include "ui/gfx/font_render_params.h"
 
-#include "base/logging.h"
+#include "base/notreached.h"
 
 namespace gfx {
 

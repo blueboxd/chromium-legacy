@@ -6,7 +6,7 @@
 
 #include <utility>
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "cc/paint/paint_flags.h"
 #include "skia/ext/image_operations.h"
 #include "ui/accessibility/ax_enums.mojom.h"

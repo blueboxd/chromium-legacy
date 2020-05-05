@@ -486,7 +486,10 @@ void DownloadTaskImpl::OnDownloadFinished(int error_code) {
   // If downloads manager's flag is enabled, keeps the downloaded file. The
   // writer deletes it if it owns it, that's why it shouldn't owns it anymore
   // when the current download is finished.
-  if (base::FeatureList::IsEnabled(web::features::kEnablePersistentDownloads))
+  // Check if writer_->AsFileWriter() is necessary because in some cases the
+  // writer isn't a fileWriter as for Passkit downloads for example.
+  if (base::FeatureList::IsEnabled(web::features::kEnablePersistentDownloads) &&
+      writer_->AsFileWriter())
     writer_->AsFileWriter()->DisownFile();
   error_code_ = error_code;
   state_ = State::kComplete;

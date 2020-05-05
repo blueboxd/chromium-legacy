@@ -64,29 +64,13 @@ std::unique_ptr<views::View> CreateRow() {
 
 // Builds a credential row, adds the given elements to the layout.
 // |destination_field| is nullptr if the destination field shouldn't be shown.
-// |password_view_button| is an optional field. If it is a nullptr, a
-// DOUBLE_VIEW_COLUMN_SET_PASSWORD will be used for password row instead of
-// TRIPLE_VIEW_COLUMN_SET.
+// |password_view_button| is an optional field.
 void BuildCredentialRows(
     views::View* parent_view,
     std::unique_ptr<views::View> destination_field,
     std::unique_ptr<views::View> username_field,
     std::unique_ptr<views::View> password_field,
     std::unique_ptr<views::ToggleImageButton> password_view_button) {
-  // TODO(crbug.com/1044038): Use an internationalized string instead.
-  int destination_label_width = 0;
-  int destination_field_height = 0;
-  std::unique_ptr<views::Label> destination_label;
-  if (destination_field) {
-    destination_label = std::make_unique<views::Label>(
-        base::ASCIIToUTF16("Destination"), views::style::CONTEXT_LABEL,
-        views::style::STYLE_PRIMARY);
-    destination_label->SetHorizontalAlignment(
-        gfx::HorizontalAlignment::ALIGN_LEFT);
-    destination_label_width = destination_label->GetPreferredSize().width();
-    destination_field_height = destination_field->GetPreferredSize().height();
-  }
-
   std::unique_ptr<views::Label> username_label(new views::Label(
       l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_USERNAME_LABEL),
       views::style::CONTEXT_LABEL, views::style::STYLE_PRIMARY));
@@ -97,14 +81,10 @@ void BuildCredentialRows(
       views::style::CONTEXT_LABEL, views::style::STYLE_PRIMARY));
   password_label->SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_LEFT);
 
-  int labels_width = std::max({destination_label_width,
-                               username_label->GetPreferredSize().width(),
+  int labels_width = std::max({username_label->GetPreferredSize().width(),
                                password_label->GetPreferredSize().width()});
-  int fields_height = std::max({destination_field_height,
-                                username_field->GetPreferredSize().height(),
+  int fields_height = std::max({username_field->GetPreferredSize().height(),
                                 password_field->GetPreferredSize().height()});
-  if (destination_label)
-    destination_label->SetPreferredSize(gfx::Size(labels_width, fields_height));
 
   username_label->SetPreferredSize(gfx::Size(labels_width, fields_height));
   password_label->SetPreferredSize(gfx::Size(labels_width, fields_height));
@@ -113,10 +93,9 @@ void BuildCredentialRows(
   if (destination_field) {
     std::unique_ptr<views::View> destination_row = CreateRow();
 
-    destination_row->AddChildView(std::move(destination_label));
     destination_field->SetProperty(
         views::kFlexBehaviorKey,
-        views::FlexSpecification(views::MinimumFlexSizeRule::kPreferred,
+        views::FlexSpecification(views::MinimumFlexSizeRule::kScaleToZero,
                                  views::MaximumFlexSizeRule::kUnbounded));
     destination_row->AddChildView(std::move(destination_field));
 
@@ -242,9 +221,11 @@ std::unique_ptr<views::Combobox> CreateDestinationCombobox(
     const std::string& account,
     bool is_using_account_store) {
   std::vector<base::string16> destinations;
-  destinations.push_back(base::ASCIIToUTF16(account));
+  destinations.push_back(
+      base::ASCIIToUTF16("in your Google Account (" + account + ")"));
   // TODO(crbug.com/1044038): Use an internationalized string instead.
-  destinations.push_back(base::ASCIIToUTF16("Local"));
+  destinations.push_back(base::ASCIIToUTF16("only on this device"));
+
   auto combobox = std::make_unique<views::Combobox>(
       std::make_unique<ui::SimpleComboboxModel>(std::move(destinations)));
   if (is_using_account_store)

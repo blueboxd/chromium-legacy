@@ -6,7 +6,11 @@
 #define EXTENSIONS_BROWSER_SERVICE_WORKER_SERVICE_WORKER_TEST_UTILS_H_
 
 #include "base/run_loop.h"
+#include "base/scoped_observer.h"
 #include "content/public/browser/service_worker_context_observer.h"
+#include "extensions/browser/process_manager.h"
+#include "extensions/browser/process_manager_observer.h"
+#include "extensions/common/extension_id.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -44,6 +48,28 @@ class TestRegistrationObserver : public content::ServiceWorkerContextObserver {
   RegistrationsMap registrations_completed_map_;
   base::RunLoop stored_run_loop_;
   content::ServiceWorkerContext* context_ = nullptr;
+};
+
+// Observes ProcessManager::UnregisterServiceWorker.
+class UnregisterWorkerObserver : public ProcessManagerObserver {
+ public:
+  UnregisterWorkerObserver(ProcessManager* process_manager,
+                           const ExtensionId& extension_id);
+  ~UnregisterWorkerObserver() override;
+
+  UnregisterWorkerObserver(const UnregisterWorkerObserver&) = delete;
+  UnregisterWorkerObserver& operator=(const UnregisterWorkerObserver&) = delete;
+
+  // ProcessManagerObserver:
+  void OnServiceWorkerUnregistered(const WorkerId& worker_id) override;
+
+  // Waits for ProcessManager::UnregisterServiceWorker for |extension_id_|.
+  void WaitForUnregister();
+
+ private:
+  ExtensionId extension_id_;
+  ScopedObserver<ProcessManager, ProcessManagerObserver> observer_{this};
+  base::RunLoop run_loop_;
 };
 
 }  // namespace service_worker_test_utils

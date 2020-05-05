@@ -7,7 +7,7 @@
 #include <algorithm>
 #include <valarray>
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/stl_util.h"
 
 namespace ui {

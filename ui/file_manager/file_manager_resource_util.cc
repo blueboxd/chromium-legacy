@@ -4,7 +4,7 @@
 
 #include "ui/file_manager/file_manager_resource_util.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "ui/file_manager/grit/file_manager_resources_map.h"
 
 namespace file_manager {

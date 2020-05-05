@@ -19,6 +19,7 @@
 #include "base/pickle.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/values.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -403,21 +404,23 @@ TEST_P(SparseHistogramTest, WriteAscii) {
   EXPECT_THAT(output, testing::MatchesRegex(kOutputFormatRe));
 }
 
-TEST_P(SparseHistogramTest, WriteHTMLGraph) {
+TEST_P(SparseHistogramTest, ToGraphDict) {
   HistogramBase* histogram =
       SparseHistogram::FactoryGet("HTMLOut", HistogramBase::kNoFlags);
   histogram->AddCount(/*sample=*/4, /*value=*/5);
   histogram->AddCount(/*sample=*/10, /*value=*/15);
 
-  std::string output;
-  histogram->WriteHTMLGraph(&output);
+  base::DictionaryValue output = histogram->ToGraphDict();
+  std::string* header = output.FindStringKey("header");
+  std::string* body = output.FindStringKey("body");
 
-  const char kOutputFormatRe[] =
-      R"(<PRE><h4>Histogram: HTMLOut recorded 20 samples.*<\/h4>)"
-      R"(4   -+O +\(5 = 25.0%\)<br>)"
-      R"(10  -+O +\(15 = 75.0%\)<br><\/PRE>)";
+  const char kOutputHeaderFormatRe[] =
+      R"(Histogram: HTMLOut recorded 20 samples.*)";
+  const char kOutputBodyFormatRe[] = R"(4   -+O +\(5 = 25.0%\)\n)"
+                                     R"(10  -+O +\(15 = 75.0%\)\n)";
 
-  EXPECT_THAT(output, testing::MatchesRegex(kOutputFormatRe));
+  EXPECT_THAT(*header, testing::MatchesRegex(kOutputHeaderFormatRe));
+  EXPECT_THAT(*body, testing::MatchesRegex(kOutputBodyFormatRe));
 }
 
 }  // namespace base

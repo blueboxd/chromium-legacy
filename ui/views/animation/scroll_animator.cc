@@ -7,7 +7,7 @@
 #include <algorithm>
 #include <cmath>
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "ui/gfx/animation/slide_animation.h"
 
 namespace {

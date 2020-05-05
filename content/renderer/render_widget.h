@@ -374,7 +374,6 @@ class CONTENT_EXPORT RenderWidget
   void SetTouchAction(cc::TouchAction touch_action) override;
   void RequestUnbufferedInputEvents() override;
   void SetHasPointerRawUpdateEventHandlers(bool has_handlers) override;
-  void SetHasTouchEventHandlers(bool has_handlers) override;
   void SetNeedsLowLatencyInput(bool) override;
   void SetNeedsUnbufferedInputForDebugger(bool) override;
   void SetPageScaleStateAndLimits(float page_scale_factor,

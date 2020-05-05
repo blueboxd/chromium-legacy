@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAGE_NAMED_PAGES_MAPPER_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_PAGE_NAMED_PAGES_MAPPER_H_
 
+#include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
@@ -19,7 +20,7 @@ namespace blink {
 // initial 'page' value 'auto' is represented by an empty string.
 //
 // [1] https://www.w3.org/TR/css-page-3/#using-named-pages
-class NamedPagesMapper {
+class CORE_EXPORT NamedPagesMapper {
  public:
   // We start by inserting an unnamed ('auto') entry with indefinite page
   // count. In documents with no named pages at all, this is all we'll
@@ -30,46 +31,21 @@ class NamedPagesMapper {
   // Add an entry for a given page name. If the specified page index is lower
   // than the number of pages we already have, the entries after this will be
   // deleted.
-  void AddNamedPage(const AtomicString& page_name, int page_index) {
-    DCHECK_GE(page_index, 0);
-    for (wtf_size_t idx = 0; idx < entries_.size(); idx++) {
-      if (entries_[idx].last_page_index == -1) {
-        DCHECK_EQ(idx, entries_.size() - 1);
-        break;
-      }
-      if (entries_[idx].last_page_index >= page_index) {
-        entries_.Shrink(idx + 1);
-        break;
-      }
-    }
-    // Terminate the previous entry if there is one (now that we know its last
-    // page index) before adding the new entry.
-    if (page_index > 0)
-      entries_.back().last_page_index = page_index - 1;
-    entries_.emplace_back(page_name);
-  }
+  void AddNamedPage(const AtomicString& page_name, int page_index);
 
   const AtomicString& LastPageName() const { return entries_.back().page_name; }
-
-  const AtomicString& NamedPageAtIndex(int page_index) const {
-    for (const Entry& entry : entries_) {
-      if (page_index <= entry.last_page_index)
-        return entry.page_name;
-    }
-    return entries_.back().page_name;
-  }
+  const AtomicString& NamedPageAtIndex(int page_index) const;
 
  private:
   // An entry of contiguous pages with the same name.
   struct Entry {
-    explicit Entry(const AtomicString& page_name)
-        : page_name(page_name), last_page_index(-1) {}
+    explicit Entry(const AtomicString& page_name) : page_name(page_name) {}
 
     AtomicString page_name;
 
     // The last page that this entry applies for. -1 means that it applies to
     // all remaining pages. -1 is only allowed in the last entry.
-    int last_page_index;
+    int last_page_index = -1;
   };
 
   Vector<Entry, 1> entries_;

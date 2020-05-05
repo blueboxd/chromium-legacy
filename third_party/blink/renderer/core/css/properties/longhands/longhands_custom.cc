@@ -6097,9 +6097,11 @@ const CSSValue* TextDecorationThickness::ParseSingleValue(
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
   DCHECK(RuntimeEnabledFeatures::UnderlineOffsetThicknessEnabled());
-  if (range.Peek().Id() == CSSValueID::kFromFont ||
-      range.Peek().Id() == CSSValueID::kAuto)
-    return css_property_parser_helpers::ConsumeIdent(range);
+  if (auto* ident =
+          css_property_parser_helpers::ConsumeIdent<CSSValueID::kFromFont,
+                                                    CSSValueID::kAuto>(range)) {
+    return ident;
+  }
   return css_property_parser_helpers::ConsumeLengthOrPercent(range, context,
                                                              kValueRangeAll);
 }

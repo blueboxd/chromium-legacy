@@ -9,8 +9,8 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/check_op.h"
 #include "base/i18n/rtl.h"
-#include "base/logging.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "build/build_config.h"

@@ -683,7 +683,19 @@ void FrameFetchContext::AddClientHintsIfNecessary(
     request.SetHttpHeaderField(
         blink::kClientHintsHeaderMapping[static_cast<size_t>(
             network::mojom::blink::WebClientHintsType::kUAPlatform)],
-        AddBrandVersionQuotes(ua->platform, ua->platform_version));
+        AddQuotes(ua->platform));
+  }
+
+  if (ua.has_value() &&
+      ShouldSendClientHint(
+          ClientHintsMode::kStandard, policy, resource_origin, is_1p_origin,
+          network::mojom::blink::WebClientHintsType::kUAPlatformVersion,
+          mojom::blink::FeaturePolicyFeature::kClientHintUAPlatform,
+          hints_preferences, enabled_hints)) {
+    request.SetHttpHeaderField(
+        blink::kClientHintsHeaderMapping[static_cast<size_t>(
+            network::mojom::blink::WebClientHintsType::kUAPlatformVersion)],
+        AddQuotes(ua->platform_version));
   }
 
   if (ua.has_value() &&

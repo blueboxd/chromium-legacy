@@ -508,9 +508,6 @@ class TestRunner {
                      const GURL& origin,
                      const GURL& embedding_origin);
 
-  // Resolve the in-flight beforeinstallprompt event.
-  void ResolveBeforeInstallPromptPromise(const std::string& platform);
-
   // Calls setlocale(LC_ALL, ...) for a specified locale.
   // Resets between tests.
   void SetPOSIXLocale(const std::string& locale);

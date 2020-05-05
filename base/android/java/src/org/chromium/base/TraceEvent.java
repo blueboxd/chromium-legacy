@@ -54,24 +54,24 @@ public class TraceEvent implements AutoCloseable {
         void beginHandling(final String line) {
             // May return an out-of-date value. this is not an issue as EarlyTraceEvent#begin()
             // will filter the event in this case.
-            boolean earlyTracingActive = EarlyTraceEvent.isActive();
+            boolean earlyTracingActive = EarlyTraceEvent.enabled();
             if (sEnabled || earlyTracingActive) {
                 mCurrentTarget = getTraceEventName(line);
                 if (sEnabled) {
                     TraceEventJni.get().beginToplevel(mCurrentTarget);
                 } else {
-                    EarlyTraceEvent.begin(mCurrentTarget);
+                    EarlyTraceEvent.begin(mCurrentTarget, true /*isToplevel*/);
                 }
             }
         }
 
         void endHandling(final String line) {
-            boolean earlyTracingActive = EarlyTraceEvent.isActive();
+            boolean earlyTracingActive = EarlyTraceEvent.enabled();
             if ((sEnabled || earlyTracingActive) && mCurrentTarget != null) {
                 if (sEnabled) {
                     TraceEventJni.get().endToplevel(mCurrentTarget);
                 } else {
-                    EarlyTraceEvent.end(mCurrentTarget);
+                    EarlyTraceEvent.end(mCurrentTarget, true /*isToplevel*/);
                 }
             }
             mCurrentTarget = null;
@@ -299,7 +299,7 @@ public class TraceEvent implements AutoCloseable {
      */
     public static void maybeEnableEarlyTracing() {
         EarlyTraceEvent.maybeEnable();
-        if (EarlyTraceEvent.isActive()) {
+        if (EarlyTraceEvent.enabled()) {
             ThreadUtils.getUiThreadLooper().setMessageLogging(LooperMonitorHolder.sInstance);
         }
     }
@@ -383,7 +383,7 @@ public class TraceEvent implements AutoCloseable {
      * @param arg  The arguments of the event.
      */
     public static void begin(String name, String arg) {
-        EarlyTraceEvent.begin(name);
+        EarlyTraceEvent.begin(name, false /*isToplevel*/);
         if (sEnabled) TraceEventJni.get().begin(name, arg);
     }
 
@@ -401,7 +401,7 @@ public class TraceEvent implements AutoCloseable {
      * @param arg  The arguments of the event.
      */
     public static void end(String name, String arg) {
-        EarlyTraceEvent.end(name);
+        EarlyTraceEvent.end(name, false /*isToplevel*/);
         if (sEnabled) TraceEventJni.get().end(name, arg);
     }
 

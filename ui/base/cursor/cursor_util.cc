@@ -4,7 +4,8 @@
 
 #include "ui/base/cursor/cursor_util.h"
 
-#include "base/logging.h"
+#include "base/check_op.h"
+#include "base/notreached.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/geometry/point_conversions.h"
 #include "ui/gfx/geometry/size_conversions.h"

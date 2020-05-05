@@ -104,8 +104,8 @@ class PasswordManagerSyncTest : public SyncTest {
 
     // Let the user opt in to the passwords account storage, and wait for it to
     // become active.
-    password_manager::features_util::SetAccountStorageOptIn(
-        GetProfile(0)->GetPrefs(), GetSyncService(0), true);
+    password_manager::features_util::OptInToAccountStorage(
+        GetProfile(0)->GetPrefs(), GetSyncService(0));
     PasswordSyncActiveChecker(GetSyncService(0)).Wait();
     ASSERT_TRUE(GetSyncService(0)->GetActiveDataTypes().Has(syncer::PASSWORDS));
   }

@@ -4068,20 +4068,18 @@ TEST_F(WebViewTest, AddFrameInChildInNavigateUnload) {
   web_view_helper_.Reset();
 }
 
-class TouchEventHandlerWebWidgetClient
-    : public frame_test_helpers::TestWebWidgetClient {
+class FakeFrameWidgetHost : public mojom::blink::FrameWidgetHost {
  public:
-  // WebWidgetClient methods
-  void SetHasTouchEventHandlers(bool state) override {
-    // Only count the times the state changes.
-    if (state != has_touch_event_handler_)
-      has_touch_event_handler_count_[state]++;
-    has_touch_event_handler_ = state;
-  }
-
-  // Local methods
-  TouchEventHandlerWebWidgetClient()
+  FakeFrameWidgetHost()
       : has_touch_event_handler_count_(), has_touch_event_handler_(false) {}
+  ~FakeFrameWidgetHost() override = default;
+
+  mojo::PendingAssociatedRemote<mojom::blink::FrameWidgetHost>
+  BindNewFrameWidgetInterfaces() {
+    frame_widget_host_receiver_.reset();
+    return frame_widget_host_receiver_
+        .BindNewEndpointAndPassDedicatedRemoteForTesting();
+  }
 
   int GetAndResetHasTouchEventHandlerCallCount(bool state) {
     int value = has_touch_event_handler_count_[state];
@@ -4090,19 +4088,70 @@ class TouchEventHandlerWebWidgetClient
   }
 
  private:
+  // blink::mojom::FrameWidgetHost overrides.
+  void AnimateDoubleTapZoomInMainFrame(const gfx::Point& tap_point,
+                                       const gfx::Rect& rect_to_zoom) override {
+  }
+  void ZoomToFindInPageRectInMainFrame(const gfx::Rect& rect_to_zoom) override {
+  }
+  void SetHasTouchEventHandlers(bool state) override {
+    // Only count the times the state changes.
+    if (state != has_touch_event_handler_)
+      has_touch_event_handler_count_[state]++;
+    has_touch_event_handler_ = state;
+  }
+
+ private:
+  mojo::AssociatedReceiver<mojom::blink::FrameWidgetHost>
+      frame_widget_host_receiver_{this};
   int has_touch_event_handler_count_[2];
   bool has_touch_event_handler_;
+
+  DISALLOW_COPY_AND_ASSIGN(FakeFrameWidgetHost);
 };
 
-// This test verifies that WebWidgetClient::SetHasTouchEventHandlers is called
+// This test verifies that FrameWidgetHost::SetHasTouchEventHandlers is called
 // accordingly for various calls to EventHandlerRegistry::did{Add|Remove|
 // RemoveAll}EventHandler(..., TouchEvent). Verifying that those calls are made
 // correctly is the job of web_tests/fast/events/event-handler-count.html.
 TEST_F(WebViewTest, SetHasTouchEventHandlers) {
-  TouchEventHandlerWebWidgetClient client;
+  // Note: this test doesn't use WebViewHelper since it intentionally runs
+  // initialization code between WebView and WebLocalFrame creation.
+  frame_test_helpers::TestWebViewClient web_view_client;
+  frame_test_helpers::TestWebWidgetClient web_widget_client;
+  WebViewImpl* web_view_impl = static_cast<WebViewImpl*>(WebView::Create(
+      &web_view_client, false,
+      /*compositing_enabled=*/true, nullptr, mojo::NullAssociatedReceiver()));
+
+  frame_test_helpers::TestWebFrameClient web_frame_client;
+  WebLocalFrame* frame =
+      WebLocalFrame::CreateMainFrame(web_view_impl, &web_frame_client, nullptr,
+                                     base::UnguessableToken::Create(), nullptr);
+  web_frame_client.Bind(frame);
+
+  FakeFrameWidgetHost frame_widget_host;
+  auto blink_frame_widget_host =
+      frame_widget_host.BindNewFrameWidgetInterfaces();
+
+  {
+    // Copy the steps done from WebViewHelper::InitializeWithOpener() to set up
+    // the appropriate pointers!
+    WebFrameWidget* widget = blink::WebFrameWidget::CreateForMainFrame(
+        &web_widget_client, frame, std::move(blink_frame_widget_host),
+        CrossVariantMojoAssociatedReceiver<mojom::FrameWidgetInterfaceBase>(),
+        CrossVariantMojoAssociatedRemote<mojom::WidgetHostInterfaceBase>(),
+        CrossVariantMojoAssociatedReceiver<mojom::WidgetInterfaceBase>());
+    web_widget_client.set_layer_tree_host(widget->InitializeCompositing(
+        web_widget_client.task_graph_runner(),
+        frame_test_helpers::GetSynchronousSingleThreadLayerTreeSettings(),
+        std::make_unique<cc::TestUkmRecorderFactory>()));
+    widget->SetCompositorVisible(true);
+    web_view_impl->DidAttachLocalMainFrame();
+  }
+
   std::string url = RegisterMockedHttpURLLoad("has_touch_event_handlers.html");
-  WebViewImpl* web_view_impl =
-      web_view_helper_.InitializeAndLoad(url, nullptr, nullptr, &client);
+  LoadFrame(web_view_impl->MainFrameImpl(), url);
+
   const EventHandlerRegistry::EventHandlerClass kTouchEvent =
       EventHandlerRegistry::kTouchStartOrMoveEventBlocking;
 
@@ -4110,8 +4159,10 @@ TEST_F(WebViewTest, SetHasTouchEventHandlers) {
   // In practice we get two such calls because WebViewHelper::initializeAndLoad
   // first initializes an empty frame, and then loads a document into it, so
   // there are two FrameLoader::commitProvisionalLoad calls.
-  EXPECT_EQ(0, client.GetAndResetHasTouchEventHandlerCallCount(false));
-  EXPECT_EQ(0, client.GetAndResetHasTouchEventHandlerCallCount(true));
+  EXPECT_EQ(0,
+            frame_widget_host.GetAndResetHasTouchEventHandlerCallCount(false));
+  EXPECT_EQ(0,
+            frame_widget_host.GetAndResetHasTouchEventHandlerCallCount(true));
 
   // Adding the first document handler results in a has-handlers call.
   Document* document =
@@ -4119,30 +4170,46 @@ TEST_F(WebViewTest, SetHasTouchEventHandlers) {
   EventHandlerRegistry* registry =
       &document->GetFrame()->GetEventHandlerRegistry();
   registry->DidAddEventHandler(*document, kTouchEvent);
-  EXPECT_EQ(0, client.GetAndResetHasTouchEventHandlerCallCount(false));
-  EXPECT_EQ(1, client.GetAndResetHasTouchEventHandlerCallCount(true));
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(0,
+            frame_widget_host.GetAndResetHasTouchEventHandlerCallCount(false));
+  EXPECT_EQ(1,
+            frame_widget_host.GetAndResetHasTouchEventHandlerCallCount(true));
 
   // Adding another handler has no effect.
   registry->DidAddEventHandler(*document, kTouchEvent);
-  EXPECT_EQ(0, client.GetAndResetHasTouchEventHandlerCallCount(false));
-  EXPECT_EQ(0, client.GetAndResetHasTouchEventHandlerCallCount(true));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(0,
+            frame_widget_host.GetAndResetHasTouchEventHandlerCallCount(false));
+  EXPECT_EQ(0,
+            frame_widget_host.GetAndResetHasTouchEventHandlerCallCount(true));
 
   // Removing the duplicate handler has no effect.
   registry->DidRemoveEventHandler(*document, kTouchEvent);
-  EXPECT_EQ(0, client.GetAndResetHasTouchEventHandlerCallCount(false));
-  EXPECT_EQ(0, client.GetAndResetHasTouchEventHandlerCallCount(true));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(0,
+            frame_widget_host.GetAndResetHasTouchEventHandlerCallCount(false));
+  EXPECT_EQ(0,
+            frame_widget_host.GetAndResetHasTouchEventHandlerCallCount(true));
 
   // Removing the final handler results in a no-handlers call.
   registry->DidRemoveEventHandler(*document, kTouchEvent);
-  EXPECT_EQ(1, client.GetAndResetHasTouchEventHandlerCallCount(false));
-  EXPECT_EQ(0, client.GetAndResetHasTouchEventHandlerCallCount(true));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(1,
+            frame_widget_host.GetAndResetHasTouchEventHandlerCallCount(false));
+  EXPECT_EQ(0,
+            frame_widget_host.GetAndResetHasTouchEventHandlerCallCount(true));
 
   // Adding a handler on a div results in a has-handlers call.
   Element* parent_div = document->getElementById("parentdiv");
   DCHECK(parent_div);
   registry->DidAddEventHandler(*parent_div, kTouchEvent);
-  EXPECT_EQ(0, client.GetAndResetHasTouchEventHandlerCallCount(false));
-  EXPECT_EQ(1, client.GetAndResetHasTouchEventHandlerCallCount(true));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(0,
+            frame_widget_host.GetAndResetHasTouchEventHandlerCallCount(false));
+  EXPECT_EQ(1,
+            frame_widget_host.GetAndResetHasTouchEventHandlerCallCount(true));
 
   // Adding a duplicate handler on the div, clearing all document handlers
   // (of which there are none) and removing the extra handler on the div
@@ -4150,25 +4217,40 @@ TEST_F(WebViewTest, SetHasTouchEventHandlers) {
   registry->DidAddEventHandler(*parent_div, kTouchEvent);
   registry->DidRemoveAllEventHandlers(*document);
   registry->DidRemoveEventHandler(*parent_div, kTouchEvent);
-  EXPECT_EQ(0, client.GetAndResetHasTouchEventHandlerCallCount(false));
-  EXPECT_EQ(0, client.GetAndResetHasTouchEventHandlerCallCount(true));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(0,
+            frame_widget_host.GetAndResetHasTouchEventHandlerCallCount(false));
+  EXPECT_EQ(0,
+            frame_widget_host.GetAndResetHasTouchEventHandlerCallCount(true));
 
   // Removing the final handler on the div results in a no-handlers call.
   registry->DidRemoveEventHandler(*parent_div, kTouchEvent);
-  EXPECT_EQ(1, client.GetAndResetHasTouchEventHandlerCallCount(false));
-  EXPECT_EQ(0, client.GetAndResetHasTouchEventHandlerCallCount(true));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(1,
+            frame_widget_host.GetAndResetHasTouchEventHandlerCallCount(false));
+  EXPECT_EQ(0,
+            frame_widget_host.GetAndResetHasTouchEventHandlerCallCount(true));
 
   // Adding two handlers then clearing them in a single call results in a
   // has-handlers then no-handlers call.
   registry->DidAddEventHandler(*parent_div, kTouchEvent);
-  EXPECT_EQ(0, client.GetAndResetHasTouchEventHandlerCallCount(false));
-  EXPECT_EQ(1, client.GetAndResetHasTouchEventHandlerCallCount(true));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(0,
+            frame_widget_host.GetAndResetHasTouchEventHandlerCallCount(false));
+  EXPECT_EQ(1,
+            frame_widget_host.GetAndResetHasTouchEventHandlerCallCount(true));
   registry->DidAddEventHandler(*parent_div, kTouchEvent);
-  EXPECT_EQ(0, client.GetAndResetHasTouchEventHandlerCallCount(false));
-  EXPECT_EQ(0, client.GetAndResetHasTouchEventHandlerCallCount(true));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(0,
+            frame_widget_host.GetAndResetHasTouchEventHandlerCallCount(false));
+  EXPECT_EQ(0,
+            frame_widget_host.GetAndResetHasTouchEventHandlerCallCount(true));
   registry->DidRemoveAllEventHandlers(*parent_div);
-  EXPECT_EQ(1, client.GetAndResetHasTouchEventHandlerCallCount(false));
-  EXPECT_EQ(0, client.GetAndResetHasTouchEventHandlerCallCount(true));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(1,
+            frame_widget_host.GetAndResetHasTouchEventHandlerCallCount(false));
+  EXPECT_EQ(0,
+            frame_widget_host.GetAndResetHasTouchEventHandlerCallCount(true));
 
   // Adding a handler inside of a child iframe results in a has-handlers call.
   Element* child_frame = document->getElementById("childframe");
@@ -4178,8 +4260,11 @@ TEST_F(WebViewTest, SetHasTouchEventHandlers) {
   Element* child_div = child_document->getElementById("childdiv");
   DCHECK(child_div);
   registry->DidAddEventHandler(*child_div, kTouchEvent);
-  EXPECT_EQ(0, client.GetAndResetHasTouchEventHandlerCallCount(false));
-  EXPECT_EQ(1, client.GetAndResetHasTouchEventHandlerCallCount(true));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(0,
+            frame_widget_host.GetAndResetHasTouchEventHandlerCallCount(false));
+  EXPECT_EQ(1,
+            frame_widget_host.GetAndResetHasTouchEventHandlerCallCount(true));
 
   // Adding and clearing handlers in the parent doc or elsewhere in the child
   // doc has no impact.
@@ -4189,19 +4274,28 @@ TEST_F(WebViewTest, SetHasTouchEventHandlers) {
   registry->DidRemoveAllEventHandlers(*document);
   registry->DidRemoveAllEventHandlers(*child_frame);
   registry->DidRemoveAllEventHandlers(*child_document);
-  EXPECT_EQ(0, client.GetAndResetHasTouchEventHandlerCallCount(false));
-  EXPECT_EQ(0, client.GetAndResetHasTouchEventHandlerCallCount(true));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(0,
+            frame_widget_host.GetAndResetHasTouchEventHandlerCallCount(false));
+  EXPECT_EQ(0,
+            frame_widget_host.GetAndResetHasTouchEventHandlerCallCount(true));
 
   // Removing the final handler inside the child frame results in a no-handlers
   // call.
   registry->DidRemoveAllEventHandlers(*child_div);
-  EXPECT_EQ(1, client.GetAndResetHasTouchEventHandlerCallCount(false));
-  EXPECT_EQ(0, client.GetAndResetHasTouchEventHandlerCallCount(true));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(1,
+            frame_widget_host.GetAndResetHasTouchEventHandlerCallCount(false));
+  EXPECT_EQ(0,
+            frame_widget_host.GetAndResetHasTouchEventHandlerCallCount(true));
 
   // Adding a handler inside the child frame results in a has-handlers call.
   registry->DidAddEventHandler(*child_document, kTouchEvent);
-  EXPECT_EQ(0, client.GetAndResetHasTouchEventHandlerCallCount(false));
-  EXPECT_EQ(1, client.GetAndResetHasTouchEventHandlerCallCount(true));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(0,
+            frame_widget_host.GetAndResetHasTouchEventHandlerCallCount(false));
+  EXPECT_EQ(1,
+            frame_widget_host.GetAndResetHasTouchEventHandlerCallCount(true));
 
   // Adding a handler in the parent document and removing the one in the frame
   // has no effect.
@@ -4209,14 +4303,20 @@ TEST_F(WebViewTest, SetHasTouchEventHandlers) {
   registry->DidRemoveEventHandler(*child_document, kTouchEvent);
   registry->DidRemoveAllEventHandlers(*child_document);
   registry->DidRemoveAllEventHandlers(*document);
-  EXPECT_EQ(0, client.GetAndResetHasTouchEventHandlerCallCount(false));
-  EXPECT_EQ(0, client.GetAndResetHasTouchEventHandlerCallCount(true));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(0,
+            frame_widget_host.GetAndResetHasTouchEventHandlerCallCount(false));
+  EXPECT_EQ(0,
+            frame_widget_host.GetAndResetHasTouchEventHandlerCallCount(true));
 
   // Now removing the handler in the parent document results in a no-handlers
   // call.
   registry->DidRemoveEventHandler(*child_frame, kTouchEvent);
-  EXPECT_EQ(1, client.GetAndResetHasTouchEventHandlerCallCount(false));
-  EXPECT_EQ(0, client.GetAndResetHasTouchEventHandlerCallCount(true));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(1,
+            frame_widget_host.GetAndResetHasTouchEventHandlerCallCount(false));
+  EXPECT_EQ(0,
+            frame_widget_host.GetAndResetHasTouchEventHandlerCallCount(true));
 
   // Free the webView before the TouchEventHandlerWebViewClient gets freed.
   web_view_helper_.Reset();

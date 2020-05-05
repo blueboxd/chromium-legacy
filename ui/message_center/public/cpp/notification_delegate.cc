@@ -5,7 +5,7 @@
 #include "ui/message_center/public/cpp/notification_delegate.h"
 
 #include "base/bind.h"
-#include "base/logging.h"
+#include "base/check.h"
 
 namespace message_center {
 

@@ -4,7 +4,7 @@
 
 #include "ui/base/dragdrop/os_exchange_data_provider_factory.h"
 
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "build/build_config.h"
 
 #if defined(USE_X11)

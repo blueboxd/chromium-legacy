@@ -39,7 +39,6 @@
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/render_view.h"
 #include "content/shell/common/shell_switches.h"
-#include "content/shell/renderer/web_test/app_banner_service.h"
 #include "content/shell/renderer/web_test/blink_test_helpers.h"
 #include "content/shell/renderer/web_test/gamepad_controller.h"
 #include "content/shell/renderer/web_test/pixel_dump.h"
@@ -59,7 +58,6 @@
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/common/input/web_input_event.h"
 #include "third_party/blink/public/common/permissions/permission_utils.h"
-#include "third_party/blink/public/mojom/app_banner/app_banner.mojom.h"
 #include "third_party/blink/public/platform/file_path_conversion.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
@@ -419,27 +417,6 @@ void BlinkTestRunner::SetPermission(const std::string& name,
 
 void BlinkTestRunner::ResetPermissions() {
   GetWebTestClientRemote()->ResetPermissions();
-}
-
-void BlinkTestRunner::DispatchBeforeInstallPromptEvent(
-    const std::vector<std::string>& event_platforms,
-    base::OnceCallback<void(bool)> callback) {
-  app_banner_service_.reset(new AppBannerService());
-  web_view_test_proxy_->GetMainRenderFrame()->BindLocalInterface(
-      blink::mojom::AppBannerController::Name_,
-      app_banner_service_->controller()
-          .BindNewPipeAndPassReceiver()
-          .PassPipe());
-  app_banner_service_->SendBannerPromptRequest(event_platforms,
-                                               std::move(callback));
-}
-
-void BlinkTestRunner::ResolveBeforeInstallPromptPromise(
-    const std::string& platform) {
-  if (app_banner_service_) {
-    app_banner_service_->ResolvePromise(platform);
-    app_banner_service_.reset(nullptr);
-  }
 }
 
 void BlinkTestRunner::SetScreenOrientationChanged() {

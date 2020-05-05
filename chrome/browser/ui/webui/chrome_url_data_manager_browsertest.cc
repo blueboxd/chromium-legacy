@@ -297,3 +297,17 @@ IN_PROC_BROWSER_TEST_F(
     NoTrustedTypesViolationInMediaInternals) {
   CheckTrustedTypesViolation("chrome://media-internals");
 }
+
+// Verify that there's no Trusted Types violation in chrome://histograms
+IN_PROC_BROWSER_TEST_F(
+    ChromeURLDataManagerTestWithWebUIReportOnlyTrustedTypesEnabled,
+    NoTrustedTypesViolationInHistograms) {
+  CheckTrustedTypesViolation("chrome://histograms");
+}
+
+// Verify that there's no Trusted Types violation in chrome://accessibility
+IN_PROC_BROWSER_TEST_F(
+    ChromeURLDataManagerTestWithWebUIReportOnlyTrustedTypesEnabled,
+    NoTrustedTypesViolationInAccessibility) {
+  CheckTrustedTypesViolation("chrome://accessibility");
+}

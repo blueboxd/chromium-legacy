@@ -5,6 +5,8 @@
 #ifndef IOS_CHROME_BROWSER_UI_WEBUI_SIGNIN_INTERNALS_UI_IOS_H_
 #define IOS_CHROME_BROWSER_UI_WEBUI_SIGNIN_INTERNALS_UI_IOS_H_
 
+#include <string>
+
 #include "base/macros.h"
 #include "base/values.h"
 #include "components/signin/core/browser/about_signin_internals.h"
@@ -14,7 +16,7 @@
 class SignInInternalsUIIOS : public web::WebUIIOSController,
                              public AboutSigninInternals::Observer {
  public:
-  explicit SignInInternalsUIIOS(web::WebUIIOS* web_ui);
+  explicit SignInInternalsUIIOS(web::WebUIIOS* web_ui, const std::string& host);
   ~SignInInternalsUIIOS() override;
 
   // web::WebUIIOSController implementation.

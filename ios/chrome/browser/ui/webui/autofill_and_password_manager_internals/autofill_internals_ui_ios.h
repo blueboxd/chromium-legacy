@@ -5,13 +5,16 @@
 #ifndef IOS_CHROME_BROWSER_UI_WEBUI_AUTOFILL_AND_PASSWORD_MANAGER_INTERNALS_AUTOFILL_INTERNALS_UI_IOS_H_
 #define IOS_CHROME_BROWSER_UI_WEBUI_AUTOFILL_AND_PASSWORD_MANAGER_INTERNALS_AUTOFILL_INTERNALS_UI_IOS_H_
 
+#include <string>
+
 #include "base/macros.h"
 #import "ios/web/public/webui/web_ui_ios_controller.h"
 
 // The implementation for the chrome://autofill-internals page.
 class AutofillInternalsUIIOS : public web::WebUIIOSController {
  public:
-  explicit AutofillInternalsUIIOS(web::WebUIIOS* web_ui);
+  explicit AutofillInternalsUIIOS(web::WebUIIOS* web_ui,
+                                  const std::string& host);
   ~AutofillInternalsUIIOS() override;
 
  private:

@@ -13,6 +13,7 @@
 #include "base/base_export.h"
 #include "base/metrics/histogram_base.h"
 #include "base/no_destructor.h"
+#include "base/values.h"
 
 namespace base {
 
@@ -36,8 +37,8 @@ class BASE_EXPORT DummyHistogram : public HistogramBase {
   std::unique_ptr<HistogramSamples> SnapshotSamples() const override;
   std::unique_ptr<HistogramSamples> SnapshotDelta() override;
   std::unique_ptr<HistogramSamples> SnapshotFinalDelta() const override;
-  void WriteHTMLGraph(std::string* output) const override {}
   void WriteAscii(std::string* output) const override {}
+  base::DictionaryValue ToGraphDict() const override;
 
  protected:
   // HistogramBase:

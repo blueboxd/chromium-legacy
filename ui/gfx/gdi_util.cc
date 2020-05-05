@@ -9,7 +9,6 @@
 #include <algorithm>
 #include <memory>
 
-#include "base/logging.h"
 #include "skia/ext/skia_utils_win.h"
 
 namespace gfx {

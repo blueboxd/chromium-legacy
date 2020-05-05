@@ -6,7 +6,6 @@
 
 #include <stddef.h>
 
-#include "base/logging.h"
 #include "base/memory/singleton.h"
 
 namespace ui {

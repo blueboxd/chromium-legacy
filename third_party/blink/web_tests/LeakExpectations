@@ -152,6 +152,9 @@ crbug.com/1068175 [ Linux ] external/wpt/referrer-policy/gen/worker-classic.http
 crbug.com/1068175 [ Linux ] external/wpt/referrer-policy/gen/worker-classic.http-rp/no-referrer-when-downgrade/worker-module.http.html [ Pass Timeout ]
 crbug.com/1068175 [ Linux ] external/wpt/referrer-policy/gen/worker-classic.http-rp/unset/worker-module.http.html [ Pass Timeout ]
 
+# Sheriff 2020-05-05
+crbug.com/998948 [ Linux ] external/wpt/pointerevents/pointerevent_releasepointercapture_invalid_pointerid.html [ Pass Failure ]
+
 ###########################################################################
 # WARNING: Memory leaks must be fixed asap. Sheriff is expected to revert #
 # culprit CLs instead of suppressing the leaks. If you have any question, #

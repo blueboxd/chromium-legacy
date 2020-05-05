@@ -4,7 +4,7 @@
 
 #include "ui/native_theme/common_theme.h"
 
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "base/optional.h"
 #include "build/build_config.h"
 #include "third_party/skia/include/core/SkCanvas.h"

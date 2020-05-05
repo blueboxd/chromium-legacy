@@ -109,8 +109,10 @@ struct TraceTrait<HeapVectorBacking<T, Traits>> {
   }
 
   static void Trace(Visitor* visitor, const void* self) {
-    if (visitor->ConcurrentTracingBailOut({self, &Trace}))
-      return;
+    if (!Traits::kCanTraceConcurrently) {
+      if (visitor->ConcurrentTracingBailOut({self, &Trace}))
+        return;
+    }
 
     static_assert(!WTF::IsWeak<T>::value,
                   "Weakness is not supported in HeapVector and HeapDeque");

@@ -1124,10 +1124,7 @@ TEST_F(MediaControlsImplTest,
 
   test::RunPendingTasks();
 
-  // Needs to call into V8's GC here to trigger a unified garbage collection.
-  V8GCController::CollectAllGarbageForTesting(
-      ThreadState::Current()->GetIsolate(),
-      v8::EmbedderHeapTracer::EmbedderStackState::kEmpty);
+  ThreadState::Current()->CollectAllGarbageForTesting();
   EXPECT_EQ(nullptr, weak_persistent_video);
 }
 

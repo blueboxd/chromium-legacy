@@ -886,6 +886,12 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
       return;
     }
 
+    // Ignore mismatches triggered by a WKWebView out-of-sync back forward list.
+    if (![self.webView.backForwardList.currentItem.URL
+            isEqual:self.webView.URL]) {
+      return;
+    }
+
     GURL documentOrigin = newURL.GetOrigin();
     web::NavigationItem* committedItem =
         self.webStateImpl->GetNavigationManager()->GetLastCommittedItem();

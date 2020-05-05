@@ -15,6 +15,9 @@ struct TestCase {
 
 TestCase* test_case = new TestCase();
 
+// Empty replacements cause no change when applied.
+GURL::Replacements* no_op = new GURL::Replacements();
+
 // Entry point for LibFuzzer.
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   if (size < 1)
@@ -23,6 +26,13 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   base::StringPiece string_piece_input(reinterpret_cast<const char*>(data),
                                        size);
   GURL url_from_string_piece(string_piece_input);
+  // Copying by applying empty replacements exercises interesting code paths.
+  // This can help discover issues like https://crbug.com/1075515.
+  GURL copy = url_from_string_piece.ReplaceComponents(*no_op);
+  CHECK_EQ(url_from_string_piece.is_valid(), copy.is_valid());
+  if (url_from_string_piece.is_valid()) {
+    CHECK_EQ(url_from_string_piece.spec(), copy.spec());
+  }
 
   // Test for StringPiece16 if size is even.
   if (size % 2 == 0) {

@@ -4,7 +4,7 @@
 
 #include "ui/gfx/x/x11_error_tracker.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "ui/gfx/x/x11_types.h"
 
 namespace {

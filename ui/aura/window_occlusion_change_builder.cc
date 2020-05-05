@@ -4,8 +4,8 @@
 
 #include "ui/aura/window_occlusion_change_builder.h"
 
+#include "base/check_op.h"
 #include "base/containers/flat_map.h"
-#include "base/logging.h"
 #include "base/macros.h"
 #include "components/viz/client/frame_eviction_manager.h"
 #include "third_party/skia/include/core/SkRegion.h"

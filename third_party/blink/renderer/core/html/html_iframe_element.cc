@@ -250,6 +250,7 @@ void HTMLIFrameElement::ParseAttribute(
     if (required_csp_ != value) {
       required_csp_ = value;
       FrameOwnerPropertiesChanged();
+      UseCounter::Count(GetDocument(), WebFeature::kIFrameCSPAttribute);
     }
   } else if (name == html_names::kAllowAttr) {
     if (allow_ != value) {
@@ -427,6 +428,7 @@ Node::InsertionNotificationRequest HTMLIFrameElement::InsertedInto(
       if (required_csp_ != GetDocument().RequiredCSP()) {
         required_csp_ = GetDocument().RequiredCSP();
         FrameOwnerPropertiesChanged();
+        UseCounter::Count(GetDocument(), WebFeature::kIFrameCSPAttribute);
       }
     }
   }

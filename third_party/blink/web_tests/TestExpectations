@@ -3024,7 +3024,7 @@ crbug.com/983503 [ Mac ] external/wpt/css/vendor-imports/mozilla/mozilla-central
 crbug.com/983503 [ Mac ] external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/contain/contain-size-select-elem-001.html [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/css/css-fonts/font-family-name-025.html [ Failure ]
 crbug.com/626703 [ Mac10.11 ] external/wpt/shape-detection/detection-HTMLVideoElement-invalid-state.html [ Timeout ]
-crbug.com/626703 [ Mac10.12 ] external/wpt/html/semantics/embedded-content/media-elements/track/track-element/track-mode.html [ Timeout ]
+crbug.com/626703 [ Mac ] external/wpt/html/semantics/embedded-content/media-elements/track/track-element/track-mode.html [ Pass Timeout ]
 crbug.com/1004760 [ Mac ] external/wpt/html/semantics/embedded-content/media-elements/ready-states/autoplay-hidden.optional.html [ Timeout ]
 crbug.com/626703 [ Retina ] external/wpt/html/browsers/the-window-object/apis-for-creating-and-navigating-browsing-contexts-by-name/open-features-tokenization-top-left.html [ Timeout ]
 crbug.com/626703 external/wpt/mediacapture-streams/MediaStream-MediaElement-srcObject.https.html [ Timeout ]
@@ -4805,7 +4805,7 @@ crbug.com/854910 [ Mac ] fast/scroll-behavior/smooth-scroll/track-scroll.html [ 
 crbug.com/855816 [ Win ] virtual/stable/http/tests/navigation/rename-subframe-goback.html [ Pass Timeout ]
 
 # User Activation
-crbug.com/736415 external/wpt/html/user-activation/navigation-state-reset-crossorigin.sub.tentative.html [ Failure Timeout ]
+crbug.com/736415 external/wpt/html/user-activation/navigation-state-reset-crossorigin.sub.tentative.html [ Failure ]
 crbug.com/736415 external/wpt/html/user-activation/navigation-state-reset-sameorigin.tentative.html [ Failure ]
 
 # Sheriff 2018-07-05
@@ -5603,7 +5603,7 @@ crbug.com/1041830 http/tests/devtools/tracing/timeline-js/timeline-js-line-level
 # These are currently failing on Mac which needs more investigation, snap-scrolls-visual-viewport seems flaky
 crbug.com/878878 [ Mac ] virtual/threaded/fast/scroll-snap/snaps-after-keyboard-scrolling.html [ Pass Timeout ]
 crbug.com/878878 [ Win10 ] virtual/threaded/fast/scroll-snap/snaps-after-keyboard-scrolling.html [ Pass Timeout ]
-crbug.com/878878 [ Mac ] virtual/threaded/fast/scroll-snap/snaps-after-scrollbar-scrolling.html [ Timeout ]
+crbug.com/878878 [ Mac ] virtual/threaded/fast/scroll-snap/snaps-after-scrollbar-scrolling.html [ Pass Timeout Failure ]
 crbug.com/878878 [ Mac ] virtual/threaded/fast/scroll-snap/snaps-for-different-key-granularity.html [ Timeout ]
 
 crbug.com/878878 virtual/threaded/fast/scroll-snap/animate-fling-to-snap-points.html [ Failure Pass Timeout ]
@@ -6049,7 +6049,6 @@ crbug.com/1061029 [ Mac ] external/wpt/html/cross-origin-embedder-policy/cache-s
 # [virtual/...]external/wpt/web-animation test flakes
 crbug.com/1064065 virtual/threaded/external/wpt/css/css-animations/event-dispatch.tentative.html [ Pass Failure ]
 crbug.com/1064127 virtual/threaded/external/wpt/web-animations/timing-model/animations/update-playback-rate-slow.html [ Pass Failure ]
-crbug.com/1064463 external/wpt/web-animations/interfaces/Animation/style-change-events.html [ Pass Failure ]
 
 # These tests will pass once the --enable-features=TrustTokens flag is on by
 # default. A virtual test suite runs the same tests with the flag enabled.
@@ -6074,9 +6073,6 @@ crbug.com/1066716 http/tests/cache/zero-length-xhr.html [ Pass Timeout ]
 
 # Sheriff 2020-04-04
 crbug.com/1067533 [ Mac10.10 ] external/wpt/shape-detection/idlharness.https.any.sharedworker.html [ Pass Failure ]
-
-crbug.com/1064422 external/wpt/html/user-activation/propagation-crossorigin.sub.tentative.html [ Pass Timeout ]
-crbug.com/1066178 external/wpt/html/user-activation/consumption-crossorigin.sub.tentative.html [ Pass Timeout ]
 
 # Flaky test, happens only on Mac 10.13.
 # The "timeout" was detected by the wpt-importer bot.
@@ -6118,3 +6114,6 @@ crbug.com/1068681 fast/peerconnection/RTCPeerConnection-insertable-streams.html 
 # Sheriff 2020-05-04
 crbug.com/952717 [ Debug ] http/tests/xmlhttprequest/redirect-cross-origin-post.html [ Pass Failure ]
 crbug.com/984467 [ Mac Debug ] virtual/gpu/fast/canvas/canvas-composite-stroke-alpha.html [ Pass Timeout ]
+
+# Sheriff 2020-05-05
+crbug.com/1078298 [ Mac ] external/wpt/orientation-event/orientation/basic-operation-absolute.https.html [ Pass Failure ]

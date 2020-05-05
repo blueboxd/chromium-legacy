@@ -4,7 +4,7 @@
 
 #include "ui/views/style/typography.h"
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "ui/views/layout/layout_provider.h"
 #include "ui/views/style/typography_provider.h"
 

@@ -57,7 +57,7 @@ class AssistiveWindowController : public views::WidgetObserver,
   ui::ime::SuggestionWindowView* suggestion_window_view_ = nullptr;
   ui::ime::UndoWindow* undo_window_ = nullptr;
   base::string16 suggestion_text_;
-  size_t confirmed_length_;
+  size_t confirmed_length_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(AssistiveWindowController);
 };

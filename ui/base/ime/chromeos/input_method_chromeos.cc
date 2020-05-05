@@ -13,8 +13,8 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/check.h"
 #include "base/i18n/char_iterator.h"
-#include "base/logging.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/third_party/icu/icu_utf.h"

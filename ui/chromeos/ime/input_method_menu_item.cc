@@ -6,7 +6,7 @@
 
 #include <sstream>
 
-#include "base/logging.h"
+#include "base/check.h"
 
 namespace ui {
 namespace ime {

@@ -31,12 +31,12 @@
 #include "base/pickle.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/lock.h"
 #include "base/values.h"
 #include "build/build_config.h"
 
 namespace {
-constexpr char kHtmlNewLine[] = "<br>";
 constexpr char kAsciiNewLine[] = "\n";
 }  // namespace
 
@@ -579,21 +579,6 @@ bool Histogram::AddSamplesFromPickle(PickleIterator* iter) {
   return unlogged_samples_->AddFromPickle(iter);
 }
 
-// The following methods provide a graphical histogram display.
-void Histogram::WriteHTMLGraph(std::string* output) const {
-  // TBD(jar) Write a nice HTML bar chart, with divs an mouse-overs etc.
-
-  // Get local (stack) copies of all effectively volatile class data so that we
-  // are consistent across our output activities.
-  std::unique_ptr<SampleVector> snapshot = SnapshotAllSamples();
-  output->append("<PRE>");
-  output->append("<h4>");
-  WriteAsciiHeader(*snapshot, output);
-  output->append("</h4>");
-  WriteAsciiBody(*snapshot, true, kHtmlNewLine, output);
-  output->append("</PRE>");
-}
-
 void Histogram::WriteAscii(std::string* output) const {
   // Get local (stack) copies of all effectively volatile class data so that we
   // are consistent across our output activities.
@@ -601,6 +586,20 @@ void Histogram::WriteAscii(std::string* output) const {
   WriteAsciiHeader(*snapshot, output);
   output->append(kAsciiNewLine);
   WriteAsciiBody(*snapshot, true, kAsciiNewLine, output);
+}
+
+base::DictionaryValue Histogram::ToGraphDict() const {
+  std::unique_ptr<SampleVector> snapshot = SnapshotAllSamples();
+  std::string header;
+  std::string body;
+  base::DictionaryValue dict;
+
+  WriteAsciiHeader(*snapshot, &header);
+  WriteAsciiBody(*snapshot, true, kAsciiNewLine, &body);
+  dict.SetString("header", header);
+  dict.SetString("body", body);
+
+  return dict;
 }
 
 void Histogram::ValidateHistogramContents() const {

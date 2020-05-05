@@ -5,6 +5,7 @@
 #include "ios/chrome/browser/ui/webui/policy/policy_ui.h"
 
 #include <memory>
+#include <string>
 
 #include "components/grit/dev_ui_components_resources.h"
 #include "components/strings/grit/components_strings.h"
@@ -87,7 +88,8 @@ web::WebUIIOSDataSource* CreatePolicyUIHtmlSource() {
 
 }  // namespace
 
-PolicyUI::PolicyUI(web::WebUIIOS* web_ui) : web::WebUIIOSController(web_ui) {
+PolicyUI::PolicyUI(web::WebUIIOS* web_ui, const std::string& host)
+    : web::WebUIIOSController(web_ui, host) {
   web_ui->AddMessageHandler(std::make_unique<PolicyUIHandler>());
   web::WebUIIOSDataSource::Add(ChromeBrowserState::FromWebUIIOS(web_ui),
                                CreatePolicyUIHtmlSource());

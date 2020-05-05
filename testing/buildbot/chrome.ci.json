@@ -1371,8 +1371,7 @@
           "--browser=cros-chrome",
           "--remote=127.0.0.1",
           "--remote-ssh-port=9222",
-          "--xvfb",
-          "--extra-browser-args=--enable-crashpad"
+          "--xvfb"
         ],
         "isolate_name": "telemetry_perf_unittests",
         "merge": {
@@ -1531,8 +1530,7 @@
         "args": [
           "--browser=cros-chrome",
           "--remote=variable_chromeos_device_hostname",
-          "--xvfb",
-          "--extra-browser-args=--enable-crashpad"
+          "--xvfb"
         ],
         "isolate_name": "telemetry_perf_unittests",
         "merge": {

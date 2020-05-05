@@ -37,7 +37,7 @@ class UpdateClient : public base::RefCounted<UpdateClient> {
 
   void Register(base::RepeatingCallback<void(int)> callback);
   void CheckForUpdate(StatusCallback callback);
-  void HandleStatusUpdate(UpdateService::UpdateState state);
+  void HandleStatusUpdate(UpdateService::UpdateState update_state);
   void RegistrationCompleted(UpdateService::Result result);
   void UpdateCompleted(UpdateService::Result result);
 

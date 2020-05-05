@@ -8,7 +8,6 @@ import android.content.Intent;
 import android.text.SpannableString;
 import android.text.TextUtils;
 
-import androidx.annotation.IntDef;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
@@ -33,55 +32,32 @@ import org.chromium.chrome.browser.vr.VrModuleProvider;
 import org.chromium.components.content_settings.ContentSettingValues;
 import org.chromium.components.content_settings.CookieControlsObserver;
 import org.chromium.components.feature_engagement.EventConstants;
-import org.chromium.components.omnibox.AutocompleteSchemeClassifier;
 import org.chromium.components.page_info.PageInfoControllerDelegate;
+import org.chromium.components.page_info.PageInfoControllerDelegate.OfflinePageState;
+import org.chromium.components.page_info.PageInfoControllerDelegate.PreviewPageState;
 import org.chromium.components.page_info.PageInfoView;
 import org.chromium.components.page_info.PageInfoView.PageInfoViewParams;
 import org.chromium.components.page_info.SystemSettingsActivityRequiredListener;
-import org.chromium.components.page_info.VrHandler;
 import org.chromium.components.security_state.ConnectionSecurityLevel;
 import org.chromium.components.security_state.SecurityStateModel;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.AndroidPermissionDelegate;
-import org.chromium.ui.modaldialog.ModalDialogManager;
 import org.chromium.ui.text.NoUnderlineClickableSpan;
 import org.chromium.ui.text.SpanApplier;
 import org.chromium.ui.text.SpanApplier.SpanInfo;
 
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
 import java.text.DateFormat;
 import java.util.Date;
 
 /**
- * Chrome's implementation of PageInfoControllerDelegate, that provides Chrome-specific info to
+ * Chrome's customization of PageInfoControllerDelegate. This class provides Chrome-specific info to
  * PageInfoController. It also contains logic for Chrome-specific features, like {@link Previews}
  */
-public class ChromePageInfoControllerDelegate implements PageInfoControllerDelegate {
-    @IntDef({OfflinePageState.NOT_OFFLINE_PAGE, OfflinePageState.TRUSTED_OFFLINE_PAGE,
-            OfflinePageState.UNTRUSTED_OFFLINE_PAGE})
-    @Retention(RetentionPolicy.SOURCE)
-    public @interface OfflinePageState {
-        int NOT_OFFLINE_PAGE = 1;
-        int TRUSTED_OFFLINE_PAGE = 2;
-        int UNTRUSTED_OFFLINE_PAGE = 3;
-    }
-
-    @IntDef({PreviewPageState.NOT_PREVIEW, PreviewPageState.SECURE_PAGE_PREVIEW,
-            PreviewPageState.INSECURE_PAGE_PREVIEW})
-    @Retention(RetentionPolicy.SOURCE)
-    public @interface PreviewPageState {
-        int NOT_PREVIEW = 1;
-        int SECURE_PAGE_PREVIEW = 2;
-        int INSECURE_PAGE_PREVIEW = 3;
-    }
-
+public class ChromePageInfoControllerDelegate extends PageInfoControllerDelegate {
     private final WebContents mWebContents;
     private final ChromeActivity mActivity;
     private final @PreviewPageState int mPreviewPageState;
-    private String mOfflinePageUrl;
     private String mOfflinePageCreationDate;
-    private @OfflinePageState int mOfflinePageState;
     private OfflinePageLoadUrlDelegate mOfflinePageLoadUrlDelegate;
     private PermissionParamsListBuilder mPermissionParamsListBuilder;
 
@@ -90,6 +66,14 @@ public class ChromePageInfoControllerDelegate implements PageInfoControllerDeleg
 
     public ChromePageInfoControllerDelegate(ChromeActivity activity, WebContents webContents,
             OfflinePageLoadUrlDelegate offlinePageLoadUrlDelegate) {
+        super(activity.getModalDialogManager(),
+                new ChromeAutocompleteSchemeClassifier(Profile.fromWebContents(webContents)),
+                VrModuleProvider.getDelegate(),
+                /** isSiteSettingsAvailable= */
+                SiteSettingsHelper.isSiteSettingsAvailable(webContents),
+                /** useDarkColors= */ !activity.getNightModeStateProvider().isInNightMode(),
+                /** cookieControlsShown= */
+                CookieControlsBridge.isCookieControlsEnabled(Profile.fromWebContents(webContents)));
         mWebContents = webContents;
         mActivity = activity;
         mPreviewPageState = getPreviewPageStateAndRecordUma();
@@ -147,38 +131,6 @@ public class ChromePageInfoControllerDelegate implements PageInfoControllerDeleg
      * {@inheritDoc}
      */
     @Override
-    public AutocompleteSchemeClassifier createAutocompleteSchemeClassifier() {
-        return new ChromeAutocompleteSchemeClassifier(profile());
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public boolean cookieControlsShown() {
-        return CookieControlsBridge.isCookieControlsEnabled(profile());
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public ModalDialogManager getModalDialogManager() {
-        return mActivity.getModalDialogManager();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public boolean useDarkColors() {
-        return !mActivity.getNightModeStateProvider().isInNightMode();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
     public void initPreviewUiParams(
             PageInfoViewParams viewParams, Consumer<Runnable> runAfterDismiss) {
         final PreviewsAndroidBridge bridge = PreviewsAndroidBridge.getInstance();
@@ -215,22 +167,6 @@ public class ChromePageInfoControllerDelegate implements PageInfoControllerDeleg
      * {@inheritDoc}
      */
     @Override
-    public boolean isShowingPreview() {
-        return mPreviewPageState != PreviewPageState.NOT_PREVIEW;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public boolean isPreviewPageInsecure() {
-        return mPreviewPageState == PreviewPageState.INSECURE_PAGE_PREVIEW;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
     public boolean isInstantAppAvailable(String url) {
         InstantAppsHandler instantAppsHandler = InstantAppsHandler.getInstance();
         return instantAppsHandler.isInstantAppAvailable(
@@ -244,30 +180,6 @@ public class ChromePageInfoControllerDelegate implements PageInfoControllerDeleg
     public Intent getInstantAppIntentForUrl(String url) {
         InstantAppsHandler instantAppsHandler = InstantAppsHandler.getInstance();
         return instantAppsHandler.getInstantAppIntentForUrl(url);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public VrHandler getVrHandler() {
-        return VrModuleProvider.getDelegate();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public String getOfflinePageUrl() {
-        return mOfflinePageUrl;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public boolean isShowingOfflinePage() {
-        return mOfflinePageState != OfflinePageState.NOT_OFFLINE_PAGE && !isShowingPreview();
     }
 
     /**
@@ -325,14 +237,6 @@ public class ChromePageInfoControllerDelegate implements PageInfoControllerDeleg
         int pagePerformanceClass =
                 PerformanceHintsObserver.getPerformanceClassForURL(mWebContents, url);
         return pagePerformanceClass == PerformanceClass.PERFORMANCE_FAST;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public boolean isSiteSettingsAvailable() {
-        return SiteSettingsHelper.isSiteSettingsAvailable(mWebContents);
     }
 
     /**

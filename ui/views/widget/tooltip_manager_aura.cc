@@ -4,7 +4,6 @@
 
 #include "ui/views/widget/tooltip_manager_aura.h"
 
-#include "base/logging.h"
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_tree_host.h"

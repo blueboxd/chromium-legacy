@@ -22,6 +22,7 @@ source_set("credential_provider") {
     ":ui",
     "//base",
     "//ios/chrome/common:ios_app_bundle_id_prefix_buildflags",
+    "//ios/chrome/common/app_group",
   ]
   libs = [
     "AuthenticationServices.framework",

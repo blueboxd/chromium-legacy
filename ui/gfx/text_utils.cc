@@ -8,7 +8,6 @@
 
 #include "base/i18n/char_iterator.h"
 #include "base/i18n/rtl.h"
-#include "base/logging.h"
 #include "base/numerics/safe_conversions.h"
 #include "third_party/icu/source/common/unicode/uchar.h"
 #include "third_party/icu/source/common/unicode/utf16.h"

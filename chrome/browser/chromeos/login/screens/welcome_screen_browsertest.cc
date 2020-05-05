@@ -16,6 +16,7 @@
 #include "chrome/browser/chromeos/login/test/oobe_base_test.h"
 #include "chrome/browser/chromeos/login/test/oobe_screen_exit_waiter.h"
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
+#include "chrome/browser/chromeos/login/test/oobe_screens_utils.h"
 #include "chrome/browser/chromeos/login/test/test_predicate_waiter.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
@@ -64,27 +65,6 @@ void ToggleAccessibilityFeature(const std::string& feature_name,
   js.TapOnPath({"connect", feature_name, "button"});
   js.CreateWaiter(feature_toggle)->Wait();
 }
-
-class LanguageReloadObserver : public WelcomeScreen::Observer {
- public:
-  explicit LanguageReloadObserver(WelcomeScreen* welcome_screen)
-      : welcome_screen_(welcome_screen) {
-    welcome_screen_->AddObserver(this);
-  }
-
-  // WelcomeScreen::Observer:
-  void OnLanguageListReloaded() override { run_loop_.Quit(); }
-
-  void Wait() { run_loop_.Run(); }
-
-  ~LanguageReloadObserver() override { welcome_screen_->RemoveObserver(this); }
-
- private:
-  WelcomeScreen* const welcome_screen_;
-  base::RunLoop run_loop_;
-
-  DISALLOW_COPY_AND_ASSIGN(LanguageReloadObserver);
-};
 
 }  // namespace
 
@@ -203,7 +183,7 @@ IN_PROC_BROWSER_TEST_F(WelcomeScreenBrowserTest,
   test::OobeJS().ExpectEQ(kCurrentLang, std::string("English (United States)"));
 
   {
-    LanguageReloadObserver observer(welcome_screen());
+    test::LanguageReloadObserver observer(welcome_screen());
     test::OobeJS().SelectElementInPath("fr",
                                        {"connect", "languageSelect", "select"});
     observer.Wait();
@@ -212,7 +192,7 @@ IN_PROC_BROWSER_TEST_F(WelcomeScreenBrowserTest,
   }
 
   {
-    LanguageReloadObserver observer(welcome_screen());
+    test::LanguageReloadObserver observer(welcome_screen());
     test::OobeJS().SelectElementInPath("en-US",
                                        {"connect", "languageSelect", "select"});
     observer.Wait();

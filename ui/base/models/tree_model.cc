@@ -4,7 +4,7 @@
 
 #include "ui/base/models/tree_model.h"
 
-#include "base/logging.h"
+#include "base/notreached.h"
 
 namespace ui {
 

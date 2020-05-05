@@ -32,9 +32,15 @@ class DlcHandler : public ::settings::SettingsPageUIHandler {
  private:
   // Handler to get the latest list of DLCs.
   void HandleGetDlcList(const base::ListValue* args);
+
+  // Handler to purge a DLC.
+  void HandlePurgeDlc(const base::ListValue* args);
+
   void GetDlcListCallback(const base::Value& callback_id,
                           const std::string& err,
                           const dlcservice::DlcModuleList& dlc_module_list);
+
+  void PurgeDlcCallback(const base::Value& callback_id, const std::string& err);
 
   base::WeakPtrFactory<DlcHandler> weak_ptr_factory_{this};
 };

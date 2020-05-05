@@ -5,7 +5,8 @@
 #include "ui/events/gesture_detection/filtered_gesture_provider.h"
 
 #include "base/auto_reset.h"
-#include "base/logging.h"
+#include "base/check.h"
+#include "base/notreached.h"
 #include "ui/events/gesture_detection/motion_event.h"
 
 namespace ui {

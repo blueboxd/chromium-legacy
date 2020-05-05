@@ -511,7 +511,9 @@ void WebFrameWidgetBase::SetEventListenerProperties(
     if (!has_touch_handlers_ || *has_touch_handlers_ != has_touch_handlers) {
       has_touch_handlers_ = has_touch_handlers;
 
-      client_->SetHasTouchEventHandlers(has_touch_handlers);
+      // Can be NULL when running tests.
+      if (auto* scheduler_state = widget_base_->RendererWidgetSchedulingState())
+        scheduler_state->SetHasTouchHandler(has_touch_handlers);
       frame_widget_host_->SetHasTouchEventHandlers(has_touch_handlers);
     }
   } else if (listener_class == cc::EventListenerClass::kPointerRawUpdate) {

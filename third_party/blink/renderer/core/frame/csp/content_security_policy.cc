@@ -1257,6 +1257,14 @@ void ContentSecurityPolicy::ReportNonsecureTrustedTypes() {
       "context. The directive has been ignored.");
 }
 
+void ContentSecurityPolicy::ReportMixedContentReportURI(
+    const String& endpoint) {
+  LogToConsole("The Content Security Policy directive specifies as endpoint '" +
+               endpoint +
+               "'. This endpoint will be ignored since it violates the policy "
+               "for Mixed Content.");
+}
+
 void ContentSecurityPolicy::ReportInvalidInReportOnly(const String& name) {
   LogToConsole("The Content Security Policy directive '" + name +
                "' is ignored when delivered in a report-only policy.");

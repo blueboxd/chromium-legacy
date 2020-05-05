@@ -82,6 +82,10 @@
   [self.context cancelRequestWithError:error];
 }
 
+- (void)userSelectedCredential:(id<Credential>)credential {
+  [self.UIHandler userSelectedCredential:credential];
+}
+
 - (void)updateResultsWithFilter:(NSString*)filter {
   NSMutableArray<id<Credential>>* suggested = [[NSMutableArray alloc] init];
   if (self.suggestedCredentials.count > 0) {

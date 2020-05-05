@@ -4,7 +4,7 @@
 
 #include "ui/base/ime/linux/text_edit_command_auralinux.h"
 
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "ui/base/ime/text_edit_commands.h"
 
 namespace ui {

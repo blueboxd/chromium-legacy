@@ -108,8 +108,8 @@ void InterstitialHTMLSource::StartDataRequest(
 
 #pragma mark - InterstitialUI
 
-InterstitialUI::InterstitialUI(web::WebUIIOS* web_ui)
-    : WebUIIOSController(web_ui) {
+InterstitialUI::InterstitialUI(web::WebUIIOS* web_ui, const std::string& host)
+    : WebUIIOSController(web_ui, host) {
   ChromeBrowserState* browser_state = ChromeBrowserState::FromWebUIIOS(web_ui);
   web::URLDataSourceIOS::Add(browser_state,
                              new InterstitialHTMLSource(browser_state));

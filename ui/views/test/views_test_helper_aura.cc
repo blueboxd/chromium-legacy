@@ -4,7 +4,7 @@
 
 #include "ui/views/test/views_test_helper_aura.h"
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "build/build_config.h"
 #include "ui/aura/window.h"
 #include "ui/views/test/test_views_delegate.h"

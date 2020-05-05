@@ -22,6 +22,7 @@ import org.chromium.content.browser.input.PopupItemType;
 import org.chromium.content.browser.input.SelectPopupDialog;
 import org.chromium.content.browser.input.SelectPopupItem;
 import org.chromium.content.browser.picker.InputDialogContainer;
+import org.chromium.ui.UiUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -133,5 +134,16 @@ public class AssistantViewInteractions {
         }
         ((AssistantToggleButton) view).setChecked(checked.getBooleans()[0]);
         return true;
+    }
+
+    @CalledByNative
+    private static void showGenericPopup(View contentView, Context context,
+            AssistantGenericUiDelegate delegate, String popupIdentifier) {
+        new UiUtils
+                .CompatibleAlertDialogBuilder(context,
+                        org.chromium.chrome.autofill_assistant.R.style.Theme_Chromium_AlertDialog)
+                .setView(contentView)
+                .setOnDismissListener(unused -> delegate.onGenericPopupDismissed(popupIdentifier))
+                .show();
     }
 }

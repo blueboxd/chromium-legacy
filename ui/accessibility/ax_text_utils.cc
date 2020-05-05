@@ -6,8 +6,9 @@
 
 #include <algorithm>
 
+#include "base/check_op.h"
 #include "base/i18n/break_iterator.h"
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/optional.h"
 #include "base/strings/string_util.h"

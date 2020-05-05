@@ -960,7 +960,14 @@ void ProcessManager::UnregisterExtension(const std::string& extension_id) {
 
   background_page_data_.erase(extension_id);
 
-  all_extension_workers_.RemoveAllForExtension(extension_id);
+  for (const WorkerId& worker_id :
+       all_extension_workers_.GetAllForExtension(extension_id)) {
+    UnregisterServiceWorker(worker_id);
+  }
+#if DCHECK_IS_ON()
+  // Sanity check: No worker entry should exist for |extension_id|.
+  DCHECK(all_extension_workers_.GetAllForExtension(extension_id).empty());
+#endif
 }
 
 void ProcessManager::RegisterServiceWorker(const WorkerId& worker_id) {
@@ -1001,8 +1008,18 @@ void ProcessManager::RenderProcessExited(
   auto iter = worker_process_to_extension_ids_.find(render_process_id);
   if (iter == worker_process_to_extension_ids_.end())
     return;
+  for (const ExtensionId& extension_id : iter->second) {
+    for (const WorkerId& worker_id : all_extension_workers_.GetAllForExtension(
+             extension_id, render_process_id)) {
+      UnregisterServiceWorker(worker_id);
+    }
+  }
+#if DCHECK_IS_ON()
+  // Sanity check: No worker entry should exist for any |extension_id| running
+  // inside the RenderProcessHost that died.
   for (const ExtensionId& extension_id : iter->second)
-    all_extension_workers_.RemoveAllForExtension(extension_id);
+    DCHECK(all_extension_workers_.GetAllForExtension(extension_id).empty());
+#endif
   worker_process_to_extension_ids_.erase(iter);
 }
 

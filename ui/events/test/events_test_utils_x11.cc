@@ -6,7 +6,8 @@
 
 #include <stddef.h>
 
-#include "base/logging.h"
+#include "base/check_op.h"
+#include "base/notreached.h"
 #include "base/stl_util.h"
 #include "ui/events/devices/x11/touch_factory_x11.h"
 #include "ui/events/event_constants.h"

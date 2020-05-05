@@ -8,7 +8,7 @@
 #include <memory>
 #include <utility>
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "ui/gfx/gpu_fence.h"
 #include "ui/gfx/native_pixmap_handle.h"
 #include "ui/ozone/platform/drm/gpu/drm_overlay_plane.h"

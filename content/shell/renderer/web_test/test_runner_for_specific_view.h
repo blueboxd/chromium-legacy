@@ -120,14 +120,6 @@ class TestRunnerForSpecificView {
   void SendBluetoothManualChooserEvent(const std::string& event,
                                        const std::string& argument);
 
-  // Causes the beforeinstallprompt event to be sent to the renderer.
-  void DispatchBeforeInstallPromptEvent(
-      const std::vector<std::string>& event_platforms,
-      v8::Local<v8::Function> callback);
-  void DispatchBeforeInstallPromptCallback(
-      v8::UniquePersistent<v8::Function> callback,
-      bool canceled);
-
   // Immediately run all pending idle tasks, including all pending
   // requestIdleCallback calls.  Invoke the callback when all
   // idle tasks are complete.

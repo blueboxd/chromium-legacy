@@ -4,7 +4,6 @@
 
 #include "ui/gfx/image/image_skia_rep_ios.h"
 
-#include "base/logging.h"
 #include "ui/gfx/color_palette.h"
 
 namespace gfx {

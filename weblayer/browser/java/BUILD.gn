@@ -80,7 +80,6 @@ android_library("java") {
     "org/chromium/weblayer_private/NavigationControllerImpl.java",
     "org/chromium/weblayer_private/NavigationImpl.java",
     "org/chromium/weblayer_private/NewTabCallbackProxy.java",
-    "org/chromium/weblayer_private/PageInfoControllerDelegateImpl.java",
     "org/chromium/weblayer_private/ProfileImpl.java",
     "org/chromium/weblayer_private/ProfileManager.java",
     "org/chromium/weblayer_private/RemoteFragmentImpl.java",
@@ -233,6 +232,7 @@ android_library("interfaces_java") {
     "org/chromium/weblayer_private/interfaces/NewTabType.java",
     "org/chromium/weblayer_private/interfaces/ObjectWrapper.java",
     "org/chromium/weblayer_private/interfaces/StrictModeWorkaround.java",
+    "org/chromium/weblayer_private/interfaces/UrlBarOptionsKeys.java",
   ]
 
   deps = [ "//third_party/android_deps:androidx_annotation_annotation_java" ]

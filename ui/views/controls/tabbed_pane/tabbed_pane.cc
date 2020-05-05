@@ -7,8 +7,8 @@
 #include <algorithm>
 #include <utility>
 
+#include "base/check_op.h"
 #include "base/i18n/rtl.h"
-#include "base/logging.h"
 #include "base/macros.h"
 #include "build/build_config.h"
 #include "cc/paint/paint_flags.h"

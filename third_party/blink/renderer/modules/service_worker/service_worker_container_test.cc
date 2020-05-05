@@ -181,7 +181,7 @@ class ServiceWorkerContainerTest : public PageTestBase {
   void SetUp() override { PageTestBase::SetUp(IntSize()); }
 
   ~ServiceWorkerContainerTest() override {
-    V8GCController::CollectAllGarbageForTesting(GetIsolate());
+    ThreadState::Current()->CollectAllGarbageForTesting();
   }
 
   v8::Isolate* GetIsolate() { return v8::Isolate::GetCurrent(); }

@@ -20,6 +20,7 @@
 
 namespace autofill_assistant {
 class BasicInteractions;
+class GenericUiControllerAndroid;
 class UserModel;
 
 // Receives incoming events and runs the corresponding set of callbacks.
@@ -80,6 +81,18 @@ class InteractionHandlerAndroid : public EventHandler::Observer {
   base::Optional<InteractionCallback> CreateInteractionCallbackFromProto(
       const CallbackProto& proto);
 
+  // Deletes the nested ui controller associated with |identifier|.
+  void DeleteNestedUi(const std::string& identifier);
+
+  // Attempts to inflate |proto|. If successful, the new controller is added
+  // to the list of managed nested controllers. Note that *this keeps ownership
+  // of created nested UIs!
+  const GenericUiControllerAndroid* CreateNestedUi(
+      const GenericUserInterfaceProto& proto,
+      const std::string& identifier);
+
+  void CreateAndShowGenericPopup(const ShowGenericUiPopupProto& proto);
+
   // Maps event keys to the corresponding list of callbacks to execute.
   std::map<EventHandler::EventKey, std::vector<InteractionCallback>>
       interactions_;
@@ -91,8 +104,15 @@ class InteractionHandlerAndroid : public EventHandler::Observer {
   base::android::ScopedJavaGlobalRef<jobject> jcontext_ = nullptr;
   base::android::ScopedJavaGlobalRef<jobject> jdelegate_ = nullptr;
   bool is_listening_ = false;
+
+  // TODO(b/154811503): move radio_groups_ and nested_ui_controllers_ to
+  // generic_ui_controller_android.
   // Maps radiogroup identifiers to the list of corresponding model identifiers.
   std::map<std::string, std::vector<std::string>> radio_groups_;
+  // Maps nested-ui identifiers to their instances.
+  std::map<std::string, std::unique_ptr<GenericUiControllerAndroid>>
+      nested_ui_controllers_;
+
   base::WeakPtrFactory<InteractionHandlerAndroid> weak_ptr_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(InteractionHandlerAndroid);
 };

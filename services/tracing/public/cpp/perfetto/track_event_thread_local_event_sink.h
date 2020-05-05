@@ -67,9 +67,9 @@ class COMPONENT_EXPORT(TRACING_CPP) TrackEventThreadLocalEventSink
   // (e.g. interning index entries and a ThreadDescriptor) to be emitted again.
   static void ClearIncrementalState();
 
-  // If we need to perform an incremental reset we will do so, and also emit all
-  // the relevant descriptors to start a new fresh sequence.
-  void ResetIncrementalStateIfNeeded(
+  // Emit any necessary descriptors that we haven't emitted yet and, if
+  // required, perform an incremental state reset.
+  void UpdateIncrementalStateIfNeeded(
       base::trace_event::TraceEvent* trace_event);
 
   // Fills in all the fields in |trace_packet| that can be directly deduced from
@@ -94,7 +94,7 @@ class COMPONENT_EXPORT(TRACING_CPP) TrackEventThreadLocalEventSink
                      base::trace_event::TraceEventHandle* handle,
                      const perfetto::Track& track,
                      TrackEventArgumentFunction arg_func) {
-    ResetIncrementalStateIfNeeded(trace_event);
+    UpdateIncrementalStateIfNeeded(trace_event);
 
     auto trace_packet = trace_writer_->NewTracePacket();
 
@@ -164,6 +164,8 @@ class COMPONENT_EXPORT(TRACING_CPP) TrackEventThreadLocalEventSink
   InterningIndex<TypeList<std::string>, SizeList<128>>
       interned_log_message_bodies_;
   InternedIndexesUpdates pending_interning_updates_;
+
+  std::vector<uint64_t> extra_emitted_track_descriptor_uuids_;
 
   static std::atomic<uint32_t> incremental_state_reset_id_;
 

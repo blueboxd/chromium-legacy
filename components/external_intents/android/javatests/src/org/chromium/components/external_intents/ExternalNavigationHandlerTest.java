@@ -1864,6 +1864,22 @@ public class ExternalNavigationHandlerTest {
         }
 
         @Override
+        public boolean supportsCreatingNewTabs() {
+            return false;
+        }
+
+        @Override
+        public void loadUrlInNewTab(final String url, final boolean launchIncognito) {}
+
+        @Override
+        public boolean canLoadUrlInCurrentTab() {
+            return false;
+        }
+
+        @Override
+        public void closeTab() {}
+
+        @Override
         public void loadUrlIfPossible(LoadUrlParams loadUrlParams) {}
 
         @Override

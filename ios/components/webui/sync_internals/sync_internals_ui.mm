@@ -56,8 +56,8 @@ web::WebUIIOSDataSource* CreateSyncInternalsHTMLSource() {
 
 }  // namespace
 
-SyncInternalsUI::SyncInternalsUI(web::WebUIIOS* web_ui)
-    : web::WebUIIOSController(web_ui) {
+SyncInternalsUI::SyncInternalsUI(web::WebUIIOS* web_ui, const std::string& host)
+    : web::WebUIIOSController(web_ui, host) {
   web::WebUIIOSDataSource::Add(web_ui->GetWebState()->GetBrowserState(),
                                CreateSyncInternalsHTMLSource());
   web_ui->AddMessageHandler(std::make_unique<SyncInternalsMessageHandler>());

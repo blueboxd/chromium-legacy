@@ -4,7 +4,7 @@
 
 #include "ui/gl/gl_share_group.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "build/build_config.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_implementation.h"

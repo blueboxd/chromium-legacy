@@ -19,6 +19,7 @@
 #include "third_party/blink/renderer/core/frame/sandbox_flags.h"
 #include "third_party/blink/renderer/core/html/html_script_element.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
+#include "third_party/blink/renderer/core/loader/mixed_content_checker.h"
 #include "third_party/blink/renderer/platform/crypto.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
@@ -1140,6 +1141,30 @@ void CSPDirectiveList::ParseReportURI(const String& name, const String& value) {
   }
 
   ParseAndAppendReportEndpoints(value);
+
+  // Ignore right away report-uri endpoints which would be blocked later when
+  // reporting because of Mixed Content and report a warning.
+  if (!policy_->GetSelfSource()) {
+    return;
+  }
+  report_endpoints_.erase(
+      std::remove_if(report_endpoints_.begin(), report_endpoints_.end(),
+                     [this](const String& endpoint) {
+                       KURL parsed_endpoint = KURL(endpoint);
+                       if (!parsed_endpoint.IsValid()) {
+                         // endpoint is not absolute, so it cannot violate
+                         // MixedContent
+                         return false;
+                       }
+                       if (MixedContentChecker::IsMixedContent(
+                               policy_->GetSelfSource()->GetScheme(),
+                               parsed_endpoint)) {
+                         policy_->ReportMixedContentReportURI(endpoint);
+                         return true;
+                       }
+                       return false;
+                     }),
+      report_endpoints_.end());
 }
 
 // For "report-uri" directive, this method corresponds to:

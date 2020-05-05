@@ -324,27 +324,6 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
     }
   }
 
-  // WKBasedNavigationManager doesn't use |loadCurrentURL| for reload or back/
-  // forward navigation. So this is the first point where a form repost would
-  // be detected. Display the confirmation dialog.
-  if ([action.request.HTTPMethod isEqual:@"POST"] &&
-      (action.navigationType == WKNavigationTypeFormResubmitted)) {
-    self.webStateImpl->ShowRepostFormWarningDialog(
-        base::BindOnce(^(bool shouldContinue) {
-          if (self.beingDestroyed) {
-            decisionHandler(WKNavigationActionPolicyCancel);
-          } else if (shouldContinue) {
-            decisionHandler(WKNavigationActionPolicyAllow);
-          } else {
-            decisionHandler(WKNavigationActionPolicyCancel);
-            if (action.targetFrame.mainFrame) {
-              [self.pendingNavigationInfo setCancelled:YES];
-            }
-          }
-        }));
-    return;
-  }
-
   // Invalid URLs should not be loaded.
   if (!requestURL.is_valid()) {
     // The HTML5 spec indicates that window.open with an invalid URL should open
@@ -379,8 +358,7 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
                                               transition:transition]) {
       policyDecision = web::WebStatePolicyDecider::PolicyDecision::Cancel();
     }
-    if (policyDecision.ShouldAllowNavigation() &&
-        !self.webStateImpl->HasWebUI()) {
+    if (policyDecision.ShouldAllowNavigation()) {
       [self.delegate navigationHandler:self createWebUIForURL:requestURL];
     }
   }
@@ -417,6 +395,24 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
 
   if (policyDecision.ShouldAllowNavigation()) {
     if ([[action.request HTTPMethod] isEqualToString:@"POST"]) {
+      // Display the confirmation dialog if a form repost is detected.
+      if (action.navigationType == WKNavigationTypeFormResubmitted) {
+        self.webStateImpl->ShowRepostFormWarningDialog(
+            base::BindOnce(^(bool shouldContinue) {
+              if (self.beingDestroyed) {
+                decisionHandler(WKNavigationActionPolicyCancel);
+              } else if (shouldContinue) {
+                decisionHandler(WKNavigationActionPolicyAllow);
+              } else {
+                decisionHandler(WKNavigationActionPolicyCancel);
+                if (action.targetFrame.mainFrame) {
+                  [self.pendingNavigationInfo setCancelled:YES];
+                }
+              }
+            }));
+        return;
+      }
+
       web::NavigationItemImpl* item =
           self.navigationManagerImpl->GetCurrentItemImpl();
       // TODO(crbug.com/570699): Remove this check once it's no longer possible
@@ -689,25 +685,6 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
   if (!web::GetWebClient()->IsAppSpecificURL(webViewURL) ||
       !exemptedAppSpecificLoad) {
     self.webStateImpl->ClearWebUI();
-  }
-
-  if (web::GetWebClient()->IsAppSpecificURL(webViewURL) &&
-      !exemptedAppSpecificLoad) {
-    // Restart app specific URL loads to properly capture state.
-    // TODO(crbug.com/546347): Extract necessary tasks for app specific URL
-    // navigation rather than restarting the load.
-
-    // Renderer-initiated loads of WebUI can be done only from other WebUI
-    // pages. WebUI pages may have increased power and using the same web
-    // process (which may potentially be controller by an attacker) is
-    // dangerous.
-    if (web::GetWebClient()->IsAppSpecificURL(self.documentURL)) {
-      [webView stopLoading];
-      [self stopLoading];
-      web::NavigationManager::WebLoadParams params(webViewURL);
-      self.navigationManagerImpl->LoadURLWithParams(params);
-    }
-    return;
   }
 
   self.webStateImpl->GetNavigationManagerImpl().OnNavigationStarted(webViewURL);

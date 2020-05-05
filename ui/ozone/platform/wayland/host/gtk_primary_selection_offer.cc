@@ -9,8 +9,8 @@
 #include <fcntl.h>
 #include <algorithm>
 
+#include "base/check.h"
 #include "base/files/file_util.h"
-#include "base/logging.h"
 #include "base/stl_util.h"
 #include "ui/base/clipboard/clipboard_constants.h"
 

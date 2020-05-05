@@ -260,15 +260,19 @@ std::set<std::string> ConnectorsManager::MatchURLAgainstLegacyPolicies(
 void ConnectorsManager::StartObservingPrefs() {
   pref_change_registrar_.Init(g_browser_process->local_state());
   if (base::FeatureList::IsEnabled(kEnterpriseConnectorsEnabled)) {
-    // TODO(crbug/1067631): Add other connectors once their corresponding policy
-    // exists.
-    if (!pref_change_registrar_.IsObserved(kOnFileAttachedPref)) {
-      pref_change_registrar_.Add(
-          kOnFileAttachedPref,
-          base::BindRepeating(&ConnectorsManager::CacheConnectorPolicy,
-                              base::Unretained(this),
-                              AnalysisConnector::FILE_ATTACHED));
-    }
+    StartObservingPref(AnalysisConnector::FILE_ATTACHED);
+    StartObservingPref(AnalysisConnector::FILE_DOWNLOADED);
+    StartObservingPref(AnalysisConnector::BULK_DATA_ENTRY);
+  }
+}
+
+void ConnectorsManager::StartObservingPref(AnalysisConnector connector) {
+  const char* pref = ConnectorPref(connector);
+  DCHECK(pref);
+  if (!pref_change_registrar_.IsObserved(pref)) {
+    pref_change_registrar_.Add(
+        pref, base::BindRepeating(&ConnectorsManager::CacheConnectorPolicy,
+                                  base::Unretained(this), connector));
   }
 }
 

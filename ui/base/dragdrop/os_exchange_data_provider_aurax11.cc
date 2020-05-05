@@ -6,7 +6,7 @@
 
 #include <utility>
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "ui/base/clipboard/clipboard_constants.h"
 #include "ui/base/x/selection_utils.h"
 #include "ui/events/platform/platform_event_source.h"

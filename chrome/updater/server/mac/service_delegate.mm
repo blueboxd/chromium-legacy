@@ -59,7 +59,19 @@
   auto sccb = base::BindRepeating(
       base::RetainBlock(^(updater::UpdateService::UpdateState state) {
         base::scoped_nsobject<CRUUpdateStateWrapper> updateStateWrapper(
-            [[CRUUpdateStateWrapper alloc] initWithUpdateState:state]);
+            [[CRUUpdateStateWrapper alloc]
+                  initWithAppId:base::SysUTF8ToNSString(state.app_id)
+                          state:[[CRUUpdateStateStateWrapper alloc]
+                                    initWithUpdateStateState:state.state]
+                        version:base::SysUTF8ToNSString(
+                                    state.next_version.GetString())
+                downloadedBytes:state.downloaded_bytes
+                     totalBytes:state.total_bytes
+                installProgress:state.install_progress
+                  errorCategory:[[CRUErrorCategoryWrapper alloc]
+                                    initWithErrorCategory:state.error_category]
+                      errorCode:state.error_code
+                      extraCode:state.extra_code1]);
         [updateState observeUpdateState:updateStateWrapper.get()];
       }));
 
@@ -81,7 +93,19 @@
   auto sccb = base::BindRepeating(
       base::RetainBlock(^(updater::UpdateService::UpdateState state) {
         base::scoped_nsobject<CRUUpdateStateWrapper> updateStateWrapper(
-            [[CRUUpdateStateWrapper alloc] initWithUpdateState:state]);
+            [[CRUUpdateStateWrapper alloc]
+                  initWithAppId:base::SysUTF8ToNSString(state.app_id)
+                          state:[[CRUUpdateStateStateWrapper alloc]
+                                    initWithUpdateStateState:state.state]
+                        version:base::SysUTF8ToNSString(
+                                    state.next_version.GetString())
+                downloadedBytes:state.downloaded_bytes
+                     totalBytes:state.total_bytes
+                installProgress:state.install_progress
+                  errorCategory:[[CRUErrorCategoryWrapper alloc]
+                                    initWithErrorCategory:state.error_category]
+                      errorCode:state.error_code
+                      extraCode:state.extra_code1]);
         [updateState observeUpdateState:updateStateWrapper.get()];
       }));
 

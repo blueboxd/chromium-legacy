@@ -496,6 +496,9 @@ bool AutofillTable::MigrateToVersion(int version,
     case 85:
       *update_compatible_version = false;
       return MigrateToVersion85AddCardIssuerColumnToMaskedCreditCard();
+    case 86:
+      *update_compatible_version = false;
+      return MigrateToVersion86RemoveUnmaskedCreditCardsUseColumns();
   }
   return true;
 }
@@ -2801,6 +2804,27 @@ bool AutofillTable::MigrateToVersion85AddCardIssuerColumnToMaskedCreditCard() {
              "DEFAULT 0");
 }
 
+bool AutofillTable::MigrateToVersion86RemoveUnmaskedCreditCardsUseColumns() {
+  // Sqlite does not support "alter table drop column" syntax, so it has be done
+  // manually.
+  sql::Transaction transaction(db_);
+  return transaction.Begin() &&
+         db_->Execute(
+             "CREATE TABLE unmasked_credit_cards_temp ("
+             "id VARCHAR,"
+             "card_number_encrypted VARCHAR,"
+             "unmask_date INTEGER NOT NULL DEFAULT 0)") &&
+         db_->Execute(
+             "INSERT INTO unmasked_credit_cards_temp "
+             "SELECT id, card_number_encrypted, unmask_date "
+             "FROM unmasked_credit_cards") &&
+         db_->Execute("DROP TABLE unmasked_credit_cards") &&
+         db_->Execute(
+             "ALTER TABLE unmasked_credit_cards_temp "
+             "RENAME TO unmasked_credit_cards") &&
+         transaction.Commit();
+}
+
 bool AutofillTable::AddFormFieldValuesTime(
     const std::vector<FormFieldData>& elements,
     std::vector<AutofillChange>* changes,
@@ -3171,9 +3195,7 @@ bool AutofillTable::InitUnmaskedCreditCardsTable() {
   if (!db_->DoesTableExist("unmasked_credit_cards")) {
     if (!db_->Execute("CREATE TABLE unmasked_credit_cards ("
                       "id VARCHAR,"
-                      "card_number_encrypted VARCHAR, "
-                      "use_count INTEGER NOT NULL DEFAULT 0, "
-                      "use_date INTEGER NOT NULL DEFAULT 0, "
+                      "card_number_encrypted VARCHAR,"
                       "unmask_date INTEGER NOT NULL DEFAULT 0)")) {
       NOTREACHED();
       return false;

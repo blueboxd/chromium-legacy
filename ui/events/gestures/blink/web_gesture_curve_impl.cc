@@ -8,7 +8,6 @@
 
 #include <utility>
 
-#include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "build/build_config.h"
 #include "ui/base/ui_base_features.h"

@@ -10,6 +10,8 @@
 namespace extensions {
 namespace service_worker_test_utils {
 
+// TestRegistrationObserver ----------------------------------------------------
+
 TestRegistrationObserver::TestRegistrationObserver(
     content::ServiceWorkerContext* context)
     : context_(context) {
@@ -45,6 +47,25 @@ void TestRegistrationObserver::OnDestruct(
     content::ServiceWorkerContext* context) {
   context_->RemoveObserver(this);
   context_ = nullptr;
+}
+
+// UnregisterWorkerObserver ----------------------------------------------------
+UnregisterWorkerObserver::UnregisterWorkerObserver(
+    ProcessManager* process_manager,
+    const ExtensionId& extension_id)
+    : extension_id_(extension_id) {
+  observer_.Add(process_manager);
+}
+
+UnregisterWorkerObserver::~UnregisterWorkerObserver() = default;
+
+void UnregisterWorkerObserver::OnServiceWorkerUnregistered(
+    const WorkerId& worker_id) {
+  run_loop_.QuitWhenIdle();
+}
+
+void UnregisterWorkerObserver::WaitForUnregister() {
+  run_loop_.Run();
 }
 
 }  // namespace service_worker_test_utils

@@ -1483,6 +1483,7 @@ jumbo_component("base") {
       "android/timezone_utils.cc",
       "android/timezone_utils.h",
       "android/trace_event_binding.cc",
+      "android/trace_event_binding.h",
       "android/unguessable_token_android.cc",
       "android/unguessable_token_android.h",
       "memory/platform_shared_memory_region_android.cc",

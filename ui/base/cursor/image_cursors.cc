@@ -7,7 +7,8 @@
 #include <float.h>
 #include <stddef.h>
 
-#include "base/logging.h"
+#include "base/check.h"
+#include "base/notreached.h"
 #include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "ui/base/cursor/cursor.h"

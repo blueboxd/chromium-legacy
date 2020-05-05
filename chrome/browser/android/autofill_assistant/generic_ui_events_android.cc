@@ -47,6 +47,7 @@ bool CreateJavaListenersFromProto(
       case EventProto::kOnValueChanged:
       case EventProto::kOnUserActionCalled:
       case EventProto::kOnTextLinkClicked:
+      case EventProto::kOnPopupDismissed:
         // Skip events not related to java views.
         break;
       case EventProto::KIND_NOT_SET:

@@ -391,36 +391,6 @@ void TestRunnerForSpecificView::SendBluetoothManualChooserEvent(
   blink_test_runner()->SendBluetoothManualChooserEvent(event, argument);
 }
 
-void TestRunnerForSpecificView::DispatchBeforeInstallPromptEvent(
-    const std::vector<std::string>& event_platforms,
-    v8::Local<v8::Function> callback) {
-  blink_test_runner()->DispatchBeforeInstallPromptEvent(
-      event_platforms,
-      base::BindOnce(
-          &TestRunnerForSpecificView::DispatchBeforeInstallPromptCallback,
-          weak_factory_.GetWeakPtr(),
-          v8::UniquePersistent<v8::Function>(blink::MainThreadIsolate(),
-                                             callback)));
-}
-
-void TestRunnerForSpecificView::DispatchBeforeInstallPromptCallback(
-    v8::UniquePersistent<v8::Function> callback,
-    bool canceled) {
-  v8::Isolate* isolate = blink::MainThreadIsolate();
-  v8::HandleScope handle_scope(isolate);
-
-  v8::Local<v8::Context> context =
-      GetLocalMainFrame()->MainWorldScriptContext();
-  if (context.IsEmpty())
-    return;
-
-  v8::Context::Scope context_scope(context);
-  v8::Local<v8::Value> arg;
-  arg = v8::Boolean::New(isolate, canceled);
-
-  PostV8CallbackWithArgs(std::move(callback), 1, &arg);
-}
-
 void TestRunnerForSpecificView::RunIdleTasks(v8::Local<v8::Function> callback) {
   blink::scheduler::WebThreadScheduler* scheduler =
       content::RenderThreadImpl::current()->GetWebMainThreadScheduler();

@@ -56,6 +56,9 @@ void UnifiedHeapController::TracePrologue(
       (v8_flags & v8::EmbedderHeapTracer::TraceFlags::kReduceMemory)
           ? BlinkGC::GCReason::kUnifiedHeapForMemoryReductionGC
           : BlinkGC::GCReason::kUnifiedHeapGC;
+  if (thread_state_->forced_unified_heap_gc_for_testing_) {
+    gc_reason = thread_state_->unified_heap_forced_gc_params_.reason;
+  }
   thread_state_->StartIncrementalMarking(gc_reason);
 
   is_tracing_done_ = false;
@@ -82,10 +85,14 @@ void UnifiedHeapController::TraceEpilogue(
         thread_state_->Heap().stats_collector());
     thread_state_->AtomicPauseMarkEpilogue(
         BlinkGC::kIncrementalAndConcurrentMarking);
+    BlinkGC::SweepingType sweeping_type = BlinkGC::kConcurrentAndLazySweeping;
+    if (thread_state_->forced_unified_heap_gc_for_testing_) {
+      sweeping_type = BlinkGC::kEagerSweeping;
+      thread_state_->forced_unified_heap_gc_for_testing_ = false;
+    }
     thread_state_->AtomicPauseSweepAndCompact(
         BlinkGC::CollectionType::kMajor,
-        BlinkGC::kIncrementalAndConcurrentMarking,
-        BlinkGC::kConcurrentAndLazySweeping);
+        BlinkGC::kIncrementalAndConcurrentMarking, sweeping_type);
 
     ThreadHeapStatsCollector* const stats_collector =
         thread_state_->Heap().stats_collector();

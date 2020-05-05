@@ -175,12 +175,14 @@ class TestUploadCallback {
 class DomainReliabilityUploaderTest : public testing::Test {
  protected:
   DomainReliabilityUploaderTest()
-      : uploader_(
-            DomainReliabilityUploader::Create(&time_, &url_request_context_)) {
-    auto interceptor = std::make_unique<UploadInterceptor>();
-    interceptor_ = interceptor.get();
+      : url_request_context_getter_(new net::TestURLRequestContextGetter(
+            base::ThreadTaskRunnerHandle::Get())),
+        interceptor_(new UploadInterceptor()),
+        uploader_(
+            DomainReliabilityUploader::Create(&time_,
+                                              url_request_context_getter_)) {
     net::URLRequestFilter::GetInstance()->AddUrlInterceptor(
-        GURL(kUploadURL), std::move(interceptor));
+        GURL(kUploadURL), base::WrapUnique(interceptor_));
     uploader_->SetDiscardUploads(false);
   }
 
@@ -190,14 +192,14 @@ class DomainReliabilityUploaderTest : public testing::Test {
 
   DomainReliabilityUploader* uploader() const { return uploader_.get(); }
   UploadInterceptor* interceptor() const { return interceptor_; }
-  net::TestURLRequestContext* url_request_context() {
-    return &url_request_context_;
+  scoped_refptr<net::TestURLRequestContextGetter> url_request_context_getter() {
+    return url_request_context_getter_;
   }
 
  private:
   base::test::SingleThreadTaskEnvironment task_environment_{
       base::test::SingleThreadTaskEnvironment::MainThreadType::IO};
-  net::TestURLRequestContext url_request_context_;
+  scoped_refptr<net::TestURLRequestContextGetter> url_request_context_getter_;
   UploadInterceptor* interceptor_;
   MockTime time_;
   std::unique_ptr<DomainReliabilityUploader> uploader_;
@@ -295,7 +297,7 @@ TEST_F(DomainReliabilityUploaderTest, UploadCanceledAtShutdown) {
 
   EXPECT_EQ(0u, c.called_count());
 
-  url_request_context()->AssertNoURLRequests();
+  url_request_context_getter()->GetURLRequestContext()->AssertNoURLRequests();
 }
 
 TEST_F(DomainReliabilityUploaderTest, NoUploadAfterShutdown) {

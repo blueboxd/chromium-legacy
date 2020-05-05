@@ -4,7 +4,7 @@
 
 #include "ui/native_theme/native_theme_android.h"
 
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace ui {

@@ -8,7 +8,6 @@
 
 #include <cmath>
 
-#include "base/logging.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"

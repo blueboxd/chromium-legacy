@@ -4,7 +4,7 @@
 
 #include "ui/gfx/animation/animation_settings_provider_linux.h"
 
-#include "base/logging.h"
+#include "base/check_op.h"
 
 namespace gfx {
 

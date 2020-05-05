@@ -64,12 +64,6 @@ constexpr const char kCategoryGroup[] = "foo";
 constexpr uint32_t kClockIdAbsolute = 64;
 constexpr uint32_t kClockIdIncremental = 65;
 
-base::ThreadTicks ThreadNow() {
-  return base::ThreadTicks::IsSupported()
-             ? base::subtle::ThreadTicksNowIgnoringOverride()
-             : base::ThreadTicks();
-}
-
 class MockProducerClient : public ProducerClient {
  public:
   explicit MockProducerClient(
@@ -373,36 +367,50 @@ class TraceEventDataSourceTest : public testing::Test {
   }
 
   void ExpectThreadTrack(const perfetto::protos::TracePacket* packet,
+                         int thread_id = 0,
                          uint64_t min_timestamp = 1u,
                          bool filtering_enabled = false) {
     ASSERT_TRUE(packet->has_track_descriptor());
     ASSERT_TRUE(packet->track_descriptor().has_thread());
-    ASSERT_TRUE(packet->track_descriptor().has_chrome_thread());
 
     EXPECT_NE(packet->track_descriptor().uuid(), 0u);
     EXPECT_NE(packet->track_descriptor().parent_uuid(), 0u);
 
-    EXPECT_EQ(packet->track_descriptor().uuid(), default_track_uuid_);
-    if (process_track_uuid_) {
-      EXPECT_EQ(packet->track_descriptor().parent_uuid(), process_track_uuid_);
-    }
-
     EXPECT_NE(packet->track_descriptor().thread().pid(), 0);
     EXPECT_NE(packet->track_descriptor().thread().tid(), 0);
+    if (thread_id) {
+      EXPECT_EQ(packet->track_descriptor().thread().tid(), thread_id);
+    }
 
     EXPECT_FALSE(
         packet->track_descriptor().thread().has_reference_timestamp_us());
     EXPECT_FALSE(
         packet->track_descriptor().thread().has_reference_thread_time_us());
 
-    if (filtering_enabled) {
+    if (filtering_enabled || thread_id) {
       EXPECT_FALSE(packet->track_descriptor().thread().has_thread_name());
     } else {
       EXPECT_EQ(packet->track_descriptor().thread().thread_name(), kTestThread);
     }
 
-    EXPECT_EQ(perfetto::protos::ChromeThreadDescriptor::THREAD_MAIN,
-              packet->track_descriptor().chrome_thread().thread_type());
+    if (!thread_id) {
+      EXPECT_EQ(packet->track_descriptor().uuid(), default_track_uuid_);
+      if (process_track_uuid_) {
+        EXPECT_EQ(packet->track_descriptor().parent_uuid(),
+                  process_track_uuid_);
+      }
+
+      ASSERT_TRUE(packet->track_descriptor().has_chrome_thread());
+      EXPECT_EQ(perfetto::protos::ChromeThreadDescriptor::THREAD_MAIN,
+                packet->track_descriptor().chrome_thread().thread_type());
+    } else {
+      EXPECT_EQ(packet->track_descriptor().uuid(),
+                perfetto::ThreadTrack::ForThread(thread_id).uuid);
+      if (process_track_uuid_) {
+        EXPECT_EQ(packet->track_descriptor().parent_uuid(),
+                  process_track_uuid_);
+      }
+    }
 
     EXPECT_EQ(packet->interned_data().event_categories_size(), 0);
     EXPECT_EQ(packet->interned_data().event_names_size(), 0);
@@ -410,21 +418,31 @@ class TraceEventDataSourceTest : public testing::Test {
     EXPECT_EQ(packet->sequence_flags(), 0u);
   }
 
-  void ExpectThreadTimeCounterTrack(
-      const perfetto::protos::TracePacket* packet) {
+  void ExpectThreadTimeCounterTrack(const perfetto::protos::TracePacket* packet,
+                                    int thread_id = 0) {
     EXPECT_NE(packet->track_descriptor().uuid(), 0u);
     EXPECT_NE(packet->track_descriptor().parent_uuid(), 0u);
 
-    EXPECT_EQ(packet->track_descriptor().uuid(),
-              default_extra_counter_track_uuids_[0]);
-    EXPECT_EQ(packet->track_descriptor().parent_uuid(), default_track_uuid_);
+    if (!thread_id) {
+      EXPECT_EQ(packet->track_descriptor().uuid(),
+                default_extra_counter_track_uuids_[0]);
+      EXPECT_EQ(packet->track_descriptor().parent_uuid(), default_track_uuid_);
+      EXPECT_TRUE(packet->track_descriptor().counter().is_incremental());
+      last_thread_time_ = 0;
+    } else {
+      constexpr uint64_t kAbsoluteThreadTimeTrackUuidBit =
+          static_cast<uint64_t>(1u) << 33;
+      EXPECT_EQ(packet->track_descriptor().uuid(),
+                perfetto::ThreadTrack::ForThread(thread_id).uuid ^
+                    kAbsoluteThreadTimeTrackUuidBit);
+      EXPECT_EQ(packet->track_descriptor().parent_uuid(),
+                perfetto::ThreadTrack::ForThread(thread_id).uuid);
+      EXPECT_FALSE(packet->track_descriptor().counter().is_incremental());
+    }
 
     EXPECT_EQ(packet->track_descriptor().counter().type(),
               perfetto::protos::CounterDescriptor::COUNTER_THREAD_TIME_NS);
     EXPECT_EQ(packet->track_descriptor().counter().unit_multiplier(), 1000u);
-    EXPECT_TRUE(packet->track_descriptor().counter().is_incremental());
-
-    last_thread_time_ = 0;
   }
 
   void ExpectProcessTrack(const perfetto::protos::TracePacket* packet,
@@ -467,7 +485,8 @@ class TraceEventDataSourceTest : public testing::Test {
     ExpectClockSnapshotAndDefaults(clock_packet);
 
     auto* tt_packet = producer_client()->GetFinalizedPacket(packet_index++);
-    ExpectThreadTrack(tt_packet, 1u, privacy_filtering_enabled);
+    ExpectThreadTrack(tt_packet, /*thread_id=*/0, /*min_timestamp=*/1u,
+                      privacy_filtering_enabled);
 
     if (base::ThreadTicks::IsSupported()) {
       auto* ttt_packet = producer_client()->GetFinalizedPacket(packet_index++);
@@ -486,7 +505,8 @@ class TraceEventDataSourceTest : public testing::Test {
                         uint64_t absolute_timestamp = 0,
                         int32_t tid_override = 0,
                         int32_t pid_override = 0,
-                        const perfetto::Track& track = perfetto::Track()) {
+                        const perfetto::Track& track = perfetto::Track(),
+                        int64_t explicit_thread_time = 0) {
     // All TrackEvents need incremental state for delta timestamps / interning.
     EXPECT_EQ(packet->sequence_flags(),
               static_cast<uint32_t>(perfetto::protos::pbzero::TracePacket::
@@ -508,13 +528,27 @@ class TraceEventDataSourceTest : public testing::Test {
       last_timestamp_ += packet->timestamp();
     }
 
-    EXPECT_EQ(packet->track_event().extra_counter_track_uuids_size(), 0);
-    if (packet->track_event().extra_counter_values_size()) {
-      int64_t thread_time_delta =
-          packet->track_event().extra_counter_values()[0];
-      EXPECT_LE(last_thread_time_ + thread_time_delta,
-                TRACE_TIME_TICKS_NOW().since_origin().InMicroseconds());
-      last_thread_time_ += thread_time_delta;
+    if (explicit_thread_time) {
+      // Absolute thread time counter value for a different thread. Chrome uses
+      // this for early java events. These events only specify thread time, no
+      // instruction count.
+      EXPECT_EQ(packet->track_event().extra_counter_track_uuids_size(), 1);
+      EXPECT_NE(packet->track_event().extra_counter_track_uuids(0), 0u);
+      EXPECT_EQ(packet->track_event().extra_counter_values_size(), 1);
+      EXPECT_EQ(packet->track_event().extra_counter_values(0),
+                explicit_thread_time);
+    } else {
+      EXPECT_EQ(packet->track_event().extra_counter_track_uuids_size(), 0);
+      if (packet->track_event().extra_counter_values_size()) {
+        // If the event is for a different thread, then we shouldn't have thread
+        // timestamps except for the explicit thread timestamps above.
+        EXPECT_TRUE(tid_override == 0);
+        int64_t thread_time_delta =
+            packet->track_event().extra_counter_values()[0];
+        EXPECT_LE(last_thread_time_ + thread_time_delta,
+                  TRACE_TIME_TICKS_NOW().since_origin().InMicroseconds());
+        last_thread_time_ += thread_time_delta;
+      }
     }
 
     if (category_iid > 0) {
@@ -891,6 +925,10 @@ TEST_F(TraceEventDataSourceTest, TimestampedTraceEvent) {
 
   size_t packet_index = ExpectStandardPreamble();
 
+  // Thread track for the overridden tid.
+  auto* tt_packet = producer_client()->GetFinalizedPacket(packet_index++);
+  ExpectThreadTrack(tt_packet, /*thread_id=*/4242);
+
   auto* e_packet = producer_client()->GetFinalizedPacket(packet_index++);
   ExpectTraceEvent(
       e_packet, /*category_iid=*/1u, /*name_iid=*/1u,
@@ -913,6 +951,36 @@ TEST_F(TraceEventDataSourceTest, InstantTraceEvent) {
   auto* e_packet = producer_client()->GetFinalizedPacket(packet_index++);
   ExpectTraceEvent(e_packet, /*category_iid=*/1u, /*name_iid=*/1u,
                    TRACE_EVENT_PHASE_INSTANT, TRACE_EVENT_SCOPE_THREAD);
+
+  ExpectEventCategories(e_packet, {{1u, kCategoryGroup}});
+  ExpectEventNames(e_packet, {{1u, "bar"}});
+}
+
+TEST_F(TraceEventDataSourceTest, InstantTraceEventOnOtherThread) {
+  CreateTraceEventDataSource();
+
+  auto* category_group_enabled =
+      TRACE_EVENT_API_GET_CATEGORY_GROUP_ENABLED(kCategoryGroup);
+
+  trace_event_internal::AddTraceEventWithThreadIdAndTimestamp(
+      TRACE_EVENT_PHASE_INSTANT, category_group_enabled, "bar",
+      trace_event_internal::kGlobalScope, trace_event_internal::kNoId,
+      /*thread_id=*/1,
+      base::TimeTicks() + base::TimeDelta::FromMicroseconds(10),
+      TRACE_EVENT_FLAG_EXPLICIT_TIMESTAMP, trace_event_internal::kNoId);
+
+  size_t packet_index = ExpectStandardPreamble();
+
+  // Thread track for the overridden tid.
+  auto* tt_packet = producer_client()->GetFinalizedPacket(packet_index++);
+  ExpectThreadTrack(tt_packet, /*thread_id=*/1);
+
+  auto* e_packet = producer_client()->GetFinalizedPacket(packet_index++);
+  ExpectTraceEvent(e_packet, /*category_iid=*/1u, /*name_iid=*/1u,
+                   TRACE_EVENT_PHASE_INSTANT,
+                   TRACE_EVENT_FLAG_EXPLICIT_TIMESTAMP, /*id=*/0u,
+                   /*absolute_timestamp=*/10, /*tid_override=*/1,
+                   /*pid_override=*/0, perfetto::ThreadTrack::ForThread(1));
 
   ExpectEventCategories(e_packet, {{1u, kCategoryGroup}});
   ExpectEventNames(e_packet, {{1u, "bar"}});
@@ -1189,6 +1257,10 @@ TEST_F(TraceEventDataSourceTest, UpdateDurationOfCompleteEvent) {
 
   size_t packet_index = ExpectStandardPreamble();
 
+  // Thread track for the overridden tid.
+  auto* tt_packet = producer_client()->GetFinalizedPacket(packet_index++);
+  ExpectThreadTrack(tt_packet, /*thread_id=*/1);
+
   auto* b_packet = producer_client()->GetFinalizedPacket(packet_index++);
   ExpectTraceEvent(
       b_packet, /*category_iid=*/1u, /*name_iid=*/1u, TRACE_EVENT_PHASE_BEGIN,
@@ -1202,8 +1274,8 @@ TEST_F(TraceEventDataSourceTest, UpdateDurationOfCompleteEvent) {
   base::trace_event::TraceLog::GetInstance()->UpdateTraceEventDurationExplicit(
       category_group_enabled, kEventName, handle, /*thread_id=*/1,
       /*explicit_timestamps=*/true,
-      base::TimeTicks() + base::TimeDelta::FromMicroseconds(30), ThreadNow(),
-      base::trace_event::ThreadInstructionCount());
+      base::TimeTicks() + base::TimeDelta::FromMicroseconds(30),
+      base::ThreadTicks(), base::trace_event::ThreadInstructionCount());
 
   auto* e_packet = producer_client()->GetFinalizedPacket(packet_index++);
   ExpectTraceEvent(e_packet, /*category_iid=*/0u, /*name_iid=*/0u,
@@ -1218,8 +1290,8 @@ TEST_F(TraceEventDataSourceTest, UpdateDurationOfCompleteEvent) {
   base::trace_event::TraceLog::GetInstance()->UpdateTraceEventDurationExplicit(
       category_group_enabled, "other_event_name", handle, /*thread_id=*/1,
       /*explicit_timestamps=*/true,
-      base::TimeTicks() + base::TimeDelta::FromMicroseconds(40), ThreadNow(),
-      base::trace_event::ThreadInstructionCount());
+      base::TimeTicks() + base::TimeDelta::FromMicroseconds(40),
+      base::ThreadTicks(), base::trace_event::ThreadInstructionCount());
 
   auto* e2_packet = producer_client()->GetFinalizedPacket(packet_index++);
   ExpectTraceEvent(e2_packet, /*category_iid=*/0u, /*name_iid=*/0u,
@@ -1227,6 +1299,62 @@ TEST_F(TraceEventDataSourceTest, UpdateDurationOfCompleteEvent) {
                    /*id=*/0u,
                    /*absolute_timestamp=*/40, /*tid_override=*/1,
                    /*pid_override=*/0, perfetto::ThreadTrack::ForThread(1));
+
+  // Complete event for the current thread emits thread time, too.
+  trace_event_internal::AddTraceEventWithThreadIdAndTimestamp(
+      TRACE_EVENT_PHASE_COMPLETE, category_group_enabled, kEventName,
+      trace_event_trace_id.scope(), trace_event_trace_id.raw_id(),
+      base::PlatformThread::CurrentId(),
+      base::TimeTicks() + base::TimeDelta::FromMicroseconds(10),
+      trace_event_trace_id.id_flags() | TRACE_EVENT_FLAG_EXPLICIT_TIMESTAMP,
+      trace_event_internal::kNoId);
+
+  auto* b2_packet = producer_client()->GetFinalizedPacket(packet_index++);
+  ExpectTraceEvent(
+      b2_packet, /*category_iid=*/1u, /*name_iid=*/1u, TRACE_EVENT_PHASE_BEGIN,
+      TRACE_EVENT_FLAG_EXPLICIT_TIMESTAMP | TRACE_EVENT_FLAG_HAS_ID, /*id=*/0u,
+      /*absolute_timestamp=*/10, /*tid_override=*/0, /*pid_override=*/0);
+}
+
+TEST_F(TraceEventDataSourceTest, ExplicitThreadTimeForDifferentThread) {
+  CreateTraceEventDataSource();
+
+  static const char kEventName[] = "bar";
+
+  auto* category_group_enabled =
+      TRACE_EVENT_API_GET_CATEGORY_GROUP_ENABLED(kCategoryGroup);
+
+  trace_event_internal::TraceID trace_event_trace_id =
+      trace_event_internal::kNoId;
+
+  // Chrome's main thread buffers and later flushes EarlyJava events on behalf
+  // of other threads, including explicit thread time values. Such an event
+  // should add descriptors for the other thread's track and for an absolute
+  // thread time track for the other thread.
+  trace_event_internal::AddTraceEventWithThreadIdAndTimestamps(
+      TRACE_EVENT_PHASE_BEGIN, category_group_enabled, kEventName,
+      trace_event_trace_id.scope(), trace_event_trace_id.raw_id(),
+      /*thread_id=*/1,
+      base::TimeTicks() + base::TimeDelta::FromMicroseconds(10),
+      base::ThreadTicks() + base::TimeDelta::FromMicroseconds(20),
+      trace_event_trace_id.id_flags() | TRACE_EVENT_FLAG_EXPLICIT_TIMESTAMP);
+
+  size_t packet_index = ExpectStandardPreamble();
+
+  // Thread track for the overridden tid.
+  auto* tt_packet = producer_client()->GetFinalizedPacket(packet_index++);
+  ExpectThreadTrack(tt_packet, /*thread_id=*/1);
+
+  // Absolute thread time track for the overridden tid.
+  auto* ttt_packet = producer_client()->GetFinalizedPacket(packet_index++);
+  ExpectThreadTimeCounterTrack(ttt_packet, /*thread_id=*/1);
+
+  auto* b_packet = producer_client()->GetFinalizedPacket(packet_index++);
+  ExpectTraceEvent(
+      b_packet, /*category_iid=*/1u, /*name_iid=*/1u, TRACE_EVENT_PHASE_BEGIN,
+      TRACE_EVENT_FLAG_EXPLICIT_TIMESTAMP | TRACE_EVENT_FLAG_HAS_ID, /*id=*/0u,
+      /*absolute_timestamp=*/10, /*tid_override=*/1, /*pid_override=*/0,
+      perfetto::ThreadTrack::ForThread(1), /*explicit_thread_time=*/20);
 }
 
 TEST_F(TraceEventDataSourceTest, TrackSupportOnBeginAndEndWithLambda) {

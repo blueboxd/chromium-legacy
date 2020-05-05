@@ -7,7 +7,7 @@
 #include <memory>
 #include <utility>
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/optional.h"
 #include "build/build_config.h"
 #include "ui/aura/client/aura_constants.h"

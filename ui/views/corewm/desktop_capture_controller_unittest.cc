@@ -4,7 +4,6 @@
 
 #include <memory>
 
-#include "base/logging.h"
 #include "base/macros.h"
 #include "ui/aura/env.h"
 #include "ui/aura/test/test_window_delegate.h"

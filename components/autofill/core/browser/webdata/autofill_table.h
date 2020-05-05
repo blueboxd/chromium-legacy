@@ -191,9 +191,6 @@ struct PaymentsCustomerData;
 //                      masked_credit_cards table to get the rest of the data.
 //   card_number_encrypted
 //                      Full card number, encrypted.
-//   use_count          DEPRECATED in version 65. See server_card_metadata.
-//   use_date           DEPRECATED in version 65. See server_card_metadata.
-//                      TODO(crbug.com/682326): Remove deprecated columns.
 //   unmask_date        The date this card was unmasked in units of
 //                      Time::ToInternalValue. Added in version 64.
 //
@@ -558,6 +555,8 @@ class AutofillTable : public WebDatabaseTable,
   bool MigrateToVersion83RemoveServerCardTypeColumn();
   bool MigrateToVersion84AddNicknameColumn();
   bool MigrateToVersion85AddCardIssuerColumnToMaskedCreditCard();
+  bool MigrateToVersion86RemoveUnmaskedCreditCardsUseColumns();
+
   // Max data length saved in the table, AKA the maximum length allowed for
   // form data.
   // Copied to components/autofill/ios/browser/resources/autofill_controller.js.

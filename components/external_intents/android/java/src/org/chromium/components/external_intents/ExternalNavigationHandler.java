@@ -395,6 +395,61 @@ public class ExternalNavigationHandler {
         }
     }
 
+    private static void loadUrlWithReferrer(
+            final String url, final String referrerUrl, ExternalNavigationDelegate delegate) {
+        LoadUrlParams loadUrlParams = new LoadUrlParams(url, PageTransition.AUTO_TOPLEVEL);
+        if (!TextUtils.isEmpty(referrerUrl)) {
+            Referrer referrer = new Referrer(referrerUrl, ReferrerPolicy.ALWAYS);
+            loadUrlParams.setReferrer(referrer);
+        }
+        delegate.loadUrlIfPossible(loadUrlParams);
+    }
+
+    /**
+     * Loads the URL from an intent, either in the current tab or a new tab, falling back to the
+     * |alternateUrl| if the |primaryUrl| is unsupported.
+     *
+     * Handling is determined as follows:
+     *
+     * If the url scheme is not supported we do nothing.
+     * If the url can be loaded in the current tab then we load the url there.
+     * If the url can't be loaded in the current tab then we launch a new tab and load it there.
+     *
+     * @param referrerUrl The string containing the original url from where the intent was referred.
+     * @param primaryUrl The primary url to load.
+     * @param alternateUrl The fallback url to use if the primary url is null or invalid.
+     * @param delegate The delegate instance with this request is associated.
+     * @param launchIncognito Whether the url should be loaded in an incognito tab.
+     * @return true if the url is loaded in the current tab.
+     */
+    public static boolean loadUrlFromIntent(String referrerUrl, String primaryUrl,
+            String alternateUrl, ExternalNavigationDelegate delegate, boolean needsToCloseTab,
+            boolean launchIncognito) {
+        // Check whether we should load this URL in the current tab or in a new tab.
+        if (!delegate.supportsCreatingNewTabs() && !delegate.canLoadUrlInCurrentTab()) return false;
+        boolean loadInNewTab = delegate.supportsCreatingNewTabs()
+                && (!delegate.canLoadUrlInCurrentTab() || needsToCloseTab);
+
+        boolean isPrimaryUrlValid =
+                (primaryUrl != null) ? UrlUtilities.isAcceptedScheme(primaryUrl) : false;
+        boolean isAlternateUrlValid =
+                (alternateUrl != null) ? UrlUtilities.isAcceptedScheme(alternateUrl) : false;
+
+        if (!isPrimaryUrlValid && !isAlternateUrlValid) return false;
+
+        String url = (isPrimaryUrlValid) ? primaryUrl : alternateUrl;
+
+        if (loadInNewTab) {
+            delegate.loadUrlInNewTab(url, launchIncognito);
+            // Explicit request to close the tab.
+            if (needsToCloseTab) delegate.closeTab();
+            return false;
+        }
+
+        loadUrlWithReferrer(url, referrerUrl, delegate);
+        return true;
+    }
+
     private boolean isTypedRedirectToExternalProtocol(
             ExternalNavigationParams params, int pageTransitionCore, boolean isExternalProtocol) {
         boolean isTyped = (pageTransitionCore == PageTransition.TYPED)

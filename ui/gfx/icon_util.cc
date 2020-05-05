@@ -4,9 +4,10 @@
 
 #include "ui/gfx/icon_util.h"
 
+#include "base/check_op.h"
 #include "base/files/file_util.h"
 #include "base/files/important_file_writer.h"
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "base/stl_util.h"
 #include "base/trace_event/trace_event.h"
 #include "base/win/resource_util.h"

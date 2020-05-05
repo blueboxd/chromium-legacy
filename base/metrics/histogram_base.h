@@ -18,6 +18,7 @@
 #include "base/macros.h"
 #include "base/strings/string_piece.h"
 #include "base/time/time.h"
+#include "base/values.h"
 
 namespace base {
 
@@ -232,9 +233,13 @@ class BASE_EXPORT HistogramBase {
   // read-only memory.
   virtual std::unique_ptr<HistogramSamples> SnapshotFinalDelta() const = 0;
 
-  // The following methods provide graphical histogram displays.
-  virtual void WriteHTMLGraph(std::string* output) const = 0;
+  // The following method provides graphical histogram displays.
   virtual void WriteAscii(std::string* output) const = 0;
+
+  // Returns histogram data as a Dict with the following format:
+  // {"header": "Name of the histogram with samples, mean, and/or flags",
+  // "body": "ASCII histogram representation"}
+  virtual base::DictionaryValue ToGraphDict() const = 0;
 
   // TODO(bcwhite): Remove this after https://crbug/836875.
   virtual void ValidateHistogramContents() const;

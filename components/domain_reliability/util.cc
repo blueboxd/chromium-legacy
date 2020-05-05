@@ -132,25 +132,26 @@ int GetNetErrorFromURLRequestStatus(const net::URLRequestStatus& status) {
   }
 }
 
-DomainReliabilityUploader::UploadResult GetUploadResultFromResponseDetails(
+void GetUploadResultFromResponseDetails(
     int net_error,
     int http_response_code,
-    base::TimeDelta retry_after) {
-  DomainReliabilityUploader::UploadResult result;
+    base::TimeDelta retry_after,
+    DomainReliabilityUploader::UploadResult* result) {
   if (net_error == net::OK && http_response_code == 200) {
-    result.status = DomainReliabilityUploader::UploadResult::SUCCESS;
-    return result;
+    result->status = DomainReliabilityUploader::UploadResult::SUCCESS;
+    return;
   }
 
-  if (net_error == net::OK && http_response_code == 503 &&
+  if (net_error == net::OK &&
+      http_response_code == 503 &&
       !retry_after.is_zero()) {
-    result.status = DomainReliabilityUploader::UploadResult::RETRY_AFTER;
-    result.retry_after = retry_after;
-    return result;
+    result->status = DomainReliabilityUploader::UploadResult::RETRY_AFTER;
+    result->retry_after = retry_after;
+    return;
   }
 
-  result.status = DomainReliabilityUploader::UploadResult::FAILURE;
-  return result;
+  result->status = DomainReliabilityUploader::UploadResult::FAILURE;
+  return;
 }
 
 // N.B. This uses a std::vector<std::unique_ptr<>> because that's what

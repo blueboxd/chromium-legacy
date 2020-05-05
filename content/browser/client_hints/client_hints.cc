@@ -520,8 +520,15 @@ void UpdateNavigationRequestClientUaHeadersImpl(
             data, network::mojom::WebClientHintsType::kUAPlatform,
             blink::mojom::FeaturePolicyFeature::kClientHintUAPlatform)) {
       AddUAHeader(headers, network::mojom::WebClientHintsType::kUAPlatform,
-                  AddBrandVersionQuotes(ua_metadata->platform,
-                                        ua_metadata->platform_version));
+                  AddQuotes(ua_metadata->platform));
+    }
+
+    if (ShouldAddClientHint(
+            data, network::mojom::WebClientHintsType::kUAPlatformVersion,
+            blink::mojom::FeaturePolicyFeature::kClientHintUAPlatform)) {
+      AddUAHeader(headers,
+                  network::mojom::WebClientHintsType::kUAPlatformVersion,
+                  AddQuotes(ua_metadata->platform_version));
     }
 
     if (ShouldAddClientHint(
@@ -540,6 +547,8 @@ void UpdateNavigationRequestClientUaHeadersImpl(
                            headers);
     RemoveClientHintHeader(network::mojom::WebClientHintsType::kUAPlatform,
                            headers);
+    RemoveClientHintHeader(
+        network::mojom::WebClientHintsType::kUAPlatformVersion, headers);
     RemoveClientHintHeader(network::mojom::WebClientHintsType::kUAModel,
                            headers);
   }
@@ -642,7 +651,7 @@ void AddNavigationRequestClientHintsHeaders(
   // If possible, logic should be added above so that the request headers for
   // the newly added client hint can be added to the request.
   static_assert(
-      network::mojom::WebClientHintsType::kUAFullVersion ==
+      network::mojom::WebClientHintsType::kUAPlatformVersion ==
           network::mojom::WebClientHintsType::kMaxValue,
       "Consider adding client hint request headers from the browser process");
 

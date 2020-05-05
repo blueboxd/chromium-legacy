@@ -7,6 +7,7 @@
 #include <set>
 
 #include "base/android/jni_string.h"
+#include "base/android/trace_event_binding.h"
 #include "base/base_jni_headers/TraceEvent_jni.h"
 #include "base/macros.h"
 #include "base/trace_event/trace_event.h"
@@ -16,9 +17,6 @@ namespace base {
 namespace android {
 
 namespace {
-
-constexpr const char kJavaCategory[] = "Java";
-constexpr const char kToplevelCategory[] = "toplevel";
 
 // Boilerplate for safely converting Java data to TRACE_EVENT data.
 class TraceEventDataConverter {
@@ -80,16 +78,16 @@ static void JNI_TraceEvent_Instant(JNIEnv* env,
                                    const JavaParamRef<jstring>& jarg) {
   TraceEventDataConverter converter(env, jname, jarg);
   if (converter.arg()) {
-    TRACE_EVENT_INSTANT_WITH_FLAGS1(kJavaCategory, converter.name(),
-                                    TRACE_EVENT_FLAG_JAVA_STRING_LITERALS |
-                                        TRACE_EVENT_FLAG_COPY |
-                                        TRACE_EVENT_SCOPE_THREAD,
-                                    converter.arg_name(), converter.arg());
+    TRACE_EVENT_INSTANT_WITH_FLAGS1(
+        internal::kJavaTraceCategory, converter.name(),
+        TRACE_EVENT_FLAG_JAVA_STRING_LITERALS | TRACE_EVENT_FLAG_COPY |
+            TRACE_EVENT_SCOPE_THREAD,
+        converter.arg_name(), converter.arg());
   } else {
-    TRACE_EVENT_INSTANT_WITH_FLAGS0(kJavaCategory, converter.name(),
-                                    TRACE_EVENT_FLAG_JAVA_STRING_LITERALS |
-                                        TRACE_EVENT_FLAG_COPY |
-                                        TRACE_EVENT_SCOPE_THREAD);
+    TRACE_EVENT_INSTANT_WITH_FLAGS0(
+        internal::kJavaTraceCategory, converter.name(),
+        TRACE_EVENT_FLAG_JAVA_STRING_LITERALS | TRACE_EVENT_FLAG_COPY |
+            TRACE_EVENT_SCOPE_THREAD);
   }
 }
 
@@ -99,12 +97,12 @@ static void JNI_TraceEvent_Begin(JNIEnv* env,
   TraceEventDataConverter converter(env, jname, jarg);
   if (converter.arg()) {
     TRACE_EVENT_BEGIN_WITH_FLAGS1(
-        kJavaCategory, converter.name(),
+        internal::kJavaTraceCategory, converter.name(),
         TRACE_EVENT_FLAG_JAVA_STRING_LITERALS | TRACE_EVENT_FLAG_COPY,
         converter.arg_name(), converter.arg());
   } else {
     TRACE_EVENT_BEGIN_WITH_FLAGS0(
-        kJavaCategory, converter.name(),
+        internal::kJavaTraceCategory, converter.name(),
         TRACE_EVENT_FLAG_JAVA_STRING_LITERALS | TRACE_EVENT_FLAG_COPY);
   }
 }
@@ -115,12 +113,12 @@ static void JNI_TraceEvent_End(JNIEnv* env,
   TraceEventDataConverter converter(env, jname, jarg);
   if (converter.arg()) {
     TRACE_EVENT_END_WITH_FLAGS1(
-        kJavaCategory, converter.name(),
+        internal::kJavaTraceCategory, converter.name(),
         TRACE_EVENT_FLAG_JAVA_STRING_LITERALS | TRACE_EVENT_FLAG_COPY,
         converter.arg_name(), converter.arg());
   } else {
     TRACE_EVENT_END_WITH_FLAGS0(
-        kJavaCategory, converter.name(),
+        internal::kJavaTraceCategory, converter.name(),
         TRACE_EVENT_FLAG_JAVA_STRING_LITERALS | TRACE_EVENT_FLAG_COPY);
   }
 }
@@ -129,7 +127,7 @@ static void JNI_TraceEvent_BeginToplevel(JNIEnv* env,
                                          const JavaParamRef<jstring>& jtarget) {
   std::string target = ConvertJavaStringToUTF8(env, jtarget);
   TRACE_EVENT_BEGIN_WITH_FLAGS0(
-      kToplevelCategory, target.c_str(),
+      internal::kToplevelTraceCategory, target.c_str(),
       TRACE_EVENT_FLAG_JAVA_STRING_LITERALS | TRACE_EVENT_FLAG_COPY);
 }
 
@@ -137,7 +135,7 @@ static void JNI_TraceEvent_EndToplevel(JNIEnv* env,
                                        const JavaParamRef<jstring>& jtarget) {
   std::string target = ConvertJavaStringToUTF8(env, jtarget);
   TRACE_EVENT_END_WITH_FLAGS0(
-      kToplevelCategory, target.c_str(),
+      internal::kToplevelTraceCategory, target.c_str(),
       TRACE_EVENT_FLAG_JAVA_STRING_LITERALS | TRACE_EVENT_FLAG_COPY);
 }
 
@@ -146,7 +144,7 @@ static void JNI_TraceEvent_StartAsync(JNIEnv* env,
                                       jlong jid) {
   TraceEventDataConverter converter(env, jname, nullptr);
   TRACE_EVENT_NESTABLE_ASYNC_BEGIN_WITH_FLAGS0(
-      kJavaCategory, converter.name(), TRACE_ID_LOCAL(jid),
+      internal::kJavaTraceCategory, converter.name(), TRACE_ID_LOCAL(jid),
       TRACE_EVENT_FLAG_JAVA_STRING_LITERALS | TRACE_EVENT_FLAG_COPY);
 }
 
@@ -155,7 +153,7 @@ static void JNI_TraceEvent_FinishAsync(JNIEnv* env,
                                        jlong jid) {
   TraceEventDataConverter converter(env, jname, nullptr);
   TRACE_EVENT_NESTABLE_ASYNC_END_WITH_FLAGS0(
-      kJavaCategory, converter.name(), TRACE_ID_LOCAL(jid),
+      internal::kJavaTraceCategory, converter.name(), TRACE_ID_LOCAL(jid),
       TRACE_EVENT_FLAG_JAVA_STRING_LITERALS | TRACE_EVENT_FLAG_COPY);
 }
 

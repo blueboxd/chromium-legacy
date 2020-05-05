@@ -17,6 +17,7 @@
 #include "services/network/public/cpp/content_security_policy/csp_source.h"
 #include "services/network/public/cpp/content_security_policy/csp_source_list.h"
 #include "services/network/public/cpp/is_potentially_trustworthy.h"
+#include "services/network/public/cpp/web_sandbox_flags.h"
 #include "url/gurl.h"
 #include "url/url_canon.h"
 #include "url/url_util.h"
@@ -489,6 +490,15 @@ void AddContentSecurityPolicyFromHeaders(
     auto frame_ancestors = directives.find("frame-ancestors");
     if (frame_ancestors != directives.end())
       ParseFrameAncestors(policy, frame_ancestors->second);
+
+    auto sandbox = directives.find("sandbox");
+    if (sandbox != directives.end()) {
+      // Note: |ParseSandboxPolicy(...).error_message| is ignored here. Blink's
+      // CSP parser is already in charge of displaying it.
+      policy->sandbox =
+          ~ParseWebSandboxPolicy(sandbox->second, mojom::WebSandboxFlags::kNone)
+               .flags;
+    }
 
     policy->treat_as_public_address |=
         directives.contains("treat-as-public-address");

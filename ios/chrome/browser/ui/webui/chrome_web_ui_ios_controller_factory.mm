@@ -52,12 +52,6 @@ using WebUIIOSFactoryFunction =
 template <class T>
 std::unique_ptr<WebUIIOSController> NewWebUIIOS(WebUIIOS* web_ui,
                                                 const GURL& url) {
-  return std::make_unique<T>(web_ui);
-}
-
-template <class T>
-std::unique_ptr<WebUIIOSController> NewWebUIIOSWithHost(WebUIIOS* web_ui,
-                                                        const GURL& url) {
   return std::make_unique<T>(web_ui, url.host());
 }
 
@@ -77,7 +71,7 @@ WebUIIOSFactoryFunction GetWebUIIOSFactoryFunction(const GURL& url) {
     return &NewWebUIIOS<AutofillInternalsUIIOS>;
   if (url_host == kChromeUIChromeURLsHost ||
       url_host == kChromeUIHistogramHost || url_host == kChromeUICreditsHost)
-    return &NewWebUIIOSWithHost<AboutUI>;
+    return &NewWebUIIOS<AboutUI>;
   if (url_host == kChromeUICrashesHost)
     return &NewWebUIIOS<CrashesUI>;
   if (url_host == kChromeUIFlagsHost)
@@ -111,7 +105,7 @@ WebUIIOSFactoryFunction GetWebUIIOSFactoryFunction(const GURL& url) {
   if (url_host == kChromeUISyncInternalsHost)
     return &NewWebUIIOS<SyncInternalsUI>;
   if (url_host == kChromeUITermsHost)
-    return &NewWebUIIOSWithHost<TermsUI>;
+    return &NewWebUIIOS<TermsUI>;
   if (url_host == kChromeUIVersionHost)
     return &NewWebUIIOS<VersionUI>;
 

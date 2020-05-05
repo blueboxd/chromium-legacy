@@ -6,6 +6,7 @@ package org.chromium.components.page_info;
 
 import android.content.Intent;
 
+import androidx.annotation.IntDef;
 import androidx.annotation.Nullable;
 
 import org.chromium.base.Callback;
@@ -17,102 +18,186 @@ import org.chromium.components.page_info.PageInfoView.PageInfoViewParams;
 import org.chromium.ui.base.AndroidPermissionDelegate;
 import org.chromium.ui.modaldialog.ModalDialogManager;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+
 /**
- * Interface that provides embedder-level information to PageInfoController.
+ *  Provides embedder-level information to PageInfoController.
  */
-public interface PageInfoControllerDelegate {
+public class PageInfoControllerDelegate {
+    @IntDef({OfflinePageState.NOT_OFFLINE_PAGE, OfflinePageState.TRUSTED_OFFLINE_PAGE,
+            OfflinePageState.UNTRUSTED_OFFLINE_PAGE})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface OfflinePageState {
+        int NOT_OFFLINE_PAGE = 1;
+        int TRUSTED_OFFLINE_PAGE = 2;
+        int UNTRUSTED_OFFLINE_PAGE = 3;
+    }
+
+    @IntDef({PreviewPageState.NOT_PREVIEW, PreviewPageState.SECURE_PAGE_PREVIEW,
+            PreviewPageState.INSECURE_PAGE_PREVIEW})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface PreviewPageState {
+        int NOT_PREVIEW = 1;
+        int SECURE_PAGE_PREVIEW = 2;
+        int INSECURE_PAGE_PREVIEW = 3;
+    }
+
+    private final ModalDialogManager mModalDialogManager;
+    private final AutocompleteSchemeClassifier mAutocompleteSchemeClassifier;
+    private final VrHandler mVrHandler;
+    private final boolean mIsSiteSettingsAvailable;
+    private final boolean mUseDarkColors;
+    private final boolean mCookieControlsShown;
+    protected final @PreviewPageState int mPreviewPageState;
+    protected @OfflinePageState int mOfflinePageState;
+    protected String mOfflinePageUrl;
+
+    public PageInfoControllerDelegate(ModalDialogManager modalDialogManager,
+            AutocompleteSchemeClassifier autocompleteSchemeClassifier, VrHandler vrHandler,
+            boolean isSiteSettingsAvailable, boolean useDarkColors, boolean cookieControlsShown) {
+        mModalDialogManager = modalDialogManager;
+        mAutocompleteSchemeClassifier = autocompleteSchemeClassifier;
+        mVrHandler = vrHandler;
+        mIsSiteSettingsAvailable = isSiteSettingsAvailable;
+        mUseDarkColors = useDarkColors;
+        mCookieControlsShown = cookieControlsShown;
+
+        // These sometimes get overwritten by derived classes.
+        mPreviewPageState = PreviewPageState.NOT_PREVIEW;
+        mOfflinePageState = OfflinePageState.NOT_OFFLINE_PAGE;
+        mOfflinePageUrl = null;
+    }
     /**
      * Creates an AutoCompleteClassifier.
      */
-    AutocompleteSchemeClassifier createAutocompleteSchemeClassifier();
+    public AutocompleteSchemeClassifier createAutocompleteSchemeClassifier() {
+        return mAutocompleteSchemeClassifier;
+    }
 
     /**
      * Whether cookie controls should be shown in Page Info UI.
      */
-    boolean cookieControlsShown();
+    public boolean cookieControlsShown() {
+        return mCookieControlsShown;
+    }
 
     /**
      * Return the ModalDialogManager to be used.
      */
-    ModalDialogManager getModalDialogManager();
+    public ModalDialogManager getModalDialogManager() {
+        return mModalDialogManager;
+    }
 
     /**
      * Whether Page Info UI should use dark colors.
      */
-    boolean useDarkColors();
+    public boolean useDarkColors() {
+        return mUseDarkColors;
+    }
 
     /**
      * Initialize viewParams with Preview UI info, if any.
      * @param viewParams The params to be initialized with Preview UI info.
      * @param runAfterDismiss Used to set "show original" callback on Previews UI.
      */
-    void initPreviewUiParams(PageInfoViewParams viewParams, Consumer<Runnable> runAfterDismiss);
+    public void initPreviewUiParams(
+            PageInfoViewParams viewParams, Consumer<Runnable> runAfterDismiss) {
+        // Don't support Preview UI by default.
+        viewParams.previewUIShown = false;
+        viewParams.previewSeparatorShown = false;
+    }
 
     /**
      * Whether website dialog is displayed for a preview.
      */
-    boolean isShowingPreview();
+    public boolean isShowingPreview() {
+        return mPreviewPageState != PreviewPageState.NOT_PREVIEW;
+    }
 
     /**
      * Whether Preview page state is INSECURE.
      */
-    boolean isPreviewPageInsecure();
+    public boolean isPreviewPageInsecure() {
+        return mPreviewPageState == PreviewPageState.INSECURE_PAGE_PREVIEW;
+    }
 
     /**
      * Returns whether or not an instant app is available for |url|.
      */
-    boolean isInstantAppAvailable(String url);
+    public boolean isInstantAppAvailable(String url) {
+        return false;
+    }
 
     /**
      * Gets the instant app intent for the given URL if one exists.
      */
-    Intent getInstantAppIntentForUrl(String url);
+    public Intent getInstantAppIntentForUrl(String url) {
+        return null;
+    }
 
     /**
      * Returns a VrHandler for Page Info UI.
      */
-    public VrHandler getVrHandler();
+    public VrHandler getVrHandler() {
+        return mVrHandler;
+    }
 
     /**
      * Gets the Url of the offline page being shown if any. Returns null otherwise.
      */
     @Nullable
-    String getOfflinePageUrl();
+    public String getOfflinePageUrl() {
+        return mOfflinePageUrl;
+    }
 
     /**
      * Whether the page being shown is an offline page.
      */
-    boolean isShowingOfflinePage();
+    public boolean isShowingOfflinePage() {
+        return mOfflinePageState != OfflinePageState.NOT_OFFLINE_PAGE && !isShowingPreview();
+    }
 
     /**
      * Initialize viewParams with Offline Page UI info, if any.
      * @param viewParams The PageInfoViewParams to set state on.
      * @param consumer Used to set "open Online" button callback for offline page.
      */
-    void initOfflinePageUiParams(PageInfoViewParams viewParams, Consumer<Runnable> runAfterDismiss);
+    public void initOfflinePageUiParams(
+            PageInfoViewParams viewParams, Consumer<Runnable> runAfterDismiss) {
+        viewParams.openOnlineButtonShown = false;
+    }
 
     /**
      * Return the connection message shown for an offline page, if appropriate.
      * Returns null if there's no offline page.
      */
     @Nullable
-    String getOfflinePageConnectionMessage();
+    public String getOfflinePageConnectionMessage() {
+        return null;
+    }
 
     /**
      * Returns whether or not the performance badge should be shown for |url|.
      */
-    boolean shouldShowPerformanceBadge(String url);
+    public boolean shouldShowPerformanceBadge(String url) {
+        return false;
+    }
 
     /**
      * Whether Site settings are available.
      */
-    boolean isSiteSettingsAvailable();
+    public boolean isSiteSettingsAvailable() {
+        return mIsSiteSettingsAvailable;
+    }
 
     /**
      * Show site settings for the URL passed in.
      * @param url The URL to show site settings for.
      */
-    void showSiteSettings(String url);
+    public void showSiteSettings(String url) {
+        // TODO(crbug.com/1058595): Override for WebLayer once SiteSettingsHelper is componentized.
+    }
 
     // TODO(crbug.com/1052375): Remove the next three methods when cookie controls UI
     // has been componentized.
@@ -120,17 +205,17 @@ public interface PageInfoControllerDelegate {
      * Creates Cookie Controls Bridge.
      * @param The CookieControlsObserver to create the bridge with.
      */
-    void createCookieControlsBridge(CookieControlsObserver observer);
+    public void createCookieControlsBridge(CookieControlsObserver observer) {}
 
     /**
      * Called when cookie controls UI is closed.
      */
-    void onUiClosing();
+    public void onUiClosing() {}
 
     /**
      * Notes whether third party cookies should be blocked for the site.
      */
-    void setThirdPartyCookieBlockingEnabledForSite(boolean blockCookies);
+    public void setThirdPartyCookieBlockingEnabledForSite(boolean blockCookies) {}
 
     // TODO(crbug.com/1058595): Componentize PermissionParamsBuilder once site settings code has
     // been componentized. These methods can be removed at that point.
@@ -144,10 +229,13 @@ public interface PageInfoControllerDelegate {
      * @param displayPermissionsCallback Callback to run to display fresh permissions in response to
      *                                   user interaction with a permission entry.
      */
-    void createPermissionParamsListBuilder(AndroidPermissionDelegate permissionDelegate,
+    public void createPermissionParamsListBuilder(AndroidPermissionDelegate permissionDelegate,
             String fullUrl, boolean shouldShowTitle,
             SystemSettingsActivityRequiredListener systemSettingsActivityRequiredListener,
-            Callback<PageInfoView.PermissionParams> displayPermissionsCallback);
+            Callback<PageInfoView.PermissionParams> displayPermissionsCallback) {
+        // TODO(crbug.com/1058597): Override for Webayer once PermissionParamsListBuilder has been
+        // componentized.
+    }
 
     /**
      * Adds a permission entry corresponding to the input params.
@@ -155,11 +243,18 @@ public interface PageInfoControllerDelegate {
      * @param type Type of the permission to add.
      * @param currentSettingValue The value of the permission to add.
      */
-    void addPermissionEntry(String name, int type, @ContentSettingValues int currentSettingValue);
+    public void addPermissionEntry(
+            String name, int type, @ContentSettingValues int currentSettingValue) {
+        // TODO(crbug.com/1058597): Override for Webayer once PermissionParamsListBuilder has been
+        // componentized.
+    }
 
     /**
      * Updates the Page Info View passed in with up to date permissions info.
      * @param view The Page Info view to update.
      */
-    void updatePermissionDisplay(PageInfoView view);
+    public void updatePermissionDisplay(PageInfoView view) {
+        // TODO(crbug.com/1058597): Override for Webayer once PermissionParamsListBuilder has been
+        // componentized.
+    }
 }

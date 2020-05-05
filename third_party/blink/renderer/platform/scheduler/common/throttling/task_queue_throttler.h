@@ -182,7 +182,9 @@ class PLATFORM_EXPORT TaskQueueThrottler : public BudgetPoolController {
                      base::TimeTicks moment,
                      bool is_wake_up);
 
-  base::Optional<base::TimeTicks> GetTimeTasksCanRunUntil(
+  // Returns the time until which tasks in |queue| can run. TimeTicks::Max()
+  // means that there are no known limits.
+  base::TimeTicks GetTimeTasksCanRunUntil(
       base::sequence_manager::TaskQueue* queue,
       base::TimeTicks now,
       bool is_wake_up) const;

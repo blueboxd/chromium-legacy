@@ -285,7 +285,8 @@ void InspectDOMHandler::WillCloseWebStateAt(WebStateList* web_state_list,
 
 }  // namespace
 
-InspectUI::InspectUI(web::WebUIIOS* web_ui) : web::WebUIIOSController(web_ui) {
+InspectUI::InspectUI(web::WebUIIOS* web_ui, const std::string& host)
+    : web::WebUIIOSController(web_ui, host) {
   base::RecordAction(base::UserMetricsAction(kInspectPageVisited));
 
   web_ui->AddMessageHandler(std::make_unique<InspectDOMHandler>());

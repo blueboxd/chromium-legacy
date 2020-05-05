@@ -33,7 +33,7 @@ class GenericUiControllerAndroid {
       UserModel* user_model,
       BasicInteractions* basic_interactions);
 
-  base::android::ScopedJavaGlobalRef<jobject> GetRootView() {
+  base::android::ScopedJavaGlobalRef<jobject> GetRootView() const {
     return jroot_view_;
   }
 
@@ -46,9 +46,6 @@ class GenericUiControllerAndroid {
   ~GenericUiControllerAndroid();
 
  private:
-  void CreateViewLayout();
-  void CreateInteractions();
-
   base::android::ScopedJavaGlobalRef<jobject> jroot_view_;
 
   // Maps view-ids to android views.

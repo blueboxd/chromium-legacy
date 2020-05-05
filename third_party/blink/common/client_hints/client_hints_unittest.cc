@@ -54,6 +54,7 @@ TEST(ClientHintsTest, FilterAcceptCH) {
       network::mojom::WebClientHintsType::kUA,
       network::mojom::WebClientHintsType::kUAArch,
       network::mojom::WebClientHintsType::kUAPlatform,
+      network::mojom::WebClientHintsType::kUAPlatformVersion,
       network::mojom::WebClientHintsType::kUAModel,
       network::mojom::WebClientHintsType::kUAMobile,
       network::mojom::WebClientHintsType::kUAFullVersion};
@@ -70,16 +71,17 @@ TEST(ClientHintsTest, FilterAcceptCH) {
                           /* permit_lang_hints = */ true,
                           /* permit_ua_hints = */ true);
   ASSERT_TRUE(result.has_value());
-  EXPECT_THAT(
-      result.value(),
-      UnorderedElementsAre(network::mojom::WebClientHintsType::kRtt,
-                           network::mojom::WebClientHintsType::kLang,
-                           network::mojom::WebClientHintsType::kUA,
-                           network::mojom::WebClientHintsType::kUAArch,
-                           network::mojom::WebClientHintsType::kUAPlatform,
-                           network::mojom::WebClientHintsType::kUAModel,
-                           network::mojom::WebClientHintsType::kUAMobile,
-                           network::mojom::WebClientHintsType::kUAFullVersion));
+  EXPECT_THAT(result.value(),
+              UnorderedElementsAre(
+                  network::mojom::WebClientHintsType::kRtt,
+                  network::mojom::WebClientHintsType::kLang,
+                  network::mojom::WebClientHintsType::kUA,
+                  network::mojom::WebClientHintsType::kUAArch,
+                  network::mojom::WebClientHintsType::kUAPlatform,
+                  network::mojom::WebClientHintsType::kUAPlatformVersion,
+                  network::mojom::WebClientHintsType::kUAModel,
+                  network::mojom::WebClientHintsType::kUAMobile,
+                  network::mojom::WebClientHintsType::kUAFullVersion));
 
   result = FilterAcceptCH(in,
                           /* permit_lang_hints = */ false,

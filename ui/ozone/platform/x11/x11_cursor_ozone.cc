@@ -4,6 +4,7 @@
 
 #include "ui/ozone/platform/x11/x11_cursor_ozone.h"
 
+#include "base/check_op.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/gfx/geometry/point.h"

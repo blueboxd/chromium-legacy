@@ -136,13 +136,13 @@ void UpdateClientMac::BeginRegister(const std::string& brand_code,
                                     const std::string& tag,
                                     const std::string& version,
                                     UpdateService::Callback callback) {
-  __block base::OnceCallback<void(update_client::Error)> block_callback =
+  __block base::OnceCallback<void(UpdateService::Result)> block_callback =
       std::move(callback);
 
   auto reply = ^(int error) {
     GetTaskRunner()->PostTask(
         FROM_HERE, base::BindOnce(std::move(block_callback),
-                                  static_cast<update_client::Error>(error)));
+                                  static_cast<UpdateService::Result>(error)));
   };
 
   [client_.get() registerForUpdatesWithAppId:base::SysUTF8ToNSString(
@@ -158,13 +158,13 @@ void UpdateClientMac::BeginRegister(const std::string& brand_code,
 void UpdateClientMac::BeginUpdateCheck(
     UpdateService::StateChangeCallback state_update,
     UpdateService::Callback callback) {
-  __block base::OnceCallback<void(update_client::Error)> block_callback =
+  __block base::OnceCallback<void(UpdateService::Result)> block_callback =
       std::move(callback);
 
   auto reply = ^(int error) {
     GetTaskRunner()->PostTask(
         FROM_HERE, base::BindOnce(std::move(block_callback),
-                                  static_cast<update_client::Error>(error)));
+                                  static_cast<UpdateService::Result>(error)));
   };
 
   base::scoped_nsobject<CRUPriorityWrapper> priorityWrapper(

@@ -560,7 +560,8 @@
         android:name="org.chromium.android_webview.devui.MainActivity"
         android:process=":webview_apk"
         android:taskAffinity="$PACKAGE.org.chromium.android_webview.devui"
-        android:theme="@style/Theme.DevUi.DayNight">
+        android:theme="@style/Theme.DevUi.DayNight"
+        android:visibleToInstantApps="true">
       <intent-filter>
         <action android:name="com.android.webview.SHOW_DEV_UI"/>
         <category android:name="android.intent.category.DEFAULT"/>
@@ -609,7 +610,8 @@
         android:enabled="false"
         android:name="org.chromium.android_webview.devui.DeveloperModeState"
         android:process=":webview_apk"
-        android:targetActivity="org.chromium.android_webview.devui.MainActivity"/>
+        android:targetActivity="org.chromium.android_webview.devui.MainActivity"
+        android:visibleToInstantApps="true"/>
     <activity-alias
         android:exported="false"
         android:name="org.chromium.chrome.browser.webapps.SecureWebAppLauncher"
@@ -806,7 +808,8 @@
         android:authorities="$PACKAGE.DeveloperModeContentProvider"
         android:exported="true"
         android:name="org.chromium.android_webview.services.DeveloperModeContentProvider"
-        android:process=":webview_service"/>
+        android:process=":webview_service"
+        android:visibleToInstantApps="true"/>
     <provider
         android:authorities="$PACKAGE.DownloadFileProvider"
         android:exported="false"

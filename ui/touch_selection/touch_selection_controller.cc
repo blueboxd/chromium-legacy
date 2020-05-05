@@ -5,9 +5,10 @@
 #include "ui/touch_selection/touch_selection_controller.h"
 
 #include "base/auto_reset.h"
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
+#include "base/notreached.h"
 
 namespace ui {
 namespace {

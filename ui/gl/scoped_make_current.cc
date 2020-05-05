@@ -4,7 +4,7 @@
 
 #include "ui/gl/scoped_make_current.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_surface.h"
 

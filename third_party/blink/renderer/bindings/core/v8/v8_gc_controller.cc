@@ -145,36 +145,20 @@ void V8GCController::GcEpilogue(v8::Isolate* isolate,
   ThreadState* current_thread_state = ThreadState::Current();
   if (current_thread_state && !current_thread_state->IsGCForbidden()) {
     if (flags & v8::kGCCallbackFlagForced) {
-      // Forces a precise GC at the end of the current event loop.
-      // This is required for testing code that cannot use GC internals but
-      // rather has to rely on window.gc().
-      current_thread_state->ScheduleForcedGCForTesting();
+      // Forces a precise GC at the end of the current event loop. This is
+      // required for testing code that cannot use GC internals but rather has
+      // to rely on window.gc(). Only schedule additional GCs if the last GC was
+      // using conservative stack scanning.
+      if (type == v8::kGCTypeScavenge ||
+          current_thread_state->RequiresForcedGCForTesting()) {
+        current_thread_state->ScheduleForcedGCForTesting();
+      }
     }
   }
 
   TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"),
                        "UpdateCounters", TRACE_EVENT_SCOPE_THREAD, "data",
                        inspector_update_counters_event::Data());
-}
-
-void V8GCController::CollectAllGarbageForTesting(
-    v8::Isolate* isolate,
-    v8::EmbedderHeapTracer::EmbedderStackState stack_state) {
-  constexpr unsigned kNumberOfGCs = 5;
-
-  if (stack_state != v8::EmbedderHeapTracer::EmbedderStackState::kUnknown) {
-    v8::EmbedderHeapTracer* const tracer = static_cast<v8::EmbedderHeapTracer*>(
-        ThreadState::Current()->unified_heap_controller());
-    // Passing a stack state is only supported when either wrapper tracing or
-    // unified heap is enabled.
-    for (unsigned i = 0; i < kNumberOfGCs; i++)
-      tracer->GarbageCollectionForTesting(stack_state);
-    return;
-  }
-
-  for (unsigned i = 0; i < kNumberOfGCs; i++)
-    isolate->RequestGarbageCollectionForTesting(
-        v8::Isolate::kFullGarbageCollection);
 }
 
 namespace {

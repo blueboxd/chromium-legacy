@@ -3278,11 +3278,6 @@ if (enable_java_templates) {
         _generated_script = "$root_build_dir/bin/${invoker.target_name}"
         script = "//build/android/gyp/create_apk_operations_script.py"
         outputs = [ _generated_script ]
-        if (_proguard_enabled && !_incremental_apk) {
-          # Required by logcat command.
-          data_deps = [ "//build/android/stacktrace:java_deobfuscate" ]
-          data = [ "$_final_apk_path.mapping" ]
-        }
         args = [
           "--script-output-path",
           rebase_path(_generated_script, root_build_dir),
@@ -3316,7 +3311,10 @@ if (enable_java_templates) {
             _static_library_apk_path,
           ]
         }
-        if (_proguard_enabled) {
+        if (_proguard_enabled && !_incremental_apk) {
+          # Required by logcat command.
+          data_deps = [ "//build/android/stacktrace:java_deobfuscate" ]
+          data = [ "$_final_apk_path.mapping" ]
           args += [
             "--proguard-mapping-path",
             rebase_path("$_final_apk_path.mapping", root_build_dir),

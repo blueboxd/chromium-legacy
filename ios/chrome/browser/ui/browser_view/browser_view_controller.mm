@@ -4117,10 +4117,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   // The display will be refreshed when this view becomes active again.
   if (!self.visible || !self.webUsageEnabled)
     return;
-
-  // Remove the find bar for now.
-  [self.dispatcher hideFindUI];
-  [self.textZoomHandler hideTextZoomUI];
 }
 
 - (void)webStateList:(WebStateList*)webStateList

@@ -7,6 +7,7 @@
 #include "base/android/jni_string.h"
 #include "base/optional.h"
 #include "chrome/android/features/autofill_assistant/jni_headers/AssistantViewInteractions_jni.h"
+#include "chrome/browser/android/autofill_assistant/generic_ui_controller_android.h"
 #include "chrome/browser/android/autofill_assistant/ui_controller_android_utils.h"
 #include "components/autofill_assistant/browser/user_model.h"
 
@@ -205,6 +206,16 @@ void ShowCalendarPopup(base::WeakPtr<UserModel> user_model,
   if (!jsuccess) {
     DVLOG(2) << "Failed to show calendar popup: JNI call failed";
   }
+}
+
+void ShowGenericPopup(const ShowGenericUiPopupProto& proto,
+                      base::android::ScopedJavaGlobalRef<jobject> jcontent_view,
+                      base::android::ScopedJavaGlobalRef<jobject> jcontext,
+                      base::android::ScopedJavaGlobalRef<jobject> jdelegate) {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  Java_AssistantViewInteractions_showGenericPopup(
+      env, jcontent_view, jcontext, jdelegate,
+      base::android::ConvertUTF8ToJavaString(env, proto.popup_identifier()));
 }
 
 void SetViewText(

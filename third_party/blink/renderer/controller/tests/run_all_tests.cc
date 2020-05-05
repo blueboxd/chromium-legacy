@@ -60,9 +60,7 @@ class BlinkUnitTestSuite : public base::TestSuite {
     // Collect garbage (including threadspecific persistent handles) in order
     // to release mock objects referred from v8 or Oilpan heap. Otherwise false
     // mock leaks will be reported.
-    blink::V8GCController::CollectAllGarbageForTesting(
-        v8::Isolate::GetCurrent(),
-        v8::EmbedderHeapTracer::EmbedderStackState::kEmpty);
+    blink::ThreadState::Current()->CollectAllGarbageForTesting();
 
     content::TearDownBlinkTestEnvironment();
 

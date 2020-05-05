@@ -40,6 +40,13 @@ public class AssistantGenericUiDelegate {
                 mNativeAssistantGenericUiDelegate, AssistantGenericUiDelegate.this, link);
     }
 
+    void onGenericPopupDismissed(String popupIdentifier) {
+        assert mNativeAssistantGenericUiDelegate != 0;
+        AssistantGenericUiDelegateJni.get().onGenericPopupDismissed(
+                mNativeAssistantGenericUiDelegate, AssistantGenericUiDelegate.this,
+                popupIdentifier);
+    }
+
     @CalledByNative
     private void clearNativePtr() {
         mNativeAssistantGenericUiDelegate = 0;
@@ -53,5 +60,7 @@ public class AssistantGenericUiDelegate {
                 AssistantGenericUiDelegate caller, String modelIdentifier, AssistantValue value);
         void onTextLinkClicked(
                 long nativeAssistantGenericUiDelegate, AssistantGenericUiDelegate caller, int link);
+        void onGenericPopupDismissed(long nativeAssistantGenericUiDelegate,
+                AssistantGenericUiDelegate caller, String popupIdentifier);
     }
 }

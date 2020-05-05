@@ -4,7 +4,7 @@
 
 #include "ui/web_dialogs/test/test_web_dialog_delegate.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/strings/utf_string_conversions.h"
 
 using content::WebContents;

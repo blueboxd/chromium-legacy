@@ -96,6 +96,7 @@ class ConnectorsManager {
   // Sets up |pref_change_registrar_| if kEnterpriseConntorsEnabled is true.
   // Used by the constructor and SetUpForTesting.
   void StartObservingPrefs();
+  void StartObservingPref(AnalysisConnector connector);
 
   // Private legacy functions.
   // These functions are used to interact with legacy policies and should stay

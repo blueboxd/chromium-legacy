@@ -43,6 +43,9 @@ std::ostream& operator<<(std::ostream& out,
     case EventProto::kOnTextLinkClicked:
       out << "kOnTextLinkClicked";
       break;
+    case EventProto::kOnPopupDismissed:
+      out << "kOnPopupDismissed";
+      break;
     case EventProto::KIND_NOT_SET:
       break;
   }

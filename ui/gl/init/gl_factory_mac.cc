@@ -4,8 +4,9 @@
 
 #include "ui/gl/init/gl_factory.h"
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/macros.h"
+#include "base/notreached.h"
 #include "base/trace_event/trace_event.h"
 #include "ui/gl/buildflags.h"
 #include "ui/gl/gl_bindings.h"

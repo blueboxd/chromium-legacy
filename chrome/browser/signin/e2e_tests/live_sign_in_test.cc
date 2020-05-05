@@ -37,6 +37,8 @@
 namespace signin {
 namespace test {
 
+const base::TimeDelta kDialogTimeout = base::TimeDelta::FromSeconds(10);
+
 // A wrapper importing the settings module when the chrome://settings serve the
 // Polymer 3 version.
 const char kSettingsScriptWrapperFormat[] =
@@ -223,7 +225,7 @@ class LiveSignInTest : public signin::test::LiveTest {
 
     SignInTestObserver observer(identity_manager(), account_reconcilor());
     EXPECT_TRUE(login_ui_test_utils::ConfirmSyncConfirmationDialog(
-        browser(), base::TimeDelta::FromSeconds(3)));
+        browser(), kDialogTimeout));
     observer.WaitForAccountChanges(previously_signed_in_accounts + 1,
                                    PrimarySyncAccountWait::kWaitForAdded);
   }
@@ -430,7 +432,7 @@ IN_PROC_BROWSER_TEST_F(LiveSignInTest, MANUAL_CancelSyncWithWebAccount) {
       settings_tab, base::StringPrintf(kSettingsScriptWrapperFormat,
                                        start_syncing_script.c_str())));
   EXPECT_TRUE(login_ui_test_utils::CancelSyncConfirmationDialog(
-      browser(), base::TimeDelta::FromSeconds(3)));
+      browser(), kDialogTimeout));
   observer.WaitForAccountChanges(1, PrimarySyncAccountWait::kWaitForCleared);
 
   const AccountsInCookieJarInfo& accounts_in_cookie_jar =
@@ -456,7 +458,7 @@ IN_PROC_BROWSER_TEST_F(LiveSignInTest, MANUAL_CancelSync) {
 
   SignInTestObserver observer(identity_manager(), account_reconcilor());
   EXPECT_TRUE(login_ui_test_utils::CancelSyncConfirmationDialog(
-      browser(), base::TimeDelta::FromSeconds(3)));
+      browser(), kDialogTimeout));
   observer.WaitForAccountChanges(0, PrimarySyncAccountWait::kWaitForCleared);
 
   const AccountsInCookieJarInfo& accounts_in_cookie_jar =
@@ -499,7 +501,7 @@ IN_PROC_BROWSER_TEST_F(LiveSignInTest,
   // Click "This wasn't me" on the email confirmation dialog and wait for a new
   // browser and profile created.
   EXPECT_TRUE(login_ui_test_utils::CompleteSigninEmailConfirmationDialog(
-      browser(), base::TimeDelta::FromSeconds(3),
+      browser(), kDialogTimeout,
       SigninEmailConfirmationDialog::CREATE_NEW_USER));
   Browser* new_browser = ui_test_utils::WaitForBrowserToOpen();
   EXPECT_EQ(profile_manager->GetNumberOfProfiles(), 2U);
@@ -510,7 +512,7 @@ IN_PROC_BROWSER_TEST_F(LiveSignInTest,
   SignInTestObserver new_browser_observer(identity_manager(new_browser),
                                           account_reconcilor(new_browser));
   EXPECT_TRUE(login_ui_test_utils::ConfirmSyncConfirmationDialog(
-      new_browser, base::TimeDelta::FromSeconds(3)));
+      new_browser, kDialogTimeout));
   new_browser_observer.WaitForAccountChanges(
       1, PrimarySyncAccountWait::kWaitForAdded);
 
@@ -570,10 +572,9 @@ IN_PROC_BROWSER_TEST_F(LiveSignInTest,
   // for a primary account to be set.
   SignInTestObserver observer(identity_manager(), account_reconcilor());
   EXPECT_TRUE(login_ui_test_utils::CompleteSigninEmailConfirmationDialog(
-      browser(), base::TimeDelta::FromSeconds(3),
-      SigninEmailConfirmationDialog::START_SYNC));
+      browser(), kDialogTimeout, SigninEmailConfirmationDialog::START_SYNC));
   EXPECT_TRUE(login_ui_test_utils::ConfirmSyncConfirmationDialog(
-      browser(), base::TimeDelta::FromSeconds(5)));
+      browser(), kDialogTimeout));
   observer.WaitForAccountChanges(1, PrimarySyncAccountWait::kWaitForAdded);
 
   // Check no profile was created.
@@ -626,8 +627,7 @@ IN_PROC_BROWSER_TEST_F(LiveSignInTest,
   // removed from Chrome.
   SignInTestObserver observer(identity_manager(), account_reconcilor());
   EXPECT_TRUE(login_ui_test_utils::CompleteSigninEmailConfirmationDialog(
-      browser(), base::TimeDelta::FromSeconds(3),
-      SigninEmailConfirmationDialog::CLOSE));
+      browser(), kDialogTimeout, SigninEmailConfirmationDialog::CLOSE));
   observer.WaitForAccountChanges(0, PrimarySyncAccountWait::kWaitForCleared);
 
   // Check no profile was created.

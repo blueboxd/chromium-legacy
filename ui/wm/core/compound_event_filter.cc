@@ -4,7 +4,7 @@
 
 #include "ui/wm/core/compound_event_filter.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "ui/aura/client/cursor_client.h"

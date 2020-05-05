@@ -6,7 +6,8 @@
 
 #include <numeric>
 
-#include "base/logging.h"
+#include "base/check_op.h"
+#include "base/notreached.h"
 #include "ui/gfx/animation/animation_delegate.h"
 
 namespace gfx {

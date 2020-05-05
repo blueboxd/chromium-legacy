@@ -4,7 +4,7 @@
 
 #include "ui/gfx/linux/gbm_util.h"
 
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "ui/gfx/linux/gbm_defines.h"
 
 namespace ui {

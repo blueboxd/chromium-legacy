@@ -4,7 +4,8 @@
 
 #include "ui/events/test/keyboard_layout.h"
 
-#include "base/logging.h"
+#include "base/check_op.h"
+#include "base/notreached.h"
 
 #if defined(USE_OZONE)
 #include "ui/events/ozone/layout/stub/stub_keyboard_layout_engine.h"  // nogncheck

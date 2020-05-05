@@ -206,7 +206,7 @@ public class ConnectionInfoPopup implements OnClickListener, ModalDialogProperti
                 // ignore this request.
                 return;
             }
-            if (mVrHandler.isInVr()) {
+            if (mVrHandler != null && mVrHandler.isInVr()) {
                 mVrHandler.exitVrAndRun(() -> {
                     mCertificateViewer.showCertificateChain(certChain);
                 }, VrHandler.UiType.CERTIFICATE_INFO);
@@ -214,7 +214,7 @@ public class ConnectionInfoPopup implements OnClickListener, ModalDialogProperti
             }
             mCertificateViewer.showCertificateChain(certChain);
         } else if (mMoreInfoLink == v) {
-            if (mVrHandler.isInVr()) {
+            if (mVrHandler != null && mVrHandler.isInVr()) {
                 mVrHandler.exitVrAndRun(this::showConnectionSecurityInfo,
                         VrHandler.UiType.CONNECTION_SECURITY_INFO);
                 return;

@@ -50,7 +50,7 @@
 
 namespace {
 
-const unsigned expected_client_hints_number = 11u;
+const unsigned expected_client_hints_number = 12u;
 
 // An interceptor that records count of fetches and client hint headers for
 // requests to https://foo.com/non-existing-image.jpg.

@@ -5,6 +5,8 @@
 #ifndef IOS_CHROME_BROWSER_UI_WEBUI_INSPECT_INSPECT_UI_H_
 #define IOS_CHROME_BROWSER_UI_WEBUI_INSPECT_INSPECT_UI_H_
 
+#include <string>
+
 #include "base/macros.h"
 #include "ios/web/public/webui/web_ui_ios_controller.h"
 
@@ -12,7 +14,7 @@
 // messages.
 class InspectUI : public web::WebUIIOSController {
  public:
-  explicit InspectUI(web::WebUIIOS* web_ui);
+  explicit InspectUI(web::WebUIIOS* web_ui, const std::string& host);
   ~InspectUI() override;
 
  private:

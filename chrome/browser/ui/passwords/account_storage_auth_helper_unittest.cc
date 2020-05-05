@@ -89,7 +89,7 @@ TEST_F(AccountStorageAuthHelperTest, ShouldSetOptInOnSucessfulReauth) {
             std::move(callback).Run(signin::ReauthResult::kSuccess);
             return nullptr;
           });
-  EXPECT_CALL(mock_password_feature_manager_, SetAccountStorageOptIn(true));
+  EXPECT_CALL(mock_password_feature_manager_, OptInToAccountStorage);
 
   auth_helper_.TriggerOptInReauth(base::DoNothing());
 }
@@ -103,7 +103,7 @@ TEST_F(AccountStorageAuthHelperTest, ShouldNotSetOptInOnFailedReauth) {
             std::move(callback).Run(signin::ReauthResult::kCancelled);
             return nullptr;
           });
-  EXPECT_CALL(mock_password_feature_manager_, SetAccountStorageOptIn).Times(0);
+  EXPECT_CALL(mock_password_feature_manager_, OptInToAccountStorage).Times(0);
 
   auth_helper_.TriggerOptInReauth(base::DoNothing());
 }

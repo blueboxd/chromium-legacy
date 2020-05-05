@@ -7,7 +7,7 @@
 
 #include "base/bind_helpers.h"
 #include "base/memory/weak_ptr.h"
-#include "components/autofill_assistant/browser/interactions.pb.h"
+#include "components/autofill_assistant/browser/generic_ui.pb.h"
 
 namespace autofill_assistant {
 class ScriptExecutorDelegate;

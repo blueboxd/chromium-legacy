@@ -28,7 +28,8 @@ class WebViewPasswordFeatureManager
   bool IsOptedInForAccountStorage() const override;
   bool ShouldShowAccountStorageOptIn() const override;
   bool ShouldShowAccountStorageReSignin() const override;
-  void SetAccountStorageOptIn(bool opt_in) override;
+  void OptInToAccountStorage() override;
+  void OptOutOfAccountStorageAndClearSettings() override;
 
   bool ShouldShowPasswordStorePicker() const override;
 

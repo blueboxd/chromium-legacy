@@ -6,7 +6,7 @@
 
 #include <memory>
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/scoped_observer.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"

@@ -33,8 +33,9 @@ web::WebUIIOSDataSource* CreateSignInInternalsHTMLSource() {
 
 }  //  namespace
 
-SignInInternalsUIIOS::SignInInternalsUIIOS(web::WebUIIOS* web_ui)
-    : WebUIIOSController(web_ui) {
+SignInInternalsUIIOS::SignInInternalsUIIOS(web::WebUIIOS* web_ui,
+                                           const std::string& host)
+    : WebUIIOSController(web_ui, host) {
   ChromeBrowserState* browser_state = ChromeBrowserState::FromWebUIIOS(web_ui);
   DCHECK(browser_state);
   web::WebUIIOSDataSource::Add(browser_state,

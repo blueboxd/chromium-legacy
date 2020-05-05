@@ -6,7 +6,7 @@
 
 #include <drm_fourcc.h>
 
-#include "base/logging.h"
+#include "base/notreached.h"
 
 #ifndef DRM_FORMAT_INVALID
 // TODO(mcasas): Remove when uprevving //third_party/libdrm.

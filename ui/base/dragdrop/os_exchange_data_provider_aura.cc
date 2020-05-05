@@ -4,7 +4,7 @@
 
 #include "ui/base/dragdrop/os_exchange_data_provider_aura.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "net/base/filename_util.h"

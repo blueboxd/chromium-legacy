@@ -4,7 +4,7 @@
 
 #include "ui/base/emoji/emoji_panel_helper.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/no_destructor.h"
 
 namespace ui {

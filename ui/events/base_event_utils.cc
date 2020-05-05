@@ -5,9 +5,9 @@
 #include "ui/events/base_event_utils.h"
 
 #include "base/atomic_sequence_num.h"
+#include "base/check_op.h"
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
-#include "base/logging.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "ui/events/event_constants.h"

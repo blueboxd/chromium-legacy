@@ -9,7 +9,7 @@
 #include <string.h>
 #include <algorithm>
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkColorFilter.h"

@@ -4,7 +4,7 @@
 
 #include "ui/android/edge_effect_base.h"
 
-#include "base/logging.h"
+#include "base/notreached.h"
 
 namespace ui {
 

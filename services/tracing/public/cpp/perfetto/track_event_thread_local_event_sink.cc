@@ -57,6 +57,16 @@ const char* const kPrivacyFiltered = "PRIVACY_FILTERED";
 constexpr uint32_t kClockIdAbsolute = 64;
 constexpr uint32_t kClockIdIncremental = 65;
 
+// Bits xor-ed into the track uuid of a thread track to make the track uuid of
+// a thread time / instruction count track. These bits are chosen from the
+// upper end of the uint64_t bytes, because the tid of the thread is hashed
+// into the least significant 32 bits of the uuid.
+constexpr uint64_t kThreadTimeTrackUuidBit = static_cast<uint64_t>(1u) << 32;
+constexpr uint64_t kAbsoluteThreadTimeTrackUuidBit = static_cast<uint64_t>(1u)
+                                                     << 33;
+constexpr uint64_t kThreadInstructionCountTrackUuidBit =
+    static_cast<uint64_t>(1u) << 34;
+
 // Names of events that should be converted into a TaskExecution event.
 const char* kTaskExecutionEventCategory = "toplevel";
 const char* kTaskExecutionEventNames[3] = {"ThreadControllerImpl::RunTask",
@@ -223,10 +233,14 @@ void TrackEventThreadLocalEventSink::ClearIncrementalState() {
   incremental_state_reset_id_.fetch_add(1u, std::memory_order_relaxed);
 }
 
-void TrackEventThreadLocalEventSink::ResetIncrementalStateIfNeeded(
+void TrackEventThreadLocalEventSink::UpdateIncrementalStateIfNeeded(
     base::trace_event::TraceEvent* trace_event) {
   bool explicit_timestamp =
       trace_event->flags() & TRACE_EVENT_FLAG_EXPLICIT_TIMESTAMP;
+  bool is_for_different_process =
+      (trace_event->flags() & TRACE_EVENT_FLAG_HAS_PROCESS_ID) &&
+      trace_event->process_id() != base::kNullProcessId;
+  bool is_for_different_thread = thread_id_ != trace_event->thread_id();
 
   // We access |incremental_state_reset_id_| atomically but racily. It's OK if
   // we don't notice the reset request immediately, as long as we will notice
@@ -239,6 +253,66 @@ void TrackEventThreadLocalEventSink::ResetIncrementalStateIfNeeded(
 
   if (reset_incremental_state_) {
     DoResetIncrementalState(trace_event, explicit_timestamp);
+  }
+
+  // Ensure that track descriptors for another thread that we reference are
+  // emitted. The other thread may not emit its own descriptors, e.g. if it's an
+  // early java thread that already died. We can only do this for threads in the
+  // same process. Some metadata events also set thread_id to 0, which doesn't
+  // correspond to a valid thread, so we skip these here.
+  if (!is_for_different_process && is_for_different_thread &&
+      trace_event->thread_id() != 0) {
+    // If we haven't yet, emit thread track descriptor and mark it as emitted.
+    // This descriptor is compatible with the thread track descriptor that may
+    // be emitted by the other thread itself, but doesn't set thread details
+    // (e.g. thread name or type).
+    perfetto::ThreadTrack thread_track =
+        perfetto::ThreadTrack::ForThread(trace_event->thread_id());
+    if (!base::Contains(extra_emitted_track_descriptor_uuids_,
+                        thread_track.uuid)) {
+      auto packet = trace_writer_->NewTracePacket();
+      SetPacketTimestamp(&packet, last_timestamp_);
+      TrackDescriptor* track_descriptor = packet->set_track_descriptor();
+      // TODO(eseckler): Call thread_track.Serialize() here instead once the
+      // gets the correct pid from Chrome.
+      track_descriptor->set_uuid(thread_track.uuid);
+      DCHECK(thread_track.parent_uuid);
+      track_descriptor->set_parent_uuid(thread_track.parent_uuid);
+      ThreadDescriptor* thread = track_descriptor->set_thread();
+      thread->set_pid(process_id_);
+      thread->set_tid(trace_event->thread_id());
+
+      extra_emitted_track_descriptor_uuids_.push_back(thread_track.uuid);
+    }
+
+    bool has_thread_time = !trace_event->thread_timestamp().is_null();
+    if (has_thread_time) {
+      // If we haven't yet, emit an absolute thread time counter track
+      // descriptor and mark it as emitted. We can't use the thread's own thread
+      // time counter track, because its delta encoding is not valid on this
+      // trace writer sequence.
+      uint64_t thread_time_track_uuid =
+          thread_track.uuid ^ kAbsoluteThreadTimeTrackUuidBit;
+      if (!base::Contains(extra_emitted_track_descriptor_uuids_,
+                          thread_time_track_uuid)) {
+        auto packet = trace_writer_->NewTracePacket();
+        SetPacketTimestamp(&packet, last_timestamp_);
+        TrackDescriptor* track_descriptor = packet->set_track_descriptor();
+        // TODO(eseckler): Switch to client library support for CounterTrack
+        // uuid calculation once available.
+        track_descriptor->set_uuid(thread_time_track_uuid);
+        track_descriptor->set_parent_uuid(thread_track.uuid);
+        CounterDescriptor* counter = track_descriptor->set_counter();
+        counter->set_type(CounterDescriptor::COUNTER_THREAD_TIME_NS);
+        // Absolute values, but in microseconds.
+        counter->set_unit_multiplier(1000u);
+
+        extra_emitted_track_descriptor_uuids_.push_back(thread_time_track_uuid);
+      }
+    }
+
+    // We never emit instruction count for different threads.
+    DCHECK(trace_event->thread_instruction_count().is_null());
   }
 }
 
@@ -395,26 +469,52 @@ TrackEvent* TrackEventThreadLocalEventSink::PrepareTrackEvent(
   DCHECK(has_thread_time || !has_instruction_count);
 
   if (has_thread_time) {
-    // Thread timestamps are never user-provided, and since we split COMPLETE
-    // events into BEGIN+END event pairs, they should not appear out of order.
-    DCHECK(trace_event->thread_timestamp() >= last_thread_time_);
+    if (is_for_different_thread) {
+      // EarlyJava events are emitted on the main thread but may actually be for
+      // different threads and specify their thread time.
 
-    track_event->add_extra_counter_values(
-        (trace_event->thread_timestamp() - last_thread_time_).InMicroseconds());
-    last_thread_time_ = trace_event->thread_timestamp();
+      // EarlyJava events are always for the same process and don't set
+      // instruction counts.
+      DCHECK(!is_for_different_process);
+      DCHECK(!has_instruction_count);
 
-    if (has_instruction_count) {
-      // Thread instruction counts are never user-provided, and since we split
-      // COMPLETE events into BEGIN+END event pairs, they should not appear out
-      // of order.
-      DCHECK(trace_event->thread_instruction_count().ToInternalValue() >=
-             last_thread_instruction_count_.ToInternalValue());
+      // Emit a value onto the absolute thread time track for the other thread.
+      // We emit a descriptor for this in UpdateIncrementalStateIfNeeded().
+      uint64_t track_uuid =
+          perfetto::ThreadTrack::ForThread(trace_event->thread_id()).uuid ^
+          kAbsoluteThreadTimeTrackUuidBit;
+      DCHECK(base::Contains(extra_emitted_track_descriptor_uuids_, track_uuid));
 
       track_event->add_extra_counter_values(
-          (trace_event->thread_instruction_count() -
-           last_thread_instruction_count_)
-              .ToInternalValue());
-      last_thread_instruction_count_ = trace_event->thread_instruction_count();
+          (trace_event->thread_timestamp() - base::ThreadTicks())
+              .InMicroseconds());
+      track_event->add_extra_counter_track_uuids(track_uuid);
+    } else {
+      // Thread timestamps for the current thread are never user-provided, and
+      // since we split COMPLETE events into BEGIN+END event pairs, they should
+      // not appear out of order.
+      DCHECK(trace_event->thread_timestamp() >= last_thread_time_);
+
+      track_event->add_extra_counter_values(
+          (trace_event->thread_timestamp() - last_thread_time_)
+              .InMicroseconds());
+      last_thread_time_ = trace_event->thread_timestamp();
+
+      if (has_instruction_count) {
+        // Thread instruction counts are never user-provided, and since we split
+        // COMPLETE events into BEGIN+END event pairs, they should not appear
+        // out of order.
+        DCHECK(trace_event->thread_instruction_count().ToInternalValue() >=
+               last_thread_instruction_count_.ToInternalValue());
+
+        // TODO(crbug.com/925589): Add tests for instruction counts.
+        track_event->add_extra_counter_values(
+            (trace_event->thread_instruction_count() -
+             last_thread_instruction_count_)
+                .ToInternalValue());
+        last_thread_instruction_count_ =
+            trace_event->thread_instruction_count();
+      }
     }
   }
 
@@ -483,9 +583,11 @@ TrackEvent* TrackEventThreadLocalEventSink::PrepareTrackEvent(
         }
         case TRACE_EVENT_SCOPE_THREAD: {
           if (thread_id_ != trace_event->thread_id()) {
-            track_event->set_track_uuid(
-                perfetto::ThreadTrack::ForThread(trace_event->thread_id())
-                    .uuid);
+            uint64_t track_uuid =
+                perfetto::ThreadTrack::ForThread(trace_event->thread_id()).uuid;
+            DCHECK(base::Contains(extra_emitted_track_descriptor_uuids_,
+                                  track_uuid));
+            track_event->set_track_uuid(track_uuid);
           } else {
             // Default to the thread track.
           }
@@ -494,8 +596,11 @@ TrackEvent* TrackEventThreadLocalEventSink::PrepareTrackEvent(
       }
     } else {
       if (thread_id_ != trace_event->thread_id()) {
-        track_event->set_track_uuid(
-            perfetto::ThreadTrack::ForThread(trace_event->thread_id()).uuid);
+        uint64_t track_uuid =
+            perfetto::ThreadTrack::ForThread(trace_event->thread_id()).uuid;
+        DCHECK(
+            base::Contains(extra_emitted_track_descriptor_uuids_, track_uuid));
+        track_event->set_track_uuid(track_uuid);
       } else {
         // Default to the thread track.
       }
@@ -751,7 +856,8 @@ void TrackEventThreadLocalEventSink::EmitCounterTrackDescriptor(
 
   // TODO(eseckler): Switch to client library support for CounterTrack uuid
   // calculation once available.
-  track_descriptor->set_uuid(thread_track_uuid ^ counter_track_uuid_bit);
+  uint64_t track_uuid = thread_track_uuid ^ counter_track_uuid_bit;
+  track_descriptor->set_uuid(track_uuid);
   track_descriptor->set_parent_uuid(thread_track_uuid);
 
   CounterDescriptor* counter = track_descriptor->set_counter();
@@ -759,7 +865,7 @@ void TrackEventThreadLocalEventSink::EmitCounterTrackDescriptor(
     counter->set_type(CounterDescriptor::COUNTER_THREAD_TIME_NS);
   }
   if (unit_multiplier) {
-    counter->set_unit_multiplier(1000u);
+    counter->set_unit_multiplier(unit_multiplier);
   }
   counter->set_is_incremental(true);
 }
@@ -767,19 +873,12 @@ void TrackEventThreadLocalEventSink::EmitCounterTrackDescriptor(
 void TrackEventThreadLocalEventSink::DoResetIncrementalState(
     base::trace_event::TraceEvent* trace_event,
     bool explicit_timestamp) {
-  // Bits xor-ed into the track uuid of a thread track to make the track uuid of
-  // a thread time / instruction count track. These bits are chosen from the
-  // upper end of the uint64_t bytes, because the tid of the thread is hashed
-  // into the least significant 32 bits of the uuid.
-  constexpr uint64_t kThreadTimeTrackUuidBit = static_cast<uint64_t>(1u) << 32;
-  constexpr uint64_t kThreadInstructionCountTrackUuidBit =
-      static_cast<uint64_t>(1u) << 33;
-
   interned_event_categories_.ResetEmittedState();
   interned_event_names_.ResetEmittedState();
   interned_annotation_names_.ResetEmittedState();
   interned_source_locations_.ResetEmittedState();
   interned_log_message_bodies_.ResetEmittedState();
+  extra_emitted_track_descriptor_uuids_.clear();
 
   // Reset the reference timestamp.
   base::TimeTicks timestamp;

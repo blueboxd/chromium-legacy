@@ -41,6 +41,7 @@ import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUi
 
 import android.graphics.Typeface;
 import android.support.test.InstrumentationRegistry;
+import android.support.test.espresso.Espresso;
 import android.support.test.filters.MediumTest;
 import android.widget.CheckBox;
 import android.widget.DatePicker;
@@ -97,6 +98,7 @@ import org.chromium.chrome.browser.autofill_assistant.proto.SetViewEnabledProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.SetViewVisibilityProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.ShapeDrawableProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.ShowCalendarPopupProto;
+import org.chromium.chrome.browser.autofill_assistant.proto.ShowGenericUiPopupProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.ShowGenericUiProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.ShowInfoPopupProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.ShowListPopupProto;
@@ -2270,5 +2272,151 @@ public class AutofillAssistantGenericUiTest {
         waitUntilViewMatchesCondition(withText("Done"), isCompletelyDisplayed());
         onView(withText("Done")).perform(click());
         onView(withText("Info message")).check(matches(isDisplayed()));
+    }
+
+    /**
+     * Shows a generic popup which modifies a value in the global user model.
+     */
+    @Test
+    @MediumTest
+    public void testNestedGenericPopups() {
+        ValueReferenceProto counterValue = (ValueReferenceProto) ValueReferenceProto.newBuilder()
+                                                   .setModelIdentifier("counter")
+                                                   .build();
+        ValueReferenceProto incrementValue = (ValueReferenceProto) ValueReferenceProto.newBuilder()
+                                                     .setValue(ValueProto.newBuilder().setInts(
+                                                             IntList.newBuilder().addValues(1)))
+                                                     .build();
+        CallbackProto incrementCounterCallback =
+                (CallbackProto) CallbackProto.newBuilder()
+                        .setComputeValue(ComputeValueProto.newBuilder()
+                                                 .setResultModelIdentifier("counter")
+                                                 .setIntegerSum(IntegerSumProto.newBuilder()
+                                                                        .addValues(counterValue)
+                                                                        .addValues(incrementValue)))
+                        .build();
+
+        // Clicking |nested_text_view| will increment |counter| by 1.
+        List<InteractionProto> interactions_nested = new ArrayList<>();
+        interactions_nested.add(
+                (InteractionProto) InteractionProto.newBuilder()
+                        .setTriggerEvent(EventProto.newBuilder().setOnViewClicked(
+                                OnViewClickedEventProto.newBuilder().setViewIdentifier(
+                                        "nested_text_view")))
+                        .addCallbacks(incrementCounterCallback)
+                        .build());
+        GenericUserInterfaceProto nestedUi =
+                (GenericUserInterfaceProto) GenericUserInterfaceProto.newBuilder()
+                        .setRootView(createTextView("click me (nested)", "nested_text_view"))
+                        .setInteractions(InteractionsProto.newBuilder().addAllInteractions(
+                                interactions_nested))
+                        .build();
+
+        // Clicking |root_text_view| will increment |counter| by 1 and open a nested popup.
+        List<InteractionProto> interactions = new ArrayList<>();
+        interactions.add((InteractionProto) InteractionProto.newBuilder()
+                                 .setTriggerEvent(EventProto.newBuilder().setOnViewClicked(
+                                         OnViewClickedEventProto.newBuilder().setViewIdentifier(
+                                                 "root_text_view")))
+                                 .addCallbacks(incrementCounterCallback)
+                                 .addCallbacks(CallbackProto.newBuilder().setShowGenericPopup(
+                                         ShowGenericUiPopupProto.newBuilder()
+                                                 .setPopupIdentifier("nested_popup")
+                                                 .setGenericUi(nestedUi)))
+                                 .build());
+        interactions.add(
+                (InteractionProto) InteractionProto.newBuilder()
+                        .setTriggerEvent(EventProto.newBuilder().setOnValueChanged(
+                                OnModelValueChangedEventProto.newBuilder().setModelIdentifier(
+                                        "chips")))
+                        .addCallbacks(CallbackProto.newBuilder().setSetUserActions(
+                                SetUserActionsProto.newBuilder().setUserActions(
+                                        ValueReferenceProto.newBuilder().setModelIdentifier(
+                                                "chips"))))
+                        .build());
+        interactions.add((InteractionProto) InteractionProto.newBuilder()
+                                 .setTriggerEvent(EventProto.newBuilder().setOnUserActionCalled(
+                                         OnUserActionCalled.newBuilder().setUserActionIdentifier(
+                                                 "done_chip")))
+                                 .addCallbacks(CallbackProto.newBuilder().setEndAction(
+                                         EndActionProto.newBuilder().setStatus(
+                                                 ProcessedActionStatusProto.ACTION_APPLIED)))
+                                 .build());
+
+        List<ModelProto.ModelValue> modelValues = new ArrayList<>();
+        modelValues.add((ModelProto.ModelValue) ModelProto.ModelValue.newBuilder()
+                                .setIdentifier("counter")
+                                .setValue(ValueProto.newBuilder().setInts(
+                                        IntList.newBuilder().addValues(0)))
+                                .build());
+        modelValues.add(
+                (ModelProto.ModelValue) ModelProto.ModelValue.newBuilder()
+                        .setIdentifier("chips")
+                        .setValue(ValueProto.newBuilder().setUserActions(
+                                UserActionList.newBuilder().addValues(
+                                        UserActionProto.newBuilder()
+                                                .setChip(ChipProto.newBuilder()
+                                                                 .setText("Done")
+                                                                 .setType(ChipType.NORMAL_ACTION))
+                                                .setIdentifier("done_chip"))))
+                        .build());
+
+        GenericUserInterfaceProto genericUserInterface =
+                (GenericUserInterfaceProto) GenericUserInterfaceProto.newBuilder()
+                        .setRootView(ViewProto.newBuilder()
+                                             .setIdentifier("root_text_view")
+                                             .setTextView(TextViewProto.newBuilder().setText(
+                                                     "click me (root)")))
+                        .setInteractions(
+                                InteractionsProto.newBuilder().addAllInteractions(interactions))
+                        .setModel(ModelProto.newBuilder().addAllValues(modelValues))
+                        .build();
+
+        ArrayList<ActionProto> list = new ArrayList<>();
+        list.add((ActionProto) ActionProto.newBuilder()
+                         .setShowGenericUi(ShowGenericUiProto.newBuilder()
+                                                   .setGenericUserInterface(genericUserInterface)
+                                                   .addOutputModelIdentifiers("counter"))
+                         .build());
+        AutofillAssistantTestScript script = new AutofillAssistantTestScript(
+                (SupportedScriptProto) SupportedScriptProto.newBuilder()
+                        .setPath("autofill_assistant_target_website.html")
+                        .setPresentation(PresentationProto.newBuilder().setAutostart(true).setChip(
+                                ChipProto.newBuilder().setText("Autostart")))
+                        .build(),
+                list);
+
+        AutofillAssistantTestService testService =
+                new AutofillAssistantTestService(Collections.singletonList(script));
+        startAutofillAssistant(mTestRule.getActivity(), testService);
+
+        // Open popup, increment counter to 1.
+        waitUntilViewMatchesCondition(withText("click me (root)"), isCompletelyDisplayed());
+        onView(withText("click me (root)")).perform(click());
+
+        // Click on nested text view, increment counter to 2.
+        waitUntilViewMatchesCondition(withText("click me (nested)"), isCompletelyDisplayed());
+        onView(withText("click me (nested)")).perform(click());
+
+        // Close popup.
+        Espresso.pressBack();
+
+        int numNextActionsCalled = testService.getNextActionsCounter();
+        onView(withText("Done")).perform(click());
+        testService.waitUntilGetNextActions(numNextActionsCalled + 1);
+
+        List<ProcessedActionProto> processedActions = testService.getProcessedActions();
+        assertThat(processedActions, iterableWithSize(1));
+        assertThat(
+                processedActions.get(0).getStatus(), is(ProcessedActionStatusProto.ACTION_APPLIED));
+        ShowGenericUiProto.Result result = processedActions.get(0).getShowGenericUiResult();
+        List<ModelProto.ModelValue> resultModelValues = result.getModel().getValuesList();
+        assertThat(resultModelValues, iterableWithSize(1));
+        assertThat(resultModelValues,
+                containsInAnyOrder((ModelProto.ModelValue) ModelProto.ModelValue.newBuilder()
+                                           .setIdentifier("counter")
+                                           .setValue(ValueProto.newBuilder().setInts(
+                                                   IntList.newBuilder().addValues(2)))
+                                           .build()));
     }
 }

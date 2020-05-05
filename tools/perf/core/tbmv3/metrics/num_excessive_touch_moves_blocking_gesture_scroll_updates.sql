@@ -139,11 +139,10 @@ CREATE VIEW num_excessive_touch_moves_blocking_gesture_scroll_updates_output AS
   "num_touch_moves_blocking_gesture_scrolls", sumExcessiveOverlaps)
 FROM (
   SELECT
-    SUM(hasFirstExcessiveOverlap) AS sumExcessiveOverlaps
+    COALESCE(SUM(hasFirstExcessiveOverlap), 0) AS sumExcessiveOverlaps
   FROM OnlyFirstExcessiveTouchAndGestureOverlap
 )
 WHERE
-  sumExcessiveOverlaps IS NOT NULL AND
   (
     SELECT
       CASE WHEN scrollDuration IS NOT NULL THEN

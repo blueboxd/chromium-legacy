@@ -117,8 +117,9 @@ web::WebUIIOSDataSource* CreateNTPTilesInternalsHTMLSource() {
 
 }  // namespace
 
-NTPTilesInternalsUI::NTPTilesInternalsUI(web::WebUIIOS* web_ui)
-    : web::WebUIIOSController(web_ui) {
+NTPTilesInternalsUI::NTPTilesInternalsUI(web::WebUIIOS* web_ui,
+                                         const std::string& host)
+    : web::WebUIIOSController(web_ui, host) {
   ChromeBrowserState* browser_state = ChromeBrowserState::FromWebUIIOS(web_ui);
   web::WebUIIOSDataSource::Add(browser_state,
                                CreateNTPTilesInternalsHTMLSource());

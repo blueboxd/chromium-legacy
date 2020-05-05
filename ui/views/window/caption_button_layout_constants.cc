@@ -4,7 +4,6 @@
 
 #include "ui/views/window/caption_button_layout_constants.h"
 
-#include "base/logging.h"
 #include "ui/base/pointer/touch_ui_controller.h"
 #include "ui/gfx/geometry/size.h"
 

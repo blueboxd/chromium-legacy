@@ -9,7 +9,7 @@
 #include <Vssym32.h>
 #include <uxtheme.h>
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/win/scoped_gdi_object.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/system_fonts_win.h"

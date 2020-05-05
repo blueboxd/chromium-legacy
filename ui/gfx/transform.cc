@@ -4,7 +4,7 @@
 
 #include "ui/gfx/transform.h"
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/strings/stringprintf.h"
 #include "ui/gfx/geometry/angle_conversions.h"
 #include "ui/gfx/geometry/box_f.h"

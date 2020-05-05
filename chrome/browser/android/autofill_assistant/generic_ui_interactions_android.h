@@ -12,7 +12,7 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/android/autofill_assistant/interaction_handler_android.h"
 #include "components/autofill_assistant/browser/basic_interactions.h"
-#include "components/autofill_assistant/browser/interactions.pb.h"
+#include "components/autofill_assistant/browser/generic_ui.pb.h"
 
 namespace autofill_assistant {
 namespace android_interactions {
@@ -53,6 +53,12 @@ void ShowCalendarPopup(base::WeakPtr<UserModel> user_model,
                        const ShowCalendarPopupProto& proto,
                        base::android::ScopedJavaGlobalRef<jobject> jcontext,
                        base::android::ScopedJavaGlobalRef<jobject> jdelegate);
+
+// Displays a generic popup on the screen.
+void ShowGenericPopup(const ShowGenericUiPopupProto& proto,
+                      base::android::ScopedJavaGlobalRef<jobject> jcontent_view,
+                      base::android::ScopedJavaGlobalRef<jobject> jcontext,
+                      base::android::ScopedJavaGlobalRef<jobject> jdelegate);
 
 // Sets the text of a view.
 void SetViewText(

@@ -35,7 +35,6 @@ class DictionaryValue;
 }  // namespace base
 
 namespace content {
-class AppBannerService;
 class WebViewTestProxy;
 struct WebPreferences;
 
@@ -161,10 +160,6 @@ class BlinkTestRunner {
       const std::vector<std::string>& event_platforms,
       base::OnceCallback<void(bool)> callback);
 
-  // Resolves the in-flight beforeinstallprompt event userChoice promise with a
-  // platform of |platform|.
-  void ResolveBeforeInstallPromptPromise(const std::string& platform);
-
   // Mark the orientation changed for fullscreen layout tests.
   void SetScreenOrientationChanged();
 
@@ -234,8 +229,6 @@ class BlinkTestRunner {
 
   bool is_main_window_ = false;
   bool waiting_for_reset_navigation_to_about_blank_ = false;
-
-  std::unique_ptr<AppBannerService> app_banner_service_;
 
   mojom::WebTestRenderFrame::CaptureDumpCallback dump_callback_;
   mojom::WebTestDumpPtr dump_result_;

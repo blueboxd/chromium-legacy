@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.autofill_assistant;
 
 import static android.support.test.espresso.Espresso.onView;
 import static android.support.test.espresso.action.ViewActions.click;
+import static android.support.test.espresso.action.ViewActions.replaceText;
 import static android.support.test.espresso.action.ViewActions.scrollTo;
 import static android.support.test.espresso.action.ViewActions.typeText;
 import static android.support.test.espresso.assertion.ViewAssertions.matches;
@@ -38,6 +39,7 @@ import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUi
 import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiTestUtil.waitUntilViewMatchesCondition;
 
 import android.support.test.InstrumentationRegistry;
+import android.support.test.espresso.core.deps.guava.collect.Iterables;
 import android.support.test.espresso.matcher.ViewMatchers;
 import android.support.test.filters.MediumTest;
 import android.widget.DatePicker;
@@ -672,6 +674,68 @@ public class AutofillAssistantCollectUserDataIntegrationTest {
                                 .setIdentifier("id")
                                 .setValue(ValueProto.newBuilder().setInts(
                                         IntList.newBuilder().addValues(1)))
+                                .build()));
+    }
+
+    /**
+     * Verify that clicking T&C link sends partial data to backend.
+     */
+    @Test
+    @MediumTest
+    public void testTermsAndConditionsLinkClick() throws Exception {
+        ArrayList<ActionProto> list = new ArrayList<>();
+        UserFormSectionProto userFormSectionProto =
+                (UserFormSectionProto) UserFormSectionProto.newBuilder()
+                        .setTitle("User form")
+                        .setTextInputSection(TextInputSectionProto.newBuilder().addInputFields(
+                                TextInputProto.newBuilder()
+                                        .setHint("field 1")
+                                        .setInputType(InputType.INPUT_TEXT)
+                                        .setClientMemoryKey("field_1")
+                                        .setValue("old value")))
+                        .setSendResultToBackend(true)
+                        .build();
+        list.add((ActionProto) ActionProto.newBuilder()
+                         .setCollectUserData(
+                                 CollectUserDataProto.newBuilder()
+                                         .setShowTermsAsCheckbox(true)
+                                         .setRequestTermsAndConditions(true)
+                                         .setAcceptTermsAndConditionsText("<link1>click me</link1>")
+                                         .addAdditionalPrependedSections(userFormSectionProto))
+                         .build());
+
+        AutofillAssistantTestScript script = new AutofillAssistantTestScript(
+                (SupportedScriptProto) SupportedScriptProto.newBuilder()
+                        .setPath("form_target_website.html")
+                        .setPresentation(PresentationProto.newBuilder().setAutostart(true).setChip(
+                                ChipProto.newBuilder().setText("Continue")))
+                        .build(),
+                list);
+
+        AutofillAssistantTestService testService =
+                new AutofillAssistantTestService(Collections.singletonList(script));
+        startAutofillAssistant(mTestRule.getActivity(), testService);
+
+        waitUntilViewMatchesCondition(withText("User form"), isCompletelyDisplayed());
+        onView(withText("User form")).perform(click());
+        waitUntilViewMatchesCondition(withContentDescription("field 1"), isCompletelyDisplayed());
+        onView(withContentDescription("field 1")).perform(replaceText("new value"));
+        int numNextActionsCalled = testService.getNextActionsCounter();
+        onView(allOf(withText("click me"), isDisplayed())).perform(click());
+        testService.waitUntilGetNextActions(numNextActionsCalled + 1);
+
+        List<ProcessedActionProto> processedActions = testService.getProcessedActions();
+        ViewMatchers.assertThat(Iterables.getOnlyElement(processedActions).getStatus(),
+                CoreMatchers.is(ProcessedActionStatusProto.ACTION_APPLIED));
+        CollectUserDataResultProto result =
+                Iterables.getOnlyElement(processedActions).getCollectUserDataResult();
+        assertThat(Iterables.getOnlyElement(result.getAdditionalSectionsValuesList()),
+                equalTo(ModelValue.newBuilder()
+                                .setIdentifier("field_1")
+                                .setValue(ValueProto.newBuilder().setStrings(
+                                        org.chromium.chrome.browser.autofill_assistant.proto
+                                                .StringList.newBuilder()
+                                                .addValues("new value")))
                                 .build()));
     }
 }

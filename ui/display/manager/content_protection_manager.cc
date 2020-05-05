@@ -7,7 +7,7 @@
 #include <algorithm>
 #include <utility>
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/observer_list.h"
 #include "base/stl_util.h"
 #include "ui/display/manager/apply_content_protection_task.h"

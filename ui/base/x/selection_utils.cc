@@ -9,7 +9,7 @@
 #include <set>
 
 #include "base/i18n/icu_string_conversions.h"
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "base/stl_util.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"

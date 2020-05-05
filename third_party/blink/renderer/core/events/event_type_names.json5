@@ -45,7 +45,6 @@
     "backgroundfetchclick",
     "backgroundfetchfail",
     "backgroundfetchsuccess",
-    "beforematch",
     "beforecopy",
     "beforecut",
     "beforeinput",

@@ -20,7 +20,6 @@
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "chrome/updater/server/win/server.h"
-#include "components/update_client/update_client_errors.h"
 
 namespace updater {
 
@@ -320,26 +319,28 @@ void LegacyOnDemandImpl::UpdateResultCallback(UpdateService::Result result) {
 CurrentState LegacyOnDemandImpl::GetOnDemandCurrentState() const {
   base::AutoLock lock{lock_};
   if (state_update_) {
-    switch (state_update_.value()) {
-      case UpdateService::UpdateState::kUnknown:
+    switch (state_update_.value().state) {
+      case UpdateService::UpdateState::State::kUnknown:
         // Fall through.
-      case UpdateService::UpdateState::kNotStarted:
+      case UpdateService::UpdateState::State::kNotStarted:
         return STATE_INIT;
-      case UpdateService::UpdateState::kCheckingForUpdates:
+      case UpdateService::UpdateState::State::kCheckingForUpdates:
         return STATE_CHECKING_FOR_UPDATE;
-      case UpdateService::UpdateState::kDownloading:
+      case UpdateService::UpdateState::State::kUpdateAvailable:
+        return STATE_UPDATE_AVAILABLE;
+      case UpdateService::UpdateState::State::kDownloading:
         return STATE_DOWNLOADING;
-      case UpdateService::UpdateState::kInstalling:
+      case UpdateService::UpdateState::State::kInstalling:
         return STATE_INSTALLING;
-      case UpdateService::UpdateState::kUpdated:
+      case UpdateService::UpdateState::State::kUpdated:
         return STATE_INSTALL_COMPLETE;
-      case UpdateService::UpdateState::kNoUpdate:
+      case UpdateService::UpdateState::State::kNoUpdate:
         return STATE_NO_UPDATE;
-      case UpdateService::UpdateState::kUpdateError:
+      case UpdateService::UpdateState::State::kUpdateError:
         return STATE_ERROR;
     }
   } else if (result_) {
-    DCHECK_NE(result_.value(), update_client::Error::NONE);
+    DCHECK_NE(result_.value(), UpdateService::Result::kSuccess);
     return STATE_ERROR;
   } else {
     return STATE_INIT;
@@ -352,7 +353,7 @@ HRESULT LegacyOnDemandImpl::GetOnDemandError() const {
   if (!result_)
     return S_OK;
 
-  return (result_.value() == update_client::Error::NONE) ? S_OK : E_FAIL;
+  return (result_.value() == UpdateService::Result::kSuccess) ? S_OK : E_FAIL;
 }
 
 }  // namespace updater

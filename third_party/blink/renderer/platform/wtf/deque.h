@@ -687,13 +687,15 @@ template <typename VisitorDispatcher, typename A>
 std::enable_if_t<A::kIsGarbageCollected>
 Deque<T, inlineCapacity, Allocator>::Trace(VisitorDispatcher visitor) const {
   // Bail out for concurrent marking.
-  if (visitor->ConcurrentTracingBailOut(
-          {this, [](blink::Visitor* visitor, const void* object) {
-             reinterpret_cast<const Deque<T, inlineCapacity, Allocator>*>(
-                 object)
-                 ->Trace(visitor);
-           }}))
-    return;
+  if (!VectorTraits<T>::kCanTraceConcurrently) {
+    if (visitor->ConcurrentTracingBailOut(
+            {this, [](blink::Visitor* visitor, const void* object) {
+               reinterpret_cast<const Deque<T, inlineCapacity, Allocator>*>(
+                   object)
+                   ->Trace(visitor);
+             }}))
+      return;
+  }
 
   static_assert(inlineCapacity == 0,
                 "Heap allocated Deque should not use inline buffer");

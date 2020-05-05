@@ -4,7 +4,7 @@
 
 #include "ui/base/ime/chromeos/input_method_manager.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 
 namespace chromeos {
 namespace input_method {

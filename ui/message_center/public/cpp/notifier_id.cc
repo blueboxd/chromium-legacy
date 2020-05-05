@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "ui/message_center/public/cpp/notifier_id.h"
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/strings/string_number_conversions.h"
 
 namespace message_center {

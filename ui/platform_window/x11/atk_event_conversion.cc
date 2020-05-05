@@ -4,7 +4,8 @@
 
 #include "ui/platform_window/x11/atk_event_conversion.h"
 
-#include "base/logging.h"
+#include "base/check.h"
+#include "base/notreached.h"
 #include "ui/events/x/events_x_utils.h"
 
 namespace ui {

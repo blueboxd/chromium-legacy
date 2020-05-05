@@ -6,6 +6,7 @@ module network.mojom;
 
 import "url/mojom/url.mojom";
 import "services/network/public/mojom/source_location.mojom";
+import "services/network/public/mojom/web_sandbox_flags.mojom";
 
 // The HTTP Content-Security-Policy-Report-Only response header allows web
 // developers to experiment with policies by monitoring (but not enforcing)
@@ -91,7 +92,8 @@ struct ContentSecurityPolicy {
   // https://wicg.github.io/cors-rfc1918/#csp
   bool treat_as_public_address = false;
 
-  // TODO(https://crbug.com/1041376) Add 'sandbox'.
+  // https://www.w3.org/TR/CSP3/#directive-sandbox
+  WebSandboxFlags sandbox; // WebSandboxFlags::kNone.
 
   ContentSecurityPolicyHeader header;
 

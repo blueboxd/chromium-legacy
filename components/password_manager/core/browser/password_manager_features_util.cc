@@ -109,28 +109,35 @@ class ScopedAccountStorageSettingsUpdate {
  public:
   ScopedAccountStorageSettingsUpdate(PrefService* prefs,
                                      const GaiaIdHash& gaia_id_hash)
-      : update_(prefs, prefs::kAccountStoragePerAccountSettings) {
-    const std::string account_hash = gaia_id_hash.ToBase64();
-    account_settings_ = update_->FindDictKey(account_hash);
-    if (!account_settings_) {
-      account_settings_ =
-          update_->SetKey(account_hash, base::DictionaryValue());
+      : update_(prefs, prefs::kAccountStoragePerAccountSettings),
+        account_hash_(gaia_id_hash.ToBase64()) {}
+
+  base::Value* GetOrCreateAccountSettings() {
+    base::Value* account_settings = update_->FindDictKey(account_hash_);
+    if (!account_settings) {
+      account_settings =
+          update_->SetKey(account_hash_, base::DictionaryValue());
     }
-    DCHECK(account_settings_);
+    DCHECK(account_settings);
+    return account_settings;
   }
 
-  void SetOptedIn(bool opt_in) {
-    account_settings_->SetBoolKey(kAccountStorageOptedInKey, opt_in);
+  void SetOptedIn() {
+    base::Value* account_settings = GetOrCreateAccountSettings();
+    account_settings->SetBoolKey(kAccountStorageOptedInKey, true);
   }
 
   void SetDefaultStore(PasswordForm::Store default_store) {
-    account_settings_->SetIntKey(kAccountStorageDefaultStoreKey,
-                                 static_cast<int>(default_store));
+    base::Value* account_settings = GetOrCreateAccountSettings();
+    account_settings->SetIntKey(kAccountStorageDefaultStoreKey,
+                                static_cast<int>(default_store));
   }
+
+  void ClearAllSettings() { update_->RemoveKey(account_hash_); }
 
  private:
   DictionaryPrefUpdate update_;
-  base::Value* account_settings_ = nullptr;
+  const std::string account_hash_;
 };
 }  // namespace
 
@@ -196,9 +203,8 @@ bool ShouldShowAccountStorageOptIn(const PrefService* pref_service,
          !sync_service->IsSyncFeatureEnabled();
 }
 
-void SetAccountStorageOptIn(PrefService* pref_service,
-                            const syncer::SyncService* sync_service,
-                            bool opt_in) {
+void OptInToAccountStorage(PrefService* pref_service,
+                           const syncer::SyncService* sync_service) {
   DCHECK(pref_service);
   DCHECK(sync_service);
   DCHECK(
@@ -212,7 +218,27 @@ void SetAccountStorageOptIn(PrefService* pref_service,
   }
   ScopedAccountStorageSettingsUpdate(pref_service,
                                      GaiaIdHash::FromGaiaId(gaia_id))
-      .SetOptedIn(opt_in);
+      .SetOptedIn();
+}
+
+void OptOutOfAccountStorageAndClearSettings(
+    PrefService* pref_service,
+    const syncer::SyncService* sync_service) {
+  DCHECK(pref_service);
+  DCHECK(sync_service);
+  DCHECK(
+      base::FeatureList::IsEnabled(features::kEnablePasswordsAccountStorage));
+
+  std::string gaia_id = sync_service->GetAuthenticatedAccountInfo().gaia;
+  if (gaia_id.empty()) {
+    // In rare cases, it could happen that the account went away since the
+    // opt-out UI was triggered.
+    // TODO(crbug.com/1063852): Add metrics.
+    return;
+  }
+  ScopedAccountStorageSettingsUpdate(pref_service,
+                                     GaiaIdHash::FromGaiaId(gaia_id))
+      .ClearAllSettings();
 }
 
 bool ShouldShowPasswordStorePicker(const PrefService* pref_service,

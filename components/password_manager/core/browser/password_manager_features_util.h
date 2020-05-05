@@ -45,13 +45,21 @@ bool ShouldShowAccountStorageOptIn(const PrefService* pref_service,
 bool ShouldShowAccountStorageReSignin(const PrefService* pref_service,
                                       const syncer::SyncService* sync_service);
 
-// Sets or clears the opt-in to using account storage for passwords for the
-// current signed-in user (unconsented primary account).
+// Sets opt-in to using account storage for passwords for the current
+// signed-in user (unconsented primary account).
 // |pref_service| and |sync_service| must not be null.
-// See PasswordFeatureManager::SetAccountStorageOptIn.
-void SetAccountStorageOptIn(PrefService* pref_service,
-                            const syncer::SyncService* sync_service,
-                            bool opt_in);
+// See PasswordFeatureManager::OptInToAccountStorage.
+void OptInToAccountStorage(PrefService* pref_service,
+                           const syncer::SyncService* sync_service);
+
+// Clears the opt-in to using account storage for passwords for the
+// current signed-in user (unconsented primary account), as well as all other
+// associated settings (e.g. default store choice).
+// |pref_service| and |sync_service| must not be null.
+// See PasswordFeatureManager::OptOutOfAccountStorageAndClearSettings.
+void OptOutOfAccountStorageAndClearSettings(
+    PrefService* pref_service,
+    const syncer::SyncService* sync_service);
 
 // Whether it makes sense to ask the user about the store when saving a
 // password (i.e. profile or account store). This is true if the user has

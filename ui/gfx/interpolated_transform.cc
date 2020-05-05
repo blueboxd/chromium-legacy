@@ -6,8 +6,7 @@
 
 #include <cmath>
 
-
-#include "base/logging.h"
+#include "base/check.h"
 #include "ui/gfx/animation/tween.h"
 #include "ui/gfx/geometry/safe_integer_conversions.h"
 

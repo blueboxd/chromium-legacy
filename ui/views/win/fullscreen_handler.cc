@@ -6,7 +6,6 @@
 
 #include <memory>
 
-#include "base/logging.h"
 #include "base/win/win_util.h"
 #include "ui/base/win/shell.h"
 #include "ui/gfx/geometry/rect.h"

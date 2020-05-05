@@ -4,7 +4,7 @@
 
 #include "ui/chromeos/devicetype_utils.h"
 
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "chromeos/constants/devicetype.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/chromeos/strings/grit/ui_chromeos_strings.h"

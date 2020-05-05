@@ -11,6 +11,7 @@
 #include "base/test/task_environment.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/enterprise/connectors/common.h"
 #include "chrome/browser/enterprise/connectors/connectors_prefs.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
@@ -411,42 +412,20 @@ INSTANTIATE_TEST_SUITE_P(
     testing::Combine(testing::ValuesIn(kAllAnalysisConnectors),
                      testing::ValuesIn(kAllDelayDeliveryUntilVerdictValues)));
 
-using ConnectorsManagerNoFeatureTest = ConnectorsManagerTest;
-
-TEST_F(ConnectorsManagerNoFeatureTest, OnFileAttached) {
-  ScopedConnectorPref scoped_pref(kOnFileAttachedPref, kNormalSettingsPref);
-
-  // Ensure that the default legacy settings are read synchronously.
-  int i = 0;
-  expected_tags_ = {"dlp"};
-  for (const char* url :
-       {kDlpAndMalwareUrl, kOnlyDlpUrl, kOnlyMalwareUrl, kNoTagsUrl}) {
-    ConnectorsManager::GetInstance()->GetAnalysisSettings(
-        GURL(url), AnalysisConnector::FILE_ATTACHED,
-        base::BindLambdaForTesting(
-            [this, &i](base::Optional<AnalysisSettings> settings) {
-              ASSERT_TRUE(settings.has_value());
-              ValidateSettings(settings.value());
-              ++i;
-            }));
-  }
-  ASSERT_EQ(i, 4);
-
-  // No cached settings imply the connector value was never read.
-  ASSERT_TRUE(ConnectorsManager::GetInstance()
-                  ->GetAnalysisConnectorsSettingsForTesting()
-                  .empty());
-}
-
 class ConnectorsManagerConnectorPoliciesTest
     : public ConnectorsManagerTest,
-      public testing::WithParamInterface<const char*> {
+      public testing::WithParamInterface<
+          std::tuple<AnalysisConnector, const char*>> {
  public:
   ConnectorsManagerConnectorPoliciesTest() {
     scoped_feature_list_.InitWithFeatures({kEnterpriseConnectorsEnabled}, {});
   }
 
-  const char* url() const { return GetParam(); }
+  AnalysisConnector connector() const { return std::get<0>(GetParam()); }
+
+  const char* url() const { return std::get<1>(GetParam()); }
+
+  const char* pref() const { return ConnectorPref(connector()); }
 
   void SetUpExpectedSettings(const char* pref) {
     auto expected_settings = ExpectedSettings(pref, url());
@@ -489,17 +468,17 @@ class ConnectorsManagerConnectorPoliciesTest
   bool expect_settings_;
 };
 
-TEST_P(ConnectorsManagerConnectorPoliciesTest, OnFileAttached) {
+TEST_P(ConnectorsManagerConnectorPoliciesTest, NormalPref) {
   ASSERT_TRUE(ConnectorsManager::GetInstance()
                   ->GetAnalysisConnectorsSettingsForTesting()
                   .empty());
-  ScopedConnectorPref scoped_pref(kOnFileAttachedPref, kNormalSettingsPref);
+  ScopedConnectorPref scoped_pref(pref(), kNormalSettingsPref);
   SetUpExpectedSettings(kNormalSettingsPref);
 
   // Verify that the expected settings are returned normally.
   bool called = false;
   ConnectorsManager::GetInstance()->GetAnalysisSettings(
-      GURL(url()), AnalysisConnector::FILE_ATTACHED,
+      GURL(url()), connector(),
       base::BindLambdaForTesting(
           [this, &called](base::Optional<AnalysisSettings> settings) {
             ASSERT_EQ(expect_settings_, settings.has_value());
@@ -514,28 +493,27 @@ TEST_P(ConnectorsManagerConnectorPoliciesTest, OnFileAttached) {
   const auto& cached_settings = ConnectorsManager::GetInstance()
                                     ->GetAnalysisConnectorsSettingsForTesting();
   ASSERT_EQ(1u, cached_settings.size());
-  ASSERT_EQ(1u, cached_settings.count(AnalysisConnector::FILE_ATTACHED));
-  ASSERT_EQ(1u, cached_settings.at(AnalysisConnector::FILE_ATTACHED).size());
+  ASSERT_EQ(1u, cached_settings.count(connector()));
+  ASSERT_EQ(1u, cached_settings.at(connector()).size());
 
-  auto settings = cached_settings.at(AnalysisConnector::FILE_ATTACHED)
-                      .at(0)
-                      .GetAnalysisSettings(GURL(url()));
+  auto settings =
+      cached_settings.at(connector()).at(0).GetAnalysisSettings(GURL(url()));
   ASSERT_EQ(expect_settings_, settings.has_value());
   if (settings.has_value())
     ValidateSettings(settings.value());
 }
 
-TEST_P(ConnectorsManagerConnectorPoliciesTest, OnFileAttached_EmptyList) {
+TEST_P(ConnectorsManagerConnectorPoliciesTest, EmptyPref) {
   // If the connector's settings list is empty, no analysis settings are ever
   // returned.
   ASSERT_TRUE(ConnectorsManager::GetInstance()
                   ->GetAnalysisConnectorsSettingsForTesting()
                   .empty());
-  ScopedConnectorPref scoped_pref(kOnFileAttachedPref, kEmptySettingsPref);
+  ScopedConnectorPref scoped_pref(pref(), kEmptySettingsPref);
 
   bool called = false;
   ConnectorsManager::GetInstance()->GetAnalysisSettings(
-      GURL(url()), AnalysisConnector::FILE_ATTACHED,
+      GURL(url()), connector(),
       base::BindLambdaForTesting(
           [&called](base::Optional<AnalysisSettings> settings) {
             ASSERT_FALSE(settings.has_value());
@@ -548,31 +526,30 @@ TEST_P(ConnectorsManagerConnectorPoliciesTest, OnFileAttached_EmptyList) {
                   .empty());
 }
 
-INSTANTIATE_TEST_CASE_P(ConnectorsManagerConnectorPoliciesTest,
-                        ConnectorsManagerConnectorPoliciesTest,
-                        testing::Values(kDlpAndMalwareUrl,
-                                        kOnlyDlpUrl,
-                                        kOnlyMalwareUrl,
-                                        kNoTagsUrl));
+INSTANTIATE_TEST_CASE_P(
+    ConnectorsManagerConnectorPoliciesTest,
+    ConnectorsManagerConnectorPoliciesTest,
+    testing::Combine(testing::ValuesIn(kAllAnalysisConnectors),
+                     testing::Values(kDlpAndMalwareUrl,
+                                     kOnlyDlpUrl,
+                                     kOnlyMalwareUrl,
+                                     kNoTagsUrl)));
 
-class ConnectorsManagerDynamicPoliciesTest
+class ConnectorsManagerAnalysisConnectorsTest
     : public ConnectorsManagerTest,
-      public testing::WithParamInterface<const char*> {
+      public testing::WithParamInterface<AnalysisConnector> {
  public:
-  ConnectorsManagerDynamicPoliciesTest() {
-    scoped_feature_list_.InitWithFeatures({kEnterpriseConnectorsEnabled}, {});
+  explicit ConnectorsManagerAnalysisConnectorsTest(bool enable = true) {
+    if (enable)
+      scoped_feature_list_.InitWithFeatures({kEnterpriseConnectorsEnabled}, {});
   }
 
-  const char* pref() const { return GetParam(); }
+  AnalysisConnector connector() const { return GetParam(); }
 
-  AnalysisConnector connector() const {
-    // TODO(crbug/1067631): Add other connector prefs once their corresponding
-    // policy exists.
-    return AnalysisConnector::FILE_ATTACHED;
-  }
+  const char* pref() const { return ConnectorPref(connector()); }
 };
 
-TEST_P(ConnectorsManagerDynamicPoliciesTest, DynamicPolicies) {
+TEST_P(ConnectorsManagerAnalysisConnectorsTest, DynamicPolicies) {
   // The cache is initially empty.
   auto* manager = ConnectorsManager::GetInstance();
   ASSERT_TRUE(manager->GetAnalysisConnectorsSettingsForTesting().empty());
@@ -604,10 +581,47 @@ TEST_P(ConnectorsManagerDynamicPoliciesTest, DynamicPolicies) {
   ASSERT_TRUE(manager->GetAnalysisConnectorsSettingsForTesting().empty());
 }
 
-// TODO(crbug/1067631): Add other connector prefs once their corresponding
-// policy exists.
-INSTANTIATE_TEST_CASE_P(ConnectorsManagerDynamicPoliciesTest,
-                        ConnectorsManagerDynamicPoliciesTest,
-                        testing::Values(kOnFileAttachedPref));
+INSTANTIATE_TEST_CASE_P(ConnectorsManagerAnalysisConnectorsTest,
+                        ConnectorsManagerAnalysisConnectorsTest,
+                        testing::ValuesIn(kAllAnalysisConnectors));
+
+class ConnectorsManagerNoFeatureTest
+    : public ConnectorsManagerAnalysisConnectorsTest {
+ public:
+  ConnectorsManagerNoFeatureTest()
+      : ConnectorsManagerAnalysisConnectorsTest(false) {}
+};
+
+TEST_P(ConnectorsManagerNoFeatureTest, Test) {
+  ScopedConnectorPref scoped_pref(pref(), kNormalSettingsPref);
+
+  // Ensure that the default legacy settings are read synchronously.
+  int i = 0;
+  if (connector() == AnalysisConnector::FILE_DOWNLOADED)
+    expected_tags_ = {"malware"};
+  else
+    expected_tags_ = {"dlp"};
+  for (const char* url :
+       {kDlpAndMalwareUrl, kOnlyDlpUrl, kOnlyMalwareUrl, kNoTagsUrl}) {
+    ConnectorsManager::GetInstance()->GetAnalysisSettings(
+        GURL(url), connector(),
+        base::BindLambdaForTesting(
+            [this, &i](base::Optional<AnalysisSettings> settings) {
+              ASSERT_TRUE(settings.has_value());
+              ValidateSettings(settings.value());
+              ++i;
+            }));
+  }
+  ASSERT_EQ(i, 4);
+
+  // No cached settings imply the connector value was never read.
+  ASSERT_TRUE(ConnectorsManager::GetInstance()
+                  ->GetAnalysisConnectorsSettingsForTesting()
+                  .empty());
+}
+
+INSTANTIATE_TEST_CASE_P(,
+                        ConnectorsManagerNoFeatureTest,
+                        testing::ValuesIn(kAllAnalysisConnectors));
 
 }  // namespace enterprise_connectors

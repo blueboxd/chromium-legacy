@@ -56,11 +56,6 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
 
 // Test that tapping the prerendered suggestions opens it.
 - (void)testTapPrerenderSuggestions {
-  // TODO(crbug.com/1076573): Test is failing when running on iOS 13.4.
-  if (base::ios::IsRunningOnOrLater(13, 4, 0)) {
-    EARL_GREY_TEST_DISABLED(@"Test disabled on iOS 13.4 and later.");
-  }
-
   // TODO(crbug.com/793306): Re-enable the test on iPad once the alternate
   // letters problem is fixed.
   if ([ChromeEarlGrey isIPadIdiom]) {

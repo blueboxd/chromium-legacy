@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "ui/gfx/icc_profile.h"
-#include "base/logging.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/color_space.h"
 #include "ui/gfx/skia_color_space_util.h"

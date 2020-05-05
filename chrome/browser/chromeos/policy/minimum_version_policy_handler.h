@@ -117,6 +117,8 @@ class MinimumVersionPolicyHandler {
 
   const MinimumVersionRequirement* GetState() const { return state_.get(); }
 
+  bool DeadlineReached() { return deadline_reached; }
+
  private:
   void OnPolicyChanged();
 
@@ -155,6 +157,10 @@ class MinimumVersionPolicyHandler {
   std::unique_ptr<MinimumVersionRequirement> state_;
 
   bool requirements_met_ = true;
+
+  // If this flag is true, user should restricted to use the session by logging
+  // out and/or showing update required screen.
+  bool deadline_reached = false;
 
   base::Time update_required_time_;
 

@@ -4,7 +4,6 @@
 
 #include "ui/events/keycodes/dom/dom_keyboard_layout.h"
 
-#include "base/logging.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversion_utils.h"
 #include "ui/events/keycodes/dom/dom_code.h"

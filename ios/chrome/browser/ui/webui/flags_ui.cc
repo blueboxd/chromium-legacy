@@ -190,8 +190,8 @@ void FlagsDOMHandler::HandleResetAllFlags(const base::ListValue* args) {
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-FlagsUI::FlagsUI(web::WebUIIOS* web_ui)
-    : web::WebUIIOSController(web_ui), weak_factory_(this) {
+FlagsUI::FlagsUI(web::WebUIIOS* web_ui, const std::string& host)
+    : web::WebUIIOSController(web_ui, host), weak_factory_(this) {
   FlagsDOMHandler* handler = new FlagsDOMHandler();
   web_ui->AddMessageHandler(base::WrapUnique(handler));
 

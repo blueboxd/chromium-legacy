@@ -238,11 +238,6 @@
       status: "stable",
     },
     {
-      // https://github.com/WICG/display-locking/blob/master/explainer-beforematch.md
-      name: "BeforeMatchEvent",
-      status: "experimental",
-    },
-    {
       name: "BidiCaretAffinity",
     },
     {
@@ -350,9 +345,7 @@
     },
     {
       name: "ContentIndex",
-      origin_trial_feature_name: "ContentIndex",
-      origin_trial_os: ["android"],
-      status: "experimental",
+      status:  {"Android": "stable", "default": "experimental"},
     },
     {
       name: "ContextMenu",

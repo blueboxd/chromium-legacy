@@ -6,7 +6,8 @@
 
 #include <float.h>
 
-#include "base/logging.h"
+#include "base/check.h"
+#include "base/notreached.h"
 #include "build/build_config.h"
 #include "skia/ext/image_operations.h"
 #include "ui/base/cursor/cursor.h"

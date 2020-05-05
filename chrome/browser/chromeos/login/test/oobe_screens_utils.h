@@ -5,6 +5,9 @@
 #ifndef CHROME_BROWSER_CHROMEOS_LOGIN_TEST_OOBE_SCREENS_UTILS_H_
 #define CHROME_BROWSER_CHROMEOS_LOGIN_TEST_OOBE_SCREENS_UTILS_H_
 
+#include "base/run_loop.h"
+#include "chrome/browser/chromeos/login/screens/welcome_screen.h"
+
 namespace chromeos {
 namespace test {
 
@@ -27,6 +30,23 @@ void TapEulaAccept();
 void WaitForSyncConsentScreen();
 void ExitScreenSyncConsent();
 void WaitForLastScreenAndTapGetStarted();
+
+class LanguageReloadObserver : public WelcomeScreen::Observer {
+ public:
+  explicit LanguageReloadObserver(WelcomeScreen* welcome_screen);
+  LanguageReloadObserver(const LanguageReloadObserver&) = delete;
+  LanguageReloadObserver& operator==(const LanguageReloadObserver&) = delete;
+  ~LanguageReloadObserver() override;
+
+  void Wait();
+
+ private:
+  // WelcomeScreen::Observer:
+  void OnLanguageListReloaded() override;
+
+  WelcomeScreen* const welcome_screen_;
+  base::RunLoop run_loop_;
+};
 
 }  // namespace test
 }  // namespace chromeos

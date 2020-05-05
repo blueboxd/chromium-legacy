@@ -157,19 +157,6 @@
 #define TRACE_EVENT_API_UPDATE_TRACE_EVENT_DURATION \
   trace_event_internal::UpdateTraceEventDuration
 
-// Set the duration field of a COMPLETE trace event.
-// void TRACE_EVENT_API_UPDATE_TRACE_EVENT_DURATION_EXPLICIT(
-//     const unsigned char* category_group_enabled,
-//     const char* name,
-//     base::trace_event::TraceEventHandle id,
-//     int thread_id,
-//     bool explicit_timestamps,
-//     const base::TimeTicks& now,
-//     const base::ThreadTicks& thread_now,
-//     base::trace_event::ThreadInstructionCount thread_instruction_now)
-#define TRACE_EVENT_API_UPDATE_TRACE_EVENT_DURATION_EXPLICIT \
-  trace_event_internal::UpdateTraceEventDurationExplicit
-
 // Adds a metadata event to the trace log. The |AppendValueAsTraceFormat| method
 // on the convertable value will be called at flush time.
 // TRACE_EVENT_API_ADD_METADATA_EVENT(
@@ -371,8 +358,8 @@
 // Implementation detail: internal macro to create static category and add
 // event if the category is enabled.
 #define INTERNAL_TRACE_EVENT_ADD_WITH_ID_TID_AND_TIMESTAMPS(                 \
-    category_group, name, id, thread_id, begin_timestamp, end_timestamp,     \
-    thread_begin_timestamp, thread_end_timestamp, flags)                     \
+    phase, category_group, name, id, thread_id, timestamp, thread_timestamp, \
+    flags)                                                                   \
   do {                                                                       \
     INTERNAL_TRACE_EVENT_GET_CATEGORY_INFO(category_group);                  \
     if (INTERNAL_TRACE_EVENT_CATEGORY_GROUP_ENABLED()) {                     \
@@ -381,16 +368,11 @@
           flags | trace_event_trace_id.id_flags();                           \
       const unsigned char* uid_category_group_enabled =                      \
           INTERNAL_TRACE_EVENT_UID(category_group_enabled);                  \
-      auto handle =                                                          \
-          trace_event_internal::AddTraceEventWithThreadIdAndTimestamps(      \
-              TRACE_EVENT_PHASE_COMPLETE, uid_category_group_enabled, name,  \
-              trace_event_trace_id.scope(), trace_event_trace_id.raw_id(),   \
-              thread_id, begin_timestamp, thread_begin_timestamp,            \
-              trace_event_flags | TRACE_EVENT_FLAG_EXPLICIT_TIMESTAMP);      \
-      TRACE_EVENT_API_UPDATE_TRACE_EVENT_DURATION_EXPLICIT(                  \
-          uid_category_group_enabled, name, handle, thread_id,               \
-          /*explicit_timestamps=*/true, end_timestamp, thread_end_timestamp, \
-          base::trace_event::ThreadInstructionCount());                      \
+      trace_event_internal::AddTraceEventWithThreadIdAndTimestamps(          \
+          phase, uid_category_group_enabled, name,                           \
+          trace_event_trace_id.scope(), trace_event_trace_id.raw_id(),       \
+          thread_id, timestamp, thread_timestamp,                            \
+          trace_event_flags | TRACE_EVENT_FLAG_EXPLICIT_TIMESTAMP);          \
     }                                                                        \
   } while (0)
 
@@ -598,7 +580,8 @@ AddTraceEventWithThreadIdAndTimestamp(
     base::trace_event::TraceArguments* args,
     unsigned int flags);
 
-base::trace_event::TraceEventHandle AddTraceEventWithThreadIdAndTimestamps(
+base::trace_event::TraceEventHandle BASE_EXPORT
+AddTraceEventWithThreadIdAndTimestamps(
     char phase,
     const unsigned char* category_group_enabled,
     const char* name,

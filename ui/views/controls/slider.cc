@@ -7,7 +7,7 @@
 #include <algorithm>
 #include <memory>
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/message_loop/message_loop_current.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"

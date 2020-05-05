@@ -27,10 +27,10 @@
 #include "device/fido/credential_management.h"
 #include "device/fido/ctap_get_assertion_request.h"
 #include "device/fido/ctap_make_credential_request.h"
-#include "device/fido/ec_public_key.h"
 #include "device/fido/fido_constants.h"
 #include "device/fido/fido_parsing_utils.h"
 #include "device/fido/opaque_attestation_statement.h"
+#include "device/fido/p256_public_key.h"
 #include "device/fido/pin.h"
 #include "device/fido/pin_internal.h"
 #include "device/fido/virtual_u2f_device.h"
@@ -98,7 +98,7 @@ bool AreMakeCredentialParamsValid(const CtapMakeCredentialRequest& request) {
       });
 }
 
-std::unique_ptr<ECPublicKey> ConstructECPublicKey(
+std::unique_ptr<P256PublicKey> ConstructECPublicKey(
     std::string public_key_string) {
   DCHECK_EQ(64u, public_key_string.size());
 
@@ -106,7 +106,7 @@ std::unique_ptr<ECPublicKey> ConstructECPublicKey(
       base::as_bytes(base::make_span(public_key_string)).first(32);
   const auto public_key_y_coordinate =
       base::as_bytes(base::make_span(public_key_string)).last(32);
-  return std::make_unique<ECPublicKey>(
+  return std::make_unique<P256PublicKey>(
       fido_parsing_utils::kEs256,
       fido_parsing_utils::Materialize(public_key_x_coordinate),
       fido_parsing_utils::Materialize(public_key_y_coordinate));

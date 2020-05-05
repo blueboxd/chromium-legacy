@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/win/events_win_utils.h"
 

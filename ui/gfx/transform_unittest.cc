@@ -9,7 +9,6 @@
 #include <limits>
 #include <ostream>
 
-#include "base/logging.h"
 #include "base/stl_util.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"

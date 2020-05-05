@@ -9,10 +9,11 @@
 #include <algorithm>
 #include <climits>
 
+#include "base/check_op.h"
 #include "base/command_line.h"
 #include "base/i18n/break_iterator.h"
 #include "base/i18n/char_iterator.h"
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "base/numerics/ranges.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"

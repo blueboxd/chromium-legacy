@@ -112,6 +112,7 @@
       <include name="IDR_CAMERA_CAMERA_BUTTON_TIMER_OFF_SVG" file="src/images/camera_button_timer_off.svg" type="BINDATA" />
       <include name="IDR_CAMERA_CAMERA_SHUTTER_PHOTO_START_ACTIVE_SVG" file="src/images/camera_shutter_photo_start_active.svg" type="BINDATA" />
       <include name="IDR_CAMERA_CAMERA_APP_ICONS_128_PNG" file="src/images/camera_app_icons_128.png" type="BINDATA" />
+      <include name="IDR_CAMERA_CAMERA_APP_ICONS_192_PNG" file="src/images/camera_app_icons_192.png" type="BINDATA" />
       <include name="IDR_CAMERA_SETTINGS_TIMER_DURATION_SVG" file="src/images/settings_timer_duration.svg" type="BINDATA" />
       <include name="IDR_CAMERA_SETTINGS_HELP_SVG" file="src/images/settings_help.svg" type="BINDATA" />
       <include name="IDR_CAMERA_CAMERA_BUTTON_MIRROR_ON_SVG" file="src/images/camera_button_mirror_on.svg" type="BINDATA" />

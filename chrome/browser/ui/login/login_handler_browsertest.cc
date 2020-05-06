@@ -2320,4 +2320,26 @@ IN_PROC_BROWSER_TEST_P(LoginPromptExtensionBrowserTest,
             console_observer.messages()[1].message);
 }
 
+// Tests that extensions can cancel authentication requests to suppress a
+// prompt. Regression test for https://crbug.com/1075442.
+IN_PROC_BROWSER_TEST_P(LoginPromptExtensionBrowserTest, OnAuthRequiredCancels) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  // Load an extension that cancels each auth request.
+  const extensions::Extension* extension =
+      LoadExtension(test_data_dir_.AppendASCII("cancel_auth_required"));
+  ASSERT_TRUE(extension);
+
+  // Navigate to a page that prompts for basic auth and test that the 401
+  // response body is rendered.
+  content::WebContents* contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  GURL test_page = embedded_test_server()->GetURL(kAuthBasicPage);
+  ui_test_utils::NavigateToURL(browser(), test_page);
+
+  base::string16 expected_title(
+      base::UTF8ToUTF16("Denied: Missing Authorization Header"));
+  EXPECT_EQ(expected_title, contents->GetTitle());
+}
+
 }  // namespace

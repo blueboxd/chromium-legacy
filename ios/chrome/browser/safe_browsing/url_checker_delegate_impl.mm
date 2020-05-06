@@ -70,9 +70,8 @@ void HandleBlockingPageRequestOnUIThread(
 
   // Send the do-not-proceed signal to cancel the navigation.  This will cause
   // the error page to be displayed using the stored UnsafeResource copy.
-  RunUnsafeResourceCallback(
-      resource, /*proceed=*/false,
-      /*showed_interstitial=*/resource.IsMainPageLoadBlocked());
+  RunUnsafeResourceCallback(resource, /*proceed=*/false,
+                            /*showed_interstitial=*/true);
 }
 }  // namespace
 

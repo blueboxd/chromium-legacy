@@ -259,7 +259,7 @@ TEST_F(UrlCheckerDelegateImplTest,
 
   // Verify the callback state.
   EXPECT_FALSE(callback_state.proceed);
-  EXPECT_FALSE(callback_state.show_interstitial);
+  EXPECT_TRUE(callback_state.show_interstitial);
 
   // Verify that the pending decision is recorded
   std::set<safe_browsing::SBThreatType> pending_threats;

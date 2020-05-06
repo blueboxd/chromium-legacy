@@ -44,6 +44,7 @@ class ChromeClient;
 class Document;
 class Element;
 class Locale;
+class Page;
 class PagePopup;
 class PagePopupController;
 
@@ -62,7 +63,7 @@ class CORE_EXPORT PagePopupClient {
 
   virtual CSSFontSelector* CreateCSSFontSelector(Document& popup_document);
 
-  virtual PagePopupController* CreatePagePopupController(PagePopup&);
+  virtual PagePopupController* CreatePagePopupController(Page&, PagePopup&);
 
   // Returns effective zoom factor of ownerElement, or the page zoom factor if
   // the effective zoom factor is not available.

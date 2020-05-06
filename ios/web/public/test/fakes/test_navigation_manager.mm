@@ -62,7 +62,7 @@ web::NavigationItem* TestNavigationManager::GetTransientItem() const {
 }
 
 void TestNavigationManager::DiscardNonCommittedItems() {
-  NOTREACHED();
+  SetPendingItem(nullptr);
 }
 
 void TestNavigationManager::LoadURLWithParams(

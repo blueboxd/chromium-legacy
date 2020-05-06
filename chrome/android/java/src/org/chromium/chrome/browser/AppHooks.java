@@ -115,16 +115,6 @@ public abstract class AppHooks {
     }
 
     /**
-     * Return a {@link AuthenticatorNavigationInterceptor} for the given {@link Tab}.
-     * This can be null if there are no applicable interceptor to be built.
-     * NOTE: This method exists only to allow downstream to transition to talking in terms of the
-     * //components-level interface. It will be deleted once the transition is complete.
-     */
-    public AuthenticatorNavigationInterceptor createAuthenticatorNavigationInterceptorV2(Tab tab) {
-        return null;
-    }
-
-    /**
      * @return An instance of {@link CustomTabsConnection}. Should not be called
      * outside of {@link CustomTabsConnection#getInstance()}.
      */

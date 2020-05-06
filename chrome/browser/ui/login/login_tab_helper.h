@@ -42,6 +42,12 @@ class LoginTabHelper : public content::WebContentsObserver,
   // Returns true if an auth prompt is currently visible.
   bool IsShowingPrompt() const;
 
+  // Registers that an extension has cancelled an auth request for the given
+  // |request_id|. An auth prompt will not subsequently be shown for this
+  // request.
+  void RegisterExtensionCancelledNavigation(
+      const content::GlobalRequestID& request_id);
+
   // Called when a response is received for a main-frame navigation with an auth
   // challenge. Rewrites the response to a blank page, on top of which
   // DidFinishNavigation() shows a login prompt.
@@ -97,6 +103,12 @@ class LoginTabHelper : public content::WebContentsObserver,
   // Both the *handle* ID and *entry* ID are needed because the entry ID does
   // not stay consistent across the refresh.
   int64_t navigation_handle_id_with_cancelled_prompt_ = 0;
+
+  // When an extension cancels an auth request for a navigation, these members
+  // remember the navigation so that the LoginTabHelper can avoid showing an
+  // auth prompt.
+  content::GlobalRequestID request_id_for_extension_cancelled_navigation_;
+  int64_t navigation_handle_id_for_extension_cancelled_navigation_ = 0;
 
   base::WeakPtrFactory<LoginTabHelper> weak_ptr_factory_{this};
 

@@ -458,7 +458,7 @@ class BreadCrumb extends HTMLElement {
     dialog.style['left'] = position + 'px';
     dialog.style['right'] = position + 'px';
     dialog.style['overflow'] = 'hidden auto';
-    dialog.style['max-height'] = '40vh';
+    dialog.style['max-height'] = '272px';
 
     // Update global <html> and |this| element state.
     document.documentElement.classList.add('breadcrumb-elider-expanded');

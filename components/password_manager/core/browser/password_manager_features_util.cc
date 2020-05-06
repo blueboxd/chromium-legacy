@@ -15,6 +15,7 @@
 
 using autofill::GaiaIdHash;
 using autofill::PasswordForm;
+using password_manager::metrics_util::PasswordAccountStorageUsageLevel;
 using password_manager::metrics_util::PasswordAccountStorageUserState;
 
 namespace password_manager {
@@ -332,6 +333,25 @@ PasswordAccountStorageUserState ComputePasswordAccountStorageUserState(
   return saving_locally
              ? PasswordAccountStorageUserState::kSignedInUserSavingLocally
              : PasswordAccountStorageUserState::kSignedInUser;
+}
+
+PasswordAccountStorageUsageLevel ComputePasswordAccountStorageUsageLevel(
+    const PrefService* pref_service,
+    const syncer::SyncService* sync_service) {
+  using UserState = PasswordAccountStorageUserState;
+  using UsageLevel = PasswordAccountStorageUsageLevel;
+  switch (ComputePasswordAccountStorageUserState(pref_service, sync_service)) {
+    case UserState::kSignedOutUser:
+    case UserState::kSignedOutAccountStoreUser:
+    case UserState::kSignedInUser:
+    case UserState::kSignedInUserSavingLocally:
+      return UsageLevel::kNotUsingAccountStorage;
+    case UserState::kSignedInAccountStoreUser:
+    case UserState::kSignedInAccountStoreUserSavingLocally:
+      return UsageLevel::kUsingAccountStorage;
+    case UserState::kSyncUser:
+      return UsageLevel::kSyncing;
+  }
 }
 
 }  // namespace features_util

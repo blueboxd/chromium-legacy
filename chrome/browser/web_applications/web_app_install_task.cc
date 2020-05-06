@@ -776,6 +776,9 @@ void WebAppInstallTask::OnShortcutsCreated(
     return;
 
   bool add_to_quick_launch_bar = kAddAppsToQuickLaunchBarByDefault;
+  if (install_source_ == WebappInstallSource::SYNC)
+    add_to_quick_launch_bar = false;
+
   if (install_params_)
     add_to_quick_launch_bar = install_params_->add_to_quick_launch_bar;
 

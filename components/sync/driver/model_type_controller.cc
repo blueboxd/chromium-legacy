@@ -87,12 +87,6 @@ ModelTypeController::ActivateManuallyForNigori() {
   return std::move(activation_response_);
 }
 
-bool ModelTypeController::ShouldLoadModelBeforeConfigure() const {
-  // USS datatypes require loading models because model controls storage where
-  // data type context and progress marker are persisted.
-  return true;
-}
-
 void ModelTypeController::LoadModels(
     const ConfigureContext& configure_context,
     const ModelLoadCallback& model_load_callback) {
@@ -127,8 +121,6 @@ void ModelTypeController::LoadModels(
       request, base::BindOnce(&ModelTypeController::OnDelegateStarted,
                               base::AsWeakPtr(this)));
 }
-
-void ModelTypeController::BeforeLoadModels(ModelTypeConfigurer* configurer) {}
 
 DataTypeController::RegisterWithBackendResult
 ModelTypeController::RegisterWithBackend(ModelTypeConfigurer* configurer) {

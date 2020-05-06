@@ -38,7 +38,6 @@ class MockModelAssociationManagerDelegate
   MOCK_METHOD2(OnSingleDataTypeAssociationDone,
                void(ModelType type,
                     const DataTypeAssociationStats& association_stats));
-  MOCK_METHOD1(OnSingleDataTypeWillStart, void(ModelType type));
   MOCK_METHOD2(OnSingleDataTypeWillStop,
                void(ModelType, const SyncError& error));
   MOCK_METHOD1(OnModelAssociationDone,
@@ -87,8 +86,6 @@ TEST_F(SyncModelAssociationManagerTest, SimpleModelStart) {
   controllers_[APPS] = std::make_unique<FakeDataTypeController>(APPS);
   ModelAssociationManager model_association_manager(&controllers_, &delegate_);
   ModelTypeSet types(BOOKMARKS, APPS);
-  EXPECT_CALL(delegate_, OnSingleDataTypeWillStart(BOOKMARKS));
-  EXPECT_CALL(delegate_, OnSingleDataTypeWillStart(APPS));
   EXPECT_CALL(delegate_, OnAllDataTypesReadyForConfigure());
   EXPECT_CALL(delegate_, OnModelAssociationDone(
                              MatchesResult(DataTypeManager::OK, types)));
@@ -117,7 +114,6 @@ TEST_F(SyncModelAssociationManagerTest, StopAfterFinish) {
   ModelAssociationManager model_association_manager(&controllers_, &delegate_);
   ModelTypeSet types;
   types.Put(BOOKMARKS);
-  EXPECT_CALL(delegate_, OnSingleDataTypeWillStart(BOOKMARKS));
   EXPECT_CALL(delegate_, OnModelAssociationDone(
                              MatchesResult(DataTypeManager::OK, types)));
   EXPECT_CALL(delegate_, OnSingleDataTypeWillStop(BOOKMARKS, _));
@@ -143,8 +139,6 @@ TEST_F(SyncModelAssociationManagerTest, SlowTypeAsFailedType) {
   types.Put(BOOKMARKS);
   types.Put(APPS);
 
-  EXPECT_CALL(delegate_, OnSingleDataTypeWillStart(BOOKMARKS));
-  EXPECT_CALL(delegate_, OnSingleDataTypeWillStart(APPS));
   EXPECT_CALL(delegate_, OnModelAssociationDone(
                              MatchesResult(DataTypeManager::OK, types)));
 
@@ -196,7 +190,6 @@ TEST_F(SyncModelAssociationManagerTest, ModelLoadFailBeforeAssociationStart) {
   ModelAssociationManager model_association_manager(&controllers_, &delegate_);
   ModelTypeSet types;
   types.Put(BOOKMARKS);
-  EXPECT_CALL(delegate_, OnSingleDataTypeWillStart(BOOKMARKS));
   EXPECT_CALL(delegate_, OnSingleDataTypeWillStop(BOOKMARKS, _));
   EXPECT_CALL(delegate_, OnModelAssociationDone(
                              MatchesResult(DataTypeManager::OK, types)));
@@ -216,7 +209,6 @@ TEST_F(SyncModelAssociationManagerTest, StopAfterConfiguration) {
   ModelAssociationManager model_association_manager(&controllers_, &delegate_);
   ModelTypeSet types;
   types.Put(BOOKMARKS);
-  EXPECT_CALL(delegate_, OnSingleDataTypeWillStart(BOOKMARKS));
   EXPECT_CALL(delegate_, OnModelAssociationDone(
                              MatchesResult(DataTypeManager::OK, types)));
 
@@ -246,8 +238,6 @@ TEST_F(SyncModelAssociationManagerTest, OnAllDataTypesReadyForConfigure) {
   ModelTypeSet types(BOOKMARKS, APPS);
   // OnAllDataTypesReadyForConfigure shouldn't be called, APPS data type is not
   // loaded yet.
-  EXPECT_CALL(delegate_, OnSingleDataTypeWillStart(BOOKMARKS));
-  EXPECT_CALL(delegate_, OnSingleDataTypeWillStart(APPS));
   EXPECT_CALL(delegate_, OnAllDataTypesReadyForConfigure()).Times(0);
 
   model_association_manager.Initialize(/*desired_types=*/types,
@@ -300,7 +290,6 @@ TEST_F(SyncModelAssociationManagerTest,
   ModelTypeSet types(APPS);
   // OnAllDataTypesReadyForConfigure shouldn't be called, APPS data type is not
   // loaded yet.
-  EXPECT_CALL(delegate_, OnSingleDataTypeWillStart(APPS));
   EXPECT_CALL(delegate_, OnAllDataTypesReadyForConfigure()).Times(0);
 
   model_association_manager.Initialize(/*desired_types=*/types,
@@ -335,8 +324,6 @@ TEST_F(SyncModelAssociationManagerTest,
 
   // Apps will finish loading but bookmarks won't.
   // OnAllDataTypesReadyForConfigure shouldn't be called.
-  EXPECT_CALL(delegate_, OnSingleDataTypeWillStart(BOOKMARKS));
-  EXPECT_CALL(delegate_, OnSingleDataTypeWillStart(APPS));
   EXPECT_CALL(delegate_, OnAllDataTypesReadyForConfigure()).Times(0);
 
   model_association_manager.Initialize(/*desired_types=*/types,
@@ -366,33 +353,6 @@ TEST_F(SyncModelAssociationManagerTest,
   GetController(BOOKMARKS)->model()->SimulateModelStartFinished();
   EXPECT_EQ(GetController(BOOKMARKS)->state(),
             DataTypeController::MODEL_LOADED);
-}
-
-// Tests that OnAllDataTypesReadyForConfigure is only called after
-// OnSingleDataTypeWillStart is called for all enabled types.
-TEST_F(SyncModelAssociationManagerTest, TypeRegistrationCallSequence) {
-  // Create two controllers and allow them to complete LoadModels synchronously.
-  controllers_[BOOKMARKS] = std::make_unique<FakeDataTypeController>(BOOKMARKS);
-  controllers_[APPS] = std::make_unique<FakeDataTypeController>(APPS);
-
-  ModelAssociationManager model_association_manager(&controllers_, &delegate_);
-  ModelTypeSet types(BOOKMARKS, APPS);
-  // OnAllDataTypesReadyForConfigure should only be called after calls to
-  // OnSingleDataTypeWillStart for both enabled types.
-  {
-    ::testing::InSequence call_sequence;
-    EXPECT_CALL(delegate_, OnSingleDataTypeWillStart(BOOKMARKS));
-    EXPECT_CALL(delegate_, OnSingleDataTypeWillStart(APPS));
-    EXPECT_CALL(delegate_, OnAllDataTypesReadyForConfigure());
-  }
-
-  model_association_manager.Initialize(/*desired_types=*/types,
-                                       /*preferred_types=*/types,
-                                       BuildConfigureContext());
-
-  EXPECT_EQ(DataTypeController::MODEL_LOADED,
-            GetController(BOOKMARKS)->state());
-  EXPECT_EQ(DataTypeController::MODEL_LOADED, GetController(APPS)->state());
 }
 
 // Test that Stop clears metadata for disabled type.
@@ -468,8 +428,6 @@ TEST_F(SyncModelAssociationManagerTest, KeepsMetadataForPreferredDataType) {
   ModelTypeSet preferred_types(BOOKMARKS, APPS);
   ModelTypeSet desired_types = preferred_types;
 
-  EXPECT_CALL(delegate_, OnSingleDataTypeWillStart(BOOKMARKS));
-  EXPECT_CALL(delegate_, OnSingleDataTypeWillStart(APPS));
   EXPECT_CALL(delegate_, OnAllDataTypesReadyForConfigure());
   EXPECT_CALL(delegate_, OnSingleDataTypeAssociationDone(BOOKMARKS, _));
   EXPECT_CALL(delegate_, OnSingleDataTypeAssociationDone(APPS, _));
@@ -508,8 +466,6 @@ TEST_F(SyncModelAssociationManagerTest, ClearsMetadataForNotPreferredDataType) {
   ModelTypeSet preferred_types(BOOKMARKS, APPS);
   ModelTypeSet desired_types = preferred_types;
 
-  EXPECT_CALL(delegate_, OnSingleDataTypeWillStart(BOOKMARKS));
-  EXPECT_CALL(delegate_, OnSingleDataTypeWillStart(APPS));
   EXPECT_CALL(delegate_, OnAllDataTypesReadyForConfigure());
   EXPECT_CALL(delegate_, OnSingleDataTypeAssociationDone(BOOKMARKS, _));
   EXPECT_CALL(delegate_, OnSingleDataTypeAssociationDone(APPS, _));
@@ -555,8 +511,6 @@ TEST_F(SyncModelAssociationManagerTest,
   configure_context.sync_mode = SyncMode::kFull;
   configure_context.cache_guid = "test_cache_guid";
 
-  EXPECT_CALL(delegate_, OnSingleDataTypeWillStart(BOOKMARKS));
-  EXPECT_CALL(delegate_, OnSingleDataTypeWillStart(APPS));
   EXPECT_CALL(delegate_, OnAllDataTypesReadyForConfigure());
   EXPECT_CALL(delegate_, OnSingleDataTypeAssociationDone(BOOKMARKS, _));
   EXPECT_CALL(delegate_, OnSingleDataTypeAssociationDone(APPS, _));
@@ -579,7 +533,6 @@ TEST_F(SyncModelAssociationManagerTest,
   // Data types should get restarted.
   EXPECT_CALL(delegate_, OnSingleDataTypeWillStop(APPS, _));
   EXPECT_CALL(delegate_, OnSingleDataTypeWillStop(BOOKMARKS, _));
-  EXPECT_CALL(delegate_, OnSingleDataTypeWillStart(BOOKMARKS));
   EXPECT_CALL(delegate_, OnAllDataTypesReadyForConfigure());
   EXPECT_CALL(delegate_, OnSingleDataTypeAssociationDone(BOOKMARKS, _));
   EXPECT_CALL(delegate_, OnModelAssociationDone(MatchesResult(
@@ -612,8 +565,6 @@ TEST_F(SyncModelAssociationManagerTest,
   configure_context.sync_mode = SyncMode::kTransportOnly;
   configure_context.cache_guid = "test_cache_guid";
 
-  EXPECT_CALL(delegate_, OnSingleDataTypeWillStart(BOOKMARKS));
-  EXPECT_CALL(delegate_, OnSingleDataTypeWillStart(APPS));
   EXPECT_CALL(delegate_, OnAllDataTypesReadyForConfigure());
   EXPECT_CALL(delegate_, OnSingleDataTypeAssociationDone(BOOKMARKS, _));
   EXPECT_CALL(delegate_, OnSingleDataTypeAssociationDone(APPS, _));
@@ -636,7 +587,6 @@ TEST_F(SyncModelAssociationManagerTest,
   // Data types should get restarted.
   EXPECT_CALL(delegate_, OnSingleDataTypeWillStop(APPS, _));
   EXPECT_CALL(delegate_, OnSingleDataTypeWillStop(BOOKMARKS, _));
-  EXPECT_CALL(delegate_, OnSingleDataTypeWillStart(BOOKMARKS));
   EXPECT_CALL(delegate_, OnAllDataTypesReadyForConfigure());
   EXPECT_CALL(delegate_, OnSingleDataTypeAssociationDone(BOOKMARKS, _));
   EXPECT_CALL(delegate_, OnModelAssociationDone(MatchesResult(

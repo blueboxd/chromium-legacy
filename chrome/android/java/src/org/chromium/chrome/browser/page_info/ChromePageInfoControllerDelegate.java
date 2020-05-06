@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.page_info;
 
+import android.content.Context;
 import android.content.Intent;
 import android.text.SpannableString;
 import android.text.TextUtils;
@@ -13,8 +14,8 @@ import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.Callback;
 import org.chromium.base.Consumer;
+import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.instantapps.InstantAppsHandler;
@@ -42,6 +43,7 @@ import org.chromium.components.security_state.ConnectionSecurityLevel;
 import org.chromium.components.security_state.SecurityStateModel;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.AndroidPermissionDelegate;
+import org.chromium.ui.modaldialog.ModalDialogManager;
 import org.chromium.ui.text.NoUnderlineClickableSpan;
 import org.chromium.ui.text.SpanApplier;
 import org.chromium.ui.text.SpanApplier.SpanInfo;
@@ -55,7 +57,7 @@ import java.util.Date;
  */
 public class ChromePageInfoControllerDelegate extends PageInfoControllerDelegate {
     private final WebContents mWebContents;
-    private final ChromeActivity mActivity;
+    private final Context mContext;
     private final @PreviewPageState int mPreviewPageState;
     private String mOfflinePageCreationDate;
     private OfflinePageLoadUrlDelegate mOfflinePageLoadUrlDelegate;
@@ -64,18 +66,18 @@ public class ChromePageInfoControllerDelegate extends PageInfoControllerDelegate
     // Bridge updating the CookieControlsView when cookie settings change.
     private CookieControlsBridge mBridge;
 
-    public ChromePageInfoControllerDelegate(ChromeActivity activity, WebContents webContents,
+    public ChromePageInfoControllerDelegate(Context context, WebContents webContents,
+            Supplier<ModalDialogManager> modalDialogManagerSupplier,
             OfflinePageLoadUrlDelegate offlinePageLoadUrlDelegate) {
-        super(activity.getModalDialogManager(),
+        super(modalDialogManagerSupplier,
                 new ChromeAutocompleteSchemeClassifier(Profile.fromWebContents(webContents)),
                 VrModuleProvider.getDelegate(),
                 /** isSiteSettingsAvailable= */
                 SiteSettingsHelper.isSiteSettingsAvailable(webContents),
-                /** useDarkColors= */ !activity.getNightModeStateProvider().isInNightMode(),
                 /** cookieControlsShown= */
                 CookieControlsBridge.isCookieControlsEnabled(Profile.fromWebContents(webContents)));
+        mContext = context;
         mWebContents = webContents;
-        mActivity = activity;
         mPreviewPageState = getPreviewPageStateAndRecordUma();
         initOfflinePageParams();
         mOfflinePageLoadUrlDelegate = offlinePageLoadUrlDelegate;
@@ -149,14 +151,14 @@ public class ChromePageInfoControllerDelegate extends PageInfoControllerDelegate
             };
             final String previewOriginalHost =
                     bridge.getOriginalHost(mWebContents.getVisibleUrlString());
-            final String loadOriginalText = mActivity.getString(
+            final String loadOriginalText = mContext.getString(
                     R.string.page_info_preview_load_original, previewOriginalHost);
             final SpannableString loadOriginalSpan = SpanApplier.applySpans(loadOriginalText,
                     new SpanInfo("<link>", "</link>",
                             // The callback given to NoUnderlineClickableSpan is overridden in
                             // PageInfoView so use previewShowOriginalClickCallback (above) instead
                             // because the entire TextView will be clickable.
-                            new NoUnderlineClickableSpan(mActivity.getResources(), (view) -> {})));
+                            new NoUnderlineClickableSpan(mContext.getResources(), (view) -> {})));
             viewParams.previewLoadOriginalMessage = loadOriginalSpan;
 
             viewParams.previewStaleTimestamp = bridge.getStalePreviewTimestamp(mWebContents);
@@ -209,16 +211,15 @@ public class ChromePageInfoControllerDelegate extends PageInfoControllerDelegate
     @Nullable
     public String getOfflinePageConnectionMessage() {
         if (mOfflinePageState == OfflinePageState.TRUSTED_OFFLINE_PAGE) {
-            return String.format(mActivity.getString(R.string.page_info_connection_offline),
+            return String.format(mContext.getString(R.string.page_info_connection_offline),
                     mOfflinePageCreationDate);
         } else if (mOfflinePageState == OfflinePageState.UNTRUSTED_OFFLINE_PAGE) {
             // For untrusted pages, if there's a creation date, show it in the message.
             if (TextUtils.isEmpty(mOfflinePageCreationDate)) {
-                return mActivity.getString(
-                        R.string.page_info_offline_page_not_trusted_without_date);
+                return mContext.getString(R.string.page_info_offline_page_not_trusted_without_date);
             } else {
                 return String.format(
-                        mActivity.getString(R.string.page_info_offline_page_not_trusted_with_date),
+                        mContext.getString(R.string.page_info_offline_page_not_trusted_with_date),
                         mOfflinePageCreationDate);
             }
         }
@@ -244,7 +245,7 @@ public class ChromePageInfoControllerDelegate extends PageInfoControllerDelegate
      */
     @Override
     public void showSiteSettings(String url) {
-        SiteSettingsHelper.showSiteSettings(mActivity, url);
+        SiteSettingsHelper.showSiteSettings(mContext, url);
     }
 
     /**
@@ -279,9 +280,9 @@ public class ChromePageInfoControllerDelegate extends PageInfoControllerDelegate
             String fullUrl, boolean shouldShowTitle,
             SystemSettingsActivityRequiredListener systemSettingsActivityRequiredListener,
             Callback<PageInfoView.PermissionParams> displayPermissionsCallback) {
-        mPermissionParamsListBuilder = new PermissionParamsListBuilder(mActivity,
-                permissionDelegate, fullUrl, shouldShowTitle,
-                systemSettingsActivityRequiredListener, displayPermissionsCallback);
+        mPermissionParamsListBuilder = new PermissionParamsListBuilder(mContext, permissionDelegate,
+                fullUrl, shouldShowTitle, systemSettingsActivityRequiredListener,
+                displayPermissionsCallback);
     }
 
     /**

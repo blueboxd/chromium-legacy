@@ -47,4 +47,16 @@ void ModelTypeConnectorProxy::UnregisterDirectoryType(ModelType type) {
                                 model_type_connector_, type));
 }
 
+void ModelTypeConnectorProxy::ConnectProxyType(ModelType type) {
+  task_runner_->PostTask(FROM_HERE,
+                         base::BindOnce(&ModelTypeConnector::ConnectProxyType,
+                                        model_type_connector_, type));
+}
+
+void ModelTypeConnectorProxy::DisconnectProxyType(ModelType type) {
+  task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&ModelTypeConnector::DisconnectProxyType,
+                                model_type_connector_, type));
+}
+
 }  // namespace syncer

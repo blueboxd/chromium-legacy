@@ -28,6 +28,9 @@ class MockPasswordFeatureManager : public PasswordFeatureManager {
   MOCK_METHOD1(SetDefaultPasswordStore,
                void(const autofill::PasswordForm::Store& store));
   MOCK_CONST_METHOD0(GetDefaultPasswordStore, autofill::PasswordForm::Store());
+
+  MOCK_CONST_METHOD0(ComputePasswordAccountStorageUsageLevel,
+                     metrics_util::PasswordAccountStorageUsageLevel());
 };
 
 }  // namespace password_manager

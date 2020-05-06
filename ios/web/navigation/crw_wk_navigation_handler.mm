@@ -5,6 +5,7 @@
 #import "ios/web/navigation/crw_wk_navigation_handler.h"
 
 #include "base/feature_list.h"
+#import "base/ios/ns_error_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/timer/timer.h"
@@ -556,6 +557,8 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
         if (policyDecision.ShouldCancelNavigation() &&
             WKResponse.canShowMIMEType && WKResponse.forMainFrame) {
           weakPendingNavigationInfo.cancelled = YES;
+          weakPendingNavigationInfo.cancellationError =
+              policyDecision.GetDisplayError();
         }
 
         handler(policyDecision.ShouldAllowNavigation()
@@ -752,9 +755,18 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
   // Handle load cancellation for directly cancelled navigations without
   // handling their potential errors. Otherwise, handle the error.
   if (self.pendingNavigationInfo.cancelled) {
-    [self handleCancelledError:error
-                 forNavigation:navigation
-               provisionalLoad:YES];
+    if (self.pendingNavigationInfo.cancellationError) {
+      // If the navigation was cancelled for a CancelAndDisplayError() policy
+      // decision, load the error in the failed navigation.
+      [self handleLoadError:error
+              forNavigation:navigation
+                    webView:webView
+            provisionalLoad:YES];
+    } else {
+      [self handleCancelledError:error
+                   forNavigation:navigation
+                 provisionalLoad:YES];
+    }
   } else if (error.code == NSURLErrorUnsupportedURL &&
              self.webStateImpl->HasWebUI()) {
     // This is a navigation to WebUI page.
@@ -1662,7 +1674,9 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
           forNavigation:(WKNavigation*)navigation
                 webView:(WKWebView*)webView
         provisionalLoad:(BOOL)provisionalLoad {
-  if (error.code == NSURLErrorCancelled) {
+  NSError* policyDecisionCancellationError =
+      self.pendingNavigationInfo.cancellationError;
+  if (!policyDecisionCancellationError && error.code == NSURLErrorCancelled) {
     [self handleCancelledError:error
                  forNavigation:navigation
                provisionalLoad:provisionalLoad];
@@ -1706,7 +1720,13 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
     }
   }
 
-  navigationContext->SetError(web::NetErrorFromError(error));
+  NSError* contextError = web::NetErrorFromError(error);
+  if (policyDecisionCancellationError) {
+    contextError = base::ios::ErrorWithAppendedUnderlyingError(
+        contextError, policyDecisionCancellationError);
+  }
+
+  navigationContext->SetError(contextError);
   navigationContext->SetIsPost([self isCurrentNavigationItemPOST]);
   // TODO(crbug.com/803631) DCHECK that self.currentNavItem is the navigation
   // item associated with navigationContext.
@@ -1740,12 +1760,8 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
         }
     }
 
-    if (error.code == web::kWebKitErrorFrameLoadInterruptedByPolicyChange) {
-      // This method should not be called if the navigation was cancelled by
-      // embedder.
-      DCHECK(self.pendingNavigationInfo &&
-             !self.pendingNavigationInfo.cancelled);
-
+    if (error.code == web::kWebKitErrorFrameLoadInterruptedByPolicyChange &&
+        !policyDecisionCancellationError) {
       // Handle Frame Load Interrupted errors from WebView. This block is
       // executed when web controller rejected the load inside
       // decidePolicyForNavigationResponse: to handle download or WKWebView

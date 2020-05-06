@@ -8,12 +8,18 @@
 
 #include "base/test/scoped_feature_list.h"
 #include "components/safe_browsing/core/features.h"
+#include "components/security_interstitials/core/unsafe_resource.h"
 #import "ios/chrome/browser/safe_browsing/fake_safe_browsing_service.h"
+#import "ios/chrome/browser/safe_browsing/safe_browsing_error.h"
 #import "ios/chrome/browser/safe_browsing/safe_browsing_unsafe_resource_container.h"
+#import "ios/web/public/navigation/navigation_item.h"
+#import "ios/web/public/test/fakes/fake_navigation_context.h"
+#import "ios/web/public/test/fakes/test_navigation_manager.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
 #include "ios/web/public/test/web_task_environment.h"
 #import "net/base/mac/url_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#import "testing/gtest_mac.h"
 #include "testing/platform_test.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -33,6 +39,10 @@ class SafeBrowsingTabHelperTest
         safe_browsing::kSafeBrowsingAvailableOnIOS);
     SafeBrowsingTabHelper::CreateForWebState(&web_state_);
     SafeBrowsingUnsafeResourceContainer::CreateForWebState(&web_state_);
+    std::unique_ptr<web::TestNavigationManager> navigation_manager =
+        std::make_unique<web::TestNavigationManager>();
+    navigation_manager_ = navigation_manager.get();
+    web_state_.SetNavigationManager(std::move(navigation_manager));
   }
 
   // Whether Safe Browsing decisions arrive before calls to
@@ -45,10 +55,11 @@ class SafeBrowsingTabHelperTest
   // given |url| and |for_main_frame|.
   web::WebStatePolicyDecider::PolicyDecision ShouldAllowRequestUrl(
       const GURL& url,
-      bool for_main_frame = true) {
+      bool for_main_frame = true,
+      ui::PageTransition transition =
+          ui::PageTransition::PAGE_TRANSITION_FIRST) {
     web::WebStatePolicyDecider::RequestInfo request_info(
-        ui::PageTransition::PAGE_TRANSITION_FIRST, for_main_frame,
-        /*has_user_gesture=*/false);
+        transition, for_main_frame, /*has_user_gesture=*/false);
     return web_state_.ShouldAllowRequest(
         [NSURLRequest requestWithURL:net::NSURLWithGURL(url)], request_info);
   }
@@ -79,8 +90,26 @@ class SafeBrowsingTabHelperTest
     return policy_decision;
   }
 
+  // Helper function that simulates a main frame load to a safe URL, returning
+  // the NavigationItem that was committed.  Used for sub frame tests.
+  web::NavigationItem* SimulateSafeMainFrameLoad() {
+    GURL safe_url("http://chromium.test");
+
+    navigation_manager_->AddItem(safe_url, ui::PAGE_TRANSITION_LINK);
+    web::NavigationItem* item = navigation_manager_->GetItemAtIndex(
+        navigation_manager_->GetItemCount() - 1);
+    navigation_manager_->SetLastCommittedItem(item);
+
+    web::FakeNavigationContext context;
+    context.SetHasCommitted(true);
+    web_state_.OnNavigationFinished(&context);
+
+    return item;
+  }
+
   web::WebTaskEnvironment task_environment_;
   web::TestWebState web_state_;
+  web::TestNavigationManager* navigation_manager_ = nullptr;
   base::test::ScopedFeatureList feature_list_;
 };
 
@@ -130,45 +159,22 @@ TEST_P(SafeBrowsingTabHelperTest, RepeatedResponse) {
   EXPECT_TRUE(response_decision.ShouldAllowNavigation());
 }
 
-// Tests the case of multiple requests followed by multiple responses.
-TEST_P(SafeBrowsingTabHelperTest, MultipleRequestsAndResponses) {
-  GURL url1("http://chromium.test");
-  GURL url2("http://" + FakeSafeBrowsingService::kUnsafeHost);
-  GURL url3("http://chromium3.test");
-  EXPECT_TRUE(ShouldAllowRequestUrl(url1).ShouldAllowNavigation());
-  EXPECT_TRUE(ShouldAllowRequestUrl(url2).ShouldAllowNavigation());
-  EXPECT_TRUE(ShouldAllowRequestUrl(url3).ShouldAllowNavigation());
-
-  if (SafeBrowsingDecisionArrivesBeforeResponse())
-    base::RunLoop().RunUntilIdle();
-
-  web::WebStatePolicyDecider::PolicyDecision response_decision =
-      ShouldAllowResponseUrl(url1);
-  EXPECT_TRUE(response_decision.ShouldAllowNavigation());
-  response_decision = ShouldAllowResponseUrl(url2);
-  EXPECT_TRUE(response_decision.ShouldCancelNavigation());
-  response_decision = ShouldAllowResponseUrl(url3);
-  EXPECT_TRUE(response_decision.ShouldAllowNavigation());
-}
-
 // Tests the case of multiple requests, followed by a single response skipping
 // some of the request URLs.
 TEST_P(SafeBrowsingTabHelperTest, MultipleRequestsSingleResponse) {
   GURL url1("http://chromium.test");
-  GURL url2("http://" + FakeSafeBrowsingService::kUnsafeHost);
-  GURL url3("http://chromium3.test");
-  GURL url4("http://chromium4.test");
+  GURL url2("http://chromium3.test");
+  GURL url3("http://" + FakeSafeBrowsingService::kUnsafeHost);
   EXPECT_TRUE(ShouldAllowRequestUrl(url1).ShouldAllowNavigation());
   EXPECT_TRUE(ShouldAllowRequestUrl(url2).ShouldAllowNavigation());
   EXPECT_TRUE(ShouldAllowRequestUrl(url3).ShouldAllowNavigation());
-  EXPECT_TRUE(ShouldAllowRequestUrl(url4).ShouldAllowNavigation());
 
   if (SafeBrowsingDecisionArrivesBeforeResponse())
     base::RunLoop().RunUntilIdle();
 
   web::WebStatePolicyDecider::PolicyDecision response_decision =
       ShouldAllowResponseUrl(url3);
-  EXPECT_TRUE(response_decision.ShouldAllowNavigation());
+  EXPECT_TRUE(response_decision.ShouldCancelNavigation());
 }
 
 // Tests the case of repeated requests for the same unsafe URL, ensuring that
@@ -210,6 +216,108 @@ TEST_P(SafeBrowsingTabHelperTest, RequestAndResponseWithUnsupportedScheme) {
   web::WebStatePolicyDecider::PolicyDecision response_decision =
       ShouldAllowResponseUrl(response_url);
   EXPECT_TRUE(response_decision.ShouldAllowNavigation());
+}
+
+// Tests the case of a single sub frame navigation request and response, for a
+// URL that is safe.
+TEST_P(SafeBrowsingTabHelperTest, SafeSubFrameRequestAndResponse) {
+  GURL url("http://chromium_sub_frame.test");
+  SimulateSafeMainFrameLoad();
+
+  // Execute ShouldAllowRequest() for a safe subframe navigation.
+  auto sub_frame_request_decision =
+      ShouldAllowRequestUrl(url, /*for_main_frame=*/false);
+  EXPECT_TRUE(sub_frame_request_decision.ShouldAllowNavigation());
+
+  if (SafeBrowsingDecisionArrivesBeforeResponse())
+    base::RunLoop().RunUntilIdle();
+
+  // Verify that the sub frame navigation is allowed.
+  web::WebStatePolicyDecider::PolicyDecision sub_frame_response_decision =
+      ShouldAllowResponseUrl(url, /*for_main_frame=*/false);
+  EXPECT_TRUE(sub_frame_response_decision.ShouldAllowNavigation());
+}
+
+// Tests the case where multiple sub frames navigating to safe URLs are all
+// allowed.
+TEST_P(SafeBrowsingTabHelperTest, RepeatedSafeSubFrameResponses) {
+  GURL url("http://chromium_sub_frame.test");
+  SimulateSafeMainFrameLoad();
+
+  // Execute ShouldAllowRequest() for a safe subframe navigation.
+  auto sub_frame_request_decision =
+      ShouldAllowRequestUrl(url, /*for_main_frame=*/false);
+  EXPECT_TRUE(sub_frame_request_decision.ShouldAllowNavigation());
+
+  if (SafeBrowsingDecisionArrivesBeforeResponse())
+    base::RunLoop().RunUntilIdle();
+
+  // Verify that the sub frame navigation is allowed.
+  web::WebStatePolicyDecider::PolicyDecision sub_frame_response_decision_1 =
+      ShouldAllowResponseUrl(url, /*for_main_frame=*/false);
+  web::WebStatePolicyDecider::PolicyDecision sub_frame_response_decision_2 =
+      ShouldAllowResponseUrl(url, /*for_main_frame=*/false);
+  web::WebStatePolicyDecider::PolicyDecision sub_frame_response_decision_3 =
+      ShouldAllowResponseUrl(url, /*for_main_frame=*/false);
+  EXPECT_TRUE(sub_frame_response_decision_1.ShouldAllowNavigation());
+  EXPECT_TRUE(sub_frame_response_decision_2.ShouldAllowNavigation());
+  EXPECT_TRUE(sub_frame_response_decision_3.ShouldAllowNavigation());
+}
+
+// Tests the case of a single sub frame navigation request and response, for a
+// URL that is unsafe.
+TEST_P(SafeBrowsingTabHelperTest, UnsafeSubFrameRequestAndResponse) {
+  GURL url("http://" + FakeSafeBrowsingService::kUnsafeHost);
+  ASSERT_FALSE(navigation_manager_->ReloadWasCalled());
+  web::NavigationItem* main_frame_item = SimulateSafeMainFrameLoad();
+
+  // Execute ShouldAllowRequest() for an unsafe subframe navigation.
+  auto sub_frame_request_decision =
+      ShouldAllowRequestUrl(url, /*for_main_frame=*/false);
+  EXPECT_TRUE(sub_frame_request_decision.ShouldAllowNavigation());
+
+  // The tab helper expects that the sub frame's UnsafeResource is stored in the
+  // container before the URL check completes.
+  security_interstitials::UnsafeResource resource;
+  resource.url = url;
+  resource.resource_type = safe_browsing::ResourceType::kSubFrame;
+  resource.web_state_getter = web_state_.CreateDefaultGetter();
+  SafeBrowsingUnsafeResourceContainer::FromWebState(&web_state_)
+      ->StoreUnsafeResource(resource);
+
+  if (SafeBrowsingDecisionArrivesBeforeResponse()) {
+    // If a sub frame navigation is deemed unsafe before its response policy
+    // decision is requested, the last committed NavigationItem is immediately
+    // reloaded.  This would cancel future sub frame loads, so
+    // ShouldAllowResponse() is not expected to be executed in this case.
+    base::RunLoop().RunUntilIdle();
+  } else {
+    // Verify that the sub frame navigation is not allowed.
+    web::WebStatePolicyDecider::PolicyDecision sub_frame_response_decision =
+        ShouldAllowResponseUrl(url, /*for_main_frame=*/false);
+    EXPECT_FALSE(sub_frame_response_decision.ShouldAllowNavigation());
+  }
+
+  // The unsafe sub frame should trigger a reload.
+  EXPECT_TRUE(navigation_manager_->ReloadWasCalled());
+
+  // Simulate the main frame reload caused by the unsafe sub frame resource.
+  navigation_manager_->SetPendingItem(main_frame_item);
+  auto main_frame_reload_request_decision =
+      ShouldAllowRequestUrl(main_frame_item->GetURL(), /*for_main_frame=*/true,
+                            ui::PageTransition::PAGE_TRANSITION_RELOAD);
+  EXPECT_TRUE(main_frame_reload_request_decision.ShouldAllowNavigation());
+
+  // The URL check is skipped for safe browsing error pages caused by reloading
+  // the main frame for unsafe sub frame resources, so there is no need to run
+  // the runloop.
+  auto main_frame_reload_response_decision =
+      ShouldAllowResponseUrl(main_frame_item->GetURL());
+  EXPECT_TRUE(main_frame_reload_response_decision.ShouldCancelNavigation());
+  EXPECT_TRUE(main_frame_reload_response_decision.ShouldDisplayError());
+  NSError* error = main_frame_reload_response_decision.GetDisplayError();
+  EXPECT_NSEQ(kSafeBrowsingErrorDomain, error.domain);
+  EXPECT_EQ(kUnsafeResourceErrorCode, error.code);
 }
 
 INSTANTIATE_TEST_SUITE_P(

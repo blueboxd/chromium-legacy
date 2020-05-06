@@ -26,8 +26,15 @@ class SysmemBufferCollection;
 
 class SysmemBufferManager {
  public:
-  explicit SysmemBufferManager(fuchsia::sysmem::AllocatorSyncPtr allocator);
+  explicit SysmemBufferManager();
   ~SysmemBufferManager();
+
+  // Initializes the buffer manager with a connection to the sysmem service.
+  void Initialize(fuchsia::sysmem::AllocatorHandle allocator);
+
+  // Disconnects from the sysmem service. After disconnecting, it's safe to call
+  // Initialize() again.
+  void Shutdown();
 
   scoped_refptr<SysmemBufferCollection> CreateCollection(
       VkDevice vk_device,

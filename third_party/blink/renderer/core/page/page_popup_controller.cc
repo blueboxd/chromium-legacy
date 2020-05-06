@@ -32,17 +32,25 @@
 
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/strings/grit/blink_strings.h"
+#include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/page/page_popup.h"
 #include "third_party/blink/renderer/core/page/page_popup_client.h"
-#include "third_party/blink/renderer/core/page/page_popup_supplement.h"
 #include "third_party/blink/renderer/platform/text/platform_locale.h"
 
 namespace blink {
 
-PagePopupController::PagePopupController(PagePopup& popup,
+const char PagePopupController::kSupplementName[] = "PagePopupController";
+
+PagePopupController* PagePopupController::From(Page& page) {
+  return Supplement<Page>::From<PagePopupController>(page);
+}
+
+PagePopupController::PagePopupController(Page& page,
+                                         PagePopup& popup,
                                          PagePopupClient* client)
     : popup_(popup), popup_client_(client) {
   DCHECK(client);
+  ProvideTo(page, this);
 }
 
 void PagePopupController::setValueAndClosePopup(int num_value,
@@ -106,6 +114,11 @@ void PagePopupController::setWindowRect(int x, int y, int width, int height) {
   popup_.SetWindowRect(IntRect(x, y, width, height));
 }
 
+void PagePopupController::Trace(Visitor* visitor) {
+  ScriptWrappable::Trace(visitor);
+  Supplement<Page>::Trace(visitor);
+}
+
 // static
 CSSFontSelector* PagePopupController::CreateCSSFontSelector(
     Document& popup_document) {
@@ -113,7 +126,7 @@ CSSFontSelector* PagePopupController::CreateCSSFontSelector(
   DCHECK(frame);
   DCHECK(frame->PagePopupOwner());
 
-  auto* controller = PagePopupSupplement::From(*frame).GetPagePopupController();
+  auto* controller = PagePopupController::From(*frame->GetPage());
 
   DCHECK(controller->popup_client_);
   return controller->popup_client_->CreateCSSFontSelector(popup_document);

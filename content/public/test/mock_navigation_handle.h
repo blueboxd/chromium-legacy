@@ -97,7 +97,9 @@ class MockNavigationHandle : public NavigationHandle {
     return resolve_error_info_;
   }
   MOCK_METHOD0(GetIsolationInfo, net::IsolationInfo());
-  MOCK_METHOD0(GetGlobalRequestID, const GlobalRequestID&());
+  const GlobalRequestID& GetGlobalRequestID() override {
+    return global_request_id_;
+  }
   MOCK_METHOD0(IsDownload, bool());
   bool IsFormSubmission() override { return is_form_submission_; }
   MOCK_METHOD0(WasInitiatedByLinkClick, bool());
@@ -157,6 +159,9 @@ class MockNavigationHandle : public NavigationHandle {
     response_headers_ = response_headers;
   }
   void set_ssl_info(const net::SSLInfo& ssl_info) { ssl_info_ = ssl_info; }
+  void set_global_request_id(const GlobalRequestID& global_request_id) {
+    global_request_id_ = global_request_id;
+  }
   void set_is_form_submission(bool is_form_submission) {
     is_form_submission_ = is_form_submission;
   }
@@ -197,6 +202,7 @@ class MockNavigationHandle : public NavigationHandle {
   base::Optional<net::SSLInfo> ssl_info_;
   base::Optional<net::AuthChallengeInfo> auth_challenge_info_;
   net::ResolveErrorInfo resolve_error_info_;
+  content::GlobalRequestID global_request_id_;
   bool is_form_submission_ = false;
   bool was_response_cached_ = false;
   net::ProxyServer proxy_server_;

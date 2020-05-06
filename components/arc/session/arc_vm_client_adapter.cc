@@ -183,9 +183,6 @@ std::vector<std::string> GenerateKernelCmdline(
       base::StringPrintf("androidboot.dev_mode=%d", is_dev_mode),
       base::StringPrintf("androidboot.disable_runas=%d", !is_dev_mode),
       base::StringPrintf("androidboot.host_is_in_vm=%d", is_host_on_vm),
-      // TODO(jschettler): Remove androidboot.vm once ro.boot.vm is no longer
-      // used.
-      base::StringPrintf("androidboot.vm=%d", is_host_on_vm),
       base::StringPrintf("androidboot.debuggable=%d",
                          file_system_status.is_android_debuggable()),
       base::StringPrintf("androidboot.lcd_density=%d",

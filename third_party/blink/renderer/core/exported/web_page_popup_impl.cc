@@ -61,7 +61,7 @@
 #include "third_party/blink/renderer/core/page/focus_controller.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/page/page_popup_client.h"
-#include "third_party/blink/renderer/core/page/page_popup_supplement.h"
+#include "third_party/blink/renderer/core/page/page_popup_controller.h"
 #include "third_party/blink/renderer/platform/animation/compositor_animation_timeline.h"
 #include "third_party/blink/renderer/platform/bindings/script_forbidden_scope.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
@@ -291,6 +291,8 @@ void WebPagePopupImpl::Initialize(WebViewImpl* web_view,
   page_->GetSettings().SetPrimaryPointerType(
       main_settings.GetPrimaryPointerType());
 
+  popup_client_->CreatePagePopupController(*page_, *this);
+
   ProvideContextFeaturesTo(*page_, std::make_unique<PagePopupFeaturesClient>());
   DEFINE_STATIC_LOCAL(Persistent<LocalFrameClient>, empty_local_frame_client,
                       (MakeGarbageCollected<EmptyLocalFrameClient>()));
@@ -303,7 +305,6 @@ void WebPagePopupImpl::Initialize(WebViewImpl* web_view,
       /* InterfaceRegistry* */ nullptr);
   frame->SetPagePopupOwner(popup_client_->OwnerElement());
   frame->SetView(MakeGarbageCollected<LocalFrameView>(*frame));
-  PagePopupSupplement::Install(*frame, *this, popup_client_);
   frame->Init();
   frame->View()->SetParentVisible(true);
   frame->View()->SetSelfVisible(true);
@@ -619,7 +620,7 @@ void WebPagePopupImpl::ClosePopup() {
     EventDispatchForbiddenScope::AllowUserAgentEvents allow_events;
 
     MainFrame().Loader().StopAllLoaders();
-    PagePopupSupplement::Uninstall(MainFrame());
+    PagePopupController::From(*page_)->ClearPagePopupClient();
     DestroyPage();
   }
 

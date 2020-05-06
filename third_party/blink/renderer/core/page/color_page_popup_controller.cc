@@ -12,9 +12,10 @@
 namespace blink {
 
 ColorPagePopupController::ColorPagePopupController(
+    Page& page,
     PagePopup& popup,
     ColorChooserPopupUIController* client)
-    : PagePopupController(popup, client) {}
+    : PagePopupController(page, popup, client) {}
 
 void ColorPagePopupController::openEyeDropper() {
   if (popup_client_) {

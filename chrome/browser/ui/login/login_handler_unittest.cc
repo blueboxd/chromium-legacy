@@ -167,6 +167,7 @@ TEST_F(LoginHandlerWithWebContentsTest, NoPendingEntryDoesNotCrash) {
   net::AuthChallengeInfo challenge;
   content::MockNavigationHandle handle;
   handle.SetAuthChallengeInfo(challenge);
+  handle.set_global_request_id({0, 1});
   content::NavigationThrottle::ThrottleCheckResult result =
       helper->WillProcessMainFrameUnauthorizedResponse(&handle);
   EXPECT_EQ(content::NavigationThrottle::CANCEL, result.action());

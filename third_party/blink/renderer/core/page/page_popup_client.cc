@@ -170,8 +170,9 @@ CSSFontSelector* PagePopupClient::CreateCSSFontSelector(
 }
 
 PagePopupController* PagePopupClient::CreatePagePopupController(
+    Page& page,
     PagePopup& popup) {
-  return MakeGarbageCollected<PagePopupController>(popup, this);
+  return MakeGarbageCollected<PagePopupController>(page, popup, this);
 }
 
 }  // namespace blink

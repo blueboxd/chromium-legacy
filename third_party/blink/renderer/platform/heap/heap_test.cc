@@ -266,7 +266,7 @@ class TestGCScope : public TestGCCollectGarbageScope {
         BlinkGC::GCReason::kForcedGCForTesting);
     ThreadState::Current()->AtomicPauseMarkPrologue(
         BlinkGC::CollectionType::kMajor, state, BlinkGC::kAtomicMarking,
-        BlinkGC::GCReason::kPreciseGC);
+        BlinkGC::GCReason::kForcedGCForTesting);
   }
   ~TestGCScope() {
     ThreadState::Current()->AtomicPauseMarkEpilogue(BlinkGC::kAtomicMarking);

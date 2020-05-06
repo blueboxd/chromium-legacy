@@ -1553,7 +1553,7 @@ TEST_F(IncrementalMarkingTest, ConservativeGCWhileCompactionScheduled) {
   ThreadState::Current()->CollectGarbageForTesting(
       BlinkGC::CollectionType::kMajor, BlinkGC::kHeapPointersOnStack,
       BlinkGC::kAtomicMarking, BlinkGC::kConcurrentAndLazySweeping,
-      BlinkGC::GCReason::kConservativeGC);
+      BlinkGC::GCReason::kForcedGCForTesting);
 
   // Heap compaction should be canceled if incremental marking finishes with a
   // conservative GC.

@@ -10,13 +10,14 @@
 namespace blink {
 
 class ColorChooserPopupUIController;
+class Page;
 class PagePopup;
 
 class ColorPagePopupController final : public PagePopupController {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  ColorPagePopupController(PagePopup&, ColorChooserPopupUIController*);
+  ColorPagePopupController(Page&, PagePopup&, ColorChooserPopupUIController*);
 
   void openEyeDropper();
 };

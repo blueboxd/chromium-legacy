@@ -974,13 +974,8 @@ void UpdateHistograms(const ThreadHeapStatsCollector::Event& event) {
     break;                                                                \
   }
 
-    // COUNT_BY_GC_REASON(IdleGC)
-    COUNT_BY_GC_REASON(PreciseGC)
-    COUNT_BY_GC_REASON(ConservativeGC)
     COUNT_BY_GC_REASON(ForcedGCForTesting)
-    COUNT_BY_GC_REASON(MemoryPressureGC)
     COUNT_BY_GC_REASON(ThreadTerminationGC)
-    COUNT_BY_GC_REASON(IncrementalV8FollowupGC)
     COUNT_BY_GC_REASON(UnifiedHeapGC)
     COUNT_BY_GC_REASON(UnifiedHeapForMemoryReductionGC)
     COUNT_BY_GC_REASON(UnifiedHeapForcedForTestingGC)
@@ -1330,7 +1325,6 @@ void ThreadState::CollectGarbage(BlinkGC::CollectionType collection_type,
   const bool should_do_full_gc =
       !was_incremental_marking ||
       reason == BlinkGC::GCReason::kForcedGCForTesting ||
-      reason == BlinkGC::GCReason::kMemoryPressureGC ||
       reason == BlinkGC::GCReason::kThreadTerminationGC;
   if (should_do_full_gc) {
     CompleteSweep();
@@ -1353,12 +1347,8 @@ void ThreadState::CollectGarbage(BlinkGC::CollectionType collection_type,
   }
 
   switch (reason) {
-    COUNT_BY_GC_REASON(PreciseGC)
-    COUNT_BY_GC_REASON(ConservativeGC)
     COUNT_BY_GC_REASON(ForcedGCForTesting)
-    COUNT_BY_GC_REASON(MemoryPressureGC)
     COUNT_BY_GC_REASON(ThreadTerminationGC)
-    COUNT_BY_GC_REASON(IncrementalV8FollowupGC)
     COUNT_BY_GC_REASON(UnifiedHeapGC)
     COUNT_BY_GC_REASON(UnifiedHeapForMemoryReductionGC)
     COUNT_BY_GC_REASON(UnifiedHeapForcedForTestingGC)

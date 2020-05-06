@@ -202,6 +202,9 @@ class ASH_PUBLIC_EXPORT AppListViewDelegate {
   // indicate not to show the view any more.
   virtual void MarkAssistantPrivacyInfoDismissed() = 0;
 
+  // Called when the app list view state is updated.
+  virtual void OnViewStateChanged(AppListViewState state) = 0;
+
   // Called when the app list view animation is completed.
   virtual void OnStateTransitionAnimationCompleted(AppListViewState state) = 0;
 

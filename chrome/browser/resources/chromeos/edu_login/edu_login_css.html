@@ -2,6 +2,7 @@
   <style include="cr-shared-style cros-color-overrides">
     :host {
       --grey-border: 1px solid var(--google-grey-300);
+      --dialog-top-border-size: 35px;
     }
 
     h1 {
@@ -25,7 +26,7 @@
     .main-padding {
       padding-inline-end: 64px;
       padding-inline-start: 64px;
-      padding-top: 64px;
+      padding-top: calc(64px - var(--dialog-top-border-size));
     }
 
     .text-elide {

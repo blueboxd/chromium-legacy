@@ -51,26 +51,16 @@ GestureCommandHandler.onAccessibilityGesture_ = function(gesture) {
 
   Output.forceModeForNextSpeechUtterance(QueueMode.FLUSH);
 
-  // Map gestures to arrow keys while within menus.
+  // Map gestures to arrow keys while within menus belonging to the desktop or
+  // generally in the ChromeVox Panel.
   if (ChromeVoxState.instance.currentRange) {
     const range = ChromeVoxState.instance.currentRange;
     if (commandData.menuKeyOverride && range.start && range.start.node &&
-        range.start.node.role == RoleType.MENU_ITEM &&
-        (range.start.node.root.docUrl.indexOf(chrome.extension.getURL('')) ==
-             0 ||
-         range.start.node.root.role == RoleType.DESKTOP)) {
-      const key = commandData.keyOverride;
-      BackgroundKeyboardHandler.sendKeyPress(key.keyCode, key.modifiers);
-      return;
-    }
-  }
-
-  const textEditHandler = DesktopAutomationHandler.instance.textEditHandler;
-  if (textEditHandler && commandData.keyOverride) {
-    const key = commandData.keyOverride;
-    if (!key.multiline ||
-        ((!key.skipStart || !textEditHandler.isSelectionOnFirstLine()) &&
-         (!key.skipEnd || !textEditHandler.isSelectionOnLastLine()))) {
+        ((range.start.node.role == RoleType.MENU_ITEM &&
+          range.start.node.root.role == RoleType.DESKTOP) ||
+         range.start.node.root.docUrl.indexOf(
+             chrome.extension.getURL('chromevox/panel/panel.html')) == 0)) {
+      const key = commandData.menuKeyOverride;
       BackgroundKeyboardHandler.sendKeyPress(key.keyCode, key.modifiers);
       return;
     }

@@ -12,7 +12,7 @@
  * Helper that returns UI that can serve as an effective mock of a fragment of
  * the real app, after loading a provided Blob URL.
  *
- * @typedef{function(string): Promise<!HTMLElement>}}
+ * @typedef{function(string, string): Promise<!HTMLElement>}}
  */
 let ModuleHandler;
 
@@ -29,9 +29,10 @@ const createVideoChild = async (blobSrc) => {
 };
 
 /** @type{ModuleHandler} */
-const createImgChild = async (blobSrc) => {
+const createImgChild = async (blobSrc, altText) => {
   const img = /** @type{!HTMLImageElement} */ (document.createElement('img'));
   img.src = blobSrc;
+  img.alt = altText;
   await img.decode();
   return img;
 };
@@ -54,7 +55,7 @@ class BacklightApp extends HTMLElement {
     const isVideo = file.mimeType.match('^video/');
     const factory = isVideo ? createVideoChild : createImgChild;
     // Note the mock app will just leak this Blob URL.
-    const child = await factory(URL.createObjectURL(file.blob));
+    const child = await factory(URL.createObjectURL(file.blob), file.name);
     // Simulate an app that shows one image at a time.
     this.replaceChild(child, this.currentMedia);
     this.currentMedia = child;

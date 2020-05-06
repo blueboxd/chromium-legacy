@@ -11,18 +11,21 @@ import android.view.Window;
 
 import androidx.annotation.IntDef;
 
+import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.WindowDelegate;
 import org.chromium.chrome.browser.ntp.FakeboxDelegate;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.omnibox.UrlBar.UrlBarDelegate;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.share.ShareDelegate;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.toolbar.IncognitoStateProvider;
 import org.chromium.chrome.browser.toolbar.ToolbarDataProvider;
 import org.chromium.chrome.browser.toolbar.top.Toolbar;
 import org.chromium.chrome.browser.toolbar.top.ToolbarActionModeCallback;
 import org.chromium.ui.base.WindowAndroid;
+import org.chromium.ui.modaldialog.ModalDialogManager;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -138,11 +141,16 @@ public interface LocationBar extends UrlBarDelegate, FakeboxDelegate {
      * @param windowAndroid {@link WindowAndroid} that is used by the owning {@link Activity}.
      * @param activityTabProvider An {@link ActivityTabProvider} to access the activity's current
      *         tab.
+     * @param modalDialogManagerSupplier A supplier for {@link ModalDialogManager} object.
+     * @param shareDelegateSupplier A supplier for {@link ShareDelegate} object.
      * @param incognitoStateProvider An {@link IncognitoStateProvider} to access the current
      *         incognito state.
      */
     void initializeControls(WindowDelegate windowDelegate, WindowAndroid windowAndroid,
-            ActivityTabProvider activityTabProvider, IncognitoStateProvider incognitoStateProvider);
+            ActivityTabProvider activityTabProvider,
+            Supplier<ModalDialogManager> modalDialogManagerSupplier,
+            Supplier<ShareDelegate> shareDelegateSupplier,
+            IncognitoStateProvider incognitoStateProvider);
 
     /**
      * Triggers the cursor to be visible in the UrlBar without triggering any of the focus animation

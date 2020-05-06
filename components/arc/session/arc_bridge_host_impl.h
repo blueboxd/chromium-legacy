@@ -92,7 +92,6 @@ class ArcBridgeHostImpl : public mojom::ArcBridgeHost {
   void OnPipInstanceReady(mojom::PipInstancePtr policy_ptr) override;
   void OnPolicyInstanceReady(mojom::PolicyInstancePtr policy_ptr) override;
   void OnPowerInstanceReady(mojom::PowerInstancePtr power_ptr) override;
-  void OnPrintInstanceReady(mojom::PrintInstancePtr print_ptr) override;
   void OnPrintSpoolerInstanceReady(
       mojom::PrintSpoolerInstancePtr print_spooler_ptr) override;
   void OnProcessInstanceReady(mojom::ProcessInstancePtr process_ptr) override;

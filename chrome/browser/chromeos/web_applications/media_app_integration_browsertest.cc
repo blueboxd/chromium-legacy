@@ -4,6 +4,7 @@
 
 #include "base/files/file_path.h"
 #include "base/path_service.h"
+#include "base/strings/string_util.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/apps/app_service/app_launch_params.h"
@@ -42,9 +43,6 @@ constexpr char kFilePng800x600[] = "image.png";
 
 // A 640x480 image/jpeg (all green pixels).
 constexpr char kFileJpeg640x480[] = "image3.jpg";
-
-// A 100x100 image/jpeg (all blue pixels).
-constexpr char kFileJpeg100x100[] = "small.jpg";
 
 // A 1-second long 648x486 VP9-encoded video with stereo Opus-encoded audio.
 constexpr char kFileVideoVP9[] = "world.webm";
@@ -91,6 +89,21 @@ OpenOperationResult OpenPathWithPlatformUtil(Profile* profile,
         run_loop.Quit();
       }));
   run_loop.Run();
+
+  // On ChromeOS, the OpenOperationResult is determined in
+  // OpenFileMimeTypeAfterTasksListed() which also invokes
+  // ExecuteFileTaskForUrl(). For WebApps like chrome://media-app, that invokes
+  // WebApps::LaunchAppWithFiles() via AppServiceProxy.
+  // Depending how the mime type of |path| is determined (e.g. extension,
+  // metadata sniffing), there may be a number of asynchronous steps involved
+  // before the call to ExecuteFileTaskForUrl(). After that, the OpenItem
+  // callback is invoked, which exits the RunLoop above.
+  // That used to be enough to also launch a Browser for the WebApp. However,
+  // since r755257, ExecuteFileTaskForUrl() goes through the mojo AppService, so
+  // it's necessary to flush those calls for the WebApp to open.
+  apps::AppServiceProxyFactory::GetForProfile(profile)
+      ->FlushMojoCallsForTesting();
+
   return open_result;
 }
 
@@ -109,29 +122,18 @@ content::WebContents* PrepareActiveBrowserForTest() {
 }
 
 // Waits for a promise that resolves with image dimensions, once an <img>
-// element appears in the light DOM that is backed by a blob URL.
-content::EvalJsResult WaitForOpenedImage(content::WebContents* web_ui) {
+// element appears in the light DOM with the provided `alt=` attribute.
+content::EvalJsResult WaitForImageAlt(content::WebContents* web_ui,
+                                      const std::string& alt) {
   constexpr char kScript[] = R"(
       (async () => {
-        const img = await waitForNode('img[src^="blob:"]');
-        return `${img.naturalWidth}x${img.naturalHeight}`;
+        const img = await waitForNode('img[alt="$1"]');
+        return `$${img.naturalWidth}x$${img.naturalHeight}`;
       })();
   )";
 
-  return MediaAppUiBrowserTest::EvalJsInAppFrame(web_ui, kScript);
-}
-
-// Clears the `src` attribute of a blob:-backed <img> in the light DOM.
-content::EvalJsResult ClearOpenedImage(content::WebContents* web_ui) {
-  constexpr char kScript[] = R"(
-      (async () => {
-        const img = await waitForNode('img[src^="blob:"]');
-        img.src = '';
-        return true;
-      })();
-  )";
-
-  return MediaAppUiBrowserTest::EvalJsInAppFrame(web_ui, kScript);
+  return MediaAppUiBrowserTest::EvalJsInAppFrame(
+      web_ui, base::ReplaceStringPlaceholders(kScript, {alt}, nullptr));
 }
 
 }  // namespace
@@ -146,9 +148,7 @@ IN_PROC_BROWSER_TEST_P(MediaAppIntegrationTest, MediaApp) {
 
 // Test that the MediaApp successfully loads a file passed in on its launch
 // params.
-// Flaky. See https://crbug.com/1064863.
-IN_PROC_BROWSER_TEST_P(MediaAppIntegrationTest,
-                       DISABLED_MediaAppLaunchWithFile) {
+IN_PROC_BROWSER_TEST_P(MediaAppIntegrationTest, MediaAppLaunchWithFile) {
   WaitForTestSystemAppInstall();
   auto params = LaunchParamsForApp(web_app::SystemAppType::MEDIA);
 
@@ -158,16 +158,13 @@ IN_PROC_BROWSER_TEST_P(MediaAppIntegrationTest,
   content::WebContents* app = LaunchApp(params);
   PrepareAppForTest(app);
 
-  EXPECT_EQ("800x600", WaitForOpenedImage(app));
-
-  // Clear the image, so that a new load can be reliably detected.
-  EXPECT_EQ(true, ClearOpenedImage(app));
+  EXPECT_EQ("800x600", WaitForImageAlt(app, kFilePng800x600));
 
   // Relaunch with a different file. This currently re-uses the existing window.
   params.launch_files = {TestFile(kFileJpeg640x480)};
   LaunchApp(params);
 
-  EXPECT_EQ("640x480", WaitForOpenedImage(app));
+  EXPECT_EQ("640x480", WaitForImageAlt(app, kFileJpeg640x480));
 }
 
 // Ensures that chrome://media-app is available as a file task for the ChromeOS
@@ -257,10 +254,6 @@ IN_PROC_BROWSER_TEST_P(MediaAppIntegrationWithFilesAppTest,
   OpenOperationResult open_result =
       OpenPathWithPlatformUtil(profile(), folder.files()[0]);
 
-  apps::AppServiceProxy* proxy =
-      apps::AppServiceProxyFactory::GetForProfile(browser()->profile());
-  proxy->FlushMojoCallsForTesting();
-
   // Window focus changes on ChromeOS are synchronous, so just get the newly
   // focused window.
   Browser* app_browser = chrome::FindBrowserWithActiveWindow();
@@ -274,66 +267,51 @@ IN_PROC_BROWSER_TEST_P(MediaAppIntegrationWithFilesAppTest,
   EXPECT_NE(test_browser, app_browser);
   EXPECT_EQ(web_app::GetAppIdFromApplicationName(app_browser->app_name()),
             *GetManager().GetAppIdForSystemApp(web_app::SystemAppType::MEDIA));
-  EXPECT_EQ("800x600", WaitForOpenedImage(web_ui));
+  EXPECT_EQ("800x600", WaitForImageAlt(web_ui, kFilePng800x600));
 }
 
 // Test that the MediaApp can navigate other files in the directory of a file
 // that was opened.
-// Flaky. See https://crbug.com/1064864.
 IN_PROC_BROWSER_TEST_P(MediaAppIntegrationWithFilesAppTest,
-                       DISABLED_FileOpenCanTraverseDirectory) {
+                       FileOpenCanTraverseDirectory) {
   WaitForTestSystemAppInstall();
 
-  // Initialize a folder with 3 files: 2 JPEG, 1 PNG. Note this approach doesn't
+  // Initialize a folder with 2 files: 1 JPEG, 1 PNG. Note this approach doesn't
   // guarantee the modification times of the files so, and therefore does not
   // suggest an ordering to the files of the directory contents. But by having
   // at most two active files, we can still write a robust test.
   file_manager::test::FolderInMyFiles folder(profile());
   folder.Add({
-      TestFile(kFilePng800x600),
       TestFile(kFileJpeg640x480),
-      TestFile(kFileJpeg100x100),
+      TestFile(kFilePng800x600),
   });
 
-  const base::FilePath copied_png_800x600 = folder.files()[0];
-  const base::FilePath copied_jpeg_640x480 = folder.files()[1];
+  const base::FilePath copied_jpeg_640x480 = folder.files()[0];
 
   // Sent an open request using only the 640x480 JPEG file.
   OpenPathWithPlatformUtil(profile(), copied_jpeg_640x480);
   content::WebContents* web_ui = PrepareActiveBrowserForTest();
 
-  EXPECT_EQ("640x480", WaitForOpenedImage(web_ui));
-
-  // Clear the <img> src attribute to ensure we can detect changes reliably.
-  // TODO(crbug.com/893226): Use the alt-text to find the image instead.
-  ClearOpenedImage(web_ui);
+  EXPECT_EQ("640x480", WaitForImageAlt(web_ui, kFileJpeg640x480));
 
   // Navigate to the next file in the directory.
   EXPECT_EQ(true, ExecuteScript(web_ui, "advance(1)"));
-  EXPECT_EQ("100x100", WaitForOpenedImage(web_ui));
+  EXPECT_EQ("800x600", WaitForImageAlt(web_ui, kFilePng800x600));
 
-  // Navigating again should wraparound, but skip the 800x600 PNG because it is
-  // a different mime type to the original open request.
-  ClearOpenedImage(web_ui);
+  // Navigating again should wraparound.
   EXPECT_EQ(true, ExecuteScript(web_ui, "advance(1)"));
-  EXPECT_EQ("640x480", WaitForOpenedImage(web_ui));
+  EXPECT_EQ("640x480", WaitForImageAlt(web_ui, kFileJpeg640x480));
 
   // Navigate backwards.
-  ClearOpenedImage(web_ui);
   EXPECT_EQ(true, ExecuteScript(web_ui, "advance(-1)"));
-  EXPECT_EQ("100x100", WaitForOpenedImage(web_ui));
+  EXPECT_EQ("800x600", WaitForImageAlt(web_ui, kFilePng800x600));
 
-  // Now open the png.
-  ClearOpenedImage(web_ui);
-  OpenPathWithPlatformUtil(profile(), copied_png_800x600);
-  EXPECT_EQ("800x600", WaitForOpenedImage(web_ui));
-
-  // Navigating should stay on this file. Note currently, this will "reload" the
-  // file. It would also be acceptable to "do nothing", but that will be tackled
-  // on the UI layer by hiding the buttons.
-  ClearOpenedImage(web_ui);
-  EXPECT_EQ(true, ExecuteScript(web_ui, "advance(1)"));
-  EXPECT_EQ("800x600", WaitForOpenedImage(web_ui));
+  // TODO(tapted): Test mixed file types. We used to test here with a file of a
+  // different type in the list of files to open. Navigating would skip over it.
+  // And opening it as the focus file would only open that file. Currently there
+  // is no file type we register as a handler for that is not an image or video
+  // file, and they all appear in the same "camera roll", so there is no way to
+  // test mixed file types.
 }
 
 INSTANTIATE_TEST_SUITE_P(All,

@@ -81,21 +81,6 @@ class FakeModelTypeConfigurer : public ModelTypeConfigurer {
     last_params_ = std::move(params);
   }
 
-  void RegisterDirectoryDataType(ModelType type,
-                                 ModelSafeGroup group) override {
-    NOTREACHED();
-  }
-
-  void UnregisterDirectoryDataType(ModelType type) override { NOTREACHED(); }
-
-  void ActivateDirectoryDataType(ModelType type,
-                                 ModelSafeGroup group,
-                                 ChangeProcessor* change_processor) override {
-    NOTREACHED();
-  }
-
-  void DeactivateDirectoryDataType(ModelType type) override { NOTREACHED(); }
-
   void ActivateNonBlockingDataType(ModelType type,
                                    std::unique_ptr<DataTypeActivationResponse>
                                        activation_response) override {
@@ -105,6 +90,10 @@ class FakeModelTypeConfigurer : public ModelTypeConfigurer {
   void DeactivateNonBlockingDataType(ModelType type) override {
     activated_types_.Remove(type);
   }
+
+  void ActivateProxyDataType(ModelType type) override {}
+
+  void DeactivateProxyDataType(ModelType type) override {}
 
   void FinishDownload(ModelTypeSet types_to_configure,
                       ModelTypeSet failed_download_types) {

@@ -50,8 +50,10 @@ class TokenHandleUtil {
 
   // Performs token handle check for |account_id|. Will call |callback| with
   // corresponding result.
-  void CheckToken(const AccountId& account_id,
-                  const TokenValidationCallback& callback);
+  void CheckToken(
+      const AccountId& account_id,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+      const TokenValidationCallback& callback);
 
   // Given the token |handle| store it for |account_id|.
   static void StoreTokenHandle(const AccountId& account_id,

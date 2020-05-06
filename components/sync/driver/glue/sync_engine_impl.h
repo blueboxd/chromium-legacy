@@ -37,7 +37,6 @@ class InvalidationService;
 
 namespace syncer {
 
-class ChangeProcessor;
 class SyncEngineBackend;
 class SyncBackendRegistrar;
 class SyncPrefs;
@@ -70,16 +69,12 @@ class SyncEngineImpl : public SyncEngine, public InvalidationHandler {
   void StopSyncingForShutdown() override;
   void Shutdown(ShutdownReason reason) override;
   void ConfigureDataTypes(ConfigureParams params) override;
-  void RegisterDirectoryDataType(ModelType type, ModelSafeGroup group) override;
-  void UnregisterDirectoryDataType(ModelType type) override;
-  void ActivateDirectoryDataType(ModelType type,
-                                 ModelSafeGroup group,
-                                 ChangeProcessor* change_processor) override;
-  void DeactivateDirectoryDataType(ModelType type) override;
   void ActivateNonBlockingDataType(
       ModelType type,
       std::unique_ptr<DataTypeActivationResponse>) override;
   void DeactivateNonBlockingDataType(ModelType type) override;
+  void ActivateProxyDataType(ModelType type) override;
+  void DeactivateProxyDataType(ModelType type) override;
   void EnableEncryptEverything() override;
   UserShare* GetUserShare() const override;
   const Status& GetDetailedStatus() const override;

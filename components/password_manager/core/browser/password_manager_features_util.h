@@ -102,6 +102,14 @@ metrics_util::PasswordAccountStorageUserState
 ComputePasswordAccountStorageUserState(const PrefService* pref_service,
                                        const syncer::SyncService* sync_service);
 
+// Returns the "usage level" of the account-scoped password storage. See
+// definition of PasswordAccountStorageUsageLevel.
+// See PasswordFeatureManager::ComputePasswordAccountStorageUsageLevel.
+password_manager::metrics_util::PasswordAccountStorageUsageLevel
+ComputePasswordAccountStorageUsageLevel(
+    const PrefService* pref_service,
+    const syncer::SyncService* sync_service);
+
 }  // namespace features_util
 
 }  // namespace password_manager

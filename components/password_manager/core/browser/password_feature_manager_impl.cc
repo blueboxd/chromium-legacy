@@ -71,4 +71,10 @@ PasswordForm::Store PasswordFeatureManagerImpl::GetDefaultPasswordStore()
   return features_util::GetDefaultPasswordStore(pref_service_, sync_service_);
 }
 
+metrics_util::PasswordAccountStorageUsageLevel
+PasswordFeatureManagerImpl::ComputePasswordAccountStorageUsageLevel() const {
+  return features_util::ComputePasswordAccountStorageUsageLevel(pref_service_,
+                                                                sync_service_);
+}
+
 }  // namespace password_manager

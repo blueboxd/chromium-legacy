@@ -104,17 +104,6 @@ class DataTypeController : public base::SupportsWeakPtr<DataTypeController> {
 
   virtual ~DataTypeController();
 
-  // Returns true if DataTypeManager should wait for LoadModels to complete
-  // successfully before starting configuration. Directory based types should
-  // return false while USS datatypes should return true.
-  virtual bool ShouldLoadModelBeforeConfigure() const = 0;
-
-  // Called right before LoadModels. This method allows controller to register
-  // the type with sync engine. Directory datatypes download initial data in
-  // parallel with LoadModels and thus should be ready to receive updates with
-  // initial data before LoadModels finishes.
-  virtual void BeforeLoadModels(ModelTypeConfigurer* configurer) = 0;
-
   // Begins asynchronous operation of loading the model to get it ready for
   // model association. Once the models are loaded the callback will be invoked
   // with the result. If the models are already loaded it is safe to call the

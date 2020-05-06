@@ -401,6 +401,22 @@ enum class PasswordAccountStorageUserState {
 std::string GetPasswordAccountStorageUserStateHistogramSuffix(
     PasswordAccountStorageUserState user_state);
 
+// The usage level of the account-scoped password storage. This is essentially
+// a less-detailed version of PasswordAccountStorageUserState, for metrics that
+// don't need the fully-detailed breakdown. Always keep this enum in sync with
+// the corresponding histogram_suffixes in histograms.xml!
+enum class PasswordAccountStorageUsageLevel {
+  // The user is not using the account-scoped password storage. Either they're
+  // not signed in, or they haven't opted in to the account storage.
+  kNotUsingAccountStorage,
+  // The user is signed in and has opted in to the account storage.
+  kUsingAccountStorage,
+  // The user has enabled Sync.
+  kSyncing,
+};
+std::string GetPasswordAccountStorageUsageLevelHistogramSuffix(
+    PasswordAccountStorageUsageLevel usage_level);
+
 // Log the |reason| a user dismissed the password manager UI except save/update
 // bubbles.
 void LogGeneralUIDismissalReason(UIDismissalReason reason);

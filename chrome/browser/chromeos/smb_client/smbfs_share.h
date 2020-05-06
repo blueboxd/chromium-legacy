@@ -31,6 +31,7 @@ class SmbFsShare : public smbfs::SmbFsHost::Delegate {
   using MountOptions = smbfs::SmbFsMounter::MountOptions;
   using MountCallback = base::OnceCallback<void(SmbMountResult)>;
   using UnmountCallback = base::OnceCallback<void(chromeos::MountError)>;
+  using RemoveCredentialsCallback = base::OnceCallback<void(bool)>;
   using MounterCreationCallback =
       base::RepeatingCallback<std::unique_ptr<smbfs::SmbFsMounter>(
           const std::string& share_path,
@@ -63,6 +64,9 @@ class SmbFsShare : public smbfs::SmbFsHost::Delegate {
   // (currently 5 seconds).
   void AllowCredentialsRequest();
 
+  // Request that any credentials saved by smbfs are deleted.
+  void RemoveSavedCredentials(RemoveCredentialsCallback callback);
+
   // Returns whether the filesystem is mounted and accessible via mount_path().
   bool IsMounted() const { return bool(host_); }
 
@@ -92,6 +96,9 @@ class SmbFsShare : public smbfs::SmbFsHost::Delegate {
                                       const std::string& username,
                                       const std::string& password);
 
+  // Callback for smbfs::SmbFsHost::RemoveSavedCredentials().
+  void OnRemoveSavedCredentialsDone(bool success);
+
   // smbfs::SmbFsHost::Delegate overrides:
   void OnDisconnected() override;
   void RequestCredentials(RequestCredentialsCallback callback) override;
@@ -102,6 +109,7 @@ class SmbFsShare : public smbfs::SmbFsHost::Delegate {
   MountOptions options_;
   const std::string mount_id_;
   bool unmount_pending_ = false;
+  RemoveCredentialsCallback remove_credentials_callback_;
 
   MounterCreationCallback mounter_creation_callback_for_test_;
   std::unique_ptr<smbfs::SmbFsMounter> mounter_;

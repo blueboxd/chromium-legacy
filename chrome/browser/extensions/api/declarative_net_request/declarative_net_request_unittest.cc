@@ -87,16 +87,6 @@ InstallWarning GetLargeRegexWarning(
                         manifest_keys::kDeclarativeRuleResourcesKey);
 }
 
-std::vector<std::string> GetPublicRulesetIDs(
-    const Extension& extension,
-    const CompositeMatcher::MatcherList& matchers) {
-  std::vector<std::string> manifest_ids;
-  for (const std::unique_ptr<RulesetMatcher>& matcher : matchers)
-    manifest_ids.push_back(GetPublicRulesetID(extension, matcher->id()));
-
-  return manifest_ids;
-}
-
 // Base test fixture to test indexing of rulesets.
 class DeclarativeNetRequestUnittest : public DNRTestBase {
  public:
@@ -994,7 +984,7 @@ TEST_P(MultipleRulesetsTest, EnabledRulesCount) {
       manager()->GetMatcherForExtension(extension()->id());
   ASSERT_TRUE(composite_matcher);
 
-  EXPECT_THAT(GetPublicRulesetIDs(*extension(), composite_matcher->matchers()),
+  EXPECT_THAT(GetPublicRulesetIDs(*extension(), *composite_matcher),
               UnorderedElementsAre("id1", "id3"));
 
   EXPECT_THAT(composite_matcher->matchers(),
@@ -1049,7 +1039,7 @@ TEST_P(MultipleRulesetsTest, StaticRuleCountExceeded) {
       manager()->GetMatcherForExtension(extension_id);
   ASSERT_TRUE(composite_matcher);
 
-  EXPECT_THAT(GetPublicRulesetIDs(*extension(), composite_matcher->matchers()),
+  EXPECT_THAT(GetPublicRulesetIDs(*extension(), *composite_matcher),
               UnorderedElementsAre("1.json", "4.json"));
 
   EXPECT_THAT(composite_matcher->matchers(),
@@ -1090,7 +1080,7 @@ TEST_P(MultipleRulesetsTest, RegexRuleCountExceeded) {
       manager()->GetMatcherForExtension(extension()->id());
   ASSERT_TRUE(composite_matcher);
 
-  EXPECT_THAT(GetPublicRulesetIDs(*extension(), composite_matcher->matchers()),
+  EXPECT_THAT(GetPublicRulesetIDs(*extension(), *composite_matcher),
               UnorderedElementsAre("1.json", "4.json"));
 
   EXPECT_THAT(

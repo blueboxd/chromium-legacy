@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "base/check_op.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/notreached.h"
@@ -17,7 +18,6 @@
 #include "components/password_manager/core/browser/form_fetcher.h"
 #include "components/password_manager/core/browser/password_bubble_experiment.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
-#include "components/password_manager/core/browser/password_manager_util.h"
 #include "components/password_manager/core/browser/statistics_table.h"
 
 using autofill::FieldPropertiesFlags;
@@ -261,6 +261,14 @@ PasswordFormMetricsRecorder::~PasswordFormMetricsRecorder() {
           "PasswordManager.FillingAssistance.InsecureOrigin",
           filling_assistance);
     }
+
+    if (account_storage_usage_level_) {
+      std::string suffix =
+          metrics_util::GetPasswordAccountStorageUsageLevelHistogramSuffix(
+              *account_storage_usage_level_);
+      base::UmaHistogramEnumeration(
+          "PasswordManager.FillingAssistance." + suffix, filling_assistance);
+    }
   }
 
   if (submit_result_ == kSubmitResultPassed && js_only_input_) {
@@ -408,8 +416,12 @@ void PasswordFormMetricsRecorder::CalculateFillingAssistanceMetric(
     const std::set<base::string16>& saved_usernames,
     const std::set<base::string16>& saved_passwords,
     bool is_blacklisted,
-    const std::vector<InteractionsStats>& interactions_stats) {
+    const std::vector<InteractionsStats>& interactions_stats,
+    metrics_util::PasswordAccountStorageUsageLevel
+        account_storage_usage_level) {
   CalculateJsOnlyInput(submitted_form);
+
+  account_storage_usage_level_ = account_storage_usage_level;
 
   if (saved_passwords.empty() && is_blacklisted) {
     filling_assistance_ = FillingAssistance::kNoSavedCredentialsAndBlacklisted;

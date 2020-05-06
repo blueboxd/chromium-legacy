@@ -1314,6 +1314,11 @@ class MockSmbFsImpl : public smbfs::mojom::SmbFs {
   explicit MockSmbFsImpl(mojo::PendingReceiver<smbfs::mojom::SmbFs> pending)
       : receiver_(this, std::move(pending)) {}
 
+  MOCK_METHOD(void,
+              RemoveSavedCredentials,
+              (RemoveSavedCredentialsCallback),
+              (override));
+
  private:
   mojo::Receiver<smbfs::mojom::SmbFs> receiver_;
 };

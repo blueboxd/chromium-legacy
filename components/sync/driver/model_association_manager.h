@@ -31,10 +31,6 @@ struct ConfigureContext;
 // those operations are passed back via this interface.
 class ModelAssociationManagerDelegate {
  public:
-  // Called right before ModelAssociationManager calls LoadModels. Allows
-  // directory types to register with sync engine before download starts.
-  virtual void OnSingleDataTypeWillStart(ModelType type) = 0;
-
   // Called when all desired types are ready to be configured with
   // ModelTypeConfigurer. Data type is ready when its progress marker is
   // available to configurer. Directory data types are always ready, their

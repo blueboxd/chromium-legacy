@@ -41,6 +41,8 @@ class SafeBrowsingBlockingPage
    private:
     // security_interstitials::ControllerClient:
     void Proceed() override;
+    void GoBack() override;
+    void GoBackAfterNavigationCommitted() override;
 
     // The URL of the resource causing the insterstitial.
     GURL url_;

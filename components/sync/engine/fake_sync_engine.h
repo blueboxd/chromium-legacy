@@ -58,21 +58,15 @@ class FakeSyncEngine : public SyncEngine {
 
   void ConfigureDataTypes(ConfigureParams params) override;
 
-  void RegisterDirectoryDataType(ModelType type, ModelSafeGroup group) override;
-
-  void UnregisterDirectoryDataType(ModelType type) override;
-
   void EnableEncryptEverything() override;
-
-  void ActivateDirectoryDataType(ModelType type,
-                                 ModelSafeGroup group,
-                                 ChangeProcessor* change_processor) override;
-  void DeactivateDirectoryDataType(ModelType type) override;
 
   void ActivateNonBlockingDataType(
       ModelType type,
       std::unique_ptr<DataTypeActivationResponse>) override;
   void DeactivateNonBlockingDataType(ModelType type) override;
+
+  void ActivateProxyDataType(ModelType type) override;
+  void DeactivateProxyDataType(ModelType type) override;
 
   UserShare* GetUserShare() const override;
 

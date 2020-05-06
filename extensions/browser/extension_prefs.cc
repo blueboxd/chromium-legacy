@@ -2043,7 +2043,13 @@ void ExtensionPrefs::PopulateExtensionInfoPrefs(
   if (install_flags & kInstallFlagIsBlacklistedForMalware)
     extension_dict->SetBoolean(kPrefBlacklist, true);
 
-  if (!ruleset_checksums.empty()) {
+  // If |ruleset_checksums| is empty, explicitly remove the
+  // |kDNRStaticRulesetPref| entry to ensure any remaining old entries from the
+  // previous install are cleared up in case of an update. Else just set the
+  // entry (which will overwrite any existing value).
+  if (ruleset_checksums.empty()) {
+    extension_dict->Remove(kDNRStaticRulesetPref, nullptr /* out_value */);
+  } else {
     auto ruleset_prefs = std::make_unique<base::DictionaryValue>();
     for (const declarative_net_request::RulesetChecksum& checksum :
          ruleset_checksums) {

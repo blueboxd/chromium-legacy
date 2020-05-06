@@ -265,6 +265,12 @@ const base::Feature kDesktopPWAsUnifiedLaunch{"DesktopPWAsUnifiedLaunch",
 const base::Feature kDesktopPWAsSharedStoreService{
     "DesktopPWAsSharedStoreService", base::FEATURE_ENABLED_BY_DEFAULT};
 
+#if !defined(OS_ANDROID)
+// Whether to allow installed-by-default web apps to be installed or not.
+const base::Feature kDefaultWebAppInstallation{
+    "DefaultWebAppInstallation", base::FEATURE_ENABLED_BY_DEFAULT};
+#endif
+
 // Enable DNS over HTTPS (DoH).
 const base::Feature kDnsOverHttps{"DnsOverHttps",
                                   base::FEATURE_DISABLED_BY_DEFAULT};

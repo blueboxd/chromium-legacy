@@ -219,6 +219,8 @@ const char kTestAccessToken[] = "fake-access-token";
 const char kTestClientId[] = "fake-client-id";
 const char kTestAppScope[] = "https://www.googleapis.com/auth/userinfo.profile";
 
+const char kSizeChangedMessage[] = "size_changed";
+
 // Helper function for GetConsumerKioskAutoLaunchStatusCallback.
 void ConsumerKioskAutoLaunchStatusCheck(
     KioskAppManager::ConsumerKioskAutoLaunchStatus* out_status,
@@ -755,15 +757,14 @@ class KioskTest : public OobeBaseTest {
     WaitForAppLaunchSuccess();
   }
 
-  // Waits for a message sent from DOM automation to |message_queue|.
+  // Waits for window width to change. Listens to a 'size_change' message sent
+  // from DOM automation to |message_queue|.
   // The message is expected to be in JSON format:
   // {'name': <msg_name>, 'data': <extra_msg_data>}.
-  // This will wait until a message with name set to |message_name| is seen, and
-  // it will return the value set as the message's data. It is acceptable for
-  // the DOM message not to specify 'data' property, in which case this will
-  // return empty value.
-  base::Value WaitForDOMMessage(content::DOMMessageQueue* message_queue,
-                                const std::string& message_name) {
+  // This will wait until a message with a different width is seen. It will
+  // return the new width.
+  int WaitForWidthChange(content::DOMMessageQueue* message_queue,
+                         int current_width) {
     std::string message;
     while (message_queue->WaitForMessage(&message)) {
       base::Optional<base::Value> message_value =
@@ -773,15 +774,23 @@ class KioskTest : public OobeBaseTest {
         continue;
 
       const std::string* name = message_value.value().FindStringKey("name");
-      if (!name || *name != message_name)
+      if (!name || *name != kSizeChangedMessage)
         continue;
 
       const base::Value* data = message_value->FindKey("data");
-      return data ? data->Clone() : base::Value();
+
+      if (!data || !data->is_int())
+        continue;
+
+      const int new_width = data->GetInt();
+      if (new_width == current_width)
+        continue;
+
+      return new_width;
     }
 
-    ADD_FAILURE() << "Message wait failed " << message_name;
-    return base::Value();
+    ADD_FAILURE() << "Message wait failed " << kSizeChangedMessage;
+    return current_width;
   }
 
   void SimulateNetworkOnline() {
@@ -865,24 +874,21 @@ IN_PROC_BROWSER_TEST_F(KioskTest, ZoomSupport) {
       apps::AppWindowWaiter(app_window_registry, test_app_id()).Wait();
   ASSERT_TRUE(window);
 
-  int original_width;
-  ASSERT_TRUE(content::ExecuteScriptAndExtractInt(
-      window->web_contents(),
-      "window.domAutomationController.send(window.innerWidth);",
-      &original_width));
+  test::JSChecker window_js(window->web_contents());
+  int original_width = window_js.GetInt("window.innerWidth");
 
-  content::DOMMessageQueue message_queue;
+  content::DOMMessageQueue message_queue(window->web_contents());
 
   // Inject window size observer that should notify this test when the app
   // window size changes during zoom operations.
-  test::JSChecker(window->web_contents())
-      .Evaluate(
-          "window.addEventListener('resize', function() {"
-          "  window.domAutomationController.send({"
-          "      'name': 'size_changed',"
-          "      'data': window.innerWidth"
-          "  });"
-          "});");
+  window_js.Evaluate(
+      base::StringPrintf("window.addEventListener('resize', function() {"
+                         "  window.domAutomationController.send({"
+                         "      'name': '%s',"
+                         "      'data': window.innerWidth"
+                         "  });"
+                         "});",
+                         kSizeChangedMessage));
 
   native_app_window::NativeAppWindowViews* native_app_window_views =
       static_cast<native_app_window::NativeAppWindowViews*>(
@@ -894,28 +900,25 @@ IN_PROC_BROWSER_TEST_F(KioskTest, ZoomSupport) {
   accelerator_target->AcceleratorPressed(
       ui::Accelerator(ui::VKEY_ADD, ui::EF_CONTROL_DOWN));
 
-  base::Value width_zoomed_in =
-      WaitForDOMMessage(&message_queue, "size_changed");
-  ASSERT_TRUE(width_zoomed_in.is_int());
-  ASSERT_LT(width_zoomed_in.GetInt(), original_width);
+  const int width_zoomed_in =
+      WaitForWidthChange(&message_queue, original_width);
+  ASSERT_LT(width_zoomed_in, original_width);
 
   // Go back to normal. Window width is restored.
   accelerator_target->AcceleratorPressed(
       ui::Accelerator(ui::VKEY_0, ui::EF_CONTROL_DOWN));
 
-  base::Value width_zoom_normal =
-      WaitForDOMMessage(&message_queue, "size_changed");
-  ASSERT_TRUE(width_zoom_normal.is_int());
-  ASSERT_EQ(width_zoom_normal.GetInt(), original_width);
+  const int width_zoom_normal =
+      WaitForWidthChange(&message_queue, width_zoomed_in);
+  ASSERT_EQ(width_zoom_normal, original_width);
 
   // Zoom out. Text is smaller and content window width becomes larger.
   accelerator_target->AcceleratorPressed(
       ui::Accelerator(ui::VKEY_SUBTRACT, ui::EF_CONTROL_DOWN));
 
-  base::Value width_zoomed_out =
-      WaitForDOMMessage(&message_queue, "size_changed");
-  ASSERT_TRUE(width_zoomed_out.is_int());
-  ASSERT_GT(width_zoomed_out.GetInt(), original_width);
+  const int width_zoomed_out =
+      WaitForWidthChange(&message_queue, width_zoom_normal);
+  ASSERT_GT(width_zoomed_out, original_width);
 
   // Terminate the app.
   window->GetBaseWindow()->Close();
@@ -1169,13 +1172,7 @@ IN_PROC_BROWSER_TEST_F(KioskTest, KioskEnableCancel) {
             GetConsumerKioskModeStatus());
 }
 
-// Flaky on MSAN (crbug.com/1029965) and CrOS (crbug.com/1043887).
-#if defined(MEMORY_SANITIZER) || defined(OS_CHROMEOS)
-#define MAYBE_KioskEnableConfirmed DISABLED_KioskEnableConfirmed
-#else
-#define MAYBE_KioskEnableConfirmed KioskEnableConfirmed
-#endif
-IN_PROC_BROWSER_TEST_F(KioskTest, MAYBE_KioskEnableConfirmed) {
+IN_PROC_BROWSER_TEST_F(KioskTest, KioskEnableConfirmed) {
   // Start UI, find menu entry for this app and launch it.
   chromeos::WizardController::SkipPostLoginScreensForTesting();
   chromeos::WizardController* wizard_controller =
@@ -1189,18 +1186,18 @@ IN_PROC_BROWSER_TEST_F(KioskTest, MAYBE_KioskEnableConfirmed) {
   // Wait for the login UI to come up and switch to the kiosk_enable screen.
   wizard_controller->SkipToLoginForTesting();
   OobeScreenWaiter(GaiaView::kScreenId).Wait();
-  GetLoginUI()->CallJavascriptFunctionUnsafe("cr.ui.Oobe.handleAccelerator",
-                                             base::Value("kiosk_enable"));
+  test::ExecuteOobeJS("cr.ui.Oobe.handleAccelerator('kiosk_enable');");
 
   // Wait for the kiosk_enable screen to show and enable kiosk.
   OobeScreenWaiter(KioskEnableScreenView::kScreenId).Wait();
-  test::OobeJS().TapOnPath({"kiosk-enable", "enable"});
 
   // Wait for the signal that indicates Kiosk Mode is enabled.
-  content::WindowedNotificationObserver(
+  content::WindowedNotificationObserver notification_observer(
       chrome::NOTIFICATION_KIOSK_ENABLED,
-      content::NotificationService::AllSources())
-      .Wait();
+      content::NotificationService::AllSources());
+  test::OobeJS().TapOnPath({"kiosk-enable", "enable"});
+  notification_observer.Wait();
+
   EXPECT_EQ(KioskAppManager::CONSUMER_KIOSK_AUTO_LAUNCH_ENABLED,
             GetConsumerKioskModeStatus());
 }

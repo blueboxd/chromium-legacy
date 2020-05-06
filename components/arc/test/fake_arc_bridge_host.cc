@@ -38,7 +38,6 @@
 #include "components/arc/mojom/pip.mojom.h"
 #include "components/arc/mojom/policy.mojom.h"
 #include "components/arc/mojom/power.mojom.h"
-#include "components/arc/mojom/print.mojom.h"
 #include "components/arc/mojom/print_spooler.mojom.h"
 #include "components/arc/mojom/process.mojom.h"
 #include "components/arc/mojom/property.mojom.h"
@@ -155,9 +154,6 @@ void FakeArcBridgeHost::OnPolicyInstanceReady(
 
 void FakeArcBridgeHost::OnPowerInstanceReady(
     mojom::PowerInstancePtr power_ptr) {}
-
-void FakeArcBridgeHost::OnPrintInstanceReady(
-    mojom::PrintInstancePtr print_ptr) {}
 
 void FakeArcBridgeHost::OnPrintSpoolerInstanceReady(
     mojom::PrintSpoolerInstancePtr print_spooler_ptr) {}

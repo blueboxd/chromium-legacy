@@ -114,6 +114,20 @@ void SmbFsHost::OnUnmountDone(SmbFsHost::UnmountCallback callback,
   std::move(callback).Run(result);
 }
 
+void SmbFsHost::RemoveSavedCredentials(
+    SmbFsHost::RemoveSavedCredentialsCallback callback) {
+  smbfs_->RemoveSavedCredentials(
+      base::BindOnce(&SmbFsHost::OnRemoveSavedCredentialsDone,
+                     base::Unretained(this), std::move(callback)));
+}
+
+void SmbFsHost::OnRemoveSavedCredentialsDone(
+    SmbFsHost::RemoveSavedCredentialsCallback callback,
+    bool success) {
+  LOG_IF(ERROR, !success) << "Unable to remove saved password for smbfs";
+  std::move(callback).Run(success);
+}
+
 void SmbFsHost::OnDisconnect() {
   // Ensure only one disconnection event occurs.
   smbfs_.reset();

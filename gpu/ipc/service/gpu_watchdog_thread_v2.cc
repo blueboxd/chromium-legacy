@@ -222,6 +222,7 @@ void GpuWatchdogThreadImplV2::Init() {
   last_arm_disarm_counter_ = ReadArmDisarmCounter();
   watchdog_start_timeticks_ = base::TimeTicks::Now();
   last_on_watchdog_timeout_timeticks_ = watchdog_start_timeticks_;
+  next_on_watchdog_timeout_time_ = base::Time::Now() + timeout;
 
 #if defined(OS_WIN)
   if (watched_thread_handle_) {
@@ -327,6 +328,7 @@ void GpuWatchdogThreadImplV2::RestartWatchdogTimeoutTask(
         base::BindOnce(&GpuWatchdogThreadImplV2::OnWatchdogTimeout, weak_ptr_),
         timeout);
     last_on_watchdog_timeout_timeticks_ = base::TimeTicks::Now();
+    next_on_watchdog_timeout_time_ = base::Time::Now() + timeout;
     last_arm_disarm_counter_ = ReadArmDisarmCounter();
 #if defined(OS_WIN)
     if (watched_thread_handle_) {
@@ -443,17 +445,20 @@ void GpuWatchdogThreadImplV2::OnWatchdogTimeout() {
   // Collect all needed info for gpu hang detection.
   bool disarmed = arm_disarm_counter % 2 == 0;  // even number
   bool gpu_makes_progress = arm_disarm_counter != last_arm_disarm_counter_;
+  bool no_gpu_hang = disarmed || gpu_makes_progress || SlowWatchdogThread();
+
   bool watched_thread_needs_more_time =
-      WatchedThreadNeedsMoreThreadTime(disarmed || gpu_makes_progress);
-  bool no_gpu_hang = disarmed || gpu_makes_progress ||
-                     watched_thread_needs_more_time ||
-                     ContinueOnNonHostX11ServerTty();
+      WatchedThreadNeedsMoreThreadTime(no_gpu_hang);
+  no_gpu_hang = no_gpu_hang || watched_thread_needs_more_time ||
+                ContinueOnNonHostX11ServerTty();
+
   bool allows_extra_timeout = WatchedThreadGetsExtraTimeout(no_gpu_hang);
   no_gpu_hang = no_gpu_hang || allows_extra_timeout;
 
   // No gpu hang. Continue with another OnWatchdogTimeout task.
   if (no_gpu_hang) {
     last_on_watchdog_timeout_timeticks_ = base::TimeTicks::Now();
+    next_on_watchdog_timeout_time_ = base::Time::Now() + watchdog_timeout_;
     last_arm_disarm_counter_ = ReadArmDisarmCounter();
 
     task_runner()->PostDelayedTask(
@@ -471,6 +476,21 @@ void GpuWatchdogThreadImplV2::OnWatchdogTimeout() {
 #endif
 
   DeliberatelyTerminateToRecoverFromHang();
+}
+
+bool GpuWatchdogThreadImplV2::SlowWatchdogThread() {
+  // If it takes 15 more seconds than the expected time between two
+  // OnWatchdogTimeout() calls, the system is considered slow and it's not a GPU
+  // hang.
+  bool slow_watchdog_thread =
+      (base::Time::Now() - next_on_watchdog_timeout_time_) >=
+      base::TimeDelta::FromSeconds(15);
+
+  // Record this case only when a GPU hang is detected and the thread is slow.
+  if (slow_watchdog_thread)
+    GpuWatchdogTimeoutHistogram(GpuWatchdogTimeoutEvent::kSlowWatchdogThread);
+
+  return slow_watchdog_thread;
 }
 
 bool GpuWatchdogThreadImplV2::WatchedThreadNeedsMoreThreadTime(

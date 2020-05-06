@@ -46,6 +46,10 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
+#endif
+
 namespace {
 
 constexpr const char kExampleURL[] = "http://example.org/";
@@ -586,6 +590,11 @@ IN_PROC_BROWSER_TEST_P(WebAppBrowserTest, InstallInstallableSite) {
 
   EXPECT_EQ(1, user_action_tester.GetActionCount("InstallWebAppFromMenu"));
   EXPECT_EQ(0, user_action_tester.GetActionCount("CreateShortcut"));
+
+#if defined(OS_CHROMEOS)
+  // Apps on Chrome OS should not be pinned after install.
+  EXPECT_FALSE(ChromeLauncherController::instance()->IsAppPinned(app_id));
+#endif
 }
 
 IN_PROC_BROWSER_TEST_P(WebAppBrowserTest, CanInstallOverTabPwa) {

@@ -56,6 +56,10 @@ class COMPONENT_EXPORT(SMBFS) SmbFsHost {
   using UnmountCallback = base::OnceCallback<void(chromeos::MountError)>;
   void Unmount(UnmountCallback callback);
 
+  // Request any credentials saved by smbfs are deleted.
+  using RemoveSavedCredentialsCallback = base::OnceCallback<void(bool)>;
+  void RemoveSavedCredentials(RemoveSavedCredentialsCallback callback);
+
  private:
   // Mojo disconnection handler.
   void OnDisconnect();
@@ -63,6 +67,10 @@ class COMPONENT_EXPORT(SMBFS) SmbFsHost {
   // Called after cros-disks has attempted to unmount the share.
   void OnUnmountDone(SmbFsHost::UnmountCallback callback,
                      chromeos::MountError result);
+
+  // Callback for mojom::SmbFs::RemoveSavedCredentials().
+  void OnRemoveSavedCredentialsDone(RemoveSavedCredentialsCallback callback,
+                                    bool success);
 
   const std::unique_ptr<chromeos::disks::MountPoint> mount_point_;
   Delegate* const delegate_;

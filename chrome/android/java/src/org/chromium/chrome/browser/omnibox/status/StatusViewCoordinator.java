@@ -4,24 +4,26 @@
 
 package org.chromium.chrome.browser.omnibox.status;
 
+import android.app.Activity;
 import android.content.res.Resources;
 import android.view.View;
 
 import androidx.annotation.DrawableRes;
 import androidx.annotation.VisibleForTesting;
 
+import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
 import org.chromium.chrome.browser.omnibox.UrlBar.UrlTextChangeListener;
 import org.chromium.chrome.browser.omnibox.UrlBarEditingTextStateProvider;
 import org.chromium.chrome.browser.page_info.ChromePageInfoControllerDelegate;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tab.TabImpl;
+import org.chromium.chrome.browser.tab.TabUtils;
 import org.chromium.chrome.browser.toolbar.IncognitoStateProvider;
 import org.chromium.chrome.browser.toolbar.ToolbarDataProvider;
 import org.chromium.components.page_info.PageInfoController;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.ui.modaldialog.ModalDialogManager;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
 
@@ -34,6 +36,7 @@ public class StatusViewCoordinator implements View.OnClickListener, UrlTextChang
     private final StatusMediator mMediator;
     private final PropertyModel mModel;
     private final boolean mIsTablet;
+    private Supplier<ModalDialogManager> mModalDialogManagerSupplier;
     private ToolbarDataProvider mToolbarDataProvider;
     private boolean mUrlHasFocus;
 
@@ -142,6 +145,15 @@ public class StatusViewCoordinator implements View.OnClickListener, UrlTextChang
     }
 
     /**
+     * @param modalDialogManagerSupplier A supplier for {@link ModalDialogManager} used
+     *         to display a dialog.
+     */
+    public void setModalDialogManagerSupplier(
+            Supplier<ModalDialogManager> modalDialogManagerSupplier) {
+        mModalDialogManagerSupplier = modalDialogManagerSupplier;
+    }
+
+    /**
      * Updates the security icon displayed in the LocationBar.
      */
     public void updateStatusIcon() {
@@ -206,11 +218,12 @@ public class StatusViewCoordinator implements View.OnClickListener, UrlTextChang
         }
 
         Tab tab = mToolbarDataProvider.getTab();
-        ChromeActivity activity = ((TabImpl) tab).getActivity();
         WebContents webContents = tab.getWebContents();
+        Activity activity = TabUtils.getActivity(tab);
         PageInfoController.show(activity, webContents, null,
                 PageInfoController.OpenedFromSource.TOOLBAR,
                 new ChromePageInfoControllerDelegate(activity, webContents,
+                        mModalDialogManagerSupplier,
                         /*offlinePageLoadUrlDelegate=*/
                         new OfflinePageUtils.TabOfflinePageLoadUrlDelegate(tab)));
     }

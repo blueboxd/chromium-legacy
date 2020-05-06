@@ -62,4 +62,12 @@ void WebViewPasswordFeatureManager::SetDefaultPasswordStore(
   NOTREACHED();
 }
 
+password_manager::metrics_util::PasswordAccountStorageUsageLevel
+WebViewPasswordFeatureManager::ComputePasswordAccountStorageUsageLevel() const {
+  // ios/web_view doesn't support either the profile password store or sync, so
+  // the account-scoped storage is the only option.
+  return password_manager::metrics_util::PasswordAccountStorageUsageLevel::
+      kUsingAccountStorage;
+}
+
 }  // namespace ios_web_view

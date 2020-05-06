@@ -35,19 +35,32 @@ void BindInterface(mojo::PendingReceiver<Interface> receiver,
 namespace ui {
 
 ScenicGpuHost::ScenicGpuHost(ScenicWindowManager* scenic_window_manager)
-    : scenic_window_manager_(scenic_window_manager),
-      ui_thread_runner_(base::ThreadTaskRunnerHandle::Get()) {
+    : scenic_window_manager_(scenic_window_manager) {
   DETACH_FROM_THREAD(io_thread_checker_);
 }
 
 ScenicGpuHost::~ScenicGpuHost() {
-  DCHECK_CALLED_ON_VALID_THREAD(ui_thread_checker_);
+  Shutdown();
 }
 
-mojo::PendingRemote<mojom::ScenicGpuHost>
-ScenicGpuHost::CreateHostProcessSelfRemote() {
-  DCHECK(!host_receiver_.is_bound());
-  return host_receiver_.BindNewPipeAndPassRemote();
+void ScenicGpuHost::Initialize(
+    mojo::PendingReceiver<mojom::ScenicGpuHost> host_receiver) {
+  DCHECK_CALLED_ON_VALID_THREAD(ui_thread_checker_);
+
+  DCHECK(!ui_thread_runner_);
+  ui_thread_runner_ = base::ThreadTaskRunnerHandle::Get();
+  DCHECK(ui_thread_runner_);
+
+  host_receiver_.Bind(std::move(host_receiver));
+}
+
+void ScenicGpuHost::Shutdown() {
+  DCHECK_CALLED_ON_VALID_THREAD(ui_thread_checker_);
+
+  ui_thread_runner_ = nullptr;
+  host_receiver_.reset();
+  gpu_receiver_.reset();
+  gpu_service_.reset();
 }
 
 void ScenicGpuHost::AttachSurfaceToWindow(

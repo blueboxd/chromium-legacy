@@ -1973,6 +1973,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
             PageInfoController.show(this, webContents, null,
                     PageInfoController.OpenedFromSource.MENU,
                     new ChromePageInfoControllerDelegate(this, webContents,
+                            this::getModalDialogManager,
                             /*offlinePageLoadUrlDelegate=*/
                             new OfflinePageUtils.TabOfflinePageLoadUrlDelegate(currentTab)));
         } else if (id == R.id.translate_id) {

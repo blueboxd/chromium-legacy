@@ -38,6 +38,20 @@ std::string GetPasswordAccountStorageUserStateHistogramSuffix(
   return std::string();
 }
 
+std::string GetPasswordAccountStorageUsageLevelHistogramSuffix(
+    PasswordAccountStorageUsageLevel usage_level) {
+  switch (usage_level) {
+    case PasswordAccountStorageUsageLevel::kNotUsingAccountStorage:
+      return "NotUsingAccountStorage";
+    case PasswordAccountStorageUsageLevel::kUsingAccountStorage:
+      return "UsingAccountStorage";
+    case PasswordAccountStorageUsageLevel::kSyncing:
+      return "Syncing";
+  }
+  NOTREACHED();
+  return std::string();
+}
+
 void LogGeneralUIDismissalReason(UIDismissalReason reason) {
   base::UmaHistogramEnumeration("PasswordManager.UIDismissalReason", reason,
                                 NUM_UI_RESPONSES);

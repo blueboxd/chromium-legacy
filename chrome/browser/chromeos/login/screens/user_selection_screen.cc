@@ -671,8 +671,12 @@ void UserSelectionScreen::CheckUserStatus(const AccountId& account_id) {
 
   if (token_handle_util_->HasToken(account_id)) {
     token_handle_util_->CheckToken(
-        account_id, base::Bind(&UserSelectionScreen::OnUserStatusChecked,
-                               weak_factory_.GetWeakPtr()));
+        account_id,
+        chromeos::ProfileHelper::Get()
+            ->GetSigninProfile()
+            ->GetURLLoaderFactory(),
+        base::Bind(&UserSelectionScreen::OnUserStatusChecked,
+                   weak_factory_.GetWeakPtr()));
   }
 
   // Run dircrypto migration check only on the login screen when necessary.

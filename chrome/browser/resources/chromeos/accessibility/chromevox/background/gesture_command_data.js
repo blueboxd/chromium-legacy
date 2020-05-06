@@ -12,8 +12,7 @@ goog.provide('GestureGranularity');
  *     {
  *     msgId: string,
  *     command: string,
- *     menuKeyOverride: (boolean|undefined),
- *     keyOverride: ({keyCode: number, modifiers: ({ctrl:
+ *     menuKeyOverride: ({keyCode: number, modifiers: ({ctrl:
  * boolean}|undefined)}|undefined),
  *     shouldRecoverRange: (boolean|undefined)
  *    }>}
@@ -24,43 +23,31 @@ GestureCommandData.GESTURE_COMMAND_MAP = {
   'swipeUp1': {
     msgId: 'swipeUp1_gesture',
     command: 'previousAtGranularity',
-    menuKeyOverride: true,
-    keyOverride: {keyCode: 38 /* up */, skipStart: true, multiline: true},
+    menuKeyOverride: {keyCode: 38 /* up */},
     shouldRecoverRange: true
   },
   'swipeDown1': {
     msgId: 'swipeDown1_gesture',
     command: 'nextAtGranularity',
-    menuKeyOverride: true,
-    keyOverride: {keyCode: 40 /* Down */, skipEnd: true, multiline: true},
+    menuKeyOverride: {keyCode: 40 /* Down */},
     shouldRecoverRange: true
   },
   'swipeLeft1': {
     msgId: 'swipeLeft1_gesture',
     command: 'previousObject',
-    menuKeyOverride: true,
-    keyOverride: {keyCode: 37 /* left */},
+    menuKeyOverride: {keyCode: 37 /* left */},
     shouldRecoverRange: true
   },
   'swipeRight1': {
     msgId: 'swipeRight1_gesture',
     command: 'nextObject',
-    menuKeyOverride: true,
-    keyOverride: {keyCode: 39 /* right */},
+    menuKeyOverride: {keyCode: 39 /* right */},
     shouldRecoverRange: true
   },
   'swipeUp2': {msgId: 'swipeUp2_gesture', command: 'jumpToTop'},
   'swipeDown2': {msgId: 'swipeDown2_gesture', command: 'readFromHere'},
-  'swipeLeft2': {
-    msgId: 'swipeLeft2_gesture',
-    command: 'previousWord',
-    keyOverride: {keyCode: 37 /* left */, modifiers: {ctrl: true}}
-  },
-  'swipeRight2': {
-    msgId: 'swipeRight2_gesture',
-    command: 'nextWord',
-    keyOverride: {keyCode: 40 /* right */, modifiers: {ctrl: true}}
-  },
+  'swipeLeft2': {msgId: 'swipeLeft2_gesture', command: 'previousWord'},
+  'swipeRight2': {msgId: 'swipeRight2_gesture', command: 'nextWord'},
   'swipeUp3': {msgId: 'swipeUp3_gesture', command: 'scrollForward'},
   'swipeDown3': {msgId: 'swipeDown3_gesture', command: 'scrollBackward'},
   'swipeLeft3': {msgId: 'swipeLeft3_gesture', command: 'previousGranularity'},

@@ -189,8 +189,10 @@ void AdjustTasksForMediaApp(const std::vector<extensions::EntryInfo>& entries,
   // video player functionality of the Media App is fully polished.
   bool any_non_image = false;
   for (const auto& entry : entries) {
-    if (IsRawImage(entry.path))
+    if (IsRawImage(entry.path)) {
+      tasks->erase(media_app_task);
       return;  // Let Gallery handle it.
+    }
 
     any_non_image =
         any_non_image || !net::MatchesMimeType("image/*", entry.mime_type);
@@ -211,6 +213,9 @@ void AdjustTasksForMediaApp(const std::vector<extensions::EntryInfo>& entries,
   // "fallback" web app (i.e. a built-in app) can never be an automatic default.
   // Fallback handlers are never preferred over extension-matched handlers, so
   // we must instead pretend that the media app has an extension match.
+  // Note this must be done after the any_non_image check to ensure the video
+  // player app gets preference as "default".
+
   // First DCHECK to see if the hack can be removed.
   DCHECK(!media_app_task->is_file_extension_match());
   media_app_task->set_is_file_extension_match(true);
@@ -857,7 +862,11 @@ void ChooseAndSetDefaultTask(const PrefService& pref_service,
 bool IsRawImage(const base::FilePath& path) {
   constexpr const char* kRawExtensions[] = {".arw", ".cr2", ".dng", ".nef",
                                             ".nrw", ".orf", ".raf", ".rw2"};
-  return base::Contains(kRawExtensions, path.Extension());
+  for (const char* extension : kRawExtensions) {
+    if (path.MatchesExtension(extension))
+      return true;
+  }
+  return false;
 }
 
 }  // namespace file_tasks

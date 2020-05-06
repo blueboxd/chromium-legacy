@@ -79,9 +79,13 @@ class AccountManagerUIHandler : public ::settings::SettingsPageUIHandler,
   // Returns secondary Gaia accounts from |stored_accounts| list. If the Device
   // Account is a Gaia account, populates |device_account| with information
   // about that account, otherwise does not modify |device_account|.
+  // If user (device account) is child - |is_child_user| should be set to true,
+  // in this case "unmigrated" property will be always false for secondary
+  // accounts.
   base::ListValue GetSecondaryGaiaAccounts(
       const std::vector<AccountManager::Account>& stored_accounts,
       const AccountId device_account_id,
+      const bool is_child_user,
       base::DictionaryValue* device_account);
 
   // Refreshes the UI.

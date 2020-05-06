@@ -33,6 +33,9 @@ class COMPONENT_EXPORT(OZONE) ScenicWindowManager {
   ScenicWindowManager();
   ~ScenicWindowManager();
 
+  // Shuts down the window manager.
+  void Shutdown();
+
   std::unique_ptr<PlatformScreen> CreateScreen();
 
   // Scenic interface that is used by ScenicWindow instances. The interface

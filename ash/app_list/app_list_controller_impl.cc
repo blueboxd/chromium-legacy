@@ -1366,6 +1366,9 @@ void AppListControllerImpl::OnStateTransitionAnimationCompleted(
     AppListViewState state) {
   if (!state_transition_animation_callback_.is_null())
     state_transition_animation_callback_.Run(state);
+}
+
+void AppListControllerImpl::OnViewStateChanged(AppListViewState state) {
   auto* notifier = GetNotifier();
   if (notifier)
     notifier->NotifyUIStateChanged(state);

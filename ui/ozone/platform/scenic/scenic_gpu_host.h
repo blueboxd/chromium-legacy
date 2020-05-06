@@ -35,9 +35,12 @@ class ScenicGpuHost : public mojom::ScenicGpuHost,
   ScenicGpuHost(ScenicWindowManager* scenic_window_manager);
   ~ScenicGpuHost() override;
 
-  // Creates browser process remote. This is used to create a software output
-  // on the UI thread.
-  mojo::PendingRemote<mojom::ScenicGpuHost> CreateHostProcessSelfRemote();
+  // Binds the receiver for the main process surface factory.
+  void Initialize(mojo::PendingReceiver<mojom::ScenicGpuHost> pending_receiver);
+
+  // Shuts down mojo service. After calling shutdown, it's safe to call
+  // Initialize() again.
+  void Shutdown();
 
   // mojom::ScenicGpuHost:
   void AttachSurfaceToWindow(

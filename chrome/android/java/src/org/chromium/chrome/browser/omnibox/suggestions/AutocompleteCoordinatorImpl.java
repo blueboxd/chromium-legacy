@@ -17,6 +17,7 @@ import androidx.core.view.ViewCompat;
 
 import org.chromium.base.Callback;
 import org.chromium.base.StrictModeContext;
+import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
@@ -34,6 +35,7 @@ import org.chromium.chrome.browser.omnibox.suggestions.tail.TailSuggestionView;
 import org.chromium.chrome.browser.omnibox.suggestions.tail.TailSuggestionViewBinder;
 import org.chromium.chrome.browser.omnibox.voice.VoiceRecognitionHandler;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.share.ShareDelegate;
 import org.chromium.chrome.browser.toolbar.ToolbarDataProvider;
 import org.chromium.chrome.browser.util.KeyNavigationUtil;
 import org.chromium.ui.ViewProvider;
@@ -209,6 +211,11 @@ public class AutocompleteCoordinatorImpl implements AutocompleteCoordinator {
     @Override
     public void setActivityTabProvider(ActivityTabProvider provider) {
         mMediator.setActivityTabProvider(provider);
+    }
+
+    @Override
+    public void setShareDelegateSupplier(Supplier<ShareDelegate> shareDelegateSupplier) {
+        mMediator.setShareDelegateSupplier(shareDelegateSupplier);
     }
 
     @Override

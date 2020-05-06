@@ -1,6 +1,7 @@
 include_rules = [
   "+chrome/browser/image_fetcher",
   "+chrome/browser/profiles/android",
+  "+chrome/browser/tab/java",
   "+components/embedder_support/android/java/src/org/chromium/components/embedder_support",
   "+components/omnibox/browser/android/java/src/org/chromium/components/omnibox",
   "+components/payments/content/android/java/src/org/chromium/components/payments",

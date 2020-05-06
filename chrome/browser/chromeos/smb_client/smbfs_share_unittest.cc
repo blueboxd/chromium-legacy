@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/smb_client/smbfs_share.h"
 
+#include <utility>
+
 #include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/gmock_callback_support.h"
@@ -72,7 +74,13 @@ class MockSmbFsMounter : public smbfs::SmbFsMounter {
               (override));
 };
 
-class TestSmbFsImpl : public smbfs::mojom::SmbFs {};
+class TestSmbFsImpl : public smbfs::mojom::SmbFs {
+ public:
+  MOCK_METHOD(void,
+              RemoveSavedCredentials,
+              (RemoveSavedCredentialsCallback),
+              (override));
+};
 
 class SmbFsShareTest : public testing::Test {
  protected:
@@ -325,6 +333,90 @@ TEST_F(SmbFsShareTest, DisallowCredentialsDialogAfterTimeout) {
         run_loop.Quit();
       }));
   run_loop.Run();
+}
+
+TEST_F(SmbFsShareTest, RemoveSavedCredentials) {
+  TestSmbFsImpl smbfs;
+  mojo::Receiver<smbfs::mojom::SmbFs> smbfs_receiver(&smbfs);
+  mojo::Remote<smbfs::mojom::SmbFsDelegate> delegate;
+
+  SmbFsShare share(&profile_, SmbUrl(kSharePath), kDisplayName, {});
+  share.SetMounterCreationCallbackForTest(mounter_creation_callback_);
+
+  EXPECT_CALL(*raw_mounter_, Mount(_))
+      .WillOnce([this, &share, &smbfs_receiver,
+                 &delegate](smbfs::SmbFsMounter::DoneCallback callback) {
+        std::move(callback).Run(
+            smbfs::mojom::MountError::kOk,
+            CreateSmbFsHost(&share, &smbfs_receiver, &delegate));
+      });
+  EXPECT_CALL(observer_, OnVolumeMounted(chromeos::MOUNT_ERROR_NONE, _))
+      .Times(1);
+  EXPECT_CALL(observer_, OnVolumeUnmounted(chromeos::MOUNT_ERROR_NONE, _))
+      .Times(1);
+
+  {
+    base::RunLoop run_loop;
+    share.Mount(base::BindLambdaForTesting([&run_loop](SmbMountResult result) {
+      EXPECT_EQ(result, SmbMountResult::kSuccess);
+      run_loop.Quit();
+    }));
+    run_loop.Run();
+  }
+
+  EXPECT_CALL(smbfs, RemoveSavedCredentials(_))
+      .WillOnce(base::test::RunOnceCallback<0>(true /* success */));
+  {
+    base::RunLoop run_loop;
+    share.RemoveSavedCredentials(
+        base::BindLambdaForTesting([&run_loop](bool success) {
+          EXPECT_TRUE(success);
+          run_loop.Quit();
+        }));
+    run_loop.Run();
+  }
+}
+
+TEST_F(SmbFsShareTest, RemoveSavedCredentials_Disconnect) {
+  TestSmbFsImpl smbfs;
+  mojo::Receiver<smbfs::mojom::SmbFs> smbfs_receiver(&smbfs);
+  mojo::Remote<smbfs::mojom::SmbFsDelegate> delegate;
+
+  SmbFsShare share(&profile_, SmbUrl(kSharePath), kDisplayName, {});
+  share.SetMounterCreationCallbackForTest(mounter_creation_callback_);
+
+  EXPECT_CALL(*raw_mounter_, Mount(_))
+      .WillOnce([this, &share, &smbfs_receiver,
+                 &delegate](smbfs::SmbFsMounter::DoneCallback callback) {
+        std::move(callback).Run(
+            smbfs::mojom::MountError::kOk,
+            CreateSmbFsHost(&share, &smbfs_receiver, &delegate));
+      });
+  EXPECT_CALL(observer_, OnVolumeMounted(chromeos::MOUNT_ERROR_NONE, _))
+      .Times(1);
+  EXPECT_CALL(observer_, OnVolumeUnmounted(chromeos::MOUNT_ERROR_NONE, _))
+      .Times(1);
+
+  {
+    base::RunLoop run_loop;
+    share.Mount(base::BindLambdaForTesting([&run_loop](SmbMountResult result) {
+      EXPECT_EQ(result, SmbMountResult::kSuccess);
+      run_loop.Quit();
+    }));
+    run_loop.Run();
+  }
+
+  EXPECT_CALL(smbfs, RemoveSavedCredentials(_))
+      .WillOnce([&smbfs_receiver](Unused) { smbfs_receiver.reset(); });
+  {
+    base::RunLoop run_loop;
+    share.RemoveSavedCredentials(
+        base::BindLambdaForTesting([&run_loop](bool success) {
+          EXPECT_FALSE(success);
+          run_loop.Quit();
+        }));
+    run_loop.Run();
+  }
 }
 
 }  // namespace

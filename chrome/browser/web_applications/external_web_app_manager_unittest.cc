@@ -19,6 +19,7 @@
 #include "base/test/scoped_path_override.h"
 #include "chrome/browser/supervised_user/supervised_user_constants.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/account_id/account_id.h"
@@ -303,6 +304,15 @@ TEST_F(ScanDirForExternalWebAppsTest, InvalidUninstallAndReplace) {
   EXPECT_EQ(0u, app_infos.size());
 }
 
+TEST_F(ScanDirForExternalWebAppsTest, DefaultWebAppInstallDisabled) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndDisableFeature(
+      features::kDefaultWebAppInstallation);
+  const auto app_infos = ScanTestDirForExternalWebApps(kGoodJsonTestDir);
+
+  EXPECT_EQ(0u, app_infos.size());
+}
+
 TEST_F(ScanDirForExternalWebAppsTest, EnabledByFinch) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(
@@ -310,7 +320,7 @@ TEST_F(ScanDirForExternalWebAppsTest, EnabledByFinch) {
   const auto app_infos = ScanTestDirForExternalWebApps("enabled_by_finch");
 
   // The enabled_by_finch directory contains two JSON file containing apps
-  // that have field trials. As the matching featureis enabled, they should be
+  // that have field trials. As the matching feature is enabled, they should be
   // in our list of apps to install.
   EXPECT_EQ(2u, app_infos.size());
 }
@@ -319,8 +329,8 @@ TEST_F(ScanDirForExternalWebAppsTest, NotEnabledByFinch) {
   const auto app_infos = ScanTestDirForExternalWebApps("enabled_by_finch");
 
   // The enabled_by_finch directory contains two JSON file containing apps
-  // that have field trials. As the matching featureis enabled, they should not
-  // be in our list of apps to install.
+  // that have field trials. As the matching feature isn't enabled, they should
+  // not be in our list of apps to install.
   EXPECT_EQ(0u, app_infos.size());
 }
 

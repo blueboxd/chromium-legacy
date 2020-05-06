@@ -60,7 +60,10 @@ enum class GpuWatchdogTimeoutEvent {
   // Windows only: The GPU main thread went through the
   // kLessThanFullThreadTimeAfterCapped stage before the process is killed.
   kKillOnLessThreadTime,
-  kMaxValue = kKillOnLessThreadTime,
+  // OnWatchdogTimeout() is called long after the expected time. The GPU is not
+  // killed this time because of the slow system.
+  kSlowWatchdogThread,
+  kMaxValue = kSlowWatchdogThread,
 };
 
 // A thread that intermitently sends tasks to a group of watched message loops

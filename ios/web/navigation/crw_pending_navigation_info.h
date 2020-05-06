@@ -26,11 +26,13 @@
 // HTTP headers.
 @property(nonatomic, assign) scoped_refptr<net::HttpResponseHeaders>
     HTTPHeaders;
-// Whether the pending navigation has been directly cancelled before the
-// navigation is committed.
-// Cancelled navigations should be simply discarded without handling any
-// specific error.
+// Whether the pending navigation has been cancelled by an embedder before the
+// navigation is committed.  Cancelled navigations without a cancellation error
+// should simply be discarded.
 @property(nonatomic, assign) BOOL cancelled;
+// The error to display if the pending navigation was cancelled by an embedder
+// using PolicyDecision::CancelAndDisplayError().
+@property(nonatomic, copy) NSError* cancellationError;
 // Whether the navigation was initiated by a user gesture.
 @property(nonatomic, assign) BOOL hasUserGesture;
 

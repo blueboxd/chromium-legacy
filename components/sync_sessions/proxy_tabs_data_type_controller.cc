@@ -6,10 +6,8 @@
 
 #include <utility>
 
-#include "base/values.h"
 #include "components/sync/driver/configure_context.h"
 #include "components/sync/driver/sync_merge_result.h"
-#include "components/sync/engine/model_safe_worker.h"
 #include "components/sync/engine/model_type_configurer.h"
 
 namespace sync_sessions {
@@ -21,20 +19,6 @@ ProxyTabsDataTypeController::ProxyTabsDataTypeController(
       state_(NOT_RUNNING) {}
 
 ProxyTabsDataTypeController::~ProxyTabsDataTypeController() {}
-
-bool ProxyTabsDataTypeController::ShouldLoadModelBeforeConfigure() const {
-  return false;
-}
-
-void ProxyTabsDataTypeController::BeforeLoadModels(
-    syncer::ModelTypeConfigurer* configurer) {
-  // Proxy type doesn't need to be registered with ModelTypeRegistry as it
-  // doesn't need update handler, client doesn't expect updates of this type
-  // from the server. We still need to register proxy type because
-  // AddClientConfigParamsToMessage decides the value of tabs_datatype_enabled
-  // based on presence of proxy types in the set of enabled types.
-  configurer->RegisterDirectoryDataType(type(), syncer::GROUP_PASSIVE);
-}
 
 void ProxyTabsDataTypeController::LoadModels(
     const syncer::ConfigureContext& configure_context,
@@ -49,6 +33,19 @@ void ProxyTabsDataTypeController::LoadModels(
 syncer::DataTypeController::RegisterWithBackendResult
 ProxyTabsDataTypeController::RegisterWithBackend(
     syncer::ModelTypeConfigurer* configurer) {
+  DCHECK(configurer);
+  DCHECK_EQ(MODEL_LOADED, state_);
+
+  // Proxy type doesn't need to be registered with ModelTypeRegistry as it
+  // doesn't need update handler, client doesn't expect updates of this type
+  // from the server. We still need to register proxy type because
+  // AddClientConfigParamsToMessage decides the value of tabs_datatype_enabled
+  // based on presence of proxy types in the set of enabled types.
+  if (!activated_) {
+    configurer->ActivateProxyDataType(type());
+    activated_ = true;
+  }
+
   return REGISTRATION_IGNORED;
 }
 
@@ -79,7 +76,10 @@ void ProxyTabsDataTypeController::ActivateDataType(
 
 void ProxyTabsDataTypeController::DeactivateDataType(
     syncer::ModelTypeConfigurer* configurer) {
-  configurer->UnregisterDirectoryDataType(type());
+  if (activated_) {
+    configurer->DeactivateProxyDataType(type());
+    activated_ = false;
+  }
 }
 
 void ProxyTabsDataTypeController::GetAllNodes(AllNodesCallback callback) {

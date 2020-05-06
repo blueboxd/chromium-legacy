@@ -24,6 +24,10 @@ namespace input_method {
 
 namespace {
 
+// TODO(crbug.com/1019541): Investigate if this can be removed or replaced by a
+// compile time flag.
+bool g_disable_ime_sandbox_for_testing = false;
+
 constexpr net::NetworkTrafficAnnotationTag traffic_annotation =
     net::DefineNetworkTrafficAnnotation("ime_url_downloader", R"(
     semantics {
@@ -62,6 +66,10 @@ bool IsDownloadURLValid(const GURL& url) {
 }
 
 }  // namespace
+
+void DisableImeSandboxForTesting() {
+  g_disable_ime_sandbox_for_testing = true;
+}
 
 ImeServiceConnector::ImeServiceConnector(Profile* profile)
     : profile_(profile), url_loader_factory_(profile->GetURLLoaderFactory()) {}
@@ -115,7 +123,9 @@ void ImeServiceConnector::SetupImeService(
         remote_service_.BindNewPipeAndPassReceiver(),
         content::ServiceProcessHost::Options()
             .WithDisplayName(IDS_IME_SERVICE_DISPLAY_NAME)
-            .WithSandboxType(kImeServiceSandboxType)
+            .WithSandboxType(g_disable_ime_sandbox_for_testing
+                                 ? service_manager::SandboxType::kNoSandbox
+                                 : kImeServiceSandboxType)
             .Pass());
     remote_service_.reset_on_disconnect();
 

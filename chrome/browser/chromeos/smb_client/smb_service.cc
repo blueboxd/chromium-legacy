@@ -210,15 +210,35 @@ void SmbService::UnmountSmbFs(const base::FilePath& mount_path) {
   for (auto it = smbfs_shares_.begin(); it != smbfs_shares_.end(); ++it) {
     SmbFsShare* share = it->second.get();
     if (share->mount_path() == mount_path) {
-      // UnmountSmbFs() is called by an explicit unmount by the user. In this
-      // case, forget the share.
-      registry_.Delete(share->share_url());
-      smbfs_shares_.erase(it);
+      if (share->options().save_restore_password) {
+        share->RemoveSavedCredentials(
+            base::BindOnce(&SmbService::OnSmbfsRemoveSavedCredentialsDone,
+                           base::Unretained(this), it->first));
+      } else {
+        // If the password wasn't saved, there's nothing for smbfs to do.
+        OnSmbfsRemoveSavedCredentialsDone(it->first, true /* success */);
+      }
       return;
     }
   }
 
   LOG(WARNING) << "Smbfs mount path not found: " << mount_path;
+}
+
+void SmbService::OnSmbfsRemoveSavedCredentialsDone(const std::string& mount_id,
+                                                   bool success) {
+  DCHECK(!mount_id.empty());
+
+  auto it = smbfs_shares_.find(mount_id);
+  if (it == smbfs_shares_.end()) {
+    LOG(WARNING) << "Smbfs mount id " << mount_id << " already deleted";
+    return;
+  }
+
+  // UnmountSmbFs() is called by an explicit unmount by the user. In this
+  // case, forget the share.
+  registry_.Delete(it->second->share_url());
+  smbfs_shares_.erase(it);
 }
 
 SmbFsShare* SmbService::GetSmbFsShareForPath(const base::FilePath& path) {

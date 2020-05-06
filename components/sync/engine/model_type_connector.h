@@ -42,11 +42,19 @@ class ModelTypeConnector {
   // Registers directory based type with sync engine. Sync engine will create
   // update handler and commit contributor objects for this type. It will start
   // including the type in GetUpdates and commit requests.
+  // TODO(crbug.com/1010397): Remove directory-specific APIs from this interface
+  // once the legacy codepath for Nigori is deleted.
   virtual void RegisterDirectoryType(ModelType type, ModelSafeGroup group) = 0;
 
   // Unregisters directory based type from sync engine. Type will no longer be
   // included in communications with server.
   virtual void UnregisterDirectoryType(ModelType type) = 0;
+
+  // Marks a proxy type as connected.
+  virtual void ConnectProxyType(ModelType type) = 0;
+
+  // Marks a proxy type as disconnected.
+  virtual void DisconnectProxyType(ModelType type) = 0;
 };
 
 }  // namespace syncer

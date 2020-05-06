@@ -132,9 +132,9 @@ void LoginHandler::Start(
   // request isn't cancelled.
     auto* api = extensions::BrowserContextKeyedAPIFactory<
         extensions::WebRequestAPI>::Get(web_contents()->GetBrowserContext());
-    auto continuation =
-        base::BindOnce(&LoginHandler::MaybeSetUpLoginPromptBeforeCommit,
-                       weak_factory_.GetWeakPtr(), request_url, is_main_frame);
+    auto continuation = base::BindOnce(
+        &LoginHandler::MaybeSetUpLoginPromptBeforeCommit,
+        weak_factory_.GetWeakPtr(), request_url, request_id, is_main_frame);
     if (api->MaybeProxyAuthRequest(web_contents()->GetBrowserContext(),
                                    auth_info_, std::move(response_headers),
                                    request_id, is_main_frame,
@@ -149,8 +149,9 @@ void LoginHandler::Start(
     base::PostTask(
         FROM_HERE, {BrowserThread::UI},
         base::BindOnce(&LoginHandler::MaybeSetUpLoginPromptBeforeCommit,
-                       weak_factory_.GetWeakPtr(), request_url, is_main_frame,
-                       base::nullopt, false /* should_cancel */));
+                       weak_factory_.GetWeakPtr(), request_url, request_id,
+                       is_main_frame, base::nullopt,
+                       false /* should_cancel */));
 }
 
 void LoginHandler::ShowLoginPromptAfterCommit(const GURL& request_url) {
@@ -435,14 +436,19 @@ void LoginHandler::GetDialogStrings(const GURL& request_url,
 
 void LoginHandler::MaybeSetUpLoginPromptBeforeCommit(
     const GURL& request_url,
+    const content::GlobalRequestID& request_id,
     bool is_request_for_main_frame,
     const base::Optional<net::AuthCredentials>& credentials,
-    bool should_cancel) {
+    bool cancelled_by_extension) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // The request may have been handled while the WebRequest API was processing.
   if (!web_contents() || !web_contents()->GetDelegate() || WasAuthHandled() ||
-      should_cancel) {
+      cancelled_by_extension) {
+    if (cancelled_by_extension && web_contents() && is_request_for_main_frame) {
+      LoginTabHelper::FromWebContents(web_contents())
+          ->RegisterExtensionCancelledNavigation(request_id);
+    }
     CancelAuth();
     return;
   }

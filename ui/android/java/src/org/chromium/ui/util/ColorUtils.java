@@ -4,6 +4,8 @@
 
 package org.chromium.ui.util;
 
+import android.content.Context;
+import android.content.res.Configuration;
 import android.graphics.Color;
 
 import org.chromium.base.MathUtils;
@@ -19,6 +21,15 @@ public class ColorUtils {
 
     /** Percentage to darken a color by when setting the status bar color. */
     private static final float DARKEN_COLOR_FRACTION = 0.6f;
+
+    /**
+     * @param context <b>Activity</b> context.
+     * @return Whether to use darkened colors under the current theme.
+     */
+    public static boolean useDarkColors(Context context) {
+        int uiMode = context.getResources().getConfiguration().uiMode;
+        return (uiMode & Configuration.UI_MODE_NIGHT_MASK) != Configuration.UI_MODE_NIGHT_YES;
+    }
 
     /**
      * Computes the lightness value in HSL standard for the given color.

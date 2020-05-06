@@ -61,8 +61,9 @@ enum class PrinterSetupSource {
   kPrintPreview = 0,       // Printer was setup from Print Preview.
   kSettings = 1,           // Printer was setup from Settings.
   kAutoUsbConfigurer = 2,  // Printer was setup by automatic USB configurer.
-  kArcPrintService = 3,    // Printer was setup by arc print service.
-  kExtensionApi = 4,       // Printer was setup via Extensions API.
+  kArcPrintServiceDeprecated =
+      3,              // Printer was setup by arc print service (Deprecated).
+  kExtensionApi = 4,  // Printer was setup via Extensions API.
   kMaxValue = kExtensionApi,
 };
 

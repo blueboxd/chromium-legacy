@@ -9,6 +9,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
+#include "chrome/browser/chromeos/input_method/ime_service_connector.h"
 #include "chrome/browser/chromeos/input_method/textinput_test_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
@@ -127,6 +128,7 @@ class NativeInputMethodEngineTest : public InProcessBrowserTest,
 
  protected:
   void SetUp() override {
+    chromeos::input_method::DisableImeSandboxForTesting();
     mojo::core::Init();
     InProcessBrowserTest::SetUp();
     ui::IMEBridge::Initialize();
@@ -198,9 +200,9 @@ class NativeInputMethodEngineTest : public InProcessBrowserTest,
 };
 
 // ID is specified in google_xkb_manifest.json.
-constexpr char kEngineIdVietnameseTelex[] = "vkd_vi_telex";
 constexpr char kEngineIdArabic[] = "vkd_ar";
 constexpr char kEngineIdUs[] = "xkb:us::eng";
+constexpr char kEngineIdVietnameseTelex[] = "vkd_vi_telex";
 
 }  // namespace
 

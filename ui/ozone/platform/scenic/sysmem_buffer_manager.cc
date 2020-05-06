@@ -12,13 +12,24 @@
 
 namespace ui {
 
-SysmemBufferManager::SysmemBufferManager(
-    fuchsia::sysmem::AllocatorSyncPtr allocator)
-    : allocator_(std::move(allocator)) {}
+SysmemBufferManager::SysmemBufferManager() = default;
 
 SysmemBufferManager::~SysmemBufferManager() {
+  Shutdown();
+}
+
+void SysmemBufferManager::Initialize(
+    fuchsia::sysmem::AllocatorHandle allocator) {
   base::AutoLock auto_lock(collections_lock_);
   DCHECK(collections_.empty());
+  DCHECK(!allocator_);
+  allocator_.Bind(std::move(allocator));
+}
+
+void SysmemBufferManager::Shutdown() {
+  base::AutoLock auto_lock(collections_lock_);
+  DCHECK(collections_.empty());
+  allocator_ = nullptr;
 }
 
 scoped_refptr<SysmemBufferCollection> SysmemBufferManager::CreateCollection(

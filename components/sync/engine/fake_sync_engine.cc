@@ -56,24 +56,17 @@ void FakeSyncEngine::Shutdown(ShutdownReason reason) {}
 
 void FakeSyncEngine::ConfigureDataTypes(ConfigureParams params) {}
 
-void FakeSyncEngine::RegisterDirectoryDataType(ModelType type,
-                                               ModelSafeGroup group) {}
-
-void FakeSyncEngine::UnregisterDirectoryDataType(ModelType type) {}
-
 void FakeSyncEngine::EnableEncryptEverything() {}
-
-void FakeSyncEngine::ActivateDirectoryDataType(
-    ModelType type,
-    ModelSafeGroup group,
-    ChangeProcessor* change_processor) {}
-void FakeSyncEngine::DeactivateDirectoryDataType(ModelType type) {}
 
 void FakeSyncEngine::ActivateNonBlockingDataType(
     ModelType type,
     std::unique_ptr<DataTypeActivationResponse> activation_response) {}
 
 void FakeSyncEngine::DeactivateNonBlockingDataType(ModelType type) {}
+
+void FakeSyncEngine::ActivateProxyDataType(ModelType type) {}
+
+void FakeSyncEngine::DeactivateProxyDataType(ModelType type) {}
 
 UserShare* FakeSyncEngine::GetUserShare() const {
   return nullptr;

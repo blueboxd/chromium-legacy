@@ -242,8 +242,9 @@ void AccountManagerUIHandler::OnGetAccounts(
   DCHECK(user);
 
   base::DictionaryValue gaia_device_account;
-  base::ListValue accounts = GetSecondaryGaiaAccounts(
-      stored_accounts, user->GetAccountId(), &gaia_device_account);
+  base::ListValue accounts =
+      GetSecondaryGaiaAccounts(stored_accounts, user->GetAccountId(),
+                               profile_->IsChild(), &gaia_device_account);
 
   AccountBuilder device_account;
   if (user->IsActiveDirectoryUser()) {
@@ -289,6 +290,7 @@ void AccountManagerUIHandler::OnGetAccounts(
 base::ListValue AccountManagerUIHandler::GetSecondaryGaiaAccounts(
     const std::vector<AccountManager::Account>& stored_accounts,
     const AccountId device_account_id,
+    const bool is_child_user,
     base::DictionaryValue* device_account) {
   base::ListValue accounts;
   for (const auto& stored_account : stored_accounts) {
@@ -312,7 +314,10 @@ base::ListValue AccountManagerUIHandler::GetSecondaryGaiaAccounts(
         .SetIsDeviceAccount(false)
         .SetFullName(maybe_account_info->full_name)
         .SetEmail(stored_account.raw_email)
-        .SetUnmigrated(account_manager_->HasDummyGaiaToken(account_key))
+        // Secondary accounts in child user session cannot be unmigrated. If
+        // such account has dummy gaia token, it was invalidated.
+        .SetUnmigrated(!is_child_user &&
+                       account_manager_->HasDummyGaiaToken(account_key))
         .SetIsSignedIn(!identity_manager_
                             ->HasAccountWithRefreshTokenInPersistentErrorState(
                                 maybe_account_info->account_id));

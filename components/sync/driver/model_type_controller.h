@@ -46,8 +46,6 @@ class ModelTypeController : public DataTypeController {
   std::unique_ptr<DataTypeActivationResponse> ActivateManuallyForNigori();
 
   // DataTypeController implementation.
-  bool ShouldLoadModelBeforeConfigure() const override;
-  void BeforeLoadModels(ModelTypeConfigurer* configurer) override;
   void LoadModels(const ConfigureContext& configure_context,
                   const ModelLoadCallback& model_load_callback) override;
   RegisterWithBackendResult RegisterWithBackend(

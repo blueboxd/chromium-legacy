@@ -37,7 +37,6 @@
 #include "chrome/browser/chromeos/arc/oemcrypto/arc_oemcrypto_bridge.h"
 #include "chrome/browser/chromeos/arc/pip/arc_pip_bridge.h"
 #include "chrome/browser/chromeos/arc/policy/arc_policy_bridge.h"
-#include "chrome/browser/chromeos/arc/print/arc_print_service.h"
 #include "chrome/browser/chromeos/arc/print_spooler/arc_print_spooler_bridge.h"
 #include "chrome/browser/chromeos/arc/process/arc_process_service.h"
 #include "chrome/browser/chromeos/arc/screen_capture/arc_screen_capture_bridge.h"
@@ -212,7 +211,6 @@ void ArcServiceLauncher::OnPrimaryUserProfilePrepared(Profile* profile) {
   ArcPolicyBridge::GetForBrowserContext(profile);
   ArcPowerBridge::GetForBrowserContext(profile)->SetUserIdHash(
       chromeos::ProfileHelper::GetUserIdHashFromProfile(profile));
-  ArcPrintService::GetForBrowserContext(profile);
   ArcPrintSpoolerBridge::GetForBrowserContext(profile);
   ArcProcessService::GetForBrowserContext(profile);
   ArcPropertyBridge::GetForBrowserContext(profile);

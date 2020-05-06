@@ -185,30 +185,10 @@ void SyncEngineImpl::ConfigureDataTypes(ConfigureParams params) {
                                 std::move(params)));
 }
 
-void SyncEngineImpl::RegisterDirectoryDataType(ModelType type,
-                                               ModelSafeGroup group) {
-  model_type_connector_->RegisterDirectoryType(type, group);
-}
-
-void SyncEngineImpl::UnregisterDirectoryDataType(ModelType type) {
-  model_type_connector_->UnregisterDirectoryType(type);
-}
-
 void SyncEngineImpl::EnableEncryptEverything() {
   sync_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&SyncEngineBackend::DoEnableEncryptEverything, backend_));
-}
-
-void SyncEngineImpl::ActivateDirectoryDataType(
-    ModelType type,
-    ModelSafeGroup group,
-    ChangeProcessor* change_processor) {
-  registrar_->ActivateDataType(type, group, change_processor, GetUserShare());
-}
-
-void SyncEngineImpl::DeactivateDirectoryDataType(ModelType type) {
-  registrar_->DeactivateDataType(type);
 }
 
 void SyncEngineImpl::ActivateNonBlockingDataType(
@@ -223,6 +203,14 @@ void SyncEngineImpl::ActivateNonBlockingDataType(
 
 void SyncEngineImpl::DeactivateNonBlockingDataType(ModelType type) {
   model_type_connector_->DisconnectNonBlockingType(type);
+}
+
+void SyncEngineImpl::ActivateProxyDataType(ModelType type) {
+  model_type_connector_->ConnectProxyType(type);
+}
+
+void SyncEngineImpl::DeactivateProxyDataType(ModelType type) {
+  model_type_connector_->DisconnectProxyType(type);
 }
 
 UserShare* SyncEngineImpl::GetUserShare() const {

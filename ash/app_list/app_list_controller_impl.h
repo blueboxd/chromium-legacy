@@ -211,6 +211,8 @@ class ASH_EXPORT AppListControllerImpl : public AppListController,
   void MaybeIncreaseAssistantPrivacyInfoShownCount() override;
   void MarkAssistantPrivacyInfoDismissed() override;
   void OnStateTransitionAnimationCompleted(AppListViewState state) override;
+  void OnViewStateChanged(AppListViewState state) override;
+
   void GetAppLaunchedMetricParams(
       AppLaunchedMetricParams* metric_params) override;
   gfx::Rect SnapBoundsToDisplayEdge(const gfx::Rect& bounds) override;

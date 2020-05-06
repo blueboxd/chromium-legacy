@@ -23,6 +23,8 @@ class FakeModelTypeConnector : public ModelTypeConnector {
   void DisconnectNonBlockingType(ModelType type) override;
   void RegisterDirectoryType(ModelType type, ModelSafeGroup group) override;
   void UnregisterDirectoryType(ModelType type) override;
+  void ConnectProxyType(ModelType type) override;
+  void DisconnectProxyType(ModelType type) override;
 };
 
 }  // namespace syncer

@@ -219,16 +219,6 @@ void ModelAssociationManager::StopDatatypeImpl(
 }
 
 void ModelAssociationManager::LoadEnabledTypes() {
-  for (ModelType type : desired_types_) {
-    auto dtc_iter = controllers_->find(type);
-    DCHECK(dtc_iter != controllers_->end());
-    DataTypeController* dtc = dtc_iter->second.get();
-    if (dtc->state() == DataTypeController::NOT_RUNNING) {
-      DCHECK(!loaded_types_.Has(dtc->type()));
-      DCHECK(!associated_types_.Has(dtc->type()));
-      delegate_->OnSingleDataTypeWillStart(dtc->type());
-    }
-  }
   // Load in kStartOrder.
   for (size_t i = 0; i < base::size(kStartOrder); i++) {
     ModelType type = kStartOrder[i];
@@ -478,12 +468,9 @@ base::OneShotTimer* ModelAssociationManager::GetTimerForTesting() {
 void ModelAssociationManager::NotifyDelegateIfReadyForConfigure() {
   if (notified_about_ready_for_configure_)
     return;
-  for (const auto& type_dtc_pair : *controllers_) {
-    ModelType type = type_dtc_pair.first;
-    if (!desired_types_.Has(type))
-      continue;
-    DataTypeController* dtc = type_dtc_pair.second.get();
-    if (dtc->ShouldLoadModelBeforeConfigure() && !loaded_types_.Has(type)) {
+
+  for (ModelType type : desired_types_) {
+    if (!loaded_types_.Has(type)) {
       // At least one type is not ready.
       return;
     }

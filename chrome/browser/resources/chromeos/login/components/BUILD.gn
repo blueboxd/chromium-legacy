@@ -6,11 +6,36 @@ import("//chrome/test/base/js2gtest.gni")
 import("//third_party/closure_compiler/compile_js.gni")
 
 js_type_check("closure_compile") {
-  deps = [ ":progress_list_item" ]
+  deps = [
+    ":html-echo",
+    ":oobe_buttons",
+    ":oobe_dialog",
+    ":oobe_help_dialog",
+    ":progress_list_item",
+  ]
 }
 
 ###############################
 # Closure compiler libraries below
+
+js_library("oobe_buttons") {
+  deps = [ "../:oobe_i18n_behavior" ]
+}
+
+js_library("oobe_dialog") {
+  deps = [
+    "../:fake_oobe",
+    "//ui/webui/resources/cr_elements:cr_scrollable_behavior",
+    "//ui/webui/resources/cr_elements/cr_lazy_render:cr_lazy_render",
+  ]
+}
+
+js_library("oobe_help_dialog") {
+  deps = [ "../:oobe_i18n_behavior" ]
+}
+
+js_library("html-echo") {
+}
 
 js_library("progress_list_item") {
   deps = [ "../:oobe_i18n_behavior" ]

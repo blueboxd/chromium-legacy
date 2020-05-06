@@ -153,7 +153,9 @@ void WebAppInstallManager::InstallBookmarkAppFromSync(
   params.locally_installed = is_locally_installed;
   params.add_to_applications_menu = is_locally_installed;
   params.add_to_desktop = is_locally_installed;
-  params.add_to_quick_launch_bar = is_locally_installed;
+
+  // Never add the app to the quick launch bar after sync.
+  params.add_to_quick_launch_bar = false;
   task->SetInstallParams(params);
 
   OnceInstallCallback task_completed_callback = base::BindOnce(

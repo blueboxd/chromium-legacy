@@ -8,12 +8,15 @@
 // <include src="oobe_i18n_behavior.js">
 // <include src="oobe_dialog_host_behavior.js">
 // <include src="login_screen_behavior.js">
+// <include src="components/html-echo.js">
+// <include src="components/oobe_buttons.js">
+// <include src="components/oobe_dialog.js">
+// <include src="components/oobe_help_dialog.js">
 // <include src="gaia_buttons.js">
 // <include src="gaia_card.js">
 // <include src="gaia_header.js">
 // <include src="gaia_input_form.js">
 // <include src="gaia_input.js">
-// <include src="html-echo.js">
 // <include src="hd-iron-icon.js">
 // <include src="gaia_password_changed.js">
 // <include src="screen_gaia_signin.js">
@@ -28,9 +31,6 @@
 // <include src="active_directory_password_change.js">
 // <include src="oobe_a11y_option.js">
 // <include src="oobe_adb_sideloading_screen.js">
-// <include src="oobe_buttons.js">
-// <include src="oobe_dialog.js">
-// <include src="oobe_help_dialog.js">
 // <include src="oobe_terms_of_service.js">
 // <include src="arc_terms_of_service.js">
 // <include src="oobe_enable_kiosk.js">

@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.externalnav;
 
-import android.Manifest.permission;
 import android.app.Activity;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
@@ -49,7 +48,6 @@ import org.chromium.components.external_intents.RedirectHandler;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.UiUtils;
-import org.chromium.ui.base.PermissionCallback;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.webapk.lib.client.WebApkValidator;
 
@@ -306,32 +304,6 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
     }
 
     @Override
-    public void startFileIntent(
-            final Intent intent, final String referrerUrl, final boolean needsToCloseTab) {
-        PermissionCallback permissionCallback = new PermissionCallback() {
-            @Override
-            public void onRequestPermissionsResult(String[] permissions, int[] grantResults) {
-                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED
-                        && hasValidTab()) {
-                    ExternalNavigationHandler.loadUrlFromIntent(referrerUrl, intent.getDataString(),
-                            null, ExternalNavigationDelegateImpl.this, needsToCloseTab,
-                            mTab.isIncognito());
-                } else {
-                    // TODO(tedchoc): Show an indication to the user that the navigation failed
-                    //                instead of silently dropping it on the floor.
-                    if (needsToCloseTab) {
-                        // If the access was not granted, then close the tab if necessary.
-                        closeTab();
-                    }
-                }
-            }
-        };
-        if (!hasValidTab()) return;
-        mTab.getWindowAndroid().requestPermissions(
-                new String[] {permission.READ_EXTERNAL_STORAGE}, permissionCallback);
-    }
-
-    @Override
     public boolean supportsCreatingNewTabs() {
         return true;
     }
@@ -380,6 +352,11 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
         if (context instanceof ChromeActivity) {
             ((ChromeActivity) context).getTabModelSelector().closeTab(mTab);
         }
+    }
+
+    @Override
+    public boolean isIncognito() {
+        return mTab.isIncognito();
     }
 
     @Override

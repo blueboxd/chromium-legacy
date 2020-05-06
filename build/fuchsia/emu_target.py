@@ -82,7 +82,17 @@ class EmuTarget(target.Target):
     return self._amber_repo
 
   def Shutdown(self):
-    if self._IsEmuStillRunning():
+    if not self._emu_process:
+      logging.error('%s did not start' % (self._GetEmulatorName()))
+      return
+    returncode = self._emu_process.poll()
+    if returncode:
+      logging.error('%s quit unexpectedly with exit code %d' %
+                    (self._GetEmulatorName(), returncode))
+    elif returncode == 0:
+      logging.info('%s quit unexpectedly without errors' %
+                   self._GetEmulatorName())
+    else:
       logging.info('Shutting down %s' % (self._GetEmulatorName()))
       self._emu_process.kill()
 

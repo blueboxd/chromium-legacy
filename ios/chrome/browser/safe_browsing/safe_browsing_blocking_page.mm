@@ -170,3 +170,17 @@ void SafeBrowsingBlockingPage::SafeBrowsingControllerClient::Proceed() {
   allow_list->AllowUnsafeNavigations(url_, threat_type_);
   Reload();
 }
+
+void SafeBrowsingBlockingPage::SafeBrowsingControllerClient::GoBack() {
+  SafeBrowsingUrlAllowList* allow_list =
+      SafeBrowsingUrlAllowList::FromWebState(web_state());
+  allow_list->RemovePendingUnsafeNavigationDecisions(url_);
+  security_interstitials::IOSBlockingPageControllerClient::GoBack();
+}
+
+void SafeBrowsingBlockingPage::SafeBrowsingControllerClient::
+    GoBackAfterNavigationCommitted() {
+  // Safe browsing blocking pages are always committed, and should use
+  // consistent "Return to safety" behavior.
+  GoBack();
+}

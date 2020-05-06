@@ -139,6 +139,11 @@ EyeDropperWin::EyeDropperWin(content::RenderFrameHost* frame,
   SetPreferredSize(gfx::Size(100, 100));
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_POPUP);
   params.opacity = views::Widget::InitParams::WindowOpacity::kTranslucent;
+  // Use software compositing to prevent situations when the widget is not
+  // translucent when moved fast.
+  // TODO(iopopesc): Investigate if this is a compositor bug or this is indeed
+  // an intentional limitation.
+  params.force_software_compositing = true;
   params.z_order = ui::ZOrderLevel::kFloatingWindow;
   params.name = "MagnifierHost";
   params.parent = content::WebContents::FromRenderFrameHost(render_frame_host_)
@@ -171,22 +176,29 @@ void EyeDropperWin::OnPaint(gfx::Canvas* view_canvas) {
   constexpr float kPixelSize = 10;
 
   // Clip circle for magnified projection.
-  const float padding = (size().width() - kDiameter) / 2;
+  const gfx::Size padding((size().width() - kDiameter) / 2,
+                          (size().height() - kDiameter) / 2);
   SkPath clip_path;
-  clip_path.addOval(SkRect::MakeXYWH(padding, padding, kDiameter, kDiameter));
+  clip_path.addOval(SkRect::MakeXYWH(padding.width(), padding.height(),
+                                     kDiameter, kDiameter));
   clip_path.close();
   view_canvas->ClipPath(clip_path, true);
 
   // Project pixels.
-  constexpr int pixel_count = kDiameter / kPixelSize;
+  constexpr int kPixelCount = kDiameter / kPixelSize;
   const SkBitmap frame = screen_capturer_->GetBitmap();
+  // The captured frame is not scaled so we need to use widget's bounds in
+  // pixels to have the magnified region match cursor position.
   const gfx::Point center_position =
-      GetWidget()->GetWindowBoundsInScreen().CenterPoint();
+      display::Screen::GetScreen()
+          ->DIPToScreenRectInWindow(GetWidget()->GetNativeWindow(),
+                                    GetWidget()->GetWindowBoundsInScreen())
+          .CenterPoint();
   view_canvas->DrawImageInt(gfx::ImageSkia::CreateFrom1xBitmap(frame),
-                            center_position.x() - pixel_count / 2,
-                            center_position.y() - pixel_count / 2, pixel_count,
-                            pixel_count, padding, padding, kDiameter, kDiameter,
-                            false);
+                            center_position.x() - kPixelCount / 2,
+                            center_position.y() - kPixelCount / 2, kPixelCount,
+                            kPixelCount, padding.width(), padding.height(),
+                            kDiameter, kDiameter, false);
 
   // Store the pixel color under the cursor as it is the last color seen
   // by the user before selection.
@@ -198,14 +210,17 @@ void EyeDropperWin::OnPaint(gfx::Canvas* view_canvas) {
   flags.setStyle(cc::PaintFlags::kStroke_Style);
   // TODO(iopopesc): Get all colors from theming object.
   flags.setColor(SK_ColorGRAY);
-  for (int i = 0; i < pixel_count; ++i) {
+  for (int i = 0; i < kPixelCount; ++i) {
     view_canvas->DrawLine(
-        gfx::PointF(padding + i * kPixelSize, padding),
-        gfx::PointF(padding + i * kPixelSize, size().height() - padding),
+        gfx::PointF(padding.width() + i * kPixelSize, padding.height()),
+        gfx::PointF(padding.width() + i * kPixelSize,
+                    size().height() - padding.height()),
         flags);
     view_canvas->DrawLine(
-        gfx::PointF(padding, padding + i * kPixelSize),
-        gfx::PointF(size().width() - padding, padding + i * kPixelSize), flags);
+        gfx::PointF(padding.width(), padding.height() + i * kPixelSize),
+        gfx::PointF(size().width() - padding.width(),
+                    padding.height() + i * kPixelSize),
+        flags);
   }
 
   // Paint central pixel in red.

@@ -179,6 +179,13 @@ void SmbFsShare::OnMountDone(MountCallback callback,
 
 void SmbFsShare::OnDisconnected() {
   Unmount(base::DoNothing());
+
+  // At this point, we won't receive any more callbacks from the Mojo host, so
+  // run any pending callbacks.
+  if (remove_credentials_callback_) {
+    LOG(WARNING) << "Mojo disconnected while removing credentials";
+    std::move(remove_credentials_callback_).Run(false /* success */);
+  }
 }
 
 void SmbFsShare::AllowCredentialsRequest() {
@@ -229,6 +236,24 @@ void SmbFsShare::OnSmbCredentialsDialogShowDone(
 
   std::move(callback).Run(false /* cancel */, parsed_username, workgroup,
                           password);
+}
+
+void SmbFsShare::RemoveSavedCredentials(RemoveCredentialsCallback callback) {
+  DCHECK(!remove_credentials_callback_);
+
+  if (!host_) {
+    std::move(callback).Run(false /* success */);
+    return;
+  }
+
+  remove_credentials_callback_ = std::move(callback);
+  host_->RemoveSavedCredentials(base::BindOnce(
+      &SmbFsShare::OnRemoveSavedCredentialsDone, base::Unretained(this)));
+}
+
+void SmbFsShare::OnRemoveSavedCredentialsDone(bool success) {
+  DCHECK(remove_credentials_callback_);
+  std::move(remove_credentials_callback_).Run(success);
 }
 
 void SmbFsShare::SetMounterCreationCallbackForTest(

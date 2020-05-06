@@ -25,6 +25,8 @@ interface SmbFsBootstrap {
 
 // Implemented by SmbFs, used from Chrome.
 interface SmbFs {
+  // Deletes any credentials stored for this share mount.
+  RemoveSavedCredentials() => (bool success);
 };
 
 // Implemented by Chrome, used from SmbFs.

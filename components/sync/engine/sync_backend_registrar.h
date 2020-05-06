@@ -24,7 +24,6 @@
 namespace syncer {
 
 class ChangeProcessor;
-struct UserShare;
 
 // A class that keep track of the workers, change processors, and
 // routing info for the enabled sync types, and also routes change
@@ -86,19 +85,6 @@ class SyncBackendRegistrar : public SyncManager::ChangeDelegate {
 
   // Must be called from the UI thread. (See destructor comment.)
   void RequestWorkerStopOnUIThread();
-
-  // Activates the given data type (which should belong to the given
-  // group) and starts the given change processor.  Must be called
-  // from |group|'s native thread.
-  void ActivateDataType(ModelType type,
-                        ModelSafeGroup group,
-                        ChangeProcessor* change_processor,
-                        UserShare* user_share);
-
-  // Deactivates the given type if necessary.  Must be called from the
-  // UI thread and not |type|'s native thread.  Yes, this is
-  // surprising: see http://crbug.com/92804.
-  void DeactivateDataType(ModelType type);
 
   // Returns true only between calls to ActivateDataType(type, ...)
   // and DeactivateDataType(type).  Used only by tests.

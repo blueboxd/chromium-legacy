@@ -26,6 +26,7 @@
 #include "chrome/browser/web_applications/components/pending_app_manager.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_install_utils.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_paths.h"
 #include "content/public/browser/browser_thread.h"
 #include "url/gurl.h"
@@ -99,14 +100,16 @@ bool IsFeatureEnabled(const std::string& feature_name) {
 
 std::vector<ExternalInstallOptions> ScanDir(const base::FilePath& dir,
                                             const std::string& user_type) {
+  std::vector<ExternalInstallOptions> install_options_list;
+  if (!base::FeatureList::IsEnabled(features::kDefaultWebAppInstallation))
+    return install_options_list;
+
   base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
                                                 base::BlockingType::MAY_BLOCK);
   base::FilePath::StringType extension(FILE_PATH_LITERAL(".json"));
   base::FileEnumerator json_files(dir,
                                   false,  // Recursive.
                                   base::FileEnumerator::FILES);
-
-  std::vector<ExternalInstallOptions> install_options_list;
 
   for (base::FilePath file = json_files.Next(); !file.empty();
        file = json_files.Next()) {

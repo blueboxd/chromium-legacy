@@ -64,11 +64,12 @@ public class PageInfoControllerTest {
     @RetryOnFailure
     public void testShow() {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            Tab tab = mActivityTestRule.getActivity().getActivityTab();
+            ChromeActivity activity = mActivityTestRule.getActivity();
+            Tab tab = activity.getActivityTab();
             PageInfoController.show(mActivityTestRule.getActivity(), tab.getWebContents(), null,
                     PageInfoController.OpenedFromSource.MENU,
-                    new ChromePageInfoControllerDelegate(mActivityTestRule.getActivity(),
-                            tab.getWebContents(),
+                    new ChromePageInfoControllerDelegate(activity, tab.getWebContents(),
+                            activity::getModalDialogManager,
                             /*offlinePageLoadUrlDelegate=*/
                             new OfflinePageUtils.TabOfflinePageLoadUrlDelegate(tab)));
         });
@@ -86,10 +87,11 @@ public class PageInfoControllerTest {
         mActivityTestRule.loadUrlInTab(
                 testUrl, PageTransition.TYPED, mActivityTestRule.getActivity().getActivityTab());
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            Tab tab = mActivityTestRule.getActivity().getActivityTab();
+            ChromeActivity activity = mActivityTestRule.getActivity();
+            Tab tab = activity.getActivityTab();
             ChromePageInfoControllerDelegate chromePageInfoControllerDelegate =
-                    new ChromePageInfoControllerDelegate(mActivityTestRule.getActivity(),
-                            tab.getWebContents(),
+                    new ChromePageInfoControllerDelegate(activity, tab.getWebContents(),
+                            activity::getModalDialogManager,
                             /*offlinePageLoadUrlDelegate=*/
                             new OfflinePageUtils.TabOfflinePageLoadUrlDelegate(tab));
             chromePageInfoControllerDelegate.setOfflinePageStateForTesting(

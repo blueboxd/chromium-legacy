@@ -32385,7 +32385,8 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="5" label="ProgressAfterWait"/>
   <int value="6" label="ContinueOnNonHostServerTty"/>
   <int value="7" label="LessThanFullThreadTimeAfterCapped"/>
-  <int value="8" label="KillOnLessThreadTime,"/>
+  <int value="8" label="KillOnLessThreadTime"/>
+  <int value="9" label="kSlowWatchdogThread"/>
 </enum>
 
 <enum name="GPUWebGraphicsContext3D_Init_CanLoseContext">
@@ -54317,7 +54318,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="0" label="Printer was setup from Print Preview"/>
   <int value="1" label="Printer was setup from Settings"/>
   <int value="2" label="Printer was setup by automatic USB configurer"/>
-  <int value="3" label="Printer was setup by arc print service"/>
+  <int value="3" label="Printer was setup by arc print service (Deprecated)"/>
   <int value="4" label="Printer was setup via Extensions API"/>
 </enum>
 

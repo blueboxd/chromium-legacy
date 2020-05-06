@@ -357,7 +357,9 @@ class PasswordFormMetricsRecorder
       const std::set<base::string16>& saved_usernames,
       const std::set<base::string16>& saved_passwords,
       bool is_blacklisted,
-      const std::vector<InteractionsStats>& interactions_stats);
+      const std::vector<InteractionsStats>& interactions_stats,
+      metrics_util::PasswordAccountStorageUsageLevel
+          account_storage_usage_level);
 
   // Calculates whether all field values in |submitted_form| came from
   // JavaScript. The result is stored in |js_only_input_|.
@@ -459,6 +461,8 @@ class PasswordFormMetricsRecorder
   bool password_hash_saved_on_chrome_sing_in_page_ = false;
 
   base::Optional<FillingAssistance> filling_assistance_;
+  base::Optional<metrics_util::PasswordAccountStorageUsageLevel>
+      account_storage_usage_level_;
 
   bool possible_username_used_ = false;
   bool username_updated_in_bubble_ = false;

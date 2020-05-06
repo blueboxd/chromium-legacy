@@ -4,7 +4,6 @@
 
 package org.chromium.weblayer_private;
 
-import android.Manifest.permission;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
@@ -23,7 +22,6 @@ import org.chromium.components.external_intents.ExternalNavigationHandler.Overri
 import org.chromium.components.external_intents.ExternalNavigationParams;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.WebContents;
-import org.chromium.ui.base.PermissionCallback;
 import org.chromium.ui.base.WindowAndroid;
 
 import java.util.ArrayList;
@@ -182,32 +180,6 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
     }
 
     @Override
-    public void startFileIntent(
-            final Intent intent, final String referrerUrl, final boolean needsToCloseTab) {
-        PermissionCallback permissionCallback = new PermissionCallback() {
-            @Override
-            public void onRequestPermissionsResult(String[] permissions, int[] grantResults) {
-                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED
-                        && hasValidTab()) {
-                    ExternalNavigationHandler.loadUrlFromIntent(referrerUrl, intent.getDataString(),
-                            null, ExternalNavigationDelegateImpl.this, needsToCloseTab,
-                            mTab.getProfile().isIncognito());
-                } else {
-                    // TODO(tedchoc): Show an indication to the user that the navigation failed
-                    //                instead of silently dropping it on the floor.
-                    if (needsToCloseTab) {
-                        // If the access was not granted, then close the tab if necessary.
-                        closeTab();
-                    }
-                }
-            }
-        };
-        if (!hasValidTab()) return;
-        mTab.getBrowser().getWindowAndroid().requestPermissions(
-                new String[] {permission.READ_EXTERNAL_STORAGE}, permissionCallback);
-    }
-
-    @Override
     public void loadUrlIfPossible(LoadUrlParams loadUrlParams) {
         if (!hasValidTab()) return;
         mTab.loadUrl(loadUrlParams);
@@ -246,6 +218,11 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
     @Override
     public void closeTab() {
         InterceptNavigationDelegateClientImpl.closeTab(mTab);
+    }
+
+    @Override
+    public boolean isIncognito() {
+        return mTab.getProfile().isIncognito();
     }
 
     @Override

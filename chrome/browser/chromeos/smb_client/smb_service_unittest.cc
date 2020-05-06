@@ -19,6 +19,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/test/bind_test_util.h"
+#include "base/test/gmock_callback_support.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -111,7 +112,19 @@ class MockSmbFsMounter : public smbfs::SmbFsMounter {
 class MockSmbFsImpl : public smbfs::mojom::SmbFs {
  public:
   explicit MockSmbFsImpl(mojo::PendingReceiver<smbfs::mojom::SmbFs> pending)
-      : receiver_(this, std::move(pending)) {}
+      : receiver_(this, std::move(pending)) {
+    receiver_.set_disconnect_handler(
+        base::BindOnce(&MockSmbFsImpl::OnDisconnect, base::Unretained(this)));
+  }
+
+  // Mojo disconnection handler.
+  MOCK_METHOD(void, OnDisconnect, (), ());
+
+  // smbfs::mojom::SmbFs overrides.
+  MOCK_METHOD(void,
+              RemoveSavedCredentials,
+              (RemoveSavedCredentialsCallback),
+              (override));
 
  private:
   mojo::Receiver<smbfs::mojom::SmbFs> receiver_;
@@ -821,6 +834,14 @@ TEST_F(SmbServiceWithSmbfsTest, Mount) {
   EXPECT_EQ(info->username(), kTestUser);
   EXPECT_TRUE(info->workgroup().empty());
   EXPECT_FALSE(info->use_kerberos());
+
+  // Unmounting should remove the saved share. Since |save_credentials| was
+  // false, there should be no request to smbfs.
+  EXPECT_CALL(smbfs_impl, RemoveSavedCredentials(_)).Times(0);
+  smb_service_->UnmountSmbFs(base::FilePath(kMountPath));
+  info = registry.Get(SmbUrl(kShareUrl));
+  EXPECT_FALSE(info);
+  EXPECT_TRUE(registry.GetAll().empty());
 }
 
 TEST_F(SmbServiceWithSmbfsTest, Mount_SaveCredentials) {
@@ -1065,8 +1086,19 @@ TEST_F(SmbServiceWithSmbfsTest, MountSaved) {
 
   run_loop.Run();
 
-  // Unmounting should remove the saved share.
+  // Unmounting should remove the saved share, and ask smbfs to remove any saved
+  // credentials.
+  base::RunLoop run_loop2;
+  EXPECT_CALL(smbfs_impl, RemoveSavedCredentials(_))
+      .WillOnce(
+          [](smbfs::mojom::SmbFs::RemoveSavedCredentialsCallback callback) {
+            std::move(callback).Run(true /* success */);
+          });
+  EXPECT_CALL(smbfs_impl, OnDisconnect())
+      .WillOnce(base::test::RunClosure(run_loop2.QuitClosure()));
   smb_service_->UnmountSmbFs(base::FilePath(kMountPath));
+  run_loop2.Run();
+
   SmbPersistedShareRegistry registry(profile_);
   base::Optional<SmbShareInfo> info = registry.Get(SmbUrl(kShareUrl));
   EXPECT_FALSE(info);

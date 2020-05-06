@@ -298,6 +298,10 @@ class SmbService : public KeyedService,
                                  StartReadDirIfSuccessfulCallback reply,
                                  smbprovider::ErrorType error);
 
+  // Handles the callback for SmbFsShare::RemoveSavedCredentials().
+  void OnSmbfsRemoveSavedCredentialsDone(const std::string& mount_id,
+                                         bool success);
+
   // Helper function that determines if HostDiscovery can be run again. Returns
   // false if HostDiscovery was recently run.
   bool ShouldRunHostDiscoveryAgain() const;

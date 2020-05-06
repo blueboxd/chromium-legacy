@@ -3,6 +3,11 @@
   "display": "standalone",
   "icons": [
     {
+      "src": "src/images/camera_app_icons_192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
       "src": "src/images/camera_app_icons_128.png",
       "sizes": "128x128",
       "type": "image/png"

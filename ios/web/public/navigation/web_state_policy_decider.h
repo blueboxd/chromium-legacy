@@ -76,6 +76,9 @@ class WebStatePolicyDecider {
     NSError* error = nil;
   };
 
+  // Callback used to provide asynchronous policy decisions.
+  typedef base::OnceCallback<void(PolicyDecision)> PolicyDecisionCallback;
+
   // Data Transfer Object for the additional information about navigation
   // request passed to WebStatePolicyDecider::ShouldAllowRequest().
   struct RequestInfo {
@@ -120,10 +123,9 @@ class WebStatePolicyDecider {
   //  - same-document navigations (unless ititiated via LoadURLWithParams)
   //  - going back after form submission navigation
   //  - user-initiated POST navigation on iOS 10
-  virtual void ShouldAllowResponse(
-      NSURLResponse* response,
-      bool for_main_frame,
-      base::OnceCallback<void(PolicyDecision)> callback);
+  virtual void ShouldAllowResponse(NSURLResponse* response,
+                                   bool for_main_frame,
+                                   PolicyDecisionCallback callback);
 
   // Notifies the policy decider that the web state is being destroyed.
   // Gives subclasses a chance to cleanup.

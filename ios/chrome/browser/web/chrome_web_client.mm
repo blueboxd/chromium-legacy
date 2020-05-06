@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/files/file_util.h"
+#import "base/ios/ns_error_util.h"
 #include "base/mac/bundle_locations.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/dom_distiller/core/url_constants.h"
@@ -261,9 +262,11 @@ void ChromeWebClient::PrepareErrorPage(
   __block NSString* error_html = nil;
   __block base::OnceCallback<void(NSString*)> error_html_callback =
       std::move(callback);
-  if ([error.domain isEqual:kSafeBrowsingErrorDomain]) {
+  NSError* final_underlying_error =
+      base::ios::GetFinalUnderlyingErrorFromError(error);
+  if ([final_underlying_error.domain isEqual:kSafeBrowsingErrorDomain]) {
     // Only kUnsafeResourceErrorCode is supported.
-    DCHECK_EQ(kUnsafeResourceErrorCode, error.code);
+    DCHECK_EQ(kUnsafeResourceErrorCode, final_underlying_error.code);
     std::move(error_html_callback)
         .Run(GetSafeBrowsingErrorPageHTML(web_state, navigation_id));
   } else if (info.has_value()) {

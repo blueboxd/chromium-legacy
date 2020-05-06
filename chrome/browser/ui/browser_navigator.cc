@@ -229,11 +229,6 @@ std::pair<Browser*, int> GetBrowserAndTabForDisposition(
             web_app::GenerateApplicationNameFromAppId(params.extension_app_id);
       } else if (params.browser && !params.browser->app_name().empty()) {
         app_name = params.browser->app_name();
-      } else if (params.source_contents) {
-        std::string app_id =
-            apps::GetAppIdForWebContents(params.source_contents);
-        if (!app_id.empty())
-          app_name = web_app::GenerateApplicationNameFromAppId(app_id);
       }
 #endif
       if (app_name.empty()) {

@@ -348,6 +348,29 @@ using base::UserMetricsAction;
   [self.identityDiscButton addTarget:self
                               action:@selector(identityDiscTapped)
                     forControlEvents:UIControlEventTouchUpInside];
+
+#if defined(__IPHONE_13_4)
+  if (@available(iOS 13.4, *)) {
+    if (base::FeatureList::IsEnabled(kPointerSupport)) {
+      self.identityDiscButton.pointerInteractionEnabled = YES;
+      self.identityDiscButton.pointerStyleProvider =
+          ^UIPointerStyle*(UIButton* button, UIPointerEffect* proposedEffect,
+                           UIPointerShape* proposedShape) {
+        // The identity disc button is oversized to the avatar image to meet the
+        // minimum touch target dimensions. The hover pointer effect should
+        // match the avatar image dimensions, not the button dimensions.
+        CGFloat singleInset =
+            (button.frame.size.width - ntp_home::kIdentityAvatarDimension) / 2;
+        CGRect rect = CGRectInset(button.frame, singleInset, singleInset);
+        UIPointerShape* shape =
+            [UIPointerShape shapeWithRoundedRect:rect
+                                    cornerRadius:rect.size.width / 2];
+        return [UIPointerStyle styleWithEffect:proposedEffect shape:shape];
+      };
+    }
+  }
+#endif  // defined(__IPHONE_13_4)
+
   // TODO(crbug.com/965958): Set action on button to launch into Settings.
   [self.headerView setIdentityDiscView:self.identityDiscButton];
 

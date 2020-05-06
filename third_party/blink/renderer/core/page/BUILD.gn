@@ -49,8 +49,6 @@ blink_core_sources("page") {
     "page_popup_client.h",
     "page_popup_controller.cc",
     "page_popup_controller.h",
-    "page_popup_supplement.cc",
-    "page_popup_supplement.h",
     "page_visibility_observer.cc",
     "page_visibility_observer.h",
     "page_widget_delegate.cc",

@@ -90,16 +90,6 @@ public interface ExternalNavigationDelegate {
     int handleIncognitoIntentTargetingSelf(Intent intent, String referrerUrl, String fallbackUrl);
 
     /**
-     * Trigger a UI affordance that will ask the user to grant file access.  After the access
-     * has been granted or denied, continue loading the specified file URL.
-     *
-     * @param intent The intent to continue loading the file URL.
-     * @param referrerUrl The HTTP referrer URL.
-     * @param needsToCloseTab Whether this action should close the current tab.
-     */
-    void startFileIntent(Intent intent, String referrerUrl, boolean needsToCloseTab);
-
-    /**
      * Loads a URL as specified by |loadUrlParams| if possible. May fail in exceptional conditions
      * (e.g., if there is no valid tab).
      * @param loadUrlParams parameters of the URL to be loaded
@@ -180,6 +170,9 @@ public interface ExternalNavigationDelegate {
 
     /* Invoked when the tab associated with this delegate should be closed. */
     void closeTab();
+
+    /* Returns whether whether the tab associated with this delegate is incognito. */
+    boolean isIncognito();
 
     /**
      * @param intent The intent to launch.

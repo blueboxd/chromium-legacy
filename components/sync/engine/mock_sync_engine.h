@@ -26,14 +26,11 @@ class MockSyncEngine : public SyncEngine {
 
   // ModelTypeConfigurer:
   MOCK_METHOD1(ConfigureDataTypes, void(ConfigureParams));
-  MOCK_METHOD2(RegisterDirectoryDataType, void(ModelType, ModelSafeGroup));
-  MOCK_METHOD1(UnregisterDirectoryDataType, void(ModelType));
-  MOCK_METHOD3(ActivateDirectoryDataType,
-               void(ModelType, ModelSafeGroup, ChangeProcessor*));
-  MOCK_METHOD1(DeactivateDirectoryDataType, void(ModelType));
   MOCK_METHOD2(ActivateNonBlockingDataType,
                void(ModelType, std::unique_ptr<DataTypeActivationResponse>));
   MOCK_METHOD1(DeactivateNonBlockingDataType, void(ModelType));
+  MOCK_METHOD1(ActivateProxyDataType, void(ModelType));
+  MOCK_METHOD1(DeactivateProxyDataType, void(ModelType));
 
   // SyncEngine:
   MOCK_METHOD1(Initialize, void(InitParams));

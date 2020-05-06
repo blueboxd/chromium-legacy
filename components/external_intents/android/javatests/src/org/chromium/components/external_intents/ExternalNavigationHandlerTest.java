@@ -1712,6 +1712,7 @@ public class ExternalNavigationHandlerTest {
         public boolean mShouldRequestFileAccess;
         public String mNewUrlAfterClobbering;
         public String mReferrerUrlForClobbering;
+        public boolean mStartFileIntentCalled;
 
         public ExternalNavigationHandlerForTesting(ExternalNavigationDelegate delegate) {
             super(delegate);
@@ -1740,6 +1741,11 @@ public class ExternalNavigationHandlerTest {
         @Override
         protected boolean shouldRequestFileAccess(String url) {
             return mShouldRequestFileAccess;
+        }
+
+        @Override
+        protected void startFileIntent(Intent intent, String referrerUrl, boolean needsToCloseTab) {
+            mStartFileIntentCalled = true;
         }
 
         @Override
@@ -1859,11 +1865,6 @@ public class ExternalNavigationHandlerTest {
         }
 
         @Override
-        public void startFileIntent(Intent intent, String referrerUrl, boolean needsToCloseTab) {
-            startFileIntentCalled = true;
-        }
-
-        @Override
         public boolean supportsCreatingNewTabs() {
             return false;
         }
@@ -1878,6 +1879,11 @@ public class ExternalNavigationHandlerTest {
 
         @Override
         public void closeTab() {}
+
+        @Override
+        public boolean isIncognito() {
+            return false;
+        }
 
         @Override
         public void loadUrlIfPossible(LoadUrlParams loadUrlParams) {}
@@ -1970,7 +1976,6 @@ public class ExternalNavigationHandlerTest {
             startActivityIntent = null;
             startIncognitoIntentCalled = false;
             handleIncognitoIntentTargetingSelfCalled = false;
-            startFileIntentCalled = false;
             mCalledWithProxy = false;
         }
 
@@ -2030,7 +2035,6 @@ public class ExternalNavigationHandlerTest {
         public boolean startIncognitoIntentCalled;
         public boolean handleIncognitoIntentTargetingSelfCalled;
         public boolean maybeSetUserGestureCalled;
-        public boolean startFileIntentCalled;
 
         private String mReferrerWebappPackageName;
 
@@ -2157,7 +2161,7 @@ public class ExternalNavigationHandlerTest {
             Assert.assertEquals(expectStartIncognito, mDelegate.startIncognitoIntentCalled);
             Assert.assertEquals(expectStartActivity, startActivityCalled);
             Assert.assertEquals(expectStartWebApk, startWebApkCalled);
-            Assert.assertEquals(expectStartFile, mDelegate.startFileIntentCalled);
+            Assert.assertEquals(expectStartFile, mUrlHandler.mStartFileIntentCalled);
             Assert.assertEquals(expectProxyForIA, mDelegate.mCalledWithProxy);
 
             if (startActivityCalled && expectSaneIntent) {

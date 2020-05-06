@@ -33,6 +33,7 @@ namespace {
 
 constexpr ukm::SourceId kTestSourceId = 0x1234;
 
+using metrics_util::PasswordAccountStorageUsageLevel;
 using UkmEntry = ukm::builders::PasswordForm;
 
 // Create a UkmEntryBuilder with kTestSourceId.
@@ -630,13 +631,38 @@ std::set<base::string16> ConvertToString16Set(
 
 void CheckFillingAssistanceTestCase(
     const FillingAssistanceTestCase& test_case) {
-  for (bool is_main_frame_secure : {false, true}) {
-    SCOPED_TRACE(testing::Message("Test description: ")
-                 << test_case.description_for_logging
-                 << ", is_main_frame_secure: " << std::boolalpha
-                 << is_main_frame_secure);
+  struct SubCase {
+    bool is_main_frame_secure;
+    PasswordAccountStorageUsageLevel account_storage_usage_level;
+  } sub_cases[] = {
+      {.is_main_frame_secure = true,
+       .account_storage_usage_level =
+           PasswordAccountStorageUsageLevel::kNotUsingAccountStorage},
+      {.is_main_frame_secure = false,
+       .account_storage_usage_level =
+           PasswordAccountStorageUsageLevel::kNotUsingAccountStorage},
+      {.is_main_frame_secure = true,
+       .account_storage_usage_level =
+           PasswordAccountStorageUsageLevel::kUsingAccountStorage},
+      {.is_main_frame_secure = false,
+       .account_storage_usage_level =
+           PasswordAccountStorageUsageLevel::kUsingAccountStorage},
+      {.is_main_frame_secure = true,
+       .account_storage_usage_level =
+           PasswordAccountStorageUsageLevel::kSyncing},
+      {.is_main_frame_secure = false,
+       .account_storage_usage_level =
+           PasswordAccountStorageUsageLevel::kSyncing}};
+  for (SubCase sub_case : sub_cases) {
+    SCOPED_TRACE(
+        testing::Message("Test description: ")
+        << test_case.description_for_logging
+        << ", is_main_frame_secure: " << std::boolalpha
+        << sub_case.is_main_frame_secure << ", account_storage_usage_level: "
+        << metrics_util::GetPasswordAccountStorageUsageLevelHistogramSuffix(
+               sub_case.account_storage_usage_level));
 
-    base::test::TaskEnvironment task_environment_;
+    base::test::TaskEnvironment task_environment;
     base::HistogramTester histogram_tester;
 
     FormData form_data = ConvertToFormData(test_case.fields);
@@ -645,12 +671,12 @@ void CheckFillingAssistanceTestCase(
     std::set<base::string16> saved_passwords =
         ConvertToString16Set(test_case.saved_passwords);
 
-    auto recorder =
-        CreatePasswordFormMetricsRecorder(is_main_frame_secure, nullptr);
+    auto recorder = CreatePasswordFormMetricsRecorder(
+        sub_case.is_main_frame_secure, nullptr);
     if (test_case.submission_detected) {
       recorder->CalculateFillingAssistanceMetric(
           form_data, saved_usernames, saved_passwords, test_case.is_blacklisted,
-          test_case.interactions_stats);
+          test_case.interactions_stats, sub_case.account_storage_usage_level);
     }
 
     if (test_case.submission_is_successful)
@@ -658,24 +684,75 @@ void CheckFillingAssistanceTestCase(
     recorder.reset();
 
     int expected_count = test_case.expectation ? 1 : 0;
-    int expected_insecure_count = !is_main_frame_secure ? expected_count : 0;
-    int expected_secure_count = is_main_frame_secure ? expected_count : 0;
+
+    // Split by secure/insecure origin.
+    int expected_insecure_count =
+        !sub_case.is_main_frame_secure ? expected_count : 0;
+    int expected_secure_count =
+        sub_case.is_main_frame_secure ? expected_count : 0;
+
+    // Split by account storage usage level.
+    int expected_not_using_account_storage_count = 0;
+    int expected_using_account_storage_count = 0;
+    int expected_syncing_count = 0;
+    switch (sub_case.account_storage_usage_level) {
+      case PasswordAccountStorageUsageLevel::kNotUsingAccountStorage:
+        expected_not_using_account_storage_count = expected_count;
+        break;
+      case PasswordAccountStorageUsageLevel::kUsingAccountStorage:
+        expected_using_account_storage_count = expected_count;
+        break;
+      case PasswordAccountStorageUsageLevel::kSyncing:
+        expected_syncing_count = expected_count;
+        break;
+    }
+
     histogram_tester.ExpectTotalCount("PasswordManager.FillingAssistance",
                                       expected_count);
+
     histogram_tester.ExpectTotalCount(
         "PasswordManager.FillingAssistance.InsecureOrigin",
         expected_insecure_count);
     histogram_tester.ExpectTotalCount(
         "PasswordManager.FillingAssistance.SecureOrigin",
         expected_secure_count);
+
+    histogram_tester.ExpectTotalCount(
+        "PasswordManager.FillingAssistance.NotUsingAccountStorage",
+        expected_not_using_account_storage_count);
+    histogram_tester.ExpectTotalCount(
+        "PasswordManager.FillingAssistance.UsingAccountStorage",
+        expected_using_account_storage_count);
+    histogram_tester.ExpectTotalCount(
+        "PasswordManager.FillingAssistance.Syncing", expected_syncing_count);
+
     if (test_case.expectation) {
       histogram_tester.ExpectUniqueSample("PasswordManager.FillingAssistance",
                                           *test_case.expectation, 1);
+
       histogram_tester.ExpectUniqueSample(
-          is_main_frame_secure
+          sub_case.is_main_frame_secure
               ? "PasswordManager.FillingAssistance.SecureOrigin"
               : "PasswordManager.FillingAssistance.InsecureOrigin",
           *test_case.expectation, 1);
+
+      std::string account_storage_histogram;
+      switch (sub_case.account_storage_usage_level) {
+        case PasswordAccountStorageUsageLevel::kNotUsingAccountStorage:
+          account_storage_histogram =
+              "PasswordManager.FillingAssistance.NotUsingAccountStorage";
+          break;
+        case PasswordAccountStorageUsageLevel::kUsingAccountStorage:
+          account_storage_histogram =
+              "PasswordManager.FillingAssistance.UsingAccountStorage";
+          break;
+        case PasswordAccountStorageUsageLevel::kSyncing:
+          account_storage_histogram =
+              "PasswordManager.FillingAssistance.Syncing";
+          break;
+      }
+      histogram_tester.ExpectUniqueSample(account_storage_histogram,
+                                          *test_case.expectation, 1);
     }
   }
 }

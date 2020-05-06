@@ -49,6 +49,7 @@ import org.chromium.chrome.browser.omnibox.suggestions.entity.EntitySuggestionPr
 import org.chromium.chrome.browser.omnibox.suggestions.tail.TailSuggestionProcessor;
 import org.chromium.chrome.browser.omnibox.voice.VoiceRecognitionHandler;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.share.ShareDelegate;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.toolbar.ToolbarDataProvider;
 import org.chromium.chrome.browser.ui.favicon.LargeIconBridge;
@@ -532,6 +533,10 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, StartStopWi
                 }
             };
         }
+    }
+
+    void setShareDelegateSupplier(Supplier<ShareDelegate> shareDelegateSupplier) {
+        mEditUrlProcessor.setShareDelegateSupplier(shareDelegateSupplier);
     }
 
     /** @see org.chromium.chrome.browser.omnibox.UrlFocusChangeListener#onUrlFocusChange(boolean) */

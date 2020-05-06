@@ -27,6 +27,8 @@ namespace syncer {
 using WorkCallback = base::OnceCallback<SyncerError(void)>;
 
 enum ModelSafeGroup {
+  // TODO(crbug.com/1010397): Remove once the pre-USS Nigori codepath is cleaned
+  // up.
   GROUP_PASSIVE = 0,   // Models that are just "passively" being synced; e.g.
                        // changes to these models don't need to be pushed to a
                        // native model.

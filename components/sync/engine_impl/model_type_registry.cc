@@ -80,6 +80,7 @@ ModelTypeRegistry::~ModelTypeRegistry() {}
 void ModelTypeRegistry::ConnectNonBlockingType(
     ModelType type,
     std::unique_ptr<DataTypeActivationResponse> activation_response) {
+  DCHECK(!IsProxyType(type));
   DCHECK(update_handler_map_.find(type) == update_handler_map_.end());
   DCHECK(commit_contributor_map_.find(type) == commit_contributor_map_.end());
   DVLOG(1) << "Enabling an off-thread sync type: " << ModelTypeToString(type);
@@ -172,6 +173,8 @@ void ModelTypeRegistry::ConnectNonBlockingType(
 
 void ModelTypeRegistry::DisconnectNonBlockingType(ModelType type) {
   DVLOG(1) << "Disabling an off-thread sync type: " << ModelTypeToString(type);
+
+  DCHECK(!IsProxyType(type));
   DCHECK(update_handler_map_.find(type) != update_handler_map_.end());
   DCHECK(commit_contributor_map_.find(type) != commit_contributor_map_.end());
 
@@ -245,8 +248,19 @@ void ModelTypeRegistry::UnregisterDirectoryType(ModelType type) {
   data_type_debug_info_emitter_map_.erase(type);
 }
 
+void ModelTypeRegistry::ConnectProxyType(ModelType type) {
+  DCHECK(IsProxyType(type));
+  enabled_proxy_types_.Put(type);
+}
+
+void ModelTypeRegistry::DisconnectProxyType(ModelType type) {
+  DCHECK(IsProxyType(type));
+  enabled_proxy_types_.Remove(type);
+}
+
 ModelTypeSet ModelTypeRegistry::GetEnabledTypes() const {
-  return Union(GetEnabledDirectoryTypes(), GetEnabledNonBlockingTypes());
+  return Union(Union(GetEnabledDirectoryTypes(), GetEnabledNonBlockingTypes()),
+               enabled_proxy_types_);
 }
 
 ModelTypeSet ModelTypeRegistry::GetInitialSyncEndedTypes() const {

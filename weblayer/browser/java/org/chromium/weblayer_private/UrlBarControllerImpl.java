@@ -168,12 +168,11 @@ public class UrlBarControllerImpl extends IUrlBarController.Stub {
                         mBrowserImpl.getActiveTab().getWebContents(),
                         /* contentPublisher= */ null, PageInfoController.OpenedFromSource.TOOLBAR,
                         new PageInfoControllerDelegate(
-                                ((FragmentWindowAndroid) mBrowserImpl.getWindowAndroid())
-                                        .getModalDialogManager(),
+                                ((FragmentWindowAndroid) mBrowserImpl
+                                                .getWindowAndroid())::getModalDialogManager,
                                 new AutocompleteSchemeClassifierImpl(),
                                 /** vrHandler= */ null,
                                 /** isSiteSettingsAvailable= */ false,
-                                /** useDarkColors= */ !mBrowserImpl.getDarkThemeEnabled(),
                                 /** cookieControlsShown= */ false));
             });
         }

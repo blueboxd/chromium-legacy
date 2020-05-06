@@ -5,9 +5,11 @@
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/web_applications/app_browser_controller.h"
 #include "chrome/browser/ui/web_applications/web_app_controller_browsertest.h"
 #include "chrome/browser/web_applications/components/web_app_id.h"
 #include "ui/base/page_transition_types.h"
@@ -75,6 +77,56 @@ IN_PROC_BROWSER_TEST_P(WebAppNavigateBrowserTest,
 
   EXPECT_EQ(browser(), params.browser);
   EXPECT_EQ(++num_tabs, browser()->tab_strip_model()->count());
+}
+
+IN_PROC_BROWSER_TEST_P(WebAppNavigateBrowserTest, NewPopup) {
+  BrowserList* const browser_list = BrowserList::GetInstance();
+  InstallPWA(GetGoogleURL());
+
+  {
+    NavigateParams params(MakeNavigateParams());
+    params.disposition = WindowOpenDisposition::NEW_WINDOW;
+    params.open_pwa_window_if_possible = true;
+    Navigate(&params);
+  }
+  Browser* const app_browser = browser_list->GetLastActive();
+  EXPECT_TRUE(app_browser->app_controller()->HasAppId());
+
+  {
+    NavigateParams params(MakeNavigateParams());
+    params.disposition = WindowOpenDisposition::NEW_WINDOW;
+    params.extension_app_id = app_browser->app_controller()->GetAppId();
+    Navigate(&params);
+  }
+  content::WebContents* const web_contents =
+      browser_list->GetLastActive()->tab_strip_model()->GetActiveWebContents();
+
+  {
+    // From a browser tab, a popup window opens.
+    NavigateParams params(MakeNavigateParams());
+    params.disposition = WindowOpenDisposition::NEW_POPUP;
+    params.source_contents = web_contents;
+    Navigate(&params);
+    EXPECT_FALSE(browser_list->GetLastActive()->app_controller());
+  }
+
+  {
+    // From a browser tab, an app window opens if app_id is specified.
+    NavigateParams params(MakeNavigateParams());
+    params.extension_app_id = app_browser->app_controller()->GetAppId();
+    params.disposition = WindowOpenDisposition::NEW_POPUP;
+    Navigate(&params);
+    EXPECT_TRUE(browser_list->GetLastActive()->app_controller()->HasAppId());
+  }
+
+  {
+    // From an app window, another app window opens.
+    NavigateParams params(MakeNavigateParams());
+    params.browser = app_browser;
+    params.disposition = WindowOpenDisposition::NEW_POPUP;
+    Navigate(&params);
+    EXPECT_TRUE(browser_list->GetLastActive()->app_controller()->HasAppId());
+  }
 }
 
 INSTANTIATE_TEST_SUITE_P(

@@ -11,6 +11,10 @@
 #include "base/macros.h"
 #include "chrome/test/base/in_process_browser_test.h"
 
+namespace views {
+class Widget;
+}  // namespace views
+
 // TestBrowserUi provides a way to register an InProcessBrowserTest testing
 // harness with a framework that invokes Chrome browser UI in a consistent way.
 // It optionally provides a way to invoke UI "interactively". This allows
@@ -80,6 +84,11 @@ class TestBrowserUi {
   // Called by ShowAndVerifyUi() after ShowUi().  Returns whether the UI was
   // successfully shown.
   virtual bool VerifyUi() = 0;
+
+  // Can be called by VerifyUi() to ensure pixel correctness.
+  bool VerifyPixelUi(views::Widget* widget,
+                     const std::string& screenshot_prefix,
+                     const std::string& screenshot_name);
 
   // Called by ShowAndVerifyUi() after VerifyUi(), in the case where the test is
   // interactive.  This should block until the UI has been dismissed.

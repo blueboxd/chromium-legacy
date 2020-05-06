@@ -37,7 +37,6 @@ import "components/arc/mojom/oemcrypto.mojom";
 import "components/arc/mojom/pip.mojom";
 import "components/arc/mojom/policy.mojom";
 import "components/arc/mojom/power.mojom";
-import "components/arc/mojom/print.mojom";
 import "components/arc/mojom/print_spooler.mojom";
 import "components/arc/mojom/process.mojom";
 import "components/arc/mojom/property.mojom";
@@ -56,7 +55,7 @@ import "components/arc/mojom/wake_lock.mojom";
 import "components/arc/mojom/wallpaper.mojom";
 
 // Next MinVersion: 49
-// Deprecated method IDs: 101, 105
+// Deprecated method IDs: 101, 105, 121
 // Next method ID: 154
 interface ArcBridgeHost {
   // Keep the entries alphabetical. In order to do so without breaking
@@ -170,9 +169,6 @@ interface ArcBridgeHost {
 
   // Notifies Chrome that the PowerInstance interface is ready.
   OnPowerInstanceReady@103(PowerInstance instance_ptr);
-
-  // Notifies Chrome that the PrintInstance interface is ready.
-  [MinVersion=16] OnPrintInstanceReady@121(PrintInstance instance_ptr);
 
   // Notifies Chrome that the PrintSpoolerInstance interface is ready.
   [MinVersion=45] OnPrintSpoolerInstanceReady@150(

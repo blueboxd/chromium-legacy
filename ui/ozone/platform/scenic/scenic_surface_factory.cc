@@ -65,8 +65,8 @@ class GLOzoneEGLScenic : public GLOzoneEGL {
   DISALLOW_COPY_AND_ASSIGN(GLOzoneEGLScenic);
 };
 
-fuchsia::sysmem::AllocatorSyncPtr ConnectSysmemAllocator() {
-  fuchsia::sysmem::AllocatorSyncPtr allocator;
+fuchsia::sysmem::AllocatorHandle ConnectSysmemAllocator() {
+  fuchsia::sysmem::AllocatorHandle allocator;
   base::fuchsia::ComponentContextForCurrentProcess()->svc()->Connect(
       allocator.NewRequest());
   return allocator;
@@ -74,19 +74,40 @@ fuchsia::sysmem::AllocatorSyncPtr ConnectSysmemAllocator() {
 
 }  // namespace
 
-ScenicSurfaceFactory::ScenicSurfaceFactory(
-    mojo::PendingRemote<mojom::ScenicGpuHost> gpu_host)
-    : gpu_host_(std::move(gpu_host)),
-      egl_implementation_(std::make_unique<GLOzoneEGLScenic>()),
-      sysmem_buffer_manager_(ConnectSysmemAllocator()),
-      weak_ptr_factory_(this) {
-  // TODO(spang, crbug.com/923445): Add message loop to GPU tests.
-  if (base::ThreadTaskRunnerHandle::IsSet())
-    main_thread_task_runner_ = base::ThreadTaskRunnerHandle::Get();
-}
+ScenicSurfaceFactory::ScenicSurfaceFactory()
+    : egl_implementation_(std::make_unique<GLOzoneEGLScenic>()),
+      weak_ptr_factory_(this) {}
 
 ScenicSurfaceFactory::~ScenicSurfaceFactory() {
+  Shutdown();
+}
+
+void ScenicSurfaceFactory::Initialize(
+    mojo::PendingRemote<mojom::ScenicGpuHost> gpu_host) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  base::AutoLock lock(surface_lock_);
+  DCHECK(surface_map_.empty());
+
+  main_thread_task_runner_ = base::ThreadTaskRunnerHandle::Get();
+  DCHECK(main_thread_task_runner_);
+
+  DCHECK(!gpu_host_);
+  gpu_host_.Bind(std::move(gpu_host));
+
+  sysmem_buffer_manager_.Initialize(ConnectSysmemAllocator());
+
+  // Scenic is lazily connected to avoid a dependency in headless mode.
+  DCHECK(!scenic_);
+}
+
+void ScenicSurfaceFactory::Shutdown() {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  base::AutoLock lock(surface_lock_);
+  DCHECK(surface_map_.empty());
+  main_thread_task_runner_ = nullptr;
+  gpu_host_.reset();
+  sysmem_buffer_manager_.Shutdown();
+  scenic_ = nullptr;
 }
 
 std::vector<gl::GLImplementation>

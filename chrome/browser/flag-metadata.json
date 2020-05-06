@@ -3526,7 +3526,7 @@
   {
     "name": "rar2fs",
     "owners": ["fdegros", "dats"],
-    "expiry_milestone": 84
+    "expiry_milestone": 86
   },
   {
     "name": "raw-clipboard",

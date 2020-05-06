@@ -187,6 +187,8 @@ void AppListTestViewDelegate::MarkAssistantPrivacyInfoDismissed() {}
 void AppListTestViewDelegate::OnStateTransitionAnimationCompleted(
     ash::AppListViewState state) {}
 
+void AppListTestViewDelegate::OnViewStateChanged(AppListViewState state) {}
+
 void AppListTestViewDelegate::GetAppLaunchedMetricParams(
     AppLaunchedMetricParams* metric_params) {}
 

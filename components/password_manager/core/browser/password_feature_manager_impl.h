@@ -37,6 +37,8 @@ class PasswordFeatureManagerImpl : public PasswordFeatureManager {
   void SetDefaultPasswordStore(
       const autofill::PasswordForm::Store& store) override;
   autofill::PasswordForm::Store GetDefaultPasswordStore() const override;
+  metrics_util::PasswordAccountStorageUsageLevel
+  ComputePasswordAccountStorageUsageLevel() const override;
 
  private:
   PrefService* const pref_service_;

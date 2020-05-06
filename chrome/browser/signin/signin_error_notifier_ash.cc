@@ -17,6 +17,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/account_manager/account_manager_util.h"
+#include "chrome/browser/chromeos/login/reauth_stats.h"
 #include "chrome/browser/chromeos/login/user_flow.h"
 #include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
@@ -92,8 +93,9 @@ SigninErrorNotifier::SigninErrorNotifier(SigninErrorController* controller,
   if (TokenHandleUtil::HasToken(account_id)) {
     token_handle_util_ = std::make_unique<TokenHandleUtil>();
     token_handle_util_->CheckToken(
-        account_id, base::Bind(&SigninErrorNotifier::OnTokenHandleCheck,
-                               weak_factory_.GetWeakPtr()));
+        account_id, profile->GetURLLoaderFactory(),
+        base::Bind(&SigninErrorNotifier::OnTokenHandleCheck,
+                   weak_factory_.GetWeakPtr()));
   }
   OnErrorChanged();
 }
@@ -103,6 +105,7 @@ void SigninErrorNotifier::OnTokenHandleCheck(
     TokenHandleUtil::TokenHandleStatus status) {
   if (status != TokenHandleUtil::INVALID)
     return;
+  RecordReauthReason(account_id, chromeos::ReauthReason::INVALID_TOKEN_HANDLE);
   HandleDeviceAccountError();
 }
 
@@ -137,9 +140,12 @@ void SigninErrorNotifier::OnErrorChanged() {
       return;
   }
 
+  const AccountId account_id =
+      multi_user_util::GetAccountIdFromProfile(profile_);
   if (!chromeos::IsAccountManagerAvailable(profile_)) {
     // If this flag is disabled, Chrome OS does not have a concept of Secondary
     // Accounts. Preserve existing behavior.
+    RecordReauthReason(account_id, chromeos::ReauthReason::SYNC_FAILED);
     HandleDeviceAccountError();
     return;
   }
@@ -149,6 +155,7 @@ void SigninErrorNotifier::OnErrorChanged() {
       identity_manager_->GetPrimaryAccountId(
           signin::ConsentLevel::kNotRequired);
   if (error_account_id == primary_account_id) {
+    RecordReauthReason(account_id, chromeos::ReauthReason::SYNC_FAILED);
     HandleDeviceAccountError();
   } else {
     HandleSecondaryAccountError(error_account_id);

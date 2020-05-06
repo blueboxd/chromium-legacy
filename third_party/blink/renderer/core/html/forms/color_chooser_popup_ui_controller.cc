@@ -250,8 +250,9 @@ void ColorChooserPopupUIController::CancelPopup() {
 }
 
 PagePopupController* ColorChooserPopupUIController::CreatePagePopupController(
+    Page& page,
     PagePopup& popup) {
-  return MakeGarbageCollected<ColorPagePopupController>(popup, this);
+  return MakeGarbageCollected<ColorPagePopupController>(page, popup, this);
 }
 
 void ColorChooserPopupUIController::EyeDropperResponseHandler(bool success,

@@ -111,6 +111,7 @@ class AppListTestViewDelegate : public AppListViewDelegate,
   void MarkAssistantPrivacyInfoDismissed() override;
   void OnStateTransitionAnimationCompleted(
       ash::AppListViewState state) override;
+  void OnViewStateChanged(AppListViewState state) override;
   void GetAppLaunchedMetricParams(
       AppLaunchedMetricParams* metric_params) override;
   gfx::Rect SnapBoundsToDisplayEdge(const gfx::Rect& bounds) override;

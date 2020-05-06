@@ -50,6 +50,7 @@ import org.chromium.ui.modaldialog.DialogDismissalCause;
 import org.chromium.ui.modaldialog.ModalDialogProperties;
 import org.chromium.ui.modaldialog.ModalDialogProperties.ButtonType;
 import org.chromium.ui.modelutil.PropertyModel;
+import org.chromium.ui.util.ColorUtils;
 import org.chromium.url.URI;
 
 import java.lang.annotation.Retention;
@@ -181,9 +182,9 @@ public class PageInfoController implements ModalDialogProperties.Controller,
             }
         }
 
-        final boolean useDarkColors = delegate.useDarkColors();
+        boolean useDarkText = ColorUtils.useDarkColors(mContext);
         OmniboxUrlEmphasizer.emphasizeUrl(displayUrlBuilder, mContext.getResources(),
-                autocompleteSchemeClassifier, mSecurityLevel, mIsInternalPage, useDarkColors,
+                autocompleteSchemeClassifier, mSecurityLevel, mIsInternalPage, useDarkText,
                 /*emphasizeScheme=*/true);
         viewParams.url = displayUrlBuilder;
         viewParams.urlOriginLength = OmniboxUrlEmphasizer.getOriginEndIndex(

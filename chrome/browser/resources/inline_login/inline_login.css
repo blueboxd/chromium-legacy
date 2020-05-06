@@ -55,6 +55,10 @@ body,
  * button at the bottom.
  */
 <if expr="chromeos">
+#signin-frame {
+  top: -35px; /*dialog top border size*/
+}
+
 #contents,
 #signin-frame {
   height: calc(100% - 96px);

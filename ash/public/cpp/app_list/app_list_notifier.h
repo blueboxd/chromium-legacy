@@ -19,29 +19,30 @@ namespace ash {
 // A notifier interface implemented in Chrome and called from Ash, which allows
 // objects in Chrome to observe state changes in Ash. Its main use is to signal
 // events related to metrics and logging: search result impressions, abandons,
-// and launches.
-//
-// TODO(crbug.com/1076270): Add a description of the impression/abandon/launch
-// state machine once it is finalized.
+// and launches. See method comments for definitions of these.
 class ASH_PUBLIC_EXPORT AppListNotifier {
  public:
   class Observer : public base::CheckedObserver {
-    // Called when |results| have been displayed for |kImpressionTimeMillis|.
+   public:
+    // Called when |results| have been displayed for the length of the
+    // impression timer. Guaranteed to be followed by either an |OnAbandon| or
+    // |OnLaunch| call with |results|.
     virtual void OnImpression(SearchResultDisplayType location,
                               const std::vector<std::string>& results) {}
 
     // Called when an impression occurred for |results|, and the user then moved
-    // to a different UI surface. This includes closing the launcher, or
-    // changing the search query. OnImpression is guaranteed to be called before
-    // OnAbandon with |results|.
+    // to a different UI view. For example, by closing the launcher or
+    // changing the search query. Guaranteed to follow an OnImpression call with
+    // |results|.
     virtual void OnAbandon(SearchResultDisplayType location,
                            const std::vector<std::string>& results) {}
 
-    // Called when |result| is launched. OnImpression is not guaranteed to be
-    // called before OnLaunch, because the user may launch |result| faster than
-    // kImpressionTimeMillis.
+    // Called when the |launched| result is launched, and provides all |shown|
+    // results at |location| (including |launched|). Guaranteed to follow an
+    // OnImpression call with |shown|.
     virtual void OnLaunch(SearchResultDisplayType location,
-                          const std::string& result) {}
+                          const std::string& launched,
+                          const std::vector<std::string>& shown) {}
   };
 
   virtual ~AppListNotifier() = default;
@@ -63,8 +64,8 @@ class ASH_PUBLIC_EXPORT AppListNotifier {
   // Called to indicate the user has updated the search query to |query|.
   virtual void NotifySearchQueryChanged(const base::string16& query) = 0;
 
-  // Called to indicate the UI state is now |state|.
-  virtual void NotifyUIStateChanged(ash::AppListViewState state) = 0;
+  // Called to indicate the UI state is now |view|.
+  virtual void NotifyUIStateChanged(ash::AppListViewState view) = 0;
 };
 
 }  // namespace ash

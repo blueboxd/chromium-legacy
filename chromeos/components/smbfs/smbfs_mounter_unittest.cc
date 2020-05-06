@@ -74,7 +74,13 @@ class TestSmbFsBootstrapImpl : public mojom::SmbFsBootstrap {
               (override));
 };
 
-class TestSmbFsImpl : public mojom::SmbFs {};
+class TestSmbFsImpl : public mojom::SmbFs {
+ public:
+  MOCK_METHOD(void,
+              RemoveSavedCredentials,
+              (RemoveSavedCredentialsCallback),
+              (override));
+};
 
 class TestSmbFsMounter : public SmbFsMounter {
  public:

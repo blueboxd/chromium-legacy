@@ -85,6 +85,11 @@ ApkWebAppService::ApkWebAppService(Profile* profile) : profile_(profile) {
 
 ApkWebAppService::~ApkWebAppService() = default;
 
+bool ApkWebAppService::IsWebOnlyTwa(const web_app::AppId& web_app_id) {
+  // TODO(crbug.com/1078673): Differentiate between WebAPKs and web-only TWAs.
+  return IsWebAppInstalledFromArc(web_app_id);
+}
+
 void ApkWebAppService::SetArcAppListPrefsForTesting(ArcAppListPrefs* prefs) {
   DCHECK(prefs);
   if (arc_app_list_prefs_)
@@ -105,9 +110,7 @@ void ApkWebAppService::SetWebAppUninstalledCallbackForTesting(
 }
 
 void ApkWebAppService::UninstallWebApp(const web_app::AppId& web_app_id) {
-  if (!web_app::ExternallyInstalledWebAppPrefs::HasAppIdWithInstallSource(
-          profile_->GetPrefs(), web_app_id,
-          web_app::ExternalInstallSource::kArc)) {
+  if (!IsWebAppInstalledFromArc(web_app_id)) {
     // Do not uninstall a web app that was not installed via ApkWebAppInstaller.
     return;
   }
@@ -397,6 +400,12 @@ void ApkWebAppService::OnDidFinishInstall(const std::string& package_name,
   // For testing.
   if (web_app_installed_callback_)
     std::move(web_app_installed_callback_).Run(package_name, web_app_id);
+}
+
+bool ApkWebAppService::IsWebAppInstalledFromArc(
+    const web_app::AppId& web_app_id) {
+  return web_app::ExternallyInstalledWebAppPrefs::HasAppIdWithInstallSource(
+      profile_->GetPrefs(), web_app_id, web_app::ExternalInstallSource::kArc);
 }
 
 }  // namespace chromeos

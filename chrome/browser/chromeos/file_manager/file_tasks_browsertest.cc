@@ -31,9 +31,13 @@ namespace {
 
 // A list of file extensions (`/` delimited) representing a selection of files
 // and the app expected to be the default to open these files.
+// A null app_id indicates there is no preferred default.
+// A mime_type can be set to a result normally given by sniffing when
+// net::GetMimeTypeFromFile() would not provide a result.
 struct Expectation {
   const char* file_extensions;
   const char* app_id;
+  const char* mime_type = nullptr;
 };
 
 // Verifies that a single default task expectation (i.e. the expected
@@ -46,6 +50,7 @@ void VerifyTasks(int* remaining,
                  Expectation expectation,
                  std::unique_ptr<std::vector<FullTaskDescriptor>> result) {
   ASSERT_TRUE(result) << expectation.file_extensions;
+  --*remaining;
 
   bool has_media_app = false;
   bool has_gallery = false;
@@ -60,6 +65,12 @@ void VerifyTasks(int* remaining,
       std::find_if(result->begin(), result->end(),
                    [](const auto& task) { return task.is_default(); });
 
+  // Early exit for the uncommon situation where no default should be set.
+  if (!expectation.app_id) {
+    EXPECT_TRUE(default_task == result->end()) << expectation.file_extensions;
+    return;
+  }
+
   ASSERT_TRUE(default_task != result->end()) << expectation.file_extensions;
 
   EXPECT_EQ(expectation.app_id, default_task->task_descriptor().app_id)
@@ -70,8 +81,6 @@ void VerifyTasks(int* remaining,
             std::count_if(result->begin(), result->end(),
                           [](const auto& task) { return task.is_default(); }))
       << expectation.file_extensions;
-
-  --*remaining;
 }
 
 // Installs a chrome app that handles .tiff.
@@ -116,10 +125,15 @@ class FileTasksBrowserTestBase : public InProcessBrowserTest {
                                  base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL);
       for (base::StringPiece extension : all_extensions) {
         base::FilePath path = prefix.AddExtension(extension);
-        // Fetching a mime type is part of the default app determination, but it
-        // doesn't need to succeed.
         std::string mime_type;
         net::GetMimeTypeFromFile(path, &mime_type);
+        if (test.mime_type) {
+          // Sniffing isn't used when GetMimeTypeFromFile() succeeds, so there
+          // shouldn't be a hard-coded mime type configured.
+          EXPECT_TRUE(mime_type.empty());
+          mime_type = test.mime_type;
+        }
+        EXPECT_FALSE(mime_type.empty()) << "No mime type for " << path;
         entries.push_back({path, mime_type, false});
       }
       std::vector<GURL> file_urls{entries.size(), GURL()};
@@ -160,35 +174,41 @@ class FileTasksBrowserTestWithMediaApp : public FileTasksBrowserTestBase {
 // handling declarations in built-in app manifests, because logic in
 // ChooseAndSetDefaultTask() treats handlers for extensions with a higher
 // priority than handlers for mime types.
+// Provide MIME types here for extensions known to be missing mime types from
+// net::GetMimeTypeFromFile() (see ExtensionToMimeMapping test). In practice,
+// these MIME types are populated via file sniffing, but tests in this file do
+// not operate on real files. We hard code MIME types that file sniffing
+// obtained experimentally from sample files.
 constexpr Expectation kUnchangedExpectations[] = {
     // Raw.
-    {"arw", kGalleryAppId},
-    {"cr2", kGalleryAppId},
-    {"dng", kGalleryAppId},
-    {"nef", kGalleryAppId},
-    {"nrw", kGalleryAppId},
-    {"orf", kGalleryAppId},
-    {"raf", kGalleryAppId},
-    {"rw2", kGalleryAppId},
+    {"arw", kGalleryAppId, "image/tiff"},
+    {"cr2", kGalleryAppId, "image/tiff"},
+    {"dng", kGalleryAppId, "image/tiff"},
+    {"nef", kGalleryAppId, "image/tiff"},
+    {"nrw", kGalleryAppId, "image/tiff"},
+    {"orf", kGalleryAppId, "image/tiff"},
+    {"raf", kGalleryAppId, "image/tiff"},
+    {"rw2", kGalleryAppId, "image/tiff"},
+    {"NRW", kGalleryAppId, "image/tiff"},  // Uppercase extension.
 
     // Video.
-    {"3gp", kVideoPlayerAppId},
-    {"avi", kVideoPlayerAppId},
+    {"3gp", kVideoPlayerAppId, "application/octet-stream"},
+    {"avi", kVideoPlayerAppId, "application/octet-stream"},
     {"m4v", kVideoPlayerAppId},
-    {"mkv", kVideoPlayerAppId},
-    {"mov", kVideoPlayerAppId},
+    {"mkv", kVideoPlayerAppId, "video/webm"},
+    {"mov", kVideoPlayerAppId, "application/octet-stream"},
     {"mp4", kVideoPlayerAppId},
     {"mpeg", kVideoPlayerAppId},
-    {"mpeg4", kVideoPlayerAppId},
+    {"mpeg4", kVideoPlayerAppId, "video/mpeg"},
     {"mpg", kVideoPlayerAppId},
-    {"mpg4", kVideoPlayerAppId},
+    {"mpg4", kVideoPlayerAppId, "video/mpeg"},
     {"ogm", kVideoPlayerAppId},
     {"ogv", kVideoPlayerAppId},
-    {"ogx", kVideoPlayerAppId},
+    {"ogx", kVideoPlayerAppId, "video/ogg"},
     {"webm", kVideoPlayerAppId},
 
     // Audio.
-    {"amr", kAudioPlayerAppId},
+    {"amr", kAudioPlayerAppId, "application/octet-stream"},
     {"flac", kAudioPlayerAppId},
     {"m4a", kAudioPlayerAppId},
     {"mp3", kAudioPlayerAppId},
@@ -289,7 +309,7 @@ IN_PROC_BROWSER_TEST_F(FileTasksBrowserTest, DefaultHandlerChangeDetector) {
 IN_PROC_BROWSER_TEST_F(FileTasksBrowserTest, MultiSelectDefaultHandler) {
   std::vector<Expectation> expectations = {
       {"jpg/gif", kGalleryAppId},
-      {"jpg/avi", kGalleryAppId},
+      {"jpg/mp4", kGalleryAppId},
   };
 
   TestExpectationsAgainstDefaultTasks(expectations);
@@ -319,8 +339,13 @@ IN_PROC_BROWSER_TEST_F(FileTasksBrowserTestWithMediaApp,
   std::vector<Expectation> expectations = {
       {"jpg/gif", kMediaAppId},
       // Test video specifically since the Media App's manifest specifies it
-      // handles video files.
-      {"jpg/avi", kGalleryAppId},
+      // handles video files. Note Gallery was never intended to handle video,
+      // (and the video app can never handle images) so, until video support
+      // has more polish in the Media App, this is the only case where no app
+      // is given a clear preference. Media App will be present, but won't be
+      // marked default because it is not marked as an "extension match" nor is
+      // it a fallback handler.
+      {"jpg/mp4", nullptr},
   };
 
   TestExpectationsAgainstDefaultTasks(expectations);

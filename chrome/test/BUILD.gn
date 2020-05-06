@@ -2471,6 +2471,10 @@ if (!is_android) {
         "base/interactive_test_utils_aura.h",
         "base/interactive_test_utils_views.cc",
       ]
+
+      # For input_method/native_input_method_engine_browsertest.cc
+      data_deps +=
+          [ "//chromeos/services/ime/public/cpp/shared_lib:fake_shared_lib" ]
       if (!is_official_build) {
         sources += [ "../browser/chromeos/web_applications/sample_system_web_app_integration_browsertest.cc" ]
       }
@@ -3523,6 +3527,11 @@ test("unit_tests") {
     # unit_tests than in base_unittests.
     "../../base/path_service_unittest.cc",
     "../../testing/gtest_mac_unittest.mm",
+
+    # Chromium's zlib unit tests
+    "../../third_party/zlib/contrib/tests/infcover.cc",
+    "../../third_party/zlib/contrib/tests/infcover.h",
+    "../../third_party/zlib/contrib/tests/utils_unittest.cc",
     "../../third_party/zlib/google/compression_utils_unittest.cc",
     "../../third_party/zlib/google/zip_reader_unittest.cc",
     "../../third_party/zlib/google/zip_unittest.cc",

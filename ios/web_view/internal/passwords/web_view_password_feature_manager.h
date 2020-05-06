@@ -37,6 +37,9 @@ class WebViewPasswordFeatureManager
       const autofill::PasswordForm::Store& store) override;
   autofill::PasswordForm::Store GetDefaultPasswordStore() const override;
 
+  password_manager::metrics_util::PasswordAccountStorageUsageLevel
+  ComputePasswordAccountStorageUsageLevel() const override;
+
  private:
   PrefService* const pref_service_;
   const syncer::SyncService* const sync_service_;

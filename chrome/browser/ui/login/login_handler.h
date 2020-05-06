@@ -157,17 +157,18 @@ class LoginHandler : public content::LoginDelegate,
                                base::string16* explanation);
 
   // Continuation from |Start| after any potential interception from the
-  // extensions WebRequest API. If |should_cancel| is |true| the request is
-  // cancelled. Otherwise |credentials| are used if supplied. Finally if the
-  // request is NOT cancelled AND |credentials| is empty, then we'll take the
-  // necessary steps to show a login prompt. This may entail cancelling the
+  // extensions WebRequest API. If |cancelled_by_extension| is |true| the
+  // request is cancelled. Otherwise |credentials| are used if supplied. Finally
+  // if the request is NOT cancelled AND |credentials| is empty, then we'll take
+  // the necessary steps to show a login prompt. This may entail cancelling the
   // navigation if it is a main-frame request (and a login prompt will be shown
   // after commit), or showing the prompt directly otherwise.
   void MaybeSetUpLoginPromptBeforeCommit(
       const GURL& request_url,
+      const content::GlobalRequestID& request_id,
       bool is_main_frame,
       const base::Optional<net::AuthCredentials>& credentials,
-      bool should_cancel);
+      bool cancelled_by_extension);
 
   void ShowLoginPrompt(const GURL& request_url);
 

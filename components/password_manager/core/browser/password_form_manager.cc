@@ -22,6 +22,7 @@
 #include "components/password_manager/core/browser/browser_save_password_progress_logger.h"
 #include "components/password_manager/core/browser/field_info_manager.h"
 #include "components/password_manager/core/browser/form_fetcher_impl.h"
+#include "components/password_manager/core/browser/password_feature_manager.h"
 #include "components/password_manager/core/browser/password_form_filling.h"
 #include "components/password_manager/core/browser/password_generation_manager.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
@@ -957,7 +958,9 @@ void PasswordFormManager::CalculateFillingAssistanceMetric(
 
   metrics_recorder_->CalculateFillingAssistanceMetric(
       submitted_form, saved_usernames, saved_passwords, IsBlacklisted(),
-      form_fetcher_->GetInteractionsStats());
+      form_fetcher_->GetInteractionsStats(),
+      client_->GetPasswordFeatureManager()
+          ->ComputePasswordAccountStorageUsageLevel());
 #endif
 }
 

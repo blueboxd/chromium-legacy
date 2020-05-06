@@ -405,7 +405,9 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
         mLocationBar.setDefaultTextEditActionModeCallback(
                 mActionModeController.getActionModeCallback());
         mLocationBar.initializeControls(new WindowDelegate(mActivity.getWindow()),
-                mActivity.getWindowAndroid(), mActivityTabProvider, mIncognitoStateProvider);
+                mActivity.getWindowAndroid(), mActivityTabProvider,
+                mActivity::getModalDialogManager, mActivity.getShareDelegateSupplier(),
+                mIncognitoStateProvider);
         mLocationBar.addUrlFocusChangeListener(mLocationBarFocusObserver);
         mProgressBarCoordinator =
                 new LoadProgressCoordinator(mActivityTabProvider, mToolbar.getProgressBar());

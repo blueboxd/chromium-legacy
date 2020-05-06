@@ -50,27 +50,15 @@ class ModelTypeRegistry : public ModelTypeConnector,
                     KeystoreKeysHandler* keystore_keys_handler);
   ~ModelTypeRegistry() override;
 
-  // Enables an off-thread type for syncing.  Connects the given proxy
-  // and its task_runner to the newly created worker.
-  //
-  // Expects that the proxy's ModelType is not currently enabled.
+  // Implementation of ModelTypeConnector.
   void ConnectNonBlockingType(
       ModelType type,
       std::unique_ptr<DataTypeActivationResponse> activation_response) override;
-
-  // Disables the syncing of an off-thread type.
-  //
-  // Expects that the type is currently enabled.
-  // Deletes the worker associated with the type.
   void DisconnectNonBlockingType(ModelType type) override;
-
-  // Creates update handler and commit contributor objects for directory type.
-  // Expects that the type is not yet registered.
   void RegisterDirectoryType(ModelType type, ModelSafeGroup group) override;
-
-  // Deletes objects related to directory type. Expects that the type is
-  // registered.
   void UnregisterDirectoryType(ModelType type) override;
+  void ConnectProxyType(ModelType type) override;
+  void DisconnectProxyType(ModelType type) override;
 
   // Implementation of SyncEncryptionHandler::Observer.
   void OnPassphraseRequired(
@@ -131,6 +119,9 @@ class ModelTypeRegistry : public ModelTypeConnector,
   syncable::Directory* directory() const {
     return user_share_->directory.get();
   }
+
+  // Enabled proxy types, which don't have a worker.
+  ModelTypeSet enabled_proxy_types_;
 
   // Sets of handlers and contributors.
   std::map<ModelType, std::unique_ptr<DirectoryCommitContributor>>

@@ -14,7 +14,14 @@
 namespace ui {
 
 ScenicWindowManager::ScenicWindowManager() = default;
-ScenicWindowManager::~ScenicWindowManager() = default;
+
+ScenicWindowManager::~ScenicWindowManager() {
+  Shutdown();
+}
+
+void ScenicWindowManager::Shutdown() {
+  DCHECK(windows_.IsEmpty());
+}
 
 std::unique_ptr<PlatformScreen> ScenicWindowManager::CreateScreen() {
   DCHECK(windows_.IsEmpty());

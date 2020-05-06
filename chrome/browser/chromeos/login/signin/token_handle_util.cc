@@ -78,8 +78,10 @@ void TokenHandleUtil::MarkHandleInvalid(const AccountId& account_id) {
 }
 
 // static
-void TokenHandleUtil::CheckToken(const AccountId& account_id,
-                                 const TokenValidationCallback& callback) {
+void TokenHandleUtil::CheckToken(
+    const AccountId& account_id,
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+    const TokenValidationCallback& callback) {
   const base::DictionaryValue* dict = nullptr;
   std::string token;
   if (!user_manager::known_user::FindPrefs(account_id, &dict)) {
@@ -92,9 +94,6 @@ void TokenHandleUtil::CheckToken(const AccountId& account_id,
   }
 
   if (!gaia_client_.get()) {
-    auto url_loader_factory = chromeos::ProfileHelper::Get()
-                                  ->GetSigninProfile()
-                                  ->GetURLLoaderFactory();
     gaia_client_.reset(
         new gaia::GaiaOAuthClient(std::move(url_loader_factory)));
   }

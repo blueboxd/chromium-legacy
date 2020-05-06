@@ -123,8 +123,17 @@ CompressedDataToImageSkiaCallback(
           std::move(callback).Run(gfx::ImageSkia());
           return;
         }
-        std::move(callback).Run(SkBitmapToImageSkia(DecompressToSkBitmap(
-            compressed_data.data(), compressed_data.size())));
+        // DecompressToSkBitmap is a CPU intensive task that must not run on the
+        // UI thread, so post the processing over to the thread pool.
+        base::ThreadPool::PostTaskAndReplyWithResult(
+            FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
+            base::BindOnce(
+                [](std::vector<uint8_t> compressed_data) {
+                  return SkBitmapToImageSkia(DecompressToSkBitmap(
+                      compressed_data.data(), compressed_data.size()));
+                },
+                std::move(compressed_data)),
+            std::move(callback));
       },
       std::move(callback));
 }

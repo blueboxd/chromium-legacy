@@ -48,6 +48,7 @@ import org.chromium.content_public.common.ContentUrlConstants;
 import org.chromium.content_public.common.Referrer;
 import org.chromium.network.mojom.ReferrerPolicy;
 import org.chromium.ui.base.PageTransition;
+import org.chromium.ui.base.PermissionCallback;
 import org.chromium.url.URI;
 
 import java.lang.annotation.Retention;
@@ -347,12 +348,44 @@ public class ExternalNavigationHandler {
             ExternalNavigationParams params, Intent targetIntent) {
         if (params.getUrl().startsWith(UrlConstants.FILE_URL_SHORT_PREFIX)
                 && shouldRequestFileAccess(params.getUrl())) {
-            mDelegate.startFileIntent(targetIntent, params.getReferrerUrl(),
+            startFileIntent(targetIntent, params.getReferrerUrl(),
                     params.shouldCloseContentsOnOverrideUrlLoadingAndLaunchIntent());
             if (DEBUG) Log.i(TAG, "Requesting filesystem access");
             return true;
         }
         return false;
+    }
+
+    /**
+     * Trigger a UI affordance that will ask the user to grant file access.  After the access
+     * has been granted or denied, continue loading the specified file URL.
+     *
+     * @param intent The intent to continue loading the file URL.
+     * @param referrerUrl The HTTP referrer URL.
+     * @param needsToCloseTab Whether this action should close the current tab.
+     */
+    protected void startFileIntent(
+            final Intent intent, final String referrerUrl, final boolean needsToCloseTab) {
+        PermissionCallback permissionCallback = new PermissionCallback() {
+            @Override
+            public void onRequestPermissionsResult(String[] permissions, int[] grantResults) {
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED
+                        && mDelegate.hasValidTab()) {
+                    loadUrlFromIntent(referrerUrl, intent.getDataString(), null, mDelegate,
+                            needsToCloseTab, mDelegate.isIncognito());
+                } else {
+                    // TODO(tedchoc): Show an indication to the user that the navigation failed
+                    //                instead of silently dropping it on the floor.
+                    if (needsToCloseTab) {
+                        // If the access was not granted, then close the tab if necessary.
+                        mDelegate.closeTab();
+                    }
+                }
+            }
+        };
+        if (!mDelegate.hasValidTab()) return;
+        mDelegate.getWindowAndroid().requestPermissions(
+                new String[] {permission.READ_EXTERNAL_STORAGE}, permissionCallback);
     }
 
     /**

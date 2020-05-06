@@ -352,7 +352,7 @@ TEST_F(PrinterEventTrackerTest, SkipLoggingValidNetworkInstallations) {
   printer.mutable_ppd_reference()->effective_make_and_model = "test_ppd";
 
   tracker_.RecordIppPrinterInstalled(printer, PrinterEventTracker::kAutomatic,
-                                     PrinterSetupSource::kArcPrintService);
+                                     PrinterSetupSource::kPrintPreview);
 
   // Since |printer| is not an "empty" setup event, we expect that the UMA
   // histogram has not been updated.

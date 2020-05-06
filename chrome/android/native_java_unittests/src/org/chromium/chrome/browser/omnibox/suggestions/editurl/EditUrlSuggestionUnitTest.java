@@ -26,7 +26,8 @@ import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestion;
 import org.chromium.chrome.browser.omnibox.suggestions.basic.SuggestionHost;
 import org.chromium.chrome.browser.omnibox.suggestions.basic.SuggestionViewDelegate;
 import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
-import org.chromium.chrome.browser.tab.TabImpl;
+import org.chromium.chrome.browser.share.ShareDelegate;
+import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.ui.favicon.LargeIconBridge;
 import org.chromium.components.search_engines.TemplateUrlService;
 import org.chromium.ui.modelutil.PropertyModel;
@@ -58,7 +59,10 @@ public final class EditUrlSuggestionUnitTest {
     private ActivityTabProvider mTabProvider;
 
     @Mock
-    private TabImpl mTab;
+    private ShareDelegate mShareDelegate;
+
+    @Mock
+    private Tab mTab;
 
     @Mock
     private OmniboxSuggestion mWhatYouTypedSuggestion;
@@ -124,6 +128,7 @@ public final class EditUrlSuggestionUnitTest {
         mProcessor = new EditUrlSuggestionProcessor(
                 mContext, mSuggestionHost, mLocationBarDelegate, () -> mIconBridge);
         mProcessor.setActivityTabProvider(mTabProvider);
+        mProcessor.setShareDelegateSupplier(() -> mShareDelegate);
 
         when(mEditButton.getId()).thenReturn(R.id.url_edit_icon);
     }

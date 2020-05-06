@@ -32,6 +32,8 @@ class ModelTypeConnectorProxy : public ModelTypeConnector {
   void DisconnectNonBlockingType(ModelType type) override;
   void RegisterDirectoryType(ModelType type, ModelSafeGroup group) override;
   void UnregisterDirectoryType(ModelType type) override;
+  void ConnectProxyType(ModelType type) override;
+  void DisconnectProxyType(ModelType type) override;
 
  private:
   // A SequencedTaskRunner representing the thread where the ModelTypeConnector

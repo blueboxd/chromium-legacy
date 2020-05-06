@@ -11,6 +11,7 @@ import androidx.annotation.Nullable;
 
 import org.chromium.base.Callback;
 import org.chromium.base.Consumer;
+import org.chromium.base.supplier.Supplier;
 import org.chromium.components.content_settings.ContentSettingValues;
 import org.chromium.components.content_settings.CookieControlsObserver;
 import org.chromium.components.omnibox.AutocompleteSchemeClassifier;
@@ -43,24 +44,22 @@ public class PageInfoControllerDelegate {
         int INSECURE_PAGE_PREVIEW = 3;
     }
 
-    private final ModalDialogManager mModalDialogManager;
+    private final Supplier<ModalDialogManager> mModalDialogManager;
     private final AutocompleteSchemeClassifier mAutocompleteSchemeClassifier;
     private final VrHandler mVrHandler;
     private final boolean mIsSiteSettingsAvailable;
-    private final boolean mUseDarkColors;
     private final boolean mCookieControlsShown;
     protected final @PreviewPageState int mPreviewPageState;
     protected @OfflinePageState int mOfflinePageState;
     protected String mOfflinePageUrl;
 
-    public PageInfoControllerDelegate(ModalDialogManager modalDialogManager,
+    public PageInfoControllerDelegate(Supplier<ModalDialogManager> modalDialogManager,
             AutocompleteSchemeClassifier autocompleteSchemeClassifier, VrHandler vrHandler,
-            boolean isSiteSettingsAvailable, boolean useDarkColors, boolean cookieControlsShown) {
+            boolean isSiteSettingsAvailable, boolean cookieControlsShown) {
         mModalDialogManager = modalDialogManager;
         mAutocompleteSchemeClassifier = autocompleteSchemeClassifier;
         mVrHandler = vrHandler;
         mIsSiteSettingsAvailable = isSiteSettingsAvailable;
-        mUseDarkColors = useDarkColors;
         mCookieControlsShown = cookieControlsShown;
 
         // These sometimes get overwritten by derived classes.
@@ -86,14 +85,7 @@ public class PageInfoControllerDelegate {
      * Return the ModalDialogManager to be used.
      */
     public ModalDialogManager getModalDialogManager() {
-        return mModalDialogManager;
-    }
-
-    /**
-     * Whether Page Info UI should use dark colors.
-     */
-    public boolean useDarkColors() {
-        return mUseDarkColors;
+        return mModalDialogManager.get();
     }
 
     /**

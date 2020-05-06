@@ -11,7 +11,6 @@
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/page/page_popup_controller.h"
-#include "third_party/blink/renderer/core/page/page_popup_supplement.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 
 namespace blink {
@@ -24,7 +23,7 @@ void PagePopupControllerAttributeGetter(
   DOMWindow* impl = V8Window::ToImpl(holder);
   PagePopupController* cpp_value = nullptr;
   if (LocalFrame* frame = To<LocalDOMWindow>(impl)->GetFrame())
-    cpp_value = PagePopupSupplement::From(*frame).GetPagePopupController();
+    cpp_value = PagePopupController::From(*frame->GetPage());
   V8SetReturnValue(info, ToV8(cpp_value, holder, info.GetIsolate()));
 }
 

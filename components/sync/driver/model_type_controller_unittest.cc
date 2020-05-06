@@ -90,25 +90,6 @@ class TestModelTypeConfigurer : public ModelTypeConfigurer {
     NOTREACHED() << "Not implemented.";
   }
 
-  void RegisterDirectoryDataType(ModelType type,
-                                 ModelSafeGroup group) override {
-    NOTREACHED() << "Not implemented.";
-  }
-
-  void UnregisterDirectoryDataType(ModelType type) override {
-    NOTREACHED() << "Not implemented.";
-  }
-
-  void ActivateDirectoryDataType(ModelType type,
-                                 ModelSafeGroup group,
-                                 ChangeProcessor* change_processor) override {
-    NOTREACHED() << "Not implemented.";
-  }
-
-  void DeactivateDirectoryDataType(ModelType type) override {
-    NOTREACHED() << "Not implemented.";
-  }
-
   void ActivateNonBlockingDataType(ModelType type,
                                    std::unique_ptr<DataTypeActivationResponse>
                                        activation_response) override {
@@ -124,6 +105,10 @@ class TestModelTypeConfigurer : public ModelTypeConfigurer {
     processor_->DisconnectSync();
     processor_.reset();
   }
+
+  void ActivateProxyDataType(ModelType type) override { NOTREACHED(); }
+
+  void DeactivateProxyDataType(ModelType type) override { NOTREACHED(); }
 
  private:
   std::unique_ptr<ModelTypeProcessor> processor_;

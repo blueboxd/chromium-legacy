@@ -97,6 +97,7 @@ class OzonePlatformScenic
   std::unique_ptr<PlatformWindow> CreatePlatformWindow(
       PlatformWindowDelegate* delegate,
       PlatformWindowInitProperties properties) override {
+    BindInMainProcessIfNecessary();
     if (!properties.view_token.value) {
       NOTREACHED();
       return nullptr;
@@ -138,36 +139,31 @@ class OzonePlatformScenic
     input_controller_ = CreateStubInputController();
     cursor_factory_ozone_ = std::make_unique<BitmapCursorFactoryOzone>();
 
-    base::MessageLoopCurrent::Get()->AddDestructionObserver(this);
-
     scenic_gpu_host_ = std::make_unique<ScenicGpuHost>(window_manager_.get());
 
     // SurfaceFactory is configured here to use a ui-process remote for software
     // output.
-    surface_factory_ = std::make_unique<ScenicSurfaceFactory>(
-        scenic_gpu_host_->CreateHostProcessSelfRemote());
+    if (!surface_factory_)
+      surface_factory_ = std::make_unique<ScenicSurfaceFactory>();
+
+    if (base::ThreadTaskRunnerHandle::IsSet())
+      BindInMainProcessIfNecessary();
   }
 
   void InitializeGPU(const InitParams& params) override {
-    if (params.single_process) {
-      if (!surface_factory_) {
-        // Without calling InitializeForUI, window surfaces cannot be created.
-        // Some test such as gpu_unittests do this.
-        // TODO(spang): This is not ideal; perhaps we should move the GL &
-        // vulkan initializers out of SurfaceFactoryOzone.
-        surface_factory_ =
-            std::make_unique<ScenicSurfaceFactory>(mojo::NullRemote());
-      }
-    } else {
-      DCHECK(!surface_factory_);
+    DCHECK(!surface_factory_ || params.single_process);
+
+    if (!surface_factory_)
+      surface_factory_ = std::make_unique<ScenicSurfaceFactory>();
+
+    if (!params.single_process) {
       mojo::PendingRemote<mojom::ScenicGpuHost> scenic_gpu_host_remote;
       scenic_gpu_service_ = std::make_unique<ScenicGpuService>(
           scenic_gpu_host_remote.InitWithNewPipeAndPassReceiver());
 
       // SurfaceFactory is configured here to use a gpu-process remote. The
       // other end of the pipe will be attached through ScenicGpuService.
-      surface_factory_ = std::make_unique<ScenicSurfaceFactory>(
-          std::move(scenic_gpu_host_remote));
+      surface_factory_->Initialize(std::move(scenic_gpu_host_remote));
     }
   }
 
@@ -183,18 +179,30 @@ class OzonePlatformScenic
   }
 
  private:
-  // base::MessageLoopCurrent::DestructionObserver implementation.
-  void WillDestroyCurrentMessageLoop() override {
-    // We must ensure to destroy any resources which rely on the MessageLoop's
-    // async_dispatcher.
-    surface_factory_ = nullptr;
-    scenic_gpu_host_ = nullptr;
-    overlay_manager_ = nullptr;
-    input_controller_ = nullptr;
-    cursor_factory_ozone_ = nullptr;
-    platform_event_source_ = nullptr;
-    window_manager_ = nullptr;
+  // Binds main process surface factory to main process ScenicGpuHost
+  void BindInMainProcessIfNecessary() {
+    if (bound_in_main_process_)
+      return;
+
+    mojo::PendingRemote<mojom::ScenicGpuHost> gpu_host_remote;
+    scenic_gpu_host_->Initialize(
+        gpu_host_remote.InitWithNewPipeAndPassReceiver());
+    surface_factory_->Initialize(std::move(gpu_host_remote));
+    bound_in_main_process_ = true;
+
+    base::MessageLoopCurrent::Get()->AddDestructionObserver(this);
   }
+
+  void ShutdownInMainProcess() {
+    DCHECK(bound_in_main_process_);
+    surface_factory_->Shutdown();
+    scenic_gpu_host_->Shutdown();
+    window_manager_->Shutdown();
+    bound_in_main_process_ = false;
+  }
+
+  // base::MessageLoopCurrent::DestructionObserver implementation.
+  void WillDestroyCurrentMessageLoop() override { ShutdownInMainProcess(); }
 
   std::unique_ptr<ScenicWindowManager> window_manager_;
 
@@ -206,6 +214,9 @@ class OzonePlatformScenic
   std::unique_ptr<ScenicGpuHost> scenic_gpu_host_;
   std::unique_ptr<ScenicGpuService> scenic_gpu_service_;
   std::unique_ptr<ScenicSurfaceFactory> surface_factory_;
+
+  // Whether the main process has initialized mojo bindings.
+  bool bound_in_main_process_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(OzonePlatformScenic);
 };

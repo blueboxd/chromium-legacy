@@ -81,6 +81,7 @@ class GPU_IPC_SERVICE_EXPORT GpuWatchdogThreadImplV2
   bool IsArmed();
   base::subtle::Atomic32 ReadArmDisarmCounter();
   void OnWatchdogTimeout();
+  bool SlowWatchdogThread();
   bool WatchedThreadNeedsMoreThreadTime(bool no_gpu_hang_detected);
 #if defined(OS_WIN)
   base::ThreadTicks GetWatchedThreadTime();
@@ -155,6 +156,10 @@ class GPU_IPC_SERVICE_EXPORT GpuWatchdogThreadImplV2
 
   // The time the last OnWatchdogTimeout() was called.
   base::TimeTicks last_on_watchdog_timeout_timeticks_;
+
+  // The wall-clock time the next OnWatchdogTimeout() will be called.
+  base::Time next_on_watchdog_timeout_time_;
+
 #if defined(OS_WIN)
   base::ThreadTicks last_on_watchdog_timeout_thread_ticks_;
 

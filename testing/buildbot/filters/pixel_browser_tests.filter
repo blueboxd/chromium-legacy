@@ -6,6 +6,7 @@ BookmarkEditorViewBrowserTest.*
 ContentSettingBubbleDialogTest.*
 ExtensionInstallDialogViewInteractiveBrowserTest.*
 ExtensionUninstallDialogViewInteractiveBrowserTest.*
+*EyeDropperBrowserTest.*
 FeaturePromoDialogTest.*
 GlobalErrorBubbleTest.*
 HatsBubbleTest.*

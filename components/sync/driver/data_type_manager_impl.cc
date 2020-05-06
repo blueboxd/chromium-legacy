@@ -703,12 +703,6 @@ void DataTypeManagerImpl::StartNextAssociation(AssociationGroup group) {
   model_association_manager_.StartAssociationAsync(types_to_associate);
 }
 
-void DataTypeManagerImpl::OnSingleDataTypeWillStart(ModelType type) {
-  DCHECK(controllers_->find(type) != controllers_->end());
-  DataTypeController* dtc = controllers_->find(type)->second.get();
-  dtc->BeforeLoadModels(configurer_);
-}
-
 void DataTypeManagerImpl::OnSingleDataTypeWillStop(ModelType type,
                                                    const SyncError& error) {
   auto c_it = controllers_->find(type);

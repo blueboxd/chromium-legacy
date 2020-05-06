@@ -6,10 +6,9 @@
 
 #include "components/security_interstitials/content/cert_report_helper.h"
 #include "components/security_interstitials/content/security_interstitial_controller_client.h"
+#include "components/security_interstitials/content/security_interstitial_page.h"
 #include "components/security_interstitials/content/ssl_cert_reporter.h"
 #include "components/security_interstitials/core/metrics_helper.h"
-#include "content/public/browser/interstitial_page.h"
-#include "content/public/browser/interstitial_page_delegate.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_process_host.h"
@@ -19,13 +18,13 @@
 #include "net/base/net_errors.h"
 #include "third_party/blink/public/mojom/renderer_preferences.mojom.h"
 
-using content::InterstitialPageDelegate;
 using content::NavigationController;
 using content::NavigationEntry;
 
 // static
-const InterstitialPageDelegate::TypeID LegacyTLSBlockingPage::kTypeForTesting =
-    &LegacyTLSBlockingPage::kTypeForTesting;
+const security_interstitials::SecurityInterstitialPage::TypeID
+    LegacyTLSBlockingPage::kTypeForTesting =
+        &LegacyTLSBlockingPage::kTypeForTesting;
 
 // Note that we always create a navigation entry with SSL errors.
 // No error happening loading a sub-resource triggers an interstitial so far.
@@ -60,7 +59,8 @@ bool LegacyTLSBlockingPage::ShouldCreateNewNavigation() const {
   return true;
 }
 
-InterstitialPageDelegate::TypeID LegacyTLSBlockingPage::GetTypeForTesting() {
+security_interstitials::SecurityInterstitialPage::TypeID
+LegacyTLSBlockingPage::GetTypeForTesting() {
   return LegacyTLSBlockingPage::kTypeForTesting;
 }
 
@@ -68,10 +68,6 @@ void LegacyTLSBlockingPage::PopulateInterstitialStrings(
     base::DictionaryValue* load_time_data) {
   legacy_tls_ui_->PopulateStringsForHTML(load_time_data);
   cert_report_helper()->PopulateExtendedReportingOption(load_time_data);
-}
-
-void LegacyTLSBlockingPage::OverrideEntry(NavigationEntry* entry) {
-  entry->GetSSL() = content::SSLStatus(ssl_info_);
 }
 
 // This handles the commands sent from the interstitial JavaScript.

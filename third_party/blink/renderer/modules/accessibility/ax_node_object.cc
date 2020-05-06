@@ -30,6 +30,8 @@
 
 #include <math.h>
 
+#include <algorithm>
+
 #include "third_party/blink/public/strings/grit/blink_strings.h"
 #include "third_party/blink/renderer/core/aom/accessible_node.h"
 #include "third_party/blink/renderer/core/display_lock/display_lock_utilities.h"
@@ -989,24 +991,12 @@ bool AXNodeObject::IsTextControl() const {
   if (!GetNode())
     return false;
 
-  if (HasContentEditableAttributeSet())
+  if (IsNativeTextControl() || HasContentEditableAttributeSet() ||
+      IsARIATextControl()) {
     return true;
-
-  switch (RoleValue()) {
-    case ax::mojom::Role::kTextField:
-    case ax::mojom::Role::kTextFieldWithComboBox:
-    case ax::mojom::Role::kSearchBox:
-      return true;
-    case ax::mojom::Role::kSpinButton:
-      // When it's a native spin button, it behaves like a text box, i.e. users
-      // can type in it and navigate around using cursors.
-      if (const auto* input = DynamicTo<HTMLInputElement>(*GetNode())) {
-        return input->IsTextField();
-      }
-      return false;
-    default:
-      return false;
   }
+
+  return false;
 }
 
 AXObject* AXNodeObject::MenuButtonForMenu() const {
@@ -1107,10 +1097,6 @@ bool AXNodeObject::IsAXNodeObject() const {
   return true;
 }
 
-bool AXNodeObject::IsAnchor() const {
-  return !IsNativeImage() && IsLink();
-}
-
 bool AXNodeObject::IsControl() const {
   Node* node = this->GetNode();
   if (!node)
@@ -1149,30 +1135,10 @@ bool AXNodeObject::IsFieldset() const {
   return IsA<HTMLFieldSetElement>(GetNode());
 }
 
-bool AXNodeObject::IsHeading() const {
-  return RoleValue() == ax::mojom::Role::kHeading;
-}
-
 bool AXNodeObject::IsHovered() const {
   if (Node* node = this->GetNode())
     return node->IsHovered();
   return false;
-}
-
-bool AXNodeObject::IsImage() const {
-  // Canvas is not currently included so that it is not exposed unless there is
-  // a label, fallback content or something to make it accessible. This decision
-  // may be revisited at a later date.
-  switch (RoleValue()) {
-    case ax::mojom::Role::kDocCover:
-    case ax::mojom::Role::kGraphicsSymbol:
-    case ax::mojom::Role::kImage:
-    case ax::mojom::Role::kImageMap:
-    case ax::mojom::Role::kSvgRoot:
-      return true;
-    default:
-      return false;
-  }
 }
 
 bool AXNodeObject::IsImageButton() const {
@@ -1185,10 +1151,6 @@ bool AXNodeObject::IsInputImage() const {
     return html_input_element->type() == input_type_names::kImage;
 
   return false;
-}
-
-bool AXNodeObject::IsLink() const {
-  return RoleValue() == ax::mojom::Role::kLink;
 }
 
 // It is not easily possible to find out if an element is the target of an
@@ -1213,18 +1175,6 @@ bool AXNodeObject::IsInPageLinkTarget() const {
     return true;
   }
   return false;
-}
-
-bool AXNodeObject::IsMenu() const {
-  return RoleValue() == ax::mojom::Role::kMenu;
-}
-
-bool AXNodeObject::IsMenuButton() const {
-  return RoleValue() == ax::mojom::Role::kMenuButton;
-}
-
-bool AXNodeObject::IsMeter() const {
-  return RoleValue() == ax::mojom::Role::kMeter;
 }
 
 bool AXNodeObject::IsMultiSelectable() const {
@@ -1343,10 +1293,6 @@ bool AXNodeObject::IsNativeSpinButton() const {
   return false;
 }
 
-bool AXNodeObject::IsMoveableSplitter() const {
-  return RoleValue() == ax::mojom::Role::kSplitter && CanSetFocusAttribute();
-}
-
 bool AXNodeObject::IsClickable() const {
   Node* node = GetNode();
   if (!node)
@@ -1365,7 +1311,7 @@ bool AXNodeObject::IsClickable() const {
     return true;
   }
 
-  return AXObject::IsClickable();
+  return IsTextControl() || AXObject::IsClickable();
 }
 
 AXRestriction AXNodeObject::Restriction() const {
@@ -1925,7 +1871,7 @@ String AXNodeObject::AriaInvalidValue() const {
 }
 
 String AXNodeObject::ValueDescription() const {
-  if (!SupportsRangeValue())
+  if (!IsRangeValueSupported())
     return String();
 
   return GetAOMPropertyOrARIAAttribute(AOMStringProperty::kValueText)
@@ -2276,7 +2222,7 @@ String AXNodeObject::TextAlternative(bool recursive,
     if (IsTextControl())
       return GetText();
 
-    if (IsRange()) {
+    if (IsRangeValueSupported()) {
       const AtomicString& aria_valuetext =
           GetAOMPropertyOrARIAAttribute(AOMStringProperty::kValueText);
       if (!aria_valuetext.IsNull())

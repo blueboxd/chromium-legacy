@@ -146,11 +146,6 @@ void SafeBrowsingUIManager::StartDisplayingBlockingPage(
   ui_manager->DisplayBlockingPage(resource);
 }
 
-void SafeBrowsingUIManager::ShowBlockingPageForResource(
-    const UnsafeResource& resource) {
-  SafeBrowsingBlockingPage::ShowBlockingPage(this, resource);
-}
-
 // static
 bool SafeBrowsingUIManager::ShouldSendHitReport(const HitReport& hit_report,
                                                 WebContents* web_contents) {

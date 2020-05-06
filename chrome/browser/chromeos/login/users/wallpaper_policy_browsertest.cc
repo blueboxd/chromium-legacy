@@ -153,9 +153,7 @@ class WallpaperPolicyTest : public LoginManagerTest,
         user_policy_builder->GetPublicSigningKeyAsString();
     EXPECT_FALSE(user_key_bits.empty());
     EXPECT_TRUE(base::CreateDirectory(user_key_file.DirName()));
-    EXPECT_EQ(base::WriteFile(user_key_file, user_key_bits.data(),
-                              user_key_bits.length()),
-              base::checked_cast<int>(user_key_bits.length()));
+    EXPECT_TRUE(base::WriteFile(user_key_file, user_key_bits));
     user_policy_builder->policy_data().set_username(account_id.GetUserEmail());
     user_policy_builder->policy_data().set_gaia_id(account_id.GetGaiaId());
     return user_policy_builder;

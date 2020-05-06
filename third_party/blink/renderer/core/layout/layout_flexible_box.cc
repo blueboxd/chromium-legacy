@@ -105,10 +105,12 @@ MinMaxSizes LayoutFlexibleBox::ComputeIntrinsicLogicalWidths() const {
   // https://bugs.webkit.org/show_bug.cgi?id=116117 and
   // https://crbug.com/240765.
   float previous_max_content_flex_fraction = -1;
+  int number_of_items = 0;
   for (LayoutBox* child = FirstChildBox(); child;
        child = child->NextSiblingBox()) {
     if (child->IsOutOfFlowPositioned())
       continue;
+    number_of_items++;
 
     LayoutUnit margin = MarginIntrinsicLogicalWidthForChild(*child);
 
@@ -141,6 +143,19 @@ MinMaxSizes LayoutFlexibleBox::ComputeIntrinsicLogicalWidths() const {
 
     previous_max_content_flex_fraction = CountIntrinsicSizeForAlgorithmChange(
         max_preferred_logical_width, child, previous_max_content_flex_fraction);
+  }
+
+  if (!IsColumnFlow() && number_of_items > 0) {
+    LayoutUnit gap_inline_size =
+        (number_of_items - 1) *
+        FlexLayoutAlgorithm::GapBetweenItems(
+            StyleRef(),
+            LogicalSize{ContentLogicalWidth(),
+                        AvailableLogicalHeightForPercentageComputation()});
+    child_sizes.max_size += gap_inline_size;
+    if (!IsMultiline()) {
+      child_sizes.min_size += gap_inline_size;
+    }
   }
 
   child_sizes.max_size = std::max(child_sizes.min_size, child_sizes.max_size);
@@ -949,8 +964,10 @@ void LayoutFlexibleBox::LayoutFlexItems(bool relayout_children,
   ChildLayoutType layout_type =
       relayout_children ? kForceLayout : kLayoutIfNeeded;
   const LayoutUnit line_break_length = MainAxisContentExtent(LayoutUnit::Max());
-  FlexLayoutAlgorithm flex_algorithm(Style(), line_break_length, LayoutUnit(),
-                                     LayoutUnit());
+  FlexLayoutAlgorithm flex_algorithm(
+      Style(), line_break_length,
+      LogicalSize{ContentLogicalWidth(),
+                  AvailableLogicalHeightForPercentageComputation()});
   order_iterator_.First();
   for (LayoutBox* child = order_iterator_.CurrentChild(); child;
        child = order_iterator_.Next()) {
@@ -1001,7 +1018,11 @@ void LayoutFlexibleBox::LayoutFlexItems(bool relayout_children,
     if (Size().Height() < min_height)
       SetLogicalHeight(min_height);
   }
-
+  if (!IsColumnFlow()) {
+    SetLogicalHeight(LogicalHeight() +
+                     flex_algorithm.gap_between_lines_ *
+                         (flex_algorithm.FlexLines().size() - 1));
+  }
   UpdateLogicalHeight();
   if (!HasOverrideLogicalHeight() && IsColumnFlow()) {
     SetIntrinsicContentLogicalHeight(
@@ -1537,8 +1558,10 @@ void LayoutFlexibleBox::AlignFlexLines(FlexLayoutAlgorithm& algorithm) {
   Vector<FlexLine>& line_contexts = algorithm.FlexLines();
   const StyleContentAlignmentData align_content =
       FlexLayoutAlgorithm::ResolvedAlignContent(StyleRef());
-  if (align_content.GetPosition() == ContentPosition::kFlexStart)
+  if (align_content.GetPosition() == ContentPosition::kFlexStart &&
+      algorithm.gap_between_lines_ == 0) {
     return;
+  }
 
   if (IsMultiline() && !line_contexts.IsEmpty()) {
     UseCounter::Count(GetDocument(),

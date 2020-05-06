@@ -28,6 +28,10 @@
 
 #include "third_party/blink/renderer/modules/accessibility/ax_layout_object.h"
 
+#include <algorithm>
+#include <memory>
+#include <string>
+
 #include "third_party/blink/renderer/bindings/core/v8/v8_image_bitmap_options.h"
 #include "third_party/blink/renderer/core/aom/accessible_node.h"
 #include "third_party/blink/renderer/core/css/css_property_names.h"
@@ -322,8 +326,9 @@ bool AXLayoutObject::IsDefault() const {
 
   // Checks for any kind of disabled, including aria-disabled.
   if (Restriction() == kRestrictionDisabled ||
-      RoleValue() != ax::mojom::Role::kButton)
+      RoleValue() != ax::mojom::Role::kButton) {
     return false;
+  }
 
   // Will only match :default pseudo class if it's the first default button in
   // a form.

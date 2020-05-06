@@ -16,7 +16,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.weblayer.Browser;
@@ -27,7 +26,7 @@ import org.chromium.weblayer.shell.InstrumentationActivity;
 /**
  * Tests handling of external intents.
  */
-@RunWith(BaseJUnit4ClassRunner.class)
+@RunWith(WebLayerJUnit4ClassRunner.class)
 public class ExternalNavigationTest {
     @Rule
     public InstrumentationActivityTestRule mActivityTestRule =

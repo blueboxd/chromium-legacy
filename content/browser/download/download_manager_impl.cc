@@ -547,7 +547,7 @@ bool DownloadManagerImpl::InterceptDownload(
     return true;
   }
 
-  std::string user_agent = "";
+  std::string user_agent;
   for (const auto& header : info.request_headers) {
     if (header.first == net::HttpRequestHeaders::kUserAgent) {
       user_agent = header.second;

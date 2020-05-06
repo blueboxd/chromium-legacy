@@ -58,6 +58,7 @@ OverlayRequestQueueImpl::~OverlayRequestQueueImpl() {
   for (auto& observer : observers_) {
     observer.OverlayRequestQueueDestroyed(this);
   }
+  CancelAllRequests();
 }
 
 #pragma mark Public

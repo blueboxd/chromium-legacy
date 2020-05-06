@@ -160,8 +160,7 @@ class MediaEngagementAutoplayBrowserTest
     list.AppendString(origin.Serialize());
     std::string json_data;
     base::JSONWriter::Write(list, &json_data);
-    EXPECT_TRUE(
-        base::WriteFile(input_path, json_data.c_str(), json_data.size()));
+    EXPECT_TRUE(base::WriteFile(input_path, json_data));
 
     // Get the path to the "generator" binary in the module path.
     base::FilePath module_dir;

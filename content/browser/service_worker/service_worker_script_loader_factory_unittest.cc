@@ -187,7 +187,7 @@ TEST_F(ServiceWorkerScriptLoaderFactoryCopyResumeTest,
        CreateResumeTypeScriptLoader) {
   const std::string kNewHeaders =
       "HTTP/1.0 200 OK\0Content-Type: text/javascript\0Content-Length: 0\0\0";
-  const std::string kNewData = "";
+  const std::string kNewData;
 
   ServiceWorkerUpdateCheckTestUtils::CreateAndSetComparedScriptInfoForVersion(
       script_url_, 0, kNewHeaders, kNewData, kOldResourceId, kNewResourceId,

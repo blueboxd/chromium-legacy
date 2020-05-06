@@ -320,14 +320,10 @@ TEST_F(RulesetMatcherTest, RedirectToExtensionPath) {
   rule.action->redirect->extension_path = "/path/newfile.js?query#fragment";
 
   std::unique_ptr<RulesetMatcher> matcher;
-  const size_t kId = 1;
+  const RulesetID kRulesetId(5);
   const size_t kRuleCountLimit = 10;
   ASSERT_TRUE(CreateVerifiedMatcher(
-      {rule},
-      CreateTemporarySource(kId,
-                            api::declarative_net_request::SOURCE_TYPE_MANIFEST,
-                            kRuleCountLimit),
-      &matcher));
+      {rule}, CreateTemporarySource(kRulesetId, kRuleCountLimit), &matcher));
 
   GURL example_url("http://example.com");
   RequestParams params;
@@ -336,11 +332,12 @@ TEST_F(RulesetMatcherTest, RedirectToExtensionPath) {
   base::Optional<RequestAction> redirect_action =
       matcher->GetBeforeRequestAction(params);
 
-  ASSERT_TRUE(redirect_action.has_value());
-  EXPECT_EQ(redirect_action->type, RequestAction::Type::REDIRECT);
-  GURL expected_redirect_url(
-      "chrome-extension://extensionid/path/newfile.js?query#fragment");
-  EXPECT_EQ(expected_redirect_url, redirect_action->redirect_url);
+  RequestAction expected_action = CreateRequestActionForTesting(
+      RequestAction::Type::REDIRECT, *rule.id, *rule.priority, kRulesetId);
+  expected_action.redirect_url =
+      GURL("chrome-extension://extensionid/path/newfile.js?query#fragment");
+
+  EXPECT_EQ(expected_action, redirect_action);
 }
 
 // Tests a rule to redirect to a static url.

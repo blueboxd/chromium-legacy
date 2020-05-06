@@ -25,7 +25,7 @@ using ActionInfo = CompositeMatcher::ActionInfo;
 namespace {
 
 bool AreIDsUnique(const CompositeMatcher::MatcherList& matchers) {
-  std::set<size_t> ids;
+  std::set<RulesetID> ids;
   for (const auto& matcher : matchers) {
     bool did_insert = ids.insert(matcher->id()).second;
     if (!did_insert)

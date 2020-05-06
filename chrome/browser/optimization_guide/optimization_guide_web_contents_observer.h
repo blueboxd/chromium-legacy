@@ -42,6 +42,9 @@ class OptimizationGuideWebContentsObserver
   void UpdateSessionTimingStatistics(
       const page_load_metrics::mojom::PageLoadTiming& timing);
 
+  // Notifies |this| to flush |last_navigation_data| so metrics are recorded.
+  void FlushLastNavigationData();
+
  private:
   friend class content::WebContentsUserData<
       OptimizationGuideWebContentsObserver>;

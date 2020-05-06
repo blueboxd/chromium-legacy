@@ -138,10 +138,7 @@ IN_PROC_BROWSER_TEST_F(RedirectTest, ClientEmptyReferer) {
   base::ScopedTempDir temp_directory;
   ASSERT_TRUE(temp_directory.CreateUniqueTempDir());
   base::FilePath temp_file = temp_directory.GetPath().AppendASCII("foo.html");
-  ASSERT_EQ(static_cast<int>(file_redirect_contents.size()),
-            base::WriteFile(temp_file,
-                            file_redirect_contents.data(),
-                            file_redirect_contents.size()));
+  ASSERT_TRUE(base::WriteFile(temp_file, file_redirect_contents));
 
   // Navigate to the file through the browser.
   GURL first_url = net::FilePathToFileURL(temp_file);

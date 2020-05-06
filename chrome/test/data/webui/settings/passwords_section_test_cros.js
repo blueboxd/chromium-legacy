@@ -135,7 +135,7 @@ suite('PasswordsSection_Cros', function() {
       passwordItem = {
         entry: createPasswordEntry(),
         set password(newPassword) {
-          if (newPassword && newPassword != this.password_) {
+          if (newPassword && newPassword !== this.password_) {
             resolve(newPassword);
           }
           this.password_ = newPassword;

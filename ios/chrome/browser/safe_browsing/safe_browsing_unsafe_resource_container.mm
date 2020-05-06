@@ -40,8 +40,10 @@ class UnsafeSubresourceContainer : public base::SupportsUserData::Data {
     return stack;
   }
 
-  // Whether the container is holding an unsafe resource.
-  bool HasUnsafeResource() const { return unsafe_subresource_.get(); }
+  // Returns a pointer to unsafe resource, or null if one is not stored.
+  const security_interstitials::UnsafeResource* GetUnsafeResource() const {
+    return unsafe_subresource_.get();
+  }
 
   // Stores a copy of |subresource| in the container.
   void StoreUnsafeSubresource(std::unique_ptr<UnsafeResource> subresource) {
@@ -91,7 +93,7 @@ void SafeBrowsingUnsafeResourceContainer::StoreUnsafeResource(
     // For main frame navigations, the copy is stored in
     // |main_frame_unsafe_resource_| it corresponds with the pending
     // NavigationItem, which is discarded when the navigation is cancelled.
-    DCHECK(!HasMainFrameUnsafeResource());
+    DCHECK(!GetMainFrameUnsafeResource());
     main_frame_unsafe_resource_ = std::move(resource_copy);
   } else {
     // Unsafe subresources are caused by loads triggered by the committed main
@@ -99,13 +101,14 @@ void SafeBrowsingUnsafeResourceContainer::StoreUnsafeResource(
     // that they persist past reloads.
     web::NavigationItem* item =
         web_state_->GetNavigationManager()->GetLastCommittedItem();
-    DCHECK(!HasSubFrameUnsafeResource(item));
+    DCHECK(!GetSubFrameUnsafeResource(item));
     UnsafeSubresourceContainer::FromNavigationItem(item)
         ->StoreUnsafeSubresource(std::move(resource_copy));
   }
 }
 
-bool SafeBrowsingUnsafeResourceContainer::HasMainFrameUnsafeResource() const {
+const security_interstitials::UnsafeResource*
+SafeBrowsingUnsafeResourceContainer::GetMainFrameUnsafeResource() const {
   return main_frame_unsafe_resource_.get();
 }
 
@@ -114,10 +117,11 @@ SafeBrowsingUnsafeResourceContainer::ReleaseMainFrameUnsafeResource() {
   return std::move(main_frame_unsafe_resource_);
 }
 
-bool SafeBrowsingUnsafeResourceContainer::HasSubFrameUnsafeResource(
+const security_interstitials::UnsafeResource*
+SafeBrowsingUnsafeResourceContainer::GetSubFrameUnsafeResource(
     web::NavigationItem* item) const {
   return UnsafeSubresourceContainer::FromNavigationItem(item)
-      ->HasUnsafeResource();
+      ->GetUnsafeResource();
 }
 
 std::unique_ptr<security_interstitials::UnsafeResource>

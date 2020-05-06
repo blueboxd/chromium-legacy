@@ -153,7 +153,7 @@ TEST_F(ProfileInfoCacheTest, AddProfiles) {
         profiles::GetDefaultAvatarIconResourceIDAtIndex(
             i)).ToSkBitmap();
 #endif
-    std::string supervised_user_id = "";
+    std::string supervised_user_id;
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
     if (i == 3)
       supervised_user_id = supervised_users::kChildAccountSUID;

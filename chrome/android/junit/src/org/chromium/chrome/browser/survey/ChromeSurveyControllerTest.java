@@ -10,7 +10,6 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -21,7 +20,6 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.robolectric.annotation.Config;
 
-import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
@@ -60,17 +58,11 @@ public class ChromeSurveyControllerTest {
     @Before
     public void before() {
         MockitoAnnotations.initMocks(this);
-        RecordHistogram.setDisabledForTests(true);
 
         mTestController = new TestChromeSurveyController();
         mTestController.setTabModelSelector(mSelector);
         mSharedPreferences = SharedPreferencesManager.getInstance();
         Assert.assertNull("Tab should be null", mTestController.getLastTabInfobarShown());
-    }
-
-    @After
-    public void after() {
-        RecordHistogram.setDisabledForTests(false);
     }
 
     @Test

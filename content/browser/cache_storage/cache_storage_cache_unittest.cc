@@ -2260,7 +2260,7 @@ TEST_F(CacheStorageCacheTest, VerifyOpaqueSizePadding) {
   EXPECT_NE(opaque_padding, current_padding);
 
   // Now reset opaque side data back to zero.
-  const std::string expected_side_data2 = "";
+  const std::string expected_side_data2;
   scoped_refptr<net::IOBuffer> buffer2 =
       base::MakeRefCounted<net::StringIOBuffer>(expected_side_data2);
   EXPECT_TRUE(WriteSideData(opaque_request->url, response_time, buffer2,

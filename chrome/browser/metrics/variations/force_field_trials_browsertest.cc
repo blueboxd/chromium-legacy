@@ -118,10 +118,7 @@ IN_PROC_BROWSER_TEST_P(ForceFieldTrialsBrowserTest, PRE_ForceTrials) {
                 trial_group == kDisabledGroupName);
 
     base::ScopedAllowBlockingForTesting allow_blocking;
-    int bytes_to_write = base::checked_cast<int>(trial_group.length());
-    int bytes_written = base::WriteFile(GetTestFilePath(i), trial_group.c_str(),
-                                        bytes_to_write);
-    ASSERT_EQ(bytes_to_write, bytes_written);
+    ASSERT_TRUE(base::WriteFile(GetTestFilePath(i), trial_group));
   }
 }
 

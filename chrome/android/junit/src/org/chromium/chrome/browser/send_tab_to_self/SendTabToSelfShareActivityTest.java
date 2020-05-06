@@ -11,7 +11,6 @@ import static org.mockito.Mockito.when;
 
 import android.support.test.filters.SmallTest;
 
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -21,7 +20,6 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.robolectric.annotation.Config;
 
-import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.JniMocker;
 import org.chromium.chrome.browser.ActivityTabProvider;
@@ -70,12 +68,6 @@ public class SendTabToSelfShareActivityTest {
         MockitoAnnotations.initMocks(this);
         mocker.mock(SendTabToSelfAndroidBridgeJni.TEST_HOOKS, mNativeMock);
         mocker.mock(ProfileJni.TEST_HOOKS, mMockProfileNatives);
-        RecordHistogram.setDisabledForTests(true);
-    }
-
-    @After
-    public void tearDown() {
-        RecordHistogram.setDisabledForTests(false);
     }
 
     @Test

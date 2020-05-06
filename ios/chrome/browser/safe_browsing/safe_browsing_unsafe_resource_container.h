@@ -31,17 +31,19 @@ class SafeBrowsingUnsafeResourceContainer
   void StoreUnsafeResource(
       const security_interstitials::UnsafeResource& resource);
 
-  // Whether the container has an unsafe resource for the main frame.
-  bool HasMainFrameUnsafeResource() const;
+  // Returns the main frame UnsafeResource, or null if one has not been stored.
+  const security_interstitials::UnsafeResource* GetMainFrameUnsafeResource()
+      const;
 
   // Returns the main frame UnsafeResource, transferring ownership to the
   // caller.  Returns null if there is no main frame unsafe resource.
   std::unique_ptr<security_interstitials::UnsafeResource>
   ReleaseMainFrameUnsafeResource();
 
-  // Whether the container has an unsafe resource for a subframe for |item|.
-  // |item| must be non-null.
-  bool HasSubFrameUnsafeResource(web::NavigationItem* item) const;
+  // Returns the sub frame UnsafeResource for |item|, or null if one has not
+  // been stored.  |item| must be non-null.
+  const security_interstitials::UnsafeResource* GetSubFrameUnsafeResource(
+      web::NavigationItem* item) const;
 
   // Returns the sub frame UnsafeResource for |item|, transferring ownership to
   // the caller.  Returns null if |item| has no sub frame unsafe resources.

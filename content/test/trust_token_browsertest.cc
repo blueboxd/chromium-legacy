@@ -6,12 +6,9 @@
 #include <string>
 
 #include "base/base64.h"
-#include "base/json/json_reader.h"
-#include "base/json/json_string_value_serializer.h"
 #include "base/strings/string_piece.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/scoped_feature_list.h"
-#include "base/values.h"
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
@@ -31,26 +28,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace content {
-
-namespace {
-
-// Given a well-formed key commitment record JSON and an issuer origin, returns
-// a serialized one-item dictionary mapping the commitment to the issuer.
-std::string WrapKeyCommitmentForIssuer(const url::Origin& issuer,
-                                       base::StringPiece commitment) {
-  std::string ret;
-  JSONStringValueSerializer serializer(&ret);
-
-  CHECK_NE(issuer.Serialize(),
-           "");  // guard against accidentally passing an opaque origin
-
-  base::Value to_serialize(base::Value::Type::DICTIONARY);
-  to_serialize.SetKey(issuer.Serialize(), *base::JSONReader::Read(commitment));
-  CHECK(serializer.Serialize(to_serialize));
-  return ret;
-}
-
-}  // namespace
 
 // TrustTokenBrowsertest is a fixture containing boilerplate for initializing an
 // HTTPS test server and passing requests through to an embedded instance of
@@ -91,8 +68,9 @@ class TrustTokenBrowsertest : public ContentBrowserTest {
 IN_PROC_BROWSER_TEST_F(TrustTokenBrowsertest, FetchEndToEnd) {
   base::RunLoop run_loop;
   GetNetworkService()->SetTrustTokenKeyCommitments(
-      WrapKeyCommitmentForIssuer(url::Origin::Create(server_.base_url()),
-                                 request_handler_.GetKeyCommitmentRecord()),
+      network::WrapKeyCommitmentForIssuer(
+          url::Origin::Create(server_.base_url()),
+          request_handler_.GetKeyCommitmentRecord()),
       run_loop.QuitClosure());
   run_loop.Run();
 
@@ -121,8 +99,9 @@ IN_PROC_BROWSER_TEST_F(TrustTokenBrowsertest, FetchEndToEnd) {
 IN_PROC_BROWSER_TEST_F(TrustTokenBrowsertest, XhrEndToEnd) {
   base::RunLoop run_loop;
   GetNetworkService()->SetTrustTokenKeyCommitments(
-      WrapKeyCommitmentForIssuer(url::Origin::Create(server_.base_url()),
-                                 request_handler_.GetKeyCommitmentRecord()),
+      network::WrapKeyCommitmentForIssuer(
+          url::Origin::Create(server_.base_url()),
+          request_handler_.GetKeyCommitmentRecord()),
       run_loop.QuitClosure());
   run_loop.Run();
 
@@ -182,8 +161,9 @@ IN_PROC_BROWSER_TEST_F(TrustTokenBrowsertest, XhrEndToEnd) {
 IN_PROC_BROWSER_TEST_F(TrustTokenBrowsertest, IframeEndToEnd) {
   base::RunLoop run_loop;
   GetNetworkService()->SetTrustTokenKeyCommitments(
-      WrapKeyCommitmentForIssuer(url::Origin::Create(server_.base_url()),
-                                 request_handler_.GetKeyCommitmentRecord()),
+      network::WrapKeyCommitmentForIssuer(
+          url::Origin::Create(server_.base_url()),
+          request_handler_.GetKeyCommitmentRecord()),
       run_loop.QuitClosure());
   run_loop.Run();
 
@@ -217,8 +197,9 @@ IN_PROC_BROWSER_TEST_F(TrustTokenBrowsertest, IframeEndToEnd) {
 IN_PROC_BROWSER_TEST_F(TrustTokenBrowsertest, HasTrustTokenAfterIssuance) {
   base::RunLoop run_loop;
   GetNetworkService()->SetTrustTokenKeyCommitments(
-      WrapKeyCommitmentForIssuer(url::Origin::Create(server_.base_url()),
-                                 request_handler_.GetKeyCommitmentRecord()),
+      network::WrapKeyCommitmentForIssuer(
+          url::Origin::Create(server_.base_url()),
+          request_handler_.GetKeyCommitmentRecord()),
       run_loop.QuitClosure());
   run_loop.Run();
 

@@ -85,9 +85,7 @@ class KioskAppUpdateServiceTest
     const std::string uptime_seconds =
         base::NumberToString(uptime.InSecondsF());
     const base::FilePath uptime_file = temp_dir.Append("uptime");
-    ASSERT_EQ(static_cast<int>(uptime_seconds.size()),
-              base::WriteFile(
-                  uptime_file, uptime_seconds.c_str(), uptime_seconds.size()));
+    ASSERT_TRUE(base::WriteFile(uptime_file, uptime_seconds));
     uptime_file_override_.reset(
         new base::ScopedPathOverride(chromeos::FILE_UPTIME, uptime_file));
   }

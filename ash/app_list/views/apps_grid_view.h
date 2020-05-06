@@ -494,7 +494,6 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   void OnListItemMoved(size_t from_index,
                        size_t to_index,
                        AppListItem* item) override;
-  void OnAppListItemHighlight(size_t index, bool highlight) override;
 
   // Overridden from PaginationModelObserver:
   void TotalPagesChanged(int previous_page_count, int new_page_count) override;

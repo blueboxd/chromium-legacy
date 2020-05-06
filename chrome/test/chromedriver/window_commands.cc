@@ -277,7 +277,7 @@ Status GetVisibleCookies(Session* session,
     cookie_dict->GetString("domain", &domain);
     std::string path;
     cookie_dict->GetString("path", &path);
-    std::string samesite = "";
+    std::string samesite;
     GetOptionalString(cookie_dict, "sameSite", &samesite);
     int64_t expiry = 0;
     double temp_double;
@@ -613,7 +613,7 @@ Status ExecuteNewWindow(Session* session,
                         const base::DictionaryValue& params,
                         std::unique_ptr<base::Value>* value,
                         Timeout* timeout) {
-  std::string type = "";
+  std::string type;
   // "type" can either be None or a string.
   auto* type_param = params.FindKey("type");
   if (!(!type_param || type_param->is_none() ||
@@ -625,7 +625,7 @@ Status ExecuteNewWindow(Session* session,
                                        ? Chrome::WindowType::kWindow
                                        : Chrome::WindowType::kTab;
 
-  std::string handle = "";
+  std::string handle;
   Status status =
       session->chrome->NewWindow(session->window, window_type, &handle);
 
@@ -1418,7 +1418,7 @@ Status ExecutePerformActions(Session* session,
             action->GetString("pointerType", &pointer_type);
             double x = 0, y = 0;
             OriginType origin = kViewPort;
-            std::string element_id = "";
+            std::string element_id;
             if (action_type == "pointerMove") {
               action->GetDouble("x", &x);
               action->GetDouble("y", &y);

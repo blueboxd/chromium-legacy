@@ -677,20 +677,6 @@ blink::WebInputEvent::Modifiers DomCodeToWebInputEventModifiers(DomCode code) {
   return static_cast<blink::WebInputEvent::Modifiers>(0);
 }
 
-bool IsGestureScrollOrPinch(WebInputEvent::Type type) {
-  switch (type) {
-    case blink::WebGestureEvent::Type::kGestureScrollBegin:
-    case blink::WebGestureEvent::Type::kGestureScrollUpdate:
-    case blink::WebGestureEvent::Type::kGestureScrollEnd:
-    case blink::WebGestureEvent::Type::kGesturePinchBegin:
-    case blink::WebGestureEvent::Type::kGesturePinchUpdate:
-    case blink::WebGestureEvent::Type::kGesturePinchEnd:
-      return true;
-    default:
-      return false;
-  }
-}
-
 bool IsGestureScroll(WebInputEvent::Type type) {
   switch (type) {
     case blink::WebGestureEvent::Type::kGestureScrollBegin:

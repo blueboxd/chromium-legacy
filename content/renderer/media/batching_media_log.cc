@@ -182,7 +182,7 @@ std::string BatchingMediaLog::MediaEventToMessageString(
           static_cast<media::PipelineStatus>(error_code));
     }
     case media::MediaLogRecord::Type::kMessage: {
-      std::string result = "";
+      std::string result;
       if (event.params.GetString(
               MediaLogMessageLevelToString(media::MediaLogMessageLevel::kERROR),
               &result)) {

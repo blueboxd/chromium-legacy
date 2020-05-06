@@ -40,6 +40,7 @@
 #include "extensions/browser/disable_reason.h"
 #include "extensions/browser/test_extension_registry_observer.h"
 #include "extensions/common/api/declarative_net_request.h"
+#include "extensions/common/api/declarative_net_request/constants.h"
 #include "extensions/common/api/declarative_net_request/test_utils.h"
 #include "extensions/common/error_utils.h"
 #include "extensions/common/file_util.h"
@@ -84,6 +85,16 @@ InstallWarning GetLargeRegexWarning(
                             base::NumberToString(rule_id), kRegexFilterKey),
                         manifest_keys::kDeclarativeNetRequestKey,
                         manifest_keys::kDeclarativeRuleResourcesKey);
+}
+
+std::vector<std::string> GetPublicRulesetIDs(
+    const Extension& extension,
+    const CompositeMatcher::MatcherList& matchers) {
+  std::vector<std::string> manifest_ids;
+  for (const std::unique_ptr<RulesetMatcher>& matcher : matchers)
+    manifest_ids.push_back(GetPublicRulesetID(extension, matcher->id()));
+
+  return manifest_ids;
 }
 
 // Base test fixture to test indexing of rulesets.
@@ -291,8 +302,9 @@ class SingleRulesetTest : public DeclarativeNetRequestUnittest {
 
     if (persist_initial_indexed_ruleset_) {
       std::string data = "user ruleset";
-      base::FilePath ruleset_path = extension_dir().Append(
-          file_util::GetIndexedRulesetRelativePath(kMinValidStaticRulesetID));
+      base::FilePath ruleset_path =
+          extension_dir().Append(file_util::GetIndexedRulesetRelativePath(
+              kMinValidStaticRulesetID.value()));
       ASSERT_TRUE(base::CreateDirectory(ruleset_path.DirName()));
       ASSERT_EQ(static_cast<int>(data.size()),
                 base::WriteFile(ruleset_path, data.c_str(), data.size()));
@@ -982,9 +994,9 @@ TEST_P(MultipleRulesetsTest, EnabledRulesCount) {
       manager()->GetMatcherForExtension(extension()->id());
   ASSERT_TRUE(composite_matcher);
 
-  EXPECT_THAT(composite_matcher->matchers(),
-              UnorderedElementsAre(Pointee(Property(&RulesetMatcher::id, 1)),
-                                   Pointee(Property(&RulesetMatcher::id, 3))));
+  EXPECT_THAT(GetPublicRulesetIDs(*extension(), composite_matcher->matchers()),
+              UnorderedElementsAre("id1", "id3"));
+
   EXPECT_THAT(composite_matcher->matchers(),
               UnorderedElementsAre(
                   Pointee(Property(&RulesetMatcher::GetRulesCount, 100 + 10)),
@@ -1037,9 +1049,9 @@ TEST_P(MultipleRulesetsTest, StaticRuleCountExceeded) {
       manager()->GetMatcherForExtension(extension_id);
   ASSERT_TRUE(composite_matcher);
 
-  EXPECT_THAT(composite_matcher->matchers(),
-              UnorderedElementsAre(Pointee(Property(&RulesetMatcher::id, 1)),
-                                   Pointee(Property(&RulesetMatcher::id, 4))));
+  EXPECT_THAT(GetPublicRulesetIDs(*extension(), composite_matcher->matchers()),
+              UnorderedElementsAre("1.json", "4.json"));
+
   EXPECT_THAT(composite_matcher->matchers(),
               UnorderedElementsAre(
                   Pointee(Property(&RulesetMatcher::GetRulesCount, 10)),
@@ -1078,9 +1090,9 @@ TEST_P(MultipleRulesetsTest, RegexRuleCountExceeded) {
       manager()->GetMatcherForExtension(extension()->id());
   ASSERT_TRUE(composite_matcher);
 
-  EXPECT_THAT(composite_matcher->matchers(),
-              UnorderedElementsAre(Pointee(Property(&RulesetMatcher::id, 1)),
-                                   Pointee(Property(&RulesetMatcher::id, 4))));
+  EXPECT_THAT(GetPublicRulesetIDs(*extension(), composite_matcher->matchers()),
+              UnorderedElementsAre("1.json", "4.json"));
+
   EXPECT_THAT(
       composite_matcher->matchers(),
       UnorderedElementsAre(

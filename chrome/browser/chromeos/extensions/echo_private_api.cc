@@ -164,7 +164,7 @@ EchoPrivateGetOobeTimestampFunction::GetOobeTimestampOnFileSequence() {
       extensions::GetExtensionFileTaskRunner()->RunsTasksInCurrentSequence());
 
   const char kOobeTimestampFile[] = "/home/chronos/.oobe_completed";
-  std::string timestamp = "";
+  std::string timestamp;
   base::File::Info fileInfo;
   if (base::GetFileInfo(base::FilePath(kOobeTimestampFile), &fileInfo)) {
     base::Time::Exploded ctime;

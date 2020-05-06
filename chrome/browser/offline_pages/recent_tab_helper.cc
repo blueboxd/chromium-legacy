@@ -93,7 +93,7 @@ struct RecentTabHelper::SnapshotProgressInfo {
 
   // The app that created the tab - either a package name of the CCT origin
   // or empty, meaning chrome.
-  std::string origin = "";
+  std::string origin;
 };
 
 RecentTabHelper::RecentTabHelper(content::WebContents* web_contents)

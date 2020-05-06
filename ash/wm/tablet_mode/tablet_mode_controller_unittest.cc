@@ -185,6 +185,7 @@ class TabletModeControllerTest : public MultiDisplayOverviewAndSplitViewTest {
   }
 
   bool IsScreenshotShown() const { return test_api_->IsScreenshotShown(); }
+  float GetLidAngle() const { return test_api_->GetLidAngle(); }
 
   // Creates a test window snapped on the left in desktop mode.
   std::unique_ptr<aura::Window> CreateDesktopWindowSnappedLeft(
@@ -463,6 +464,17 @@ TEST_P(TabletModeControllerTest, NotExitTabletModeWithUnstableLidAngle) {
   EXPECT_TRUE(CanUseUnstableLidAngle());
   OpenLidToAngle(5.0f);
   EXPECT_TRUE(IsTabletModeStarted());
+}
+
+// Test that when the device lid is closed, its lid angle is reset properly.
+TEST_P(TabletModeControllerTest, ResetLidAngleWhenLidClosed) {
+  AttachTickClockForTest();
+  OpenLid();
+  OpenLidToAngle(90.0f);
+  EXPECT_FLOAT_EQ(GetLidAngle(), 90.f);
+
+  CloseLid();
+  EXPECT_FLOAT_EQ(GetLidAngle(), 0.f);
 }
 
 // Tests that when the hinge is nearly vertically aligned, the current state

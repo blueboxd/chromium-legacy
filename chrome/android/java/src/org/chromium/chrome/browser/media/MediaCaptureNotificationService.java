@@ -165,7 +165,7 @@ public class MediaCaptureNotificationService extends Service {
             int notificationId, @MediaType int mediaType, String url, boolean isIncognito) {
         final String channelId = mediaType == MediaType.SCREEN_CAPTURE
                 ? ChromeChannelDefinitions.ChannelId.SCREEN_CAPTURE
-                : ChromeChannelDefinitions.ChannelId.MEDIA;
+                : ChromeChannelDefinitions.ChannelId.WEBRTC_CAM_AND_MIC;
 
         Context appContext = ContextUtils.getApplicationContext();
         ChromeNotificationBuilder builder =

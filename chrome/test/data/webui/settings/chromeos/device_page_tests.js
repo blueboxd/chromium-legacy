@@ -104,8 +104,8 @@ cr.define('device_page_tests', function() {
 
       let changed = false;
       this.noteTakingApps_.forEach(function(app) {
-        changed = changed || app.preferred != (app.value == appId);
-        app.preferred = app.value == appId;
+        changed = changed || app.preferred !== (app.value === appId);
+        app.preferred = app.value === appId;
       });
 
       if (changed) {
@@ -124,7 +124,7 @@ cr.define('device_page_tests', function() {
                 settings.NoteAppLockScreenSupport.SUPPORTED,
                 app.lockScreenSupport);
           }
-          if (app.lockScreenSupport ==
+          if (app.lockScreenSupport ===
               settings.NoteAppLockScreenSupport.SUPPORTED) {
             app.lockScreenSupport = settings.NoteAppLockScreenSupport.ENABLED;
           }
@@ -134,7 +134,7 @@ cr.define('device_page_tests', function() {
                 settings.NoteAppLockScreenSupport.ENABLED,
                 app.lockScreenSupport);
           }
-          if (app.lockScreenSupport ==
+          if (app.lockScreenSupport ===
               settings.NoteAppLockScreenSupport.ENABLED) {
             app.lockScreenSupport = settings.NoteAppLockScreenSupport.SUPPORTED;
           }
@@ -458,8 +458,8 @@ cr.define('device_page_tests', function() {
         id: 'fakeDisplayId' + n,
         name: 'fakeDisplayName' + n,
         mirroring: '',
-        isPrimary: n == 1,
-        isInternal: n == 1,
+        isPrimary: n === 1,
+        isInternal: n === 1,
         rotation: 0,
         modes: [{
           deviceScaleFactor: 1.0,
@@ -2057,7 +2057,7 @@ cr.define('device_page_tests', function() {
        */
       function isHidden(element) {
         return !element ||
-            (element.offsetWidth == 0 && element.offsetHeight == 0);
+            (element.offsetWidth === 0 && element.offsetHeight === 0);
       }
 
       /**

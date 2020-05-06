@@ -726,14 +726,15 @@ function testBreadcrumbDropDownMenuPathPartsEllipsisElide() {
   const element = getBreadCrumb();
 
   // Set path.
-  element.path = 'A/B/VERYVERYVERYVERYWIDEPATHPART/C/D';
+  element.path = 'A/B/VERYVERYVERYVERYWIDEPATHPARTINDEED/C/D';
 
   // clang-format off
   const expect = element.path +
       ' 1: display:block id=first text=[A]' +
       ' 2: display:flex elider[aria-expanded=false,aria-haspopup,aria-label]' +
       ' dropdown-item: display:block text=[B]' +
-      ' dropdown-item: display:block text=[VERYVERYVERYVERYWIDEPATHPART]' +
+      ' dropdown-item: display:block' +
+      ' text=[VERYVERYVERYVERYWIDEPATHPARTINDEED]' +
       ' 3: display:none id=second hidden' +
       ' 4: display:block id=third text=[C]' +
       ' 5: display:block id=fourth text=[D]';

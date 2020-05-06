@@ -227,8 +227,8 @@ void ExploreSitesGetCatalogTaskTest::SetDownloadingAndCurrentVersion(
 
 std::pair<std::string, std::string>
 ExploreSitesGetCatalogTaskTest::GetCurrentAndDownloadingVersion() {
-  std::string current_catalog = "";
-  std::string downloading_catalog = "";
+  std::string current_catalog;
+  std::string downloading_catalog;
   ExecuteSync(base::BindLambdaForTesting([&](sql::Database* db) {
     sql::MetaTable meta_table;
     ExploreSitesSchema::InitMetaTable(db, &meta_table);

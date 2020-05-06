@@ -597,6 +597,13 @@ void TabletModeController::LidEventReceived(
     const base::TimeTicks& time) {
   VLOG(1) << "Lid event received: " << static_cast<int>(state);
   lid_is_closed_ = state != chromeos::PowerManagerClient::LidState::OPEN;
+  if (lid_is_closed_) {
+    // Reset |lid_angle_| to 0.f when lid is closed. The accelerometer readings
+    // can be wrong when lid is closed, e.g., it can report lid angle to be
+    // around 360 degrees when lid is nearly closed.
+    lid_angle_ = 0.f;
+  }
+
   if (!tablet_mode_behavior_.use_sensor)
     return;
 
@@ -665,6 +672,7 @@ void TabletModeController::OnInputDeviceConfigurationChanged(
 }
 
 void TabletModeController::OnDeviceListsComplete() {
+  initial_input_device_set_up_finished_ = true;
   HandlePointingDeviceAddedOrRemoved();
 }
 
@@ -942,6 +950,9 @@ TabletModeController::CurrentTabletModeIntervalType() {
 }
 
 void TabletModeController::HandlePointingDeviceAddedOrRemoved() {
+  if (!initial_input_device_set_up_finished_)
+    return;
+
   bool has_external_pointing_device = false;
   bool has_internal_pointing_device = false;
 

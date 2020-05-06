@@ -68,9 +68,7 @@ ExtensionAppItem::~ExtensionAppItem() = default;
 
 void ExtensionAppItem::Reload() {
   const Extension* extension = GetExtension();
-  bool is_installing = !extension;
-  SetIsInstalling(is_installing);
-  if (is_installing) {
+  if (!extension) {
     SetName(extension_name_);
     SetIcon(installing_icon_);
     return;

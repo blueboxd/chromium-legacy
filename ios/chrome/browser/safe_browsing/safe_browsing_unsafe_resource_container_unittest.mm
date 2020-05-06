@@ -55,21 +55,25 @@ TEST_F(SafeBrowsingUnsafeResourceContainerTest, MainFrameResource) {
   UnsafeResource resource = MakeUnsafeResource(/*is_main_frame=*/true);
 
   // The container should not have any unsafe main frame resources initially.
-  EXPECT_FALSE(stack()->HasMainFrameUnsafeResource());
+  EXPECT_FALSE(stack()->GetMainFrameUnsafeResource());
 
   // Store |resource| in the container.
   stack()->StoreUnsafeResource(resource);
-  EXPECT_TRUE(stack()->HasMainFrameUnsafeResource());
+  const UnsafeResource* resource_copy = stack()->GetMainFrameUnsafeResource();
+  ASSERT_TRUE(resource_copy);
+  EXPECT_EQ(resource.url, resource_copy->url);
+  EXPECT_TRUE(resource_copy->callback.is_null());
 
   // Release the resource and check that it matches and that the callback has
   // been removed.
   std::unique_ptr<UnsafeResource> popped_resource =
       stack()->ReleaseMainFrameUnsafeResource();
+  ASSERT_TRUE(popped_resource);
   EXPECT_EQ(resource.url, popped_resource->url);
   EXPECT_TRUE(popped_resource->callback.is_null());
 
   // Verify that the main frame resource was removed from the container.
-  EXPECT_FALSE(stack()->HasMainFrameUnsafeResource());
+  EXPECT_FALSE(stack()->GetMainFrameUnsafeResource());
   EXPECT_FALSE(stack()->ReleaseMainFrameUnsafeResource());
 }
 
@@ -79,20 +83,25 @@ TEST_F(SafeBrowsingUnsafeResourceContainerTest, SubFrameResource) {
   UnsafeResource resource = MakeUnsafeResource(/*is_main_frame=*/false);
 
   // The container should not have any unsafe sub frame resources initially.
-  EXPECT_FALSE(stack()->HasSubFrameUnsafeResource(item_.get()));
+  EXPECT_FALSE(stack()->GetSubFrameUnsafeResource(item_.get()));
 
   // Store |resource| in the container.
   stack()->StoreUnsafeResource(resource);
-  EXPECT_TRUE(stack()->HasSubFrameUnsafeResource(item_.get()));
+  const UnsafeResource* resource_copy =
+      stack()->GetSubFrameUnsafeResource(item_.get());
+  ASSERT_TRUE(resource_copy);
+  EXPECT_EQ(resource.url, resource_copy->url);
+  EXPECT_TRUE(resource_copy->callback.is_null());
 
   // Release the resource and check that it matches and that the callback has
   // been removed.
   std::unique_ptr<UnsafeResource> popped_resource =
       stack()->ReleaseSubFrameUnsafeResource(item_.get());
+  ASSERT_TRUE(popped_resource);
   EXPECT_EQ(resource.url, popped_resource->url);
   EXPECT_TRUE(popped_resource->callback.is_null());
 
   // Verify that the sub frame resource was removed from the container.
-  EXPECT_FALSE(stack()->HasSubFrameUnsafeResource(item_.get()));
+  EXPECT_FALSE(stack()->GetSubFrameUnsafeResource(item_.get()));
   EXPECT_FALSE(stack()->ReleaseSubFrameUnsafeResource(item_.get()));
 }

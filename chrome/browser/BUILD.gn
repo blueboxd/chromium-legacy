@@ -1246,6 +1246,8 @@ jumbo_static_library("browser") {
     "policy/homepage_location_policy_handler.h",
     "policy/javascript_policy_handler.cc",
     "policy/javascript_policy_handler.h",
+    "policy/messaging_layer/public/report_queue_configuration.cc",
+    "policy/messaging_layer/public/report_queue_configuration.h",
     "policy/messaging_layer/util/status.cc",
     "policy/messaging_layer/util/status.h",
     "policy/messaging_layer/util/status_macros.h",

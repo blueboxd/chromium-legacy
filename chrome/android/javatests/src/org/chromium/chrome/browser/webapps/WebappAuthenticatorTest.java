@@ -6,13 +6,10 @@ package org.chromium.chrome.browser.webapps;
 
 import android.support.test.filters.SmallTest;
 
-import org.junit.After;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 
@@ -21,16 +18,6 @@ import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
 public class WebappAuthenticatorTest {
-    @Before
-    public void setUp() {
-        RecordHistogram.setDisabledForTests(true);
-    }
-
-    @After
-    public void tearDown() {
-        RecordHistogram.setDisabledForTests(false);
-    }
-
     @Test
     @SmallTest
     @Feature({"Webapps"})

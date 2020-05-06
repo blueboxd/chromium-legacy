@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "components/safe_browsing/content/base_blocking_page.h"
+#include "components/security_interstitials/content/security_interstitial_page.h"
 #include "components/security_interstitials/core/base_safe_browsing_error_ui.h"
 #include "components/security_interstitials/core/unsafe_resource.h"
 
@@ -23,7 +24,8 @@ class SafeBrowsingBlockingPage : public safe_browsing::BaseBlockingPage {
   typedef security_interstitials::UnsafeResource UnsafeResource;
 
   // Interstitial type, used in tests.
-  static const content::InterstitialPageDelegate::TypeID kTypeForTesting;
+  static const security_interstitials::SecurityInterstitialPage::TypeID
+      kTypeForTesting;
 
   static SafeBrowsingBlockingPage* CreateBlockingPage(
       SafeBrowsingUIManager* ui_manager,
@@ -32,7 +34,8 @@ class SafeBrowsingBlockingPage : public safe_browsing::BaseBlockingPage {
       const UnsafeResource& unsafe_resource);
 
   // InterstitialPageDelegate methods:
-  content::InterstitialPageDelegate::TypeID GetTypeForTesting() override;
+  security_interstitials::SecurityInterstitialPage::TypeID GetTypeForTesting()
+      override;
 
  private:
   SafeBrowsingBlockingPage(

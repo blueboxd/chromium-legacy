@@ -87,7 +87,7 @@ cr.define('os_languages_page_tests', function() {
         const i18nString = assert(loadTimeData.getString(i18nKey));
         const menuItems = actionMenu.querySelectorAll('.dropdown-item');
         const menuItem = Array.from(menuItems).find(
-            item => item.textContent.trim() == i18nString);
+            item => item.textContent.trim() === i18nString);
         return assert(menuItem, `Menu item "${i18nKey}" not found`);
       }
 
@@ -128,7 +128,7 @@ cr.define('os_languages_page_tests', function() {
       function assertRestartButtonActiveState(shouldBeActive) {
         const activeElement = getActiveElement();
         isRestartButtonActive =
-            activeElement && (activeElement.id == 'restartButton');
+            activeElement && (activeElement.id === 'restartButton');
         assertEquals(isRestartButtonActive, shouldBeActive);
       }
 
@@ -198,7 +198,7 @@ cr.define('os_languages_page_tests', function() {
         const domRepeat = assert(languagesList.querySelector('dom-repeat'));
         const item = Array.from(items).find(function(el) {
           return domRepeat.itemForElement(el) &&
-              domRepeat.itemForElement(el).language.code == 'no';
+              domRepeat.itemForElement(el).language.code === 'no';
         });
 
         // Open the menu and select Remove.
@@ -220,7 +220,7 @@ cr.define('os_languages_page_tests', function() {
         const domRepeat = assert(languagesList.querySelector('dom-repeat'));
         const item = Array.from(items).find(function(el) {
           return domRepeat.itemForElement(el) &&
-              domRepeat.itemForElement(el).language.code == 'sw';
+              domRepeat.itemForElement(el).language.code === 'sw';
         });
 
         // Open the menu and select Remove.

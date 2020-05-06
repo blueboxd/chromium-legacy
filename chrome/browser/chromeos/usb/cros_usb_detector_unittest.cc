@@ -335,7 +335,7 @@ TEST_F(CrosUsbDetectorTest, UsbDeviceClassWithoutNotificationAdded) {
 }
 
 TEST_F(CrosUsbDetectorTest, UsbDeviceWithoutProductNameAddedAndRemoved) {
-  std::string product_name = "";
+  std::string product_name;
   ConnectToDeviceManager();
   base::RunLoop().RunUntilIdle();
 
@@ -364,8 +364,8 @@ TEST_F(CrosUsbDetectorTest, UsbDeviceWithoutProductNameAddedAndRemoved) {
 
 TEST_F(CrosUsbDetectorTest,
        UsbDeviceWithoutProductNameOrManufacturerNameAddedAndRemoved) {
-  std::string product_name = "";
-  std::string manufacturer_name = "";
+  std::string product_name;
+  std::string manufacturer_name;
   ConnectToDeviceManager();
   base::RunLoop().RunUntilIdle();
 

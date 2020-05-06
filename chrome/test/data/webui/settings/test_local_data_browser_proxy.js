@@ -91,7 +91,7 @@ export class TestLocalDataBrowserProxy extends TestBrowserProxy {
   getNumCookiesString(numCookies) {
     this.methodCalled('getNumCookiesString', numCookies);
     return Promise.resolve(
-        `${numCookies} ` + (numCookies == 1 ? 'cookie' : 'cookies'));
+        `${numCookies} ` + (numCookies === 1 ? 'cookie' : 'cookies'));
   }
 
   /** @override */

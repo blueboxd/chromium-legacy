@@ -62,12 +62,21 @@ Polymer({
   },
 
   /**
+   * @param {number} value
+   * @return {string}
+   * @private
+   */
+  getName_(value) {
+    return value.toString();
+  },
+
+  /**
    * Determine whether to show the user defined startup pages.
    * @param {number} restoreOnStartup Enum value from prefValues_.
    * @return {boolean} Whether the open specific pages is selected.
    * @private
    */
   showStartupUrls_(restoreOnStartup) {
-    return restoreOnStartup == this.prefValues_.OPEN_SPECIFIC;
+    return restoreOnStartup === this.prefValues_.OPEN_SPECIFIC;
   },
 });

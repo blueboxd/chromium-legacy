@@ -1124,7 +1124,8 @@ public class SelectionPopupControllerImpl extends ActionModeCallbackHelper
         RecordUserAction.record("MobileActionMode.ProcessTextIntent");
         assert Build.VERSION.SDK_INT >= Build.VERSION_CODES.M;
 
-        String query = sanitizeQuery(getSelectedText(), MAX_SEARCH_QUERY_LENGTH);
+        // Use MAX_SHARE_QUERY_LENGTH for the Intent 100k limitation.
+        String query = sanitizeQuery(getSelectedText(), MAX_SHARE_QUERY_LENGTH);
         if (TextUtils.isEmpty(query)) return;
 
         intent.putExtra(Intent.EXTRA_PROCESS_TEXT, query);

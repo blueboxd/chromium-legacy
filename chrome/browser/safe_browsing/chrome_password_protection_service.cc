@@ -1073,7 +1073,7 @@ ChromePasswordProtectionService::GetPlaceholdersForSavedPasswordWarningText()
   std::vector<base::string16> placeholders;
   for (auto priority_domain_iter = spoofed_domains.begin();
        priority_domain_iter != spoofed_domains.end(); ++priority_domain_iter) {
-    std::string matching_domain = "";
+    std::string matching_domain;
 
     // Check if any of the matching domains is equal or a suffix to the current
     // priority domain.

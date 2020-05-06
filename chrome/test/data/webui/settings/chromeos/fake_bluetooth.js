@@ -56,7 +56,7 @@ cr.define('settings', function() {
       // Make sure the new devices don't already exist.
       for (const d of newDevices) {
         const found = this.devices.find(element => {
-          return element.address == d.address;
+          return element.address === d.address;
         });
         assert(
             !found,
@@ -86,7 +86,7 @@ cr.define('settings', function() {
     simulateDevicesRemovedForTest: function(deviceAddresses) {
       for (const deviceAddress of deviceAddresses) {
         const removedDeviceIndex = this.devices.findIndex(element => {
-          return element.address == deviceAddress;
+          return element.address === deviceAddress;
         });
         assert(
             removedDeviceIndex !== -1,
@@ -114,7 +114,7 @@ cr.define('settings', function() {
      */
     getDeviceForTest: function(address) {
       return this.devices.find(function(d) {
-        return d.address == address;
+        return d.address === address;
       });
     },
 

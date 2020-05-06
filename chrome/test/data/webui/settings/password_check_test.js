@@ -52,7 +52,7 @@ function createLeakedPasswordItem(entry) {
 }
 
 function isElementVisible(element) {
-  return !!element && !element.hidden && element.style.display != 'none' &&
+  return !!element && !element.hidden && element.style.display !== 'none' &&
       element.offsetParent !== null;  // Considers parents hiding |element|.
 }
 

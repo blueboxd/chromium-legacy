@@ -177,6 +177,14 @@ class IsolatedPrerenderTabHelper
     // The url of the page following the Google SRP.
     GURL url_;
 
+    // The number of SRP links that were eligible to be prefetched on the SRP.
+    // This is copied from the same named member of |srp_metrics_|.
+    size_t prefetch_eligible_count_ = 0;
+
+    // The position of the link on the SRP that was navigated to. Not set if the
+    // navigated page wasn't in the SRP.
+    base::Optional<size_t> clicked_link_srp_position_;
+
     // The status of a prefetch done on the SRP that may have been used here.
     base::Optional<PrefetchStatus> prefetch_status_;
   };
@@ -270,7 +278,8 @@ class IsolatedPrerenderTabHelper
   void Prefetch();
 
   // Called when |url_loader_| encounters a redirect.
-  void OnPrefetchRedirect(const net::RedirectInfo& redirect_info,
+  void OnPrefetchRedirect(const GURL& original_url,
+                          const net::RedirectInfo& redirect_info,
                           const network::mojom::URLResponseHead& response_head,
                           std::vector<std::string>* removed_headers);
 

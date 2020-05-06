@@ -56,7 +56,7 @@ std::string GetWebKitRevision() {
 }
 
 std::string BuildCpuInfo() {
-  std::string cpuinfo = "";
+  std::string cpuinfo;
 
 #if defined(OS_MACOSX)
   cpuinfo = "Intel";
@@ -185,7 +185,7 @@ std::string BuildUserAgentFromProduct(const std::string& product) {
 }
 
 std::string BuildModelInfo() {
-  std::string model = "";
+  std::string model;
 #if defined(OS_ANDROID)
   // Only send the model information if on the release build of Android,
   // matching user agent behaviour.

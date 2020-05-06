@@ -535,11 +535,13 @@ TEST_F(NGLineBreakerTest, MinMaxWithTrailingSpaces) {
     <div id=container>12345 6789 </div>
   )HTML");
 
-  auto size = node.ComputeMinMaxSizes(
-      WritingMode::kHorizontalTb,
-      MinMaxSizesInput(/* percentage_resolution_block_size */ (LayoutUnit())));
-  EXPECT_EQ(size.min_size, LayoutUnit(60));
-  EXPECT_EQ(size.max_size, LayoutUnit(110));
+  auto sizes = node.ComputeMinMaxSizes(
+                       WritingMode::kHorizontalTb,
+                       MinMaxSizesInput(/* percentage_resolution_block_size */ (
+                           LayoutUnit())))
+                   .sizes;
+  EXPECT_EQ(sizes.min_size, LayoutUnit(60));
+  EXPECT_EQ(sizes.max_size, LayoutUnit(110));
 }
 
 TEST_F(NGLineBreakerTest, TableCellWidthCalculationQuirkOutOfFlow) {

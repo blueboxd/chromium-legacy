@@ -6,6 +6,7 @@
 
 #include "components/security_interstitials/content/bad_clock_blocking_page.h"
 #include "components/security_interstitials/content/captive_portal_blocking_page.h"
+#include "components/security_interstitials/content/security_interstitial_page.h"
 #include "components/security_interstitials/content/security_interstitial_tab_helper.h"
 #include "components/security_interstitials/content/ssl_blocking_page.h"
 #include "weblayer/browser/tab_impl.h"
@@ -34,7 +35,7 @@ GetCurrentlyShowingInterstitial(Tab* tab) {
 // in |tab|.
 bool IsShowingInterstitialOfType(
     Tab* tab,
-    content::InterstitialPageDelegate::TypeID type) {
+    security_interstitials::SecurityInterstitialPage::TypeID type) {
   auto* blocking_page = GetCurrentlyShowingInterstitial(tab);
 
   if (!blocking_page)

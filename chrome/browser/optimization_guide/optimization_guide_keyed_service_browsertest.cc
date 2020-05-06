@@ -171,13 +171,13 @@ class OptimizationGuideKeyedServiceBrowserTest
 
     https_server_.reset(
         new net::EmbeddedTestServer(net::EmbeddedTestServer::TYPE_HTTPS));
+    https_server_->ServeFilesFromSourceDirectory(GetChromeTestDataDir());
     https_server_->RegisterRequestHandler(base::BindRepeating(
         &OptimizationGuideKeyedServiceBrowserTest::HandleRequest,
         base::Unretained(this)));
     ASSERT_TRUE(https_server_->Start());
 
-    url_with_hints_ =
-        https_server_->GetURL("somehost.com", "/hashints/whatever");
+    url_with_hints_ = https_server_->GetURL("/simple.html");
     url_that_redirects_ =
         https_server_->GetURL("/redirect?" + url_with_hints_.spec());
     url_that_redirects_to_no_hints_ =
@@ -226,8 +226,8 @@ class OptimizationGuideKeyedServiceBrowserTest
 
     const optimization_guide::HintsComponentInfo& component_info =
         test_hints_component_creator_.CreateHintsComponentInfoWithPageHints(
-            optimization_guide::proto::NOSCRIPT, {url_with_hints_.host()}, "*",
-            {});
+            optimization_guide::proto::NOSCRIPT, {url_with_hints_.host()},
+            "simple.html", {});
 
     g_browser_process->optimization_guide_service()->MaybeUpdateHintsComponent(
         component_info);
@@ -439,6 +439,46 @@ IN_PROC_BROWSER_TEST_F(OptimizationGuideKeyedServiceBrowserTest,
       123);
 }
 
+IN_PROC_BROWSER_TEST_F(OptimizationGuideKeyedServiceBrowserTest,
+                       RecordsUKMWhenTabHidden) {
+  PushHintsComponentAndWaitForCompletion();
+  RegisterWithKeyedService();
+
+  ukm::TestAutoSetUkmRecorder ukm_recorder;
+  base::HistogramTester histogram_tester;
+
+  ui_test_utils::NavigateToURL(browser(), url_with_hints());
+
+  EXPECT_GT(RetryForHistogramUntilCountReached(
+                histogram_tester, "OptimizationGuide.LoadedHint.Result", 1),
+            0);
+  // There is a hint that matches this URL, so there should be an attempt to
+  // load a hint that succeeds.
+  histogram_tester.ExpectUniqueSample("OptimizationGuide.LoadedHint.Result",
+                                      true, 1);
+  // We had a hint and it was loaded and it was painful enough.
+  EXPECT_EQ(optimization_guide::OptimizationGuideDecision::kTrue,
+            last_should_target_navigation_decision());
+  EXPECT_EQ(optimization_guide::OptimizationGuideDecision::kTrue,
+            last_can_apply_optimization_decision());
+
+  // Make sure metrics get recorded when tab is hidden.
+  browser()->tab_strip_model()->GetActiveWebContents()->WasHidden();
+
+  // Expect that the optimization guide UKM was recorded.
+  auto entries = ukm_recorder.GetEntriesByName(
+      ukm::builders::OptimizationGuide::kEntryName);
+  ASSERT_EQ(1u, entries.size());
+  auto* entry = entries.at(0);
+  ukm_recorder.ExpectEntryMetric(
+      entry, ukm::builders::OptimizationGuide::kHintSourceName,
+      static_cast<int>(
+          optimization_guide::proto::HINT_SOURCE_OPTIMIZATION_HINTS_COMPONENT));
+  ukm_recorder.ExpectEntryMetric(
+      entry, ukm::builders::OptimizationGuide::kHintGenerationTimestampName,
+      123);
+}
+
 IN_PROC_BROWSER_TEST_F(
     OptimizationGuideKeyedServiceBrowserTest,
     NavigateToPageWithHintsLoadsHintButDoesNotAllowApplyDueToECT) {
@@ -507,12 +547,10 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_EQ(RetryForHistogramUntilCountReached(
                 histogram_tester, "OptimizationGuide.LoadedHint.Result", 2),
             2);
-  // Should attempt and fail to load a hint for the initial navigation.
+  // Should attempt and succeed to load a hint once for the initial navigation
+  // and redirect.
   histogram_tester.ExpectBucketCount("OptimizationGuide.LoadedHint.Result",
-                                     false, 1);
-  // Should attempt and succeed to load a hint once for the redirect.
-  histogram_tester.ExpectBucketCount("OptimizationGuide.LoadedHint.Result",
-                                     true, 1);
+                                     true, 2);
   // Hint is still applicable so we expect it to be allowed to be applied.
   EXPECT_EQ(optimization_guide::OptimizationGuideDecision::kTrue,
             last_should_target_navigation_decision());

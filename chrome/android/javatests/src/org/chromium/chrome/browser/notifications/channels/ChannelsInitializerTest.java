@@ -115,7 +115,7 @@ public class ChannelsInitializerTest {
                 containsInAnyOrder(ChromeChannelDefinitions.ChannelId.BROWSER,
                         ChromeChannelDefinitions.ChannelId.DOWNLOADS,
                         ChromeChannelDefinitions.ChannelId.INCOGNITO,
-                        ChromeChannelDefinitions.ChannelId.MEDIA));
+                        ChromeChannelDefinitions.ChannelId.MEDIA_PLAYBACK));
     }
 
     @Test
@@ -208,13 +208,14 @@ public class ChannelsInitializerTest {
     @TargetApi(Build.VERSION_CODES.O)
     @Feature({"Browser", "Notifications"})
     public void testEnsureInitialized_mediaChannel() {
-        mChannelsInitializer.ensureInitialized(ChromeChannelDefinitions.ChannelId.MEDIA);
+        mChannelsInitializer.ensureInitialized(ChromeChannelDefinitions.ChannelId.MEDIA_PLAYBACK);
 
         assertThat(getChannelsIgnoringDefault(), hasSize(1));
         NotificationChannel channel = getChannelsIgnoringDefault().get(0);
-        assertThat(channel.getId(), is(ChromeChannelDefinitions.ChannelId.MEDIA));
+        assertThat(channel.getId(), is(ChromeChannelDefinitions.ChannelId.MEDIA_PLAYBACK));
         assertThat(channel.getName().toString(),
-                is(mContext.getString(org.chromium.chrome.R.string.notification_category_media)));
+                is(mContext.getString(
+                        org.chromium.chrome.R.string.notification_category_media_playback)));
         assertThat(channel.getImportance(), is(NotificationManager.IMPORTANCE_LOW));
         assertThat(channel.getGroup(), is(ChromeChannelDefinitions.ChannelGroupId.GENERAL));
     }
@@ -320,7 +321,7 @@ public class ChannelsInitializerTest {
                 CollectionUtil.newHashSet(ChromeChannelDefinitions.ChannelGroupId.SITES,
                         ChromeChannelDefinitions.ChannelGroupId.GENERAL);
         Collection<String> channelIds =
-                CollectionUtil.newHashSet(ChromeChannelDefinitions.ChannelId.MEDIA,
+                CollectionUtil.newHashSet(ChromeChannelDefinitions.ChannelId.MEDIA_PLAYBACK,
                         ChromeChannelDefinitions.ChannelId.BROWSER);
         mChannelsInitializer.ensureInitialized(groupIds, channelIds);
         assertThat(getChannelsIgnoringDefault(), hasSize(2));

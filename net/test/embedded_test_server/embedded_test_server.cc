@@ -45,6 +45,7 @@
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
 #include "net/test/embedded_test_server/request_handler_util.h"
+#include "net/test/revocation_builder.h"
 #include "net/test/test_data_directory.h"
 #include "third_party/boringssl/src/include/openssl/bytestring.h"
 #include "third_party/boringssl/src/include/openssl/evp.h"
@@ -71,7 +72,184 @@ std::unique_ptr<HttpResponse> ServeResponseForPath(
   return http_response;
 }
 
+// Serves response for |expected_path| or any subpath of it.
+// |expected_path| should not include a trailing "/".
+std::unique_ptr<HttpResponse> ServeResponseForSubPaths(
+    const std::string& expected_path,
+    HttpStatusCode status_code,
+    const std::string& content_type,
+    const std::string& content,
+    const HttpRequest& request) {
+  if (request.GetURL().path() != expected_path &&
+      !base::StartsWith(request.GetURL().path(), expected_path + "/",
+                        base::CompareCase::SENSITIVE)) {
+    return nullptr;
+  }
+
+  auto http_response = std::make_unique<BasicHttpResponse>();
+  http_response->set_code(status_code);
+  http_response->set_content_type(content_type);
+  http_response->set_content(content);
+  return http_response;
+}
+
+bool MaybeCreateOCSPResponse(CertBuilder* target,
+                             const EmbeddedTestServer::OCSPConfig& config,
+                             std::string* out_response) {
+  using OCSPResponseType = EmbeddedTestServer::OCSPConfig::ResponseType;
+
+  if (!config.single_responses.empty() &&
+      config.response_type != OCSPResponseType::kSuccessful) {
+    // OCSPConfig contained single_responses for a non-successful response.
+    return false;
+  }
+
+  if (config.response_type == OCSPResponseType::kOff) {
+    *out_response = std::string();
+    return true;
+  }
+
+  if (!target) {
+    // OCSPConfig enabled but corresponding certificate is null.
+    return false;
+  }
+
+  switch (config.response_type) {
+    case OCSPResponseType::kOff:
+      return false;
+    case OCSPResponseType::kMalformedRequest:
+      *out_response = BuildOCSPResponseError(
+          OCSPResponse::ResponseStatus::MALFORMED_REQUEST);
+      return true;
+    case OCSPResponseType::kInternalError:
+      *out_response =
+          BuildOCSPResponseError(OCSPResponse::ResponseStatus::INTERNAL_ERROR);
+      return true;
+    case OCSPResponseType::kTryLater:
+      *out_response =
+          BuildOCSPResponseError(OCSPResponse::ResponseStatus::TRY_LATER);
+      return true;
+    case OCSPResponseType::kSigRequired:
+      *out_response =
+          BuildOCSPResponseError(OCSPResponse::ResponseStatus::SIG_REQUIRED);
+      return true;
+    case OCSPResponseType::kUnauthorized:
+      *out_response =
+          BuildOCSPResponseError(OCSPResponse::ResponseStatus::UNAUTHORIZED);
+      return true;
+    case OCSPResponseType::kInvalidResponse:
+      *out_response = "3";
+      return true;
+    case OCSPResponseType::kInvalidResponseData:
+      *out_response =
+          BuildOCSPResponseWithResponseData(target->issuer()->GetKey(),
+                                            // OCTET_STRING { "not ocsp data" }
+                                            "\x04\x0dnot ocsp data");
+      return true;
+    case OCSPResponseType::kSuccessful:
+      break;
+  }
+
+  base::Time now = base::Time::Now();
+  base::Time target_not_before, target_not_after;
+  if (!target->GetValidity(&target_not_before, &target_not_after))
+    return false;
+  base::Time produced_at;
+  using OCSPProduced = EmbeddedTestServer::OCSPConfig::Produced;
+  switch (config.produced) {
+    case OCSPProduced::kValid:
+      produced_at = now - base::TimeDelta::FromDays(1);
+      break;
+    case OCSPProduced::kBeforeCert:
+      produced_at = target_not_before - base::TimeDelta::FromDays(1);
+      break;
+    case OCSPProduced::kAfterCert:
+      produced_at = target_not_after + base::TimeDelta::FromDays(1);
+      break;
+  }
+
+  std::vector<OCSPBuilderSingleResponse> responses;
+  for (const auto& config_response : config.single_responses) {
+    OCSPBuilderSingleResponse response;
+    response.serial = target->GetSerialNumber();
+    if (config_response.serial ==
+        EmbeddedTestServer::OCSPConfig::SingleResponse::Serial::kMismatch) {
+      response.serial ^= 1;
+    }
+    response.cert_status = config_response.cert_status;
+    // |revocation_time| is ignored if |cert_status| is not REVOKED.
+    response.revocation_time = now - base::TimeDelta::FromDays(1000);
+
+    using OCSPDate = EmbeddedTestServer::OCSPConfig::SingleResponse::Date;
+    switch (config_response.ocsp_date) {
+      case OCSPDate::kValid:
+        response.this_update = now - base::TimeDelta::FromDays(1);
+        response.next_update =
+            response.this_update + base::TimeDelta::FromDays(7);
+        break;
+      case OCSPDate::kOld:
+        response.this_update = now - base::TimeDelta::FromDays(8);
+        response.next_update =
+            response.this_update + base::TimeDelta::FromDays(7);
+        break;
+      case OCSPDate::kEarly:
+        response.this_update = now + base::TimeDelta::FromDays(1);
+        response.next_update =
+            response.this_update + base::TimeDelta::FromDays(7);
+        break;
+      case OCSPDate::kLong:
+        response.this_update = now - base::TimeDelta::FromDays(365);
+        response.next_update =
+            response.this_update + base::TimeDelta::FromDays(366);
+        break;
+      case OCSPDate::kLonger:
+        response.this_update = now - base::TimeDelta::FromDays(367);
+        response.next_update =
+            response.this_update + base::TimeDelta::FromDays(368);
+        break;
+    }
+
+    responses.push_back(response);
+  }
+  *out_response =
+      BuildOCSPResponse(target->issuer()->GetSubject(),
+                        target->issuer()->GetKey(), produced_at, responses);
+  return true;
+}
+
 }  // namespace
+
+EmbeddedTestServer::OCSPConfig::OCSPConfig() = default;
+EmbeddedTestServer::OCSPConfig::OCSPConfig(ResponseType response_type)
+    : response_type(response_type) {}
+EmbeddedTestServer::OCSPConfig::OCSPConfig(
+    std::vector<SingleResponse> single_responses,
+    Produced produced)
+    : response_type(ResponseType::kSuccessful),
+      produced(produced),
+      single_responses(std::move(single_responses)) {}
+EmbeddedTestServer::OCSPConfig::OCSPConfig(const OCSPConfig&) = default;
+EmbeddedTestServer::OCSPConfig::OCSPConfig(OCSPConfig&&) = default;
+EmbeddedTestServer::OCSPConfig::~OCSPConfig() = default;
+EmbeddedTestServer::OCSPConfig& EmbeddedTestServer::OCSPConfig::operator=(
+    const OCSPConfig&) = default;
+EmbeddedTestServer::OCSPConfig& EmbeddedTestServer::OCSPConfig::operator=(
+    OCSPConfig&&) = default;
+
+EmbeddedTestServer::ServerCertificateConfig::ServerCertificateConfig() =
+    default;
+EmbeddedTestServer::ServerCertificateConfig::ServerCertificateConfig(
+    const ServerCertificateConfig&) = default;
+EmbeddedTestServer::ServerCertificateConfig::ServerCertificateConfig(
+    ServerCertificateConfig&&) = default;
+EmbeddedTestServer::ServerCertificateConfig::~ServerCertificateConfig() =
+    default;
+EmbeddedTestServer::ServerCertificateConfig&
+EmbeddedTestServer::ServerCertificateConfig::operator=(
+    const ServerCertificateConfig&) = default;
+EmbeddedTestServer::ServerCertificateConfig&
+EmbeddedTestServer::ServerCertificateConfig::operator=(
+    ServerCertificateConfig&&) = default;
 
 EmbeddedTestServer::EmbeddedTestServer() : EmbeddedTestServer(TYPE_HTTP) {}
 
@@ -259,31 +437,106 @@ bool EmbeddedTestServer::GenerateCertAndKey() {
   std::unique_ptr<CertBuilder> static_root = CertBuilder::FromStaticCert(
       root_cert->cert_buffer(), root_private_key.get());
 
-  CertificateList orig_leaf_and_intermediate = CreateCertificateListFromFile(
-      certs_dir, "ok_cert_by_intermediate.pem", X509Certificate::FORMAT_AUTO);
-  if (orig_leaf_and_intermediate.size() != 2)
+  // Will be nullptr if cert_config_.intermediate == kNone.
+  std::unique_ptr<CertBuilder> intermediate;
+  std::unique_ptr<CertBuilder> leaf;
+
+  if (cert_config_.intermediate != IntermediateType::kNone) {
+    CertificateList orig_leaf_and_intermediate = CreateCertificateListFromFile(
+        certs_dir, "ok_cert_by_intermediate.pem", X509Certificate::FORMAT_AUTO);
+    if (orig_leaf_and_intermediate.size() != 2)
+      return false;
+
+    intermediate = std::make_unique<CertBuilder>(
+        orig_leaf_and_intermediate[1]->cert_buffer(), static_root.get());
+
+    leaf = std::make_unique<CertBuilder>(
+        orig_leaf_and_intermediate[0]->cert_buffer(), intermediate.get());
+  } else {
+    scoped_refptr<X509Certificate> orig_leaf =
+        ImportCertFromFile(certs_dir, "ok_cert.pem");
+    if (!orig_leaf)
+      return false;
+
+    leaf = std::make_unique<CertBuilder>(orig_leaf->cert_buffer(),
+                                         static_root.get());
+  }
+
+  std::vector<GURL> leaf_ca_issuers_urls;
+  std::vector<GURL> leaf_ocsp_urls;
+
+  if (!cert_config_.policy_oids.empty()) {
+    leaf->SetCertificatePolicies(cert_config_.policy_oids);
+    if (intermediate)
+      intermediate->SetCertificatePolicies(cert_config_.policy_oids);
+  }
+
+  const std::string leaf_serial_text =
+      base::NumberToString(leaf->GetSerialNumber());
+  const std::string intermediate_serial_text =
+      intermediate ? base::NumberToString(intermediate->GetSerialNumber()) : "";
+
+  std::string ocsp_response;
+  if (!MaybeCreateOCSPResponse(leaf.get(), cert_config_.ocsp_config,
+                               &ocsp_response)) {
     return false;
+  }
+  if (!ocsp_response.empty()) {
+    std::string ocsp_path = "/ocsp/" + leaf_serial_text;
+    leaf_ocsp_urls.push_back(aia_http_server_->GetURL(ocsp_path));
+    aia_http_server_->RegisterRequestHandler(
+        base::BindRepeating(ServeResponseForSubPaths, ocsp_path, HTTP_OK,
+                            "application/ocsp-response", ocsp_response));
+  }
 
-  // Generate intermediate:
-  CertBuilder intermediate(orig_leaf_and_intermediate[1]->cert_buffer(),
-                           static_root.get());
-  std::string intermediate_serial_text =
-      base::NumberToString(intermediate.GetSerialNumber());
-  std::string intermediate_der = intermediate.GetDER();
+  std::string stapled_ocsp_response;
+  if (!MaybeCreateOCSPResponse(leaf.get(), cert_config_.stapled_ocsp_config,
+                               &stapled_ocsp_response)) {
+    return false;
+  }
+  if (!stapled_ocsp_response.empty()) {
+    ssl_config_.ocsp_response = std::vector<uint8_t>(
+        stapled_ocsp_response.begin(), stapled_ocsp_response.end());
+  }
 
-  // Generate leaf:
-  CertBuilder leaf(orig_leaf_and_intermediate[0]->cert_buffer(), &intermediate);
-  std::string ca_issuers_path = "/ca_issuers/" + intermediate_serial_text;
-  leaf.SetCaIssuersUrl(aia_http_server_->GetURL(ca_issuers_path));
+  std::string intermediate_ocsp_response;
+  if (!MaybeCreateOCSPResponse(intermediate.get(),
+                               cert_config_.intermediate_ocsp_config,
+                               &intermediate_ocsp_response)) {
+    return false;
+  }
+  if (!intermediate_ocsp_response.empty()) {
+    std::string intermediate_ocsp_path = "/ocsp/" + intermediate_serial_text;
+    intermediate->SetCaIssuersAndOCSPUrls(
+        {}, {aia_http_server_->GetURL(intermediate_ocsp_path)});
+    aia_http_server_->RegisterRequestHandler(base::BindRepeating(
+        ServeResponseForSubPaths, intermediate_ocsp_path, HTTP_OK,
+        "application/ocsp-response", intermediate_ocsp_response));
+  }
 
-  // Setup AIA server to serve the intermediate referred to by the leaf.
-  aia_http_server_->RegisterRequestHandler(
-      base::BindRepeating(ServeResponseForPath, ca_issuers_path, HTTP_OK,
-                          "application/pkix-cert", intermediate_der));
+  if (cert_config_.intermediate == IntermediateType::kByAIA) {
+    std::string ca_issuers_path = "/ca_issuers/" + intermediate_serial_text;
+    leaf_ca_issuers_urls.push_back(aia_http_server_->GetURL(ca_issuers_path));
 
-  // Server certificate chain does not include the intermediate.
-  x509_cert_ = leaf.GetX509Certificate();
-  private_key_ = bssl::UpRef(leaf.GetKey());
+    // Setup AIA server to serve the intermediate referred to by the leaf.
+    aia_http_server_->RegisterRequestHandler(
+        base::BindRepeating(ServeResponseForPath, ca_issuers_path, HTTP_OK,
+                            "application/pkix-cert", intermediate->GetDER()));
+  }
+
+  if (!leaf_ca_issuers_urls.empty() || !leaf_ocsp_urls.empty()) {
+    leaf->SetCaIssuersAndOCSPUrls(leaf_ca_issuers_urls, leaf_ocsp_urls);
+  }
+
+  if (cert_config_.intermediate == IntermediateType::kByAIA) {
+    // Server certificate chain does not include the intermediate.
+    x509_cert_ = leaf->GetX509Certificate();
+  } else {
+    // Server certificate chain will include the intermediate, if there is one.
+    x509_cert_ = leaf->GetX509CertificateChain();
+  }
+
+  private_key_ = bssl::UpRef(leaf->GetKey());
 
   // If this server is already accepting connections but is being reconfigured,
   // start the new AIA server now. Otherwise, wait until
@@ -408,15 +661,6 @@ GURL EmbeddedTestServer::GetURL(
   return local_url.ReplaceComponents(replace_host);
 }
 
-void EmbeddedTestServer::SetSSLConfig(ServerCertificate cert,
-                                      const SSLServerConfig& ssl_config) {
-  DCHECK(!Started());
-  cert_ = cert;
-  x509_cert_ = nullptr;
-  private_key_ = nullptr;
-  ssl_config_ = ssl_config;
-}
-
 bool EmbeddedTestServer::GetAddressList(AddressList* address_list) const {
   *address_list = AddressList(local_endpoint_);
   return true;
@@ -426,10 +670,44 @@ std::string EmbeddedTestServer::GetIPLiteralString() const {
   return local_endpoint_.address().ToString();
 }
 
+void EmbeddedTestServer::SetSSLConfigInternal(
+    ServerCertificate cert,
+    const ServerCertificateConfig* cert_config,
+    const SSLServerConfig& ssl_config) {
+  DCHECK(!Started());
+  cert_ = cert;
+  DCHECK(!cert_config || cert == CERT_AUTO);
+  cert_config_ = cert_config ? *cert_config : ServerCertificateConfig();
+  x509_cert_ = nullptr;
+  private_key_ = nullptr;
+  ssl_config_ = ssl_config;
+}
+
+void EmbeddedTestServer::SetSSLConfig(ServerCertificate cert,
+                                      const SSLServerConfig& ssl_config) {
+  SetSSLConfigInternal(cert, /*cert_config=*/nullptr, ssl_config);
+}
+
+void EmbeddedTestServer::SetSSLConfig(ServerCertificate cert) {
+  SetSSLConfigInternal(cert, /*cert_config=*/nullptr, SSLServerConfig());
+}
+
+void EmbeddedTestServer::SetSSLConfig(
+    const ServerCertificateConfig& cert_config,
+    const SSLServerConfig& ssl_config) {
+  SetSSLConfigInternal(CERT_AUTO, &cert_config, ssl_config);
+}
+
+void EmbeddedTestServer::SetSSLConfig(
+    const ServerCertificateConfig& cert_config) {
+  SetSSLConfigInternal(CERT_AUTO, &cert_config, SSLServerConfig());
+}
+
 bool EmbeddedTestServer::ResetSSLConfigOnIOThread(
     ServerCertificate cert,
     const SSLServerConfig& ssl_config) {
   cert_ = cert;
+  cert_config_ = ServerCertificateConfig();
   ssl_config_ = ssl_config;
   connections_.clear();
   return InitializeSSLServerContext();
@@ -440,10 +718,6 @@ bool EmbeddedTestServer::ResetSSLConfig(ServerCertificate cert,
   return PostTaskToIOThreadAndWaitWithResult(
       base::BindOnce(&EmbeddedTestServer::ResetSSLConfigOnIOThread,
                      base::Unretained(this), cert, ssl_config));
-}
-
-void EmbeddedTestServer::SetSSLConfig(ServerCertificate cert) {
-  SetSSLConfig(cert, SSLServerConfig());
 }
 
 std::string EmbeddedTestServer::GetCertificateName() const {
@@ -470,7 +744,7 @@ std::string EmbeddedTestServer::GetCertificateName() const {
       return "bad_validity.pem";
     case CERT_TEST_NAMES:
       return "test_names.pem";
-    case CERT_AUTO_AIA_INTERMEDIATE:
+    case CERT_AUTO:
       return std::string();
   }
 

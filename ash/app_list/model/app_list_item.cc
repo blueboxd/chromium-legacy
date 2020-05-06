@@ -9,9 +9,7 @@
 namespace ash {
 
 AppListItem::AppListItem(const std::string& id)
-    : metadata_(std::make_unique<AppListItemMetadata>()),
-      is_installing_(false),
-      percent_downloaded_(-1) {
+    : metadata_(std::make_unique<AppListItemMetadata>()) {
   metadata_->id = id;
 }
 
@@ -43,24 +41,6 @@ const gfx::ImageSkia& AppListItem::GetIcon(
     // icon.
   }
   return metadata_->icon;
-}
-
-void AppListItem::SetIsInstalling(bool is_installing) {
-  if (is_installing_ == is_installing)
-    return;
-
-  is_installing_ = is_installing;
-  for (auto& observer : observers_)
-    observer.ItemIsInstallingChanged();
-}
-
-void AppListItem::SetPercentDownloaded(int percent_downloaded) {
-  if (percent_downloaded_ == percent_downloaded)
-    return;
-
-  percent_downloaded_ = percent_downloaded;
-  for (auto& observer : observers_)
-    observer.ItemPercentDownloadedChanged();
 }
 
 void AppListItem::AddObserver(AppListItemObserver* observer) {

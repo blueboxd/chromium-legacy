@@ -2287,7 +2287,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WindowsCreate_OpenerAndOrigin) {
   };
 
   auto run_test_case = [&web_contents](const TestCase& test_case) {
-    std::string maybe_specify_set_self_as_opener = "";
+    std::string maybe_specify_set_self_as_opener;
     if (test_case.set_self_as_opener) {
       maybe_specify_set_self_as_opener =
           base::StringPrintf(", setSelfAsOpener: %s",

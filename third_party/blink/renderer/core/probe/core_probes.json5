@@ -107,6 +107,7 @@
       probes: [
         "ApplyAcceptLanguageOverride",
         "ApplyUserAgentOverride",
+        "ApplyUserAgentMetadataOverride",
         "FrameStartedLoading",
         "PrepareRequest",
       ]

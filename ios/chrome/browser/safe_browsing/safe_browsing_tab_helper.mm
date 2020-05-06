@@ -16,6 +16,7 @@
 #include "ios/chrome/browser/application_context.h"
 #import "ios/chrome/browser/safe_browsing/safe_browsing_error.h"
 #include "ios/chrome/browser/safe_browsing/safe_browsing_service.h"
+#import "ios/chrome/browser/safe_browsing/safe_browsing_unsafe_resource_container.h"
 #include "ios/web/public/thread/web_task_traits.h"
 #import "net/base/mac/url_conversions.h"
 
@@ -118,16 +119,30 @@ web::WebStatePolicyDecider::PolicyDecision
 SafeBrowsingTabHelper::PolicyDecider::ShouldAllowRequest(
     NSURLRequest* request,
     const web::WebStatePolicyDecider::RequestInfo& request_info) {
+  // For main frame requests, clear out any pre-existing main frame unsafe
+  // resources for |request_url| that haven't resulted in an error page yet.
+  // This can occur in back/forward navigations to safe browsing errorr pages,
+  // where ShouldAllowRequest() is called multiple times consecutively for the
+  // same URL.
+  bool is_main_frame = request_info.target_frame_is_main;
+  GURL request_url = net::GURLWithNSURL(request.URL);
+  SafeBrowsingUnsafeResourceContainer* unsafe_resource_container =
+      SafeBrowsingUnsafeResourceContainer::FromWebState(web_state());
+  if (is_main_frame && unsafe_resource_container) {
+    const security_interstitials::UnsafeResource* main_frame_resource =
+        unsafe_resource_container->GetMainFrameUnsafeResource();
+    if (main_frame_resource && main_frame_resource->url == request_url)
+      unsafe_resource_container->ReleaseMainFrameUnsafeResource();
+  }
+
   SafeBrowsingService* safe_browsing_service =
       GetApplicationContext()->GetSafeBrowsingService();
-  GURL request_url = net::GURLWithNSURL(request.URL);
   if (!safe_browsing_service->CanCheckUrl(request_url))
     return web::WebStatePolicyDecider::PolicyDecision::Allow();
 
   safe_browsing::ResourceType resource_type =
-      request_info.target_frame_is_main
-          ? safe_browsing::ResourceType::kMainFrame
-          : safe_browsing::ResourceType::kSubFrame;
+      is_main_frame ? safe_browsing::ResourceType::kMainFrame
+                    : safe_browsing::ResourceType::kSubFrame;
   std::unique_ptr<safe_browsing::SafeBrowsingUrlCheckerImpl> url_checker =
       safe_browsing_service->CreateUrlChecker(resource_type, web_state());
 

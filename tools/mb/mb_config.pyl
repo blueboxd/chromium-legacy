@@ -494,10 +494,10 @@
       'Android arm64 Builder Perf': 'official_goma_minimal_symbols_android_arm64',
       'android_arm64-builder-perf': 'official_goma_minimal_symbols_android_arm64',
       'android-builder-perf': 'official_goma_minimal_symbols_android',
-      'linux-builder-perf': 'official_goma_linux_perf',
+      'linux-builder-perf': 'official_goma_perf',
       'mac-builder-perf': 'official_goma_mac_perf',
-      'win32-builder-perf': 'official_goma_x86_perf',
-      'win64-builder-perf': 'official_goma_perf',
+      'win32-builder-perf': 'official_goma_x86',
+      'win64-builder-perf': 'official_goma',
     },
 
     'chromium.perf.fyi': {
@@ -914,10 +914,10 @@
     'tryserver.chromium.perf': {
       'Android Compile Perf': 'official_goma_minimal_symbols_android',
       'Android arm64 Compile Perf': 'official_goma_minimal_symbols_android_arm64',
-      'Linux Builder Perf': 'official_goma_linux_perf',
+      'Linux Builder Perf': 'official_goma_perf',
       'Mac Builder Perf': 'official_goma_mac_perf',
-      'Win Builder Perf': 'official_goma_x86_perf',
-      'Win x64 Builder Perf': 'official_goma_perf',
+      'Win Builder Perf': 'official_goma_x86',
+      'Win x64 Builder Perf': 'official_goma',
     },
 
     'tryserver.chromium.swangle': {
@@ -1967,20 +1967,16 @@
       'official', 'goma',
     ],
 
-    'official_goma_perf': [
-      'official', 'goma', 'no_symbols',
-    ],
-
     'official_goma_mac_perf': [
-      'official', 'goma', 'no_keystone_registration_framework', 'no_symbols',
+      'official', 'goma', 'no_keystone_registration_framework',
     ],
 
     'official_goma_mac_pgo': [
       'official', 'goma', 'no_keystone_registration_framework', 'static', 'no_symbols', 'pgo_phase_1'
     ],
 
-    'official_goma_linux_perf': [
-      'official', 'goma', 'no_gnome_keyring', 'no_symbols',
+    'official_goma_perf': [
+      'official', 'goma', 'no_gnome_keyring',
     ],
 
     'official_goma_chromeos': [
@@ -2017,10 +2013,6 @@
 
     'official_goma_x86': [
       'official', 'goma', 'x86',
-    ],
-
-    'official_goma_x86_perf': [
-      'official', 'goma', 'x86', 'no_symbols'
     ],
 
     'official_goma_x86_pgo': [

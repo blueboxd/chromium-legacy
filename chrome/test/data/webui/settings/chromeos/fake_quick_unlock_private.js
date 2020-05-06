@@ -49,7 +49,7 @@ cr.define('settings', function() {
      *     !Array<!chrome.quickUnlockPrivate.QuickUnlockMode>):void} onComplete
      */
     getAuthToken: function(password, onComplete) {
-      if (password != this.accountPassword) {
+      if (password !== this.accountPassword) {
         chrome.runtime.lastError = 'Incorrect Password';
         onComplete();
         return;
@@ -65,7 +65,7 @@ cr.define('settings', function() {
      * @param {function(boolean):void}= onComplete
      */
     setLockScreenEnabled: function(token, enabled, onComplete) {
-      if (token != FAKE_TOKEN) {
+      if (token !== FAKE_TOKEN) {
         chrome.runtime.lastError = 'Authentication token invalid';
       } else {
         // Note: Fake does not set pref value.
@@ -105,7 +105,7 @@ cr.define('settings', function() {
      * @param {function(boolean):void} onComplete
      */
     setModes: function(token, modes, credentials, onComplete) {
-      if (token != FAKE_TOKEN) {
+      if (token !== FAKE_TOKEN) {
         chrome.runtime.lastError = 'Authentication token invalid';
         onComplete();
         return;
@@ -133,7 +133,7 @@ cr.define('settings', function() {
         errors.push(chrome.quickUnlockPrivate.CredentialProblem.TOO_SHORT);
       }
 
-      if (!!credential && this.credentialRequirements.maxLength != 0 &&
+      if (!!credential && this.credentialRequirements.maxLength !== 0 &&
           credential.length > this.credentialRequirements.maxLength) {
         errors.push(chrome.quickUnlockPrivate.CredentialProblem.TOO_LONG);
       }

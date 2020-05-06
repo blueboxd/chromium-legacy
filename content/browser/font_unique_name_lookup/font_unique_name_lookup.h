@@ -127,7 +127,7 @@ class CONTENT_EXPORT FontUniqueNameLookup {
   base::MappedReadOnlyRegion proto_storage_;
 
   base::FilePath cache_directory_;
-  std::string android_build_fingerprint_for_testing_ = "";
+  std::string android_build_fingerprint_for_testing_;
   std::vector<std::string> font_file_paths_for_testing_ =
       std::vector<std::string>();
 

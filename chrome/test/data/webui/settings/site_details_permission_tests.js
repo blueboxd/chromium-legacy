@@ -177,12 +177,12 @@ suite('SiteDetailsPermission', function() {
                    '\nBlock (default)\nAllow\nBlock\nAsk'),
           testElement.$.permissionItem.innerText.trim());
       assertEquals(
-          permissionSourcesNoSetting[testSource] != '',
+          permissionSourcesNoSetting[testSource] !== '',
           testElement.$.permissionItem.classList.contains('two-line'));
 
-      if (testSource != SiteSettingSource.DEFAULT &&
-          testSource != SiteSettingSource.PREFERENCE &&
-          testSource != SiteSettingSource.EMBARGO) {
+      if (testSource !== SiteSettingSource.DEFAULT &&
+          testSource !== SiteSettingSource.PREFERENCE &&
+          testSource !== SiteSettingSource.EMBARGO) {
         assertTrue(testElement.$.permission.disabled);
       } else {
         assertFalse(testElement.$.permission.disabled);

@@ -2610,6 +2610,9 @@ enum WebFeature {
   kClientHintsUAPlatformVersion = 3273,
   kIFrameCSPAttribute = 3274,
   kNavigatorCookieEnabled = 3275,
+  kTrustTokenFetch = 3276,
+  kTrustTokenXhr = 3277,
+  kTrustTokenIframe = 3278,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

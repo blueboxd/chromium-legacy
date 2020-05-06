@@ -196,12 +196,19 @@ void IsolatedPrerenderTabHelper::DidFinishNavigation(
   if (page_->srp_metrics_->predicted_urls_count_ > 0) {
     after_srp = std::make_unique<AfterSRPMetrics>();
     after_srp->url_ = url;
+    after_srp->prefetch_eligible_count_ =
+        page_->srp_metrics_->prefetch_eligible_count_;
 
     auto status_iter = page_->prefetch_status_by_url_.find(url);
     if (status_iter != page_->prefetch_status_by_url_.end()) {
       after_srp->prefetch_status_ = status_iter->second;
     } else {
       after_srp->prefetch_status_ = PrefetchStatus::kNavigatedToLinkNotOnSRP;
+    }
+
+    auto position_iter = page_->original_prediction_ordering_.find(url);
+    if (position_iter != page_->original_prediction_ordering_.end()) {
+      after_srp->clicked_link_srp_position_ = position_iter->second;
     }
   }
 
@@ -327,8 +334,9 @@ void IsolatedPrerenderTabHelper::Prefetch() {
       network::SimpleURLLoader::Create(std::move(request), traffic_annotation);
 
   // base::Unretained is safe because |page_->url_loader_| is owned by |this|.
-  page_->url_loader_->SetOnRedirectCallback(base::BindRepeating(
-      &IsolatedPrerenderTabHelper::OnPrefetchRedirect, base::Unretained(this)));
+  page_->url_loader_->SetOnRedirectCallback(
+      base::BindRepeating(&IsolatedPrerenderTabHelper::OnPrefetchRedirect,
+                          base::Unretained(this), url));
   page_->url_loader_->SetAllowHttpErrorResults(true);
   page_->url_loader_->SetTimeoutDuration(IsolatedPrefetchTimeoutDuration());
   page_->url_loader_->DownloadToString(
@@ -339,12 +347,21 @@ void IsolatedPrerenderTabHelper::Prefetch() {
 }
 
 void IsolatedPrerenderTabHelper::OnPrefetchRedirect(
+    const GURL& original_url,
     const net::RedirectInfo& redirect_info,
     const network::mojom::URLResponseHead& response_head,
     std::vector<std::string>* removed_headers) {
   DCHECK(PrefetchingActive());
 
   page_->srp_metrics_->prefetch_total_redirect_count_++;
+
+  // Copy the position ordering when there is a redirect so the metrics don't
+  // miss out on redirects.
+  auto position_iter = page_->original_prediction_ordering_.find(original_url);
+  if (position_iter != page_->original_prediction_ordering_.end()) {
+    page_->original_prediction_ordering_.emplace(redirect_info.new_url,
+                                                 position_iter->second);
+  }
 
   // Run the new URL through all the eligibility checks. In the mean time,
   // continue on with other Prefetches.
@@ -595,10 +612,6 @@ void IsolatedPrerenderTabHelper::OnGotCookieList(
   page_->srp_metrics_->prefetch_eligible_count_++;
   OnPrefetchStatusUpdate(url, PrefetchStatus::kPrefetchNotStarted);
 
-  // The queried url may not have been part of this page's prediction if it was
-  // a redirect (common) or if the cookie query finished after
-  // |OnFinishNavigation| (less common). Either way, don't record anything in
-  // the bitmask.
   if (page_->original_prediction_ordering_.find(url) !=
       page_->original_prediction_ordering_.end()) {
     size_t original_prediction_index =

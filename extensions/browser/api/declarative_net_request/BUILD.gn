@@ -73,6 +73,7 @@ source_set("core") {
     "indexed_rule.h",
     "parse_info.cc",
     "parse_info.h",
+    "ruleset_checksum.cc",
     "ruleset_checksum.h",
     "ruleset_source.cc",
     "ruleset_source.h",

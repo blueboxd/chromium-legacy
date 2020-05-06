@@ -398,73 +398,63 @@ class MODULES_EXPORT AXObject : public GarbageCollected<AXObject> {
   void Serialize(ui::AXNodeData* node_data);
 
   // Determine subclass type.
-  virtual bool IsAXNodeObject() const { return false; }
-  virtual bool IsAXLayoutObject() const { return false; }
-  virtual bool IsAXInlineTextBox() const { return false; }
-  virtual bool IsAXListBox() const { return false; }
-  virtual bool IsAXListBoxOption() const { return false; }
-  virtual bool IsAXRadioInput() const { return false; }
-  virtual bool IsAXSVGRoot() const { return false; }
+  virtual bool IsImageMapLink() const;
+  virtual bool IsAXNodeObject() const;
+  virtual bool IsAXLayoutObject() const;
+  virtual bool IsAXInlineTextBox() const;
+  virtual bool IsList() const;
+  virtual bool IsAXListBox() const;
+  virtual bool IsAXListBoxOption() const;
+  virtual bool IsMenuList() const;
+  virtual bool IsMenuListOption() const;
+  virtual bool IsMenuListPopup() const;
+  virtual bool IsMockObject() const;
+  virtual bool IsProgressIndicator() const;
+  virtual bool IsAXRadioInput() const;
+  virtual bool IsSlider() const;
+  virtual bool IsAXSVGRoot() const;
+  virtual bool IsValidationMessage() const;
+  virtual bool IsVirtualObject() const;
 
   // Check object role or purpose.
-  virtual ax::mojom::Role RoleValue() const { return role_; }
+  virtual ax::mojom::Role RoleValue() const;
   bool IsARIATextControl() const;
-  virtual bool IsAnchor() const { return false; }
+  bool IsAnchor() const;
   bool IsButton() const;
-  bool IsCanvas() const { return RoleValue() == ax::mojom::Role::kCanvas; }
-  bool IsCheckbox() const { return RoleValue() == ax::mojom::Role::kCheckBox; }
-  bool IsCheckboxOrRadio() const { return IsCheckbox() || IsRadioButton(); }
-  bool IsColorWell() const {
-    return RoleValue() == ax::mojom::Role::kColorWell;
-  }
-  virtual bool IsControl() const { return false; }
-  virtual bool IsDefault() const { return false; }
-  virtual bool IsFieldset() const { return false; }
-  virtual bool IsHeading() const { return false; }
-  virtual bool IsImage() const { return false; }
-  virtual bool IsImageMapLink() const { return false; }
-  virtual bool IsInputImage() const { return false; }
+  bool IsCanvas() const;
+  bool IsCheckbox() const;
+  bool IsCheckboxOrRadio() const;
+  bool IsColorWell() const;
+  virtual bool IsControl() const;
+  virtual bool IsDefault() const;
+  virtual bool IsFieldset() const;
+  bool IsHeading() const;
+  bool IsImage() const;
+  virtual bool IsInputImage() const;
   bool IsLandmarkRelated() const;
-  virtual bool IsLink() const { return false; }
-  virtual bool IsInPageLinkTarget() const { return false; }
-  virtual bool IsList() const { return false; }
-  virtual bool IsMenu() const { return false; }
-  virtual bool IsMenuButton() const { return false; }
-  virtual bool IsMenuList() const { return false; }
-  virtual bool IsMenuListOption() const { return false; }
-  virtual bool IsMenuListPopup() const { return false; }
+  bool IsLink() const;
+  virtual bool IsInPageLinkTarget() const;
+  bool IsMenu() const;
+  bool IsMenuButton() const;
   bool IsMenuRelated() const;
-  virtual bool IsMeter() const { return false; }
-  virtual bool IsMockObject() const { return false; }
-  virtual bool IsNativeSpinButton() const { return false; }
-  virtual bool IsNativeTextControl() const {
-    return false;
-  }  // input or textarea
-  virtual bool IsNonNativeTextControl() const {
-    return false;
-  }  // contenteditable or role=textbox
-  virtual bool IsPasswordField() const { return false; }
+  bool IsMeter() const;
+  virtual bool IsNativeImage() const;
+  virtual bool IsNativeSpinButton() const;
+  // input or textarea.
+  virtual bool IsNativeTextControl() const;
+  // contenteditable or role=textbox.
+  virtual bool IsNonNativeTextControl() const;
+  virtual bool IsPasswordField() const;
   bool IsPasswordFieldAndShouldHideValue() const;
-  bool IsPresentational() const {
-    return RoleValue() == ax::mojom::Role::kNone ||
-           RoleValue() == ax::mojom::Role::kPresentational;
-  }
-  virtual bool IsProgressIndicator() const { return false; }
+  bool IsPresentational() const;
   bool IsRadioButton() const {
     return RoleValue() == ax::mojom::Role::kRadioButton;
   }
-  bool IsRange() const {
-    return RoleValue() == ax::mojom::Role::kProgressIndicator ||
-           RoleValue() == ax::mojom::Role::kScrollBar ||
-           RoleValue() == ax::mojom::Role::kSlider ||
-           RoleValue() == ax::mojom::Role::kSpinButton || IsMoveableSplitter();
-  }
+  bool IsRangeValueSupported() const;
   bool IsScrollbar() const {
     return RoleValue() == ax::mojom::Role::kScrollBar;
   }
-  virtual bool IsSlider() const { return false; }
   virtual bool IsNativeSlider() const { return false; }
-  virtual bool IsMoveableSplitter() const { return false; }
   virtual bool IsSpinButton() const {
     return RoleValue() == ax::mojom::Role::kSpinButton;
   }
@@ -472,8 +462,6 @@ class MODULES_EXPORT AXObject : public GarbageCollected<AXObject> {
   virtual bool IsTextControl() const { return false; }
   bool IsTextObject() const;
   bool IsTree() const { return RoleValue() == ax::mojom::Role::kTree; }
-  virtual bool IsValidationMessage() const { return false; }
-  virtual bool IsVirtualObject() const { return false; }
   bool IsWebArea() const {
     return RoleValue() == ax::mojom::Role::kRootWebArea;
   }
@@ -748,7 +736,6 @@ class MODULES_EXPORT AXObject : public GarbageCollected<AXObject> {
   virtual bool SupportsARIADragging() const { return false; }
   virtual void Dropeffects(Vector<ax::mojom::Dropeffect>& dropeffects) const {}
   virtual bool SupportsARIAOwns() const { return false; }
-  bool SupportsRangeValue() const;
   bool SupportsARIAReadOnly() const;
 
   // Returns 0-based index.
@@ -809,8 +796,8 @@ class MODULES_EXPORT AXObject : public GarbageCollected<AXObject> {
 
   // High-level accessibility tree access. Other modules should only use these
   // functions.
-  AncestorsIterator AncestorsBegin();
-  AncestorsIterator AncestorsEnd();
+  AncestorsIterator AncestorsBegin() const;
+  AncestorsIterator AncestorsEnd() const;
   InOrderTraversalIterator GetInOrderTraversalIterator();
   int ChildCount() const;
   const AXObjectVector& Children() const;

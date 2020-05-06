@@ -29,7 +29,6 @@ import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.RecyclerView;
 
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -39,7 +38,6 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.robolectric.annotation.Config;
 
-import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
@@ -128,7 +126,6 @@ public class TabGridItemTouchHelperCallbackUnitTest {
 
     @Before
     public void setUp() {
-        RecordHistogram.setDisabledForTests(true);
 
         MockitoAnnotations.initMocks(this);
 
@@ -200,11 +197,6 @@ public class TabGridItemTouchHelperCallbackUnitTest {
                 mTabClosedListener, isDialog ? mTabGridDialogHandler : null, "", !isDialog);
         mItemTouchHelperCallback.setupCallback(THRESHOLD, THRESHOLD, THRESHOLD, mProfile);
         mItemTouchHelperCallback.getMovementFlags(mRecyclerView, mMockViewHolder1);
-    }
-
-    @After
-    public void tearDown() {
-        RecordHistogram.setDisabledForTests(false);
     }
 
     @Test

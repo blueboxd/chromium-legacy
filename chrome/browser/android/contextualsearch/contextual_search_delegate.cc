@@ -222,13 +222,13 @@ ContextualSearchDelegate::GetResolvedSearchTermFromJson(
   int start_adjust = 0;
   int end_adjust = 0;
   std::string context_language;
-  std::string thumbnail_url = "";
-  std::string caption = "";
-  std::string quick_action_uri = "";
+  std::string thumbnail_url;
+  std::string caption;
+  std::string quick_action_uri;
   QuickActionCategory quick_action_category = QUICK_ACTION_CATEGORY_NONE;
   int64_t logged_event_id = 0;
-  std::string search_url_full = "";
-  std::string search_url_preload = "";
+  std::string search_url_full;
+  std::string search_url_preload;
   int coca_card_tag = 0;
 
   DecodeSearchTermFromJsonResponse(

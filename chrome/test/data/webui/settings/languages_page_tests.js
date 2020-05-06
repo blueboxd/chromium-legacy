@@ -99,7 +99,7 @@ suite('languages page', function() {
     // whenAttributeIs for use elsewhere.
     const onMutation = function(mutations, observer) {
       if (mutations.some(function(mutation) {
-            return mutation.type == 'childList' &&
+            return mutation.type === 'childList' &&
                 Array.from(mutation.removedNodes).includes(dialog);
           })) {
         // Sanity check: the dialog should no longer be in the DOM.
@@ -263,7 +263,7 @@ suite('languages page', function() {
       assertTrue(!!i18nString);
       const menuItems = actionMenu.querySelectorAll('.dropdown-item');
       const menuItem = Array.from(menuItems).find(
-          item => item.textContent.trim() == i18nString);
+          item => item.textContent.trim() === i18nString);
       assertTrue(!!menuItem, 'Menu item "' + i18nKey + '" not found');
       return menuItem;
     }
@@ -322,10 +322,10 @@ suite('languages page', function() {
       assertTrue(!!targetLanguageCode);
       assertTrue(languageHelper.languages.enabled.some(
           l => languageHelper.convertLanguageCodeForTranslate(
-                   l.language.code) == targetLanguageCode));
+                   l.language.code) === targetLanguageCode));
       assertTrue(languageHelper.languages.enabled.some(
           l => languageHelper.convertLanguageCodeForTranslate(
-                   l.language.code) != targetLanguageCode));
+                   l.language.code) !== targetLanguageCode));
       let translateTargetLabel = null;
       let item = null;
 
@@ -339,7 +339,7 @@ suite('languages page', function() {
         if (item) {
           translateTargetLabel = el.querySelector('.target-info');
           assertTrue(!!translateTargetLabel);
-          if (getComputedStyle(translateTargetLabel).display != 'none') {
+          if (getComputedStyle(translateTargetLabel).display !== 'none') {
             num_visibles++;
             assertEquals(
                 targetLanguageCode,
@@ -424,7 +424,7 @@ suite('languages page', function() {
       assertTrue(!!domRepeat);
       const item = Array.from(items).find(function(el) {
         return domRepeat.itemForElement(el) &&
-            domRepeat.itemForElement(el).language.code == 'no';
+            domRepeat.itemForElement(el).language.code === 'no';
       });
 
       // Open the menu and select Remove.
@@ -452,7 +452,7 @@ suite('languages page', function() {
       assertTrue(!!domRepeat);
       const item = Array.from(items).find(function(el) {
         return domRepeat.itemForElement(el) &&
-            domRepeat.itemForElement(el).language.code == 'en-US';
+            domRepeat.itemForElement(el).language.code === 'en-US';
       });
       // Open the menu and select Remove.
       item.querySelector('cr-icon-button').click();
@@ -468,7 +468,7 @@ suite('languages page', function() {
       assertTrue(!!domRepeat);
       const item = Array.from(items).find(function(el) {
         return domRepeat.itemForElement(el) &&
-            domRepeat.itemForElement(el).language.code == 'sw';
+            domRepeat.itemForElement(el).language.code === 'sw';
       });
 
       // Open the menu and select Remove.

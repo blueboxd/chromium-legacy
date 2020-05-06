@@ -118,6 +118,8 @@ namespace {
 
 namespace dnr_api = api::declarative_net_request;
 
+constexpr char kDefaultRulesetID[] = "id";
+
 // Returns true if |window.scriptExecuted| is true for the given frame.
 bool WasFrameWithScriptLoaded(content::RenderFrameHost* rfh) {
   if (!rfh)
@@ -386,10 +388,10 @@ class DeclarativeNetRequestBrowserTest
   void LoadExtensionWithRules(const std::vector<TestRule>& rules,
                               const std::string& directory,
                               const std::vector<std::string>& hosts) {
-    constexpr char kRulesetID[] = "id";
     constexpr char kJSONRulesFilename[] = "rules_file.json";
     LoadExtensionWithRulesets(
-        {TestRulesetInfo(kRulesetID, kJSONRulesFilename, *ToListValue(rules))},
+        {TestRulesetInfo(kDefaultRulesetID, kJSONRulesFilename,
+                         *ToListValue(rules))},
         directory, hosts);
   }
 
@@ -1991,9 +1993,7 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest_Packed,
       [](const base::FilePath& indexed_path) {
         base::ScopedAllowBlockingForTesting scoped_allow_blocking;
         std::string corrupted_data = GetVersionHeaderForTesting() + "data";
-        ASSERT_EQ(static_cast<int>(corrupted_data.size()),
-                  base::WriteFile(indexed_path, corrupted_data.c_str(),
-                                  corrupted_data.size()));
+        ASSERT_TRUE(base::WriteFile(indexed_path, corrupted_data));
       };
 
   // Helper to reload the extension and ensure it is working.
@@ -2834,13 +2834,19 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
   // Verify that the badge text for the first tab is unaffected.
   EXPECT_EQ(first_tab_badge_text, action->GetDisplayBadgeText(first_tab_id));
 
-  // Verify that the correct rules are returned via getMatchedRules.
-  auto get_matched_rule_ids = [this](int tab_id) {
+  // Verify that the correct rules are returned via getMatchedRules. Returns "|"
+  // separated pairs of <rule_id>,<ruleset_id>, sorted by rule ids, e.g.
+  // "ruleId1,rulesetId1|ruleId2,rulesetId2".
+  auto get_matched_rules = [this](int tab_id) {
     const char kGetMatchedRulesScript[] = R"(
-      chrome.declarativeNetRequest.getMatchedRules({tabId: %d}, (rules) => {
-        var ruleIds =
-            rules.rulesMatchedInfo.map(rule => rule.rule.ruleId).sort();
-        window.domAutomationController.send(ruleIds.join());
+      chrome.declarativeNetRequest.getMatchedRules({tabId: %d}, (matches) => {
+        // Sort by |ruleId|.
+        matches.rulesMatchedInfo.sort((a, b) => a.rule.ruleId - b.rule.ruleId);
+
+        var ruleAndRulesetIDs = matches.rulesMatchedInfo.map(
+          match => [match.rule.ruleId, match.rule.rulesetId].join());
+
+        window.domAutomationController.send(ruleAndRulesetIDs.join('|'));
       });
     )";
 
@@ -2858,10 +2864,13 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
   //   - the redirect rule for def.com (ruleId = 2)
   //   - the removeHeaders rule for jkl.com (ruleId = 3)
   //   - the allow rule for abcd.com (ruleId = 5)
-  EXPECT_EQ("1,2,3,5", get_matched_rule_ids(first_tab_id));
+  EXPECT_EQ(base::StringPrintf("1,%s|2,%s|3,%s|5,%s", kDefaultRulesetID,
+                               kDefaultRulesetID, kDefaultRulesetID,
+                               kDefaultRulesetID),
+            get_matched_rules(first_tab_id));
 
   // No rule should be matched on the tab with |second_tab_id|.
-  EXPECT_EQ("", get_matched_rule_ids(second_tab_id));
+  EXPECT_EQ("", get_matched_rules(second_tab_id));
 }
 
 // Ensure web request events are still dispatched even if DNR blocks/redirects

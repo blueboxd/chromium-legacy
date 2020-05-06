@@ -132,8 +132,7 @@ class KioskCrashRestoreTest : public InProcessBrowserTest {
     base::FilePath local_state_file;
     CHECK(base::PathService::Get(chrome::DIR_USER_DATA, &local_state_file));
     local_state_file = local_state_file.Append(chrome::kLocalStateFilename);
-    base::WriteFile(local_state_file, local_state_json.data(),
-                    local_state_json.size());
+    base::WriteFile(local_state_file, local_state_json);
   }
 
   std::string test_app_id_ = kTestKioskApp;

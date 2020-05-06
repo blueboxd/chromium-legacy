@@ -17,15 +17,6 @@ import org.chromium.base.annotations.NativeMethods;
 @MainDex
 public class RecordHistogram {
     /**
-     * Tests may need to disable metrics. The value should be reset after the test done, to avoid
-     * carrying over state to unrelated tests.
-     */
-    @VisibleForTesting
-    public static void setDisabledForTests(boolean disabled) {
-        UmaRecorderHolder.setDisabledForTests(disabled);
-    }
-
-    /**
      * Records a sample in a boolean UMA histogram of the given name. Boolean histogram has two
      * buckets, corresponding to success (true) and failure (false). This is the Java equivalent of
      * the UMA_HISTOGRAM_BOOLEAN C++ macro.

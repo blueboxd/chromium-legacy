@@ -384,7 +384,7 @@ TEST_P(LogFileWriterTest, CallToWriteWithEmptyStringSucceeds) {
   auto writer = CreateWriter(kMaxRemoteLogFileSizeBytes);
   ASSERT_TRUE(writer);
 
-  const std::string log = "";
+  const std::string log;
   EXPECT_TRUE(writer->Write(log));
 
   ASSERT_TRUE(writer->Close());

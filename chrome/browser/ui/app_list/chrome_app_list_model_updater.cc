@@ -115,19 +115,6 @@ void ChromeAppListModelUpdater::SetStatus(ash::AppListModelStatus status) {
   app_list_controller_->SetStatus(status);
 }
 
-void ChromeAppListModelUpdater::SetState(ash::AppListState state) {
-  if (!app_list_controller_)
-    return;
-  app_list_controller_->SetState(state);
-}
-
-void ChromeAppListModelUpdater::HighlightItemInstalledFromUI(
-    const std::string& id) {
-  if (!app_list_controller_)
-    return;
-  app_list_controller_->HighlightItemInstalledFromUI(id);
-}
-
 void ChromeAppListModelUpdater::SetSearchEngineIsGoogle(bool is_google) {
   search_engine_is_google_ = is_google;
   if (app_list_controller_)
@@ -275,21 +262,6 @@ void ChromeAppListModelUpdater::SetItemFolderId(const std::string& id,
   app_list_controller_->SetItemMetadata(id, std::move(data));
 }
 
-void ChromeAppListModelUpdater::SetItemIsInstalling(const std::string& id,
-                                                    bool is_installing) {
-  if (!app_list_controller_)
-    return;
-  app_list_controller_->SetItemIsInstalling(id, is_installing);
-}
-
-void ChromeAppListModelUpdater::SetItemPercentDownloaded(
-    const std::string& id,
-    int32_t percent_downloaded) {
-  if (!app_list_controller_)
-    return;
-  app_list_controller_->SetItemPercentDownloaded(id, percent_downloaded);
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // Methods only used by ChromeSearchResult that talk to ash directly.
 
@@ -299,30 +271,6 @@ void ChromeAppListModelUpdater::SetSearchResultMetadata(
   if (!app_list_controller_)
     return;
   app_list_controller_->SetSearchResultMetadata(std::move(metadata));
-}
-
-void ChromeAppListModelUpdater::SetSearchResultIsInstalling(
-    const std::string& id,
-    bool is_installing) {
-  if (!app_list_controller_)
-    return;
-  app_list_controller_->SetSearchResultIsInstalling(id, is_installing);
-}
-
-void ChromeAppListModelUpdater::SetSearchResultPercentDownloaded(
-    const std::string& id,
-    int percent_downloaded) {
-  if (!app_list_controller_)
-    return;
-  app_list_controller_->SetSearchResultPercentDownloaded(id,
-                                                         percent_downloaded);
-}
-
-void ChromeAppListModelUpdater::NotifySearchResultItemInstalled(
-    const std::string& id) {
-  if (!app_list_controller_)
-    return;
-  app_list_controller_->NotifySearchResultItemInstalled(id);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

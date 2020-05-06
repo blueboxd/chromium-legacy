@@ -5,6 +5,8 @@
 #ifndef EXTENSIONS_COMMON_API_DECLARATIVE_NET_REQUEST_CONSTANTS_H_
 #define EXTENSIONS_COMMON_API_DECLARATIVE_NET_REQUEST_CONSTANTS_H_
 
+#include "base/util/type_safety/id_type.h"
+
 namespace extensions {
 namespace declarative_net_request {
 
@@ -20,9 +22,11 @@ constexpr int kMinValidID = 1;
 // Minimum valid value of a declarative rule priority.
 constexpr int kMinValidPriority = 1;
 
-constexpr int kMinValidStaticRulesetID = 1;
-constexpr int kDynamicRulesetID = 0;
-constexpr int kInvalidRulesetID = -1;
+using RulesetID =
+    ::util::IdType<class RulesetIDTag, int, -1 /* invalid value */>;
+
+constexpr RulesetID kMinValidStaticRulesetID(1);
+constexpr RulesetID kDynamicRulesetID(0);
 
 // Default priority used for rules when the priority is not explicity provided
 // by an extension.

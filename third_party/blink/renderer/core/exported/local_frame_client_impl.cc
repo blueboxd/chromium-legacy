@@ -91,6 +91,7 @@
 #include "third_party/blink/renderer/core/origin_trials/origin_trial_context.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/page/plugin_data.h"
+#include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/platform/exported/wrapped_resource_request.h"
 #include "third_party/blink/renderer/platform/exported/wrapped_resource_response.h"
 #include "third_party/blink/renderer/platform/instrumentation/histogram.h"
@@ -826,12 +827,15 @@ String LocalFrameClientImpl::UserAgent() {
 base::Optional<UserAgentMetadata> LocalFrameClientImpl::UserAgentMetadata() {
   bool ua_override_on = web_frame_->Client() &&
                         !web_frame_->Client()->UserAgentOverride().IsEmpty();
-  if (ua_override_on)
-    return web_frame_->Client()->UserAgentMetadataOverride();
+  base::Optional<blink::UserAgentMetadata> user_agent_metadata =
+      ua_override_on ? web_frame_->Client()->UserAgentMetadataOverride()
+                     : Platform::Current()->UserAgentMetadata();
 
-  if (user_agent_metadata_.brand_version_list.empty())
-    user_agent_metadata_ = Platform::Current()->UserAgentMetadata();
-  return user_agent_metadata_;
+  Document* document = web_frame_->GetDocument();
+  probe::ApplyUserAgentMetadataOverride(probe::ToCoreProbeSink(document),
+                                        &user_agent_metadata);
+
+  return user_agent_metadata;
 }
 
 String LocalFrameClientImpl::DoNotTrackValue() {

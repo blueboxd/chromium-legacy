@@ -177,16 +177,11 @@ class ExtensionWebstorePrivateApiTest : public ExtensionApiTest {
   // Navigates to |page| and runs the Extension API test there. Any downloads
   // of extensions will return the contents of |crx_file|.
   bool RunInstallTest(const std::string& page, const std::string& crx_file) {
-#if defined(OS_WIN) && !defined(NDEBUG)
-    // See http://crbug.com/177163 for details.
-    return true;
-#else
     const GURL crx_url = GetTestServerURL(crx_file);
     extension_test_util::SetGalleryUpdateURL(crx_url);
 
     GURL page_url = GetTestServerURL(page);
     return RunPageTest(page_url.spec());
-#endif
   }
 
   content::WebContents* GetWebContents() {
@@ -299,17 +294,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest, IncorrectManifest2) {
   ASSERT_TRUE(RunInstallTest("incorrect_manifest2.html", "extension.crx"));
 }
 
-// Disabled: http://crbug.com/174399 and http://crbug.com/177163
-#if defined(OS_WIN) && (defined(USE_AURA) || !defined(NDEBUG))
-#define MAYBE_AppInstallBubble DISABLED_AppInstallBubble
-#else
-#define MAYBE_AppInstallBubble AppInstallBubble
-#endif
-
 // Tests that we can request an app installed bubble (instead of the default
 // UI when an app is installed).
-IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest,
-                       MAYBE_AppInstallBubble) {
+IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest, AppInstallBubble) {
   WebstoreInstallListener listener;
   WebstorePrivateApi::SetWebstoreInstallerDelegateForTesting(&listener);
   ASSERT_TRUE(RunInstallTest("app_install_bubble.html", "app.crx"));
@@ -328,25 +315,13 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest, IsNotInIncognitoMode) {
   ASSERT_TRUE(RunPageTest(page_url.spec()));
 }
 
-// Fails often on Windows dbg bots. http://crbug.com/177163.
-#if defined(OS_WIN)
-#define MAYBE_IconUrl DISABLED_IconUrl
-#else
-#define MAYBE_IconUrl IconUrl
-#endif  // defined(OS_WIN)
 // Tests using the iconUrl parameter to the install function.
-IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest, MAYBE_IconUrl) {
+IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest, IconUrl) {
   ASSERT_TRUE(RunInstallTest("icon_url.html", "extension.crx"));
 }
 
-// http://crbug.com/177163
-#if defined(OS_WIN) && !defined(NDEBUG)
-#define MAYBE_BeginInstall DISABLED_BeginInstall
-#else
-#define MAYBE_BeginInstall BeginInstall
-#endif
 // Tests that the Approvals are properly created in beginInstall.
-IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest, MAYBE_BeginInstall) {
+IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest, BeginInstall) {
   std::string appId = "iladmdjkfniedhfhcfoefgojhgaiaccc";
   std::string extensionId = "enfkhcelefdadlmkffamgdlgplcionje";
   ASSERT_TRUE(RunInstallTest("begin_install.html", "extension.crx"));
@@ -368,14 +343,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest, MAYBE_BeginInstall) {
   EXPECT_EQ(browser()->profile(), approval->profile);
 }
 
-// http://crbug.com/177163
-#if defined(OS_WIN) && !defined(NDEBUG)
-#define MAYBE_InstallTheme DISABLED_InstallTheme
-#else
-#define MAYBE_InstallTheme InstallTheme
-#endif
 // Tests that themes are installed without an install prompt.
-IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest, MAYBE_InstallTheme) {
+IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest, InstallTheme) {
   WebstoreInstallListener listener;
   WebstorePrivateApi::SetWebstoreInstallerDelegateForTesting(&listener);
   ASSERT_TRUE(RunInstallTest("theme.html", "../../theme.crx"));

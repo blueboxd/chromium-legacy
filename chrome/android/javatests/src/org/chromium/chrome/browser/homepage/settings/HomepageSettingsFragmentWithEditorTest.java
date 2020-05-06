@@ -8,15 +8,12 @@ import android.support.test.filters.SmallTest;
 
 import androidx.preference.Preference;
 
-import org.junit.After;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
@@ -66,16 +63,6 @@ public class HomepageSettingsFragmentWithEditorTest {
 
     @Rule
     public TestRule mFeatureProcessor = new Features.InstrumentationProcessor();
-
-    @Before
-    public void setup() {
-        RecordHistogram.setDisabledForTests(true);
-    }
-
-    @After
-    public void tearDown() {
-        RecordHistogram.setDisabledForTests(false);
-    }
 
     private ChromeSwitchPreference mSwitch;
     private Preference mHomepageEditor;

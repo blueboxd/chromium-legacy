@@ -1222,7 +1222,7 @@ static void CreateFile(const base::FilePath& file,
                 const base::Time& timestamp) {
   base::ScopedAllowBlockingForTesting allow_blocking;
   std::string data(size, 0);
-  EXPECT_EQ(base::WriteFile(file, data.data(), data.size()), int(size));
+  EXPECT_TRUE(base::WriteFile(file, data));
   EXPECT_TRUE(base::TouchFile(file, timestamp, timestamp));
 }
 

@@ -165,7 +165,7 @@ suite('settings-languages', function() {
       // English which is still enabled.
       assertTrue(languageHelper.languages.inputMethods.enabled.some(function(
           inputMethod) {
-        return inputMethod.id == swUS;
+        return inputMethod.id === swUS;
       }));
     });
   }

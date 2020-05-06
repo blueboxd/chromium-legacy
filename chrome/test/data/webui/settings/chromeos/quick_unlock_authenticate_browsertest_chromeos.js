@@ -16,7 +16,7 @@ cr.define('settings_people_page_quick_unlock', function() {
     while (element) {
       if (element.offsetWidth <= 0 || element.offsetHeight <= 0 ||
           element.hidden ||
-          window.getComputedStyle(element).visibility == 'hidden') {
+          window.getComputedStyle(element).visibility === 'hidden') {
         return false;
       }
 
@@ -26,9 +26,9 @@ cr.define('settings_people_page_quick_unlock', function() {
         // cr-dialog itself will always be 0x0. It's the inner native <dialog>
         // that has actual dimensions.
         // (The same about PIN-KEYBOARD.)
-        if (element.tagName == 'CR-DIALOG') {
+        if (element.tagName === 'CR-DIALOG') {
           element = element.getNative();
-        } else if (element.tagName == 'PIN-KEYBOARD') {
+        } else if (element.tagName === 'PIN-KEYBOARD') {
           element = element.$.root;
         }
       }
@@ -220,7 +220,7 @@ cr.define('settings_people_page_quick_unlock', function() {
        */
       function assertRadioButtonChecked(radioButton) {
         function doAssert(element, name) {
-          if (radioButton == element) {
+          if (radioButton === element) {
             assertTrue(element.checked, 'Expected ' + name + ' to be checked');
           } else {
             assertFalse(

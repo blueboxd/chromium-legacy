@@ -67,6 +67,8 @@ class Keyboard : public ui::EventHandler,
 
   // Overridden from ash::KeyboardControllerObserver
   void OnKeyboardEnabledChanged(bool is_enabled) override;
+  void OnKeyRepeatSettingsChanged(
+      const ash::KeyRepeatSettings& settings) override;
 
  private:
   // Change keyboard focus to |surface|.

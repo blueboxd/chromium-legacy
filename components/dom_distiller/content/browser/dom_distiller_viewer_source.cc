@@ -18,7 +18,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "build/build_config.h"
 #include "components/dom_distiller/content/browser/distiller_javascript_utils.h"
 #include "components/dom_distiller/content/common/mojom/distiller_page_notifier_service.mojom.h"
 #include "components/dom_distiller/core/distilled_page_prefs.h"
@@ -35,10 +34,8 @@
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
-#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
-#include "content/public/common/web_preferences.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/url_util.h"
 #include "net/url_request/url_request.h"
@@ -222,13 +219,6 @@ void DomDistillerViewerSource::StartDataRequest(
   content::WebContents* web_contents = wc_getter.Run();
   if (!web_contents)
     return;
-#if !defined(OS_ANDROID)
-  // Don't allow loading of mixed content on Reader Mode pages.
-  content::WebPreferences prefs =
-      web_contents->GetRenderViewHost()->GetWebkitPreferences();
-  prefs.strict_mixed_content_checking = true;
-  web_contents->GetRenderViewHost()->UpdateWebkitPreferences(prefs);
-#endif  // !defined(OS_ANDROID)
   if (kViewerCssPath == path) {
     std::string css = viewer::GetCss();
     std::move(callback).Run(base::RefCountedString::TakeString(&css));

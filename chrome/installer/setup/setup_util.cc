@@ -611,7 +611,7 @@ int GetInstallAge(const InstallerState& installer_state) {
 
 void RecordUnPackMetrics(UnPackStatus unpack_status,
                          UnPackConsumer consumer) {
-  std::string consumer_name = "";
+  std::string consumer_name;
 
   switch (consumer) {
     case UnPackConsumer::CHROME_ARCHIVE_PATCH:
@@ -800,34 +800,6 @@ base::FilePath GetElevationServicePath(const base::FilePath& target_path,
                                        const base::Version& version) {
   return target_path.AppendASCII(version.GetString())
       .Append(kElevationServiceExe);
-}
-
-base::string16 GetElevationServiceGuid(base::StringPiece16 prefix) {
-  auto result = base::win::String16FromGUID(install_static::GetElevatorClsid());
-  result.insert(0, prefix.data(), prefix.size());
-  return result;
-}
-
-base::string16 GetElevationServiceClsidRegistryPath() {
-  return GetElevationServiceGuid(L"Software\\Classes\\CLSID\\");
-}
-
-base::string16 GetElevationServiceAppidRegistryPath() {
-  return GetElevationServiceGuid(L"Software\\Classes\\AppID\\");
-}
-
-base::string16 GetElevationServiceIid(base::StringPiece16 prefix) {
-  auto result = base::win::String16FromGUID(install_static::GetElevatorIid());
-  result.insert(0, prefix.data(), prefix.size());
-  return result;
-}
-
-base::string16 GetElevationServiceIidRegistryPath() {
-  return GetElevationServiceIid(L"Software\\Classes\\Interface\\");
-}
-
-base::string16 GetElevationServiceTypeLibRegistryPath() {
-  return GetElevationServiceIid(L"Software\\Classes\\TypeLib\\");
 }
 
 }  // namespace installer

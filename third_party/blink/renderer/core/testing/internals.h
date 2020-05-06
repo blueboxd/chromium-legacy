@@ -500,8 +500,6 @@ class Internals final : public ScriptWrappable {
                       const HeapVector<Member<Element>>& elements,
                       ExceptionState&);
 
-  void revealSelection();
-
   String selectedHTMLForClipboard();
   String selectedTextForClipboard();
 

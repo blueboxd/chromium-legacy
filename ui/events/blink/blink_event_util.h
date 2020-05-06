@@ -81,8 +81,6 @@ int WebEventModifiersToEventFlags(int modifiers);
 blink::WebInputEvent::Modifiers DomCodeToWebInputEventModifiers(
     ui::DomCode code);
 
-bool IsGestureScrollOrPinch(blink::WebInputEvent::Type);
-
 bool IsGestureScroll(blink::WebInputEvent::Type);
 
 bool IsContinuousGestureEvent(blink::WebInputEvent::Type);

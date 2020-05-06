@@ -685,7 +685,7 @@ void DevToolsWindow::ToggleDevToolsWindow(
     Profile* profile = Profile::FromBrowserContext(
         inspected_web_contents->GetBrowserContext());
     base::RecordAction(base::UserMetricsAction("DevTools_InspectRenderer"));
-    std::string panel = "";
+    std::string panel;
     switch (action.type()) {
       case DevToolsToggleAction::kInspect:
       case DevToolsToggleAction::kShowElementsPanel:

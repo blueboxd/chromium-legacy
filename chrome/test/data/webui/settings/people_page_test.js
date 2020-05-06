@@ -172,7 +172,7 @@ if (!isChromeOS) {
         // The control element should exist when policy allows.
         const accountControl = peoplePage.$$('settings-sync-account-control');
         assertTrue(
-            window.getComputedStyle(accountControl)['display'] != 'none');
+            window.getComputedStyle(accountControl)['display'] !== 'none');
 
         // Control element doesn't exist when policy forbids sync.
         simulateSyncStatus({
@@ -213,7 +213,7 @@ if (!isChromeOS) {
           hasError: false,
         });
         assertTrue(
-            window.getComputedStyle(manageGoogleAccount)['display'] != 'none');
+            window.getComputedStyle(manageGoogleAccount)['display'] !== 'none');
 
         // A stored account with sync off and error should not result in the
         // Google Account being shown.
@@ -233,7 +233,7 @@ if (!isChromeOS) {
           hasError: false,
         });
         assertTrue(
-            window.getComputedStyle(manageGoogleAccount)['display'] != 'none');
+            window.getComputedStyle(manageGoogleAccount)['display'] !== 'none');
 
         // A stored account with sync on but with error should not result in
         // the Google Account being shown.

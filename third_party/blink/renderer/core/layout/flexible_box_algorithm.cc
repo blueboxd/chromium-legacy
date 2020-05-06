@@ -579,12 +579,47 @@ void FlexLine::ComputeLineItemsPosition(LayoutUnit main_axis_start_offset,
   cross_axis_offset += max_child_cross_axis_extent;
 }
 
+// static
+LayoutUnit FlexLayoutAlgorithm::GapBetweenItems(
+    const ComputedStyle& style,
+    LogicalSize percent_resolution_sizes) {
+  DCHECK_GE(percent_resolution_sizes.inline_size, 0);
+  if (IsColumnFlow(style)) {
+    if (LIKELY(style.RowGap().IsNormal()))
+      return LayoutUnit();
+    return MinimumValueForLength(
+        style.RowGap().GetLength(),
+        percent_resolution_sizes.block_size.ClampNegativeToZero());
+  }
+  if (LIKELY(style.ColumnGap().IsNormal()))
+    return LayoutUnit();
+  return MinimumValueForLength(style.ColumnGap().GetLength(),
+                               percent_resolution_sizes.inline_size);
+}
+
+// static
+LayoutUnit FlexLayoutAlgorithm::GapBetweenLines(
+    const ComputedStyle& style,
+    LogicalSize percent_resolution_sizes) {
+  DCHECK_GE(percent_resolution_sizes.inline_size, 0);
+  if (!IsColumnFlow(style)) {
+    if (LIKELY(style.RowGap().IsNormal()))
+      return LayoutUnit();
+    return MinimumValueForLength(
+        style.RowGap().GetLength(),
+        percent_resolution_sizes.block_size.ClampNegativeToZero());
+  }
+  if (LIKELY(style.ColumnGap().IsNormal()))
+    return LayoutUnit();
+  return MinimumValueForLength(style.ColumnGap().GetLength(),
+                               percent_resolution_sizes.inline_size);
+}
+
 FlexLayoutAlgorithm::FlexLayoutAlgorithm(const ComputedStyle* style,
                                          LayoutUnit line_break_length,
-                                         LayoutUnit gap_between_items,
-                                         LayoutUnit gap_between_lines)
-    : gap_between_items_(gap_between_items),
-      gap_between_lines_(gap_between_lines),
+                                         LogicalSize percent_resolution_sizes)
+    : gap_between_items_(GapBetweenItems(*style, percent_resolution_sizes)),
+      gap_between_lines_(GapBetweenLines(*style, percent_resolution_sizes)),
       style_(style),
       line_break_length_(line_break_length),
       next_item_index_(0) {}
@@ -647,7 +682,12 @@ bool FlexLayoutAlgorithm::IsHorizontalFlow() const {
 }
 
 bool FlexLayoutAlgorithm::IsColumnFlow() const {
-  return StyleRef().ResolvedIsColumnFlexDirection();
+  return IsColumnFlow(*style_);
+}
+
+// static
+bool FlexLayoutAlgorithm::IsColumnFlow(const ComputedStyle& style) {
+  return style.ResolvedIsColumnFlexDirection();
 }
 
 // static

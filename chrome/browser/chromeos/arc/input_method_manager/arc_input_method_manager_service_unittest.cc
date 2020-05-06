@@ -170,7 +170,7 @@ class TestInputMethodManager : public im::MockInputMethodManager {
 
    private:
     std::vector<std::string> active_input_method_ids_;
-    std::string active_ime_id_ = "";
+    std::string active_ime_id_;
     std::vector<std::string> allowed_input_methods_;
   };
 

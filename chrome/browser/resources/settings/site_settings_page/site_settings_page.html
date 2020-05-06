@@ -1,6 +1,10 @@
-    <style include="settings-shared"></style>
+    <style include="cr-shared-style settings-shared">
+      .no-min-height {
+        min-height: 0;
+      }
+    </style>
     <template is="dom-if" if="[[!privacySettingsRedesignEnabled_]]">
-      <div class="settings-box first line-only">
+      <div class="cr-row first no-min-height">
         <h2 class="first">$i18n{siteSettingsAllSites}</h2>
       </div>
     </template>
@@ -13,7 +17,7 @@
         <img id="banner" alt=""
             src="chrome://settings/images/permissions_banner.svg">
       </picture>
-      <div class="settings-box first line-only">
+      <div class="cr-row first">
         <h2>$i18n{siteSettingsRecentPermissionsSectionLabel}</h2>
       </div>
       <settings-recent-site-permissions id="recentSitePermissions"
@@ -27,7 +31,7 @@
         label="$i18n{siteSettingsAllSitesDescription}"
         on-click="onSiteSettingsAllClick_"
         role-description="$i18n{subpageArrowRoleDescription}"></cr-link-row>
-    <div class="settings-box first line-only">
+    <div class="cr-row first line-only">
       <h2>$i18n{siteSettingsPermissions}</h2>
     </div>
 
@@ -43,7 +47,7 @@
           category-list="[[lists_.permissionsBasic]]"
           focus-config="[[focusConfig]]">
       </settings-site-settings-list>
-      <cr-expand-button class="settings-box"
+      <cr-expand-button class="cr-row"
           expanded="{{permissionsExpanded_}}">
         <div>$i18n{siteSettingsPermissionsMore}</div>
       </cr-expand-button>
@@ -54,14 +58,14 @@
         </settings-site-settings-list>
       </iron-collapse>
 
-      <div class="settings-box first line-only">
+      <div class="cr-row first line-only">
         <h2>$i18n{siteSettingsContent}</h2>
       </div>
       <settings-site-settings-list id="basicContentList"
           category-list="[[lists_.contentBasic]]"
           focus-config="[[focusConfig]]">
       </settings-site-settings-list>
-      <cr-expand-button class="settings-box"
+      <cr-expand-button class="cr-row"
           expanded="{{contentExpanded_}}">
         <div>$i18n{siteSettingsContentMore}</div>
       </cr-expand-button>

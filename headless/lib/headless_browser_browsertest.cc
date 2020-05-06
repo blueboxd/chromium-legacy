@@ -764,7 +764,9 @@ IN_PROC_BROWSER_TEST_F(HeadlessBrowserTest,
 #endif
 IN_PROC_BROWSER_TEST_F(HeadlessBrowserTest, MAYBE_AIAFetching) {
   net::EmbeddedTestServer server(net::EmbeddedTestServer::TYPE_HTTPS);
-  server.SetSSLConfig(net::EmbeddedTestServer::CERT_AUTO_AIA_INTERMEDIATE);
+  net::EmbeddedTestServer::ServerCertificateConfig cert_config;
+  cert_config.intermediate = net::EmbeddedTestServer::IntermediateType::kByAIA;
+  server.SetSSLConfig(cert_config);
   server.AddDefaultHandlers(base::FilePath(FILE_PATH_LITERAL("net/data/ssl")));
   ASSERT_TRUE(server.Start());
 

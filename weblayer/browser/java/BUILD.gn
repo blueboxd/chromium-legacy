@@ -117,6 +117,7 @@ android_library("java") {
     "//components/crash/android:java",
     "//components/download/internal/common:internal_java",
     "//components/embedder_support/android:application_java",
+    "//components/embedder_support/android:browser_context_java",
     "//components/embedder_support/android:context_menu_java",
     "//components/embedder_support/android:util_java",
     "//components/embedder_support/android:web_contents_delegate_java",

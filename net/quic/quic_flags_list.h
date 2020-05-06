@@ -381,3 +381,9 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_bbr_use_available_min_rtt, true)
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_notify_handshaker_on_connection_close,
           false)
+
+// If true, for QUIC + TLS, change default encryption level when new encryption
+// key is available.
+QUIC_FLAG(bool,
+          FLAGS_quic_reloadable_flag_quic_change_default_encryption_level,
+          false)

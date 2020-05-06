@@ -15182,6 +15182,7 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
   <int value="35" label="Settings - Emulation Geolocations"/>
   <int value="36" label="Settings - Shortcuts"/>
   <int value="37" label="Drawer - Issues"/>
+  <int value="38" label="Settings - Shortcuts (custom)"/>
 </enum>
 
 <enum name="DevToolsSetting">
@@ -27176,6 +27177,9 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3273" label="ClientHintsUAPlatformVersion"/>
   <int value="3274" label="IFrameCSPAttribute"/>
   <int value="3275" label="NavigatorCookieEnabled"/>
+  <int value="3276" label="TrustTokenFetch"/>
+  <int value="3277" label="TrustTokenXhr"/>
+  <int value="3278" label="TrustTokenIframe"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">

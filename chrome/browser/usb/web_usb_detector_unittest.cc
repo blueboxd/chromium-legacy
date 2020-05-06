@@ -148,7 +148,7 @@ TEST_F(WebUsbDetectorTest, UsbDeviceAddedAndRemoved) {
 }
 
 TEST_F(WebUsbDetectorTest, UsbDeviceWithoutProductNameAddedAndRemoved) {
-  std::string product_name = "";
+  std::string product_name;
   GURL landing_page(kLandingPage_1);
   Initialize();
   base::RunLoop().RunUntilIdle();

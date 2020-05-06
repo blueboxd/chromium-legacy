@@ -23,6 +23,7 @@
 #include "third_party/blink/public/platform/web_coalesced_input_event.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "ui/events/base_event_utils.h"
+#include "ui/events/blink/did_overscroll_params.h"
 
 #if defined(OS_ANDROID)
 #include "content/public/common/content_client.h"
@@ -36,6 +37,19 @@ using ::perfetto::protos::pbzero::ChromeLatencyInfo;
 using ::perfetto::protos::pbzero::TrackEvent;
 
 namespace {
+
+base::Optional<ui::DidOverscrollParams> ToDidOverscrollParams(
+    const std::unique_ptr<blink::InputHandlerProxy::DidOverscrollParams>&
+        overscroll_params) {
+  if (!overscroll_params)
+    return base::nullopt;
+  return ui::DidOverscrollParams{overscroll_params->accumulated_overscroll,
+                                 overscroll_params->latest_overscroll_delta,
+                                 overscroll_params->current_fling_velocity,
+                                 overscroll_params->causal_event_viewport_point,
+                                 overscroll_params->overscroll_behavior};
+}
+
 void CallCallback(mojom::WidgetInputHandler::DispatchEventCallback callback,
                   blink::mojom::InputEventResultState result_state,
                   const ui::LatencyInfo& latency_info,
@@ -53,19 +67,19 @@ void CallCallback(mojom::WidgetInputHandler::DispatchEventCallback callback,
 }
 
 blink::mojom::InputEventResultState InputEventDispositionToAck(
-    ui::InputHandlerProxy::EventDisposition disposition) {
+    blink::InputHandlerProxy::EventDisposition disposition) {
   switch (disposition) {
-    case ui::InputHandlerProxy::DID_HANDLE:
+    case blink::InputHandlerProxy::DID_HANDLE:
       return blink::mojom::InputEventResultState::kConsumed;
-    case ui::InputHandlerProxy::DID_NOT_HANDLE:
+    case blink::InputHandlerProxy::DID_NOT_HANDLE:
       return blink::mojom::InputEventResultState::kNotConsumed;
-    case ui::InputHandlerProxy::DID_NOT_HANDLE_NON_BLOCKING_DUE_TO_FLING:
+    case blink::InputHandlerProxy::DID_NOT_HANDLE_NON_BLOCKING_DUE_TO_FLING:
       return blink::mojom::InputEventResultState::kSetNonBlockingDueToFling;
-    case ui::InputHandlerProxy::DROP_EVENT:
+    case blink::InputHandlerProxy::DROP_EVENT:
       return blink::mojom::InputEventResultState::kNoConsumerExists;
-    case ui::InputHandlerProxy::DID_HANDLE_NON_BLOCKING:
+    case blink::InputHandlerProxy::DID_HANDLE_NON_BLOCKING:
       return blink::mojom::InputEventResultState::kSetNonBlocking;
-    case ui::InputHandlerProxy::DID_HANDLE_SHOULD_BUBBLE:
+    case blink::InputHandlerProxy::DID_HANDLE_SHOULD_BUBBLE:
       return blink::mojom::InputEventResultState::kConsumedShouldBubble;
   }
   NOTREACHED();
@@ -88,7 +102,7 @@ class SynchronousCompositorProxyRegistry
     DCHECK(!proxy_);
   }
 
-  void CreateProxy(ui::SynchronousInputHandlerProxy* handler) {
+  void CreateProxy(blink::SynchronousInputHandlerProxy* handler) {
     DCHECK(compositor_task_runner_->BelongsToCurrentThread());
     proxy_ = std::make_unique<SynchronousCompositorProxy>(handler);
     proxy_->Init();
@@ -271,7 +285,7 @@ void WidgetInputHandlerManager::GenerateScrollBeginAndSendToMainThread(
 void WidgetInputHandlerManager::SetWhiteListedTouchAction(
     cc::TouchAction touch_action,
     uint32_t unique_touch_event_id,
-    ui::InputHandlerProxy::EventDisposition event_disposition) {
+    blink::InputHandlerProxy::EventDisposition event_disposition) {
   white_listed_touch_action_ = touch_action;
 }
 
@@ -511,7 +525,7 @@ void WidgetInputHandlerManager::InitOnInputHandlingThread(
   // to go through the main thread.
   bool force_input_handling_on_main = !compositor_task_runner_;
 
-  input_handler_proxy_ = std::make_unique<ui::InputHandlerProxy>(
+  input_handler_proxy_ = std::make_unique<blink::InputHandlerProxy>(
       input_handler.get(), this, force_input_handling_on_main);
 
 #if defined(OS_ANDROID)
@@ -571,10 +585,11 @@ void WidgetInputHandlerManager::HandleInputEvent(
 
 void WidgetInputHandlerManager::DidHandleInputEventAndOverscroll(
     mojom::WidgetInputHandler::DispatchEventCallback callback,
-    ui::InputHandlerProxy::EventDisposition event_disposition,
+    blink::InputHandlerProxy::EventDisposition event_disposition,
     ui::WebScopedInputEvent input_event,
     const ui::LatencyInfo& latency_info,
-    std::unique_ptr<ui::DidOverscrollParams> overscroll_params,
+    std::unique_ptr<blink::InputHandlerProxy::DidOverscrollParams>
+        overscroll_params,
     const blink::WebInputEventAttribution& attribution) {
   TRACE_EVENT1("input",
                "WidgetInputHandlerManager::DidHandleInputEventAndOverscroll",
@@ -614,11 +629,7 @@ void WidgetInputHandlerManager::DidHandleInputEventAndOverscroll(
   if (callback) {
     std::move(callback).Run(
         blink::mojom::InputEventResultSource::kCompositorThread, latency_info,
-        ack_state,
-        overscroll_params
-            ? base::Optional<ui::DidOverscrollParams>(*overscroll_params)
-            : base::nullopt,
-        base::nullopt);
+        ack_state, ToDidOverscrollParams(overscroll_params), base::nullopt);
   }
 }
 

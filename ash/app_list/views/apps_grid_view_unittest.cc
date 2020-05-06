@@ -415,28 +415,6 @@ TEST_P(AppsGridViewTest, CreatePage) {
   EXPECT_EQ(kPages + 1, GetPaginationModel()->total_pages());
 }
 
-TEST_F(AppsGridViewTest, EnsureHighlightedVisible) {
-  const int kPages = 3;
-  model_->PopulateApps(GetTilesPerPage(0) + (kPages - 1) * GetTilesPerPage(1));
-  EXPECT_EQ(kPages, GetPaginationModel()->total_pages());
-  EXPECT_EQ(0, GetPaginationModel()->selected_page());
-
-  // Highlight first one and last one one first page and first page should be
-  // selected.
-  model_->HighlightItemAt(0);
-  EXPECT_EQ(0, GetPaginationModel()->selected_page());
-  model_->HighlightItemAt(GetTilesPerPage(0) - 1);
-  EXPECT_EQ(0, GetPaginationModel()->selected_page());
-
-  // Highlight first one on 2nd page and 2nd page should be selected.
-  model_->HighlightItemAt(GetTilesPerPage(1) + 1);
-  EXPECT_EQ(1, GetPaginationModel()->selected_page());
-
-  // Highlight last one in the model and last page should be selected.
-  model_->HighlightItemAt(model_->top_level_item_list()->item_count() - 1);
-  EXPECT_EQ(kPages - 1, GetPaginationModel()->selected_page());
-}
-
 TEST_F(AppsGridViewTest, RemoveSelectedLastApp) {
   const int kTotalItems = 2;
   const int kLastItemIndex = kTotalItems - 1;

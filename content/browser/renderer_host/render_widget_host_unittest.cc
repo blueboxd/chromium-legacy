@@ -393,6 +393,12 @@ class MockRenderWidgetHostDelegate : public RenderWidgetHostDelegate {
     ignore_input_events_ = ignore_input_events;
   }
 
+  bool IsFullscreenForCurrentTab() override { return is_fullscreen_for_tab_; }
+
+  void set_is_fullscreen_for_current_tab(bool enabled) {
+    is_fullscreen_for_tab_ = enabled;
+  }
+
  protected:
   KeyboardEventProcessingResult PreHandleKeyboardEvent(
       const NativeWebKeyboardEvent& event) override {
@@ -462,6 +468,8 @@ class MockRenderWidgetHostDelegate : public RenderWidgetHostDelegate {
   int on_vertical_scroll_direction_changed_call_count_ = 0;
   viz::VerticalScrollDirection last_vertical_scroll_direction_ =
       viz::VerticalScrollDirection::kNull;
+
+  bool is_fullscreen_for_tab_ = false;
 };
 
 class MockRenderWidgetHostOwnerDelegate
@@ -963,6 +971,58 @@ TEST_F(RenderWidgetHostTest, ResizeScreenInfo) {
   EXPECT_FALSE(host_->SynchronizeVisualProperties());
   EXPECT_EQ(0u, sink_->message_count());
   EXPECT_FALSE(host_->visual_properties_ack_pending_);
+}
+
+// Tests that a resize event is sent when entering fullscreen mode, and the
+// screen_info rects are overridden to match the view bounds.
+TEST_F(RenderWidgetHostTest, OverrideScreenInfoDuringFullscreenMode) {
+  const gfx::Rect kScreenBounds(0, 0, 800, 600);
+  const gfx::Rect kViewBounds(55, 66, 600, 500);
+
+  ScreenInfo screen_info;
+  screen_info.device_scale_factor = 1.f;
+  screen_info.rect = kScreenBounds;
+  screen_info.available_rect = kScreenBounds;
+  screen_info.orientation_angle = 0;
+  screen_info.orientation_type = SCREEN_ORIENTATION_VALUES_PORTRAIT_PRIMARY;
+  view_->SetScreenInfo(screen_info);
+
+  sink_->ClearMessages();
+
+  // Do initial VisualProperties sync while not fullscreened.
+  view_->SetBounds(kViewBounds);
+  ASSERT_FALSE(delegate_->IsFullscreenForCurrentTab());
+  host_->SynchronizeVisualPropertiesIgnoringPendingAck();
+  // WidgetMsg_UpdateVisualProperties sent to the renderer.
+  ASSERT_EQ(1u, sink_->message_count());
+  WidgetMsg_UpdateVisualProperties::Param param;
+  ASSERT_TRUE(
+      WidgetMsg_UpdateVisualProperties::Read(sink_->GetMessageAt(0), &param));
+  VisualProperties props = std::get<0>(param);
+  EXPECT_EQ(kScreenBounds, props.screen_info.rect);
+  EXPECT_EQ(kScreenBounds, props.screen_info.available_rect);
+
+  // Enter fullscreen and do another VisualProperties sync.
+  delegate_->set_is_fullscreen_for_current_tab(true);
+  host_->SynchronizeVisualPropertiesIgnoringPendingAck();
+  // WidgetMsg_UpdateVisualProperties sent to the renderer.
+  ASSERT_EQ(2u, sink_->message_count());
+  ASSERT_TRUE(
+      WidgetMsg_UpdateVisualProperties::Read(sink_->GetMessageAt(1), &param));
+  props = std::get<0>(param);
+  EXPECT_EQ(kViewBounds.size(), props.screen_info.rect.size());
+  EXPECT_EQ(kViewBounds.size(), props.screen_info.available_rect.size());
+
+  // Exit fullscreen and do another VisualProperties sync.
+  delegate_->set_is_fullscreen_for_current_tab(false);
+  host_->SynchronizeVisualPropertiesIgnoringPendingAck();
+  // WidgetMsg_UpdateVisualProperties sent to the renderer.
+  ASSERT_EQ(3u, sink_->message_count());
+  ASSERT_TRUE(
+      WidgetMsg_UpdateVisualProperties::Read(sink_->GetMessageAt(2), &param));
+  props = std::get<0>(param);
+  EXPECT_EQ(kScreenBounds, props.screen_info.rect);
+  EXPECT_EQ(kScreenBounds, props.screen_info.available_rect);
 }
 
 TEST_F(RenderWidgetHostTest, ReceiveFrameTokenFromCrashedRenderer) {

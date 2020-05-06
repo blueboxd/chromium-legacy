@@ -8,6 +8,7 @@
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/webui/app_management/app_management_page_handler.h"
+#include "chrome/browser/ui/webui/settings/chromeos/android_apps_handler.h"
 #include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
@@ -24,35 +25,76 @@ namespace {
 
 const std::vector<SearchConcept>& GetAppsSearchConcepts() {
   static const base::NoDestructor<std::vector<SearchConcept>> tags({
-      // TODO(khorimoto): Add "Apps" search concepts.
+      {IDS_OS_SETTINGS_TAG_APPS,
+       mojom::kAppsSectionPath,
+       mojom::SearchResultIcon::kAppsGrid,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSection,
+       {.section = mojom::Section::kApps}},
+      {IDS_OS_SETTINGS_TAG_APPS_MANAGEMENT,
+       mojom::kAppManagementSubpagePath,
+       mojom::SearchResultIcon::kAppsGrid,
+       mojom::SearchResultDefaultRank::kHigh,
+       mojom::SearchResultType::kSubpage,
+       {.subpage = mojom::Subpage::kAppManagement},
+       {IDS_OS_SETTINGS_TAG_APPS_MANAGEMENT_ALT1, SearchConcept::kAltTagEnd}},
   });
   return *tags;
 }
 
 const std::vector<SearchConcept>& GetAndroidPlayStoreSearchConcepts() {
   static const base::NoDestructor<std::vector<SearchConcept>> tags({
-      // TODO(khorimoto): Add "MultiDevice" search concepts.
+      {IDS_OS_SETTINGS_TAG_PLAY_STORE,
+       mojom::kGooglePlayStoreSubpagePath,
+       mojom::SearchResultIcon::kGooglePlay,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSubpage,
+       {.subpage = mojom::Subpage::kGooglePlayStore}},
+      {IDS_OS_SETTINGS_TAG_REMOVE_PLAY_STORE,
+       mojom::kGooglePlayStoreSubpagePath,
+       mojom::SearchResultIcon::kGooglePlay,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSetting,
+       {.setting = mojom::Setting::kRemovePlayStore},
+       {IDS_OS_SETTINGS_TAG_REMOVE_PLAY_STORE_ALT1, SearchConcept::kAltTagEnd}},
   });
   return *tags;
 }
 
 const std::vector<SearchConcept>& GetAndroidSettingsSearchConcepts() {
   static const base::NoDestructor<std::vector<SearchConcept>> tags({
-      // TODO(khorimoto): Add "MultiDevice" search concepts.
+      {IDS_OS_SETTINGS_TAG_ANDROID_SETTINGS_WITH_PLAY_STORE,
+       mojom::kGooglePlayStoreSubpagePath,
+       mojom::SearchResultIcon::kGooglePlay,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSetting,
+       {.setting = mojom::Setting::kManageAndroidPreferences}},
   });
   return *tags;
 }
 
 const std::vector<SearchConcept>& GetAndroidNoPlayStoreSearchConcepts() {
   static const base::NoDestructor<std::vector<SearchConcept>> tags({
-      // TODO(khorimoto): Add "MultiDevice" search concepts.
+      {IDS_OS_SETTINGS_TAG_ANDROID_SETTINGS,
+       mojom::kAppsSectionPath,
+       mojom::SearchResultIcon::kAndroid,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSetting,
+       {.setting = mojom::Setting::kManageAndroidPreferences}},
   });
   return *tags;
 }
 
 const std::vector<SearchConcept>& GetAndroidPlayStoreDisabledSearchConcepts() {
   static const base::NoDestructor<std::vector<SearchConcept>> tags({
-      // TODO(khorimoto): Add "MultiDevice" search concepts.
+      {IDS_OS_SETTINGS_TAG_ANDROID_TURN_ON_PLAY_STORE,
+       mojom::kAppsSectionPath,
+       mojom::SearchResultIcon::kAndroid,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSetting,
+       {.setting = mojom::Setting::kTurnOnPlayStore},
+       {IDS_OS_SETTINGS_TAG_ANDROID_TURN_ON_PLAY_STORE_ALT1,
+        SearchConcept::kAltTagEnd}},
   });
   return *tags;
 }
@@ -99,6 +141,8 @@ AppsSection::AppsSection(Profile* profile,
 
     if (arc_app_list_prefs_)
       arc_app_list_prefs_->AddObserver(this);
+
+    UpdateAndroidSearchTags();
   }
 }
 
@@ -132,6 +176,11 @@ void AppsSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
 
   AddAppManagementStrings(html_source);
   AddAndroidAppStrings(html_source);
+}
+
+void AppsSection::AddHandlers(content::WebUI* web_ui) {
+  web_ui->AddMessageHandler(
+      std::make_unique<chromeos::settings::AndroidAppsHandler>(profile()));
 }
 
 void AppsSection::OnAppRegistered(const std::string& app_id,

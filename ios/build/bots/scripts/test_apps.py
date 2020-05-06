@@ -346,3 +346,119 @@ class EgtestsApp(GTestsApp):
       module_data['IsAppHostedTestBundle'] = True
 
     return xctestrun_data
+
+
+class DeviceXCTestUnitTestsApp(GTestsApp):
+  """XCTest hosted unit tests to run on devices.
+
+  This is for the XCTest framework hosted unit tests, which run on iOS 13+
+  real devices now.
+
+  Stores data about tests:
+    tests_app: full path to tests app.
+    project_path: root project folder.
+    module_name: egtests module name.
+    included_tests: List of tests to run.
+    excluded_tests: List of tests not to run.
+  """
+
+  def __init__(self,
+               tests_app,
+               included_tests=None,
+               excluded_tests=None,
+               test_args=None,
+               env_vars=None,
+               release=False):
+    """Initialize the class.
+
+    Args:
+      tests_app: (str) full path to tests app.
+      included_tests: (list) Specific tests to run
+         E.g.
+          [ 'TestCaseClass1/testMethod1', 'TestCaseClass2/testMethod2']
+      excluded_tests: (list) Specific tests not to run
+         E.g.
+          [ 'TestCaseClass1', 'TestCaseClass2/testMethod2']
+      test_args: List of strings to pass as arguments to the test when
+        launching.
+      env_vars: List of environment variables to pass to the test itself.
+
+    Raises:
+      AppNotFoundError: If the given app does not exist
+    """
+    test_args = test_args or []
+    test_args.append('--enable-run-ios-unittests-with-xctest')
+    super(DeviceXCTestUnitTestsApp,
+          self).__init__(tests_app, included_tests, excluded_tests, test_args,
+                         env_vars, release, None)
+
+  # TODO(crbug.com/1077277): Refactor class structure and remove duplicate code.
+  def _xctest_path(self):
+    """Gets xctest-file from egtests/PlugIns folder.
+
+    Returns:
+      A path for xctest in the format of /PlugIns/file.xctest
+
+    Raises:
+      PlugInsNotFoundError: If no PlugIns folder found in egtests.app.
+      XCTestPlugInNotFoundError: If no xctest-file found in PlugIns.
+    """
+    plugins_dir = os.path.join(self.test_app_path, 'PlugIns')
+    if not os.path.exists(plugins_dir):
+      raise test_runner.PlugInsNotFoundError(plugins_dir)
+    plugin_xctest = None
+    if os.path.exists(plugins_dir):
+      for plugin in os.listdir(plugins_dir):
+        if plugin.endswith('.xctest'):
+          plugin_xctest = os.path.join(plugins_dir, plugin)
+    if not plugin_xctest:
+      raise test_runner.XCTestPlugInNotFoundError(plugin_xctest)
+    return plugin_xctest.replace(self.test_app_path, '')
+
+  def fill_xctestrun_node(self):
+    """Fills only required nodes for XCTest hosted unit tests in xctestrun file.
+
+    Returns:
+      A node with filled required fields about tests.
+    """
+    xctestrun_data = {
+        'TestTargetName': {
+            'IsAppHostedTestBundle': True,
+            'TestBundlePath': '__TESTHOST__/%s' % self._xctest_path(),
+            'TestHostBundleIdentifier': get_bundle_id(self.test_app_path),
+            'TestHostPath': '%s' % self.test_app_path,
+            'TestingEnvironmentVariables': {
+                'DYLD_INSERT_LIBRARIES':
+                    '__PLATFORMS__/iPhoneOS.platform/Developer/usr/lib/'
+                    'libXCTestBundleInject.dylib',
+                'DYLD_LIBRARY_PATH':
+                    '__PLATFORMS__/iPhoneOS.platform/Developer/Library',
+                'DYLD_FRAMEWORK_PATH':
+                    '__PLATFORMS__/iPhoneOS.platform/Developer/'
+                    'Library/Frameworks',
+                'XCInjectBundleInto':
+                    '__TESTHOST__/%s' % self.module_name
+            }
+        }
+    }
+
+    if self.env_vars:
+      self.xctestrun_data['TestTargetName'].update(
+          {'EnvironmentVariables': self.env_vars})
+
+    gtest_filter = []
+    if self.included_tests:
+      gtest_filter = get_gtest_filter(self.included_tests, invert=False)
+    elif self.excluded_tests:
+      gtest_filter = get_gtest_filter(self.excluded_tests, invert=True)
+    if gtest_filter:
+      # Removed previous gtest-filter if exists.
+      self.test_args = [
+          el for el in self.test_args if not el.startswith('--gtest_filter=')
+      ]
+      self.test_args.append('--gtest_filter=%s' % gtest_filter)
+
+    xctestrun_data['TestTargetName'].update(
+        {'CommandLineArguments': self.test_args})
+
+    return xctestrun_data

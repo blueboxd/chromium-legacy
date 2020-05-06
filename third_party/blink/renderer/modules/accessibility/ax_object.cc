@@ -28,6 +28,8 @@
 
 #include "third_party/blink/renderer/modules/accessibility/ax_object.h"
 
+#include <algorithm>
+
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/input/focus_type.mojom-blink.h"
 #include "third_party/blink/renderer/core/aom/accessible_node.h"
@@ -72,6 +74,7 @@
 #include "third_party/blink/renderer/platform/wtf/wtf_size_t.h"
 #include "third_party/skia/include/core/SkMatrix44.h"
 #include "ui/accessibility/ax_node_data.h"
+#include "ui/accessibility/ax_role_properties.h"
 
 namespace blink {
 
@@ -789,18 +792,149 @@ void AXObject::Serialize(ui::AXNodeData* node_data) {
     node_data->AddState(ax::mojom::blink::State::kIgnored);
 }
 
+bool AXObject::IsAXNodeObject() const {
+  return false;
+}
+
+bool AXObject::IsAXLayoutObject() const {
+  return false;
+}
+
+bool AXObject::IsAXInlineTextBox() const {
+  return false;
+}
+
+bool AXObject::IsList() const {
+  return ui::IsList(RoleValue());
+}
+
+bool AXObject::IsAXListBox() const {
+  return false;
+}
+
+bool AXObject::IsAXListBoxOption() const {
+  return false;
+}
+
+bool AXObject::IsMenuList() const {
+  return false;
+}
+
+bool AXObject::IsMenuListOption() const {
+  return false;
+}
+
+bool AXObject::IsMenuListPopup() const {
+  return false;
+}
+
+bool AXObject::IsMockObject() const {
+  return false;
+}
+
+bool AXObject::IsProgressIndicator() const {
+  return false;
+}
+
+bool AXObject::IsAXRadioInput() const {
+  return false;
+}
+
+bool AXObject::IsSlider() const {
+  return false;
+}
+
+bool AXObject::IsAXSVGRoot() const {
+  return false;
+}
+
+bool AXObject::IsValidationMessage() const {
+  return false;
+}
+
+bool AXObject::IsVirtualObject() const {
+  return false;
+}
+
+ax::mojom::Role AXObject::RoleValue() const {
+  return role_;
+}
+
 bool AXObject::IsARIATextControl() const {
   return AriaRoleAttribute() == ax::mojom::Role::kTextField ||
          AriaRoleAttribute() == ax::mojom::Role::kSearchBox ||
          AriaRoleAttribute() == ax::mojom::Role::kTextFieldWithComboBox;
 }
 
-bool AXObject::IsButton() const {
-  ax::mojom::Role role = RoleValue();
+bool AXObject::IsAnchor() const {
+  return IsLink() && !IsNativeImage();
+}
 
-  return role == ax::mojom::Role::kButton ||
-         role == ax::mojom::Role::kPopUpButton ||
-         role == ax::mojom::Role::kToggleButton;
+bool AXObject::IsButton() const {
+  return ui::IsButton(RoleValue());
+}
+
+bool AXObject::IsCanvas() const {
+  return RoleValue() == ax::mojom::Role::kCanvas;
+}
+
+bool AXObject::IsCheckbox() const {
+  return RoleValue() == ax::mojom::Role::kCheckBox;
+}
+
+bool AXObject::IsCheckboxOrRadio() const {
+  return IsCheckbox() || IsRadioButton();
+}
+
+bool AXObject::IsColorWell() const {
+  return RoleValue() == ax::mojom::Role::kColorWell;
+}
+
+bool AXObject::IsControl() const {
+  return ui::IsControl(RoleValue());
+}
+
+bool AXObject::IsDefault() const {
+  return false;
+}
+
+bool AXObject::IsFieldset() const {
+  return false;
+}
+
+bool AXObject::IsHeading() const {
+  return ui::IsHeading(RoleValue());
+}
+
+bool AXObject::IsImage() const {
+  // Canvas is not currently included so that it is not exposed unless there is
+  // a label, fallback content or something to make it accessible. This decision
+  // may be revisited at a later date.
+  return ui::IsImage(RoleValue()) && RoleValue() != ax::mojom::Role::kCanvas;
+}
+
+bool AXObject::IsInputImage() const {
+  return false;
+}
+
+bool AXObject::IsLink() const {
+  return ui::IsLink(RoleValue());
+}
+
+bool AXObject::IsInPageLinkTarget() const {
+  return false;
+}
+
+bool AXObject::IsImageMapLink() const {
+  return false;
+}
+
+bool AXObject::IsMenu() const {
+  return RoleValue() == ax::mojom::Role::kMenu;
+}
+
+bool AXObject::IsMenuButton() const {
+  return RoleValue() == ax::mojom::Role::kMenuButton;
 }
 
 bool AXObject::IsCheckable() const {
@@ -921,17 +1055,31 @@ bool AXObject::IsLandmarkRelated() const {
 }
 
 bool AXObject::IsMenuRelated() const {
-  switch (RoleValue()) {
-    case ax::mojom::Role::kMenu:
-    case ax::mojom::Role::kMenuBar:
-    case ax::mojom::Role::kMenuButton:
-    case ax::mojom::Role::kMenuItem:
-    case ax::mojom::Role::kMenuItemCheckBox:
-    case ax::mojom::Role::kMenuItemRadio:
-      return true;
-    default:
-      return false;
-  }
+  return ui::IsMenuRelated(RoleValue());
+}
+
+bool AXObject::IsMeter() const {
+  return RoleValue() == ax::mojom::Role::kMeter;
+}
+
+bool AXObject::IsNativeImage() const {
+  return false;
+}
+
+bool AXObject::IsNativeSpinButton() const {
+  return false;
+}
+
+bool AXObject::IsNativeTextControl() const {
+  return false;
+}
+
+bool AXObject::IsNonNativeTextControl() const {
+  return false;
+}
+
+bool AXObject::IsPasswordField() const {
+  return false;
 }
 
 bool AXObject::IsPasswordFieldAndShouldHideValue() const {
@@ -940,6 +1088,10 @@ bool AXObject::IsPasswordFieldAndShouldHideValue() const {
     return false;
 
   return IsPasswordField();
+}
+
+bool AXObject::IsPresentational() const {
+  return ui::IsPresentational(RoleValue());
 }
 
 bool AXObject::IsTextObject() const {
@@ -955,30 +1107,17 @@ bool AXObject::IsTextObject() const {
   }
 }
 
-bool AXObject::IsClickable() const {
-  if (IsButton() || IsLink() || IsTextControl())
-    return true;
-
-  // TODO(dmazzoni): Ensure that ax::mojom::Role::kColorWell and
-  // ax::mojom::Role::kSpinButton are correctly handled here via their
-  // constituent parts.
-  switch (RoleValue()) {
-    case ax::mojom::Role::kCheckBox:
-    case ax::mojom::Role::kComboBoxMenuButton:
-    case ax::mojom::Role::kDisclosureTriangle:
-    case ax::mojom::Role::kListBox:
-    case ax::mojom::Role::kListBoxOption:
-    case ax::mojom::Role::kMenuItemCheckBox:
-    case ax::mojom::Role::kMenuItemRadio:
-    case ax::mojom::Role::kMenuItem:
-    case ax::mojom::Role::kMenuListOption:
-    case ax::mojom::Role::kRadioButton:
-    case ax::mojom::Role::kSwitch:
-    case ax::mojom::Role::kTab:
-      return true;
-    default:
-      return false;
+bool AXObject::IsRangeValueSupported() const {
+  if (RoleValue() == ax::mojom::Role::kSplitter) {
+    // According to the ARIA spec, role="separator" acts as a splitter only
+    // when focusable, and supports a range only in that case.
+    return CanSetFocusAttribute();
   }
+  return ui::IsRangeValueSupported(RoleValue());
+}
+
+bool AXObject::IsClickable() const {
+  return ui::IsClickable(RoleValue());
 }
 
 bool AXObject::AccessibilityIsIgnored() const {
@@ -1411,9 +1550,8 @@ bool AXObject::CanSetValueAttribute() const {
     case ax::mojom::Role::kSearchBox:
       return Restriction() == kRestrictionNone;
     default:
-      break;
+      return false;
   }
-  return false;
 }
 
 bool AXObject::IsFocusableStyleUsingBestAvailableState() const {
@@ -1658,7 +1796,7 @@ bool AXObject::IsSubWidget() const {
     case ax::mojom::Role::kColumnHeader:
     case ax::mojom::Role::kRowHeader:
     case ax::mojom::Role::kColumn:
-    case ax::mojom::Role::kRow: {
+    case ax::mojom::Role::kRow:
       // If it has an explicit ARIA role, it's a subwidget.
       //
       // Reasoning:
@@ -1677,45 +1815,24 @@ bool AXObject::IsSubWidget() const {
 
       // Otherwise it's only a subwidget if it's in a grid or treegrid,
       // not in a table.
-      AXObject* parent = ParentObjectUnignored();
-      while (parent && !parent->IsTableLikeRole())
-        parent = parent->ParentObjectUnignored();
-      if (parent && (parent->RoleValue() == ax::mojom::Role::kGrid ||
-                     parent->RoleValue() == ax::mojom::Role::kTreeGrid))
-        return true;
-      return false;
-    }
+      return std::any_of(
+          AncestorsBegin(), AncestorsEnd(), [](const AXObject& ancestor) {
+            return ancestor.RoleValue() == ax::mojom::Role::kGrid ||
+                   ancestor.RoleValue() == ax::mojom::Role::kTreeGrid;
+          });
+
     case ax::mojom::Role::kListBoxOption:
     case ax::mojom::Role::kMenuListOption:
     case ax::mojom::Role::kTab:
     case ax::mojom::Role::kTreeItem:
       return true;
     default:
-      break;
+      return false;
   }
-  return false;
 }
 
 bool AXObject::SupportsARIASetSizeAndPosInSet() const {
-  switch (RoleValue()) {
-    case ax::mojom::Role::kArticle:
-    case ax::mojom::Role::kComment:
-    case ax::mojom::Role::kListBoxOption:
-    case ax::mojom::Role::kListItem:
-    case ax::mojom::Role::kMenuItem:
-    case ax::mojom::Role::kMenuItemRadio:
-    case ax::mojom::Role::kMenuItemCheckBox:
-    case ax::mojom::Role::kMenuListOption:
-    case ax::mojom::Role::kRadioButton:
-    case ax::mojom::Role::kRow:
-    case ax::mojom::Role::kTab:
-    case ax::mojom::Role::kTreeItem:
-      return true;
-    default:
-      break;
-  }
-
-  return false;
+  return ui::IsSetLike(RoleValue()) || ui::IsItemLike(RoleValue());
 }
 
 // Simplify whitespace, but preserve a single leading and trailing whitespace
@@ -2248,11 +2365,6 @@ bool AXObject::HasGlobalARIAAttribute() const {
   return false;
 }
 
-bool AXObject::SupportsRangeValue() const {
-  return IsProgressIndicator() || IsMeter() || IsSlider() || IsScrollbar() ||
-         IsSpinButton() || IsMoveableSplitter();
-}
-
 int AXObject::IndexInParent() const {
   DCHECK(AccessibilityIsIncludedInTree())
       << "IndexInParent is only valid when a node is included in the tree";
@@ -2483,14 +2595,14 @@ AXObject* AXObject::ElementAccessibilityHitTest(const IntPoint& point) const {
   return const_cast<AXObject*>(this);
 }
 
-AXObject::AncestorsIterator AXObject::AncestorsBegin() {
+AXObject::AncestorsIterator AXObject::AncestorsBegin() const {
   AXObject* parent = ParentObjectUnignored();
   if (parent)
     return AXObject::AncestorsIterator(*parent);
   return AncestorsEnd();
 }
 
-AXObject::AncestorsIterator AXObject::AncestorsEnd() {
+AXObject::AncestorsIterator AXObject::AncestorsEnd() const {
   return AXObject::AncestorsIterator();
 }
 
@@ -2794,23 +2906,7 @@ AXObject* AXObject::ParentObjectIncludedInTree() const {
 // Container widgets are those that a user tabs into and arrows around
 // sub-widgets
 bool AXObject::IsContainerWidget() const {
-  switch (RoleValue()) {
-    case ax::mojom::Role::kComboBoxGrouping:
-    case ax::mojom::Role::kComboBoxMenuButton:
-    case ax::mojom::Role::kGrid:
-    case ax::mojom::Role::kListBox:
-    case ax::mojom::Role::kMenuBar:
-    case ax::mojom::Role::kMenu:
-    case ax::mojom::Role::kRadioGroup:
-    case ax::mojom::Role::kSpinButton:
-    case ax::mojom::Role::kTabList:
-    case ax::mojom::Role::kToolbar:
-    case ax::mojom::Role::kTreeGrid:
-    case ax::mojom::Role::kTree:
-      return true;
-    default:
-      return false;
-  }
+  return ui::IsContainerWithSelectableChildren(RoleValue());
 }
 
 AXObject* AXObject::ContainerWidget() const {
@@ -3034,32 +3130,18 @@ void AXObject::SetScrollOffset(const IntPoint& offset) const {
 }
 
 bool AXObject::IsTableLikeRole() const {
-  switch (RoleValue()) {
-    case ax::mojom::Role::kLayoutTable:
-    case ax::mojom::Role::kTable:
-    case ax::mojom::Role::kGrid:
-    case ax::mojom::Role::kTreeGrid:
-      return true;
-    default:
-      return false;
-  }
+  return ui::IsTableLike(RoleValue()) ||
+         RoleValue() == ax::mojom::Role::kLayoutTable;
 }
 
 bool AXObject::IsTableRowLikeRole() const {
-  return RoleValue() == ax::mojom::Role::kRow ||
+  return ui::IsTableRow(RoleValue()) ||
          RoleValue() == ax::mojom::Role::kLayoutTableRow;
 }
 
 bool AXObject::IsTableCellLikeRole() const {
-  switch (RoleValue()) {
-    case ax::mojom::Role::kLayoutTableCell:
-    case ax::mojom::Role::kCell:
-    case ax::mojom::Role::kColumnHeader:
-    case ax::mojom::Role::kRowHeader:
-      return true;
-    default:
-      return false;
-  }
+  return ui::IsCellOrTableHeader(RoleValue()) ||
+         RoleValue() == ax::mojom::Role::kLayoutTableCell;
 }
 
 unsigned AXObject::ColumnCount() const {
@@ -3159,14 +3241,14 @@ int AXObject::AriaRowCount() const {
   if (!HasAOMPropertyOrARIAAttribute(AOMIntProperty::kRowCount, row_count))
     return 0;
 
-  if (row_count > static_cast<int>(RowCount()))
+  if (row_count > int{RowCount()})
     return row_count;
 
   // Spec says that if all of the rows are present in the DOM, it is
   // not necessary to set this attribute as the user agent can
   // automatically calculate the total number of rows.
   // It returns 0 in order not to set this attribute.
-  if (row_count == (int)RowCount() || row_count != -1)
+  if (row_count == int{RowCount()} || row_count != -1)
     return 0;
 
   // In the spec, -1 explicitly means an unknown number of rows.
@@ -3966,36 +4048,18 @@ bool AXObject::NameFromContents(bool recursive) const {
 }
 
 bool AXObject::SupportsARIAReadOnly() const {
-  switch (RoleValue()) {
-    case ax::mojom::Role::kCell:
-    case ax::mojom::Role::kCheckBox:
-    case ax::mojom::Role::kColorWell:
-    case ax::mojom::Role::kColumnHeader:
-    case ax::mojom::Role::kComboBoxGrouping:
-    case ax::mojom::Role::kComboBoxMenuButton:
-    case ax::mojom::Role::kDate:
-    case ax::mojom::Role::kDateTime:
-    case ax::mojom::Role::kGrid:
-    case ax::mojom::Role::kInputTime:
-    case ax::mojom::Role::kListBox:
-    case ax::mojom::Role::kMenuButton:
-    case ax::mojom::Role::kMenuItemCheckBox:
-    case ax::mojom::Role::kMenuItemRadio:
-    case ax::mojom::Role::kPopUpButton:
-    case ax::mojom::Role::kRadioGroup:
-    case ax::mojom::Role::kRowHeader:
-    case ax::mojom::Role::kSearchBox:
-    case ax::mojom::Role::kSlider:
-    case ax::mojom::Role::kSpinButton:
-    case ax::mojom::Role::kSwitch:
-    case ax::mojom::Role::kTextField:
-    case ax::mojom::Role::kTextFieldWithComboBox:
-    case ax::mojom::Role::kToggleButton:
-    case ax::mojom::Role::kTreeGrid:
-      return true;
-    default:
-      break;
+  if (ui::IsReadOnlySupported(RoleValue()))
+    return true;
+
+  if (ui::IsCellOrTableHeader(RoleValue())) {
+    // For cells and row/column headers, readonly is supported within a grid.
+    return std::any_of(
+        AncestorsBegin(), AncestorsEnd(), [](const AXObject& ancestor) {
+          return ancestor.RoleValue() == ax::mojom::Role::kGrid ||
+                 ancestor.RoleValue() == ax::mojom::Role::kTreeGrid;
+        });
   }
+
   return false;
 }
 

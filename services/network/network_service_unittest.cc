@@ -1494,7 +1494,9 @@ TEST_F(NetworkServiceTestWithService, MAYBE_AIAFetching) {
       network_context_.BindNewPipeAndPassReceiver(), std::move(context_params));
 
   net::EmbeddedTestServer test_server(net::EmbeddedTestServer::TYPE_HTTPS);
-  test_server.SetSSLConfig(net::EmbeddedTestServer::CERT_AUTO_AIA_INTERMEDIATE);
+  net::EmbeddedTestServer::ServerCertificateConfig cert_config;
+  cert_config.intermediate = net::EmbeddedTestServer::IntermediateType::kByAIA;
+  test_server.SetSSLConfig(cert_config);
   test_server.AddDefaultHandlers(base::FilePath(kServicesTestData));
   ASSERT_TRUE(test_server.Start());
 

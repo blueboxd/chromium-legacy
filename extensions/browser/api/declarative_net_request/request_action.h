@@ -10,7 +10,7 @@
 
 #include "base/macros.h"
 #include "base/optional.h"
-#include "extensions/common/api/declarative_net_request.h"
+#include "extensions/common/api/declarative_net_request/constants.h"
 #include "extensions/common/extension_id.h"
 #include "url/gurl.h"
 
@@ -42,7 +42,7 @@ struct RequestAction {
   RequestAction(Type type,
                 uint32_t rule_id,
                 uint64_t index_priority,
-                api::declarative_net_request::SourceType source_type,
+                RulesetID ruleset_id,
                 const ExtensionId& extension_id);
   ~RequestAction();
   RequestAction(RequestAction&&);
@@ -63,8 +63,8 @@ struct RequestAction {
   // rule's priority and the rule's action's priority.
   uint64_t index_priority;
 
-  // The source type of the matching rule for this action.
-  api::declarative_net_request::SourceType source_type;
+  // The id of the ruleset corresponding to the matched rule.
+  RulesetID ruleset_id;
 
   // The id of the extension the action is attributed to.
   ExtensionId extension_id;

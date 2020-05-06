@@ -1021,6 +1021,7 @@ if (!is_android) {
       "../browser/net/reporting_browsertest.cc",
       "../browser/net/samesite_cookies_policy_browsertest.cc",
       "../browser/net/system_network_context_manager_browsertest.cc",
+      "../browser/net/trust_token_usecounter_browsertest.cc",
       "../browser/net/variations_http_headers_browsertest.cc",
       "../browser/net/websocket_browsertest.cc",
       "../browser/no_best_effort_tasks_browsertest.cc",
@@ -2308,7 +2309,6 @@ if (!is_android) {
         "../browser/chromeos/login/ui/captive_portal_window_browsertest.cc",
         "../browser/chromeos/login/ui/login_feedback_browsertest.cc",
         "../browser/chromeos/login/ui/login_web_dialog_browsertest.cc",
-        "../browser/chromeos/login/ui/simple_web_view_dialog_browsertest.cc",
         "../browser/chromeos/login/ui/user_adding_screen_browsertest.cc",
         "../browser/chromeos/login/users/avatar/user_image_manager_browsertest.cc",
         "../browser/chromeos/login/users/avatar/user_image_manager_test_util.cc",
@@ -3303,6 +3303,7 @@ test("unit_tests") {
     "../browser/policy/file_selection_dialogs_policy_handler_unittest.cc",
     "../browser/policy/homepage_location_policy_handler_unittest.cc",
     "../browser/policy/javascript_policy_handler_unittest.cc",
+    "../browser/policy/messaging_layer/public/report_queue_configuration_unittest.cc",
     "../browser/policy/messaging_layer/util/status_macros_unittest.cc",
     "../browser/policy/messaging_layer/util/status_unittest.cc",
     "../browser/policy/messaging_layer/util/statusor_unittest.cc",
@@ -3617,7 +3618,6 @@ test("unit_tests") {
   data = [
     "../browser/flag-metadata.json",
     "../browser/flag-never-expire-list.json",
-    "data/",
     "//base/test/data/",
     "//components/test/data/",
     "//extensions/test/data/",
@@ -3628,6 +3628,28 @@ test("unit_tests") {
     "//third_party/zlib/google/test/data/",
     "//tools/metrics/histograms/enums.xml",
   ]
+
+  if (is_android) {
+    # Trim data specifically to what is used by unit tests on Android.
+    data += [
+      "data/android/google.png",
+      "data/file_select_helper/",
+      "data/media/feeds/media-feed.json",
+      "data/offline_pages/",
+      "data/osdd/",
+      "data/public_offline_pages/",
+      "data/whitelists/content_pack/site_list.json",
+
+      # webapk_installer_unittest
+      "data/banners/image-512px-corp.png",
+      "data/nostore.html",
+      "data/simple.html",
+      "data/title1.html",
+    ]
+  } else {
+    data += [ "data/" ]
+  }
+
   data += js2gtest_js_libraries
   if (is_android) {
     data += [
@@ -5374,6 +5396,7 @@ test("unit_tests") {
       "../browser/ui/views/media_router/web_contents_display_observer_view_unittest.cc",
       "../browser/ui/views/omnibox/omnibox_result_view_unittest.cc",
       "../browser/ui/views/omnibox/omnibox_view_views_unittest.cc",
+      "../browser/ui/views/page_action/page_action_icon_view_unittest.cc",
       "../browser/ui/views/page_info/page_info_bubble_view_unittest.cc",
       "../browser/ui/views/page_info/safety_tip_page_info_bubble_view_unittest.cc",
       "../browser/ui/views/payments/payment_request_item_list_unittest.cc",

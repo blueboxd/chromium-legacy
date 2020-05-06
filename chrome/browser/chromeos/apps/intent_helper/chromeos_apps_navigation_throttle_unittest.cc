@@ -13,7 +13,7 @@ namespace chromeos {
 TEST(ChromeOsAppsNavigationThrottleTest, TestGetDestinationPlatform) {
   const std::string app_launch_name = "fake_package";
   const std::string chrome_launch_name =
-      arc::ArcIntentHelperBridge::kArcIntentHelperPackageName;
+      apps::AppsNavigationThrottle::kUseBrowserForLink;
 
   // When the PickerAction is either ERROR or DIALOG_DEACTIVATED we MUST stay in
   // Chrome not taking into account the selected_app_package.

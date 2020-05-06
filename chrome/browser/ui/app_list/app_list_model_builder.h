@@ -50,8 +50,10 @@ class AppListModelBuilder {
   // app is removed only from model and sync service is not used.
   virtual void RemoveApp(const std::string& id, bool unsynced_change);
 
+  // Returns a SyncItem of the specified type if it exists.
   const app_list::AppListSyncableService::SyncItem* GetSyncItem(
-      const std::string& id);
+      const std::string& id,
+      sync_pb::AppListSpecifics::AppListItemType type);
 
   // Returns app instance matching |id| or nullptr.
   ChromeAppListItem* GetAppItem(const std::string& id);

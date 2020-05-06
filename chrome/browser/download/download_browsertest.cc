@@ -3703,8 +3703,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, MAYBE_DownloadTest_CrazyFilenames) {
         ));
 
     // Create the file.
-    EXPECT_EQ(static_cast<int>(crazy8.size()),
-              base::WriteFile(file_path, crazy8.c_str(), crazy8.size()));
+    EXPECT_TRUE(base::WriteFile(file_path, crazy8));
     GURL file_url(net::FilePathToFileURL(file_path));
 
     // Download the file and check that the filename is correct.

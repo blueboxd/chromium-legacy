@@ -224,7 +224,8 @@ public class MediaStreamManager {
         // TODO(crbug/1076098): don't hard-code incognito to false.
         ChromeNotification notification = MediaCaptureNotificationUtil.createNotification(
                 new WebLayerNotificationBuilder(appContext,
-                        WebLayerNotificationChannels.ChannelId.MEDIA, channelsInitializer,
+                        WebLayerNotificationChannels.ChannelId.WEBRTC_CAM_AND_MIC,
+                        channelsInitializer,
                         new NotificationMetadata(0, AV_STREAM_TAG, mNotificationId)),
                 mediaType, mTab.getWebContents().getVisibleUrl().getSpec(),
                 WebLayerImpl.getClientApplicationName(), false /*isIncognito*/, contentIntent,

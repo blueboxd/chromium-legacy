@@ -478,13 +478,10 @@ void AppServiceProxy::AddPreferredApp(const std::string& app_id,
   }
   preferred_apps_.AddPreferredApp(app_id, intent_filter);
   if (app_service_.is_connected()) {
-    cache_.ForOneApp(
-        app_id, [this, &intent_filter, &intent](const apps::AppUpdate& update) {
-          constexpr bool kFromPublisher = false;
-          app_service_->AddPreferredApp(update.AppType(), update.AppId(),
-                                        std::move(intent_filter),
-                                        intent->Clone(), kFromPublisher);
-        });
+    constexpr bool kFromPublisher = false;
+    app_service_->AddPreferredApp(cache_.GetAppType(app_id), app_id,
+                                  std::move(intent_filter), intent->Clone(),
+                                  kFromPublisher);
   }
 }
 

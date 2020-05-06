@@ -97,15 +97,15 @@ class NET_EXPORT CRLSet : public base::RefCountedThreadSafe<CRLSet> {
   // IsExpired on the result will return true. If |issuer_spki| is not NULL,
   // the CRLSet will cover certificates issued by that SPKI. If |serial_number|
   // is not empty, then that DER-encoded serial number will be considered to
-  // have been revoked by |issuer_spki|. If |common_name| is not empty then the
-  // CRLSet will consider certificates with a subject consisting only of that
-  // common name to be revoked unless they match an SPKI hash from
-  // |acceptable_spki_hashes_for_cn|.
+  // have been revoked by |issuer_spki|. If |utf8_common_name| is not empty
+  // then the CRLSet will consider certificates with a subject consisting only
+  // of that common name as a UTF8String to be revoked unless they match an
+  // SPKI hash from |acceptable_spki_hashes_for_cn|.
   static scoped_refptr<CRLSet> ForTesting(
       bool is_expired,
       const SHA256HashValue* issuer_spki,
       const std::string& serial_number,
-      const std::string common_name,
+      const std::string utf8_common_name,
       const std::vector<std::string> acceptable_spki_hashes_for_cn);
 
  private:

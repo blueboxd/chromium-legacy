@@ -600,8 +600,8 @@ cr.define('settings_people_page_kerberos_accounts', function() {
       assertFalse(actionButton.disabled);
     });
 
-    // If the account has passwordWasRemembered == true and the user just clicks
-    // the 'Add' button, an empty password is submitted.
+    // If the account has passwordWasRemembered === true and the user just
+    // clicks the 'Add' button, an empty password is submitted.
     test('SubmitsEmptyPasswordIfRememberedPasswordIsUsed', async () => {
       assertTrue(testAccounts[1].passwordWasRemembered);
       createDialog(testAccounts[1]);
@@ -611,8 +611,8 @@ cr.define('settings_people_page_kerberos_accounts', function() {
       assertTrue(args[AddParams.REMEMBER_PASSWORD]);
     });
 
-    // If the account has passwordWasRemembered == true and the user changes the
-    // password before clicking the action button, the changed password is
+    // If the account has passwordWasRemembered === true and the user changes
+    // the password before clicking the action button, the changed password is
     // submitted.
     test('SubmitsChangedPasswordIfRememberedPasswordIsChanged', async () => {
       assertTrue(testAccounts[1].passwordWasRemembered);

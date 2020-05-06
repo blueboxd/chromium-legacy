@@ -125,7 +125,7 @@ class WheelScrollLatchingBrowserTest : public ContentBrowserTest {
     return value;
   }
   std::string ExecuteScriptAndExtractString(const std::string& script) {
-    std::string value = "";
+    std::string value;
     EXPECT_TRUE(content::ExecuteScriptAndExtractString(
         shell(), "domAutomationController.send(" + script + ")", &value));
     return value;

@@ -57,8 +57,8 @@ SettingsAccessibilityV3Test.violationFilter = {
     // tabindex -1 anyway.
     const parentNode = nodeResult.element.parentNode;
     return parentNode && parentNode.host &&
-        (parentNode.host.tagName == 'CR-TOGGLE' ||
-         parentNode.host.tagName == 'CR-CHECKBOX');
+        (parentNode.host.tagName === 'CR-TOGGLE' ||
+         parentNode.host.tagName === 'CR-CHECKBOX');
   },
 };
 

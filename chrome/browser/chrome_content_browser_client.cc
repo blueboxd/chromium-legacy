@@ -2707,19 +2707,6 @@ void ChromeContentBrowserClient::AllowCertificateError(
   return;
 }
 
-#if !defined(OS_ANDROID)
-bool ChromeContentBrowserClient::ShouldDenyRequestOnCertificateError(
-    const GURL main_page_url) {
-  // Desktop Reader Mode pages should never load resources with certificate
-  // errors. Desktop Reader Mode is more strict about security than Reader Mode
-  // on Android: the desktop version has its own security indicator and
-  // is not downgraded to a WARNING, whereas Android will show "Not secure"
-  // in the omnibox (for low-end devices which show the omnibox on Reader Mode
-  // pages).
-  return main_page_url.SchemeIs(dom_distiller::kDomDistillerScheme);
-}
-#endif
-
 namespace {
 
 certificate_matching::CertificatePrincipalPattern

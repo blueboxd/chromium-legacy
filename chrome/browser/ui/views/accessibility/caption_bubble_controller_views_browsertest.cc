@@ -466,4 +466,63 @@ IN_PROC_BROWSER_TEST_F(CaptionBubbleControllerViewsTest,
   EXPECT_EQ("No human has ever seen a living giant squid", GetLabelText());
 }
 
+IN_PROC_BROWSER_TEST_F(CaptionBubbleControllerViewsTest, ShowsAndHidesBubble) {
+  // Bubble isn't shown when controller is created.
+  GetController();
+  EXPECT_FALSE(GetCaptionWidget()->IsVisible());
+
+  // It is shown if there is an error, and hidden when that error goes away.
+  GetBubble()->SetHasError(true);
+  EXPECT_TRUE(GetCaptionWidget()->IsVisible());
+  GetBubble()->SetHasError(false);
+  EXPECT_FALSE(GetCaptionWidget()->IsVisible());
+
+  // It is shown if there is text, and hidden if the text is removed.
+  OnPartialTranscription("Newborn kangaroos are less than 1 in long");
+  EXPECT_TRUE(GetCaptionWidget()->IsVisible());
+  // Stays visible when switching to an error state.
+  GetBubble()->SetHasError(true);
+  EXPECT_TRUE(GetCaptionWidget()->IsVisible());
+  // Even if the text is removed, because of the error.
+  OnFinalTranscription("");
+  EXPECT_TRUE(GetCaptionWidget()->IsVisible());
+  // No error and no text means not visible.
+  GetBubble()->SetHasError(false);
+  EXPECT_FALSE(GetCaptionWidget()->IsVisible());
+
+  // Explicitly tell the bubble to show itself. It shouldn't show because
+  // it has no text and no error.
+  GetBubble()->Show();
+  EXPECT_FALSE(GetCaptionWidget()->IsVisible());
+  GetBubble()->SetHasError(true);
+  EXPECT_TRUE(GetCaptionWidget()->IsVisible());
+
+  // Telling it explicitly to hide will hide it.
+  GetBubble()->Hide();
+  EXPECT_FALSE(GetCaptionWidget()->IsVisible());
+  GetBubble()->Show();
+  EXPECT_TRUE(GetCaptionWidget()->IsVisible());
+
+#if !defined(OS_MACOSX)
+  // Shrink it so small the caption bubble can't fit. Ensure it's hidden.
+  // Mac windows cannot be shrunk small enough to force the bubble to hide.
+  GetBubble()->SetHasError(false);
+  browser()->window()->SetBounds(gfx::Rect(50, 50, 200, 100));
+  EXPECT_FALSE(GetCaptionWidget()->IsVisible());
+
+  // Make it bigger again and ensure it's still not visible.
+  browser()->window()->SetBounds(gfx::Rect(50, 50, 800, 400));
+  EXPECT_FALSE(GetCaptionWidget()->IsVisible());
+
+  // Now set some text, and ensure it hides when shrunk but re-shows when
+  // grown.
+  OnPartialTranscription("Newborn opossums are about 1cm long");
+  EXPECT_TRUE(GetCaptionWidget()->IsVisible());
+  browser()->window()->SetBounds(gfx::Rect(50, 50, 200, 100));
+  EXPECT_FALSE(GetCaptionWidget()->IsVisible());
+  browser()->window()->SetBounds(gfx::Rect(50, 50, 800, 400));
+  EXPECT_TRUE(GetCaptionWidget()->IsVisible());
+#endif
+}
+
 }  // namespace captions

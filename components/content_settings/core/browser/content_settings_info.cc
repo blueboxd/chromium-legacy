@@ -5,7 +5,6 @@
 #include "components/content_settings/core/browser/content_settings_info.h"
 
 #include "base/stl_util.h"
-#include "components/content_settings/core/browser/content_settings_utils.h"
 #include "components/content_settings/core/browser/website_settings_info.h"
 #include "components/content_settings/core/common/content_settings_utils.h"
 
@@ -14,22 +13,16 @@ namespace content_settings {
 ContentSettingsInfo::ContentSettingsInfo(
     const WebsiteSettingsInfo* website_settings_info,
     const std::vector<std::string>& whitelisted_schemes,
-    const base::flat_set<url::Origin>& force_allowed_origins,
     const std::set<ContentSetting>& valid_settings,
     IncognitoBehavior incognito_behavior,
     StorageBehavior storage_behavior,
     OriginRestriction origin_restriction)
     : website_settings_info_(website_settings_info),
       whitelisted_schemes_(whitelisted_schemes),
-      force_allowed_origins_(force_allowed_origins),
       valid_settings_(valid_settings),
       incognito_behavior_(incognito_behavior),
       storage_behavior_(storage_behavior),
-      origin_restriction_(origin_restriction) {
-  // We only allow certain origins to be force allowed to have permissions.
-  for (const auto& origin : force_allowed_origins_)
-    CHECK(content_settings::OriginCanBeForceAllowed(origin));
-}
+      origin_restriction_(origin_restriction) {}
 
 ContentSettingsInfo::~ContentSettingsInfo() {}
 

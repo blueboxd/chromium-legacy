@@ -15,7 +15,6 @@
 #include "components/security_interstitials/content/security_interstitial_page.h"
 #include "components/security_interstitials/core/base_safe_browsing_error_ui.h"
 #include "components/security_interstitials/core/metrics_helper.h"
-#include "content/public/browser/interstitial_page_delegate.h"
 #include "url/gurl.h"
 
 namespace safe_browsing {
@@ -36,21 +35,11 @@ class BaseBlockingPage
   static const BaseSafeBrowsingErrorUI::SBErrorDisplayOptions
   CreateDefaultDisplayOptions(const UnsafeResourceList& unsafe_resources);
 
-  // Shows a blocking page warning the user about phishing/malware for a
-  // specific resource.
-  // This can be called several times. If an interstitial is already showing
-  // and the user decides to proceed, it will be discarded and a new one will be
-  // displayed.
-  static void ShowBlockingPage(BaseUIManager* ui_manager,
-                               const UnsafeResource& resource);
-
   // Returns true if the passed |unsafe_resources| is blocking the load of
   // the main page.
   static bool IsMainPageLoadBlocked(const UnsafeResourceList& unsafe_resources);
 
-  // InterstitialPageDelegate methods:
-  void OnProceed() override;
-  void OnDontProceed() override;
+  // SecurityInterstitialPage method:
   void CommandReceived(const std::string& command) override;
 
   // Checks the threat type to decide if we should report ThreatDetails.

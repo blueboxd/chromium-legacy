@@ -250,6 +250,9 @@ CHAR-LIMIT guidelines:
       <message name="IDS_NOTIFICATION_CATEGORY_ANNOUNCEMENT" desc="Label for announcements notifications, within a list of notification categories. [CHAR-LIMIT=32]">
         Announcements
       </message>
+      <message name="IDS_NOTIFICATION_CATEGORY_MEDIA_PLAYBACK" desc="Label for media playback notifications, within a list of notification categories. [CHAR-LIMIT=32]">
+        Playing media
+      </message>
 
       <message name="IDS_NOTIFICATION_CATEGORY_PERMISSION_REQUESTS" desc="Label for permission requests, within a list of notification categories. [CHAR-LIMIT=32]">
        Permission requests

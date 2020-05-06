@@ -48,7 +48,7 @@ void CreateAndInitializeLocalCache() {
                                &extension_cache_dir));
   base::FilePath cache_init_file = extension_cache_dir.Append(
       extensions::LocalExtensionCache::kCacheReadyFlagFileName);
-  EXPECT_EQ(base::WriteFile(cache_init_file, "", 0), 0);
+  EXPECT_TRUE(base::WriteFile(cache_init_file, ""));
 #endif
 }
 

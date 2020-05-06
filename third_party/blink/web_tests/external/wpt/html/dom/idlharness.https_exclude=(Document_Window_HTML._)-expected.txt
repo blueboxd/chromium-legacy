@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 1412 tests; 1378 PASS, 34 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 1412 tests; 1377 PASS, 35 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS idl_test setup
 PASS idl_test validation
 PASS Partial interface Document: original interface defined
@@ -796,7 +796,7 @@ PASS ElementInternals interface: existence and properties of interface prototype
 PASS ElementInternals interface: existence and properties of interface prototype object's @@unscopables property
 PASS ElementInternals interface: operation setFormValue((File or USVString or FormData)?, optional (File or USVString or FormData)?)
 PASS ElementInternals interface: attribute form
-PASS ElementInternals interface: operation setValidity(ValidityStateFlags, optional DOMString, optional HTMLElement)
+FAIL ElementInternals interface: operation setValidity(optional ValidityStateFlags, optional DOMString, optional HTMLElement) assert_equals: property has wrong .length expected 0 but got 1
 PASS ElementInternals interface: attribute willValidate
 PASS ElementInternals interface: attribute validity
 PASS ElementInternals interface: attribute validationMessage

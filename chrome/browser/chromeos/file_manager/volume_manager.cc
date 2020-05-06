@@ -993,7 +993,7 @@ void VolumeManager::OnRenameEvent(
       return;
     case chromeos::disks::DiskMountManager::RENAME_COMPLETED:
       // Find previous mount point label if it exists
-      std::string mount_label = "";
+      std::string mount_label;
       auto disk_map_iter = disk_mount_manager_->disks().find(device_path);
       if (disk_map_iter != disk_mount_manager_->disks().end() &&
           !disk_map_iter->second->base_mount_path().empty()) {

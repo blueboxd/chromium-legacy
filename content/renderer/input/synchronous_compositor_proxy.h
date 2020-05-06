@@ -19,7 +19,7 @@
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/mojom/input/input_event_result.mojom-shared.h"
-#include "ui/events/blink/synchronous_input_handler_proxy.h"
+#include "third_party/blink/public/platform/input/synchronous_input_handler_proxy.h"
 #include "ui/gfx/geometry/scroll_offset.h"
 #include "ui/gfx/geometry/size_f.h"
 
@@ -34,12 +34,12 @@ struct SyncCompositorCommonRendererParams;
 struct SyncCompositorDemandDrawHwParams;
 struct SyncCompositorDemandDrawSwParams;
 
-class SynchronousCompositorProxy : public ui::SynchronousInputHandler,
+class SynchronousCompositorProxy : public blink::SynchronousInputHandler,
                                    public SynchronousLayerTreeFrameSinkClient,
                                    public mojom::SynchronousCompositor {
  public:
   SynchronousCompositorProxy(
-      ui::SynchronousInputHandlerProxy* input_handler_proxy);
+      blink::SynchronousInputHandlerProxy* input_handler_proxy);
   ~SynchronousCompositorProxy() override;
 
   void Init();
@@ -49,7 +49,7 @@ class SynchronousCompositorProxy : public ui::SynchronousInputHandler,
       mojo::PendingAssociatedReceiver<mojom::SynchronousCompositor>
           compositor_request);
 
-  // ui::SynchronousInputHandler overrides.
+  // blink::SynchronousInputHandler overrides.
   void UpdateRootLayerState(const gfx::ScrollOffset& total_scroll_offset,
                             const gfx::ScrollOffset& max_scroll_offset,
                             const gfx::SizeF& scrollable_size,
@@ -117,7 +117,7 @@ class SynchronousCompositorProxy : public ui::SynchronousInputHandler,
 
   struct SharedMemoryWithSize;
 
-  ui::SynchronousInputHandlerProxy* const input_handler_proxy_;
+  blink::SynchronousInputHandlerProxy* const input_handler_proxy_;
   mojo::Remote<mojom::SynchronousCompositorControlHost> control_host_;
   mojo::AssociatedRemote<mojom::SynchronousCompositorHost> host_;
   mojo::AssociatedReceiver<mojom::SynchronousCompositor> receiver_{this};

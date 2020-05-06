@@ -16,6 +16,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "content/browser/devtools/devtools_instrumentation.h"
 #include "content/browser/frame_host/frame_tree.h"
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/frame_host/navigator.h"
@@ -477,6 +478,13 @@ void UpdateNavigationRequestClientUaHeadersImpl(
                      : base::nullopt;
     // If a custom UA override is set, but no value is provided for UA client
     // hints, disable them.
+    disable_due_to_custom_ua = !ua_metadata.has_value();
+  }
+
+  if (devtools_instrumentation::ApplyUserAgentMetadataOverrides(frame_tree_node,
+                                                                &ua_metadata)) {
+    // Likewise, if devtools says to override client hints but provides no
+    // value, disable them. This overwrites previous decision from UI.
     disable_due_to_custom_ua = !ua_metadata.has_value();
   }
 

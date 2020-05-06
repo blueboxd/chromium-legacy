@@ -3205,10 +3205,6 @@ void Internals::setScrollChain(ScrollState* scroll_state,
   scroll_state->SetScrollChain(scroll_chain);
 }
 
-void Internals::revealSelection() {
-  GetFrame()->Selection().RevealSelection(ScrollAlignment::ToEdgeIfNeeded());
-}
-
 String Internals::selectedHTMLForClipboard() {
   if (!GetFrame())
     return String();

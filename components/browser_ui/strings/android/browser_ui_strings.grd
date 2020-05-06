@@ -477,10 +477,10 @@
       Completed downloads
     </message>
     <message name="IDS_NOTIFICATION_CATEGORY_DOWNLOADS" desc="Label for notifications shown when something is downloading, within a list of notification categories. [CHAR-LIMIT=32]">
-      Downloads
+      Active downloads
     </message>
-    <message name="IDS_NOTIFICATION_CATEGORY_MEDIA" desc="Label for notifications shown when media is playing or recording, within a list of notification categories. [CHAR-LIMIT=32]">
-      Media
+    <message name="IDS_NOTIFICATION_CATEGORY_WEBRTC_CAM_AND_MIC" desc="Label for notifications shown when media is being recorded from a camera or microphone, within a list of notification categories. [CHAR-LIMIT=32]">
+      Camera and microphone use
     </message>
     <message name="IDS_SCREEN_CAPTURE_NOTIFICATION_TITLE" desc="Text to be shown as a notification when screen capture is in progress.">
       Sharing your screen

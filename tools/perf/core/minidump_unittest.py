@@ -18,6 +18,7 @@ import py_utils
 CRASH_SIGNATURES = [
     'gl::Crash',
     'chrome!Crash',
+    'GpuServiceImpl::Crash()',
 ]
 
 

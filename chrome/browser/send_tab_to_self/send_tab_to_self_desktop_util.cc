@@ -30,7 +30,7 @@ void CreateNewEntry(content::WebContents* tab,
   DCHECK(tab);
 
   GURL shared_url = link_url;
-  std::string title = "";
+  std::string title;
   base::Time navigation_time = base::Time();
 
   content::NavigationEntry* navigation_entry =

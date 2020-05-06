@@ -30,7 +30,6 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.EditText;
 
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -43,7 +42,6 @@ import org.mockito.MockitoAnnotations;
 import org.robolectric.annotation.Config;
 
 import org.chromium.base.Callback;
-import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
@@ -141,7 +139,6 @@ public class TabGridDialogMediatorUnitTest {
 
     @Before
     public void setUp() {
-        RecordHistogram.setDisabledForTests(true);
 
         MockitoAnnotations.initMocks(this);
 
@@ -198,11 +195,6 @@ public class TabGridDialogMediatorUnitTest {
                 mTabModelSelector, mTabCreatorManager, mTabSwitcherResetHandler,
                 mAnimationSourceViewProvider, mShareDelegateSupplier, "");
         mMediator.initWithNative(mTabSelectionEditorController, mTabGroupTitleEditor);
-    }
-
-    @After
-    public void tearDown() {
-        RecordHistogram.setDisabledForTests(false);
     }
 
     @Test

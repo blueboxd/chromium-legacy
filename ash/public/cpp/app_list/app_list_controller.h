@@ -60,14 +60,6 @@ class ASH_PUBLIC_EXPORT AppListController {
   // e.g. the model is under synchronization or in normal status.
   virtual void SetStatus(AppListModelStatus status) = 0;
 
-  // Tells Ash what the current state of the app list should be,
-  // e.g. the user is searching for something, or showing apps, etc.
-  virtual void SetState(AppListState state) = 0;
-
-  // Highlights the given item in the app list. If not present and it is later
-  // added, the item will be highlighted after being added.
-  virtual void HighlightItemInstalledFromUI(const std::string& id) = 0;
-
   // Sets whether the search engine is Google or not.
   virtual void SetSearchEngineIsGoogle(bool is_google) = 0;
 
@@ -96,14 +88,6 @@ class ASH_PUBLIC_EXPORT AppListController {
   virtual void SetItemIcon(const std::string& id,
                            const gfx::ImageSkia& icon) = 0;
 
-  // Updates whether an item is installing.
-  virtual void SetItemIsInstalling(const std::string& id,
-                                   bool is_installing) = 0;
-
-  // Updates the downloaded percentage of an item.
-  virtual void SetItemPercentDownloaded(const std::string& id,
-                                        int32_t percent_downloaded) = 0;
-
   // Update the whole model, usually when profile changes happen in Chrome.
   virtual void SetModelData(
       int profile_id,
@@ -113,17 +97,6 @@ class ASH_PUBLIC_EXPORT AppListController {
   // Updates a search rresult's metadata.
   virtual void SetSearchResultMetadata(
       std::unique_ptr<SearchResultMetadata> metadata) = 0;
-
-  // Updates whether a search result is being installed.
-  virtual void SetSearchResultIsInstalling(const std::string& id,
-                                           bool is_installing) = 0;
-
-  // Updates the download progress of a search result.
-  virtual void SetSearchResultPercentDownloaded(const std::string& id,
-                                                int32_t percent_downloaded) = 0;
-
-  // Called when the app represented by a search result is installed.
-  virtual void NotifySearchResultItemInstalled(const std::string& id) = 0;
 
   // Returns a map from each item's id to its shown index in the app list.
   using GetIdToAppListIndexMapCallback =

@@ -221,7 +221,7 @@ suite('CrSettingsSecurityPageTestWithEnhanced', function() {
     flush();
 
     assertTrue(
-        page.prefs.safebrowsing.scout_reporting_enabled.value == previous);
+        page.prefs.safebrowsing.scout_reporting_enabled.value === previous);
   });
 
   test('noControlSafeBrowsingReportingInDisabled', async function() {
@@ -260,7 +260,7 @@ suite('CrSettingsSecurityPageTestWithEnhanced', function() {
     await flushTasks();
 
     assertTrue(
-        page.prefs.safebrowsing.scout_reporting_enabled.value == previous);
+        page.prefs.safebrowsing.scout_reporting_enabled.value === previous);
   });
 
   test('noValueChangePasswordLeakSwitchToEnhanced', function() {
@@ -272,7 +272,7 @@ suite('CrSettingsSecurityPageTestWithEnhanced', function() {
     flush();
 
     assertTrue(
-        page.prefs.profile.password_manager_leak_detection.value == previous);
+        page.prefs.profile.password_manager_leak_detection.value === previous);
   });
 
   test('noValuePasswordLeakSwitchToDisabled', async function() {
@@ -292,7 +292,7 @@ suite('CrSettingsSecurityPageTestWithEnhanced', function() {
     await flushTasks();
 
     assertTrue(
-        page.prefs.profile.password_manager_leak_detection.value == previous);
+        page.prefs.profile.password_manager_leak_detection.value === previous);
   });
 
   test('SafeBrowsingRadio_PreferenceUpdate', function() {

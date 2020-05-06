@@ -40,7 +40,6 @@ _LLVM_TOOLS_DIR = os.path.join(
 _CLANG_UPDATE_PATH = os.path.join(_SRC_ROOT, 'tools', 'clang', 'scripts',
                                   'update.py')
 _GN_PATH = os.path.join(_SRC_ROOT, 'third_party', 'depot_tools', 'gn')
-_NINJA_PATH = os.path.join(_SRC_ROOT, 'third_party', 'depot_tools', 'ninja')
 
 
 _DiffResult = collections.namedtuple('DiffResult', ['name', 'value', 'units'])
@@ -345,7 +344,7 @@ class _BuildHelper(object):
     return [_GN_PATH, 'gen', self.output_directory, '--args=%s' % gn_args]
 
   def _GenNinjaCmd(self):
-    cmd = [_NINJA_PATH, '-C', self.output_directory]
+    cmd = ['autoninja', '-C', self.output_directory]
     cmd += ['-j', self.max_jobs] if self.max_jobs else []
     cmd += ['-l', self.max_load_average] if self.max_load_average else []
     cmd += [self.target]

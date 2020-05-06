@@ -222,6 +222,15 @@ const TrustTokenTestParameters kSigningTrustTokenTestParameters[]{
                              base::nullopt),
 };
 
+// Given a well-formed key commitment record JSON and an issuer origin, returns
+// a serialized one-item dictionary mapping the commitment to the issuer.
+//
+// Example:
+//   WrapKeyCommitmentForIssuer("https://issuer.com", R"( {"srrkey": "abcd"} )")
+//   =  R"( { "https://issuer.com": { "srrkey": "abcd" } } )"
+std::string WrapKeyCommitmentForIssuer(const url::Origin& issuer,
+                                       base::StringPiece commitment);
+
 }  // namespace network
 
 #endif  // SERVICES_NETWORK_TRUST_TOKENS_TEST_TRUST_TOKEN_TEST_UTIL_H_

@@ -268,7 +268,7 @@ void SnippetsInternalsPageHandler::FetchSuggestionsInBackgroundImpl(
 }
 
 void SnippetsInternalsPageHandler::GetLastJson(GetLastJsonCallback callback) {
-  std::string json = "";
+  std::string json;
   if (remote_suggestions_provider_) {
     const ntp_snippets::RemoteSuggestionsFetcher* fetcher =
         remote_suggestions_provider_->suggestions_fetcher_for_debugging();

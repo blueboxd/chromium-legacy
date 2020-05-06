@@ -26,6 +26,10 @@ namespace base {
 class UnguessableToken;
 }
 
+namespace blink {
+struct UserAgentMetadata;
+}
+
 namespace net {
 class SSLInfo;
 class X509Certificate;
@@ -54,6 +58,14 @@ namespace devtools_instrumentation {
 void ApplyNetworkRequestOverrides(FrameTreeNode* frame_tree_node,
                                   mojom::BeginNavigationParams* begin_params,
                                   bool* report_raw_headers);
+
+// Returns true if devtools want |*override_out| to be used.
+// (A true return and |*override_out| being nullopt means no user agent client
+//  hints should be sent; a false return means devtools doesn't want to affect
+//  the behavior).
+bool ApplyUserAgentMetadataOverrides(
+    FrameTreeNode* frame_tree_node,
+    base::Optional<blink::UserAgentMetadata>* override_out);
 
 bool WillCreateURLLoaderFactory(
     RenderFrameHostImpl* rfh,

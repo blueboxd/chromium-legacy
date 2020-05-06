@@ -1218,16 +1218,9 @@ class Port(object):
         if not self._results_directory:
             option_val = self.get_option(
                 'results_directory') or self.default_results_directory()
-            # TODO(crbug.com/1027708): There are several blink tests step
-            # configuration files in the infra repository which append the
-            # layout-test-results to the value passed in for the
-            # --results-directory command line argument value. We need to
-            # remove the layout-test-results suffix for each blink tests step
-            # configuration file in the infra repository. Then we can stop
-            # removing the layout-test-results sub directory from the
-            # --results-directory command line argument value.
-            if self._filesystem.basename(option_val) == 'layout-test-results':
-                option_val = self.host.filesystem.dirname(option_val)
+            assert not self._filesystem.basename(option_val) == 'layout-test-results', (
+                'crbug.com/1026494, crbug.com/1027708: The layout-test-results sub directory should '
+                'not be passed as part of the --results-directory command line argument.')
             self._results_directory = self._filesystem.abspath(option_val)
         return self._results_directory
 

@@ -98,6 +98,9 @@ struct NET_EXPORT SSLServerConfig {
   // Layer Protocol Negotiation), in decreasing order of preference.  Protocols
   // will be advertised in this order during TLS handshake.
   NextProtoVector alpn_protos;
+
+  // If non-empty, the DER-encoded OCSP response to staple.
+  std::vector<uint8_t> ocsp_response;
 };
 
 }  // namespace net

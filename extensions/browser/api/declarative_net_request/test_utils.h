@@ -46,8 +46,7 @@ RequestAction CreateRequestActionForTesting(
     RequestAction::Type type,
     uint32_t rule_id = kMinValidID,
     uint32_t rule_priority = kDefaultPriority,
-    api::declarative_net_request::SourceType source_type =
-        api::declarative_net_request::SOURCE_TYPE_MANIFEST,
+    RulesetID ruleset_id = kMinValidStaticRulesetID,
     const ExtensionId& extension_id = "extensionid");
 
 // Test helpers for help with gtest expectations and assertions.
@@ -71,12 +70,9 @@ bool CreateVerifiedMatcher(const std::vector<TestRule>& rules,
                            int* expected_checksum = nullptr);
 
 // Helper to return a RulesetSource bound to temporary files.
-RulesetSource CreateTemporarySource(
-    size_t id = 1,
-    api::declarative_net_request::SourceType source_type =
-        api::declarative_net_request::SOURCE_TYPE_MANIFEST,
-    size_t rule_count_limit = 100,
-    ExtensionId extension_id = "extensionid");
+RulesetSource CreateTemporarySource(RulesetID id = kMinValidStaticRulesetID,
+                                    size_t rule_count_limit = 100,
+                                    ExtensionId extension_id = "extensionid");
 
 api::declarative_net_request::ModifyHeaderInfo CreateModifyHeaderInfo(
     api::declarative_net_request::HeaderOperation operation,

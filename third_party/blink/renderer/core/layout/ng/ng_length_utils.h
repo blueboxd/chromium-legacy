@@ -75,7 +75,6 @@ CORE_EXPORT LayoutUnit ResolveBlockLengthInternal(
     const NGBoxStrut& border_padding,
     const Length&,
     LayoutUnit content_size,
-    LengthResolvePhase,
     const LayoutUnit* opt_percentage_resolution_block_size_for_min_max =
         nullptr);
 
@@ -93,7 +92,7 @@ inline LayoutUnit ResolveMinInlineLength(
 
   base::Optional<MinMaxSizes> min_max_sizes;
   if (length.IsIntrinsic())
-    min_max_sizes = min_max_sizes_func();
+    min_max_sizes = min_max_sizes_func().sizes;
 
   return ResolveInlineLengthInternal(constraint_space, style, border_padding,
                                      min_max_sizes, length);
@@ -128,7 +127,7 @@ inline LayoutUnit ResolveMaxInlineLength(
 
   base::Optional<MinMaxSizes> min_max_sizes;
   if (length.IsIntrinsic())
-    min_max_sizes = min_max_sizes_func();
+    min_max_sizes = min_max_sizes_func().sizes;
 
   return ResolveInlineLengthInternal(constraint_space, style, border_padding,
                                      min_max_sizes, length);
@@ -159,7 +158,7 @@ inline LayoutUnit ResolveMainInlineLength(
     const Length& length) {
   base::Optional<MinMaxSizes> min_max_sizes;
   if (length.IsIntrinsic())
-    min_max_sizes = min_max_sizes_func();
+    min_max_sizes = min_max_sizes_func().sizes;
 
   return ResolveInlineLengthInternal(constraint_space, style, border_padding,
                                      min_max_sizes, length);
@@ -191,7 +190,7 @@ inline LayoutUnit ResolveMinBlockLength(
     return border_padding.BlockSum();
 
   return ResolveBlockLengthInternal(
-      constraint_space, style, border_padding, length, kIndefiniteSize, phase,
+      constraint_space, style, border_padding, length, kIndefiniteSize,
       opt_percentage_resolution_block_size_for_min_max);
 }
 
@@ -210,7 +209,7 @@ inline LayoutUnit ResolveMaxBlockLength(
     return LayoutUnit::Max();
 
   return ResolveBlockLengthInternal(
-      constraint_space, style, border_padding, length, kIndefiniteSize, phase,
+      constraint_space, style, border_padding, length, kIndefiniteSize,
       opt_percentage_resolution_block_size_for_min_max);
 }
 
@@ -231,7 +230,7 @@ inline LayoutUnit ResolveMainBlockLength(
     return content_size;
 
   return ResolveBlockLengthInternal(
-      constraint_space, style, border_padding, length, content_size, phase,
+      constraint_space, style, border_padding, length, content_size,
       opt_percentage_resolution_block_size_for_min_max);
 }
 
@@ -257,7 +256,7 @@ inline LayoutUnit ResolveMainBlockLength(
 
   return ResolveBlockLengthInternal(
       constraint_space, style, border_padding, length, intrinsic_block_size,
-      phase, opt_percentage_resolution_block_size_for_min_max);
+      opt_percentage_resolution_block_size_for_min_max);
 }
 
 // For the given style and min/max content sizes, computes the min and max
@@ -283,7 +282,7 @@ ComputeMinAndMaxContentContributionForTest(WritingMode writing_mode,
 // parent, we'll still return the inline min/max contribution in the writing
 // mode of the parent (i.e. typically something based on the preferred *block*
 // size of the child).
-MinMaxSizes ComputeMinAndMaxContentContribution(
+MinMaxSizesResult ComputeMinAndMaxContentContribution(
     const ComputedStyle& parent_style,
     NGLayoutInputNode child,
     const MinMaxSizesInput&);
@@ -526,7 +525,8 @@ LayoutUnit CalculateChildPercentageBlockSizeForMinMax(
     const NGConstraintSpace& constraint_space,
     const NGBlockNode node,
     const NGBoxStrut& border_padding,
-    LayoutUnit parent_percentage_block_size);
+    LayoutUnit input_percentage_block_size,
+    bool* uses_input_percentage_block_size);
 
 // The following function clamps the calculated size based on the node
 // requirements. Specifically, this adjusts the size based on size containment
@@ -542,7 +542,7 @@ LayoutUnit ClampIntrinsicBlockSize(
 // without considering children. If so, it returns the calculated size.
 // Otherwise, it returns base::nullopt and the caller has to compute the size
 // itself.
-base::Optional<MinMaxSizes> CalculateMinMaxSizesIgnoringChildren(
+base::Optional<MinMaxSizesResult> CalculateMinMaxSizesIgnoringChildren(
     const NGBlockNode&,
     const NGBoxStrut& border_scrollbar_padding);
 

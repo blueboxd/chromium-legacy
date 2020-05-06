@@ -282,6 +282,21 @@ void ApplyNetworkRequestOverrides(FrameTreeNode* frame_tree_node,
   begin_params->headers = headers.ToString();
 }
 
+bool ApplyUserAgentMetadataOverrides(
+    FrameTreeNode* frame_tree_node,
+    base::Optional<blink::UserAgentMetadata>* override_out) {
+  DevToolsAgentHostImpl* agent_host =
+      RenderFrameDevToolsAgentHost::GetFor(frame_tree_node);
+  if (!agent_host)
+    return false;
+
+  bool result = false;
+  for (auto* emulation : protocol::EmulationHandler::ForAgentHost(agent_host))
+    result = emulation->ApplyUserAgentMetadataOverrides(override_out) || result;
+
+  return result;
+}
+
 namespace {
 template <typename HandlerType>
 bool MaybeCreateProxyForInterception(

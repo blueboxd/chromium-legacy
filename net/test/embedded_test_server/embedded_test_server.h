@@ -23,6 +23,7 @@
 #include "net/base/address_list.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/ip_endpoint.h"
+#include "net/cert/ocsp_revocation_status.h"
 #include "net/cert/x509_certificate.h"
 #include "net/socket/ssl_server_socket.h"
 #include "net/socket/stream_socket.h"
@@ -130,12 +131,141 @@ class EmbeddedTestServer {
     // and rerunning net/data/ssl/scripts/generate-test-certs.sh.
     CERT_TEST_NAMES,
 
-    // TODO(crbug.com/846909): handle CERT_AUTO and CERT_AUTO_WITH_INTERMEDIATE
+    // A certificate will be generated at runtime. A ServerCertificateConfig
+    // passed to SetSSLConfig may be used to configure the details of the
+    // generated certificate.
+    CERT_AUTO,
+  };
 
-    // Generate an intermediate cert, and generate a test certificate issued by
-    // that intermediate with an AIA record for retrieving the intermediate.
-    // The intermediate is not included in the TLS handshake.
-    CERT_AUTO_AIA_INTERMEDIATE,
+  enum class IntermediateType {
+    // Generated cert is issued directly by the CA.
+    kNone,
+    // Generated cert is issued by a generated intermediate cert, which is
+    // included in the TLS handshake.
+    kInHandshake,
+    // Generated cert is issued by a generated intermediate, which is NOT
+    // included in the TLS handshake, but is available through the leaf's
+    // AIA caIssuers URL.
+    kByAIA,
+  };
+
+  struct OCSPConfig {
+    // Enumerates the types of OCSP response that the testserver can produce.
+    enum class ResponseType {
+      // OCSP will not be enabled for the corresponding config.
+      kOff,
+      // These correspond to the OCSPResponseStatus enumeration in RFC
+      // 6960.
+      kSuccessful,
+      kMalformedRequest,
+      kInternalError,
+      kTryLater,
+      kSigRequired,
+      kUnauthorized,
+      // The response will not be valid OCSPResponse DER.
+      kInvalidResponse,
+      // OCSPResponse will be valid DER but the contained ResponseData will not.
+      kInvalidResponseData,
+    };
+
+    // OCSPProduced describes the time of the producedAt field in the
+    // OCSP response relative to the certificate the response is for.
+    enum class Produced {
+      // producedAt is between certificate's notBefore and notAfter dates.
+      kValid,
+      // producedAt is before certificate's notBefore date.
+      kBeforeCert,
+      // producedAt is after certificate's notAfter date.
+      kAfterCert,
+    };
+
+    struct SingleResponse {
+      // Date describes the thisUpdate..nextUpdate ranges for OCSP
+      // singleResponses, relative to the current time.
+      enum class Date {
+        // The singleResponse is valid for 7 days, and includes the current
+        // time.
+        kValid,
+        // The singleResponse is valid for 7 days, but nextUpdate is before the
+        // current time.
+        kOld,
+        // The singleResponse is valid for 7 days, but thisUpdate is after the
+        // current time.
+        kEarly,
+        // The singleResponse is valid for 366 days, and includes the current
+        // time.
+        kLong,
+        // The singleResponse is valid for 368 days, and includes the current
+        // time.
+        kLonger,
+      };
+
+      // Configures whether a generated OCSP singleResponse's serial field
+      // matches the serial number of the target certificate.
+      enum class Serial {
+        kMatch,
+        kMismatch,
+      };
+
+      OCSPRevocationStatus cert_status = OCSPRevocationStatus::GOOD;
+      Date ocsp_date = Date::kValid;
+      Serial serial = Serial::kMatch;
+    };
+
+    OCSPConfig();
+    // Configure OCSP response with |response_type|.
+    explicit OCSPConfig(ResponseType response_type);
+    // Configure a successful OCSP response with |single_responses|. |produced|
+    // specifies the response's producedAt value, relative to the validity
+    // period of the certificate the OCSPConfig is for.
+    explicit OCSPConfig(std::vector<SingleResponse> single_responses,
+                        Produced produced = Produced::kValid);
+    OCSPConfig(const OCSPConfig&);
+    OCSPConfig(OCSPConfig&&);
+    ~OCSPConfig();
+    OCSPConfig& operator=(const OCSPConfig&);
+    OCSPConfig& operator=(OCSPConfig&&);
+
+    ResponseType response_type = ResponseType::kOff;
+    Produced produced = Produced::kValid;
+    std::vector<SingleResponse> single_responses;
+  };
+
+  // Configuration for generated server certificate.
+  struct ServerCertificateConfig {
+    ServerCertificateConfig();
+    ServerCertificateConfig(const ServerCertificateConfig&);
+    ServerCertificateConfig(ServerCertificateConfig&&);
+    ~ServerCertificateConfig();
+    ServerCertificateConfig& operator=(const ServerCertificateConfig&);
+    ServerCertificateConfig& operator=(ServerCertificateConfig&&);
+
+    // Configure whether the generated certificate chain should include an
+    // intermediate, and if so, how it is delivered to the client.
+    IntermediateType intermediate = IntermediateType::kNone;
+
+    // Configure OCSP handling.
+    // Note: In the current implementation the AIA request handler does not
+    // actually parse the OCSP request (a different OCSP URL is used for each
+    // cert). So this is useful for testing the client's handling of the OCSP
+    // response, but not for testing that the client is sending a proper OCSP
+    // request.
+    //
+    // AIA OCSP for the leaf cert. If |kOff|, no AIA OCSP URL will be included
+    // in the leaf cert.
+    OCSPConfig ocsp_config;
+    // Stapled OCSP for the leaf cert. If |kOff|, OCSP Stapling will not be
+    // used.
+    OCSPConfig stapled_ocsp_config;
+    // AIA OCSP for the intermediate cert. If |kOff|, no AIA OCSP URL will be
+    // included in the intermediate cert. It is invalid to supply a
+    // configuration other than |kOff| if |intermediate| is |kNone|.
+    OCSPConfig intermediate_ocsp_config;
+
+    // Certificate policy OIDs, in text notation (e.g. "1.2.3.4"). If
+    // non-empty, the policies will be added to the leaf cert and the
+    // intermediate cert (if an intermediate is configured).
+    std::vector<std::string> policy_oids;
   };
 
   typedef base::RepeatingCallback<std::unique_ptr<HttpResponse>(
@@ -222,8 +352,14 @@ class EmbeddedTestServer {
   // Returns the port number used by the server.
   uint16_t port() const { return port_; }
 
+  // SetSSLConfig sets the SSL configuration for the server. It is invalid to
+  // call after the server is started. If called multiple times, the last call
+  // will have effect.
   void SetSSLConfig(ServerCertificate cert, const SSLServerConfig& ssl_config);
   void SetSSLConfig(ServerCertificate cert);
+  void SetSSLConfig(const ServerCertificateConfig& cert_config,
+                    const SSLServerConfig& ssl_config);
+  void SetSSLConfig(const ServerCertificateConfig& cert_config);
 
   // TODO(mattm): make this WARN_UNUSED_RESULT
   bool ResetSSLConfig(ServerCertificate cert,
@@ -279,6 +415,12 @@ class EmbeddedTestServer {
 
   // Shuts down the server.
   void ShutdownOnIOThread();
+
+  // Sets the SSL configuration for the server. It is invalid for |cert_config|
+  // to be non-null if |cert| is not CERT_AUTO.
+  void SetSSLConfigInternal(ServerCertificate cert,
+                            const ServerCertificateConfig* cert_config,
+                            const SSLServerConfig& ssl_config);
 
   // Resets the SSLServerConfig on the IO thread.
   bool ResetSSLConfigOnIOThread(ServerCertificate cert,
@@ -369,6 +511,7 @@ class EmbeddedTestServer {
 
   net::SSLServerConfig ssl_config_;
   ServerCertificate cert_;
+  ServerCertificateConfig cert_config_;
   scoped_refptr<X509Certificate> x509_cert_;
   bssl::UniquePtr<EVP_PKEY> private_key_;
   std::unique_ptr<SSLServerContext> context_;

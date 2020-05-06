@@ -178,10 +178,6 @@ void FrameCaret::SetShouldShowBlockCursor(bool should_show_block_cursor) {
   ScheduleVisualUpdateForPaintInvalidationIfNeeded();
 }
 
-bool FrameCaret::CaretIsActive() {
-  return display_item_client_->IsActive();
-}
-
 bool FrameCaret::ShouldPaintCaret(const LayoutBlock& block) const {
   return display_item_client_->ShouldPaintCaret(block);
 }

@@ -24,7 +24,6 @@ import android.view.View;
 
 import androidx.annotation.Nullable;
 
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Rule;
@@ -38,7 +37,6 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.robolectric.annotation.Config;
 
-import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.browser.ThemeColorProvider;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
@@ -196,7 +194,6 @@ public class TabGroupUiMediatorUnitTest {
         // initAndAssertProperties(true), TabModel has 3 tabs in the following order: mTab1, mTab2,
         // and mTab3, while mTab2 and mTab3 are in a group. By default mTab1 is selected. If
         // initAndAssertProperties(false) is called instead, there's no tabs in TabModel.
-        RecordHistogram.setDisabledForTests(true);
 
         MockitoAnnotations.initMocks(this);
 
@@ -277,11 +274,6 @@ public class TabGroupUiMediatorUnitTest {
         mResetHandlerInOrder = inOrder(mResetHandler);
         mVisibilityControllerInOrder = inOrder(mVisibilityController);
         mModel = new PropertyModel(TabGroupUiProperties.ALL_KEYS);
-    }
-
-    @After
-    public void tearDown() {
-        RecordHistogram.setDisabledForTests(false);
     }
 
     @Test

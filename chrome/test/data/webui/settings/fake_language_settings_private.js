@@ -186,7 +186,7 @@ cr.define('settings', function() {
     enableLanguage(languageCode) {
       let languageCodes = this.settingsPrefs_.prefs.intl.accept_languages.value;
       const languages = languageCodes.split(',');
-      if (languages.indexOf(languageCode) != -1) {
+      if (languages.indexOf(languageCode) !== -1) {
         return;
       }
       languages.push(languageCode);
@@ -207,7 +207,7 @@ cr.define('settings', function() {
       let languageCodes = this.settingsPrefs_.prefs.intl.accept_languages.value;
       const languages = languageCodes.split(',');
       const index = languages.indexOf(languageCode);
-      if (index == -1) {
+      if (index === -1) {
         return;
       }
       languages.splice(index, 1);
@@ -232,13 +232,13 @@ cr.define('settings', function() {
           this.settingsPrefs_.prefs.translate_blocked_languages.value.indexOf(
               languageCode);
       if (enable) {
-        if (index == -1) {
+        if (index === -1) {
           return;
         }
         this.settingsPrefs_.splice(
             'prefs.translate_blocked_languages.value', index, 1);
       } else {
-        if (index != -1) {
+        if (index !== -1) {
           return;
         }
         this.settingsPrefs_.push(
@@ -257,14 +257,14 @@ cr.define('settings', function() {
       const languages = languageCodes.split(',');
       const index = languages.indexOf(languageCode);
 
-      if (moveType == chrome.languageSettingsPrivate.MoveType.TOP) {
+      if (moveType === chrome.languageSettingsPrivate.MoveType.TOP) {
         if (index < 1) {
           return;
         }
 
         languages.splice(index, 1);
         languages.unshift(languageCode);
-      } else if (moveType == chrome.languageSettingsPrivate.MoveType.UP) {
+      } else if (moveType === chrome.languageSettingsPrivate.MoveType.UP) {
         if (index < 1) {
           return;
         }
@@ -272,8 +272,8 @@ cr.define('settings', function() {
         const temp = languages[index - 1];
         languages[index - 1] = languageCode;
         languages[index] = temp;
-      } else if (moveType == chrome.languageSettingsPrivate.MoveType.DOWN) {
-        if (index == -1 || index == languages.length - 1) {
+      } else if (moveType === chrome.languageSettingsPrivate.MoveType.DOWN) {
+        if (index === -1 || index === languages.length - 1) {
           return;
         }
 
@@ -359,7 +359,7 @@ cr.define('settings', function() {
     addInputMethod(inputMethodId) {
       assert(cr.isChromeOS);
       const inputMethod = this.componentExtensionImes.find(function(ime) {
-        return ime.id == inputMethodId;
+        return ime.id === inputMethodId;
       });
       assert(!!inputMethod);
       inputMethod.enabled = true;
@@ -377,7 +377,7 @@ cr.define('settings', function() {
     removeInputMethod(inputMethodId) {
       assert(cr.isChromeOS);
       const inputMethod = this.componentExtensionImes.find(function(ime) {
-        return ime.id == inputMethodId;
+        return ime.id === inputMethodId;
       });
       assert(!!inputMethod);
       inputMethod.enabled = false;

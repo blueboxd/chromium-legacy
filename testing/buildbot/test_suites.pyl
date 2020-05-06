@@ -474,7 +474,7 @@
           # By default, CrOS VMs' ssh servers listen on local port 9222.
           '--remote=127.0.0.1',
           '--remote-ssh-port=9222',
-          '--xvfb'
+          '--xvfb',
         ],
         'swarming': {
           'idempotent': False,  # https://crbug.com/549140
@@ -1048,6 +1048,8 @@
       'telemetry_perf_unittests': {
         'args': [
           '--xvfb',
+          # TODO(crbug.com/1077284): Remove this once Crashpad is the default.
+          '--extra-browser-args=--enable-crashpad',
         ],
         'swarming': {
           'idempotent': False,  # https://crbug.com/549140
@@ -3257,23 +3259,6 @@
       },
     },
 
-    'performance_system_health_isolated_scripts': {
-      'performance_test_suite': {
-        'args': [
-          # executable is set in gn_isolate_map.pyl
-          '--benchmarks=system_health.common_desktop',
-          # Unknown args are appended as passthrough-args to the executable
-          '-v',
-          '--assert-gpu-compositing',
-          '--upload-results',
-          '--extra-browser-args=LLVM_PROFILE_FILE=${ISOLATED_OUTDIR}'
-        ],
-        'merge': {
-          'script': '//tools/perf/process_perf_results.py',
-        },
-      }
-    },
-
     'pixel_browser_tests_gtests': {
       'pixel_browser_tests': {
         'name': 'pixel_browser_tests',
@@ -3660,8 +3645,29 @@
       },
     },
 
+    'telemetry_android_minidump_unittests_isolated_scripts': {
+      'telemetry_chromium_minidump_unittests': {
+        'args': [
+          'BrowserMinidumpTest',
+          '--browser=android-chromium',
+        ],
+        'isolate_name': 'telemetry_perf_unittests',
+      },
+      'telemetry_monochrome_minidump_unittests': {
+        'args': [
+          'BrowserMinidumpTest',
+          '--browser=android-chromium-monochrome',
+        ],
+        'isolate_name': 'telemetry_perf_unittests',
+      },
+    },
+
     'telemetry_perf_unittests_isolated_scripts': {
       'telemetry_perf_unittests': {
+        'args': [
+          # TODO(crbug.com/1077284): Remove this once Crashpad is the default.
+          '--extra-browser-args=--enable-crashpad',
+        ],
         'swarming': {
           'idempotent': False,  # https://crbug.com/549140
           'shards': 12,
@@ -4787,6 +4793,7 @@
     'marshmallow_pie_isolated_scripts': [
       'android_isolated_scripts',
       'components_perftests_isolated_scripts',
+      'telemetry_android_minidump_unittests_isolated_scripts',
       'telemetry_perf_unittests_isolated_scripts',
     ],
 
@@ -4794,6 +4801,7 @@
       'android_isolated_scripts',
       'components_perftests_isolated_scripts',
       'monochrome_apk_checker_isolated_script',
+      'telemetry_android_minidump_unittests_isolated_scripts',
       'telemetry_perf_unittests_isolated_scripts',
     ],
 

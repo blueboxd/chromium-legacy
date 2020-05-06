@@ -778,6 +778,7 @@ VisualProperties RenderWidgetHostImpl::GetVisualProperties() {
   VisualProperties visual_properties;
 
   GetScreenInfo(&visual_properties.screen_info);
+  // Note: Later in this method, ScreenInfo rects might be overridden!
 
   visual_properties.is_fullscreen_granted =
       delegate_->IsFullscreenForCurrentTab();
@@ -824,6 +825,17 @@ VisualProperties RenderWidgetHostImpl::GetVisualProperties() {
   visual_properties.max_size_for_auto_resize = max_size_for_auto_resize_;
 
   visual_properties.new_size = view_->GetRequestedRendererSize();
+
+  // While in fullscreen mode, set the ScreenInfo rects to match the view size.
+  // This is needed because web authors often assume screen.width/height are
+  // identical to window.innerWidth/innerHeight while a page is in fullscreen,
+  // and this is not always true for some browser UI features.
+  // https://crbug.com/1060795
+  if (visual_properties.is_fullscreen_granted) {
+    visual_properties.screen_info.rect.set_size(visual_properties.new_size);
+    visual_properties.screen_info.available_rect.set_size(
+        visual_properties.new_size);
+  }
 
   // This widget is for a frame that is the main frame of the outermost frame
   // tree. That makes it the top-most frame. OR this is a non-frame widget.

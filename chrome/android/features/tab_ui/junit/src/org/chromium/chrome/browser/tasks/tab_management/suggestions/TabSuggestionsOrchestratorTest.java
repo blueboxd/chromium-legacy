@@ -12,7 +12,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -24,7 +23,6 @@ import org.mockito.MockitoAnnotations;
 import org.robolectric.annotation.Config;
 
 import org.chromium.base.Callback;
-import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.util.InMemorySharedPreferences;
 import org.chromium.base.test.util.JniMocker;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
@@ -101,12 +99,6 @@ public class TabSuggestionsOrchestratorTest {
         doReturn(Arrays.asList(sTabs[0])).when(mTabModelFilter).getRelatedTabList(0);
         doReturn(Arrays.asList(sTabs[1])).when(mTabModelFilter).getRelatedTabList(1);
         doReturn(Arrays.asList(sTabs[2])).when(mTabModelFilter).getRelatedTabList(2);
-        RecordHistogram.setDisabledForTests(true);
-    }
-
-    @After
-    public void tearDown() throws Exception {
-        RecordHistogram.setDisabledForTests(false);
     }
 
     @Test

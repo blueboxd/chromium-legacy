@@ -317,7 +317,7 @@ IN_PROC_BROWSER_TEST_F(BrowserSwitcherServiceTest, ExternalFileUrl) {
   base::ScopedTempDir dir;
   ASSERT_TRUE(dir.CreateUniqueTempDir());
   base::FilePath sitelist_path = dir.GetPath().AppendASCII("sitelist.xml");
-  base::WriteFile(sitelist_path, kSitelistXml, strlen(kSitelistXml));
+  base::WriteFile(sitelist_path, kSitelistXml);
 
   SetExternalUrl(net::FilePathToFileURL(sitelist_path).spec());
 
@@ -566,17 +566,15 @@ IN_PROC_BROWSER_TEST_F(BrowserSwitcherServiceTest, WritesSitelistsToCacheFile) {
   ASSERT_TRUE(dir.CreateUniqueTempDir());
   base::FilePath ieem_sitelist_path =
       dir.GetPath().AppendASCII("ieem_sitelist.xml");
-  base::WriteFile(ieem_sitelist_path, kSitelistXml, strlen(kSitelistXml));
+  base::WriteFile(ieem_sitelist_path, kSitelistXml);
 
   base::FilePath external_sitelist_path =
       dir.GetPath().AppendASCII("external_sitelist.xml");
-  base::WriteFile(external_sitelist_path, kOtherSitelistXml,
-                  strlen(kOtherSitelistXml));
+  base::WriteFile(external_sitelist_path, kOtherSitelistXml);
 
   base::FilePath external_greylist_path =
       dir.GetPath().AppendASCII("external_greylist.xml");
-  base::WriteFile(external_greylist_path, kYetAnotherSitelistXml,
-                  strlen(kYetAnotherSitelistXml));
+  base::WriteFile(external_greylist_path, kYetAnotherSitelistXml);
 
   policy::PolicyMap policies;
   EnableBrowserSwitcher(&policies);
@@ -699,7 +697,7 @@ IN_PROC_BROWSER_TEST_F(BrowserSwitcherServiceTest,
   base::RunLoop().RunUntilIdle();
 
   ASSERT_TRUE(base::CreateDirectory(cache_dir()));
-  base::WriteFile(sitelist_cache_file_path(), "", 0);
+  base::WriteFile(sitelist_cache_file_path(), "");
   ASSERT_TRUE(base::PathExists(sitelist_cache_file_path()));
 
   // Check that "sitelistcache.dat" got cleaned up on startup.
@@ -754,8 +752,8 @@ IN_PROC_BROWSER_TEST_F(BrowserSwitcherServiceTest,
 
   // Cache files already exist.
   ASSERT_TRUE(base::CreateDirectory(cache_dir()));
-  base::WriteFile(cache_file_path(), "", 0);
-  base::WriteFile(sitelist_cache_file_path(), "", 0);
+  base::WriteFile(cache_file_path(), "");
+  base::WriteFile(sitelist_cache_file_path(), "");
   ASSERT_TRUE(base::PathExists(cache_file_path()));
   ASSERT_TRUE(base::PathExists(sitelist_cache_file_path()));
 

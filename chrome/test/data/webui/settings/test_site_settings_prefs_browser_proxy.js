@@ -135,7 +135,7 @@ export class TestSiteSettingsPrefsBrowserProxy extends TestBrowserProxy {
     // Remove entries from the current prefs which have the same origin.
     const newPrefs = /** @type {!Array<RawSiteException>} */
         (this.prefs_.exceptions[category].filter((categoryException) => {
-          if (categoryException.origin != newException.origin) {
+          if (categoryException.origin !== newException.origin) {
             return true;
           }
         }));
@@ -185,7 +185,7 @@ export class TestSiteSettingsPrefsBrowserProxy extends TestBrowserProxy {
       const exceptionList = this.prefs_.exceptions[type];
       for (let j = 0; j < exceptionList.length; ++j) {
         let effectiveSetting = blanketSetting;
-        if (blanketSetting == ContentSetting.DEFAULT) {
+        if (blanketSetting === ContentSetting.DEFAULT) {
           effectiveSetting = this.prefs_.defaults[type].setting;
           exceptionList[j].source = SiteSettingSource.DEFAULT;
         }
@@ -228,7 +228,7 @@ export class TestSiteSettingsPrefsBrowserProxy extends TestBrowserProxy {
       const etldPlus1Name = urlParts.join('.');
 
       const existing = result.find(siteGroup => {
-        return siteGroup.etldPlus1 == etldPlus1Name;
+        return siteGroup.etldPlus1 === etldPlus1Name;
       });
 
       const mockUsage = index * 100;
@@ -257,7 +257,7 @@ export class TestSiteSettingsPrefsBrowserProxy extends TestBrowserProxy {
   getDefaultValueForContentType(contentType) {
     this.methodCalled('getDefaultValueForContentType', contentType);
     const pref = this.prefs_.defaults[contentType];
-    assert(pref != undefined, 'Pref is missing for ' + contentType);
+    assert(pref !== undefined, 'Pref is missing for ' + contentType);
     return Promise.resolve(pref);
   }
 
@@ -269,7 +269,7 @@ export class TestSiteSettingsPrefsBrowserProxy extends TestBrowserProxy {
     window.setTimeout(
         () => this.methodCalled('getExceptionList', contentType), 0);
     let pref = this.prefs_.exceptions[contentType];
-    assert(pref != undefined, 'Pref is missing for ' + contentType);
+    assert(pref !== undefined, 'Pref is missing for ' + contentType);
 
     if (this.hasIncognito_) {
       const incognitoElements = [];
@@ -299,7 +299,7 @@ export class TestSiteSettingsPrefsBrowserProxy extends TestBrowserProxy {
     // is able update the UI appropriately when incognito mode is toggled.
     const pref =
         JSON.parse(JSON.stringify(this.prefs_.chooserExceptions[setting]));
-    assert(pref != undefined, 'Pref is missing for ' + chooserType);
+    assert(pref !== undefined, 'Pref is missing for ' + chooserType);
 
     if (this.hasIncognito_) {
       for (let i = 0; i < pref.length; ++i) {
@@ -308,7 +308,7 @@ export class TestSiteSettingsPrefsBrowserProxy extends TestBrowserProxy {
           // Skip preferences that are not controlled by policy since opening an
           // incognito session does not automatically grant permission to
           // chooser exceptions that have been granted in the main session.
-          if (pref[i].sites[j].source != SiteSettingSource.POLICY) {
+          if (pref[i].sites[j].source !== SiteSettingSource.POLICY) {
             continue;
           }
 
@@ -381,7 +381,7 @@ export class TestSiteSettingsPrefsBrowserProxy extends TestBrowserProxy {
       let setting;
       let source;
       const isSet = this.prefs_.exceptions[contentType].some(originPrefs => {
-        if (originPrefs.origin == origin) {
+        if (originPrefs.origin === origin) {
           setting = originPrefs.setting;
           source = originPrefs.source;
           return true;
@@ -392,7 +392,7 @@ export class TestSiteSettingsPrefsBrowserProxy extends TestBrowserProxy {
       if (!isSet) {
         this.prefs_.chooserExceptions[contentType].some(chooserException => {
           return chooserException.sites.some(originPrefs => {
-            if (originPrefs.origin == origin) {
+            if (originPrefs.origin === origin) {
               setting = originPrefs.setting;
               source = originPrefs.source;
               return true;
@@ -403,7 +403,7 @@ export class TestSiteSettingsPrefsBrowserProxy extends TestBrowserProxy {
       }
 
       assert(
-          setting != undefined,
+          setting !== undefined,
           'There was no exception set for origin: ' + origin +
               ' and contentType: ' + contentType);
 

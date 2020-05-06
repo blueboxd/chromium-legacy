@@ -18,7 +18,6 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.StreamUtil;
-import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.util.AdvancedMockContext;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
@@ -264,14 +263,9 @@ public class RestoreMigrateTest {
         TabPersistentStore storeIn = buildTabPersistentStore(selectorIn, 0);
 
         int maxId = Math.max(getMaxId(selector0), getMaxId(selector1));
-        try {
-            RecordHistogram.setDisabledForTests(true);
-            storeIn.loadState(false /* ignoreIncognitoFiles */);
-            Assert.assertEquals("Invalid next id", maxId + 1,
-                    TabIdManager.getInstance().generateValidId(Tab.INVALID_TAB_ID));
-        } finally {
-            RecordHistogram.setDisabledForTests(false);
-        }
+        storeIn.loadState(false /* ignoreIncognitoFiles */);
+        Assert.assertEquals("Invalid next id", maxId + 1,
+                TabIdManager.getInstance().generateValidId(Tab.INVALID_TAB_ID));
     }
 
     /**
@@ -299,13 +293,8 @@ public class RestoreMigrateTest {
 
         TabPersistentStore storeIn1 = buildTabPersistentStore(selectorIn1, 1);
 
-        try {
-            RecordHistogram.setDisabledForTests(true);
-            storeIn0.loadState(false /* ignoreIncognitoFiles */);
-            storeIn1.loadState(false /* ignoreIncognitoFiles */);
-        } finally {
-            RecordHistogram.setDisabledForTests(false);
-        }
+        storeIn0.loadState(false /* ignoreIncognitoFiles */);
+        storeIn1.loadState(false /* ignoreIncognitoFiles */);
 
         Assert.assertEquals("Unexpected number of tabs to load", 6, storeIn0.getRestoredTabCount());
         Assert.assertEquals("Unexpected number of tabs to load", 3, storeIn1.getRestoredTabCount());

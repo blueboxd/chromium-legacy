@@ -307,14 +307,14 @@ HRESULT RegisterWithGoogleDeviceManagement(const base::string16& mdm_url,
 
   // Need localized local user group name for Administrators group
   // for supporting account elevation scenarios.
-  base::string16 local_administrators_group_name = L"";
+  base::string16 local_administrators_group_name;
   hr = LookupLocalizedNameForWellKnownSid(WinBuiltinAdministratorsSid,
                                           &local_administrators_group_name);
   if (FAILED(hr)) {
     LOGFN(WARNING) << "Failed to fetch name for administrators group";
   }
 
-  base::string16 builtin_administrator_name = L"";
+  base::string16 builtin_administrator_name;
   hr = GetLocalizedNameBuiltinAdministratorAccount(&builtin_administrator_name);
   if (FAILED(hr)) {
     LOGFN(WARNING) << "Failed to fetch name for builtin administrator account";

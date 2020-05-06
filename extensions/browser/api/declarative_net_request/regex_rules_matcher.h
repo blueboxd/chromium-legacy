@@ -51,7 +51,7 @@ class RegexRulesMatcher final : public RulesetMatcherBase {
   using RegexRulesList =
       ::flatbuffers::Vector<flatbuffers::Offset<flat::RegexRule>>;
   RegexRulesMatcher(const ExtensionId& extension_id,
-                    api::declarative_net_request::SourceType source_type,
+                    RulesetID ruleset_id,
                     const RegexRulesList* regex_list,
                     const ExtensionMetadataList* metadata_list);
 

@@ -241,9 +241,8 @@ bool UpdateAndIndexDynamicRules(const RulesetSource& source,
   // Initially write the new JSON and indexed rulesets to temporary files to
   // ensure we don't leave the actual files in an inconsistent state.
   std::unique_ptr<RulesetSource> temporary_source =
-      RulesetSource::CreateTemporarySource(source.id(), source.type(),
-                                           source.rule_count_limit(),
-                                           source.extension_id());
+      RulesetSource::CreateTemporarySource(
+          source.id(), source.rule_count_limit(), source.extension_id());
   if (!temporary_source) {
     *error = kInternalErrorUpdatingDynamicRules;
     *status = UpdateDynamicRulesStatus::kErrorCreateTemporarySource;

@@ -733,8 +733,24 @@ class SSLClientSocketTest : public PlatformTest, public WithTaskEnvironment {
     spawned_test_server_ = nullptr;
     embedded_test_server_ =
         std::make_unique<EmbeddedTestServer>(EmbeddedTestServer::TYPE_HTTPS);
-    RegisterEmbeddedTestServerHandlers(embedded_test_server_.get());
     embedded_test_server_->SetSSLConfig(cert, server_config);
+    return FinishStartingEmbeddedTestServer();
+  }
+
+  // Starts the embedded test server with the specified parameters. Returns true
+  // on success.
+  bool StartEmbeddedTestServer(
+      const EmbeddedTestServer::ServerCertificateConfig& cert_config,
+      const SSLServerConfig& server_config) {
+    spawned_test_server_ = nullptr;
+    embedded_test_server_ =
+        std::make_unique<EmbeddedTestServer>(EmbeddedTestServer::TYPE_HTTPS);
+    embedded_test_server_->SetSSLConfig(cert_config, server_config);
+    return FinishStartingEmbeddedTestServer();
+  }
+
+  bool FinishStartingEmbeddedTestServer() {
+    RegisterEmbeddedTestServerHandlers(embedded_test_server_.get());
     if (!embedded_test_server_->Start()) {
       LOG(ERROR) << "Could not start EmbeddedTestServer";
       return false;
@@ -2908,14 +2924,15 @@ TEST_P(SSLClientSocketVersionTest, CTCompliantEVHistogram) {
 
 // Tests that OCSP stapling is requested, as per Certificate Transparency (RFC
 // 6962).
-TEST_F(SSLClientSocketTest, ConnectSignedCertTimestampsEnablesOCSP) {
-  SpawnedTestServer::SSLOptions ssl_options;
-  ssl_options.staple_ocsp_response = true;
+TEST_P(SSLClientSocketVersionTest, ConnectSignedCertTimestampsEnablesOCSP) {
   // The test server currently only knows how to generate OCSP responses
   // for a freshly minted certificate.
-  ssl_options.server_certificate = SpawnedTestServer::SSLOptions::CERT_AUTO;
+  EmbeddedTestServer::ServerCertificateConfig cert_config;
+  cert_config.stapled_ocsp_config = EmbeddedTestServer::OCSPConfig(
+      {{OCSPRevocationStatus::GOOD,
+        EmbeddedTestServer::OCSPConfig::SingleResponse::Date::kValid}});
 
-  ASSERT_TRUE(StartTestServer(ssl_options));
+  ASSERT_TRUE(StartEmbeddedTestServer(cert_config, GetServerConfig()));
 
   SSLConfig ssl_config;
 

@@ -11,8 +11,6 @@
 #include "third_party/blink/renderer/core/dom/element_traversal.h"
 #include "third_party/blink/renderer/core/dom/nth_index_cache.h"
 #include "third_party/blink/renderer/core/dom/static_node_list.h"
-#include "third_party/blink/renderer/core/editing/drag_caret.h"
-#include "third_party/blink/renderer/core/editing/selection_modifier.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/root_frame_viewport.h"
 #include "third_party/blink/renderer/core/frame/web_feature.h"
@@ -20,7 +18,6 @@
 #include "third_party/blink/renderer/core/layout/layout_box.h"
 #include "third_party/blink/renderer/core/layout/layout_table.h"
 #include "third_party/blink/renderer/core/layout/line/inline_text_box.h"
-#include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/platform/instrumentation/histogram.h"
@@ -451,18 +448,6 @@ void ScrollAnchor::Adjust() {
   IntSize adjustment = ComputeAdjustment();
   if (adjustment.IsZero())
     return;
-
-  // Disallow scroll anchoring while there is an active caret for now.
-  // In the future it would be good to suppot anchoring the caret location on
-  // the screen.
-  if (LayoutBox* box = ScrollerLayoutBox(scroller_)) {
-    LocalFrame& frame = *box->GetFrame();
-    if (frame.Selection().HasActiveSelectionCaret() ||
-        frame.GetPage()->GetDragCaret().HasCaret()) {
-      ClearSelf();
-      return;
-    }
-  }
 
   if (scroll_anchor_disabling_style_changed_) {
     // Note that we only clear if the adjustment would have been non-zero.

@@ -296,8 +296,8 @@ public class MediaNotificationManager {
                         null /* notificationTag */, s.getNotificationId());
         ChromeNotificationBuilder builder =
                 NotificationBuilderFactory.createChromeNotificationBuilder(true /* preferCompat */,
-                        ChromeChannelDefinitions.ChannelId.MEDIA, null /* remoteAppPackageName */,
-                        metadata);
+                        ChromeChannelDefinitions.ChannelId.MEDIA_PLAYBACK,
+                        null /* remoteAppPackageName */, metadata);
         ForegroundServiceUtils.getInstance().startForeground(s, s.getNotificationId(),
                 builder.buildChromeNotification().getNotification(), 0 /* foregroundServiceType */);
     }
@@ -988,7 +988,7 @@ public class MediaNotificationManager {
                 new NotificationMetadata(NotificationUmaTracker.SystemNotificationType.MEDIA,
                         null /* notificationTag */, mMediaNotificationInfo.id);
         mNotificationBuilder = NotificationBuilderFactory.createChromeNotificationBuilder(
-                true /* preferCompat */, ChromeChannelDefinitions.ChannelId.MEDIA,
+                true /* preferCompat */, ChromeChannelDefinitions.ChannelId.MEDIA_PLAYBACK,
                 null /* remoteAppPackageName*/, metadata);
         setMediaStyleLayoutForNotificationBuilder(mNotificationBuilder);
 

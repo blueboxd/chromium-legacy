@@ -95,11 +95,7 @@ class ChromeSearchResult {
   void SetBadgeIcon(const gfx::ImageSkia& badge_icon);
   void SetNotifyVisibilityChange(bool notify_visibility_change);
 
-  // The following methods call model updater to update Ash.
-  void SetPercentDownloaded(int percent_downloaded);
-
   void SetSearchResultMetadata();
-  void NotifyItemInstalled();
 
   void SetMetadata(std::unique_ptr<ash::SearchResultMetadata> metadata) {
     metadata_ = std::move(metadata);

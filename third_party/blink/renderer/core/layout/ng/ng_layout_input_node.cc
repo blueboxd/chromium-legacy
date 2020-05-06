@@ -60,7 +60,7 @@ void AppendNodeToString(NGLayoutInputNode node,
 
 }  // namespace
 
-MinMaxSizes NGLayoutInputNode::ComputeMinMaxSizes(
+MinMaxSizesResult NGLayoutInputNode::ComputeMinMaxSizes(
     WritingMode writing_mode,
     const MinMaxSizesInput& input,
     const NGConstraintSpace* space) {

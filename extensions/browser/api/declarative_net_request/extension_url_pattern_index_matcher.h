@@ -21,11 +21,10 @@ class ExtensionUrlPatternIndexMatcher final : public RulesetMatcherBase {
  public:
   using UrlPatternIndexList = flatbuffers::Vector<
       flatbuffers::Offset<url_pattern_index::flat::UrlPatternIndex>>;
-  ExtensionUrlPatternIndexMatcher(
-      const ExtensionId& extension_id,
-      api::declarative_net_request::SourceType source_type,
-      const UrlPatternIndexList* index_list,
-      const ExtensionMetadataList* metadata_list);
+  ExtensionUrlPatternIndexMatcher(const ExtensionId& extension_id,
+                                  RulesetID ruleset_id,
+                                  const UrlPatternIndexList* index_list,
+                                  const ExtensionMetadataList* metadata_list);
 
   // RulesetMatcherBase override:
   ~ExtensionUrlPatternIndexMatcher() override;

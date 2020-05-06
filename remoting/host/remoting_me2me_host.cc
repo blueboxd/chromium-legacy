@@ -59,6 +59,7 @@
 #include "remoting/host/desktop_environment.h"
 #include "remoting/host/desktop_environment_options.h"
 #include "remoting/host/desktop_session_connector.h"
+#include "remoting/host/ftl_echo_message_listener.h"
 #include "remoting/host/ftl_host_change_notification_listener.h"
 #include "remoting/host/ftl_signaling_connector.h"
 #include "remoting/host/heartbeat_sender.h"
@@ -408,6 +409,7 @@ class HostProcess : public ConfigWatcher::Delegate,
   std::unique_ptr<HeartbeatSender> heartbeat_sender_;
   std::unique_ptr<FtlHostChangeNotificationListener>
       ftl_host_change_notification_listener_;
+  std::unique_ptr<FtlEchoMessageListener> ftl_echo_message_listener_;
 
   std::unique_ptr<HostStatusLogger> host_status_logger_;
   std::unique_ptr<HostEventLogger> host_event_logger_;
@@ -1498,6 +1500,9 @@ void HostProcess::StartHost() {
   ftl_host_change_notification_listener_ =
       std::make_unique<FtlHostChangeNotificationListener>(
           this, signal_strategy_.get());
+
+  ftl_echo_message_listener_ = std::make_unique<FtlEchoMessageListener>(
+      host_owner_, signal_strategy_.get());
 
   // Set up reporting the host status notifications.
 #if defined(REMOTING_MULTI_PROCESS)

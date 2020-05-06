@@ -72,6 +72,19 @@ NET_EXPORT bool ReadUTCOrGeneralizedTime(der::Parser* parser,
                                          der::GeneralizedTime* out)
     WARN_UNUSED_RESULT;
 
+// Parses a DER-encoded "Validity" as specified by RFC 5280. Returns true on
+// success and sets the results in |not_before| and |not_after|:
+//
+//       Validity ::= SEQUENCE {
+//            notBefore      Time,
+//            notAfter       Time }
+//
+// Note that upon success it is NOT guaranteed that |*not_before <= *not_after|.
+NET_EXPORT bool ParseValidity(const der::Input& validity_tlv,
+                              der::GeneralizedTime* not_before,
+                              der::GeneralizedTime* not_after)
+    WARN_UNUSED_RESULT;
+
 struct NET_EXPORT ParseCertificateOptions {
   // If set to true, then parsing will skip checks on the certificate's serial
   // number. The only requirement will be that the serial number is an INTEGER,

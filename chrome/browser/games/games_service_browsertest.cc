@@ -95,8 +95,7 @@ class GamesServiceBrowserTest : public PlatformBrowserTest {
     bool write_file_success = false;
     base::ThreadPool::PostTask(
         FROM_HERE, {base::MayBlock()}, base::BindLambdaForTesting([&]() {
-          write_file_success = base::WriteFile(file_path, string_data.data(),
-                                               string_data.size()) != -1;
+          write_file_success = base::WriteFile(file_path, string_data);
           run_loop.Quit();
         }));
     run_loop.Run();

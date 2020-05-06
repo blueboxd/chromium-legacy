@@ -19,7 +19,6 @@ import org.junit.runner.RunWith;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.StrictModeContext;
-import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
@@ -57,12 +56,10 @@ public final class ServicificationBackgroundServiceTest {
     public void setUp() {
         mServicificationBackgroundService =
                 new ServicificationBackgroundService(true /*supportsServiceManagerOnly*/);
-        RecordHistogram.setDisabledForTests(true);
     }
 
     @After
     public void tearDown() {
-        RecordHistogram.setDisabledForTests(false);
         closeBrowserMetricsSpareFile();
     }
 

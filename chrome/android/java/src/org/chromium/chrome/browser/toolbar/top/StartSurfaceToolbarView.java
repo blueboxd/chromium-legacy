@@ -152,11 +152,11 @@ class StartSurfaceToolbarView extends RelativeLayout {
     }
 
     /**
-     * @param isAtLeft Whether the new tab button is at left.
+     * @param isAtStart Whether the new tab button is at start.
      */
-    void setNewTabButtonAtLeft(boolean isAtLeft) {
-        assert isAtLeft;
-        if (isAtLeft) {
+    void setNewTabButtonAtStart(boolean isAtStart) {
+        assert isAtStart;
+        if (isAtStart) {
             ((LayoutParams) mNewTabButton.getLayoutParams()).removeRule(RelativeLayout.START_OF);
 
             LayoutParams params = (LayoutParams) mIncognitoSwitch.getLayoutParams();
@@ -188,9 +188,9 @@ class StartSurfaceToolbarView extends RelativeLayout {
     }
 
     /**
-     * @param isAtLeft Whether the identity disc is at left.
+     * @param isAtStart Whether the identity disc is at start.
      */
-    void setIdentityDiscAtLeft(boolean isAtLeft) {
+    void setIdentityDiscAtStart(boolean isAtStart) {
         ((LayoutParams) mIdentityDiscButton.getLayoutParams()).removeRule(RelativeLayout.START_OF);
     }
 

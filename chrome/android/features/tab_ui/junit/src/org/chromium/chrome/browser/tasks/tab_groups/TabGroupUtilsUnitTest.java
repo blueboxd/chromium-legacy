@@ -16,7 +16,6 @@ import static org.mockito.Mockito.when;
 import android.content.Context;
 import android.content.SharedPreferences;
 
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -27,7 +26,6 @@ import org.mockito.MockitoAnnotations;
 import org.robolectric.annotation.Config;
 
 import org.chromium.base.ContextUtils;
-import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.tabmodel.TabModel;
@@ -86,7 +84,6 @@ public class TabGroupUtilsUnitTest {
 
     @Before
     public void setUp() {
-        RecordHistogram.setDisabledForTests(true);
 
         MockitoAnnotations.initMocks(this);
 
@@ -106,11 +103,6 @@ public class TabGroupUtilsUnitTest {
         doReturn(mRemoveEditor).when(mEditor).remove(any(String.class));
         doReturn(mPutStringEditor).when(mEditor).putString(any(String.class), any(String.class));
         ContextUtils.initApplicationContextForTests(mContext);
-    }
-
-    @After
-    public void tearDown() {
-        RecordHistogram.setDisabledForTests(false);
     }
 
     @Test

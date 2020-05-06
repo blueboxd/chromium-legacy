@@ -355,6 +355,15 @@ void AshTestBase::ParentWindowInPrimaryRootWindow(aura::Window* window) {
                                         gfx::Rect());
 }
 
+void AshTestBase::SetUserPref(const std::string& user_email,
+                              const std::string& path,
+                              const base::Value& value) {
+  AccountId accountId = AccountId::FromUserEmail(user_email);
+  PrefService* prefs =
+      GetSessionControllerClient()->GetUserPrefService(accountId);
+  prefs->Set(path, value);
+}
+
 TestScreenshotDelegate* AshTestBase::GetScreenshotDelegate() {
   return static_cast<TestScreenshotDelegate*>(
       Shell::Get()->screenshot_controller()->screenshot_delegate_.get());

@@ -568,8 +568,8 @@ void SiteSettingsHandler::OnGetUsageInfo() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   // Site Details Page does not display the number of cookies for the origin.
   const CookieTreeNode* root = cookies_tree_model_->GetRoot();
-  std::string usage_string = "";
-  std::string cookie_string = "";
+  std::string usage_string;
+  std::string cookie_string;
   for (const auto& site : root->children()) {
     std::string title = base::UTF16ToUTF8(site->GetTitle());
     if (title != usage_host_)
@@ -1322,7 +1322,7 @@ void SiteSettingsHandler::HandleIsPatternValidForType(
   std::string type;
   CHECK(args->GetString(2, &type));
 
-  std::string reason = "";
+  std::string reason;
   bool is_valid =
       IsPatternValidForType(pattern_string, type, profile_, &reason);
 

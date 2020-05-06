@@ -44,8 +44,7 @@ IN_PROC_BROWSER_TEST_F(WebrtcLoggingPrivateApiBrowserTest,
   ASSERT_TRUE(base::CreateDirectory(webrtc_logs_path()));
   base::FilePath test_file_path = webrtc_logs_path().AppendASCII("test.file");
   std::string contents = "test file contents";
-  ASSERT_EQ(base::checked_cast<int>(contents.size()),
-            base::WriteFile(test_file_path, contents.c_str(), contents.size()));
+  ASSERT_TRUE(base::WriteFile(test_file_path, contents));
   ASSERT_TRUE(RunPlatformAppTestWithArg(
       "api_test/webrtc_logging_private/get_logs_directory",
       "test_with_file_in_directory"))

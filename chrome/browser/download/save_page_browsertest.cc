@@ -885,8 +885,7 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, SaveUnauthorizedResource) {
   base::FilePath file_path =
       temp_dir2.GetPath().Append(FILE_PATH_LITERAL("should-not-save.jpg"));
   std::string file_content("fake-jpg");
-  ASSERT_LT(
-      0, base::WriteFile(file_path, file_content.data(), file_content.size()));
+  ASSERT_TRUE(base::WriteFile(file_path, file_content));
 
   // Refer to the test file from the test page.
   GURL file_url = net::FilePathToFileURL(file_path);

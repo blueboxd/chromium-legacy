@@ -73,8 +73,7 @@ class FirstRunMasterPrefsBrowserTestBase : public InProcessBrowserTest {
     ASSERT_TRUE(text_.get());
 
     ASSERT_TRUE(base::CreateTemporaryFile(&prefs_file_));
-    EXPECT_EQ(static_cast<int>(text_->size()),
-              base::WriteFile(prefs_file_, text_->c_str(), text_->size()));
+    EXPECT_TRUE(base::WriteFile(prefs_file_, *text_));
     SetMasterPrefsPathForTesting(prefs_file_);
 
     // This invokes BrowserMain, and does the import, so must be done last.
@@ -331,10 +330,7 @@ class FirstRunMasterPrefsVariationsSeedTest
   // Writes the trial group to the temporary file.
   void WriteTrialGroupToTestFile(const std::string& trial_group) {
     base::ScopedAllowBlockingForTesting allow_blocking;
-    int bytes_to_write = base::checked_cast<int>(trial_group.length());
-    int bytes_written =
-        base::WriteFile(GetTestFilePath(), trial_group.c_str(), bytes_to_write);
-    EXPECT_EQ(bytes_to_write, bytes_written);
+    EXPECT_TRUE(base::WriteFile(GetTestFilePath(), trial_group));
   }
 
   // Reads the trial group from the temporary file.

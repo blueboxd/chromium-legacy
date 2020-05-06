@@ -977,7 +977,7 @@ void CupsPrintersHandler::FileSelected(const base::FilePath& path,
 
 void CupsPrintersHandler::VerifyPpdContents(const base::FilePath& path,
                                             const std::string& contents) {
-  std::string result = "";
+  std::string result;
   if (PpdLineReader::ContainsMagicNumber(contents, kPpdMaxLineLength))
     result = path.value();
 

@@ -4,12 +4,15 @@
 
 #include "chrome/browser/chromeos/input_method/personal_info_suggester.h"
 
+#include "ash/public/cpp/ash_pref_names.h"
 #include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
+#include "components/prefs/pref_service.h"
 
 using input_method::InputMethodEngineBase;
 
@@ -23,7 +26,43 @@ const char kAssistNamePrefix[] = "my name is ";
 const char kAssistAddressPrefix[] = "my address is ";
 const char kAssistPhoneNumberPrefix[] = "my phone number is ";
 
+constexpr base::TimeDelta kTtsShowDelay =
+    base::TimeDelta::FromMilliseconds(1200);
+
 }  // namespace
+
+TtsHandler::TtsHandler(Profile* profile) : profile_(profile) {}
+TtsHandler::~TtsHandler() = default;
+
+void TtsHandler::Announce(const std::string& text,
+                          const base::TimeDelta delay) {
+  const bool chrome_vox_enabled = profile_->GetPrefs()->GetBoolean(
+      ash::prefs::kAccessibilitySpokenFeedbackEnabled);
+  if (!chrome_vox_enabled)
+    return;
+
+  delay_timer_ = std::make_unique<base::OneShotTimer>();
+  delay_timer_->Start(
+      FROM_HERE, delay,
+      base::BindOnce(&TtsHandler::Speak, base::Unretained(this), text));
+}
+
+void TtsHandler::OnTtsEvent(content::TtsUtterance* utterance,
+                            content::TtsEventType event_type,
+                            int char_index,
+                            int length,
+                            const std::string& error_message) {}
+
+void TtsHandler::Speak(const std::string& text) {
+  std::unique_ptr<content::TtsUtterance> utterance =
+      content::TtsUtterance::Create(profile_);
+  utterance->SetText(text);
+  utterance->SetEventDelegate(this);
+
+  auto* tts_controller = content::TtsController::GetInstance();
+  tts_controller->Stop();
+  tts_controller->SpeakOrEnqueue(std::move(utterance));
+}
 
 AssistiveType ProposeAssistiveAction(const base::string16& text) {
   AssistiveType action = AssistiveType::kGenericAction;
@@ -49,13 +88,16 @@ AssistiveType ProposeAssistiveAction(const base::string16& text) {
 PersonalInfoSuggester::PersonalInfoSuggester(
     SuggestionHandlerInterface* suggestion_handler,
     Profile* profile,
-    autofill::PersonalDataManager* personal_data_manager)
+    autofill::PersonalDataManager* personal_data_manager,
+    std::unique_ptr<TtsHandler> tts_handler)
     : suggestion_handler_(suggestion_handler),
       profile_(profile),
       personal_data_manager_(
           personal_data_manager
               ? personal_data_manager
-              : autofill::PersonalDataManagerFactory::GetForProfile(profile)) {}
+              : autofill::PersonalDataManagerFactory::GetForProfile(profile)),
+      tts_handler_(tts_handler ? std::move(tts_handler)
+                               : std::make_unique<TtsHandler>(profile)) {}
 
 PersonalInfoSuggester::~PersonalInfoSuggester() {}
 
@@ -153,12 +195,22 @@ base::string16 PersonalInfoSuggester::GetSuggestion(
 void PersonalInfoSuggester::ShowSuggestion(const base::string16& text,
                                            const size_t confirmed_length) {
   std::string error;
-  suggestion_shown_ = true;
   suggestion_handler_->SetSuggestion(context_id_, text, confirmed_length, true,
                                      &error);
   if (!error.empty()) {
     LOG(ERROR) << "Fail to show suggestion. " << error;
   }
+
+  if (!suggestion_shown_) {
+    tts_handler_->Announce(
+        // TODO(jiwan): Add translation to other languages when we support more
+        // than English.
+        base::StringPrintf("Suggested text %s. Press tab to insert.",
+                           base::UTF16ToUTF8(text).c_str()),
+        kTtsShowDelay);
+  }
+
+  suggestion_shown_ = true;
 }
 
 AssistiveType PersonalInfoSuggester::GetProposeActionType() {
@@ -172,6 +224,8 @@ void PersonalInfoSuggester::AcceptSuggestion() {
   if (!error.empty()) {
     LOG(ERROR) << "Failed to accept suggestion. " << error;
   }
+  tts_handler_->Announce(base::StringPrintf(
+      "Inserted suggestion %s.", base::UTF16ToUTF8(suggestion_).c_str()));
 }
 
 void PersonalInfoSuggester::DismissSuggestion() {

@@ -4,6 +4,9 @@
 
 #include "ui/accessibility/ax_node_data.h"
 
+#include <set>
+
+#include "base/stl_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/accessibility/ax_enum_util.h"
 #include "ui/accessibility/ax_enums.mojom.h"
@@ -154,28 +157,38 @@ TEST(AXNodeDataTest, IsClickable) {
   }
 
   // Test for iterating through all roles and validate if a role is clickable.
-  std::unordered_set<ax::mojom::Role> roles_expected_is_clickable = {
+  std::set<ax::mojom::Role> roles_expected_is_clickable = {
       ax::mojom::Role::kButton,
       ax::mojom::Role::kCheckBox,
       ax::mojom::Role::kColorWell,
+      ax::mojom::Role::kComboBoxMenuButton,
+      ax::mojom::Role::kDate,
+      ax::mojom::Role::kDateTime,
       ax::mojom::Role::kDisclosureTriangle,
       ax::mojom::Role::kDocBackLink,
       ax::mojom::Role::kDocBiblioRef,
       ax::mojom::Role::kDocGlossRef,
       ax::mojom::Role::kDocNoteRef,
+      ax::mojom::Role::kImeCandidate,
+      ax::mojom::Role::kInputTime,
       ax::mojom::Role::kLink,
+      ax::mojom::Role::kListBox,
       ax::mojom::Role::kListBoxOption,
       ax::mojom::Role::kMenuButton,
       ax::mojom::Role::kMenuItem,
       ax::mojom::Role::kMenuItemCheckBox,
       ax::mojom::Role::kMenuItemRadio,
       ax::mojom::Role::kMenuListOption,
-      ax::mojom::Role::kMenuListPopup,
       ax::mojom::Role::kPdfActionableHighlight,
       ax::mojom::Role::kPopUpButton,
+      ax::mojom::Role::kPortal,
       ax::mojom::Role::kRadioButton,
+      ax::mojom::Role::kSearchBox,
+      ax::mojom::Role::kSpinButton,
       ax::mojom::Role::kSwitch,
       ax::mojom::Role::kTab,
+      ax::mojom::Role::kTextField,
+      ax::mojom::Role::kTextFieldWithComboBox,
       ax::mojom::Role::kToggleButton};
 
   AXNodeData data;
@@ -190,11 +203,8 @@ TEST(AXNodeDataTest, IsClickable) {
                  << ", Actual: isClickable=" << is_clickable
                  << ", Expected: isClickable=" << !is_clickable);
 
-    if (roles_expected_is_clickable.find(data.role) !=
-        roles_expected_is_clickable.end())
-      EXPECT_TRUE(is_clickable);
-    else
-      EXPECT_FALSE(is_clickable);
+    EXPECT_EQ(base::Contains(roles_expected_is_clickable, data.role),
+              is_clickable);
   }
 }
 
@@ -206,20 +216,22 @@ TEST(AXNodeDataTest, IsInvocable) {
   for (int role_idx = static_cast<int>(ax::mojom::Role::kMinValue);
        role_idx <= static_cast<int>(ax::mojom::Role::kMaxValue); role_idx++) {
     data.role = static_cast<ax::mojom::Role>(role_idx);
-    bool supports_expand_collapse = data.SupportsExpandCollapse();
-    bool supports_toggle = ui::SupportsToggle(data.role);
-    bool is_clickable = data.IsClickable();
-    bool is_invocable = data.IsInvocable();
+    bool is_activatable = data.IsActivatable();
+    const bool supports_expand_collapse = data.SupportsExpandCollapse();
+    const bool supports_toggle = ui::SupportsToggle(data.role);
+    const bool is_clickable = data.IsClickable();
+    const bool is_invocable = data.IsInvocable();
 
     SCOPED_TRACE(testing::Message()
                  << "ax::mojom::Role=" << ToString(data.role)
-                 << ", isClickable=" << is_clickable
-                 << ", supportsToggle=" << supports_toggle
+                 << ", isClickable=" << is_clickable << ", isActivatable="
+                 << is_activatable << ", supportsToggle=" << supports_toggle
                  << ", supportsExpandCollapse=" << supports_expand_collapse
                  << ", Actual: isInvocable=" << is_invocable
                  << ", Expected: isInvocable=" << !is_invocable);
 
-    if (is_clickable && !supports_toggle && !supports_expand_collapse)
+    if (is_clickable && !is_activatable && !supports_toggle &&
+        !supports_expand_collapse)
       EXPECT_TRUE(is_invocable);
     else
       EXPECT_FALSE(is_invocable);

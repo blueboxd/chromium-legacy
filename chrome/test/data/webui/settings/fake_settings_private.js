@@ -75,7 +75,7 @@ cr.define('settings', function() {
       }
       assertNotEquals(true, this.disallowSetPref_);
 
-      const changed = JSON.stringify(pref.value) != JSON.stringify(value);
+      const changed = JSON.stringify(pref.value) !== JSON.stringify(value);
       pref.value = deepCopy(value);
       callback(true);
 

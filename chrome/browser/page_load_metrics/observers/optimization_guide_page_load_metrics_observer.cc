@@ -32,12 +32,22 @@ OptimizationGuidePageLoadMetricsObserver::OnStart(
 page_load_metrics::PageLoadMetricsObserver::ObservePolicy
 OptimizationGuidePageLoadMetricsObserver::OnHidden(
     const page_load_metrics::mojom::PageLoadTiming& timing) {
+  if (optimization_guide_web_contents_observer_)
+    optimization_guide_web_contents_observer_->FlushLastNavigationData();
   return STOP_OBSERVING;
+}
+
+void OptimizationGuidePageLoadMetricsObserver::OnComplete(
+    const page_load_metrics::mojom::PageLoadTiming& timing) {
+  if (optimization_guide_web_contents_observer_)
+    optimization_guide_web_contents_observer_->FlushLastNavigationData();
 }
 
 page_load_metrics::PageLoadMetricsObserver::ObservePolicy
 OptimizationGuidePageLoadMetricsObserver::FlushMetricsOnAppEnterBackground(
     const page_load_metrics::mojom::PageLoadTiming& timing) {
+  if (optimization_guide_web_contents_observer_)
+    optimization_guide_web_contents_observer_->FlushLastNavigationData();
   return STOP_OBSERVING;
 }
 

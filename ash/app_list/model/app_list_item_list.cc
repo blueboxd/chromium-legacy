@@ -159,25 +159,6 @@ AppListItem* AppListItemList::AddPageBreakItemAfter(
   return item;
 }
 
-void AppListItemList::HighlightItemInstalledFromUI(const std::string& id) {
-  // Items within folders are not highlighted (apps are never installed to a
-  // folder initially). So just search the top-level list.
-  size_t index;
-  if (FindItemIndex(highlighted_id_, &index)) {
-    for (auto& observer : observers_)
-      observer.OnAppListItemHighlight(index, false);
-  }
-  highlighted_id_ = id;
-  if (!FindItemIndex(highlighted_id_, &index)) {
-    // If the item isin't in the app list yet, it will be highlighted later, in
-    // AddItem().
-    return;
-  }
-
-  for (auto& observer : observers_)
-    observer.OnAppListItemHighlight(index, true);
-}
-
 // AppListItemList private
 
 syncer::StringOrdinal AppListItemList::CreatePositionBefore(
@@ -215,11 +196,6 @@ AppListItem* AppListItemList::AddItem(std::unique_ptr<AppListItem> item_ptr) {
   for (auto& observer : observers_)
     observer.OnListItemAdded(index, item);
 
-  if (item->id() == highlighted_id_) {
-    // Item not present when highlight requested, so highlight it now.
-    for (auto& observer : observers_)
-      observer.OnAppListItemHighlight(index, true);
-  }
   return item;
 }
 

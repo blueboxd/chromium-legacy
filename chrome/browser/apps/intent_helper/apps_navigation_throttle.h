@@ -41,6 +41,8 @@ class AppsNavigationThrottle : public content::NavigationThrottle {
   // ScrollView.
   enum { kMaxAppResults = 3 };
 
+  static const char kUseBrowserForLink[];
+
   // Possibly creates a navigation throttle that checks if any installed apps
   // can handle the URL being navigated to. The user is prompted if they wish to
   // open the app or remain in the browser.

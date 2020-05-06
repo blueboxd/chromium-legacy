@@ -14,15 +14,6 @@ class APP_LIST_MODEL_EXPORT SearchResultObserver {
   // Invoked when the SearchResult's metadata has changed.
   virtual void OnMetadataChanged() {}
 
-  // Invoked when the SearchResult's is_installing flag has changed.
-  virtual void OnIsInstallingChanged() {}
-
-  // Invoked when the download percentage has changed.
-  virtual void OnPercentDownloadedChanged() {}
-
-  // Invoked when the item represented by the SearchResult is installed.
-  virtual void OnItemInstalled() {}
-
   // Invoked just before the SearchResult is destroyed.
   virtual void OnResultDestroying() {}
 

@@ -84,32 +84,16 @@ void AddComServiceWorkItems(const base::FilePath& com_service_path,
                             WorkItemList* list) {
   DCHECK(list);
   DCHECK(::IsUserAnAdmin());
-  const HKEY root = HKEY_LOCAL_MACHINE;
 
   if (com_service_path.empty()) {
     LOG(DFATAL) << "com_service_path is invalid.";
     return;
   }
 
-  const base::string16 clsid_reg_path = GetComServiceClsidRegistryPath();
-  const base::string16 appid_reg_path = GetComServiceAppidRegistryPath();
-
-  // Delete any old registrations first.
-  for (const auto& reg_path : {clsid_reg_path, appid_reg_path}) {
-    for (const auto& key_flag : {KEY_WOW64_32KEY, KEY_WOW64_64KEY})
-      list->AddDeleteRegKeyWorkItem(root, reg_path, key_flag);
-  }
-
   list->AddWorkItem(new installer::InstallServiceWorkItem(
       kWindowsServiceName, kWindowsServiceName,
-      base::CommandLine(com_service_path)));
-
-  list->AddCreateRegKeyWorkItem(root, clsid_reg_path, WorkItem::kWow64Default);
-  list->AddSetRegValueWorkItem(root, clsid_reg_path, WorkItem::kWow64Default,
-                               L"AppID", GetComServiceClsid(), true);
-  list->AddCreateRegKeyWorkItem(root, appid_reg_path, WorkItem::kWow64Default);
-  list->AddSetRegValueWorkItem(root, appid_reg_path, WorkItem::kWow64Default,
-                               L"LocalService", kWindowsServiceName, true);
+      base::CommandLine(com_service_path), __uuidof(UpdaterServiceClass),
+      GUID_NULL));
 }
 
 // Adds work items to register the COM Interfaces with Windows.

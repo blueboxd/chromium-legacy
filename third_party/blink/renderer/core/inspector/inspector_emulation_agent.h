@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "base/optional.h"
+#include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/inspector/inspector_base_agent.h"
 #include "third_party/blink/renderer/core/inspector/protocol/Emulation.h"
@@ -79,12 +80,16 @@ class CORE_EXPORT InspectorEmulationAgent final
   protocol::Response setUserAgentOverride(
       const String& user_agent,
       protocol::Maybe<String> accept_language,
-      protocol::Maybe<String> platform) override;
+      protocol::Maybe<String> platform,
+      protocol::Maybe<protocol::Emulation::UserAgentMetadata>
+          ua_metadata_override) override;
   protocol::Response setLocaleOverride(protocol::Maybe<String>) override;
 
   // InspectorInstrumentation API
   void ApplyAcceptLanguageOverride(String* accept_lang);
   void ApplyUserAgentOverride(String* user_agent);
+  void ApplyUserAgentMetadataOverride(
+      base::Optional<blink::UserAgentMetadata>* ua_metadata);
   void FrameStartedLoading(LocalFrame*);
   void PrepareRequest(DocumentLoader*,
                       ResourceRequest&,
@@ -131,6 +136,8 @@ class CORE_EXPORT InspectorEmulationAgent final
   InspectorAgentState::String emulated_vision_deficiency_;
   InspectorAgentState::String navigator_platform_override_;
   InspectorAgentState::String user_agent_override_;
+  InspectorAgentState::String serialized_ua_metadata_override_;
+  base::Optional<blink::UserAgentMetadata> ua_metadata_override_;
   InspectorAgentState::String accept_language_override_;
   InspectorAgentState::String locale_override_;
   InspectorAgentState::Double virtual_time_budget_;

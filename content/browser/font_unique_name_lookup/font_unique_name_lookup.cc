@@ -187,7 +187,7 @@ void IndexFile(FT_Library ft_library,
     if (!IsRelevantNameRecord(sfnt_name))
       continue;
 
-    std::string sfnt_name_string = "";
+    std::string sfnt_name_string;
     std::string codepage_name;
     // Codepage names from http://demo.icu-project.org/icu-bin/convexp
     if (sfnt_name.platform_id == TT_PLATFORM_MICROSOFT &&

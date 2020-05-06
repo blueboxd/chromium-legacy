@@ -15,12 +15,35 @@ enum RoutineVerdict {
   kNotRun,
 };
 
-// Messages related to the SignalStrength routine that may provide additional
-// insight along with the verdict.
+// Problems related to the SignalStrength routine.
 [Extensible]
 enum SignalStrengthProblem {
   kSignalNotFound,
   kWeakSignal,
+};
+
+// Problems related to the GatewayCanBePinged routine.
+[Extensible]
+enum GatewayCanBePingedProblem {
+  // All gateways are unreachable, hence cannot be pinged.
+  kUnreachableGateway,
+  // The default network cannot be pinged.
+  kFailedToPingDefaultNetwork,
+  // The default network has a latency above the threshold.
+  kDefaultNetworkAboveLatencyThreshold,
+  // One or more of the non-default networks has failed pings.
+  kUnsuccessfulNonDefaultNetworksPings,
+  // One of more of the non-default networks has a latency above the threshold.
+  kNonDefaultNetworksAboveLatencyThreshold,
+};
+
+// Messages related to the HasSecureWiFiConnection routine.
+[Extensible]
+enum HasSecureWiFiConnectionProblem {
+  kSecurityTypeNone,
+  kSecurityTypeWep8021x,
+  kSecurityTypeWepPsk,
+  kUnknownSecurityType,
 };
 
 // This interface is to be used by any clients that need to run specific
@@ -36,5 +59,14 @@ interface NetworkDiagnosticsRoutines {
 
   // Tests whether there is an acceptable signal strength on wireless networks.
   SignalStrength() => (RoutineVerdict verdict,
-                      array<SignalStrengthProblem> problems);
+      array<SignalStrengthProblem> problems);
+
+  // Tests whether the gateway of connected networks is pingable.
+  GatewayCanBePinged() => (RoutineVerdict verdict,
+      array<GatewayCanBePingedProblem> problems);
+
+  // Tests whether the WiFi connection is secure. Note that if WiFi is not
+  // connected, the routine will result in a |kNotRun| verdict.
+  HasSecureWiFiConnection() => (RoutineVerdict verdict,
+      array<HasSecureWiFiConnectionProblem> problems);
 };

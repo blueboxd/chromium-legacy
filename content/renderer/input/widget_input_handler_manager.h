@@ -14,8 +14,8 @@
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/shared_remote.h"
-#include "ui/events/blink/input_handler_proxy.h"
-#include "ui/events/blink/input_handler_proxy_client.h"
+#include "third_party/blink/public/platform/input/input_handler_proxy.h"
+#include "third_party/blink/public/platform/input/input_handler_proxy_client.h"
 
 namespace blink {
 class WebInputEventAttribution;
@@ -38,7 +38,7 @@ class SynchronousCompositorProxyRegistry;
 // The lifecycle of this object matches that of the RenderWidget.
 class CONTENT_EXPORT WidgetInputHandlerManager final
     : public base::RefCountedThreadSafe<WidgetInputHandlerManager>,
-      public ui::InputHandlerProxyClient,
+      public blink::InputHandlerProxyClient,
       public base::SupportsWeakPtr<WidgetInputHandlerManager> {
   // Used in UMA metrics reporting. Do not re-order, and rename the metric if
   // additional states are required.
@@ -89,7 +89,7 @@ class CONTENT_EXPORT WidgetInputHandlerManager final
   void SetWhiteListedTouchAction(
       cc::TouchAction touch_action,
       uint32_t unique_touch_event_id,
-      ui::InputHandlerProxy::EventDisposition event_disposition) override;
+      blink::InputHandlerProxy::EventDisposition event_disposition) override;
 
   void ObserveGestureEventOnMainThread(
       const blink::WebGestureEvent& gesture_event,
@@ -162,10 +162,11 @@ class CONTENT_EXPORT WidgetInputHandlerManager final
       mojom::WidgetInputHandler::DispatchEventCallback callback);
   void DidHandleInputEventAndOverscroll(
       mojom::WidgetInputHandler::DispatchEventCallback callback,
-      ui::InputHandlerProxy::EventDisposition event_disposition,
+      blink::InputHandlerProxy::EventDisposition event_disposition,
       ui::WebScopedInputEvent input_event,
       const ui::LatencyInfo& latency_info,
-      std::unique_ptr<ui::DidOverscrollParams> overscroll_params,
+      std::unique_ptr<blink::InputHandlerProxy::DidOverscrollParams>
+          overscroll_params,
       const blink::WebInputEventAttribution& attribution);
   void HandledInputEvent(
       mojom::WidgetInputHandler::DispatchEventCallback callback,
@@ -190,7 +191,7 @@ class CONTENT_EXPORT WidgetInputHandlerManager final
 
   // InputHandlerProxy is only interacted with on the compositor
   // thread.
-  std::unique_ptr<ui::InputHandlerProxy> input_handler_proxy_;
+  std::unique_ptr<blink::InputHandlerProxy> input_handler_proxy_;
 
   // The WidgetInputHandlerHost is bound on the compositor task runner
   // but class can be called on the compositor and main thread.

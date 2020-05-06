@@ -147,8 +147,8 @@ const breadCrumbTemplate = `
       display: block;
       font-family: 'Roboto';
       font-size: 13px;
-      min-width: 14em;  /* menu width */
-      max-width: 14em;
+      min-width: 192px;  /* menu width */
+      max-width: 288px;
       padding: 0 16px;
       text-align: start;
     }

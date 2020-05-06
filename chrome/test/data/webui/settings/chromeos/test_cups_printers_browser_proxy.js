@@ -154,7 +154,7 @@ cr.define('printerBrowserProxy', function() {
     /** @override */
     queryPrintServer(serverUrl) {
       this.methodCalled('queryPrintServer', serverUrl);
-      if (this.queryPrintServerResult_ != PrintServerResult.NO_ERRORS) {
+      if (this.queryPrintServerResult_ !== PrintServerResult.NO_ERRORS) {
         return Promise.reject(this.queryPrintServerResult_);
       }
       return Promise.resolve(this.printServerPrinters);

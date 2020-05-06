@@ -512,6 +512,9 @@ Request* Request::CreateRequestWithRequestOrString(
   }
 
   if (init->hasTrustToken()) {
+    UseCounter::Count(ExecutionContext::From(script_state),
+                      mojom::blink::WebFeature::kTrustTokenFetch);
+
     network::mojom::blink::TrustTokenParams params;
     if (!ConvertTrustTokenToMojom(*init->trustToken(), &exception_state,
                                   &params)) {

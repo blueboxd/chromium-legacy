@@ -2183,6 +2183,8 @@ static_library("test_support") {
     "test/net_test_suite.h",
     "test/quic_simple_test_server.cc",
     "test/quic_simple_test_server.h",
+    "test/revocation_builder.cc",
+    "test/revocation_builder.h",
     "test/scoped_disable_exit_on_dfatal.cc",
     "test/scoped_disable_exit_on_dfatal.h",
     "test/tcp_socket_proxy.cc",

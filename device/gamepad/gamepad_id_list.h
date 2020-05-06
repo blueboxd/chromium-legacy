@@ -36,6 +36,7 @@ enum class GamepadId : uint32_t {
 
   // ID values for supported devices.
   kAsusTekProduct4500 = 0x0b054500,
+  kBroadcomProduct8502 = 0x0a5c8502,
   kDragonRiseProduct0006 = 0x00790006,
   kDragonRiseProduct0011 = 0x00790011,
   kGoogleProduct2c40 = 0x18d12c40,

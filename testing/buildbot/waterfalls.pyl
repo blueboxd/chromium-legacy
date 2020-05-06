@@ -190,68 +190,6 @@
     },
   },
   {
-    'project': 'chrome',
-    'bucket': 'ci',
-    'name': 'chrome.pgo',
-    'mixins': ['chrome-tester-service-account'],
-    'machines': {
-      'mac-pgo-beta': {
-        'mixins': ['browser_beta'],
-        'test_suites': {
-          'isolated_scripts': 'performance_system_health_isolated_scripts'
-        }
-      },
-      'mac-pgo-stable': {
-        'mixins': ['browser_stable'],
-        'test_suites': {
-          'isolated_scripts': 'performance_system_health_isolated_scripts'
-        }
-      },
-      'mac-pgo-trunk': {
-        'mixins': ['browser_trunk'],
-        'test_suites': {
-          'isolated_scripts': 'performance_system_health_isolated_scripts'
-        }
-      },
-      'win32-pgo-beta': {
-        'mixins': ['browser_beta'],
-        'test_suites': {
-          'isolated_scripts': 'performance_system_health_isolated_scripts'
-        }
-      },
-      'win32-pgo-stable': {
-        'mixins': ['browser_stable'],
-        'test_suites': {
-          'isolated_scripts': 'performance_system_health_isolated_scripts'
-        }
-      },
-      'win32-pgo-trunk': {
-        'mixins': ['browser_trunk'],
-        'test_suites': {
-          'isolated_scripts': 'performance_system_health_isolated_scripts'
-        }
-      },
-      'win64-pgo-beta': {
-        'mixins': ['browser_beta'],
-        'test_suites': {
-          'isolated_scripts': 'performance_system_health_isolated_scripts'
-        }
-      },
-      'win64-pgo-stable': {
-        'mixins': ['browser_stable'],
-        'test_suites': {
-          'isolated_scripts': 'performance_system_health_isolated_scripts'
-        }
-      },
-      'win64-pgo-trunk': {
-        'mixins': ['browser_trunk'],
-        'test_suites': {
-          'isolated_scripts': 'performance_system_health_isolated_scripts'
-        }
-      },
-    }
-  },
-  {
     'project': 'chromium',
     'bucket': 'ci',
     'name': 'chromium',

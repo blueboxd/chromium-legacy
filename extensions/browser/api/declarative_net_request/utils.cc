@@ -22,6 +22,8 @@
 #include "extensions/browser/api/declarative_net_request/constants.h"
 #include "extensions/browser/api/declarative_net_request/flat/extension_ruleset_generated.h"
 #include "extensions/browser/api/web_request/web_request_info.h"
+#include "extensions/common/api/declarative_net_request/constants.h"
+#include "extensions/common/api/declarative_net_request/dnr_manifest_data.h"
 #include "third_party/flatbuffers/src/include/flatbuffers/flatbuffers.h"
 
 namespace extensions {
@@ -264,6 +266,15 @@ flat::ActionType ConvertToFlatActionType(dnr_api::RuleActionType action_type) {
   }
   NOTREACHED();
   return flat::ActionType_block;
+}
+
+std::string GetPublicRulesetID(const Extension& extension,
+                               RulesetID ruleset_id) {
+  if (ruleset_id == kDynamicRulesetID)
+    return dnr_api::DYNAMIC_RULESET_ID;
+
+  DCHECK_GE(ruleset_id, kMinValidStaticRulesetID);
+  return DNRManifestData::GetManifestID(extension, ruleset_id);
 }
 
 }  // namespace declarative_net_request

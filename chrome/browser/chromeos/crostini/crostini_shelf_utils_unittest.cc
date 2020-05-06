@@ -25,7 +25,7 @@ struct App {
   std::string desktop_file_id;
   std::string vm_name = "vm";
   std::string container_name = "container";
-  std::string app_name = "";
+  std::string app_name;
   base::Optional<std::string> startup_wm_class;
   base::Optional<bool> startup_notify;
   base::Optional<bool> no_display;

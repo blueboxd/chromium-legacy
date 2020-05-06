@@ -72,18 +72,6 @@ ChromeAppListItem::ChromeAppListItem(Profile* profile,
 
 ChromeAppListItem::~ChromeAppListItem() = default;
 
-void ChromeAppListItem::SetIsInstalling(bool is_installing) {
-  AppListModelUpdater* updater = model_updater();
-  if (updater)
-    updater->SetItemIsInstalling(id(), is_installing);
-}
-
-void ChromeAppListItem::SetPercentDownloaded(int32_t percent_downloaded) {
-  AppListModelUpdater* updater = model_updater();
-  if (updater)
-    updater->SetItemPercentDownloaded(id(), percent_downloaded);
-}
-
 void ChromeAppListItem::SetMetadata(
     std::unique_ptr<ash::AppListItemMetadata> metadata) {
   metadata_ = std::move(metadata);

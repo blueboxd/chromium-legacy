@@ -23,7 +23,7 @@
 namespace content {
 
 SynchronousCompositorProxy::SynchronousCompositorProxy(
-    ui::SynchronousInputHandlerProxy* input_handler_proxy)
+    blink::SynchronousInputHandlerProxy* input_handler_proxy)
     : input_handler_proxy_(input_handler_proxy),
       use_in_process_zero_copy_software_draw_(
           base::CommandLine::ForCurrentProcess()->HasSwitch(

@@ -436,8 +436,8 @@ std::unique_ptr<Action::ActionVector> CountingPolicy::DoReadFilteredData(
     return actions;
 
   // Build up the query based on which parameters were specified.
-  std::string where_str = "";
-  std::string where_next = "";
+  std::string where_str;
+  std::string where_next;
   if (!extension_id.empty()) {
     where_str += "extension_id=?";
     where_next = " AND ";

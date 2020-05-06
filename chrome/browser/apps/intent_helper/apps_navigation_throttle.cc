@@ -101,6 +101,9 @@ GURL GetStartingGURL(content::NavigationHandle* navigation_handle) {
 namespace apps {
 
 // static
+const char AppsNavigationThrottle::kUseBrowserForLink[] = "use_browser";
+
+// static
 std::unique_ptr<content::NavigationThrottle>
 AppsNavigationThrottle::MaybeCreate(content::NavigationHandle* handle) {
   if (!handle->IsInMainFrame())

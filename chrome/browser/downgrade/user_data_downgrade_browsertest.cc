@@ -94,12 +94,12 @@ class UserDataDowngradeBrowserTestBase : public InProcessBrowserTest {
                                .AddExtension(kDowngradeDeleteSuffix);
     if (IsPreTest()) {
       // Create some "other file" to be convinced that stuff is moved.
-      if (base::WriteFile(other_file_, "data", 4) != 4)
+      if (!base::WriteFile(other_file_, "data"))
         return false;
       // Pretend that a higher version of Chrome previously wrote User Data.
       const std::string last_version = GetNextChromeVersion();
       base::WriteFile(user_data_dir_.Append(kDowngradeLastVersionFile),
-                      last_version.c_str(), last_version.size());
+                      last_version);
     }
     return true;
   }

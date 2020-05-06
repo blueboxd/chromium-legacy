@@ -6,6 +6,7 @@
 
 #include "base/no_destructor.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chrome/browser/ui/webui/chromeos/smb_shares/smb_handler.h"
 #include "chrome/browser/ui/webui/chromeos/smb_shares/smb_shares_localized_strings_provider.h"
 #include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/common/url_constants.h"
@@ -21,7 +22,26 @@ namespace {
 
 const std::vector<SearchConcept>& GetFilesSearchConcepts() {
   static const base::NoDestructor<std::vector<SearchConcept>> tags({
-      // TODO(khorimoto): Add "Files" search concepts.
+      {IDS_OS_SETTINGS_TAG_FILES,
+       mojom::kFilesSectionPath,
+       mojom::SearchResultIcon::kFolder,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSection,
+       {.section = mojom::Section::kFiles}},
+      {IDS_OS_SETTINGS_TAG_FILES_DISCONNECT_GOOGLE_DRIVE,
+       mojom::kFilesSectionPath,
+       mojom::SearchResultIcon::kDrive,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSetting,
+       {.setting = mojom::Setting::kGoogleDriveConnection}},
+      {IDS_OS_SETTINGS_TAG_FILES_NETWORK_FILE_SHARES,
+       mojom::kNetworkFileSharesSubpagePath,
+       mojom::SearchResultIcon::kFolder,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSubpage,
+       {.subpage = mojom::Subpage::kNetworkFileShares},
+       {IDS_OS_SETTINGS_TAG_FILES_NETWORK_FILE_SHARES_ALT1,
+        SearchConcept::kAltTagEnd}},
   });
   return *tags;
 }
@@ -73,6 +93,11 @@ void FilesSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
       chromeos::ProfileHelper::Get()->GetUserByProfile(profile());
   html_source->AddBoolean("isActiveDirectoryUser",
                           user && user->IsActiveDirectoryUser());
+}
+
+void FilesSection::AddHandlers(content::WebUI* web_ui) {
+  web_ui->AddMessageHandler(std::make_unique<chromeos::smb_dialog::SmbHandler>(
+      profile(), base::DoNothing()));
 }
 
 }  // namespace settings

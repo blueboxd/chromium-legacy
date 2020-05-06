@@ -79,7 +79,7 @@ suite('OnStartupPage', function() {
   function getSelectedOptionLabel() {
     return Array
         .from(testElement.root.querySelectorAll('controlled-radio-button'))
-        .find(el => el.name == testElement.$.onStartupRadioGroup.selected)
+        .find(el => el.name === testElement.$.onStartupRadioGroup.selected)
         .label;
   }
 

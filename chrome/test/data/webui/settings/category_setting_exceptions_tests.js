@@ -48,7 +48,7 @@ suite('CategorySettingExceptions', function() {
         // Make sure that the Allow and Session Only site lists are hidden.
         const siteListElements = testElement.querySelectorAll('site-list');
         siteListElements.forEach(element => {
-          if (element.categorySubtype == ContentSetting.BLOCK) {
+          if (element.categorySubtype === ContentSetting.BLOCK) {
             assertFalse(
                 element.hidden,
                 `site-list for ${
@@ -71,7 +71,7 @@ suite('CategorySettingExceptions', function() {
         // Make sure that the Allow and Session Only site lists are hidden.
         const siteListElements = testElement.querySelectorAll('site-list');
         siteListElements.forEach(element => {
-          if (element.categorySubtype == ContentSetting.ALLOW) {
+          if (element.categorySubtype === ContentSetting.ALLOW) {
             assertFalse(
                 element.hidden,
                 `site-list for ${
@@ -98,7 +98,7 @@ suite('CategorySettingExceptions', function() {
     // Make sure that the Allow and Session Only site lists are hidden.
     const siteListElements = testElement.querySelectorAll('site-list');
     siteListElements.forEach(element => {
-      if (element.categorySubtype == ContentSetting.BLOCK) {
+      if (element.categorySubtype === ContentSetting.BLOCK) {
         assertFalse(
             element.hidden,
             `site-list for ${element.categorySubtype} should not be hidden`);

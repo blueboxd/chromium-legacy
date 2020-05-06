@@ -67,29 +67,6 @@ void SearchResult::SetActions(const Actions& sets) {
     observer.OnMetadataChanged();
 }
 
-void SearchResult::SetIsInstalling(bool is_installing) {
-  if (is_installing_ == is_installing)
-    return;
-
-  is_installing_ = is_installing;
-  for (auto& observer : observers_)
-    observer.OnIsInstallingChanged();
-}
-
-void SearchResult::SetPercentDownloaded(int percent_downloaded) {
-  if (percent_downloaded_ == percent_downloaded)
-    return;
-
-  percent_downloaded_ = percent_downloaded;
-  for (auto& observer : observers_)
-    observer.OnPercentDownloadedChanged();
-}
-
-void SearchResult::NotifyItemInstalled() {
-  for (auto& observer : observers_)
-    observer.OnItemInstalled();
-}
-
 void SearchResult::AddObserver(SearchResultObserver* observer) {
   observers_.AddObserver(observer);
 }

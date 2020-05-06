@@ -203,11 +203,53 @@ void WaylandKeyboardDelegate::SendLayout(const xkb_rule_names* names) {
   wl_client_flush(client());
 }
 
+// Convert from ChromeOS's key repeat interval to Wayland's key repeat rate.
+// For example, an interval of 500ms is a rate of 1000/500 = 2 Hz.
+//
+// Known issue: A 2000ms interval is 0.5 Hz. This rounds to 1 Hz, which
+// is twice as fast. This is not fixable without Wayland spec changes.
+int32_t GetWaylandRepeatRate(bool enabled, base::TimeDelta interval) {
+  DCHECK(interval.InMillisecondsF() > 0.0);
+  int32_t rate;
+  if (enabled) {
+    // Most of ChromeOS's interval options divide perfectly into 1000,
+    // but a few do need rounding.
+    rate = int32_t{std::lround(1000.0 / interval.InMillisecondsF())};
+
+    // Avoid disabling key repeat if the interval is >2000ms.
+    rate = std::max(1, rate);
+  } else {
+    // Disables key repeat, as documented in Wayland spec.
+    rate = 0;
+  }
+  return rate;
+}
+
+// Expose GetWaylandRepeatRate() to tests.
+int32_t GetWaylandRepeatRateForTesting(bool enabled, base::TimeDelta interval) {
+  return GetWaylandRepeatRate(enabled, interval);
+}
+
+void WaylandKeyboardDelegate::OnKeyRepeatSettingsChanged(
+    bool enabled,
+    base::TimeDelta delay,
+    base::TimeDelta interval) {
+  // delay may be zero, but not negative (per Wayland spec).
+  DCHECK_GE(delay.InMilliseconds(), 0);
+
+  uint32_t version = wl_resource_get_version(keyboard_resource_);
+  if (version >= WL_KEYBOARD_REPEAT_INFO_SINCE_VERSION) {
+    wl_keyboard_send_repeat_info(keyboard_resource_,
+                                 GetWaylandRepeatRate(enabled, interval),
+                                 int32_t{delay.InMilliseconds()});
+  }
+}
+
 wl_client* WaylandKeyboardDelegate::client() const {
   return wl_resource_get_client(keyboard_resource_);
 }
 
-#endif
+#endif  // BUILDFLAG(USE_XKBCOMMON)
 
 }  // namespace wayland
 }  // namespace exo

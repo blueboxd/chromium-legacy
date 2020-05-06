@@ -37,6 +37,10 @@ class CrosNetworkConfigTestHelper {
     return *network_state_helper_;
   }
 
+  NetworkDeviceHandler* network_device_handler() {
+    return network_device_handler_.get();
+  }
+
   void Initialize(
       ManagedNetworkConfigurationHandler* network_configuration_handler);
 

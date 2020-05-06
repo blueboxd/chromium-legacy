@@ -361,8 +361,7 @@ class FlexLayoutAlgorithm {
  public:
   FlexLayoutAlgorithm(const ComputedStyle*,
                       LayoutUnit line_break_length,
-                      LayoutUnit gap_between_items,
-                      LayoutUnit gap_between_lines);
+                      LogicalSize percent_resolution_sizes);
 
   template <typename... Args>
   FlexItem& emplace_back(Args&&... args) {
@@ -384,6 +383,7 @@ class FlexLayoutAlgorithm {
   bool IsColumnFlow() const;
   bool IsMultiline() const { return style_->FlexWrap() != EFlexWrap::kNowrap; }
   static bool IsHorizontalFlow(const ComputedStyle&);
+  static bool IsColumnFlow(const ComputedStyle&);
   bool IsLeftToRightFlow() const;
   TransformedWritingMode GetTransformedWritingMode() const;
 
@@ -431,6 +431,11 @@ class FlexLayoutAlgorithm {
   void LayoutColumnReverse(LayoutUnit main_axis_content_size,
                            LayoutUnit border_scrollbar_padding_before);
   bool IsNGFlexBox() const;
+
+  static LayoutUnit GapBetweenItems(const ComputedStyle& style,
+                                    LogicalSize percent_resolution_sizes);
+  static LayoutUnit GapBetweenLines(const ComputedStyle& style,
+                                    LogicalSize percent_resolution_sizes);
   const LayoutUnit gap_between_items_;
   const LayoutUnit gap_between_lines_;
 

@@ -45,6 +45,8 @@ InspectorEmulationAgent::InspectorEmulationAgent(
       navigator_platform_override_(&agent_state_,
                                    /*default_value=*/WTF::String()),
       user_agent_override_(&agent_state_, /*default_value=*/WTF::String()),
+      serialized_ua_metadata_override_(&agent_state_,
+                                       /*default_value=*/WTF::String()),
       accept_language_override_(&agent_state_,
                                 /*default_value=*/WTF::String()),
       locale_override_(&agent_state_, /*default_value=*/WTF::String()),
@@ -77,9 +79,19 @@ std::unique_ptr<protocol::DOM::RGBA> ParseRGBA(
 }  // namespace
 
 void InspectorEmulationAgent::Restore() {
-  setUserAgentOverride(user_agent_override_.Get(),
-                       accept_language_override_.Get(),
-                       navigator_platform_override_.Get());
+  // Since serialized_ua_metadata_override_ can't directly be converted back
+  // to appropriate protocol message, we initially pass null and decode it
+  // directly.
+  WTF::String save_serialized_ua_metadata_override =
+      serialized_ua_metadata_override_.Get();
+  setUserAgentOverride(
+      user_agent_override_.Get(), accept_language_override_.Get(),
+      navigator_platform_override_.Get(),
+      protocol::Maybe<protocol::Emulation::UserAgentMetadata>());
+  ua_metadata_override_ = blink::UserAgentMetadata::Demarshal(
+      save_serialized_ua_metadata_override.Latin1());
+  serialized_ua_metadata_override_.Set(save_serialized_ua_metadata_override);
+
   if (!locale_override_.Get().IsEmpty())
     setLocaleOverride(locale_override_.Get());
   if (!web_local_frame_)
@@ -155,8 +167,10 @@ Response InspectorEmulationAgent::disable() {
     instrumenting_agents_->RemoveInspectorEmulationAgent(this);
     enabled_ = false;
   }
-  setUserAgentOverride(String(), protocol::Maybe<String>(),
-                       protocol::Maybe<String>());
+
+  setUserAgentOverride(
+      String(), protocol::Maybe<String>(), protocol::Maybe<String>(),
+      protocol::Maybe<protocol::Emulation::UserAgentMetadata>());
   if (!locale_override_.Get().IsEmpty())
     setLocaleOverride(String());
   if (!web_local_frame_)
@@ -530,7 +544,9 @@ Response InspectorEmulationAgent::clearDeviceMetricsOverride() {
 Response InspectorEmulationAgent::setUserAgentOverride(
     const String& user_agent,
     protocol::Maybe<String> accept_language,
-    protocol::Maybe<String> platform) {
+    protocol::Maybe<String> platform,
+    protocol::Maybe<protocol::Emulation::UserAgentMetadata>
+        ua_metadata_override) {
   if (!user_agent.IsEmpty() || accept_language.isJust() || platform.isJust())
     InnerEnable();
   user_agent_override_.Set(user_agent);
@@ -540,6 +556,43 @@ Response InspectorEmulationAgent::setUserAgentOverride(
     GetWebViewImpl()->GetPage()->GetSettings().SetNavigatorPlatformOverride(
         navigator_platform_override_.Get());
   }
+
+  if (ua_metadata_override.isJust()) {
+    if (user_agent.IsEmpty()) {
+      ua_metadata_override_ = base::nullopt;
+      serialized_ua_metadata_override_.Set(WTF::String());
+      return Response::InvalidParams(
+          "Can't specify UserAgentMetadata but no UA string");
+    }
+    std::unique_ptr<protocol::Emulation::UserAgentMetadata> ua_metadata =
+        ua_metadata_override.takeJust();
+    ua_metadata_override_.emplace();
+    if (ua_metadata->getBrands()) {
+      for (const auto& bv : *ua_metadata->getBrands()) {
+        blink::UserAgentBrandVersion out_bv;
+        out_bv.brand = bv->getBrand().Ascii();
+        out_bv.major_version = bv->getVersion().Ascii();
+        ua_metadata_override_->brand_version_list.push_back(std::move(out_bv));
+      }
+    }
+    ua_metadata_override_->full_version = ua_metadata->getFullVersion().Ascii();
+    ua_metadata_override_->platform = ua_metadata->getPlatform().Ascii();
+    ua_metadata_override_->platform_version =
+        ua_metadata->getPlatformVersion().Ascii();
+    ua_metadata_override_->architecture =
+        ua_metadata->getArchitecture().Ascii();
+    ua_metadata_override_->model = ua_metadata->getModel().Ascii();
+    ua_metadata_override_->mobile = ua_metadata->getMobile();
+  } else {
+    ua_metadata_override_ = base::nullopt;
+  }
+
+  std::string marshalled =
+      blink::UserAgentMetadata::Marshal(ua_metadata_override_)
+          .value_or(std::string());
+  serialized_ua_metadata_override_.Set(
+      WTF::String(marshalled.data(), marshalled.size()));
+
   return Response::Success();
 }
 
@@ -585,6 +638,14 @@ void InspectorEmulationAgent::ApplyAcceptLanguageOverride(String* accept_lang) {
 void InspectorEmulationAgent::ApplyUserAgentOverride(String* user_agent) {
   if (!user_agent_override_.Get().IsEmpty())
     *user_agent = user_agent_override_.Get();
+}
+
+void InspectorEmulationAgent::ApplyUserAgentMetadataOverride(
+    base::Optional<blink::UserAgentMetadata>* ua_metadata) {
+  // This applies when UA override is set.
+  if (!user_agent_override_.Get().IsEmpty()) {
+    *ua_metadata = ua_metadata_override_;
+  }
 }
 
 void InspectorEmulationAgent::InnerEnable() {

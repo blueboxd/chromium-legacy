@@ -64,18 +64,18 @@ public class ChromeChannelDefinitions extends ChannelDefinitions {
      * and add the ID to the LEGACY_CHANNELS_ID array below. See the README in this directory for
      * more detailed instructions.
      */
-    @StringDef({ChannelId.BROWSER, ChannelId.DOWNLOADS, ChannelId.INCOGNITO, ChannelId.MEDIA,
-            ChannelId.SCREEN_CAPTURE, ChannelId.CONTENT_SUGGESTIONS, ChannelId.WEBAPP_ACTIONS,
-            ChannelId.SITES, ChannelId.SHARING, ChannelId.UPDATES, ChannelId.COMPLETED_DOWNLOADS,
-            ChannelId.PERMISSION_REQUESTS, ChannelId.PERMISSION_REQUESTS_HIGH,
-            ChannelId.ANNOUNCEMENT, ChannelId.TWA_DISCLOSURE_INITIAL,
-            ChannelId.TWA_DISCLOSURE_SUBSEQUENT})
+    @StringDef({ChannelId.BROWSER, ChannelId.DOWNLOADS, ChannelId.INCOGNITO,
+            ChannelId.MEDIA_PLAYBACK, ChannelId.SCREEN_CAPTURE, ChannelId.CONTENT_SUGGESTIONS,
+            ChannelId.WEBAPP_ACTIONS, ChannelId.SITES, ChannelId.SHARING, ChannelId.UPDATES,
+            ChannelId.COMPLETED_DOWNLOADS, ChannelId.PERMISSION_REQUESTS,
+            ChannelId.PERMISSION_REQUESTS_HIGH, ChannelId.ANNOUNCEMENT,
+            ChannelId.TWA_DISCLOSURE_INITIAL, ChannelId.TWA_DISCLOSURE_SUBSEQUENT})
     @Retention(RetentionPolicy.SOURCE)
     public @interface ChannelId {
         String BROWSER = "browser";
         String DOWNLOADS = "downloads";
         String INCOGNITO = "incognito";
-        String MEDIA = "media";
+        String MEDIA_PLAYBACK = "media";
         String SCREEN_CAPTURE = "screen_capture";
         String CONTENT_SUGGESTIONS = "content_suggestions";
         String WEBAPP_ACTIONS = "webapp_actions";
@@ -90,6 +90,7 @@ public class ChromeChannelDefinitions extends ChannelDefinitions {
         String ANNOUNCEMENT = "announcement";
         String TWA_DISCLOSURE_INITIAL = "twa_disclosure_initial";
         String TWA_DISCLOSURE_SUBSEQUENT = "twa_disclosure_subsequent";
+        String WEBRTC_CAM_AND_MIC = "webrtc_cam_and_mic";
     }
 
     @StringDef({ChannelGroupId.GENERAL, ChannelGroupId.SITES})
@@ -138,10 +139,16 @@ public class ChromeChannelDefinitions extends ChannelDefinitions {
                             NotificationManager.IMPORTANCE_LOW, ChannelGroupId.GENERAL));
             startup.add(ChannelId.INCOGNITO);
 
-            map.put(ChannelId.MEDIA,
-                    new PredefinedChannel(ChannelId.MEDIA, R.string.notification_category_media,
+            map.put(ChannelId.MEDIA_PLAYBACK,
+                    new PredefinedChannel(ChannelId.MEDIA_PLAYBACK,
+                            R.string.notification_category_media_playback,
                             NotificationManager.IMPORTANCE_LOW, ChannelGroupId.GENERAL));
-            startup.add(ChannelId.MEDIA);
+            startup.add(ChannelId.MEDIA_PLAYBACK);
+
+            map.put(ChannelId.WEBRTC_CAM_AND_MIC,
+                    new PredefinedChannel(ChannelId.WEBRTC_CAM_AND_MIC,
+                            R.string.notification_category_webrtc_cam_and_mic,
+                            NotificationManager.IMPORTANCE_LOW, ChannelGroupId.GENERAL));
 
             // ChannelId.SCREEN_CAPTURE will be created on first use, instead of on startup,
             // so that it doesn't clutter the list for users who don't use this feature.

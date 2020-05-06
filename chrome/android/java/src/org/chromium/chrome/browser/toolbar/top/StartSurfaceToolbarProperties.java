@@ -51,8 +51,8 @@ class StartSurfaceToolbarProperties {
     public static final PropertyModel.WritableBooleanPropertyKey BUTTONS_CLICKABLE =
             new PropertyModel.WritableBooleanPropertyKey();
 
-    /** When set to true, move identity disc to the left of the toolbar. Can only set to true. */
-    public static final PropertyModel.WritableBooleanPropertyKey IDENTITY_DISC_AT_LEFT =
+    /** When set to true, move identity disc to the start of the toolbar. Can only set to true. */
+    public static final PropertyModel.WritableBooleanPropertyKey IDENTITY_DISC_AT_START =
             new PropertyModel.WritableBooleanPropertyKey();
 
     /**
@@ -62,17 +62,17 @@ class StartSurfaceToolbarProperties {
     public static final PropertyModel.WritableBooleanPropertyKey INCOGNITO_SWITCHER_VISIBLE =
             new PropertyModel.WritableBooleanPropertyKey();
     /**
-     * When set to true, move New Tab Button to the left of the toolbar, and move the Incognito
+     * When set to true, move New Tab Button to the start of the toolbar, and move the Incognito
      * switcher to the center. Can only set to true.
      */
-    public static final PropertyModel.WritableBooleanPropertyKey NEW_TAB_BUTTON_AT_LEFT =
+    public static final PropertyModel.WritableBooleanPropertyKey NEW_TAB_BUTTON_AT_START =
             new PropertyModel.WritableBooleanPropertyKey();
 
     public static final PropertyKey[] ALL_KEYS =
             new PropertyKey[] {APP_MENU_BUTTON_HELPER, NEW_TAB_CLICK_HANDLER, IS_VISIBLE,
                     LOGO_IS_VISIBLE, IS_INCOGNITO, INCOGNITO_STATE_PROVIDER, ACCESSIBILITY_ENABLED,
                     MENU_IS_VISIBLE, NEW_TAB_BUTTON_IS_VISIBLE, BUTTONS_CLICKABLE,
-                    IDENTITY_DISC_AT_LEFT, INCOGNITO_SWITCHER_VISIBLE, NEW_TAB_BUTTON_AT_LEFT,
+                    IDENTITY_DISC_AT_START, INCOGNITO_SWITCHER_VISIBLE, NEW_TAB_BUTTON_AT_START,
                     IDENTITY_DISC_IS_VISIBLE, IDENTITY_DISC_CLICK_HANDLER, IDENTITY_DISC_IMAGE,
                     IDENTITY_DISC_DESCRIPTION, IN_START_SURFACE_MODE};
 }

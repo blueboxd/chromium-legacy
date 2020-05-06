@@ -529,7 +529,7 @@ void TtsControllerImpl::StripSSMLHelper(
     return;
   }
 
-  std::string parsed_text = "";
+  std::string parsed_text;
   // Change from unique_ptr to base::Value* so recursion will work.
   PopulateParsedText(&parsed_text, &(*result.value));
 

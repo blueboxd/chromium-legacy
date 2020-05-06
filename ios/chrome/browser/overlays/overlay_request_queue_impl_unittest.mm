@@ -82,25 +82,39 @@ class MockOverlayRequestQueueImplObserver
 
   MOCK_METHOD3(RequestAddedToQueue,
                void(OverlayRequestQueueImpl*, OverlayRequest*, size_t));
+
+  void OverlayRequestQueueDestroyed(OverlayRequestQueueImpl* queue) override {
+    queue->RemoveObserver(this);
+  }
+};
+// A cancel handler that never cancels its request.
+class NoOpCancelHandler : public OverlayRequestCancelHandler {
+ public:
+  NoOpCancelHandler(OverlayRequest* request, OverlayRequestQueue* queue)
+      : OverlayRequestCancelHandler(request, queue) {}
+  ~NoOpCancelHandler() override = default;
 };
 }  // namespace
 
 // Test fixture for RequestQueueImpl.
 class OverlayRequestQueueImplTest : public PlatformTest {
  public:
-  OverlayRequestQueueImplTest() : PlatformTest() {
-    OverlayRequestQueueImpl::Container::CreateForWebState(&web_state_);
+  OverlayRequestQueueImplTest()
+      : PlatformTest(), web_state_(std::make_unique<web::TestWebState>()) {
+    OverlayRequestQueueImpl::Container::CreateForWebState(web_state_.get());
     queue()->set_delegate(&delegate_);
     queue()->AddObserver(&observer_);
   }
   ~OverlayRequestQueueImplTest() override {
-    queue()->set_delegate(nullptr);
-    queue()->RemoveObserver(&observer_);
+    if (web_state_) {
+      queue()->set_delegate(nullptr);
+      queue()->RemoveObserver(&observer_);
+    }
   }
 
   OverlayRequestQueueImpl* queue() {
     // Use the kWebContentArea queue for testing.
-    return OverlayRequestQueueImpl::Container::FromWebState(&web_state_)
+    return OverlayRequestQueueImpl::Container::FromWebState(web_state_.get())
         ->QueueForModality(OverlayModality::kWebContentArea);
   }
   MockOverlayRequestQueueImplObserver& observer() { return observer_; }
@@ -118,7 +132,7 @@ class OverlayRequestQueueImplTest : public PlatformTest {
  protected:
   FakeOverlayRequestQueueImplDelegate delegate_;
   MockOverlayRequestQueueImplObserver observer_;
-  web::TestWebState web_state_;
+  std::unique_ptr<web::TestWebState> web_state_;
 };
 
 // Tests that state is updated correctly and observer callbacks are received
@@ -235,5 +249,25 @@ TEST_F(OverlayRequestQueueImplTest, WebStateSetup) {
   EXPECT_CALL(observer(),
               RequestAddedToQueue(queue(), request, queue()->size()));
   queue()->AddRequest(std::move(added_request));
-  EXPECT_EQ(&web_state_, request->GetQueueWebState());
+  EXPECT_EQ(web_state_.get(), request->GetQueueWebState());
+}
+
+// Tests that requests are cancelled upon queue destruction even if their cancel
+// handlers do not explicitly handle cancellation on WebState destruction.
+TEST_F(OverlayRequestQueueImplTest, CancellationUponDestruction) {
+  std::unique_ptr<OverlayRequest> passed_request =
+      OverlayRequest::CreateWithConfig<FakeOverlayUserData>();
+  OverlayRequest* request = passed_request.get();
+  std::unique_ptr<OverlayRequestCancelHandler> cancel_handler =
+      std::make_unique<NoOpCancelHandler>(passed_request.get(), queue());
+  EXPECT_CALL(observer(),
+              RequestAddedToQueue(queue(), request, queue()->size()));
+  queue()->AddRequest(std::move(passed_request), std::move(cancel_handler));
+
+  // Destroy the OverlayRequestQueue by destroying its owning WebState.
+  web_state_ = nullptr;
+
+  // Verify that the request was cancelled even though the cancel handler never
+  // executed CancelRequest().
+  EXPECT_TRUE(delegate_.WasRequestCancelled(request));
 }

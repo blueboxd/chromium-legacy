@@ -16,12 +16,14 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/webui/settings/chromeos/crostini_handler.h"
 #include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "components/arc/arc_prefs.h"
 #include "components/prefs/pref_service.h"
+#include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/webui/web_ui_util.h"
@@ -33,49 +35,155 @@ namespace {
 
 const std::vector<SearchConcept>& GetCrostiniSearchConcepts() {
   static const base::NoDestructor<std::vector<SearchConcept>> tags({
-      // TODO(khorimoto): Add "Crostini" search concepts.
+      {IDS_OS_SETTINGS_TAG_CROSTINI,
+       mojom::kCrostiniDetailsSubpagePath,
+       mojom::SearchResultIcon::kPenguin,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSubpage,
+       {.subpage = mojom::Subpage::kCrostiniDetails},
+       {IDS_OS_SETTINGS_TAG_CROSTINI_ALT1, SearchConcept::kAltTagEnd}},
+  });
+  return *tags;
+}
+
+const std::vector<SearchConcept>& GetCrostiniOptedInSearchConcepts() {
+  static const base::NoDestructor<std::vector<SearchConcept>> tags({
+      {IDS_OS_SETTINGS_TAG_CROSTINI_USB_PREFERENCES,
+       mojom::kCrostiniUsbPreferencesSubpagePath,
+       mojom::SearchResultIcon::kPenguin,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSubpage,
+       {.subpage = mojom::Subpage::kCrostiniUsbPreferences},
+       {IDS_OS_SETTINGS_TAG_CROSTINI_USB_PREFERENCES_ALT1,
+        SearchConcept::kAltTagEnd}},
+      {IDS_OS_SETTINGS_TAG_CROSTINI_REMOVE,
+       mojom::kCrostiniDetailsSubpagePath,
+       mojom::SearchResultIcon::kPenguin,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSetting,
+       {.setting = mojom::Setting::kUninstallCrostini},
+       {
+           IDS_OS_SETTINGS_TAG_CROSTINI_REMOVE_ALT1,
+           IDS_OS_SETTINGS_TAG_CROSTINI_REMOVE_ALT2,
+           IDS_OS_SETTINGS_TAG_CROSTINI_REMOVE_ALT3,
+           IDS_OS_SETTINGS_TAG_CROSTINI_REMOVE_ALT4,
+           IDS_OS_SETTINGS_TAG_CROSTINI_REMOVE_ALT5,
+       }},
+      {IDS_OS_SETTINGS_TAG_CROSTINI_SHARED_FOLDERS,
+       mojom::kCrostiniManageSharedFoldersSubpagePath,
+       mojom::SearchResultIcon::kPenguin,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSubpage,
+       {.subpage = mojom::Subpage::kCrostiniManageSharedFolders},
+       {IDS_OS_SETTINGS_TAG_CROSTINI_SHARED_FOLDERS_ALT1,
+        IDS_OS_SETTINGS_TAG_CROSTINI_SHARED_FOLDERS_ALT2,
+        IDS_OS_SETTINGS_TAG_CROSTINI_SHARED_FOLDERS_ALT3,
+        SearchConcept::kAltTagEnd}},
+  });
+  return *tags;
+}
+
+const std::vector<SearchConcept>& GetCrostiniOptedOutSearchConcepts() {
+  static const base::NoDestructor<std::vector<SearchConcept>> tags({
+      {IDS_OS_SETTINGS_TAG_CROSTINI_SETUP,
+       mojom::kCrostiniSectionPath,
+       mojom::SearchResultIcon::kPenguin,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSection,
+       {.section = mojom::Section::kCrostini},
+       {IDS_OS_SETTINGS_TAG_CROSTINI_SETUP_ALT1, SearchConcept::kAltTagEnd}},
   });
   return *tags;
 }
 
 const std::vector<SearchConcept>& GetCrostiniExportImportSearchConcepts() {
   static const base::NoDestructor<std::vector<SearchConcept>> tags({
-      // TODO(khorimoto): Add "Crostini export/import" search concepts.
+      {IDS_OS_SETTINGS_TAG_CROSTINI_BACKUP_RESTORE,
+       mojom::kCrostiniBackupAndRestoreSubpagePath,
+       mojom::SearchResultIcon::kPenguin,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSubpage,
+       {.subpage = mojom::Subpage::kCrostiniBackupAndRestore},
+       {IDS_OS_SETTINGS_TAG_CROSTINI_BACKUP_RESTORE_ALT1,
+        SearchConcept::kAltTagEnd}},
   });
   return *tags;
 }
 
 const std::vector<SearchConcept>& GetCrostiniAdbSideloadingSearchConcepts() {
   static const base::NoDestructor<std::vector<SearchConcept>> tags({
-      // TODO(khorimoto): Add "Crostini ADB sideloading" search concepts.
+      {IDS_OS_SETTINGS_TAG_CROSTINI_ANDROID_APPS_ADB,
+       mojom::kCrostiniDevelopAndroidAppsSubpagePath,
+       mojom::SearchResultIcon::kPenguin,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSetting,
+       {.setting = mojom::Setting::kCrostiniAdbDebugging},
+       {IDS_OS_SETTINGS_TAG_CROSTINI_ANDROID_APPS_ADB_ALT1,
+        SearchConcept::kAltTagEnd}},
+      {IDS_OS_SETTINGS_TAG_CROSTINI_ANDROID_APPS,
+       mojom::kCrostiniDevelopAndroidAppsSubpagePath,
+       mojom::SearchResultIcon::kPenguin,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSubpage,
+       {.subpage = mojom::Subpage::kCrostiniDevelopAndroidApps},
+       {IDS_OS_SETTINGS_TAG_CROSTINI_ANDROID_APPS_ALT1,
+        SearchConcept::kAltTagEnd}},
   });
   return *tags;
 }
 
 const std::vector<SearchConcept>& GetCrostiniPortForwardingSearchConcepts() {
   static const base::NoDestructor<std::vector<SearchConcept>> tags({
-      // TODO(khorimoto): Add "Crostini port forwarding" search concepts.
+      {IDS_OS_SETTINGS_TAG_CROSTINI_PORT_FORWARDING,
+       mojom::kCrostiniPortForwardingSubpagePath,
+       mojom::SearchResultIcon::kPenguin,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSubpage,
+       {.subpage = mojom::Subpage::kCrostiniPortForwarding},
+       {IDS_OS_SETTINGS_TAG_CROSTINI_PORT_FORWARDING_ALT1,
+        SearchConcept::kAltTagEnd}},
   });
   return *tags;
 }
 
 const std::vector<SearchConcept>& GetCrostiniContainerUpgradeSearchConcepts() {
   static const base::NoDestructor<std::vector<SearchConcept>> tags({
-      // TODO(khorimoto): Add "Crostini container upgrade" search concepts.
+      {IDS_OS_SETTINGS_TAG_CROSTINI_CONTAINER_UPGRADE,
+       mojom::kCrostiniDetailsSubpagePath,
+       mojom::SearchResultIcon::kPenguin,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSetting,
+       {.setting = mojom::Setting::kCrostiniContainerUpgrade},
+       {IDS_OS_SETTINGS_TAG_CROSTINI_CONTAINER_UPGRADE_ALT1,
+        SearchConcept::kAltTagEnd}},
   });
   return *tags;
 }
 
 const std::vector<SearchConcept>& GetCrostiniDiskResizingSearchConcepts() {
   static const base::NoDestructor<std::vector<SearchConcept>> tags({
-      // TODO(khorimoto): Add "Crostini disk resizing" search concepts.
+      {IDS_OS_SETTINGS_TAG_CROSTINI_DISK_RESIZE,
+       mojom::kCrostiniDetailsSubpagePath,
+       mojom::SearchResultIcon::kPenguin,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSubpage,
+       {.setting = mojom::Setting::kCrostiniDiskResize},
+       {IDS_OS_SETTINGS_TAG_CROSTINI_DISK_RESIZE_ALT1,
+        SearchConcept::kAltTagEnd}},
   });
   return *tags;
 }
 
 const std::vector<SearchConcept>& GetCrostiniMicSearchConcepts() {
   static const base::NoDestructor<std::vector<SearchConcept>> tags({
-      // TODO(khorimoto): Add "Crostini mic" search concepts.
+      {IDS_OS_SETTINGS_TAG_CROSTINI_MIC_ACCESS,
+       mojom::kCrostiniDetailsSubpagePath,
+       mojom::SearchResultIcon::kPenguin,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSetting,
+       {.setting = mojom::Setting::kCrostiniMicAccess},
+       {IDS_OS_SETTINGS_TAG_CROSTINI_MIC_ACCESS_ALT1,
+        SearchConcept::kAltTagEnd}},
   });
   return *tags;
 }
@@ -116,6 +224,10 @@ CrostiniSection::CrostiniSection(Profile* profile,
   pref_change_registrar_.Init(pref_service_);
   pref_change_registrar_.Add(
       crostini::prefs::kUserCrostiniAllowedByPolicy,
+      base::BindRepeating(&CrostiniSection::UpdateSearchTags,
+                          base::Unretained(this)));
+  pref_change_registrar_.Add(
+      crostini::prefs::kCrostiniEnabled,
       base::BindRepeating(&CrostiniSection::UpdateSearchTags,
                           base::Unretained(this)));
   pref_change_registrar_.Add(
@@ -305,6 +417,13 @@ void CrostiniSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
   html_source->AddBoolean("showCrostiniMic", IsMicSettingAllowed());
 }
 
+void CrostiniSection::AddHandlers(content::WebUI* web_ui) {
+  if (crostini::CrostiniFeatures::Get()->IsUIAllowed(profile(),
+                                                     /*check_policy=*/false)) {
+    web_ui->AddMessageHandler(std::make_unique<CrostiniHandler>(profile()));
+  }
+}
+
 bool CrostiniSection::IsCrostiniAllowed() {
   return crostini::CrostiniFeatures::Get()->IsUIAllowed(profile(),
                                                         /*check_policy=*/false);
@@ -320,6 +439,8 @@ bool CrostiniSection::IsContainerUpgradeAllowed() {
 
 void CrostiniSection::UpdateSearchTags() {
   delegate()->RemoveSearchTags(GetCrostiniSearchConcepts());
+  delegate()->RemoveSearchTags(GetCrostiniOptedInSearchConcepts());
+  delegate()->RemoveSearchTags(GetCrostiniOptedOutSearchConcepts());
   delegate()->RemoveSearchTags(GetCrostiniExportImportSearchConcepts());
   delegate()->RemoveSearchTags(GetCrostiniAdbSideloadingSearchConcepts());
   delegate()->RemoveSearchTags(GetCrostiniPortForwardingSearchConcepts());
@@ -331,6 +452,13 @@ void CrostiniSection::UpdateSearchTags() {
     return;
 
   delegate()->AddSearchTags(GetCrostiniSearchConcepts());
+
+  if (!pref_service_->GetBoolean(crostini::prefs::kCrostiniEnabled)) {
+    delegate()->AddSearchTags(GetCrostiniOptedOutSearchConcepts());
+    return;
+  }
+
+  delegate()->AddSearchTags(GetCrostiniOptedInSearchConcepts());
 
   if (IsExportImportAllowed())
     delegate()->AddSearchTags(GetCrostiniExportImportSearchConcepts());

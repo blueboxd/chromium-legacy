@@ -25,7 +25,9 @@ bool IsTabletModeControllerInitialized() {
 }  // namespace
 
 TabletModeControllerTestApi::TabletModeControllerTestApi()
-    : tablet_mode_controller_(Shell::Get()->tablet_mode_controller()) {}
+    : tablet_mode_controller_(Shell::Get()->tablet_mode_controller()) {
+  tablet_mode_controller_->OnDeviceListsComplete();
+}
 
 TabletModeControllerTestApi::~TabletModeControllerTestApi() = default;
 

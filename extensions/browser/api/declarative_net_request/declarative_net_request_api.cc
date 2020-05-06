@@ -189,7 +189,7 @@ DeclarativeNetRequestGetMatchedRulesFunction::Run() {
 
   dnr_api::RulesMatchedDetails details;
   details.rules_matched_info =
-      action_tracker.GetMatchedRules(extension_id(), tab_id, min_time_stamp);
+      action_tracker.GetMatchedRules(*extension(), tab_id, min_time_stamp);
 
   return RespondNow(
       ArgumentList(dnr_api::GetMatchedRules::Results::Create(details)));

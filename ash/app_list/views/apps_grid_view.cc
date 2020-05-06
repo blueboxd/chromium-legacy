@@ -2860,13 +2860,6 @@ void AppsGridView::OnListItemMoved(size_t from_index,
     Layout();
 }
 
-void AppsGridView::OnAppListItemHighlight(size_t index, bool highlight) {
-  if (highlight) {
-    const int model_index = GetModelIndexOfItem(item_list_->item_at(index));
-    EnsureViewVisible(GetIndexFromModelIndex(model_index));
-  }
-}
-
 void AppsGridView::TotalPagesChanged(int previous_page_count,
                                      int new_page_count) {
   // Don't record from folder.

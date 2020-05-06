@@ -42,7 +42,6 @@
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/menu/menu_runner.h"
-#include "ui/views/controls/progress_bar.h"
 #include "ui/views/drag_controller.h"
 
 namespace ash {
@@ -277,12 +276,10 @@ AppListItemView::AppListItemView(AppsGridView* apps_grid_view,
   }
 
   title_ = AddChildView(std::move(title));
-  progress_bar_ = AddChildView(std::make_unique<views::ProgressBar>());
 
   SetIcon(item->GetIcon(GetAppListConfig().type()));
   SetItemName(base::UTF8ToUTF16(item->GetDisplayName()),
               base::UTF8ToUTF16(item->name()));
-  SetItemIsInstalling(item->is_installing());
   item->AddObserver(this);
 
   set_context_menu_controller(this);
@@ -357,8 +354,7 @@ void AppListItemView::SetUIState(UIState ui_state) {
 
   switch (ui_state) {
     case UI_STATE_NORMAL:
-      title_->SetVisible(!is_installing_);
-      progress_bar_->SetVisible(is_installing_);
+      title_->SetVisible(true);
       if (ui_state_ == UI_STATE_DRAGGING)
         ScaleAppIcon(false);
       else if (ui_state_ == UI_STATE_CARDIFY)
@@ -366,7 +362,6 @@ void AppListItemView::SetUIState(UIState ui_state) {
       break;
     case UI_STATE_DRAGGING:
       title_->SetVisible(false);
-      progress_bar_->SetVisible(false);
       if (ui_state_ == UI_STATE_NORMAL)
         ScaleAppIcon(true);
       break;
@@ -519,24 +514,6 @@ void AppListItemView::SetItemName(const base::string16& display_name,
                        full_name.empty() ? folder_name_placeholder : full_name)
                  : full_name);
   Layout();
-}
-
-void AppListItemView::SetItemIsInstalling(bool is_installing) {
-  is_installing_ = is_installing;
-  if (ui_state_ == UI_STATE_NORMAL) {
-    title_->SetVisible(!is_installing);
-    progress_bar_->SetVisible(is_installing);
-  }
-  SchedulePaint();
-}
-
-void AppListItemView::SetItemPercentDownloaded(int percent_downloaded) {
-  // A percent_downloaded() of -1 can mean it's not known how much percent is
-  // completed, or the download hasn't been marked complete, as is the case
-  // while an extension is being installed after being downloaded.
-  if (percent_downloaded == -1)
-    return;
-  progress_bar_->SetValue(percent_downloaded / 100.0);
 }
 
 void AppListItemView::OnContextMenuModelReceived(
@@ -700,9 +677,6 @@ void AppListItemView::Layout() {
   if (!apps_grid_view_->is_in_folder())
     title_bounds.Inset(title_shadow_margins_);
   title_->SetBoundsRect(title_bounds);
-
-  progress_bar_->SetBoundsRect(GetProgressBarBoundsForTargetViewBounds(
-      rect, progress_bar_->GetPreferredSize()));
 }
 
 gfx::Size AppListItemView::CalculatePreferredSize() const {
@@ -1009,17 +983,6 @@ gfx::Rect AppListItemView::GetTitleBoundsForTargetViewBounds(
   return rect;
 }
 
-// static
-gfx::Rect AppListItemView::GetProgressBarBoundsForTargetViewBounds(
-    const gfx::Rect& target_bounds,
-    const gfx::Size& progress_bar_size) {
-  gfx::Rect progress_bar_bounds(progress_bar_size);
-  progress_bar_bounds.set_x(
-      (target_bounds.width() - progress_bar_bounds.width()) / 2);
-  progress_bar_bounds.set_y(target_bounds.y());
-  return progress_bar_bounds;
-}
-
 void AppListItemView::ItemIconChanged(AppListConfigType config_type) {
   if (config_type != AppListConfigType::kShared &&
       config_type != GetAppListConfig().type()) {
@@ -1032,14 +995,6 @@ void AppListItemView::ItemIconChanged(AppListConfigType config_type) {
 void AppListItemView::ItemNameChanged() {
   SetItemName(base::UTF8ToUTF16(item_weak_->GetDisplayName()),
               base::UTF8ToUTF16(item_weak_->name()));
-}
-
-void AppListItemView::ItemIsInstallingChanged() {
-  SetItemIsInstalling(item_weak_->is_installing());
-}
-
-void AppListItemView::ItemPercentDownloadedChanged() {
-  SetItemPercentDownloaded(item_weak_->percent_downloaded());
 }
 
 void AppListItemView::ItemBeingDestroyed() {

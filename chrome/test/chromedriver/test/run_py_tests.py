@@ -82,8 +82,6 @@ _NEGATIVE_FILTER = [
     'ChromeDriverTest.testAlertOnNewWindow',
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2532
     'ChromeDriverPageLoadTimeoutTest.testRefreshWithPageLoadTimeout',
-    # testFocus is failing
-    'JavaScriptTests.testFocus',
 ]
 
 
@@ -4271,7 +4269,6 @@ class JavaScriptTests(ChromeDriverBaseTestWithWebServer):
     self._driver.Load(self.GetFileUrl('is_option_element_toggleable_test.html'))
     self.checkTestResult()
 
-  def testFocus(self):
     self._driver.Load(self.GetFileUrl('focus_test.html'))
     self.checkTestResult()
 

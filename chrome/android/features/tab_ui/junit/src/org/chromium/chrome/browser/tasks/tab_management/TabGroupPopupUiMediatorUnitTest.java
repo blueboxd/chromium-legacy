@@ -17,7 +17,6 @@ import static org.mockito.Mockito.when;
 
 import android.widget.FrameLayout;
 
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -29,7 +28,6 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.robolectric.annotation.Config;
 
-import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.tab.Tab;
@@ -114,7 +112,6 @@ public class TabGroupPopupUiMediatorUnitTest {
 
     @Before
     public void setUp() {
-        RecordHistogram.setDisabledForTests(true);
 
         MockitoAnnotations.initMocks(this);
 
@@ -141,11 +138,6 @@ public class TabGroupPopupUiMediatorUnitTest {
         mModel = new PropertyModel(TabGroupPopupUiProperties.ALL_KEYS);
         mMediator = new TabGroupPopupUiMediator(mModel, mTabModelSelector, mOverviewModeBehavior,
                 mChromeFullscreenManager, mUpdater, mTabGroupUiController, mBottomSheetController);
-    }
-
-    @After
-    public void tearDown() {
-        RecordHistogram.setDisabledForTests(false);
     }
 
     @Test

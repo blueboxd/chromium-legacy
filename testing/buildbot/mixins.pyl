@@ -149,27 +149,6 @@
       },
     },
   },
-  'browser_beta': {
-    '$mixin_append': {
-      'args': [
-        '--browser=beta'
-      ]
-    }
-  },
-  'browser_stable': {
-    '$mixin_append': {
-      'args': [
-        '--browser=stable'
-      ]
-    }
-  },
-  'browser_trunk': {
-    '$mixin_append': {
-      'args': [
-        '--browser=default'
-      ]
-    }
-  },
   'bullhead': {
     'swarming': {
       'dimensions': {

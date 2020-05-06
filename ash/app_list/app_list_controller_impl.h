@@ -90,8 +90,6 @@ class ASH_EXPORT AppListControllerImpl : public AppListController,
   void MoveItemToFolder(const std::string& id,
                         const std::string& folder_id) override;
   void SetStatus(AppListModelStatus status) override;
-  void SetState(AppListState state) override;
-  void HighlightItemInstalledFromUI(const std::string& id) override;
   void SetSearchEngineIsGoogle(bool is_google) override;
   void SetSearchTabletAndClamshellAccessibleName(
       const base::string16& tablet_accessible_name,
@@ -104,20 +102,12 @@ class ASH_EXPORT AppListControllerImpl : public AppListController,
   void SetItemMetadata(const std::string& id,
                        std::unique_ptr<AppListItemMetadata> data) override;
   void SetItemIcon(const std::string& id, const gfx::ImageSkia& icon) override;
-  void SetItemIsInstalling(const std::string& id, bool is_installing) override;
-  void SetItemPercentDownloaded(const std::string& id,
-                                int32_t percent_downloaded) override;
   void SetModelData(int profile_id,
                     std::vector<std::unique_ptr<AppListItemMetadata>> apps,
                     bool is_search_engine_google) override;
 
   void SetSearchResultMetadata(
       std::unique_ptr<SearchResultMetadata> metadata) override;
-  void SetSearchResultIsInstalling(const std::string& id,
-                                   bool is_installing) override;
-  void SetSearchResultPercentDownloaded(const std::string& id,
-                                        int32_t percent_downloaded) override;
-  void NotifySearchResultItemInstalled(const std::string& id) override;
 
   void GetIdToAppListIndexMap(GetIdToAppListIndexMapCallback callback) override;
   void FindOrCreateOemFolder(

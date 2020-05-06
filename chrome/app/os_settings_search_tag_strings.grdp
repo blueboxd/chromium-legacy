@@ -481,8 +481,128 @@
   </message>
 
   <!-- Apps section. -->
+  <message name="IDS_OS_SETTINGS_TAG_APPS" desc="Text for search result item which, when clicked, navigates the user to apps settings.">
+    Apps
+  </message>
+  <message name="IDS_OS_SETTINGS_TAG_APPS_MANAGEMENT" desc="Text for search result item which, when clicked, navigates the user to app mangement settings. Alternate phrase for: 'View installed apps'">
+    Manage apps
+  </message>
+  <message name="IDS_OS_SETTINGS_TAG_APPS_MANAGEMENT_ALT1" desc="Text for search result item which, when clicked, navigates the user to app mangement settings. Alternate phrase for: 'Manage apps'">
+    View installed apps
+  </message>
+  <message name="IDS_OS_SETTINGS_TAG_REMOVE_PLAY_STORE" desc="Text for search result item which, when clicked, navigates the user to Android app settings, with a button to remove the Play Store (Android app store). Alternate phrase for: 'Uninstall Google Play Store'">
+    Remove Google Play Store
+  </message>
+  <message name="IDS_OS_SETTINGS_TAG_REMOVE_PLAY_STORE_ALT1" desc="Text for search result item which, when clicked, navigates the user to Android app settings, with a button to remove the Play Store (Android app store). Alternate phrase for: 'Remove Google Play Store'">
+    Uninstall Google Play Store
+  </message>
+  <message name="IDS_OS_SETTINGS_TAG_PLAY_STORE" desc="Text for search result item which, when clicked, navigates the user to Play Store (Android app store) settings.">
+    Play Store
+  </message>
+  <message name="IDS_OS_SETTINGS_TAG_ANDROID_SETTINGS_WITH_PLAY_STORE" desc="Text for search result item which, when clicked, navigates the user to Android app settings, with a button to open Android settings.">
+    Android settings
+  </message>
+  <message name="IDS_OS_SETTINGS_TAG_ANDROID_SETTINGS" desc="Text for search result item which, when clicked, navigates the user to apps settings, with a button to open Android settings.">
+    Android settings
+  </message>
+  <message name="IDS_OS_SETTINGS_TAG_ANDROID_TURN_ON_PLAY_STORE" desc="Text for search result item which, when clicked, navigates the user to apps settings, with a button to turn on the Play Store (Android app store). Alternate phrase for: 'Enable Play Store'">
+    Turn on Play Store
+  </message>
+  <message name="IDS_OS_SETTINGS_TAG_ANDROID_TURN_ON_PLAY_STORE_ALT1" desc="Text for search result item which, when clicked, navigates the user to apps settings, with a button to turn on the Play Store (Android app store). Alternate phrase for: 'Turn on Play Store'">
+    Enable Play Store
+  </message>
 
   <!-- Crostini section. -->
+  <message name="IDS_OS_SETTINGS_TAG_CROSTINI" desc="Text for search result item which, when clicked, navigates the user to Linux (a.k.a. Crostini) settings. Alternate phrase for: 'Crostini'">
+    Linux
+  </message>
+  <message name="IDS_OS_SETTINGS_TAG_CROSTINI_ALT1" desc="Text for search result item which, when clicked, navigates the user to Linux (a.k.a. Crostini) settings. Alternate phrase for: 'Linux'">
+    Crostini
+  </message>
+  <message name="IDS_OS_SETTINGS_TAG_CROSTINI_SHARED_FOLDERS" desc="Text for search result item which, when clicked, navigates the user to Linux (a.k.a. Crostini) settings, with the option to share folders with the Chromebook. Alternate phrase for: 'Linux shared directories', 'Crostini shared folders', 'Crostini shared directories'">
+    Linux shared folders
+  </message>
+  <message name="IDS_OS_SETTINGS_TAG_CROSTINI_SHARED_FOLDERS_ALT1" desc="Text for search result item which, when clicked, navigates the user to Linux (a.k.a. Crostini) settings, with the option to share folders with the Chromebook. Alternate phrase for: 'Linux shared folders', 'Crostini shared folders', 'Crostini shared directories'">
+    Linux shared directories
+  </message>
+  <message name="IDS_OS_SETTINGS_TAG_CROSTINI_SHARED_FOLDERS_ALT2" desc="Text for search result item which, when clicked, navigates the user to Linux (a.k.a. Crostini) settings, with the option to share folders with the Chromebook. Alternate phrase for: 'Linux shared folders', 'Linux shared directories', 'Crostini shared directories'">
+    Crostini shared folders
+  </message>
+  <message name="IDS_OS_SETTINGS_TAG_CROSTINI_SHARED_FOLDERS_ALT3" desc="Text for search result item which, when clicked, navigates the user to Linux (a.k.a. Crostini) settings, with the option to share folders with the Chromebook. Alternate phrase for: 'Linux shared folders', 'Linux shared directories', 'Crostini shared folders'">
+    Crostini shared directories
+  </message>
+  <message name="IDS_OS_SETTINGS_TAG_CROSTINI_USB_PREFERENCES" desc="Text for search result item which, when clicked, navigates the user to Linux (a.k.a. Crostini) settings, with the option to set USB preferences. Alternate phrase for: 'Crostini USB preferences'">
+    Linux USB preferences
+  </message>
+  <message name="IDS_OS_SETTINGS_TAG_CROSTINI_USB_PREFERENCES_ALT1" desc="Text for search result item which, when clicked, navigates the user to Linux (a.k.a. Crostini) settings, with the option to set USB preferences. Alternate phrase for: 'Linux USB preferences'">
+    Crostini USB preferences
+  </message>
+  <message name="IDS_OS_SETTINGS_TAG_CROSTINI_REMOVE" desc="Text for search result item which, when clicked, navigates the user to Linux (a.k.a. Crostini) settings, with an option to delete the Linux installation on Chromebook. Alternate phrase for: 'Remove Crostini', 'Uninstall Linux', 'Uninstall Crostini', 'Delete Linux', 'Delete Crostini'">
+    Remove Linux
+  </message>
+  <message name="IDS_OS_SETTINGS_TAG_CROSTINI_REMOVE_ALT1" desc="Text for search result item which, when clicked, navigates the user to Linux (a.k.a. Crostini) settings, with an option to delete the Linux installation on Chromebook. Alternate phrase for: 'Remove Linux', 'Uninstall Linux', 'Uninstall Crostini', 'Delete Linux', 'Delete Crostini'">
+    Remove Crostini
+  </message>
+  <message name="IDS_OS_SETTINGS_TAG_CROSTINI_REMOVE_ALT2" desc="Text for search result item which, when clicked, navigates the user to Linux (a.k.a. Crostini) settings, with an option to delete the Linux installation on Chromebook. Alternate phrase for: 'Remove Linux', 'Remove Crostini', 'Uninstall Crostini', 'Delete Linux', 'Delete Crostini'">
+    Uninstall Linux
+  </message>
+  <message name="IDS_OS_SETTINGS_TAG_CROSTINI_REMOVE_ALT3" desc="Text for search result item which, when clicked, navigates the user to Linux (a.k.a. Crostini) settings, with an option to delete the Linux installation on Chromebook. Alternate phrase for: 'Remove Linux', 'Remove Crostini', 'Uninstall Linux', 'Delete Linux', 'Delete Crostini'">
+    Uninstall Crostini
+  </message>
+  <message name="IDS_OS_SETTINGS_TAG_CROSTINI_REMOVE_ALT4" desc="Text for search result item which, when clicked, navigates the user to Linux (a.k.a. Crostini) settings, with an option to delete the Linux installation on Chromebook. Alternate phrase for: 'Remove Linux', 'Remove Crostini', 'Uninstall Linux', 'Uninstall Crostini', 'Delete Crostini'">
+    Delete Linux
+  </message>
+  <message name="IDS_OS_SETTINGS_TAG_CROSTINI_REMOVE_ALT5" desc="Text for search result item which, when clicked, navigates the user to Linux (a.k.a. Crostini) settings, with an option to delete the Linux installation on Chromebook. Alternate phrase for: 'Remove Linux', 'Remove Crostini', 'Uninstall Linux', 'Uninstall Crostini', 'Delete Linux'">
+    Delete Crostini
+  </message>
+  <message name="IDS_OS_SETTINGS_TAG_CROSTINI_SETUP" desc="Text for search result item which, when clicked, navigates the user to Linux (a.k.a. Crostini) settings, with an option to set up Linux integration with Chromebook. Alternate phrase for: 'Crostini setup'">
+    Linux setup
+  </message>
+  <message name="IDS_OS_SETTINGS_TAG_CROSTINI_SETUP_ALT1" desc="Text for search result item which, when clicked, navigates the user to Linux (a.k.a. Crostini) settings, with an option to set up Linux integration with Chromebook. Alternate phrase for: 'Linux setup'">
+    Crostini setup
+  </message>
+  <message name="IDS_OS_SETTINGS_TAG_CROSTINI_BACKUP_RESTORE" desc="Text for search result item which, when clicked, navigates the user to Linux (a.k.a. Crostini) settings, with an option to back up and restore Linux apps/files. Alternate phrase for: 'Crostini backup'">
+    Linux backup and restore
+  </message>
+  <message name="IDS_OS_SETTINGS_TAG_CROSTINI_BACKUP_RESTORE_ALT1" desc="Text for search result item which, when clicked, navigates the user to Linux (a.k.a. Crostini) settings, with an option to back up and restore Linux apps/files. Alternate phrase for: 'Linux backup'">
+    Crostini backup and restore
+  </message>
+  <message name="IDS_OS_SETTINGS_TAG_CROSTINI_ANDROID_APPS" desc="Text for search result item which, when clicked, navigates the user to Linux (a.k.a. Crostini) settings, with options for developing Android apps. Alternate phrase for: 'Crostini Android app development'">
+    Linux Android app development
+  </message>
+  <message name="IDS_OS_SETTINGS_TAG_CROSTINI_ANDROID_APPS_ALT1" desc="Text for search result item which, when clicked, navigates the user to Linux (a.k.a. Crostini) settings, with options for developing Android apps. Alternate phrase for: 'Linux Android app development'">
+    Crostini Android app development
+  </message>
+  <message name="IDS_OS_SETTINGS_TAG_CROSTINI_ANDROID_APPS_ADB" desc="Text for search result item which, when clicked, navigates the user to Linux (a.k.a. Crostini) settings, with a toggle to enable/disable Android ADB (Android to Chromebook device bridge). Alternate phrase for: 'Crostini Android app ADB'">
+    Linux Android app ADB
+  </message>
+  <message name="IDS_OS_SETTINGS_TAG_CROSTINI_ANDROID_APPS_ADB_ALT1" desc="Text for search result item which, when clicked, navigates the user to Linux (a.k.a. Crostini) settings, with a toggle to enable/disable Android ADB (Android to Chromebook device bridge). Alternate phrase for: 'Linux Android app ADB'">
+    Crostini Android app ADB
+  </message>
+  <message name="IDS_OS_SETTINGS_TAG_CROSTINI_PORT_FORWARDING" desc="Text for search result item which, when clicked, navigates the user to Linux (a.k.a. Crostini) settings, with an option to set up port forwarding. Alternate phrase for: 'Crostini port forwarding'">
+    Linux port forwarding
+  </message>
+  <message name="IDS_OS_SETTINGS_TAG_CROSTINI_PORT_FORWARDING_ALT1" desc="Text for search result item which, when clicked, navigates the user to Linux (a.k.a. Crostini) settings, with an option to set up port forwarding. Alternate phrase for: 'Linux port forwarding'">
+    Crostini port forwarding
+  </message>
+  <message name="IDS_OS_SETTINGS_TAG_CROSTINI_CONTAINER_UPGRADE" desc="Text for search result item which, when clicked, navigates the user to Linux (a.k.a. Crostini) settings, with an option to upgrade the Linux container. Alternate phrase for: 'Crostini upgrade'">
+    Linux upgrade
+  </message>
+  <message name="IDS_OS_SETTINGS_TAG_CROSTINI_CONTAINER_UPGRADE_ALT1" desc="Text for search result item which, when clicked, navigates the user to Linux (a.k.a. Crostini) settings, with an option to upgrade the Linux container. Alternate phrase for: 'Linux upgrade'">
+    Crostini upgrade
+  </message>
+  <message name="IDS_OS_SETTINGS_TAG_CROSTINI_DISK_RESIZE" desc="Text for search result item which, when clicked, navigates the user to Linux (a.k.a. Crostini) settings, with an option to resize hard drive partitions. Alternate phrase for: 'Crostini disk resize'">
+    Linux disk resize
+  </message>
+  <message name="IDS_OS_SETTINGS_TAG_CROSTINI_DISK_RESIZE_ALT1" desc="Text for search result item which, when clicked, navigates the user to Linux (a.k.a. Crostini) settings, with an option to resize hard drive partitions. Alternate phrase for: 'Linux disk resize'">
+    Crostini disk resize
+  </message>
+  <message name="IDS_OS_SETTINGS_TAG_CROSTINI_MIC_ACCESS" desc="Text for search result item which, when clicked, navigates the user to Linux (a.k.a. Crostini) settings, with an toggle to enable/disable access to the device's microphone. Alternate phrase for: 'Crostini microphone access'">
+    Linux microphone access
+  </message>
+  <message name="IDS_OS_SETTINGS_TAG_CROSTINI_MIC_ACCESS_ALT1" desc="Text for search result item which, when clicked, navigates the user to Linux (a.k.a. Crostini) settings, with an toggle to enable/disable access to the device's microphone. Alternate phrase for: 'Linux microphone access'">
+    Crostini microphone access
+  </message>
 
   <!-- Date and Time section. -->
 
@@ -491,6 +611,18 @@
   <!-- Languages and Input section. -->
 
   <!-- Files section. -->
+  <message name="IDS_OS_SETTINGS_TAG_FILES" desc="Text for search result item which, when clicked, navigates the user to files settings.">
+    Files
+  </message>
+  <message name="IDS_OS_SETTINGS_TAG_FILES_DISCONNECT_GOOGLE_DRIVE" desc="Text for search result item which, when clicked, navigates the user to files settings, with a toggle to enable/disable connecting the user's Google Drive account.">
+    Disconnect Google Drive account
+  </message>
+  <message name="IDS_OS_SETTINGS_TAG_FILES_NETWORK_FILE_SHARES" desc="Text for search result item which, when clicked, navigates the user to network file share (a.k.a. SMB share) settings. Alternate phrase for: 'SMB share'">
+    Network file shares
+  </message>
+  <message name="IDS_OS_SETTINGS_TAG_FILES_NETWORK_FILE_SHARES_ALT1" desc="Text for search result item which, when clicked, navigates the user to network file share (a.k.a. SMB share) settings. Alternate phrase for: 'Network file shares'">
+    SMB share
+  </message>
 
   <!-- Printing section. -->
 

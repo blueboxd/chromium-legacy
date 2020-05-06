@@ -181,7 +181,14 @@ enum class VideoCaptureError {
   kMacAvFoundationReceivedAVCaptureSessionRuntimeErrorNotification = 113,
   kAndroidApi2ErrorConfiguringCamera = 114,
   kCrosHalV3DeviceDelegateFailedToFlush = 115,
-  kMaxValue = 115
+  kFuchsiaCameraDeviceDisconnected = 116,
+  kFuchsiaCameraStreamDisconnected = 117,
+  kFuchsiaSysmemDidNotSetImageFormat = 118,
+  kFuchsiaSysmemInvalidBufferIndex = 119,
+  kFuchsiaSysmemInvalidBufferSize = 120,
+  kFuchsiaUnsupportedPixelFormat = 121,
+  kFuchsiaFailedToMapSysmemBuffer = 122,
+  kMaxValue = 122
 };
 
 // WARNING: Do not change the values assigned to the entries. They are used for

@@ -14,7 +14,7 @@ import org.chromium.base.test.util.CommandLineFlags;
 import java.util.List;
 
 /**
- * A custom runner for //content JUnit4 tests.
+ * A custom runner for //weblayer JUnit4 tests.
  */
 public class WebLayerJUnit4ClassRunner extends BaseJUnit4ClassRunner {
     /**

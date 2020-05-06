@@ -264,10 +264,15 @@ class MODULES_EXPORT AXObjectCacheImpl
   // For built-in HTML form validation messages.
   AXObject* ValidationMessageObjectIfInvalid();
 
-  void set_is_handling_action(bool value) { is_handling_action_ = value; }
-
   WebAXAutofillState GetAutofillState(AXID id) const;
   void SetAutofillState(AXID id, WebAXAutofillState state);
+
+  ax::mojom::blink::EventFrom active_event_from() const {
+    return active_event_from_;
+  }
+  void set_active_event_from(const ax::mojom::blink::EventFrom event_from) {
+    active_event_from_ = event_from;
+  }
 
  protected:
   void PostPlatformNotification(
@@ -307,10 +312,14 @@ class MODULES_EXPORT AXObjectCacheImpl
   struct TreeUpdateParams final : public GarbageCollected<TreeUpdateParams> {
     TreeUpdateParams(Node* node,
                      ax::mojom::blink::EventFrom event_from,
+                     const BlinkAXEventIntentsSet& intents,
                      base::OnceClosure callback)
-        : node(node), event_from(event_from), callback(std::move(callback)) {}
+        : node(node), event_from(event_from), callback(std::move(callback)) {
+      std::copy(intents.begin(), intents.end(), event_intents.begin());
+    }
     WeakMember<Node> node;
     ax::mojom::blink::EventFrom event_from;
+    BlinkAXEventIntentsSet event_intents;
     base::OnceClosure callback;
 
     void Trace(Visitor* visitor) { visitor->Trace(node); }
@@ -403,9 +412,11 @@ class MODULES_EXPORT AXObjectCacheImpl
                                              Element* element);
 
   void ScheduleVisualUpdate();
-  void FireTreeUpdatedEventImmediately(Node* node,
-                                       base::OnceClosure callback,
-                                       ax::mojom::blink::EventFrom event_from);
+  void FireTreeUpdatedEventImmediately(
+      Node* node,
+      ax::mojom::blink::EventFrom event_from,
+      const BlinkAXEventIntentsSet& event_intents,
+      base::OnceClosure callback);
   void FireAXEventImmediately(AXObject* obj,
                               ax::mojom::blink::Event event_type,
                               ax::mojom::blink::EventFrom event_from,
@@ -425,10 +436,12 @@ class MODULES_EXPORT AXObjectCacheImpl
   typedef HeapVector<Member<TreeUpdateParams>> TreeUpdateCallbackQueue;
   TreeUpdateCallbackQueue tree_update_callback_queue_;
 
-  bool is_handling_action_ = false;
-
   // Maps ids to their object's autofill state.
   HashMap<AXID, WebAXAutofillState> autofill_state_map_;
+
+  // The source of the event that is currently being handled.
+  ax::mojom::blink::EventFrom active_event_from_ =
+      ax::mojom::blink::EventFrom::kNone;
 
   // A set of currently active event intents.
   BlinkAXEventIntentsSet active_event_intents_;

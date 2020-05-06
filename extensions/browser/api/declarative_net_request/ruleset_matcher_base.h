@@ -12,7 +12,7 @@
 #include "content/public/browser/global_routing_id.h"
 #include "extensions/browser/api/declarative_net_request/flat/extension_ruleset_generated.h"
 #include "extensions/browser/api/declarative_net_request/request_action.h"
-#include "extensions/common/api/declarative_net_request.h"
+#include "extensions/common/api/declarative_net_request/constants.h"
 #include "extensions/common/extension_id.h"
 
 class GURL;
@@ -30,8 +30,7 @@ struct RequestParams;
 // matchers, e.g. filter lists and regex.
 class RulesetMatcherBase {
  public:
-  RulesetMatcherBase(const ExtensionId& extension_id,
-                     api::declarative_net_request::SourceType source_type);
+  RulesetMatcherBase(const ExtensionId& extension_id, RulesetID ruleset_id);
 
   virtual ~RulesetMatcherBase();
 
@@ -60,10 +59,8 @@ class RulesetMatcherBase {
   // Returns the extension ID with which this matcher is associated.
   const ExtensionId& extension_id() const { return extension_id_; }
 
-  // The source type of the matcher.
-  api::declarative_net_request::SourceType source_type() const {
-    return source_type_;
-  }
+  // The ruleset ID of the matcher.
+  RulesetID ruleset_id() const { return ruleset_id_; }
 
   void OnRenderFrameCreated(content::RenderFrameHost* host);
   void OnRenderFrameDeleted(content::RenderFrameHost* host);
@@ -142,7 +139,7 @@ class RulesetMatcherBase {
       content::GlobalFrameRoutingId frame_id) const;
 
   const ExtensionId extension_id_;
-  const api::declarative_net_request::SourceType source_type_;
+  const RulesetID ruleset_id_;
 
   // Stores the IDs for the RenderFrameHosts which are allow-listed due to an
   // allowAllRequests action and the corresponding highest priority

@@ -327,8 +327,6 @@
     CallbackFunctionTest callbackFunctionTest();
     [RaisesException] void setScrollChain(ScrollState scrollState, sequence<Element> elements);
 
-    void revealSelection();
-
     DOMString selectedHTMLForClipboard();
     DOMString selectedTextForClipboard();
 

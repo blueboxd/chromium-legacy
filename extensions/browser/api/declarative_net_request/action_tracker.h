@@ -11,6 +11,7 @@
 
 #include "base/time/time.h"
 #include "extensions/common/api/declarative_net_request.h"
+#include "extensions/common/api/declarative_net_request/constants.h"
 #include "extensions/common/extension_id.h"
 
 namespace base {
@@ -24,6 +25,7 @@ class BrowserContext;
 
 namespace extensions {
 
+class Extension;
 class ExtensionPrefs;
 struct WebRequestInfo;
 
@@ -79,10 +81,10 @@ class ActionTracker {
   // Updates the TrackedInfo for all extensions for the given |tab_id|.
   void ResetTrackedInfoForTab(int tab_id, int64_t navigation_id);
 
-  // Returns all matched rules for |extension_id|. If |tab_id| is provided, only
+  // Returns all matched rules for |extension|. If |tab_id| is provided, only
   // rules matched for |tab_id| will be returned.
   std::vector<api::declarative_net_request::MatchedRuleInfo> GetMatchedRules(
-      const ExtensionId& extension_id,
+      const Extension& extension,
       const base::Optional<int>& tab_id,
       const base::Time& min_time_stamp);
 
@@ -124,16 +126,14 @@ class ActionTracker {
   // Represents a matched rule. This is used as a lightweight version of
   // api::declarative_net_request::MatchedRuleInfo.
   struct TrackedRule {
-    TrackedRule(int rule_id,
-                api::declarative_net_request::SourceType source_type);
+    TrackedRule(int rule_id, RulesetID ruleset_id);
     TrackedRule(const TrackedRule& other) = delete;
     TrackedRule& operator=(const TrackedRule& other) = delete;
 
     const int rule_id;
-    const api::declarative_net_request::SourceType source_type;
+    const RulesetID ruleset_id;
 
-    // The timestamp for when the rule was matched. This is set in the
-    // constructor.
+    // The timestamp for when the rule was matched.
     const base::Time time_stamp;
   };
 
@@ -177,6 +177,7 @@ class ActionTracker {
 
   // Converts an internally represented |tracked_rule| to a MatchedRuleInfo.
   api::declarative_net_request::MatchedRuleInfo CreateMatchedRuleInfo(
+      const Extension& extension,
       const TrackedRule& tracked_rule,
       int tab_id) const;
 

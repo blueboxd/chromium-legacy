@@ -950,7 +950,7 @@ void AccessibilityTreeFormatterUia::WriteElementArray(
     base::DictionaryValue* dict) {
   int count;
   array->get_Length(&count);
-  base::string16 element_list = L"";
+  base::string16 element_list;
   for (int i = 0; i < count; i++) {
     Microsoft::WRL::ComPtr<IUIAutomationElement> element;
     if (SUCCEEDED(array->GetElement(i, &element))) {

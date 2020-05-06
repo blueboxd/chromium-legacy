@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_util.h"
 #include "build/build_config.h"
 #include "content/browser/devtools/devtools_agent_host_impl.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
@@ -52,6 +53,16 @@ ui::GestureProviderConfigType TouchEmulationConfigurationToType(
     result = ui::GestureProviderConfigType::GENERIC_DESKTOP;
   }
   return result;
+}
+
+bool ValidateClientHintString(const std::string& s) {
+  // Matches definition in structured headers:
+  // https://tools.ietf.org/html/draft-ietf-httpbis-header-structure-17#section-3.3.3
+  for (char c : s) {
+    if (!base::IsAsciiPrintable(c))
+      return false;
+  }
+  return true;
 }
 
 }  // namespace
@@ -317,7 +328,8 @@ Response EmulationHandler::SetVisibleSize(int width, int height) {
 Response EmulationHandler::SetUserAgentOverride(
     const std::string& user_agent,
     Maybe<std::string> accept_language,
-    Maybe<std::string> platform) {
+    Maybe<std::string> platform,
+    Maybe<Emulation::UserAgentMetadata> ua_metadata_override) {
   if (!user_agent.empty() && !net::HttpUtil::IsValidHeaderValue(user_agent))
     return Response::InvalidParams("Invalid characters found in userAgent");
   std::string accept_lang = accept_language.fromMaybe(std::string());
@@ -328,6 +340,58 @@ Response EmulationHandler::SetUserAgentOverride(
 
   user_agent_ = user_agent;
   accept_language_ = accept_lang;
+
+  user_agent_metadata_ = base::nullopt;
+  if (!ua_metadata_override.isJust())
+    return Response::FallThrough();
+
+  if (user_agent.empty()) {
+    return Response::InvalidParams(
+        "Empty userAgent invalid with userAgentMetadata provided");
+  }
+
+  std::unique_ptr<Emulation::UserAgentMetadata> ua_metadata =
+      ua_metadata_override.takeJust();
+  blink::UserAgentMetadata new_ua_metadata;
+  DCHECK(ua_metadata->GetBrands());
+
+  for (const auto& bv : *ua_metadata->GetBrands()) {
+    blink::UserAgentBrandVersion out_bv;
+    if (!ValidateClientHintString(bv->GetBrand()))
+      return Response::InvalidParams("Invalid brand string");
+    out_bv.brand = bv->GetBrand();
+
+    if (!ValidateClientHintString(bv->GetVersion()))
+      return Response::InvalidParams("Invalid brand version string");
+    out_bv.major_version = bv->GetVersion();
+
+    new_ua_metadata.brand_version_list.push_back(std::move(out_bv));
+  }
+
+  if (!ValidateClientHintString(ua_metadata->GetFullVersion()))
+    return Response::InvalidParams("Invalid full version string");
+  new_ua_metadata.full_version = ua_metadata->GetFullVersion();
+
+  if (!ValidateClientHintString(ua_metadata->GetPlatform()))
+    return Response::InvalidParams("Invalid platform string");
+  new_ua_metadata.platform = ua_metadata->GetPlatform();
+
+  if (!ValidateClientHintString(ua_metadata->GetPlatformVersion()))
+    return Response::InvalidParams("Invalid platform version string");
+  new_ua_metadata.platform_version = ua_metadata->GetPlatformVersion();
+
+  if (!ValidateClientHintString(ua_metadata->GetArchitecture()))
+    return Response::InvalidParams("Invalid architecture string");
+  new_ua_metadata.architecture = ua_metadata->GetArchitecture();
+
+  if (!ValidateClientHintString(ua_metadata->GetModel()))
+    return Response::InvalidParams("Invalid model string");
+  new_ua_metadata.model = ua_metadata->GetModel();
+
+  new_ua_metadata.mobile = ua_metadata->GetMobile();
+
+  // All checks OK, can update user_agent_metadata_.
+  user_agent_metadata_.emplace(std::move(new_ua_metadata));
   return Response::FallThrough();
 }
 
@@ -421,6 +485,16 @@ void EmulationHandler::ApplyOverrides(net::HttpRequestHeaders* headers) {
         net::HttpRequestHeaders::kAcceptLanguage,
         net::HttpUtil::GenerateAcceptLanguageHeader(accept_language_));
   }
+}
+
+bool EmulationHandler::ApplyUserAgentMetadataOverrides(
+    base::Optional<blink::UserAgentMetadata>* override_out) {
+  // This is conditional on basic user agent override being on; this helps us
+  // emulate a device not sending any UA client hints.
+  if (user_agent_.empty())
+    return false;
+  *override_out = user_agent_metadata_;
+  return true;
 }
 
 }  // namespace protocol

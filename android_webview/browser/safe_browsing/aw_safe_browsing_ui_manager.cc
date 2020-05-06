@@ -90,11 +90,6 @@ void AwSafeBrowsingUIManager::DisplayBlockingPage(
   safe_browsing::BaseUIManager::DisplayBlockingPage(resource);
 }
 
-void AwSafeBrowsingUIManager::ShowBlockingPageForResource(
-    const UnsafeResource& resource) {
-  AwSafeBrowsingBlockingPage::ShowBlockingPage(this, resource);
-}
-
 scoped_refptr<network::SharedURLLoaderFactory>
 AwSafeBrowsingUIManager::GetURLLoaderFactoryOnIOThread() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);

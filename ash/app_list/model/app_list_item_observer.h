@@ -20,12 +20,6 @@ class APP_LIST_MODEL_EXPORT AppListItemObserver {
   // Invoked after item's name is changed.
   virtual void ItemNameChanged() {}
 
-  // Invoked after item begins or finishes installing.
-  virtual void ItemIsInstallingChanged() {}
-
-  // Invoked after item's download percentage changes.
-  virtual void ItemPercentDownloadedChanged() {}
-
   // Invoked when the item is about to be destroyed.
   virtual void ItemBeingDestroyed() {}
 

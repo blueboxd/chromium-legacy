@@ -4,18 +4,23 @@
 
 #include "chrome/installer/util/install_service_work_item_impl.h"
 
+#include <cguid.h>
+#include <guiddef.h>
+
 #include <memory>
 #include <string>
 #include <utility>
 
-#include "base/command_line.h"
+#include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/strings/strcat.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
 #include "base/win/registry.h"
+#include "base/win/win_util.h"
 #include "chrome/install_static/install_util.h"
+#include "chrome/installer/util/install_util.h"
 
 using base::win::RegKey;
 
@@ -91,6 +96,27 @@ void RecordWin32ApiErrorCode(const char* function) {
       base::StrCat({"Setup.Install.Win32ApiError.", function}), error_code);
 }
 
+base::string16 GetComRegistryPath(base::StringPiece16 hive, const GUID& guid) {
+  return base::StrCat(
+      {L"Software\\Classes\\", hive, L"\\", base::win::String16FromGUID(guid)});
+}
+
+base::string16 GetComClsidRegistryPath(const GUID& clsid) {
+  return GetComRegistryPath(L"CLSID", clsid);
+}
+
+base::string16 GetComAppidRegistryPath(const GUID& appid) {
+  return GetComRegistryPath(L"AppID", appid);
+}
+
+base::string16 GetComIidRegistryPath(const GUID& iid) {
+  return GetComRegistryPath(L"Interface", iid);
+}
+
+base::string16 GetComTypeLibRegistryPath(const GUID& iid) {
+  return GetComRegistryPath(L"TypeLib", iid);
+}
+
 }  // namespace
 
 InstallServiceWorkItemImpl::ServiceConfig::ServiceConfig()
@@ -120,10 +146,15 @@ InstallServiceWorkItemImpl::ServiceConfig::~ServiceConfig() = default;
 InstallServiceWorkItemImpl::InstallServiceWorkItemImpl(
     const base::string16& service_name,
     const base::string16& display_name,
-    const base::CommandLine& service_cmd_line)
-    : service_name_(service_name),
+    const base::CommandLine& service_cmd_line,
+    const GUID& clsid,
+    const GUID& iid)
+    : com_registration_work_items_(WorkItem::CreateWorkItemList()),
+      service_name_(service_name),
       display_name_(display_name),
-      service_cmd_line_(service_cmd_line.GetCommandLineString()),
+      service_cmd_line_(service_cmd_line),
+      clsid_(clsid),
+      iid_(iid),
       rollback_existing_service_(false),
       rollback_new_service_(false),
       original_service_still_exists_(false) {}
@@ -131,6 +162,10 @@ InstallServiceWorkItemImpl::InstallServiceWorkItemImpl(
 InstallServiceWorkItemImpl::~InstallServiceWorkItemImpl() = default;
 
 bool InstallServiceWorkItemImpl::DoImpl() {
+  return DoInstallService() && DoComRegistration();
+}
+
+bool InstallServiceWorkItemImpl::DoInstallService() {
   scm_.Set(::OpenSCManager(nullptr, nullptr,
                            SC_MANAGER_CONNECT | SC_MANAGER_CREATE_SERVICE));
   if (!scm_.IsValid()) {
@@ -195,7 +230,77 @@ bool InstallServiceWorkItemImpl::DoImpl() {
   return false;
 }
 
+bool InstallServiceWorkItemImpl::DoComRegistration() {
+  if (clsid_ != GUID_NULL) {
+    const base::string16 clsid_reg_path = GetComClsidRegistryPath(clsid_);
+    const base::string16 appid_reg_path = GetComAppidRegistryPath(clsid_);
+
+    com_registration_work_items_->AddCreateRegKeyWorkItem(
+        HKEY_LOCAL_MACHINE, clsid_reg_path, WorkItem::kWow64Default);
+    com_registration_work_items_->AddSetRegValueWorkItem(
+        HKEY_LOCAL_MACHINE, clsid_reg_path, WorkItem::kWow64Default, L"AppID",
+        base::win::String16FromGUID(clsid_), true);
+    com_registration_work_items_->AddCreateRegKeyWorkItem(
+        HKEY_LOCAL_MACHINE, appid_reg_path, WorkItem::kWow64Default);
+    com_registration_work_items_->AddSetRegValueWorkItem(
+        HKEY_LOCAL_MACHINE, appid_reg_path, WorkItem::kWow64Default,
+        L"LocalService", GetCurrentServiceName(), true);
+  }
+
+  if (iid_ != GUID_NULL) {
+    const base::string16 iid_reg_path = GetComIidRegistryPath(iid_);
+    const base::string16 typelib_reg_path = GetComTypeLibRegistryPath(iid_);
+
+    // Registering the Ole Automation marshaler with the CLSID
+    // {00020424-0000-0000-C000-000000000046} as the proxy/stub for the
+    // interface.
+    com_registration_work_items_->AddCreateRegKeyWorkItem(
+        HKEY_LOCAL_MACHINE, iid_reg_path, WorkItem::kWow64Default);
+    com_registration_work_items_->AddCreateRegKeyWorkItem(
+        HKEY_LOCAL_MACHINE, iid_reg_path + L"\\ProxyStubClsid32",
+        WorkItem::kWow64Default);
+    com_registration_work_items_->AddSetRegValueWorkItem(
+        HKEY_LOCAL_MACHINE, iid_reg_path + L"\\ProxyStubClsid32",
+        WorkItem::kWow64Default, L"", L"{00020424-0000-0000-C000-000000000046}",
+        true);
+    com_registration_work_items_->AddCreateRegKeyWorkItem(
+        HKEY_LOCAL_MACHINE, iid_reg_path + L"\\TypeLib",
+        WorkItem::kWow64Default);
+    com_registration_work_items_->AddSetRegValueWorkItem(
+        HKEY_LOCAL_MACHINE, iid_reg_path + L"\\TypeLib",
+        WorkItem::kWow64Default, L"", base::win::String16FromGUID(iid_), true);
+
+    // The TypeLib registration for the Ole Automation marshaler.
+    com_registration_work_items_->AddCreateRegKeyWorkItem(
+        HKEY_LOCAL_MACHINE, typelib_reg_path, WorkItem::kWow64Default);
+    com_registration_work_items_->AddCreateRegKeyWorkItem(
+        HKEY_LOCAL_MACHINE, typelib_reg_path + L"\\1.0",
+        WorkItem::kWow64Default);
+    com_registration_work_items_->AddCreateRegKeyWorkItem(
+        HKEY_LOCAL_MACHINE, typelib_reg_path + L"\\1.0\\0",
+        WorkItem::kWow64Default);
+    com_registration_work_items_->AddCreateRegKeyWorkItem(
+        HKEY_LOCAL_MACHINE, typelib_reg_path + L"\\1.0\\0\\win32",
+        WorkItem::kWow64Default);
+    com_registration_work_items_->AddSetRegValueWorkItem(
+        HKEY_LOCAL_MACHINE, typelib_reg_path + L"\\1.0\\0\\win32",
+        WorkItem::kWow64Default, L"", service_cmd_line_.GetProgram().value(),
+        true);
+    com_registration_work_items_->AddCreateRegKeyWorkItem(
+        HKEY_LOCAL_MACHINE, typelib_reg_path + L"\\1.0\\0\\win64",
+        WorkItem::kWow64Default);
+    com_registration_work_items_->AddSetRegValueWorkItem(
+        HKEY_LOCAL_MACHINE, typelib_reg_path + L"\\1.0\\0\\win64",
+        WorkItem::kWow64Default, L"", service_cmd_line_.GetProgram().value(),
+        true);
+  }
+
+  return com_registration_work_items_->Do();
+}
+
 void InstallServiceWorkItemImpl::RollbackImpl() {
+  com_registration_work_items_->Rollback();
+
   DCHECK(!(rollback_existing_service_ && rollback_new_service_));
 
   if (!rollback_existing_service_ && !rollback_new_service_)
@@ -249,6 +354,21 @@ void InstallServiceWorkItemImpl::RollbackImpl() {
 }
 
 bool InstallServiceWorkItemImpl::DeleteServiceImpl() {
+  // Uninstall the elevation service.
+  if (clsid_ != GUID_NULL) {
+    for (const auto& reg_path :
+         {GetComClsidRegistryPath(clsid_), GetComAppidRegistryPath(clsid_)}) {
+      InstallUtil::DeleteRegistryKey(HKEY_LOCAL_MACHINE, reg_path,
+                                     WorkItem::kWow64Default);
+    }
+  }
+  if (iid_ != GUID_NULL) {
+    for (const auto& reg_path :
+         {GetComIidRegistryPath(iid_), GetComTypeLibRegistryPath(iid_)}) {
+      InstallUtil::DeleteRegistryKey(HKEY_LOCAL_MACHINE, reg_path,
+                                     WorkItem::kWow64Default);
+    }
+  }
   scm_.Set(::OpenSCManager(nullptr, nullptr, SC_MANAGER_CONNECT));
   if (!scm_.IsValid()) {
     DPLOG(ERROR) << "::OpenSCManager Failed";
@@ -281,7 +401,8 @@ bool InstallServiceWorkItemImpl::IsServiceCorrectlyConfigured(
   return config.type == kServiceType &&
          config.start_type == kServiceStartType &&
          config.error_control == kServiceErrorControl &&
-         !_wcsicmp(config.cmd_line.c_str(), service_cmd_line_.c_str()) &&
+         !_wcsicmp(config.cmd_line.c_str(),
+                   service_cmd_line_.GetCommandLineString().c_str()) &&
          config.dependencies == MultiSzToVector(kServiceDependencies);
 }
 
@@ -405,9 +526,9 @@ std::vector<base::char16> InstallServiceWorkItemImpl::MultiSzToVector(
 
 bool InstallServiceWorkItemImpl::InstallNewService() {
   DCHECK(!service_.IsValid());
-  bool success = InstallService(
-      ServiceConfig(kServiceType, kServiceStartType, kServiceErrorControl,
-                    service_cmd_line_, kServiceDependencies));
+  bool success = InstallService(ServiceConfig(
+      kServiceType, kServiceStartType, kServiceErrorControl,
+      service_cmd_line_.GetCommandLineString(), kServiceDependencies));
   if (success)
     rollback_new_service_ = true;
   return success;
@@ -429,9 +550,9 @@ bool InstallServiceWorkItemImpl::UpgradeService() {
 
   original_service_config_ = std::move(config);
 
-  bool success = ChangeServiceConfig(
-      ServiceConfig(kServiceType, kServiceStartType, kServiceErrorControl,
-                    service_cmd_line_, kServiceDependencies));
+  bool success = ChangeServiceConfig(ServiceConfig(
+      kServiceType, kServiceStartType, kServiceErrorControl,
+      service_cmd_line_.GetCommandLineString(), kServiceDependencies));
   if (success) {
     rollback_existing_service_ = true;
     RecordServiceInstallResult(

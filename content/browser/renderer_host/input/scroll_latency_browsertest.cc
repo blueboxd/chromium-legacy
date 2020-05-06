@@ -267,15 +267,9 @@ IN_PROC_BROWSER_TEST_F(ScrollLatencyBrowserTest,
 
 using ScrollThroughputBrowserTest = ScrollLatencyBrowserTest;
 
-// The test does a fling during the test, and it times out in slower builds
-// (e.g. when sanitizers are turned on).
-#if defined(ADDRESS_SANITIZER) || defined(THREAD_SANITIZER)
-#define MAYBE_ScrollThroughputMetrics DISABLED_ScrollThroughputMetrics
-#else
-#define MAYBE_ScrollThroughputMetrics ScrollThroughputMetrics
-#endif
+// This test flakes on most platforms: https://crbug.com/1067492.
 IN_PROC_BROWSER_TEST_F(ScrollThroughputBrowserTest,
-                       MAYBE_ScrollThroughputMetrics) {
+                       DISABLED_ScrollThroughputMetrics) {
   LoadURL();
   auto scroll_update_watcher = std::make_unique<InputMsgWatcher>(
       GetWidgetHost(), blink::WebInputEvent::Type::kGestureScrollEnd);

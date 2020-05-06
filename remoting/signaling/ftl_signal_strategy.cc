@@ -379,10 +379,19 @@ void FtlSignalStrategy::Core::SendMessageImpl(
     return;
   }
 
-  HOST_LOG << "Sending outgoing stanza:\n"
+  std::string message_payload;
+  if (message.has_xmpp()) {
+    message_payload = message.xmpp().stanza();
+  } else if (message.has_echo()) {
+    message_payload = message.echo().message();
+  } else {
+    message_payload = "Error displaying message due to unknown format.";
+  }
+
+  HOST_LOG << "Sending outgoing message:\n"
            << "Receiver: " << receiver_username << "\n"
            << "Receiver registration ID: " << receiver_registration_id << "\n"
-           << message.xmpp().stanza()
+           << message_payload
            << "\n=========================================================";
 
   messaging_client_->SendMessage(receiver_username, receiver_registration_id,

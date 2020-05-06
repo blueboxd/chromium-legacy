@@ -785,10 +785,6 @@ class CONTENT_EXPORT ContentBrowserClient {
       bool strict_enforcement,
       base::OnceCallback<void(CertificateRequestResultType)> callback);
 
-  // Returns true if all requests with certificate errors should be blocked
-  // for a given |main_frame_url|, regardless of any other security settings.
-  virtual bool ShouldDenyRequestOnCertificateError(const GURL main_frame_url);
-
   // Selects a SSL client certificate and returns it to the |delegate|. Note:
   // |delegate| may be called synchronously or asynchronously.
   //

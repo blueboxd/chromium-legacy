@@ -1835,21 +1835,21 @@ void ExtensionPrefs::SetNeedsSync(const std::string& extension_id,
 
 bool ExtensionPrefs::GetDNRStaticRulesetChecksum(
     const ExtensionId& extension_id,
-    int ruleset_id,
+    declarative_net_request::RulesetID ruleset_id,
     int* checksum) const {
   std::string pref =
-      JoinPrefs({kDNRStaticRulesetPref, base::NumberToString(ruleset_id),
-                 kDNRChecksumKey});
+      JoinPrefs({kDNRStaticRulesetPref,
+                 base::NumberToString(ruleset_id.value()), kDNRChecksumKey});
   return ReadPrefAsInteger(extension_id, pref, checksum);
 }
 
 void ExtensionPrefs::SetDNRStaticRulesetChecksum(
     const ExtensionId& extension_id,
-    int ruleset_id,
+    declarative_net_request::RulesetID ruleset_id,
     int checksum) {
   std::string pref =
-      JoinPrefs({kDNRStaticRulesetPref, base::NumberToString(ruleset_id),
-                 kDNRChecksumKey});
+      JoinPrefs({kDNRStaticRulesetPref,
+                 base::NumberToString(ruleset_id.value()), kDNRChecksumKey});
   UpdateExtensionPref(extension_id, pref,
                       std::make_unique<base::Value>(checksum));
 }
@@ -2050,7 +2050,7 @@ void ExtensionPrefs::PopulateExtensionInfoPrefs(
       auto ruleset_dict = std::make_unique<base::DictionaryValue>();
       ruleset_dict->SetIntKey(kDNRChecksumKey, checksum.checksum);
 
-      std::string id_key = base::NumberToString(checksum.ruleset_id);
+      std::string id_key = base::NumberToString(checksum.ruleset_id.value());
       DCHECK(!ruleset_prefs->FindKey(id_key));
       ruleset_prefs->SetDictionary(id_key, std::move(ruleset_dict));
     }

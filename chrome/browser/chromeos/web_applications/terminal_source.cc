@@ -15,6 +15,7 @@
 #include "base/task/thread_pool.h"
 #include "chrome/browser/chromeos/crostini/crostini_terminal.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/webui/webui_allowlist.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/common/webui_url_constants.h"
 #include "components/prefs/pref_service.h"
@@ -79,7 +80,15 @@ void ReadFile(const std::string& relative_path,
 }
 }  // namespace
 
-TerminalSource::TerminalSource(Profile* profile) : profile_(profile) {}
+TerminalSource::TerminalSource(Profile* profile) : profile_(profile) {
+  auto* webui_allowlist = WebUIAllowlist::GetOrCreate(profile);
+  const url::Origin terminal_origin =
+      url::Origin::Create(GURL(chrome::kChromeUIUntrustedTerminalURL));
+  webui_allowlist->RegisterAutoGrantedPermission(
+      terminal_origin, ContentSettingsType::NOTIFICATIONS);
+  webui_allowlist->RegisterAutoGrantedPermission(
+      terminal_origin, ContentSettingsType::CLIPBOARD_READ_WRITE);
+}
 
 TerminalSource::~TerminalSource() = default;
 

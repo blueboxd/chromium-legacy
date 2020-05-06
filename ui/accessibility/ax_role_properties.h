@@ -15,18 +15,31 @@ namespace ui {
 //
 // Please keep these functions in alphabetic order.
 
-// Returns true for objects which have the characteristic "Children
-// Presentational: True". This concept is defined in the ARIA specification. See
+// Returns true for object roles that have the attribute "Children
+// Presentational: True" as defined in the ARIA Specification.
 // https://www.w3.org/TR/wai-aria-1.1/#childrenArePresentational.
 AX_BASE_EXPORT bool HasPresentationalChildren(const ax::mojom::Role role);
 
-// Returns if the given role is an alert or alert-dialog type.
+// Returns true if the given role is an alert or alert-dialog type.
 AX_BASE_EXPORT bool IsAlert(const ax::mojom::Role role);
 
-// Returns if the given role is a native button or ARIA role="button".
+// Returns true if the provided role belongs to a native or an ARIA button.
 AX_BASE_EXPORT bool IsButton(const ax::mojom::Role role);
 
-// Returns if the given role is a clickable type.
+// Returns true if the provided role belongs to an object on which a click
+// handler is commonly attached, or to an object that carries out an action when
+// clicked, such as activating itself, opening a dialog or closing a menu.
+//
+// A button and a checkbox fall in the first category, whilst a color well and a
+// list menu option in the second. Note that a text field, or a similar element,
+// also carries out an action when clicked. It focuses itself, so the action
+// verb is "activate". Not all roles that inherently support a click handler or
+// that can potentially be focused are included, because in that case even a div
+// could be made clickable or focusable.
+//
+// The reason for the existence of this function is that certain screen readers,
+// such as Jaws, might need to report such objects as clickable to their users,
+// so that users will know that they could activate them if they so choose.
 AX_BASE_EXPORT bool IsClickable(const ax::mojom::Role role);
 
 // Returns true if the provided role belongs to a cell or a table header.
@@ -66,11 +79,11 @@ AX_BASE_EXPORT bool IsHeadingOrTableHeader(const ax::mojom::Role role);
 // Returns true if the provided role belongs to an iframe.
 AX_BASE_EXPORT bool IsIframe(const ax::mojom::Role role);
 
-// Returns true if the provided role is for any kind of image or video.
-AX_BASE_EXPORT bool IsImageOrVideo(const ax::mojom::Role role);
-
 // Returns true if the provided role belongs to an image, graphic, canvas, etc.
 AX_BASE_EXPORT bool IsImage(const ax::mojom::Role role);
+
+// Returns true if the provided role is for any kind of image or video.
+AX_BASE_EXPORT bool IsImageOrVideo(const ax::mojom::Role role);
 
 // Returns true if the provided role is item-like, specifically if it can hold
 // pos_in_set and set_size values.
@@ -95,7 +108,17 @@ AX_BASE_EXPORT bool IsMenuItem(ax::mojom::Role role);
 // Returns true if the provided role belongs to a menu or related control.
 AX_BASE_EXPORT bool IsMenuRelated(const ax::mojom::Role role);
 
+// Returns true if the provided role is presentational in nature, i.e. a node
+// whose implicit native role semantics will not be mapped to the accessibility
+// API.
+AX_BASE_EXPORT bool IsPresentational(const ax::mojom::Role role);
+
+// Returns true if the provided role supports a range-based value, such as a
+// slider.
+AX_BASE_EXPORT bool IsRangeValueSupported(const ax::mojom::Role role);
+
 // Returns true if this object supports readonly.
+//
 // Note: This returns false for table cells and headers, it is up to the
 //       caller to make sure that they are included IFF they are within an
 //       ARIA-1.1+ role='grid' or 'treegrid', and not role='table'.

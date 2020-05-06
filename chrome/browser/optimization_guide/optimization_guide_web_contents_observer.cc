@@ -173,4 +173,9 @@ void OptimizationGuideWebContentsObserver::UpdateSessionTimingStatistics(
       timing.paint_timing->first_contentful_paint.value());
 }
 
+void OptimizationGuideWebContentsObserver::FlushLastNavigationData() {
+  if (last_navigation_data_)
+    last_navigation_data_.reset();
+}
+
 WEB_CONTENTS_USER_DATA_KEY_IMPL(OptimizationGuideWebContentsObserver)

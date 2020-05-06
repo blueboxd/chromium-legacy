@@ -40,13 +40,24 @@ class InstallServiceWorkItem : public WorkItem {
   // |service_cmd_line| is the command line with which the service is invoked by
   // the SCM. For example,
   // "C:\Program Files (x86)\Google\Chrome\ElevationService.exe" /svc
+  //
+  // |clsid| is the CLSID and AppId to register.
+  // If COM CLSID/AppId registration is not required, pass in GUID_NULL for
+  // |clsid|.
+  // |iid| is the Interface and Typelib to register.
+  // If COM Interface/Typelib registration is not required, pass in
+  // GUID_NULL for |iid|.
   InstallServiceWorkItem(const base::string16& service_name,
                          const base::string16& display_name,
-                         const base::CommandLine& service_cmd_line);
+                         const base::CommandLine& service_cmd_line,
+                         const GUID& clsid,
+                         const GUID& iid);
 
   ~InstallServiceWorkItem() override;
 
-  static bool DeleteService(const base::string16& service_name);
+  static bool DeleteService(const base::string16& service_name,
+                            const GUID& clsid,
+                            const GUID& iid);
 
  private:
   friend class InstallServiceWorkItemTest;

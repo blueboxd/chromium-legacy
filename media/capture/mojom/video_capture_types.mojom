@@ -214,7 +214,14 @@ enum VideoCaptureError {
   kMacDeckLinkUnsupportedPixelFormat,
   kMacAvFoundationReceivedAVCaptureSessionRuntimeErrorNotification,
   kAndroidApi2ErrorConfiguringCamera,
-  kCrosHalV3DeviceDelegateFailedToFlush
+  kCrosHalV3DeviceDelegateFailedToFlush,
+  kFuchsiaCameraDeviceDisconnected,
+  kFuchsiaCameraStreamDisconnected,
+  kFuchsiaSysmemDidNotSetImageFormat,
+  kFuchsiaSysmemInvalidBufferIndex,
+  kFuchsiaSysmemInvalidBufferSize,
+  kFuchsiaUnsupportedPixelFormat,
+  kFuchsiaFailedToMapSysmemBuffer,
 };
 
 enum VideoCaptureFrameDropReason {

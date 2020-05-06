@@ -112,6 +112,6 @@ function isHiddenByDomIf(element) {
   if (element.style.display === 'none') {
     return true;
   }
-  // The element is rendered and display != 'none'
+  // The element is rendered and display !== 'none'
   return false;
 }

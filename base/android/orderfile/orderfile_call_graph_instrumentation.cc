@@ -259,7 +259,7 @@ NO_INSTRUMENT_FUNCTION bool DumpToFile(const base::FilePath& path) {
                                 base::StringPrintf("%" PRIuS, caller_index));
     callee_element.SetStringKey("callee_offset",
                                 base::StringPrintf("%" PRIu32, callee_offset));
-    std::string offset_str = "";
+    std::string offset_str;
     ListValue callers_list;
     for (size_t j = 0; j < kTotalBuckets; j++) {
       uint32_t caller_offset =

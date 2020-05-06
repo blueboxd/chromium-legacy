@@ -61,7 +61,7 @@ namespace views {
 class View;
 class Widget;
 class WidgetDelegate;
-}
+}  // namespace views
 
 namespace ash {
 
@@ -222,6 +222,10 @@ class AshTestBase : public testing::Test {
   }
   TestingPrefServiceSimple* local_state() { return &local_state_; }
   AshTestHelper* ash_test_helper() { return ash_test_helper_.get(); }
+
+  void SetUserPref(const std::string& user_email,
+                   const std::string& path,
+                   const base::Value& value);
 
   TestScreenshotDelegate* GetScreenshotDelegate();
 

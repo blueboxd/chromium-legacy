@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/path_service.h"
 #include "build/build_config.h"
@@ -10,6 +11,10 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/views/examples/examples_window_with_content.h"
 #include "ui/views_content_client/views_content_client.h"
+
+#if defined(OS_MACOSX)
+#include "sandbox/mac/seatbelt_exec.h"
+#endif
 
 #if defined(OS_WIN)
 #include "content/public/app/sandbox_helper_win.h"
@@ -56,7 +61,22 @@ int APIENTRY wWinMain(HINSTANCE instance, HINSTANCE, wchar_t*, int) {
   ui::ViewsContentClient views_content_client(instance, &sandbox_info);
 #else
 int main(int argc, const char** argv) {
+  base::CommandLine::Init(argc, argv);
   ui::ViewsContentClient views_content_client(argc, argv);
+#endif
+
+#if defined(OS_MACOSX)
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  // ViewsContentClient expects a const char** argv and
+  // CreateFromArgumentsResult expects a regular char** argv. Given this is a
+  // test program, a refactor from either end didn't seem worth it. As a result,
+  // use a const_cast instead.
+  sandbox::SeatbeltExecServer::CreateFromArgumentsResult seatbelt =
+      sandbox::SeatbeltExecServer::CreateFromArguments(
+          command_line->GetProgram().value().c_str(), argc,
+          const_cast<char**>(argv));
+  if (seatbelt.sandbox_required)
+    CHECK(seatbelt.server->InitializeSandbox());
 #endif
 
   views_content_client.set_on_resources_loaded_callback(

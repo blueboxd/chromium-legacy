@@ -14,6 +14,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "media/capture/video/fuchsia/video_capture_device_fuchsia.h"
 
 namespace media {
 
@@ -77,8 +78,11 @@ class VideoCaptureDeviceFactoryFuchsia::DeviceInfoFetcher {
                                       props.image_format.display_height);
         format.frame_rate = static_cast<float>(props.frame_rate.numerator) /
                             props.frame_rate.denominator;
-        // VideoFrameCapturerFuchsia converts all formats to I420.
-        format.pixel_format = PIXEL_FORMAT_I420;
+        format.pixel_format =
+            VideoCaptureDeviceFuchsia::GetConvertedPixelFormat(
+                props.image_format.pixel_format.type);
+        if (format.pixel_format == PIXEL_FORMAT_UNKNOWN)
+          continue;
         formats.push_back(format);
       }
     }
@@ -116,8 +120,14 @@ std::unique_ptr<VideoCaptureDevice>
 VideoCaptureDeviceFactoryFuchsia::CreateDevice(
     const VideoCaptureDeviceDescriptor& device_descriptor) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  NOTIMPLEMENTED();
-  return nullptr;
+  uint64_t device_id;
+  bool converted =
+      base::StringToUint64(device_descriptor.device_id, &device_id);
+  DCHECK(converted);
+
+  fidl::InterfaceHandle<fuchsia::camera3::Device> device;
+  device_watcher_->ConnectToDevice(device_id, device.NewRequest());
+  return std::make_unique<VideoCaptureDeviceFuchsia>(std::move(device));
 }
 
 void VideoCaptureDeviceFactoryFuchsia::GetDeviceDescriptors(

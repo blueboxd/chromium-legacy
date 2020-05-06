@@ -14,7 +14,6 @@ import android.support.test.filters.SmallTest;
 
 import com.google.android.gms.gcm.TaskParams;
 
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -22,7 +21,6 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 
-import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.task.PostTask;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
@@ -105,15 +103,9 @@ public class ChromeBackgroundServiceTest {
 
     @Before
     public void setUp() {
-        RecordHistogram.setDisabledForTests(true);
         mSnippetsLauncher = SnippetsLauncher.create();
         mTaskService = new MockTaskService();
         mTaskService.setUpMocks();
-    }
-
-    @After
-    public void tearDown() {
-        RecordHistogram.setDisabledForTests(false);
     }
 
     private void deleteSnippetsLauncherInstance() {

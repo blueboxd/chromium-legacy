@@ -7,6 +7,7 @@
 
 #include "base/containers/flat_map.h"
 #include "base/macros.h"
+#include "base/time/time.h"
 #include "build/buildflag.h"
 #include "components/exo/keyboard_delegate.h"
 #include "components/exo/keyboard_observer.h"
@@ -63,6 +64,9 @@ class WaylandKeyboardDelegate : public WaylandInputDelegate,
                          ui::DomCode key,
                          bool pressed) override;
   void OnKeyboardModifiers(int modifier_flags) override;
+  void OnKeyRepeatSettingsChanged(bool enabled,
+                                  base::TimeDelta delay,
+                                  base::TimeDelta interval) override;
 
 #if defined(OS_CHROMEOS)
   // Overridden from ImeControllerImpl::Observer:
@@ -109,6 +113,9 @@ class WaylandKeyboardDelegate : public WaylandInputDelegate,
   DISALLOW_COPY_AND_ASSIGN(WaylandKeyboardDelegate);
 #endif
 };
+
+// Exposed for testing.
+int32_t GetWaylandRepeatRateForTesting(bool enabled, base::TimeDelta interval);
 
 }  // namespace wayland
 }  // namespace exo

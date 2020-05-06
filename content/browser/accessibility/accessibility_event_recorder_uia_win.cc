@@ -414,7 +414,7 @@ AccessibilityEventRecorderUia::Thread::EventHandler::HandleAutomationEvent(
 
 std::string AccessibilityEventRecorderUia::Thread::EventHandler::GetSenderInfo(
     IUIAutomationElement* sender) {
-  std::string sender_info = "";
+  std::string sender_info;
 
   auto append_property = [&](const char* name, auto getter) {
     base::win::ScopedBstr bstr;

@@ -26,7 +26,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.task.PostTask;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.CallbackHelper;
@@ -126,7 +125,6 @@ public class TrustedWebActivityClientTest {
 
     @Before
     public void setUp() throws TimeoutException, RemoteException {
-        RecordHistogram.setDisabledForTests(true);
         mTargetContext = InstrumentationRegistry.getTargetContext();
         mBuilder = new StandardNotificationBuilder(mTargetContext);
 

@@ -413,7 +413,7 @@ class FeedSurfaceMediator
         int itemId = item.get(ListMenuItemProperties.MENU_ITEM_ID);
         if (itemId == R.id.ntp_feed_header_menu_item_activity) {
             mPageNavigationDelegate.openUrl(WindowOpenDisposition.CURRENT_TAB,
-                    new LoadUrlParams("https://myactivity.google.com/myactivity"));
+                    new LoadUrlParams("https://myactivity.google.com/myactivity?product=50"));
         } else if (itemId == R.id.ntp_feed_header_menu_item_interest) {
             mPageNavigationDelegate.openUrl(WindowOpenDisposition.CURRENT_TAB,
                     new LoadUrlParams("https://www.google.com/preferences/interests"));

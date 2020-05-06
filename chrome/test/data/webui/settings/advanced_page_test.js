@@ -48,12 +48,12 @@ suite('AdvancedPage', function() {
 
     const children = pages.getContentChildren();
     const stampedChildren = children.filter(function(element) {
-      return element.tagName != 'TEMPLATE';
+      return element.tagName !== 'TEMPLATE';
     });
 
     // The section's main child should be stamped and visible.
     const main = stampedChildren.filter(function(element) {
-      return element.getAttribute('route-path') == 'default';
+      return element.getAttribute('route-path') === 'default';
     });
     assertEquals(
         main.length, 1,
@@ -62,7 +62,7 @@ suite('AdvancedPage', function() {
 
     // Any other stamped subpages should not be visible.
     const subpages = stampedChildren.filter(function(element) {
-      return element.getAttribute('route-path') != 'default';
+      return element.getAttribute('route-path') !== 'default';
     });
     for (const subpage of subpages) {
       assertEquals(

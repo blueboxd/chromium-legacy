@@ -96,7 +96,7 @@ function getFirstPasswordListItem(passwordsSection) {
  */
 function listContainsUrl(passwordList, url) {
   for (let i = 0; i < passwordList.length; ++i) {
-    if (passwordList[i].urls.origin == url) {
+    if (passwordList[i].urls.origin === url) {
       return true;
     }
   }
@@ -110,7 +110,7 @@ function listContainsUrl(passwordList, url) {
  */
 function exceptionsListContainsUrl(exceptionList, url) {
   for (let i = 0; i < exceptionList.length; ++i) {
-    if (exceptionList[i].urls.orginUrl == url) {
+    if (exceptionList[i].urls.orginUrl === url) {
       return true;
     }
   }

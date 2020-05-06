@@ -11,11 +11,9 @@ import android.content.IntentFilter;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
 
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
@@ -26,11 +24,6 @@ public class GSAAccountChangeListenerTest {
     private static final String ACCOUNT_NAME = "me@gmail.com";
     private static final String ACCOUNT_NAME2 = "you@gmail.com";
     private static final String PERMISSION = "permission.you.dont.have";
-
-    @Before
-    public void setUp() {
-        RecordHistogram.setDisabledForTests(true);
-    }
 
     @Test(expected = AssertionError.class)
     @SmallTest

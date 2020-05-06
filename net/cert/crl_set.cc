@@ -411,10 +411,10 @@ scoped_refptr<CRLSet> CRLSet::ForTesting(
     bool is_expired,
     const SHA256HashValue* issuer_spki,
     const std::string& serial_number,
-    const std::string common_name,
+    const std::string utf8_common_name,
     const std::vector<std::string> acceptable_spki_hashes_for_cn) {
   std::string subject_hash;
-  if (!common_name.empty()) {
+  if (!utf8_common_name.empty()) {
     CBB cbb, top_level, set, inner_seq, oid, cn;
     uint8_t* x501_data;
     size_t x501_len;
@@ -428,10 +428,10 @@ scoped_refptr<CRLSet> CRLSet::ForTesting(
         !CBB_add_asn1(&set, &inner_seq, CBS_ASN1_SEQUENCE) ||
         !CBB_add_asn1(&inner_seq, &oid, CBS_ASN1_OBJECT) ||
         !CBB_add_bytes(&oid, kCommonNameOID, sizeof(kCommonNameOID)) ||
-        !CBB_add_asn1(&inner_seq, &cn, CBS_ASN1_PRINTABLESTRING) ||
-        !CBB_add_bytes(&cn,
-                       reinterpret_cast<const uint8_t*>(common_name.data()),
-                       common_name.size()) ||
+        !CBB_add_asn1(&inner_seq, &cn, CBS_ASN1_UTF8STRING) ||
+        !CBB_add_bytes(
+            &cn, reinterpret_cast<const uint8_t*>(utf8_common_name.data()),
+            utf8_common_name.size()) ||
         !CBB_finish(&cbb, &x501_data, &x501_len)) {
       CBB_cleanup(&cbb);
       return nullptr;

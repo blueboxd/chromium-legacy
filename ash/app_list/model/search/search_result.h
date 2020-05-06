@@ -130,12 +130,6 @@ class APP_LIST_MODEL_EXPORT SearchResult {
   const Actions& actions() const { return metadata_->actions; }
   void SetActions(const Actions& sets);
 
-  bool is_installing() const { return is_installing_; }
-  void SetIsInstalling(bool is_installing);
-
-  int percent_downloaded() const { return percent_downloaded_; }
-  void SetPercentDownloaded(int percent_downloaded);
-
   bool notify_visibility_change() const {
     return metadata_->notify_visibility_change;
   }
@@ -156,8 +150,6 @@ class APP_LIST_MODEL_EXPORT SearchResult {
   void set_is_recommendation(bool is_recommendation) {
     metadata_->is_recommendation = is_recommendation;
   }
-
-  void NotifyItemInstalled();
 
   void AddObserver(SearchResultObserver* observer);
   void RemoveObserver(SearchResultObserver* observer);
@@ -186,8 +178,6 @@ class APP_LIST_MODEL_EXPORT SearchResult {
   // result. This is logged for UMA.
   int distance_from_origin_ = -1;
 
-  bool is_installing_ = false;
-  int percent_downloaded_ = 0;
   bool is_visible_ = true;
 
   std::unique_ptr<SearchResultMetadata> metadata_;

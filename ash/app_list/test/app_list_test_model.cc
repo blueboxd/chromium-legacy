@@ -160,10 +160,6 @@ AppListTestModel::AppListTestItem* AppListTestModel::CreateAndAddItem(
   AppListItem* item = AppListModel::AddItem(std::move(test_item));
   return static_cast<AppListTestItem*>(item);
 }
-void AppListTestModel::HighlightItemAt(int index) {
-  AppListItem* item = top_level_item_list()->item_at(index);
-  top_level_item_list()->HighlightItemInstalledFromUI(item->id());
-}
 
 void AppListTestModel::ItemActivated(AppListTestItem* item) {
   last_activated_ = item;

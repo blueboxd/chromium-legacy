@@ -9,6 +9,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "components/safe_browsing/core/features.h"
 #import "ios/chrome/browser/safe_browsing/fake_safe_browsing_service.h"
+#import "ios/chrome/browser/safe_browsing/safe_browsing_unsafe_resource_container.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
 #include "ios/web/public/test/web_task_environment.h"
 #import "net/base/mac/url_conversions.h"
@@ -31,6 +32,7 @@ class SafeBrowsingTabHelperTest
     feature_list_.InitAndEnableFeature(
         safe_browsing::kSafeBrowsingAvailableOnIOS);
     SafeBrowsingTabHelper::CreateForWebState(&web_state_);
+    SafeBrowsingUnsafeResourceContainer::CreateForWebState(&web_state_);
   }
 
   // Whether Safe Browsing decisions arrive before calls to

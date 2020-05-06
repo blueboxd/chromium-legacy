@@ -112,9 +112,6 @@ class SafeBrowsingUIManager : public BaseUIManager {
   // |observer_list_|.
   void CreateAndSendHitReport(const UnsafeResource& resource) override;
 
-  // Calls SafeBrowsingBlockingPage::ShowBlockingPage().
-  void ShowBlockingPageForResource(const UnsafeResource& resource) override;
-
   // Helper method to ensure hit reports are only sent when the user has
   // opted in to extended reporting and is not currently in incognito mode.
   static bool ShouldSendHitReport(const HitReport& hit_report,

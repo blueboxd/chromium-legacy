@@ -756,6 +756,50 @@ void MapperBoomN64Psx(const Gamepad& input, Gamepad* mapped) {
   mapped->axes_length = AXIS_INDEX_COUNT;
 }
 
+void MapperSnakebyteIDroidCon(const Gamepad& input, Gamepad* mapped) {
+  *mapped = input;
+  mapped->buttons[BUTTON_INDEX_TERTIARY] = input.buttons[3];
+  mapped->buttons[BUTTON_INDEX_QUATERNARY] = input.buttons[4];
+  mapped->buttons[BUTTON_INDEX_LEFT_SHOULDER] = input.buttons[6];
+  mapped->buttons[BUTTON_INDEX_RIGHT_SHOULDER] = input.buttons[7];
+  mapped->buttons[BUTTON_INDEX_BACK_SELECT] = input.buttons[10];
+  mapped->buttons[BUTTON_INDEX_START] = input.buttons[11];
+  mapped->buttons[BUTTON_INDEX_LEFT_THUMBSTICK] = input.buttons[2];
+  mapped->buttons[BUTTON_INDEX_RIGHT_THUMBSTICK] = input.buttons[5];
+  mapped->buttons[BUTTON_INDEX_META] = NullButton();
+
+  if (input.axes_length == 7) {
+    // "Game controller 2" mode: analog triggers.
+    mapped->buttons[BUTTON_INDEX_LEFT_TRIGGER] =
+        AxisPositiveAsButton(input.axes[2]);
+    mapped->buttons[BUTTON_INDEX_RIGHT_TRIGGER] =
+        AxisNegativeAsButton(input.axes[2]);
+    mapped->buttons[BUTTON_INDEX_DPAD_UP] = AxisNegativeAsButton(input.axes[6]);
+    mapped->buttons[BUTTON_INDEX_DPAD_DOWN] =
+        AxisPositiveAsButton(input.axes[6]);
+    mapped->buttons[BUTTON_INDEX_DPAD_LEFT] =
+        AxisNegativeAsButton(input.axes[5]);
+    mapped->buttons[BUTTON_INDEX_DPAD_RIGHT] =
+        AxisPositiveAsButton(input.axes[5]);
+    mapped->buttons[BUTTON_INDEX_META] = NullButton();
+    mapped->axes[AXIS_INDEX_RIGHT_STICK_X] = input.axes[3];
+    mapped->axes[AXIS_INDEX_RIGHT_STICK_Y] = input.axes[4];
+  } else {
+    // "Game controller 1" mode: digital triggers.
+    mapped->buttons[BUTTON_INDEX_LEFT_TRIGGER] = input.buttons[8];
+    mapped->buttons[BUTTON_INDEX_RIGHT_TRIGGER] = input.buttons[9];
+    mapped->buttons[BUTTON_INDEX_DPAD_UP] = AxisNegativeAsButton(input.axes[5]);
+    mapped->buttons[BUTTON_INDEX_DPAD_DOWN] =
+        AxisPositiveAsButton(input.axes[5]);
+    mapped->buttons[BUTTON_INDEX_DPAD_LEFT] =
+        AxisNegativeAsButton(input.axes[4]);
+    mapped->buttons[BUTTON_INDEX_DPAD_RIGHT] =
+        AxisPositiveAsButton(input.axes[4]);
+  }
+  mapped->buttons_length = BUTTON_INDEX_COUNT - 1;  // no meta
+  mapped->axes_length = AXIS_INDEX_COUNT;
+}
+
 constexpr struct MappingData {
   GamepadId gamepad_id;
   GamepadStandardMappingFunction function;
@@ -836,6 +880,8 @@ constexpr struct MappingData {
     {GamepadId::kPrototypeVendorProduct0667, MapperBoomN64Psx},
     // Stadia Controller prototype
     {GamepadId::kPrototypeVendorProduct9401, MapperStadiaControllerOldFirmware},
+    // Snakebyte iDroid:con
+    {GamepadId::kBroadcomProduct8502, MapperSnakebyteIDroidCon},
 };
 
 }  // namespace

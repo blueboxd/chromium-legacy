@@ -101,10 +101,6 @@ void seat_get_keyboard(wl_client* client, wl_resource* resource, uint32_t id) {
   keyboard->AddObserver(delegate);
   SetImplementation(keyboard_resource, &keyboard_implementation,
                     std::move(keyboard));
-
-  // TODO(reveman): Keep repeat info synchronized with chromium and the host OS.
-  if (version >= WL_KEYBOARD_REPEAT_INFO_SINCE_VERSION)
-    wl_keyboard_send_repeat_info(keyboard_resource, 40, 500);
 #else
   NOTIMPLEMENTED();
 #endif  // BUILDFLAG(USE_XKBCOMMON)

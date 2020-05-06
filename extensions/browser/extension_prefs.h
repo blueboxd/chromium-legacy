@@ -24,6 +24,7 @@
 #include "extensions/browser/disable_reason.h"
 #include "extensions/browser/extension_prefs_scope.h"
 #include "extensions/browser/install_flag.h"
+#include "extensions/common/api/declarative_net_request/constants.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_id.h"
@@ -591,12 +592,14 @@ class ExtensionPrefs : public KeyedService {
   // Returns false if there is no ruleset checksum corresponding to the given
   // |extension_id| and |ruleset_id|. On success, returns true and populates the
   // checksum.
-  bool GetDNRStaticRulesetChecksum(const ExtensionId& extension_id,
-                                   int ruleset_id,
-                                   int* checksum) const;
-  void SetDNRStaticRulesetChecksum(const ExtensionId& extension_id,
-                                   int ruleset_id,
-                                   int checksum);
+  bool GetDNRStaticRulesetChecksum(
+      const ExtensionId& extension_id,
+      declarative_net_request::RulesetID ruleset_id,
+      int* checksum) const;
+  void SetDNRStaticRulesetChecksum(
+      const ExtensionId& extension_id,
+      declarative_net_request::RulesetID ruleset_id,
+      int checksum);
 
   // Returns false if there is no dynamic ruleset corresponding to
   // |extension_id|. On success, returns true and populates the checksum.

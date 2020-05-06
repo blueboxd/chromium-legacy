@@ -175,7 +175,7 @@ suite('SiteEntry', function() {
 
     const collapseChild = testElement.$.originList.get();
     flush();
-    const originList = collapseChild.querySelectorAll('.settings-box');
+    const originList = collapseChild.querySelectorAll('.hr');
     assertEquals(3, originList.length);
 
     for (let i = 0; i < originList.length; i++) {

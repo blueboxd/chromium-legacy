@@ -288,7 +288,7 @@ std::unique_ptr<net::test_server::HttpResponse>
 VariationsHttpHeadersBrowserTest::RequestHandler(
     const net::test_server::HttpRequest& request) {
   // Retrieve the host name (without port) from the request headers.
-  std::string host = "";
+  std::string host;
   if (request.headers.find("Host") != request.headers.end())
     host = request.headers.find("Host")->second;
   if (host.find(':') != std::string::npos)

@@ -165,9 +165,7 @@ class DeviceIDTest : public OobeBaseTest,
       dictionary.SetKey(kv.first, base::Value(kv.second));
     std::string json;
     EXPECT_TRUE(base::JSONWriter::Write(dictionary, &json));
-    EXPECT_EQ(static_cast<int>(json.length()),
-              base::WriteFile(GetRefreshTokenToDeviceIdMapFilePath(),
-                              json.c_str(), json.length()));
+    EXPECT_TRUE(base::WriteFile(GetRefreshTokenToDeviceIdMapFilePath(), json));
   }
 
   std::unique_ptr<base::RunLoop> user_removal_loop_;

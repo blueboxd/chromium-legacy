@@ -109,7 +109,7 @@ void SetPolicyValue(em::ChromeDeviceSettingsProto* proto,
                     PolicyValue policy,
                     bool recommended) {
   std::vector<std::string> json_entries;
-  std::string json = "";
+  std::string json;
   if (policy.external_width) {
     json_entries.push_back("\"external_width\": " +
                            std::to_string(*policy.external_width));

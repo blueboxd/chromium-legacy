@@ -284,7 +284,6 @@ class LocalFrameClientImpl final : public LocalFrameClient {
   Member<WebLocalFrameImpl> web_frame_;
 
   String user_agent_;
-  blink::UserAgentMetadata user_agent_metadata_;
 };
 
 template <>

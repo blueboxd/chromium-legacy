@@ -28,10 +28,6 @@ class APP_LIST_MODEL_EXPORT AppListItemListObserver {
                                size_t to_index,
                                AppListItem* item) {}
 
-  // Triggered after the item at the corresponding index in the top level has
-  // started or completed installing and should be highlighted.
-  virtual void OnAppListItemHighlight(size_t index, bool highlight) {}
-
  protected:
   virtual ~AppListItemListObserver() {}
 };

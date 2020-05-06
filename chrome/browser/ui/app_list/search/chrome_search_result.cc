@@ -97,12 +97,6 @@ void ChromeSearchResult::SetIsRecommendation(bool is_recommendation) {
   SetSearchResultMetadata();
 }
 
-void ChromeSearchResult::SetPercentDownloaded(int percent_downloaded) {
-  AppListModelUpdater* updater = model_updater();
-  if (updater)
-    updater->SetSearchResultPercentDownloaded(id(), percent_downloaded);
-}
-
 void ChromeSearchResult::SetQueryUrl(const GURL& url) {
   metadata_->query_url = url;
   auto* updater = model_updater();
@@ -139,12 +133,6 @@ void ChromeSearchResult::SetBadgeIcon(const gfx::ImageSkia& badge_icon) {
 void ChromeSearchResult::SetNotifyVisibilityChange(
     bool notify_visibility_change) {
   metadata_->notify_visibility_change = notify_visibility_change;
-}
-
-void ChromeSearchResult::NotifyItemInstalled() {
-  AppListModelUpdater* updater = model_updater();
-  if (updater)
-    updater->NotifySearchResultItemInstalled(id());
 }
 
 void ChromeSearchResult::SetSearchResultMetadata() {

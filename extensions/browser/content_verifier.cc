@@ -131,8 +131,8 @@ std::unique_ptr<ContentVerifierIOData::ExtensionData> CreateIOData(
   using DNRManifestData = declarative_net_request::DNRManifestData;
   for (const DNRManifestData::RulesetInfo& info :
        DNRManifestData::GetRulesets(*extension)) {
-    indexed_ruleset_paths->insert(
-        canonicalize_path(file_util::GetIndexedRulesetRelativePath(info.id)));
+    indexed_ruleset_paths->insert(canonicalize_path(
+        file_util::GetIndexedRulesetRelativePath(info.id.value())));
   }
 
   return std::make_unique<ContentVerifierIOData::ExtensionData>(

@@ -42,6 +42,11 @@ class KeyboardDelegate {
   // Called when keyboard modifier state changed.
   virtual void OnKeyboardModifiers(int modifier_flags) = 0;
 
+  // Called when key repeat settings are changed.
+  virtual void OnKeyRepeatSettingsChanged(bool enabled,
+                                          base::TimeDelta delay,
+                                          base::TimeDelta interval) = 0;
+
  protected:
   virtual ~KeyboardDelegate() {}
 };

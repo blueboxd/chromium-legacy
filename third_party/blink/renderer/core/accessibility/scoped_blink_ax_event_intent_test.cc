@@ -28,14 +28,40 @@ TEST_F(ScopedBlinkAXEventIntentTest, SingleIntent) {
          ax::mojom::blink::MoveDirection::kForward},
         &GetDocument());
 
-    EXPECT_TRUE(cache->ActiveEventIntents().Contains(scoped_intent.intent()));
+    EXPECT_TRUE(
+        cache->ActiveEventIntents().Contains(scoped_intent.intents()[0]));
     EXPECT_EQ(1u, cache->ActiveEventIntents().size());
   }
 
   EXPECT_TRUE(cache->ActiveEventIntents().IsEmpty());
 }
 
-TEST_F(ScopedBlinkAXEventIntentTest, NestedIntents) {
+TEST_F(ScopedBlinkAXEventIntentTest, MultipleIdenticalIntents) {
+  AXContext ax_context(GetDocument());
+  AXObjectCache* cache = GetDocument().ExistingAXObjectCache();
+  ASSERT_NE(nullptr, cache);
+
+  {
+    ScopedBlinkAXEventIntent scoped_intent(
+        {{ax::mojom::blink::Command::kCut,
+          ax::mojom::blink::TextBoundary::kWordEnd,
+          ax::mojom::blink::MoveDirection::kForward},
+         {ax::mojom::blink::Command::kCut,
+          ax::mojom::blink::TextBoundary::kWordEnd,
+          ax::mojom::blink::MoveDirection::kForward}},
+        &GetDocument());
+
+    EXPECT_TRUE(
+        cache->ActiveEventIntents().Contains(scoped_intent.intents()[0]));
+    EXPECT_EQ(2u,
+              cache->ActiveEventIntents().count(scoped_intent.intents()[0]));
+    EXPECT_EQ(1u, cache->ActiveEventIntents().size());
+  }
+
+  EXPECT_TRUE(cache->ActiveEventIntents().IsEmpty());
+}
+
+TEST_F(ScopedBlinkAXEventIntentTest, NestedIndividualIntents) {
   AXContext ax_context(GetDocument());
   AXObjectCache* cache = GetDocument().ExistingAXObjectCache();
   ASSERT_NE(nullptr, cache);
@@ -55,23 +81,85 @@ TEST_F(ScopedBlinkAXEventIntentTest, NestedIntents) {
           &GetDocument());
 
       EXPECT_TRUE(
-          cache->ActiveEventIntents().Contains(scoped_intent1.intent()));
+          cache->ActiveEventIntents().Contains(scoped_intent1.intents()[0]));
       EXPECT_TRUE(
-          cache->ActiveEventIntents().Contains(scoped_intent2.intent()));
-      EXPECT_EQ(1u, cache->ActiveEventIntents().count(scoped_intent1.intent()));
-      EXPECT_EQ(1u, cache->ActiveEventIntents().count(scoped_intent2.intent()));
+          cache->ActiveEventIntents().Contains(scoped_intent2.intents()[0]));
+      EXPECT_EQ(1u,
+                cache->ActiveEventIntents().count(scoped_intent1.intents()[0]));
+      EXPECT_EQ(1u,
+                cache->ActiveEventIntents().count(scoped_intent2.intents()[0]));
       EXPECT_EQ(2u, cache->ActiveEventIntents().size());
     }
 
-    EXPECT_TRUE(cache->ActiveEventIntents().Contains(scoped_intent1.intent()));
-    EXPECT_EQ(1u, cache->ActiveEventIntents().count(scoped_intent1.intent()));
+    EXPECT_TRUE(
+        cache->ActiveEventIntents().Contains(scoped_intent1.intents()[0]));
+    EXPECT_EQ(1u,
+              cache->ActiveEventIntents().count(scoped_intent1.intents()[0]));
     EXPECT_EQ(1u, cache->ActiveEventIntents().size());
   }
 
   EXPECT_TRUE(cache->ActiveEventIntents().IsEmpty());
 }
 
-TEST_F(ScopedBlinkAXEventIntentTest, NestedSameIntents) {
+TEST_F(ScopedBlinkAXEventIntentTest, NestedMultipleIntents) {
+  AXContext ax_context(GetDocument());
+  AXObjectCache* cache = GetDocument().ExistingAXObjectCache();
+  ASSERT_NE(nullptr, cache);
+
+  {
+    ScopedBlinkAXEventIntent scoped_intent1(
+        {{ax::mojom::blink::Command::kType,
+          ax::mojom::blink::TextBoundary::kCharacter,
+          ax::mojom::blink::MoveDirection::kForward},
+         {ax::mojom::blink::Command::kSetSelection,
+          ax::mojom::blink::TextBoundary::kWordEnd,
+          ax::mojom::blink::MoveDirection::kForward}},
+        &GetDocument());
+
+    {
+      ScopedBlinkAXEventIntent scoped_intent2(
+          {{ax::mojom::blink::Command::kCut,
+            ax::mojom::blink::TextBoundary::kWordEnd,
+            ax::mojom::blink::MoveDirection::kForward},
+           {ax::mojom::blink::Command::kClearSelection,
+            ax::mojom::blink::TextBoundary::kWordEnd,
+            ax::mojom::blink::MoveDirection::kForward}},
+          &GetDocument());
+
+      EXPECT_TRUE(
+          cache->ActiveEventIntents().Contains(scoped_intent1.intents()[0]));
+      EXPECT_TRUE(
+          cache->ActiveEventIntents().Contains(scoped_intent1.intents()[1]));
+      EXPECT_TRUE(
+          cache->ActiveEventIntents().Contains(scoped_intent2.intents()[0]));
+      EXPECT_TRUE(
+          cache->ActiveEventIntents().Contains(scoped_intent2.intents()[1]));
+      EXPECT_EQ(1u,
+                cache->ActiveEventIntents().count(scoped_intent1.intents()[0]));
+      EXPECT_EQ(1u,
+                cache->ActiveEventIntents().count(scoped_intent1.intents()[1]));
+      EXPECT_EQ(1u,
+                cache->ActiveEventIntents().count(scoped_intent2.intents()[0]));
+      EXPECT_EQ(1u,
+                cache->ActiveEventIntents().count(scoped_intent2.intents()[1]));
+      EXPECT_EQ(4u, cache->ActiveEventIntents().size());
+    }
+
+    EXPECT_TRUE(
+        cache->ActiveEventIntents().Contains(scoped_intent1.intents()[0]));
+    EXPECT_TRUE(
+        cache->ActiveEventIntents().Contains(scoped_intent1.intents()[1]));
+    EXPECT_EQ(1u,
+              cache->ActiveEventIntents().count(scoped_intent1.intents()[0]));
+    EXPECT_EQ(1u,
+              cache->ActiveEventIntents().count(scoped_intent1.intents()[1]));
+    EXPECT_EQ(2u, cache->ActiveEventIntents().size());
+  }
+
+  EXPECT_TRUE(cache->ActiveEventIntents().IsEmpty());
+}
+
+TEST_F(ScopedBlinkAXEventIntentTest, NestedIdenticalIntents) {
   AXContext ax_context(GetDocument());
   AXObjectCache* cache = GetDocument().ExistingAXObjectCache();
   ASSERT_NE(nullptr, cache);
@@ -92,13 +180,16 @@ TEST_F(ScopedBlinkAXEventIntentTest, NestedSameIntents) {
           &GetDocument());
 
       EXPECT_TRUE(
-          cache->ActiveEventIntents().Contains(scoped_intent1.intent()));
-      EXPECT_EQ(2u, cache->ActiveEventIntents().count(scoped_intent1.intent()));
+          cache->ActiveEventIntents().Contains(scoped_intent1.intents()[0]));
+      EXPECT_EQ(2u,
+                cache->ActiveEventIntents().count(scoped_intent1.intents()[0]));
       EXPECT_EQ(1u, cache->ActiveEventIntents().size());
     }
 
-    EXPECT_TRUE(cache->ActiveEventIntents().Contains(scoped_intent1.intent()));
-    EXPECT_EQ(1u, cache->ActiveEventIntents().count(scoped_intent1.intent()));
+    EXPECT_TRUE(
+        cache->ActiveEventIntents().Contains(scoped_intent1.intents()[0]));
+    EXPECT_EQ(1u,
+              cache->ActiveEventIntents().count(scoped_intent1.intents()[0]));
     EXPECT_EQ(1u, cache->ActiveEventIntents().size());
   }
 

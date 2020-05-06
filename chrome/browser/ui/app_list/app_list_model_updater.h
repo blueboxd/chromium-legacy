@@ -59,8 +59,6 @@ class AppListModelUpdater {
   virtual void MoveItemToFolder(const std::string& id,
                                 const std::string& folder_id) {}
   virtual void SetStatus(ash::AppListModelStatus status) {}
-  virtual void SetState(ash::AppListState state) {}
-  virtual void HighlightItemInstalledFromUI(const std::string& id) {}
   // For SearchModel:
   virtual void SetSearchEngineIsGoogle(bool is_google) {}
   virtual void SetSearchTabletAndClamshellAccessibleName(
@@ -83,22 +81,14 @@ class AppListModelUpdater {
   virtual void SetItemIsPersistent(const std::string& id, bool is_persistent) {}
   virtual void SetItemFolderId(const std::string& id,
                                const std::string& folder_id) {}
-  virtual void SetItemIsInstalling(const std::string& id, bool is_installing) {}
-  virtual void SetItemPercentDownloaded(const std::string& id,
-                                        int32_t percent_downloaded) {}
 
   virtual void SetSearchResultMetadata(
       const std::string& id,
       std::unique_ptr<ash::SearchResultMetadata> metadata) {}
-  virtual void SetSearchResultIsInstalling(const std::string& id,
-                                           bool is_installing) {}
-  virtual void SetSearchResultPercentDownloaded(const std::string& id,
-                                                int percent_downloaded) {}
   virtual void SetSearchResultIcon(const std::string& id,
                                    const gfx::ImageSkia& icon) {}
   virtual void SetSearchResultBadgeIcon(const std::string& id,
                                         const gfx::ImageSkia& badge_icon) {}
-  virtual void NotifySearchResultItemInstalled(const std::string& id) {}
   virtual void ActivateChromeItem(const std::string& id, int event_flags) {}
 
   // For AppListModel:

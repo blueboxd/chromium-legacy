@@ -306,9 +306,8 @@ std::vector<RulesetSource> RulesetSource::CreateStatic(
     sources.push_back(RulesetSource(
         extension.path().Append(info.relative_path),
         extension.path().Append(
-            file_util::GetIndexedRulesetRelativePath(info.id)),
-        info.id, dnr_api::SOURCE_TYPE_MANIFEST, dnr_api::MAX_NUMBER_OF_RULES,
-        extension.id(), info.enabled));
+            file_util::GetIndexedRulesetRelativePath(info.id.value())),
+        info.id, dnr_api::MAX_NUMBER_OF_RULES, extension.id(), info.enabled));
   }
   return sources;
 }
@@ -323,14 +322,13 @@ RulesetSource RulesetSource::CreateDynamic(content::BrowserContext* context,
   return RulesetSource(
       dynamic_ruleset_directory.AppendASCII(kDynamicRulesJSONFilename),
       dynamic_ruleset_directory.AppendASCII(kDynamicIndexedRulesFilename),
-      kDynamicRulesetID, dnr_api::SOURCE_TYPE_DYNAMIC,
-      dnr_api::MAX_NUMBER_OF_DYNAMIC_RULES, extension_id, true /* enabled */);
+      kDynamicRulesetID, dnr_api::MAX_NUMBER_OF_DYNAMIC_RULES, extension_id,
+      true /* enabled */);
 }
 
 // static
 std::unique_ptr<RulesetSource> RulesetSource::CreateTemporarySource(
-    int id,
-    dnr_api::SourceType type,
+    RulesetID id,
     size_t rule_count_limit,
     ExtensionId extension_id) {
   base::FilePath temporary_file_indexed;
@@ -343,7 +341,7 @@ std::unique_ptr<RulesetSource> RulesetSource::CreateTemporarySource(
   // Use WrapUnique since RulesetSource constructor is private.
   return base::WrapUnique(new RulesetSource(
       std::move(temporary_file_json), std::move(temporary_file_indexed), id,
-      type, rule_count_limit, std::move(extension_id), true /* enabled */));
+      rule_count_limit, std::move(extension_id), true /* enabled */));
 }
 
 RulesetSource::~RulesetSource() = default;
@@ -351,7 +349,7 @@ RulesetSource::RulesetSource(RulesetSource&&) = default;
 RulesetSource& RulesetSource::operator=(RulesetSource&&) = default;
 
 RulesetSource RulesetSource::Clone() const {
-  return RulesetSource(json_path_, indexed_path_, id_, type_, rule_count_limit_,
+  return RulesetSource(json_path_, indexed_path_, id_, rule_count_limit_,
                        extension_id_, enabled_);
 }
 
@@ -491,15 +489,13 @@ bool RulesetSource::WriteRulesToJSON(
 
 RulesetSource::RulesetSource(base::FilePath json_path,
                              base::FilePath indexed_path,
-                             int id,
-                             dnr_api::SourceType type,
+                             RulesetID id,
                              size_t rule_count_limit,
                              ExtensionId extension_id,
                              bool enabled)
     : json_path_(std::move(json_path)),
       indexed_path_(std::move(indexed_path)),
       id_(id),
-      type_(type),
       rule_count_limit_(rule_count_limit),
       extension_id_(std::move(extension_id)),
       enabled_(enabled) {}

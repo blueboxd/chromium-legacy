@@ -85,7 +85,7 @@ class MODULES_EXPORT AXLayoutObject : public AXNodeObject {
 
   // Check object role or purpose.
   bool IsAutofillAvailable() const override;
-  bool IsDefault() const override;
+  bool IsDefault() const final;
   bool IsEditable() const override;
   bool IsRichlyEditable() const override;
   bool IsLineBreakingObject() const override;

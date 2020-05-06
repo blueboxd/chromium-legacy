@@ -10,12 +10,13 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
 // Annotates all accessibility events that are raised while an instance of this
-// class is alive with a specific intent. Multiple instances with different
-// intents could be alive at the same time.
+// class is alive with a specific intent or intents. Multiple instances with
+// different intents could be alive at the same time.
 //
 // An event intent is a description of what caused an accessibility event and
 // may include user actions such as paste, or page actions such as a text
@@ -31,15 +32,17 @@ class CORE_EXPORT ScopedBlinkAXEventIntent final {
  public:
   ScopedBlinkAXEventIntent(const BlinkAXEventIntent& intent,
                            Document* document);
+  ScopedBlinkAXEventIntent(const Vector<BlinkAXEventIntent>& intents,
+                           Document* document);
   virtual ~ScopedBlinkAXEventIntent();
   ScopedBlinkAXEventIntent(const ScopedBlinkAXEventIntent& intent) = delete;
   ScopedBlinkAXEventIntent& operator=(const ScopedBlinkAXEventIntent& intent) =
       delete;
 
-  const BlinkAXEventIntent& intent() const { return intent_; }
+  const Vector<BlinkAXEventIntent>& intents() const { return intents_; }
 
  private:
-  BlinkAXEventIntent intent_;
+  Vector<BlinkAXEventIntent> intents_;
 
   // This class is stack allocated, and therefore no WeakPersistent handle is
   // required for |document_| and no trace method is necessary.

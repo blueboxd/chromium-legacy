@@ -1715,7 +1715,7 @@ void WebBluetoothServiceImpl::OnDescriptorWriteValueFailed(
 
 CacheQueryResult WebBluetoothServiceImpl::QueryCacheForDevice(
     const blink::WebBluetoothDeviceId& device_id) {
-  std::string device_address = "";
+  std::string device_address;
   if (base::FeatureList::IsEnabled(
           features::kWebBluetoothNewPermissionsBackend)) {
     BluetoothDelegate* delegate =

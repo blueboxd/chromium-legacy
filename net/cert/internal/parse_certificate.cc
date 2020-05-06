@@ -124,48 +124,6 @@ WARN_UNUSED_RESULT bool ParseVersion(const der::Input& in,
   return !parser.HasMore();
 }
 
-// Parses a DER-encoded "Validity" as specified by RFC 5280. Returns true on
-// success and sets the results in |not_before| and |not_after|:
-//
-//       Validity ::= SEQUENCE {
-//            notBefore      Time,
-//            notAfter       Time }
-//
-// Note that upon success it is NOT guaranteed that |*not_before <= *not_after|.
-bool ParseValidity(const der::Input& validity_tlv,
-                   der::GeneralizedTime* not_before,
-                   der::GeneralizedTime* not_after) {
-  der::Parser parser(validity_tlv);
-
-  //     Validity ::= SEQUENCE {
-  der::Parser validity_parser;
-  if (!parser.ReadSequence(&validity_parser))
-    return false;
-
-  //          notBefore      Time,
-  if (!ReadUTCOrGeneralizedTime(&validity_parser, not_before))
-    return false;
-
-  //          notAfter       Time }
-  if (!ReadUTCOrGeneralizedTime(&validity_parser, not_after))
-    return false;
-
-  // By definition the input was a single Validity sequence, so there shouldn't
-  // be unconsumed data.
-  if (parser.HasMore())
-    return false;
-
-  // The Validity type does not have an extension point.
-  if (validity_parser.HasMore())
-    return false;
-
-  // Note that RFC 5280 doesn't require notBefore to be <=
-  // notAfter, so that will not be considered a "parsing" error here. Instead it
-  // will be considered an expired certificate later when testing against the
-  // current timestamp.
-  return true;
-}
-
 // Returns true if every bit in |bits| is zero (including empty).
 WARN_UNUSED_RESULT bool BitStringIsAllZeros(const der::BitString& bits) {
   // Note that it is OK to read from the unused bits, since BitString parsing
@@ -341,6 +299,40 @@ bool ReadUTCOrGeneralizedTime(der::Parser* parser, der::GeneralizedTime* out) {
 
   // Unrecognized tag.
   return false;
+}
+
+bool ParseValidity(const der::Input& validity_tlv,
+                   der::GeneralizedTime* not_before,
+                   der::GeneralizedTime* not_after) {
+  der::Parser parser(validity_tlv);
+
+  //     Validity ::= SEQUENCE {
+  der::Parser validity_parser;
+  if (!parser.ReadSequence(&validity_parser))
+    return false;
+
+  //          notBefore      Time,
+  if (!ReadUTCOrGeneralizedTime(&validity_parser, not_before))
+    return false;
+
+  //          notAfter       Time }
+  if (!ReadUTCOrGeneralizedTime(&validity_parser, not_after))
+    return false;
+
+  // By definition the input was a single Validity sequence, so there shouldn't
+  // be unconsumed data.
+  if (parser.HasMore())
+    return false;
+
+  // The Validity type does not have an extension point.
+  if (validity_parser.HasMore())
+    return false;
+
+  // Note that RFC 5280 doesn't require notBefore to be <=
+  // notAfter, so that will not be considered a "parsing" error here. Instead it
+  // will be considered an expired certificate later when testing against the
+  // current timestamp.
+  return true;
 }
 
 bool ParseCertificate(const der::Input& certificate_tlv,

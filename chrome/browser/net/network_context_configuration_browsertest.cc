@@ -1063,9 +1063,7 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest, PRE_DiskCache) {
   // Write the URL and expected response to a file.
   std::string file_data =
       test_url.spec() + "\n" + *simple_loader_helper.response_body();
-  ASSERT_EQ(
-      static_cast<int>(file_data.length()),
-      base::WriteFile(save_url_file_path, file_data.data(), file_data.size()));
+  ASSERT_TRUE(base::WriteFile(save_url_file_path, file_data));
 
   EXPECT_TRUE(embedded_test_server()->ShutdownAndWaitUntilComplete());
 }
@@ -1240,9 +1238,7 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest, PRE_Hsts) {
   base::FilePath save_url_file_path = browser()->profile()->GetPath().Append(
       FILE_PATH_LITERAL("url_for_test.txt"));
   std::string file_data = start_url.spec();
-  ASSERT_EQ(
-      static_cast<int>(file_data.length()),
-      base::WriteFile(save_url_file_path, file_data.data(), file_data.size()));
+  ASSERT_TRUE(base::WriteFile(save_url_file_path, file_data));
 }
 
 // Checks if the HSTS information from the last test is still available after a
@@ -1811,9 +1807,7 @@ class NetworkContextConfigurationFilePacBrowserTest
         temp_dir_.GetPath().AppendASCII(kPacFileName);
 
     std::string pac_script = GetPacScript();
-    ASSERT_EQ(
-        static_cast<int>(pac_script.size()),
-        base::WriteFile(pac_file_path, pac_script.c_str(), pac_script.size()));
+    ASSERT_TRUE(base::WriteFile(pac_file_path, pac_script));
 
     command_line->AppendSwitchASCII(
         switches::kProxyPacUrl, net::FilePathToFileURL(pac_file_path).spec());

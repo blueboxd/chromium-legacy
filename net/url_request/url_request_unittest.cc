@@ -9578,83 +9578,16 @@ class HTTPSCertNetFetchingTest : public HTTPSRequestTest {
     net::URLRequestFilter::GetInstance()->ClearHandlers();
   }
 
- protected:
-  // GetCertVerifierConfig() configures the URLRequestContext that will be used
-  // for making connections to the testserver. This can be overridden in test
-  // subclasses for different behaviour.
-  virtual CertVerifier::Config GetCertVerifierConfig() {
-    CertVerifier::Config config;
-    return config;
-  }
-
-  scoped_refptr<CertNetFetcherURLRequest> cert_net_fetcher_;
-  std::unique_ptr<CertVerifier> cert_verifier_;
-  TestURLRequestContext context_;
-};
-
-// This the fingerprint of the "Testing CA" certificate used by the testserver.
-// See net/data/ssl/certificates/ocsp-test-root.pem.
-static const SHA256HashValue kOCSPTestCertFingerprint = {{
-    0x0c, 0xa9, 0x05, 0x11, 0xb0, 0xa2, 0xc0, 0x1d, 0x40, 0x6a, 0x99,
-    0x04, 0x21, 0x36, 0x45, 0x3f, 0x59, 0x12, 0x5c, 0x80, 0x64, 0x2d,
-    0x46, 0x6a, 0x3b, 0x78, 0x9e, 0x84, 0xea, 0x54, 0x0f, 0x8b,
-}};
-
-// This is the SHA256, SPKI hash of the "Testing CA" certificate used by the
-// testserver.
-static const SHA256HashValue kOCSPTestCertSPKI = {{
-    0x05, 0xa8, 0xf6, 0xfd, 0x8e, 0x10, 0xfe, 0x92, 0x2f, 0x22, 0x75,
-    0x46, 0x40, 0xf4, 0xc4, 0x57, 0x06, 0x0d, 0x95, 0xfd, 0x60, 0x31,
-    0x3b, 0xf3, 0xfc, 0x12, 0x47, 0xe7, 0x66, 0x1a, 0x82, 0xa3,
-}};
-
-// This is the policy OID contained in the certificates that testserver
-// generates.
-static const char kOCSPTestCertPolicy[] = "1.3.6.1.4.1.11129.2.4.1";
-
-class HTTPSOCSPTest : public HTTPSRequestTest {
- public:
-  HTTPSOCSPTest()
-      : context_(true),
-        ev_test_policy_(
-            new ScopedTestEVPolicy(EVRootCAMetadata::GetInstance(),
-                                   kOCSPTestCertFingerprint,
-                                   kOCSPTestCertPolicy)) {
-  }
-
-  void SetUp() override {
-    cert_net_fetcher_ = base::MakeRefCounted<CertNetFetcherURLRequest>();
-    cert_verifier_ = CertVerifier::CreateDefault(cert_net_fetcher_);
-    context_.set_cert_verifier(cert_verifier_.get());
-    context_.SetCTPolicyEnforcer(std::make_unique<DefaultCTPolicyEnforcer>());
-    context_.Init();
-
-    cert_net_fetcher_->SetURLRequestContext(&context_);
-    context_.cert_verifier()->SetConfig(GetCertVerifierConfig());
-
-    net::URLRequestFilter::GetInstance()->AddHostnameInterceptor(
-        "http", "127.0.0.1", std::make_unique<SecureDnsInterceptor>());
-
-    scoped_refptr<X509Certificate> root_cert =
-        ImportCertFromFile(GetTestCertsDirectory(), "ocsp-test-root.pem");
-    ASSERT_TRUE(root_cert);
-    test_root_.reset(new ScopedTestRoot(root_cert.get()));
-  }
-
-  void TearDown() override {
-    net::URLRequestFilter::GetInstance()->ClearHandlers();
-  }
-
   void DoConnectionWithDelegate(
-      const SpawnedTestServer::SSLOptions& ssl_options,
+      const EmbeddedTestServer::ServerCertificateConfig& cert_config,
       TestDelegate* delegate,
       SSLInfo* out_ssl_info) {
     // Always overwrite |out_ssl_info|.
     out_ssl_info->Reset();
 
-    SpawnedTestServer test_server(
-        SpawnedTestServer::TYPE_HTTPS,
-        ssl_options,
+    EmbeddedTestServer test_server(EmbeddedTestServer::TYPE_HTTPS);
+    test_server.SetSSLConfig(cert_config);
+    test_server.AddDefaultHandlers(
         base::FilePath(FILE_PATH_LITERAL("net/data/ssl")));
     ASSERT_TRUE(test_server.Start());
 
@@ -9670,21 +9603,18 @@ class HTTPSOCSPTest : public HTTPSRequestTest {
     *out_ssl_info = r->ssl_info();
   }
 
-  void DoConnection(const SpawnedTestServer::SSLOptions& ssl_options,
-                    CertStatus* out_cert_status) {
+  void DoConnection(
+      const EmbeddedTestServer::ServerCertificateConfig& cert_config,
+      CertStatus* out_cert_status) {
     // Always overwrite |out_cert_status|.
     *out_cert_status = 0;
 
     TestDelegate d;
     SSLInfo ssl_info;
     ASSERT_NO_FATAL_FAILURE(
-        DoConnectionWithDelegate(ssl_options, &d, &ssl_info));
+        DoConnectionWithDelegate(cert_config, &d, &ssl_info));
 
     *out_cert_status = ssl_info.cert_status;
-  }
-
-  ~HTTPSOCSPTest() override {
-    cert_net_fetcher_->Shutdown();
   }
 
  protected:
@@ -9693,15 +9623,52 @@ class HTTPSOCSPTest : public HTTPSRequestTest {
   // subclasses for different behaviour.
   virtual CertVerifier::Config GetCertVerifierConfig() {
     CertVerifier::Config config;
+    return config;
+  }
+
+  scoped_refptr<CertNetFetcherURLRequest> cert_net_fetcher_;
+  std::unique_ptr<CertVerifier> cert_verifier_;
+  TestURLRequestContext context_;
+};
+
+// SHA256 hash of the testserver root_ca_cert DER.
+// openssl x509 -in root_ca_cert.pem -outform der | \
+//   openssl dgst -sha256 -binary | xxd -i
+static const SHA256HashValue kTestRootCertHash = {
+    {0xb2, 0xab, 0xa3, 0xa5, 0xd4, 0x11, 0x56, 0xcb, 0xb9, 0x23, 0x35,
+     0x07, 0x6d, 0x0b, 0x51, 0xbe, 0xd3, 0xee, 0x2e, 0xab, 0xe7, 0xab,
+     0x6b, 0xad, 0xcc, 0x2a, 0xfa, 0x35, 0xfb, 0x8e, 0x31, 0x5e}};
+
+// SHA256 hash of the DER SPKI of the testserver root_ca_cert.
+// openssl x509 -in root_ca_cert.pem -pubkey -noout | \
+//   openssl pkey -pubin -outform der | openssl dgst -sha256 -binary | xxd -i
+static const SHA256HashValue kTestRootCertSPKIHash = {
+    {0x57, 0x2a, 0x4f, 0xdd, 0x55, 0x8b, 0xec, 0xe6, 0xaa, 0x4c, 0x9e,
+     0xe6, 0x20, 0x17, 0xa1, 0x59, 0x89, 0x6f, 0xf2, 0x48, 0x4f, 0xb8,
+     0x51, 0xe9, 0x5a, 0x27, 0x9a, 0xad, 0x92, 0x36, 0x62, 0x32}};
+
+// The test EV policy OID used for generated certs.
+static const char kOCSPTestCertPolicy[] = "1.3.6.1.4.1.11129.2.4.1";
+
+class HTTPSOCSPTest : public HTTPSCertNetFetchingTest {
+ public:
+  void SetUp() override {
+    HTTPSCertNetFetchingTest::SetUp();
+
+    ev_test_policy_ = std::make_unique<ScopedTestEVPolicy>(
+        EVRootCAMetadata::GetInstance(), kTestRootCertHash,
+        kOCSPTestCertPolicy);
+  }
+
+  void TearDown() override { HTTPSCertNetFetchingTest::TearDown(); }
+
+  CertVerifier::Config GetCertVerifierConfig() override {
+    CertVerifier::Config config;
     config.enable_rev_checking = true;
     return config;
   }
 
-  std::unique_ptr<ScopedTestRoot> test_root_;
-  std::unique_ptr<TestSSLConfigService> ssl_config_service_;
-  scoped_refptr<CertNetFetcherURLRequest> cert_net_fetcher_;
-  std::unique_ptr<CertVerifier> cert_verifier_;
-  TestURLRequestContext context_;
+ private:
   std::unique_ptr<ScopedTestEVPolicy> ev_test_policy_;
 };
 
@@ -9787,12 +9754,14 @@ TEST_F(HTTPSOCSPTest, Valid) {
     return;
   }
 
-  SpawnedTestServer::SSLOptions ssl_options(
-      SpawnedTestServer::SSLOptions::CERT_AUTO);
-  ssl_options.ocsp_status = SpawnedTestServer::SSLOptions::OCSP_OK;
+  EmbeddedTestServer::ServerCertificateConfig cert_config;
+  cert_config.policy_oids = {kOCSPTestCertPolicy};
+  cert_config.ocsp_config = EmbeddedTestServer::OCSPConfig(
+      {{OCSPRevocationStatus::GOOD,
+        EmbeddedTestServer::OCSPConfig::SingleResponse::Date::kValid}});
 
   CertStatus cert_status;
-  DoConnection(ssl_options, &cert_status);
+  DoConnection(cert_config, &cert_status);
 
   EXPECT_EQ(0u, cert_status & CERT_STATUS_ALL_ERRORS);
 
@@ -9808,12 +9777,14 @@ TEST_F(HTTPSOCSPTest, Revoked) {
     return;
   }
 
-  SpawnedTestServer::SSLOptions ssl_options(
-      SpawnedTestServer::SSLOptions::CERT_AUTO);
-  ssl_options.ocsp_status = SpawnedTestServer::SSLOptions::OCSP_REVOKED;
+  EmbeddedTestServer::ServerCertificateConfig cert_config;
+  cert_config.policy_oids = {kOCSPTestCertPolicy};
+  cert_config.ocsp_config = EmbeddedTestServer::OCSPConfig(
+      {{OCSPRevocationStatus::REVOKED,
+        EmbeddedTestServer::OCSPConfig::SingleResponse::Date::kValid}});
 
   CertStatus cert_status;
-  DoConnection(ssl_options, &cert_status);
+  DoConnection(cert_config, &cert_status);
 
   EXPECT_EQ(CERT_STATUS_REVOKED, cert_status & CERT_STATUS_ALL_ERRORS);
   EXPECT_FALSE(cert_status & CERT_STATUS_IS_EV);
@@ -9826,13 +9797,13 @@ TEST_F(HTTPSOCSPTest, Invalid) {
     return;
   }
 
-  SpawnedTestServer::SSLOptions ssl_options(
-      SpawnedTestServer::SSLOptions::CERT_AUTO);
-  ssl_options.ocsp_status =
-      SpawnedTestServer::SSLOptions::OCSP_INVALID_RESPONSE;
+  EmbeddedTestServer::ServerCertificateConfig cert_config;
+  cert_config.policy_oids = {kOCSPTestCertPolicy};
+  cert_config.ocsp_config = EmbeddedTestServer::OCSPConfig(
+      EmbeddedTestServer::OCSPConfig::ResponseType::kInvalidResponse);
 
   CertStatus cert_status;
-  DoConnection(ssl_options, &cert_status);
+  DoConnection(cert_config, &cert_status);
 
   // Without a positive OCSP response, we shouldn't show the EV status, but also
   // should not show any revocation checking errors.
@@ -9847,13 +9818,18 @@ TEST_F(HTTPSOCSPTest, IntermediateValid) {
     return;
   }
 
-  SpawnedTestServer::SSLOptions ssl_options(
-      SpawnedTestServer::SSLOptions::CERT_AUTO_WITH_INTERMEDIATE);
-  ssl_options.ocsp_status = SpawnedTestServer::SSLOptions::OCSP_OK;
-  ssl_options.ocsp_intermediate_status = SpawnedTestServer::SSLOptions::OCSP_OK;
+  EmbeddedTestServer::ServerCertificateConfig cert_config;
+  cert_config.policy_oids = {kOCSPTestCertPolicy};
+  cert_config.intermediate = EmbeddedTestServer::IntermediateType::kInHandshake;
+  cert_config.ocsp_config = EmbeddedTestServer::OCSPConfig(
+      {{OCSPRevocationStatus::GOOD,
+        EmbeddedTestServer::OCSPConfig::SingleResponse::Date::kValid}});
+  cert_config.intermediate_ocsp_config = EmbeddedTestServer::OCSPConfig(
+      {{OCSPRevocationStatus::GOOD,
+        EmbeddedTestServer::OCSPConfig::SingleResponse::Date::kValid}});
 
   CertStatus cert_status;
-  DoConnection(ssl_options, &cert_status);
+  DoConnection(cert_config, &cert_status);
 
   EXPECT_EQ(0u, cert_status & CERT_STATUS_ALL_ERRORS);
 
@@ -9869,17 +9845,20 @@ TEST_F(HTTPSOCSPTest, IntermediateResponseOldButStillValid) {
     return;
   }
 
-  SpawnedTestServer::SSLOptions ssl_options(
-      SpawnedTestServer::SSLOptions::CERT_AUTO_WITH_INTERMEDIATE);
-  ssl_options.ocsp_status = SpawnedTestServer::SSLOptions::OCSP_OK;
-  ssl_options.ocsp_intermediate_status = SpawnedTestServer::SSLOptions::OCSP_OK;
+  EmbeddedTestServer::ServerCertificateConfig cert_config;
+  cert_config.policy_oids = {kOCSPTestCertPolicy};
+  cert_config.intermediate = EmbeddedTestServer::IntermediateType::kInHandshake;
+  cert_config.ocsp_config = EmbeddedTestServer::OCSPConfig(
+      {{OCSPRevocationStatus::GOOD,
+        EmbeddedTestServer::OCSPConfig::SingleResponse::Date::kValid}});
   // Use an OCSP response for the intermediate that would be too old for a leaf
   // cert, but is still valid for an intermediate.
-  ssl_options.ocsp_intermediate_date =
-      SpawnedTestServer::SSLOptions::OCSP_DATE_LONG;
+  cert_config.intermediate_ocsp_config = EmbeddedTestServer::OCSPConfig(
+      {{OCSPRevocationStatus::GOOD,
+        EmbeddedTestServer::OCSPConfig::SingleResponse::Date::kLong}});
 
   CertStatus cert_status;
-  DoConnection(ssl_options, &cert_status);
+  DoConnection(cert_config, &cert_status);
 
   EXPECT_EQ(0u, cert_status & CERT_STATUS_ALL_ERRORS);
 
@@ -9895,15 +9874,18 @@ TEST_F(HTTPSOCSPTest, IntermediateResponseTooOld) {
     return;
   }
 
-  SpawnedTestServer::SSLOptions ssl_options(
-      SpawnedTestServer::SSLOptions::CERT_AUTO_WITH_INTERMEDIATE);
-  ssl_options.ocsp_status = SpawnedTestServer::SSLOptions::OCSP_OK;
-  ssl_options.ocsp_intermediate_status = SpawnedTestServer::SSLOptions::OCSP_OK;
-  ssl_options.ocsp_intermediate_date =
-      SpawnedTestServer::SSLOptions::OCSP_DATE_LONGER;
+  EmbeddedTestServer::ServerCertificateConfig cert_config;
+  cert_config.policy_oids = {kOCSPTestCertPolicy};
+  cert_config.intermediate = EmbeddedTestServer::IntermediateType::kInHandshake;
+  cert_config.ocsp_config = EmbeddedTestServer::OCSPConfig(
+      {{OCSPRevocationStatus::GOOD,
+        EmbeddedTestServer::OCSPConfig::SingleResponse::Date::kValid}});
+  cert_config.intermediate_ocsp_config = EmbeddedTestServer::OCSPConfig(
+      {{OCSPRevocationStatus::GOOD,
+        EmbeddedTestServer::OCSPConfig::SingleResponse::Date::kLonger}});
 
   CertStatus cert_status;
-  DoConnection(ssl_options, &cert_status);
+  DoConnection(cert_config, &cert_status);
 
   if (UsingBuiltinCertVerifier()) {
     // The builtin verifier enforces the baseline requirements for max age of an
@@ -9925,14 +9907,18 @@ TEST_F(HTTPSOCSPTest, IntermediateRevoked) {
     return;
   }
 
-  SpawnedTestServer::SSLOptions ssl_options(
-      SpawnedTestServer::SSLOptions::CERT_AUTO_WITH_INTERMEDIATE);
-  ssl_options.ocsp_status = SpawnedTestServer::SSLOptions::OCSP_OK;
-  ssl_options.ocsp_intermediate_status =
-      SpawnedTestServer::SSLOptions::OCSP_REVOKED;
+  EmbeddedTestServer::ServerCertificateConfig cert_config;
+  cert_config.policy_oids = {kOCSPTestCertPolicy};
+  cert_config.intermediate = EmbeddedTestServer::IntermediateType::kInHandshake;
+  cert_config.ocsp_config = EmbeddedTestServer::OCSPConfig(
+      {{OCSPRevocationStatus::GOOD,
+        EmbeddedTestServer::OCSPConfig::SingleResponse::Date::kValid}});
+  cert_config.intermediate_ocsp_config = EmbeddedTestServer::OCSPConfig(
+      {{OCSPRevocationStatus::REVOKED,
+        EmbeddedTestServer::OCSPConfig::SingleResponse::Date::kValid}});
 
   CertStatus cert_status;
-  DoConnection(ssl_options, &cert_status);
+  DoConnection(cert_config, &cert_status);
 
 #if defined(OS_WIN)
   // TODO(mattm): Seems to be flaky on Windows. Either returns
@@ -9954,14 +9940,19 @@ TEST_F(HTTPSOCSPTest, ValidStapled) {
     return;
   }
 
-  SpawnedTestServer::SSLOptions ssl_options(
-      SpawnedTestServer::SSLOptions::CERT_AUTO);
-  ssl_options.ocsp_status = SpawnedTestServer::SSLOptions::OCSP_OK;
-  ssl_options.staple_ocsp_response = true;
-  ssl_options.ocsp_server_unavailable = true;
+  EmbeddedTestServer::ServerCertificateConfig cert_config;
+  cert_config.policy_oids = {kOCSPTestCertPolicy};
+
+  // AIA OCSP url is included, but does not return a successful ocsp response.
+  cert_config.ocsp_config = EmbeddedTestServer::OCSPConfig(
+      EmbeddedTestServer::OCSPConfig::ResponseType::kTryLater);
+
+  cert_config.stapled_ocsp_config = EmbeddedTestServer::OCSPConfig(
+      {{OCSPRevocationStatus::GOOD,
+        EmbeddedTestServer::OCSPConfig::SingleResponse::Date::kValid}});
 
   CertStatus cert_status;
-  DoConnection(ssl_options, &cert_status);
+  DoConnection(cert_config, &cert_status);
 
   EXPECT_EQ(0u, cert_status & CERT_STATUS_ALL_ERRORS);
 
@@ -9978,222 +9969,279 @@ TEST_F(HTTPSOCSPTest, RevokedStapled) {
     return;
   }
 
-  SpawnedTestServer::SSLOptions ssl_options(
-      SpawnedTestServer::SSLOptions::CERT_AUTO);
-  ssl_options.ocsp_status = SpawnedTestServer::SSLOptions::OCSP_REVOKED;
-  ssl_options.staple_ocsp_response = true;
-  ssl_options.ocsp_server_unavailable = true;
+  EmbeddedTestServer::ServerCertificateConfig cert_config;
+  cert_config.policy_oids = {kOCSPTestCertPolicy};
+
+  // AIA OCSP url is included, but does not return a successful ocsp response.
+  cert_config.ocsp_config = EmbeddedTestServer::OCSPConfig(
+      EmbeddedTestServer::OCSPConfig::ResponseType::kTryLater);
+
+  cert_config.stapled_ocsp_config = EmbeddedTestServer::OCSPConfig(
+      {{OCSPRevocationStatus::REVOKED,
+        EmbeddedTestServer::OCSPConfig::SingleResponse::Date::kValid}});
 
   CertStatus cert_status;
-  DoConnection(ssl_options, &cert_status);
+  DoConnection(cert_config, &cert_status);
 
   EXPECT_EQ(CERT_STATUS_REVOKED, cert_status & CERT_STATUS_ALL_ERRORS);
   EXPECT_FALSE(cert_status & CERT_STATUS_IS_EV);
   EXPECT_TRUE(cert_status & CERT_STATUS_REV_CHECKING_ENABLED);
 }
 
+TEST_F(HTTPSOCSPTest, OldStapledAndInvalidAIA) {
+  if (!SystemSupportsOCSPStapling()) {
+    LOG(WARNING)
+        << "Skipping test because system doesn't support OCSP stapling";
+    return;
+  }
+
+  EmbeddedTestServer::ServerCertificateConfig cert_config;
+  cert_config.policy_oids = {kOCSPTestCertPolicy};
+
+  // Stapled response indicates good, but is too old.
+  cert_config.stapled_ocsp_config = EmbeddedTestServer::OCSPConfig(
+      {{OCSPRevocationStatus::GOOD,
+        EmbeddedTestServer::OCSPConfig::SingleResponse::Date::kOld}});
+
+  // AIA OCSP url is included, but does not return a successful ocsp response.
+  cert_config.ocsp_config = EmbeddedTestServer::OCSPConfig(
+      EmbeddedTestServer::OCSPConfig::ResponseType::kTryLater);
+
+  CertStatus cert_status;
+  DoConnection(cert_config, &cert_status);
+
+  EXPECT_EQ(0u, cert_status & CERT_STATUS_ALL_ERRORS);
+  EXPECT_FALSE(cert_status & CERT_STATUS_IS_EV);
+  EXPECT_TRUE(cert_status & CERT_STATUS_REV_CHECKING_ENABLED);
+}
+
+TEST_F(HTTPSOCSPTest, OldStapledButValidAIA) {
+  if (!SystemSupportsOCSPStapling()) {
+    LOG(WARNING)
+        << "Skipping test because system doesn't support OCSP stapling";
+    return;
+  }
+
+  EmbeddedTestServer::ServerCertificateConfig cert_config;
+  cert_config.policy_oids = {kOCSPTestCertPolicy};
+
+  // Stapled response indicates good, but response is too old.
+  cert_config.stapled_ocsp_config = EmbeddedTestServer::OCSPConfig(
+      {{OCSPRevocationStatus::GOOD,
+        EmbeddedTestServer::OCSPConfig::SingleResponse::Date::kOld}});
+
+  // AIA OCSP url is included, and returns a successful ocsp response.
+  cert_config.ocsp_config = EmbeddedTestServer::OCSPConfig(
+      {{OCSPRevocationStatus::GOOD,
+        EmbeddedTestServer::OCSPConfig::SingleResponse::Date::kValid}});
+
+  CertStatus cert_status;
+  DoConnection(cert_config, &cert_status);
+
+  EXPECT_EQ(0u, cert_status & CERT_STATUS_ALL_ERRORS);
+  EXPECT_EQ(SystemUsesChromiumEVMetadata(),
+            static_cast<bool>(cert_status & CERT_STATUS_IS_EV));
+  EXPECT_TRUE(cert_status & CERT_STATUS_REV_CHECKING_ENABLED);
+}
+
 static const struct OCSPVerifyTestData {
-  std::vector<SpawnedTestServer::SSLOptions::OCSPSingleResponse> ocsp_responses;
-  SpawnedTestServer::SSLOptions::OCSPProduced ocsp_produced;
+  EmbeddedTestServer::OCSPConfig ocsp_config;
   OCSPVerifyResult::ResponseStatus expected_response_status;
   // |expected_cert_status| is only used if |expected_response_status| is
   // PROVIDED.
   OCSPRevocationStatus expected_cert_status;
 } kOCSPVerifyData[] = {
     // 0
-    {{{SpawnedTestServer::SSLOptions::OCSP_OK,
-       SpawnedTestServer::SSLOptions::OCSP_DATE_VALID}},
-     SpawnedTestServer::SSLOptions::OCSP_PRODUCED_VALID,
-     OCSPVerifyResult::PROVIDED,
-     OCSPRevocationStatus::GOOD},
+    {EmbeddedTestServer::OCSPConfig(
+         {{OCSPRevocationStatus::GOOD,
+           EmbeddedTestServer::OCSPConfig::SingleResponse::Date::kValid}},
+         EmbeddedTestServer::OCSPConfig::Produced::kValid),
+     OCSPVerifyResult::PROVIDED, OCSPRevocationStatus::GOOD},
 
     // 1
-    {{{SpawnedTestServer::SSLOptions::OCSP_OK,
-       SpawnedTestServer::SSLOptions::OCSP_DATE_OLD}},
-     SpawnedTestServer::SSLOptions::OCSP_PRODUCED_VALID,
-     OCSPVerifyResult::INVALID_DATE,
-     OCSPRevocationStatus::UNKNOWN},
+    {EmbeddedTestServer::OCSPConfig(
+         {{OCSPRevocationStatus::GOOD,
+           EmbeddedTestServer::OCSPConfig::SingleResponse::Date::kOld}},
+         EmbeddedTestServer::OCSPConfig::Produced::kValid),
+     OCSPVerifyResult::INVALID_DATE, OCSPRevocationStatus::UNKNOWN},
 
     // 2
-    {{{SpawnedTestServer::SSLOptions::OCSP_OK,
-       SpawnedTestServer::SSLOptions::OCSP_DATE_EARLY}},
-     SpawnedTestServer::SSLOptions::OCSP_PRODUCED_VALID,
-     OCSPVerifyResult::INVALID_DATE,
-     OCSPRevocationStatus::UNKNOWN},
+    {EmbeddedTestServer::OCSPConfig(
+         {{OCSPRevocationStatus::GOOD,
+           EmbeddedTestServer::OCSPConfig::SingleResponse::Date::kEarly}},
+         EmbeddedTestServer::OCSPConfig::Produced::kValid),
+     OCSPVerifyResult::INVALID_DATE, OCSPRevocationStatus::UNKNOWN},
 
     // 3
-    {{{SpawnedTestServer::SSLOptions::OCSP_OK,
-       SpawnedTestServer::SSLOptions::OCSP_DATE_LONG}},
-     SpawnedTestServer::SSLOptions::OCSP_PRODUCED_VALID,
-     OCSPVerifyResult::INVALID_DATE,
-     OCSPRevocationStatus::UNKNOWN},
+    {EmbeddedTestServer::OCSPConfig(
+         {{OCSPRevocationStatus::GOOD,
+           EmbeddedTestServer::OCSPConfig::SingleResponse::Date::kLong}},
+         EmbeddedTestServer::OCSPConfig::Produced::kValid),
+     OCSPVerifyResult::INVALID_DATE, OCSPRevocationStatus::UNKNOWN},
 
     // 4
-    {{{SpawnedTestServer::SSLOptions::OCSP_TRY_LATER,
-       SpawnedTestServer::SSLOptions::OCSP_DATE_VALID}},
-     SpawnedTestServer::SSLOptions::OCSP_PRODUCED_VALID,
-     OCSPVerifyResult::ERROR_RESPONSE,
-     OCSPRevocationStatus::UNKNOWN},
+    {EmbeddedTestServer::OCSPConfig(
+         EmbeddedTestServer::OCSPConfig::ResponseType::kTryLater),
+     OCSPVerifyResult::ERROR_RESPONSE, OCSPRevocationStatus::UNKNOWN},
 
     // 5
-    {{{SpawnedTestServer::SSLOptions::OCSP_INVALID_RESPONSE,
-       SpawnedTestServer::SSLOptions::OCSP_DATE_VALID}},
-     SpawnedTestServer::SSLOptions::OCSP_PRODUCED_VALID,
-     OCSPVerifyResult::PARSE_RESPONSE_ERROR,
-     OCSPRevocationStatus::UNKNOWN},
+    {EmbeddedTestServer::OCSPConfig(
+         EmbeddedTestServer::OCSPConfig::ResponseType::kInvalidResponse),
+     OCSPVerifyResult::PARSE_RESPONSE_ERROR, OCSPRevocationStatus::UNKNOWN},
 
     // 6
-    {{{SpawnedTestServer::SSLOptions::OCSP_INVALID_RESPONSE_DATA,
-       SpawnedTestServer::SSLOptions::OCSP_DATE_VALID}},
-     SpawnedTestServer::SSLOptions::OCSP_PRODUCED_VALID,
+    {EmbeddedTestServer::OCSPConfig(
+         EmbeddedTestServer::OCSPConfig::ResponseType::kInvalidResponseData),
      OCSPVerifyResult::PARSE_RESPONSE_DATA_ERROR,
      OCSPRevocationStatus::UNKNOWN},
 
     // 7
-    {{{SpawnedTestServer::SSLOptions::OCSP_REVOKED,
-       SpawnedTestServer::SSLOptions::OCSP_DATE_EARLY}},
-     SpawnedTestServer::SSLOptions::OCSP_PRODUCED_VALID,
-     OCSPVerifyResult::INVALID_DATE,
-     OCSPRevocationStatus::UNKNOWN},
+    {EmbeddedTestServer::OCSPConfig(
+         {{OCSPRevocationStatus::REVOKED,
+           EmbeddedTestServer::OCSPConfig::SingleResponse::Date::kEarly}},
+         EmbeddedTestServer::OCSPConfig::Produced::kValid),
+     OCSPVerifyResult::INVALID_DATE, OCSPRevocationStatus::UNKNOWN},
 
     // 8
-    {{{SpawnedTestServer::SSLOptions::OCSP_UNKNOWN,
-       SpawnedTestServer::SSLOptions::OCSP_DATE_VALID}},
-     SpawnedTestServer::SSLOptions::OCSP_PRODUCED_VALID,
-     OCSPVerifyResult::PROVIDED,
-     OCSPRevocationStatus::UNKNOWN},
+    {EmbeddedTestServer::OCSPConfig(
+         {{OCSPRevocationStatus::UNKNOWN,
+           EmbeddedTestServer::OCSPConfig::SingleResponse::Date::kValid}},
+         EmbeddedTestServer::OCSPConfig::Produced::kValid),
+     OCSPVerifyResult::PROVIDED, OCSPRevocationStatus::UNKNOWN},
 
     // 9
-    {{{SpawnedTestServer::SSLOptions::OCSP_UNKNOWN,
-       SpawnedTestServer::SSLOptions::OCSP_DATE_OLD}},
-     SpawnedTestServer::SSLOptions::OCSP_PRODUCED_VALID,
-     OCSPVerifyResult::INVALID_DATE,
-     OCSPRevocationStatus::UNKNOWN},
+    {EmbeddedTestServer::OCSPConfig(
+         {{OCSPRevocationStatus::UNKNOWN,
+           EmbeddedTestServer::OCSPConfig::SingleResponse::Date::kOld}},
+         EmbeddedTestServer::OCSPConfig::Produced::kValid),
+     OCSPVerifyResult::INVALID_DATE, OCSPRevocationStatus::UNKNOWN},
 
     // 10
-    {{{SpawnedTestServer::SSLOptions::OCSP_UNKNOWN,
-       SpawnedTestServer::SSLOptions::OCSP_DATE_EARLY}},
-     SpawnedTestServer::SSLOptions::OCSP_PRODUCED_VALID,
-     OCSPVerifyResult::INVALID_DATE,
-     OCSPRevocationStatus::UNKNOWN},
+    {EmbeddedTestServer::OCSPConfig(
+         {{OCSPRevocationStatus::UNKNOWN,
+           EmbeddedTestServer::OCSPConfig::SingleResponse::Date::kEarly}},
+         EmbeddedTestServer::OCSPConfig::Produced::kValid),
+     OCSPVerifyResult::INVALID_DATE, OCSPRevocationStatus::UNKNOWN},
 
     // 11
-    {{{SpawnedTestServer::SSLOptions::OCSP_OK,
-       SpawnedTestServer::SSLOptions::OCSP_DATE_VALID}},
-     SpawnedTestServer::SSLOptions::OCSP_PRODUCED_BEFORE_CERT,
-     OCSPVerifyResult::BAD_PRODUCED_AT,
-     OCSPRevocationStatus::UNKNOWN},
+    {EmbeddedTestServer::OCSPConfig(
+         {{OCSPRevocationStatus::GOOD,
+           EmbeddedTestServer::OCSPConfig::SingleResponse::Date::kValid}},
+         EmbeddedTestServer::OCSPConfig::Produced::kBeforeCert),
+     OCSPVerifyResult::BAD_PRODUCED_AT, OCSPRevocationStatus::UNKNOWN},
 
     // 12
-    {{{SpawnedTestServer::SSLOptions::OCSP_OK,
-       SpawnedTestServer::SSLOptions::OCSP_DATE_VALID}},
-     SpawnedTestServer::SSLOptions::OCSP_PRODUCED_AFTER_CERT,
-     OCSPVerifyResult::BAD_PRODUCED_AT,
-     OCSPRevocationStatus::UNKNOWN},
+    {EmbeddedTestServer::OCSPConfig(
+         {{OCSPRevocationStatus::GOOD,
+           EmbeddedTestServer::OCSPConfig::SingleResponse::Date::kValid}},
+         EmbeddedTestServer::OCSPConfig::Produced::kAfterCert),
+     OCSPVerifyResult::BAD_PRODUCED_AT, OCSPRevocationStatus::UNKNOWN},
 
     // 13
-    {{{SpawnedTestServer::SSLOptions::OCSP_OK,
-       SpawnedTestServer::SSLOptions::OCSP_DATE_OLD},
-      {SpawnedTestServer::SSLOptions::OCSP_OK,
-       SpawnedTestServer::SSLOptions::OCSP_DATE_VALID}},
-     SpawnedTestServer::SSLOptions::OCSP_PRODUCED_VALID,
-     OCSPVerifyResult::PROVIDED,
-     OCSPRevocationStatus::GOOD},
+    {EmbeddedTestServer::OCSPConfig(
+         {{OCSPRevocationStatus::GOOD,
+           EmbeddedTestServer::OCSPConfig::SingleResponse::Date::kOld},
+          {OCSPRevocationStatus::GOOD,
+           EmbeddedTestServer::OCSPConfig::SingleResponse::Date::kValid}},
+         EmbeddedTestServer::OCSPConfig::Produced::kValid),
+     OCSPVerifyResult::PROVIDED, OCSPRevocationStatus::GOOD},
 
     // 14
-    {{{SpawnedTestServer::SSLOptions::OCSP_OK,
-       SpawnedTestServer::SSLOptions::OCSP_DATE_EARLY},
-      {SpawnedTestServer::SSLOptions::OCSP_OK,
-       SpawnedTestServer::SSLOptions::OCSP_DATE_VALID}},
-     SpawnedTestServer::SSLOptions::OCSP_PRODUCED_VALID,
-     OCSPVerifyResult::PROVIDED,
-     OCSPRevocationStatus::GOOD},
+    {EmbeddedTestServer::OCSPConfig(
+         {{OCSPRevocationStatus::GOOD,
+           EmbeddedTestServer::OCSPConfig::SingleResponse::Date::kEarly},
+          {OCSPRevocationStatus::GOOD,
+           EmbeddedTestServer::OCSPConfig::SingleResponse::Date::kValid}},
+         EmbeddedTestServer::OCSPConfig::Produced::kValid),
+     OCSPVerifyResult::PROVIDED, OCSPRevocationStatus::GOOD},
 
     // 15
-    {{{SpawnedTestServer::SSLOptions::OCSP_OK,
-       SpawnedTestServer::SSLOptions::OCSP_DATE_LONG},
-      {SpawnedTestServer::SSLOptions::OCSP_OK,
-       SpawnedTestServer::SSLOptions::OCSP_DATE_VALID}},
-     SpawnedTestServer::SSLOptions::OCSP_PRODUCED_VALID,
-     OCSPVerifyResult::PROVIDED,
-     OCSPRevocationStatus::GOOD},
+    {EmbeddedTestServer::OCSPConfig(
+         {{OCSPRevocationStatus::GOOD,
+           EmbeddedTestServer::OCSPConfig::SingleResponse::Date::kLong},
+          {OCSPRevocationStatus::GOOD,
+           EmbeddedTestServer::OCSPConfig::SingleResponse::Date::kValid}},
+         EmbeddedTestServer::OCSPConfig::Produced::kValid),
+     OCSPVerifyResult::PROVIDED, OCSPRevocationStatus::GOOD},
 
     // 16
-    {{{SpawnedTestServer::SSLOptions::OCSP_OK,
-       SpawnedTestServer::SSLOptions::OCSP_DATE_EARLY},
-      {SpawnedTestServer::SSLOptions::OCSP_OK,
-       SpawnedTestServer::SSLOptions::OCSP_DATE_OLD},
-      {SpawnedTestServer::SSLOptions::OCSP_OK,
-       SpawnedTestServer::SSLOptions::OCSP_DATE_LONG}},
-     SpawnedTestServer::SSLOptions::OCSP_PRODUCED_VALID,
-     OCSPVerifyResult::INVALID_DATE,
-     OCSPRevocationStatus::UNKNOWN},
+    {EmbeddedTestServer::OCSPConfig(
+         {{OCSPRevocationStatus::GOOD,
+           EmbeddedTestServer::OCSPConfig::SingleResponse::Date::kEarly},
+          {OCSPRevocationStatus::GOOD,
+           EmbeddedTestServer::OCSPConfig::SingleResponse::Date::kOld},
+          {OCSPRevocationStatus::GOOD,
+           EmbeddedTestServer::OCSPConfig::SingleResponse::Date::kLong}},
+         EmbeddedTestServer::OCSPConfig::Produced::kValid),
+     OCSPVerifyResult::INVALID_DATE, OCSPRevocationStatus::UNKNOWN},
 
     // 17
-    {{{SpawnedTestServer::SSLOptions::OCSP_UNKNOWN,
-       SpawnedTestServer::SSLOptions::OCSP_DATE_VALID},
-      {SpawnedTestServer::SSLOptions::OCSP_REVOKED,
-       SpawnedTestServer::SSLOptions::OCSP_DATE_VALID},
-      {SpawnedTestServer::SSLOptions::OCSP_OK,
-       SpawnedTestServer::SSLOptions::OCSP_DATE_VALID}},
-     SpawnedTestServer::SSLOptions::OCSP_PRODUCED_VALID,
-     OCSPVerifyResult::PROVIDED,
-     OCSPRevocationStatus::REVOKED},
+    {EmbeddedTestServer::OCSPConfig(
+         {{OCSPRevocationStatus::UNKNOWN,
+           EmbeddedTestServer::OCSPConfig::SingleResponse::Date::kValid},
+          {OCSPRevocationStatus::REVOKED,
+           EmbeddedTestServer::OCSPConfig::SingleResponse::Date::kValid},
+          {OCSPRevocationStatus::GOOD,
+           EmbeddedTestServer::OCSPConfig::SingleResponse::Date::kValid}},
+         EmbeddedTestServer::OCSPConfig::Produced::kValid),
+     OCSPVerifyResult::PROVIDED, OCSPRevocationStatus::REVOKED},
 
     // 18
-    {{{SpawnedTestServer::SSLOptions::OCSP_UNKNOWN,
-       SpawnedTestServer::SSLOptions::OCSP_DATE_VALID},
-      {SpawnedTestServer::SSLOptions::OCSP_OK,
-       SpawnedTestServer::SSLOptions::OCSP_DATE_VALID}},
-     SpawnedTestServer::SSLOptions::OCSP_PRODUCED_VALID,
-     OCSPVerifyResult::PROVIDED,
-     OCSPRevocationStatus::UNKNOWN},
+    {EmbeddedTestServer::OCSPConfig(
+         {{OCSPRevocationStatus::UNKNOWN,
+           EmbeddedTestServer::OCSPConfig::SingleResponse::Date::kValid},
+          {OCSPRevocationStatus::GOOD,
+           EmbeddedTestServer::OCSPConfig::SingleResponse::Date::kValid}},
+         EmbeddedTestServer::OCSPConfig::Produced::kValid),
+     OCSPVerifyResult::PROVIDED, OCSPRevocationStatus::UNKNOWN},
 
     // 19
-    {{{SpawnedTestServer::SSLOptions::OCSP_UNKNOWN,
-       SpawnedTestServer::SSLOptions::OCSP_DATE_VALID},
-      {SpawnedTestServer::SSLOptions::OCSP_REVOKED,
-       SpawnedTestServer::SSLOptions::OCSP_DATE_LONG},
-      {SpawnedTestServer::SSLOptions::OCSP_OK,
-       SpawnedTestServer::SSLOptions::OCSP_DATE_VALID}},
-     SpawnedTestServer::SSLOptions::OCSP_PRODUCED_VALID,
-     OCSPVerifyResult::PROVIDED,
-     OCSPRevocationStatus::UNKNOWN},
+    {EmbeddedTestServer::OCSPConfig(
+         {{OCSPRevocationStatus::UNKNOWN,
+           EmbeddedTestServer::OCSPConfig::SingleResponse::Date::kValid},
+          {OCSPRevocationStatus::REVOKED,
+           EmbeddedTestServer::OCSPConfig::SingleResponse::Date::kLong},
+          {OCSPRevocationStatus::GOOD,
+           EmbeddedTestServer::OCSPConfig::SingleResponse::Date::kValid}},
+         EmbeddedTestServer::OCSPConfig::Produced::kValid),
+     OCSPVerifyResult::PROVIDED, OCSPRevocationStatus::UNKNOWN},
 
     // 20
-    {{{SpawnedTestServer::SSLOptions::OCSP_MISMATCHED_SERIAL,
-       SpawnedTestServer::SSLOptions::OCSP_DATE_VALID}},
-     SpawnedTestServer::SSLOptions::OCSP_PRODUCED_VALID,
-     OCSPVerifyResult::NO_MATCHING_RESPONSE,
-     OCSPRevocationStatus::UNKNOWN},
+    {EmbeddedTestServer::OCSPConfig(
+         {{OCSPRevocationStatus::GOOD,
+           EmbeddedTestServer::OCSPConfig::SingleResponse::Date::kValid,
+           EmbeddedTestServer::OCSPConfig::SingleResponse::Serial::kMismatch}},
+         EmbeddedTestServer::OCSPConfig::Produced::kValid),
+     OCSPVerifyResult::NO_MATCHING_RESPONSE, OCSPRevocationStatus::UNKNOWN},
 
     // 21
-    {{{SpawnedTestServer::SSLOptions::OCSP_MISMATCHED_SERIAL,
-       SpawnedTestServer::SSLOptions::OCSP_DATE_EARLY}},
-     SpawnedTestServer::SSLOptions::OCSP_PRODUCED_VALID,
-     OCSPVerifyResult::NO_MATCHING_RESPONSE,
-     OCSPRevocationStatus::UNKNOWN},
+    {EmbeddedTestServer::OCSPConfig(
+         {{OCSPRevocationStatus::GOOD,
+           EmbeddedTestServer::OCSPConfig::SingleResponse::Date::kEarly,
+           EmbeddedTestServer::OCSPConfig::SingleResponse::Serial::kMismatch}},
+         EmbeddedTestServer::OCSPConfig::Produced::kValid),
+     OCSPVerifyResult::NO_MATCHING_RESPONSE, OCSPRevocationStatus::UNKNOWN},
 
     // 22
-    {{{SpawnedTestServer::SSLOptions::OCSP_REVOKED,
-       SpawnedTestServer::SSLOptions::OCSP_DATE_VALID}},
-     SpawnedTestServer::SSLOptions::OCSP_PRODUCED_VALID,
-     OCSPVerifyResult::PROVIDED,
-     OCSPRevocationStatus::REVOKED},
+    {EmbeddedTestServer::OCSPConfig(
+         {{OCSPRevocationStatus::REVOKED,
+           EmbeddedTestServer::OCSPConfig::SingleResponse::Date::kValid}},
+         EmbeddedTestServer::OCSPConfig::Produced::kValid),
+     OCSPVerifyResult::PROVIDED, OCSPRevocationStatus::REVOKED},
 
     // 23
-    {{{SpawnedTestServer::SSLOptions::OCSP_REVOKED,
-       SpawnedTestServer::SSLOptions::OCSP_DATE_OLD}},
-     SpawnedTestServer::SSLOptions::OCSP_PRODUCED_VALID,
-     OCSPVerifyResult::INVALID_DATE,
-     OCSPRevocationStatus::UNKNOWN},
+    {EmbeddedTestServer::OCSPConfig(
+         {{OCSPRevocationStatus::REVOKED,
+           EmbeddedTestServer::OCSPConfig::SingleResponse::Date::kOld}},
+         EmbeddedTestServer::OCSPConfig::Produced::kValid),
+     OCSPVerifyResult::INVALID_DATE, OCSPRevocationStatus::UNKNOWN},
 
     // 24
-    {{{SpawnedTestServer::SSLOptions::OCSP_REVOKED,
-       SpawnedTestServer::SSLOptions::OCSP_DATE_LONG}},
-     SpawnedTestServer::SSLOptions::OCSP_PRODUCED_VALID,
-     OCSPVerifyResult::INVALID_DATE,
-     OCSPRevocationStatus::UNKNOWN},
+    {EmbeddedTestServer::OCSPConfig(
+         {{OCSPRevocationStatus::REVOKED,
+           EmbeddedTestServer::OCSPConfig::SingleResponse::Date::kLong}},
+         EmbeddedTestServer::OCSPConfig::Produced::kValid),
+     OCSPVerifyResult::INVALID_DATE, OCSPRevocationStatus::UNKNOWN},
 };
 
 class HTTPSOCSPVerifyTest
@@ -10201,18 +10249,16 @@ class HTTPSOCSPVerifyTest
       public testing::WithParamInterface<OCSPVerifyTestData> {};
 
 TEST_P(HTTPSOCSPVerifyTest, VerifyResult) {
-  SpawnedTestServer::SSLOptions ssl_options(
-      SpawnedTestServer::SSLOptions::CERT_AUTO);
   OCSPVerifyTestData test = GetParam();
 
-  ssl_options.ocsp_responses = test.ocsp_responses;
-  ssl_options.ocsp_produced = test.ocsp_produced;
-  ssl_options.staple_ocsp_response = true;
+  EmbeddedTestServer::ServerCertificateConfig cert_config;
+  cert_config.policy_oids = {kOCSPTestCertPolicy};
+  cert_config.stapled_ocsp_config = test.ocsp_config;
 
   SSLInfo ssl_info;
   OCSPErrorTestDelegate delegate;
   ASSERT_NO_FATAL_FAILURE(
-      DoConnectionWithDelegate(ssl_options, &delegate, &ssl_info));
+      DoConnectionWithDelegate(cert_config, &delegate, &ssl_info));
 
   // The SSLInfo must be extracted from |delegate| on error, due to how
   // URLRequest caches certificate errors.
@@ -10238,7 +10284,9 @@ class HTTPSAIATest : public HTTPSCertNetFetchingTest {};
 
 TEST_F(HTTPSAIATest, AIAFetching) {
   EmbeddedTestServer test_server(EmbeddedTestServer::TYPE_HTTPS);
-  test_server.SetSSLConfig(EmbeddedTestServer::CERT_AUTO_AIA_INTERMEDIATE);
+  EmbeddedTestServer::ServerCertificateConfig cert_config;
+  cert_config.intermediate = EmbeddedTestServer::IntermediateType::kByAIA;
+  test_server.SetSSLConfig(cert_config);
   test_server.AddDefaultHandlers(
       base::FilePath(FILE_PATH_LITERAL("net/data/ssl")));
   ASSERT_TRUE(test_server.Start());
@@ -10286,13 +10334,13 @@ TEST_F(HTTPSHardFailTest, FailsOnOCSPInvalid) {
     return;
   }
 
-  SpawnedTestServer::SSLOptions ssl_options(
-      SpawnedTestServer::SSLOptions::CERT_AUTO);
-  ssl_options.ocsp_status =
-      SpawnedTestServer::SSLOptions::OCSP_INVALID_RESPONSE;
+  EmbeddedTestServer::ServerCertificateConfig cert_config;
+  cert_config.policy_oids = {kOCSPTestCertPolicy};
+  cert_config.ocsp_config = EmbeddedTestServer::OCSPConfig(
+      EmbeddedTestServer::OCSPConfig::ResponseType::kInvalidResponse);
 
   CertStatus cert_status;
-  DoConnection(ssl_options, &cert_status);
+  DoConnection(cert_config, &cert_status);
 
   EXPECT_EQ(CERT_STATUS_UNABLE_TO_CHECK_REVOCATION,
             cert_status & CERT_STATUS_ALL_ERRORS);
@@ -10316,13 +10364,13 @@ TEST_F(HTTPSEVCRLSetTest, MissingCRLSetAndInvalidOCSP) {
     return;
   }
 
-  SpawnedTestServer::SSLOptions ssl_options(
-      SpawnedTestServer::SSLOptions::CERT_AUTO);
-  ssl_options.ocsp_status =
-      SpawnedTestServer::SSLOptions::OCSP_INVALID_RESPONSE;
+  EmbeddedTestServer::ServerCertificateConfig cert_config;
+  cert_config.policy_oids = {kOCSPTestCertPolicy};
+  cert_config.ocsp_config = EmbeddedTestServer::OCSPConfig(
+      EmbeddedTestServer::OCSPConfig::ResponseType::kInvalidResponse);
 
   CertStatus cert_status;
-  DoConnection(ssl_options, &cert_status);
+  DoConnection(cert_config, &cert_status);
 
   EXPECT_EQ(0u, cert_status & CERT_STATUS_ALL_ERRORS);
   EXPECT_FALSE(cert_status & CERT_STATUS_IS_EV);
@@ -10336,12 +10384,14 @@ TEST_F(HTTPSEVCRLSetTest, MissingCRLSetAndRevokedOCSP) {
     return;
   }
 
-  SpawnedTestServer::SSLOptions ssl_options(
-      SpawnedTestServer::SSLOptions::CERT_AUTO);
-  ssl_options.ocsp_status = SpawnedTestServer::SSLOptions::OCSP_REVOKED;
+  EmbeddedTestServer::ServerCertificateConfig cert_config;
+  cert_config.policy_oids = {kOCSPTestCertPolicy};
+  cert_config.ocsp_config = EmbeddedTestServer::OCSPConfig(
+      {{OCSPRevocationStatus::REVOKED,
+        EmbeddedTestServer::OCSPConfig::SingleResponse::Date::kValid}});
 
   CertStatus cert_status;
-  DoConnection(ssl_options, &cert_status);
+  DoConnection(cert_config, &cert_status);
 
   // The CertVerifyProc implementations handle revocation on the EV
   // verification differently. Some will return a revoked error, others will
@@ -10382,12 +10432,14 @@ TEST_F(HTTPSEVCRLSetTest, MissingCRLSetAndGoodOCSP) {
     return;
   }
 
-  SpawnedTestServer::SSLOptions ssl_options(
-      SpawnedTestServer::SSLOptions::CERT_AUTO);
-  ssl_options.ocsp_status = SpawnedTestServer::SSLOptions::OCSP_OK;
+  EmbeddedTestServer::ServerCertificateConfig cert_config;
+  cert_config.policy_oids = {kOCSPTestCertPolicy};
+  cert_config.ocsp_config = EmbeddedTestServer::OCSPConfig(
+      {{OCSPRevocationStatus::GOOD,
+        EmbeddedTestServer::OCSPConfig::SingleResponse::Date::kValid}});
 
   CertStatus cert_status;
-  DoConnection(ssl_options, &cert_status);
+  DoConnection(cert_config, &cert_status);
 
   EXPECT_EQ(0u, cert_status & CERT_STATUS_ALL_ERRORS);
 
@@ -10403,16 +10455,17 @@ TEST_F(HTTPSEVCRLSetTest, ExpiredCRLSet) {
     return;
   }
 
-  SpawnedTestServer::SSLOptions ssl_options(
-      SpawnedTestServer::SSLOptions::CERT_AUTO);
-  ssl_options.ocsp_status =
-      SpawnedTestServer::SSLOptions::OCSP_INVALID_RESPONSE;
+  EmbeddedTestServer::ServerCertificateConfig cert_config;
+  cert_config.policy_oids = {kOCSPTestCertPolicy};
+  cert_config.ocsp_config = EmbeddedTestServer::OCSPConfig(
+      EmbeddedTestServer::OCSPConfig::ResponseType::kInvalidResponse);
+
   CertVerifier::Config cert_verifier_config = GetCertVerifierConfig();
   cert_verifier_config.crl_set = CRLSet::ExpiredCRLSetForTesting();
   context_.cert_verifier()->SetConfig(cert_verifier_config);
 
   CertStatus cert_status;
-  DoConnection(ssl_options, &cert_status);
+  DoConnection(cert_config, &cert_status);
 
   EXPECT_EQ(0u, cert_status & CERT_STATUS_ALL_ERRORS);
   EXPECT_FALSE(cert_status & CERT_STATUS_IS_EV);
@@ -10426,17 +10479,18 @@ TEST_F(HTTPSEVCRLSetTest, FreshCRLSetCovered) {
     return;
   }
 
-  SpawnedTestServer::SSLOptions ssl_options(
-      SpawnedTestServer::SSLOptions::CERT_AUTO);
-  ssl_options.ocsp_status =
-      SpawnedTestServer::SSLOptions::OCSP_INVALID_RESPONSE;
+  EmbeddedTestServer::ServerCertificateConfig cert_config;
+  cert_config.policy_oids = {kOCSPTestCertPolicy};
+  cert_config.ocsp_config = EmbeddedTestServer::OCSPConfig(
+      EmbeddedTestServer::OCSPConfig::ResponseType::kInvalidResponse);
+
   CertVerifier::Config cert_verifier_config = GetCertVerifierConfig();
   cert_verifier_config.crl_set =
-      CRLSet::ForTesting(false, &kOCSPTestCertSPKI, "", "", {});
+      CRLSet::ForTesting(false, &kTestRootCertSPKIHash, "", "", {});
   context_.cert_verifier()->SetConfig(cert_verifier_config);
 
   CertStatus cert_status;
-  DoConnection(ssl_options, &cert_status);
+  DoConnection(cert_config, &cert_status);
 
   // With a fresh CRLSet that covers the issuing certificate, we shouldn't do a
   // revocation check for EV.
@@ -10453,16 +10507,17 @@ TEST_F(HTTPSEVCRLSetTest, FreshCRLSetNotCovered) {
     return;
   }
 
-  SpawnedTestServer::SSLOptions ssl_options(
-      SpawnedTestServer::SSLOptions::CERT_AUTO);
-  ssl_options.ocsp_status =
-      SpawnedTestServer::SSLOptions::OCSP_INVALID_RESPONSE;
+  EmbeddedTestServer::ServerCertificateConfig cert_config;
+  cert_config.policy_oids = {kOCSPTestCertPolicy};
+  cert_config.ocsp_config = EmbeddedTestServer::OCSPConfig(
+      EmbeddedTestServer::OCSPConfig::ResponseType::kInvalidResponse);
+
   CertVerifier::Config cert_verifier_config = GetCertVerifierConfig();
   cert_verifier_config.crl_set = CRLSet::EmptyCRLSetForTesting();
   context_.cert_verifier()->SetConfig(cert_verifier_config);
 
   CertStatus cert_status = 0;
-  DoConnection(ssl_options, &cert_status);
+  DoConnection(cert_config, &cert_status);
 
   // Even with a fresh CRLSet, we should still do online revocation checks when
   // the certificate chain isn't covered by the CRLSet, which it isn't in this
@@ -10475,33 +10530,19 @@ TEST_F(HTTPSEVCRLSetTest, FreshCRLSetNotCovered) {
             static_cast<bool>(cert_status & CERT_STATUS_REV_CHECKING_ENABLED));
 }
 
-class HTTPSCRLSetTest : public HTTPSOCSPTest {
- protected:
-  CertVerifier::Config GetCertVerifierConfig() override {
-    CertVerifier::Config config;
-    return config;
-  }
-
-  void SetUp() override {
-    HTTPSOCSPTest::SetUp();
-
-    // Unmark the certificate's OID as EV, which should disable revocation
-    // checking (as per the user preference).
-    ev_test_policy_.reset();
-  }
-};
+class HTTPSCRLSetTest : public HTTPSCertNetFetchingTest {};
 
 TEST_F(HTTPSCRLSetTest, ExpiredCRLSet) {
-  SpawnedTestServer::SSLOptions ssl_options(
-      SpawnedTestServer::SSLOptions::CERT_AUTO);
-  ssl_options.ocsp_status =
-      SpawnedTestServer::SSLOptions::OCSP_INVALID_RESPONSE;
+  EmbeddedTestServer::ServerCertificateConfig cert_config;
+  cert_config.ocsp_config = EmbeddedTestServer::OCSPConfig(
+      EmbeddedTestServer::OCSPConfig::ResponseType::kInvalidResponse);
+
   CertVerifier::Config cert_verifier_config = GetCertVerifierConfig();
   cert_verifier_config.crl_set = CRLSet::ExpiredCRLSetForTesting();
   context_.cert_verifier()->SetConfig(cert_verifier_config);
 
   CertStatus cert_status;
-  DoConnection(ssl_options, &cert_status);
+  DoConnection(cert_config, &cert_status);
 
   // If we're not trying EV verification then, even if the CRLSet has expired,
   // we don't fall back to online revocation checks.
@@ -10518,16 +10559,17 @@ TEST_F(HTTPSCRLSetTest, ExpiredCRLSetAndRevoked) {
     return;
   }
 
-  SpawnedTestServer::SSLOptions ssl_options(
-      SpawnedTestServer::SSLOptions::CERT_AUTO);
-  ssl_options.ocsp_status = SpawnedTestServer::SSLOptions::OCSP_REVOKED;
+  EmbeddedTestServer::ServerCertificateConfig cert_config;
+  cert_config.ocsp_config = EmbeddedTestServer::OCSPConfig(
+      {{OCSPRevocationStatus::REVOKED,
+        EmbeddedTestServer::OCSPConfig::SingleResponse::Date::kValid}});
 
   CertVerifier::Config cert_verifier_config = GetCertVerifierConfig();
   cert_verifier_config.crl_set = CRLSet::ExpiredCRLSetForTesting();
   context_.cert_verifier()->SetConfig(cert_verifier_config);
 
   CertStatus cert_status;
-  DoConnection(ssl_options, &cert_status);
+  DoConnection(cert_config, &cert_status);
 
   EXPECT_EQ(0u, cert_status & CERT_STATUS_ALL_ERRORS);
 
@@ -10541,18 +10583,32 @@ TEST_F(HTTPSCRLSetTest, CRLSetRevoked) {
     return;
   }
 
-  SpawnedTestServer::SSLOptions ssl_options(
-      SpawnedTestServer::SSLOptions::CERT_AUTO);
-  ssl_options.ocsp_status = SpawnedTestServer::SSLOptions::OCSP_OK;
-  ssl_options.cert_serial = 10;
+  EmbeddedTestServer test_server(EmbeddedTestServer::TYPE_HTTPS);
+  EmbeddedTestServer::ServerCertificateConfig cert_config;
+  cert_config.ocsp_config = EmbeddedTestServer::OCSPConfig(
+      {{OCSPRevocationStatus::GOOD,
+        EmbeddedTestServer::OCSPConfig::SingleResponse::Date::kValid}});
+  test_server.SetSSLConfig(cert_config);
+  test_server.AddDefaultHandlers(
+      base::FilePath(FILE_PATH_LITERAL("net/data/ssl")));
+  ASSERT_TRUE(test_server.Start());
 
   CertVerifier::Config cert_verifier_config = GetCertVerifierConfig();
   cert_verifier_config.crl_set =
-      CRLSet::ForTesting(false, &kOCSPTestCertSPKI, "\x0a", "", {});
+      CRLSet::ForTesting(false, &kTestRootCertSPKIHash,
+                         test_server.GetCertificate()->serial_number(), "", {});
   context_.cert_verifier()->SetConfig(cert_verifier_config);
 
-  CertStatus cert_status = 0;
-  DoConnection(ssl_options, &cert_status);
+  TestDelegate d;
+  d.set_allow_certificate_errors(true);
+  std::unique_ptr<URLRequest> r(context_.CreateRequest(
+      test_server.GetURL("/defaultresponse"), DEFAULT_PRIORITY, &d,
+      TRAFFIC_ANNOTATION_FOR_TESTS));
+  r->Start();
+  EXPECT_TRUE(r->is_pending());
+  d.RunUntilComplete();
+  EXPECT_EQ(1, d.response_started_count());
+  CertStatus cert_status = r->ssl_info().cert_status;
 
   // If the certificate is recorded as revoked in the CRLSet, that should be
   // reflected without online revocation checking.
@@ -10567,20 +10623,35 @@ TEST_F(HTTPSCRLSetTest, CRLSetRevokedBySubject) {
     return;
   }
 
-  SpawnedTestServer::SSLOptions ssl_options(
-      SpawnedTestServer::SSLOptions::CERT_AUTO);
-  ssl_options.ocsp_status = SpawnedTestServer::SSLOptions::OCSP_OK;
-  static const char kCommonName[] = "Test CN";
-  ssl_options.cert_common_name = kCommonName;
+  EmbeddedTestServer test_server(EmbeddedTestServer::TYPE_HTTPS);
+  EmbeddedTestServer::ServerCertificateConfig cert_config;
+  cert_config.ocsp_config = EmbeddedTestServer::OCSPConfig(
+      {{OCSPRevocationStatus::GOOD,
+        EmbeddedTestServer::OCSPConfig::SingleResponse::Date::kValid}});
+  test_server.SetSSLConfig(cert_config);
+  test_server.AddDefaultHandlers(
+      base::FilePath(FILE_PATH_LITERAL("net/data/ssl")));
+  ASSERT_TRUE(test_server.Start());
+
+  std::string common_name = test_server.GetCertificate()->subject().common_name;
 
   {
     CertVerifier::Config cert_verifier_config = GetCertVerifierConfig();
     cert_verifier_config.crl_set =
-        CRLSet::ForTesting(false, nullptr, "", kCommonName, {});
+        CRLSet::ForTesting(false, nullptr, "", common_name, {});
+    ASSERT_TRUE(cert_verifier_config.crl_set);
     context_.cert_verifier()->SetConfig(cert_verifier_config);
 
-    CertStatus cert_status = 0;
-    DoConnection(ssl_options, &cert_status);
+    TestDelegate d;
+    d.set_allow_certificate_errors(true);
+    std::unique_ptr<URLRequest> r(context_.CreateRequest(
+        test_server.GetURL("/defaultresponse"), DEFAULT_PRIORITY, &d,
+        TRAFFIC_ANNOTATION_FOR_TESTS));
+    r->Start();
+    EXPECT_TRUE(r->is_pending());
+    d.RunUntilComplete();
+    EXPECT_EQ(1, d.response_started_count());
+    CertStatus cert_status = r->ssl_info().cert_status;
 
     // If the certificate is recorded as revoked in the CRLSet, that should be
     // reflected without online revocation checking.
@@ -10589,26 +10660,31 @@ TEST_F(HTTPSCRLSetTest, CRLSetRevokedBySubject) {
     EXPECT_FALSE(cert_status & CERT_STATUS_REV_CHECKING_ENABLED);
   }
 
-  const uint8_t kTestServerSPKISHA256[32] = {
-      0xb3, 0x91, 0xac, 0x73, 0x32, 0x54, 0x7f, 0x7b, 0x8a, 0x62, 0x77,
-      0x73, 0x1d, 0x45, 0x7b, 0x23, 0x46, 0x69, 0xef, 0x6f, 0x05, 0x3d,
-      0x07, 0x22, 0x15, 0x18, 0xd6, 0x10, 0x8b, 0xa1, 0x49, 0x33,
-  };
-  const std::string spki_hash(
-      reinterpret_cast<const char*>(kTestServerSPKISHA256),
-      sizeof(kTestServerSPKISHA256));
-
+  HashValue spki_hash_value;
+  ASSERT_TRUE(x509_util::CalculateSha256SpkiHash(
+      test_server.GetCertificate()->cert_buffer(), &spki_hash_value));
+  std::string spki_hash(spki_hash_value.data(),
+                        spki_hash_value.data() + spki_hash_value.size());
   {
     CertVerifier::Config cert_verifier_config = GetCertVerifierConfig();
     cert_verifier_config.crl_set =
-        CRLSet::ForTesting(false, nullptr, "", kCommonName, {spki_hash});
+        CRLSet::ForTesting(false, nullptr, "", common_name, {spki_hash});
     context_.cert_verifier()->SetConfig(cert_verifier_config);
 
-    CertStatus cert_status = 0;
-    DoConnection(ssl_options, &cert_status);
+    TestDelegate d;
+    d.set_allow_certificate_errors(true);
+    std::unique_ptr<URLRequest> r(context_.CreateRequest(
+        test_server.GetURL("/defaultresponse"), DEFAULT_PRIORITY, &d,
+        TRAFFIC_ANNOTATION_FOR_TESTS));
+    r->Start();
+    EXPECT_TRUE(r->is_pending());
+    d.RunUntilComplete();
+    EXPECT_EQ(1, d.response_started_count());
+    CertStatus cert_status = r->ssl_info().cert_status;
 
-    // When the correct SPKI hash is specified, the connection should succeed
-    // even though the subject is listed in the CRLSet.
+    // When the correct SPKI hash is specified in
+    // |acceptable_spki_hashes_for_cn|, the connection should succeed even
+    // though the subject is listed in the CRLSet.
     EXPECT_EQ(0u, cert_status & CERT_STATUS_ALL_ERRORS);
   }
 }

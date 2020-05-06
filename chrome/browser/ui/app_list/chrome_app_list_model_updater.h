@@ -36,8 +36,6 @@ class ChromeAppListModelUpdater : public AppListModelUpdater {
   void MoveItemToFolder(const std::string& id,
                         const std::string& folder_id) override;
   void SetStatus(ash::AppListModelStatus status) override;
-  void SetState(ash::AppListState state) override;
-  void HighlightItemInstalledFromUI(const std::string& id) override;
   void SetSearchEngineIsGoogle(bool is_google) override;
   void SetSearchTabletAndClamshellAccessibleName(
       const base::string16& tablet_accessible_name,
@@ -59,19 +57,11 @@ class ChromeAppListModelUpdater : public AppListModelUpdater {
   void SetItemIsPersistent(const std::string& id, bool is_persistent) override;
   void SetItemFolderId(const std::string& id,
                        const std::string& folder_id) override;
-  void SetItemIsInstalling(const std::string& id, bool is_installing) override;
-  void SetItemPercentDownloaded(const std::string& id,
-                                int32_t percent_downloaded) override;
 
   // Methods only used by ChromeSearchResult that talk to ash directly.
   void SetSearchResultMetadata(
       const std::string& id,
       std::unique_ptr<ash::SearchResultMetadata> metadata) override;
-  void SetSearchResultIsInstalling(const std::string& id,
-                                   bool is_installing) override;
-  void SetSearchResultPercentDownloaded(const std::string& id,
-                                        int percent_downloaded) override;
-  void NotifySearchResultItemInstalled(const std::string& id) override;
 
   // Methods only for visiting Chrome items that never talk to ash.
   void ActivateChromeItem(const std::string& id, int event_flags) override;

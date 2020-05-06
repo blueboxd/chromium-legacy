@@ -14,6 +14,7 @@ import org.chromium.base.CollectionUtil;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
+import org.chromium.components.embedder_support.browser_context.BrowserContextHandle;
 import org.chromium.weblayer_private.interfaces.BrowsingDataType;
 import org.chromium.weblayer_private.interfaces.ICookieManager;
 import org.chromium.weblayer_private.interfaces.IDownloadCallbackClient;
@@ -29,7 +30,7 @@ import java.util.List;
  * Implementation of IProfile.
  */
 @JNINamespace("weblayer")
-public final class ProfileImpl extends IProfile.Stub {
+public final class ProfileImpl extends IProfile.Stub implements BrowserContextHandle {
     private final String mName;
     private long mNativeProfile;
     private CookieManagerImpl mCookieManager;
@@ -114,6 +115,12 @@ public final class ProfileImpl extends IProfile.Stub {
         StrictModeWorkaround.apply();
         checkNotDestroyed();
         return mName;
+    }
+
+    @Override
+    public long getNativeBrowserContextPointer() {
+        assert mNativeProfile != 0;
+        return ProfileImplJni.get().getBrowserContext(mNativeProfile);
     }
 
     public boolean isIncognito() {
@@ -202,6 +209,7 @@ public final class ProfileImpl extends IProfile.Stub {
         void enumerateAllProfileNames(Callback<String[]> callback);
         long createProfile(String name, ProfileImpl caller);
         void deleteProfile(long profile);
+        long getBrowserContext(long nativeProfileImpl);
         int getNumBrowserImpl(long nativeProfileImpl);
         void destroyAndDeleteDataFromDisk(long nativeProfileImpl, Runnable completionCallback);
         void clearBrowsingData(long nativeProfileImpl, @ImplBrowsingDataType int[] dataTypes,

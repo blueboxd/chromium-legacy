@@ -226,12 +226,7 @@ void IntentPickerBubbleView::OnDialogAccepted() {
 }
 
 void IntentPickerBubbleView::OnDialogCancelled() {
-  const char* launch_name =
-#if defined(OS_CHROMEOS)
-      arc::ArcIntentHelperBridge::kArcIntentHelperPackageName;
-#else
-      kInvalidLaunchName;
-#endif
+  const char* launch_name = apps::AppsNavigationThrottle::kUseBrowserForLink;
   bool should_persist = remember_selection_checkbox_ &&
                         remember_selection_checkbox_->GetChecked();
   RunCallbackAndCloseBubble(launch_name, apps::PickerEntryType::kUnknown,

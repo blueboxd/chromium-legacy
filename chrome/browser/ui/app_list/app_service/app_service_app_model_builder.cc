@@ -10,6 +10,7 @@
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/ui/app_list/app_service/app_service_app_item.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/sync/protocol/sync.pb.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace {
@@ -54,8 +55,10 @@ class AppServiceAppModelBuilder::CrostiniFolderObserver
 
     // Either the name and position will be in the sync, or we set them
     // manually.
-    if (parent_->GetSyncItem(crostini::kCrostiniFolderId))
+    if (parent_->GetSyncItem(crostini::kCrostiniFolderId,
+                             sync_pb::AppListSpecifics::TYPE_FOLDER)) {
       return;
+    }
     item->SetName(
         l10n_util::GetStringUTF8(IDS_APP_LIST_CROSTINI_DEFAULT_FOLDER_NAME));
     item->SetDefaultPositionIfApplicable(parent_->model_updater());
@@ -125,7 +128,9 @@ void AppServiceAppModelBuilder::OnAppUpdate(const apps::AppUpdate& update) {
 
   } else if (show) {
     InsertApp(std::make_unique<AppServiceAppItem>(
-        profile(), model_updater(), GetSyncItem(update.AppId()), update));
+        profile(), model_updater(),
+        GetSyncItem(update.AppId(), sync_pb::AppListSpecifics::TYPE_APP),
+        update));
   }
 }
 

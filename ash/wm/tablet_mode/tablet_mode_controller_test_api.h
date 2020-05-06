@@ -95,6 +95,8 @@ class TabletModeControllerTestApi {
     return tablet_mode_controller_->is_in_tablet_physical_state();
   }
 
+  float GetLidAngle() const { return tablet_mode_controller_->lid_angle(); }
+
  private:
   TabletModeController* tablet_mode_controller_;
 

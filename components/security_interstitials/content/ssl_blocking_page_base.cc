@@ -40,12 +40,6 @@ void SSLBlockingPageBase::OnInterstitialClosing() {
   cert_report_helper_->FinishCertCollection();
 }
 
-void SSLBlockingPageBase::OverrideRendererPrefs(
-    blink::mojom::RendererPreferences* prefs) {
-  if (renderer_pref_callback_)
-    renderer_pref_callback_.Run(web_contents(), prefs);
-}
-
 void SSLBlockingPageBase::SetSSLCertReporterForTesting(
     std::unique_ptr<SSLCertReporter> ssl_cert_reporter) {
   cert_report_helper_->SetSSLCertReporterForTesting(

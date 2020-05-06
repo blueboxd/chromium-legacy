@@ -19,7 +19,6 @@ import org.junit.Test;
 import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
@@ -59,7 +58,6 @@ public class PartnerHomepageUnitTest {
         mHomepageManager = HomepageManager.getInstance();
         mPartnerBrowserCustomizations = PartnerBrowserCustomizations.getInstance();
 
-        RecordHistogram.setDisabledForTests(true);
         Assert.assertNotNull(mHomepageManager);
 
         Assert.assertNotSame(
@@ -70,7 +68,6 @@ public class PartnerHomepageUnitTest {
     @After
     public void tearDown() {
         PartnerBrowserCustomizations.destroy();
-        RecordHistogram.setDisabledForTests(false);
     }
 
     @Test

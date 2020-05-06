@@ -55,9 +55,8 @@ RulesetMatcher::LoadRulesetResult RulesetMatcher::CreateVerifiedMatcher(
 
   // Using WrapUnique instead of make_unique since this class has a private
   // constructor.
-  *matcher = base::WrapUnique(new RulesetMatcher(std::move(ruleset_data),
-                                                 source.id(), source.type(),
-                                                 source.extension_id()));
+  *matcher = base::WrapUnique(new RulesetMatcher(
+      std::move(ruleset_data), source.id(), source.extension_id()));
   return kLoadSuccess;
 }
 
@@ -123,20 +122,18 @@ RulesetMatcher::GetAllowlistedFrameActionForTesting(
       regex_matcher_.GetAllowlistedFrameActionForTesting(host));
 }
 
-RulesetMatcher::RulesetMatcher(
-    std::string ruleset_data,
-    int id,
-    api::declarative_net_request::SourceType source_type,
-    const ExtensionId& extension_id)
+RulesetMatcher::RulesetMatcher(std::string ruleset_data,
+                               RulesetID id,
+                               const ExtensionId& extension_id)
     : ruleset_data_(std::move(ruleset_data)),
       root_(flat::GetExtensionIndexedRuleset(ruleset_data_.data())),
       id_(id),
       url_pattern_index_matcher_(extension_id,
-                                 source_type,
+                                 id,
                                  root_->index_list(),
                                  root_->extension_metadata()),
       regex_matcher_(extension_id,
-                     source_type,
+                     id,
                      root_->regex_rules(),
                      root_->extension_metadata()) {}
 

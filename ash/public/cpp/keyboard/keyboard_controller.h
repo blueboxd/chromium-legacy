@@ -28,6 +28,8 @@ enum class HideReason {
   kSystem,
 };
 
+struct KeyRepeatSettings;
+
 class ASH_PUBLIC_EXPORT KeyboardController {
  public:
   static KeyboardController* Get();
@@ -111,6 +113,9 @@ class ASH_PUBLIC_EXPORT KeyboardController {
   // Adds/removes a KeyboardControllerObserver.
   virtual void AddObserver(KeyboardControllerObserver* observer) = 0;
   virtual void RemoveObserver(KeyboardControllerObserver* observer) = 0;
+
+  // Returns current key repeat settings, derived from the active user's prefs.
+  virtual KeyRepeatSettings GetKeyRepeatSettings() = 0;
 
  protected:
   static KeyboardController* g_instance_;

@@ -85,12 +85,11 @@ RegexRuleInfo::RegexRuleInfo(const flat::RegexRule* regex_rule,
 RegexRuleInfo::RegexRuleInfo(const RegexRuleInfo& info) = default;
 RegexRuleInfo& RegexRuleInfo::operator=(const RegexRuleInfo& info) = default;
 
-RegexRulesMatcher::RegexRulesMatcher(
-    const ExtensionId& extension_id,
-    api::declarative_net_request::SourceType source_type,
-    const RegexRulesList* regex_list,
-    const ExtensionMetadataList* metadata_list)
-    : RulesetMatcherBase(extension_id, source_type),
+RegexRulesMatcher::RegexRulesMatcher(const ExtensionId& extension_id,
+                                     RulesetID ruleset_id,
+                                     const RegexRulesList* regex_list,
+                                     const ExtensionMetadataList* metadata_list)
+    : RulesetMatcherBase(extension_id, ruleset_id),
       regex_list_(regex_list),
       metadata_list_(metadata_list),
       is_extra_headers_matcher_(IsExtraHeadersMatcherInternal(regex_list)) {

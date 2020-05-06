@@ -234,7 +234,3 @@ void CaptivePortalBlockingPage::CommandReceived(const std::string& command) {
                    << " isn't handled by the captive portal interstitial.";
   }
 }
-
-void CaptivePortalBlockingPage::OverrideEntry(content::NavigationEntry* entry) {
-  entry->GetSSL() = content::SSLStatus(ssl_info_);
-}

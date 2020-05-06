@@ -566,8 +566,15 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
   RunEventTest(FILE_PATH_LITERAL("form-required-changed.html"));
 }
 
+// Flaky on Windows: https://crbug.com/1078490.
+#if defined(OS_WIN)
+#define MAYBE_AccessibilityEventsFocusListbox \
+  DISABLED_AccessibilityEventsFocusListbox
+#else
+#define MAYBE_AccessibilityEventsFocusListbox AccessibilityEventsFocusListbox
+#endif
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
-                       AccessibilityEventsFocusListbox) {
+                       MAYBE_AccessibilityEventsFocusListbox) {
   RunEventTest(FILE_PATH_LITERAL("focus-listbox.html"));
 }
 
@@ -690,8 +697,15 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
   RunEventTest(FILE_PATH_LITERAL("multiple-aria-properties-changed.html"));
 }
 
+// Flaky on Windows: https://crbug.com/1078490.
+#if defined(OS_WIN)
+#define MAYBE_AccessibilityEventsNameChange \
+  DISABLED_AccessibilityEventsNameChange
+#else
+#define MAYBE_AccessibilityEventsNameChange AccessibilityEventsNameChange
+#endif
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
-                       AccessibilityEventsNameChange) {
+                       MAYBE_AccessibilityEventsNameChange) {
   RunEventTest(FILE_PATH_LITERAL("name-change.html"));
 }
 

@@ -282,7 +282,7 @@ void AccessibilityEventRecorderAuraLinux::ProcessATKEvent(
   AtkObject* obj = ATK_OBJECT(g_value_get_object(&params[0]));
   log += " " + AtkObjectToString(obj, log_name);
 
-  std::string states = "";
+  std::string states;
   AtkStateSet* state_set = atk_object_ref_state_set(obj);
   for (int i = ATK_STATE_INVALID; i < ATK_STATE_LAST_DEFINED; i++) {
     AtkStateType state_type = static_cast<AtkStateType>(i);

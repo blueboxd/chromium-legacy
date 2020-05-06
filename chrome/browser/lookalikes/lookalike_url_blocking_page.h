@@ -12,7 +12,6 @@
 #include "base/time/time.h"
 #include "components/lookalikes/core/lookalike_url_util.h"
 #include "components/security_interstitials/content/security_interstitial_page.h"
-#include "content/public/browser/interstitial_page_delegate.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 
 class GURL;
@@ -24,7 +23,8 @@ class LookalikeUrlBlockingPage
     : public security_interstitials::SecurityInterstitialPage {
  public:
   // Interstitial type, used in tests.
-  static const content::InterstitialPageDelegate::TypeID kTypeForTesting;
+  static const security_interstitials::SecurityInterstitialPage::TypeID
+      kTypeForTesting;
 
   LookalikeUrlBlockingPage(
       content::WebContents* web_contents,
@@ -37,8 +37,9 @@ class LookalikeUrlBlockingPage
 
   ~LookalikeUrlBlockingPage() override;
 
-  // InterstitialPageDelegate method:
-  InterstitialPageDelegate::TypeID GetTypeForTesting() override;
+  // SecurityInterstitialPage method:
+  security_interstitials::SecurityInterstitialPage::TypeID GetTypeForTesting()
+      override;
 
   // Allow easier reporting of UKM when no interstitial is shown.
   static void RecordUkmEvent(ukm::SourceId source_id,
@@ -46,10 +47,8 @@ class LookalikeUrlBlockingPage
                              LookalikeUrlBlockingPageUserAction user_action);
 
  protected:
-  // InterstitialPageDelegate implementation:
-  void CommandReceived(const std::string& command) override;
-
   // SecurityInterstitialPage implementation:
+  void CommandReceived(const std::string& command) override;
   bool ShouldCreateNewNavigation() const override;
   void PopulateInterstitialStrings(
       base::DictionaryValue* load_time_data) override;

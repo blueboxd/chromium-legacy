@@ -82,8 +82,10 @@ class CORE_EXPORT PointerLockController final
   void EnqueueEvent(const AtomicString& type, Document*);
   void ChangeLockRequestCallback(Element* target,
                                  ScriptPromiseResolver* resolver,
+                                 bool unadjusted_movement_requested,
                                  mojom::blink::PointerLockResult result);
   void LockRequestCallback(ScriptPromiseResolver* resolver,
+                           bool unadjusted_movement_requested,
                            mojom::blink::PointerLockResult result);
   DOMException* ConvertResultToException(
       mojom::blink::PointerLockResult result);

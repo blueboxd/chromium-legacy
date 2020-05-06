@@ -33,9 +33,8 @@ TEST_F(WebUIAllowlistProviderTest, RegisterChrome) {
   map->SetDefaultContentSetting(ContentSettingsType::GEOLOCATION,
                                 CONTENT_SETTING_BLOCK);
 
-  // Check |url_allowed| is not affected by whitelisted_schemes and
-  // force_allowed_origins. These two mechanisms take precedence over allowlist
-  // provider.
+  // Check |url_allowed| is not affected by whitelisted_schemes. This mechanism
+  // take precedence over allowlist provider.
   const GURL url_allowed = GURL("chrome://test/");
   ASSERT_EQ(CONTENT_SETTING_BLOCK,
             map->GetContentSetting(url_allowed, url_allowed,
@@ -81,9 +80,8 @@ TEST_F(WebUIAllowlistProviderTest, RegisterChromeUntrusted) {
   map->SetDefaultContentSetting(ContentSettingsType::GEOLOCATION,
                                 CONTENT_SETTING_BLOCK);
 
-  // Check |url_allowed| is not affected by whitelisted_schemes and
-  // force_allowed_origins. These two mechanisms take precedence over allowlist
-  // provider.
+  // Check |url_allowed| is not affected by whitelisted_schemes. This mechanism
+  // take precedence over allowlist provider.
   const GURL url_allowed = GURL("chrome-untrusted://test/");
   ASSERT_EQ(CONTENT_SETTING_BLOCK,
             map->GetContentSetting(url_allowed, url_allowed,

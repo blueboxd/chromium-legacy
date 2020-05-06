@@ -7,16 +7,15 @@
 namespace extensions {
 namespace declarative_net_request {
 
-RequestAction::RequestAction(
-    RequestAction::Type type,
-    uint32_t rule_id,
-    uint64_t index_priority,
-    api::declarative_net_request::SourceType source_type,
-    const ExtensionId& extension_id)
+RequestAction::RequestAction(RequestAction::Type type,
+                             uint32_t rule_id,
+                             uint64_t index_priority,
+                             RulesetID ruleset_id,
+                             const ExtensionId& extension_id)
     : type(type),
       rule_id(rule_id),
       index_priority(index_priority),
-      source_type(source_type),
+      ruleset_id(ruleset_id),
       extension_id(extension_id) {}
 RequestAction::~RequestAction() = default;
 RequestAction::RequestAction(RequestAction&&) = default;

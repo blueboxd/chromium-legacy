@@ -195,8 +195,7 @@ class CrashRestoreComplexTest : public CrashRestoreSimpleTest {
     ASSERT_TRUE(
         base::PathService::Get(chrome::DIR_USER_DATA, &local_state_file));
     local_state_file = local_state_file.Append(chrome::kLocalStateFilename);
-    ASSERT_NE(-1, base::WriteFile(local_state_file, local_state_json.data(),
-                                  local_state_json.size()));
+    ASSERT_TRUE(base::WriteFile(local_state_file, local_state_json));
   }
 
   // Creates user profiles with open user sessions to simulate crashes.
@@ -217,8 +216,8 @@ class CrashRestoreComplexTest : public CrashRestoreSimpleTest {
           user_data_dir.Append(ProfileHelper::GetUserProfileDir(user_id_hash));
       ASSERT_TRUE(base::CreateDirectory(user_profile_path));
 
-      ASSERT_NE(-1, base::WriteFile(user_profile_path.Append("Preferences"),
-                                    prefs_json.data(), prefs_json.size()));
+      ASSERT_TRUE(
+          base::WriteFile(user_profile_path.Append("Preferences"), prefs_json));
     }
   }
 };

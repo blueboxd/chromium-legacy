@@ -107,7 +107,8 @@ ScriptPromise PointerLockController::RequestPointerLock(
               target->GetDocument().GetFrame(),
               WTF::Bind(&PointerLockController::ChangeLockRequestCallback,
                         WrapWeakPersistent(this), WrapWeakPersistent(target),
-                        WrapPersistent(resolver)),
+                        WrapPersistent(resolver),
+                        unadjusted_movement_requested),
               unadjusted_movement_requested)) {
         EnqueueEvent(event_type_names::kPointerlockerror, target);
         exception_state.ThrowDOMException(
@@ -124,12 +125,11 @@ ScriptPromise PointerLockController::RequestPointerLock(
   } else if (page_->GetChromeClient().RequestPointerLock(
                  target->GetDocument().GetFrame(),
                  WTF::Bind(&PointerLockController::LockRequestCallback,
-                           WrapWeakPersistent(this), WrapPersistent(resolver)),
+                           WrapWeakPersistent(this), WrapPersistent(resolver),
+                           unadjusted_movement_requested),
                  unadjusted_movement_requested)) {
     lock_pending_ = true;
     element_ = target;
-    current_unadjusted_movement_setting_ =
-        options ? options->unadjustedMovement() : false;
   } else {
     EnqueueEvent(event_type_names::kPointerlockerror, target);
     exception_state.ThrowDOMException(DOMExceptionCode::kInUseAttributeError,
@@ -142,17 +142,20 @@ ScriptPromise PointerLockController::RequestPointerLock(
 void PointerLockController::ChangeLockRequestCallback(
     Element* target,
     ScriptPromiseResolver* resolver,
+    bool unadjusted_movement_requested,
     mojom::blink::PointerLockResult result) {
   if (result == mojom::blink::PointerLockResult::kSuccess)
     element_ = target;
 
-  LockRequestCallback(resolver, result);
+  LockRequestCallback(resolver, unadjusted_movement_requested, result);
 }
 
 void PointerLockController::LockRequestCallback(
     ScriptPromiseResolver* resolver,
+    bool unadjusted_movement_requested,
     mojom::blink::PointerLockResult result) {
   if (result == mojom::blink::PointerLockResult::kSuccess) {
+    current_unadjusted_movement_setting_ = unadjusted_movement_requested;
     resolver->Resolve();
     return;
   }

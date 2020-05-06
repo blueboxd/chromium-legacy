@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/run_loop.h"
+#include "base/strings/stringprintf.h"
 #include "base/test/bind_test_util.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -20,6 +21,7 @@
 #include "content/common/input/synthetic_web_input_event_builders.h"
 #include "content/common/view_messages.h"
 #include "content/common/widget_messages.h"
+#include "content/public/browser/notification_types.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/content_switches.h"
@@ -39,6 +41,35 @@
 #include "ui/latency/latency_info.h"
 
 namespace content {
+
+// For tests that just need a browser opened/navigated to a simple web page.
+class RenderWidgetHostBrowserTest : public ContentBrowserTest {
+ public:
+  void SetUpOnMainThread() override {
+    ContentBrowserTest::SetUpOnMainThread();
+    EXPECT_TRUE(NavigateToURL(
+        shell(), GURL("data:text/html,<!doctype html>"
+                      "<body style='background-color: magenta;'></body>")));
+  }
+
+  WebContents* web_contents() const { return shell()->web_contents(); }
+  RenderWidgetHostViewBase* view() const {
+    return static_cast<RenderWidgetHostViewBase*>(
+        web_contents()->GetRenderWidgetHostView());
+  }
+  RenderWidgetHostImpl* host() const {
+    return static_cast<RenderWidgetHostImpl*>(view()->GetRenderWidgetHost());
+  }
+
+  void WaitForVisualPropertiesAck() {
+    while (host()->visual_properties_ack_pending_for_testing()) {
+      WindowedNotificationObserver(
+          NOTIFICATION_RENDER_WIDGET_HOST_DID_UPDATE_VISUAL_PROPERTIES,
+          Source<RenderWidgetHost>(host()))
+          .Wait();
+    }
+  }
+};
 
 // This test enables --site-per-porcess flag.
 class RenderWidgetHostSitePerProcessTest : public ContentBrowserTest {
@@ -592,5 +623,60 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostSitePerProcessTest,
   }
 }
 #endif
+
+// Tests that the renderer receives the blink::WebScreenInfo size overrides
+// while the page is in fullscreen mode. This is a regression test for
+// https://crbug.com/1060795.
+IN_PROC_BROWSER_TEST_F(RenderWidgetHostBrowserTest,
+                       PropagatesFullscreenSizeOverrides) {
+  class FullscreenWaiter : public WebContentsObserver {
+   public:
+    explicit FullscreenWaiter(WebContents* wc) : WebContentsObserver(wc) {}
+
+    void Wait(bool enter) {
+      if (web_contents()->IsFullscreenForCurrentTab() != enter) {
+        run_loop_.Run();
+      }
+      EXPECT_EQ(enter, web_contents()->IsFullscreenForCurrentTab());
+    }
+
+   private:
+    void DidToggleFullscreenModeForTab(bool entered,
+                                       bool will_resize) override {
+      run_loop_.Quit();
+    }
+
+    base::RunLoop run_loop_;
+  };
+
+  // Sanity-check: Ensure the Shell and WebContents both agree the browser is
+  // not currently in fullscreen.
+  ASSERT_FALSE(shell()->IsFullscreenForTabOrPending(web_contents()));
+  ASSERT_FALSE(web_contents()->IsFullscreenForCurrentTab());
+
+  // While not fullscreened, expect the screen size to not be overridden.
+  ScreenInfo screen_info;
+  host()->GetScreenInfo(&screen_info);
+  WaitForVisualPropertiesAck();
+  EXPECT_EQ(screen_info.rect.size().ToString(),
+            EvalJs(web_contents(), "`${screen.width}x${screen.height}`"));
+
+  // Enter fullscreen mode. The Content Shell does not resize the view to fill
+  // the entire screen, and so the page will see the view's size as the screen
+  // size. This confirms the ScreenInfo override logic is working.
+  ASSERT_TRUE(ExecJs(web_contents(), "document.body.requestFullscreen();"));
+  FullscreenWaiter(web_contents()).Wait(true);
+  WaitForVisualPropertiesAck();
+  EXPECT_EQ(view()->GetRequestedRendererSize().ToString(),
+            EvalJs(web_contents(), "`${screen.width}x${screen.height}`"));
+
+  // Exit fullscreen mode, and then the page should see the screen size again.
+  ASSERT_TRUE(ExecJs(web_contents(), "document.exitFullscreen();"));
+  FullscreenWaiter(web_contents()).Wait(false);
+  host()->GetScreenInfo(&screen_info);
+  WaitForVisualPropertiesAck();
+  EXPECT_EQ(screen_info.rect.size().ToString(),
+            EvalJs(web_contents(), "`${screen.width}x${screen.height}`"));
+}
 
 }  // namespace content

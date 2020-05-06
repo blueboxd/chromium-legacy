@@ -11,7 +11,6 @@
 #include "base/macros.h"
 #include "components/security_interstitials/content/security_interstitial_controller_client.h"
 #include "components/security_interstitials/content/security_interstitial_page.h"
-#include "content/public/browser/interstitial_page_delegate.h"
 #include "services/network/public/cpp/origin_policy.h"
 
 #include "url/gurl.h"
@@ -36,8 +35,6 @@ class OriginPolicyInterstitialPage : public SecurityInterstitialPage {
   void OnInterstitialClosing() override;
 
   void CommandReceived(const std::string& command) override;
-  void OnProceed() override;
-  void OnDontProceed() override;
 
  protected:
   bool ShouldCreateNewNavigation() const override;
@@ -45,6 +42,9 @@ class OriginPolicyInterstitialPage : public SecurityInterstitialPage {
 
  private:
   network::OriginPolicyState error_reason_;
+
+  void Proceed();
+  void DontProceed();
 
   DISALLOW_COPY_AND_ASSIGN(OriginPolicyInterstitialPage);
 };

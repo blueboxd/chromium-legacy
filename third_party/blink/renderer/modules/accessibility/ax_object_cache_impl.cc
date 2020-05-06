@@ -28,12 +28,14 @@
 
 #include "third_party/blink/renderer/modules/accessibility/ax_object_cache_impl.h"
 
+#include "base/auto_reset.h"
 #include "base/memory/scoped_refptr.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "third_party/blink/public/mojom/permissions/permission.mojom-blink.h"
 #include "third_party/blink/public/mojom/permissions/permission_status.mojom-blink.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/web/web_local_frame_client.h"
+#include "third_party/blink/renderer/core/accessibility/scoped_blink_ax_event_intent.h"
 #include "third_party/blink/renderer/core/aom/accessible_node.h"
 #include "third_party/blink/renderer/core/display_lock/display_lock_utilities.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -819,7 +821,7 @@ void AXObjectCacheImpl::DeferTreeUpdateInternal(Node* node,
       << "DeferTreeUpdateInternal should only be outside of the lifecycle or "
          "before the accessibility state.";
   tree_update_callback_queue_.push_back(MakeGarbageCollected<TreeUpdateParams>(
-      node, ComputeEventFrom(), std::move(callback)));
+      node, ComputeEventFrom(), ActiveEventIntents(), std::move(callback)));
 
   // These events are fired during DocumentLifecycle::kInAccessibility,
   // ensure there is a document lifecycle update scheduled.
@@ -1067,12 +1069,14 @@ void AXObjectCacheImpl::ProcessUpdates(Document& document) {
     if (node->GetDocument() != document) {
       tree_update_callback_queue_.push_back(
           MakeGarbageCollected<TreeUpdateParams>(node, tree_update->event_from,
+                                                 tree_update->event_intents,
                                                  std::move(callback)));
       continue;
     }
 
-    FireTreeUpdatedEventImmediately(node, std::move(callback),
-                                    tree_update->event_from);
+    FireTreeUpdatedEventImmediately(node, tree_update->event_from,
+                                    tree_update->event_intents,
+                                    std::move(callback));
   }
 }
 
@@ -1164,15 +1168,17 @@ void AXObjectCacheImpl::ScheduleVisualUpdate() {
 
 void AXObjectCacheImpl::FireTreeUpdatedEventImmediately(
     Node* node,
-    base::OnceClosure callback,
-    ax::mojom::blink::EventFrom event_from) {
+    ax::mojom::blink::EventFrom event_from,
+    const BlinkAXEventIntentsSet& event_intents,
+    base::OnceClosure callback) {
   DCHECK_EQ(node->GetDocument().Lifecycle().GetState(),
             DocumentLifecycle::kInAccessibility);
-  bool saved_is_handling_action = is_handling_action_;
-  if (event_from == ax::mojom::blink::EventFrom::kAction)
-    is_handling_action_ = true;
+
+  base::AutoReset<ax::mojom::blink::EventFrom> event_from_resetter(
+      &active_event_from_, event_from);
+  ScopedBlinkAXEventIntent defered_event_intents(event_intents.AsVector(),
+                                                 &node->GetDocument());
   std::move(callback).Run();
-  is_handling_action_ = saved_is_handling_action;
 }
 
 void AXObjectCacheImpl::FireAXEventImmediately(
@@ -2054,8 +2060,8 @@ void AXObjectCacheImpl::Trace(Visitor* visitor) {
 }
 
 ax::mojom::blink::EventFrom AXObjectCacheImpl::ComputeEventFrom() {
-  if (is_handling_action_)
-    return ax::mojom::blink::EventFrom::kAction;
+  if (active_event_from_ != ax::mojom::blink::EventFrom::kNone)
+    return active_event_from_;
 
   if (document_ && document_->View() &&
       LocalFrame::HasTransientUserActivation(

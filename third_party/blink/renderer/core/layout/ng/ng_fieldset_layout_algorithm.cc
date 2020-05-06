@@ -378,9 +378,9 @@ bool NGFieldsetLayoutAlgorithm::IsFragmentainerOutOfSpace(
   return block_offset >= FragmentainerSpaceAtBfcStart(ConstraintSpace());
 }
 
-MinMaxSizes NGFieldsetLayoutAlgorithm::ComputeMinMaxSizes(
+MinMaxSizesResult NGFieldsetLayoutAlgorithm::ComputeMinMaxSizes(
     const MinMaxSizesInput& input) const {
-  MinMaxSizes sizes;
+  MinMaxSizesResult result;
 
   // TODO(crbug.com/1011842): Need to consider content-size here.
   bool apply_size_containment = Node().ShouldApplySizeContainment();
@@ -388,29 +388,31 @@ MinMaxSizes NGFieldsetLayoutAlgorithm::ComputeMinMaxSizes(
   // Size containment does not consider the legend for sizing.
   if (!apply_size_containment) {
     if (NGBlockNode legend = Node().GetRenderedLegend()) {
-      sizes = ComputeMinAndMaxContentContribution(Style(), legend, input);
-      sizes += ComputeMinMaxMargins(Style(), legend).InlineSum();
+      result = ComputeMinAndMaxContentContribution(Style(), legend, input);
+      result.sizes += ComputeMinMaxMargins(Style(), legend).InlineSum();
     }
   }
 
   // The fieldset content includes the fieldset padding (and any scrollbars),
   // while the legend is a regular child and doesn't. We may have a fieldset
   // without any content or legend, so add the padding here, on the outside.
-  sizes += ComputePadding(ConstraintSpace(), Style()).InlineSum();
+  result.sizes += ComputePadding(ConstraintSpace(), Style()).InlineSum();
 
   // Size containment does not consider the content for sizing.
   if (!apply_size_containment) {
     if (NGBlockNode content = Node().GetFieldsetContent()) {
-      MinMaxSizes content_min_max_sizes =
+      MinMaxSizesResult content_result =
           ComputeMinAndMaxContentContribution(Style(), content, input);
-      content_min_max_sizes +=
+      content_result.sizes +=
           ComputeMinMaxMargins(Style(), content).InlineSum();
-      sizes.Encompass(content_min_max_sizes);
+      result.sizes.Encompass(content_result.sizes);
+      result.depends_on_percentage_block_size |=
+          content_result.depends_on_percentage_block_size;
     }
   }
 
-  sizes += ComputeBorders(ConstraintSpace(), Style()).InlineSum();
-  return sizes;
+  result.sizes += ComputeBorders(ConstraintSpace(), Style()).InlineSum();
+  return result;
 }
 
 const NGConstraintSpace

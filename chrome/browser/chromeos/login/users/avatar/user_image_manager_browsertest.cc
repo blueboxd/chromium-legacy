@@ -576,11 +576,7 @@ class UserImageManagerPolicyTest : public UserImageManagerTestBase,
     std::vector<uint8_t> user_key_bits;
     ASSERT_TRUE(user_policy_.GetSigningKey()->ExportPublicKey(&user_key_bits));
     ASSERT_TRUE(base::CreateDirectory(user_key_file.DirName()));
-    ASSERT_EQ(
-        base::WriteFile(user_key_file,
-                        reinterpret_cast<const char*>(user_key_bits.data()),
-                        user_key_bits.size()),
-        static_cast<int>(user_key_bits.size()));
+    ASSERT_TRUE(base::WriteFile(user_key_file, user_key_bits));
     user_policy_.policy_data().set_username(
         enterprise_account_id_.GetUserEmail());
     user_policy_.policy_data().set_gaia_id(enterprise_account_id_.GetGaiaId());

@@ -88,7 +88,8 @@ mojom::blink::ScrollAlignment::Behavior ToBlinkScrollAlignmentBehavior(
 
 class WebAXSparseAttributeClientAdapter : public AXSparseAttributeClient {
  public:
-  WebAXSparseAttributeClientAdapter(WebAXSparseAttributeClient& attribute_map)
+  explicit WebAXSparseAttributeClientAdapter(
+      WebAXSparseAttributeClient& attribute_map)
       : attribute_map_(attribute_map) {}
   virtual ~WebAXSparseAttributeClientAdapter() = default;
 
@@ -132,15 +133,19 @@ class WebAXSparseAttributeClientAdapter : public AXSparseAttributeClient {
 };
 
 // A utility class which uses the lifetime of this object to signify when
-// AXObjCache handles programmatic actions.
+// AXObjCache or AXObjectCacheImpl handles programmatic actions.
 class ScopedActionAnnotator {
  public:
   explicit ScopedActionAnnotator(AXObject* obj)
-      : cache_(&(obj->AXObjectCache())) {
-    cache_->set_is_handling_action(true);
+      : cache_(&obj->AXObjectCache()) {
+    DCHECK_EQ(cache_->active_event_from(), ax::mojom::blink::EventFrom::kNone)
+        << "Multiple ScopedActionAnnotator instances cannot be nested.";
+    cache_->set_active_event_from(ax::mojom::blink::EventFrom::kAction);
   }
 
-  ~ScopedActionAnnotator() { cache_->set_is_handling_action(false); }
+  ~ScopedActionAnnotator() {
+    cache_->set_active_event_from(ax::mojom::blink::EventFrom::kNone);
+  }
 
  private:
   Persistent<AXObjectCacheImpl> cache_;
@@ -1069,7 +1074,7 @@ bool WebAXObject::SupportsRangeValue() const {
   if (IsDetached())
     return false;
 
-  return private_->SupportsRangeValue();
+  return private_->IsRangeValueSupported();
 }
 
 WebString WebAXObject::ValueDescription() const {

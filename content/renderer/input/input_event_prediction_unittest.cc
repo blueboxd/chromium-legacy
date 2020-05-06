@@ -12,8 +12,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/features.h"
 #include "ui/events/base_event_utils.h"
-#include "ui/events/blink/prediction/empty_predictor.h"
-#include "ui/events/blink/prediction/predictor_factory.h"
 
 namespace content {
 
@@ -22,7 +20,7 @@ using blink::WebInputEvent;
 using blink::WebMouseEvent;
 using blink::WebPointerProperties;
 using blink::WebTouchEvent;
-using ui::input_prediction::PredictorType;
+using blink::input_prediction::PredictorType;
 }  // namespace
 
 class InputEventPredictionTest : public testing::Test {
@@ -38,7 +36,7 @@ class InputEventPredictionTest : public testing::Test {
     return event_predictor_->pointer_id_predictor_map_.size();
   }
 
-  std::unique_ptr<ui::InputPredictor::InputData> GetPrediction(
+  std::unique_ptr<blink::InputPredictor::InputData> GetPrediction(
       const WebPointerProperties& event) const {
     if (event.pointer_type == WebPointerProperties::PointerType::kMouse) {
       return event_predictor_->mouse_predictor_->GeneratePrediction(

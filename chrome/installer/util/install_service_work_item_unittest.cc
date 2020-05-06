@@ -13,6 +13,7 @@
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/win/registry.h"
+#include "base/win/win_util.h"
 #include "chrome/install_static/install_util.h"
 #include "chrome/install_static/test/scoped_install_details.h"
 #include "chrome/installer/util/work_item.h"
@@ -25,7 +26,35 @@ namespace {
 constexpr base::char16 kServiceName[] = L"InstallServiceWorkItemService";
 constexpr base::char16 kServiceDisplayName[] = L"InstallServiceWorkItemService";
 constexpr base::FilePath::CharType kServiceProgramPath[] =
-    FILE_PATH_LITERAL("c:\\windows\\system32\\cmd.exe");
+    FILE_PATH_LITERAL("c:\\windows\\SysWow64\\cmd.exe");
+
+// {76EDE292-9C33-4A09-9B3A-3B880DF64440}
+constexpr GUID kClsid = {0x76ede292,
+                         0x9c33,
+                         0x4a09,
+                         {0x9b, 0x3a, 0x3b, 0x88, 0xd, 0xf6, 0x44, 0x40}};
+constexpr base::char16 kClsidRegPath[] =
+    L"Software\\Classes\\CLSID\\{76EDE292-9C33-4A09-9B3A-3B880DF64440}";
+constexpr base::char16 kAppidRegPath[] =
+    L"Software\\Classes\\AppId\\{76EDE292-9C33-4A09-9B3A-3B880DF64440}";
+
+// {0F9A0C1C-A94A-4C0A-93C7-81330526AC7B}
+constexpr GUID kIid = {0xf9a0c1c,
+                       0xa94a,
+                       0x4c0a,
+                       {0x93, 0xc7, 0x81, 0x33, 0x5, 0x26, 0xac, 0x7b}};
+constexpr base::char16 kIidPSRegPath[] =
+    L"Software\\Classes\\Interface\\{0F9A0C1C-A94A-4C0A-93C7-81330526AC7B}"
+    L"\\ProxyStubClsid32";
+constexpr base::char16 kIidTLBRegPath[] =
+    L"Software\\Classes\\Interface\\{0F9A0C1C-A94A-4C0A-93C7-81330526AC7B}"
+    L"\\TypeLib";
+constexpr base::char16 kTypeLibWin32RegPath[] =
+    L"Software\\Classes\\TypeLib\\{0F9A0C1C-A94A-4C0A-93C7-81330526AC7B}\\1."
+    L"0\\0\\win32";
+constexpr base::char16 kTypeLibWin64RegPath[] =
+    L"Software\\Classes\\TypeLib\\{0F9A0C1C-A94A-4C0A-93C7-81330526AC7B}\\1."
+    L"0\\0\\win64";
 
 }  // namespace
 
@@ -100,32 +129,82 @@ TEST_F(InstallServiceWorkItemTest, Do_MultiSzToVector) {
 TEST_F(InstallServiceWorkItemTest, Do_FreshInstall) {
   auto item = std::make_unique<InstallServiceWorkItem>(
       kServiceName, kServiceDisplayName,
-      base::CommandLine(base::FilePath(kServiceProgramPath)));
+      base::CommandLine(base::FilePath(kServiceProgramPath)), kClsid, kIid);
 
   ASSERT_TRUE(item->Do());
   EXPECT_TRUE(GetImpl(item.get())->OpenService());
   EXPECT_TRUE(IsServiceCorrectlyConfigured(item.get()));
 
+  base::win::RegKey key;
+  std::wstring value;
+
+  // Check CLSID registration.
+  EXPECT_EQ(ERROR_SUCCESS,
+            key.Open(HKEY_LOCAL_MACHINE, kClsidRegPath, KEY_READ));
+  EXPECT_EQ(ERROR_SUCCESS, key.ReadValue(L"AppID", &value));
+  EXPECT_EQ(base::win::String16FromGUID(kClsid), value);
+
+  // Check AppId registration.
+  EXPECT_EQ(ERROR_SUCCESS,
+            key.Open(HKEY_LOCAL_MACHINE, kAppidRegPath, KEY_READ));
+  EXPECT_EQ(ERROR_SUCCESS, key.ReadValue(L"LocalService", &value));
+  EXPECT_EQ(kServiceName, value);
+
+  // Check IID registration.
+  EXPECT_EQ(ERROR_SUCCESS,
+            key.Open(HKEY_LOCAL_MACHINE, kIidPSRegPath, KEY_READ));
+  EXPECT_EQ(ERROR_SUCCESS, key.ReadValue(L"", &value));
+  EXPECT_EQ(L"{00020424-0000-0000-C000-000000000046}", value);
+
+  EXPECT_EQ(ERROR_SUCCESS,
+            key.Open(HKEY_LOCAL_MACHINE, kIidTLBRegPath, KEY_READ));
+  EXPECT_EQ(ERROR_SUCCESS, key.ReadValue(L"", &value));
+  EXPECT_EQ(base::win::String16FromGUID(kIid), value);
+
+  // Check TypeLib registration.
+  EXPECT_EQ(ERROR_SUCCESS,
+            key.Open(HKEY_LOCAL_MACHINE, kTypeLibWin32RegPath, KEY_READ));
+  EXPECT_EQ(ERROR_SUCCESS, key.ReadValue(L"", &value));
+  EXPECT_EQ(kServiceProgramPath, value);
+
+  EXPECT_EQ(ERROR_SUCCESS,
+            key.Open(HKEY_LOCAL_MACHINE, kTypeLibWin64RegPath, KEY_READ));
+  EXPECT_EQ(ERROR_SUCCESS, key.ReadValue(L"", &value));
+  EXPECT_EQ(kServiceProgramPath, value);
+
   item->Rollback();
   EXPECT_FALSE(GetImpl(item.get())->OpenService());
+  EXPECT_EQ(ERROR_FILE_NOT_FOUND,
+            key.Open(HKEY_LOCAL_MACHINE, kClsidRegPath, KEY_READ));
+  EXPECT_EQ(ERROR_FILE_NOT_FOUND,
+            key.Open(HKEY_LOCAL_MACHINE, kAppidRegPath, KEY_READ));
+  EXPECT_EQ(ERROR_FILE_NOT_FOUND,
+            key.Open(HKEY_LOCAL_MACHINE, kIidPSRegPath, KEY_READ));
+  EXPECT_EQ(ERROR_FILE_NOT_FOUND,
+            key.Open(HKEY_LOCAL_MACHINE, kIidTLBRegPath, KEY_READ));
+  EXPECT_EQ(ERROR_FILE_NOT_FOUND,
+            key.Open(HKEY_LOCAL_MACHINE, kTypeLibWin32RegPath, KEY_READ));
+  EXPECT_EQ(ERROR_FILE_NOT_FOUND,
+            key.Open(HKEY_LOCAL_MACHINE, kTypeLibWin64RegPath, KEY_READ));
 }
 
 TEST_F(InstallServiceWorkItemTest, Do_FreshInstallThenDeleteService) {
   auto item = std::make_unique<InstallServiceWorkItem>(
       kServiceName, kServiceDisplayName,
-      base::CommandLine(base::FilePath(kServiceProgramPath)));
+      base::CommandLine(base::FilePath(kServiceProgramPath)), kClsid, kIid);
 
   ASSERT_TRUE(item->Do());
   EXPECT_TRUE(GetImpl(item.get())->OpenService());
   EXPECT_TRUE(IsServiceCorrectlyConfigured(item.get()));
 
-  EXPECT_TRUE(InstallServiceWorkItem::DeleteService(kServiceName));
+  EXPECT_TRUE(
+      InstallServiceWorkItem::DeleteService(kServiceName, kClsid, kIid));
 }
 
 TEST_F(InstallServiceWorkItemTest, Do_UpgradeNoChanges) {
   auto item = std::make_unique<InstallServiceWorkItem>(
       kServiceName, kServiceDisplayName,
-      base::CommandLine(base::FilePath(kServiceProgramPath)));
+      base::CommandLine(base::FilePath(kServiceProgramPath)), kClsid, kIid);
   ASSERT_TRUE(item->Do());
 
   EXPECT_TRUE(IsServiceCorrectlyConfigured(item.get()));
@@ -133,7 +212,7 @@ TEST_F(InstallServiceWorkItemTest, Do_UpgradeNoChanges) {
   // Same command line:
   auto item_upgrade = std::make_unique<InstallServiceWorkItem>(
       kServiceName, kServiceDisplayName,
-      base::CommandLine(base::FilePath(kServiceProgramPath)));
+      base::CommandLine(base::FilePath(kServiceProgramPath)), kClsid, kIid);
   EXPECT_TRUE(item_upgrade->Do());
 
   item_upgrade->Rollback();
@@ -145,7 +224,7 @@ TEST_F(InstallServiceWorkItemTest, Do_UpgradeNoChanges) {
 TEST_F(InstallServiceWorkItemTest, Do_UpgradeChangedCmdLine) {
   auto item = std::make_unique<InstallServiceWorkItem>(
       kServiceName, kServiceDisplayName,
-      base::CommandLine(base::FilePath(kServiceProgramPath)));
+      base::CommandLine(base::FilePath(kServiceProgramPath)), kClsid, kIid);
   ASSERT_TRUE(item->Do());
 
   EXPECT_TRUE(IsServiceCorrectlyConfigured(item.get()));
@@ -153,7 +232,7 @@ TEST_F(InstallServiceWorkItemTest, Do_UpgradeChangedCmdLine) {
   // New command line.
   auto item_upgrade = std::make_unique<InstallServiceWorkItem>(
       kServiceName, kServiceDisplayName,
-      base::CommandLine::FromString(L"NewCmd.exe arg1 arg2"));
+      base::CommandLine::FromString(L"NewCmd.exe arg1 arg2"), kClsid, kIid);
   EXPECT_TRUE(item_upgrade->Do());
 
   item_upgrade->Rollback();
@@ -168,7 +247,7 @@ TEST_F(InstallServiceWorkItemTest, Do_UpgradeChangedCmdLine) {
 TEST_F(InstallServiceWorkItemTest, Do_ServiceName) {
   auto item = std::make_unique<InstallServiceWorkItem>(
       kServiceName, kServiceDisplayName,
-      base::CommandLine(base::FilePath(kServiceProgramPath)));
+      base::CommandLine(base::FilePath(kServiceProgramPath)), kClsid, kIid);
 
   EXPECT_STREQ(kServiceName,
                GetImpl(item.get())->GetCurrentServiceName().c_str());

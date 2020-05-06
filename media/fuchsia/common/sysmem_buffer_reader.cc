@@ -17,25 +17,72 @@ SysmemBufferReader::~SysmemBufferReader() = default;
 bool SysmemBufferReader::Read(size_t index,
                               size_t offset,
                               base::span<uint8_t> data) {
-  DCHECK_LT(index, collection_info_.buffer_count);
+  DCHECK_LT(index, num_buffers());
+  DCHECK_LE(offset + data.size(),
+            collection_info_.settings.buffer_settings.size_bytes);
+
+  const fuchsia::sysmem::VmoBuffer& buffer = collection_info_.buffers[index];
+  size_t vmo_offset = buffer.vmo_usable_start + offset;
+
+  InvalidateCacheIfNecessary(buffer.vmo, vmo_offset, data.size());
+
+  zx_status_t status = buffer.vmo.read(data.data(), vmo_offset, data.size());
+
+  ZX_LOG_IF(ERROR, status != ZX_OK, status) << "Fail to read";
+  return status == ZX_OK;
+}
+
+base::span<const uint8_t> SysmemBufferReader::GetMappingForBuffer(
+    size_t index) {
+  if (mappings_.empty())
+    mappings_.resize(num_buffers());
+
+  DCHECK_LT(index, mappings_.size());
+
   const fuchsia::sysmem::BufferMemorySettings& settings =
       collection_info_.settings.buffer_settings;
   fuchsia::sysmem::VmoBuffer& buffer = collection_info_.buffers[index];
-  DCHECK_LE(buffer.vmo_usable_start + offset + data.size(),
-            settings.size_bytes);
 
-  size_t vmo_offset = buffer.vmo_usable_start + offset;
+  auto& mapping = mappings_[index];
+  size_t buffer_start = buffer.vmo_usable_start;
 
-  // Invalidate cache.
-  if (settings.coherency_domain == fuchsia::sysmem::CoherencyDomain::RAM) {
-    zx_status_t status = buffer.vmo.op_range(
-        ZX_VMO_OP_CACHE_CLEAN_INVALIDATE, vmo_offset, data.size(), nullptr, 0);
-    ZX_LOG_IF(ERROR, status != ZX_OK, status) << "Fail to invalidate cache";
+  if (!mapping.IsValid()) {
+    size_t mapping_size = buffer_start + settings.size_bytes;
+    auto region = base::ReadOnlySharedMemoryRegion::Deserialize(
+        base::subtle::PlatformSharedMemoryRegion::Take(
+            std::move(buffer.vmo),
+            base::subtle::PlatformSharedMemoryRegion::Mode::kReadOnly,
+            mapping_size, base::UnguessableToken::Create()));
+
+    mapping = region.Map();
+
+    // Return the VMO handle back to buffer_.
+    buffer.vmo = base::ReadOnlySharedMemoryRegion::TakeHandleForSerialization(
+                     std::move(region))
+                     .PassPlatformHandle();
   }
 
-  zx_status_t status = buffer.vmo.read(data.data(), vmo_offset, data.size());
-  ZX_LOG_IF(ERROR, status != ZX_OK, status) << "Fail to read";
-  return status == ZX_OK;
+  if (!mapping.IsValid()) {
+    DLOG(WARNING) << "Failed to map VMO returned by sysmem";
+    return {};
+  }
+
+  InvalidateCacheIfNecessary(buffer.vmo, buffer_start, settings.size_bytes);
+
+  return base::make_span(
+      reinterpret_cast<const uint8_t*>(mapping.memory()) + buffer_start,
+      settings.size_bytes);
+}
+
+void SysmemBufferReader::InvalidateCacheIfNecessary(const zx::vmo& vmo,
+                                                    size_t offset,
+                                                    size_t size) {
+  if (collection_info_.settings.buffer_settings.coherency_domain ==
+      fuchsia::sysmem::CoherencyDomain::RAM) {
+    zx_status_t status = vmo.op_range(ZX_VMO_OP_CACHE_CLEAN_INVALIDATE, offset,
+                                      size, nullptr, 0);
+    ZX_LOG_IF(ERROR, status != ZX_OK, status) << "Fail to invalidate cache";
+  }
 }
 
 // static

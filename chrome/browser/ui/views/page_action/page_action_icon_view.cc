@@ -201,6 +201,7 @@ void PageActionIconView::Update() {
   // Currently no page action icon should be visible during user input.
   // A future subclass may need a hook here if that changes.
   if (delegate_->ShouldHidePageActionIcons()) {
+    ResetSlideAnimation(/*show_label=*/false);
     SetVisible(false);
   } else {
     UpdateImpl();

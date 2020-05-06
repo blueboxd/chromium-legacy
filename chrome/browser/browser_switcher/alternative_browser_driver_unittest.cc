@@ -106,7 +106,7 @@ TEST_F(AlternativeBrowserDriverTest, GetBrowserName) {
 #elif defined(OS_MACOSX)
   std::string expected = "Safari";
 #else
-  std::string expected = "";
+  std::string expected;
 #endif
   std::string actual = driver()->GetBrowserName();
   EXPECT_EQ(expected, actual);

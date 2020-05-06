@@ -72,6 +72,7 @@ class ProfileImpl : public Profile {
               const base::android::JavaParamRef<jobject>& java_profile);
 
   jint GetNumBrowserImpl(JNIEnv* env);
+  jlong GetBrowserContext(JNIEnv* env);
   void DestroyAndDeleteDataFromDisk(
       JNIEnv* env,
       const base::android::JavaRef<jobject>& j_completion_callback);

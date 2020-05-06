@@ -8,6 +8,7 @@
 #include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "ash/keyboard/ui/keyboard_util.h"
 #include "ash/public/cpp/app_types.h"
+#include "ash/public/cpp/keyboard/keyboard_controller.h"
 #include "ash/shell.h"
 #include "base/bind.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -171,8 +172,11 @@ Keyboard::Keyboard(KeyboardDelegate* delegate, Seat* seat)
           kExpirationDelayForPendingKeyAcksMs)) {
   AddEventHandler();
   seat_->AddObserver(this);
-  keyboard::KeyboardUIController::Get()->AddObserver(this);
+  ash::KeyboardController::Get()->AddObserver(this);
+
   OnSurfaceFocused(seat_->GetFocusedSurface());
+  OnKeyRepeatSettingsChanged(
+      ash::KeyboardController::Get()->GetKeyRepeatSettings());
 }
 
 Keyboard::~Keyboard() {
@@ -182,7 +186,7 @@ Keyboard::~Keyboard() {
     focus_->RemoveSurfaceObserver(this);
   RemoveEventHandler();
   seat_->RemoveObserver(this);
-  keyboard::KeyboardUIController::Get()->RemoveObserver(this);
+  ash::KeyboardController::Get()->RemoveObserver(this);
 }
 
 bool Keyboard::HasDeviceConfigurationDelegate() const {
@@ -380,6 +384,12 @@ void Keyboard::OnKeyboardEnabledChanged(bool enabled) {
     bool is_physical = !IsVirtualKeyboardEnabled();
     device_configuration_delegate_->OnKeyboardTypeChanged(is_physical);
   }
+}
+
+void Keyboard::OnKeyRepeatSettingsChanged(
+    const ash::KeyRepeatSettings& settings) {
+  delegate_->OnKeyRepeatSettingsChanged(settings.enabled, settings.delay,
+                                        settings.interval);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

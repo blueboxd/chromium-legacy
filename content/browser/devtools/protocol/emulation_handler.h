@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "content/browser/devtools/protocol/devtools_domain_handler.h"
 #include "content/browser/devtools/protocol/emulation.h"
+#include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
 #include "third_party/blink/public/web/web_device_emulation_params.h"
 
 namespace net {
@@ -46,9 +47,11 @@ class EmulationHandler : public DevToolsDomainHandler,
       bool enabled,
       Maybe<std::string> configuration) override;
 
-  Response SetUserAgentOverride(const std::string& user_agent,
-                                Maybe<std::string> accept_language,
-                                Maybe<std::string> platform) override;
+  Response SetUserAgentOverride(
+      const std::string& user_agent,
+      Maybe<std::string> accept_language,
+      Maybe<std::string> platform,
+      Maybe<Emulation::UserAgentMetadata> ua_metadata_override) override;
 
   Response CanEmulate(bool* result) override;
   Response SetDeviceMetricsOverride(
@@ -76,6 +79,8 @@ class EmulationHandler : public DevToolsDomainHandler,
   bool device_emulation_enabled() { return device_emulation_enabled_; }
 
   void ApplyOverrides(net::HttpRequestHeaders* headers);
+  bool ApplyUserAgentMetadataOverrides(
+      base::Optional<blink::UserAgentMetadata>* override_out);
 
  private:
   WebContentsImpl* GetWebContents();
@@ -88,6 +93,11 @@ class EmulationHandler : public DevToolsDomainHandler,
   bool focus_emulation_enabled_;
   blink::WebDeviceEmulationParams device_emulation_params_;
   std::string user_agent_;
+
+  // |user_agent_metadata_| is meaningful if |user_agent_| is non-empty.
+  // In that case nullopt will disable sending of client hints, and a
+  // non-nullopt value will be sent.
+  base::Optional<blink::UserAgentMetadata> user_agent_metadata_;
   std::string accept_language_;
 
   RenderFrameHostImpl* host_;

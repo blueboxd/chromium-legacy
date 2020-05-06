@@ -131,18 +131,15 @@ class WebRtcGetUserMediaBrowserTest : public WebRtcContentBrowserTestBase {
         "getSources()");
     EXPECT_FALSE(devices_as_json.empty());
 
-    int error_code;
-    std::string error_message;
-    std::unique_ptr<base::Value> value =
-        base::JSONReader::ReadAndReturnErrorDeprecated(
-            devices_as_json, base::JSON_ALLOW_TRAILING_COMMAS, &error_code,
-            &error_message);
+    base::JSONReader::ValueWithError parsed_json =
+        base::JSONReader::ReadAndReturnValueWithError(
+            devices_as_json, base::JSON_ALLOW_TRAILING_COMMAS);
 
-    ASSERT_TRUE(value.get() != nullptr) << error_message;
-    EXPECT_EQ(value->type(), base::Value::Type::LIST);
+    ASSERT_TRUE(parsed_json.value) << parsed_json.error_message;
+    EXPECT_EQ(parsed_json.value->type(), base::Value::Type::LIST);
 
     base::ListValue* values;
-    ASSERT_TRUE(value->GetAsList(&values));
+    ASSERT_TRUE(parsed_json.value->GetAsList(&values));
 
     for (auto it = values->begin(); it != values->end(); ++it) {
       const base::DictionaryValue* dict;

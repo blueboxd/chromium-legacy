@@ -50,7 +50,7 @@ class LocalFrameView;
 
 class CORE_EXPORT AXObjectCache : public GarbageCollected<AXObjectCache> {
  public:
-  using BlinkAXEventIntentsSet = HashCountedSet<const BlinkAXEventIntent,
+  using BlinkAXEventIntentsSet = HashCountedSet<BlinkAXEventIntent,
                                                 BlinkAXEventIntentHash,
                                                 BlinkAXEventIntentHashTraits>;
 
@@ -156,8 +156,13 @@ class CORE_EXPORT AXObjectCache : public GarbageCollected<AXObjectCache> {
  protected:
   friend class ScopedBlinkAXEventIntent;
   FRIEND_TEST_ALL_PREFIXES(ScopedBlinkAXEventIntentTest, SingleIntent);
-  FRIEND_TEST_ALL_PREFIXES(ScopedBlinkAXEventIntentTest, NestedIntents);
-  FRIEND_TEST_ALL_PREFIXES(ScopedBlinkAXEventIntentTest, NestedSameIntents);
+  FRIEND_TEST_ALL_PREFIXES(ScopedBlinkAXEventIntentTest,
+                           MultipleIdenticalIntents);
+  FRIEND_TEST_ALL_PREFIXES(ScopedBlinkAXEventIntentTest,
+                           NestedIndividualIntents);
+  FRIEND_TEST_ALL_PREFIXES(ScopedBlinkAXEventIntentTest, NestedMultipleIntents);
+  FRIEND_TEST_ALL_PREFIXES(ScopedBlinkAXEventIntentTest,
+                           NestedIdenticalIntents);
 
   virtual BlinkAXEventIntentsSet& ActiveEventIntents() = 0;
 

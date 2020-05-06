@@ -152,7 +152,8 @@ Polymer({
    * @param {!Array<!Enrollment>} enrollments
    */
   onEnrollments_(enrollments) {
-    this.enrollments_ = enrollments;
+    this.enrollments_ =
+        enrollments.slice().sort((a, b) => a.name.localeCompare(b.name));
     this.$.enrollmentList.fire('iron-resize');
     this.dialogPage_ = BioEnrollDialogPage.ENROLLMENTS;
   },

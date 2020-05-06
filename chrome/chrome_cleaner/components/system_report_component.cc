@@ -806,7 +806,7 @@ void ReportShortcutModifications(ShortcutParserAPI* shortcut_parser) {
       base::string16 sanitized_target_path = SanitizePath(target_path);
       base::string16 sanitized_lnk_path = SanitizePath(shortcut.lnk_path);
 
-      std::string target_digest = "";
+      std::string target_digest;
       if (PathExists(target_path) &&
           !ComputeSHA256DigestOfPath(target_path, &target_digest)) {
         LOG(ERROR) << "Cannot compute the sha digest of the target path";

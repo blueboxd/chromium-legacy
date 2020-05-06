@@ -97,13 +97,13 @@ suite('Multidevice', function() {
       setMode(mode);
       assertEquals(
           !!multideviceSubpage.$$('#smartLockItem'),
-          mode == settings.MultiDeviceSettingsMode.HOST_SET_VERIFIED);
+          mode === settings.MultiDeviceSettingsMode.HOST_SET_VERIFIED);
       assertEquals(
           !!multideviceSubpage.$$('#instantTetheringItem'),
-          mode == settings.MultiDeviceSettingsMode.HOST_SET_VERIFIED);
+          mode === settings.MultiDeviceSettingsMode.HOST_SET_VERIFIED);
       assertEquals(
           !!multideviceSubpage.$$('#messagesItem'),
-          mode == settings.MultiDeviceSettingsMode.HOST_SET_VERIFIED);
+          mode === settings.MultiDeviceSettingsMode.HOST_SET_VERIFIED);
     }
   });
 

@@ -198,6 +198,10 @@ executable("views_examples_with_content") {
     configs += [ "//build/config/win:windowed" ]
     configs -= [ "//build/config/win:console" ]
   }
+
+  if (is_mac) {
+    deps += [ "//sandbox/mac:seatbelt" ]
+  }
 }
 
 copy("copy_content_resources") {

@@ -63,7 +63,7 @@ TEST_P(DownloadItemRequestTest, GetsContentsWaitsUntilRename) {
   ON_CALL(item_, GetFullPath())
       .WillByDefault(ReturnRef(download_temporary_path_));
 
-  std::string download_contents = "";
+  std::string download_contents;
   request_.GetRequestData(base::BindOnce(
       [](std::string* target_contents, BinaryUploadService::Result result,
          const BinaryUploadService::Request::Data& data) {

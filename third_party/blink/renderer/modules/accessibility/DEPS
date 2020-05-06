@@ -8,4 +8,5 @@ include_rules = [
     "+ui/accessibility/ax_enums.mojom-blink-forward.h",
     "+ui/accessibility/ax_event.h",
     "+ui/accessibility/ax_node_data.h",
+    "+ui/accessibility/ax_role_properties.h",
 ]

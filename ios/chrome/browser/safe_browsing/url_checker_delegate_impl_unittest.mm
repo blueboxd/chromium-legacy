@@ -223,7 +223,7 @@ TEST_F(UrlCheckerDelegateImplTest,
 
   // Verify that a copy of |resource| without its callback has been added to the
   // container.
-  EXPECT_TRUE(container()->HasMainFrameUnsafeResource());
+  EXPECT_TRUE(container()->GetMainFrameUnsafeResource());
   std::unique_ptr<UnsafeResource> resource_copy =
       container()->ReleaseMainFrameUnsafeResource();
   ASSERT_TRUE(resource_copy);
@@ -270,7 +270,7 @@ TEST_F(UrlCheckerDelegateImplTest,
 
   // Verify that a copy of |resource| without its callback has been added to the
   // container.
-  EXPECT_TRUE(container()->HasSubFrameUnsafeResource(item_.get()));
+  EXPECT_TRUE(container()->GetSubFrameUnsafeResource(item_.get()));
   std::unique_ptr<UnsafeResource> resource_copy =
       container()->ReleaseSubFrameUnsafeResource(item_.get());
   ASSERT_TRUE(resource_copy);

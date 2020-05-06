@@ -22,6 +22,8 @@ class OptimizationGuidePageLoadMetricsObserver
       const page_load_metrics::mojom::PageLoadTiming& timing) override;
   ObservePolicy OnHidden(
       const page_load_metrics::mojom::PageLoadTiming& timing) override;
+  void OnComplete(
+      const page_load_metrics::mojom::PageLoadTiming& timing) override;
   ObservePolicy FlushMetricsOnAppEnterBackground(
       const page_load_metrics::mojom::PageLoadTiming& timing) override;
   ObservePolicy OnStart(content::NavigationHandle* navigation_handle,

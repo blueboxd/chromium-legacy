@@ -204,6 +204,7 @@ source_set("unit_tests") {
 
   if (is_chromeos) {
     sources += [
+      "wayland_keyboard_delegate_unittest.cc",
       "wayland_positioner_unittest.cc",
       "zaura_shell_unittest.cc",
       "zcr_remote_shell_unittest.cc",

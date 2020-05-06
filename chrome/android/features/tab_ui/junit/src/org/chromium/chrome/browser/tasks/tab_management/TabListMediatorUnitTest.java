@@ -76,7 +76,6 @@ import org.robolectric.annotation.Config;
 import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.UserDataHost;
-import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.FlakyTest;
 import org.chromium.base.test.util.JniMocker;
@@ -247,7 +246,6 @@ public class TabListMediatorUnitTest {
 
     @Before
     public void setUp() {
-        RecordHistogram.setDisabledForTests(true);
 
         MockitoAnnotations.initMocks(this);
         mMocker.mock(UrlUtilitiesJni.TEST_HOOKS, mUrlUtilitiesJniMock);
@@ -330,7 +328,6 @@ public class TabListMediatorUnitTest {
 
     @After
     public void tearDown() {
-        RecordHistogram.setDisabledForTests(false);
         CachedFeatureFlags.setForTesting(ChromeFeatureList.START_SURFACE_ANDROID, null);
         PseudoTab.clearForTesting();
         TabAttributeCache.clearAllForTesting();

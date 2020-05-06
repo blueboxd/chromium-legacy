@@ -739,9 +739,7 @@ class DeviceStatusCollectorTest : public testing::Test {
   }
 
   void WriteUploadLog(const std::string& log_data) {
-    ASSERT_GT(base::WriteFile(log_path(), log_data.c_str(),
-                              static_cast<int>(log_data.size())),
-              0);
+    ASSERT_TRUE(base::WriteFile(log_path(), log_data));
   }
 
   base::FilePath log_path() {

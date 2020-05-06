@@ -37,18 +37,60 @@ function removeRuleMatchedListener() {
       onRuleMatchedDebugCallback);
 }
 
+function verifyExpectedRuleInfo(expectedRuleInfo) {
+  chrome.test.assertEq(1, matchedRules.length);
+  const matchedRule = matchedRules[0];
+
+  // The request ID may not be known but should be populated.
+  chrome.test.assertTrue(matchedRule.request.hasOwnProperty('requestId'));
+  delete matchedRule.request.requestId;
+
+  chrome.test.assertEq(expectedRuleInfo, matchedRule);
+}
+
 var tests = [
+  function testDynamicRule() {
+    const ruleIdsToRemove = [];
+    const rule = {
+      id: 1,
+      priority: 1,
+      condition: {urlFilter: 'def', 'resourceTypes': ['main_frame']},
+      action: {type: 'block'},
+    };
+    addRuleMatchedListener();
+    chrome.declarativeNetRequest.updateDynamicRules(
+        ruleIdsToRemove, [rule], function() {
+          chrome.test.assertNoLastError();
+          const url = getServerURL('def.com');
+          navigateTab(url, url, (tab) => {
+            const expectedRuleInfo = {
+              request: {
+                initiator: `chrome-extension://${chrome.runtime.id}`,
+                method: 'GET',
+                frameId: 0,
+                parentFrameId: -1,
+                tabId: tab.id,
+                type: 'main_frame',
+                url: url
+              },
+              rule: {
+                ruleId: 1,
+                rulesetId: chrome.declarativeNetRequest.DYNAMIC_RULESET_ID
+              }
+            };
+            verifyExpectedRuleInfo(expectedRuleInfo);
+            removeRuleMatchedListener();
+            chrome.test.succeed();
+          });
+        });
+  },
   function testBlockRule() {
     addRuleMatchedListener();
+    // TODO(crbug.com/1029233): Can adding the listener race with the network
+    // request such that when the browser receives the network request, the
+    // listener is not added?
     const url = getServerURL('abc.com');
     navigateTab(url, url, (tab) => {
-      chrome.test.assertEq(1, matchedRules.length);
-      const matchedRule = matchedRules[0];
-
-      // The request ID may not be known but should be populated.
-      chrome.test.assertTrue(matchedRule.request.hasOwnProperty('requestId'));
-      delete matchedRule.request.requestId;
-
       const expectedRuleInfo = {
         request: {
           initiator: `chrome-extension://${chrome.runtime.id}`,
@@ -57,22 +99,18 @@ var tests = [
           parentFrameId: -1,
           tabId: tab.id,
           type: 'main_frame',
-          url: `http://abc.com:${testServerPort}/`
+          url: url
         },
-        rule: {ruleId: 1, sourceType: 'manifest'}
+        rule: {ruleId: 1, rulesetId: 'rules1'}
       };
-
-      // Sanity check that the MatchedRuleInfoDebug fields are populated
-      // correctly.
-      chrome.test.assertTrue(
-          chrome.test.checkDeepEq(expectedRuleInfo, matchedRule));
-
+      verifyExpectedRuleInfo(expectedRuleInfo);
       removeRuleMatchedListener();
       chrome.test.succeed();
     });
   },
 
-  // Ensure listening to requests not originating from a tab works fine.
+  // Ensure that requests that don't originate from a tab (such as those from
+  // the extension background page) trigger the listener.
   function testBackgroundPageRequest() {
     addRuleMatchedListener();
 
@@ -90,6 +128,7 @@ var tests = [
       chrome.test.assertEq(1, matchedRules.length);
       const matchedRule = matchedRules[0];
       chrome.test.assertEq(1, matchedRule.rule.ruleId);
+      chrome.test.assertEq('rules1', matchedRule.rule.rulesetId);
 
       // Tab ID should be -1 since this request was made from a background page.
       chrome.test.assertEq(-1, matchedRule.request.tabId);
@@ -121,6 +160,7 @@ var tests = [
       chrome.test.assertEq(1, matchedRules.length);
       const matchedRule = matchedRules[0];
       chrome.test.assertEq(4, matchedRule.rule.ruleId);
+      chrome.test.assertEq('rules2', matchedRule.rule.rulesetId);
 
       removeRuleMatchedListener();
       chrome.test.succeed();
@@ -135,9 +175,16 @@ var tests = [
     navigateTab(getServerURL('redir1.com'), 'http://abc.com/', (tab) => {
       chrome.test.assertEq(3, matchedRules.length);
 
-      const expectedRuleIDs = [2, 3, 1];
-      for (let i = 0; i < matchedRules.length; ++i)
-        chrome.test.assertEq(expectedRuleIDs[i], matchedRules[i].rule.ruleId);
+      const expectedMatches = [
+        {ruleId: 2, rulesetId: 'rules1'}, {ruleId: 3, rulesetId: 'rules2'},
+        {ruleId: 1, rulesetId: 'rules1'}
+      ];
+      for (let i = 0; i < matchedRules.length; ++i) {
+        chrome.test.assertEq(
+            expectedMatches[i].ruleId, matchedRules[i].rule.ruleId);
+        chrome.test.assertEq(
+            expectedMatches[i].rulesetId, matchedRules[i].rule.rulesetId);
+      }
 
       removeRuleMatchedListener();
       chrome.test.succeed();

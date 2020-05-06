@@ -57,7 +57,7 @@ uint32_t Checksum(const std::string& data) {
 
 void DumpMessage(bool outgoing, const uint8_t* data, size_t length) {
 #if 0
-  std::string result = "";
+  std::string result;
   if (length == kHeaderSize) {
     for (size_t i = 0; i < 24; ++i) {
       result += base::StringPrintf("%02x", data[i]);

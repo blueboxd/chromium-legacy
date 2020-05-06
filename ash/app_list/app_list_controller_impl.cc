@@ -265,15 +265,6 @@ void AppListControllerImpl::SetStatus(AppListModelStatus status) {
   model_->SetStatus(status);
 }
 
-void AppListControllerImpl::SetState(AppListState state) {
-  model_->SetState(state);
-}
-
-void AppListControllerImpl::HighlightItemInstalledFromUI(
-    const std::string& id) {
-  model_->top_level_item_list()->HighlightItemInstalledFromUI(id);
-}
-
 void AppListControllerImpl::SetSearchEngineIsGoogle(bool is_google) {
   search_model_.SetSearchEngineIsGoogle(is_google);
 }
@@ -345,21 +336,6 @@ void AppListControllerImpl::SetItemIcon(const std::string& id,
     item->SetIcon(AppListConfigType::kShared, icon);
 }
 
-void AppListControllerImpl::SetItemIsInstalling(const std::string& id,
-                                                bool is_installing) {
-  AppListItem* item = model_->FindItem(id);
-  if (item)
-    item->SetIsInstalling(is_installing);
-}
-
-void AppListControllerImpl::SetItemPercentDownloaded(
-    const std::string& id,
-    int32_t percent_downloaded) {
-  AppListItem* item = model_->FindItem(id);
-  if (item)
-    item->SetPercentDownloaded(percent_downloaded);
-}
-
 void AppListControllerImpl::SetModelData(
     int profile_id,
     std::vector<std::unique_ptr<AppListItemMetadata>> apps,
@@ -391,28 +367,6 @@ void AppListControllerImpl::SetSearchResultMetadata(
   SearchResult* result = search_model_.FindSearchResult(metadata->id);
   if (result)
     result->SetMetadata(std::move(metadata));
-}
-
-void AppListControllerImpl::SetSearchResultIsInstalling(const std::string& id,
-                                                        bool is_installing) {
-  SearchResult* result = search_model_.FindSearchResult(id);
-  if (result)
-    result->SetIsInstalling(is_installing);
-}
-
-void AppListControllerImpl::SetSearchResultPercentDownloaded(
-    const std::string& id,
-    int32_t percent_downloaded) {
-  SearchResult* result = search_model_.FindSearchResult(id);
-  if (result)
-    result->SetPercentDownloaded(percent_downloaded);
-}
-
-void AppListControllerImpl::NotifySearchResultItemInstalled(
-    const std::string& id) {
-  SearchResult* result = search_model_.FindSearchResult(id);
-  if (result)
-    result->NotifyItemInstalled();
 }
 
 void AppListControllerImpl::GetIdToAppListIndexMap(

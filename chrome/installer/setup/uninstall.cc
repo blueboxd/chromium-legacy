@@ -673,21 +673,13 @@ bool DeleteChromeRegistrationKeys(const InstallerState& installer_state,
 
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   if (installer_state.system_install()) {
-    // Uninstall the elevation service.
-    const base::string16 clsid_reg_path =
-        GetElevationServiceClsidRegistryPath();
-    const base::string16 appid_reg_path =
-        GetElevationServiceAppidRegistryPath();
-    const base::string16 iid_reg_path = GetElevationServiceIidRegistryPath();
-    const base::string16 typelib_reg_path =
-        GetElevationServiceTypeLibRegistryPath();
-    for (const auto& reg_path :
-         {clsid_reg_path, appid_reg_path, iid_reg_path, typelib_reg_path}) {
-      InstallUtil::DeleteRegistryKey(root, reg_path, WorkItem::kWow64Default);
+    if (!InstallServiceWorkItem::DeleteService(
+            install_static::GetElevationServiceName(),
+            install_static::GetElevatorClsid(),
+            install_static::GetElevatorIid())) {
+      LOG(WARNING) << "Failed to delete "
+                   << install_static::GetElevationServiceName();
     }
-
-    LOG_IF(WARNING, !InstallServiceWorkItem::DeleteService(
-                        install_static::GetElevationServiceName()));
   }
 #endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING
 

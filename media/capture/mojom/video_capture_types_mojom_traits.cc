@@ -686,6 +686,21 @@ EnumTraits<media::mojom::VideoCaptureError, media::VideoCaptureError>::ToMojom(
     case media::VideoCaptureError::kCrosHalV3DeviceDelegateFailedToFlush:
       return media::mojom::VideoCaptureError::
           kCrosHalV3DeviceDelegateFailedToFlush;
+    case media::VideoCaptureError::kFuchsiaCameraDeviceDisconnected:
+      return media::mojom::VideoCaptureError::kFuchsiaCameraDeviceDisconnected;
+    case media::VideoCaptureError::kFuchsiaCameraStreamDisconnected:
+      return media::mojom::VideoCaptureError::kFuchsiaCameraStreamDisconnected;
+    case media::VideoCaptureError::kFuchsiaSysmemDidNotSetImageFormat:
+      return media::mojom::VideoCaptureError::
+          kFuchsiaSysmemDidNotSetImageFormat;
+    case media::VideoCaptureError::kFuchsiaSysmemInvalidBufferIndex:
+      return media::mojom::VideoCaptureError::kFuchsiaSysmemInvalidBufferIndex;
+    case media::VideoCaptureError::kFuchsiaSysmemInvalidBufferSize:
+      return media::mojom::VideoCaptureError::kFuchsiaSysmemInvalidBufferSize;
+    case media::VideoCaptureError::kFuchsiaUnsupportedPixelFormat:
+      return media::mojom::VideoCaptureError::kFuchsiaUnsupportedPixelFormat;
+    case media::VideoCaptureError::kFuchsiaFailedToMapSysmemBuffer:
+      return media::mojom::VideoCaptureError::kFuchsiaFailedToMapSysmemBuffer;
   }
   NOTREACHED();
   return media::mojom::VideoCaptureError::kNone;
@@ -1206,6 +1221,27 @@ bool EnumTraits<media::mojom::VideoCaptureError, media::VideoCaptureError>::
       return true;
     case media::mojom::VideoCaptureError::kCrosHalV3DeviceDelegateFailedToFlush:
       *output = media::VideoCaptureError::kCrosHalV3DeviceDelegateFailedToFlush;
+      return true;
+    case media::mojom::VideoCaptureError::kFuchsiaCameraDeviceDisconnected:
+      *output = media::VideoCaptureError::kFuchsiaCameraDeviceDisconnected;
+      return true;
+    case media::mojom::VideoCaptureError::kFuchsiaCameraStreamDisconnected:
+      *output = media::VideoCaptureError::kFuchsiaCameraStreamDisconnected;
+      return true;
+    case media::mojom::VideoCaptureError::kFuchsiaSysmemDidNotSetImageFormat:
+      *output = media::VideoCaptureError::kFuchsiaSysmemDidNotSetImageFormat;
+      return true;
+    case media::mojom::VideoCaptureError::kFuchsiaSysmemInvalidBufferIndex:
+      *output = media::VideoCaptureError::kFuchsiaSysmemInvalidBufferIndex;
+      return true;
+    case media::mojom::VideoCaptureError::kFuchsiaSysmemInvalidBufferSize:
+      *output = media::VideoCaptureError::kFuchsiaSysmemInvalidBufferSize;
+      return true;
+    case media::mojom::VideoCaptureError::kFuchsiaUnsupportedPixelFormat:
+      *output = media::VideoCaptureError::kFuchsiaUnsupportedPixelFormat;
+      return true;
+    case media::mojom::VideoCaptureError::kFuchsiaFailedToMapSysmemBuffer:
+      *output = media::VideoCaptureError::kFuchsiaFailedToMapSysmemBuffer;
       return true;
   }
   NOTREACHED();

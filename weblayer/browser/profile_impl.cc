@@ -329,6 +329,10 @@ jint ProfileImpl::GetNumBrowserImpl(JNIEnv* env) {
   return num_browser_impl_;
 }
 
+jlong ProfileImpl::GetBrowserContext(JNIEnv* env) {
+  return reinterpret_cast<intptr_t>(GetBrowserContext());
+}
+
 void ProfileImpl::DestroyAndDeleteDataFromDisk(
     JNIEnv* env,
     const base::android::JavaRef<jobject>& j_completion_callback) {

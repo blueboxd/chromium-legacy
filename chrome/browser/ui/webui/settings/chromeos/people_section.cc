@@ -624,7 +624,7 @@ PeopleSection::PeopleSection(
     OnKerberosEnabledStateChanged();
   }
 
-  if (sync_service_) {
+  if (sync_service_ && chromeos::features::IsSplitSettingsSyncEnabled()) {
     // Sync search tags are added/removed dynamically.
     sync_service_->AddObserver(this);
     OnStateChanged(sync_service_);
@@ -645,7 +645,7 @@ PeopleSection::~PeopleSection() {
   if (kerberos_credentials_manager_)
     kerberos_credentials_manager_->RemoveObserver(this);
 
-  if (sync_service_)
+  if (sync_service_ && chromeos::features::IsSplitSettingsSyncEnabled())
     sync_service_->RemoveObserver(this);
 }
 
@@ -762,6 +762,7 @@ void PeopleSection::AddHandlers(content::WebUI* web_ui) {
 }
 
 void PeopleSection::OnStateChanged(syncer::SyncService* sync_service) {
+  DCHECK(chromeos::features::IsSplitSettingsSyncEnabled());
   DCHECK_EQ(sync_service, sync_service_);
   if (sync_service_->IsEngineInitialized() &&
       sync_service_->GetUserSettings()->IsOsSyncFeatureEnabled()) {

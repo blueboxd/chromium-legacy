@@ -290,9 +290,6 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       bool strict_enforcement,
       base::OnceCallback<void(content::CertificateRequestResultType)> callback)
       override;
-#if !defined(OS_ANDROID)
-  bool ShouldDenyRequestOnCertificateError(const GURL main_page_url) override;
-#endif
   base::OnceClosure SelectClientCertificate(
       content::WebContents* web_contents,
       net::SSLCertRequestInfo* cert_request_info,

@@ -93,7 +93,7 @@ struct ParsedNtpIconPath {
   GURL url;
 
   // The requested color of the icon in 8-digit Hex format (e.g., #757575FF).
-  std::string color_rgba = "";
+  std::string color_rgba;
 
   // The size of the requested icon in dip.
   int size_in_dip = 0;

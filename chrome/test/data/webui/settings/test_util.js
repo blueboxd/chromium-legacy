@@ -153,7 +153,7 @@ export function createSiteSettingsPrefs(
  * @return {SiteGroup}
  */
 export function createSiteGroup(eTLDPlus1Name, originList, mockUsage) {
-  if (mockUsage == undefined) {
+  if (mockUsage === undefined) {
     mockUsage = 0;
   }
   const originInfoList =

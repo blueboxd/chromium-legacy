@@ -30,7 +30,7 @@ namespace dnr_api = api::declarative_net_request;
 RequestAction CreateRequestActionForTesting(RequestAction::Type type,
                                             uint32_t rule_id,
                                             uint32_t rule_priority,
-                                            dnr_api::SourceType source_type,
+                                            RulesetID ruleset_id,
                                             const ExtensionId& extension_id) {
   dnr_api::RuleActionType action = [type] {
     switch (type) {
@@ -51,12 +51,12 @@ RequestAction CreateRequestActionForTesting(RequestAction::Type type,
   }();
   return RequestAction(type, rule_id,
                        ComputeIndexedRulePriority(rule_priority, action),
-                       source_type, extension_id);
+                       ruleset_id, extension_id);
 }
 
 // Note: This is not declared in the anonymous namespace so that we can use it
 // with gtest. This reuses the logic used to test action equality in
-// TestRequestACtion in test_utils.h.
+// TestRequestAction in test_utils.h.
 bool operator==(const RequestAction& lhs, const RequestAction& rhs) {
   // TODO(crbug.com/947591): Modify this method for
   // flat::IndexType_modify_headers.
@@ -72,7 +72,7 @@ bool operator==(const RequestAction& lhs, const RequestAction& rhs) {
 
   auto get_members_tuple = [](const RequestAction& action) {
     return std::tie(action.type, action.redirect_url, action.rule_id,
-                    action.index_priority, action.source_type,
+                    action.index_priority, action.ruleset_id,
                     action.extension_id);
   };
 
@@ -119,8 +119,7 @@ std::ostream& operator<<(std::ostream& output, const RequestAction& action) {
          << "\n";
   output << "|rule_id| " << action.rule_id << "\n";
   output << "|index_priority| " << action.index_priority << "\n";
-  output << "|source_type| "
-         << api::declarative_net_request::ToString(action.source_type) << "\n";
+  output << "|ruleset_id| " << action.ruleset_id << "\n";
   output << "|extension_id| " << action.extension_id << "\n";
   output << "|request_headers_to_remove| "
          << ::testing::PrintToString(action.request_headers_to_remove) << "\n";
@@ -311,12 +310,11 @@ bool CreateVerifiedMatcher(const std::vector<TestRule>& rules,
   return load_result == RulesetMatcher::kLoadSuccess;
 }
 
-RulesetSource CreateTemporarySource(size_t id,
-                                    dnr_api::SourceType source_type,
+RulesetSource CreateTemporarySource(RulesetID id,
                                     size_t rule_count_limit,
                                     ExtensionId extension_id) {
   std::unique_ptr<RulesetSource> source = RulesetSource::CreateTemporarySource(
-      id, source_type, rule_count_limit, std::move(extension_id));
+      id, rule_count_limit, std::move(extension_id));
   CHECK(source);
   return source->Clone();
 }

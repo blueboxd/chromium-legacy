@@ -198,6 +198,10 @@ struct AX_BASE_EXPORT AXNodeData {
   ax::mojom::ImageAnnotationStatus GetImageAnnotationStatus() const;
   void SetImageAnnotationStatus(ax::mojom::ImageAnnotationStatus status);
 
+  // Helper to determine if the data belongs to a node that gains focus when
+  // clicked, such as a text field or a native HTML list box.
+  bool IsActivatable() const;
+
   // Helper to determine if the data belongs to a node that is a native button
   // or ARIA role="button" in a pressed state.
   bool IsButtonPressed() const;

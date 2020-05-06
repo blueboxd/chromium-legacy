@@ -18,7 +18,7 @@ function verifyFilteredPrinters(printerEntryListTestElement, searchTerm) {
 
   for (let i = 0; i < printerListEntries.length; ++i) {
     const entry = printerListEntries[i];
-    if (hiddenEntries.indexOf(entry) == -1) {
+    if (hiddenEntries.indexOf(entry) === -1) {
       assertTrue(
           entry.printerEntry.printerInfo.printerName.toLowerCase().includes(
               searchTerm.toLowerCase()));

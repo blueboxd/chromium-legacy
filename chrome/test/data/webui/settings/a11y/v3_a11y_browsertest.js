@@ -26,11 +26,11 @@ const violationFilterExcludeCustomInputAndTabindex =
       // Excuse custom input elements.
       'aria-valid-attr-value': function(nodeResult) {
         const describerId = nodeResult.element.getAttribute('aria-describedby');
-        return describerId === '' && nodeResult.element.tagName == 'INPUT';
+        return describerId === '' && nodeResult.element.tagName === 'INPUT';
       },
       'tabindex': function(nodeResult) {
         // TODO(crbug.com/808276): remove this exception when bug is fixed.
-        return nodeResult.element.getAttribute('tabindex') == '0';
+        return nodeResult.element.getAttribute('tabindex') === '0';
       },
     });
 

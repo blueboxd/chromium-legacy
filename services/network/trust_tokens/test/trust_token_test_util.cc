@@ -4,8 +4,11 @@
 
 #include "services/network/trust_tokens/test/trust_token_test_util.h"
 
+#include "base/json/json_reader.h"
+#include "base/json/json_string_value_serializer.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/task_environment.h"
+#include "base/values.h"
 #include "services/network/public/mojom/trust_tokens.mojom-shared.h"
 
 namespace network {
@@ -175,6 +178,20 @@ SerializeTrustTokenParametersAndConstructExpectation(
   JSONStringValueSerializer serializer(&serialized_parameters);
   CHECK(serializer.Serialize(parameters));
   return {std::move(trust_token_params), std::move(serialized_parameters)};
+}
+
+std::string WrapKeyCommitmentForIssuer(const url::Origin& issuer,
+                                       base::StringPiece commitment) {
+  std::string ret;
+  JSONStringValueSerializer serializer(&ret);
+
+  CHECK_NE(issuer.Serialize(),
+           "");  // guard against accidentally passing an opaque origin
+
+  base::Value to_serialize(base::Value::Type::DICTIONARY);
+  to_serialize.SetKey(issuer.Serialize(), *base::JSONReader::Read(commitment));
+  CHECK(serializer.Serialize(to_serialize));
+  return ret;
 }
 
 }  // namespace network

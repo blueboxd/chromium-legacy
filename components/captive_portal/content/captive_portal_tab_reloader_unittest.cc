@@ -8,8 +8,6 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "components/captive_portal/content/captive_portal_service.h"
-#include "content/public/browser/interstitial_page.h"
-#include "content/public/browser/interstitial_page_delegate.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/test_renderer_host.h"
 #include "net/base/net_errors.h"
@@ -52,29 +50,6 @@ class TestCaptivePortalTabReloader : public CaptivePortalTabReloader {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestCaptivePortalTabReloader);
-};
-
-// Used to test behavior when a WebContents is showing an interstitial page.
-class MockInterstitialPageDelegate : public content::InterstitialPageDelegate {
- public:
-  // The newly created MockInterstitialPageDelegate will be owned by the
-  // WebContents' InterstitialPage, and cleaned up when the WebContents
-  // destroys it.
-  explicit MockInterstitialPageDelegate(content::WebContents* web_contents) {
-    content::InterstitialPage* interstitial_page =
-        content::InterstitialPage::Create(web_contents, true,
-                                          GURL("http://blah"), this);
-    interstitial_page->DontCreateViewForTesting();
-    interstitial_page->Show();
-  }
-
-  ~MockInterstitialPageDelegate() override {}
-
- private:
-  // InterstitialPageDelegate implementation:
-  std::string GetHTMLContents() override { return "HTML Contents"; }
-
-  DISALLOW_COPY_AND_ASSIGN(MockInterstitialPageDelegate);
 };
 
 class CaptivePortalTabReloaderTest : public content::RenderViewHostTestHarness {
@@ -730,37 +705,6 @@ TEST_F(CaptivePortalTabReloaderTest, LogInWhileTimerRunningNoError) {
   // The page successfully commits, so no reload is triggered.
   tab_reloader().OnLoadCommitted(net::OK, net::ResolveErrorInfo(net::OK));
   EXPECT_EQ(CaptivePortalTabReloader::STATE_NONE, tab_reloader().state());
-}
-
-// Simulate the login process when there's an SSL certificate error.
-TEST_F(CaptivePortalTabReloaderTest, SSLCertErrorLogin) {
-  tab_reloader().OnLoadStart(true);
-  EXPECT_EQ(CaptivePortalTabReloader::STATE_TIMER_RUNNING,
-            tab_reloader().state());
-
-  // The load is interrupted by an interstitial page.  The interstitial page
-  // is created after the TabReloader is notified.
-  EXPECT_CALL(tab_reloader(), CheckForCaptivePortal(
-                                  CaptivePortalProbeReason::kCertificateError));
-  net::SSLInfo ssl_info;
-  ssl_info.cert_status |= net::CERT_STATUS_COMMON_NAME_INVALID;
-  tab_reloader().OnSSLCertError(ssl_info);
-  EXPECT_EQ(CaptivePortalTabReloader::STATE_MAYBE_BROKEN_BY_PORTAL,
-            tab_reloader().state());
-  EXPECT_FALSE(tab_reloader().TimerRunning());
-  // The MockInterstitialPageDelegate will cleaned up by the WebContents.
-  new MockInterstitialPageDelegate(web_contents());
-
-  // Captive portal probe finds a captive portal.
-  EXPECT_CALL(tab_reloader(), MaybeOpenCaptivePortalLoginTab()).Times(1);
-  tab_reloader().OnCaptivePortalResults(RESULT_INTERNET_CONNECTED,
-                                        RESULT_BEHIND_CAPTIVE_PORTAL);
-
-  // The user logs in.  Since the interstitial is showing, the page should
-  // be reloaded, despite still having a provisional load.
-  EXPECT_CALL(tab_reloader(), ReloadTab()).Times(1);
-  tab_reloader().OnCaptivePortalResults(RESULT_BEHIND_CAPTIVE_PORTAL,
-                                        RESULT_INTERNET_CONNECTED);
 }
 
 // Simulate an HTTP redirect to HTTPS, when the Internet is connected.

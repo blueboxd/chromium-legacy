@@ -286,7 +286,7 @@ suite('ClearBrowsingDataAllPlatforms', function() {
           assertTrue(cancelButton.disabled);
           assertTrue(actionButton.disabled);
           assertTrue(spinner.active);
-          assertTrue(installedApps.length == 0);
+          assertTrue(installedApps.length === 0);
 
           // Simulate signal from browser indicating that clearing has
           // completed.

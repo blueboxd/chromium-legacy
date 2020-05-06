@@ -688,7 +688,7 @@ IN_PROC_BROWSER_TEST_P(SingleClientBookmarksSyncTest,
 IN_PROC_BROWSER_TEST_P(SingleClientBookmarksSyncTest,
                        ShouldTruncateBlanksWhenMatchingTitles) {
   const std::string remote_blank_title = " ";
-  const std::string local_empty_title = "";
+  const std::string local_empty_title;
 
   // Create a folder on the server under BookmarkBar with a title with a blank
   // space.

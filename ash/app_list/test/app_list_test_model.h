@@ -76,9 +76,6 @@ class AppListTestModel : public AppListModel {
   // pointer to the created item.
   AppListTestItem* CreateAndAddItem(const std::string& id);
 
-  // Call SetHighlighted on the specified item.
-  void HighlightItemAt(int index);
-
   int activate_count() { return activate_count_; }
   AppListItem* last_activated() { return last_activated_; }
 

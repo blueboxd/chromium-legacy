@@ -145,13 +145,11 @@ public class VariationsSeedLoaderTest {
     @Before
     public void setUp() throws IOException {
         mMainHandler = new Handler(Looper.getMainLooper());
-        RecordHistogram.setDisabledForTests(true);
         VariationsTestUtils.deleteSeeds();
     }
 
     @After
     public void tearDown() throws IOException {
-        RecordHistogram.setDisabledForTests(false);
         VariationsTestUtils.deleteSeeds();
     }
 
@@ -344,7 +342,6 @@ public class VariationsSeedLoaderTest {
     @Test
     @MediumTest
     public void testRecordSeedFresh() throws Exception {
-        RecordHistogram.setDisabledForTests(false);
         File oldFile = VariationsUtils.getSeedFile();
         Assert.assertTrue("Expected seed file to not already exist", oldFile.createNewFile());
         VariationsTestUtils.writeMockSeed(oldFile);
@@ -360,7 +357,6 @@ public class VariationsSeedLoaderTest {
     @Test
     @MediumTest
     public void testRecordSeedRequested() throws Exception {
-        RecordHistogram.setDisabledForTests(false);
         File oldFile = VariationsUtils.getSeedFile();
         Assert.assertTrue("Expected seed file to not already exist", oldFile.createNewFile());
         VariationsTestUtils.writeMockSeed(oldFile);
@@ -377,7 +373,6 @@ public class VariationsSeedLoaderTest {
     @Test
     @MediumTest
     public void testRecordSeedRequestThrottled() throws Exception {
-        RecordHistogram.setDisabledForTests(false);
         File oldFile = VariationsUtils.getSeedFile();
         Assert.assertTrue("Expected seed file to not already exist", oldFile.createNewFile());
         VariationsTestUtils.writeMockSeed(oldFile);
@@ -398,7 +393,6 @@ public class VariationsSeedLoaderTest {
     @MediumTest
     public void testRecordAppSeedFreshness() throws Exception {
         long seedAgeHours = 2;
-        RecordHistogram.setDisabledForTests(false);
         File oldFile = VariationsUtils.getSeedFile();
         Assert.assertTrue("Expected seed file to not already exist", oldFile.createNewFile());
         VariationsTestUtils.writeMockSeed(oldFile);
@@ -458,7 +452,6 @@ public class VariationsSeedLoaderTest {
             long nineMinutesMs = TimeUnit.MINUTES.toMillis(9);
             long twoWeeksMs = TimeUnit.DAYS.toMillis(14);
             long threeWeeksMs = TimeUnit.DAYS.toMillis(21);
-            RecordHistogram.setDisabledForTests(false);
 
             VariationsServiceMetricsHelper metrics =
                     VariationsServiceMetricsHelper.fromBundle(new Bundle());

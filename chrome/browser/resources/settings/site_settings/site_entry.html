@@ -1,7 +1,11 @@
-    <style include="settings-shared">
+    <style include="cr-shared-style settings-shared">
+      :host {
+        padding: 0 var(--cr-section-padding);
+      }
+
       .row-aligned {
+        align-items: center;
         display: flex;
-        flex-direction: row;
       }
 
       #toggleButton {
@@ -32,7 +36,7 @@
       }
     </style>
     <div id="collapseParent" focus-row-container>
-      <div class$="settings-box list-item [[getClassForIndex_(listIndex)]]">
+      <div class$="list-item [[getClassForIndex_(listIndex)]]">
         <div id="toggleButton" class="start row-aligned two-line"
             on-click="onSiteEntryTap_" actionable aria-expanded="false">
           <site-favicon url="[[getSiteGroupIcon_(siteGroup)]]"></site-favicon>
@@ -77,7 +81,7 @@
           <iron-collapse id="collapseChild" no-animation>
             <div class="list-frame">
               <template is="dom-repeat" items="[[siteGroup.origins]]">
-                <div class="settings-box">
+                <div class="hr">
                   <div class="start row-aligned list-item"
                        on-click="onOriginTap_" actionable>
                     <site-favicon url="[[item.origin]]"></site-favicon>

@@ -101,7 +101,7 @@ class WebUIDataSourceImpl::InternalDataSource : public URLDataSource {
     return URLDataSource::GetContentSecurityPolicyWorkerSrc();
   }
   std::string GetContentSecurityPolicyFrameAncestors() override {
-    std::string frame_ancestors = "";
+    std::string frame_ancestors;
     if (parent_->frame_ancestors_.size() == 0)
       frame_ancestors += " 'none'";
     for (const GURL& frame_ancestor : parent_->frame_ancestors_) {

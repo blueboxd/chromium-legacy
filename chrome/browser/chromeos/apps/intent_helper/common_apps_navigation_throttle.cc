@@ -120,7 +120,7 @@ void CommonAppsNavigationThrottle::OnAppIconsLoaded(
     std::vector<apps::IntentPickerAppInfo> apps) {
   apps::AppsNavigationThrottle::ShowIntentPickerBubbleForApps(
       web_contents, std::move(apps),
-      /*show_stay_in_chrome=*/false,
+      /*show_stay_in_chrome=*/true,
       /*show_remember_selection=*/true,
       base::BindOnce(&OnIntentPickerClosed, web_contents,
                      ui_auto_display_service, url));

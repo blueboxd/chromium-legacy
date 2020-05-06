@@ -999,6 +999,12 @@ void SSLServerContextImpl::Init() {
 
   SSL_CTX_set_alpn_select_cb(ssl_ctx_.get(), &SocketImpl::ALPNSelectCallback,
                              nullptr);
+
+  if (!ssl_server_config_.ocsp_response.empty()) {
+    SSL_CTX_set_ocsp_response(ssl_ctx_.get(),
+                              ssl_server_config_.ocsp_response.data(),
+                              ssl_server_config_.ocsp_response.size());
+  }
 }
 
 SSLServerContextImpl::~SSLServerContextImpl() = default;

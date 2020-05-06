@@ -21,7 +21,6 @@ import static org.mockito.Mockito.verify;
 
 import androidx.annotation.Nullable;
 
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -32,7 +31,6 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.robolectric.annotation.Config;
 
-import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabCreationState;
@@ -240,18 +238,12 @@ public class TabGroupModelFilterUnitTest {
         // After setUp, TabModel has 6 tabs in the following order: mTab1, mTab2, mTab3, mTab4,
         // mTab5, mTab6. While mTab2 and mTab3 are in a group, and mTab5 and mTab6 are in a separate
         // group.
-        RecordHistogram.setDisabledForTests(true);
 
         MockitoAnnotations.initMocks(this);
 
         setUpTab();
         setUpTabModel();
         setupTabGroupModelFilter(true, false);
-    }
-
-    @After
-    public void tearDown() {
-        RecordHistogram.setDisabledForTests(false);
     }
 
     @Test

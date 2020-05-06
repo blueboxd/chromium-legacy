@@ -203,16 +203,19 @@ gfx::Rect CaptionBubble::GetBubbleBounds() {
   // If it still doesn't fit after being adjusted to fit, then it is too tall
   // or too wide for the tiny window, and we need to simply hide it. Otherwise,
   // ensure it is shown.
-  if (latest_bounds_.height() < height)
-    GetWidget()->Hide();
-  else if (!GetWidget()->IsVisible())
-    GetWidget()->Show();
+  DCHECK(GetWidget());
+  bool can_layout = latest_bounds_.height() >= height;
+  if (can_layout != can_layout_) {
+    can_layout_ = can_layout;
+    UpdateBubbleVisibility();
+  }
 
   return latest_bounds_;
 }
 
 void CaptionBubble::OnWidgetBoundsChanged(views::Widget* widget,
                                           const gfx::Rect& new_bounds) {
+  DCHECK(GetWidget());
   gfx::Rect widget_bounds = GetWidget()->GetWindowBoundsInScreen();
   gfx::Rect anchor_rect = GetAnchorView()->GetBoundsInScreen();
   if (latest_bounds_ == widget_bounds && latest_anchor_bounds_ == anchor_rect) {
@@ -362,6 +365,7 @@ void CaptionBubble::OnKeyEvent(ui::KeyEvent* event) {
       offset.set_x(kWidgetDisplacementWithArrowKeyDip);
     }
     if (offset != gfx::Vector2d()) {
+      DCHECK(GetWidget());
       gfx::Rect bounds = GetWidget()->GetWindowBoundsInScreen();
       bounds.Offset(offset);
       GetWidget()->SetBounds(bounds);
@@ -411,6 +415,7 @@ void CaptionBubble::GetAccessibleNodeData(ui::AXNodeData* node_data) {
 void CaptionBubble::ButtonPressed(views::Button* sender,
                                   const ui::Event& event) {
   if (sender == close_button_) {
+    DCHECK(GetWidget());
     GetWidget()->CloseWithReason(
         views::Widget::ClosedReason::kCloseButtonClicked);
   }
@@ -418,7 +423,7 @@ void CaptionBubble::ButtonPressed(views::Button* sender,
 
 void CaptionBubble::SetText(const std::string& text) {
   label_->SetText(base::ASCIIToUTF16(text));
-  UpdateTitleVisibility();
+  UpdateBubbleAndTitleVisibility();
 }
 
 void CaptionBubble::SetHasError(bool has_error) {
@@ -426,16 +431,35 @@ void CaptionBubble::SetHasError(bool has_error) {
     return;
   has_error_ = has_error;
   label_->SetVisible(!has_error);
-  UpdateTitleVisibility();
+  UpdateBubbleAndTitleVisibility();
   error_icon_->SetVisible(has_error);
   error_message_->SetVisible(has_error);
 }
 
-void CaptionBubble::UpdateTitleVisibility() {
+void CaptionBubble::UpdateBubbleAndTitleVisibility() {
   // Show the title if there is room for it and no error.
   title_->SetVisible(!has_error_ &&
                      label_->GetPreferredSize().height() <
                          kLineHeightDip * kNumLines * GetTextScaleFactor());
+  UpdateBubbleVisibility();
+}
+
+void CaptionBubble::UpdateBubbleVisibility() {
+  DCHECK(GetWidget());
+  // Show the widget if it can be shown, there is room for it and it has text
+  // or an error to display.
+  if (!should_show_ || !can_layout_) {
+    if (GetWidget()->IsVisible())
+      GetWidget()->Hide();
+  } else if (label_->GetText().size() > 0 || has_error_) {
+    // Only show the widget if it isn't already visible. Always calling
+    // Widget::Show() will mean the widget gets focus each time.
+    if (!GetWidget()->IsVisible())
+      GetWidget()->Show();
+  } else if (GetWidget()->IsVisible()) {
+    // No text and no error. Hide it.
+    GetWidget()->Hide();
+  }
 }
 
 void CaptionBubble::UpdateCaptionStyle(
@@ -443,6 +467,16 @@ void CaptionBubble::UpdateCaptionStyle(
   caption_style_ = caption_style;
   UpdateTextSize();
   SizeToContents();
+}
+
+void CaptionBubble::Show() {
+  should_show_ = true;
+  UpdateBubbleVisibility();
+}
+
+void CaptionBubble::Hide() {
+  should_show_ = false;
+  UpdateBubbleVisibility();
 }
 
 double CaptionBubble::GetTextScaleFactor() {

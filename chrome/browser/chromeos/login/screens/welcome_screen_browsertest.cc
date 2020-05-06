@@ -80,10 +80,7 @@ class WelcomeScreenBrowserTest : public OobeBaseTest {
     EXPECT_TRUE(data_dir_.CreateUniqueTempDir());
     const base::FilePath startup_manifest =
         data_dir_.GetPath().AppendASCII("startup_manifest.json");
-    const int file_size = strlen(kStartupManifest);
-    const int written =
-        base::WriteFile(startup_manifest, kStartupManifest, file_size);
-    EXPECT_EQ(written, file_size);
+    EXPECT_TRUE(base::WriteFile(startup_manifest, kStartupManifest));
     path_override_ = std::make_unique<base::ScopedPathOverride>(
         chromeos::FILE_STARTUP_CUSTOMIZATION_MANIFEST, startup_manifest);
     return true;

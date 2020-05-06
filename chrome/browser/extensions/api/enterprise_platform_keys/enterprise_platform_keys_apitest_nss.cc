@@ -264,7 +264,7 @@ IN_PROC_BROWSER_TEST_P(EnterprisePlatformKeysTest, Basic) {
       mock_policy_provider());
 
   // By default, the system token is disabled.
-  std::string system_token_availability = "";
+  std::string system_token_availability;
 
   // Only if the system token exists, and the current user is of the same domain
   // as the device is enrolled to, the system token is available to the

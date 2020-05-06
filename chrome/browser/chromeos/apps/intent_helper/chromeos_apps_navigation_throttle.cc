@@ -104,7 +104,8 @@ void ChromeOsAppsNavigationThrottle::OnIntentPickerClosed(
       if (close_reason == apps::IntentPickerCloseReason::STAY_IN_CHROME &&
           should_persist) {
         arc::ArcIntentPickerAppFetcher::MaybeLaunchOrPersistArcApp(
-            url, launch_name, /*should_launch_app=*/false,
+            url, arc::ArcIntentHelperBridge::kArcIntentHelperPackageName,
+            /*should_launch_app=*/false,
             /*should_persist=*/true);
       }
       // Fall through to super class method to increment counter.
@@ -160,8 +161,8 @@ ChromeOsAppsNavigationThrottle::GetDestinationPlatform(
     PickerAction picker_action) {
   switch (picker_action) {
     case PickerAction::PREFERRED_ACTIVITY_FOUND:
-      return arc::ArcIntentHelperBridge::IsIntentHelperPackage(
-                 selected_launch_name)
+      return selected_launch_name ==
+                     apps::AppsNavigationThrottle::kUseBrowserForLink
                  ? Platform::CHROME
                  : Platform::ARC;
     case PickerAction::ARC_APP_PRESSED:

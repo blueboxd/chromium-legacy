@@ -2316,6 +2316,29 @@
             ]
         }
     ],
+    "FontPreloadingDelaysRendering": [
+        {
+            "platforms": [
+                "android",
+                "android_webview",
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "EnabledWithDelay150ms",
+                    "params": {
+                        "delay-in-ms": "150"
+                    },
+                    "enable_features": [
+                        "FontPreloadingDelaysRendering"
+                    ]
+                }
+            ]
+        }
+    ],
     "FontSrcLocalMatching": [
         {
             "platforms": [

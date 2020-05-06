@@ -48,6 +48,14 @@ class CaptionBubble : public views::BubbleDialogDelegateView,
   // the caption text size.
   void UpdateCaptionStyle(base::Optional<ui::CaptionStyle> caption_style);
 
+  // Makes the bubble showable. Will show the bubble if it has text or an error
+  // state, and space to draw.
+  void Show();
+
+  // Hides the bubble. This should be used instead of showing/hiding the widget
+  // directly.
+  void Hide();
+
  protected:
   // views::BubbleDialogDelegateView:
   void Init() override;
@@ -69,7 +77,10 @@ class CaptionBubble : public views::BubbleDialogDelegateView,
  private:
   friend class CaptionBubbleControllerViewsTest;
 
-  void UpdateTitleVisibility();
+  void UpdateBubbleAndTitleVisibility();
+  // The caption bubble manages its own visibility based on whether there's
+  // space for it to be shown, and if it has an error or text to display.
+  void UpdateBubbleVisibility();
   double GetTextScaleFactor();
   void UpdateTextSize();
 
@@ -95,6 +106,12 @@ class CaptionBubble : public views::BubbleDialogDelegateView,
   double ratio_in_parent_y_;
   gfx::Rect latest_bounds_;
   gfx::Rect latest_anchor_bounds_;
+
+  // Whether there's space for the widget to layout within its parent window.
+  bool can_layout_ = true;
+
+  // Whether we should show the widget. False if explicitly asked to hide.
+  bool should_show_ = true;
 };
 
 }  // namespace captions

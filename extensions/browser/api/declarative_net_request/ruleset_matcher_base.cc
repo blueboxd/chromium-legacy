@@ -12,6 +12,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "extensions/browser/api/declarative_net_request/request_action.h"
 #include "extensions/browser/api/declarative_net_request/request_params.h"
+#include "extensions/common/api/declarative_net_request.h"
 #include "net/base/url_util.h"
 #include "net/http/http_request_headers.h"
 #include "url/gurl.h"
@@ -198,10 +199,9 @@ GURL GetTransformedURL(const RequestParams& params,
 
 }  // namespace
 
-RulesetMatcherBase::RulesetMatcherBase(
-    const ExtensionId& extension_id,
-    api::declarative_net_request::SourceType source_type)
-    : extension_id_(extension_id), source_type_(source_type) {}
+RulesetMatcherBase::RulesetMatcherBase(const ExtensionId& extension_id,
+                                       RulesetID ruleset_id)
+    : extension_id_(extension_id), ruleset_id_(ruleset_id) {}
 RulesetMatcherBase::~RulesetMatcherBase() = default;
 
 base::Optional<RequestAction> RulesetMatcherBase::GetBeforeRequestAction(
@@ -401,7 +401,7 @@ RequestAction RulesetMatcherBase::GetRemoveHeadersActionForMask(
 RequestAction RulesetMatcherBase::CreateRequestAction(
     RequestAction::Type type,
     const flat_rule::UrlRule& rule) const {
-  return RequestAction(type, rule.id(), rule.priority(), source_type(),
+  return RequestAction(type, rule.id(), rule.priority(), ruleset_id(),
                        extension_id());
 }
 

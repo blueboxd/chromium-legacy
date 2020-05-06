@@ -1043,7 +1043,7 @@ class DriveFsTestVolume : public TestVolume {
       case AddEntriesMessage::FILE: {
         original_name = base::FilePath(entry.target_path).BaseName();
         if (entry.source_file_name.empty()) {
-          ASSERT_EQ(0, base::WriteFile(target_path, "", 0));
+          ASSERT_TRUE(base::WriteFile(target_path, ""));
           break;
         }
         const base::FilePath source_path =

@@ -26,7 +26,6 @@ import android.content.Context;
 import android.content.res.Resources;
 import android.view.View;
 
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -40,7 +39,6 @@ import org.mockito.MockitoAnnotations;
 import org.robolectric.annotation.Config;
 
 import org.chromium.base.UserDataHost;
-import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.test.ShadowRecordHistogram;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.browser.compositor.CompositorViewHolder;
@@ -141,7 +139,6 @@ public class TabSwitcherMediatorUnitTest {
     @Before
     public void setUp() {
         ShadowRecordHistogram.reset();
-        RecordHistogram.setDisabledForTests(true);
 
         MockitoAnnotations.initMocks(this);
 
@@ -191,11 +188,6 @@ public class TabSwitcherMediatorUnitTest {
         mMediator.initWithNative(null);
         mMediator.addOverviewModeObserver(mOverviewModeObserver);
         mMediator.setOnTabSelectingListener(mLayout::onTabSelecting);
-    }
-
-    @After
-    public void tearDown() {
-        RecordHistogram.setDisabledForTests(false);
     }
 
     @Test

@@ -470,7 +470,7 @@ TEST_F(GcpReauthCredentialGlsRunnerTest, NoGaiaIdAvailableForADUser) {
 
   // Create a fake ad joined domain user to reauth.
   CComBSTR sid;
-  std::string empty_gaia_id = "";
+  std::string empty_gaia_id;
   ASSERT_EQ(S_OK, fake_os_user_manager()->CreateTestOSUser(
                       OLE2CW(username), OLE2CW(password), OLE2CW(full_name),
                       L"comment", base::UTF8ToUTF16(empty_gaia_id),

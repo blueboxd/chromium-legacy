@@ -75,6 +75,10 @@ class MockKeyboardDelegate : public exo::KeyboardDelegate {
               (base::TimeTicks, ui::DomCode, bool),
               (override));
   MOCK_METHOD(void, OnKeyboardModifiers, (int), (override));
+  MOCK_METHOD(void,
+              OnKeyRepeatSettingsChanged,
+              (bool, base::TimeDelta, base::TimeDelta),
+              (override));
 };
 
 class FakeNotificationSurface : public exo::NotificationSurface {

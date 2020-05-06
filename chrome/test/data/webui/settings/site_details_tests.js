@@ -289,13 +289,13 @@ suite('SiteDetails', function() {
     assertFalse(testElement.$$('#noStorage').hidden);
     assertTrue(testElement.$$('#storage').hidden);
     assertTrue(
-        testElement.$$('#usage').innerText.indexOf('No usage data') != -1);
+        testElement.$$('#usage').innerText.indexOf('No usage data') !== -1);
 
     // If there is, check the correct amount of usage is specified.
     testElement.storedData_ = '1 KB';
     assertTrue(testElement.$$('#noStorage').hidden);
     assertFalse(testElement.$$('#storage').hidden);
-    assertTrue(testElement.$$('#usage').innerText.indexOf('1 KB') != -1);
+    assertTrue(testElement.$$('#usage').innerText.indexOf('1 KB') !== -1);
   });
 
   test('storage gets trashed properly', function() {
@@ -378,7 +378,7 @@ suite('SiteDetails', function() {
           testElement.root.querySelectorAll('site-details-permission')
               .forEach((siteDetailsPermission) => {
                 if (!isChromeOS &&
-                    siteDetailsPermission.category ==
+                    siteDetailsPermission.category ===
                         ContentSettingsTypes.PROTECTED_CONTENT) {
                   return;
                 }
@@ -390,17 +390,17 @@ suite('SiteDetails', function() {
 
                 // For all the categories with non-user-set 'Allow' preferences,
                 // update expected values.
-                if (siteDetailsPermission.category ==
+                if (siteDetailsPermission.category ===
                         ContentSettingsTypes.NOTIFICATIONS ||
-                    siteDetailsPermission.category ==
+                    siteDetailsPermission.category ===
                         ContentSettingsTypes.PLUGINS ||
-                    siteDetailsPermission.category ==
+                    siteDetailsPermission.category ===
                         ContentSettingsTypes.JAVASCRIPT ||
-                    siteDetailsPermission.category ==
+                    siteDetailsPermission.category ===
                         ContentSettingsTypes.IMAGES ||
-                    siteDetailsPermission.category ==
+                    siteDetailsPermission.category ===
                         ContentSettingsTypes.POPUPS ||
-                    siteDetailsPermission.category ==
+                    siteDetailsPermission.category ===
                         ContentSettingsTypes.NATIVE_FILE_SYSTEM_WRITE) {
                   expectedSetting =
                       prefs.exceptions[siteDetailsPermission.category][0]
@@ -409,7 +409,7 @@ suite('SiteDetails', function() {
                       prefs.exceptions[siteDetailsPermission.category][0]
                           .source;
                   expectedMenuValue =
-                      (expectedSource == SiteSettingSource.DEFAULT) ?
+                      (expectedSource === SiteSettingSource.DEFAULT) ?
                       ContentSetting.DEFAULT :
                       expectedSetting;
                 }

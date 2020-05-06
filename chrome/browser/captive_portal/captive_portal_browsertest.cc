@@ -61,8 +61,6 @@
 #include "components/security_interstitials/content/ssl_error_handler.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/interstitial_page.h"
-#include "content/public/browser/interstitial_page_delegate.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_observer.h"
@@ -599,7 +597,7 @@ class CaptivePortalBrowserTest : public InProcessBrowserTest {
   bool CheckPending(Browser* browser);
 
   // Returns the type of the interstitial being shown.
-  content::InterstitialPageDelegate::TypeID GetInterstitialType(
+  security_interstitials::SecurityInterstitialPage::TypeID GetInterstitialType(
       WebContents* contents) const;
 
   bool IsShowingInterstitial(WebContents* contents);
@@ -1140,7 +1138,7 @@ bool CaptivePortalBrowserTest::CheckPending(Browser* browser) {
       captive_portal_service->TimerRunning();
 }
 
-content::InterstitialPageDelegate::TypeID
+security_interstitials::SecurityInterstitialPage::TypeID
 CaptivePortalBrowserTest::GetInterstitialType(WebContents* contents) const {
   security_interstitials::SecurityInterstitialTabHelper* helper =
       security_interstitials::SecurityInterstitialTabHelper::FromWebContents(

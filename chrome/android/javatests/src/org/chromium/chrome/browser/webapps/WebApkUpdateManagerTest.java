@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.webapps;
 
 import android.support.test.filters.MediumTest;
 
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -14,7 +13,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.Callback;
-import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
@@ -152,7 +150,6 @@ public class WebApkUpdateManagerTest {
     @Before
     public void setUp() throws Exception {
         mActivityTestRule.startMainActivityOnBlankPage();
-        RecordHistogram.setDisabledForTests(true);
         mActivity = mActivityTestRule.getActivity();
         mTab = mActivity.getActivityTab();
         mTestServer = mTestServerRule.getServer();
@@ -160,11 +157,6 @@ public class WebApkUpdateManagerTest {
         TestFetchStorageCallback callback = new TestFetchStorageCallback();
         WebappRegistry.getInstance().register(WEBAPK_ID, callback);
         callback.waitForCallback(0);
-    }
-
-    @After
-    public void tearDown() {
-        RecordHistogram.setDisabledForTests(false);
     }
 
      /** Checks whether a WebAPK update is needed. */

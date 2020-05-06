@@ -106,7 +106,7 @@ suite('AddSearchEngineDialogTests', function() {
       const inputElement = dialog.$[inputId];
       browserProxy.resetResolver('validateSearchEngineInput');
       inputElement.fire('input');
-      return inputElement.value != '' ?
+      return inputElement.value !== '' ?
           // Expecting validation only on non-empty values.
           browserProxy.whenCalled('validateSearchEngineInput') :
           Promise.resolve();
@@ -420,7 +420,7 @@ suite('SearchEnginePageTests', function() {
     flush();
 
     function getListItems(listIndex) {
-      const ironList = listIndex == 2 /* extensions */ ?
+      const ironList = listIndex === 2 /* extensions */ ?
           page.shadowRoot.querySelector('iron-list') :
           page.shadowRoot
               .querySelectorAll('settings-search-engines-list')[listIndex]

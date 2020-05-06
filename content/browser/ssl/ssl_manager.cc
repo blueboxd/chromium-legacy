@@ -134,13 +134,6 @@ void SSLManager::OnSSLCertificateError(
     return;
   }
 
-  // Check if we should deny certificate errors using the main frame's URL.
-  if (GetContentClient()->browser()->ShouldDenyRequestOnCertificateError(
-          web_contents->GetLastCommittedURL())) {
-    handler->DenyRequest();
-    return;
-  }
-
   NavigationControllerImpl* controller =
       static_cast<NavigationControllerImpl*>(&web_contents->GetController());
   controller->SetPendingNavigationSSLError(true);

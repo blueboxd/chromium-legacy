@@ -7,14 +7,16 @@
 
 #include <vector>
 
+#include "extensions/common/api/declarative_net_request/constants.h"
+
 namespace extensions {
 namespace declarative_net_request {
 
 struct RulesetChecksum {
-  RulesetChecksum(int ruleset_id, int checksum)
-      : ruleset_id(ruleset_id), checksum(checksum) {}
+  RulesetChecksum(RulesetID ruleset_id, int checksum);
+
   // ID of the ruleset.
-  int ruleset_id;
+  RulesetID ruleset_id;
   // Checksum of the indexed ruleset.
   int checksum;
 };

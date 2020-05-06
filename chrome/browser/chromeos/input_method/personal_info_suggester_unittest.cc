@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/input_method/personal_info_suggester.h"
 
+#include "ash/public/cpp/ash_pref_names.h"
 #include "base/guid.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/test/base/testing_profile.h"
@@ -57,28 +58,48 @@ class TestSuggestionHandler : public SuggestionHandlerInterface {
   bool suggestion_accepted_ = false;
 };
 
+class TestTtsHandler : public TtsHandler {
+ public:
+  explicit TestTtsHandler(Profile* profile) : TtsHandler(profile) {}
+
+  void VerifyAnnouncement(const std::string& expected_text) {
+    EXPECT_EQ(text_, expected_text);
+  }
+
+ private:
+  void Speak(const std::string& text) override { text_ = text; }
+
+  std::string text_ = "";
+};
+
 }  // namespace
 
 class PersonalInfoSuggesterTest : public testing::Test {
  protected:
   PersonalInfoSuggesterTest() {
-    profile_ = std::make_unique<TestingProfile>();
     autofill_client_.SetPrefs(autofill::test::PrefServiceForTesting());
   }
 
   void SetUp() override {
+    profile_ = std::make_unique<TestingProfile>();
+    auto tts_handler = std::make_unique<TestTtsHandler>(profile_.get());
+    tts_handler_ = tts_handler.get();
+
     suggestion_handler_ = std::make_unique<TestSuggestionHandler>();
 
     personal_data_ = std::make_unique<autofill::TestPersonalDataManager>();
     personal_data_->SetPrefService(autofill_client_.GetPrefs());
 
     suggester_ = std::make_unique<PersonalInfoSuggester>(
-        suggestion_handler_.get(), profile_.get(), personal_data_.get());
+        suggestion_handler_.get(), profile_.get(), personal_data_.get(),
+        std::move(tts_handler));
   }
 
-  content::BrowserTaskEnvironment task_environment_;
+  content::BrowserTaskEnvironment task_environment_{
+      base::test::TaskEnvironment::TimeSource::MOCK_TIME};
 
   std::unique_ptr<TestingProfile> profile_;
+  TestTtsHandler* tts_handler_;
   std::unique_ptr<TestSuggestionHandler> suggestion_handler_;
   std::unique_ptr<PersonalInfoSuggester> suggester_;
 
@@ -166,6 +187,45 @@ TEST_F(PersonalInfoSuggesterTest, SuggestWithConfirmedLength) {
   suggester_->Suggest(base::UTF8ToUTF16("my phone number is "));
   suggester_->Suggest(base::UTF8ToUTF16("my phone number is 16"));
   suggestion_handler_->VerifySuggestion(phone_number_, 2);
+}
+
+TEST_F(PersonalInfoSuggesterTest,
+       DoNotAnnounceSpokenFeedbackWhenChromeVoxIsOff) {
+  profile_->set_profile_name(base::UTF16ToUTF8(email_));
+  profile_->GetPrefs()->SetBoolean(
+      ash::prefs::kAccessibilitySpokenFeedbackEnabled, false);
+
+  suggester_->Suggest(base::UTF8ToUTF16("my email is "));
+  task_environment_.FastForwardBy(base::TimeDelta::FromMilliseconds(5000));
+  tts_handler_->VerifyAnnouncement("");
+
+  ::input_method::InputMethodEngineBase::KeyboardEvent event;
+  event.key = "Tab";
+  suggester_->HandleKeyEvent(event);
+  task_environment_.FastForwardBy(base::TimeDelta::FromMilliseconds(5000));
+  tts_handler_->VerifyAnnouncement("");
+}
+
+TEST_F(PersonalInfoSuggesterTest, AnnounceSpokenFeedbackWhenChromeVoxIsOn) {
+  profile_->set_profile_name(base::UTF16ToUTF8(email_));
+  profile_->GetPrefs()->SetBoolean(
+      ash::prefs::kAccessibilitySpokenFeedbackEnabled, true);
+
+  suggester_->Suggest(base::UTF8ToUTF16("my email is "));
+  task_environment_.FastForwardBy(base::TimeDelta::FromMilliseconds(500));
+  tts_handler_->VerifyAnnouncement("");
+
+  task_environment_.FastForwardBy(base::TimeDelta::FromMilliseconds(1000));
+  tts_handler_->VerifyAnnouncement(
+      base::StringPrintf("Suggested text %s. Press tab to insert.",
+                         base::UTF16ToUTF8(email_).c_str()));
+
+  ::input_method::InputMethodEngineBase::KeyboardEvent event;
+  event.key = "Tab";
+  suggester_->HandleKeyEvent(event);
+  task_environment_.FastForwardBy(base::TimeDelta::FromMilliseconds(200));
+  tts_handler_->VerifyAnnouncement(base::StringPrintf(
+      "Inserted suggestion %s.", base::UTF16ToUTF8(email_).c_str()));
 }
 
 }  // namespace chromeos

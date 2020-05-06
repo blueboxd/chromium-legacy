@@ -46,7 +46,7 @@ class TestSecurityKeysBrowserProxy extends TestBrowserProxy {
   handleMethod(methodName, opt_arg) {
     this.methodCalled(methodName, opt_arg);
     const promise = this.promiseMap_.get(methodName);
-    if (promise != undefined) {
+    if (promise !== undefined) {
       this.promiseMap_.delete(methodName);
       return promise;
     }
@@ -207,7 +207,7 @@ function assertShown(allDivs, dialog, expectedID) {
   assertTrue(allDivs.includes(expectedID));
 
   const allShown =
-      allDivs.filter(id => dialog.$[id].className == 'iron-selected');
+      allDivs.filter(id => dialog.$[id].className === 'iron-selected');
   assertEquals(allShown.length, 1);
   assertEquals(allShown[0], expectedID);
 }
@@ -369,7 +369,7 @@ suite('SecurityKeysSetPINDialog', function() {
       await browserProxy.whenCalled('close');
       assertComplete();
       assertShown(allDivs, dialog, testCase[1]);
-      if (testCase[1] == 'error') {
+      if (testCase[1] === 'error') {
         // Unhandled error codes display the numeric code.
         assertTrue(
             dialog.$.error.textContent.trim().includes(testCase[0].toString()));
@@ -481,7 +481,7 @@ suite('SecurityKeysSetPINDialog', function() {
       await browserProxy.whenCalled('close');
       assertComplete();
       assertShown(allDivs, dialog, testCase[1]);
-      if (testCase[1] == 'error') {
+      if (testCase[1] === 'error') {
         // Unhandled error codes display the numeric code.
         assertTrue(
             dialog.$.error.textContent.trim().includes(testCase[0].toString()));
@@ -761,35 +761,37 @@ suite('SecurityKeysBioEnrollment', function() {
     pinResolver.resolve();
     await browserProxy.whenCalled('enumerateEnrollments');
     uiReady = eventToPromise('bio-enroll-dialog-ready-for-testing', dialog);
-    const enrollments = [
-      {
-        name: 'Fingerprint00',
-        id: '0000',
-      },
-      {
-        name: 'FingerprintAF',
-        id: '4321',
-      },
-      {
-        name: 'FingerprintFA',
-        id: '1234',
-      },
-    ];
+
+    const fingerprintA = {
+      name: 'FingerprintA',
+      id: '1234',
+    };
+    const fingerprintB = {
+      name: 'FingerprintB',
+      id: '4321',
+    };
+    const fingerprintC = {
+      name: 'FingerprintC',
+      id: '0000',
+    };
+    const enrollments = [fingerprintC, fingerprintB, fingerprintA];
+    const sortedEnrollments = [fingerprintA, fingerprintB, fingerprintC];
     enumerateResolver.resolve(enrollments);
     await uiReady;
     assertShown(allDivs, dialog, 'enrollments');
-    assertEquals(dialog.$.enrollmentList.items, enrollments);
+    assertDeepEquals(dialog.$.enrollmentList.items, sortedEnrollments);
 
     // Delete the second enrollments and refresh the list.
     flush();
     dialog.$.enrollmentList.querySelectorAll('cr-icon-button')[1].click();
     const id = await browserProxy.whenCalled('deleteEnrollment');
-    assertEquals(enrollments[1].id, id);
+    assertEquals(sortedEnrollments[1].id, id);
+    sortedEnrollments.splice(1, 1);
     enrollments.splice(1, 1);
     deleteResolver.resolve(enrollments);
     await uiReady;
     assertShown(allDivs, dialog, 'enrollments');
-    assertEquals(dialog.$.enrollmentList.items, enrollments);
+    assertDeepEquals(dialog.$.enrollmentList.items, sortedEnrollments);
   });
 
   test('AddEnrollment', async function() {

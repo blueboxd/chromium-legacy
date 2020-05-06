@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "chrome/browser/ui/app_list/chrome_app_list_item.h"
+#include "components/sync/protocol/sync.pb.h"
 
 AppListModelBuilder::AppListModelBuilder(AppListControllerDelegate* controller,
                                          const char* item_type)
@@ -45,8 +46,13 @@ void AppListModelBuilder::RemoveApp(const std::string& id,
 }
 
 const app_list::AppListSyncableService::SyncItem*
-AppListModelBuilder::GetSyncItem(const std::string& id) {
-  return service_ ? service_->GetSyncItem(id) : nullptr;
+AppListModelBuilder::GetSyncItem(
+    const std::string& id,
+    sync_pb::AppListSpecifics::AppListItemType type) {
+  if (!service_)
+    return nullptr;
+  auto* result = service_->GetSyncItem(id);
+  return result && result->item_type == type ? result : nullptr;
 }
 
 ChromeAppListItem* AppListModelBuilder::GetAppItem(const std::string& id) {

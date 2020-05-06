@@ -11,6 +11,7 @@
 #include "chrome/browser/chromeos/input_method/suggestion_enums.h"
 #include "chrome/browser/chromeos/input_method/suggestion_handler_interface.h"
 #include "chrome/browser/ui/input_method/input_method_engine_base.h"
+#include "content/public/browser/tts_controller.h"
 
 namespace autofill {
 class PersonalDataManager;
@@ -22,6 +23,31 @@ namespace chromeos {
 
 AssistiveType ProposeAssistiveAction(const base::string16& text);
 
+class TtsHandler : public content::UtteranceEventDelegate {
+ public:
+  explicit TtsHandler(Profile* profile);
+  ~TtsHandler() override;
+
+  // Announce |text| after some |delay|. The delay is to avoid conflict with
+  // other ChromeVox announcements. This should be no-op if ChromeVox is not
+  // enabled.
+  void Announce(const std::string& text,
+                const base::TimeDelta delay = base::TimeDelta());
+
+  // UtteranceEventDelegate implementation.
+  void OnTtsEvent(content::TtsUtterance* utterance,
+                  content::TtsEventType event_type,
+                  int char_index,
+                  int length,
+                  const std::string& error_message) override;
+
+ private:
+  virtual void Speak(const std::string& text);
+
+  Profile* const profile_;
+  std::unique_ptr<base::OneShotTimer> delay_timer_;
+};
+
 // An agent to suggest personal information when the user types, and adopt or
 // dismiss the suggestion according to the user action.
 class PersonalInfoSuggester : public Suggester {
@@ -31,7 +57,8 @@ class PersonalInfoSuggester : public Suggester {
   PersonalInfoSuggester(
       SuggestionHandlerInterface* suggestion_handler,
       Profile* profile,
-      autofill::PersonalDataManager* personal_data_manager = nullptr);
+      autofill::PersonalDataManager* personal_data_manager = nullptr,
+      std::unique_ptr<TtsHandler> tts_handler = nullptr);
   ~PersonalInfoSuggester() override;
 
   // Suggester overrides:
@@ -66,6 +93,9 @@ class PersonalInfoSuggester : public Suggester {
 
   // Personal data manager provided by autofill service.
   autofill::PersonalDataManager* const personal_data_manager_;
+
+  // The handler to handle Text-to-Speech (TTS) request.
+  std::unique_ptr<TtsHandler> const tts_handler_;
 
   // If we are showing a suggestion right now.
   bool suggestion_shown_ = false;

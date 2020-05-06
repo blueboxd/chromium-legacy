@@ -29,24 +29,17 @@
 #include "components/favicon/content/content_favicon_driver.h"
 #include "components/favicon/core/favicon_driver_observer.h"
 #include "components/security_state/core/security_state.h"
-#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
-#include "content/public/browser/render_view_host.h"
-#include "content/public/browser/ssl_status.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
-#include "content/public/common/content_switches.h"
 #include "content/public/common/isolated_world_ids.h"
-#include "content/public/common/web_preferences.h"
 #include "content/public/test/back_forward_cache_util.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
-#include "net/test/embedded_test_server/request_handler_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/common/features.h"
 #include "ui/gfx/image/image_unittest_util.h"
 
 namespace dom_distiller {
@@ -450,164 +443,6 @@ IN_PROC_BROWSER_TEST_F(DomDistillerTabUtilsBrowserTest,
   gfx::Image distilled_favicon = browser()->GetCurrentPageIcon();
   EXPECT_TRUE(gfx::test::AreImagesEqual(article_favicon, distilled_favicon));
 }
-
-#if !defined(OS_ANDROID)
-class DomDistillerTabUtilsBrowserTestInsecureContent
-    : public InProcessBrowserTest {
- public:
-  void SetUpOnMainThread() override {
-    if (!DistillerJavaScriptWorldIdIsSet()) {
-      SetDistillerJavaScriptWorldId(content::ISOLATED_WORLD_ID_CONTENT_END);
-    }
-    ASSERT_TRUE(https_server_->Start());
-    ASSERT_TRUE(https_server_expired_->Start());
-  }
-
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    command_line->AppendSwitch(switches::kEnableDomDistiller);
-    command_line->AppendSwitch(switches::kAllowInsecureLocalhost);
-  }
-
-  void CheckImageWidthById(content::WebContents* contents,
-                           std::string id,
-                           int expected_width) {
-    EXPECT_EQ(expected_width,
-              content::EvalJs(contents, "document.getElementById('" + id +
-                                            "').naturalWidth"));
-  }
-
-  void CheckImageWidthByOrderInPage(content::WebContents* contents,
-                                    std::string elem,
-                                    int expected_width) {
-    // Use ExecuteScriptAndExtractInt to avoid Content SecurityPolicy errors.
-    // Use naturalWidth because the distiller sets the width and height
-    // attributes on the img.
-    int image_width = -1;
-    EXPECT_TRUE(content::ExecuteScriptAndExtractInt(
-        contents,
-        "window.domAutomationController.send("
-        "document.getElementById('main-content').getElementsByTagName('img')[" +
-            elem + "].naturalWidth)",
-        &image_width));
-    EXPECT_EQ(expected_width, image_width);
-  }
-
- protected:
-  DomDistillerTabUtilsBrowserTestInsecureContent() {
-    feature_list_.InitWithFeatures({dom_distiller::kReaderMode},
-                                   {blink::features::kMixedContentAutoupgrade});
-  }
-
-  void SetUpInProcessBrowserTestFixture() override {
-    https_server_.reset(
-        new net::EmbeddedTestServer(net::EmbeddedTestServer::TYPE_HTTPS));
-    https_server_->ServeFilesFromSourceDirectory(GetChromeTestDataDir());
-    https_server_expired_.reset(
-        new net::EmbeddedTestServer(net::EmbeddedTestServer::TYPE_HTTPS));
-    https_server_expired_->SetSSLConfig(net::EmbeddedTestServer::CERT_EXPIRED);
-    https_server_expired_->ServeFilesFromSourceDirectory(
-        GetChromeTestDataDir());
-  }
-
-  std::unique_ptr<net::EmbeddedTestServer> https_server_;
-  std::unique_ptr<net::EmbeddedTestServer> https_server_expired_;
-
- private:
-  base::test::ScopedFeatureList feature_list_;
-};
-
-IN_PROC_BROWSER_TEST_F(DomDistillerTabUtilsBrowserTestInsecureContent,
-                       DoesNotLoadMixedContent) {
-  content::WebContents* initial_web_contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
-  ui_test_utils::NavigateToURL(
-      browser(),
-      https_server_->GetURL("/dom_distiller/simple_article_mixed_image.html"));
-  // Security state should be downgraded.
-  SecurityStateTabHelper* helper =
-      SecurityStateTabHelper::FromWebContents(initial_web_contents);
-  EXPECT_EQ(security_state::WARNING, helper->GetSecurityLevel());
-  EXPECT_TRUE(initial_web_contents->GetController()
-                  .GetVisibleEntry()
-                  ->GetSSL()
-                  .content_status &
-              content::SSLStatus::DISPLAYED_INSECURE_CONTENT);
-  // The first image should not have loaded.
-  CheckImageWidthById(initial_web_contents, "bad_image", 0);
-  CheckImageWidthById(initial_web_contents, "ok_image", 276);
-
-  // Create destination WebContents and add it to the tab strip.
-  browser()->tab_strip_model()->AppendWebContents(
-      NewContentsWithSameParamsAs(initial_web_contents),
-      /* foreground = */ true);
-  content::WebContents* destination_web_contents =
-      browser()->tab_strip_model()->GetWebContentsAt(1);
-
-  // Original page has a http image, but the page was loaded over https. It
-  // isn't technically distillable because it isn't SECURE, but we will distill
-  // it anyway to ensure the mixed resource is not loaded in the distilled page.
-  DistillAndView(initial_web_contents, destination_web_contents);
-  DistilledPageObserver(destination_web_contents).WaitUntilFinishedLoading();
-
-  // The distilled page should not try to load insecure content.
-  helper = SecurityStateTabHelper::FromWebContents(destination_web_contents);
-  EXPECT_EQ(security_state::NONE, helper->GetSecurityLevel());
-  EXPECT_FALSE(destination_web_contents->GetController()
-                   .GetVisibleEntry()
-                   ->GetSSL()
-                   .content_status &
-               content::SSLStatus::DISPLAYED_INSECURE_CONTENT);
-  CheckImageWidthByOrderInPage(destination_web_contents, "0", 0);
-  CheckImageWidthByOrderInPage(destination_web_contents, "1", 276);
-}
-
-IN_PROC_BROWSER_TEST_F(DomDistillerTabUtilsBrowserTestInsecureContent,
-                       DoesNotLoadContentWithBadCert) {
-  content::WebContents* initial_web_contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
-  base::StringPairs replacement_text;
-  // Create a page with an image that is loaded over a HTTPS server with invalid
-  // certificate.
-  replacement_text.push_back(
-      make_pair("REPLACE_WITH_HOST_AND_PORT",
-                https_server_expired_->host_port_pair().ToString()));
-  std::string path = net::test_server::GetFilePathWithReplacements(
-      "/dom_distiller/simple_article_bad_cert_image.html", replacement_text);
-  ui_test_utils::NavigateToURL(browser(), https_server_->GetURL(path));
-  // Should have loaded the image with the cert errors.
-  SecurityStateTabHelper* helper =
-      SecurityStateTabHelper::FromWebContents(initial_web_contents);
-  EXPECT_TRUE(
-      helper->GetVisibleSecurityState()->displayed_content_with_cert_errors);
-  // Check both the good and the bad images loaded.
-  CheckImageWidthById(initial_web_contents, "bad_image", 276);
-  CheckImageWidthById(initial_web_contents, "ok_image", 276);
-
-  // Create destination WebContents and add it to the tab strip.
-  browser()->tab_strip_model()->AppendWebContents(
-      NewContentsWithSameParamsAs(initial_web_contents),
-      /* foreground = */ true);
-  content::WebContents* destination_web_contents =
-      browser()->tab_strip_model()->GetWebContentsAt(1);
-
-  // Original page has broken cert image. It isn't technically distillable
-  // because it isn't SECURE, but we will distill it anyway to ensure those
-  // resources are not loaded in the distilled page.
-  DistillAndView(initial_web_contents, destination_web_contents);
-  DistilledPageObserver(destination_web_contents).WaitUntilFinishedLoading();
-
-  // Check security of the distilled page. It should not try to load the
-  // image with the invalid cert.
-  helper = SecurityStateTabHelper::FromWebContents(destination_web_contents);
-  EXPECT_EQ(security_state::NONE, helper->GetSecurityLevel());
-  EXPECT_FALSE(
-      helper->GetVisibleSecurityState()->displayed_content_with_cert_errors);
-
-  CheckImageWidthByOrderInPage(destination_web_contents, "0", 0);
-  CheckImageWidthByOrderInPage(destination_web_contents, "1", 276);
-}
-
-#endif  // !defined(OS_ANDROID)
 
 }  // namespace
 }  // namespace dom_distiller

@@ -320,7 +320,7 @@ std::string ShortcutHelper::QueryFirstWebApkPackage(const GURL& url) {
   ScopedJavaLocalRef<jstring> java_webapk_package_name =
       Java_ShortcutHelper_queryFirstWebApkPackage(env, java_url);
 
-  std::string webapk_package_name = "";
+  std::string webapk_package_name;
   if (java_webapk_package_name.obj()) {
     webapk_package_name =
         base::android::ConvertJavaStringToUTF8(env, java_webapk_package_name);

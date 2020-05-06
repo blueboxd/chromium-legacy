@@ -74,10 +74,10 @@ size_t GetRulesCountInternal(
 
 ExtensionUrlPatternIndexMatcher::ExtensionUrlPatternIndexMatcher(
     const ExtensionId& extension_id,
-    api::declarative_net_request::SourceType source_type,
+    RulesetID ruleset_id,
     const ExtensionUrlPatternIndexMatcher::UrlPatternIndexList* index_list,
     const ExtensionMetadataList* metadata_list)
-    : RulesetMatcherBase(extension_id, source_type),
+    : RulesetMatcherBase(extension_id, ruleset_id),
       metadata_list_(metadata_list),
       matchers_(GetMatchers(index_list)),
       is_extra_headers_matcher_(IsExtraHeadersMatcherInternal(matchers_)),

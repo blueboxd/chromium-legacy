@@ -42,7 +42,7 @@ export function getSection(page, section) {
   assertTrue(!!sections);
   for (let i = 0; i < sections.length; ++i) {
     const s = sections[i];
-    if (s.section == section) {
+    if (s.section === section) {
       return s;
     }
   }

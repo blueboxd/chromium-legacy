@@ -132,14 +132,14 @@ class UserDataSnapshotBrowserTestBase : public InProcessBrowserTest {
       // Pretend that a lower version of Chrome previously wrote User Data.
       const std::string last_version = GetPreviousChromeVersion();
       base::WriteFile(user_data_dir_.Append(kDowngradeLastVersionFile),
-                      last_version.c_str(), last_version.size());
+                      last_version);
     }
 
     if (IsRolledbackVersion()) {
       // Pretend that a higher version of Chrome previously wrote User Data.
       const std::string last_version = GetNextChromeVersion();
       base::WriteFile(user_data_dir_.Append(kDowngradeLastVersionFile),
-                      last_version.c_str(), last_version.size());
+                      last_version);
     }
     return true;
   }
@@ -437,7 +437,7 @@ IN_PROC_BROWSER_TEST_F(InProcessBrowserTest, SameMilestoneSnapshot) {
 
   // No snapshots for same version.
   base::WriteFile(user_data_dir.Append(kDowngradeLastVersionFile),
-                  current_version.c_str(), current_version.size());
+                  current_version);
   EXPECT_FALSE(downgrade_manager.PrepareUserDataDirectoryForCurrentVersion(
       user_data_dir));
   EXPECT_FALSE(
@@ -454,7 +454,7 @@ IN_PROC_BROWSER_TEST_F(InProcessBrowserTest, SameMilestoneSnapshot) {
   auto last_minor_version =
       base::Version(last_minor_version_components).GetString();
   base::WriteFile(user_data_dir.Append(kDowngradeLastVersionFile),
-                  last_minor_version.c_str(), last_minor_version.size());
+                  last_minor_version);
 
   EXPECT_FALSE(downgrade_manager.PrepareUserDataDirectoryForCurrentVersion(
       user_data_dir));
@@ -477,7 +477,7 @@ IN_PROC_BROWSER_TEST_F(InProcessBrowserTest, CanarySameMilestoneSnapshot) {
 
   // No snapshots for same version.
   base::WriteFile(user_data_dir.Append(kDowngradeLastVersionFile),
-                  current_version.c_str(), current_version.size());
+                  current_version);
   EXPECT_FALSE(downgrade_manager.PrepareUserDataDirectoryForCurrentVersion(
       user_data_dir));
   EXPECT_FALSE(
@@ -494,7 +494,7 @@ IN_PROC_BROWSER_TEST_F(InProcessBrowserTest, CanarySameMilestoneSnapshot) {
   auto last_minor_version =
       base::Version(last_minor_version_components).GetString();
   base::WriteFile(user_data_dir.Append(kDowngradeLastVersionFile),
-                  last_minor_version.c_str(), last_minor_version.size());
+                  last_minor_version);
 
   EXPECT_FALSE(downgrade_manager.PrepareUserDataDirectoryForCurrentVersion(
       user_data_dir));

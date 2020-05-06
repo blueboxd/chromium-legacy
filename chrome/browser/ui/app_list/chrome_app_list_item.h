@@ -63,9 +63,6 @@ class ChromeAppListItem {
   const gfx::ImageSkia& icon() const { return metadata_->icon; }
   bool is_page_break() const { return metadata_->is_page_break; }
 
-  void SetIsInstalling(bool is_installing);
-  void SetPercentDownloaded(int32_t percent_downloaded);
-
   void SetMetadata(std::unique_ptr<ash::AppListItemMetadata> metadata);
   std::unique_ptr<ash::AppListItemMetadata> CloneMetadata() const;
 

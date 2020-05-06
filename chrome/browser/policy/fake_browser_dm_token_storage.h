@@ -39,9 +39,9 @@ class FakeBrowserDMTokenStorage : public BrowserDMTokenStorage {
   scoped_refptr<base::TaskRunner> SaveDMTokenTaskRunner() override;
 
  private:
-  std::string client_id_ = "";
-  std::string enrollment_token_ = "";
-  std::string dm_token_ = "";
+  std::string client_id_;
+  std::string enrollment_token_;
+  std::string dm_token_;
   bool enrollment_error_option_ = true;
 
   bool storage_enabled_ = true;

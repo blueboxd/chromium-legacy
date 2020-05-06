@@ -2081,6 +2081,13 @@
       'Linux Release (NVIDIA)',
     ],
   },
+  'telemetry_monochrome_minidump_unittests': {
+    'remove_from': [
+      # Monochrome isn't supported on M.
+      'android-marshmallow-arm64-rel',
+      'android-marshmallow-x86-fyi-rel',
+    ],
+  },
   'telemetry_perf_unittests': {
     'modifications': {
       'Linux Tests': {

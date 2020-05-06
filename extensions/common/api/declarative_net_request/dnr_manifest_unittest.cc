@@ -66,7 +66,8 @@ class DNRManifestTest : public testing::Test {
         DNRManifestData::GetRulesets(*extension);
     ASSERT_EQ(info.size(), rulesets.size());
     for (size_t i = 0; i < rulesets.size(); ++i) {
-      EXPECT_EQ(i + 1, static_cast<size_t>(rulesets[i].id));
+      EXPECT_EQ(RulesetID(i + kMinValidStaticRulesetID.value()),
+                rulesets[i].id);
 
       EXPECT_EQ(info[i].manifest_id, rulesets[i].manifest_id);
 
@@ -78,6 +79,9 @@ class DNRManifestTest : public testing::Test {
                 rulesets[i].relative_path);
 
       EXPECT_EQ(info[i].enabled, rulesets[i].enabled);
+
+      EXPECT_EQ(rulesets[i].manifest_id,
+                DNRManifestData::GetManifestID(*extension, rulesets[i].id));
     }
   }
 
@@ -243,6 +247,18 @@ TEST_F(DNRManifestTest, DuplicateRulesetID) {
   LoadAndExpectError(ErrorUtils::FormatErrorMessage(
       errors::kInvalidRulesetID, keys::kDeclarativeNetRequestKey,
       keys::kDeclarativeRuleResourcesKey, "3"));
+}
+
+TEST_F(DNRManifestTest, ReservedRulesetID) {
+  TestRulesetInfo ruleset_1("foo", "1.json", base::ListValue());
+  TestRulesetInfo ruleset_2("_bar", "2.json", base::ListValue());
+  TestRulesetInfo ruleset_3("baz", "3.json", base::ListValue());
+  std::vector<TestRulesetInfo> rulesets({ruleset_1, ruleset_2, ruleset_3});
+  WriteManifestAndRuleset(*CreateManifest(rulesets), rulesets);
+
+  LoadAndExpectError(ErrorUtils::FormatErrorMessage(
+      errors::kInvalidRulesetID, keys::kDeclarativeNetRequestKey,
+      keys::kDeclarativeRuleResourcesKey, "1"));
 }
 
 }  // namespace

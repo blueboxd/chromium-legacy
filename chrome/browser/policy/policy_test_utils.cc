@@ -28,7 +28,6 @@
 #include "components/variations/variations_params_manager.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/interstitial_page_delegate.h"
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"

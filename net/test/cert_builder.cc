@@ -463,6 +463,19 @@ uint64_t CertBuilder::GetSerialNumber() {
   return serial_number_;
 }
 
+bool CertBuilder::GetValidity(base::Time* not_before,
+                              base::Time* not_after) const {
+  der::GeneralizedTime not_before_generalized_time;
+  der::GeneralizedTime not_after_generalized_time;
+  if (!ParseValidity(der::Input(&validity_tlv_), &not_before_generalized_time,
+                     &not_after_generalized_time) ||
+      !GeneralizedTimeToTime(not_before_generalized_time, not_before) ||
+      !GeneralizedTimeToTime(not_after_generalized_time, not_after)) {
+    return false;
+  }
+  return true;
+}
+
 EVP_PKEY* CertBuilder::GetKey() {
   if (!key_)
     GenerateKey();

@@ -263,6 +263,8 @@ constexpr struct GamepadInfo {
     // NVIDIA Corp.
     {0x0955, 0x7210, kXInputTypeNone},
     {0x0955, 0x7214, kXInputTypeNone},
+    // Broadcom Corp.
+    {0x0a5c, 0x8502, kXInputTypeNone},
     // ASUSTek Computer, Inc.
     {0x0b05, 0x4500, kXInputTypeNone},
     // Play.com, Inc.

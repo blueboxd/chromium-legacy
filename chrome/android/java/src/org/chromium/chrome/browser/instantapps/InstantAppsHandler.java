@@ -6,13 +6,10 @@ package org.chromium.chrome.browser.instantapps;
 
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.ResolveInfo;
 import android.net.Uri;
 import android.os.Build;
 import android.os.SystemClock;
 import android.provider.Browser;
-
-import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.IntentUtils;
@@ -67,11 +64,6 @@ public class InstantAppsHandler {
     private static final String[] SUPERVISOR_START_ACTIONS = {
             "com.google.android.instantapps.START", "com.google.android.instantapps.nmr1.INSTALL",
             "com.google.android.instantapps.nmr1.VIEW"};
-
-    // Instant Apps system resolver activity on N-MR1+.
-    @VisibleForTesting
-    public static final String EPHEMERAL_INSTALLER_CLASS =
-            "com.google.android.gms.instantapps.routing.EphemeralInstallerActivity";
 
     /** Finch experiment name. */
     private static final String INSTANT_APPS_EXPERIMENT_NAME = "InstantApps";
@@ -364,22 +356,6 @@ public class InstantAppsHandler {
      */
     public boolean isInstantAppAvailable(
             String url, boolean checkHoldback, boolean includeUserPrefersBrowser) {
-        return false;
-    }
-
-    /**
-     * Whether the given ResolveInfo object refers to Instant Apps as a launcher.
-     * @param info The resolve info.
-     */
-    public boolean isInstantAppResolveInfo(ResolveInfo info) {
-        if (info == null) return false;
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            return info.isInstantAppAvailable;
-        } else if (info.activityInfo != null) {
-            return EPHEMERAL_INSTALLER_CLASS.equals(info.activityInfo.name);
-        }
-
         return false;
     }
 }

@@ -60,22 +60,29 @@ static int SkColorTypeToBitmapFormat(SkColorType color_type) {
 
 ScopedJavaLocalRef<jobject> CreateJavaBitmap(int width,
                                              int height,
-                                             SkColorType color_type) {
+                                             SkColorType color_type,
+                                             OomBehavior reaction) {
   DCHECK_GT(width, 0);
   DCHECK_GT(height, 0);
   int java_bitmap_config = SkColorTypeToBitmapFormat(color_type);
   return Java_BitmapHelper_createBitmap(
-      AttachCurrentThread(), width, height, java_bitmap_config);
+      AttachCurrentThread(), width, height, java_bitmap_config,
+      reaction == OomBehavior::kReturnNullOnOom);
 }
 
-ScopedJavaLocalRef<jobject> ConvertToJavaBitmap(const SkBitmap* skbitmap) {
+ScopedJavaLocalRef<jobject> ConvertToJavaBitmap(const SkBitmap* skbitmap,
+                                                OomBehavior reaction) {
   DCHECK(skbitmap);
   DCHECK(!skbitmap->isNull());
   SkColorType color_type = skbitmap->colorType();
   DCHECK((color_type == kRGB_565_SkColorType) ||
          (color_type == kN32_SkColorType));
   ScopedJavaLocalRef<jobject> jbitmap = CreateJavaBitmap(
-      skbitmap->width(), skbitmap->height(), color_type);
+      skbitmap->width(), skbitmap->height(), color_type, reaction);
+  if (!jbitmap) {
+    DCHECK_EQ(OomBehavior::kReturnNullOnOom, reaction);
+    return jbitmap;
+  }
   JavaBitmap dst_lock(jbitmap);
   void* src_pixels = skbitmap->getPixels();
   void* dst_pixels = dst_lock.pixels();

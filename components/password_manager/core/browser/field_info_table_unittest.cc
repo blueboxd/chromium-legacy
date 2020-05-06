@@ -9,6 +9,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "build/build_config.h"
 #include "components/autofill/core/browser/field_types.h"
+#include "components/autofill/core/common/signatures.h"
 #include "sql/database.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -38,9 +39,15 @@ class FieldInfoTableTest : public testing::Test {
     field_info_table_->Init(db_.get());
     ASSERT_TRUE(field_info_table_->CreateTableIfNecessary());
 
-    test_data_.push_back({101u, 1u, USERNAME, Time::FromTimeT(1)});
-    test_data_.push_back({101u, 10u, PASSWORD, Time::FromTimeT(5)});
-    test_data_.push_back({102u, 1u, SINGLE_USERNAME, Time::FromTimeT(10)});
+    test_data_.push_back({autofill::FormSignature(101u),
+                          autofill::FieldSignature(1u), USERNAME,
+                          Time::FromTimeT(1)});
+    test_data_.push_back({autofill::FormSignature(101u),
+                          autofill::FieldSignature(10u), PASSWORD,
+                          Time::FromTimeT(5)});
+    test_data_.push_back({autofill::FormSignature(102u),
+                          autofill::FieldSignature(1u), SINGLE_USERNAME,
+                          Time::FromTimeT(10)});
   }
 
   base::ScopedTempDir temp_dir_;

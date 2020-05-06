@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/optional.h"
 #include "base/strings/string_piece.h"
 #include "components/os_crypt/key_storage_linux.h"
 
@@ -29,7 +30,7 @@ class OSCryptMockerLinux : public KeyStorageLinux {
  protected:
   // KeyStorageLinux
   bool Init() override;
-  std::string GetKeyImpl() override;
+  base::Optional<std::string> GetKeyImpl() override;
 
  private:
   std::string key_;

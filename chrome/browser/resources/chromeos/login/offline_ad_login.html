@@ -6,8 +6,6 @@
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/cr_elements/md_select_css.html">
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout-classes.html">
-
 
 <!--
   Offline UI for the AD Domain joining and User authentication.
@@ -46,10 +44,8 @@
 -->
 <dom-module id="offline-ad-login">
   <template>
-    <style include="md-select iron-flex iron-flex-alignment iron-positioning">
+    <style include="md-select oobe-dialog-host">
     </style>
-    <link rel="stylesheet" href="oobe_dialog_host.css">
-    <link rel="stylesheet" href="oobe_iron_flex_layout_fix.css">
     <link rel="stylesheet" href="offline_ad_login.css">
     <oobe-dialog id="unlockStep" hidden="[[!unlockPasswordStep]]"
         title-key="adUnlockTitle"

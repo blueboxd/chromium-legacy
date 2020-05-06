@@ -473,8 +473,13 @@ inline bool LayerShouldBeSkippedForDrawPropertiesComputation(
     const TransformTree& transform_tree,
     const EffectTree& effect_tree) {
   const EffectNode* effect_node = effect_tree.Node(layer->effect_tree_index());
+
   if (effect_node->HasRenderSurface() && effect_node->subtree_has_copy_request)
     return false;
+
+  // Skip if the node's subtree is hidden and no need to cache.
+  if (effect_node->subtree_hidden && !effect_node->cache_render_surface)
+    return true;
 
   // If the layer transform is not invertible, it should be skipped. In case the
   // transform is animating and singular, we should not skip it.

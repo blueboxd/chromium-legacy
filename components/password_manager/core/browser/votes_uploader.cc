@@ -8,6 +8,7 @@
 #include <algorithm>
 #include <iostream>
 #include <utility>
+
 #include "base/check_op.h"
 #include "base/hash/hash.h"
 #include "base/metrics/histogram_macros.h"
@@ -20,6 +21,7 @@
 #include "components/autofill/core/browser/randomized_encoder.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/form_field_data.h"
+#include "components/autofill/core/common/signatures.h"
 #include "components/password_manager/core/browser/browser_save_password_progress_logger.h"
 #include "components/password_manager/core/browser/field_info_manager.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
@@ -706,8 +708,8 @@ bool VotesUploader::StartUploadRequest(
       std::string(), true /* observed_submission */, nullptr /* prefs */);
 }
 
-void VotesUploader::SaveFieldVote(uint64_t form_signature,
-                                  uint32_t field_signature,
+void VotesUploader::SaveFieldVote(autofill::FormSignature form_signature,
+                                  autofill::FieldSignature field_signature,
                                   autofill::ServerFieldType field_type) {
   FieldInfoManager* field_info_manager = client_->GetFieldInfoManager();
   if (!field_info_manager)

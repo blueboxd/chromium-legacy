@@ -64,7 +64,8 @@ void AnalyseKeyHistory(GList* secret_items) {
 
 }  // namespace
 
-std::string KeyStorageLibsecret::AddRandomPasswordInLibsecret() {
+base::Optional<std::string>
+KeyStorageLibsecret::AddRandomPasswordInLibsecret() {
   std::string password;
   base::Base64Encode(base::RandBytesAsString(16), &password);
   GError* error = nullptr;
@@ -74,18 +75,18 @@ std::string KeyStorageLibsecret::AddRandomPasswordInLibsecret() {
   if (error) {
     VLOG(1) << "Libsecret lookup failed: " << error->message;
     g_error_free(error);
-    return std::string();
+    return base::nullopt;
   }
   if (!success) {
     VLOG(1) << "Libsecret lookup failed.";
-    return std::string();
+    return base::nullopt;
   }
 
   VLOG(1) << "OSCrypt generated a new password.";
   return password;
 }
 
-std::string KeyStorageLibsecret::GetKeyImpl() {
+base::Optional<std::string> KeyStorageLibsecret::GetKeyImpl() {
   LibsecretAttributesBuilder attrs;
   attrs.Append("application", kApplicationName);
 
@@ -94,7 +95,7 @@ std::string KeyStorageLibsecret::GetKeyImpl() {
                 SECRET_SEARCH_UNLOCK | SECRET_SEARCH_LOAD_SECRETS);
   if (!helper.success()) {
     VLOG(1) << "Libsecret lookup failed: " << helper.error()->message;
-    return std::string();
+    return base::nullopt;
   }
 
   SecretValue* password_libsecret = ToSingleSecret(helper.results());
@@ -102,7 +103,7 @@ std::string KeyStorageLibsecret::GetKeyImpl() {
     return AddRandomPasswordInLibsecret();
   }
   AnalyseKeyHistory(helper.results());
-  std::string password(
+  base::Optional<std::string> password(
       LibsecretLoader::secret_value_get_text(password_libsecret));
   LibsecretLoader::secret_value_unref(password_libsecret);
   return password;

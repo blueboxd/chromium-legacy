@@ -10,6 +10,7 @@
 
 #include "base/macros.h"
 #include "base/optional.h"
+#include "extensions/common/api/declarative_net_request.h"
 #include "extensions/common/api/declarative_net_request/constants.h"
 #include "extensions/common/extension_id.h"
 #include "url/gurl.h"
@@ -17,9 +18,25 @@
 namespace extensions {
 namespace declarative_net_request {
 
+namespace flat {
+struct ModifyHeaderInfo;
+}  // namespace flat
+
 // A struct representing an action to be applied to a request based on DNR rule
 // matches. Each action is attributed to exactly one extension.
 struct RequestAction {
+  // A copyable version of api::declarative_net_request::ModifyHeaderInfo.
+  // This is used instead of ModifyHeaderInfo so it can be copied in Clone().
+  struct HeaderInfo {
+    HeaderInfo(std::string header,
+               api::declarative_net_request::HeaderOperation operation);
+    explicit HeaderInfo(const flat::ModifyHeaderInfo& info);
+
+    // The name of the header to be modified, specified in lowercase.
+    std::string header;
+    api::declarative_net_request::HeaderOperation operation;
+  };
+
   enum class Type {
     // Block the network request.
     BLOCK,
@@ -37,6 +54,8 @@ struct RequestAction {
     // Allow the network request. This request is either for an allowlisted
     // frame or originated from one.
     ALLOW_ALL_REQUESTS,
+    // Modify request/response headers.
+    MODIFY_HEADERS,
   };
 
   RequestAction(Type type,
@@ -73,6 +92,13 @@ struct RequestAction {
   // static storage duration.
   std::vector<const char*> request_headers_to_remove;
   std::vector<const char*> response_headers_to_remove;
+
+  // Valid iff |type| is |MODIFY_HEADERS|.
+  // TODO(crbug.com/1074530): Constructing these vectors could involve lots of
+  // string copies. One potential enhancement involves storing a WeakPtr to the
+  // flatbuffer index that contain the actual header strings.
+  std::vector<HeaderInfo> request_headers_to_modify;
+  std::vector<HeaderInfo> response_headers_to_modify;
 
   // Whether the action has already been tracked by the ActionTracker.
   // TODO(crbug.com/983761): Move the tracking of actions matched to

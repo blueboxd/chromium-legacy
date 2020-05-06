@@ -237,9 +237,15 @@ void LogDeleteCorruptedPasswordsResult(DeleteCorruptedPasswordsResult result) {
       "PasswordManager.DeleteCorruptedPasswordsResult", result);
 }
 
-void LogNewlySavedPasswordIsGenerated(bool value) {
+void LogNewlySavedPasswordIsGenerated(
+    bool value,
+    PasswordAccountStorageUsageLevel account_storage_usage_level) {
   base::UmaHistogramBoolean("PasswordManager.NewlySavedPasswordIsGenerated",
                             value);
+  std::string suffix = GetPasswordAccountStorageUsageLevelHistogramSuffix(
+      account_storage_usage_level);
+  base::UmaHistogramBoolean(
+      "PasswordManager.NewlySavedPasswordIsGenerated." + suffix, value);
 }
 
 void LogGenerationDialogChoice(GenerationDialogChoice choice,

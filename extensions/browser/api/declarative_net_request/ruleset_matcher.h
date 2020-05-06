@@ -78,6 +78,9 @@ class RulesetMatcher {
       const RequestParams& params,
       uint8_t excluded_remove_headers_mask,
       std::vector<RequestAction>* remove_headers_actions) const;
+  std::vector<RequestAction> GetModifyHeadersActions(
+      const RequestParams& params) const;
+
   bool IsExtraHeadersMatcher() const;
   size_t GetRulesCount() const;
   size_t GetRegexRulesCount() const;

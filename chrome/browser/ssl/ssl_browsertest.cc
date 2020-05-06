@@ -5398,8 +5398,8 @@ class SSLBlockingPageIDNTest
   }
 };
 
-// Flaky on mac: https://crbug.com/689846
-#if defined(OS_MACOSX)
+// Flaky on mac OS and Windows: https://crbug.com/689846
+#if defined(OS_MACOSX) || defined(OS_WIN)
 #define MAYBE_SSLBlockingPageDecodesIDN DISABLED_SSLBlockingPageDecodesIDN
 #else
 #define MAYBE_SSLBlockingPageDecodesIDN SSLBlockingPageDecodesIDN

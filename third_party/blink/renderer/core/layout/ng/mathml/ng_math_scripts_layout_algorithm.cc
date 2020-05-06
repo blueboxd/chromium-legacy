@@ -319,62 +319,50 @@ scoped_refptr<const NGLayoutResult> NGMathScriptsLayoutAlgorithm::Layout() {
   return container_builder_.ToBoxFragment();
 }
 
-MinMaxSizesResult NGMathScriptsLayoutAlgorithm::ComputeMinMaxSizes(
-    const MinMaxSizesInput& child_input) const {
-  if (auto result = CalculateMinMaxSizesIgnoringChildren(
+MinMaxSizes NGMathScriptsLayoutAlgorithm::ComputeMinMaxSizes(
+    const MinMaxSizesInput& input) const {
+  if (auto sizes = CalculateMinMaxSizesIgnoringChildren(
           Node(), border_scrollbar_padding_))
-    return *result;
+    return *sizes;
 
   NGBlockNode base = nullptr;
   NGBlockNode sub = nullptr;
   NGBlockNode sup = nullptr;
   GatherChildren(&base, &sub, &sup);
 
+  LayoutUnit child_percentage_resolution_block_size =
+      CalculateChildPercentageBlockSizeForMinMax(
+          ConstraintSpace(), Node(), border_scrollbar_padding_,
+          input.percentage_resolution_block_size);
+
+  MinMaxSizesInput child_input(child_percentage_resolution_block_size);
+
   MinMaxSizes sizes;
-  bool depends_on_percentage_block_size = false;
-
-  MinMaxSizesResult base_result =
-      ComputeMinAndMaxContentContribution(Style(), base, child_input);
-  base_result.sizes += ComputeMinMaxMargins(Style(), base).InlineSum() +
-                       GetSpaceAfterScript(Style());
-
-  sizes = base_result.sizes;
-  depends_on_percentage_block_size |=
-      base_result.depends_on_percentage_block_size;
-
+  sizes += ComputeMinAndMaxContentContribution(Style(), base, child_input);
+  sizes += ComputeMinMaxMargins(Style(), base).InlineSum();
+  sizes += GetSpaceAfterScript(Style());
   switch (Node().ScriptType()) {
     case MathScriptType::kSub:
     case MathScriptType::kSuper: {
       // TODO(fwang): Take italic correction into account.
       auto first_post_script = sub ? sub : sup;
-      auto first_post_script_result = ComputeMinAndMaxContentContribution(
-          Style(), first_post_script, child_input);
-      first_post_script_result.sizes +=
-          ComputeMinMaxMargins(Style(), first_post_script).InlineSum();
-
-      sizes += first_post_script_result.sizes;
-      depends_on_percentage_block_size |=
-          first_post_script_result.depends_on_percentage_block_size;
+      sizes += ComputeMinAndMaxContentContribution(Style(), first_post_script,
+                                                   child_input);
+      sizes += ComputeMinMaxMargins(Style(), first_post_script).InlineSum();
       break;
     }
     case MathScriptType::kSubSup: {
       // TODO(fwang): Take italic correction into account.
       MinMaxSizes sub_sup_pair_size;
-      auto sub_result =
+      auto sub_size =
           ComputeMinAndMaxContentContribution(Style(), sub, child_input);
-      sub_result.sizes += ComputeMinMaxMargins(Style(), sub).InlineSum();
-      sub_sup_pair_size.Encompass(sub_result.sizes);
-
-      auto sup_result =
+      sub_size += ComputeMinMaxMargins(Style(), sub).InlineSum();
+      sub_sup_pair_size.Encompass(sub_size);
+      auto sup_size =
           ComputeMinAndMaxContentContribution(Style(), sup, child_input);
-      sup_result.sizes += ComputeMinMaxMargins(Style(), sup).InlineSum();
-      sub_sup_pair_size.Encompass(sup_result.sizes);
-
+      sup_size += ComputeMinMaxMargins(Style(), sup).InlineSum();
+      sub_sup_pair_size.Encompass(sup_size);
       sizes += sub_sup_pair_size;
-      depends_on_percentage_block_size |=
-          sub_result.depends_on_percentage_block_size;
-      depends_on_percentage_block_size |=
-          sup_result.depends_on_percentage_block_size;
       break;
     }
     case MathScriptType::kUnder:
@@ -385,8 +373,7 @@ MinMaxSizesResult NGMathScriptsLayoutAlgorithm::ComputeMinMaxSizes(
       break;
   }
   sizes += border_scrollbar_padding_.InlineSum();
-
-  return {sizes, depends_on_percentage_block_size};
+  return sizes;
 }
 
 }  // namespace blink

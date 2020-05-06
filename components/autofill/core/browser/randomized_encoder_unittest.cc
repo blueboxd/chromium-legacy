@@ -5,6 +5,7 @@
 #include "components/autofill/core/browser/randomized_encoder.h"
 
 #include "base/strings/stringprintf.h"
+#include "components/autofill/core/common/signatures.h"
 #include "net/base/hex_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -99,8 +100,8 @@ using RandomizedEncoderTest = ::testing::TestWithParam<EncodeParams>;
 }  // namespace
 
 TEST_P(RandomizedEncoderTest, Encode) {
-  const autofill::FormSignature form_signature = 0x1234567812345678;
-  const autofill::FieldSignature field_signature = 0xCAFEBABE;
+  const autofill::FormSignature form_signature(0x1234567812345678);
+  const autofill::FieldSignature field_signature(0xCAFEBABE);
   const std::string data_type = "css_class";
   const EncodeParams& params = GetParam();
   const std::string value("This is some text for testing purposes.");
@@ -129,8 +130,8 @@ TEST_P(RandomizedEncoderTest, Encode) {
 }
 
 TEST_P(RandomizedEncoderTest, EncodeLarge) {
-  const autofill::FormSignature form_signature = 0x8765432187654321;
-  const autofill::FieldSignature field_signature = 0xDEADBEEF;
+  const autofill::FormSignature form_signature(0x8765432187654321);
+  const autofill::FieldSignature field_signature(0xDEADBEEF);
   const std::string data_type = "html_name";
   const EncodeParams& params = GetParam();
   const std::string value(
@@ -247,8 +248,8 @@ std::string Make128BitSeed(size_t i) {
 }  // namespace
 
 TEST_P(RandomizedDecoderTest, Decode) {
-  static const autofill::FormSignature form_signature = 0x8765432187654321;
-  static const autofill::FieldSignature field_signature = 0xDEADBEEF;
+  static const autofill::FormSignature form_signature(0x8765432187654321);
+  static const autofill::FieldSignature field_signature(0xDEADBEEF);
   static const char data_type[] = "data_type";
   static const base::StringPiece common_prefix(
       "This is the common prefix to encode and recover ");

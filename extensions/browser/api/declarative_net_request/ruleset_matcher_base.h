@@ -50,6 +50,10 @@ class RulesetMatcherBase {
       uint8_t excluded_remove_headers_mask,
       std::vector<RequestAction>* remove_headers_actions) const = 0;
 
+  // Returns a vector of RequestAction for all matching modifyHeaders rules.
+  virtual std::vector<RequestAction> GetModifyHeadersActions(
+      const RequestParams& params) const = 0;
+
   // Returns whether this modifies "extraHeaders".
   virtual bool IsExtraHeadersMatcher() const = 0;
 
@@ -113,6 +117,13 @@ class RulesetMatcherBase {
   RequestAction GetRemoveHeadersActionForMask(
       const url_pattern_index::flat::UrlRule& rule,
       uint8_t mask) const;
+
+  // Helper to create a list of RequestActions of type |MODIFY_HEADERS| with the
+  // appropriate list of headers for each action.
+  std::vector<RequestAction> GetModifyHeadersActionsFromMetadata(
+      const RequestParams& params,
+      const std::vector<const url_pattern_index::flat::UrlRule*>& rules,
+      const ExtensionMetadataList& metadata_list) const;
 
  private:
   // Returns the ruleset's highest priority matching allowAllRequests action or

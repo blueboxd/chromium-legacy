@@ -32,6 +32,10 @@ source_set("credential_provider") {
     "//ios/chrome/common/credential_provider",
     "//url",
   ]
+  libs = [
+    "AuthenticationServices.framework",
+    "Foundation.framework",
+  ]
 }
 
 buildflag_header("buildflags") {

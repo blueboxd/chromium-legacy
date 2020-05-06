@@ -19,9 +19,9 @@ scoped_refptr<const NGLayoutResult> NGGridLayoutAlgorithm::Layout() {
   return container_builder_.ToBoxFragment();
 }
 
-MinMaxSizesResult NGGridLayoutAlgorithm::ComputeMinMaxSizes(
+MinMaxSizes NGGridLayoutAlgorithm::ComputeMinMaxSizes(
     const MinMaxSizesInput& input) const {
-  return {MinMaxSizes(), /* depends_on_percentage_block_size */ true};
+  return MinMaxSizes();
 }
 
 }  // namespace blink

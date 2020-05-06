@@ -25,9 +25,8 @@ bool PasswordFeatureManagerImpl::IsGenerationEnabled() const {
       return ShouldShowAccountStorageOptIn();
     case SYNCING_WITH_CUSTOM_PASSPHRASE:
     case SYNCING_NORMAL_ENCRYPTION:
-      return true;
     case ACCOUNT_PASSWORDS_ACTIVE_NORMAL_ENCRYPTION:
-      return GetDefaultPasswordStore() == PasswordForm::Store::kAccountStore;
+      return true;
   }
 }
 

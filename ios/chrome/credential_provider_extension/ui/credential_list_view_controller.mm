@@ -20,6 +20,47 @@ NSString* kCellIdentifier = @"clvcCell";
 const CGFloat kHeaderHeight = 70;
 }
 
+#if defined(__IPHONE_13_4)
+// This cell just adds a simple hover pointer interaction to the TableViewCell.
+@interface CredentialListCell : UITableViewCell <UIPointerInteractionDelegate>
+@end
+
+@implementation CredentialListCell
+
+- (instancetype)initWithStyle:(UITableViewCellStyle)style
+              reuseIdentifier:(NSString*)reuseIdentifier {
+  self = [super initWithStyle:style reuseIdentifier:reuseIdentifier];
+  if (self) {
+    if (@available(iOS 13.4, *)) {
+      [self
+          addInteraction:[[UIPointerInteraction alloc] initWithDelegate:self]];
+    }
+  }
+  return self;
+}
+
+#pragma mark UIPointerInteractionDelegate
+
+- (UIPointerRegion*)pointerInteraction:(UIPointerInteraction*)interaction
+                      regionForRequest:(UIPointerRegionRequest*)request
+                         defaultRegion:(UIPointerRegion*)defaultRegion
+    API_AVAILABLE(ios(13.4)) {
+  return defaultRegion;
+}
+
+- (UIPointerStyle*)pointerInteraction:(UIPointerInteraction*)interaction
+                       styleForRegion:(UIPointerRegion*)region
+    API_AVAILABLE(ios(13.4)) {
+  UIPointerHoverEffect* effect = [UIPointerHoverEffect
+      effectWithPreview:[[UITargetedPreview alloc] initWithView:self]];
+  effect.prefersScaledContent = NO;
+  effect.prefersShadow = NO;
+  return [UIPointerStyle styleWithEffect:effect shape:nil];
+}
+
+@end
+#endif  // defined(__IPHONE_13_4)
+
 @interface CredentialListViewController () <UITableViewDataSource,
                                             UISearchResultsUpdating>
 
@@ -123,8 +164,14 @@ const CGFloat kHeaderHeight = 70;
   UITableViewCell* cell =
       [tableView dequeueReusableCellWithIdentifier:kCellIdentifier];
   if (!cell) {
+#if defined(__IPHONE_13_4)
+    cell =
+        [[CredentialListCell alloc] initWithStyle:UITableViewCellStyleSubtitle
+                                  reuseIdentifier:kCellIdentifier];
+#else
     cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleSubtitle
                                   reuseIdentifier:kCellIdentifier];
+#endif  // defined(__IPHONE_13_4)
     cell.accessoryView = [self infoIconButton];
   }
 
@@ -206,6 +253,24 @@ const CGFloat kHeaderHeight = 70;
   [button addTarget:self
                 action:@selector(infoIconButtonTapped:event:)
       forControlEvents:UIControlEventTouchUpInside];
+
+#if defined(__IPHONE_13_4)
+  if (@available(iOS 13.4, *)) {
+    button.pointerInteractionEnabled = YES;
+    button.pointerStyleProvider = ^UIPointerStyle*(
+        UIButton* button, __unused UIPointerEffect* proposedEffect,
+        __unused UIPointerShape* proposedShape) {
+      UITargetedPreview* preview =
+          [[UITargetedPreview alloc] initWithView:button];
+      UIPointerHighlightEffect* effect =
+          [UIPointerHighlightEffect effectWithPreview:preview];
+      UIPointerShape* shape =
+          [UIPointerShape shapeWithRoundedRect:button.frame
+                                  cornerRadius:button.frame.size.width / 2];
+      return [UIPointerStyle styleWithEffect:effect shape:shape];
+    };
+  }
+#endif  // defined(__IPHONE_13_4)
 
   return button;
 }

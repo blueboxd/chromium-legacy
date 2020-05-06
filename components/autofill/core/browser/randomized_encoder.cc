@@ -20,6 +20,7 @@
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_prefs.h"
 #include "components/autofill/core/common/autofill_switches.h"
+#include "components/autofill/core/common/signatures.h"
 #include "components/prefs/pref_service.h"
 #include "crypto/hkdf.h"
 
@@ -113,11 +114,11 @@ std::string GetPseudoRandomBits(base::StringPiece secret,
   int data_type_length = base::checked_cast<int>(data_type.length());
 
   // Join the descriptive information about the encoding about to be performed.
-  std::string info =
-      base::StringPrintf("%d:%.*s;%08" PRIx64 ";%08" PRIx64 ";%d:%.*s",
-                         purpose_length, purpose_length, purpose.data(),
-                         form_signature, static_cast<uint64_t>(field_signature),
-                         data_type_length, data_type_length, data_type.data());
+  std::string info = base::StringPrintf(
+      "%d:%.*s;%08" PRIx64 ";%08" PRIx64 ";%d:%.*s", purpose_length,
+      purpose_length, purpose.data(), form_signature.value(),
+      static_cast<uint64_t>(field_signature.value()), data_type_length,
+      data_type_length, data_type.data());
 
   DVLOG(1) << "Generating pseudo-random bits from " << info;
 

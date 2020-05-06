@@ -33,15 +33,6 @@ class CredentialProviderService
   // the old ones are deleted.
   void RequestSyncAllCredentials();
 
-  // Adds a credential with |form| to the store.
-  void SaveCredential(const autofill::PasswordForm& form) const;
-
-  // Updates a credential with |form| in the store.
-  void UpdateCredential(const autofill::PasswordForm& form) const;
-
-  // Removes a credential with |form| from the store.
-  void RemoveCredential(const autofill::PasswordForm& form) const;
-
   // Syncs the credential store to disk.
   void SyncStore(void (^completion)(NSError*)) const;
 

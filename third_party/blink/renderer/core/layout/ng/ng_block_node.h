@@ -21,6 +21,7 @@ class NGEarlyBreak;
 class NGLayoutResult;
 class NGPhysicalBoxFragment;
 class NGPhysicalContainerFragment;
+struct MinMaxSizes;
 struct NGBoxStrut;
 struct NGLayoutAlgorithmParams;
 
@@ -82,9 +83,9 @@ class CORE_EXPORT NGBlockNode final : public NGLayoutInputNode {
   // The constraint space is also used to perform layout when this block's
   // writing mode is orthogonal to its parent's, in which case the constraint
   // space is not optional.
-  MinMaxSizesResult ComputeMinMaxSizes(WritingMode container_writing_mode,
-                                       const MinMaxSizesInput&,
-                                       const NGConstraintSpace* = nullptr);
+  MinMaxSizes ComputeMinMaxSizes(WritingMode container_writing_mode,
+                                 const MinMaxSizesInput&,
+                                 const NGConstraintSpace* = nullptr);
 
   MinMaxSizes ComputeMinMaxSizesFromLegacy(const MinMaxSizesInput&) const;
 

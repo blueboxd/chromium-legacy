@@ -13,6 +13,7 @@
 #include "components/password_manager/core/browser/form_saver.h"
 #include "components/password_manager/core/browser/form_saver_impl.h"
 #include "components/password_manager/core/browser/multi_store_password_save_manager.h"
+#include "components/password_manager/core/browser/password_feature_manager.h"
 #include "components/password_manager/core/browser/password_form_metrics_recorder.h"
 #include "components/password_manager/core/browser/password_generation_manager.h"
 #include "components/password_manager/core/browser/password_manager_util.h"
@@ -493,7 +494,9 @@ void PasswordSaveManagerImpl::UploadVotesAndMetrics(
     const PasswordForm& parsed_submitted_form) {
   if (IsNewLogin()) {
     metrics_util::LogNewlySavedPasswordIsGenerated(
-        pending_credentials_.type == PasswordForm::Type::kGenerated);
+        pending_credentials_.type == PasswordForm::Type::kGenerated,
+        client_->GetPasswordFeatureManager()
+            ->ComputePasswordAccountStorageUsageLevel());
     votes_uploader_->SendVotesOnSave(observed_form, parsed_submitted_form,
                                      form_fetcher_->GetBestMatches(),
                                      &pending_credentials_);

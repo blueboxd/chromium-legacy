@@ -20,6 +20,7 @@
 #include "base/test/task_environment.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "components/autofill/core/common/signatures.h"
 #include "components/os_crypt/os_crypt_mocker.h"
 #include "components/password_manager/core/browser/android_affiliation/affiliated_match_helper.h"
 #include "components/password_manager/core/browser/android_affiliation/affiliation_service.h"
@@ -1755,10 +1756,12 @@ TEST_F(PasswordStoreTest, RemoveCompromisedCredentialsSyncOnDelete) {
 // TODO(https://crbug.com/1051914): Enable on Android after making local
 // heuristics reliable.
 TEST_F(PasswordStoreTest, GetAllFieldInfo) {
-  FieldInfo field_info1{1001 /*form_signature*/, 1 /* field_signature */,
-                        autofill::USERNAME, base::Time::FromTimeT(1)};
-  FieldInfo field_info2{1002 /*form_signature*/, 10 /* field_signature */,
-                        autofill::PASSWORD, base::Time::FromTimeT(2)};
+  FieldInfo field_info1{autofill::FormSignature(1001),
+                        autofill::FieldSignature(1), autofill::USERNAME,
+                        base::Time::FromTimeT(1)};
+  FieldInfo field_info2{autofill::FormSignature(1002),
+                        autofill::FieldSignature(10), autofill::PASSWORD,
+                        base::Time::FromTimeT(2)};
   scoped_refptr<PasswordStoreDefault> store = CreatePasswordStore();
   store->Init(nullptr);
 
@@ -1774,13 +1777,16 @@ TEST_F(PasswordStoreTest, GetAllFieldInfo) {
 }
 
 TEST_F(PasswordStoreTest, RemoveFieldInfo) {
-  FieldInfo field_info1{1001 /*form_signature*/, 1 /* field_signature */,
-                        autofill::USERNAME, base::Time::FromTimeT(100)};
-  FieldInfo field_info2{1002 /*form_signature*/, 10 /* field_signature */,
-                        autofill::PASSWORD, base::Time::FromTimeT(200)};
+  FieldInfo field_info1{autofill::FormSignature(1001),
+                        autofill::FieldSignature(1), autofill::USERNAME,
+                        base::Time::FromTimeT(100)};
+  FieldInfo field_info2{autofill::FormSignature(1002),
+                        autofill::FieldSignature(10), autofill::PASSWORD,
+                        base::Time::FromTimeT(200)};
 
-  FieldInfo field_info3{1003 /*form_signature*/, 11 /* field_signature */,
-                        autofill::PASSWORD, base::Time::FromTimeT(300)};
+  FieldInfo field_info3{autofill::FormSignature(1003),
+                        autofill::FieldSignature(11), autofill::PASSWORD,
+                        base::Time::FromTimeT(300)};
 
   scoped_refptr<PasswordStoreDefault> store = CreatePasswordStore();
   store->Init(nullptr);

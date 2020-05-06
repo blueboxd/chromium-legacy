@@ -37,8 +37,7 @@ class PasswordFeatureManagerImplTest : public ::testing::Test {
   CoreAccountInfo account_;
 };
 
-TEST_F(PasswordFeatureManagerImplTest,
-       GenerationEnabledForOptedInUserOnlyIfDefaultStoreIsAccount) {
+TEST_F(PasswordFeatureManagerImplTest, GenerationEnabledIfUserIsOptedIn) {
   base::test::ScopedFeatureList features;
   features.InitAndEnableFeature(
       password_manager::features::kEnablePasswordsAccountStorage);
@@ -54,15 +53,7 @@ TEST_F(PasswordFeatureManagerImplTest,
       password_manager_util::GetPasswordSyncState(&sync_service_),
       password_manager::SyncState::ACCOUNT_PASSWORDS_ACTIVE_NORMAL_ENCRYPTION);
 
-  password_feature_manager_.SetDefaultPasswordStore(
-      autofill::PasswordForm::Store::kAccountStore);
-
   EXPECT_TRUE(password_feature_manager_.IsGenerationEnabled());
-
-  password_feature_manager_.SetDefaultPasswordStore(
-      autofill::PasswordForm::Store::kProfileStore);
-
-  EXPECT_FALSE(password_feature_manager_.IsGenerationEnabled());
 }
 
 TEST_F(PasswordFeatureManagerImplTest,

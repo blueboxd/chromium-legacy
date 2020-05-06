@@ -9,6 +9,7 @@
 #include "base/check_op.h"
 #include "base/notreached.h"
 #include "base/numerics/safe_conversions.h"
+#include "base/strings/string_util.h"
 #include "extensions/browser/api/declarative_net_request/indexed_rule.h"
 #include "extensions/browser/api/declarative_net_request/utils.h"
 #include "net/base/escape.h"
@@ -172,7 +173,7 @@ FlatVectorOffset<flat::ModifyHeaderInfo> BuildModifyHeaderInfoOffset(
     }
 
     FlatStringOffset header_name =
-        builder->CreateSharedString(header_info.header);
+        builder->CreateSharedString(base::ToLowerASCII(header_info.header));
     flat_modify_header_list.push_back(
         flat::CreateModifyHeaderInfo(*builder, operation, header_name));
   }

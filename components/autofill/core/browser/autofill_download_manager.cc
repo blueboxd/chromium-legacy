@@ -41,6 +41,7 @@
 #include "components/autofill/core/common/autofill_tick_clock.h"
 #include "components/autofill/core/common/logging/log_buffer.h"
 #include "components/autofill/core/common/mojom/autofill_types.mojom.h"
+#include "components/autofill/core/common/signatures.h"
 #include "components/google/core/common/google_util.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/prefs/pref_service.h"
@@ -476,7 +477,8 @@ bool CanThrottleUpload(const FormStructure& form,
   // Get the key for the upload bucket and extract the current bitfield value.
   static constexpr size_t kNumUploadBuckets = 1021;
   std::string key = base::StringPrintf(
-      "%03X", static_cast<int>(form.form_signature() % kNumUploadBuckets));
+      "%03X",
+      static_cast<int>(form.form_signature().value() % kNumUploadBuckets));
   auto* upload_events =
       pref_service->GetDictionary(prefs::kAutofillUploadEvents);
   auto* found = upload_events->FindKeyOfType(key, base::Value::Type::INTEGER);

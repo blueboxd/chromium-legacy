@@ -5,6 +5,7 @@
 package org.chromium.components.external_intents;
 
 import android.Manifest.permission;
+import android.app.Activity;
 import android.content.ActivityNotFoundException;
 import android.content.ComponentName;
 import android.content.Context;
@@ -1326,6 +1327,19 @@ public class ExternalNavigationHandler {
     public static void forcePdfViewerAsIntentHandlerIfNeeded(Intent intent) {
         if (intent == null || !isPdfIntent(intent)) return;
         resolveIntent(intent, true /* allowSelfOpen (ignored) */);
+    }
+
+    /**
+     * Get a {@link Context} linked to this instance with preference to the delegate's {@link
+     * Activity}. At times the delegate might not have an associated Activity, in which case the
+     * ApplicationContext is returned.
+     * @return The activity {@link Context} if it can be reached.
+     *         Application {@link Context} if not.
+     */
+    public static Context getAvailableContext(ExternalNavigationDelegate delegate) {
+        Activity activityContext = delegate.getActivityContext();
+        if (activityContext == null) return ContextUtils.getApplicationContext();
+        return activityContext;
     }
 
     /**

@@ -10,7 +10,7 @@
 
 #include "base/strings/string_piece.h"
 #include "components/autofill/core/browser/proto/server.pb.h"
-#include "components/autofill/core/common/signatures_util.h"
+#include "components/autofill/core/common/signatures.h"
 
 class PrefService;
 

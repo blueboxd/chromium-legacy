@@ -4,12 +4,47 @@
 
 #include "media/capture/video/win/video_capture_device_utils_win.h"
 
+#include <cmath>
 #include <iostream>
 
 #include "base/win/win_util.h"
 #include "base/win/windows_version.h"
 
 namespace media {
+
+namespace {
+const int kDegreesToArcSeconds = 3600;
+const int kSecondsTo100MicroSeconds = 10000;
+}  // namespace
+
+// Windows platform stores pan and tilt (min, max, step and current) in
+// degrees. Spec expects them in arc seconds.
+// https://docs.microsoft.com/en-us/windows/win32/api/strmif/ne-strmif-cameracontrolproperty
+// spec: https://w3c.github.io/mediacapture-image/#pan
+long CaptureAngleToPlatformValue(double arc_seconds) {
+  return std::round(arc_seconds / kDegreesToArcSeconds);
+}
+
+double PlatformAngleToCaptureValue(long degrees) {
+  return 1.0 * degrees * kDegreesToArcSeconds;
+}
+
+// Windows platform stores exposure time (min, max and current) in log base 2
+// seconds. If value is n, exposure time is 2^n seconds. Spec expects exposure
+// times in 100 micro seconds.
+// https://docs.microsoft.com/en-us/windows/win32/api/strmif/ne-strmif-cameracontrolproperty
+// spec: https://w3c.github.io/mediacapture-image/#exposure-time
+long CaptureExposureTimeToPlatformValue(double hundreds_of_microseconds) {
+  return std::log2(hundreds_of_microseconds / kSecondsTo100MicroSeconds);
+}
+
+double PlatformExposureTimeToCaptureValue(long log_seconds) {
+  return std::exp2(log_seconds) * kSecondsTo100MicroSeconds;
+}
+
+double PlatformExposureTimeToCaptureStep(long log_step) {
+  return std::exp2(log_step);
+}
 
 // Note: Because we can't find a solid way to detect camera location (front/back
 // or external USB camera) with Win32 APIs, assume it's always front camera when

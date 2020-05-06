@@ -505,16 +505,9 @@ IN_PROC_BROWSER_TEST_P(MediaHistoryBrowserTest,
             GetPlaybackSessionsSync(GetOTRMediaHistoryService(browser), 1));
 }
 
-// Flaky on Mac: https://crbug.com/1078463.
-#if defined(OS_MACOSX)
-#define MAYBE_RecordMediaSession_OnNavigate_Complete \
-  DISABLED_RecordMediaSession_OnNavigate_Complete
-#else
-#define MAYBE_RecordMediaSession_OnNavigate_Complete \
-  RecordMediaSession_OnNavigate_Complete
-#endif
+// TODO(crbug.com/1078463): Flaky on Mac, Linux ASAN, and Win ASAN.
 IN_PROC_BROWSER_TEST_P(MediaHistoryBrowserTest,
-                       MAYBE_RecordMediaSession_OnNavigate_Complete) {
+                       DISABLED_RecordMediaSession_OnNavigate_Complete) {
   auto* browser = CreateBrowserFromParam();
 
   EXPECT_TRUE(SetupPageAndStartPlaying(browser, GetTestURL()));

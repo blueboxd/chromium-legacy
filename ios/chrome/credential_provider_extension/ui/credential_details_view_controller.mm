@@ -231,6 +231,24 @@ typedef NS_ENUM(NSInteger, RowIdentifier) {
                 action:@selector(passwordIconButtonTapped:event:)
       forControlEvents:UIControlEventTouchUpInside];
 
+#if defined(__IPHONE_13_4)
+  if (@available(iOS 13.4, *)) {
+    button.pointerInteractionEnabled = YES;
+    button.pointerStyleProvider = ^UIPointerStyle*(
+        UIButton* button, __unused UIPointerEffect* proposedEffect,
+        __unused UIPointerShape* proposedShape) {
+      UITargetedPreview* preview =
+          [[UITargetedPreview alloc] initWithView:button];
+      UIPointerHighlightEffect* effect =
+          [UIPointerHighlightEffect effectWithPreview:preview];
+      UIPointerShape* shape =
+          [UIPointerShape shapeWithRoundedRect:button.frame
+                                  cornerRadius:button.frame.size.width / 2];
+      return [UIPointerStyle styleWithEffect:effect shape:shape];
+    };
+  }
+#endif  // defined(__IPHONE_13_4)
+
   return button;
 }
 

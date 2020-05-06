@@ -6,6 +6,7 @@
 
 #include "base/metrics/histogram_functions.h"
 #include "build/build_config.h"
+#include "components/autofill/core/common/signatures.h"
 #include "components/password_manager/core/browser/field_info_table.h"
 #include "components/password_manager/core/browser/password_store.h"
 
@@ -19,9 +20,10 @@ FieldInfoManagerImpl::FieldInfoManagerImpl(
 
 FieldInfoManagerImpl::~FieldInfoManagerImpl() = default;
 
-void FieldInfoManagerImpl::AddFieldType(uint64_t form_signature,
-                                        uint32_t field_signature,
-                                        autofill::ServerFieldType field_type) {
+void FieldInfoManagerImpl::AddFieldType(
+    autofill::FormSignature form_signature,
+    autofill::FieldSignature field_signature,
+    autofill::ServerFieldType field_type) {
 #if !defined(OS_ANDROID)
   // TODO(https://crbug.com/1051914): Enable on Android after making local
   // heuristics reliable.
@@ -32,8 +34,8 @@ void FieldInfoManagerImpl::AddFieldType(uint64_t form_signature,
 }
 
 autofill::ServerFieldType FieldInfoManagerImpl::GetFieldType(
-    uint64_t form_signature,
-    uint32_t field_signature) const {
+    autofill::FormSignature form_signature,
+    autofill::FieldSignature field_signature) const {
   auto it = field_types_.find(std::make_pair(form_signature, field_signature));
   return it == field_types_.end() ? autofill::UNKNOWN_TYPE : it->second;
 }

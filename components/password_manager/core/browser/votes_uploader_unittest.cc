@@ -19,6 +19,7 @@
 #include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/renderer_id.h"
+#include "components/autofill/core/common/signatures.h"
 #include "components/password_manager/core/browser/field_info_manager.h"
 #include "components/password_manager/core/browser/mock_password_store.h"
 #include "components/password_manager/core/browser/stub_password_manager_client.h"
@@ -30,8 +31,10 @@
 
 using autofill::AutofillDownloadManager;
 using autofill::CONFIRMATION_PASSWORD;
+using autofill::FieldSignature;
 using autofill::FormData;
 using autofill::FormFieldData;
+using autofill::FormSignature;
 using autofill::FormStructure;
 using autofill::NEW_PASSWORD;
 using autofill::NOT_USERNAME;
@@ -94,8 +97,14 @@ class MockPasswordManagerClient : public StubPasswordManagerClient {
 
 class MockFieldInfoManager : public FieldInfoManager {
  public:
-  MOCK_METHOD3(AddFieldType, void(uint64_t, uint32_t, ServerFieldType));
-  MOCK_CONST_METHOD2(GetFieldType, ServerFieldType(uint64_t, uint32_t));
+  MOCK_METHOD(void,
+              AddFieldType,
+              (FormSignature, FieldSignature, ServerFieldType),
+              (override));
+  MOCK_METHOD(ServerFieldType,
+              GetFieldType,
+              (FormSignature, autofill::FieldSignature),
+              (const override));
 };
 
 }  // namespace
@@ -414,16 +423,17 @@ TEST_F(VotesUploaderTest, UploadSingleUsername) {
         .WillByDefault(Return(&mock_field_manager));
 
     constexpr autofill::FieldRendererId kUsernameRendererId(101);
-    constexpr uint32_t kUsernameFieldSignature = 1234;
-    constexpr uint64_t kFormSignature = 1000;
+    constexpr FieldSignature kUsernameFieldSignature(1234);
+    constexpr FormSignature kFormSignature(1000);
 
     FormPredictions form_predictions;
     form_predictions.form_signature = kFormSignature;
     // Add a non-username field.
     form_predictions.fields.emplace_back();
-    form_predictions.fields.back().renderer_id =
-        autofill::FieldRendererId(kUsernameRendererId.value() - 1);
-    form_predictions.fields.back().signature = kUsernameFieldSignature - 1;
+    form_predictions.fields.back().renderer_id.value() =
+        kUsernameRendererId.value() - 1;
+    form_predictions.fields.back().signature.value() =
+        kUsernameFieldSignature.value() - 1;
 
     // Add the username field.
     form_predictions.fields.emplace_back();
@@ -447,8 +457,8 @@ TEST_F(VotesUploaderTest, UploadSingleUsername) {
 TEST_F(VotesUploaderTest, SaveSingleUsernameVote) {
   VotesUploader votes_uploader(&client_, false);
   constexpr autofill::FieldRendererId kUsernameRendererId(101);
-  constexpr uint32_t kUsernameFieldSignature = 1234;
-  constexpr uint64_t kFormSignature = 1000;
+  constexpr autofill::FieldSignature kUsernameFieldSignature(1234);
+  constexpr autofill::FormSignature kFormSignature(1000);
 
   FormPredictions form_predictions;
   form_predictions.form_signature = kFormSignature;
@@ -486,8 +496,8 @@ TEST_F(VotesUploaderTest, SaveSingleUsernameVote) {
 TEST_F(VotesUploaderTest, DontUploadSingleUsernameWhenAlreadyUploaded) {
   VotesUploader votes_uploader(&client_, false);
   constexpr autofill::FieldRendererId kUsernameRendererId(101);
-  constexpr uint32_t kUsernameFieldSignature = 1234;
-  constexpr uint64_t kFormSignature = 1000;
+  constexpr autofill::FieldSignature kUsernameFieldSignature(1234);
+  constexpr autofill::FormSignature kFormSignature(1000);
 
   MockFieldInfoManager mock_field_manager;
   ON_CALL(client_, GetFieldInfoManager())

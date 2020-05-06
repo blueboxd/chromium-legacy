@@ -31,9 +31,14 @@ NGCustomLayoutAlgorithm::NGCustomLayoutAlgorithm(
   container_builder_.SetIsNewFormattingContext(
       params.space.IsNewFormattingContext());
   container_builder_.SetInitialFragmentGeometry(params.fragment_geometry);
+  const NGConstraintSpace& space = ConstraintSpace();
+  child_percentage_resolution_block_size_for_min_max_ =
+      CalculateChildPercentageBlockSizeForMinMax(
+          space, Node(), border_padding_,
+          space.PercentageResolutionBlockSize());
 }
 
-MinMaxSizesResult NGCustomLayoutAlgorithm::ComputeMinMaxSizes(
+MinMaxSizes NGCustomLayoutAlgorithm::ComputeMinMaxSizes(
     const MinMaxSizesInput& input) const {
   if (!Node().IsCustomLayoutLoaded())
     return FallbackMinMaxSizes(input);
@@ -54,13 +59,12 @@ MinMaxSizesResult NGCustomLayoutAlgorithm::ComputeMinMaxSizes(
     return FallbackMinMaxSizes(input);
   }
 
-  bool depends_on_percentage_block_size = false;
   IntrinsicSizesResultOptions* intrinsic_sizes_result_options = nullptr;
   if (!instance->IntrinsicSizes(
           ConstraintSpace(), document, Node(),
           container_builder_.InitialBorderBoxSize(), border_scrollbar_padding_,
-          input.percentage_resolution_block_size, &scope,
-          &intrinsic_sizes_result_options, &depends_on_percentage_block_size)) {
+          child_percentage_resolution_block_size_for_min_max_, &scope,
+          intrinsic_sizes_result_options)) {
     // TODO(ikilpatrick): Report this error to the developer.
     return FallbackMinMaxSizes(input);
   }
@@ -75,7 +79,7 @@ MinMaxSizesResult NGCustomLayoutAlgorithm::ComputeMinMaxSizes(
   sizes.min_size.ClampNegativeToZero();
   sizes.max_size.ClampNegativeToZero();
 
-  return {sizes, depends_on_percentage_block_size};
+  return sizes;
 }
 
 scoped_refptr<const NGLayoutResult> NGCustomLayoutAlgorithm::Layout() {
@@ -102,10 +106,11 @@ scoped_refptr<const NGLayoutResult> NGCustomLayoutAlgorithm::Layout() {
 
   FragmentResultOptions* fragment_result_options = nullptr;
   scoped_refptr<SerializedScriptValue> fragment_result_data;
-  if (!instance->Layout(ConstraintSpace(), document, Node(),
-                        container_builder_.InitialBorderBoxSize(),
-                        border_scrollbar_padding_, &scope,
-                        fragment_result_options, &fragment_result_data)) {
+  if (!instance->Layout(
+          ConstraintSpace(), document, Node(),
+          container_builder_.InitialBorderBoxSize(), border_scrollbar_padding_,
+          child_percentage_resolution_block_size_for_min_max_, &scope,
+          fragment_result_options, &fragment_result_data)) {
     // TODO(ikilpatrick): Report this error to the developer.
     return FallbackLayout();
   }
@@ -196,7 +201,7 @@ void NGCustomLayoutAlgorithm::AddAnyOutOfFlowPositionedChildren(
   }
 }
 
-MinMaxSizesResult NGCustomLayoutAlgorithm::FallbackMinMaxSizes(
+MinMaxSizes NGCustomLayoutAlgorithm::FallbackMinMaxSizes(
     const MinMaxSizesInput& input) const {
   return NGBlockLayoutAlgorithm(params_).ComputeMinMaxSizes(input);
 }

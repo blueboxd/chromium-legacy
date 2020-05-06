@@ -10,6 +10,7 @@
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/common/form_field_data.h"
 #include "components/autofill/core/common/renderer_id.h"
+#include "components/autofill/core/common/signatures.h"
 #include "components/password_manager/core/browser/form_parsing/fuzzer/data_accessor.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -118,9 +119,9 @@ autofill::FormData GenerateWithDataAccessor(
 
   if (predictions) {
     predictions->driver_id = static_cast<int>(accessor->ConsumeNumber(32));
-    predictions->form_signature =
+    predictions->form_signature = autofill::FormSignature(
         (static_cast<uint64_t>(accessor->ConsumeNumber(32)) << 32) +
-        accessor->ConsumeNumber(32);
+        accessor->ConsumeNumber(32));
   }
 
   // And finally do the same for all the fields.

@@ -20,9 +20,10 @@ import org.chromium.base.Log;
 import org.chromium.base.task.PostTask;
 import org.chromium.chrome.browser.identity.SettingsSecureBasedIdentificationGenerator;
 import org.chromium.chrome.browser.identity.UniqueIdentificationGeneratorFactory;
+import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.init.ProcessInitializationHandler;
+import org.chromium.chrome.browser.signin.IdentityServicesProvider;
 import org.chromium.components.signin.AccountManagerFacadeProvider;
-import org.chromium.components.signin.ChromeSigninController;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.ui.base.DeviceFormFactor;
 
@@ -219,8 +220,10 @@ public abstract class RequestGenerator {
      */
     @VisibleForTesting
     public int getNumSignedIn() {
+        // The native needs to be loaded for the usage of IdentityManager.
+        ChromeBrowserInitializer.getInstance().handleSynchronousStartup();
         // We only have a single account.
-        return ChromeSigninController.get().isSignedIn() ? 1 : 0;
+        return IdentityServicesProvider.get().getIdentityManager().hasPrimaryAccount() ? 1 : 0;
     }
 
     /**

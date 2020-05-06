@@ -125,8 +125,10 @@ def _RunGnGen(output_dir, args=None):
 
 
 def _RunNinja(output_dir, args):
+  # Don't use version within _DEPOT_TOOLS_PATH, since most devs don't use
+  # that one when building.
   cmd = [
-      os.path.join(_DEPOT_TOOLS_PATH, 'autoninja'),
+      'autoninja',
       '-C',
       output_dir,
   ]
@@ -138,7 +140,7 @@ def _RunNinja(output_dir, args):
 def _QueryForAllGnTargets(output_dir):
   # Query ninja rather than GN since it's faster.
   cmd = [
-      os.path.join(_DEPOT_TOOLS_PATH, 'ninja'),
+      'ninja',
       '-C',
       output_dir,
       '-t',

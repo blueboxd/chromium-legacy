@@ -82,7 +82,6 @@ public class IncognitoStorageLeakageTest {
     public void tearDown() {
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> IncognitoDataTestUtils.closeTabs(mChromeActivityTestRule));
-        IncognitoDataTestUtils.finishActivities();
         mTestServer.stopAndDestroyServer();
     }
 

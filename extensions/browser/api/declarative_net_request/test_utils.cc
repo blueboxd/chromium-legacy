@@ -48,6 +48,8 @@ RequestAction CreateRequestActionForTesting(RequestAction::Type type,
         return dnr_api::RULE_ACTION_TYPE_REMOVEHEADERS;
       case RequestAction::Type::ALLOW_ALL_REQUESTS:
         return dnr_api::RULE_ACTION_TYPE_ALLOWALLREQUESTS;
+      case RequestAction::Type::MODIFY_HEADERS:
+        return dnr_api::RULE_ACTION_TYPE_MODIFYHEADERS;
     }
   }();
   return RequestAction(type, rule_id,
@@ -55,12 +57,21 @@ RequestAction CreateRequestActionForTesting(RequestAction::Type type,
                        ruleset_id, extension_id);
 }
 
+bool operator==(const RequestAction::HeaderInfo& lhs,
+                const RequestAction::HeaderInfo& rhs) {
+  return lhs.header == rhs.header && lhs.operation == rhs.operation;
+}
+
+std::ostream& operator<<(std::ostream& output,
+                         const RequestAction::HeaderInfo& header_info) {
+  return output << dnr_api::ToString(header_info.operation) << ":"
+                << header_info.header;
+}
+
 // Note: This is not declared in the anonymous namespace so that we can use it
 // with gtest. This reuses the logic used to test action equality in
 // TestRequestAction in test_utils.h.
 bool operator==(const RequestAction& lhs, const RequestAction& rhs) {
-  // TODO(crbug.com/947591): Modify this method for
-  // flat::IndexType_modify_headers.
   static_assert(flat::IndexType_count == 6,
                 "Modify this method to ensure it stays updated as new actions "
                 "are added.");
@@ -77,11 +88,29 @@ bool operator==(const RequestAction& lhs, const RequestAction& rhs) {
                     action.extension_id);
   };
 
+  auto are_headers_equal = [](std::vector<RequestAction::HeaderInfo> a,
+                              std::vector<RequestAction::HeaderInfo> b) {
+    auto header_info_comparator = [](const RequestAction::HeaderInfo& lhs,
+                                     const RequestAction::HeaderInfo& rhs) {
+      return std::make_pair(lhs.header, lhs.operation) >
+             std::make_pair(rhs.header, rhs.operation);
+    };
+
+    std::sort(a.begin(), a.end(), header_info_comparator);
+    std::sort(b.begin(), b.end(), header_info_comparator);
+
+    return a == b;
+  };
+
   return get_members_tuple(lhs) == get_members_tuple(rhs) &&
          are_vectors_equal(lhs.request_headers_to_remove,
                            rhs.request_headers_to_remove) &&
          are_vectors_equal(lhs.response_headers_to_remove,
-                           rhs.response_headers_to_remove);
+                           rhs.response_headers_to_remove) &&
+         are_headers_equal(lhs.request_headers_to_modify,
+                           rhs.request_headers_to_modify) &&
+         are_headers_equal(lhs.response_headers_to_modify,
+                           rhs.response_headers_to_modify);
 }
 
 std::ostream& operator<<(std::ostream& output, RequestAction::Type type) {
@@ -107,6 +136,9 @@ std::ostream& operator<<(std::ostream& output, RequestAction::Type type) {
     case RequestAction::Type::ALLOW_ALL_REQUESTS:
       output << "ALLOW_ALL_REQUESTS";
       break;
+    case RequestAction::Type::MODIFY_HEADERS:
+      output << "MODIFY_HEADERS";
+      break;
   }
   return output;
 }
@@ -125,7 +157,11 @@ std::ostream& operator<<(std::ostream& output, const RequestAction& action) {
   output << "|request_headers_to_remove| "
          << ::testing::PrintToString(action.request_headers_to_remove) << "\n";
   output << "|response_headers_to_remove| "
-         << ::testing::PrintToString(action.response_headers_to_remove);
+         << ::testing::PrintToString(action.response_headers_to_remove) << "\n";
+  output << "|request_headers_to_modify| "
+         << ::testing::PrintToString(action.request_headers_to_modify) << "\n";
+  output << "|response_headers_to_modify| "
+         << ::testing::PrintToString(action.response_headers_to_modify);
   return output;
 }
 

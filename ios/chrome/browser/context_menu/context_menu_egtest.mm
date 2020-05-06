@@ -101,22 +101,6 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
   return std::move(http_response);
 }
 
-// Waits for the context menu item to disappear. TODO(crbug.com/682871): Remove
-// this once EarlGrey is synchronized with context menu.
-void WaitForContextMenuItemDisappeared(
-    id<GREYMatcher> context_menu_item_button) {
-  ConditionBlock condition = ^{
-    NSError* error = nil;
-    [[EarlGrey selectElementWithMatcher:context_menu_item_button]
-        assertWithMatcher:grey_nil()
-                    error:&error];
-    return error == nil;
-  };
-  GREYAssert(base::test::ios::WaitUntilConditionOrTimeout(
-                 base::test::ios::kWaitForUIElementTimeout, condition),
-             @"Waiting for matcher %@ failed.", context_menu_item_button);
-}
-
 // Long press on |element_id| to trigger context menu.
 void LongPressElement(const char* element_id) {
   [[EarlGrey selectElementWithMatcher:WebViewMatcher()]
@@ -131,7 +115,6 @@ void TapOnContextMenuButton(id<GREYMatcher> context_menu_item_button) {
       assertWithMatcher:grey_notNil()];
   [[EarlGrey selectElementWithMatcher:context_menu_item_button]
       performAction:grey_tap()];
-  WaitForContextMenuItemDisappeared(context_menu_item_button);
 }
 
 }  // namespace

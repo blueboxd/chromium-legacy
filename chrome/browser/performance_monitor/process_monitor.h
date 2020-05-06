@@ -7,7 +7,6 @@
 
 #include <map>
 #include <memory>
-#include <vector>
 
 #include "base/lazy_instance.h"
 #include "base/macros.h"
@@ -42,31 +41,22 @@ class ProcessMonitor {
   ProcessMonitor();
   ~ProcessMonitor();
 
-  // Perform any collections that are done on a timed basis.
-  void DoTimedCollections();
-
   // Mark the given process as alive in the current update iteration.
   // This means adding an entry to the map of watched processes if it's not
   // already present.
   void MarkProcessAsAlive(const ProcessMetricsMetadata& process_data,
                           int current_update_sequence);
-  void MarkProcessesAsAliveOnUIThread(
-      std::unique_ptr<std::vector<ProcessMetricsMetadata>> process_data_list,
-      int current_update_sequence);
 
   // Updates the ProcessMetrics map with the current list of processes and
   // gathers metrics from each entry.
   void GatherMetricsMapOnUIThread();
   void GatherMetricsMapOnIOThread(int current_update_sequence);
 
-  void UpdateMetricsOnIOThread(int current_update_sequence);
-  void RunTriggersUIThread();
-
   // A map of currently running ProcessHandles to ProcessMetrics.
   MetricsMap metrics_map_;
 
   // The timer to signal ProcessMonitor to perform its timed collections.
-  base::OneShotTimer repeating_timer_;
+  base::RepeatingTimer repeating_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(ProcessMonitor);
 };

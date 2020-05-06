@@ -1,7 +1,7 @@
 -- A metric that collects on-device power rails measurement for the
 -- duration of the story run. Power drain breakdown is device-specific
--- since different devices have different sensors. This metric currently
--- only supports Sunfish EVT and DVT devices.
+-- since different devices have different sensors.
+-- See go/power-mobile-benchmark for the list of supported devices.
 -- Output values are in Joules (Watt-seconds).
 
 CREATE VIEW RunStory AS
@@ -27,9 +27,9 @@ CREATE VIEW power_rails_metric_output AS
 SELECT PowerRailsMetric(
   'total_j',
       (SELECT sum(drain_j) FROM drains WHERE name LIKE 'power.%'),
-  'cpu_big_core_j',
+  'cpu_big_core_cluster_j',
       (SELECT drain_j FROM drains WHERE name = 'power.VPH_PWR_S5C_S6C_uws'),
-  'cpu_little_core_j',
+  'cpu_little_core_cluster_j',
       (SELECT drain_j FROM drains WHERE name = 'power.VPH_PWR_S4C_uws'),
   'soc_j',
       (SELECT drain_j FROM drains WHERE name = 'power.VPH_PWR_S2C_S3C_uws'),

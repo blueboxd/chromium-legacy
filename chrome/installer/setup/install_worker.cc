@@ -395,11 +395,13 @@ void AddElevationServiceWorkItems(const base::FilePath& elevation_service_path,
     return;
   }
 
-  list->AddWorkItem(new InstallServiceWorkItem(
+  WorkItem* install_service_work_item = new InstallServiceWorkItem(
       install_static::GetElevationServiceName(),
       install_static::GetElevationServiceDisplayName(),
       base::CommandLine(elevation_service_path),
-      install_static::GetElevatorClsid(), install_static::GetElevatorIid()));
+      install_static::GetElevatorClsid(), install_static::GetElevatorIid());
+  install_service_work_item->set_best_effort(true);
+  list->AddWorkItem(install_service_work_item);
 }
 
 // Adds work items to add or remove the "store-dmtoken" command to Chrome's

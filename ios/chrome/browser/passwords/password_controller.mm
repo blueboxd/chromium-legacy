@@ -28,6 +28,7 @@
 #include "components/autofill/core/common/password_form_fill_data.h"
 #include "components/autofill/core/common/password_form_generation_data.h"
 #include "components/autofill/core/common/renderer_id.h"
+#include "components/autofill/core/common/signatures.h"
 #include "components/autofill/ios/browser/autofill_util.h"
 #import "components/autofill/ios/form_util/form_activity_observer_bridge.h"
 #include "components/autofill/ios/form_util/form_activity_params.h"
@@ -909,8 +910,9 @@ NSString* const kSuggestionSuffix = @" ••••••••";
 
   // TODO(crbug.com/886583): pass correct |max_length|.
   base::string16 generatedPassword =
-      _passwordGenerationHelper->GeneratePassword([self lastCommittedURL], 0, 0,
-                                                  0);
+      _passwordGenerationHelper->GeneratePassword(
+          [self lastCommittedURL], autofill::FormSignature(0),
+          autofill::FieldSignature(0), /*max_length=*/0);
 
   self.generatedPotentialPassword = SysUTF16ToNSString(generatedPassword);
 

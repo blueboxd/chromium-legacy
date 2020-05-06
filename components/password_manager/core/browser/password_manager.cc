@@ -24,6 +24,7 @@
 #include "components/autofill/core/browser/logging/log_manager.h"
 #include "components/autofill/core/common/form_data_predictions.h"
 #include "components/autofill/core/common/save_password_progress_logger.h"
+#include "components/autofill/core/common/signatures.h"
 #include "components/password_manager/core/browser/browser_save_password_progress_logger.h"
 #include "components/password_manager/core/browser/field_info_manager.h"
 #include "components/password_manager/core/browser/password_autofill_manager.h"
@@ -174,8 +175,10 @@ void AddLocallySavedPredictions(FieldInfoManager* field_info_manager,
     }
     if (logger && local_prediction != UNKNOWN_TYPE) {
       std::string message =
-          "form signature=" + NumberToString(predictions->form_signature) +
-          " , field signature=" + NumberToString(field.signature) + ", type=" +
+          "form signature=" +
+          NumberToString(predictions->form_signature.value()) +
+          " , field signature=" + NumberToString(field.signature.value()) +
+          ", type=" +
           autofill::AutofillType::ServerFieldTypeToString(local_prediction);
       logger->LogString(Logger::STRING_LOCALLY_SAVED_PREDICTION, message);
     }

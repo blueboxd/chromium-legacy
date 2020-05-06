@@ -1,4 +1,3 @@
-<link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout-classes.html">
 <link rel="import" href="chrome://resources/cr_elements/shared_style_css.html">
 
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
@@ -25,12 +24,8 @@
 
 <dom-module id="discover-pin-setup-module">
   <template>
-    <link rel="stylesheet" href="../../oobe_dialog_host.css">
-    <link rel="stylesheet" href="../../oobe_flex_layout.css">
-    <style include="iron-flex iron-flex-alignment iron-positioning
-                    cr-shared-style">
+    <style include="cr-shared-style oobe-dialog-host">
     </style>
-    <style include="settings-shared"></style>
     <link rel="stylesheet" href="discover_module_pin_setup.css">
     <oobe-dialog id="loading" role="dialog" no-header no-footer-padding
         hidden="[[isStepHidden_(step_, 'loading')]]">

@@ -14,13 +14,12 @@ namespace internal {
 void BindDataToStatement(const std::string& key,
                          const google::protobuf::MessageLite& data,
                          sql::Statement* statement) {
-  int size = data.ByteSize();
-  DCHECK_GT(size, 0);
-  std::vector<char> proto_buffer(size);
-  data.SerializeToArray(&proto_buffer[0], size);
-
   statement->BindString(0, key);
-  statement->BindBlob(1, &proto_buffer[0], size);
+
+  int size = data.ByteSize();
+  std::vector<char> proto_buffer(size);
+  data.SerializeToArray(proto_buffer.data(), size);
+  statement->BindBlob(1, proto_buffer.data(), size);
 }
 
 std::string GetSelectAllSql(const std::string& table_name) {

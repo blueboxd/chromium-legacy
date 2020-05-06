@@ -1624,18 +1624,12 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   //
   // Also clears the "dirty" flag for the intrinsic logical widths.
   void SetIntrinsicLogicalWidthsFromNG(
-      LayoutUnit intrinsic_logical_widths_percentage_resolution_block_size,
-      bool depends_on_percentage_block_size,
-      bool child_depends_on_percentage_block_size,
-      const MinMaxSizes* sizes = nullptr) {
+      const MinMaxSizes& sizes,
+      LayoutUnit intrinsic_logical_widths_percentage_resolution_block_size) {
+    intrinsic_logical_widths_ = sizes;
     intrinsic_logical_widths_percentage_resolution_block_size_ =
         intrinsic_logical_widths_percentage_resolution_block_size;
-    SetIntrinsicLogicalWidthsDependsOnPercentageBlockSize(
-        depends_on_percentage_block_size);
-    SetIntrinsicLogicalWidthsChildDependsOnPercentageBlockSize(
-        child_depends_on_percentage_block_size);
-    if (sizes)
-      intrinsic_logical_widths_ = *sizes;
+
     ClearIntrinsicLogicalWidthsDirty();
   }
 

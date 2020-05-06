@@ -50,13 +50,6 @@ class CORE_EXPORT V8GCController {
   // Prologue and epilogue callbacks for V8 garbage collections.
   static void GcPrologue(v8::Isolate*, v8::GCType, v8::GCCallbackFlags);
   static void GcEpilogue(v8::Isolate*, v8::GCType, v8::GCCallbackFlags);
-
-  // Called when Oilpan traces references from V8 wrappers to DOM wrappables.
-  static void TraceDOMWrappers(v8::Isolate*, Visitor*);
-
-  // Called upon terminating a thread when Oilpan clears references from V8
-  // wrappers to DOM wrappables.
-  static void ClearDOMWrappers(v8::Isolate*);
 };
 
 }  // namespace blink

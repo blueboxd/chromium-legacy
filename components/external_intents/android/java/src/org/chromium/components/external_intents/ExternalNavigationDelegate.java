@@ -4,6 +4,7 @@
 
 package org.chromium.components.external_intents;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.ResolveInfo;
 
@@ -22,6 +23,12 @@ import java.util.List;
  * by {@link ExternalNavigationHandler}.
  */
 public interface ExternalNavigationDelegate {
+    /**
+     * Returns the Activity with which this delegate is associated, or null if there
+     * is no such Activity at the time of invocation.
+     */
+    Activity getActivityContext();
+
     /**
      * Determine if Chrome is the default or only handler for a given intent. If true, Chrome
      * will handle the intent when started.

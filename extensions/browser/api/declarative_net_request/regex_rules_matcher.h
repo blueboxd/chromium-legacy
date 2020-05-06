@@ -61,6 +61,8 @@ class RegexRulesMatcher final : public RulesetMatcherBase {
       const RequestParams& params,
       uint8_t excluded_remove_headers_mask,
       std::vector<RequestAction>* remove_headers_actions) const override;
+  std::vector<RequestAction> GetModifyHeadersActions(
+      const RequestParams& params) const override;
   bool IsExtraHeadersMatcher() const override {
     return is_extra_headers_matcher_;
   }

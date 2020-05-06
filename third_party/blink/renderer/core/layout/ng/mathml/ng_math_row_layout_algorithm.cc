@@ -141,27 +141,28 @@ scoped_refptr<const NGLayoutResult> NGMathRowLayoutAlgorithm::Layout() {
   return container_builder_.ToBoxFragment();
 }
 
-MinMaxSizesResult NGMathRowLayoutAlgorithm::ComputeMinMaxSizes(
-    const MinMaxSizesInput& child_input) const {
-  if (auto result = CalculateMinMaxSizesIgnoringChildren(
+MinMaxSizes NGMathRowLayoutAlgorithm::ComputeMinMaxSizes(
+    const MinMaxSizesInput& input) const {
+  if (auto sizes = CalculateMinMaxSizesIgnoringChildren(
           Node(), border_scrollbar_padding_))
-    return *result;
+    return *sizes;
 
   MinMaxSizes sizes;
-  bool depends_on_percentage_block_size = false;
+  LayoutUnit child_percentage_resolution_block_size =
+      CalculateChildPercentageBlockSizeForMinMax(
+          ConstraintSpace(), Node(), border_padding_,
+          input.percentage_resolution_block_size);
+  MinMaxSizesInput child_input(child_percentage_resolution_block_size);
 
   for (NGLayoutInputNode child = Node().FirstChild(); child;
        child = child.NextSibling()) {
     if (child.IsOutOfFlowPositioned())
       continue;
-    MinMaxSizesResult child_result =
+    MinMaxSizes child_min_max_sizes =
         ComputeMinAndMaxContentContribution(Style(), child, child_input);
     NGBoxStrut child_margins = ComputeMinMaxMargins(Style(), child);
-    child_result.sizes += child_margins.InlineSum();
-
-    sizes += child_result.sizes;
-    depends_on_percentage_block_size |=
-        child_result.depends_on_percentage_block_size;
+    child_min_max_sizes += child_margins.InlineSum();
+    sizes += child_min_max_sizes;
 
     // TODO(rbuis): Operators can add lspace and rspace.
   }
@@ -172,8 +173,7 @@ MinMaxSizesResult NGMathRowLayoutAlgorithm::ComputeMinMaxSizes(
 
   DCHECK_LE(sizes.min_size, sizes.max_size);
   sizes += border_scrollbar_padding_.InlineSum();
-
-  return {sizes, depends_on_percentage_block_size};
+  return sizes;
 }
 
 }  // namespace blink

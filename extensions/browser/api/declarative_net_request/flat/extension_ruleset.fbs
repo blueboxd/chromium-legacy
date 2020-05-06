@@ -121,6 +121,9 @@ enum HeaderOperation : ubyte {
 /// Corresponds to extensions::api::declarative_net_request::ModifyHeaderInfo.
 table ModifyHeaderInfo {
   operation: HeaderOperation;
+  /// The name the header to be modified. Since header names are
+  /// case-insensitive, the header name is normalized by converting it to
+  /// lowercase.
   header: string;
 }
 

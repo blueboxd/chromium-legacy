@@ -35,6 +35,7 @@ static void JNI_CustomTabsConnection_CreateAndStartDetachedResourceRequest(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& profile,
     const base::android::JavaParamRef<jobject>& session,
+    const base::android::JavaParamRef<jstring>& package_name,
     const base::android::JavaParamRef<jstring>& url,
     const base::android::JavaParamRef<jstring>& origin,
     jint referrer_policy,
@@ -48,6 +49,10 @@ static void JNI_CustomTabsConnection_CreateAndStartDetachedResourceRequest(
   GURL native_origin(base::android::ConvertJavaStringToUTF8(env, origin));
   DCHECK(native_url.is_valid());
   DCHECK(native_origin.is_valid());
+
+  std::string native_package;
+  if (!package_name.is_null())
+    base::android::ConvertJavaStringToUTF8(env, package_name, &native_package);
 
   // Java only knows about the blink referrer policy.
   net::URLRequest::ReferrerPolicy url_request_referrer_policy =
@@ -65,7 +70,7 @@ static void JNI_CustomTabsConnection_CreateAndStartDetachedResourceRequest(
 
   DetachedResourceRequest::CreateAndStart(
       native_profile, native_url, native_origin, url_request_referrer_policy,
-      request_motivation, std::move(cb));
+      request_motivation, native_package, std::move(cb));
 }
 
 static void JNI_CustomTabsConnection_SetClientDataHeader(

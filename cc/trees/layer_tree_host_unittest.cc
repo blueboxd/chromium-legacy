@@ -875,6 +875,99 @@ class LayerTreeHostTestPushPropertiesTo : public LayerTreeHostTest {
 
 SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestPushPropertiesTo);
 
+// Verify that invisible render passes are excluded in CompositorFrame.
+class LayerTreeHostTestInvisibleLayersSkipRenderPass
+    : public LayerTreeHostTest {
+ protected:
+  enum Step {
+    kAllInvisible,
+    kOneVisible,
+    kAllVisible,
+    kAllInvisibleAgain,
+    kDone,
+  };
+
+  void SetupTree() override {
+    SetInitialRootBounds(gfx::Size(10, 10));
+    LayerTreeHostTest::SetupTree();
+    auto* root = layer_tree_host()->root_layer();
+    child1_ = CreateChild(root);
+    child2_ = CreateChild(root);
+  }
+
+  scoped_refptr<Layer> CreateChild(scoped_refptr<Layer> root) {
+    auto child = Layer::Create();
+    // Initially hidden.
+    child->SetHideLayerAndSubtree(true);
+    AddBackgroundBlurFilter(child.get());
+    root->AddChild(child.get());
+    return child;
+  }
+
+  void AddBackgroundBlurFilter(Layer* layer) {
+    FilterOperations filters;
+    filters.Append(FilterOperation::CreateBlurFilter(
+        30, SkBlurImageFilter::kClamp_TileMode));
+    layer->SetBackdropFilters(filters);
+  }
+
+  void BeginTest() override {
+    index_ = kAllInvisible;
+    PostSetNeedsCommitToMainThread();
+  }
+
+  void DidCommitAndDrawFrame() override {
+    ++index_;
+    switch (index_) {
+      case kAllInvisible:
+        NOTREACHED();
+        break;
+      case kOneVisible:
+        child1_->SetHideLayerAndSubtree(false);
+        break;
+      case kAllVisible:
+        child2_->SetHideLayerAndSubtree(false);
+        break;
+      case kAllInvisibleAgain:
+        child1_->SetHideLayerAndSubtree(true);
+        child2_->SetHideLayerAndSubtree(true);
+        break;
+      case kDone:
+        EndTest();
+        break;
+    }
+  }
+
+  void DisplayReceivedCompositorFrameOnThread(
+      const viz::CompositorFrame& frame) override {
+    size_t num_render_passes = frame.render_pass_list.size();
+    switch (index_) {
+      case kAllInvisible:
+        // There is only a root render pass.
+        EXPECT_EQ(1u, num_render_passes);
+        break;
+      case kOneVisible:
+        EXPECT_EQ(2u, num_render_passes);
+        break;
+      case kAllVisible:
+        EXPECT_EQ(3u, num_render_passes);
+        break;
+      case kAllInvisibleAgain:
+        EXPECT_EQ(1u, num_render_passes);
+        break;
+      case kDone:
+        EndTest();
+        break;
+    }
+  }
+
+  int index_ = kAllInvisible;
+  scoped_refptr<Layer> child1_;
+  scoped_refptr<Layer> child2_;
+};
+
+SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestInvisibleLayersSkipRenderPass);
+
 class LayerTreeHostTestPushNodeOwnerToNodeIdMap : public LayerTreeHostTest {
  protected:
   void SetupTree() override {

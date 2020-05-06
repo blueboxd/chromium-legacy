@@ -626,11 +626,10 @@ static void HostGetImportMetaProperties(v8::Local<v8::Context> context,
 static void InitializeV8Common(v8::Isolate* isolate) {
   // Set up garbage collection before setting up anything else as V8 may trigger
   // GCs during Blink setup.
-  isolate->AddGCPrologueCallback(V8GCController::GcPrologue);
-  isolate->AddGCEpilogueCallback(V8GCController::GcEpilogue);
+  V8PerIsolateData::From(isolate)->SetGCCallbacks(
+      isolate, V8GCController::GcPrologue, V8GCController::GcEpilogue);
   ThreadState::Current()->AttachToIsolate(
-      isolate, V8GCController::TraceDOMWrappers,
-      EmbedderGraphBuilder::BuildEmbedderGraphCallback);
+      isolate, EmbedderGraphBuilder::BuildEmbedderGraphCallback);
   V8PerIsolateData::From(isolate)->SetActiveScriptWrappableManager(
       MakeGarbageCollected<ActiveScriptWrappableManager>());
 

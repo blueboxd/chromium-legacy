@@ -253,13 +253,10 @@ inline bool NGLineBreaker::HandleOverflowIfNeeded(NGLineInfo* line_info) {
   return false;
 }
 
-void NGLineBreaker::SetIntrinsicSizeOutputs(
-    MaxSizeCache* max_size_cache,
-    bool* depends_on_percentage_block_size_out) {
+void NGLineBreaker::SetMaxSizeCache(MaxSizeCache* max_size_cache) {
   DCHECK_NE(mode_, NGLineBreakerMode::kContent);
   DCHECK(max_size_cache);
   max_size_cache_ = max_size_cache;
-  depends_on_percentage_block_size_out_ = depends_on_percentage_block_size_out;
 }
 
 // Compute the base direction for bidi algorithm for this line.
@@ -1378,22 +1375,18 @@ void NGLineBreaker::HandleAtomicInline(
     DCHECK(mode_ == NGLineBreakerMode::kMinContent || !max_size_cache_);
     NGBlockNode child(ToLayoutBox(item.GetLayoutObject()));
     MinMaxSizesInput input(percentage_resolution_block_size_for_min_max);
-    MinMaxSizesResult result =
+    MinMaxSizes sizes =
         ComputeMinAndMaxContentContribution(node_.Style(), child, input);
     if (mode_ == NGLineBreakerMode::kMinContent) {
-      item_result->inline_size = result.sizes.min_size + inline_margins;
-      if (depends_on_percentage_block_size_out_) {
-        *depends_on_percentage_block_size_out_ |=
-            result.depends_on_percentage_block_size;
-      }
+      item_result->inline_size = sizes.min_size + inline_margins;
       if (max_size_cache_) {
         if (max_size_cache_->IsEmpty())
           max_size_cache_->resize(Items().size());
         unsigned item_index = &item - Items().begin();
-        (*max_size_cache_)[item_index] = result.sizes.max_size + inline_margins;
+        (*max_size_cache_)[item_index] = sizes.max_size + inline_margins;
       }
     } else {
-      item_result->inline_size = result.sizes.max_size + inline_margins;
+      item_result->inline_size = sizes.max_size + inline_margins;
     }
   }
 

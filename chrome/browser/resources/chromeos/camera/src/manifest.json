@@ -11,6 +11,7 @@
     "128": "images/camera_app_icons_128.png"
   },
   "permissions": [
+    "notifications",
     "videoCapture",
     "audioCapture",
     "storage",

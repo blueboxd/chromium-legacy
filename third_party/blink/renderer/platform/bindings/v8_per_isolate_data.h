@@ -218,6 +218,10 @@ class PLATFORM_EXPORT V8PerIsolateData {
     active_script_wrappable_manager_ = manager;
   }
 
+  void SetGCCallbacks(v8::Isolate* isolate,
+                      v8::Isolate::GCCallback prologue_callback,
+                      v8::Isolate::GCCallback epilogue_callback);
+
  private:
   V8PerIsolateData(scoped_refptr<base::SingleThreadTaskRunner>,
                    V8ContextSnapshotMode);
@@ -288,6 +292,9 @@ class PLATFORM_EXPORT V8PerIsolateData {
   Persistent<ActiveScriptWrappableManager> active_script_wrappable_manager_;
 
   RuntimeCallStats runtime_call_stats_;
+
+  v8::Isolate::GCCallback prologue_callback_;
+  v8::Isolate::GCCallback epilogue_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(V8PerIsolateData);
 };

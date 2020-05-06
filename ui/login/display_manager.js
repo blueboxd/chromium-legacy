@@ -719,6 +719,7 @@ cr.define('cr.ui.login', function() {
     registerScreen: function(el, attributes) {
       var screenId = el.id;
       assert(screenId);
+      assert(!this.screens_.includes(screenId), "Duplicate screen ID.");
 
       this.screens_.push(screenId);
       this.screensAttributes_.push(attributes);

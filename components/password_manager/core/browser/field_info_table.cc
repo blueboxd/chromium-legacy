@@ -5,6 +5,7 @@
 #include "components/password_manager/core/browser/field_info_table.h"
 
 #include "build/build_config.h"
+#include "components/autofill/core/common/signatures.h"
 #include "components/password_manager/core/browser/sql_table_builder.h"
 #include "sql/database.h"
 #include "sql/statement.h"
@@ -46,10 +47,10 @@ std::vector<FieldInfo> StatementToFieldInfo(sql::Statement* s) {
   std::vector<FieldInfo> results;
   while (s->Step()) {
     results.emplace_back();
-    results.back().form_signature =
-        s->ColumnInt64(GetColumnNumber(FieldInfoTableColumn::kFormSignature));
-    results.back().field_signature =
-        s->ColumnInt(GetColumnNumber(FieldInfoTableColumn::kFieldSignature));
+    results.back().form_signature = autofill::FormSignature(
+        s->ColumnInt64(GetColumnNumber(FieldInfoTableColumn::kFormSignature)));
+    results.back().field_signature = autofill::FieldSignature(
+        s->ColumnInt(GetColumnNumber(FieldInfoTableColumn::kFieldSignature)));
     results.back().field_type = static_cast<autofill::ServerFieldType>(
         s->ColumnInt(GetColumnNumber(FieldInfoTableColumn::kFieldType)));
     results.back().create_time = base::Time::FromDeltaSinceWindowsEpoch(
@@ -106,9 +107,9 @@ bool FieldInfoTable::AddRow(const FieldInfo& field) {
       "(form_signature, field_signature, field_type, create_time) "
       "VALUES (?, ?, ?, ?)"));
   s.BindInt64(GetColumnNumber(FieldInfoTableColumn::kFormSignature),
-              field.form_signature);
+              field.form_signature.value());
   s.BindInt64(GetColumnNumber(FieldInfoTableColumn::kFieldSignature),
-              field.field_signature);
+              field.field_signature.value());
   s.BindInt(GetColumnNumber(FieldInfoTableColumn::kFieldType),
             field.field_type);
   s.BindInt64(GetColumnNumber(FieldInfoTableColumn::kCreateTime),

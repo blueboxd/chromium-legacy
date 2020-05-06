@@ -468,9 +468,10 @@ id<GREYMatcher> SearchCopiedTextButton() {
 // it should be displayed. Select & SelectAll buttons should be hidden when the
 // omnibox is empty.
 - (void)testEmptyOmnibox {
-  // TODO(crbug.com/1076996): Test is flaky when running on iOS 13.4 iPad.
-  if ([ChromeEarlGrey isIPadIdiom] && base::ios::IsRunningOnOrLater(13, 4, 0)) {
-    EARL_GREY_TEST_DISABLED(@"Test disabled on iOS 13.4 and later.");
+  // TODO(crbug.com/1078784): This is flaky on iOS 13 iPad, probably linked to
+  // Apple help on the keyboard.
+  if ([ChromeEarlGrey isIPadIdiom] && base::ios::IsRunningOnOrLater(13, 0, 0)) {
+    EARL_GREY_TEST_DISABLED(@"Test disabled on iPad, iOS 13 and later.");
   }
 
 // TODO(crbug.com/1046787): Test is failing for EG1.

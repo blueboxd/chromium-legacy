@@ -5,6 +5,7 @@
 #include "extensions/browser/api/declarative_net_request/ruleset_manager.h"
 
 #include <algorithm>
+#include <iterator>
 #include <tuple>
 #include <utility>
 
@@ -186,16 +187,13 @@ bool RulesetManager::HasExtraHeadersMatcherForRequest(
   const std::vector<RequestAction>& actions =
       EvaluateRequest(request, is_incognito_context);
 
-  // We only support removing a subset of extra headers currently. If that
-  // changes, the implementation here should change as well.
-  // TODO(crbug.com/947591): Modify this method for
-  // flat::ActionType_modify_headers.
   static_assert(flat::ActionType_count == 7,
                 "Modify this method to ensure HasExtraHeadersMatcherForRequest "
                 "is updated as new actions are added.");
 
   for (const auto& action : actions) {
-    if (action.type == RequestAction::Type::REMOVE_HEADERS)
+    if (action.type == RequestAction::Type::REMOVE_HEADERS ||
+        action.type == RequestAction::Type::MODIFY_HEADERS)
       return true;
   }
 
@@ -271,6 +269,7 @@ base::Optional<RequestAction> RulesetManager::GetBeforeRequestAction(
       case RequestAction::Type::ALLOW_ALL_REQUESTS:
         return 1;
       case RequestAction::Type::REMOVE_HEADERS:
+      case RequestAction::Type::MODIFY_HEADERS:
         NOTREACHED();
         return 0;
     }
@@ -327,6 +326,34 @@ std::vector<RequestAction> RulesetManager::GetRemoveHeadersActions(
   }
 
   return remove_headers_actions;
+}
+
+std::vector<RequestAction> RulesetManager::GetModifyHeadersActions(
+    const std::vector<const ExtensionRulesetData*>& rulesets,
+    const RequestParams& params) const {
+  DCHECK(std::is_sorted(rulesets.begin(), rulesets.end(),
+                        [](const ExtensionRulesetData* a,
+                           const ExtensionRulesetData* b) { return *a < *b; }));
+
+  std::vector<RequestAction> modify_headers_actions;
+
+  for (const ExtensionRulesetData* ruleset : rulesets) {
+    std::vector<RequestAction> actions_for_matcher =
+        ruleset->matcher->GetModifyHeadersActions(params);
+
+    modify_headers_actions.insert(
+        modify_headers_actions.end(),
+        std::make_move_iterator(actions_for_matcher.begin()),
+        std::make_move_iterator(actions_for_matcher.end()));
+  }
+
+  // |modify_headers_actions| is implicitly sorted in descreasing order by
+  // priority.
+  //  - Within an extension: each CompositeMatcher returns a vector sorted by
+  //  priority.
+  //  - Between extensions: |rulesets| is sorder in descending order of
+  //  extension priority.
+  return modify_headers_actions;
 }
 
 std::vector<RequestAction> RulesetManager::EvaluateRequestInternal(
@@ -397,6 +424,13 @@ std::vector<RequestAction> RulesetManager::EvaluateRequestInternal(
 
   if (!remove_headers_actions.empty())
     return remove_headers_actions;
+
+  // TODO(crbug.com/1071698): Modifying headers should require host permissions.
+  std::vector<RequestAction> modify_headers_actions =
+      GetModifyHeadersActions(rulesets_to_evaluate, params);
+
+  if (!modify_headers_actions.empty())
+    return modify_headers_actions;
 
   return actions;
 }

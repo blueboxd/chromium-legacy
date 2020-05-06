@@ -32,6 +32,17 @@ using Microsoft::WRL::ComPtr;
 
 namespace media {
 
+#if DCHECK_IS_ON()
+#define DLOG_IF_FAILED_WITH_HRESULT(message, hr)                      \
+  {                                                                   \
+    DLOG_IF(ERROR, FAILED(hr))                                        \
+        << (message) << ": " << logging::SystemErrorCodeToString(hr); \
+  }
+#else
+#define DLOG_IF_FAILED_WITH_HRESULT(message, hr) \
+  {}
+#endif
+
 namespace {
 
 class MFPhotoCallback final
@@ -345,6 +356,26 @@ HRESULT CreateCaptureEngine(IMFCaptureEngine** engine) {
   return capture_engine_class_factory->CreateInstance(CLSID_MFCaptureEngine,
                                                       IID_PPV_ARGS(engine));
 }
+
+// Retrieves the control range and value, and
+// optionally returns the associated supported and current mode.
+template <typename ControlInterface, typename ControlProperty>
+mojom::RangePtr RetrieveControlRangeAndCurrent(
+    ComPtr<ControlInterface>& control_interface,
+    ControlProperty control_property,
+    std::vector<mojom::MeteringMode>* supported_modes = nullptr,
+    mojom::MeteringMode* current_mode = nullptr,
+    double (*value_converter)(long) = PlatformToCaptureValue,
+    double (*step_converter)(long) = PlatformToCaptureValue) {
+  return media::RetrieveControlRangeAndCurrent(
+      [&control_interface, control_property](auto... args) {
+        return control_interface->GetRange(control_property, args...);
+      },
+      [&control_interface, control_property](auto... args) {
+        return control_interface->Get(control_property, args...);
+      },
+      supported_modes, current_mode, value_converter, step_converter);
+}
 }  // namespace
 
 class MFVideoCallback final
@@ -581,7 +612,10 @@ VideoCaptureDeviceMFWin::VideoCaptureDeviceMFWin(
       source_(source),
       engine_(engine),
       is_started_(false),
-      has_sent_on_started_to_client_(false) {
+      has_sent_on_started_to_client_(false),
+      exposure_mode_manual_(false),
+      focus_mode_manual_(false),
+      white_balance_mode_manual_(false) {
   DETACH_FROM_SEQUENCE(sequence_checker_);
 }
 
@@ -602,14 +636,20 @@ VideoCaptureDeviceMFWin::~VideoCaptureDeviceMFWin() {
 bool VideoCaptureDeviceMFWin::Init() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!is_initialized_);
+  HRESULT hr;
 
-  HRESULT hr = S_OK;
-  if (!engine_)
+  hr = source_.As(&camera_control_);
+  DLOG_IF_FAILED_WITH_HRESULT("Failed to retrieve IAMCameraControl", hr);
+
+  hr = source_.As(&video_control_);
+  DLOG_IF_FAILED_WITH_HRESULT("Failed to retrieve IAMVideoProcAmp", hr);
+
+  if (!engine_) {
     hr = CreateCaptureEngine(&engine_);
-
-  if (FAILED(hr)) {
-    LogError(FROM_HERE, hr);
-    return false;
+    if (FAILED(hr)) {
+      LogError(FROM_HERE, hr);
+      return false;
+    }
   }
 
   ComPtr<IMFAttributes> attributes;
@@ -931,6 +971,48 @@ void VideoCaptureDeviceMFWin::GetPhotoState(GetPhotoStateCallback callback) {
   photo_capabilities->width = mojom::Range::New(
       max_size.width(), min_size.width(), current_size.width(), 1);
 
+  if (camera_control_ && video_control_) {
+    photo_capabilities->color_temperature = RetrieveControlRangeAndCurrent(
+        video_control_, VideoProcAmp_WhiteBalance,
+        &photo_capabilities->supported_white_balance_modes,
+        &photo_capabilities->current_white_balance_mode);
+
+    photo_capabilities->exposure_time = RetrieveControlRangeAndCurrent(
+        camera_control_, CameraControl_Exposure,
+        &photo_capabilities->supported_exposure_modes,
+        &photo_capabilities->current_exposure_mode,
+        PlatformExposureTimeToCaptureValue, PlatformExposureTimeToCaptureStep);
+
+    photo_capabilities->focus_distance = RetrieveControlRangeAndCurrent(
+        camera_control_, CameraControl_Focus,
+        &photo_capabilities->supported_focus_modes,
+        &photo_capabilities->current_focus_mode);
+
+    photo_capabilities->brightness =
+        RetrieveControlRangeAndCurrent(video_control_, VideoProcAmp_Brightness);
+    photo_capabilities->contrast =
+        RetrieveControlRangeAndCurrent(video_control_, VideoProcAmp_Contrast);
+    photo_capabilities->exposure_compensation =
+        RetrieveControlRangeAndCurrent(video_control_, VideoProcAmp_Gain);
+    // There is no ISO control property in IAMCameraControl or IAMVideoProcAmp
+    // interfaces nor any other control property with direct mapping to ISO.
+    photo_capabilities->iso = mojom::Range::New();
+    photo_capabilities->red_eye_reduction = mojom::RedEyeReduction::NEVER;
+    photo_capabilities->saturation =
+        RetrieveControlRangeAndCurrent(video_control_, VideoProcAmp_Saturation);
+    photo_capabilities->sharpness =
+        RetrieveControlRangeAndCurrent(video_control_, VideoProcAmp_Sharpness);
+    photo_capabilities->torch = false;
+    photo_capabilities->pan = RetrieveControlRangeAndCurrent(
+        camera_control_, CameraControl_Pan, nullptr, nullptr,
+        PlatformAngleToCaptureValue, PlatformAngleToCaptureStep);
+    photo_capabilities->tilt = RetrieveControlRangeAndCurrent(
+        camera_control_, CameraControl_Tilt, nullptr, nullptr,
+        PlatformAngleToCaptureValue, PlatformAngleToCaptureStep);
+    photo_capabilities->zoom =
+        RetrieveControlRangeAndCurrent(camera_control_, CameraControl_Zoom);
+  }
+
   std::move(callback).Run(std::move(photo_capabilities));
 }
 
@@ -977,6 +1059,131 @@ void VideoCaptureDeviceMFWin::SetPhotoOptions(
     const CapabilityWin best_match = GetBestMatchedPhotoCapability(
         current_source_media_type, requested_size, photo_capabilities_);
     selected_photo_capability_.reset(new CapabilityWin(best_match));
+  }
+
+  if (camera_control_ && video_control_) {
+    if (settings->has_white_balance_mode) {
+      if (settings->white_balance_mode == mojom::MeteringMode::CONTINUOUS) {
+        hr = video_control_->Set(VideoProcAmp_WhiteBalance, 0L,
+                                 VideoProcAmp_Flags_Auto);
+        DLOG_IF_FAILED_WITH_HRESULT("Auto white balance config failed", hr);
+        if (FAILED(hr))
+          return;
+        white_balance_mode_manual_ = false;
+      } else {
+        white_balance_mode_manual_ = true;
+      }
+    }
+    if (white_balance_mode_manual_ && settings->has_color_temperature) {
+      hr = video_control_->Set(VideoProcAmp_WhiteBalance,
+                               settings->color_temperature,
+                               VideoProcAmp_Flags_Manual);
+      DLOG_IF_FAILED_WITH_HRESULT("Color temperature config failed", hr);
+      if (FAILED(hr))
+        return;
+    }
+
+    if (settings->has_exposure_mode) {
+      if (settings->exposure_mode == mojom::MeteringMode::CONTINUOUS) {
+        hr = camera_control_->Set(CameraControl_Exposure, 0L,
+                                  CameraControl_Flags_Auto);
+        DLOG_IF_FAILED_WITH_HRESULT("Auto exposure config failed", hr);
+        if (FAILED(hr))
+          return;
+        exposure_mode_manual_ = false;
+      } else {
+        exposure_mode_manual_ = true;
+      }
+    }
+    if (exposure_mode_manual_ && settings->has_exposure_time) {
+      hr = camera_control_->Set(
+          CameraControl_Exposure,
+          CaptureExposureTimeToPlatformValue(settings->exposure_time),
+          CameraControl_Flags_Manual);
+      DLOG_IF_FAILED_WITH_HRESULT("Exposure Time config failed", hr);
+      if (FAILED(hr))
+        return;
+    }
+
+    if (settings->has_focus_mode) {
+      if (settings->focus_mode == mojom::MeteringMode::CONTINUOUS) {
+        hr = camera_control_->Set(CameraControl_Focus, 0L,
+                                  CameraControl_Flags_Auto);
+        DLOG_IF_FAILED_WITH_HRESULT("Auto focus config failed", hr);
+        if (FAILED(hr))
+          return;
+        focus_mode_manual_ = false;
+      } else {
+        focus_mode_manual_ = true;
+      }
+    }
+    if (focus_mode_manual_ && settings->has_focus_distance) {
+      hr = camera_control_->Set(CameraControl_Focus, settings->focus_distance,
+                                CameraControl_Flags_Manual);
+      DLOG_IF_FAILED_WITH_HRESULT("Focus Distance config failed", hr);
+      if (FAILED(hr))
+        return;
+    }
+
+    if (settings->has_brightness) {
+      hr = video_control_->Set(VideoProcAmp_Brightness, settings->brightness,
+                               VideoProcAmp_Flags_Manual);
+      DLOG_IF_FAILED_WITH_HRESULT("Brightness config failed", hr);
+      if (FAILED(hr))
+        return;
+    }
+    if (settings->has_contrast) {
+      hr = video_control_->Set(VideoProcAmp_Contrast, settings->contrast,
+                               VideoProcAmp_Flags_Manual);
+      DLOG_IF_FAILED_WITH_HRESULT("Contrast config failed", hr);
+      if (FAILED(hr))
+        return;
+    }
+    if (settings->has_exposure_compensation) {
+      hr = video_control_->Set(VideoProcAmp_Gain,
+                               settings->exposure_compensation,
+                               VideoProcAmp_Flags_Manual);
+      DLOG_IF_FAILED_WITH_HRESULT("Exposure Compensation config failed", hr);
+      if (FAILED(hr))
+        return;
+    }
+    if (settings->has_saturation) {
+      hr = video_control_->Set(VideoProcAmp_Saturation, settings->saturation,
+                               VideoProcAmp_Flags_Manual);
+      DLOG_IF_FAILED_WITH_HRESULT("Saturation config failed", hr);
+      if (FAILED(hr))
+        return;
+    }
+    if (settings->has_sharpness) {
+      hr = video_control_->Set(VideoProcAmp_Sharpness, settings->sharpness,
+                               VideoProcAmp_Flags_Manual);
+      DLOG_IF_FAILED_WITH_HRESULT("Sharpness config failed", hr);
+      if (FAILED(hr))
+        return;
+    }
+    if (settings->has_pan) {
+      hr = camera_control_->Set(CameraControl_Pan,
+                                CaptureAngleToPlatformValue(settings->pan),
+                                CameraControl_Flags_Manual);
+      DLOG_IF_FAILED_WITH_HRESULT("Pan config failed", hr);
+      if (FAILED(hr))
+        return;
+    }
+    if (settings->has_tilt) {
+      hr = camera_control_->Set(CameraControl_Tilt,
+                                CaptureAngleToPlatformValue(settings->tilt),
+                                CameraControl_Flags_Manual);
+      DLOG_IF_FAILED_WITH_HRESULT("Tilt config failed", hr);
+      if (FAILED(hr))
+        return;
+    }
+    if (settings->has_zoom) {
+      hr = camera_control_->Set(CameraControl_Zoom, settings->zoom,
+                                CameraControl_Flags_Manual);
+      DLOG_IF_FAILED_WITH_HRESULT("Zoom config failed", hr);
+      if (FAILED(hr))
+        return;
+    }
   }
 
   std::move(callback).Run(true);

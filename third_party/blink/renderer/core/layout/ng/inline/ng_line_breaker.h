@@ -67,8 +67,7 @@ class CORE_EXPORT NGLineBreaker {
   // information that can help computing |kMaxContent|. It is recommended to set
   // this when computing both |kMinContent| and |kMaxContent|.
   using MaxSizeCache = Vector<LayoutUnit, 64>;
-  void SetIntrinsicSizeOutputs(MaxSizeCache* max_size_cache,
-                               bool* depends_on_percentage_block_size_out);
+  void SetMaxSizeCache(MaxSizeCache* max_size_cache);
 
   // Compute NGInlineItemResult for an open tag item.
   // Returns true if this item has edge and may have non-zero inline size.
@@ -294,8 +293,6 @@ class CORE_EXPORT NGLineBreaker {
 
   // Cache for computing |MinMaxSize|. See |MaxSizeCache|.
   MaxSizeCache* max_size_cache_ = nullptr;
-
-  bool* depends_on_percentage_block_size_out_ = nullptr;
 
   // Keep the last item |HandleTextForFastMinContent()| has handled. This is
   // used to fallback the last word to |HandleText()|.

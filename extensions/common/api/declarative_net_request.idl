@@ -40,7 +40,7 @@ namespace declarativeNetRequest {
     setCookie
   };
 
-  // This describes the possible opeations for a "modifyHeaders" rule.
+  // This describes the possible operations for a "modifyHeaders" rule.
   // TODO(crbug.com/947591): Add documentation once implementation is complete.
   [nodoc]
   enum HeaderOperation {

@@ -128,4 +128,17 @@ TEST_F(KeyValueTableTest, DeleteAll) {
   EXPECT_TRUE(my_data.empty());
 }
 
+// Storing an element with a default proto value (zero byte size) should work;
+// this can be useful since a default value can have different semantics from a
+// missing value.
+TEST_F(KeyValueTableTest, PutGetDefaultValue) {
+  TestProto element;
+  table_.UpdateData("a", element, &db_);
+  ASSERT_EQ(element.ByteSize(), 0);
+
+  std::map<std::string, TestProto> my_data;
+  table_.GetAllData(&my_data, &db_);
+  EXPECT_THAT(my_data, ElementsAre(Pair("a", EqualsProto(element))));
+}
+
 }  // namespace sqlite_proto

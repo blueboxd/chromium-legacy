@@ -20,7 +20,7 @@
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/form_field_data.h"
 #include "components/autofill/core/common/password_form_generation_data.h"
-#include "components/autofill/core/common/signatures_util.h"
+#include "components/autofill/core/common/signatures.h"
 #include "components/password_manager/core/browser/generation/password_requirements_spec_fetcher.h"
 #include "components/password_manager/core/browser/password_autofill_manager.h"
 #include "components/password_manager/core/browser/password_manager.h"
@@ -327,7 +327,8 @@ TEST_F(PasswordGenerationFrameHelperTest, ProcessPasswordRequirements) {
 
     PasswordRequirementsSpec spec_for_unknown_signature =
         client_->GetPasswordRequirementsService()->GetSpec(
-            origin, form_signature + 1, field_signature);
+            origin, autofill::FormSignature(form_signature.value() + 1),
+            field_signature);
     EXPECT_EQ(test.expected_spec_for_unknown_signature.max_length(),
               spec.max_length());
   }

@@ -1186,6 +1186,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/page_info/SiteSettingsHelper.java",
   "java/src/org/chromium/chrome/browser/paint_preview/PaintPreviewDemoManager.java",
   "java/src/org/chromium/chrome/browser/paint_preview/PaintPreviewExperiments.java",
+  "java/src/org/chromium/chrome/browser/paint_preview/PaintPreviewInitializer.java",
   "java/src/org/chromium/chrome/browser/paint_preview/PaintPreviewTabHelper.java",
   "java/src/org/chromium/chrome/browser/paint_preview/TabbedPaintPreviewPlayer.java",
   "java/src/org/chromium/chrome/browser/paint_preview/services/PaintPreviewDemoService.java",

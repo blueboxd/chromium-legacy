@@ -482,6 +482,35 @@ constexpr CGFloat kSafeAreaMultiplier = 0.8;
   primaryActionButton.translatesAutoresizingMaskIntoConstraints = NO;
   primaryActionButton.accessibilityIdentifier =
       kConfirmationAlertPrimaryActionAccessibilityIdentifier;
+
+#if defined(__IPHONE_13_4)
+  if (@available(iOS 13.4, *)) {
+    if (self.pointerInteractionEnabled) {
+      primaryActionButton.pointerInteractionEnabled = YES;
+
+      primaryActionButton.pointerStyleProvider =
+          ^UIPointerStyle*(UIButton* button, UIPointerEffect* proposedEffect,
+                           __unused UIPointerShape* proposedShape) {
+        //
+        // The default pointer interaction on this button is awful (It does a
+        // lift on the button with an weird mousing highlight effect on just
+        // the label). All attempts to correct this for a button wide lift have
+        // failed ; no matter what is done in this block the only reasonable
+        // effect achievable is a hover with the cursor still visible.
+        //
+        // It seems that anything larger than roughly the third of the width
+        // of an iPad screen causes the framework to cancel the the lift effect
+        // and to replace it with a simple hover.
+        //
+        // This code below should do a lift. Does a lift on a smaller version
+        // of the exact same button. But it only achieves a hover.
+        //
+        return [UIPointerStyle styleWithEffect:proposedEffect shape:nil];
+      };
+    }
+  }
+#endif  // defined(__IPHONE_13_4)
+
   return primaryActionButton;
 }
 

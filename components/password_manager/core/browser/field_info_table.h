@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "components/autofill/core/browser/field_types.h"
+#include "components/autofill/core/common/signatures.h"
 
 namespace sql {
 class Database;
@@ -16,8 +17,8 @@ class Database;
 namespace password_manager {
 
 struct FieldInfo {
-  uint64_t form_signature = 0u;
-  uint32_t field_signature = 0u;
+  autofill::FormSignature form_signature;
+  autofill::FieldSignature field_signature;
   autofill::ServerFieldType field_type = autofill::UNKNOWN_TYPE;
   // The date when the record was created.
   base::Time create_time;

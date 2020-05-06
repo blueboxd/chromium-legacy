@@ -10,7 +10,6 @@
 <link rel="import" href="chrome://resources/cr_components/chromeos/multidevice_setup/multidevice_setup.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout-classes.html">
 <!--
   UI for the MultiDevice setup flow when displayed after OOBE or during the
   user's first login on this Chromebook. Note that this flow is
@@ -28,7 +27,7 @@
 <dom-module id="multidevice-setup-first-run">
   <template>
     <link rel="stylesheet" href="oobe_popup_overlay.css">
-    <style include="shared-style multidevice-setup-shared ">
+    <style include="multidevice-setup-shared oobe-common">
       multidevice-setup {
         --multidevice-setup-width: 100%;
         --iron-pages-overflow: auto;

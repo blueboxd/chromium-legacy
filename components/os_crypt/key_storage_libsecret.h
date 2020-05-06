@@ -9,6 +9,7 @@
 
 #include "base/component_export.h"
 #include "base/macros.h"
+#include "base/optional.h"
 #include "components/os_crypt/key_storage_linux.h"
 
 // Specialisation of KeyStorageLinux that uses Libsecret.
@@ -20,10 +21,10 @@ class COMPONENT_EXPORT(OS_CRYPT) KeyStorageLibsecret : public KeyStorageLinux {
  protected:
   // KeyStorageLinux
   bool Init() override;
-  std::string GetKeyImpl() override;
+  base::Optional<std::string> GetKeyImpl() override;
 
  private:
-  std::string AddRandomPasswordInLibsecret();
+  base::Optional<std::string> AddRandomPasswordInLibsecret();
 
   DISALLOW_COPY_AND_ASSIGN(KeyStorageLibsecret);
 };

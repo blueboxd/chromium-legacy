@@ -15,7 +15,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
-#include "components/autofill/core/common/signatures_util.h"
+#include "components/autofill/core/common/signatures.h"
 
 using base::checked_cast;
 using base::DictionaryValue;
@@ -40,7 +40,7 @@ SavePasswordProgressLogger::~SavePasswordProgressLogger() = default;
 
 std::string FormSignatureToDebugString(autofill::FormSignature form_signature) {
   return base::StrCat(
-      {NumberToString(form_signature), " - ",
+      {NumberToString(form_signature.value()), " - ",
        NumberToString(autofill::HashFormSignature(form_signature))});
 }
 

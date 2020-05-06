@@ -30,7 +30,7 @@ using FlatRulesetIndexerTest = ::testing::Test;
 // Helper to convert a flatbuffer string to a std::string.
 std::string ToString(const flatbuffers::String* string) {
   DCHECK(string);
-  return std::string(string->c_str(), string->size());
+  return CreateString<std::string>(*string);
 }
 
 // Helper to convert a flatbuffer vector of strings to a std::vector.

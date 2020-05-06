@@ -8,6 +8,7 @@
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #import "ios/testing/earl_grey/earl_grey_test.h"
 #include "ios/testing/embedded_test_server_handlers.h"
+#include "ios/web/common/features.h"
 #include "net/test/embedded_test_server/default_handlers.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
@@ -36,6 +37,12 @@
 // Test loading a page with a bad SSL certificate from the NTP, to avoid
 // https://crbug.com/1067250 from regressing.
 - (void)testBadSSLOnNTP {
+  if (!base::FeatureList::IsEnabled(
+          web::features::kSSLCommittedInterstitials)) {
+    // The content of the interstitial isn't in the webstate in that case.
+    EARL_GREY_TEST_SKIPPED(@"The test needs committed interstitials enabled.");
+  }
+
   GREYAssertTrue(_HTTPSServer->Start(), @"Test server failed to start.");
 
   const GURL pageURL = _HTTPSServer->GetURL("/echo");

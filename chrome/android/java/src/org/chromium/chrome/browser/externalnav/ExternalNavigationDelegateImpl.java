@@ -75,19 +75,14 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
         mTab.addObserver(mTabObserver);
     }
 
-    /**
-     * Get a {@link Context} linked to this delegate with preference to {@link Activity}.
-     * The tab this delegate associates with can swap the {@link Activity} it is hosted in and
-     * during the swap, there might not be an available {@link Activity}.
-     * @return The activity {@link Context} if it can be reached.
-     *         Application {@link Context} if not.
-     */
+    @Override
+    public Activity getActivityContext() {
+        if (mTab.getWindowAndroid() == null) return null;
+        return ContextUtils.activityFromContext(mTab.getWindowAndroid().getContext().get());
+    }
+
     protected final Context getAvailableContext() {
-        if (mTab.getWindowAndroid() == null) return mApplicationContext;
-        Context activityContext =
-                ContextUtils.activityFromContext(mTab.getWindowAndroid().getContext().get());
-        if (activityContext == null) return mApplicationContext;
-        return activityContext;
+        return ExternalNavigationHandler.getAvailableContext(this);
     }
 
     /**
@@ -151,7 +146,7 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
             }
 
             if (info.activityInfo != null) {
-                if (InstantAppsHandler.getInstance().isInstantAppResolveInfo(info)) {
+                if (IntentUtils.isInstantAppResolveInfo(info)) {
                     // Don't consider the Instant Apps resolver a specialized application.
                     continue;
                 }

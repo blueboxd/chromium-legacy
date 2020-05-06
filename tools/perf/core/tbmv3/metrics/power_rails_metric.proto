@@ -7,14 +7,14 @@ import "protos/perfetto/metrics/custom_options.proto";
 
 // A metric that collects on-device power rails measurement for the
 // duration of the story run. Power drain breakdown is device-specific
-// since different devices have different sensors. This metric currently
-// only supports Sunfish EVT and DVT devices.
+// since different devices have different sensors.
+// See go/power-mobile-benchmark for the list of supported devices.
 // Output values are in Joules (Watt-seconds).
 
 message PowerRailsMetric {
   optional float total_j = 1 [(unit) = "J_smallerIsBetter"];
-  optional float cpu_big_core_j = 2 [(unit) = "J_smallerIsBetter"];
-  optional float cpu_little_core_j = 3 [(unit) = "J_smallerIsBetter"];
+  optional float cpu_big_core_cluster_j = 2 [(unit) = "J_smallerIsBetter"];
+  optional float cpu_little_core_cluster_j = 3 [(unit) = "J_smallerIsBetter"];
   optional float soc_j = 4 [(unit) = "J_smallerIsBetter"];
   optional float display_j = 5 [(unit) = "J_smallerIsBetter"];
   optional float duration_ms = 6 [(unit) = "ms"];

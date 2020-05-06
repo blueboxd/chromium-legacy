@@ -1,5 +1,7 @@
-<script src="../../../resources/testharness.js"></script>
-<script src="../../../resources/testharnessreport.js"></script>
+<link rel="help" href="https://drafts.csswg.org/css-scroll-anchoring/">
+
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
 <style>
   body {
     margin: 0px;
@@ -29,11 +31,6 @@
   // 1- page gets loaded and anchor element gets scrolled into view.
   // 2- loaded page refreshed.
   async_test(function(t) {
-    // TODO(ymalik): Remove reference to internals when scroll anchoring is
-    // enabled by default.
-    assert_false(!window.internals, 'This test requires internals');
-    internals.runtimeFlags.scrollAnchoringEnabled = true;
-
     if (window.name == 'second/load') {
       assert_equals(window.scrollY, 1000);
       // Change height of content above anchor.

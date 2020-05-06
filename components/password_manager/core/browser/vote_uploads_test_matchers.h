@@ -8,6 +8,7 @@
 #include <string>
 
 #include "components/autofill/core/browser/form_structure.h"
+#include "components/autofill/core/common/signatures.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -28,7 +29,7 @@ MATCHER_P(SignatureIsSameAs,
 MATCHER_P(SignatureIs,
           signature,
           std::string(negation ? "signature isn't " : "signature is ") +
-              base::NumberToString(signature)) {
+              base::NumberToString(signature.value())) {
   if (signature == arg.form_signature())
     return true;
 

@@ -56,11 +56,8 @@
 
 <dom-module id="oobe-welcome-dialog">
   <template>
-    <link rel="stylesheet" href="oobe_fonts.css">
-    <link rel="stylesheet" href="oobe_dialog_host.css">
-    <link rel="stylesheet" href="oobe_flex_layout.css">
+    <style include="cr-shared-style oobe-dialog-host"></style>
     <link rel="stylesheet" href="oobe_welcome_dialog.css">
-    <style include="cr-shared-style"></style>
     <oobe-dialog has-buttons footer-shrinkable>
       <h1 slot="title" id="title">
         [[i18nDynamic(locale, 'welcomeScreenGreeting')]]

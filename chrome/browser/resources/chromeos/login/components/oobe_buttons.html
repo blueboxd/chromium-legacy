@@ -5,7 +5,6 @@
 <link rel="import" href="chrome://resources/cr_elements/cr_button/cr_button.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_icons_css.html">
 <link rel="import" href="chrome://resources/cr_elements/shared_style_css.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout-classes.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-iconset-svg/iron-iconset-svg.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-styles/color.html">
@@ -55,10 +54,7 @@
 -->
 <dom-module id="oobe-text-button">
   <template>
-    <style include="iron-flex iron-flex-alignment iron-positioning"></style>
-    <link rel="stylesheet" href="../oobe_iron_flex_layout_fix.css">
-    <style include="cr-icons cr-shared-style"></style>
-    <link rel="stylesheet" href="../oobe_fonts.css">
+    <style include="cr-shared-style oobe-common"></style>
     <link rel="stylesheet" href="oobe_text_buttons.css">
     <cr-button id="textButton" on-tap="onClick_" disabled="[[disabled]]"
         inverse$="[[inverse]]" aria-label$="[[labelForAriaText_]]"
@@ -99,10 +95,7 @@
 -->
 <dom-module id="oobe-back-button">
   <template>
-    <style include="iron-flex iron-flex-alignment iron-positioning"></style>
-    <link rel="stylesheet" href="../oobe_iron_flex_layout_fix.css">
-    <style include="cr-icons cr-shared-style"></style>
-    <link rel="stylesheet" href="../oobe_fonts.css">
+    <style include="cr-icons cr-shared-style oobe-common"></style>
     <link rel="stylesheet" href="oobe_text_buttons.css">
     <link rel="stylesheet" href="oobe_back_button.css">
     <cr-button id="button" on-click="onClick_" disabled="[[disabled]]"
@@ -122,10 +115,7 @@
 
 <dom-module id="oobe-next-button">
   <template>
-    <style include="iron-flex iron-flex-alignment iron-positioning"></style>
-    <link rel="stylesheet" href="../oobe_iron_flex_layout_fix.css">
-    <style include="cr-icons cr-shared-style"></style>
-    <link rel="stylesheet" href="../oobe_fonts.css">
+    <style include="cr-icons cr-shared-style oobe-common"></style>
     <link rel="stylesheet" href="oobe_text_buttons.css">
     <link rel="stylesheet" href="oobe_next_button.css">
     <cr-button id="button" on-tap="onClick_" disabled="[[disabled]]"
@@ -166,10 +156,7 @@
 -->
 <dom-module id="oobe-welcome-secondary-button">
   <template>
-    <style include="iron-flex iron-flex-alignment iron-positioning"></style>
-    <link rel="stylesheet" href="../oobe_iron_flex_layout_fix.css">
-    <style include="cr-icons cr-shared-style"></style>
-    <link rel="stylesheet" href="../oobe_fonts.css">
+    <style include="cr-icons cr-shared-style oobe-common"></style>
     <link rel="stylesheet" href="oobe_text_buttons.css">
     <link rel="stylesheet" href="oobe_welcome_secondary_button.css">
     <cr-button id="button" aria-label$="[[labelForAriaText_]]">

@@ -72,6 +72,11 @@ extern NSString* const
 // The button for the primary action. Nil if not available.
 @property(nonatomic, readonly) UIButton* primaryActionButton;
 
+// Enables pointer support.
+#if defined(__IPHONE_13_4)
+@property(nonatomic) BOOL pointerInteractionEnabled API_AVAILABLE(ios(13.4));
+#endif  // defined(__IPHONE_13_4)
+
 @end
 
 #endif  // IOS_CHROME_COMMON_UI_CONFIRMATION_ALERT_CONFIRMATION_ALERT_VIEW_CONTROLLER_H_

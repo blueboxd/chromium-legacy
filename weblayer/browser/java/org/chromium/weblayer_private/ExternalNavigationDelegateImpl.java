@@ -31,31 +31,24 @@ import java.util.List;
  * WebLayer's implementation of the {@link ExternalNavigationDelegate}.
  */
 public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegate {
-    protected final Context mApplicationContext;
     private final TabImpl mTab;
     private boolean mTabDestroyed;
 
     public ExternalNavigationDelegateImpl(TabImpl tab) {
         mTab = tab;
-        mApplicationContext = ContextUtils.getApplicationContext();
     }
 
     public void onTabDestroyed() {
         mTabDestroyed = true;
     }
 
-    /**
-     * Get a {@link Context} linked to this delegate with preference to {@link Activity}.
-     * The tab this delegate associates with can swap the {@link Activity} it is hosted in and
-     * during the swap, there might not be an available {@link Activity}.
-     * @return The activity {@link Context} if it can be reached.
-     *         Application {@link Context} if not.
-     */
-    protected final Context getAvailableContext() {
-        if (mTab.getBrowser().getContext() == null) return mApplicationContext;
-        Context activityContext = ContextUtils.activityFromContext(mTab.getBrowser().getContext());
-        if (activityContext == null) return mApplicationContext;
-        return activityContext;
+    @Override
+    public Activity getActivityContext() {
+        return ContextUtils.activityFromContext(mTab.getBrowser().getContext());
+    }
+
+    private Context getAvailableContext() {
+        return ExternalNavigationHandler.getAvailableContext(this);
     }
 
     @Override

@@ -643,12 +643,13 @@ bool TestRecipeReplayer::ReplayRecordedActions(
   }
 
   // Convert the file text into a json object.
-  std::unique_ptr<base::DictionaryValue> recipe = base::DictionaryValue::From(
-      base::JSONReader().ReadToValueDeprecated(json_text));
-  if (!recipe) {
+  base::Optional<base::Value> parsed_json = base::JSONReader::Read(json_text);
+  if (!parsed_json) {
     ADD_FAILURE() << "Failed to deserialize json text!";
     return false;
   }
+  std::unique_ptr<base::DictionaryValue> recipe = base::DictionaryValue::From(
+      base::Value::ToUniquePtrValue(std::move(*parsed_json)));
 
   if (!InitializeBrowserToExecuteRecipe(recipe))
     return false;

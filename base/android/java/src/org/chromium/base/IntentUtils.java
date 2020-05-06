@@ -7,8 +7,10 @@ package org.chromium.base;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.ResolveInfo;
 import android.os.BadParcelableException;
 import android.os.Binder;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.os.Parcel;
@@ -33,6 +35,26 @@ public class IntentUtils {
      */
     public static final String ANDROID_APP_REFERRER_SCHEME = "android-app";
 
+    // Instant Apps system resolver activity on N-MR1+.
+    @VisibleForTesting
+    public static final String EPHEMERAL_INSTALLER_CLASS =
+            "com.google.android.gms.instantapps.routing.EphemeralInstallerActivity";
+
+    /**
+     * Whether the given ResolveInfo object refers to Instant Apps as a launcher.
+     * @param info The resolve info.
+     */
+    public static boolean isInstantAppResolveInfo(ResolveInfo info) {
+        if (info == null) return false;
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            return info.isInstantAppAvailable;
+        } else if (info.activityInfo != null) {
+            return EPHEMERAL_INSTALLER_CLASS.equals(info.activityInfo.name);
+        }
+
+        return false;
+    }
     /**
      * Just like {@link Intent#hasExtra(String)} but doesn't throw exceptions.
      */

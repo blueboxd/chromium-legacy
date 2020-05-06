@@ -9,7 +9,7 @@
 namespace blink {
 
 TEST(CascadeInterpolationsTest, Limit) {
-  constexpr size_t max = std::numeric_limits<uint16_t>::max();
+  constexpr size_t max = std::numeric_limits<uint8_t>::max();
 
   static_assert(CascadeInterpolations::kMaxEntryIndex == max,
                 "Unexpected max. If the limit increased, evaluate whether it "
@@ -41,6 +41,41 @@ TEST(CascadeInterpolationsTest, Reset) {
 
   interpolations.Reset();
   EXPECT_TRUE(interpolations.IsEmpty());
+}
+
+TEST(CascadeInterpolationsTest, EncodeDecodeInterpolationPropertyID) {
+  for (CSSPropertyID id : CSSPropertyIDList()) {
+    EXPECT_EQ(id, DecodeInterpolationPropertyID(
+                      EncodeInterpolationPosition(id, 0u, false)));
+    EXPECT_EQ(id, DecodeInterpolationPropertyID(
+                      EncodeInterpolationPosition(id, 255u, false)));
+    EXPECT_EQ(id, DecodeInterpolationPropertyID(
+                      EncodeInterpolationPosition(id, 255u, true)));
+  }
+}
+
+TEST(CascadeInterpolationsTest, EncodeDecodeInterpolationIndex) {
+  CSSPropertyID id = lastCSSProperty;
+  for (uint8_t index : Vector<uint8_t>({0u, 1u, 15u, 51u, 254u, 255u})) {
+    EXPECT_EQ(index, DecodeInterpolationIndex(
+                         EncodeInterpolationPosition(id, index, false)));
+  }
+}
+
+TEST(CascadeInterpolationsTest, EncodeDecodeIsPresentationAttribute) {
+  CSSPropertyID id = lastCSSProperty;
+  EXPECT_FALSE(DecodeIsPresentationAttribute(
+      EncodeInterpolationPosition(id, 0u, false)));
+  EXPECT_FALSE(DecodeIsPresentationAttribute(
+      EncodeInterpolationPosition(id, 13u, false)));
+  EXPECT_FALSE(DecodeIsPresentationAttribute(
+      EncodeInterpolationPosition(id, 255u, false)));
+  EXPECT_TRUE(
+      DecodeIsPresentationAttribute(EncodeInterpolationPosition(id, 0u, true)));
+  EXPECT_TRUE(DecodeIsPresentationAttribute(
+      EncodeInterpolationPosition(id, 13u, true)));
+  EXPECT_TRUE(DecodeIsPresentationAttribute(
+      EncodeInterpolationPosition(id, 255u, true)));
 }
 
 }  // namespace blink

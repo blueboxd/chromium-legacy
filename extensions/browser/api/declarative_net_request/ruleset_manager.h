@@ -126,6 +126,13 @@ class RulesetManager {
       const std::vector<const ExtensionRulesetData*>& rulesets,
       const RequestParams& params) const;
 
+  // Returns the list of matching modifyHeaders actions sorted in descending
+  // order of priority (|rulesets| is sorted in descending order of extension
+  // priority.)
+  std::vector<RequestAction> GetModifyHeadersActions(
+      const std::vector<const ExtensionRulesetData*>& rulesets,
+      const RequestParams& params) const;
+
   // Helper for EvaluateRequest.
   std::vector<RequestAction> EvaluateRequestInternal(
       const WebRequestInfo& request,

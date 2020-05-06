@@ -54,11 +54,6 @@ scoped_refptr<const NGLayoutResult> NGFieldsetLayoutAlgorithm::Layout() {
   // anonymous child box, and since padding is inside the scrollport, padding
   // also needs to be handled by the anonymous child.
 
-  if (ConstraintSpace().HasBlockFragmentation()) {
-    SetupFragmentBuilderForFragmentation(ConstraintSpace(), BreakToken(),
-                                         &container_builder_);
-  }
-
   // Calculate the amount of the border block-start that was consumed in
   // previous fragments.
   consumed_border_block_start_ =
@@ -378,9 +373,9 @@ bool NGFieldsetLayoutAlgorithm::IsFragmentainerOutOfSpace(
   return block_offset >= FragmentainerSpaceAtBfcStart(ConstraintSpace());
 }
 
-MinMaxSizesResult NGFieldsetLayoutAlgorithm::ComputeMinMaxSizes(
+MinMaxSizes NGFieldsetLayoutAlgorithm::ComputeMinMaxSizes(
     const MinMaxSizesInput& input) const {
-  MinMaxSizesResult result;
+  MinMaxSizes sizes;
 
   // TODO(crbug.com/1011842): Need to consider content-size here.
   bool apply_size_containment = Node().ShouldApplySizeContainment();
@@ -388,31 +383,29 @@ MinMaxSizesResult NGFieldsetLayoutAlgorithm::ComputeMinMaxSizes(
   // Size containment does not consider the legend for sizing.
   if (!apply_size_containment) {
     if (NGBlockNode legend = Node().GetRenderedLegend()) {
-      result = ComputeMinAndMaxContentContribution(Style(), legend, input);
-      result.sizes += ComputeMinMaxMargins(Style(), legend).InlineSum();
+      sizes = ComputeMinAndMaxContentContribution(Style(), legend, input);
+      sizes += ComputeMinMaxMargins(Style(), legend).InlineSum();
     }
   }
 
   // The fieldset content includes the fieldset padding (and any scrollbars),
   // while the legend is a regular child and doesn't. We may have a fieldset
   // without any content or legend, so add the padding here, on the outside.
-  result.sizes += ComputePadding(ConstraintSpace(), Style()).InlineSum();
+  sizes += ComputePadding(ConstraintSpace(), Style()).InlineSum();
 
   // Size containment does not consider the content for sizing.
   if (!apply_size_containment) {
     if (NGBlockNode content = Node().GetFieldsetContent()) {
-      MinMaxSizesResult content_result =
+      MinMaxSizes content_min_max_sizes =
           ComputeMinAndMaxContentContribution(Style(), content, input);
-      content_result.sizes +=
+      content_min_max_sizes +=
           ComputeMinMaxMargins(Style(), content).InlineSum();
-      result.sizes.Encompass(content_result.sizes);
-      result.depends_on_percentage_block_size |=
-          content_result.depends_on_percentage_block_size;
+      sizes.Encompass(content_min_max_sizes);
     }
   }
 
-  result.sizes += ComputeBorders(ConstraintSpace(), Style()).InlineSum();
-  return result;
+  sizes += ComputeBorders(ConstraintSpace(), Style()).InlineSum();
+  return sizes;
 }
 
 const NGConstraintSpace

@@ -198,14 +198,17 @@ void NGBlockLayoutAlgorithm::SetBoxType(NGPhysicalFragment::NGBoxType type) {
   container_builder_.SetBoxType(type);
 }
 
-MinMaxSizesResult NGBlockLayoutAlgorithm::ComputeMinMaxSizes(
+MinMaxSizes NGBlockLayoutAlgorithm::ComputeMinMaxSizes(
     const MinMaxSizesInput& input) const {
-  if (auto result = CalculateMinMaxSizesIgnoringChildren(
+  if (auto sizes = CalculateMinMaxSizesIgnoringChildren(
           node_, border_scrollbar_padding_))
-    return *result;
+    return *sizes;
 
   MinMaxSizes sizes;
-  bool depends_on_percentage_block_size = false;
+  LayoutUnit child_percentage_resolution_block_size =
+      CalculateChildPercentageBlockSizeForMinMax(
+          ConstraintSpace(), Node(), border_padding_,
+          input.percentage_resolution_block_size);
 
   const TextDirection direction = Style().Direction();
   LayoutUnit float_left_inline_size = input.float_left_inline_size;
@@ -241,13 +244,13 @@ MinMaxSizesResult NGBlockLayoutAlgorithm::ComputeMinMaxSizes(
         float_right_inline_size = LayoutUnit();
     }
 
-    MinMaxSizesInput child_input(input.percentage_resolution_block_size);
+    MinMaxSizesInput child_input(child_percentage_resolution_block_size);
     if (child.IsInline() || child.IsAnonymousBlock()) {
       child_input.float_left_inline_size = float_left_inline_size;
       child_input.float_right_inline_size = float_right_inline_size;
     }
 
-    MinMaxSizesResult child_result;
+    MinMaxSizes child_sizes;
     if (child.IsInline()) {
       // From |NGBlockLayoutAlgorithm| perspective, we can handle |NGInlineNode|
       // almost the same as |NGBlockNode|, because an |NGInlineNode| includes
@@ -255,14 +258,13 @@ MinMaxSizesResult NGBlockLayoutAlgorithm::ComputeMinMaxSizes(
       // an anonymous box that contains all line boxes.
       // |NextSibling| returns the next block sibling, or nullptr, skipping all
       // following inline siblings and descendants.
-      child_result =
+      child_sizes =
           child.ComputeMinMaxSizes(Style().GetWritingMode(), child_input);
     } else {
-      child_result =
+      child_sizes =
           ComputeMinAndMaxContentContribution(Style(), child, child_input);
     }
-    DCHECK_LE(child_result.sizes.min_size, child_result.sizes.max_size)
-        << child.ToString();
+    DCHECK_LE(child_sizes.min_size, child_sizes.max_size) << child.ToString();
 
     // Determine the max inline contribution of the child.
     NGBoxStrut margins = ComputeMinMaxMargins(Style(), child);
@@ -271,8 +273,7 @@ MinMaxSizesResult NGBlockLayoutAlgorithm::ComputeMinMaxSizes(
     if (child.IsFloating()) {
       // A float adds to its inline size to the current "line". The new max
       // inline contribution is just the sum of all the floats on that "line".
-      LayoutUnit float_inline_size =
-          child_result.sizes.max_size + margins.InlineSum();
+      LayoutUnit float_inline_size = child_sizes.max_size + margins.InlineSum();
 
       // float_inline_size is negative when the float is completely outside of
       // the content area, by e.g., negative margins. Such floats do not affect
@@ -307,26 +308,21 @@ MinMaxSizesResult NGBlockLayoutAlgorithm::ComputeMinMaxSizes(
               ? std::max(float_right_inline_size, margin_line_right)
               : float_right_inline_size + margin_line_right;
 
-      // The order of operations is important here.
-      // If child_result.sizes.max_size is saturated, adding the insets
-      // sequentially can result in an DCHECK.
+      // The order of operations is important here. If child_sizes.max_size is
+      // saturated, adding the insets sequentially can result in an DCHECK.
       max_inline_contribution =
-          child_result.sizes.max_size + (line_left_inset + line_right_inset);
+          child_sizes.max_size + (line_left_inset + line_right_inset);
     } else {
       // This is just a standard inflow child.
-      max_inline_contribution =
-          child_result.sizes.max_size + margins.InlineSum();
+      max_inline_contribution = child_sizes.max_size + margins.InlineSum();
     }
     sizes.max_size = std::max(sizes.max_size, max_inline_contribution);
 
     // The min inline contribution just assumes that floats are all on their own
     // "line".
     LayoutUnit min_inline_contribution =
-        child_result.sizes.min_size + margins.InlineSum();
+        child_sizes.min_size + margins.InlineSum();
     sizes.min_size = std::max(sizes.min_size, min_inline_contribution);
-
-    depends_on_percentage_block_size |=
-        child_result.depends_on_percentage_block_size;
 
     // Anything that isn't a float will create a new "line" resetting the float
     // size trackers.
@@ -340,7 +336,7 @@ MinMaxSizesResult NGBlockLayoutAlgorithm::ComputeMinMaxSizes(
   DCHECK_LE(sizes.min_size, sizes.max_size) << Node().ToString();
 
   sizes += border_scrollbar_padding_.InlineSum();
-  return {sizes, depends_on_percentage_block_size};
+  return sizes;
 }
 
 LogicalOffset NGBlockLayoutAlgorithm::CalculateLogicalOffset(
@@ -468,10 +464,6 @@ inline scoped_refptr<const NGLayoutResult> NGBlockLayoutAlgorithm::Layout(
             Node().IsInlineFormattingContextRoot());
   container_builder_.SetIsInlineFormattingContext(inline_child_layout_context);
 
-  if (ConstraintSpace().HasBlockFragmentation()) {
-    SetupFragmentBuilderForFragmentation(ConstraintSpace(), BreakToken(),
-                                         &container_builder_);
-  }
   container_builder_.SetBfcLineOffset(
       ConstraintSpace().BfcOffset().line_offset);
 

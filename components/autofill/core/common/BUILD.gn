@@ -56,8 +56,8 @@ jumbo_static_library("common") {
     "renderer_id.h",
     "save_password_progress_logger.cc",
     "save_password_progress_logger.h",
-    "signatures_util.cc",
-    "signatures_util.h",
+    "signatures.cc",
+    "signatures.h",
   ]
 
   deps = [

@@ -11,6 +11,11 @@
 NSURL* CredentialProviderSharedArchivableStoreURL();
 
 // Key for the app group user defaults indicating if the credentials have been
+// synced with iOS via AuthenticationServices.
+extern NSString* const
+    kUserDefaultsCredentialProviderASIdentityStoreSyncCompleted;
+
+// Key for the app group user defaults indicating if the credentials have been
 // sync for the first time. The defaults contain a Bool indicating if the first
 // time sync have been completed.
 extern NSString* const kUserDefaultsCredentialProviderFirstTimeSyncCompleted;

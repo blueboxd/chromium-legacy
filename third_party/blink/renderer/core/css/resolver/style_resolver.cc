@@ -1115,25 +1115,28 @@ bool StyleResolver::PseudoStyleForElementInternal(
     // but that would use a slow universal element selector. So instead we apply
     // the styles here as an optimization.
     if (pseudo_style_request.pseudo_id == kPseudoIdMarker) {
+      auto* set = MakeGarbageCollected<MutableCSSPropertyValueSet>(
+          state.GetParserMode());
+
       // Set 'unicode-bidi: isolate'
-      state.Style()->SetUnicodeBidi(UnicodeBidi::kIsolate);
+      set->SetProperty(CSSPropertyID::kUnicodeBidi,
+                       *CSSIdentifierValue::Create(CSSValueID::kIsolate));
 
       // Set 'font-variant-numeric: tabular-nums'
-      FontVariantNumeric variant_numeric;
-      variant_numeric.SetNumericSpacing(FontVariantNumeric::kTabularNums);
-      state.GetFontBuilder().SetVariantNumeric(variant_numeric);
-      UpdateFont(state);
+      CSSValueList* variant_numeric = CSSValueList::CreateSpaceSeparated();
+      variant_numeric->Append(
+          *CSSIdentifierValue::Create(CSSValueID::kTabularNums));
+      set->SetProperty(CSSPropertyID::kFontVariantNumeric, *variant_numeric);
 
-      // Don't bother matching rules if there is no style for ::marker
-      if (!state.ParentStyle()->HasPseudoElementStyle(kPseudoIdMarker)) {
-        StyleAdjuster::AdjustComputedStyle(state, nullptr);
-        return true;
-      }
+      cascade.MutableMatchResult().AddMatchedProperties(set);
     }
 
-    MatchUARules(state.GetElement(), collector);
-    MatchUserRules(collector);
-    MatchAuthorRules(state.GetElement(), collector);
+    // TODO(obrufau): support styling nested pseudo-elements
+    if (!element.IsPseudoElement()) {
+      MatchUARules(state.GetElement(), collector);
+      MatchUserRules(collector);
+      MatchAuthorRules(state.GetElement(), collector);
+    }
     collector.FinishAddingAuthorRulesForTreeScope();
 
     if (tracker_)

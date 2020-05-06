@@ -13,6 +13,7 @@
 #include <mfidl.h>
 #include <mfreadwrite.h>
 #include <stdint.h>
+#include <strmif.h>
 #include <wrl/client.h>
 
 #include <vector>
@@ -131,12 +132,18 @@ class CAPTURE_EXPORT VideoCaptureDeviceMFWin : public VideoCaptureDevice {
 
   std::unique_ptr<VideoCaptureDevice::Client> client_;
   const Microsoft::WRL::ComPtr<IMFMediaSource> source_;
+  Microsoft::WRL::ComPtr<IAMCameraControl> camera_control_;
+  Microsoft::WRL::ComPtr<IAMVideoProcAmp> video_control_;
   Microsoft::WRL::ComPtr<IMFCaptureEngine> engine_;
   std::unique_ptr<CapabilityWin> selected_video_capability_;
   CapabilityList photo_capabilities_;
   std::unique_ptr<CapabilityWin> selected_photo_capability_;
   bool is_started_;
   bool has_sent_on_started_to_client_;
+  // These flags keep the manual/auto mode between cycles of SetPhotoOptions().
+  bool exposure_mode_manual_;
+  bool focus_mode_manual_;
+  bool white_balance_mode_manual_;
   base::queue<TakePhotoCallback> video_stream_take_photo_callbacks_;
 
   SEQUENCE_CHECKER(sequence_checker_);

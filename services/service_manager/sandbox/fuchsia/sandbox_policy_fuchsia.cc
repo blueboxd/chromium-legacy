@@ -107,6 +107,7 @@ constexpr SandboxConfig kRendererConfig = {
 constexpr SandboxConfig kVideoCaptureConfig = {
     base::make_span((const char* const[]){
         fuchsia::camera3::DeviceWatcher::Name_,
+        fuchsia::sysmem::Allocator::Name_,
     }),
     0,
 };

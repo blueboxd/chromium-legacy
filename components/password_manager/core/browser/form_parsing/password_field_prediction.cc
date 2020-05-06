@@ -6,7 +6,7 @@
 
 #include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/core/common/form_data.h"
-#include "components/autofill/core/common/signatures_util.h"
+#include "components/autofill/core/common/signatures.h"
 
 using autofill::AutofillField;
 using autofill::FieldSignature;
@@ -78,9 +78,10 @@ FormPredictions ConvertToFormPredictions(int driver_id,
   // field.
 
   // Stores the signature of the last field with the server type
-  // ACCOUNT_CREATION_PASSWORD or NEW_PASSWORD. The value 0 represents "no
-  // field with the 'new password' type seen yet".
-  FieldSignature last_new_password = 0;
+  // ACCOUNT_CREATION_PASSWORD or NEW_PASSWORD. Initially,
+  // |last_new_password|.is_null() to represents "no
+  // field with the 'new password' type as been seen yet".
+  FieldSignature last_new_password;
 
   bool explicit_confirmation_hint_present = false;
   for (const auto& field : form_structure) {

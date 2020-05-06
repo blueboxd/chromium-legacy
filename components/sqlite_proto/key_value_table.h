@@ -82,7 +82,9 @@ void KeyValueTable<T>::GetAllData(std::map<std::string, T>* data_map,
     auto it = data_map->emplace(reader.ColumnString(0), T()).first;
     int size = reader.ColumnByteLength(1);
     const void* blob = reader.ColumnBlob(1);
-    DCHECK(blob);
+    // Annoyingly, a nullptr result means either that an error occurred or that
+    // the blob was empty; partially disambiguate based on the length.
+    DCHECK(size && blob || !size && !blob) << !!size << !!blob;
     it->second.ParseFromArray(blob, size);
   }
 }

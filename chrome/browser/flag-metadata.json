@@ -488,7 +488,7 @@
   {
     "name": "click-to-call-context-menu-selected-text",
     "owners": [ "//chrome/browser/sharing/OWNERS" ],
-    "expiry_milestone": 82
+    "expiry_milestone": 86
   },
   {
     "name": "click-to-call-detection-v2",
@@ -1345,7 +1345,7 @@
   {
     "name": "enable-cssom-view-scroll-coordinates",
     "owners": [ "cathiechen@igalia.com", "fwang@igalia.com" ],
-    "expiry_milestone": 83
+    "expiry_milestone": 85
   },
   {
     "name": "enable-cups-printers-ui-overhaul",
@@ -2072,7 +2072,7 @@
   {
     "name": "enable-sync-device-info-in-transport-mode",
     "owners": ["//components/sync/OWNERS", "//chrome/browser/sharing/OWNERS"],
-    "expiry_milestone": 83
+    "expiry_milestone": 86
   },
   {
     "name": "enable-sync-trusted-vault",
@@ -3592,7 +3592,7 @@
   {
     "name": "remote-copy-receiver",
     "owners": [ "//chrome/browser/sharing/OWNERS" ],
-    "expiry_milestone": 83
+    "expiry_milestone": 86
   },
   {
     "name": "request-unbuffered-dispatch",
@@ -3685,7 +3685,7 @@
   {
     "name": "shared-clipboard-receiver",
     "owners": [ "//chrome/browser/sharing/OWNERS" ],
-    "expiry_milestone": 82
+    "expiry_milestone": 86
   },
   {
     "name": "shared-clipboard-ui",
@@ -3695,7 +3695,7 @@
   {
     "name": "sharing-device-expiration",
     "owners": [ "//chrome/browser/sharing/OWNERS" ],
-    "expiry_milestone": 83
+    "expiry_milestone": 86
   },
   {
     "name": "sharing-peer-connection-receiver",
@@ -3715,7 +3715,7 @@
   {
     "name": "sharing-send-via-sync",
     "owners": [ "//chrome/browser/sharing/OWNERS" ],
-    "expiry_milestone": 84
+    "expiry_milestone": 86
   },
   {
     "name": "sharing-use-device-info",

@@ -26,6 +26,7 @@
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/form_field_data.h"
 #include "components/autofill/core/common/renderer_id.h"
+#include "components/autofill/core/common/signatures.h"
 #include "components/password_manager/core/browser/field_info_manager.h"
 #include "components/password_manager/core/browser/form_fetcher_impl.h"
 #include "components/password_manager/core/browser/leak_detection/leak_detection_check.h"
@@ -292,8 +293,16 @@ void SetUniqueIdIfNeeded(FormData* form) {
 
 class MockFieldInfoManager : public FieldInfoManager {
  public:
-  MOCK_METHOD3(AddFieldType, void(uint64_t, uint32_t, ServerFieldType));
-  MOCK_CONST_METHOD2(GetFieldType, ServerFieldType(uint64_t, uint32_t));
+  MOCK_METHOD(void,
+              AddFieldType,
+              (autofill::FormSignature,
+               autofill::FieldSignature,
+               ServerFieldType),
+              (override));
+  MOCK_METHOD(ServerFieldType,
+              GetFieldType,
+              (autofill::FormSignature, autofill::FieldSignature),
+              (const override));
 };
 
 }  // namespace

@@ -4,6 +4,8 @@
 
 #include "ios/chrome/browser/credential_provider/credential_provider_service.h"
 
+#import <AuthenticationServices/AuthenticationServices.h>
+
 #include "base/logging.h"
 #include "base/scoped_observer.h"
 #include "base/threading/sequenced_task_runner_handle.h"
@@ -14,6 +16,7 @@
 #include "ios/chrome/common/app_group/app_group_constants.h"
 #import "ios/chrome/common/credential_provider/archivable_credential.h"
 #import "ios/chrome/common/credential_provider/archivable_credential_store.h"
+#import "ios/chrome/common/credential_provider/as_password_credential_identity+credential.h"
 #import "ios/chrome/common/credential_provider/constants.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -32,6 +35,46 @@ BOOL ShouldSyncAllCredentials() {
   DCHECK(shared_defaults);
   return ![shared_defaults
       boolForKey:kUserDefaultsCredentialProviderFirstTimeSyncCompleted];
+}
+
+BOOL ShouldSyncASIdentityStore() {
+  NSUserDefaults* shared_defaults = app_group::GetGroupUserDefaults();
+  DCHECK(shared_defaults);
+  BOOL isIdentityStoreSynced = [shared_defaults
+      boolForKey:kUserDefaultsCredentialProviderASIdentityStoreSyncCompleted];
+  BOOL areCredentialsSynced = [shared_defaults
+      boolForKey:kUserDefaultsCredentialProviderFirstTimeSyncCompleted];
+  return !isIdentityStoreSynced && areCredentialsSynced;
+}
+
+void SyncASIdentityStore(ArchivableCredentialStore* credential_store) {
+  auto stateCompletion = ^(ASCredentialIdentityStoreState* state) {
+#if !defined(NDEBUG)
+    dispatch_assert_queue_not(dispatch_get_main_queue());
+#endif  // !defined(NDEBUG)
+    if (state.enabled) {
+      NSArray<id<Credential>>* credentials = credential_store.credentials;
+      NSMutableArray<ASPasswordCredentialIdentity*>* storeIdentities =
+          [NSMutableArray arrayWithCapacity:credentials.count];
+      for (id<Credential> credential in credentials) {
+        [storeIdentities addObject:[[ASPasswordCredentialIdentity alloc]
+                                       initWithCredential:credential]];
+      }
+      auto replaceCompletion = ^(BOOL success, NSError* error) {
+        DCHECK(success) << "Failed to update store, error: "
+                        << error.description;
+        NSUserDefaults* shared_defaults = app_group::GetGroupUserDefaults();
+        NSString* key =
+            kUserDefaultsCredentialProviderASIdentityStoreSyncCompleted;
+        [shared_defaults setBool:success forKey:key];
+      };
+      [ASCredentialIdentityStore.sharedStore
+          replaceCredentialIdentitiesWithIdentities:storeIdentities
+                                         completion:replaceCompletion];
+    }
+  };
+  [ASCredentialIdentityStore.sharedStore
+      getCredentialIdentityStoreStateWithCompletion:stateCompletion];
 }
 
 ArchivableCredential* CredentialFromForm(const PasswordForm& form) {
@@ -57,8 +100,11 @@ CredentialProviderService::CredentialProviderService(
       archivable_credential_store_(credential_store) {
   DCHECK(password_store_);
   password_store_->AddObserver(this);
-  // TODO(crbug.com/1066803): Wait for things to settle down before sync, and
+  // TODO(crbug.com/1066803): Wait for things to settle down before syncs, and
   // sync credentials after Sync finishes or some seconds in the future.
+  if (ShouldSyncASIdentityStore()) {
+    SyncASIdentityStore(credential_store);
+  }
   if (ShouldSyncAllCredentials()) {
     RequestSyncAllCredentials();
   }
@@ -76,38 +122,19 @@ void CredentialProviderService::OnGetPasswordStoreResults(
     std::vector<std::unique_ptr<PasswordForm>> results) {
   [archivable_credential_store_ removeAllCredentials];
   for (const auto& form : results) {
-    SaveCredential(*form);
+    ArchivableCredential* credential = CredentialFromForm(*form);
+    if (credential) {
+      [archivable_credential_store_ addCredential:credential];
+    }
   }
   SyncStore(^(NSError* error) {
     if (!error) {
       [app_group::GetGroupUserDefaults()
           setBool:YES
            forKey:kUserDefaultsCredentialProviderFirstTimeSyncCompleted];
+      SyncASIdentityStore(archivable_credential_store_);
     }
   });
-}
-
-void CredentialProviderService::SaveCredential(const PasswordForm& form) const {
-  ArchivableCredential* credential = CredentialFromForm(form);
-  if (credential) {
-    [archivable_credential_store_ addCredential:credential];
-  }
-}
-
-void CredentialProviderService::UpdateCredential(
-    const PasswordForm& form) const {
-  ArchivableCredential* credential = CredentialFromForm(form);
-  if (credential) {
-    [archivable_credential_store_ updateCredential:credential];
-  }
-}
-
-void CredentialProviderService::RemoveCredential(
-    const PasswordForm& form) const {
-  ArchivableCredential* credential = CredentialFromForm(form);
-  if (credential) {
-    [archivable_credential_store_ removeCredential:credential];
-  }
 }
 
 void CredentialProviderService::SyncStore(void (^completion)(NSError*)) const {
@@ -122,15 +149,19 @@ void CredentialProviderService::SyncStore(void (^completion)(NSError*)) const {
 void CredentialProviderService::OnLoginsChanged(
     const PasswordStoreChangeList& changes) {
   for (const PasswordStoreChange& change : changes) {
+    ArchivableCredential* credential = CredentialFromForm(change.form());
+    if (!credential) {
+      continue;
+    }
     switch (change.type()) {
       case PasswordStoreChange::ADD:
-        SaveCredential(change.form());
+        [archivable_credential_store_ addCredential:credential];
         break;
       case PasswordStoreChange::UPDATE:
-        UpdateCredential(change.form());
+        [archivable_credential_store_ updateCredential:credential];
         break;
       case PasswordStoreChange::REMOVE:
-        RemoveCredential(change.form());
+        [archivable_credential_store_ removeCredential:credential];
         break;
 
       default:
@@ -138,5 +169,12 @@ void CredentialProviderService::OnLoginsChanged(
         break;
     }
   }
-  SyncStore(nil);
+  SyncStore(^(NSError* error) {
+    if (!error) {
+      // TODO(crbug.com/1077747): Support ASCredentialIdentityStore incremental
+      // updates. Currently calling multiple methods on it to save and remove
+      // causes it to crash. This needs to be further investigated.
+      SyncASIdentityStore(archivable_credential_store_);
+    }
+  });
 }

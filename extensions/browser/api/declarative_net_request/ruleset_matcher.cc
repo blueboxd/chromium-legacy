@@ -4,6 +4,7 @@
 
 #include "extensions/browser/api/declarative_net_request/ruleset_matcher.h"
 
+#include <iterator>
 #include <utility>
 
 #include "base/check.h"
@@ -83,6 +84,22 @@ uint8_t RulesetMatcher::GetRemoveHeadersMask(
   return mask | regex_matcher_.GetRemoveHeadersMask(
                     params, excluded_remove_headers_mask | mask,
                     remove_headers_actions);
+}
+
+std::vector<RequestAction> RulesetMatcher::GetModifyHeadersActions(
+    const RequestParams& params) const {
+  std::vector<RequestAction> modify_header_actions =
+      url_pattern_index_matcher_.GetModifyHeadersActions(params);
+
+  std::vector<RequestAction> regex_modify_header_actions =
+      regex_matcher_.GetModifyHeadersActions(params);
+
+  modify_header_actions.insert(
+      modify_header_actions.end(),
+      std::make_move_iterator(regex_modify_header_actions.begin()),
+      std::make_move_iterator(regex_modify_header_actions.end()));
+
+  return modify_header_actions;
 }
 
 bool RulesetMatcher::IsExtraHeadersMatcher() const {

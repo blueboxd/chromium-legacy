@@ -106,6 +106,18 @@ struct TestRuleRedirect : public DictionarySource {
   std::unique_ptr<base::DictionaryValue> ToValue() const override;
 };
 
+struct TestHeaderInfo : public DictionarySource {
+  TestHeaderInfo(std::string header, std::string operation);
+  ~TestHeaderInfo() override;
+  TestHeaderInfo(const TestHeaderInfo&);
+  TestHeaderInfo& operator=(const TestHeaderInfo&);
+
+  base::Optional<std::string> header;
+  base::Optional<std::string> operation;
+
+  std::unique_ptr<base::DictionaryValue> ToValue() const override;
+};
+
 struct TestRuleAction : public DictionarySource {
   TestRuleAction();
   ~TestRuleAction() override;
@@ -114,6 +126,8 @@ struct TestRuleAction : public DictionarySource {
 
   base::Optional<std::string> type;
   base::Optional<std::vector<std::string>> remove_headers_list;
+  base::Optional<std::vector<TestHeaderInfo>> request_headers;
+  base::Optional<std::vector<TestHeaderInfo>> response_headers;
   base::Optional<TestRuleRedirect> redirect;
 
   std::unique_ptr<base::DictionaryValue> ToValue() const override;

@@ -93,6 +93,12 @@ flat::ActionType ConvertToFlatActionType(
 std::string GetPublicRulesetID(const Extension& extension,
                                RulesetID ruleset_id);
 
+// Helper to convert a flatbufffers::String to a string-like object with type T.
+template <typename T>
+T CreateString(const flatbuffers::String& str) {
+  return T(str.c_str(), str.size());
+}
+
 }  // namespace declarative_net_request
 }  // namespace extensions
 

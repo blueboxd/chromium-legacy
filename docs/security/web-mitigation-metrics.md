@@ -84,9 +84,10 @@ usage we obtain the following usage counts:
   two allow us to determine which percentage of pages run in enforcing or
   report-only mode (or both).
 
-* Tracking specific features: `kTrustedTypesDefaultPolicyUsed` notes whether a
-  "default" policy has been used. `kTrustedTyoesAllowDuplicates` records
-  whether an 'allow-duplicates' keyword has been used.
+* Tracking specific features: `kTrustedTypesPolicyCreated` tracks
+  creation of all Trusted Types policies, `kTrustedTypesDefaultPolicyCreated`
+  notes whether a "default" policy has been created. `kTrustedTypesAllowDuplicates` 
+  records whether an 'allow-duplicates' keyword has been used.
 
 * Error tracking: `kTrustedTypesAssignmentError` tracks whether Trusted Types
   has blocked a string assignment.

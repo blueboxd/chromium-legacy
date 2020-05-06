@@ -54,9 +54,11 @@ void ProcessMetricsHistory::SampleMetrics() {
   package_idle_wakeups_ = process_metrics_->GetPackageIdleWakeupsPerSecond();
   energy_impact_ = process_metrics_->GetEnergyImpact();
 #endif
+
+  UpdateHistograms();
 }
 
-void ProcessMetricsHistory::RunPerformanceTriggers() {
+void ProcessMetricsHistory::UpdateHistograms() {
   // We scale up to the equivalent of 64 CPU cores fully loaded. More than this
   // doesn't really matter, as we're already in a terrible place.
   const int kHistogramMin = 1;

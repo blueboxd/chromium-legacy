@@ -6,16 +6,48 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_RESOLVER_CASCADE_INTERPOLATIONS_H_
 
 #include "third_party/blink/renderer/core/animation/interpolation.h"
+#include "third_party/blink/renderer/core/animation/property_handle.h"
 #include "third_party/blink/renderer/core/css/resolver/cascade_origin.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 
 namespace blink {
 
+// bit:  0-15: CSSPropertyID
+// bit: 16-23: Entry index
+// bit: 24: Presentation attribute bit (inverse)
+//
+// Our tests currently expect css properties to win over presentation
+// attributes. We borrow bit 24 for this purpose, even though it's not really
+// part of the position.
+inline uint32_t EncodeInterpolationPosition(CSSPropertyID id,
+                                            uint8_t index,
+                                            bool is_presentation_attribute) {
+  static_assert(kIntLastCSSProperty < std::numeric_limits<uint16_t>::max(),
+                "Enough bits for CSSPropertyID");
+  DCHECK_NE(id, CSSPropertyID::kInvalid);
+  DCHECK_LE(id, lastCSSProperty);
+  return (static_cast<uint32_t>(!is_presentation_attribute) << 24) |
+         (static_cast<uint32_t>(index & 0xFF) << 16) |
+         (static_cast<uint32_t>(id) & 0xFFFF);
+}
+
+inline CSSPropertyID DecodeInterpolationPropertyID(uint32_t position) {
+  return convertToCSSPropertyID(position & 0xFFFF);
+}
+
+inline uint8_t DecodeInterpolationIndex(uint32_t position) {
+  return (position >> 16) & 0xFF;
+}
+
+inline bool DecodeIsPresentationAttribute(uint32_t position) {
+  return (~position >> 24) & 1;
+}
+
 class CORE_EXPORT CascadeInterpolations {
   STACK_ALLOCATED();
 
  public:
-  static constexpr size_t kMaxEntryIndex = std::numeric_limits<uint16_t>::max();
+  static constexpr size_t kMaxEntryIndex = std::numeric_limits<uint8_t>::max();
 
   struct Entry {
     DISALLOW_NEW();

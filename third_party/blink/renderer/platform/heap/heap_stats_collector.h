@@ -61,7 +61,6 @@ class PLATFORM_EXPORT ThreadHeapStatsObserver {
   V(MarkWeakProcessing)               \
   V(UnifiedMarkingStep)               \
   V(VisitCrossThreadPersistents)      \
-  V(VisitDOMWrappers)                 \
   V(VisitPersistentRoots)             \
   V(VisitPersistents)                 \
   V(VisitRoots)                       \

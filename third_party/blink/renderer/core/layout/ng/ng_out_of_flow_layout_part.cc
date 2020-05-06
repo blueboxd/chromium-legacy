@@ -607,8 +607,7 @@ scoped_refptr<const NGLayoutResult> NGOutOfFlowLayoutPart::Layout(
     }
 
     min_max_sizes = node.ComputeMinMaxSizes(candidate_writing_mode, input,
-                                            &candidate_constraint_space)
-                        .sizes;
+                                            &candidate_constraint_space);
   }
 
   base::Optional<LogicalSize> replaced_size;

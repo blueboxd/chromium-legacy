@@ -500,6 +500,8 @@ void AddContentSecurityPolicyFromHeaders(
                .flags;
     }
 
+    policy->upgrade_insecure_requests |=
+        directives.contains("upgrade-insecure-requests");
     policy->treat_as_public_address |=
         directives.contains("treat-as-public-address");
 

@@ -174,12 +174,9 @@ TEST_F(NGBlockNodeForTest, MinAndMaxContent) {
   const int kWidth = 30;
 
   NGBlockNode box(ToLayoutBox(GetLayoutObjectByElementId("box")));
-  MinMaxSizes sizes =
-      box.ComputeMinMaxSizes(
-             WritingMode::kHorizontalTb,
-             MinMaxSizesInput(
-                 /* percentage_resolution_block_size */ LayoutUnit()))
-          .sizes;
+  MinMaxSizes sizes = box.ComputeMinMaxSizes(
+      WritingMode::kHorizontalTb,
+      MinMaxSizesInput(/* percentage_resolution_block_size */ LayoutUnit()));
   EXPECT_EQ(LayoutUnit(kWidth), sizes.min_size);
   EXPECT_EQ(LayoutUnit(kWidth), sizes.max_size);
 }

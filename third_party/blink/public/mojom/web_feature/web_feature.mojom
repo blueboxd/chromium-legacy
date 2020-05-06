@@ -2080,7 +2080,7 @@ enum WebFeature {
   kV8PaymentRequest_HasEnrolledInstrument_Method = 2721,
   kTrustedTypesEnabled = 2722,
   kTrustedTypesCreatePolicy = 2723,
-  kTrustedTypesDefaultPolicyUsed = 2724,
+  kTrustedTypesDefaultPolicyCreated = 2724,
   kTrustedTypesAssignmentError = 2725,
   kBadgeSet = 2726,
   kBadgeClear = 2727,
@@ -2613,6 +2613,7 @@ enum WebFeature {
   kTrustTokenFetch = 3276,
   kTrustTokenXhr = 3277,
   kTrustTokenIframe = 3278,
+  kTrustedTypesPolicyCreated = 3279,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

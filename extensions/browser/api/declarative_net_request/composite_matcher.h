@@ -73,6 +73,12 @@ class CompositeMatcher {
       uint8_t excluded_remove_headers_mask,
       std::vector<RequestAction>* remove_headers_actions) const;
 
+  // Returns all matching RequestActions for the request corresponding to
+  // modifyHeaders rules matched from this extension, sorted in descending order
+  // by rule priority.
+  std::vector<RequestAction> GetModifyHeadersActions(
+      const RequestParams& params) const;
+
   // Returns whether this modifies "extraHeaders".
   bool HasAnyExtraHeadersMatcher() const;
 

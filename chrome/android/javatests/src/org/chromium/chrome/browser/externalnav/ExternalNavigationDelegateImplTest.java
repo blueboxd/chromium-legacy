@@ -18,6 +18,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.IntentUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.IntentHandler;
@@ -213,11 +214,11 @@ import java.util.List;
         info.filter.addDataPath("somepath", 2);
         info.activityInfo = new ActivityInfo();
 
-        // See InstantAppsHandler.isInstantAppResolveInfo
+        // See IntentUtils.isInstantAppResolveInfo
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             info.isInstantAppAvailable = true;
         } else {
-            info.activityInfo.name = InstantAppsHandler.EPHEMERAL_INSTALLER_CLASS;
+            info.activityInfo.name = IntentUtils.EPHEMERAL_INSTALLER_CLASS;
         }
         info.activityInfo.packageName = "com.google.android.gms";
         List<ResolveInfo> resolveInfos = makeResolveInfos(info);

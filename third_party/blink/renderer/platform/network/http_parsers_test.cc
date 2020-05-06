@@ -706,8 +706,8 @@ TEST(HTTPParsersTest, ParseContentSecurityPolicyDirectiveName) {
   EXPECT_EQ(0u, policies[6]->directives.size());
   // default-src. Not parsed.
   EXPECT_EQ(0u, policies[7]->directives.size());
-  // upgrade-insecure-policies. Not parsed.
-  EXPECT_EQ(false, policies[8]->upgrade_insecure_requests);
+  // upgrade-insecure-policies.
+  EXPECT_EQ(true, policies[8]->upgrade_insecure_requests);
 }
 
 TEST(HTTPParsersTest, ParseContentSecurityPolicyReportTo) {

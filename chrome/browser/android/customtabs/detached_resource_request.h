@@ -58,6 +58,7 @@ class DetachedResourceRequest {
                              const GURL& first_party_for_cookies,
                              net::URLRequest::ReferrerPolicy referer_policy,
                              Motivation motivation,
+                             const std::string& package_name,
                              OnResultCallback cb = base::DoNothing());
 
  private:
@@ -65,6 +66,7 @@ class DetachedResourceRequest {
                           const GURL& site_for_cookies,
                           net::URLRequest::ReferrerPolicy referer_policy,
                           Motivation motivation,
+                          const std::string& package_name,
                           OnResultCallback cb);
 
   static void Start(std::unique_ptr<DetachedResourceRequest> request,
@@ -81,6 +83,7 @@ class DetachedResourceRequest {
   OnResultCallback cb_;
   std::unique_ptr<network::SimpleURLLoader> url_loader_;
   int redirects_;
+  bool is_from_aga_;
 
   DISALLOW_COPY_AND_ASSIGN(DetachedResourceRequest);
 };

@@ -92,8 +92,9 @@ public class PaintPreviewTabService implements NativePaintPreviewServiceProvider
      * for the regular to capture and delete paint previews as needed. Audits restored tabs to
      * remove any failed deletions.
      * @param tabModelSelector the TabModelSelector for the activity.
+     * @param runAudit whether to delete tabs not in the tabModelSelector.
      */
-    public void onRestoreCompleted(TabModelSelector tabModelSelector) {
+    public void onRestoreCompleted(TabModelSelector tabModelSelector, boolean runAudit) {
         mTabModelSelectorTabObserver =
                 new PaintPreviewTabServiceTabModelSelectorTabObserver(this, tabModelSelector);
         TabModel regularTabModel = tabModelSelector.getModel(/*incognito*/ false);
@@ -104,7 +105,8 @@ public class PaintPreviewTabService implements NativePaintPreviewServiceProvider
             Tab tab = regularTabModel.getTabAt(i);
             tabIds[i] = tab.getId();
         }
-        auditArtifacts(tabIds);
+
+        if (runAudit) auditArtifacts(tabIds);
     }
 
     private void captureTab(Tab tab, Callback<Boolean> successCallback) {

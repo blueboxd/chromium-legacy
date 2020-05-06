@@ -13,7 +13,6 @@
 #include "components/autofill/core/common/form_field_data.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/autofill/core/common/renderer_id.h"
-#include "components/autofill/core/common/signatures_util.h"
 #include "url/gurl.h"
 
 namespace autofill {

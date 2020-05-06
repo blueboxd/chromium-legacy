@@ -64,23 +64,6 @@ const CSSValue* Parse(const CSSProperty& property,
                                              context);
 }
 
-uint32_t EncodeInterpolationPosition(size_t index,
-                                     bool is_presentation_attribute) {
-  // Our tests currently expect css properties to win over presentation
-  // attributes. Hence, we borrow a bit in the position-uint32_t for this
-  // purpose.
-  return (static_cast<uint32_t>(!is_presentation_attribute) << 16) |
-         static_cast<uint16_t>(index);
-}
-
-size_t DecodeInterpolationIndex(uint32_t position) {
-  return position & 0xFFFF;
-}
-
-bool DecodeIsPresentationAttribute(uint32_t position) {
-  return (~position >> 16) & 1;
-}
-
 const CSSValue* ValueAt(const MatchResult& result, uint32_t position) {
   size_t matched_properties_index = DecodeMatchedPropertiesIndex(position);
   size_t declaration_index = DecodeDeclarationIndex(position);
@@ -91,10 +74,14 @@ const CSSValue* ValueAt(const MatchResult& result, uint32_t position) {
 
 PropertyHandle ToPropertyHandle(const CSSProperty& property,
                                 CascadePriority priority) {
-  if (IsA<CustomProperty>(property))
-    return PropertyHandle(property.GetPropertyNameAtomicString());
   uint32_t position = priority.GetPosition();
-  return PropertyHandle(property, DecodeIsPresentationAttribute(position));
+  CSSPropertyID id = DecodeInterpolationPropertyID(position);
+  if (id == CSSPropertyID::kVariable) {
+    DCHECK(IsA<CustomProperty>(property));
+    return PropertyHandle(property.GetPropertyNameAtomicString());
+  }
+  return PropertyHandle(CSSProperty::Get(id),
+                        DecodeIsPresentationAttribute(position));
 }
 
 // https://drafts.csswg.org/css-cascade-4/#default
@@ -230,11 +217,11 @@ void StyleCascade::AnalyzeInterpolations() {
   const auto& entries = interpolations_.GetEntries();
   for (size_t i = 0; i < entries.size(); ++i) {
     for (const auto& active_interpolation : *entries[i].map) {
+      auto name = active_interpolation.key.GetCSSPropertyName();
       uint32_t position = EncodeInterpolationPosition(
-          i, active_interpolation.key.IsPresentationAttribute());
+          name.Id(), i, active_interpolation.key.IsPresentationAttribute());
       CascadePriority priority(entries[i].origin, false, 0, position);
 
-      auto name = active_interpolation.key.GetCSSPropertyName();
       CSSPropertyRef ref(name, GetDocument());
       DCHECK(ref.IsValid());
       const CSSProperty& property = ResolveSurrogate(ref.GetProperty());
@@ -367,8 +354,8 @@ void StyleCascade::ApplyInterpolationMap(const ActiveInterpolationsMap& map,
                                          CascadeResolver& resolver) {
   for (const auto& entry : map) {
     auto name = entry.key.GetCSSPropertyName();
-    uint32_t position =
-        EncodeInterpolationPosition(index, entry.key.IsPresentationAttribute());
+    uint32_t position = EncodeInterpolationPosition(
+        name.Id(), index, entry.key.IsPresentationAttribute());
     CascadePriority priority(origin, false, 0, position);
     priority = CascadePriority(priority, resolver.generation_);
 

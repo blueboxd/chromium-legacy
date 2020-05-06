@@ -38,6 +38,7 @@
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_switches.h"
 #include "components/autofill/core/common/form_data.h"
+#include "components/autofill/core/common/signatures.h"
 #include "components/prefs/pref_service.h"
 #include "components/variations/variations_http_header_provider.h"
 #include "net/http/http_status_code.h"
@@ -590,13 +591,13 @@ TEST_F(AutofillDownloadManagerTest, QueryAPITest) {
         DeserializeAutofillPageQueryRequest(encoded_request, &request_content));
     // Verify form content.
     ASSERT_EQ(request_content.forms().size(), 1);
-    EXPECT_EQ(request_content.forms(0).signature(),
+    EXPECT_EQ(FormSignature(request_content.forms(0).signature()),
               form_structures[0]->form_signature());
     // Verify field content.
     ASSERT_EQ(request_content.forms(0).fields().size(), 2);
-    EXPECT_EQ(request_content.forms(0).fields(0).signature(),
+    EXPECT_EQ(FieldSignature(request_content.forms(0).fields(0).signature()),
               form_structures[0]->field(0)->GetFieldSignature());
-    EXPECT_EQ(request_content.forms(0).fields(1).signature(),
+    EXPECT_EQ(FieldSignature(request_content.forms(0).fields(1).signature()),
               form_structures[0]->field(1)->GetFieldSignature());
   }
 
@@ -708,11 +709,11 @@ TEST_F(AutofillDownloadManagerTest, QueryAPITestWhenTooLongUrl) {
         query_request.serialized_request(), &request_content));
     // Verify form content.
     ASSERT_EQ(request_content.forms().size(), 1);
-    EXPECT_EQ(request_content.forms(0).signature(),
+    EXPECT_EQ(FormSignature(request_content.forms(0).signature()),
               form_structures[0]->form_signature());
     // Verify field content.
     ASSERT_EQ(request_content.forms(0).fields().size(), 1);
-    EXPECT_EQ(request_content.forms(0).fields(0).signature(),
+    EXPECT_EQ(FieldSignature(request_content.forms(0).fields(0).signature()),
               form_structures[0]->field(0)->GetFieldSignature());
   }
 
@@ -791,7 +792,7 @@ TEST_F(AutofillDownloadManagerTest, UploadToAPITest) {
   AutofillUploadRequest upload_request;
   EXPECT_TRUE(GetUploadRequestProtoFromRequest(request, &upload_request));
   EXPECT_GT(upload_request.upload().client_version().size(), 0U);
-  EXPECT_EQ(upload_request.upload().form_signature(),
+  EXPECT_EQ(FormSignature(upload_request.upload().form_signature()),
             form_structure.form_signature());
 
   // Trigger an upload response from the API and assert upload response content.

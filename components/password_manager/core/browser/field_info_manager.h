@@ -8,6 +8,7 @@
 #include <map>
 
 #include "components/autofill/core/browser/field_types.h"
+#include "components/autofill/core/common/signatures.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/password_manager/core/browser/password_store_consumer.h"
 
@@ -18,13 +19,13 @@ class PasswordStore;
 class FieldInfoManager {
  public:
   virtual ~FieldInfoManager() = default;
-  virtual void AddFieldType(uint64_t form_signature,
-                            uint32_t field_signature,
+  virtual void AddFieldType(autofill::FormSignature form_signature,
+                            autofill::FieldSignature field_signature,
                             autofill::ServerFieldType field_type) = 0;
 
   virtual autofill::ServerFieldType GetFieldType(
-      uint64_t form_signature,
-      uint32_t field_signature) const = 0;
+      autofill::FormSignature form_signature,
+      autofill::FieldSignature field_signature) const = 0;
 };
 
 // Keeps semantic types of web forms fields. Fields are specified with a pair
@@ -39,12 +40,12 @@ class FieldInfoManagerImpl : public FieldInfoManager,
   ~FieldInfoManagerImpl() override;
 
   // FieldInfoManager:
-  void AddFieldType(uint64_t form_signature,
-                    uint32_t field_signature,
+  void AddFieldType(autofill::FormSignature form_signature,
+                    autofill::FieldSignature field_signature,
                     autofill::ServerFieldType field_type) override;
   autofill::ServerFieldType GetFieldType(
-      uint64_t form_signature,
-      uint32_t field_signature) const override;
+      autofill::FormSignature form_signature,
+      autofill::FieldSignature field_signature) const override;
 
  private:
   // PasswordStoreConsumer:
@@ -52,7 +53,8 @@ class FieldInfoManagerImpl : public FieldInfoManager,
       std::vector<std::unique_ptr<autofill::PasswordForm>> results) override;
   void OnGetAllFieldInfo(std::vector<FieldInfo>) override;
 
-  std::map<std::pair<uint64_t, uint32_t>, autofill::ServerFieldType>
+  std::map<std::pair<autofill::FormSignature, autofill::FieldSignature>,
+           autofill::ServerFieldType>
       field_types_;
   scoped_refptr<password_manager::PasswordStore> store_;
 };

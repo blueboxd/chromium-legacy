@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_AUTOFILL_CORE_COMMON_SIGNATURES_UTIL_H_
-#define COMPONENTS_AUTOFILL_CORE_COMMON_SIGNATURES_UTIL_H_
+#ifndef COMPONENTS_AUTOFILL_CORE_COMMON_SIGNATURES_H_
+#define COMPONENTS_AUTOFILL_CORE_COMMON_SIGNATURES_H_
 
 #include <stddef.h>
 
@@ -11,14 +11,34 @@
 #include <string>
 
 #include "base/strings/string16.h"
+#include "base/util/type_safety/id_type.h"
 
 namespace autofill {
 
 struct FormData;
 struct FormFieldData;
 
-using FormSignature = uint64_t;
-using FieldSignature = uint32_t;
+namespace internal {
+
+using FormSignatureType =
+    ::util::IdType<class FormSignatureMarker, uint64_t, 0>;
+
+using FieldSignatureType =
+    ::util::IdType<class FieldSignatureMarker, uint32_t, 0>;
+
+}  // namespace internal
+
+// The below strong aliases are defined as subclasses instead of typedefs in
+// order to avoid having to define out-of-line constructors in all structs that
+// contain signatures.
+
+class FormSignature : public internal::FormSignatureType {
+  using internal::FormSignatureType::IdType;
+};
+
+class FieldSignature : public internal::FieldSignatureType {
+  using internal::FieldSignatureType::IdType;
+};
 
 // Calculates form signature based on |form_data|.
 FormSignature CalculateFormSignature(const FormData& form_data);
@@ -43,6 +63,7 @@ int64_t HashFormSignature(autofill::FormSignature form_signature);
 
 // Reduce FieldSignature space (in UKM) to a small range for privacy reasons.
 int64_t HashFieldSignature(autofill::FieldSignature field_signature);
-}
 
-#endif  // COMPONENTS_AUTOFILL_CORE_COMMON_SIGNATURES_UTIL_H_
+}  // namespace autofill
+
+#endif  // COMPONENTS_AUTOFILL_CORE_COMMON_SIGNATURES_H_

@@ -147,6 +147,19 @@ std::unique_ptr<base::DictionaryValue> TestRuleRedirect::ToValue() const {
   return dict;
 }
 
+TestHeaderInfo::TestHeaderInfo(std::string header, std::string operation)
+    : header(std::move(header)), operation(std::move(operation)) {}
+TestHeaderInfo::~TestHeaderInfo() = default;
+TestHeaderInfo::TestHeaderInfo(const TestHeaderInfo&) = default;
+TestHeaderInfo& TestHeaderInfo::operator=(const TestHeaderInfo&) = default;
+
+std::unique_ptr<base::DictionaryValue> TestHeaderInfo::ToValue() const {
+  auto dict = std::make_unique<base::DictionaryValue>();
+  SetValue(dict.get(), kHeaderNameKey, header);
+  SetValue(dict.get(), kHeaderOperationKey, operation);
+  return dict;
+}
+
 TestRuleAction::TestRuleAction() = default;
 TestRuleAction::~TestRuleAction() = default;
 TestRuleAction::TestRuleAction(const TestRuleAction&) = default;
@@ -156,6 +169,8 @@ std::unique_ptr<base::DictionaryValue> TestRuleAction::ToValue() const {
   auto dict = std::make_unique<base::DictionaryValue>();
   SetValue(dict.get(), kRuleActionTypeKey, type);
   SetValue(dict.get(), kRemoveHeadersListKey, remove_headers_list);
+  SetValue(dict.get(), kRequestHeadersKey, request_headers);
+  SetValue(dict.get(), kResponseHeadersKey, response_headers);
   SetValue(dict.get(), kRedirectKey, redirect);
   return dict;
 }

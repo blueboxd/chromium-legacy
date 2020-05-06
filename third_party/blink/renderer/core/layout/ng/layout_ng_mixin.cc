@@ -90,11 +90,9 @@ MinMaxSizes LayoutNGMixin<Base>::ComputeIntrinsicLogicalWidths() const {
       LayoutBoxUtils::AvailableLogicalHeight(*this, Base::ContainingBlock());
 
   NGConstraintSpace space = ConstraintSpaceForMinMaxSizes();
-  MinMaxSizes sizes =
-      node.ComputeMinMaxSizes(node.Style().GetWritingMode(),
-                              MinMaxSizesInput(available_logical_height),
-                              &space)
-          .sizes;
+  MinMaxSizes sizes = node.ComputeMinMaxSizes(
+      node.Style().GetWritingMode(), MinMaxSizesInput(available_logical_height),
+      &space);
 
   if (Base::IsTableCell()) {
     // If a table cell, or the column that it belongs to, has a specified fixed

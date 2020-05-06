@@ -695,6 +695,7 @@ junit_binary("chrome_junit_tests") {
   # From java_sources.gni.
   sources = chrome_junit_test_java_sources
 
+  # Should not have any deps native targets since junit tests are java-only.
   assert_no_deps = [
     "//content",
     "//mojo/public/mojom/base",

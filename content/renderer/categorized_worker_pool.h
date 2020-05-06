@@ -12,6 +12,7 @@
 #include "base/sequenced_task_runner.h"
 #include "base/synchronization/condition_variable.h"
 #include "base/task_runner.h"
+#include "base/thread_annotations.h"
 #include "base/threading/simple_thread.h"
 #include "cc/raster/task_category.h"
 #include "cc/raster/task_graph_runner.h"
@@ -104,25 +105,31 @@ class CONTENT_EXPORT CategorizedWorkerPool : public base::TaskRunner,
   };
 
   void ScheduleTasksWithLockAcquired(cc::NamespaceToken token,
-                                     cc::TaskGraph* graph);
+                                     cc::TaskGraph* graph)
+      EXCLUSIVE_LOCKS_REQUIRED(lock_);
   void CollectCompletedTasksWithLockAcquired(cc::NamespaceToken token,
-                                             cc::Task::Vector* completed_tasks);
+                                             cc::Task::Vector* completed_tasks)
+      EXCLUSIVE_LOCKS_REQUIRED(lock_);
 
   // Runs a task from one of the provided categories. Categories listed first
   // have higher priority. Returns false if there were no tasks to run.
-  bool RunTaskWithLockAcquired(const std::vector<cc::TaskCategory>& categories);
+  bool RunTaskWithLockAcquired(const std::vector<cc::TaskCategory>& categories)
+      EXCLUSIVE_LOCKS_REQUIRED(lock_);
 
   // Run next task for the given category. Caller must acquire |lock_| prior to
   // calling this function and make sure at least one task is ready to run.
-  void RunTaskInCategoryWithLockAcquired(cc::TaskCategory category);
+  void RunTaskInCategoryWithLockAcquired(cc::TaskCategory category)
+      EXCLUSIVE_LOCKS_REQUIRED(lock_);
 
   // Helper function which signals worker threads if tasks are ready to run.
-  void SignalHasReadyToRunTasksWithLockAcquired();
+  void SignalHasReadyToRunTasksWithLockAcquired()
+      EXCLUSIVE_LOCKS_REQUIRED(lock_);
 
   // Determines if we should run a new task for the given category. This factors
   // in whether a task is available and whether the count of running tasks is
   // low enough to start a new one.
-  bool ShouldRunTaskForCategoryWithLockAcquired(cc::TaskCategory category);
+  bool ShouldRunTaskForCategoryWithLockAcquired(cc::TaskCategory category)
+      EXCLUSIVE_LOCKS_REQUIRED(lock_);
 
   // The actual threads where work is done.
   std::vector<std::unique_ptr<base::SimpleThread>> threads_;
@@ -131,16 +138,16 @@ class CONTENT_EXPORT CategorizedWorkerPool : public base::TaskRunner,
   // implement the TaskRunner and TaskGraphRunner interfaces.
   base::Lock lock_;
   // Stores the tasks to be run, sorted by priority.
-  cc::TaskGraphWorkQueue work_queue_;
+  cc::TaskGraphWorkQueue work_queue_ GUARDED_BY(lock_);
   // Namespace used to schedule tasks in the task graph runner.
-  cc::NamespaceToken namespace_token_;
+  const cc::NamespaceToken namespace_token_;
   // List of tasks currently queued up for execution.
-  cc::Task::Vector tasks_;
+  cc::Task::Vector tasks_ GUARDED_BY(lock_);
   // Graph object used for scheduling tasks.
-  cc::TaskGraph graph_;
+  cc::TaskGraph graph_ GUARDED_BY(lock_);
   // Cached vector to avoid allocation when getting the list of complete
   // tasks.
-  cc::Task::Vector completed_tasks_;
+  cc::Task::Vector completed_tasks_ GUARDED_BY(lock_);
   // Condition variables for foreground and background tasks.
   base::ConditionVariable has_ready_to_run_foreground_tasks_cv_;
   base::ConditionVariable has_ready_to_run_background_tasks_cv_;
@@ -148,7 +155,7 @@ class CONTENT_EXPORT CategorizedWorkerPool : public base::TaskRunner,
   // has finished running all associated tasks.
   base::ConditionVariable has_namespaces_with_finished_running_tasks_cv_;
   // Set during shutdown. Tells Run() to return when no more tasks are pending.
-  bool shutdown_;
+  bool shutdown_ GUARDED_BY(lock_);
 
   base::OnceCallback<void(base::PlatformThreadId)> backgrounding_callback_;
   scoped_refptr<base::SingleThreadTaskRunner> background_task_runner_;

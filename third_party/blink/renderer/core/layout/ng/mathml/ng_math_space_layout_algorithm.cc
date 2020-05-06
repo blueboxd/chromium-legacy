@@ -35,16 +35,15 @@ scoped_refptr<const NGLayoutResult> NGMathSpaceLayoutAlgorithm::Layout() {
   return container_builder_.ToBoxFragment();
 }
 
-MinMaxSizesResult NGMathSpaceLayoutAlgorithm::ComputeMinMaxSizes(
-    const MinMaxSizesInput&) const {
-  if (auto result =
+MinMaxSizes NGMathSpaceLayoutAlgorithm::ComputeMinMaxSizes(
+    const MinMaxSizesInput& input) const {
+  if (auto sizes =
           CalculateMinMaxSizesIgnoringChildren(Node(), border_padding_))
-    return *result;
+    return *sizes;
 
   MinMaxSizes sizes;
   sizes += border_padding_.InlineSum();
-
-  return {sizes, /* depends_on_percentage_block_size */ false};
+  return sizes;
 }
 
 }  // namespace blink

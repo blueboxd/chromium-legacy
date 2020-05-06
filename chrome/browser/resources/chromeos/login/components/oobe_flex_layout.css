@@ -83,6 +83,16 @@
   justify-content: space-between;
 }
 
+/* wrapping */
+
+.layout.wrap {
+  flex-wrap: wrap;
+}
+
+.layout.no-wrap {
+  flex-wrap: nowrap;
+}
+
 /* self alignment */
 
 .self-start {

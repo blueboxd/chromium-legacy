@@ -20,17 +20,18 @@ class CORE_EXPORT NGCustomLayoutAlgorithm
  public:
   NGCustomLayoutAlgorithm(const NGLayoutAlgorithmParams& params);
 
-  MinMaxSizesResult ComputeMinMaxSizes(const MinMaxSizesInput&) const override;
+  MinMaxSizes ComputeMinMaxSizes(const MinMaxSizesInput&) const override;
   scoped_refptr<const NGLayoutResult> Layout() override;
 
  private:
   void AddAnyOutOfFlowPositionedChildren(NGLayoutInputNode* child);
-  MinMaxSizesResult FallbackMinMaxSizes(const MinMaxSizesInput&) const;
+  MinMaxSizes FallbackMinMaxSizes(const MinMaxSizesInput&) const;
   scoped_refptr<const NGLayoutResult> FallbackLayout();
 
   const NGLayoutAlgorithmParams& params_;
   const NGBoxStrut border_padding_;
   const NGBoxStrut border_scrollbar_padding_;
+  LayoutUnit child_percentage_resolution_block_size_for_min_max_;
 };
 
 }  // namespace blink

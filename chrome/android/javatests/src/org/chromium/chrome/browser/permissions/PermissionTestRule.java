@@ -19,6 +19,8 @@ import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.util.InfoBarTestAnimationListener;
 import org.chromium.chrome.test.util.InfoBarUtil;
 import org.chromium.components.browser_ui.modaldialog.ModalDialogTestUtils;
+import org.chromium.components.browser_ui.modaldialog.R;
+import org.chromium.components.browser_ui.modaldialog.TabModalPresenter;
 import org.chromium.components.permissions.PermissionDialogController;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
@@ -27,7 +29,6 @@ import org.chromium.content_public.browser.test.util.TouchCommon;
 import org.chromium.net.test.EmbeddedTestServer;
 import org.chromium.ui.modaldialog.ModalDialogManager;
 import org.chromium.ui.modaldialog.ModalDialogManager.ModalDialogType;
-import org.chromium.ui.modaldialog.ModalDialogProperties;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -255,13 +256,12 @@ public class PermissionTestRule extends ChromeActivityTestRule<ChromeActivity> {
      */
     private void replyToDialogAndWaitForUpdates(
             PermissionUpdateWaiter updateWaiter, int nUpdates, boolean allow) throws Exception {
-        TestThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                PermissionDialogController.getInstance().clickButtonForTest(allow
-                                ? ModalDialogProperties.ButtonType.POSITIVE
-                                : ModalDialogProperties.ButtonType.NEGATIVE);
-            }
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            TabModalPresenter presenter = (TabModalPresenter) getActivity()
+                                                  .getModalDialogManager()
+                                                  .getCurrentPresenterForTest();
+            TouchCommon.singleClickView(presenter.getDialogContainerForTest().findViewById(
+                    allow ? R.id.positive_button : R.id.negative_button));
         });
         updateWaiter.waitForNumUpdates(nUpdates);
     }

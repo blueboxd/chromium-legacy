@@ -70,7 +70,7 @@ class GatewayCanBePingedRoutine : public NetworkDiagnosticsRoutine {
   GatewayCanBePingedRoutineCallback routine_completed_callback_;
   std::vector<std::string> gateways_;
   bool unreachable_gateways_ = true;
-  int non_default_network_unsuccessful_ping_count_;
+  int non_default_network_unsuccessful_ping_count_ = 0;
   // |non_default_network_latencies_| is responsible for storing the ping
   // latencies for all networks except the default network. The default network
   // latency is stored separately in |default_network_latency_|.

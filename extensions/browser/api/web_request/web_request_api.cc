@@ -1155,6 +1155,10 @@ int ExtensionWebRequestEventRouter::OnBeforeRequest(
                                     DNRRequestAction::Type::REMOVE_HEADERS;
                            }));
         break;
+      case DNRRequestAction::Type::MODIFY_HEADERS:
+        // TODO(crbug.com/947591): Evaluate modify headers DNR actions.
+        NOTREACHED();
+        break;
     }
   }
 

@@ -11,6 +11,7 @@
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/proto/server.pb.h"
 #include "components/autofill/core/common/autofill_features.h"
+#include "components/autofill/core/common/signatures.h"
 
 namespace autofill {
 
@@ -173,7 +174,7 @@ FieldSignature AutofillField::GetFieldSignature() const {
 }
 
 std::string AutofillField::FieldSignatureAsStr() const {
-  return base::NumberToString(GetFieldSignature());
+  return base::NumberToString(GetFieldSignature().value());
 }
 
 bool AutofillField::IsFieldFillable() const {

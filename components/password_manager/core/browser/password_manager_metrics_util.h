@@ -512,7 +512,9 @@ void LogDeleteUndecryptableLoginsReturnValue(
 void LogDeleteCorruptedPasswordsResult(DeleteCorruptedPasswordsResult result);
 
 // Log whether a saved password was generated.
-void LogNewlySavedPasswordIsGenerated(bool value);
+void LogNewlySavedPasswordIsGenerated(
+    bool value,
+    PasswordAccountStorageUsageLevel account_storage_usage_level);
 
 // Log whether the generated password was accepted or rejected for generation of
 // |type| (automatic or manual).

@@ -15,6 +15,7 @@
 #include "components/autofill/core/browser/proto/server.pb.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/autofill/core/common/renderer_id.h"
+#include "components/autofill/core/common/signatures.h"
 #include "components/password_manager/core/browser/form_parsing/password_field_prediction.h"
 
 namespace autofill {
@@ -198,8 +199,8 @@ class VotesUploader {
 
   // Save a vote |field_type| for a field with |field_signature| from a form
   // with |form_signature| to FieldInfoManager.
-  void SaveFieldVote(uint64_t form_signature,
-                     uint32_t field_signature,
+  void SaveFieldVote(autofill::FormSignature form_signature,
+                     autofill::FieldSignature field_signature,
                      autofill::ServerFieldType field_type);
 
   // The client which implements embedder-specific PasswordManager operations.

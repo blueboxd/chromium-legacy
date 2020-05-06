@@ -10,6 +10,7 @@
 #include "third_party/blink/renderer/core/layout/min_max_sizes.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_block_node.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_constraint_space.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_fragmentation_utils.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 
 namespace blink {
@@ -31,8 +32,7 @@ class NGLayoutAlgorithmOperations {
   // Computes the min-content and max-content intrinsic sizes for the given box.
   // The result will not take any min-width, max-width or width properties into
   // account.
-  virtual MinMaxSizesResult ComputeMinMaxSizes(
-      const MinMaxSizesInput&) const = 0;
+  virtual MinMaxSizes ComputeMinMaxSizes(const MinMaxSizesInput&) const = 0;
 };
 
 // Parameters to pass when creating a layout algorithm for a block node.
@@ -76,7 +76,13 @@ class CORE_EXPORT NGLayoutAlgorithm : public NGLayoutAlgorithmOperations {
                            style,
                            &space,
                            space.GetWritingMode(),
-                           direction) {}
+                           direction) {
+    if (UNLIKELY(space.HasBlockFragmentation())) {
+      DCHECK(space.IsAnonymous() || !node.IsMonolithic());
+      SetupFragmentBuilderForFragmentation(space, BreakToken(),
+                                           &container_builder_);
+    }
+  }
 
   NGLayoutAlgorithm(const NGLayoutAlgorithmParams& params)
       : NGLayoutAlgorithm(params.node,

@@ -187,7 +187,6 @@ class PLATFORM_EXPORT ThreadState final {
   class SweepForbiddenScope;
   class HeapPointersOnStackScope;
 
-  using V8TraceRootsCallback = void (*)(v8::Isolate*, Visitor*);
   using V8BuildEmbedderGraphCallback = void (*)(v8::Isolate*,
                                                 v8::EmbedderGraph*,
                                                 void*);
@@ -238,7 +237,6 @@ class PLATFORM_EXPORT ThreadState final {
   // Associates |ThreadState| with a given |v8::Isolate|, essentially tying
   // there garbage collectors together.
   void AttachToIsolate(v8::Isolate*,
-                       V8TraceRootsCallback,
                        V8BuildEmbedderGraphCallback);
 
   // Removes the association from a potentially attached |v8::Isolate|.
@@ -520,9 +518,6 @@ class PLATFORM_EXPORT ThreadState final {
   // Visit all weak persistents allocated on this thread.
   void VisitWeakPersistents(Visitor*);
 
-  // Visit all DOM wrappers allocatd on this thread.
-  void VisitDOMWrappers(Visitor*);
-
   // Visit card tables (remembered sets) containing inter-generational pointers.
   void VisitRememberedSets(MarkingVisitor*);
 
@@ -627,7 +622,6 @@ class PLATFORM_EXPORT ThreadState final {
   Deque<PreFinalizer> ordered_pre_finalizers_;
 
   v8::Isolate* isolate_ = nullptr;
-  V8TraceRootsCallback v8_trace_roots_ = nullptr;
   V8BuildEmbedderGraphCallback v8_build_embedder_graph_ = nullptr;
   std::unique_ptr<UnifiedHeapController> unified_heap_controller_;
 

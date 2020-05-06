@@ -12,6 +12,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "extensions/browser/api/declarative_net_request/request_action.h"
 #include "extensions/browser/api/declarative_net_request/request_params.h"
+#include "extensions/browser/api/declarative_net_request/utils.h"
 #include "extensions/common/api/declarative_net_request.h"
 #include "net/base/url_util.h"
 #include "net/http/http_request_headers.h"
@@ -46,10 +47,6 @@ GURL GetUpgradedUrl(const GURL& url) {
   return url.ReplaceComponents(replacements);
 }
 
-base::StringPiece CreateStringPiece(const ::flatbuffers::String& str) {
-  return base::StringPiece(str.c_str(), str.size());
-}
-
 // Returns true if the given |vec| is nullptr or empty.
 template <typename T>
 bool IsEmpty(const flatbuffers::Vector<T>* vec) {
@@ -81,7 +78,7 @@ bool GetModifiedQuery(const GURL& url,
   if (!IsEmpty(transform.remove_query_params())) {
     remove_query_params.reserve(transform.remove_query_params()->size());
     for (const ::flatbuffers::String* str : *transform.remove_query_params())
-      remove_query_params.push_back(CreateStringPiece(*str));
+      remove_query_params.push_back(CreateString<base::StringPiece>(*str));
   }
 
   // We don't use a map from keys to vector of values to ensure the relative
@@ -96,8 +93,8 @@ bool GetModifiedQuery(const GURL& url,
       DCHECK(query_pair->key());
       DCHECK(query_pair->value());
       add_or_replace_query_params.emplace_back(
-          CreateStringPiece(*query_pair->key()),
-          CreateStringPiece(*query_pair->value()));
+          CreateString<base::StringPiece>(*query_pair->key()),
+          CreateString<base::StringPiece>(*query_pair->value()));
     }
   }
 
@@ -154,22 +151,23 @@ GURL GetTransformedURL(const RequestParams& params,
   GURL::Replacements replacements;
 
   if (transform.scheme())
-    replacements.SetSchemeStr(CreateStringPiece(*transform.scheme()));
+    replacements.SetSchemeStr(
+        CreateString<base::StringPiece>(*transform.scheme()));
 
   if (transform.host())
-    replacements.SetHostStr(CreateStringPiece(*transform.host()));
+    replacements.SetHostStr(CreateString<base::StringPiece>(*transform.host()));
 
   DCHECK(!(transform.clear_port() && transform.port()));
   if (transform.clear_port())
     replacements.ClearPort();
   else if (transform.port())
-    replacements.SetPortStr(CreateStringPiece(*transform.port()));
+    replacements.SetPortStr(CreateString<base::StringPiece>(*transform.port()));
 
   DCHECK(!(transform.clear_path() && transform.path()));
   if (transform.clear_path())
     replacements.ClearPath();
   else if (transform.path())
-    replacements.SetPathStr(CreateStringPiece(*transform.path()));
+    replacements.SetPathStr(CreateString<base::StringPiece>(*transform.path()));
 
   // |query| is defined outside the if conditions since url::Replacements does
   // not own the strings it uses.
@@ -177,7 +175,8 @@ GURL GetTransformedURL(const RequestParams& params,
   if (transform.clear_query()) {
     replacements.ClearQuery();
   } else if (transform.query()) {
-    replacements.SetQueryStr(CreateStringPiece(*transform.query()));
+    replacements.SetQueryStr(
+        CreateString<base::StringPiece>(*transform.query()));
   } else if (GetModifiedQuery(*params.url, transform, &query)) {
     replacements.SetQueryStr(query);
   }
@@ -186,13 +185,16 @@ GURL GetTransformedURL(const RequestParams& params,
   if (transform.clear_fragment())
     replacements.ClearRef();
   else if (transform.fragment())
-    replacements.SetRefStr(CreateStringPiece(*transform.fragment()));
+    replacements.SetRefStr(
+        CreateString<base::StringPiece>(*transform.fragment()));
 
   if (transform.password())
-    replacements.SetPasswordStr(CreateStringPiece(*transform.password()));
+    replacements.SetPasswordStr(
+        CreateString<base::StringPiece>(*transform.password()));
 
   if (transform.username())
-    replacements.SetUsernameStr(CreateStringPiece(*transform.username()));
+    replacements.SetUsernameStr(
+        CreateString<base::StringPiece>(*transform.username()));
 
   return params.url->ReplaceComponents(replacements);
 }
@@ -333,7 +335,8 @@ RulesetMatcherBase::CreateRedirectActionFromMetadata(
 
   GURL redirect_url;
   if (metadata->redirect_url())
-    redirect_url = GURL(CreateStringPiece(*metadata->redirect_url()));
+    redirect_url =
+        GURL(CreateString<base::StringPiece>(*metadata->redirect_url()));
   else
     redirect_url = GetTransformedURL(params, *metadata->transform());
 
@@ -396,6 +399,45 @@ RequestAction RulesetMatcherBase::GetRemoveHeadersActionForMask(
   }
 
   return action;
+}
+
+std::vector<RequestAction>
+RulesetMatcherBase::GetModifyHeadersActionsFromMetadata(
+    const RequestParams& params,
+    const std::vector<const url_pattern_index::flat::UrlRule*>& rules,
+    const ExtensionMetadataList& metadata_list) const {
+  using FlatHeaderList = flatbuffers::Vector<flatbuffers::Offset<
+      extensions::declarative_net_request::flat::ModifyHeaderInfo>>;
+
+  // Helper method to convert a list of headers from a rule's metadata to a list
+  // of RequestAction::HeaderInfo.
+  auto get_headers_for_action = [](const FlatHeaderList& headers_for_rule) {
+    std::vector<RequestAction::HeaderInfo> headers_for_action;
+    for (const auto* flat_header_info : headers_for_rule)
+      headers_for_action.emplace_back(*flat_header_info);
+
+    return headers_for_action;
+  };
+
+  std::vector<RequestAction> actions;
+  for (const auto* rule : rules) {
+    const flat::UrlRuleMetadata* metadata =
+        metadata_list.LookupByKey(rule->id());
+
+    DCHECK(metadata);
+    DCHECK_EQ(metadata->id(), rule->id());
+
+    RequestAction action =
+        CreateRequestAction(RequestAction::Type::MODIFY_HEADERS, *rule);
+    action.request_headers_to_modify =
+        get_headers_for_action(*metadata->request_headers());
+    action.response_headers_to_modify =
+        get_headers_for_action(*metadata->response_headers());
+
+    actions.push_back(std::move(action));
+  }
+
+  return actions;
 }
 
 RequestAction RulesetMatcherBase::CreateRequestAction(

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/autofill/core/common/signatures_util.h"
+#include "components/autofill/core/common/signatures.h"
 
 #include <cctype>
 
@@ -87,7 +87,7 @@ FormSignature CalculateFormSignature(const FormData& form_data) {
   std::string form_string =
       scheme + "://" + host + "&" + form_name + form_signature_field_names;
 
-  return StrToHash64Bit(form_string);
+  return FormSignature(StrToHash64Bit(form_string));
 }
 
 FieldSignature CalculateFieldSignatureByNameAndType(
@@ -95,7 +95,7 @@ FieldSignature CalculateFieldSignatureByNameAndType(
     const std::string& field_type) {
   std::string name = UTF16ToUTF8(field_name);
   std::string field_string = name + "&" + field_type;
-  return StrToHash32Bit(field_string);
+  return FieldSignature(StrToHash32Bit(field_string));
 }
 
 FieldSignature CalculateFieldSignatureForField(
@@ -132,11 +132,11 @@ uint32_t StrToHash32Bit(const std::string& str) {
 }
 
 int64_t HashFormSignature(autofill::FormSignature form_signature) {
-  return static_cast<uint64_t>(form_signature) % 1021;
+  return static_cast<uint64_t>(form_signature.value()) % 1021;
 }
 
 int64_t HashFieldSignature(autofill::FieldSignature field_signature) {
-  return static_cast<uint64_t>(field_signature) % 1021;
+  return static_cast<uint64_t>(field_signature.value()) % 1021;
 }
 
 }  // namespace autofill

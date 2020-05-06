@@ -16,7 +16,7 @@
 #include "components/autofill/core/browser/logging/log_manager.h"
 #include "components/autofill/core/browser/proto/server.pb.h"
 #include "components/autofill/core/common/password_form.h"
-#include "components/autofill/core/common/signatures_util.h"
+#include "components/autofill/core/common/signatures.h"
 #include "components/password_manager/core/browser/password_form_metrics_recorder.h"
 #include "components/password_manager/core/browser/password_manager.h"
 
@@ -87,7 +87,7 @@ std::string VoteTypeToString(
 
 std::string FormSignatureToDebugString(autofill::FormSignature form_signature) {
   return base::StrCat(
-      {NumberToString(form_signature), " - ",
+      {NumberToString(form_signature.value()), " - ",
        NumberToString(
            PasswordFormMetricsRecorder::HashFormSignature(form_signature))});
 }

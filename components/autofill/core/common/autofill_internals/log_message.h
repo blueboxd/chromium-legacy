@@ -41,7 +41,9 @@ class LogBuffer;
   T(ImportAddressProfileFromFormCountrySource,                                 \
     "Source of country for address requirements: ")                            \
   T(ImportAddressProfileFromFormAddressRequirements,                           \
-    "Requirements for the address import: ")
+    "Requirements for the address import: ")                                   \
+  T(FormSubmissionDetected, "Form submission detected: ")
+
 // Log messages for chrome://autofill-internals.
 
 #define AUTOFILL_TEMPLATE(NAME, MESSAGE) k##NAME,

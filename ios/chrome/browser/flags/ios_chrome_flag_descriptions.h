@@ -177,12 +177,6 @@ extern const char kEnableAutofillCacheServerCardInfoName[];
 extern const char kEnableAutofillCacheServerCardInfoDescription[];
 
 // Title and description for the flag to control if credit card upload can
-// display a cardholder name fix flow.
-extern const char kEnableAutofillCreditCardUploadEditableCardholderNameName[];
-extern const char
-    kEnableAutofillCreditCardUploadEditableCardholderNameDescription[];
-
-// Title and description for the flag to control if credit card upload can
 // display an expiration date fix flow.
 extern const char kEnableAutofillCreditCardUploadEditableExpirationDateName[];
 extern const char

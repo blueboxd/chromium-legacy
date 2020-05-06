@@ -67,6 +67,21 @@ void PrintLayerHierarchyImp(const Layer* layer,
   if (!layer->GetSubpixelOffset().IsZero())
     *out << " " << layer->GetSubpixelOffset().ToString();
 
+  const cc::Layer* cc_layer = layer->cc_layer_for_testing();
+  if (cc_layer) {
+    // Property trees must be updated in order to get valid render surface
+    // reasons.
+    if (cc_layer->layer_tree_host() &&
+        !cc_layer->layer_tree_host()->property_trees()->needs_rebuild) {
+      cc::RenderSurfaceReason render_surface =
+          cc_layer->GetRenderSurfaceReason();
+      if (render_surface != cc::RenderSurfaceReason::kNone) {
+        *out << " render-surface-reason: "
+             << cc::RenderSurfaceReasonToString(render_surface);
+      }
+    }
+  }
+
   const ui::Layer* mask = const_cast<ui::Layer*>(layer)->layer_mask_layer();
 
   if (mask) {

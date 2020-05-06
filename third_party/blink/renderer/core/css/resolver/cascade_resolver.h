@@ -73,7 +73,6 @@ class CORE_EXPORT CascadeResolver {
 
  private:
   friend class AutoLock;
-  friend class AutoSurrogateScope;
   friend class StyleCascade;
   friend class TestCascadeResolver;
 

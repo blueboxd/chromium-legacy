@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/run_loop.h"
-#include "base/strings/stringprintf.h"
 #include "base/test/bind_test_util.h"
 #include "base/time/time.h"
 #include "build/build_config.h"

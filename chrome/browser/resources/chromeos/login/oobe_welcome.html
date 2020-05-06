@@ -54,9 +54,8 @@
 
 <dom-module id="oobe-welcome-md">
   <template>
-    <link rel="stylesheet" href="oobe_dialog_host.css">
+    <style include="oobe-dialog-host"></style>
     <link rel="stylesheet" href="oobe_welcome.css">
-    <link rel="stylesheet" href="oobe_flex_layout.css">
     <oobe-welcome-dialog id="welcomeScreen" role="dialog"
         aria-label$="[[i18nDynamic(locale, 'welcomeScreenGreeting')]]"
         current-language="[[currentLanguage]]"

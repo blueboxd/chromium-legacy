@@ -25,17 +25,16 @@ bool IsExtraHeadersMatcherInternal(
 
   // We only support removing a subset of extra headers currently. If that
   // changes, the implementation here should change as well.
-  // TODO(crbug.com/947591): Modify this method for
-  // flat::ActionType_modify_headers.
   static_assert(flat::ActionType_count == 7,
                 "Modify this method to ensure IsExtraHeadersMatcherInternal is "
                 "updated as new actions are added.");
 
-  return std::any_of(regex_list->begin(), regex_list->end(),
-                     [](const flat::RegexRule* regex_rule) {
-                       return regex_rule->action_type() ==
-                              flat::ActionType_remove_headers;
-                     });
+  return std::any_of(
+      regex_list->begin(), regex_list->end(),
+      [](const flat::RegexRule* regex_rule) {
+        return regex_rule->action_type() == flat::ActionType_remove_headers ||
+               regex_rule->action_type() == flat::ActionType_modify_headers;
+      });
 }
 
 re2::StringPiece ToRE2StringPiece(const ::flatbuffers::String& str) {
@@ -135,6 +134,22 @@ uint8_t RegexRulesMatcher::GetRemoveHeadersMask(
 
   DCHECK(!(mask & excluded_remove_headers_mask));
   return mask;
+}
+
+std::vector<RequestAction> RegexRulesMatcher::GetModifyHeadersActions(
+    const RequestParams& params) const {
+  const std::vector<RegexRuleInfo>& potential_matches =
+      GetPotentialMatches(params);
+
+  std::vector<const flat_rule::UrlRule*> rules;
+  for (const RegexRuleInfo& info : potential_matches) {
+    if (info.regex_rule->action_type() == flat::ActionType_modify_headers &&
+        re2::RE2::PartialMatch(params.url->spec(), *info.regex)) {
+      rules.push_back(info.regex_rule->url_rule());
+    }
+  }
+
+  return GetModifyHeadersActionsFromMetadata(params, rules, *metadata_list_);
 }
 
 base::Optional<RequestAction> RegexRulesMatcher::GetAllowAllRequestsAction(

@@ -258,11 +258,9 @@ void ThreadState::DetachCurrentThread() {
 
 void ThreadState::AttachToIsolate(
     v8::Isolate* isolate,
-    V8TraceRootsCallback v8_trace_roots,
     V8BuildEmbedderGraphCallback v8_build_embedder_graph) {
   DCHECK(isolate);
   isolate_ = isolate;
-  v8_trace_roots_ = v8_trace_roots;
   v8_build_embedder_graph_ = v8_build_embedder_graph;
   unified_heap_controller_.reset(new UnifiedHeapController(this));
   isolate_->SetEmbedderHeapTracer(unified_heap_controller_.get());
@@ -281,7 +279,6 @@ void ThreadState::DetachFromIsolate() {
     }
   }
   isolate_ = nullptr;
-  v8_trace_roots_ = nullptr;
   v8_build_embedder_graph_ = nullptr;
   unified_heap_controller_.reset();
 }
@@ -415,14 +412,6 @@ void ThreadState::VisitUnsafeStack(MarkingVisitor* visitor) {
                  static_cast<Address*>(__builtin___get_unsafe_stack_top()),
                  static_cast<Address*>(__builtin___get_unsafe_stack_ptr()));
 #endif  // HAS_FEATURE(safe_stack)
-}
-
-void ThreadState::VisitDOMWrappers(Visitor* visitor) {
-  if (v8_trace_roots_) {
-    ThreadHeapStatsCollector::Scope stats_scope(
-        Heap().stats_collector(), ThreadHeapStatsCollector::kVisitDOMWrappers);
-    v8_trace_roots_(isolate_, visitor);
-  }
 }
 
 void ThreadState::VisitPersistents(Visitor* visitor) {
@@ -1394,46 +1383,6 @@ void ThreadState::AtomicPauseMarkEpilogue(BlinkGC::MarkingType marking_type) {
   static_cast<MutexBase&>(ProcessHeap::CrossThreadPersistentMutex()).unlock();
 }
 
-namespace {
-
-class ClearReferencesInDeadObjectsVisitor final
-    : public v8::PersistentHandleVisitor,
-      public v8::EmbedderHeapTracer::TracedGlobalHandleVisitor {
- public:
-  explicit ClearReferencesInDeadObjectsVisitor(ThreadHeap* heap)
-      : heap_(heap) {}
-
-  void VisitPersistentHandle(v8::Persistent<v8::Value>* value,
-                             uint16_t class_id) final {
-    if (InDeadObject(value))
-      value->Reset();
-  }
-
-  void VisitTracedGlobalHandle(const v8::TracedGlobal<v8::Value>&) final {
-    CHECK(false) << "Blink does not use v8::TracedGlobal.";
-  }
-
-  void VisitTracedReference(const v8::TracedReference<v8::Value>& value) final {
-    // TODO(mlippautz): Avoid const_cast after changing the API to allow
-    // modificaton of the handle.
-    if (InDeadObject(&const_cast<v8::TracedReference<v8::Value>&>(value)))
-      const_cast<v8::TracedReference<v8::Value>&>(value).Reset();
-  }
-
- private:
-  bool InDeadObject(void* address) {
-    // Filter slots not on the heap.
-    if (!heap_->LookupPageForAddress(reinterpret_cast<Address>(address)))
-      return false;
-
-    return !HeapObjectHeader::FromInnerAddress(address)->IsMarked();
-  }
-
-  ThreadHeap* const heap_;
-};
-
-}  // namespace
-
 void ThreadState::AtomicPauseSweepAndCompact(
     BlinkGC::CollectionType collection_type,
     BlinkGC::MarkingType marking_type,
@@ -1452,15 +1401,6 @@ void ThreadState::AtomicPauseSweepAndCompact(
   // We have to set the GCPhase to Sweeping before calling pre-finalizers
   // to disallow a GC during the pre-finalizers.
   SetGCPhase(GCPhase::kSweeping);
-
-  if (!IsUnifiedHeapGC() && GetIsolate()) {
-    // Clear any Blink->V8 references in dead objects in case of a stand-alone
-    // garbage collection. This is necessary to avoid calling destructors on the
-    // references.
-    ClearReferencesInDeadObjectsVisitor visitor(&Heap());
-    GetIsolate()->VisitHandlesWithClassIds(&visitor);
-    unified_heap_controller()->IterateTracedGlobalHandles(&visitor);
-  }
 
   InvokePreFinalizers();
 
@@ -1651,16 +1591,6 @@ void ThreadState::MarkPhaseVisitRoots() {
   Visitor* visitor = current_gc_data_.visitor.get();
 
   VisitPersistents(visitor);
-
-  // DOM wrapper references from V8 are considered as roots. Exceptions are:
-  // - Unified garbage collections: The cross-component references between
-  //   V8<->Blink are found using collaborative tracing where both GCs report
-  //   live references to each other.
-  // - Termination GCs that do not care about V8 any longer.
-  if (!IsUnifiedGCMarkingInProgress() &&
-      current_gc_data_.reason != BlinkGC::GCReason::kThreadTerminationGC) {
-    VisitDOMWrappers(visitor);
-  }
 
   if (current_gc_data_.stack_state == BlinkGC::kHeapPointersOnStack) {
     ThreadHeapStatsCollector::Scope stack_stats_scope(

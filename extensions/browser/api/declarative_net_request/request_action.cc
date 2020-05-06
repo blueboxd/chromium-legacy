@@ -4,8 +4,36 @@
 
 #include "extensions/browser/api/declarative_net_request/request_action.h"
 
+#include <utility>
+
+#include "extensions/browser/api/declarative_net_request/flat/extension_ruleset_generated.h"
+#include "extensions/browser/api/declarative_net_request/utils.h"
+
 namespace extensions {
 namespace declarative_net_request {
+namespace {
+
+namespace dnr_api = api::declarative_net_request;
+
+// Helper to connvert a flat::HeaderOperation to an
+// api::declarative_net_request::HeaderOperation.
+dnr_api::HeaderOperation ConvertFlatHeaderOperation(
+    flat::HeaderOperation operation) {
+  switch (operation) {
+    case flat::HeaderOperation_remove:
+      return dnr_api::HEADER_OPERATION_REMOVE;
+  }
+}
+
+}  // namespace
+
+RequestAction::HeaderInfo::HeaderInfo(std::string header,
+                                      dnr_api::HeaderOperation operation)
+    : header(std::move(header)), operation(operation) {}
+
+RequestAction::HeaderInfo::HeaderInfo(const flat::ModifyHeaderInfo& info)
+    : header(CreateString<std::string>(*info.header())),
+      operation(ConvertFlatHeaderOperation(info.operation())) {}
 
 RequestAction::RequestAction(RequestAction::Type type,
                              uint32_t rule_id,

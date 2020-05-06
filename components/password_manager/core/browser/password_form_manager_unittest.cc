@@ -24,6 +24,7 @@
 #include "components/autofill/core/common/password_form_generation_data.h"
 #include "components/autofill/core/common/password_generation_util.h"
 #include "components/autofill/core/common/renderer_id.h"
+#include "components/autofill/core/common/signatures.h"
 #include "components/password_manager/core/browser/fake_form_fetcher.h"
 #include "components/password_manager/core/browser/field_info_manager.h"
 #include "components/password_manager/core/browser/multi_store_password_save_manager.h"
@@ -272,8 +273,16 @@ class MockFormSaver : public StubFormSaver {
 
 class MockFieldInfoManager : public FieldInfoManager {
  public:
-  MOCK_METHOD3(AddFieldType, void(uint64_t, uint32_t, ServerFieldType));
-  MOCK_CONST_METHOD2(GetFieldType, ServerFieldType(uint64_t, uint32_t));
+  MOCK_METHOD(void,
+              AddFieldType,
+              (autofill::FormSignature,
+               autofill::FieldSignature,
+               ServerFieldType),
+              (override));
+  MOCK_METHOD(ServerFieldType,
+              GetFieldType,
+              (autofill::FormSignature, autofill::FieldSignature),
+              (const override));
 };
 
 class PasswordFormManagerTest : public testing::Test,
@@ -2098,11 +2107,11 @@ TEST_P(PasswordFormManagerTest, UsernameFirstFlowVotes) {
 
   // Create form predictions and set them to |possible_username_data|.
   FormPredictions predictions;
-  constexpr uint64_t kUsernameFormSignature = 1000;
+  constexpr autofill::FormSignature kUsernameFormSignature(1000);
   predictions.form_signature = kUsernameFormSignature;
   PasswordFieldPrediction field_prediction;
   field_prediction.renderer_id = kUsernameFieldRendererId;
-  field_prediction.signature = 123;
+  field_prediction.signature.value() = 123;
   field_prediction.type = autofill::SINGLE_USERNAME;
   predictions.fields.push_back(field_prediction);
   possible_username_data.form_predictions = predictions;
@@ -2196,8 +2205,8 @@ TEST_P(PasswordFormManagerTest, PossibleUsernameFieldManager) {
   for (ServerFieldType prediction : {SINGLE_USERNAME, NOT_USERNAME}) {
     SCOPED_TRACE(testing::Message("prediction=") << prediction);
 
-    const int kFormSignature = 1234;
-    const int kFieldSignature = 12;
+    constexpr autofill::FormSignature kFormSignature(1234);
+    constexpr autofill::FieldSignature kFieldSignature(12);
     FormPredictions form_predictions;
     form_predictions.form_signature = kFormSignature;
     // Simulate that the server knows nothing about username field.

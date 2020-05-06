@@ -1436,7 +1436,6 @@ IN_PROC_BROWSER_TEST_F(
 IN_PROC_BROWSER_TEST_F(
     SaveCardBubbleViewsFullFormBrowserTestWithAutofillUpstream,
     Upload_RequestedCardholderNameTextfieldIsNotPrefilledWithFocusNameIfMissing) {
-  // Enable the EditableCardholderName experiment.
   base::HistogramTester histogram_tester;
 
   // Start sync.

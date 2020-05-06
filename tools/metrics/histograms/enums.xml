@@ -26594,7 +26594,7 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="2721" label="V8PaymentRequest_HasEnrolledInstrument_Method"/>
   <int value="2722" label="TrustedTypesEnabled"/>
   <int value="2723" label="TrustedTypesCreatePolicy"/>
-  <int value="2724" label="TrustedTypesDefaultPolicyUsed"/>
+  <int value="2724" label="TrustedTypesDefaultPolicyCreated"/>
   <int value="2725" label="TrustedTypesAssignmentError"/>
   <int value="2726" label="BadgeSet"/>
   <int value="2727" label="BadgeClear"/>
@@ -27180,6 +27180,7 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3276" label="TrustTokenFetch"/>
   <int value="3277" label="TrustTokenXhr"/>
   <int value="3278" label="TrustTokenIframe"/>
+  <int value="3279" label="TrustedTypesPolicyCreated"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">

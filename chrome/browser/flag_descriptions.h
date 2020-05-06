@@ -310,10 +310,6 @@ extern const char kEnableAutofillCreditCardAblationExperimentDescription[];
 extern const char kEnableAutofillCreditCardAuthenticationName[];
 extern const char kEnableAutofillCreditCardAuthenticationDescription[];
 
-extern const char kEnableAutofillCreditCardUploadEditableCardholderNameName[];
-extern const char
-    kEnableAutofillCreditCardUploadEditableCardholderNameDescription[];
-
 extern const char kEnableAutofillCreditCardUploadEditableExpirationDateName[];
 extern const char
     kEnableAutofillCreditCardUploadEditableExpirationDateDescription[];

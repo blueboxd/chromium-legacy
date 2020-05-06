@@ -26,6 +26,36 @@
 
 namespace customtabs {
 
+namespace {
+
+void RecordParallelRequestHistograms(const std::string& suffix,
+                                     int redirects,
+                                     base::TimeDelta duration,
+                                     int net_error) {
+  bool success = net_error == net::OK;
+  if (success) {
+    // Max 20 redirects, 21 would be a bug.
+    base::UmaHistogramCustomCounts(
+        "CustomTabs.DetachedResourceRequest.RedirectsCount.Success" + suffix,
+        redirects, 1, 21, 21);
+    base::UmaHistogramMediumTimes(
+        "CustomTabs.DetachedResourceRequest.Duration.Success" + suffix,
+        duration);
+  } else {
+    base::UmaHistogramCustomCounts(
+        "CustomTabs.DetachedResourceRequest.RedirectsCount.Failure" + suffix,
+        redirects, 1, 21, 21);
+    base::UmaHistogramMediumTimes(
+        "CustomTabs.DetachedResourceRequest.Duration.Failure" + suffix,
+        duration);
+  }
+
+  base::UmaHistogramSparse(
+      "CustomTabs.DetachedResourceRequest.FinalStatus" + suffix, net_error);
+}
+
+}  // namespace
+
 // static
 void DetachedResourceRequest::CreateAndStart(
     content::BrowserContext* browser_context,
@@ -33,11 +63,12 @@ void DetachedResourceRequest::CreateAndStart(
     const GURL& site_for_cookies,
     const net::URLRequest::ReferrerPolicy referrer_policy,
     Motivation motivation,
+    const std::string& package_name,
     DetachedResourceRequest::OnResultCallback cb) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   std::unique_ptr<DetachedResourceRequest> detached_request(
       new DetachedResourceRequest(url, site_for_cookies, referrer_policy,
-                                  motivation, std::move(cb)));
+                                  motivation, package_name, std::move(cb)));
   Start(std::move(detached_request), browser_context);
 }
 
@@ -48,12 +79,14 @@ DetachedResourceRequest::DetachedResourceRequest(
     const GURL& site_for_cookies,
     net::URLRequest::ReferrerPolicy referrer_policy,
     Motivation motivation,
+    const std::string& package_name,
     DetachedResourceRequest::OnResultCallback cb)
     : url_(url),
       site_for_cookies_(site_for_cookies),
       motivation_(motivation),
       cb_(std::move(cb)),
       redirects_(0) {
+  is_from_aga_ = package_name == "com.google.android.googlequicksearchbox";
   net::NetworkTrafficAnnotationTag traffic_annotation =
       net::DefineNetworkTrafficAnnotation("customtabs_parallel_request",
                                           R"(
@@ -148,33 +181,20 @@ void DetachedResourceRequest::OnResponseCallback(
     std::unique_ptr<std::string> response_body) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   int net_error = url_loader_->NetError();
-  bool success = net_error == net::OK;
   net_error = std::abs(net_error);
   auto duration = base::TimeTicks::Now() - start_time_;
 
   switch (motivation_) {
     case Motivation::kParallelRequest: {
-      if (success) {
-        // Max 20 redirects, 21 would be a bug.
-        UMA_HISTOGRAM_CUSTOM_COUNTS(
-            "CustomTabs.DetachedResourceRequest.RedirectsCount.Success",
-            redirects_, 1, 21, 21);
-        UMA_HISTOGRAM_MEDIUM_TIMES(
-            "CustomTabs.DetachedResourceRequest.Duration.Success", duration);
-      } else {
-        UMA_HISTOGRAM_CUSTOM_COUNTS(
-            "CustomTabs.DetachedResourceRequest.RedirectsCount.Failure",
-            redirects_, 1, 21, 21);
-        UMA_HISTOGRAM_MEDIUM_TIMES(
-            "CustomTabs.DetachedResourceRequest.Duration.Failure", duration);
+      RecordParallelRequestHistograms("", redirects_, duration, net_error);
+      if (is_from_aga_) {
+        RecordParallelRequestHistograms(".FromAga", redirects_, duration,
+                                        net_error);
       }
-
-      base::UmaHistogramSparse("CustomTabs.DetachedResourceRequest.FinalStatus",
-                               net_error);
       break;
     }
     case Motivation::kResourcePrefetch: {
-      if (success) {
+      if (net_error == net::OK) {
         UMA_HISTOGRAM_MEDIUM_TIMES(
             "CustomTabs.ResourcePrefetch.Duration.Success", duration);
       } else {

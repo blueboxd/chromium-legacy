@@ -40,6 +40,8 @@ namespace extensions {
 namespace declarative_net_request {
 namespace {
 
+namespace dnr_api = api::declarative_net_request;
+
 class RulesetMatcherTest : public ExtensionsTest {
  public:
   RulesetMatcherTest() : channel_(::version_info::Channel::UNKNOWN) {}
@@ -310,6 +312,70 @@ TEST_F(RulesetMatcherTest, RemoveHeadersMultipleRules) {
                   ::testing::Eq(::testing::ByRef(rule_2_action))));
 }
 
+TEST_F(RulesetMatcherTest, ModifyHeaders_IsExtraHeaderMatcher) {
+  TestRule rule = CreateGenericRule();
+  rule.condition->url_filter = std::string("example.com");
+  std::unique_ptr<RulesetMatcher> matcher;
+  ASSERT_TRUE(CreateVerifiedMatcher({rule}, CreateTemporarySource(), &matcher));
+  EXPECT_FALSE(matcher->IsExtraHeadersMatcher());
+
+  rule.action->type = std::string("modifyHeaders");
+  rule.action->response_headers =
+      std::vector<TestHeaderInfo>({TestHeaderInfo("HEADER3", "remove")});
+  ASSERT_TRUE(CreateVerifiedMatcher({rule}, CreateTemporarySource(), &matcher));
+  EXPECT_TRUE(matcher->IsExtraHeadersMatcher());
+}
+
+TEST_F(RulesetMatcherTest, ModifyHeaders) {
+  TestRule rule_1 = CreateGenericRule();
+  rule_1.id = kMinValidID;
+  rule_1.priority = kMinValidPriority + 1;
+  rule_1.condition->url_filter = std::string("example.com");
+  rule_1.action->type = std::string("modifyHeaders");
+  rule_1.action->request_headers =
+      std::vector<TestHeaderInfo>({TestHeaderInfo("header1", "remove")});
+
+  TestRule rule_2 = CreateGenericRule();
+  rule_2.id = kMinValidID + 1;
+  rule_2.priority = kMinValidPriority;
+  rule_2.condition->url_filter = std::string("example.com");
+  rule_2.action->type = std::string("modifyHeaders");
+  rule_2.action->request_headers =
+      std::vector<TestHeaderInfo>({TestHeaderInfo("header1", "remove"),
+                                   TestHeaderInfo("header2", "remove")});
+
+  std::unique_ptr<RulesetMatcher> matcher;
+  ASSERT_TRUE(CreateVerifiedMatcher({rule_1, rule_2}, CreateTemporarySource(),
+                                    &matcher));
+  EXPECT_TRUE(matcher->IsExtraHeadersMatcher());
+
+  GURL example_url("http://example.com");
+  RequestParams params;
+  params.url = &example_url;
+  params.element_type = url_pattern_index::flat::ElementType_SUBDOCUMENT;
+  params.is_third_party = true;
+
+  std::vector<RequestAction> modify_header_actions =
+      matcher->GetModifyHeadersActions(params);
+
+  RequestAction expected_rule_1_action = CreateRequestActionForTesting(
+      RequestAction::Type::MODIFY_HEADERS, *rule_1.id, *rule_1.priority);
+  expected_rule_1_action.request_headers_to_modify = {
+      RequestAction::HeaderInfo("header1", dnr_api::HEADER_OPERATION_REMOVE)};
+
+  RequestAction expected_rule_2_action = CreateRequestActionForTesting(
+      RequestAction::Type::MODIFY_HEADERS, *rule_2.id, *rule_2.priority);
+  expected_rule_2_action.request_headers_to_modify = {
+      RequestAction::HeaderInfo("header1", dnr_api::HEADER_OPERATION_REMOVE),
+      RequestAction::HeaderInfo("header2", dnr_api::HEADER_OPERATION_REMOVE)};
+
+  ASSERT_EQ(2u, modify_header_actions.size());
+  EXPECT_THAT(modify_header_actions,
+              testing::UnorderedElementsAre(
+                  testing::Eq(testing::ByRef(expected_rule_1_action)),
+                  testing::Eq(testing::ByRef(expected_rule_2_action))));
+}
+
 // Tests a rule to redirect to an extension path.
 TEST_F(RulesetMatcherTest, RedirectToExtensionPath) {
   TestRule rule = CreateGenericRule();
@@ -553,6 +619,14 @@ TEST_F(RulesetMatcherTest, RegexRules) {
       std::vector<std::string>({"referer", "cookie"});
   rules.push_back(remove_headers_rule);
 
+  // Add a modify headers rule.
+  TestRule modify_headers_rule =
+      create_regex_rule(6, R"(^(?:http|https)://[a-z\.]+\.org)");
+  modify_headers_rule.action->type = "modifyHeaders";
+  modify_headers_rule.action->request_headers =
+      std::vector<TestHeaderInfo>({TestHeaderInfo("header1", "remove")});
+  rules.push_back(modify_headers_rule);
+
   std::unique_ptr<RulesetMatcher> matcher;
   ASSERT_TRUE(CreateVerifiedMatcher(rules, CreateTemporarySource(), &matcher));
 
@@ -561,6 +635,7 @@ TEST_F(RulesetMatcherTest, RegexRules) {
     base::Optional<RequestAction> expected_action;
     uint8_t expected_remove_headers_mask = 0u;
     base::Optional<RequestAction> expected_remove_header_action;
+    base::Optional<RequestAction> expected_modify_header_action;
   };
 
   std::vector<TestCase> test_cases;
@@ -631,6 +706,20 @@ TEST_F(RulesetMatcherTest, RegexRules) {
   }
 
   {
+    TestCase test_case = {"http://abc123.org/path"};
+    test_cases.push_back(std::move(test_case));
+  }
+
+  {
+    TestCase test_case = {"http://abc.org/path"};
+    test_case.expected_modify_header_action = CreateRequestActionForTesting(
+        RequestAction::Type::MODIFY_HEADERS, *modify_headers_rule.id);
+    test_case.expected_modify_header_action->request_headers_to_modify = {
+        RequestAction::HeaderInfo("header1", dnr_api::HEADER_OPERATION_REMOVE)};
+    test_cases.push_back(std::move(test_case));
+  }
+
+  {
     TestCase test_case = {"http://example.com"};
     test_cases.push_back(std::move(test_case));
   }
@@ -649,12 +738,24 @@ TEST_F(RulesetMatcherTest, RegexRules) {
               matcher->GetRemoveHeadersMask(
                   params, 0u /* excluded_remove_headers_mask */,
                   &remove_header_actions));
+
+    std::vector<RequestAction> modify_header_actions =
+        matcher->GetModifyHeadersActions(params);
+
     if (test_case.expected_remove_header_action) {
       EXPECT_THAT(remove_header_actions,
                   testing::ElementsAre(testing::Eq(testing::ByRef(
                       test_case.expected_remove_header_action))));
     } else {
       EXPECT_TRUE(remove_header_actions.empty());
+    }
+
+    if (test_case.expected_modify_header_action) {
+      EXPECT_THAT(modify_header_actions,
+                  testing::ElementsAre(testing::Eq(testing::ByRef(
+                      test_case.expected_modify_header_action))));
+    } else {
+      EXPECT_TRUE(modify_header_actions.empty());
     }
   }
 
@@ -996,6 +1097,93 @@ TEST_F(RulesetMatcherTest, RegexAndFilterListRules_RemoveHeaders) {
     // is an internal implementation detail). Hence only the set-cookie header
     // removal will be attributed to rule 2.
     action_2.request_headers_to_remove = {};
+    EXPECT_THAT(actions, testing::UnorderedElementsAre(
+                             testing::Eq(testing::ByRef(action_1)),
+                             testing::Eq(testing::ByRef(action_2))));
+  }
+}
+
+TEST_F(RulesetMatcherTest, RegexAndFilterListRules_ModifyHeaders) {
+  std::vector<TestRule> rules;
+
+  TestRule rule = CreateGenericRule();
+  rule.id = 1;
+  rule.priority = kMinValidPriority + 1;
+  rule.action->type = "modifyHeaders";
+  rule.condition->url_filter = "abc";
+  rule.action->request_headers =
+      std::vector<TestHeaderInfo>({TestHeaderInfo("header1", "remove"),
+                                   TestHeaderInfo("header2", "remove")});
+  rules.push_back(rule);
+
+  RequestAction action_1 = CreateRequestActionForTesting(
+      RequestAction::Type::MODIFY_HEADERS, 1, *rule.priority);
+  action_1.request_headers_to_modify = {
+      RequestAction::HeaderInfo("header1", dnr_api::HEADER_OPERATION_REMOVE),
+      RequestAction::HeaderInfo("header2", dnr_api::HEADER_OPERATION_REMOVE)};
+
+  rule = CreateGenericRule();
+  rule.id = 2;
+  rule.priority = kMinValidPriority;
+  rule.condition->url_filter.reset();
+  rule.condition->regex_filter = "example";
+  rule.action->type = "modifyHeaders";
+  rule.action->request_headers =
+      std::vector<TestHeaderInfo>({TestHeaderInfo("header1", "remove"),
+                                   TestHeaderInfo("header3", "remove")});
+  rules.push_back(rule);
+
+  RequestAction action_2 = CreateRequestActionForTesting(
+      RequestAction::Type::MODIFY_HEADERS, 2, *rule.priority);
+  action_2.request_headers_to_modify = {
+      RequestAction::HeaderInfo("header1", dnr_api::HEADER_OPERATION_REMOVE),
+      RequestAction::HeaderInfo("header3", dnr_api::HEADER_OPERATION_REMOVE)};
+
+  std::unique_ptr<RulesetMatcher> matcher;
+  ASSERT_TRUE(CreateVerifiedMatcher(rules, CreateTemporarySource(), &matcher));
+
+  {
+    GURL url("http://nomatch.com");
+    SCOPED_TRACE(url.spec());
+    RequestParams params;
+    params.url = &url;
+
+    EXPECT_TRUE(matcher->GetModifyHeadersActions(params).empty());
+  }
+
+  {
+    GURL url("http://abc.com");
+    SCOPED_TRACE(url.spec());
+    RequestParams params;
+    params.url = &url;
+
+    std::vector<RequestAction> actions =
+        matcher->GetModifyHeadersActions(params);
+    EXPECT_THAT(actions, testing::UnorderedElementsAre(
+                             testing::Eq(testing::ByRef(action_1))));
+  }
+
+  {
+    GURL url("http://example.com");
+    SCOPED_TRACE(url.spec());
+    RequestParams params;
+    params.url = &url;
+
+    std::vector<RequestAction> actions =
+        matcher->GetModifyHeadersActions(params);
+    EXPECT_THAT(actions, testing::UnorderedElementsAre(
+                             testing::Eq(testing::ByRef(action_2))));
+  }
+
+  {
+    // Send a request that matches both the filter list and regex rules.
+    GURL url("http://abc.com/example");
+    SCOPED_TRACE(url.spec());
+    RequestParams params;
+    params.url = &url;
+
+    std::vector<RequestAction> actions =
+        matcher->GetModifyHeadersActions(params);
     EXPECT_THAT(actions, testing::UnorderedElementsAre(
                              testing::Eq(testing::ByRef(action_1)),
                              testing::Eq(testing::ByRef(action_2))));

@@ -139,17 +139,21 @@ GnomeKeyringTest::~GnomeKeyringTest() {
 }
 
 TEST_F(GnomeKeyringTest, KeyringRepeats) {
-  std::string password = keyring_.GetKey();
-  EXPECT_FALSE(password.empty());
-  std::string password_repeat = keyring_.GetKey();
-  EXPECT_EQ(password, password_repeat);
+  base::Optional<std::string> password = keyring_.GetKey();
+  EXPECT_TRUE(password.has_value());
+  EXPECT_FALSE(password.value().empty());
+  base::Optional<std::string> password_repeat = keyring_.GetKey();
+  EXPECT_TRUE(password_repeat.has_value());
+  EXPECT_EQ(password.value(), password_repeat.value());
 }
 
 TEST_F(GnomeKeyringTest, KeyringCreatesRandomised) {
-  std::string password = keyring_.GetKey();
+  base::Optional<std::string> password = keyring_.GetKey();
   MockGnomeKeyringLoader::ResetForOSCrypt();
-  std::string password_new = keyring_.GetKey();
-  EXPECT_NE(password, password_new);
+  base::Optional<std::string> password_new = keyring_.GetKey();
+  EXPECT_TRUE(password.has_value());
+  EXPECT_TRUE(password_new.has_value());
+  EXPECT_NE(password.value(), password_new.value());
 }
 
 }  // namespace

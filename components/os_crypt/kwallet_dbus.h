@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/nix/xdg_util.h"
+#include "base/optional.h"
 
 namespace dbus {
 class Bus;
@@ -118,7 +119,8 @@ class COMPONENT_EXPORT(OS_CRYPT) KWalletDBus {
                              const std::string& folder_name,
                              const std::string& key,
                              const std::string& app_name,
-                             std::string* password_ptr) WARN_UNUSED_RESULT;
+                             base::Optional<std::string>* const password_ptr)
+      WARN_UNUSED_RESULT;
 
   // Close the wallet. The wallet will only be closed if it is open but not in
   // use (rare), or if it is forced closed.

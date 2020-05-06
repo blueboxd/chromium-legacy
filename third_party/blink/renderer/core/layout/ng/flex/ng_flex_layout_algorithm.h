@@ -25,7 +25,7 @@ class CORE_EXPORT NGFlexLayoutAlgorithm
 
   scoped_refptr<const NGLayoutResult> Layout() override;
 
-  MinMaxSizesResult ComputeMinMaxSizes(const MinMaxSizesInput&) const override;
+  MinMaxSizes ComputeMinMaxSizes(const MinMaxSizesInput&) const override;
 
  private:
   bool DoesItemCrossSizeComputeToAuto(const NGBlockNode& child) const;

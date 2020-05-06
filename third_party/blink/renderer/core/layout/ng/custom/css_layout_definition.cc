@@ -89,6 +89,7 @@ bool CSSLayoutDefinition::Instance::Layout(
     const NGBlockNode& node,
     const LogicalSize& border_box_size,
     const NGBoxStrut& border_scrollbar_padding,
+    const LayoutUnit child_percentage_resolution_block_size_for_min_max,
     CustomLayoutScope* custom_layout_scope,
     FragmentResultOptions*& fragment_result_options,
     scoped_refptr<SerializedScriptValue>* fragment_result_data) {
@@ -144,7 +145,8 @@ bool CSSLayoutDefinition::Instance::Layout(
   // Run the work queue until exhaustion.
   while (!custom_layout_scope->Queue()->IsEmpty()) {
     for (auto& task : *custom_layout_scope->Queue()) {
-      task.Run(space, node.Style(), border_box_size.block_size);
+      task.Run(space, node.Style(),
+               child_percentage_resolution_block_size_for_min_max);
     }
     custom_layout_scope->Queue()->clear();
     {
@@ -221,8 +223,7 @@ bool CSSLayoutDefinition::Instance::IntrinsicSizes(
     const NGBoxStrut& border_scrollbar_padding,
     const LayoutUnit child_percentage_resolution_block_size_for_min_max,
     CustomLayoutScope* custom_layout_scope,
-    IntrinsicSizesResultOptions** intrinsic_sizes_result_options,
-    bool* child_depends_on_percentage_block_size) {
+    IntrinsicSizesResultOptions*& intrinsic_sizes_result_options) {
   ScriptState* script_state = definition_->GetScriptState();
   v8::Isolate* isolate = script_state->GetIsolate();
 
@@ -271,8 +272,7 @@ bool CSSLayoutDefinition::Instance::IntrinsicSizes(
   while (!custom_layout_scope->Queue()->IsEmpty()) {
     for (auto& task : *custom_layout_scope->Queue()) {
       task.Run(space, node.Style(),
-               child_percentage_resolution_block_size_for_min_max,
-               child_depends_on_percentage_block_size);
+               child_percentage_resolution_block_size_for_min_max);
     }
     custom_layout_scope->Queue()->clear();
     {
@@ -300,7 +300,7 @@ bool CSSLayoutDefinition::Instance::IntrinsicSizes(
   v8::Local<v8::Value> inner_value = v8_result_promise->Result();
 
   // Attempt to convert the result.
-  *intrinsic_sizes_result_options =
+  intrinsic_sizes_result_options =
       NativeValueTraits<IntrinsicSizesResultOptions>::NativeValue(
           isolate, inner_value, exception_state);
 

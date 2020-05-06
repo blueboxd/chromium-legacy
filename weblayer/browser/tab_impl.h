@@ -74,6 +74,7 @@ class TabImpl : public Tab,
     kHiddenByControls,
     kScaledToEmpty,
     kCaptureFailed,
+    kBitmapAllocationFailed,
   };
 
   // TODO(sky): investigate a better way to not have so many ifdefs.

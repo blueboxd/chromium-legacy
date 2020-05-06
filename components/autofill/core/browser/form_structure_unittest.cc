@@ -24,7 +24,7 @@
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/form_field_data.h"
 #include "components/autofill/core/common/password_form.h"
-#include "components/autofill/core/common/signatures_util.h"
+#include "components/autofill/core/common/signatures.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -2334,7 +2334,7 @@ TEST_F(FormStructureTest, EncodeQueryRequest) {
   AutofillQueryContents query;
   query.set_client_version("6.1.1715.1442/en (GGLL)");
   AutofillQueryContents::Form* query_form = query.add_form();
-  query_form->set_signature(form_structure.form_signature());
+  query_form->set_signature(form_structure.form_signature().value());
 
   test::FillQueryField(query_form->add_field(), 412125936U, "name_on_card",
                        "text");
@@ -2388,7 +2388,7 @@ TEST_F(FormStructureTest, EncodeQueryRequest) {
 
   // Add the second form to the expected proto.
   query_form = query.add_form();
-  query_form->set_signature(form_structure3.form_signature());
+  query_form->set_signature(form_structure3.form_signature().value());
 
   test::FillQueryField(query_form->add_field(), 412125936U, "name_on_card",
                        "text");
@@ -2621,7 +2621,7 @@ TEST_F(FormStructureTest, EncodeUploadRequest_WithMatchingValidities) {
   AutofillUploadContents upload;
   upload.set_submission(true);
   upload.set_client_version("6.1.1715.1442/en (GGLL)");
-  upload.set_form_signature(form_structure->form_signature());
+  upload.set_form_signature(form_structure->form_signature().value());
   upload.set_autofill_used(false);
   upload.set_data_present("144200030e");
   upload.set_passwords_revealed(false);
@@ -2700,7 +2700,7 @@ TEST_F(FormStructureTest, EncodeUploadRequest_WithMatchingValidities) {
   }
 
   // Adjust the expected proto string.
-  upload.set_form_signature(form_structure->form_signature());
+  upload.set_form_signature(form_structure->form_signature().value());
   upload.set_autofill_used(false);
   // Create an additional 2 fields (total of 7).  Put the appropriate autofill
   // type on the different address fields.
@@ -2816,7 +2816,7 @@ TEST_F(FormStructureTest, EncodeUploadRequest_WithNonMatchingValidities) {
   AutofillUploadContents upload;
   upload.set_submission(true);
   upload.set_client_version("6.1.1715.1442/en (GGLL)");
-  upload.set_form_signature(form_structure->form_signature());
+  upload.set_form_signature(form_structure->form_signature().value());
   upload.set_autofill_used(false);
   upload.set_data_present("144200030e");
   upload.set_passwords_revealed(false);
@@ -2947,7 +2947,7 @@ TEST_F(FormStructureTest, EncodeUploadRequest_WithMultipleValidities) {
   AutofillUploadContents upload;
   upload.set_submission(true);
   upload.set_client_version("6.1.1715.1442/en (GGLL)");
-  upload.set_form_signature(form_structure->form_signature());
+  upload.set_form_signature(form_structure->form_signature().value());
   upload.set_autofill_used(false);
   upload.set_data_present("144200030e");
   upload.set_passwords_revealed(false);
@@ -3076,7 +3076,7 @@ TEST_F(FormStructureTest, EncodeUploadRequest) {
   upload.set_submission(true);
   upload.set_submission_event(AutofillUploadContents::HTML_FORM_SUBMISSION);
   upload.set_client_version("6.1.1715.1442/en (GGLL)");
-  upload.set_form_signature(form_structure->form_signature());
+  upload.set_form_signature(form_structure->form_signature().value());
   upload.set_autofill_used(false);
   upload.set_data_present("144200030e");
   upload.set_passwords_revealed(false);
@@ -3146,7 +3146,7 @@ TEST_F(FormStructureTest, EncodeUploadRequest) {
   }
 
   // Adjust the expected proto string.
-  upload.set_form_signature(form_structure->form_signature());
+  upload.set_form_signature(form_structure->form_signature().value());
   upload.set_autofill_used(false);
   upload.set_submission_event(
       AutofillUploadContents_SubmissionIndicatorEvent_HTML_FORM_SUBMISSION);
@@ -3276,7 +3276,7 @@ TEST_F(FormStructureTest,
   AutofillUploadContents upload;
   upload.set_submission(true);
   upload.set_client_version("6.1.1715.1442/en (GGLL)");
-  upload.set_form_signature(form_structure->form_signature());
+  upload.set_form_signature(form_structure->form_signature().value());
   upload.set_autofill_used(true);
   upload.set_data_present("1440000000000000000802");
   upload.set_action_signature(15724779818122431245U);
@@ -3378,7 +3378,7 @@ TEST_F(FormStructureTest, EncodeUploadRequest_WithAutocomplete) {
   AutofillUploadContents upload;
   upload.set_submission(true);
   upload.set_client_version("6.1.1715.1442/en (GGLL)");
-  upload.set_form_signature(form_structure->form_signature());
+  upload.set_form_signature(form_structure->form_signature().value());
   upload.set_autofill_used(true);
   upload.set_data_present("1440");
   upload.set_action_signature(15724779818122431245U);
@@ -3476,7 +3476,7 @@ TEST_F(FormStructureTest, EncodeUploadRequestWithPropertiesMask) {
   AutofillUploadContents upload;
   upload.set_submission(true);
   upload.set_client_version("6.1.1715.1442/en (GGLL)");
-  upload.set_form_signature(form_structure->form_signature());
+  upload.set_form_signature(form_structure->form_signature().value());
   upload.set_autofill_used(true);
   upload.set_data_present("1440");
   upload.set_passwords_revealed(false);
@@ -3562,7 +3562,7 @@ TEST_F(FormStructureTest, EncodeUploadRequest_ObservedSubmissionFalse) {
   AutofillUploadContents upload;
   upload.set_submission(false);
   upload.set_client_version("6.1.1715.1442/en (GGLL)");
-  upload.set_form_signature(form_structure->form_signature());
+  upload.set_form_signature(form_structure->form_signature().value());
   upload.set_autofill_used(true);
   upload.set_data_present("1440");
   upload.set_action_signature(15724779818122431245U);
@@ -3638,7 +3638,7 @@ TEST_F(FormStructureTest, EncodeUploadRequest_WithLabels) {
   AutofillUploadContents upload;
   upload.set_submission(true);
   upload.set_client_version("6.1.1715.1442/en (GGLL)");
-  upload.set_form_signature(form_structure->form_signature());
+  upload.set_form_signature(form_structure->form_signature().value());
   upload.set_autofill_used(true);
   upload.set_data_present("1440");
   upload.set_action_signature(15724779818122431245U);
@@ -3710,7 +3710,7 @@ TEST_F(FormStructureTest, EncodeUploadRequest_WithCssClassesAndIds) {
   AutofillUploadContents upload;
   upload.set_submission(true);
   upload.set_client_version("6.1.1715.1442/en (GGLL)");
-  upload.set_form_signature(form_structure->form_signature());
+  upload.set_form_signature(form_structure->form_signature().value());
   upload.set_autofill_used(true);
   upload.set_data_present("1440");
   upload.set_action_signature(15724779818122431245U);
@@ -3795,7 +3795,7 @@ TEST_F(FormStructureTest, EncodeUploadRequest_WithFormName) {
   AutofillUploadContents upload;
   upload.set_submission(true);
   upload.set_client_version("6.1.1715.1442/en (GGLL)");
-  upload.set_form_signature(form_structure->form_signature());
+  upload.set_form_signature(form_structure->form_signature().value());
   upload.set_autofill_used(true);
   upload.set_data_present("1440");
   upload.set_action_signature(15724779818122431245U);
@@ -3878,7 +3878,7 @@ TEST_F(FormStructureTest, EncodeUploadRequestPartialMetadata) {
   AutofillUploadContents upload;
   upload.set_submission(true);
   upload.set_client_version("6.1.1715.1442/en (GGLL)");
-  upload.set_form_signature(form_structure->form_signature());
+  upload.set_form_signature(form_structure->form_signature().value());
   upload.set_autofill_used(true);
   upload.set_data_present("1440");
   upload.set_passwords_revealed(false);
@@ -3972,7 +3972,7 @@ TEST_F(FormStructureTest, EncodeUploadRequest_DisabledMetadataTrial) {
   AutofillUploadContents upload;
   upload.set_submission(true);
   upload.set_client_version("6.1.1715.1442/en (GGLL)");
-  upload.set_form_signature(form_structure->form_signature());
+  upload.set_form_signature(form_structure->form_signature().value());
   upload.set_autofill_used(true);
   upload.set_data_present("1440");
   upload.set_passwords_revealed(false);
@@ -4047,7 +4047,7 @@ TEST_F(FormStructureTest, CheckDataPresence) {
   AutofillUploadContents upload;
   upload.set_submission(true);
   upload.set_client_version("6.1.1715.1442/en (GGLL)");
-  upload.set_form_signature(form_structure.form_signature());
+  upload.set_form_signature(form_structure.form_signature().value());
   upload.set_autofill_used(false);
   upload.set_data_present("");
   upload.set_passwords_revealed(false);
@@ -4330,7 +4330,7 @@ TEST_F(FormStructureTest, CheckMultipleTypes) {
   AutofillUploadContents upload;
   upload.set_submission(true);
   upload.set_client_version("6.1.1715.1442/en (GGLL)");
-  upload.set_form_signature(form_structure->form_signature());
+  upload.set_form_signature(form_structure->form_signature().value());
   upload.set_autofill_used(false);
   upload.set_data_present("1440000360000008");
   upload.set_passwords_revealed(false);
@@ -4528,7 +4528,8 @@ TEST_F(FormStructureTest, EncodeUploadRequest_RichMetadata) {
     EXPECT_FALSE(upload.randomized_form_metadata().has_id());
   } else {
     EXPECT_EQ(upload.randomized_form_metadata().id().encoded_bits(),
-              encoder.Encode(form_signature, 0, RandomizedEncoder::FORM_ID,
+              encoder.Encode(form_signature, FieldSignature(),
+                             RandomizedEncoder::FORM_ID,
                              form_structure.id_attribute()));
   }
 
@@ -4536,7 +4537,8 @@ TEST_F(FormStructureTest, EncodeUploadRequest_RichMetadata) {
     EXPECT_FALSE(upload.randomized_form_metadata().has_name());
   } else {
     EXPECT_EQ(upload.randomized_form_metadata().name().encoded_bits(),
-              encoder.Encode(form_signature, 0, RandomizedEncoder::FORM_NAME,
+              encoder.Encode(form_signature, FieldSignature(),
+                             RandomizedEncoder::FORM_NAME,
                              form_structure.name_attribute()));
   }
   ASSERT_EQ(static_cast<size_t>(upload.field_size()),
@@ -4738,7 +4740,7 @@ TEST_F(FormStructureTest, SkipFieldTest) {
   AutofillQueryContents query;
   query.set_client_version("6.1.1715.1442/en (GGLL)");
   AutofillQueryContents::Form* query_form = query.add_form();
-  query_form->set_signature(form_structure.form_signature());
+  query_form->set_signature(form_structure.form_signature().value());
 
   test::FillQueryField(query_form->add_field(), 239111655U, "username", "text");
   test::FillQueryField(query_form->add_field(), 420638584U, "email", "text");
@@ -4790,7 +4792,7 @@ TEST_F(FormStructureTest, EncodeQueryRequest_WithLabels) {
   AutofillQueryContents query;
   query.set_client_version("6.1.1715.1442/en (GGLL)");
   AutofillQueryContents::Form* query_form = query.add_form();
-  query_form->set_signature(form_structure.form_signature());
+  query_form->set_signature(form_structure.form_signature().value());
 
   test::FillQueryField(query_form->add_field(), 239111655U, "username", "text");
   test::FillQueryField(query_form->add_field(), 420638584U, "email", "text");
@@ -4845,7 +4847,7 @@ TEST_F(FormStructureTest, EncodeQueryRequest_WithLongLabels) {
   AutofillQueryContents query;
   query.set_client_version("6.1.1715.1442/en (GGLL)");
   AutofillQueryContents::Form* query_form = query.add_form();
-  query_form->set_signature(form_structure.form_signature());
+  query_form->set_signature(form_structure.form_signature().value());
 
   test::FillQueryField(query_form->add_field(), 239111655U, "username", "text");
   test::FillQueryField(query_form->add_field(), 420638584U, "email", "text");
@@ -4894,7 +4896,7 @@ TEST_F(FormStructureTest, EncodeQueryRequest_MissingNames) {
   AutofillQueryContents query;
   query.set_client_version("6.1.1715.1442/en (GGLL)");
   AutofillQueryContents::Form* query_form = query.add_form();
-  query_form->set_signature(form_structure.form_signature());
+  query_form->set_signature(form_structure.form_signature().value());
 
   test::FillQueryField(query_form->add_field(), 239111655U, "username", "text");
   test::FillQueryField(query_form->add_field(), 1318412689U, nullptr, "text");
@@ -4945,7 +4947,7 @@ TEST_F(FormStructureTest, EncodeQueryRequest_DisabledMetadataTrial) {
   AutofillQueryContents query;
   query.set_client_version("6.1.1715.1442/en (GGLL)");
   AutofillQueryContents::Form* query_form = query.add_form();
-  query_form->set_signature(form_structure.form_signature());
+  query_form->set_signature(form_structure.form_signature().value());
 
   test::FillQueryField(query_form->add_field(), 239111655U, nullptr, nullptr);
   test::FillQueryField(query_form->add_field(), 3654076265U, nullptr, nullptr);
@@ -7130,11 +7132,12 @@ TEST_F(FormStructureTest, OneFieldPasswordFormShouldNotBeUpload) {
 TEST_F(FormStructureTest, CreateForPasswordManagerUpload) {
   std::unique_ptr<FormStructure> form =
       FormStructure::CreateForPasswordManagerUpload(
-          1234 /* form_signature */, {1, 10, 100} /* field_signatures */);
+          FormSignature(1234),
+          {FieldSignature(1), FieldSignature(10), FieldSignature(100)});
   AutofillUploadContents upload;
-  EXPECT_EQ(1234u, form->form_signature());
+  EXPECT_EQ(FormSignature(1234u), form->form_signature());
   ASSERT_EQ(3u, form->field_count());
-  ASSERT_EQ(100u, form->field(2)->GetFieldSignature());
+  ASSERT_EQ(FieldSignature(100u), form->field(2)->GetFieldSignature());
   EXPECT_TRUE(form->EncodeUploadRequest(
       {} /* available_field_types */, false /* form_was_autofilled */,
       "" /*login_form_signature*/, true /*observed_submission*/, &upload));

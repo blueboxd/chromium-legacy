@@ -176,9 +176,12 @@ void HandleJavaScriptResult(const ScopedJavaGlobalRef<jobject>& callback,
 void OnConvertedToJavaBitmap(const ScopedJavaGlobalRef<jobject>& value_callback,
                              const ScopedJavaGlobalRef<jobject>& java_bitmap) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  Java_TabImpl_runCaptureScreenShotCallback(
-      AttachCurrentThread(), value_callback, java_bitmap,
-      static_cast<int>(TabImpl::ScreenShotErrors::kNone));
+  TabImpl::ScreenShotErrors error =
+      java_bitmap ? TabImpl::ScreenShotErrors::kNone
+                  : TabImpl::ScreenShotErrors::kBitmapAllocationFailed;
+  Java_TabImpl_runCaptureScreenShotCallback(AttachCurrentThread(),
+                                            value_callback, java_bitmap,
+                                            static_cast<int>(error));
 }
 
 // Convert SkBitmap to java Bitmap on a background thread since it involves a
@@ -187,8 +190,8 @@ void ConvertToJavaBitmapBackgroundThread(
     const SkBitmap& bitmap,
     base::OnceCallback<void(const ScopedJavaGlobalRef<jobject>&)> callback) {
   // Make sure to only pass ScopedJavaGlobalRef between threads.
-  ScopedJavaGlobalRef<jobject> java_bitmap =
-      ScopedJavaGlobalRef<jobject>(gfx::ConvertToJavaBitmap(&bitmap));
+  ScopedJavaGlobalRef<jobject> java_bitmap = ScopedJavaGlobalRef<jobject>(
+      gfx::ConvertToJavaBitmap(&bitmap, gfx::OomBehavior::kReturnNullOnOom));
   base::PostTask(FROM_HERE, {content::BrowserThread::UI},
                  base::BindOnce(std::move(callback), std::move(java_bitmap)));
 }

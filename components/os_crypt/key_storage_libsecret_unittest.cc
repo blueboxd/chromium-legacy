@@ -239,19 +239,23 @@ TEST_F(LibsecretTest, LibsecretRepeats) {
   KeyStorageLibsecret libsecret;
   MockLibsecretLoader::ResetForOSCrypt();
   g_password_store.Pointer()->SetPassword("initial password");
-  std::string password = libsecret.GetKey();
-  EXPECT_FALSE(password.empty());
-  std::string password_repeat = libsecret.GetKey();
-  EXPECT_EQ(password, password_repeat);
+  base::Optional<std::string> password = libsecret.GetKey();
+  EXPECT_TRUE(password.has_value());
+  EXPECT_FALSE(password.value().empty());
+  base::Optional<std::string> password_repeat = libsecret.GetKey();
+  EXPECT_TRUE(password_repeat.has_value());
+  EXPECT_EQ(password.value(), password_repeat.value());
 }
 
 TEST_F(LibsecretTest, LibsecretCreatesRandomised) {
   KeyStorageLibsecret libsecret;
   MockLibsecretLoader::ResetForOSCrypt();
-  std::string password = libsecret.GetKey();
+  base::Optional<std::string> password = libsecret.GetKey();
   MockLibsecretLoader::ResetForOSCrypt();
-  std::string password_new = libsecret.GetKey();
-  EXPECT_NE(password, password_new);
+  base::Optional<std::string> password_new = libsecret.GetKey();
+  EXPECT_TRUE(password.has_value());
+  EXPECT_TRUE(password_new.has_value());
+  EXPECT_NE(password.value(), password_new.value());
 }
 
 }  // namespace

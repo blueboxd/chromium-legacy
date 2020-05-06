@@ -82,7 +82,6 @@ public class IncognitoCookieLeakageTest {
     public void tearDown() {
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> IncognitoDataTestUtils.closeTabs(mChromeActivityTestRule));
-        IncognitoDataTestUtils.finishActivities();
         mTestServer.stopAndDestroyServer();
     }
 

@@ -50,6 +50,36 @@ using Origin = CascadeOrigin;
 using Priority = CascadePriority;
 using UnitType = CSSPrimitiveValue::UnitType;
 
+class TestCascadeResolver {
+  STACK_ALLOCATED();
+
+ public:
+  explicit TestCascadeResolver(Document& document, uint8_t generation = 0)
+      : document_(document), resolver_(CascadeFilter(), generation) {}
+  bool InCycle() const { return resolver_.InCycle(); }
+  bool DetectCycle(String name) {
+    CSSPropertyRef ref(name, document_);
+    DCHECK(ref.IsValid());
+    const CSSProperty& property = ref.GetProperty();
+    return resolver_.DetectCycle(property);
+  }
+  wtf_size_t CycleDepth() const { return resolver_.cycle_depth_; }
+  void MarkApplied(CascadePriority* priority) {
+    resolver_.MarkApplied(priority);
+  }
+  void MarkUnapplied(CascadePriority* priority) {
+    resolver_.MarkUnapplied(priority);
+  }
+  uint8_t GetGeneration() { return resolver_.generation_; }
+  CascadeResolver& InnerResolver() { return resolver_; }
+
+ private:
+  friend class TestCascadeAutoLock;
+
+  Document& document_;
+  CascadeResolver resolver_;
+};
+
 class TestCascade {
   STACK_ALLOCATED();
 
@@ -95,6 +125,13 @@ class TestCascade {
   void Apply(CascadeFilter filter = CascadeFilter()) {
     EnsureAtLeast(CascadeOrigin::kAuthor);
     cascade_.Apply(filter);
+  }
+
+  void ApplySingle(const CSSProperty& property) {
+    EnsureAtLeast(CascadeOrigin::kAuthor);
+    cascade_.AnalyzeIfNeeded();
+    TestCascadeResolver resolver(GetDocument(), ++cascade_.generation_);
+    cascade_.LookupAndApply(property, resolver.InnerResolver());
   }
 
   std::unique_ptr<CSSBitset> GetImportantSet() {
@@ -216,35 +253,6 @@ class TestCascade {
   CascadeOrigin current_origin_ = CascadeOrigin::kUserAgent;
   StyleResolverState state_;
   StyleCascade cascade_;
-};
-
-class TestCascadeResolver {
-  STACK_ALLOCATED();
-
- public:
-  explicit TestCascadeResolver(Document& document, uint8_t generation = 0)
-      : document_(document), resolver_(CascadeFilter(), generation) {}
-  bool InCycle() const { return resolver_.InCycle(); }
-  bool DetectCycle(String name) {
-    CSSPropertyRef ref(name, document_);
-    DCHECK(ref.IsValid());
-    const CSSProperty& property = ref.GetProperty();
-    return resolver_.DetectCycle(property);
-  }
-  wtf_size_t CycleDepth() const { return resolver_.cycle_depth_; }
-  void MarkApplied(CascadePriority* priority) {
-    resolver_.MarkApplied(priority);
-  }
-  void MarkUnapplied(CascadePriority* priority) {
-    resolver_.MarkUnapplied(priority);
-  }
-  uint8_t GetGeneration() { return resolver_.generation_; }
-
- private:
-  friend class TestCascadeAutoLock;
-
-  Document& document_;
-  CascadeResolver resolver_;
 };
 
 class TestCascadeAutoLock {
@@ -2124,6 +2132,56 @@ TEST_F(StyleCascadeTest, AnimateStandardProperty) {
 
   EXPECT_EQ(CascadeOrigin::kAnimation, cascade.GetOrigin("width"));
   EXPECT_EQ("15px", cascade.ComputedValue("width"));
+}
+
+TEST_F(StyleCascadeTest, AnimateLogicalProperty) {
+  // We don't support smooth interpolation of css-logical properties yet,
+  // so this test uses a paused animation at t=0.
+  // TODO(crbug.com/865579): Support animations of css-logical properties
+
+  AppendSheet(R"HTML(
+     @keyframes test {
+        from { margin-inline-start: 10px; }
+        to { margin-inline-start: 20px; }
+     }
+    )HTML");
+
+  TestCascade cascade(GetDocument());
+
+  cascade.Add("margin-left:1000px");
+  cascade.Add("animation:test 1s linear paused");
+  cascade.Apply();
+
+  cascade.CalculateAnimationUpdate();
+  cascade.Apply();
+
+  EXPECT_EQ(CascadeOrigin::kAnimation, cascade.GetOrigin("margin-left"));
+  EXPECT_EQ("10px", cascade.ComputedValue("margin-left"));
+}
+
+TEST_F(StyleCascadeTest, AnimateLogicalPropertyWithLookup) {
+  // We don't support smooth interpolation of css-logical properties yet,
+  // so this test uses a paused animation at t=0.
+  // TODO(crbug.com/865579): Support animations of css-logical properties
+
+  AppendSheet(R"HTML(
+     @keyframes test {
+        from { margin-inline-start: 10px; }
+        to { margin-inline-start: 20px; }
+     }
+    )HTML");
+
+  TestCascade cascade(GetDocument());
+
+  cascade.Add("margin-left:1000px");
+  cascade.Add("animation:test 1s linear paused");
+  cascade.Apply();
+
+  cascade.CalculateAnimationUpdate();
+  cascade.ApplySingle(GetCSSPropertyMarginLeft());
+
+  EXPECT_EQ(CascadeOrigin::kAnimation, cascade.GetOrigin("margin-left"));
+  EXPECT_EQ("10px", cascade.ComputedValue("margin-left"));
 }
 
 TEST_F(StyleCascadeTest, AuthorImportantWinOverAnimations) {

@@ -78,12 +78,6 @@ Node* V8GCController::OpaqueRootForGC(v8::Isolate*, Node* node) {
 
 namespace {
 
-bool IsDOMWrapperClassId(uint16_t class_id) {
-  return class_id == WrapperTypeInfo::kNodeClassId ||
-         class_id == WrapperTypeInfo::kObjectClassId ||
-         class_id == WrapperTypeInfo::kCustomWrappableId;
-}
-
 bool IsNestedInV8GC(ThreadState* thread_state, v8::GCType type) {
   return thread_state && (type == v8::kGCTypeMarkSweepCompact ||
                           type == v8::kGCTypeIncrementalMarking);
@@ -159,65 +153,6 @@ void V8GCController::GcEpilogue(v8::Isolate* isolate,
   TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"),
                        "UpdateCounters", TRACE_EVENT_SCOPE_THREAD, "data",
                        inspector_update_counters_event::Data());
-}
-
-namespace {
-
-// Visitor forwarding all DOM wrapper handles to the provided Blink visitor.
-class DOMWrapperForwardingVisitor final
-    : public v8::PersistentHandleVisitor,
-      public v8::EmbedderHeapTracer::TracedGlobalHandleVisitor {
- public:
-  explicit DOMWrapperForwardingVisitor(Visitor* visitor) : visitor_(visitor) {
-    DCHECK(visitor_);
-  }
-
-  void VisitPersistentHandle(v8::Persistent<v8::Value>* value,
-                             uint16_t class_id) final {
-    // TODO(mlippautz): There should be no more v8::Persistent that have a class
-    // id set.
-    VisitHandle(value, class_id);
-  }
-
-  void VisitTracedGlobalHandle(const v8::TracedGlobal<v8::Value>&) final {
-    CHECK(false) << "Blink does not use v8::TracedGlobal.";
-  }
-
-  void VisitTracedReference(const v8::TracedReference<v8::Value>& value) final {
-    VisitHandle(&value, value.WrapperClassId());
-  }
-
- private:
-  template <typename T>
-  void VisitHandle(T* value, uint16_t class_id) {
-    if (!IsDOMWrapperClassId(class_id))
-      return;
-
-    WrapperTypeInfo* wrapper_type_info = const_cast<WrapperTypeInfo*>(
-        ToWrapperTypeInfo(value->template As<v8::Object>()));
-
-    // WrapperTypeInfo pointer may have been cleared before termination GCs on
-    // worker threads.
-    if (!wrapper_type_info)
-      return;
-
-    wrapper_type_info->Trace(
-        visitor_, ToUntypedWrappable(value->template As<v8::Object>()));
-  }
-
-  Visitor* const visitor_;
-};
-
-}  // namespace
-
-// static
-void V8GCController::TraceDOMWrappers(v8::Isolate* isolate, Visitor* visitor) {
-  DCHECK(isolate);
-  DOMWrapperForwardingVisitor forwarding_visitor(visitor);
-  isolate->VisitHandlesWithClassIds(&forwarding_visitor);
-  v8::EmbedderHeapTracer* const tracer = static_cast<v8::EmbedderHeapTracer*>(
-      ThreadState::Current()->unified_heap_controller());
-  tracer->IterateTracedGlobalHandles(&forwarding_visitor);
 }
 
 }  // namespace blink

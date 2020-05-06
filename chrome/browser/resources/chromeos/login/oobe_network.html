@@ -4,8 +4,7 @@
 
 <dom-module id="oobe-network-md">
   <template>
-    <link rel="stylesheet" href="oobe_dialog_host.css">
-    <link rel="stylesheet" href="oobe_flex_layout.css">
+    <style include="oobe-dialog-host"></style>
     <oobe-dialog id="networkDialog" role="dialog" on-show-dialog="onShown_"
         title-key="networkSectionTitle"
         aria-label$="[[i18nDynamic(locale, 'networkSectionTitle')]]"

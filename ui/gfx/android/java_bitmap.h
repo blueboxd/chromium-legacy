@@ -53,18 +53,25 @@ class GFX_EXPORT JavaBitmap {
   DISALLOW_COPY_AND_ASSIGN(JavaBitmap);
 };
 
+enum class OomBehavior {
+  kCrashOnOom,
+  kReturnNullOnOom,
+};
+
 // Allocates a Java-backed bitmap (android.graphics.Bitmap) with the given
 // (non-empty!) size and color type.
 GFX_EXPORT base::android::ScopedJavaLocalRef<jobject> CreateJavaBitmap(
     int width,
     int height,
-    SkColorType color_type);
+    SkColorType color_type,
+    OomBehavior reaction = OomBehavior::kCrashOnOom);
 
 // Converts |skbitmap| to a Java-backed bitmap (android.graphics.Bitmap).
 // Note: |skbitmap| is assumed to be non-null, non-empty and one of RGBA_8888 or
 // RGB_565 formats.
 GFX_EXPORT base::android::ScopedJavaLocalRef<jobject> ConvertToJavaBitmap(
-    const SkBitmap* skbitmap);
+    const SkBitmap* skbitmap,
+    OomBehavior reaction = OomBehavior::kCrashOnOom);
 
 // Converts |bitmap| to an SkBitmap of the same size and format.
 // Note: |jbitmap| is assumed to be non-null, non-empty and of format RGBA_8888.

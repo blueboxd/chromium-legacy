@@ -5,6 +5,7 @@
 #include "extensions/browser/api/declarative_net_request/composite_matcher.h"
 
 #include <algorithm>
+#include <iterator>
 #include <set>
 #include <utility>
 
@@ -133,7 +134,8 @@ uint8_t CompositeMatcher::GetRemoveHeadersMask(
     std::vector<RequestAction>* remove_headers_actions) const {
   uint8_t mask = 0;
   for (const auto& matcher : matchers_) {
-    // An allow rule will override lower priority remove header rules.
+    // An allow or allowAllRequests rule will override remove header rules
+    // within |matcher|.
     if (!params.allow_rule_cache.contains(matcher.get())) {
       // GetBeforeRequestAction is normally called before GetRemoveHeadersMask,
       // so this should never happen in non-test builds. There are tests that
@@ -144,7 +146,7 @@ uint8_t CompositeMatcher::GetRemoveHeadersMask(
           action && action->IsAllowOrAllowAllRequests();
     }
     if (params.allow_rule_cache[matcher.get()])
-      return mask;
+      return 0;
 
     mask |= matcher->GetRemoveHeadersMask(
         params, mask | excluded_remove_headers_mask, remove_headers_actions);
@@ -152,6 +154,34 @@ uint8_t CompositeMatcher::GetRemoveHeadersMask(
 
   DCHECK(!(mask & excluded_remove_headers_mask));
   return mask;
+}
+
+std::vector<RequestAction> CompositeMatcher::GetModifyHeadersActions(
+    const RequestParams& params) const {
+  std::vector<RequestAction> modify_headers_actions;
+
+  for (const auto& matcher : matchers_) {
+    // TODO(crbug.com/947591): An allow or allowAllRequests rule should override
+    // all equal or lower priority modifyHeaders rules specified by |matcher|.
+    DCHECK(params.allow_rule_cache.contains(matcher.get()));
+    if (params.allow_rule_cache[matcher.get()])
+      return std::vector<RequestAction>();
+
+    std::vector<RequestAction> actions_for_matcher =
+        matcher->GetModifyHeadersActions(params);
+
+    modify_headers_actions.insert(
+        modify_headers_actions.end(),
+        std::make_move_iterator(actions_for_matcher.begin()),
+        std::make_move_iterator(actions_for_matcher.end()));
+  }
+
+  // Sort |modify_headers_actions| in descending order of priority.
+  std::sort(modify_headers_actions.begin(), modify_headers_actions.end(),
+            [](const RequestAction& lhs, const RequestAction& rhs) {
+              return lhs.index_priority > rhs.index_priority;
+            });
+  return modify_headers_actions;
 }
 
 bool CompositeMatcher::HasAnyExtraHeadersMatcher() const {

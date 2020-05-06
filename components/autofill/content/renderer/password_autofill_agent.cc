@@ -35,6 +35,7 @@
 #include "components/autofill/core/common/form_field_data.h"
 #include "components/autofill/core/common/mojom/autofill_types.mojom.h"
 #include "components/autofill/core/common/password_form_fill_data.h"
+#include "components/autofill/core/common/signatures.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/safe_browsing/buildflags.h"
 #include "content/public/renderer/document_state.h"
@@ -250,7 +251,7 @@ bool IsPublicSuffixDomainMatch(const std::string& url1,
 // returns it as WebString.
 WebString GetFormSignatureAsWebString(const FormData& form_data) {
   return WebString::FromUTF8(
-      base::NumberToString(CalculateFormSignature(form_data)));
+      base::NumberToString(CalculateFormSignature(form_data).value()));
 }
 
 // Annotate |fields| with field signatures and form signature as HTML
@@ -264,7 +265,7 @@ void AnnotateFieldsWithSignatures(
         control_element.FormControlTypeForAutofill().Utf8());
     control_element.SetAttribute(
         WebString::FromASCII(kDebugAttributeForFieldSignature),
-        WebString::FromUTF8(base::NumberToString(field_signature)));
+        WebString::FromUTF8(base::NumberToString(field_signature.value())));
     control_element.SetAttribute(
         blink::WebString::FromASCII(kDebugAttributeForFormSignature),
         form_signature);

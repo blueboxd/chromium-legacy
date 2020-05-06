@@ -55,7 +55,7 @@
 #include "components/autofill/core/common/form_field_data.h"
 #include "components/autofill/core/common/form_field_data_predictions.h"
 #include "components/autofill/core/common/logging/log_buffer.h"
-#include "components/autofill/core/common/signatures_util.h"
+#include "components/autofill/core/common/signatures.h"
 #include "components/security_state/core/security_state.h"
 #include "url/origin.h"
 
@@ -455,8 +455,8 @@ void PopulateRandomizedFormMetadata(const RandomizedEncoder& encoder,
                                     const FormStructure& form,
                                     AutofillRandomizedFormMetadata* metadata) {
   const FormSignature form_signature = form.form_signature();
-  constexpr FieldSignature kNullFieldSignature =
-      0;  // Not relevant for form level metadata.
+  constexpr FieldSignature
+      kNullFieldSignature;  // Not relevant for form level metadata.
   if (!form.id_attribute().empty()) {
     EncodeRandomizedValue(encoder, form_signature, kNullFieldSignature,
                           RandomizedEncoder::FORM_ID, form.id_attribute(),
@@ -675,7 +675,7 @@ bool FormStructure::EncodeUploadRequest(
 
   upload->set_submission(observed_submission);
   upload->set_client_version(kClientVersion);
-  upload->set_form_signature(form_signature());
+  upload->set_form_signature(form_signature().value());
   upload->set_autofill_used(form_was_autofilled);
   upload->set_data_present(EncodeFieldTypes(available_field_types));
   upload->set_passwords_revealed(passwords_were_revealed_);
@@ -924,7 +924,7 @@ std::unique_ptr<FormStructure> FormStructure::CreateForPasswordManagerUpload(
 }
 
 std::string FormStructure::FormSignatureAsStr() const {
-  return base::NumberToString(form_signature());
+  return base::NumberToString(form_signature().value());
 }
 
 bool FormStructure::IsAutofillable() const {
@@ -1862,7 +1862,7 @@ void FormStructure::EncodeFormForQuery(
     AutofillQueryContents::Form* query_form) const {
   DCHECK(!IsMalformed());
 
-  query_form->set_signature(form_signature());
+  query_form->set_signature(form_signature().value());
 
   if (is_rich_query_enabled_) {
     EncodeFormMetadataForQuery(*this, query_form->mutable_form_metadata());
@@ -1874,7 +1874,7 @@ void FormStructure::EncodeFormForQuery(
 
     AutofillQueryContents::Form::Field* added_field = query_form->add_field();
 
-    added_field->set_signature(field->GetFieldSignature());
+    added_field->set_signature(field->GetFieldSignature().value());
 
     if (is_rich_query_enabled_) {
       EncodeFieldMetadataForQuery(*field,
@@ -1938,7 +1938,7 @@ void FormStructure::EncodeFormForUpload(AutofillUploadContents* upload) const {
       added_field->set_initial_value_hash(field->initial_value_hash().value());
     }
 
-    added_field->set_signature(field->GetFieldSignature());
+    added_field->set_signature(field->GetFieldSignature().value());
 
     if (field->properties_mask)
       added_field->set_properties_mask(field->properties_mask);
@@ -2277,7 +2277,8 @@ LogBuffer& operator<<(LogBuffer& buffer, const FormStructure& form) {
   buffer << Tag{"div"} << Attrib{"class", "form"};
   buffer << Tag{"table"};
   buffer << Tr{} << "Form signature:"
-         << base::StrCat({base::NumberToString(form.form_signature()), " - ",
+         << base::StrCat({base::NumberToString(form.form_signature().value()),
+                          " - ",
                           base::NumberToString(
                               HashFormSignature(form.form_signature()))});
   buffer << Tr{} << "Form name:" << form.form_name();
@@ -2291,7 +2292,8 @@ LogBuffer& operator<<(LogBuffer& buffer, const FormStructure& form) {
     buffer << Tag{"table"};
     buffer << Tr{} << "Signature:"
            << base::StrCat(
-                  {base::NumberToString(field->GetFieldSignature()), " - ",
+                  {base::NumberToString(field->GetFieldSignature().value()),
+                   " - ",
                    base::NumberToString(
                        HashFieldSignature(field->GetFieldSignature()))});
     buffer << Tr{} << "Name:" << field->parseable_name();

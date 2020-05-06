@@ -61,6 +61,7 @@ class CSSLayoutDefinition final : public GarbageCollected<CSSLayoutDefinition>,
         const NGBlockNode&,
         const LogicalSize& border_box_size,
         const NGBoxStrut& border_scrollbar_padding,
+        const LayoutUnit child_percentage_resolution_block_size_for_min_max,
         CustomLayoutScope*,
         FragmentResultOptions*&,
         scoped_refptr<SerializedScriptValue>* fragment_result_data);
@@ -75,8 +76,7 @@ class CSSLayoutDefinition final : public GarbageCollected<CSSLayoutDefinition>,
         const NGBoxStrut& border_scrollbar_padding,
         const LayoutUnit child_percentage_resolution_block_size_for_min_max,
         CustomLayoutScope*,
-        IntrinsicSizesResultOptions**,
-        bool* child_depends_on_percentage_block_size);
+        IntrinsicSizesResultOptions*&);
 
     void Trace(Visitor*);
 

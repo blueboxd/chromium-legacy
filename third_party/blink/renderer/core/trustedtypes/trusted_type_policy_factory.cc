@@ -54,12 +54,14 @@ TrustedTypePolicy* TrustedTypePolicyFactory::createPolicy(
     exception_state.ThrowTypeError(message);
     return nullptr;
   }
-
+  UseCounter::Count(GetExecutionContext(),
+                    WebFeature::kTrustedTypesPolicyCreated);
   if (policy_name == "default") {
     DCHECK(!policy_map_.Contains("default"));
     UseCounter::Count(GetExecutionContext(),
-                      WebFeature::kTrustedTypesDefaultPolicyUsed);
+                      WebFeature::kTrustedTypesDefaultPolicyCreated);
   }
+
   auto* policy = MakeGarbageCollected<TrustedTypePolicy>(
       policy_name, const_cast<TrustedTypePolicyOptions*>(policy_options));
   policy_map_.insert(policy_name, policy);

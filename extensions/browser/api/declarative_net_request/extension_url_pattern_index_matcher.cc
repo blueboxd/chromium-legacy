@@ -42,8 +42,6 @@ bool IsExtraHeadersMatcherInternal(
     const std::vector<url_pattern_index::UrlPatternIndexMatcher>& matchers) {
   // We only support removing a subset of extra headers currently. If that
   // changes, the implementation here should change as well.
-  // TODO(crbug.com/947591): Modify this method for
-  // flat::IndexType_modify_headers.
   static_assert(flat::IndexType_count == 6,
                 "Modify this method to ensure IsExtraHeadersMatcherInternal is "
                 "updated as new actions are added.");
@@ -51,6 +49,7 @@ bool IsExtraHeadersMatcherInternal(
       flat::IndexType_remove_cookie_header,
       flat::IndexType_remove_referer_header,
       flat::IndexType_remove_set_cookie_header,
+      flat::IndexType_modify_headers,
   };
 
   for (flat::IndexType index : extra_header_indices) {
@@ -153,6 +152,15 @@ ExtensionUrlPatternIndexMatcher::GetAllowAllRequestsAction(
   return CreateAllowAllRequestsAction(params, *rule);
 }
 
+std::vector<RequestAction>
+ExtensionUrlPatternIndexMatcher::GetModifyHeadersActions(
+    const RequestParams& params) const {
+  std::vector<const flat_rule::UrlRule*> rules =
+      GetAllMatchingRules(params, flat::IndexType_modify_headers);
+
+  return GetModifyHeadersActionsFromMetadata(params, rules, *metadata_list_);
+}
+
 base::Optional<RequestAction>
 ExtensionUrlPatternIndexMatcher::GetBeforeRequestActionIgnoringAncestors(
     const RequestParams& params) const {
@@ -208,6 +216,24 @@ const flat_rule::UrlRule* ExtensionUrlPatternIndexMatcher::GetMatchingRule(
       *params.url, params.first_party_origin, params.element_type,
       flat_rule::ActivationType_NONE, params.is_third_party,
       kDisableGenericRules, strategy);
+}
+
+std::vector<const url_pattern_index::flat::UrlRule*>
+ExtensionUrlPatternIndexMatcher::GetAllMatchingRules(
+    const RequestParams& params,
+    flat::IndexType index) const {
+  DCHECK_LT(index, flat::IndexType_count);
+  DCHECK_GE(index, 0);
+  DCHECK(params.url);
+
+  // Don't exclude generic rules from being matched. A generic rule is one with
+  // an empty included domains list.
+  const bool kDisableGenericRules = false;
+
+  return matchers_[index].FindAllMatches(
+      *params.url, params.first_party_origin, params.element_type,
+      flat_rule::ActivationType_NONE, params.is_third_party,
+      kDisableGenericRules);
 }
 
 }  // namespace declarative_net_request

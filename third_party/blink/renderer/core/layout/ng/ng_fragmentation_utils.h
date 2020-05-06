@@ -107,6 +107,10 @@ void SetupFragmentBuilderForFragmentation(
     const NGBlockBreakToken* previous_break_token,
     NGBoxFragmentBuilder*);
 
+inline void SetupFragmentBuilderForFragmentation(const NGConstraintSpace&,
+                                                 const NGInlineBreakToken*,
+                                                 NGLineBoxFragmentBuilder*) {}
+
 // Write fragmentation information to the fragment builder after layout.
 void FinishFragmentation(const NGConstraintSpace&,
                          const NGBlockBreakToken* previous_break_token,

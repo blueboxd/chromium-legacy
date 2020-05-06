@@ -90,6 +90,7 @@
 <translation id="1947424002851288782">ក្តារចុចអាល្លឺម៉ង់</translation>
 <translation id="1972984168337863910">ពង្រីកផ្ទាំង​មតិកែលម្អ​ឯកសារ</translation>
 <translation id="1984603991036629094">ក្តារចុចសូរស័ព្ទអាម៉ានី</translation>
+<translation id="1995337122023280937">ទៅកាន់​ទីតាំង​ឯកសារ</translation>
 <translation id="2001796770603320721">គ្រប់គ្រង​ក្នុង​​ថាស</translation>
 <translation id="2009067268969781306">ការសម្អាត​ឧបករណ៍ផ្ទុក USB នឹងលុបទិន្នន័យ​ទាំងអស់​ដែលបានរក្សាទុក​នៅលើវា។ សកម្មភាព​នេះ​មិន​អាច​​ត្រឡប់វិញ​បានទេ។</translation>
 <translation id="2028997212275086731">ឯកសារបណ្ណាសារ RAR</translation>
@@ -141,6 +142,7 @@
 <translation id="2638942478653899953">មិនអាចទៅកាន់ Google Drive ទេ។ សូម <ph name="BEGIN_LINK" />ចាកចេញ<ph name="END_LINK" /> ហើយចូលត្រលប់វិញ។</translation>
 <translation id="2649120831653069427">ត្រីឥន្ធនូ</translation>
 <translation id="2661146741306740526">16x9</translation>
+<translation id="2664412712123763093">ទីតាំង​ឯកសារ</translation>
 <translation id="2672394958563893062">កំហុសឆ្គងបានកើតឡើង។ ចុចដើម្បីចាប់ផ្តើមពីដំបូងឡើងវិញ។</translation>
 <translation id="2676946222714718093">កំពុងលេងនៅលើ</translation>
 <translation id="2735698359135166290">ក្តារចុចតាមបទដ្ឋានរ៉ូម៉ានី</translation>
@@ -349,6 +351,7 @@
 <translation id="5081517858322016911"><ph name="TOTAL_FILE_SIZE" /> នៃឯកសារ​នឹងត្រូវលុប</translation>
 <translation id="509429900233858213">កំហុសឆ្គងបានកើតឡើង។</translation>
 <translation id="5098629044894065541">ភាសាហ៊ីប៊្រូ</translation>
+<translation id="5112685521274804841">ឯកសារ​នៅក្នុង​ថតនេះគឺសម្រាប់​តែអានប៉ុណ្ណោះ។ មិនអាច​ប្រើសកម្មភាព​មួយចំនួន​បានទេ។</translation>
 <translation id="5123433949759960244">​បាល់បោះ</translation>
 <translation id="5129662217315786329">ភាសាប៉ូឡូញ</translation>
 <translation id="5144820558584035333">ហានគុល 3 ឈុត (390)</translation>
@@ -698,6 +701,7 @@
 <translation id="9034924485347205037">ឯកសារ Linux</translation>
 <translation id="9035012421917565900">ធាតុ​ទាំងនេះ​មិនអាច​ផ្លាស់ទី​ទៅក្នុង '<ph name="DESTINATION_NAME" />' បានទេ ដូច្នេះ​អ្នកនឹង​មិនអាច​ត្រឡប់​សកម្មភាព​នេះវិញ​បានទេ។</translation>
 <translation id="9038620279323455325">ឯកសារដែល​ដាក់ឈ្មោះ "<ph name="FILE_NAME" />" មានរួចហើយ។ សូមជ្រើសរើស​ឈ្មោះផ្សេង។</translation>
+<translation id="9062992083244091966">ដើម្បីបើក​ឯកសារ​ដោយប្រើ​កម្មវិធី <ph name="APP_NAME" /> សូមផ្លាស់ទី​ឯកសារ​ទាំងនោះទៅ​ថតឯកសាររួម​របស់ <ph name="APP_NAME" /> ជាមុនសិន។</translation>
 <translation id="9064939804718829769">កំពុងផ្ទេរ...</translation>
 <translation id="9065203028668620118">កែប្រែ</translation>
 <translation id="9099674669267916096">ចំនួន​ទំព័រ</translation>

@@ -48,8 +48,8 @@ public class AutocompleteController {
      * Listener for receiving OmniboxSuggestions.
      */
     public interface OnSuggestionsReceivedListener {
-        void onSuggestionsReceived(List<OmniboxSuggestion> suggestions,
-                SparseArray<String> groupHeaders, String inlineAutocompleteText);
+        void onSuggestionsReceived(
+                AutocompleteResult autocompleteResult, String inlineAutocompleteText);
     }
 
     /**
@@ -88,12 +88,8 @@ public class AutocompleteController {
     void startCachedZeroSuggest() {
         assert mListener != null : "Ensure a listener is set prior to calling.";
         mUseCachedZeroSuggestResults = true;
-        List<OmniboxSuggestion> suggestions =
-                OmniboxSuggestion.getCachedOmniboxSuggestionsForZeroSuggest();
-        SparseArray<String> groupHeaders =
-                OmniboxSuggestion.getCachedOmniboxSuggestionHeadersForZeroSuggest();
-        OmniboxSuggestion.dropSuggestionsWithIncorrectGroupHeaders(suggestions, groupHeaders);
-        if (suggestions != null) mListener.onSuggestionsReceived(suggestions, groupHeaders, "");
+        AutocompleteResult data = CachedZeroSuggestionsManager.readFromCache();
+        mListener.onSuggestionsReceived(data, "");
     }
 
     /**
@@ -183,7 +179,7 @@ public class AutocompleteController {
      *
      * <p>
      * Calling this method with {@code false}, will result in
-     * {@link #onSuggestionsReceived(List, SparseArray, String, long)} being called with an empty
+     * {@link #onSuggestionsReceived(AutocompleteResult, String, long)} being called with an empty
      * result set.
      *
      * @param clear Whether to clear the most recent autocomplete results.
@@ -232,21 +228,22 @@ public class AutocompleteController {
     }
 
     @CalledByNative
-    protected void onSuggestionsReceived(List<OmniboxSuggestion> suggestions,
-            SparseArray<String> groupHeaders, String inlineAutocompleteText,
-            long currentNativeAutocompleteResult) {
+    protected void onSuggestionsReceived(AutocompleteResult autocompleteResult,
+            String inlineAutocompleteText, long currentNativeAutocompleteResult) {
         assert mListener != null : "Ensure a listener is set prior generating suggestions.";
         // Run through new providers to get an updated list of suggestions.
-        suggestions = mVoiceSuggestionProvider.addVoiceSuggestions(
-                suggestions, MAX_VOICE_SUGGESTION_COUNT);
+        AutocompleteResult resultsWithVoiceSuggestions = new AutocompleteResult(
+                mVoiceSuggestionProvider.addVoiceSuggestions(
+                        autocompleteResult.getSuggestionsList(), MAX_VOICE_SUGGESTION_COUNT),
+                autocompleteResult.getGroupHeaders());
 
         mCurrentNativeAutocompleteResult = currentNativeAutocompleteResult;
 
         // Notify callbacks of suggestions.
-        mListener.onSuggestionsReceived(suggestions, groupHeaders, inlineAutocompleteText);
+        mListener.onSuggestionsReceived(resultsWithVoiceSuggestions, inlineAutocompleteText);
+
         if (mWaitingForSuggestionsToCache) {
-            OmniboxSuggestion.cacheOmniboxSuggestionListForZeroSuggest(suggestions);
-            OmniboxSuggestion.cacheOmniboxSuggestionHeadersForZeroSuggest(groupHeaders);
+            CachedZeroSuggestionsManager.saveToCache(autocompleteResult);
         }
     }
 
@@ -288,38 +285,35 @@ public class AutocompleteController {
     }
 
     @CalledByNative
-    private static List<OmniboxSuggestion> createOmniboxSuggestionList(int size) {
-        return new ArrayList<OmniboxSuggestion>(size);
-    }
-
-    @CalledByNative
-    private static void addOmniboxSuggestionToList(
-            List<OmniboxSuggestion> suggestionList, OmniboxSuggestion suggestion) {
-        suggestionList.add(suggestion);
+    private static AutocompleteResult createAutocompleteResult(
+            int suggestionsCount, int groupHeadersCount) {
+        return new AutocompleteResult(new ArrayList<OmniboxSuggestion>(suggestionsCount),
+                new SparseArray<String>(groupHeadersCount));
     }
 
     /**
-     * Create a map (SparseArray) of Group Id to Group Header text.
+     * Append suggestion to Suggestions List.
      *
-     * @param size Size hint for the newly created map.
-     * @return Empty map of Group ID to Header title.
+     * @param autocompleteResult AutocompleteResult instance.
+     * @param suggestion Suggestion to append.
      */
     @CalledByNative
-    private static SparseArray<String> createOmniboxGroupHeadersMap(int size) {
-        return new SparseArray<String>(size);
+    private static void addOmniboxSuggestionToResult(
+            AutocompleteResult autocompleteResult, OmniboxSuggestion suggestion) {
+        autocompleteResult.getSuggestionsList().add(suggestion);
     }
 
     /**
      * Insert element to Group Headers map.
      *
-     * @param headersMap SparseArray of Group Id to Headers.
+     * @param autocompleteResult AutocompleteResult instance.
      * @param groupId ID of a Group.
      * @param headerText Group title.
      */
     @CalledByNative
-    private static void addOmniboxGroupHeaderToMap(
-            SparseArray<String> headersMap, int groupId, String headerText) {
-        headersMap.put(groupId, headerText);
+    private static void addOmniboxGroupHeaderToResult(
+            AutocompleteResult autocompleteResult, int groupId, String headerText) {
+        autocompleteResult.getGroupHeaders().put(groupId, headerText);
     }
 
     @CalledByNative

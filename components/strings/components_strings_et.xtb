@@ -52,7 +52,6 @@
 <translation id="1197088940767939838">Oranž</translation>
 <translation id="1201402288615127009">Edasi</translation>
 <translation id="1201895884277373915">Veel sellelt saidilt</translation>
-<translation id="1205963431094182634">Logige sisse, et kasutada oma Google'i kontole salvestatud paroole</translation>
 <translation id="1206967143813997005">Sobimatu algne allkiri</translation>
 <translation id="1209206284964581585">Peida praeguseks</translation>
 <translation id="121201262018556460">Proovisite jõuda saidile <ph name="DOMAIN" />, kuid server esitas nõrka võtit sisaldava sertifikaadi. Võimalik, et ründaja on privaatvõtme lahti murdnud ja tegemist ei pruugi olla oodatud serveriga (võimalik, et suhtlete ründajaga).</translation>
@@ -1216,7 +1215,6 @@ Vastasel korral blokeeritakse see teie privaatsusseadetes. See võimaldab teie k
 <translation id="6116338172782435947">näha lõikelauale kopeeritud teksti ja kujutisi</translation>
 <translation id="6120179357481664955">Kas jätta teie UPI ID meelde?</translation>
 <translation id="6124432979022149706">Chrome Enterprise'i liidesed</translation>
-<translation id="6135641591018127088">Kasutage tugeva parooli loomiseks oma Google'i kontot</translation>
 <translation id="6146055958333702838">Kontrollige kaableid ning taaskäivitage kõik ruuterid, modemid ja muud
     kasutuses olevad võrguseadmed.</translation>
 <translation id="614940544461990577">Proovige järgmist.</translation>
@@ -1262,7 +1260,6 @@ Vastasel korral blokeeritakse see teie privaatsusseadetes. See võimaldab teie k
 <translation id="6328639280570009161">Proovige keelata võrguprognoos</translation>
 <translation id="6328784461820205019">„Teie ühendus ei ole privaatne” või „&lt;span class="error-code"&gt;NET::ERR_CERT_AUTHORITY_INVALID&lt;/span&gt;” või „&lt;span class="error-code"&gt;ERR_CERT_COMMON_NAME_INVALID&lt;/span&gt;” või „&lt;span class="error-code"&gt;NET::ERR_CERT_WEAK_SIGNATURE_ALGORITHM&lt;/span&gt;” või „&lt;span class="error-code"&gt;ERR_CERT_SYMANTEC_LEGACY&lt;/span&gt;” või „SSL-i sertifikaadi viga”</translation>
 <translation id="6328786501058569169">See sait on petturlik</translation>
-<translation id="6333334544069706521">Kasutage oma Google'i kontole salvestatud paroole</translation>
 <translation id="6337133576188860026">Vabastab alla <ph name="SIZE" />. Mõne saidi laadimine võib järgmisel külastusel rohkem aega võtta.</translation>
 <translation id="6337534724793800597">Reeglite filtreerimine nime järgi</translation>
 <translation id="6353505687280762741">{COUNT,plural, =0{Puudub}=1{1 parool (loendile <ph name="DOMAIN_LIST" />, sünkroonitud)}=2{2 parooli (loendile <ph name="DOMAIN_LIST" />, sünkroonitud)}other{# parooli (loendile <ph name="DOMAIN_LIST" />, sünkroonitud)}}</translation>

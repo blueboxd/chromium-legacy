@@ -27,6 +27,16 @@ bool g_libassistant_enabled = false;
 }  // namespace
 
 // static
+std::string AssistantOptInFlowScreen::GetResultString(Result result) {
+  switch (result) {
+    case Result::NEXT:
+      return "Next";
+    case Result::NOT_APPLICABLE:
+      return BaseScreen::kNotApplicable;
+  }
+}
+
+// static
 AssistantOptInFlowScreen* AssistantOptInFlowScreen::Get(
     ScreenManager* manager) {
   return static_cast<AssistantOptInFlowScreen*>(
@@ -35,7 +45,7 @@ AssistantOptInFlowScreen* AssistantOptInFlowScreen::Get(
 
 AssistantOptInFlowScreen::AssistantOptInFlowScreen(
     AssistantOptInFlowScreenView* view,
-    const base::RepeatingClosure& exit_callback)
+    const ScreenExitCallback& exit_callback)
     : BaseScreen(AssistantOptInFlowScreenView::kScreenId,
                  OobeScreenPriority::DEFAULT),
       view_(view),
@@ -50,27 +60,26 @@ AssistantOptInFlowScreen::~AssistantOptInFlowScreen() {
     view_->Unbind();
 }
 
-void AssistantOptInFlowScreen::ShowImpl() {
-  if (!view_)
-    return;
-
-  if (chrome_user_manager_util::IsPublicSessionOrEphemeralLogin()) {
-    exit_callback_.Run();
-    return;
-  }
-
-  if (!g_libassistant_enabled) {
-    exit_callback_.Run();
-    return;
+bool AssistantOptInFlowScreen::MaybeSkip() {
+  if (!g_libassistant_enabled ||
+      chrome_user_manager_util::IsPublicSessionOrEphemeralLogin()) {
+    exit_callback_.Run(Result::NOT_APPLICABLE);
+    return true;
   }
 
   if (::assistant::IsAssistantAllowedForProfile(
           ProfileManager::GetActiveUserProfile()) ==
       ash::mojom::AssistantAllowedState::ALLOWED) {
-    view_->Show();
-    return;
+    return false;
   }
-  exit_callback_.Run();
+
+  exit_callback_.Run(Result::NOT_APPLICABLE);
+  return true;
+}
+
+void AssistantOptInFlowScreen::ShowImpl() {
+  if (view_)
+    view_->Show();
 }
 
 void AssistantOptInFlowScreen::HideImpl() {
@@ -86,13 +95,14 @@ void AssistantOptInFlowScreen::OnViewDestroyed(
 
 // static
 std::unique_ptr<base::AutoReset<bool>>
-AssistantOptInFlowScreen::ForceLibAssistantEnabledForTesting() {
-  return std::make_unique<base::AutoReset<bool>>(&g_libassistant_enabled, true);
+AssistantOptInFlowScreen::ForceLibAssistantEnabledForTesting(bool enabled) {
+  return std::make_unique<base::AutoReset<bool>>(&g_libassistant_enabled,
+                                                 enabled);
 }
 
 void AssistantOptInFlowScreen::OnUserAction(const std::string& action_id) {
   if (action_id == kFlowFinished)
-    exit_callback_.Run();
+    exit_callback_.Run(Result::NEXT);
   else
     BaseScreen::OnUserAction(action_id);
 }

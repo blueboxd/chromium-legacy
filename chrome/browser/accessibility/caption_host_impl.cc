@@ -25,7 +25,17 @@ void CaptionHostImpl::Create(
 }
 
 CaptionHostImpl::CaptionHostImpl(content::RenderFrameHost* frame_host)
-    : frame_host_(frame_host) {}
+    : frame_host_(frame_host) {
+  if (!frame_host_)
+    return;
+  content::WebContents* web_contents =
+      content::WebContents::FromRenderFrameHost(frame_host_);
+  if (!web_contents) {
+    frame_host_ = nullptr;
+    return;
+  }
+  Observe(web_contents);
+}
 
 CaptionHostImpl::~CaptionHostImpl() = default;
 
@@ -33,16 +43,23 @@ void CaptionHostImpl::OnTranscription(
     chrome::mojom::TranscriptionResultPtr transcription_result) {
   if (!frame_host_)
     return;
-  auto* web_contents = content::WebContents::FromRenderFrameHost(frame_host_);
-  if (!web_contents)
+  content::WebContents* web_contents =
+      content::WebContents::FromRenderFrameHost(frame_host_);
+  if (!web_contents) {
+    frame_host_ = nullptr;
     return;
-  auto* profile =
+  }
+  Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
   if (!profile)
     return;
-
   CaptionControllerFactory::GetForProfile(profile)->DispatchTranscription(
-      frame_host_, transcription_result);
+      web_contents, transcription_result);
+}
+
+void CaptionHostImpl::RenderFrameDeleted(content::RenderFrameHost* frame_host) {
+  if (frame_host == frame_host_)
+    frame_host_ = nullptr;
 }
 
 }  // namespace captions

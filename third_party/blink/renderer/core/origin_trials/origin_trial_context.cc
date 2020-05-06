@@ -332,6 +332,10 @@ bool OriginTrialContext::CanEnableTrialFromName(const StringView& trial_name) {
       !base::FeatureList::IsEnabled(features::kPortals)) {
     return false;
   }
+  if (trial_name == "AppCache" &&
+      !base::FeatureList::IsEnabled(features::kAppCache)) {
+    return false;
+  }
 
   return true;
 }

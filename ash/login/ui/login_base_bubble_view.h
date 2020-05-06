@@ -46,7 +46,7 @@ class ASH_EXPORT LoginBaseBubbleView : public views::View,
 
   // ui::LayerAnimationObserver:
   void OnLayerAnimationEnded(ui::LayerAnimationSequence* sequence) override;
-  void OnLayerAnimationAborted(ui::LayerAnimationSequence* sequence) override {}
+  void OnLayerAnimationAborted(ui::LayerAnimationSequence* sequence) override;
   void OnLayerAnimationScheduled(
       ui::LayerAnimationSequence* sequence) override {}
 
@@ -73,6 +73,9 @@ class ASH_EXPORT LoginBaseBubbleView : public views::View,
   gfx::Rect GetBoundsAvailableToShowBubble() const;
 
  private:
+  // Create a layer for this view if doesn't exist.
+  void EnsureLayer();
+
   // Return bounds of the anchors root view. This bounds excludes virtual
   // keyboard.
   gfx::Rect GetRootViewBounds() const;

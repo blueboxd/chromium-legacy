@@ -172,10 +172,10 @@ void GatewayCanBePingedRoutine::OnNetworkStateListReceived(
     const std::string& guid = network->guid;
     if (default_network_guid_.empty()) {
       default_network_guid_ = guid;
-      guids.emplace_back(guid);
     }
+    guids.emplace_back(guid);
   }
-  if (!connected) {
+  if (!connected || guids.empty()) {
     // Since we are not connected at all, directly analyze the results.
     AnalyzeResultsAndExecuteCallback();
   } else {

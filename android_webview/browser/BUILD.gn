@@ -210,7 +210,7 @@ source_set("browser") {
     "//components/embedder_support/android:web_contents_delegate",
     "//components/embedder_support/android/metrics",
     "//components/google/core/common",
-    "//components/heap_profiling",
+    "//components/heap_profiling/multi_process",
     "//components/metrics",
     "//components/minidump_uploader",
     "//components/navigation_interception",

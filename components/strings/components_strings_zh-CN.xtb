@@ -52,7 +52,6 @@
 <translation id="1197088940767939838">橙色</translation>
 <translation id="1201402288615127009">下一步</translation>
 <translation id="1201895884277373915">来自该网站的更多内容</translation>
-<translation id="1205963431094182634">登录即可使用存储在您 Google 帐号中的密码</translation>
 <translation id="1206967143813997005">初始签名不正确</translation>
 <translation id="1209206284964581585">暂时隐藏</translation>
 <translation id="121201262018556460">您尝试访问的是 <ph name="DOMAIN" />，但是服务器出示的证书包含弱密钥。攻击者可能已经破解了私钥，因此这可能并不是您想要访问的服务器（您可能正在与攻击者进行通信）。</translation>
@@ -1202,7 +1201,6 @@
 <translation id="6116338172782435947">查看复制到剪贴板的文字和图片</translation>
 <translation id="6120179357481664955">要记住您的 UPI ID 吗？</translation>
 <translation id="6124432979022149706">Chrome 企业版连接器</translation>
-<translation id="6135641591018127088">使用您的 Google 帐号生成安全系数高的密码</translation>
 <translation id="6146055958333702838">请检查所有网线是否都已连好，然后重新启动您可能正在使用的任何路由器、调制解调器或其他网络设备。</translation>
 <translation id="614940544461990577">请试试以下办法：</translation>
 <translation id="6150036310511284407">三孔（左侧）</translation>
@@ -1247,7 +1245,6 @@
 <translation id="6328639280570009161">请尝试停用网络联想查询功能</translation>
 <translation id="6328784461820205019">“您的连接不是私密连接”、“&lt;span class="error-code"&gt;NET::ERR_CERT_AUTHORITY_INVALID&lt;/span&gt;”、“&lt;span class="error-code"&gt;ERR_CERT_COMMON_NAME_INVALID&lt;/span&gt;”、“&lt;span class="error-code"&gt;NET::ERR_CERT_WEAK_SIGNATURE_ALGORITHM&lt;/span&gt;”、“&lt;span class="error-code"&gt;ERR_CERT_SYMANTEC_LEGACY&lt;/span&gt;”或“SSL 证书错误”</translation>
 <translation id="6328786501058569169">此网站是欺骗性网站</translation>
-<translation id="6333334544069706521">使用存储在您的 Google 帐号中的密码</translation>
 <translation id="6337133576188860026">释放了不到 <ph name="SIZE" />。当您下次访问时，某些网站的加载速度可能会更慢。</translation>
 <translation id="6337534724793800597">按名称过滤政策</translation>
 <translation id="6353505687280762741">{COUNT,plural, =0{无}=1{1 个密码（用于 <ph name="DOMAIN_LIST" />，已同步）}=2{2 个密码（用于 <ph name="DOMAIN_LIST" />，已同步）}other{# 个密码（用于 <ph name="DOMAIN_LIST" />，已同步）}}</translation>

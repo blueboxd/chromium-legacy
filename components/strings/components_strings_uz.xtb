@@ -52,7 +52,6 @@
 <translation id="1197088940767939838">To‘q sariq</translation>
 <translation id="1201402288615127009">Keyingisi</translation>
 <translation id="1201895884277373915">Bu sayt bo‘yicha boshqa yozuvlar</translation>
-<translation id="1205963431094182634">Google hisobingizda saqlangan parollardan foydalanish uchun hisobingizga kiring</translation>
 <translation id="1206967143813997005">Boshlang‘ich imzo tasdiqlanmadi</translation>
 <translation id="1209206284964581585">Berkitish</translation>
 <translation id="121201262018556460">Siz <ph name="DOMAIN" /> saytiga o‘tmoqchi bo‘ldingiz, lekin server taqdim qilgan sertifikat zaif kalitga ega. Bu server bergan havfsizlik hisob ma’lumotlari ishonchsiz va server o‘zini boshqa server deb ko‘rsatayotgan bo‘lishi mumkin (bu firibgarlar sayti bo‘lishi mumkin).</translation>
@@ -1212,7 +1211,6 @@ Aks holda bu maxfiylik sozlamalaringiz tomonidan bloklanadi. Bunda siz ochgan sa
 <translation id="6116338172782435947">Klipbordga nusxalangan matn va rasmlarni ko‘rish</translation>
 <translation id="6120179357481664955">UPI identifikatori eslab qolinsinmi?</translation>
 <translation id="6124432979022149706">Chrome korporativ konnektorlari</translation>
-<translation id="6135641591018127088">Ishonchli parol yaratish uchun Google hisobingizni ishlating</translation>
 <translation id="6146055958333702838">Kabel ulanishlarini tekshiring, router, modem yoki boshqa tarmoq qurilmalarini o‘chirib yoqing.</translation>
 <translation id="614940544461990577">Quyidagilarni bajaring:</translation>
 <translation id="6150036310511284407">Chapdan 3 ta teshik ochish</translation>
@@ -1257,7 +1255,6 @@ Aks holda bu maxfiylik sozlamalaringiz tomonidan bloklanadi. Bunda siz ochgan sa
 <translation id="6328639280570009161">Tarmoqni oldindan aniqlash funksiyasidan foydalanib ko‘ring</translation>
 <translation id="6328784461820205019">“Ulanishingiz himoyalanmagan” yoki “&lt;span class="error-code"&gt;NET::ERR_CERT_AUTHORITY_INVALID&lt;/span&gt;” yoki “&lt;span class="error-code"&gt;ERR_CERT_COMMON_NAME_INVALID&lt;/span&gt;” yoki “&lt;span class="error-code"&gt;NET::ERR_CERT_WEAK_SIGNATURE_ALGORITHM&lt;/span&gt;” yoki “SSL sertifikati xatoligi”</translation>
 <translation id="6328786501058569169">Bu – soxta sayt</translation>
-<translation id="6333334544069706521">Google hisobingizda saqlangan parollardan foydalaning</translation>
 <translation id="6337133576188860026">Xotirada <ph name="SIZE" /> tozalandi. Bundan keyin ba’zi veb-saytlar sekinroq yuklanishi mumkin.</translation>
 <translation id="6337534724793800597">Qoidalarni nomi bo‘yicha filtrlash</translation>
 <translation id="6353505687280762741">{COUNT,plural, =0{Hech qanday}=1{1 ta parol (<ph name="DOMAIN_LIST" /> uchun, sinxronlandi)}=2{2 ta parol (<ph name="DOMAIN_LIST" /> uchun, sinxronlandi)}other{# ta parol (<ph name="DOMAIN_LIST" /> uchun, sinxronlandi)}}</translation>

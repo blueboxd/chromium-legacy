@@ -2,11 +2,11 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="kn">
 <translation id="1028699632127661925"><ph name="DEVICE_NAME" /> ಗೆ ಕಳುಹಿಸಲಾಗುತ್ತಿದೆ...</translation>
-<translation id="103269572468856066">ಈ ಸೈಟ್ &amp; ಆ್ಯಪ್ ಡೇಟಾ ತೆರವುಗೊಳಿಸುವುದೇ?</translation>
+<translation id="103269572468856066">ಈ ಸೈಟ್ &amp; ಆ್ಯಪ್ ಡೇಟಾ ತೆರವುಗೊಳಿಸಬೇಕೇ?</translation>
 <translation id="1036348656032585052">ಆಫ್ ಮಾಡು</translation>
 <translation id="1036727731225946849"><ph name="WEBAPK_NAME" /> ಅನ್ನು ಸೇರಿಸಲಾಗುತ್ತಿದೆ...</translation>
 <translation id="1041308826830691739">ವೆಬ್‌ಸೈಟ್‌ಗಳ ಮೂಲಕ</translation>
-<translation id="1045899828449635435">ಈ ಸೈಟ್‌ನ ಡೇಟಾ ತೆರವುಗೊಳಿಸುವುದೇ?</translation>
+<translation id="1045899828449635435">ಈ ಸೈಟ್‌ನ ಡೇಟಾ ತೆರವುಗೊಳಿಸಬೇಕೇ?</translation>
 <translation id="1049743911850919806">ಅದೃಶ್ಯ</translation>
 <translation id="10614374240317010">ಉಳಿಸಿಯೇ ಇಲ್ಲ</translation>
 <translation id="1067922213147265141">ಇತರ Google ಸೇವೆಗಳು</translation>
@@ -33,6 +33,7 @@
 <translation id="1208340532756947324">ಸಾಧನಗಳಾದ್ಯಂತ ಸಿಂಕ್ ಮಾಡಲು ಮತ್ತು ವೈಯಕ್ತೀಕರಿಸಲು, ಸಿಂಕ್ ಆನ್ ಮಾಡಿ</translation>
 <translation id="1209206284964581585">ಸದ್ಯಕ್ಕೆ ಮರೆಮಾಡಿ</translation>
 <translation id="1227058898775614466">ನ್ಯಾವಿಗೇಶನ್ ಇತಿಹಾಸ</translation>
+<translation id="1229399675748764149">ಈ ಪುಟವನ್ನು ನಿಮ್ಮ ಮುಖಪುಟವಾಗಿ ಮಾಡಿಕೊಳ್ಳಿ</translation>
 <translation id="1231733316453485619">ಸಿಂಕ್ ಆನ್ ಮಾಡುವುದೇ?</translation>
 <translation id="123724288017357924">ಸಂಗ್ರಹ ಮಾಡಿದ ವಿಷಯವನ್ನು ನಿರ್ಲಕ್ಷಿಸಿ, ಪ್ರಸ್ತುತ ಪುಟ ಮರುಲೋಡ್ ಮಾಡಿ</translation>
 <translation id="124116460088058876">ಹೆಚ್ಚಿನ ಭಾಷೆಗಳು</translation>
@@ -71,6 +72,7 @@
 <translation id="1513352483775369820">ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳು ಮತ್ತು ವೆಬ್ ಇತಿಹಾಸ</translation>
 <translation id="1513858653616922153">ಪಾಸ್‌ವರ್ಡ್ ಅಳಿಸಿ</translation>
 <translation id="1521774566618522728">ಇಂದು ಸಕ್ರಿಯ</translation>
+<translation id="1543538514740974167">ತ್ವರಿತವಾಗಿ ಇಲ್ಲಿ ಪಡೆಯಿರಿ</translation>
 <translation id="1544826120773021464">ನಿಮ್ಮ Google ಖಾತೆಯನ್ನು ನಿರ್ವಹಿಸಲು, "ಖಾತೆಯನ್ನು ನಿರ್ವಹಿಸಿ" ಬಟನ್ ಅನ್ನು ಟ್ಯಾಪ್ ಮಾಡಿ</translation>
 <translation id="1549000191223877751">ಇತರ ವಿಂಡೋಗೆ ಸರಿಸಿ</translation>
 <translation id="1553358976309200471">Chrome ಅಪ್‌ಡೇಟ್‌ ಮಾಡಿ</translation>
@@ -723,13 +725,15 @@
 <translation id="7022756207310403729">ಬ್ರೌಸರ್‌ನಲ್ಲಿ ತೆರೆಯಿರಿ</translation>
 <translation id="702463548815491781">TalkBack ಅಥವಾ ಪ್ರವೇಶ ಬದಲಾಯಿಸಿ ಆನ್ ಆಗಿದ್ದಾಗ ಶಿಫಾರಸು ಮಾಡಲಾಗಿದೆ</translation>
 <translation id="7029809446516969842">ಪಾಸ್‌ವರ್ಡ್‌ಗಳು</translation>
+<translation id="703523980599857277">ಮುಖಪುಟವನ್ನು ಬದಲಾಯಿಸಿ</translation>
 <translation id="7055152154916055070">ಮರುನಿರ್ದೇಶಿಸುವಿಕೆಯನ್ನು ನಿರ್ಬಂಧಿಸಲಾಗಿದೆ:</translation>
 <translation id="7063006564040364415">ಸಿಂಕ್ ಸರ್ವರ್‌ಗೆ ಸಂಪರ್ಕ ಹೊಂದಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ.</translation>
 <translation id="7071521146534760487">ಖಾತೆಯನ್ನು ನಿರ್ವಹಿಸಿ</translation>
 <translation id="7077143737582773186">ಎಸ್‌ಡಿ ಕಾರ್ಡ್‌</translation>
 <translation id="7121362699166175603">ವಿಳಾಸ ಪಟ್ಟಿಯ ಇತಿಹಾಸ ಮತ್ತು ಸ್ವಯಂಪೂರ್ಣಗೊಳಿಸುವಿಕೆಯನ್ನು ತೆರವುಗೊಳಿಸುತ್ತದೆ. ನಿಮ್ಮ Google ಖಾತೆಯು <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> ನಲ್ಲಿ ಇತರ ವಿಧಗಳ ಬ್ರೌಸಿಂಗ್ ಇತಿಹಾಸವನ್ನು ಹೊಂದಿರಬಹುದು.</translation>
+<translation id="7128355412245153445">ನೀವು ಮುಖಪುಟ ಬಟನ್ ಟ್ಯಾಪ್ ಮಾಡಿದಾಗಲೆಲ್ಲಾ, ನಿಮ್ಮ ಪ್ರಮುಖ ಸೈಟ್‌ಗಳು ಮತ್ತು ಇತ್ತೀಚಿನ ಸುದ್ದಿಗಳನ್ನು ನೋಡಿ</translation>
 <translation id="7138678301420049075">ಇತರೆ</translation>
-<translation id="7146622961999026732">ಈ ಸೈಟ್‌ಗಳು ಮತ್ತು ಆ್ಯಪ್‌ಗಳು ನಿಮಗೆ ಮುಖ್ಯವಾದವು:</translation>
+<translation id="7146622961999026732">ಈ ಸೈಟ್‌ಗಳು ಮತ್ತು ಆ್ಯಪ್‌ಗಳು ನಿಮಗೆ ಮುಖ್ಯವಾದವು ಎನಿಸುತ್ತಿದೆ:</translation>
 <translation id="7149158118503947153"><ph name="DOMAIN_NAME" /> ನಿಂದ <ph name="BEGIN_LINK" />ಮೂಲ ಪುಟವನ್ನು ಲೋಡ್ ಮಾಡಿ<ph name="END_LINK" /></translation>
 <translation id="7149893636342594995">ಕಳೆದ 24 ಗಂಟೆಗಳು</translation>
 <translation id="7173114856073700355">ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ತೆರೆಯಿರಿ</translation>
@@ -968,11 +972,13 @@
 <translation id="9155898266292537608">ನೀವು ಪದವನ್ನು ಕ್ಷಿಪ್ರವಾಗಿ ಟ್ಯಾಪ್ ಮಾಡುವ ಮೂಲಕವೂ ಹುಡುಕಬಹುದು</translation>
 <translation id="9169507124922466868">ನ್ಯಾವಿಗೇಷನ್ ಇತಿಹಾಸವು ಅರ್ಧ-ತೆರೆದಿದೆ</translation>
 <translation id="9204836675896933765">1 ಫೈಲ್ ಬಾಕಿ ಉಳಿದಿದೆ</translation>
+<translation id="9205796607887024517">ನಿಮ್ಮ ಸುದ್ದಿಗಳನ್ನು ಇಲ್ಲಿ ನಿಯಂತ್ರಿಸಿ</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="9209888181064652401">ಕರೆಗಳನ್ನು ಮಾಡಲು ಸಾಧ್ಯವಿಲ್ಲ</translation>
 <translation id="9219103736887031265">ಚಿತ್ರಗಳು</translation>
 <translation id="926205370408745186">ಡಿಜಿಟಲ್ ಯೋಗಕ್ಷೇಮದಿಂದ ನಿಮ್ಮ Chrome ಚಟುವಟಿಕೆಯನ್ನು ತೆಗೆದುಹಾಕಿ</translation>
 <translation id="932327136139879170">ಹೋಮ್</translation>
+<translation id="93753284658583800">ಮುಖಪುಟವನ್ನು ಬದಲಿಸಲಾಗಿದೆ</translation>
 <translation id="938850635132480979">ದೋಷ: <ph name="ERROR_CODE" /></translation>
 <translation id="95817756606698420">Chrome ಚೀನಾದಲ್ಲಿ ಹುಡುಕಲು <ph name="BEGIN_BOLD" />Sogou<ph name="END_BOLD" /> ಬಳಸಬಹುದು. ನೀವು ಇದನ್ನು <ph name="BEGIN_LINK" />ಸೆಟ್ಟಿಂಗ್‌ಗಳು<ph name="END_LINK" /> ನಲ್ಲಿ ಬದಲಾಯಿಸಬಹುದು.</translation>
 <translation id="968900484120156207">ನೀವು ಭೇಟಿ ನೀಡುವ ಪುಟಗಳು ಇಲ್ಲಿ ಕಾಣಿಸಿಕೊಳ್ಳುತ್ತವೆ</translation>

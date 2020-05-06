@@ -4,6 +4,9 @@
 
 #include "components/query_tiles/internal/config.h"
 
+#include "base/metrics/field_trial_params.h"
+#include "components/query_tiles/switches.h"
+
 namespace upboarding {
 namespace {
 
@@ -14,15 +17,12 @@ constexpr char kDefaultBaseURL[] =
 // Default URL string for GetQueryTiles RPC.
 constexpr char kDefaultGetQueryTilePath[] = "/v1/querytiles";
 
-// Default state of QueryTile feature.
-constexpr bool kDefaultQueryTileState = false;
+// Finch parameter key for experiment tag to be passed to the server.
+constexpr char kExperimentTagKey[] = "experiment_tag";
 
 // Default expire duration.
 constexpr base::TimeDelta kDefaultExpireDuration =
     base::TimeDelta::FromHours(48);
-
-// Default locale string.
-constexpr char kDefaultLocale[] = "en-US";
 
 // Default network requirement for background task.
 constexpr bool kDefaultIsUnmeterNetworkRequired = false;
@@ -35,24 +35,26 @@ const GURL BuildGetQueryTileURL(const GURL& base_url, const char* path) {
 
 }  // namespace
 
-std::unique_ptr<TileConfig> TileConfig::Create() {
-  return std::make_unique<TileConfig>();
+// static
+GURL TileConfig::GetQueryTilesServerUrl() {
+  GURL base_url(kDefaultBaseURL);
+  return BuildGetQueryTileURL(base_url, kDefaultGetQueryTilePath);
 }
 
-std::unique_ptr<TileConfig> TileConfig::CreateFromFinch() {
-  // TODO(hesen): Implement reading parameters from Finch.
-  return std::make_unique<TileConfig>();
+// static
+bool TileConfig::GetIsUnMeteredNetworkRequired() {
+  return kDefaultIsUnmeterNetworkRequired;
 }
 
-TileConfig::TileConfig()
-    : is_enabled(kDefaultQueryTileState),
-      base_url(GURL(kDefaultBaseURL)),
-      get_query_tile_url(
-          BuildGetQueryTileURL(base_url, kDefaultGetQueryTilePath)),
-      expire_duration(kDefaultExpireDuration),
-      locale(kDefaultLocale),
-      is_unmetered_network_required(kDefaultIsUnmeterNetworkRequired) {}
+// static
+std::string TileConfig::GetExperimentTag() {
+  return base::GetFieldTrialParamValueByFeature(features::kQueryTiles,
+                                                kExperimentTagKey);
+}
 
-TileConfig::~TileConfig() = default;
+// static
+base::TimeDelta TileConfig::GetExpireDuration() {
+  return kDefaultExpireDuration;
+}
 
 }  // namespace upboarding

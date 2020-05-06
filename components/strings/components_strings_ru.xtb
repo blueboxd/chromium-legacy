@@ -52,7 +52,6 @@
 <translation id="1197088940767939838">Оранжевый</translation>
 <translation id="1201402288615127009">Далее</translation>
 <translation id="1201895884277373915">Другие записи по этому сайту</translation>
-<translation id="1205963431094182634">Чтобы использовать пароли, сохраненные в аккаунте Google, выполните вход</translation>
 <translation id="1206967143813997005">Начальная подпись недействительна</translation>
 <translation id="1209206284964581585">Скрыть</translation>
 <translation id="121201262018556460">Вы попытались перейти на сайт <ph name="DOMAIN" />, но сервер предоставил сертификат с ненадежным ключом. Возможно, частный ключ был взломан злоумышленником, а сервер выдает себя за другой (вероятно, это атака).</translation>
@@ -1205,7 +1204,6 @@
 <translation id="6116338172782435947">Просмотр текста и изображений, скопированных в буфер обмена</translation>
 <translation id="6120179357481664955">Запомнить идентификатор UPI?</translation>
 <translation id="6124432979022149706">Коннекторы Chrome Enterprise</translation>
-<translation id="6135641591018127088">Использовать аккаунт Google, чтобы сгенерировать надежный пароль</translation>
 <translation id="6146055958333702838">Проверьте соединение кабелей, перезагрузите маршрутизаторы, модемы и другие
     сетевые устройства.</translation>
 <translation id="614940544461990577">Попробуйте сделать следующее:</translation>
@@ -1251,7 +1249,6 @@
 <translation id="6328639280570009161">Отключите предсказание сетевых действий</translation>
 <translation id="6328784461820205019">"Подключение не защищено", "&lt;span class="error-code"&gt;NET::ERR_CERT_AUTHORITY_INVALID&lt;/span&gt;", "&lt;span class="error-code"&gt;ERR_CERT_COMMON_NAME_INVALID&lt;/span&gt;", "&lt;span class="error-code"&gt;NET::ERR_CERT_WEAK_SIGNATURE_ALGORITHM&lt;/span&gt;", "&lt;span class="error-code"&gt;ERR_CERT_SYMANTEC_LEGACY&lt;/span&gt;" или "Ошибка сертификата SSL"</translation>
 <translation id="6328786501058569169">Это поддельный сайт</translation>
-<translation id="6333334544069706521">Использовать пароли, хранящиеся в аккаунте Google</translation>
 <translation id="6337133576188860026">Освободится менее <ph name="SIZE" /> пространства. После этого некоторые веб-страницы могут загружаться дольше обычного.</translation>
 <translation id="6337534724793800597">Фильтровать политики по названию</translation>
 <translation id="6353505687280762741">{COUNT,plural, =0{Нет}=1{1 пароль (для <ph name="DOMAIN_LIST" />, синхронизировано)}=2{2 пароля (для <ph name="DOMAIN_LIST" />, синхронизировано)}one{# пароль (для <ph name="DOMAIN_LIST" />, синхронизировано)}few{# пароля (для <ph name="DOMAIN_LIST" />, синхронизировано)}many{# паролей (для <ph name="DOMAIN_LIST" />, синхронизировано)}other{# пароля (для <ph name="DOMAIN_LIST" />, синхронизировано)}}</translation>

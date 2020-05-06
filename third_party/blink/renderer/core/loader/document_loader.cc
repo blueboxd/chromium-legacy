@@ -1891,7 +1891,8 @@ void DocumentLoader::ParseAndPersistClientHints(
       response.HttpHeaderField(http_names::kAcceptCHLifetime), url,
       &hints_context);
   client_hints_preferences_.UpdateFromAcceptClientHintsHeader(
-      response.HttpHeaderField(http_names::kAcceptCH), url, &hints_context);
+      response.HttpHeaderField(http_names::kAcceptCH), url,
+      ClientHintsPreferences::UpdateMode::kReplace, &hints_context);
 
   base::TimeDelta persist_duration;
 

@@ -360,4 +360,42 @@ TEST_F(FileSelectHelperTest, DeepScanCompletionCallback_OKBadFiles) {
             files[0]->get_native_file()->file_path);
 }
 
+TEST_F(FileSelectHelperTest, GetFileTypesFromAcceptType) {
+  content::BrowserTaskEnvironment task_environment;
+  TestingProfile profile;
+  scoped_refptr<FileSelectHelper> file_select_helper =
+      new FileSelectHelper(&profile);
+
+  std::vector<base::string16> accept_types{
+      // normal file extension
+      base::string16{0x2e, 'm', 'p', '4'},
+      // file extension with some chinese
+      base::string16{0x2e, 0x65a4, 0x62f7, 0x951f},
+      // file extension with fire emoji
+      base::string16{0x2e, 55357, 56613},
+      // mime type
+      base::string16({'i', 'm', 'a', 'g', 'e', '/', 'p', 'n', 'g'}),
+      // non-ascii mime type which should be ignored
+      base::string16({'t', 'e', 'x', 't', '/', 0x65a4, 0x62f7, 0x951f})};
+
+  std::unique_ptr<ui::SelectFileDialog::FileTypeInfo> file_type_info =
+      file_select_helper->GetFileTypesFromAcceptType(accept_types);
+
+  std::vector<std::vector<base::FilePath::StringType>> expected_extensions{
+      std::vector<base::FilePath::StringType>{
+#if defined(OS_WIN)
+          L"mp4",
+          {0x65a4, 0x62f7, 0x951f},  // some chinese
+          {55357, 56613},            // fire emoji
+          L"png"}};
+#else
+          "mp4",
+          {0xe6, 0x96, 0xa4, 0xe6, 0x8b, 0xb7, 0xe9, 0x94,
+           0x9f},                    // some chinese
+          {0xf0, 0x9f, 0x94, 0xa5},  // fire emoji
+          "png"}};
+#endif
+  ASSERT_EQ(expected_extensions, file_type_info->extensions);
+}
+
 #endif  // BUILDFLAG(FULL_SAFE_BROWSING)

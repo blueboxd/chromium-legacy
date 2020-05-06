@@ -14,6 +14,7 @@
 #include "components/password_manager/core/browser/leak_detection/mock_leak_detection_check_factory.h"
 #include "components/password_manager/core/browser/test_password_store.h"
 #include "components/password_manager/ios/credential_manager_util.h"
+#include "components/safe_browsing/core/common/safe_browsing_prefs.h"
 #import "ios/chrome/browser/passwords/test/test_password_manager_client.h"
 #include "ios/web/public/navigation/navigation_item.h"
 #include "ios/web/public/navigation/navigation_manager.h"

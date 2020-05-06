@@ -52,7 +52,6 @@
 <translation id="1197088940767939838">Narandžasta</translation>
 <translation id="1201402288615127009">Naprijed</translation>
 <translation id="1201895884277373915">Više s ove web lokacije</translation>
-<translation id="1205963431094182634">Prijavite se da koristite lozinke pohranjene na Google računu</translation>
 <translation id="1206967143813997005">Neispravan potpis inicijalima</translation>
 <translation id="1209206284964581585">Sakrij za sada</translation>
 <translation id="121201262018556460">Pokušali ste otvoriti domenu <ph name="DOMAIN" />, ali je server prikazao potvrdu koja sadrži slab ključ. Možda je napadač otkrio privatni ključ, a server nije onaj kojeg očekujete (možda komunicirate s napadačem).</translation>
@@ -1217,7 +1216,6 @@ To će u suprotnom biti blokirano prema vašim postavkama privatnosti. To će om
 <translation id="6116338172782435947">Pogledajte tekst i slike kopirane u međumemoriju</translation>
 <translation id="6120179357481664955">Zapamtiti vaš UPI ID?</translation>
 <translation id="6124432979022149706">Konektori Chromea za preduzeća</translation>
-<translation id="6135641591018127088">Generirajte jaku lozinku pomoću Google računa</translation>
 <translation id="6146055958333702838">Provjerite sve kablove i ponovo pokrenite sve rutere, modeme ili druge mrežne
     uređaje koje koristite.</translation>
 <translation id="614940544461990577">Pokušajte:</translation>
@@ -1263,7 +1261,6 @@ To će u suprotnom biti blokirano prema vašim postavkama privatnosti. To će om
 <translation id="6328639280570009161">Pokušajte onemogućiti predviđanje mreže</translation>
 <translation id="6328784461820205019">"Vaša veza nije privatna" ili "&lt;span class="error-code"&gt;NET::ERR_CERT_AUTHORITY_INVALID&lt;/span&gt;" ili "&lt;span class="error-code"&gt;ERR_CERT_COMMON_NAME_INVALID&lt;/span&gt;" ili "&lt;span class="error-code"&gt;NET::ERR_CERT_WEAK_SIGNATURE_ALGORITHM&lt;/span&gt;" ili "&lt;span class="error-code"&gt;ERR_CERT_SYMANTEC_LEGACY&lt;/span&gt;" ili "SSL certificate error"</translation>
 <translation id="6328786501058569169">Ova web lokacija vas obmanjuje</translation>
-<translation id="6333334544069706521">Koristite lozinke pohranjene na Google računu</translation>
 <translation id="6337133576188860026">Oslobodit će se manje od <ph name="SIZE" />. Neke web lokacije će se prilikom sljedeće posjete možda sporije učitavati.</translation>
 <translation id="6337534724793800597">Filtriraj pravila po nazivu</translation>
 <translation id="6353505687280762741">{COUNT,plural, =0{Ništa}=1{1 lozinka (za <ph name="DOMAIN_LIST" />, sinhronizirano)}=2{2 lozinke (za <ph name="DOMAIN_LIST" />, sinhronizirano)}one{# lozinka (za <ph name="DOMAIN_LIST" />, sinhronizirano)}few{# lozinke (za <ph name="DOMAIN_LIST" />, sinhronizirano)}other{# lozinki (za <ph name="DOMAIN_LIST" />, sinhronizirano)}}</translation>

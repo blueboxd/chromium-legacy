@@ -95,8 +95,8 @@ class AX_EXPORT AXTableInfo {
 
   // The ARIA row count and column count, if any ARIA table or grid
   // attributes are used in the table at all.
-  base::Optional<int> aria_row_count = 0;
-  base::Optional<int> aria_col_count = 0;
+  int aria_row_count = 0;
+  int aria_col_count = 0;
 
   std::string ToString() const;
 

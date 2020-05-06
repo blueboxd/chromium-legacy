@@ -517,12 +517,10 @@ TEST_F(CupsPrintersManagerTest, SyncedPrintersTrumpDetections) {
   // into the Saved class and thus *remove* them from their previous
   // classes.
   manager_->PrinterInstalled(Printer("DiscoveredPrinter0"),
-                             /*is_automatic=*/true,
-                             PrinterSetupSource::kSettings);
+                             /*is_automatic=*/true);
   manager_->SavePrinter(Printer("DiscoveredPrinter0"));
   manager_->PrinterInstalled(Printer("AutomaticPrinter0"),
-                             /*is_automatic=*/true,
-                             PrinterSetupSource::kPrintPreview);
+                             /*is_automatic=*/true);
   manager_->SavePrinter(Printer("AutomaticPrinter0"));
   task_environment_.RunUntilIdle();
   ExpectPrintersInClassAre(PrinterClass::kDiscovered, {"DiscoveredPrinter1"});
@@ -737,8 +735,7 @@ TEST_F(CupsPrintersManagerTest, PrinterNotInstalled) {
 
 TEST_F(CupsPrintersManagerTest, PrinterIsInstalled) {
   Printer printer(kPrinterId);
-  manager_->PrinterInstalled(printer, /*is_automatic=*/false,
-                             PrinterSetupSource::kSettings);
+  manager_->PrinterInstalled(printer, /*is_automatic=*/false);
   EXPECT_TRUE(manager_->IsPrinterInstalled(printer));
 }
 
@@ -746,8 +743,7 @@ TEST_F(CupsPrintersManagerTest, PrinterIsInstalled) {
 // relevant fields change.
 TEST_F(CupsPrintersManagerTest, UpdatedPrinterConfiguration) {
   Printer printer(kPrinterId);
-  manager_->PrinterInstalled(printer, /*is_automatic=*/false,
-                             PrinterSetupSource::kSettings);
+  manager_->PrinterInstalled(printer, /*is_automatic=*/false);
 
   Printer updated(printer);
   updated.set_uri("different value");
@@ -788,8 +784,7 @@ TEST_F(CupsPrintersManagerTest, SavePrinterSucceedsOnManualPrinter) {
 // Test that installing a printer does not put it in the saved class.
 TEST_F(CupsPrintersManagerTest, PrinterInstalledDoesNotSavePrinter) {
   Printer printer(kPrinterId);
-  manager_->PrinterInstalled(printer, /*is_automatic=*/false,
-                             PrinterSetupSource::kSettings);
+  manager_->PrinterInstalled(printer, /*is_automatic=*/false);
 
   auto saved_printers = manager_->GetPrinters(PrinterClass::kSaved);
   EXPECT_EQ(0u, saved_printers.size());
@@ -799,8 +794,7 @@ TEST_F(CupsPrintersManagerTest, PrinterInstalledDoesNotSavePrinter) {
 // the saved printer but does not install the updated printer.
 TEST_F(CupsPrintersManagerTest, SavePrinterUpdatesPreviouslyInstalledPrinter) {
   Printer printer(kPrinterId);
-  manager_->PrinterInstalled(printer, /*is_automatic=*/false,
-                             PrinterSetupSource::kSettings);
+  manager_->PrinterInstalled(printer, /*is_automatic=*/false);
   manager_->SavePrinter(printer);
   EXPECT_TRUE(manager_->IsPrinterInstalled(printer));
 

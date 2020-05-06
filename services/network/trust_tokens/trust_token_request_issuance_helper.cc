@@ -10,6 +10,7 @@
 #include "base/task/thread_pool.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_response_headers.h"
+#include "net/log/net_log_event_type.h"
 #include "net/url_request/url_request.h"
 #include "services/network/public/cpp/is_potentially_trustworthy.h"
 #include "services/network/public/mojom/trust_tokens.mojom-forward.h"
@@ -56,17 +57,37 @@ ConfirmIssuanceOnPostedSequence(std::unique_ptr<Cryptographer> cryptographer,
   return {std::move(cryptographer), std::move(unblinded_tokens)};
 }
 
+base::Value CreateLogValue(base::StringPiece outcome) {
+  base::Value ret(base::Value::Type::DICTIONARY);
+  ret.SetStringKey("outcome", outcome);
+  return ret;
+}
+
+// Define convenience aliases for the NetLogEventTypes for brevity.
+enum NetLogOp { kBegin, kFinalize };
+void LogOutcome(const net::NetLogWithSource& log,
+                NetLogOp begin_or_finalize,
+                base::StringPiece outcome) {
+  log.EndEvent(
+      begin_or_finalize == kBegin
+          ? net::NetLogEventType::TRUST_TOKEN_OPERATION_BEGIN_ISSUANCE
+          : net::NetLogEventType::TRUST_TOKEN_OPERATION_FINALIZE_ISSUANCE,
+      [outcome]() { return CreateLogValue(outcome); });
+}
+
 }  // namespace
 
 TrustTokenRequestIssuanceHelper::TrustTokenRequestIssuanceHelper(
     SuitableTrustTokenOrigin top_level_origin,
     TrustTokenStore* token_store,
     const TrustTokenKeyCommitmentGetter* key_commitment_getter,
-    std::unique_ptr<Cryptographer> cryptographer)
+    std::unique_ptr<Cryptographer> cryptographer,
+    net::NetLogWithSource net_log)
     : top_level_origin_(std::move(top_level_origin)),
       token_store_(token_store),
       key_commitment_getter_(std::move(key_commitment_getter)),
-      cryptographer_(std::move(cryptographer)) {
+      cryptographer_(std::move(cryptographer)),
+      net_log_(std::move(net_log)) {
   DCHECK(token_store_);
   DCHECK(key_commitment_getter_);
   DCHECK(cryptographer_);
@@ -87,19 +108,25 @@ void TrustTokenRequestIssuanceHelper::Begin(
          IsOriginPotentiallyTrustworthy(*request->initiator()))
       << *request->initiator();
 
+  net_log_.BeginEvent(
+      net::NetLogEventType::TRUST_TOKEN_OPERATION_BEGIN_ISSUANCE);
+
   issuer_ = SuitableTrustTokenOrigin::Create(request->url());
   if (!issuer_) {
+    LogOutcome(net_log_, kBegin, "Unsuitable issuer URL");
     std::move(done).Run(mojom::TrustTokenOperationStatus::kInvalidArgument);
     return;
   }
 
   if (!token_store_->SetAssociation(*issuer_, top_level_origin_)) {
+    LogOutcome(net_log_, kBegin, "Couldn't set issuer-toplevel association");
     std::move(done).Run(mojom::TrustTokenOperationStatus::kResourceExhausted);
     return;
   }
 
   if (token_store_->CountTokens(*issuer_) ==
       kTrustTokenPerIssuerTokenCapacity) {
+    LogOutcome(net_log_, kBegin, "Tokens at capacity");
     std::move(done).Run(mojom::TrustTokenOperationStatus::kResourceExhausted);
     return;
   }
@@ -115,12 +142,15 @@ void TrustTokenRequestIssuanceHelper::OnGotKeyCommitment(
     base::OnceCallback<void(mojom::TrustTokenOperationStatus)> done,
     mojom::TrustTokenKeyCommitmentResultPtr commitment_result) {
   if (!commitment_result) {
+    LogOutcome(net_log_, kBegin, "No keys for issuer");
     std::move(done).Run(mojom::TrustTokenOperationStatus::kFailedPrecondition);
     return;
   }
 
   if (!commitment_result->batch_size ||
       !cryptographer_->Initialize(commitment_result->batch_size->value)) {
+    LogOutcome(net_log_, kBegin,
+               "Internal error initializing cryptography delegate");
     std::move(done).Run(mojom::TrustTokenOperationStatus::kInternalError);
     return;
   }
@@ -128,6 +158,7 @@ void TrustTokenRequestIssuanceHelper::OnGotKeyCommitment(
   for (const mojom::TrustTokenVerificationKeyPtr& key :
        commitment_result->keys) {
     if (!cryptographer_->AddKey(key->body)) {
+      LogOutcome(net_log_, kBegin, "Bad key");
       std::move(done).Run(
           mojom::TrustTokenOperationStatus::kFailedPrecondition);
       return;
@@ -164,6 +195,7 @@ void TrustTokenRequestIssuanceHelper::OnDelegateBeginIssuanceCallComplete(
       cryptographer_and_blinded_tokens.blinded_tokens;  // Convenience alias
 
   if (!maybe_blinded_tokens) {
+    LogOutcome(net_log_, kBegin, "Internal error generating blinded tokens");
     std::move(done).Run(mojom::TrustTokenOperationStatus::kInternalError);
     return;
   }
@@ -178,6 +210,7 @@ void TrustTokenRequestIssuanceHelper::OnDelegateBeginIssuanceCallComplete(
   // settings.
   request->SetLoadFlags(request->load_flags() | net::LOAD_BYPASS_CACHE);
 
+  LogOutcome(net_log_, kBegin, "Success");
   std::move(done).Run(mojom::TrustTokenOperationStatus::kOk);
 }
 
@@ -190,12 +223,16 @@ void TrustTokenRequestIssuanceHelper::Finalize(
   // https-scheme requests (which Trust Tokens requests are).
   DCHECK(response->headers);
 
+  net_log_.BeginEvent(
+      net::NetLogEventType::TRUST_TOKEN_OPERATION_FINALIZE_ISSUANCE);
+
   std::string header_value;
 
   // EnumerateHeader(|iter|=nullptr) asks for the first instance of the header,
   // if any.
   if (!response->headers->EnumerateHeader(
           /*iter=*/nullptr, kTrustTokensSecTrustTokenHeader, &header_value)) {
+    LogOutcome(net_log_, kFinalize, "Response missing Trust Tokens header");
     std::move(done).Run(mojom::TrustTokenOperationStatus::kBadResponse);
     return;
   }
@@ -219,6 +256,9 @@ void TrustTokenRequestIssuanceHelper::OnDelegateConfirmIssuanceCallComplete(
       cryptographer_and_unblinded_tokens.unblinded_tokens;  // Convenience alias
 
   if (!maybe_tokens) {
+    LogOutcome(net_log_, kFinalize,
+               "Response rejected during processing (perhaps malformed?)");
+
     // The response was rejected by the underlying cryptographic library as
     // malformed or otherwise invalid.
     std::move(done).Run(mojom::TrustTokenOperationStatus::kBadResponse);
@@ -228,6 +268,13 @@ void TrustTokenRequestIssuanceHelper::OnDelegateConfirmIssuanceCallComplete(
   token_store_->AddTokens(*issuer_, base::make_span(maybe_tokens->tokens),
                           maybe_tokens->body_of_verifying_key);
 
+  net_log_.EndEvent(
+      net::NetLogEventType::TRUST_TOKEN_OPERATION_FINALIZE_ISSUANCE,
+      [num_obtained_tokens = maybe_tokens->tokens.size()]() {
+        base::Value ret = CreateLogValue("Success");
+        ret.SetIntKey("# tokens obtained", num_obtained_tokens);
+        return ret;
+      });
   std::move(done).Run(mojom::TrustTokenOperationStatus::kOk);
   return;
 }

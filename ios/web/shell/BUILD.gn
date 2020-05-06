@@ -6,7 +6,6 @@ import("//build/config/ios/rules.gni")
 import("//ios/build/config.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
 import("//tools/grit/grit_rule.gni")
-import("//tools/grit/repack.gni")
 
 ios_app_bundle("ios_web_shell") {
   info_plist = "Info.plist"

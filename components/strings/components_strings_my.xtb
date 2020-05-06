@@ -52,7 +52,6 @@
 <translation id="1197088940767939838">လိမ္မော်ရောင်</translation>
 <translation id="1201402288615127009">ရှေ့သို့</translation>
 <translation id="1201895884277373915">ဤဆိုဒ်မှ ပိုမို</translation>
-<translation id="1205963431094182634">သင့် Google အကောင့်တွင် သိမ်းဆည်းထားသည့် စကားဝှက်များကို အသုံးပြုရန် လက်မှတ်ထိုးဝင်ပါ</translation>
 <translation id="1206967143813997005">မသဲကွဲသော လက်မှတ်အတို</translation>
 <translation id="1209206284964581585">ယခု ဖျောက်ထားပါ</translation>
 <translation id="121201262018556460">သင်<ph name="DOMAIN" /> သို့ရောက်ရှိရန် ချဉ်းကပ်ခဲ့သည်၊ သို့သော် အားနည်းသည့် အသိမှတ်ပြုလက်မှတ်အား ဆာဗာမှ ပြသခဲ့သည်။ တိုက်ခိုက်သူသည် ကိုယ်ပိုင်ကီးကို ချိုးဖောက်နိုင်ပြီး ဆာဗာသည် သင်မျှော်လင့်ထားသည့် ဆာဗာ မဖြစ်နိုင်တော့ပါ (သင်သည် တိုက်ခိုက်သူနှင့် ဆက်သွယ်ရနိုင်ပါသည်)။</translation>
@@ -1217,7 +1216,6 @@
 <translation id="6116338172782435947">ကလစ်ဘုတ်သို့ မိတ္တူကူးထားသည့် စာသားနှင့် ပုံများအား ကြည့်ရန်</translation>
 <translation id="6120179357481664955">သင့် UPI ID ကို မှတ်မိပါသလား။</translation>
 <translation id="6124432979022149706">Chrome လုပ်ငန်းသုံး ချိတ်ဆက်သည့်ကိရိယာများ</translation>
-<translation id="6135641591018127088">လုံခြုံမှုမြင့်သည့် စကားဝှက် ရယူရန် သင့် Google အကောင့်ကို အသုံးပြုပါ</translation>
 <translation id="6146055958333702838">သင်အသုံးပြုနေသည့် ရောက်တာများ၊ မိုဒမ်းများ၊ သို့မဟုတ် အခြားကွန်ယက်စက်ပစ္စည်းများနှင့် ကြိုးများကို စစ်ဆေးပါ။</translation>
 <translation id="614940544461990577">စမ်းကြည့်ပါ −</translation>
 <translation id="6150036310511284407">ဘယ်ဘက်တွင် သုံးချက်ဖောက်ရန်</translation>
@@ -1262,7 +1260,6 @@
 <translation id="6328639280570009161">ကွန်ရက် ခန့်မှန်းမှုကို ပိတ်ထားရန် ကြိုးစားပါ</translation>
 <translation id="6328784461820205019">"သင်၏ချိတ်ဆက်မှုသည် သီးသန့်ဖြစ်မနေပါ" သို့မဟုတ် "&lt;span class="error-code"&gt;NET::ERR_CERT_AUTHORITY_INVALID&lt;/span&gt;" သို့မဟုတ် "&lt;span class="error-code"&gt;ERR_CERT_COMMON_NAME_INVALID&lt;/span&gt;" သို့မဟုတ် "&lt;span class="error-code"&gt;NET::ERR_CERT_WEAK_SIGNATURE_ALGORITHM&lt;/span&gt;" သို့မဟုတ် "&lt;span class="error-code"&gt;ERR_CERT_SYMANTEC_LEGACY&lt;/span&gt;" သို့မဟုတ် "SSL အသိအမှတ်ပြုလက်မှတ် အမှားအယွင်း"</translation>
 <translation id="6328786501058569169">ဤဆိုက်သည် လှည့်စားထားသည့်ဆိုက်သာ ဖြစ်သည်</translation>
-<translation id="6333334544069706521">သင့် Google အကောင့်တွင် သိမ်းဆည်းထားသည့် စကားဝှက်များကို အသုံးပြုပါ</translation>
 <translation id="6337133576188860026"><ph name="SIZE" /> အောက် နေရာလွတ်ပြုလုပ်ပါ။ အချို့ဝဘ်ဆိုက်များကို နောက်တစ်ကြိမ်ဖွင့်သည့်အခါ ပိုမိုနှေးကွေးစွာ ဖွင့်ပါလိမ့်မည်။</translation>
 <translation id="6337534724793800597">မူဝါဒများကို အမည်များဖြင့် စစ်ထုတ်ရန်</translation>
 <translation id="6353505687280762741">{COUNT,plural, =0{မရှိ}=1{စကားဝှက် ၁ ခု (<ph name="DOMAIN_LIST" /> အတွက်၊ စင့်ခ်လုပ်ထားသည်)}=2{စကားဝှက် ၂ ခု (<ph name="DOMAIN_LIST" /> အတွက်၊ စင့်ခ်လုပ်ထားသည်)}other{စကားဝှက် # ခု (<ph name="DOMAIN_LIST" /> အတွက်၊ စင့်ခ်လုပ်ထားသည်)}}</translation>

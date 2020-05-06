@@ -33,6 +33,7 @@
 <translation id="1208340532756947324">Cihazlar üzrə sinxronizasiya etmək və fərdiləşdirmək üçün sinxronizasiyanı aktiv edin</translation>
 <translation id="1209206284964581585">Hələlik gizlədin</translation>
 <translation id="1227058898775614466">Naviqasiya tarixçəsi</translation>
+<translation id="1229399675748764149">Bu səhifəni əsas səhifəyə çevirin</translation>
 <translation id="1231733316453485619">Sinxronizasiya ktiv edilsin?</translation>
 <translation id="123724288017357924">Keş məzmununu iqnor edərək cari səhifəni yenidən yükləyin</translation>
 <translation id="124116460088058876">Digər dillər</translation>
@@ -71,6 +72,7 @@
 <translation id="1513352483775369820">Əlfəcin və veb tarixçəsi</translation>
 <translation id="1513858653616922153">Parolu silin</translation>
 <translation id="1521774566618522728">Bu gün aktivdir</translation>
+<translation id="1543538514740974167">Bura daha tez keçin</translation>
 <translation id="1544826120773021464">Google hesabınızı idarə etmək üçün "Hesabı idarə edin" düyməsinə toxunun</translation>
 <translation id="1549000191223877751">Başqa pəncərəyə keçin</translation>
 <translation id="1553358976309200471">Chrome'u güncəlləşdirin</translation>
@@ -721,11 +723,13 @@ Ayarı dəyişmək üçün <ph name="BEGIN_LINK" />sinxronizasiyanı sıfırlay�
 <translation id="7022756207310403729">Brauzerdə açın</translation>
 <translation id="702463548815491781">TalkBack və ya Keçid Düyməsi aktiv olduqda tövsiyə olunur</translation>
 <translation id="7029809446516969842">Parollar</translation>
+<translation id="703523980599857277">Əsas səhifəni dəyişin</translation>
 <translation id="7055152154916055070">Yönləndirmə blok edildi:</translation>
 <translation id="7063006564040364415">Sinxronizasiya serverinə qoşula bilmədi.</translation>
 <translation id="7071521146534760487">Hesabı idarə edin</translation>
 <translation id="7077143737582773186">SD Kart</translation>
 <translation id="7121362699166175603">Ünvan penelindəki tarixçə və avtomatik tamamlamanı silir. <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> linkində Google Hesabına məxsus axtarış tarixçəsinin başqa formaları ola bilər.</translation>
+<translation id="7128355412245153445">Əsas səhifə düyməsinə basdıqda populyar saytlar və ən son hekayələr göstərilsin</translation>
 <translation id="7138678301420049075">Digər</translation>
 <translation id="7146622961999026732">Bu saytlar və tətbiqlər sizə vacib görünür:</translation>
 <translation id="7149158118503947153"><ph name="DOMAIN_NAME" /> domenindən <ph name="BEGIN_LINK" />orijinal səhifəni yükləyin<ph name="END_LINK" /></translation>
@@ -966,11 +970,13 @@ Ayarı dəyişmək üçün <ph name="BEGIN_LINK" />sinxronizasiyanı sıfırlay�
 <translation id="9155898266292537608">Sözün üzərində klikləməklə axtarış edə bilərsiniz</translation>
 <translation id="9169507124922466868">Naviqasiya tarixçəsi yarı açıqdır</translation>
 <translation id="9204836675896933765">1 fayl qaldı</translation>
+<translation id="9205796607887024517">Hekayələrinizi burada idarə edin</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="9209888181064652401">Zəng etmək mümkün deyil</translation>
 <translation id="9219103736887031265">Şəkillər</translation>
 <translation id="926205370408745186">Digital Sağlamlıqdan Chrome fəaliyyətini silin</translation>
 <translation id="932327136139879170">Ev</translation>
+<translation id="93753284658583800">Əsas səhifə dəyişdirilib</translation>
 <translation id="938850635132480979">Xəta: <ph name="ERROR_CODE" /></translation>
 <translation id="95817756606698420">Chrome, Çində axtarış üçün <ph name="BEGIN_BOLD" />Sogou<ph name="END_BOLD" /> istifadə edə bilər. Bunu <ph name="BEGIN_LINK" />Ayarlar<ph name="END_LINK" /> bölməsindən dəyişə bilərsiniz.</translation>
 <translation id="968900484120156207">Girdiyiniz səhifələr burada görünəcək</translation>

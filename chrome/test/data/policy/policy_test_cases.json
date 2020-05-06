@@ -4784,6 +4784,19 @@
     ]
   },
 
+  "PluginVmUserId": {
+    "os": ["chromeos"],
+    "policy_pref_mapping_test": [
+      {
+        "policies": {
+          "PluginVmUserId": "USER_ID"
+        },
+        "prefs": { "plugin_vm.user_id": {"value": "USER_ID"} }
+      }
+    ]
+  },
+
+
   "VoiceInteractionHotwordEnabled": {
     "os": ["chromeos"],
     "policy_pref_mapping_test": [
@@ -5932,18 +5945,6 @@
           "PluginVmLicenseKey": "LICENSE_KEY"
         },
         "prefs": { "cros.device.plugin_vm_license_key": {} }
-      }
-    ]
-  },
-
-  "PluginVmUserId": {
-    "os": ["chromeos"],
-    "policy_pref_mapping_test": [
-      {
-        "policies": {
-          "PluginVmLicenseKey": "USER_ID"
-        },
-        "prefs": { "cros.device.plugin_vm_user_id": {} }
       }
     ]
   },
@@ -7245,5 +7246,16 @@
       }
     ]
   },
-  "TabFreezingEnabled":  {}
+  "TabFreezingEnabled":  {},
+  "AccessibilityImageLabelsEnabled": {
+    "os": ["win", "linux", "mac", "chromeos"],
+    "policy_pref_mapping_test": [
+      {
+        "policies": { "AccessibilityImageLabelsEnabled": true },
+        "prefs": {
+          "settings.a11y.enable_accessibility_image_labels": {}
+        }
+      }
+    ]
+  }
 }

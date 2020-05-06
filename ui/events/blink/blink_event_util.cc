@@ -332,59 +332,73 @@ WebGestureEvent CreateWebGestureEvent(const GestureEventDetails& details,
   switch (details.type()) {
     case ET_GESTURE_SHOW_PRESS:
       gesture.SetType(WebInputEvent::Type::kGestureShowPress);
-      gesture.data.show_press.width = details.bounding_box_f().width();
-      gesture.data.show_press.height = details.bounding_box_f().height();
+      gesture.data.show_press.width =
+          IfNanUseMaxFloat(details.bounding_box_f().width());
+      gesture.data.show_press.height =
+          IfNanUseMaxFloat(details.bounding_box_f().height());
       break;
     case ET_GESTURE_DOUBLE_TAP:
       gesture.SetType(WebInputEvent::Type::kGestureDoubleTap);
       DCHECK_EQ(1, details.tap_count());
       gesture.data.tap.tap_count = details.tap_count();
-      gesture.data.tap.width = details.bounding_box_f().width();
-      gesture.data.tap.height = details.bounding_box_f().height();
+      gesture.data.tap.width =
+          IfNanUseMaxFloat(details.bounding_box_f().width());
+      gesture.data.tap.height =
+          IfNanUseMaxFloat(details.bounding_box_f().height());
       gesture.SetNeedsWheelEvent(source_device == WebGestureDevice::kTouchpad);
       break;
     case ET_GESTURE_TAP:
       gesture.SetType(WebInputEvent::Type::kGestureTap);
       DCHECK_GE(details.tap_count(), 1);
       gesture.data.tap.tap_count = details.tap_count();
-      gesture.data.tap.width = details.bounding_box_f().width();
-      gesture.data.tap.height = details.bounding_box_f().height();
+      gesture.data.tap.width =
+          IfNanUseMaxFloat(details.bounding_box_f().width());
+      gesture.data.tap.height =
+          IfNanUseMaxFloat(details.bounding_box_f().height());
       break;
     case ET_GESTURE_TAP_UNCONFIRMED:
       gesture.SetType(WebInputEvent::Type::kGestureTapUnconfirmed);
       DCHECK_EQ(1, details.tap_count());
       gesture.data.tap.tap_count = details.tap_count();
-      gesture.data.tap.width = details.bounding_box_f().width();
-      gesture.data.tap.height = details.bounding_box_f().height();
+      gesture.data.tap.width =
+          IfNanUseMaxFloat(details.bounding_box_f().width());
+      gesture.data.tap.height =
+          IfNanUseMaxFloat(details.bounding_box_f().height());
       break;
     case ET_GESTURE_LONG_PRESS:
       gesture.SetType(WebInputEvent::Type::kGestureLongPress);
-      gesture.data.long_press.width = details.bounding_box_f().width();
-      gesture.data.long_press.height = details.bounding_box_f().height();
+      gesture.data.long_press.width =
+          IfNanUseMaxFloat(details.bounding_box_f().width());
+      gesture.data.long_press.height =
+          IfNanUseMaxFloat(details.bounding_box_f().height());
       break;
     case ET_GESTURE_LONG_TAP:
       gesture.SetType(WebInputEvent::Type::kGestureLongTap);
-      gesture.data.long_press.width = details.bounding_box_f().width();
-      gesture.data.long_press.height = details.bounding_box_f().height();
+      gesture.data.long_press.width =
+          IfNanUseMaxFloat(details.bounding_box_f().width());
+      gesture.data.long_press.height =
+          IfNanUseMaxFloat(details.bounding_box_f().height());
       break;
     case ET_GESTURE_TWO_FINGER_TAP:
       gesture.SetType(blink::WebInputEvent::Type::kGestureTwoFingerTap);
       gesture.data.two_finger_tap.first_finger_width =
-          details.first_finger_width();
+          IfNanUseMaxFloat(details.first_finger_width());
       gesture.data.two_finger_tap.first_finger_height =
-          details.first_finger_height();
+          IfNanUseMaxFloat(details.first_finger_height());
       break;
     case ET_GESTURE_SCROLL_BEGIN:
       gesture.SetType(WebInputEvent::Type::kGestureScrollBegin);
       gesture.data.scroll_begin.pointer_count = details.touch_points();
-      gesture.data.scroll_begin.delta_x_hint = details.scroll_x_hint();
-      gesture.data.scroll_begin.delta_y_hint = details.scroll_y_hint();
+      gesture.data.scroll_begin.delta_x_hint =
+          IfNanUseMaxFloat(details.scroll_x_hint());
+      gesture.data.scroll_begin.delta_y_hint =
+          IfNanUseMaxFloat(details.scroll_y_hint());
       gesture.data.scroll_begin.delta_hint_units = details.scroll_begin_units();
       break;
     case ET_GESTURE_SCROLL_UPDATE:
       gesture.SetType(WebInputEvent::Type::kGestureScrollUpdate);
-      gesture.data.scroll_update.delta_x = details.scroll_x();
-      gesture.data.scroll_update.delta_y = details.scroll_y();
+      gesture.data.scroll_update.delta_x = IfNanUseMaxFloat(details.scroll_x());
+      gesture.data.scroll_update.delta_y = IfNanUseMaxFloat(details.scroll_y());
       gesture.data.scroll_update.delta_units = details.scroll_update_units();
       break;
     case ET_GESTURE_SCROLL_END:
@@ -392,8 +406,10 @@ WebGestureEvent CreateWebGestureEvent(const GestureEventDetails& details,
       break;
     case ET_SCROLL_FLING_START:
       gesture.SetType(WebInputEvent::Type::kGestureFlingStart);
-      gesture.data.fling_start.velocity_x = details.velocity_x();
-      gesture.data.fling_start.velocity_y = details.velocity_y();
+      gesture.data.fling_start.velocity_x =
+          IfNanUseMaxFloat(details.velocity_x());
+      gesture.data.fling_start.velocity_y =
+          IfNanUseMaxFloat(details.velocity_y());
       break;
     case ET_SCROLL_FLING_CANCEL:
       gesture.SetType(WebInputEvent::Type::kGestureFlingCancel);
@@ -416,8 +432,10 @@ WebGestureEvent CreateWebGestureEvent(const GestureEventDetails& details,
       break;
     case ET_GESTURE_TAP_DOWN:
       gesture.SetType(WebInputEvent::Type::kGestureTapDown);
-      gesture.data.tap_down.width = details.bounding_box_f().width();
-      gesture.data.tap_down.height = details.bounding_box_f().height();
+      gesture.data.tap_down.width =
+          IfNanUseMaxFloat(details.bounding_box_f().width());
+      gesture.data.tap_down.height =
+          IfNanUseMaxFloat(details.bounding_box_f().height());
       break;
     case ET_GESTURE_BEGIN:
     case ET_GESTURE_END:
@@ -431,6 +449,12 @@ WebGestureEvent CreateWebGestureEvent(const GestureEventDetails& details,
   }
 
   return gesture;
+}
+
+float IfNanUseMaxFloat(float value) {
+  if (std::isnan(value))
+    return std::numeric_limits<float>::max();
+  return value;
 }
 
 WebGestureEvent CreateWebGestureEventFromGestureEventData(

@@ -52,7 +52,6 @@
 <translation id="1197088940767939838">Appelsínugulur</translation>
 <translation id="1201402288615127009">Áfram</translation>
 <translation id="1201895884277373915">Meira frá þessu vefsvæði</translation>
-<translation id="1205963431094182634">Skráðu þig inn til að nota aðgangsorð sem eru vistuð á Google reikningnum þínum</translation>
 <translation id="1206967143813997005">Röng upprunaleg undirskrift</translation>
 <translation id="1209206284964581585">Fela í bili</translation>
 <translation id="121201262018556460">Þú reyndir að ná sambandi við <ph name="DOMAIN" /> en þjónninn framvísaði vottorði sem inniheldur ótraustan lykil. Tölvuþrjótur kann að hafa skemmt einkalykilinn og þjónninn er ef til vill ekki sá sem þú bjóst við (þú gætir verið í samskiptum við tölvuþrjót).</translation>
@@ -1218,7 +1217,6 @@ Ef þú gerir það ekki loka persónuverndarstillingar þínar á þennan aðga
 <translation id="6116338172782435947">Sjá texta og myndir sem þú afritar á klippiborðið</translation>
 <translation id="6120179357481664955">Muna eftir UPI-auðkenni?</translation>
 <translation id="6124432979022149706">Chrome Enterprise Connectors</translation>
-<translation id="6135641591018127088">Notaðu Google reikninginn þinn til að búa til traust aðgangsorð</translation>
 <translation id="6146055958333702838">Kannaðu allar snúrur og endurræstu beina, mótöld og önnur
     nettæki sem þú kannt að vera að nota.</translation>
 <translation id="614940544461990577">Prófaðu að:</translation>
@@ -1264,7 +1262,6 @@ Ef þú gerir það ekki loka persónuverndarstillingar þínar á þennan aðga
 <translation id="6328639280570009161">Prófaðu að slökkva á netspá</translation>
 <translation id="6328784461820205019">„Tengingin þín er ekki lokuð“ eða „span class="error-code"&gt;NET::ERR_CERT_AUTHORITY_INVALID&lt;/span&gt;“ eða „&lt;span class="error-code"&gt;ERR_CERT_COMMON_NAME_INVALID&lt;/span&gt;“ eða „&lt;span class="error-code"&gt;NET::ERR_CERT_WEAK_SIGNATURE_ALGORITHM&lt;/span&gt;“ eða „&lt;span class="error-code"&gt;ERR_CERT_SYMANTEC_LEGACY&lt;/span&gt;“ eða „Villa í SSL-vottorði“</translation>
 <translation id="6328786501058569169">Þetta vefsvæði villir á sér heimildir</translation>
-<translation id="6333334544069706521">Nota aðgangsorð sem eru vistuð í Google reikningnum þínum</translation>
 <translation id="6337133576188860026">Losar minna en <ph name="SIZE" />. Lengri tíma gæti tekið að sækja sum vefsvæði þegar þú heimsækir þau næst.</translation>
 <translation id="6337534724793800597">Sía reglur eftir heiti</translation>
 <translation id="6353505687280762741">{COUNT,plural, =0{Ekkert}=1{1 aðgangsorð (fyrir <ph name="DOMAIN_LIST" />, samstillt)}=2{2 aðgangsorð fyrir (<ph name="DOMAIN_LIST" />, samstillt)}one{# aðgangsorð (fyrir <ph name="DOMAIN_LIST" />, samstillt)}other{# aðgangsorð (fyrir <ph name="DOMAIN_LIST" />, samstillt)}}</translation>

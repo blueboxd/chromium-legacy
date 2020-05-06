@@ -90,6 +90,7 @@
 <translation id="1947424002851288782">জার্মান কী’ব’র্ড</translation>
 <translation id="1972984168337863910">ফাইলসমূহৰ প্ৰতিক্ৰিয়াৰ পেনেলটো বিস্তাৰ কৰক</translation>
 <translation id="1984603991036629094">আমেৰিকান ফ’নেটিক কীব’র্ড</translation>
+<translation id="1995337122023280937">ফাইলৰ অৱস্থানলৈ যাওক</translation>
 <translation id="2001796770603320721">ড্ৰাইভত পৰিচালনা কৰক</translation>
 <translation id="2009067268969781306">এটা ড্ৰাইভ ফর্মেট কৰা কার্যই ড্ৰাইভটোত ষ্ট'ৰ কৰি ৰখা সকলো ডেটা মচিব। এই কাৰ্যটো আনডু কৰিব নোৱাৰি।</translation>
 <translation id="2028997212275086731">RAR আৰ্কাইভ</translation>
@@ -141,6 +142,7 @@
 <translation id="2638942478653899953">Google Drive পাব পৰা অৱস্থাত নাই। অনুগ্ৰহ কৰি <ph name="BEGIN_LINK" />লগ আউট কৰক<ph name="END_LINK" /> আৰু পুনৰ লগ ইন কৰক।</translation>
 <translation id="2649120831653069427">Rainbowfish</translation>
 <translation id="2661146741306740526">১৬x৯</translation>
+<translation id="2664412712123763093">ফাইলৰ অৱস্থান</translation>
 <translation id="2672394958563893062">কোনো আসোঁৱাহ হৈছে। আৰম্ভণিৰে পৰা পুনৰাৰম্ভ কৰিবলৈ ক্লিক কৰক৷</translation>
 <translation id="2676946222714718093">ইয়াত প্লে’ কৰি থকা হৈছে</translation>
 <translation id="2735698359135166290">ৰোমানিয়ান উন্নত কীব'র্ড</translation>
@@ -346,6 +348,7 @@
 <translation id="5081517858322016911"><ph name="TOTAL_FILE_SIZE" /> ফাইল মচা হ'ব</translation>
 <translation id="509429900233858213">কোনো আসোঁৱাহ হৈছে।</translation>
 <translation id="5098629044894065541">হিব্ৰু</translation>
+<translation id="5112685521274804841">এই ফ'ল্ডাৰটোৰ ফাইলসমূহ কেৱল পঢ়িব পৰা। কিছুমান কার্যকলাপ সমৰ্থিত নহয়।</translation>
 <translation id="5123433949759960244">বাস্কেটবল</translation>
 <translation id="5129662217315786329">প’লিশ্ব</translation>
 <translation id="5144820558584035333">হাংগুল ৩ ছেট (৩৯০)</translation>
@@ -690,6 +693,7 @@
 <translation id="9034924485347205037">Linux ফাইল</translation>
 <translation id="9035012421917565900">বস্তুবোৰ ‘<ph name="DESTINATION_NAME" />’লৈ পুনৰ লৈ যাব নোৱাৰি, সেয়েহে আপুনি এই কাৰ্যটো আনডু কৰিব নোৱাৰিব।</translation>
 <translation id="9038620279323455325">"<ph name="FILE_NAME" />" নামৰ ফাইল ইতিমধ্যে আছেই। অনুগ্ৰহ কৰি অন্য কোনো নাম বাছনি কৰক।</translation>
+<translation id="9062992083244091966"><ph name="APP_NAME" /> এপ্‌সমূহৰ জৰিয়তে ফাইল খুলিবলৈ, প্ৰথমে সেইবোৰ <ph name="APP_NAME" />ৰ শ্বেয়াৰ কৰা ফাইলসমূহৰ ফ'ল্ডাৰলৈ নিয়ক।</translation>
 <translation id="9064939804718829769">স্থানান্তৰ কৰি থকা হৈছে…</translation>
 <translation id="9065203028668620118">সম্পাদনা কৰক</translation>
 <translation id="9099674669267916096">পৃষ্ঠাৰ সংখ্যা</translation>

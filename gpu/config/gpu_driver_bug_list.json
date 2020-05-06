@@ -682,8 +682,8 @@
       },
       "vendor_id": "0x8086",
       "driver_version": {
-        "op": "<",
-        "value": "0.0.0.3000"
+        "op": "<=",
+        "value": "9.18.0.0"
       },
       "features": [
         "disable_d3d11"
@@ -3002,6 +3002,7 @@
         "type": "win"
       },
       "driver_version": {
+        "schema": "intel_driver",
         "op": ">",
         "value": "0.0.100.0"
       },
@@ -3183,6 +3184,7 @@
       },
       "vendor_id": "0x8086",
       "driver_version": {
+        "schema": "intel_driver",
         "op": "<",
         "value": "0.0.0.9999"
       },

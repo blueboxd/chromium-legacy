@@ -33,6 +33,7 @@
 <translation id="1208340532756947324">ਡੀਵਾਈਸਾਂ ਵਿਚਾਲੇ ਸਮਕਾਲੀਕਰਨ ਕਰਨ ਅਤੇ ਵਿਅਕਤੀਗਤ ਬਣਾਉਣ ਲਈ, ਸਮਕਾਲੀਕਰਨ ਚਾਲੂ ਕਰੋ</translation>
 <translation id="1209206284964581585">ਫਿਲਹਾਲ ਲੁਕਾਓ</translation>
 <translation id="1227058898775614466">ਨੈਵੀਗੇਸ਼ਨ ਇਤਿਹਾਸ</translation>
+<translation id="1229399675748764149">ਇਸ ਪੰਨੇ ਨੂੰ ਆਪਣਾ ਹੋਮਪੇਜ ਬਣਾਓ</translation>
 <translation id="1231733316453485619">ਕੀ ਸਮਕਾਲੀਕਰਨ ਚਾਲੂ ਕਰਨਾ ਹੈ?</translation>
 <translation id="123724288017357924">ਕੈਸ਼ੇ ਕੀਤੀ ਸਮੱਗਰੀ ਨੂੰ ਅਣਡਿੱਠ ਕਰਕੇ ਮੌਜੂਦਾ ਪੰਨਾ ਰੀਲੋਡ ਕਰੋ</translation>
 <translation id="124116460088058876">ਹੋਰ ਭਾਸ਼ਾਵਾਂ</translation>
@@ -71,6 +72,7 @@
 <translation id="1513352483775369820">ਬੁੱਕਮਾਰਕ ਅਤੇ ਵੈੱਬ ਇਤਿਹਾਸ</translation>
 <translation id="1513858653616922153">ਪਾਸਵਰਡ ਮਿਟਾਓ</translation>
 <translation id="1521774566618522728">ਅੱਜ ਕਿਰਿਆਸ਼ੀਲ</translation>
+<translation id="1543538514740974167">ਤੇਜ਼ੀ ਨਾਲ ਇੱਥੇ ਪਹੁੰਚੋ</translation>
 <translation id="1544826120773021464">ਆਪਣੇ Google ਖਾਤੇ ਦਾ ਪ੍ਰਬੰਧਨ ਕਰਨ ਲਈ, "ਖਾਤੇ ਦਾ ਪ੍ਰਬੰਧਨ ਕਰੋ" ਬਟਨ 'ਤੇ ਟੈਪ ਕਰੋ</translation>
 <translation id="1549000191223877751">ਹੋਰ ਵਿੰਡੋ 'ਤੇ ਤਬਦੀਲ ਕਰੋ</translation>
 <translation id="1553358976309200471">Chrome ਨੂੰ ਅੱਪਡੇਟ ਕਰੋ</translation>
@@ -723,11 +725,13 @@
 <translation id="7022756207310403729">ਬ੍ਰਾਊਜ਼ਰ ਵਿੱਚ ਖੋਲ੍ਹੋ</translation>
 <translation id="702463548815491781">TalkBack ਜਾਂ 'ਸਵਿੱਚ ਪਹੁੰਚ' ਦੇ ਚਾਲੂ ਹੋਣ 'ਤੇ ਸਿਫ਼ਾਰਸ਼ ਕੀਤੀ ਜਾਂਦੀ ਹੈ</translation>
 <translation id="7029809446516969842">ਪਾਸਵਰਡ</translation>
+<translation id="703523980599857277">ਹੋਮਪੇਜ ਬਦਲੋ</translation>
 <translation id="7055152154916055070">ਇਸ ਰੀਡਾਇਰੈਕਟ ਨੂੰ ਬਲਾਕ ਕੀਤਾ ਗਿਆ:</translation>
 <translation id="7063006564040364415">ਸਿੰਕ ਸਰਵਰ ਨਾਲ ਕਨੈਕਟ ਨਹੀਂ ਕਰ ਸਕਿਆ।</translation>
 <translation id="7071521146534760487">ਖਾਤੇ ਦਾ ਪ੍ਰਬੰਧਨ ਕਰੋ</translation>
 <translation id="7077143737582773186">SD ਕਾਰਡ</translation>
 <translation id="7121362699166175603">ਪਤਾ ਬਾਰ ਵਿੱਚ ਇਤਿਹਾਸ ਅਤੇ ਸਵੈ-ਮੁਕੰਮਲ ਚੀਜ਼ਾਂ ਨੂੰ ਕਲੀਅਰ ਕਰੋ। ਤੁਹਾਡੇ Google ਖਾਤੇ ਵਿੱਚ <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> 'ਤੇ ਬ੍ਰਾਊਜ਼ਿੰਗ ਇਤਿਹਾਸ ਦੀਆਂ ਹੋਰ ਕਿਸਮਾਂ ਹੋ ਸਕਦੀਆਂ ਹਨ।</translation>
+<translation id="7128355412245153445">ਹੋਮ ਬਟਨ 'ਤੇ ਟੈਪ ਕਰਨ 'ਤੇ ਆਪਣੀਆਂ ਪ੍ਰਮੁੱਖ ਸਾਈਟਾਂ ਅਤੇ ਹਾਲੀਆ ਕਹਾਣੀਆਂ ਦੇਖੋ</translation>
 <translation id="7138678301420049075">ਹੋਰ</translation>
 <translation id="7146622961999026732">ਇਹ ਸਾਈਟਾਂ ਅਤੇ ਐਪਾਂ ਤੁਹਾਡੇ ਲਈ ਮਹੱਤਵਪੂਰਨ ਲੱਗ ਰਹੀਆਂ ਹਨ:</translation>
 <translation id="7149158118503947153"><ph name="DOMAIN_NAME" /> ਤੋਂ <ph name="BEGIN_LINK" />ਮੂਲ ਪੰਨਾ ਲੋਡ ਕਰੋ<ph name="END_LINK" /></translation>
@@ -968,11 +972,13 @@
 <translation id="9155898266292537608">ਤੁਸੀਂ ਕਿਸੇ ਸ਼ਬਦ 'ਤੇ ਤੁਰੰਤ ਟੈਪ ਨਾਲ ਵੀ ਖੋਜ ਕਰ ਸਕਦੇ ਹੋ</translation>
 <translation id="9169507124922466868">ਨੈਵੀਗੇਸ਼ਨ ਇਤਿਹਾਸ ਵਾਲੀ ਸ਼ੀਟ ਅੱਧੀ ਖੁੱਲ੍ਹੀ ਹੋਈ ਹੈ</translation>
 <translation id="9204836675896933765">1 ਫ਼ਾਈਲ ਬਾਕੀ</translation>
+<translation id="9205796607887024517">ਆਪਣੀਆਂ ਕਹਾਣੀਆਂ ਨੂੰ ਇੱਥੇ ਕੰਟਰੋਲ ਕਰੋ</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="9209888181064652401">ਕਾਲਾਂ ਨਹੀਂ ਕਰ ਸਕਦੇ</translation>
 <translation id="9219103736887031265">ਚਿੱਤਰ</translation>
 <translation id="926205370408745186">ਡਿਜੀਟਲ ਜੀਵਨਸ਼ੈਲੀ ਤੋਂ ਆਪਣੀ Chrome ਸਰਗਰਮੀ ਹਟਾਓ</translation>
 <translation id="932327136139879170">ਹੋਮ</translation>
+<translation id="93753284658583800">ਹੋਮਪੇਜ ਬਦਲ ਦਿੱਤਾ ਗਿਆ</translation>
 <translation id="938850635132480979">ਗੜਬੜ: <ph name="ERROR_CODE" /></translation>
 <translation id="95817756606698420">Chrome ਚੀਨ ਵਿੱਚ ਖੋਜ ਲਈ <ph name="BEGIN_BOLD" />Sogou<ph name="END_BOLD" /> ਦੀ ਵਰਤੋਂ ਕਰ ਸਕਦਾ ਹੈ। ਤੁਸੀਂ ਇਸ ਨੂੰ <ph name="BEGIN_LINK" />ਸੈਟਿੰਗਾਂ<ph name="END_LINK" /> ਵਿੱਚੋਂ ਬਦਲ ਸਕਦੇ ਹੋ।</translation>
 <translation id="968900484120156207">ਜਿਨ੍ਹਾਂ ਪੰਨਿਆਂ 'ਤੇ ਤੁਸੀਂ ਜਾਂਦੇ ਹੋ ਉਹ ਇੱਥੇ ਦਿਖਾਈ ਦਿੰਦੇ ਹਨ</translation>

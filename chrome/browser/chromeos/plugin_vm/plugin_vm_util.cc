@@ -54,7 +54,10 @@ static std::string& GetFakeUserId() {
 // * PluginVm feature should be enabled.
 // * Device should be enterprise enrolled:
 //   * User should be affiliated.
-//   * PluginVmAllowed and PluginVmLicenseKey policies should be set.
+//   * PluginVmAllowed should be set.
+// * At least one of the following should be set:
+//   * PluginVmLicenseKey policy.
+//   * PluginVmUserId policy.
 bool IsPluginVmAllowedForProfile(const Profile* profile) {
   // Check that the profile is eligible.
   if (!profile || profile->IsChild() || profile->IsLegacySupervised() ||
@@ -92,13 +95,7 @@ bool IsPluginVmAllowedForProfile(const Profile* profile) {
   if (!plugin_vm_allowed_for_device)
     return false;
 
-  // Check that a license key is set.
-  std::string plugin_vm_license_key;
-  if (!chromeos::CrosSettings::Get()->GetString(chromeos::kPluginVmLicenseKey,
-                                                &plugin_vm_license_key)) {
-    return false;
-  }
-  if (plugin_vm_license_key == std::string())
+  if (GetPluginVmLicenseKey().empty() && GetPluginVmUserId().empty())
     return false;
 
   return true;
@@ -143,12 +140,20 @@ std::string GetPluginVmUserId() {
     return GetFakeUserId();
   }
 
-  std::string plugin_vm_user_id;
-  if (!chromeos::CrosSettings::Get()->GetString(chromeos::kPluginVmUserId,
-                                                &plugin_vm_user_id)) {
+  const user_manager::User* primary_user_ref =
+      user_manager::UserManager::Get()->GetPrimaryUser();
+  if (primary_user_ref == nullptr) {
     return std::string();
   }
-  return plugin_vm_user_id;
+
+  Profile* primary_profile =
+      chromeos::ProfileHelper::Get()->GetProfileByUser(primary_user_ref);
+  if (primary_profile == nullptr) {
+    return std::string();
+  }
+
+  return primary_profile->GetPrefs()->GetString(
+      plugin_vm::prefs::kPluginVmUserId);
 }
 
 void SetFakePluginVmPolicy(Profile* profile,

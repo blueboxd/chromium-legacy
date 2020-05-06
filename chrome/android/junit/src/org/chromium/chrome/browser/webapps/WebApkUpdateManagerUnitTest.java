@@ -1236,7 +1236,7 @@ public class WebApkUpdateManagerUnitTest {
     public void testUpdateIfShortcutIsAdded() {
         ManifestData fetchedData = defaultManifestData();
         fetchedData.shortcuts.add(new WebApkExtras.ShortcutItem(
-                "name", "shortName", "launchUrl", "iconUrl", "iconHash", null));
+                "name", "shortName", "launchUrl", "iconUrl", "iconHash", new WebappIcon()));
         assertTrue(checkUpdateNeededForFetchedManifest(defaultManifestData(), fetchedData));
     }
 
@@ -1250,7 +1250,7 @@ public class WebApkUpdateManagerUnitTest {
                 "iconUrl", "iconHash", new WebappIcon("appName", 42)));
         ManifestData fetchedData = defaultManifestData();
         fetchedData.shortcuts.add(new WebApkExtras.ShortcutItem(
-                "name2", "shortName", "launchUrl", "iconUrl", "iconHash", null));
+                "name2", "shortName", "launchUrl", "iconUrl", "iconHash", new WebappIcon()));
         assertTrue(checkUpdateNeededForFetchedManifest(androidData, fetchedData));
     }
 
@@ -1264,7 +1264,7 @@ public class WebApkUpdateManagerUnitTest {
                 "iconUrl", "iconHash", new WebappIcon("appName", 42)));
         ManifestData fetchedData = defaultManifestData();
         fetchedData.shortcuts.add(new WebApkExtras.ShortcutItem(
-                "name", "shortName2", "launchUrl", "iconUrl", "iconHash", null));
+                "name", "shortName2", "launchUrl", "iconUrl", "iconHash", new WebappIcon()));
         assertTrue(checkUpdateNeededForFetchedManifest(androidData, fetchedData));
     }
 
@@ -1278,7 +1278,7 @@ public class WebApkUpdateManagerUnitTest {
                 "iconUrl", "iconHash", new WebappIcon("appName", 42)));
         ManifestData fetchedData = defaultManifestData();
         fetchedData.shortcuts.add(new WebApkExtras.ShortcutItem(
-                "name", "shortName", "launchUrl2", "iconUrl", "iconHash", null));
+                "name", "shortName", "launchUrl2", "iconUrl", "iconHash", new WebappIcon()));
         assertTrue(checkUpdateNeededForFetchedManifest(androidData, fetchedData));
     }
 
@@ -1292,7 +1292,7 @@ public class WebApkUpdateManagerUnitTest {
                 "iconUrl", "iconHash1", new WebappIcon("appName", 42)));
         ManifestData fetchedData = defaultManifestData();
         fetchedData.shortcuts.add(new WebApkExtras.ShortcutItem(
-                "name", "shortName", "launchUrl", "iconUrl", "iconHash2", null));
+                "name", "shortName", "launchUrl", "iconUrl", "iconHash2", new WebappIcon()));
         assertTrue(checkUpdateNeededForFetchedManifest(androidData, fetchedData));
     }
 
@@ -1306,7 +1306,7 @@ public class WebApkUpdateManagerUnitTest {
                 "iconUrl1", "iconHash", new WebappIcon("appName", 42)));
         ManifestData fetchedData = defaultManifestData();
         fetchedData.shortcuts.add(new WebApkExtras.ShortcutItem(
-                "name", "shortName", "launchUrl", "iconUrl2", "iconHash", null));
+                "name", "shortName", "launchUrl", "iconUrl2", "iconHash", new WebappIcon()));
         assertFalse(checkUpdateNeededForFetchedManifest(androidData, fetchedData));
     }
 }

@@ -411,8 +411,6 @@ const char kDeviceUnaffiliatedCrostiniAllowed[] =
 const char kPluginVmAllowed[] = "cros.device.plugin_vm_allowed";
 // A string pref that specifies PluginVm license key for this device.
 const char kPluginVmLicenseKey[] = "cros.device.plugin_vm_license_key";
-// A string pref that specifies PluginVm user id.
-const char kPluginVmUserId[] = "cros.device.plugin_vm_user_id";
 
 // An enum pref specifying the case when device needs to reboot on user sign
 // out.

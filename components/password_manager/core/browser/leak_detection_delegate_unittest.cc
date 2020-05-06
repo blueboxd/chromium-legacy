@@ -86,12 +86,10 @@ class LeakDetectionDelegateTest : public testing::Test {
     delegate_.set_leak_factory(std::move(mock_factory));
     pref_service_->registry()->RegisterBooleanPref(
         password_manager::prefs::kPasswordLeakDetectionEnabled, true);
-#if !defined(OS_IOS)
     pref_service_->registry()->RegisterBooleanPref(
         ::prefs::kSafeBrowsingEnabled, true);
     pref_service_->registry()->RegisterBooleanPref(
         ::prefs::kSafeBrowsingEnhanced, false);
-#endif
     ON_CALL(client_, GetPrefs()).WillByDefault(Return(pref_service()));
   }
 
@@ -149,7 +147,6 @@ TEST_F(LeakDetectionDelegateTest, InIncognito) {
   EXPECT_FALSE(delegate().leak_check());
 }
 
-#if !defined(OS_IOS)
 TEST_F(LeakDetectionDelegateTest, SafeBrowsingOff) {
   pref_service()->SetBoolean(::prefs::kSafeBrowsingEnabled, false);
 
@@ -158,7 +155,6 @@ TEST_F(LeakDetectionDelegateTest, SafeBrowsingOff) {
 
   EXPECT_FALSE(delegate().leak_check());
 }
-#endif
 
 TEST_F(LeakDetectionDelegateTest, UsernameIsEmpty) {
   autofill::PasswordForm form = CreateTestForm();
@@ -195,7 +191,6 @@ TEST_F(LeakDetectionDelegateTest, DoNotStartCheck) {
   EXPECT_FALSE(delegate().leak_check());
 }
 
-#if !defined(OS_IOS)
 TEST_F(LeakDetectionDelegateTest, StartCheckWithStandardProtection) {
   SetSBState(safe_browsing::STANDARD_PROTECTION);
   SetLeakDetectionEnabled(true);
@@ -256,7 +251,6 @@ TEST_F(LeakDetectionDelegateTest, DoNotStartLeakCheckIfLeakCheckIsOff) {
   EXPECT_FALSE(delegate().leak_check());
   EXPECT_FALSE(CanStartLeakCheck(*pref_service()));
 }
-#endif
 
 TEST_F(LeakDetectionDelegateTest, LeakDetectionDoneWithFalseResult) {
   base::HistogramTester histogram_tester;

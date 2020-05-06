@@ -31,7 +31,6 @@ class GcpCrashReporterClient : public crash_reporter::CrashReporterClient {
                                base::string16* message,
                                bool* is_rtl_locale) override;
   bool AboutToRestart() override;
-  bool GetDeferredUploadsSupported(bool is_per_user_install) override;
   bool GetIsPerUserInstall() override;
   bool GetShouldDumpLargerDumps() override;
   int GetResultCodeRespawnFailed() override;

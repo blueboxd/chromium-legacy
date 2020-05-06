@@ -91,7 +91,7 @@
 #endif  // defined(OS_CHROMEOS)
 
 #if defined(OS_ANDROID)
-#include "chrome/browser/sync/test/integration/sync_test_signin_utils_android.h"
+#include "chrome/browser/sync/test/integration/sync_test_utils_android.h"
 #else
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -267,7 +267,8 @@ SyncTest::~SyncTest() = default;
 
 void SyncTest::SetUp() {
 #if defined(OS_ANDROID)
-  sync_test_signin_utils_android::SetUpAuthForTest();
+  sync_test_utils_android::SetUpAuthForTest();
+  sync_test_utils_android::SetUpAndroidSyncSettingsForTesting();
 #endif
 
   // Sets |server_type_| if it wasn't specified by the test.
@@ -314,7 +315,7 @@ void SyncTest::PostRunTestOnMainThread() {
   PlatformBrowserTest::PostRunTestOnMainThread();
 
 #if defined(OS_ANDROID)
-  sync_test_signin_utils_android::TearDownAuthForTest();
+  sync_test_utils_android::TearDownAuthForTest();
 #endif
 }
 

@@ -33,6 +33,7 @@
 <translation id="1208340532756947324">Për të sinkronizuar dhe personalizuar mes pajisjeve, aktivizo sinkronizimin</translation>
 <translation id="1209206284964581585">Fshih për momentin</translation>
 <translation id="1227058898775614466">Historiku i navigimit</translation>
+<translation id="1229399675748764149">Bëje këtë faqe faqen tënde bazë</translation>
 <translation id="1231733316453485619">Të aktivizohet sinkronizimi?</translation>
 <translation id="123724288017357924">Ringarko faqen aktuale, duke shpërfillur përmbajtjen në memorien specifike</translation>
 <translation id="124116460088058876">Gjuhë të tjera</translation>
@@ -71,6 +72,7 @@
 <translation id="1513352483775369820">Faqeshënuesit dhe historiku i uebit</translation>
 <translation id="1513858653616922153">Fshi fjalëkalimin</translation>
 <translation id="1521774566618522728">Aktiv sot</translation>
+<translation id="1543538514740974167">Si të mbërrish këtu më shpejt</translation>
 <translation id="1544826120773021464">Për të menaxhuar "Llogarinë tënde të Google", prek butonin "Menaxho llogarinë"</translation>
 <translation id="1549000191223877751">Zhvendose te dritarja tjetër</translation>
 <translation id="1553358976309200471">Përditëso Chrome</translation>
@@ -723,11 +725,13 @@ Për shembull, disa sajte uebi mund t'i përgjigjen kësaj kërkese duke të tre
 <translation id="7022756207310403729">Hape në shfletues</translation>
 <translation id="702463548815491781">Rekomandohet kur është aktiv TalkBack ose "Qasja me çelës"</translation>
 <translation id="7029809446516969842">Fjalëkalimet</translation>
+<translation id="703523980599857277">Ndrysho faqen kryesore</translation>
 <translation id="7055152154916055070">Ridrejtimi u bllokua:</translation>
 <translation id="7063006564040364415">Nuk mund të lidhej me serverin e sinkronizimit.</translation>
 <translation id="7071521146534760487">Menaxho llogarinë</translation>
 <translation id="7077143737582773186">Karta SD</translation>
 <translation id="7121362699166175603">Pastron historikun dhe plotësimet automatike në shiritin e adresës. Llogaria jote e Google mund të ketë forma të tjera të historikut të shfletimit në <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
+<translation id="7128355412245153445">Shiko sajtet kryesore dhe historitë e fundit sa herë që troket te butoni "Kreu"</translation>
 <translation id="7138678301420049075">Tjetër</translation>
 <translation id="7146622961999026732">Këto sajte dhe aplikacione duken të rëndësishme për ty:</translation>
 <translation id="7149158118503947153"><ph name="BEGIN_LINK" />Ngarko faqen origjinale<ph name="END_LINK" /> nga <ph name="DOMAIN_NAME" /></translation>
@@ -968,11 +972,13 @@ Për shembull, disa sajte uebi mund t'i përgjigjen kësaj kërkese duke të tre
 <translation id="9155898266292537608">Mund të kërkosh po ashtu me një trokitje të shpejtë te një fjalë</translation>
 <translation id="9169507124922466868">Historiku i navigimit është gjysmë i hapur</translation>
 <translation id="9204836675896933765">1 skedar i mbetur</translation>
+<translation id="9205796607887024517">Kontrollo historitë e tua këtu</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="9209888181064652401">Telefonatat nuk mund të kryhen</translation>
 <translation id="9219103736887031265">Imazhet</translation>
 <translation id="926205370408745186">Hiq aktivitetin tënd të Chrome nga "Mirëqenia dixhitale"</translation>
 <translation id="932327136139879170">Faqja kryesore</translation>
+<translation id="93753284658583800">Faqja bazë u ndryshua</translation>
 <translation id="938850635132480979">Gabim: <ph name="ERROR_CODE" /></translation>
 <translation id="95817756606698420">Chrome mund të përdorë <ph name="BEGIN_BOLD" />Sogou<ph name="END_BOLD" /> për kërkimin në Kinë. Mund ta ndryshosh këtë te <ph name="BEGIN_LINK" />Cilësimet<ph name="END_LINK" />.</translation>
 <translation id="968900484120156207">Faqet që viziton shfaqen këtu</translation>

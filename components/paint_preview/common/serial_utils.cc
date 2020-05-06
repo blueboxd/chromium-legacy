@@ -4,6 +4,8 @@
 
 #include "components/paint_preview/common/serial_utils.h"
 
+#include "base/trace_event/common/trace_event_common.h"
+#include "base/trace_event/trace_event.h"
 #include "components/paint_preview/common/subset_font.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkPictureRecorder.h"
@@ -39,6 +41,7 @@ sk_sp<SkData> SerializeSubframe(SkPicture* picture, void* ctx) {
 
 // De-duplicates and subsets used typefaces and discards any unused typefaces.
 sk_sp<SkData> SerializeTypeface(SkTypeface* typeface, void* ctx) {
+  TRACE_EVENT0("paint_preview", "SerializeTypeface");
   TypefaceSerializationContext* context =
       reinterpret_cast<TypefaceSerializationContext*>(ctx);
 

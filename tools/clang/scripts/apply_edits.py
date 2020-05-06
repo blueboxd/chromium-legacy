@@ -22,6 +22,7 @@ import functools
 import multiprocessing
 import os
 import os.path
+import re
 import subprocess
 import sys
 
@@ -98,38 +99,164 @@ def _ParseEditsFromStdin(build_directory):
   return edits
 
 
-def _ApplyEditsToSingleFile(filename, edits):
+_PLATFORM_SUFFIX = \
+    r'(?:_(?:android|aura|chromeos|ios|linux|mac|ozone|posix|win|x11))?'
+_TEST_SUFFIX = \
+    r'(?:_(?:browser|interactive_ui|ui|unit)?test)?'
+_suffix_regex = re.compile(_PLATFORM_SUFFIX + _TEST_SUFFIX)
+
+
+def _FindPrimaryHeaderBasename(filepath):
+  """ Translates bar/foo.cc -> foo
+                 bar/foo_posix.cc -> foo
+                 bar/foo_unittest.cc -> foo
+                 bar/foo.h -> None
+  """
+  dirname, filename = os.path.split(filepath)
+  basename, extension = os.path.splitext(filename)
+  if extension == '.h':
+    return None
+  basename = _suffix_regex.sub('', basename)
+  return basename
+
+
+_INCLUDE_INSERTION_POINT_REGEX_TEMPLATE = r'''
+   ^(?!         # Match the start of the first line that is
+                # not one of the following:
+
+      \s+       # 1. Line starting with whitespace
+                #    (this includes blank lines and continuations of
+                #     C comments that start with whitespace/indentation)
+
+    | //        # 2a. A C++ comment
+    | /\*       # 2b. A C comment
+    | \*        # 2c. A continuation of a C comment (see also rule 1. above)
+
+      # 3. Include guards (Chromium-style)
+    | \#ifndef \s+ [A-Z0-9_]+_H ( | _ | __ ) \b \s* $
+    | \#define \s+ [A-Z0-9_]+_H ( | _ | __ ) \b \s* $
+
+      # 3b. Include guards (anything that repeats):
+      #     - the same <guard> has to repeat in both the #ifndef and the #define
+      #     - #define has to be "simple" - either:
+      #         - either: #define GUARD
+      #         - or    : #define GUARD 1
+    | \#ifndef \s+ (?P<guard> [A-Za-z0-9_]* ) \s* $ ( \n | \r )* ^
+      \#define \s+ (?P=guard) \s* ( | 1 \s* ) $
+    | \#define \s+ (?P=guard) \s* ( | 1 \s* ) $  # Skipping previous line.
+
+      # 4. A C/C++ system include
+    | \#include \s* < .* >
+
+      # 5. A primary header include
+      #    (%%s should be the basename returned by _FindPrimaryHeaderBasename).
+      #
+      # TODO(lukasza): Do not allow any directory below - require the top-level
+      # directory to be the same and at least one itermediate dirname to be the
+      # same.
+    | \#include \s*   "
+          [^"]* \b       # Allowing any directory
+          %s[^"/]*\.h "  # Matching both basename.h and basename_posix.h
+    )
+'''
+
+
+def _InsertNonSystemIncludeHeader(filepath, header_line_to_add, contents):
+  """ Mutates |contents| (contents of |filepath|) to #include
+      the |header_to_add
+  """
+  # Don't add the header if it is already present.
+  replacement_text = header_line_to_add
+  if replacement_text in contents:
+    return
+  replacement_text += '\n'
+
+  # Find the right insertion point.
+  #
+  # Note that we depend on a follow-up |git cl format| for the right order of
+  # headers.  Therefore we just need to find the right header group (e.g. skip
+  # system headers and the primary header).
+  primary_header_basename = _FindPrimaryHeaderBasename(filepath)
+  if primary_header_basename is None:
+    primary_header_basename = ':this:should:never:match:'
+  regex_text = _INCLUDE_INSERTION_POINT_REGEX_TEMPLATE % primary_header_basename
+  match = re.search(regex_text, contents, re.MULTILINE | re.VERBOSE)
+  assert (match is not None)
+  insertion_point = match.start()
+
+  # Extra empty line is required if the addition is not adjacent to other
+  # includes.
+  if not contents[insertion_point:].startswith('#include'):
+    replacement_text += '\n'
+
+  # Make the edit.
+  contents[insertion_point:insertion_point] = replacement_text
+
+
+def _ApplyReplacement(filepath, contents, edit, last_edit):
+  if (last_edit is not None and edit.edit_type == last_edit.edit_type
+      and edit.offset == last_edit.offset and edit.length == last_edit.length):
+    raise ValueError(('Conflicting replacement text: ' +
+                      '%s at offset %d, length %d: "%s" != "%s"\n') %
+                     (filepath, edit.offset, edit.length, edit.replacement,
+                      last_edit.replacement))
+
+  contents[edit.offset:edit.offset + edit.length] = edit.replacement
+  if not edit.replacement:
+    _ExtendDeletionIfElementIsInList(contents, edit.offset)
+
+
+def _ApplyIncludeHeader(filepath, contents, edit, last_edit):
+  header_line_to_add = '#include "%s"' % edit.replacement
+  _InsertNonSystemIncludeHeader(filepath, header_line_to_add, contents)
+
+
+def _ApplySingleEdit(filepath, contents, edit, last_edit):
+  if edit.edit_type == 'r':
+    _ApplyReplacement(filepath, contents, edit, last_edit)
+  elif edit.edit_type == 'include-user-header':
+    _ApplyIncludeHeader(filepath, contents, edit, last_edit)
+  else:
+    raise ValueError('Unrecognized edit directive "%s": %s\n' %
+                     (edit.edit_type, filepath))
+
+
+def _ApplyEditsToSingleFileContents(filepath, contents, edits):
   # Sort the edits and iterate through them in reverse order. Sorting allows
   # duplicate edits to be quickly skipped, while reversing means that
   # subsequent edits don't need to have their offsets updated with each edit
   # applied.
+  #
+  # Note that after sorting in reverse, the 'i' directives will come after 'r'
+  # directives.
+  edits.sort(reverse=True)
+
   edit_count = 0
   error_count = 0
-  edits.sort()
   last_edit = None
-  with open(filename, 'rb+') as f:
-    contents = bytearray(f.read())
-    for edit in reversed(edits):
-      if edit == last_edit:
-        continue
-      if (last_edit is not None and edit.edit_type == last_edit.edit_type and
-          edit.offset == last_edit.offset and edit.length == last_edit.length):
-        sys.stderr.write(
-            'Conflicting edit: %s at offset %d, length %d: "%s" != "%s"\n' %
-            (filename, edit.offset, edit.length, edit.replacement,
-             last_edit.replacement))
-        error_count += 1
-        continue
-
+  for edit in edits:
+    if edit == last_edit:
+      continue
+    try:
+      _ApplySingleEdit(filepath, contents, edit, last_edit)
       last_edit = edit
-      contents[edit.offset:edit.offset + edit.length] = edit.replacement
-      if not edit.replacement:
-        _ExtendDeletionIfElementIsInList(contents, edit.offset)
       edit_count += 1
+    except ValueError as err:
+      sys.stderr.write(str(err) + '\n')
+      error_count += 1
+
+  return (edit_count, error_count)
+
+
+def _ApplyEditsToSingleFile(filepath, edits):
+  with open(filepath, 'rb+') as f:
+    contents = bytearray(f.read())
+    edit_and_error_counts = _ApplyEditsToSingleFileContents(
+        filepath, contents, edits)
     f.seek(0)
     f.truncate()
     f.write(contents)
-  return (edit_count, error_count)
+  return edit_and_error_counts
 
 
 def _ApplyEdits(edits):

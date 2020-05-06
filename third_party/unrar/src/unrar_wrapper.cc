@@ -26,12 +26,10 @@ bool RarReader::Open(base::File rar_file, base::File temp_file) {
   archive_->SetTempFileHandle(temp_file_.GetPlatformFile());
 
   bool open_success = archive_->Open(L"dummy.rar");
-  UMA_HISTOGRAM_BOOLEAN("SBClientDownload.RarOpenSuccess", open_success);
   if (!open_success)
     return false;
 
   bool is_valid_archive = archive_->IsArchive(/*EnableBroken=*/true);
-  UMA_HISTOGRAM_BOOLEAN("SBClientDownload.RarValidArchive", is_valid_archive);
   if (!is_valid_archive)
     return false;
 

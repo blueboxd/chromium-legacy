@@ -23,7 +23,7 @@
 #include "base/stl_util.h"
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
-#include "chrome/browser/themes/theme_properties.h"
+#include "chrome/browser/themes/theme_properties.h"  // nogncheck
 #include "printing/buildflags/buildflags.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkCanvas.h"

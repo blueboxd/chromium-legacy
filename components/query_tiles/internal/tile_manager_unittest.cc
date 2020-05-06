@@ -42,12 +42,10 @@ class TileManagerTest : public testing::Test {
   void SetUp() override {
     auto tile_store = std::make_unique<MockTileStore>();
     tile_store_ = tile_store.get();
-    config_.locale = "en-US";
-    config_.is_enabled = true;
     base::Time fake_now;
     EXPECT_TRUE(base::Time::FromString("03/18/20 01:00:00 AM", &fake_now));
     clock_.SetNow(fake_now);
-    manager_ = TileManager::Create(std::move(tile_store), &clock_, &config_);
+    manager_ = TileManager::Create(std::move(tile_store), &clock_);
   }
 
   // Initial and load entries from store_, compare the |expected_status| to the
@@ -121,14 +119,12 @@ class TileManagerTest : public testing::Test {
  protected:
   TileManager* manager() { return manager_.get(); }
   MockTileStore* tile_store() { return tile_store_; }
-  const TileConfig& config() const { return config_; }
   const base::SimpleTestClock* clock() const { return &clock_; }
 
  private:
   base::test::TaskEnvironment task_environment_;
   std::unique_ptr<TileManager> manager_;
   MockTileStore* tile_store_;
-  TileConfig config_;
   base::SimpleTestClock clock_;
 };
 
@@ -154,25 +150,6 @@ TEST_F(TileManagerTest, InitWithEmptyDb) {
       }));
 
   Init(TileGroupStatus::kSuccess);
-  GetTiles(std::vector<Tile>() /*expect an empty result*/);
-}
-
-TEST_F(TileManagerTest, InitAndLoadWithLocaleNotMatch) {
-  auto invalid_group = std::make_unique<TileGroup>();
-  test::ResetTestGroup(invalid_group.get());
-  invalid_group->locale = "jp";
-  MockTileStore::KeysAndEntries input;
-  input[invalid_group->id] = std::move(invalid_group);
-  EXPECT_CALL(*tile_store(), InitAndLoad(_))
-      .WillOnce(Invoke(
-          [&input](base::OnceCallback<void(bool, MockTileStore::KeysAndEntries)>
-                       callback) {
-            std::move(callback).Run(true, std::move(input));
-          }));
-
-  EXPECT_CALL(*tile_store(), Delete(_, _));
-
-  Init(TileGroupStatus::kInvalidGroup);
   GetTiles(std::vector<Tile>() /*expect an empty result*/);
 }
 

@@ -142,6 +142,9 @@ void PaintPreviewClient::CapturePaintPreview(
   document_data.source_id =
       ukm::GetSourceIdForWebContentsDocument(web_contents());
   all_document_data_.insert({params.document_guid, std::move(document_data)});
+  TRACE_EVENT_NESTABLE_ASYNC_BEGIN0(
+      "paint_preview", "PaintPreviewClient::CapturePaintPreview",
+      TRACE_ID_LOCAL(&all_document_data_[params.document_guid]));
   CapturePaintPreviewInternal(params, render_frame_host);
 }
 
@@ -406,6 +409,11 @@ void PaintPreviewClient::OnFinished(base::UnguessableToken guid,
                                     PaintPreviewData* document_data) {
   if (!document_data || !document_data->callback)
     return;
+
+  TRACE_EVENT_NESTABLE_ASYNC_END2(
+      "paint_preview", "PaintPreviewClient::CapturePaintPreview",
+      TRACE_ID_LOCAL(document_data), "success", document_data->proto != nullptr,
+      "subframes", document_data->finished_subframes.size());
 
   base::UmaHistogramBoolean("Browser.PaintPreview.Capture.Success",
                             document_data->proto != nullptr);

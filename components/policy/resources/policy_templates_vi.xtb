@@ -271,7 +271,7 @@
       Để biết thêm thông tin về dịch vụ Duyệt web an toàn, vui lòng truy cập vào https://developers.google.com/safe-browsing.</translation>
 <translation id="1413936351612032792">Báo cáo thông tin về việc sử dụng các ứng dụng Linux</translation>
 <translation id="142346659686073702">Cho phép người dùng chưa liên kết sử dụng Crostini</translation>
-<translation id="1425551776320718592">Không để người dùng thiết bị này sử dụng chế độ cài đặt không qua cửa hàng cho Cầu gỡ lỗi Android (ADB) mà không buộc powerwash thiết bị vì điều này có thể khiến thiết bị có trạng thái bảo mật là đáng ngờ</translation>
+<translation id="1425551776320718592">Ngăn người dùng thiết bị này sử dụng tính năng cài đặt không qua cửa hàng của Cầu gỡ lỗi Android (ADB) mà không buộc thiết bị chạy powerwash vì điều này có thể khiến thiết bị có trạng thái bảo mật là đáng ngờ</translation>
 <translation id="1426170570389588560">Đặt khoảng thời gian tính bằng ngày để lưu trữ siêu dữ liệu về lệnh in</translation>
 <translation id="1426410128494586442">Có</translation>
 <translation id="1427655258943162134">Địa chỉ hoặc URL của máy chủ proxy</translation>
@@ -875,9 +875,9 @@ Nếu bạn tắt chính sách này, thì việc cuộn trang web đến các ph
 
       Các mẫu không đúng định dạng sẽ bị bỏ qua.</translation>
 <translation id="2345547870894930157">Bật chế độ DNS qua HTTPS không có phương án dự phòng cho truy vấn không an toàn</translation>
-<translation id="2353442107789326507">Danh sách các tùy chọn cài đặt dịch vụ Trình kết nối của Chrome Enterprise sẽ áp dụng cho Trình kết nối <ph name="ON_FILE_ATTACHED_ENTERPRISE_CONNECTOR" /> của Chrome Enterprise. Trình kết nối này sẽ chạy khi tệp được đính kèm vào Chrome.
+<translation id="2353442107789326507">Danh sách các tùy chọn cài đặt dịch vụ Trình kết nối của Chrome Enterprise sẽ áp dụng cho Trình kết nối <ph name="ON_FILE_ATTACHED_ENTERPRISE_CONNECTOR" /> của Chrome Enterprise. Trình kết nối này sẽ chạy khi có tệp được đính kèm vào Chrome.
 
-      Các trường <ph name="ENTERPRISE_CONNECTOR_URL_LIST_FIELD" />, <ph name="ENTERPRISE_CONNECTOR_TAGS_FIELD" />, <ph name="ENTERPRISE_CONNECTOR_ENABLE_FIELD" /> và <ph name="ENTERPRISE_CONNECTOR_DISABLE_FIELD" /> dùng để xác định xem trình kết nối có gửi tệp đi phân tích hay không khi tệp được đính kèm vào một trang cụ thể, cũng như thẻ nào cần thêm vào yêu cầu phân tích cho tệp đó. Nếu URL của trang khớp với mẫu liên kết với thẻ đó, thì hệ thống sẽ thêm một thẻ tương ứng với mẫu 'enable' vào yêu cầu phân tích chừng nào không còn mẫu 'disable' có thẻ như vậy khớp với URL của trang. Quá trình phân tích sẽ diễn ra nếu hệ thống thêm ít nhất 1 thẻ vào yêu cầu.
+      Các trường <ph name="ENTERPRISE_CONNECTOR_URL_LIST_FIELD" />, <ph name="ENTERPRISE_CONNECTOR_TAGS_FIELD" />, <ph name="ENTERPRISE_CONNECTOR_ENABLE_FIELD" /> và <ph name="ENTERPRISE_CONNECTOR_DISABLE_FIELD" /> dùng để xác định xem trình kết nối có gửi tệp đi để phân tích hay không khi tệp được đính kèm vào một trang cụ thể, cũng như thẻ nào cần thêm vào yêu cầu phân tích cho tệp đó. Nếu URL của trang khớp với mẫu liên kết với một thẻ tương ứng với một mẫu 'enable', thì hệ thống sẽ thêm thẻ đó vào yêu cầu phân tích chừng nào không còn mẫu 'disable' có cùng thẻ như vậy khớp với URL của trang. Quá trình phân tích sẽ diễn ra nếu hệ thống thêm ít nhất 1 thẻ vào yêu cầu.
 
       Trường <ph name="ENTERPRISE_CONNECTOR_SERVICE_PROVIDER_FIELD" /> xác định nhà cung cấp dịch vụ phân tích nào tương ứng với các tùy chọn cài đặt.
 
@@ -952,7 +952,7 @@ Nếu bạn không đặt chính sách này, thì màn hình bảo vệ quyền 
       Nếu chính sách này được đặt thành False thì không thể bỏ qua tự động đăng nhập không trễ (nếu được định cấu hình).</translation>
 <translation id="2449669951136028258">Danh sách các loại tệp tự động mở khi tải xuống. Bạn không được thêm dấu phân cách phía trước khi liệt kê loại tệp, vì vậy hãy liệt kê "txt" thay cho ".txt".
 
-      Những tệp thuộc loại tự động mở sẽ vẫn phải trải qua các bước kiểm tra mà bạn đã bật trong chế độ duyệt web an toàn và sẽ không mở nếu không vượt qua các bước kiểm tra đó.
+      Những tệp thuộc loại tự động mở sẽ vẫn phải trải qua các bước kiểm tra trong chế độ duyệt web an toàn mà người dùng đã bật và sẽ không mở nếu không vượt qua các bước kiểm tra đó.
 
       Nếu bạn không đặt chính sách này, thì chỉ các loại tệp mà người dùng đã chỉ định là tự động mở sẽ tự động mở khi tải xuống.
 
@@ -1454,7 +1454,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
 
       Nếu bạn không đặt chính sách này hoặc giá trị sau khi thay thế không phải là tên máy chủ hợp lệ, thì tên máy chủ sẽ không được đặt trong yêu cầu DHCP. </translation>
 <translation id="3053265701996417839">Microsoft Windows 7</translation>
-<translation id="3066446511111537292">Cho phép người dùng đã liên kết của thiết bị này sử dụng chế độ cài đặt không qua cửa hàng cho Cầu gỡ lỗi Android (ADB)</translation>
+<translation id="3066446511111537292">Cho phép người dùng đã liên kết của thiết bị này sử dụng tính năng cài đặt không qua cửa hàng của Cầu gỡ lỗi Android (ADB)</translation>
 <translation id="3069958900488014740">Cho phép tắt tối ưu hóa WPAD (Tự động phát hiện proxy web) trong <ph name="PRODUCT_NAME" />.
 
       Nếu bạn đặt chính sách này thành false, tối ưu hóa WPAD sẽ bị tắt, điều này khiến <ph name="PRODUCT_NAME" /> phải đợi trong khoảng thời gian lâu hơn đối với máy chủ WPAD dựa trên DNS. Nếu bạn không đặt hoặc nếu bạn bật chính sách này, tối ưu hóa WPAD sẽ được bật.
@@ -3055,6 +3055,7 @@ Nếu đặt thành False, thì <ph name="PRODUCT_NAME" /> sẽ không sử dụ
 
       Chính sách này nhằm sử dụng cùng với tính năng "VPN luôn bật", cho phép quản trị viên quyết định thiết lập tùy chọn kết nối VPN khi khởi động.</translation>
 <translation id="5401696449591951427">Bật <ph name="CHROME_DEVICES_LINK" /></translation>
+<translation id="5404635530342514143">Với tính năng này, người dùng có thể hiển thị mật khẩu trên màn hình khóa/khởi động sau khi nhấp vào nút.</translation>
 <translation id="5405289061476885481">Định cấu hình bố cục bàn phím được cho phép trên màn hình đăng nhập <ph name="PRODUCT_OS_NAME" />.
 
       Nếu chính sách này được đặt thành danh sách số nhận dạng phương thức nhập, phương thức nhập được cung cấp sẽ có sẵn trên màn hình đăng nhập. Phương thức nhập được cung cấp đầu tiên sẽ được chọn sẵn. Mặc dù nhóm người dùng được lấy tiêu điểm trên màn hình đăng nhập, phương thức nhập được sử dụng gần đây nhất của người dùng sẽ có sẵn ngoài phương thức nhập được cung cấp bởi chính sách này. Nếu chính sách này chưa được đặt, các phương thức nhập trên màn hình đăng nhập sẽ được lấy từ ngôn ngữ mà màn hình đăng nhập hiển thị. Các giá trị không phải số nhận dạng phương thức nhập hợp lệ sẽ bị bỏ qua.</translation>
@@ -3295,7 +3296,7 @@ Nếu đặt thành False, thì <ph name="PRODUCT_NAME" /> sẽ không sử dụ
 <translation id="5656177735561364047">Bật tính năng Khay nhớ tạm dùng chung</translation>
 <translation id="5666457529647159548">Cho phép người dùng quản lý các chứng chỉ ứng dụng khách đã cài đặt.</translation>
 <translation id="5676740747107495269">Hiển thị tùy chọn hỗ trợ tiếp cận trong trình đơn của khay hệ thống trên màn hình đăng nhập</translation>
-<translation id="5679540979548648200">Không để người dùng thiết bị này sử dụng chế độ cài đặt không qua cửa hàng cho Cầu gỡ lỗi Android (ADB) và buộc thực hiện chức năng powerwash thiết bị nếu chế độ cài đặt không qua cửa hàng được bật từ trước</translation>
+<translation id="5679540979548648200">Ngăn người dùng thiết bị này sử dụng tính năng cài đặt không qua cửa hàng của Cầu gỡ lỗi Android (ADB) và buộc thiết bị chạy powerwash nếu tính năng cài đặt không qua cửa hàng đã được bật từ trước</translation>
 <translation id="5689430183304951538">Kích thước trang in mặc định</translation>
 <translation id="5693469654327063861">Cho phép di chuyển dữ liệu</translation>
 <translation id="5694594914843889579">Khi chính sách này được đặt thành true, bộ nhớ ngoài sẽ không khả dụng trong trình duyệt tệp.
@@ -3415,7 +3416,7 @@ Nếu đặt thành False, thì <ph name="PRODUCT_NAME" /> sẽ không sử dụ
       Lưu ý rằng nếu chính sách này thay đổi khi <ph name="PRODUCT_NAME" /> đang chạy, thì chính sách sẽ chỉ áp dụng cho các thẻ mới mở. Vì vậy, một số thẻ có thể vẫn tuân theo hành vi trước đó.
 
       Để biết thông tin chi tiết về mẫu URL hợp lệ, vui lòng xem tại https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.</translation>
-<translation id="585270638818921943">Không cho phép người dùng sử dụng các ứng dụng Android từ những nguồn không tin cậy</translation>
+<translation id="585270638818921943">Ngăn người dùng sử dụng các ứng dụng Android từ những nguồn không tin cậy</translation>
 <translation id="5855010364142818361">Chính sách này kiểm soát các tham số dòng lệnh dành cho Chrome từ Internet Explorer.
 
       Nếu bạn chưa cài đặt tiện ích bổ trợ 'Hỗ trợ trình duyệt cũ' cho Internet Explorer, thì chính sách này sẽ không có hiệu lực.
@@ -3850,9 +3851,9 @@ Nếu bạn không đặt chính sách này thì người dùng sẽ có thể t
 <translation id="6553143066970470539">Phần trăm độ sáng màn hình</translation>
 <translation id="6559057113164934677">Không cho phép bất kỳ trang web nào truy cập vào máy ảnh và micrô</translation>
 <translation id="6561396069801924653">Hiển thị tùy chọn trợ năng trong menu của khay hệ thống</translation>
-<translation id="6561900678873266853">Danh sách các tùy chọn cài đặt dịch vụ Trình kết nối của Chrome Enterprise sẽ áp dụng cho Trình kết nối <ph name="ON_BULK_DATA_ENTRY_ENTERPRISE_CONNECTOR" /> của Enterprise. Trình kết nối này sẽ chạy khi người dùng nhập dữ liệu vào Chrome từ khay nhớ tạm hoặc bằng cách kéo và thả nội dung web.
+<translation id="6561900678873266853">Danh sách các tùy chọn cài đặt dịch vụ Trình kết nối của Chrome Enterprise sẽ áp dụng cho Trình kết nối <ph name="ON_BULK_DATA_ENTRY_ENTERPRISE_CONNECTOR" /> của Enterprise. Trình kết nối này sẽ chạy khi người dùng nhập dữ liệu vào Chrome từ khay nhớ tạm hoặc bằng cách kéo và thả nội dung trên web.
 
-      Các trường <ph name="ENTERPRISE_CONNECTOR_URL_LIST_FIELD" />, <ph name="ENTERPRISE_CONNECTOR_TAGS_FIELD" />, <ph name="ENTERPRISE_CONNECTOR_ENABLE_FIELD" /> và <ph name="ENTERPRISE_CONNECTOR_DISABLE_FIELD" /> dùng để xác định xem trình kết nối có gửi dữ liệu đi phân tích hay không khi người dùng nhập dữ liệu vào một trang cụ thể và thẻ nào cần thêm vào yêu cầu phân tích cho dữ liệu đó. Nếu URL của trang khớp với mẫu liên kết với thẻ đó, thì hệ thống sẽ thêm một thẻ tương ứng với mẫu 'enable' vào yêu cầu phân tích chừng nào không còn mẫu 'disable' có thẻ như vậy khớp với URL của trang. Quá trình phân tích sẽ diễn ra nếu hệ thống thêm ít nhất 1 thẻ vào yêu cầu.
+      Các trường <ph name="ENTERPRISE_CONNECTOR_URL_LIST_FIELD" />, <ph name="ENTERPRISE_CONNECTOR_TAGS_FIELD" />, <ph name="ENTERPRISE_CONNECTOR_ENABLE_FIELD" /> và <ph name="ENTERPRISE_CONNECTOR_DISABLE_FIELD" /> dùng để xác định xem trình kết nối có gửi dữ liệu đi để phân tích hay không khi người dùng nhập dữ liệu vào một trang cụ thể và thẻ nào cần thêm vào yêu cầu phân tích cho dữ liệu đó. Nếu URL của trang khớp với mẫu liên kết với một thẻ tương ứng với một mẫu 'enable', thì hệ thống sẽ thêm thẻ đó vào yêu cầu phân tích chừng nào không còn mẫu 'disable' có cùng thẻ như vậy khớp với URL của trang. Quá trình phân tích sẽ diễn ra nếu hệ thống thêm ít nhất 1 thẻ vào yêu cầu.
 
       Trường <ph name="ENTERPRISE_CONNECTOR_SERVICE_PROVIDER_FIELD" /> xác định nhà cung cấp dịch vụ phân tích nào tương ứng với các tùy chọn cài đặt.
 
@@ -4139,6 +4140,7 @@ Nếu bạn không đặt chính sách này thì người dùng sẽ có thể t
 
           Hệ số tỷ lệ phải từ 100% trở lên.</translation>
 <translation id="7086720321892395256">Kiểm soát các chính sách người dùng và thiết bị dành cho tính năng màn hình bảo vệ quyền riêng tư.</translation>
+<translation id="7095145887485705461">Bật nút hiển thị mật khẩu trên màn hình khóa/khởi động.</translation>
 <translation id="710003290625031750">Mô tả lược đồ mở rộng:</translation>
 <translation id="7106631983877564505">Bật khóa khi thiết bị chạy <ph name="PRODUCT_OS_NAME" /> không hoạt động hoặc bị treo.
       Nếu bạn bật cài đặt này, người dùng sẽ được yêu cầu cung cấp mật khẩu để mở khóa thiết bị khỏi chế độ ngủ.

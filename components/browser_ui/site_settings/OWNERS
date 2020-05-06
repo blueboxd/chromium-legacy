@@ -1,1 +1,7 @@
-file://chrome/android/java/src/org/chromium/chrome/browser/site_settings/OWNERS
+finnur@chromium.org
+hkamila@chromium.org
+andypaicu@chromium.org
+
+per-file CookieControls*=dullweber@chromium.org
+
+# COMPONENT: UI>Browser>Mobile>Settings

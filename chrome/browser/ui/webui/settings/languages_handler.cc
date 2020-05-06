@@ -8,7 +8,6 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "components/language/core/browser/pref_names.h"
 #include "components/prefs/pref_service.h"
@@ -17,18 +16,20 @@
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/base/locale_util.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chrome/browser/profiles/profile.h"
 #include "components/user_manager/user_manager.h"
 #include "components/user_manager/user_type.h"
 #endif
 
 namespace settings {
 
-LanguagesHandler::LanguagesHandler(content::WebUI* webui)
-    : profile_(Profile::FromWebUI(webui)) {
-}
+#if defined(OS_CHROMEOS)
+LanguagesHandler::LanguagesHandler(Profile* profile) : profile_(profile) {}
+#else
+LanguagesHandler::LanguagesHandler() = default;
+#endif
 
-LanguagesHandler::~LanguagesHandler() {
-}
+LanguagesHandler::~LanguagesHandler() = default;
 
 void LanguagesHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(

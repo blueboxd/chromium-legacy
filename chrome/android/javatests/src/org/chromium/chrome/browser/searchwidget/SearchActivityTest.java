@@ -42,6 +42,8 @@ import org.chromium.chrome.browser.locale.DefaultSearchEnginePromoDialog.Default
 import org.chromium.chrome.browser.locale.LocaleManager;
 import org.chromium.chrome.browser.omnibox.MatchClassificationStyle;
 import org.chromium.chrome.browser.omnibox.UrlBar;
+import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteResult;
+import org.chromium.chrome.browser.omnibox.suggestions.CachedZeroSuggestionsManager;
 import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestion;
 import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestion.MatchClassification;
 import org.chromium.chrome.browser.omnibox.voice.VoiceRecognitionHandler;
@@ -353,7 +355,8 @@ public class SearchActivityTest {
         List<OmniboxSuggestion> list = new ArrayList<>();
         list.add(mockSuggestion);
         list.add(mockSuggestion2);
-        OmniboxSuggestion.cacheOmniboxSuggestionListForZeroSuggest(list);
+        AutocompleteResult data = new AutocompleteResult(list, null);
+        CachedZeroSuggestionsManager.saveToCache(data);
 
         // Wait for the activity to load, but don't let it load the native library.
         mTestDelegate.shouldDelayLoadingNative = true;

@@ -20,6 +20,7 @@
 #include "sql/statement.h"
 #include "sql/transaction.h"
 #include "storage/browser/quota/padding_key.h"
+#include "third_party/blink/public/common/features.h"
 
 namespace content {
 
@@ -212,6 +213,14 @@ std::string SerializeOrigin(const url::Origin& origin) {
 }
 
 }  // anon namespace
+
+bool AppCacheDatabase::CacheRecord::HasValidOriginTrialToken() {
+  if (base::FeatureList::IsEnabled(
+          blink::features::kAppCacheRequireOriginTrial)) {
+    return token_expires > base::Time::Now();
+  }
+  return true;
+}
 
 // AppCacheDatabase ----------------------------------------------------------
 
@@ -572,8 +581,10 @@ bool AppCacheDatabase::FindCachesForOrigin(const url::Origin& origin,
 
   CacheRecord cache_record;
   for (const auto& record : group_records) {
-    if (FindCacheForGroup(record.group_id, &cache_record))
+    if (FindCacheForGroup(record.group_id, &cache_record) &&
+        cache_record.HasValidOriginTrialToken()) {
       records->push_back(cache_record);
+    }
   }
   return true;
 }

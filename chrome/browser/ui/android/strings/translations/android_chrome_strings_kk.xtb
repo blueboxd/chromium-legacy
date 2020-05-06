@@ -2,11 +2,11 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="kk">
 <translation id="1028699632127661925"><ph name="DEVICE_NAME" /> құрылғысына жіберілуде…</translation>
-<translation id="103269572468856066">Cайттар мен қолданбалардан деректер өшірілсін бе?</translation>
+<translation id="103269572468856066">Деректер өшірілсін бе?</translation>
 <translation id="1036348656032585052">Өшіру</translation>
 <translation id="1036727731225946849"><ph name="WEBAPK_NAME" /> енгізілуде…</translation>
 <translation id="1041308826830691739">Вебсайттардан</translation>
-<translation id="1045899828449635435">Сайттардан деректер өшірілсін бе?</translation>
+<translation id="1045899828449635435">Деректер өшірілсін бе?</translation>
 <translation id="1049743911850919806">Инкогнито</translation>
 <translation id="10614374240317010">Ешқашан сақталмайды</translation>
 <translation id="1067922213147265141">Басқа Google қызметтері</translation>
@@ -33,6 +33,7 @@
 <translation id="1208340532756947324">Барлық құрылғыларда синхрондау және жекелендіру үшін синхрондау функциясын қосыңыз</translation>
 <translation id="1209206284964581585">Әзірге жасыру</translation>
 <translation id="1227058898775614466">Навигация тарихы</translation>
+<translation id="1229399675748764149">Бұл бетті негізгі етіңіз</translation>
 <translation id="1231733316453485619">Синхрондау қосылсын ба?</translation>
 <translation id="123724288017357924">Кэштелген мазмұнды елемей, ағымдағы бетті жаңарту</translation>
 <translation id="124116460088058876">Қосымша тілдер</translation>
@@ -71,6 +72,7 @@
 <translation id="1513352483775369820">Бетбелгілер мен веб-журнал</translation>
 <translation id="1513858653616922153">Құпия сөзді жою</translation>
 <translation id="1521774566618522728">Бүгін белсенді болды</translation>
+<translation id="1543538514740974167">Жылдам өту</translation>
 <translation id="1544826120773021464">Google есептік жазбасын басқару үшін "Есептік жазбаны басқару" түймесін түртіңіз.</translation>
 <translation id="1549000191223877751">Басқа терезеге өту</translation>
 <translation id="1553358976309200471">Chrome жаңарту</translation>
@@ -723,11 +725,13 @@ Google есептік жазбасының шолу тарихы басқа Goog
 <translation id="7022756207310403729">Браузерден ашу</translation>
 <translation id="702463548815491781">TalkBack не Ауыстырғышпен кіру қосулы кезде пайдалануға ұсынылады</translation>
 <translation id="7029809446516969842">Құпия сөздер</translation>
+<translation id="703523980599857277">Негізгі бетті өзгерту</translation>
 <translation id="7055152154916055070">Бағыттау функциясына тыйым салынды.</translation>
 <translation id="7063006564040364415">Синхрондау серверіне қосылу мүмкін емес.</translation>
 <translation id="7071521146534760487">Есептік жазбаны басқару</translation>
 <translation id="7077143737582773186">SD картасы</translation>
 <translation id="7121362699166175603">Мекенжай жолағында тарих пен автотолтыруларды өшіреді. <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> сайтында Google есептік жазбасымен шолу тарихының басқа да үлгілері болуы мүмкін.</translation>
+<translation id="7128355412245153445">Негізгі экран түймесін түрткен кезде, үздік сайттар мен соңғы жаңалықтарды көру</translation>
 <translation id="7138678301420049075">Басқа</translation>
 <translation id="7146622961999026732">Бұл сайттар мен қолданбалар маңызды болуы мүмкін:</translation>
 <translation id="7149158118503947153"><ph name="BEGIN_LINK" />Беттің<ph name="END_LINK" /> түпнұсқасын <ph name="DOMAIN_NAME" /> доменінен жүктеу</translation>
@@ -968,11 +972,13 @@ Google есептік жазбасының шолу тарихы басқа Goog
 <translation id="9155898266292537608">Сонымен қатар сөзді түрту арқылы іздеуге болады</translation>
 <translation id="9169507124922466868">Навигация тарихы жартылай ашық.</translation>
 <translation id="9204836675896933765">1 файл қалды</translation>
+<translation id="9205796607887024517">Стористерді осы жерден бақылау</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="9209888181064652401">Қоңырау шалу мүмкін емес</translation>
 <translation id="9219103736887031265">Кескіндер</translation>
 <translation id="926205370408745186">Digital Wellbeing функциясынан Chrome браузерін пайдалану деректерін өшіру</translation>
 <translation id="932327136139879170">Негізгі бет</translation>
+<translation id="93753284658583800">Негізгі бет өзгертілді.</translation>
 <translation id="938850635132480979">Қате: <ph name="ERROR_CODE" /></translation>
 <translation id="95817756606698420">Chrome браузері <ph name="BEGIN_BOLD" />Sogou<ph name="END_BOLD" /> жүйесін Қытайда іздеу үшін пайдалана алады. Мұны <ph name="BEGIN_LINK" />Параметрлер<ph name="END_LINK" /> бөлімінен өзгертуге болады.</translation>
 <translation id="968900484120156207">Кірген беттеріңіз осы жерде көрсетіледі.</translation>

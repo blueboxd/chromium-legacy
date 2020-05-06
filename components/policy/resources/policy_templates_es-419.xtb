@@ -854,9 +854,9 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 
       Se omitirán las plantillas con formato incorrecto.</translation>
 <translation id="2345547870894930157">Habilitar DNS sobre HTTPS sin resguardo inseguro</translation>
-<translation id="2353442107789326507">Lista de configuraciones de servicios de Conectores de Chrome Enterprise que se aplicarán al Conector de Enterprise <ph name="ON_FILE_ATTACHED_ENTERPRISE_CONNECTOR" />, el cual se activa cuando se adjunta un archivo a Chrome.
+<translation id="2353442107789326507">Lista de configuraciones de servicios de Chrome Enterprise Connectors que se aplicarán al Enterprise Connector <ph name="ON_FILE_ATTACHED_ENTERPRISE_CONNECTOR" />, el cual se activa cuando se adjunta un archivo a Chrome.
 
-      Los campos <ph name="ENTERPRISE_CONNECTOR_URL_LIST_FIELD" />, <ph name="ENTERPRISE_CONNECTOR_TAGS_FIELD" />, <ph name="ENTERPRISE_CONNECTOR_ENABLE_FIELD" /> y <ph name="ENTERPRISE_CONNECTOR_DISABLE_FIELD" /> se usan para determinar si el Conector debe enviar un archivo para que se analice cuando se adjunta a una página específica o qué etiquetas deben incluirse en la solicitud de análisis del archivo. La solicitud de análisis incluirá la etiqueta correspondiente al patrón "enable" si la URL de la página coincide con un patrón asociado a esa etiqueta siempre y cuando no exista coincidencia entre un patrón "disable" con esa misma etiqueta y la URL de la página. Si la solicitud incluye al menos 1 etiqueta, se realizará el análisis.
+      Los campos <ph name="ENTERPRISE_CONNECTOR_URL_LIST_FIELD" />, <ph name="ENTERPRISE_CONNECTOR_TAGS_FIELD" />, <ph name="ENTERPRISE_CONNECTOR_ENABLE_FIELD" /> y <ph name="ENTERPRISE_CONNECTOR_DISABLE_FIELD" /> se usan para determinar si el conector debe enviar un archivo para que se analice cuando se adjunta a una página específica o qué etiquetas deben incluirse en la solicitud de análisis del archivo. La solicitud de análisis incluirá la etiqueta correspondiente al patrón "enable" si la URL de la página coincide con un patrón asociado a esa etiqueta, siempre y cuando no exista coincidencia entre un patrón "disable" con esa misma etiqueta y la URL de la página. Si la solicitud incluye al menos 1 etiqueta, se realizará el análisis.
 
       El campo <ph name="ENTERPRISE_CONNECTOR_SERVICE_PROVIDER_FIELD" /> especifica el proveedor de servicios de análisis al que corresponde la configuración.
 
@@ -934,7 +934,7 @@ Si no la estableces, inicialmente se inhabilitará la pantalla de privacidad, pe
 
       Cuando se habilita la Navegación segura, esta función revisa los archivos que pueden abrirse automáticamente. Si los archivos no son seguros, no se abrirán.
 
-      Si no se establece esta política, solo se abrirán aquellos tipos de archivos que un usuario ya haya especificado para que se abran automáticamente cuando se descarguen.
+      Si no se establece esta política, solo se abrirán los tipos de archivos que un usuario ya haya especificado para que se abran automáticamente cuando se descarguen.
 
       Esta política está disponible en instancias de Windows vinculadas a un dominio de <ph name="MS_AD_NAME" /> o instancias de Windows 10 Pro o Enterprise habilitadas para la administración de dispositivos.</translation>
 <translation id="2454228136871844693">Optimiza la estabilidad.</translation>
@@ -2772,8 +2772,8 @@ Si se establece como falsa, <ph name="PRODUCT_NAME" /> no podrá usar notificaci
           Si se habilita esta configuración, <ph name="PRODUCT_NAME" /> ignorará todas las opciones relacionadas con el proxy especificadas desde la línea de comandos.
 
           Si no se configura esta política, los usuarios podrán elegir las opciones de configuración del proxy por su cuenta.</translation>
-<translation id="5177260184597743704">Política de configuración para el Conector de Chrome Enterprise OnSecurityEvent</translation>
-<translation id="5179734767316042713">Lista de configuraciones para los servicios de Conectores de Chrome Enterprise que se aplicarán al Conector de Enterprise <ph name="ON_SECURITY_EVENT_ENTERPRISE_CONNECTOR" />, el cual se activa cuando se produce un evento de seguridad en Chrome. Esto incluye los veredictos negativos de los análisis de Conectores de Enterprise, la reutilización de contraseñas, la navegación en páginas no seguras y otras actividades del usuario que afectan la seguridad.
+<translation id="5177260184597743704">Política de configuración para Chrome Enterprise Connector OnSecurityEvent</translation>
+<translation id="5179734767316042713">Lista de configuraciones para los servicios de Chrome Enterprise Connectors que se aplicarán al Enterprise Connector <ph name="ON_SECURITY_EVENT_ENTERPRISE_CONNECTOR" />, el cual se activa cuando se produce un evento de seguridad en Chrome. Esto incluye los veredictos negativos de los análisis de Enterprise Connectors, la reutilización de contraseñas, la navegación en páginas no seguras y otras actividades del usuario que afectan la seguridad.
 
       El campo <ph name="ENTERPRISE_CONNECTOR_SERVICE_PROVIDER_FIELD" /> especifica el proveedor de servicios de informes al que corresponde la configuración.
 
@@ -2981,6 +2981,7 @@ Si se establece como falsa, <ph name="PRODUCT_NAME" /> no podrá usar notificaci
 
       Esta política está diseñada para usarse junto con la función "VPN siempre activada", que permite que el administrador decida establecer una conexión VPN en el inicio.</translation>
 <translation id="5401696449591951427">Habilita <ph name="CHROME_DEVICES_LINK" /></translation>
+<translation id="5404635530342514143">Esta función permite que se muestre la contraseña en la pantalla de inicio o de bloqueo cuando el usuario hace clic en un botón.</translation>
 <translation id="5405289061476885481">Establece los diseños de teclado compatibles con la pantalla de acceso de <ph name="PRODUCT_OS_NAME" />.
 
       Si esta política se establece como una lista de identificadores de método de entrada, estos métodos estarán disponibles en la pantalla de acceso y se preseleccionará el primero de ellos. Cuando se activa un módulo de sesión de usuario en la pantalla de acceso, el último método de entrada que este utilizó estará disponible junto con aquellos que especifica esta política. Si no se establece esta política, los métodos de entrada de la pantalla de acceso se obtendrán a partir de la configuración regional que se muestra en la pantalla de acceso. Se ignorarán los valores que no sean identificadores válidos de métodos de entrada.</translation>
@@ -3208,7 +3209,7 @@ Si se establece como falsa, <ph name="PRODUCT_NAME" /> no podrá usar notificaci
 
           Antes de la versión 75, no se admite el uso de ID de extensiones separados con varias comas, por lo que se omitirán. Se aplicará el resto de las políticas.</translation>
 <translation id="5645779841392247734">Permitir cookies en estos sitios</translation>
-<translation id="5646234199535103501">Política de configuración para el Conector de Chrome Enterprise OnBulkDataEntry</translation>
+<translation id="5646234199535103501">Política de configuración para Chrome Enterprise Connector OnBulkDataEntry</translation>
 <translation id="5656177735561364047">Habilita la función de portapapeles compartido</translation>
 <translation id="5666457529647159548">Permite que los usuarios administren los certificados instalados</translation>
 <translation id="5676740747107495269">Muestra las opciones de accesibilidad en el menú de la bandeja del sistema de la pantalla de acceso</translation>
@@ -3764,9 +3765,9 @@ Si se establece como falsa, <ph name="PRODUCT_NAME" /> no podrá usar notificaci
 <translation id="6553143066970470539">Porcentaje del brillo de pantalla</translation>
 <translation id="6559057113164934677">No permitir que ningún sitio acceda a la cámara ni al micrófono</translation>
 <translation id="6561396069801924653">Mostrar opciones de accesibilidad en el menú de la bandeja del sistema</translation>
-<translation id="6561900678873266853">Lista de configuraciones para los servicios de Conectores de Chrome Enterprise que se aplicarán al Conector de Enterprise <ph name="ON_BULK_DATA_ENTRY_ENTERPRISE_CONNECTOR" />, el cual se activa cuando se ingresan datos a Chrome desde el portapapeles o se arrastra y se suelta contenido web.
+<translation id="6561900678873266853">Lista de configuraciones para los servicios de Chrome Enterprise Connectors que se aplicarán al Enterprise Connector <ph name="ON_BULK_DATA_ENTRY_ENTERPRISE_CONNECTOR" />, el cual se activa cuando se ingresan datos a Chrome desde el portapapeles o se arrastra y se suelta contenido web.
 
-      Los campos <ph name="ENTERPRISE_CONNECTOR_URL_LIST_FIELD" />, <ph name="ENTERPRISE_CONNECTOR_TAGS_FIELD" />, <ph name="ENTERPRISE_CONNECTOR_ENABLE_FIELD" /> y <ph name="ENTERPRISE_CONNECTOR_DISABLE_FIELD" /> se usan para determinar si el conector debe enviar datos para que se analicen cuando se descargan de una página específica y qué etiquetas deben incluirse en la solicitud de análisis de los datos. La solicitud de análisis incluirá la etiqueta correspondiente al patrón "enable" si la URL de la página coincide con un patrón asociado a esa etiqueta siempre y cuando no exista coincidencia entre un patrón "disable" con esa misma etiqueta y la URL de la página. Si la solicitud incluye al menos 1 etiqueta, se realizará el análisis.
+      Los campos <ph name="ENTERPRISE_CONNECTOR_URL_LIST_FIELD" />, <ph name="ENTERPRISE_CONNECTOR_TAGS_FIELD" />, <ph name="ENTERPRISE_CONNECTOR_ENABLE_FIELD" /> y <ph name="ENTERPRISE_CONNECTOR_DISABLE_FIELD" /> se usan para determinar si el conector debe enviar datos para que se analicen cuando se descargan de una página específica y qué etiquetas deben incluirse en la solicitud de análisis de los datos. La solicitud de análisis incluirá la etiqueta correspondiente al patrón "enable" si la URL de la página coincide con un patrón asociado a esa etiqueta, siempre y cuando no exista coincidencia entre un patrón "disable" con esa misma etiqueta y la URL de la página. Si la solicitud incluye al menos 1 etiqueta, se realizará el análisis.
 
       El campo <ph name="ENTERPRISE_CONNECTOR_SERVICE_PROVIDER_FIELD" /> especifica el proveedor de servicios de análisis al que corresponde la configuración.
 
@@ -4044,6 +4045,7 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
 
           El factor de ajuste debe ser 100% o más.</translation>
 <translation id="7086720321892395256">Controla las políticas de dispositivo y usuario para la función de la pantalla de privacidad.</translation>
+<translation id="7095145887485705461">Habilita el botón para mostrar contraseñas en la pantalla de inicio o de bloqueo</translation>
 <translation id="710003290625031750">Descripción del esquema expandido:</translation>
 <translation id="7106631983877564505">Habilitar el bloqueo cuando los dispositivos <ph name="PRODUCT_OS_NAME" /> están inactivos o suspendidos
 

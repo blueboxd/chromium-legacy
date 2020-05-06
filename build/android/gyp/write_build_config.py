@@ -264,13 +264,25 @@ In this case, `deps_info['unprocessed_jar_path']` will point to the source
 Path to a single `.sources` file listing all the Java sources that were used
 to generate the library (simple text format, one `.jar` path per line).
 
-* `deps_info['owned_resource_dirs']`:
-List of all resource directories belonging to all resource dependencies for
-this target.
+* `deps_info['lint_android_manifest']`:
+Path to an AndroidManifest.xml file to use for this lint target.
 
-* `deps_info['owned_resource_zips']`:
-List of all resource zip files belonging to all resource dependencies for this
-target.
+* `deps_info['lint_java_sources']`:
+The list of all `deps_info['java_sources_file']` entries for all library
+dependencies that are chromium code. Note: this is a list of files, where each
+file contains a list of Java source files. This is used for lint.
+
+* `deps_info['lint_srcjars']`:
+List of all bundled srcjars of all transitive java library targets. Excludes
+non-chromium java libraries.
+
+* `deps_info['lint_resource_sources']`:
+List of all resource sources files belonging to all transitive resource
+dependencies of this target. Excludes resources owned by non-chromium code.
+
+* `deps_info['lint_resource_zips']`:
+List of all resource zip files belonging to all transitive resource dependencies
+of this target. Excludes resources owned by non-chromium code.
 
 * `deps_info['owned_resource_srcjars']`:
 List of all .srcjar files belonging to all resource dependencies for this
@@ -898,6 +910,10 @@ def main(argv):
                     help='Path to JAR that contains java resources. Everything '
                     'from this JAR except meta-inf/ content and .class files '
                     'will be added to the final APK.')
+  parser.add_option(
+      '--non-chromium-code',
+      action='store_true',
+      help='True if a java library is not chromium code, used for lint.')
 
   # android library options
   parser.add_option('--dex-path', help='Path to target\'s dex output.')
@@ -1131,14 +1147,15 @@ def main(argv):
   # Initialize some common config.
   # Any value that needs to be queryable by dependents must go within deps_info.
   config = {
-    'deps_info': {
-      'name': os.path.basename(options.build_config),
-      'path': options.build_config,
-      'type': options.type,
-      'deps_configs': deps.direct_deps_config_paths
-    },
-    # Info needed only by generate_gradle.py.
-    'gradle': {}
+      'deps_info': {
+          'name': os.path.basename(options.build_config),
+          'path': options.build_config,
+          'type': options.type,
+          'deps_configs': deps.direct_deps_config_paths,
+          'chromium_code': not options.non_chromium_code,
+      },
+      # Info needed only by generate_gradle.py.
+      'gradle': {}
   }
   deps_info = config['deps_info']
   gradle = config['gradle']
@@ -1162,12 +1179,16 @@ def main(argv):
   if options.android_manifest:
     deps_info['android_manifest'] = options.android_manifest
 
+  if options.bundled_srcjars:
+    deps_info['bundled_srcjars'] = build_utils.ParseGnList(
+        options.bundled_srcjars)
+
+  if options.java_sources_file:
+    deps_info['java_sources_file'] = options.java_sources_file
+
   if is_java_target:
-    if options.java_sources_file:
-      deps_info['java_sources_file'] = options.java_sources_file
     if options.bundled_srcjars:
-      gradle['bundled_srcjars'] = (
-          build_utils.ParseGnList(options.bundled_srcjars))
+      gradle['bundled_srcjars'] = deps_info['bundled_srcjars']
 
     gradle['dependent_android_projects'] = []
     gradle['dependent_java_projects'] = []
@@ -1284,47 +1305,24 @@ def main(argv):
       deps_info['package_name'] = manifest.GetPackageName()
     if options.package_name:
       deps_info['package_name'] = options.package_name
-
-
     deps_info['res_sources_path'] = ''
     if options.res_sources_path:
       deps_info['res_sources_path'] = options.res_sources_path
 
   if options.requires_android and is_java_target:
-    # Lint all resources that are not already linted by a dependent library.
-    owned_resource_dirs = set()
-    owned_resource_zips = set()
     owned_resource_srcjars = set()
     for c in all_resources_deps:
-      # Always use resources_dirs in favour of resources_zips so that lint error
-      # messages have paths that are closer to reality (and to avoid needing to
-      # extract during lint).
-      if c['res_sources_path']:
-        with open(c['res_sources_path']) as f:
-          resource_files = f.read().splitlines()
-        resource_dirs = resource_utils.DeduceResourceDirsFromFileList(
-            resource_files)
-        owned_resource_dirs.update(resource_dirs)
-        all_inputs.append(c['res_sources_path'])
-      else:
-        owned_resource_zips.add(c['resources_zip'])
       srcjar = c.get('srcjar')
       if srcjar:
         owned_resource_srcjars.add(srcjar)
-
     for c in all_library_deps:
-      if c['requires_android']:
-        owned_resource_dirs.difference_update(c['owned_resources_dirs'])
-        owned_resource_zips.difference_update(c['owned_resources_zips'])
+      if c['requires_android'] and not c['is_prebuilt']:
         # Many .aar files include R.class files in them, as it makes it easier
         # for IDEs to resolve symbols. However, including them is not required
         # and not all prebuilts do. Rather than try to detect their presense,
         # just assume they are not there. The only consequence is redundant
         # compilation of the R.class.
-        if not c['is_prebuilt']:
-          owned_resource_srcjars.difference_update(c['owned_resource_srcjars'])
-    deps_info['owned_resources_dirs'] = sorted(owned_resource_dirs)
-    deps_info['owned_resources_zips'] = sorted(owned_resource_zips)
+        owned_resource_srcjars.difference_update(c['owned_resource_srcjars'])
     deps_info['owned_resource_srcjars'] = sorted(owned_resource_srcjars)
 
     if options.type == 'java_library':
@@ -1474,19 +1472,79 @@ def main(argv):
   deps_info['proguard_configs'] = list(all_configs)
   extra_proguard_classpath_jars = []
 
+  # We allow lint to be run on android_apk targets, so we collect lint
+  # artifacts for them.
+  # We allow lint to be run on android_app_bundle targets, so we need to
+  # collect lint artifacts for the android_app_bundle_module targets that the
+  # bundle includes. Different android_app_bundle targets may include different
+  # android_app_bundle_module targets, so the bundle needs to be able to
+  # de-duplicate these lint artifacts.
+  if options.type in ('android_app_bundle_module', 'android_apk'):
+    # Collect all sources and resources at the apk/bundle_module level.
+    lint_srcjars = set()
+    lint_java_sources = set()
+    lint_resource_sources = set()
+    lint_resource_zips = set()
+
+    if options.java_sources_file:
+      lint_java_sources.add(options.java_sources_file)
+    if options.bundled_srcjars:
+      lint_srcjars.update(deps_info['bundled_srcjars'])
+    for c in all_library_deps:
+      if c['chromium_code'] and c['requires_android']:
+        if 'java_sources_file' in c:
+          lint_java_sources.add(c['java_sources_file'])
+        lint_srcjars.update(c['bundled_srcjars'])
+
+    if options.res_sources_path:
+      lint_resource_sources.add(options.res_sources_path)
+    if options.resources_zip:
+      lint_resource_zips.add(options.resources_zip)
+    for c in all_resources_deps:
+      if c['chromium_code']:
+        # Prefer res_sources_path to resources_zips so that lint errors have
+        # real paths and to avoid needing to extract during lint.
+        if c['res_sources_path']:
+          lint_resource_sources.add(c['res_sources_path'])
+        else:
+          lint_resource_zips.add(c['resources_zip'])
+
+    deps_info['lint_srcjars'] = sorted(lint_srcjars)
+    deps_info['lint_java_sources'] = sorted(lint_java_sources)
+    deps_info['lint_resource_sources'] = sorted(lint_resource_sources)
+    deps_info['lint_resource_zips'] = sorted(lint_resource_zips)
+
+    if options.type == 'android_apk':
+      assert options.android_manifest, 'Android APKs must define a manifest'
+      deps_info['lint_android_manifest'] = options.android_manifest
+
   if options.type == 'android_app_bundle':
     module_configs = [
         GetDepConfig(c)
         for c in build_utils.ParseGnList(options.module_build_configs)
     ]
     jni_all_source = set()
+    lint_srcjars = set()
+    lint_java_sources = set()
+    lint_resource_sources = set()
+    lint_resource_zips = set()
     for c in module_configs:
       if c['is_base_module']:
         assert 'base_module_config' not in deps_info, (
             'Must have exactly 1 base module!')
         deps_info['base_module_config'] = c['path']
+        # Use the base module's android manifest for linting.
+        deps_info['lint_android_manifest'] = c['android_manifest']
       jni_all_source.update(c['jni']['all_source'])
+      lint_srcjars.update(c['lint_srcjars'])
+      lint_java_sources.update(c['lint_java_sources'])
+      lint_resource_sources.update(c['lint_resource_sources'])
+      lint_resource_zips.update(c['lint_resource_zips'])
     deps_info['jni'] = {'all_source': sorted(jni_all_source)}
+    deps_info['lint_srcjars'] = sorted(lint_srcjars)
+    deps_info['lint_java_sources'] = sorted(lint_java_sources)
+    deps_info['lint_resource_sources'] = sorted(lint_resource_sources)
+    deps_info['lint_resource_zips'] = sorted(lint_resource_zips)
 
   # Map configs to classpath entries that should be included in their final dex.
   classpath_entries_by_owning_config = collections.defaultdict(list)

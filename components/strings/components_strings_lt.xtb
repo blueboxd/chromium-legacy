@@ -52,7 +52,6 @@
 <translation id="1197088940767939838">Oranžinė</translation>
 <translation id="1201402288615127009">Kitas</translation>
 <translation id="1201895884277373915">Daugiau iš šios svetainės</translation>
-<translation id="1205963431094182634">Prisijunkite, kad galėtumėte naudoti „Google“ paskyroje saugomus slaptažodžius</translation>
 <translation id="1206967143813997005">Netinkamas pirminis parašas</translation>
 <translation id="1209206284964581585">Slėpti dabar</translation>
 <translation id="121201262018556460">Bandėte pasiekti <ph name="DOMAIN" />, bet serveris pateikė nesudėtingą raktą turintį sertifikatą. Užpuolikas galėjo nulaužti privatųjį raktą, o šis serveris gali būti ne tas, kurio tikėjotės (gali būti, kad bendraujate su užpuoliku).</translation>
@@ -1218,7 +1217,6 @@ Kitu atveju tai bus užblokuota pagal jūsų privatumo nustatymus. Taip turinys,
 <translation id="6116338172782435947">Peržiūrėti tekstą ir vaizdus, nukopijuotus į iškarpinę</translation>
 <translation id="6120179357481664955">Prisiminti UPI ID?</translation>
 <translation id="6124432979022149706">Chrome Enterprise Connectors</translation>
-<translation id="6135641591018127088">Naudodamiesi „Google“ paskyra sugeneruokite sudėtingą slaptažodį</translation>
 <translation id="6146055958333702838">Patikrinkite laidus ir iš naujo paleiskite maršruto parinktuvus, modemus ar kitus
         naudojamus tinklo įrenginius.</translation>
 <translation id="614940544461990577">Pabandykite atlikti toliau nurodytus veiksmus.</translation>
@@ -1264,7 +1262,6 @@ Kitu atveju tai bus užblokuota pagal jūsų privatumo nustatymus. Taip turinys,
 <translation id="6328639280570009161">Bandykite neleisti tinklo numatymo</translation>
 <translation id="6328784461820205019">„Ryšys nėra privatus“, „&lt;span class="error-code"&gt;NET::ERR_CERT_AUTHORITY_INVALID&lt;/span&gt;“, „&lt;span class="error-code"&gt;ERR_CERT_COMMON_NAME_INVALID&lt;/span&gt;“, „&lt;span class="error-code"&gt;NET::ERR_CERT_WEAK_SIGNATURE_ALGORITHM&lt;/span&gt;“, „&lt;span class="error-code"&gt;ERR_CERT_SYMANTEC_LEGACY&lt;/span&gt;“ arba „SSL sertifikato klaida“</translation>
 <translation id="6328786501058569169">Ši svetainė yra apgaulinga</translation>
-<translation id="6333334544069706521">Naudoti „Google“ paskyroje saugomus slaptažodžius</translation>
 <translation id="6337133576188860026">Atlaisvina mažiau nei <ph name="SIZE" />. Per kitą jūsų apsilankymą kai kurios svetainės gali būti įkeliamos lėčiau.</translation>
 <translation id="6337534724793800597">Filtruoti politiką pagal pavadinimą</translation>
 <translation id="6353505687280762741">{COUNT,plural, =0{Nėra}=1{1 slaptažodis (skirta <ph name="DOMAIN_LIST" />, sinchronizuojama)}=2{2 slaptažodžiai (skirta <ph name="DOMAIN_LIST" />, sinchronizuojama)}one{# slaptažodis (skirta <ph name="DOMAIN_LIST" />, sinchronizuojama)}few{# slaptažodžiai (skirta <ph name="DOMAIN_LIST" />, sinchronizuojama)}many{# slaptažodžio (skirta <ph name="DOMAIN_LIST" />, sinchronizuojama)}other{# slaptažodžių (skirta <ph name="DOMAIN_LIST" />, sinchronizuojama)}}</translation>

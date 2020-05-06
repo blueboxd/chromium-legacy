@@ -76,7 +76,7 @@
         android:order="13"
         android:title="@string/prefs_accessibility"/>
     <Preference
-        android:fragment="org.chromium.chrome.browser.site_settings.SiteSettings"
+        android:fragment="org.chromium.components.browser_ui.site_settings.SiteSettings"
         android:key="content_settings"
         android:order="14"
         android:title="@string/prefs_site_settings"/>

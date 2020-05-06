@@ -243,8 +243,14 @@ class SubresourceFilterSafeBrowsingActivationThrottleTest
   content::NavigationThrottle::ThrottleCheckResult SimulateStart(
       const GURL& first_url,
       content::RenderFrameHost* rfh) {
+    CHECK(!rfh->GetParent());
+    // Use browser-initiated navigations, since some navigations are to WebUI
+    // URLs, which are not allowed from regular web renderers. Tests in this
+    // class are only verifying subresource behavior, so which type of
+    // navigation is used does not influence the test expectations.
     navigation_simulator_ =
-        content::NavigationSimulator::CreateRendererInitiated(first_url, rfh);
+        content::NavigationSimulator::CreateBrowserInitiated(
+            first_url, content::WebContents::FromRenderFrameHost(rfh));
     navigation_simulator_->Start();
     auto result = navigation_simulator_->GetLastThrottleCheckResult();
     if (result.action() == content::NavigationThrottle::CANCEL)

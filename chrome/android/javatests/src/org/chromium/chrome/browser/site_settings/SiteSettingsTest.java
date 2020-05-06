@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.site_settings;
 
-import static org.chromium.chrome.browser.site_settings.WebsitePreferenceBridge.SITE_WILDCARD;
+import static org.chromium.components.browser_ui.site_settings.WebsitePreferenceBridge.SITE_WILDCARD;
 
 import android.content.Intent;
 import android.os.Build;
@@ -38,7 +38,6 @@ import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.settings.SettingsActivity;
 import org.chromium.chrome.browser.settings.SettingsLauncher;
 import org.chromium.chrome.browser.settings.SettingsLauncherImpl;
-import org.chromium.chrome.browser.site_settings.FourStateCookieSettingsPreference.CookieSettingsState;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.InfoBarTestAnimationListener;
@@ -47,6 +46,15 @@ import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.chrome.test.util.browser.LocationSettingsTestUtil;
 import org.chromium.components.browser_ui.settings.ChromeBaseCheckBoxPreference;
 import org.chromium.components.browser_ui.settings.ChromeSwitchPreference;
+import org.chromium.components.browser_ui.site_settings.FourStateCookieSettingsPreference;
+import org.chromium.components.browser_ui.site_settings.FourStateCookieSettingsPreference.CookieSettingsState;
+import org.chromium.components.browser_ui.site_settings.SingleCategorySettings;
+import org.chromium.components.browser_ui.site_settings.SingleWebsiteSettings;
+import org.chromium.components.browser_ui.site_settings.SiteSettingsCategory;
+import org.chromium.components.browser_ui.site_settings.TriStateSiteSettingsPreference;
+import org.chromium.components.browser_ui.site_settings.Website;
+import org.chromium.components.browser_ui.site_settings.WebsiteAddress;
+import org.chromium.components.browser_ui.site_settings.WebsitePreferenceBridge;
 import org.chromium.components.content_settings.ContentSettingValues;
 import org.chromium.components.content_settings.ContentSettingsFeatureList;
 import org.chromium.components.content_settings.ContentSettingsType;

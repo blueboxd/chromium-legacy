@@ -60,7 +60,9 @@ js_type_check("closure_compile") {
                   ]
   deps = [
     ":about_page_tests",
+    ":advanced_page_test",
     ":search_page_test",
+    ":settings_page_test_util",
     ":test_about_page_browser_proxy",
     ":test_lifetime_browser_proxy.m",
     ":test_search_engines_browser_proxy.m",
@@ -77,6 +79,20 @@ js_library("about_page_tests") {
     "//chrome/browser/resources/settings:settings",
   ]
   externs_list = [ "$externs_path/mocha-2.5.js" ]
+}
+
+js_library("advanced_page_test") {
+  deps = [
+    ":settings_page_test_util",
+    "..:chai_assert",
+    "//chrome/browser/resources/settings:settings",
+    "//ui/webui/resources/js:load_time_data.m",
+  ]
+  externs_list = [ "$externs_path/mocha-2.5.js" ]
+}
+
+js_library("settings_page_test_util") {
+  deps = [ "..:chai_assert" ]
 }
 
 js_library("test_about_page_browser_proxy") {

@@ -69,11 +69,6 @@ bool GcpCrashReporterClient::AboutToRestart() {
   return false;
 }
 
-bool GcpCrashReporterClient::GetDeferredUploadsSupported(
-    bool is_per_user_install) {
-  return false;
-}
-
 bool GcpCrashReporterClient::GetIsPerUserInstall() {
   // GCPW can only be installed at system level.
   return false;

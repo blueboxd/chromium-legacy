@@ -11,6 +11,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/scoped_feature_list.h"
 #include "content/browser/appcache/appcache_database.h"
 #include "content/browser/appcache/appcache_entry.h"
 #include "sql/database.h"
@@ -20,6 +21,7 @@
 #include "sql/test/test_helpers.h"
 #include "sql/transaction.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/sqlite/sqlite3.h"
 
 namespace {
@@ -32,6 +34,11 @@ namespace content {
 
 class AppCacheDatabaseTest : public testing::Test {
  public:
+  AppCacheDatabaseTest() {
+    appcache_require_origin_trial_feature_.InitAndDisableFeature(
+        blink::features::kAppCacheRequireOriginTrial);
+  }
+
   int64_t GetCacheManifestParserVersion(const content::AppCacheDatabase& db,
                                         int64_t cache_id) {
     static const char kSql[] =
@@ -55,6 +62,9 @@ class AppCacheDatabaseTest : public testing::Test {
     EXPECT_TRUE(statement.Step());
     return statement.ColumnString(0);
   }
+
+ private:
+  base::test::ScopedFeatureList appcache_require_origin_trial_feature_;
 };
 
 TEST_F(AppCacheDatabaseTest, LazyOpen) {

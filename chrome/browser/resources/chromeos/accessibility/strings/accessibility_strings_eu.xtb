@@ -169,7 +169,7 @@ Chrome arakatzaileko menua irekitzeko, sakatu Alt tekla eta F.</translation>
 <translation id="2390264819538553347">Aurrera egiteko, sakatu Sartu; atzera egiteko, berriz, sakatu zuriune-barra.</translation>
 <translation id="2398579267367951220">Idatzi orrian bilatu nahi duzuna. Sakatu Sartu tekla emaitza saltatzeko, Gora edo Behera geziak emaitzak arakatzeko, jarraitu idazten bilaketa aldatzeko edo sakatu Ihes tekla uzteko.</translation>
 <translation id="240709722712693803">Bioleta urdinxka</translation>
-<translation id="2416512023405990736">Markatu gabeko kontrol-lauki bat</translation>
+<translation id="2416512023405990736">Markatu gabeko koadro bat</translation>
 <translation id="2417569100218200841">Edukiaren informazioa</translation>
 <translation id="2417948780551741035">Amaierako oharrak</translation>
 <translation id="2419852971200420169">Azalpenen zerrenda</translation>
@@ -391,7 +391,7 @@ Chrome arakatzaileko menua irekitzeko, sakatu Alt tekla eta F.</translation>
 <translation id="4081085052247739398">{COUNT,plural, =1{MARRA KIZKURRA}other{# marra kizkur}}</translation>
 <translation id="409334809956508737">Aurreko objektua</translation>
 <translation id="4099274309791143834">azpimenua du</translation>
-<translation id="4101527861445851766">Markatutako kontrol-lauki bat</translation>
+<translation id="4101527861445851766">Markatutako koadro bat</translation>
 <translation id="4115378294792113321">Magenta</translation>
 <translation id="4116415223832267137">Alerta</translation>
 <translation id="4148180433151187540">{COUNT,plural, =1{eskuin giltza}other{# eskuin giltza}}</translation>
@@ -488,7 +488,7 @@ Chrome arakatzaileko menua irekitzeko, sakatu Alt tekla eta F.</translation>
 <translation id="4892105484979139179">Zian iluna</translation>
 <translation id="489907760999452556">Barneko esteka</translation>
 <translation id="4909019435900810068">Atzeratu hitz bat</translation>
-<translation id="4911349081560453449">Ez dago beste kontrol-laukirik honen aurretik</translation>
+<translation id="4911349081560453449">Ez dago beste koadrorik honen aurretik</translation>
 <translation id="4915087353619183190">Ikasteko modua gaitzen. Sakatu QWERTY teklatuko tekla bat, freskatzen den braille-teklatu bateko tekla bat edo egin ukipen-keinu bat haren funtzioa ikusteko. Irteteko, sakatu Ktrl + w edo Ihes tekla.</translation>
 <translation id="492295894462528572">Aitzinsolasa</translation>
 <translation id="495046168593986294">Egin gora</translation>
@@ -570,7 +570,7 @@ Chrome arakatzaileko menua irekitzeko, sakatu Alt tekla eta F.</translation>
 <translation id="5562645715554321347">hdnggrp</translation>
 <translation id="5574412348552378458">ChromeVox-en ikasteko modua</translation>
 <translation id="5585044216466955529">Editatu testua, idatzi helbide elektronikoa</translation>
-<translation id="5597170376237141345">Hurrengo kontrol-laukia</translation>
+<translation id="5597170376237141345">Hurrengo koadroa</translation>
 <translation id="5598905979683743333"><ph name="NAME" /> irrati-botoia desautatu da</translation>
 <translation id="5601172225407283979">Gauzatu ekintza lehenetsia</translation>
 <translation id="5608798115546226984">Osatze automatiko txertatua</translation>
@@ -585,7 +585,7 @@ Chrome arakatzaileko menua irekitzeko, sakatu Alt tekla eta F.</translation>
 <translation id="5678161956734658133">mled</translation>
 <translation id="5681643281275621376">def</translation>
 <translation id="5682113568322255809">Mugarria</translation>
-<translation id="5683155931978483559">Aurreko kontrol-laukia</translation>
+<translation id="5683155931978483559">Aurreko koadroa</translation>
 <translation id="5684277895745049190">Zerrenda</translation>
 <translation id="5703716265115423771">jaitsi bolumena</translation>
 <translation id="5704453877234251104">Automatikoki osatzeko aukerak ikusteko, sakatu Gora edo Behera gezia</translation>
@@ -911,7 +911,7 @@ Chrome arakatzaileko menua irekitzeko, sakatu Alt tekla eta F.</translation>
 <translation id="8455868257606149352">Gehienez <ph name="X" /></translation>
 <translation id="84575901236241018">sarbide-tekla du: <ph name="KEY" /></translation>
 <translation id="8463645336674919227">Gramatika-akatsetik irten zara</translation>
-<translation id="847040613207937740">Ez dago beste kontrol-laukirik honen ondoren</translation>
+<translation id="847040613207937740">Ez dago beste koadrorik honen ondoren</translation>
 <translation id="8473540203671727883">Irakurri ozen saguaren kurtsorearen azpiko testua</translation>
 <translation id="8476408756881832830">Pausatu erreprodukzioa ChromeVox hitz egiten ari bada</translation>
 <translation id="8476508772960940536">leihoen ikuspegi orokorra</translation>

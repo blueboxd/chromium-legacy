@@ -42,6 +42,8 @@ suite(edu_login_signin_tests.suiteName, function() {
       this.data = null;
       /** @type {Number} */
       this.loadCalls = 0;
+      /** @type {Number} */
+      this.resetStatesCalls = 0;
     }
 
     /**
@@ -52,6 +54,10 @@ suite(edu_login_signin_tests.suiteName, function() {
       this.loadCalls++;
       this.authMode = authMode;
       this.data = data;
+    }
+
+    resetStates() {
+      this.resetStatesCalls++;
     }
   }
 
@@ -80,6 +86,7 @@ suite(edu_login_signin_tests.suiteName, function() {
     });
     webUIListenerCallback('navigate-back-in-webview');
     expectEquals(1, goBackCalls);
+    assertEquals(1, testAuthenticator.resetStatesCalls);
 
     const fakeAuthExtensionData = {
       hl: 'hl',

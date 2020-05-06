@@ -181,12 +181,6 @@ public class SyncTestRule extends ChromeActivityTestRule<ChromeActivity> {
         startMainActivityOnBlankPage();
     }
 
-    private void setUpMockAndroidSyncSettings() {
-        mSyncContentResolver = new MockSyncContentResolverDelegate();
-        mSyncContentResolver.setMasterSyncAutomatically(true);
-        AndroidSyncSettings.overrideForTests(mSyncContentResolver, null);
-    }
-
     public Account setUpTestAccount() {
         Account account = SigninTestUtil.addTestAccount();
         Assert.assertFalse(SyncTestUtil.isSyncRequested());
@@ -310,7 +304,9 @@ public class SyncTestRule extends ChromeActivityTestRule<ChromeActivity> {
         final Statement base = super.apply(new Statement() {
             @Override
             public void evaluate() throws Throwable {
-                setUpMockAndroidSyncSettings();
+                mSyncContentResolver = new MockSyncContentResolverDelegate();
+                AndroidSyncSettingsTestUtils.setUpAndroidSyncSettingsForTesting(
+                        mSyncContentResolver);
 
                 TrustedVaultClient.setInstanceForTesting(
                         new TrustedVaultClient(FakeTrustedVaultClientBackend.get()));

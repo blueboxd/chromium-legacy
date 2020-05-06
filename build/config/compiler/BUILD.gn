@@ -62,7 +62,7 @@ declare_args() {
 
   # When we are going to use gold we need to find it.
   # This is initialized below, after use_gold might have been overridden.
-  gold_path = false
+  gold_path = ""
 
   # Enable fatal linker warnings. Building Chromium with certain versions
   # of binutils can cause linker warning.
@@ -155,9 +155,6 @@ declare_args() {
   #
   # icf=all is broken in older golds, see
   # https://sourceware.org/bugzilla/show_bug.cgi?id=17704
-  # See also https://crbug.com/663886
-  # `linux_use_bundled_binutils` is to avoid breaking Linux distros which may
-  # still have a buggy gold.
   # chromeos binutils has been patched with the fix, so always use icf there.
   # The bug only affects x86 and x64, so we can still use ICF when targeting
   # other architectures.
@@ -165,20 +162,8 @@ declare_args() {
   # lld doesn't have the bug.
   use_icf = (is_posix || is_fuchsia) && !is_debug && !using_sanitizer &&
             !use_clang_coverage && !(is_android && use_order_profiling) &&
-            (use_lld ||
-             (use_gold &&
-              ((!is_android && linux_use_bundled_binutils) || is_chromeos ||
-               !(current_cpu == "x86" || current_cpu == "x64"))))
-}
-
-# Apply the default logic for these values if they were not set explicitly.
-if (gold_path == false) {
-  if (use_gold) {
-    gold_path = rebase_path("//third_party/binutils/Linux_x64/Release/bin",
-                            root_build_dir)
-  } else {
-    gold_path = ""
-  }
+            (use_lld || (use_gold && (is_chromeos || !(current_cpu == "x86" ||
+                                                       current_cpu == "x64"))))
 }
 
 if (use_debug_fission == "default") {
@@ -420,19 +405,19 @@ config("compiler") {
       # On Android, this isn't needed.  gcc in the NDK knows to look next to
       # it with -fuse-ld=gold, and clang gets a --gcc-toolchain flag passed
       # above.
-      ldflags += [ "-B$gold_path" ]
-
-      if (linux_use_bundled_binutils) {
-        ldflags += [
-          # Experimentation found that using four linking threads
-          # saved ~20% of link time.
-          # https://groups.google.com/a/chromium.org/group/chromium-dev/browse_thread/thread/281527606915bb36
-          # Only apply this to the target linker, since the host
-          # linker might not be gold, but isn't used much anyway.
-          "-Wl,--threads",
-          "-Wl,--thread-count=4",
-        ]
+      if (gold_path != "") {
+        ldflags += [ "-B$gold_path" ]
       }
+
+      ldflags += [
+        # Experimentation found that using four linking threads
+        # saved ~20% of link time.
+        # https://groups.google.com/a/chromium.org/group/chromium-dev/browse_thread/thread/281527606915bb36
+        # Only apply this to the target linker, since the host
+        # linker might not be gold, but isn't used much anyway.
+        "-Wl,--threads",
+        "-Wl,--thread-count=4",
+      ]
     }
 
     # TODO(thestig): Make this flag work with GN.
@@ -441,18 +426,10 @@ config("compiler") {
     #    "-Wl,--detect-odr-violations",
     #  ]
     #}
-  } else if (linux_use_bundled_binutils) {
-    # Gold is the default linker for the bundled binutils so we explicitly
-    # enable the bfd linker when use_gold is not set.
-    ldflags += [ "-fuse-ld=bfd" ]
   }
 
   if (use_icf) {
     ldflags += [ "-Wl,--icf=all" ]
-  }
-
-  if (linux_use_bundled_binutils) {
-    cflags += [ "-B$binutils_path" ]
   }
 
   if (is_linux) {

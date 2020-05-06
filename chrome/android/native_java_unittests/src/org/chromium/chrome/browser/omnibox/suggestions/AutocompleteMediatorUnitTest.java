@@ -161,7 +161,7 @@ public class AutocompleteMediatorUnitTest {
 
         final int maximumListHeight = SUGGESTION_MIN_HEIGHT * 3;
 
-        mMediator.setNewSuggestions(mSuggestionsList, null);
+        mMediator.setNewSuggestions(new AutocompleteResult(mSuggestionsList, null));
         mMediator.updateSuggestionsList(maximumListHeight);
 
         Assert.assertEquals(MINIMUM_NUMBER_OF_SUGGESTIONS_TO_SHOW, mSuggestionModels.size());
@@ -176,7 +176,7 @@ public class AutocompleteMediatorUnitTest {
 
         final int maximumListHeight = SUGGESTION_MIN_HEIGHT * 7;
 
-        mMediator.setNewSuggestions(mSuggestionsList, null);
+        mMediator.setNewSuggestions(new AutocompleteResult(mSuggestionsList, null));
         mMediator.updateSuggestionsList(maximumListHeight);
 
         Assert.assertEquals(7, mSuggestionModels.size());
@@ -191,7 +191,7 @@ public class AutocompleteMediatorUnitTest {
 
         final int maximumListHeight = SUGGESTION_MIN_HEIGHT * 2;
 
-        mMediator.setNewSuggestions(mSuggestionsList, null);
+        mMediator.setNewSuggestions(new AutocompleteResult(mSuggestionsList, null));
         mMediator.updateSuggestionsList(maximumListHeight);
 
         Assert.assertEquals(mSuggestionsList.size(), mSuggestionModels.size());
@@ -206,7 +206,7 @@ public class AutocompleteMediatorUnitTest {
 
         final int maximumListHeight = SUGGESTION_MIN_HEIGHT * 7;
 
-        mMediator.setNewSuggestions(null, null);
+        mMediator.setNewSuggestions(new AutocompleteResult(null, null));
         mMediator.updateSuggestionsList(maximumListHeight);
 
         Assert.assertEquals(0, mSuggestionModels.size());
@@ -221,7 +221,7 @@ public class AutocompleteMediatorUnitTest {
 
         final int maximumListHeight = SUGGESTION_MIN_HEIGHT * 7;
 
-        mMediator.setNewSuggestions(new ArrayList<>(), null);
+        mMediator.setNewSuggestions(new AutocompleteResult(new ArrayList<>(), null));
         mMediator.updateSuggestionsList(maximumListHeight);
 
         Assert.assertEquals(0, mSuggestionModels.size());
@@ -234,7 +234,7 @@ public class AutocompleteMediatorUnitTest {
     public void updateSuggestionsList_reusesExistingSuggestionsWhenHinted() {
         mMediator.onNativeInitialized();
 
-        mMediator.setNewSuggestions(mSuggestionsList, null);
+        mMediator.setNewSuggestions(new AutocompleteResult(mSuggestionsList, null));
         mMediator.updateSuggestionsList(SUGGESTION_MIN_HEIGHT * 5);
 
         // Verify that processor has only been initialized once.
@@ -266,50 +266,50 @@ public class AutocompleteMediatorUnitTest {
     public void setNewSuggestions_detectsSameSuggestions() {
         final List<OmniboxSuggestion> list1 = buildDummySuggestionsList(5, "Set A");
         final List<OmniboxSuggestion> list2 = buildDummySuggestionsList(5, "Set A");
-        mMediator.setNewSuggestions(list1, null);
-        Assert.assertFalse(mMediator.setNewSuggestions(list2, null));
+        mMediator.setNewSuggestions(new AutocompleteResult(list1, null));
+        Assert.assertFalse(mMediator.setNewSuggestions(new AutocompleteResult(list2, null)));
     }
 
     @CalledByNativeJavaTest
     public void setNewSuggestions_detectsDifferentLists() {
         final List<OmniboxSuggestion> list1 = buildDummySuggestionsList(5, "Set A");
         final List<OmniboxSuggestion> list2 = buildDummySuggestionsList(5, "Set B");
-        mMediator.setNewSuggestions(list1, null);
-        Assert.assertTrue(mMediator.setNewSuggestions(list2, null));
+        mMediator.setNewSuggestions(new AutocompleteResult(list1, null));
+        Assert.assertTrue(mMediator.setNewSuggestions(new AutocompleteResult(list2, null)));
     }
 
     @CalledByNativeJavaTest
     public void setNewSuggestions_detectsNewElements() {
         final List<OmniboxSuggestion> list1 = buildDummySuggestionsList(5, "Set A");
         final List<OmniboxSuggestion> list2 = buildDummySuggestionsList(6, "Set A");
-        mMediator.setNewSuggestions(list1, null);
-        Assert.assertTrue(mMediator.setNewSuggestions(list2, null));
+        mMediator.setNewSuggestions(new AutocompleteResult(list1, null));
+        Assert.assertTrue(mMediator.setNewSuggestions(new AutocompleteResult(list2, null)));
     }
 
     @CalledByNativeJavaTest
     public void setNewSuggestions_detectsNoDifferenceWhenSuppliedEmptyLists() {
         final List<OmniboxSuggestion> list1 = new ArrayList<>();
         final List<OmniboxSuggestion> list2 = new ArrayList<>();
-        mMediator.setNewSuggestions(list1, null);
-        Assert.assertFalse(mMediator.setNewSuggestions(list2, null));
+        mMediator.setNewSuggestions(new AutocompleteResult(list1, null));
+        Assert.assertFalse(mMediator.setNewSuggestions(new AutocompleteResult(list2, null)));
     }
 
     @CalledByNativeJavaTest
     public void setNewSuggestions_detectsDifferenceWhenWorkingWithEmptyLists() {
         final List<OmniboxSuggestion> list1 = buildDummySuggestionsList(5, "Set");
         final List<OmniboxSuggestion> list2 = new ArrayList<>();
-        mMediator.setNewSuggestions(list1, null);
+        mMediator.setNewSuggestions(new AutocompleteResult(list1, null));
         // Changing from populated list to an empty list.
-        Assert.assertTrue(mMediator.setNewSuggestions(list2, null));
+        Assert.assertTrue(mMediator.setNewSuggestions(new AutocompleteResult(list2, null)));
         // Changing from an empty list to populated list.
-        Assert.assertTrue(mMediator.setNewSuggestions(list1, null));
+        Assert.assertTrue(mMediator.setNewSuggestions(new AutocompleteResult(list1, null)));
     }
 
     @CalledByNativeJavaTest
     public void updateSuggestionsList_collectsNewGroupHeaders() {
         final List<OmniboxSuggestion> list = new ArrayList<>();
         final SparseArray<String> giveHeaders = buildDummyGroupHeaders(3, 1, "Header");
-        mMediator.setNewSuggestions(list, giveHeaders);
+        mMediator.setNewSuggestions(new AutocompleteResult(list, giveHeaders));
         final SparseArray<String> haveHeaders = mMediator.getGroupHeaders();
 
         Assert.assertEquals(giveHeaders.size(), haveHeaders.size());
@@ -324,8 +324,8 @@ public class AutocompleteMediatorUnitTest {
         final List<OmniboxSuggestion> list = new ArrayList<>();
         final SparseArray<String> oldHeaders = buildDummyGroupHeaders(5, 3, "Old Header");
         final SparseArray<String> newHeaders = buildDummyGroupHeaders(3, 1, "New Header");
-        mMediator.setNewSuggestions(list, oldHeaders);
-        mMediator.setNewSuggestions(list, newHeaders);
+        mMediator.setNewSuggestions(new AutocompleteResult(list, oldHeaders));
+        mMediator.setNewSuggestions(new AutocompleteResult(list, newHeaders));
 
         final SparseArray<String> haveHeaders = mMediator.getGroupHeaders();
 
@@ -342,8 +342,8 @@ public class AutocompleteMediatorUnitTest {
         final SparseArray<String> headers1 = buildDummyGroupHeaders(3, 1, "Header");
         final SparseArray<String> headers2 = buildDummyGroupHeaders(3, 1, "Header");
 
-        mMediator.setNewSuggestions(list, headers1);
-        Assert.assertFalse(mMediator.setNewSuggestions(list, headers2));
+        mMediator.setNewSuggestions(new AutocompleteResult(list, headers1));
+        Assert.assertFalse(mMediator.setNewSuggestions(new AutocompleteResult(list, headers2)));
     }
 
     @CalledByNativeJavaTest
@@ -352,8 +352,8 @@ public class AutocompleteMediatorUnitTest {
         final SparseArray<String> headers1 = buildDummyGroupHeaders(3, 1, "Header");
         final SparseArray<String> headers2 = buildDummyGroupHeaders(3, 2, "Header");
 
-        mMediator.setNewSuggestions(list, headers1);
-        Assert.assertTrue(mMediator.setNewSuggestions(list, headers2));
+        mMediator.setNewSuggestions(new AutocompleteResult(list, headers1));
+        Assert.assertTrue(mMediator.setNewSuggestions(new AutocompleteResult(list, headers2)));
     }
 
     @CalledByNativeJavaTest
@@ -362,8 +362,8 @@ public class AutocompleteMediatorUnitTest {
         final SparseArray<String> headers1 = buildDummyGroupHeaders(3, 1, "HeaderA");
         final SparseArray<String> headers2 = buildDummyGroupHeaders(3, 1, "HeaderB");
 
-        mMediator.setNewSuggestions(list, headers1);
-        Assert.assertTrue(mMediator.setNewSuggestions(list, headers2));
+        mMediator.setNewSuggestions(new AutocompleteResult(list, headers1));
+        Assert.assertTrue(mMediator.setNewSuggestions(new AutocompleteResult(list, headers2)));
     }
 
     @CalledByNativeJavaTest
@@ -372,8 +372,8 @@ public class AutocompleteMediatorUnitTest {
         final SparseArray<String> headers1 = new SparseArray<String>();
         final SparseArray<String> headers2 = new SparseArray<String>();
 
-        mMediator.setNewSuggestions(list, headers1);
-        Assert.assertFalse(mMediator.setNewSuggestions(list, headers2));
+        mMediator.setNewSuggestions(new AutocompleteResult(list, headers1));
+        Assert.assertFalse(mMediator.setNewSuggestions(new AutocompleteResult(list, headers2)));
     }
 
     @CalledByNativeJavaTest
@@ -382,8 +382,8 @@ public class AutocompleteMediatorUnitTest {
         final SparseArray<String> headers1 = new SparseArray<String>();
         final SparseArray<String> headers2 = null;
 
-        mMediator.setNewSuggestions(list, headers1);
-        Assert.assertFalse(mMediator.setNewSuggestions(list, headers2));
+        mMediator.setNewSuggestions(new AutocompleteResult(list, headers1));
+        Assert.assertFalse(mMediator.setNewSuggestions(new AutocompleteResult(list, headers2)));
     }
 
     @CalledByNativeJavaTest
@@ -392,7 +392,7 @@ public class AutocompleteMediatorUnitTest {
     public void updateSuggestionsList_defersKeyboardPopupWhenHaveLotsOfSuggestionsToShow() {
         mMediator.onNativeInitialized();
         mMediator.signalPendingKeyboardShowDecision();
-        mMediator.onSuggestionsReceived(mSuggestionsList, null, "");
+        mMediator.onSuggestionsReceived(new AutocompleteResult(mSuggestionsList, null), "");
         verify(mAutocompleteDelegate, times(1)).setKeyboardVisibility(eq(false));
         verify(mAutocompleteDelegate, never()).setKeyboardVisibility(eq(true));
     }
@@ -404,7 +404,9 @@ public class AutocompleteMediatorUnitTest {
         mMediator.onNativeInitialized();
         mMediator.signalPendingKeyboardShowDecision();
         mMediator.onSuggestionsReceived(
-                mSuggestionsList.subList(0, MINIMUM_NUMBER_OF_SUGGESTIONS_TO_SHOW), null, "");
+                new AutocompleteResult(
+                        mSuggestionsList.subList(0, MINIMUM_NUMBER_OF_SUGGESTIONS_TO_SHOW), null),
+                "");
         verify(mAutocompleteDelegate, times(1)).setKeyboardVisibility(eq(true));
         verify(mAutocompleteDelegate, never()).setKeyboardVisibility(eq(false));
     }
@@ -415,8 +417,9 @@ public class AutocompleteMediatorUnitTest {
     public void updateSuggestionsList_doesNotShowKeyboardAfterReceivingSubsequentSuggestionLists() {
         mMediator.onNativeInitialized();
         mMediator.signalPendingKeyboardShowDecision();
-        mMediator.onSuggestionsReceived(mSuggestionsList, null, "");
-        mMediator.onSuggestionsReceived(mSuggestionsList.subList(0, 1), null, "");
+        mMediator.onSuggestionsReceived(new AutocompleteResult(mSuggestionsList, null), "");
+        mMediator.onSuggestionsReceived(
+                new AutocompleteResult(mSuggestionsList.subList(0, 1), null), "");
         verify(mAutocompleteDelegate, times(1)).setKeyboardVisibility(eq(false));
         verify(mAutocompleteDelegate, never()).setKeyboardVisibility(eq(true));
     }
@@ -430,7 +433,7 @@ public class AutocompleteMediatorUnitTest {
         // the omnibox field. This is beyond our control.
         mMediator.onNativeInitialized();
         mMediator.signalPendingKeyboardShowDecision();
-        mMediator.onSuggestionsReceived(mSuggestionsList, null, "");
+        mMediator.onSuggestionsReceived(new AutocompleteResult(mSuggestionsList, null), "");
         verify(mAutocompleteDelegate, times(1)).setKeyboardVisibility(eq(false));
         // Should request keyboard hide.
         mMediator.onSuggestionDropdownScroll();
@@ -448,7 +451,9 @@ public class AutocompleteMediatorUnitTest {
         mMediator.onNativeInitialized();
         mMediator.signalPendingKeyboardShowDecision();
         mMediator.onSuggestionsReceived(
-                mSuggestionsList.subList(0, MINIMUM_NUMBER_OF_SUGGESTIONS_TO_SHOW), null, "");
+                new AutocompleteResult(
+                        mSuggestionsList.subList(0, MINIMUM_NUMBER_OF_SUGGESTIONS_TO_SHOW), null),
+                "");
         verify(mAutocompleteDelegate, times(1)).setKeyboardVisibility(eq(true));
 
         // Should perform no action.
@@ -533,11 +538,13 @@ public class AutocompleteMediatorUnitTest {
             ChromeFeatureList.OMNIBOX_DEFERRED_KEYBOARD_POPUP})
     public void onSuggestionsReceived_sendsOnSuggestionsChanged() {
         mMediator.onNativeInitialized();
-        mMediator.onSuggestionsReceived(mSuggestionsList, null, "inline_autocomplete");
+        mMediator.onSuggestionsReceived(
+                new AutocompleteResult(mSuggestionsList, null), "inline_autocomplete");
         verify(mAutocompleteDelegate).onSuggestionsChanged("inline_autocomplete");
 
         // Ensure duplicate requests are suppressed.
-        mMediator.onSuggestionsReceived(mSuggestionsList, null, "inline_autocomplete2");
+        mMediator.onSuggestionsReceived(
+                new AutocompleteResult(mSuggestionsList, null), "inline_autocomplete2");
         verifyNoMoreInteractions(mAutocompleteDelegate);
     }
 
@@ -546,7 +553,7 @@ public class AutocompleteMediatorUnitTest {
             ChromeFeatureList.OMNIBOX_DEFERRED_KEYBOARD_POPUP})
     public void setLayoutDirection_beforeInitialization() {
         mMediator.setLayoutDirection(View.LAYOUT_DIRECTION_RTL);
-        mMediator.setNewSuggestions(mSuggestionsList, null);
+        mMediator.setNewSuggestions(new AutocompleteResult(mSuggestionsList, null));
         mMediator.updateSuggestionsList(Integer.MAX_VALUE);
         Assert.assertEquals(mSuggestionsList.size(), mSuggestionModels.size());
         for (int i = 0; i < mSuggestionModels.size(); i++) {
@@ -561,7 +568,7 @@ public class AutocompleteMediatorUnitTest {
     @NativeJavaTestFeatures.Disable({ChromeFeatureList.OMNIBOX_ADAPTIVE_SUGGESTIONS_COUNT,
             ChromeFeatureList.OMNIBOX_DEFERRED_KEYBOARD_POPUP})
     public void setLayoutDirection_afterInitialization() {
-        mMediator.setNewSuggestions(mSuggestionsList, null);
+        mMediator.setNewSuggestions(new AutocompleteResult(mSuggestionsList, null));
         mMediator.updateSuggestionsList(Integer.MAX_VALUE);
         Assert.assertEquals(mSuggestionsList.size(), mSuggestionModels.size());
 

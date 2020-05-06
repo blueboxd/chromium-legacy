@@ -353,12 +353,10 @@ class PasswordManagerTest : public testing::Test {
         prefs::kWasOnboardingFeatureCheckedBefore, false);
     prefs_->registry()->RegisterBooleanPref(
         prefs::kPasswordLeakDetectionEnabled, true);
-#if !defined(OS_IOS)
     prefs_->registry()->RegisterBooleanPref(::prefs::kSafeBrowsingEnabled,
                                             true);
     prefs_->registry()->RegisterBooleanPref(::prefs::kSafeBrowsingEnhanced,
                                             true);
-#endif
     ON_CALL(client_, GetPrefs()).WillByDefault(Return(prefs_.get()));
 
     // When waiting for predictions is on, it makes tests more complicated.

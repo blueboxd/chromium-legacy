@@ -19,7 +19,7 @@ class Profile;
 class PrefChangeRegistrar;
 
 namespace content {
-class RenderFrameHost;
+class WebContents;
 }
 
 namespace user_prefs {
@@ -56,7 +56,7 @@ class CaptionController : public BrowserListObserver, public KeyedService {
   // Routes a transcription to the CaptionBubbleController that belongs to the
   // appropriate browser.
   void DispatchTranscription(
-      content::RenderFrameHost* frame_host,
+      content::WebContents* web_contents,
       const chrome::mojom::TranscriptionResultPtr& transcription_result);
 
  private:

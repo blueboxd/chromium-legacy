@@ -111,16 +111,12 @@ bool AXTableInfo::Update() {
   row_count = GetSizeTAttribute(*table_node_, IntAttribute::kTableRowCount);
   col_count = GetSizeTAttribute(*table_node_, IntAttribute::kTableColumnCount);
 
-  int32_t aria_rows = table_node_->GetIntAttribute(IntAttribute::kAriaRowCount);
-  aria_row_count = (aria_rows != ax::mojom::kUnknownAriaColumnOrRowCount)
-                       ? base::make_optional(int{aria_rows})
-                       : base::nullopt;
-
-  int32_t aria_cols =
-      table_node_->GetIntAttribute(IntAttribute::kAriaColumnCount);
-  aria_col_count = (aria_cols != ax::mojom::kUnknownAriaColumnOrRowCount)
-                       ? base::make_optional(int{aria_cols})
-                       : base::nullopt;
+  // Note - GetIntAttribute returns 0 if no value has been specified for the
+  // attribute.
+  aria_row_count =
+      int{table_node_->GetIntAttribute(IntAttribute::kAriaRowCount)};
+  aria_col_count =
+      int{table_node_->GetIntAttribute(IntAttribute::kAriaColumnCount)};
 
   // Iterate over the cells and build up an array of CellData
   // entries, one for each cell. Compute the actual row and column
@@ -298,14 +294,14 @@ void AXTableInfo::BuildCellDataVectorFromRowAndCellNodes(
       // whereas all other indices are zero-based.
       row_count = std::max(row_count, cell_data.row_index + cell_data.row_span);
       col_count = std::max(col_count, cell_data.col_index + cell_data.col_span);
-      if (aria_row_count) {
+      if (aria_row_count != ax::mojom::kUnknownAriaColumnOrRowCount) {
         aria_row_count =
-            std::max((*aria_row_count),
+            std::max((aria_row_count),
                      int{current_aria_row_index + cell_data.row_span - 1});
       }
-      if (aria_col_count) {
+      if (aria_col_count != ax::mojom::kUnknownAriaColumnOrRowCount) {
         aria_col_count =
-            std::max((*aria_col_count),
+            std::max((aria_col_count),
                      int{current_aria_col_index + cell_data.col_span - 1});
       }
       // Update |current_col_index| to reflect the next available index after

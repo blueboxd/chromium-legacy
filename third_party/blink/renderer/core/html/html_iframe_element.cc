@@ -312,6 +312,9 @@ void HTMLIFrameElement::ParseAttribute(
 // on iframe attribute.'.
 DocumentPolicy::FeatureState HTMLIFrameElement::ConstructRequiredPolicy()
     const {
+  if (!RuntimeEnabledFeatures::DocumentPolicyEnabled(&GetDocument()))
+    return {};
+
   if (!required_policy_.IsEmpty()) {
     UseCounter::Count(
         GetDocument(),

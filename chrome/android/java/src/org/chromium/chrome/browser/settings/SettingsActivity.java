@@ -32,8 +32,8 @@ import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.profiles.ProfileManagerUtils;
 import org.chromium.chrome.browser.site_settings.ChromeSiteSettingsClient;
-import org.chromium.chrome.browser.site_settings.SiteSettingsPreferenceFragment;
 import org.chromium.components.browser_ui.settings.SettingsUtils;
+import org.chromium.components.browser_ui.site_settings.SiteSettingsPreferenceFragment;
 import org.chromium.ui.UiUtils;
 import org.chromium.ui.util.ColorUtils;
 

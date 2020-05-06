@@ -260,6 +260,62 @@ TEST_F(DocumentLoaderSimTest, FramePolicyIntegrityOnNavigationCommit) {
   EXPECT_TRUE(child_document->IsFeatureEnabled(
       blink::mojom::blink::FeaturePolicyFeature::kPayment));
 }
+// When runtime feature DocumentPolicy is not enabled, specifying
+// Document-Policy and Require-Document-Policy should have no effect, i.e.
+// document load should not be blocked even if the required policy and incoming
+// policy are incompatible and calling
+// |Document::IsFeatureEnabled(DocumentPolicyFeature...)| should always return
+// true.
+TEST_F(DocumentLoaderSimTest, DocumentPolicyNoEffectWhenFlagNotSet) {
+  blink::ScopedDocumentPolicyForTest sdp(false);
+  SimRequest::Params params;
+  params.response_http_headers = {
+      {"Document-Policy", "unoptimized-lossless-images;bpp=1.1"}};
+
+  SimRequest main_resource("https://example.com", "text/html");
+  SimRequest iframe_resource("https://example.com/foo.html", "text/html",
+                             params);
+
+  LoadURL("https://example.com");
+  main_resource.Complete(R"(
+    <iframe
+      src="https://example.com/foo.html"
+      policy="unoptimized-lossless-images;bpp=1.0">
+    </iframe>
+  )");
+
+  iframe_resource.Finish();
+  auto* child_frame = To<WebLocalFrameImpl>(MainFrame().FirstChild());
+  auto* child_document = child_frame->GetFrame()->GetDocument();
+  auto& console_messages = static_cast<frame_test_helpers::TestWebFrameClient*>(
+                               child_frame->Client())
+                               ->ConsoleMessages();
+
+  // Should not receive a console error message caused by document policy
+  // violation blocking document load.
+  EXPECT_TRUE(console_messages.IsEmpty());
+
+  EXPECT_EQ(child_document->Url(), KURL("https://example.com/foo.html"));
+
+  EXPECT_FALSE(child_document->IsUseCounted(
+      mojom::WebFeature::kDocumentPolicyCausedPageUnload));
+
+  // Unoptimized-lossless-images should still be allowed in main document.
+  EXPECT_TRUE(GetDocument().IsFeatureEnabled(
+      mojom::blink::DocumentPolicyFeature::kUnoptimizedLosslessImages,
+      PolicyValue(2.0)));
+  EXPECT_TRUE(GetDocument().IsFeatureEnabled(
+      mojom::blink::DocumentPolicyFeature::kUnoptimizedLosslessImages,
+      PolicyValue(1.0)));
+
+  // Unoptimized-lossless-images should still be allowed in child document.
+  EXPECT_TRUE(child_document->IsFeatureEnabled(
+      mojom::blink::DocumentPolicyFeature::kUnoptimizedLosslessImages,
+      PolicyValue(2.0)));
+  EXPECT_TRUE(child_document->IsFeatureEnabled(
+      mojom::blink::DocumentPolicyFeature::kUnoptimizedLosslessImages,
+      PolicyValue(1.0)));
+}
 
 TEST_F(DocumentLoaderSimTest, ReportErrorWhenDocumentPolicyIncompatible) {
   blink::ScopedDocumentPolicyForTest sdp(true);

@@ -11,6 +11,7 @@
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/notreached.h"
 #include "base/sequenced_task_runner.h"
@@ -216,11 +217,21 @@ void FileSystemManagerImpl::Open(const url::Origin& origin,
                                  OpenCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  if (base::FeatureList::IsEnabled(
-          features::kSiteIsolationEnforcementForFileSystemApi) &&
-      !security_policy_->CanAccessDataForOrigin(process_id_, origin)) {
-    receivers_.ReportBadMessage("FSMI_OPEN_INVALID_ORIGIN");
-    return;
+  if (!security_policy_->CanAccessDataForOrigin(process_id_, origin)) {
+    const std::string& scheme =
+        origin.GetTupleOrPrecursorTupleIfOpaque().scheme();
+    bool is_http_based_scheme =
+        (scheme == url::kHttpsScheme) || (scheme == url::kHttpsScheme);
+    UMA_HISTOGRAM_BOOLEAN(
+        "SiteIsolation.FileSystemApi.CanAccessDataForOriginFailure."
+        "IsHttpBasedScheme",
+        is_http_based_scheme);
+
+    if (base::FeatureList::IsEnabled(
+            features::kSiteIsolationEnforcementForFileSystemApi)) {
+      receivers_.ReportBadMessage("FSMI_OPEN_INVALID_ORIGIN");
+      return;
+    }
   }
 
   if (file_system_type == blink::mojom::FileSystemType::kTemporary) {

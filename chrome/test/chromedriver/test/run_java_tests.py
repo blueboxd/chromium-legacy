@@ -156,7 +156,8 @@ def _PrintTestResults(results_path):
   failuresCount = re.search(r'There w.* (.*) failure', contents)
   if failuresCount:
     print("Failed %s tests" % failuresCount.group(1))
-  failedTests = re.findall(r'\s\d*\) (.*org.openqa.*)', contents)
+  failedTests = re.findall(r'^\d*\) (.*\(org.openqa.*\))',
+       contents, re.MULTILINE)
   testsToReRun = []
   for test in failedTests:
     testName = test.split('(')[0]

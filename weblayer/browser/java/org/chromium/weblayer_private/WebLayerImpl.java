@@ -22,6 +22,7 @@ import android.webkit.ValueCallback;
 import android.webkit.WebViewDelegate;
 import android.webkit.WebViewFactory;
 
+import androidx.annotation.Nullable;
 import androidx.core.content.FileProvider;
 
 import org.chromium.base.BuildInfo;
@@ -33,6 +34,7 @@ import org.chromium.base.FileUtils;
 import org.chromium.base.Log;
 import org.chromium.base.PathUtils;
 import org.chromium.base.StrictModeContext;
+import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.library_loader.LibraryLoader;
@@ -97,6 +99,7 @@ public final class WebLayerImpl extends IWebLayer.Stub {
 
     private boolean mInited;
     private static IWebLayerClient sClient;
+
     // Whether WebView is running in process. Set in init().
     private boolean mIsWebViewCompatMode;
 
@@ -628,6 +631,12 @@ public final class WebLayerImpl extends IWebLayer.Stub {
         } catch (Exception e) {
             Log.w(TAG, "Unable to notify WebView running in process", e);
         }
+    }
+
+    @CalledByNative
+    @Nullable
+    private static String getEmbedderName() {
+        return getClientApplicationName();
     }
 
     @NativeMethods

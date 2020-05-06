@@ -22,7 +22,7 @@ MediaFoundationProtectionManager::MediaFoundationProtectionManager() = default;
 MediaFoundationProtectionManager::~MediaFoundationProtectionManager() = default;
 
 HRESULT MediaFoundationProtectionManager::RuntimeClassInitialize() {
-  DVLOG(1) << __func__ << ": this=" << this;
+  DVLOG_FUNC(1);
 
   if (!base::win::ScopedHString::ResolveCoreWinRTStringDelayload())
     return E_FAIL;
@@ -37,7 +37,7 @@ HRESULT MediaFoundationProtectionManager::RuntimeClassInitialize() {
 }
 
 HRESULT MediaFoundationProtectionManager::SetCdmProxy(IMFCdmProxy* cdm_proxy) {
-  DVLOG(1) << __func__ << ": this=" << this;
+  DVLOG_FUNC(1);
 
   DCHECK(cdm_proxy);
   cdm_proxy_ = cdm_proxy;
@@ -49,7 +49,7 @@ HRESULT MediaFoundationProtectionManager::SetCdmProxy(IMFCdmProxy* cdm_proxy) {
 
 HRESULT MediaFoundationProtectionManager::SetPMPServer(
     ABI::Windows::Media::Protection::IMediaProtectionPMPServer* pmp_server) {
-  DVLOG(1) << __func__ << ": this=" << this;
+  DVLOG_FUNC(1);
 
   DCHECK(pmp_server);
   ComPtr<ABI::Windows::Foundation::Collections::IMap<HSTRING, IInspectable*>>
@@ -72,7 +72,7 @@ HRESULT MediaFoundationProtectionManager::BeginEnableContent(
     IMFTopology* topology,
     IMFAsyncCallback* callback,
     IUnknown* state) {
-  DVLOG(1) << __func__ << ": this=" << this;
+  DVLOG_FUNC(1);
 
   ComPtr<IUnknown> unknown_object;
   ComPtr<IMFAsyncResult> async_result;
@@ -115,7 +115,7 @@ HRESULT MediaFoundationProtectionManager::BeginEnableContent(
 
 HRESULT MediaFoundationProtectionManager::EndEnableContent(
     IMFAsyncResult* async_result) {
-  DVLOG(1) << __func__ << ": this=" << this;
+  DVLOG_FUNC(1);
 
   // Get status from the given |async_result| for the purpose of logging.
   // Returns S_OK as there is no additional work being done here.
@@ -164,7 +164,7 @@ HRESULT MediaFoundationProtectionManager::remove_ComponentLoadFailed(
 
 HRESULT MediaFoundationProtectionManager::get_Properties(
     ABI::Windows::Foundation::Collections::IPropertySet** properties) {
-  DVLOG(2) << __func__ << ": this=" << this;
+  DVLOG_FUNC(2);
   if (!properties)
     return E_POINTER;
   return property_set_.CopyTo(properties);

@@ -14,6 +14,7 @@
 #include "base/strings/string_piece.h"
 #include "chrome/browser/chromeos/login/login_wizard.h"
 #include "chrome/browser/chromeos/login/oobe_screen.h"
+#include "chrome/browser/chromeos/login/screens/sync_consent_screen.h"
 #include "chrome/browser/chromeos/login/test/js_checker.h"
 #include "chrome/browser/chromeos/login/test/login_manager_mixin.h"
 #include "chrome/browser/chromeos/login/test/oobe_base_test.h"
@@ -334,13 +335,14 @@ class AssistantOptInFlowTest : public OobeBaseTest {
 
   void SetUpOnMainThread() override {
     OobeBaseTest::SetUpOnMainThread();
-    force_lib_assistant_enabled_ =
-        AssistantOptInFlowScreen::ForceLibAssistantEnabledForTesting();
-
     assistant_settings_ = std::make_unique<FakeAssistantSettings>();
-    assistant_optin_flow_screen_ = AssistantOptInFlowScreen::Get(
-        WizardController::default_controller()->screen_manager());
-    assistant_optin_flow_screen_->set_exit_callback_for_testing(
+
+    AssistantOptInFlowScreen* assistant_optin_flow_screen =
+        AssistantOptInFlowScreen::Get(
+            WizardController::default_controller()->screen_manager());
+    original_callback_ =
+        assistant_optin_flow_screen->get_exit_callback_for_testing();
+    assistant_optin_flow_screen->set_exit_callback_for_testing(
         base::BindRepeating(&AssistantOptInFlowTest::HandleScreenExit,
                             base::Unretained(this)));
   }
@@ -353,11 +355,13 @@ class AssistantOptInFlowTest : public OobeBaseTest {
   void ShowAssistantOptInFlowScreen() {
     login_manager_.LoginAsNewReguarUser();
     OobeScreenExitWaiter(GaiaView::kScreenId).Wait();
-    LoginDisplayHost::default_host()->StartWizard(
-        AssistantOptInFlowScreenView::kScreenId);
+    if (!screen_exited_) {
+      LoginDisplayHost::default_host()->StartWizard(
+          AssistantOptInFlowScreenView::kScreenId);
+    }
   }
 
-  // Overrides:
+  // Waits for the OOBE UI to complete initialization, and overrides:
   // *   the assistant value prop webview URL with the one provided by embedded
   //     https proxy.
   // *   the timeout delay for sending done user action from voice match screen.
@@ -415,9 +419,10 @@ class AssistantOptInFlowTest : public OobeBaseTest {
     run_loop.Run();
   }
 
-  AssistantOptInFlowScreen* assistant_optin_flow_screen_;
-
   std::unique_ptr<FakeAssistantSettings> assistant_settings_;
+
+  base::Optional<AssistantOptInFlowScreen::Result> screen_result_;
+  base::HistogramTester histogram_tester_;
 
   // If set, HandleRequest will return an error for the next value prop URL
   // request..
@@ -438,24 +443,27 @@ class AssistantOptInFlowTest : public OobeBaseTest {
     return std::move(response);
   }
 
-  void HandleScreenExit() {
+  void HandleScreenExit(AssistantOptInFlowScreen::Result result) {
     ASSERT_FALSE(screen_exited_);
     screen_exited_ = true;
+    screen_result_ = result;
+    original_callback_.Run(result);
     if (screen_exit_callback_)
       std::move(screen_exit_callback_).Run();
   }
 
   bool screen_exited_ = false;
   base::OnceClosure screen_exit_callback_;
+  AssistantOptInFlowScreen::ScreenExitCallback original_callback_;
 
   base::test::ScopedFeatureList feature_list_;
-
-  std::unique_ptr<base::AutoReset<bool>> force_lib_assistant_enabled_;
 
   LoginManagerMixin login_manager_{&mixin_host_};
 };
 
 IN_PROC_BROWSER_TEST_F(AssistantOptInFlowTest, Basic) {
+  auto force_lib_assistant_enabled =
+      AssistantOptInFlowScreen::ForceLibAssistantEnabledForTesting(true);
   ash::AssistantState::Get()->NotifyStatusChanged(
       ash::mojom::AssistantState::READY);
 
@@ -489,9 +497,16 @@ IN_PROC_BROWSER_TEST_F(AssistantOptInFlowTest, Basic) {
             prefs->GetInteger(assistant::prefs::kAssistantConsentStatus));
   EXPECT_TRUE(prefs->GetBoolean(assistant::prefs::kAssistantHotwordEnabled));
   EXPECT_TRUE(prefs->GetBoolean(assistant::prefs::kAssistantContextEnabled));
+  EXPECT_EQ(screen_result_.value(), AssistantOptInFlowScreen::Result::NEXT);
+  histogram_tester_.ExpectTotalCount(
+      "OOBE.StepCompletionTimeByExitReason.Assistant-optin-flow.Next", 1);
+  histogram_tester_.ExpectTotalCount(
+      "OOBE.StepCompletionTime.Assistant-optin-flow", 1);
 }
 
 IN_PROC_BROWSER_TEST_F(AssistantOptInFlowTest, DisableScreenContext) {
+  auto force_lib_assistant_enabled =
+      AssistantOptInFlowScreen::ForceLibAssistantEnabledForTesting(true);
   ash::AssistantState::Get()->NotifyStatusChanged(
       ash::mojom::AssistantState::READY);
 
@@ -529,9 +544,16 @@ IN_PROC_BROWSER_TEST_F(AssistantOptInFlowTest, DisableScreenContext) {
             prefs->GetInteger(assistant::prefs::kAssistantConsentStatus));
   EXPECT_TRUE(prefs->GetBoolean(assistant::prefs::kAssistantHotwordEnabled));
   EXPECT_FALSE(prefs->GetBoolean(assistant::prefs::kAssistantContextEnabled));
+  EXPECT_EQ(screen_result_.value(), AssistantOptInFlowScreen::Result::NEXT);
+  histogram_tester_.ExpectTotalCount(
+      "OOBE.StepCompletionTimeByExitReason.Assistant-optin-flow.Next", 1);
+  histogram_tester_.ExpectTotalCount(
+      "OOBE.StepCompletionTime.Assistant-optin-flow", 1);
 }
 
 IN_PROC_BROWSER_TEST_F(AssistantOptInFlowTest, AssistantStateUpdateAfterShow) {
+  auto force_lib_assistant_enabled =
+      AssistantOptInFlowScreen::ForceLibAssistantEnabledForTesting(true);
   SetUpAssistantScreensForTest();
   ShowAssistantOptInFlowScreen();
 
@@ -567,9 +589,16 @@ IN_PROC_BROWSER_TEST_F(AssistantOptInFlowTest, AssistantStateUpdateAfterShow) {
             prefs->GetInteger(assistant::prefs::kAssistantConsentStatus));
   EXPECT_TRUE(prefs->GetBoolean(assistant::prefs::kAssistantHotwordEnabled));
   EXPECT_TRUE(prefs->GetBoolean(assistant::prefs::kAssistantContextEnabled));
+  EXPECT_EQ(screen_result_.value(), AssistantOptInFlowScreen::Result::NEXT);
+  histogram_tester_.ExpectTotalCount(
+      "OOBE.StepCompletionTimeByExitReason.Assistant-optin-flow.Next", 1);
+  histogram_tester_.ExpectTotalCount(
+      "OOBE.StepCompletionTime.Assistant-optin-flow", 1);
 }
 
 IN_PROC_BROWSER_TEST_F(AssistantOptInFlowTest, RetryOnWebviewLoadFail) {
+  auto force_lib_assistant_enabled =
+      AssistantOptInFlowScreen::ForceLibAssistantEnabledForTesting(true);
   SetUpAssistantScreensForTest();
   fail_next_value_prop_url_request_ = true;
 
@@ -607,9 +636,16 @@ IN_PROC_BROWSER_TEST_F(AssistantOptInFlowTest, RetryOnWebviewLoadFail) {
             prefs->GetInteger(assistant::prefs::kAssistantConsentStatus));
   EXPECT_TRUE(prefs->GetBoolean(assistant::prefs::kAssistantHotwordEnabled));
   EXPECT_TRUE(prefs->GetBoolean(assistant::prefs::kAssistantContextEnabled));
+  EXPECT_EQ(screen_result_.value(), AssistantOptInFlowScreen::Result::NEXT);
+  histogram_tester_.ExpectTotalCount(
+      "OOBE.StepCompletionTimeByExitReason.Assistant-optin-flow.Next", 1);
+  histogram_tester_.ExpectTotalCount(
+      "OOBE.StepCompletionTime.Assistant-optin-flow", 1);
 }
 
 IN_PROC_BROWSER_TEST_F(AssistantOptInFlowTest, RejectValueProp) {
+  auto force_lib_assistant_enabled =
+      AssistantOptInFlowScreen::ForceLibAssistantEnabledForTesting(true);
   SetUpAssistantScreensForTest();
   ash::AssistantState::Get()->NotifyStatusChanged(
       ash::mojom::AssistantState::READY);
@@ -631,9 +667,16 @@ IN_PROC_BROWSER_TEST_F(AssistantOptInFlowTest, RejectValueProp) {
             prefs->GetInteger(assistant::prefs::kAssistantConsentStatus));
   EXPECT_FALSE(prefs->GetBoolean(assistant::prefs::kAssistantHotwordEnabled));
   EXPECT_FALSE(prefs->GetBoolean(assistant::prefs::kAssistantContextEnabled));
+  EXPECT_EQ(screen_result_.value(), AssistantOptInFlowScreen::Result::NEXT);
+  histogram_tester_.ExpectTotalCount(
+      "OOBE.StepCompletionTimeByExitReason.Assistant-optin-flow.Next", 1);
+  histogram_tester_.ExpectTotalCount(
+      "OOBE.StepCompletionTime.Assistant-optin-flow", 1);
 }
 
 IN_PROC_BROWSER_TEST_F(AssistantOptInFlowTest, AskEmailOptIn_NotChecked) {
+  auto force_lib_assistant_enabled =
+      AssistantOptInFlowScreen::ForceLibAssistantEnabledForTesting(true);
   assistant_settings_->set_consent_ui_flags(
       FakeAssistantSettings::CONSENT_UI_FLAG_ASK_EMAIL_OPT_IN);
   ash::AssistantState::Get()->NotifyStatusChanged(
@@ -672,9 +715,16 @@ IN_PROC_BROWSER_TEST_F(AssistantOptInFlowTest, AskEmailOptIn_NotChecked) {
             prefs->GetInteger(assistant::prefs::kAssistantConsentStatus));
   EXPECT_TRUE(prefs->GetBoolean(assistant::prefs::kAssistantHotwordEnabled));
   EXPECT_TRUE(prefs->GetBoolean(assistant::prefs::kAssistantContextEnabled));
+  EXPECT_EQ(screen_result_.value(), AssistantOptInFlowScreen::Result::NEXT);
+  histogram_tester_.ExpectTotalCount(
+      "OOBE.StepCompletionTimeByExitReason.Assistant-optin-flow.Next", 1);
+  histogram_tester_.ExpectTotalCount(
+      "OOBE.StepCompletionTime.Assistant-optin-flow", 1);
 }
 
 IN_PROC_BROWSER_TEST_F(AssistantOptInFlowTest, AskEmailOptIn_Accepted) {
+  auto force_lib_assistant_enabled =
+      AssistantOptInFlowScreen::ForceLibAssistantEnabledForTesting(true);
   assistant_settings_->set_consent_ui_flags(
       FakeAssistantSettings::CONSENT_UI_FLAG_ASK_EMAIL_OPT_IN);
   ash::AssistantState::Get()->NotifyStatusChanged(
@@ -716,9 +766,16 @@ IN_PROC_BROWSER_TEST_F(AssistantOptInFlowTest, AskEmailOptIn_Accepted) {
             prefs->GetInteger(assistant::prefs::kAssistantConsentStatus));
   EXPECT_TRUE(prefs->GetBoolean(assistant::prefs::kAssistantHotwordEnabled));
   EXPECT_TRUE(prefs->GetBoolean(assistant::prefs::kAssistantContextEnabled));
+  EXPECT_EQ(screen_result_.value(), AssistantOptInFlowScreen::Result::NEXT);
+  histogram_tester_.ExpectTotalCount(
+      "OOBE.StepCompletionTimeByExitReason.Assistant-optin-flow.Next", 1);
+  histogram_tester_.ExpectTotalCount(
+      "OOBE.StepCompletionTime.Assistant-optin-flow", 1);
 }
 
 IN_PROC_BROWSER_TEST_F(AssistantOptInFlowTest, SkipShowingValueProp) {
+  auto force_lib_assistant_enabled =
+      AssistantOptInFlowScreen::ForceLibAssistantEnabledForTesting(true);
   assistant_settings_->set_consent_ui_flags(
       FakeAssistantSettings::CONSENT_UI_FLAG_SKIP_ACTIVITY_CONTROL);
 
@@ -749,10 +806,17 @@ IN_PROC_BROWSER_TEST_F(AssistantOptInFlowTest, SkipShowingValueProp) {
             prefs->GetInteger(assistant::prefs::kAssistantConsentStatus));
   EXPECT_TRUE(prefs->GetBoolean(assistant::prefs::kAssistantHotwordEnabled));
   EXPECT_TRUE(prefs->GetBoolean(assistant::prefs::kAssistantContextEnabled));
+  EXPECT_EQ(screen_result_.value(), AssistantOptInFlowScreen::Result::NEXT);
+  histogram_tester_.ExpectTotalCount(
+      "OOBE.StepCompletionTimeByExitReason.Assistant-optin-flow.Next", 1);
+  histogram_tester_.ExpectTotalCount(
+      "OOBE.StepCompletionTime.Assistant-optin-flow", 1);
 }
 
 IN_PROC_BROWSER_TEST_F(AssistantOptInFlowTest,
                        SkipShowingValuePropAndThirdPartyDisclosure) {
+  auto force_lib_assistant_enabled =
+      AssistantOptInFlowScreen::ForceLibAssistantEnabledForTesting(true);
   assistant_settings_->set_consent_ui_flags(
       FakeAssistantSettings::CONSENT_UI_FLAG_SKIP_ACTIVITY_CONTROL |
       FakeAssistantSettings::CONSENT_UI_FLAG_SKIP_THIRD_PARTY_DISCLOSURE);
@@ -781,9 +845,16 @@ IN_PROC_BROWSER_TEST_F(AssistantOptInFlowTest,
             prefs->GetInteger(assistant::prefs::kAssistantConsentStatus));
   EXPECT_TRUE(prefs->GetBoolean(assistant::prefs::kAssistantHotwordEnabled));
   EXPECT_TRUE(prefs->GetBoolean(assistant::prefs::kAssistantContextEnabled));
+  EXPECT_EQ(screen_result_.value(), AssistantOptInFlowScreen::Result::NEXT);
+  histogram_tester_.ExpectTotalCount(
+      "OOBE.StepCompletionTimeByExitReason.Assistant-optin-flow.Next", 1);
+  histogram_tester_.ExpectTotalCount(
+      "OOBE.StepCompletionTime.Assistant-optin-flow", 1);
 }
 
 IN_PROC_BROWSER_TEST_F(AssistantOptInFlowTest, SpeakerIdEnrollment) {
+  auto force_lib_assistant_enabled =
+      AssistantOptInFlowScreen::ForceLibAssistantEnabledForTesting(true);
   assistant_settings_->set_consent_ui_flags(
       FakeAssistantSettings::CONSENT_UI_FLAG_SKIP_ACTIVITY_CONTROL |
       FakeAssistantSettings::CONSENT_UI_FLAG_SKIP_THIRD_PARTY_DISCLOSURE);
@@ -870,10 +941,17 @@ IN_PROC_BROWSER_TEST_F(AssistantOptInFlowTest, SpeakerIdEnrollment) {
             prefs->GetInteger(assistant::prefs::kAssistantConsentStatus));
   EXPECT_TRUE(prefs->GetBoolean(assistant::prefs::kAssistantHotwordEnabled));
   EXPECT_TRUE(prefs->GetBoolean(assistant::prefs::kAssistantContextEnabled));
+  EXPECT_EQ(screen_result_.value(), AssistantOptInFlowScreen::Result::NEXT);
+  histogram_tester_.ExpectTotalCount(
+      "OOBE.StepCompletionTimeByExitReason.Assistant-optin-flow.Next", 1);
+  histogram_tester_.ExpectTotalCount(
+      "OOBE.StepCompletionTime.Assistant-optin-flow", 1);
 }
 
 IN_PROC_BROWSER_TEST_F(AssistantOptInFlowTest,
                        BailOutDuringSpeakerIdEnrollment) {
+  auto force_lib_assistant_enabled =
+      AssistantOptInFlowScreen::ForceLibAssistantEnabledForTesting(true);
   assistant_settings_->set_consent_ui_flags(
       FakeAssistantSettings::CONSENT_UI_FLAG_SKIP_ACTIVITY_CONTROL |
       FakeAssistantSettings::CONSENT_UI_FLAG_SKIP_THIRD_PARTY_DISCLOSURE);
@@ -922,10 +1000,17 @@ IN_PROC_BROWSER_TEST_F(AssistantOptInFlowTest,
             prefs->GetInteger(assistant::prefs::kAssistantConsentStatus));
   EXPECT_FALSE(prefs->GetBoolean(assistant::prefs::kAssistantHotwordEnabled));
   EXPECT_TRUE(prefs->GetBoolean(assistant::prefs::kAssistantContextEnabled));
+  EXPECT_EQ(screen_result_.value(), AssistantOptInFlowScreen::Result::NEXT);
+  histogram_tester_.ExpectTotalCount(
+      "OOBE.StepCompletionTimeByExitReason.Assistant-optin-flow.Next", 1);
+  histogram_tester_.ExpectTotalCount(
+      "OOBE.StepCompletionTime.Assistant-optin-flow", 1);
 }
 
 IN_PROC_BROWSER_TEST_F(AssistantOptInFlowTest,
                        SpeakerIdEnrollmentFailureAndRetry) {
+  auto force_lib_assistant_enabled =
+      AssistantOptInFlowScreen::ForceLibAssistantEnabledForTesting(true);
   assistant_settings_->set_consent_ui_flags(
       FakeAssistantSettings::CONSENT_UI_FLAG_SKIP_ACTIVITY_CONTROL |
       FakeAssistantSettings::CONSENT_UI_FLAG_SKIP_THIRD_PARTY_DISCLOSURE);
@@ -978,9 +1063,16 @@ IN_PROC_BROWSER_TEST_F(AssistantOptInFlowTest,
             prefs->GetInteger(assistant::prefs::kAssistantConsentStatus));
   EXPECT_TRUE(prefs->GetBoolean(assistant::prefs::kAssistantHotwordEnabled));
   EXPECT_TRUE(prefs->GetBoolean(assistant::prefs::kAssistantContextEnabled));
+  EXPECT_EQ(screen_result_.value(), AssistantOptInFlowScreen::Result::NEXT);
+  histogram_tester_.ExpectTotalCount(
+      "OOBE.StepCompletionTimeByExitReason.Assistant-optin-flow.Next", 1);
+  histogram_tester_.ExpectTotalCount(
+      "OOBE.StepCompletionTime.Assistant-optin-flow", 1);
 }
 
 IN_PROC_BROWSER_TEST_F(AssistantOptInFlowTest, WAADisabledByPolicy) {
+  auto force_lib_assistant_enabled =
+      AssistantOptInFlowScreen::ForceLibAssistantEnabledForTesting(true);
   assistant_settings_->set_consent_ui_flags(
       FakeAssistantSettings::CONSENT_UI_FLAG_WAA_DISABLED_BY_POLICY);
 
@@ -996,9 +1088,16 @@ IN_PROC_BROWSER_TEST_F(AssistantOptInFlowTest, WAADisabledByPolicy) {
   EXPECT_TRUE(prefs->GetBoolean(assistant::prefs::kAssistantEnabled));
   EXPECT_FALSE(prefs->GetBoolean(assistant::prefs::kAssistantHotwordEnabled));
   EXPECT_FALSE(prefs->GetBoolean(assistant::prefs::kAssistantContextEnabled));
+  EXPECT_EQ(screen_result_.value(), AssistantOptInFlowScreen::Result::NEXT);
+  histogram_tester_.ExpectTotalCount(
+      "OOBE.StepCompletionTimeByExitReason.Assistant-optin-flow.Next", 1);
+  histogram_tester_.ExpectTotalCount(
+      "OOBE.StepCompletionTime.Assistant-optin-flow", 1);
 }
 
 IN_PROC_BROWSER_TEST_F(AssistantOptInFlowTest, AssistantDisabledByPolicy) {
+  auto force_lib_assistant_enabled =
+      AssistantOptInFlowScreen::ForceLibAssistantEnabledForTesting(true);
   assistant_settings_->set_consent_ui_flags(
       FakeAssistantSettings::CONSENT_UI_FLAG_ASSISTANT_DISABLED_BY_POLICY);
 
@@ -1015,6 +1114,30 @@ IN_PROC_BROWSER_TEST_F(AssistantOptInFlowTest, AssistantDisabledByPolicy) {
   EXPECT_FALSE(prefs->GetBoolean(assistant::prefs::kAssistantEnabled));
   EXPECT_FALSE(prefs->GetBoolean(assistant::prefs::kAssistantHotwordEnabled));
   EXPECT_FALSE(prefs->GetBoolean(assistant::prefs::kAssistantContextEnabled));
+  EXPECT_EQ(screen_result_.value(), AssistantOptInFlowScreen::Result::NEXT);
+  histogram_tester_.ExpectTotalCount(
+      "OOBE.StepCompletionTimeByExitReason.Assistant-optin-flow.Next", 1);
+  histogram_tester_.ExpectTotalCount(
+      "OOBE.StepCompletionTime.Assistant-optin-flow", 1);
+}
+
+IN_PROC_BROWSER_TEST_F(AssistantOptInFlowTest, AssistantSkippedNoLib) {
+  auto force_lib_assistant_disabled =
+      AssistantOptInFlowScreen::ForceLibAssistantEnabledForTesting(false);
+  ash::AssistantState::Get()->NotifyStatusChanged(
+      ash::mojom::AssistantState::READY);
+  SetUpAssistantScreensForTest();
+  ShowAssistantOptInFlowScreen();
+
+  WaitForScreenExit();
+
+  ExpectCollectedOptIns({});
+  EXPECT_EQ(screen_result_.value(),
+            AssistantOptInFlowScreen::Result::NOT_APPLICABLE);
+  histogram_tester_.ExpectTotalCount(
+      "OOBE.StepCompletionTimeByExitReason.Assistant-optin-flow.Next", 0);
+  histogram_tester_.ExpectTotalCount(
+      "OOBE.StepCompletionTime.Assistant-optin-flow", 0);
 }
 
 }  // namespace chromeos

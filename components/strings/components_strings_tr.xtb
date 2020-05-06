@@ -52,7 +52,6 @@
 <translation id="1197088940767939838">Turuncu</translation>
 <translation id="1201402288615127009">İleri</translation>
 <translation id="1201895884277373915">Bu siteden daha çok</translation>
-<translation id="1205963431094182634">Google hesabınızda kayıtlı şifreleri kullanmak için oturum açın</translation>
 <translation id="1206967143813997005">Başlangıç anahtarlı imza hatalı</translation>
 <translation id="1209206284964581585">Şimdilik gizle</translation>
 <translation id="121201262018556460"><ph name="DOMAIN" /> alanına ulaşmayı denediniz, ancak sunucu zayıf anahtar içeren bir sertifika sundu. Bir saldırgan özel anahtarı ele geçirmiş olabilir ve sunucu beklediğiniz sunucu olmayabilir (bir saldırganla irtibat kuruyor olabilirsiniz).</translation>
@@ -1211,7 +1210,6 @@ Aksi halde bu işlem gizlilik ayarlarınız tarafından engellenecek. Buna izin 
 <translation id="6116338172782435947">Panoya kopyalanan metin ve resimleri görme</translation>
 <translation id="6120179357481664955">UPI ID'nizi hatırlıyor musunuz?</translation>
 <translation id="6124432979022149706">Chrome Enterprise Connectors</translation>
-<translation id="6135641591018127088">Güçlü bir şifre oluşturmak için Google hesabınızı kullanın</translation>
 <translation id="6146055958333702838">Kabloları kontrol edin ve kullandığınız yönlendiricileri, modemleri
     veya diğer ağ cihazlarını yeniden başlatın.</translation>
 <translation id="614940544461990577">Aşağıdakileri deneyin:</translation>
@@ -1257,7 +1255,6 @@ Aksi halde bu işlem gizlilik ayarlarınız tarafından engellenecek. Buna izin 
 <translation id="6328639280570009161">Ağ tahmin özelliğini devre dışı bırakmayı deneyin</translation>
 <translation id="6328784461820205019">"Bağlantınız gizli değil", "&lt;span class="error-code"&gt;NET::ERR_CERT_AUTHORITY_INVALID&lt;/span&gt;", "&lt;span class="error-code"&gt;ERR_CERT_COMMON_NAME_INVALID&lt;/span&gt;", "&lt;span class="error-code"&gt;NET::ERR_CERT_WEAK_SIGNATURE_ALGORITHM&lt;/span&gt;", "&lt;span class="error-code"&gt;ERR_CERT_SYMANTEC_LEGACY&lt;/span&gt;" veya "SSL sertifika hatası"</translation>
 <translation id="6328786501058569169">Bu site yanıltıcıdır</translation>
-<translation id="6333334544069706521">Google hesabınızda kayıtlı şifreleri kullanın</translation>
 <translation id="6337133576188860026"><ph name="SIZE" /> boyutundan daha az yer açar. Bir sonraki ziyaretinizde bazı siteler daha yavaş yüklenebilir.</translation>
 <translation id="6337534724793800597">Politikalara ada göre filtre uygula</translation>
 <translation id="6353505687280762741">{COUNT,plural, =0{Yok}=1{1 şifre (<ph name="DOMAIN_LIST" /> için, senkronize edildi)}=2{2 şifre (<ph name="DOMAIN_LIST" /> için, senkronize edildi)}other{# şifre (<ph name="DOMAIN_LIST" /> için, senkronize edildi)}}</translation>

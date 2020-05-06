@@ -266,7 +266,7 @@ Bei verwalteten Geräten sind standardmäßig keine Modi für das schnelle Entsp
       Weitere Informationen zu Safe Browsing finden Sie unter https://developers.google.com/safe-browsing.</translation>
 <translation id="1413936351612032792">Informationen zur Nutzung von Linux-Apps senden</translation>
 <translation id="142346659686073702">Nicht verknüpften Nutzern die Verwendung von Crostini gestatten</translation>
-<translation id="1425551776320718592">Nutzer des Geräts daran hindern, ADB-Sideloading zu verwenden, jedoch kein Powerwash für das Gerät erzwingen. Das kann zu einem unklaren Sicherheitszustand des Geräts führen</translation>
+<translation id="1425551776320718592">Nutzer des Geräts daran hindern, ADB-Sideloading zu verwenden, jedoch kein Powerwash für das Gerät erzwingen, was zu einem unklaren Sicherheitszustand des Geräts führen kann</translation>
 <translation id="1426170570389588560">Zeitraum für die Speicherung von Metadaten zu Druckaufträgen festlegen (in Tagen)</translation>
 <translation id="1426410128494586442">Ja</translation>
 <translation id="1427655258943162134">Adresse oder URL des Proxyservers</translation>
@@ -864,7 +864,7 @@ Diese Richtlinie gilt auch für Komponentenerweiterungen, zum Beispiel die Hango
 
       Inkorrekt formatierte Vorlagen werden ignoriert.</translation>
 <translation id="2345547870894930157">DoH-Modus ohne unsicheres Fallback-Verhalten aktivieren</translation>
-<translation id="2353442107789326507">Liste der Einstellungen für Chrome Enterprise-Connector-Services für den Enterprise-Connector "<ph name="ON_FILE_ATTACHED_ENTERPRISE_CONNECTOR" />". Dieser wird ausgelöst, wenn eine Datei an Chrome angehängt wird.
+<translation id="2353442107789326507">Liste der Einstellungen für Chrome Enterprise Connectors-Services für den Enterprise Connector "<ph name="ON_FILE_ATTACHED_ENTERPRISE_CONNECTOR" />". Dieser wird ausgelöst, wenn eine Datei an Chrome angehängt wird.
 
       Mit den Feldern "<ph name="ENTERPRISE_CONNECTOR_URL_LIST_FIELD" />", "<ph name="ENTERPRISE_CONNECTOR_TAGS_FIELD" />", "<ph name="ENTERPRISE_CONNECTOR_ENABLE_FIELD" />" und "<ph name="ENTERPRISE_CONNECTOR_DISABLE_FIELD" />" wird ermittelt, ob der Connector eine Datei zur Analyse senden soll, wenn sie an eine bestimmte Seite angehängt wird, und welche Tags für die Analyseanfrage verwendet werden sollen. Ein Tag, das einem "enable"-Muster entspricht, wird der Anfrage hinzugefügt, wenn die Seiten-URL mit einem für das jeweilige Tag passenden Muster übereinstimmt – jedoch nur, wenn kein "disable"-Muster mit demselben Tag mit der Seiten-URL übereinstimmt. Die Analyse wird durchgeführt, wenn die Anfrage mindestens ein Tag enthält.
 
@@ -874,7 +874,7 @@ Diese Richtlinie gilt auch für Komponentenerweiterungen, zum Beispiel die Hango
 
       Mit dem Feld "<ph name="ENTERPRISE_CONNECTOR_BLOCK_PASSWORD_PROTECTED_FIELD" />" wird festgelegt, ob Chrome den Zugriff auf Dateien blockiert, die durch ein Passwort geschützt sind.
 
-      Ob Chrome den Zugriff auf Dateien blockiert, die zu groß für die Analyse sind (50 MB oder größer), wird mit dem Feld "<ph name="ENTERPRISE_CONNECTOR_BLOCK_LARGE_FILES_FIELD" />" festgelegt.
+      Mit dem Feld "<ph name="ENTERPRISE_CONNECTOR_BLOCK_LARGE_FILES_FIELD" /> wird festgelegt, ob Chrome den Zugriff auf Dateien blockiert, die zu groß für die Analyse sind (50 MB oder größer).
 
       Diese Richtlinie kann nur über die Google Admin-Konsole konfiguriert werden.</translation>
 <translation id="2386362615870139244">Bildschirm-Wakelocks zulassen</translation>
@@ -944,7 +944,7 @@ Falls die Richtlinie auf "false" gesetzt wird, kann eine verzögerungsfreie auto
 
       Dateitypen, die automatisch geöffnet werden sollen, unterliegen dennoch den aktivierten Safe Browsing-Überprüfungen und werden nicht geöffnet, falls sie diese nicht bestehen.
 
-      Falls diese Richtlinie nicht konfiguriert ist, werden nach dem Download nur die Dateitypen automatisch geöffnet, die der Nutzer bereits angegeben hat.
+      Wenn diese Richtlinie nicht konfiguriert ist, werden nach dem Download nur die Dateitypen automatisch geöffnet, die der Nutzer bereits angegeben hat.
 
       Diese Richtlinie steht nur bei Windows-Instanzen zur Verfügung, die Teil einer <ph name="MS_AD_NAME" />-Domain sind, oder bei Windows 10 Pro- oder Enterprise-Instanzen, die für die Geräteverwaltung angemeldet sind.</translation>
 <translation id="2454228136871844693">Für eine optimale Stabilität.</translation>
@@ -2455,7 +2455,7 @@ Diese Richtlinie hat keine Auswirkungen darauf, ob die lokalen Nutzerdaten auf d
 
       Genaue Informationen zu gültigen URL-Mustern finden Sie unter https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.</translation>
 <translation id="4617338332148204752">Metatag-Überprüfung in <ph name="PRODUCT_FRAME_NAME" /> überspringen</translation>
-<translation id="462134014569484584">In dieser Richtlinie ist der <ph name="PLUGIN_VM_NAME" />-Lizenzschlüssel für dieses Gerät angegeben.</translation>
+<translation id="462134014569484584">Mit dieser Richtlinie wird der <ph name="PLUGIN_VM_NAME" />-Lizenzschlüssel für dieses Gerät angegeben.</translation>
 <translation id="4625915093043961294">Weiße Liste für Installation von Erweiterungen konfigurieren</translation>
 <translation id="4632343302005518762">Verarbeitung der gelisteten Inhaltstypen durch <ph name="PRODUCT_FRAME_NAME" /> zulassen</translation>
 <translation id="4632566332417930481">Nutzung der Entwicklertools für Erweiterungen, die über die Unternehmensrichtlinie installiert wurden, nicht zulassen und Nutzung der Entwicklertools in anderen Kontexten zulassen</translation>
@@ -2774,8 +2774,8 @@ Sollte die Richtlinie nicht konfiguriert sein, so wird der Standardsuchanbieter 
           Wenn Sie diese Einstellung aktivieren, werden alle Proxyoptionen, die über die Befehlszeile eingegeben werden, von <ph name="PRODUCT_NAME" /> ignoriert.
 
           Wird die Richtlinie nicht konfiguriert, so können Nutzer ihre eigenen Proxyeinstellungen vornehmen.</translation>
-<translation id="5177260184597743704">Konfigurationsrichtlinie für den Chrome Enterprise-Connector "OnSecurityEvent"</translation>
-<translation id="5179734767316042713">Liste der Einstellungen für Chrome Enterprise-Connector-Services für den Enterprise-Connector "<ph name="ON_SECURITY_EVENT_ENTERPRISE_CONNECTOR" />". Dieser wird ausgelöst, wenn in Chrome ein Sicherheitshinweis auftritt. Hierzu gehören negative Ergebnisse von Analyse-Enterprise-Connectors, Wiederverwendung eines Passworts, Aufrufen unsicherer Seiten und andere sicherheitsrelevante Nutzeraktionen.
+<translation id="5177260184597743704">Konfigurationsrichtlinie für den Chrome Enterprise Connector "OnSecurityEvent"</translation>
+<translation id="5179734767316042713">Liste der Einstellungen für Chrome Enterprise Connectors-Services für den Enterprise Connector "<ph name="ON_SECURITY_EVENT_ENTERPRISE_CONNECTOR" />". Dieser wird ausgelöst, wenn in Chrome ein Sicherheitshinweis auftritt. Hierzu gehören negative Analyseergebnisse von Enterprise Connectors, die Wiederverwendung eines Passworts, das Aufrufen unsicherer Seiten und andere sicherheitsrelevante Nutzeraktionen.
 
       Mit dem Feld "<ph name="ENTERPRISE_CONNECTOR_SERVICE_PROVIDER_FIELD" />" wird festgelegt, für welchen Berichterstellungsanbieter die Einstellungen gelten.
 
@@ -2988,6 +2988,7 @@ Wenn diese Richtlinie zu "false" geändert wird, wirkt sich dies auf den Start n
 
       Diese Richtlinie soll gemeinsam mit der Funktion "Durchgehend aktives VPN" verwendet werden, mit der der Administrator festlegen kann, ob beim Start eine VPN-Verbindung hergestellt werden soll.</translation>
 <translation id="5401696449591951427"><ph name="CHROME_DEVICES_LINK" /> aktivieren</translation>
+<translation id="5404635530342514143">Wenn die Richtlinie aktiviert ist, kann der Nutzer die Schaltfläche anklicken und sich so das Passwort auf dem Sperrbildschirm oder Startbildschirm anzeigen lassen.</translation>
 <translation id="5405289061476885481">Konfiguriert, welche Tastaturlayouts auf der <ph name="PRODUCT_OS_NAME" />-Anmeldeseite erlaubt sind.
 
       Ist für diese Richtlinie eine Liste mit IDs für Eingabemethoden festgelegt, werden die entsprechenden Eingabemethoden auf der Anmeldeseite bereitgestellt. Das oberste Listenelement ist vorab ausgewählt. Während bestimmte Nutzerdaten auf der Anmeldeseite markiert sind, wird zusätzlich zu den von dieser Richtlinie bereitgestellten Eingabemethoden auch die vom Nutzer zuletzt verwendete angeboten. Ist diese Richtlinie nicht konfiguriert, werden die Eingabemethoden auf der Anmeldeseite von der Sprache der Anmeldeseite abgeleitet. Werte, die keine gültigen IDs für Eingabemethoden sind, werden ignoriert.</translation>
@@ -3216,7 +3217,7 @@ Wenn diese Richtlinie zu "false" geändert wird, wirkt sich dies auf den Start n
 
           Vor Version 75 wird die Angabe mehrerer durch Kommas getrennter Erweiterungs-IDs nicht unterstützt und wird deswegen übersprungen. Der verbleibende Teil der Richtlinie wird trotzdem angewendet.</translation>
 <translation id="5645779841392247734">Cookies auf diesen Websites zulassen</translation>
-<translation id="5646234199535103501">Konfigurationsrichtlinie für den Chrome Enterprise-Connector "OnBulkDataEntry"</translation>
+<translation id="5646234199535103501">Konfigurationsrichtlinie für den Chrome Enterprise Connector "OnBulkDataEntry"</translation>
 <translation id="5656177735561364047">Mit dieser Richtlinie wird die Funktion "Geteilte Zwischenablage" aktiviert.</translation>
 <translation id="5666457529647159548">Nutzern erlauben, installierte Clientzertifikate zu verwalten.</translation>
 <translation id="5676740747107495269">Optionen für Bedienungshilfen im Taskleistenmenü auf dem Anmeldebildschirm anzeigen</translation>
@@ -3756,7 +3757,7 @@ Wenn diese Richtlinie nicht konfiguriert ist, können die Nutzer selbst wählen,
 <translation id="6553143066970470539">Displayhelligkeit in %</translation>
 <translation id="6559057113164934677">Keine Website darf auf meine Kamera oder mein Mikrofon zugreifen</translation>
 <translation id="6561396069801924653">Optionen für Bedienungshilfen im Taskleistenmenü anzeigen</translation>
-<translation id="6561900678873266853">Liste der Einstellungen für Chrome Enterprise-Connector-Services für den Enterprise-Connector "<ph name="ON_BULK_DATA_ENTRY_ENTERPRISE_CONNECTOR" />". Dieser wird ausgelöst, wenn Daten aus der Zwischenablage oder durch Drag-and-drop von Webinhalten in Chrome eingegeben werden.
+<translation id="6561900678873266853">Liste der Einstellungen für Chrome Enterprise Connectors-Services für den Enterprise Connector "<ph name="ON_BULK_DATA_ENTRY_ENTERPRISE_CONNECTOR" />". Dieser wird ausgelöst, wenn Daten aus der Zwischenablage oder durch Drag-and-drop von Webinhalten in Chrome eingegeben werden.
 
       Mit den Feldern "<ph name="ENTERPRISE_CONNECTOR_URL_LIST_FIELD" />", "<ph name="ENTERPRISE_CONNECTOR_TAGS_FIELD" />", "<ph name="ENTERPRISE_CONNECTOR_ENABLE_FIELD" />" und "<ph name="ENTERPRISE_CONNECTOR_DISABLE_FIELD" />" wird ermittelt, ob der Connector Daten zur Analyse senden soll, wenn sie auf einer bestimmten Seite eingegeben werden, und welche Tags für die Analyseanfrage verwendet werden sollen. Ein Tag, das einem "enable"-Muster entspricht, wird der Anfrage hinzugefügt, wenn die Seiten-URL mit einem für das jeweilige Tag passenden Muster übereinstimmt – jedoch nur, wenn kein "disable"-Muster mit demselben Tag mit der Seiten-URL übereinstimmt. Die Analyse wird durchgeführt, wenn die Anfrage mindestens ein Tag enthält.
 
@@ -4034,6 +4035,7 @@ Speicherinformationen werden unabhängig von der gewählten Option an die Seite 
 
           Der Skalierungsfaktor muss bei mindestens 100 % liegen.</translation>
 <translation id="7086720321892395256">Mit dieser Richtlinie werden Nutzer- und Geräterichtlinien für den Datenschutzbildschirm festgelegt.</translation>
+<translation id="7095145887485705461">Mit dieser Richtlinie kann eine Schaltfläche zum Einblenden des Passworts auf dem Sperrbildschirm oder Startbildschirm aktiviert werden.</translation>
 <translation id="710003290625031750">Ausführliche Schemabeschreibung:</translation>
 <translation id="7106631983877564505">Ermöglicht das Sperren von Geräten, wenn ein <ph name="PRODUCT_OS_NAME" />-Gerät inaktiv ist oder angehalten wird.
 
@@ -4728,7 +4730,7 @@ Auf nicht verwalteten Geräten dürfen virtuelle Maschinen ausgeführt werden.</
       Wenn Sie diese Einstellung deaktivieren, können Nutzer die AutoFill-Funktion nicht verwenden.
 
       Ist diese Einstellung aktiviert oder nicht konfiguriert, kann der Nutzer selbst entscheiden, ob er AutoFill nutzen möchte. Er kann dann AutoFill-Profile konfigurieren und AutoFill nach eigenem Ermessen aktivieren und deaktivieren.</translation>
-<translation id="8042971420829376618">In dieser Richtlinie ist der <ph name="PLUGIN_VM_NAME" />-Nutzer-ID für dieses Gerät angegeben.</translation>
+<translation id="8042971420829376618">Mit dieser Richtlinie wird die <ph name="PLUGIN_VM_NAME" />-Nutzer-ID für dieses Gerät angegeben.</translation>
 <translation id="8044493735196713914">Startmodus von Geräten melden</translation>
 <translation id="8050080920415773384">Natives Drucken</translation>
 <translation id="8053580360728293758">Dadurch wird der standardmäßige Farbdruckmodus überschrieben. Wenn der Modus nicht verfügbar ist, wird die Richtlinie ignoriert.</translation>

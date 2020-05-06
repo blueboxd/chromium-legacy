@@ -37,6 +37,7 @@ class SyncService;
 
 namespace chromeos {
 
+class CupsPrintersManager;
 class KerberosCredentialsManager;
 
 namespace android_sms {
@@ -88,7 +89,8 @@ class OsSettingsManager : public KeyedService,
       KerberosCredentialsManager* kerberos_credentials_manager,
       ArcAppListPrefs* arc_app_list_prefs,
       signin::IdentityManager* identity_manager,
-      android_sms::AndroidSmsService* android_sms_service);
+      android_sms::AndroidSmsService* android_sms_service,
+      CupsPrintersManager* printers_manager);
   OsSettingsManager(const OsSettingsManager& other) = delete;
   OsSettingsManager& operator=(const OsSettingsManager& other) = delete;
   ~OsSettingsManager() override;

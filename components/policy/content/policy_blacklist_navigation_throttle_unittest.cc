@@ -184,8 +184,14 @@ TEST_F(PolicyBlacklistNavigationThrottleTest, Schemes) {
   SetSafeSitesFilterBehavior(SafeSitesFilterBehavior::kSafeSitesFilterEnabled);
   stub_url_checker_.SetUpValidResponse(true /* is_porn */);
 
-  // The safe sites filter is only used for http(s) URLs.
-  auto navigation_simulator = StartNavigation(GURL("chrome://settings"));
+  // The safe sites filter is only used for http(s) URLs. This test uses
+  // browser-initiated navigation, since renderer-initiated navigations to
+  // WebUI documents are not allowed.
+  auto navigation_simulator =
+      content::NavigationSimulator::CreateBrowserInitiated(
+          GURL("chrome://settings"), RenderViewHostTestHarness::web_contents());
+  navigation_simulator->SetAutoAdvance(false);
+  navigation_simulator->Start();
   ASSERT_FALSE(navigation_simulator->IsDeferred());
   EXPECT_EQ(content::NavigationThrottle::PROCEED,
             navigation_simulator->GetLastThrottleCheckResult());

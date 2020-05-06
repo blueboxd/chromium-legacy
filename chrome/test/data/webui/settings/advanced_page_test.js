@@ -5,30 +5,34 @@
 /** @fileoverview Suite of tests for the Settings advanced page. */
 
 // clang-format off
+import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {CrSettingsPrefs} from 'chrome://settings/settings.js';
-import {getPage, getSection} from 'chrome://test/settings/settings_page_test_util.js';
+
+import {assertEquals, assertGT, assertTrue} from '../chai_assert.js';
+
+import {getPage, getSection} from './settings_page_test_util.js';
 
 // clang-format on
 
 suite('AdvancedPage', function() {
+  /** @type {?SettingsBasicPageElement} */
   let basicPage = null;
 
   suiteSetup(function() {
-    PolymerTest.clearBody();
-    const ui = document.createElement('settings-ui');
-    document.body.appendChild(ui);
+    document.body.innerHTML = '';
+    const settingsUi = document.createElement('settings-ui');
+    document.body.appendChild(settingsUi);
     return CrSettingsPrefs.initialized
         .then(() => {
           return getPage('basic');
         })
         .then(page => {
           basicPage = page;
-          const settingsMain =
-              document.querySelector('settings-ui').$$('settings-main');
+          const settingsMain = /** @type {!SettingsMainElement} */ (
+              settingsUi.$$('settings-main'));
           assertTrue(!!settingsMain);
-          settingsMain.advancedToggleExpanded =
-              !settingsMain.advancedToggleExpanded;
+          settingsMain.advancedToggleExpanded = true;
           flush();
         });
   });
@@ -36,7 +40,7 @@ suite('AdvancedPage', function() {
   /**
    * Verifies the section has a visible #main element and that any possible
    * sub-pages are hidden.
-   * @param {!Node} The DOM node for the section.
+   * @param {!Node} section The DOM node for the section.
    */
   function verifySubpagesHidden(section) {
     // Check if there are sub-pages to verify.
@@ -82,9 +86,10 @@ suite('AdvancedPage', function() {
       sections.push('privacy');
     }
     for (let i = 0; i < sections.length; i++) {
-      const section = getSection(basicPage, sections[i]);
+      const section = getSection(
+          /** @type {!SettingsBasicPageElement} */ (basicPage), sections[i]);
       assertTrue(!!section);
-      verifySubpagesHidden(section);
+      verifySubpagesHidden(/** @type {!Node} */ (section));
     }
   });
 });

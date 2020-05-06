@@ -19,15 +19,7 @@ system_image_name: "system-images;android-28;google_apis_playstore;x86"
 
 avd_package {
   package_name: "chromium/third_party/android_sdk/public/avds/android-28/google_apis_playstore/x86"
-  version: "YsRCl6xqnPtiinkxCEa1QDLLJNjWWlwTwUsaBLvuEscC"
+  version: "bmg8zBF8218BBIET9QlBTJvCtf1Pn1KN4jqJNkp2JlcC"
   dest_path: ".android"
 }
 avd_name: "android_28_google_apis_playstore_x86"
-
-avd_settings {
-  screen {
-    density: 480
-    height: 1920
-    width: 1080
-  }
-}

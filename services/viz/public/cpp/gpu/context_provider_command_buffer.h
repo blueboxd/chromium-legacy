@@ -23,6 +23,7 @@
 #include "gpu/command_buffer/common/scheduling_priority.h"
 #include "gpu/ipc/common/surface_handle.h"
 #include "services/viz/public/cpp/gpu/command_buffer_metrics.h"
+#include "skia/buildflags.h"
 #include "ui/gl/gpu_preference.h"
 #include "url/gurl.h"
 
@@ -168,8 +169,10 @@ class ContextProviderCommandBuffer
   std::unique_ptr<gpu::webgpu::WebGPUInterface> webgpu_interface_;
 
   std::unique_ptr<skia_bindings::GrContextForGLES2Interface> gr_context_;
+#if BUILDFLAG(SKIA_USE_DAWN)
   std::unique_ptr<skia_bindings::GrContextForWebGPUInterface>
       webgpu_gr_context_;
+#endif
   std::unique_ptr<ContextCacheController> cache_controller_;
 
   base::ObserverList<ContextLostObserver>::Unchecked observers_;

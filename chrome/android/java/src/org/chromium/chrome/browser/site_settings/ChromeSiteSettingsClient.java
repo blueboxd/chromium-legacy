@@ -19,6 +19,9 @@ import org.chromium.chrome.browser.settings.ChromeManagedPreferenceDelegate;
 import org.chromium.chrome.browser.ui.favicon.FaviconHelper;
 import org.chromium.chrome.browser.ui.favicon.FaviconHelper.FaviconImageCallback;
 import org.chromium.components.browser_ui.settings.ManagedPreferenceDelegate;
+import org.chromium.components.browser_ui.site_settings.SiteSettingsClient;
+import org.chromium.components.browser_ui.site_settings.SiteSettingsHelpClient;
+import org.chromium.components.browser_ui.site_settings.WebappSettingsClient;
 import org.chromium.components.browser_ui.widget.RoundedIconGenerator;
 import org.chromium.components.embedder_support.browser_context.BrowserContextHandle;
 

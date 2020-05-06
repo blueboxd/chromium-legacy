@@ -52,7 +52,6 @@
 <translation id="1197088940767939838">Portocaliu</translation>
 <translation id="1201402288615127009">Înainte</translation>
 <translation id="1201895884277373915">Mai multe de la acest site</translation>
-<translation id="1205963431094182634">Conectează-te pentru a folosi parolele stocate în contul Google</translation>
 <translation id="1206967143813997005">Semnătură inițială nevalidă</translation>
 <translation id="1209206284964581585">Ascunde momentan</translation>
 <translation id="121201262018556460">Ați încercat să accesați <ph name="DOMAIN" />, dar serverul a furnizat un certificat care conține o cheie slabă. Un atacator ar fi putut sparge cheia privată și este posibil ca serverul să nu fie cel așteptat de dvs. (este posibil să comunicați cu un atacator).</translation>
@@ -1215,7 +1214,6 @@ Permiți ca <ph name="EMBEDDED_URL" /> să folosească cookie-uri și date privi
 <translation id="6116338172782435947">să afișeze textul și imaginile copiate în clipboard</translation>
 <translation id="6120179357481664955">Îți amintești ID-ul UPI?</translation>
 <translation id="6124432979022149706">Conectori Chrome Enterprise</translation>
-<translation id="6135641591018127088">Folosește contul Google ca să generezi o parolă puternică</translation>
 <translation id="6146055958333702838">Verifică toate cablurile și repornește routerele, modemurile sau alte
     dispozitive de rețea pe care le folosești.</translation>
 <translation id="614940544461990577">Încearcă:</translation>
@@ -1261,7 +1259,6 @@ Permiți ca <ph name="EMBEDDED_URL" /> să folosească cookie-uri și date privi
 <translation id="6328639280570009161">Încercați să dezactivați anticiparea rețelei</translation>
 <translation id="6328784461820205019">„Conexiunea nu este privată” sau „&lt;span class="error-code"&gt;NET::ERR_CERT_AUTHORITY_INVALID&lt;/span&gt;” sau „&lt;span class="error-code"&gt;ERR_CERT_COMMON_NAME_INVALID&lt;/span&gt;” sau „&lt;span class="error-code"&gt;NET::ERR_CERT_WEAK_SIGNATURE_ALGORITHM&lt;/span&gt;” sau „&lt;span class="error-code"&gt;ERR_CERT_SYMANTEC_LEGACY&lt;/span&gt;” sau „Eroare privind certificatul SSL”</translation>
 <translation id="6328786501058569169">Acest site este înșelător</translation>
-<translation id="6333334544069706521">Folosește parolele stocate în contul Google</translation>
 <translation id="6337133576188860026">Eliberează mai puțin de <ph name="SIZE" />. Este posibil ca unele site-uri să se încarce mai lent la următoarea accesare.</translation>
 <translation id="6337534724793800597">Filtrați politicile după nume</translation>
 <translation id="6353505687280762741">{COUNT,plural, =0{Niciuna}=1{O parolă (pentru <ph name="DOMAIN_LIST" />, sincronizată)}=2{2 parole (pentru <ph name="DOMAIN_LIST" />, sincronizate)}few{# parole (pentru <ph name="DOMAIN_LIST" />, sincronizate)}other{# de parole (pentru <ph name="DOMAIN_LIST" />, sincronizate)}}</translation>

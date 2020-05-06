@@ -170,6 +170,7 @@
 <translation id="1217483152325416304">Вашите локални податоци наскоро ќе бидат избришани</translation>
 <translation id="1217668622537098248">Врати се на лев клик после дејството</translation>
 <translation id="121783623783282548">Лозинките не се совпаѓаат.</translation>
+<translation id="1218015446623563536">Бришење на Linux</translation>
 <translation id="1218839827383191197"><ph name="BEGIN_PARAGRAPH1" />Услугата според локација на Google користи извори како што се Wi-Fi, мобилни мрежи и сензори за да се процени локацијата на уредот.<ph name="END_PARAGRAPH1" />
     <ph name="BEGIN_PARAGRAPH2" />Може да ја исклучите „Локацијата“ со исклучување на главната поставка за „Локација“ на уредов. Може да го исклучите и користењето Wi-Fi, мобилни мрежи и сензори за локација во поставките за локација.<ph name="END_PARAGRAPH2" /></translation>
 <translation id="122082903575839559">Алгоритам за потпис на сертификат</translation>
@@ -371,7 +372,7 @@
 <translation id="1486096554574027028">Пребарај лозинки</translation>
 <translation id="1487335504823219454">Вклучено - приспособени поставки</translation>
 <translation id="1489664337021920575">Изберете друга опција</translation>
-<translation id="1491985563764252632">Родителот ги оневозможил дозволите за екстензијата.</translation>
+<translation id="1491985563764252632">Родителот ги оневозможил дозволите за екстензиите.</translation>
 <translation id="1493892686965953381">Се чека <ph name="LOAD_STATE_PARAMETER" />…</translation>
 <translation id="1495486559005647033"><ph name="NUM_PRINTERS" /> други достапни уреди.</translation>
 <translation id="1495677929897281669">Назад на картичката</translation>

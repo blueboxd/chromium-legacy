@@ -90,6 +90,7 @@
 <translation id="1947424002851288782">Vācu valodas tastatūra</translation>
 <translation id="1972984168337863910">Notiek failu atsauksmju paneļu izvēršana</translation>
 <translation id="1984603991036629094">Armēņu fonētiskā tastatūra</translation>
+<translation id="1995337122023280937">Pāriet uz faila atrašanās vietu</translation>
 <translation id="2001796770603320721">Pārvaldīt Diskā</translation>
 <translation id="2009067268969781306">Formatējot disku, tiks dzēsti visi tajā uzglabātie dati. Šo darbību nevar atsaukt.</translation>
 <translation id="2028997212275086731">RAR arhīvs</translation>
@@ -141,6 +142,7 @@
 <translation id="2638942478653899953">Nevarēja piekļūt Google diskam. Lūdzu, <ph name="BEGIN_LINK" />atsakieties<ph name="END_LINK" /> un atkārtoti piesakieties.</translation>
 <translation id="2649120831653069427">Varavīksnes zivs</translation>
 <translation id="2661146741306740526">16 x 9</translation>
+<translation id="2664412712123763093">Faila atrašanās vieta</translation>
 <translation id="2672394958563893062">Radās kļūda. Noklikšķiniet, lai sāktu vēlreiz no sākuma.</translation>
 <translation id="2676946222714718093">Tiek atskaņots šeit:</translation>
 <translation id="2735698359135166290">Rumāņu standarta tastatūra</translation>
@@ -349,6 +351,7 @@
 <translation id="5081517858322016911">Tiks dzēsti <ph name="TOTAL_FILE_SIZE" /> failu.</translation>
 <translation id="509429900233858213">Radās kļūda.</translation>
 <translation id="5098629044894065541">Ebreju valoda</translation>
+<translation id="5112685521274804841">Faili šajās mapēs ir tikai lasāmi. Noteiktas darbības netiek atbalstītas.</translation>
 <translation id="5123433949759960244">Basketbols</translation>
 <translation id="5129662217315786329">Poļu valoda</translation>
 <translation id="5144820558584035333">Hangils (3 Set, 390)</translation>
@@ -699,6 +702,7 @@
 <translation id="9034924485347205037">Linux faili</translation>
 <translation id="9035012421917565900">Vienumus nevar pārvietot atpakaļ uz “<ph name="DESTINATION_NAME" />”, tādēļ nevarēsiet atsaukt šo darbību.</translation>
 <translation id="9038620279323455325">Fails ar nosaukumu “<ph name="FILE_NAME" />” jau pastāv. Lūdzu, izvēlieties citu nosaukumu.</translation>
+<translation id="9062992083244091966">Lai atvērtu failus ar <ph name="APP_NAME" /> lietotnēm, vispirms pārvietojiet tos uz <ph name="APP_NAME" /> koplietoto failu mapi.</translation>
 <translation id="9064939804718829769">Notiek pārsūtīšana...</translation>
 <translation id="9065203028668620118">Labot</translation>
 <translation id="9099674669267916096">Lappušu skaits</translation>

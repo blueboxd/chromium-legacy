@@ -50,6 +50,7 @@
 #include "services/network/public/mojom/url_loader.mojom.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/origin_trials/origin_trial_policy.h"
 #include "third_party/blink/public/common/origin_trials/trial_token.h"
 #include "third_party/blink/public/common/origin_trials/trial_token_validator.h"
@@ -691,7 +692,10 @@ class AppCacheUpdateJobTest : public testing::Test,
                                 base::Unretained(this))),
         process_id_(123),
         weak_partition_factory_(static_cast<StoragePartitionImpl*>(
-            BrowserContext::GetDefaultStoragePartition(&browser_context_))) {}
+            BrowserContext::GetDefaultStoragePartition(&browser_context_))) {
+    appcache_require_origin_trial_feature_.InitAndDisableFeature(
+        blink::features::kAppCacheRequireOriginTrial);
+  }
 
   // TODO(ananta/michaeln): Remove dependencies on URLRequest based
   // classes by refactoring the response headers/data into a common class.
@@ -4109,6 +4113,31 @@ class AppCacheUpdateJobTest : public testing::Test,
     // Start update after data write completes asynchronously.
   }
 
+  void OriginTrialRequiredNoTokenTest() {
+    GURL manifest_url = MockHttpServer::GetMockUrl("files/manifest1");
+
+    MakeService();
+    group_ = base::MakeRefCounted<AppCacheGroup>(
+        service_->storage(), manifest_url, service_->storage()->NewGroupId());
+    ASSERT_TRUE(group_->last_full_update_check_time().is_null());
+    AppCacheUpdateJob* update =
+        new AppCacheUpdateJob(service_.get(), group_.get());
+    group_->update_job_ = update;
+
+    MockFrontend* frontend = MakeMockFrontend();
+    AppCacheHost* host = MakeHost(frontend);
+    update->StartUpdate(host, GURL());
+
+    // Set up checks for when update job finishes.
+    do_checks_after_update_finished_ = true;
+    expect_group_obsolete_ = false;
+    expect_group_has_cache_ = false;
+    frontend->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
+
+    WaitForUpdateToFinish();
+  }
+
   void WaitForUpdateToFinish() {
     if (group_->update_status() == AppCacheGroup::IDLE)
       UpdateFinished();
@@ -5015,6 +5044,8 @@ class AppCacheUpdateJobTest : public testing::Test,
   std::map<GURL, std::unique_ptr<HttpHeadersRequestTestJob>>
       http_headers_request_test_jobs_;
 
+  base::test::ScopedFeatureList appcache_require_origin_trial_feature_;
+
   base::WeakPtrFactory<StoragePartitionImpl> weak_partition_factory_;
 };
 
@@ -5429,8 +5460,24 @@ TEST_F(AppCacheUpdateJobTest, CrossOriginHttpsDenied) {
   RunTestOnUIThread(&AppCacheUpdateJobTest::CrossOriginHttpsDeniedTest);
 }
 
-TEST_F(AppCacheUpdateJobTest, OriginTrialUpdate) {
+TEST_F(AppCacheUpdateJobTest, OriginTrialUpdateWithFeature) {
+  // Updating a manifest with a valid token should work
+  // with or without the kAppCacheRequireOriginTrial feature.
+  base::test::ScopedFeatureList f;
+  f.InitAndEnableFeature(blink::features::kAppCacheRequireOriginTrial);
   RunTestOnUIThread(&AppCacheUpdateJobTest::OriginTrialUpdateTest);
+}
+
+TEST_F(AppCacheUpdateJobTest, OriginTrialUpdateWithoutFeature) {
+  base::test::ScopedFeatureList f;
+  f.InitAndDisableFeature(blink::features::kAppCacheRequireOriginTrial);
+  RunTestOnUIThread(&AppCacheUpdateJobTest::OriginTrialUpdateTest);
+}
+
+TEST_F(AppCacheUpdateJobTest, OriginTrialRequiredNoToken) {
+  base::test::ScopedFeatureList f;
+  f.InitAndEnableFeature(blink::features::kAppCacheRequireOriginTrial);
+  RunTestOnUIThread(&AppCacheUpdateJobTest::OriginTrialRequiredNoTokenTest);
 }
 
 }  // namespace appcache_update_job_unittest

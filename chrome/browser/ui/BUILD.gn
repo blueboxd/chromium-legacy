@@ -465,7 +465,7 @@ jumbo_static_library("ui") {
     "//components/flags_ui",
     "//components/gcm_driver",
     "//components/google/core/common",
-    "//components/heap_profiling",
+    "//components/heap_profiling/multi_process",
     "//components/history/content/browser",
     "//components/history/core/browser",
     "//components/history/core/common",
@@ -629,6 +629,7 @@ jumbo_static_library("ui") {
 
   if (is_android) {
     deps += [
+      "//chrome/app:chromium_strings",
       "//chrome/browser/ui/webui/explore_sites_internals:mojo_bindings",
       "//chrome/browser/ui/webui/snippets_internals:mojo_bindings",
       "//components/browser_ui/util/android",
@@ -3835,8 +3836,6 @@ jumbo_static_library("ui") {
       "app_list/crostini/crostini_app_icon.h",
       "app_list/extension_app_context_menu.cc",
       "app_list/extension_app_context_menu.h",
-      "app_list/extension_app_item.cc",
-      "app_list/extension_app_item.h",
       "app_list/extension_app_utils.cc",
       "app_list/extension_app_utils.h",
       "app_list/internal_app/internal_app_metadata.cc",

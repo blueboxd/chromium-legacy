@@ -90,6 +90,7 @@
 <translation id="1947424002851288782">जर्मन कीबोर्ड</translation>
 <translation id="1972984168337863910">फ़ाइल के लिए सुझाव पैनल को बड़ा करें</translation>
 <translation id="1984603991036629094">आर्मेनियाई फ़ोनेटिक कीबोर्ड</translation>
+<translation id="1995337122023280937">फ़ाइल की जगह पर जाएं</translation>
 <translation id="2001796770603320721">डिस्क में प्रबंधित करें</translation>
 <translation id="2009067268969781306">किसी डिस्क को फ़ॉर्मैट करने से उस पर सेव किया गया पूरा डेटा मिट जाएगा. यह कार्रवाई वापस नहीं ली जा सकती.</translation>
 <translation id="2028997212275086731">RAR संग्रह</translation>
@@ -141,6 +142,7 @@
 <translation id="2638942478653899953">Google डिस्क तक नहीं पहुंचा जा सका. कृपया <ph name="BEGIN_LINK" />लॉग आउट करें<ph name="END_LINK" /> और वापस प्रवेश करें.</translation>
 <translation id="2649120831653069427">रेनबोफ़िश</translation>
 <translation id="2661146741306740526">16x9</translation>
+<translation id="2664412712123763093">फ़ाइल की जगह</translation>
 <translation id="2672394958563893062">एक गड़बड़ी हुई. शुरुआत से शुरू करने के लिए रिस्टार्ट पर क्लिक करें.</translation>
 <translation id="2676946222714718093">इस पर चलाया जा रहा है:</translation>
 <translation id="2735698359135166290">रोमानियाई मानक कीबोर्ड</translation>
@@ -349,6 +351,7 @@
 <translation id="5081517858322016911"><ph name="TOTAL_FILE_SIZE" /> फ़ाइलें मिटा दी जाएंगी</translation>
 <translation id="509429900233858213">कोई गड़बड़ी हुई.</translation>
 <translation id="5098629044894065541">हिब्रू</translation>
+<translation id="5112685521274804841">इस फ़ोल्डर में मौजूद फ़ाइलें सिर्फ़ पढ़ी जा सकती हैं. कुछ गतिविधियां नहीं की जा सकतीं.</translation>
 <translation id="5123433949759960244">बास्केटबॉल</translation>
 <translation id="5129662217315786329">पोलिश</translation>
 <translation id="5144820558584035333">हंगुल 3 सेट (390)</translation>
@@ -699,6 +702,7 @@
 <translation id="9034924485347205037">Linux की फ़ाइलें</translation>
 <translation id="9035012421917565900">ये आइटम '<ph name="DESTINATION_NAME" />' में वापस नहीं ले जाए जा सकते हैं, इसलिए आप इस कार्रवाई को पहले जैसा नहीं कर सकेंगे.</translation>
 <translation id="9038620279323455325">"<ph name="FILE_NAME" />" नाम की फ़ाइल पहले से मौजूद है. कृपया कोई दूसरा नाम चुनें.</translation>
+<translation id="9062992083244091966"><ph name="APP_NAME" /> ऐप्लिकेशन से फ़ाइलें खोलने के लिए, पहले उन्हें <ph name="APP_NAME" /> के शेयर की गई फ़ाइलों के फ़ोल्डर में ले जाएं.</translation>
 <translation id="9064939804718829769">स्थानांतरित किया जा रहा है...</translation>
 <translation id="9065203028668620118">बदलाव करें</translation>
 <translation id="9099674669267916096">पेज संख्या</translation>

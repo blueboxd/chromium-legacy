@@ -52,7 +52,6 @@
 <translation id="1197088940767939838">Қызғылт сары</translation>
 <translation id="1201402288615127009">Келесі</translation>
 <translation id="1201895884277373915">Бұл сайттан толығырақ</translation>
-<translation id="1205963431094182634">Google есептік жазбаңызда сақталған құпия сөздерді пайдалану үшін кіріңіз</translation>
 <translation id="1206967143813997005">Бастапқы қолтаңба дұрыс емес</translation>
 <translation id="1209206284964581585">Әзірге жасыру</translation>
 <translation id="121201262018556460"><ph name="DOMAIN" /> доменіне қол жеткізуге әрекет еттіңіз, бірақ сервер кілті әлсіз сертификатты ұсынды. Қаскүнем жеке кілтті бұзып, басқа серверге кіріп жатқан болуыңыз мүмкін (қаскүнеммен байланысып жатқан болуыңыз мүмкін).</translation>
@@ -1216,7 +1215,6 @@
 <translation id="6116338172782435947">Буферге көшірілетін мәтіндер мен кескіндерді көру</translation>
 <translation id="6120179357481664955">UPI идентификаторы сақталсын ба?</translation>
 <translation id="6124432979022149706">Chrome Enterprise Connectors</translation>
-<translation id="6135641591018127088">Күрделі құпия сөз жасау үшін Google есептік жазбаңызды пайдаланыңыз.</translation>
 <translation id="6146055958333702838">Барлық кабельдерді тексеріп, пайдаланып отырған кез
     келген роутерлерді, модемдерді немесе басқа желі құрылғыларын қайта жүктеңіз.</translation>
 <translation id="614940544461990577">Орындап көріңіз:</translation>
@@ -1262,7 +1260,6 @@
 <translation id="6328639280570009161">Желілік болжамды өшіруге әрекет ету</translation>
 <translation id="6328784461820205019">"Байланыс қорғалмаған" немесе "&lt;span class="error-code"&gt;NET::ERR_CERT_AUTHORITY_INVALID&lt;/span&gt;" немесе "&lt;span class="error-code"&gt;ERR_CERT_COMMON_NAME_INVALID&lt;/span&gt;" немесе "&lt;span class="error-code"&gt;NET::ERR_CERT_WEAK_SIGNATURE_ALGORITHM&lt;/span&gt;" немесе "&lt;span class="error-code"&gt;ERR_CERT_SYMANTEC_LEGACY&lt;/span&gt;" немесе "SSL сертификатының қатесі"</translation>
 <translation id="6328786501058569169">Бұл – жалған сайт</translation>
-<translation id="6333334544069706521">Google есептік жазбаңызда сақталған құпия сөздерді пайдаланыңыз.</translation>
 <translation id="6337133576188860026"><ph name="SIZE" /> аз орын босатады .Кейбір сайттар келесі кіргенде баяуырақ жүктелуі мүмкін.</translation>
 <translation id="6337534724793800597">Атауы бойынша сүзгі саясаттары</translation>
 <translation id="6353505687280762741">{COUNT,plural, =0{Жоқ}=1{1 құпия сөз (<ph name="DOMAIN_LIST" />, синхрондалды)}=2{2 құпия сөз (<ph name="DOMAIN_LIST" />, синхрондалды)}other{# құпия сөз (<ph name="DOMAIN_LIST" />, синхрондалды)}}</translation>

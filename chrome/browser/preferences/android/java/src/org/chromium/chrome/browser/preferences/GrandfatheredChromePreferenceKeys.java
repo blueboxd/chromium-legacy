@@ -191,7 +191,9 @@ public class GrandfatheredChromePreferenceKeys {
                 ChromePreferenceKeys.VR_SHOULD_REGISTER_ASSETS_COMPONENT_ON_STARTUP,
                 ChromePreferenceKeys.WEBAPK_EXTRACTED_DEX_VERSION,
                 ChromePreferenceKeys.WEBAPK_LAST_SDK_VERSION,
-                ChromePreferenceKeys.WEBAPK_UNINSTALLED_PACKAGES
+                ChromePreferenceKeys.WEBAPK_UNINSTALLED_PACKAGES,
+                ChromePreferenceKeys.KEY_ZERO_SUGGEST_LIST_SIZE,
+                ChromePreferenceKeys.KEY_ZERO_SUGGEST_HEADER_LIST_SIZE
         );
         // clang-format on
     }
@@ -203,7 +205,20 @@ public class GrandfatheredChromePreferenceKeys {
                 ChromePreferenceKeys.CONTEXTUAL_SEARCH_IMPRESSIONS_WEEK_PREFIX,
                 ChromePreferenceKeys.CUSTOM_TABS_DEX_LAST_UPDATE_TIME_PREF_PREFIX,
                 ChromePreferenceKeys.PAYMENTS_PAYMENT_INSTRUMENT_USE_COUNT,
-                ChromePreferenceKeys.PAYMENTS_PAYMENT_INSTRUMENT_USE_DATE
+                ChromePreferenceKeys.PAYMENTS_PAYMENT_INSTRUMENT_USE_DATE,
+                ChromePreferenceKeys.KEY_ZERO_SUGGEST_URL_PREFIX,
+                ChromePreferenceKeys.KEY_ZERO_SUGGEST_DISPLAY_TEXT_PREFIX,
+                ChromePreferenceKeys.KEY_ZERO_SUGGEST_DESCRIPTION_PREFIX,
+                ChromePreferenceKeys.KEY_ZERO_SUGGEST_NATIVE_TYPE_PREFIX,
+                ChromePreferenceKeys.KEY_ZERO_SUGGEST_IS_SEARCH_TYPE_PREFIX,
+                ChromePreferenceKeys.KEY_ZERO_SUGGEST_ANSWER_TEXT_PREFIX,
+                ChromePreferenceKeys.KEY_ZERO_SUGGEST_GROUP_ID_PREFIX,
+                ChromePreferenceKeys.KEY_ZERO_SUGGEST_IS_DELETABLE_PREFIX,
+                ChromePreferenceKeys.KEY_ZERO_SUGGEST_IS_STARRED_PREFIX,
+                ChromePreferenceKeys.KEY_ZERO_SUGGEST_POST_CONTENT_TYPE_PREFIX,
+                ChromePreferenceKeys.KEY_ZERO_SUGGEST_POST_CONTENT_DATA_PREFIX,
+                ChromePreferenceKeys.KEY_ZERO_SUGGEST_HEADER_GROUP_ID_PREFIX,
+                ChromePreferenceKeys.KEY_ZERO_SUGGEST_HEADER_GROUP_TITLE_PREFIX
         );
         // clang-format on
     }

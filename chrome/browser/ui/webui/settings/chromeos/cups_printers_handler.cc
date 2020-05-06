@@ -26,7 +26,6 @@
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/printing/cups_printers_manager.h"
-#include "chrome/browser/chromeos/printing/cups_printers_manager_factory.h"
 #include "chrome/browser/chromeos/printing/ppd_provider_factory.h"
 #include "chrome/browser/chromeos/printing/printer_configurer.h"
 #include "chrome/browser/chromeos/printing/printer_event_tracker.h"
@@ -264,6 +263,13 @@ GURL GenerateHttpCupsServerUrl(const GURL& server_url) {
 
 }  // namespace
 
+CupsPrintersHandler::CupsPrintersHandler(Profile* profile,
+                                         CupsPrintersManager* printers_manager)
+    : CupsPrintersHandler(profile,
+                          CreatePpdProvider(profile),
+                          PrinterConfigurer::Create(profile),
+                          printers_manager) {}
+
 CupsPrintersHandler::CupsPrintersHandler(
     Profile* profile,
     scoped_refptr<PpdProvider> ppd_provider,
@@ -275,19 +281,6 @@ CupsPrintersHandler::CupsPrintersHandler(
       printers_manager_(printers_manager),
       endpoint_resolver_(std::make_unique<local_discovery::EndpointResolver>()),
       printers_manager_observer_(this) {}
-
-// static
-std::unique_ptr<CupsPrintersHandler> CupsPrintersHandler::Create(
-    content::WebUI* webui) {
-  Profile* profile(Profile::FromWebUI(webui));
-  auto ppd_provider = CreatePpdProvider(profile);
-  auto printer_configurer = PrinterConfigurer::Create(profile);
-  CupsPrintersManager* printers_manager =
-      CupsPrintersManagerFactory::GetForBrowserContext(profile);
-  // Using 'new' to access non-public constructor.
-  return base::WrapUnique(new CupsPrintersHandler(
-      profile, ppd_provider, std::move(printer_configurer), printers_manager));
-}
 
 // static
 std::unique_ptr<CupsPrintersHandler> CupsPrintersHandler::CreateForTesting(
@@ -761,8 +754,7 @@ void CupsPrintersHandler::OnAddedOrEditedPrinterCommon(
       UMA_HISTOGRAM_ENUMERATION("Printing.CUPS.PrinterAdded",
                                 printer.GetProtocol(), Printer::kProtocolMax);
       PRINTER_LOG(USER) << "Performing printer setup";
-      printers_manager_->PrinterInstalled(printer, is_automatic,
-                                          PrinterSetupSource::kSettings);
+      printers_manager_->PrinterInstalled(printer, is_automatic);
       printers_manager_->SavePrinter(printer);
       if (printer.IsUsbProtocol()) {
         // Record UMA for USB printer setup source.

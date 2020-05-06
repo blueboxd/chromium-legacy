@@ -8,6 +8,7 @@ import androidx.annotation.Nullable;
 
 import org.chromium.chrome.browser.browserservices.permissiondelegation.TrustedWebActivityPermissionManager;
 import org.chromium.chrome.browser.webapps.WebappRegistry;
+import org.chromium.components.browser_ui.site_settings.WebappSettingsClient;
 import org.chromium.components.embedder_support.util.Origin;
 
 import java.util.Set;

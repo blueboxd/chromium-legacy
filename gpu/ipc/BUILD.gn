@@ -54,6 +54,10 @@ component("gl_in_process_context") {
     "//ui/gl",
     "//ui/gl/init",
   ]
+
+  if (use_ozone) {
+    deps += [ "//ui/ozone" ]
+  }
 }
 
 component("gpu_thread_holder") {

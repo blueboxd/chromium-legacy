@@ -33,6 +33,9 @@
 #include "components/keep_alive_registry/keep_alive_registry.h"
 #include "components/keep_alive_registry/keep_alive_types.h"
 #include "components/keep_alive_registry/scoped_keep_alive.h"
+#include "components/policy/core/common/mock_configuration_policy_provider.h"
+#include "components/policy/core/common/policy_service_impl.h"
+#include "components/sync_preferences/pref_service_syncable.h"
 #include "content/public/test/browser_task_environment.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_system.h"
@@ -195,13 +198,21 @@ class BackgroundModeManagerTest : public testing::Test {
 
   void SetUp() override {
     command_line_.reset(new base::CommandLine(base::CommandLine::NO_PROGRAM));
+
+    auto policy_service = std::make_unique<policy::PolicyServiceImpl>(
+        std::vector<policy::ConfigurationPolicyProvider*>{&policy_provider_});
     profile_manager_ = CreateTestingProfileManager();
-    profile_ = profile_manager_->CreateTestingProfile("p1");
+    profile_ = profile_manager_->CreateTestingProfile(
+        "p1", nullptr, base::UTF8ToUTF16("p1"), 0, "",
+        TestingProfile::TestingFactories(), base::nullopt,
+        std::move(policy_service));
   }
 
  protected:
   content::BrowserTaskEnvironment task_environment_;
   std::unique_ptr<base::CommandLine> command_line_;
+
+  policy::MockConfigurationPolicyProvider policy_provider_;
 
   std::unique_ptr<TestingProfileManager> profile_manager_;
   // Test profile used by all tests - this is owned by profile_manager_.
@@ -1035,4 +1046,43 @@ TEST_F(BackgroundModeManagerTest,
   Mock::VerifyAndClearExpectations(&manager);
   AssertBackgroundModeActive(manager);
   EXPECT_FALSE(entry->GetBackgroundStatus());
+}
+
+TEST_F(BackgroundModeManagerTest, ForceInstalledExtensionsKeepAlive) {
+  const auto* keep_alive_registry = KeepAliveRegistry::GetInstance();
+  EXPECT_FALSE(keep_alive_registry->IsKeepingAlive());
+
+  base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
+  command_line.AppendSwitch(switches::kNoStartupWindow);
+  TestBackgroundModeManager manager(
+      command_line, profile_manager_->profile_attributes_storage());
+
+  EXPECT_TRUE(keep_alive_registry->IsKeepingAlive());
+  EXPECT_TRUE(keep_alive_registry->WouldRestartWithout({
+      KeepAliveOrigin::BACKGROUND_MODE_MANAGER_STARTUP,
+      KeepAliveOrigin::BACKGROUND_MODE_MANAGER_FORCE_INSTALLED_EXTENSIONS,
+  }));
+
+  manager.RegisterProfile(profile_);
+  EXPECT_TRUE(keep_alive_registry->IsKeepingAlive());
+  EXPECT_TRUE(keep_alive_registry->WouldRestartWithout({
+      KeepAliveOrigin::BACKGROUND_MODE_MANAGER_STARTUP,
+      KeepAliveOrigin::BACKGROUND_MODE_MANAGER_FORCE_INSTALLED_EXTENSIONS,
+  }));
+
+  static_cast<extensions::TestExtensionSystem*>(
+      extensions::ExtensionSystem::Get(profile_))
+      ->CreateExtensionService(&command_line, base::FilePath(), false);
+  static_cast<extensions::TestExtensionSystem*>(
+      extensions::ExtensionSystem::Get(profile_))
+      ->SetReady();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(keep_alive_registry->IsKeepingAlive());
+  EXPECT_TRUE(keep_alive_registry->WouldRestartWithout({
+      KeepAliveOrigin::BACKGROUND_MODE_MANAGER_FORCE_INSTALLED_EXTENSIONS,
+  }));
+
+  manager.GetBackgroundModeData(profile_)->OnForceInstalledExtensionsReady();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(keep_alive_registry->IsKeepingAlive());
 }

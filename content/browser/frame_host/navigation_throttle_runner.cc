@@ -12,7 +12,6 @@
 #include "content/browser/frame_host/navigation_request.h"
 #include "content/browser/frame_host/navigator_delegate.h"
 #include "content/browser/frame_host/origin_policy_throttle.h"
-#include "content/browser/frame_host/webui_navigation_throttle.h"
 #include "content/browser/portal/portal_navigation_throttle.h"
 #include "content/public/browser/navigation_handle.h"
 
@@ -97,9 +96,6 @@ void NavigationThrottleRunner::RegisterNavigationThrottles() {
   NavigationRequest* request = static_cast<NavigationRequest*>(delegate_);
 
   throttles_ = request->GetDelegate()->CreateThrottlesForNavigation(request);
-
-  // Enforce rules for WebUI navigations.
-  AddThrottle(WebUINavigationThrottle::CreateThrottleForNavigation(request));
 
   // Check for renderer-inititated main frame navigations to blocked URL schemes
   // (data, filesystem). This is done early as it may block the main frame

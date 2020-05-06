@@ -33,6 +33,7 @@
 <translation id="1208340532756947324">เปิดการซิงค์เพื่อซิงค์และปรับเปลี่ยนข้อมูลตามความต้องการในอุปกรณ์ทุกเครื่อง</translation>
 <translation id="1209206284964581585">ซ่อนไปก่อน</translation>
 <translation id="1227058898775614466">ประวัติการนำทาง</translation>
+<translation id="1229399675748764149">ทำให้หน้านี้เป็นหน้าแรก</translation>
 <translation id="1231733316453485619">เปิดการซิงค์ไหม</translation>
 <translation id="123724288017357924">โหลดหน้าปัจจุบันซ้ำ โดยไม่คำนึงถึงเนื้อหาที่แคชไว้</translation>
 <translation id="124116460088058876">ภาษาเพิ่มเติม</translation>
@@ -71,6 +72,7 @@
 <translation id="1513352483775369820">บุ๊กมาร์กและประวัติเว็บ</translation>
 <translation id="1513858653616922153">ลบรหัสผ่าน</translation>
 <translation id="1521774566618522728">ใช้งานวันนี้</translation>
+<translation id="1543538514740974167">มาที่นี่ได้เร็วขึ้น</translation>
 <translation id="1544826120773021464">หากต้องการจัดการบัญชี Google ให้แตะปุ่ม "จัดการบัญชี"</translation>
 <translation id="1549000191223877751">ย้ายไปยังหน้าต่างอื่น</translation>
 <translation id="1553358976309200471">อัปเดต Chrome</translation>
@@ -656,7 +658,7 @@
 <translation id="6461962085415701688">เปิดไฟล์ไม่ได้</translation>
 <translation id="6464977750820128603">คุณดูเว็บไซต์ที่เข้าชมใน Chrome และตั้งตัวจับเวลาการใช้เว็บไซต์เหล่านั้นได้\n\nGoogle จะได้รับข้อมูลเกี่ยวกับเว็บไซต์ที่คุณตั้งตัวจับเวลาไว้และระยะเวลาที่คุณเข้าชมเว็บไซต์เหล่านั้น เราจะใช้ข้อมูลนี้เพื่อปรับปรุงไลฟ์สไตล์ดิจิทัลให้ดียิ่งขึ้น</translation>
 <translation id="6475951671322991020">ดาวน์โหลดวิดีโอ</translation>
-<translation id="6477928892249167417">ดูเหมือนว่าเว็บไซต์เหล่านี้จะสำคัญสำหรับคุณ</translation>
+<translation id="6477928892249167417">ดูเหมือนว่าเว็บไซต์ต่อไปนี้จะสำคัญกับคุณ</translation>
 <translation id="6482749332252372425">การดาวน์โหลด <ph name="FILE_NAME" /> ล้มเหลวเพราะพื้นที่เก็บข้อมูลไม่เพียงพอ</translation>
 <translation id="6496823230996795692">โปรดเชื่อมต่ออินเทอร์เน็ตเพื่อใช้ <ph name="APP_NAME" /> เป็นครั้งแรก</translation>
 <translation id="6508722015517270189">รีสตาร์ท Chrome</translation>
@@ -723,13 +725,15 @@
 <translation id="7022756207310403729">เปิดในเบราว์เซอร์</translation>
 <translation id="702463548815491781">แนะนำให้ใช้เมื่อ TalkBack หรือการเข้าถึงด้วยสวิตช์เปิดอยู่</translation>
 <translation id="7029809446516969842">รหัสผ่าน</translation>
+<translation id="703523980599857277">เปลี่ยนหน้าแรก</translation>
 <translation id="7055152154916055070">การเปลี่ยนเส้นทางถูกบล็อก</translation>
 <translation id="7063006564040364415">ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์การซิงค์</translation>
 <translation id="7071521146534760487">จัดการบัญชี</translation>
 <translation id="7077143737582773186">การ์ด SD</translation>
 <translation id="7121362699166175603">ล้างประวัติการเข้าชมและการเติมข้อความอัตโนมัติในแถบที่อยู่เว็บ บัญชี Google อาจมีประวัติการท่องเว็บรูปแบบอื่นๆ ที่ <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /></translation>
+<translation id="7128355412245153445">ดูเว็บไซต์ยอดนิยมและเรื่องราวล่าสุดได้ทุกเมื่อที่แตะปุ่มหน้าแรก</translation>
 <translation id="7138678301420049075">อื่นๆ</translation>
-<translation id="7146622961999026732">ดูเหมือนว่าเว็บไซต์และแอปเหล่านี้จะสำคัญสำหรับคุณ</translation>
+<translation id="7146622961999026732">ดูเหมือนว่าเว็บไซต์และแอปต่อไปนี้จะสำคัญกับคุณ</translation>
 <translation id="7149158118503947153"><ph name="BEGIN_LINK" />โหลดหน้าต้นฉบับ<ph name="END_LINK" />จาก <ph name="DOMAIN_NAME" /></translation>
 <translation id="7149893636342594995">24 ชั่วโมงที่แล้ว</translation>
 <translation id="7173114856073700355">เปิดการตั้งค่า</translation>
@@ -968,11 +972,13 @@
 <translation id="9155898266292537608">หรือคุณจะค้นหาด้วยการแตะอย่างรวดเร็วที่คำๆ หนึ่งก็ได้เช่นกัน</translation>
 <translation id="9169507124922466868">ประวัติการนำทางเปิดอยู่ครึ่งเดียว</translation>
 <translation id="9204836675896933765">เหลืออีก 1 ไฟล์</translation>
+<translation id="9205796607887024517">ควบคุมเรื่องราวที่นี่</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="9209888181064652401">โทรออกไม่ได้</translation>
 <translation id="9219103736887031265">ภาพ</translation>
 <translation id="926205370408745186">นำกิจกรรม Chrome ออกจากไลฟ์สไตล์ดิจิทัล</translation>
 <translation id="932327136139879170">หน้าแรก</translation>
+<translation id="93753284658583800">เปลี่ยนหน้าแรกแล้ว</translation>
 <translation id="938850635132480979">ข้อผิดพลาด: <ph name="ERROR_CODE" /></translation>
 <translation id="95817756606698420">Chrome สามารถใช้ <ph name="BEGIN_BOLD" />Sogou<ph name="END_BOLD" /> สำหรับการค้นหาในประเทศจีน คุณสามารถเปลี่ยนเครื่องมือค้นหาเริ่มต้นนี้ได้ใน<ph name="BEGIN_LINK" />การตั้งค่า<ph name="END_LINK" /></translation>
 <translation id="968900484120156207">หน้าที่คุณเข้าชมจะปรากฏที่นี่</translation>

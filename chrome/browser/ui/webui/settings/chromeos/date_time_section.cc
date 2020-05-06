@@ -4,13 +4,20 @@
 
 #include "chrome/browser/ui/webui/settings/chromeos/date_time_section.h"
 
+#include "base/feature_list.h"
 #include "base/no_destructor.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/system/timezone_util.h"
+#include "chrome/browser/ui/webui/settings/chromeos/date_time_handler.h"
 #include "chrome/browser/ui/webui/webui_util.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
+#include "chromeos/settings/cros_settings_names.h"
+#include "chromeos/settings/system_settings_provider.h"
+#include "chromeos/settings/timezone_settings.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/webui/web_ui_util.h"
@@ -21,7 +28,44 @@ namespace {
 
 const std::vector<SearchConcept>& GetDateTimeSearchConcepts() {
   static const base::NoDestructor<std::vector<SearchConcept>> tags({
-      // TODO(khorimoto): Add "Date & Time" search concepts.
+      {IDS_OS_SETTINGS_TAG_DATE_TIME,
+       mojom::kDateAndTimeSectionPath,
+       mojom::SearchResultIcon::kClock,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSection,
+       {.section = mojom::Section::kDateAndTime}},
+      {IDS_OS_SETTINGS_TAG_DATE_TIME_MILITARY_CLOCK,
+       mojom::kDateAndTimeSectionPath,
+       mojom::SearchResultIcon::kClock,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSetting,
+       {.setting = mojom::Setting::k24HourClock},
+       {IDS_OS_SETTINGS_TAG_DATE_TIME_MILITARY_CLOCK_ALT1,
+        SearchConcept::kAltTagEnd}},
+  });
+  return *tags;
+}
+
+const std::vector<SearchConcept>& GetFineGrainedTimeZoneSearchConcepts() {
+  static const base::NoDestructor<std::vector<SearchConcept>> tags({
+      {IDS_OS_SETTINGS_TAG_DATE_TIME_ZONE_SUBPAGE,
+       mojom::kTimeZoneSubpagePath,
+       mojom::SearchResultIcon::kClock,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSubpage,
+       {.subpage = mojom::Subpage::kTimeZone}},
+  });
+  return *tags;
+}
+
+const std::vector<SearchConcept>& GetNoFineGrainedTimeZoneSearchConcepts() {
+  static const base::NoDestructor<std::vector<SearchConcept>> tags({
+      {IDS_OS_SETTINGS_TAG_DATE_TIME_ZONE,
+       mojom::kDateAndTimeSectionPath,
+       mojom::SearchResultIcon::kClock,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSetting,
+       {.setting = mojom::Setting::kChangeTimeZone}},
   });
   return *tags;
 }
@@ -31,6 +75,12 @@ const std::vector<SearchConcept>& GetDateTimeSearchConcepts() {
 DateTimeSection::DateTimeSection(Profile* profile, Delegate* per_page_delegate)
     : OsSettingsSection(profile, per_page_delegate) {
   delegate()->AddSearchTags(GetDateTimeSearchConcepts());
+
+  SystemSettingsProvider provider;
+  if (provider.Get(chromeos::kFineGrainedTimeZoneResolveEnabled)->GetBool())
+    delegate()->AddSearchTags(GetFineGrainedTimeZoneSearchConcepts());
+  else
+    delegate()->AddSearchTags(GetNoFineGrainedTimeZoneSearchConcepts());
 }
 
 DateTimeSection::~DateTimeSection() = default;
@@ -66,6 +116,19 @@ void DateTimeSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
       base::ASCIIToUTF16(base::StringPrintf(
           chrome::kTimeZoneSettingsLearnMoreURL,
           g_browser_process->GetApplicationLocale().c_str())));
+
+  // Set the initial time zone to show.
+  html_source->AddString("timeZoneName", system::GetCurrentTimezoneName());
+  html_source->AddString(
+      "timeZoneID",
+      system::TimezoneSettings::GetInstance()->GetCurrentTimezoneID());
+  html_source->AddBoolean(
+      "timeActionsProtectedForChild",
+      base::FeatureList::IsEnabled(features::kParentAccessCodeForTimeChange));
+}
+
+void DateTimeSection::AddHandlers(content::WebUI* web_ui) {
+  web_ui->AddMessageHandler(std::make_unique<DateTimeHandler>());
 }
 
 }  // namespace settings

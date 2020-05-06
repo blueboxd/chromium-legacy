@@ -242,6 +242,10 @@ class ClientHintsBrowserTest : public InProcessBrowserTest,
         https_server_.GetURL("/http_equiv_accept_ch_with_lifetime.html");
 
     redirect_url_ = https_cross_origin_server_.GetURL("/redirect.html");
+
+    accept_ch_empty_ = https_server_.GetURL("/accept_ch_empty.html");
+    http_equiv_accept_ch_merge_ =
+        https_server_.GetURL("/http_equiv_accept_ch_merge.html");
   }
 
   ~ClientHintsBrowserTest() override {}
@@ -417,6 +421,14 @@ class ClientHintsBrowserTest : public InProcessBrowserTest,
   }
 
   const GURL& redirect_url() const { return redirect_url_; }
+
+  // A URL to a page with a response containing an empty accept_ch header.
+  const GURL& accept_ch_empty() const { return accept_ch_empty_; }
+
+  // A page where some hints are in accept-ch header, some in http-equiv.
+  const GURL& http_equiv_accept_ch_merge() const {
+    return http_equiv_accept_ch_merge_;
+  }
 
   size_t count_user_agent_hint_headers_seen() const {
     base::AutoLock lock(count_headers_lock_);
@@ -752,6 +764,8 @@ class ClientHintsBrowserTest : public InProcessBrowserTest,
   GURL http_equiv_accept_ch_without_lifetime_img_localhost_;
   GURL http_equiv_accept_ch_with_lifetime_;
   GURL redirect_url_;
+  GURL accept_ch_empty_;
+  GURL http_equiv_accept_ch_merge_;
 
   std::string main_frame_ua_observed_;
   std::string main_frame_ua_full_version_observed_;
@@ -1078,6 +1092,35 @@ IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest, UserAgentOverrideClientHints) {
       "window.domAutomationController.send(document.body.textContent);",
       &header_value));
   EXPECT_EQ("foobar\n\"Foobarnator\";v=\"3.14\"\n?1", header_value);
+}
+
+IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest, EmptyAcceptCH) {
+  // First navigate to a page that enables hints. No CH for it yet, since
+  // nothing opted in.
+  GURL gurl = accept_ch_with_lifetime_url();
+  SetClientHintExpectationsOnMainFrame(false);
+  ui_test_utils::NavigateToURL(browser(), gurl);
+
+  // Now go to a page with blank Accept-CH. Should get hints from previous
+  // visit.
+  gurl = accept_ch_empty();
+  SetClientHintExpectationsOnMainFrame(true);
+  ui_test_utils::NavigateToURL(browser(), gurl);
+
+  // Visiting again should not expect them since we opted out again.
+  SetClientHintExpectationsOnMainFrame(false);
+  ui_test_utils::NavigateToURL(browser(), gurl);
+}
+
+IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest, MergeAcceptCH) {
+  // Go to page where some hints are enabled by headers, some by
+  // http-equiv. It shouldn't get hints itself (due to first visit),
+  // but subresources should get all the client hints.
+  GURL gurl = http_equiv_accept_ch_merge();
+  SetClientHintExpectationsOnMainFrame(false);
+  SetClientHintExpectationsOnSubresources(true);
+  ui_test_utils::NavigateToURL(browser(), gurl);
+  EXPECT_EQ(expected_client_hints_number, count_client_hints_headers_seen());
 }
 
 void ClientHintsBrowserTest::TestProfilesIndependent(Browser* browser_a,

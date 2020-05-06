@@ -30,10 +30,10 @@ import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.chrome.browser.notifications.NotificationChannelStatus;
 import org.chromium.chrome.browser.notifications.NotificationSettingsBridge;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.browser.site_settings.PermissionInfo;
 import org.chromium.chrome.test.ChromeBrowserTestRule;
 import org.chromium.components.browser_ui.notifications.NotificationManagerProxy;
 import org.chromium.components.browser_ui.notifications.NotificationManagerProxyImpl;
+import org.chromium.components.browser_ui.site_settings.PermissionInfo;
 import org.chromium.components.content_settings.ContentSettingValues;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 

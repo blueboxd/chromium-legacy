@@ -127,17 +127,37 @@ base::Optional<DISPLAYCONFIG_PATH_INFO> GetPathInfo(HMONITOR monitor) {
   return base::nullopt;
 }
 
-float GetMonitorSDRWhiteLevel(HMONITOR monitor) {
-  if (auto path_info = GetPathInfo(monitor)) {
+float GetSDRWhiteLevel(const base::Optional<DISPLAYCONFIG_PATH_INFO>& path) {
+  if (path) {
     DISPLAYCONFIG_SDR_WHITE_LEVEL white_level = {};
     white_level.header.type = DISPLAYCONFIG_DEVICE_INFO_GET_SDR_WHITE_LEVEL;
     white_level.header.size = sizeof(white_level);
-    white_level.header.adapterId = path_info->targetInfo.adapterId;
-    white_level.header.id = path_info->targetInfo.id;
+    white_level.header.adapterId = path->targetInfo.adapterId;
+    white_level.header.id = path->targetInfo.id;
     if (DisplayConfigGetDeviceInfo(&white_level.header) == ERROR_SUCCESS)
       return white_level.SDRWhiteLevel * 80.0 / 1000.0;
   }
   return 200.0f;
+}
+
+DISPLAYCONFIG_VIDEO_OUTPUT_TECHNOLOGY GetOutputTechnology(
+    const base::Optional<DISPLAYCONFIG_PATH_INFO>& path) {
+  if (path)
+    return path->targetInfo.outputTechnology;
+  return DISPLAYCONFIG_OUTPUT_TECHNOLOGY_OTHER;
+}
+
+// Returns true if |tech| represents an internal display (eg. a laptop screen).
+bool IsInternalOutputTechnology(DISPLAYCONFIG_VIDEO_OUTPUT_TECHNOLOGY tech) {
+  switch (tech) {
+    case DISPLAYCONFIG_OUTPUT_TECHNOLOGY_INTERNAL:
+    case DISPLAYCONFIG_OUTPUT_TECHNOLOGY_DISPLAYPORT_EMBEDDED:
+    case DISPLAYCONFIG_OUTPUT_TECHNOLOGY_UDI_EMBEDDED:
+      return true;
+
+    default:
+      return false;
+  }
 }
 
 Display::Rotation OrientationToRotation(DWORD orientation) {
@@ -424,13 +444,14 @@ BOOL CALLBACK EnumMonitorForDisplayInfoCallback(HMONITOR monitor,
   const gfx::Vector2dF pixels_per_inch =
       GetMonitorPixelsPerInch(monitor).value_or(
           GetDefaultMonitorPhysicalPixelsPerInch());
+  const auto path_info = GetPathInfo(monitor);
 
   auto* display_infos = reinterpret_cast<std::vector<DisplayInfo>*>(data);
   DCHECK(display_infos);
-  display_infos->emplace_back(monitor_info, GetMonitorScaleFactor(monitor),
-                              GetMonitorSDRWhiteLevel(monitor),
-                              display_settings.rotation,
-                              display_settings.frequency, pixels_per_inch);
+  display_infos->emplace_back(
+      monitor_info, GetMonitorScaleFactor(monitor), GetSDRWhiteLevel(path_info),
+      display_settings.rotation, display_settings.frequency, pixels_per_inch,
+      GetOutputTechnology(path_info));
   return TRUE;
 }
 
@@ -739,6 +760,13 @@ void ScreenWin::UpdateFromDisplayInfos(
   screen_win_displays_ = DisplayInfosToScreenWinDisplays(
       display_infos, color_profile_reader_.get(), hdr_enabled_);
   displays_ = ScreenWinDisplaysToDisplays(screen_win_displays_);
+  for (const auto& display_info : display_infos) {
+    if (IsInternalOutputTechnology(display_info.output_technology())) {
+      // TODO(crbug.com/1078903): Support multiple internal displays.
+      Display::SetInternalDisplayId(display_info.id());
+      break;
+    }
+  }
 }
 
 void ScreenWin::Initialize() {

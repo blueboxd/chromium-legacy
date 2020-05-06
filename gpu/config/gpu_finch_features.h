@@ -42,6 +42,8 @@ GPU_EXPORT extern const base::Feature kGpuWatchdogV2NewTimeout;
 GPU_EXPORT extern const base::Feature kMetal;
 #endif
 
+GPU_EXPORT extern const base::Feature kOopRasterizationDDL;
+
 GPU_EXPORT extern const base::Feature kSharedImageManager;
 
 GPU_EXPORT extern const base::Feature kVaapiJpegImageDecodeAcceleration;

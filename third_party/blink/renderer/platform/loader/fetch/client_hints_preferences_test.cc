@@ -61,8 +61,9 @@ TEST_F(ClientHintsPreferencesTest, BasicSecure) {
     SCOPED_TRACE(testing::Message() << test_case.header_value);
     ClientHintsPreferences preferences;
     const KURL kurl(String::FromUTF8("https://www.google.com/"));
-    preferences.UpdateFromAcceptClientHintsHeader(test_case.header_value, kurl,
-                                                  nullptr);
+    preferences.UpdateFromAcceptClientHintsHeader(
+        test_case.header_value, kurl,
+        ClientHintsPreferences::UpdateMode::kReplace, nullptr);
     EXPECT_EQ(test_case.expectation_resource_width,
               preferences.ShouldSend(
                   network::mojom::WebClientHintsType::kResourceWidth));
@@ -93,9 +94,10 @@ TEST_F(ClientHintsPreferencesTest, BasicSecure) {
         test_case.expectation_ua_model,
         preferences.ShouldSend(network::mojom::WebClientHintsType::kUAModel));
 
-    // Calling UpdateFromAcceptClientHintsHeader with empty header should have
-    // no impact on client hint preferences.
-    preferences.UpdateFromAcceptClientHintsHeader("", kurl, nullptr);
+    // Calling UpdateFromAcceptClientHintsHeader with an invalid header should
+    // have no impact on client hint preferences, for either mode.
+    preferences.UpdateFromAcceptClientHintsHeader(
+        "1, 42,", kurl, ClientHintsPreferences::UpdateMode::kReplace, nullptr);
     EXPECT_EQ(test_case.expectation_resource_width,
               preferences.ShouldSend(
                   network::mojom::WebClientHintsType::kResourceWidth));
@@ -105,9 +107,8 @@ TEST_F(ClientHintsPreferencesTest, BasicSecure) {
               preferences.ShouldSend(
                   network::mojom::WebClientHintsType::kViewportWidth));
 
-    // Calling UpdateFromAcceptClientHintsHeader with an invalid header should
-    // have no impact on client hint preferences.
-    preferences.UpdateFromAcceptClientHintsHeader("foobar", kurl, nullptr);
+    preferences.UpdateFromAcceptClientHintsHeader(
+        "1, 42,", kurl, ClientHintsPreferences::UpdateMode::kMerge, nullptr);
     EXPECT_EQ(test_case.expectation_resource_width,
               preferences.ShouldSend(
                   network::mojom::WebClientHintsType::kResourceWidth));
@@ -116,15 +117,41 @@ TEST_F(ClientHintsPreferencesTest, BasicSecure) {
     EXPECT_EQ(test_case.expectation_viewport_width,
               preferences.ShouldSend(
                   network::mojom::WebClientHintsType::kViewportWidth));
+
+    // Calling UpdateFromAcceptClientHintsHeader with empty header in merge
+    // mode is also a no-op.
+    preferences.UpdateFromAcceptClientHintsHeader(
+        "", kurl, ClientHintsPreferences::UpdateMode::kMerge, nullptr);
+    EXPECT_EQ(test_case.expectation_resource_width,
+              preferences.ShouldSend(
+                  network::mojom::WebClientHintsType::kResourceWidth));
+    EXPECT_EQ(test_case.expectation_dpr,
+              preferences.ShouldSend(network::mojom::WebClientHintsType::kDpr));
+    EXPECT_EQ(test_case.expectation_viewport_width,
+              preferences.ShouldSend(
+                  network::mojom::WebClientHintsType::kViewportWidth));
+
+    // Calling UpdateFromAcceptClientHintsHeader with empty header in replace
+    // mode should clear client hint preferences.
+    preferences.UpdateFromAcceptClientHintsHeader(
+        "", kurl, ClientHintsPreferences::UpdateMode::kReplace, nullptr);
+    EXPECT_EQ(false, preferences.ShouldSend(
+                         network::mojom::WebClientHintsType::kResourceWidth));
+    EXPECT_EQ(false,
+              preferences.ShouldSend(network::mojom::WebClientHintsType::kDpr));
+    EXPECT_EQ(false, preferences.ShouldSend(
+                         network::mojom::WebClientHintsType::kViewportWidth));
   }
 }
 
-// Verify that the set of enabled client hints is updated every time Update*()
-// methods are called.
-TEST_F(ClientHintsPreferencesTest, SecureEnabledTypesAreUpdated) {
+// Verify that the set of enabled client hints is overwritten every time
+// Update*() methods are called with replace mode.
+TEST_F(ClientHintsPreferencesTest, SecureEnabledTypesReplace) {
   ClientHintsPreferences preferences;
   const KURL kurl(String::FromUTF8("https://www.google.com/"));
-  preferences.UpdateFromAcceptClientHintsHeader("rtt, downlink", kurl, nullptr);
+  preferences.UpdateFromAcceptClientHintsHeader(
+      "rtt, downlink", kurl, ClientHintsPreferences::UpdateMode::kReplace,
+      nullptr);
 
   EXPECT_EQ(base::TimeDelta(), preferences.GetPersistDuration());
   EXPECT_FALSE(preferences.ShouldSend(
@@ -148,9 +175,10 @@ TEST_F(ClientHintsPreferencesTest, SecureEnabledTypesAreUpdated) {
   EXPECT_FALSE(
       preferences.ShouldSend(network::mojom::WebClientHintsType::kUAModel));
 
-  // Calling UpdateFromAcceptClientHintsHeader with empty header should have
-  // no impact on client hint preferences.
-  preferences.UpdateFromAcceptClientHintsHeader("", kurl, nullptr);
+  // Calling UpdateFromAcceptClientHintsHeader with an invalid header should
+  // have no impact on client hint preferences.
+  preferences.UpdateFromAcceptClientHintsHeader(
+      "1,,42", kurl, ClientHintsPreferences::UpdateMode::kReplace, nullptr);
   EXPECT_EQ(base::TimeDelta(), preferences.GetPersistDuration());
   EXPECT_FALSE(preferences.ShouldSend(
       network::mojom::WebClientHintsType::kResourceWidth));
@@ -169,15 +197,100 @@ TEST_F(ClientHintsPreferencesTest, SecureEnabledTypesAreUpdated) {
   EXPECT_FALSE(
       preferences.ShouldSend(network::mojom::WebClientHintsType::kUAModel));
 
+  // Calling UpdateFromAcceptClientHintsHeader with "width" header should
+  // replace preferences with just width.
+  preferences.UpdateFromAcceptClientHintsHeader(
+      "width", kurl, ClientHintsPreferences::UpdateMode::kReplace, nullptr);
+  EXPECT_EQ(base::TimeDelta(), preferences.GetPersistDuration());
+  EXPECT_TRUE(preferences.ShouldSend(
+      network::mojom::WebClientHintsType::kResourceWidth));
+  EXPECT_FALSE(
+      preferences.ShouldSend(network::mojom::WebClientHintsType::kRtt));
+  EXPECT_FALSE(
+      preferences.ShouldSend(network::mojom::WebClientHintsType::kDownlink));
+  EXPECT_FALSE(
+      preferences.ShouldSend(network::mojom::WebClientHintsType::kEct));
+  EXPECT_FALSE(
+      preferences.ShouldSend(network::mojom::WebClientHintsType::kLang));
+  EXPECT_FALSE(preferences.ShouldSend(network::mojom::WebClientHintsType::kUA));
+  EXPECT_FALSE(
+      preferences.ShouldSend(network::mojom::WebClientHintsType::kUAArch));
+  EXPECT_FALSE(
+      preferences.ShouldSend(network::mojom::WebClientHintsType::kUAPlatform));
+  EXPECT_FALSE(
+      preferences.ShouldSend(network::mojom::WebClientHintsType::kUAModel));
+
+  // Calling UpdateFromAcceptClientHintsHeader with empty header should empty
+  // client hint preferences.
+  preferences.UpdateFromAcceptClientHintsHeader(
+      "", kurl, ClientHintsPreferences::UpdateMode::kReplace, nullptr);
+  EXPECT_EQ(base::TimeDelta(), preferences.GetPersistDuration());
+  EXPECT_FALSE(preferences.ShouldSend(
+      network::mojom::WebClientHintsType::kResourceWidth));
+  EXPECT_FALSE(
+      preferences.ShouldSend(network::mojom::WebClientHintsType::kRtt));
+  EXPECT_FALSE(
+      preferences.ShouldSend(network::mojom::WebClientHintsType::kDownlink));
+  EXPECT_FALSE(
+      preferences.ShouldSend(network::mojom::WebClientHintsType::kEct));
+  EXPECT_FALSE(
+      preferences.ShouldSend(network::mojom::WebClientHintsType::kLang));
+  EXPECT_FALSE(preferences.ShouldSend(network::mojom::WebClientHintsType::kUA));
+  EXPECT_FALSE(
+      preferences.ShouldSend(network::mojom::WebClientHintsType::kUAArch));
+  EXPECT_FALSE(
+      preferences.ShouldSend(network::mojom::WebClientHintsType::kUAPlatform));
+  EXPECT_FALSE(
+      preferences.ShouldSend(network::mojom::WebClientHintsType::kUAModel));
+
+  preferences.UpdateFromAcceptClientHintsLifetimeHeader("1000", kurl, nullptr);
+  EXPECT_EQ(base::TimeDelta::FromSeconds(1000),
+            preferences.GetPersistDuration());
+}
+
+// Verify that the set of enabled client hints is merged every time
+// Update*() methods are called with merge mode.
+TEST_F(ClientHintsPreferencesTest, SecureEnabledTypesMerge) {
+  ClientHintsPreferences preferences;
+  const KURL kurl(String::FromUTF8("https://www.google.com/"));
+  preferences.UpdateFromAcceptClientHintsHeader(
+      "rtt, downlink", kurl, ClientHintsPreferences::UpdateMode::kMerge,
+      nullptr);
+
+  EXPECT_EQ(base::TimeDelta(), preferences.GetPersistDuration());
+  EXPECT_FALSE(preferences.ShouldSend(
+      network::mojom::WebClientHintsType::kResourceWidth));
+  EXPECT_FALSE(
+      preferences.ShouldSend(network::mojom::WebClientHintsType::kDpr));
+  EXPECT_FALSE(preferences.ShouldSend(
+      network::mojom::WebClientHintsType::kViewportWidth));
+  EXPECT_TRUE(preferences.ShouldSend(network::mojom::WebClientHintsType::kRtt));
+  EXPECT_TRUE(
+      preferences.ShouldSend(network::mojom::WebClientHintsType::kDownlink));
+  EXPECT_FALSE(
+      preferences.ShouldSend(network::mojom::WebClientHintsType::kEct));
+  EXPECT_FALSE(
+      preferences.ShouldSend(network::mojom::WebClientHintsType::kLang));
+  EXPECT_FALSE(preferences.ShouldSend(network::mojom::WebClientHintsType::kUA));
+  EXPECT_FALSE(
+      preferences.ShouldSend(network::mojom::WebClientHintsType::kUAArch));
+  EXPECT_FALSE(
+      preferences.ShouldSend(network::mojom::WebClientHintsType::kUAPlatform));
+  EXPECT_FALSE(
+      preferences.ShouldSend(network::mojom::WebClientHintsType::kUAModel));
+
   // Calling UpdateFromAcceptClientHintsHeader with an invalid header should
   // have no impact on client hint preferences.
-  preferences.UpdateFromAcceptClientHintsHeader("foobar", kurl, nullptr);
+  preferences.UpdateFromAcceptClientHintsHeader(
+      "1,,42", kurl, ClientHintsPreferences::UpdateMode::kMerge, nullptr);
   EXPECT_EQ(base::TimeDelta(), preferences.GetPersistDuration());
   EXPECT_FALSE(preferences.ShouldSend(
       network::mojom::WebClientHintsType::kResourceWidth));
   EXPECT_TRUE(preferences.ShouldSend(network::mojom::WebClientHintsType::kRtt));
   EXPECT_TRUE(
       preferences.ShouldSend(network::mojom::WebClientHintsType::kDownlink));
+  EXPECT_FALSE(
+      preferences.ShouldSend(network::mojom::WebClientHintsType::kEct));
   EXPECT_FALSE(
       preferences.ShouldSend(network::mojom::WebClientHintsType::kLang));
   EXPECT_FALSE(preferences.ShouldSend(network::mojom::WebClientHintsType::kUA));
@@ -189,8 +302,31 @@ TEST_F(ClientHintsPreferencesTest, SecureEnabledTypesAreUpdated) {
       preferences.ShouldSend(network::mojom::WebClientHintsType::kUAModel));
 
   // Calling UpdateFromAcceptClientHintsHeader with "width" header should
-  // have no impact on already enabled client hint preferences.
-  preferences.UpdateFromAcceptClientHintsHeader("width", kurl, nullptr);
+  // replace add width to preferences
+  preferences.UpdateFromAcceptClientHintsHeader(
+      "width", kurl, ClientHintsPreferences::UpdateMode::kMerge, nullptr);
+  EXPECT_EQ(base::TimeDelta(), preferences.GetPersistDuration());
+  EXPECT_TRUE(preferences.ShouldSend(
+      network::mojom::WebClientHintsType::kResourceWidth));
+  EXPECT_TRUE(preferences.ShouldSend(network::mojom::WebClientHintsType::kRtt));
+  EXPECT_TRUE(
+      preferences.ShouldSend(network::mojom::WebClientHintsType::kDownlink));
+  EXPECT_FALSE(
+      preferences.ShouldSend(network::mojom::WebClientHintsType::kEct));
+  EXPECT_FALSE(
+      preferences.ShouldSend(network::mojom::WebClientHintsType::kLang));
+  EXPECT_FALSE(preferences.ShouldSend(network::mojom::WebClientHintsType::kUA));
+  EXPECT_FALSE(
+      preferences.ShouldSend(network::mojom::WebClientHintsType::kUAArch));
+  EXPECT_FALSE(
+      preferences.ShouldSend(network::mojom::WebClientHintsType::kUAPlatform));
+  EXPECT_FALSE(
+      preferences.ShouldSend(network::mojom::WebClientHintsType::kUAModel));
+
+  // Calling UpdateFromAcceptClientHintsHeader with empty header should not
+  // change anything with the mode is merge.
+  preferences.UpdateFromAcceptClientHintsHeader(
+      "", kurl, ClientHintsPreferences::UpdateMode::kMerge, nullptr);
   EXPECT_EQ(base::TimeDelta(), preferences.GetPersistDuration());
   EXPECT_TRUE(preferences.ShouldSend(
       network::mojom::WebClientHintsType::kResourceWidth));
@@ -220,7 +356,8 @@ TEST_F(ClientHintsPreferencesTest, Insecure) {
     const KURL kurl = use_secure_url
                           ? KURL(String::FromUTF8("https://www.google.com/"))
                           : KURL(String::FromUTF8("http://www.google.com/"));
-    preferences.UpdateFromAcceptClientHintsHeader("dpr", kurl, nullptr);
+    preferences.UpdateFromAcceptClientHintsHeader(
+        "dpr", kurl, ClientHintsPreferences::UpdateMode::kReplace, nullptr);
     EXPECT_EQ(use_secure_url,
               preferences.ShouldSend(network::mojom::WebClientHintsType::kDpr));
   }
@@ -298,8 +435,9 @@ TEST_F(ClientHintsPreferencesTest, ParseHeaders) {
     EXPECT_EQ(base::TimeDelta(), persist_duration);
 
     const KURL kurl(String::FromUTF8("https://www.google.com/"));
-    preferences.UpdateFromAcceptClientHintsHeader(test.accept_ch_header_value,
-                                                  kurl, nullptr);
+    preferences.UpdateFromAcceptClientHintsHeader(
+        test.accept_ch_header_value, kurl,
+        ClientHintsPreferences::UpdateMode::kReplace, nullptr);
     preferences.UpdateFromAcceptClientHintsLifetimeHeader(
         test.accept_lifetime_header_value, kurl, nullptr);
 

@@ -33,6 +33,7 @@
 <translation id="1208340532756947324">Սարքերը համաժամացնելու և անհատականացնելու համար միացրեք համաժամացումը</translation>
 <translation id="1209206284964581585">Առայժմ թաքցնել</translation>
 <translation id="1227058898775614466">Նավարկման պատմություն</translation>
+<translation id="1229399675748764149">Դարձրեք այս էջը գլխավոր</translation>
 <translation id="1231733316453485619">Միացնե՞լ համաժամացումը</translation>
 <translation id="123724288017357924">Վերաբեռնել ընթացիկ էջը` անտեսելով հիշապահեստի բովանդակությունը</translation>
 <translation id="124116460088058876">Այլ լեզուներ</translation>
@@ -71,6 +72,7 @@
 <translation id="1513352483775369820">Էջանիշներ և վեբ պատմություն</translation>
 <translation id="1513858653616922153">Ջնջել գաղտնաբառը</translation>
 <translation id="1521774566618522728">Այսօր ակտիվ է եղել</translation>
+<translation id="1543538514740974167">Արագ հասանելիություն</translation>
 <translation id="1544826120773021464">Google հաշիվը կառավարելու համար հպեք «Կառավարել հաշիվը» կոճակին</translation>
 <translation id="1549000191223877751">Տեղափոխել այլ պատուհան</translation>
 <translation id="1553358976309200471">Թարմացնել Chrome-ը</translation>
@@ -723,11 +725,13 @@
 <translation id="7022756207310403729">Բացել դիտարկիչով</translation>
 <translation id="702463548815491781">Խորհուրդ է տրվում, երբ TalkBack-ը կամ Switch Access-ը միացված են</translation>
 <translation id="7029809446516969842">Գաղտնաբառեր</translation>
+<translation id="703523980599857277">Փոխել գլխավոր էջը</translation>
 <translation id="7055152154916055070">Վերահասցեավորումն արգելափակված է՝</translation>
 <translation id="7063006564040364415">Չհաջողվեց կապակցվել համաժամացման սերվերին:</translation>
 <translation id="7071521146534760487">Կառավարել հաշիվը</translation>
 <translation id="7077143737582773186">SD քարտ</translation>
 <translation id="7121362699166175603">Մաքրում է պատմությունն ու ինքնալրացումները հասցեագոտում: Ձեր Google հաշվում կարող են լինել այցելությունների պատմության այլ ձևեր ևս: Դրանք կարող եք գտնել <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> էջում:</translation>
+<translation id="7128355412245153445">Ձեր թոփ կայքերն ու վերջին հոդվածները տեսնելու համար պարզապես սեղմեք Սկիզբ կոճակը</translation>
 <translation id="7138678301420049075">Այլ</translation>
 <translation id="7146622961999026732">Այս կայքերը և հավելվածները կարող են կարևոր լինել ձեզ համար՝</translation>
 <translation id="7149158118503947153"><ph name="BEGIN_LINK" />Բեռնել էջի բնօրինակը<ph name="END_LINK" /> <ph name="DOMAIN_NAME" /> տիրույթից</translation>
@@ -968,11 +972,13 @@
 <translation id="9155898266292537608">Կարող եք նաև որոնել՝ սեղմելով բառի վրա</translation>
 <translation id="9169507124922466868">Նավարկման պատմության թերթը կիսաբացված է</translation>
 <translation id="9204836675896933765">Մնաց 1 ֆայլ</translation>
+<translation id="9205796607887024517">Այստեղ կարգավորեք հոդվածները</translation>
 <translation id="9206873250291191720">Ա</translation>
 <translation id="9209888181064652401">Չի հաջողվում զանգել</translation>
 <translation id="9219103736887031265">Պատկերներ</translation>
 <translation id="926205370408745186">Հեռացրեք Chrome-ի պատմությունը Թվային բարեկեցությունից</translation>
 <translation id="932327136139879170">Գլխավոր էջ</translation>
+<translation id="93753284658583800">Գլխավոր էջը փոխվեց</translation>
 <translation id="938850635132480979">Սխալ՝ <ph name="ERROR_CODE" /></translation>
 <translation id="95817756606698420">Չինաստանում որոնում կատարելու համար Chrome-ը կարող է օգտագործել <ph name="BEGIN_BOLD" />Sogou<ph name="END_BOLD" /> որոնման համակարգը: Սա կարող եք փոխել <ph name="BEGIN_LINK" />կարգավորումներում<ph name="END_LINK" />:</translation>
 <translation id="968900484120156207">Ձեր այցելած էջերը կցուցադրվեն այստեղ</translation>

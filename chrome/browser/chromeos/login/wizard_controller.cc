@@ -1163,9 +1163,10 @@ void WizardController::OnAppDownloadingScreenExit() {
   ShowAssistantOptInFlowScreen();
 }
 
-void WizardController::OnAssistantOptInFlowScreenExit() {
-  OnScreenExit(AssistantOptInFlowScreenView::kScreenId, kDefaultExitReason);
-
+void WizardController::OnAssistantOptInFlowScreenExit(
+    AssistantOptInFlowScreen::Result result) {
+  OnScreenExit(AssistantOptInFlowScreenView::kScreenId,
+               AssistantOptInFlowScreen::GetResultString(result));
   ShowMultiDeviceSetupScreen();
 }
 

@@ -254,6 +254,21 @@ void WebMediaPlayerMSCompositor::EnableSubmission(
     video_frame_provider_client_->StartRendering();
 }
 
+void WebMediaPlayerMSCompositor::SetForceBeginFrames(bool enable) {
+  if (!submitter_)
+    return;
+
+  if (!video_frame_compositor_task_runner_->BelongsToCurrentThread()) {
+    PostCrossThreadTask(
+        *video_frame_compositor_task_runner_, FROM_HERE,
+        CrossThreadBindOnce(&WebMediaPlayerMSCompositor::SetForceBeginFrames,
+                            weak_ptr_factory_.GetWeakPtr(), enable));
+    return;
+  }
+
+  submitter_->SetForceBeginFrames(enable);
+}
+
 void WebMediaPlayerMSCompositor::SetForceSubmit(bool force_submit) {
   DCHECK(video_frame_compositor_task_runner_->BelongsToCurrentThread());
   submitter_->SetForceSubmit(force_submit);

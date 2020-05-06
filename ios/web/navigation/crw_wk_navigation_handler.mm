@@ -1445,13 +1445,24 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
   if (WKResponse.forMainFrame) {
     web::NavigationContextImpl* context =
         [self contextForPendingMainFrameNavigationWithURL:responseURL];
-    context->SetIsDownload(true);
-    context->ReleaseItem();
-    if (context->IsPost()) {
-      HTTPMethod = @"POST";
+    // Context lookup fails in rare cases (f.e. after certain redirects,
+    // when WKWebView.URL did not change to redirected page inside
+    // webView:didReceiveServerRedirectForProvisionalNavigation:
+    // as happened in crbug.com/820375). In that case it's not possible
+    // to locate correct context to update |HTTPMethod| and call
+    // WebStateObserver::DidFinishNavigation. Download will fail with incorrect
+    // HTTPMethod, which is better than a crash on null pointer dereferencing.
+    // Missing DidFinishNavigation for download navigation does not cause any
+    // major issues, and it's also better than a crash.
+    if (context) {
+      context->SetIsDownload(true);
+      context->ReleaseItem();
+      if (context->IsPost()) {
+        HTTPMethod = @"POST";
+      }
+      // Navigation callbacks can only be called for the main frame.
+      self.webStateImpl->OnNavigationFinished(context);
     }
-    // Navigation callbacks can only be called for the main frame.
-    self.webStateImpl->OnNavigationFinished(context);
   }
   web::DownloadController::FromBrowserState(
       self.webStateImpl->GetBrowserState())

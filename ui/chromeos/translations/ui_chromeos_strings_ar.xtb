@@ -90,6 +90,7 @@
 <translation id="1947424002851288782">لوحة المفاتيح الألمانية</translation>
 <translation id="1972984168337863910">توسيع لوحات تعليقات الملفات</translation>
 <translation id="1984603991036629094">لوحة المفاتيح الأرمينية الصوتية</translation>
+<translation id="1995337122023280937">الانتقال إلى موقع الملف</translation>
 <translation id="2001796770603320721">‏الإدارة في Drive</translation>
 <translation id="2009067268969781306">سيؤدي تنسيق محرك أقراص إلى حذف جميع البيانات المخزّنة عليه. لا يمكن التراجع عن هذا الإجراء.</translation>
 <translation id="2028997212275086731">‏أرشيف RAR</translation>
@@ -141,6 +142,7 @@
 <translation id="2638942478653899953">‏تعذر الوصول إلى Google Drive. يُرجى <ph name="BEGIN_LINK" />الخروج<ph name="END_LINK" /> ثم تسجيل الدخول مرة أخرى.</translation>
 <translation id="2649120831653069427">أسماك رينبو فيش</translation>
 <translation id="2661146741306740526">16x9</translation>
+<translation id="2664412712123763093">موقع الملف</translation>
 <translation id="2672394958563893062">حدث خطأ. انقر لإعادة التشغيل من البداية.</translation>
 <translation id="2676946222714718093">التشغيل بواسطة</translation>
 <translation id="2735698359135166290">لوحة المفاتيح الرومانية القياسية</translation>
@@ -349,6 +351,7 @@
 <translation id="5081517858322016911">سيتم حذف <ph name="TOTAL_FILE_SIZE" /> من حجم الملفات.</translation>
 <translation id="509429900233858213">حدث خطأ.</translation>
 <translation id="5098629044894065541">العبرية</translation>
+<translation id="5112685521274804841">لا تتوفّر الملفات في هذا المجلد إلا للقراءة. وبعض النشاطات غير متاحة.</translation>
 <translation id="5123433949759960244">كرة السلة</translation>
 <translation id="5129662217315786329">البولندية</translation>
 <translation id="5144820558584035333">المجموعة رقم 3 الهانغولية (390)</translation>
@@ -699,6 +702,7 @@
 <translation id="9034924485347205037">‏ملفات نظام التشغيل Linux</translation>
 <translation id="9035012421917565900">لا يمكن نقل العناصر مرة أخرى إلى '<ph name="DESTINATION_NAME" />'، لذلك لن تتمكن من التراجع عن هذا الإجراء.</translation>
 <translation id="9038620279323455325">الملف الذي يحمل الاسم "<ph name="FILE_NAME" />" موجود من قبل. يُرجى اختيار اسم مختلف.</translation>
+<translation id="9062992083244091966">لفتح الملفات باستخدام تطبيقات <ph name="APP_NAME" />، يُرجى نقلها أولًا إلى مجلد الملفات التي تمت مشاركتها في <ph name="APP_NAME" />.</translation>
 <translation id="9064939804718829769">جارٍ النقل...</translation>
 <translation id="9065203028668620118">تعديل</translation>
 <translation id="9099674669267916096">عدد الصفحات</translation>

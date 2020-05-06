@@ -358,6 +358,12 @@ class CONTENT_EXPORT ContentBrowserClient {
   virtual bool ShouldLockToOrigin(BrowserContext* browser_context,
                                   const GURL& effective_url);
 
+  // Returns a boolean indicating whether the WebUI |scheme| requires its
+  // process to be locked to the WebUI origin.
+  // Note: This method can be called from multiple threads. It is not safe to
+  // assume it runs only on the UI thread.
+  virtual bool DoesWebUISchemeRequireProcessLock(base::StringPiece scheme);
+
   // Returns true if everything embedded inside a document with given scheme
   // should be treated as first-party content. |scheme| will be in canonical
   // (lowercased) form. |is_embedded_origin_secure| refers to whether the origin
@@ -784,6 +790,10 @@ class CONTENT_EXPORT ContentBrowserClient {
       bool is_main_frame_request,
       bool strict_enforcement,
       base::OnceCallback<void(CertificateRequestResultType)> callback);
+
+  // Returns true if all requests with certificate errors should be blocked
+  // for a given |main_frame_url|, regardless of any other security settings.
+  virtual bool ShouldDenyRequestOnCertificateError(const GURL main_frame_url);
 
   // Selects a SSL client certificate and returns it to the |delegate|. Note:
   // |delegate| may be called synchronously or asynchronously.

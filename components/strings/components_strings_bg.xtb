@@ -52,7 +52,6 @@
 <translation id="1197088940767939838">оранжево</translation>
 <translation id="1201402288615127009">Напред</translation>
 <translation id="1201895884277373915">Още от този сайт</translation>
-<translation id="1205963431094182634">Влезте в профила си в Google, за да използвате съхраняваните в него пароли</translation>
 <translation id="1206967143813997005">Невалиден първоначален подпис</translation>
 <translation id="1209206284964581585">Скриване засега</translation>
 <translation id="121201262018556460">Направихте опит да се свържете с/ъс <ph name="DOMAIN" />, но сървърът предостави сертификат, съдържащ слаб ключ. Възможно е извършител на атака да е пробил личния ключ и сървърът да не е този, който очаквате (възможно е да сте се свързали с извършител на атака).</translation>
@@ -1213,7 +1212,6 @@
 <translation id="6116338172782435947">Да преглежда текста и изображенията, копирани в буферната памет</translation>
 <translation id="6120179357481664955">Помните ли идентификационния си номер за UPI?</translation>
 <translation id="6124432979022149706">Конектори за Chrome Enterprise</translation>
-<translation id="6135641591018127088">Използване на профила ви в Google за генериране на надеждна парола</translation>
 <translation id="6146055958333702838">Проверете всички кабели и рестартирайте маршрутизаторите, модемите или другите мрежови
 устройства, които може да използвате.</translation>
 <translation id="614940544461990577">Изпробвайте следното:</translation>
@@ -1259,7 +1257,6 @@
 <translation id="6328639280570009161">Опитайте да деактивирате предвижданията за мрежата</translation>
 <translation id="6328784461820205019">„Връзката ви не е частна“, „&lt;span class="error-code"&gt;NET::ERR_CERT_AUTHORITY_INVALID&lt;/span&gt;“, „&lt;span class="error-code"&gt;ERR_CERT_COMMON_NAME_INVALID&lt;/span&gt;“, „&lt;span class="error-code"&gt;NET::ERR_CERT_WEAK_SIGNATURE_ALGORITHM&lt;/span&gt;“, „&lt;span class="error-code"&gt;ERR_CERT_SYMANTEC_LEGACY&lt;/span&gt;“ или „Грешка при SSL сертификатите“</translation>
 <translation id="6328786501058569169">Този сайт е измамен</translation>
-<translation id="6333334544069706521">Използване на паролите, съхранявани в профила ви в Google</translation>
 <translation id="6337133576188860026">Ще освободите по-малко от <ph name="SIZE" />. Някои сайтове може да се заредят по-бавно при следващото ви посещение.</translation>
 <translation id="6337534724793800597">Филтриране на правилата по име</translation>
 <translation id="6353505687280762741">{COUNT,plural, =0{Няма}=1{1 парола (за <ph name="DOMAIN_LIST" />, синхронизирана)}=2{2 пароли (за <ph name="DOMAIN_LIST" />, синхронизирани)}other{# пароли (за <ph name="DOMAIN_LIST" />, синхронизирани)}}</translation>

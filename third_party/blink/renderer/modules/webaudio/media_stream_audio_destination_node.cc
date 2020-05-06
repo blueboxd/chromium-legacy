@@ -225,7 +225,9 @@ MediaStreamAudioDestinationNode* MediaStreamAudioDestinationNode::Create(
     ExceptionState& exception_state) {
   DCHECK(IsMainThread());
 
-  // Default to stereo; |options| will update it approriately if needed.
+  if (!context->CheckExecutionContextAndThrowIfNecessary(exception_state))
+    return nullptr;
+  // Default to stereo; |options| will update it appropriately if needed.
   MediaStreamAudioDestinationNode* node =
       MakeGarbageCollected<MediaStreamAudioDestinationNode>(*context, 2);
 

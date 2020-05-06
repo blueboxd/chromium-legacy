@@ -179,6 +179,7 @@ source_set("unit_tests") {
     "//components/password_manager/ios:test_support",
     "//components/prefs",
     "//components/prefs:test_support",
+    "//components/safe_browsing/core/common:safe_browsing_prefs",
     "//components/security_state/ios",
     "//google_apis",
     "//ios/chrome/browser/autofill",

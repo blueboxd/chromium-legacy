@@ -74,7 +74,8 @@ OsSettingsManager::OsSettingsManager(
     KerberosCredentialsManager* kerberos_credentials_manager,
     ArcAppListPrefs* arc_app_list_prefs,
     signin::IdentityManager* identity_manager,
-    android_sms::AndroidSmsService* android_sms_service)
+    android_sms::AndroidSmsService* android_sms_service,
+    CupsPrintersManager* printers_manager)
     : index_(local_search_service->GetIndex(
           local_search_service::IndexId::kCrosSettings)) {
   // Add per-page string providers.
@@ -110,8 +111,8 @@ OsSettingsManager::OsSettingsManager(
       std::make_unique<LanguagesSection>(profile, /*delegate=*/this));
   sections_.push_back(
       std::make_unique<FilesSection>(profile, /*delegate=*/this));
-  sections_.push_back(
-      std::make_unique<PrintingSection>(profile, /*delegate=*/this));
+  sections_.push_back(std::make_unique<PrintingSection>(
+      profile, /*delegate=*/this, printers_manager));
   sections_.push_back(std::make_unique<AccessibilitySection>(
       profile, /*delegate=*/this, profile->GetPrefs()));
   sections_.push_back(

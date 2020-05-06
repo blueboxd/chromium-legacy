@@ -6,6 +6,8 @@
 
 #include <utility>
 
+#include "base/trace_event/common/trace_event_common.h"
+#include "base/trace_event/trace_event.h"
 #include "components/paint_preview/common/file_stream.h"
 #include "components/paint_preview/common/proto/paint_preview.pb.h"
 #include "components/paint_preview/common/serial_utils.h"
@@ -33,6 +35,7 @@ PaintPreviewCompositorImpl::~PaintPreviewCompositorImpl() {
 void PaintPreviewCompositorImpl::BeginComposite(
     mojom::PaintPreviewBeginCompositeRequestPtr request,
     BeginCompositeCallback callback) {
+  TRACE_EVENT0("paint_preview", "PaintPreviewCompositorImpl::BeginComposite");
   auto response = mojom::PaintPreviewBeginCompositeResponse::New();
   auto mapping = request->proto.Map();
   if (!mapping.IsValid()) {
@@ -71,6 +74,7 @@ void PaintPreviewCompositorImpl::BitmapForFrame(
     const gfx::Rect& clip_rect,
     float scale_factor,
     BitmapForFrameCallback callback) {
+  TRACE_EVENT0("paint_preview", "PaintPreviewCompositorImpl::BitmapForFrame");
   SkBitmap bitmap;
   auto frame_it = frames_.find(frame_guid);
   if (frame_it == frames_.end()) {

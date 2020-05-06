@@ -11,6 +11,11 @@ import android.support.test.InstrumentationRegistry;
 import org.chromium.chrome.browser.settings.SettingsActivity;
 import org.chromium.chrome.browser.settings.SettingsLauncher;
 import org.chromium.chrome.browser.settings.SettingsLauncherImpl;
+import org.chromium.components.browser_ui.site_settings.SingleCategorySettings;
+import org.chromium.components.browser_ui.site_settings.SingleWebsiteSettings;
+import org.chromium.components.browser_ui.site_settings.SiteSettings;
+import org.chromium.components.browser_ui.site_settings.SiteSettingsCategory;
+import org.chromium.components.browser_ui.site_settings.Website;
 
 /**
  * Util functions for testing SiteSettings functionality.

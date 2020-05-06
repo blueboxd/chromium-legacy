@@ -12,6 +12,7 @@
 #include "base/android/unguessable_token_android.h"
 #include "base/bind.h"
 #include "base/task/post_task.h"
+#include "base/trace_event/common/trace_event_common.h"
 #include "base/unguessable_token.h"
 #include "components/paint_preview/browser/paint_preview_base_service.h"
 #include "components/paint_preview/player/android/jni_headers/PlayerCompositorDelegateImpl_jni.h"
@@ -77,7 +78,8 @@ PlayerCompositorDelegateAndroid::PlayerCompositorDelegateAndroid(
           paint_preview_service,
           GURL(base::android::ConvertJavaStringToUTF8(env, j_url_spec)),
           DirectoryKey{
-              base::android::ConvertJavaStringToUTF8(env, j_directory_key)}) {
+              base::android::ConvertJavaStringToUTF8(env, j_directory_key)}),
+      request_id_(0) {
   java_ref_.Reset(env, j_object);
 }
 
@@ -169,6 +171,10 @@ void PlayerCompositorDelegateAndroid::RequestBitmap(
     jint j_clip_y,
     jint j_clip_width,
     jint j_clip_height) {
+  TRACE_EVENT_NESTABLE_ASYNC_BEGIN0(
+      "paint_preview", "PlayerCompositorDelegateAndroid::RequestBitmap",
+      TRACE_ID_LOCAL(request_id_));
+
   gfx::Rect clip_rect =
       gfx::Rect(j_clip_x, j_clip_y, j_clip_width, j_clip_height);
   PlayerCompositorDelegate::RequestBitmap(
@@ -178,14 +184,22 @@ void PlayerCompositorDelegateAndroid::RequestBitmap(
       base::BindOnce(&PlayerCompositorDelegateAndroid::OnBitmapCallback,
                      weak_factory_.GetWeakPtr(),
                      ScopedJavaGlobalRef<jobject>(j_bitmap_callback),
-                     ScopedJavaGlobalRef<jobject>(j_error_callback)));
+                     ScopedJavaGlobalRef<jobject>(j_error_callback),
+                     request_id_));
+  ++request_id_;
 }
 
 void PlayerCompositorDelegateAndroid::OnBitmapCallback(
     const ScopedJavaGlobalRef<jobject>& j_bitmap_callback,
     const ScopedJavaGlobalRef<jobject>& j_error_callback,
+    int request_id,
     mojom::PaintPreviewCompositor::Status status,
     const SkBitmap& sk_bitmap) {
+  TRACE_EVENT_NESTABLE_ASYNC_END2(
+      "paint_preview", "PlayerCompositorDelegateAndroid::RequestBitmap",
+      TRACE_ID_LOCAL(request_id), "status", static_cast<int>(status), "bytes",
+      sk_bitmap.computeByteSize());
+
   if (status == mojom::PaintPreviewCompositor::Status::kSuccess) {
     base::ThreadPool::PostTaskAndReplyWithResult(
         FROM_HERE, {base::TaskPriority::USER_VISIBLE},

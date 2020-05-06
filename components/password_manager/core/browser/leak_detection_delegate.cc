@@ -145,12 +145,6 @@ bool CanStartLeakCheck(const PrefService& prefs,
   // Leak detection can only start if:
   // 1. The user has not opted out and Safe Browsing is turned on, or
   // 2. The user is an enhanced protection user
-  // Safe Browsing is only available on non-IOS.
-#if defined(OS_IOS)
-  if (!is_leak_protection_on)
-    LogString(client, Logger::STRING_LEAK_DETECTION_DISABLED_FEATURE);
-  return is_leak_protection_on;
-#else
   safe_browsing::SafeBrowsingState sb_state =
       safe_browsing::GetSafeBrowsingState(prefs);
   switch (sb_state) {
@@ -167,7 +161,6 @@ bool CanStartLeakCheck(const PrefService& prefs,
   }
 
   return true;
-#endif
 }
 
 }  // namespace password_manager

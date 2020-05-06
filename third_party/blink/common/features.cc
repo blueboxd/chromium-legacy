@@ -499,7 +499,15 @@ const base::Feature kFlexNG{"FlexNG", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kKeepScriptResourceAlive{"KeepScriptResourceAlive",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
 
+// The AppCache feature is a kill-switch for the entire AppCache feature,
+// both backend and API.  If disabled, then it will turn off the backend and
+// api, regardless of the presence of valid origin trial tokens.
 const base::Feature kAppCache{"AppCache", base::FEATURE_ENABLED_BY_DEFAULT};
+// If AppCacheRequireOriginTrial is enabled, then the AppCache backend in the
+// browser will require origin trial tokens in order to load or store manifests
+// and their contents.
+const base::Feature kAppCacheRequireOriginTrial{
+    "AppCacheRequireOriginTrial", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables the AV1 Image File Format (AVIF).
 const base::Feature kAVIF{"AVIF", base::FEATURE_DISABLED_BY_DEFAULT};

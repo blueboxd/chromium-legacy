@@ -23,6 +23,8 @@
 #include "base/stl_util.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task/post_task.h"
+#include "base/test/bind_test_util.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread.h"
@@ -50,6 +52,7 @@
 #include "sql/test/test_helpers.h"
 #include "storage/browser/quota/quota_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/appcache/appcache.mojom.h"
 #include "third_party/blink/public/mojom/appcache/appcache_info.mojom.h"
 #include "third_party/blink/public/mojom/devtools/console_message.mojom.h"
@@ -269,6 +272,8 @@ class AppCacheStorageImplTest : public testing::Test {
             BrowserContext::GetDefaultStoragePartition(&browser_context_))) {
     ChildProcessSecurityPolicyImpl::GetInstance()->Add(kProcessId,
                                                        &browser_context_);
+    appcache_require_origin_trial_feature_.InitAndDisableFeature(
+        blink::features::kAppCacheRequireOriginTrial);
   }
 
   ~AppCacheStorageImplTest() override {
@@ -398,6 +403,43 @@ class AppCacheStorageImplTest : public testing::Test {
     TestFinished();
   }
 
+  void LoadCache_OriginTrialSuccess() {
+    AddToDatabase(kManifestUrl, 222, 111, valid_token_expires());
+    AppCacheDatabase::EntryRecord entry_record;
+    entry_record.cache_id = 111;
+    entry_record.url = kEntryUrl;
+    entry_record.flags = AppCacheEntry::EXPLICIT;
+    entry_record.response_id = 1;
+    EXPECT_TRUE(database()->InsertEntry(&entry_record));
+
+    storage()->LoadCache(111, delegate());
+
+    PushNextTask(base::BindLambdaForTesting([&]() {
+      EXPECT_EQ(111, delegate()->loaded_cache_id_);
+      EXPECT_EQ(1, mock_quota_manager_proxy_->notify_storage_accessed_count_);
+      EXPECT_EQ(0, mock_quota_manager_proxy_->notify_storage_modified_count_);
+      TestFinished();
+    }));
+  }
+
+  void LoadCache_OriginTrialFailure() {
+    int64_t cache_id = storage()->NewCacheId();
+    int64_t group_id = storage()->NewGroupId();
+    AddToDatabase(kManifestUrl, group_id, cache_id, invalid_token_expires());
+    AppCacheDatabase::EntryRecord entry_record;
+    entry_record.cache_id = cache_id;
+    entry_record.url = kEntryUrl;
+    entry_record.flags = AppCacheEntry::EXPLICIT;
+    entry_record.response_id = 1;
+    EXPECT_TRUE(database()->InsertEntry(&entry_record));
+
+    storage()->LoadCache(cache_id, delegate());
+    EXPECT_FALSE(delegate()->loaded_cache_.get());
+    EXPECT_EQ(0, mock_quota_manager_proxy_->notify_storage_accessed_count_);
+    EXPECT_EQ(0, mock_quota_manager_proxy_->notify_storage_modified_count_);
+    TestFinished();
+  }
+
   // CreateGroup  --------------------------------------------
 
   void CreateGroupInEmptyOrigin() {
@@ -453,7 +495,7 @@ class AppCacheStorageImplTest : public testing::Test {
 
     // Setup some preconditions. Create a group and newest cache that
     // appear to be "stored" and "not currently in use".
-    MakeCacheAndGroup(kManifestUrl, 1, 1, true);
+    MakeCacheAndGroup(kManifestUrl, 1, 1, valid_token_expires(), true);
     group_ = nullptr;
     cache_ = nullptr;
 
@@ -555,7 +597,7 @@ class AppCacheStorageImplTest : public testing::Test {
 
     // Setup some preconditions. Create a group and old complete cache
     // that appear to be "stored"
-    MakeCacheAndGroup(kManifestUrl, 1, 1, true);
+    MakeCacheAndGroup(kManifestUrl, 1, 1, invalid_token_expires(), true);
     EXPECT_EQ(kDefaultEntrySize + kDefaultEntryPadding,
               storage()->usage_map_[kOrigin]);
 
@@ -607,7 +649,7 @@ class AppCacheStorageImplTest : public testing::Test {
 
     // Setup some preconditions. Create a group and old complete cache
     // that appear to be "stored"
-    MakeCacheAndGroup(kManifestUrl, 1, 1, true);
+    MakeCacheAndGroup(kManifestUrl, 1, 1, invalid_token_expires(), true);
     EXPECT_EQ(kDefaultEntrySize + kDefaultEntryPadding,
               storage()->usage_map_[kOrigin]);
 
@@ -744,7 +786,7 @@ class AppCacheStorageImplTest : public testing::Test {
 
     // Setup some preconditions. Create a group and newest cache that
     // appears to be "stored" and "currently in use".
-    MakeCacheAndGroup(kManifestUrl, 1, 1, true);
+    MakeCacheAndGroup(kManifestUrl, 1, 1, invalid_token_expires(), true);
     EXPECT_EQ(kDefaultEntrySize + kDefaultEntryPadding,
               storage()->usage_map_[kOrigin]);
 
@@ -813,7 +855,7 @@ class AppCacheStorageImplTest : public testing::Test {
   void MarkEntryAsForeign() {
     // Setup some preconditions. Create a cache with an entry
     // in storage and in the working set.
-    MakeCacheAndGroup(kManifestUrl, 1, 1, true);
+    MakeCacheAndGroup(kManifestUrl, 1, 1, invalid_token_expires(), true);
     cache_->AddEntry(kEntryUrl, AppCacheEntry(AppCacheEntry::EXPLICIT));
     AppCacheDatabase::EntryRecord entry_record;
     entry_record.cache_id = 1;
@@ -849,7 +891,7 @@ class AppCacheStorageImplTest : public testing::Test {
 
     // Setup some preconditions. Create a cache with an entry
     // in storage, but not in the working set.
-    MakeCacheAndGroup(kManifestUrl, 1, 1, true);
+    MakeCacheAndGroup(kManifestUrl, 1, 1, invalid_token_expires(), true);
     cache_->AddEntry(kEntryUrl, AppCacheEntry(AppCacheEntry::EXPLICIT));
     AppCacheDatabase::EntryRecord entry_record;
     entry_record.cache_id = 1;
@@ -924,7 +966,7 @@ class AppCacheStorageImplTest : public testing::Test {
 
     // Setup some preconditions. Create a complete cache with an entry
     // in storage.
-    MakeCacheAndGroup(kManifestUrl, 2, 1, true);
+    MakeCacheAndGroup(kManifestUrl, 2, 1, invalid_token_expires(), true);
     cache_->AddEntry(kEntryUrl, AppCacheEntry(AppCacheEntry::EXPLICIT, 1));
     AppCacheDatabase::EntryRecord entry_record;
     entry_record.cache_id = 1;
@@ -940,6 +982,25 @@ class AppCacheStorageImplTest : public testing::Test {
       EXPECT_TRUE(group_->HasOneRef());
       group_ = nullptr;
     }
+
+    // Conduct the test.
+    storage()->FindResponseForMainRequest(kEntryUrl, GURL(), delegate());
+    EXPECT_NE(kEntryUrl, delegate()->found_url_);
+  }
+
+  void BasicFindMainResponse_OriginTrialFailure() {
+    PushNextTask(
+        base::BindOnce(&AppCacheStorageImplTest::Verify_FindNoMainResponse,
+                       base::Unretained(this)));
+
+    // Add cache/group/entry to the database.
+    AddToDatabase(kManifestUrl, 2, 1, invalid_token_expires());
+    AppCacheDatabase::EntryRecord entry_record;
+    entry_record.cache_id = 1;
+    entry_record.url = kEntryUrl;
+    entry_record.flags = AppCacheEntry::EXPLICIT;
+    entry_record.response_id = 1;
+    EXPECT_TRUE(database()->InsertEntry(&entry_record));
 
     // Conduct the test.
     storage()->FindResponseForMainRequest(kEntryUrl, GURL(), delegate());
@@ -974,7 +1035,7 @@ class AppCacheStorageImplTest : public testing::Test {
 
     // Setup some preconditions. Create a complete cache with a
     // fallback namespace and entry.
-    MakeCacheAndGroup(kManifestUrl, 2, 1, true);
+    MakeCacheAndGroup(kManifestUrl, 2, 1, valid_token_expires(), true);
     cache_->AddEntry(kEntryUrl, AppCacheEntry(AppCacheEntry::FALLBACK, 1));
     cache_->AddEntry(kEntryUrl2, AppCacheEntry(AppCacheEntry::FALLBACK, 2));
     cache_->fallback_namespaces_.push_back(AppCacheNamespace(
@@ -1022,24 +1083,89 @@ class AppCacheStorageImplTest : public testing::Test {
     TestFinished();
   }
 
+  void FindMainFallbackResponse_OriginTrialFailure() {
+    PushNextTask(base::BindLambdaForTesting([&]() {
+      EXPECT_EQ(kFallbackTestUrl, delegate()->found_url_);
+      EXPECT_TRUE(delegate()->found_manifest_url_.is_empty());
+      EXPECT_EQ(0, delegate()->found_cache_id_);
+      EXPECT_EQ(0, delegate()->found_group_id_);
+      EXPECT_FALSE(delegate()->found_entry_.has_response_id());
+      EXPECT_EQ(0, delegate()->found_fallback_entry_.response_id());
+      EXPECT_TRUE(delegate()->found_namespace_entry_url_.is_empty());
+      TestFinished();
+    }));
+
+    // Setup some preconditions. Create a complete cache with a
+    // fallback namespace and entry.
+    MakeCacheAndGroup(kManifestUrl, 2, 1, invalid_token_expires(), true);
+    cache_->AddEntry(kEntryUrl, AppCacheEntry(AppCacheEntry::FALLBACK, 1));
+    cache_->AddEntry(kEntryUrl2, AppCacheEntry(AppCacheEntry::FALLBACK, 2));
+    cache_->fallback_namespaces_.push_back(AppCacheNamespace(
+        APPCACHE_FALLBACK_NAMESPACE, kFallbackNamespace2, kEntryUrl2));
+    cache_->fallback_namespaces_.push_back(AppCacheNamespace(
+        APPCACHE_FALLBACK_NAMESPACE, kFallbackNamespace, kEntryUrl));
+    AppCacheDatabase::CacheRecord cache_record;
+    std::vector<AppCacheDatabase::EntryRecord> entries;
+    std::vector<AppCacheDatabase::NamespaceRecord> intercepts;
+    std::vector<AppCacheDatabase::NamespaceRecord> fallbacks;
+    std::vector<AppCacheDatabase::OnlineWhiteListRecord> whitelists;
+    cache_->ToDatabaseRecords(group_.get(), &cache_record, &entries,
+                              &intercepts, &fallbacks, &whitelists);
+
+    for (const auto& entry : entries) {
+      // MakeCacheAndGroup has inserted the default entry record already.
+      if (entry.url != kDefaultEntryUrl)
+        EXPECT_TRUE(database()->InsertEntry(&entry));
+    }
+
+    cache_ = nullptr;
+    group_ = nullptr;
+
+    EXPECT_TRUE(database()->InsertNamespaceRecords(fallbacks));
+    EXPECT_TRUE(database()->InsertOnlineWhiteListRecords(whitelists));
+
+    // Conduct the test. Although the test url is in both fallback namespace
+    // urls, it will match neither of them because its group does not have a
+    // valid origin trial token.
+    storage()->FindResponseForMainRequest(kFallbackTestUrl, GURL(), delegate());
+    EXPECT_NE(kFallbackTestUrl, delegate()->found_url_);
+  }
+
   // BasicFindMainInterceptResponse  -------------------------------
 
   void BasicFindMainInterceptResponseInDatabase() {
-    BasicFindMainInterceptResponse(true);
-  }
-
-  void BasicFindMainInterceptResponseInWorkingSet() {
-    BasicFindMainInterceptResponse(false);
-  }
-
-  void BasicFindMainInterceptResponse(bool drop_from_working_set) {
     PushNextTask(base::BindOnce(
         &AppCacheStorageImplTest::Verify_BasicFindMainInterceptResponse,
         base::Unretained(this)));
+    BasicFindMainInterceptResponse(true, valid_token_expires());
+  }
 
+  void BasicFindMainInterceptResponseInWorkingSet() {
+    PushNextTask(base::BindOnce(
+        &AppCacheStorageImplTest::Verify_BasicFindMainInterceptResponse,
+        base::Unretained(this)));
+    BasicFindMainInterceptResponse(false, valid_token_expires());
+  }
+
+  void FindMainInterceptResponse_OriginTrialFailure() {
+    PushNextTask(base::BindLambdaForTesting([&]() {
+      EXPECT_EQ(kInterceptTestUrl, delegate()->found_url_);
+      EXPECT_TRUE(delegate()->found_manifest_url_.is_empty());
+      EXPECT_EQ(0, delegate()->found_cache_id_);
+      EXPECT_EQ(0, delegate()->found_group_id_);
+      EXPECT_FALSE(delegate()->found_entry_.has_response_id());
+      EXPECT_EQ(0, delegate()->found_fallback_entry_.response_id());
+      EXPECT_TRUE(delegate()->found_namespace_entry_url_.is_empty());
+      TestFinished();
+    }));
+    BasicFindMainInterceptResponse(true, invalid_token_expires());
+  }
+
+  void BasicFindMainInterceptResponse(bool drop_from_working_set,
+                                      base::Time token_expires) {
     // Setup some preconditions. Create a complete cache with an
     // intercept namespace and entry.
-    MakeCacheAndGroup(kManifestUrl, 2, 1, true);
+    MakeCacheAndGroup(kManifestUrl, 2, 1, token_expires, true);
     cache_->AddEntry(kEntryUrl, AppCacheEntry(AppCacheEntry::INTERCEPT, 1));
     cache_->AddEntry(kEntryUrl2, AppCacheEntry(AppCacheEntry::INTERCEPT, 2));
     cache_->intercept_namespaces_.push_back(AppCacheNamespace(
@@ -1109,7 +1235,7 @@ class AppCacheStorageImplTest : public testing::Test {
   }
 
   void MakeMultipleHitCacheAndGroup(const GURL& manifest_url, int id) {
-    MakeCacheAndGroup(manifest_url, id, id, true);
+    MakeCacheAndGroup(manifest_url, id, id, invalid_token_expires(), true);
     AppCacheDatabase::EntryRecord entry_record;
 
     // Add an entry for kEntryUrl
@@ -1251,7 +1377,7 @@ class AppCacheStorageImplTest : public testing::Test {
     // Setup some preconditions. Create a complete cache with a
     // foreign entry, an online namespace, and a second online
     // namespace nested within a fallback namespace.
-    MakeCacheAndGroup(kManifestUrl, 1, 1, true);
+    MakeCacheAndGroup(kManifestUrl, 1, 1, invalid_token_expires(), true);
     cache_->AddEntry(
         kEntryUrl,
         AppCacheEntry(AppCacheEntry::EXPLICIT | AppCacheEntry::FOREIGN, 1));
@@ -1587,9 +1713,16 @@ class AppCacheStorageImplTest : public testing::Test {
 
   void OnBadMessage(const std::string& reason) { NOTREACHED(); }
 
+  static base::Time invalid_token_expires() { return base::Time(); }
+
+  static base::Time valid_token_expires() {
+    return base::Time::Now() + base::TimeDelta::FromDays(10);
+  }
+
   void MakeCacheAndGroup(const GURL& manifest_url,
                          int64_t group_id,
                          int64_t cache_id,
+                         base::Time token_expires,
                          bool add_to_database) {
     AppCacheEntry default_entry(AppCacheEntry::EXPLICIT,
                                 cache_id + kDefaultEntryIdOffset,
@@ -1600,35 +1733,46 @@ class AppCacheStorageImplTest : public testing::Test {
     cache_->AddEntry(kDefaultEntryUrl, default_entry);
     cache_->set_complete(true);
     group_->AddCache(cache_.get());
-    url::Origin manifest_origin(url::Origin::Create(manifest_url));
-    if (add_to_database) {
-      AppCacheDatabase::GroupRecord group_record;
-      group_record.group_id = group_id;
-      group_record.manifest_url = manifest_url;
-      group_record.origin = manifest_origin;
-      EXPECT_TRUE(database()->InsertGroup(&group_record));
-      AppCacheDatabase::CacheRecord cache_record;
-      cache_record.cache_id = cache_id;
-      cache_record.group_id = group_id;
-      cache_record.online_wildcard = false;
-      cache_record.update_time = kZeroTime;
-      cache_record.cache_size = kDefaultEntrySize;
-      cache_record.padding_size = kDefaultEntryPadding;
-      cache_record.manifest_parser_version = 1;
-      cache_record.manifest_scope = std::string("/");
-      EXPECT_TRUE(database()->InsertCache(&cache_record));
-      AppCacheDatabase::EntryRecord entry_record;
-      entry_record.cache_id = cache_id;
-      entry_record.url = kDefaultEntryUrl;
-      entry_record.flags = default_entry.types();
-      entry_record.response_id = default_entry.response_id();
-      entry_record.response_size = default_entry.response_size();
-      entry_record.padding_size = default_entry.padding_size();
-      EXPECT_TRUE(database()->InsertEntry(&entry_record));
+    if (add_to_database)
+      AddToDatabase(manifest_url, group_id, cache_id, token_expires);
+  }
 
-      storage()->usage_map_[manifest_origin] =
-          default_entry.response_size() + default_entry.padding_size();
-    }
+  void AddToDatabase(const GURL& manifest_url,
+                     int64_t group_id,
+                     int64_t cache_id,
+                     base::Time token_expires) {
+    url::Origin manifest_origin(url::Origin::Create(manifest_url));
+    AppCacheEntry default_entry(AppCacheEntry::EXPLICIT,
+                                cache_id + kDefaultEntryIdOffset,
+                                kDefaultEntrySize, kDefaultEntryPadding);
+
+    AppCacheDatabase::GroupRecord group_record;
+    group_record.group_id = group_id;
+    group_record.manifest_url = manifest_url;
+    group_record.origin = manifest_origin;
+    EXPECT_TRUE(database()->InsertGroup(&group_record));
+    AppCacheDatabase::CacheRecord cache_record;
+    cache_record.cache_id = cache_id;
+    cache_record.group_id = group_id;
+    cache_record.online_wildcard = false;
+    cache_record.update_time = kZeroTime;
+    cache_record.cache_size = kDefaultEntrySize;
+    cache_record.padding_size = kDefaultEntryPadding;
+    cache_record.manifest_parser_version = 1;
+    cache_record.manifest_scope = std::string("/");
+    cache_record.token_expires = token_expires;
+    EXPECT_TRUE(database()->InsertCache(&cache_record));
+    AppCacheDatabase::EntryRecord entry_record;
+    entry_record.cache_id = cache_id;
+    entry_record.url = kDefaultEntryUrl;
+    entry_record.flags = default_entry.types();
+    entry_record.response_id = default_entry.response_id();
+    entry_record.response_size = default_entry.response_size();
+    entry_record.padding_size = default_entry.padding_size();
+    EXPECT_TRUE(database()->InsertEntry(&entry_record));
+
+    storage()->usage_map_[manifest_origin] =
+        default_entry.response_size() + default_entry.padding_size();
   }
 
   // Data members --------------------------------------------------
@@ -1655,6 +1799,7 @@ class AppCacheStorageImplTest : public testing::Test {
   std::unique_ptr<AppCacheRequestHandler> handler_;
   URLLoaderInterceptor interceptor_;
   TestBrowserContext browser_context_;
+  base::test::ScopedFeatureList appcache_require_origin_trial_feature_;
   base::WeakPtrFactory<StoragePartitionImpl> weak_partition_factory_;
 
   // Test data
@@ -1709,6 +1854,18 @@ TEST_F(AppCacheStorageImplTest, LoadCache_NearHit) {
   RunTestOnUIThread(&AppCacheStorageImplTest::LoadCache_NearHit);
 }
 
+TEST_F(AppCacheStorageImplTest, LoadCache_OriginTrialSuccess) {
+  base::test::ScopedFeatureList f;
+  f.InitAndEnableFeature(blink::features::kAppCacheRequireOriginTrial);
+  RunTestOnUIThread(&AppCacheStorageImplTest::LoadCache_OriginTrialSuccess);
+}
+
+TEST_F(AppCacheStorageImplTest, LoadCache_OriginTrialFailure) {
+  base::test::ScopedFeatureList f;
+  f.InitAndEnableFeature(blink::features::kAppCacheRequireOriginTrial);
+  RunTestOnUIThread(&AppCacheStorageImplTest::LoadCache_OriginTrialFailure);
+}
+
 TEST_F(AppCacheStorageImplTest, CreateGroupInEmptyOrigin) {
   RunTestOnUIThread(&AppCacheStorageImplTest::CreateGroupInEmptyOrigin);
 }
@@ -1718,6 +1875,12 @@ TEST_F(AppCacheStorageImplTest, CreateGroupInPopulatedOrigin) {
 }
 
 TEST_F(AppCacheStorageImplTest, LoadGroupAndCache_FarHit) {
+  RunTestOnUIThread(&AppCacheStorageImplTest::LoadGroupAndCache_FarHit);
+}
+
+TEST_F(AppCacheStorageImplTest, LoadGroupAndCache_OriginTrialSuccess) {
+  base::test::ScopedFeatureList f;
+  f.InitAndEnableFeature(blink::features::kAppCacheRequireOriginTrial);
   RunTestOnUIThread(&AppCacheStorageImplTest::LoadGroupAndCache_FarHit);
 }
 
@@ -1762,6 +1925,20 @@ TEST_F(AppCacheStorageImplTest, BasicFindMainResponseInDatabase) {
   RunTestOnUIThread(&AppCacheStorageImplTest::BasicFindMainResponseInDatabase);
 }
 
+TEST_F(AppCacheStorageImplTest, BasicFindMainResponse_OriginTrialFailure) {
+  base::test::ScopedFeatureList f;
+  f.InitAndEnableFeature(blink::features::kAppCacheRequireOriginTrial);
+  RunTestOnUIThread(
+      &AppCacheStorageImplTest::BasicFindMainResponse_OriginTrialFailure);
+}
+
+TEST_F(AppCacheStorageImplTest, BasicFindMainResponse_OriginTrialSuccess) {
+  base::test::ScopedFeatureList f;
+  f.InitAndEnableFeature(blink::features::kAppCacheRequireOriginTrial);
+  RunTestOnUIThread(
+      &AppCacheStorageImplTest::BasicFindMainFallbackResponseInDatabase);
+}
+
 TEST_F(AppCacheStorageImplTest, BasicFindMainResponseInWorkingSet) {
   RunTestOnUIThread(
       &AppCacheStorageImplTest::BasicFindMainResponseInWorkingSet);
@@ -1777,6 +1954,20 @@ TEST_F(AppCacheStorageImplTest, BasicFindMainFallbackResponseInWorkingSet) {
       &AppCacheStorageImplTest::BasicFindMainFallbackResponseInWorkingSet);
 }
 
+TEST_F(AppCacheStorageImplTest, FindMainFallbackResponse_OriginTrialSuccess) {
+  base::test::ScopedFeatureList f;
+  f.InitAndEnableFeature(blink::features::kAppCacheRequireOriginTrial);
+  RunTestOnUIThread(
+      &AppCacheStorageImplTest::BasicFindMainFallbackResponseInDatabase);
+}
+
+TEST_F(AppCacheStorageImplTest, FindMainFallbackResponse_OriginTrialFailure) {
+  base::test::ScopedFeatureList f;
+  f.InitAndEnableFeature(blink::features::kAppCacheRequireOriginTrial);
+  RunTestOnUIThread(
+      &AppCacheStorageImplTest::FindMainFallbackResponse_OriginTrialFailure);
+}
+
 TEST_F(AppCacheStorageImplTest, BasicFindMainInterceptResponseInDatabase) {
   RunTestOnUIThread(
       &AppCacheStorageImplTest::BasicFindMainInterceptResponseInDatabase);
@@ -1785,6 +1976,20 @@ TEST_F(AppCacheStorageImplTest, BasicFindMainInterceptResponseInDatabase) {
 TEST_F(AppCacheStorageImplTest, BasicFindMainInterceptResponseInWorkingSet) {
   RunTestOnUIThread(
       &AppCacheStorageImplTest::BasicFindMainInterceptResponseInWorkingSet);
+}
+
+TEST_F(AppCacheStorageImplTest, FindMainInterceptResponse_OriginTrialSuccess) {
+  base::test::ScopedFeatureList f;
+  f.InitAndEnableFeature(blink::features::kAppCacheRequireOriginTrial);
+  RunTestOnUIThread(
+      &AppCacheStorageImplTest::BasicFindMainInterceptResponseInDatabase);
+}
+
+TEST_F(AppCacheStorageImplTest, FindMainInterceptResponse_OriginTrialFailure) {
+  base::test::ScopedFeatureList f;
+  f.InitAndEnableFeature(blink::features::kAppCacheRequireOriginTrial);
+  RunTestOnUIThread(
+      &AppCacheStorageImplTest::FindMainInterceptResponse_OriginTrialFailure);
 }
 
 TEST_F(AppCacheStorageImplTest, FindMainResponseWithMultipleHits) {

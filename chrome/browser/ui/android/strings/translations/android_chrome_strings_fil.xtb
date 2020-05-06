@@ -33,6 +33,7 @@
 <translation id="1208340532756947324">Para mag-sync at mag-personalize sa mga device, i-on ang pag-sync</translation>
 <translation id="1209206284964581585">Itago sa ngayon</translation>
 <translation id="1227058898775614466">History ng pag-navigate</translation>
+<translation id="1229399675748764149">Gawing iyong homepage ang page na ito</translation>
 <translation id="1231733316453485619">I-on ang pag-sync?</translation>
 <translation id="123724288017357924">I-reload ang page, balewalain ang cached content</translation>
 <translation id="124116460088058876">Higit pang wika</translation>
@@ -71,6 +72,7 @@
 <translation id="1513352483775369820">Bookmark at history ng web</translation>
 <translation id="1513858653616922153">I-delete ang password</translation>
 <translation id="1521774566618522728">Aktibo ngayong araw</translation>
+<translation id="1543538514740974167">Mas mabilis na makapunta rito</translation>
 <translation id="1544826120773021464">Para pamahalaan ang iyong Google account, i-tap ang button na "Pamahalaan ang account"</translation>
 <translation id="1549000191223877751">Lumipat sa ibang window</translation>
 <translation id="1553358976309200471">I-update ang Chrome</translation>
@@ -723,11 +725,13 @@ Halimbawa, puwedeng tumugon ang ilang website sa kahilingang ito sa pamamagitan 
 <translation id="7022756207310403729">Buksan sa browser</translation>
 <translation id="702463548815491781">Inirerekomenda kapag naka-on ang TalkBack o Switch Access</translation>
 <translation id="7029809446516969842">Mga Password</translation>
+<translation id="703523980599857277">Baguhin ang homepage</translation>
 <translation id="7055152154916055070">Na-block ang pag-redirect:</translation>
 <translation id="7063006564040364415">Hindi makakonekta sa server ng pag-sync.</translation>
 <translation id="7071521146534760487">Pamahalaan ang account</translation>
 <translation id="7077143737582773186">SD Card</translation>
 <translation id="7121362699166175603">Kini-clear ang history at mga autocompletion sa address bar. Maaaring may iba pang anyo ng history ng pag-browse ang iyong Google Account sa <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
+<translation id="7128355412245153445">Makita ang iyong mga nangungunang site at kamakailang kuwento sa tuwing ita-tap mo ang button ng Home</translation>
 <translation id="7138678301420049075">Iba pa</translation>
 <translation id="7146622961999026732">Mukhang mahalaga sa iyo ang mga site at app na ito:</translation>
 <translation id="7149158118503947153"><ph name="BEGIN_LINK" />I-load ang orihinal na page<ph name="END_LINK" /> mula sa <ph name="DOMAIN_NAME" /></translation>
@@ -968,11 +972,13 @@ Halimbawa, puwedeng tumugon ang ilang website sa kahilingang ito sa pamamagitan 
 <translation id="9155898266292537608">Makakapaghanap ka rin gamit ang mabilisang pag-tap sa isang salita</translation>
 <translation id="9169507124922466868">Nakabukas nang kalahati ang history ng pag-navigate</translation>
 <translation id="9204836675896933765">1 file ang natitira</translation>
+<translation id="9205796607887024517">Kontrolin ang iyong mga kuwento rito</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="9209888181064652401">Hindi makatawag</translation>
 <translation id="9219103736887031265">Mga Larawan</translation>
 <translation id="926205370408745186">Alisin sa Digital Wellness ang iyong aktibidad sa Chrome</translation>
 <translation id="932327136139879170">Home</translation>
+<translation id="93753284658583800">Binago ang homepage</translation>
 <translation id="938850635132480979">Error: <ph name="ERROR_CODE" /></translation>
 <translation id="95817756606698420">Maaaring gamitin ng Chrome ang <ph name="BEGIN_BOLD" />Sogou<ph name="END_BOLD" /> para sa paghahanap sa China. Maaari mo itong baguhin sa <ph name="BEGIN_LINK" />Mga Setting<ph name="END_LINK" />.</translation>
 <translation id="968900484120156207">Lalabas dito ang mga page na binibisita mo</translation>

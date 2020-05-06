@@ -605,10 +605,64 @@
   </message>
 
   <!-- Date and Time section. -->
+  <message name="IDS_OS_SETTINGS_TAG_DATE_TIME" desc="Text for search result item which, when clicked, navigates the user to date and time settings.">
+    Date and time settings
+  </message>
+  <message name="IDS_OS_SETTINGS_TAG_DATE_TIME_MILITARY_CLOCK" desc="Text for search result item which, when clicked, navigates the user to date and time settings, with a toggle to enable/disable using a 24-hour clock. Alternate phrase for: 'Military time'">
+    Use 24-hour clock
+  </message>
+  <message name="IDS_OS_SETTINGS_TAG_DATE_TIME_MILITARY_CLOCK_ALT1" desc="Text for search result item which, when clicked, navigates the user to date and time settings, with a toggle to enable/disable using a 24-hour clock. Alternate phrase for: 'Use 24-hour clock'">
+    Military time
+  </message>
+  <message name="IDS_OS_SETTINGS_TAG_DATE_TIME_ZONE_SUBPAGE" desc="Text for search result item which, when clicked, navigates the user to time zone settings.">
+    Time zone
+  </message>
+  <message name="IDS_OS_SETTINGS_TAG_DATE_TIME_ZONE" desc="Text for search result item which, when clicked, navigates the user to time zone settings.">
+    Time zone
+  </message>
 
   <!-- Privacy section. -->
+  <message name="IDS_OS_SETTINGS_TAG_PRIVACY" desc="Text for search result item which, when clicked, navigates the user to privacy settings.">
+    Privacy settings
+  </message>
+  <message name="IDS_OS_SETTINGS_TAG_PRIVACY_VERIFIED_ACCESS" desc="Text for search result item which, when clicked, navigates the user to pirvacy settings, with a toggle to enable/disable verified access.">
+    Privacy verified access
+  </message>
+  <message name="IDS_OS_SETTINGS_TAG_PRIVACY_WIFI_SLEEP" desc="Text for search result item which, when clicked, navigates the user to privacy settings, with a toggle to enable/disable allowing Wi-Fi to remain active while Chromebook is sleeping. Alternate phrase for: 'Keep Wi-Fi on while idle'">
+    Keep Wi-Fi on during sleep
+  </message>
+  <message name="IDS_OS_SETTINGS_TAG_PRIVACY_WIFI_SLEEP_ALT1" desc="Text for search result item which, when clicked, navigates the user to privacy settings, with a toggle to enable/disable allowing Wi-Fi to remain active while Chromebook is sleeping. Alternate phrase for: 'Keep Wi-Fi on during sleep'">
+    Keep Wi-Fi on while idle
+  </message>
+  <message name="IDS_OS_SETTINGS_TAG_PRIVACY_CRASH_REPORTS" desc="Text for search result item which, when clicked, navigates the user to privacy settings, with a toggle to enable/disable allowing usage statistics and crash reports to be sent to Google. Alternate phrase for: 'Feedback reports'">
+    Usage statistics and crash reports
+  </message>
+  <message name="IDS_OS_SETTINGS_TAG_PRIVACY_CRASH_REPORTS_ALT1" desc="Text for search result item which, when clicked, navigates the user to privacy settings, with a toggle to enable/disable allowing usage statistics and crash reports to be sent to Google. Alternate phrase for: 'Usage statistics and crash reports'">
+    Feedback reports
+  </message>
 
   <!-- Languages and Input section. -->
+  <message name="IDS_OS_SETTINGS_TAG_LANGUAGES_INPUT" desc="Text for search result item which, when clicked, navigates the user to languages and input settings.">
+    Languages and input settings
+  </message>
+  <message name="IDS_OS_SETTINGS_TAG_LANGUAGES_INPUT_ADD_LANGUAGE" desc="Text for search result item which, when clicked, navigates the user to languages and input settings, with an option to add a new language.">
+    Add languages
+  </message>
+  <message name="IDS_OS_SETTINGS_TAG_LANGUAGES_INPUT_METHODS" desc="Text for search result item which, when clicked, navigates the user to input settings, with the option to enable/disable input in supported languages.">
+    Manage input methods
+  </message>
+  <message name="IDS_OS_SETTINGS_TAG_LANGUAGES_INPUT_INPUT_OPTIONS_SHELF" desc="Text for search result item which, when clicked, navigates the user to languages and input settings, with a toggle to enable/disable showing input options in the shelf. Alternate phrase for: 'Input options in toolbar'">
+    Show input options in the shelf
+  </message>
+  <message name="IDS_OS_SETTINGS_TAG_LANGUAGES_INPUT_INPUT_OPTIONS_SHELF_ALT1" desc="Text for search result item which, when clicked, navigates the user to languages and input settings, with a toggle to enable/disable showing input options in the shelf. Alternate phrase for: 'Show input options in the shelf'">
+    Input options in toolbar
+  </message>
+  <message name="IDS_OS_SETTINGS_TAG_LANGUAGES_SMART_INPUTS" desc="Text for search result item which, when clicked, navigates the user to smart input settings, which allows spelling/grammar suggestions generated using personal information such as contacts.">
+    Smart inputs
+  </message>
+  <message name="IDS_OS_SETTINGS_TAG_LANGUAGES_PERSONAL_INFORMATION_SUGGESTIONS" desc="Text for search result item which, when clicked, navigates the user to smart input settings, which with a toggle to enable/disable showing personal information suggestions.">
+    Personal information suggestions
+  </message>
 
   <!-- Files section. -->
   <message name="IDS_OS_SETTINGS_TAG_FILES" desc="Text for search result item which, when clicked, navigates the user to files settings.">
@@ -625,6 +679,27 @@
   </message>
 
   <!-- Printing section. -->
+  <message name="IDS_OS_SETTINGS_TAG_PRINTING" desc="Text for search result item which, when clicked, navigates the user to printer settings for CUPS printers (a.k.a. those that can use the Unix protocol). Alternate phrase for: 'Printing', 'CUPS'">
+    Printer
+  </message>
+  <message name="IDS_OS_SETTINGS_TAG_PRINTING_ALT1" desc="Text for search result item which, when clicked, navigates the user to printer settings for CUPS printers (a.k.a. those that can use the Unix protocol). Alternate phrase for: 'Printer settings', 'CUPS'">
+    Printing
+  </message>
+  <message name="IDS_OS_SETTINGS_TAG_PRINTING_ALT2" desc="Text for search result item which, when clicked, navigates the user to printer settings for CUPS printers (a.k.a. those that can use the Unix protocol). Alternate phrase for: 'Printer settings', 'Printing'">
+    CUPS
+  </message>
+  <message name="IDS_OS_SETTINGS_TAG_PRINTING_ADD_PRINTER" desc="Text for search result item which, when clicked, navigates the user to printer settings, with the option to add a printer. Alternate phrase for: 'Install printer', 'Setup printer'">
+    Add printer
+  </message>
+  <message name="IDS_OS_SETTINGS_TAG_PRINTING_ADD_PRINTER_ALT1" desc="Text for search result item which, when clicked, navigates the user to printer settings, with the option to add a printer. Alternate phrase for: 'Add printer', 'Setup printer'">
+    Install printer
+  </message>
+  <message name="IDS_OS_SETTINGS_TAG_PRINTING_ADD_PRINTER_ALT2" desc="Text for search result item which, when clicked, navigates the user to printer settings, with the option to add a printer. Alternate phrase for: 'Add printer', 'Install printer'">
+    Setup printer
+  </message>
+  <message name="IDS_OS_SETTINGS_TAG_PRINTING_SAVED_PRINTERS" desc="Text for search result item which, when clicked, navigates the user to printer settings, with the option to edit saved printers.">
+    Saved printers
+  </message>
 
   <!-- Accessibility section. -->
 

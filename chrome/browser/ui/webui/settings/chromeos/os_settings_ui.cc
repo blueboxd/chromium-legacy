@@ -42,8 +42,6 @@
 #include "chrome/browser/ui/webui/settings/browser_lifetime_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/accessibility_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/account_manager_handler.h"
-#include "chrome/browser/ui/webui/settings/chromeos/cups_printers_handler.h"
-#include "chrome/browser/ui/webui/settings/chromeos/date_time_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/device_storage_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/internet_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/kerberos_accounts_handler.h"
@@ -58,7 +56,6 @@
 #include "chrome/browser/ui/webui/settings/downloads_handler.h"
 #include "chrome/browser/ui/webui/settings/extension_control_handler.h"
 #include "chrome/browser/ui/webui/settings/font_handler.h"
-#include "chrome/browser/ui/webui/settings/languages_handler.h"
 #include "chrome/browser/ui/webui/settings/profile_info_handler.h"
 #include "chrome/browser/ui/webui/settings/protocol_handlers_handler.h"
 #include "chrome/browser/ui/webui/settings/reset_settings_handler.h"
@@ -124,8 +121,6 @@ OSSettingsUI::OSSettingsUI(content::WebUI* web_ui)
   AddSettingsPageUIHandler(
       std::make_unique<::settings::ExtensionControlHandler>());
   AddSettingsPageUIHandler(std::make_unique<::settings::FontHandler>(web_ui));
-  AddSettingsPageUIHandler(
-      std::make_unique<::settings::LanguagesHandler>(web_ui));
   AddSettingsPageUIHandler(
       std::make_unique<::settings::ProfileInfoHandler>(profile));
   AddSettingsPageUIHandler(
@@ -223,10 +218,6 @@ void OSSettingsUI::InitOSWebUIHandlers(content::WebUIDataSource* html_source) {
 
   web_ui()->AddMessageHandler(
       std::make_unique<chromeos::settings::AccessibilityHandler>(profile));
-  web_ui()->AddMessageHandler(
-      chromeos::settings::CupsPrintersHandler::Create(web_ui()));
-  web_ui()->AddMessageHandler(base::WrapUnique(
-      chromeos::settings::DateTimeHandler::Create(html_source)));
 
   std::unique_ptr<chromeos::settings::KerberosAccountsHandler>
       kerberos_accounts_handler =

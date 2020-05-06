@@ -52,7 +52,6 @@
 <translation id="1197088940767939838">Кызгылт сары</translation>
 <translation id="1201402288615127009">Кийинки</translation>
 <translation id="1201895884277373915">Бул сайттан дагы көбүрөөк маалымат</translation>
-<translation id="1205963431094182634">Google аккаунтуңузда сакталган сырсөздөрдү колдонуу үчүн аккаунтуңузга кириңиз</translation>
 <translation id="1206967143813997005">Баштапкы колтамга начар</translation>
 <translation id="1209206284964581585">Азырынча жашыруу</translation>
 <translation id="121201262018556460"><ph name="DOMAIN" /> доменин ачканга аракет кылдыңыз, бирок сервер чабал ачкычты камтыган тастыктаманы сунуштады. Башкача айтканда, зыянкеч чабуулчу жеке ачкычты бузгандыктан, сервер сиз күтүп жаткан сервер болбой калышы мүмкүн (балким, чабуулчу менен байланышып жатасыз).</translation>
@@ -1216,7 +1215,6 @@
 <translation id="6116338172782435947">Алмашуу буферине көчүрүлгөн текстти жана сүрөттөрдү көрүү</translation>
 <translation id="6120179357481664955">UPI идентификаторуңуз сакталсынбы?</translation>
 <translation id="6124432979022149706">Chrome Enterprise туташтыргычтары</translation>
-<translation id="6135641591018127088">Google аккаунтуңуз менен татаал сырсөз түзүп алыңыз</translation>
 <translation id="6146055958333702838">Колдонулуп жаткан кабелдерди текшерип, роутер, модем жана башка
     тармак түзмөктөрүн өчүрүп-күйгүзүңүз.</translation>
 <translation id="614940544461990577">Төмөнкүлөрдү кылып көрүңүз:</translation>
@@ -1262,7 +1260,6 @@
 <translation id="6328639280570009161">Тармакты алдын-ала божомолдоо мүмкүнчүлүгүн өчүрүп көрүңүз</translation>
 <translation id="6328784461820205019">"Туташууңуз купуя эмес" же "&lt;span class="error-code"&gt;NET::ERR_CERT_AUTHORITY_INVALID&lt;/span&gt;" же "&lt;span class="error-code"&gt;ERR_CERT_COMMON_NAME_INVALID&lt;/span&gt;" же "&lt;span class="error-code"&gt;NET::ERR_CERT_WEAK_SIGNATURE_ALGORITHM&lt;/span&gt;" же "&lt;span class="error-code"&gt;ERR_CERT_SYMANTEC_LEGACY&lt;/span&gt;" же "SSL тастыктамасынын катасы"</translation>
 <translation id="6328786501058569169">Бул – жасалма сайт</translation>
-<translation id="6333334544069706521">Google аккаунтуңузда сакталган сырсөздөрдү колдонуңуз</translation>
 <translation id="6337133576188860026"><ph name="SIZE" /> чейин орун бошотулат. Кийинки жолу киргениңизде, айрым сайттар жайыраак жүктөлүшү мүмкүн.</translation>
 <translation id="6337534724793800597">Саясаттарды аталышы боюнча чыпкалоо</translation>
 <translation id="6353505687280762741">{COUNT,plural, =0{Жок}=1{1 сырсөз (<ph name="DOMAIN_LIST" /> доменде, шайкештирилген)}=2{2 сырсөз (<ph name="DOMAIN_LIST" /> доменде, шайкештирилген)}other{# сырсөз (<ph name="DOMAIN_LIST" /> доменде, шайкештирилген)}}</translation>

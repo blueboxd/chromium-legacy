@@ -311,7 +311,12 @@ const NSTimeInterval kDisplayPromoDelay = 0.1;
        applicationCommandEndpoint:self
       browsingDataCommandEndpoint:self.mainController];
 
-  self.browserViewWrangler.windowID = self.sceneState.windowID;
+  if (IsMultiwindowSupported()) {
+    if (@available(iOS 13, *)) {
+      self.browserViewWrangler.sessionID =
+          self.sceneState.scene.session.persistentIdentifier;
+    }
+  }
 
   // Ensure the main browser is created. This also creates the BVC.
   [self.browserViewWrangler createMainBrowser];

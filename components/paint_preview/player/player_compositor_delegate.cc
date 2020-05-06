@@ -18,6 +18,8 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
+#include "base/trace_event/common/trace_event_common.h"
+#include "base/trace_event/trace_event.h"
 #include "base/unguessable_token.h"
 #include "build/build_config.h"
 #include "components/paint_preview/browser/compositor_utils.h"
@@ -145,6 +147,9 @@ PlayerCompositorDelegate::PlayerCompositorDelegate(
                             weak_factory_.GetWeakPtr(), expected_url));
     return;
   }
+  TRACE_EVENT_NESTABLE_ASYNC_BEGIN0("paint_preview",
+                                    "PlayerCompositorDelegate CreateCompositor",
+                                    TRACE_ID_LOCAL(this));
   paint_preview_compositor_service_ =
       paint_preview_service_->StartCompositorService(base::BindOnce(
           &PlayerCompositorDelegate::OnCompositorServiceDisconnected,
@@ -168,6 +173,9 @@ void PlayerCompositorDelegate::OnCompositorServiceDisconnected() {
 void PlayerCompositorDelegate::OnCompositorClientCreated(
     const GURL& expected_url,
     const DirectoryKey& key) {
+  TRACE_EVENT_NESTABLE_ASYNC_END0("paint_preview",
+                                  "PlayerCompositorDelegate CreateCompositor",
+                                  TRACE_ID_LOCAL(this));
   paint_preview_service_->GetCapturedPaintPreviewProto(
       key, base::BindOnce(&PlayerCompositorDelegate::OnProtoAvailable,
                           weak_factory_.GetWeakPtr(), expected_url));

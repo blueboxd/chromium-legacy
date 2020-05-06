@@ -138,7 +138,9 @@ class TestScreenWinInitializer {
   virtual void AddMonitor(const gfx::Rect& pixel_bounds,
                           const gfx::Rect& pixel_work,
                           const wchar_t* device_name,
-                          float device_scale_factor) = 0;
+                          float device_scale_factor,
+                          DISPLAYCONFIG_VIDEO_OUTPUT_TECHNOLOGY tech =
+                              DISPLAYCONFIG_OUTPUT_TECHNOLOGY_OTHER) = 0;
 
   virtual HWND CreateFakeHwnd(const gfx::Rect& bounds) = 0;
 };
@@ -152,13 +154,15 @@ class TestScreenWinManager final : public TestScreenWinInitializer {
   void AddMonitor(const gfx::Rect& pixel_bounds,
                   const gfx::Rect& pixel_work,
                   const wchar_t* device_name,
-                  float device_scale_factor) override {
+                  float device_scale_factor,
+                  DISPLAYCONFIG_VIDEO_OUTPUT_TECHNOLOGY tech =
+                      DISPLAYCONFIG_OUTPUT_TECHNOLOGY_OTHER) override {
     MONITORINFOEX monitor_info =
         win::test::CreateMonitorInfo(pixel_bounds, pixel_work, device_name);
     monitor_infos_.push_back(monitor_info);
     display_infos_.push_back(DisplayInfo(monitor_info, device_scale_factor,
                                          1.0f, Display::ROTATE_0, 60,
-                                         gfx::Vector2dF()));
+                                         gfx::Vector2dF(), tech));
   }
 
   HWND CreateFakeHwnd(const gfx::Rect& bounds) override {
@@ -3491,6 +3495,35 @@ TEST_F(ScreenWinUninitializedForced2x, GetSystemMetricsInDIP) {
 
 TEST_F(ScreenWinUninitializedForced2x, GetScaleFactorForHWND) {
   EXPECT_EQ(2.0, ScreenWin::GetScaleFactorForHWND(nullptr));
+}
+
+namespace {
+
+// Two Displays, one of which is internal (eg. a laptop screen).
+class ScreenWinTestTwoDisplaysOneInternal : public ScreenWinTest {
+ public:
+  ScreenWinTestTwoDisplaysOneInternal() = default;
+
+  void SetUpScreen(TestScreenWinInitializer* initializer) override {
+    initializer->AddMonitor(gfx::Rect(0, 0, 1920, 1200),
+                            gfx::Rect(0, 0, 1920, 1100), L"primary", 1.0,
+                            DISPLAYCONFIG_OUTPUT_TECHNOLOGY_INTERNAL);
+    initializer->AddMonitor(gfx::Rect(1920, 0, 800, 600),
+                            gfx::Rect(1920, 0, 800, 600), L"secondary", 1.0);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ScreenWinTestTwoDisplaysOneInternal);
+};
+
+}  // namespace
+
+TEST_F(ScreenWinTestTwoDisplaysOneInternal, InternalDisplayIdSet) {
+  EXPECT_NE(Display::InternalDisplayId(), kInvalidDisplayId);
+  std::vector<Display> displays = GetScreen()->GetAllDisplays();
+  ASSERT_EQ(2u, displays.size());
+  EXPECT_EQ(Display::InternalDisplayId(), displays[0].id());
+  EXPECT_NE(Display::InternalDisplayId(), displays[1].id());
 }
 
 }  // namespace win

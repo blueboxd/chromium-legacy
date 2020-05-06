@@ -33,6 +33,7 @@
 #include "components/password_manager/ios/unique_id_tab_helper.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
+#include "components/safe_browsing/core/common/safe_browsing_prefs.h"
 #import "ios/chrome/browser/autofill/form_suggestion_controller.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #import "ios/chrome/browser/passwords/password_form_filler.h"
@@ -104,6 +105,7 @@ class MockPasswordManagerClient
                                             false);
     prefs_->registry()->RegisterBooleanPref(kPasswordLeakDetectionEnabled,
                                             true);
+    safe_browsing::RegisterProfilePrefs(prefs_->registry());
   }
 
   ~MockPasswordManagerClient() override = default;

@@ -713,16 +713,7 @@ XRSystem::XRSystem(LocalFrame& frame, int64_t ukm_source_id)
           frame.Loader().GetDocumentLoader()->GetTiming().NavigationStart()),
       feature_handle_for_scheduler_(frame.GetFrameScheduler()->RegisterFeature(
           SchedulingPolicy::Feature::kWebXR,
-          {SchedulingPolicy::RecordMetricsForBackForwardCache()})) {
-  // See https://bit.ly/2S0zRAS for task types.
-  DCHECK(frame.IsAttached());
-  frame.GetBrowserInterfaceBroker().GetInterface(
-      service_.BindNewPipeAndPassReceiver(
-          frame.GetTaskRunner(TaskType::kMiscPlatformAPI)));
-  service_.set_disconnect_handler(WTF::Bind(&XRSystem::Dispose,
-                                            WrapWeakPersistent(this),
-                                            DisposeType::kDisconnected));
-}
+          {SchedulingPolicy::RecordMetricsForBackForwardCache()})) {}
 
 void XRSystem::FocusedFrameChanged() {
   // Tell all sessions that focus changed.
@@ -893,9 +884,10 @@ ScriptPromise XRSystem::InternalIsSessionSupported(
     return promise;
   }
 
+  // If TryEnsureService() doesn't set |service_|, then we don't have any WebXR
+  // hardware, so we need to reject as being unsupported.
+  TryEnsureService();
   if (!service_) {
-    // If we don't have a service at the time we reach this call it indicates
-    // that there's no WebXR hardware. Reject as not supported.
     query->Resolve(false, &exception_state);
     return promise;
   }
@@ -943,8 +935,9 @@ void XRSystem::RequestImmersiveSession(LocalFrame* frame,
     return;
   }
 
-  // If we don't have a service by the time we reach this call, there is no XR
+  // If TryEnsureService() doesn't set |service_|, then we don't have any WebXR
   // hardware.
+  TryEnsureService();
   if (!service_) {
     query->RejectWithDOMException(DOMExceptionCode::kNotSupportedError,
                                   kNoDevicesMessage, exception_state);
@@ -1001,6 +994,11 @@ void XRSystem::RequestInlineSession(LocalFrame* frame,
   }
 
   auto sensor_requirement = query->GetSensorRequirement();
+
+  // Try to get the service now. If we can't get it, then we know that we can
+  // only support a sensorless session. But if we *can* get it, then we need to
+  // check if we have any hardware that supports the requested features.
+  TryEnsureService();
 
   // If no sensors are requested, or if we don't have a service and sensors are
   // not required, then just create a sensorless session.
@@ -1171,6 +1169,8 @@ ScriptPromise XRSystem::requestSession(ScriptState* script_state,
     query->SetDOMOverlayElement(session_init->domOverlay()->root());
   }
 
+  // The various session request methods may have other checks that would reject
+  // before needing to create the vr service, so we don't try to create it here.
   switch (session_mode) {
     case device::mojom::blink::XRSessionMode::kImmersiveVr:
     case device::mojom::blink::XRSessionMode::kImmersiveAr:
@@ -1368,6 +1368,9 @@ void XRSystem::AddedEventListener(
   EventTargetWithInlineData::AddedEventListener(event_type,
                                                 registered_listener);
 
+  // If we're adding an event listener we should spin up the service, if we can,
+  // so that we can actually register for notifications.
+  TryEnsureService();
   if (!service_)
     return;
 
@@ -1425,7 +1428,7 @@ void XRSystem::Dispose(DisposeType dispose_type) {
       is_context_destroyed_ = true;
       break;
     case DisposeType::kDisconnected:
-      // nothing to do
+      did_service_ever_disconnect_ = true;
       break;
   }
 
@@ -1462,6 +1465,30 @@ void XRSystem::OnEnvironmentProviderDisconnect() {
 
   environment_provider_error_callbacks_.clear();
   environment_provider_.reset();
+}
+
+void XRSystem::TryEnsureService() {
+  // If we already have a service, there's nothing to do.
+  if (service_)
+    return;
+
+  // If the service has been disconnected in the past or our context has been
+  // destroyed, don't try to get the service again.
+  if (did_service_ever_disconnect_ || is_context_destroyed_)
+    return;
+
+  // If the current frame isn't attached, don't try to get the service.
+  LocalFrame* frame = GetFrame();
+  if (!frame || !frame->IsAttached())
+    return;
+
+  // See https://bit.ly/2S0zRAS for task types.
+  frame->GetBrowserInterfaceBroker().GetInterface(
+      service_.BindNewPipeAndPassReceiver(
+          frame->GetTaskRunner(TaskType::kMiscPlatformAPI)));
+  service_.set_disconnect_handler(WTF::Bind(&XRSystem::Dispose,
+                                            WrapWeakPersistent(this),
+                                            DisposeType::kDisconnected));
 }
 
 void XRSystem::Trace(Visitor* visitor) {

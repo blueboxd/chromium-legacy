@@ -52,7 +52,6 @@
 <translation id="1197088940767939838">Orange</translation>
 <translation id="1201402288615127009">Nästa</translation>
 <translation id="1201895884277373915">Mer från den här webbplatsen</translation>
-<translation id="1205963431094182634">Logga in om du vill använda lösenord som har sparats i Google-kontot</translation>
 <translation id="1206967143813997005">Felaktig första signatur</translation>
 <translation id="1209206284964581585">Dölj för tillfället</translation>
 <translation id="121201262018556460">Du försökte öppna <ph name="DOMAIN" />, men servern visade ett certifikat som signerats med en svag nyckel. Det innebär att den privata nyckeln som servern visar kan vara en förfalskning och att servern kanske inte är den server du tror (du kanske kommunicerar med en skadlig server).</translation>
@@ -1217,7 +1216,6 @@ Annars blockeras detta av sekretessinställningarna. Om du tillåter detta kan i
 <translation id="6116338172782435947">Tillgång till text och bilder som kopierats till Urklipp</translation>
 <translation id="6120179357481664955">Vill du spara UPI-id?</translation>
 <translation id="6124432979022149706">Chrome Enterprise Connectors</translation>
-<translation id="6135641591018127088">Använd Google-kontot till att generera ett starkt lösenord</translation>
 <translation id="6146055958333702838">Kontrollera kablar och starta om routrar, modem och andra nätverksenheter
     som används.</translation>
 <translation id="614940544461990577">Testa att</translation>
@@ -1263,7 +1261,6 @@ Annars blockeras detta av sekretessinställningarna. Om du tillåter detta kan i
 <translation id="6328639280570009161">Prova att inaktivera nätverksförslag</translation>
 <translation id="6328784461820205019">Anslutningen är inte privat eller &lt;span class="error-code"&gt;NET::ERR_CERT_AUTHORITY_INVALID&lt;/span&gt; eller &lt;span class="error-code"&gt;ERR_CERT_COMMON_NAME_INVALID&lt;/span&gt; eller &lt;span class="error-code"&gt;NET::ERR_CERT_WEAK_SIGNATURE_ALGORITHM&lt;/span&gt; eller &lt;span class="error-code"&gt;ERR_CERT_SYMANTEC_LEGACY&lt;/span&gt;eller SSL-certifikatfel</translation>
 <translation id="6328786501058569169">Den här webbplatsen är bedräglig</translation>
-<translation id="6333334544069706521">Använd lösenord som har sparats i Google-kontot</translation>
 <translation id="6337133576188860026">Frigör mindre än <ph name="SIZE" />. Vissa webbplatser kan läsas in långsammare nästa gång du besöker dem.</translation>
 <translation id="6337534724793800597">Filtrera princip efter namn</translation>
 <translation id="6353505687280762741">{COUNT,plural, =0{Inga}=1{1 lösenord (för <ph name="DOMAIN_LIST" />, synkroniseras)}=2{2 lösenord (för <ph name="DOMAIN_LIST" />, synkroniseras)}other{# lösenord (för <ph name="DOMAIN_LIST" />, synkroniseras)}}</translation>

@@ -903,8 +903,12 @@
     {
       "id": 75,
       "description": "GpuControlListEntryTest.IntelDriverVendorEntry",
+      "os": {
+        "type": "win"
+      },
       "driver_vendor": "Intel.*",
       "driver_version": {
+        "schema": "intel_driver",
         "op": "between",
         "value": "24.20.100.6000",
         "value2": "26.20.100.7000"
@@ -916,8 +920,12 @@
     {
       "id": 76,
       "description": "GpuControlListEntryTest.IntelDriverVersionEntry",
+      "os": {
+        "type": "win"
+      },
       "vendor_id": "0x8086",
       "driver_version": {
+        "schema": "intel_driver",
         "op": "<=",
         "value": "24.20.100.7000"
       },
@@ -928,8 +936,12 @@
     {
       "id": 77,
       "description": "GpuControlListEntryTest.IntelOldDriverVersionEntry",
+      "os": {
+        "type": "win"
+      },
       "vendor_id": "0x8086",
       "driver_version": {
+        "schema": "intel_driver",
         "op": "<=",
         "value": "24.20.10.7000"
       },

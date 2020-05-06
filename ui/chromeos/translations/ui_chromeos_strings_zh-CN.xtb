@@ -90,6 +90,7 @@
 <translation id="1947424002851288782">德语键盘</translation>
 <translation id="1972984168337863910">展开文件反馈面板</translation>
 <translation id="1984603991036629094">亚美尼亚语拼音键盘</translation>
+<translation id="1995337122023280937">转到文件位置</translation>
 <translation id="2001796770603320721">在云端硬盘中管理</translation>
 <translation id="2009067268969781306">将驱动器格式化会删除其中存储的所有数据。此操作无法撤消。</translation>
 <translation id="2028997212275086731">RAR 归档</translation>
@@ -141,6 +142,7 @@
 <translation id="2638942478653899953">无法访问 Google 云端硬盘。请先<ph name="BEGIN_LINK" />退出<ph name="END_LINK" />，然后再重新登录。</translation>
 <translation id="2649120831653069427">彩虹鱼</translation>
 <translation id="2661146741306740526">16x9</translation>
+<translation id="2664412712123763093">文件位置</translation>
 <translation id="2672394958563893062">出现错误。点击可从头开始重新播放。</translation>
 <translation id="2676946222714718093">当前播放设备：</translation>
 <translation id="2735698359135166290">罗马尼亚语标准键盘</translation>
@@ -349,6 +351,7 @@
 <translation id="5081517858322016911">其中的所有文件（共计 <ph name="TOTAL_FILE_SIZE" />）都将被删除</translation>
 <translation id="509429900233858213">出现错误。</translation>
 <translation id="5098629044894065541">希伯来语</translation>
+<translation id="5112685521274804841">此文件夹中的文件都是处于只读状态。某些活动不受支持。</translation>
 <translation id="5123433949759960244">篮球</translation>
 <translation id="5129662217315786329">波兰语</translation>
 <translation id="5144820558584035333">韩语（3 Set，390版）</translation>
@@ -694,6 +697,7 @@
 <translation id="9034924485347205037">Linux 文件</translation>
 <translation id="9035012421917565900">这些内容一旦移出“<ph name="DESTINATION_NAME" />”便无法移回，因此您将无法撤消这项操作。</translation>
 <translation id="9038620279323455325">已有名为“<ph name="FILE_NAME" />”的文件。请另选一个名称。</translation>
+<translation id="9062992083244091966">若要使用 <ph name="APP_NAME" /> 应用打开文件，请先将文件移到“<ph name="APP_NAME" /> 共享文件”文件夹。</translation>
 <translation id="9064939804718829769">正在处理…</translation>
 <translation id="9065203028668620118">编辑</translation>
 <translation id="9099674669267916096">页数</translation>

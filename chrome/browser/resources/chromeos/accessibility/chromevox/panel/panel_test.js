@@ -20,6 +20,30 @@ ChromeVoxPanelTest = class extends ChromeVoxNextE2ETest {
     ChromeVoxE2ETest.prototype.testGenCppIncludes.call(this);
   }
 
+  /** @override */
+  setUp() {
+    chrome.accessibilityPrivate.sendSyntheticKeyEvent = (params) => {
+      if (params.type == 'keydown') {
+        let key = '';
+        switch (params.keyCode) {
+          case 37:
+            key = 'ArrowLeft';
+            break;
+          case 38:
+            key = 'ArrowUp';
+            break;
+          case 39:
+            key = 'ArrowRight';
+            break;
+          case 40:
+            key = 'ArrowDown';
+            break;
+        }
+        this.fireMockEvent(key)();
+      }
+    };
+  }
+
   /**
    * @return {!MockFeedback}
    */
@@ -164,4 +188,36 @@ TEST_F('ChromeVoxPanelTest', 'SearchMenu', function() {
         .expectSpeech(/announce/i, 'Menu item', /2 of [0-9]+/);
     mockFeedback.replay();
   });
+});
+
+TEST_F('ChromeVoxPanelTest', 'Gestures', function() {
+  const doGesture = (gesture) => {
+    return () => {
+      GestureCommandHandler.onAccessibilityGesture_(gesture);
+    };
+  };
+
+  const mockFeedback = this.createMockFeedback();
+  this.runWithLoadedTree(
+      `<button>Cancel</button><button>OK</button>`, function(root) {
+        mockFeedback.call(doGesture('tap4'))
+            .expectSpeech(
+                'Search the menus', /Type to search the menus./, 'is editing')
+            .call(doGesture('swipeRight1'))
+            .expectSpeech(
+                'Jump', 'Menu', 'Go To Beginning Of Table', / 1 of [0-9]{2} /)
+            .call(doGesture('swipeRight1'))
+            .expectSpeech(
+                'Speech', 'Menu', 'Announce Current Battery Status',
+                / 1 of [0-9]{2} /)
+            .call(doGesture('swipeLeft1'))
+            .expectSpeech(
+                'Jump', 'Menu', 'Go To Beginning Of Table', / 1 of [0-9]{2} /)
+            .call(doGesture('swipeDown1'))
+            .expectSpeech('Menu item', /2 of [0-9]{2}/)
+            .call(doGesture('swipeUp1'))
+            .expectSpeech('Menu item', /1 of [0-9]{2}/)
+
+            .replay();
+      });
 });

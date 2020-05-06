@@ -52,7 +52,6 @@
 <translation id="1197088940767939838">สีส้ม</translation>
 <translation id="1201402288615127009">ถัดไป</translation>
 <translation id="1201895884277373915">เพิ่มเติมจากไซต์นี้</translation>
-<translation id="1205963431094182634">ลงชื่อเข้าใช้เพื่อใช้รหัสผ่านที่จัดเก็บในบัญชี Google</translation>
 <translation id="1206967143813997005">ลายเซ็นเริ่มต้นไม่ถูกต้อง</translation>
 <translation id="1209206284964581585">ซ่อนไปก่อน</translation>
 <translation id="121201262018556460">คุณพยายามเข้าถึง <ph name="DOMAIN" /> แต่เซิร์ฟเวอร์แสดงใบรับรองที่มีคีย์ที่ไม่รัดกุม ผู้โจมตีอาจทำให้คีย์ส่วนตัวเสียหายไปแล้วและเซิร์ฟเวอร์นี้อาจไม่ใช่เซิร์ฟเวอร์ที่คุณคิด (คุณอาจกำลังติดต่อกับผู้โจมตี)</translation>
@@ -1205,7 +1204,6 @@
 <translation id="6116338172782435947">ดูข้อความและรูปภาพที่คัดลอกไปที่คลิปบอร์ด</translation>
 <translation id="6120179357481664955">จำรหัส UPI ไหม</translation>
 <translation id="6124432979022149706">เครื่องมือเชื่อมต่อ Chrome Enterprise</translation>
-<translation id="6135641591018127088">ใช้บัญชี Google ของคุณเพื่อสร้างรหัสผ่านที่รัดกุม</translation>
 <translation id="6146055958333702838">ตรวจสายเคเบิลและรีบูตเราเตอร์ โมเด็ม หรืออุปกรณ์เครือข่ายอื่น
     ที่คุณอาจใช้งานอยู่</translation>
 <translation id="614940544461990577">ลอง:</translation>
@@ -1251,7 +1249,6 @@
 <translation id="6328639280570009161">ลองปิดการคาดคะเนเครือข่าย</translation>
 <translation id="6328784461820205019">"การเชื่อมต่อของคุณไม่เป็นส่วนตัว" หรือ "&lt;span class="error-code"&gt;NET::ERR_CERT_AUTHORITY_INVALID&lt;/span&gt;" หรือ "&lt;span class="error-code"&gt;ERR_CERT_COMMON_NAME_INVALID&lt;/span&gt;" หรือ "&lt;span class="error-code"&gt;NET::ERR_CERT_WEAK_SIGNATURE_ALGORITHM&lt;/span&gt;" หรือ "&lt;span class="error-code"&gt;ERR_CERT_SYMANTEC_LEGACY&lt;/span&gt;" หรือ "ข้อผิดพลาดของใบรับรอง SSL"</translation>
 <translation id="6328786501058569169">เว็บไซต์นี้มีการหลอกลวง</translation>
-<translation id="6333334544069706521">ใช้รหัสผ่านที่จัดเก็บในบัญชี Google</translation>
 <translation id="6337133576188860026">หากเพิ่มพื้นที่ว่างไม่ถึง <ph name="SIZE" /> ไซต์บางแห่งอาจโหลดช้าลงเมื่อคุณเข้าชมครั้งถัดไป</translation>
 <translation id="6337534724793800597">กรองนโยบายตามชื่อ</translation>
 <translation id="6353505687280762741">{COUNT,plural, =0{ไม่มี}=1{มีรหัสผ่าน 1 รายการ (สำหรับ <ph name="DOMAIN_LIST" />, ซิงค์แล้ว)}=2{มีรหัสผ่าน 2 รายการ (สำหรับ <ph name="DOMAIN_LIST" />, ซิงค์แล้ว)}other{มีรหัสผ่าน # รายการ (สำหรับ <ph name="DOMAIN_LIST" />, ซิงค์แล้ว)}}</translation>

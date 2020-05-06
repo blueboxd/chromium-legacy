@@ -334,7 +334,6 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
           {"AllowContentInitiatedDataUrlNavigations",
            features::kAllowContentInitiatedDataUrlNavigations,
            kUseFeatureState},
-          {"AppCache", blink::features::kAppCache, kDisableOnly},
           {"AudioWorkletRealtimeThread",
            blink::features::kAudioWorkletRealtimeThread, kEnableOnly},
           {"BlockCredentialedSubresources",
@@ -554,6 +553,22 @@ void SetCustomizedRuntimeFeaturesFromCombinedArgs(
   WebRuntimeFeatures::EnableReducedReferrerGranularity(
       base::FeatureList::IsEnabled(features::kReducedReferrerGranularity) &&
       !content::Referrer::ShouldForceLegacyDefaultReferrerPolicy());
+
+  if (base::FeatureList::IsEnabled(
+          blink::features::kAppCacheRequireOriginTrial)) {
+    // The kAppCacheRequireOriginTrial is a flag that controls whether or not
+    // the renderer AppCache api and backend is gated by an origin trial.  If
+    // on, then AppCache is disabled but can be re-enabled by the origin trial.
+    // The origin trial will not turn on the feature if the base::Feature
+    // AppCache is disabled.
+    WebRuntimeFeatures::EnableFeatureFromString("AppCache", false);
+  } else {
+    // If the origin trial is not required, then the kAppCache feature /
+    // about:flag is a disable-only kill switch to allow developers to test
+    // their application with AppCache fully disabled.
+    if (!base::FeatureList::IsEnabled(blink::features::kAppCache))
+      WebRuntimeFeatures::EnableFeatureFromString("AppCache", false);
+  }
 }
 
 }  // namespace

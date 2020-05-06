@@ -52,7 +52,6 @@
 <translation id="1197088940767939838">نارنجی</translation>
 <translation id="1201402288615127009">اگلا</translation>
 <translation id="1201895884277373915">اس سائٹ سے مزید</translation>
-<translation id="1205963431094182634">‏اپنے Google اکاؤنٹ میں اسٹور کردہ پاس ورڈز کا استعمال کرنے کے لئے سائن ان کریں</translation>
 <translation id="1206967143813997005">غلط ابتدائی دستخط</translation>
 <translation id="1209206284964581585">ابھی کیلئے چھپائیں</translation>
 <translation id="121201262018556460">آپ نے <ph name="DOMAIN" /> تک پہنچنے کی کوشش کی لیکن سرور نے ایک کمزور کلید پر مشتمل سرٹیفکیٹ پیش کیا۔ ہو سکتا ہے کہ کسی حملہ آور نے نجی کلید توڑ دی ہو اور ممکن ہے سرور آپ کا متوقع سرور نہ ہو (ممکن ہے آپ کسی حملہ آور کے ساتھ مواصلت کر رہے ہوں)۔</translation>
@@ -1217,7 +1216,6 @@
 <translation id="6116338172782435947">کلپ بورڈ میں کاپی کیے گئے متن اور تصاویر دیکھیں</translation>
 <translation id="6120179357481664955">‏آپ کی UPI ID یاد رکھیں؟</translation>
 <translation id="6124432979022149706">‏Chrome Enterprise کنیکٹرز</translation>
-<translation id="6135641591018127088">‏مضبوط پاس ورڈ تخلیق کرنے کے لیے اپنا Google اکاؤنٹ استعمال کریں</translation>
 <translation id="6146055958333702838">کوئی بھی کیبلز چیک کریں اور کوئی بھی
     روٹرز، موڈمز
 یا ان دیگر نیٹ ورک آلات کو ریبوٹ کریں جنہیں آپ استعمال کر سکتے ہیں۔</translation>
@@ -1264,7 +1262,6 @@
 <translation id="6328639280570009161">نیٹ ورک کی پیشین گوئی غیر فعال کرنے کی کوشش کریں</translation>
 <translation id="6328784461820205019">‏"آپ کا کنکشن نجی نہیں ہے" یا "&lt;span class="error-code"&gt;NET::ERR_CERT_AUTHORITY_INVALID&lt;/span&gt;" یا "&lt;span class="error-code"&gt;ERR_CERT_COMMON_NAME_INVALID&lt;/span&gt;" یا "&lt;span class="error-code"&gt;NET::ERR_CERT_WEAK_SIGNATURE_ALGORITHM&lt;/span&gt;" یا "&lt;span class="error-code"&gt;ERR_CERT_SYMANTEC_LEGACY&lt;/span&gt;" یا "SSL سرٹیفکیٹ سے متعلق خرابی"</translation>
 <translation id="6328786501058569169">یہ سائٹ پُر فریب ہے</translation>
-<translation id="6333334544069706521">‏اپنے Google اکاؤنٹ میں اسٹور کردہ پاس ورڈز کا استعمال کریں</translation>
 <translation id="6337133576188860026"><ph name="SIZE" /> سے کم بچت ہوتی ہے۔ آپ کے اگلے ملاحظہ پر کچھ سائٹس مزید آہستہ سے لوڈ ہو سکتی ہیں۔</translation>
 <translation id="6337534724793800597">نام کے لحاظ سے پالیسیاں فلٹر کریں</translation>
 <translation id="6353505687280762741">{COUNT,plural, =0{کوئی نہیں}=1{1 پاس ورڈ (برائے <ph name="DOMAIN_LIST" />، مطابقت پذیر ہے)}=2{2 پاس ورڈز (برائے <ph name="DOMAIN_LIST" />، مطابقت پذیر ہیں)}other{# پاس ورڈز (برائے <ph name="DOMAIN_LIST" />، مطابقت پذیر ہیں)}}</translation>

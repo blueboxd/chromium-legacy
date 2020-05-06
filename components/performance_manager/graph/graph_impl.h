@@ -15,10 +15,12 @@
 #include <vector>
 
 #include "base/containers/flat_map.h"
+#include "base/containers/flat_set.h"
 #include "base/macros.h"
 #include "base/process/process_handle.h"
 #include "base/sequence_checker.h"
 #include "components/performance_manager/public/graph/graph.h"
+#include "components/performance_manager/public/graph/graph_registered.h"
 #include "components/performance_manager/public/graph/node_attached_data.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 
@@ -65,6 +67,8 @@ class GraphImpl : public Graph {
   void RemoveWorkerNodeObserver(WorkerNodeObserver* observer) override;
   void PassToGraph(std::unique_ptr<GraphOwned> graph_owned) override;
   std::unique_ptr<GraphOwned> TakeFromGraph(GraphOwned* graph_owned) override;
+  void RegisterObject(GraphRegistered* object) override;
+  void UnregisterObject(GraphRegistered* object) override;
   const SystemNode* FindOrCreateSystemNode() override;
   std::vector<const ProcessNode*> GetAllProcessNodes() const override;
   std::vector<const FrameNode*> GetAllFrameNodes() const override;
@@ -75,6 +79,7 @@ class GraphImpl : public Graph {
   NodeDataDescriberRegistry* GetNodeDataDescriberRegistry() const override;
   uintptr_t GetImplType() const override;
   const void* GetImpl() const override;
+  GraphRegistered* GetRegisteredObject(uintptr_t type_id) override;
 
   // Helper function for safely downcasting to the implementation. This also
   // casts away constness. This will CHECK on an invalid cast.
@@ -193,6 +198,29 @@ class GraphImpl : public Graph {
   using NodeAttachedDataMap =
       std::map<NodeAttachedDataKey, std::unique_ptr<NodeAttachedData>>;
   NodeAttachedDataMap node_attached_data_map_;
+
+  // Comparator for GraphRegistered objects, which sorts by TypeId. This is a
+  // transparent comparator (see base::flat_tree) which allows comparing
+  // GraphRegistered objects and TypeIds with each other.
+  struct GraphRegisteredComparator {
+    using is_transparent = void;
+    bool operator()(const GraphRegistered* gr1,
+                    const GraphRegistered* gr2) const {
+      return gr1->GetTypeId() < gr2->GetTypeId();
+    }
+    bool operator()(const GraphRegistered* gr1, uintptr_t type_id) const {
+      return gr1->GetTypeId() < type_id;
+    }
+    bool operator()(uintptr_t type_id, const GraphRegistered* gr2) const {
+      return type_id < gr2->GetTypeId();
+    }
+  };
+
+  // Storage for GraphRegistered objects. They are stored by pointer to object,
+  // but sorted by their uintptr_t TypeIds. These must all be unregistered
+  // before this object is destroyed.
+  base::flat_set<GraphRegistered*, GraphRegisteredComparator>
+      registered_objects_;
 
   // The most recently assigned serialization ID.
   int64_t current_node_serialization_id_ = 0u;

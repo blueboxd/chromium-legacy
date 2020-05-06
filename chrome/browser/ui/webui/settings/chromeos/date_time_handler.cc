@@ -27,7 +27,6 @@
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
-#include "content/public/browser/web_ui_data_source.h"
 
 namespace chromeos {
 namespace settings {
@@ -70,20 +69,6 @@ bool IsTimezoneAutomaticDetectionUserEditable() {
 DateTimeHandler::DateTimeHandler() : scoped_observer_(this) {}
 
 DateTimeHandler::~DateTimeHandler() = default;
-
-DateTimeHandler* DateTimeHandler::Create(
-    content::WebUIDataSource* html_source) {
-  // Set the initial time zone to show.
-  html_source->AddString("timeZoneName", system::GetCurrentTimezoneName());
-  html_source->AddString(
-      "timeZoneID",
-      system::TimezoneSettings::GetInstance()->GetCurrentTimezoneID());
-  html_source->AddBoolean(
-      "timeActionsProtectedForChild",
-      base::FeatureList::IsEnabled(features::kParentAccessCodeForTimeChange));
-
-  return new DateTimeHandler;
-}
 
 void DateTimeHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(

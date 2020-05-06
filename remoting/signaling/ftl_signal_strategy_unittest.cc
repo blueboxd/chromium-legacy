@@ -535,11 +535,10 @@ TEST_F(FtlSignalStrategyTest, SendMessage_Success) {
         std::move(on_done).Run(grpc::Status::OK);
       });
 
-  ftl::Id remote_user_id;
-  remote_user_id.set_type(ftl::IdType_Type_EMAIL);
-  remote_user_id.set_id(kFakeRemoteUsername);
-  signal_strategy_->SendMessage(remote_user_id, kFakeRemoteRegistrationId,
-                                message);
+  signal_strategy_->SendMessage(
+      SignalingAddress::CreateFtlSignalingAddress(kFakeRemoteUsername,
+                                                  kFakeRemoteRegistrationId),
+      message);
 }
 
 TEST_F(FtlSignalStrategyTest, SendMessage_AuthError) {
@@ -557,12 +556,12 @@ TEST_F(FtlSignalStrategyTest, SendMessage_AuthError) {
         std::move(on_done).Run(
             grpc::Status(grpc::StatusCode::UNAUTHENTICATED, "unauthenticated"));
       });
-  ftl::Id remote_user_id;
-  remote_user_id.set_type(ftl::IdType_Type_EMAIL);
-  remote_user_id.set_id(kFakeRemoteUsername);
+
   ftl::ChromotingMessage message;
-  signal_strategy_->SendMessage(remote_user_id, kFakeRemoteRegistrationId,
-                                message);
+  signal_strategy_->SendMessage(
+      SignalingAddress::CreateFtlSignalingAddress(kFakeRemoteUsername,
+                                                  kFakeRemoteRegistrationId),
+      message);
 
   ASSERT_EQ(3u, state_history_.size());
   ASSERT_EQ(SignalStrategy::State::CONNECTING, state_history_[0]);
@@ -590,12 +589,11 @@ TEST_F(FtlSignalStrategyTest, SendMessage_NetworkError) {
             grpc::Status(grpc::StatusCode::UNAVAILABLE, "unavailable"));
       });
 
-  ftl::Id remote_user_id;
-  remote_user_id.set_type(ftl::IdType_Type_EMAIL);
-  remote_user_id.set_id(kFakeRemoteUsername);
   ftl::ChromotingMessage message;
-  signal_strategy_->SendMessage(remote_user_id, kFakeRemoteRegistrationId,
-                                message);
+  signal_strategy_->SendMessage(
+      SignalingAddress::CreateFtlSignalingAddress(kFakeRemoteUsername,
+                                                  kFakeRemoteRegistrationId),
+      message);
 
   ASSERT_EQ(0u, received_messages_.size());
 }

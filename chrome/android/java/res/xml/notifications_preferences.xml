@@ -11,7 +11,7 @@
         android:summary="@string/notifications_content_suggestions_summary" />
 
     <Preference
-        android:fragment="org.chromium.chrome.browser.site_settings.SingleCategorySettings"
+        android:fragment="org.chromium.components.browser_ui.site_settings.SingleCategorySettings"
         android:title="@string/notifications_from_websites_title"
         android:key="from_websites" />
 </PreferenceScreen>

@@ -24,7 +24,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/tracing/crash_service_uploader.h"
-#include "components/heap_profiling/supervisor.h"
+#include "components/heap_profiling/multi_process/supervisor.h"
 #include "components/services/heap_profiling/public/cpp/controller.h"
 #include "components/services/heap_profiling/public/cpp/settings.h"
 #include "components/version_info/version_info.h"

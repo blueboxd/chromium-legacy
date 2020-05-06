@@ -25,6 +25,9 @@ namespace {
 class FakeSharingMojoService : public sharing::mojom::Sharing,
                                public sharing::mojom::SignallingReceiver {
  public:
+  using NearbyConnectionsHostMojom =
+      location::nearby::connections::mojom::NearbyConnectionsHost;
+
   FakeSharingMojoService() = default;
   ~FakeSharingMojoService() override = default;
 
@@ -40,6 +43,11 @@ class FakeSharingMojoService : public sharing::mojom::Sharing,
       mojo::PendingRemote<network::mojom::MdnsResponder> mdns_responder,
       std::vector<sharing::mojom::IceServerPtr> ice_servers) override {
     signaling_set.Add(this, std::move(signalling_receiver));
+  }
+  void CreateNearbyConnections(
+      mojo::PendingRemote<NearbyConnectionsHostMojom> host,
+      CreateNearbyConnectionsCallback callback) override {
+    NOTIMPLEMENTED();
   }
 
   void OnOfferReceived(const std::string& offer,

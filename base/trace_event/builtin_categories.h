@@ -116,6 +116,7 @@
   X("passwords")                                                         \
   X("p2p")                                                               \
   X("page-serialization")                                                \
+  X("paint_preview")                                                     \
   X("pepper")                                                            \
   X("PlatformMalloc")                                                    \
   X("ppapi")                                                             \

@@ -52,7 +52,6 @@
 <translation id="1197088940767939838">నారింజ రంగు</translation>
 <translation id="1201402288615127009">తరువాత</translation>
 <translation id="1201895884277373915">ఈ సైట్ నుండి మరికొన్ని</translation>
-<translation id="1205963431094182634">మీ Google ఖాతాలో స్టోర్ చేయబడిన పాస్‌వర్డ్‌లను ఉపయోగించడానికి సైన్ ఇన్ చేయండి</translation>
 <translation id="1206967143813997005">తప్పు ప్రారంభ సంతకం</translation>
 <translation id="1209206284964581585">ప్రస్తుతానికి దాచు</translation>
 <translation id="121201262018556460">మీరు <ph name="DOMAIN" />ను చేరుకోవడానికి ప్రయత్నించారు, కానీ సర్వర్ బలహీన కీని కలిగి ఉన్న ప్రమాణపత్రాన్ని అందించింది. దాడి చేసేవారు ప్రైవేట్ కీని విచ్ఛిన్నం చేశారు మరియు సర్వర్ మీరు ఊహించిన సర్వర్ కాకపోవచ్చు (మీరు దాడి చేసే వారితో కమ్యూనికేట్ చేస్తుండవచ్చు).</translation>
@@ -1217,7 +1216,6 @@
 <translation id="6116338172782435947">క్లిప్‌బోర్డ్‌కు కాపీ చేసిన వచనం మరియు చిత్రాలను చూడండి</translation>
 <translation id="6120179357481664955">మీ UPI ID గుర్తుందా?</translation>
 <translation id="6124432979022149706">Chrome Enterprise కనెక్టర్‌లు</translation>
-<translation id="6135641591018127088">శక్తివంతమైన పాస్‌వర్డ్‌ను రూపొందించడానికి మీ Google ఖాతాను ఉపయోగించండి</translation>
 <translation id="6146055958333702838">ఏవైనా కేబుల్‌లను తనిఖీ చేయండి మరియు మీరు ఉపయోగించే ఏవైనా రూటర్‌లు, మోడెమ్‌లు
         లేదా ఇతర నెట్‌వర్క్ పరికరాలను రీబూట్ చేయండి.</translation>
 <translation id="614940544461990577">ఇలా చేసి ప్రయత్నించండి:</translation>
@@ -1263,7 +1261,6 @@
 <translation id="6328639280570009161">నెట్‌వర్క్ సూచనను నిలిపివేసి ప్రయత్నించండి</translation>
 <translation id="6328784461820205019">"మీ కనెక్షన్ ప్రైవేట్ కాదు" లేదా "&lt;span class="error-code"&gt;NET::ERR_CERT_AUTHORITY_INVALID&lt;/span&gt;" లేదా "&lt;span class="error-code"&gt;ERR_CERT_COMMON_NAME_INVALID&lt;/span&gt;" లేదా "&lt;span class="error-code"&gt;NET::ERR_CERT_WEAK_SIGNATURE_ALGORITHM&lt;/span&gt;" లేదా "&lt;span class="error-code"&gt;ERR_CERT_SYMANTEC_LEGACY&lt;/span&gt;" లేదా "SSL సర్టిఫికెట్ ఎర్రర్"</translation>
 <translation id="6328786501058569169">ఈ సైట్ మోసపూరితమైనది</translation>
-<translation id="6333334544069706521">మీ Google ఖాతాలో స్టోర్ చేయబడిన పాస్‌వర్డ్‌లను ఉపయోగించండి</translation>
 <translation id="6337133576188860026"><ph name="SIZE" /> కంటే తక్కువ స్థలాన్ని ఖాళీ చేస్తుంది. మీ తదుపరి సందర్శనలో కొన్ని సైట్‌లు మరింత నెమ్మదిగా లోడ్ కావచ్చు.</translation>
 <translation id="6337534724793800597">పేరు ద్వారా విధానాలను ఫిల్టర్ చేయి</translation>
 <translation id="6353505687280762741">{COUNT,plural, =0{ఏవీ లేవు}=1{1 పాస్‌వర్డ్ (<ph name="DOMAIN_LIST" />కు చెందినది, సింక్ చేయబడింది)}=2{2 పాస్‌వర్డ్‌లు (<ph name="DOMAIN_LIST" />కు చెందినవి, సింక్ చేయబడ్డాయి)}other{# పాస్‌వర్డ్‌లు (<ph name="DOMAIN_LIST" />కు చెందినవి, సింక్ చేయబడ్డాయి)}}</translation>

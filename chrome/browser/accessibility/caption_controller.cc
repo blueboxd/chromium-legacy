@@ -22,7 +22,6 @@
 #include "components/prefs/pref_change_registrar.h"
 #include "components/sync_preferences/pref_service_syncable.h"
 #include "content/public/browser/browser_accessibility_state.h"
-#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "media/base/media_switches.h"
 
@@ -165,12 +164,9 @@ void CaptionController::OnBrowserRemoved(Browser* browser) {
 }
 
 void CaptionController::DispatchTranscription(
-    content::RenderFrameHost* frame_host,
+    content::WebContents* web_contents,
     const chrome::mojom::TranscriptionResultPtr& transcription_result) {
-  auto* web_contents = content::WebContents::FromRenderFrameHost(frame_host);
-  if (!web_contents)
-    return;
-  auto* browser = chrome::FindBrowserWithWebContents(web_contents);
+  Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
   if (!browser)
     return;
   if (!caption_bubble_controllers_.count(browser))

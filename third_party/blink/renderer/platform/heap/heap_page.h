@@ -39,6 +39,7 @@
 #include "base/compiler_specific.h"
 #include "build/build_config.h"
 #include "third_party/blink/renderer/platform/heap/blink_gc.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/heap/gc_info.h"
 #include "third_party/blink/renderer/platform/heap/heap_buildflags.h"
 #include "third_party/blink/renderer/platform/heap/thread_state.h"
@@ -204,6 +205,7 @@ class PLATFORM_EXPORT HeapObjectHeader {
   enum class AccessMode : uint8_t { kNonAtomic, kAtomic };
 
   static HeapObjectHeader* FromPayload(const void*);
+  static inline HeapObjectHeader* FromTraceDescriptor(const TraceDescriptor&);
   template <AccessMode = AccessMode::kNonAtomic>
   static HeapObjectHeader* FromInnerAddress(const void*);
 
@@ -1142,6 +1144,16 @@ inline HeapObjectHeader* HeapObjectHeader::FromPayload(const void* payload) {
   HeapObjectHeader* header =
       reinterpret_cast<HeapObjectHeader*>(addr - sizeof(HeapObjectHeader));
   return header;
+}
+
+// static
+HeapObjectHeader* HeapObjectHeader::FromTraceDescriptor(
+    const TraceDescriptor& desc) {
+  static_assert(!BlinkGC::kNotFullyConstructedObject,
+                "Expecting kNotFullyConstructedObject == nullptr");
+  return desc.base_object_payload
+             ? HeapObjectHeader::FromPayload(desc.base_object_payload)
+             : nullptr;
 }
 
 template <HeapObjectHeader::AccessMode mode>

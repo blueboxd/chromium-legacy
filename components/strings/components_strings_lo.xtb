@@ -52,7 +52,6 @@
 <translation id="1197088940767939838">ສີໝາກກ້ຽງ</translation>
 <translation id="1201402288615127009">ຕໍ່ໄປ</translation>
 <translation id="1201895884277373915">ເພີ່ມເຕີມຈາກ​ເວັບ​ໄຊ​ທ໌ນີ້</translation>
-<translation id="1205963431094182634">ເຂົ້າສູ່ລະບົບເພື່ອໃຊ້ລະຫັດຜ່ານທີ່ເກັບໄວ້ໃນບັນຊີ Google ຂອງທ່ານ</translation>
 <translation id="1206967143813997005">ລາຍເຊັນເບື້ອງຕົ້ນທີ່ບໍ່ດີ</translation>
 <translation id="1209206284964581585">ເຊື່ອງສຳລັບຕອນນີ້</translation>
 <translation id="121201262018556460">ທ່ານໄດ້ພະຍາຍາມທີ່ຈະເຂົ້າຫາ <ph name="DOMAIN" />, ແຕ່ເຊີບເວີໄດ້ນໍາສະເໜີໃບຢັ້ງຢືນທີ່ມີລະຫັດອ່ອນ. ຜູ້ໂຈມຕີສາມາດທໍາລາຍລະຫັດສ່ວນຕົວໄດ້, ແລະເຊີບເວີອາດຈະບໍ່ເປັນເຊີບເວີທີ່ທ່ານຄາດໄວ້ (ທ່ານອາດຈະກໍາລັງສື່ສານກັບຜູ້ໂຈມຕີຢູ່).</translation>
@@ -1217,7 +1216,6 @@
 <translation id="6116338172782435947">ເຫັນຂໍ້ຄວາມ ແລະ ຮູບພາບທີ່ສຳເນົາໄວ້ໃນຄລິບບອດ</translation>
 <translation id="6120179357481664955">ຈື່ UPI ID ຂອງທ່ານໄວ້ບໍ?</translation>
 <translation id="6124432979022149706">ເຄື່ອງມືເຊື່ອມຕໍ່ Chrome Enterprise</translation>
-<translation id="6135641591018127088">ໃຊ້ບັນຊີ Google ຂອງທ່ານເພື່ອສ້າງລະຫັດຜ່ານທີ່ເດົາຍາກ</translation>
 <translation id="6146055958333702838">ກວດເບິ່ງສາຍໄຟ ແລະປິດເປີດເຣົາເຕີ, ໂມເດັມ, ຫຼືອຸປະກອນເຄືອຂ່າຍ
     ທີ່ທ່ານອາດກຳລັງໃຊ້ຢູ່ຄືນໃໝ່.</translation>
 <translation id="614940544461990577">ລອງ:</translation>
@@ -1263,7 +1261,6 @@
 <translation id="6328639280570009161">ລອງປິດໃຊ້ງານການເດົາເຄືອຂ່າຍ</translation>
 <translation id="6328784461820205019">"ການເຊື່ອມຕໍ່ຂອງທ່ານບໍ່ເປັນສ່ວນຕົວ" ຫຼື "&lt;span class="error-code"&gt;NET::ERR_CERT_AUTHORITY_INVALID&lt;/span&gt;" ຫຼື "&lt;span class="error-code"&gt;ERR_CERT_COMMON_NAME_INVALID&lt;/span&gt;" ຫຼື "&lt;span class="error-code"&gt;NET::ERR_CERT_WEAK_SIGNATURE_ALGORITHM&lt;/span&gt;" ຫຼື "ໃບຮັບຮອງ SSL ຜິດພາດ"</translation>
 <translation id="6328786501058569169">ເວັບໄຊນີ້ແມ່ນເວັບຫຼອກລວງ</translation>
-<translation id="6333334544069706521">ໃຊ້ລະຫັດຜ່ານທີ່ເກັບໄວ້ໃນບັນຊີ Google ຂອງທ່ານ</translation>
 <translation id="6337133576188860026">ຂະຫຍາຍພື້ນທີ່ຫວ່າງໄດ້ໜ້ອຍກວ່າ <ph name="SIZE" />. ບາງເວັບໄຊອາດຈະໂຫຼດຊ້າກວ່າໃນການເຂົ້າເບິ່ງຄັ້ງຕໍ່ໄປຂອງທ່ານ.</translation>
 <translation id="6337534724793800597">ກັ່ນຕອງນະໂຍບາຍຕາມຊື່</translation>
 <translation id="6353505687280762741">{COUNT,plural, =0{ບໍ່ມີ}=1{1 ລະຫັດຜ່ານ (ສຳລັບ <ph name="DOMAIN_LIST" />, ຊິ້ງຂໍ້ມູນແລ້ວ)}=2{2 ລະຫັດຜ່ານ (ສຳລັບ <ph name="DOMAIN_LIST" />, ຊິ້ງຂໍ້ມູນແລ້ວ)}other{# ລະຫັດຜ່ານ (ສຳລັບ <ph name="DOMAIN_LIST" />, ຊິ້ງຂໍ້ມູນແລ້ວ)}}</translation>

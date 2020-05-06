@@ -52,7 +52,6 @@
 <translation id="1197088940767939838">Narancssárga</translation>
 <translation id="1201402288615127009">Tovább</translation>
 <translation id="1201895884277373915">Továbbiak erről a webhelyről</translation>
-<translation id="1205963431094182634">Jelentkezzen be a Google-fiókjában tárolt jelszavak használatához</translation>
 <translation id="1206967143813997005">Hibás alapértelmezett aláírás</translation>
 <translation id="1209206284964581585">Elrejtés most</translation>
 <translation id="121201262018556460">Megpróbálta elérni a(z) <ph name="DOMAIN" /> webhelyet, de a szerver egy gyenge kulccsal rendelkező tanúsítványt adott. Egy támadó feltörhette a privát kulcsot, és lehet, hogy a szerver nem a várt kiszolgáló (lehet, hogy Ön egy támadóval kommunikál).</translation>
@@ -1209,7 +1208,6 @@ Ezt egyéb esetben letiltják az adatvédelmi beállításai. Az engedélyezéss
 <translation id="6116338172782435947">Megtekinteni a vágólapra másolt szövegeket és képeket</translation>
 <translation id="6120179357481664955">Emlékszik UPI-azonosítójára?</translation>
 <translation id="6124432979022149706">Chrome Enterprise csatlakozási szoftverek</translation>
-<translation id="6135641591018127088">A Google-fiók használata erős jelszók generálására</translation>
 <translation id="6146055958333702838">Ellenőrizze a kábeleket, majd indítsa újra a routert, modemet vagy más
     hálózati eszközt, amelyet használ.</translation>
 <translation id="614940544461990577">Próbálja ki a következőket:</translation>
@@ -1255,7 +1253,6 @@ Ezt egyéb esetben letiltják az adatvédelmi beállításai. Az engedélyezéss
 <translation id="6328639280570009161">Próbálkozzon a hálózati előrejelzések kikapcsolásával</translation>
 <translation id="6328784461820205019">„Az Ön kapcsolata nem privát”, „&lt;span class="error-code"&gt;NET::ERR_CERT_AUTHORITY_INVALID&lt;/span&gt;”, „&lt;span class="error-code"&gt;ERR_CERT_COMMON_NAME_INVALID&lt;/span&gt;”, „&lt;span class="error-code"&gt;NET::ERR_CERT_WEAK_SIGNATURE_ALGORITHM&lt;/span&gt;”, „&lt;span class="error-code"&gt;ERR_CERT_SYMANTEC_LEGACY&lt;/span&gt;” vagy „SSL-tanúsítványhiba”</translation>
 <translation id="6328786501058569169">A webhely megtévesztő</translation>
-<translation id="6333334544069706521">A Google-fiókban tárolt jelszavak kezelése</translation>
 <translation id="6337133576188860026"><ph name="SIZE" />-nál kevesebb hely szabadul fel. Előfordulhat, hogy egyes webhelyek lassabban töltődnek be, amikor legközelebb felkeresi őket.</translation>
 <translation id="6337534724793800597">Házirendek szűrése név szerint</translation>
 <translation id="6353505687280762741">{COUNT,plural, =0{Nincs}=1{1 jelszó (a következő domainekhez: <ph name="DOMAIN_LIST" />, szinkronizálva)}=2{2 jelszó (a következő domainekhez: <ph name="DOMAIN_LIST" />, szinkronizálva)}other{# jelszó (a következő domainekhez: <ph name="DOMAIN_LIST" />, szinkronizálva)}}</translation>

@@ -90,7 +90,6 @@
 <translation id="4165986682804962316">সাইটের সেটিংস</translation>
 <translation id="4226663524361240545">বিজ্ঞপ্তি আসলে ডিভাইস ভাইব্রেট হতে পারে</translation>
 <translation id="4259722352634471385">নেভিগেশন অবরুদ্ধ করা হয়েছে: <ph name="URL" /></translation>
-<translation id="4275663329226226506">মাধ্যম</translation>
 <translation id="4278390842282768270">মঞ্জুরিপ্রাপ্ত</translation>
 <translation id="4433925000917964731">Google লাইট পৃষ্ঠা পাঠিয়েছে</translation>
 <translation id="4434045419905280838">পপ-আপ এবং রিডাইরেক্ট</translation>
@@ -101,7 +100,6 @@
 <translation id="4645575059429386691">আপনার পিতামাতার দ্বারা পরিচালিত</translation>
 <translation id="4670064810192446073">ভার্চুয়াল রিয়ালিটি</translation>
 <translation id="4751476147751820511">মোশন বা হালকা সেন্সর</translation>
-<translation id="4759238208242260848">ডাউনলোডগুলি</translation>
 <translation id="4883854917563148705">ম্যানেজ করা সেটিংস রিসেট করা যায় না</translation>
 <translation id="4887024562049524730">সাইটগুলিকে আপনার ভার্চুয়াল রিয়েলিটি ডিভাইস ও ডেটা ব্যবহার করতে দেওয়ার আগে অনুমতি নিতে বলুন (সাজেস্ট করা হয়েছে)</translation>
 <translation id="4962975101802056554">ডিভাইসের ক্ষেত্রে সমস্ত অনুমতি সরিয়ে দিন</translation>
@@ -211,6 +209,7 @@
 <translation id="8380167699614421159">এই সাইট ব্যাঘাত সৃষ্টিকারী বা বিভ্রান্তিকর বিজ্ঞাপন দেখায়</translation>
 <translation id="8394832520002899662">সাইটে ফিরে যেতে ট্যাপ করুন</translation>
 <translation id="8447861592752582886">ডিভাইসের অনুমতি প্রত্যাহার করুন</translation>
+<translation id="8463851957836045671">সাইট খুব দ্রুত লোড হয়</translation>
 <translation id="851751545965956758">সাইটকে ডিভাইসের সাথে কানেক্ট করা থেকে ব্লক করুন</translation>
 <translation id="857943718398505171">অনুমোদিত (প্রস্তাবিত)</translation>
 <translation id="8609465669617005112">উপরে যান</translation>
@@ -224,6 +223,7 @@
 <translation id="8847988622838149491">USB</translation>
 <translation id="885701979325669005">স্টোরেজ</translation>
 <translation id="8926666909099850184">এই ডিভাইসে NFC বন্ধ আছে। <ph name="BEGIN_LINK" />Android সেটিংস<ph name="END_LINK" /> থেকে এটি চালু করুন।</translation>
+<translation id="8929372349074745002">বেশিরভাগ লোকের ক্ষেত্রে এই সাইট খুব কম সময়ের মধ্যেই খুলেও যায় এবং এখান থেকে সব রকম উত্তরও পান</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8958424370300090006">কোনও নির্দিষ্ট সাইটের জন্য কুকি ব্লক করুন।</translation>
 <translation id="8959122750345127698">নেভিগেশানে পৌছানো যাচ্ছে না: <ph name="URL" /></translation>

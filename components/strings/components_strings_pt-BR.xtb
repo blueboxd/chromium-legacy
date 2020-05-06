@@ -52,7 +52,6 @@
 <translation id="1197088940767939838">Laranja</translation>
 <translation id="1201402288615127009">Próxima</translation>
 <translation id="1201895884277373915">Mais deste site</translation>
-<translation id="1205963431094182634">Faça login para usar as senhas armazenadas na sua Conta do Google</translation>
 <translation id="1206967143813997005">Assinatura inicial inválida</translation>
 <translation id="1209206284964581585">Ocultar por enquanto</translation>
 <translation id="121201262018556460">Você tentou acessar <ph name="DOMAIN" />, mas o servidor apresentou um certificado que contém uma chave fraca. Um invasor pode ter violado a chave privada, e o servidor pode não ser o servidor que você esperava (você pode estar se comunicando com um invasor).</translation>
@@ -1206,7 +1205,6 @@ Se não fizer isso, a permissão será bloqueada pelas configurações de privac
 <translation id="6116338172782435947">Ver os textos e imagens copiados para a área de transferência</translation>
 <translation id="6120179357481664955">Lembrar código da UPI?</translation>
 <translation id="6124432979022149706">Conectores do Chrome Enterprise</translation>
-<translation id="6135641591018127088">Usar sua Conta do Google para gerar uma senha forte</translation>
 <translation id="6146055958333702838">Verifique todos os cabos e reinicie todos os roteadores, modens ou outros
     dispositivos de rede que você estiver usando.</translation>
 <translation id="614940544461990577">Tente:</translation>
@@ -1252,7 +1250,6 @@ Se não fizer isso, a permissão será bloqueada pelas configurações de privac
 <translation id="6328639280570009161">Tente desativar a previsão de rede</translation>
 <translation id="6328784461820205019">"Sua conexão não é particular" ou "&lt;span class="error-code"&gt;NET::ERR_CERT_AUTHORITY_INVALID&lt;/span&gt;" ou "&lt;span class="error-code"&gt;ERR_CERT_COMMON_NAME_INVALID&lt;/span&gt;" ou "&lt;span class="error-code"&gt;NET::ERR_CERT_WEAK_SIGNATURE_ALGORITHM&lt;/span&gt;" ou "&lt;span class="error-code"&gt;ERR_CERT_SYMANTEC_LEGACY&lt;/span&gt;" ou "Erro de certificado SSL"</translation>
 <translation id="6328786501058569169">Este site é enganoso</translation>
-<translation id="6333334544069706521">Usar senhas salvas na Conta do Google</translation>
 <translation id="6337133576188860026">Libera menos de <ph name="SIZE" />. O carregamento de alguns sites pode ficar mais lento no seu próximo acesso.</translation>
 <translation id="6337534724793800597">Filtrar políticas por nome</translation>
 <translation id="6353505687280762741">{COUNT,plural, =0{Nenhuma}=1{1 senha (para <ph name="DOMAIN_LIST" />, sincronizada)}=2{2 senhas (para <ph name="DOMAIN_LIST" />, sincronizadas)}one{# senha (para <ph name="DOMAIN_LIST" />, sincronizada)}other{# senhas (para <ph name="DOMAIN_LIST" />, sincronizadas)}}</translation>

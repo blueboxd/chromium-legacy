@@ -90,6 +90,7 @@
 <translation id="1947424002851288782">Գերմաներենի ստեղնաշար</translation>
 <translation id="1972984168337863910">Ծավալել ֆայլերի մասին կարծիք հայտնելու վահանակները</translation>
 <translation id="1984603991036629094">Հայերենի հնչյունային ստեղնաշար</translation>
+<translation id="1995337122023280937">Անցնել ֆայլի տեղադրություն</translation>
 <translation id="2001796770603320721">Կառավարել Drive-ում</translation>
 <translation id="2009067268969781306">Ֆորմատավորման արդյունքում կրիչի վրա պահված բոլոր տվյալները կջնջվեն: Այս գործողությունը հնարավոր չէ հետարկել:</translation>
 <translation id="2028997212275086731">RAR արխիվ</translation>
@@ -141,6 +142,7 @@
 <translation id="2638942478653899953">Google Drive-ն անհասանելի է: <ph name="BEGIN_LINK" />Դուրս գրվեք<ph name="END_LINK" /> և նորից մուտք գործեք:</translation>
 <translation id="2649120831653069427">Ձկնիկ</translation>
 <translation id="2661146741306740526">16 x 9</translation>
+<translation id="2664412712123763093">Ֆայլի տեղադրությունը</translation>
 <translation id="2672394958563893062">Սխալ է տեղի ունեցել: Սկզբից նվագարկելու համար վերագործարկեք:</translation>
 <translation id="2676946222714718093">Նվագարկվում է</translation>
 <translation id="2735698359135166290">Ռումիներենի սովորական ստեղնաշար</translation>
@@ -349,6 +351,7 @@
 <translation id="5081517858322016911"><ph name="TOTAL_FILE_SIZE" /> ծավալով ֆայլեր կջնջվեն</translation>
 <translation id="509429900233858213">Սխալ առաջացավ:</translation>
 <translation id="5098629044894065541">Եբրայական</translation>
+<translation id="5112685521274804841">Այս պանակի ֆայլերը հասանելի են միայն կարդալու համար։ Որոշ գործողություններ չեն աջակցվում:</translation>
 <translation id="5123433949759960244">Բասկետբոլ</translation>
 <translation id="5129662217315786329">Լեհական</translation>
 <translation id="5144820558584035333">Հանգուլ 3 Set (390)</translation>
@@ -698,6 +701,7 @@
 <translation id="9034924485347205037">Լինուքսի ֆայլեր</translation>
 <translation id="9035012421917565900">Տարրերը հնարավոր չէ տեղափոխել «<ph name="DESTINATION_NAME" />», այդ պատճառով այս գործողությունը չեք կարող հետարկել։</translation>
 <translation id="9038620279323455325">«<ph name="FILE_NAME" />» անունով ֆայլ արդեն գոյություն ունի: Ընտրեք այլ անուն:</translation>
+<translation id="9062992083244091966"><ph name="APP_NAME" /> հավելվածների միջոցով ֆայլեր բացելու համար նախ դրանք տեղափոխեք <ph name="APP_NAME" />-ի ընդհանուր ֆայլերի պանակ:</translation>
 <translation id="9064939804718829769">Փոխանցում…</translation>
 <translation id="9065203028668620118">Փոփոխել</translation>
 <translation id="9099674669267916096">Էջերի քանակը</translation>

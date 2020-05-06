@@ -5,7 +5,6 @@
 package org.chromium.chrome.test.util;
 
 import android.content.Context;
-import android.util.SparseArray;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 
@@ -17,6 +16,7 @@ import org.chromium.chrome.browser.omnibox.UrlBar;
 import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteController;
 import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteController.OnSuggestionsReceivedListener;
 import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteCoordinatorTestUtils;
+import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteResult;
 import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestion;
 import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestion.MatchClassification;
 import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestionsDropdown;
@@ -155,8 +155,10 @@ public class OmniboxTestUtils {
                     if (suggestions == null) return;
 
                     for (int i = 0; i < suggestions.size(); i++) {
-                        onSuggestionsReceived(suggestions.get(i).mSuggestions, null,
-                                suggestions.get(i).mAutocompleteText, 0);
+                        AutocompleteResult autocompleteResult =
+                                new AutocompleteResult(suggestions.get(i).mSuggestions, null);
+                        onSuggestionsReceived(
+                                autocompleteResult, suggestions.get(i).mAutocompleteText, 0);
                     }
                 }
             };
@@ -195,8 +197,8 @@ public class OmniboxTestUtils {
             super();
             setOnSuggestionsReceivedListener(new OnSuggestionsReceivedListener() {
                 @Override
-                public void onSuggestionsReceived(List<OmniboxSuggestion> suggestions,
-                        SparseArray<String> groupHeaders, String inlineAutocompleteText) {
+                public void onSuggestionsReceived(
+                        AutocompleteResult autocompleteResult, String inlineAutocompleteText) {
                     Assert.fail("No autocomplete suggestions should be received");
                 }
             });

@@ -59,8 +59,7 @@ class FtlSignalStrategy::Core {
   void AddListener(Listener* listener);
   void RemoveListener(Listener* listener);
   bool SendStanza(std::unique_ptr<jingle_xmpp::XmlElement> stanza);
-  bool SendMessage(const ftl::Id& destination_id,
-                   const std::string& destination_registration_id,
+  bool SendMessage(const SignalingAddress& destination_address,
                    const ftl::ChromotingMessage& message);
   bool IsSignInError() const;
 
@@ -233,8 +232,7 @@ bool FtlSignalStrategy::Core::SendStanza(
 }
 
 bool FtlSignalStrategy::Core::SendMessage(
-    const ftl::Id& destination_id,
-    const std::string& destination_registration_id,
+    const SignalingAddress& destination_address,
     const ftl::ChromotingMessage& message) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
@@ -243,12 +241,10 @@ bool FtlSignalStrategy::Core::SendMessage(
     return false;
   }
 
-  SignalingAddress destination = SignalingAddress::CreateFtlSignalingAddress(
-      destination_id.id(), destination_registration_id);
   SendMessageImpl(
-      destination, message,
+      destination_address, message,
       base::BindOnce(&Core::OnSendMessageResponse, weak_factory_.GetWeakPtr(),
-                     destination, std::string()));
+                     destination_address, std::string()));
 
   return true;
 }
@@ -537,12 +533,9 @@ bool FtlSignalStrategy::SendStanza(
   return core_->SendStanza(std::move(stanza));
 }
 
-bool FtlSignalStrategy::SendMessage(
-    const ftl::Id& destination_id,
-    const std::string& destination_registration_id,
-    const ftl::ChromotingMessage& message) {
-  return core_->SendMessage(destination_id, destination_registration_id,
-                            message);
+bool FtlSignalStrategy::SendMessage(const SignalingAddress& destination_address,
+                                    const ftl::ChromotingMessage& message) {
+  return core_->SendMessage(destination_address, message);
 }
 
 std::string FtlSignalStrategy::GetNextId() {

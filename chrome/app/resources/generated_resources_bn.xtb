@@ -169,6 +169,7 @@
 <translation id="1217483152325416304">আপনার স্থানীয় ডেটা শীঘ্রই মুছে যাবে</translation>
 <translation id="1217668622537098248">কাজটি হয়ে গেলে লেফ্ট ক্লিকে ফিরে যান</translation>
 <translation id="121783623783282548">পাসওয়ার্ডগুলি মেলে না৷</translation>
+<translation id="1218015446623563536">Linux মুছে ফেলুন</translation>
 <translation id="1218839827383191197"><ph name="BEGIN_PARAGRAPH1" />Google-এর লোকেশন ভিত্তিক পরিষেবা ওয়াই-ফাই, মোবাইল নেটওয়ার্ক এবং সেন্সরের মতো উৎস ব্যবহার করে আপনার ডিভাইসের লোকেশন অনুমান করে।<ph name="END_PARAGRAPH1" />
     <ph name="BEGIN_PARAGRAPH2" />এই ডিভাইসের মূল লোকেশন সেটিং বন্ধ করে আপনি লোকেশন পরিষেবাটি বন্ধ করতে পারেন। এছাড়াও আপনি লোকেশন সেটিংসে গিয়ে লোকেশন নির্ধারণের জন্য ওয়াই-ফাই, মোবাইল নেটওয়ার্ক এবং সেন্সরের ব্যবহার বন্ধ করতে পারেন।<ph name="END_PARAGRAPH2" /></translation>
 <translation id="122082903575839559">সার্টিফিকেট স্বাক্ষর অ্যালগরিদম</translation>
@@ -368,6 +369,7 @@
 <translation id="1486096554574027028">পাসওয়ার্ড খুঁজুন</translation>
 <translation id="1487335504823219454">চালু - কাস্টম সেটিংস</translation>
 <translation id="1489664337021920575">অন্য বিকল্প বেছে নিন</translation>
+<translation id="1491985563764252632">আপনার অভিভাবক এক্সটেনশনের অনুমতি বন্ধ করে রেখেছেন।</translation>
 <translation id="1493892686965953381"><ph name="LOAD_STATE_PARAMETER" />এর জন্য প্রতীক্ষারত...</translation>
 <translation id="1495486559005647033"><ph name="NUM_PRINTERS" />টি অন্যান্য উপলব্ধ ডিভাইস৷</translation>
 <translation id="1495677929897281669">ট্যাবে ফিরে যান</translation>
@@ -1281,6 +1283,7 @@
 <translation id="2683638487103917598">ফোল্ডার সাজানো হয়েছে</translation>
 <translation id="2684004000387153598">চালিয়ে যেতে 'ঠিক আছে' বোতামে ক্লিক করুন, তারপর আপনার ইমেল আইডির জন্য নতুন প্রোফাইল তৈরি করতে 'কাউকে যোগ করুন' বোতামে ক্লিক করুন।</translation>
 <translation id="2687403674020088961">সব কুকি ব্লক করুন (সাজেস্ট করা হচ্ছে না)</translation>
+<translation id="2687407218262674387">Google পরিষেবার শর্তাবলী</translation>
 <translation id="2688196195245426394">ডিভাইসটি সার্ভারে নথিভুক্ত করার সময়ে ত্রুটি: <ph name="CLIENT_ERROR" />৷</translation>
 <translation id="2690024944919328218">ভাষা বিকল্পগুলি দেখান</translation>
 <translation id="2691385045260836588">মডেল</translation>
@@ -3702,6 +3705,7 @@
 <translation id="5972666587303800813">নো-অপারেশন পরিষেবা</translation>
 <translation id="5972708806901999743">শীর্ষে যান</translation>
 <translation id="5972826969634861500"><ph name="PRODUCT_NAME" /> শুরু করুন</translation>
+<translation id="5973041996755340290">"<ph name="CLIENT_NAME" />" এই ব্রাউজার ডিবাগ করা চালু করেছে</translation>
 <translation id="5973605538625120605">পিন পরিবর্তন করুন</translation>
 <translation id="5975792506968920132">ব্যাটারি চার্জের শতাংশ মান</translation>
 <translation id="5976160379964388480">অন্যান্য</translation>
@@ -3782,6 +3786,7 @@
 <translation id="6076491747490570887">হালকা ধূসর</translation>
 <translation id="6077131872140550515">পছন্দের তালিকা থেকে সরান</translation>
 <translation id="6077189836672154517"><ph name="DEVICE_TYPE" />-এর সম্পর্কে পরামর্শ এবং আপডেট</translation>
+<translation id="6078045608615316905">এই ছবির QR কোড তৈরি করুন</translation>
 <translation id="6078323886959318429">শর্টকাট যোগ করুন</translation>
 <translation id="6078752646384677957">অনুগ্রহ করে আপনার মাইক্রোফোন এবং অডিওর স্তর ভালকরে দেখে নিন।</translation>
 <translation id="6078769373519310690">"<ph name="CHROME_EXTENSION_NAME" />" একটি HID ডিভাইসের সাথে কানেক্ট করতে চায়</translation>
@@ -4223,6 +4228,7 @@
 <translation id="668599234725812620">Google Play খুলুন</translation>
 <translation id="6686490380836145850">ডানদিকের ট্যাবগুলি বন্ধ করুন</translation>
 <translation id="6686817083349815241">আপনার পাসওয়ার্ড সেভ করুন</translation>
+<translation id="6688285987813868112">এই ছবির QR কোড তৈরি করুন</translation>
 <translation id="6690659332373509948">ফাইল বিশ্লেষণ করতে বন্ধ: <ph name="FILE_NAME" /></translation>
 <translation id="6690751852586194791">এই ডিভাইসটিতে যোগ করতে একটি তত্ত্বাবধানে থাকা ব্যবহারকারী বেছে করুন৷</translation>
 <translation id="6691331417640343772">Google ড্যাশবোর্ডে সিঙ্ক হওয়া ডেটা পরিচালনা করুন</translation>
@@ -4391,6 +4397,7 @@
 <translation id="6914783257214138813">এক্সপোর্ট করা ফাইল যারা দেখতে পান তারা আপনার পাসওয়ার্ডগুলিও দেখতে পাবেন।</translation>
 <translation id="6915804003454593391">ব্যবহারকারী:</translation>
 <translation id="6916590542764765824">এক্সটেনশানগুলি পরিচালনা করুন</translation>
+<translation id="6920262510368602827">এই পৃষ্ঠার QR কোড তৈরি করুন</translation>
 <translation id="6920989436227028121">নিয়মিত ট্যাব রূপে খুলুন</translation>
 <translation id="6921104647315081813">অ্যাক্টিভিটি খালি করুন</translation>
 <translation id="692114467174262153"><ph name="ALTERNATIVE_BROWSER_NAME" /> চালু করা যাচ্ছে না</translation>
@@ -4591,6 +4598,7 @@
 <translation id="7175353351958621980">এখান থেকে লোড হয়েছে:</translation>
 <translation id="7180611975245234373">রিফ্রেশ করুন</translation>
 <translation id="7180865173735832675">কাস্টমাইজ করুন</translation>
+<translation id="7182791023900310535">পাসওয়ার্ড সরান</translation>
 <translation id="7186088072322679094">টুলবারের মধ্যে রাখুন</translation>
 <translation id="7187428571767585875">যে রেজিস্ট্রি এন্ট্রি সরিয়ে দেওয়া হবে অথবা পরিবর্তন করা হবে:</translation>
 <translation id="7189234443051076392">আপনার ডিভাইসে পর্যাপ্ত জায়গা আছে কিনা দেখে নিন</translation>
@@ -5505,6 +5513,7 @@
 <translation id="8382913212082956454">ও ইমেল অ্যাড্রেস কপি করুন</translation>
 <translation id="8386091599636877289">নীতি খুঁজে পাওয়া যায়নি।</translation>
 <translation id="8386903983509584791">স্ক্যান করা সম্পন্ন হয়েছে</translation>
+<translation id="8389416080014625855">এই পৃষ্ঠার QR কোড তৈরি করুন</translation>
 <translation id="8389492867173948260">আপনার দেখা ওয়েবসাইটে আপনার সমস্ত ডেটা পড়ার এবং পরিবর্তন করার জন্য এই এক্সটেনশনটিকে অনুমতি দিন:</translation>
 <translation id="8390449457866780408">সার্ভার অনুপলব্ধ৷</translation>
 <translation id="8391218455464584335">ভিনাইল</translation>

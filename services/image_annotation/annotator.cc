@@ -581,8 +581,11 @@ std::unique_ptr<network::SimpleURLLoader> Annotator::MakeRequestLoader(
             "You can enable or disable this feature via the context menu "
             "for images, or via 'Image Labeling' in Chrome's settings under "
             "Accessibility. This feature is disabled by default."
-          policy_exception_justification: "Policy to come; feature not yet "
-                                          "complete."
+          chrome_policy {
+            AccessibilityImageLabelsEnabled {
+              AccessibilityImageLabelsEnabled: false
+            }
+          }
         })");
 
   auto url_loader = network::SimpleURLLoader::Create(

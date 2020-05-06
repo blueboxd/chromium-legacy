@@ -4,7 +4,9 @@
 
 #include "chrome/services/sharing/sharing_impl.h"
 
+#include "base/test/bind_test_util.h"
 #include "base/test/task_environment.h"
+#include "chrome/services/sharing/nearby/test/mock_nearby_connections_host.h"
 #include "chrome/services/sharing/webrtc/test/mock_sharing_connection_host.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -13,6 +15,11 @@ namespace sharing {
 
 class SharingImplTest : public testing::Test {
  public:
+  using MockNearbyConnectionsHost =
+      location::nearby::connections::MockNearbyConnectionsHost;
+  using NearbyConnectionsMojom =
+      location::nearby::connections::mojom::NearbyConnections;
+
   SharingImplTest() {
     service_ =
         std::make_unique<SharingImpl>(remote_.BindNewPipeAndPassReceiver());
@@ -36,6 +43,18 @@ class SharingImplTest : public testing::Test {
         connection->mdns_responder.BindNewPipeAndPassRemote(),
         /*ice_servers=*/{});
     return connection;
+  }
+
+  std::unique_ptr<MockNearbyConnectionsHost> CreateNearbyConnections(
+      mojo::Remote<NearbyConnectionsMojom>* remote) {
+    auto host = std::make_unique<MockNearbyConnectionsHost>();
+    service()->CreateNearbyConnections(
+        host->host.BindNewPipeAndPassRemote(),
+        base::BindLambdaForTesting(
+            [&](mojo::PendingRemote<NearbyConnectionsMojom> pending_remote) {
+              remote->Bind(std::move(pending_remote));
+            }));
+    return host;
   }
 
  protected:
@@ -70,6 +89,44 @@ TEST_F(SharingImplTest, ClosesPeerConnection) {
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(2u, service()->GetWebRtcConnectionCountForTesting());
+}
+
+TEST_F(SharingImplTest, NearbyConnections_Create) {
+  mojo::Remote<NearbyConnectionsMojom> connections;
+  auto connections_host = CreateNearbyConnections(&connections);
+
+  EXPECT_TRUE(connections.is_connected());
+}
+
+TEST_F(SharingImplTest, NearbyConnections_CreateMultiple) {
+  mojo::Remote<NearbyConnectionsMojom> connections_1;
+  auto connections_host_1 = CreateNearbyConnections(&connections_1);
+  EXPECT_TRUE(connections_1.is_connected());
+
+  // Calling CreateNearbyConnections() again should disconnect the old instance.
+  mojo::Remote<NearbyConnectionsMojom> connections_2;
+  auto connections_host_2 = CreateNearbyConnections(&connections_2);
+
+  // Run mojo disconnect handlers.
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_FALSE(connections_1.is_connected());
+  EXPECT_TRUE(connections_2.is_connected());
+}
+
+TEST_F(SharingImplTest, NearbyConnections_Disconnects) {
+  mojo::Remote<NearbyConnectionsMojom> connections;
+  auto connections_host = CreateNearbyConnections(&connections);
+  EXPECT_TRUE(connections.is_connected());
+
+  // Disconnecting the |connections_host| interface should also disconnect and
+  // destroy the |connections| interface.
+  connections_host.reset();
+
+  // Run mojo disconnect handlers.
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_FALSE(connections.is_connected());
 }
 
 }  // namespace sharing

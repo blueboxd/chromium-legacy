@@ -4,9 +4,63 @@
 
 #include "media/renderers/win/media_engine_notify_impl.h"
 
+#include "media/base/win/mf_helpers.h"
+
 namespace media {
 
 namespace {
+
+#define ENUM_TO_STRING(enum) \
+  case enum:                 \
+    return #enum
+
+std::string MediaEngineEventToString(MF_MEDIA_ENGINE_EVENT event) {
+  switch (event) {
+    ENUM_TO_STRING(MF_MEDIA_ENGINE_EVENT_LOADSTART);
+    ENUM_TO_STRING(MF_MEDIA_ENGINE_EVENT_PROGRESS);
+    ENUM_TO_STRING(MF_MEDIA_ENGINE_EVENT_SUSPEND);
+    ENUM_TO_STRING(MF_MEDIA_ENGINE_EVENT_ABORT);
+    ENUM_TO_STRING(MF_MEDIA_ENGINE_EVENT_ERROR);
+    ENUM_TO_STRING(MF_MEDIA_ENGINE_EVENT_EMPTIED);
+    ENUM_TO_STRING(MF_MEDIA_ENGINE_EVENT_STALLED);
+    ENUM_TO_STRING(MF_MEDIA_ENGINE_EVENT_PLAY);
+    ENUM_TO_STRING(MF_MEDIA_ENGINE_EVENT_PAUSE);
+    ENUM_TO_STRING(MF_MEDIA_ENGINE_EVENT_LOADEDMETADATA);
+    ENUM_TO_STRING(MF_MEDIA_ENGINE_EVENT_LOADEDDATA);
+    ENUM_TO_STRING(MF_MEDIA_ENGINE_EVENT_WAITING);
+    ENUM_TO_STRING(MF_MEDIA_ENGINE_EVENT_PLAYING);
+    ENUM_TO_STRING(MF_MEDIA_ENGINE_EVENT_CANPLAY);
+    ENUM_TO_STRING(MF_MEDIA_ENGINE_EVENT_CANPLAYTHROUGH);
+    ENUM_TO_STRING(MF_MEDIA_ENGINE_EVENT_SEEKING);
+    ENUM_TO_STRING(MF_MEDIA_ENGINE_EVENT_SEEKED);
+    ENUM_TO_STRING(MF_MEDIA_ENGINE_EVENT_TIMEUPDATE);
+    ENUM_TO_STRING(MF_MEDIA_ENGINE_EVENT_ENDED);
+    ENUM_TO_STRING(MF_MEDIA_ENGINE_EVENT_RATECHANGE);
+    ENUM_TO_STRING(MF_MEDIA_ENGINE_EVENT_DURATIONCHANGE);
+    ENUM_TO_STRING(MF_MEDIA_ENGINE_EVENT_VOLUMECHANGE);
+    ENUM_TO_STRING(MF_MEDIA_ENGINE_EVENT_FORMATCHANGE);
+    ENUM_TO_STRING(MF_MEDIA_ENGINE_EVENT_PURGEQUEUEDEVENTS);
+    ENUM_TO_STRING(MF_MEDIA_ENGINE_EVENT_TIMELINE_MARKER);
+    ENUM_TO_STRING(MF_MEDIA_ENGINE_EVENT_BALANCECHANGE);
+    ENUM_TO_STRING(MF_MEDIA_ENGINE_EVENT_DOWNLOADCOMPLETE);
+    ENUM_TO_STRING(MF_MEDIA_ENGINE_EVENT_BUFFERINGSTARTED);
+    ENUM_TO_STRING(MF_MEDIA_ENGINE_EVENT_BUFFERINGENDED);
+    ENUM_TO_STRING(MF_MEDIA_ENGINE_EVENT_FRAMESTEPCOMPLETED);
+    ENUM_TO_STRING(MF_MEDIA_ENGINE_EVENT_NOTIFYSTABLESTATE);
+    ENUM_TO_STRING(MF_MEDIA_ENGINE_EVENT_FIRSTFRAMEREADY);
+    ENUM_TO_STRING(MF_MEDIA_ENGINE_EVENT_TRACKSCHANGE);
+    ENUM_TO_STRING(MF_MEDIA_ENGINE_EVENT_OPMINFO);
+    ENUM_TO_STRING(MF_MEDIA_ENGINE_EVENT_RESOURCELOST);
+    ENUM_TO_STRING(MF_MEDIA_ENGINE_EVENT_DELAYLOADEVENT_CHANGED);
+    ENUM_TO_STRING(MF_MEDIA_ENGINE_EVENT_STREAMRENDERINGERROR);
+    ENUM_TO_STRING(MF_MEDIA_ENGINE_EVENT_SUPPORTEDRATES_CHANGED);
+    ENUM_TO_STRING(MF_MEDIA_ENGINE_EVENT_AUDIOENDPOINTCHANGE);
+    default:
+      return "Unknown MF_MEDIA_ENGINE_EVENT";
+  }
+}
+
+#undef ENUM_TO_STRING
 
 PipelineStatus MediaEngineStatusToPipelineStatus(
     MF_MEDIA_ENGINE_ERR media_engine_status) {
@@ -38,13 +92,15 @@ HRESULT MediaEngineNotifyImpl::RuntimeClassInitialize(
     ErrorCB error_cb,
     EndedCB ended_cb,
     BufferingStateChangedCB buffering_state_changed_cb,
-    VideoNaturalSizeChangedCB video_natural_size_changed_cb) {
-  DVLOG(1) << __func__ << ": this=" << this;
+    VideoNaturalSizeChangedCB video_natural_size_changed_cb,
+    TimeUpdateCB time_update_cb) {
+  DVLOG_FUNC(1);
 
   error_cb_ = std::move(error_cb);
   ended_cb_ = std::move(ended_cb);
   buffering_state_changed_cb_ = std::move(buffering_state_changed_cb);
   video_natural_size_changed_cb_ = std::move(video_natural_size_changed_cb);
+  time_update_cb_ = std::move(time_update_cb);
   return S_OK;
 }
 
@@ -55,28 +111,25 @@ HRESULT MediaEngineNotifyImpl::RuntimeClassInitialize(
 HRESULT MediaEngineNotifyImpl::EventNotify(DWORD event_code,
                                            DWORD_PTR param1,
                                            DWORD param2) {
-  DVLOG(3) << __func__ << ": this=" << this << ",eventCode=" << event_code
-           << ",param1=" << static_cast<unsigned>(param1)
-           << ",param2=" << static_cast<unsigned>(param2);
+  auto event = static_cast<MF_MEDIA_ENGINE_EVENT>(event_code);
+  DVLOG_FUNC(3) << "event=" << MediaEngineEventToString(event);
 
   base::AutoLock lock(lock_);
   if (has_shutdown_)
     return S_OK;
 
-  switch (static_cast<MF_MEDIA_ENGINE_EVENT>(event_code)) {
+  switch (event) {
     case MF_MEDIA_ENGINE_EVENT_ERROR: {
       // |param1| - A member of the MF_MEDIA_ENGINE_ERR enumeration.
       // |param2| - An HRESULT error code, or zero.
       MF_MEDIA_ENGINE_ERR error = static_cast<MF_MEDIA_ENGINE_ERR>(param1);
-      DLOG(ERROR) << __func__ << ": error=" << error << ",hr=" << param2;
+      DLOG(ERROR) << __func__ << ": error=" << error
+                  << ", hr=" << PrintHr(param2);
       error_cb_.Run(MediaEngineStatusToPipelineStatus(error));
       break;
     }
     case MF_MEDIA_ENGINE_EVENT_ENDED:
       ended_cb_.Run();
-      break;
-    case MF_MEDIA_ENGINE_EVENT_DURATIONCHANGE:
-      DVLOG(2) << __func__ << ": this=" << this << ", duration changed.";
       break;
     case MF_MEDIA_ENGINE_EVENT_FORMATCHANGE:
       video_natural_size_changed_cb_.Run();
@@ -94,16 +147,19 @@ HRESULT MediaEngineNotifyImpl::EventNotify(DWORD event_code,
           BufferingState::BUFFERING_HAVE_NOTHING,
           BufferingStateChangeReason::BUFFERING_CHANGE_REASON_UNKNOWN);
       break;
+    case MF_MEDIA_ENGINE_EVENT_TIMEUPDATE:
+      time_update_cb_.Run();
+      break;
+
     default:
-      DVLOG(3) << __func__ << ": this=" << this
-               << ", unhandled event_code=" << event_code;
+      DVLOG_FUNC(2) << "Unhandled event=" << MediaEngineEventToString(event);
       break;
   }
   return S_OK;
 }
 
 void MediaEngineNotifyImpl::Shutdown() {
-  DVLOG(1) << __func__ << ": this=" << this;
+  DVLOG_FUNC(1);
 
   base::AutoLock lock(lock_);
   has_shutdown_ = true;

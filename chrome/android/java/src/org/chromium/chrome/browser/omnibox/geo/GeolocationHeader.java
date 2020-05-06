@@ -28,9 +28,9 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.omnibox.geo.VisibleNetworks.VisibleCell;
 import org.chromium.chrome.browser.omnibox.geo.VisibleNetworks.VisibleWifi;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.browser.site_settings.PermissionInfo;
-import org.chromium.chrome.browser.site_settings.WebsitePreferenceBridge;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.components.browser_ui.site_settings.PermissionInfo;
+import org.chromium.components.browser_ui.site_settings.WebsitePreferenceBridge;
 import org.chromium.components.content_settings.ContentSettingValues;
 import org.chromium.components.content_settings.ContentSettingsType;
 import org.chromium.components.embedder_support.util.UrlConstants;
@@ -318,7 +318,8 @@ public class GeolocationHeader {
 
         @LocationSource int locationSource = getLocationSource();
         @Permission int appPermission = getGeolocationPermission(tab);
-        @Permission int domainPermission = getDomainPermission(profile, url);
+        @Permission
+        int domainPermission = getDomainPermission(profile, url);
 
         // Record the permission state with a histogram.
         recordPermissionHistogram(locationSource, appPermission, domainPermission,

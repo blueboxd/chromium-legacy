@@ -59,7 +59,7 @@ class InstallationMetrics : public InstallationTracker::Observer {
   // Calls ReportMetrics method if there is a non-empty list of
   // force-installed extensions, and is responsible for cleanup of
   // observers.
-  void OnForceInstallationFinished() override;
+  void OnForceInstalledExtensionsLoaded() override;
 
  private:
   // Returns true only in case of some well-known misconfigurations which are

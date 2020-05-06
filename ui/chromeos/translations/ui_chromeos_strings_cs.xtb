@@ -90,6 +90,7 @@
 <translation id="1947424002851288782">Německá klávesnice</translation>
 <translation id="1972984168337863910">Rozbalit panely zpětné vazby k souborům</translation>
 <translation id="1984603991036629094">Arménská fonetická klávesnice</translation>
+<translation id="1995337122023280937">Přejít do umístění souboru</translation>
 <translation id="2001796770603320721">Spravovat na Disku</translation>
 <translation id="2009067268969781306">Naformátováním jednotky smažete všechna na ní uložená data. Tuto akci nelze vrátit zpět.</translation>
 <translation id="2028997212275086731">Archiv ve formátu RAR</translation>
@@ -141,6 +142,7 @@
 <translation id="2638942478653899953">Disk Google nelze použít. <ph name="BEGIN_LINK" />Odhlaste se prosím<ph name="END_LINK" /> a opět se přihlaste.</translation>
 <translation id="2649120831653069427">Duhovka</translation>
 <translation id="2661146741306740526">16 : 9</translation>
+<translation id="2664412712123763093">Umístění souboru</translation>
 <translation id="2672394958563893062">Došlo k chybě. Kliknutím spustíte přehrávání od začátku.</translation>
 <translation id="2676946222714718093">Přehrávání v zařízení</translation>
 <translation id="2735698359135166290">Standardní rumunská klávesnice</translation>
@@ -349,6 +351,7 @@
 <translation id="5081517858322016911">Budou vymazány soubory o celkové velikosti <ph name="TOTAL_FILE_SIZE" /></translation>
 <translation id="509429900233858213">Došlo k chybě.</translation>
 <translation id="5098629044894065541">hebrejština</translation>
+<translation id="5112685521274804841">Soubory v této složce jsou pouze ke čtení. Některé aktivity nejsou podporovány.</translation>
 <translation id="5123433949759960244">Basketbal</translation>
 <translation id="5129662217315786329">polština</translation>
 <translation id="5144820558584035333">Hangul – 3 sady (390)</translation>
@@ -698,6 +701,7 @@
 <translation id="9034924485347205037">Soubory systému Linux</translation>
 <translation id="9035012421917565900">Položky nelze přesunout zpět do týmu <ph name="DESTINATION_NAME" />. Tuto akci proto nebude možné vrátit zpět.</translation>
 <translation id="9038620279323455325">Soubor s názvem „<ph name="FILE_NAME" />“ již existuje. Zvolte jiný název.</translation>
+<translation id="9062992083244091966">Chcete-li soubory otevřít pomocí aplikací <ph name="APP_NAME" />, nejdříve je přesuňte do složky sdílených souborů aplikace <ph name="APP_NAME" />.</translation>
 <translation id="9064939804718829769">Probíhá přenos...</translation>
 <translation id="9065203028668620118">Upravit</translation>
 <translation id="9099674669267916096">Počet stránek</translation>

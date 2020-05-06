@@ -183,9 +183,12 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
   AddSettingsPageUIHandler(std::make_unique<ImportDataHandler>());
   AddSettingsPageUIHandler(std::make_unique<HatsHandler>());
 
-#if defined(OS_WIN) || defined(OS_CHROMEOS)
-  AddSettingsPageUIHandler(std::make_unique<LanguagesHandler>(web_ui));
-#endif  // defined(OS_WIN) || defined(OS_CHROMEOS)
+#if defined(OS_WIN)
+  AddSettingsPageUIHandler(std::make_unique<LanguagesHandler>());
+#endif  // defined(OS_WIN)
+#if defined(OS_CHROMEOS)
+  AddSettingsPageUIHandler(std::make_unique<LanguagesHandler>(profile));
+#endif  // defined(OS_CHROMEOS)
 
   AddSettingsPageUIHandler(
       std::make_unique<MediaDevicesSelectionHandler>(profile));

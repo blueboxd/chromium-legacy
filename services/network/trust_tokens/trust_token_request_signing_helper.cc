@@ -16,6 +16,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/time/time_to_iso8601.h"
+#include "base/values.h"
 #include "components/cbor/values.h"
 #include "components/cbor/writer.h"
 #include "net/http/structured_headers.h"
@@ -30,6 +31,18 @@
 
 namespace network {
 
+namespace {
+
+void LogOutcome(const net::NetLogWithSource& log, base::StringPiece outcome) {
+  log.EndEvent(net::NetLogEventType::TRUST_TOKEN_OPERATION_BEGIN_SIGNING,
+               [outcome]() {
+                 base::Value ret(base::Value::Type::DICTIONARY);
+                 ret.SetStringKey("outcome", outcome);
+                 return ret;
+               });
+}
+
+}  // namespace
 namespace internal {
 
 // Parse the Signed-Headers input header as a Structured Headers Draft 15 list
@@ -178,11 +191,13 @@ TrustTokenRequestSigningHelper::TrustTokenRequestSigningHelper(
     TrustTokenStore* token_store,
     Params params,
     std::unique_ptr<Signer> signer,
-    std::unique_ptr<TrustTokenRequestCanonicalizer> canonicalizer)
+    std::unique_ptr<TrustTokenRequestCanonicalizer> canonicalizer,
+    net::NetLogWithSource net_log)
     : token_store_(token_store),
       params_(std::move(params)),
       signer_(std::move(signer)),
-      canonicalizer_(std::move(canonicalizer)) {}
+      canonicalizer_(std::move(canonicalizer)),
+      net_log_(std::move(net_log)) {}
 
 TrustTokenRequestSigningHelper::~TrustTokenRequestSigningHelper() = default;
 
@@ -226,12 +241,17 @@ void TrustTokenRequestSigningHelper::Begin(
   DCHECK(!request->extra_request_headers().HasHeader(
       kTrustTokensRequestHeaderSecSignature));
 
+  net_log_.BeginEvent(
+      net::NetLogEventType::TRUST_TOKEN_OPERATION_BEGIN_SIGNING);
+
   base::Optional<SignedTrustTokenRedemptionRecord> maybe_redemption_record =
       token_store_->RetrieveNonstaleRedemptionRecord(params_.issuer,
                                                      params_.toplevel);
 
   if (!maybe_redemption_record) {
     AttachSignedRedemptionRecordHeader(request, std::string());
+
+    LogOutcome(net_log_, "No SRR for this (issuer, top-level context) pair");
     std::move(done).Run(mojom::TrustTokenOperationStatus::kResourceExhausted);
     return;
   }
@@ -242,6 +262,10 @@ void TrustTokenRequestSigningHelper::Begin(
 
   if (!maybe_headers_to_sign) {
     AttachSignedRedemptionRecordHeader(request, std::string());
+
+    LogOutcome(net_log_,
+               "Unsignable header specified in Signed-Headers "
+               "header or additionalSignedHeaders arg");
     std::move(done).Run(mojom::TrustTokenOperationStatus::kInvalidArgument);
     return;
   }
@@ -255,6 +279,7 @@ void TrustTokenRequestSigningHelper::Begin(
   }
 
   if (params_.sign_request_data == mojom::TrustTokenSignRequestData::kOmit) {
+    LogOutcome(net_log_, "Success (sign-request-data='omit')");
     std::move(done).Run(mojom::TrustTokenOperationStatus::kOk);
     return;
   }
@@ -267,6 +292,7 @@ void TrustTokenRequestSigningHelper::Begin(
     request->RemoveRequestHeaderByName(kTrustTokensRequestHeaderSecTime);
     request->RemoveRequestHeaderByName(kTrustTokensRequestHeaderSignedHeaders);
 
+    LogOutcome(net_log_, "Internal error generating signature");
     std::move(done).Run(mojom::TrustTokenOperationStatus::kInternalError);
     return;
   }
@@ -278,6 +304,7 @@ void TrustTokenRequestSigningHelper::Begin(
 
   // Error serializing the header. Not expected.
   if (!maybe_signature_header) {
+    LogOutcome(net_log_, "Internal error serializing signature header");
     std::move(done).Run(mojom::TrustTokenOperationStatus::kInternalError);
     return;
   }
@@ -286,6 +313,7 @@ void TrustTokenRequestSigningHelper::Begin(
                                        *maybe_signature_header,
                                        /*overwrite=*/true);
 
+  LogOutcome(net_log_, "Success");
   std::move(done).Run(mojom::TrustTokenOperationStatus::kOk);
 }
 

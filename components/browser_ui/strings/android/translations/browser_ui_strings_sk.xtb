@@ -90,7 +90,6 @@
 <translation id="4165986682804962316">Nastavenia webu</translation>
 <translation id="4226663524361240545">Upozornenia môžu pri prijatí na zariadení spustiť vibrovanie</translation>
 <translation id="4259722352634471385">Navigácia je zablokovaná: <ph name="URL" /></translation>
-<translation id="4275663329226226506">Médiá</translation>
 <translation id="4278390842282768270">Povolené</translation>
 <translation id="4433925000917964731">Zjednodušenú verziu stránky poskytol Google</translation>
 <translation id="4434045419905280838">Vyskakovacie okná a presmerovania</translation>
@@ -101,7 +100,6 @@
 <translation id="4645575059429386691">Spravované vaším rodičom</translation>
 <translation id="4670064810192446073">Virtuálna realita</translation>
 <translation id="4751476147751820511">Senzory pohybu alebo svetla</translation>
-<translation id="4759238208242260848">Stiahnuté</translation>
 <translation id="4883854917563148705">Spravované nastavenia sa nedajú resetovať</translation>
 <translation id="4887024562049524730">Opýtať sa, či chcete povoliť webom používať vaše zariadenie a údaje virtuálnej reality (odporúčané)</translation>
 <translation id="4962975101802056554">Odvolať všetky povolenia pre zariadenie</translation>
@@ -225,7 +223,7 @@
 <translation id="8847988622838149491">USB</translation>
 <translation id="885701979325669005">Úložisko</translation>
 <translation id="8926666909099850184">Technológia NFC je v tomto zariadení vypnutá. Zapnite ju v <ph name="BEGIN_LINK" />Nastaveniach Androidu<ph name="END_LINK" />.</translation>
-<translation id="8929372349074745002">Tento web sa väčšine ľudí otvára rýchlo aj tak reaguje</translation>
+<translation id="8929372349074745002">Tento web sa väčšine ľudí otvára rýchlo, aj tak reaguje</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8958424370300090006">Blokovanie súborov cookie konkrétneho webu</translation>
 <translation id="8959122750345127698">Navigácia je nedostupná: <ph name="URL" /></translation>

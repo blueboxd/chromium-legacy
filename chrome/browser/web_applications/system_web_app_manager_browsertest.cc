@@ -51,7 +51,6 @@
 #include "chrome/browser/chromeos/policy/system_features_disable_list_policy_handler.h"
 #include "chrome/browser/ui/app_list/app_list_client_impl.h"
 #include "chrome/browser/ui/app_list/app_list_model_updater.h"
-#include "chrome/browser/ui/app_list/extension_app_item.h"
 #include "chrome/browser/ui/app_list/test/chrome_app_list_test_support.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "components/policy/core/common/policy_pref_names.h"

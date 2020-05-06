@@ -8,22 +8,24 @@
 #include "base/macros.h"
 #include "chrome/browser/ui/webui/settings/settings_page_ui_handler.h"
 
+#if defined(OS_CHROMEOS)
+class Profile;
+#endif
+
 namespace base {
 class ListValue;
-}
-
-namespace content {
-class WebUI;
-}
-
-class Profile;
+}  // namespace base
 
 namespace settings {
 
 // Chrome "Languages" settings page UI handler.
 class LanguagesHandler : public SettingsPageUIHandler {
  public:
-  explicit LanguagesHandler(content::WebUI* webui);
+#if defined(OS_CHROMEOS)
+  explicit LanguagesHandler(Profile* profile);
+#else
+  LanguagesHandler();
+#endif
   ~LanguagesHandler() override;
 
   // SettingsPageUIHandler implementation.
@@ -41,7 +43,9 @@ class LanguagesHandler : public SettingsPageUIHandler {
   // The actual UI language will not change until the next restart.
   void HandleSetProspectiveUILanguage(const base::ListValue* args);
 
+#if defined(OS_CHROMEOS)
   Profile* profile_;  // Weak pointer.
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(LanguagesHandler);
 };

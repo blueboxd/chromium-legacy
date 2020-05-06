@@ -7,6 +7,7 @@
 
 #include "cc/paint/skia_paint_canvas.h"
 #include "cc/raster/playback_image_provider.h"
+#include "gpu/command_buffer/common/shared_image_usage.h"
 #include "third_party/blink/renderer/platform/graphics/canvas_resource.h"
 #include "third_party/blink/renderer/platform/graphics/image_orientation.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_recorder.h"
@@ -58,11 +59,12 @@ class PLATFORM_EXPORT CanvasResourceProvider
  public:
   // These values are persisted to logs. Entries should not be renumbered and
   // numeric values should never be reused.
-  // todo(juanmihd@) ResourceUsage will be removed soon, try avoiding using this
+  // TODO(juanmihd@ bug/1035589) ResourceUsage will be removed soon, try
+  // avoiding using this.
   enum class ResourceUsage {
     kSoftwareResourceUsage = 0,  // deprecated
     kSoftwareCompositedResourceUsage = 1,
-    kAcceleratedResourceUsage = 2,
+    kAcceleratedResourceUsage = 2,  // deprecated
     kAcceleratedCompositedResourceUsage = 3,
     kAcceleratedDirect2DResourceUsage = 4,
     kAcceleratedDirect3DResourceUsage = 5,
@@ -92,21 +94,29 @@ class PLATFORM_EXPORT CanvasResourceProvider
     kDirectGpuMemoryBuffer = 6,
     kPassThrough = 7,
     kSwapChain = 8,
-    kMaxValue = kSwapChain,
+    kWebGPUSharedImage = 9,
+    kMaxValue = kWebGPUSharedImage,
   };
 
   using RestoreMatrixClipStackCb =
       base::RepeatingCallback<void(cc::PaintCanvas*)>;
 
-  // todo(juanmihd@) Check whether SkFilterQuality is needed in all of this, or
-  // just call setFilterQuality explicitly
+  // TODO(juanmihd@ bug/1078518) Check whether SkFilterQuality is needed in all
+  // of this, or just call setFilterQuality explicitly.
   static std::unique_ptr<CanvasResourceProvider> CreateBitmapProvider(
       const IntSize&,
       SkFilterQuality,
       const CanvasColorParams&);
 
+  static std::unique_ptr<CanvasResourceProvider> CreateSharedBitmapProvider(
+      const IntSize&,
+      base::WeakPtr<WebGraphicsContext3DProviderWrapper>,
+      SkFilterQuality,
+      const CanvasColorParams&,
+      base::WeakPtr<CanvasResourceDispatcher>);
+
   // Specifies whether the provider should rasterize paint commands on the CPU
-  // or GPU. This is used to support software raster with GPU compositing
+  // or GPU. This is used to support software raster with GPU compositing.
   enum class RasterMode {
     kGPU,
     kCPU,

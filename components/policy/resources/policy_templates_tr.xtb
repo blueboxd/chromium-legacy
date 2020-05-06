@@ -3038,6 +3038,7 @@ politikayı geçersiz kılamaz.
 
       Bu politika, yöneticinin başlangıçta VPN bağlantısı kurmaya karar vermesini sağlayan "Her zaman açık VPN" özelliğiyle birlikte kullanılmak üzere tasarlanmıştır.</translation>
 <translation id="5401696449591951427"><ph name="CHROME_DEVICES_LINK" /> bağlantısını etkinleştir</translation>
+<translation id="5404635530342514143">Bu özellik, kullanıcının bir düğmeyi tıklayarak şifreyi kilit/başlama ekranında görüntülemesine olanak tanır.</translation>
 <translation id="5405289061476885481"><ph name="PRODUCT_OS_NAME" /> oturum açma ekranında hangi klavye düzenlerine izin verileceğini yapılandırır.
 
       Bu politika bir giriş yöntemi tanımlayıcıları listesine ayarlanırsa belirtilen giriş yöntemleri oturum açma ekranında kullanılabilir. Belirtilen ilk giriş yöntemi önceden seçilir. Oturum açma ekranında bir kullanıcı simgesine odaklanılmışken, kullanıcının kullandığı son giriş yöntemi de bu politikada belirtilen giriş yöntemlerine ek olarak gösterilir. Bu politika ayarlanmazsa oturum açma ekranındaki giriş yöntemleri, oturum açma ekranının görüntülendiği yerel ayardan türetilir. Geçerli giriş yöntemi tanımlayıcıları olmayan değerler yok sayılır.</translation>
@@ -4104,6 +4105,7 @@ Bu ayar devre dışı bırakılır veya herhangi bir değer belirlenmezse <ph na
 
           Ölçekleme faktörü en az %100 olmalıdır.</translation>
 <translation id="7086720321892395256">Gizlilik ekranı özelliği için kullanıcı ve cihaz politikalarını kontrol eder.</translation>
+<translation id="7095145887485705461">Kilit/başlangıç ekranında şifre görüntüleme düğmesini etkinleştirir.</translation>
 <translation id="710003290625031750">Geniş şema açıklaması:</translation>
 <translation id="7106631983877564505"><ph name="PRODUCT_OS_NAME" /> cihazları boştayken veya askıya alındığında kilidi etkinleştir.
 

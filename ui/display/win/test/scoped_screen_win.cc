@@ -15,8 +15,9 @@ ScopedScreenWin::ScopedScreenWin() : ScreenWin(false) {
   constexpr gfx::Rect kPixelWork(0, 0, 1920, 1100);
   const MONITORINFOEX monitor_info =
       CreateMonitorInfo(kPixelBounds, kPixelWork, L"primary");
-  UpdateFromDisplayInfos({{monitor_info, 1.0f /* device_scale_factor*/, 1.0f,
-                           Display::ROTATE_0, 60, gfx::Vector2dF(96.0, 96.0)}});
+  UpdateFromDisplayInfos(
+      {{monitor_info, /*device_scale_factor=*/1.0f, 1.0f, Display::ROTATE_0, 60,
+        gfx::Vector2dF(96.0, 96.0), DISPLAYCONFIG_OUTPUT_TECHNOLOGY_OTHER}});
 }
 
 ScopedScreenWin::~ScopedScreenWin() {

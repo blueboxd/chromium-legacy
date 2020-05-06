@@ -9,11 +9,8 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Environment;
 import android.text.TextUtils;
-
-import androidx.core.app.NotificationManagerCompat;
 
 import org.chromium.base.Callback;
 import org.chromium.base.ContentUriUtils;
@@ -26,6 +23,7 @@ import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.task.AsyncTask;
 import org.chromium.base.task.PostTask;
 import org.chromium.base.task.TaskTraits;
+import org.chromium.components.browser_ui.util.DownloadUtils;
 
 import java.io.File;
 import java.util.concurrent.RejectedExecutionException;
@@ -92,24 +90,11 @@ public class DownloadManagerBridge {
             String filePath, long fileSizeBytes, String originalUrl, String referer,
             String downloadGuid) {
         assert !ThreadUtils.runningOnUiThread();
-        DownloadManager manager =
-                (DownloadManager) getContext().getSystemService(Context.DOWNLOAD_SERVICE);
-        NotificationManagerCompat notificationManager =
-                NotificationManagerCompat.from(getContext());
-        boolean useSystemNotification = !notificationManager.areNotificationsEnabled();
         long downloadId = getDownloadIdForDownloadGuid(downloadGuid);
         if (downloadId != DownloadConstants.INVALID_DOWNLOAD_ID) return downloadId;
 
-        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.M) {
-            // OriginalUri has to be null or non-empty http(s) scheme.
-            Uri originalUri = UriUtils.parseOriginalUrl(originalUrl);
-            Uri refererUri = TextUtils.isEmpty(referer) ? null : Uri.parse(referer);
-            downloadId = manager.addCompletedDownload(fileName, description, true, mimeType,
-                    filePath, fileSizeBytes, useSystemNotification, originalUri, refererUri);
-        } else {
-            downloadId = manager.addCompletedDownload(fileName, description, true, mimeType,
-                    filePath, fileSizeBytes, useSystemNotification);
-        }
+        downloadId = DownloadUtils.addCompletedDownload(
+                fileName, description, mimeType, filePath, fileSizeBytes, originalUrl, referer);
         addDownloadIdMapping(downloadId, downloadGuid);
         return downloadId;
     }

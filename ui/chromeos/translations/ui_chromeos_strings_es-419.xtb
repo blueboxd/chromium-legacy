@@ -90,6 +90,7 @@
 <translation id="1947424002851288782">Teclado alemán </translation>
 <translation id="1972984168337863910">Expandir paneles de comentarios de archivos</translation>
 <translation id="1984603991036629094">Teclado fonético armenio</translation>
+<translation id="1995337122023280937">Ir a la ubicación del archivo</translation>
 <translation id="2001796770603320721">Administrar en Drive</translation>
 <translation id="2009067268969781306">Si formateas una unidad, se borrarán todos los datos almacenados en ella. No se puede deshacer esta acción.</translation>
 <translation id="2028997212275086731">Archivo RAR</translation>
@@ -141,6 +142,7 @@
 <translation id="2638942478653899953">No se pudo establecer conexión con Google Drive. <ph name="BEGIN_LINK" />Sal de la cuenta<ph name="END_LINK" /> y vuelve a acceder.</translation>
 <translation id="2649120831653069427">Pez arco iris</translation>
 <translation id="2661146741306740526">16 x 9</translation>
+<translation id="2664412712123763093">Ubicación del archivo</translation>
 <translation id="2672394958563893062">Ocurrió un error. Haz clic para reiniciar desde el principio.</translation>
 <translation id="2676946222714718093">Reproduciendo en</translation>
 <translation id="2735698359135166290">Teclado estándar rumano</translation>
@@ -349,6 +351,7 @@
 <translation id="5081517858322016911">Se eliminarán <ph name="TOTAL_FILE_SIZE" /> de archivos</translation>
 <translation id="509429900233858213">Se ha producido un error.</translation>
 <translation id="5098629044894065541">Hebreo</translation>
+<translation id="5112685521274804841">Los archivos en esta carpeta son de solo lectura. No se admiten algunas actividades.</translation>
 <translation id="5123433949759960244">Básquet</translation>
 <translation id="5129662217315786329">Polaco</translation>
 <translation id="5144820558584035333">Hangul de triple alternancia (390)</translation>
@@ -699,6 +702,7 @@
 <translation id="9034924485347205037">Archivos de Linux</translation>
 <translation id="9035012421917565900">Los elementos no se pueden volver a colocar en "<ph name="DESTINATION_NAME" />", por lo que no podrás deshacer esta acción.</translation>
 <translation id="9038620279323455325">Ya existe un archivo con el nombre "<ph name="FILE_NAME" />". Elige otro.</translation>
+<translation id="9062992083244091966">Para abrir archivos con las apps de <ph name="APP_NAME" />, primero debes moverlos a la carpeta de archivos compartidos de <ph name="APP_NAME" />.</translation>
 <translation id="9064939804718829769">Transfiriendo…</translation>
 <translation id="9065203028668620118">Editar</translation>
 <translation id="9099674669267916096">Cantidad de páginas</translation>

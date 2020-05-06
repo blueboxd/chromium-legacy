@@ -30,9 +30,9 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host.h"
+#include "content/public/browser/renderer_preferences_util.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
-#include "content/shell/browser/shell_browser_main_parts.h"
 #include "content/shell/browser/shell_content_browser_client.h"
 #include "content/shell/browser/shell_devtools_frontend.h"
 #include "content/shell/browser/shell_javascript_dialog_manager.h"
@@ -95,6 +95,9 @@ Shell::Shell(std::unique_ptr<WebContents> web_contents,
   if (switches::IsRunWebTestsSwitchPresent()) {
     headless_ = !base::CommandLine::ForCurrentProcess()->HasSwitch(
         switches::kDisableHeadlessMode);
+  } else {
+    UpdateFontRendererPreferencesFromSystemSettings(
+        web_contents_->GetMutableRendererPrefs());
   }
 
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(

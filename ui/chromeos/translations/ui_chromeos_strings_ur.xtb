@@ -90,6 +90,7 @@
 <translation id="1947424002851288782">جرمن کی بورڈ</translation>
 <translation id="1972984168337863910">فائلز کے تاثرات کے پینلز کو پھیلائیں</translation>
 <translation id="1984603991036629094">آرمینیائی فونیٹک کی بورڈ</translation>
+<translation id="1995337122023280937">فائل کے مقام پر جائیں</translation>
 <translation id="2001796770603320721">‏Drive میں نظم کریں</translation>
 <translation id="2009067268969781306">ڈرائیو کو فارمیٹ کرنے سے اس پر اسٹور کردہ تمام ڈیٹا حذف ہو جائے گا۔ اس کارروائی کو کالعدم نہیں کیا جا سکتا۔</translation>
 <translation id="2028997212275086731">‏RAR آرکائیو</translation>
@@ -141,6 +142,7 @@
 <translation id="2638942478653899953">‏Google Drive تک رسائی حاصل نہیں ہو سکی۔ براہ کرم <ph name="BEGIN_LINK" />لاگ آؤٹ کریں<ph name="END_LINK" /> اور دوبارہ لاگ ان کریں۔</translation>
 <translation id="2649120831653069427">رینبو فش</translation>
 <translation id="2661146741306740526">16x9</translation>
+<translation id="2664412712123763093">فائل کا مقام</translation>
 <translation id="2672394958563893062">ایک خرابی پیش آگئی۔ ابتدا سے دوبارہ شروع کرنے کیلئے کلک کریں۔</translation>
 <translation id="2676946222714718093">اس پر چل رہا ہے</translation>
 <translation id="2735698359135166290">رومانیائی معیاری کی بورڈ</translation>
@@ -349,6 +351,7 @@
 <translation id="5081517858322016911"><ph name="TOTAL_FILE_SIZE" /> فائلیں حذف کر دی جائیں گی</translation>
 <translation id="509429900233858213">ایک خرابی پیش آگئی۔</translation>
 <translation id="5098629044894065541">عبرانی</translation>
+<translation id="5112685521274804841">ان فولڈرز میں موجود فائلز صرف پڑھنے کے لیے ہیں۔ کچھ سرگرمیاں تعاون یافتہ نہیں ہیں۔</translation>
 <translation id="5123433949759960244">باسکٹ بال</translation>
 <translation id="5129662217315786329">پولستانی</translation>
 <translation id="5144820558584035333">ہنگول 3 سیٹ (390)</translation>
@@ -698,6 +701,7 @@
 <translation id="9034924485347205037">‏Linux فائلز</translation>
 <translation id="9035012421917565900">آئٹمز '<ph name="DESTINATION_NAME" />' میں واپس منتقل نہیں کیے جا سکتے، اسلئے آپ اس کارروائي کو کالعدم نہیں کر سکیں گے۔</translation>
 <translation id="9038620279323455325">"<ph name="FILE_NAME" />" نام کی فائل پہلے سے موجود ہے۔ براہ کرم ایک مختلف نام منتخب کریں۔</translation>
+<translation id="9062992083244091966"><ph name="APP_NAME" /> کے ساتھ فائلز کھولنے کے لیے، پہلے انہیں <ph name="APP_NAME" /> کے اشتراک کردہ فائلز کے فولڈر میں منتقل کریں۔</translation>
 <translation id="9064939804718829769">منتقلی ہو رہی ہے…</translation>
 <translation id="9065203028668620118">تبدیل کریں</translation>
 <translation id="9099674669267916096">صفحات کی تعداد</translation>

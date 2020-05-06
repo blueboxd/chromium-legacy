@@ -855,7 +855,7 @@ Jika Anda menonaktifkan kebijakan ini, scroll halaman web ke fragmen teks terten
 <translation id="2345547870894930157">Aktifkan DNS-over-HTTPS tanpa fallback yang tidak aman</translation>
 <translation id="2353442107789326507">Daftar setelan layanan Konektor Chrome Enterprise yang akan diterapkan ke Konektor Enterprise <ph name="ON_FILE_ATTACHED_ENTERPRISE_CONNECTOR" />, yang terpicu saat file dilampirkan ke Chrome.
 
-      Kolom <ph name="ENTERPRISE_CONNECTOR_URL_LIST_FIELD" />, <ph name="ENTERPRISE_CONNECTOR_TAGS_FIELD" />, <ph name="ENTERPRISE_CONNECTOR_ENABLE_FIELD" /> dan <ph name="ENTERPRISE_CONNECTOR_DISABLE_FIELD" /> digunakan untuk menentukan apakah konektor perlu mengirimkan file untuk dianalisis saat dilampirkan ke halaman tertentu dan tag yang perlu disertakan dalam permintaan analisis untuk file tersebut. Tag yang sesuai dengan pola 'aktifkan' akan disertakan dalam permintaan analisis jika URL halaman cocok dengan pola yang terkait dengan tag tersebut, selama tidak ada pola 'nonaktifkan' yang memiliki tag sama yang cocok dengan URL halaman itu. Analisis dilakukan jika terdapat minimal 1 tag yang disertakan dalam permintaan.
+      Kolom <ph name="ENTERPRISE_CONNECTOR_URL_LIST_FIELD" />, <ph name="ENTERPRISE_CONNECTOR_TAGS_FIELD" />, <ph name="ENTERPRISE_CONNECTOR_ENABLE_FIELD" /> dan <ph name="ENTERPRISE_CONNECTOR_DISABLE_FIELD" /> digunakan untuk menentukan apakah konektor perlu mengirimkan file untuk dianalisis saat dilampirkan ke halaman tertentu, dan jenis tag yang perlu disertakan dalam permintaan analisis untuk file tersebut. Tag yang sesuai dengan pola 'aktifkan' akan disertakan dalam permintaan analisis jika URL halaman cocok dengan pola yang terkait dengan tag tersebut, selama tidak ada pola 'nonaktifkan' yang memiliki tag sama yang cocok dengan URL halaman itu. Analisis dilakukan jika terdapat minimal 1 tag yang disertakan dalam permintaan.
 
       Kolom <ph name="ENTERPRISE_CONNECTOR_SERVICE_PROVIDER_FIELD" /> akan mengidentifikasi penyedia layanan analisis yang sesuai dengan setelan.
 
@@ -2989,6 +2989,7 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
 
       Kebijakan ini dimaksudkan untuk digunakan bersama fitur "VPN Selalu Aktif", yang memungkinkan admin memutuskan untuk membuat koneksi VPN saat booting atau tidak.</translation>
 <translation id="5401696449591951427">Mengaktifkan <ph name="CHROME_DEVICES_LINK" /></translation>
+<translation id="5404635530342514143">Fitur ini memungkinkan sandi pada layar awal/kunci ditampilkan setelah pengguna mengklik tombol.</translation>
 <translation id="5405289061476885481">Mengonfigurasi tata letak keyboard yang diizinkan di layar login <ph name="PRODUCT_OS_NAME" />.
 
       Jika kebijakan ini disetel ke daftar pengenal metode masukan, metode masukan yang diberikan akan tersedia di layar login. Metode masukan yang diberikan pertama telah dipilih sebelumnya. Sementara pod pengguna difokuskan pada layar login, metode masukan yang terakhir kali digunakan oleh pengguna akan tersedia, selain dari metode masukan yang diberikan oleh kebijakan ini. Jika kebijakan ini tidak disetel, metode masukan pada layar login akan diambil dari lokal yang menampilkan layar login. Pengenal metode masukan akan mengabaikan nilai yang tidak valid.</translation>
@@ -3754,7 +3755,7 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
 <translation id="6561396069801924653">Tampilkan opsi aksesibilitas di menu baki sistem</translation>
 <translation id="6561900678873266853">Daftar setelan layanan Konektor Chrome Enterprise yang akan diterapkan ke Konektor Enterprise <ph name="ON_BULK_DATA_ENTRY_ENTERPRISE_CONNECTOR" />, yang terpicu saat data dimasukkan ke Chrome dari papan klip atau dengan menarik lalu melepas konten web.
 
-      Kolom <ph name="ENTERPRISE_CONNECTOR_URL_LIST_FIELD" />, <ph name="ENTERPRISE_CONNECTOR_TAGS_FIELD" />, <ph name="ENTERPRISE_CONNECTOR_ENABLE_FIELD" />, dan <ph name="ENTERPRISE_CONNECTOR_DISABLE_FIELD" /> digunakan untuk menentukan apakah konektor perlu mengirimkan data untuk dianalisis saat dimasukkan ke halaman tertentu dan tag yang perlu disertakan dalam permintaan analisis untuk data tersebut. Tag yang sesuai dengan pola 'aktifkan' akan disertakan dalam permintaan analisis jika URL halaman cocok dengan pola yang terkait dengan tag tersebut, selama tidak ada pola 'nonaktifkan' yang memiliki tag sama yang cocok dengan URL halaman itu. Analisis dilakukan jika terdapat minimal 1 tag yang disertakan dalam permintaan.
+      Kolom <ph name="ENTERPRISE_CONNECTOR_URL_LIST_FIELD" />, <ph name="ENTERPRISE_CONNECTOR_TAGS_FIELD" />, <ph name="ENTERPRISE_CONNECTOR_ENABLE_FIELD" />, dan <ph name="ENTERPRISE_CONNECTOR_DISABLE_FIELD" /> digunakan untuk menentukan apakah konektor perlu mengirimkan data untuk dianalisis saat dimasukkan ke halaman tertentu, dan jenis tag yang perlu disertakan dalam permintaan analisis untuk data tersebut. Tag yang sesuai dengan pola 'aktifkan' akan disertakan dalam permintaan analisis jika URL halaman cocok dengan pola yang terkait dengan tag tersebut, selama tidak ada pola 'nonaktifkan' yang memiliki tag sama yang cocok dengan URL halaman itu. Analisis dilakukan jika terdapat minimal 1 tag yang disertakan dalam permintaan.
 
       Kolom <ph name="ENTERPRISE_CONNECTOR_SERVICE_PROVIDER_FIELD" /> akan mengidentifikasi penyedia layanan analisis yang sesuai dengan setelan.
 
@@ -4030,6 +4031,7 @@ Kebijakan ini hanya berlaku jika dukungan aplikasi Linux diaktifkan.</translatio
 
           Faktor skalanya harus 100% atau lebih.</translation>
 <translation id="7086720321892395256">Mengontrol kebijakan pengguna dan perangkat untuk fitur layar privasi.</translation>
+<translation id="7095145887485705461">Mengaktifkan tombol tampilan sandi pada layar awal/kunci.</translation>
 <translation id="710003290625031750">Deskripsi skema yang diluaskan:</translation>
 <translation id="7106631983877564505">Mengaktifkan kunci jika perangkat <ph name="PRODUCT_OS_NAME" /> menganggur atau ditangguhkan.
 

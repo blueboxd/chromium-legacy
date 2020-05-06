@@ -12079,7 +12079,7 @@
           ],
           "dimension_sets": [
             {
-              "os": "Mac-10.14.6"
+              "os": "Mac-10.15"
             }
           ],
           "named_caches": [
@@ -12088,13 +12088,6 @@
               "path": "Xcode.app"
             }
           ],
-          "optional_dimensions": {
-            "60": [
-              {
-                "os": "Mac-10.15"
-              }
-            ]
-          },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://base:base_unittests/"
@@ -12127,7 +12120,7 @@
           ],
           "dimension_sets": [
             {
-              "os": "Mac-10.14.6"
+              "os": "Mac-10.15"
             }
           ],
           "named_caches": [
@@ -12136,13 +12129,6 @@
               "path": "Xcode.app"
             }
           ],
-          "optional_dimensions": {
-            "60": [
-              {
-                "os": "Mac-10.15"
-              }
-            ]
-          },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://base:base_unittests/"
@@ -12175,7 +12161,7 @@
           ],
           "dimension_sets": [
             {
-              "os": "Mac-10.14.6"
+              "os": "Mac-10.15"
             }
           ],
           "named_caches": [
@@ -12184,13 +12170,6 @@
               "path": "Xcode.app"
             }
           ],
-          "optional_dimensions": {
-            "60": [
-              {
-                "os": "Mac-10.15"
-              }
-            ]
-          },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://base:base_unittests/"
@@ -12223,7 +12202,7 @@
           ],
           "dimension_sets": [
             {
-              "os": "Mac-10.14.6"
+              "os": "Mac-10.15"
             }
           ],
           "named_caches": [
@@ -12232,13 +12211,6 @@
               "path": "Xcode.app"
             }
           ],
-          "optional_dimensions": {
-            "60": [
-              {
-                "os": "Mac-10.15"
-              }
-            ]
-          },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://base:base_unittests/"
@@ -12271,7 +12243,7 @@
           ],
           "dimension_sets": [
             {
-              "os": "Mac-10.14.6"
+              "os": "Mac-10.15"
             }
           ],
           "named_caches": [
@@ -12280,13 +12252,6 @@
               "path": "Xcode.app"
             }
           ],
-          "optional_dimensions": {
-            "60": [
-              {
-                "os": "Mac-10.15"
-              }
-            ]
-          },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://third_party/boringssl:boringssl_crypto_tests/"
@@ -12319,7 +12284,7 @@
           ],
           "dimension_sets": [
             {
-              "os": "Mac-10.14.6"
+              "os": "Mac-10.15"
             }
           ],
           "named_caches": [
@@ -12328,13 +12293,6 @@
               "path": "Xcode.app"
             }
           ],
-          "optional_dimensions": {
-            "60": [
-              {
-                "os": "Mac-10.15"
-              }
-            ]
-          },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://third_party/boringssl:boringssl_crypto_tests/"
@@ -12367,7 +12325,7 @@
           ],
           "dimension_sets": [
             {
-              "os": "Mac-10.14.6"
+              "os": "Mac-10.15"
             }
           ],
           "named_caches": [
@@ -12376,13 +12334,6 @@
               "path": "Xcode.app"
             }
           ],
-          "optional_dimensions": {
-            "60": [
-              {
-                "os": "Mac-10.15"
-              }
-            ]
-          },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://third_party/boringssl:boringssl_ssl_tests/"
@@ -12415,7 +12366,7 @@
           ],
           "dimension_sets": [
             {
-              "os": "Mac-10.14.6"
+              "os": "Mac-10.15"
             }
           ],
           "named_caches": [
@@ -12424,13 +12375,6 @@
               "path": "Xcode.app"
             }
           ],
-          "optional_dimensions": {
-            "60": [
-              {
-                "os": "Mac-10.15"
-              }
-            ]
-          },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://third_party/boringssl:boringssl_ssl_tests/"
@@ -12463,7 +12407,7 @@
           ],
           "dimension_sets": [
             {
-              "os": "Mac-10.14.6"
+              "os": "Mac-10.15"
             }
           ],
           "named_caches": [
@@ -12472,13 +12416,6 @@
               "path": "Xcode.app"
             }
           ],
-          "optional_dimensions": {
-            "60": [
-              {
-                "os": "Mac-10.15"
-              }
-            ]
-          },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://components:components_unittests/"
@@ -12511,7 +12448,7 @@
           ],
           "dimension_sets": [
             {
-              "os": "Mac-10.14.6"
+              "os": "Mac-10.15"
             }
           ],
           "named_caches": [
@@ -12520,13 +12457,6 @@
               "path": "Xcode.app"
             }
           ],
-          "optional_dimensions": {
-            "60": [
-              {
-                "os": "Mac-10.15"
-              }
-            ]
-          },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://components:components_unittests/"
@@ -12559,7 +12489,7 @@
           ],
           "dimension_sets": [
             {
-              "os": "Mac-10.14.6"
+              "os": "Mac-10.15"
             }
           ],
           "named_caches": [
@@ -12568,13 +12498,6 @@
               "path": "Xcode.app"
             }
           ],
-          "optional_dimensions": {
-            "60": [
-              {
-                "os": "Mac-10.15"
-              }
-            ]
-          },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://components:components_unittests/"
@@ -12607,7 +12530,7 @@
           ],
           "dimension_sets": [
             {
-              "os": "Mac-10.14.6"
+              "os": "Mac-10.15"
             }
           ],
           "named_caches": [
@@ -12616,13 +12539,6 @@
               "path": "Xcode.app"
             }
           ],
-          "optional_dimensions": {
-            "60": [
-              {
-                "os": "Mac-10.15"
-              }
-            ]
-          },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://components:components_unittests/"
@@ -12655,7 +12571,7 @@
           ],
           "dimension_sets": [
             {
-              "os": "Mac-10.14.6"
+              "os": "Mac-10.15"
             }
           ],
           "named_caches": [
@@ -12664,13 +12580,6 @@
               "path": "Xcode.app"
             }
           ],
-          "optional_dimensions": {
-            "60": [
-              {
-                "os": "Mac-10.15"
-              }
-            ]
-          },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://crypto:crypto_unittests/"
@@ -12703,7 +12612,7 @@
           ],
           "dimension_sets": [
             {
-              "os": "Mac-10.14.6"
+              "os": "Mac-10.15"
             }
           ],
           "named_caches": [
@@ -12712,13 +12621,6 @@
               "path": "Xcode.app"
             }
           ],
-          "optional_dimensions": {
-            "60": [
-              {
-                "os": "Mac-10.15"
-              }
-            ]
-          },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://crypto:crypto_unittests/"
@@ -12751,7 +12653,7 @@
           ],
           "dimension_sets": [
             {
-              "os": "Mac-10.14.6"
+              "os": "Mac-10.15"
             }
           ],
           "named_caches": [
@@ -12760,13 +12662,6 @@
               "path": "Xcode.app"
             }
           ],
-          "optional_dimensions": {
-            "60": [
-              {
-                "os": "Mac-10.15"
-              }
-            ]
-          },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://ui/gfx:gfx_unittests/"
@@ -12799,7 +12694,7 @@
           ],
           "dimension_sets": [
             {
-              "os": "Mac-10.14.6"
+              "os": "Mac-10.15"
             }
           ],
           "named_caches": [
@@ -12808,13 +12703,6 @@
               "path": "Xcode.app"
             }
           ],
-          "optional_dimensions": {
-            "60": [
-              {
-                "os": "Mac-10.15"
-              }
-            ]
-          },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://ui/gfx:gfx_unittests/"
@@ -12847,7 +12735,7 @@
           ],
           "dimension_sets": [
             {
-              "os": "Mac-10.14.6"
+              "os": "Mac-10.15"
             }
           ],
           "named_caches": [
@@ -12856,13 +12744,6 @@
               "path": "Xcode.app"
             }
           ],
-          "optional_dimensions": {
-            "60": [
-              {
-                "os": "Mac-10.15"
-              }
-            ]
-          },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://ui/gfx:gfx_unittests/"
@@ -12895,7 +12776,7 @@
           ],
           "dimension_sets": [
             {
-              "os": "Mac-10.14.6"
+              "os": "Mac-10.15"
             }
           ],
           "named_caches": [
@@ -12904,13 +12785,6 @@
               "path": "Xcode.app"
             }
           ],
-          "optional_dimensions": {
-            "60": [
-              {
-                "os": "Mac-10.15"
-              }
-            ]
-          },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://ui/gfx:gfx_unittests/"
@@ -12943,7 +12817,7 @@
           ],
           "dimension_sets": [
             {
-              "os": "Mac-10.14.6"
+              "os": "Mac-10.15"
             }
           ],
           "named_caches": [
@@ -12952,13 +12826,6 @@
               "path": "Xcode.app"
             }
           ],
-          "optional_dimensions": {
-            "60": [
-              {
-                "os": "Mac-10.15"
-              }
-            ]
-          },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://google_apis:google_apis_unittests/"
@@ -12991,7 +12858,7 @@
           ],
           "dimension_sets": [
             {
-              "os": "Mac-10.14.6"
+              "os": "Mac-10.15"
             }
           ],
           "named_caches": [
@@ -13000,13 +12867,6 @@
               "path": "Xcode.app"
             }
           ],
-          "optional_dimensions": {
-            "60": [
-              {
-                "os": "Mac-10.15"
-              }
-            ]
-          },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://google_apis:google_apis_unittests/"
@@ -13039,7 +12899,7 @@
           ],
           "dimension_sets": [
             {
-              "os": "Mac-10.14.6"
+              "os": "Mac-10.15"
             }
           ],
           "named_caches": [
@@ -13048,13 +12908,6 @@
               "path": "Xcode.app"
             }
           ],
-          "optional_dimensions": {
-            "60": [
-              {
-                "os": "Mac-10.15"
-              }
-            ]
-          },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 3
         },
@@ -13088,7 +12941,7 @@
           ],
           "dimension_sets": [
             {
-              "os": "Mac-10.14.6"
+              "os": "Mac-10.15"
             }
           ],
           "named_caches": [
@@ -13097,13 +12950,6 @@
               "path": "Xcode.app"
             }
           ],
-          "optional_dimensions": {
-            "60": [
-              {
-                "os": "Mac-10.15"
-              }
-            ]
-          },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 3
         },
@@ -13137,7 +12983,7 @@
           ],
           "dimension_sets": [
             {
-              "os": "Mac-10.14.6"
+              "os": "Mac-10.15"
             }
           ],
           "named_caches": [
@@ -13146,13 +12992,6 @@
               "path": "Xcode.app"
             }
           ],
-          "optional_dimensions": {
-            "60": [
-              {
-                "os": "Mac-10.15"
-              }
-            ]
-          },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://ios/chrome/test/earl_grey:ios_chrome_signin_egtests/"
@@ -13185,7 +13024,7 @@
           ],
           "dimension_sets": [
             {
-              "os": "Mac-10.14.6"
+              "os": "Mac-10.15"
             }
           ],
           "named_caches": [
@@ -13194,13 +13033,6 @@
               "path": "Xcode.app"
             }
           ],
-          "optional_dimensions": {
-            "60": [
-              {
-                "os": "Mac-10.15"
-              }
-            ]
-          },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://ios/chrome/test/earl_grey:ios_chrome_signin_egtests/"
@@ -13233,7 +13065,7 @@
           ],
           "dimension_sets": [
             {
-              "os": "Mac-10.14.6"
+              "os": "Mac-10.15"
             }
           ],
           "named_caches": [
@@ -13242,13 +13074,6 @@
               "path": "Xcode.app"
             }
           ],
-          "optional_dimensions": {
-            "60": [
-              {
-                "os": "Mac-10.15"
-              }
-            ]
-          },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 5
         },
@@ -13282,7 +13107,7 @@
           ],
           "dimension_sets": [
             {
-              "os": "Mac-10.14.6"
+              "os": "Mac-10.15"
             }
           ],
           "named_caches": [
@@ -13291,13 +13116,6 @@
               "path": "Xcode.app"
             }
           ],
-          "optional_dimensions": {
-            "60": [
-              {
-                "os": "Mac-10.15"
-              }
-            ]
-          },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 5
         },
@@ -13331,7 +13149,7 @@
           ],
           "dimension_sets": [
             {
-              "os": "Mac-10.14.6"
+              "os": "Mac-10.15"
             }
           ],
           "named_caches": [
@@ -13340,13 +13158,6 @@
               "path": "Xcode.app"
             }
           ],
-          "optional_dimensions": {
-            "60": [
-              {
-                "os": "Mac-10.15"
-              }
-            ]
-          },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://ios/chrome/test:ios_chrome_unittests/"
@@ -13379,7 +13190,7 @@
           ],
           "dimension_sets": [
             {
-              "os": "Mac-10.14.6"
+              "os": "Mac-10.15"
             }
           ],
           "named_caches": [
@@ -13388,13 +13199,6 @@
               "path": "Xcode.app"
             }
           ],
-          "optional_dimensions": {
-            "60": [
-              {
-                "os": "Mac-10.15"
-              }
-            ]
-          },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://ios/chrome/test:ios_chrome_unittests/"
@@ -13427,7 +13231,7 @@
           ],
           "dimension_sets": [
             {
-              "os": "Mac-10.14.6"
+              "os": "Mac-10.15"
             }
           ],
           "named_caches": [
@@ -13436,13 +13240,6 @@
               "path": "Xcode.app"
             }
           ],
-          "optional_dimensions": {
-            "60": [
-              {
-                "os": "Mac-10.15"
-              }
-            ]
-          },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://ios/chrome/test:ios_chrome_unittests/"
@@ -13475,7 +13272,7 @@
           ],
           "dimension_sets": [
             {
-              "os": "Mac-10.14.6"
+              "os": "Mac-10.15"
             }
           ],
           "named_caches": [
@@ -13484,13 +13281,6 @@
               "path": "Xcode.app"
             }
           ],
-          "optional_dimensions": {
-            "60": [
-              {
-                "os": "Mac-10.15"
-              }
-            ]
-          },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://ios/chrome/test:ios_chrome_unittests/"
@@ -13523,7 +13313,7 @@
           ],
           "dimension_sets": [
             {
-              "os": "Mac-10.14.6"
+              "os": "Mac-10.15"
             }
           ],
           "named_caches": [
@@ -13532,13 +13322,6 @@
               "path": "Xcode.app"
             }
           ],
-          "optional_dimensions": {
-            "60": [
-              {
-                "os": "Mac-10.15"
-              }
-            ]
-          },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://ios/components:ios_components_unittests/"
@@ -13571,7 +13354,7 @@
           ],
           "dimension_sets": [
             {
-              "os": "Mac-10.14.6"
+              "os": "Mac-10.15"
             }
           ],
           "named_caches": [
@@ -13580,13 +13363,6 @@
               "path": "Xcode.app"
             }
           ],
-          "optional_dimensions": {
-            "60": [
-              {
-                "os": "Mac-10.15"
-              }
-            ]
-          },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://ios/components:ios_components_unittests/"
@@ -13619,7 +13395,7 @@
           ],
           "dimension_sets": [
             {
-              "os": "Mac-10.14.6"
+              "os": "Mac-10.15"
             }
           ],
           "named_caches": [
@@ -13628,13 +13404,6 @@
               "path": "Xcode.app"
             }
           ],
-          "optional_dimensions": {
-            "60": [
-              {
-                "os": "Mac-10.15"
-              }
-            ]
-          },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://ios/net:ios_net_unittests/"
@@ -13667,7 +13436,7 @@
           ],
           "dimension_sets": [
             {
-              "os": "Mac-10.14.6"
+              "os": "Mac-10.15"
             }
           ],
           "named_caches": [
@@ -13676,13 +13445,6 @@
               "path": "Xcode.app"
             }
           ],
-          "optional_dimensions": {
-            "60": [
-              {
-                "os": "Mac-10.15"
-              }
-            ]
-          },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://ios/net:ios_net_unittests/"
@@ -13715,7 +13477,7 @@
           ],
           "dimension_sets": [
             {
-              "os": "Mac-10.14.6"
+              "os": "Mac-10.15"
             }
           ],
           "named_caches": [
@@ -13724,13 +13486,6 @@
               "path": "Xcode.app"
             }
           ],
-          "optional_dimensions": {
-            "60": [
-              {
-                "os": "Mac-10.15"
-              }
-            ]
-          },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://remoting/ios:ios_remoting_unittests/"
@@ -13763,7 +13518,7 @@
           ],
           "dimension_sets": [
             {
-              "os": "Mac-10.14.6"
+              "os": "Mac-10.15"
             }
           ],
           "named_caches": [
@@ -13772,13 +13527,6 @@
               "path": "Xcode.app"
             }
           ],
-          "optional_dimensions": {
-            "60": [
-              {
-                "os": "Mac-10.15"
-              }
-            ]
-          },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://remoting/ios:ios_remoting_unittests/"
@@ -13811,7 +13559,7 @@
           ],
           "dimension_sets": [
             {
-              "os": "Mac-10.14.6"
+              "os": "Mac-10.15"
             }
           ],
           "named_caches": [
@@ -13820,13 +13568,6 @@
               "path": "Xcode.app"
             }
           ],
-          "optional_dimensions": {
-            "60": [
-              {
-                "os": "Mac-10.15"
-              }
-            ]
-          },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://ios/testing:ios_testing_unittests/"
@@ -13859,7 +13600,7 @@
           ],
           "dimension_sets": [
             {
-              "os": "Mac-10.14.6"
+              "os": "Mac-10.15"
             }
           ],
           "named_caches": [
@@ -13868,13 +13609,6 @@
               "path": "Xcode.app"
             }
           ],
-          "optional_dimensions": {
-            "60": [
-              {
-                "os": "Mac-10.15"
-              }
-            ]
-          },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://ios/testing:ios_testing_unittests/"
@@ -13907,7 +13641,7 @@
           ],
           "dimension_sets": [
             {
-              "os": "Mac-10.14.6"
+              "os": "Mac-10.15"
             }
           ],
           "named_caches": [
@@ -13916,13 +13650,6 @@
               "path": "Xcode.app"
             }
           ],
-          "optional_dimensions": {
-            "60": [
-              {
-                "os": "Mac-10.15"
-              }
-            ]
-          },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://ios/web:ios_web_inttests/"
@@ -13955,7 +13682,7 @@
           ],
           "dimension_sets": [
             {
-              "os": "Mac-10.14.6"
+              "os": "Mac-10.15"
             }
           ],
           "named_caches": [
@@ -13964,13 +13691,6 @@
               "path": "Xcode.app"
             }
           ],
-          "optional_dimensions": {
-            "60": [
-              {
-                "os": "Mac-10.15"
-              }
-            ]
-          },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://ios/web:ios_web_inttests/"
@@ -14003,7 +13723,7 @@
           ],
           "dimension_sets": [
             {
-              "os": "Mac-10.14.6"
+              "os": "Mac-10.15"
             }
           ],
           "named_caches": [
@@ -14012,13 +13732,6 @@
               "path": "Xcode.app"
             }
           ],
-          "optional_dimensions": {
-            "60": [
-              {
-                "os": "Mac-10.15"
-              }
-            ]
-          },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://ios/web:ios_web_inttests/"
@@ -14051,7 +13764,7 @@
           ],
           "dimension_sets": [
             {
-              "os": "Mac-10.14.6"
+              "os": "Mac-10.15"
             }
           ],
           "named_caches": [
@@ -14060,13 +13773,6 @@
               "path": "Xcode.app"
             }
           ],
-          "optional_dimensions": {
-            "60": [
-              {
-                "os": "Mac-10.15"
-              }
-            ]
-          },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://ios/web:ios_web_inttests/"
@@ -14099,7 +13805,7 @@
           ],
           "dimension_sets": [
             {
-              "os": "Mac-10.14.6"
+              "os": "Mac-10.15"
             }
           ],
           "named_caches": [
@@ -14108,13 +13814,6 @@
               "path": "Xcode.app"
             }
           ],
-          "optional_dimensions": {
-            "60": [
-              {
-                "os": "Mac-10.15"
-              }
-            ]
-          },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://ios/web/shell/test:ios_web_shell_egtests/"
@@ -14147,7 +13846,7 @@
           ],
           "dimension_sets": [
             {
-              "os": "Mac-10.14.6"
+              "os": "Mac-10.15"
             }
           ],
           "named_caches": [
@@ -14156,13 +13855,6 @@
               "path": "Xcode.app"
             }
           ],
-          "optional_dimensions": {
-            "60": [
-              {
-                "os": "Mac-10.15"
-              }
-            ]
-          },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://ios/web/shell/test:ios_web_shell_egtests/"
@@ -14195,7 +13887,7 @@
           ],
           "dimension_sets": [
             {
-              "os": "Mac-10.14.6"
+              "os": "Mac-10.15"
             }
           ],
           "named_caches": [
@@ -14204,13 +13896,6 @@
               "path": "Xcode.app"
             }
           ],
-          "optional_dimensions": {
-            "60": [
-              {
-                "os": "Mac-10.15"
-              }
-            ]
-          },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://ios/web:ios_web_unittests/"
@@ -14243,7 +13928,7 @@
           ],
           "dimension_sets": [
             {
-              "os": "Mac-10.14.6"
+              "os": "Mac-10.15"
             }
           ],
           "named_caches": [
@@ -14252,13 +13937,6 @@
               "path": "Xcode.app"
             }
           ],
-          "optional_dimensions": {
-            "60": [
-              {
-                "os": "Mac-10.15"
-              }
-            ]
-          },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://ios/web:ios_web_unittests/"
@@ -14291,7 +13969,7 @@
           ],
           "dimension_sets": [
             {
-              "os": "Mac-10.14.6"
+              "os": "Mac-10.15"
             }
           ],
           "named_caches": [
@@ -14300,13 +13978,6 @@
               "path": "Xcode.app"
             }
           ],
-          "optional_dimensions": {
-            "60": [
-              {
-                "os": "Mac-10.15"
-              }
-            ]
-          },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://ios/web:ios_web_unittests/"
@@ -14339,7 +14010,7 @@
           ],
           "dimension_sets": [
             {
-              "os": "Mac-10.14.6"
+              "os": "Mac-10.15"
             }
           ],
           "named_caches": [
@@ -14348,13 +14019,6 @@
               "path": "Xcode.app"
             }
           ],
-          "optional_dimensions": {
-            "60": [
-              {
-                "os": "Mac-10.15"
-              }
-            ]
-          },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://ios/web:ios_web_unittests/"
@@ -14387,7 +14051,7 @@
           ],
           "dimension_sets": [
             {
-              "os": "Mac-10.14.6"
+              "os": "Mac-10.15"
             }
           ],
           "named_caches": [
@@ -14396,13 +14060,6 @@
               "path": "Xcode.app"
             }
           ],
-          "optional_dimensions": {
-            "60": [
-              {
-                "os": "Mac-10.15"
-              }
-            ]
-          },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://ios/web_view:ios_web_view_inttests/"
@@ -14435,7 +14092,7 @@
           ],
           "dimension_sets": [
             {
-              "os": "Mac-10.14.6"
+              "os": "Mac-10.15"
             }
           ],
           "named_caches": [
@@ -14444,13 +14101,6 @@
               "path": "Xcode.app"
             }
           ],
-          "optional_dimensions": {
-            "60": [
-              {
-                "os": "Mac-10.15"
-              }
-            ]
-          },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://ios/web_view:ios_web_view_inttests/"
@@ -14483,7 +14133,7 @@
           ],
           "dimension_sets": [
             {
-              "os": "Mac-10.14.6"
+              "os": "Mac-10.15"
             }
           ],
           "named_caches": [
@@ -14492,13 +14142,6 @@
               "path": "Xcode.app"
             }
           ],
-          "optional_dimensions": {
-            "60": [
-              {
-                "os": "Mac-10.15"
-              }
-            ]
-          },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://ios/web_view:ios_web_view_inttests/"
@@ -14531,7 +14174,7 @@
           ],
           "dimension_sets": [
             {
-              "os": "Mac-10.14.6"
+              "os": "Mac-10.15"
             }
           ],
           "named_caches": [
@@ -14540,13 +14183,6 @@
               "path": "Xcode.app"
             }
           ],
-          "optional_dimensions": {
-            "60": [
-              {
-                "os": "Mac-10.15"
-              }
-            ]
-          },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://ios/web_view:ios_web_view_inttests/"
@@ -14579,7 +14215,7 @@
           ],
           "dimension_sets": [
             {
-              "os": "Mac-10.14.6"
+              "os": "Mac-10.15"
             }
           ],
           "named_caches": [
@@ -14588,13 +14224,6 @@
               "path": "Xcode.app"
             }
           ],
-          "optional_dimensions": {
-            "60": [
-              {
-                "os": "Mac-10.15"
-              }
-            ]
-          },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://ios/web_view:ios_web_view_unittests/"
@@ -14627,7 +14256,7 @@
           ],
           "dimension_sets": [
             {
-              "os": "Mac-10.14.6"
+              "os": "Mac-10.15"
             }
           ],
           "named_caches": [
@@ -14636,13 +14265,6 @@
               "path": "Xcode.app"
             }
           ],
-          "optional_dimensions": {
-            "60": [
-              {
-                "os": "Mac-10.15"
-              }
-            ]
-          },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://ios/web_view:ios_web_view_unittests/"
@@ -14675,7 +14297,7 @@
           ],
           "dimension_sets": [
             {
-              "os": "Mac-10.14.6"
+              "os": "Mac-10.15"
             }
           ],
           "named_caches": [
@@ -14684,13 +14306,6 @@
               "path": "Xcode.app"
             }
           ],
-          "optional_dimensions": {
-            "60": [
-              {
-                "os": "Mac-10.15"
-              }
-            ]
-          },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://ios/web_view:ios_web_view_unittests/"
@@ -14723,7 +14338,7 @@
           ],
           "dimension_sets": [
             {
-              "os": "Mac-10.14.6"
+              "os": "Mac-10.15"
             }
           ],
           "named_caches": [
@@ -14732,13 +14347,6 @@
               "path": "Xcode.app"
             }
           ],
-          "optional_dimensions": {
-            "60": [
-              {
-                "os": "Mac-10.15"
-              }
-            ]
-          },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://ios/web_view:ios_web_view_unittests/"
@@ -14771,7 +14379,7 @@
           ],
           "dimension_sets": [
             {
-              "os": "Mac-10.14.6"
+              "os": "Mac-10.15"
             }
           ],
           "named_caches": [
@@ -14780,13 +14388,6 @@
               "path": "Xcode.app"
             }
           ],
-          "optional_dimensions": {
-            "60": [
-              {
-                "os": "Mac-10.15"
-              }
-            ]
-          },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://net:net_unittests/"
@@ -14819,7 +14420,7 @@
           ],
           "dimension_sets": [
             {
-              "os": "Mac-10.14.6"
+              "os": "Mac-10.15"
             }
           ],
           "named_caches": [
@@ -14828,13 +14429,6 @@
               "path": "Xcode.app"
             }
           ],
-          "optional_dimensions": {
-            "60": [
-              {
-                "os": "Mac-10.15"
-              }
-            ]
-          },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://net:net_unittests/"
@@ -14867,7 +14461,7 @@
           ],
           "dimension_sets": [
             {
-              "os": "Mac-10.14.6"
+              "os": "Mac-10.15"
             }
           ],
           "named_caches": [
@@ -14876,13 +14470,6 @@
               "path": "Xcode.app"
             }
           ],
-          "optional_dimensions": {
-            "60": [
-              {
-                "os": "Mac-10.15"
-              }
-            ]
-          },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://services:services_unittests/"
@@ -14915,7 +14502,7 @@
           ],
           "dimension_sets": [
             {
-              "os": "Mac-10.14.6"
+              "os": "Mac-10.15"
             }
           ],
           "named_caches": [
@@ -14924,13 +14511,6 @@
               "path": "Xcode.app"
             }
           ],
-          "optional_dimensions": {
-            "60": [
-              {
-                "os": "Mac-10.15"
-              }
-            ]
-          },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://services:services_unittests/"
@@ -14963,7 +14543,7 @@
           ],
           "dimension_sets": [
             {
-              "os": "Mac-10.14.6"
+              "os": "Mac-10.15"
             }
           ],
           "named_caches": [
@@ -14972,13 +14552,6 @@
               "path": "Xcode.app"
             }
           ],
-          "optional_dimensions": {
-            "60": [
-              {
-                "os": "Mac-10.15"
-              }
-            ]
-          },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://skia:skia_unittests/"
@@ -15011,7 +14584,7 @@
           ],
           "dimension_sets": [
             {
-              "os": "Mac-10.14.6"
+              "os": "Mac-10.15"
             }
           ],
           "named_caches": [
@@ -15020,13 +14593,6 @@
               "path": "Xcode.app"
             }
           ],
-          "optional_dimensions": {
-            "60": [
-              {
-                "os": "Mac-10.15"
-              }
-            ]
-          },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://skia:skia_unittests/"
@@ -15059,7 +14625,7 @@
           ],
           "dimension_sets": [
             {
-              "os": "Mac-10.14.6"
+              "os": "Mac-10.15"
             }
           ],
           "named_caches": [
@@ -15068,13 +14634,6 @@
               "path": "Xcode.app"
             }
           ],
-          "optional_dimensions": {
-            "60": [
-              {
-                "os": "Mac-10.15"
-              }
-            ]
-          },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://skia:skia_unittests/"
@@ -15107,7 +14666,7 @@
           ],
           "dimension_sets": [
             {
-              "os": "Mac-10.14.6"
+              "os": "Mac-10.15"
             }
           ],
           "named_caches": [
@@ -15116,13 +14675,6 @@
               "path": "Xcode.app"
             }
           ],
-          "optional_dimensions": {
-            "60": [
-              {
-                "os": "Mac-10.15"
-              }
-            ]
-          },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://skia:skia_unittests/"
@@ -15155,7 +14707,7 @@
           ],
           "dimension_sets": [
             {
-              "os": "Mac-10.14.6"
+              "os": "Mac-10.15"
             }
           ],
           "named_caches": [
@@ -15164,13 +14716,6 @@
               "path": "Xcode.app"
             }
           ],
-          "optional_dimensions": {
-            "60": [
-              {
-                "os": "Mac-10.15"
-              }
-            ]
-          },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://sql:sql_unittests/"
@@ -15203,7 +14748,7 @@
           ],
           "dimension_sets": [
             {
-              "os": "Mac-10.14.6"
+              "os": "Mac-10.15"
             }
           ],
           "named_caches": [
@@ -15212,13 +14757,6 @@
               "path": "Xcode.app"
             }
           ],
-          "optional_dimensions": {
-            "60": [
-              {
-                "os": "Mac-10.15"
-              }
-            ]
-          },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://sql:sql_unittests/"
@@ -15251,7 +14789,7 @@
           ],
           "dimension_sets": [
             {
-              "os": "Mac-10.14.6"
+              "os": "Mac-10.15"
             }
           ],
           "named_caches": [
@@ -15260,13 +14798,6 @@
               "path": "Xcode.app"
             }
           ],
-          "optional_dimensions": {
-            "60": [
-              {
-                "os": "Mac-10.15"
-              }
-            ]
-          },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://ui/base:ui_base_unittests/"
@@ -15299,7 +14830,7 @@
           ],
           "dimension_sets": [
             {
-              "os": "Mac-10.14.6"
+              "os": "Mac-10.15"
             }
           ],
           "named_caches": [
@@ -15308,13 +14839,6 @@
               "path": "Xcode.app"
             }
           ],
-          "optional_dimensions": {
-            "60": [
-              {
-                "os": "Mac-10.15"
-              }
-            ]
-          },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://ui/base:ui_base_unittests/"
@@ -15347,7 +14871,7 @@
           ],
           "dimension_sets": [
             {
-              "os": "Mac-10.14.6"
+              "os": "Mac-10.15"
             }
           ],
           "named_caches": [
@@ -15356,13 +14880,6 @@
               "path": "Xcode.app"
             }
           ],
-          "optional_dimensions": {
-            "60": [
-              {
-                "os": "Mac-10.15"
-              }
-            ]
-          },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://ui/base:ui_base_unittests/"
@@ -15395,7 +14912,7 @@
           ],
           "dimension_sets": [
             {
-              "os": "Mac-10.14.6"
+              "os": "Mac-10.15"
             }
           ],
           "named_caches": [
@@ -15404,13 +14921,6 @@
               "path": "Xcode.app"
             }
           ],
-          "optional_dimensions": {
-            "60": [
-              {
-                "os": "Mac-10.15"
-              }
-            ]
-          },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://ui/base:ui_base_unittests/"
@@ -15443,7 +14953,7 @@
           ],
           "dimension_sets": [
             {
-              "os": "Mac-10.14.6"
+              "os": "Mac-10.15"
             }
           ],
           "named_caches": [
@@ -15452,13 +14962,6 @@
               "path": "Xcode.app"
             }
           ],
-          "optional_dimensions": {
-            "60": [
-              {
-                "os": "Mac-10.15"
-              }
-            ]
-          },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://url:url_unittests/"
@@ -15491,7 +14994,7 @@
           ],
           "dimension_sets": [
             {
-              "os": "Mac-10.14.6"
+              "os": "Mac-10.15"
             }
           ],
           "named_caches": [
@@ -15500,13 +15003,6 @@
               "path": "Xcode.app"
             }
           ],
-          "optional_dimensions": {
-            "60": [
-              {
-                "os": "Mac-10.15"
-              }
-            ]
-          },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://url:url_unittests/"
@@ -15546,7 +15042,7 @@
           ],
           "dimension_sets": [
             {
-              "os": "Mac-10.14.6"
+              "os": "Mac-10.15"
             }
           ],
           "named_caches": [
@@ -15555,13 +15051,6 @@
               "path": "Xcode.app"
             }
           ],
-          "optional_dimensions": {
-            "60": [
-              {
-                "os": "Mac-10.15"
-              }
-            ]
-          },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://ios/chrome/test/earl_grey:ios_chrome_bookmarks_egtests/"
@@ -15594,7 +15083,7 @@
           ],
           "dimension_sets": [
             {
-              "os": "Mac-10.14.6"
+              "os": "Mac-10.15"
             }
           ],
           "named_caches": [
@@ -15603,13 +15092,6 @@
               "path": "Xcode.app"
             }
           ],
-          "optional_dimensions": {
-            "60": [
-              {
-                "os": "Mac-10.15"
-              }
-            ]
-          },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://ios/chrome/test/earl_grey:ios_chrome_bookmarks_egtests/"
@@ -15642,7 +15124,7 @@
           ],
           "dimension_sets": [
             {
-              "os": "Mac-10.14.6"
+              "os": "Mac-10.15"
             }
           ],
           "named_caches": [
@@ -15651,13 +15133,6 @@
               "path": "Xcode.app"
             }
           ],
-          "optional_dimensions": {
-            "60": [
-              {
-                "os": "Mac-10.15"
-              }
-            ]
-          },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://ios/chrome/test/earl_grey:ios_chrome_bookmarks_egtests/"
@@ -15690,7 +15165,7 @@
           ],
           "dimension_sets": [
             {
-              "os": "Mac-10.14.6"
+              "os": "Mac-10.15"
             }
           ],
           "named_caches": [
@@ -15699,13 +15174,6 @@
               "path": "Xcode.app"
             }
           ],
-          "optional_dimensions": {
-            "60": [
-              {
-                "os": "Mac-10.15"
-              }
-            ]
-          },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://ios/chrome/test/earl_grey:ios_chrome_bookmarks_egtests/"
@@ -15738,7 +15206,7 @@
           ],
           "dimension_sets": [
             {
-              "os": "Mac-10.14.6"
+              "os": "Mac-10.15"
             }
           ],
           "named_caches": [
@@ -15747,13 +15215,6 @@
               "path": "Xcode.app"
             }
           ],
-          "optional_dimensions": {
-            "60": [
-              {
-                "os": "Mac-10.15"
-              }
-            ]
-          },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://ios/chrome/test/earl_grey:ios_chrome_bookmarks_egtests/"
@@ -15786,7 +15247,7 @@
           ],
           "dimension_sets": [
             {
-              "os": "Mac-10.14.6"
+              "os": "Mac-10.15"
             }
           ],
           "named_caches": [
@@ -15795,13 +15256,6 @@
               "path": "Xcode.app"
             }
           ],
-          "optional_dimensions": {
-            "60": [
-              {
-                "os": "Mac-10.15"
-              }
-            ]
-          },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 3
         },
@@ -15835,7 +15289,7 @@
           ],
           "dimension_sets": [
             {
-              "os": "Mac-10.14.6"
+              "os": "Mac-10.15"
             }
           ],
           "named_caches": [
@@ -15844,13 +15298,6 @@
               "path": "Xcode.app"
             }
           ],
-          "optional_dimensions": {
-            "60": [
-              {
-                "os": "Mac-10.15"
-              }
-            ]
-          },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 3
         },
@@ -15884,7 +15331,7 @@
           ],
           "dimension_sets": [
             {
-              "os": "Mac-10.14.6"
+              "os": "Mac-10.15"
             }
           ],
           "named_caches": [
@@ -15893,13 +15340,6 @@
               "path": "Xcode.app"
             }
           ],
-          "optional_dimensions": {
-            "60": [
-              {
-                "os": "Mac-10.15"
-              }
-            ]
-          },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 3
         },
@@ -15933,7 +15373,7 @@
           ],
           "dimension_sets": [
             {
-              "os": "Mac-10.14.6"
+              "os": "Mac-10.15"
             }
           ],
           "named_caches": [
@@ -15942,13 +15382,6 @@
               "path": "Xcode.app"
             }
           ],
-          "optional_dimensions": {
-            "60": [
-              {
-                "os": "Mac-10.15"
-              }
-            ]
-          },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://ios/chrome/test/earl_grey:ios_chrome_reading_list_egtests/"
@@ -15981,7 +15414,7 @@
           ],
           "dimension_sets": [
             {
-              "os": "Mac-10.14.6"
+              "os": "Mac-10.15"
             }
           ],
           "named_caches": [
@@ -15990,13 +15423,6 @@
               "path": "Xcode.app"
             }
           ],
-          "optional_dimensions": {
-            "60": [
-              {
-                "os": "Mac-10.15"
-              }
-            ]
-          },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://ios/chrome/test/earl_grey:ios_chrome_reading_list_egtests/"
@@ -16029,7 +15455,7 @@
           ],
           "dimension_sets": [
             {
-              "os": "Mac-10.14.6"
+              "os": "Mac-10.15"
             }
           ],
           "named_caches": [
@@ -16038,13 +15464,6 @@
               "path": "Xcode.app"
             }
           ],
-          "optional_dimensions": {
-            "60": [
-              {
-                "os": "Mac-10.15"
-              }
-            ]
-          },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://ios/chrome/test/earl_grey:ios_chrome_reading_list_egtests/"
@@ -16077,7 +15496,7 @@
           ],
           "dimension_sets": [
             {
-              "os": "Mac-10.14.6"
+              "os": "Mac-10.15"
             }
           ],
           "named_caches": [
@@ -16086,13 +15505,6 @@
               "path": "Xcode.app"
             }
           ],
-          "optional_dimensions": {
-            "60": [
-              {
-                "os": "Mac-10.15"
-              }
-            ]
-          },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://ios/chrome/test/earl_grey:ios_chrome_reading_list_egtests/"
@@ -16125,7 +15537,7 @@
           ],
           "dimension_sets": [
             {
-              "os": "Mac-10.14.6"
+              "os": "Mac-10.15"
             }
           ],
           "named_caches": [
@@ -16134,13 +15546,6 @@
               "path": "Xcode.app"
             }
           ],
-          "optional_dimensions": {
-            "60": [
-              {
-                "os": "Mac-10.15"
-              }
-            ]
-          },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://ios/chrome/test/earl_grey:ios_chrome_reading_list_egtests/"
@@ -16173,7 +15578,7 @@
           ],
           "dimension_sets": [
             {
-              "os": "Mac-10.14.6"
+              "os": "Mac-10.15"
             }
           ],
           "named_caches": [
@@ -16182,13 +15587,6 @@
               "path": "Xcode.app"
             }
           ],
-          "optional_dimensions": {
-            "60": [
-              {
-                "os": "Mac-10.15"
-              }
-            ]
-          },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 3
         },
@@ -16222,7 +15620,7 @@
           ],
           "dimension_sets": [
             {
-              "os": "Mac-10.14.6"
+              "os": "Mac-10.15"
             }
           ],
           "named_caches": [
@@ -16231,13 +15629,6 @@
               "path": "Xcode.app"
             }
           ],
-          "optional_dimensions": {
-            "60": [
-              {
-                "os": "Mac-10.15"
-              }
-            ]
-          },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 3
         },
@@ -16271,7 +15662,7 @@
           ],
           "dimension_sets": [
             {
-              "os": "Mac-10.14.6"
+              "os": "Mac-10.15"
             }
           ],
           "named_caches": [
@@ -16280,13 +15671,6 @@
               "path": "Xcode.app"
             }
           ],
-          "optional_dimensions": {
-            "60": [
-              {
-                "os": "Mac-10.15"
-              }
-            ]
-          },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 3
         },
@@ -16320,7 +15704,7 @@
           ],
           "dimension_sets": [
             {
-              "os": "Mac-10.14.6"
+              "os": "Mac-10.15"
             }
           ],
           "named_caches": [
@@ -16329,13 +15713,6 @@
               "path": "Xcode.app"
             }
           ],
-          "optional_dimensions": {
-            "60": [
-              {
-                "os": "Mac-10.15"
-              }
-            ]
-          },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 3
         },
@@ -16369,7 +15746,7 @@
           ],
           "dimension_sets": [
             {
-              "os": "Mac-10.14.6"
+              "os": "Mac-10.15"
             }
           ],
           "named_caches": [
@@ -16378,13 +15755,6 @@
               "path": "Xcode.app"
             }
           ],
-          "optional_dimensions": {
-            "60": [
-              {
-                "os": "Mac-10.15"
-              }
-            ]
-          },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 3
         },
@@ -16418,7 +15788,7 @@
           ],
           "dimension_sets": [
             {
-              "os": "Mac-10.14.6"
+              "os": "Mac-10.15"
             }
           ],
           "named_caches": [
@@ -16427,13 +15797,6 @@
               "path": "Xcode.app"
             }
           ],
-          "optional_dimensions": {
-            "60": [
-              {
-                "os": "Mac-10.15"
-              }
-            ]
-          },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://ios/chrome/test/earl_grey:ios_chrome_signin_egtests/"
@@ -16466,7 +15829,7 @@
           ],
           "dimension_sets": [
             {
-              "os": "Mac-10.14.6"
+              "os": "Mac-10.15"
             }
           ],
           "named_caches": [
@@ -16475,13 +15838,6 @@
               "path": "Xcode.app"
             }
           ],
-          "optional_dimensions": {
-            "60": [
-              {
-                "os": "Mac-10.15"
-              }
-            ]
-          },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://ios/chrome/test/earl_grey:ios_chrome_signin_egtests/"
@@ -16514,7 +15870,7 @@
           ],
           "dimension_sets": [
             {
-              "os": "Mac-10.14.6"
+              "os": "Mac-10.15"
             }
           ],
           "named_caches": [
@@ -16523,13 +15879,6 @@
               "path": "Xcode.app"
             }
           ],
-          "optional_dimensions": {
-            "60": [
-              {
-                "os": "Mac-10.15"
-              }
-            ]
-          },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://ios/chrome/test/earl_grey:ios_chrome_signin_egtests/"
@@ -16562,7 +15911,7 @@
           ],
           "dimension_sets": [
             {
-              "os": "Mac-10.14.6"
+              "os": "Mac-10.15"
             }
           ],
           "named_caches": [
@@ -16571,13 +15920,6 @@
               "path": "Xcode.app"
             }
           ],
-          "optional_dimensions": {
-            "60": [
-              {
-                "os": "Mac-10.15"
-              }
-            ]
-          },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://ios/chrome/test/earl_grey:ios_chrome_translate_egtests/"
@@ -16610,7 +15952,7 @@
           ],
           "dimension_sets": [
             {
-              "os": "Mac-10.14.6"
+              "os": "Mac-10.15"
             }
           ],
           "named_caches": [
@@ -16619,13 +15961,6 @@
               "path": "Xcode.app"
             }
           ],
-          "optional_dimensions": {
-            "60": [
-              {
-                "os": "Mac-10.15"
-              }
-            ]
-          },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://ios/chrome/test/earl_grey:ios_chrome_translate_egtests/"
@@ -16658,7 +15993,7 @@
           ],
           "dimension_sets": [
             {
-              "os": "Mac-10.14.6"
+              "os": "Mac-10.15"
             }
           ],
           "named_caches": [
@@ -16667,13 +16002,6 @@
               "path": "Xcode.app"
             }
           ],
-          "optional_dimensions": {
-            "60": [
-              {
-                "os": "Mac-10.15"
-              }
-            ]
-          },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://ios/chrome/test/earl_grey:ios_chrome_translate_egtests/"
@@ -16706,7 +16034,7 @@
           ],
           "dimension_sets": [
             {
-              "os": "Mac-10.14.6"
+              "os": "Mac-10.15"
             }
           ],
           "named_caches": [
@@ -16715,13 +16043,6 @@
               "path": "Xcode.app"
             }
           ],
-          "optional_dimensions": {
-            "60": [
-              {
-                "os": "Mac-10.15"
-              }
-            ]
-          },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://ios/chrome/test/earl_grey:ios_chrome_translate_egtests/"
@@ -16754,7 +16075,7 @@
           ],
           "dimension_sets": [
             {
-              "os": "Mac-10.14.6"
+              "os": "Mac-10.15"
             }
           ],
           "named_caches": [
@@ -16763,13 +16084,6 @@
               "path": "Xcode.app"
             }
           ],
-          "optional_dimensions": {
-            "60": [
-              {
-                "os": "Mac-10.15"
-              }
-            ]
-          },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://ios/chrome/test/earl_grey:ios_chrome_translate_egtests/"
@@ -16802,7 +16116,7 @@
           ],
           "dimension_sets": [
             {
-              "os": "Mac-10.14.6"
+              "os": "Mac-10.15"
             }
           ],
           "named_caches": [
@@ -16811,13 +16125,6 @@
               "path": "Xcode.app"
             }
           ],
-          "optional_dimensions": {
-            "60": [
-              {
-                "os": "Mac-10.15"
-              }
-            ]
-          },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 5
         },
@@ -16851,7 +16158,7 @@
           ],
           "dimension_sets": [
             {
-              "os": "Mac-10.14.6"
+              "os": "Mac-10.15"
             }
           ],
           "named_caches": [
@@ -16860,13 +16167,6 @@
               "path": "Xcode.app"
             }
           ],
-          "optional_dimensions": {
-            "60": [
-              {
-                "os": "Mac-10.15"
-              }
-            ]
-          },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 5
         },
@@ -16900,7 +16200,7 @@
           ],
           "dimension_sets": [
             {
-              "os": "Mac-10.14.6"
+              "os": "Mac-10.15"
             }
           ],
           "named_caches": [
@@ -16909,13 +16209,6 @@
               "path": "Xcode.app"
             }
           ],
-          "optional_dimensions": {
-            "60": [
-              {
-                "os": "Mac-10.15"
-              }
-            ]
-          },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 5
         },
@@ -16949,7 +16242,7 @@
           ],
           "dimension_sets": [
             {
-              "os": "Mac-10.14.6"
+              "os": "Mac-10.15"
             }
           ],
           "named_caches": [
@@ -16958,13 +16251,6 @@
               "path": "Xcode.app"
             }
           ],
-          "optional_dimensions": {
-            "60": [
-              {
-                "os": "Mac-10.15"
-              }
-            ]
-          },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://ios/chrome/test/earl_grey:ios_chrome_web_egtests/"
@@ -16997,7 +16283,7 @@
           ],
           "dimension_sets": [
             {
-              "os": "Mac-10.14.6"
+              "os": "Mac-10.15"
             }
           ],
           "named_caches": [
@@ -17006,13 +16292,6 @@
               "path": "Xcode.app"
             }
           ],
-          "optional_dimensions": {
-            "60": [
-              {
-                "os": "Mac-10.15"
-              }
-            ]
-          },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://ios/chrome/test/earl_grey:ios_chrome_web_egtests/"
@@ -17045,7 +16324,7 @@
           ],
           "dimension_sets": [
             {
-              "os": "Mac-10.14.6"
+              "os": "Mac-10.15"
             }
           ],
           "named_caches": [
@@ -17054,13 +16333,6 @@
               "path": "Xcode.app"
             }
           ],
-          "optional_dimensions": {
-            "60": [
-              {
-                "os": "Mac-10.15"
-              }
-            ]
-          },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://ios/chrome/test/earl_grey:ios_chrome_web_egtests/"
@@ -17093,7 +16365,7 @@
           ],
           "dimension_sets": [
             {
-              "os": "Mac-10.14.6"
+              "os": "Mac-10.15"
             }
           ],
           "named_caches": [
@@ -17102,13 +16374,6 @@
               "path": "Xcode.app"
             }
           ],
-          "optional_dimensions": {
-            "60": [
-              {
-                "os": "Mac-10.15"
-              }
-            ]
-          },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://ios/chrome/test/earl_grey:ios_chrome_web_egtests/"
@@ -17141,7 +16406,7 @@
           ],
           "dimension_sets": [
             {
-              "os": "Mac-10.14.6"
+              "os": "Mac-10.15"
             }
           ],
           "named_caches": [
@@ -17150,13 +16415,6 @@
               "path": "Xcode.app"
             }
           ],
-          "optional_dimensions": {
-            "60": [
-              {
-                "os": "Mac-10.15"
-              }
-            ]
-          },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://ios/chrome/test/earl_grey:ios_chrome_web_egtests/"
@@ -17189,7 +16447,7 @@
           ],
           "dimension_sets": [
             {
-              "os": "Mac-10.14.6"
+              "os": "Mac-10.15"
             }
           ],
           "named_caches": [
@@ -17198,13 +16456,6 @@
               "path": "Xcode.app"
             }
           ],
-          "optional_dimensions": {
-            "60": [
-              {
-                "os": "Mac-10.15"
-              }
-            ]
-          },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://ios/showcase:ios_showcase_egtests/"
@@ -17237,7 +16488,7 @@
           ],
           "dimension_sets": [
             {
-              "os": "Mac-10.14.6"
+              "os": "Mac-10.15"
             }
           ],
           "named_caches": [
@@ -17246,13 +16497,6 @@
               "path": "Xcode.app"
             }
           ],
-          "optional_dimensions": {
-            "60": [
-              {
-                "os": "Mac-10.15"
-              }
-            ]
-          },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://ios/showcase:ios_showcase_egtests/"
@@ -17285,7 +16529,7 @@
           ],
           "dimension_sets": [
             {
-              "os": "Mac-10.14.6"
+              "os": "Mac-10.15"
             }
           ],
           "named_caches": [
@@ -17294,13 +16538,6 @@
               "path": "Xcode.app"
             }
           ],
-          "optional_dimensions": {
-            "60": [
-              {
-                "os": "Mac-10.15"
-              }
-            ]
-          },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://ios/showcase:ios_showcase_egtests/"
@@ -17333,7 +16570,7 @@
           ],
           "dimension_sets": [
             {
-              "os": "Mac-10.14.6"
+              "os": "Mac-10.15"
             }
           ],
           "named_caches": [
@@ -17342,13 +16579,6 @@
               "path": "Xcode.app"
             }
           ],
-          "optional_dimensions": {
-            "60": [
-              {
-                "os": "Mac-10.15"
-              }
-            ]
-          },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://ios/showcase:ios_showcase_egtests/"
@@ -17381,7 +16611,7 @@
           ],
           "dimension_sets": [
             {
-              "os": "Mac-10.14.6"
+              "os": "Mac-10.15"
             }
           ],
           "named_caches": [
@@ -17390,13 +16620,6 @@
               "path": "Xcode.app"
             }
           ],
-          "optional_dimensions": {
-            "60": [
-              {
-                "os": "Mac-10.15"
-              }
-            ]
-          },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://ios/showcase:ios_showcase_egtests/"
@@ -17429,7 +16652,7 @@
           ],
           "dimension_sets": [
             {
-              "os": "Mac-10.14.6"
+              "os": "Mac-10.15"
             }
           ],
           "named_caches": [
@@ -17438,13 +16661,6 @@
               "path": "Xcode.app"
             }
           ],
-          "optional_dimensions": {
-            "60": [
-              {
-                "os": "Mac-10.15"
-              }
-            ]
-          },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://ios/web/shell/test:ios_web_shell_egtests/"
@@ -17477,7 +16693,7 @@
           ],
           "dimension_sets": [
             {
-              "os": "Mac-10.14.6"
+              "os": "Mac-10.15"
             }
           ],
           "named_caches": [
@@ -17486,13 +16702,6 @@
               "path": "Xcode.app"
             }
           ],
-          "optional_dimensions": {
-            "60": [
-              {
-                "os": "Mac-10.15"
-              }
-            ]
-          },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://ios/web/shell/test:ios_web_shell_egtests/"
@@ -17525,7 +16734,7 @@
           ],
           "dimension_sets": [
             {
-              "os": "Mac-10.14.6"
+              "os": "Mac-10.15"
             }
           ],
           "named_caches": [
@@ -17534,13 +16743,6 @@
               "path": "Xcode.app"
             }
           ],
-          "optional_dimensions": {
-            "60": [
-              {
-                "os": "Mac-10.15"
-              }
-            ]
-          },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://ios/web/shell/test:ios_web_shell_egtests/"

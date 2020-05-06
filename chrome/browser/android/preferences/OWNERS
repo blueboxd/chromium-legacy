@@ -2,6 +2,5 @@ twellington@chromium.org
 chouinard@chromium.org
 
 per-file cookie_controls*=dullweber@chromium.org
-per-file website_preference_bridge.cc=file://chrome/android/java/src/org/chromium/chrome/browser/site_settings/OWNERS
 
 # COMPONENT: UI>Browser>Mobile>Settings

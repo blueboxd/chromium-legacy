@@ -64,11 +64,14 @@ class PlayerCompositorDelegateAndroid : public PlayerCompositorDelegate {
   void OnBitmapCallback(
       const base::android::ScopedJavaGlobalRef<jobject>& j_bitmap_callback,
       const base::android::ScopedJavaGlobalRef<jobject>& j_error_callback,
+      int request_id,
       mojom::PaintPreviewCompositor::Status status,
       const SkBitmap& sk_bitmap);
 
   // Points to corresponding the Java object.
   base::android::ScopedJavaGlobalRef<jobject> java_ref_;
+
+  int request_id_;
 
   base::WeakPtrFactory<PlayerCompositorDelegateAndroid> weak_factory_{this};
 

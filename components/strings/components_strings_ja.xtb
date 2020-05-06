@@ -52,7 +52,6 @@
 <translation id="1197088940767939838">オレンジ</translation>
 <translation id="1201402288615127009">次へ</translation>
 <translation id="1201895884277373915">このサイトからの他の履歴</translation>
-<translation id="1205963431094182634">Google アカウントに保存したパスワードを使用するには、ログインしてください</translation>
 <translation id="1206967143813997005">最初の署名に問題があります</translation>
 <translation id="1209206284964581585">今は表示しない</translation>
 <translation id="121201262018556460"><ph name="DOMAIN" /> にアクセスしようとしましたが、サーバーから提示された証明書には脆弱な暗号鍵が含まれています。悪意のあるユーザーによって秘密鍵が破られた可能性があり、アクセスしようとしたサーバーとは異なるサーバーであるおそれがあります（悪意のあるユーザーと通信している可能性があります）。</translation>
@@ -1206,7 +1205,6 @@
 <translation id="6116338172782435947">クリップボードにコピーしたテキストや画像へのアクセス</translation>
 <translation id="6120179357481664955">UPI ID を保存しますか？</translation>
 <translation id="6124432979022149706">Chrome Enterprise Connector</translation>
-<translation id="6135641591018127088">Google アカウントを使用して安全なパスワードを生成する</translation>
 <translation id="6146055958333702838">ケーブルを確認し、使用しているネットワーク デバイス（ルーター、モデムなど）を
     再起動してください。</translation>
 <translation id="614940544461990577">次をお試しください</translation>
@@ -1252,7 +1250,6 @@
 <translation id="6328639280570009161">ネットワーク予測を無効にしてみてください</translation>
 <translation id="6328784461820205019">「この接続ではプライバシーが保護されません」、「&lt;span class="error-code"&gt;NET::ERR_CERT_AUTHORITY_INVALID&lt;/span&gt;」、「&lt;span class="error-code"&gt;ERR_CERT_COMMON_NAME_INVALID&lt;/span&gt;」、「&lt;span class="error-code"&gt;NET::ERR_CERT_WEAK_SIGNATURE_ALGORITHM&lt;/span&gt;」、「&lt;span class="error-code"&gt;ERR_CERT_SYMANTEC_LEGACY&lt;/span&gt;」、「SSL 証明書エラー」</translation>
 <translation id="6328786501058569169">これは偽のサイトです</translation>
-<translation id="6333334544069706521">Google アカウントに保存したパスワードを使用する</translation>
 <translation id="6337133576188860026">最大で <ph name="SIZE" /> を解放します。サイトによっては、次回アクセスする際に読み込みに時間がかかる可能性があります。</translation>
 <translation id="6337534724793800597">ポリシーを名前でフィルタ</translation>
 <translation id="6353505687280762741">{COUNT,plural, =0{なし}=1{<ph name="DOMAIN_LIST" /> のパスワード 1 件（同期）}=2{<ph name="DOMAIN_LIST" /> のパスワード 2 件（同期）}other{<ph name="DOMAIN_LIST" /> のパスワード # 件（同期）}}</translation>

@@ -5,16 +5,10 @@
 import("//build/config/android/rules.gni")
 
 generate_jni("site_settings_jni_headers") {
-  sources = [ "java/src/org/chromium/components/browser_ui/site_settings/SiteSettingsFeatureList.java" ]
-}
-
-android_library("java") {
-  sources = [ "java/src/org/chromium/components/browser_ui/site_settings/SiteSettingsFeatureList.java" ]
-  deps = [
-    "//base:base_java",
-    "//base:jni_java",
+  sources = [
+    "java/src/org/chromium/components/browser_ui/site_settings/SiteSettingsFeatureList.java",
+    "java/src/org/chromium/components/browser_ui/site_settings/WebsitePreferenceBridge.java",
   ]
-  annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
 }
 
 source_set("android") {
@@ -24,12 +18,92 @@ source_set("android") {
     "site_settings_feature_list.cc",
     "storage_info_fetcher.cc",
     "storage_info_fetcher.h",
+    "website_preference_bridge.cc",
   ]
   deps = [
     ":site_settings_jni_headers",
     "//base",
+    "//components/browsing_data/content",
+    "//components/cdm/browser",
+    "//components/content_settings/core/browser",
+    "//components/embedder_support/android:browser_context",
+    "//components/permissions",
+    "//components/user_prefs",
     "//content/public/browser",
+    "//services/network/public/mojom",
     "//storage/browser",
+    "//url",
+  ]
+}
+
+android_library("java") {
+  sources = [
+    "java/src/org/chromium/components/browser_ui/site_settings/AddExceptionPreference.java",
+    "java/src/org/chromium/components/browser_ui/site_settings/ChosenObjectInfo.java",
+    "java/src/org/chromium/components/browser_ui/site_settings/ChosenObjectSettings.java",
+    "java/src/org/chromium/components/browser_ui/site_settings/ClearWebsiteStorage.java",
+    "java/src/org/chromium/components/browser_ui/site_settings/ClearWebsiteStorageDialog.java",
+    "java/src/org/chromium/components/browser_ui/site_settings/ContentSetting.java",
+    "java/src/org/chromium/components/browser_ui/site_settings/ContentSettingException.java",
+    "java/src/org/chromium/components/browser_ui/site_settings/ContentSettingsResources.java",
+    "java/src/org/chromium/components/browser_ui/site_settings/ForwardingManagedPreferenceDelegate.java",
+    "java/src/org/chromium/components/browser_ui/site_settings/FourStateCookieSettingsPreference.java",
+    "java/src/org/chromium/components/browser_ui/site_settings/LocalStorageInfo.java",
+    "java/src/org/chromium/components/browser_ui/site_settings/LocationCategory.java",
+    "java/src/org/chromium/components/browser_ui/site_settings/NfcCategory.java",
+    "java/src/org/chromium/components/browser_ui/site_settings/NotificationCategory.java",
+    "java/src/org/chromium/components/browser_ui/site_settings/PermissionInfo.java",
+    "java/src/org/chromium/components/browser_ui/site_settings/SettingsNavigationSource.java",
+    "java/src/org/chromium/components/browser_ui/site_settings/SingleCategorySettings.java",
+    "java/src/org/chromium/components/browser_ui/site_settings/SingleWebsiteSettings.java",
+    "java/src/org/chromium/components/browser_ui/site_settings/SiteDataCleaner.java",
+    "java/src/org/chromium/components/browser_ui/site_settings/SiteSettings.java",
+    "java/src/org/chromium/components/browser_ui/site_settings/SiteSettingsCategory.java",
+    "java/src/org/chromium/components/browser_ui/site_settings/SiteSettingsClient.java",
+    "java/src/org/chromium/components/browser_ui/site_settings/SiteSettingsFeatureList.java",
+    "java/src/org/chromium/components/browser_ui/site_settings/SiteSettingsHelpClient.java",
+    "java/src/org/chromium/components/browser_ui/site_settings/SiteSettingsPrefClient.java",
+    "java/src/org/chromium/components/browser_ui/site_settings/SiteSettingsPreference.java",
+    "java/src/org/chromium/components/browser_ui/site_settings/SiteSettingsPreferenceFragment.java",
+    "java/src/org/chromium/components/browser_ui/site_settings/StorageInfo.java",
+    "java/src/org/chromium/components/browser_ui/site_settings/TriStateSiteSettingsPreference.java",
+    "java/src/org/chromium/components/browser_ui/site_settings/WebappSettingsClient.java",
+    "java/src/org/chromium/components/browser_ui/site_settings/Website.java",
+    "java/src/org/chromium/components/browser_ui/site_settings/WebsiteAddress.java",
+    "java/src/org/chromium/components/browser_ui/site_settings/WebsitePermissionsFetcher.java",
+    "java/src/org/chromium/components/browser_ui/site_settings/WebsitePreference.java",
+    "java/src/org/chromium/components/browser_ui/site_settings/WebsitePreferenceBridge.java",
+  ]
+  annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
+  deps = [
+    ":java_resources",
+    "//base:base_java",
+    "//base:jni_java",
+    "//components/browser_ui/settings/android:java",
+    "//components/browser_ui/widget/android:java",
+    "//components/content_settings/android:content_settings_enums_java",
+    "//components/content_settings/android:java",
+    "//components/embedder_support/android:browser_context_java",
+    "//components/embedder_support/android:util_java",
+    "//components/location/android:location_java",
+    "//components/permissions/android:java",
+    "//components/subresource_filter/android:java",
+    "//components/url_formatter/android:url_formatter_java",
+    "//content/public/android:content_java",
+    "//services/device/public/java:device_feature_list_java",
+    "//third_party/android_deps:android_support_v7_appcompat_java",
+    "//third_party/android_deps:androidx_preference_preference_java",
+    "//ui/android:ui_full_java",
+    "//ui/android:ui_utils_java",
+  ]
+}
+
+android_library("javatests") {
+  testonly = true
+  sources = [ "javatests/src/org/chromium/components/browser_ui/site_settings/WebsiteAddressTest.java" ]
+  deps = [
+    ":java",
+    "//base:base_java_test_support",
   ]
 }
 
@@ -108,6 +182,7 @@ android_resources("java_resources") {
     "java/res/drawable/ic_person_24dp.xml",
     "java/res/layout/add_site_dialog.xml",
     "java/res/layout/clear_data_dialog.xml",
+    "java/res/layout/clear_storage.xml",
     "java/res/layout/four_state_cookie_settings_preference.xml",
     "java/res/layout/storage_preferences_view.xml",
     "java/res/layout/tri_state_site_settings_preference.xml",
@@ -117,6 +192,14 @@ android_resources("java_resources") {
     "java/res/xml/single_website_preferences.xml",
     "java/res/xml/site_settings_preferences.xml",
     "java/res/xml/website_preferences.xml",
+  ]
+
+  deps = [
+    "//components/browser_ui/settings/android:java_resources",
+    "//components/browser_ui/strings/android:browser_ui_strings_grd",
+    "//components/browser_ui/styles/android:java_resources",
+    "//components/permissions/android:java_resources",
+    "//third_party/android_deps:android_support_v7_appcompat_java",
   ]
   custom_package = "org.chromium.components.browser_ui.site_settings"
 }

@@ -241,8 +241,12 @@ size_t FontFaceSetDocument::ApproximateBlankCharacterCount(Document& document) {
 }
 
 void FontFaceSetDocument::AlignTimeoutWithLCPGoal(FontFace* font_face) {
+  bool is_loading = font_face->LoadStatus() == FontFace::kLoading;
   bool affected = font_face->CssFontFace()->UpdatePeriod();
-  if (font_face->display() == "auto") {
+  // We only count loading font faces, so that unused fonts are excluded. This
+  // is especially useful when the page uses a font library, where most of the
+  // fonts are unused.
+  if (is_loading && font_face->display() == "auto") {
     font_display_auto_align_histogram_.SetHasFontDisplayAuto();
     if (affected)
       font_display_auto_align_histogram_.CountAffected();

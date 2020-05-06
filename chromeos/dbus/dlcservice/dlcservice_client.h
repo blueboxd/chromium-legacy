@@ -54,11 +54,18 @@ class COMPONENT_EXPORT(DLCSERVICE_CLIENT) DlcserviceClient {
   using PurgeCallback = base::OnceCallback<void(const std::string& err)>;
 
   // The callback used for |GetInstalled()|, if the error is something other
-  // than |dlcservice::kErrorNone| the call has failed. It is very rare case for
-  // |GetInstalled()| call to fail.
+  // than |dlcservice::kErrorNone| the call has failed. It is a very rare case
+  // for |GetInstalled()| call to fail.
   using GetInstalledCallback = base::OnceCallback<void(
       const std::string& err,
       const dlcservice::DlcModuleList& dlc_module_list)>;
+
+  // The callback used for |GetExistingDlcs()|, if the error is something other
+  // than |dlcservice::kErrorNone| the call has failed. It is a very rare case
+  // for |GetExistingDlcs()| call to fail.
+  using GetExistingDlcsCallback = base::OnceCallback<void(
+      const std::string& err,
+      const dlcservice::DlcsWithContent& dlcs_with_content)>;
 
   // The callback to use for |Install()|, if the caller wants to ignore the
   // progress updates.
@@ -85,8 +92,14 @@ class COMPONENT_EXPORT(DLCSERVICE_CLIENT) DlcserviceClient {
   virtual void Purge(const std::string& dlc_id,
                      PurgeCallback purge_callback) = 0;
 
+  // DEPRECATING: Please do not use this method call.
   // Provides the DLC(s) information such as id and root mount point.
   virtual void GetInstalled(GetInstalledCallback callback) = 0;
+
+  // Provides the DLC(s) information such as:
+  // id, name, description, used_bytes_on_disk. (reference
+  // |dlcservice::DlcsWithContent| proto for complete details)
+  virtual void GetExistingDlcs(GetExistingDlcsCallback callback) = 0;
 
   // During testing, can be used to mimic signals received back from dlcservice.
   virtual void OnInstallStatusForTest(dbus::Signal* signal) = 0;

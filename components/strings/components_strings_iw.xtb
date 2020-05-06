@@ -52,7 +52,6 @@
 <translation id="1197088940767939838">כתום</translation>
 <translation id="1201402288615127009">הבא</translation>
 <translation id="1201895884277373915">עוד מאתר זה</translation>
-<translation id="1205963431094182634">‏עליך להיכנס כדי להשתמש בסיסמאות המאוחסנות בחשבון Google</translation>
 <translation id="1206967143813997005">חתימה ראשונית לא חוקית</translation>
 <translation id="1209206284964581585">הסתר בינתיים</translation>
 <translation id="121201262018556460">ניסית להגיע אל <ph name="DOMAIN" />, אך השרת הציג אישור המכיל מפתח חלש. ייתכן שתוקף פרץ את המפתח הפרטי, והשרת אינו השרת שרצית (ייתכן שאתה מתקשר עם תוקף).</translation>
@@ -1220,7 +1219,6 @@ Del</translation>
 <translation id="6116338172782435947">גישה אל טקסט ותמונות שהועתקו ללוח</translation>
 <translation id="6120179357481664955">‏מזהה UPI שלך זכור לך?</translation>
 <translation id="6124432979022149706">‏מחברים של Chrome Enterprise</translation>
-<translation id="6135641591018127088">‏שימוש בחשבון Google ליצירת סיסמה חזקה</translation>
 <translation id="6146055958333702838">בדוק את הכבלים והפעל מחדש את הנתבים, המודמים ושאר התקני הרשת
   שאתה משתמש בהם.</translation>
 <translation id="614940544461990577">כדאי לנסות:</translation>
@@ -1266,7 +1264,6 @@ Del</translation>
 <translation id="6328639280570009161">נסה להשבית את חיזוי הרשת</translation>
 <translation id="6328784461820205019">‏"החיבור שלך אינו פרטי" או "&lt;span class="error-code"&gt;NET::ERR_CERT_AUTHORITY_INVALID&lt;/span&gt;" או "&lt;span class="error-code"&gt;ERR_CERT_COMMON_NAME_INVALID&lt;/span&gt;" או "&lt;span class="error-code"&gt;NET::ERR_CERT_WEAK_SIGNATURE_ALGORITHM&lt;/span&gt;" או "&lt;span class="error-code"&gt;ERR_CERT_SYMANTEC_LEGACY&lt;/span&gt;" או "שגיאת אישור SSL"</translation>
 <translation id="6328786501058569169">האתר הזה מטעה</translation>
-<translation id="6333334544069706521">‏שימוש בסיסמאות המאוחסנות בחשבון Google</translation>
 <translation id="6337133576188860026">פינוי של פחות מ-<ph name="SIZE" /> מהשטח. ייתכן שחלק מהאתרים ייטענו לאט יותר בביקור הבא שלך.</translation>
 <translation id="6337534724793800597">סנן מדיניות לפי שם</translation>
 <translation id="6353505687280762741">{COUNT,plural, =0{אין}=1{סיסמה אחת (עבור <ph name="DOMAIN_LIST" />, מסונכרנת)}=2{שתי סיסמאות (עבור <ph name="DOMAIN_LIST" />, מסונכרנות)}many{# סיסמאות (עבור <ph name="DOMAIN_LIST" />, מסונכרנות)}other{# סיסמאות (עבור <ph name="DOMAIN_LIST" />, מסונכרנות)}}</translation>

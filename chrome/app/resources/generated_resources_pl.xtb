@@ -170,6 +170,7 @@
 <translation id="1217483152325416304">Twoje dane lokalne zostaną wkrótce usunięte</translation>
 <translation id="1217668622537098248">Przywróć działanie po kliknięciu lewego przycisku myszy</translation>
 <translation id="121783623783282548">Hasła nie są zgodne.</translation>
+<translation id="1218015446623563536">Usuń Linuksa</translation>
 <translation id="1218839827383191197"><ph name="BEGIN_PARAGRAPH1" />Usługa lokalizacyjna Google używa takich źródeł jak sieci Wi-Fi, sieci komórkowe i czujniki, by łatwiej określać lokalizację tego urządzenia.<ph name="END_PARAGRAPH1" />
     <ph name="BEGIN_PARAGRAPH2" />Aby wyłączyć tę usługę, wyłącz główne ustawienie Lokalizacja na urządzeniu. Możesz też wyłączyć w ustawieniach lokalizacji korzystanie z sieci Wi‑Fi, sieci komórkowych i czujników przy określaniu lokalizacji.<ph name="END_PARAGRAPH2" /></translation>
 <translation id="122082903575839559">Algorytm podpisu certyfikatu</translation>
@@ -926,7 +927,7 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="2202898655984161076">Podczas tworzenia listy drukarek wystąpił problem. Niektóre drukarki mogły nie zostać pomyślnie zarejestrowane w usłudze <ph name="CLOUD_PRINT_NAME" />.</translation>
 <translation id="2203682048752833055">Wyszukiwarka używana w <ph name="BEGIN_LINK" />pasku adresu<ph name="END_LINK" /></translation>
 <translation id="2204034823255629767">Odczyt i zmiana wpisanego tekstu</translation>
-<translation id="2207166770508557715">Ustawienia dotyczące snu</translation>
+<translation id="2207166770508557715">Ustawienia uśpienia</translation>
 <translation id="220858061631308971">Wpisz ten kod PIN na urządzeniu „<ph name="DEVICE_NAME" />”:</translation>
 <translation id="2212565012507486665">Zezwalaj na pliki cookie</translation>
 <translation id="2213140827792212876">Usuń udostępnianie</translation>
@@ -1394,7 +1395,7 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="2796740370559399562">Nadal zezwalaj na pliki cookie</translation>
 <translation id="2799223571221894425">Uruchom ponownie</translation>
 <translation id="2800760947029405028">Prześlij obraz</translation>
-<translation id="2801954693771979815">Rozmiar ekranu</translation>
+<translation id="2801954693771979815">Rozmiar elementów na ekranie</translation>
 <translation id="2803375539583399270">Wpisz kod PIN</translation>
 <translation id="2804043232879091219">Nie udało się otworzyć alternatywnej przeglądarki</translation>
 <translation id="2804667941345577550">Wylogujemy Cię z tej strony, także na otwartych kartach</translation>
@@ -3186,7 +3187,7 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="5235565664420173924">Better Together</translation>
 <translation id="5235750401727657667">Zmiana strony, która wyświetla się, gdy otwierasz nową kartę</translation>
 <translation id="5238278114306905396">Aplikacja „<ph name="EXTENSION_NAME" />” została automatycznie usunięta.</translation>
-<translation id="5238435043462632060">Rodzic wyłączył „Uprawnienia stron, aplikacji i rozszerzeń” dla Chrome. <ph name="ACTION_PARAMETER" /> tego <ph name="EXTENSION_TYPE_PARAMETER" /> jest niedozwolone.</translation>
+<translation id="5238435043462632060">Rodzic wyłączył „Uprawnienia stron, aplikacji i rozszerzeń” dla Chrome. <ph name="ACTION_PARAMETER" /> tego elementu <ph name="EXTENSION_TYPE_PARAMETER" /> jest niedozwolone.</translation>
 <translation id="5239730228370806996">Te przeciągnięte dane naruszają zasady bezpieczeństwa obowiązujące w Twojej organizacji. Czy mimo to chcesz kontynuować?</translation>
 <translation id="5241128660650683457">Odczyt wszystkich Twoich danych na odwiedzanych stronach internetowych</translation>
 <translation id="5242724311594467048">Włączyć rozszerzenie „<ph name="EXTENSION_NAME" />”?</translation>
@@ -3837,7 +3838,7 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="6085886413119427067">Określa, jak nawiązywać połączenia ze stronami przez zabezpieczone połączenie</translation>
 <translation id="6086846494333236931">Zainstalowane przez administratora</translation>
 <translation id="6087960857463881712">Niesamowita twarz</translation>
-<translation id="6088036808197002565"><ph name="ACTION_PARAMETER" /> <ph name="EXTENSION_TYPE_PARAMETER" /> jest wyłączone</translation>
+<translation id="6088036808197002565"><ph name="ACTION_PARAMETER" /> elementu <ph name="EXTENSION_TYPE_PARAMETER" /> jest wyłączone</translation>
 <translation id="6091761513005122595">Udział został podłączony.</translation>
 <translation id="6093888419484831006">Anulowanie aktualizacji...</translation>
 <translation id="6095984072944024315">−</translation>
@@ -6011,7 +6012,7 @@ Przechowuj plik klucza w bezpiecznym miejscu. Będzie on potrzebny do utworzenia
 <translation id="894360074127026135">Dostęp międzynarodowy firmy Netscape</translation>
 <translation id="8944099748578356325">szybciej zużyje baterię (obecnie <ph name="BATTERY_PERCENTAGE" />%)</translation>
 <translation id="8944964446326379280"><ph name="APP_NAME" /> udostępnia okno karcie <ph name="TAB_NAME" />.</translation>
-<translation id="8945274638472141382">Rozmiar ikony</translation>
+<translation id="8945274638472141382">Rozmiar ikon</translation>
 <translation id="8946359700442089734">Funkcje debugowania nie zostały w pełni włączone na urządzeniu <ph name="IDS_SHORT_PRODUCT_NAME" />.</translation>
 <translation id="894871326938397531">Zamknąć tryb incognito?</translation>
 <translation id="8948939328578167195"><ph name="WEBSITE" /> chce odczytać markę i model Twojego klucza bezpieczeństwa</translation>

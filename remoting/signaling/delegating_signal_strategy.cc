@@ -109,8 +109,7 @@ bool DelegatingSignalStrategy::SendStanza(
 }
 
 bool DelegatingSignalStrategy::SendMessage(
-    const ftl::Id& destination_id,
-    const std::string& destination_registration_id,
+    const SignalingAddress& destination_address,
     const ftl::ChromotingMessage& message) {
   DCHECK(client_task_runner_->BelongsToCurrentThread());
   NOTIMPLEMENTED();

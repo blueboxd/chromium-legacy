@@ -213,9 +213,22 @@ nearest ancestor OWNERS file.
 - Anybody can review code, but there must be at least one owner for each
   affected directory.
 - If there are multiple reviewers, make it clear what each reviewer is expected
-  to review. Otherwise, people might assume their input is not required or
-  waste time with redundant reviews.
+  to review.
 - `git cl owners` automatically suggests reviewers based on the OWNERS files.
+
+_Note:_ By default, please only select one reviewer for each file (that is, a
+single reviewer may review multiple files, but typically each file only needs
+to be reviewed by one person). It can be tempting to add multiple reviewers so
+that "whoever gets to it first" can review, but this has two common failure
+modes:
+- Reviewer Alpha and Beta both review the CL, resulting in duplicate effort.
+- Out of fear of the above failure case, neither reviewer Alpha nor Beta review
+  the CL.
+
+There are times when requesting multiple reviewers for the same file may be
+desirable - such as when the code is particularly complicated, or when the file
+uses multiple systems and a perspective from each is valuable. In this case,
+please make it explicit that you would like both reviewers to review.
 
 ### Requesting review
 

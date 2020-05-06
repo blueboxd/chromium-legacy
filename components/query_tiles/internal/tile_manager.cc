@@ -12,6 +12,7 @@
 #include "base/task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "components/query_tiles/internal/config.h"
 #include "components/query_tiles/internal/tile_manager.h"
 
 namespace upboarding {
@@ -19,13 +20,8 @@ namespace {
 
 class TileManagerImpl : public TileManager {
  public:
-  TileManagerImpl(std::unique_ptr<TileStore> store,
-                  base::Clock* clock,
-                  TileConfig* config)
-      : initialized_(false),
-        store_(std::move(store)),
-        clock_(clock),
-        config_(config) {}
+  TileManagerImpl(std::unique_ptr<TileStore> store, base::Clock* clock)
+      : initialized_(false), store_(std::move(store)), clock_(clock) {}
 
   TileManagerImpl(const TileManagerImpl& other) = delete;
   TileManagerImpl& operator=(const TileManagerImpl& other) = delete;
@@ -48,8 +44,8 @@ class TileManagerImpl : public TileManager {
     auto group = std::make_unique<TileGroup>();
     group->id = base::GenerateGUID();
     group->last_updated_ts = clock_->Now();
-    group->locale = config_->locale;
     group->tiles = std::move(top_level_tiles);
+    // TODO(qinmin) : get locale from response.
 
     store_->Update(group->id, *group.get(),
                    base::BindOnce(&TileManagerImpl::OnGroupSaved,
@@ -146,8 +142,8 @@ class TileManagerImpl : public TileManager {
   // Returns true if the group is not expired and the locale matches OS
   // setting.
   bool ValidateGroup(const TileGroup* group) const {
-    return clock_->Now() - group->last_updated_ts < config_->expire_duration &&
-           group->locale == config_->locale;
+    return clock_->Now() - group->last_updated_ts <
+           TileConfig::GetExpireDuration();
   }
 
   void OnGroupSaved(std::unique_ptr<TileGroup> group,
@@ -187,9 +183,6 @@ class TileManagerImpl : public TileManager {
   // Clock object.
   base::Clock* clock_;
 
-  // QueryTileConfig object.
-  TileConfig* config_;
-
   base::WeakPtrFactory<TileManagerImpl> weak_ptr_factory_{this};
 };
 
@@ -199,10 +192,8 @@ TileManager::TileManager() = default;
 
 std::unique_ptr<TileManager> TileManager::Create(
     std::unique_ptr<TileStore> tile_store,
-    base::Clock* clock,
-    TileConfig* config) {
-  return std::make_unique<TileManagerImpl>(std::move(tile_store), clock,
-                                           config);
+    base::Clock* clock) {
+  return std::make_unique<TileManagerImpl>(std::move(tile_store), clock);
 }
 
 }  // namespace upboarding

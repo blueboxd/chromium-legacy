@@ -420,14 +420,8 @@ public class WebApkUpdateManager implements WebApkUpdateDataFetcher.Observer, De
         String[][] shortcuts = new String[info.shortcutItems().size()][];
         for (int j = 0; j < info.shortcutItems().size(); j++) {
             WebApkExtras.ShortcutItem shortcut = info.shortcutItems().get(j);
-
-            String iconData = "";
-            if (shortcut.icon != null) {
-                iconData = shortcut.icon.encoded();
-            }
-
             shortcuts[j] = new String[] {shortcut.name, shortcut.shortName, shortcut.launchUrl,
-                    shortcut.iconUrl, shortcut.iconHash, iconData};
+                    shortcut.iconUrl, shortcut.iconHash, shortcut.icon.encoded()};
         }
 
         String shareTargetAction = "";

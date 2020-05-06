@@ -17,8 +17,10 @@
 <translation id="2805756323405976993">Appar</translation>
 <translation id="2872961005593481000">Stäng av</translation>
 <translation id="3008341117444806826">UPPDATERA</translation>
+<translation id="3369013195428705271">Vill du rensa all utskriftshistorik? De pågående utskriftsjobben rensas inte.</translation>
 <translation id="3515615323037921860">Utskriftsjobb</translation>
 <translation id="3749289110408117711">Filnamn</translation>
+<translation id="38114475217616659">Rensa all historik</translation>
 <translation id="3820172043799983114">Ogiltig pinkod</translation>
 <translation id="3838338534323494292">Nytt lösenord</translation>
 <translation id="4003259559679196451"><ph name="ENROLLMENT_DOMAIN" /> hanterar den här enheten och har tillgång till all användaraktivitet, inklusive besökta webbsidor, lösenord och e-post.</translation>
@@ -43,6 +45,7 @@ Tryck på mikrofonen och fråga om något.</translation>
 <translation id="6106186594183574873">Slutför genom att ange det gamla lösenordet</translation>
 <translation id="6146993107019042706">Slutför genom att ange det nya lösenordet</translation>
 <translation id="6643016212128521049">Rensa</translation>
+<translation id="7162487448488904999">Gallery</translation>
 <translation id="7658239707568436148">Avbryt</translation>
 <translation id="7690294790491645610">Bekräfta det nya lösenordet</translation>
 <translation id="7805768142964895445">Status</translation>

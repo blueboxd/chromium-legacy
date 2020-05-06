@@ -15,6 +15,12 @@
 
 namespace media {
 
+// Helper function to print HRESULT to std::string.
+const auto PrintHr = logging::SystemErrorCodeToString;
+
+// Helper macro for DVLOG with function name and this pointer.
+#define DVLOG_FUNC(level) DVLOG(level) << __func__ << ": (" << this << ") "
+
 // Macros that contain return statements can make code harder to read. Only use
 // these when necessary, e.g. in places where we deal with a lot of Windows API
 // calls, for each of which we have to check the returned HRESULT.
@@ -25,8 +31,8 @@ namespace media {
   do {                                                                  \
     HRESULT hresult = (expr);                                           \
     if (FAILED(hresult)) {                                              \
-      DLOG(ERROR) << __func__ << ": failed with \""                     \
-                  << logging::SystemErrorCodeToString(hresult) << "\""; \
+      DLOG(ERROR) << __func__ << ": failed with \"" << PrintHr(hresult) \
+                  << "\"";                                              \
       return hresult;                                                   \
     }                                                                   \
   } while (0)
@@ -39,10 +45,8 @@ namespace media {
     }                                        \
   } while (0)
 
-#define RETURN_ON_HR_FAILURE(hresult, log, ret)                               \
-  RETURN_ON_FAILURE(SUCCEEDED(hresult),                                       \
-                    log << ", " << logging::SystemErrorCodeToString(hresult), \
-                    ret);
+#define RETURN_ON_HR_FAILURE(hresult, log, ret) \
+  RETURN_ON_FAILURE(SUCCEEDED(hresult), log << ", " << PrintHr(hresult), ret);
 
 // Creates a Media Foundation sample with one buffer of length |buffer_length|
 // on a |align|-byte boundary. Alignment must be a perfect power of 2 or 0.
@@ -53,7 +57,7 @@ CreateEmptySampleWithBuffer(uint32_t buffer_length, int align);
 // instance.
 class MF_INITIALIZER_EXPORT MediaBufferScopedPointer {
  public:
-  MediaBufferScopedPointer(IMFMediaBuffer* media_buffer);
+  explicit MediaBufferScopedPointer(IMFMediaBuffer* media_buffer);
   ~MediaBufferScopedPointer();
 
   uint8_t* get() { return buffer_; }
@@ -72,7 +76,6 @@ class MF_INITIALIZER_EXPORT MediaBufferScopedPointer {
 class MF_INITIALIZER_EXPORT DXGIDeviceScopedHandle {
  public:
   explicit DXGIDeviceScopedHandle(IMFDXGIDeviceManager* device_manager);
-
   ~DXGIDeviceScopedHandle();
 
   HRESULT LockDevice(REFIID riid, void** device_out);

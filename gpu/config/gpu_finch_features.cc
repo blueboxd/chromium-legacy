@@ -79,6 +79,10 @@ const base::Feature kGpuWatchdogV2NewTimeout{"GpuWatchdogV2NewTimeout",
 const base::Feature kMetal{"Metal", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
+// Turns on skia deferred display list for out of process raster.
+const base::Feature kOopRasterizationDDL{"OopRasterizationDDL",
+                                         base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Causes us to use the SharedImageManager, removing support for the old
 // mailbox system. Any consumers of the GPU process using the old mailbox
 // system will experience undefined results.

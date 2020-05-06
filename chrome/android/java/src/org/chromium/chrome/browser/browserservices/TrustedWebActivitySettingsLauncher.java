@@ -13,10 +13,10 @@ import org.chromium.base.Log;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.settings.SettingsLauncher;
 import org.chromium.chrome.browser.settings.SettingsLauncherImpl;
-import org.chromium.chrome.browser.site_settings.SettingsNavigationSource;
-import org.chromium.chrome.browser.site_settings.SingleCategorySettings;
-import org.chromium.chrome.browser.site_settings.SingleWebsiteSettings;
-import org.chromium.chrome.browser.site_settings.SiteSettingsCategory;
+import org.chromium.components.browser_ui.site_settings.SettingsNavigationSource;
+import org.chromium.components.browser_ui.site_settings.SingleCategorySettings;
+import org.chromium.components.browser_ui.site_settings.SingleWebsiteSettings;
+import org.chromium.components.browser_ui.site_settings.SiteSettingsCategory;
 
 import java.util.ArrayList;
 import java.util.Collection;

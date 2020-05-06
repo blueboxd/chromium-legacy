@@ -51,11 +51,12 @@ class TileFetcherImpl : public TileFetcher {
       const std::string& country_code,
       const std::string& accept_languages,
       const std::string& api_key,
+      const std::string& experiment_tag,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
       : url_loader_factory_(url_loader_factory) {
     tile_info_request_status_ = TileInfoRequestStatus::kInit;
-    auto resource_request =
-        BuildGetRequest(url, country_code, accept_languages, api_key);
+    auto resource_request = BuildGetRequest(url, country_code, accept_languages,
+                                            api_key, experiment_tag);
     url_loader_ = network::SimpleURLLoader::Create(
         std::move(resource_request), kQueryTilesFetcherTrafficAnnotation);
     url_loader_->SetOnResponseStartedCallback(base::BindRepeating(
@@ -78,7 +79,8 @@ class TileFetcherImpl : public TileFetcher {
       const GURL& url,
       const std::string& country_code,
       const std::string& accept_languages,
-      const std::string& api_key) {
+      const std::string& api_key,
+      const std::string& experiment_tag) {
     auto request = std::make_unique<network::ResourceRequest>();
     request->method = net::HttpRequestHeaders::kGetMethod;
     request->headers.SetHeader("x-goog-api-key", api_key);
@@ -86,9 +88,15 @@ class TileFetcherImpl : public TileFetcher {
                                kRequestContentType);
     request->url =
         net::AppendOrReplaceQueryParameter(url, "country_code", country_code);
-    if (!accept_languages.empty())
+    if (!experiment_tag.empty()) {
+      request->url = net::AppendOrReplaceQueryParameter(
+          request->url, "experiment_tag", experiment_tag);
+    }
+    if (!accept_languages.empty()) {
       request->headers.SetHeader(net::HttpRequestHeaders::kAcceptLanguage,
                                  accept_languages);
+    }
+
     return request;
   }
 
@@ -131,9 +139,11 @@ std::unique_ptr<TileFetcher> TileFetcher::Create(
     const std::string& country_code,
     const std::string& accept_languages,
     const std::string& api_key,
+    const std::string& experiment_tag,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory) {
   return std::make_unique<TileFetcherImpl>(url, country_code, accept_languages,
-                                           api_key, url_loader_factory);
+                                           api_key, experiment_tag,
+                                           url_loader_factory);
 }
 
 TileFetcher::TileFetcher() = default;

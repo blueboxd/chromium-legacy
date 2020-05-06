@@ -2,11 +2,11 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="mr">
 <translation id="1028699632127661925"><ph name="DEVICE_NAME" /> ला पाठवत आहे…</translation>
-<translation id="103269572468856066">या साइट व अ‍ॅप्सवरील डेटासुद्धा साफ करायचा?</translation>
+<translation id="103269572468856066">डेटासुद्धा साफ करायचा?</translation>
 <translation id="1036348656032585052">बंद करा</translation>
 <translation id="1036727731225946849"><ph name="WEBAPK_NAME" /> जोडत आहे…</translation>
 <translation id="1041308826830691739">वेबसाइटवरून</translation>
-<translation id="1045899828449635435">या साइटवरील डेटासुद्धा साफ करायचा?</translation>
+<translation id="1045899828449635435">डेटासुद्धा साफ करायचा?</translation>
 <translation id="1049743911850919806">गुप्त</translation>
 <translation id="10614374240317010">कधीही सेव्ह न केलेले</translation>
 <translation id="1067922213147265141">इतर Google सेवा</translation>
@@ -33,6 +33,7 @@
 <translation id="1208340532756947324">सर्व डिव्हाइसवर सिंक आणि पर्सनलाइझ करण्यासाठी, सिंक सुरू करा</translation>
 <translation id="1209206284964581585">आतासाठी लपवा</translation>
 <translation id="1227058898775614466">नेव्हिगेशन इतिहास</translation>
+<translation id="1229399675748764149">या पेजला तुमचे होम पेज बनवा</translation>
 <translation id="1231733316453485619">सिंक सुरू करायचे का?</translation>
 <translation id="123724288017357924">कॅशे केलेला आशय दुर्लक्षित करून, सद्य पेज रीलोड करा</translation>
 <translation id="124116460088058876">आणखी भाषा...</translation>
@@ -71,6 +72,7 @@
 <translation id="1513352483775369820">बुकमार्क आणि वेब इतिहास</translation>
 <translation id="1513858653616922153">पासवर्ड हटवा</translation>
 <translation id="1521774566618522728">आज ॲक्टिव्ह होते</translation>
+<translation id="1543538514740974167">येथे आणखी झटपट जा</translation>
 <translation id="1544826120773021464">तुमचे Google खाते व्यवस्थापित करण्यासाठी, "खाते व्यवस्थापित करा" बटणावर टॅप करा</translation>
 <translation id="1549000191223877751">अन्य विंडोवर हलवा</translation>
 <translation id="1553358976309200471">Chrome अपडेट करा</translation>
@@ -723,13 +725,15 @@
 <translation id="7022756207310403729">ब्राउझरमध्ये उघडा</translation>
 <translation id="702463548815491781">TalkBack किंवा स्विच ॲक्सेस सुरू असताना शिफारस केलेले</translation>
 <translation id="7029809446516969842">पासवर्ड</translation>
+<translation id="703523980599857277">होम पेज बदला</translation>
 <translation id="7055152154916055070">रीडिरेक्ट ब्लॉक केले:</translation>
 <translation id="7063006564040364415">संकालित सर्व्हरशी कनेक्ट करू शकलो नाही.</translation>
 <translation id="7071521146534760487">खाते व्यवस्थापित करा</translation>
 <translation id="7077143737582773186">SD कार्ड</translation>
 <translation id="7121362699166175603">अ‍ॅड्रेस बारवरील इतिहास आणि आपोआप पूर्ण करण्याचे दाखले साफ करते. तुमच्या Google खात्यामध्ये <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> वर कदाचित ब्राउझिंगचे इतर फॉर्म असतील.</translation>
+<translation id="7128355412245153445">तुम्ही होम बटण टॅप करता तेव्हा तुमच्या टॉप साइट आणि अलीकडील स्टोरी पहा</translation>
 <translation id="7138678301420049075">इतर</translation>
-<translation id="7146622961999026732">या साइट आणि अ‍ॅप्स तुमच्यासाठी महत्त्वाची आहेत असे दिसते:</translation>
+<translation id="7146622961999026732">या साइट आणि ही अ‍ॅप्स तुमच्यासाठी महत्त्वाची आहेत असे दिसते:</translation>
 <translation id="7149158118503947153"><ph name="DOMAIN_NAME" /> वरून <ph name="BEGIN_LINK" />मुळचे पेज लोड करा<ph name="END_LINK" /></translation>
 <translation id="7149893636342594995">शेवटच्या 72 तासांमधील</translation>
 <translation id="7173114856073700355">सेटिंग्ज उघडा</translation>
@@ -968,11 +972,13 @@
 <translation id="9155898266292537608">तुम्ही शब्दावर जलद टॅप करूनदेखील शोधू शकता</translation>
 <translation id="9169507124922466868">नेव्हिगेशन इतिहास अर्धा उघडा आहे</translation>
 <translation id="9204836675896933765">1 फाइल शिल्लक</translation>
+<translation id="9205796607887024517">तुमच्या स्टोरी येथे नियंत्रित करा</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="9209888181064652401">कॉल करू शकत नाही</translation>
 <translation id="9219103736887031265">इमेज</translation>
 <translation id="926205370408745186">Digital wellbeing वरून तुमची Chrome ॲक्टिव्हिटी काढून टाका</translation>
 <translation id="932327136139879170">होम</translation>
+<translation id="93753284658583800">होम पेज बदलले</translation>
 <translation id="938850635132480979">एरर: <ph name="ERROR_CODE" /></translation>
 <translation id="95817756606698420">Chrome चीनमध्ये शोध करण्‍यासाठी <ph name="BEGIN_BOLD" />Sogou<ph name="END_BOLD" /> चा वापर करू शकते. तुम्ही हे <ph name="BEGIN_LINK" />सेटिंग्जमध्ये<ph name="END_LINK" /> बदलू शकता.</translation>
 <translation id="968900484120156207">तुम्ही भेट देता ती पेज येथे दिसतील</translation>

@@ -5,6 +5,7 @@
 #include "chrome/services/sharing/sharing_impl.h"
 
 #include "base/callback.h"
+#include "chrome/services/sharing/nearby/nearby_connections.h"
 #include "chrome/services/sharing/webrtc/sharing_webrtc_connection.h"
 #include "jingle/glue/thread_wrapper.h"
 #include "third_party/webrtc/api/peer_connection_interface.h"
@@ -39,6 +40,24 @@ void SharingImpl::CreateSharingWebRtcConnection(
   SharingWebRtcConnection* sharing_connection_ptr = sharing_connection.get();
   sharing_webrtc_connections_.emplace(sharing_connection_ptr,
                                       std::move(sharing_connection));
+}
+
+void SharingImpl::CreateNearbyConnections(
+    mojo::PendingRemote<NearbyConnectionsHostMojom> host,
+    CreateNearbyConnectionsCallback callback) {
+  // Reset old instance of Nearby Connections stack.
+  nearby_connections_.reset();
+
+  mojo::PendingRemote<NearbyConnectionsMojom> remote;
+  nearby_connections_ = std::make_unique<NearbyConnections>(
+      remote.InitWithNewPipeAndPassReceiver(), std::move(host),
+      base::BindOnce(&SharingImpl::NearbyConnectionsDisconnected,
+                     weak_ptr_factory_.GetWeakPtr()));
+  std::move(callback).Run(std::move(remote));
+}
+
+void SharingImpl::NearbyConnectionsDisconnected() {
+  nearby_connections_.reset();
 }
 
 size_t SharingImpl::GetWebRtcConnectionCountForTesting() const {

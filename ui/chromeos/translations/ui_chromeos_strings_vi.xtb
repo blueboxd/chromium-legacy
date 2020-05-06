@@ -90,6 +90,7 @@
 <translation id="1947424002851288782">Bàn phím tiếng Đức</translation>
 <translation id="1972984168337863910">Mở rộng bảng dữ liệu phản hồi về tệp</translation>
 <translation id="1984603991036629094">Bàn phím ngữ âm Armenia</translation>
+<translation id="1995337122023280937">Chuyển đến vị trí tệp</translation>
 <translation id="2001796770603320721">Quản lý trong Drive</translation>
 <translation id="2009067268969781306">Thao tác định dạng ổ sẽ xóa toàn bộ dữ liệu lưu trữ trên ổ đó. Bạn không thể hủy thao tác này sau khi đã thực hiện.</translation>
 <translation id="2028997212275086731">Lưu trữ RAR</translation>
@@ -141,6 +142,7 @@
 <translation id="2638942478653899953">Không thể truy cập Google Drive. Vui lòng <ph name="BEGIN_LINK" />đăng xuất<ph name="END_LINK" /> và đăng nhập lại.</translation>
 <translation id="2649120831653069427">Cá cầu vồng</translation>
 <translation id="2661146741306740526">16x9</translation>
+<translation id="2664412712123763093">Vị trí tệp</translation>
 <translation id="2672394958563893062">Đã xảy ra lỗi. Nhấp để khởi động lại từ đầu.</translation>
 <translation id="2676946222714718093">Đang phát trên</translation>
 <translation id="2735698359135166290">Bàn phím chuẩn tiếng Rumani</translation>
@@ -349,6 +351,7 @@
 <translation id="5081517858322016911"><ph name="TOTAL_FILE_SIZE" /> dung lượng tệp sẽ bị xóa</translation>
 <translation id="509429900233858213">Đã xảy ra lỗi.</translation>
 <translation id="5098629044894065541">Tiếng Do Thái</translation>
+<translation id="5112685521274804841">Các tệp trong thư mục này ở chế độ chỉ đọc. Bạn không thể thực hiện một số hành động.</translation>
 <translation id="5123433949759960244">Bóng rổ</translation>
 <translation id="5129662217315786329">Tiếng Ba Lan</translation>
 <translation id="5144820558584035333">Hangul 3 bộ (390)</translation>
@@ -699,6 +702,7 @@
 <translation id="9034924485347205037">Tệp Linux</translation>
 <translation id="9035012421917565900">Không thể chuyển lại các tệp này vào '<ph name="DESTINATION_NAME" />', do đó bạn sẽ không thể hoàn tác hành động này.</translation>
 <translation id="9038620279323455325">Tệp có tên "<ph name="FILE_NAME" />" đã tồn tại. Vui lòng chọn một tên khác.</translation>
+<translation id="9062992083244091966">Để mở các tệp bằng ứng dụng <ph name="APP_NAME" />, trước tiên, hãy chuyển các tệp đó vào thư mục tệp được chia sẻ trên <ph name="APP_NAME" />.</translation>
 <translation id="9064939804718829769">Đang chuyển...</translation>
 <translation id="9065203028668620118">Chỉnh sửa</translation>
 <translation id="9099674669267916096">Số lượng trang</translation>

@@ -52,7 +52,6 @@
 <translation id="1197088940767939838">橙色</translation>
 <translation id="1201402288615127009">下一個</translation>
 <translation id="1201895884277373915">這個網站的更多內容</translation>
-<translation id="1205963431094182634">登入即可使用儲存在 Google 帳戶中的密碼</translation>
 <translation id="1206967143813997005">縮寫簽名錯誤</translation>
 <translation id="1209206284964581585">暫時隱藏</translation>
 <translation id="121201262018556460">您嘗試前往 <ph name="DOMAIN" />，但伺服器所提供的憑證含有防護力薄弱的金鑰。攻擊者可能已破壞私密金鑰，而這個伺服器可能並非您的目標伺服器 (您的連線對象可能是攻擊者的電腦)。</translation>
@@ -1204,7 +1203,6 @@
 <translation id="6116338172782435947">查看複製到剪貼簿的文字和圖片</translation>
 <translation id="6120179357481664955">要記住您的 UPI ID 嗎？</translation>
 <translation id="6124432979022149706">Chrome Enterprise Connectors</translation>
-<translation id="6135641591018127088">使用 Google 帳戶產生安全性強的密碼</translation>
 <translation id="6146055958333702838">檢查連接線，或重新啟動路由器、數據機或其他使用中的
     網絡裝置。</translation>
 <translation id="614940544461990577">建議做法：</translation>
@@ -1250,7 +1248,6 @@
 <translation id="6328639280570009161">建議停用網絡預測功能</translation>
 <translation id="6328784461820205019">「您的連線不是私人連線」或「&lt;span class="error-code"&gt;NET::ERR_CERT_AUTHORITY_INVALID&lt;/span&gt;」、「&lt;span class="error-code"&gt;ERR_CERT_COMMON_NAME_INVALID&lt;/span&gt;」、「&lt;span class="error-code"&gt;NET::ERR_CERT_WEAK_SIGNATURE_ALGORITHM&lt;/span&gt;」、「&lt;span class="error-code"&gt;ERR_CERT_SYMANTEC_LEGACY&lt;/span&gt;」或「SSL 憑證錯誤」</translation>
 <translation id="6328786501058569169">這是欺詐網站</translation>
-<translation id="6333334544069706521">使用儲存在 Google 帳戶中的密碼</translation>
 <translation id="6337133576188860026">釋的快取不到 <ph name="SIZE" />。在您下次瀏覽部分網站時，載入速度可能會變慢。</translation>
 <translation id="6337534724793800597">依名稱篩選政策</translation>
 <translation id="6353505687280762741">{COUNT,plural, =0{無}=1{有 1 個密碼 (<ph name="DOMAIN_LIST" />，已同步)}=2{有 2 個密碼 (<ph name="DOMAIN_LIST" />，已同步)}other{有 # 個密碼 (<ph name="DOMAIN_LIST" />，已同步)}}</translation>

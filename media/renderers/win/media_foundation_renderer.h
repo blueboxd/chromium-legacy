@@ -18,8 +18,6 @@
 #include "base/unguessable_token.h"
 #include "base/win/windows_types.h"
 #include "media/base/buffering_state.h"
-#include "media/base/media_export.h"
-#include "media/base/media_log.h"
 #include "media/base/media_resource.h"
 #include "media/base/pipeline_status.h"
 #include "media/base/renderer.h"
@@ -37,8 +35,12 @@ namespace media {
 class MediaFoundationRenderer : public Renderer,
                                 public MediaFoundationRendererExtension {
  public:
+  // Whether MediaFoundationRenderer() is supported on the current device.
+  static bool IsSupported();
+
   MediaFoundationRenderer(bool muted,
-                          scoped_refptr<base::SequencedTaskRunner> task_runner);
+                          scoped_refptr<base::SequencedTaskRunner> task_runner,
+                          bool force_dcomp_mode_for_testing = false);
 
   ~MediaFoundationRenderer() override;
 
@@ -77,11 +79,14 @@ class MediaFoundationRenderer : public Renderer,
   void StartSendingStatistics();
   void StopSendingStatistics();
 
+  // Callbacks for |mf_media_engine_notify_|.
   void OnPlaybackError(PipelineStatus status);
   void OnPlaybackEnded();
   void OnBufferingStateChanged(BufferingState state,
                                BufferingStateChangeReason reason);
   void OnVideoNaturalSizeChanged();
+  void OnTimeUpdate();
+
   void OnCdmProxyReceived(IMFCdmProxy* cdm);
 
   HRESULT SetDCompModeInternal(bool enabled);
@@ -92,8 +97,13 @@ class MediaFoundationRenderer : public Renderer,
   // TODO(crbug.com/1017943): Support Audio Indicator when using
   // media::MojoRenderer. For now, keep |muted_| as const.
   const bool muted_;
+
   // Renderer methods are running in the same sequence.
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
+
+  // Once set, will force |mf_media_engine_| to use DirectComposition mode.
+  // This is used for testing.
+  const bool force_dcomp_mode_for_testing_;
 
   bool mf_started_ = false;
   RendererClient* renderer_client_;

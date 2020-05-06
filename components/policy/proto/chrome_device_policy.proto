@@ -1434,11 +1434,6 @@ message PluginVmLicenseKeyProto {
   optional string plugin_vm_license_key = 1;
 }
 
-// Setting that specifies PluginVm User Id for this device.
-message PluginVmUserIdProto {
-  optional string plugin_vm_user_id = 1;
-}
-
 // Setting that controls whether the device should reboot when user sign out.
 message DeviceRebootOnUserSignoutProto {
   enum RebootOnSignoutMode {
@@ -1733,5 +1728,4 @@ message ChromeDeviceSettingsProto {
       required_client_certificate_for_device = 101;
   optional DeviceCrostiniArcAdbSideloadingAllowedProto
       device_crostini_arc_adb_sideloading_allowed = 102;
-  optional PluginVmUserIdProto plugin_vm_user_id = 103;
 }

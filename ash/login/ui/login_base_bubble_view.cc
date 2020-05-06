@@ -129,7 +129,11 @@ LoginBaseBubbleView::LoginBaseBubbleView(views::View* anchor_view,
       views::BoxLayout::CrossAxisAlignment::kStart);
 
   SetVisible(false);
+}
 
+void LoginBaseBubbleView::EnsureLayer() {
+  if (layer())
+    return;
   // Layer rendering is needed for animation.
   SetPaintToLayer();
   SkColor background_color = AshColorProvider::Get()->GetBaseLayerColor(
@@ -145,7 +149,8 @@ LoginBaseBubbleView::LoginBaseBubbleView(views::View* anchor_view,
 LoginBaseBubbleView::~LoginBaseBubbleView() = default;
 
 void LoginBaseBubbleView::Show() {
-  layer()->GetAnimator()->RemoveObserver(this);
+  if (layer())
+    layer()->GetAnimator()->RemoveObserver(this);
 
   SetSize(GetPreferredSize());
   SetPosition(CalculatePosition());
@@ -190,6 +195,13 @@ void LoginBaseBubbleView::OnLayerAnimationEnded(
     ui::LayerAnimationSequence* sequence) {
   layer()->GetAnimator()->RemoveObserver(this);
   SetVisible(false);
+  DestroyLayer();
+}
+
+void LoginBaseBubbleView::OnLayerAnimationAborted(
+    ui::LayerAnimationSequence* sequence) {
+  // The animation for this view should never be aborted.
+  NOTREACHED();
 }
 
 gfx::Size LoginBaseBubbleView::CalculatePreferredSize() const {
@@ -273,8 +285,10 @@ void LoginBaseBubbleView::ScheduleAnimation(bool visible) {
                                       nullptr /*event*/);
   }
 
-  layer()->GetAnimator()->StopAnimating();
+  if (layer())
+    layer()->GetAnimator()->StopAnimating();
 
+  EnsureLayer();
   float opacity_start = 0.0f;
   float opacity_end = 1.0f;
   if (!visible) {

@@ -90,6 +90,7 @@
 <translation id="1947424002851288782">Неміс пернетақтасы</translation>
 <translation id="1972984168337863910">Файлдар пікірі панельдерін жаю</translation>
 <translation id="1984603991036629094">Армян фонетикалық пернетақтасы</translation>
+<translation id="1995337122023280937">Файл орнына өту</translation>
 <translation id="2001796770603320721">Drive қызметінде басқару</translation>
 <translation id="2009067268969781306">Дискіні форматтасаңыз, онда сақталған деректердің барлығы өшіп қалады. Бұл әрекеттен бас тарту мүмкін емес.</translation>
 <translation id="2028997212275086731">RAR мұрағаты</translation>
@@ -141,6 +142,7 @@
 <translation id="2638942478653899953">Google Drive мазмұнына қол жеткізу мүмкін емес. <ph name="BEGIN_LINK" />Жүйеден шығып<ph name="END_LINK" />, қайта кіріңіз.</translation>
 <translation id="2649120831653069427">Түрлі түсті балық</translation>
 <translation id="2661146741306740526">16x9</translation>
+<translation id="2664412712123763093">Файлдың орналасқан жері</translation>
 <translation id="2672394958563893062">Қате орын алды. Басынан бастап қайта іске қосу үшін басыңыз.</translation>
 <translation id="2676946222714718093">Бейне көрсетіліп жатыр:</translation>
 <translation id="2735698359135166290">Румын стандартты пернетақтасы</translation>
@@ -349,6 +351,7 @@
 <translation id="5081517858322016911"><ph name="TOTAL_FILE_SIZE" /> файл жойылады.</translation>
 <translation id="509429900233858213">Қате орын алды.</translation>
 <translation id="5098629044894065541">иврит</translation>
+<translation id="5112685521274804841">Бұл қалтадағы файлдарды тек оқуға болады. Кейбір әрекеттерге қолдау көрсетілмейді.</translation>
 <translation id="5123433949759960244">Баскетбол</translation>
 <translation id="5129662217315786329">поляк</translation>
 <translation id="5144820558584035333">Ханғыл 3-жинақ (390)</translation>
@@ -698,6 +701,7 @@
 <translation id="9034924485347205037">Linux файлдары</translation>
 <translation id="9035012421917565900">Файлдар "<ph name="DESTINATION_NAME" />" қалтасына қайта көшірілмейді, сондықтан бұл қадамды кері қайтару мүмкін емес.</translation>
 <translation id="9038620279323455325">"<ph name="FILE_NAME" />" файлы бұрыннан бар. Басқа атау таңдаңыз.</translation>
+<translation id="9062992083244091966">Файлдарды <ph name="APP_NAME" /> қолданбаларымен ашу үшін оларды <ph name="APP_NAME" /> бөлісілген файлдар қалтасына салыңыз.</translation>
 <translation id="9064939804718829769">Тасымалдануда…</translation>
 <translation id="9065203028668620118">Өзгерту</translation>
 <translation id="9099674669267916096">Бет саны</translation>

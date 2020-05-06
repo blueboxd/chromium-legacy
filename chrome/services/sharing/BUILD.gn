@@ -4,6 +4,8 @@
 
 source_set("sharing") {
   sources = [
+    "nearby/nearby_connections.cc",
+    "nearby/nearby_connections.h",
     "sharing_impl.cc",
     "sharing_impl.h",
     "webrtc/ipc_network_manager.cc",
@@ -42,6 +44,8 @@ source_set("unit_tests") {
   testonly = true
 
   sources = [
+    "nearby/test/mock_nearby_connections_host.cc",
+    "nearby/test/mock_nearby_connections_host.h",
     "sharing_impl_unittest.cc",
     "webrtc/sharing_webrtc_connection_integration_test.cc",
     "webrtc/sharing_webrtc_connection_unittest.cc",

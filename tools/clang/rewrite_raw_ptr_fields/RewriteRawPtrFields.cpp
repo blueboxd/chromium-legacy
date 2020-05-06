@@ -41,15 +41,48 @@
 #include "llvm/Support/TargetSelect.h"
 
 using namespace clang::ast_matchers;
-using clang::tooling::CommonOptionsParser;
-using clang::tooling::Replacement;
 
 namespace {
 
+// Include path that needs to be added to all the files where CheckedPtr<...>
+// replaces a raw pointer.
+const char kIncludePath[] = "base/memory/checked_ptr.h";
+
+// Output format is documented in //docs/clang_tool_refactoring.md
+class ReplacementsPrinter {
+ public:
+  ReplacementsPrinter() { llvm::outs() << "==== BEGIN EDITS ====\n"; }
+
+  ~ReplacementsPrinter() { llvm::outs() << "==== END EDITS ====\n"; }
+
+  void PrintReplacement(const clang::SourceManager& source_manager,
+                        const clang::SourceRange& replacement_range,
+                        std::string replacement_text) {
+    clang::tooling::Replacement replacement(
+        source_manager, clang::CharSourceRange::getCharRange(replacement_range),
+        replacement_text);
+    llvm::StringRef file_path = replacement.getFilePath();
+    std::replace(replacement_text.begin(), replacement_text.end(), '\n', '\0');
+    llvm::outs() << "r:::" << file_path << ":::" << replacement.getOffset()
+                 << ":::" << replacement.getLength()
+                 << ":::" << replacement_text << "\n";
+
+    bool was_inserted = false;
+    std::tie(std::ignore, was_inserted) =
+        files_with_already_added_includes_.insert(file_path.str());
+    if (was_inserted)
+      llvm::outs() << "include-user-header:::" << file_path
+                   << ":::-1:::-1:::" << kIncludePath << "\n";
+  }
+
+ private:
+  std::set<std::string> files_with_already_added_includes_;
+};
+
 class FieldDeclRewriter : public MatchFinder::MatchCallback {
  public:
-  explicit FieldDeclRewriter(std::vector<Replacement>* replacements)
-      : replacements_(replacements) {}
+  explicit FieldDeclRewriter(ReplacementsPrinter* replacements_printer)
+      : replacements_printer_(replacements_printer) {}
 
   void run(const MatchFinder::MatchResult& result) override {
     const clang::SourceManager& source_manager = *result.SourceManager;
@@ -88,10 +121,9 @@ class FieldDeclRewriter : public MatchFinder::MatchCallback {
     if (field_decl->isMutable())
       replacement_text.insert(0, "mutable ");
 
-    // Generate and add a replacement.
-    replacements_->emplace_back(
-        source_manager, clang::CharSourceRange::getCharRange(replacement_range),
-        replacement_text);
+    // Generate and print a replacement.
+    replacements_printer_->PrintReplacement(source_manager, replacement_range,
+                                            replacement_text);
   }
 
  private:
@@ -120,7 +152,7 @@ class FieldDeclRewriter : public MatchFinder::MatchCallback {
     return result;
   }
 
-  std::vector<Replacement>* const replacements_;
+  ReplacementsPrinter* const replacements_printer_;
 };
 
 }  // namespace
@@ -132,12 +164,12 @@ int main(int argc, const char* argv[]) {
   llvm::InitializeNativeTargetAsmParser();
   llvm::cl::OptionCategory category(
       "rewrite_raw_ptr_fields: changes |T* field_| to |CheckedPtr<T> field_|.");
-  CommonOptionsParser options(argc, argv, category);
+  clang::tooling::CommonOptionsParser options(argc, argv, category);
   clang::tooling::ClangTool tool(options.getCompilations(),
                                  options.getSourcePathList());
 
   MatchFinder match_finder;
-  std::vector<Replacement> replacements;
+  ReplacementsPrinter replacements_printer;
 
   // Field declarations =========
   // Given
@@ -146,7 +178,7 @@ int main(int argc, const char* argv[]) {
   //   };
   // matches |int* y|.
   auto field_decl_matcher = fieldDecl(hasType(pointerType())).bind("fieldDecl");
-  FieldDeclRewriter field_decl_rewriter(&replacements);
+  FieldDeclRewriter field_decl_rewriter(&replacements_printer);
   match_finder.addMatcher(field_decl_matcher, &field_decl_rewriter);
 
   // Prepare and run the tool.
@@ -155,16 +187,6 @@ int main(int argc, const char* argv[]) {
   int result = tool.run(factory.get());
   if (result != 0)
     return result;
-
-  // Serialization format is documented in tools/clang/scripts/run_tool.py
-  llvm::outs() << "==== BEGIN EDITS ====\n";
-  for (const auto& r : replacements) {
-    std::string replacement_text = r.getReplacementText().str();
-    std::replace(replacement_text.begin(), replacement_text.end(), '\n', '\0');
-    llvm::outs() << "r:::" << r.getFilePath() << ":::" << r.getOffset()
-                 << ":::" << r.getLength() << ":::" << replacement_text << "\n";
-  }
-  llvm::outs() << "==== END EDITS ====\n";
 
   return 0;
 }

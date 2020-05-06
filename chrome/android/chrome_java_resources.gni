@@ -931,7 +931,6 @@ chrome_java_resources = [
   "java/res/layout/checkbox_layout.xml",
   "java/res/layout/clear_browsing_data_tabs.xml",
   "java/res/layout/clear_browsing_important_dialog_listview.xml",
-  "java/res/layout/clear_storage.xml",
   "java/res/layout/compositor_view_holder.xml",
   "java/res/layout/confirm_import_sync_data.xml",
   "java/res/layout/confirm_important_sites_list_row.xml",

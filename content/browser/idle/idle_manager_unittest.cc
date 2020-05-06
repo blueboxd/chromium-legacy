@@ -4,6 +4,7 @@
 
 #include "content/browser/idle/idle_manager_impl.h"
 
+#include <tuple>
 #include <utility>
 
 #include "base/bind.h"
@@ -11,15 +12,15 @@
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
+#include "base/test/task_environment.h"
+#include "base/test/test_mock_time_task_runner.h"
 #include "base/time/time.h"
-#include "build/build_config.h"
 #include "content/browser/permissions/permission_controller_impl.h"
 #include "content/public/browser/permission_controller.h"
 #include "content/public/browser/permission_type.h"
+#include "content/public/test/browser_task_environment.h"
 #include "content/public/test/mock_permission_manager.h"
-#include "content/public/test/navigation_simulator.h"
 #include "content/public/test/test_browser_context.h"
-#include "content/test/test_render_frame_host.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/test_support/test_utils.h"
 #include "services/service_manager/public/cpp/bind_source_info.h"
@@ -33,11 +34,9 @@ using blink::mojom::IdleStatePtr;
 using blink::mojom::ScreenIdleState;
 using blink::mojom::UserIdleState;
 using ::testing::_;
-using ::testing::InSequence;
 using ::testing::Invoke;
 using ::testing::NiceMock;
 using ::testing::Return;
-using ::testing::StrictMock;
 using url::Origin;
 
 namespace content {
@@ -64,25 +63,29 @@ class MockIdleTimeProvider : public IdleManager::IdleTimeProvider {
   MOCK_METHOD0(CheckIdleStateIsLocked, bool());
 };
 
-class IdleManagerTest : public RenderViewHostImplTestHarness {
+class IdleManagerTest : public testing::Test {
  protected:
-  IdleManagerTest() = default;
+  IdleManagerTest()
+      : task_environment_(base::test::TaskEnvironment::TimeSource::MOCK_TIME),
+        browser_context_(new TestBrowserContext()) {}
   ~IdleManagerTest() override = default;
   IdleManagerTest(const IdleManagerTest&) = delete;
   IdleManagerTest& operator=(const IdleManagerTest&) = delete;
 
   void SetUp() override {
-    RenderViewHostImplTestHarness::SetUp();
-    permission_manager_ = new ::testing::NiceMock<MockPermissionManager>();
-    static_cast<TestBrowserContext*>(browser_context())
-        ->SetPermissionControllerDelegate(
-            base::WrapUnique(permission_manager_));
-    idle_manager_ = std::make_unique<IdleManagerImpl>(browser_context());
+    permission_manager_ = new NiceMock<MockPermissionManager>();
+    idle_time_provider_ = new NiceMock<MockIdleTimeProvider>();
+    browser_context_->SetPermissionControllerDelegate(
+        base::WrapUnique(permission_manager_));
+    idle_manager_ = std::make_unique<IdleManagerImpl>(browser_context_.get());
+    idle_manager_->SetIdleTimeProviderForTest(
+        base::WrapUnique(idle_time_provider_));
+    idle_manager_->CreateService(service_remote_.BindNewPipeAndPassReceiver(),
+                                 Origin::Create(url_));
   }
 
   void TearDown() override {
     idle_manager_.reset();
-    RenderViewHostImplTestHarness::TearDown();
   }
 
   IdleManagerImpl* GetIdleManager() { return idle_manager_.get(); }
@@ -94,12 +97,71 @@ class IdleManagerTest : public RenderViewHostImplTestHarness {
         .WillByDefault(Return(permission_status));
   }
 
-  Origin origin() const { return Origin::Create(url_); }
+  std::tuple<UserIdleState, ScreenIdleState> AddMonitorRequest(
+      base::TimeDelta threshold) {
+    base::RunLoop loop;
+    UserIdleState user_result;
+    ScreenIdleState screen_result;
+
+    service_remote_->AddMonitor(
+        threshold, monitor_receiver_.BindNewPipeAndPassRemote(),
+        base::BindLambdaForTesting(
+            [&loop, &user_result, &screen_result](IdleManagerError error,
+                                                  IdleStatePtr state) {
+              EXPECT_EQ(IdleManagerError::kSuccess, error);
+              user_result = state->user;
+              screen_result = state->screen;
+              loop.Quit();
+            }));
+    loop.Run();
+    return std::make_tuple(user_result, screen_result);
+  }
+
+  std::tuple<UserIdleState, ScreenIdleState> GetIdleStatus() {
+    base::RunLoop loop;
+    UserIdleState user_result;
+    ScreenIdleState screen_result;
+
+    EXPECT_CALL(idle_monitor_, Update(_))
+        .WillOnce(
+            Invoke([&loop, &user_result, &screen_result](IdleStatePtr state) {
+              user_result = state->user;
+              screen_result = state->screen;
+              loop.Quit();
+            }));
+
+    // Fast forward to run polling task.
+    task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(1));
+    loop.Run();
+    return std::make_tuple(user_result, screen_result);
+  }
+
+  void DisconnectRenderer() {
+    base::RunLoop loop;
+
+    // Simulates the renderer disconnecting.
+    monitor_receiver_.reset();
+
+    // Wait for the IdleManager to observe the pipe close.
+    loop.RunUntilIdle();
+  }
+
+  MockIdleTimeProvider* idle_time_provider() const {
+    return idle_time_provider_;
+  }
   const GURL& url() const { return url_; }
 
+ protected:
+  mojo::Remote<blink::mojom::IdleManager> service_remote_;
+
  private:
+  BrowserTaskEnvironment task_environment_;
+  std::unique_ptr<TestBrowserContext> browser_context_;
   std::unique_ptr<IdleManagerImpl> idle_manager_;
   MockPermissionManager* permission_manager_;
+  MockIdleTimeProvider* idle_time_provider_;
+  NiceMock<MockIdleMonitor> idle_monitor_;
+  mojo::Receiver<blink::mojom::IdleMonitor> monitor_receiver_{&idle_monitor_};
   GURL url_ = GURL(kTestUrl);
 };
 
@@ -107,341 +169,154 @@ class IdleManagerTest : public RenderViewHostImplTestHarness {
 
 TEST_F(IdleManagerTest, AddMonitor) {
   SetPermissionStatus(url(), blink::mojom::PermissionStatus::GRANTED);
-  auto* impl = GetIdleManager();
-  auto* mock = new NiceMock<MockIdleTimeProvider>();
-  impl->SetIdleTimeProviderForTest(base::WrapUnique(mock));
-  mojo::Remote<blink::mojom::IdleManager> service_remote;
-  impl->CreateService(service_remote.BindNewPipeAndPassReceiver(), origin());
-
-  MockIdleMonitor monitor;
-  mojo::Receiver<blink::mojom::IdleMonitor> monitor_receiver(&monitor);
-
-  base::RunLoop loop;
-
-  service_remote.set_disconnect_handler(base::BindLambdaForTesting([&]() {
-    ADD_FAILURE() << "Unexpected connection error";
-    loop.Quit();
-  }));
 
   // Initial state of the system.
-  EXPECT_CALL(*mock, CalculateIdleTime())
-      .WillRepeatedly(Return(base::TimeDelta::FromSeconds(0)));
-  EXPECT_CALL(*mock, CheckIdleStateIsLocked()).WillRepeatedly(Return(false));
+  EXPECT_CALL(*idle_time_provider(), CalculateIdleTime())
+      .WillOnce(Return(base::TimeDelta::FromSeconds(0)));
+  EXPECT_CALL(*idle_time_provider(), CheckIdleStateIsLocked())
+      .WillOnce(Return(false));
 
-  service_remote->AddMonitor(
-      kThreshold, monitor_receiver.BindNewPipeAndPassRemote(),
-      base::BindOnce(
-          [](base::OnceClosure callback, IdleManagerError error,
-             IdleStatePtr state) {
-            // The initial state of the status of the user is to be active.
-            EXPECT_EQ(IdleManagerError::kSuccess, error);
-            EXPECT_EQ(UserIdleState::kActive, state->user);
-            EXPECT_EQ(ScreenIdleState::kUnlocked, state->screen);
-            std::move(callback).Run();
-          },
-          loop.QuitClosure()));
-
-  loop.Run();
+  EXPECT_EQ(std::make_tuple(UserIdleState::kActive, ScreenIdleState::kUnlocked),
+            AddMonitorRequest(kThreshold));
 }
 
-// Disabled test: https://crbug.com/1062668
-TEST_F(IdleManagerTest, DISABLED_Idle) {
-  mojo::Remote<blink::mojom::IdleManager> service_remote;
-
+TEST_F(IdleManagerTest, Idle) {
   SetPermissionStatus(url(), blink::mojom::PermissionStatus::GRANTED);
-  auto* impl = GetIdleManager();
-  auto* mock = new NiceMock<MockIdleTimeProvider>();
-  impl->SetIdleTimeProviderForTest(base::WrapUnique(mock));
-  impl->CreateService(service_remote.BindNewPipeAndPassReceiver(), origin());
 
-  MockIdleMonitor monitor;
-  mojo::Receiver<blink::mojom::IdleMonitor> monitor_receiver(&monitor);
+  // Initial state of the system.
+  EXPECT_CALL(*idle_time_provider(), CalculateIdleTime())
+      .WillOnce(Return(base::TimeDelta::FromSeconds(0)));
+  EXPECT_CALL(*idle_time_provider(), CheckIdleStateIsLocked())
+      .WillOnce(Return(false));
 
-  {
-    base::RunLoop loop;
-    // Initial state of the system.
-    EXPECT_CALL(*mock, CalculateIdleTime())
-        .WillRepeatedly(Return(base::TimeDelta::FromSeconds(0)));
+  EXPECT_EQ(std::make_tuple(UserIdleState::kActive, ScreenIdleState::kUnlocked),
+            AddMonitorRequest(kThreshold));
 
-    service_remote->AddMonitor(
-        kThreshold, monitor_receiver.BindNewPipeAndPassRemote(),
-        base::BindLambdaForTesting(
-            [&](IdleManagerError error, IdleStatePtr state) {
-              EXPECT_EQ(IdleManagerError::kSuccess, error);
-              EXPECT_EQ(UserIdleState::kActive, state->user);
-              loop.Quit();
-            }));
+  // Simulates a user going idle.
+  EXPECT_CALL(*idle_time_provider(), CalculateIdleTime())
+      .WillOnce(Return(base::TimeDelta::FromSeconds(60)));
+  EXPECT_CALL(*idle_time_provider(), CheckIdleStateIsLocked())
+      .WillOnce(Return(true));
 
-    loop.Run();
-  }
+  EXPECT_EQ(std::make_tuple(UserIdleState::kIdle, ScreenIdleState::kLocked),
+            GetIdleStatus());
 
-  {
-    base::RunLoop loop;
-    // Simulates a user going idle.
-    EXPECT_CALL(*mock, CalculateIdleTime())
-        .WillRepeatedly(Return(base::TimeDelta::FromSeconds(60)));
+  // Simulates a user going active, calling a callback under the threshold.
+  EXPECT_CALL(*idle_time_provider(), CalculateIdleTime())
+      .WillOnce(Return(base::TimeDelta::FromSeconds(0)));
+  EXPECT_CALL(*idle_time_provider(), CheckIdleStateIsLocked())
+      .WillOnce(Return(false));
 
-    // Expects Update to be notified about the change to idle.
-    EXPECT_CALL(monitor, Update(_)).WillOnce(Invoke([&](IdleStatePtr state) {
-      EXPECT_EQ(UserIdleState::kIdle, state->user);
-      loop.Quit();
-    }));
-    loop.Run();
-  }
-
-  {
-    base::RunLoop loop;
-    // Simulates a user going active, calling a callback under the threshold.
-    EXPECT_CALL(*mock, CalculateIdleTime())
-        .WillRepeatedly(Return(base::TimeDelta::FromSeconds(0)));
-
-    // Expects Update to be notified about the change to active.
-    // auto quit = loop.QuitClosure();
-    EXPECT_CALL(monitor, Update(_)).WillOnce(Invoke([&](IdleStatePtr state) {
-      EXPECT_EQ(UserIdleState::kActive, state->user);
-      // Ends the test.
-      loop.Quit();
-    }));
-    loop.Run();
-  }
+  EXPECT_EQ(std::make_tuple(UserIdleState::kActive, ScreenIdleState::kUnlocked),
+            GetIdleStatus());
 }
 
-// TODO(crbug.com/1069706): Test is flaky on all platforms except Mac.
-#if defined(OS_MACOSX)
-#define MAYBE_UnlockingScreen UnlockingScreen
-#else
-#define MAYBE_UnlockingScreen DISABLED_UnlockingScreen
-#endif
-TEST_F(IdleManagerTest, MAYBE_UnlockingScreen) {
+TEST_F(IdleManagerTest, UnlockingScreen) {
   SetPermissionStatus(url(), blink::mojom::PermissionStatus::GRANTED);
-  mojo::Remote<blink::mojom::IdleManager> service_remote;
 
-  auto* impl = GetIdleManager();
-  auto* mock = new NiceMock<MockIdleTimeProvider>();
-  impl->SetIdleTimeProviderForTest(base::WrapUnique(mock));
-  impl->CreateService(service_remote.BindNewPipeAndPassReceiver(), origin());
+  // Initial state of the system.
+  EXPECT_CALL(*idle_time_provider(), CalculateIdleTime())
+      .WillOnce(Return(base::TimeDelta::FromSeconds(70)));
+  EXPECT_CALL(*idle_time_provider(), CheckIdleStateIsLocked())
+      .WillOnce(Return(true));
 
-  MockIdleMonitor monitor;
-  mojo::Receiver<blink::mojom::IdleMonitor> monitor_receiver(&monitor);
+  EXPECT_EQ(std::make_tuple(UserIdleState::kIdle, ScreenIdleState::kLocked),
+            AddMonitorRequest(kThreshold));
 
-  {
-    base::RunLoop loop;
+  // Simulates a user unlocking the screen.
+  EXPECT_CALL(*idle_time_provider(), CalculateIdleTime())
+      .WillOnce(Return(base::TimeDelta::FromSeconds(0)));
+  EXPECT_CALL(*idle_time_provider(), CheckIdleStateIsLocked())
+      .WillOnce(Return(false));
 
-    // Initial state of the system.
-    EXPECT_CALL(*mock, CheckIdleStateIsLocked()).WillRepeatedly(Return(true));
-
-    service_remote->AddMonitor(
-        kThreshold, monitor_receiver.BindNewPipeAndPassRemote(),
-        base::BindLambdaForTesting(
-            [&](IdleManagerError error, IdleStatePtr state) {
-              EXPECT_EQ(IdleManagerError::kSuccess, error);
-              EXPECT_EQ(ScreenIdleState::kLocked, state->screen);
-              loop.Quit();
-            }));
-
-    loop.Run();
-  }
-
-  {
-    base::RunLoop loop;
-
-    // Simulates a user unlocking the screen.
-    EXPECT_CALL(*mock, CheckIdleStateIsLocked()).WillRepeatedly(Return(false));
-
-    // Expects Update to be notified about the change to unlocked.
-    EXPECT_CALL(monitor, Update(_)).WillOnce(Invoke([&](IdleStatePtr state) {
-      EXPECT_EQ(ScreenIdleState::kUnlocked, state->screen);
-      loop.Quit();
-    }));
-
-    loop.Run();
-  }
+  EXPECT_EQ(std::make_tuple(UserIdleState::kActive, ScreenIdleState::kUnlocked),
+            GetIdleStatus());
 }
 
-// Disabled test: https://crbug.com/1062668
-TEST_F(IdleManagerTest, DISABLED_LockingScreen) {
-  mojo::Remote<blink::mojom::IdleManager> service_remote;
-
+TEST_F(IdleManagerTest, LockingScreen) {
   SetPermissionStatus(url(), blink::mojom::PermissionStatus::GRANTED);
-  auto* impl = GetIdleManager();
-  auto* mock = new NiceMock<MockIdleTimeProvider>();
-  impl->SetIdleTimeProviderForTest(base::WrapUnique(mock));
-  impl->CreateService(service_remote.BindNewPipeAndPassReceiver(), origin());
 
-  MockIdleMonitor monitor;
-  mojo::Receiver<blink::mojom::IdleMonitor> monitor_receiver(&monitor);
+  // Initial state of the system.
+  EXPECT_CALL(*idle_time_provider(), CalculateIdleTime())
+      .WillOnce(Return(base::TimeDelta::FromSeconds(0)));
+  EXPECT_CALL(*idle_time_provider(), CheckIdleStateIsLocked())
+      .WillOnce(Return(false));
 
-  {
-    base::RunLoop loop;
+  EXPECT_EQ(std::make_tuple(UserIdleState::kActive, ScreenIdleState::kUnlocked),
+            AddMonitorRequest(kThreshold));
 
-    // Initial state of the system.
-    EXPECT_CALL(*mock, CheckIdleStateIsLocked()).WillRepeatedly(Return(false));
+  // Simulates a user locking the screen.
+  EXPECT_CALL(*idle_time_provider(), CalculateIdleTime())
+      .WillOnce(Return(base::TimeDelta::FromSeconds(10)));
+  EXPECT_CALL(*idle_time_provider(), CheckIdleStateIsLocked())
+      .WillOnce(Return(true));
 
-    service_remote->AddMonitor(
-        kThreshold, monitor_receiver.BindNewPipeAndPassRemote(),
-        base::BindLambdaForTesting(
-            [&](IdleManagerError error, IdleStatePtr state) {
-              EXPECT_EQ(IdleManagerError::kSuccess, error);
-              EXPECT_EQ(ScreenIdleState::kUnlocked, state->screen);
-              loop.Quit();
-            }));
-
-    loop.Run();
-  }
-
-  {
-    base::RunLoop loop;
-
-    // Simulates a user locking the screen.
-    EXPECT_CALL(*mock, CheckIdleStateIsLocked()).WillRepeatedly(Return(true));
-
-    // Expects Update to be notified about the change to unlocked.
-    EXPECT_CALL(monitor, Update(_)).WillOnce(Invoke([&](IdleStatePtr state) {
-      EXPECT_EQ(ScreenIdleState::kLocked, state->screen);
-      loop.Quit();
-    }));
-
-    loop.Run();
-  }
+  EXPECT_EQ(std::make_tuple(UserIdleState::kActive, ScreenIdleState::kLocked),
+            GetIdleStatus());
 }
 
-// Disabled test: https://crbug.com/1062668
-TEST_F(IdleManagerTest, DISABLED_LockingScreenThenIdle) {
-  mojo::Remote<blink::mojom::IdleManager> service_remote;
-
+TEST_F(IdleManagerTest, LockingScreenThenIdle) {
   SetPermissionStatus(url(), blink::mojom::PermissionStatus::GRANTED);
-  auto* impl = GetIdleManager();
-  auto* mock = new NiceMock<MockIdleTimeProvider>();
-  impl->SetIdleTimeProviderForTest(base::WrapUnique(mock));
-  impl->CreateService(service_remote.BindNewPipeAndPassReceiver(), origin());
 
-  MockIdleMonitor monitor;
-  mojo::Receiver<blink::mojom::IdleMonitor> monitor_receiver(&monitor);
+  // Initial state of the system.
+  EXPECT_CALL(*idle_time_provider(), CalculateIdleTime())
+      .WillOnce(Return(base::TimeDelta::FromSeconds(0)));
+  EXPECT_CALL(*idle_time_provider(), CheckIdleStateIsLocked())
+      .WillOnce(Return(false));
 
-  {
-    base::RunLoop loop;
+  EXPECT_EQ(std::make_tuple(UserIdleState::kActive, ScreenIdleState::kUnlocked),
+            AddMonitorRequest(kThreshold));
 
-    // Initial state of the system.
-    EXPECT_CALL(*mock, CheckIdleStateIsLocked()).WillRepeatedly(Return(false));
+  // Simulates a user locking screen.
+  EXPECT_CALL(*idle_time_provider(), CalculateIdleTime())
+      .WillOnce(Return(base::TimeDelta::FromSeconds(10)));
+  EXPECT_CALL(*idle_time_provider(), CheckIdleStateIsLocked())
+      .WillOnce(Return(true));
 
-    service_remote->AddMonitor(
-        kThreshold, monitor_receiver.BindNewPipeAndPassRemote(),
-        base::BindLambdaForTesting(
-            [&](IdleManagerError error, IdleStatePtr state) {
-              EXPECT_EQ(IdleManagerError::kSuccess, error);
-              EXPECT_EQ(UserIdleState::kActive, state->user);
-              EXPECT_EQ(ScreenIdleState::kUnlocked, state->screen);
-              loop.Quit();
-            }));
+  EXPECT_EQ(std::make_tuple(UserIdleState::kActive, ScreenIdleState::kLocked),
+            GetIdleStatus());
 
-    loop.Run();
-  }
+  // Simulates a user going idle, while the screen is still locked.
+  EXPECT_CALL(*idle_time_provider(), CalculateIdleTime())
+      .WillOnce(Return(base::TimeDelta::FromSeconds(70)));
+  EXPECT_CALL(*idle_time_provider(), CheckIdleStateIsLocked())
+      .WillOnce(Return(true));
 
-  {
-    base::RunLoop loop;
-
-    // Simulates a user locking screen.
-    EXPECT_CALL(*mock, CheckIdleStateIsLocked()).WillRepeatedly(Return(true));
-
-    // Expects Update to be notified about the change to locked.
-    EXPECT_CALL(monitor, Update(_)).WillOnce(Invoke([&](IdleStatePtr state) {
-      EXPECT_EQ(ScreenIdleState::kLocked, state->screen);
-      EXPECT_EQ(UserIdleState::kActive, state->user);
-      loop.Quit();
-    }));
-
-    loop.Run();
-  }
-
-  {
-    base::RunLoop loop;
-
-    // Simulates a user going idle, whilte the screen is still locked.
-    EXPECT_CALL(*mock, CalculateIdleTime())
-        .WillRepeatedly(Return(base::TimeDelta::FromSeconds(60)));
-    EXPECT_CALL(*mock, CheckIdleStateIsLocked()).WillRepeatedly(Return(true));
-
-    // Expects Update to be notified about the change to active.
-    EXPECT_CALL(monitor, Update(_)).WillOnce(Invoke([&](IdleStatePtr state) {
-      EXPECT_EQ(UserIdleState::kIdle, state->user);
-      EXPECT_EQ(ScreenIdleState::kLocked, state->screen);
-      // Ends the test.
-      loop.Quit();
-    }));
-
-    loop.Run();
-  }
+  EXPECT_EQ(std::make_tuple(UserIdleState::kIdle, ScreenIdleState::kLocked),
+            GetIdleStatus());
 }
 
-// Disabled test: https://crbug.com/1062668
-TEST_F(IdleManagerTest, DISABLED_LockingScreenAfterIdle) {
-  mojo::Remote<blink::mojom::IdleManager> service_remote;
-
+TEST_F(IdleManagerTest, LockingScreenAfterIdle) {
   SetPermissionStatus(url(), blink::mojom::PermissionStatus::GRANTED);
-  auto* impl = GetIdleManager();
-  auto* mock = new NiceMock<MockIdleTimeProvider>();
-  impl->SetIdleTimeProviderForTest(base::WrapUnique(mock));
-  impl->CreateService(service_remote.BindNewPipeAndPassReceiver(), origin());
 
-  MockIdleMonitor monitor;
-  mojo::Receiver<blink::mojom::IdleMonitor> monitor_receiver(&monitor);
+  // Initial state of the system.
+  EXPECT_CALL(*idle_time_provider(), CalculateIdleTime())
+      .WillOnce(Return(base::TimeDelta::FromSeconds(0)));
+  EXPECT_CALL(*idle_time_provider(), CheckIdleStateIsLocked())
+      .WillOnce(Return(false));
 
-  {
-    base::RunLoop loop;
+  EXPECT_EQ(std::make_tuple(UserIdleState::kActive, ScreenIdleState::kUnlocked),
+            AddMonitorRequest(kThreshold));
 
-    // Initial state of the system.
-    EXPECT_CALL(*mock, CalculateIdleTime())
-        .WillRepeatedly(Return(base::TimeDelta::FromSeconds(0)));
-    EXPECT_CALL(*mock, CheckIdleStateIsLocked()).WillRepeatedly(Return(false));
+  // Simulates a user going idle, but with the screen still unlocked.
+  EXPECT_CALL(*idle_time_provider(), CalculateIdleTime())
+      .WillOnce(Return(base::TimeDelta::FromSeconds(60)));
+  EXPECT_CALL(*idle_time_provider(), CheckIdleStateIsLocked())
+      .WillOnce(Return(false));
 
-    service_remote->AddMonitor(
-        kThreshold, monitor_receiver.BindNewPipeAndPassRemote(),
-        base::BindLambdaForTesting(
-            [&](IdleManagerError error, IdleStatePtr state) {
-              EXPECT_EQ(IdleManagerError::kSuccess, error);
-              EXPECT_EQ(UserIdleState::kActive, state->user);
-              EXPECT_EQ(ScreenIdleState::kUnlocked, state->screen);
-              loop.Quit();
-            }));
+  EXPECT_EQ(std::make_tuple(UserIdleState::kIdle, ScreenIdleState::kUnlocked),
+            GetIdleStatus());
 
-    loop.Run();
-  }
+  // Simulates the screen getting locked by the system after the user goes
+  // idle (e.g. screensaver kicks in first, throwing idleness, then getting
+  // locked).
+  EXPECT_CALL(*idle_time_provider(), CalculateIdleTime())
+      .WillOnce(Return(base::TimeDelta::FromSeconds(60)));
+  EXPECT_CALL(*idle_time_provider(), CheckIdleStateIsLocked())
+      .WillOnce(Return(true));
 
-  {
-    base::RunLoop loop;
-    // Simulates a user going idle, but with the screen still unlocked.
-    EXPECT_CALL(*mock, CalculateIdleTime())
-        .WillRepeatedly(Return(base::TimeDelta::FromSeconds(60)));
-    EXPECT_CALL(*mock, CheckIdleStateIsLocked()).WillRepeatedly(Return(false));
-
-    // Expects Update to be notified about the change to idle.
-    EXPECT_CALL(monitor, Update(_)).WillOnce(Invoke([&](IdleStatePtr state) {
-      EXPECT_EQ(UserIdleState::kIdle, state->user);
-      EXPECT_EQ(ScreenIdleState::kUnlocked, state->screen);
-      loop.Quit();
-    }));
-
-    loop.Run();
-  }
-
-  {
-    base::RunLoop loop;
-    // Simulates the screeng getting locked by the system after the user goes
-    // idle (e.g. screensaver kicks in first, throwing idleness, then getting
-    // locked).
-    EXPECT_CALL(*mock, CalculateIdleTime())
-        .WillRepeatedly(Return(base::TimeDelta::FromSeconds(60)));
-    EXPECT_CALL(*mock, CheckIdleStateIsLocked()).WillRepeatedly(Return(true));
-
-    // Expects Update to be notified about the change to locked.
-    EXPECT_CALL(monitor, Update(_)).WillOnce(Invoke([&](IdleStatePtr state) {
-      EXPECT_EQ(ScreenIdleState::kLocked, state->screen);
-      EXPECT_EQ(UserIdleState::kIdle, state->user);
-      // Ends the test.
-      loop.Quit();
-    }));
-    loop.Run();
-  }
+  EXPECT_EQ(std::make_tuple(UserIdleState::kIdle, ScreenIdleState::kLocked),
+            GetIdleStatus());
 }
 
 TEST_F(IdleManagerTest, RemoveMonitorStopsPolling) {
@@ -449,122 +324,69 @@ TEST_F(IdleManagerTest, RemoveMonitorStopsPolling) {
   // that the polling stops for the idle detection.
 
   SetPermissionStatus(url(), blink::mojom::PermissionStatus::GRANTED);
+
+  AddMonitorRequest(kThreshold);
+
   auto* impl = GetIdleManager();
-  auto* mock = new NiceMock<MockIdleTimeProvider>();
-  impl->SetIdleTimeProviderForTest(base::WrapUnique(mock));
-
-  mojo::Remote<blink::mojom::IdleManager> service_remote;
-  impl->CreateService(service_remote.BindNewPipeAndPassReceiver(), origin());
-
-  MockIdleMonitor monitor;
-  mojo::Receiver<blink::mojom::IdleMonitor> monitor_receiver(&monitor);
-
-  {
-    base::RunLoop loop;
-
-    service_remote->AddMonitor(
-        kThreshold, monitor_receiver.BindNewPipeAndPassRemote(),
-        base::BindLambdaForTesting(
-            [&](IdleManagerError error, IdleStatePtr state) { loop.Quit(); }));
-
-    loop.Run();
-  }
-
   EXPECT_TRUE(impl->IsPollingForTest());
 
-  {
-    base::RunLoop loop;
-
-    // Simulates the renderer disconnecting.
-    monitor_receiver.reset();
-
-    // Wait for the IdleManager to observe the pipe close.
-    loop.RunUntilIdle();
-  }
+  DisconnectRenderer();
 
   EXPECT_FALSE(impl->IsPollingForTest());
 }
 
 TEST_F(IdleManagerTest, Threshold) {
   SetPermissionStatus(url(), blink::mojom::PermissionStatus::GRANTED);
-  auto* impl = GetIdleManager();
-  auto* mock = new NiceMock<MockIdleTimeProvider>();
-  impl->SetIdleTimeProviderForTest(base::WrapUnique(mock));
-  mojo::Remote<blink::mojom::IdleManager> service_remote;
-  impl->CreateService(service_remote.BindNewPipeAndPassReceiver(), origin());
-
-  MockIdleMonitor monitor;
-  mojo::Receiver<blink::mojom::IdleMonitor> monitor_receiver(&monitor);
-
-  base::RunLoop loop;
 
   // Initial state of the system.
-  EXPECT_CALL(*mock, CalculateIdleTime())
-      .WillRepeatedly(Return(base::TimeDelta::FromSeconds(91)));
-  EXPECT_CALL(*mock, CheckIdleStateIsLocked()).WillRepeatedly(Return(false));
+  EXPECT_CALL(*idle_time_provider(), CalculateIdleTime())
+      .WillOnce(Return(base::TimeDelta::FromSeconds(90)));
+  EXPECT_CALL(*idle_time_provider(), CheckIdleStateIsLocked())
+      .WillOnce(Return(false));
 
-  service_remote->AddMonitor(
-      base::TimeDelta::FromSeconds(90),
-      monitor_receiver.BindNewPipeAndPassRemote(),
-      base::BindLambdaForTesting(
-          [&](IdleManagerError error, IdleStatePtr state) {
-            EXPECT_EQ(IdleManagerError::kSuccess, error);
-            EXPECT_EQ(UserIdleState::kIdle, state->user);
-            loop.Quit();
-          }));
-
-  loop.Run();
+  EXPECT_EQ(
+      AddMonitorRequest(base::TimeDelta::FromSeconds(91)),
+      std::make_tuple(UserIdleState::kActive, ScreenIdleState::kUnlocked));
 }
 
 TEST_F(IdleManagerTest, InvalidThreshold) {
   SetPermissionStatus(url(), blink::mojom::PermissionStatus::GRANTED);
   mojo::test::BadMessageObserver bad_message_observer;
-  auto* impl = GetIdleManager();
-  auto* mock = new NiceMock<MockIdleTimeProvider>();
-  impl->SetIdleTimeProviderForTest(base::WrapUnique(mock));
-  mojo::Remote<blink::mojom::IdleManager> service_remote;
-  impl->CreateService(service_remote.BindNewPipeAndPassReceiver(), origin());
 
   MockIdleMonitor monitor;
   mojo::Receiver<blink::mojom::IdleMonitor> monitor_receiver(&monitor);
 
   // Should not start initial state of the system.
-  EXPECT_CALL(*mock, CalculateIdleTime()).Times(0);
-  EXPECT_CALL(*mock, CheckIdleStateIsLocked()).Times(0);
+  EXPECT_CALL(*idle_time_provider(), CalculateIdleTime()).Times(0);
+  EXPECT_CALL(*idle_time_provider(), CheckIdleStateIsLocked()).Times(0);
 
-  service_remote->AddMonitor(base::TimeDelta::FromSeconds(50),
-                             monitor_receiver.BindNewPipeAndPassRemote(),
-                             base::NullCallback());
-  EXPECT_EQ("Minimum threshold is 60 seconds.",
+  service_remote_->AddMonitor(base::TimeDelta::FromSeconds(50),
+                              monitor_receiver.BindNewPipeAndPassRemote(),
+                              base::NullCallback());
+
+  EXPECT_EQ("Minimum threshold is 1 minute.",
             bad_message_observer.WaitForBadMessage());
 }
 
 TEST_F(IdleManagerTest, NotificationPermissionDisabled) {
   SetPermissionStatus(url(), blink::mojom::PermissionStatus::DENIED);
-  auto* impl = GetIdleManager();
-  auto* mock = new NiceMock<MockIdleTimeProvider>();
-  impl->SetIdleTimeProviderForTest(base::WrapUnique(mock));
-  mojo::Remote<blink::mojom::IdleManager> service_remote;
-  impl->CreateService(service_remote.BindNewPipeAndPassReceiver(), origin());
 
   MockIdleMonitor monitor;
   mojo::Receiver<blink::mojom::IdleMonitor> monitor_receiver(&monitor);
 
   // Should not start initial state of the system.
-  EXPECT_CALL(*mock, CalculateIdleTime()).Times(0);
-  EXPECT_CALL(*mock, CheckIdleStateIsLocked()).Times(0);
+  EXPECT_CALL(*idle_time_provider(), CalculateIdleTime()).Times(0);
+  EXPECT_CALL(*idle_time_provider(), CheckIdleStateIsLocked()).Times(0);
 
   base::RunLoop loop;
-
-  service_remote->AddMonitor(
-      base::TimeDelta::FromSeconds(90),
-      monitor_receiver.BindNewPipeAndPassRemote(),
-      base::BindLambdaForTesting([&](IdleManagerError error,
-                                     IdleStatePtr state) {
-        EXPECT_EQ(blink::mojom::IdleManagerError::kPermissionDisabled, error);
-        EXPECT_FALSE(state);
-        loop.Quit();
-      }));
+  service_remote_->AddMonitor(
+      kThreshold, monitor_receiver.BindNewPipeAndPassRemote(),
+      base::BindLambdaForTesting(
+          [&loop](IdleManagerError error, IdleStatePtr state) {
+            EXPECT_EQ(IdleManagerError::kPermissionDisabled, error);
+            EXPECT_FALSE(state);
+            loop.Quit();
+          }));
   loop.Run();
 }
 

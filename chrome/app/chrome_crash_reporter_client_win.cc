@@ -121,11 +121,6 @@ bool ChromeCrashReporterClient::AboutToRestart() {
   return true;
 }
 
-bool ChromeCrashReporterClient::GetDeferredUploadsSupported(
-    bool is_per_user_install) {
-  return false;
-}
-
 bool ChromeCrashReporterClient::GetIsPerUserInstall() {
   return !install_static::IsSystemInstall();
 }

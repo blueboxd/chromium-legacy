@@ -16,7 +16,7 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisabledTest;
-import org.chromium.components.heap_profiling.HeapProfilingTestShim;
+import org.chromium.components.heap_profiling.multi_process.HeapProfilingTestShim;
 
 /**
  * Tests suite for heap profiling.

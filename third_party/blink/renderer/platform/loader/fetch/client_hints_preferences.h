@@ -29,6 +29,8 @@ class PLATFORM_EXPORT ClientHintsPreferences {
     virtual ~Context() = default;
   };
 
+  enum class UpdateMode { kReplace, kMerge };
+
   ClientHintsPreferences();
 
   void UpdateFrom(const ClientHintsPreferences&);
@@ -39,6 +41,7 @@ class PLATFORM_EXPORT ClientHintsPreferences {
   // |url|, then |this| would not be updated.
   void UpdateFromAcceptClientHintsHeader(const String& header_value,
                                          const KURL&,
+                                         UpdateMode mode,
                                          Context*);
 
   bool ShouldSend(network::mojom::WebClientHintsType type) const {

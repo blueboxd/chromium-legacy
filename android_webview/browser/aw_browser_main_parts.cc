@@ -35,7 +35,7 @@
 #include "components/crash/content/browser/child_exit_observer_android.h"
 #include "components/crash/core/common/crash_key.h"
 #include "components/embedder_support/android/metrics/memory_metrics_logger.h"
-#include "components/heap_profiling/supervisor.h"
+#include "components/heap_profiling/multi_process/supervisor.h"
 #include "components/services/heap_profiling/public/cpp/settings.h"
 #include "components/user_prefs/user_prefs.h"
 #include "components/variations/variations_crash_keys.h"

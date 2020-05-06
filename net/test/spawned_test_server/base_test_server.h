@@ -60,10 +60,6 @@ class BaseTestServer {
       // CERT_AUTO causes the testserver to generate a test certificate issued
       // by "Testing CA" (see net/data/ssl/certificates/ocsp-test-root.pem).
       CERT_AUTO,
-      // As with CERT_AUTO, but the chain will include a generated intermediate
-      // as well. The testserver will include the intermediate cert in the TLS
-      // handshake.
-      CERT_AUTO_WITH_INTERMEDIATE,
 
       CERT_MISMATCHED_NAME,
       CERT_EXPIRED,
@@ -88,45 +84,6 @@ class BaseTestServer {
       // A certificate with invalid notBefore and notAfter times. Windows'
       // certificate library will not parse this certificate.
       CERT_BAD_VALIDITY,
-    };
-
-    // OCSPStatus enumerates the types of OCSP response that the testserver
-    // can produce.
-    enum OCSPStatus {
-      OCSP_OK,
-      OCSP_REVOKED,
-      OCSP_INVALID_RESPONSE,
-      OCSP_UNAUTHORIZED,
-      OCSP_UNKNOWN,
-      OCSP_INVALID_RESPONSE_DATA,
-      OCSP_TRY_LATER,
-      OCSP_MISMATCHED_SERIAL,
-    };
-
-    // OCSPDate enumerates the date ranges for OCSP responses that the
-    // testserver can produce.
-    enum OCSPDate {
-      OCSP_DATE_VALID,
-      OCSP_DATE_OLD,
-      OCSP_DATE_EARLY,
-      OCSP_DATE_LONG,
-      OCSP_DATE_LONGER,
-    };
-
-    // OCSPSingleResponse is used when specifying multiple stapled responses,
-    // each
-    // with their own CertStatus and date validity.
-    struct OCSPSingleResponse {
-      OCSPStatus status;
-      OCSPDate date;
-    };
-
-    // OCSPProduced enumerates the validity of the producedAt field in OCSP
-    // responses produced by the testserver.
-    enum OCSPProduced {
-      OCSP_PRODUCED_VALID,
-      OCSP_PRODUCED_BEFORE_CERT,
-      OCSP_PRODUCED_AFTER_CERT,
     };
 
     // Bitmask of key exchange algorithms that the test server supports and that
@@ -198,85 +155,8 @@ class BaseTestServer {
     // |server_certificate|.
     base::FilePath GetCertificateFile() const;
 
-    // GetOCSPArgument returns the value of any OCSP argument to testserver or
-    // the empty string if there is none.
-    std::string GetOCSPArgument() const;
-
-    // GetOCSPDateArgument returns the value of the OCSP date argument to
-    // testserver or the empty string if there is none.
-    std::string GetOCSPDateArgument() const;
-
-    // GetOCSPProducedArgument returns the value of the OCSP produced argument
-    // to testserver or the empty string if there is none.
-    std::string GetOCSPProducedArgument() const;
-
-    // GetOCSPIntermediateArgument returns the value of any OCSP intermediate
-    // argument to testserver or the empty string if there is none.
-    std::string GetOCSPIntermediateArgument() const;
-
-    // GetOCSPIntermediateDateArgument returns the value of the OCSP
-    // intermediate date argument to testserver or the empty string if there is
-    // none.
-    std::string GetOCSPIntermediateDateArgument() const;
-
-    // GetOCSPIntermediateProducedArgument returns the value of the OCSP
-    // intermediate produced argument to testserver or the empty string if
-    // there is none.
-    std::string GetOCSPIntermediateProducedArgument() const;
-
     // The certificate to use when serving requests.
     ServerCertificate server_certificate = CERT_OK;
-
-    // If |server_certificate==CERT_AUTO| or |CERT_AUTO_WITH_INTERMEDIATE| then
-    // this determines the type of leaf OCSP response returned. Ignored if
-    // |ocsp_responses| is non-empty.
-    OCSPStatus ocsp_status = OCSP_OK;
-
-    // If |server_certificate==CERT_AUTO| or |CERT_AUTO_WITH_INTERMEDIATE| then
-    // this determines the date range set on the leaf OCSP response returned.
-    // Ignore if |ocsp_responses| is non-empty.
-    OCSPDate ocsp_date = OCSP_DATE_VALID;
-
-    // If |server_certificate==CERT_AUTO| or |CERT_AUTO_WITH_INTERMEDIATE|,
-    // contains the status and validity for multiple stapled responeses.
-    // Overrides |ocsp_status| and |ocsp_date| when
-    // non-empty.
-    std::vector<OCSPSingleResponse> ocsp_responses;
-
-    // If |server_certificate==CERT_AUTO| or |CERT_AUTO_WITH_INTERMEDIATE| then
-    // this determines the validity of the producedAt field on the returned
-    // leaf OCSP response.
-    OCSPProduced ocsp_produced = OCSP_PRODUCED_VALID;
-
-    // If |server_certificate==CERT_AUTO_WITH_INTERMEDIATE| then this
-    // determines the type of intermediate OCSP response returned. Ignored if
-    // |ocsp_intermediate_responses| is non-empty.
-    OCSPStatus ocsp_intermediate_status = OCSP_OK;
-
-    // If |server_certificate==CERT_AUTO_WITH_INTERMEDIATE| then this
-    // determines the date range set on the intermediate OCSP response
-    // returned. Ignore if |ocsp_intermediate_responses| is non-empty.
-    OCSPDate ocsp_intermediate_date = OCSP_DATE_VALID;
-
-    // If |server_certificate==CERT_AUTO_WITH_INTERMEDIATE|, contains the
-    // status and validity for multiple stapled responeses. Overrides
-    // |ocsp_intermediate_status| and |ocsp_intermediate_date| when non-empty.
-    // TODO(mattm): testserver doesn't actually staple OCSP responses for
-    // intermediates.
-    std::vector<OCSPSingleResponse> ocsp_intermediate_responses;
-
-    // If |server_certificate==CERT_AUTO_WITH_INTERMEDIATE| then this
-    // determines the validity of the producedAt field on the returned
-    // intermediate OCSP response.
-    OCSPProduced ocsp_intermediate_produced = OCSP_PRODUCED_VALID;
-
-    // If not zero, |cert_serial| will be the serial number of the
-    // auto-generated leaf certificate when |server_certificate==CERT_AUTO|.
-    uint64_t cert_serial = 0;
-
-    // If not empty, |cert_common_name| will be the common name of the
-    // auto-generated leaf certificate when |server_certificate==CERT_AUTO|.
-    std::string cert_common_name;
 
     // True if a CertificateRequest should be sent to the client during
     // handshaking.
@@ -333,13 +213,6 @@ class BaseTestServer {
     // (Fake) SignedCertificateTimestampList (as a raw binary string) to send in
     // a TLS extension.
     std::string signed_cert_timestamps_tls_ext;
-
-    // Whether to staple the OCSP response.
-    bool staple_ocsp_response = false;
-
-    // Whether to make the OCSP server unavailable. This does not affect the
-    // stapled OCSP response.
-    bool ocsp_server_unavailable = false;
 
     // List of protocols to advertise in NPN extension.  NPN is not supported if
     // list is empty.  Note that regardless of what protocol is negotiated, the

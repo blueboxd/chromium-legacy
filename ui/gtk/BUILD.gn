@@ -72,7 +72,6 @@ jumbo_component("gtk") {
     # our own HarfBuzz avoid mixing symbols from system HarfBuzz and
     # our own through the indirect dependency to harfbuzz-ng here.
     "//build/config/linux/gtk",
-    "//chrome/browser:theme_properties",
     "//third_party:freetype_harfbuzz",
     "//ui/aura",
     "//ui/base",

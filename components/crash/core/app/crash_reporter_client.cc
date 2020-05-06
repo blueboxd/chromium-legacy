@@ -70,11 +70,6 @@ bool CrashReporterClient::AboutToRestart() {
   return false;
 }
 
-bool CrashReporterClient::GetDeferredUploadsSupported(
-    bool is_per_usr_install) {
-  return false;
-}
-
 bool CrashReporterClient::GetIsPerUserInstall() {
   return true;
 }

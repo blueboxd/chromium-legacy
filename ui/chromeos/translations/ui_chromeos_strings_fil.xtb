@@ -90,6 +90,7 @@
 <translation id="1947424002851288782">German na keyboard</translation>
 <translation id="1972984168337863910">I-expand ang mga panel ng feedback ng mga file</translation>
 <translation id="1984603991036629094">Armenian na Phonetic keyboard</translation>
+<translation id="1995337122023280937">Pumunta sa lokasyon ng file</translation>
 <translation id="2001796770603320721">Pamahalaan sa Drive</translation>
 <translation id="2009067268969781306">Kapag nag-format ng drive, made-delete ang lahat ng data na naka-store doon. Hindi puwedeng i-undo ang pagkilos na ito.</translation>
 <translation id="2028997212275086731">Archive na RAR</translation>
@@ -141,6 +142,7 @@
 <translation id="2638942478653899953">Hindi maabot ang Google Drive. Mangyaring <ph name="BEGIN_LINK" />mag-log out<ph name="END_LINK" /> at mag-log in muli.</translation>
 <translation id="2649120831653069427">Rainbowfish</translation>
 <translation id="2661146741306740526">16x9</translation>
+<translation id="2664412712123763093">Lokasyon ng file</translation>
 <translation id="2672394958563893062">May naganap na error. I-click upang magsimulang muli.</translation>
 <translation id="2676946222714718093">Nagpe-play sa</translation>
 <translation id="2735698359135166290">Romanian standard keyboard</translation>
@@ -349,6 +351,7 @@
 <translation id="5081517858322016911">Ide-delete ang <ph name="TOTAL_FILE_SIZE" /> ng mga file</translation>
 <translation id="509429900233858213">May naganap na error.</translation>
 <translation id="5098629044894065541">Hebrew</translation>
+<translation id="5112685521274804841">Read only ang mga file sa mga folder na ito. Hindi sinusuportahan ang ilang aktibidad.</translation>
 <translation id="5123433949759960244">Basketball</translation>
 <translation id="5129662217315786329">Polish</translation>
 <translation id="5144820558584035333">Hangul 3 Set (390)</translation>
@@ -699,6 +702,7 @@
 <translation id="9034924485347205037">Mga Linux file</translation>
 <translation id="9035012421917565900">Hindi na maibabalik ang mga item sa '<ph name="DESTINATION_NAME" />,' kaya hindi mo maa-undo ang pagkilos na ito.</translation>
 <translation id="9038620279323455325">Mayroon nang file na may pangalang "<ph name="FILE_NAME" />." Pumili ng ibang pangalan.</translation>
+<translation id="9062992083244091966">Para magbukas ng mga file gamit ang mga <ph name="APP_NAME" /> app, ilipat muna ang mga ito sa folder ng mga nakabahaging file ng <ph name="APP_NAME" />.</translation>
 <translation id="9064939804718829769">Naglilipat...</translation>
 <translation id="9065203028668620118">I-edit</translation>
 <translation id="9099674669267916096">Bilang ng page</translation>

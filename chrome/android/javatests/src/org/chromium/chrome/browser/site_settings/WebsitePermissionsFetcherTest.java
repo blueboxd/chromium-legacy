@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.site_settings;
 
-import static org.chromium.chrome.browser.site_settings.WebsitePreferenceBridge.SITE_WILDCARD;
+import static org.chromium.components.browser_ui.site_settings.WebsitePreferenceBridge.SITE_WILDCARD;
 
 import android.support.test.filters.SmallTest;
 import android.util.Pair;
@@ -22,6 +22,17 @@ import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.test.ChromeBrowserTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
+import org.chromium.components.browser_ui.site_settings.ChosenObjectInfo;
+import org.chromium.components.browser_ui.site_settings.ContentSettingException;
+import org.chromium.components.browser_ui.site_settings.LocalStorageInfo;
+import org.chromium.components.browser_ui.site_settings.PermissionInfo;
+import org.chromium.components.browser_ui.site_settings.SiteSettingsCategory;
+import org.chromium.components.browser_ui.site_settings.StorageInfo;
+import org.chromium.components.browser_ui.site_settings.Website;
+import org.chromium.components.browser_ui.site_settings.WebsiteAddress;
+import org.chromium.components.browser_ui.site_settings.WebsitePermissionsFetcher;
+import org.chromium.components.browser_ui.site_settings.WebsitePreferenceBridge;
+import org.chromium.components.browser_ui.site_settings.WebsitePreferenceBridgeJni;
 import org.chromium.components.content_settings.ContentSettingValues;
 import org.chromium.components.content_settings.ContentSettingsType;
 import org.chromium.components.embedder_support.browser_context.BrowserContextHandle;

@@ -76,6 +76,8 @@ class CONTENT_EXPORT AppCacheDatabase {
     CacheRecord(const CacheRecord& other);
     ~CacheRecord();
 
+    bool HasValidOriginTrialToken();
+
     int64_t cache_id = 0;
     int64_t group_id = 0;
     bool online_wildcard = false;

@@ -37,6 +37,9 @@ namespace chromeos {
 
 namespace {
 
+// TODO(kimjae): Delete and remove usages once system_api is uprev'ed.
+const char kGetExistingDlcsMethod[] = "GetExistingDlcs";
+
 DlcserviceClient* g_instance = nullptr;
 
 class DlcserviceErrorResponseHandler {
@@ -196,6 +199,26 @@ class DlcserviceClientImpl : public DlcserviceClient {
     dlcservice_proxy_->CallMethodWithErrorResponse(
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
         base::BindOnce(&DlcserviceClientImpl::OnGetInstalled,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+  }
+
+  void GetExistingDlcs(GetExistingDlcsCallback callback) override {
+    if (!service_available_ || task_running_) {
+      EnqueueTask(base::BindOnce(&DlcserviceClientImpl::GetExistingDlcs,
+                                 weak_ptr_factory_.GetWeakPtr(),
+                                 std::move(callback)));
+      return;
+    }
+
+    TaskStarted();
+    // TODO(kimjae): Use |kGetExistingDlcsMethod| once system_api is uprev'ed.
+    dbus::MethodCall method_call(dlcservice::kDlcServiceInterface,
+                                 kGetExistingDlcsMethod);
+
+    VLOG(1) << "Requesting to get existing DLC(s).";
+    dlcservice_proxy_->CallMethodWithErrorResponse(
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::BindOnce(&DlcserviceClientImpl::OnGetExistingDlcs,
                        weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
@@ -387,6 +410,21 @@ class DlcserviceClientImpl : public DlcserviceClient {
       std::move(callback).Run(
           DlcserviceErrorResponseHandler(err_response).get_err(),
           dlcservice::DlcModuleList());
+    }
+    CheckAndRunPendingTask();
+  }
+
+  void OnGetExistingDlcs(GetExistingDlcsCallback callback,
+                         dbus::Response* response,
+                         dbus::ErrorResponse* err_response) {
+    dlcservice::DlcsWithContent dlcs_with_content;
+    if (response && dbus::MessageReader(response).PopArrayOfBytesAsProto(
+                        &dlcs_with_content)) {
+      std::move(callback).Run(dlcservice::kErrorNone, dlcs_with_content);
+    } else {
+      std::move(callback).Run(
+          DlcserviceErrorResponseHandler(err_response).get_err(),
+          dlcservice::DlcsWithContent());
     }
     CheckAndRunPendingTask();
   }

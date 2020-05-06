@@ -4,6 +4,9 @@
 
 #include "chrome/browser/chromeos/printing/automatic_usb_printer_configurer.h"
 
+#include <string>
+#include <utility>
+
 #include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/stl_util.h"
@@ -95,8 +98,7 @@ void AutomaticUsbPrinterConfigurer::OnSetupComplete(const Printer& printer,
     LOG(ERROR) << "Unable to autoconfigure usb printer " << printer.id();
     return;
   }
-  installation_manager_->PrinterInstalled(
-      printer, /*is_automatic=*/true, PrinterSetupSource::kAutoUsbConfigurer);
+  installation_manager_->PrinterInstalled(printer, /*is_automatic=*/true);
   PrinterConfigurer::RecordUsbPrinterSetupSource(
       UsbPrinterSetupSource::kAutoconfigured);
   CompleteConfiguration(printer);

@@ -3864,10 +3864,10 @@ test("unit_tests") {
       "../browser/omnibox/suggestions/autocomplete_mediator_unittest.cc",
       "../browser/omnibox/suggestions/base/base_suggestion_processor_unittest.cc",
       "../browser/omnibox/suggestions/basic/basic_suggestion_processor_unittest.cc",
+      "../browser/omnibox/suggestions/cached_zero_suggestions_manager_unittest.cc",
       "../browser/omnibox/suggestions/clipboard/clipboard_suggestion_processor_unittest.cc",
       "../browser/omnibox/suggestions/editurl/edit_url_suggestions_unittest.cc",
       "../browser/omnibox/suggestions/entity/entity_suggestions_processor_unittest.cc",
-      "../browser/omnibox/suggestions/omnibox_suggestion_unittest.cc",
       "../browser/optimization_guide/android/optimization_guide_bridge_unittest.cc",
       "../browser/page_load_metrics/observers/android_page_load_metrics_observer_unittest.cc",
       "../browser/partnercustomizations/partner_browser_customizations_unittest.cc",
@@ -6195,18 +6195,29 @@ if (is_android) {
   android_library("sync_integration_test_support_java") {
     testonly = true
     deps = [
+      "//base:base_java",
+      "//base:jni_java",
       "//chrome/android:chrome_all_java",
       "//chrome/test/android:chrome_java_test_support",
       "//components/signin/public/android:java",
+      "//components/sync:sync_java_test_support",
+      "//components/sync/android:sync_java",
       "//content/public/test/android:content_java_test_support",
+      "//third_party/android_deps:androidx_annotation_annotation_java",
       "//third_party/junit",
     ]
-    sources = [ "../android/javatests/src/org/chromium/chrome/browser/sync/SyncTestSigninUtils.java" ]
+    sources = [
+      "../android/javatests/src/org/chromium/chrome/browser/sync/AndroidSyncSettingsTestUtils.java",
+      "../android/javatests/src/org/chromium/chrome/browser/sync/SyncTestSigninUtils.java",
+    ]
   }
 
   generate_jni("sync_integration_test_support_jni_headers") {
     testonly = true
-    sources = [ "../android/javatests/src/org/chromium/chrome/browser/sync/SyncTestSigninUtils.java" ]
+    sources = [
+      "../android/javatests/src/org/chromium/chrome/browser/sync/AndroidSyncSettingsTestUtils.java",
+      "../android/javatests/src/org/chromium/chrome/browser/sync/SyncTestSigninUtils.java",
+    ]
   }
 }
 
@@ -6310,8 +6321,8 @@ if (!is_fuchsia) {
       sources += [
         "../browser/sync/test/integration/sync_signin_delegate_android.cc",
         "../browser/sync/test/integration/sync_signin_delegate_android.h",
-        "../browser/sync/test/integration/sync_test_signin_utils_android.cc",
-        "../browser/sync/test/integration/sync_test_signin_utils_android.h",
+        "../browser/sync/test/integration/sync_test_utils_android.cc",
+        "../browser/sync/test/integration/sync_test_utils_android.h",
       ]
     }
     public_deps = [ "//chrome/browser" ]

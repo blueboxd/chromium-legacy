@@ -9,6 +9,7 @@ import android.app.Activity;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.help.HelpAndFeedback;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.components.browser_ui.site_settings.SiteSettingsHelpClient;
 
 /**
  * A SiteSettingsHelpClient instance that provides Chrome-specific help functionality.

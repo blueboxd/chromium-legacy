@@ -61,7 +61,6 @@ source_set("renderers") {
   if (is_fuchsia) {
     deps += [ "//fuchsia/engine:switches" ]
   }
-
   configs += [
     "//media:subcomponent_config",
 
@@ -99,8 +98,14 @@ source_set("unit_tests") {
     "//ui/gl:test_support",
   ]
   if (is_win) {
-    sources += [ "win/media_foundation_renderer_unittest.cc" ]
-    deps += [ "//media/renderers:media_foundation_renderer" ]
+    sources += [
+      "win/media_foundation_renderer_integration_test.cc",
+      "win/media_foundation_renderer_unittest.cc",
+    ]
+    deps += [
+      "//media/renderers:media_foundation_renderer",
+      "//media/test:pipeline_integration_test_base",
+    ]
   }
 }
 

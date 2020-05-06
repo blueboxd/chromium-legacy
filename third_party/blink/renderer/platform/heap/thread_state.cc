@@ -1675,9 +1675,6 @@ void ThreadState::CollectAllGarbageForTesting(BlinkGC::StackState stack_state) {
   size_t previous_live_objects = 0;
   for (int i = 0; i < 5; ++i) {
     if (isolate_) {
-      forced_unified_heap_gc_for_testing_ = true;
-      unified_heap_forced_gc_params_.reason =
-          BlinkGC::GCReason::kUnifiedHeapForcedForTestingGC;
       unified_heap_controller()->GarbageCollectionForTesting(
           stack_state == BlinkGC::kNoHeapPointersOnStack
               ? v8::EmbedderHeapTracer::EmbedderStackState::kEmpty

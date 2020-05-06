@@ -33,6 +33,7 @@
 <translation id="1208340532756947324">Chcete-li synchronizovat a přizpůsobit různá zařízení, zapněte synchronizaci</translation>
 <translation id="1209206284964581585">Prozatím skrýt</translation>
 <translation id="1227058898775614466">Historie navigace</translation>
+<translation id="1229399675748764149">Nastavte si tuto stránku jako domovskou</translation>
 <translation id="1231733316453485619">Zapnout synchronizaci?</translation>
 <translation id="123724288017357924">Obnovit stránku a ignorovat obsah v mezipaměti</translation>
 <translation id="124116460088058876">Další jazyky</translation>
@@ -71,6 +72,7 @@
 <translation id="1513352483775369820">Záložky a webová historie</translation>
 <translation id="1513858653616922153">Vymazat heslo</translation>
 <translation id="1521774566618522728">Aktivní dnes</translation>
+<translation id="1543538514740974167">Rychlejší přístup</translation>
 <translation id="1544826120773021464">Chcete-li spravovat svůj účet Google, klepněte na tlačítko Spravovat účet</translation>
 <translation id="1549000191223877751">Přejít do jiného okna</translation>
 <translation id="1553358976309200471">Aktualizovat Chrome</translation>
@@ -723,11 +725,13 @@ Některé weby mohou například na tento požadavek reagovat tak, že vám zobr
 <translation id="7022756207310403729">Otevřít v prohlížeči</translation>
 <translation id="702463548815491781">Doporučeno, když je zapnuta funkce TalkBack nebo přístup pomocí přepínačů</translation>
 <translation id="7029809446516969842">Hesla</translation>
+<translation id="703523980599857277">Změnit domovskou stránku</translation>
 <translation id="7055152154916055070">Bylo zablokováno přesměrování:</translation>
 <translation id="7063006564040364415">K synchronizačnímu serveru se nelze připojit.</translation>
 <translation id="7071521146534760487">Spravovat účet</translation>
 <translation id="7077143737582773186">SD karta</translation>
 <translation id="7121362699166175603">Vymaže historii a automatická dokončení v adresním řádku. Na stránce <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> mohou být k dispozici další druhy historie prohlížení zaznamenané ve vašem účtu Google.</translation>
+<translation id="7128355412245153445">Své oblíbené weby a aktuální zprávy můžete mít k dispozici po klepnutí na tlačítko domovské stránky</translation>
 <translation id="7138678301420049075">Ostatní</translation>
 <translation id="7146622961999026732">Tyto weby a aplikace jsou pro vás zřejmě důležité:</translation>
 <translation id="7149158118503947153"><ph name="BEGIN_LINK" />Načíst původní stránku<ph name="END_LINK" /> z domény <ph name="DOMAIN_NAME" /></translation>
@@ -968,11 +972,13 @@ Některé weby mohou například na tento požadavek reagovat tak, že vám zobr
 <translation id="9155898266292537608">Hledat můžete také rychlým klepnutím na slovo</translation>
 <translation id="9169507124922466868">Historie navigace je otevřená na půlce</translation>
 <translation id="9204836675896933765">Zbývá 1 soubor</translation>
+<translation id="9205796607887024517">Zde můžete ovládat své zprávy</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="9209888181064652401">Nelze uskutečňovat hovory</translation>
 <translation id="9219103736887031265">Obrázky</translation>
 <translation id="926205370408745186">Odstranit vaši aktivitu v Chromu z digitální rovnováhy</translation>
 <translation id="932327136139879170">Domovská stránka</translation>
+<translation id="93753284658583800">Domovská stránka se změnila</translation>
 <translation id="938850635132480979">Chyba: <ph name="ERROR_CODE" /></translation>
 <translation id="95817756606698420">Chrome může v Číně k vyhledávání používat službu <ph name="BEGIN_BOLD" />Sogou<ph name="END_BOLD" />. Tuto volbu můžete změnit v <ph name="BEGIN_LINK" />Nastavení<ph name="END_LINK" />.</translation>
 <translation id="968900484120156207">Zde se zobrazují navštívené stránky</translation>

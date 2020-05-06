@@ -90,7 +90,6 @@
 <translation id="4165986682804962316">साइट सेटिङहरू</translation>
 <translation id="4226663524361240545">सूचनाहरूले गर्दा यन्त्र कम्पन गर्न सक्छ</translation>
 <translation id="4259722352634471385">नेभिगेशन रोकियो: <ph name="URL" /></translation>
-<translation id="4275663329226226506">मिडिया</translation>
 <translation id="4278390842282768270">अनुमति प्राप्त</translation>
 <translation id="4433925000917964731">Google ले प्रदान गरेको मूल पृष्ठको लाइट संस्करण</translation>
 <translation id="4434045419905280838">पपअप तथा रिडिरेक्टहरू</translation>
@@ -101,7 +100,6 @@
 <translation id="4645575059429386691">तपाईँको अविभावक द्वारा प्रबन्ध गरिएको</translation>
 <translation id="4670064810192446073">भर्चुअल रियालिटी</translation>
 <translation id="4751476147751820511">गति वा प्रकाशसम्बन्धी सेन्सरहरू</translation>
-<translation id="4759238208242260848">डाउनलोडहरू</translation>
 <translation id="4883854917563148705">व्यवस्थित सेटिङ रिसेट गर्न सकिँदैन</translation>
 <translation id="4887024562049524730">साइटहरूलाई भर्चुअल रियालिटी चल्ने तपाईंको यन्त्र र त्यसमा भएको डेटा प्रयोग गर्न अनुमति दिनुअघि सोध्नुहोस् (सिफारिस गरिएको)</translation>
 <translation id="4962975101802056554">यन्त्रका सबै अनुमतिहरू फिर्ता लिनुहोस्</translation>
@@ -211,7 +209,7 @@
 <translation id="8380167699614421159">यो साइटले हस्तक्षेपकारी वा भ्रामक विज्ञापनहरू देखाउँछ</translation>
 <translation id="8394832520002899662">साइटमा फर्कन ट्याप गर्नुहोस्</translation>
 <translation id="8447861592752582886">यन्त्र सम्बन्धी अनुमतिलाई उल्टाउनुहोस्</translation>
-<translation id="8463851957836045671">साइट छिटो लोड हुन्छ</translation>
+<translation id="8463851957836045671">साइट द्रूत छ</translation>
 <translation id="851751545965956758">साइटहरूलाई यन्त्रमा जडान गर्नबाट रोक लगाउनुहोस्</translation>
 <translation id="857943718398505171">(सिफारिस गरिएको) अनुमति दिएको</translation>
 <translation id="8609465669617005112">माथि सार्नुहोस्</translation>
@@ -225,7 +223,7 @@
 <translation id="8847988622838149491">USB</translation>
 <translation id="885701979325669005">भण्डारण</translation>
 <translation id="8926666909099850184">यो यन्त्रमा NFC निष्क्रिय पारिएको छ। <ph name="BEGIN_LINK" />Android का सेटिङ<ph name="END_LINK" /> मा गई यसलाई सक्रिय गर्नुहोस्।</translation>
-<translation id="8929372349074745002">यो साइट धेरै जसो मान्छेका यन्त्रमा छिट्टै खुल्छ र यसले चाँडै प्रतिक्रिया दिन्छ</translation>
+<translation id="8929372349074745002">यो साइट धेरै जसो मान्छेका यन्त्रमा छिट्टै खुल्छ</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8958424370300090006">कुनै खास साइटमा कुकीहरूलाई रोक लगाउनुहोस्।</translation>
 <translation id="8959122750345127698">नेभिगेशन पहुँचयोग्य छैन: <ph name="URL" /></translation>

@@ -835,7 +835,7 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
 
       I modelli con formato errato verranno ignorati.</translation>
 <translation id="2345547870894930157">Attiva DNS over HTTPS senza fallback non sicuro</translation>
-<translation id="2353442107789326507">Elenco di impostazioni per i servizi dei connettori di Chrome Enterprise da applicare al connettore di Enterprise <ph name="ON_FILE_ATTACHED_ENTERPRISE_CONNECTOR" />, che si attiva quando un file viene allegato a Chrome.
+<translation id="2353442107789326507">Elenco di impostazioni per i servizi di Chrome Enterprise Connectors da applicare al connettore di Enterprise <ph name="ON_FILE_ATTACHED_ENTERPRISE_CONNECTOR" />, che si attiva quando un file viene allegato a Chrome.
 
       I campi <ph name="ENTERPRISE_CONNECTOR_URL_LIST_FIELD" />, <ph name="ENTERPRISE_CONNECTOR_TAGS_FIELD" />, <ph name="ENTERPRISE_CONNECTOR_ENABLE_FIELD" /> e <ph name="ENTERPRISE_CONNECTOR_DISABLE_FIELD" /> vengono utilizzati per stabilire se il connettore deve inviare un file per l'analisi quando viene allegato a una pagina specifica e quali tag includere nella richiesta di analisi di tale file. Un tag che corrisponde a un pattern "enable" verrà incluso nella richiesta di analisi se l'URL della pagina corrisponde a un pattern associato a tale tag finché nessun pattern "disable" con lo stesso tag corrisponde all'URL della pagina. L'analisi viene eseguita se almeno un tag deve essere incluso nella richiesta.
 
@@ -2740,7 +2740,7 @@ Se questa norma non viene impostata viene utilizzata la riga di comando predefin
 
           Se questa norma non è impostata, gli utenti potranno scegliere le impostazioni proxy autonomamente.</translation>
 <translation id="5177260184597743704">Criterio di configurazione per il connettore OnSecurityEvent di Chrome Enterprise</translation>
-<translation id="5179734767316042713">Elenco di impostazioni per i servizi dei connettori di Chrome Enterprise da applicare al connettore di Enterprise <ph name="ON_SECURITY_EVENT_ENTERPRISE_CONNECTOR" />, che si attiva quando si verifica un evento di sicurezza in Chrome. Sono inclusi risultati negativi dei connettori di Enterprise di analisi, riutilizzo delle password, visite di pagine non sicure e altre azioni dell'utente critiche dal punto di vista della sicurezza.
+<translation id="5179734767316042713">Elenco di impostazioni per i servizi di Chrome Enterprise Connectors da applicare al connettore di Enterprise <ph name="ON_SECURITY_EVENT_ENTERPRISE_CONNECTOR" />, che si attiva quando si verifica un evento di sicurezza in Chrome. Sono inclusi risultati negativi dei connettori di Enterprise di analisi, riutilizzo delle password, visite di pagine non sicure e altre azioni dell'utente critiche dal punto di vista della sicurezza.
 
       Il campo <ph name="ENTERPRISE_CONNECTOR_SERVICE_PROVIDER_FIELD" /> identifica il fornitore di servizi di rapporto a cui corrispondono le impostazioni.
 
@@ -3731,13 +3731,13 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
 <translation id="6553143066970470539">Percentuale di luminosità dello schermo</translation>
 <translation id="6559057113164934677">Non consentire ad alcun sito di accedere alla fotocamera e al microfono</translation>
 <translation id="6561396069801924653">Mostra le opzioni di accessibilità nel menu della barra delle applicazioni di sistema</translation>
-<translation id="6561900678873266853">Elenco di impostazioni per i servizi dei connettori di Chrome Enterprise da applicare al connettore di Enterprise <ph name="ON_BULK_DATA_ENTRY_ENTERPRISE_CONNECTOR" />, che si attiva quando vengono inseriti dati in Chrome dagli appunti o tramite trascinamento di contenuti web.
+<translation id="6561900678873266853">Elenco di impostazioni per i servizi di Chrome Enterprise Connectors da applicare al connettore di Enterprise <ph name="ON_BULK_DATA_ENTRY_ENTERPRISE_CONNECTOR" />, che si attiva quando vengono inseriti dati in Chrome dagli appunti o tramite trascinamento di contenuti web.
 
       I campi <ph name="ENTERPRISE_CONNECTOR_URL_LIST_FIELD" />, <ph name="ENTERPRISE_CONNECTOR_TAGS_FIELD" />, <ph name="ENTERPRISE_CONNECTOR_ENABLE_FIELD" /> e <ph name="ENTERPRISE_CONNECTOR_DISABLE_FIELD" /> vengono utilizzati per stabilire se il connettore deve inviare dati per l'analisi quando vengono inseriti in una pagina specifica e quali tag includere nella richiesta di analisi di tali dati. Un tag che corrisponde a un pattern "enable" verrà incluso nella richiesta di analisi se l'URL della pagina corrisponde a un pattern associato a tale tag finché nessun pattern "disable" con lo stesso tag corrisponde all'URL della pagina. L'analisi viene eseguita se almeno un tag deve essere incluso nella richiesta.
 
       Il campo <ph name="ENTERPRISE_CONNECTOR_SERVICE_PROVIDER_FIELD" /> identifica il fornitore di servizi di analisi a cui corrispondono le impostazioni.
 
-      Se il campo <ph name="ENTERPRISE_CONNECTOR_BLOCK_UNTIL_VERDICT_FIELD" /> viene impostato su 1, Chrome attende di ricevere una risposta dal servizio di analisi prima di concedere alla pagina l'accesso ai dati. Con qualsiasi altro valore intero, Chrome concede immediatamente l'accesso ai dati.
+      Se il campo <ph name="ENTERPRISE_CONNECTOR_BLOCK_UNTIL_VERDICT_FIELD" /> viene impostato su 1, Chrome attende di ricevere una risposta dal servizio di analisi prima di concedere alla pagina l'accesso ai dati. Con qualsiasi altro valore intero, Chrome concede immediatamente alla pagina l'accesso ai dati.
 
       Questo criterio può essere impostato solo dalla Console di amministrazione Google.</translation>
 <translation id="6563458316362153786">Attiva 802.11r Fast Transition</translation>
@@ -4365,7 +4365,7 @@ Se l'impostazione viene disattivata, questa funzione non sarà disponibile.</tra
       Se il dispositivo dell'utente è gestito, la disponibilità di questa funzionalità dipende anche dai criteri relativi ai dispositivi corrispondenti.
 
       Se il dispositivo dell'utente non è gestito, la disponibilità di questa funzionalità dipende anche dal fatto che l'utente sia o meno il proprietario del dispositivo.</translation>
-<translation id="7570291542739287032">Solo cloud</translation>
+<translation id="7570291542739287032">Solo Google Cloud</translation>
 <translation id="757395965347379751">Quando questa impostazione è attivata, <ph name="PRODUCT_NAME" /> consente l'utilizzo dei certificati SHA-1 firmati che sono convalidati e concatenati a certificati CA installati localmente.
 
       Considera che questa norma dipende dallo stack di verifica dei certificati del sistema operativo che autorizza le firme SHA-1. Se un aggiornamento del sistema operativo modifica la gestione dei certificati SHA-1 da parte del sistema operativo, la norma potrebbe non essere più valida. Inoltre, questa norma è da considerarsi come soluzione alternativa temporanea per concedere alle aziende più tempo per l'abbandono della crittografia SHA-1. Questa norma verrà rimossa il 1° gennaio 2019 o intorno a quella data.

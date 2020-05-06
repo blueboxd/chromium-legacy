@@ -33,6 +33,7 @@
 <translation id="1208340532756947324">Activa a sincronización para personalizar todos os teus dispositivos e sincronizalos</translation>
 <translation id="1209206284964581585">Ocultar por agora</translation>
 <translation id="1227058898775614466">Historial de navegación</translation>
+<translation id="1229399675748764149">Fai que esta sexa a túa páxina de inicio</translation>
 <translation id="1231733316453485619">Queres activar a sincronización?</translation>
 <translation id="123724288017357924">Cargar a páxina, ignorando o contido da caché</translation>
 <translation id="124116460088058876">Máis idiomas</translation>
@@ -71,6 +72,7 @@
 <translation id="1513352483775369820">Marcadores e historial web</translation>
 <translation id="1513858653616922153">Eliminar contrasinal</translation>
 <translation id="1521774566618522728">Dispositivo activo hoxe</translation>
+<translation id="1543538514740974167">Accede aquí máis rápido</translation>
 <translation id="1544826120773021464">Para xestionar a túa conta de Google, toca o botón Xestionar conta</translation>
 <translation id="1549000191223877751">Mover a outra ventá</translation>
 <translation id="1553358976309200471">Actualizar Chrome</translation>
@@ -723,13 +725,15 @@ Por exemplo, algúns sitios web poden responder a esta solicitude mostrándoche 
 <translation id="7022756207310403729">Abrir no navegador</translation>
 <translation id="702463548815491781">Recoméndase cando están activadas as funcións TalkBack ou Acceso con interruptores</translation>
 <translation id="7029809446516969842">Contrasinais</translation>
+<translation id="703523980599857277">Cambiar páxina de inicio</translation>
 <translation id="7055152154916055070">Bloqueouse unha redirección:</translation>
 <translation id="7063006564040364415">Non se puido conectar co servidor de sincronización.</translation>
 <translation id="7071521146534760487">Xestiona a conta</translation>
 <translation id="7077143737582773186">Tarxeta SD</translation>
 <translation id="7121362699166175603">Borra o historial e os completados automáticos na barra de enderezos. É posible que a túa conta de Google teña outras formas do historial de navegación en <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
+<translation id="7128355412245153445">Consulta os teus sitios principais e as túas historias recentes sempre que toques o botón de inicio</translation>
 <translation id="7138678301420049075">Outros</translation>
-<translation id="7146622961999026732">Estes sitios e aplicacións parecen importantes para ti</translation>
+<translation id="7146622961999026732">Estes sitios e aplicacións parecen importantes para ti:</translation>
 <translation id="7149158118503947153"><ph name="BEGIN_LINK" />Cargar páxina orixinal<ph name="END_LINK" /> desde <ph name="DOMAIN_NAME" /></translation>
 <translation id="7149893636342594995">Últimas 24 horas</translation>
 <translation id="7173114856073700355">Abrir Configuración</translation>
@@ -968,11 +972,13 @@ Por exemplo, algúns sitios web poden responder a esta solicitude mostrándoche 
 <translation id="9155898266292537608">Tamén podes realizar buscas con só tocar rapidamente unha palabra</translation>
 <translation id="9169507124922466868">O historial de navegación abriuse ata a metade</translation>
 <translation id="9204836675896933765">Queda 1 ficheiro</translation>
+<translation id="9205796607887024517">Controla as túas historias aquí</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="9209888181064652401">Non se pode realizar chamadas</translation>
 <translation id="9219103736887031265">Imaxes</translation>
 <translation id="926205370408745186">Quitar a túa actividade de Chrome de Benestar dixital</translation>
 <translation id="932327136139879170">Inicio</translation>
+<translation id="93753284658583800">A páxina de inicio cambiou</translation>
 <translation id="938850635132480979">Erro: <ph name="ERROR_CODE" /></translation>
 <translation id="95817756606698420">Chrome pode utilizar <ph name="BEGIN_BOLD" />Sogou<ph name="END_BOLD" /> para a busca en China. Podes cambiar esta opción en <ph name="BEGIN_LINK" />Configuración<ph name="END_LINK" />.</translation>
 <translation id="968900484120156207">As páxinas que visites aparecerán aquí</translation>

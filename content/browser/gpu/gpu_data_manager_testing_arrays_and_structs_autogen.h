@@ -20,16 +20,18 @@ const int kFeatureListForGpuManagerTestingEntry1[1] = {
 
 const GpuControlList::More kMoreForEntry1_572251052 = {
     GpuControlList::kGLTypeNone,  // gl_type
-    {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical, nullptr,
-     nullptr},  // gl_version
-    {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical, nullptr,
+    {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical,
+     GpuControlList::kVersionSchemaCommon, nullptr, nullptr},  // gl_version
+    {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical,
+     GpuControlList::kVersionSchemaCommon, nullptr,
      nullptr},  // pixel_shader_version
     false,      // in_process_gpu
     0,          // gl_reset_notification_strategy
-    {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical, nullptr,
+    {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical,
+     GpuControlList::kVersionSchemaCommon, nullptr,
      nullptr},  // direct_rendering_version
-    {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical, nullptr,
-     nullptr},                  // gpu_count
+    {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical,
+     GpuControlList::kVersionSchemaCommon, nullptr, nullptr},  // gpu_count
     GpuControlList::kDontCare,  // hardware_overlay
     0,                          // test_group
     GpuControlList::kDontCare,  // subpixel_font_rendering
@@ -48,16 +50,18 @@ const GpuControlList::GLStrings kGLStringsForGpuManagerTestingEntry2 = {
 
 const GpuControlList::More kMoreForEntry2_572251052 = {
     GpuControlList::kGLTypeNone,  // gl_type
-    {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical, nullptr,
-     nullptr},  // gl_version
-    {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical, nullptr,
+    {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical,
+     GpuControlList::kVersionSchemaCommon, nullptr, nullptr},  // gl_version
+    {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical,
+     GpuControlList::kVersionSchemaCommon, nullptr,
      nullptr},  // pixel_shader_version
     false,      // in_process_gpu
     0,          // gl_reset_notification_strategy
-    {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical, nullptr,
+    {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical,
+     GpuControlList::kVersionSchemaCommon, nullptr,
      nullptr},  // direct_rendering_version
-    {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical, nullptr,
-     nullptr},                  // gpu_count
+    {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical,
+     GpuControlList::kVersionSchemaCommon, nullptr, nullptr},  // gpu_count
     GpuControlList::kDontCare,  // hardware_overlay
     0,                          // test_group
     GpuControlList::kDontCare,  // subpixel_font_rendering
@@ -69,16 +73,18 @@ const int kFeatureListForGpuManagerTestingEntry3[1] = {
 
 const GpuControlList::More kMoreForEntry3_572251052 = {
     GpuControlList::kGLTypeNone,  // gl_type
-    {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical, nullptr,
-     nullptr},  // gl_version
-    {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical, nullptr,
+    {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical,
+     GpuControlList::kVersionSchemaCommon, nullptr, nullptr},  // gl_version
+    {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical,
+     GpuControlList::kVersionSchemaCommon, nullptr,
      nullptr},  // pixel_shader_version
     false,      // in_process_gpu
     0,          // gl_reset_notification_strategy
-    {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical, nullptr,
+    {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical,
+     GpuControlList::kVersionSchemaCommon, nullptr,
      nullptr},  // direct_rendering_version
-    {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical, nullptr,
-     nullptr},                  // gpu_count
+    {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical,
+     GpuControlList::kVersionSchemaCommon, nullptr, nullptr},  // gpu_count
     GpuControlList::kDontCare,  // hardware_overlay
     0,                          // test_group
     GpuControlList::kDontCare,  // subpixel_font_rendering
@@ -98,16 +104,18 @@ const GpuControlList::GLStrings kGLStringsForGpuManagerTestingEntry4 = {
 
 const GpuControlList::More kMoreForEntry4_572251052 = {
     GpuControlList::kGLTypeNone,  // gl_type
-    {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical, nullptr,
-     nullptr},  // gl_version
-    {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical, nullptr,
+    {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical,
+     GpuControlList::kVersionSchemaCommon, nullptr, nullptr},  // gl_version
+    {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical,
+     GpuControlList::kVersionSchemaCommon, nullptr,
      nullptr},  // pixel_shader_version
     false,      // in_process_gpu
     0,          // gl_reset_notification_strategy
-    {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical, nullptr,
+    {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical,
+     GpuControlList::kVersionSchemaCommon, nullptr,
      nullptr},  // direct_rendering_version
-    {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical, nullptr,
-     nullptr},                  // gpu_count
+    {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical,
+     GpuControlList::kVersionSchemaCommon, nullptr, nullptr},  // gpu_count
     GpuControlList::kDontCare,  // hardware_overlay
     0,                          // test_group
     GpuControlList::kDontCare,  // subpixel_font_rendering
@@ -119,16 +127,18 @@ const int kFeatureListForGpuManagerTestingEntry5[1] = {
 
 const GpuControlList::More kMoreForEntry5_572251052 = {
     GpuControlList::kGLTypeNone,  // gl_type
-    {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical, nullptr,
-     nullptr},  // gl_version
-    {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical, nullptr,
+    {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical,
+     GpuControlList::kVersionSchemaCommon, nullptr, nullptr},  // gl_version
+    {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical,
+     GpuControlList::kVersionSchemaCommon, nullptr,
      nullptr},  // pixel_shader_version
     false,      // in_process_gpu
     0,          // gl_reset_notification_strategy
-    {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical, nullptr,
+    {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical,
+     GpuControlList::kVersionSchemaCommon, nullptr,
      nullptr},  // direct_rendering_version
-    {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical, nullptr,
-     nullptr},                  // gpu_count
+    {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical,
+     GpuControlList::kVersionSchemaCommon, nullptr, nullptr},  // gpu_count
     GpuControlList::kDontCare,  // hardware_overlay
     0,                          // test_group
     GpuControlList::kDontCare,  // subpixel_font_rendering
@@ -144,16 +154,18 @@ const GpuControlList::GLStrings kGLStringsForGpuManagerTestingEntry5Exception0 =
 
 const GpuControlList::More kMoreForEntry5_572251052Exception0 = {
     GpuControlList::kGLTypeNone,  // gl_type
-    {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical, nullptr,
-     nullptr},  // gl_version
-    {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical, nullptr,
+    {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical,
+     GpuControlList::kVersionSchemaCommon, nullptr, nullptr},  // gl_version
+    {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical,
+     GpuControlList::kVersionSchemaCommon, nullptr,
      nullptr},  // pixel_shader_version
     false,      // in_process_gpu
     0,          // gl_reset_notification_strategy
-    {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical, nullptr,
+    {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical,
+     GpuControlList::kVersionSchemaCommon, nullptr,
      nullptr},  // direct_rendering_version
-    {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical, nullptr,
-     nullptr},                  // gpu_count
+    {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical,
+     GpuControlList::kVersionSchemaCommon, nullptr, nullptr},  // gpu_count
     GpuControlList::kDontCare,  // hardware_overlay
     0,                          // test_group
     GpuControlList::kDontCare,  // subpixel_font_rendering
@@ -178,16 +190,18 @@ const int kFeatureListForGpuManagerTestingEntry6[14] = {
 
 const GpuControlList::More kMoreForEntry6_572251052 = {
     GpuControlList::kGLTypeNone,  // gl_type
-    {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical, nullptr,
-     nullptr},  // gl_version
-    {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical, nullptr,
+    {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical,
+     GpuControlList::kVersionSchemaCommon, nullptr, nullptr},  // gl_version
+    {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical,
+     GpuControlList::kVersionSchemaCommon, nullptr,
      nullptr},  // pixel_shader_version
     false,      // in_process_gpu
     0,          // gl_reset_notification_strategy
-    {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical, nullptr,
+    {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical,
+     GpuControlList::kVersionSchemaCommon, nullptr,
      nullptr},  // direct_rendering_version
-    {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical, nullptr,
-     nullptr},                  // gpu_count
+    {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical,
+     GpuControlList::kVersionSchemaCommon, nullptr, nullptr},  // gpu_count
     GpuControlList::kDontCare,  // hardware_overlay
     0,                          // test_group
     GpuControlList::kDontCare,  // subpixel_font_rendering
@@ -199,16 +213,18 @@ const int kFeatureListForGpuManagerTestingEntry7[1] = {
 
 const GpuControlList::More kMoreForEntry7_572251052 = {
     GpuControlList::kGLTypeNone,  // gl_type
-    {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical, nullptr,
-     nullptr},  // gl_version
-    {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical, nullptr,
+    {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical,
+     GpuControlList::kVersionSchemaCommon, nullptr, nullptr},  // gl_version
+    {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical,
+     GpuControlList::kVersionSchemaCommon, nullptr,
      nullptr},  // pixel_shader_version
     false,      // in_process_gpu
     0,          // gl_reset_notification_strategy
-    {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical, nullptr,
+    {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical,
+     GpuControlList::kVersionSchemaCommon, nullptr,
      nullptr},  // direct_rendering_version
-    {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical, nullptr,
-     nullptr},                  // gpu_count
+    {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical,
+     GpuControlList::kVersionSchemaCommon, nullptr, nullptr},  // gpu_count
     GpuControlList::kDontCare,  // hardware_overlay
     0,                          // test_group
     GpuControlList::kDontCare,  // subpixel_font_rendering

@@ -54,7 +54,7 @@ android_apk("webview_instrumentation_apk") {
     "//android_webview:platform_service_bridge_upstream_implementation_java",
     "//base:base_java",
     "//base:base_java_test_support",
-    "//components/heap_profiling:heap_profiling_java_test_support",
+    "//components/heap_profiling/multi_process:heap_profiling_java_test_support",
     "//components/policy/android:policy_java_test_support",
     "//content/public/android:content_java",
     "//third_party/android_support_test_runner:runner_java",
@@ -144,7 +144,7 @@ shared_library("libstandalonelibwebviewchromium") {
     "//android_webview/nonembedded",
     "//android_webview/public",
     "//base",
-    "//components/heap_profiling:test_support",
+    "//components/heap_profiling/multi_process:test_support",
     "//content/public/test/android:content_native_test_support",
   ]
   configs -= [ "//build/config/android:hide_all_but_jni_onload" ]

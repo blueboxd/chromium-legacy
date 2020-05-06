@@ -676,7 +676,8 @@ void PageInfo::ComputeUIInputs(const GURL& url) {
         // This string is shown on all non-error HTTPS sites on Android when
         // the user taps "Details" link on page info.
         identity_status_description_android_.assign(l10n_util::GetStringFUTF16(
-            IDS_PAGE_INFO_SECURE_IDENTITY_VERIFIED, issuer_name));
+            IDS_PAGE_INFO_SECURE_IDENTITY_VERIFIED,
+            delegate_->GetClientApplicationName(), issuer_name));
 #endif
       }
       if (security_state::IsSHA1InChain(visible_security_state)) {

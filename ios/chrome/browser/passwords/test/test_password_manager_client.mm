@@ -9,6 +9,7 @@
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
+#include "components/safe_browsing/core/common/safe_browsing_prefs.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -30,6 +31,8 @@ TestPasswordManagerClient::TestPasswordManagerClient()
       password_manager::prefs::kWasAutoSignInFirstRunExperienceShown, true);
   prefs_->registry()->RegisterBooleanPref(
       password_manager::prefs::kPasswordLeakDetectionEnabled, true);
+  prefs_->registry()->RegisterBooleanPref(::prefs::kSafeBrowsingEnabled, true);
+  prefs_->registry()->RegisterBooleanPref(::prefs::kSafeBrowsingEnhanced, true);
 }
 
 TestPasswordManagerClient::~TestPasswordManagerClient() = default;

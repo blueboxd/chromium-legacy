@@ -38,6 +38,9 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/page_info/page_info_infobar_delegate.h"
+#else
+#include "chrome/grit/chromium_strings.h"
+#include "ui/base/l10n/l10n_util.h"
 #endif
 
 ChromePageInfoDelegate::ChromePageInfoDelegate(
@@ -192,6 +195,12 @@ ChromePageInfoDelegate::GetTabSpecificContentSettingsDelegate() {
       web_contents_);
   return std::move(delegate);
 }
+
+#if defined(OS_ANDROID)
+const base::string16 ChromePageInfoDelegate::GetClientApplicationName() {
+  return l10n_util::GetStringUTF16(IDS_PRODUCT_NAME);
+}
+#endif
 
 void ChromePageInfoDelegate::SetSecurityStateForTests(
     security_state::SecurityLevel security_level,

@@ -13,6 +13,13 @@
 #include "content/public/browser/browser_main_parts.h"
 #include "content/public/common/main_function_params.h"
 #include "content/shell/browser/shell_browser_context.h"
+#include "ui/base/buildflags.h"
+
+#if BUILDFLAG(USE_GTK)
+namespace ui {
+class GtkUiDelegate;
+}
+#endif
 
 namespace content {
 
@@ -26,6 +33,7 @@ class ShellBrowserMainParts : public BrowserMainParts {
   int PreCreateThreads() override;
   void PreMainMessageLoopStart() override;
   void PostMainMessageLoopStart() override;
+  void ToolkitInitialized() override;
   void PreMainMessageLoopRun() override;
   bool MainMessageLoopRun(int* result_code) override;
   void PreDefaultMainMessageLoopRun(base::OnceClosure quit_closure) override;
@@ -56,6 +64,10 @@ class ShellBrowserMainParts : public BrowserMainParts {
   // For running content_browsertests.
   const MainFunctionParams parameters_;
   bool run_message_loop_;
+
+#if BUILDFLAG(USE_GTK)
+  std::unique_ptr<ui::GtkUiDelegate> gtk_ui_delegate_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(ShellBrowserMainParts);
 };

@@ -33,6 +33,7 @@
 <translation id="1208340532756947324">要在您的所有设备上保持同步并进行个性化设置，请开启同步功能</translation>
 <translation id="1209206284964581585">暂时隐藏</translation>
 <translation id="1227058898775614466">导航历史记录</translation>
+<translation id="1229399675748764149">将此页面设为您的主页</translation>
 <translation id="1231733316453485619">开启同步功能？</translation>
 <translation id="123724288017357924">重新加载当前网页（忽略缓存的内容）</translation>
 <translation id="124116460088058876">更多语言</translation>
@@ -71,6 +72,7 @@
 <translation id="1513352483775369820">书签和网络历史记录</translation>
 <translation id="1513858653616922153">删除密码</translation>
 <translation id="1521774566618522728">今天曾有活动</translation>
+<translation id="1543538514740974167">更快速地转到此处</translation>
 <translation id="1544826120773021464">要管理您的 Google 帐号，请点按“管理帐号”按钮</translation>
 <translation id="1549000191223877751">移至其他窗口</translation>
 <translation id="1553358976309200471">更新 Chrome</translation>
@@ -723,11 +725,13 @@
 <translation id="7022756207310403729">在浏览器中打开</translation>
 <translation id="702463548815491781">建议在开启 TalkBack 或“开关控制”时使用</translation>
 <translation id="7029809446516969842">密码</translation>
+<translation id="703523980599857277">更改主页</translation>
 <translation id="7055152154916055070">已禁止重定向：</translation>
 <translation id="7063006564040364415">无法连接到同步服务器。</translation>
 <translation id="7071521146534760487">管理帐号</translation>
 <translation id="7077143737582773186">SD 卡</translation>
 <translation id="7121362699166175603">清除历史记录和地址栏中的自动填充项。您的 Google 帐号在 <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> 上可能有其他形式的浏览记录。</translation>
+<translation id="7128355412245153445">只需点击“主页”按钮，即可查看您所在国家/地区的热门网站和近期报道</translation>
 <translation id="7138678301420049075">其他</translation>
 <translation id="7146622961999026732">这些网站和应用似乎对您很重要：</translation>
 <translation id="7149158118503947153">从 <ph name="DOMAIN_NAME" /> <ph name="BEGIN_LINK" />加载原始网页<ph name="END_LINK" /></translation>
@@ -968,11 +972,13 @@
 <translation id="9155898266292537608">您也可以通过快速点按某个字词进行搜索</translation>
 <translation id="9169507124922466868">导航历史记录在下半屏中显示</translation>
 <translation id="9204836675896933765">还剩 1 个文件</translation>
+<translation id="9205796607887024517">在此处控制您的报道</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="9209888181064652401">无法致电</translation>
 <translation id="9219103736887031265">图片</translation>
 <translation id="926205370408745186">从“数字健康”应用中移除您的 Chrome 活动记录</translation>
 <translation id="932327136139879170">首页</translation>
+<translation id="93753284658583800">主页已更改</translation>
 <translation id="938850635132480979">错误：<ph name="ERROR_CODE" /></translation>
 <translation id="95817756606698420">在中国，Chrome 可以使用<ph name="BEGIN_BOLD" />搜狗<ph name="END_BOLD" />作为搜索引擎。如果需要，您可以在<ph name="BEGIN_LINK" />设置<ph name="END_LINK" />中进行更改。</translation>
 <translation id="968900484120156207">您访问的网页会显示在此处</translation>

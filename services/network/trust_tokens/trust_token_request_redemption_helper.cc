@@ -23,19 +23,43 @@
 
 namespace network {
 
+namespace {
+
+base::Value CreateLogValue(base::StringPiece outcome) {
+  base::Value ret(base::Value::Type::DICTIONARY);
+  ret.SetStringKey("outcome", outcome);
+  return ret;
+}
+
+// Define convenience aliases for the NetLogEventTypes for brevity.
+enum NetLogOp { kBegin, kFinalize };
+void LogOutcome(const net::NetLogWithSource& log,
+                NetLogOp begin_or_finalize,
+                base::StringPiece outcome) {
+  log.EndEvent(
+      begin_or_finalize == kBegin
+          ? net::NetLogEventType::TRUST_TOKEN_OPERATION_BEGIN_REDEMPTION
+          : net::NetLogEventType::TRUST_TOKEN_OPERATION_FINALIZE_REDEMPTION,
+      [outcome]() { return CreateLogValue(outcome); });
+}
+
+}  // namespace
+
 TrustTokenRequestRedemptionHelper::TrustTokenRequestRedemptionHelper(
     SuitableTrustTokenOrigin top_level_origin,
     mojom::TrustTokenRefreshPolicy refresh_policy,
     TrustTokenStore* token_store,
     const TrustTokenKeyCommitmentGetter* key_commitment_getter,
     std::unique_ptr<KeyPairGenerator> key_pair_generator,
-    std::unique_ptr<Cryptographer> cryptographer)
+    std::unique_ptr<Cryptographer> cryptographer,
+    net::NetLogWithSource net_log)
     : top_level_origin_(top_level_origin),
       refresh_policy_(refresh_policy),
       token_store_(token_store),
       key_commitment_getter_(std::move(key_commitment_getter)),
       key_pair_generator_(std::move(key_pair_generator)),
-      cryptographer_(std::move(cryptographer)) {
+      cryptographer_(std::move(cryptographer)),
+      net_log_(std::move(net_log)) {
   DCHECK(token_store_);
   DCHECK(key_commitment_getter_);
   DCHECK(key_pair_generator_);
@@ -53,8 +77,12 @@ void TrustTokenRequestRedemptionHelper::Begin(
          IsOriginPotentiallyTrustworthy(*request->initiator()))
       << *request->initiator();
 
+  net_log_.BeginEvent(
+      net::NetLogEventType::TRUST_TOKEN_OPERATION_BEGIN_REDEMPTION);
+
   issuer_ = SuitableTrustTokenOrigin::Create(request->url());
   if (!issuer_) {
+    LogOutcome(net_log_, kBegin, "Unsuitable issuer URL (request destination)");
     std::move(done).Run(mojom::TrustTokenOperationStatus::kInvalidArgument);
     return;
   }
@@ -62,11 +90,13 @@ void TrustTokenRequestRedemptionHelper::Begin(
   if (refresh_policy_ == mojom::TrustTokenRefreshPolicy::kRefresh &&
       (!request->initiator() ||
        !request->initiator()->IsSameOriginWith(*issuer_))) {
+    LogOutcome(net_log_, kBegin, "Refresh from non-issuer context");
     std::move(done).Run(mojom::TrustTokenOperationStatus::kFailedPrecondition);
     return;
   }
 
   if (!token_store_->SetAssociation(*issuer_, top_level_origin_)) {
+    LogOutcome(net_log_, kBegin, "Couldn't set issuer-toplevel association");
     std::move(done).Run(mojom::TrustTokenOperationStatus::kResourceExhausted);
     return;
   }
@@ -74,6 +104,7 @@ void TrustTokenRequestRedemptionHelper::Begin(
   if (refresh_policy_ == mojom::TrustTokenRefreshPolicy::kUseCached &&
       token_store_->RetrieveNonstaleRedemptionRecord(*issuer_,
                                                      top_level_origin_)) {
+    LogOutcome(net_log_, kBegin, "Signed redemption record cache hit");
     std::move(done).Run(mojom::TrustTokenOperationStatus::kAlreadyExists);
     return;
   }
@@ -89,6 +120,7 @@ void TrustTokenRequestRedemptionHelper::OnGotKeyCommitment(
     base::OnceCallback<void(mojom::TrustTokenOperationStatus)> done,
     mojom::TrustTokenKeyCommitmentResultPtr commitment_result) {
   if (!commitment_result) {
+    LogOutcome(net_log_, kBegin, "No keys for issuer");
     std::move(done).Run(mojom::TrustTokenOperationStatus::kFailedPrecondition);
     return;
   }
@@ -99,6 +131,7 @@ void TrustTokenRequestRedemptionHelper::OnGotKeyCommitment(
 
   base::Optional<TrustToken> maybe_token_to_redeem = RetrieveSingleToken();
   if (!maybe_token_to_redeem) {
+    LogOutcome(net_log_, kBegin, "No tokens to redeem");
     std::move(done).Run(mojom::TrustTokenOperationStatus::kResourceExhausted);
     return;
   }
@@ -107,11 +140,16 @@ void TrustTokenRequestRedemptionHelper::OnGotKeyCommitment(
       !cryptographer_->Initialize(
           commitment_result->batch_size->value,
           commitment_result->signed_redemption_record_verification_key)) {
+    LogOutcome(net_log_, kBegin,
+               "Internal error initializing BoringSSL redemption state "
+               "(possibly due to malformed SRR key or bad batch size)");
     std::move(done).Run(mojom::TrustTokenOperationStatus::kInternalError);
     return;
   }
 
   if (!key_pair_generator_->Generate(&signing_key_, &verification_key_)) {
+    LogOutcome(net_log_, kBegin,
+               "Internal error generating SRR-bound key pair");
     std::move(done).Run(mojom::TrustTokenOperationStatus::kInternalError);
     return;
   }
@@ -121,6 +159,7 @@ void TrustTokenRequestRedemptionHelper::OnGotKeyCommitment(
                                       top_level_origin_);
 
   if (!maybe_redemption_header) {
+    LogOutcome(net_log_, kBegin, "Internal error beginning redemption");
     std::move(done).Run(mojom::TrustTokenOperationStatus::kInternalError);
     return;
   }
@@ -138,6 +177,7 @@ void TrustTokenRequestRedemptionHelper::OnGotKeyCommitment(
 
   token_store_->DeleteToken(*issuer_, *maybe_token_to_redeem);
 
+  LogOutcome(net_log_, kBegin, "Success");
   std::move(done).Run(mojom::TrustTokenOperationStatus::kOk);
 }
 
@@ -147,6 +187,8 @@ void TrustTokenRequestRedemptionHelper::Finalize(
   // Numbers 1-4 below correspond to the lines of the "Process a redemption
   // response" pseudocode from the design doc.
 
+  net_log_.BeginEvent(
+      net::NetLogEventType::TRUST_TOKEN_OPERATION_FINALIZE_REDEMPTION);
   DCHECK(response);
 
   // A response headers object should be present on all responses for
@@ -161,6 +203,7 @@ void TrustTokenRequestRedemptionHelper::Finalize(
   // if any.
   if (!response->headers->EnumerateHeader(
           /*iter=*/nullptr, kTrustTokensSecTrustTokenHeader, &header_value)) {
+    LogOutcome(net_log_, kFinalize, "Response missing Trust Tokens header");
     std::move(done).Run(mojom::TrustTokenOperationStatus::kBadResponse);
     return;
   }
@@ -178,6 +221,7 @@ void TrustTokenRequestRedemptionHelper::Finalize(
   if (!maybe_signed_redemption_record) {
     // The response was rejected by the underlying cryptographic library as
     // malformed or otherwise invalid.
+    LogOutcome(net_log_, kFinalize, "SRR validation failed");
     std::move(done).Run(mojom::TrustTokenOperationStatus::kBadResponse);
     return;
   }
@@ -191,8 +235,8 @@ void TrustTokenRequestRedemptionHelper::Finalize(
   token_store_->SetRedemptionRecord(*issuer_, top_level_origin_,
                                     std::move(record_to_store));
 
+  LogOutcome(net_log_, kFinalize, "Success");
   std::move(done).Run(mojom::TrustTokenOperationStatus::kOk);
-  return;
 }
 
 base::Optional<TrustToken>

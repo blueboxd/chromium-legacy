@@ -77,10 +77,10 @@ InstallationMetrics::InstallationMetrics(
       timer_(std::move(timer)) {
   timer_->Start(
       FROM_HERE, kInstallationTimeout,
-      base::BindOnce(&InstallationMetrics::OnForceInstallationFinished,
+      base::BindOnce(&InstallationMetrics::OnForceInstalledExtensionsLoaded,
                      base::Unretained(this)));
-  if (tracker_->IsComplete())
-    OnForceInstallationFinished();
+  if (tracker_->IsDoneLoading())
+    OnForceInstalledExtensionsLoaded();
   else
     tracker_observer_.Add(tracker_);
 }
@@ -297,7 +297,7 @@ void InstallationMetrics::ReportMetrics() {
       non_misconfigured_failure_occurred);
 }
 
-void InstallationMetrics::OnForceInstallationFinished() {
+void InstallationMetrics::OnForceInstalledExtensionsLoaded() {
   if (reported_)
     return;
   // Report only if there was non-empty list of force-installed extensions.

@@ -169,8 +169,7 @@ bool FakeSignalStrategy::SendStanza(std::unique_ptr<jingle_xmpp::XmlElement> sta
 }
 
 bool FakeSignalStrategy::SendMessage(
-    const ftl::Id& destination_id,
-    const std::string& destination_registration_id,
+    const SignalingAddress& destination_address,
     const ftl::ChromotingMessage& message) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   NOTIMPLEMENTED();

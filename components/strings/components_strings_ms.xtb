@@ -52,7 +52,6 @@
 <translation id="1197088940767939838">Oren</translation>
 <translation id="1201402288615127009">Seterusnya</translation>
 <translation id="1201895884277373915">Lagi dari tapak ini</translation>
-<translation id="1205963431094182634">Log masuk untuk menggunakan kata laluan yang disimpan dalam akaun Google anda</translation>
 <translation id="1206967143813997005">Tandatangan awal tidak sah</translation>
 <translation id="1209206284964581585">Sorok sementara</translation>
 <translation id="121201262018556460">Anda cuba untuk mencapai <ph name="DOMAIN" /> , tetapi pelayan memberi sijil yang mengandungi kunci yang lemah, Penyerang mungkin telah merosakkan kunci peribadi dan pelayan tersebut mungkin bukan pelayan yang anda jangkakan (anda mungkin berkomunikasi dengan penyerang).</translation>
@@ -1218,7 +1217,6 @@ Jika tidak, ini akan disekat oleh tetapan privasi anda. Kebenaran ini akan membo
 <translation id="6116338172782435947">Lihat teks dan imej yang disalin ke papan keratan</translation>
 <translation id="6120179357481664955">Ingat ID UPI anda?</translation>
 <translation id="6124432979022149706">Chrome Enterprise Connectors</translation>
-<translation id="6135641591018127088">Gunakan akaun Google anda untuk menghasilkan kata laluan kukuh</translation>
 <translation id="6146055958333702838">Periksa mana-mana kabel dan but semula mana-mana penghala, modem atau peranti
     rangkaian lain yang mungkin anda gunakan.</translation>
 <translation id="614940544461990577">Cuba:</translation>
@@ -1264,7 +1262,6 @@ Jika tidak, ini akan disekat oleh tetapan privasi anda. Kebenaran ini akan membo
 <translation id="6328639280570009161">Cuba lumpuhkan ramalan rangkaian</translation>
 <translation id="6328784461820205019">"Sambungan anda tidak peribadi" atau "&lt;span class="error-code"&gt;NET::ERR_CERT_AUTHORITY_INVALID&lt;/span&gt;" atau "&lt;span class="error-code"&gt;ERR_CERT_COMMON_NAME_INVALID&lt;/span&gt;" atau "&lt;span class="error-code"&gt;NET::ERR_CERT_WEAK_SIGNATURE_ALGORITHM&lt;/span&gt;" atau "&lt;span class="error-code"&gt;ERR_CERT_SYMANTEC_LEGACY&lt;/span&gt;" atau "Ralat sijil SSL"</translation>
 <translation id="6328786501058569169">Tapak ini mengelirukan</translation>
-<translation id="6333334544069706521">Gunakan kata laluan yang disimpan dalam akaun Google anda</translation>
 <translation id="6337133576188860026">Mengosongkan kurang daripada <ph name="SIZE" />. Sesetengah tapak mungkin dimuatkan dengan lebih perlahan pada lawatan anda yang seterusnya.</translation>
 <translation id="6337534724793800597">Tapis dasar mengikut nama</translation>
 <translation id="6353505687280762741">{COUNT,plural, =0{Tiada}=1{1 kata laluan (untuk <ph name="DOMAIN_LIST" />, disegerakkan)}=2{2 kata laluan (untuk <ph name="DOMAIN_LIST" />, disegerakkan)}other{# kata laluan (untuk <ph name="DOMAIN_LIST" />, disegerakkan)}}</translation>

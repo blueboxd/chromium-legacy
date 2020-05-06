@@ -9,6 +9,8 @@
 
 namespace blink {
 
+class HeapObjectHeader;
+
 // Marking verifier that checks that a child is marked if its parent is marked.
 class MarkingVerifier final : public Visitor {
  public:

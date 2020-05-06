@@ -22,7 +22,6 @@ class TileServiceImpl : public TileService {
  public:
   TileServiceImpl(std::unique_ptr<ImageLoader> image_loader,
                   std::unique_ptr<TileManager> tile_manager,
-                  std::unique_ptr<TileConfig> config,
                   background_task::BackgroundTaskScheduler* scheduler,
                   std::unique_ptr<TileFetcher> tile_fetcher);
   ~TileServiceImpl() override;
@@ -57,9 +56,6 @@ class TileServiceImpl : public TileService {
 
   // Manages in memory tile group and coordinates with TileStore.
   std::unique_ptr<TileManager> tile_manager_;
-
-  // Config for the feature.
-  std::unique_ptr<TileConfig> config_;
 
   // Background task scheduler, obtained from native
   // BackgroundTaskSchedulerFactory.

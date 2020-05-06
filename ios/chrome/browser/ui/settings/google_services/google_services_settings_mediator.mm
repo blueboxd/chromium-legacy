@@ -713,13 +713,15 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
 // Returns a boolean indicating if the switch should appear as "On" or "Off"
 // based on the sync preference and the sign in status.
 - (BOOL)passwordLeakCheckItemOnState {
-  return [self.passwordLeakCheckEnabled value] && self.isAuthenticated;
+  return self.safeBrowsingPreference.value &&
+         self.passwordLeakCheckEnabled.value && self.isAuthenticated;
 }
 
 // Updates the detail text and on state of the leak check item based on the
 // state.
 - (void)updateLeakCheckItem {
-  self.passwordLeakCheckItem.enabled = self.isAuthenticated;
+  self.passwordLeakCheckItem.enabled =
+      self.isAuthenticated && self.safeBrowsingPreference.value;
   self.passwordLeakCheckItem.on = [self passwordLeakCheckItemOnState];
 
   if (!self.isAuthenticated && self.passwordLeakCheckEnabled.value) {
@@ -765,6 +767,7 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
       break;
     case SafeBrowsingItemType:
       self.safeBrowsingPreference.value = value;
+      [self updateLeakCheckItemAndReload];
       break;
     case ImproveChromeItemType:
       self.sendDataUsagePreference.value = value;

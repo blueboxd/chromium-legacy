@@ -101,6 +101,7 @@ PhysicsBasedFlingCurve::PhysicsBasedFlingCurve(
       bezier_(p1_.x(), p1_.y(), p2_.x(), p2_.y()),
       previous_time_delta_(base::TimeDelta()) {
   DCHECK(!velocity.IsZero());
+  CHECK(!std::isnan(velocity.x()) && !std::isnan(velocity.y()));
 }
 
 PhysicsBasedFlingCurve::~PhysicsBasedFlingCurve() = default;

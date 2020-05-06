@@ -52,7 +52,6 @@
 <translation id="1197088940767939838">Портокалова</translation>
 <translation id="1201402288615127009">Следно</translation>
 <translation id="1201895884277373915">Повеќе од оваа локација</translation>
-<translation id="1205963431094182634">Најавете се за да користите лозинки складирани во вашата сметка на Google</translation>
 <translation id="1206967143813997005">Лош почетен потпис</translation>
 <translation id="1209206284964581585">Сокриј засега</translation>
 <translation id="121201262018556460">Се обидовте да стигнете до <ph name="DOMAIN" />, но серверот прикажа сертификат што содржи слаб клуч. Напаѓач може го расипал приватниот клуч, па серверот може не е серверот што го очекувавте (можеби комуницирате со напаѓач).</translation>
@@ -1217,7 +1216,6 @@
 <translation id="6116338172782435947">гледа текст и слики копирани на привремената меморија</translation>
 <translation id="6120179357481664955">Да се запомни ID за UPI?</translation>
 <translation id="6124432979022149706">Chrome Enterprise Connectors</translation>
-<translation id="6135641591018127088">Користете ја сметката на Google за да генерирате силна лозинка</translation>
 <translation id="6146055958333702838">Проверете ги каблите и рестартирајте ги рутерите, модемите или другите мрежни
         уреди што ги користите.</translation>
 <translation id="614940544461990577">Обидете се:</translation>
@@ -1263,7 +1261,6 @@
 <translation id="6328639280570009161">Обидете се да го оневозможите мрежното предвидување</translation>
 <translation id="6328784461820205019">„Врската не е приватна“ или „&lt;span class="error-code"&gt;NET::ERR_CERT_AUTHORITY_INVALID&lt;/span&gt;“ или „&lt;span class="error-code"&gt;ERR_CERT_COMMON_NAME_INVALID&lt;/span&gt;“ или „&lt;span class="error-code"&gt;NET::ERR_CERT_WEAK_SIGNATURE_ALGORITHM&lt;/span&gt;“ или „&lt;span class="error-code"&gt;ERR_CERT_SYMANTEC_LEGACY&lt;/span&gt;“ или „Грешка со SSL-сертификатот“</translation>
 <translation id="6328786501058569169">Сајтов е лажен</translation>
-<translation id="6333334544069706521">Користете лозинки складирани во вашата сметка на Google</translation>
 <translation id="6337133576188860026">Ќе ослободи помалку од <ph name="SIZE" />. Некои сајтови може да се вчитуваат побавно при вашата следна посета.</translation>
 <translation id="6337534724793800597">Филтрирај правила по име</translation>
 <translation id="6353505687280762741">{COUNT,plural, =0{Ниедна}=1{1 лозинка (за <ph name="DOMAIN_LIST" />, синхронизирана)}=2{2 лозинка (за <ph name="DOMAIN_LIST" />, синхронизирани)}one{# лозинка (за <ph name="DOMAIN_LIST" />, синхронизирани)}other{# лозинки (за <ph name="DOMAIN_LIST" />, синхронизирани)}}</translation>

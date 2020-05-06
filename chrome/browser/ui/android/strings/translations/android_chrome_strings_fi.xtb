@@ -33,6 +33,7 @@
 <translation id="1208340532756947324">Ota synkronointi käyttöön, niin sisältö synkronoidaan ja yksilöidään eri laitteilla</translation>
 <translation id="1209206284964581585">Piilota toistaiseksi</translation>
 <translation id="1227058898775614466">Navigointihistoria</translation>
+<translation id="1229399675748764149">Tee tästä etusivusi</translation>
 <translation id="1231733316453485619">Otetaanko synkronointi käyttöön?</translation>
 <translation id="123724288017357924">Päivitä nykyinen sivu, ohita välimuistin sisältö</translation>
 <translation id="124116460088058876">Lisää kieliä</translation>
@@ -71,6 +72,7 @@
 <translation id="1513352483775369820">Kirjanmerkit ja verkkohistoria</translation>
 <translation id="1513858653616922153">Poista salasana</translation>
 <translation id="1521774566618522728">Aktiivinen tänään</translation>
+<translation id="1543538514740974167">Tule tänne nopeammin</translation>
 <translation id="1544826120773021464">Voit ylläpitää Google-tiliäsi napauttamalla Ylläpidä tiliä ‑painiketta</translation>
 <translation id="1549000191223877751">Siirrä toiseen ikkunaan</translation>
 <translation id="1553358976309200471">Päivitä Chrome</translation>
@@ -723,11 +725,13 @@ Jotkin verkkosivustot voivat vastata tähän pyyntöön esimerkiksi näyttämäl
 <translation id="7022756207310403729">Avaa selaimessa</translation>
 <translation id="702463548815491781">Suositellaan käytettäväksi, kun TalkBack tai Kytkimen käyttö on päällä</translation>
 <translation id="7029809446516969842">Salasanat</translation>
+<translation id="703523980599857277">Vaihda etusivua</translation>
 <translation id="7055152154916055070">Uudelleenohjaus estetty:</translation>
 <translation id="7063006564040364415">Synkronointipalvelimeen ei saada yhteyttä.</translation>
 <translation id="7071521146534760487">Hallinnoi tiliä</translation>
 <translation id="7077143737582773186">Secure Digital</translation>
 <translation id="7121362699166175603">Tyhjentää historian ja osoitekentän automaattiset täydennykset. Google-tililläsi voi olla muita selaushistoriatietoja osoitteessa <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
+<translation id="7128355412245153445">Näet suosituimmat sivustosi ja tuoreet jutut napauttaessasi aloitusnäyttöpainiketta</translation>
 <translation id="7138678301420049075">Muu</translation>
 <translation id="7146622961999026732">Nämä sivustot ja sovellukset vaikuttavat olevan tärkeitä sinulle:</translation>
 <translation id="7149158118503947153"><ph name="BEGIN_LINK" />Lataa alkuperäinen sivu<ph name="END_LINK" /> osoitteesta <ph name="DOMAIN_NAME" /></translation>
@@ -968,11 +972,13 @@ Jotkin verkkosivustot voivat vastata tähän pyyntöön esimerkiksi näyttämäl
 <translation id="9155898266292537608">Voit hakea myös napauttamalla sanaa nopeasti.</translation>
 <translation id="9169507124922466868">Navigointihistoria on puoliksi auki</translation>
 <translation id="9204836675896933765">1 tiedosto jäljellä</translation>
+<translation id="9205796607887024517">Muuta juttujesi asetuksia täältä</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="9209888181064652401">Puheluiden soittaminen ei onnistu</translation>
 <translation id="9219103736887031265">Kuvat</translation>
 <translation id="926205370408745186">Poista Chrome-toimintasi Digitaalisesta hyvinvoinnista</translation>
 <translation id="932327136139879170">Etusivu</translation>
+<translation id="93753284658583800">Etusivu muutettu</translation>
 <translation id="938850635132480979">(Virhe: <ph name="ERROR_CODE" />)</translation>
 <translation id="95817756606698420">Chrome voi käyttää <ph name="BEGIN_BOLD" />Sogouta<ph name="END_BOLD" /> hakujen tekemiseen Kiinassa. Voit muokata tätä <ph name="BEGIN_LINK" />Asetuksissa<ph name="END_LINK" />.</translation>
 <translation id="968900484120156207">Avaamasi sivut näkyvät tässä</translation>

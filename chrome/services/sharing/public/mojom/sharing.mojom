@@ -4,6 +4,7 @@
 
 module sharing.mojom;
 
+import "chrome/services/sharing/public/mojom/nearby_connections.mojom";
 import "chrome/services/sharing/public/mojom/webrtc.mojom";
 import "services/network/public/mojom/p2p.mojom";
 import "services/network/public/mojom/mdns_responder.mojom";
@@ -28,4 +29,16 @@ interface Sharing {
       pending_remote<network.mojom.P2PSocketManager> socket_manager,
       pending_remote<network.mojom.MdnsResponder> mdns_responder,
       array<IceServer> ice_servers);
+
+  // Creates a new Nearby Connections stack. All dependencies are provided via
+  // the |host| interface at runtime to allow dynamic capabilities like adding
+  // bluetooth adapters without restarting the service. Closing the |host| or
+  // the returned |connections| interface destroys the stack. Calling this
+  // method with an existing instance of the stack shuts down the previous one
+  // and creates a new one.
+  CreateNearbyConnections(
+      pending_remote<location.nearby.connections.mojom.NearbyConnectionsHost>
+          host)
+      => (pending_remote<location.nearby.connections.mojom.NearbyConnections>
+              connections);
 };

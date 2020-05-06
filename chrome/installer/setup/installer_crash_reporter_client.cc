@@ -70,12 +70,6 @@ bool InstallerCrashReporterClient::AboutToRestart() {
   return false;
 }
 
-bool InstallerCrashReporterClient::GetDeferredUploadsSupported(
-    bool is_per_user_install) {
-  // Copy Chrome's impl?
-  return false;
-}
-
 bool InstallerCrashReporterClient::GetIsPerUserInstall() {
   return is_per_user_install_;
 }

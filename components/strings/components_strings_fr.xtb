@@ -52,7 +52,6 @@
 <translation id="1197088940767939838">Orange</translation>
 <translation id="1201402288615127009">Suivant</translation>
 <translation id="1201895884277373915">Plus de résultats pour ce site</translation>
-<translation id="1205963431094182634">Connectez-vous pour utiliser les mots de passe enregistrés dans votre compte Google</translation>
 <translation id="1206967143813997005">Signature initiale incorrecte</translation>
 <translation id="1209206284964581585">Masquer pour le moment</translation>
 <translation id="121201262018556460">Vous avez tenté d'accéder à <ph name="DOMAIN" />, mais le serveur a présenté un certificat contenant une clé faible. Il est possible qu'un pirate ait compromis la clé privée. Il est donc possible que le serveur auquel vous avez accédé ne soit pas celui que vous croyez, et que vous soyez en train de communiquer avec un pirate informatique.</translation>
@@ -1206,7 +1205,6 @@ Par défaut, ce type d'accès est bloqué par vos paramètres de confidentialit�
 <translation id="6116338172782435947">Voir le texte et les images copiés dans le presse-papiers</translation>
 <translation id="6120179357481664955">Souhaitez-vous mémoriser votre ID UPI ?</translation>
 <translation id="6124432979022149706">Connecteurs Chrome Enterprise</translation>
-<translation id="6135641591018127088">Utiliser votre compte Google pour générer un mot de passe sécurisé</translation>
 <translation id="6146055958333702838">Vérifiez les câbles et redémarrez votre routeur, votre modem
     ou tout autre périphérique réseau utilisé.</translation>
 <translation id="614940544461990577">Voici quelques conseils :</translation>
@@ -1252,7 +1250,6 @@ Par défaut, ce type d'accès est bloqué par vos paramètres de confidentialit�
 <translation id="6328639280570009161">Essayez de désactiver la prédiction réseau</translation>
 <translation id="6328784461820205019">"Votre connexion n'est pas privée", "&lt;span class="error-code"&gt;NET::ERR_CERT_AUTHORITY_INVALID&lt;/span&gt;", "&lt;span class="error-code"&gt;ERR_CERT_COMMON_NAME_INVALID&lt;/span&gt;", "&lt;span class="error-code"&gt;NET::ERR_CERT_WEAK_SIGNATURE_ALGORITHM&lt;/span&gt;", "&lt;span class="error-code"&gt;ERR_CERT_SYMANTEC_LEGACY&lt;/span&gt;" ou "Erreur de certificat SSL"</translation>
 <translation id="6328786501058569169">Ce site est trompeur</translation>
-<translation id="6333334544069706521">Utiliser un mot de passe enregistré dans votre compte Google</translation>
 <translation id="6337133576188860026">Libère moins de <ph name="SIZE" />. Le chargement de certains sites risque d'être plus lent lors de votre prochaine visite.</translation>
 <translation id="6337534724793800597">Filtrer les règles par nom</translation>
 <translation id="6353505687280762741">{COUNT,plural, =0{Aucun}=1{1 mot de passe (associé à <ph name="DOMAIN_LIST" /> ; synchronisé)}=2{2 mots de passe (associés à <ph name="DOMAIN_LIST" /> ; synchronisés)}one{# mot de passe (associé à <ph name="DOMAIN_LIST" /> ; synchronisé)}other{# mots de passe (associés à <ph name="DOMAIN_LIST" /> ; synchronisés)}}</translation>

@@ -125,10 +125,9 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoCableDiscovery
   void StopAdvertisements(base::OnceClosure callback);
   void OnAdvertisementsStopped(base::OnceClosure callback);
   void CableDeviceFound(BluetoothAdapter* adapter, BluetoothDevice* device);
-  void ConductEncryptionHandshake(std::unique_ptr<FidoCableDevice> cable_device,
-                                  Result discovery_data);
+  void ConductEncryptionHandshake(FidoCableHandshakeHandler* handshake_handler,
+                                  CableDiscoveryData::Version cable_version);
   void ValidateAuthenticatorHandshakeMessage(
-      std::unique_ptr<FidoCableDevice> cable_device,
       CableDiscoveryData::Version cable_version,
       FidoCableHandshakeHandler* handshake_handler,
       base::Optional<std::vector<uint8_t>> handshake_response);
@@ -175,8 +174,9 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoCableDiscovery
   std::map<CableEidArray, scoped_refptr<BluetoothAdvertisement>>
       advertisements_;
 
-  std::vector<std::unique_ptr<FidoCableHandshakeHandler>>
-      cable_handshake_handlers_;
+  std::vector<std::pair<std::unique_ptr<FidoCableDevice>,
+                        std::unique_ptr<FidoCableHandshakeHandler>>>
+      active_handshakes_;
   base::Optional<
       base::RepeatingCallback<void(std::unique_ptr<CableDiscoveryData>)>>
       pairing_callback_;

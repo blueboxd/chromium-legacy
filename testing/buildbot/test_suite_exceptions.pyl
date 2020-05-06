@@ -1172,6 +1172,22 @@
       },
     },
   },
+  'gpu_unittests': {
+    'modifications': {
+      'Fuchsia ARM64': {
+        'args': [
+          # https://crbug.com/1058247
+          '--child-arg=--ozone-platform=headless',
+        ],
+      },
+      'fuchsia-fyi-arm64-rel': {
+        'args': [
+          # https://crbug.com/1058247
+          '--child-arg=--ozone-platform=headless',
+        ],
+      },
+    },
+  },
   'hardware_accelerated_feature_tests': {
     # TODO(https://crbug.com/850107): Remove the Android FYI Release (Pixel 2)
     # exception once there is enough capacity to run these tests.
@@ -1330,6 +1346,13 @@
   },
   'media_unittests': {
     'modifications': {
+      'Fuchsia ARM64': {
+        'args': [
+          # https://crbug.com/1058247
+          '--child-arg=--ozone-platform=headless',
+          '--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.qemu.media_unittests.filter'
+        ],
+      },
       'android-marshmallow-x86-fyi-rel': {
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator.media_unittests.filter',
@@ -1343,6 +1366,13 @@
       'android-pie-x86-rel': {
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator.media_unittests.filter',
+        ],
+      },
+      'fuchsia-fyi-arm64-rel': {
+        'args': [
+          # https://crbug.com/1058247
+          '--child-arg=--ozone-platform=headless',
+          '--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.qemu.media_unittests.filter'
         ],
       },
     },

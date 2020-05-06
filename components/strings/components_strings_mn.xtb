@@ -52,7 +52,6 @@
 <translation id="1197088940767939838">Улбар шар</translation>
 <translation id="1201402288615127009">Дараагийнх</translation>
 <translation id="1201895884277373915">Энэ сайтаас илүү ихийг</translation>
-<translation id="1205963431094182634">Google бүртгэлдээ хадгалсан нууц үгсийг ашиглахын тулд нэвтэрнэ үү</translation>
 <translation id="1206967143813997005">Анхны муу гарын үсэг</translation>
 <translation id="1209206284964581585">Одоо нуух</translation>
 <translation id="121201262018556460">Та <ph name="DOMAIN" />-д хандах оролдлого хийсэн боловч сервер нь сул кодлол ашигласан сертификаттай байна. Халдагч системийн хувийн кодлолыг гэмтээсэн байж болзошгүй бөгөөд энэхүү сервер нь таны хандахыг хүссэн сервер (та халдагчтай харилцаж байж болно) биш байж болох юм.</translation>
@@ -1217,7 +1216,6 @@
 <translation id="6116338172782435947">Түр санах ойд хуулсан текст, зургийг харах</translation>
 <translation id="6120179357481664955">UPI ID-гаа санаж байна уу?</translation>
 <translation id="6124432979022149706">Chrome байгууллагын холбогч</translation>
-<translation id="6135641591018127088">Сайн нууц үг үүсгэхийн тулд Google бүртгэлээ ашиглах</translation>
 <translation id="6146055958333702838">Ашиглаж байгаа кабелаа шалгасны дараагаар рутер, модем эсвэл бусад сүлжээний төхөөрөмжөө дахин ачааллана уу.</translation>
 <translation id="614940544461990577">Оролдож үзэх:</translation>
 <translation id="6150036310511284407">Зүүн ирмэг дагуу гурван нүх цоолох</translation>
@@ -1262,7 +1260,6 @@
 <translation id="6328639280570009161">Сүлжээний таамаглалыг идэвхгүй болгох гээд үзээрэй</translation>
 <translation id="6328784461820205019">"Таны холболт хувийн биш" эсвэл "&lt;span class="error-code"&gt;NET::ERR_CERT_AUTHORITY_INVALID&lt;/span&gt;" эсвэл "&lt;span class="error-code"&gt;ERR_CERT_COMMON_NAME_INVALID&lt;/span&gt;" эсвэл "&lt;span class="error-code"&gt;NET::ERR_CERT_WEAK_SIGNATURE_ALGORITHM&lt;/span&gt;" эсвэл "&lt;span class="error-code"&gt;ERR_CERT_SYMANTEC_LEGACY&lt;/span&gt;" эсвэл "SSL гэрчилгээний алдаа"</translation>
 <translation id="6328786501058569169">Энэ сайт хуурамч байна</translation>
-<translation id="6333334544069706521">Google бүртгэлдээ хадгалсан нууц үгсийг ашиглах</translation>
 <translation id="6337133576188860026"><ph name="SIZE" />-с бага зай гаргана. Зарим сайтад зочлох үед удаан ачааллаж болзошгүй.</translation>
 <translation id="6337534724793800597">Журмуудыг нэрээр нь шүү</translation>
 <translation id="6353505687280762741">{COUNT,plural, =0{Байхгүй}=1{(<ph name="DOMAIN_LIST" />-н) 1 нууц үг (синк хийсэн)}=2{(<ph name="DOMAIN_LIST" />-н) 2 нууц үг (синк хийсэн)}other{(<ph name="DOMAIN_LIST" />-н) # нууц үг (синк хийсэн)}}</translation>

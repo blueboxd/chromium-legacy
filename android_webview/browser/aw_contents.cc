@@ -155,16 +155,6 @@ class AwContentsUserData : public base::SupportsUserData::Data {
 
 base::subtle::Atomic32 g_instance_count = 0;
 
-void JavaScriptResultCallbackForTesting(
-    const ScopedJavaGlobalRef<jobject>& callback,
-    base::Value result) {
-  JNIEnv* env = base::android::AttachCurrentThread();
-  std::string json;
-  base::JSONWriter::Write(result, &json);
-  ScopedJavaLocalRef<jstring> j_json = ConvertUTF8ToJavaString(env, json);
-  Java_AwContents_onEvaluateJavaScriptResultForTesting(env, j_json, callback);
-}
-
 }  // namespace
 
 class ScopedAllowInitGLBindings {
@@ -1512,34 +1502,6 @@ int AwContents::GetErrorUiType() {
   if (obj.is_null())
     return false;
   return Java_AwContents_getErrorUiType(env, obj);
-}
-
-// TODO(carlosil): This function no longer has anything specific to
-// interstitials and can be cleaned up.
-void AwContents::EvaluateJavaScriptOnInterstitialForTesting(
-    JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& obj,
-    const base::android::JavaParamRef<jstring>& script,
-    const base::android::JavaParamRef<jobject>& callback) {
-  content::RenderFrameHost* main_frame;
-  main_frame = web_contents_->GetMainFrame();
-
-  if (!callback) {
-    // No callback requested.
-    main_frame->ExecuteJavaScriptForTests(ConvertJavaStringToUTF16(env, script),
-                                          base::NullCallback());
-    return;
-  }
-
-  // Secure the Java callback in a scoped object and give ownership of it to the
-  // base::Callback.
-  ScopedJavaGlobalRef<jobject> j_callback;
-  j_callback.Reset(env, callback);
-  RenderFrameHost::JavaScriptResultCallback js_callback =
-      base::BindOnce(&JavaScriptResultCallbackForTesting, j_callback);
-
-  main_frame->ExecuteJavaScriptForTests(ConvertJavaStringToUTF16(env, script),
-                                        std::move(js_callback));
 }
 
 void AwContents::RendererUnresponsive(

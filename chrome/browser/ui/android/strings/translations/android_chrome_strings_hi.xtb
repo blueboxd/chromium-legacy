@@ -33,6 +33,7 @@
 <translation id="1208340532756947324">सभी डिवाइस पर सिंक करने और मनमुताबिक बनाने के लिए, 'सिंक करें' को चालू करें</translation>
 <translation id="1209206284964581585">अभी छिपाएं</translation>
 <translation id="1227058898775614466">नेविगेशन का इतिहास</translation>
+<translation id="1229399675748764149">इस पेज को अपना होम पेज बनाएं</translation>
 <translation id="1231733316453485619">क्या सिंक करना चालू करें?</translation>
 <translation id="123724288017357924">कैश सामग्री को अनदेखा कर, मौजूदा पेज फिर लोड करें</translation>
 <translation id="124116460088058876">ज़्यादा भाषाएं</translation>
@@ -71,6 +72,7 @@
 <translation id="1513352483775369820">बुकमार्क और वेब इतिहास</translation>
 <translation id="1513858653616922153">पासवर्ड मिटाएं</translation>
 <translation id="1521774566618522728">आज सक्रिय है</translation>
+<translation id="1543538514740974167">यहां आसानी से पहुंचें</translation>
 <translation id="1544826120773021464">अपना Google खाता प्रबंधित करने के लिए, "खाता प्रबंधित करें" बटन पर टैप करें</translation>
 <translation id="1549000191223877751">अन्य विंडो में ले जाएं</translation>
 <translation id="1553358976309200471">Chrome अपडेट करें</translation>
@@ -723,11 +725,13 @@
 <translation id="7022756207310403729">ब्राउज़र में खोलें</translation>
 <translation id="702463548815491781">उस समय के लिए सुझाया गया जब 'टॉकबैक' या 'ऐक्सेस करने का तरीका बदलें' चालू हों</translation>
 <translation id="7029809446516969842">पासवर्ड</translation>
+<translation id="703523980599857277">होम पेज बदलें</translation>
 <translation id="7055152154916055070">रीडायरेक्ट ब्लॉक किया गया:</translation>
 <translation id="7063006564040364415">समन्‍वयन सर्वर से कनेक्‍ट नहीं किया जा सका.</translation>
 <translation id="7071521146534760487">खाता प्रबंधित करें</translation>
 <translation id="7077143737582773186">SD कार्ड</translation>
 <translation id="7121362699166175603">पता बार मेंअपने-आपपूर्णता और इतिहास को हटाता है. आपके Google खाते में <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> पर अन्य प्रकार के ब्राउज़िंग इतिहास हो सकतेे हैं.</translation>
+<translation id="7128355412245153445">होम बटन पर टैप करते ही, अपनी पसंदीदा साइटें और हाल ही की खबरें देखें</translation>
 <translation id="7138678301420049075">अन्य</translation>
 <translation id="7146622961999026732">शायद ये साइटें और ऐप्लिकेशन आपके लिए अहम हैं:</translation>
 <translation id="7149158118503947153"><ph name="DOMAIN_NAME" /> से <ph name="BEGIN_LINK" />मूल पेज लोड करें<ph name="END_LINK" /></translation>
@@ -968,11 +972,13 @@
 <translation id="9155898266292537608">आप किसी शब्द पर बस एक टैप करके भी खोज सकते हैं</translation>
 <translation id="9169507124922466868">नेविगेशन का इतिहास आधी स्क्रीन में खुला हुआ है</translation>
 <translation id="9204836675896933765">1 फ़ाइल बची है</translation>
+<translation id="9205796607887024517">यहां से खबरें प्रबंधित करें</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="9209888181064652401">कॉल नहीं कर पा रहे</translation>
 <translation id="9219103736887031265">इमेज</translation>
 <translation id="926205370408745186">'डिजिटल वेलबीइंग' से अपनी Chrome गतिविधि हटाएं</translation>
 <translation id="932327136139879170">होम बटन</translation>
+<translation id="93753284658583800">होम पेज बदल गया</translation>
 <translation id="938850635132480979">गड़बड़ी: <ph name="ERROR_CODE" /></translation>
 <translation id="95817756606698420">चीन में खोज करने के लिए Chrome, <ph name="BEGIN_BOLD" />Sogou<ph name="END_BOLD" /> का इस्तेमाल कर सकता है. आप इसे <ph name="BEGIN_LINK" />सेटिंग<ph name="END_LINK" /> में बदल सकते हैं.</translation>
 <translation id="968900484120156207">आप जिन पेजों पर जाएंगे वे यहां दिखाई देंगे</translation>

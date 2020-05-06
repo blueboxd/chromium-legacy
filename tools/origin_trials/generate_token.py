@@ -205,7 +205,7 @@ def main():
     print("Invalid token version.")
     sys.exit(1)
 
-  if (args.is_third_party is not None and args.version != 3):
+  if (args.is_third_party is not None and args.version[0] != 3):
     print("Only version 3 token supports is_third_party flag.")
     sys.exit(1)
 

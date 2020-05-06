@@ -56,11 +56,13 @@ MediaStream* MediaStream::Create(ExecutionContext* context) {
   MediaStreamTrackVector audio_tracks;
   MediaStreamTrackVector video_tracks;
 
+  DCHECK(context);
   return MakeGarbageCollected<MediaStream>(context, audio_tracks, video_tracks);
 }
 
 MediaStream* MediaStream::Create(ExecutionContext* context,
                                  MediaStream* stream) {
+  DCHECK(context);
   DCHECK(stream);
 
   MediaStreamTrackVector audio_tracks;
@@ -80,6 +82,7 @@ MediaStream* MediaStream::Create(ExecutionContext* context,
   MediaStreamTrackVector audio_tracks;
   MediaStreamTrackVector video_tracks;
 
+  DCHECK(context);
   for (MediaStreamTrack* track : tracks) {
     ProcessTrack(track, track->kind() == "audio" ? audio_tracks : video_tracks);
   }

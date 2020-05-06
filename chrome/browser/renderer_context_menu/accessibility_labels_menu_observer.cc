@@ -136,6 +136,15 @@ bool AccessibilityLabelsMenuObserver::ShouldShowLabelsItem() {
   if (!base::FeatureList::IsEnabled(features::kExperimentalAccessibilityLabels))
     return false;
 
+  // Disabled by policy.
+  Profile* profile = Profile::FromBrowserContext(proxy_->GetBrowserContext());
+  if (!profile->GetPrefs()->GetBoolean(
+          prefs::kAccessibilityImageLabelsEnabled) &&
+      profile->GetPrefs()->IsManagedPreference(
+          prefs::kAccessibilityImageLabelsEnabled)) {
+    return false;
+  }
+
   return accessibility_state_utils::IsScreenReaderEnabled();
 }
 

@@ -90,6 +90,7 @@
 <translation id="1947424002851288782">독일어 키보드</translation>
 <translation id="1972984168337863910">파일 의견 패널 펼치기</translation>
 <translation id="1984603991036629094">Armenian Phonetic 키보드</translation>
+<translation id="1995337122023280937">파일 위치로 이동</translation>
 <translation id="2001796770603320721">드라이브에서 관리</translation>
 <translation id="2009067268969781306">드라이브를 포맷하면 드라이브에 저장된 데이터가 모두 삭제됩니다. 이 작업은 취소할 수 없습니다.</translation>
 <translation id="2028997212275086731">RAR 압축 파일</translation>
@@ -141,6 +142,7 @@
 <translation id="2638942478653899953">Google 드라이브에 연결할 수 없습니다. <ph name="BEGIN_LINK" />로그아웃<ph name="END_LINK" />한 후 다시 로그인하세요.</translation>
 <translation id="2649120831653069427">구피</translation>
 <translation id="2661146741306740526">16x9</translation>
+<translation id="2664412712123763093">파일 위치</translation>
 <translation id="2672394958563893062">오류가 발생했습니다. 클릭하여 처음부터 다시 시작하세요.</translation>
 <translation id="2676946222714718093">재생 중:</translation>
 <translation id="2735698359135166290">루마니아 표준 키보드</translation>
@@ -349,6 +351,7 @@
 <translation id="5081517858322016911"><ph name="TOTAL_FILE_SIZE" />의 파일이 삭제됩니다.</translation>
 <translation id="509429900233858213">오류가 발생했습니다.</translation>
 <translation id="5098629044894065541">히브리어</translation>
+<translation id="5112685521274804841">이 폴더의 파일은 읽기 전용입니다. 일부 활동이 지원되지 않습니다.</translation>
 <translation id="5123433949759960244">농구공</translation>
 <translation id="5129662217315786329">폴란드어</translation>
 <translation id="5144820558584035333">한글 세벌식(390)</translation>
@@ -699,6 +702,7 @@
 <translation id="9034924485347205037">Linux 파일</translation>
 <translation id="9035012421917565900">항목을 다시 '<ph name="DESTINATION_NAME" />'(으)로 이동할 수 없으므로 이 작업을 실행취소할 수 없습니다.</translation>
 <translation id="9038620279323455325">'<ph name="FILE_NAME" />' 파일이 이미 존재합니다. 다른 이름을 선택하세요.</translation>
+<translation id="9062992083244091966"><ph name="APP_NAME" /> 앱으로 파일을 열려면 파일을 <ph name="APP_NAME" /> 공유 파일 폴더로 이동하세요.</translation>
 <translation id="9064939804718829769">이전 중...</translation>
 <translation id="9065203028668620118">수정</translation>
 <translation id="9099674669267916096">페이지 수</translation>

@@ -12,9 +12,6 @@ import("//build/config/gclient_args.gni")
 # Some non-Chromium builds don't support building java targets.
 enable_java_templates = true
 
-# Some non-Chromium builds don't use Chromium's third_party/binutils.
-linux_use_bundled_binutils_override = true
-
 # Allows different projects to specify their own suppressions and blacklist
 # files for sanitizer tools.
 # asan_suppressions_file = "path/to/asan_suppressions.cc"

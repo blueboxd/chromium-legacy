@@ -148,6 +148,10 @@ class UnifiedMessageListView::MessageViewContainer
 
   // views::View:
   void ChildPreferredSizeChanged(views::View* child) override {
+    // If we've already been removed, ignore new child size changes.
+    if (is_removed_)
+      return;
+
     PreferredSizeChanged();
   }
 

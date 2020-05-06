@@ -90,6 +90,7 @@
 <translation id="1947424002851288782">德文鍵盤</translation>
 <translation id="1972984168337863910">展開檔案意見面板</translation>
 <translation id="1984603991036629094">亞美尼亞文 (拼音) 鍵盤</translation>
+<translation id="1995337122023280937">前往檔案位置</translation>
 <translation id="2001796770603320721">在「雲端硬碟」中管理</translation>
 <translation id="2009067268969781306">格式化硬碟將刪除其中儲存的所有資料。此操作無法復原。</translation>
 <translation id="2028997212275086731">RAR 封存檔案</translation>
@@ -141,6 +142,7 @@
 <translation id="2638942478653899953">無法連上「Google 雲端硬碟」。請<ph name="BEGIN_LINK" />登出<ph name="END_LINK" />並重新登入帳戶。</translation>
 <translation id="2649120831653069427">彩虹魚</translation>
 <translation id="2661146741306740526">16x9</translation>
+<translation id="2664412712123763093">檔案位置</translation>
 <translation id="2672394958563893062">發生錯誤，按一下即可重新播放。</translation>
 <translation id="2676946222714718093">目前播放裝置：</translation>
 <translation id="2735698359135166290">羅馬尼亞文標準鍵盤</translation>
@@ -349,6 +351,7 @@
 <translation id="5081517858322016911"><ph name="TOTAL_FILE_SIZE" /> 的檔案將被刪除</translation>
 <translation id="509429900233858213">發生錯誤。</translation>
 <translation id="5098629044894065541">希伯來文</translation>
+<translation id="5112685521274804841">此資料夾中的檔案是唯獨檔案，因此不支援部份活動。</translation>
 <translation id="5123433949759960244">籃球</translation>
 <translation id="5129662217315786329">波蘭文</translation>
 <translation id="5144820558584035333">韓文 3 Set (390)</translation>
@@ -699,6 +702,7 @@
 <translation id="9034924485347205037">Linux 檔案</translation>
 <translation id="9035012421917565900">這些項目無法移回「<ph name="DESTINATION_NAME" />」，因此無法復原此操作。</translation>
 <translation id="9038620279323455325">名稱為「<ph name="FILE_NAME" />」的檔案已經存在，請選擇其他名稱。</translation>
+<translation id="9062992083244091966">如要透過「<ph name="APP_NAME" />」應用程式開啟檔案，請先將檔案移至「<ph name="APP_NAME" />」共用檔案資料夾。</translation>
 <translation id="9064939804718829769">轉移中…</translation>
 <translation id="9065203028668620118">編輯</translation>
 <translation id="9099674669267916096">頁數</translation>

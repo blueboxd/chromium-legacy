@@ -52,7 +52,6 @@
 <translation id="1197088940767939838">Oranža</translation>
 <translation id="1201402288615127009">Tālāk</translation>
 <translation id="1201895884277373915">Vairāk no šīs vietnes</translation>
-<translation id="1205963431094182634">Pierakstieties, lai izmantotu savā Google kontā saglabātās paroles</translation>
 <translation id="1206967143813997005">Sākotnējais paraksts nav derīgs</translation>
 <translation id="1209206284964581585">Pagaidām slēpt</translation>
 <translation id="121201262018556460">Jūs centāties sasniegt <ph name="DOMAIN" />, bet servera uzrādītais sertifikāts satur vāju atslēgu. Iespējams, uzbrucējs ir uzlauzis privāto atslēgu un serveris var nebūt tas, ko centāties sasniegt (iespējams, jūs sazināties ar uzbrucēju).</translation>
@@ -1214,7 +1213,6 @@ Pretējā gadījumā šī iespēja būtu liegta saskaņā ar jūsu konfidenciali
 <translation id="6116338172782435947">Skatīt starpliktuvē kopēto tekstu un attēlus</translation>
 <translation id="6120179357481664955">Vai iegaumēt jūsu UPI ID?</translation>
 <translation id="6124432979022149706">Chrome Enterprise savienotāji</translation>
-<translation id="6135641591018127088">Izmantot Google kontu, lai izveidotu drošu paroli</translation>
 <translation id="6146055958333702838">Pārbaudiet vadus un atkārtoti palaidiet maršrutētājus, modemus vai citas
     izmantotās tīkla ierīces.</translation>
 <translation id="614940544461990577">Veiciet tālāk norādītās darbības.</translation>
@@ -1260,7 +1258,6 @@ Pretējā gadījumā šī iespēja būtu liegta saskaņā ar jūsu konfidenciali
 <translation id="6328639280570009161">Tīkla prognožu atspējošana</translation>
 <translation id="6328784461820205019">“Savienojums nav privāts”, “&lt;span class="error-code"&gt;NET::ERR_CERT_AUTHORITY_INVALID&lt;/span&gt;”, “&lt;span class="error-code"&gt;ERR_CERT_COMMON_NAME_INVALID&lt;/span&gt;”, “&lt;span class="error-code"&gt;NET::ERR_CERT_WEAK_SIGNATURE_ALGORITHM&lt;/span&gt;”, “&lt;span class="error-code"&gt;ERR_CERT_SYMANTEC_LEGACY&lt;/span&gt;” vai “SSL sertifikāta kļūda”</translation>
 <translation id="6328786501058569169">Šī vietne ir krāpnieciska</translation>
-<translation id="6333334544069706521">Izmantot savā Google kontā uzglabātās paroles</translation>
 <translation id="6337133576188860026">Tiks atbrīvots mazāk nekā <ph name="SIZE" />. Dažas vietnes nākamajā apmeklējumā var ielādēt lēnāk.</translation>
 <translation id="6337534724793800597">Filtrēt politikas pēc nosaukuma</translation>
 <translation id="6353505687280762741">{COUNT,plural, =0{Nav}=1{1 parole (šādiem domēniem: <ph name="DOMAIN_LIST" />, sinhronizēta)}=2{2 paroles (šādiem domēniem: <ph name="DOMAIN_LIST" />, sinhronizētas)}zero{# paroļu (šādiem domēniem: <ph name="DOMAIN_LIST" />, sinhronizētas)}one{# parole (šādiem domēniem: <ph name="DOMAIN_LIST" />, sinhronizētas)}other{# paroles (šādiem domēniem: <ph name="DOMAIN_LIST" />, sinhronizētas)}}</translation>

@@ -1168,6 +1168,8 @@ test("views_unittests") {
     ]
 
     sources += [
+      "accessibility/test_list_grid_view.cc",
+      "accessibility/test_list_grid_view.h",
       "accessibility/view_ax_platform_node_delegate_win_unittest.cc",
       "win/pen_event_processor_unittest.cc",
     ]

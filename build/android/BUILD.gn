@@ -12,7 +12,6 @@ if (enable_java_templates) {
   # functionally empty lint task. This prevents racy creation of the
   # cache while linting java targets in android_lint.
   android_lint("prepare_android_lint_cache") {
-    android_manifest = "//build/android/AndroidManifest.xml"
     create_cache = true
   }
 

@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.site_settings;
 
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
+import org.chromium.components.browser_ui.site_settings.SiteSettingsPrefClient;
 
 /**
  * A SiteSettingsPrefClient implementation that delegates to Chrome's PrefServiceBridge.

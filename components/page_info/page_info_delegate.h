@@ -76,6 +76,10 @@ class PageInfoDelegate {
   virtual bool IsContentDisplayedInVrHeadset() = 0;
   virtual security_state::SecurityLevel GetSecurityLevel() = 0;
   virtual security_state::VisibleSecurityState GetVisibleSecurityState() = 0;
+#if defined(OS_ANDROID)
+  // Gets the name of the embedder.
+  virtual const base::string16 GetClientApplicationName() = 0;
+#endif
 };
 
 #endif  // COMPONENTS_PAGE_INFO_PAGE_INFO_DELEGATE_H_

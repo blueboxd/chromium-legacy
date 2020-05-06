@@ -33,6 +33,7 @@
 <translation id="1208340532756947324">თქვენი ყველა მოწყობილობის სინქრონიზაციისთვისა და პერსონალიზებისთვის ჩართეთ სინქრონიზაცია</translation>
 <translation id="1209206284964581585">ამჯერად დამალვა</translation>
 <translation id="1227058898775614466">ნავიგაციის ისტორია</translation>
+<translation id="1229399675748764149">აქციეთ ეს გვერდი მთავარ გვერდად</translation>
 <translation id="1231733316453485619">გსურთ სინქრონიზაციის ჩართვა?</translation>
 <translation id="123724288017357924">გვერდის გადატვირთვა ქეშირ. კონტენტის იგნორირებით</translation>
 <translation id="124116460088058876">სხვა ენები</translation>
@@ -71,6 +72,7 @@
 <translation id="1513352483775369820">სანიშნეები და ვებ-ისტორია</translation>
 <translation id="1513858653616922153">პაროლის წაშლა</translation>
 <translation id="1521774566618522728">აქტიური იყო დღეს</translation>
+<translation id="1543538514740974167">გადმოდით აქ უფრო სწრაფად</translation>
 <translation id="1544826120773021464">თქვენი Google ანგარიშის სამართავად შეეხეთ „ანგარიშის მართვის“ ღილაკს</translation>
 <translation id="1549000191223877751">სხვა ფანჯარაში გადატანა</translation>
 <translation id="1553358976309200471">Chrome-ის განახლება</translation>
@@ -723,11 +725,13 @@
 <translation id="7022756207310403729">ბრაუზერში გახსნა</translation>
 <translation id="702463548815491781">რეკომენდებულია, როცა ჩართულია TalkBack ან გადამრთველით წვდომა</translation>
 <translation id="7029809446516969842">პაროლები</translation>
+<translation id="703523980599857277">მთავარი გვერდის შეცვლა</translation>
 <translation id="7055152154916055070">გადამისამართება დაიბლოკა:</translation>
 <translation id="7063006564040364415">ვერ ვუკავშირდებით სინქრონიზაციის სერვერს.</translation>
 <translation id="7071521146534760487">ანგარიშის მართვა</translation>
 <translation id="7077143737582773186">SD ბარათი</translation>
 <translation id="7121362699166175603">მისამართთა ზოლში გაასუფთავებს ისტორიასა და ავტომატურ დასრულებებს. თქვენს Google ანგარიშში შეიძლება ინახებოდეს სხვა ტიპის დათვალიერების ისტორიაც, რომელიც ხელმისაწვდომია მისამართზე: <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
+<translation id="7128355412245153445">იხილეთ ყველაზე პოპულარული საიტები და ბოლოდროინდელი ამბები მთავარ ეკრანზე გადასვლის ღილაკზე ყოველი შეხებისას.</translation>
 <translation id="7138678301420049075">სხვა</translation>
 <translation id="7146622961999026732">როგორც ჩანს, თქვენთვის მნიშვნელოვანია შემდეგი აპები და საიტები:</translation>
 <translation id="7149158118503947153"><ph name="BEGIN_LINK" />გვერდის ორიგინალის ჩატვირთვა<ph name="END_LINK" /> <ph name="DOMAIN_NAME" />-დან</translation>
@@ -968,11 +972,13 @@
 <translation id="9155898266292537608">ძიება სიტყვაზე სწრაფად შეხებითაც შეგიძლიათ</translation>
 <translation id="9169507124922466868">ნავიგაციის ისტორია ნახევრადგახსნილია</translation>
 <translation id="9204836675896933765">დარჩენილია 1 ფაილი</translation>
+<translation id="9205796607887024517">აქ შეგიძლიათ მართოთ თქვენი ამბები</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="9209888181064652401">დარეკვა ვერ ხერხდება</translation>
 <translation id="9219103736887031265">გამოსახულებები</translation>
 <translation id="926205370408745186">ციფრული კომფორტიდან Chrome-ში თქვენი აქტივობის ამოშლა</translation>
 <translation id="932327136139879170">საწყისი გვერდი</translation>
+<translation id="93753284658583800">მთავარი გვერდი შეიცვალა</translation>
 <translation id="938850635132480979">შეცდომა: <ph name="ERROR_CODE" /></translation>
 <translation id="95817756606698420">ჩინეთის ტერიტორიაზე ძიების განსახორციელებლად, Chrome-ს <ph name="BEGIN_BOLD" />Sogou<ph name="END_BOLD" />-ს გამოყენება შეუძლია. ამის შეცვლა <ph name="BEGIN_LINK" />პარამეტრებიდან<ph name="END_LINK" /> შეგიძლიათ.</translation>
 <translation id="968900484120156207">აქ გამოჩნდება თქვენ მიერ მონახულებული გვერდები</translation>

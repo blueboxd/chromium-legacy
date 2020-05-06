@@ -7,6 +7,8 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/trace_event/common/trace_event_common.h"
+#include "base/trace_event/trace_event.h"
 #include "components/paint_preview/common/file_stream.h"
 #include "components/paint_preview/common/paint_preview_tracker.h"
 #include "mojo/public/cpp/base/shared_memory_utils.h"
@@ -34,6 +36,7 @@ bool SerializeAsSkPicture(sk_sp<const cc::PaintRecord> record,
                           base::File file,
                           size_t max_size,
                           size_t* serialized_size) {
+  TRACE_EVENT0("paint_preview", "SerializeAsSkPicture");
   if (!file.IsValid())
     return false;
 

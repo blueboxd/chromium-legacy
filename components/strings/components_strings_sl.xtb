@@ -52,7 +52,6 @@
 <translation id="1197088940767939838">Oranžna</translation>
 <translation id="1201402288615127009">Naprej</translation>
 <translation id="1201895884277373915">Več s tega mesta</translation>
-<translation id="1205963431094182634">Prijavite se, če želite uporabljati gesla, shranjena v računu Google</translation>
 <translation id="1206967143813997005">Neveljaven prvotni podpis</translation>
 <translation id="1209206284964581585">Zaenkrat skrij</translation>
 <translation id="121201262018556460">Poskusili ste dostopati do domene <ph name="DOMAIN" />, vendar ima strežnik potrdilo s šibkim ključem. Napadalec je morda dešifriral zasebni ključ in strežnik morda ni tisti, ki ste ga pričakovali (morda komunicirate z napadalcem).</translation>
@@ -1217,7 +1216,6 @@ V nasprotnem primeru bodo to blokirale nastavitve zasebnosti. S tem bo vsebina, 
 <translation id="6116338172782435947">ogled besedila in slik, kopiranih v odložišče</translation>
 <translation id="6120179357481664955">Si želite zapomniti ID za UPI?</translation>
 <translation id="6124432979022149706">Priključki za Chrome za podjetja</translation>
-<translation id="6135641591018127088">Uporabite račun Google za ustvarjanje zapletenega gesla</translation>
 <translation id="6146055958333702838">Preverite kable in znova zaženite usmerjevalnike, modeme ali druge omrežne 
     naprave, ki jih uporabljate.</translation>
 <translation id="614940544461990577">Poskusite:</translation>
@@ -1263,7 +1261,6 @@ V nasprotnem primeru bodo to blokirale nastavitve zasebnosti. S tem bo vsebina, 
 <translation id="6328639280570009161">Poskusite onemogočiti omrežno predvidevanje</translation>
 <translation id="6328784461820205019">»Vaša povezava ni zasebna« ali »&lt;span class="error-code"&gt;NET::ERR_CERT_AUTHORITY_INVALID&lt;/span&gt;« ali »&lt;span class="error-code"&gt;ERR_CERT_COMMON_NAME_INVALID&lt;/span&gt;« ali »&lt;span class="error-code"&gt;NET::ERR_CERT_WEAK_SIGNATURE_ALGORITHM&lt;/span&gt;« ali »&lt;span class="error-code"&gt;ERR_CERT_SYMANTEC_LEGACY&lt;/span&gt;« ali »Napaka v potrdilu SSL«</translation>
 <translation id="6328786501058569169">To spletno mesto je zavajajoče</translation>
-<translation id="6333334544069706521">Uporabite gesla, shranjena v računu Google</translation>
 <translation id="6337133576188860026">Sprosti manj kot <ph name="SIZE" />. Nekatera spletna mesta se bodo ob naslednjem obisku morda počasneje naložila.</translation>
 <translation id="6337534724793800597">Filtriraj pravilnike po imenu</translation>
 <translation id="6353505687280762741">{COUNT,plural, =0{Nič}=1{Eno geslo (za <ph name="DOMAIN_LIST" />, sinhronizirano)}=2{Dve gesli (za <ph name="DOMAIN_LIST" />, sinhronizirano)}one{# geslo (za <ph name="DOMAIN_LIST" />, sinhronizirano)}two{# gesli (za <ph name="DOMAIN_LIST" />, sinhronizirano)}few{# gesla (za <ph name="DOMAIN_LIST" />, sinhronizirano)}other{# gesel (za <ph name="DOMAIN_LIST" />, sinhronizirano)}}</translation>

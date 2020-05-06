@@ -90,10 +90,10 @@ public class WebApkExtras {
         public String launchUrl;
         public String iconUrl;
         public String iconHash;
-        public WebappIcon icon;
+        public @NonNull WebappIcon icon;
 
         public ShortcutItem(String name, String shortName, String launchUrl, String iconUrl,
-                String iconHash, WebappIcon icon) {
+                String iconHash, @NonNull WebappIcon icon) {
             this.name = name;
             this.shortName = shortName;
             this.launchUrl = launchUrl;

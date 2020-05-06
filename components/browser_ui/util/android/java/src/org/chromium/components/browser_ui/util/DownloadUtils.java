@@ -4,7 +4,17 @@
 
 package org.chromium.components.browser_ui.util;
 
+import android.app.DownloadManager;
 import android.content.Context;
+import android.net.Uri;
+import android.os.Build;
+import android.text.TextUtils;
+
+import androidx.core.app.NotificationManagerCompat;
+
+import org.chromium.base.ContextUtils;
+import org.chromium.base.ThreadUtils;
+import org.chromium.components.embedder_support.util.UrlConstants;
 
 /**
  * A class containing some utility static methods.
@@ -47,5 +57,49 @@ public class DownloadUtils {
         }
 
         return context.getResources().getString(resourceId, bytesInCorrectUnits);
+    }
+
+    /**
+     * Adds a download to the Android DownloadManager.
+     * @see android.app.DownloadManager#addCompletedDownload(String, String, boolean, String,
+     * String, long, boolean)
+     */
+    public static long addCompletedDownload(String fileName, String description, String mimeType,
+            String filePath, long fileSizeBytes, String originalUrl, String referer) {
+        assert !ThreadUtils.runningOnUiThread();
+        Context context = ContextUtils.getApplicationContext();
+        DownloadManager manager =
+                (DownloadManager) context.getSystemService(Context.DOWNLOAD_SERVICE);
+        NotificationManagerCompat notificationManager = NotificationManagerCompat.from(context);
+        boolean useSystemNotification = !notificationManager.areNotificationsEnabled();
+        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.M) {
+            // OriginalUri has to be null or non-empty http(s) scheme.
+            Uri originalUri = parseOriginalUrl(originalUrl);
+            Uri refererUri = TextUtils.isEmpty(referer) ? null : Uri.parse(referer);
+            return manager.addCompletedDownload(fileName, description, true, mimeType, filePath,
+                    fileSizeBytes, useSystemNotification, originalUri, refererUri);
+        }
+
+        return manager.addCompletedDownload(fileName, description, true, mimeType, filePath,
+                fileSizeBytes, useSystemNotification);
+    }
+
+    /**
+     * Parses an originating URL string and returns a valid Uri that can be inserted into
+     * DownloadManager. The returned Uri has to be null or non-empty http(s) scheme.
+     * @param originalUrl String representation of the originating URL.
+     * @return A valid Uri that can be accepted by DownloadManager.
+     */
+    public static Uri parseOriginalUrl(String originalUrl) {
+        Uri originalUri = TextUtils.isEmpty(originalUrl) ? null : Uri.parse(originalUrl);
+        if (originalUri != null) {
+            String scheme = originalUri.normalizeScheme().getScheme();
+            if (scheme == null
+                    || (!scheme.equals(UrlConstants.HTTPS_SCHEME)
+                            && !scheme.equals(UrlConstants.HTTP_SCHEME))) {
+                originalUri = null;
+            }
+        }
+        return originalUri;
     }
 }

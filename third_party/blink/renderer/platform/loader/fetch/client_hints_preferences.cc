@@ -35,10 +35,8 @@ void ClientHintsPreferences::UpdateFrom(
 void ClientHintsPreferences::UpdateFromAcceptClientHintsHeader(
     const String& header_value,
     const KURL& url,
+    UpdateMode mode,
     Context* context) {
-  if (header_value.IsEmpty())
-    return;
-
   // Client hints should be allowed only on secure URLs.
   if (!IsClientHintsAllowed(url))
     return;
@@ -58,7 +56,9 @@ void ClientHintsPreferences::UpdateFromAcceptClientHintsHeader(
   if (!parsed_ch.has_value())
     return;
 
-  // Note: this keeps previously enabled hints.
+  if (mode == UpdateMode::kReplace)
+    enabled_hints_ = WebEnabledClientHints();
+
   for (network::mojom::WebClientHintsType newly_enabled : parsed_ch.value())
     enabled_hints_.SetIsEnabled(newly_enabled, true);
 

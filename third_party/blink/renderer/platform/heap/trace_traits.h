@@ -40,10 +40,6 @@ struct AdjustPointerTrait<T, false> {
   static TraceDescriptor GetTraceDescriptor(const void* self) {
     return {self, TraceTrait<T>::Trace};
   }
-
-  static HeapObjectHeader* GetHeapObjectHeader(const void* self) {
-    return HeapObjectHeader::FromPayload(self);
-  }
 };
 
 template <typename T>
@@ -52,10 +48,6 @@ struct AdjustPointerTrait<T, true> {
 
   static TraceDescriptor GetTraceDescriptor(const void* self) {
     return static_cast<const T*>(self)->GetTraceDescriptor();
-  }
-
-  static HeapObjectHeader* GetHeapObjectHeader(const void* self) {
-    return static_cast<const T*>(self)->GetHeapObjectHeader();
   }
 };
 

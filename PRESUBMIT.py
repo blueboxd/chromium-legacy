@@ -1100,6 +1100,18 @@ _BANNED_CPP_FUNCTIONS = (
       False,
       (),
     ),
+    (
+      r'/\bTRACE_EVENT_ASYNC_',
+      (
+          'Please use TRACE_EVENT_NESTABLE_ASYNC_.. macros instead',
+          'of TRACE_EVENT_ASYNC_.. (crbug.com/1038710).',
+      ),
+      False,
+      (
+        r'^base/trace_event/.*',
+        r'^base/tracing/.*',
+      ),
+    ),
 )
 
 # Format: Sequence of tuples containing:

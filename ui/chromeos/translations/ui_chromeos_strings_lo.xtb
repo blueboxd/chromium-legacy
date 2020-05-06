@@ -90,6 +90,7 @@
 <translation id="1947424002851288782">ຄີບອດພາສາເຢຍ​ລະ​ມັນ</translation>
 <translation id="1972984168337863910">ຂະຫຍາຍແຜງຄຳຕິຊົມໄຟລ໌</translation>
 <translation id="1984603991036629094">ຄີບອດການອອກສຽງພາສາອາເມເນຍ</translation>
+<translation id="1995337122023280937">ໄປຫາສະຖານທີ່ຂອງໄຟລ໌</translation>
 <translation id="2001796770603320721">ຈັດການໃນ Drive</translation>
 <translation id="2009067268969781306">ການຟໍແມັດໄດຣຈະລຶບຂໍ້ມູນທັງໝົດທີ່ເກັບໄວ້ໃນມັນ ຄຳສັ່ງນີ້ບໍ່ສາມາດຍົກເລີກໄດ້.</translation>
 <translation id="2028997212275086731">ເຄື່ອງເກັບມ້ຽນ RAR</translation>
@@ -141,6 +142,7 @@
 <translation id="2638942478653899953">ບໍ່ສາມາດເຂົ້າຫາ Google Drive ໄດ້. ກະລຸນາ <ph name="BEGIN_LINK" />ອອກຈາກລະບົບ<ph name="END_LINK" /> ແລະລົງຊື່ກັບເຂົ້າຫາອີກ.</translation>
 <translation id="2649120831653069427">ປາສາຍຮຸ້ງ</translation>
 <translation id="2661146741306740526">16x9</translation>
+<translation id="2664412712123763093">ສະຖານທີ່ຂອງໄຟລ໌</translation>
 <translation id="2672394958563893062">ເກີດຄວາມຜິດພາດຂຶ້ນ. ຄລິກເພື່ອເລີ່ມຈາກການເລີ່ມຕົ້ນ.</translation>
 <translation id="2676946222714718093">ກຳລັງຫຼິ້ນຢູ່</translation>
 <translation id="2735698359135166290">ແປ້ນ​ພິມ​ມາດ​ຕະ​ຖານ​ພາ​ສາ​ໂຣ​ມັນ</translation>
@@ -349,6 +351,7 @@
 <translation id="5081517858322016911">ລະບົບຈະລຶບໄຟລ໌ <ph name="TOTAL_FILE_SIZE" /></translation>
 <translation id="509429900233858213">ເກີດຄວາມຜິດພາດຂຶ້ນ.</translation>
 <translation id="5098629044894065541">ພາສາຮິບຣູ</translation>
+<translation id="5112685521274804841">ໄຟລ໌ໃນໂຟນເດີນີ້ເປັນແບບອ່ານເທົ່ານັ້ນ. ບໍ່ຮອງຮັບບາງກິດຈະກຳ.</translation>
 <translation id="5123433949759960244">ບານບ້ວງ</translation>
 <translation id="5129662217315786329">ພາສາໂປໂລຍ</translation>
 <translation id="5144820558584035333">ຮາງກຸລ 3 ຊຸດ (390​)</translation>
@@ -698,6 +701,7 @@
 <translation id="9034924485347205037">ໄຟລ໌ Linux</translation>
 <translation id="9035012421917565900">ບໍ່ສາມາດຍ້າຍລາຍການນີ້ກັບຄືນຫາ '<ph name="DESTINATION_NAME" />' ໄດ້, ສະນັ້ນ ທ່ານຈະບໍ່ສາມາດລົບລ້າງການກະທຳນີ້ໄດ້.</translation>
 <translation id="9038620279323455325">ມີໄຟລ໌ຊື່ "<ph name="FILE_NAME" />" ຢູ່ແລ້ວ. ກະລຸນາເລືອກຊື່ໄຟລ໌ອື່ນ.</translation>
+<translation id="9062992083244091966">ເພື່ອເປີດໄຟລ໌ດ້ວຍແອັບ <ph name="APP_NAME" />, ກ່ອນອື່ນ ກະລຸນາຍ້າຍພວກມັນໄປໃສ່ໂຟນເດີໄຟລ໌ທີ່ແບ່ງປັນຂອງ <ph name="APP_NAME" />.</translation>
 <translation id="9064939804718829769">ກໍາລັງໂອນ...</translation>
 <translation id="9065203028668620118">ແກ້ໄຂ</translation>
 <translation id="9099674669267916096">ຈຳນວນໜ້າ</translation>

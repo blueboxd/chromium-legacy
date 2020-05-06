@@ -12,6 +12,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/strings/string_piece_forward.h"
+#include "net/log/net_log_with_source.h"
 #include "services/network/public/mojom/trust_tokens.mojom.h"
 #include "services/network/trust_tokens/proto/public.pb.h"
 #include "services/network/trust_tokens/suitable_trust_token_origin.h"
@@ -130,7 +131,8 @@ class TrustTokenRequestRedemptionHelper : public TrustTokenRequestHelper {
       TrustTokenStore* token_store,
       const TrustTokenKeyCommitmentGetter* key_commitment_getter,
       std::unique_ptr<KeyPairGenerator> key_pair_generator,
-      std::unique_ptr<Cryptographer> cryptographer);
+      std::unique_ptr<Cryptographer> cryptographer,
+      net::NetLogWithSource net_log = net::NetLogWithSource());
   ~TrustTokenRequestRedemptionHelper() override;
 
   // Executes the outbound part of a Trust Tokens redemption operation,
@@ -206,6 +208,7 @@ class TrustTokenRequestRedemptionHelper : public TrustTokenRequestHelper {
   const TrustTokenKeyCommitmentGetter* const key_commitment_getter_;
   const std::unique_ptr<KeyPairGenerator> key_pair_generator_;
   const std::unique_ptr<Cryptographer> cryptographer_;
+  net::NetLogWithSource net_log_;
 
   base::WeakPtrFactory<TrustTokenRequestRedemptionHelper> weak_factory_{this};
 };

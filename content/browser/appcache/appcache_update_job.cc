@@ -26,6 +26,7 @@
 #include "net/base/net_errors.h"
 #include "net/base/request_priority.h"
 #include "storage/browser/quota/padding_key.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/appcache/appcache.mojom.h"
 #include "third_party/blink/public/mojom/devtools/console_message.mojom.h"
 #include "url/origin.h"
@@ -608,6 +609,22 @@ void AppCacheUpdateJob::HandleFetchedManifestChanged() {
             message,
             blink::mojom::AppCacheErrorReason::APPCACHE_SIGNATURE_ERROR, GURL(),
             0, false /*is_cross_origin*/),
+        MANIFEST_ERROR, GURL());
+    VLOG(1) << message;
+    return;
+  }
+
+  if (base::FeatureList::IsEnabled(
+          blink::features::kAppCacheRequireOriginTrial) &&
+      manifest.token_expires <= base::Time::Now()) {
+    const char kFormatString[] =
+        "Invalid or missing manifest origin trial token: %s";
+    const std::string message =
+        base::StringPrintf(kFormatString, manifest_url_.spec().c_str());
+    HandleCacheFailure(
+        blink::mojom::AppCacheErrorDetails(
+            message, blink::mojom::AppCacheErrorReason::APPCACHE_MANIFEST_ERROR,
+            manifest_url_, 0, false /*is_cross_origin*/),
         MANIFEST_ERROR, GURL());
     VLOG(1) << message;
     return;

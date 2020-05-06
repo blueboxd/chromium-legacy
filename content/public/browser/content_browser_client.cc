@@ -123,7 +123,7 @@ bool ContentBrowserClient::ShouldUseMobileFlingCurve() {
 
 bool ContentBrowserClient::ShouldUseProcessPerSite(
     BrowserContext* browser_context,
-    const GURL& effective_url) {
+    const GURL& site_url) {
   DCHECK(browser_context);
   return false;
 }
@@ -144,6 +144,11 @@ bool ContentBrowserClient::DoesSiteRequireDedicatedProcess(
 bool ContentBrowserClient::ShouldLockToOrigin(BrowserContext* browser_context,
                                               const GURL& effective_url) {
   DCHECK(browser_context);
+  return true;
+}
+
+bool ContentBrowserClient::DoesWebUISchemeRequireProcessLock(
+    base::StringPiece scheme) {
   return true;
 }
 
@@ -418,6 +423,13 @@ void ContentBrowserClient::AllowCertificateError(
     bool strict_enforcement,
     base::OnceCallback<void(CertificateRequestResultType)> callback) {
   std::move(callback).Run(CERTIFICATE_REQUEST_RESULT_TYPE_DENY);
+}
+
+bool ContentBrowserClient::ShouldDenyRequestOnCertificateError(
+    const GURL main_frame_url) {
+  // Generally we shouldn't deny all certificate errors, but individual
+  // subclasses may override this for special cases.
+  return false;
 }
 
 base::OnceClosure ContentBrowserClient::SelectClientCertificate(

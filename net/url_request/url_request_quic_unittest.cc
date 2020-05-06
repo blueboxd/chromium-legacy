@@ -571,7 +571,7 @@ TEST_P(URLRequestQuicTest, DoNotCancelPushIfNotFoundInCache) {
   auto entries = net_log_.GetEntriesWithType(
       NetLogEventType::SERVER_PUSH_LOOKUP_TRANSACTION);
 
-  EXPECT_EQ(4u, entries.size());
+  ASSERT_EQ(4u, entries.size());
 
   std::string value;
   std::string push_url_1 = UrlFromPath(kKittenPath);

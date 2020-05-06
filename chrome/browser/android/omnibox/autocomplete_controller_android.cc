@@ -423,18 +423,20 @@ void AutocompleteControllerAndroid::NotifySuggestionsReceived(
 
   autocomplete_controller_->InlineTailPrefixes();
 
-  ScopedJavaLocalRef<jobject> suggestion_list_obj =
-      Java_AutocompleteController_createOmniboxSuggestionList(
-          env, autocomplete_result.size());
+  ScopedJavaLocalRef<jobject> j_autocomplete_result =
+      Java_AutocompleteController_createAutocompleteResult(
+          env, autocomplete_result.size(),
+          autocomplete_result.headers_map().size());
+
   for (size_t i = 0; i < autocomplete_result.size(); ++i) {
     ScopedJavaLocalRef<jobject> j_omnibox_suggestion =
         BuildOmniboxSuggestion(env, autocomplete_result.match_at(i));
-    Java_AutocompleteController_addOmniboxSuggestionToList(
-        env, suggestion_list_obj, j_omnibox_suggestion);
+    Java_AutocompleteController_addOmniboxSuggestionToResult(
+        env, j_autocomplete_result, j_omnibox_suggestion);
   }
 
-  ScopedJavaLocalRef<jobject> headers =
-      BuildOmniboxGroupHeaders(env, autocomplete_result.headers_map());
+  PopulateOmniboxGroupHeaders(env, j_autocomplete_result,
+                              autocomplete_result.headers_map());
 
   // Get the inline-autocomplete text.
   base::string16 inline_autocomplete_text;
@@ -442,11 +444,11 @@ void AutocompleteControllerAndroid::NotifySuggestionsReceived(
     inline_autocomplete_text = default_match->inline_autocompletion;
   ScopedJavaLocalRef<jstring> inline_text =
       ConvertUTF16ToJavaString(env, inline_autocomplete_text);
-  jlong j_autocomplete_result =
+  jlong j_autocomplete_result_raw_ptr =
       reinterpret_cast<intptr_t>(&(autocomplete_result));
   Java_AutocompleteController_onSuggestionsReceived(
-      env, java_bridge, suggestion_list_obj, headers, inline_text,
-      j_autocomplete_result);
+      env, java_bridge, j_autocomplete_result, inline_text,
+      j_autocomplete_result_raw_ptr);
 }
 
 namespace {
@@ -577,21 +579,15 @@ AutocompleteControllerAndroid::BuildOmniboxSuggestion(
       match.suggestion_group_id.value_or(INVALID_GROUP));
 }
 
-ScopedJavaLocalRef<jobject>
-AutocompleteControllerAndroid::BuildOmniboxGroupHeaders(
+void AutocompleteControllerAndroid::PopulateOmniboxGroupHeaders(
     JNIEnv* env,
+    ScopedJavaLocalRef<jobject> j_autocomplete_result,
     const SearchSuggestionParser::HeadersMap& native_header_map) {
-  const auto j_header_map =
-      Java_AutocompleteController_createOmniboxGroupHeadersMap(
-          env, native_header_map.size());
-
   for (const auto& group_header : native_header_map) {
-    Java_AutocompleteController_addOmniboxGroupHeaderToMap(
-        env, j_header_map, group_header.first,
+    Java_AutocompleteController_addOmniboxGroupHeaderToResult(
+        env, j_autocomplete_result, group_header.first,
         ConvertUTF16ToJavaString(env, group_header.second));
   }
-
-  return j_header_map;
 }
 
 ScopedJavaLocalRef<jobject>

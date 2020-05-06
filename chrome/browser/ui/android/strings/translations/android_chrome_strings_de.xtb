@@ -33,6 +33,7 @@
 <translation id="1208340532756947324">Aktivieren Sie die Synchronisierung, um geräteübergreifend zu synchronisieren und zu personalisieren</translation>
 <translation id="1209206284964581585">Vorerst ausblenden</translation>
 <translation id="1227058898775614466">Navigationsverlauf</translation>
+<translation id="1229399675748764149">Diese Seite als Startseite festlegen</translation>
 <translation id="1231733316453485619">Synchronisierung aktivieren?</translation>
 <translation id="123724288017357924">Aktuelle Seite neu laden, Cache-Inhalte ignorieren</translation>
 <translation id="124116460088058876">Weitere Sprachen</translation>
@@ -71,6 +72,7 @@
 <translation id="1513352483775369820">Lesezeichen und Webprotokoll</translation>
 <translation id="1513858653616922153">Passwort löschen</translation>
 <translation id="1521774566618522728">Heute aktiv</translation>
+<translation id="1543538514740974167">Schneller hierherkommen</translation>
 <translation id="1544826120773021464">Wenn Sie Ihr Google-Konto verwalten möchten, tippen Sie auf die Schaltfläche "Konto verwalten"</translation>
 <translation id="1549000191223877751">Zu anderem Fenster wechseln</translation>
 <translation id="1553358976309200471">Chrome aktualisieren</translation>
@@ -432,7 +434,7 @@ Eventuell finden Sie unter <ph name="BEGIN_LINK" />history.google.com<ph name="E
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> Lesezeichen gelöscht</translation>
 <translation id="4665282149850138822"><ph name="NAME" /> wurde Ihrem Startbildschirm hinzugefügt.</translation>
 <translation id="4684427112815847243">Alles synchronisieren</translation>
-<translation id="4688610874307684559">Läuft in Chrome (Priorität)</translation>
+<translation id="4688610874307684559">Läuft in Chrome (erste Benachrichtigung)</translation>
 <translation id="4695891336199304370">{SHIPPING_OPTIONS,plural, =1{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 und <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> weitere}other{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 und <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> weitere}}</translation>
 <translation id="4696983787092045100">SMS an meine Geräte senden</translation>
 <translation id="4698034686595694889">Offline in <ph name="APP_NAME" /> ansehen</translation>
@@ -723,11 +725,13 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="7022756207310403729">Im Browser öffnen</translation>
 <translation id="702463548815491781">Empfohlen, wenn TalkBack oder der Schalterzugriff aktiviert ist</translation>
 <translation id="7029809446516969842">Passwörter</translation>
+<translation id="703523980599857277">Startseite ändern</translation>
 <translation id="7055152154916055070">Weiterleitung blockiert:</translation>
 <translation id="7063006564040364415">Verbindung zum Synchronisierungsserver konnte nicht hergestellt werden.</translation>
 <translation id="7071521146534760487">Konto verwalten</translation>
 <translation id="7077143737582773186">SD-Karte</translation>
 <translation id="7121362699166175603">Löscht den Verlauf und Autovervollständigungen in der Adressleiste. Unter <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> sind möglicherweise weitere Arten von Browserverlaufsdaten für Ihr Google-Konto gespeichert.</translation>
+<translation id="7128355412245153445">Sie können sich Ihre Top-Websites und aktuelle Meldungen anzeigen lassen, wenn Sie die Schaltfläche "Startbildschirm" antippen</translation>
 <translation id="7138678301420049075">Sonstiges</translation>
 <translation id="7146622961999026732">Diese Websites und Apps scheinen Ihnen wichtig zu sein:</translation>
 <translation id="7149158118503947153"><ph name="BEGIN_LINK" />Originalseite<ph name="END_LINK" /> aus <ph name="DOMAIN_NAME" /> laden</translation>
@@ -968,11 +972,13 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="9155898266292537608">Sie können auch kurz auf ein Wort tippen, um eine Suche zu starten</translation>
 <translation id="9169507124922466868">Navigationsverlauf ist halb geöffnet</translation>
 <translation id="9204836675896933765">Noch 1 Datei</translation>
+<translation id="9205796607887024517">Meldungen hier konfigurieren</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="9209888181064652401">Anrufe nicht möglich</translation>
 <translation id="9219103736887031265">Bilder</translation>
 <translation id="926205370408745186">Chrome-Aktivitäten aus Digital Wellbeing entfernen</translation>
 <translation id="932327136139879170">Privat</translation>
+<translation id="93753284658583800">Startseite geändert</translation>
 <translation id="938850635132480979">Fehler: <ph name="ERROR_CODE" /></translation>
 <translation id="95817756606698420">Chrome kann in China <ph name="BEGIN_BOLD" />Sogou<ph name="END_BOLD" /> für die Suche verwenden. Sie können dies unter <ph name="BEGIN_LINK" />Einstellungen<ph name="END_LINK" /> ändern.</translation>
 <translation id="968900484120156207">Von Ihnen besuchte Seiten werden hier angezeigt</translation>

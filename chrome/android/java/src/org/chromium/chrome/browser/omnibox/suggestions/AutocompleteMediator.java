@@ -14,6 +14,7 @@ import android.util.SparseArray;
 import android.view.View;
 
 import androidx.annotation.IntDef;
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.Px;
 import androidx.annotation.StringRes;
@@ -945,8 +946,8 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, StartStopWi
     }
 
     @Override
-    public void onSuggestionsReceived(List<OmniboxSuggestion> newSuggestions,
-            SparseArray<String> groupHeaders, String inlineAutocompleteText) {
+    public void onSuggestionsReceived(
+            AutocompleteResult autocompleteResult, String inlineAutocompleteText) {
         if (mShouldPreventOmniboxAutocomplete
                 || getSuggestionVisibilityState() == SuggestionVisibilityState.DISALLOWED) {
             resolvePendingKeyboardShowDecision();
@@ -960,6 +961,7 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, StartStopWi
                 || mShowCachedZeroSuggestResults
             : "Native suggestions received before native side intialialized";
 
+        final List<OmniboxSuggestion> newSuggestions = autocompleteResult.getSuggestionsList();
         if (mDeferredOnSelection != null) {
             mDeferredOnSelection.setShouldLog(newSuggestions.size() > mDeferredOnSelection.mPosition
                     && mDeferredOnSelection.mSuggestion.equals(
@@ -970,7 +972,7 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, StartStopWi
         String userText = mUrlBarEditingTextProvider.getTextWithoutAutocomplete();
         mUrlTextAfterSuggestionsReceived = userText + inlineAutocompleteText;
 
-        if (setNewSuggestions(newSuggestions, groupHeaders)) {
+        if (setNewSuggestions(autocompleteResult)) {
             // Reset all processors and clear existing suggestions if we received a new suggestions
             // list.
             for (SuggestionProcessor processor : mSuggestionProcessors) {
@@ -988,21 +990,18 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, StartStopWi
      * TODO(https://crbug.com/982818): identify suggestions that have simply changed places and
      * re-use them.
      *
-     * @param newSuggestions List of OmniboxSuggestions to apply.
-     * @param groupHeaders Map of group ID to header title.
+     * @param autocompleteResult New autocomplete details.
      * @return true, if newly supplied list was different from the previously supplied and cached
      *         list.
      */
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
-    boolean setNewSuggestions(
-            List<OmniboxSuggestion> newSuggestions, SparseArray<String> newGroupHeaders) {
-        final int newSuggestionsCount = newSuggestions != null ? newSuggestions.size() : 0;
+    boolean setNewSuggestions(AutocompleteResult autocompleteResult) {
+        final List<OmniboxSuggestion> newSuggestions = autocompleteResult.getSuggestionsList();
         boolean sameSuggestions = false;
-
-        final int currentSuggestionsCount = mAvailableSuggestions.size();
-        if (currentSuggestionsCount == newSuggestionsCount) {
+        final int newSuggestionsCount = newSuggestions.size();
+        if (mAvailableSuggestions.size() == newSuggestionsCount) {
             sameSuggestions = true;
-            for (int i = 0; i < currentSuggestionsCount; i++) {
+            for (int i = 0; i < newSuggestionsCount; i++) {
                 OmniboxSuggestion existingSuggestion = mAvailableSuggestions.get(i).suggestion;
                 if (!existingSuggestion.equals(newSuggestions.get(i))) {
                     sameSuggestions = false;
@@ -1011,7 +1010,8 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, StartStopWi
             }
         }
 
-        final int newHeadersCount = newGroupHeaders != null ? newGroupHeaders.size() : 0;
+        final SparseArray<String> newGroupHeaders = autocompleteResult.getGroupHeaders();
+        final int newHeadersCount = newGroupHeaders.size();
         sameSuggestions &= newHeadersCount == mGroupHeaders.size();
         if (sameSuggestions) {
             for (int i = 0; i < mGroupHeaders.size(); i++) {
@@ -1033,15 +1033,11 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, StartStopWi
             mAvailableSuggestions.add(new SuggestionViewInfo(processor, suggestion));
         }
 
-        if (newGroupHeaders == null) {
-            mGroupHeaders.clear();
-        } else {
-            mGroupHeaders = newGroupHeaders;
-        }
+        mGroupHeaders = newGroupHeaders;
         return true;
     }
 
-    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+    @NonNull
     SparseArray<String> getGroupHeaders() {
         return mGroupHeaders;
     }

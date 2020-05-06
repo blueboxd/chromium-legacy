@@ -52,7 +52,6 @@
 <translation id="1197088940767939838">Оранжевий</translation>
 <translation id="1201402288615127009">Далі</translation>
 <translation id="1201895884277373915">Більше з цього сайту</translation>
-<translation id="1205963431094182634">Увійдіть, щоб користуватися паролями, збереженими в обліковому записі Google</translation>
 <translation id="1206967143813997005">Недійсний підпис</translation>
 <translation id="1209206284964581585">Приховати</translation>
 <translation id="121201262018556460">Ви пробували зв’язатися з доменом <ph name="DOMAIN" />, проте сервер надав сертифікат, який містить слабкий ключ. Можливо, зловмисник зламав секретний ключ, а сервер не є тим, який вам потрібен (ви можете обмінюватися даними зі зловмисником).</translation>
@@ -1210,7 +1209,6 @@
 <translation id="6116338172782435947">Переглядати тексти й зображення в буфері обміну</translation>
 <translation id="6120179357481664955">Запам'ятати ідентифікатор UPI?</translation>
 <translation id="6124432979022149706">Конектори Chrome Enterprise</translation>
-<translation id="6135641591018127088">Згенерувати надійний пароль в обліковому записі Google</translation>
 <translation id="6146055958333702838">Перевірте всі кабелі та перезавантажте всі маршрутизатори, модеми чи інші мережеві
     пристрої, які ви використовуєте.</translation>
 <translation id="614940544461990577">Спробуйте:</translation>
@@ -1256,7 +1254,6 @@
 <translation id="6328639280570009161">Спробуйте вимкнути прогнозування мережі.</translation>
 <translation id="6328784461820205019">"З’єднання не конфіденційне", "&lt;span class="error-code"&gt;NET::ERR_CERT_AUTHORITY_INVALID&lt;/span&gt;", "&lt;span class="error-code"&gt;ERR_CERT_COMMON_NAME_INVALID&lt;/span&gt;", "&lt;span class="error-code"&gt;NET::ERR_CERT_WEAK_SIGNATURE_ALGORITHM&lt;/span&gt;", "&lt;span class="error-code"&gt;ERR_CERT_SYMANTEC_LEGACY&lt;/span&gt;" або "Помилка сертифіката SSL"</translation>
 <translation id="6328786501058569169">Це оманливий сайт</translation>
-<translation id="6333334544069706521">Використовувати паролі, збережені в обліковому записі Google</translation>
 <translation id="6337133576188860026">Звільняє менше <ph name="SIZE" />. Деякі сайти можуть завантажуватися повільніше під час наступного відвідування.</translation>
 <translation id="6337534724793800597">Фільтрувати правила за назвою</translation>
 <translation id="6353505687280762741">{COUNT,plural, =0{Немає}=1{1 пароль (для <ph name="DOMAIN_LIST" />, синхронізовано)}=2{2 паролі (для <ph name="DOMAIN_LIST" />, синхронізовано)}one{# пароль (для <ph name="DOMAIN_LIST" />, синхронізовано)}few{# паролі (для <ph name="DOMAIN_LIST" />, синхронізовано)}many{# паролів (для <ph name="DOMAIN_LIST" />, синхронізовано)}other{# пароля (для <ph name="DOMAIN_LIST" />, синхронізовано)}}</translation>

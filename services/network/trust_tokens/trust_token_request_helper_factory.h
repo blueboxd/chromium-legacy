@@ -10,6 +10,7 @@
 #include "base/callback.h"
 #include "base/no_destructor.h"
 #include "base/optional.h"
+#include "net/log/net_log_with_source.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/mojom/trust_tokens.mojom.h"
 #include "services/network/trust_tokens/pending_trust_token_store.h"
@@ -71,6 +72,7 @@ class TrustTokenRequestHelperFactory {
   void ConstructHelperUsingStore(
       SuitableTrustTokenOrigin top_frame_origin,
       mojom::TrustTokenParamsPtr params,
+      net::NetLogWithSource net_log,
       base::OnceCallback<void(TrustTokenStatusOrRequestHelper)> done,
       TrustTokenStore* store);
 

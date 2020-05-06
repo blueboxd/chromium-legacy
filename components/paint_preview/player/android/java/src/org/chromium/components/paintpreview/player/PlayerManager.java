@@ -14,6 +14,7 @@ import android.widget.FrameLayout;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.Callback;
+import org.chromium.base.TraceEvent;
 import org.chromium.base.UnguessableToken;
 import org.chromium.components.paintpreview.browser.NativePaintPreviewServiceProvider;
 import org.chromium.components.paintpreview.player.frame.PlayerFrameCoordinator;
@@ -34,11 +35,13 @@ public class PlayerManager {
     private PlayerFrameCoordinator mRootFrameCoordinator;
     private FrameLayout mHostView;
     private Callback<Boolean> mViewReadyCallback;
+    private static final String sInitEvent = "paint_preview PlayerManager init";
 
     public PlayerManager(GURL url, Context context,
             NativePaintPreviewServiceProvider nativePaintPreviewServiceProvider,
             String directoryKey, @Nonnull LinkClickHandler linkClickHandler,
             Callback<Boolean> viewReadyCallback, int backgroundColor) {
+        TraceEvent.startAsync(sInitEvent, hashCode());
         mContext = context;
         mDelegate = new PlayerCompositorDelegateImpl(nativePaintPreviewServiceProvider, url,
                 directoryKey, this::onCompositorReady, linkClickHandler);
@@ -59,6 +62,7 @@ public class PlayerManager {
             UnguessableToken[] subFrameGuids, int[] subFrameClipRects) {
         if (!safeToShow) {
             mViewReadyCallback.onResult(safeToShow);
+            TraceEvent.finishAsync(sInitEvent, hashCode());
             return;
         }
 
@@ -71,6 +75,7 @@ public class PlayerManager {
         mHostView.addView(mRootFrameCoordinator.getView(),
                 new FrameLayout.LayoutParams(
                         ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+        TraceEvent.finishAsync(sInitEvent, hashCode());
         mViewReadyCallback.onResult(safeToShow);
     }
 

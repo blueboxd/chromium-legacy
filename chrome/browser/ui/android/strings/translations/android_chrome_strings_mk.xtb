@@ -2,11 +2,11 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="mk">
 <translation id="1028699632127661925">Се испраќа до <ph name="DEVICE_NAME" />…</translation>
-<translation id="103269572468856066">Избриши податоци и од овие сајтови и апликации?</translation>
+<translation id="103269572468856066">Да се избришат податоците и од сајтовиве и апликацииве?</translation>
 <translation id="1036348656032585052">Исклучи</translation>
 <translation id="1036727731225946849">Се додава <ph name="WEBAPK_NAME" />…</translation>
 <translation id="1041308826830691739">Од веб-сајтови</translation>
-<translation id="1045899828449635435">Избриши податоци и од сајтовиве?</translation>
+<translation id="1045899828449635435">Да се избришат податоците и од сајтовиве?</translation>
 <translation id="1049743911850919806">Инкогнито</translation>
 <translation id="10614374240317010">Никогаш не е зачувано</translation>
 <translation id="1067922213147265141">Други услуги на Google</translation>

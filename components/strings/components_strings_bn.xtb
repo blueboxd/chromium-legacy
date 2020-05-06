@@ -52,7 +52,6 @@
 <translation id="1197088940767939838">কমলা</translation>
 <translation id="1201402288615127009">পরবর্তী</translation>
 <translation id="1201895884277373915">এই সাইট থেকে আরও</translation>
-<translation id="1205963431094182634">আপনার Google অ্যাকাউন্টে স্টোর করা পাসওয়ার্ড ব্যবহার করার জন্য আবার সাইন-ইন করুন</translation>
 <translation id="1206967143813997005">নষ্ট প্রাথমিক স্বাক্ষর</translation>
 <translation id="1209206284964581585">এখনকার মতো লুকান</translation>
 <translation id="121201262018556460">আপনি <ph name="DOMAIN" /> অ্যাক্সেস করার চেষ্টা করেছেন, কিন্তু সার্ভার একটি দুর্বল কী সম্বলিত সার্টিফিকেট উপস্থাপন করেছে৷ কোনও আক্রমণকারী ব্যক্তিগত কী অ্যাক্সেস করে থাকতে পারে এবং সার্ভারটি আপনার প্রত্যাশিত সার্ভার নাও হতে পারে (হতে পারে আপনি একজন আক্রমণকারীর সাথে যোগাযোগ করছেন)৷</translation>
@@ -1218,7 +1217,6 @@
 <translation id="6116338172782435947">ক্লিপবোর্ডে কপি করা টেক্সট এবং ছবি দেখতে</translation>
 <translation id="6120179357481664955">আপনার UPI আইডি মনে আছে?</translation>
 <translation id="6124432979022149706">Chrome Enterprise কানেক্টর</translation>
-<translation id="6135641591018127088">আপনার Google অ্যাকাউন্ট ব্যবহার করে একটি শক্তিশালী পাসওয়ার্ড তৈরি করুন</translation>
 <translation id="6146055958333702838">সব কেবল পরীক্ষা করুন এবং আপনি ব্যবহার করছেন এমন যেকোনো রাউটার, মডেম বা অন্যান্য নেটওয়ার্ক ডিভাইসগুলি আবার চালু করুন।</translation>
 <translation id="614940544461990577">এটি করে দেখুন:</translation>
 <translation id="6150036310511284407">বাঁদিকে ট্রিপল পাঞ্চ</translation>
@@ -1263,7 +1261,6 @@
 <translation id="6328639280570009161">নেটওয়ার্ক পূর্বানুমান নিষ্ক্রিয় করার চেষ্টা করুন</translation>
 <translation id="6328784461820205019">"আপনার কানেকশন গোপন নয়" বা "&lt;span class="error-code"&gt;NET::ERR_CERT_AUTHORITY_INVALID&lt;/span&gt;" বা "&lt;span class="error-code"&gt;ERR_CERT_COMMON_NAME_INVALID&lt;/span&gt;" বা "&lt;span class="error-code"&gt;NET::ERR_CERT_WEAK_SIGNATURE_ALGORITHM&lt;/span&gt;" বা "&lt;span class="error-code"&gt;ERR_CERT_SYMANTEC_LEGACY&lt;/span&gt;" বা "SSL সার্টিফিকেটে সমস্যা"</translation>
 <translation id="6328786501058569169">এই সাইটটি প্রতারণামূলক</translation>
-<translation id="6333334544069706521">আপনার Google অ্যাকাউন্টে স্টোর করা পাসওয়ার্ড ব্যবহার করুন</translation>
 <translation id="6337133576188860026"><ph name="SIZE" />-এর চেয়ে কম জায়গা খালি করে। পরের বার যখন দেখবেন তখন কিছু সাইট লোড হতে দেরি হতে পারে।</translation>
 <translation id="6337534724793800597">নাম অনুসারে ফিল্টারগুলি বাছাই করুন</translation>
 <translation id="6353505687280762741">{COUNT,plural, =0{একটিও নয়}=1{১টি পাসওয়ার্ড (<ph name="DOMAIN_LIST" />-এর জন্য, সিঙ্ক করা হয়েছে)}=2{২টি পাসওয়ার্ড (<ph name="DOMAIN_LIST" />-এর জন্য, সিঙ্ক করা হয়েছে)}one{#টি পাসওয়ার্ড (<ph name="DOMAIN_LIST" />-এর জন্য, সিঙ্ক করা হয়েছে)}other{#টি পাসওয়ার্ড (<ph name="DOMAIN_LIST" />-এর জন্য, সিঙ্ক করা হয়েছে)}}</translation>

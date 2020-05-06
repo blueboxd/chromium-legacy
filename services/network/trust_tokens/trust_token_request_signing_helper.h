@@ -13,6 +13,7 @@
 #include "base/containers/span.h"
 #include "base/optional.h"
 #include "net/http/http_request_headers.h"
+#include "net/log/net_log_with_source.h"
 #include "services/network/public/mojom/trust_tokens.mojom-shared.h"
 #include "services/network/public/mojom/url_response_head.mojom-forward.h"
 #include "services/network/trust_tokens/suitable_trust_token_origin.h"
@@ -148,7 +149,8 @@ class TrustTokenRequestSigningHelper : public TrustTokenRequestHelper {
       TrustTokenStore* token_store,
       Params params,
       std::unique_ptr<Signer> signer,
-      std::unique_ptr<TrustTokenRequestCanonicalizer> canonicalizer);
+      std::unique_ptr<TrustTokenRequestCanonicalizer> canonicalizer,
+      net::NetLogWithSource net_log = net::NetLogWithSource());
 
   ~TrustTokenRequestSigningHelper() override;
 
@@ -234,6 +236,7 @@ class TrustTokenRequestSigningHelper : public TrustTokenRequestHelper {
 
   std::unique_ptr<Signer> signer_;
   std::unique_ptr<TrustTokenRequestCanonicalizer> canonicalizer_;
+  net::NetLogWithSource net_log_;
 };
 
 }  // namespace network

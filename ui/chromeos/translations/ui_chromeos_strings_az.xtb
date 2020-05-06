@@ -90,6 +90,7 @@
 <translation id="1947424002851288782">Alman klaviaturası</translation>
 <translation id="1972984168337863910">Faylların rəy panelini genişləndirin</translation>
 <translation id="1984603991036629094">Erməni Fonetik klaviaturası</translation>
+<translation id="1995337122023280937">Faylın yerinə keçin</translation>
 <translation id="2001796770603320721">Diskdə idarə edin</translation>
 <translation id="2009067268969781306">Formatdan sonra diskdə saxlanılan bütün data silinəcək. Bu əməliyyat geri qaytarıla bilməz.</translation>
 <translation id="2028997212275086731">RAR arxivi</translation>
@@ -141,6 +142,7 @@
 <translation id="2638942478653899953">Google Diskə daxil olmaq alınmadı. Lütfən, <ph name="BEGIN_LINK" />hesabdan çıxın<ph name="END_LINK" /> və yenidən daxil olun.</translation>
 <translation id="2649120831653069427">Göyqurşaqlı balıq</translation>
 <translation id="2661146741306740526">16x9</translation>
+<translation id="2664412712123763093">Faylın yeri</translation>
 <translation id="2672394958563893062">Xəta oldu. Əvvəldən başlamaq üçün klikləyin.</translation>
 <translation id="2676946222714718093">Playing</translation>
 <translation id="2735698359135166290">Rumın standart klaviaturası</translation>
@@ -349,6 +351,7 @@
 <translation id="5081517858322016911"><ph name="TOTAL_FILE_SIZE" /> həcmində fayllar silinəcək</translation>
 <translation id="509429900233858213">Xəta baş verdi.</translation>
 <translation id="5098629044894065541">İvrit</translation>
+<translation id="5112685521274804841">Bu qovluqdakı fayllar ancaq oxuna bilər. Bəzi fəaliyyətlər dəstəklənmir.</translation>
 <translation id="5123433949759960244">Basketbol</translation>
 <translation id="5129662217315786329">Polyak</translation>
 <translation id="5144820558584035333">Hangul 3 Set (390)</translation>
@@ -696,6 +699,7 @@
 <translation id="9034924485347205037">Linux faylları</translation>
 <translation id="9035012421917565900">Element yenidən "<ph name="DESTINATION_NAME" />" təyinatına köçürülə bilməz, ona görə də bu əməliyyat geri qaytara bilməyəcəksiniz.</translation>
 <translation id="9038620279323455325">"<ph name="FILE_NAME" />" adlı fayl artıq mövcuddur. Fərqli ad seçin.</translation>
+<translation id="9062992083244091966">Faylları <ph name="APP_NAME" /> tətbiqləri ilə açmaq üçün əvvəlcə onları <ph name="APP_NAME" /> paylaşılan fayllar qovluğuna köçürün.</translation>
 <translation id="9064939804718829769">Transfer edilir..</translation>
 <translation id="9065203028668620118">Düzəliş edin</translation>
 <translation id="9099674669267916096">Səhifə sayı</translation>

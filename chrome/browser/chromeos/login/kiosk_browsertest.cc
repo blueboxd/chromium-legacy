@@ -23,6 +23,8 @@
 #include "base/strings/stringprintf.h"
 #include "base/system/sys_info.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
+#include "chrome/browser/chromeos/accessibility/speech_monitor.h"
 #include "chrome/browser/chromeos/app_mode/fake_cws.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_data.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_launch_error.h"
@@ -82,6 +84,7 @@
 #include "extensions/browser/app_window/app_window.h"
 #include "extensions/browser/app_window/app_window_registry.h"
 #include "extensions/browser/app_window/native_app_window.h"
+#include "extensions/browser/browsertest_util.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/sandboxed_unpacker.h"
@@ -626,7 +629,9 @@ class KioskTest : public OobeBaseTest {
     return GetInstalledApp()->location();
   }
 
-  void WaitForAppLaunchWithOptions(bool check_launch_data, bool terminate_app) {
+  void WaitForAppLaunchWithOptions(bool check_launch_data,
+                                   bool terminate_app,
+                                   bool keep_app_open = false) {
     ExtensionTestMessageListener launch_data_check_listener(
         "launchData.isKioskSession = true", false);
 
@@ -664,7 +669,8 @@ class KioskTest : public OobeBaseTest {
       window->GetBaseWindow()->Close();
 
     // Wait until the app terminates if it is still running.
-    if (!app_window_registry->GetAppWindowsForApp(test_app_id_).empty())
+    if (!keep_app_open &&
+        !app_window_registry->GetAppWindowsForApp(test_app_id_).empty())
       RunUntilBrowserProcessQuits();
 
     // Check that the app had been informed that it is running in a kiosk
@@ -1331,6 +1337,35 @@ IN_PROC_BROWSER_TEST_F(KioskTest, NoEnterpriseAutoLaunchWhenUntrusted) {
 
   // Check that no launch has started.
   EXPECT_FALSE(login_display_host->GetAppLaunchController());
+}
+
+IN_PROC_BROWSER_TEST_F(KioskTest, SpokenFeedback) {
+  SpeechMonitor sm;
+  AccessibilityManager::Get()->EnableSpokenFeedback(true);
+  StartAppLaunchFromLoginScreen(
+      NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_ONLINE);
+  WaitForAppLaunchWithOptions(false /* check launch data */,
+                              false /* terminate app */,
+                              true /* keep app open */);
+  sm.ExpectSpeech("ChromeVox spoken feedback is ready");
+  sm.Call([]() {
+    // Navigate to the next object (should move to the heading and speak
+    // it).
+    // Trigger opening of the options page (should do nothing).
+    // Then, force reading of 'done' given the right internal flag is
+    // set.
+    extensions::browsertest_util::ExecuteScriptInBackgroundPageNoWait(
+        AccessibilityManager::Get()->profile(),
+        extension_misc::kChromeVoxExtensionId,
+        R"(CommandHandler.onCommand('nextObject');
+          CommandHandler.onCommand('showOptionsPage');
+          if (CommandHandler.isKioskSession_)
+            ChromeVox.tts.speak('done');)");
+  });
+  sm.ExpectSpeech("Test Kiosk App 3 exclamations");
+  sm.ExpectSpeech("Heading 1");
+  sm.ExpectSpeech("done");
+  sm.Replay();
 }
 
 class KioskUpdateTest : public KioskTest {

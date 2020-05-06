@@ -1,0 +1,4 @@
+This is a testharness.js-based test.
+FAIL Request revalidation aren't blocked by CSP assert_unreached: CSP reports aren't sent for revalidation requests Reached unreachable code
+Harness: the test ran to completion.
+

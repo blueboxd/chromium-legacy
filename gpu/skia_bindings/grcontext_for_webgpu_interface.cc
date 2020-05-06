@@ -34,7 +34,7 @@ GrContextForWebGPUInterface::GrContextForWebGPUInterface(
   options.fShaderErrorHandler = this;
   options.fInternalMultisampleCount = 0;
   // TODO(senorblanco): use an actual passed-in Device, rather than assuming
-  // device ID 1.
+  // device ID 1.  http://crbug.com/1078775
   WGPUDevice device = webgpu->GetDevice(1);
   wgpuDeviceSetUncapturedErrorCallback(device, PrintDeviceError, 0);
   gr_context_ = GrContext::MakeDawn(device, options);

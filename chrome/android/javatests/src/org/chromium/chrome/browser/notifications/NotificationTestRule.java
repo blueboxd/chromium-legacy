@@ -9,10 +9,10 @@ import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
 
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.browser.site_settings.PermissionInfo;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.components.browser_ui.notifications.MockNotificationManagerProxy;
 import org.chromium.components.browser_ui.notifications.MockNotificationManagerProxy.NotificationEntry;
+import org.chromium.components.browser_ui.site_settings.PermissionInfo;
 import org.chromium.components.content_settings.ContentSettingValues;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;

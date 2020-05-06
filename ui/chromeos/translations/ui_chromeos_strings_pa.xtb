@@ -90,6 +90,7 @@
 <translation id="1947424002851288782">ਜਰਮਨ ਕੀ-ਬੋਰਡ</translation>
 <translation id="1972984168337863910">ਫ਼ਾਈਲਾਂ ਦੇ ਪ੍ਰਤੀਕਰਮ ਪੈਨਲਾਂ ਦਾ ਵਿਸਤਾਰ ਕਰੋ</translation>
 <translation id="1984603991036629094">ਆਰਮੀਨੀਅਨ ਧੁਨੀਆਤਮਿਕ ਕੀ-ਬੋਰਡ</translation>
+<translation id="1995337122023280937">ਫ਼ਾਈਲ ਟਿਕਾਣੇ 'ਤੇ ਜਾਓ</translation>
 <translation id="2001796770603320721">'ਡਰਾਈਵ' ਵਿੱਚ ਪ੍ਰਬੰਧਨ ਕਰੋ</translation>
 <translation id="2009067268969781306">ਕਿਸੇ ਡਰਾਈਵ ਨੂੰ ਫਾਰਮੈਟ ਕਰਨ ਨਾਲ ਇਸ 'ਤੇ ਸਟੋਰ ਕੀਤਾ ਸਾਰਾ ਡਾਟਾ ਮਿਟ ਜਾਵੇਗਾ। ਇਸ ਕਾਰਵਾਈ ਨੂੰ ਅਣਕੀਤਾ ਨਹੀਂ ਕੀਤਾ ਜਾ ਸਕਦਾ।</translation>
 <translation id="2028997212275086731">RAR ਪੁਰਾਲੇਖ</translation>
@@ -141,6 +142,7 @@
 <translation id="2638942478653899953">Google Drive 'ਤੇ ਪਹੁੰਚਿਆ ਨਹੀਂ ਜਾ ਸਕਿਆ। ਕਿਰਪਾ ਕਰਕੇ <ph name="BEGIN_LINK" />ਲੌਗ ਆਉਟ<ph name="END_LINK" /> ਅਤੇ ਫਿਰ ਲੌਗ ਇਨ ਕਰੋ।</translation>
 <translation id="2649120831653069427">ਰੈਂਬੋਫ਼ਿਸ਼</translation>
 <translation id="2661146741306740526">16x9</translation>
+<translation id="2664412712123763093">ਫ਼ਾਈਲ ਦਾ ਟਿਕਾਣਾ</translation>
 <translation id="2672394958563893062">ਕੋਈ ਗੜਬੜ ਹੋ ਗਈ। ਮੁੱਢ ਤੋਂ ਮੁੜ-ਸ਼ੁਰੂ ਕਰਨ ਲਈ ਕਲਿੱਕ ਕਰੋ।</translation>
 <translation id="2676946222714718093">ਤੇ ਪਲੇ ਹੋ ਰਿਹਾ ਹੈ</translation>
 <translation id="2735698359135166290">ਰੋਮਾਨੀਅਨ ਸਟੈਂਡਰਡ ਕੀ-ਬੋਰਡ</translation>
@@ -349,6 +351,7 @@
 <translation id="5081517858322016911"><ph name="TOTAL_FILE_SIZE" /> ਫ਼ਾਈਲਾਂ ਮਿਟਾ ਦਿੱਤੀਆਂ ਜਾਣਗੀਆਂ</translation>
 <translation id="509429900233858213">ਇੱਕ ਗੜਬੜ ਹੋਈ</translation>
 <translation id="5098629044894065541">Hebrew</translation>
+<translation id="5112685521274804841">ਇਸ ਫੋਲਡਰ ਦੀਆਂ ਫ਼ਾਈਲਾਂ ਸਿਰਫ਼ ਪੜ੍ਹਨ ਲਈ ਹਨ। ਕੁਝ ਸਰਗਰਮੀਆਂ ਸਮਰਥਿਤ ਨਹੀਂ ਹਨ।</translation>
 <translation id="5123433949759960244">ਬਾਸਕਟਬਾਲ</translation>
 <translation id="5129662217315786329">Polish</translation>
 <translation id="5144820558584035333">Hangul 3 ਸੈਟ (390)</translation>
@@ -698,6 +701,7 @@
 <translation id="9034924485347205037">Linux ਫ਼ਾਈਲਾਂ</translation>
 <translation id="9035012421917565900">ਆਈਟਮਾਂ ਨੂੰ '<ph name="DESTINATION_NAME" />' ਵਿੱਚ ਵਾਪਸ ਤਬਦੀਲ ਨਹੀਂ ਕੀਤਾ ਜਾ ਸਕਦਾ, ਇਸ ਕਰਕੇ ਤੁਸੀਂ ਇਸ ਕਾਰਵਾਈ ਨੂੰ ਅਣਕੀਤਾ ਕਰਨ ਦੇ ਯੋਗ ਨਹੀਂ ਹੋਵੋਗੇ।</translation>
 <translation id="9038620279323455325">"<ph name="FILE_NAME" />" ਨਾਮਕ ਫ਼ਾਈਲ ਪਹਿਲਾਂ ਹੀ ਮੌਜੂਦ ਹੈ। ਕਿਰਪਾ ਕਰਕੇ ਕੋਈ ਵੱਖਰਾ ਨਾਮ ਚੁਣੋ।</translation>
+<translation id="9062992083244091966"><ph name="APP_NAME" /> ਐਪਾਂ ਨਾਲ ਫ਼ਾਈਲਾਂ ਖੋਲ੍ਹਣ ਲਈ, ਪਹਿਲਾਂ ਉਹਨਾਂ ਨੂੰ <ph name="APP_NAME" /> ਸਾਂਝੀਆਂ ਕੀਤੀਆਂ ਫ਼ਾਈਲਾਂ ਦੇ ਫੋਲਡਰ ਵਿੱਚ ਲਿਜਾਓ।</translation>
 <translation id="9064939804718829769">ਟ੍ਰਾਂਸਫਰ ਕਰ ਰਿਹਾ ਹੈ...</translation>
 <translation id="9065203028668620118">ਸੰਪਾਦਿਤ ਕਰੋ</translation>
 <translation id="9099674669267916096">ਪੰਨਾ ਗਿਣਤੀ</translation>

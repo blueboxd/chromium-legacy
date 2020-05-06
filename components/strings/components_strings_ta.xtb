@@ -52,7 +52,6 @@
 <translation id="1197088940767939838">ஆரஞ்சு</translation>
 <translation id="1201402288615127009">அடுத்து</translation>
 <translation id="1201895884277373915">இந்தத் தளம் கூடுதலாக வழங்குபவை</translation>
-<translation id="1205963431094182634">உங்கள் Google கணக்கில் சேமிக்கப்பட்டுள்ள கடவுச்சொற்களை உபயோகிக்க உள்நுழையவும்</translation>
 <translation id="1206967143813997005">தொடக்கக் கையொப்பம் சரியானதல்ல</translation>
 <translation id="1209206284964581585">இப்போதைக்கு மறை</translation>
 <translation id="121201262018556460">நீங்கள் <ph name="DOMAIN" /> ஐ அடைய முயற்சித்தீர்கள் ஆனால் சேவையகம் ஒரு வலுவற்ற விசை கொண்ட சான்றிதழை வழங்கியது. தனிப்பட்ட விசையை தீங்கிழைப்பவர் களவாடி இருப்பதால், சேவையகம் நீங்கள் எதிர்பார்த்த (தீங்கிழைப்பவருடன் நீங்கள் தகவல் பரிமாற்றம் செய்துகொண்டிருக்கலாம்) சேவையகமாக இல்லாமல் இருக்கலாம்.</translation>
@@ -1207,7 +1206,6 @@
 <translation id="6116338172782435947">கிளிப்போர்டுக்கு நகலெடுத்த உரையையும் படங்களையும் பார்க்க விரும்புகிறது</translation>
 <translation id="6120179357481664955">உங்கள் UPI ஐடியைச் சேமிக்கவா?</translation>
 <translation id="6124432979022149706">Chrome Enterprise Connectors</translation>
-<translation id="6135641591018127088">Google கணக்கைப் பயன்படுத்தி வலிமையான கடவுச்சொல்லை உருவாக்குக</translation>
 <translation id="6146055958333702838">கேபிள்களைச் சரிபார்த்து, நீங்கள் பயன்படுத்தக்கூடிய ரூட்டர்கள், மோடம்கள் அல்லது பிற நெட்வொர்க் சாதனங்களை மறுதொடக்கம் செய்யவும்.</translation>
 <translation id="614940544461990577">இவற்றைச் செய்து பார்க்கவும்:</translation>
 <translation id="6150036310511284407">டிரிப்பில் பஞ்ச் லெஃப்ட்</translation>
@@ -1252,7 +1250,6 @@
 <translation id="6328639280570009161">நெட்வொர்க் யூகத்தை முடக்க முயலவும்</translation>
 <translation id="6328784461820205019">"உங்கள் இணைப்பு தனிப்பட்டது அல்ல" அல்லது "&lt;span class="error-code"&gt;NET::ERR_CERT_AUTHORITY_INVALID&lt;/span&gt;" அல்லது "&lt;span class="error-code"&gt;ERR_CERT_COMMON_NAME_INVALID&lt;/span&gt;" அல்லது "&lt;span class="error-code"&gt;NET::ERR_CERT_WEAK_SIGNATURE_ALGORITHM&lt;/span&gt;" அல்லது "&lt;span class="error-code"&gt;ERR_CERT_SYMANTEC_LEGACY&lt;/span&gt;" அல்லது "SSL சான்றிதழ் பிழை"</translation>
 <translation id="6328786501058569169">இது ஏமாற்றக்கூடிய தளம்</translation>
-<translation id="6333334544069706521">Google கணக்கில் சேமிக்கப்பட்ட கடவுச்சொற்களைப் பயன்படுத்துக</translation>
 <translation id="6337133576188860026"><ph name="SIZE" />க்கும் குறைவான அளவைக் காலியாக்கும். நீங்கள் அடுத்த முறை பார்வையிடும் போது, சில தளங்கள் மிகவும் மெதுவாக ஏற்றப்படலாம்.</translation>
 <translation id="6337534724793800597">பெயரின்படி கொள்கைகளை வடி</translation>
 <translation id="6353505687280762741">{COUNT,plural, =0{எதுவுமில்லை}=1{1 கடவுச்சொல் (டொமைன்கள்: <ph name="DOMAIN_LIST" />, ஒத்திசைக்கப்பட்டது)}=2{2 கடவுச்சொற்கள் (டொமைன்கள்: <ph name="DOMAIN_LIST" />, ஒத்திசைக்கப்பட்டன)}other{# கடவுச்சொற்கள் (டொமைன்கள்: <ph name="DOMAIN_LIST" />, ஒத்திசைக்கப்பட்டன)}}</translation>

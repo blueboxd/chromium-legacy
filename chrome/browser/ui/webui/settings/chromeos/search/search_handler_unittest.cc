@@ -42,7 +42,7 @@ class SearchHandlerTest : public testing::Test {
         /*sync_service=*/nullptr, /*supervised_user_service=*/nullptr,
         /*kerberos_credentials_manager=*/nullptr,
         /*arc_app_list_prefs=*/nullptr, /*identity_manager=*/nullptr,
-        /*android_sms_service=*/nullptr);
+        /*android_sms_service=*/nullptr, /*printers_manager=*/nullptr);
 
     handler_ = std::make_unique<SearchHandler>(provider_.get(),
                                                &local_search_service_);
@@ -70,13 +70,10 @@ TEST_F(SearchHandlerTest, Success) {
   mojom::SearchHandlerAsyncWaiter(handler_remote_.get())
       .Search(base::ASCIIToUTF16("Wi-Fi"), &search_results);
 
-  // Multiple results should be available, and they should have Wi-Fi metadata.
+  // Multiple results should be available. We don't verify values on the
+  // retrieved metadata because so that we don't have to update this test
+  // whenever Wi-Fi settings are changed.
   EXPECT_GT(search_results.size(), 0u);
-  for (const auto& result : search_results) {
-    EXPECT_EQ(chromeos::settings::mojom::kWifiNetworksSubpagePath,
-              result->url_path_with_parameters);
-    EXPECT_EQ(mojom::SearchResultIcon::kWifi, result->icon);
-  }
 }
 
 TEST_F(SearchHandlerTest, NoResults) {

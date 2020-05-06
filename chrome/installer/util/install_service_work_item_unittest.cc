@@ -126,7 +126,8 @@ TEST_F(InstallServiceWorkItemTest, Do_MultiSzToVector) {
   EXPECT_EQ(vec.size(), base::size(kMultiSz));
 }
 
-TEST_F(InstallServiceWorkItemTest, Do_FreshInstall) {
+// Test is flaky: https://crbug.com/1078916.
+TEST_F(InstallServiceWorkItemTest, DISABLED_Do_FreshInstall) {
   auto item = std::make_unique<InstallServiceWorkItem>(
       kServiceName, kServiceDisplayName,
       base::CommandLine(base::FilePath(kServiceProgramPath)), kClsid, kIid);

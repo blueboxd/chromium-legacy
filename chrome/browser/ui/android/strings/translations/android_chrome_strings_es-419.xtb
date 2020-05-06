@@ -33,6 +33,7 @@
 <translation id="1208340532756947324">Para sincronizar diferentes dispositivos y personalizar tu experiencia, activa la sincronización</translation>
 <translation id="1209206284964581585">Ocultar por el momento</translation>
 <translation id="1227058898775614466">Historial de navegación</translation>
+<translation id="1229399675748764149">Hacer que esta página sea tu página principal</translation>
 <translation id="1231733316453485619">¿Quieres activar la sincronización?</translation>
 <translation id="123724288017357924">Volver a cargar página actual; ignorar contenido en caché</translation>
 <translation id="124116460088058876">Más idiomas</translation>
@@ -71,6 +72,7 @@
 <translation id="1513352483775369820">Favoritos e historial web</translation>
 <translation id="1513858653616922153">Borrar contraseña</translation>
 <translation id="1521774566618522728">Activo hoy</translation>
+<translation id="1543538514740974167">Accede rápidamente</translation>
 <translation id="1544826120773021464">Para administrar tu Cuenta de Google, presiona el botón "Administrar cuenta"</translation>
 <translation id="1549000191223877751">Mover a otra ventana</translation>
 <translation id="1553358976309200471">Actualizar Chrome</translation>
@@ -723,11 +725,13 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mediante anuncio
 <translation id="7022756207310403729">Abrir en el navegador</translation>
 <translation id="702463548815491781">Se recomienda cuando TalkBack o "Accesibilidad mejorada" están activadas</translation>
 <translation id="7029809446516969842">Contraseñas</translation>
+<translation id="703523980599857277">Cambiar la página principal</translation>
 <translation id="7055152154916055070">Se bloqueó el redireccionamiento:</translation>
 <translation id="7063006564040364415">No se pudo establecer conexión con el servidor de sincronización.</translation>
 <translation id="7071521146534760487">Administrar cuenta</translation>
 <translation id="7077143737582773186">Tarjeta SD</translation>
 <translation id="7121362699166175603">Borra el historial y las sugerencias de autocompletado en la barra de direcciones. Es posible que tu cuenta de Google tenga otros formularios del historial de navegación en <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
+<translation id="7128355412245153445">Mira tus historias recientes y sitios populares cuando presionas el botón de inicio</translation>
 <translation id="7138678301420049075">Otros</translation>
 <translation id="7146622961999026732">Estos sitios y apps parecen importantes para ti:</translation>
 <translation id="7149158118503947153"><ph name="BEGIN_LINK" />Cargar página original<ph name="END_LINK" /> de <ph name="DOMAIN_NAME" /></translation>
@@ -968,11 +972,13 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mediante anuncio
 <translation id="9155898266292537608">También puedes presionar brevemente la palabra para realizar una búsqueda</translation>
 <translation id="9169507124922466868">El historial de navegación está abierto a la mitad</translation>
 <translation id="9204836675896933765">Queda 1 archivo</translation>
+<translation id="9205796607887024517">Controla tus historias aquí</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="9209888181064652401">No se pueden realizar llamadas</translation>
 <translation id="9219103736887031265">Imágenes</translation>
 <translation id="926205370408745186">Quita tu actividad en Chrome de Bienestar digital</translation>
 <translation id="932327136139879170">Página principal</translation>
+<translation id="93753284658583800">Se cambió la página principal</translation>
 <translation id="938850635132480979">Error: <ph name="ERROR_CODE" /></translation>
 <translation id="95817756606698420">Chrome puede usar <ph name="BEGIN_BOLD" />Sogou<ph name="END_BOLD" /> para realizar búsquedas en China. Puede cambiar esta opción en <ph name="BEGIN_LINK" />Configuración<ph name="END_LINK" />.</translation>
 <translation id="968900484120156207">Las páginas que visites aparecerán aquí</translation>

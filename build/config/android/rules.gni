@@ -952,11 +952,22 @@ if (enable_java_templates) {
     _rebased_resource_files = rebase_path(_resource_files, root_build_dir)
     write_file(_res_sources_path, _rebased_resource_files)
 
+    # This is necessary so we only lint chromium resources.
+    if (defined(invoker.chromium_code)) {
+      _chromium_code = invoker.chromium_code
+    } else {
+      # Default based on whether target is in third_party.
+      _chromium_code =
+          filter_exclude([ get_label_info(":$target_name", "dir") ],
+                         [ "*\bthird_party\b*" ]) != []
+    }
+
     write_build_config(_build_config_target_name) {
       type = "android_resources"
       build_config = _build_config
       resources_zip = _resources_zip
       res_sources_path = _res_sources_path
+      chromium_code = _chromium_code
 
       if (defined(_srcjar_path)) {
         forward_variables_from(invoker,
@@ -1833,9 +1844,6 @@ if (enable_java_templates) {
 
       supports_android = true
       requires_android = true
-      if (!defined(invoker.min_sdk_version)) {
-        min_sdk_version = default_min_sdk_version
-      }
 
       if (!defined(jar_excluded_patterns)) {
         jar_excluded_patterns = []
@@ -2748,7 +2756,6 @@ if (enable_java_templates) {
                                "enable_jetify",
                                "jacoco_never_instrument",
                                "javac_args",
-                               "manifest_package",
                                "native_lib_placeholders",
                                "processor_args_javac",
                                "skip_jetify",
@@ -2784,7 +2791,6 @@ if (enable_java_templates) {
       main_target_name = _template_name
       supports_android = true
       requires_android = true
-      min_sdk_version = _min_sdk_version
       srcjar_deps = _srcjar_deps
       final_jar_path = _jar_path
       if (defined(_final_dex_path)) {
@@ -3328,9 +3334,46 @@ if (enable_java_templates) {
       _final_deps += [ ":$_apk_operations_target_name" ]
     }
 
+    # This is necessary so we only lint chromium apks.
+    if (defined(invoker.chromium_code)) {
+      _chromium_code = invoker.chromium_code
+    } else {
+      # Default based on whether target is in third_party.
+      _chromium_code =
+          filter_exclude([ get_label_info(":$target_name", "dir") ],
+                         [ "*\bthird_party\b*" ]) != []
+    }
+
+    # Bundle modules get linted via android_app_bundle targets.
+    # Skip testonly apks since many of them trigger lint warnings.
+    _enable_lint = _chromium_code && !_is_bundle_module &&
+                   (!defined(testonly) || !testonly) && !disable_android_lint
+    if (_enable_lint) {
+      # Only run lint on final apk targets so that lint can run on all source
+      # files and all resources. This is both faster and more correct for checks
+      # like UnusedResources and IntDef.
+      _android_lint_target = "${target_name}__lint"
+      android_lint(_android_lint_target) {
+        forward_variables_from(invoker,
+                               [
+                                 "manifest_package",
+                                 "min_sdk_version",
+                                 "lint_suppressions_file",
+                               ])
+        build_config = _build_config
+        deps = [
+          ":$_build_config_target",
+          ":$_java_target",
+        ]
+      }
+    } else {
+      not_needed(invoker, [ "manifest_package" ])
+    }
+
     group(target_name) {
       forward_variables_from(invoker,
                              [
+                               "assert_no_deps",
                                "data",
                                "data_deps",
                                "metadata",
@@ -3341,6 +3384,10 @@ if (enable_java_templates) {
 
       if (!defined(data_deps)) {
         data_deps = []
+      }
+
+      if (_enable_lint) {
+        data_deps += [ ":$_android_lint_target" ]
       }
 
       if (_incremental_apk) {
@@ -3395,6 +3442,7 @@ if (enable_java_templates) {
                                "annotation_processor_deps",
                                "apk_under_test",
                                "app_as_shared_lib",
+                               "assert_no_deps",
                                "bundles_supported",
                                "chromium_code",
                                "command_line_flags_file",
@@ -3535,6 +3583,7 @@ if (enable_java_templates) {
                                "android_manifest_dep",
                                "annotation_processor_deps",
                                "app_as_shared_lib",
+                               "assert_no_deps",
                                "base_module_target",
                                "bundle_target",
                                "chromium_code",
@@ -4898,13 +4947,38 @@ if (enable_java_templates) {
       }
     }
 
+    if (!disable_android_lint) {
+      # Only run lint on final output targets so that lint can run on all source
+      # files and all resources. This is both faster and more correct for checks
+      # like UnusedResources and IntDef.
+      _android_lint_target = "${_target_name}__lint"
+      android_lint(_android_lint_target) {
+        forward_variables_from(invoker,
+                               [
+                                 "manifest_package",
+                                 "min_sdk_version",
+                                 "lint_suppressions_file",
+                               ])
+        build_config = _build_config
+        deps = _module_java_targets + [ ":$_build_config_target" ]
+      }
+    } else {
+      not_needed(invoker, [ "manifest_package" ])
+    }
+
     group(_target_name) {
       public_deps = [
-        ":${_target_name}__bundle",
+        ":$_bundle_target_name",
         ":${_target_name}__wrapper_script",
       ]
       if (defined(_size_info_target)) {
         public_deps += [ ":$_size_info_target" ]
+      }
+      if (!disable_android_lint) {
+        if (!defined(data_deps)) {
+          data_deps = []
+        }
+        data_deps += [ ":$_android_lint_target" ]
       }
     }
 

@@ -47,7 +47,6 @@ std::unique_ptr<TileService> CreateTileService(
       cached_image_fetcher, reduced_mode_image_fetcher);
 
   // Create tile store and manager.
-  auto config = TileConfig::CreateFromFinch();
   auto task_runner = base::ThreadPool::CreateSequencedTaskRunner(
       {base::MayBlock(), base::TaskPriority::USER_VISIBLE});
   base::FilePath tile_store_dir = storage_dir.Append(kTileDbName);
@@ -55,17 +54,17 @@ std::unique_ptr<TileService> CreateTileService(
       leveldb_proto::ProtoDbType::UPBOARDING_QUERY_TILE_STORE, tile_store_dir,
       task_runner);
   auto tile_store = std::make_unique<TileStore>(std::move(tile_db));
-  auto tile_manager = TileManager::Create(
-      std::move(tile_store), base::DefaultClock::GetInstance(), config.get());
+  auto tile_manager = TileManager::Create(std::move(tile_store),
+                                          base::DefaultClock::GetInstance());
 
   // Create fetcher.
-  auto tile_fetcher =
-      TileFetcher::Create(config->get_query_tile_url, country_code,
-                          accepted_language, api_key, url_loader_factory);
+  auto tile_fetcher = TileFetcher::Create(
+      TileConfig::GetQueryTilesServerUrl(), country_code, accepted_language,
+      api_key, TileConfig::GetExperimentTag(), url_loader_factory);
 
-  return std::make_unique<TileServiceImpl>(
-      std::move(image_loader), std::move(tile_manager), std::move(config),
-      scheduler, std::move(tile_fetcher));
+  return std::make_unique<TileServiceImpl>(std::move(image_loader),
+                                           std::move(tile_manager), scheduler,
+                                           std::move(tile_fetcher));
 }
 
 }  // namespace upboarding

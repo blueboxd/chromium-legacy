@@ -107,7 +107,7 @@ TileFetcher::FinishedCallback TileFetcherTest::StoreResult() {
 std::unique_ptr<TileFetcher> TileFetcherTest::CreateFetcher() {
   std::unique_ptr<TileFetcher> fetcher =
       TileFetcher::Create(GURL(kServerURL), "US", kAcceptLanguages,
-                          kGoogleApiKey, test_shared_url_loader_factory_);
+                          kGoogleApiKey, "", test_shared_url_loader_factory_);
   return fetcher;
 }
 

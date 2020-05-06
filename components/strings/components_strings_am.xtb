@@ -52,7 +52,6 @@
 <translation id="1197088940767939838">ብርቱካናማ</translation>
 <translation id="1201402288615127009">ቀጣይ</translation>
 <translation id="1201895884277373915">ተጨማሪ ከዚህ ጣቢያ</translation>
-<translation id="1205963431094182634">በእርስዎ Google መለያ ውስጥ የተከማቹ የይለፍ ቃላትን ለመጠቀም በመለያ ይግቡ</translation>
 <translation id="1206967143813997005">መጥፎ የመጀመሪያ ፊርማ</translation>
 <translation id="1209206284964581585">ለአሁን ደብቅ</translation>
 <translation id="121201262018556460"><ph name="DOMAIN" />ን ለመድረስ ሞክረዋል፣ ግን አገልጋዩ ደካማ ቁልፍ የያዘ የእውቅና ማረጋገጫ ነው ያቀረበው። አንድ አጥቂ የግል ቁልፉን ሰብሮ ሊሆን ይችላል፣ እና አገልጋዩ የጠበቁት ላይሆን ይችላል (ከአጥቂ ጋር እየተገናኙ ሊሆኑ ይችላሉ)።</translation>
@@ -1208,7 +1207,6 @@
 <translation id="6116338172782435947">ወደ ቅንጥብ ሰሌዳው የተቀዱ ጽሑፍ እና ምስሎችን ይመልከቱ</translation>
 <translation id="6120179357481664955">የእርስዎን UPI መታወቂያ ያስታውሳሉ?</translation>
 <translation id="6124432979022149706">Chrome Enterprise አያያዦች</translation>
-<translation id="6135641591018127088">ጠንካራ የይለፍ ቃል ለማመንጨት የGoogle መለያዎን ይጠቀሙ</translation>
 <translation id="6146055958333702838">ማናቸውም ገመዶችን ይፈትሹና እየተጠቀሙ ሊሆኑ የሚችሏቸውን ማንኛውም ራውተሮች፣
         ሞደሞችን ወይም ሌላ አውታረ መረብ መሣሪያዎችን ዳግም ያስጀምሩ።</translation>
 <translation id="614940544461990577">ይሞክሩ፦</translation>
@@ -1254,7 +1252,6 @@
 <translation id="6328639280570009161">የአውታረ መረብ መገመትን አሰናክለው ይሞክሩ</translation>
 <translation id="6328784461820205019">«የእርስዎ ግንኙነት ግላዊ አይደለም» ወይም «&lt;span class="error-code"&gt;NET::ERR_CERT_AUTHORITY_INVALID&lt;/span&gt;» ወይም «&lt;span class="error-code"&gt;ERR_CERT_COMMON_NAME_INVALID&lt;/span&gt;» ወይም «&lt;span class="error-code"&gt;NET::ERR_CERT_WEAK_SIGNATURE_ALGORITHM&lt;/span&gt;» ወይም «&lt;span class="error-code"&gt;ERR_CERT_SYMANTEC_LEGACY&lt;/span&gt;» ወይም «SSL የእውቅና ማረጋገጫ ስህተት»</translation>
 <translation id="6328786501058569169">ይህ ጣቢያ አታላይ ነው</translation>
-<translation id="6333334544069706521">በGoogle መለያዎ ላይ የተከማቹ የይለፍ ቃላትን ይጠቀሙ</translation>
 <translation id="6337133576188860026">ከ<ph name="SIZE" /> ያነሰ ቦታ ያስለቅቃል። አንዳንድ ጣቢያዎች በሚቀጥለው ጉብኝትዎ ላይ ይበልጥ በዝግታ ሊጫኑ ይችላሉ።</translation>
 <translation id="6337534724793800597">መምሪያዎችን በስም አጣራ</translation>
 <translation id="6353505687280762741">{COUNT,plural, =0{ምንም}=1{1 ይለፍ ቃል (ለ<ph name="DOMAIN_LIST" />፣ ሰምሯል)}=2{2 ይለፍ ቃላት (ለ<ph name="DOMAIN_LIST" />፣ ሰምሯል)}one{# ይለፍ ቃላት (ለ<ph name="DOMAIN_LIST" />፣ ሰምሯል)}other{# ይለፍ ቃላት (ለ<ph name="DOMAIN_LIST" />፣ ሰምሯል)}}</translation>

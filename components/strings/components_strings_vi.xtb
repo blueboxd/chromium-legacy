@@ -52,7 +52,6 @@
 <translation id="1197088940767939838">Màu cam</translation>
 <translation id="1201402288615127009">Tiếp theo</translation>
 <translation id="1201895884277373915">Thêm từ trang web này</translation>
-<translation id="1205963431094182634">Đăng nhập để sử dụng mật khẩu lưu trữ trong Tài khoản Google của bạn</translation>
 <translation id="1206967143813997005">Chữ ký ban đầu không hợp lệ</translation>
 <translation id="1209206284964581585">Ẩn ngay bây giờ</translation>
 <translation id="121201262018556460">Bạn đã cố truy cập vào <ph name="DOMAIN" /> nhưng máy chủ xuất trình chứng chỉ chứa khóa yếu. Kẻ tấn công có thể đã phá khóa cá nhân và máy chủ đó có thể không phải là máy chủ bạn mong đợi (bạn có thể đang giao tiếp với một kẻ tấn công).</translation>
@@ -1217,7 +1216,6 @@ Nếu bạn từ chối, các tùy chọn cài đặt quyền riêng tư của b
 <translation id="6116338172782435947">Xem văn bản và hình ảnh đã sao chép sang khay nhớ tạm</translation>
 <translation id="6120179357481664955">Ghi nhớ mã nhận dạng sản phẩm duy nhất (UPI) của bạn?</translation>
 <translation id="6124432979022149706">Trình kết nối của Chrome Enterprise</translation>
-<translation id="6135641591018127088">Sử dụng Tài khoản Google của bạn để tạo mật khẩu mạnh</translation>
 <translation id="6146055958333702838">Kiểm tra mọi dây cáp rồi khởi động lại bộ định tuyến, modem hoặc các thiết bị
     mạng khác mà bạn có thể đang sử dụng.</translation>
 <translation id="614940544461990577">Hãy thử:</translation>
@@ -1263,7 +1261,6 @@ Nếu bạn từ chối, các tùy chọn cài đặt quyền riêng tư của b
 <translation id="6328639280570009161">Thử tắt dự đoán mạng</translation>
 <translation id="6328784461820205019">"Kết nối của bạn không phải là kết nối riêng tư" hoặc "&lt;span class="error-code"&gt;NET::ERR_CERT_AUTHORITY_INVALID&lt;/span&gt;" hoặc "&lt;span class="error-code"&gt;ERR_CERT_COMMON_NAME_INVALID&lt;/span&gt;" hoặc "&lt;span class="error-code"&gt;NET::ERR_CERT_WEAK_SIGNATURE_ALGORITHM&lt;/span&gt;" hoặc "&lt;span class="error-code"&gt;ERR_CERT_SYMANTEC_LEGACY&lt;/span&gt;" hoặc "Lỗi chứng chỉ SSL"</translation>
 <translation id="6328786501058569169">Đây là trang web lừa đảo</translation>
-<translation id="6333334544069706521">Sử dụng mật khẩu lưu trữ trong Tài khoản Google của bạn</translation>
 <translation id="6337133576188860026">Bộ nhớ đệm còn chưa đầy <ph name="SIZE" />. Một số trang web có thể tải chậm hơn vào lần tới bạn truy cập.</translation>
 <translation id="6337534724793800597">Lọc chính sách theo tên</translation>
 <translation id="6353505687280762741">{COUNT,plural, =0{Không có}=1{1 mật khẩu (cho <ph name="DOMAIN_LIST" />, đã đồng bộ hóa)}=2{2 mật khẩu (cho <ph name="DOMAIN_LIST" />, đã đồng bộ hóa)}other{# mật khẩu (cho <ph name="DOMAIN_LIST" />, đã đồng bộ hóa)}}</translation>

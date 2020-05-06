@@ -52,7 +52,6 @@
 <translation id="1197088940767939838">Oransje</translation>
 <translation id="1201402288615127009">Neste</translation>
 <translation id="1201895884277373915">Mer fra dette nettstedet</translation>
-<translation id="1205963431094182634">Logg på for å bruke passord som er lagret i Google-kontoen din</translation>
 <translation id="1206967143813997005">Ugyldig start på signaturen</translation>
 <translation id="1209206284964581585">Skjul for øyeblikket</translation>
 <translation id="121201262018556460">Du forsøkte å gå til <ph name="DOMAIN" />, men tjeneren presenterte et sertifikat som inneholder en svak nøkkel. En angriper kan ha løst den private nøkkelen, og tjeneren er kanskje ikke den tjeneren du forventet (det kan hende at du kommuniserer med en angriper).</translation>
@@ -1218,7 +1217,6 @@ effektuere
 <translation id="6116338172782435947">Se tekst og bilder som er kopiert til utklippstavlen</translation>
 <translation id="6120179357481664955">Husker du UPI-ID-en din?</translation>
 <translation id="6124432979022149706">Chrome Enterprise Connectors</translation>
-<translation id="6135641591018127088">Bruk Google-kontoen din til å generere et sterkt passord</translation>
 <translation id="6146055958333702838">Sjekk alle kabler, og start rutere, modemer eller andre nettverksenheter
      du bruker, på nytt.</translation>
 <translation id="614940544461990577">Prøv dette:</translation>
@@ -1264,7 +1262,6 @@ effektuere
 <translation id="6328639280570009161">Prøv å slå av nettverksforutsigelse</translation>
 <translation id="6328784461820205019">«Tilkoblingen din er ikke privat», «&lt;span class="error-code"&gt;NET::ERR_CERT_AUTHORITY_INVALID&lt;/span&gt;», «&lt;span class="error-code"&gt;ERR_CERT_COMMON_NAME_INVALID&lt;/span&gt;», «&lt;span class="error-code"&gt;NET::ERR_CERT_WEAK_SIGNATURE_ALGORITHM&lt;/span&gt;», «&lt;span class="error-code"&gt;ERR_CERT_SYMANTEC_LEGACY&lt;/span&gt;» eller «SSL-sertifikatfeil»</translation>
 <translation id="6328786501058569169">Dette nettstedet er villedende</translation>
-<translation id="6333334544069706521">Bruk passord som er lagret i Google-kontoen din</translation>
 <translation id="6337133576188860026">Frigjør mindre enn <ph name="SIZE" />. Det kan hende enkelte nettsteder lastes inn tregere neste gang du besøker dem.</translation>
 <translation id="6337534724793800597">Filtrér retningslinjer etter navn</translation>
 <translation id="6353505687280762741">{COUNT,plural, =0{Ingen}=1{1 passord (for <ph name="DOMAIN_LIST" /> – synkronisert)}=2{2 passord (for <ph name="DOMAIN_LIST" /> – synkronisert)}other{# passord (for <ph name="DOMAIN_LIST" /> – synkronisert)}}</translation>

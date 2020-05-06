@@ -32,7 +32,6 @@
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/app_list/chrome_app_list_item.h"
 #include "chrome/browser/ui/app_list/chrome_app_list_model_updater.h"
-#include "chrome/browser/ui/app_list/extension_app_item.h"
 #include "chrome/browser/ui/app_list/page_break_app_item.h"
 #include "chrome/browser/ui/app_list/page_break_constants.h"
 #include "chrome/common/chrome_features.h"

@@ -21,7 +21,7 @@ DisplayInfo CreateDisplayInfo(int x, int y, int width, int height,
                                                  gfx::Rect(x, y, width, height),
                                                  kFakeDisplayName);
   return DisplayInfo(monitor_info, scale_factor, 1.0f, Display::ROTATE_0, 60,
-                     gfx::Vector2dF());
+                     gfx::Vector2dF(), DISPLAYCONFIG_OUTPUT_TECHNOLOGY_OTHER);
 }
 
 ::testing::AssertionResult AssertOffsetsEqual(

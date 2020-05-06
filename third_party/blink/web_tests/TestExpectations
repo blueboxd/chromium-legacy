@@ -6135,3 +6135,4 @@ crbug.com/1078298 [ Mac ] external/wpt/orientation-event/orientation/basic-opera
 
 # Sheriff 2020-05-06
 crbug.com/1078298 [ Mac ] external/wpt/orientation-event/orientation/absolute-fallback.https.html [ Pass Failure ]
+crbug.com/1078863 [ Mac ] fast/speech/scripted/speechrecognition-restart-onend.html [ Pass Timeout ]

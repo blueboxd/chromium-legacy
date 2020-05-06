@@ -90,6 +90,7 @@
 <translation id="1947424002851288782">Almanca klavye</translation>
 <translation id="1972984168337863910">Dosyalar geri bildirim panellerini genişlet</translation>
 <translation id="1984603991036629094">Ermenice Fonetik klavye</translation>
+<translation id="1995337122023280937">Dosya konumuna git</translation>
 <translation id="2001796770603320721">Drive'da Yönet</translation>
 <translation id="2009067268969781306">Bir sürücünün biçimlendirilmesi, üzerinde depolanan tüm verileri siler. Bu işlem geri alınamaz.</translation>
 <translation id="2028997212275086731">RAR arşivi</translation>
@@ -141,6 +142,7 @@
 <translation id="2638942478653899953">Google Drive'a erişilemedi. Lütfen <ph name="BEGIN_LINK" />çıkıp<ph name="END_LINK" /> tekrar giriş yapın.</translation>
 <translation id="2649120831653069427">Gökkuşağı Balığı</translation>
 <translation id="2661146741306740526">16x9</translation>
+<translation id="2664412712123763093">Dosya konumu</translation>
 <translation id="2672394958563893062">Bir hata oluştu. Baştan başlamak için tıklayın.</translation>
 <translation id="2676946222714718093">Şurada oynatılıyor:</translation>
 <translation id="2735698359135166290">Rumence standart klavye</translation>
@@ -349,6 +351,7 @@
 <translation id="5081517858322016911"><ph name="TOTAL_FILE_SIZE" /> dosya silinecek</translation>
 <translation id="509429900233858213">Bir hata oluştu.</translation>
 <translation id="5098629044894065541">İbranice</translation>
+<translation id="5112685521274804841">Bu klasördekiler salt okunur dosyalardır. Bazı işlemler desteklenmez.</translation>
 <translation id="5123433949759960244">Basketbol</translation>
 <translation id="5129662217315786329">Lehçe</translation>
 <translation id="5144820558584035333">Hangul 3 Grubu (390)</translation>
@@ -699,6 +702,7 @@
 <translation id="9034924485347205037">Linux dosyaları</translation>
 <translation id="9035012421917565900">Öğeler "<ph name="DESTINATION_NAME" />" hedefine geri taşınamaz. Bu nedenle bu işlemi geri alamazsınız.</translation>
 <translation id="9038620279323455325">"<ph name="FILE_NAME" />" adlı dosya zaten var. Lütfen farklı bir ad seçin.</translation>
+<translation id="9062992083244091966">Dosyaları <ph name="APP_NAME" /> uygulamalarıyla açmak için önce dosyaları <ph name="APP_NAME" /> paylaşılan dosyalar klasörüne taşıyın.</translation>
 <translation id="9064939804718829769">Aktarılıyor...</translation>
 <translation id="9065203028668620118">Düzenle</translation>
 <translation id="9099674669267916096">Sayfa sayısı</translation>

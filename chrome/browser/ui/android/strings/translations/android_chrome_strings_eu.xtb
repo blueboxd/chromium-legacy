@@ -33,6 +33,7 @@
 <translation id="1208340532756947324">Gailu guztiak sinkronizatu eta pertsonalizatzeko, aktibatu sinkronizazioa</translation>
 <translation id="1209206284964581585">Ezkutatu</translation>
 <translation id="1227058898775614466">Nabigazio-historia</translation>
+<translation id="1229399675748764149">Ezarri orri hau orri nagusi gisa</translation>
 <translation id="1231733316453485619">Sinkronizazioa aktibatu nahi duzu?</translation>
 <translation id="123724288017357924">Kargatu orria, cacheko edukiari ez ikusi eginda</translation>
 <translation id="124116460088058876">Hizkuntza gehiago</translation>
@@ -71,6 +72,7 @@
 <translation id="1513352483775369820">Laster-markak eta web-historia</translation>
 <translation id="1513858653616922153">Ezabatu pasahitza</translation>
 <translation id="1521774566618522728">Aktibo gaur</translation>
+<translation id="1543538514740974167">Iritsi hona azkarrago</translation>
 <translation id="1544826120773021464">Google-ko kontua kudeatzeko, sakatu "Kudeatu kontua" botoia</translation>
 <translation id="1549000191223877751">Eraman beste leiho batera</translation>
 <translation id="1553358976309200471">Eguneratu Chrome</translation>
@@ -723,11 +725,13 @@ Esaterako, bisitatu dituzun webguneetan oinarritzen ez diren iragarkiak bidalita
 <translation id="7022756207310403729">Ireki arakatzailean</translation>
 <translation id="702463548815491781">TalkBack edo Erabilerraztasun-osagarria aktibatuta daudenean gomendatua</translation>
 <translation id="7029809446516969842">Pasahitzak</translation>
+<translation id="703523980599857277">Aldatu orri nagusia</translation>
 <translation id="7055152154916055070">Birbideratze hau blokeatu da:</translation>
 <translation id="7063006564040364415">Ezin izan da sinkronizazio-zerbitzarira konektatu</translation>
 <translation id="7071521146534760487">Kudeatu kontua</translation>
 <translation id="7077143737582773186">SD txartela</translation>
 <translation id="7121362699166175603">Helbide-barrako historia eta osatze automatikoak garbitzen ditu. Google-ko kontuko historia arakatzeko beste modu batzuk aurki zenitzake <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> webgunean.</translation>
+<translation id="7128355412245153445">Ikusi webgune nagusiak eta duela gutxiko istorioak Hasiera botoia sakatzen duzunean</translation>
 <translation id="7138678301420049075">Beste bat</translation>
 <translation id="7146622961999026732">Webgune eta aplikazio hauek garrantzitsuak dira zuretzat:</translation>
 <translation id="7149158118503947153"><ph name="BEGIN_LINK" />Kargatu jatorrizko orria<ph name="END_LINK" /> <ph name="DOMAIN_NAME" /> domeinutik</translation>
@@ -968,11 +972,13 @@ Esaterako, bisitatu dituzun webguneetan oinarritzen ez diren iragarkiak bidalita
 <translation id="9155898266292537608">Hatzarekin ukitu bizkor bat emanda ere egin ditzakezu bilaketak</translation>
 <translation id="9169507124922466868">Nabigazio-historia erdi-irekita dago</translation>
 <translation id="9204836675896933765">1 fitxategi gelditzen da</translation>
+<translation id="9205796607887024517">Kontrolatu zure istorioak hemen</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="9209888181064652401">Ezin da deirik egin</translation>
 <translation id="9219103736887031265">Irudiak</translation>
 <translation id="926205370408745186">Kendu Chrome-ko jarduerak Ongizate digitala programatik</translation>
 <translation id="932327136139879170">Hasiera</translation>
+<translation id="93753284658583800">Aldatu da orri nagusia</translation>
 <translation id="938850635132480979">Errorea: <ph name="ERROR_CODE" /></translation>
 <translation id="95817756606698420">Txinan, <ph name="BEGIN_BOLD" />Sogou<ph name="END_BOLD" /> erabil dezake Chrome-k bilatzaile gisa. <ph name="BEGIN_LINK" />Ezarpenak<ph name="END_LINK" /> atalean alda dezakezu hori.</translation>
 <translation id="968900484120156207">Hemen agertuko dira bisitatzen dituzun orriak</translation>

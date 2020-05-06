@@ -8,6 +8,7 @@
 #include "base/no_destructor.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/webui/settings/chromeos/os_settings_features_util.h"
+#include "chrome/browser/ui/webui/settings/languages_handler.h"
 #include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
@@ -22,16 +23,56 @@ namespace {
 
 const std::vector<SearchConcept>& GetLanguagesSearchConcepts() {
   static const base::NoDestructor<std::vector<SearchConcept>> tags({
-      // TODO(khorimoto): Add "Languages" search concepts.
+      {IDS_OS_SETTINGS_TAG_LANGUAGES_INPUT,
+       mojom::kLanguagesAndInputDetailsSubpagePath,
+       mojom::SearchResultIcon::kGlobe,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSubpage,
+       {.subpage = mojom::Subpage::kLanguagesAndInputDetails}},
+      {IDS_OS_SETTINGS_TAG_LANGUAGES_INPUT_METHODS,
+       mojom::kManageInputMethodsSubpagePath,
+       mojom::SearchResultIcon::kGlobe,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSubpage,
+       {.subpage = mojom::Subpage::kManageInputMethods}},
+      {IDS_OS_SETTINGS_TAG_LANGUAGES_INPUT_ADD_LANGUAGE,
+       mojom::kLanguagesAndInputDetailsSubpagePath,
+       mojom::SearchResultIcon::kGlobe,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSetting,
+       {.setting = mojom::Setting::kAddLanguage}},
+      {IDS_OS_SETTINGS_TAG_LANGUAGES_INPUT_INPUT_OPTIONS_SHELF,
+       mojom::kLanguagesAndInputDetailsSubpagePath,
+       mojom::SearchResultIcon::kGlobe,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSetting,
+       {.setting = mojom::Setting::kShowInputOptionsInShelf},
+       {IDS_OS_SETTINGS_TAG_LANGUAGES_INPUT_INPUT_OPTIONS_SHELF_ALT1,
+        SearchConcept::kAltTagEnd}},
   });
   return *tags;
 }
 
-const std::vector<SearchConcept>&
-GetLanguagesAssistivePersonalInfoSearchConcepts() {
+const std::vector<SearchConcept>& GetSmartInputsSearchConcepts() {
   static const base::NoDestructor<std::vector<SearchConcept>> tags({
-      // TODO(khorimoto): Add "Languages assistive personal info" search
-      // concepts.
+      {IDS_OS_SETTINGS_TAG_LANGUAGES_SMART_INPUTS,
+       mojom::kSmartInputsSubagePath,
+       mojom::SearchResultIcon::kGlobe,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSubpage,
+       {.subpage = mojom::Subpage::kSmartInputs}},
+  });
+  return *tags;
+}
+
+const std::vector<SearchConcept>& GetAssistivePersonalInfoSearchConcepts() {
+  static const base::NoDestructor<std::vector<SearchConcept>> tags({
+      {IDS_OS_SETTINGS_TAG_LANGUAGES_PERSONAL_INFORMATION_SUGGESTIONS,
+       mojom::kSmartInputsSubagePath,
+       mojom::SearchResultIcon::kGlobe,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSetting,
+       {.setting = mojom::Setting::kShowPersonalInformationSuggestions}},
   });
   return *tags;
 }
@@ -67,8 +108,8 @@ LanguagesSection::LanguagesSection(Profile* profile,
   delegate()->AddSearchTags(GetLanguagesSearchConcepts());
 
   if (IsAssistivePersonalInfoAllowed()) {
-    delegate()->AddSearchTags(
-        GetLanguagesAssistivePersonalInfoSearchConcepts());
+    delegate()->AddSearchTags(GetSmartInputsSearchConcepts());
+    delegate()->AddSearchTags(GetAssistivePersonalInfoSearchConcepts());
   }
 }
 
@@ -112,6 +153,11 @@ void LanguagesSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
   html_source->AddString(
       "languagesLearnMoreURL",
       base::ASCIIToUTF16(chrome::kLanguageSettingsLearnMoreUrl));
+}
+
+void LanguagesSection::AddHandlers(content::WebUI* web_ui) {
+  web_ui->AddMessageHandler(
+      std::make_unique<::settings::LanguagesHandler>(profile()));
 }
 
 }  // namespace settings

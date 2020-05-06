@@ -293,18 +293,20 @@ base::Optional<int> AXPlatformNodeDelegateBase::GetTableColCount() const {
 }
 
 base::Optional<int> AXPlatformNodeDelegateBase::GetTableAriaColCount() const {
-  int aria_column_count =
-      GetData().GetIntAttribute(ax::mojom::IntAttribute::kAriaColumnCount);
-  if (aria_column_count == ax::mojom::kUnknownAriaColumnOrRowCount)
+  int aria_column_count;
+  if (!GetData().GetIntAttribute(ax::mojom::IntAttribute::kAriaColumnCount,
+                                 &aria_column_count)) {
     return base::nullopt;
+  }
   return aria_column_count;
 }
 
 base::Optional<int> AXPlatformNodeDelegateBase::GetTableAriaRowCount() const {
-  int aria_row_count =
-      GetData().GetIntAttribute(ax::mojom::IntAttribute::kAriaRowCount);
-  if (aria_row_count == ax::mojom::kUnknownAriaColumnOrRowCount)
+  int aria_row_count;
+  if (!GetData().GetIntAttribute(ax::mojom::IntAttribute::kAriaRowCount,
+                                 &aria_row_count)) {
     return base::nullopt;
+  }
   return aria_row_count;
 }
 

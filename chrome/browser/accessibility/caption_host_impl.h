@@ -8,6 +8,7 @@
 #include <string>
 
 #include "chrome/common/caption.mojom.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 
 namespace content {
@@ -22,7 +23,8 @@ namespace captions {
 //  A class that implements the Mojo interface CaptionHost. There exists one
 //  CaptionHostImpl per render frame.
 //
-class CaptionHostImpl : public chrome::mojom::CaptionHost {
+class CaptionHostImpl : public chrome::mojom::CaptionHost,
+                        public content::WebContentsObserver {
  public:
   explicit CaptionHostImpl(content::RenderFrameHost* frame_host);
   CaptionHostImpl(const CaptionHostImpl&) = delete;
@@ -37,6 +39,9 @@ class CaptionHostImpl : public chrome::mojom::CaptionHost {
   // chrome::mojom::CaptionHost:
   void OnTranscription(
       chrome::mojom::TranscriptionResultPtr transcription_result) override;
+
+  // content::WebContentsObserver:
+  void RenderFrameDeleted(content::RenderFrameHost* frame_host) override;
 
  private:
   content::RenderFrameHost* frame_host_;

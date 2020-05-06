@@ -61,31 +61,43 @@ void AudioWorkletGlobalScope::registerProcessor(
     ExceptionState& exception_state) {
   DCHECK(IsContextThread());
 
+  // 1. If name is an empty string, throw a NotSupportedError.
+  if (name.IsEmpty()) {
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kNotSupportedError,
+        "The processor name cannot be empty.");
+    return;
+  }
+
+  // 2. If name already exists as a key in the node name to processor
+  //    constructor map, throw a NotSupportedError.
   if (processor_definition_map_.Contains(name)) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kNotSupportedError,
-        "A class with name:'" + name + "' is already registered.");
+        "An AudioWorkletProcessor with name:\"" + name +
+        "\" is already registered.");
     return;
   }
 
-  // TODO(hongchan): this is not stated in the spec, but seems necessary.
-  // https://github.com/WebAudio/web-audio-api/issues/1172
-  if (name.IsEmpty()) {
-    exception_state.ThrowTypeError("The empty string is not a valid name.");
-    return;
-  }
-
+  // 3. If the result of IsConstructor(argument=processorCtor) is false, throw
+  //    a TypeError .
   if (!processor_ctor->IsConstructor()) {
     exception_state.ThrowTypeError(
-        "The provided callback is not a constructor.");
+        "The provided class definition of \"" + name +
+        "\" AudioWorkletProcessor is not a constructor.");
     return;
   }
 
+  // 4. Let prototype be the result of Get(O=processorCtor, P="prototype").
+  // 5. If the result of Type(argument=prototype) is not Object, throw a
+  //    TypeError .
   CallbackMethodRetriever retriever(processor_ctor);
   retriever.GetPrototypeObject(exception_state);
   if (exception_state.HadException())
     return;
 
+  // TODO(crbug.com/1077911): Do not extract process() function at the
+  // registration step.
   v8::Local<v8::Function> v8_process =
       retriever.GetMethodOrThrow("process", exception_state);
   if (exception_state.HadException())
@@ -93,9 +105,9 @@ void AudioWorkletGlobalScope::registerProcessor(
   V8BlinkAudioWorkletProcessCallback* process =
       V8BlinkAudioWorkletProcessCallback::Create(v8_process);
 
-  // constructor() and process() functions are successfully parsed from the
-  // script code, thus create the definition. The rest of parsing process
-  // (i.e. parameterDescriptors) is optional.
+  // The sufficient information to build a AudioWorkletProcessorDefinition
+  // is collected. The rest of registration process is optional.
+  // (i.e. parameterDescriptors)
   AudioWorkletProcessorDefinition* definition =
       AudioWorkletProcessorDefinition::Create(name, processor_ctor, process);
 
@@ -114,19 +126,23 @@ void AudioWorkletGlobalScope::registerProcessor(
     }
   }
 
+  // 7. If parameterDescriptorsValue is not undefined, execute the following
+  //    steps:
   if (!v8_parameter_descriptors->IsNullOrUndefined()) {
-    // Optional 'parameterDescriptors' property is found.
+    // 7.1. Let parameterDescriptorSequence be the result of the conversion
+    //      from parameterDescriptorsValue to an IDL value of type
+    //      sequence<AudioParamDescriptor>.
     const HeapVector<Member<AudioParamDescriptor>>& given_param_descriptors =
         NativeValueTraits<IDLSequence<AudioParamDescriptor>>::NativeValue(
             isolate, v8_parameter_descriptors, exception_state);
     if (exception_state.HadException())
       return;
 
-    // registerProcessor() Step 7.3.1: Let paramName be the value of the member
-    // name in descriptor. Throw a NotSupportedError if paramNames already
-    // contains paramName value.
-    HashSet<String> sanitized_names;
+    // 7.2. Let paramNames be an empty Array.
     HeapVector<Member<AudioParamDescriptor>> sanitized_param_descriptors;
+
+    // 7.3. For each descriptor of parameterDescriptorSequence:
+    HashSet<String> sanitized_names;
     for (const auto& given_descriptor : given_param_descriptors) {
       const String new_param_name = given_descriptor->name();
       if (!sanitized_names.insert(new_param_name).is_new_entry) {
@@ -137,12 +153,17 @@ void AudioWorkletGlobalScope::registerProcessor(
             "definition of \"" + name + "\".");
         return;
       }
+
+      // TODO(crbug.com/1078546): The steps 7.3.3 ~ 7.3.6 are missing.
+
       sanitized_param_descriptors.push_back(given_descriptor);
     }
 
     definition->SetAudioParamDescriptors(sanitized_param_descriptors);
   }
 
+  // 8. Append the key-value pair name → processorCtor to node name to
+  //    processor constructor map of the associated AudioWorkletGlobalScope.
   processor_definition_map_.Set(name, definition);
 }
 

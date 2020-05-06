@@ -27,7 +27,7 @@ import org.chromium.base.FileUtils;
 import org.chromium.base.Log;
 import org.chromium.base.StreamUtil;
 import org.chromium.base.task.AsyncTask;
-import org.chromium.chrome.browser.download.DownloadManagerBridge;
+import org.chromium.components.browser_ui.util.DownloadUtils;
 import org.chromium.content_public.browser.RenderWidgetHostView;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.UiUtils;
@@ -350,8 +350,8 @@ public class ShareImageFileUtils {
         String path = file.getPath();
         long length = file.length();
 
-        return DownloadManagerBridge.addCompletedDownload(
-                title, title, MIME_TYPE, path, length, null, null, title);
+        return DownloadUtils.addCompletedDownload(
+                title, title, MIME_TYPE, path, length, null, null);
     }
 
     @TargetApi(29)

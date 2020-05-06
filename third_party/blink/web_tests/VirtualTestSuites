@@ -552,6 +552,11 @@
              "--enable-blink-features=CSSColorScheme,CSSColorSchemeUARendering"]
   },
   {
+    "prefix": "appcache-origin-trial",
+    "bases": ["http/tests/appcache/origin-trial"],
+    "args": ["--enable-features=AppCacheRequireOriginTrial"]
+  },
+  {
     "prefix": "force-defer-script",
     "bases": ["defer-script"],
     "args": ["--enable-blink-features=ForceDeferScriptIntervention"]

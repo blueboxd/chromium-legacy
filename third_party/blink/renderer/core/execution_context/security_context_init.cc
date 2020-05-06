@@ -265,6 +265,9 @@ void SecurityContextInit::InitializeOrigin(const DocumentInit& initializer) {
 
 void SecurityContextInit::InitializeDocumentPolicy(
     const DocumentInit& initializer) {
+  if (!RuntimeEnabledFeatures::DocumentPolicyEnabled(this))
+    return;
+
   // Because Document-Policy http header is parsed in DocumentLoader,
   // when origin trial context is not initialized yet.
   // Needs to filter out features that are not in origin trial after

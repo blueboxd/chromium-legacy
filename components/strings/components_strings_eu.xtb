@@ -52,7 +52,6 @@
 <translation id="1197088940767939838">Laranja</translation>
 <translation id="1201402288615127009">Hurrengoa</translation>
 <translation id="1201895884277373915">Webgune honetako gehiago</translation>
-<translation id="1205963431094182634">Hasi saioa Google-ko kontuan gordetako pasahitzak erabiltzeko</translation>
 <translation id="1206967143813997005">Hasierako sinadurak ez du balio</translation>
 <translation id="1209206284964581585">Ezkutatu</translation>
 <translation id="121201262018556460"><ph name="DOMAIN" /> domeinuarekin komunikatzen saiatu zara, baina zerbitzariak aurkeztu duen ziurtagiriaren gakoa ez da segurua. Agian erasotzaile batek gako pribatua bortxatu du eta zerbitzaria ez da espero zenuena (agian erasotzaile batekin komunikatzen ari zara).</translation>
@@ -1206,7 +1205,6 @@ Bestela, pribatutasun-ezarpenek blokeatu egingo dute baimen hori. Baimen honekin
 <translation id="6116338172782435947">Ikusi arbelean kopiatzen ditudan testuak eta irudiak</translation>
 <translation id="6120179357481664955">Gogoan al duzu UPI IDa?</translation>
 <translation id="6124432979022149706">Chrome Enterprise zerbitzuaren konektoreak</translation>
-<translation id="6135641591018127088">Erabili Google-ko kontua pasahitz seguru bat sortzeko</translation>
 <translation id="6146055958333702838">Egiaztatu kableak konektatuta daudela eta berrabiarazi erabiltzen ari zaren bideratzaile, modem eta sare-gailu oro.</translation>
 <translation id="614940544461990577">Konpontzeko, hauek egin ditzakezu:</translation>
 <translation id="6150036310511284407">Hiru zulo ezkerrean</translation>
@@ -1251,7 +1249,6 @@ Bestela, pribatutasun-ezarpenek blokeatu egingo dute baimen hori. Baimen honekin
 <translation id="6328639280570009161">Saiatu sarearen iragarpena desgaitzen</translation>
 <translation id="6328784461820205019">"Konexioa ez da pribatua", "&lt;span class="error-code"&gt;NET::ERR_CERT_AUTHORITY_INVALID&lt;/span&gt;", "&lt;span class="error-code"&gt;ERR_CERT_COMMON_NAME_INVALID&lt;/span&gt;", "&lt;span class="error-code"&gt;NET::ERR_CERT_WEAK_SIGNATURE_ALGORITHM&lt;/span&gt;", "&lt;span class="error-code"&gt;ERR_CERT_SYMANTEC_LEGACY&lt;/span&gt;" edo "SSL ziurtagiriaren errorea"</translation>
 <translation id="6328786501058569169">Webgune hau iruzurtia da</translation>
-<translation id="6333334544069706521">Erabili Google-ko kontuan gordetako pasahitzak</translation>
 <translation id="6337133576188860026"><ph name="SIZE" /> baino gutxiago utziko ditu libre. Webgune batzuk mantsoago kargatuko dira bisitatzen dituzun hurrengoan.</translation>
 <translation id="6337534724793800597">Iragazi gidalerroak izenaren arabera</translation>
 <translation id="6353505687280762741">{COUNT,plural, =0{Bat ere ez}=1{<ph name="DOMAIN_LIST" />: 1 pasahitz (sinkronizatuta)}=2{<ph name="DOMAIN_LIST" />: 2 pasahitz (sinkronizatuta)}other{<ph name="DOMAIN_LIST" />: # pasahitz (sinkronizatuta)}}</translation>

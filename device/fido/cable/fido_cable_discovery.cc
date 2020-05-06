@@ -739,45 +739,61 @@ void FidoCableDiscovery::CableDeviceFound(BluetoothAdapter* adapter,
   auto cable_device =
       std::make_unique<FidoCableDevice>(adapter, device_address);
   cable_device->set_observer(this);
-  StopAdvertisements(base::BindOnce(
-      &FidoCableDiscovery::ConductEncryptionHandshake,
-      weak_factory_.GetWeakPtr(), std::move(cable_device), std::move(*result)));
-}
 
-void FidoCableDiscovery::ConductEncryptionHandshake(
-    std::unique_ptr<FidoCableDevice> cable_device,
-    FidoCableDiscovery::Result result) {
   base::Optional<std::unique_ptr<FidoCableHandshakeHandler>> handshake_handler =
-      CreateHandshakeHandler(cable_device.get(), result.discovery_data,
-                             result.nonce, result.eid);
+      CreateHandshakeHandler(cable_device.get(), result->discovery_data,
+                             result->nonce, result->eid);
   if (!handshake_handler) {
     return;
   }
   auto* const handshake_handler_ptr = handshake_handler->get();
-  cable_handshake_handlers_.emplace_back(std::move(*handshake_handler));
+  active_handshakes_.emplace_back(std::move(cable_device),
+                                  std::move(*handshake_handler));
 
-  handshake_handler_ptr->InitiateCableHandshake(
-      base::BindOnce(&FidoCableDiscovery::ValidateAuthenticatorHandshakeMessage,
-                     weak_factory_.GetWeakPtr(), std::move(cable_device),
-                     result.discovery_data.version, handshake_handler_ptr));
+  StopAdvertisements(
+      base::BindOnce(&FidoCableDiscovery::ConductEncryptionHandshake,
+                     weak_factory_.GetWeakPtr(), handshake_handler_ptr,
+                     result->discovery_data.version));
+}
+
+void FidoCableDiscovery::ConductEncryptionHandshake(
+    FidoCableHandshakeHandler* handshake_handler,
+    CableDiscoveryData::Version cable_version) {
+  handshake_handler->InitiateCableHandshake(base::BindOnce(
+      &FidoCableDiscovery::ValidateAuthenticatorHandshakeMessage,
+      weak_factory_.GetWeakPtr(), cable_version, handshake_handler));
 }
 
 void FidoCableDiscovery::ValidateAuthenticatorHandshakeMessage(
-    std::unique_ptr<FidoCableDevice> cable_device,
     CableDiscoveryData::Version cable_version,
     FidoCableHandshakeHandler* handshake_handler,
     base::Optional<std::vector<uint8_t>> handshake_response) {
-  if (!handshake_response)
-    return;
+  const bool ok = handshake_response.has_value() &&
+                  handshake_handler->ValidateAuthenticatorHandshakeMessage(
+                      *handshake_response);
 
-  if (handshake_handler->ValidateAuthenticatorHandshakeMessage(
-          *handshake_response)) {
+  bool found = false;
+  for (auto it = active_handshakes_.begin(); it != active_handshakes_.end();
+       it++) {
+    if (it->second.get() != handshake_handler) {
+      continue;
+    }
+
+    found = true;
+    if (ok) {
+      AddDevice(std::move(it->first));
+    }
+    active_handshakes_.erase(it);
+    break;
+  }
+  DCHECK(found);
+
+  if (ok) {
     FIDO_LOG(DEBUG) << "Authenticator handshake validated";
     if (cable_version == CableDiscoveryData::Version::V1) {
       RecordCableV1DiscoveryEventOnce(
           CableV1DiscoveryEvent::kFirstCableHandshakeSucceeded);
     }
-    AddDevice(std::move(cable_device));
   } else {
     FIDO_LOG(DEBUG) << "Authenticator handshake invalid";
   }

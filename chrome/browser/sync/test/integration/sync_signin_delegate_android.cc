@@ -4,11 +4,11 @@
 
 #include "chrome/browser/sync/test/integration/sync_signin_delegate_android.h"
 
-#include "chrome/browser/sync/test/integration/sync_test_signin_utils_android.h"
+#include "chrome/browser/sync/test/integration/sync_test_utils_android.h"
 
 void SyncSigninDelegateAndroid::SigninFake(Profile* profile,
                                            const std::string& username) {
-  sync_test_signin_utils_android::SetUpTestAccountAndSignIn();
+  sync_test_utils_android::SetUpTestAccountAndSignIn();
 }
 
 bool SyncSigninDelegateAndroid::SigninUI(Profile* profile,

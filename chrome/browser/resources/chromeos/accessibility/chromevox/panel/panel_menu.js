@@ -177,11 +177,10 @@ PanelMenu = class {
     this.menuBarItemElement.classList.remove('active');
     this.activeIndex_ = -1;
 
-    window.setTimeout(
-        (function() {
-          this.menuContainerElement.style.visibility = 'hidden';
-        }).bind(this),
-        0);
+    // Do not defer the below layout-triggering style change; it has minimal
+    // user-impact, but deferring layout makes any tests against the panel
+    // flakey and very hard to debug.
+    this.menuContainerElement.style.visibility = 'hidden';
   }
 
   /**

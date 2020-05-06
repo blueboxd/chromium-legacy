@@ -52,7 +52,6 @@
 <translation id="1197088940767939838">सुन्तला रङ्ग</translation>
 <translation id="1201402288615127009">अर्को</translation>
 <translation id="1201895884277373915">यस साइटबाट थप</translation>
-<translation id="1205963431094182634">आफ्नो Google खातामा भण्डारण गरिएका पासवर्डहरू प्रयोग गर्न साइन इन गर्नुहोस्</translation>
 <translation id="1206967143813997005">प्रारम्भिक हस्ताक्षर त्रुटिपूर्ण छ</translation>
 <translation id="1209206284964581585">अहिलेका लागि लुकाउनुहोस्</translation>
 <translation id="121201262018556460">तपाईंले <ph name="DOMAIN" /> मा पुग्ने प्रयत्न गर्नुभयो, तर सर्भरले एउटा कमजोर कुञ्जी भएको प्रमाणपत्र प्रस्तुत गर्‍यो। कुनै आक्रमणकारीले निजी कुञ्जीलाई तोडेको हुन सक्छ, र त्यो सर्भर तपाईंले अपेक्षा गर्नुभएको सर्भर नहुन सक्छ (तपाईं एउटा आक्रमणकारीसँग सञ्चारण गरिरहनुभएको हुन सक्छ)।</translation>
@@ -1205,7 +1204,6 @@
 <translation id="6116338172782435947">क्लिपबोर्डमा प्रतिलिपि गरिएका पाठ र छविहरू हेर्नुहोस्</translation>
 <translation id="6120179357481664955">आफ्नो UPI ID सम्झने हो?</translation>
 <translation id="6124432979022149706">Chrome Enterprise का कनेक्टरहरू</translation>
-<translation id="6135641591018127088">एउटा भरपर्दो पासवर्ड सिर्जना गर्न आफ्नो Google खाता प्रयोग गर्नुहोस्</translation>
 <translation id="6146055958333702838">तपाइँले प्रयोग गरिेहेको कुनै पनि केबुलहरू जाँच्नुहोस् र कुनै पनि राउटरहरू, मोडेमहरू, वा अन्य 
         नेटवर्क यन्त्रहरू रिबुट गर्नुहोस्।</translation>
 <translation id="614940544461990577">यसो गरी हेर्नुहोस्:</translation>
@@ -1251,7 +1249,6 @@
 <translation id="6328639280570009161">सञ्जाल भविष्यवाणि असक्षम गर्नुहोस्</translation>
 <translation id="6328784461820205019">"तपाईंको जडान व्यक्तिगत छैन" वा "&lt;span class="error-code"&gt;NET::ERR_CERT_AUTHORITY_INVALID&lt;/span&gt;" वा "&lt;span class="error-code"&gt;ERR_CERT_COMMON_NAME_INVALID&lt;/span&gt;" वा "&lt;span class="error-code"&gt;NET::ERR_CERT_WEAK_SIGNATURE_ALGORITHM&lt;/span&gt;" वा "&lt;span class="error-code"&gt;ERR_CERT_SYMANTEC_LEGACY&lt;/span&gt;" वा "SSL प्रमाणपत्रसम्बन्धी त्रुटि"</translation>
 <translation id="6328786501058569169">यो साइट भ्रमपूर्ण छ</translation>
-<translation id="6333334544069706521">आफ्नो Google खातामा भण्डारण गरिएका पासवर्डहरू प्रयोग गर्नुहोस्</translation>
 <translation id="6337133576188860026"><ph name="SIZE" /> भन्दा कम ठाउँ खाली गर्दछ। तपाईं अर्कोपटक आउँदा केही साइटहरू अझ ढिलोगरी लोड हुनसक्छन्।</translation>
 <translation id="6337534724793800597">नामद्वारा नीतिहरू फिल्टर गर्छ</translation>
 <translation id="6353505687280762741">{COUNT,plural, =0{कुनै पनि होइन}=1{<ph name="DOMAIN_LIST" /> को १ पासवर्ड (सिंक गरिएको छ)}=2{<ph name="DOMAIN_LIST" /> का २ पासवर्डहरू (सिंक गरिएका छन्)}other{<ph name="DOMAIN_LIST" /> का # पासवर्डहरू (सिंक गरिएका छन्)}}</translation>

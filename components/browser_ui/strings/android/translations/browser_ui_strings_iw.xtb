@@ -90,7 +90,6 @@
 <translation id="4165986682804962316">הגדרות לאתרים</translation>
 <translation id="4226663524361240545">רטט של המכשיר אפשרי כשמתקבלת הודעה</translation>
 <translation id="4259722352634471385">הניווט חסום: <ph name="URL" /></translation>
-<translation id="4275663329226226506">מדיה</translation>
 <translation id="4278390842282768270">מותר</translation>
 <translation id="4433925000917964731">‏גרסת Lite של הדף נוצרה על ידי Google</translation>
 <translation id="4434045419905280838">חלונות קופצים והפניות אוטומטיות</translation>
@@ -101,7 +100,6 @@
 <translation id="4645575059429386691">מנוהל על-ידי ההורה שלך</translation>
 <translation id="4670064810192446073">מציאות מדומה</translation>
 <translation id="4751476147751820511">חיישני תנועה או אור</translation>
-<translation id="4759238208242260848">הורדות</translation>
 <translation id="4883854917563148705">לא ניתן לאפס הגדרות מנוהלות</translation>
 <translation id="4887024562049524730">תוצג שאלה לפני מתן הרשאה לאתרים להשתמש במכשיר המציאות המדומה ובנתוני המציאות המדומה שלך (מומלץ)</translation>
 <translation id="4962975101802056554">ביטול כל ההרשאות בשביל המכשיר</translation>
@@ -225,7 +223,7 @@
 <translation id="8847988622838149491">USB</translation>
 <translation id="885701979325669005">אחסון</translation>
 <translation id="8926666909099850184">‏קישוריות ה-NFC מושבתת במכשיר הזה. ניתן להפעיל אותה דרך <ph name="BEGIN_LINK" />הגדרות Android<ph name="END_LINK" />.</translation>
-<translation id="8929372349074745002">האתר נפתח ומגיב במהירות מבחינת רוב האנשים</translation>
+<translation id="8929372349074745002">רוב האנשים מדווחים שהאתר נפתח ומגיב במהירות</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8958424370300090006">‏חסימת קובצי Cookie של אתר מסוים.</translation>
 <translation id="8959122750345127698">הניווט לא אפשרי: <ph name="URL" /></translation>

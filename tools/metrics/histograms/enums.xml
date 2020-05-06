@@ -6977,6 +6977,11 @@ Unknown properties are collapsed to zero. -->
   <int value="1" label="Hit"/>
 </enum>
 
+<enum name="BooleanHttpBasedOrOtherScheme">
+  <int value="0" label="Non-http/https scheme"/>
+  <int value="1" label="Http(s) scheme"/>
+</enum>
+
 <enum name="BooleanHttps">
   <int value="0" label="HTTP"/>
   <int value="1" label="HTTPS"/>
@@ -20106,6 +20111,7 @@ Called by update_document_policy_enum.py.-->
   <int value="700" label="AutoOpenFileTypes"/>
   <int value="701" label="LoginDisplayPasswordButtonEnabled"/>
   <int value="702" label="ReportDeviceAppInfo"/>
+  <int value="703" label="AccessibilityImageLabelsEnabled"/>
 </enum>
 
 <enum name="EnterprisePolicyDeviceIdValidity">
@@ -47323,6 +47329,18 @@ Called by update_net_trust_anchors.py.-->
       label="2e06cae1fc20b200e6fb748557a4444bec9317dfff2e4151669e0f7944f0a9e0"/>
   <int value="514"
       label="122312c081949106b7049f3febf199c010ada13e3281cd358a41e7bd09c829d7"/>
+  <int value="515"
+      label="1134fd81561a2818eccfffc2e440a0cef9a40e2926c08299804d738b0a97f63d"/>
+  <int value="516"
+      label="79caaf5347e6e4a94c8e78a98496fc74020f809ede13f220fab6104c8ded329f"/>
+  <int value="517"
+      label="fde8999a5e427319835c89a17d64a2dcd13a851c0916c4c547b6d8f7a6437d94"/>
+  <int value="518"
+      label="453b74809b69019627f2f843001db5950cdd1d45371053e7f3dfdbc3714113c6"/>
+  <int value="519"
+      label="1f3c9fd4fdbb50a055bcca7fe5a581a92099cef1e9e476d6baef0c910831c7b3"/>
+  <int value="520"
+      label="c942262c0c7c0a95bb152b71c42556ddbe9a04fa8378373550d2b7ce27d952a3"/>
 </enum>
 
 <enum name="Network3GGobiError">
@@ -54316,6 +54334,9 @@ Called by update_net_trust_anchors.py.-->
 </enum>
 
 <enum name="PrinterSetupSource">
+  <obsolete>
+    Removed 2020-04.
+  </obsolete>
   <int value="0" label="Printer was setup from Print Preview"/>
   <int value="1" label="Printer was setup from Settings"/>
   <int value="2" label="Printer was setup by automatic USB configurer"/>

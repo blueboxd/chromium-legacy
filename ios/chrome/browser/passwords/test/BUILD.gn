@@ -18,6 +18,7 @@ source_set("test") {
     "//components/password_manager/core/common",
     "//components/prefs",
     "//components/prefs:test_support",
+    "//components/safe_browsing/core/common:safe_browsing_prefs",
     "//ios/chrome/browser/passwords:infobar_delegates",
     "//testing/gmock",
     "//testing/gtest",

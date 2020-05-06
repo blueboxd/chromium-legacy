@@ -310,6 +310,24 @@ void SetReferrer(
   request.SetReferrerPolicy(generated_referrer.referrer_policy);
 }
 
+void PopulateAndAddResourceTimingInfo(Resource* resource,
+                                      scoped_refptr<ResourceTimingInfo> info,
+                                      base::TimeTicks response_end,
+                                      int64_t encoded_data_length) {
+  info->SetInitialURL(
+      resource->GetResourceRequest().GetInitialUrlForResourceTiming().IsNull()
+          ? resource->GetResourceRequest().Url()
+          : resource->GetResourceRequest().GetInitialUrlForResourceTiming());
+  info->SetFinalResponse(resource->GetResponse());
+  info->SetLoadResponseEnd(response_end);
+  // encodedDataLength == -1 means "not available".
+  // TODO(ricea): Find cases where it is not available but the
+  // PerformanceResourceTiming spec requires it to be available and fix
+  // them.
+  info->AddFinalTransferSize(encoded_data_length == -1 ? 0
+                                                       : encoded_data_length);
+}
+
 }  // namespace
 
 ResourceFetcherInit::ResourceFetcherInit(
@@ -1767,21 +1785,8 @@ void ResourceFetcher::HandleLoaderFinish(Resource* resource,
   if (scoped_refptr<ResourceTimingInfo> info =
           resource_timing_info_map_.Take(resource)) {
     if (resource->GetResponse().IsHTTP()) {
-      info->SetInitialURL(resource->GetResourceRequest()
-                                  .GetInitialUrlForResourceTiming()
-                                  .IsNull()
-                              ? resource->GetResourceRequest().Url()
-                              : resource->GetResourceRequest()
-                                    .GetInitialUrlForResourceTiming());
-      info->SetFinalResponse(resource->GetResponse());
-      info->SetLoadResponseEnd(response_end);
-      // encodedDataLength == -1 means "not available".
-      // TODO(ricea): Find cases where it is not available but the
-      // PerformanceResourceTiming spec requires it to be available and fix
-      // them.
-      info->AddFinalTransferSize(
-          encoded_data_length == -1 ? 0 : encoded_data_length);
-
+      PopulateAndAddResourceTimingInfo(resource, info, response_end,
+                                       encoded_data_length);
       auto receiver = Context().TakePendingWorkerTimingReceiver(
           resource->GetResponse().RequestId());
       info->SetWorkerTimingReceiver(std::move(receiver));
@@ -1825,7 +1830,14 @@ void ResourceFetcher::HandleLoaderError(Resource* resource,
 
   RemoveResourceLoader(resource->Loader());
 
-  resource_timing_info_map_.Take(resource);
+  if (scoped_refptr<ResourceTimingInfo> info =
+          resource_timing_info_map_.Take(resource)) {
+    PopulateAndAddResourceTimingInfo(
+        resource, info, info->InitialTime(),
+        resource->GetResponse().EncodedDataLength());
+    if (resource->Options().request_initiator_context == kDocumentContext)
+      Context().AddResourceTiming(*info);
+  }
 
   resource->VirtualTimePauser().UnpauseVirtualTime();
   if (error.IsCancellation())

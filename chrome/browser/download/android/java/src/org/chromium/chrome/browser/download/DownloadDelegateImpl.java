@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.download;
 
 import android.net.Uri;
 
+import org.chromium.components.browser_ui.util.DownloadUtils;
 import org.chromium.components.download.DownloadDelegate;
 
 /**
@@ -21,7 +22,7 @@ public class DownloadDelegateImpl extends DownloadDelegate {
 
     @Override
     public Uri parseOriginalUrl(String originalUrl) {
-        return UriUtils.parseOriginalUrl(originalUrl);
+        return DownloadUtils.parseOriginalUrl(originalUrl);
     }
 
     @Override

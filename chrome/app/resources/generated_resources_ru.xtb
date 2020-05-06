@@ -170,6 +170,7 @@
 <translation id="1217483152325416304">Локальные данные скоро будут удалены</translation>
 <translation id="1217668622537098248">Переключаться обратно на нажатие левой кнопки мыши после завершения действия</translation>
 <translation id="121783623783282548">Пароли не совпадают.</translation>
+<translation id="1218015446623563536">Удаление Linux</translation>
 <translation id="1218839827383191197"><ph name="BEGIN_PARAGRAPH1" />Когда геолокация Google включена, местоположение устройства определяется с помощью датчиков, Wi‑Fi и мобильных сетей.<ph name="END_PARAGRAPH1" />
     <ph name="BEGIN_PARAGRAPH2" />При желании отключите эту функцию в настройках устройства. Там же вы можете запретить использование датчиков, Wi‑Fi и мобильных сетей для уточнения местоположения.<ph name="END_PARAGRAPH2" /></translation>
 <translation id="122082903575839559">Алгоритм подписи сертификатов</translation>
@@ -3747,7 +3748,7 @@
 <translation id="5972666587303800813">No-op</translation>
 <translation id="5972708806901999743">К началу</translation>
 <translation id="5972826969634861500">Запустить <ph name="PRODUCT_NAME" /></translation>
-<translation id="5973041996755340290">Отладка этого браузера выполнялась с помощью инструмента "<ph name="CLIENT_NAME" />".</translation>
+<translation id="5973041996755340290">Инструмент "<ph name="CLIENT_NAME" />" запустил отладку этого браузера.</translation>
 <translation id="5973605538625120605">Изменение PIN-кода</translation>
 <translation id="5975792506968920132">Процент зарядки батареи</translation>
 <translation id="5976160379964388480">Другое</translation>

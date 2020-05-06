@@ -208,6 +208,14 @@
       </message>
     </if>
 
+    <!-- Certificate Info strings -->
+    <if expr="is_android">
+    <!-- Only used in the dialog shown after tapping "Details" in page info -->
+    <message name="IDS_PAGE_INFO_SECURE_IDENTITY_VERIFIED" desc="The text of the identity section when the page is secure and uses a valid certificate">
+      <ph name="BROWSER">$1<ex>Chromium</ex></ph> verified that <ph name="ISSUER">$2<ex>VeriSign</ex></ph> issued this website's certificate.
+    </message>
+    </if>
+
     <!-- Cookies -->
     <if expr="not is_android">
       <message name="IDS_PAGE_INFO_COOKIES" desc="The label for the Cookies setting in the Page Information Window.">

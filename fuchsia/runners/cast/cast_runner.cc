@@ -47,8 +47,9 @@ static constexpr const char* kServices[] = {
     "fuchsia.vulkan.loader.Loader",
 
     // These services are redirected to the Agent:
-    // * fuchsia.media.Audio
+    // * fuchsia.camera3.DeviceWatcher
     // * fuchsia.legacymetrics.MetricsRecorder
+    // * fuchsia.media.Audio
 };
 
 bool IsPermissionGrantedInAppConfig(
@@ -86,6 +87,9 @@ CastRunner::CastRunner(bool is_headless)
   // Add handlers to main context's service directory for redirected services.
   main_services_->outgoing_directory()->AddPublicService<fuchsia::media::Audio>(
       fit::bind_member(this, &CastRunner::OnAudioServiceRequest));
+  main_services_->outgoing_directory()
+      ->AddPublicService<fuchsia::camera3::DeviceWatcher>(
+          fit::bind_member(this, &CastRunner::OnCameraServiceRequest));
   main_services_->outgoing_directory()
       ->AddPublicService<fuchsia::legacymetrics::MetricsRecorder>(
           fit::bind_member(this, &CastRunner::OnMetricsRecorderServiceRequest));
@@ -168,6 +172,11 @@ void CastRunner::LaunchPendingComponent(PendingCastComponent* pending_component,
             cast_component->application_config(),
             fuchsia::web::PermissionType::MICROPHONE)) {
       audio_capturer_component_ = cast_component.get();
+    }
+
+    if (IsPermissionGrantedInAppConfig(cast_component->application_config(),
+                                       fuchsia::web::PermissionType::CAMERA)) {
+      video_capturer_component_ = cast_component.get();
     }
   }
 
@@ -269,9 +278,27 @@ void CastRunner::OnAudioServiceRequest(
     return;
   }
 
-  // Otherwise use the Runner's fuchsia.media.Audio service.
+  // Otherwise use the Runner's fuchsia.media.Audio service. fuchsia.media.Audio
+  // may be used by frames without MICRIPHONE permission to create AudioRenderer
+  // instance.
   base::fuchsia::ComponentContextForCurrentProcess()->svc()->Connect(
       std::move(request));
+}
+
+void CastRunner::OnCameraServiceRequest(
+    fidl::InterfaceRequest<fuchsia::camera3::DeviceWatcher> request) {
+  // If we have a component that allows camera access then redirect the
+  // fuchsia.camera3.DeviceWatcher requests to the corresponding agent.
+  if (video_capturer_component_) {
+    video_capturer_component_->agent_manager()->ConnectToAgentService(
+        video_capturer_component_->application_config().agent_url(),
+        std::move(request));
+    return;
+  }
+
+  LOG(WARNING) << "fuchsia.camera3.DeviceWatcher request was received while no "
+                  "apps with the CAMERA permission are running.";
+  // Drop the request.
 }
 
 void CastRunner::OnMetricsRecorderServiceRequest(

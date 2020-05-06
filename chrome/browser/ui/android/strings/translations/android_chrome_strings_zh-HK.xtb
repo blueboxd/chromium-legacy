@@ -33,6 +33,7 @@
 <translation id="1208340532756947324">如要在不同裝置上同步和個人化內容，請開啟同步處理功能</translation>
 <translation id="1209206284964581585">暫時隱藏</translation>
 <translation id="1227058898775614466">導覽記錄</translation>
+<translation id="1229399675748764149">將此頁面設為首頁</translation>
 <translation id="1231733316453485619">要開啟同步處理功能嗎？</translation>
 <translation id="123724288017357924">重新載入目前的網頁，忽略之前快取的內容</translation>
 <translation id="124116460088058876">更多語言</translation>
@@ -71,6 +72,7 @@
 <translation id="1513352483775369820">書籤和網頁記錄</translation>
 <translation id="1513858653616922153">刪除密碼</translation>
 <translation id="1521774566618522728">今天已使用</translation>
+<translation id="1543538514740974167">輕輕一按，即時到位</translation>
 <translation id="1544826120773021464">如要管理 Google 帳戶，請輕按「管理帳戶」按鈕</translation>
 <translation id="1549000191223877751">移至其他視窗</translation>
 <translation id="1553358976309200471">更新 Chrome</translation>
@@ -723,11 +725,13 @@
 <translation id="7022756207310403729">在瀏覽器中開啟</translation>
 <translation id="702463548815491781">建議在 TalkBack 或「按鈕控制」開啟時使用</translation>
 <translation id="7029809446516969842">密碼</translation>
+<translation id="703523980599857277">變更首頁</translation>
 <translation id="7055152154916055070">已禁止重新導向：</translation>
 <translation id="7063006564040364415">無法連線至同步處理伺服器。</translation>
 <translation id="7071521146534760487">管理帳戶</translation>
 <translation id="7077143737582773186">SD 卡</translation>
 <translation id="7121362699166175603">清除記錄和網址列中的自動完成資料。您的 Google 帳戶在 <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> 上可能有其他形式的瀏覽記錄。</translation>
+<translation id="7128355412245153445">輕按首頁按鈕，即可隨時查看熱門網站和近期報導</translation>
 <translation id="7138678301420049075">其他</translation>
 <translation id="7146622961999026732">這些網站和應用程式似乎對您很重要：</translation>
 <translation id="7149158118503947153">從 <ph name="DOMAIN_NAME" /> <ph name="BEGIN_LINK" />載入原始網頁<ph name="END_LINK" /></translation>
@@ -968,11 +972,13 @@
 <translation id="9155898266292537608">您亦可以透過快速輕按某個字詞進行搜尋</translation>
 <translation id="9169507124922466868">導覽記錄喺畫面下半部分顯示</translation>
 <translation id="9204836675896933765">尚餘 1 個檔案</translation>
+<translation id="9205796607887024517">在這裡控制您的報導</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="9209888181064652401">無法撥打電話</translation>
 <translation id="9219103736887031265">圖片</translation>
 <translation id="926205370408745186">從「健康數碼生活」中移除您的 Chrome 活動記錄</translation>
 <translation id="932327136139879170">首頁</translation>
+<translation id="93753284658583800">已變更首頁</translation>
 <translation id="938850635132480979">錯誤：<ph name="ERROR_CODE" /></translation>
 <translation id="95817756606698420">Chrome 可在中國使用「搜狗」<ph name="BEGIN_BOLD" /><ph name="END_BOLD" />搜尋內容。您可以在「<ph name="BEGIN_LINK" />設定<ph name="END_LINK" />」中變更此設定。</translation>
 <translation id="968900484120156207">您瀏覽的網頁會在這裡顯示</translation>

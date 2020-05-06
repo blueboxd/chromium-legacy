@@ -16,6 +16,7 @@ namespace media {
 using Microsoft::WRL::ComPtr;
 
 MediaFoundationSourceWrapper::MediaFoundationSourceWrapper() = default;
+
 MediaFoundationSourceWrapper::~MediaFoundationSourceWrapper() {
   if (!cdm_proxy_)
     return;
@@ -29,14 +30,14 @@ MediaFoundationSourceWrapper::~MediaFoundationSourceWrapper() {
   HRESULT hr = cdm_proxy_->SetLastKeyIds(playback_element_id_, key_ids.data(),
                                          key_ids.size());
   DLOG_IF(ERROR, FAILED(hr))
-      << "Failed to notify CDM proxy of last Key IDs. hr=" << hr;
+      << "Failed to notify CDM proxy of last Key IDs: " << PrintHr(hr);
 }
 
 HRESULT MediaFoundationSourceWrapper::RuntimeClassInitialize(
     uint64_t playback_element_id,
     MediaResource* media_resource,
     scoped_refptr<base::SequencedTaskRunner> task_runner) {
-  DVLOG(1) << __func__ << ": this=" << this;
+  DVLOG_FUNC(1);
 
   if (media_resource->GetType() != MediaResource::Type::STREAM) {
     DLOG(ERROR) << "MediaResource is not of Type STREAM";
@@ -61,7 +62,7 @@ HRESULT MediaFoundationSourceWrapper::RuntimeClassInitialize(
 }
 
 void MediaFoundationSourceWrapper::DetachResource() {
-  DVLOG(1) << __func__ << ": this=" << this;
+  DVLOG_FUNC(1);
 
   for (auto stream : media_streams_) {
     stream->DetachDemuxerStream();
@@ -70,7 +71,7 @@ void MediaFoundationSourceWrapper::DetachResource() {
 
 HRESULT MediaFoundationSourceWrapper::GetCharacteristics(
     DWORD* characteristics) {
-  DVLOG(3) << __func__ << ": this=" << this;
+  DVLOG_FUNC(3);
 
   if (state_ == State::kShutdown) {
     DLOG(ERROR) << __func__ << ": MF_E_SHUTDOWN";
@@ -110,7 +111,7 @@ HRESULT MediaFoundationSourceWrapper::SelectDefaultStreams(
 
 HRESULT MediaFoundationSourceWrapper::CreatePresentationDescriptor(
     IMFPresentationDescriptor** presentation_descriptor_out) {
-  DVLOG(2) << __func__ << ": this=" << this;
+  DVLOG_FUNC(2);
 
   if (state_ == State::kShutdown) {
     DLOG(ERROR) << __func__ << ": MF_E_SHUTDOWN";
@@ -141,7 +142,7 @@ HRESULT MediaFoundationSourceWrapper::Start(
     IMFPresentationDescriptor* presentation_descriptor,
     const GUID* guid_time_format,
     const PROPVARIANT* start_position) {
-  DVLOG(2) << __func__ << ": this=" << this;
+  DVLOG_FUNC(2);
 
   if (state_ == State::kShutdown) {
     DLOG(ERROR) << __func__ << ": MF_E_SHUTDOWN";
@@ -232,7 +233,7 @@ HRESULT MediaFoundationSourceWrapper::Start(
 }
 
 HRESULT MediaFoundationSourceWrapper::Stop() {
-  DVLOG(2) << __func__ << ": this=" << this;
+  DVLOG_FUNC(2);
 
   if (state_ == State::kShutdown) {
     DLOG(ERROR) << __func__ << ": MF_E_SHUTDOWN";
@@ -252,7 +253,7 @@ HRESULT MediaFoundationSourceWrapper::Stop() {
 }
 
 HRESULT MediaFoundationSourceWrapper::Pause() {
-  DVLOG(2) << __func__ << ": this=" << this;
+  DVLOG_FUNC(2);
 
   if (state_ == State::kShutdown) {
     DLOG(ERROR) << __func__ << ": MF_E_SHUTDOWN";
@@ -278,7 +279,7 @@ HRESULT MediaFoundationSourceWrapper::Pause() {
 // After this method is called, methods on the media source and all of its
 // media streams return MF_E_SHUTDOWN (except for IUnknown methods).
 HRESULT MediaFoundationSourceWrapper::Shutdown() {
-  DVLOG(1) << __func__ << ": this=" << this;
+  DVLOG_FUNC(1);
 
   for (auto stream : media_streams_) {
     stream->DetachParent();
@@ -295,7 +296,7 @@ HRESULT MediaFoundationSourceWrapper::Shutdown() {
 //
 HRESULT MediaFoundationSourceWrapper::GetEvent(DWORD flags,
                                                IMFMediaEvent** event_out) {
-  DVLOG(3) << __func__ << ": this=" << this;
+  DVLOG_FUNC(3);
   DCHECK(mf_media_event_queue_);
 
   // Not tracing hr to avoid the noise from MF_E_NO_EVENTS_AVAILABLE.
@@ -304,7 +305,7 @@ HRESULT MediaFoundationSourceWrapper::GetEvent(DWORD flags,
 
 HRESULT MediaFoundationSourceWrapper::BeginGetEvent(IMFAsyncCallback* callback,
                                                     IUnknown* state) {
-  DVLOG(3) << __func__ << ": this=" << this;
+  DVLOG_FUNC(3);
   DCHECK(mf_media_event_queue_);
 
   RETURN_IF_FAILED(mf_media_event_queue_->BeginGetEvent(callback, state));
@@ -313,7 +314,7 @@ HRESULT MediaFoundationSourceWrapper::BeginGetEvent(IMFAsyncCallback* callback,
 
 HRESULT MediaFoundationSourceWrapper::EndGetEvent(IMFAsyncResult* result,
                                                   IMFMediaEvent** event_out) {
-  DVLOG(3) << __func__ << ": this=" << this;
+  DVLOG_FUNC(3);
   DCHECK(mf_media_event_queue_);
 
   RETURN_IF_FAILED(mf_media_event_queue_->EndGetEvent(result, event_out));
@@ -324,7 +325,7 @@ HRESULT MediaFoundationSourceWrapper::QueueEvent(MediaEventType type,
                                                  REFGUID extended_type,
                                                  HRESULT status,
                                                  const PROPVARIANT* value) {
-  DVLOG(3) << __func__ << ": this=" << this;
+  DVLOG_FUNC(3);
   DCHECK(mf_media_event_queue_);
 
   RETURN_IF_FAILED(mf_media_event_queue_->QueueEventParamVar(
@@ -336,19 +337,19 @@ HRESULT MediaFoundationSourceWrapper::GetInputTrustAuthority(
     DWORD stream_id,
     REFIID riid,
     IUnknown** object_out) {
-  DVLOG(1) << __func__ << ": this=" << this;
+  DVLOG_FUNC(1);
 
   if (stream_id >= StreamCount())
     return E_INVALIDARG;
 
   if (!cdm_proxy_) {
-    DLOG(ERROR) << __func__ << ": MF_E_NOT_PROTECTED";
+    DVLOG_FUNC(1) << "MF_E_NOT_PROTECTED";
     return MF_E_NOT_PROTECTED;
   }
 
   if (!media_streams_[stream_id]->IsEncrypted()) {
-    DVLOG(1) << __func__ << ". Unprotected stream. stream_id=" << stream_id
-             << ",this=" << this;
+    DVLOG_FUNC(1) << "Unprotected stream; stream_id=" << stream_id;
+
     return MF_E_NOT_PROTECTED;
   }
 
@@ -362,7 +363,7 @@ HRESULT MediaFoundationSourceWrapper::GetInputTrustAuthority(
 HRESULT MediaFoundationSourceWrapper::GetService(REFGUID guid_service,
                                                  REFIID riid,
                                                  LPVOID* result) {
-  DVLOG(3) << __func__ << ": this=" << this;
+  DVLOG_FUNC(3);
   DCHECK(result);
 
   if (!IsEqualGUID(guid_service, MF_RATE_CONTROL_SERVICE))
@@ -373,7 +374,7 @@ HRESULT MediaFoundationSourceWrapper::GetService(REFGUID guid_service,
 HRESULT MediaFoundationSourceWrapper::GetSlowestRate(MFRATE_DIRECTION direction,
                                                      BOOL supports_thinning,
                                                      float* rate) {
-  DVLOG(2) << __func__ << ": this=" << this;
+  DVLOG_FUNC(3);
   DCHECK(rate);
 
   if (direction == MFRATE_REVERSE) {
@@ -386,7 +387,7 @@ HRESULT MediaFoundationSourceWrapper::GetSlowestRate(MFRATE_DIRECTION direction,
 HRESULT MediaFoundationSourceWrapper::GetFastestRate(MFRATE_DIRECTION direction,
                                                      BOOL supports_thinning,
                                                      float* rate) {
-  DVLOG(2) << __func__ << ": this=" << this;
+  DVLOG_FUNC(3);
   DCHECK(rate);
 
   if (direction == MFRATE_REVERSE) {
@@ -404,7 +405,7 @@ HRESULT MediaFoundationSourceWrapper::GetFastestRate(MFRATE_DIRECTION direction,
 HRESULT MediaFoundationSourceWrapper::IsRateSupported(BOOL supports_thinning,
                                                       float new_rate,
                                                       float* supported_rate) {
-  DVLOG(2) << __func__ << ": this=" << this;
+  DVLOG_FUNC(2) << "new_rate=" << new_rate;
 
   if (state_ == State::kShutdown)
     return MF_E_SHUTDOWN;
@@ -438,12 +439,13 @@ HRESULT MediaFoundationSourceWrapper::IsRateSupported(BOOL supports_thinning,
     }
   }
 
+  DVLOG_FUNC(2) << PrintHr(hr);
   return hr;
 }
 
 HRESULT MediaFoundationSourceWrapper::SetRate(BOOL supports_thinning,
                                               float rate) {
-  DVLOG(2) << __func__ << ": this=" << this;
+  DVLOG_FUNC(2);
 
   if (state_ == State::kShutdown)
     return MF_E_SHUTDOWN;
@@ -460,7 +462,7 @@ HRESULT MediaFoundationSourceWrapper::SetRate(BOOL supports_thinning,
 
 HRESULT MediaFoundationSourceWrapper::GetRate(BOOL* supports_thinning,
                                               float* rate) {
-  DVLOG(2) << __func__ << ": this=" << this;
+  DVLOG_FUNC(2);
 
   *supports_thinning = FALSE;
   *rate = 0.0f;
@@ -477,7 +479,7 @@ uint32_t MediaFoundationSourceWrapper::StreamCount() const {
 }
 
 void MediaFoundationSourceWrapper::CheckForEndOfPresentation() {
-  DVLOG(2) << __func__ << ": this=" << this;
+  DVLOG_FUNC(2);
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
 
   if (presentation_ended_) {
@@ -495,7 +497,7 @@ void MediaFoundationSourceWrapper::CheckForEndOfPresentation() {
   if (presentation_ended_) {
     HRESULT hr = QueueEvent(MEEndOfPresentation, GUID_NULL, S_OK, nullptr);
     DLOG_IF(ERROR, FAILED(hr))
-        << "Failed to notify end of presentation. hr=" << hr;
+        << "Failed to notify end of presentation: " << PrintHr(hr);
   }
 }
 
@@ -511,7 +513,7 @@ bool MediaFoundationSourceWrapper::HasEncryptedStream() const {
 }
 
 void MediaFoundationSourceWrapper::SetCdmProxy(IMFCdmProxy* cdm_proxy) {
-  DVLOG(2) << __func__ << ": this=" << this;
+  DVLOG_FUNC(2);
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
 
   // cdm_proxy_ should never change.
@@ -519,11 +521,12 @@ void MediaFoundationSourceWrapper::SetCdmProxy(IMFCdmProxy* cdm_proxy) {
   cdm_proxy_ = cdm_proxy;
 
   HRESULT hr = cdm_proxy_->RefreshTrustedInput(playback_element_id_);
-  DLOG_IF(ERROR, FAILED(hr)) << "Failed to refresh trusted input. hr=" << hr;
+  DLOG_IF(ERROR, FAILED(hr))
+      << "Failed to refresh trusted input: " << PrintHr(hr);
 }
 
 bool MediaFoundationSourceWrapper::SetVideoStreamEnabled(bool enabled) {
-  DVLOG(2) << __func__ << ": this=" << this << ",enabled=" << enabled;
+  DVLOG_FUNC(2) << "enabled=" << enabled;
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
 
   if (enabled == video_stream_enabled_)
@@ -546,7 +549,7 @@ bool MediaFoundationSourceWrapper::SetVideoStreamEnabled(bool enabled) {
 }
 
 void MediaFoundationSourceWrapper::FlushStreams() {
-  DVLOG(2) << __func__ << ": this=" << this;
+  DVLOG_FUNC(2);
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
 
   for (auto stream : media_streams_) {

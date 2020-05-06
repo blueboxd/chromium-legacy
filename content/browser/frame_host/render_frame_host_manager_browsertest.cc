@@ -5715,7 +5715,7 @@ class ProcessPerSiteContentBrowserClient : public TestContentBrowserClient {
   }
 
   bool ShouldUseProcessPerSite(BrowserContext* browser_context,
-                               const GURL& effective_url) override {
+                               const GURL& site_url) override {
     return should_use_process_per_site_;
   }
 

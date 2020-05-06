@@ -977,7 +977,8 @@ bool FrameFetchContext::ShouldSendClientHint(
   // |hints_preferences| is used only in case of the preload scanner;
   // GetClientHintsPreferences() has things parsed for this document
   // normally (whether via headers of http-equiv), and |enabled_hints| are
-  // previously persistent settings.
+  // previously persistent settings (which may include those from current
+  // document if IPCs got through already).
   return GetClientHintsPreferences().ShouldSend(type) ||
          hints_preferences.ShouldSend(type) || enabled_hints.IsEnabled(type);
 }

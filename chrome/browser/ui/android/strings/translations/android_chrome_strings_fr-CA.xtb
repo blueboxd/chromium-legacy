@@ -2,7 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="fr-CA">
 <translation id="1028699632127661925">Envoi à <ph name="DEVICE_NAME" /> en cours…</translation>
-<translation id="103269572468856066">Supprimer aussi les données de ces sites et ces applis?</translation>
+<translation id="103269572468856066">Supprimer aussi les données de ces sites et de ces applis?</translation>
 <translation id="1036348656032585052">Désactiver</translation>
 <translation id="1036727731225946849">Ajout de <ph name="WEBAPK_NAME" /> en cours…</translation>
 <translation id="1041308826830691739">À partir de sites Web</translation>
@@ -33,6 +33,7 @@
 <translation id="1208340532756947324">Pour profiter de la synchronisation et d'une expérience personnalisée sur tous vos appareils, activez la synchronisation</translation>
 <translation id="1209206284964581585">Masquer pour l'instant</translation>
 <translation id="1227058898775614466">Historique de navigation</translation>
+<translation id="1229399675748764149">Faire de cette page votre page d'accueil</translation>
 <translation id="1231733316453485619">Activer la synchronisation?</translation>
 <translation id="123724288017357924">Actualiser la page, ignorer le contenu mis en cache</translation>
 <translation id="124116460088058876">Plus de langues</translation>
@@ -71,6 +72,7 @@
 <translation id="1513352483775369820">Favoris et historique Web</translation>
 <translation id="1513858653616922153">Supprimer le mot de passe</translation>
 <translation id="1521774566618522728">Actif aujourd'hui</translation>
+<translation id="1543538514740974167">Arrivez ici plus rapidement</translation>
 <translation id="1544826120773021464">Pour gérer votre compte Google, touchez le bouton « Gérer le compte »</translation>
 <translation id="1549000191223877751">Déplacer vers autre fenêtre</translation>
 <translation id="1553358976309200471">Mettre à jour Chrome</translation>
@@ -723,11 +725,13 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="7022756207310403729">Ouvrir dans le navigateur</translation>
 <translation id="702463548815491781">Recommandé lorsque le service TalkBack ou Switch Access est activé</translation>
 <translation id="7029809446516969842">Mots de passe</translation>
+<translation id="703523980599857277">Modifier la page d'accueil</translation>
 <translation id="7055152154916055070">Redirection bloquée :</translation>
 <translation id="7063006564040364415">Échec de connexion au serveur de synchronisation.</translation>
 <translation id="7071521146534760487">Gérer le compte</translation>
 <translation id="7077143737582773186">Carte SD</translation>
 <translation id="7121362699166175603">Efface l'historique et les saisies semi-automatiques dans la barre d'adresse. D'autres formes d'historique de navigation peuvent exister sur votre compte Google à l'adresse <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
+<translation id="7128355412245153445">Consultez vos sites les plus fréquentés et vos histoires récentes lorsque vous appuyez sur la touche d'accueil</translation>
 <translation id="7138678301420049075">Autre</translation>
 <translation id="7146622961999026732">Ces applications et ces sites semblent importants pour vous :</translation>
 <translation id="7149158118503947153"><ph name="BEGIN_LINK" />Charger la page d'origine<ph name="END_LINK" /> à partir de <ph name="DOMAIN_NAME" /></translation>
@@ -968,11 +972,13 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="9155898266292537608">Vous pouvez également effectuer une recherche d'un simple toucher sur un mot</translation>
 <translation id="9169507124922466868">L'historique de navigation est ouvert à moitié</translation>
 <translation id="9204836675896933765">1 fichier restant</translation>
+<translation id="9205796607887024517">Gérez vos histoires ici</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="9209888181064652401">Impossible de faire des appels</translation>
 <translation id="9219103736887031265">Images</translation>
 <translation id="926205370408745186">Supprimer votre activité Chrome de Bien-être numérique</translation>
 <translation id="932327136139879170">Accueil</translation>
+<translation id="93753284658583800">La page d'accueil a été modifiée</translation>
 <translation id="938850635132480979">Erreur : <ph name="ERROR_CODE" /></translation>
 <translation id="95817756606698420">Google Chrome peut faire appel à <ph name="BEGIN_BOLD" />Sogou<ph name="END_BOLD" /> pour effectuer des recherches en Chine. Vous pouvez modifier cette option dans les <ph name="BEGIN_LINK" />Paramètres<ph name="END_LINK" />.</translation>
 <translation id="968900484120156207">Les pages que vous visitez s'affichent ici</translation>

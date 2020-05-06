@@ -15,6 +15,9 @@
 #include "ios/chrome/browser/main/browser_user_data.h"
 #include "ios/chrome/browser/web_state_list/web_state_list_observer.h"
 
+namespace base {
+class FilePath;
+}
 class ChromeBrowserState;
 @class SessionWindowIOS;
 @class SessionIOSFactory;
@@ -38,6 +41,14 @@ class SessionRestorationBrowserAgent
 
   ~SessionRestorationBrowserAgent() override;
 
+  // Set a session identification string that will be used to locate which
+  // session to restore. If this is unset (or an empty string), then the
+  // default session will be restored. This value is ignored when multi-window
+  // is not enabled, and the default session is always used.
+  // Setting this more than once on the same agent is probably a programming
+  // error.
+  void SetSessionID(const std::string& session_identifier);
+
   // Adds/Removes Observer to session restoration events.
   void AddObserver(SessionRestorationObserver* observer);
   void RemoveObserver(SessionRestorationObserver* observer);
@@ -47,6 +58,11 @@ class SessionRestorationBrowserAgent
   // from the restored sessions should be added at the end of the current list
   // of tabs. Returns YES if the single NTP tab is closed.
   bool RestoreSessionWindow(SessionWindowIOS* window);
+
+  // Restores the session whose ID matches the session ID set for this agent.
+  // Restoration is done via RestoreSessionWindow(), above, and the return
+  // value of that method is returned.
+  bool RestoreSession();
 
   // Persists the current list of tabs to disk, either immediately or deferred
   // based on the value of |immediately|.
@@ -77,6 +93,11 @@ class SessionRestorationBrowserAgent
                            int active_index,
                            ActiveWebStateChangeReason reason) override;
 
+  // The path to use for all session storage reads and writes. If multi-window
+  // is enabled, the session ID for this agent is used to determine this path;
+  // otherwise it is the state path of the associated browser state.
+  base::FilePath GetSessionStoragePath();
+
   // The service object which handles the actual saving of sessions.
   SessionServiceIOS* session_service_;
 
@@ -92,6 +113,9 @@ class SessionRestorationBrowserAgent
 
   // Session Factory used to create session data for saving.
   SessionIOSFactory* session_ios_factory_;
+
+  // Session identifier for this agent.
+  std::string session_identifier_;
 
   // True when session restoration is in progress.
   bool restoring_session_ = false;

@@ -380,8 +380,8 @@ public class SafeBrowsingTest {
 
     private void evaluateJavaScriptOnInterstitialOnUiThread(
             final String script, final Callback<String> callback) {
-        PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT,
-                () -> mAwContents.evaluateJavaScriptOnInterstitialForTesting(script, callback));
+        PostTask.runOrPostTask(
+                UiThreadTaskTraits.DEFAULT, () -> mAwContents.evaluateJavaScript(script, callback));
     }
 
     private String evaluateJavaScriptOnInterstitialOnUiThreadSync(final String script)

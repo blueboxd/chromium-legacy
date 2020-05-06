@@ -44,6 +44,13 @@ void FakeDlcserviceClient::GetInstalled(GetInstalledCallback callback) {
                                 dlc_module_list_));
 }
 
+void FakeDlcserviceClient::GetExistingDlcs(GetExistingDlcsCallback callback) {
+  VLOG(1) << "Requesting to get existing DLC(s).";
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), get_existing_dlcs_err_,
+                                dlcs_with_content_));
+}
+
 void FakeDlcserviceClient::OnInstallStatusForTest(dbus::Signal* signal) {
   NOTREACHED();
 }

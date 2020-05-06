@@ -33,6 +33,7 @@
 <translation id="1208340532756947324">ເພື່ອຊິ້ງຂໍ້ມູນ ແລະ ປັບແຕ່ງເປັນແບບສ່ວນຕົວໃນທົ່ວອຸປະກອນ, ກະລຸນາເປີດການຊິ້ງຂໍ້ມູນກ່ອນ</translation>
 <translation id="1209206284964581585">ເຊື່ອງສຳລັບຕອນນີ້</translation>
 <translation id="1227058898775614466">ປະຫວັດການນຳທາງ</translation>
+<translation id="1229399675748764149">ເຮັດໃຫ້ໜ້ານີ້ເປັນໜ້າຫຼັກຂອງທ່ານ</translation>
 <translation id="1231733316453485619">ເປີດການຊິ້ງຂໍ້ມູນບໍ?</translation>
 <translation id="123724288017357924">ໂຫຼດໜ້າປັດຈຸບັນຄືນໃໝ່, ໂດຍລະເລີຍເນື້ອຫາທີ່ຈັດເກັບໄວ້ຖາວອນ</translation>
 <translation id="124116460088058876">ພາສາເພີ່ມເຕີມ</translation>
@@ -71,6 +72,7 @@
 <translation id="1513352483775369820">ບຸກມາກສ໌ ​ແລະ​ປະ​ຫວັດ​ເວັບ​</translation>
 <translation id="1513858653616922153">ລຶບລະຫັດຜ່ານ</translation>
 <translation id="1521774566618522728">ເປີດນຳໃຊ້ມື້ນີ້</translation>
+<translation id="1543538514740974167">ມາທີ່ນີ້ໄດ້ໄວກວ່າ</translation>
 <translation id="1544826120773021464">ເພື່ອຈັດການບັນຊີ Google ຂອງທ່ານ, ກະລຸນາແຕະປຸ່ມ "ຈັດການບັນຊີ"</translation>
 <translation id="1549000191223877751">ຍ້າຍໄປຫາໜ້າຈໍອື່ນ</translation>
 <translation id="1553358976309200471">ອັບ​ເດດ Chrome</translation>
@@ -723,11 +725,13 @@
 <translation id="7022756207310403729">ເປີດໃນໂປຣແກຣມທ່ອງເວັບ</translation>
 <translation id="702463548815491781">ແນະນຳເມື່ອ TalkBack ຫຼື ການເຂົ້າເຖິງດ້ວຍປຸ່ມເປີດຢູ່</translation>
 <translation id="7029809446516969842">ລະ​ຫັດ​ຜ່ານ</translation>
+<translation id="703523980599857277">ປ່ຽນໜ້າຫຼັກ</translation>
 <translation id="7055152154916055070">ບລັອກການປ່ຽນເສັ້ນທາງແລ້ວ:</translation>
 <translation id="7063006564040364415">ບໍ່​ສາ​ມາດ​ເຊື່ອມ​ຕໍ່​ກັບ​ເຊີບເວີຊິງຄ໌ໄດ້​.</translation>
 <translation id="7071521146534760487">ຈັດການບັນຊີ</translation>
 <translation id="7077143737582773186">SD ກາດ</translation>
 <translation id="7121362699166175603">ລຶບລ້າງປະຫວັດ ແລະ ການປະກອບຂໍ້ມູນອັດຕະໂນມັດໃນແຖບທີ່ຢູ່. ບັນຊີ Google ຂອງທ່ານອາດຈະມີຮູບແບບອື່ນຂອງປະຫວັດການທ່ອງເວັບຢູ່ <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
+<translation id="7128355412245153445">ເບິ່ງເວັບໄຊຍອດນິຍົມ ແລະ ເລື່ອງລາວຫຼ້າສຸດໃນທຸກເມື່ອທີ່ທ່ານແຕະປຸ່ມໜ້າທໍາອິດ</translation>
 <translation id="7138678301420049075">ອື່ນໆ</translation>
 <translation id="7146622961999026732">ເວັບໄຊ ແລະ ແອັບເຫຼົ່ານີ້ປາກົດວ່າສຳຄັນຕໍ່ກັບທ່ານ:</translation>
 <translation id="7149158118503947153"><ph name="BEGIN_LINK" />ໂຫຼດໜ້າຕົ້ນສະບັບ<ph name="END_LINK" /> ຈາກ <ph name="DOMAIN_NAME" /></translation>
@@ -968,11 +972,13 @@
 <translation id="9155898266292537608">ທ່ານສາມາດຊອກຫາດ້ວຍການແຕະດ່ວນໃສ່ຄຳສັບໃດໜຶ່ງໄດ້ເຊັ່ນກັນ</translation>
 <translation id="9169507124922466868">ປະຫວັດການນຳທາງເປີດຢູ່ເຄິ່ງໜຶ່ງ</translation>
 <translation id="9204836675896933765">ຍັງເຫຼືອ 1 ໄຟລ໌</translation>
+<translation id="9205796607887024517">ຄວບຄຸມເລື່ອງລາວຂອງທ່ານຢູ່ບ່ອນນີ້</translation>
 <translation id="9206873250291191720">ກ</translation>
 <translation id="9209888181064652401">ບໍ່ສາມາດໂທອອກໄດ້</translation>
 <translation id="9219103736887031265">ຮູບ</translation>
 <translation id="926205370408745186">ລຶບການເຄື່ອນໄຫວໃນ Chrome ຂອງທ່ານອອກຈາກ Digital Wellbeing</translation>
 <translation id="932327136139879170">ບ້ານ</translation>
+<translation id="93753284658583800">ປ່ຽນໜ້າຫຼັກແລ້ວ</translation>
 <translation id="938850635132480979">ຜິດພາດ: <ph name="ERROR_CODE" /></translation>
 <translation id="95817756606698420">Chrome ສາມາດໃຊ້ <ph name="BEGIN_BOLD" />Sogou<ph name="END_BOLD" /> ສຳລັບການຊອກຫາໃນປະເທດຈີນ. ທ່ານສາມາດປ່ຽນສິ່ງນີ້ໄດ້ໃນ <ph name="BEGIN_LINK" />ການຕັ້ງຄ່າ<ph name="END_LINK" />.</translation>
 <translation id="968900484120156207">ໜ້າທີ່ທ່ານເຂົ້າເບິ່ງປາກົດຢູ່ບ່ອນນີ້</translation>

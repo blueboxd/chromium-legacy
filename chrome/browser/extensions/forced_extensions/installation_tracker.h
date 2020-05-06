@@ -11,6 +11,7 @@
 #include "base/observer_list_types.h"
 #include "base/scoped_observer.h"
 #include "chrome/browser/extensions/forced_extensions/installation_reporter.h"
+#include "components/policy/core/common/policy_service.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_registry_observer.h"
@@ -29,26 +30,48 @@ namespace extensions {
 // and report stats to UMA.
 // ExtensionService owns this class and outlives it.
 class InstallationTracker : public ExtensionRegistryObserver,
-                            public InstallationReporter::Observer {
+                            public InstallationReporter::Observer,
+                            public policy::PolicyService::Observer {
  public:
   class Observer : public base::CheckedObserver {
    public:
-    // Called after every force-installed extension is loaded (not only
+    // Called after every force-installed extension is loaded (not yet
     // installed) or reported as failure.
     //
-    // If there are no force-installed extensions configured, this method still
-    // gets called.
-    virtual void OnForceInstallationFinished() = 0;
+    // Called exactly once, during startup (may take several minutes). Use
+    // IsDoneLoading() to know if it has already been called. If there are no
+    // force-installed extensions configured, this method still gets called.
+    virtual void OnForceInstalledExtensionsLoaded() {}
+
+    // Same as OnForceInstalledExtensionsLoaded(), but after they're ready
+    // instead of loaded.
+    //
+    // Called exactly once, during startup (may take several minutes). Use
+    // IsReady() to know if it has already been called. If there are no
+    // force-installed extensions configured, this method still gets called.
+    virtual void OnForceInstalledExtensionsReady() {}
   };
 
   InstallationTracker(ExtensionRegistry* registry, Profile* profile);
 
   ~InstallationTracker() override;
 
+  // Returns true if all extensions loaded/failed loading.
+  bool IsDoneLoading() const;
+
+  // Returns true if all extensions installed/failed installing.
+  bool IsReady() const;
+
+  // Add/remove observers to this object, to get notified when installation is
+  // finished.
+  void AddObserver(Observer* observer);
+  void RemoveObserver(Observer* observer);
+
   // ExtensionRegistryObserver overrides:
   void OnExtensionLoaded(content::BrowserContext* browser_context,
                          const Extension* extension) override;
-
+  void OnExtensionReady(content::BrowserContext* browser_context,
+                        const Extension* extension) override;
   void OnShutdown(ExtensionRegistry*) override;
 
   // InstallationReporter::Observer overrides:
@@ -56,13 +79,12 @@ class InstallationTracker : public ExtensionRegistryObserver,
       const ExtensionId& extension_id,
       InstallationReporter::FailureReason reason) override;
 
-  // Returns true if all extensions are loaded/failed loading.
-  bool IsComplete() const;
+  // policy::PolicyService::Observer overrides:
+  void OnPolicyUpdated(const policy::PolicyNamespace& ns,
+                       const policy::PolicyMap& previous,
+                       const policy::PolicyMap& current) override;
 
-  // Add/remove observers to this object, to get notified when installation is
-  // finished.
-  void AddObserver(Observer* observer);
-  void RemoveObserver(Observer* observer);
+  void OnPolicyServiceInitialized(policy::PolicyDomain domain) override;
 
   enum class ExtensionStatus {
     // Extension appears in force-install list, but it not installed yet.
@@ -70,6 +92,9 @@ class InstallationTracker : public ExtensionRegistryObserver,
 
     // Extension was successfully loaded.
     LOADED,
+
+    // Extension is ready. This happens after loading.
+    READY,
 
     // Extension installation failure was reported.
     FAILED
@@ -91,8 +116,15 @@ class InstallationTracker : public ExtensionRegistryObserver,
   }
 
  private:
-  // Fire OnForceInstallationFinished() on observers.
-  void NotifyInstallationFinished();
+  policy::PolicyService* policy_service();
+
+  // Fires OnForceInstallationFinished() on observers, then changes |status_| to
+  // kComplete.
+  void MaybeNotifyObservers();
+
+  // Increment (or decrement) |load_pending_count_| and |install_pending_count_|
+  // by |delta|, depending on |status|.
+  void UpdateCounters(ExtensionStatus status, int delta);
 
   // Helper method to modify |extensions_| and bounded counter, adds extension
   // to the collection.
@@ -105,19 +137,13 @@ class InstallationTracker : public ExtensionRegistryObserver,
   void ChangeExtensionStatus(const ExtensionId& extension_id,
                              ExtensionStatus status);
 
-  // Helper method to modify |extensions_| and bounded counter, removes
-  // extension from the collection.
-  void RemoveExtensionInfo(const ExtensionId& extension_id);
-
-  // Loads list of force-installed extensions if available.
-  void OnForcedExtensionsPrefChanged();
+  // Loads list of force-installed extensions if available. Only called once.
+  void OnForcedExtensionsPrefReady();
 
   // Unowned, but guaranteed to outlive this object.
   ExtensionRegistry* registry_;
   Profile* profile_;
   PrefService* pref_service_;
-
-  PrefChangeRegistrar pref_change_registrar_;
 
   // Collection of all extensions we are interested in here. Don't update
   // directly, use AddExtensionInfo/RemoveExtensionInfo/ChangeExtensionStatus
@@ -125,14 +151,32 @@ class InstallationTracker : public ExtensionRegistryObserver,
   // this collection.
   std::map<ExtensionId, ExtensionInfo> extensions_;
 
-  // Number of extensions in |extensions_| with status equals to |PENDING|.
-  size_t pending_extensions_counter_ = 0;
+  // Number of extensions in |extensions_| with status |PENDING|.
+  size_t load_pending_count_ = 0;
+  // Number of extensions in |extensions_| with status |PENDING| or |LOADED|.
+  // (ie. could be loaded, but not ready yet).
+  size_t ready_pending_count_ = 0;
 
-  // Tracks whether non-empty forcelist policy was received at least once.
-  bool loaded_ = false;
-
-  // Tracks whether all extensions are done installing/loading.
-  bool complete_ = false;
+  // Stores the current state of this tracker, to know when it's complete, and
+  // to perform sanity DCHECK()s.
+  enum Status {
+    // Waiting for PolicyService to finish initializing. Listening for
+    // OnPolicyServiceInitialized().
+    kWaitingForPolicyService,
+    // Waiting for one or more extensions to finish loading. Listening for
+    // |ExtensionRegistryObserver| events.
+    kWaitingForExtensionLoads,
+    // Waiting for one or more extensions to finish loading. Listening for
+    // |ExtensionRegistryObserver| events. Extensions have already finished
+    // loading; we're still waiting for the "ready" state. IsDoneLoading()
+    // returns true, but IsReady() returns false.
+    kWaitingForExtensionReady,
+    // All extensions have finished installing (successfully or not); observers
+    // have been called exactly once, and IsDoneLoading() and IsReady()
+    // both return true.
+    kComplete,
+  };
+  Status status_ = kWaitingForPolicyService;
 
   ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>
       registry_observer_{this};

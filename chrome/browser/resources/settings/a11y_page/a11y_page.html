@@ -15,10 +15,11 @@
             external$="[[captionSettingsOpensExternally_]]">
         </cr-link-row>
         <settings-toggle-button
+            id="a11yImageLabels"
             class="hr"
             hidden$="[[!showAccessibilityLabelsSetting_]]"
             pref="{{prefs.settings.a11y.enable_accessibility_image_labels}}"
-            on-change="onA11yImageLabelsChange_"
+            on-change="onToggleAccessibilityImageLabels_"
             label="$i18n{accessibleImageLabelsTitle}"
             sub-label="$i18n{accessibleImageLabelsSubtitle}">
         </settings-toggle-button>
@@ -26,7 +27,6 @@
         <template is="dom-if" if="[[enableLiveCaption_]]">
           <settings-toggle-button
               pref="{{prefs.accessibility.captions.live_caption_enabled}}"
-              on-change="onA11yLiveCaptionChange_"
               label="$i18n{captionsEnableLiveCaptionTitle}"
               sub-label="$i18n{captionsEnableLiveCaptionSubtitle}">
           </settings-toggle-button>

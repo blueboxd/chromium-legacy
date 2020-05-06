@@ -620,7 +620,8 @@ AutomationPredicate.link = AutomationPredicate.roles([Role.LINK]);
 /** @type {AutomationPredicate.Unary} */
 AutomationPredicate.row = AutomationPredicate.roles([Role.ROW]);
 /** @type {AutomationPredicate.Unary} */
-AutomationPredicate.table = AutomationPredicate.roles([Role.GRID, Role.TABLE]);
+AutomationPredicate.table =
+    AutomationPredicate.roles([Role.GRID, Role.LIST_GRID, Role.TABLE]);
 /** @type {AutomationPredicate.Unary} */
 AutomationPredicate.listLike =
     AutomationPredicate.roles([Role.LIST, Role.DESCRIPTION_LIST]);

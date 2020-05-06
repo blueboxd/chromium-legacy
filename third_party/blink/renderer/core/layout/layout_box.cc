@@ -2690,15 +2690,16 @@ scoped_refptr<const NGLayoutResult> LayoutBox::CachedLayoutResult(
     // Check if we only need "simplified" layout. We don't abort yet, as we
     // need to check if other things (like floats) will require us to perform a
     // full layout.
-    //
+    if (!NeedsSimplifiedLayoutOnly())
+      return nullptr;
+
     // We don't regenerate any lineboxes during our "simplified" layout pass.
     // If something needs "simplified" layout within a linebox, (e.g. an
     // atomic-inline) we miss the cache.
-    if (NeedsSimplifiedLayoutOnly() &&
-        (!ChildrenInline() || !NeedsSimplifiedNormalFlowLayout()))
-      cache_status = NGLayoutCacheStatus::kNeedsSimplifiedLayout;
-    else
+    if (ChildrenInline() && NeedsSimplifiedNormalFlowLayout())
       return nullptr;
+
+    cache_status = NGLayoutCacheStatus::kNeedsSimplifiedLayout;
   }
 
   const NGPhysicalContainerFragment& physical_fragment =

@@ -66,6 +66,10 @@ class ChromePageInfoDelegate : public PageInfoDelegate {
   std::unique_ptr<content_settings::TabSpecificContentSettings::Delegate>
   GetTabSpecificContentSettingsDelegate() override;
 
+#if defined(OS_ANDROID)
+  const base::string16 GetClientApplicationName() override;
+#endif
+
  private:
   Profile* GetProfile() const;
 #if BUILDFLAG(FULL_SAFE_BROWSING)

@@ -15,8 +15,8 @@ import org.chromium.chrome.browser.settings.SettingsLauncher;
 import org.chromium.chrome.browser.settings.SettingsLauncherImpl;
 import org.chromium.chrome.browser.site_settings.CookieControlsServiceBridge;
 import org.chromium.chrome.browser.site_settings.CookieControlsServiceBridge.CookieControlsServiceObserver;
-import org.chromium.chrome.browser.site_settings.SingleCategorySettings;
-import org.chromium.chrome.browser.site_settings.SiteSettingsCategory;
+import org.chromium.components.browser_ui.site_settings.SingleCategorySettings;
+import org.chromium.components.browser_ui.site_settings.SiteSettingsCategory;
 import org.chromium.components.content_settings.ContentSettingsFeatureList;
 import org.chromium.components.content_settings.CookieControlsEnforcement;
 

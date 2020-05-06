@@ -85,6 +85,12 @@
 #include "base/process/process_handle.h"
 #endif
 
+#if defined(USE_OZONE)
+#include "ui/ozone/public/ozone_platform.h"
+#include "ui/ozone/public/platform_window_surface.h"
+#include "ui/ozone/public/surface_factory_ozone.h"
+#endif
+
 namespace gpu {
 
 namespace {
@@ -442,6 +448,14 @@ gpu::ContextResult InProcessCommandBuffer::InitializeOnGpuThread(
               gl::GLSurfaceFormat::COLOR_SPACE_DISPLAY_P3);
           break;
       }
+#if defined(USE_OZONE)
+      if (params.surface_handle != gpu::kNullSurfaceHandle) {
+        window_surface_ =
+            ui::OzonePlatform::GetInstance()
+                ->GetSurfaceFactoryOzone()
+                ->CreatePlatformWindowSurface(params.surface_handle);
+      }
+#endif
       surface_ = ImageTransportSurface::CreateNativeSurface(
           gpu_thread_weak_ptr_factory_.GetWeakPtr(), params.surface_handle,
           surface_format);
@@ -687,6 +701,9 @@ bool InProcessCommandBuffer::DestroyOnGpuThread() {
   }
   command_buffer_.reset();
   surface_ = nullptr;
+#if defined(USE_OZONE)
+  window_surface_.reset();
+#endif
 
   context_ = nullptr;
   if (sync_point_client_state_) {

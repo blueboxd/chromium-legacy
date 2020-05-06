@@ -52,7 +52,6 @@
 <translation id="1197088940767939838">Laranja</translation>
 <translation id="1201402288615127009">Seguinte</translation>
 <translation id="1201895884277373915">Mais a partir deste Website</translation>
-<translation id="1205963431094182634">Inicie sessão para utilizar palavras-passe armazenadas na sua Conta Google</translation>
 <translation id="1206967143813997005">Assinatura com inicial incorreta</translation>
 <translation id="1209206284964581585">Ocultar para já</translation>
 <translation id="121201262018556460">Tentou aceder a <ph name="DOMAIN" />, mas o servidor apresentou um certificado que contém uma chave fraca. Um utilizador mal intencionado poderá ter quebrado a chave privada e o servidor pode não ser o servidor esperado (pode estar a comunicar com um utilizador mal intencionado).</translation>
@@ -1217,7 +1216,6 @@ Se não permitir, isto será bloqueado pelas suas definições de privacidade. I
 <translation id="6116338172782435947">Ver o texto e as imagens copiados para a área de transferência</translation>
 <translation id="6120179357481664955">Lembra-se do seu ID do UPI?</translation>
 <translation id="6124432979022149706">Conetores do Chrome Enterprise</translation>
-<translation id="6135641591018127088">Utilizar a sua Conta Google para gerar uma palavra-passe forte</translation>
 <translation id="6146055958333702838">Verifique os cabos e reinicie todos os routers, modems ou outros
     dispositivos de rede que possa estar a utilizar.</translation>
 <translation id="614940544461990577">Experimente:</translation>
@@ -1263,7 +1261,6 @@ Se não permitir, isto será bloqueado pelas suas definições de privacidade. I
 <translation id="6328639280570009161">Tente desativar a previsão de rede</translation>
 <translation id="6328784461820205019">"A sua ligação não é privada", "&lt;span class="error-code"&gt;NET::ERR_CERT_AUTHORITY_INVALID&lt;/span&gt;", "&lt;span class="error-code"&gt;ERR_CERT_COMMON_NAME_INVALID&lt;/span&gt;", "&lt;span class="error-code"&gt;NET::ERR_CERT_WEAK_SIGNATURE_ALGORITHM&lt;/span&gt;", "&lt;span class="error-code"&gt;ERR_CERT_SYMANTEC_LEGACY&lt;/span&gt;" ou "Erro de certificado SSL"</translation>
 <translation id="6328786501058569169">Este site é fraudulento</translation>
-<translation id="6333334544069706521">Utilizar palavras-passe armazenadas na sua Conta Google</translation>
 <translation id="6337133576188860026">Liberta menos de <ph name="SIZE" />. É possível que alguns sites sejam carregados mais lentamente na sua próxima visita.</translation>
 <translation id="6337534724793800597">Filtrar políticas pelo nome</translation>
 <translation id="6353505687280762741">{COUNT,plural, =0{Nenhuma}=1{1 palavra-passe (de <ph name="DOMAIN_LIST" />, sincronizada)}=2{2 palavras-passe (de <ph name="DOMAIN_LIST" />, sincronizadas)}other{# palavras-passe (de <ph name="DOMAIN_LIST" />, sincronizadas)}}</translation>

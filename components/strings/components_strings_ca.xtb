@@ -52,7 +52,6 @@
 <translation id="1197088940767939838">Taronja</translation>
 <translation id="1201402288615127009">Següent</translation>
 <translation id="1201895884277373915">Més entrades d'aquest lloc</translation>
-<translation id="1205963431094182634">Inicia la sessió per utilitzar les contrasenyes emmagatzemades al teu Compte de Google</translation>
 <translation id="1206967143813997005">Signatura inicial incorrecta</translation>
 <translation id="1209206284964581585">Amaga per ara</translation>
 <translation id="121201262018556460">Heu provat d'accedir a <ph name="DOMAIN" />, però el servidor ha presentat un certificat que conté una clau dèbil. És possible que un atacant hagi accedit a la clau privada i que aquest servidor no sigui el que espereu (pot ser que us estigueu comunicant amb un atacant).</translation>
@@ -1206,7 +1205,6 @@ En cas contrari, la configuració de privadesa el bloquejarà. Això permetrà q
 <translation id="6116338172782435947">Veure el text i les imatges copiats al porta-retalls</translation>
 <translation id="6120179357481664955">Recordes el teu identificador d'UPI?</translation>
 <translation id="6124432979022149706">Connectors de Chrome Enterprise</translation>
-<translation id="6135641591018127088">Utilitza el Compte de Google per generar una contrasenya segura</translation>
 <translation id="6146055958333702838">Reviseu els cables i reinicieu els encaminadors, els mòdems o altres
         dispositius de xarxa que feu servir.</translation>
 <translation id="614940544461990577">Prova el següent:</translation>
@@ -1252,7 +1250,6 @@ En cas contrari, la configuració de privadesa el bloquejarà. Això permetrà q
 <translation id="6328639280570009161">Proveu de desactivar la predicció de xarxa</translation>
 <translation id="6328784461820205019">"La connexió no és privada", "&lt;span class="error-code"&gt;NET::ERR_CERT_AUTHORITY_INVALID&lt;/span&gt;", "&lt;span class="error-code"&gt;ERR_CERT_COMMON_NAME_INVALID&lt;/span&gt;", "&lt;span class="error-code"&gt;NET::ERR_CERT_WEAK_SIGNATURE_ALGORITHM&lt;/span&gt;", "&lt;span class="error-code"&gt;ERR_CERT_SYMANTEC_LEGACY&lt;/span&gt;" o "Error de certificat SSL"</translation>
 <translation id="6328786501058569169">Aquest lloc web és enganyós</translation>
-<translation id="6333334544069706521">Utilitza les contrasenyes emmagatzemades al teu Compte de Google</translation>
 <translation id="6337133576188860026">Allibera menys de <ph name="SIZE" />. És possible que alguns llocs web es carreguin més a poc a poc la propera vegada que els visitis.</translation>
 <translation id="6337534724793800597">Filtra les polítiques pel nom</translation>
 <translation id="6353505687280762741">{COUNT,plural, =0{Cap}=1{1 contrasenya per a <ph name="DOMAIN_LIST" /> (sincronitzats)}=2{2 contrasenyes per a <ph name="DOMAIN_LIST" /> (sincronitzats)}other{# contrasenyes per a <ph name="DOMAIN_LIST" /> (sincronitzats)}}</translation>

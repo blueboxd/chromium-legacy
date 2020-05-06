@@ -62,12 +62,7 @@ using StateChangeCallback =
 @synthesize appId = _appId;
 @synthesize state = _state;
 @synthesize version = _version;
-@synthesize downloadedBytes = _downloadedBytes;
-@synthesize totalBytes = _totalBytes;
-@synthesize installProgress = _installProgress;
 @synthesize errorCategory = _errorCategory;
-@synthesize errorCode = _errorCode;
-@synthesize extraCode = _extraCode;
 
 // Designated initializer.
 - (instancetype)initWithAppId:(NSString*)appId
@@ -80,32 +75,51 @@ using StateChangeCallback =
                     errorCode:(int)errorCode
                     extraCode:(int)extraCode {
   if (self = [super init]) {
-    _appId = appId;
-    _state = state;
-    _version = version;
-    _downloadedBytes = downloadedBytes;
-    _totalBytes = totalBytes;
-    _installProgress = installProgress;
-    _errorCategory = errorCategory;
-    _errorCode = errorCode;
-    _extraCode = extraCode;
+    _appId = [appId copy];
+    _state = [state retain];
+    _version = [version copy];
+    _errorCategory = [errorCategory retain];
 
-    _updateState.app_id = base::SysNSStringToUTF8(_appId);
-    _updateState.state = _state.updateStateState;
-    _updateState.next_version =
-        base::Version(base::SysNSStringToUTF8(_version));
-    _updateState.downloaded_bytes = _downloadedBytes;
-    _updateState.total_bytes = _totalBytes;
-    _updateState.install_progress = _installProgress;
-    _updateState.error_category = _errorCategory.errorCategory;
-    _updateState.error_code = _errorCode;
-    _updateState.extra_code1 = _extraCode;
+    _updateState.app_id = base::SysNSStringToUTF8(appId);
+    _updateState.state = state.updateStateState;
+    _updateState.next_version = base::Version(base::SysNSStringToUTF8(version));
+    _updateState.downloaded_bytes = downloadedBytes;
+    _updateState.total_bytes = totalBytes;
+    _updateState.install_progress = installProgress;
+    _updateState.error_category = errorCategory.errorCategory;
+    _updateState.error_code = errorCode;
+    _updateState.extra_code1 = extraCode;
   }
   return self;
 }
 
-- (updater::UpdateService::UpdateState)updateState {
-  return _updateState;
+- (void)dealloc {
+  [_appId release];
+  [_state release];
+  [_version release];
+  [_errorCategory release];
+
+  [super dealloc];
+}
+
+- (int64_t)downloadedBytes {
+  return self.updateState.downloaded_bytes;
+}
+
+- (int64_t)totalBytes {
+  return self.updateState.total_bytes;
+}
+
+- (int)installProgress {
+  return self.updateState.install_progress;
+}
+
+- (int)errorCode {
+  return self.updateState.error_code;
+}
+
+- (int)extraCode {
+  return self.updateState.extra_code1;
 }
 
 + (BOOL)supportsSecureCoding {
@@ -144,16 +158,19 @@ using StateChangeCallback =
 }
 
 - (void)encodeWithCoder:(NSCoder*)coder {
+  DCHECK([coder respondsToSelector:@selector(encodeObject:forKey:)]);
   DCHECK([coder respondsToSelector:@selector(encodeInt:forKey:)]);
-  [coder encodeObject:_appId forKey:kCRUUpdateStateAppId];
-  [coder encodeObject:_state forKey:kCRUUpdateStateState];
-  [coder encodeObject:_version forKey:kCRUUpdateStateVersion];
-  [coder encodeInt64:_downloadedBytes forKey:kCRUUpdateStateDownloadedBytes];
-  [coder encodeInt64:_totalBytes forKey:kCRUUpdateStateTotalBytes];
-  [coder encodeInt:_installProgress forKey:kCRUUpdateStateInstallProgress];
-  [coder encodeObject:_errorCategory forKey:kCRUUpdateStateErrorCategory];
-  [coder encodeInt:_errorCode forKey:kCRUUpdateStateErrorCode];
-  [coder encodeInt:_extraCode forKey:kCRUUpdateStateExtraCode];
+  DCHECK([coder respondsToSelector:@selector(encodeInt64:forKey:)]);
+  [coder encodeObject:self.appId forKey:kCRUUpdateStateAppId];
+  [coder encodeObject:self.state forKey:kCRUUpdateStateState];
+  [coder encodeObject:self.version forKey:kCRUUpdateStateVersion];
+  [coder encodeInt64:self.downloadedBytes
+              forKey:kCRUUpdateStateDownloadedBytes];
+  [coder encodeInt64:self.totalBytes forKey:kCRUUpdateStateTotalBytes];
+  [coder encodeInt:self.installProgress forKey:kCRUUpdateStateInstallProgress];
+  [coder encodeObject:self.errorCategory forKey:kCRUUpdateStateErrorCategory];
+  [coder encodeInt:self.errorCode forKey:kCRUUpdateStateErrorCode];
+  [coder encodeInt:self.extraCode forKey:kCRUUpdateStateExtraCode];
 }
 
 @end
@@ -162,7 +179,7 @@ using StateChangeCallback =
 
 @synthesize updateStateState = _updateStateState;
 
-// Wrapper for updater::UpdateService::UpdateState
+// Wrapper for updater::UpdateService::UpdateState::State
 typedef NS_ENUM(NSInteger, CRUUpdateStateStateEnum) {
   kCRUUpdateStateStateUnknown = static_cast<NSInteger>(
       updater::UpdateService::UpdateState::State::kUnknown),
@@ -236,7 +253,7 @@ typedef NS_ENUM(NSInteger, CRUUpdateStateStateEnum) {
 
 - (void)encodeWithCoder:(NSCoder*)coder {
   DCHECK([coder respondsToSelector:@selector(encodeInt:forKey:)]);
-  [coder encodeInt:static_cast<NSInteger>(_updateStateState)
+  [coder encodeInt:static_cast<NSInteger>(self.updateStateState)
             forKey:kCRUUpdateStateState];
 }
 
@@ -289,7 +306,7 @@ typedef NS_ENUM(NSInteger, CRUUpdatePriorityEnum) {
 }
 - (void)encodeWithCoder:(NSCoder*)coder {
   DCHECK([coder respondsToSelector:@selector(encodeInt:forKey:)]);
-  [coder encodeInt:static_cast<NSInteger>(_priority) forKey:kCRUPriority];
+  [coder encodeInt:static_cast<NSInteger>(self.priority) forKey:kCRUPriority];
 }
 
 @end
@@ -298,7 +315,7 @@ typedef NS_ENUM(NSInteger, CRUUpdatePriorityEnum) {
 
 @synthesize errorCategory = _errorCategory;
 
-// Wrapper for updater::UpdateService::Priority
+// Wrapper for updater::UpdateService::ErrorCategory
 typedef NS_ENUM(NSInteger, CRUErrorCategoryEnum) {
   kCRUErrorCategoryNone =
       static_cast<NSInteger>(updater::UpdateService::ErrorCategory::kNone),
@@ -357,7 +374,7 @@ typedef NS_ENUM(NSInteger, CRUErrorCategoryEnum) {
 }
 - (void)encodeWithCoder:(NSCoder*)coder {
   DCHECK([coder respondsToSelector:@selector(encodeInt:forKey:)]);
-  [coder encodeInt:static_cast<NSInteger>(_errorCategory)
+  [coder encodeInt:static_cast<NSInteger>(self.errorCategory)
             forKey:kCRUErrorCategory];
 }
 

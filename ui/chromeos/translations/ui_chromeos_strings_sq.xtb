@@ -90,6 +90,7 @@
 <translation id="1947424002851288782">Tastierë në gjermanisht</translation>
 <translation id="1972984168337863910">Zgjero panelet e komenteve të skedarëve</translation>
 <translation id="1984603991036629094">Tastierë fonetike armeniane</translation>
+<translation id="1995337122023280937">Shko te vendndodhja e skedarit</translation>
 <translation id="2001796770603320721">Menaxhoje te "Disku"</translation>
 <translation id="2009067268969781306">Formatimi i një disku do të fshijë të gjitha të dhënat e ruajtura në të. Ky veprim nuk mund të zhbëhet.</translation>
 <translation id="2028997212275086731">Arkiv RAR</translation>
@@ -141,6 +142,7 @@
 <translation id="2638942478653899953">"Disku i Google" është i paarritshëm. <ph name="BEGIN_LINK" />Dil<ph name="END_LINK" /> dhe identifikohu përsëri.</translation>
 <translation id="2649120831653069427">Peshku</translation>
 <translation id="2661146741306740526">16x9</translation>
+<translation id="2664412712123763093">Vendndodhja e skedarit</translation>
 <translation id="2672394958563893062">Ndodhi një gabim. Kliko për të rinisur nga fillimi.</translation>
 <translation id="2676946222714718093">Po luan</translation>
 <translation id="2735698359135166290">Tastierë standarde në rumanisht</translation>
@@ -349,6 +351,7 @@
 <translation id="5081517858322016911"><ph name="TOTAL_FILE_SIZE" /> nga skedarët do të fshihen</translation>
 <translation id="509429900233858213">Ndodhi një gabim.</translation>
 <translation id="5098629044894065541">Hebraisht</translation>
+<translation id="5112685521274804841">Skedarët në këtë dosje janë vetëm për lexim. Disa aktivitete nuk mbështeten.</translation>
 <translation id="5123433949759960244">Basketboll</translation>
 <translation id="5129662217315786329">Polonisht</translation>
 <translation id="5144820558584035333">Paketa Hangul 3 (390)</translation>
@@ -698,6 +701,7 @@
 <translation id="9034924485347205037">Skedarët e Linux</translation>
 <translation id="9035012421917565900">Artikujt nuk mund të zhvendosen sërish te "<ph name="DESTINATION_NAME" />", prandaj nuk do të jesh në gjendje ta zhbësh këtë veprim.</translation>
 <translation id="9038620279323455325">Skedari me emrin "<ph name="FILE_NAME" />" ekziston tashmë. Zgjidh një emër tjetër.</translation>
+<translation id="9062992083244091966">Për të hapur skedarët me aplikacionet <ph name="APP_NAME" />, në fillim lëvizi ato te dosja e skedarëve të ndarë të <ph name="APP_NAME" />.</translation>
 <translation id="9064939804718829769">Po transferon...</translation>
 <translation id="9065203028668620118">Redakto</translation>
 <translation id="9099674669267916096">Numri i faqeve</translation>

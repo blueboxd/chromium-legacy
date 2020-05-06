@@ -2,11 +2,11 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="bs">
 <translation id="1028699632127661925">Slanje na uređaj <ph name="DEVICE_NAME" /></translation>
-<translation id="103269572468856066">Obrisati i podatke ovih lokacija i apl.?</translation>
+<translation id="103269572468856066">Obrisati i podatke ovih web lokacija i apl.?</translation>
 <translation id="1036348656032585052">Isključi</translation>
 <translation id="1036727731225946849">Dodavanje stavke <ph name="WEBAPK_NAME" />...</translation>
 <translation id="1041308826830691739">S web lokacija</translation>
-<translation id="1045899828449635435">Obrisati i podatke ovih lokacija?</translation>
+<translation id="1045899828449635435">Obrisati i podatke ovih web lokacija?</translation>
 <translation id="1049743911850919806">Anonimno</translation>
 <translation id="10614374240317010">Nikada nije sačuvano</translation>
 <translation id="1067922213147265141">Ostale Googleove usluge</translation>

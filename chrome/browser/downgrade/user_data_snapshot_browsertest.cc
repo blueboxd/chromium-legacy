@@ -33,6 +33,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_node.h"
+#include "components/bookmarks/test/bookmark_test_helpers.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/history/core/browser/history_types.h"
 #include "components/keyed_service/core/service_access_type.h"
@@ -41,6 +42,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/referrer.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/public/test/test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/page_transition_types.h"
@@ -185,8 +187,7 @@ class UserDataSnapshotBrowserTestBase : public InProcessBrowserTest {
       relaunch_chrome_override_;
 };
 
-// Disabled due to cross-platform flakes; https://crbug.com/1066680.
-class DISABLED_BookmarksSnapshotTest : public UserDataSnapshotBrowserTestBase {
+class BookmarksSnapshotTest : public UserDataSnapshotBrowserTestBase {
  protected:
   // Bookmarks as such
   // bookmark_bar_node
@@ -203,7 +204,7 @@ class DISABLED_BookmarksSnapshotTest : public UserDataSnapshotBrowserTestBase {
   void SimulateUserActions() override {
     bookmarks::BookmarkModel* bookmark_model =
         BookmarkModelFactory::GetForBrowserContext(browser()->profile());
-
+    bookmarks::test::WaitForBookmarkModelToLoad(bookmark_model);
     auto* folder = bookmark_model->AddFolder(
         bookmark_model->bookmark_bar_node(), 0, folder_title_);
     auto* sub_folder = bookmark_model->AddFolder(folder, 0, sub_folder_title_);
@@ -218,11 +219,14 @@ class DISABLED_BookmarksSnapshotTest : public UserDataSnapshotBrowserTestBase {
                            that_other_url_title_, that_other_url_);
     bookmark_model->AddURL(bookmark_model->mobile_node(), 0, mobile_url_title_,
                            mobile_url_);
+    // This is necessary to ensure the save completes.
+    content::RunAllTasksUntilIdle();
   }
 
   void ValidateUserActions() override {
     bookmarks::BookmarkModel* bookmark_model =
         BookmarkModelFactory::GetForBrowserContext(browser()->profile());
+    bookmarks::test::WaitForBookmarkModelToLoad(bookmark_model);
     ASSERT_TRUE(bookmark_model->bookmark_bar_node()->children().size() == 2);
 
     const bookmarks::BookmarkNode* folder =
@@ -277,10 +281,10 @@ class DISABLED_BookmarksSnapshotTest : public UserDataSnapshotBrowserTestBase {
   const base::string16 mobile_url_title_ = base::ASCIIToUTF16("Mobile URL");
 };
 
-IN_PROC_BROWSER_TEST_F(DISABLED_BookmarksSnapshotTest, PRE_PRE_PRE_Test) {}
-IN_PROC_BROWSER_TEST_F(DISABLED_BookmarksSnapshotTest, PRE_PRE_Test) {}
-IN_PROC_BROWSER_TEST_F(DISABLED_BookmarksSnapshotTest, PRE_Test) {}
-IN_PROC_BROWSER_TEST_F(DISABLED_BookmarksSnapshotTest, Test) {}
+IN_PROC_BROWSER_TEST_F(BookmarksSnapshotTest, PRE_PRE_PRE_Test) {}
+IN_PROC_BROWSER_TEST_F(BookmarksSnapshotTest, PRE_PRE_Test) {}
+IN_PROC_BROWSER_TEST_F(BookmarksSnapshotTest, PRE_Test) {}
+IN_PROC_BROWSER_TEST_F(BookmarksSnapshotTest, Test) {}
 
 class HistorySnapshotTest : public UserDataSnapshotBrowserTestBase {
   struct HistoryEntry {

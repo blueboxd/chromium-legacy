@@ -27,7 +27,6 @@
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
 #include "net/test/spawned_test_server/remote_test_server_spawner_request.h"
-#include "net/test/tcp_socket_proxy.h"
 #include "url/gurl.h"
 
 namespace net {
@@ -127,22 +126,6 @@ bool RemoteTestServer::StartInBackground() {
   // pass right server type to Python test server.
   arguments_dict.SetString("server-type", GetServerTypeString(type()));
 
-  // If the server is expected to handle OCSP, it needs to know what port
-  // number to write into the AIA urls. Initialize the ocsp proxy to
-  // reserve a port, and pass it to the testserver so it can generate
-  // certificates for the OCSP server valid for the proxied port. Note that
-  // the test spawer may forward OCSP a second time, from the device to the
-  // host.
-  bool ocsp_server_enabled =
-      type() == TYPE_HTTPS && !ssl_options().GetOCSPArgument().empty();
-  if (ocsp_server_enabled) {
-    ocsp_proxy_ = std::make_unique<TcpSocketProxy>(io_thread_.task_runner());
-    bool initialized = ocsp_proxy_->Initialize();
-    CHECK(initialized);
-    arguments_dict.SetKey("ocsp-proxy-port-number",
-                          base::Value(ocsp_proxy_->local_port()));
-  }
-
   // Generate JSON-formatted argument string.
   std::string arguments_string;
   base::JSONWriter::Write(arguments_dict, &arguments_string);
@@ -172,16 +155,6 @@ bool RemoteTestServer::BlockUntilStarted() {
   }
 
   SetPort(remote_port_);
-
-  if (ocsp_proxy_) {
-    base::Optional<int> ocsp_port_value = server_data().FindIntKey("ocsp_port");
-    if (ocsp_port_value) {
-      ocsp_proxy_->Start(
-          IPEndPoint(IPAddress::IPv4Localhost(), *ocsp_port_value));
-    } else {
-      LOG(WARNING) << "testserver.py didn't return ocsp_port.";
-    }
-  }
 
   return SetupWhenServerStarted();
 }

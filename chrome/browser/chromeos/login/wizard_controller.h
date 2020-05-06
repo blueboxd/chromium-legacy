@@ -23,6 +23,7 @@
 #include "chrome/browser/chromeos/login/enrollment/enrollment_screen.h"
 #include "chrome/browser/chromeos/login/screen_manager.h"
 #include "chrome/browser/chromeos/login/screens/arc_terms_of_service_screen.h"
+#include "chrome/browser/chromeos/login/screens/assistant_optin_flow_screen.h"
 #include "chrome/browser/chromeos/login/screens/demo_preferences_screen.h"
 #include "chrome/browser/chromeos/login/screens/demo_setup_screen.h"
 #include "chrome/browser/chromeos/login/screens/enable_adb_sideloading_screen.h"
@@ -237,7 +238,7 @@ class WizardController {
   void OnArcTermsOfServiceAccepted();
   void OnRecommendAppsScreenExit(RecommendAppsScreen::Result result);
   void OnAppDownloadingScreenExit();
-  void OnAssistantOptInFlowScreenExit();
+  void OnAssistantOptInFlowScreenExit(AssistantOptInFlowScreen::Result result);
   void OnMultiDeviceSetupScreenExit();
   void OnGestureNavigationScreenExit(GestureNavigationScreen::Result result);
   void OnMarketingOptInScreenExit(MarketingOptInScreen::Result result);

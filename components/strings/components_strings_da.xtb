@@ -52,7 +52,6 @@
 <translation id="1197088940767939838">Orange</translation>
 <translation id="1201402288615127009">Næste</translation>
 <translation id="1201895884277373915">Mere fra dette website</translation>
-<translation id="1205963431094182634">Log ind for at bruge de adgangskoder, du har gemt på din Google-konto</translation>
 <translation id="1206967143813997005">Ugyldig første signatur</translation>
 <translation id="1209206284964581585">Skjul indtil videre</translation>
 <translation id="121201262018556460">Du har forsøgt at få fat i <ph name="DOMAIN" />, men serveren har præsenteret et certifikat med en svag nøgle. En hacker kan have knækket den private nøgle, og serveren er muligvis ikke den forventede server (du kommunikerer muligvis med en hacker).</translation>
@@ -1217,7 +1216,6 @@ Ellers vil det blive blokeret af dine privatlivsindstillinger. Det giver det ind
 <translation id="6116338172782435947">Se tekst og billeder, der er kopieret til udklipsholderen</translation>
 <translation id="6120179357481664955">Skal dit UPI-id huskes?</translation>
 <translation id="6124432979022149706">Chrome Enterprise-connectorer</translation>
-<translation id="6135641591018127088">Brug din Google-konto til at generere en stærk adgangskode</translation>
 <translation id="6146055958333702838">Kontrollér eventuelle kabler, og genstart alle routere, modemmer eller andre
     netværksenheder, du bruger.</translation>
 <translation id="614940544461990577">Prøv at:</translation>
@@ -1263,7 +1261,6 @@ Ellers vil det blive blokeret af dine privatlivsindstillinger. Det giver det ind
 <translation id="6328639280570009161">Prøv at deaktivere netværksforslag</translation>
 <translation id="6328784461820205019">"Din forbindelse er ikke privat" eller "&lt;span class="error-code"&gt;NET::ERR_CERT_AUTHORITY_INVALID&lt;/span&gt;" eller "&lt;span class="error-code"&gt;ERR_CERT_COMMON_NAME_INVALID&lt;/span&gt;" eller "&lt;span class="error-code"&gt;NET::ERR_CERT_WEAK_SIGNATURE_ALGORITHM&lt;/span&gt;" eller "&lt;span class="error-code"&gt;ERR_CERT_SYMANTEC_LEGACY&lt;/span&gt;" eller "SSL-certifikatfejl"</translation>
 <translation id="6328786501058569169">Dette website er vildledende</translation>
-<translation id="6333334544069706521">Brug adgangskoder, der er gemt på din Google-konto</translation>
 <translation id="6337133576188860026">Frigiver mindre end <ph name="SIZE" />. Nogle websites indlæses muligvis langsommere under dit næste besøg.</translation>
 <translation id="6337534724793800597">Filtrér politikker efter navn</translation>
 <translation id="6353505687280762741">{COUNT,plural, =0{Ingen}=1{1 adgangskode (til <ph name="DOMAIN_LIST" /> – synkroniseret)}=2{2 adgangskoder (til <ph name="DOMAIN_LIST" /> – synkroniseret)}one{# adgangskode (til <ph name="DOMAIN_LIST" /> – synkroniseret)}other{# adgangskoder (til <ph name="DOMAIN_LIST" /> – synkroniseret)}}</translation>

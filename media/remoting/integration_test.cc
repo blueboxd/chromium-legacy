@@ -12,25 +12,24 @@
 namespace media {
 namespace remoting {
 
-namespace {
-
 constexpr int kAppendTimeSec = 1;
-
-std::unique_ptr<Renderer> CreateEnd2EndTestRenderer(
-    std::unique_ptr<Renderer> default_renderer) {
-  return std::make_unique<End2EndTestRenderer>(std::move(default_renderer));
-}
-
-}  // namespace
 
 class MediaRemotingIntegrationTest : public testing::Test,
                                      public PipelineIntegrationTestBase {
  public:
   MediaRemotingIntegrationTest() {
-    SetWrapRendererCB(base::BindRepeating(&CreateEnd2EndTestRenderer));
+    SetCreateRendererCB(base::BindRepeating(
+        &MediaRemotingIntegrationTest::CreateEnd2EndTestRenderer,
+        base::Unretained(this)));
   }
 
  private:
+  std::unique_ptr<Renderer> CreateEnd2EndTestRenderer(
+      base::Optional<RendererFactoryType> factory_type) {
+    return std::make_unique<End2EndTestRenderer>(
+        this->CreateDefaultRenderer(factory_type));
+  }
+
   DISALLOW_COPY_AND_ASSIGN(MediaRemotingIntegrationTest);
 };
 

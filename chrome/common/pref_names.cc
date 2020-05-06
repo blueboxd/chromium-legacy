@@ -1200,7 +1200,8 @@ const char kAccessibilityCaptionsBackgroundOpacity[] =
 const char kShowInternalAccessibilityTree[] =
     "accessibility.show_internal_accessibility_tree";
 
-// Additional features for image labels for accessibility.
+// Whether the "Get Image Descriptions from Google" feature is enabled.
+// Only shown to screen reader users.
 const char kAccessibilityImageLabelsEnabled[] =
     "settings.a11y.enable_accessibility_image_labels";
 

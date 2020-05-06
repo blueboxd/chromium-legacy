@@ -35,7 +35,8 @@ class GpuBlocklistTest : public testing::Test {
         {
             GpuControlList::kOsMacosx,  // os_type
             {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical,
-             nullptr, nullptr},                    // os_version
+             GpuControlList::kVersionSchemaCommon, nullptr,
+             nullptr},                             // os_version
             0x10de,                                // vendor_id
             1,                                     // DeviceIDs size
             kDeviceIDsForEntry1,                   // DeviceIDs
@@ -47,8 +48,9 @@ class GpuBlocklistTest : public testing::Test {
             0,                                     // gpu_series size
             nullptr,                               // gpu_series
             {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical,
-             nullptr, nullptr},  // intel_gpu_generation
-            nullptr,             // more conditions
+             GpuControlList::kVersionSchemaCommon, nullptr,
+             nullptr},  // intel_gpu_generation
+            nullptr,    // more conditions
         },
         0,        // exceptions count
         nullptr,  // exceptions

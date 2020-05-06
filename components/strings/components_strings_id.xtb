@@ -52,7 +52,6 @@
 <translation id="1197088940767939838">Oranye</translation>
 <translation id="1201402288615127009">Berikutnya</translation>
 <translation id="1201895884277373915">Lainnya dari situs ini</translation>
-<translation id="1205963431094182634">Login untuk menggunakan sandi yang disimpan di Akun Google Anda</translation>
 <translation id="1206967143813997005">Tanda tangan awal tidak valid</translation>
 <translation id="1209206284964581585">Sembunyikan sekarang</translation>
 <translation id="121201262018556460">Anda bermaksud membuka <ph name="DOMAIN" />, namun server menyajikan sertifikat yang berisi kunci yang lemah. Penyerang mungkin telah merusak kunci pribadi, dan server mungkin bukan yang diharapkan (Anda mungkin sedang berkomunikasi dengan penyerang).</translation>
@@ -1216,7 +1215,6 @@ Jika tidak, ini akan diblokir oleh setelan privasi Anda. Ini akan memungkinkan k
 <translation id="6116338172782435947">Melihat teks dan gambar yang disalin ke papan klip</translation>
 <translation id="6120179357481664955">Ingat ID UPI Anda?</translation>
 <translation id="6124432979022149706">Chrome Enterprise Connectors</translation>
-<translation id="6135641591018127088">Gunakan Akun Google Anda untuk membuat sandi yang kuat</translation>
 <translation id="6146055958333702838">Periksa semua kabel dan boot ulang router, modem, atau perangkat
     jaringan lain yang mungkin Anda gunakan.</translation>
 <translation id="614940544461990577">Coba:</translation>
@@ -1262,7 +1260,6 @@ Jika tidak, ini akan diblokir oleh setelan privasi Anda. Ini akan memungkinkan k
 <translation id="6328639280570009161">Coba nonaktifkan prediksi jaringan</translation>
 <translation id="6328784461820205019">"Koneksi Anda tidak bersifat pribadi" atau "&lt;span class="error-code"&gt;NET::ERR_CERT_AUTHORITY_INVALID&lt;/span&gt;" atau "&lt;span class="error-code"&gt;ERR_CERT_COMMON_NAME_INVALID&lt;/span&gt;" atau "&lt;span class="error-code"&gt;NET::ERR_CERT_WEAK_SIGNATURE_ALGORITHM&lt;/span&gt;" atau "&lt;span class="error-code"&gt;ERR_CERT_SYMANTEC_LEGACY&lt;/span&gt;" atau "SSL certificate error"S</translation>
 <translation id="6328786501058569169">Situs ini bersifat menipu</translation>
-<translation id="6333334544069706521">Gunakan sandi yang disimpan di Akun Google Anda</translation>
 <translation id="6337133576188860026">Sediakan ruang kurang dari <ph name="SIZE" />. Beberapa situs mungkin dimuat lebih lambat saat dibuka lagi.</translation>
 <translation id="6337534724793800597">Filter kebijakan menurut nama</translation>
 <translation id="6353505687280762741">{COUNT,plural, =0{Tidak ada}=1{1 sandi (untuk <ph name="DOMAIN_LIST" />, disinkronkan)}=2{2 sandi (untuk <ph name="DOMAIN_LIST" />, disinkronkan)}other{# sandi (untuk <ph name="DOMAIN_LIST" />, disinkronkan)}}</translation>

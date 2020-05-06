@@ -52,7 +52,6 @@
 <translation id="1197088940767939838">Oranje</translation>
 <translation id="1201402288615127009">Volgende</translation>
 <translation id="1201895884277373915">Meer van deze site</translation>
-<translation id="1205963431094182634">Inloggen om wachtwoorden te gebruiken die zijn opgeslagen in je Google-account</translation>
 <translation id="1206967143813997005">Onjuiste eerste handtekening</translation>
 <translation id="1209206284964581585">Voorlopig verbergen</translation>
 <translation id="121201262018556460">Je probeert <ph name="DOMAIN" /> te bereiken, maar de server heeft een certificaat geretourneerd met een zwakke sleutel. Een hacker kan de persoonlijke sleutel hebben aangepast en het is mogelijk dat de server zelf een imitatie is (wellicht een server die je schade probeert te berokkenen).</translation>
@@ -1201,7 +1200,6 @@ Anders wordt dit geblokkeerd door je privacyinstellingen. Hierdoor werkt de cont
 <translation id="6116338172782435947">Tekst en afbeeldingen bekijken die naar het klembord zijn gekopieerd</translation>
 <translation id="6120179357481664955">Weet je je UPI-ID nog?</translation>
 <translation id="6124432979022149706">Chrome Enterprise-connectors</translation>
-<translation id="6135641591018127088">Je Google-account gebruiken om een sterk wachtwoord te genereren</translation>
 <translation id="6146055958333702838">Controleer alle kabels en start alle routers, modems of andere netwerkapparaten die je gebruikt, opnieuw op.</translation>
 <translation id="614940544461990577">Probeer dit eens:</translation>
 <translation id="6150036310511284407">Drie perforaties links</translation>
@@ -1246,7 +1244,6 @@ Anders wordt dit geblokkeerd door je privacyinstellingen. Hierdoor werkt de cont
 <translation id="6328639280570009161">Probeer netwerkvoorspelling uit te schakelen</translation>
 <translation id="6328784461820205019">'Je verbinding is niet privé' of '&lt;span class="error-code"&gt;NET::ERR_CERT_AUTHORITY_INVALID&lt;/span&gt;' of '&lt;span class="error-code"&gt;ERR_CERT_COMMON_NAME_INVALID&lt;/span&gt;' of '&lt;span class="error-code"&gt;NET::ERR_CERT_WEAK_SIGNATURE_ALGORITHM&lt;/span&gt;' of '&lt;span class="error-code"&gt;ERR_CERT_SYMANTEC_LEGACY&lt;/span&gt;' of 'SSL certificaatfout'</translation>
 <translation id="6328786501058569169">Deze site is misleidend</translation>
-<translation id="6333334544069706521">Wachtwoorden gebruiken die zijn opgeslagen in je Google-account</translation>
 <translation id="6337133576188860026">Hiermee wordt minder dan <ph name="SIZE" /> vrijgemaakt. Sommige sites kunnen langzamer worden geladen wanneer je ze weer bezoekt.</translation>
 <translation id="6337534724793800597">Beleid filteren op naam</translation>
 <translation id="6353505687280762741">{COUNT,plural, =0{Geen}=1{1 wachtwoord (voor <ph name="DOMAIN_LIST" />, gesynchroniseerd)}=2{2 wachtwoorden (voor <ph name="DOMAIN_LIST" />, gesynchroniseerd)}other{# wachtwoorden (voor <ph name="DOMAIN_LIST" />, gesynchroniseerd)}}</translation>

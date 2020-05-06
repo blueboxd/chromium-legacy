@@ -61,6 +61,10 @@ struct GpuFenceHandle;
 class Size;
 }
 
+namespace ui {
+class PlatformWindowSurface;
+}
+
 namespace viz {
 class GpuTaskSchedulerHelper;
 }
@@ -341,6 +345,11 @@ class GL_IN_PROCESS_CONTEXT_EXPORT InProcessCommandBuffer
   const ContextUrl active_url_;
 
   bool is_offscreen_ = false;
+
+#if defined(USE_OZONE)
+  // Accessed on GPU thread. Should outlive |surface_|.
+  std::unique_ptr<ui::PlatformWindowSurface> window_surface_;
+#endif
 
   // Members accessed on the gpu thread (possibly with the exception of
   // creation):

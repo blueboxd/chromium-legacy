@@ -204,7 +204,7 @@ ImageBitmap* OffscreenCanvas::transferToImageBitmap(
 
   ImageBitmap* image = context_->TransferToImageBitmap(script_state);
   if (!image) {
-    // Undocumented exception (not in spec)
+    // Undocumented exception (not in spec).
     exception_state.ThrowDOMException(DOMExceptionCode::kUnknownError,
                                       "ImageBitmap construction failed");
   }
@@ -353,83 +353,77 @@ CanvasResourceDispatcher* OffscreenCanvas::GetOrCreateResourceDispatcher() {
 }
 
 CanvasResourceProvider* OffscreenCanvas::GetOrCreateResourceProvider() {
-  if (!ResourceProvider()) {
-    bool can_use_gpu = false;
-    uint8_t presentation_mode =
-        CanvasResourceProvider::kDefaultPresentationMode;
-    if (Is3d()) {
-      if (RuntimeEnabledFeatures::WebGLImageChromiumEnabled()) {
-        presentation_mode |=
-            CanvasResourceProvider::kAllowImageChromiumPresentationMode;
-      }
-      can_use_gpu = SharedGpuContext::IsGpuCompositingEnabled();
-    } else {
-      if (RuntimeEnabledFeatures::Canvas2dImageChromiumEnabled()) {
-        presentation_mode |=
-            CanvasResourceProvider::kAllowImageChromiumPresentationMode;
-      }
-      if (SharedGpuContext::IsGpuCompositingEnabled() &&
-          RuntimeEnabledFeatures::Accelerated2dCanvasEnabled()) {
-        can_use_gpu = true;
-      }
-    }
+  if (ResourceProvider())
+    return ResourceProvider();
 
-    IntSize surface_size(width(), height());
+  std::unique_ptr<CanvasResourceProvider> provider;
+  IntSize surface_size(width(), height());
+  const bool can_use_gpu =
+      SharedGpuContext::IsGpuCompositingEnabled() &&
+      (Is3d() || RuntimeEnabledFeatures::Accelerated2dCanvasEnabled());
+  const bool composited_mode =
+      (Is3d() ? RuntimeEnabledFeatures::WebGLImageChromiumEnabled()
+              : RuntimeEnabledFeatures::Canvas2dImageChromiumEnabled());
+
+  // If this context has a placeholder, the resource needs to be optimized for
+  // displaying on screen. In the case we are hardware compositing, we also
+  // try to enable the usage of the image as scanout buffer (overlay).
+  uint32_t shared_image_usage_flags = 0u;
+  if (HasPlaceholderCanvas()) {
+    shared_image_usage_flags |= gpu::SHARED_IMAGE_USAGE_DISPLAY;
+    if (composited_mode)
+      shared_image_usage_flags |= gpu::SHARED_IMAGE_USAGE_SCANOUT;
+  }
+
+  if (can_use_gpu) {
+    provider = CanvasResourceProvider::CreateSharedImageProvider(
+        surface_size, SharedGpuContext::ContextProviderWrapper(),
+        FilterQuality(), context_->ColorParams(), false /*is_origin_top_left*/,
+        CanvasResourceProvider::RasterMode::kGPU, shared_image_usage_flags);
+  } else if (HasPlaceholderCanvas() && composited_mode) {
+    // Only try a SoftwareComposited SharedImage if the context has Placeholder
+    // canvas and the composited mode is enabled.
+    provider = CanvasResourceProvider::CreateSharedImageProvider(
+        surface_size, SharedGpuContext::ContextProviderWrapper(),
+        FilterQuality(), context_->ColorParams(), false /*is_origin_top_left*/,
+        CanvasResourceProvider::RasterMode::kCPU, shared_image_usage_flags);
+  }
+
+  if (!provider && HasPlaceholderCanvas()) {
+    // If this context has a Placerholder - which means that we have to display
+    // this resource - and the SharedImage Provider creation above failed, we
+    // try a SharedBitmap Provider before falling back to a Bitmap Provider.
     base::WeakPtr<CanvasResourceDispatcher> dispatcher_weakptr =
-        HasPlaceholderCanvas() ? GetOrCreateResourceDispatcher()->GetWeakPtr()
-                               : nullptr;
-    std::unique_ptr<CanvasResourceProvider> provider;
-    // kAcceleratedCompositedResourceUsage and kSoftwareCompositedResourceUsage
-    // still need to use the Create method for CanvasResourceProvider.
-    // The former kAcceleratedResourceUsage and kSoftwareResourceUsage have been
-    // replaced by two different constructors (one of sharedImage witt the
-    // fallback to bitmap, and the other one to bitmap)
-    // This is still WIP and more changes will come in upcoming CLs.
-    if (can_use_gpu && HasPlaceholderCanvas()) {
-      provider = CanvasResourceProvider::Create(
-          surface_size,
-          CanvasResourceProvider::ResourceUsage::
-              kAcceleratedCompositedResourceUsage,
-          SharedGpuContext::ContextProviderWrapper(), 0, FilterQuality(),
-          context_->ColorParams(), presentation_mode,
-          std::move(dispatcher_weakptr), false /*is_origin_top_left*/);
-    } else if (!can_use_gpu && HasPlaceholderCanvas()) {
-      provider = CanvasResourceProvider::Create(
-          surface_size,
-          CanvasResourceProvider::ResourceUsage::
-              kSoftwareCompositedResourceUsage,
-          SharedGpuContext::ContextProviderWrapper(), 0, FilterQuality(),
-          context_->ColorParams(), presentation_mode,
-          std::move(dispatcher_weakptr), false /*is_origin_top_left=*/);
-    } else if (can_use_gpu) {
-      provider = CanvasResourceProvider::CreateSharedImageProvider(
-          surface_size, SharedGpuContext::ContextProviderWrapper(),
-          FilterQuality(), context_->ColorParams(),
-          false /*is_origin_top_left*/,
-          CanvasResourceProvider::RasterMode::kGPU,
-          0u /*shared_image_usage_flags*/);
+        GetOrCreateResourceDispatcher()->GetWeakPtr();
+    provider = CanvasResourceProvider::CreateSharedBitmapProvider(
+        surface_size, SharedGpuContext::ContextProviderWrapper(),
+        FilterQuality(), context_->ColorParams(),
+        std::move(dispatcher_weakptr));
+  }
 
-    }  // else will try the BitmapProvider
+  if (!provider) {
+    // If any of the above Create was able to create a valid provider, a
+    // BitmapProvider will be created here.
+    provider = CanvasResourceProvider::CreateBitmapProvider(
+        surface_size, FilterQuality(), context_->ColorParams());
+  }
 
-    if (!provider) {
-      provider = CanvasResourceProvider::CreateBitmapProvider(
-          surface_size, FilterQuality(), context_->ColorParams());
-    }
+  ReplaceResourceProvider(std::move(provider));
 
-    ReplaceResourceProvider(std::move(provider));
+  if (ResourceProvider() && ResourceProvider()->IsValid()) {
+    // todo(crbug/1064363)  Add a separate UMA for Offscreen Canvas usage and
+    // understand if the if (ResourceProvider() &&
+    // ResourceProvider()->IsValid()) is really needed.
+    base::UmaHistogramBoolean("Blink.Canvas.ResourceProviderIsAccelerated",
+                              ResourceProvider()->IsAccelerated());
+    base::UmaHistogramEnumeration("Blink.Canvas.ResourceProviderType",
+                                  ResourceProvider()->GetType());
+    ResourceProvider()->Clear();
+    DidDraw();
 
-    if (ResourceProvider() && ResourceProvider()->IsValid()) {
-      base::UmaHistogramBoolean("Blink.Canvas.ResourceProviderIsAccelerated",
-                                ResourceProvider()->IsAccelerated());
-      base::UmaHistogramEnumeration("Blink.Canvas.ResourceProviderType",
-                                    ResourceProvider()->GetType());
-      ResourceProvider()->Clear();
-      DidDraw();
-
-      if (needs_matrix_clip_restore_) {
-        needs_matrix_clip_restore_ = false;
-        context_->RestoreCanvasMatrixClipStack(ResourceProvider()->Canvas());
-      }
+    if (needs_matrix_clip_restore_) {
+      needs_matrix_clip_restore_ = false;
+      context_->RestoreCanvasMatrixClipStack(ResourceProvider()->Canvas());
     }
   }
   return ResourceProvider();

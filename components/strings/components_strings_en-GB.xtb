@@ -52,7 +52,6 @@
 <translation id="1197088940767939838">Orange</translation>
 <translation id="1201402288615127009">Next</translation>
 <translation id="1201895884277373915">More from this site</translation>
-<translation id="1205963431094182634">Sign in to use passwords stored in your Google Account</translation>
 <translation id="1206967143813997005">Bad initial signature</translation>
 <translation id="1209206284964581585">Hide for now</translation>
 <translation id="121201262018556460">You attempted to reach <ph name="DOMAIN" />, but the server presented a certificate containing a weak key. An attacker could have broken the private key and the server may not be the server you expected (you may be communicating with an attacker).</translation>
@@ -1211,7 +1210,6 @@ This will otherwise be blocked by your privacy settings. This will allow the con
 <translation id="6116338172782435947">See text and images copied to the clipboard</translation>
 <translation id="6120179357481664955">Remember your UPI ID?</translation>
 <translation id="6124432979022149706">Chrome Enterprise connectors</translation>
-<translation id="6135641591018127088">Use your Google Account to generate a strong password</translation>
 <translation id="6146055958333702838">Check any cables and reboot any routers, modems or other network
     devices you may be using.</translation>
 <translation id="614940544461990577">Try:</translation>
@@ -1257,7 +1255,6 @@ This will otherwise be blocked by your privacy settings. This will allow the con
 <translation id="6328639280570009161">Try disabling network prediction</translation>
 <translation id="6328784461820205019">'Your connection is not private' or '&lt;span class="error-code"&gt;NET::ERR_CERT_AUTHORITY_INVALID&lt;/span&gt;' or '&lt;span class="error-code"&gt;ERR_CERT_COMMON_NAME_INVALID&lt;/span&gt;' or '&lt;span class="error-code"&gt;NET::ERR_CERT_WEAK_SIGNATURE_ALGORITHM&lt;/span&gt;' or '&lt;span class="error-code"&gt;ERR_CERT_SYMANTEC_LEGACY&lt;/span&gt;' or 'SSL certificate error'</translation>
 <translation id="6328786501058569169">This site is deceptive</translation>
-<translation id="6333334544069706521">Use passwords stored in your Google Account</translation>
 <translation id="6337133576188860026">Frees up less than <ph name="SIZE" />. Some sites may load more slowly on your next visit.</translation>
 <translation id="6337534724793800597">Filter policies by name</translation>
 <translation id="6353505687280762741">{COUNT,plural, =0{None}=1{1 password (for <ph name="DOMAIN_LIST" />, synced)}=2{2 passwords (for <ph name="DOMAIN_LIST" />, synced)}other{# passwords (for <ph name="DOMAIN_LIST" />, synced)}}</translation>

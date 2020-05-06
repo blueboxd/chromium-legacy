@@ -19,8 +19,6 @@ Still reading?
     build/android/lint/suppress.py
 
   which will generate this file (Comments are not preserved).
-  Note: PRODUCT_DIR will be substituted at run-time with actual
-  directory path (e.g. out/Debug)
 -->
   <issue id="AcceptsUserCertificates">
     <!-- See https://crbug.com/827265 and comment in the file for context. -->
@@ -36,6 +34,12 @@ Still reading?
   <issue id="AppCompatResource" severity="ignore"/>
   <!-- We use asserts in Chromium. See https://chromium.googlesource.com/chromium/src/+/master/styleguide/java/java.md#Asserts -->
   <issue id="Assert" severity="ignore"/>
+  <issue id="Autofill">
+    <!-- Filed https://crbug.com/1073966 to fix -->
+    <ignore regexp="chrome/android/features/tab_ui/java/res/layout/bottom_tab_grid_toolbar.xml"/>
+    <ignore regexp="chrome/android/java/res/layout/password_entry_editor.xml"/>
+    <ignore regexp="components/browser_ui/widget/android/java/res/layout/radio_button_with_edit_text.xml"/>
+  </issue>
   <issue id="AuthLeak" severity="Error">
     <ignore regexp="chrome/android/javatests"/>
     <ignore regexp="Test.java"/>
@@ -53,6 +57,7 @@ Still reading?
   </issue>
   <issue id="ContentDescription" severity="Error">
     <ignore regexp="chromecast/internal"/>
+    <ignore regexp="remoting/android/internal"/>
     <!--TODO(crbug.com/1044658): This suppression was added blindly, and needs investigated.-->
     <ignore regexp="chrome/android/java/res/layout/contacts_list_item_view.xml"/>
     <!--TODO(crbug.com/1044658): This suppression was added blindly, and needs investigated.-->
@@ -128,6 +133,7 @@ Still reading?
     <ignore regexp="content/public/android/java/res/drawable-xxxhdpi"/>
     <ignore regexp="ui/android/java/res/drawable-xxhdpi"/>
     <ignore regexp="ui/android/java/res/drawable-xxxhdpi"/>
+    <ignore regexp="remoting/android/internal"/>
   </issue>
   <issue id="IconDipSize">
     <!-- These only need to be 1px for all densities. See: crbug.com/804449 -->
@@ -138,9 +144,12 @@ Still reading?
     <!-- mipmap version is used for app launcher only. drawables used for notifications -->
     <ignore regexp="chromecast/browser/android/apk/res/mipmap-.*/app_icon.png"/>
     <ignore regexp="chromecast/internal"/>
+    <!-- Filed https://crbug.com/1073963 -->
+    <ignore regexp="clank/java/res_default/mipmap-.*/app_shortcut_icon.png"/>
   </issue>
   <issue id="IconDuplicatesConfig" severity="Error">
     <ignore regexp="chromecast/internal"/>
+    <ignore regexp="remoting/android/internal"/>
   </issue>
   <issue id="IconLauncherFormat" severity="ignore"/>
   <issue id="IconLauncherShape" severity="Error">
@@ -172,6 +181,7 @@ Still reading?
   <issue id="ImpliedQuantity" severity="Error">
     <ignore regexp="chrome/browser/ui/android/strings/ui_strings_grd"/>
     <ignore regexp="components/browser_ui/strings/android/browser_ui_strings_grd"/>
+    <ignore regexp="clank/third_party/chime/chime_systemtray_strings_grd.resources.zip"/>
   </issue>
   <issue id="InsecureBaseConfiguration">
     <!-- See https://crbug.com/827265 and comment in the file for context. -->
@@ -225,6 +235,7 @@ Still reading?
     <ignore regexp="android_chrome_strings.xml"/>
     <ignore regexp="android_chrome_tab_ui_strings.xml"/>
     <ignore regexp="components/browser_ui/strings/android/browser_ui_strings_grd"/>
+    <ignore regexp="clank/third_party/chime/chime_systemtray_strings_grd.resources.zip"/>
   </issue>
   <issue id="MissingRegistered" severity="ignore"/>
   <issue id="MissingSuperCall" severity="Error">
@@ -234,6 +245,7 @@ Still reading?
     <!-- http://crbug.com/450548 -->
     <ignore regexp="chromecast/internal"/>
     <ignore regexp="restriction_values.xml.*"/>
+    <ignore regexp="remoting/resources/strings_java.resources.zip"/>
   </issue>
   <issue id="MissingVersion">
     <ignore path="AndroidManifest.xml"/>
@@ -393,14 +405,17 @@ Still reading?
     <ignore regexp="chrome/browser/ui/android/strings/ui_strings_grd.resources.zip/values-zh-rCN/android_chrome_strings.xml"/>
     <ignore regexp="chrome/browser/ui/android/strings/ui_strings_grd.resources.zip/values-zh-rHK/android_chrome_strings.xml"/>
     <ignore regexp="chrome/browser/ui/android/strings/ui_strings_grd.resources.zip/values-zh-rTW/android_chrome_strings.xml"/>
+    <ignore regexp="clank/third_party/chime/chime_systemtray_strings_grd.resources.zip"/>
     <ignore regexp="components/browser_ui/strings/android/browser_ui_strings_grd"/>
   </issue>
   <issue id="UnusedResources">
     <!-- Do not add new suppressions without rationale. -->
     <!-- 3 raw resources are accessed by URL in various places -->
-    <ignore regexp="PRODUCT_DIR/gen/remoting/android/.*/res/raw/credits.html"/>
-    <ignore regexp="PRODUCT_DIR/gen/remoting/android/.*/res/raw/credits_css.css"/>
-    <ignore regexp="PRODUCT_DIR/gen/remoting/android/.*/res/raw/credits_js.js"/>
+    <ignore regexp="gen/remoting/android/.*/res/raw/credits.html"/>
+    <ignore regexp="gen/remoting/android/.*/res/raw/credits_css.css"/>
+    <ignore regexp="gen/remoting/android/.*/res/raw/credits_js.js"/>
+    <!-- 1 all resources in remoting internal -->
+    <ignore regexp="remoting/android/internal"/>
     <!-- 1 string test only, used in CronetSmokeTestCase dynamically -->
     <ignore regexp="R.string.TestSupportImplClass"/>
     <!-- 1 resource used by android webview glue layer, could be refactored -->
@@ -472,6 +487,24 @@ Still reading?
     <ignore regexp="components/page_info/android/java/res/drawable-hdpi/pageinfo_*"/>
     <!--TODO(crbug.com/1052375): Remove this suppression once PermissionParamsListBuilder moves to components.-->
     <ignore regexp="The resource `R.string.page_info_permission_ads_subtitle` appears to be unused" />
+    <!--TODO(crbug.com/1069186): The following 12 are found when we switched to linting the entire app. -->
+    <ignore regexp="The resource `R.string.download_manager_ui_documents` appears to be unused" />
+    <ignore regexp="The resource `R.string.download_manager_offline_home` appears to be unused" />
+    <ignore regexp="The resource `R.string.ntp_learn_more_about_suggested_content` appears to be unused" />
+    <ignore regexp="The resource `R.string.ntp_feed_menu_iph` appears to be unused" />
+    <ignore regexp="The resource `R.string.tab_switcher_button_label` appears to be unused" />
+    <ignore regexp="The resource `R.string.prefs_autofill_assistant_switch` appears to be unused" />
+    <ignore regexp="The resource `R.string.storage_clear_dialog_text` appears to be unused" />
+    <ignore regexp="The resource `R.string.website_settings_category_notifications_block` appears to be unused" />
+    <ignore regexp="The resource `R.string.autofill_cc_google_issued` appears to be unused" />
+    <ignore regexp="The resource `R.string.notification_manage_button` appears to be unused" />
+    <ignore regexp="The resource `R.string.app_banner_add` appears to be unused" />
+    <ignore regexp="The resource `R.string.notification_category_permission_requests` appears to be unused" />
+    <ignore regexp="The resource `R.drawable.ic_launcher_background` appears to be unused" />
+    <ignore regexp="The resource `R.string.combined_notification_text` appears to be unused" />
+    <ignore regexp="The resource `R.plurals.public_notification_text` appears to be unused" />
+    <ignore regexp="The resource `R.mipmap.app_shortcut_icon` appears to be unused" />
+    <ignore regexp="The resource `R.mipmap.app_single_page_icon` appears to be unused" />
   </issue>
   <issue id="UseCompoundDrawables">
     <!-- Upscaling 24dp to 48dp doesn't work as expected with a TextView compound drawable. -->
@@ -519,11 +552,14 @@ Still reading?
     <!--TODO(crbug.com/1044658): This suppression was added blindly, and needs investigated.-->
     <ignore regexp="chrome/android/java/res/menu/main_menu.xml"/>
   </issue>
+  <!--TODO(crbug.com/1069186): See if this new check is useful. -->
+  <issue id="DuplicateDefinition" severity="ignore"/>
   <issue id="IncludeLayoutParam" severity="Error">
     <!--TODO(crbug.com/1044658): This suppression was added blindly, and needs investigated.-->
     <ignore regexp="chrome/android/java/res/layout/start_top_toolbar.xml"/>
   </issue>
   <issue id="RtlHardcoded" severity="Error">
+    <ignore regexp="remoting/android/internal"/>
     <!--TODO(crbug.com/1044658): This suppression was added blindly, and needs investigated.-->
     <ignore regexp="chrome/android/java/res/layout/sheet_tab_toolbar.xml"/>
   </issue>

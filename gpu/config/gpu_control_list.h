@@ -87,11 +87,11 @@ class GPU_EXPORT GpuControlList {
 
   enum VersionSchema {
     // All digits are meaningful when distinguishing versions.
-    kCommon,
+    kVersionSchemaCommon,
     // The version format of Intel graphics driver is AA.BB.CCC.DDDD.
     // DDDD(old schema) or CCC.DDDD(new schema) is the build number.
     // That is, indicates the actual driver number.
-    kIntelDriver,
+    kVersionSchemaIntelDriver,
   };
 
   enum SupportedOrNot {
@@ -103,6 +103,7 @@ class GPU_EXPORT GpuControlList {
   struct GPU_EXPORT Version {
     NumericOp op;
     VersionStyle style;
+    VersionSchema schema;
     const char* value1;
     const char* value2;
 
@@ -133,8 +134,7 @@ class GPU_EXPORT GpuControlList {
     const char* driver_vendor;
     Version driver_version;
 
-    bool Contains(const GPUInfo& gpu_info,
-                  VersionSchema version_schema = kCommon) const;
+    bool Contains(const GPUInfo& gpu_info) const;
   };
 
   struct GPU_EXPORT GLStrings {

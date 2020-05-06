@@ -189,6 +189,7 @@ class AwContentBrowserClient : public content::ContentBrowserClient {
   bool ShouldEnableStrictSiteIsolation() override;
   bool ShouldLockToOrigin(content::BrowserContext* browser_context,
                           const GURL& effective_url) override;
+  bool DoesWebUISchemeRequireProcessLock(base::StringPiece scheme) override;
   bool WillCreateURLLoaderFactory(
       content::BrowserContext* browser_context,
       content::RenderFrameHost* frame,

@@ -425,6 +425,12 @@ class PLATFORM_EXPORT ThreadState final {
   static void VisitStackAfterPushingRegisters(ThreadState*,
                                               intptr_t* end_of_stack);
 
+  static bool IsForcedGC(BlinkGC::GCReason reason) {
+    return reason == BlinkGC::GCReason::kThreadTerminationGC ||
+           reason == BlinkGC::GCReason::kForcedGCForTesting ||
+           reason == BlinkGC::GCReason::kUnifiedHeapForcedForTestingGC;
+  }
+
   ThreadState();
   ~ThreadState();
 
@@ -564,10 +570,7 @@ class PLATFORM_EXPORT ThreadState final {
   // The argument must be registered before calling this.
   void RemoveObserver(BlinkGCObserver*);
 
-  bool IsForcedGC(BlinkGC::GCReason reason) const {
-    return reason == BlinkGC::GCReason::kThreadTerminationGC ||
-           reason == BlinkGC::GCReason::kForcedGCForTesting;
-  }
+  bool IsForcedGC() const { return IsForcedGC(current_gc_data_.reason); }
 
   // Returns whether stack scanning is forced. This is currently only used in
   // platform tests where non nested tasks can be run with heap pointers on
@@ -599,7 +602,6 @@ class PLATFORM_EXPORT ThreadState final {
   bool heap_pointers_on_stack_forced_ = false;
   bool incremental_marking_ = false;
   bool should_optimize_for_load_time_ = false;
-  bool forced_unified_heap_gc_for_testing_ = false;
   bool forced_scheduled_gc_for_testing_ = false;
   size_t no_allocation_count_ = 0;
   size_t gc_forbidden_count_ = 0;
@@ -609,9 +611,6 @@ class PLATFORM_EXPORT ThreadState final {
   GCPhase gc_phase_ = GCPhase::kNone;
   BlinkGC::GCReason reason_for_scheduled_gc_ =
       BlinkGC::GCReason::kForcedGCForTesting;
-  struct {
-    BlinkGC::GCReason reason;
-  } unified_heap_forced_gc_params_;
 
   using PreFinalizerCallback = bool (*)(const LivenessBroker&, void*);
   using PreFinalizer = std::pair<void*, PreFinalizerCallback>;

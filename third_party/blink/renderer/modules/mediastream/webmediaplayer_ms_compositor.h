@@ -126,6 +126,14 @@ class MODULES_EXPORT WebMediaPlayerMSCompositor
   std::unique_ptr<WebMediaPlayer::VideoFramePresentationMetadata>
   GetLastPresentedFrameMetadata();
 
+  // Sets the ForceBeginFrames flag on |submitter_|. Can be called from any
+  // thread.
+  //
+  // The flag is used to keep receiving BeginFrame()/UpdateCurrentFrame() calls
+  // even if the video element is not visible, so websites can still use the
+  // requestVideoFrameCallback() API when the video is offscreen.
+  void SetForceBeginFrames(bool enable);
+
  private:
   friend class WTF::ThreadSafeRefCounted<WebMediaPlayerMSCompositor,
                                          WebMediaPlayerMSCompositorTraits>;

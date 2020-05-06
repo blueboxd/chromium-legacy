@@ -125,8 +125,9 @@ class AutocompleteControllerAndroid : public AutocompleteController::Observer,
       JNIEnv* env, const AutocompleteMatch& match);
 
   // Construct Java Group Headers map from supplied HeadersMap.
-  base::android::ScopedJavaLocalRef<jobject> BuildOmniboxGroupHeaders(
+  void PopulateOmniboxGroupHeaders(
       JNIEnv* env,
+      base::android::ScopedJavaLocalRef<jobject> j_autocomplete_result,
       const SearchSuggestionParser::HeadersMap& header_map);
 
   // A helper method for fetching the top synchronous autocomplete result.

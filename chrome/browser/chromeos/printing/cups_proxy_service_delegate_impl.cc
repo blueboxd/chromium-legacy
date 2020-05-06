@@ -58,8 +58,7 @@ bool CupsProxyServiceDelegateImpl::IsPrinterInstalled(const Printer& printer) {
 void CupsProxyServiceDelegateImpl::PrinterInstalled(const Printer& printer) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(GetPrinter(printer.id()));
-  printers_manager_->PrinterInstalled(
-      printer, false /* unused */, PrinterSetupSource::kMaxValue /* unused */);
+  printers_manager_->PrinterInstalled(printer, false /* unused */);
 }
 
 scoped_refptr<base::SingleThreadTaskRunner>

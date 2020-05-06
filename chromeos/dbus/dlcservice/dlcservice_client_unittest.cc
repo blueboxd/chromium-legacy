@@ -151,6 +151,54 @@ TEST_F(DlcserviceClientTest, GetInstalledFailureTest) {
   base::RunLoop().RunUntilIdle();
 }
 
+TEST_F(DlcserviceClientTest, GetExistingDlcsSuccessTest) {
+  responses_.push_back(dbus::Response::CreateEmpty());
+  dbus::Response* response = responses_.front().get();
+  dbus::MessageWriter writer(response);
+  dlcservice::DlcsWithContent dlcs_with_content;
+  writer.AppendProtoAsArrayOfBytes(dlcs_with_content);
+
+  EXPECT_CALL(*mock_proxy_.get(), DoCallMethodWithErrorResponse(_, _, _))
+      .WillOnce(
+          Invoke(this, &DlcserviceClientTest::CallMethodWithErrorResponse));
+
+  DlcserviceClient::GetExistingDlcsCallback callback = base::BindOnce(
+      [](const std::string& err, const dlcservice::DlcsWithContent&) {
+        EXPECT_EQ(dlcservice::kErrorNone, err);
+      });
+  client_->GetExistingDlcs(std::move(callback));
+  base::RunLoop().RunUntilIdle();
+}
+
+TEST_F(DlcserviceClientTest, GetExistingDlcsFailureTest) {
+  // TODO(kimjae): Use |kGetExistingDlcsMethod| once system_api is uprev'ed.
+  dbus::MethodCall method_call(dlcservice::kDlcServiceInterface,
+                               "GetExsitingDlcs");
+  method_call.SetSerial(123);
+  err_responses_.push_back(dbus::ErrorResponse::FromMethodCall(
+      &method_call, DBUS_ERROR_FAILED, "some-unknown-error"));
+
+  EXPECT_CALL(*mock_proxy_.get(), DoCallMethodWithErrorResponse(_, _, _))
+      .WillRepeatedly(
+          Invoke(this, &DlcserviceClientTest::CallMethodWithErrorResponse));
+
+  client_->GetExistingDlcs(base::BindOnce(
+      [](const std::string& err, const dlcservice::DlcsWithContent&) {
+        EXPECT_EQ(dlcservice::kErrorInternal, err);
+      }));
+  base::RunLoop().RunUntilIdle();
+
+  err_responses_.push_back(dbus::ErrorResponse::FromMethodCall(
+      &method_call, dlcservice::kErrorInvalidDlc,
+      "Some error due to bad DLC."));
+
+  client_->GetExistingDlcs(base::BindOnce(
+      [](const std::string& err, const dlcservice::DlcsWithContent&) {
+        EXPECT_EQ(dlcservice::kErrorInvalidDlc, err);
+      }));
+  base::RunLoop().RunUntilIdle();
+}
+
 TEST_F(DlcserviceClientTest, UninstallSuccessTest) {
   responses_.push_back(dbus::Response::CreateEmpty());
 

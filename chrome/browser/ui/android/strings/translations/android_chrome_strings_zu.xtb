@@ -33,6 +33,7 @@
 <translation id="1208340532756947324">Ukuze uvumelanise uphinde wenze kube ngokwakho kuwo wonkana amadivayisi akho, vula ukuvumelanisa</translation>
 <translation id="1209206284964581585">Fihla okwamanje</translation>
 <translation id="1227058898775614466">Umlando wokuzula</translation>
+<translation id="1229399675748764149">Yenza lokhu kube ikhasi lakho lasekhaya</translation>
 <translation id="1231733316453485619">vula ukuvumelanisa?</translation>
 <translation id="123724288017357924">Phinda ulayishe ikhasi lamanje, iziba okuqukethwe okufakwe kunqolobane</translation>
 <translation id="124116460088058876">Izilimi eziningi</translation>
@@ -71,6 +72,7 @@
 <translation id="1513352483775369820">Amabhukhimakhi nomlando wendawo</translation>
 <translation id="1513858653616922153">Susa iphasiwedi</translation>
 <translation id="1521774566618522728">Iyasebenza namhlanje</translation>
+<translation id="1543538514740974167">Fika lapha ngokushesha</translation>
 <translation id="1544826120773021464">Ukuze uphathe i-akhawunti yakho ye-Google, thepha inkinobho "Phatha i-akhawunti"</translation>
 <translation id="1549000191223877751">Yisa kwelinye iwindi</translation>
 <translation id="1553358976309200471">Buyekeza i-Chrome</translation>
@@ -723,11 +725,13 @@ Isibonelo, amanye amawebhusayithi angaphendula lesi sicelo ngokukubonisa izikhan
 <translation id="7022756207310403729">Vula kusiphequluli</translation>
 <translation id="702463548815491781">Kunconyiwe uma i-TalkBack noma okuthi Shintsha ukufinyelela kuvuliwe</translation>
 <translation id="7029809446516969842">Amaphasiwedi</translation>
+<translation id="703523980599857277">Shintsha ikhasi lasekhaya</translation>
 <translation id="7055152154916055070">Ukuqondiswa kabusha kuvinjiwe:</translation>
 <translation id="7063006564040364415">Ayikwazanga ukuxhumeka kuseva yokuvumelanisa.</translation>
 <translation id="7071521146534760487">Phatha i-akhawunti</translation>
 <translation id="7077143737582773186">Ikhadi le-SD</translation>
 <translation id="7121362699166175603">Isula umlando nokuqedelelwa okuzenzakalelayo kubha yekheli. I-akhawunti yakho ye-Google ingaba namanye amafomu omlando okuphequlula ku-<ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
+<translation id="7128355412245153445">Bona amasayithi akho aphezulu nezindaba zakamuva noma nini lapho uthepha inkinobho Yasekhaya</translation>
 <translation id="7138678301420049075">Okunye</translation>
 <translation id="7146622961999026732">La masayithi nezinhlelo zokusebenza kubonakala kubalulekile kuwe:</translation>
 <translation id="7149158118503947153"><ph name="BEGIN_LINK" />Layisha ikhasi loqobo<ph name="END_LINK" /> kusuka ku-<ph name="DOMAIN_NAME" /></translation>
@@ -968,11 +972,13 @@ Isibonelo, amanye amawebhusayithi angaphendula lesi sicelo ngokukubonisa izikhan
 <translation id="9155898266292537608">Futhi ungasesha ngokuthepha okusheshayo egameni</translation>
 <translation id="9169507124922466868">Umlando wokuzula uvuleke ngohhafu</translation>
 <translation id="9204836675896933765">1 ifayela elisele</translation>
+<translation id="9205796607887024517">Lawula izindaba zakho lapha</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="9209888181064652401">Ayikwazi ukwenza amakholi</translation>
 <translation id="9219103736887031265">Izithombe</translation>
 <translation id="926205370408745186">Susa umsebenzi wakho we-Chrome kusukela ku-Digital Wellbeing</translation>
 <translation id="932327136139879170">Ikhaya</translation>
+<translation id="93753284658583800">Ikhasi lasekhaya lishintshile</translation>
 <translation id="938850635132480979">Iphutha: <ph name="ERROR_CODE" /></translation>
 <translation id="95817756606698420">I-Chrome ingasebenzisa i-<ph name="BEGIN_BOLD" />Sogou<ph name="END_BOLD" /> ukusesha e-China. Ungashintsha lokhu <ph name="BEGIN_LINK" />kuzilungiselelo<ph name="END_LINK" />.</translation>
 <translation id="968900484120156207">Amakhasi owavakashelayo avela lapha</translation>

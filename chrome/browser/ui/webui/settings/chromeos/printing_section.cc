@@ -6,6 +6,7 @@
 
 #include "base/feature_list.h"
 #include "base/no_destructor.h"
+#include "chrome/browser/ui/webui/settings/chromeos/cups_printers_handler.h"
 #include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/url_constants.h"
@@ -20,15 +21,40 @@ namespace {
 
 const std::vector<SearchConcept>& GetPrintingSearchConcepts() {
   static const base::NoDestructor<std::vector<SearchConcept>> tags({
-      // TODO(khorimoto): Add "Printing" search concepts.
+      {IDS_OS_SETTINGS_TAG_PRINTING_ADD_PRINTER,
+       mojom::kPrintingDetailsSubpagePath,
+       mojom::SearchResultIcon::kPrinter,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSetting,
+       {.setting = mojom::Setting::kAddPrinter},
+       {IDS_OS_SETTINGS_TAG_PRINTING_ADD_PRINTER_ALT1,
+        IDS_OS_SETTINGS_TAG_PRINTING_ADD_PRINTER_ALT2,
+        SearchConcept::kAltTagEnd}},
+      {IDS_OS_SETTINGS_TAG_PRINTING_SAVED_PRINTERS,
+       mojom::kPrintingDetailsSubpagePath,
+       mojom::SearchResultIcon::kPrinter,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSetting,
+       {.setting = mojom::Setting::kSavedPrinters}},
+      {IDS_OS_SETTINGS_TAG_PRINTING,
+       mojom::kPrintingDetailsSubpagePath,
+       mojom::SearchResultIcon::kPrinter,
+       mojom::SearchResultDefaultRank::kHigh,
+       mojom::SearchResultType::kSubpage,
+       {.subpage = mojom::Subpage::kPrintingDetails},
+       {IDS_OS_SETTINGS_TAG_PRINTING_ALT1, IDS_OS_SETTINGS_TAG_PRINTING_ALT2,
+        SearchConcept::kAltTagEnd}},
   });
   return *tags;
 }
 
 }  // namespace
 
-PrintingSection::PrintingSection(Profile* profile, Delegate* per_page_delegate)
-    : OsSettingsSection(profile, per_page_delegate) {
+PrintingSection::PrintingSection(Profile* profile,
+                                 Delegate* per_page_delegate,
+                                 CupsPrintersManager* printers_manager)
+    : OsSettingsSection(profile, per_page_delegate),
+      printers_manager_(printers_manager) {
   delegate()->AddSearchTags(GetPrintingSearchConcepts());
 }
 
@@ -185,6 +211,11 @@ void PrintingSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
   html_source->AddBoolean(
       "consumerPrintServerUiEnabled",
       base::FeatureList::IsEnabled(::features::kPrintServerUi));
+}
+
+void PrintingSection::AddHandlers(content::WebUI* web_ui) {
+  web_ui->AddMessageHandler(
+      std::make_unique<CupsPrintersHandler>(profile(), printers_manager_));
 }
 
 }  // namespace settings

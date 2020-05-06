@@ -18037,15 +18037,15 @@
         'type': 'string'
       },
       'supported_on': ['chrome_os:84-'],
-      'device_only': True,
       'features': {
         'dynamic_refresh': True,
+        'per_profile': False,
       },
       'example_value': "USER_ID",
       'id': 698,
       'caption': '''<ph name="PLUGIN_VM_NAME">PluginVm</ph> user id''',
       'tags': [],
-      'desc': '''This policy specifies the <ph name="PLUGIN_VM_NAME">PluginVm</ph> user id for this device.''',
+      'desc': '''This policy specifies the <ph name="PLUGIN_VM_NAME">PluginVm</ph> licensing user id for this device.''',
     },
     {
       'name': 'PluginVmImage',
@@ -21167,6 +21167,41 @@ If you disable this policy, web page scrolling to specific text fragments via UR
       'tags': [],
       'desc': '''This feature allows the password on the lock/start screen to be displayed by the user after clicking on a button.''',
     },
+    {
+      'name': 'AccessibilityImageLabelsEnabled',
+      'owners': ['file://ui/accessibility/OWNERS'],
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome_os:84-', 'chrome.*:84-'],
+      'features': {
+        'can_be_recommended': False,
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': False,
+      'id': 703,
+      'caption': '''Enable <ph name="PRODUCT_NAME">Get Image Descriptions from Google</ph>.''',
+      'tags': ['google-sharing'],
+      'desc': '''The <ph name="PRODUCT_NAME">Get Image Descriptions from Google</ph>
+          accessibility feature enables visually-impaired screen reader users to
+          get descriptions of unlabeled images on the web. Users who choose to enable it
+          will have the option of using an anonymous Google service to provide
+          automatic descriptions for unlabeled images they encounter on the web.
+
+          If this feature is enabled, the content of images will be sent to Google
+          servers in order to generate a description. No cookies or other user
+          data is sent, and Google does not save or log any image content.
+
+          If this policy is set to true, the
+          <ph name="PRODUCT_NAME">Get Image Descriptions from Google</ph>
+          feature will be enabled, though it will only affect users who are using a
+          screen reader or other similar assistive technology.
+
+          If this policy is set to false, users will not have the option of enabling
+          the feature.
+
+          If you set this policy, users cannot change or override it.''',
+    },
   ],
 
   'messages': {
@@ -21529,7 +21564,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
     'DeviceWilcoDtcAllowed': 'device_wilco_dtc_allowed.device_wilco_dtc_allowed',
     'DeviceWilcoDtcConfiguration': 'device_wilco_dtc_configuration.device_wilco_dtc_configuration',
     'PluginVmLicenseKey': 'plugin_vm_license_key.plugin_vm_license_key',
-    'PluginVmUserId': 'plugin_vm_user_id.plugin_vm_user_id',
     'DeviceAuthDataCacheLifetime': 'device_auth_data_cache_lifetime.lifetime_hours',
     'DeviceGpoCacheLifetime': 'device_gpo_cache_lifetime.lifetime_hours',
     'DeviceRebootOnUserSignout': 'device_reboot_on_user_signout.reboot_on_signout_mode',
@@ -21908,6 +21942,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
         'PluginVmAllowed',
         'PluginVmLicenseKey',
         'PluginVmImage',
+        'PluginVmUserId',
       ],
     },
     {
@@ -22023,6 +22058,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   ],
   'placeholders': [],
   'deleted_policy_ids': [412, 476, 546, 562, 569, 578],
-  'highest_id_currently_used': 702,
+  'highest_id_currently_used': 703,
   'highest_atomic_group_id_currently_used': 38
 }

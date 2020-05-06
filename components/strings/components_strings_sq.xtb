@@ -52,7 +52,6 @@
 <translation id="1197088940767939838">Portokalli</translation>
 <translation id="1201402288615127009">Tjetra</translation>
 <translation id="1201895884277373915">Më shumë nga ky sajt</translation>
-<translation id="1205963431094182634">Identifikohu për të përdorur fjalëkalimet e ruajtura në "Llogarinë tënde të Google"</translation>
 <translation id="1206967143813997005">Nënshkrimi fillestar i gabuar</translation>
 <translation id="1209206284964581585">Fshih për momentin</translation>
 <translation id="121201262018556460">Tentove të hapje <ph name="DOMAIN" />, por serveri paraqiti një certifikatë që përmban një çelës të dobët. Një sulmues mund ta ketë prishur çelësin privat dhe serveri mund të mos jetë ai që prisje (mund të jesh duke komunikuar me një sulmues).</translation>
@@ -1209,7 +1208,6 @@ Ndryshe kjo do të bllokohet nga cilësimet e tua të privatësisë. Kjo do ta l
 <translation id="6116338172782435947">Shiko tekstin dhe imazhet e kopjuara te kujtesa e fragmenteve</translation>
 <translation id="6120179357481664955">Të kujtohet ID-ja e UPI?</translation>
 <translation id="6124432979022149706">Chrome Enterprise Connectors</translation>
-<translation id="6135641591018127088">Përdor "Llogarinë tënde të Google" për të gjeneruar një fjalëkalim të fortë</translation>
 <translation id="6146055958333702838">Kontrollo kabllot dhe rindiz router-it, modemët ose pajisjet e tjera të rrjetit që mund të jesh duke përdorur.</translation>
 <translation id="614940544461990577">Provo:</translation>
 <translation id="6150036310511284407">Tri shpime majtas</translation>
@@ -1254,7 +1252,6 @@ Ndryshe kjo do të bllokohet nga cilësimet e tua të privatësisë. Kjo do ta l
 <translation id="6328639280570009161">Provo çaktivizimin e parashikimit të rrjetit</translation>
 <translation id="6328784461820205019">"Lidhja jote nuk është private" ose "&lt;span class="error-code"&gt;NET::ERR_CERT_AUTHORITY_INVALID&lt;/span&gt;" ose "&lt;span class="error-code"&gt;ERR_CERT_COMMON_NAME_INVALID&lt;/span&gt;" ose "&lt;span class="error-code"&gt;NET::ERR_CERT_WEAK_SIGNATURE_ALGORITHM&lt;/span&gt;" ose "&lt;span class="error-code"&gt;ERR_CERT_SYMANTEC_LEGACY&lt;/span&gt;" ose "Gabim i certifikatës SSL"</translation>
 <translation id="6328786501058569169">Ky është një sajt mashtrues</translation>
-<translation id="6333334544069706521">Përdor fjalëkalimet e ruajtura në "Llogarinë tënde të Google"</translation>
 <translation id="6337133576188860026">Liron më pak se <ph name="SIZE" />. Disa sajte mund të ngarkohen më ngadalë gjatë vizitës tënde të radhës.</translation>
 <translation id="6337534724793800597">Filtro politikat sipas emrit</translation>
 <translation id="6353505687280762741">{COUNT,plural, =0{Asnjë}=1{1 fjalëkalim (për <ph name="DOMAIN_LIST" />, sinkronizuar)}=2{2 fjalëkalime (për <ph name="DOMAIN_LIST" />, sinkronizuar)}other{# fjalëkalime (për <ph name="DOMAIN_LIST" />, sinkronizuar)}}</translation>

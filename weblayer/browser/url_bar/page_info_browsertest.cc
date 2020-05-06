@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/strings/string16.h"
+#include "base/strings/utf_string_conversions.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/page_info/android/page_info_client.h"
 #include "components/page_info/page_info_delegate.h"
@@ -79,6 +81,16 @@ IN_PROC_BROWSER_TEST_F(PageInfoBrowserTest,
       page_info::GetPageInfoClient()->CreatePageInfoDelegate(GetWebContents());
   ASSERT_TRUE(page_info_delegate);
   EXPECT_TRUE(page_info_delegate->GetTabSpecificContentSettingsDelegate());
+}
+
+IN_PROC_BROWSER_TEST_F(PageInfoBrowserTest, EmbedderNameSet) {
+  std::unique_ptr<PageInfoDelegate> page_info_delegate =
+      page_info::GetPageInfoClient()->CreatePageInfoDelegate(GetWebContents());
+  ASSERT_TRUE(page_info_delegate);
+  base::string16 expected_embedder_name =
+      base::ASCIIToUTF16("WebLayerBrowserTests");
+  EXPECT_EQ(expected_embedder_name,
+            page_info_delegate->GetClientApplicationName().c_str());
 }
 
 }  // namespace weblayer

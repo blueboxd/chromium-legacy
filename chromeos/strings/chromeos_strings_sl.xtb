@@ -17,8 +17,10 @@
 <translation id="2805756323405976993">Aplikacije</translation>
 <translation id="2872961005593481000">Zaustavitev</translation>
 <translation id="3008341117444806826">OSVEŽI</translation>
+<translation id="3369013195428705271">Ali ste prepričani, da želite izbrisati vso zgodovino tiskanja? Tiskalna opravila, ki potekajo, ne bodo izbrisana.</translation>
 <translation id="3515615323037921860">Tiskalni posli</translation>
 <translation id="3749289110408117711">Ime datoteke</translation>
+<translation id="38114475217616659">Izbriši celotno zgodovino</translation>
 <translation id="3820172043799983114">Neveljavna koda PIN.</translation>
 <translation id="3838338534323494292">Novo geslo</translation>
 <translation id="4003259559679196451"><ph name="ENROLLMENT_DOMAIN" /> upravlja to napravo in ima dostop do vse dejavnosti uporabnika, vključno z obiskanimi spletnimi mesti, gesli in e-pošto.</translation>
@@ -43,6 +45,7 @@ Poskusite vprašati tako, da se dotaknete mikrofona.</translation>
 <translation id="6106186594183574873">Za dokončanje vnesite staro geslo</translation>
 <translation id="6146993107019042706">Za dokončanje vnesite novo geslo</translation>
 <translation id="6643016212128521049">Izbriši</translation>
+<translation id="7162487448488904999">Galerija</translation>
 <translation id="7658239707568436148">Prekliči</translation>
 <translation id="7690294790491645610">Potrdite novo geslo</translation>
 <translation id="7805768142964895445">Stanje</translation>

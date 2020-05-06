@@ -52,7 +52,6 @@
 <translation id="1197088940767939838">কমলা</translation>
 <translation id="1201402288615127009">পৰৱৰ্তী</translation>
 <translation id="1201895884277373915">এই ছাইটৰ পৰা অধিক</translation>
-<translation id="1205963431094182634">আপোনাৰ Google একাউণ্টত ষ্ট’ৰ কৰা পাছৱৰ্ডসমূহ ব্যৱহাৰ কৰিবলৈ ছাইন ইন কৰক</translation>
 <translation id="1206967143813997005">প্ৰাৰম্ভিক স্বাক্ষৰটো বেয়া</translation>
 <translation id="1209206284964581585">এতিয়াৰ বাবে লুকুৱাওক</translation>
 <translation id="121201262018556460">আপুনি <ph name="DOMAIN" /> পাবলৈ প্ৰয়াস কৰিছে কিন্তু ছার্ভাৰে কোনো দুর্বল চাবি থকা প্ৰমাণপত্ৰ উপস্থাপন কৰিছে। কোনো আক্ৰমণকাৰীয়ে ব্যক্তিগত চাবিটো ভাঙিব পাৰে আৰু আপুনি বিচৰা ছার্ভাৰটো এইটো নহ'বও পাৰে (আপুনি কোনো আক্ৰমণকাৰীৰ সৈতে যোগাযোগ কৰি থাকিব পাৰে)।</translation>
@@ -1211,7 +1210,6 @@
 <translation id="6116338172782435947">ক্লিপব’ৰ্ডলৈ প্ৰতিলিপি কৰা পাঠ আৰু প্ৰতিচ্ছবি চাওক</translation>
 <translation id="6120179357481664955">আপোনাৰ UPI IDটো মনত আছেনে?</translation>
 <translation id="6124432979022149706">Chrome এণ্টাৰপ্ৰাইজ কানেক্টৰসমূহ</translation>
-<translation id="6135641591018127088">এটা শক্তিশালী পাছৱৰ্ড সৃষ্টি কৰিবলৈ আপোনাৰ Google একাউণ্টটো ব্যৱহাৰ কৰক</translation>
 <translation id="6146055958333702838">কোনো কেবল পৰীক্ষা কৰক আৰু আপুনি ব্যৱহাৰ কৰি থকা কোনো ৰাউটাৰ, ম’ডেম বা অন্য নেটৱৰ্ক ডিভাইচ ৰিবুট কৰক।</translation>
 <translation id="614940544461990577">এইখিনি কৰি চাওক:</translation>
 <translation id="6150036310511284407">বাওঁফালে তিনিবাৰ পাঞ্চ কৰক</translation>
@@ -1256,7 +1254,6 @@
 <translation id="6328639280570009161">নেটৱৰ্কৰ পূৰ্বানুমান অক্ষম কৰি চাওক</translation>
 <translation id="6328784461820205019">"আপোনাৰ সংযোগটো ব্যক্তিগত নহয়" বা "&lt;span class="error-code"&gt;NET::ERR_CERT_AUTHORITY_INVALID&lt;/span&gt;" বা "&lt;span class="error-code"&gt;ERR_CERT_COMMON_NAME_INVALID&lt;/span&gt;" বা "&lt;span class="error-code"&gt;NET::ERR_CERT_WEAK_SIGNATURE_ALGORITHM&lt;/span&gt;" বা "&lt;span class="error-code"&gt;ERR_CERT_SYMANTEC_LEGACY&lt;/span&gt;" বা "SSL প্ৰমাণপত্ৰৰ আসোঁৱাহ"</translation>
 <translation id="6328786501058569169">এই ছাইটটো বিভ্ৰান্তিকৰ</translation>
-<translation id="6333334544069706521">আপোনাৰ Google একাউণ্টত ষ্ট’ৰ কৰা পাছৱৰ্ডসমূহ ব্যৱহাৰ কৰক</translation>
 <translation id="6337133576188860026"><ph name="SIZE" />তকৈ কম খালী ঠাই উলিয়াওক। আপুনি পৰৱর্তী সময়ত কিছুমান ছাইট চাওতে লেহেমীয়াকৈ ল’ড হ’ব পাৰে।</translation>
 <translation id="6337534724793800597">নাম অনুসৰি নীতিসমূহ ফিল্টাৰ কৰক</translation>
 <translation id="6353505687280762741">{COUNT,plural, =0{এটাও নাই}=1{১টা পাছৱৰ্ড (<ph name="DOMAIN_LIST" />ৰ বাবে, ছিংক কৰা আছে)}=2{২টা পাছৱৰ্ড (<ph name="DOMAIN_LIST" />ৰ বাবে, ছিংক কৰা আছে)}one{#টা পাছৱৰ্ড (<ph name="DOMAIN_LIST" />ৰ বাবে, ছিংক কৰা আছে)}other{#টা পাছৱৰ্ড (<ph name="DOMAIN_LIST" />ৰ বাবে, ছিংক কৰা আছে)}}</translation>

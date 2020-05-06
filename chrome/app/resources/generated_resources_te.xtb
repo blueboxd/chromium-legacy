@@ -169,6 +169,7 @@
 <translation id="1217483152325416304">మీ స్థానిక డేటా త్వరలో తొలగించబడుతుంది</translation>
 <translation id="1217668622537098248">చర్య తర్వాత తిరిగి ఎడమ క్లిక్ వద్దకు మారు</translation>
 <translation id="121783623783282548">పాస్‌‌వర్డ్‌లు సరిపోలలేదు.</translation>
+<translation id="1218015446623563536">Linuxని తొలగించండి</translation>
 <translation id="1218839827383191197"><ph name="BEGIN_PARAGRAPH1" />ఈ పరికర స్థానాన్ని అంచనా వేయడంలో సహాయపడటానికి Wi‑Fi, మొబైల్ నెట్‌వర్క్‌లు మరియు సెన్సార్‌ల వంటి మూలాధారాలను Google స్థాన సేవ ఉపయోగిస్తుంది.<ph name="END_PARAGRAPH1" />
     <ph name="BEGIN_PARAGRAPH2" />మీరు ఈ పరికరంలో ప్రధాన స్థాన సెట్టింగ్‌ని ఆఫ్ చేయడం ద్వారా స్థానాన్ని ఆఫ్ చేయవచ్చు. మీరు స్థాన సెట్టింగ్‌లలో స్థానం కోసం Wi‑Fi, మొబైల్ నెట్‌వర్క్‌లు మరియు సెన్సార్‌ల వినియోగాన్ని కూడా ఆఫ్ చేయవచ్చు.<ph name="END_PARAGRAPH2" /></translation>
 <translation id="122082903575839559">సర్టిఫికెట్ సంతకం అల్గారిథమ్</translation>
@@ -3786,7 +3787,7 @@
 <translation id="6076491747490570887">లేత బూడిద రంగు</translation>
 <translation id="6077131872140550515">ప్రాధాన్య నెట్‌వర్క్‌ల నుండి తీసివేయి</translation>
 <translation id="6077189836672154517"><ph name="DEVICE_TYPE" />కు సంబంధించిన చిట్కాలు మరియు అప్‌డేట్‌లు</translation>
-<translation id="6078045608615316905">ఈ ఇమేజ్ కోసం QR కోడ్‌ను సృష్టించండి</translation>
+<translation id="6078045608615316905">ఈ ఇమేజ్ కోసం QR కోడ్‌ను రూపొందించండి</translation>
 <translation id="6078323886959318429">షార్ట్‌కట్‌ను జోడించు</translation>
 <translation id="6078752646384677957">దయచేసి మీ మైక్రోఫోన్ మరియు ఆడియో స్థాయిలను తనిఖీ చేయండి.</translation>
 <translation id="6078769373519310690">"<ph name="CHROME_EXTENSION_NAME" />" ఒక HID పరికరానికి కనెక్ట్ కావాలని కోరుకుంటుంది</translation>
@@ -4227,7 +4228,7 @@
 <translation id="668599234725812620">Google Playని తెరువు</translation>
 <translation id="6686490380836145850">కుడివైపు ట్యాబ్‌లను మూసివేయి</translation>
 <translation id="6686817083349815241">మీ పాస్‌వర్డ్‌ను సేవ్ చేయండి</translation>
-<translation id="6688285987813868112">ఈ ఇమేజ్ కోసం QR కోడ్‌ను సృష్టించండి</translation>
+<translation id="6688285987813868112">ఈ ఇమేజ్ కోసం QR కోడ్‌ను రూపొందించండి</translation>
 <translation id="6690659332373509948">ఈ ఫైల్‌ను అన్వయించడం సాధ్యపడలేదు: <ph name="FILE_NAME" /></translation>
 <translation id="6690751852586194791">ఈ పరికరానికి జోడించడానికి పర్యవేక్షించబడే వినియోగదారును ఎంచుకోండి.</translation>
 <translation id="6691331417640343772">Google డాష్‌బోర్డ్‌లో సింక్ చేయ‌బ‌డిన‌ డేటాను నిర్వహించండి</translation>
@@ -4396,7 +4397,7 @@
 <translation id="6914783257214138813">ఎగుమతి చేయబడిన ఫైల్‌ను చూడగల ఎవరికైనా మీ పాస్‌వర్డ్‌లు కనిపిస్తాయి.</translation>
 <translation id="6915804003454593391">వినియోగదారు:</translation>
 <translation id="6916590542764765824">పొడిగింపులను నిర్వహించండి</translation>
-<translation id="6920262510368602827">ఈ పేజీ కోసం QR కోడ్‌ను సృష్టించండి</translation>
+<translation id="6920262510368602827">ఈ పేజీ కోసం QR కోడ్‌ను రూపొందించండి</translation>
 <translation id="6920989436227028121">సాధారణ టాబ్‌ లాగా తెరువు</translation>
 <translation id="6921104647315081813">కార్యకలాపాలను తీసివేయి</translation>
 <translation id="692114467174262153"><ph name="ALTERNATIVE_BROWSER_NAME" />ను తెరవలేకపోయింది</translation>
@@ -5510,7 +5511,7 @@
 <translation id="8382913212082956454">&amp;ఇమెయిల్ చిరునామాను కాపీ చేయండి</translation>
 <translation id="8386091599636877289">విధానం కనుగొనబడలేదు.</translation>
 <translation id="8386903983509584791">స్కాన్ పూర్తయింది</translation>
-<translation id="8389416080014625855">ఈ పేజీ కోసం QR కోడ్‌ను సృష్టించండి</translation>
+<translation id="8389416080014625855">ఈ పేజీ కోసం QR కోడ్‌ను రూపొందించండి</translation>
 <translation id="8389492867173948260">మీరు సందర్శించే వెబ్‌సైట్‌లలో ఉన్న మీ డేటా మొత్తాన్ని చదవడం లేదా మార్చడం కోసం ఈ ఎక్స్‌టెన్షన్‌ను అనుమతించండి:</translation>
 <translation id="8390449457866780408">సర్వర్ అందుబాటులో లేదు.</translation>
 <translation id="8391218455464584335">వినైల్</translation>

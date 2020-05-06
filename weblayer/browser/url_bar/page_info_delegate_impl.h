@@ -5,6 +5,7 @@
 #ifndef WEBLAYER_BROWSER_URL_BAR_PAGE_INFO_DELEGATE_IMPL_H_
 #define WEBLAYER_BROWSER_URL_BAR_PAGE_INFO_DELEGATE_IMPL_H_
 
+#include "base/strings/string16.h"
 #include "build/build_config.h"
 #include "components/browsing_data/content/local_shared_objects_container.h"
 #include "components/page_info/page_info_delegate.h"
@@ -45,6 +46,10 @@ class PageInfoDelegateImpl : public PageInfoDelegate {
   bool IsContentDisplayedInVrHeadset() override;
   security_state::SecurityLevel GetSecurityLevel() override;
   security_state::VisibleSecurityState GetVisibleSecurityState() override;
+
+#if defined(OS_ANDROID)
+  const base::string16 GetClientApplicationName() override;
+#endif
 
  private:
   content::BrowserContext* GetBrowserContext() const;

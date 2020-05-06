@@ -945,8 +945,6 @@ jumbo_source_set("browser") {
     "frame_host/render_frame_proxy_host.cc",
     "frame_host/render_frame_proxy_host.h",
     "frame_host/should_swap_browsing_instance.h",
-    "frame_host/webui_navigation_throttle.cc",
-    "frame_host/webui_navigation_throttle.h",
     "generic_sensor/sensor_provider_proxy_impl.cc",
     "generic_sensor/sensor_provider_proxy_impl.h",
     "geolocation/geolocation_service_impl.cc",

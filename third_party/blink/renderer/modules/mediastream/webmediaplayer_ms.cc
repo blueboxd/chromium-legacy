@@ -41,6 +41,7 @@
 #include "third_party/blink/renderer/modules/mediastream/webmediaplayer_ms_compositor.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_audio_track.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
+#include "third_party/blink/renderer/platform/timer.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 
 namespace {
@@ -102,6 +103,8 @@ const char* NetworkStateToString(blink::WebMediaPlayer::NetworkState state) {
   }
 }
 
+constexpr base::TimeDelta kForceBeginFramesTimeout =
+    base::TimeDelta::FromSeconds(1);
 }  // namespace
 
 namespace WTF {
@@ -330,6 +333,11 @@ WebMediaPlayerMS::WebMediaPlayerMS(
       volume_multiplier_(1.0),
       should_play_upon_shown_(false),
       create_bridge_callback_(std::move(create_bridge_callback)),
+      stop_force_begin_frames_timer_(
+          std::make_unique<TaskRunnerTimer<WebMediaPlayerMS>>(
+              main_render_task_runner_,
+              this,
+              &WebMediaPlayerMS::StopForceBeginFrames)),
       submitter_(std::move(submitter)),
       surface_layer_mode_(surface_layer_mode) {
   DCHECK(client);
@@ -407,8 +415,8 @@ WebMediaPlayer::LoadTiming WebMediaPlayerMS::Load(
       compositor_task_runner_, io_task_runner_, web_stream_,
       std::move(submitter_), surface_layer_mode_, weak_this_);
 
-  // We can receive a call to RequestAnimationFrame() before |compositor_| is
-  // created. In that case, we suspend the request, and wait until now to
+  // We can receive a call to RequestVideoFrameCallback() before |compositor_|
+  // is created. In that case, we suspend the request, and wait until now to
   // reiniate it.
   if (pending_rvfc_request_) {
     RequestVideoFrameCallback();
@@ -1347,6 +1355,16 @@ void WebMediaPlayerMS::RequestVideoFrameCallback() {
   compositor_->SetOnFramePresentedCallback(
       media::BindToCurrentLoop(base::BindOnce(
           &WebMediaPlayerMS::OnNewFramePresentedCallback, weak_this_)));
+
+  compositor_->SetForceBeginFrames(true);
+
+  stop_force_begin_frames_timer_->StartOneShot(kForceBeginFramesTimeout,
+                                               FROM_HERE);
+}
+
+void WebMediaPlayerMS::StopForceBeginFrames(TimerBase* timer) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  compositor_->SetForceBeginFrames(false);
 }
 
 }  // namespace blink

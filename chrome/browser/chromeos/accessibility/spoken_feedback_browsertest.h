@@ -39,8 +39,6 @@ class LoggedInSpokenFeedbackTest : public InProcessBrowserTest {
 
   void SendMouseMoveTo(const gfx::Point& location);
 
-  void RunJavaScriptInChromeVoxBackgroundPage(const std::string& script);
-
   void SimulateTouchScreenInChromeVox();
 
   bool PerformAcceleratorAction(ash::AcceleratorAction action);

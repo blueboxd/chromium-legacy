@@ -4,6 +4,7 @@
 
 #include "weblayer/browser/url_bar/page_info_delegate_impl.h"
 
+#include "build/build_config.h"
 #include "components/permissions/permission_manager.h"
 #include "components/security_interstitials/content/stateful_ssl_host_state_delegate.h"
 #include "components/security_state/content/content_utils.h"
@@ -13,6 +14,10 @@
 #include "weblayer/browser/permissions/permission_manager_factory.h"
 #include "weblayer/browser/stateful_ssl_host_state_delegate_factory.h"
 #include "weblayer/browser/tab_specific_content_settings_delegate.h"
+
+#if defined(OS_ANDROID)
+#include "weblayer/browser/weblayer_impl_android.h"
+#endif
 
 PageInfoDelegateImpl::PageInfoDelegateImpl(content::WebContents* web_contents)
     : web_contents_(web_contents) {
@@ -107,6 +112,12 @@ PageInfoDelegateImpl::GetTabSpecificContentSettingsDelegate() {
   return std::make_unique<weblayer::TabSpecificContentSettingsDelegate>(
       web_contents_);
 }
+
+#if defined(OS_ANDROID)
+const base::string16 PageInfoDelegateImpl::GetClientApplicationName() {
+  return weblayer::GetClientApplicationName();
+}
+#endif
 
 content::BrowserContext* PageInfoDelegateImpl::GetBrowserContext() const {
   return web_contents_->GetBrowserContext();

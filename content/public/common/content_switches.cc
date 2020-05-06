@@ -498,9 +498,6 @@ const char kDisableOopRasterization[] = "disable-oop-rasterization";
 // would have been used.  Enables the chromium_raster_transport extension.
 const char kEnableOopRasterization[] = "enable-oop-rasterization";
 
-// Turns on skia deferred display list for out of process raster.
-const char kEnableOopRasterizationDDL[] = "enable-oop-rasterization-ddl";
-
 // Pins the default referrer policy to the pre-M80 value of
 // no-referrer-when-downgrade.
 // TODO(crbug.com/1016541): After M82, remove when the corresponding

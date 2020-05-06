@@ -57,19 +57,6 @@ mojom("mojom_platform") {
     "fetch/fetch_api_response.mojom",
     "file/file_utilities.mojom",
     "filesystem/file_system.mojom",
-    "frame/blocked_navigation_types.mojom",
-    "frame/frame.mojom",
-    "frame/frame_owner_element_type.mojom",
-    "frame/frame_owner_properties.mojom",
-    "frame/frame_policy.mojom",
-    "frame/fullscreen.mojom",
-    "frame/intrinsic_sizing_info.mojom",
-    "frame/lifecycle.mojom",
-    "frame/media_player_action.mojom",
-    "frame/navigation_initiator.mojom",
-    "frame/sudden_termination_disabler_type.mojom",
-    "frame/tree_scope_type.mojom",
-    "frame/user_activation_update_types.mojom",
     "geolocation/geolocation_service.mojom",
     "hid/hid.mojom",
     "hyphenation/hyphenation.mojom",
@@ -342,10 +329,23 @@ mojom("android_mojo_bindings") {
 mojom("mojom_core") {
   generate_java = true
   sources = [
+    # We can't move these frame/*.mojom files to public/mojom/frame because
+    # they depend in several .mojom files from the mojo_platform target.
+    #
+    # TODO(crbug.com/1078875): Reorganize how we assign frame/*mojom files to
+    # mojom GN targets to match better the core/platform separation in C++.
+    "frame/frame.mojom",
+    "frame/frame_owner_properties.mojom",
+    "frame/frame_policy.mojom",
+    "frame/navigation_initiator.mojom",
+
+    # transferable_message.mojom depends the other three messaging/ mojom files.
     "messaging/cloneable_message.mojom",
     "messaging/message_port_descriptor.mojom",
     "messaging/transferable_message.mojom",
     "messaging/user_activation_snapshot.mojom",
+
+    # Depends on transferable_message.mojom.
     "portal/portal.mojom",
 
     # Note that service_worker_object.mojom and service_worker.mojom depend on
@@ -376,14 +376,20 @@ mojom("mojom_core") {
     ":android_mojo_bindings",
     ":mojom_platform",
     ":web_feature_mojo_bindings",
+    "//cc/mojom",
     "//components/payments/mojom",
     "//mojo/public/mojom/base",
     "//services/network/public/mojom",
     "//services/service_manager/public/mojom",
     "//skia/public/mojom",
+    "//ui/gfx/geometry/mojom",
     "//url/mojom:url_mojom_gurl",
     "//url/mojom:url_mojom_origin",
   ]
+
+  if (is_mac) {
+    public_deps += [ "//ui/gfx/range/mojom" ]
+  }
 
   overridden_deps_blink = [
     ":android_mojo_bindings",

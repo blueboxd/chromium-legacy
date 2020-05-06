@@ -93,11 +93,6 @@ bool NotificationHelperCrashReporterClient::AboutToRestart() {
   return false;
 }
 
-bool NotificationHelperCrashReporterClient::GetDeferredUploadsSupported(
-    bool is_per_user_install) {
-  return false;
-}
-
 bool NotificationHelperCrashReporterClient::GetIsPerUserInstall() {
   return !install_static::IsSystemInstall();
 }

@@ -23,6 +23,7 @@ class PageInfoClientImpl : public page_info::PageInfoClient {
   PageInfoClientImpl() = default;
   ~PageInfoClientImpl() = default;
 
+  // PageInfoClient implementation.
   std::unique_ptr<PageInfoDelegate> CreatePageInfoDelegate(
       content::WebContents* web_contents) override;
   int GetJavaResourceId(int native_resource_id) override;

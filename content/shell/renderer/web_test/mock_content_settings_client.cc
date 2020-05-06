@@ -97,7 +97,7 @@ void PersistClientHintsInEmbedder(
     const mojo::Remote<client_hints::mojom::ClientHints>& remote) {
   const int max_length =
       static_cast<int>(network::mojom::WebClientHintsType::kMaxValue) + 1;
-  std::vector<network::mojom::WebClientHintsType> client_hints(max_length);
+  std::vector<network::mojom::WebClientHintsType> client_hints;
   const url::Origin origin = url::Origin::Create(url);
 
   ConvertWebEnabledClientHintsToWebClientHintsTypeVector(

@@ -23,6 +23,7 @@ enum class KeepAliveOrigin {
   // c/b/background
   BACKGROUND_MODE_MANAGER,
   BACKGROUND_MODE_MANAGER_STARTUP,
+  BACKGROUND_MODE_MANAGER_FORCE_INSTALLED_EXTENSIONS,
 
   // c/b/background_sync
   BACKGROUND_SYNC,

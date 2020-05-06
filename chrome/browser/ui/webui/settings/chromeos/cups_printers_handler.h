@@ -48,14 +48,13 @@ class CupsPrintersHandler : public ::settings::SettingsPageUIHandler,
                             public ui::SelectFileDialog::Listener,
                             public CupsPrintersManager::Observer {
  public:
-  static std::unique_ptr<CupsPrintersHandler> Create(content::WebUI* webui);
-
   static std::unique_ptr<CupsPrintersHandler> CreateForTesting(
       Profile* profile,
       scoped_refptr<PpdProvider> ppd_provider,
       std::unique_ptr<PrinterConfigurer> printer_configurer,
       CupsPrintersManager* printers_manager);
 
+  CupsPrintersHandler(Profile* profile, CupsPrintersManager* printers_manager);
   ~CupsPrintersHandler() override;
 
   // SettingsPageUIHandler overrides:

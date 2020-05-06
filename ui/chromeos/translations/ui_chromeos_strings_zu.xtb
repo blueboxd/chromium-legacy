@@ -90,6 +90,7 @@
 <translation id="1947424002851288782">Ikhibhodi ye-German</translation>
 <translation id="1972984168337863910">Nweba amaphaneli wempendulo yamafayela</translation>
 <translation id="1984603991036629094">Ikhibhodi yefonotiki ye-Armenian</translation>
+<translation id="1995337122023280937">Iya endaweni yefayela</translation>
 <translation id="2001796770603320721">Phatha kuDrayivu</translation>
 <translation id="2009067268969781306">Ukufometha idrayivu kuzosula yonke idatha elondolozwe kuyo. Lesi senzo asikwazi ukuhlehliswa.</translation>
 <translation id="2028997212275086731">Ingobo yomlando ye-RAR</translation>
@@ -141,6 +142,7 @@
 <translation id="2638942478653899953">I-Google Drayivu ayikwazanga ukufinyelelwa. Sicela <ph name="BEGIN_LINK" />uphume ngemvume<ph name="END_LINK" /> uphinde ungene ngemvume.</translation>
 <translation id="2649120831653069427">I-Rainbowfish</translation>
 <translation id="2661146741306740526">16x9</translation>
+<translation id="2664412712123763093">Indawo yefayela</translation>
 <translation id="2672394958563893062">Kuvele iphutha. Chofoza ukuze uqalise kabusha kusukela ekuqaleni.</translation>
 <translation id="2676946222714718093">Idlala ku</translation>
 <translation id="2735698359135166290">Ikhibhodi ejwayelekile ye-Romanian</translation>
@@ -349,6 +351,7 @@
 <translation id="5081517858322016911"><ph name="TOTAL_FILE_SIZE" /> wamafayela uzosulwa</translation>
 <translation id="509429900233858213">Kuvele iphutha.</translation>
 <translation id="5098629044894065541">Isi-Hebrew</translation>
+<translation id="5112685521274804841">Amafayela akuleli folda awokufundwa kuphela. Eminye imisebenzi ayisekelwa.</translation>
 <translation id="5123433949759960244">I-Basketball</translation>
 <translation id="5129662217315786329">Isi-Polish</translation>
 <translation id="5144820558584035333">Isethi ye-Hangul 3 (390)</translation>
@@ -698,6 +701,7 @@
 <translation id="9034924485347205037">Amafayela e-Linux</translation>
 <translation id="9035012421917565900">Lezi zinto azikwazi ukubuyiselwa ku-'<ph name="DESTINATION_NAME" />', ngakho-ke ngeke ukwazi ukuhlehlisa lesi senzo.</translation>
 <translation id="9038620279323455325">Igama eliqanjwe "<ph name="FILE_NAME" />" selivele likhona. Sicela ukhethe igama elihlukile.</translation>
+<translation id="9062992083244091966">Ukuvula izinhlelo zokusebenza nge-<ph name="APP_NAME" />, zihambise kuqala kufolda yamafayela abiwe we-<ph name="APP_NAME" />.</translation>
 <translation id="9064939804718829769">Iyandlulisa...</translation>
 <translation id="9065203028668620118">Hlela</translation>
 <translation id="9099674669267916096">Ukubalwa kwekhasi</translation>

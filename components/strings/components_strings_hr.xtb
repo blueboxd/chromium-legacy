@@ -52,7 +52,6 @@
 <translation id="1197088940767939838">Narančasta</translation>
 <translation id="1201402288615127009">Dalje</translation>
 <translation id="1201895884277373915">Više s ove web-lokacije</translation>
-<translation id="1205963431094182634">Prijavite se kako biste upotrebljavali zaporke pohranjene na vašem Google računu</translation>
 <translation id="1206967143813997005">Potpis inicijalima nije ispravan</translation>
 <translation id="1209206284964581585">Sakrij za sad</translation>
 <translation id="121201262018556460">Pokušali ste doseći domenu <ph name="DOMAIN" />, ali poslužitelj je predstavio certifikat potpisan slabim ključem. Napadač je možda otkrio privatni ključ, a poslužitelj možda nije očekivani poslužitelj (možda ste u komunikaciji s napadačem).</translation>
@@ -1216,7 +1215,6 @@ To će u suprotnom biti onemogućeno na temelju vaših postavki privatnosti. To 
 <translation id="6116338172782435947">vidjeti tekst i slike koje kopirate u međuspremnik</translation>
 <translation id="6120179357481664955">Upamtiti vaš UPI ID?</translation>
 <translation id="6124432979022149706">Priključci za Chrome za poduzeća</translation>
-<translation id="6135641591018127088">Upotrijebite Google račun da biste generirali snažnu zaporku</translation>
 <translation id="6146055958333702838">Provjerite kabele i ponovo pokrenite usmjerivače, modeme ili druge mrežne
         uređaje koje možda upotrebljavate.</translation>
 <translation id="614940544461990577">Pokušajte sljedeće:</translation>
@@ -1262,7 +1260,6 @@ To će u suprotnom biti onemogućeno na temelju vaših postavki privatnosti. To 
 <translation id="6328639280570009161">Pokušajte onemogućiti predviđanja mreže</translation>
 <translation id="6328784461820205019">"Vaša veza nije privatna" ili "&lt;span class="error-code"&gt;NET::ERR_CERT_AUTHORITY_INVALID&lt;/span&gt;" ili "&lt;span class="error-code"&gt;ERR_CERT_COMMON_NAME_INVALID&lt;/span&gt;" ili "&lt;span class="error-code"&gt;NET::ERR_CERT_WEAK_SIGNATURE_ALGORITHM&lt;/span&gt;" ili "&lt;span class="error-code"&gt;ERR_CERT_SYMANTEC_LEGACY&lt;/span&gt;" ili "Pogreška SSL certifikata"</translation>
 <translation id="6328786501058569169">Ova je web-lokacija obmanjujuća</translation>
-<translation id="6333334544069706521">Koristite zaporke pohranjene na vašem Google računu</translation>
 <translation id="6337133576188860026">Oslobodit će se <ph name="SIZE" />. Neke bi se web-lokacije pri sljedećem otvaranju mogle sporije učitavati.</translation>
 <translation id="6337534724793800597">Filtriranje pravila prema nazivu</translation>
 <translation id="6353505687280762741">{COUNT,plural, =0{Nijedna}=1{Jedna zaporka (za <ph name="DOMAIN_LIST" />, sinkronizirano)}=2{Dvije zaporke (za <ph name="DOMAIN_LIST" />, sinkronizirano)}one{# zaporka (za <ph name="DOMAIN_LIST" />, sinkronizirano)}few{# zaporke (za <ph name="DOMAIN_LIST" />, sinkronizirano)}other{# zaporki (za <ph name="DOMAIN_LIST" />, sinkronizirano)}}</translation>

@@ -52,7 +52,6 @@
 <translation id="1197088940767939838">ნარინჯისფერი</translation>
 <translation id="1201402288615127009">შემდეგი</translation>
 <translation id="1201895884277373915">მეტი ამ საიტიდან</translation>
-<translation id="1205963431094182634">თქვენს Google ანგარიშში შენახული პაროლების გამოსაყენებლად შედით სისტემაში</translation>
 <translation id="1206967143813997005">საწყისი ხელმოწერა არასწორია</translation>
 <translation id="1209206284964581585">ამჯერად დამალვა</translation>
 <translation id="121201262018556460">თქვენ სცადეთ <ph name="DOMAIN" />-ზე წვდომა, მაგრამ სერვერმა წარმოადგინა სუსტი გასაღების შემცველი სერთიფიკატი. შესაძლოა თავდამსხმელმა გატეხა პირადი გასაღები და შეიძლება სერვერი არ იყოს სერვერი, რომელსაც თქვენ მოელოდით (შეიძლება თქვენ ურთიერთობა გაქვთ თავდამსხმელთან).</translation>
@@ -1206,7 +1205,6 @@
 <translation id="6116338172782435947">გაცვლის ბუფერში კოპირებული ტექსტისა და სურათების ნახვა</translation>
 <translation id="6120179357481664955">გსურთ თქვენი UPI ID-ს დამახსოვრება?</translation>
 <translation id="6124432979022149706">Chrome Enterprise მაერთებლები</translation>
-<translation id="6135641591018127088">Google ანგარიშის გამოყენება ძლიერი პაროლის შესაქმნელად</translation>
 <translation id="6146055958333702838">შეამოწმეთ კაბელები და გადატვირთეთ ყველა როუტერი, მოდემი ან
     სხვა ქსელური მოწყობილობა, რომელსაც იყენებთ.</translation>
 <translation id="614940544461990577">ცადეთ:</translation>
@@ -1252,7 +1250,6 @@
 <translation id="6328639280570009161">სცადეთ ქსელის პროგნოზის გამორთვა</translation>
 <translation id="6328784461820205019">„თქვენი კავშირი არ არის კონფიდენციალური“, „&lt;span class="error-code"&gt;NET::ERR_CERT_AUTHORITY_INVALID&lt;/span&gt;“, „&lt;span class="error-code"&gt;ERR_CERT_COMMON_NAME_INVALID&lt;/span&gt;“, „&lt;span class="error-code"&gt;NET::ERR_CERT_WEAK_SIGNATURE_ALGORITHM&lt;/span&gt;“, „&lt;span class="error-code"&gt;ERR_CERT_SYMANTEC_LEGACY&lt;/span&gt;“ ან „SSL სერტიფიკატის შეცდომა“</translation>
 <translation id="6328786501058569169">ეს საიტი შეცდომაში შემყვანია</translation>
-<translation id="6333334544069706521">Google ანგარიშში შენახული პაროლების გამოყენება</translation>
 <translation id="6337133576188860026">გამოთავისუფლდება <ph name="SIZE" /> ან ნაკლები. ზოგიერთი საიტი შემდეგი მონახულებისას შეიძლება უფრო ნელა ჩაიტვირთოს.</translation>
 <translation id="6337534724793800597">ფილტრის წესები სახელის მიხედვით</translation>
 <translation id="6353505687280762741">{COUNT,plural, =0{არცერთი}=1{1 პაროლი (<ph name="DOMAIN_LIST" />-ისთვის, სინქრონიზებული)}=2{2 პაროლი (<ph name="DOMAIN_LIST" />-ისთვის, სინქრონიზებული)}other{# პაროლი (<ph name="DOMAIN_LIST" />-ისთვის, სინქრონიზებული)}}</translation>

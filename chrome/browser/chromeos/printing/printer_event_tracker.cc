@@ -4,17 +4,10 @@
 
 #include "chrome/browser/chromeos/printing/printer_event_tracker.h"
 
-#include "base/metrics/histogram_functions.h"
-#include "chrome/browser/chromeos/printing/printer_configurer.h"
 #include "chromeos/printing/printer_configuration.h"
 
 namespace chromeos {
 namespace {
-
-constexpr char kEmptyNetworkAutomaticSetupSourceMetric[] =
-    "Printing.CUPS.EmptyNetworkAutomaticSetupEventSource";
-constexpr char kEmptyUsbAutomaticSetupSourceMetric[] =
-    "Printing.CUPS.EmptyUsbAutomaticSetupEventSource";
 
 // Set the event_type on |event| based on |mode|.
 void SetEventType(metrics::PrinterEventProto* event,
@@ -64,23 +57,6 @@ void SetNetworkPrinterInfo(metrics::PrinterEventProto* event,
   }
 }
 
-// Returns true if |event| does not contain any make and model information for
-// the printer, but has a PPD identifier set.
-bool IsEmptyEvent(metrics::PrinterEventProto event) {
-  return event.usb_printer_manufacturer().empty() &&
-         event.usb_printer_model().empty() && event.usb_vendor_id() == 0 &&
-         event.usb_model_id() == 0 && event.ipp_make_and_model().empty() &&
-         // The PPD identifier is populated.
-         !event.ppd_identifier().empty();
-}
-
-// Returns true if |event| does not contain any make and model information for
-// the printer and |mode| is an Automatic setup.
-bool IsEmptyAutomaticSetupEvent(metrics::PrinterEventProto event,
-                                PrinterEventTracker::SetupMode mode) {
-  return mode == PrinterEventTracker::kAutomatic && IsEmptyEvent(event);
-}
-
 }  // namespace
 
 PrinterEventTracker::PrinterEventTracker() = default;
@@ -93,8 +69,7 @@ void PrinterEventTracker::set_logging(bool logging) {
 
 void PrinterEventTracker::RecordUsbPrinterInstalled(
     const PrinterDetector::DetectedPrinter& detected,
-    SetupMode mode,
-    PrinterSetupSource source) {
+    SetupMode mode) {
   base::AutoLock l(lock_);
   if (!logging_) {
     return;
@@ -104,18 +79,11 @@ void PrinterEventTracker::RecordUsbPrinterInstalled(
   SetEventType(&event, mode);
   SetPpdInfo(&event, detected.printer.ppd_reference());
   SetUsbInfo(&event, detected);
-  // Log the sources of automatic setup events which do not have any make and
-  // model information in order to investigate the cause of
-  // https://crbug.com/964120
-  if (IsEmptyAutomaticSetupEvent(event, mode)) {
-    base::UmaHistogramEnumeration(kEmptyUsbAutomaticSetupSourceMetric, source);
-  }
   events_.push_back(event);
 }
 
 void PrinterEventTracker::RecordIppPrinterInstalled(const Printer& printer,
-                                                    SetupMode mode,
-                                                    PrinterSetupSource source) {
+                                                    SetupMode mode) {
   base::AutoLock l(lock_);
   if (!logging_) {
     return;
@@ -125,13 +93,6 @@ void PrinterEventTracker::RecordIppPrinterInstalled(const Printer& printer,
   SetEventType(&event, mode);
   SetPpdInfo(&event, printer.ppd_reference());
   SetNetworkPrinterInfo(&event, printer);
-  // Log the sources of automatic setup events which do not have any make and
-  // model information in order to investigate the cause of
-  // https://crbug.com/964120
-  if (IsEmptyAutomaticSetupEvent(event, mode)) {
-    base::UmaHistogramEnumeration(kEmptyNetworkAutomaticSetupSourceMetric,
-                                  source);
-  }
   events_.push_back(event);
 }
 

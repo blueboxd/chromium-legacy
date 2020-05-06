@@ -79,8 +79,8 @@ class GatewayCanBePingedRoutine : public NetworkDiagnosticsRoutine {
   base::TimeDelta default_network_latency_;
   std::string default_network_guid_;
   std::string default_network_gateway_;
-  int guids_remaining_;
-  int gateways_remaining_;
+  int guids_remaining_ = 0;
+  int gateways_remaining_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(GatewayCanBePingedRoutine);
 };

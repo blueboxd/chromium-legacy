@@ -4,21 +4,21 @@
 
 // clang-format off
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {assertTrue} from '../chai_assert.js';
 // clang-format on
 
 /** @fileoverview Test utils for Settings page tests. */
 
 /**
  * @param {string} type The settings page type, e.g. 'about' or 'basic'.
- * @return {!PolymerElement} The PolymerElement for the page.
+ * @return {!Promise<!HTMLElement>} The PolymerElement for the page.
  */
 export function getPage(type) {
   const settingsUi = document.querySelector('settings-ui');
   assertTrue(!!settingsUi);
   const settingsMain = settingsUi.$$('settings-main');
   assertTrue(!!settingsMain);
-  const pageType = 'settings-' + type + '-page';
-  const page = settingsMain.$$(pageType);
+  const page = settingsMain.$$(`settings-${type}-page`);
 
   const idleRender = page && page.$$('settings-idle-load');
   if (!idleRender) {
@@ -32,7 +32,7 @@ export function getPage(type) {
 }
 
 /**
- * @param {!PolymerElement} page The PolymerElement for the page containing
+ * @param {!HTMLElement} page The PolymerElement for the page containing
  *     |section|.
  * @param {string} section The settings page section, e.g. 'appearance'.
  * @return {Node|undefined} The DOM node for the section.

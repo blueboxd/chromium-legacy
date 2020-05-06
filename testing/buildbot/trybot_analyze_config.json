@@ -85,8 +85,7 @@
     "exclusions": [
       "build/linux/sysroot_ld_path.sh",
       "build/linux/sysroot_scripts/sysroots.json",
-      "testing/xvfb.py",
-      "third_party/binutils/Linux_x64/binutils.tar.bz2.sha1"
+      "testing/xvfb.py"
     ]
   },
   "win": {

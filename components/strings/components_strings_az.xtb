@@ -52,7 +52,6 @@
 <translation id="1197088940767939838">Narıncı</translation>
 <translation id="1201402288615127009">Növbəti</translation>
 <translation id="1201895884277373915">Bu saytdan daha çox</translation>
-<translation id="1205963431094182634">Google hesabınızda saxlanılan parolları istifadə etmək üçün daxil olun</translation>
 <translation id="1206967143813997005">Yanlış inisial imzası</translation>
 <translation id="1209206284964581585">Hələlik gizlədin</translation>
 <translation id="121201262018556460">Siz <ph name="DOMAIN" /> üzərinə daxil olmağa çalışırsız, lakin server zəif açardan ibarət sertifikat təqdim edir.  Hücumçunun şəxsi açarı qırıq ola bilər və server gözlədiyiniz server olmaya bilər. (bir hücumçu ilə əlaqə yaratmış ola bilərsiniz)</translation>
@@ -1213,7 +1212,6 @@
 <translation id="6116338172782435947">Buferə kopyalanan mətn və şəkillərə baxın</translation>
 <translation id="6120179357481664955">UPI ID'niz yadda saxlansın?</translation>
 <translation id="6124432979022149706">Chrome Enterprise Birləşdiriciləri</translation>
-<translation id="6135641591018127088">Güclü parol yaratmaq üçün Google hesabınızdan istifadə edin</translation>
 <translation id="6146055958333702838">Kabelləri yoxlayın və istifadə edəcəyiniz hər hansı router, modem və ya digər
         şəbəkə cihazlarını yenidən yükləyin.</translation>
 <translation id="614940544461990577">Cəhd edin:</translation>
@@ -1259,7 +1257,6 @@
 <translation id="6328639280570009161">Şəbəkə proqnozunu deaktiv etməyə çalışın</translation>
 <translation id="6328784461820205019">"Bağlantınız məxfi deyil" və ya "&lt;span class="error-code"&gt;NET::ERR_CERT_AUTHORITY_INVALID&lt;/span&gt;", "&lt;span class="error-code"&gt;ERR_CERT_COMMON_NAME_INVALID&lt;/span&gt;" , "&lt;span class="error-code"&gt;NET::ERR_CERT_WEAK_SIGNATURE_ALGORITHM&lt;/span&gt;", "&lt;span class="error-code"&gt;ERR_CERT_SYMANTEC_LEGACY&lt;/span&gt;", yaxud "SSL sertifikat xətası"</translation>
 <translation id="6328786501058569169">Bu sayt aldadıcıdır</translation>
-<translation id="6333334544069706521">Google hesabınızda saxlanılan parolları istifadə edin</translation>
 <translation id="6337133576188860026">Maksimum <ph name="SIZE" /> boşaldılır. Növbəti dəfə daxil olarkən bəzi saytlar daha yavaş yüklənə bilər.</translation>
 <translation id="6337534724793800597">Siyasətləri adlara əsasən filtrləyin</translation>
 <translation id="6353505687280762741">{COUNT,plural, =0{Heç biri}=1{1 parol (<ph name="DOMAIN_LIST" /> üçün sinxronizasiya edilib)}=2{2 parol (<ph name="DOMAIN_LIST" />üçün sinxronizasiya edilib)}other{# parol (<ph name="DOMAIN_LIST" />üçün sinxronizasiya edilib)}}</translation>

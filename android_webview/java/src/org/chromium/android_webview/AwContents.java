@@ -3463,26 +3463,6 @@ public class AwContents implements SmartClipProvider {
                 && percentOfScreenHeight >= MIN_SCREEN_HEIGHT_PERCENTAGE_FOR_INTERSTITIAL;
     }
 
-    @VisibleForTesting
-    public void evaluateJavaScriptOnInterstitialForTesting(
-            String script, final Callback<String> callback) {
-        if (TRACE) Log.i(TAG, "%s evaluateJavaScriptOnInterstitialForTesting=%s", this, script);
-        if (isDestroyed(WARN)) return;
-        JavaScriptCallback jsCallback = null;
-        if (callback != null) {
-            jsCallback = jsonResult -> callback.onResult(jsonResult);
-        }
-
-        AwContentsJni.get().evaluateJavaScriptOnInterstitialForTesting(
-                mNativeAwContents, AwContents.this, script, jsCallback);
-    }
-
-    @CalledByNative
-    private static void onEvaluateJavaScriptResultForTesting(
-            String jsonResult, JavaScriptCallback callback) {
-        callback.handleJavaScriptResult(jsonResult);
-    }
-
     /**
      * Return the device locale in the same format we use to populate the 'hl' query parameter for
      * Safe Browsing interstitial urls, as done in BaseUIManager::app_locale().
@@ -4009,8 +3989,6 @@ public class AwContents implements SmartClipProvider {
         void setShouldDownloadFavicons();
         void updateDefaultLocale(String locale, String localeList);
         String getSafeBrowsingLocaleForTesting();
-        void evaluateJavaScriptOnInterstitialForTesting(long nativeAwContents, AwContents caller,
-                String script, JavaScriptCallback jsCallback);
         void setJavaPeers(long nativeAwContents, AwContents caller, AwContents awContents,
                 AwWebContentsDelegate webViewWebContentsDelegate,
                 AwContentsClientBridge contentsClientBridge,

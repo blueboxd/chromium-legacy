@@ -447,10 +447,6 @@ void ContentSettingsAgentImpl::PersistClientHints(
   if (!content::IsOriginSecure(primary_url))
     return;
 
-  // TODO(tbansal): crbug.com/735518. Determine if the value should be
-  // merged or overridden. Also, determine if the merger should happen on the
-  // browser side or the renderer. If the value needs to be overridden,
-  // this method should not return early if |update_count| is 0.
   std::vector<::network::mojom::WebClientHintsType> client_hints;
   static constexpr size_t kWebClientHintsCount =
       static_cast<size_t>(network::mojom::WebClientHintsType::kMaxValue) + 1;
@@ -464,8 +460,6 @@ void ContentSettingsAgentImpl::PersistClientHints(
     }
   }
   size_t update_count = client_hints.size();
-  if (update_count == 0)
-    return;
 
   UMA_HISTOGRAM_CUSTOM_TIMES(
       "ClientHints.PersistDuration", duration, base::TimeDelta::FromSeconds(1),

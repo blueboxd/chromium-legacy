@@ -9,6 +9,8 @@
 
 #include "base/callback_forward.h"
 #include "net/base/isolation_info.h"
+#include "net/log/net_log_event_type.h"
+#include "net/log/net_log_with_source.h"
 #include "net/url_request/url_request.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/mojom/trust_tokens.mojom-shared.h"
@@ -26,6 +28,19 @@
 
 namespace network {
 
+namespace {
+
+void LogOutcome(const net::NetLogWithSource& log, base::StringPiece message) {
+  log.EndEvent(net::NetLogEventType::TRUST_TOKEN_OPERATION_REQUESTED,
+               [message]() {
+                 base::Value ret(base::Value::Type::DICTIONARY);
+                 ret.SetStringKey("outcome", message);
+                 return ret;
+               });
+}
+
+}  // namespace
+
 TrustTokenRequestHelperFactory::TrustTokenRequestHelperFactory(
     PendingTrustTokenStore* store,
     const TrustTokenKeyCommitmentGetter* key_commitment_getter,
@@ -39,13 +54,23 @@ void TrustTokenRequestHelperFactory::CreateTrustTokenHelperForRequest(
     const net::URLRequest& request,
     const mojom::TrustTokenParams& params,
     base::OnceCallback<void(TrustTokenStatusOrRequestHelper)> done) {
+  request.net_log().BeginEventWithIntParams(
+      net::NetLogEventType::TRUST_TOKEN_OPERATION_REQUESTED,
+      "Operation type (mojom.TrustTokenOperationType)",
+      static_cast<int>(params.type));
+
   if (!authorizer_.Run()) {
+    LogOutcome(request.net_log(),
+               "Rejected by authorizer (check cookie settings?)");
     std::move(done).Run(mojom::TrustTokenOperationStatus::kUnavailable);
     return;
   }
 
   for (base::StringPiece header : TrustTokensRequestHeaders()) {
     if (request.extra_request_headers().HasHeader(header)) {
+      LogOutcome(
+          request.net_log(),
+          "Request rejected due to bearing an internal Trust Tokens header");
       std::move(done).Run(mojom::TrustTokenOperationStatus::kInvalidArgument);
       return;
     }
@@ -57,39 +82,45 @@ void TrustTokenRequestHelperFactory::CreateTrustTokenHelperForRequest(
         *request.isolation_info().top_frame_origin());
   }
   if (!maybe_top_frame_origin) {
+    LogOutcome(request.net_log(), "Unsuitable top frame origin");
     std::move(done).Run(mojom::TrustTokenOperationStatus::kFailedPrecondition);
     return;
   }
 
-  store_->ExecuteOrEnqueue(
-      base::BindOnce(&TrustTokenRequestHelperFactory::ConstructHelperUsingStore,
-                     weak_factory_.GetWeakPtr(), *maybe_top_frame_origin,
-                     base::Passed(params.Clone()), std::move(done)));
+  store_->ExecuteOrEnqueue(base::BindOnce(
+      &TrustTokenRequestHelperFactory::ConstructHelperUsingStore,
+      weak_factory_.GetWeakPtr(), *maybe_top_frame_origin,
+      base::Passed(params.Clone()), request.net_log(), std::move(done)));
 }
 
 void TrustTokenRequestHelperFactory::ConstructHelperUsingStore(
     SuitableTrustTokenOrigin top_frame_origin,
     mojom::TrustTokenParamsPtr params,
+    net::NetLogWithSource net_log,
     base::OnceCallback<void(TrustTokenStatusOrRequestHelper)> done,
     TrustTokenStore* store) {
   DCHECK(params);
 
   switch (params->type) {
     case mojom::TrustTokenOperationType::kIssuance: {
+      LogOutcome(net_log, "Successfully created an issuance helper");
       std::move(done).Run(std::unique_ptr<TrustTokenRequestHelper>(
           new TrustTokenRequestIssuanceHelper(
               std::move(top_frame_origin), store, key_commitment_getter_,
-              std::make_unique<BoringsslTrustTokenIssuanceCryptographer>())));
+              std::make_unique<BoringsslTrustTokenIssuanceCryptographer>(),
+              std::move(net_log))));
       return;
     }
 
     case mojom::TrustTokenOperationType::kRedemption: {
+      LogOutcome(net_log, "Successfully created a redemption helper");
       std::move(done).Run(std::unique_ptr<TrustTokenRequestHelper>(
           new TrustTokenRequestRedemptionHelper(
               std::move(top_frame_origin), params->refresh_policy, store,
               key_commitment_getter_,
               std::make_unique<Ed25519KeyPairGenerator>(),
-              std::make_unique<BoringsslTrustTokenRedemptionCryptographer>())));
+              std::make_unique<BoringsslTrustTokenRedemptionCryptographer>(),
+              std::move(net_log))));
       return;
     }
 
@@ -101,6 +132,7 @@ void TrustTokenRequestHelperFactory::ConstructHelperUsingStore(
       }
 
       if (!maybe_issuer) {
+        LogOutcome(net_log, "Missing/unsuitable 'issuer' parameter");
         std::move(done).Run(mojom::TrustTokenOperationStatus::kInvalidArgument);
         return;
       }
@@ -110,11 +142,13 @@ void TrustTokenRequestHelperFactory::ConstructHelperUsingStore(
           std::move(params->additional_signed_headers),
           params->include_timestamp_header, params->sign_request_data);
 
+      LogOutcome(net_log, "Missing/unsuitable 'issuer' parameter");
       std::move(done).Run(std::unique_ptr<TrustTokenRequestHelper>(
           new TrustTokenRequestSigningHelper(
               store, std::move(signing_params),
               std::make_unique<Ed25519TrustTokenRequestSigner>(),
-              std::make_unique<TrustTokenRequestCanonicalizer>())));
+              std::make_unique<TrustTokenRequestCanonicalizer>(),
+              std::move(net_log))));
       return;
     }
   }

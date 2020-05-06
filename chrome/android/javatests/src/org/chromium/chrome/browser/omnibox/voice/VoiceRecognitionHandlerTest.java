@@ -14,7 +14,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.speech.RecognizerIntent;
 import android.support.test.filters.SmallTest;
-import android.util.SparseArray;
 import android.view.ViewGroup;
 
 import androidx.annotation.ColorRes;
@@ -41,7 +40,7 @@ import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteController.On
 import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteCoordinator;
 import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteCoordinatorImpl;
 import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteDelegate;
-import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestion;
+import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteResult;
 import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestionsDropdown;
 import org.chromium.chrome.browser.omnibox.voice.VoiceRecognitionHandler.VoiceInteractionSource;
 import org.chromium.chrome.browser.omnibox.voice.VoiceRecognitionHandler.VoiceResult;
@@ -89,8 +88,8 @@ public class VoiceRecognitionHandlerTest {
     private static final OnSuggestionsReceivedListener sEmptySuggestionListener =
             new OnSuggestionsReceivedListener() {
                 @Override
-                public void onSuggestionsReceived(List<OmniboxSuggestion> suggestions,
-                        SparseArray<String> groupHeaders, String inlineAutocompleteText) {}
+                public void onSuggestionsReceived(
+                        AutocompleteResult autocompleteResult, String inlineAutocompleteText) {}
             };
 
     /**

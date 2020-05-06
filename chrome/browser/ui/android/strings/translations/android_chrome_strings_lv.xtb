@@ -33,6 +33,7 @@
 <translation id="1208340532756947324">Lai sinhronizētu un personalizētu saturu dažādās ierīcēs, ieslēdziet sinhronizāciju.</translation>
 <translation id="1209206284964581585">Pagaidām slēpt</translation>
 <translation id="1227058898775614466">Navigācijas vēsture</translation>
+<translation id="1229399675748764149">Iestatiet šo lapu kā sākumlapu</translation>
 <translation id="1231733316453485619">Vai ieslēgt sinhronizāciju?</translation>
 <translation id="123724288017357924">Atkārtoti ielādēt lapu, ignorējot saturu kešatmiņā</translation>
 <translation id="124116460088058876">Citas valodas…</translation>
@@ -71,6 +72,7 @@
 <translation id="1513352483775369820">Grāmatzīmes un tīmekļa vēsture</translation>
 <translation id="1513858653616922153">Dzēst paroli</translation>
 <translation id="1521774566618522728">Aktīvs šodien</translation>
+<translation id="1543538514740974167">Ātrāka piekļuve</translation>
 <translation id="1544826120773021464">Lai pārvaldītu savu Google kontu, pieskarieties pogai “Konta pārvaldība”</translation>
 <translation id="1549000191223877751">Pārvietot uz citu logu</translation>
 <translation id="1553358976309200471">Atjaunināt Chrome</translation>
@@ -723,11 +725,13 @@ Piemēram, dažas vietnes, reaģējot uz šo pieprasījumu, var rādīt jums rek
 <translation id="7022756207310403729">Atvērt pārlūkā</translation>
 <translation id="702463548815491781">Ieteicams, ja ir ieslēgta lietotne TalkBack vai slēdžu piekļuves funkcija.</translation>
 <translation id="7029809446516969842">Paroles</translation>
+<translation id="703523980599857277">Mainīt sākumlapu</translation>
 <translation id="7055152154916055070">Novirzīšana ir bloķēta:</translation>
 <translation id="7063006564040364415">Nevarēja izveidot savienojumu ar sinhronizācijas serveri.</translation>
 <translation id="7071521146534760487">Pārvaldīt kontu</translation>
 <translation id="7077143737582773186">SD karte</translation>
 <translation id="7121362699166175603">Notīra vēsturi un automātiskās pabeigšanas datus adreses joslā. Jūsu Google kontam var būt cita veida pārlūkošanas vēstures dati vietnē <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
+<translation id="7128355412245153445">Skatiet vietnes, ko apmeklējat visbiežāk, kā arī jaunākos stāstus katru reizi, kad pieskaraties pogai Sākums.</translation>
 <translation id="7138678301420049075">Cits</translation>
 <translation id="7146622961999026732">Šķiet, ka šīs vietnes un lietotnes jums ir svarīgas:</translation>
 <translation id="7149158118503947153"><ph name="BEGIN_LINK" />Ielādēt sākotnējo lapu<ph name="END_LINK" /> no <ph name="DOMAIN_NAME" /></translation>
@@ -968,11 +972,13 @@ Piemēram, dažas vietnes, reaģējot uz šo pieprasījumu, var rādīt jums rek
 <translation id="9155898266292537608">Varat arī meklēt, ātri pieskaroties vārdam</translation>
 <translation id="9169507124922466868">Navigācijas vēsture ir atvērta līdz pusei.</translation>
 <translation id="9204836675896933765">Atlicis 1 fails</translation>
+<translation id="9205796607887024517">Pārvaldiet savus stāstus šeit</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="9209888181064652401">Nevar zvanīt</translation>
 <translation id="9219103736887031265">Attēli</translation>
 <translation id="926205370408745186">Chrome darbību noņemšana no Digitālās labjutības</translation>
 <translation id="932327136139879170">Sākums</translation>
+<translation id="93753284658583800">Sākumlapa nomainīta</translation>
 <translation id="938850635132480979">Kļūda: <ph name="ERROR_CODE" /></translation>
 <translation id="95817756606698420">Pārlūkā Chrome var izmantot meklētājprogrammu <ph name="BEGIN_BOLD" />Sogou<ph name="END_BOLD" />, lai veiktu meklēšanu Ķīnā. Varat to mainīt sadaļā <ph name="BEGIN_LINK" />Iestatījumi<ph name="END_LINK" />.</translation>
 <translation id="968900484120156207">Šeit tiek rādītas jūsu apmeklētās lapas</translation>

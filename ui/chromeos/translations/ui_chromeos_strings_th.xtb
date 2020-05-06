@@ -90,6 +90,7 @@
 <translation id="1947424002851288782">แป้นพิมพ์ภาษาเยอรมัน</translation>
 <translation id="1972984168337863910">ขยายแผงความคิดเห็นเกี่ยวกับไฟล์</translation>
 <translation id="1984603991036629094">แป้นพิมพ์แบบออกเสียงอาร์เมเนีย</translation>
+<translation id="1995337122023280937">ไปยังตำแหน่งที่ตั้งไฟล์</translation>
 <translation id="2001796770603320721">จัดการใน Google ไดรฟ์</translation>
 <translation id="2009067268969781306">การฟอร์แมตไดรฟ์จะลบข้อมูลทั้งหมดที่เก็บไว้ในไดรฟ์ การดำเนินการนี้ยกเลิกไม่ได้</translation>
 <translation id="2028997212275086731">ไฟล์ RAR</translation>
@@ -141,6 +142,7 @@
 <translation id="2638942478653899953">ไม่สามารถเข้าถึง Google ไดรฟ์ โปรด<ph name="BEGIN_LINK" />ออกจากระบบ<ph name="END_LINK" /> และเข้าสู่ระบบใหม่อีกครั้ง</translation>
 <translation id="2649120831653069427">ปลาเรนโบว์</translation>
 <translation id="2661146741306740526">16x9</translation>
+<translation id="2664412712123763093">ตำแหน่งที่ตั้งไฟล์</translation>
 <translation id="2672394958563893062">เกิดข้อผิดพลาด คลิกเพื่อเริ่มใหม่ตั้งแต่ต้น</translation>
 <translation id="2676946222714718093">กำลังเล่นบน</translation>
 <translation id="2735698359135166290">แป้นพิมพ์มาตรฐานโรมาเนีย</translation>
@@ -349,6 +351,7 @@
 <translation id="5081517858322016911">ระบบจะลบไฟล์ที่รวมแล้วมีขนาด <ph name="TOTAL_FILE_SIZE" /></translation>
 <translation id="509429900233858213">มีข้อผิดพลาดเกิดขึ้น</translation>
 <translation id="5098629044894065541">ฮิบรู</translation>
+<translation id="5112685521274804841">ไฟล์ในโฟลเดอร์นี้เป็นแบบอ่านอย่างเดียว ระบบไม่รองรับบางกิจกรรม</translation>
 <translation id="5123433949759960244">บาสเกตบอล</translation>
 <translation id="5129662217315786329">โปแลนด์</translation>
 <translation id="5144820558584035333">ฮังกูลแบบ 3 ชุด (390)</translation>
@@ -699,6 +702,7 @@
 <translation id="9034924485347205037">ไฟล์ Linux</translation>
 <translation id="9035012421917565900">ไม่สามารถย้ายรายการกลับไปที่ "<ph name="DESTINATION_NAME" />" คุณจึงไม่สามารถเลิกทำการดำเนินการนี้</translation>
 <translation id="9038620279323455325">มีไฟล์ชื่อ "<ph name="FILE_NAME" />" อยู่แล้ว โปรดเลือกชื่ออื่น</translation>
+<translation id="9062992083244091966">หากต้องการเปิดไฟล์ด้วยแอป <ph name="APP_NAME" /> ก่อนอื่น ให้ย้ายไฟล์ไปยังโฟลเดอร์ไฟล์ที่แชร์ของ <ph name="APP_NAME" /></translation>
 <translation id="9064939804718829769">กำลังโอน...</translation>
 <translation id="9065203028668620118">แก้ไข</translation>
 <translation id="9099674669267916096">จำนวนหน้า</translation>

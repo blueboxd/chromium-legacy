@@ -102,7 +102,8 @@ void ResetTestEntry(Tile* entry) {
 void ResetTestGroup(TileGroup* group) {
   group->id = "group_guid";
   group->locale = "en-US";
-  DCHECK(base::Time::FromString(kTimeStr, &group->last_updated_ts));
+  bool success = base::Time::FromString(kTimeStr, &group->last_updated_ts);
+  CHECK(success);
   group->tiles.clear();
   auto test_entry_1 = std::make_unique<Tile>();
   ResetTestEntry(test_entry_1.get());

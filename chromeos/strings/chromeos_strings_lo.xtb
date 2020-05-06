@@ -17,8 +17,10 @@
 <translation id="2805756323405976993">ແອັບ</translation>
 <translation id="2872961005593481000">ມອດ</translation>
 <translation id="3008341117444806826">ໂຫຼດຂໍ້ມູນໃໝ່</translation>
+<translation id="3369013195428705271">ທ່ານແນ່ໃຈບໍ່ວ່າທ່ານຕ້ອງການລຶບປະຫວັດການພິມທັງໝົດ? ວຽກການພິມທີ່ພວມດຳເນີນຢູ່ຂອງທ່ານຈະບໍ່ຖືກລຶບລ້າງ.</translation>
 <translation id="3515615323037921860">ວຽກການພິມ</translation>
 <translation id="3749289110408117711">ຊື່​ໄຟລ​໌</translation>
+<translation id="38114475217616659">ລຶບລ້າງປະຫວັດທັງໝົດ</translation>
 <translation id="3820172043799983114">PIN ບໍ່ຖືກຕ້ອງ.</translation>
 <translation id="3838338534323494292">ລະຫັດຜ່ານໃໝ່</translation>
 <translation id="4003259559679196451"><ph name="ENROLLMENT_DOMAIN" /> ຈັດການອຸປະກອນນີ້ ແລະ ເຂົ້າເຖິງການເຄື່ອນໄຫວຜູ້ໃຊ້ທັງໝົດ, ຮວມທັງໜ້າເວັບທີ່ເຂົ້າເບິ່ງ, ລະຫັດຜ່ານ ແລະ ອີເມວ.</translation>
@@ -43,6 +45,7 @@
 <translation id="6106186594183574873">ເພື່ອສຳເລັດ, ກະລຸນາປ້ອນລະຫັດຜ່ານເກົ່າຂອງທ່ານ</translation>
 <translation id="6146993107019042706">ເພື່ອດຳເນີນການໃຫ້ສຳເລັດ, ກະລຸນາປ້ອນລະຫັດຜ່ານໃໝ່ຂອງທ່ານ</translation>
 <translation id="6643016212128521049">ລຶບ</translation>
+<translation id="7162487448488904999">ຄັງຮູບ</translation>
 <translation id="7658239707568436148">ຍົກ​ເລີກ​</translation>
 <translation id="7690294790491645610">ຢືນຢັນລະຫັດຜ່ານໃໝ່</translation>
 <translation id="7805768142964895445">ສະ​ຖາ​ນະ​</translation>

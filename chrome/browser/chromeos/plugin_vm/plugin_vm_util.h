@@ -81,8 +81,8 @@ bool IsPluginVmWindow(const aura::Window* window);
 // none is set this will return an empty string.
 std::string GetPluginVmLicenseKey();
 
-// Retrieves the User Id to be used for Plugin VM. If
-// none is set this will return an empty string.
+// Retrieves the User Id to be used for Plugin VM. If none is set this will
+// return an empty string.
 std::string GetPluginVmUserId();
 
 // Sets fake policy values and enables Plugin VM for testing. These set global

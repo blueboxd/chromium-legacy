@@ -104,6 +104,18 @@ TEST(BlinkEventUtilTest, PaginatedScrollBeginEvent) {
   EXPECT_EQ(1.f, gestureEvent->data.scroll_begin.delta_y_hint);
 }
 
+TEST(BlinkEventUtilTest, EnsureFlingVelocityNotNaN) {
+  float nan_number = std::nanf("");
+  ui::GestureEventDetails details(ui::ET_SCROLL_FLING_START, nan_number, 1.f);
+  details.set_device_type(ui::GestureDeviceType::DEVICE_TOUCHSCREEN);
+  auto event =
+      CreateWebGestureEvent(details, base::TimeTicks(), gfx::PointF(1.f, 1.f),
+                            gfx::PointF(1.f, 1.f), 0, 0U);
+  EXPECT_EQ(std::numeric_limits<float>::max(),
+            event.data.fling_start.velocity_x);
+  EXPECT_EQ(1.f, event.data.fling_start.velocity_y);
+}
+
 TEST(BlinkEventUtilTest, NonPaginatedScrollUpdateEvent) {
   ui::GestureEventDetails details(ui::ET_GESTURE_SCROLL_UPDATE, 1, 1);
   details.set_device_type(ui::GestureDeviceType::DEVICE_TOUCHSCREEN);

@@ -52,7 +52,6 @@
 <translation id="1197088940767939838">Orange</translation>
 <translation id="1201402288615127009">Susunod</translation>
 <translation id="1201895884277373915">Higit pa mula sa site na ito</translation>
-<translation id="1205963431094182634">Mag-sign in para magamit ang mga password na naka-store sa iyong Google account</translation>
 <translation id="1206967143813997005">Hindi magandang paunang signature</translation>
 <translation id="1209206284964581585">Itago sa ngayon</translation>
 <translation id="121201262018556460">Tinangka mong maabot ang <ph name="DOMAIN" />, ngunit nagpakita ang server ng isang certificate na naglalaman ng isang mahinang key. Maaaring sinira ng isang nang-aatake ang pribadong key, at ang server ay maaaring hindi ang server na iyong inaasahan (maaaring nakikipag-ugnay ka sa isang nang-aatake).</translation>
@@ -1212,7 +1211,6 @@ Kung ayaw mo, iba-block ito ng iyong mga setting ng privacy. Papayagan nito ang 
 <translation id="6116338172782435947">Tingnan ang text at mga larawang kinopya sa clipboard</translation>
 <translation id="6120179357481664955">Natatandaan mo ang iyong UPI ID?</translation>
 <translation id="6124432979022149706">Mga Chrome Enterprise Connector</translation>
-<translation id="6135641591018127088">Gamitin ang iyong Google account para gumawa ng malakas na password</translation>
 <translation id="6146055958333702838">Tingnan ang anumang mga kable at i-reboot ang anumang mga router, modem o iba
     pang mga network device na maaaring ginagamit mo.</translation>
 <translation id="614940544461990577">Subukang:</translation>
@@ -1258,7 +1256,6 @@ Kung ayaw mo, iba-block ito ng iyong mga setting ng privacy. Papayagan nito ang 
 <translation id="6328639280570009161">Subukang i-disable ang paghula ng network</translation>
 <translation id="6328784461820205019">"Hindi pribado ang iyong koneksyon" o "&lt;span class="error-code"&gt;NET::ERR_CERT_AUTHORITY_INVALID&lt;/span&gt;" o "&lt;span class="error-code"&gt;ERR_CERT_COMMON_NAME_INVALID&lt;/span&gt;" o "&lt;span class="error-code"&gt;NET::ERR_CERT_WEAK_SIGNATURE_ALGORITHM&lt;/span&gt;" o "&lt;span class="error-code"&gt;ERR_CERT_SYMANTEC_LEGACY&lt;/span&gt;" o "SSL certificate error"</translation>
 <translation id="6328786501058569169">Mapanlinlang ang site na ito</translation>
-<translation id="6333334544069706521">Gamitin ang mga password na naka-store sa iyong Google account</translation>
 <translation id="6337133576188860026">Magbabakante ng wala pang <ph name="SIZE" />. Maaaring mag-load nang mas mabagal ang ilang site sa iyong susunod na pagbisita.</translation>
 <translation id="6337534724793800597">I-filter ang mga patakaran ayon sa pangalan</translation>
 <translation id="6353505687280762741">{COUNT,plural, =0{Wala}=1{1 password (para sa <ph name="DOMAIN_LIST" />, naka-sync)}=2{2 password (para sa <ph name="DOMAIN_LIST" />, naka-sync)}one{# password (para sa <ph name="DOMAIN_LIST" />, naka-sync)}other{# na password (para sa <ph name="DOMAIN_LIST" />, naka-sync)}}</translation>

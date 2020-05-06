@@ -52,7 +52,6 @@
 <translation id="1197088940767939838">Naranja</translation>
 <translation id="1201402288615127009">Siguiente</translation>
 <translation id="1201895884277373915">Más sobre este sitio</translation>
-<translation id="1205963431094182634">Accede a tu Cuenta de Google para usar las contraseñas almacenadas allí</translation>
 <translation id="1206967143813997005">La firma inicial no es válida</translation>
 <translation id="1209206284964581585">Ocultar por el momento</translation>
 <translation id="121201262018556460">Intentaste acceder a <ph name="DOMAIN" />, pero el servidor  presentó un certificado que contiene una clave no segura. Es posible que un atacante haya descifrado la clave privada y que este no sea el servidor esperado (es posible que hayas establecido comunicación con un atacante).</translation>
@@ -1216,7 +1215,6 @@ De lo contrario, la configuración de privacidad bloqueará esta acción. Esto p
 <translation id="6116338172782435947">Ver el texto y las imágenes copiados en el portapapeles</translation>
 <translation id="6120179357481664955">¿Recuerdas tu ID de IUP?</translation>
 <translation id="6124432979022149706">Conectores de Chrome Enterprise</translation>
-<translation id="6135641591018127088">Usar tu Cuenta de Google para generar una contraseña segura</translation>
 <translation id="6146055958333702838">Revisa los cables y reinicia los routers, módems u otros dispositivos
         de red que estés usando.</translation>
 <translation id="614940544461990577">Intenta:</translation>
@@ -1262,7 +1260,6 @@ De lo contrario, la configuración de privacidad bloqueará esta acción. Esto p
 <translation id="6328639280570009161">Intenta inhabilitar la predicción de red.</translation>
 <translation id="6328784461820205019">"La conexión no es privada", "&lt;span class="error-code"&gt;NET::ERR_CERT_AUTHORITY_INVALID&lt;/span&gt;", "&lt;span class="error-code"&gt;ERR_CERT_COMMON_NAME_INVALID&lt;/span&gt;", "&lt;span class="error-code"&gt;NET::ERR_CERT_WEAK_SIGNATURE_ALGORITHM&lt;/span&gt;", "&lt;span class="error-code"&gt;ERR_CERT_SYMANTEC_LEGACY&lt;/span&gt;" o "Error del certificado SSL"</translation>
 <translation id="6328786501058569169">Este sitio es engañoso</translation>
-<translation id="6333334544069706521">Usar las contraseñas almacenadas en tu Cuenta de Google</translation>
 <translation id="6337133576188860026">Esta acción libera menos de <ph name="SIZE" />. Es posible que algunos sitios se carguen más lento en tu próxima visita.</translation>
 <translation id="6337534724793800597">Filtrar políticas por nombre</translation>
 <translation id="6353505687280762741">{COUNT,plural, =0{Ninguna}=1{1 contraseña (para <ph name="DOMAIN_LIST" />, sincronizada)}=2{2 contraseñas (para <ph name="DOMAIN_LIST" />, sincronizadas)}other{# contraseñas (para <ph name="DOMAIN_LIST" />, sincronizadas)}}</translation>

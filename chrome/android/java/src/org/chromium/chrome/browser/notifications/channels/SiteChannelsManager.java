@@ -17,9 +17,9 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.notifications.NotificationChannelStatus;
 import org.chromium.chrome.browser.notifications.NotificationSettingsBridge.SiteChannel;
-import org.chromium.chrome.browser.site_settings.WebsiteAddress;
 import org.chromium.components.browser_ui.notifications.NotificationManagerProxy;
 import org.chromium.components.browser_ui.notifications.NotificationManagerProxyImpl;
+import org.chromium.components.browser_ui.site_settings.WebsiteAddress;
 
 import java.util.ArrayList;
 import java.util.List;

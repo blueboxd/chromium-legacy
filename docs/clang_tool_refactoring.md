@@ -54,8 +54,10 @@ Other useful references when writing the tool:
 ### Edit serialization format
 ```
 ==== BEGIN EDITS ====
-r:::path/to/file1:::offset1:::length1:::replacement text
-r:::path/to/file2:::offset2:::length2:::replacement text
+r:::path/to/file/to/edit:::offset1:::length1:::replacement text
+r:::path/to/file/to/edit:::offset2:::length2:::replacement text
+r:::path/to/file2/to/edit:::offset3:::length3:::replacement text
+include-user-header:::path/to/file2/to/edit:::-1:::-1:::header/file/to/include.h
 
        ...
 
@@ -64,8 +66,8 @@ r:::path/to/file2:::offset2:::length2:::replacement text
 
 The header and footer are required. Each line between the header and footer
 represents one edit. Fields are separated by `:::`, and the first field must
-be `r` (for replacement). In the future, this may be extended to handle header
-insertion/removal. A deletion is an edit with no replacement text.
+be `r` (for replacement) or `include-user-header`.
+A deletion is an edit with no replacement text.
 
 The edits are applied by [`apply_edits.py`](#Running), which understands certain
 conventions:

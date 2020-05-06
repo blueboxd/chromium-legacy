@@ -401,6 +401,8 @@ class XRSystem final : public EventTargetWithInlineData,
 
   void OnEnvironmentProviderDisconnect();
 
+  void TryEnsureService();
+
   // Indicates whether use of requestDevice has already been logged.
   bool did_log_supports_immersive_ = false;
 
@@ -445,6 +447,7 @@ class XRSystem final : public EventTargetWithInlineData,
   Color original_base_background_color_;
 
   bool is_context_destroyed_ = false;
+  bool did_service_ever_disconnect_ = false;
 };
 
 }  // namespace blink

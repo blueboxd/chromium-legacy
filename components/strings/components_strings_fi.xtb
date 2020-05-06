@@ -52,7 +52,6 @@
 <translation id="1197088940767939838">Oranssi</translation>
 <translation id="1201402288615127009">Seuraava</translation>
 <translation id="1201895884277373915">Lisää tästä sivustosta</translation>
-<translation id="1205963431094182634">Kirjaudu sisään käyttääksesi Google-tilillesi tallennettuja salasanoja</translation>
 <translation id="1206967143813997005">Virheellinen alkuperäinen allekirjoitus</translation>
 <translation id="1209206284964581585">Piilota toistaiseksi</translation>
 <translation id="121201262018556460">Yritit yhdistää verkkotunnukseen <ph name="DOMAIN" />, mutta palvelin esitti varmenteen, joka käyttää heikkoa avainta. Hakkeri on saattanut murtaa avaimen. Palvelin ei siis välttämättä ole tavoittelemasi palvelin, vaan saatat viestiä hakkerin kanssa.</translation>
@@ -1218,7 +1217,6 @@ Muussa tapauksessa tämä estetään tietosuoja-asetuksilla. Jos sallit tämän,
 <translation id="6116338172782435947">nähdä leikepöydälle kopioidun tekstin ja kuvat</translation>
 <translation id="6120179357481664955">Muistatko UPI-tunnuksesi?</translation>
 <translation id="6124432979022149706">Chrome Enterprise Connectors</translation>
-<translation id="6135641591018127088">Luo vahva salasana käyttämällä Google-tiliä</translation>
 <translation id="6146055958333702838">Tarkista kaikki kaapelit ja käynnistä uudelleen reitittimet, modeemit ja muut
     käytössä olevat verkkolaitteet.</translation>
 <translation id="614940544461990577">Kokeile seuraavia toimenpiteitä:</translation>
@@ -1264,7 +1262,6 @@ Muussa tapauksessa tämä estetään tietosuoja-asetuksilla. Jos sallit tämän,
 <translation id="6328639280570009161">Kokeile verkon ennakoinnin poistamista käytöstä.</translation>
 <translation id="6328784461820205019">"Yhteytesi ei ole salattu", "&lt;span class="error-code"&gt;NET::ERR_CERT_AUTHORITY_INVALID&lt;/span&gt;", "&lt;span class="error-code"&gt;ERR_CERT_COMMON_NAME_INVALID&lt;/span&gt;", "&lt;span class="error-code"&gt;NET::ERR_CERT_WEAK_SIGNATURE_ALGORITHM&lt;/span&gt;", "&lt;span class="error-code"&gt;ERR_CERT_SYMANTEC_LEGACY&lt;/span&gt;" tai "SSL-varmennevirhe"</translation>
 <translation id="6328786501058569169">Tämä sivusto on petollinen</translation>
-<translation id="6333334544069706521">Käytä Google-tilillesi tallennettuja salasanoja</translation>
 <translation id="6337133576188860026">Vapauttaa alle <ph name="SIZE" />. Jotkin sivustot saattavat latautua hitaammin seuraavalla käynnillä.</translation>
 <translation id="6337534724793800597">Suodata käytäntöjä nimen mukaan</translation>
 <translation id="6353505687280762741">{COUNT,plural, =0{Ei mitään}=1{1 salasana: (<ph name="DOMAIN_LIST" />, synkronoitu)}=2{2 salasanaa (<ph name="DOMAIN_LIST" />, synkronoitu)}other{# salasanaa (<ph name="DOMAIN_LIST" />, synkronoitu)}}</translation>

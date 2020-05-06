@@ -822,11 +822,11 @@
 
       格式有误的模板将被忽略。</translation>
 <translation id="2345547870894930157">启用 DNS-over-HTTPS，且禁止改用不安全的查询</translation>
-<translation id="2353442107789326507">让您能够指定适用于 <ph name="ON_FILE_ATTACHED_ENTERPRISE_CONNECTOR" /> Enterprise Connector 的 Chrome Enterprise Connector 服务设置列表，以供有人向 Chrome 附加文件时调用。
+<translation id="2353442107789326507">让您能够指定应用于 <ph name="ON_FILE_ATTACHED_ENTERPRISE_CONNECTOR" /> Enterprise Connector 的 Chrome Enterprise Connector 服务设置列表，以供在有人向 Chrome 附加文件时调用。
 
       <ph name="ENTERPRISE_CONNECTOR_URL_LIST_FIELD" />、<ph name="ENTERPRISE_CONNECTOR_TAGS_FIELD" />、<ph name="ENTERPRISE_CONNECTOR_ENABLE_FIELD" /> 和 <ph name="ENTERPRISE_CONNECTOR_DISABLE_FIELD" /> 字段用于确定当某个文件附加到特定网页后，该连接器是否应发送此文件进行分析，以及要将哪些标记添加到针对此文件的分析请求中。如果相应的网页网址与“enable”格式所对应的某个标记相匹配，那么只要所有包含这个标记的“disable”格式与此网页网址都不匹配，该连接器便会将这个标记添加到分析请求中。如果该连接器向分析请求中添加了至少 1 个标记，分析服务便会分析附加的文件。
 
-      <ph name="ENTERPRISE_CONNECTOR_SERVICE_PROVIDER_FIELD" /> 字段用于确定您指定的设置是与哪个分析服务提供商对应。
+      <ph name="ENTERPRISE_CONNECTOR_SERVICE_PROVIDER_FIELD" /> 字段用于确定您指定的设置与哪个分析服务提供商对应。
 
       如果您将 <ph name="ENTERPRISE_CONNECTOR_BLOCK_UNTIL_VERDICT_FIELD" /> 字段设为 1，Chrome 需要先等到分析服务做出响应，再确定是否要授权相应网页访问此文件。如果您将该字段设为任何其他整数值，Chrome 就会立即授权相应网页访问此文件。
 
@@ -2721,9 +2721,9 @@
 
           如果您未设置此政策，用户将可以自行选择代理设置。</translation>
 <translation id="5177260184597743704">OnSecurityEvent Chrome Enterprise Connector 的配置政策</translation>
-<translation id="5179734767316042713">让您能够指定适用于 <ph name="ON_SECURITY_EVENT_ENTERPRISE_CONNECTOR" /> Enterprise Connector 的 Chrome Enterprise Connector 服务设置列表，以供 Chrome 中发生安全性事件时调用。安全性事件包括分析类 Enterprise Connector 给出的否定结果、密码重用、导航到不安全的网页，以及其他关乎安全性的用户操作。
+<translation id="5179734767316042713">让您能够指定应用于 <ph name="ON_SECURITY_EVENT_ENTERPRISE_CONNECTOR" /> Enterprise Connector 的 Chrome Enterprise Connector 服务设置列表，以供在 Chrome 中发生安全性事件时调用。安全性事件包括分析类 Enterprise Connector 给出的否定结果、密码重用、导航到不安全的网页，以及其他关乎安全性的用户操作。
 
-      <ph name="ENTERPRISE_CONNECTOR_SERVICE_PROVIDER_FIELD" /> 字段用于确定您指定的设置是与哪个报告服务提供商对应。
+      <ph name="ENTERPRISE_CONNECTOR_SERVICE_PROVIDER_FIELD" /> 字段用于确定您指定的设置与哪个报告服务提供商对应。
 
       此政策只能通过 Google 管理控制台进行设置。</translation>
 <translation id="5182055907976889880">在 <ph name="PRODUCT_OS_NAME" />中配置 Google 云端硬盘。</translation>
@@ -2932,6 +2932,7 @@
 
       此政策旨在与“始终开启的 VPN”功能结合使用，以便管理员决定是否要在启动时建立 VPN 连接。</translation>
 <translation id="5401696449591951427">启用 <ph name="CHROME_DEVICES_LINK" /></translation>
+<translation id="5404635530342514143">如果您开启了此功能，用户便可通过点击锁定/开始屏幕上的相应按钮让系统显示密码。</translation>
 <translation id="5405289061476885481">配置允许在 <ph name="PRODUCT_OS_NAME" />登录屏幕上使用哪些键盘布局。
 
       如果此政策设为一个输入法标识符列表，登录屏幕上将会提供所有已指定的输入法以供选用。系统将会预先选择所指定的第一种输入法。当登录屏幕上显示已激活的用户操作大图标时，屏幕上除了会提供通过此政策指定的各种输入法外，还会提供相应用户最近一次用过的输入法。如果此政策未设置，系统则会根据显示登录屏幕时使用的语言区域提供登录屏幕上的输入法。系统将会忽略无效的输入法标识符。</translation>
@@ -3690,11 +3691,11 @@
 <translation id="6553143066970470539">屏幕亮度百分比</translation>
 <translation id="6559057113164934677">不允许任何网站使用摄像头和麦克风</translation>
 <translation id="6561396069801924653">在系统任务栏菜单中显示无障碍选项</translation>
-<translation id="6561900678873266853">让您能够指定适用于 <ph name="ON_BULK_DATA_ENTRY_ENTERPRISE_CONNECTOR" /> Enterprise Connector 的 Chrome Enterprise Connector 服务设置列表，以供有人通过从剪贴板复制内容或通过拖放网页内容在 Chrome 中输入数据时调用。
+<translation id="6561900678873266853">让您能够指定应用于 <ph name="ON_BULK_DATA_ENTRY_ENTERPRISE_CONNECTOR" /> Enterprise Connector 的 Chrome Enterprise Connector 服务设置列表，以供在有人通过从剪贴板复制内容或通过拖放网页内容在 Chrome 中输入数据时调用。
 
       <ph name="ENTERPRISE_CONNECTOR_URL_LIST_FIELD" />、<ph name="ENTERPRISE_CONNECTOR_TAGS_FIELD" />、<ph name="ENTERPRISE_CONNECTOR_ENABLE_FIELD" /> 和 <ph name="ENTERPRISE_CONNECTOR_DISABLE_FIELD" /> 字段用于确定当在特定网页中输入数据后，该连接器是否应发送此数据进行分析，以及要将哪些标记添加到针对此数据的分析请求中。如果相应的网页网址与“enable”格式所对应的某个标记相匹配，那么只要所有包含这个标记的“disable”格式与此网页网址都不匹配，该连接器便会将这个标记添加到分析请求中。如果该连接器向分析请求中添加了至少 1 个标记，分析服务便会分析输入的数据。
 
-      <ph name="ENTERPRISE_CONNECTOR_SERVICE_PROVIDER_FIELD" /> 字段用于确定您指定的设置是与哪个分析服务提供商对应。
+      <ph name="ENTERPRISE_CONNECTOR_SERVICE_PROVIDER_FIELD" /> 字段用于确定您指定的设置与哪个分析服务提供商对应。
 
       如果您将 <ph name="ENTERPRISE_CONNECTOR_BLOCK_UNTIL_VERDICT_FIELD" /> 字段设为 1，Chrome 需要先等到分析服务做出响应，再确定是否要授权相应网页访问此数据。如果您将该字段设为任何其他整数值，Chrome 就会立即授权相应网页访问此数据。
 
@@ -3715,7 +3716,7 @@
 <translation id="6573305661369899995">设置网址限制条件的外部来源</translation>
 <translation id="6574770600243153999">允许该设备运行 PluginVm。
 
-      如果您未设置此政策，或将其设为 false，系统不会为该设备启用 <ph name="PLUGIN_VM_NAME" />。如果您将此政策设为 true，系统会为该设备启用 <ph name="PLUGIN_VM_NAME" />，但前提是其他设置也允许该设备运行它。若要允许 <ph name="PLUGIN_VM_NAME" /> 运行，您需将 <ph name="PLUGIN_VM_ALLOWED_POLICY_NAME" /> 设为 true 并设置 <ph name="PLUGIN_VM_LICENSE_KEY_POLICY_NAME" />、<ph name="PLUGIN_VM_USER_ID_POLICY_NAME" /> 或 <ph name="PLUGIN_VM_IMAGE_POLICY_NAME" />。</translation>
+      如果此政策设为 false 或未设置，系统不会为该设备启用 <ph name="PLUGIN_VM_NAME" />。如果此政策设为 true，系统会为该设备启用 <ph name="PLUGIN_VM_NAME" />，但前提是其他设置也允许该设备运行它。若要允许 <ph name="PLUGIN_VM_NAME" /> 运行，您需将 <ph name="PLUGIN_VM_ALLOWED_POLICY_NAME" /> 设为 true 并设置 <ph name="PLUGIN_VM_LICENSE_KEY_POLICY_NAME" />、<ph name="PLUGIN_VM_USER_ID_POLICY_NAME" /> 或 <ph name="PLUGIN_VM_IMAGE_POLICY_NAME" />。</translation>
 <translation id="6583851521569686409">配置打印机列表。
 
       通过此政策，管理员可为用户提供打印机配置。
@@ -3966,6 +3967,7 @@
 
           调整因子不得小于 100%。</translation>
 <translation id="7086720321892395256">控制“隐私保护屏”功能的用户和设备政策。</translation>
+<translation id="7095145887485705461">启用锁定/开始屏幕上用于显示密码的按钮。</translation>
 <translation id="710003290625031750">已展开的架构说明：</translation>
 <translation id="7106631983877564505"><ph name="PRODUCT_OS_NAME" />设备进入待机或暂停状态时，启用锁定功能。
 

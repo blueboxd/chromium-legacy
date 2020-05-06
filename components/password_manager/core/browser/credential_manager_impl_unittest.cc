@@ -83,12 +83,10 @@ class MockPasswordManagerClient : public StubPasswordManagerClient {
         prefs::kWasAutoSignInFirstRunExperienceShown, true);
     prefs_->registry()->RegisterBooleanPref(
         prefs::kPasswordLeakDetectionEnabled, true);
-#if !defined(OS_IOS)
     prefs_->registry()->RegisterBooleanPref(::prefs::kSafeBrowsingEnabled,
                                             true);
     prefs_->registry()->RegisterBooleanPref(::prefs::kSafeBrowsingEnhanced,
                                             false);
-#endif
   }
   ~MockPasswordManagerClient() override = default;
 
@@ -1645,7 +1643,6 @@ TEST_F(CredentialManagerImplTest,
   RunAllPendingTasks();
 }
 
-#if !defined(OS_IOS)
 // Check that following a call to store() a federated credential is not checked
 // for leaks.
 TEST_F(CredentialManagerImplTest,
@@ -1682,6 +1679,5 @@ TEST_F(CredentialManagerImplTest, StorePasswordCredentialStartsLeakDetection) {
 
   RunAllPendingTasks();
 }
-#endif  // !defined(OS_IOS)
 
 }  // namespace password_manager

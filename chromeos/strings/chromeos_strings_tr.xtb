@@ -17,8 +17,10 @@
 <translation id="2805756323405976993">Uygulamalar</translation>
 <translation id="2872961005593481000">Kapat</translation>
 <translation id="3008341117444806826">YENİLE</translation>
+<translation id="3369013195428705271">Tüm yazdırma geçmişini temizlemek istediğinizden emin misiniz? Devam eden yazdırma işleriniz silinmez.</translation>
 <translation id="3515615323037921860">Yazdırma İşleri</translation>
 <translation id="3749289110408117711">Dosya adı</translation>
+<translation id="38114475217616659">Tüm geçmişi temizle</translation>
 <translation id="3820172043799983114">Geçersiz PIN.</translation>
 <translation id="3838338534323494292">Yeni şifre</translation>
 <translation id="4003259559679196451"><ph name="ENROLLMENT_DOMAIN" /> bu cihazı yönetiyor ve ziyaret edilen web siteleri, şifreler ve e-postalar dahil olmak üzere tüm kullanıcı etkinliklerine erişimi var.</translation>
@@ -43,6 +45,7 @@ Bana bir şey sormak için mikrofona dokunmayı deneyin.</translation>
 <translation id="6106186594183574873">Bitirmek için eski şifrenizi girin</translation>
 <translation id="6146993107019042706">Bitirmek için yeni şifrenizi girin</translation>
 <translation id="6643016212128521049">Temizle</translation>
+<translation id="7162487448488904999">Galeri</translation>
 <translation id="7658239707568436148">İptal</translation>
 <translation id="7690294790491645610">Yeni şifreyi doğrula</translation>
 <translation id="7805768142964895445">Durum</translation>

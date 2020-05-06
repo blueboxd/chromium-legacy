@@ -1609,6 +1609,20 @@ bool ChromeContentBrowserClient::ShouldLockToOrigin(
   return true;
 }
 
+bool ChromeContentBrowserClient::DoesWebUISchemeRequireProcessLock(
+    base::StringPiece scheme) {
+  // Note: This method can be called from multiple threads. It is not safe to
+  // assume it runs only on the UI thread.
+
+  // chrome-search: documents commit only in the NTP instant process and are not
+  // locked to chrome-search: origin.
+  if (scheme == chrome::kChromeSearchScheme)
+    return false;
+
+  // All other WebUIs must be locked to origin.
+  return true;
+}
+
 bool ChromeContentBrowserClient::ShouldTreatURLSchemeAsFirstPartyWhenTopLevel(
     base::StringPiece scheme,
     bool is_embedded_origin_secure) {
@@ -2706,6 +2720,19 @@ void ChromeContentBrowserClient::AllowCertificateError(
   std::move(callback).Run(content::CERTIFICATE_REQUEST_RESULT_TYPE_DENY);
   return;
 }
+
+#if !defined(OS_ANDROID)
+bool ChromeContentBrowserClient::ShouldDenyRequestOnCertificateError(
+    const GURL main_page_url) {
+  // Desktop Reader Mode pages should never load resources with certificate
+  // errors. Desktop Reader Mode is more strict about security than Reader Mode
+  // on Android: the desktop version has its own security indicator and
+  // is not downgraded to a WARNING, whereas Android will show "Not secure"
+  // in the omnibox (for low-end devices which show the omnibox on Reader Mode
+  // pages).
+  return main_page_url.SchemeIs(dom_distiller::kDomDistillerScheme);
+}
+#endif
 
 namespace {
 

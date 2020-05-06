@@ -52,7 +52,6 @@
 <translation id="1197088940767939838">Նարնջագույն</translation>
 <translation id="1201402288615127009">Հաջորդը</translation>
 <translation id="1201895884277373915">Ավելին այս կայքից</translation>
-<translation id="1205963431094182634">Մուտք գործեք՝ Google հաշվում պահված գաղտնաբառերն օգտագործելու համար</translation>
 <translation id="1206967143813997005">Սկզբնական ստորագրությունը սխալ է</translation>
 <translation id="1209206284964581585">Առայժմ թաքցնել</translation>
 <translation id="121201262018556460">Դուք փորձում էիք մտնել <ph name="DOMAIN" />, սակայն սերվերի կողմից ներկայացված վկայագրի բանալին թույլ էր: Հնարավոր է, ինչ-որ հարձակվող կոտրել է մասնավոր բանալին, և սերվերը ձեր ուզած սերվերը չէ (հնարավոր է, դուք կապ եք հաստատել հարձակվողի հետ):</translation>
@@ -1217,7 +1216,6 @@
 <translation id="6116338172782435947">Տեսնել սեղմատախտակին պատճենված տեքստը և պատկերները</translation>
 <translation id="6120179357481664955">Հիշո՞ւմ եք ձեր UPI ID-ն</translation>
 <translation id="6124432979022149706">Chrome Enterprise-ի միակցիչներ</translation>
-<translation id="6135641591018127088">Հուսալի գաղտնաբառ ստեղծելու համար օգտագործեք ձեր Google հաշիվը։</translation>
 <translation id="6146055958333702838">Ստուգեք բոլոր մալուխները և վերաբեռնեք երթուղիչները, մոդեմները կամ օգտագործվող
     այլ ցանցային սարքերը:</translation>
 <translation id="614940544461990577">Փորձեք՝</translation>
@@ -1263,7 +1261,6 @@
 <translation id="6328639280570009161">Անջատեք ցանցի գործողությունների կանխատեսումը</translation>
 <translation id="6328784461820205019">«Ձեր կապը պաշտպանված չէ» կամ «&lt;span class="error-code"&gt;NET::ERR_CERT_AUTHORITY_INVALID&lt;/span&gt;» կամ «&lt;span class="error-code"&gt;ERR_CERT_COMMON_NAME_INVALID&lt;/span&gt;» կամ «&lt;span class="error-code"&gt;NET::ERR_CERT_WEAK_SIGNATURE_ALGORITHM&lt;/span&gt;» կամ «&lt;span class="error-code"&gt;ERR_CERT_SYMANTEC_LEGACY&lt;/span&gt;» կամ «SSL հավաստագրի սխալ»</translation>
 <translation id="6328786501058569169">Սա կեղծ կայք է</translation>
-<translation id="6333334544069706521">Օգտագործել Google հաշվում պահված գաղտնաբառերը</translation>
 <translation id="6337133576188860026">Կազատվի մինչև <ph name="SIZE" /> տարածք։ Դրանից հետո որոշ կայքեր հնարավոր է՝ ավելի դանդաղ բեռնվեն։</translation>
 <translation id="6337534724793800597">Զտել կանոններն ըստ անվան</translation>
 <translation id="6353505687280762741">{COUNT,plural, =0{Չկա}=1{1 գաղտնաբառ (հետևյալ տիրույթների համար՝ <ph name="DOMAIN_LIST" />, համաժամացված է)}=2{2 գաղտնաբառ (հետևյալ տիրույթների համար՝ <ph name="DOMAIN_LIST" />, համաժամացված են)}one{# գաղտնաբառ (հետևյալ տիրույթների համար՝ <ph name="DOMAIN_LIST" />, համաժամացված են)}other{# գաղտնաբառ (հետևյալ տիրույթների համար՝ <ph name="DOMAIN_LIST" />, համաժամացված են)}}</translation>

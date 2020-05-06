@@ -672,6 +672,36 @@ public final class ChromePreferenceKeys {
     /** Key for deferred recording of list of uninstalled WebAPK packages. */
     public static final String WEBAPK_UNINSTALLED_PACKAGES = "webapk_uninstalled_packages";
 
+    /** Cached Suggestions and Suggestion Headers. */
+    public static final String KEY_ZERO_SUGGEST_LIST_SIZE = "zero_suggest_list_size";
+    public static final KeyPrefix KEY_ZERO_SUGGEST_URL_PREFIX = new KeyPrefix("zero_suggest_url*");
+    public static final KeyPrefix KEY_ZERO_SUGGEST_DISPLAY_TEXT_PREFIX =
+            new KeyPrefix("zero_suggest_display_text*");
+    public static final KeyPrefix KEY_ZERO_SUGGEST_DESCRIPTION_PREFIX =
+            new KeyPrefix("zero_suggest_description*");
+    public static final KeyPrefix KEY_ZERO_SUGGEST_NATIVE_TYPE_PREFIX =
+            new KeyPrefix("zero_suggest_native_type*");
+    public static final KeyPrefix KEY_ZERO_SUGGEST_IS_SEARCH_TYPE_PREFIX =
+            new KeyPrefix("zero_suggest_is_search*");
+    public static final KeyPrefix KEY_ZERO_SUGGEST_ANSWER_TEXT_PREFIX =
+            new KeyPrefix("zero_suggest_answer_text*");
+    public static final KeyPrefix KEY_ZERO_SUGGEST_GROUP_ID_PREFIX =
+            new KeyPrefix("zero_suggest_group_id*");
+    @Deprecated
+    public static final KeyPrefix KEY_ZERO_SUGGEST_IS_DELETABLE_PREFIX =
+            new KeyPrefix("zero_suggest_is_deletable*");
+    public static final KeyPrefix KEY_ZERO_SUGGEST_IS_STARRED_PREFIX =
+            new KeyPrefix("zero_suggest_is_starred*");
+    public static final KeyPrefix KEY_ZERO_SUGGEST_POST_CONTENT_TYPE_PREFIX =
+            new KeyPrefix("zero_suggest_post_content_type*");
+    public static final KeyPrefix KEY_ZERO_SUGGEST_POST_CONTENT_DATA_PREFIX =
+            new KeyPrefix("zero_suggest_post_content_data*");
+    public static final String KEY_ZERO_SUGGEST_HEADER_LIST_SIZE = "zero_suggest_header_list_size";
+    public static final KeyPrefix KEY_ZERO_SUGGEST_HEADER_GROUP_ID_PREFIX =
+            new KeyPrefix("zero_suggest_header_group_id*");
+    public static final KeyPrefix KEY_ZERO_SUGGEST_HEADER_GROUP_TITLE_PREFIX =
+            new KeyPrefix("zero_suggest_header_group_title*");
+
     /**
      * These values are currently used as SharedPreferences keys, along with the keys in
      * {@link GrandfatheredChromePreferenceKeys#getKeysInUse()}. Add new SharedPreferences keys

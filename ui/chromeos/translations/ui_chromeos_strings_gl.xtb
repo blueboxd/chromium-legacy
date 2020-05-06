@@ -90,6 +90,7 @@
 <translation id="1947424002851288782">Teclado alemán</translation>
 <translation id="1972984168337863910">Despregar paneis de comentarios de ficheiros</translation>
 <translation id="1984603991036629094">Teclado fonético armenio</translation>
+<translation id="1995337122023280937">Ir á localización do ficheiro</translation>
 <translation id="2001796770603320721">Xestionar contido en Drive</translation>
 <translation id="2009067268969781306">Ao formatar unha unidade, eliminaranse todos os datos que conteña. Esta acción non se pode desfacer.</translation>
 <translation id="2028997212275086731">Arquivo RAR</translation>
@@ -141,6 +142,7 @@
 <translation id="2638942478653899953">Non se puido acceder a Google Drive. <ph name="BEGIN_LINK" />Pecha sesión<ph name="END_LINK" /> e volve iniciala.</translation>
 <translation id="2649120831653069427">Peixe arco iris</translation>
 <translation id="2661146741306740526">16 x 9</translation>
+<translation id="2664412712123763093">Localización do ficheiro</translation>
 <translation id="2672394958563893062">Produciuse un erro. Fai clic para reiniciar desde o principio.</translation>
 <translation id="2676946222714718093">Reproducindo en</translation>
 <translation id="2735698359135166290">Teclado estándar romanés</translation>
@@ -349,6 +351,7 @@
 <translation id="5081517858322016911">Volume de ficheiros que se eliminará: <ph name="TOTAL_FILE_SIZE" /></translation>
 <translation id="509429900233858213">Produciuse un erro.</translation>
 <translation id="5098629044894065541">Hebreo</translation>
+<translation id="5112685521274804841">O ficheiros destes cartafois son só de lectura. Non se admiten algunhas actividades.</translation>
 <translation id="5123433949759960244">Baloncesto</translation>
 <translation id="5129662217315786329">Polaco</translation>
 <translation id="5144820558584035333">Tripla alternancia hangul (390)</translation>
@@ -698,6 +701,7 @@
 <translation id="9034924485347205037">Ficheiros de Linux</translation>
 <translation id="9035012421917565900">Os elementos non se poden transferir de novo a "<ph name="DESTINATION_NAME" />", así que non poderás desfacer esta acción.</translation>
 <translation id="9038620279323455325">Xa existe un ficheiro denominado "<ph name="FILE_NAME" />". Escolle un nome diferente.</translation>
+<translation id="9062992083244091966">Para abrir ficheiros coas aplicacións de <ph name="APP_NAME" />, primeiro debes movelas ao cartafol de ficheiros compartidos de <ph name="APP_NAME" />.</translation>
 <translation id="9064939804718829769">Transferindo...</translation>
 <translation id="9065203028668620118">Editar</translation>
 <translation id="9099674669267916096">Número de páxinas</translation>

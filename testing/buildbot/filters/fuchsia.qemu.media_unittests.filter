@@ -1,0 +1,4 @@
+# https://crbug.com/1058247
+-FuchsiaVideoDecoderTest.H264
+-FuchsiaVideoDecoderTest.ReinitializeH264
+-FuchsiaVideoDecoderTest.ResetAndReinitializeH264

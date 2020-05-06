@@ -15,6 +15,7 @@
 #include "base/optional.h"
 #include "mojo/public/cpp/bindings/message.h"
 #include "net/cookies/cookie_constants.h"
+#include "net/url_request/url_request_context.h"
 #include "services/network/cookie_manager.h"
 #include "services/network/cookie_settings.h"
 #include "services/network/cors/cors_url_loader_factory.h"

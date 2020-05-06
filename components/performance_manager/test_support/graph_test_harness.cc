@@ -24,16 +24,23 @@ TestNodeWrapper<FrameNodeImpl> TestGraphImpl::CreateFrameNodeAutoId(
 
 GraphTestHarness::GraphTestHarness()
     : task_env_(base::test::TaskEnvironment::TimeSource::MOCK_TIME,
-                base::test::TaskEnvironment::ThreadPoolExecutionMode::QUEUED) {}
+                base::test::TaskEnvironment::ThreadPoolExecutionMode::QUEUED),
+      graph_(new TestGraphImpl()) {}
 
 GraphTestHarness::~GraphTestHarness() {
   // Ideally this would be done in TearDown(), but that would require subclasses
   // do destroy all their nodes before invoking TearDown below.
-  graph_.TearDown();
+  if (graph_)
+    graph_->TearDown();
 }
 
 void GraphTestHarness::TearDown() {
   base::RunLoop().RunUntilIdle();
+}
+
+void GraphTestHarness::TearDownAndDestroyGraph() {
+  graph_->TearDown();
+  graph_.reset();
 }
 
 }  // namespace performance_manager

@@ -90,6 +90,7 @@
 <translation id="1947424002851288782">Nemis klaviaturasi</translation>
 <translation id="1972984168337863910">Fayllar holat panelini yoyish</translation>
 <translation id="1984603991036629094">Armancha fonetik klaviatura</translation>
+<translation id="1995337122023280937">Fayl joylashuviga kirish</translation>
 <translation id="2001796770603320721">Google Drive orqali ochish</translation>
 <translation id="2009067268969781306">Xotira formatlansa, undagi barcha maʼlumotlar oʻchib ketadi. Bu amal bekor qilinmaydi.</translation>
 <translation id="2028997212275086731">RAR arxivi</translation>
@@ -141,6 +142,7 @@
 <translation id="2638942478653899953">Google Drive‘ga ulanib bo‘lmadi. Iltimos, <ph name="BEGIN_LINK" />tizimdan chiqing<ph name="END_LINK" /> va qaytadan kiring.</translation>
 <translation id="2649120831653069427">Kamalakbaliq</translation>
 <translation id="2661146741306740526">16x9</translation>
+<translation id="2664412712123763093">Fayl joylashuvi</translation>
 <translation id="2672394958563893062">Xatolik yuz berdi. Boshidan boshlash uchun bosing.</translation>
 <translation id="2676946222714718093">Qurilma:</translation>
 <translation id="2735698359135166290">Rumin standart klaviaturasi</translation>
@@ -349,6 +351,7 @@
 <translation id="5081517858322016911"><ph name="TOTAL_FILE_SIZE" /> joy tozalanadi</translation>
 <translation id="509429900233858213">Xatolik yuz berdi.</translation>
 <translation id="5098629044894065541">Ivrit</translation>
+<translation id="5112685521274804841">Bu jildlardagi fayllarni faqat oʻqish mumkin. Ayrim amallar ishlamaydi.</translation>
 <translation id="5123433949759960244">Basketbol</translation>
 <translation id="5129662217315786329">Polyak tili</translation>
 <translation id="5144820558584035333">Koreyscha matn kiritish usuli (Sebeolsik 390)</translation>
@@ -698,6 +701,7 @@ Amal bajarilishini kuting va qurilmani “Fayllar” ilovasida chiqarib oling. A
 <translation id="9034924485347205037">Linux fayllari</translation>
 <translation id="9035012421917565900">Obyektlarni “<ph name="DESTINATION_NAME" />” umumiy diskiga qaytarib bo‘lmaydi, shuning uchun bu amalni bekor qila olmaysiz.</translation>
 <translation id="9038620279323455325">“<ph name="FILE_NAME" />” nomli fayl allaqachon mavjud. Boshqa nom tanlang.</translation>
+<translation id="9062992083244091966">Fayllarni <ph name="APP_NAME" /> ilovalari orqali ochish uchun avval ularni <ph name="APP_NAME" /> umumiy fayllar jildiga koʻchiring.</translation>
 <translation id="9064939804718829769">Bajarilmoqda...</translation>
 <translation id="9065203028668620118">O‘zgartirish</translation>
 <translation id="9099674669267916096">Sahifalar soni</translation>

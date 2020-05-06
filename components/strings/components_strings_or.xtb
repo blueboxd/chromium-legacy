@@ -52,7 +52,6 @@
 <translation id="1197088940767939838">କମଳା</translation>
 <translation id="1201402288615127009">ପରବର୍ତ୍ତୀ</translation>
 <translation id="1201895884277373915">ଏହି ସାଇଟ୍‌ ତରଫରୁ ଅଧିକ</translation>
-<translation id="1205963431094182634">ଆପଣଙ୍କ Google ଆକାଉଣ୍ଟରେ ଷ୍ଟୋର୍ କରାଯାଇଥିବା ପାସୱାର୍ଡଗୁଡ଼ିକୁ ବ୍ୟବହାର କରିବାକୁ ସାଇନ୍ ଇନ୍ କରନ୍ତୁ</translation>
 <translation id="1206967143813997005">ପ୍ରାରମ୍ଭିକ ଭୁଲ୍‌ ଦସ୍ତଖତ</translation>
 <translation id="1209206284964581585">ବର୍ତ୍ତମାନ ପାଇଁ ଲୁଚାନ୍ତୁ</translation>
 <translation id="121201262018556460">ଆପଣ <ph name="DOMAIN" />ରେ ପହଞ୍ଚିବାକୁ ଚେଷ୍ଟା କରିଛନ୍ତି କିନ୍ତୁ ସର୍ଭର୍ ଏକ ଦୁର୍ବଳ କୀ ଧାରଣ କରିଥିବା ସାର୍ଟିଫିକେଟ୍ ଉପସ୍ଥାପନ କରିଛି। ଜଣେ ଆକ୍ରମଣକାରୀ ବ୍ୟକ୍ତିଗତ କୀ'ପାଖରେ ପହଞ୍ଚିପାରେ ଏବଂ ସର୍ଭର୍‌ଟି ହୁଏତ ଆପଣଙ୍କର ପ୍ରତ୍ୟାଶିତ ସର୍ଭର୍ ନ ହୋଇଥାଇପାରେ (ଆପଣ ହୁଏତ ଜଣେ ଆକ୍ରମଣକାରୀଙ୍କ ସହିତ ଯୋଗାଯୋଗ କରୁଥାଇପାରନ୍ତି)।</translation>
@@ -1203,7 +1202,6 @@
 <translation id="6116338172782435947">କ୍ଲିପ୍‌ବୋର୍ଡକୁ କପି ହୋ‍ଇଥିବା ଟେକ୍ସଟ୍‍ ଏବଂ ଛବିଗୁଡ଼ିକୁ ଦେଖନ୍ତୁ</translation>
 <translation id="6120179357481664955">ଆପଣଙ୍କର UPI ID ମନେ ଅଛି?</translation>
 <translation id="6124432979022149706">Chrome ଏଣ୍ଟରପ୍ରାଇଜ୍ କନେକ୍ଟରଗୁଡ଼ିକ</translation>
-<translation id="6135641591018127088">ଏକ ଜଟିଳ ପାସୱାର୍ଡ ସୃଷ୍ଟି କରିବାକୁ ଆପଣଙ୍କ Google ଆକାଉଣ୍ଟ ବ୍ୟବହାର କରନ୍ତୁ</translation>
 <translation id="6146055958333702838">ଯେକୌଣସି କେବଲ୍‌ ଯାଞ୍ଚ କରନ୍ତୁ ଏବଂ ଆପଣଙ୍କ ଦ୍ୱାରା ବ୍ୟବହାର କରାଯାଉଥିବା ଯେକୌଣସି ରାଉଟର୍‌, ମୋଡେମ୍‍ କିମ୍ବା ଅନ୍ୟ ରାଉଟର୍‌ ରିବୁଟ୍‌ କରନ୍ତୁ।</translation>
 <translation id="614940544461990577">ଏହାକୁ ପରଖନ୍ତୁ:</translation>
 <translation id="6150036310511284407">ବାମ ପଟରେ ତିନୋଟି ପଞ୍ଚ୍</translation>
@@ -1248,7 +1246,6 @@
 <translation id="6328639280570009161">ନେଟ୍‌ୱର୍କ ପୁର୍ବାନୁମାନ ଅକ୍ଷମ କରି ଦେଖନ୍ତୁ</translation>
 <translation id="6328784461820205019">"ଆପଣଙ୍କ ସଂଯୋଗ ବ୍ୟକ୍ତିଗତ ନୁହେଁ" କିମ୍ବା "&lt;span class="error-code"&gt;NET::ERR_CERT_AUTHORITY_INVALID&lt;/span&gt;" କିମ୍ବା "&lt;span class="error-code"&gt;ERR_CERT_COMMON_NAME_INVALID&lt;/span&gt;" କିମ୍ବା "&lt;span class="error-code"&gt;NET::ERR_CERT_WEAK_SIGNATURE_ALGORITHM&lt;/span&gt;" କିମ୍ବା "&lt;span class="error-code"&gt;ERR_CERT_SYMANTEC_LEGACY&lt;/span&gt;" କିମ୍ବା "SSL ସାର୍ଟିଫିକେଟ୍ ତ୍ରୁଟି"</translation>
 <translation id="6328786501058569169">ଏହି ସାଇଟ୍‌ଟି ପ୍ରତାରଣାମୂଳକ ଅଟେ</translation>
-<translation id="6333334544069706521">ଆପଣଙ୍କ Google ଆକାଉଣ୍ଟରେ ଷ୍ଟୋର୍ କରାଯାଇଥିବା ପାସୱାର୍ଡଗୁଡ଼ିକୁ ବ୍ୟବହାର କରନ୍ତୁ</translation>
 <translation id="6337133576188860026"><ph name="SIZE" />ଠାରୁ କମ୍ ଖାଲି କରନ୍ତି। କିଛି ଆପଣଙ୍କର ପରବର୍ତ୍ତୀ ଭ୍ରମଣ ସମୟରେ ଆହୁରି ଧୀରେ ଲୋଡ୍ ହୋଇପାରନ୍ତି।</translation>
 <translation id="6337534724793800597">ନାମ ଅନୁଯାୟୀ ନୀତିଗୁଡ଼ିକ ଫିଲ୍ଟର୍‍ କରନ୍ତୁ</translation>
 <translation id="6353505687280762741">{COUNT,plural, =0{କୌଣସିଟି ନୁହେଁ}=1{1ଟି ପାସ୍‌ୱାର୍ଡ (<ph name="DOMAIN_LIST" /> ପାଇଁ, ସିଙ୍କ୍ କରାଯାଇଛି)}=2{2ଟି ପାସ୍‌ୱାର୍ଡ (<ph name="DOMAIN_LIST" /> ପାଇଁ, ସିଙ୍କ୍ କରାଯାଇଛି)}other{#ଟି ପାସ୍‌ୱାର୍ଡ (<ph name="DOMAIN_LIST" /> ପାଇଁ, ସିଙ୍କ୍ କରାଯାଇଛି)}}</translation>

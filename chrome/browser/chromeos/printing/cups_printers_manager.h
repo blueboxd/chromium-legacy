@@ -31,8 +31,6 @@ class ServerPrintersProvider;
 class SyncedPrintersManager;
 class UsbPrinterNotificationController;
 
-enum class PrinterSetupSource;
-
 // Returns true if |printer_uri| is an IPP uri.
 bool IsIppUri(base::StringPiece printer_uri);
 
@@ -103,9 +101,7 @@ class CupsPrintersManager : public PrinterInstallationManager,
   // Parameter |is_automatic| should be set to true if the printer was
   // saved automatically (without requesting additional information
   // from the user).
-  void PrinterInstalled(const Printer& printer,
-                        bool is_automatic,
-                        PrinterSetupSource source) override = 0;
+  void PrinterInstalled(const Printer& printer, bool is_automatic) override = 0;
 
   // Returns true if |printer| is currently installed in CUPS with this
   // configuration.

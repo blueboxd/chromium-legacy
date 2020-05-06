@@ -52,7 +52,6 @@
 <translation id="1197088940767939838">තැඹිලි</translation>
 <translation id="1201402288615127009">ඊළඟ</translation>
 <translation id="1201895884277373915">මෙම අඩවියෙන් තවත්</translation>
-<translation id="1205963431094182634">ඔබේ Google ගිණුම තුළ ගබඩා කර ඇති මුරපද භාවිත කිරීමට පුරන්න</translation>
 <translation id="1206967143813997005">අයහපත් මූලික අත්සන</translation>
 <translation id="1209206284964581585">දැනට සඟවන්න</translation>
 <translation id="121201262018556460">ඔබ <ph name="DOMAIN" /> වෙත ළඟා වීමට උත්සාහ කළෙහිය, නමුත් සර්වරය ඉදිරිපත් කළේ දුර්වල යතුරක් සහිත සහතිකයකි. ප්‍රහාරකයා පුද්ගලික යතුර කඩා දමා තිබිය හැකි අතර, සර්වරය ඔබ අපේක්ෂා කළ සර්වරයම නොවීමට පුළුවන (ඔබ ප්‍රහාරකයෙකු සමඟ සන්නිවේදනය කරමින් සිටිනවා විය හැකිය).</translation>
@@ -1212,7 +1211,6 @@
 <translation id="6116338172782435947">පසුරු පුවරුවට පිටපත් කළ පෙළ සහ රූප බලන්න</translation>
 <translation id="6120179357481664955">ඔබේ UPI හැඳුනුම මතකද?</translation>
 <translation id="6124432979022149706">Chrome ව්‍යවසාය සම්බන්ධක</translation>
-<translation id="6135641591018127088">ප්‍රබල මුරපදයක් උත්පාදන කිරීමට ඔබේ Google ගිණුම භාවිත කරන්න</translation>
 <translation id="6146055958333702838">කිනම් හෝ කේබල පරීක්ෂා කර කිනම් හෝ රවුටර, මොඩම හෝ ඔබ භාවිත කරමින් සිටිය හැකි
     වෙනත් ජාල උපාංග යළි පණ ගන්වන්න.</translation>
 <translation id="614940544461990577">උත්සාහ කරන්න:</translation>
@@ -1258,7 +1256,6 @@
 <translation id="6328639280570009161">ජාල අනාවැකි අක්‍රීය කිරීමට උත්සහ ගන්න</translation>
 <translation id="6328784461820205019">"ඔබේ සම්බන්ධතාව පුද්ගලික නොවේ" හෝ "&lt;span class="error-code"&gt;NET::ERR_CERT_AUTHORITY_INVALID&lt;/span&gt;" හෝ "&lt;span class="error-code"&gt;ERR_CERT_COMMON_NAME_INVALID&lt;/span&gt;" හෝ "&lt;span class="error-code"&gt;NET::ERR_CERT_WEAK_SIGNATURE_ALGORITHM&lt;/span&gt;" හෝ "&lt;span class="error-code"&gt;ERR_CERT_SYMANTEC_LEGACY&lt;/span&gt;" හෝ "SSL සහතිකයේ දෝෂයයි"</translation>
 <translation id="6328786501058569169">මෙම අඩවිය රැවටිලිකාරය</translation>
-<translation id="6333334544069706521">ඔබේ Google ගිණුම තුළ ගබඩා කර ඇති මුරපද භාවිත කරන්න</translation>
 <translation id="6337133576188860026"><ph name="SIZE" />ට වඩා අඩුවෙන් හිස් කරයි. ඔබගේ ඊළඟ පිවිසීමේදී සමහර අඩවි වඩාත් සෙමින් පූරණය විය හැකිය.</translation>
 <translation id="6337534724793800597">නම් වශයෙන් ප්‍රතිපත්ති පෙරන්න</translation>
 <translation id="6353505687280762741">{COUNT,plural, =0{කිසිවක් නැත}=1{1 මුරපදයක් (<ph name="DOMAIN_LIST" /> සඳහා, සමමුහූර්තයි)}=2{මුරපද 2 ක් (<ph name="DOMAIN_LIST" /> සඳහා, සමමුහූර්තයි)}one{මුරපද # ක් (<ph name="DOMAIN_LIST" /> සඳහා, සමමුහූර්තයි)}other{මුරපද # ක් (<ph name="DOMAIN_LIST" /> සඳහා, සමමුහූර්තයි)}}</translation>

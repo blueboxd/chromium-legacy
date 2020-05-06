@@ -52,7 +52,6 @@
 <translation id="1197088940767939838">नारिंगी</translation>
 <translation id="1201402288615127009">पुढील</translation>
 <translation id="1201895884277373915">या साइटकडून अधिक</translation>
-<translation id="1205963431094182634">तुमच्या Google खात्यामध्ये स्टोअर केलेले पासवर्ड वापरण्यासाठी साइन इन करा</translation>
 <translation id="1206967143813997005">खराब प्रारंभिक स्वाक्षरी</translation>
 <translation id="1209206284964581585">आतासाठी लपवा</translation>
 <translation id="121201262018556460">तुम्ही <ph name="DOMAIN" /> वर पोहोचण्याचा प्रयत्न केलात, परंतु सर्व्हरने एक कमकुवत की असलेले सर्टिफिकेट सादर केले. हल्लेखोराने गोपनीय की तोडलेली असू शकते आणि सर्व्हर हे तुम्हाला अपेक्षित असणारे सर्व्हर नसू शकते (तुम्ही कदाचित हल्लेखोराशी संवाद प्रस्थापित करत असाल).</translation>
@@ -1216,7 +1215,6 @@
 <translation id="6116338172782435947">क्लिपबोर्डवर कॉपी केलेला मजकूर आणि इमेज पहा</translation>
 <translation id="6120179357481664955">तुमचा UPI आयडी लक्षात ठेवायचा आहे का?</translation>
 <translation id="6124432979022149706">Chrome एंटरप्राइझ कनेक्टर</translation>
-<translation id="6135641591018127088">क्लिष्ट पासवर्ड जनरेट करण्यासाठी तुमचे Google खाते वापरा</translation>
 <translation id="6146055958333702838">कोणत्याही केबल तपासा आणि कोणतेही राउटर, मोडेम किंवा तुम्ही
 वापरत असलेले
         अन्य नेटवर्क डिव्हाइसेस रीबूट करा.</translation>
@@ -1263,7 +1261,6 @@
 <translation id="6328639280570009161">नेटवर्क पूर्वानुमान अक्षम करून पहा</translation>
 <translation id="6328784461820205019">"तुमचे कनेक्शन खाजगी नाही" किंवा "&lt;span class="error-code"&gt;NET::ERR_CERT_AUTHORITY_INVALID&lt;/span&gt;" किंवा "&lt;span class="error-code"&gt;ERR_CERT_COMMON_NAME_INVALID&lt;/span&gt;" किंवा "&lt;span class="error-code"&gt;NET::ERR_CERT_WEAK_SIGNATURE_ALGORITHM&lt;/span&gt;" किंवा "&lt;span class="error-code"&gt;ERR_CERT_SYMANTEC_LEGACY&lt;/span&gt;" किंवा "SSL सर्टिफिकेट एरर"</translation>
 <translation id="6328786501058569169">ही साइट फसवी आहे</translation>
-<translation id="6333334544069706521">तुमच्या Google खात्यामध्ये स्टोअर केलेले पासवर्ड वापरा</translation>
 <translation id="6337133576188860026"><ph name="SIZE" /> पेक्षा कमी जागा मोकळी करते. काही साइट तुमच्या पुढील भेटीच्या वेळी आणखी धीम्या गतीने लोड होऊ शकतात.</translation>
 <translation id="6337534724793800597">धोरणे नावानुसार फिल्टर करा</translation>
 <translation id="6353505687280762741">{COUNT,plural, =0{काहीही नाही}=1{(<ph name="DOMAIN_LIST" /> साठी) एक पासवर्ड सिंक केला}=2{(<ph name="DOMAIN_LIST" /> साठी) दोन पासवर्ड सिंक केले}other{(<ph name="DOMAIN_LIST" /> साठी) # पासवर्ड सिंक केले}}</translation>

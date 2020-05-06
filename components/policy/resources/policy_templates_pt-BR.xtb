@@ -855,7 +855,7 @@ Se você desativar esta configuração ou deixá-la sem definição, todas as p�
 
       Modelos formatados incorretamente serão ignorados.</translation>
 <translation id="2345547870894930157">Ativar DNS sobre HTTPS sem substituto inseguro</translation>
-<translation id="2353442107789326507">Lista de configurações dos serviços de conectores do Chrome Enterprise que serão aplicadas ao <ph name="ON_FILE_ATTACHED_ENTERPRISE_CONNECTOR" />, que é ativado quando um arquivo é anexado ao Chrome.
+<translation id="2353442107789326507">Lista de configurações dos serviços do Chrome Enterprise Connectors que serão aplicadas ao <ph name="ON_FILE_ATTACHED_ENTERPRISE_CONNECTOR" />, que é ativado quando um arquivo é anexado ao Chrome.
 
       Os campos <ph name="ENTERPRISE_CONNECTOR_URL_LIST_FIELD" />, <ph name="ENTERPRISE_CONNECTOR_TAGS_FIELD" />, <ph name="ENTERPRISE_CONNECTOR_ENABLE_FIELD" /> e <ph name="ENTERPRISE_CONNECTOR_DISABLE_FIELD" /> são usados para determinar se o conector enviará um arquivo para análise quando for anexado a uma página específica e quais tags serão incluídas na solicitação de análise do arquivo. Uma tag correspondente ao padrão "ativar" será incluída na solicitação de análise se o URL da página corresponder a um padrão associado a essa tag. Isso acontecerá apenas se nenhum padrão "desativar" com a mesma tag corresponder ao URL da página. A análise será feita se pelo menos uma tag for incluída na solicitação.
 
@@ -1471,7 +1471,7 @@ Se esta política não for definida, a tela de privacidade ficará desativada in
 <translation id="3152425128389603870">Disponibilizar e ativar por padrão a área de trabalho unificada</translation>
 <translation id="3159375329008977062">O usuário tem permissão para exportar/importar contêineres do Crostini por meio da IU</translation>
 <translation id="3165808775394012744">Essas políticas estão incluídas aqui para facilitar a remoção delas.</translation>
-<translation id="3166210414652928099">Permite que o usuário use apps para Android de fontes não confiáveis</translation>
+<translation id="3166210414652928099">Permite o uso de apps para Android de fontes não confiáveis</translation>
 <translation id="316778957754360075">Esta configuração foi descontinuada a partir da versão 29 do <ph name="PRODUCT_NAME" />. O modo recomendado de configurar as coleções de extensões/aplicativos hospedados pela organização é incluir na hospedagem do site os pacotes CRX em ExtensionInstallSources e colocar links de download direto para os pacotes em uma página da Web. É possível criar um iniciador da página da Web usando a política ExtensionInstallForcelist.</translation>
 <translation id="3168968618972302728">Políticas relacionadas à autenticação do Kerberos.</translation>
 <translation id="3171369832001535378">Modelo de nome do host da rede do dispositivo</translation>
@@ -2757,7 +2757,7 @@ O campo <ph name="PROXY_MODE_PROXY_SETTINGS_FIELD" /> permite que você especifi
 
           Deixar esta política sem definição permitirá que os usuários escolham as configurações de proxy por conta própria.</translation>
 <translation id="5177260184597743704">Política de configuração para o conector OnSecurityEvent do Chrome Enterprise</translation>
-<translation id="5179734767316042713">Lista de configurações para os serviços de conectores do Chrome Enterprise que serão aplicadas ao conector <ph name="ON_SECURITY_EVENT_ENTERPRISE_CONNECTOR" />, que é acionado quando há uma ocorrência de segurança no Chrome. Isso inclui vereditos negativos de análises dos conectores do Chrome Enterprise, reutilização de senha, navegação para páginas não seguras e outras ações do usuário relacionadas à segurança.
+<translation id="5179734767316042713">Lista de configurações para os serviços do Chrome Enterprise Connectors que serão aplicadas ao conector <ph name="ON_SECURITY_EVENT_ENTERPRISE_CONNECTOR" />, que é acionado quando há uma ocorrência de segurança no Chrome. Isso inclui vereditos negativos do Enterprise Connectors, reutilização de senha, navegação para páginas não seguras e outras ações do usuário relacionadas à segurança.
 
       O campo <ph name="ENTERPRISE_CONNECTOR_SERVICE_PROVIDER_FIELD" /> identifica o provedor de serviços de relatórios correspondente às configurações.
 
@@ -3312,7 +3312,7 @@ O campo <ph name="PROXY_MODE_PROXY_SETTINGS_FIELD" /> permite que você especifi
       Se o <ph name="PRODUCT_NAME" /> estiver aberto e esta política for modificada, ela só terá validade para as novas guias abertas. Portanto, é possível que algumas guias ainda apresentem o comportamento anterior.
 
       Para informações detalhadas sobre padrões de URL válidos, consulte https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.</translation>
-<translation id="585270638818921943">Impede o usuário de usar apps para Android de fontes não confiáveis</translation>
+<translation id="585270638818921943">Impede o uso de apps para Android de fontes não confiáveis</translation>
 <translation id="5855010364142818361">Esta política controla os parâmetros de linha de comando para o Chrome no Internet Explorer.
 
       Se o suplemento "Suporte a navegadores legados" do Internet Explorer não estiver instalado, esta política não terá efeito.
@@ -3740,7 +3740,7 @@ Se esta configuração estiver desativada ou se nenhum valor for definido, o Mod
 <translation id="6553143066970470539">Porcentagem de brilho da tela</translation>
 <translation id="6559057113164934677">Não permitir que nenhum site acesse minha câmera e meu microfone</translation>
 <translation id="6561396069801924653">Mostrar opções de acessibilidade no menu da bandeja do sistema</translation>
-<translation id="6561900678873266853">Lista de configurações para os serviços de conectores do Chrome Enterprise que serão aplicadas ao conector <ph name="ON_BULK_DATA_ENTRY_ENTERPRISE_CONNECTOR" />, que é acionado quando dados da área de transferência ou conteúdos da Web são inseridos no Chrome usando o recurso de arrastar e soltar.
+<translation id="6561900678873266853">Lista de configurações para os serviços do Chrome Enterprise Connectors que serão aplicadas ao conector <ph name="ON_BULK_DATA_ENTRY_ENTERPRISE_CONNECTOR" />, que é acionado quando dados da área de transferência ou conteúdos da Web são inseridos no Chrome usando o recurso de arrastar e soltar.
 
       Os campos <ph name="ENTERPRISE_CONNECTOR_URL_LIST_FIELD" />, <ph name="ENTERPRISE_CONNECTOR_TAGS_FIELD" />, <ph name="ENTERPRISE_CONNECTOR_ENABLE_FIELD" /> e <ph name="ENTERPRISE_CONNECTOR_DISABLE_FIELD" /> são usados para determinar se o conector enviará dados para análise quando eles forem inseridos em uma página específica e quais tags serão incluídas na solicitação de análise desses dados. Uma tag correspondente ao padrão "ativar" será incluída na solicitação de análise se o URL da página corresponder a um padrão associado a essa tag. Isso acontecerá apenas se nenhum padrão "desativar" com a mesma tag corresponder ao URL da página. A análise será feita se pelo menos uma tag for incluída na solicitação.
 
@@ -4373,7 +4373,7 @@ Essas políticas são ignoradas se a Área de trabalho remota do Google Chrome n
       Se o dispositivo do usuário for gerenciado, a disponibilidade da funcionalidade será dependente também da política do dispositivo correspondente.
 
       Se o dispositivo do usuário não for gerenciado, a disponibilidade da funcionalidade será dependente também da possibilidade de o usuário não ser proprietário do dispositivo.</translation>
-<translation id="7570291542739287032">Somente na nuvem</translation>
+<translation id="7570291542739287032">Somente no Cloud</translation>
 <translation id="757395965347379751">Quando esta configuração está ativada, o <ph name="PRODUCT_NAME" /> permite certificados SHA-1 assinados, desde que eles sejam validados e estejam vinculados a certificados de CA instalados localmente.
 
       Esta política depende da permissão de assinaturas SHA-1 pela pilha de verificação de certificados do sistema operacional. Se a atualização de um SO alterar o modo como esse sistema lida com certificados SHA-1, talvez esta política deixe de ter efeito. Além disso, esta política é usada como alternativa temporária para dar às empresas mais tempo para deixar de usar SHA-1. Esta política será removida no dia 1 de janeiro de 2019 ou em uma data próxima a essa.

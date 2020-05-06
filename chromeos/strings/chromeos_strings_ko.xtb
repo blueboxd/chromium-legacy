@@ -17,8 +17,10 @@
 <translation id="2805756323405976993">앱</translation>
 <translation id="2872961005593481000">종료</translation>
 <translation id="3008341117444806826">새로고침</translation>
+<translation id="3369013195428705271">모든 인쇄 기록을 삭제하시겠습니까? 진행 중인 인쇄 작업은 삭제되지 않습니다.</translation>
 <translation id="3515615323037921860">인쇄 작업</translation>
 <translation id="3749289110408117711">파일 이름</translation>
+<translation id="38114475217616659">모든 기록 삭제</translation>
 <translation id="3820172043799983114">잘못된 PIN입니다.</translation>
 <translation id="3838338534323494292">새 비밀번호</translation>
 <translation id="4003259559679196451"><ph name="ENROLLMENT_DOMAIN" />에서 이 기기를 관리하고 방문한 웹페이지, 비밀번호, 이메일을 비롯한 모든 사용자 활동에 액세스합니다.</translation>
@@ -43,6 +45,7 @@
 <translation id="6106186594183574873">완료하려면 이전 비밀번호를 입력하세요.</translation>
 <translation id="6146993107019042706">완료하려면 새 비밀번호를 입력하세요.</translation>
 <translation id="6643016212128521049">삭제</translation>
+<translation id="7162487448488904999">갤러리</translation>
 <translation id="7658239707568436148">취소</translation>
 <translation id="7690294790491645610">새 비밀번호 확인</translation>
 <translation id="7805768142964895445">상태</translation>

@@ -376,12 +376,15 @@ public class SpannableAutocompleteEditTextModel implements AutocompleteEditTextM
         // crbug.com/758443, crbug.com/766888: Japanese keyboard does not finish composition when we
         // restore the deleted text, and later typing will make Japanese keyboard move before the
         // restored character. Most keyboards accept finishComposingText and update their internal
-        // states. One exception is the recent version of Samsung keyboard which works goofily only
+        // states.
+        String pkgName = mDelegate.getKeyboardPackageName();
+        // One exception is the recent version of Samsung keyboard which works goofily only
         // when we finish composing text here. Since it is more difficult to blacklist all Japanese
         // keyboards, instead we call finishComposingText() for all the keyboards except for Samsung
         // keyboard.
-        String pkgName = mDelegate.getKeyboardPackageName();
-        return !pkgName.contains("com.sec.android.inputmethod");
+        return !pkgName.contains("com.sec.android.inputmethod")
+                // crbug.com/1071011: LG keyboard has the same issue.
+                && !pkgName.contains("com.lge.ime");
     }
 
     @VisibleForTesting

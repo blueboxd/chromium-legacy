@@ -8,7 +8,6 @@ import android.annotation.SuppressLint;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
 import android.support.test.filters.SmallTest;
-import android.util.SparseArray;
 import android.view.KeyEvent;
 import android.widget.ImageButton;
 
@@ -32,7 +31,7 @@ import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.omnibox.status.StatusViewCoordinator;
 import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteController.OnSuggestionsReceivedListener;
-import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestion;
+import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteResult;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabObserver;
@@ -47,8 +46,6 @@ import org.chromium.content_public.browser.test.util.KeyUtils;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.net.test.EmbeddedTestServer;
 import org.chromium.net.test.ServerCertificate;
-
-import java.util.List;
 
 /**
  * Tests of the Omnibox.
@@ -80,8 +77,8 @@ public class OmniboxTest {
     private static final OnSuggestionsReceivedListener sEmptySuggestionListener =
             new OnSuggestionsReceivedListener() {
                 @Override
-                public void onSuggestionsReceived(List<OmniboxSuggestion> suggestions,
-                        SparseArray<String> groupHeaders, String inlineAutocompleteText) {}
+                public void onSuggestionsReceived(
+                        AutocompleteResult autocompleteResult, String inlineAutocompleteText) {}
             };
 
     /**

@@ -245,7 +245,7 @@ HRESULT MediaFoundationAACAudioStream::GetMediaType(
 // accordingly).
 HRESULT MediaFoundationAACAudioStream::TransformSample(
     Microsoft::WRL::ComPtr<IMFSample>& sample) {
-  DVLOG(3) << __func__ << ": this=" << this;
+  DVLOG_FUNC(3);
 
   if (!enable_adts_header_removal_)
     return S_OK;

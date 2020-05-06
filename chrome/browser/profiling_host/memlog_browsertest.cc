@@ -6,7 +6,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/profiling_host/profiling_process_host.h"
 #include "chrome/common/chrome_switches.h"
-#include "components/heap_profiling/test_driver.h"
+#include "components/heap_profiling/multi_process/test_driver.h"
 #include "components/services/heap_profiling/public/cpp/settings.h"
 #include "components/services/heap_profiling/public/cpp/switches.h"
 #include "testing/gtest/include/gtest/gtest.h"

@@ -33,6 +33,7 @@
 <translation id="1208340532756947324">للمزامنة والتخصيص على جميع الأجهزة، يمكنك تفعيل المزامنة.</translation>
 <translation id="1209206284964581585">إخفاء الآن</translation>
 <translation id="1227058898775614466">سجلّ التنقُّل</translation>
+<translation id="1229399675748764149">جعل هذه الصفحة صفحتك الرئيسية</translation>
 <translation id="1231733316453485619">هل تريد تفعيل المزامنة؟</translation>
 <translation id="123724288017357924">إعادة تحميل الصفحة الحالية مع تجاهل المحتوى المُخزَّن مؤقتًا</translation>
 <translation id="124116460088058876">مزيد من اللغات</translation>
@@ -71,6 +72,7 @@
 <translation id="1513352483775369820">الإشارات المرجعية وسجلّ الويب</translation>
 <translation id="1513858653616922153">حذف كلمة المرور</translation>
 <translation id="1521774566618522728">نشط اليوم</translation>
+<translation id="1543538514740974167">الانتقال إلى هنا بشكل أسرع</translation>
 <translation id="1544826120773021464">‏لإدارة إعدادات حسابك على Google، يُرجى النقر على الزر "إدارة الحساب".</translation>
 <translation id="1549000191223877751">الانتقال إلى نافذة أخرى</translation>
 <translation id="1553358976309200471">‏تحديث Chrome‏</translation>
@@ -723,11 +725,13 @@
 <translation id="7022756207310403729">فتح في المتصفح</translation>
 <translation id="702463548815491781">‏يُوصى به عند تفعيل TalkBack أو الوصول عبر مفتاح التحويل</translation>
 <translation id="7029809446516969842">كلمات المرور</translation>
+<translation id="703523980599857277">تغيير الصفحة الرئيسية</translation>
 <translation id="7055152154916055070">تم حظر إعادة توجيه:</translation>
 <translation id="7063006564040364415">تعذر الاتصال بخادم المزامنة.</translation>
 <translation id="7071521146534760487">إدارة الحساب</translation>
 <translation id="7077143737582773186">‏بطاقة SD</translation>
 <translation id="7121362699166175603">‏يتم محو السجلّ وعمليات الإكمال التلقائي في شريط العناوين. وقد يتضمّن حسابك على Google نماذج أخرى من سجلّ التصفّح في <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
+<translation id="7128355412245153445">يمكنك الاطّلاع على أهم المواقع الإلكترونية وأحدث الأخبار عند النقر على زر "الشاشة الرئيسية".</translation>
 <translation id="7138678301420049075">أخرى</translation>
 <translation id="7146622961999026732">يبدو أن المواقع الإلكترونية والتطبيقات التالية مهمة بالنسبة إليك:</translation>
 <translation id="7149158118503947153"><ph name="BEGIN_LINK" />تحميل الصفحة الأصلية<ph name="END_LINK" /> من <ph name="DOMAIN_NAME" /></translation>
@@ -968,11 +972,13 @@
 <translation id="9155898266292537608">يمكنك أيضًا البحث بنقرة سريعة على كلمة</translation>
 <translation id="9169507124922466868">سجلّ التنقل مفتوح جزئيًا</translation>
 <translation id="9204836675896933765">ملف واحد متبقٍ</translation>
+<translation id="9205796607887024517">تحكَّم بالأخبار المعروضة هنا</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="9209888181064652401">لا يمكن إجراء المكالمات</translation>
 <translation id="9219103736887031265">الصور</translation>
 <translation id="926205370408745186">‏إزالة نشاط Chrome من الرفاهية الرقمية</translation>
 <translation id="932327136139879170">الصفحة الرئيسية</translation>
+<translation id="93753284658583800">تم تغيير الصفحة الرئيسية.</translation>
 <translation id="938850635132480979">الخطأ: <ph name="ERROR_CODE" /></translation>
 <translation id="95817756606698420">‏يمكن لـ Chrome استخدام <ph name="BEGIN_BOLD" />Sogou<ph name="END_BOLD" /> للبحث في الصين. ويمكنك تغيير هذا في <ph name="BEGIN_LINK" />الإعدادات<ph name="END_LINK" />.</translation>
 <translation id="968900484120156207">يتم عرض الصفحات التي تزورها هنا.</translation>

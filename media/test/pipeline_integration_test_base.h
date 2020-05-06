@@ -132,7 +132,7 @@ class PipelineIntegrationTestBase : public Pipeline::Client {
   }
 
   // Saves a test callback, ownership of which will be transferred to the next
-  // AudioRendererImpl created by CreateRenderer().
+  // AudioRendererImpl created by CreateDefaultRenderer().
   void set_audio_play_delay_cb(AudioRendererImpl::PlayDelayCBForTesting cb) {
     audio_play_delay_cb_ = std::move(cb);
   }
@@ -169,14 +169,19 @@ class PipelineIntegrationTestBase : public Pipeline::Client {
   base::TimeDelta current_duration_;
   AudioRendererImpl::PlayDelayCBForTesting audio_play_delay_cb_;
 
-  // A callback that can wrap one Renderer into another Renderer.
-  using WrapRendererCB = base::RepeatingCallback<std::unique_ptr<Renderer>(
-      std::unique_ptr<Renderer>)>;
-  WrapRendererCB wrap_renderer_cb_;
+  // By default RendererImpl will be created using CreateDefaultRenderer(). But
+  // if |create_renderer_cb_| is set, it'll be used to create the Renderer
+  // instead.
+  using CreateRendererCB = base::RepeatingCallback<std::unique_ptr<Renderer>(
+      base::Optional<RendererFactoryType> factory_type)>;
+  CreateRendererCB create_renderer_cb_;
 
-  // Sets |wrap_renderer_cb_| which will be used to wrap the Renderer created by
-  // CreateRenderer().
-  void SetWrapRendererCB(WrapRendererCB wrap_renderer_cb);
+  std::unique_ptr<Renderer> CreateDefaultRenderer(
+      base::Optional<RendererFactoryType> factory_type);
+
+  // Sets |create_renderer_cb_| which will be used to wrap the Renderer created
+  // by CreateDefaultRenderer().
+  void SetCreateRendererCB(CreateRendererCB create_renderer_cb);
 
   PipelineStatus StartInternal(
       std::unique_ptr<DataSource> data_source,

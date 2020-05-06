@@ -32,6 +32,12 @@ template("standalone_system_webview_apk_tmpl") {
         "//android_webview/nonembedded:system_webview_manifest"
     deps = upstream_only_webview_deps
     min_sdk_version = 21
+
+    # Material design is a large dependency that pulls in a lot of res/ files.
+    # At time of this comment, adding this dep even when unused adds 220kb.
+    assert_no_deps = [
+      "//third_party/android_deps:com_google_android_material_material_java",
+    ]
   }
 }
 
@@ -67,6 +73,7 @@ if (enable_webview_bundles) {
     base_module_target = ":system_webview_base_bundle_module"
     bundle_name = "SystemWebView"
     min_sdk_version = 21
+    compress_shared_libraries = true
   }
 }
 
@@ -91,6 +98,7 @@ if (android_64bit_target_cpu) {
       bundle_name = "SystemWebView32"
       include_64_bit_webview = false
       min_sdk_version = 21
+      compress_shared_libraries = true
     }
   }
 }

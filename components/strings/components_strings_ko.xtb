@@ -52,7 +52,6 @@
 <translation id="1197088940767939838">오렌지색</translation>
 <translation id="1201402288615127009">다음</translation>
 <translation id="1201895884277373915">이 사이트에서 더보기</translation>
-<translation id="1205963431094182634">로그인하여 Google 계정에 저장된 비밀번호 사용</translation>
 <translation id="1206967143813997005">잘못된 초기 서명</translation>
 <translation id="1209206284964581585">지금 숨기기</translation>
 <translation id="121201262018556460"><ph name="DOMAIN" />에 접속하려 했으나 서버가 안전성이 낮은 키가 포함된 인증서를 전달했습니다. 공격자가 비공개 키를 손상시켰을 수 있으며 서버를 가장한 공격자와 통신 중일 수 있습니다.</translation>
@@ -1215,7 +1214,6 @@
 <translation id="6116338172782435947">클립보드에 복사된 텍스트 및 이미지를 확인합니다.</translation>
 <translation id="6120179357481664955">UPI ID를 저장하시겠습니까?</translation>
 <translation id="6124432979022149706">Chrome Enterprise Connectors</translation>
-<translation id="6135641591018127088">Google 계정을 사용하여 안전한 비밀번호 만들기</translation>
 <translation id="6146055958333702838">케이블을 확인하고 사용 중인 라우터, 모뎀 또는 기타 네트워크 기기를
     재부팅하시기 바랍니다.</translation>
 <translation id="614940544461990577">다음 방법을 시도해 보세요.</translation>
@@ -1261,7 +1259,6 @@
 <translation id="6328639280570009161">네트워크 예측을 사용 중지해 보세요.</translation>
 <translation id="6328784461820205019">'연결이 비공개로 설정되어 있지 않습니다.', '&lt;span class="error-code"&gt;NET::ERR_CERT_AUTHORITY_INVALID&lt;/span&gt;', '&lt;span class="error-code"&gt;ERR_CERT_COMMON_NAME_INVALID&lt;/span&gt;', '&lt;span class="error-code"&gt;NET::ERR_CERT_WEAK_SIGNATURE_ALGORITHM&lt;/span&gt;', '&lt;span class="error-code"&gt;ERR_CERT_SYMANTEC_LEGACY&lt;/span&gt;' 또는 'SSL 인증서 오류'</translation>
 <translation id="6328786501058569169">사기성 사이트</translation>
-<translation id="6333334544069706521">Google 계정에 저장된 비밀번호 사용</translation>
 <translation id="6337133576188860026"><ph name="SIZE" /> 미만의 저장용량을 확보합니다. 일부 사이트는 다음 방문 시 로드 속도가 느려질 수 있습니다.</translation>
 <translation id="6337534724793800597">이름별로 정책 필터링</translation>
 <translation id="6353505687280762741">{COUNT,plural, =0{없음}=1{비밀번호 1개(도메인: <ph name="DOMAIN_LIST" />, 동기화됨)}=2{비밀번호 2개(도메인: <ph name="DOMAIN_LIST" />, 동기화됨)}other{비밀번호 #개(도메인: <ph name="DOMAIN_LIST" />, 동기화됨)}}</translation>

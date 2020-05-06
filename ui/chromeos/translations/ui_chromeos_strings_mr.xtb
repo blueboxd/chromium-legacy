@@ -90,6 +90,7 @@
 <translation id="1947424002851288782">जर्मन कीबोर्ड</translation>
 <translation id="1972984168337863910">फाइल फीडबॅक पॅनलचा विस्तार करा</translation>
 <translation id="1984603991036629094">अर्मेनियन Phonetic कीबोर्ड</translation>
+<translation id="1995337122023280937">फाइल स्थानावर जा</translation>
 <translation id="2001796770603320721">ड्राइव्ह मध्ये व्यवस्थापित करा</translation>
 <translation id="2009067268969781306">ड्राइव्ह फॉरमॅट त्यावर स्टोअर केलेला डेटा हटवेल. ही क्रिया पहिल्यासारखी केली जाऊ शकत नाही.</translation>
 <translation id="2028997212275086731">RAR संग्रहण</translation>
@@ -141,6 +142,7 @@
 <translation id="2638942478653899953">Google ड्राइव्ह पर्यंत पोहोचणे शक्य नाही. कृपया <ph name="BEGIN_LINK" />लॉग आउट करा<ph name="END_LINK" /> आणि परत लॉग इन करा.</translation>
 <translation id="2649120831653069427">रेनबोफिश</translation>
 <translation id="2661146741306740526">16x9</translation>
+<translation id="2664412712123763093">फाइलचे स्थान</translation>
 <translation id="2672394958563893062">एरर आली. सुरवातीपासून रीस्टार्ट करण्यासाठी क्लिक करा.</translation>
 <translation id="2676946222714718093">यावर प्ले होत आहे</translation>
 <translation id="2735698359135166290">रोमेनियन मानक कीबोर्ड</translation>
@@ -349,6 +351,7 @@
 <translation id="5081517858322016911"><ph name="TOTAL_FILE_SIZE" /> फाइल हटवल्या जातील</translation>
 <translation id="509429900233858213">एक एरर आली आहे.</translation>
 <translation id="5098629044894065541">हिब्रू</translation>
+<translation id="5112685521274804841">या फोल्डरमधील फाइल फक्त वाचता येणार्‍या आहेत. काही अ‍ॅक्टिव्हिटींना सपोर्ट नाही.</translation>
 <translation id="5123433949759960244">बास्केटबॉल</translation>
 <translation id="5129662217315786329">पोलिश</translation>
 <translation id="5144820558584035333">हँगल 3 संच (390)</translation>
@@ -699,6 +702,7 @@ Google ड्राइव्ह मधील फायली अपडेट क
 <translation id="9034924485347205037">Linux फायली</translation>
 <translation id="9035012421917565900">हे आयटम '<ph name="DESTINATION_NAME" />' मध्ये परत हलवणे शक्य नाही, म्हणून ही क्रिया पहिल्यासारखी केली जाणार नाही.</translation>
 <translation id="9038620279323455325">"<ph name="FILE_NAME" />" नावाची फाइल आधीच अस्तित्वात आहे. कृपया वेगळे नाव निवडा.</translation>
+<translation id="9062992083244091966"><ph name="APP_NAME" /> अ‍ॅप्ससोबत फाइल उघडण्यासाठी, प्रथम त्या <ph name="APP_NAME" /> शेअर केलेल्या फाइल फोल्डरमध्ये हलवा.</translation>
 <translation id="9064939804718829769">हस्तांतरित करत आहे...</translation>
 <translation id="9065203028668620118">संपादन</translation>
 <translation id="9099674669267916096">पेज गणना</translation>

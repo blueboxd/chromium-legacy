@@ -1244,6 +1244,40 @@ public class JsJavaInteractionTest {
         Assert.assertTrue(mListener.hasNoMoreOnPostMessage());
     }
 
+    @Test
+    @MediumTest
+    @Feature({"AndroidWebView", "JsJavaInteraction"})
+    public void testDocumentStartJavaScript_doubleRemoveScript() throws Throwable {
+        addWebMessageListenerOnUiThread(mAwContents, JS_OBJECT_NAME, new String[] {"*"}, mListener);
+
+        final String script = JS_OBJECT_NAME + ".postMessage('" + HELLO + "');";
+        ScriptReference reference =
+                addDocumentStartJavascriptOnUiThread(mAwContents, script, new String[] {"*"});
+
+        final String url = loadUrlFromPath(HELLO_WORLD_HTML);
+
+        TestWebMessageListener.Data data = mListener.waitForOnPostMessage();
+
+        assertUrlHasOrigin(url, data.mSourceOrigin);
+        Assert.assertEquals(HELLO, data.mMessage);
+
+        // Remove twice, the second time should take no effect.
+        TestThreadUtils.runOnUiThreadBlocking(() -> reference.remove());
+        TestThreadUtils.runOnUiThreadBlocking(() -> reference.remove());
+        // Load the page again.
+        loadUrlFromPath(HELLO_WORLD_HTML);
+
+        Assert.assertTrue(mListener.hasNoMoreOnPostMessage());
+
+        // Remove twice again, should have no effect.
+        TestThreadUtils.runOnUiThreadBlocking(() -> reference.remove());
+        TestThreadUtils.runOnUiThreadBlocking(() -> reference.remove());
+        // Load the page again.
+        loadUrlFromPath(HELLO_WORLD_HTML);
+
+        Assert.assertTrue(mListener.hasNoMoreOnPostMessage());
+    }
+
     private void checkInjectAndAccessJsObjectNameAsWindowProperty(String jsObjName)
             throws Throwable {
         addWebMessageListenerOnUiThread(mAwContents, jsObjName, new String[] {"*"}, mListener);

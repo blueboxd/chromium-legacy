@@ -90,6 +90,7 @@
 <translation id="1947424002851288782">Tyskt tangentbord</translation>
 <translation id="1972984168337863910">Utöka panel med information om filåtgärder</translation>
 <translation id="1984603991036629094">Armeniskt fonetiskt tangentbord</translation>
+<translation id="1995337122023280937">Gå till filens plats</translation>
 <translation id="2001796770603320721">Hantera i Drive</translation>
 <translation id="2009067268969781306">Om du formaterar en enhet raderas all data som lagras på den. Det går inte att ångra åtgärden.</translation>
 <translation id="2028997212275086731">RAR-arkiv</translation>
@@ -141,6 +142,7 @@
 <translation id="2638942478653899953">Det gick inte att nå Google Drive. <ph name="BEGIN_LINK" />Logga ut<ph name="END_LINK" /> och sedan in igen.</translation>
 <translation id="2649120831653069427">Regnbågsfisk</translation>
 <translation id="2661146741306740526">16:9</translation>
+<translation id="2664412712123763093">Filens plats</translation>
 <translation id="2672394958563893062">Ett fel inträffade. Klicka här och börja om från början.</translation>
 <translation id="2676946222714718093">Spelas på</translation>
 <translation id="2735698359135166290">Rumänskt standardtangentbord</translation>
@@ -349,6 +351,7 @@
 <translation id="5081517858322016911">Filer på sammanlagt <ph name="TOTAL_FILE_SIZE" /> tas bort</translation>
 <translation id="509429900233858213">Det har uppstått ett fel.</translation>
 <translation id="5098629044894065541">hebreiska</translation>
+<translation id="5112685521274804841">Filer i den här mappen är skrivskyddade. Vissa aktiviteter stöds inte.</translation>
 <translation id="5123433949759960244">Basketboll</translation>
 <translation id="5129662217315786329">polska</translation>
 <translation id="5144820558584035333">Hangul 3 Set (390)</translation>
@@ -699,6 +702,7 @@
 <translation id="9034924485347205037">Linux-filer</translation>
 <translation id="9035012421917565900">Eftersom det inte går att flytta tillbaka objekten till <ph name="DESTINATION_NAME" /> går det inte att ångra åtgärden.</translation>
 <translation id="9038620279323455325">Det finns redan en fil med namnet <ph name="FILE_NAME" />. Välj ett annat namn.</translation>
+<translation id="9062992083244091966">Om du vill öppna filer med <ph name="APP_NAME" /> ska du först flytta dem till mappen med delade <ph name="APP_NAME" />-filer.</translation>
 <translation id="9064939804718829769">Överför ...</translation>
 <translation id="9065203028668620118">Redigera</translation>
 <translation id="9099674669267916096">Sidantal</translation>

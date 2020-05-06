@@ -153,6 +153,9 @@ GraphImpl::GraphImpl() {
 GraphImpl::~GraphImpl() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
+  // All graph registered objects should have been unregistered.
+  DCHECK(registered_objects_.empty());
+
   // At this point, all typed observers should be empty.
   DCHECK(graph_observers_.empty());
   DCHECK(frame_node_observers_.empty());
@@ -275,6 +278,21 @@ std::unique_ptr<GraphOwned> GraphImpl::TakeFromGraph(GraphOwned* graph_owned) {
   return object;
 }
 
+void GraphImpl::RegisterObject(GraphRegistered* object) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_EQ(nullptr, GetRegisteredObject(object->GetTypeId()));
+  registered_objects_.insert(object);
+  // If there are ever so many registered objects we should consider changing
+  // data structures.
+  DCHECK_GT(100u, registered_objects_.size());
+}
+
+void GraphImpl::UnregisterObject(GraphRegistered* object) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_EQ(object, GetRegisteredObject(object->GetTypeId()));
+  registered_objects_.erase(object);
+}
+
 const SystemNode* GraphImpl::FindOrCreateSystemNode() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return FindOrCreateSystemNodeImpl();
@@ -322,6 +340,15 @@ uintptr_t GraphImpl::GetImplType() const {
 
 const void* GraphImpl::GetImpl() const {
   return this;
+}
+
+GraphRegistered* GraphImpl::GetRegisteredObject(uintptr_t type_id) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  auto it = registered_objects_.find(type_id);
+  if (it == registered_objects_.end())
+    return nullptr;
+  DCHECK_EQ((*it)->GetTypeId(), type_id);
+  return *it;
 }
 
 // static

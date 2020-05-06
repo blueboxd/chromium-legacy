@@ -17,8 +17,10 @@
 <translation id="2805756323405976993">แอป</translation>
 <translation id="2872961005593481000">ปิด</translation>
 <translation id="3008341117444806826">รีเฟรช</translation>
+<translation id="3369013195428705271">แน่ใจไหมว่าต้องการล้างประวัติการพิมพ์ทั้งหมด ระบบจะล้างงานพิมพ์ที่กำลังพิมพ์อยู่</translation>
 <translation id="3515615323037921860">งานพิมพ์</translation>
 <translation id="3749289110408117711">ชื่อไฟล์</translation>
+<translation id="38114475217616659">ล้างประวัติทั้งหมด</translation>
 <translation id="3820172043799983114">PIN ไม่ถูกต้อง</translation>
 <translation id="3838338534323494292">รหัสผ่านใหม่</translation>
 <translation id="4003259559679196451"><ph name="ENROLLMENT_DOMAIN" /> จัดการอุปกรณ์นี้และมีสิทธิ์เข้าถึงกิจกรรมทั้งหมดของผู้ใช้ ซึ่งรวมถึงหน้าเว็บที่เข้าชม รหัสผ่าน และอีเมล</translation>
@@ -43,6 +45,7 @@
 <translation id="6106186594183574873">ป้อนรหัสผ่านเดิมเพื่อเปลี่ยนรหัสผ่านให้เสร็จ</translation>
 <translation id="6146993107019042706">ป้อนรหัสผ่านใหม่เพื่อเปลี่ยนรหัสผ่านให้เสร็จ</translation>
 <translation id="6643016212128521049">ล้าง</translation>
+<translation id="7162487448488904999">แกลเลอรี</translation>
 <translation id="7658239707568436148">ยกเลิก</translation>
 <translation id="7690294790491645610">ยืนยันรหัสผ่านใหม่</translation>
 <translation id="7805768142964895445">สถานะ</translation>

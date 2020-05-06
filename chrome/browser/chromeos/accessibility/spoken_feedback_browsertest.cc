@@ -39,8 +39,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
-#include "extensions/browser/extension_host.h"
-#include "extensions/browser/process_manager.h"
+#include "extensions/browser/browsertest_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/test/ui_controls.h"
 #include "ui/views/widget/widget.h"
@@ -107,7 +106,8 @@ void LoggedInSpokenFeedbackTest::SendKeyPressWithSearchAndControlAndShift(
 
 void LoggedInSpokenFeedbackTest::SendStickyKeyCommand() {
   // To avoid flakes in sending keys, execute the command directly in js.
-  RunJavaScriptInChromeVoxBackgroundPage(
+  extensions::browsertest_util::ExecuteScriptInBackgroundPageNoWait(
+      browser()->profile(), extension_misc::kChromeVoxExtensionId,
       "CommandHandler.onCommand('toggleStickyMode');");
 }
 
@@ -116,20 +116,12 @@ void LoggedInSpokenFeedbackTest::SendMouseMoveTo(const gfx::Point& location) {
       ASSERT_TRUE(ui_controls::SendMouseMove(location.x(), location.y())));
 }
 
-void LoggedInSpokenFeedbackTest::RunJavaScriptInChromeVoxBackgroundPage(
-    const std::string& script) {
-  extensions::ExtensionHost* host =
-      extensions::ProcessManager::Get(browser()->profile())
-          ->GetBackgroundHostForExtension(
-              extension_misc::kChromeVoxExtensionId);
-  content::ExecuteScriptAsync(host->host_contents(), script);
-}
-
 void LoggedInSpokenFeedbackTest::SimulateTouchScreenInChromeVox() {
   // ChromeVox looks at whether 'ontouchstart' exists to know whether
   // or not it should respond to hover events. Fake it so that touch
   // exploration events get spoken.
-  RunJavaScriptInChromeVoxBackgroundPage(
+  extensions::browsertest_util::ExecuteScriptInBackgroundPageNoWait(
+      browser()->profile(), extension_misc::kChromeVoxExtensionId,
       "window.ontouchstart = function() {};");
 }
 
@@ -143,7 +135,8 @@ void LoggedInSpokenFeedbackTest::DisableEarcons() {
   // running the test locally, but seems to cause crashes
   // (http://crbug.com/396507). Work around this by just telling
   // ChromeVox to not ever play earcons (prerecorded sound effects).
-  RunJavaScriptInChromeVoxBackgroundPage(
+  extensions::browsertest_util::ExecuteScriptInBackgroundPageNoWait(
+      browser()->profile(), extension_misc::kChromeVoxExtensionId,
       "ChromeVox.earcons.playEarcon = function() {};");
 }
 

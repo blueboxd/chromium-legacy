@@ -39,6 +39,7 @@
 #include "storage/browser/quota/quota_client.h"
 #include "storage/browser/quota/quota_manager.h"
 #include "storage/browser/quota/quota_manager_proxy.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/appcache/appcache_info.mojom.h"
 #include "third_party/blink/public/mojom/quota/quota_types.mojom.h"
 
@@ -358,6 +359,9 @@ void AppCacheStorageImpl::GetAllInfoTask::Run() {
     for (const auto& group : groups) {
       AppCacheDatabase::CacheRecord cache_record;
       database_->FindCacheForGroup(group.group_id, &cache_record);
+      if (!cache_record.HasValidOriginTrialToken())
+        continue;
+
       blink::mojom::AppCacheInfo info;
       info.manifest_url = group.manifest_url;
       info.creation_time = group.creation_time;
@@ -508,10 +512,16 @@ class AppCacheStorageImpl::CacheLoadTask : public StoreOrLoadTask {
 };
 
 void AppCacheStorageImpl::CacheLoadTask::Run() {
-  success_ =
-      database_->FindCache(cache_id_, &cache_record_) &&
-      database_->FindGroup(cache_record_.group_id, &group_record_) &&
-      FindRelatedCacheRecords(cache_id_);
+  success_ = database_->FindCache(cache_id_, &cache_record_);
+  if (!success_)
+    return;
+  if (!cache_record_.HasValidOriginTrialToken()) {
+    success_ = false;
+    return;
+  }
+
+  success_ = database_->FindGroup(cache_record_.group_id, &group_record_) &&
+             FindRelatedCacheRecords(cache_id_);
 
   if (success_)
     database_->LazyUpdateLastAccessTime(group_record_.group_id,
@@ -556,8 +566,16 @@ class AppCacheStorageImpl::GroupLoadTask : public StoreOrLoadTask {
 void AppCacheStorageImpl::GroupLoadTask::Run() {
   success_ =
       database_->FindGroupForManifestUrl(manifest_url_, &group_record_) &&
-      database_->FindCacheForGroup(group_record_.group_id, &cache_record_) &&
-      FindRelatedCacheRecords(cache_record_.cache_id);
+      database_->FindCacheForGroup(group_record_.group_id, &cache_record_);
+
+  if (!success_)
+    return;
+  if (!cache_record_.HasValidOriginTrialToken()) {
+    success_ = false;
+    return;
+  }
+
+  success_ = FindRelatedCacheRecords(cache_record_.cache_id);
 
   if (success_) {
     database_->LazyUpdateLastAccessTime(group_record_.group_id,
@@ -946,10 +964,11 @@ void AppCacheStorageImpl::FindMainResponseTask::Run() {
   if (!preferred_manifest_url_.is_empty()) {
     AppCacheDatabase::GroupRecord preferred_group;
     AppCacheDatabase::CacheRecord preferred_cache;
-    if (database_->FindGroupForManifestUrl(
-            preferred_manifest_url_, &preferred_group) &&
-        database_->FindCacheForGroup(
-            preferred_group.group_id, &preferred_cache)) {
+    if (database_->FindGroupForManifestUrl(preferred_manifest_url_,
+                                           &preferred_group) &&
+        database_->FindCacheForGroup(preferred_group.group_id,
+                                     &preferred_cache) &&
+        preferred_cache.HasValidOriginTrialToken()) {
       preferred_cache_id = preferred_cache.cache_id;
     }
   }
@@ -979,10 +998,14 @@ bool AppCacheStorageImpl::FindMainResponseTask::FindExactMatch(
     // Take the first with a valid, non-foreign entry.
     for (const auto& entry : entries) {
       AppCacheDatabase::GroupRecord group_record;
+      AppCacheDatabase::CacheRecord cache_record;
       if ((entry.flags & AppCacheEntry::FOREIGN) ||
-          !database_->FindGroupForCache(entry.cache_id, &group_record)) {
+          !database_->FindGroupForCache(entry.cache_id, &group_record) ||
+          !database_->FindCache(entry.cache_id, &cache_record) ||
+          !cache_record.HasValidOriginTrialToken()) {
         continue;
       }
+
       manifest_url_ = group_record.manifest_url;
       group_id_ = group_record.group_id;
       entry_ = AppCacheEntry(entry.flags, entry.response_id);
@@ -1066,8 +1089,14 @@ FindMainResponseTask::FindFirstValidNamespace(
                              namespace_record->namespace_.target_url,
                              &entry_record)) {
       AppCacheDatabase::GroupRecord group_record;
-      if ((entry_record.flags & AppCacheEntry::FOREIGN) ||
-          !database_->FindGroupForCache(entry_record.cache_id, &group_record)) {
+      AppCacheDatabase::CacheRecord cache_record;
+      if (entry_record.flags & AppCacheEntry::FOREIGN)
+        continue;
+      if (!database_->FindGroupForCache(entry_record.cache_id, &group_record))
+        continue;
+      if (!database_->FindCache(entry_record.cache_id, &cache_record))
+        continue;
+      if (!cache_record.HasValidOriginTrialToken()) {
         continue;
       }
       manifest_url_ = group_record.manifest_url;

@@ -522,14 +522,14 @@ base::Optional<int> AXNode::GetTableAriaColCount() const {
   const AXTableInfo* table_info = GetAncestorTableInfo();
   if (!table_info)
     return base::nullopt;
-  return table_info->aria_col_count;
+  return base::make_optional(table_info->aria_col_count);
 }
 
 base::Optional<int> AXNode::GetTableAriaRowCount() const {
   const AXTableInfo* table_info = GetAncestorTableInfo();
   if (!table_info)
     return base::nullopt;
-  return table_info->aria_row_count;
+  return base::make_optional(table_info->aria_row_count);
 }
 
 base::Optional<int> AXNode::GetTableCellCount() const {

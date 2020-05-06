@@ -33,6 +33,7 @@
 <translation id="1208340532756947324">Untuk menyinkronkan dan mempersonalisasi berbagai perangkat, aktifkan sinkronisasi</translation>
 <translation id="1209206284964581585">Sembunyikan sekarang</translation>
 <translation id="1227058898775614466">Histori navigasi</translation>
+<translation id="1229399675748764149">Jadikan ini halaman beranda Anda</translation>
 <translation id="1231733316453485619">Aktifkan sinkronisasi?</translation>
 <translation id="123724288017357924">Memuat ulang halaman, mengabaikan konten dalam cache</translation>
 <translation id="124116460088058876">Bahasa lainnya</translation>
@@ -71,6 +72,7 @@
 <translation id="1513352483775369820">Bookmark dan histori web</translation>
 <translation id="1513858653616922153">Hapus sandi</translation>
 <translation id="1521774566618522728">Aktif hari ini</translation>
+<translation id="1543538514740974167">Buka halaman ini lebih cepat</translation>
 <translation id="1544826120773021464">Untuk mengelola akun Google Anda, ketuk tombol "Kelola akun"</translation>
 <translation id="1549000191223877751">Beralih ke jendela lain</translation>
 <translation id="1553358976309200471">Perbarui browser Chrome</translation>
@@ -723,11 +725,13 @@ Misalnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangka
 <translation id="7022756207310403729">Buka di browser</translation>
 <translation id="702463548815491781">Disarankan saat TalkBack atau Tombol Akses aktif</translation>
 <translation id="7029809446516969842">Sandi</translation>
+<translation id="703523980599857277">Ubah halaman beranda</translation>
 <translation id="7055152154916055070">Pengalihan diblokir:</translation>
 <translation id="7063006564040364415">Tidak dapat menyambung ke server sinkronisasi.</translation>
 <translation id="7071521146534760487">Kelola akun</translation>
 <translation id="7077143737582773186">Kartu Secure Digital</translation>
 <translation id="7121362699166175603">Menghapus histori dan pelengkapan otomatis di kolom URL. Akun Google Anda mungkin memiliki bentuk histori penjelajahan lainnya di <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
+<translation id="7128355412245153445">Lihat situs populer dan artikel terbaru saat Anda mengetuk tombol Beranda</translation>
 <translation id="7138678301420049075">Lainnya</translation>
 <translation id="7146622961999026732">Situs dan aplikasi ini sepertinya penting untuk Anda:</translation>
 <translation id="7149158118503947153"><ph name="BEGIN_LINK" />Muat halaman asli<ph name="END_LINK" /> dari <ph name="DOMAIN_NAME" /></translation>
@@ -968,11 +972,13 @@ Misalnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangka
 <translation id="9155898266292537608">Anda juga dapat menelusuri dengan mengetuk kata secara cepat</translation>
 <translation id="9169507124922466868">Histori navigasi terbuka setengah</translation>
 <translation id="9204836675896933765">1 file tersisa</translation>
+<translation id="9205796607887024517">Kontrol artikel Anda di sini</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="9209888181064652401">Tidak dapat menelepon</translation>
 <translation id="9219103736887031265">Gambar</translation>
 <translation id="926205370408745186">Hapus aktivitas Chrome Anda dari Kesehatan Digital</translation>
 <translation id="932327136139879170">Beranda</translation>
+<translation id="93753284658583800">Halaman beranda diubah</translation>
 <translation id="938850635132480979">Kesalahan: <ph name="ERROR_CODE" /></translation>
 <translation id="95817756606698420">Chrome dapat menggunakan <ph name="BEGIN_BOLD" />Sogou<ph name="END_BOLD" /> sebagai mesin telusur di Tiongkok. Anda dapat mengubahnya di <ph name="BEGIN_LINK" />Setelan<ph name="END_LINK" />.</translation>
 <translation id="968900484120156207">Halaman yang Anda kunjungi akan muncul di sini</translation>

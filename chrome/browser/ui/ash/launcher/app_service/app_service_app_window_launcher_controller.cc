@@ -222,10 +222,18 @@ void AppServiceAppWindowLauncherController::OnWindowDestroying(
   // window could be teleported from the inactive user, and isn't saved in the
   // proxy of the active user's profile, but it should still be removed from
   // the controller, and the shelf, so search all the proxies.
-  const ash::ShelfID shelf_id =
-      GetShelfId(window, true /*search_profile_list*/);
-  if (shelf_id.IsNull())
-    return;
+  ash::ShelfID shelf_id = GetShelfId(window, true /*search_profile_list*/);
+  if (shelf_id.IsNull()) {
+    // For Crostini apps, it could be run from the command line, and not saved
+    // in AppService, so GetShelfId could return null when the window is
+    // destroyed, but it should still be deleted from instance and remove the
+    // app window from the shelf. So if we can get the window from
+    // InstanceRegistry, we should still destroy it from InstanceRegistry and
+    // remove the app window from the shelf
+    shelf_id = proxy_->InstanceRegistry().GetShelfId(window);
+    if (shelf_id.IsNull())
+      return;
+  }
 
   if (app_service_instance_helper_->IsOpenedInBrowser(shelf_id.app_id,
                                                       window) ||

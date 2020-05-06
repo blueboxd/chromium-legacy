@@ -3756,3 +3756,52 @@ EVENT_TYPE(HTTP3_HEADERS_SENT)
 //    "headers": <A dictionary of the headers sent>
 //  }
 EVENT_TYPE(HTTP3_PUSH_PROMISE_SENT)
+
+// -----------------------------------------------------------------------------
+// Trust Tokens-related events
+// -----------------------------------------------------------------------------
+
+// Event emitted when a request with an associated Trust Tokens operation
+// reaches the net stack (TrustTokenRequestHelperFactory).
+//
+// The BEGIN event contains the operation type:
+// {
+//  "Operation type (mojom.TrustTokenOperationType)": <The operation type>
+// }
+//
+// The END event contains a human-readable explanation of whether creating a
+// Trust Tokens helper (i.e., moving on to the bulk of the operation-specific
+// logic) succeeded or failed:
+// {
+//  "outcome": <human-readable explanation of the outcome>
+// }
+EVENT_TYPE(TRUST_TOKEN_OPERATION_REQUESTED)
+
+// For each of the BEGIN/FINALIZE event type pairs below:
+//
+// The BEGIN event type's BEGIN event is emitted when a request with an
+// associated Trust Tokens operation starts the "Begin" (outbound) phase of the
+// operation. Its END event contains a description of why the outbound phase of
+// the operation succeeded or failed:
+// {
+//  "outcome": <human-readable explanation of the outcome>
+// }
+//
+// The FINALIZE event type is the analogue for the "Finalize" (inbound) phase of
+// the operation.
+//
+// BEGIN_ISSUANCE's BEGIN event is the only event containing a dynamic parameter
+// populated with data from an operation (rather than just a success-or-error
+// description). On success, it contains the number of signed tokens that the
+// issuance operation yielded.
+// {
+//  "outcome": <human-readable explanation of the outcome>,
+//  "# tokens obtained": <number of tokens>
+// }
+EVENT_TYPE(TRUST_TOKEN_OPERATION_BEGIN_ISSUANCE)
+EVENT_TYPE(TRUST_TOKEN_OPERATION_FINALIZE_ISSUANCE)
+
+EVENT_TYPE(TRUST_TOKEN_OPERATION_BEGIN_REDEMPTION)
+EVENT_TYPE(TRUST_TOKEN_OPERATION_FINALIZE_REDEMPTION)
+
+EVENT_TYPE(TRUST_TOKEN_OPERATION_BEGIN_SIGNING)

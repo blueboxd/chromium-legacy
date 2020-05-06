@@ -19,10 +19,6 @@ namespace base {
 class ListValue;
 }
 
-namespace content {
-class WebUIDataSource;
-}
-
 namespace chromeos {
 namespace settings {
 
@@ -30,10 +26,8 @@ namespace settings {
 class DateTimeHandler : public ::settings::SettingsPageUIHandler,
                         public SystemClockClient::Observer {
  public:
+  DateTimeHandler();
   ~DateTimeHandler() override;
-
-  // Adds load-time values to html_source before creating the handler.
-  static DateTimeHandler* Create(content::WebUIDataSource* html_source);
 
   // SettingsPageUIHandler implementation.
   void RegisterMessages() override;
@@ -41,8 +35,6 @@ class DateTimeHandler : public ::settings::SettingsPageUIHandler,
   void OnJavascriptDisallowed() override;
 
  private:
-  DateTimeHandler();
-
   // SystemClockClient::Observer implementation.
   void SystemClockCanSetTimeChanged(bool can_set_time) override;
 

@@ -31,12 +31,10 @@ constexpr base::TimeDelta kBackgroundTaskFlexTime =
 TileServiceImpl::TileServiceImpl(
     std::unique_ptr<ImageLoader> image_loader,
     std::unique_ptr<TileManager> tile_manager,
-    std::unique_ptr<TileConfig> config,
     background_task::BackgroundTaskScheduler* scheduler,
     std::unique_ptr<TileFetcher> tile_fetcher)
     : image_loader_(std::move(image_loader)),
       tile_manager_(std::move(tile_manager)),
-      config_(std::move(config)),
       scheduler_(scheduler),
       tile_fetcher_(std::move(tile_fetcher)) {
   // TODO(crbug.com/1077172): Initialize tile_db within tile_manager from
@@ -73,7 +71,7 @@ void TileServiceImpl::ScheduleDailyTask() {
   task_info.is_persisted = true;
   task_info.update_current = false;
   task_info.network_type =
-      config_->is_unmetered_network_required
+      TileConfig::GetIsUnMeteredNetworkRequired()
           ? background_task::TaskInfo::NetworkType::UNMETERED
           : background_task::TaskInfo::NetworkType::ANY;
 

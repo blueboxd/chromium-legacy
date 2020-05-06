@@ -400,12 +400,6 @@ class NetworkingPrivateApiTest : public ExtensionApiTest {
 // other. TODO(stevenjb): Use extensions::ApiUnitTest once moved to
 // src/extensions.
 
-// These fail on Windows due to crbug.com/177163. Note: we still have partial
-// coverage in NetworkingPrivateServiceClientApiTest. TODO(stevenjb): Enable
-// these on Windows once we switch to extensions::ApiUnitTest.
-
-#if !defined(OS_WIN)
-
 IN_PROC_BROWSER_TEST_F(NetworkingPrivateApiTest, GetProperties) {
   EXPECT_TRUE(RunNetworkingSubtest("getProperties")) << message_;
 }
@@ -512,8 +506,9 @@ IN_PROC_BROWSER_TEST_F(NetworkingPrivateApiTest, GetGlobalPolicy) {
   EXPECT_TRUE(RunNetworkingSubtest("getGlobalPolicy")) << message_;
 }
 
-// Test failure case
+namespace {
 
+// Test failure case
 class NetworkingPrivateApiTestFail : public NetworkingPrivateApiTest {
  public:
   NetworkingPrivateApiTestFail() { test_failure_ = true; }
@@ -523,6 +518,8 @@ class NetworkingPrivateApiTestFail : public NetworkingPrivateApiTest {
  protected:
   DISALLOW_COPY_AND_ASSIGN(NetworkingPrivateApiTestFail);
 };
+
+}  // namespace
 
 IN_PROC_BROWSER_TEST_F(NetworkingPrivateApiTestFail, GetProperties) {
   EXPECT_FALSE(RunNetworkingSubtest("getProperties")) << message_;
@@ -614,7 +611,5 @@ IN_PROC_BROWSER_TEST_F(NetworkingPrivateApiTestFail,
                        SelectCellularMobileNetwork) {
   EXPECT_FALSE(RunNetworkingSubtest("selectCellularMobileNetwork")) << message_;
 }
-
-#endif // defined(OS_WIN)
 
 }  // namespace extensions

@@ -600,6 +600,9 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kAdvancedProtectionAllowed,
     prefs::kAdvancedProtectionAllowed,
     base::Value::Type::BOOLEAN },
+  { key::kAccessibilityImageLabelsEnabled,
+    prefs::kAccessibilityImageLabelsEnabled,
+    base::Value::Type::BOOLEAN },
 
 #if defined(OS_ANDROID)
   { key::kDataCompressionProxyEnabled,
@@ -966,6 +969,9 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kPluginVmImage,
     plugin_vm::prefs::kPluginVmImage,
     base::Value::Type::DICTIONARY },
+  { key::kPluginVmUserId,
+    plugin_vm::prefs::kPluginVmUserId,
+    base::Value::Type::STRING },
   { key::kVoiceInteractionContextEnabled,
     chromeos::assistant::prefs::kAssistantContextEnabled,
     base::Value::Type::BOOLEAN },

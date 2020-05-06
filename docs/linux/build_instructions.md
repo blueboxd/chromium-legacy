@@ -183,7 +183,6 @@ it. e.g. Intel, Opera, Samsung (this is not useful if you're using Goma).
 In order to use `icecc`, set the following GN args:
 
 ```
-linux_use_bundled_binutils=false
 use_debug_fission=false
 is_clang=false
 ```

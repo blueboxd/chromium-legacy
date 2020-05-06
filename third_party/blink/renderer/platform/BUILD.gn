@@ -9,6 +9,7 @@ import("//build/config/features.gni")
 import("//build/config/jumbo.gni")
 import("//build/config/ui.gni")
 import("//media/media_options.gni")
+import("//skia/features.gni")
 import("//testing/libfuzzer/fuzzer_test.gni")
 import("//testing/test.gni")
 import("//third_party/blink/public/public_features.gni")
@@ -1678,6 +1679,10 @@ jumbo_component("platform") {
   if (use_webaudio_pffft) {
     include_dirs += [ "//third_party/pffft/src" ]
     deps += [ "//third_party/pffft" ]
+  }
+
+  if (skia_use_dawn) {
+    deps += [ "//third_party/dawn/src/dawn:dawncpp" ]
   }
 
   if (!is_debug && !optimize_for_size) {

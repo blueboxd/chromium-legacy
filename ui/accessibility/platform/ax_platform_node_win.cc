@@ -30,6 +30,7 @@
 #include "ui/accessibility/accessibility_switches.h"
 #include "ui/accessibility/ax_action_data.h"
 #include "ui/accessibility/ax_active_popup.h"
+#include "ui/accessibility/ax_constants.mojom.h"
 #include "ui/accessibility/ax_enum_util.h"
 #include "ui/accessibility/ax_mode_observer.h"
 #include "ui/accessibility/ax_node_data.h"
@@ -1880,6 +1881,9 @@ IFACEMETHODIMP AXPlatformNodeWin::get_RowCount(int* result) {
 
   base::Optional<int> row_count = GetTableAriaRowCount();
   if (!row_count)
+    row_count = GetTableRowCount();
+
+  if (!row_count || *row_count == ax::mojom::kUnknownAriaColumnOrRowCount)
     return E_UNEXPECTED;
   *result = *row_count;
   return S_OK;
@@ -1891,7 +1895,12 @@ IFACEMETHODIMP AXPlatformNodeWin::get_ColumnCount(int* result) {
 
   base::Optional<int> column_count = GetTableAriaColumnCount();
   if (!column_count)
+    column_count = GetTableColumnCount();
+
+  if (!column_count ||
+      *column_count == ax::mojom::kUnknownAriaColumnOrRowCount) {
     return E_UNEXPECTED;
+  }
   *result = *column_count;
   return S_OK;
 }

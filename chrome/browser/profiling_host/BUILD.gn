@@ -17,7 +17,7 @@ static_library("profiling_host") {
   deps = [
     "//base",
     "//chrome/common:non_code_constants",
-    "//components/heap_profiling",
+    "//components/heap_profiling/multi_process",
     "//components/services/heap_profiling/public/cpp",
     "//content/public/browser",
     "//content/public/common",
@@ -39,7 +39,7 @@ source_set("profiling_browsertests") {
     "//base",
     "//base/allocator:buildflags",
     "//chrome/common:non_code_constants",
-    "//components/heap_profiling:test_support",
+    "//components/heap_profiling/multi_process:test_support",
     "//components/services/heap_profiling/public/cpp",
     "//content/public/common",
     "//testing/gmock",

@@ -115,6 +115,7 @@ enum Setting {
 
   // Date and Time section.
   k24HourClock = 1000,
+  kChangeTimeZone = 1001,
 
   // Privacy section.
   kVerifiedAccess = 1101,
@@ -124,6 +125,7 @@ enum Setting {
   // Languages and Input section.
   kAddLanguage = 1200,
   kShowInputOptionsInShelf = 1201,
+  kShowPersonalInformationSuggestions = 1202,
 
   // Files section.
   kGoogleDriveConnection = 1300,

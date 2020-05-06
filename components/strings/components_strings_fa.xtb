@@ -52,7 +52,6 @@
 <translation id="1197088940767939838">نارنجی</translation>
 <translation id="1201402288615127009">بعدی</translation>
 <translation id="1201895884277373915">موارد بیشتر از این سایت</translation>
-<translation id="1205963431094182634">‏برای استفاده از گذرواژه‌های ذخیره‌شده در حساب Google، به سیستم وارد شوید</translation>
 <translation id="1206967143813997005">امضای اولیه نادرست</translation>
 <translation id="1209206284964581585">فعلاً پنهان شود</translation>
 <translation id="121201262018556460">شما می‌خواستید به <ph name="DOMAIN" /> دسترسی یابید، اما سرور یک گواهی دارای کلید ضعیف ارائه داد. یک مهاجم ممکن است کلید خصوصی را تخریب کرده باشد و سرور، همان سروری نباشد که شما انتظار داشتید (ممکن است در حال ارتباط با یک مهاجم باشید).</translation>
@@ -1215,7 +1214,6 @@
 <translation id="6116338172782435947">به نوشتار و تصاویر کپی‌شده در بریده‌دان دسترسی پیدا کند</translation>
 <translation id="6120179357481664955">‏شناسه «رابط پرداخت‌های یکپارچه» (UPI) شما به‌خاطر سپرده شود؟</translation>
 <translation id="6124432979022149706">‏رابط‌های Chrome Enterprise</translation>
-<translation id="6135641591018127088">‏استفاده از حساب Google برای ایجاد گذرواژه‌ای قوی</translation>
 <translation id="6146055958333702838">همه کابل‌ها را بررسی کنید و همه ره‌یاب‌ها، مودم‌ها، یا دیگر دستگاه‌های
    شبکه‌ای را که ممکن است درحال استفاده از آن‌ها باشید مجدداً راه‌اندازی کنید.</translation>
 <translation id="614940544461990577">این موارد را امتحان کنید:</translation>
@@ -1261,7 +1259,6 @@
 <translation id="6328639280570009161">غیرفعال کردن پیش‌بینی شبکه را امتحان کنید</translation>
 <translation id="6328784461820205019">‏«اتصالتان خصوصی نیست» یا «&lt;span class="error-code"&gt;NET::ERR_CERT_AUTHORITY_INVALID&lt;/span&gt;» یا «&lt;span class="error-code"&gt;ERR_CERT_COMMON_NAME_INVALID&lt;/span&gt;» یا «&lt;span class="error-code"&gt;NET::ERR_CERT_WEAK_SIGNATURE_ALGORITHM&lt;/span&gt;» یا «خطای گواهینامه SSL»</translation>
 <translation id="6328786501058569169">این سایت گول‌زننده است</translation>
-<translation id="6333334544069706521">‏استفاده از گذرواژه‌های ذخیره‌شده در حساب Google</translation>
 <translation id="6337133576188860026">کمتر از <ph name="SIZE" /> از فضا را آزاد می‌کند. ممکن است برخی از سایت‌ها در بازدیدهای بعدی کندتر بارگیری شوند.</translation>
 <translation id="6337534724793800597">فیلتر کردن خط‌مشی‌ها براساس نام</translation>
 <translation id="6353505687280762741">{COUNT,plural, =0{هیچ‌کدام}=1{۱ گذرواژه (برای <ph name="DOMAIN_LIST" />، همگام‌سازی‌شده)}=2{۲ گذرواژه (برای <ph name="DOMAIN_LIST" />، همگام‌سازی‌شده)}one{# گذرواژه (برای <ph name="DOMAIN_LIST" />، همگام‌سازی‌شده)}other{# گذرواژه (برای <ph name="DOMAIN_LIST" />، همگام‌سازی‌شده)}}</translation>

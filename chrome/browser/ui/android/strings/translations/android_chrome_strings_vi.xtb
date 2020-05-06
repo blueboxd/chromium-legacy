@@ -33,6 +33,7 @@
 <translation id="1208340532756947324">Để đồng bộ hóa và cá nhân hóa trên các thiết bị, hãy bật tính năng đồng bộ hóa</translation>
 <translation id="1209206284964581585">Ẩn ngay bây giờ</translation>
 <translation id="1227058898775614466">Lịch sử di chuyển</translation>
+<translation id="1229399675748764149">Đặt trang này làm trang chủ</translation>
 <translation id="1231733316453485619">Bạn muốn bật tính năng đồng bộ hóa?</translation>
 <translation id="123724288017357924">Tải lại trang hiện tại, bỏ qua nội dung được lưu trong bộ nhớ đệm</translation>
 <translation id="124116460088058876">Ngôn ngữ khác</translation>
@@ -71,6 +72,7 @@
 <translation id="1513352483775369820">Dấu trang và lịch sử web</translation>
 <translation id="1513858653616922153">Xóa mật khẩu</translation>
 <translation id="1521774566618522728">Hoạt động hôm nay</translation>
+<translation id="1543538514740974167">Truy cập vào trang này nhanh hơn</translation>
 <translation id="1544826120773021464">Để quản lý Tài khoản Google của bạn, hãy nhấn vào nút "Quản lý tài khoản"</translation>
 <translation id="1549000191223877751">Di chuyển đến cửa sổ khác</translation>
 <translation id="1553358976309200471">Cập nhật Chrome</translation>
@@ -723,11 +725,13 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="7022756207310403729">Mở trong trình duyệt</translation>
 <translation id="702463548815491781">Khuyên dùng khi dịch vụ TalkBack hoặc Tiếp cận bằng công tắc đang bật</translation>
 <translation id="7029809446516969842">Mật khẩu</translation>
+<translation id="703523980599857277">Thay đổi trang chủ</translation>
 <translation id="7055152154916055070">Liên kết chuyển hướng đã chặn:</translation>
 <translation id="7063006564040364415">Không thể kết nối với máy chủ đồng bộ hóa.</translation>
 <translation id="7071521146534760487">Quản lý tài khoản</translation>
 <translation id="7077143737582773186">Thẻ SD</translation>
 <translation id="7121362699166175603">Xóa lịch sử duyệt web và nội dung tự động hoàn thành trong thanh địa chỉ. Tài khoản Google của bạn có thể có các dạng lịch sử duyệt web khác tại <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
+<translation id="7128355412245153445">Xem các trang web hàng đầu và những tin gần đây bất cứ khi nào bạn nhấn vào nút Trang chủ</translation>
 <translation id="7138678301420049075">Khác</translation>
 <translation id="7146622961999026732">Các trang web và ứng dụng này có vẻ quan trọng đối với bạn:</translation>
 <translation id="7149158118503947153"><ph name="BEGIN_LINK" />Tải trang gốc<ph name="END_LINK" /> từ <ph name="DOMAIN_NAME" /></translation>
@@ -968,11 +972,13 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="9155898266292537608">Bạn cũng có thể tìm kiếm bằng cách nhấn nhanh vào một từ</translation>
 <translation id="9169507124922466868">Lịch sử di chuyển đang mở ở nửa dưới màn hình</translation>
 <translation id="9204836675896933765">Còn lại 1 tệp</translation>
+<translation id="9205796607887024517">Kiểm soát các tin tại đây</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="9209888181064652401">Không thể gọi điện</translation>
 <translation id="9219103736887031265">Hình ảnh</translation>
 <translation id="926205370408745186">Xóa hoạt động của bạn trên Chrome khỏi Digital Wellbeing</translation>
 <translation id="932327136139879170">Trang chủ</translation>
+<translation id="93753284658583800">Trang chủ đã thay đổi</translation>
 <translation id="938850635132480979">Lỗi: <ph name="ERROR_CODE" /></translation>
 <translation id="95817756606698420">Chrome có thể sử dụng <ph name="BEGIN_BOLD" />Sogou<ph name="END_BOLD" /> để tìm kiếm tại Trung Quốc. Bạn có thể thay đổi điều này trong <ph name="BEGIN_LINK" />Cài đặt<ph name="END_LINK" />.</translation>
 <translation id="968900484120156207">Các trang mà bạn truy cập sẽ xuất hiện tại đây</translation>

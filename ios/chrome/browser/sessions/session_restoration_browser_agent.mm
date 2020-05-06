@@ -10,10 +10,12 @@
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
 #import "ios/chrome/browser/main/browser.h"
+#import "ios/chrome/browser/sessions/session_ios.h"
 #import "ios/chrome/browser/sessions/session_ios_factory.h"
-#include "ios/chrome/browser/sessions/session_restoration_observer.h"
+#import "ios/chrome/browser/sessions/session_restoration_observer.h"
 #import "ios/chrome/browser/sessions/session_service_ios.h"
 #import "ios/chrome/browser/sessions/session_window_ios.h"
+#import "ios/chrome/browser/ui/util/multi_window_support.h"
 #import "ios/chrome/browser/web/page_placeholder_tab_helper.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/web_state_list/web_state_list_serialization.h"
@@ -30,6 +32,10 @@
 #endif
 
 BROWSER_USER_DATA_KEY_IMPL(SessionRestorationBrowserAgent)
+
+namespace {
+const std::string kSessionDirectory = "Sessions";
+}
 
 // static
 void SessionRestorationBrowserAgent::CreateForBrowser(
@@ -62,6 +68,14 @@ SessionRestorationBrowserAgent::~SessionRestorationBrowserAgent() {
   [session_ios_factory_ disconnect];
 }
 
+void SessionRestorationBrowserAgent::SetSessionID(
+    const std::string& session_identifier) {
+  // It's probably incorrect to set this more than once.
+  DCHECK(session_identifier_.empty() ||
+         session_identifier_ == session_identifier);
+  session_identifier_ = session_identifier;
+}
+
 void SessionRestorationBrowserAgent::AddObserver(
     SessionRestorationObserver* observer) {
   observers_.AddObserver(observer);
@@ -75,7 +89,7 @@ void SessionRestorationBrowserAgent::RemoveObserver(
 bool SessionRestorationBrowserAgent::RestoreSessionWindow(
     SessionWindowIOS* window) {
   if (!window.sessions.count)
-    return NO;
+    return false;
   restoring_session_ = true;
 
   for (auto& observer : observers_) {
@@ -135,16 +149,16 @@ bool SessionRestorationBrowserAgent::RestoreSessionWindow(
   }
 
   // If there was only one tab and it was the new tab page, clobber it.
-  BOOL closed_ntp_tab = NO;
+  bool closed_ntp_tab = false;
   if (old_count == 1) {
     web::WebState* webState = web_state_list_->GetWebStateAt(0);
-    BOOL hasPendingLoad =
+    bool hasPendingLoad =
         webState->GetNavigationManager()->GetPendingItem() != nullptr;
     if (!hasPendingLoad &&
         webState->GetLastCommittedURL() == kChromeUINewTabURL) {
       web_state_list_->CloseWebStateAt(0, WebStateList::CLOSE_USER_ACTION);
 
-      closed_ntp_tab = YES;
+      closed_ntp_tab = true;
       old_count = 0;
     }
   }
@@ -155,6 +169,20 @@ bool SessionRestorationBrowserAgent::RestoreSessionWindow(
   return closed_ntp_tab;
 }
 
+bool SessionRestorationBrowserAgent::RestoreSession() {
+  NSString* path =
+      base::SysUTF8ToNSString(GetSessionStoragePath().AsUTF8Unsafe());
+  SessionIOS* session = [session_service_ loadSessionFromDirectory:path];
+  SessionWindowIOS* session_window = nil;
+
+  if (session) {
+    DCHECK_EQ(session.sessionWindows.count, 1u);
+    session_window = session.sessionWindows[0];
+  }
+
+  return RestoreSessionWindow(session_window);
+}
+
 bool SessionRestorationBrowserAgent::IsRestoringSession() {
   return restoring_session_;
 }
@@ -163,10 +191,10 @@ void SessionRestorationBrowserAgent::SaveSession(bool immediately) {
   if (!CanSaveSession())
     return;
 
-  NSString* statePath =
-      base::SysUTF8ToNSString(browser_state_->GetStatePath().AsUTF8Unsafe());
+  NSString* path =
+      base::SysUTF8ToNSString(GetSessionStoragePath().AsUTF8Unsafe());
   [session_service_ saveSession:session_ios_factory_
-                      directory:statePath
+                      directory:path
                     immediately:immediately];
 }
 
@@ -201,4 +229,15 @@ void SessionRestorationBrowserAgent::WebStateActivatedAt(
 
   // Persist the session state if the new web state is not loading.
   SaveSession(/*immediately=*/false);
+}
+
+base::FilePath SessionRestorationBrowserAgent::GetSessionStoragePath() {
+  base::FilePath path = browser_state_->GetStatePath();
+  if (IsMultiwindowSupported() && !session_identifier_.empty()) {
+    path = path.Append(kSessionDirectory)
+               .Append(session_identifier_)
+               .AsEndingWithSeparator();
+  }
+
+  return path;
 }

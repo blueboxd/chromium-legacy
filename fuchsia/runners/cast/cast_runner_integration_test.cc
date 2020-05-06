@@ -2,8 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <fuchsia/camera3/cpp/fidl.h>
 #include <fuchsia/legacymetrics/cpp/fidl.h>
 #include <fuchsia/legacymetrics/cpp/fidl_test_base.h>
+#include <fuchsia/media/cpp/fidl.h>
 #include <fuchsia/modular/cpp/fidl.h>
 #include <lib/fdio/directory.h>
 #include <lib/fidl/cpp/binding.h>
@@ -783,6 +785,35 @@ TEST_F(CastRunnerIntegrationTest, MicrophoneRedirect) {
   ExecuteJavaScript("connectMicrophone();");
 
   // Will quit once AudioCapturer is connected.
+  run_loop.Run();
+}
+
+TEST_F(CastRunnerIntegrationTest, CameraRedirect) {
+  GURL app_url = test_server_.GetURL("/camera.html");
+  auto app_config =
+      FakeApplicationConfigManager::CreateConfig(kTestAppId, app_url);
+
+  fuchsia::web::PermissionDescriptor canera_permission;
+  canera_permission.set_type(fuchsia::web::PermissionType::CAMERA);
+  app_config.mutable_permissions()->push_back(std::move(canera_permission));
+  app_config_manager_.AddAppConfig(std::move(app_config));
+
+  CreateComponentContextAndStartComponent();
+
+  // Expect fuchsia.camera3.DeviceWatcher connection to be redirected to the
+  // agent.
+  base::RunLoop run_loop;
+  component_state_->outgoing_directory()->AddPublicService(
+      std::make_unique<vfs::Service>(
+          [quit_closure = run_loop.QuitClosure()](
+              zx::channel channel, async_dispatcher_t* dispatcher) mutable {
+            std::move(quit_closure).Run();
+          }),
+      fuchsia::camera3::DeviceWatcher::Name_);
+
+  ExecuteJavaScript("connectCamera();");
+
+  // Will quit once camara3::DeviceWatcher is connected.
   run_loop.Run();
 }
 

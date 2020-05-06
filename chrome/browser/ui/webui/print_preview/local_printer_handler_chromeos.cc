@@ -262,9 +262,7 @@ void LocalPrinterHandlerChromeos::OnPrinterInstalled(
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   if (result == chromeos::PrinterSetupResult::kSuccess) {
-    printers_manager_->PrinterInstalled(
-        printer, /*is_automatic=*/true,
-        chromeos::PrinterSetupSource::kPrintPreview);
+    printers_manager_->PrinterInstalled(printer, /*is_automatic=*/true);
   }
 
   HandlePrinterSetup(printer, std::move(cb), printer.IsUsbProtocol(), result);

@@ -52,7 +52,6 @@
 <translation id="1197088940767939838">Narandžasta</translation>
 <translation id="1201402288615127009">Dalje</translation>
 <translation id="1201895884277373915">Više sa ovog sajta</translation>
-<translation id="1205963431094182634">Prijavite se da biste koristili lozinke sačuvane na Google nalogu</translation>
 <translation id="1206967143813997005">Neispravan potpis inicijalima</translation>
 <translation id="1209206284964581585">Sakrij za sada</translation>
 <translation id="121201262018556460">Pokušali ste da kontaktirate <ph name="DOMAIN" />, ali je server poslao sertifikat koji sadrži slab ključ. Moguće je da je napadač otkrio privatni ključ i da server možda nije onaj koji mislite da jeste (možda komunicirate sa napadačem).</translation>
@@ -1217,7 +1216,6 @@ To inače blokiraju podešavanja privatnosti. To omogućava da sadržaj sa koji
 <translation id="6116338172782435947">da vidi tekst i slike koji su kopirani u privremenu memoriju</translation>
 <translation id="6120179357481664955">Želite da sačuvate ID za UPI?</translation>
 <translation id="6124432979022149706">Priključci za Chrome za preduzeća</translation>
-<translation id="6135641591018127088">Upotrebite Google nalog da biste generisali jaku lozinku</translation>
 <translation id="6146055958333702838">Proverite sve kablove i restartujte sve rutere, modeme ili druge mrežne uređaje koje možda koristite.</translation>
 <translation id="614940544461990577">Pokušajte:</translation>
 <translation id="6150036310511284407">Trostruko bušenje na levoj strani</translation>
@@ -1262,7 +1260,6 @@ To inače blokiraju podešavanja privatnosti. To omogućava da sadržaj sa koji
 <translation id="6328639280570009161">Pokušajte da onemogućite predviđanje mreže</translation>
 <translation id="6328784461820205019">„Veza nije privatna“ ili „&lt;span class="error-code"&gt;NET::ERR_CERT_AUTHORITY_INVALID&lt;/span&gt;“ ili „&lt;span class="error-code"&gt;ERR_CERT_COMMON_NAME_INVALID&lt;/span&gt;“ ili „&lt;span class="error-code"&gt;NET::ERR_CERT_WEAK_SIGNATURE_ALGORITHM&lt;/span&gt;“ ili „&lt;span class="error-code"&gt;ERR_CERT_SYMANTEC_LEGACY&lt;/span&gt;“ ili „Greška u vezi sa SSL sertifikatom“</translation>
 <translation id="6328786501058569169">Ovaj sajt je obmanjujuć</translation>
-<translation id="6333334544069706521">Koristite lozinke koje se čuvaju na Google nalogu</translation>
 <translation id="6337133576188860026">Oslobađa manje od <ph name="SIZE" />. Neki sajtovi će se možda sporije učitavati kad ih sledeći put posetite.</translation>
 <translation id="6337534724793800597">Filtriraj smernice prema nazivu</translation>
 <translation id="6353505687280762741">{COUNT,plural, =0{Nijedna}=1{1 lozinka (za <ph name="DOMAIN_LIST" />, sinhronizovano)}=2{2 lozinke (za <ph name="DOMAIN_LIST" />, sinhronizovano)}one{# lozinka (za <ph name="DOMAIN_LIST" />, sinhronizovano)}few{# lozinke (za <ph name="DOMAIN_LIST" />, sinhronizovano)}other{# lozinki (za <ph name="DOMAIN_LIST" />, sinhronizovano)}}</translation>

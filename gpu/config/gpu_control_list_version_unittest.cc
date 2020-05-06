@@ -14,6 +14,9 @@ namespace {
 constexpr auto kNumerical = GpuControlList::kVersionStyleNumerical;
 constexpr auto kLexical = GpuControlList::kVersionStyleLexical;
 
+constexpr auto kCommon = GpuControlList::kVersionSchemaCommon;
+constexpr auto kIntelDriver = GpuControlList::kVersionSchemaIntelDriver;
+
 constexpr auto kBetween = GpuControlList::kBetween;
 constexpr auto kEQ = GpuControlList::kEQ;
 constexpr auto kLT = GpuControlList::kLT;
@@ -34,14 +37,14 @@ class VersionTest : public testing::Test {
 
 TEST_F(VersionTest, VersionComparison) {
   {
-    Version info = {kAny, kNumerical, nullptr, nullptr};
+    Version info = {kAny, kNumerical, kCommon, nullptr, nullptr};
     EXPECT_TRUE(info.Contains("0"));
     EXPECT_TRUE(info.Contains("8.9"));
     EXPECT_TRUE(info.Contains("100"));
     EXPECT_TRUE(info.Contains("1.9.alpha"));
   }
   {
-    Version info = {kGT, kNumerical, "8.9", nullptr};
+    Version info = {kGT, kNumerical, kCommon, "8.9", nullptr};
     EXPECT_FALSE(info.Contains("7"));
     EXPECT_FALSE(info.Contains("8.9"));
     EXPECT_FALSE(info.Contains("8.9.hs762"));
@@ -50,7 +53,7 @@ TEST_F(VersionTest, VersionComparison) {
     EXPECT_TRUE(info.Contains("9.hs762"));
   }
   {
-    Version info = {kGE, kNumerical, "8.9", nullptr};
+    Version info = {kGE, kNumerical, kCommon, "8.9", nullptr};
     EXPECT_FALSE(info.Contains("7"));
     EXPECT_FALSE(info.Contains("7.07hdy"));
     EXPECT_TRUE(info.Contains("8.9"));
@@ -60,7 +63,7 @@ TEST_F(VersionTest, VersionComparison) {
     EXPECT_TRUE(info.Contains("9.0rel"));
   }
   {
-    Version info = {kEQ, kNumerical, "8.9", nullptr};
+    Version info = {kEQ, kNumerical, kCommon, "8.9", nullptr};
     EXPECT_FALSE(info.Contains("7"));
     EXPECT_TRUE(info.Contains("8"));
     EXPECT_TRUE(info.Contains("8.1uhdy"));
@@ -70,7 +73,7 @@ TEST_F(VersionTest, VersionComparison) {
     EXPECT_FALSE(info.Contains("9"));
   }
   {
-    Version info = {kLT, kNumerical, "8.9", nullptr};
+    Version info = {kLT, kNumerical, kCommon, "8.9", nullptr};
     EXPECT_TRUE(info.Contains("7"));
     EXPECT_TRUE(info.Contains("7.txt"));
     EXPECT_TRUE(info.Contains("8.8"));
@@ -82,7 +85,7 @@ TEST_F(VersionTest, VersionComparison) {
     EXPECT_FALSE(info.Contains("9"));
   }
   {
-    Version info = {kLE, kNumerical, "8.9", nullptr};
+    Version info = {kLE, kNumerical, kCommon, "8.9", nullptr};
     EXPECT_TRUE(info.Contains("7"));
     EXPECT_TRUE(info.Contains("8.8"));
     EXPECT_TRUE(info.Contains("8"));
@@ -93,7 +96,7 @@ TEST_F(VersionTest, VersionComparison) {
     EXPECT_FALSE(info.Contains("9.pork"));
   }
   {
-    Version info = {kBetween, kNumerical, "8.9", "9.1"};
+    Version info = {kBetween, kNumerical, kCommon, "8.9", "9.1"};
     EXPECT_FALSE(info.Contains("7"));
     EXPECT_FALSE(info.Contains("8.8"));
     EXPECT_TRUE(info.Contains("8"));
@@ -111,14 +114,14 @@ TEST_F(VersionTest, DateComparison) {
   // When we use '-' as splitter, we assume a format of mm-dd-yyyy
   // or mm-yyyy, i.e., a date.
   {
-    Version info = {kEQ, kNumerical, "1976.3.21", nullptr};
+    Version info = {kEQ, kNumerical, kCommon, "1976.3.21", nullptr};
     EXPECT_TRUE(info.Contains("3-21-1976", '-'));
     EXPECT_TRUE(info.Contains("3-1976", '-'));
     EXPECT_TRUE(info.Contains("03-1976", '-'));
     EXPECT_FALSE(info.Contains("21-3-1976", '-'));
   }
   {
-    Version info = {kGT, kNumerical, "1976.3.21", nullptr};
+    Version info = {kGT, kNumerical, kCommon, "1976.3.21", nullptr};
     EXPECT_TRUE(info.Contains("3-22-1976", '-'));
     EXPECT_TRUE(info.Contains("4-1976", '-'));
     EXPECT_TRUE(info.Contains("04-1976", '-'));
@@ -126,7 +129,7 @@ TEST_F(VersionTest, DateComparison) {
     EXPECT_FALSE(info.Contains("2-1976", '-'));
   }
   {
-    Version info = {kBetween, kNumerical, "1976.3.21", "2012.12.25"};
+    Version info = {kBetween, kNumerical, kCommon, "1976.3.21", "2012.12.25"};
     EXPECT_FALSE(info.Contains("3-20-1976", '-'));
     EXPECT_TRUE(info.Contains("3-21-1976", '-'));
     EXPECT_TRUE(info.Contains("3-22-1976", '-'));
@@ -149,7 +152,7 @@ TEST_F(VersionTest, LexicalComparison) {
   // When we use lexical style, we assume a format major.minor.*.
   // We apply numerical comparison to major, lexical comparison to others.
   {
-    Version info = {kLT, kLexical, "8.201", nullptr};
+    Version info = {kLT, kLexical, kCommon, "8.201", nullptr};
     EXPECT_TRUE(info.Contains("8.001.100"));
     EXPECT_TRUE(info.Contains("8.109"));
     EXPECT_TRUE(info.Contains("8.10900"));
@@ -168,7 +171,7 @@ TEST_F(VersionTest, LexicalComparison) {
     EXPECT_FALSE(info.Contains("12.201"));
   }
   {
-    Version info = {kLT, kLexical, "9.002", nullptr};
+    Version info = {kLT, kLexical, kCommon, "9.002", nullptr};
     EXPECT_TRUE(info.Contains("8.001.100"));
     EXPECT_TRUE(info.Contains("8.109"));
     EXPECT_TRUE(info.Contains("8.10900"));
@@ -185,6 +188,34 @@ TEST_F(VersionTest, LexicalComparison) {
     EXPECT_FALSE(info.Contains("9.201"));
     EXPECT_FALSE(info.Contains("12"));
     EXPECT_FALSE(info.Contains("12.201"));
+  }
+}
+
+TEST_F(VersionTest, IntelDriverSchema) {
+  {
+    // New drivers, AA.BB.CCC.DDDD, only CCC.DDDD is considered.
+    Version info = {kLT, kNumerical, kIntelDriver, "25.20.100.6952", nullptr};
+    EXPECT_TRUE(info.Contains("0.0.100.6000"));
+    EXPECT_FALSE(info.Contains("0.0.100.7000"));
+    EXPECT_FALSE(info.Contains("0.0.200.6000"));
+    EXPECT_TRUE(info.Contains("26.20.100.6000"));
+    EXPECT_FALSE(info.Contains("24.20.100.7000"));
+
+    // Doesn't match old drivers.
+    EXPECT_FALSE(info.Contains("22.20.16.7000"));
+    EXPECT_FALSE(info.Contains("15.45.16.4248"));
+  }
+  {
+    // Old drivers, AA.BB.CC.DDDD, only DDDD is considered.
+    Version info = {kGT, kNumerical, kIntelDriver, "10.18.15.4256", nullptr};
+    EXPECT_TRUE(info.Contains("0.0.0.6000"));
+    EXPECT_FALSE(info.Contains("0.0.0.4000"));
+    EXPECT_FALSE(info.Contains("0.0.16.4000"));
+    EXPECT_TRUE(info.Contains("10.18.15.4279"));
+    EXPECT_FALSE(info.Contains("15.40.19.4058"));
+
+    // Doesn't match new drivers.
+    EXPECT_FALSE(info.Contains("24.20.100.6346"));
   }
 }
 

@@ -90,6 +90,7 @@
 <translation id="1947424002851288782">Нямецкая раскладка</translation>
 <translation id="1972984168337863910">Разгарнуць панэлі водгукаў для файлаў</translation>
 <translation id="1984603991036629094">Армянская фанетычная клавіятура</translation>
+<translation id="1995337122023280937">Адкрыць месцазнаходжанне файла</translation>
 <translation id="2001796770603320721">Кіраваць на Дыску</translation>
 <translation id="2009067268969781306">Фармаціраванне дыска прывядзе да выдалення ўсіх захаваных на ім даных. Гэта дзеянне нельга адрабіць.</translation>
 <translation id="2028997212275086731">Архіў RAR</translation>
@@ -141,6 +142,7 @@
 <translation id="2638942478653899953">Не ўдалося атрымаць доступ да Google Дыска. <ph name="BEGIN_LINK" />Выйдзіце<ph name="END_LINK" /> і зноў увайдзіце ва ўліковы запіс.</translation>
 <translation id="2649120831653069427">Радужная рыбка</translation>
 <translation id="2661146741306740526">16x9</translation>
+<translation id="2664412712123763093">Месцазнаходжанне файла</translation>
 <translation id="2672394958563893062">Адбылася памылка. Націсніце, каб перазапусціць і пачаць спачатку.</translation>
 <translation id="2676946222714718093">Прайграецца на прыладзе</translation>
 <translation id="2735698359135166290">Румынская стандартная клавіятура</translation>
@@ -349,6 +351,7 @@
 <translation id="5081517858322016911">Будуць выдалены файлы агульным памерам <ph name="TOTAL_FILE_SIZE" /></translation>
 <translation id="509429900233858213">Адбылася памылка.</translation>
 <translation id="5098629044894065541">Іўрыт</translation>
+<translation id="5112685521274804841">Файлы ў гэтай папцы – толькі для чытання. Некаторыя дзеянні не падтрымліваюцца.</translation>
 <translation id="5123433949759960244">Баскетбол</translation>
 <translation id="5129662217315786329">Польская</translation>
 <translation id="5144820558584035333">Карэйскі алфавіт (хангыль), рэжым 3 Set (390)</translation>
@@ -698,6 +701,7 @@
 <translation id="9034924485347205037">Файлы Linux</translation>
 <translation id="9035012421917565900">Немагчыма перамясціць элементы назад у "<ph name="DESTINATION_NAME" />", таму вы не зможаце адрабіць гэта дзеянне.</translation>
 <translation id="9038620279323455325">Файл пад назвай "<ph name="FILE_NAME" />" ужо існуе. Выберыце іншую назву.</translation>
+<translation id="9062992083244091966">Каб адкрываць файлы ў праграмах <ph name="APP_NAME" />, спачатку перамясціце іх у папку абагуленых файлаў <ph name="APP_NAME" />.</translation>
 <translation id="9064939804718829769">Ідзе перадача...</translation>
 <translation id="9065203028668620118">Змяніць</translation>
 <translation id="9099674669267916096">Колькасць старонак</translation>

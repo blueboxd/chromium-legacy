@@ -30,6 +30,7 @@ class COMPONENT_EXPORT(DLCSERVICE_CLIENT) FakeDlcserviceClient
   // Purging removes the DLC entirely from disk.
   void Purge(const std::string& dlc_id, PurgeCallback callback) override;
   void GetInstalled(GetInstalledCallback callback) override;
+  void GetExistingDlcs(GetExistingDlcsCallback callback) override;
   void OnInstallStatusForTest(dbus::Signal* signal) override;
 
   // Setters:
@@ -41,6 +42,9 @@ class COMPONENT_EXPORT(DLCSERVICE_CLIENT) FakeDlcserviceClient
   void SetGetInstalledError(const std::string& err) {
     get_installed_err_ = err;
   }
+  void SetGetExistingDlcsError(const std::string& err) {
+    get_existing_dlcs_err_ = err;
+  }
   void set_installed_dlcs(const dlcservice::DlcModuleList& dlc_module_list) {
     dlc_module_list_ = dlc_module_list;
   }
@@ -51,6 +55,8 @@ class COMPONENT_EXPORT(DLCSERVICE_CLIENT) FakeDlcserviceClient
   std::string purge_err_ = dlcservice::kErrorNone;
   std::string get_installed_err_ = dlcservice::kErrorNone;
   dlcservice::DlcModuleList dlc_module_list_;
+  std::string get_existing_dlcs_err_ = dlcservice::kErrorNone;
+  dlcservice::DlcsWithContent dlcs_with_content_;
 };
 
 }  // namespace chromeos

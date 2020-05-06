@@ -77,9 +77,6 @@ class CrashReporterClient {
   // restarting after a crash.
   virtual bool AboutToRestart();
 
-  // Returns true if the crash report uploader supports deferred uploads.
-  virtual bool GetDeferredUploadsSupported(bool is_per_user_install);
-
   // Returns true if the running binary is a per-user installation.
   virtual bool GetIsPerUserInstall();
 

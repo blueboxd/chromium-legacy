@@ -8,6 +8,7 @@
 #include "chrome/browser/chromeos/kerberos/kerberos_credentials_manager_factory.h"
 #include "chrome/browser/chromeos/local_search_service/local_search_service_factory.h"
 #include "chrome/browser/chromeos/multidevice_setup/multidevice_setup_client_factory.h"
+#include "chrome/browser/chromeos/printing/cups_printers_manager_factory.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
@@ -44,6 +45,7 @@ OsSettingsManagerFactory::OsSettingsManagerFactory()
   DependsOn(ArcAppListPrefsFactory::GetInstance());
   DependsOn(IdentityManagerFactory::GetInstance());
   DependsOn(android_sms::AndroidSmsServiceFactory::GetInstance());
+  DependsOn(CupsPrintersManagerFactory::GetInstance());
 }
 
 OsSettingsManagerFactory::~OsSettingsManagerFactory() = default;
@@ -60,7 +62,8 @@ KeyedService* OsSettingsManagerFactory::BuildServiceInstanceFor(
       KerberosCredentialsManagerFactory::Get(profile),
       ArcAppListPrefsFactory::GetForBrowserContext(profile),
       IdentityManagerFactory::GetForProfile(profile),
-      android_sms::AndroidSmsServiceFactory::GetForBrowserContext(profile));
+      android_sms::AndroidSmsServiceFactory::GetForBrowserContext(profile),
+      CupsPrintersManagerFactory::GetForBrowserContext(profile));
 }
 
 bool OsSettingsManagerFactory::ServiceIsNULLWhileTesting() const {

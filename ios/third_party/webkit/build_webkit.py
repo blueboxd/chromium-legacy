@@ -17,6 +17,8 @@ def main():
                       help='Use "iphoneos" SDK instead of "macos".')
   parser.add_argument('--asan', action='store_true', default=False,
                       help='Make Asan build.')
+  parser.add_argument('--clean', action='store_true', default=False,
+                      help='Clean output directory before building.')
   parser.add_argument('--debug', action='store_true', default=False,
                       help='Make debug build.')
   parser.add_argument('-j',
@@ -45,6 +47,11 @@ def main():
 
   env = {'WEBKIT_OUTPUTDIR': output_dir}
   cwd = os.path.dirname(os.path.realpath(__file__))
+
+  if opts.clean:
+     clean_command = ['src/Tools/Scripts/clean-webkit']
+     proc = subprocess.Popen(clean_command, cwd=cwd, env=env)
+     proc.communicate()
 
   if opts.asan:
      config_command = ['src/Tools/Scripts/set-webkit-configuration', '--asan']

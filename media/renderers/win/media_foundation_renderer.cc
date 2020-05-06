@@ -9,6 +9,7 @@
 #include <memory>
 #include <string>
 
+#include "base/bind_helpers.h"
 #include "base/callback_helpers.h"
 #include "base/guid.h"
 #include "base/strings/string16.h"
@@ -17,6 +18,7 @@
 #include "base/win/scoped_bstr.h"
 #include "base/win/scoped_hdc.h"
 #include "base/win/scoped_propvariant.h"
+#include "base/win/windows_version.h"
 #include "base/win/wrapped_window_proc.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/timestamp_constants.h"
@@ -52,7 +54,7 @@ bool InitializeVideoWindowClass() {
   g_video_window_class = RegisterClassEx(&intermediate_class);
   if (!g_video_window_class) {
     HRESULT register_class_error = HRESULT_FROM_WIN32(GetLastError());
-    DLOG(ERROR) << "RegisterClass failed. hr=" << register_class_error;
+    DLOG(ERROR) << "RegisterClass failed: " << PrintHr(register_class_error);
     return false;
   }
 
@@ -61,15 +63,23 @@ bool InitializeVideoWindowClass() {
 
 }  // namespace
 
+// static
+bool MediaFoundationRenderer::IsSupported() {
+  return base::win::GetVersion() >= base::win::Version::WIN10;
+}
+
 MediaFoundationRenderer::MediaFoundationRenderer(
     bool muted,
-    scoped_refptr<base::SequencedTaskRunner> task_runner)
-    : muted_(muted), task_runner_(task_runner) {
-  DVLOG(1) << __func__ << ": this=" << this;
+    scoped_refptr<base::SequencedTaskRunner> task_runner,
+    bool force_dcomp_mode_for_testing)
+    : muted_(muted),
+      task_runner_(task_runner),
+      force_dcomp_mode_for_testing_(force_dcomp_mode_for_testing) {
+  DVLOG_FUNC(1);
 }
 
 MediaFoundationRenderer::~MediaFoundationRenderer() {
-  DVLOG(1) << __func__ << ": this=" << this;
+  DVLOG_FUNC(1);
 
   // Perform shutdown/cleanup in the order (shutdown/detach/destroy) we wanted
   // without depending on the order of destructors being invoked. We also need
@@ -102,13 +112,13 @@ MediaFoundationRenderer::~MediaFoundationRenderer() {
 void MediaFoundationRenderer::Initialize(MediaResource* media_resource,
                                          RendererClient* client,
                                          PipelineStatusCallback init_cb) {
-  DVLOG(1) << __func__ << ": this=" << this;
+  DVLOG_FUNC(1);
 
   renderer_client_ = client;
 
   HRESULT hr = CreateMediaEngine(media_resource);
   if (FAILED(hr)) {
-    DLOG(ERROR) << "Failed to create media engine. hr=" << hr;
+    DLOG(ERROR) << "Failed to create media engine: " << PrintHr(hr);
     std::move(init_cb).Run(PIPELINE_ERROR_INITIALIZATION_FAILED);
   } else {
     std::move(init_cb).Run(PIPELINE_OK);
@@ -117,7 +127,7 @@ void MediaFoundationRenderer::Initialize(MediaResource* media_resource,
 
 HRESULT MediaFoundationRenderer::CreateMediaEngine(
     MediaResource* media_resource) {
-  DVLOG(1) << __func__ << ": this=" << this;
+  DVLOG_FUNC(1);
 
   RETURN_IF_FAILED(MFStartup(MF_VERSION, MFSTARTUP_LITE));
   mf_started_ = true;
@@ -139,7 +149,9 @@ HRESULT MediaFoundationRenderer::CreateMediaEngine(
       BindToCurrentLoop(base::BindRepeating(
           &MediaFoundationRenderer::OnBufferingStateChanged, weak_this)),
       BindToCurrentLoop(base::BindRepeating(
-          &MediaFoundationRenderer::OnVideoNaturalSizeChanged, weak_this))));
+          &MediaFoundationRenderer::OnVideoNaturalSizeChanged, weak_this)),
+      BindToCurrentLoop(base::BindRepeating(
+          &MediaFoundationRenderer::OnTimeUpdate, weak_this))));
 
   ComPtr<IMFAttributes> creation_attributes;
   RETURN_IF_FAILED(MFCreateAttributes(&creation_attributes, 6));
@@ -189,10 +201,12 @@ HRESULT MediaFoundationRenderer::CreateMediaEngine(
   RETURN_IF_FAILED(MakeAndInitialize<MediaFoundationSourceWrapper>(
       &mf_source_, playback_element_id_, media_resource, task_runner_));
 
+  if (force_dcomp_mode_for_testing_)
+    SetDCompMode(true, base::DoNothing());
+
   if (!mf_source_->HasEncryptedStream()) {
-    // TODO(frankli): we might need to call SetSourceOnMediaEngine for testing
-    // of clear content.
-    return E_ABORT;
+    // Supports clear stream for testing.
+    return SetSourceOnMediaEngine();
   }
 
   // Has encrypted stream.
@@ -220,7 +234,7 @@ HRESULT MediaFoundationRenderer::CreateMediaEngine(
 }
 
 HRESULT MediaFoundationRenderer::SetSourceOnMediaEngine() {
-  DVLOG(1) << __func__ << ": this=" << this;
+  DVLOG_FUNC(1);
 
   if (!mf_source_) {
     LOG(ERROR) << "mf_source_ is null.";
@@ -281,7 +295,7 @@ HRESULT MediaFoundationRenderer::InitializeVirtualVideoWindow() {
                      nullptr, nullptr, nullptr, nullptr);
   if (!virtual_video_window_) {
     HRESULT hr = HRESULT_FROM_WIN32(GetLastError());
-    DLOG(ERROR) << "Failed to create virtual window. hr=" << hr;
+    DLOG(ERROR) << "Failed to create virtual window: " << PrintHr(hr);
     return hr;
   }
 
@@ -290,7 +304,7 @@ HRESULT MediaFoundationRenderer::InitializeVirtualVideoWindow() {
 
 void MediaFoundationRenderer::SetCdm(CdmContext* cdm_context,
                                      CdmAttachedCB cdm_attached_cb) {
-  DVLOG(1) << __func__ << ": this=" << this;
+  DVLOG_FUNC(1);
 
   if (cdm_context_ || !cdm_context) {
     DLOG(ERROR) << "Failed in checking CdmContext.";
@@ -321,7 +335,7 @@ void MediaFoundationRenderer::SetLatencyHint(
 
 // TODO(frankli): Use ComPtr<> for |cdm|.
 void MediaFoundationRenderer::OnCdmProxyReceived(IMFCdmProxy* cdm) {
-  DVLOG(1) << __func__ << ": this=" << this;
+  DVLOG_FUNC(1);
 
   if (!waiting_for_mf_cdm_ || !content_protection_manager_) {
     DLOG(ERROR) << "Failed in checking internal state.";
@@ -337,19 +351,20 @@ void MediaFoundationRenderer::OnCdmProxyReceived(IMFCdmProxy* cdm) {
   mf_source_->SetCdmProxy(cdm_proxy.Get());
   HRESULT hr = SetSourceOnMediaEngine();
   if (FAILED(hr)) {
-    DLOG(ERROR) << "Failed to set source on media engine. hr=" << hr;
+    DLOG(ERROR) << "Failed to set source on media engine: " << PrintHr(hr);
     renderer_client_->OnError(PipelineStatus::PIPELINE_ERROR_COULD_NOT_RENDER);
     return;
   }
 }
 
 void MediaFoundationRenderer::Flush(base::OnceClosure flush_cb) {
-  DVLOG(2) << __func__ << ": this=" << this;
+  DVLOG_FUNC(2);
 
   HRESULT hr = mf_media_engine_->Pause();
   // Ignore any Pause() error. We can continue to flush |mf_source_| instead of
   // stopping the playback with error.
-  DVLOG_IF(1, FAILED(hr)) << "Failed to pause playback on flush. hr=" << hr;
+  DVLOG_IF(1, FAILED(hr)) << "Failed to pause playback on flush: "
+                          << PrintHr(hr);
 
   StopSendingStatistics();
   mf_source_->FlushStreams();
@@ -358,7 +373,7 @@ void MediaFoundationRenderer::Flush(base::OnceClosure flush_cb) {
 
 void MediaFoundationRenderer::StartPlayingFrom(base::TimeDelta time) {
   double current_time = time.InSecondsF();
-  DVLOG(2) << __func__ << ": this=" << this << ",current_time=" << current_time;
+  DVLOG_FUNC(2) << "current_time=" << current_time;
 
   // Note: It is okay for |waiting_for_mf_cdm_| to be true here. The
   // MFMediaEngine supports calls to Play/SetCurrentTime before a source is set
@@ -371,14 +386,14 @@ void MediaFoundationRenderer::StartPlayingFrom(base::TimeDelta time) {
   // MF_MEDIA_ENGINE_EVENT_SEEKED event.
   HRESULT hr = mf_media_engine_->SetCurrentTime(current_time);
   if (FAILED(hr)) {
-    DLOG(ERROR) << "Failed to SetCurrentTime. hr=" << hr;
+    DLOG(ERROR) << "Failed to SetCurrentTime: " << PrintHr(hr);
     renderer_client_->OnError(PipelineStatus::PIPELINE_ERROR_COULD_NOT_RENDER);
     return;
   }
 
   hr = mf_media_engine_->Play();
   if (FAILED(hr)) {
-    DLOG(ERROR) << "Failed to start playback. hr=" << hr;
+    DLOG(ERROR) << "Failed to start playback: " << PrintHr(hr);
     renderer_client_->OnError(PipelineStatus::PIPELINE_ERROR_COULD_NOT_RENDER);
     return;
   }
@@ -387,20 +402,20 @@ void MediaFoundationRenderer::StartPlayingFrom(base::TimeDelta time) {
 }
 
 void MediaFoundationRenderer::SetPlaybackRate(double playback_rate) {
-  DVLOG(2) << __func__ << ": this=" << this;
+  DVLOG_FUNC(2) << "playback_rate=" << playback_rate;
 
   HRESULT hr = mf_media_engine_->SetPlaybackRate(playback_rate);
   // Ignore error so that the media continues to play rather than stopped.
-  DVLOG_IF(1, FAILED(hr)) << "Failed to set playback rate. hr=" << hr;
+  DVLOG_IF(1, FAILED(hr)) << "Failed to set playback rate: " << PrintHr(hr);
 }
 
 void MediaFoundationRenderer::SetDCompMode(bool enabled,
                                            SetDCompModeCB callback) {
-  DVLOG(1) << __func__ << ": this=" << this;
+  DVLOG_FUNC(1);
 
   HRESULT hr = SetDCompModeInternal(enabled);
   if (FAILED(hr)) {
-    DLOG(ERROR) << "Failed to set DComp mode. hr=" << hr;
+    DLOG(ERROR) << "Failed to set DComp mode: " << PrintHr(hr);
     std::move(callback).Run(false);
     return;
   }
@@ -409,18 +424,18 @@ void MediaFoundationRenderer::SetDCompMode(bool enabled,
 }
 
 void MediaFoundationRenderer::GetDCompSurface(GetDCompSurfaceCB callback) {
-  DVLOG(1) << __func__ << ": this=" << this;
+  DVLOG_FUNC(1);
 
   HANDLE surface_handle = INVALID_HANDLE_VALUE;
   HRESULT hr = GetDCompSurfaceInternal(&surface_handle);
-  DVLOG_IF(1, FAILED(hr)) << "Failed to get DComp surface. hr=" << hr;
+  DVLOG_IF(1, FAILED(hr)) << "Failed to get DComp surface: " << PrintHr(hr);
   std::move(callback).Run(std::move(surface_handle));
 }
 
 // TODO(crbug.com/1070030): Investigate if we need to add
 // OnSelectedVideoTracksChanged() to media renderer.mojom.
 void MediaFoundationRenderer::SetVideoStreamEnabled(bool enabled) {
-  DVLOG(1) << __func__ << ": this=" << this << ",enabled=" << enabled;
+  DVLOG_FUNC(1) << "enabled=" << enabled;
   if (!mf_source_)
     return;
 
@@ -435,22 +450,21 @@ void MediaFoundationRenderer::SetVideoStreamEnabled(bool enabled) {
 
 void MediaFoundationRenderer::SetPlaybackElementId(
     uint64_t playback_element_id) {
-  DVLOG(1) << __func__ << ": this=" << this
-           << ",playback_element_id=" << playback_element_id;
+  DVLOG_FUNC(1) << "playback_element_id=" << playback_element_id;
 
   playback_element_id_ = playback_element_id;
 }
 
 void MediaFoundationRenderer::SetOutputParams(const gfx::Rect& output_rect) {
-  DVLOG(2) << __func__ << ": this=" << this;
+  DVLOG_FUNC(2);
 
   HRESULT hr = SetOutputParamsInternal(output_rect);
-  DVLOG_IF(1, FAILED(hr)) << "Failed to set output parameters. hr=" << hr;
+  DVLOG_IF(1, FAILED(hr)) << "Failed to set output parameters: " << PrintHr(hr);
 }
 
 HRESULT MediaFoundationRenderer::SetOutputParamsInternal(
     const gfx::Rect& output_rect) {
-  DVLOG(2) << __func__ << ": this=" << this;
+  DVLOG_FUNC(2);
 
   if (virtual_video_window_ &&
       !::SetWindowPos(virtual_video_window_, HWND_BOTTOM, output_rect.x(),
@@ -467,7 +481,7 @@ HRESULT MediaFoundationRenderer::SetOutputParamsInternal(
 
 HRESULT MediaFoundationRenderer::GetDCompSurfaceInternal(
     HANDLE* surface_handle) {
-  DVLOG(1) << __func__ << ": this=" << this;
+  DVLOG_FUNC(1);
 
   ComPtr<IMFMediaEngineEx> media_engine_ex;
   RETURN_IF_FAILED(mf_media_engine_.As(&media_engine_ex));
@@ -476,7 +490,7 @@ HRESULT MediaFoundationRenderer::GetDCompSurfaceInternal(
 }
 
 HRESULT MediaFoundationRenderer::SetDCompModeInternal(bool enabled) {
-  DVLOG(1) << __func__ << ": this=" << this << ",enabled=" << enabled;
+  DVLOG_FUNC(1) << "enabled=" << enabled;
 
   ComPtr<IMFMediaEngineEx> media_engine_ex;
   RETURN_IF_FAILED(mf_media_engine_.As(&media_engine_ex));
@@ -503,7 +517,7 @@ void MediaFoundationRenderer::SendStatistics() {
   PipelineStatistics new_stats = {};
   HRESULT hr = PopulateStatistics(new_stats);
   if (FAILED(hr)) {
-    DVLOG(3) << "Failed to populate pipeline stats. hr=" << hr;
+    DVLOG(3) << "Failed to populate pipeline stats: " << PrintHr(hr);
     return;
   }
 
@@ -527,10 +541,10 @@ void MediaFoundationRenderer::StopSendingStatistics() {
 void MediaFoundationRenderer::SetVolume(float volume) {
   volume_ = volume;
   float set_volume = muted_ ? 0 : volume_;
-  DVLOG(2) << __func__ << ": this=" << this << ",set_volume=" << set_volume;
+  DVLOG_FUNC(2) << "set_volume=" << set_volume;
 
   HRESULT hr = mf_media_engine_->SetVolume(set_volume);
-  DVLOG_IF(1, FAILED(hr)) << "Failed to set volume. hr=" << hr;
+  DVLOG_IF(1, FAILED(hr)) << "Failed to set volume: " << PrintHr(hr);
 }
 
 base::TimeDelta MediaFoundationRenderer::GetMediaTime() {
@@ -543,14 +557,14 @@ base::TimeDelta MediaFoundationRenderer::GetMediaTime() {
 }
 
 void MediaFoundationRenderer::OnPlaybackError(PipelineStatus status) {
-  DVLOG(1) << __func__ << ". this=" << this << ",status=" << status;
+  DVLOG_FUNC(1) << "status=" << status;
 
   renderer_client_->OnError(status);
   StopSendingStatistics();
 }
 
 void MediaFoundationRenderer::OnPlaybackEnded() {
-  DVLOG(2) << __func__ << ": this=" << this;
+  DVLOG_FUNC(2);
 
   renderer_client_->OnEnded();
   StopSendingStatistics();
@@ -559,7 +573,7 @@ void MediaFoundationRenderer::OnPlaybackEnded() {
 void MediaFoundationRenderer::OnBufferingStateChanged(
     BufferingState state,
     BufferingStateChangeReason reason) {
-  DVLOG(2) << __func__ << ": this=" << this;
+  DVLOG_FUNC(2);
 
   if (state == BufferingState::BUFFERING_HAVE_ENOUGH) {
     max_buffering_state_ = state;
@@ -576,10 +590,10 @@ void MediaFoundationRenderer::OnBufferingStateChanged(
 }
 
 void MediaFoundationRenderer::OnVideoNaturalSizeChanged() {
-  DVLOG(2) << __func__ << ": this=" << this;
+  DVLOG_FUNC(2);
 
   const bool has_video = mf_media_engine_->HasVideo();
-  DVLOG(2) << __func__ << ": this=" << this << ",has_video=" << has_video;
+  DVLOG_FUNC(2) << "has_video=" << has_video;
 
   // Skip if there are no video streams. This can happen because this is
   // originated from MF_MEDIA_ENGINE_EVENT_FORMATCHANGE.
@@ -605,7 +619,7 @@ void MediaFoundationRenderer::OnVideoNaturalSizeChanged() {
   ComPtr<IMFMediaEngineEx> mf_media_engine_ex;
   hr = mf_media_engine_.As(&mf_media_engine_ex);
   if (FAILED(hr)) {
-    DLOG(ERROR) << "hr=" << hr;
+    DLOG(ERROR) << PrintHr(hr);
     return;
   }
 
@@ -615,12 +629,16 @@ void MediaFoundationRenderer::OnVideoNaturalSizeChanged() {
   hr =
       mf_media_engine_ex->UpdateVideoStream(nullptr, &video_dest_rect, nullptr);
   if (FAILED(hr)) {
-    DLOG(ERROR) << "hr=" << hr;
+    DLOG(ERROR) << PrintHr(hr);
     return;
   }
 
   renderer_client_->OnVideoNaturalSizeChange(native_video_size_);
   return;
+}
+
+void MediaFoundationRenderer::OnTimeUpdate() {
+  DVLOG_FUNC(3) << "media_time=" << GetMediaTime();
 }
 
 }  // namespace media

@@ -9,13 +9,16 @@
  * a subpage with lots of other settings on Chrome OS.
  */
 import 'chrome://resources/cr_elements/cr_link_row/cr_link_row.m.js';
-import '../controls/settings_toggle_button.m.js';
 import '../settings_page/settings_animated_pages.m.js';
 import '../settings_shared_css.m.js';
 
 // <if expr="not is_macosx and not chromeos">
 import './captions_subpage.m.js';
 import '../settings_page/settings_subpage.m.js';
+// </if>
+
+// <if expr="not chromeos">
+import '../controls/settings_toggle_button.m.js';
 // </if>
 
 import {WebUIListenerBehavior} from 'chrome://resources/js/web_ui_listener_behavior.m.js';
@@ -123,28 +126,15 @@ Polymer({
         loadTimeData.getBoolean('showExperimentalA11yLabels');
   },
 
-  /**
-   * @private
-   * @param {!Event} event
-   */
-  onA11yImageLabelsChange_(event) {
-    const a11yImageLabelsOn = event.target.checked;
+  /** @private */
+  onToggleAccessibilityImageLabels_() {
+    const a11yImageLabelsOn = this.$.a11yImageLabels.checked;
     if (a11yImageLabelsOn) {
       chrome.send('confirmA11yImageLabels');
     }
     chrome.metricsPrivate.recordBoolean(
         'Accessibility.ImageLabels.FromSettings.ToggleSetting',
         a11yImageLabelsOn);
-  },
-
-  /**
-   * @private
-   * @param {!Event} event
-   */
-  onA11yLiveCaptionChange_(event) {
-    const a11yLiveCaptionOn = event.target.checked;
-    chrome.metricsPrivate.recordBoolean(
-        'Accessibility.LiveCaption.ToggleEnabled', a11yLiveCaptionOn);
   },
 
   // <if expr="chromeos">

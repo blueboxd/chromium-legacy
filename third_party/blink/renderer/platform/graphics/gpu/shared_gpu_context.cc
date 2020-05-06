@@ -9,6 +9,7 @@
 #include "gpu/command_buffer/client/raster_interface.h"
 #include "gpu/config/gpu_driver_bug_workaround_type.h"
 #include "gpu/config/gpu_feature_info.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_graphics_context_3d_provider.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
@@ -113,8 +114,18 @@ void SharedGpuContext::CreateContextProviderIfNeeded(
         Platform::Current()->IsGpuCompositingDisabled();
     if (is_gpu_compositing_disabled_ && only_if_gpu_compositing)
       return;
-    auto context_provider =
-        Platform::Current()->CreateSharedOffscreenGraphicsContext3DProvider();
+    std::unique_ptr<blink::WebGraphicsContext3DProvider> context_provider;
+    if (base::FeatureList::IsEnabled(blink::features::kDawn2dCanvas)) {
+      context_provider =
+          Platform::Current()->CreateWebGPUGraphicsContext3DProvider(
+              blink::WebURL());
+      if (context_provider) {
+        context_provider->BindToCurrentThread();
+      }
+    } else {
+      context_provider =
+          Platform::Current()->CreateSharedOffscreenGraphicsContext3DProvider();
+    }
     if (context_provider) {
       context_provider_wrapper_ =
           std::make_unique<WebGraphicsContext3DProviderWrapper>(

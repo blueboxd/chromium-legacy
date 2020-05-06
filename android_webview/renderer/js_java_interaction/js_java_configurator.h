@@ -31,7 +31,7 @@ class JsJavaConfigurator
   explicit JsJavaConfigurator(content::RenderFrame* render_frame);
   ~JsJavaConfigurator() override;
 
-  // mojom::Configurator implementation
+  // mojom::JsJavaConfigurator implementation
   void SetJsObjects(std::vector<mojom::JsObjectPtr> js_object_ptrs) override;
   void AddDocumentStartScript(
       mojom::DocumentStartJavascriptPtr script_ptr) override;

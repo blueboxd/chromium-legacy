@@ -22,7 +22,26 @@ namespace {
 
 const std::vector<SearchConcept>& GetPrivacySearchConcepts() {
   static const base::NoDestructor<std::vector<SearchConcept>> tags({
-      // TODO(khorimoto): Add "Privacy" search concepts.
+      {IDS_OS_SETTINGS_TAG_PRIVACY_VERIFIED_ACCESS,
+       mojom::kPrivacyAndSecuritySectionPath,
+       mojom::SearchResultIcon::kShield,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSetting,
+       {.setting = mojom::Setting::kVerifiedAccess}},
+      {IDS_OS_SETTINGS_TAG_PRIVACY,
+       mojom::kPrivacyAndSecuritySectionPath,
+       mojom::SearchResultIcon::kShield,
+       mojom::SearchResultDefaultRank::kHigh,
+       mojom::SearchResultType::kSection,
+       {.section = mojom::Section::kPrivacyAndSecurity}},
+      {IDS_OS_SETTINGS_TAG_PRIVACY_WIFI_SLEEP,
+       mojom::kPrivacyAndSecuritySectionPath,
+       mojom::SearchResultIcon::kShield,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSetting,
+       {.setting = mojom::Setting::kKeepWifiOnDuringSleep},
+       {IDS_OS_SETTINGS_TAG_PRIVACY_WIFI_SLEEP_ALT1,
+        SearchConcept::kAltTagEnd}},
   });
   return *tags;
 }
@@ -30,7 +49,14 @@ const std::vector<SearchConcept>& GetPrivacySearchConcepts() {
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
 const std::vector<SearchConcept>& GetPrivacyGoogleChromeSearchConcepts() {
   static const base::NoDestructor<std::vector<SearchConcept>> tags({
-      // TODO(khorimoto): Add "Privacy Google Chrome" search concepts.
+      {IDS_OS_SETTINGS_TAG_PRIVACY_CRASH_REPORTS,
+       mojom::kPrivacyAndSecuritySectionPath,
+       mojom::SearchResultIcon::kShield,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSetting,
+       {.setting = mojom::Setting::kUsageStatsAndCrashReports},
+       {IDS_OS_SETTINGS_TAG_PRIVACY_CRASH_REPORTS_ALT1,
+        SearchConcept::kAltTagEnd}},
   });
   return *tags;
 }

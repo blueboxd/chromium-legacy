@@ -86,6 +86,7 @@
 <translation id="1947424002851288782">ಜರ್ಮನ್ ಕೀಬೋರ್ಡ್</translation>
 <translation id="1972984168337863910">ಫೈಲ್‌ಗಳ ಪ್ರತಿಕ್ರಿಯೆ ಫಲಕಗಳನ್ನು ವಿಸ್ತರಿಸಿ</translation>
 <translation id="1984603991036629094">ಅರ್ಮೇನಿಯನ್ ಫೋನೆಟಿಕ್ ಕೀಬೋರ್ಡ್</translation>
+<translation id="1995337122023280937">ಫೈಲ್ ಸ್ಥಳಕ್ಕೆ ಹೋಗಿ</translation>
 <translation id="2001796770603320721">ಡ್ರೈವ್‌ನಲ್ಲಿ ನಿರ್ವಹಿಸಿ</translation>
 <translation id="2009067268969781306">ಡ್ರೈವ್ ಅನ್ನು ಫಾರ್ಮ್ಯಾಟ್ ಮಾಡುವುದರಿಂದ, ಅದರಲ್ಲಿ ಸಂಗ್ರಣೆಯಾಗಿರುವ ಎಲ್ಲಾ ಡೇಟಾವನ್ನು ಅಳಿಸಲಾಗುತ್ತದೆ. ಈ ಕ್ರಿಯೆಯನ್ನು ರದ್ದುಪಡಿಸಲಾಗುವುದಿಲ್ಲ.</translation>
 <translation id="2028997212275086731">RAR ಆರ್ಕೈವ್</translation>
@@ -137,6 +138,7 @@
 <translation id="2638942478653899953">Google ಡ್ರೈವ್ ಅನ್ನು ತಲುಪಲಾಗಲಿಲ್ಲ. ದಯವಿಟ್ಟು <ph name="BEGIN_LINK" />ಲಾಗ್ ಔಟ್<ph name="END_LINK" /> ಮಾಡಿ ಹಾಗೂ ಮತ್ತೆ ಹಿಂತಿರುಗಿ ಲಾಗ್ ಇನ್ ಮಾಡಿ.</translation>
 <translation id="2649120831653069427">ರೈನ್‌ಬೋಫಿಶ್</translation>
 <translation id="2661146741306740526">16x9</translation>
+<translation id="2664412712123763093">ಫೈಲ್ ಸ್ಥಳ</translation>
 <translation id="2672394958563893062">ದೋಷವೊಂದು ಸಂಭವಿಸಿದೆ. ಮೊದಲಿನಿಂದ ಮರುಪ್ರಾರಂಭಿಸಲು ಕ್ಲಿಕ್ ಮಾಡಿ.</translation>
 <translation id="2676946222714718093">ಪ್ಲೇ ಆಗುತ್ತಿದೆ</translation>
 <translation id="2735698359135166290">ರೊಮೇನಿಯನ್ ಪ್ರಮಾಣಿತ ಕೀಬೋರ್ಡ್</translation>
@@ -345,6 +347,7 @@
 <translation id="5081517858322016911"><ph name="TOTAL_FILE_SIZE" /> ಗಾತ್ರದ ಫೈಲ್‍‍ಗಳನ್ನು ಅಳಿಸಲಾಗುತ್ತದೆ</translation>
 <translation id="509429900233858213">ದೋಷವೊಂದು ಕಾಣಿಸಿಕೊಂಡಿದೆ.</translation>
 <translation id="5098629044894065541">Hebrew</translation>
+<translation id="5112685521274804841">ಫೋಲ್ಡರ್‌ಗಳಲ್ಲಿರುವ ಫೈಲ್‌ಗಳು ಓದಲು ಮಾತ್ರ. ಕೆಲವು ಚಟುವಟಿಕೆಗಳು ಬೆಂಬಲಿತವಾಗಿರುವುದಿಲ್ಲ.</translation>
 <translation id="5123433949759960244">ಬ್ಯಾಸ್ಕೆಟ್‌ಬಾಲ್‌</translation>
 <translation id="5129662217315786329">ಪೋಲಿಶ್</translation>
 <translation id="5144820558584035333">ಹಂಗುಲ್ 3 ಸೆಟ್ (390)</translation>
@@ -687,6 +690,7 @@
 <translation id="9034924485347205037">Linux ಫೈಲ್‌ಗಳು</translation>
 <translation id="9035012421917565900">ಐಟಂಗಳನ್ನು '<ph name="DESTINATION_NAME" />' ಗೆ ಮರಳಿ ಹಿಂತಿರುಗಿಸಲು ಸಾಧ್ಯವಿಲ್ಲ, ಆದ್ದರಿಂದ ನಿಮಗೆ ಈ ಕ್ರಿಯೆಯನ್ನು ರದ್ದುಪಡಿಸಲು ಸಾಧ್ಯವಾಗುವುದಿಲ್ಲ.</translation>
 <translation id="9038620279323455325">"<ph name="FILE_NAME" />" ಹೆಸರಿನ ಫೈಲ್ ಈಗಾಗಲೇ ಇದೆ. ಬೇರೊಂದು ಹೆಸರನ್ನು ಆರಿಸಿ.</translation>
+<translation id="9062992083244091966"><ph name="APP_NAME" /> ಆ್ಯಪ್‌ಗಳೊಂದಿಗೆ ಫೈಲ್‌ಗಳನ್ನು ತೆರೆಯಲು, ಅವುಗಳನ್ನು <ph name="APP_NAME" /> ಹಂಚಿದ ಫೈಲ್‌ಗಳ ಫೋಲ್ಡರ್‌ಗೆ ಸರಿಸಿ.</translation>
 <translation id="9064939804718829769">ವರ್ಗಾಯಿಸಲಾಗುತ್ತಿದೆ...</translation>
 <translation id="9065203028668620118">ಎಡಿಟ್</translation>
 <translation id="9099674669267916096">ಪುಟ ಎಣಿಕೆ</translation>

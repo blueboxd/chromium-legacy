@@ -39,12 +39,6 @@ void CopyArchivedBinaries(
   }
 }
 
-void RecordArchivedArchiveFileExtensionType(const base::FilePath& file) {
-  base::UmaHistogramSparse(
-      "SBClientDownload.ArchivedArchiveExtensions",
-      FileTypePolicies::GetInstance()->UmaValueForFile(file));
-}
-
 FileAnalyzer::Results ExtractFileFeatures(
     scoped_refptr<BinaryFeatureExtractor> binary_feature_extractor,
     base::FilePath file_path) {
@@ -162,21 +156,10 @@ void FileAnalyzer::OnZipAnalysisFinished(
                        &results_.archived_binaries);
 
   // Log metrics for ZIP analysis
-  if (results_.archived_executable) {
-    UMA_HISTOGRAM_COUNTS_1M("SBClientDownload.ZipFileArchivedBinariesCount",
-                            archive_results.archived_binary.size());
-  }
   UMA_HISTOGRAM_BOOLEAN("SBClientDownload.ZipFileSuccess",
                         archive_results.success);
-  UMA_HISTOGRAM_BOOLEAN("SBClientDownload.ZipFileHasExecutable",
-                        archive_results.has_executable);
-  UMA_HISTOGRAM_BOOLEAN(
-      "SBClientDownload.ZipFileHasArchiveButNoExecutable",
-      archive_results.has_archive && !archive_results.has_executable);
   UMA_HISTOGRAM_MEDIUM_TIMES("SBClientDownload.ExtractZipFeaturesTimeMedium",
                              base::TimeTicks::Now() - zip_analysis_start_time_);
-  for (const auto& file_name : archive_results.archived_archive_filenames)
-    RecordArchivedArchiveFileExtensionType(file_name);
 
   if (!results_.archived_executable) {
     if (archive_results.has_archive) {
@@ -226,17 +209,8 @@ void FileAnalyzer::OnRarAnalysisFinished(
     UMA_HISTOGRAM_COUNTS_100("SBClientDownload.RarFileArchivedBinariesCount",
                              archive_results.archived_binary.size());
   }
-  UMA_HISTOGRAM_BOOLEAN("SBClientDownload.RarFileSuccess",
-                        archive_results.success);
-  UMA_HISTOGRAM_BOOLEAN("SBClientDownload.RarFileHasExecutable",
-                        results_.archived_executable);
-  UMA_HISTOGRAM_BOOLEAN(
-      "SBClientDownload.RarFileHasArchiveButNoExecutable",
-      archive_results.has_archive && !archive_results.has_executable);
   UMA_HISTOGRAM_MEDIUM_TIMES("SBClientDownload.ExtractRarFeaturesTimeMedium",
                              base::TimeTicks::Now() - rar_analysis_start_time_);
-  for (const auto& file_name : archive_results.archived_archive_filenames)
-    RecordArchivedArchiveFileExtensionType(file_name);
 
   if (!results_.archived_executable) {
     if (archive_results.has_archive) {

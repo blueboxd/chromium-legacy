@@ -16,7 +16,7 @@ MediaEngineExtension::MediaEngineExtension() = default;
 MediaEngineExtension::~MediaEngineExtension() = default;
 
 HRESULT MediaEngineExtension::RuntimeClassInitialize() {
-  DVLOG(1) << __func__ << ": this=" << this;
+  DVLOG_FUNC(1);
   return S_OK;
 }
 
@@ -35,7 +35,7 @@ HRESULT MediaEngineExtension::BeginCreateObject(BSTR url_bstr,
                                                 IUnknown** cancel_cookie,
                                                 IMFAsyncCallback* callback,
                                                 IUnknown* state) {
-  DVLOG(1) << __func__ << ": this=" << this << ",type=" << type;
+  DVLOG_FUNC(1) << "type=" << type;
 
   if (cancel_cookie) {
     // We don't support a cancel cookie.
@@ -51,7 +51,7 @@ HRESULT MediaEngineExtension::BeginCreateObject(BSTR url_bstr,
   }
 
   if (type == MF_OBJECT_MEDIASOURCE) {
-    DVLOG(2) << "Begin to resolve mf_media_source_: this=" << this;
+    DVLOG_FUNC(2) << "Begin to resolve |mf_media_source_|";
     DCHECK(local_source) << "Media Source should have been set";
 
     ComPtr<IMFAsyncResult> async_result;
@@ -71,20 +71,20 @@ HRESULT MediaEngineExtension::BeginCreateObject(BSTR url_bstr,
 
 HRESULT MediaEngineExtension::CancelObjectCreation(
     __in IUnknown* cancel_cookie) {
-  DVLOG(1) << __func__ << ": this=" << this;
+  DVLOG_FUNC(1);
 
   return MF_E_UNEXPECTED;
 }
 
 HRESULT MediaEngineExtension::EndCreateObject(__in IMFAsyncResult* result,
                                               __deref_out IUnknown** ret_obj) {
-  DVLOG(1) << __func__ << ": this=" << this;
+  DVLOG_FUNC(1);
 
   *ret_obj = nullptr;
   if (!pending_create_object_)
     return MF_E_UNEXPECTED;
 
-  DVLOG(2) << "End to resolve mf_media_source_: this=" << this;
+  DVLOG_FUNC(2) << "End to resolve |mf_media_source_|";
   RETURN_IF_FAILED(result->GetStatus());
   RETURN_IF_FAILED(result->GetObject(ret_obj));
   pending_create_object_ = false;
@@ -92,7 +92,7 @@ HRESULT MediaEngineExtension::EndCreateObject(__in IMFAsyncResult* result,
 }
 
 HRESULT MediaEngineExtension::SetMediaSource(IUnknown* mf_media_source) {
-  DVLOG(1) << __func__ << ": this=" << this;
+  DVLOG_FUNC(1);
 
   base::AutoLock lock(lock_);
   if (has_shutdown_)
@@ -103,7 +103,7 @@ HRESULT MediaEngineExtension::SetMediaSource(IUnknown* mf_media_source) {
 
 // Break cycles.
 void MediaEngineExtension::Shutdown() {
-  DVLOG(1) << __func__ << ": this=" << this;
+  DVLOG_FUNC(1);
 
   base::AutoLock lock(lock_);
   if (!has_shutdown_) {

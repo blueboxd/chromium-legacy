@@ -90,6 +90,7 @@
 <translation id="1947424002851288782">Clavier allemand</translation>
 <translation id="1972984168337863910">Développer les panneaux de commentaires sur les fichiers</translation>
 <translation id="1984603991036629094">Clavier phonétique arménien</translation>
+<translation id="1995337122023280937">Accéder à l'emplacement du fichier</translation>
 <translation id="2001796770603320721">Gérer dans Drive</translation>
 <translation id="2009067268969781306">Le formatage d'une clé entraîne la suppression de toutes les données qui y sont stockées. Cette action est irréversible.</translation>
 <translation id="2028997212275086731">Archive RAR</translation>
@@ -141,6 +142,7 @@
 <translation id="2638942478653899953">Impossible d'accéder à Google Drive. Veuillez vous <ph name="BEGIN_LINK" />déconnecter<ph name="END_LINK" />, puis vous reconnecter.</translation>
 <translation id="2649120831653069427">Poisson arc-en-ciel</translation>
 <translation id="2661146741306740526">16 x 9</translation>
+<translation id="2664412712123763093">Emplacement du fichier</translation>
 <translation id="2672394958563893062">Une erreur s'est produite. Veuillez cliquer ici pour recommencer depuis le début.</translation>
 <translation id="2676946222714718093">Lecture en cours sur</translation>
 <translation id="2735698359135166290">Clavier roumain standard</translation>
@@ -349,6 +351,7 @@
 <translation id="5081517858322016911"><ph name="TOTAL_FILE_SIZE" /> de fichiers seront supprimés</translation>
 <translation id="509429900233858213">Une erreur s'est produite.</translation>
 <translation id="5098629044894065541">Hébreu</translation>
+<translation id="5112685521274804841">Les fichiers de ce dossier sont accessibles en lecture seule. Certaines opérations ne sont pas possibles.</translation>
 <translation id="5123433949759960244">Basket-ball</translation>
 <translation id="5129662217315786329">Polonais</translation>
 <translation id="5144820558584035333">Hangûl Sebeol-sik (390)</translation>
@@ -699,6 +702,7 @@
 <translation id="9034924485347205037">Fichiers Linux</translation>
 <translation id="9035012421917565900">Les éléments ne pourront pas être redéplacés vers "<ph name="DESTINATION_NAME" />". Cette action est donc irréversible.</translation>
 <translation id="9038620279323455325">Le nom "<ph name="FILE_NAME" />" est déjà attribué à un fichier. Veuillez en choisir un autre.</translation>
+<translation id="9062992083244091966">Pour ouvrir des fichiers avec les applications <ph name="APP_NAME" />, déplacez-les d'abord dans le dossier de fichiers partagés <ph name="APP_NAME" />.</translation>
 <translation id="9064939804718829769">Transfert en cours…</translation>
 <translation id="9065203028668620118">Modifier</translation>
 <translation id="9099674669267916096">Nombre de pages</translation>

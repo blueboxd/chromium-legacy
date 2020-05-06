@@ -85,9 +85,7 @@ void PrinterCapabilitiesProvider::OnPrinterInstalled(
         FROM_HERE, base::BindOnce(std::move(callback), base::nullopt));
     return;
   }
-  printers_manager_->PrinterInstalled(
-      printer, /*is_automatic=*/true,
-      chromeos::PrinterSetupSource::kExtensionApi);
+  printers_manager_->PrinterInstalled(printer, /*is_automatic=*/true);
   FetchCapabilities(printer.id(), std::move(callback));
 }
 

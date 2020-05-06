@@ -154,8 +154,22 @@ Polymer({
     if (this.$.signinFrame.canGoBack()) {
       this.$.signinFrame.back();
     } else {
+      // Reload the webview. It allows users to go back and try to add another
+      // account if something goes wrong in the webview (e.g. SAML server
+      // doesn't respond, see crbug/1068783).
+      this.reloadWebview_();
       this.fire('go-back');
     }
+  },
+
+  /**
+   * Reloads the webview and shows 'loading' spinner.
+   * @private
+   */
+  reloadWebview_() {
+    this.loading_ = true;
+    this.authExtHost_.resetStates();
+    this.$.signinFrame.reload();
   },
 
   /**

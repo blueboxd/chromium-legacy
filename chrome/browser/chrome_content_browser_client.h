@@ -154,6 +154,7 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
                                        const GURL& effective_site_url) override;
   bool ShouldLockToOrigin(content::BrowserContext* browser_context,
                           const GURL& effective_site_url) override;
+  bool DoesWebUISchemeRequireProcessLock(base::StringPiece scheme) override;
   bool ShouldTreatURLSchemeAsFirstPartyWhenTopLevel(
       base::StringPiece scheme,
       bool is_embedded_origin_secure) override;
@@ -290,6 +291,9 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       bool strict_enforcement,
       base::OnceCallback<void(content::CertificateRequestResultType)> callback)
       override;
+#if !defined(OS_ANDROID)
+  bool ShouldDenyRequestOnCertificateError(const GURL main_page_url) override;
+#endif
   base::OnceClosure SelectClientCertificate(
       content::WebContents* web_contents,
       net::SSLCertRequestInfo* cert_request_info,

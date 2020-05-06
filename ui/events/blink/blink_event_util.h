@@ -78,6 +78,8 @@ void SetWebPointerPropertiesFromMotionEventData(
 
 int WebEventModifiersToEventFlags(int modifiers);
 
+float IfNanUseMaxFloat(float value);
+
 blink::WebInputEvent::Modifiers DomCodeToWebInputEventModifiers(
     ui::DomCode code);
 

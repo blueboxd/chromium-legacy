@@ -10,6 +10,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/task_runner.h"
 #include "base/time/time.h"
+#include "base/trace_event/common/trace_event_common.h"
 #include "cc/paint/paint_record.h"
 #include "cc/paint/paint_recorder.h"
 #include "components/paint_preview/renderer/paint_preview_recorder_utils.h"
@@ -29,12 +30,15 @@ mojom::PaintPreviewStatus FinishRecording(
     base::File skp_file,
     size_t max_capture_size,
     mojom::PaintPreviewCaptureResponse* response) {
+  TRACE_EVENT0("paint_preview", "FinishRecording");
   DCHECK(response);
   DCHECK(tracker);
   if (!response || !tracker)
     return mojom::PaintPreviewStatus::kCaptureFailed;
 
+  TRACE_EVENT_BEGIN0("paint_preview", "ParseGlyphs");
   ParseGlyphs(recording.get(), tracker);
+  TRACE_EVENT_END0("paint_preview", "ParseGlyphs");
   size_t serialized_size = 0;
   if (!SerializeAsSkPicture(recording, tracker, bounds, std::move(skp_file),
                             max_capture_size, &serialized_size))
@@ -62,6 +66,8 @@ PaintPreviewRecorderImpl::~PaintPreviewRecorderImpl() = default;
 void PaintPreviewRecorderImpl::CapturePaintPreview(
     mojom::PaintPreviewCaptureParamsPtr params,
     CapturePaintPreviewCallback callback) {
+  TRACE_EVENT0("paint_preview",
+               "PaintPreviewRecorderImpl::CapturePaintPreview");
   mojom::PaintPreviewStatus status = mojom::PaintPreviewStatus::kOk;
   base::ReadOnlySharedMemoryRegion region;
   // This should not be called recursively or multiple times while unfinished
@@ -138,7 +144,9 @@ void PaintPreviewRecorderImpl::CapturePaintPreviewInternal(
   // 3. Record only on successes as failures are likely to be outliers (fast or
   //    slow).
   base::TimeTicks start_time = base::TimeTicks::Now();
+  TRACE_EVENT_BEGIN0("paint_preview", "WebLocalFrame::CapturePaintPreview");
   bool success = frame->CapturePaintPreview(bounds, canvas);
+  TRACE_EVENT_END0("paint_preview", "WebLocalFrame::CapturePaintPreview");
   base::TimeDelta capture_time = base::TimeTicks::Now() - start_time;
   response->blink_recording_time = capture_time;
 

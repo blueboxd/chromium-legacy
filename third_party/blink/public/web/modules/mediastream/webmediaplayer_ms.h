@@ -44,6 +44,9 @@ using CreateSurfaceLayerBridgeCB =
         cc::UpdateSubmissionStateCB)>;
 
 class MediaStreamInternalFrameWrapper;
+template <typename TimerFiredClass, bool>
+class TaskRunnerTimer;
+class TimerBase;
 class WebLocalFrame;
 class WebMediaPlayerClient;
 class WebMediaStreamAudioRenderer;
@@ -282,6 +285,8 @@ class BLINK_MODULES_EXPORT WebMediaPlayerMS
 
   void SendLogMessage(const WTF::String& message) const;
 
+  void StopForceBeginFrames(TimerBase*);
+
   std::unique_ptr<MediaStreamInternalFrameWrapper> internal_frame_;
 
   WebMediaPlayer::NetworkState network_state_;
@@ -361,6 +366,11 @@ class BLINK_MODULES_EXPORT WebMediaPlayerMS
   WebString current_audio_track_id_;
 
   CreateSurfaceLayerBridgeCB create_bridge_callback_;
+
+  // Resets the ForceBeginFrames flag once we stop receiving calls to
+  // requestVideoFrameCallback().
+  std::unique_ptr<TaskRunnerTimer<WebMediaPlayerMS, false>>
+      stop_force_begin_frames_timer_;
 
   std::unique_ptr<WebVideoFrameSubmitter> submitter_;
 

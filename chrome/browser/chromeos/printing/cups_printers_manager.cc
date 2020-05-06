@@ -206,16 +206,14 @@ class CupsPrintersManagerImpl
   }
 
   // Public API function.
-  void PrinterInstalled(const Printer& printer,
-                        bool is_automatic,
-                        PrinterSetupSource source) override {
+  void PrinterInstalled(const Printer& printer, bool is_automatic) override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_);
     if (!native_printers_allowed_.GetValue()) {
       LOG(WARNING) << "PrinterInstalled() called when "
                       "UserNativePrintersAllowed is  set to false";
       return;
     }
-    MaybeRecordInstallation(printer, is_automatic, source);
+    MaybeRecordInstallation(printer, is_automatic);
     MarkPrinterInstalledWithCups(printer);
   }
 
@@ -445,8 +443,7 @@ class CupsPrintersManagerImpl
   }
 
   void MaybeRecordInstallation(const Printer& printer,
-                               bool is_automatic_installation,
-                               PrinterSetupSource source) {
+                               bool is_automatic_installation) {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_);
     if (synced_printers_manager_->GetPrinter(printer.id())) {
       // It's just an update, not a new installation, so don't record an event.
@@ -477,7 +474,7 @@ class CupsPrintersManagerImpl
       } else {
         mode = PrinterEventTracker::kUser;
       }
-      event_tracker_->RecordUsbPrinterInstalled(*detected, mode, source);
+      event_tracker_->RecordUsbPrinterInstalled(*detected, mode);
     } else {
       PrinterEventTracker::SetupMode mode;
       if (is_automatic_installation) {
@@ -485,7 +482,7 @@ class CupsPrintersManagerImpl
       } else {
         mode = PrinterEventTracker::kUser;
       }
-      event_tracker_->RecordIppPrinterInstalled(printer, mode, source);
+      event_tracker_->RecordIppPrinterInstalled(printer, mode);
     }
   }
 

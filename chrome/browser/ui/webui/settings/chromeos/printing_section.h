@@ -12,17 +12,25 @@ class WebUIDataSource;
 }  // namespace content
 
 namespace chromeos {
+
+class CupsPrintersManager;
+
 namespace settings {
 
 // Provides UI strings and search tags for Printing settings.
 class PrintingSection : public OsSettingsSection {
  public:
-  PrintingSection(Profile* profile, Delegate* per_page_delegate);
+  PrintingSection(Profile* profile,
+                  Delegate* per_page_delegate,
+                  CupsPrintersManager* printers_manager);
   ~PrintingSection() override;
 
  private:
   // OsSettingsSection:
   void AddLoadTimeData(content::WebUIDataSource* html_source) override;
+  void AddHandlers(content::WebUI* web_ui) override;
+
+  CupsPrintersManager* printers_manager_;
 };
 
 }  // namespace settings

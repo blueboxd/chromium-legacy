@@ -24,6 +24,7 @@
 #include "content/browser/isolated_origin_util.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/site_instance_impl.h"
+#include "content/browser/webui/url_data_manager_backend.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_or_resource_context.h"
 #include "content/public/browser/browser_thread.h"
@@ -1013,6 +1014,24 @@ bool ChildProcessSecurityPolicyImpl::CanRequestURL(
     // allowed to request the URL.
     if (state->second->CanRequestURL(url))
       return true;
+  }
+
+  // If |url| has WebUI scheme, the process must usually be locked, unless
+  // running in single-process mode. Since this is a check whether the process
+  // can request |url|, the check must operate based on scheme because one WebUI
+  // should be able to request subresources from another WebUI of the same
+  // scheme.
+  const auto& webui_schemes = URLDataManagerBackend::GetWebUISchemes();
+  if (!RenderProcessHost::run_renderer_in_process() &&
+      base::Contains(webui_schemes, url.scheme())) {
+    bool should_be_locked =
+        GetContentClient()->browser()->DoesWebUISchemeRequireProcessLock(
+            url.scheme());
+    if (should_be_locked) {
+      const GURL& lock_url = GetOriginLock(child_id);
+      if (lock_url.is_empty() || !lock_url.SchemeIs(url.scheme()))
+        return false;
+    }
   }
 
   // Also allow URLs destined for ShellExecute and not the browser itself.

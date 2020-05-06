@@ -12,7 +12,6 @@
 #include "base/test/mock_callback.h"
 #include "base/test/task_environment.h"
 #include "base/win/scoped_com_initializer.h"
-#include "base/win/windows_version.h"
 #include "media/base/demuxer_stream.h"
 #include "media/base/mock_filters.h"
 #include "media/base/test_helpers.h"
@@ -105,9 +104,8 @@ class MockMediaProtectionPMPServer
 
 class MediaFoundationRendererTest : public testing::Test {
  public:
-  MediaFoundationRendererTest()
-      : test_supported_(base::win::GetVersion() >= base::win::Version::WIN10) {
-    if (!test_supported_)
+  MediaFoundationRendererTest() {
+    if (!MediaFoundationRenderer::IsSupported())
       return;
 
     MockMediaProtectionPMPServer::MakeMockMediaProtectionPMPServer(
@@ -177,7 +175,6 @@ class MediaFoundationRendererTest : public testing::Test {
   }
 
  protected:
-  const bool test_supported_;
   base::win::ScopedCOMInitializer com_initializer_;
   base::test::TaskEnvironment task_environment_;
   base::MockOnceCallback<void(bool)> set_cdm_cb_;
@@ -192,7 +189,7 @@ class MediaFoundationRendererTest : public testing::Test {
 };
 
 TEST_F(MediaFoundationRendererTest, VerifyInitWithoutSetCdm) {
-  if (!test_supported_)
+  if (!MediaFoundationRenderer::IsSupported())
     return;
 
   AddStream(DemuxerStream::AUDIO, /*encrypted=*/false);
@@ -207,7 +204,7 @@ TEST_F(MediaFoundationRendererTest, VerifyInitWithoutSetCdm) {
 }
 
 TEST_F(MediaFoundationRendererTest, SetCdmThenInit) {
-  if (!test_supported_)
+  if (!MediaFoundationRenderer::IsSupported())
     return;
 
   AddStream(DemuxerStream::AUDIO, /*encrypted=*/true);
@@ -224,7 +221,7 @@ TEST_F(MediaFoundationRendererTest, SetCdmThenInit) {
 }
 
 TEST_F(MediaFoundationRendererTest, InitThenSetCdm) {
-  if (!test_supported_)
+  if (!MediaFoundationRenderer::IsSupported())
     return;
 
   AddStream(DemuxerStream::AUDIO, /*encrypted=*/true);
@@ -241,7 +238,7 @@ TEST_F(MediaFoundationRendererTest, InitThenSetCdm) {
 }
 
 TEST_F(MediaFoundationRendererTest, DirectCompositionHandle) {
-  if (!test_supported_)
+  if (!MediaFoundationRenderer::IsSupported())
     return;
 
   base::MockCallback<MediaFoundationRendererExtension::SetDCompModeCB>

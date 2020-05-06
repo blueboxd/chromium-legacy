@@ -92,7 +92,7 @@ void IdleManagerImpl::AddMonitor(
     AddMonitorCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (threshold < kMinimumThreshold) {
-    receivers_.ReportBadMessage("Minimum threshold is 60 seconds.");
+    receivers_.ReportBadMessage("Minimum threshold is 1 minute.");
     return;
   }
 
@@ -102,8 +102,10 @@ void IdleManagerImpl::AddMonitor(
     return;
   }
 
+  blink::mojom::IdleStatePtr current_state = CheckIdleState(threshold);
+  auto response_state = current_state->Clone();
   auto monitor = std::make_unique<IdleMonitor>(
-      std::move(monitor_remote), CheckIdleState(threshold), threshold);
+      std::move(monitor_remote), std::move(current_state), threshold);
 
   // This unretained reference is safe because IdleManagerImpl owns all
   // IdleMonitor instances.
@@ -115,7 +117,7 @@ void IdleManagerImpl::AddMonitor(
   StartPolling();
 
   std::move(callback).Run(IdleManagerError::kSuccess,
-                          CheckIdleState(threshold));
+                          std::move(response_state));
 }
 
 bool IdleManagerImpl::HasPermission(const url::Origin& origin) {

@@ -1434,6 +1434,22 @@
       },
     },
 
+    'gpu_angle_deqp_egl_metal_gtests': {
+      'angle_deqp_egl_metal_tests': {
+        'args': [
+          '--deqp-egl-display-type=angle-metal',
+        ],
+        'desktop_args': [
+          '--test-launcher-batch-limit=400',
+        ],
+        'should_retry_with_patch': False,
+        'swarming': {
+          'shards': 1,
+        },
+        'test': 'angle_deqp_egl_tests',
+      },
+    },
+
     'gpu_angle_deqp_egl_vulkan_gtests': {
       'angle_deqp_egl_vulkan_tests': {
         'android_args': [
@@ -1479,6 +1495,20 @@
         'should_retry_with_patch': False,
         'swarming': {
           'shards': 4,
+        },
+        'test': 'angle_deqp_gles2_tests',
+      },
+    },
+
+    'gpu_angle_deqp_gles2_metal_gtests': {
+      'angle_deqp_gles2_metal_tests': {
+        'args': [
+          '--test-launcher-batch-limit=400',
+          '--deqp-egl-display-type=angle-metal',
+        ],
+        'should_retry_with_patch': False,
+        'swarming': {
+          'shards': 1,
         },
         'test': 'angle_deqp_gles2_tests',
       },
@@ -1736,6 +1766,7 @@
         ],
         'android_args': [
           '--shard-timeout=800',
+          '--test-launcher-batch-limit=100',
         ],
         'merge': {
           'script': '//tools/perf/process_perf_results.py',
@@ -4366,7 +4397,9 @@
 
     'gpu_angle_deqp_mac_gtests': [
       'gpu_angle_deqp_egl_gl_gtests',
+      'gpu_angle_deqp_egl_metal_gtests',
       'gpu_angle_deqp_gles2_gl_gtests',
+      'gpu_angle_deqp_gles2_metal_gtests',
       'gpu_angle_deqp_gles3_gl_gtests',
     ],
 

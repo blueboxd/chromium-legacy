@@ -398,6 +398,10 @@ class ExtensionService : public ExtensionServiceInterface,
     return external_install_manager_.get();
   }
 
+  InstallationTracker* forced_extensions_tracker() {
+    return &forced_extensions_tracker_;
+  }
+
   //////////////////////////////////////////////////////////////////////////////
   // For Testing
 

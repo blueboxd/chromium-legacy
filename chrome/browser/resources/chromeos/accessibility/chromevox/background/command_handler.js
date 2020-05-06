@@ -32,7 +32,7 @@ const RoleType = chrome.automation.RoleType;
 const StateType = chrome.automation.StateType;
 
 /** @private {boolean} */
-CommandHandler.incognito_ = !!chrome.runtime.getManifest()['incognito'];
+CommandHandler.isIncognito_ = !!chrome.runtime.getManifest()['incognito'];
 
 /** @private {boolean} */
 CommandHandler.languageLoggingEnabled_ = false;
@@ -49,8 +49,9 @@ CommandHandler.smartStickyMode_ = new SmartStickyMode();
  * @return {boolean} True if the command should propagate.
  */
 CommandHandler.onCommand = function(command) {
-  // Check for a command disallowed in OOBE/login.
-  if (CommandHandler.incognito_ && CommandStore.CMD_WHITELIST[command] &&
+  // Check for a command disallowed in incognito contexts and kiosk.
+  if ((CommandHandler.isIncognito_ || CommandHandler.isKioskSession_) &&
+      CommandStore.CMD_WHITELIST[command] &&
       CommandStore.CMD_WHITELIST[command].disallowOOBE) {
     return true;
   }
@@ -1485,6 +1486,12 @@ CommandHandler.init = function() {
           CommandHandler.languageLoggingEnabled_ = true;
         }
       });
+
+  chrome.chromeosInfoPrivate.get(['sessionType'], (result) => {
+    /** @type {boolean} */
+    CommandHandler.isKioskSession_ =
+        result['sessionType'] == chrome.chromeosInfoPrivate.SessionType.KIOSK;
+  });
 };
 
 });  // goog.scope

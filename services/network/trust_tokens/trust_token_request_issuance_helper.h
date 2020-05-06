@@ -12,6 +12,7 @@
 #include "base/callback_forward.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string_piece_forward.h"
+#include "net/log/net_log_with_source.h"
 #include "services/network/public/mojom/trust_tokens.mojom-shared.h"
 #include "services/network/trust_tokens/proto/public.pb.h"
 #include "services/network/trust_tokens/suitable_trust_token_origin.h"
@@ -120,7 +121,8 @@ class TrustTokenRequestIssuanceHelper : public TrustTokenRequestHelper {
       SuitableTrustTokenOrigin top_level_origin,
       TrustTokenStore* token_store,
       const TrustTokenKeyCommitmentGetter* key_commitment_getter,
-      std::unique_ptr<Cryptographer> cryptographer);
+      std::unique_ptr<Cryptographer> cryptographer,
+      net::NetLogWithSource net_log = net::NetLogWithSource());
   ~TrustTokenRequestIssuanceHelper() override;
 
   // Executes the outbound part of a Trust Tokens issuance operation,
@@ -208,11 +210,14 @@ class TrustTokenRequestIssuanceHelper : public TrustTokenRequestHelper {
   const SuitableTrustTokenOrigin top_level_origin_;
   TrustTokenStore* const token_store_;
   const TrustTokenKeyCommitmentGetter* const key_commitment_getter_;
+
   // Relinquishes ownership during posted tasks for the potentially
   // computationally intensive cryptographic operations
   // (Cryptographer::BeginIssuance, Cryptographer::ConfirmIssuance); repopulated
   // when regaining ownership upon receiving each operation's results.
   std::unique_ptr<Cryptographer> cryptographer_;
+
+  net::NetLogWithSource net_log_;
   base::WeakPtrFactory<TrustTokenRequestIssuanceHelper> weak_ptr_factory_{this};
 };
 }  // namespace network

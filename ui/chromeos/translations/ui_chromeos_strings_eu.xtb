@@ -90,6 +90,7 @@
 <translation id="1947424002851288782">Teklatu alemana</translation>
 <translation id="1972984168337863910">Zabaldu fitxategien oharren panelak</translation>
 <translation id="1984603991036629094">Teklatu armeniar fonetikoa</translation>
+<translation id="1995337122023280937">Joan fitxategiaren kokapenera</translation>
 <translation id="2001796770603320721">Kudeatu Drive-n</translation>
 <translation id="2009067268969781306">Unitatea formateatuz gero, bertan gordetako datu guztiak ezabatuko dira. Ezin da desegin ekintza hori.</translation>
 <translation id="2028997212275086731">RAR fitxategia</translation>
@@ -141,6 +142,7 @@
 <translation id="2638942478653899953">Ezin izan da Google Drive-rekin konektatu. <ph name="BEGIN_LINK" />Amaitu saioa<ph name="END_LINK" /> eta hasi saioa berriro.</translation>
 <translation id="2649120831653069427">Arrain koloretsua</translation>
 <translation id="2661146741306740526">16x9</translation>
+<translation id="2664412712123763093">Fitxategiaren kokapena</translation>
 <translation id="2672394958563893062">Errore bat gertatu da. Berriro hasieratik hasteko, sakatu hau.</translation>
 <translation id="2676946222714718093">Hemen erreproduzitzen:</translation>
 <translation id="2735698359135166290">Errumanierako teklatu estandarra</translation>
@@ -349,6 +351,7 @@
 <translation id="5081517858322016911">Fitxategiei dagozkien <ph name="TOTAL_FILE_SIZE" /> ezabatuko dira</translation>
 <translation id="509429900233858213">Errore bat gertatu da.</translation>
 <translation id="5098629044894065541">Hebrearra</translation>
+<translation id="5112685521274804841">Karpeta hauetako fitxategiak irakurtzeko soilik dira. Jarduera batzuk ez dira onartzen.</translation>
 <translation id="5123433949759960244">Saskibaloiko baloia</translation>
 <translation id="5129662217315786329">Poloniarra</translation>
 <translation id="5144820558584035333">3. hangul-karaktere sorta (390)</translation>
@@ -698,6 +701,7 @@
 <translation id="9034924485347205037">Linux fitxategiak</translation>
 <translation id="9035012421917565900">Ezin dira eraman berriro elementuak "<ph name="DESTINATION_NAME" />" unitatera; beraz, ezin izango duzu desegin ekintza.</translation>
 <translation id="9038620279323455325">"<ph name="FILE_NAME" />" izena duen fitxategia bazegoen lehendik ere. Aukeratu beste izen bat.</translation>
+<translation id="9062992083244091966">Fitxategiak <ph name="APP_NAME" /> aplikazioarekin irekitzeko, eraman itzazu lehenik <ph name="APP_NAME" /> aplikazioko partekatutako fitxategien karpetara.</translation>
 <translation id="9064939804718829769">Transferitzen…</translation>
 <translation id="9065203028668620118">Editatu</translation>
 <translation id="9099674669267916096">Orri kopurua</translation>
